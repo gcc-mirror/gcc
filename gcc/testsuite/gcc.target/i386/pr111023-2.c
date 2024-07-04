@@ -36,7 +36,7 @@ v4si_v4hi (v4si *dst, v8hi src)
   dst[0] = *(v4si *) tem;
 }
 
-/* { dg-final { scan-assembler "pcmpgtw" } } */
+/* { dg-final { scan-assembler "(?:pcmpgtw|psraw)" } } */
 /* { dg-final { scan-assembler "punpcklwd" } } */
 
 void
@@ -48,5 +48,5 @@ v2di_v2si (v2di *dst, v4si src)
   dst[0] = *(v2di *) tem;
 }
 
-/* { dg-final { scan-assembler "pcmpgtd" } } */
+/* { dg-final { scan-assembler "(?:pcmpgtd|psrad)" } } */
 /* { dg-final { scan-assembler "punpckldq" } } */

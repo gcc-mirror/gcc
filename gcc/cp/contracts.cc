@@ -1,5 +1,5 @@
 /* Definitions for C++ contract levels
-   Copyright (C) 2020-2023 Free Software Foundation, Inc.
+   Copyright (C) 2020-2024 Free Software Foundation, Inc.
    Contributed by Jeff Chapman II (jchapman@lock3software.com)
 
 This file is part of GCC.
@@ -88,64 +88,7 @@ along with GCC; see the file COPYING3.  If not see
        return -v;
      }
 
-   The original decl is left alone and instead calls are generated to pre/post
-   functions within the body:
-
-     void fun.pre(int v)
-     {
-       [[ assert: v > 0 ]];
-     }
-     int fun.post(int v, int __r)
-     {
-       [[ assert: __r < 0 ]];
-       return __r;
-     }
-     int fun(int v)
-     {
-       fun.pre(v);
-       return fun.post(v, -v);
-     }
-
-   If fun returns in memory, the return value is not passed through the post
-   function; instead, the return object is initialized directly and then passed
-   to the post function by invisible reference.
-
-   This sides steps a number of issues with having to rewrite the bodies or
-   rewrite the parsed conditions as the parameters to the original function
-   changes (as happens during redeclaration). The ultimate goal is to get
-   something that optimizes well along the lines of
-
-     int fun(int v)
-     {
-       [[ assert: v > 0 ]];
-       auto &&__r = -v;
-       goto out;
-     out:
-       [[ assert: __r < 0 ]];
-       return __r;
-     }
-
-   With the idea being that multiple return statements could collapse the
-   function epilogue after inlining the pre/post functions. clang is able
-   to collapse common function epilogues, while gcc needs -O3 -Os combined.
-
-   Directly laying the pre contracts down in the function body doesn't have
-   many issues. The post contracts may need to be repeated multiple times, once
-   for each return, or a goto epilogue would need to be generated.
-   For this initial implementation, generating function calls and letting
-   later optimizations decide whether to inline and duplicate the actual
-   checks or whether to collapse the shared epilogue was chosen.
-
-   For cdtors a post contract is implemented using a CLEANUP_STMT.
-
-   FIXME the compiler already shores cleanup code on multiple exit paths, so
-   this outlining seems unnecessary if we represent the postcondition as a
-   cleanup for all functions.
-
-   More helpful for optimization might be to make the contracts a wrapper
-   function (for non-variadic functions), that could be inlined into a
-   caller while preserving the call to the actual function?  Either that or
-   mirror a never-continue post contract with an assume in the caller.  */
+  TODO: reiterate the revised implementation.  */
 
 #include "config.h"
 #include "system.h"
@@ -601,7 +544,7 @@ invalidate_contract (tree t)
   return t;
 }
 
-/* Returns an invented parameter declration of the form 'TYPE ID' for the
+/* Returns an invented parameter declaration of the form 'TYPE ID' for the
    purpose of parsing the postcondition.
 
    We use a PARM_DECL instead of a VAR_DECL so that tsubst forces a lookup
@@ -616,6 +559,10 @@ make_postcondition_variable (cp_expr id, tree type)
   tree decl = build_lang_decl (PARM_DECL, id, type);
   DECL_ARTIFICIAL (decl) = true;
   DECL_SOURCE_LOCATION (decl) = id.get_location ();
+
+  // constify the postcondition variable
+  if (flag_contracts_nonattr && !flag_contracts_nonattr_noconst)
+	TREE_READONLY(decl) = 1;
 
   pushdecl (decl);
   return decl;
@@ -636,7 +583,11 @@ make_postcondition_variable (cp_expr id)
 bool
 check_postcondition_result (tree decl, tree type, location_t loc)
 {
-  if (VOID_TYPE_P (type))
+  /* Do not be confused by targetm.cxx.cdtor_return_this ();
+     conceptually, cdtors have no return value.  */
+  if (VOID_TYPE_P (type)
+      || DECL_CONSTRUCTOR_P (decl)
+      || DECL_DESTRUCTOR_P (decl))
     {
       error_at (loc,
 		DECL_CONSTRUCTOR_P (decl)
@@ -722,7 +673,8 @@ build_comment (cp_expr condition)
 {
   /* Try to get the actual source text for the condition; if that fails pretty
      print the resulting tree.  */
-  char *str = get_source_text_between (condition.get_start (),
+  char *str = get_source_text_between (global_dc->get_file_cache (),
+				       condition.get_start (),
 				       condition.get_finish ());
   if (!str)
     {
@@ -745,8 +697,12 @@ tree
 grok_contract (tree attribute, tree mode, tree result, cp_expr condition,
 	       location_t loc)
 {
+
+  if (condition == error_mark_node)
+    return error_mark_node;
+
   tree_code code;
-  if (is_attribute_p ("assert", attribute))
+  if (is_attribute_p ("assert", attribute) || is_attribute_p ("contract_assert", attribute))
     code = ASSERTION_STMT;
   else if (is_attribute_p ("pre", attribute))
     code = PRECONDITION_STMT;
@@ -780,6 +736,10 @@ grok_contract (tree attribute, tree mode, tree result, cp_expr condition,
 
   /* The condition is converted to bool.  */
   condition = finish_contract_condition (condition);
+
+  if (condition == error_mark_node)
+      return error_mark_node;
+
   CONTRACT_CONDITION (contract) = condition;
 
   return contract;
@@ -795,7 +755,6 @@ finish_contract_attribute (tree identifier, tree contract)
 
   tree attribute = build_tree_list (build_tree_list (NULL_TREE, identifier),
 				    build_tree_list (NULL_TREE, contract));
-
 
   /* Mark the attribute as dependent if the condition is dependent.
 
@@ -980,7 +939,7 @@ retain_decl (tree decl, copy_body_data *)
    When declarations are merged, we sometimes need to update contracts to
    refer to new parameters.
 
-   If DUPLICATE_P is true, this is called by duplicate_decls to rewrite contacts
+   If DUPLICATE_P is true, this is called by duplicate_decls to rewrite contracts
    in terms of a new set of parameters. In this case, we can retain local
    variables appearing in the contract because the contract is not being
    prepared for insertion into a new function. Importantly, this preserves the
@@ -1393,19 +1352,31 @@ build_contract_condition_function (tree fndecl, bool pre)
 {
   if (TREE_TYPE (fndecl) == error_mark_node)
     return error_mark_node;
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fndecl)
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (fndecl)
       && !TYPE_METHOD_BASETYPE (TREE_TYPE (fndecl)))
     return error_mark_node;
 
   /* Create and rename the unchecked function and give an internal name.  */
   tree fn = copy_fn_decl (fndecl);
   DECL_RESULT (fn) = NULL_TREE;
-  tree value_type = pre ? void_type_node : TREE_TYPE (TREE_TYPE (fn));
 
   /* Don't propagate declaration attributes to the checking function,
      including the original contracts.  */
   DECL_ATTRIBUTES (fn) = NULL_TREE;
 
+  /* If requested, disable optimisation of checking functions; this can, in
+     some cases, prevent UB from eliding the checks themselves.  */
+  if (flag_contract_disable_optimized_checks)
+    DECL_ATTRIBUTES (fn)
+      = tree_cons (get_identifier ("optimize"),
+		   build_tree_list (NULL_TREE, build_string (3, "-O0")),
+		   NULL_TREE);
+  /* Now parse and add any internal representation of these attrs to the
+     decl.  */
+  if (DECL_ATTRIBUTES (fn))
+    cplus_decl_attributes (&fn, DECL_ATTRIBUTES (fn), 0);
+
+  /* Handle the args list.  */
   tree arg_types = NULL_TREE;
   tree *last = &arg_types;
 
@@ -1416,37 +1387,33 @@ build_contract_condition_function (tree fndecl, bool pre)
       arg_type && arg_type != void_list_node;
       arg_type = TREE_CHAIN (arg_type))
     {
-      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fndecl)
+      if (DECL_IOBJ_MEMBER_FUNCTION_P (fndecl)
 	  && TYPE_ARG_TYPES (TREE_TYPE (fn)) == arg_type)
       {
 	class_type = TREE_TYPE (TREE_VALUE (arg_type));
 	continue;
       }
       *last = build_tree_list (TREE_PURPOSE (arg_type), TREE_VALUE (arg_type));
-      last = &TREE_CHAIN (*last);
     }
 
-  if (pre || VOID_TYPE_P (value_type))
-    *last = void_list_node;
-  else
+  tree orig_fn_value_type = TREE_TYPE (TREE_TYPE (fn));
+  if (!pre && !VOID_TYPE_P (orig_fn_value_type))
     {
+      /* For post contracts that deal with a non-void function, append a
+	 parameter to pass the return value.  */
       tree name = get_identifier ("__r");
-      tree parm = build_lang_decl (PARM_DECL, name, value_type);
+      tree parm = build_lang_decl (PARM_DECL, name, orig_fn_value_type);
       DECL_CONTEXT (parm) = fn;
       DECL_ARTIFICIAL (parm) = true;
       DECL_ARGUMENTS (fn) = chainon (DECL_ARGUMENTS (fn), parm);
-
-      *last = build_tree_list (NULL_TREE, value_type);
-      TREE_CHAIN (*last) = void_list_node;
-
-      if (aggregate_value_p (value_type, fndecl))
-	/* If FNDECL returns in memory, don't return the value from the
-	   postcondition.  */
-	value_type = void_type_node;
+      *last = build_tree_list (NULL_TREE, orig_fn_value_type);
+      last = &TREE_CHAIN (*last);
     }
+  *last = void_list_node;
+  /* The handlers are void fns.  */
+  TREE_TYPE (fn) = build_function_type (void_type_node, arg_types);
 
-  TREE_TYPE (fn) = build_function_type (value_type, arg_types);
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fndecl))
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (fndecl))
     TREE_TYPE (fn) = build_method_type (class_type, TREE_TYPE (fn));
 
   DECL_NAME (fn) = copy_node (DECL_NAME (fn));
@@ -1877,15 +1844,12 @@ emit_preconditions (tree attr)
   return emit_contract_conditions (attr, PRECONDITION_STMT);
 }
 
-/* Emit statements for postcondition attributes.  */
+/* Emit statements for precondition attributes.  */
 
 static void
-emit_postconditions_cleanup (tree contracts)
+emit_postconditions (tree attr)
 {
-  tree stmts = push_stmt_list ();
-  emit_contract_conditions (contracts, POSTCONDITION_STMT);
-  stmts = pop_stmt_list (stmts);
-  push_cleanup (NULL_TREE, stmts, /*eh_only*/false);
+  return emit_contract_conditions (attr, POSTCONDITION_STMT);
 }
 
 /* We're compiling the pre/postcondition function CONDFN; remap any FN
@@ -1927,6 +1891,46 @@ finish_contract_condition (cp_expr condition)
     return condition;
 
   return condition_conversion (condition);
+}
+
+/*
+ *  Wrap the decl into VIEW_CONVERT_EXPR representing
+ *  const qualified version of the decl.
+ */
+
+tree view_as_const(tree decl)
+{
+  tree ctype = TREE_TYPE (decl);
+  ctype = cp_build_qualified_type (ctype, (cp_type_quals (ctype)
+						     | TYPE_QUAL_CONST));
+  decl = build1 (VIEW_CONVERT_EXPR, ctype, decl);
+  return decl;
+}
+
+/* constify access to an id from within the contract condition */
+tree
+constify_contract_access(tree decl)
+{
+  /* only constifies the automatic storage variables for now.
+   * The postcondition variable is created const. Parameters need to be
+   * checked separately, and we also need to make references and *this const
+   */
+
+  /* We check if we have a variable of automatic storage duration, a parameter,
+   * a variable of automatic storage duration of reference type, or a
+   * parameter of reference type
+   */
+  if (!TREE_READONLY (decl)
+      && ((VAR_P (decl) && decl_storage_duration (decl) == dk_auto)
+	  || (TREE_CODE (decl) == PARM_DECL)
+          || (REFERENCE_REF_P (decl) &&
+		((VAR_P (TREE_OPERAND (decl, 0)) && decl_storage_duration (TREE_OPERAND (decl, 0)) == dk_auto)
+		 || (TREE_CODE (TREE_OPERAND (decl, 0)) == PARM_DECL)))))
+  {
+      decl = view_as_const (decl);
+  }
+
+  return decl;
 }
 
 void
@@ -1988,31 +1992,151 @@ start_function_contracts (tree decl1)
   if (!handle_contracts_p (decl1))
     return;
 
+  /* For cdtors, we evaluate the contracts check inline.  */
   if (!outline_contracts_p (decl1))
-    {
-      emit_preconditions (DECL_CONTRACTS (current_function_decl));
-      emit_postconditions_cleanup (DECL_CONTRACTS (current_function_decl));
-      return;
-    }
+    return;
 
   /* Contracts may have just been added without a chance to parse them, though
      we still need the PRE_FN available to generate a call to it.  */
   if (!DECL_PRE_FN (decl1))
     build_contract_function_decls (decl1);
 
+}
+
+/* If we have a precondition function and it's valid, call it.  */
+
+static void
+add_pre_condition_fn_call (tree fndecl)
+{
   /* If we're starting a guarded function with valid contracts, we need to
      insert a call to the pre function.  */
-  if (DECL_PRE_FN (decl1)
-      && DECL_PRE_FN (decl1) != error_mark_node)
-    {
-      releasing_vec args = build_arg_list (decl1);
-      tree call = build_call_a (DECL_PRE_FN (decl1),
-				args->length (),
-				args->address ());
-      CALL_FROM_THUNK_P (call) = true;
-      finish_expr_stmt (call);
-    }
+  gcc_checking_assert (DECL_PRE_FN (fndecl)
+      && DECL_PRE_FN (fndecl) != error_mark_node);
+
+  releasing_vec args = build_arg_list (fndecl);
+  tree call = build_call_a (DECL_PRE_FN (fndecl), args->length (),
+			    args->address ());
+  CALL_FROM_THUNK_P (call) = true;
+  finish_expr_stmt (call);
 }
+
+/* Build and add a call to the post-condition checking function, when that
+   is in use.  */
+
+static void
+add_post_condition_fn_call (tree fndecl)
+{
+  gcc_checking_assert (DECL_POST_FN (fndecl)
+      && DECL_POST_FN (fndecl) != error_mark_node);
+
+  releasing_vec args = build_arg_list (fndecl);
+  if (get_postcondition_result_parameter (fndecl))
+    vec_safe_push (args, DECL_RESULT (fndecl));
+  tree call = build_call_a (DECL_POST_FN (fndecl), args->length (),
+			    args->address ());
+  CALL_FROM_THUNK_P (call) = true;
+  finish_expr_stmt (call);
+}
+
+/* Add a call or a direct evaluation of the pre checks.  */
+
+static void
+apply_preconditions (tree fndecl)
+{
+  if (outline_contracts_p (fndecl))
+    add_pre_condition_fn_call (fndecl);
+  else
+    emit_preconditions (DECL_CONTRACTS (fndecl));
+}
+
+/* Add a call or a direct evaluation of the post checks.  */
+
+static void
+apply_postconditions (tree fndecl)
+{
+  if (outline_contracts_p (fndecl))
+    add_post_condition_fn_call (fndecl);
+  else
+    emit_postconditions (DECL_CONTRACTS (fndecl));
+}
+
+/* Add contract handling to the function in FNDECL.
+
+   When we have only pre-conditions, this simply prepends a call (or a direct
+   evaluation, for cdtors) to the existing function body.
+
+   When we have post conditions we build a try-finally block.
+   If the function might throw then the handler in the try-finally is an
+   EH_ELSE expression, where the post condition check is applied to the
+   non-exceptional path, and a rethrow is applied to the EH path.  If the
+   function has a non-throwing eh spec, then the handler is simply the post
+   contract checker (either a call or, for cdtors, a direct evaluation).  */
+
+void
+maybe_apply_function_contracts (tree fndecl)
+{
+  if (!handle_contracts_p (fndecl))
+    /* We did nothing and the original function body statement list will be
+       popped by our caller.  */
+    return;
+
+  bool do_pre = has_active_preconditions (fndecl);
+  bool do_post = has_active_postconditions (fndecl);
+  /* We should not have reached here with nothing to do... */
+  gcc_checking_assert (do_pre || do_post);
+
+  /* This copies the approach used for function try blocks.  */
+  tree fnbody = pop_stmt_list (DECL_SAVED_TREE (fndecl));
+  DECL_SAVED_TREE (fndecl) = push_stmt_list ();
+  tree compound_stmt = begin_compound_stmt (0);
+  current_binding_level->artificial = 1;
+
+  /* FIXME : find some better location to use - perhaps the position of the
+     function opening brace, if that is available.  */
+  location_t loc = UNKNOWN_LOCATION;
+
+  /* For other cases, we call a function to process the check.  */
+
+  /* IF we hsve a pre - but not a post, then just emit that.  */
+  if (!do_post)
+    {
+      apply_preconditions (fndecl);
+      add_stmt (fnbody);
+      finish_compound_stmt (compound_stmt);
+      return;
+    }
+
+  tree try_fin = build_stmt (loc, TRY_FINALLY_EXPR, NULL_TREE, NULL_TREE);
+  add_stmt (try_fin);
+  TREE_OPERAND (try_fin, 0) = push_stmt_list ();
+  if (do_pre)
+    /* Add a precondition call, if we have one. */
+    apply_preconditions (fndecl);
+  add_stmt (fnbody);
+  TREE_OPERAND (try_fin, 0) = pop_stmt_list (TREE_OPERAND (try_fin, 0));
+  TREE_OPERAND (try_fin, 1) = push_stmt_list ();
+  if (!type_noexcept_p (TREE_TYPE (fndecl)))
+    {
+      tree eh_else = build_stmt (loc, EH_ELSE_EXPR, NULL_TREE, NULL_TREE);
+      /* We need to ignore this in constexpr considerations.  */
+      CONTRACT_EH_ELSE_P (eh_else) = true;
+      add_stmt (eh_else);
+      TREE_OPERAND (eh_else, 0) = push_stmt_list ();
+      apply_postconditions (fndecl);
+      TREE_OPERAND (eh_else, 0) = pop_stmt_list (TREE_OPERAND (eh_else, 0));
+      TREE_OPERAND (eh_else, 1) = push_stmt_list ();
+      tree rethrow = build_throw (input_location, NULL_TREE, tf_warning_or_error);
+      suppress_warning (rethrow);
+      finish_expr_stmt (rethrow);
+      TREE_OPERAND (eh_else, 1) = pop_stmt_list (TREE_OPERAND (eh_else, 1));
+    }
+  else
+    apply_postconditions (fndecl);
+  TREE_OPERAND (try_fin, 1) = pop_stmt_list (TREE_OPERAND (try_fin, 1));
+  finish_compound_stmt (compound_stmt);
+  /* The DECL_SAVED_TREE stmt list will be popped by our caller.  */
+}
+
 
 /* Finish up the pre & post function definitions for a guarded FNDECL,
    and compile those functions all the way to assembler language output.  */
@@ -2020,6 +2144,12 @@ start_function_contracts (tree decl1)
 void
 finish_function_contracts (tree fndecl)
 {
+  /* If the guarded func is either already decided to be ill-formed or is
+     not yet complete return early.  */
+  if (fndecl == error_mark_node
+      || DECL_INITIAL (fndecl) == error_mark_node)
+    return;
+
   if (!handle_contracts_p (fndecl)
       || !outline_contracts_p (fndecl))
     return;
@@ -2042,58 +2172,31 @@ finish_function_contracts (tree fndecl)
   if (pre == error_mark_node || post == error_mark_node)
     return;
 
-  if (pre && DECL_INITIAL (fndecl) != error_mark_node)
+  if (pre)
     {
       DECL_PENDING_INLINE_P (pre) = false;
       start_preparsed_function (pre, DECL_ATTRIBUTES (pre), flags);
       remap_and_emit_conditions (fndecl, pre, PRECONDITION_STMT);
+      finish_return_stmt (NULL_TREE);
       tree finished_pre = finish_function (false);
       expand_or_defer_fn (finished_pre);
     }
 
-  if (post && DECL_INITIAL (fndecl) != error_mark_node)
+  if (post)
     {
       DECL_PENDING_INLINE_P (post) = false;
-      start_preparsed_function (post,
+     start_preparsed_function (post,
 				DECL_ATTRIBUTES (post),
 				flags);
       remap_and_emit_conditions (fndecl, post, POSTCONDITION_STMT);
-      if (!VOID_TYPE_P (TREE_TYPE (TREE_TYPE (post))))
-	finish_return_stmt (get_postcondition_result_parameter (fndecl));
+      gcc_checking_assert (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (post))));
+      finish_return_stmt (NULL_TREE);
 
       tree finished_post = finish_function (false);
       expand_or_defer_fn (finished_post);
     }
 }
 
-/* Rewrite the expression of a returned expression so that it invokes the
-   postcondition function as needed.  */
-
-tree
-apply_postcondition_to_return (tree expr)
-{
-  tree fn = current_function_decl;
-  tree post = DECL_POST_FN (fn);
-  if (!post)
-    return NULL_TREE;
-
-  /* If FN returns in memory, POST has a void return type and we call it when
-     EXPR is DECL_RESULT (fn).  If FN returns a scalar, POST has the same
-     return type and we call it when EXPR is the value being returned.  */
-  if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (post)))
-      != (expr == DECL_RESULT (fn)))
-    return NULL_TREE;
-
-  releasing_vec args = build_arg_list (fn);
-  if (get_postcondition_result_parameter (fn))
-    vec_safe_push (args, expr);
-  tree call = build_call_a (post,
-			    args->length (),
-			    args->address ());
-  CALL_FROM_THUNK_P (call) = true;
-
-  return call;
-}
 
 /* A subroutine of duplicate_decls. Diagnose issues in the redeclaration of
    guarded functions.  */

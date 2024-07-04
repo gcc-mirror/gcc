@@ -1,5 +1,5 @@
 # Manipulate the CPU, FPU and architecture descriptions for ARM.
-# Copyright (C) 2017-2023 Free Software Foundation, Inc.
+# Copyright (C) 2017-2024 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -62,7 +62,7 @@ function boilerplate (style) {
     print cc "Generated automatically by parsecpu.awk from arm-cpus.in."
     print cc "Do not edit."
     print ""
-    print cc "Copyright (C) 2011-2023 Free Software Foundation, Inc."
+    print cc "Copyright (C) 2011-2024 Free Software Foundation, Inc."
     print ""
     print cc "This file is part of GCC."
     print ""
@@ -529,7 +529,7 @@ function check_cpu (name) {
 
     for (n = 2; n <= exts; n++) {
 	if (!((cpu_name, extensions[n]) in cpu_opt_remove)	\
-	    && !((cpu_name, extensions[n]) in cpu_optaliases)) {
+	    && !((cpu_name, extensions[n]) in cpu_opt_alias)) {
 	    return "error"
 	}
     }
@@ -552,7 +552,7 @@ function check_arch (name) {
 
     for (n = 2; n <= exts; n++) {
 	if (!((extensions[1], extensions[n]) in arch_opt_remove)	\
-	    && !((extensions[1], extensions[n]) in arch_optaliases)) {
+	    && !((extensions[1], extensions[n]) in arch_opt_alias)) {
 	    return "error"
 	}
     }

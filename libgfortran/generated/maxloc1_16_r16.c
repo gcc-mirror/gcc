@@ -1,5 +1,5 @@
 /* Implementation of the MAXLOC intrinsic
-   Copyright (C) 2002-2023 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -109,12 +109,7 @@ maxloc1_16_r16 (gfc_array_i16 * const restrict retarray,
 
       retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_INTEGER_16));
       if (alloc_size == 0)
-	{
-	  /* Make sure we have a zero-sized array.  */
-	  GFC_DIMENSION_SET(retarray->dim[0], 0, -1, 1);
-	  return;
-
-	}
+	return;
     }
   else
     {
@@ -270,8 +265,8 @@ mmaxloc1_16_r16 (gfc_array_i16 * const restrict retarray,
     }
 
   len = GFC_DESCRIPTOR_EXTENT(array,dim);
-  if (len <= 0)
-    return;
+  if (len < 0)
+    len = 0;
 
   mbase = mask->base_addr;
 
@@ -329,15 +324,9 @@ mmaxloc1_16_r16 (gfc_array_i16 * const restrict retarray,
       retarray->offset = 0;
       retarray->dtype.rank = rank;
 
+      retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_INTEGER_16));
       if (alloc_size == 0)
-	{
-	  /* Make sure we have a zero-sized array.  */
-	  GFC_DIMENSION_SET(retarray->dim[0], 0, -1, 1);
-	  return;
-	}
-      else
-	retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_INTEGER_16));
-
+	return;
     }
   else
     {
@@ -537,14 +526,9 @@ smaxloc1_16_r16 (gfc_array_i16 * const restrict retarray,
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
+      retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_INTEGER_16));
       if (alloc_size == 0)
-	{
-	  /* Make sure we have a zero-sized array.  */
-	  GFC_DIMENSION_SET(retarray->dim[0], 0, -1, 1);
-	  return;
-	}
-      else
-	retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_INTEGER_16));
+	return;
     }
   else
     {

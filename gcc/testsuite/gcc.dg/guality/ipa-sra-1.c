@@ -1,6 +1,10 @@
 /* { dg-do run } */
 /* { dg-options "-g -fno-ipa-icf" } */
 
+int __attribute__((noipa))
+get_val1 (void)  {return 20;}
+int __attribute__((noipa))
+get_val2 (void)  {return 7;}
 
 void __attribute__((noipa))
 use (int x)
@@ -12,8 +16,8 @@ static int __attribute__((noinline))
 bar (int i, int k)
 {
   asm ("" : "+r" (i));
-  use (i);		/* { dg-final { gdb-test . "k" "3" { xfail { ! { aarch64*-*-* && { any-opts "-O0" "-O1" "-Og" } } } } } } */
-  return 6;
+  use (i);		/* { dg-final { gdb-test . "k" "3" { xfail { ! { *-*-*-* && { any-opts "-O0" "-O1" "-Og" } } } } } } */
+  return 6 + get_val1();
 }
 
 volatile int v;
@@ -29,11 +33,6 @@ foo (int i, int k)
 }
 
 volatile int v;
-
-int __attribute__((noipa))
-get_val1 (void)  {return 20;}
-int __attribute__((noipa))
-get_val2 (void)  {return 7;}
 
 int
 main (void)

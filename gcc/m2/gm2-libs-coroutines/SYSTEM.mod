@@ -1,6 +1,6 @@
 (* SYSTEM.mod provides access to COROUTINE primitives and underlying system.
 
-Copyright (C) 2002-2023 Free Software Foundation, Inc.
+Copyright (C) 2002-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -35,7 +35,7 @@ IMPORT RTint ;
 
 FROM Storage IMPORT ALLOCATE ;
 FROM M2RTS IMPORT Halt ;
-FROM libc IMPORT printf, memcpy, memcpy, memset ;
+FROM libc IMPORT printf, memcpy, memset ;
 
 
 CONST
@@ -51,7 +51,7 @@ TYPE
 
 VAR
    initMain,
-   initGTh        : BOOLEAN ;
+   initGTh : BOOLEAN ;
 
 
 (*

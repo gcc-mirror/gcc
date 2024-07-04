@@ -1,3 +1,5 @@
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
+
 // This file is part of GCC.
 
 // GCC is free software; you can redistribute it and/or modify it under
@@ -21,6 +23,7 @@
 #include "rust-tree.h"
 #include "langhooks.h"
 #include "tree.h"
+#include "selftest.h"
 
 namespace Rust {
 namespace Compile {
@@ -75,6 +78,7 @@ namespace Compile {
 //     _ => return None,
 // };
 // Some(cx.get_intrinsic(&llvm_name))
+
 class BuiltinsContext
 {
 public:
@@ -83,6 +87,110 @@ public:
   bool lookup_simple_builtin (const std::string &name, tree *builtin);
 
 private:
+  enum Type
+  {
+#define DEF_PRIMITIVE_TYPE(NAME, V) NAME,
+#define DEF_FUNCTION_TYPE_0(NAME, R) NAME,
+#define DEF_FUNCTION_TYPE_1(NAME, R, A1) NAME,
+#define DEF_FUNCTION_TYPE_2(NAME, R, A1, A2) NAME,
+#define DEF_FUNCTION_TYPE_3(NAME, R, A1, A2, A3) NAME,
+#define DEF_FUNCTION_TYPE_4(NAME, R, A1, A2, A3, A4) NAME,
+#define DEF_FUNCTION_TYPE_5(NAME, R, A1, A2, A3, A4, A5) NAME,
+#define DEF_FUNCTION_TYPE_6(NAME, R, A1, A2, A3, A4, A5, A6) NAME,
+#define DEF_FUNCTION_TYPE_7(NAME, R, A1, A2, A3, A4, A5, A6, A7) NAME,
+#define DEF_FUNCTION_TYPE_8(NAME, R, A1, A2, A3, A4, A5, A6, A7, A8) NAME,
+#define DEF_FUNCTION_TYPE_9(NAME, R, A1, A2, A3, A4, A5, A6, A7, A8, A9) NAME,
+#define DEF_FUNCTION_TYPE_10(NAME, R, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10) \
+  NAME,
+#define DEF_FUNCTION_TYPE_11(NAME, R, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, \
+			     A11)                                              \
+  NAME,
+#define DEF_FUNCTION_TYPE_VAR_0(NAME, R) NAME,
+#define DEF_FUNCTION_TYPE_VAR_1(NAME, R, A1) NAME,
+#define DEF_FUNCTION_TYPE_VAR_2(NAME, R, A1, A2) NAME,
+#define DEF_FUNCTION_TYPE_VAR_3(NAME, R, A1, A2, A3) NAME,
+#define DEF_FUNCTION_TYPE_VAR_4(NAME, R, A1, A2, A3, A4) NAME,
+#define DEF_FUNCTION_TYPE_VAR_5(NAME, R, A1, A2, A3, A4, A5) NAME,
+#define DEF_FUNCTION_TYPE_VAR_6(NAME, R, A1, A2, A3, A4, A5, A6) NAME,
+#define DEF_FUNCTION_TYPE_VAR_7(NAME, R, A1, A2, A3, A4, A5, A6, A7) NAME,
+#define DEF_FUNCTION_TYPE_VAR_11(NAME, R, A1, A2, A3, A4, A5, A6, A7, A8, A9,  \
+				 A10, A11)                                     \
+  NAME,
+#define DEF_POINTER_TYPE(NAME, TYPE) NAME,
+
+#include "builtin-types.def"
+
+#undef DEF_PRIMITIVE_TYPE
+#undef DEF_FUNCTION_TYPE_0
+#undef DEF_FUNCTION_TYPE_1
+#undef DEF_FUNCTION_TYPE_2
+#undef DEF_FUNCTION_TYPE_3
+#undef DEF_FUNCTION_TYPE_4
+#undef DEF_FUNCTION_TYPE_5
+#undef DEF_FUNCTION_TYPE_6
+#undef DEF_FUNCTION_TYPE_7
+#undef DEF_FUNCTION_TYPE_8
+#undef DEF_FUNCTION_TYPE_9
+#undef DEF_FUNCTION_TYPE_10
+#undef DEF_FUNCTION_TYPE_11
+#undef DEF_FUNCTION_TYPE_VAR_0
+#undef DEF_FUNCTION_TYPE_VAR_1
+#undef DEF_FUNCTION_TYPE_VAR_2
+#undef DEF_FUNCTION_TYPE_VAR_3
+#undef DEF_FUNCTION_TYPE_VAR_4
+#undef DEF_FUNCTION_TYPE_VAR_5
+#undef DEF_FUNCTION_TYPE_VAR_6
+#undef DEF_FUNCTION_TYPE_VAR_7
+#undef DEF_FUNCTION_TYPE_VAR_11
+#undef DEF_POINTER_TYPE
+
+    BT_LAST,
+  };
+
+  enum Attr
+  {
+#define DEF_ATTR_NULL_TREE(ENUM) ENUM,
+#define DEF_ATTR_INT(ENUM, VALUE) ENUM,
+#define DEF_ATTR_STRING(ENUM, VALUE) ENUM,
+#define DEF_ATTR_IDENT(ENUM, STRING) ENUM,
+#define DEF_ATTR_TREE_LIST(ENUM, PURPOSE, VALUE, CHAIN) ENUM,
+
+#include "builtin-attrs.def"
+
+#undef DEF_ATTR_NULL_TREE
+#undef DEF_ATTR_INT
+#undef DEF_ATTR_STRING
+#undef DEF_ATTR_IDENT
+#undef DEF_ATTR_TREE_LIST
+
+    ATTR_LAST,
+  };
+
+  /**
+   * All builtin types, as defined in `builtin-types.def`
+   *
+   * This array is filled by the `define_builtin_types` method, during the first
+   * initialization of the `BuiltinsContext`
+   */
+  tree builtin_types[Type::BT_LAST + 1];
+
+  /**
+   * Similarly, this array contains all builtin attributes, as defined in
+   * `builtin-attr.def`
+   *
+   * This array is filled by the `define_builtin_attributes` method, during the
+   * first initialization of the `BuiltinsContext`
+   */
+  tree builtin_attributes[Attr::ATTR_LAST + 1];
+
+  void define_function_type (Type def, Type ret, bool is_variadic, size_t n,
+			     ...);
+  void define_builtin_types ();
+  void define_builtin_attributes ();
+  void define_builtins ();
+
+  void register_rust_mappings ();
+
   BuiltinsContext ();
 
   void setup_overflow_fns ();
@@ -91,20 +199,10 @@ private:
 
   void setup ();
 
-  // Define a builtin function.  BCODE is the builtin function code
-  // defined by builtins.def.  NAME is the name of the builtin function.
-  // LIBNAME is the name of the corresponding library function, and is
-  // NULL if there isn't one.  FNTYPE is the type of the function.
-  // CONST_P is true if the function has the const attribute.
-  // NORETURN_P is true if the function has the noreturn attribute.
-  void define_builtin (const std::string rust_name, built_in_function bcode,
-		       const char *name, const char *libname, tree fntype,
-		       int flags);
-
   bool lookup_gcc_builtin (const std::string &name, tree *builtin);
 
   // A mapping of the GCC built-ins exposed to GCC Rust.
-  std::map<std::string, tree> builtin_functions_;
+  std::map<std::string, tree> builtin_functions;
   std::map<std::string, std::string> rust_intrinsic_to_gcc_builtin;
 };
 

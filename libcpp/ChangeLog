@@ -1,3 +1,398 @@
+2024-06-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR testsuite/109360
+	* include/rich-location.h (rich_location::get_column_override):
+	New accessor.
+
+2024-06-11  Joseph Myers  <josmyers@redhat.com>
+
+	* include/cpplib.h (CLK_GNUC2Y, CLK_STDC2Y): New.
+	* init.cc (lang_defaults): Add GNUC2Y and STDC2Y entries.
+	(cpp_init_builtins): Define __STDC_VERSION__ to 202500L for GNUC2Y
+	and STDC2Y.
+
+2024-06-07  Jason Merrill  <jason@redhat.com>
+
+	* files.cc (_cpp_stack_file): LC_ENTER for -include header unit.
+
+2024-05-29  Jason Merrill  <jason@redhat.com>
+
+	* mkdeps.cc (make_write): Change .c++m to .c++-module.
+
+2024-05-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (TAGS_SOURCES): Add include/label-text.h.
+	* include/label-text.h: New file.
+	* include/rich-location.h: Include "label-text.h".
+	(class label_text): Move to label-text.h.
+
+2024-05-26  Peter Damianov  <peter0x44@disroot.org>
+
+	* lex.cc (do_peek_prev): Correct typo in argument to __builtin_expect()
+
+2024-05-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/rich-location.h (class label_effects): New forward decl.
+	(range_label::get_effects): New vfunc.
+
+2024-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* init.cc (cpp_init_builtins): Change __STDC_VERSION__
+	for C23 from 202000L to 202311L.
+
+2024-04-17  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR preprocessor/114748
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
+2024-03-14  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/110558
+	* macro.cc (builtin_has_include): Set
+	pfile->state.directive_wants_padding prior to lexing the
+	file name, in case it comes from macro expansion.
+
+2024-03-14  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/80755
+	* files.cc (search_path_head): Add SUPPRESS_DIAGNOSTIC argument
+	defaulting to false.
+	(_cpp_has_header): Silently return false if the search path has been
+	exhausted, rather than issuing a diagnostic and then hitting an
+	assert.
+
+2024-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/114007
+	* include/cpplib.h (COLON_SCOPE): Define to PURE_ZERO.
+	* lex.cc (_cpp_lex_direct): When lexing CPP_COLON with another
+	colon after it, if !CPP_OPTION (pfile, scope) set COLON_SCOPE
+	flag on the first CPP_COLON token.
+
+2024-02-01  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/105608
+	* pch.cc (cpp_read_state): Set a valid location for restored
+	macros.
+
+2024-01-04  Raiki Tamura  <tamaron1203@gmail.com>
+
+	* charset.cc (cpp_check_xid_property): New.
+	* include/cpplib.h
+	(cpp_check_xid_property): New.
+	(enum cpp_xid_property): New.
+
+2023-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/112956
+	* lex.cc (_cpp_lex_direct): Initialize c to 0.
+	For CPP_PRAGMA_EOL tokens and if c == 0 also for CPP_EOF
+	set result->src_loc to highest locus.
+
+2023-11-28  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/112701
+	* expr.cc (num_div_op): Set unsignedp appropriately when returning a
+	stub value for divide by 0.
+
+2023-11-27  Alex Coplan  <alex.coplan@arm.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/60512
+	* include/cpplib.h (struct cpp_callbacks): Add has_feature.
+	(enum cpp_builtin_type): Add BT_HAS_{FEATURE,EXTENSION}.
+	* init.cc: Add __has_{feature,extension}.
+	* macro.cc (_cpp_builtin_macro_text): Handle
+	BT_HAS_{FEATURE,EXTENSION}.
+
+2023-11-24  Alexander Monakov  <amonakov@ispras.ru>
+
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (ENABLE_VALGRIND_CHECKING): Delete.
+	(ENABLE_VALGRIND_ANNOTATIONS): Rename to
+	ENABLE_VALGRIND_WORKAROUNDS.  Delete Valgrind header checks.
+	* lex.cc (new_buff): Adjust for renaming.
+	(_cpp_free_buff): Ditto.
+
+2023-11-20  Marc Poulhiès  <dkm@kataplop.net>
+
+	* macro.cc (parse_params): Fix typo in variadic.
+	(create_iso_definition): Likewise.
+
+2023-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (TAGS_SOURCES): Add "include/rich-location.h".
+	* include/cpplib.h (class rich_location): New forward decl.
+	* include/line-map.h (class range_label)
+	(enum range_display_kind, struct location_range)
+	(class semi_embedded_vec, class rich_location, class label_text)
+	(class range_label, class fixit_hint): Move to...
+	* include/rich-location.h: ...this new file.
+	* internal.h: Include "rich-location.h".
+
+2023-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* makeucnid.cc (write_copyright): Update copyright year.
+	* makeuname2c.cc (write_copyright): Likewise.
+	(struct generated): Update latest Unicode version.
+	(generated_ranges): Add 2ebf0-2ee5d CJK UNIFIED IDEOGRAPH
+	range which was forgotten to be added to 4-8 table, but
+	clearly is expected to be there from the 15.1 additions.
+	* ucnid.h: Regenerated.
+	* uname2c.h: Regenerated.
+	* generated_cpp_wcwidth.h: Regenerated.
+
+2023-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110341
+	* charset.cc: Implement C++26 P1854R4 - Making non-encodable string
+	literals ill-formed.
+	(one_count_chars, convert_count_chars, count_source_chars): New
+	functions.
+	(narrow_str_to_charconst): Change last arg type from cpp_ttype to
+	const cpp_token *.  For C++ if pedantic and i > 1 in CPP_CHAR
+	interpret token also as CPP_STRING32 and if number of characters
+	in the CPP_STRING32 is larger than number of bytes in CPP_CHAR,
+	pedwarn on it.  Make the diagnostics more detailed.
+	(wide_str_to_charconst): Change last arg type from cpp_ttype to
+	const cpp_token *.  Make the diagnostics more detailed.
+	(cpp_interpret_charconst): Adjust narrow_str_to_charconst and
+	wide_str_to_charconst callers.
+
+2023-11-14  Arsen Arsenović  <arsen@aarsen.me>
+
+	* config.in: Regenerate.
+
+2023-11-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	* configure: Regenerate.
+	* aclocal.m4: Regenerate.
+
+2023-11-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (rich_location::get_expanded_location): Make
+	const.
+	(rich_location::get_line_table): New accessor.
+	(rich_location::m_line_table): Make the pointer be const.
+	(rich_location::m_have_expanded_location): Make mutable.
+	(rich_location::m_expanded_location): Likewise.
+	(fixit_hint::affects_line_p): Add const line_maps * param.
+	(linemap_client_expand_location_to_spelling_point): Likewise.
+	* line-map.cc (rich_location::get_expanded_location): Make const.
+	Pass m_line_table to
+	linemap_client_expand_location_to_spelling_point.
+	(rich_location::maybe_add_fixit): Likewise.
+	(fixit_hint::affects_line_p): Add set param and pass to
+	linemap_client_expand_location_to_spelling_point.
+
+2023-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* directives.cc: Refer to C23 instead of C2X in diagnostics and
+	comments.
+	(STDC2X): Rename to STDC23.
+	* expr.cc: Use cpp_warn_c11_c23_compat instead of
+	cpp_warn_c11_c2x_compat and CPP_W_C11_C23_COMPAT instead of
+	CPP_W_C11_C2X_COMPAT.  Refer to C23 instead of C2X in diagnostics
+	and comments.
+	* include/cpplib.h: Refer to C23 instead of C2X in diagnostics and
+	comments.
+	(CLK_GNUC2X): Rename to CLK_GNUC23.
+	(CLK_STDC2X): Rename to CLK_STDC23.
+	(CPP_W_C11_C2X_COMPAT): Rename to CPP_W_C11_C23_COMPAT.
+	* init.cc: Use GNUC23 instead of GNUC2X, STDC23 instead of STDC2X
+	and cpp_warn_c11_c23_compat instead of cpp_warn_c11_c2x_compat.
+	* lex.cc (maybe_va_opt_error): Refer to C23 instead of C2X in
+	diagnostic.
+	* macro.cc (_cpp_arguments_ok): Refer to C23 instead of C2X in
+	comment.
+
+2023-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110342
+	* include/cpplib.h (TTYPE_TABLE): Add CPP_UNEVAL_STRING literal
+	entry.  Use C++11 instead of C++-0x in comments.
+	* charset.cc (convert_escape): Add UNEVAL argument, if true,
+	pedantically diagnose numeric escape sequences.
+	(cpp_interpret_string_1): Formatting fix.  Adjust convert_escape
+	caller.
+	(cpp_interpret_string): Formatting string.
+	(cpp_interpret_string_notranslate): Pass type through to
+	cpp_interpret_string if it is CPP_UNEVAL_STRING.
+
+2023-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h
+	(line_map_macro::get_expansion_point_location): New accessor.
+	(line_map_macro::expansion): Rename field to...
+	(line_map_macro::mexpansion): Rename field to...
+	(MACRO_MAP_EXPANSION_POINT_LOCATION): Delete this function.
+	* line-map.cc (linemap_enter_macro): Update for renaming of field.
+	(linemap_macro_map_loc_to_exp_point): Update for removal of
+	MACRO_MAP_EXPANSION_POINT_LOCATION.
+
+2023-10-23  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/36887
+	* directives.cc (do_pragma_poison): Store in the extra hash map the
+	location from which an identifier has been poisoned.
+	* lex.cc (identifier_diagnostics_on_lex): When issuing a diagnostic
+	for the use of a poisoned identifier, also add a note indicating the
+	location from which it was poisoned.
+	* identifiers.cc (alloc_node): Convert to template function.
+	(_cpp_init_hashtable): Handle the new extra hash map.
+	(_cpp_destroy_hashtable): Likewise.
+	* include/cpplib.h (struct cpp_hashnode_extra): New struct.
+	(cpp_create_reader): Update prototype to...
+	* init.cc (cpp_create_reader): ...accept an argument for the extra
+	hash table and pass it to _cpp_init_hashtable.
+	* include/symtab.h (ht_lookup): New overload for convenience.
+	* internal.h (struct cpp_reader): Add EXTRA_HASH_TABLE member.
+	(_cpp_init_hashtable): Adjust prototype.
+
+2023-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (LINEMAPS_ORDINARY_MAPS): Delete.
+	(LINEMAPS_MACRO_MAPS): Delete.
+	* line-map.cc (linemap_tracks_macro_expansion_locs_p): Update for
+	deletion of LINEMAPS_MACRO_MAPS.
+	(linemap_get_statistics): Likewise.
+
+2023-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (maps_info_ordinary::cache): Rename to...
+	(maps_info_ordinary::m_cache): ...this.
+	(maps_info_macro::cache): Rename to...
+	(maps_info_macro::m_cache): ...this.
+	(LINEMAPS_CACHE): Delete.
+	(LINEMAPS_ORDINARY_CACHE): Delete.
+	(LINEMAPS_MACRO_CACHE): Delete.
+	* init.cc (read_original_filename): Update for adding "m_" prefix.
+	* line-map.cc (linemap_add): Eliminate LINEMAPS_ORDINARY_CACHE in
+	favor of a simple field access.
+	(linemap_enter_macro): Likewise for LINEMAPS_MACRO_CACHE.
+	(linemap_ordinary_map_lookup): Likewise for
+	LINEMAPS_ORDINARY_CACHE, twice.
+	(linemap_lookup_macro_index): Likewise for LINEMAPS_MACRO_CACHE.
+
+2023-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (LINEMAPS_LAST_ALLOCATED_MAP): Delete.
+	(LINEMAPS_LAST_ALLOCATED_ORDINARY_MAP): Delete.
+	(LINEMAPS_LAST_ALLOCATED_MACRO_MAP): Delete.
+
+2023-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (line_maps::reallocator): Rename to...
+	(line_maps::m_reallocator): ...this.
+	(line_maps::round_alloc_size): Rename to...
+	(line_maps::m_round_alloc_size): ...this.
+	(line_maps::location_adhoc_data_map): Rename to...
+	(line_maps::m_location_adhoc_data_map): ...this.
+	(line_maps::num_optimized_ranges): Rename to...
+	(line_maps::m_num_optimized_ranges): ..this.
+	(line_maps::num_unoptimized_ranges): Rename to...
+	(line_maps::m_num_unoptimized_ranges): ...this.
+	(get_combined_adhoc_loc): Delete decl.
+	(COMBINE_LOCATION_DATA): Delete.
+	* lex.cc (get_location_for_byte_range_in_cur_line): Update for
+	removal of COMBINE_LOCATION_DATA.
+	(warn_about_normalization): Likewise.
+	(_cpp_lex_direct): Likewise.
+	* line-map.cc (line_maps::~line_maps): Update for "m_" prefix of
+	some fields of line_maps.
+	(rebuild_location_adhoc_htab): Likewise.
+	(can_be_stored_compactly_p): Convert to...
+	(line_maps::can_be_stored_compactly_p): ...this private member
+	function.
+	(get_combined_adhoc_loc): Convert to...
+	(line_maps::get_or_create_combined_loc): ...this public member
+	function.
+	(line_maps::make_location): Update for removal of
+	COMBINE_LOCATION_DATA.
+	(get_data_from_adhoc_loc): Update for "m_" prefix of some fields
+	of line_maps.
+	(get_discriminator_from_adhoc_loc): Likewise.
+	(get_location_from_adhoc_loc): Likewise.
+	(get_range_from_adhoc_loc): Convert to...
+	(line_maps::get_range_from_adhoc_loc): ...this private member
+	function.
+	(line_maps::get_range_from_loc): Update for conversion of
+	get_range_from_adhoc_loc to a member function.
+	(linemap_init): Update for "m_" prefix of some fields of
+	line_maps.
+	(line_map_new_raw): Likewise.
+	(linemap_enter_macro): Likewise.
+	(linemap_get_statistics): Likewise.
+
+2023-10-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (line_maps::pure_location_p): New decl.
+	(line_maps::get_pure_location): New decl.
+	(line_maps::get_range_from_loc): New decl.
+	(line_maps::get_start): New.
+	(line_maps::get_finish): New.
+	(line_maps::make_location): New decl.
+	(get_range_from_loc): Make line_maps param const.
+	(get_discriminator_from_loc): Likewise.
+	(pure_location_p): Likewise.
+	(get_pure_location): Likewise.
+	(linemap_check_files_exited): Likewise.
+	(linemap_tracks_macro_expansion_locs_p): Likewise.
+	(linemap_location_in_system_header_p): Likewise.
+	(linemap_location_from_macro_definition_p): Likewise.
+	(linemap_macro_map_loc_unwind_toward_spelling): Likewise.
+	(linemap_included_from_linemap): Likewise.
+	(first_map_in_common): Likewise.
+	(linemap_compare_locations): Likewise.
+	(linemap_location_before_p): Likewise.
+	(linemap_resolve_location): Likewise.
+	(linemap_unwind_toward_expansion): Likewise.
+	(linemap_unwind_to_first_non_reserved_loc): Likewise.
+	(linemap_expand_location): Likewise.
+	(linemap_get_file_highest_location): Likewise.
+	(linemap_get_statistics): Likewise.
+	(linemap_dump_location): Likewise.
+	(linemap_dump): Likewise.
+	(line_table_dump): Likewise.
+	* internal.h (linemap_get_expansion_line): Likewise.
+	(linemap_get_expansion_filename): Likewise.
+	* line-map.cc (can_be_stored_compactly_p): Likewise.
+	(get_data_from_adhoc_loc): Drop redundant "class".
+	(get_discriminator_from_adhoc_loc): Likewise.
+	(get_location_from_adhoc_loc): Likewise.
+	(get_range_from_adhoc_loc): Likewise.
+	(get_range_from_loc): Make const and move implementation to...
+	(line_maps::get_range_from_loc): ...this new function.
+	(get_discriminator_from_loc): Make line_maps param const.
+	(pure_location_p): Make const and move implementation to...
+	(line_maps::pure_location_p): ...this new function.
+	(get_pure_location): Make const and move implementation to...
+	(line_maps::get_pure_location): ...this new function.
+	(linemap_included_from_linemap): Make line_maps param const.
+	(linemap_check_files_exited): Likewise.
+	(linemap_tracks_macro_expansion_locs_p): Likewise.
+	(linemap_macro_map_loc_unwind_toward_spelling): Likewise.
+	(linemap_get_expansion_line): Likewise.
+	(linemap_get_expansion_filename): Likewise.
+	(linemap_location_in_system_header_p): Likewise.
+	(first_map_in_common_1): Likewise.
+	(linemap_compare_locations): Likewise.
+	(linemap_macro_loc_to_spelling_point): Likewise.
+	(linemap_macro_loc_to_def_point): Likewise.
+	(linemap_macro_loc_to_exp_point): Likewise.
+	(linemap_resolve_location): Likewise.
+	(linemap_location_from_macro_definition_p): Likewise.
+	(linemap_unwind_toward_expansion): Likewise.
+	(linemap_unwind_to_first_non_reserved_loc): Likewise.
+	(linemap_expand_location): Likewise.
+	(linemap_dump): Likewise.
+	(linemap_dump_location): Likewise.
+	(linemap_get_file_highest_location): Likewise.
+	(linemap_get_statistics): Likewise.
+	(line_table_dump): Likewise.
+
 2023-09-20  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/61474
@@ -7663,7 +8058,7 @@
 	* include/symtab.h: Moved from gcc/hashtable.h.  Change header
 	guard name.
 
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

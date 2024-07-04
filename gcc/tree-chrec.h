@@ -1,5 +1,5 @@
 /* Chains of recurrences.
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -63,7 +63,7 @@ extern tree chrec_fold_plus (tree, tree, tree);
 extern tree chrec_fold_minus (tree, tree, tree);
 extern tree chrec_fold_multiply (tree, tree, tree);
 extern tree chrec_convert (tree, tree, gimple *, bool = true, tree = NULL);
-extern tree chrec_convert_rhs (tree, tree, gimple *);
+extern tree chrec_convert_rhs (tree, tree, gimple * = NULL);
 extern tree chrec_convert_aggressive (tree, tree, bool *);
 
 /* Operations.  */

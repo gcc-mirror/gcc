@@ -159,6 +159,7 @@ proc libitm_init { args } {
     }
 
     if [istarget *-*-darwin*] {
+	lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/.libs"
 	lappend ALWAYS_CFLAGS "additional_flags=-shared-libgcc"
     }
 
@@ -216,7 +217,7 @@ proc libitm_target_compile { source dest type options } {
 	set options [concat "$ALWAYS_CFLAGS" $options]
     }
 
-    set options [dg-additional-files-options $options $source]
+    set options [dg-additional-files-options $options $source $dest $type]
 
     set result [target_compile $source $dest $type $options]
 

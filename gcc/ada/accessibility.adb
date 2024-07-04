@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2022-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2022-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,6 @@ with Elists;         use Elists;
 with Errout;         use Errout;
 with Einfo.Utils;    use Einfo.Utils;
 with Exp_Atag;       use Exp_Atag;
-with Exp_Ch3;        use Exp_Ch3;
 with Exp_Ch7;        use Exp_Ch7;
 with Exp_Tss;        use Exp_Tss;
 with Exp_Util;       use Exp_Util;
@@ -399,7 +398,7 @@ package body Accessibility is
 
       --  Local variables
 
-      E   : Node_Id := Original_Node (Expr);
+      E   : Node_Id;
       Pre : Node_Id;
 
    --  Start of processing for Accessibility_Level
@@ -410,6 +409,17 @@ package body Accessibility is
 
       if Present (Param_Entity (Expr)) then
          E := Param_Entity (Expr);
+
+      --  Use the original node unless it is an unanalyzed identifier, as we
+      --  don't want to reason on unanalyzed expressions from predicates.
+
+      elsif Nkind (Original_Node (Expr)) /= N_Identifier
+        or else Analyzed (Original_Node (Expr))
+      then
+         E := Original_Node (Expr);
+
+      else
+         E := Expr;
       end if;
 
       --  Extract the entity
@@ -466,7 +476,15 @@ package body Accessibility is
             --  so handle these cases explicitly.
 
             elsif Attribute_Name (E)
-                    in Name_Old | Name_Loop_Entry | Name_Result
+                    in Name_Old        |
+                       Name_Loop_Entry |
+                       Name_Result     |
+                       Name_Super      |
+                       Name_Tag        |
+                       Name_Safe_First |
+                       Name_Safe_Last  |
+                       Name_First      |
+                       Name_Last
             then
                --  Named access types
 
@@ -2220,7 +2238,11 @@ package body Accessibility is
                   --  that of the type.
 
                   elsif Ekind (Def_Ent) = E_Discriminant then
-                     return Scope_Depth (Scope (Def_Ent));
+                     return Scope_Depth
+                       (if Present (Full_View (Scope (Def_Ent))) then
+                           Full_View (Scope (Def_Ent))
+                        else
+                           Scope (Def_Ent));
                   end if;
                end if;
 

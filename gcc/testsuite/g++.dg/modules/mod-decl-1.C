@@ -10,17 +10,19 @@ module foo.second; // { dg-error "only permitted as" }
 
 namespace Foo 
 {
-module third;  // { dg-error "only permitted as" }
+module third;  // { dg-error "must be at global scope" }
 }
 
 struct Baz
 {
-  module forth; // { dg-error "expected" }
+  module forth; // { dg-error "unexpected module directive" }
+  // { dg-message "line break after .module." "" { target *-*-* } .-1 }
 };
 
 void Bink ()
 {
-  module fifth; // { dg-error "expected" }
+  module fifth; // { dg-error "unexpected module directive" }
+  // { dg-message "line break after .module." "" { target *-*-* } .-1 }
 }
 
 module a.; // { dg-error "only permitted as" }

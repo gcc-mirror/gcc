@@ -1,5 +1,5 @@
 /* Map (unsigned int) keys to (source file, line, column) triples.
-   Copyright (C) 2001-2023 Free Software Foundation, Inc.
+   Copyright (C) 2001-2024 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -461,6 +461,15 @@ struct cpp_hashnode;
    The offset from START_LOCATION is used to index into
    MACRO_LOCATIONS; this holds the original location of the token.  */
 struct GTY((tag ("2"))) line_map_macro : public line_map {
+
+  /* Get the location of the expansion point of this macro map.  */
+
+  location_t
+  get_expansion_point_location () const
+  {
+    return m_expansion;
+  }
+
   /* Base is 4 bytes.  */
 
   /* The number of tokens inside the replacement-list of MACRO.  */
@@ -535,7 +544,7 @@ struct GTY((tag ("2"))) line_map_macro : public line_map {
      by the map that was current right before the current one. It
      could have been either a macro or an ordinary map, depending on
      if we are in a nested expansion context not.  */
-  location_t expansion;
+  location_t m_expansion;
 
   /* Size is 20 or 32 (4 bytes padding on 64-bit).  */
 };
@@ -705,14 +714,6 @@ MACRO_MAP_LOCATIONS (const line_map_macro *macro_map)
   return macro_map->macro_locations;
 }
 
-/* Get the location of the expansion point of the macro map MAP.  */
-
-inline location_t
-MACRO_MAP_EXPANSION_POINT_LOCATION (const line_map_macro *macro_map)
-{
-  return macro_map->expansion;
-}
-
 /* The abstraction of a set of location maps. There can be several
    types of location maps. This abstraction contains the attributes
    that are independent from the type of the map.
@@ -733,7 +734,9 @@ struct GTY(()) maps_info_ordinary {
      or equal to ALLOCATED.  */
   unsigned int used;
 
-  mutable unsigned int cache;
+  /* The index of the last ordinary map that was looked up with
+     linemap_lookup.  */
+  mutable unsigned int m_cache;
 };
 
 struct GTY(()) maps_info_macro {
@@ -748,7 +751,9 @@ struct GTY(()) maps_info_macro {
      or equal to ALLOCATED.  */
   unsigned int used;
 
-  mutable unsigned int cache;
+  /* The index of the last macro map that was looked up with
+     linemap_lookup.  */
+  mutable unsigned int m_cache;
 };
 
 /* Data structure to associate a source_range together with an arbitrary
@@ -784,7 +789,39 @@ class GTY(()) line_maps {
 public:
 
   ~line_maps ();
-  
+
+  bool pure_location_p (location_t loc) const;
+  location_t get_pure_location (location_t loc) const;
+
+  source_range get_range_from_loc (location_t loc) const;
+  location_t get_start (location_t loc) const
+  {
+    return get_range_from_loc (loc).m_start;
+  }
+  location_t
+  get_finish (location_t loc) const
+  {
+    return get_range_from_loc (loc).m_finish;
+  }
+
+  location_t make_location (location_t caret,
+			    location_t start,
+			    location_t finish);
+
+  location_t
+  get_or_create_combined_loc (location_t locus,
+			      source_range src_range,
+			      void *data,
+			      unsigned discriminator);
+
+ private:
+  bool can_be_stored_compactly_p (location_t locus,
+				  source_range src_range,
+				  void *data,
+				  unsigned discriminator) const;
+  source_range get_range_from_adhoc_loc (location_t loc) const;
+
+ public:
   maps_info_ordinary info_ordinary;
 
   maps_info_macro info_macro;
@@ -809,13 +846,13 @@ public:
   unsigned int max_column_hint;
 
   /* The allocator to use when resizing 'maps', defaults to xrealloc.  */
-  line_map_realloc GTY((callback)) reallocator;
+  line_map_realloc GTY((callback)) m_reallocator;
 
   /* The allocators' function used to know the actual size it
      allocated, for a certain allocation size requested.  */
-  line_map_round_alloc_size_func GTY((callback)) round_alloc_size;
+  line_map_round_alloc_size_func GTY((callback)) m_round_alloc_size;
 
-  struct location_adhoc_data_map location_adhoc_data_map;
+  struct location_adhoc_data_map m_location_adhoc_data_map;
 
   /* The special location value that is used as spelling location for
      built-in tokens.  */
@@ -824,8 +861,8 @@ public:
   /* The default value of range_bits in ordinary line maps.  */
   unsigned int default_range_bits;
 
-  unsigned int num_optimized_ranges;
-  unsigned int num_unoptimized_ranges;
+  unsigned int m_num_optimized_ranges;
+  unsigned int m_num_unoptimized_ranges;
 };
 
 /* Returns the number of allocated maps so far. MAP_KIND shall be TRUE
@@ -872,18 +909,6 @@ LINEMAPS_USED (line_maps *set, bool map_kind)
     return set->info_ordinary.used;
 }
 
-/* Returns the index of the last map that was looked up with
-   linemap_lookup. MAP_KIND shall be TRUE if we are interested in
-   macro maps, FALSE otherwise.  */
-inline unsigned int &
-LINEMAPS_CACHE (const line_maps *set, bool map_kind)
-{
-  if (map_kind)
-    return set->info_macro.cache;
-  else
-    return set->info_ordinary.cache;
-}
-
 /* Return the map at a given index.  */
 inline line_map *
 LINEMAPS_MAP_AT (const line_maps *set, bool map_kind, int index)
@@ -902,24 +927,6 @@ LINEMAPS_LAST_MAP (const line_maps *set, bool map_kind)
 {
   return LINEMAPS_MAP_AT (set, map_kind,
 			  LINEMAPS_USED (set, map_kind) - 1);
-}
-
-/* Returns the last map that was allocated in the line table SET.
-   MAP_KIND shall be TRUE if we are interested in macro maps, FALSE
-   otherwise.*/
-inline line_map *
-LINEMAPS_LAST_ALLOCATED_MAP (const line_maps *set, bool map_kind)
-{
-  return LINEMAPS_MAP_AT (set, map_kind,
-			  LINEMAPS_ALLOCATED (set, map_kind) - 1);
-}
-
-/* Returns a pointer to the memory region where ordinary maps are
-   allocated in the line table SET.  */
-inline line_map_ordinary *
-LINEMAPS_ORDINARY_MAPS (const line_maps *set)
-{
-  return set->info_ordinary.maps;
 }
 
 /* Returns the INDEXth ordinary map.  */
@@ -946,36 +953,12 @@ LINEMAPS_ORDINARY_USED (const line_maps *set)
   return LINEMAPS_USED (set, false);
 }
 
-/* Return the index of the last ordinary map that was looked up with
-   linemap_lookup.  */
-inline unsigned int &
-LINEMAPS_ORDINARY_CACHE (const line_maps *set)
-{
-  return LINEMAPS_CACHE (set, false);
-}
-
 /* Returns a pointer to the last ordinary map used in the line table
    SET.  */
 inline line_map_ordinary *
 LINEMAPS_LAST_ORDINARY_MAP (const line_maps *set)
 {
   return (line_map_ordinary *)LINEMAPS_LAST_MAP (set, false);
-}
-
-/* Returns a pointer to the last ordinary map allocated the line table
-   SET.  */
-inline line_map_ordinary *
-LINEMAPS_LAST_ALLOCATED_ORDINARY_MAP (const line_maps *set)
-{
-  return (line_map_ordinary *)LINEMAPS_LAST_ALLOCATED_MAP (set, false);
-}
-
-/* Returns a pointer to the beginning of the region where macro maps
-   are allocated.  */
-inline line_map_macro *
-LINEMAPS_MACRO_MAPS (const line_maps *set)
-{
-  return set->info_macro.maps;
 }
 
 /* Returns the INDEXth macro map.  */
@@ -1002,14 +985,6 @@ LINEMAPS_MACRO_USED (const line_maps *set)
   return LINEMAPS_USED (set, true);
 }
 
-/* Return the index of the last macro map that was looked up with
-   linemap_lookup.  */
-inline unsigned int &
-LINEMAPS_MACRO_CACHE (const line_maps *set)
-{
-  return LINEMAPS_CACHE (set, true);
-}
-
 /* Returns the last macro map used in the line table SET.  */
 inline line_map_macro *
 LINEMAPS_LAST_MACRO_MAP (const line_maps *set)
@@ -1027,45 +1002,24 @@ LINEMAPS_MACRO_LOWEST_LOCATION (const line_maps *set)
          : MAX_LOCATION_T + 1;
 }
 
-/* Returns the last macro map allocated in the line table SET.  */
-inline line_map_macro *
-LINEMAPS_LAST_ALLOCATED_MACRO_MAP (const line_maps *set)
-{
-  return (line_map_macro *)LINEMAPS_LAST_ALLOCATED_MAP (set, true);
-}
-
-extern location_t get_combined_adhoc_loc (line_maps *, location_t,
-					  source_range, void *, unsigned);
 extern void *get_data_from_adhoc_loc (const line_maps *, location_t);
 extern unsigned get_discriminator_from_adhoc_loc (const line_maps *, location_t);
 extern location_t get_location_from_adhoc_loc (const line_maps *,
 					       location_t);
 
-extern source_range get_range_from_loc (line_maps *set, location_t loc);
-extern unsigned get_discriminator_from_loc (line_maps *set, location_t loc);
+extern source_range get_range_from_loc (const line_maps *set, location_t loc);
+extern unsigned get_discriminator_from_loc (const line_maps *set, location_t loc);
 
 /* Get whether location LOC is a "pure" location, or
    whether it is an ad-hoc location, or embeds range information.  */
 
 bool
-pure_location_p (line_maps *set, location_t loc);
+pure_location_p (const line_maps *set, location_t loc);
 
 /* Given location LOC within SET, strip away any packed range information
    or ad-hoc information.  */
 
-extern location_t get_pure_location (line_maps *set, location_t loc);
-
-/* Combine LOC and BLOCK, giving a combined adhoc location.  */
-
-inline location_t
-COMBINE_LOCATION_DATA (class line_maps *set,
-		       location_t loc,
-		       source_range src_range,
-		       void *block,
-		       unsigned discriminator)
-{
-  return get_combined_adhoc_loc (set, loc, src_range, block, discriminator);
-}
+extern location_t get_pure_location (const line_maps *set, location_t loc);
 
 extern void rebuild_location_adhoc_htab (class line_maps *);
 
@@ -1078,7 +1032,7 @@ extern void linemap_init (class line_maps *set,
 
 /* Check for and warn about line_maps entered but not exited.  */
 
-extern void linemap_check_files_exited (class line_maps *);
+extern void linemap_check_files_exited (const line_maps *);
 
 /* Return a location_t for the start (i.e. column==0) of
    (physical) line TO_LINE in the current source file (as in the
@@ -1156,7 +1110,7 @@ unsigned linemap_lookup_macro_index (const line_maps *, location_t);
 
 /* Returns TRUE if the line table set tracks token locations across
    macro expansion, FALSE otherwise.  */
-bool linemap_tracks_macro_expansion_locs_p (class line_maps *);
+bool linemap_tracks_macro_expansion_locs_p (const line_maps *);
 
 /* Return the name of the macro associated to MACRO_MAP.  */
 const char* linemap_map_get_macro_name (const line_map_macro *);
@@ -1170,7 +1124,7 @@ const char* linemap_map_get_macro_name (const line_map_macro *);
    Note that this function returns 1 if LOCATION belongs to a token
    that is part of a macro replacement-list defined in a system
    header, but expanded in a non-system file.  */
-int linemap_location_in_system_header_p (class line_maps *,
+int linemap_location_in_system_header_p (const line_maps *,
 					 location_t);
 
 /* Return TRUE if LOCATION is a source code location of a token that is part of
@@ -1180,7 +1134,7 @@ bool linemap_location_from_macro_expansion_p (const line_maps *,
 
 /* TRUE if LOCATION is a source code location of a token that is part of the
    definition of a macro, FALSE otherwise.  */
-bool linemap_location_from_macro_definition_p (class line_maps *,
+bool linemap_location_from_macro_definition_p (const line_maps *,
 					       location_t);
 
 /* With the precondition that LOCATION is the locus of a token that is
@@ -1188,8 +1142,10 @@ bool linemap_location_from_macro_definition_p (class line_maps *,
    expansion of MACRO_MAP, return the locus of that argument in the
    context of the caller of MACRO_MAP.  */
 
-extern location_t linemap_macro_map_loc_unwind_toward_spelling
-  (line_maps *set, const line_map_macro *macro_map, location_t location);
+extern location_t
+linemap_macro_map_loc_unwind_toward_spelling (const line_maps *set,
+					      const line_map_macro *macro_map,
+					      location_t location);
 
 /* location_t values from 0 to RESERVED_LOCATION_COUNT-1 will
    be reserved for libcpp user as special values, no token from libcpp
@@ -1220,8 +1176,9 @@ linemap_included_from (const line_map_ordinary *ord_map)
 }
 
 /* The linemap containing the included-from location of MAP.  */
-const line_map_ordinary *linemap_included_from_linemap
-  (line_maps *set, const line_map_ordinary *map);
+const line_map_ordinary *
+linemap_included_from_linemap (const line_maps *set,
+			       const line_map_ordinary *map);
 
 /* True if the map is at the bottom of the include stack.  */
 
@@ -1277,7 +1234,7 @@ LINEMAP_SYSP (const line_map_ordinary *ord_map)
   return ord_map->sysp;
 }
 
-const struct line_map *first_map_in_common (line_maps *set,
+const struct line_map *first_map_in_common (const line_maps *set,
 					    location_t loc0,
 					    location_t loc1,
 					    location_t *res_loc0,
@@ -1287,7 +1244,7 @@ const struct line_map *first_map_in_common (line_maps *set,
    comes before the token of POST, 0 if PRE denotes the location of
    the same token as the token for POST, and a negative value
    otherwise.  */
-int linemap_compare_locations (class line_maps *set,
+int linemap_compare_locations (const line_maps *set,
 			       location_t   pre,
 			       location_t   post);
 
@@ -1295,7 +1252,7 @@ int linemap_compare_locations (class line_maps *set,
    topogically before the token denoted by location LOC_B, or if they
    are equal.  */
 inline bool
-linemap_location_before_p (class line_maps *set,
+linemap_location_before_p (const line_maps *set,
 			   location_t loc_a,
 			   location_t loc_b)
 {
@@ -1317,673 +1274,6 @@ typedef struct
   /* In a system header?. */
   bool sysp;
 } expanded_location;
-
-class range_label;
-
-/* A hint to diagnostic_show_locus on how to print a source range within a
-   rich_location.
-
-   Typically this is SHOW_RANGE_WITH_CARET for the 0th range, and
-   SHOW_RANGE_WITHOUT_CARET for subsequent ranges,
-   but the Fortran frontend uses SHOW_RANGE_WITH_CARET repeatedly for
-   printing things like:
-
-       x = x + y
-           1   2
-       Error: Shapes for operands at (1) and (2) are not conformable
-
-   where "1" and "2" are notionally carets.  */
-
-enum range_display_kind
-{
-  /* Show the pertinent source line(s), the caret, and underline(s).  */
-  SHOW_RANGE_WITH_CARET,
-
-  /* Show the pertinent source line(s) and underline(s), but don't
-     show the caret (just an underline).  */
-  SHOW_RANGE_WITHOUT_CARET,
-
-  /* Just show the source lines; don't show the range itself.
-     This is for use when displaying some line-insertion fix-it hints (for
-     showing the user context on the change, for when it doesn't make sense
-     to highlight the first column on the next line).  */
-  SHOW_LINES_WITHOUT_RANGE
-};
-
-/* A location within a rich_location: a caret&range, with
-   the caret potentially flagged for display, and an optional
-   label.  */
-
-struct location_range
-{
-  location_t m_loc;
-
-  enum range_display_kind m_range_display_kind;
-
-  /* If non-NULL, the label for this range.  */
-  const range_label *m_label;
-};
-
-/* A partially-embedded vec for use within rich_location for storing
-   ranges and fix-it hints.
-
-   Elements [0..NUM_EMBEDDED) are allocated within m_embed, after
-   that they are within the dynamically-allocated m_extra.
-
-   This allows for static allocation in the common case, whilst
-   supporting the rarer case of an arbitrary number of elements.
-
-   Dynamic allocation is not performed unless it's needed.  */
-
-template <typename T, int NUM_EMBEDDED>
-class semi_embedded_vec
-{
- public:
-  semi_embedded_vec ();
-  ~semi_embedded_vec ();
-
-  unsigned int count () const { return m_num; }
-  T& operator[] (int idx);
-  const T& operator[] (int idx) const;
-
-  void push (const T&);
-  void truncate (int len);
-
- private:
-  int m_num;
-  T m_embedded[NUM_EMBEDDED];
-  int m_alloc;
-  T *m_extra;
-};
-
-/* Constructor for semi_embedded_vec.  In particular, no dynamic allocation
-   is done.  */
-
-template <typename T, int NUM_EMBEDDED>
-semi_embedded_vec<T, NUM_EMBEDDED>::semi_embedded_vec ()
-: m_num (0), m_alloc (0), m_extra (NULL)
-{
-}
-
-/* semi_embedded_vec's dtor.  Release any dynamically-allocated memory.  */
-
-template <typename T, int NUM_EMBEDDED>
-semi_embedded_vec<T, NUM_EMBEDDED>::~semi_embedded_vec ()
-{
-  XDELETEVEC (m_extra);
-}
-
-/* Look up element IDX, mutably.  */
-
-template <typename T, int NUM_EMBEDDED>
-T&
-semi_embedded_vec<T, NUM_EMBEDDED>::operator[] (int idx)
-{
-  linemap_assert (idx < m_num);
-  if (idx < NUM_EMBEDDED)
-    return m_embedded[idx];
-  else
-    {
-      linemap_assert (m_extra != NULL);
-      return m_extra[idx - NUM_EMBEDDED];
-    }
-}
-
-/* Look up element IDX (const).  */
-
-template <typename T, int NUM_EMBEDDED>
-const T&
-semi_embedded_vec<T, NUM_EMBEDDED>::operator[] (int idx) const
-{
-  linemap_assert (idx < m_num);
-  if (idx < NUM_EMBEDDED)
-    return m_embedded[idx];
-  else
-    {
-      linemap_assert (m_extra != NULL);
-      return m_extra[idx - NUM_EMBEDDED];
-    }
-}
-
-/* Append VALUE to the end of the semi_embedded_vec.  */
-
-template <typename T, int NUM_EMBEDDED>
-void
-semi_embedded_vec<T, NUM_EMBEDDED>::push (const T& value)
-{
-  int idx = m_num++;
-  if (idx < NUM_EMBEDDED)
-    m_embedded[idx] = value;
-  else
-    {
-      /* Offset "idx" to be an index within m_extra.  */
-      idx -= NUM_EMBEDDED;
-      if (NULL == m_extra)
-	{
-	  linemap_assert (m_alloc == 0);
-	  m_alloc = 16;
-	  m_extra = XNEWVEC (T, m_alloc);
-	}
-      else if (idx >= m_alloc)
-	{
-	  linemap_assert (m_alloc > 0);
-	  m_alloc *= 2;
-	  m_extra = XRESIZEVEC (T, m_extra, m_alloc);
-	}
-      linemap_assert (m_extra);
-      linemap_assert (idx < m_alloc);
-      m_extra[idx] = value;
-    }
-}
-
-/* Truncate to length LEN.  No deallocation is performed.  */
-
-template <typename T, int NUM_EMBEDDED>
-void
-semi_embedded_vec<T, NUM_EMBEDDED>::truncate (int len)
-{
-  linemap_assert (len <= m_num);
-  m_num = len;
-}
-
-class fixit_hint;
-class diagnostic_path;
-
-/* A "rich" source code location, for use when printing diagnostics.
-   A rich_location has one or more carets&ranges, where the carets
-   are optional.  These are referred to as "ranges" from here.
-   Typically the zeroth range has a caret; other ranges sometimes
-   have carets.
-
-   The "primary" location of a rich_location is the caret of range 0,
-   used for determining the line/column when printing diagnostic
-   text, such as:
-
-      some-file.c:3:1: error: ...etc...
-
-   Additional ranges may be added to help the user identify other
-   pertinent clauses in a diagnostic.
-
-   Ranges can (optionally) be given labels via class range_label.
-
-   rich_location instances are intended to be allocated on the stack
-   when generating diagnostics, and to be short-lived.
-
-   Examples of rich locations
-   --------------------------
-
-   Example A
-   *********
-      int i = "foo";
-              ^
-   This "rich" location is simply a single range (range 0), with
-   caret = start = finish at the given point.
-
-   Example B
-   *********
-      a = (foo && bar)
-          ~~~~~^~~~~~~
-   This rich location has a single range (range 0), with the caret
-   at the first "&", and the start/finish at the parentheses.
-   Compare with example C below.
-
-   Example C
-   *********
-      a = (foo && bar)
-           ~~~ ^~ ~~~
-   This rich location has three ranges:
-   - Range 0 has its caret and start location at the first "&" and
-     end at the second "&.
-   - Range 1 has its start and finish at the "f" and "o" of "foo";
-     the caret is not flagged for display, but is perhaps at the "f"
-     of "foo".
-   - Similarly, range 2 has its start and finish at the "b" and "r" of
-     "bar"; the caret is not flagged for display, but is perhaps at the
-     "b" of "bar".
-   Compare with example B above.
-
-   Example D (Fortran frontend)
-   ****************************
-       x = x + y
-           1   2
-   This rich location has range 0 at "1", and range 1 at "2".
-   Both are flagged for caret display.  Both ranges have start/finish
-   equal to their caret point.  The frontend overrides the diagnostic
-   context's default caret character for these ranges.
-
-   Example E (range labels)
-   ************************
-      printf ("arg0: %i  arg1: %s arg2: %i",
-                               ^~
-                               |
-                               const char *
-              100, 101, 102);
-                   ~~~
-                   |
-                   int
-   This rich location has two ranges:
-   - range 0 is at the "%s" with start = caret = "%" and finish at
-     the "s".  It has a range_label ("const char *").
-   - range 1 has start/finish covering the "101" and is not flagged for
-     caret printing.  The caret is at the start of "101", where its
-     range_label is printed ("int").
-
-   Fix-it hints
-   ------------
-
-   Rich locations can also contain "fix-it hints", giving suggestions
-   for the user on how to edit their code to fix a problem.  These
-   can be expressed as insertions, replacements, and removals of text.
-   The edits by default are relative to the zeroth range within the
-   rich_location, but optionally they can be expressed relative to
-   other locations (using various overloaded methods of the form
-   rich_location::add_fixit_*).
-
-   For example:
-
-   Example F: fix-it hint: insert_before
-   *************************************
-      ptr = arr[0];
-	    ^~~~~~
-	    &
-   This rich location has a single range (range 0) covering "arr[0]",
-   with the caret at the start.  The rich location has a single
-   insertion fix-it hint, inserted before range 0, added via
-     richloc.add_fixit_insert_before ("&");
-
-   Example G: multiple fix-it hints: insert_before and insert_after
-   ****************************************************************
-      #define FN(ARG0, ARG1, ARG2) fn(ARG0, ARG1, ARG2)
-				      ^~~~  ^~~~  ^~~~
-				      (   ) (   ) (   )
-   This rich location has three ranges, covering "arg0", "arg1",
-   and "arg2", all with caret-printing enabled.
-   The rich location has 6 insertion fix-it hints: each arg
-   has a pair of insertion fix-it hints, suggesting wrapping
-   them with parentheses: one a '(' inserted before,
-   the other a ')' inserted after, added via
-     richloc.add_fixit_insert_before (LOC, "(");
-   and
-     richloc.add_fixit_insert_after (LOC, ")");
-
-   Example H: fix-it hint: removal
-   *******************************
-     struct s {int i};;
-		      ^
-		      -
-   This rich location has a single range at the stray trailing
-   semicolon, along with a single removal fix-it hint, covering
-   the same range, added via:
-     richloc.add_fixit_remove ();
-
-   Example I: fix-it hint: replace
-   *******************************
-      c = s.colour;
-	    ^~~~~~
-	    color
-   This rich location has a single range (range 0) covering "colour",
-   and a single "replace" fix-it hint, covering the same range,
-   added via
-     richloc.add_fixit_replace ("color");
-
-   Example J: fix-it hint: line insertion
-   **************************************
-
-     3 | #include <stddef.h>
-     + |+#include <stdio.h>
-     4 | int the_next_line;
-
-   This rich location has a single range at line 4 column 1, marked
-   with SHOW_LINES_WITHOUT_RANGE (to avoid printing a meaningless caret
-   on the "i" of int).  It has a insertion fix-it hint of the string
-   "#include <stdio.h>\n".
-
-   Adding a fix-it hint can fail: for example, attempts to insert content
-   at the transition between two line maps may fail due to there being no
-   location_t value to express the new location.
-
-   Attempts to add a fix-it hint within a macro expansion will fail.
-
-   There is only limited support for newline characters in fix-it hints:
-   only hints with newlines which insert an entire new line are permitted,
-   inserting at the start of a line, and finishing with a newline
-   (with no interior newline characters).  Other attempts to add
-   fix-it hints containing newline characters will fail.
-   Similarly, attempts to delete or replace a range *affecting* multiple
-   lines will fail.
-
-   The rich_location API handles these failures gracefully, so that
-   diagnostics can attempt to add fix-it hints without each needing
-   extensive checking.
-
-   Fix-it hints within a rich_location are "atomic": if any hints can't
-   be applied, none of them will be (tracked by the m_seen_impossible_fixit
-   flag), and no fix-its hints will be displayed for that rich_location.
-   This implies that diagnostic messages need to be worded in such a way
-   that they make sense whether or not the fix-it hints are displayed,
-   or that richloc.seen_impossible_fixit_p () should be checked before
-   issuing the diagnostics.  */
-
-class rich_location
-{
- public:
-  /* Constructors.  */
-
-  /* Constructing from a location.  */
-  rich_location (line_maps *set, location_t loc,
-		 const range_label *label = NULL);
-
-  /* Destructor.  */
-  ~rich_location ();
-
-  /* The class manages the memory pointed to by the elements of
-     the M_FIXIT_HINTS vector and is not meant to be copied or
-     assigned.  */
-  rich_location (const rich_location &) = delete;
-  void operator= (const rich_location &) = delete;
-
-  /* Accessors.  */
-  location_t get_loc () const { return get_loc (0); }
-  location_t get_loc (unsigned int idx) const;
-
-  void
-  add_range (location_t loc,
-	     enum range_display_kind range_display_kind
-	       = SHOW_RANGE_WITHOUT_CARET,
-	     const range_label *label = NULL);
-
-  void
-  set_range (unsigned int idx, location_t loc,
-	     enum range_display_kind range_display_kind);
-
-  unsigned int get_num_locations () const { return m_ranges.count (); }
-
-  const location_range *get_range (unsigned int idx) const;
-  location_range *get_range (unsigned int idx);
-
-  expanded_location get_expanded_location (unsigned int idx);
-
-  void
-  override_column (int column);
-
-  /* Fix-it hints.  */
-
-  /* Methods for adding insertion fix-it hints.  */
-
-  /* Suggest inserting NEW_CONTENT immediately before the primary
-     range's start.  */
-  void
-  add_fixit_insert_before (const char *new_content);
-
-  /* Suggest inserting NEW_CONTENT immediately before the start of WHERE.  */
-  void
-  add_fixit_insert_before (location_t where,
-			   const char *new_content);
-
-  /* Suggest inserting NEW_CONTENT immediately after the end of the primary
-     range.  */
-  void
-  add_fixit_insert_after (const char *new_content);
-
-  /* Suggest inserting NEW_CONTENT immediately after the end of WHERE.  */
-  void
-  add_fixit_insert_after (location_t where,
-			  const char *new_content);
-
-  /* Methods for adding removal fix-it hints.  */
-
-  /* Suggest removing the content covered by range 0.  */
-  void
-  add_fixit_remove ();
-
-  /* Suggest removing the content covered between the start and finish
-     of WHERE.  */
-  void
-  add_fixit_remove (location_t where);
-
-  /* Suggest removing the content covered by SRC_RANGE.  */
-  void
-  add_fixit_remove (source_range src_range);
-
-  /* Methods for adding "replace" fix-it hints.  */
-
-  /* Suggest replacing the content covered by range 0 with NEW_CONTENT.  */
-  void
-  add_fixit_replace (const char *new_content);
-
-  /* Suggest replacing the content between the start and finish of
-     WHERE with NEW_CONTENT.  */
-  void
-  add_fixit_replace (location_t where,
-		     const char *new_content);
-
-  /* Suggest replacing the content covered by SRC_RANGE with
-     NEW_CONTENT.  */
-  void
-  add_fixit_replace (source_range src_range,
-		     const char *new_content);
-
-  unsigned int get_num_fixit_hints () const { return m_fixit_hints.count (); }
-  fixit_hint *get_fixit_hint (int idx) const { return m_fixit_hints[idx]; }
-  fixit_hint *get_last_fixit_hint () const;
-  bool seen_impossible_fixit_p () const { return m_seen_impossible_fixit; }
-
-  /* Set this if the fix-it hints are not suitable to be
-     automatically applied.
-
-     For example, if you are suggesting more than one
-     mutually exclusive solution to a problem, then
-     it doesn't make sense to apply all of the solutions;
-     manual intervention is required.
-
-     If set, then the fix-it hints in the rich_location will
-     be printed, but will not be added to generated patches,
-     or affect the modified version of the file.  */
-  void fixits_cannot_be_auto_applied ()
-  {
-    m_fixits_cannot_be_auto_applied = true;
-  }
-
-  bool fixits_can_be_auto_applied_p () const
-  {
-    return !m_fixits_cannot_be_auto_applied;
-  }
-
-  /* An optional path through the code.  */
-  const diagnostic_path *get_path () const { return m_path; }
-  void set_path (const diagnostic_path *path) { m_path = path; }
-
-  /* A flag for hinting that the diagnostic involves character encoding
-     issues, and thus that it will be helpful to the user if we show some
-     representation of how the characters in the pertinent source lines
-     are encoded.
-     The default is false (i.e. do not escape).
-     When set to true, non-ASCII bytes in the pertinent source lines will
-     be escaped in a manner controlled by the user-supplied option
-     -fdiagnostics-escape-format=, so that the user can better understand
-     what's going on with the encoding in their source file.  */
-  bool escape_on_output_p () const { return m_escape_on_output; }
-  void set_escape_on_output (bool flag) { m_escape_on_output = flag; }
-
-private:
-  bool reject_impossible_fixit (location_t where);
-  void stop_supporting_fixits ();
-  void maybe_add_fixit (location_t start,
-			location_t next_loc,
-			const char *new_content);
-
-public:
-  static const int STATICALLY_ALLOCATED_RANGES = 3;
-
-protected:
-  line_maps *m_line_table;
-  semi_embedded_vec <location_range, STATICALLY_ALLOCATED_RANGES> m_ranges;
-
-  int m_column_override;
-
-  bool m_have_expanded_location;
-  bool m_seen_impossible_fixit;
-  bool m_fixits_cannot_be_auto_applied;
-  bool m_escape_on_output;
-
-  expanded_location m_expanded_location;
-
-  static const int MAX_STATIC_FIXIT_HINTS = 2;
-  semi_embedded_vec <fixit_hint *, MAX_STATIC_FIXIT_HINTS> m_fixit_hints;
-
-  const diagnostic_path *m_path;
-};
-
-/* A struct for the result of range_label::get_text: a NUL-terminated buffer
-   of localized text, and a flag to determine if the caller should "free" the
-   buffer.  */
-
-class label_text
-{
-public:
-  label_text ()
-  : m_buffer (NULL), m_owned (false)
-  {}
-
-  ~label_text ()
-  {
-    if (m_owned)
-      free (m_buffer);
-  }
-
-  /* Move ctor.  */
-  label_text (label_text &&other)
-  : m_buffer (other.m_buffer), m_owned (other.m_owned)
-  {
-    other.release ();
-  }
-
-  /* Move assignment.  */
-  label_text & operator= (label_text &&other)
-  {
-    if (m_owned)
-      free (m_buffer);
-    m_buffer = other.m_buffer;
-    m_owned = other.m_owned;
-    other.release ();
-    return *this;
-  }
-
-  /* Delete the copy ctor and copy-assignment operator.  */
-  label_text (const label_text &) = delete;
-  label_text & operator= (const label_text &) = delete;
-
-  /* Create a label_text instance that borrows BUFFER from a
-     longer-lived owner.  */
-  static label_text borrow (const char *buffer)
-  {
-    return label_text (const_cast <char *> (buffer), false);
-  }
-
-  /* Create a label_text instance that takes ownership of BUFFER.  */
-  static label_text take (char *buffer)
-  {
-    return label_text (buffer, true);
-  }
-
-  void release ()
-  {
-    m_buffer = NULL;
-    m_owned = false;
-  }
-
-  const char *get () const
-  {
-    return m_buffer;
-  }
-
-  bool is_owner () const
-  {
-    return m_owned;
-  }
-
-private:
-  char *m_buffer;
-  bool m_owned;
-
-  label_text (char *buffer, bool owned)
-  : m_buffer (buffer), m_owned (owned)
-  {}
-};
-
-/* Abstract base class for labelling a range within a rich_location
-   (e.g. for labelling expressions with their type).
-
-   Generating the text could require non-trivial work, so this work
-   is delayed (via the "get_text" virtual function) until the diagnostic
-   printing code "knows" it needs it, thus avoiding doing it e.g. for
-   warnings that are filtered by command-line flags.  This virtual
-   function also isolates libcpp and the diagnostics subsystem from
-   the front-end and middle-end-specific code for generating the text
-   for the labels.
-
-   Like the rich_location instances they annotate, range_label instances
-   are intended to be allocated on the stack when generating diagnostics,
-   and to be short-lived.  */
-
-class range_label
-{
- public:
-  virtual ~range_label () {}
-
-  /* Get localized text for the label.
-     The RANGE_IDX is provided, allowing for range_label instances to be
-     shared by multiple ranges if need be (the "flyweight" design pattern).  */
-  virtual label_text get_text (unsigned range_idx) const = 0;
-};
-
-/* A fix-it hint: a suggested insertion, replacement, or deletion of text.
-   We handle these three types of edit with one class, by representing
-   them as replacement of a half-open range:
-       [start, next_loc)
-   Insertions have start == next_loc: "replace" the empty string at the
-   start location with the new string.
-   Deletions are replacement with the empty string.
-
-   There is only limited support for newline characters in fix-it hints
-   as noted above in the comment for class rich_location.
-   A fixit_hint instance can have at most one newline character; if
-   present, the newline character must be the final character of
-   the content (preventing e.g. fix-its that split a pre-existing line).  */
-
-class fixit_hint
-{
- public:
-  fixit_hint (location_t start,
-	      location_t next_loc,
-	      const char *new_content);
-  ~fixit_hint () { free (m_bytes); }
-
-  bool affects_line_p (const char *file, int line) const;
-  location_t get_start_loc () const { return m_start; }
-  location_t get_next_loc () const { return m_next_loc; }
-  bool maybe_append (location_t start,
-		     location_t next_loc,
-		     const char *new_content);
-
-  const char *get_string () const { return m_bytes; }
-  size_t get_length () const { return m_len; }
-
-  bool insertion_p () const { return m_start == m_next_loc; }
-
-  bool ends_with_newline_p () const;
-
- private:
-  /* We don't use source_range here since, unlike most places,
-     this is a half-open/half-closed range:
-       [start, next_loc)
-     so that we can support insertion via start == next_loc.  */
-  location_t m_start;
-  location_t m_next_loc;
-  char *m_bytes;
-  size_t m_len;
-};
-
 
 /* This is enum is used by the function linemap_resolve_location
    below.  The meaning of the values is explained in the comment of
@@ -2043,7 +1333,7 @@ enum location_resolution_kind
    resolves to a location reserved for the client code, like
    UNKNOWN_LOCATION or BUILTINS_LOCATION in GCC.  */
 
-location_t linemap_resolve_location (class line_maps *,
+location_t linemap_resolve_location (const line_maps *,
 				     location_t loc,
 				     enum location_resolution_kind lrk,
 				     const line_map_ordinary **loc_map);
@@ -2055,7 +1345,7 @@ location_t linemap_resolve_location (class line_maps *,
    the point where M' was expanded.  LOC_MAP is an output parameter.
    When non-NULL, *LOC_MAP is set to the map of the returned
    location.  */
-location_t linemap_unwind_toward_expansion (class line_maps *,
+location_t linemap_unwind_toward_expansion (const line_maps *,
 					    location_t loc,
 					    const line_map **loc_map);
 
@@ -2073,7 +1363,7 @@ location_t linemap_unwind_toward_expansion (class line_maps *,
 
    *MAP is set to the map of the returned location if the later is
    different from LOC.  */
-location_t linemap_unwind_to_first_non_reserved_loc (class line_maps *,
+location_t linemap_unwind_to_first_non_reserved_loc (const line_maps *,
 						     location_t loc,
 						     const line_map **map);
 
@@ -2081,7 +1371,7 @@ location_t linemap_unwind_to_first_non_reserved_loc (class line_maps *,
    code location.  LOC must be a spelling (non-virtual) location.  If
    it's a location < RESERVED_LOCATION_COUNT a zeroed expanded source
    location is returned.  */
-expanded_location linemap_expand_location (class line_maps *,
+expanded_location linemap_expand_location (const line_maps *,
 					   const line_map *,
 					   location_t loc);
 
@@ -2108,27 +1398,27 @@ struct linemap_stats
    there is a line map in SET.  FILE_NAME is the file name to
    consider.  If the function returns TRUE, *LOC is set to the highest
    location emitted for that file.  */
-bool linemap_get_file_highest_location (class line_maps * set,
+bool linemap_get_file_highest_location (const line_maps * set,
 					const char *file_name,
 					location_t *loc);
 
 /* Compute and return statistics about the memory consumption of some
    parts of the line table SET.  */
-void linemap_get_statistics (line_maps *, struct linemap_stats *);
+void linemap_get_statistics (const line_maps *, struct linemap_stats *);
 
 /* Dump debugging information about source location LOC into the file
    stream STREAM. SET is the line map set LOC comes from.  */
-void linemap_dump_location (line_maps *, location_t, FILE *);
+void linemap_dump_location (const line_maps *, location_t, FILE *);
 
 /* Dump line map at index IX in line table SET to STREAM.  If STREAM
    is NULL, use stderr.  IS_MACRO is true if the caller wants to
    dump a macro map, false otherwise.  */
-void linemap_dump (FILE *, line_maps *, unsigned, bool);
+void linemap_dump (FILE *, const line_maps *, unsigned, bool);
 
 /* Dump line table SET to STREAM.  If STREAM is NULL, stderr is used.
    NUM_ORDINARY specifies how many ordinary maps to dump.  NUM_MACRO
    specifies how many macro maps to dump.  */
-void line_table_dump (FILE *, line_maps *, unsigned int, unsigned int);
+void line_table_dump (FILE *, const line_maps *, unsigned int, unsigned int);
 
 /* An enum for distinguishing the various parts within a location_t.  */
 
@@ -2146,7 +1436,8 @@ enum location_aspect
    Hence we require client code of libcpp to implement the following
    symbol.  */
 extern expanded_location
-linemap_client_expand_location_to_spelling_point (location_t,
+linemap_client_expand_location_to_spelling_point (const line_maps *,
+						  location_t,
 						  enum location_aspect);
 
 #endif /* !LIBCPP_LINE_MAP_H  */

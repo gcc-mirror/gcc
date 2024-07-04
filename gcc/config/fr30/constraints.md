@@ -1,5 +1,5 @@
 ;; Constraint definitions for the FR30.
-;; Copyright (C) 2011-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2024 Free Software Foundation, Inc.
 
 ;; This file is part of GCC.
 
@@ -63,9 +63,3 @@
   "An integer in the range -256 to 255."
   (and (match_code "const_int")
        (match_test "IN_RANGE (ival, -256, 255)")))
-
-;; Extra constraints.
-(define_constraint "Q"
-  "@internal"
-  (and (match_code "mem")
-       (match_code "symbol_ref" "0")))

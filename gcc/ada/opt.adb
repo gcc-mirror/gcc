@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -22,8 +22,6 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
-
-with Csets;          use Csets;
 
 package body Opt is
 
@@ -188,7 +186,6 @@ package body Opt is
          Prefix_Exception_Messages   := True;
          Uneval_Old                  := 'E';
          Use_VADS_Size               := False;
-         Identifier_Char ('[')       := False;
 
          --  Note: we do not need to worry about Warnings_As_Errors_Count since
          --  we do not expect to get any warnings from compiling such a unit.

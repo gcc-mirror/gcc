@@ -1,6 +1,6 @@
 /* { dg-do compile { target lp64 } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O2 -mvsx" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* This file just generates calls to the various builtins and verifies the      
    expected number of instructions for each builtin were generated.  */

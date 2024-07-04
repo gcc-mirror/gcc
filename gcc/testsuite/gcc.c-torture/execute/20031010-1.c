@@ -1,5 +1,7 @@
 /* A reminder to process ops in generate_expr_as_of_bb exactly once.  */
 
+void abort (void);
+
 long __attribute__((noinline))
 foo (long ct, long cf, _Bool p1, _Bool p2, _Bool p3)
 {

@@ -1,5 +1,5 @@
 ;; Machine description for NVPTX.
-;; Copyright (C) 2014-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2024 Free Software Foundation, Inc.
 ;; Contributed by Bernd Schmidt <bernds@codesourcery.com>
 ;;
 ;; This file is part of GCC.
@@ -33,8 +33,6 @@
    UNSPEC_FPINT_BTRUNC
    UNSPEC_FPINT_CEIL
    UNSPEC_FPINT_NEARBYINT
-
-   UNSPEC_BITREV
 
    UNSPEC_ALLOCA
 
@@ -636,8 +634,7 @@
 
 (define_insn "bitrev<mode>2"
   [(set (match_operand:SDIM 0 "nvptx_register_operand" "=R")
-	(unspec:SDIM [(match_operand:SDIM 1 "nvptx_register_operand" "R")]
-		     UNSPEC_BITREV))]
+	(bitreverse:SDIM (match_operand:SDIM 1 "nvptx_register_operand" "R")))]
   ""
   "%.\\tbrev.b%T0\\t%0, %1;")
 
@@ -658,11 +655,18 @@
   DONE;
 })
 
-(define_insn "popcount<mode>2"
+(define_insn "popcountsi2"
   [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
-	(popcount:SI (match_operand:SDIM 1 "nvptx_register_operand" "R")))]
+	(popcount:SI (match_operand:SI 1 "nvptx_register_operand" "R")))]
   ""
-  "%.\\tpopc.b%T1\\t%0, %1;")
+  "%.\\tpopc.b32\\t%0, %1;")
+
+(define_insn "popcountdi2"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(truncate:SI
+	  (popcount:DI (match_operand:DI 1 "nvptx_register_operand" "R"))))]
+  ""
+  "%.\\tpopc.b64\\t%0, %1;")
 
 ;; Multiplication variants
 
@@ -2312,14 +2316,11 @@
   {
     const char *insns[] = {
       "{",
-      "\\t"		  ".reg.b32"	    "\\t" "%%r_act;",
-      "%.\\t"		  "vote.ballot.b32" "\\t" "%%r_act,1;",
-      "\\t"		  ".reg.pred"	    "\\t" "%%r_do_abort;",
-      "\\t"		  "mov.pred"	    "\\t" "%%r_do_abort,0;",
-      "%.\\t"		  "setp.ne.b32"	    "\\t" "%%r_do_abort,%%r_act,"
-						  "0xffffffff;",
-      "@ %%r_do_abort\\t" "trap;",
-      "@ %%r_do_abort\\t" "exit;",
+      "\\t"		".reg.pred"	"\\t" "%%r_sync;",
+      "\\t"		"mov.pred"	"\\t" "%%r_sync, 1;",
+      "%.\\t"		"vote.all.pred" "\\t" "%%r_sync, 1;",
+      "@!%%r_sync\\t"	"trap;",
+      "@!%%r_sync\\t"	"exit;",
       "}",
       NULL
     };

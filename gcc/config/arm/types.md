@@ -1,6 +1,6 @@
 ;; Instruction Classification for ARM for GNU compiler.
 
-;; Copyright (C) 1991-2023 Free Software Foundation, Inc.
+;; Copyright (C) 1991-2024 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 
 ;; This file is part of GCC.
@@ -574,6 +574,7 @@
 ; mve_move
 ; mve_store
 ; mve_load
+; mve_misc
 
 (define_attr "type"
  "adc_imm,\
@@ -1126,7 +1127,8 @@
   ls64,\
   mve_move,\
   mve_store,\
-  mve_load"
+  mve_load, \
+  mve_misc"
    (cond [(eq_attr "autodetect_type" "alu_shift_lsr_op2,alu_shift_asr_op2")
             (const_string "alu_shift_imm_other")
           (eq_attr "autodetect_type" "alu_shift_lsl_op2")
@@ -1292,7 +1294,7 @@
 ;; No otherwise.
 (define_attr "is_mve_type" "yes,no"
         (if_then_else (eq_attr "type"
-        "mve_move, mve_load, mve_store, mrs")
+        "mve_move, mve_load, mve_store, mrs, mve_misc")
         (const_string "yes")
         (const_string "no")))
 

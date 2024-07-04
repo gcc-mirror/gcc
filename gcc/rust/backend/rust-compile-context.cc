@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -22,8 +22,8 @@
 namespace Rust {
 namespace Compile {
 
-Context::Context (::Backend *backend)
-  : backend (backend), resolver (Resolver::Resolver::get ()),
+Context::Context ()
+  : resolver (Resolver::Resolver::get ()),
     tyctx (Resolver::TypeCheckContext::get ()),
     mappings (Analysis::Mappings::get ()), mangler (Mangler ())
 {

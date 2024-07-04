@@ -1,5 +1,8 @@
 #include <stdarg.h>
 
+void abort (void);
+void exit (int);
+
 typedef double TYPE;
 
 void vafunction (TYPE dummy1, TYPE dummy2, ...)

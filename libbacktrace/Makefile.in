@@ -15,7 +15,7 @@
 @SET_MAKE@
 
 # Makefile.am -- Backtrace Makefile.
-# Copyright (C) 2012-2023 Free Software Foundation, Inc.
+# Copyright (C) 2012-2024 Free Software Foundation, Inc.
 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -134,9 +134,9 @@ TESTS = $(am__append_4) $(MAKETESTS) $(am__EXEEXT_16)
 @NATIVE_TRUE@@USE_DSYMUTIL_TRUE@	stest.dSYM stest_alloc.dSYM \
 @NATIVE_TRUE@@USE_DSYMUTIL_TRUE@	edtest.dSYM edtest_alloc.dSYM
 @HAVE_BUILDID_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_6 = b2test
-@HAVE_BUILDID_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_7 = b2test_buildid
+@HAVE_BUILDID_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_7 = b2test_buildid b2test_buildidfull
 @HAVE_BUILDID_TRUE@@HAVE_DWZ_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_8 = b3test
-@HAVE_BUILDID_TRUE@@HAVE_DWZ_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_9 = b3test_dwz_buildid
+@HAVE_BUILDID_TRUE@@HAVE_DWZ_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_9 = b3test_dwz_buildid b3test_dwz_buildidfull
 @HAVE_ELF_TRUE@@NATIVE_TRUE@am__append_10 = btest_lto
 @NATIVE_TRUE@am__append_11 = btest_alloc stest stest_alloc
 @HAVE_DWZ_TRUE@@NATIVE_TRUE@am__append_12 = btest_dwz
@@ -152,10 +152,10 @@ TESTS = $(am__append_4) $(MAKETESTS) $(am__EXEEXT_16)
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@@USE_DSYMUTIL_TRUE@am__append_21 =  \
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@@USE_DSYMUTIL_TRUE@	ttest.dSYM \
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@@USE_DSYMUTIL_TRUE@	ttest_alloc.dSYM
-@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_22 = btest_gnudebuglink
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__append_23 = ctestg ctesta
-@HAVE_COMPRESSED_DEBUG_TRUE@@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@am__append_24 = ctestzstd
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__append_25 = ctestg_alloc ctesta_alloc
+@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_22 = btest_gnudebuglink btest_gnudebuglinkfull
+@HAVE_COMPRESSED_DEBUG_ZLIB_GNU_TRUE@@NATIVE_TRUE@am__append_23 = ctestg ctestg_alloc
+@HAVE_COMPRESSED_DEBUG_ZLIB_GABI_TRUE@@NATIVE_TRUE@am__append_24 = ctesta ctesta_alloc
+@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@am__append_25 = ctestzstd ctestzstd_alloc
 @HAVE_DWARF5_TRUE@@NATIVE_TRUE@am__append_26 = dwarf5 dwarf5_alloc
 @HAVE_DWARF5_TRUE@@NATIVE_TRUE@@USE_DSYMUTIL_TRUE@am__append_27 =  \
 @HAVE_DWARF5_TRUE@@NATIVE_TRUE@@USE_DSYMUTIL_TRUE@	dwarf5.dSYM \
@@ -239,12 +239,12 @@ libbacktrace_noformat_la_OBJECTS =  \
 @NATIVE_TRUE@am__EXEEXT_8 = edtest$(EXEEXT) edtest_alloc$(EXEEXT)
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__EXEEXT_9 = ttest$(EXEEXT) \
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@	ttest_alloc$(EXEEXT)
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__EXEEXT_10 =  \
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctestg$(EXEEXT) \
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta$(EXEEXT)
-@HAVE_COMPRESSED_DEBUG_TRUE@@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@am__EXEEXT_11 = ctestzstd$(EXEEXT)
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__EXEEXT_12 = ctestg_alloc$(EXEEXT) \
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta_alloc$(EXEEXT)
+@HAVE_COMPRESSED_DEBUG_ZLIB_GNU_TRUE@@NATIVE_TRUE@am__EXEEXT_10 = ctestg$(EXEEXT) \
+@HAVE_COMPRESSED_DEBUG_ZLIB_GNU_TRUE@@NATIVE_TRUE@	ctestg_alloc$(EXEEXT)
+@HAVE_COMPRESSED_DEBUG_ZLIB_GABI_TRUE@@NATIVE_TRUE@am__EXEEXT_11 = ctesta$(EXEEXT) \
+@HAVE_COMPRESSED_DEBUG_ZLIB_GABI_TRUE@@NATIVE_TRUE@	ctesta_alloc$(EXEEXT)
+@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@am__EXEEXT_12 = ctestzstd$(EXEEXT) \
+@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@	ctestzstd_alloc$(EXEEXT)
 @HAVE_DWARF5_TRUE@@NATIVE_TRUE@am__EXEEXT_13 = dwarf5$(EXEEXT) \
 @HAVE_DWARF5_TRUE@@NATIVE_TRUE@	dwarf5_alloc$(EXEEXT)
 @NATIVE_TRUE@am__EXEEXT_14 = mtest$(EXEEXT)
@@ -283,7 +283,7 @@ btest_OBJECTS = $(am_btest_OBJECTS)
 @NATIVE_TRUE@btest_DEPENDENCIES = libbacktrace.la
 btest_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(btest_CFLAGS) $(CFLAGS) \
-	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+	$(btest_LDFLAGS) $(LDFLAGS) -o $@
 @NATIVE_TRUE@am__objects_4 = btest_alloc-btest.$(OBJEXT) \
 @NATIVE_TRUE@	btest_alloc-testlib.$(OBJEXT)
 @NATIVE_TRUE@am_btest_alloc_OBJECTS = $(am__objects_4)
@@ -291,7 +291,7 @@ btest_alloc_OBJECTS = $(am_btest_alloc_OBJECTS)
 @NATIVE_TRUE@btest_alloc_DEPENDENCIES = libbacktrace_alloc.la
 btest_alloc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(btest_alloc_CFLAGS) \
-	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+	$(CFLAGS) $(btest_alloc_LDFLAGS) $(LDFLAGS) -o $@
 @HAVE_ELF_TRUE@@NATIVE_TRUE@am_btest_lto_OBJECTS =  \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	btest_lto-btest.$(OBJEXT) \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	btest_lto-testlib.$(OBJEXT)
@@ -299,48 +299,54 @@ btest_lto_OBJECTS = $(am_btest_lto_OBJECTS)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@btest_lto_DEPENDENCIES = libbacktrace.la
 btest_lto_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(btest_lto_CFLAGS) \
-	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am_ctesta_OBJECTS = ctesta-btest.$(OBJEXT) \
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta-testlib.$(OBJEXT)
+	$(CFLAGS) $(btest_lto_LDFLAGS) $(LDFLAGS) -o $@
+@HAVE_COMPRESSED_DEBUG_ZLIB_GABI_TRUE@@NATIVE_TRUE@am_ctesta_OBJECTS = ctesta-btest.$(OBJEXT) \
+@HAVE_COMPRESSED_DEBUG_ZLIB_GABI_TRUE@@NATIVE_TRUE@	ctesta-testlib.$(OBJEXT)
 ctesta_OBJECTS = $(am_ctesta_OBJECTS)
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_DEPENDENCIES =  \
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	libbacktrace.la
+@HAVE_COMPRESSED_DEBUG_ZLIB_GABI_TRUE@@NATIVE_TRUE@ctesta_DEPENDENCIES = libbacktrace.la
 ctesta_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(ctesta_CFLAGS) $(CFLAGS) \
 	$(ctesta_LDFLAGS) $(LDFLAGS) -o $@
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__objects_5 = ctesta_alloc-btest.$(OBJEXT) \
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta_alloc-testlib.$(OBJEXT)
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am_ctesta_alloc_OBJECTS =  \
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	$(am__objects_5)
+@HAVE_COMPRESSED_DEBUG_ZLIB_GABI_TRUE@@NATIVE_TRUE@am__objects_5 = ctesta_alloc-btest.$(OBJEXT) \
+@HAVE_COMPRESSED_DEBUG_ZLIB_GABI_TRUE@@NATIVE_TRUE@	ctesta_alloc-testlib.$(OBJEXT)
+@HAVE_COMPRESSED_DEBUG_ZLIB_GABI_TRUE@@NATIVE_TRUE@am_ctesta_alloc_OBJECTS = $(am__objects_5)
 ctesta_alloc_OBJECTS = $(am_ctesta_alloc_OBJECTS)
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_alloc_DEPENDENCIES = libbacktrace_alloc.la
+@HAVE_COMPRESSED_DEBUG_ZLIB_GABI_TRUE@@NATIVE_TRUE@ctesta_alloc_DEPENDENCIES = libbacktrace_alloc.la
 ctesta_alloc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(ctesta_alloc_CFLAGS) \
 	$(CFLAGS) $(ctesta_alloc_LDFLAGS) $(LDFLAGS) -o $@
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am_ctestg_OBJECTS = ctestg-btest.$(OBJEXT) \
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctestg-testlib.$(OBJEXT)
+@HAVE_COMPRESSED_DEBUG_ZLIB_GNU_TRUE@@NATIVE_TRUE@am_ctestg_OBJECTS = ctestg-btest.$(OBJEXT) \
+@HAVE_COMPRESSED_DEBUG_ZLIB_GNU_TRUE@@NATIVE_TRUE@	ctestg-testlib.$(OBJEXT)
 ctestg_OBJECTS = $(am_ctestg_OBJECTS)
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctestg_DEPENDENCIES =  \
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	libbacktrace.la
+@HAVE_COMPRESSED_DEBUG_ZLIB_GNU_TRUE@@NATIVE_TRUE@ctestg_DEPENDENCIES = libbacktrace.la
 ctestg_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(ctestg_CFLAGS) $(CFLAGS) \
 	$(ctestg_LDFLAGS) $(LDFLAGS) -o $@
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__objects_6 = ctestg_alloc-btest.$(OBJEXT) \
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctestg_alloc-testlib.$(OBJEXT)
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am_ctestg_alloc_OBJECTS =  \
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	$(am__objects_6)
+@HAVE_COMPRESSED_DEBUG_ZLIB_GNU_TRUE@@NATIVE_TRUE@am__objects_6 = ctestg_alloc-btest.$(OBJEXT) \
+@HAVE_COMPRESSED_DEBUG_ZLIB_GNU_TRUE@@NATIVE_TRUE@	ctestg_alloc-testlib.$(OBJEXT)
+@HAVE_COMPRESSED_DEBUG_ZLIB_GNU_TRUE@@NATIVE_TRUE@am_ctestg_alloc_OBJECTS = $(am__objects_6)
 ctestg_alloc_OBJECTS = $(am_ctestg_alloc_OBJECTS)
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctestg_alloc_DEPENDENCIES = libbacktrace_alloc.la
+@HAVE_COMPRESSED_DEBUG_ZLIB_GNU_TRUE@@NATIVE_TRUE@ctestg_alloc_DEPENDENCIES = libbacktrace_alloc.la
 ctestg_alloc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(ctestg_alloc_CFLAGS) \
 	$(CFLAGS) $(ctestg_alloc_LDFLAGS) $(LDFLAGS) -o $@
-@HAVE_COMPRESSED_DEBUG_TRUE@@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@am_ctestzstd_OBJECTS = ctestzstd-btest.$(OBJEXT) \
-@HAVE_COMPRESSED_DEBUG_TRUE@@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@	ctestzstd-testlib.$(OBJEXT)
+@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@am_ctestzstd_OBJECTS = ctestzstd-btest.$(OBJEXT) \
+@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@	ctestzstd-testlib.$(OBJEXT)
 ctestzstd_OBJECTS = $(am_ctestzstd_OBJECTS)
-@HAVE_COMPRESSED_DEBUG_TRUE@@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@ctestzstd_DEPENDENCIES = libbacktrace.la
+@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@ctestzstd_DEPENDENCIES =  \
+@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@	libbacktrace.la
 ctestzstd_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(ctestzstd_CFLAGS) \
 	$(CFLAGS) $(ctestzstd_LDFLAGS) $(LDFLAGS) -o $@
+@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@am__objects_7 = ctestzstd_alloc-btest.$(OBJEXT) \
+@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@	ctestzstd_alloc-testlib.$(OBJEXT)
+@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@am_ctestzstd_alloc_OBJECTS = $(am__objects_7)
+ctestzstd_alloc_OBJECTS = $(am_ctestzstd_alloc_OBJECTS)
+@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@ctestzstd_alloc_DEPENDENCIES = libbacktrace_alloc.la
+ctestzstd_alloc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(ctestzstd_alloc_CFLAGS) $(CFLAGS) $(ctestzstd_alloc_LDFLAGS) \
+	$(LDFLAGS) -o $@
 @HAVE_DWARF5_TRUE@@NATIVE_TRUE@am_dwarf5_OBJECTS =  \
 @HAVE_DWARF5_TRUE@@NATIVE_TRUE@	dwarf5-btest.$(OBJEXT) \
 @HAVE_DWARF5_TRUE@@NATIVE_TRUE@	dwarf5-testlib.$(OBJEXT)
@@ -348,18 +354,18 @@ dwarf5_OBJECTS = $(am_dwarf5_OBJECTS)
 @HAVE_DWARF5_TRUE@@NATIVE_TRUE@dwarf5_DEPENDENCIES = libbacktrace.la
 dwarf5_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(dwarf5_CFLAGS) $(CFLAGS) \
-	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-@HAVE_DWARF5_TRUE@@NATIVE_TRUE@am__objects_7 =  \
+	$(dwarf5_LDFLAGS) $(LDFLAGS) -o $@
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@am__objects_8 =  \
 @HAVE_DWARF5_TRUE@@NATIVE_TRUE@	dwarf5_alloc-btest.$(OBJEXT) \
 @HAVE_DWARF5_TRUE@@NATIVE_TRUE@	dwarf5_alloc-testlib.$(OBJEXT)
 @HAVE_DWARF5_TRUE@@NATIVE_TRUE@am_dwarf5_alloc_OBJECTS =  \
-@HAVE_DWARF5_TRUE@@NATIVE_TRUE@	$(am__objects_7)
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@	$(am__objects_8)
 dwarf5_alloc_OBJECTS = $(am_dwarf5_alloc_OBJECTS)
 @HAVE_DWARF5_TRUE@@NATIVE_TRUE@dwarf5_alloc_DEPENDENCIES =  \
 @HAVE_DWARF5_TRUE@@NATIVE_TRUE@	libbacktrace_alloc.la
 dwarf5_alloc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(dwarf5_alloc_CFLAGS) \
-	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+	$(CFLAGS) $(dwarf5_alloc_LDFLAGS) $(LDFLAGS) -o $@
 @NATIVE_TRUE@am_edtest_OBJECTS = edtest-edtest.$(OBJEXT) \
 @NATIVE_TRUE@	edtest-edtest2_build.$(OBJEXT) \
 @NATIVE_TRUE@	edtest-testlib.$(OBJEXT)
@@ -367,36 +373,36 @@ edtest_OBJECTS = $(am_edtest_OBJECTS)
 @NATIVE_TRUE@edtest_DEPENDENCIES = libbacktrace.la
 edtest_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(edtest_CFLAGS) $(CFLAGS) \
-	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-@NATIVE_TRUE@am__objects_8 = edtest_alloc-edtest.$(OBJEXT) \
+	$(edtest_LDFLAGS) $(LDFLAGS) -o $@
+@NATIVE_TRUE@am__objects_9 = edtest_alloc-edtest.$(OBJEXT) \
 @NATIVE_TRUE@	edtest_alloc-edtest2_build.$(OBJEXT) \
 @NATIVE_TRUE@	edtest_alloc-testlib.$(OBJEXT)
-@NATIVE_TRUE@am_edtest_alloc_OBJECTS = $(am__objects_8)
+@NATIVE_TRUE@am_edtest_alloc_OBJECTS = $(am__objects_9)
 edtest_alloc_OBJECTS = $(am_edtest_alloc_OBJECTS)
 @NATIVE_TRUE@edtest_alloc_DEPENDENCIES = libbacktrace_alloc.la
 edtest_alloc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(edtest_alloc_CFLAGS) \
-	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+	$(CFLAGS) $(edtest_alloc_LDFLAGS) $(LDFLAGS) -o $@
 @NATIVE_TRUE@am_mtest_OBJECTS = mtest-mtest.$(OBJEXT) \
 @NATIVE_TRUE@	mtest-testlib.$(OBJEXT)
 mtest_OBJECTS = $(am_mtest_OBJECTS)
 @NATIVE_TRUE@mtest_DEPENDENCIES = libbacktrace.la
 mtest_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(mtest_CFLAGS) $(CFLAGS) \
-	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+	$(mtest_LDFLAGS) $(LDFLAGS) -o $@
 @NATIVE_TRUE@am_stest_OBJECTS = stest-stest.$(OBJEXT)
 stest_OBJECTS = $(am_stest_OBJECTS)
 @NATIVE_TRUE@stest_DEPENDENCIES = libbacktrace.la
 stest_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(stest_CFLAGS) $(CFLAGS) \
-	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-@NATIVE_TRUE@am__objects_9 = stest_alloc-stest.$(OBJEXT)
-@NATIVE_TRUE@am_stest_alloc_OBJECTS = $(am__objects_9)
+	$(stest_LDFLAGS) $(LDFLAGS) -o $@
+@NATIVE_TRUE@am__objects_10 = stest_alloc-stest.$(OBJEXT)
+@NATIVE_TRUE@am_stest_alloc_OBJECTS = $(am__objects_10)
 stest_alloc_OBJECTS = $(am_stest_alloc_OBJECTS)
 @NATIVE_TRUE@stest_alloc_DEPENDENCIES = libbacktrace_alloc.la
 stest_alloc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(stest_alloc_CFLAGS) \
-	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+	$(CFLAGS) $(stest_alloc_LDFLAGS) $(LDFLAGS) -o $@
 @NATIVE_TRUE@am_test_elf_32_OBJECTS =  \
 @NATIVE_TRUE@	test_elf_32-test_format.$(OBJEXT) \
 @NATIVE_TRUE@	test_elf_32-testlib.$(OBJEXT)
@@ -405,7 +411,7 @@ test_elf_32_OBJECTS = $(am_test_elf_32_OBJECTS)
 @NATIVE_TRUE@	elf_32.lo
 test_elf_32_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(test_elf_32_CFLAGS) \
-	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+	$(CFLAGS) $(test_elf_32_LDFLAGS) $(LDFLAGS) -o $@
 @NATIVE_TRUE@am_test_elf_64_OBJECTS =  \
 @NATIVE_TRUE@	test_elf_64-test_format.$(OBJEXT) \
 @NATIVE_TRUE@	test_elf_64-testlib.$(OBJEXT)
@@ -414,7 +420,7 @@ test_elf_64_OBJECTS = $(am_test_elf_64_OBJECTS)
 @NATIVE_TRUE@	elf_64.lo
 test_elf_64_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(test_elf_64_CFLAGS) \
-	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+	$(CFLAGS) $(test_elf_64_LDFLAGS) $(LDFLAGS) -o $@
 @NATIVE_TRUE@am_test_macho_OBJECTS = test_macho-test_format.$(OBJEXT) \
 @NATIVE_TRUE@	test_macho-testlib.$(OBJEXT)
 test_macho_OBJECTS = $(am_test_macho_OBJECTS)
@@ -422,7 +428,7 @@ test_macho_OBJECTS = $(am_test_macho_OBJECTS)
 @NATIVE_TRUE@	macho.lo
 test_macho_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(test_macho_CFLAGS) \
-	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+	$(CFLAGS) $(test_macho_LDFLAGS) $(LDFLAGS) -o $@
 @NATIVE_TRUE@am_test_pecoff_OBJECTS =  \
 @NATIVE_TRUE@	test_pecoff-test_format.$(OBJEXT) \
 @NATIVE_TRUE@	test_pecoff-testlib.$(OBJEXT)
@@ -431,7 +437,7 @@ test_pecoff_OBJECTS = $(am_test_pecoff_OBJECTS)
 @NATIVE_TRUE@	pecoff.lo
 test_pecoff_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(test_pecoff_CFLAGS) \
-	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+	$(CFLAGS) $(test_pecoff_LDFLAGS) $(LDFLAGS) -o $@
 @NATIVE_TRUE@am_test_unknown_OBJECTS =  \
 @NATIVE_TRUE@	test_unknown-test_format.$(OBJEXT) \
 @NATIVE_TRUE@	test_unknown-testlib.$(OBJEXT)
@@ -440,7 +446,7 @@ test_unknown_OBJECTS = $(am_test_unknown_OBJECTS)
 @NATIVE_TRUE@	unknown.lo
 test_unknown_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(test_unknown_CFLAGS) \
-	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+	$(CFLAGS) $(test_unknown_LDFLAGS) $(LDFLAGS) -o $@
 @NATIVE_TRUE@am_test_xcoff_32_OBJECTS =  \
 @NATIVE_TRUE@	test_xcoff_32-test_format.$(OBJEXT) \
 @NATIVE_TRUE@	test_xcoff_32-testlib.$(OBJEXT)
@@ -449,7 +455,7 @@ test_xcoff_32_OBJECTS = $(am_test_xcoff_32_OBJECTS)
 @NATIVE_TRUE@	xcoff_32.lo
 test_xcoff_32_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(test_xcoff_32_CFLAGS) \
-	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+	$(CFLAGS) $(test_xcoff_32_LDFLAGS) $(LDFLAGS) -o $@
 @NATIVE_TRUE@am_test_xcoff_64_OBJECTS =  \
 @NATIVE_TRUE@	test_xcoff_64-test_format.$(OBJEXT) \
 @NATIVE_TRUE@	test_xcoff_64-testlib.$(OBJEXT)
@@ -458,7 +464,7 @@ test_xcoff_64_OBJECTS = $(am_test_xcoff_64_OBJECTS)
 @NATIVE_TRUE@	xcoff_64.lo
 test_xcoff_64_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(test_xcoff_64_CFLAGS) \
-	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+	$(CFLAGS) $(test_xcoff_64_LDFLAGS) $(LDFLAGS) -o $@
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am_ttest_OBJECTS =  \
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@	ttest-ttest.$(OBJEXT) \
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@	ttest-testlib.$(OBJEXT)
@@ -466,34 +472,34 @@ ttest_OBJECTS = $(am_ttest_OBJECTS)
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_DEPENDENCIES = libbacktrace.la
 ttest_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(ttest_CFLAGS) $(CFLAGS) \
-	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__objects_10 =  \
+	$(ttest_LDFLAGS) $(LDFLAGS) -o $@
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__objects_11 =  \
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@	ttest_alloc-ttest.$(OBJEXT) \
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@	ttest_alloc-testlib.$(OBJEXT)
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am_ttest_alloc_OBJECTS =  \
-@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@	$(am__objects_10)
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@	$(am__objects_11)
 ttest_alloc_OBJECTS = $(am_ttest_alloc_OBJECTS)
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_alloc_DEPENDENCIES =  \
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@	libbacktrace_alloc.la
 ttest_alloc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(ttest_alloc_CFLAGS) \
-	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+	$(CFLAGS) $(ttest_alloc_LDFLAGS) $(LDFLAGS) -o $@
 @NATIVE_TRUE@am_unittest_OBJECTS = unittest-unittest.$(OBJEXT) \
 @NATIVE_TRUE@	unittest-testlib.$(OBJEXT)
 unittest_OBJECTS = $(am_unittest_OBJECTS)
 @NATIVE_TRUE@unittest_DEPENDENCIES = libbacktrace.la
 unittest_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(unittest_CFLAGS) \
-	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-@NATIVE_TRUE@am__objects_11 = unittest_alloc-unittest.$(OBJEXT) \
+	$(CFLAGS) $(unittest_LDFLAGS) $(LDFLAGS) -o $@
+@NATIVE_TRUE@am__objects_12 = unittest_alloc-unittest.$(OBJEXT) \
 @NATIVE_TRUE@	unittest_alloc-testlib.$(OBJEXT)
-@NATIVE_TRUE@am_unittest_alloc_OBJECTS = $(am__objects_11)
+@NATIVE_TRUE@am_unittest_alloc_OBJECTS = $(am__objects_12)
 unittest_alloc_OBJECTS = $(am_unittest_alloc_OBJECTS)
 @NATIVE_TRUE@unittest_alloc_DEPENDENCIES = libbacktrace_alloc.la
 unittest_alloc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(unittest_alloc_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o \
-	$@
+	$(unittest_alloc_CFLAGS) $(CFLAGS) $(unittest_alloc_LDFLAGS) \
+	$(LDFLAGS) -o $@
 @HAVE_ELF_TRUE@am_xztest_OBJECTS = xztest-xztest.$(OBJEXT) \
 @HAVE_ELF_TRUE@	xztest-testlib.$(OBJEXT)
 xztest_OBJECTS = $(am_xztest_OBJECTS)
@@ -501,16 +507,16 @@ xztest_OBJECTS = $(am_xztest_OBJECTS)
 @HAVE_ELF_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 xztest_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(xztest_CFLAGS) $(CFLAGS) \
-	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-@HAVE_ELF_TRUE@am__objects_12 = xztest_alloc-xztest.$(OBJEXT) \
+	$(xztest_LDFLAGS) $(LDFLAGS) -o $@
+@HAVE_ELF_TRUE@am__objects_13 = xztest_alloc-xztest.$(OBJEXT) \
 @HAVE_ELF_TRUE@	xztest_alloc-testlib.$(OBJEXT)
-@HAVE_ELF_TRUE@am_xztest_alloc_OBJECTS = $(am__objects_12)
+@HAVE_ELF_TRUE@am_xztest_alloc_OBJECTS = $(am__objects_13)
 xztest_alloc_OBJECTS = $(am_xztest_alloc_OBJECTS)
 @HAVE_ELF_TRUE@xztest_alloc_DEPENDENCIES = libbacktrace_alloc.la \
 @HAVE_ELF_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 xztest_alloc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(xztest_alloc_CFLAGS) \
-	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+	$(CFLAGS) $(xztest_alloc_LDFLAGS) $(LDFLAGS) -o $@
 @HAVE_ELF_TRUE@@NATIVE_TRUE@am_zstdtest_OBJECTS =  \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	zstdtest-zstdtest.$(OBJEXT) \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	zstdtest-testlib.$(OBJEXT)
@@ -520,12 +526,12 @@ zstdtest_OBJECTS = $(am_zstdtest_OBJECTS)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__DEPENDENCIES_1)
 zstdtest_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(zstdtest_CFLAGS) \
-	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-@HAVE_ELF_TRUE@@NATIVE_TRUE@am__objects_13 =  \
+	$(CFLAGS) $(zstdtest_LDFLAGS) $(LDFLAGS) -o $@
+@HAVE_ELF_TRUE@@NATIVE_TRUE@am__objects_14 =  \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	zstdtest_alloc-zstdtest.$(OBJEXT) \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	zstdtest_alloc-testlib.$(OBJEXT)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@am_zstdtest_alloc_OBJECTS =  \
-@HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__objects_13)
+@HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__objects_14)
 zstdtest_alloc_OBJECTS = $(am_zstdtest_alloc_OBJECTS)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@zstdtest_alloc_DEPENDENCIES =  \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	libbacktrace_alloc.la \
@@ -533,8 +539,8 @@ zstdtest_alloc_OBJECTS = $(am_zstdtest_alloc_OBJECTS)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__DEPENDENCIES_1)
 zstdtest_alloc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(zstdtest_alloc_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o \
-	$@
+	$(zstdtest_alloc_CFLAGS) $(CFLAGS) $(zstdtest_alloc_LDFLAGS) \
+	$(LDFLAGS) -o $@
 @HAVE_ELF_TRUE@@NATIVE_TRUE@am_ztest_OBJECTS = ztest-ztest.$(OBJEXT) \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	ztest-testlib.$(OBJEXT)
 ztest_OBJECTS = $(am_ztest_OBJECTS)
@@ -543,12 +549,12 @@ ztest_OBJECTS = $(am_ztest_OBJECTS)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__DEPENDENCIES_1)
 ztest_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(ztest_CFLAGS) $(CFLAGS) \
-	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-@HAVE_ELF_TRUE@@NATIVE_TRUE@am__objects_14 =  \
+	$(ztest_LDFLAGS) $(LDFLAGS) -o $@
+@HAVE_ELF_TRUE@@NATIVE_TRUE@am__objects_15 =  \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	ztest_alloc-ztest.$(OBJEXT) \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	ztest_alloc-testlib.$(OBJEXT)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@am_ztest_alloc_OBJECTS =  \
-@HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__objects_14)
+@HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__objects_15)
 ztest_alloc_OBJECTS = $(am_ztest_alloc_OBJECTS)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@ztest_alloc_DEPENDENCIES =  \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	libbacktrace_alloc.la \
@@ -556,7 +562,7 @@ ztest_alloc_OBJECTS = $(am_ztest_alloc_OBJECTS)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__DEPENDENCIES_1)
 ztest_alloc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(ztest_alloc_CFLAGS) \
-	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+	$(CFLAGS) $(ztest_alloc_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -598,7 +604,8 @@ SOURCES = $(libbacktrace_la_SOURCES) $(EXTRA_libbacktrace_la_SOURCES) \
 	$(b2test_SOURCES) $(b3test_SOURCES) $(btest_SOURCES) \
 	$(btest_alloc_SOURCES) $(btest_lto_SOURCES) $(ctesta_SOURCES) \
 	$(ctesta_alloc_SOURCES) $(ctestg_SOURCES) \
-	$(ctestg_alloc_SOURCES) $(ctestzstd_SOURCES) $(dwarf5_SOURCES) \
+	$(ctestg_alloc_SOURCES) $(ctestzstd_SOURCES) \
+	$(ctestzstd_alloc_SOURCES) $(dwarf5_SOURCES) \
 	$(dwarf5_alloc_SOURCES) $(edtest_SOURCES) \
 	$(edtest_alloc_SOURCES) $(mtest_SOURCES) $(stest_SOURCES) \
 	$(stest_alloc_SOURCES) $(test_elf_32_SOURCES) \
@@ -1042,6 +1049,10 @@ check_DATA = $(am__append_5) $(am__append_21) $(am__append_27) \
 
 # Flags to use when compiling test programs.
 libbacktrace_TEST_CFLAGS = $(EXTRA_FLAGS) $(WARN_FLAGS) -g
+
+# Flags to use when linking test programs.
+# This avoids generating a shell script when configured with --enable-shared.
+libbacktrace_testing_ldflags = -no-install
 @NATIVE_TRUE@check_LTLIBRARIES = libbacktrace_alloc.la \
 @NATIVE_TRUE@	libbacktrace_noformat.la $(am__append_1) \
 @NATIVE_TRUE@	libbacktrace_instrumented_alloc.la
@@ -1058,30 +1069,39 @@ libbacktrace_TEST_CFLAGS = $(EXTRA_FLAGS) $(WARN_FLAGS) -g
 
 @NATIVE_TRUE@test_elf_32_SOURCES = test_format.c testlib.c
 @NATIVE_TRUE@test_elf_32_CFLAGS = $(libbacktrace_TEST_CFLAGS)
+@NATIVE_TRUE@test_elf_32_LDFLAGS = $(libbacktrace_testing_ldflags)
 @NATIVE_TRUE@test_elf_32_LDADD = libbacktrace_noformat.la elf_32.lo
 @NATIVE_TRUE@test_elf_64_SOURCES = test_format.c testlib.c
 @NATIVE_TRUE@test_elf_64_CFLAGS = $(libbacktrace_TEST_CFLAGS)
+@NATIVE_TRUE@test_elf_64_LDFLAGS = $(libbacktrace_testing_ldflags)
 @NATIVE_TRUE@test_elf_64_LDADD = libbacktrace_noformat.la elf_64.lo
 @NATIVE_TRUE@test_macho_SOURCES = test_format.c testlib.c
 @NATIVE_TRUE@test_macho_CFLAGS = $(libbacktrace_TEST_CFLAGS)
+@NATIVE_TRUE@test_macho_LDFLAGS = $(libbacktrace_testing_ldflags)
 @NATIVE_TRUE@test_macho_LDADD = libbacktrace_noformat.la macho.lo
 @NATIVE_TRUE@test_xcoff_32_SOURCES = test_format.c testlib.c
 @NATIVE_TRUE@test_xcoff_32_CFLAGS = $(libbacktrace_TEST_CFLAGS)
+@NATIVE_TRUE@test_xcoff_32_LDFLAGS = $(libbacktrace_testing_ldflags)
 @NATIVE_TRUE@test_xcoff_32_LDADD = libbacktrace_noformat.la xcoff_32.lo
 @NATIVE_TRUE@test_xcoff_64_SOURCES = test_format.c testlib.c
 @NATIVE_TRUE@test_xcoff_64_CFLAGS = $(libbacktrace_TEST_CFLAGS)
+@NATIVE_TRUE@test_xcoff_64_LDFLAGS = $(libbacktrace_testing_ldflags)
 @NATIVE_TRUE@test_xcoff_64_LDADD = libbacktrace_noformat.la xcoff_64.lo
 @NATIVE_TRUE@test_pecoff_SOURCES = test_format.c testlib.c
 @NATIVE_TRUE@test_pecoff_CFLAGS = $(libbacktrace_TEST_CFLAGS)
+@NATIVE_TRUE@test_pecoff_LDFLAGS = $(libbacktrace_testing_ldflags)
 @NATIVE_TRUE@test_pecoff_LDADD = libbacktrace_noformat.la pecoff.lo
 @NATIVE_TRUE@test_unknown_SOURCES = test_format.c testlib.c
 @NATIVE_TRUE@test_unknown_CFLAGS = $(libbacktrace_TEST_CFLAGS)
+@NATIVE_TRUE@test_unknown_LDFLAGS = $(libbacktrace_testing_ldflags)
 @NATIVE_TRUE@test_unknown_LDADD = libbacktrace_noformat.la unknown.lo
 @NATIVE_TRUE@unittest_SOURCES = unittest.c testlib.c
 @NATIVE_TRUE@unittest_CFLAGS = $(libbacktrace_TEST_CFLAGS)
+@NATIVE_TRUE@unittest_LDFLAGS = $(libbacktrace_testing_ldflags)
 @NATIVE_TRUE@unittest_LDADD = libbacktrace.la
 @NATIVE_TRUE@unittest_alloc_SOURCES = $(unittest_SOURCES)
 @NATIVE_TRUE@unittest_alloc_CFLAGS = $(libbacktrace_TEST_CFLAGS)
+@NATIVE_TRUE@unittest_alloc_LDFLAGS = $(libbacktrace_testing_ldflags)
 @NATIVE_TRUE@unittest_alloc_LDADD = libbacktrace_alloc.la
 @NATIVE_TRUE@libbacktrace_instrumented_alloc_la_SOURCES = $(libbacktrace_la_SOURCES)
 @NATIVE_TRUE@libbacktrace_instrumented_alloc_la_LIBADD = $(BACKTRACE_FILE) $(FORMAT_FILE) \
@@ -1095,29 +1115,35 @@ libbacktrace_TEST_CFLAGS = $(EXTRA_FLAGS) $(WARN_FLAGS) -g
 @NATIVE_TRUE@allocfail_LDADD = libbacktrace_instrumented_alloc.la
 @HAVE_BUILDID_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@b2test_SOURCES = $(btest_SOURCES)
 @HAVE_BUILDID_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@b2test_CFLAGS = $(libbacktrace_TEST_CFLAGS)
-@HAVE_BUILDID_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@b2test_LDFLAGS = -Wl,--build-id
+@HAVE_BUILDID_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@b2test_LDFLAGS = -Wl,--build-id $(libbacktrace_testing_ldflags)
 @HAVE_BUILDID_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@b2test_LDADD = libbacktrace_elf_for_test.la
 @HAVE_BUILDID_TRUE@@HAVE_DWZ_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@b3test_SOURCES = $(btest_SOURCES)
 @HAVE_BUILDID_TRUE@@HAVE_DWZ_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@b3test_CFLAGS = $(libbacktrace_TEST_CFLAGS)
-@HAVE_BUILDID_TRUE@@HAVE_DWZ_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@b3test_LDFLAGS = -Wl,--build-id
+@HAVE_BUILDID_TRUE@@HAVE_DWZ_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@b3test_LDFLAGS = -Wl,--build-id $(libbacktrace_testing_ldflags)
 @HAVE_BUILDID_TRUE@@HAVE_DWZ_TRUE@@HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@b3test_LDADD = libbacktrace_elf_for_test.la
 @NATIVE_TRUE@btest_SOURCES = btest.c testlib.c
 @NATIVE_TRUE@btest_CFLAGS = $(libbacktrace_TEST_CFLAGS) -O
+@NATIVE_TRUE@btest_LDFLAGS = $(libbacktrace_testing_ldflags)
 @NATIVE_TRUE@btest_LDADD = libbacktrace.la
 @HAVE_ELF_TRUE@@NATIVE_TRUE@btest_lto_SOURCES = btest.c testlib.c
 @HAVE_ELF_TRUE@@NATIVE_TRUE@btest_lto_CFLAGS = $(libbacktrace_TEST_CFLAGS) -O -flto
+@HAVE_ELF_TRUE@@NATIVE_TRUE@btest_lto_LDFLAGS = $(libbacktrace_testing_ldflags)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@btest_lto_LDADD = libbacktrace.la
 @NATIVE_TRUE@btest_alloc_SOURCES = $(btest_SOURCES)
 @NATIVE_TRUE@btest_alloc_CFLAGS = $(libbacktrace_TEST_CFLAGS)
+@NATIVE_TRUE@btest_alloc_LDFLAGS = $(libbacktrace_testing_ldflags)
 @NATIVE_TRUE@btest_alloc_LDADD = libbacktrace_alloc.la
 @NATIVE_TRUE@stest_SOURCES = stest.c
 @NATIVE_TRUE@stest_CFLAGS = $(libbacktrace_TEST_CFLAGS)
+@NATIVE_TRUE@stest_LDFLAGS = $(libbacktrace_testing_ldflags)
 @NATIVE_TRUE@stest_LDADD = libbacktrace.la
 @NATIVE_TRUE@stest_alloc_SOURCES = $(stest_SOURCES)
 @NATIVE_TRUE@stest_alloc_CFLAGS = $(libbacktrace_TEST_CFLAGS)
+@NATIVE_TRUE@stest_alloc_LDFLAGS = $(libbacktrace_testing_ldflags)
 @NATIVE_TRUE@stest_alloc_LDADD = libbacktrace_alloc.la
 @HAVE_ELF_TRUE@@NATIVE_TRUE@ztest_SOURCES = ztest.c testlib.c
 @HAVE_ELF_TRUE@@NATIVE_TRUE@ztest_CFLAGS = $(libbacktrace_TEST_CFLAGS) -DSRCDIR=\"$(srcdir)\"
+@HAVE_ELF_TRUE@@NATIVE_TRUE@ztest_LDFLAGS = $(libbacktrace_testing_ldflags)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@ztest_LDADD = libbacktrace.la \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__append_14) \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	$(CLOCK_GETTIME_LINK)
@@ -1126,8 +1152,10 @@ libbacktrace_TEST_CFLAGS = $(EXTRA_FLAGS) $(WARN_FLAGS) -g
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	$(CLOCK_GETTIME_LINK)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@ztest_alloc_SOURCES = $(ztest_SOURCES)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@ztest_alloc_CFLAGS = $(ztest_CFLAGS)
+@HAVE_ELF_TRUE@@NATIVE_TRUE@ztest_alloc_LDFLAGS = $(libbacktrace_testing_ldflags)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@zstdtest_SOURCES = zstdtest.c testlib.c
 @HAVE_ELF_TRUE@@NATIVE_TRUE@zstdtest_CFLAGS = $(libbacktrace_TEST_CFLAGS) -DSRCDIR=\"$(srcdir)\"
+@HAVE_ELF_TRUE@@NATIVE_TRUE@zstdtest_LDFLAGS = $(libbacktrace_testing_ldflags)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@zstdtest_LDADD = libbacktrace.la \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__append_17) \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	$(CLOCK_GETTIME_LINK)
@@ -1137,53 +1165,67 @@ libbacktrace_TEST_CFLAGS = $(EXTRA_FLAGS) $(WARN_FLAGS) -g
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	$(CLOCK_GETTIME_LINK)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@zstdtest_alloc_SOURCES = $(zstdtest_SOURCES)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@zstdtest_alloc_CFLAGS = $(zstdtest_CFLAGS)
+@HAVE_ELF_TRUE@@NATIVE_TRUE@zstdtest_alloc_LDFLAGS = $(libbacktrace_testing_ldflags)
 @NATIVE_TRUE@edtest_SOURCES = edtest.c edtest2_build.c testlib.c
 @NATIVE_TRUE@edtest_CFLAGS = $(libbacktrace_TEST_CFLAGS)
+@NATIVE_TRUE@edtest_LDFLAGS = $(libbacktrace_testing_ldflags)
 @NATIVE_TRUE@edtest_LDADD = libbacktrace.la
 @NATIVE_TRUE@edtest_alloc_SOURCES = $(edtest_SOURCES)
 @NATIVE_TRUE@edtest_alloc_CFLAGS = $(libbacktrace_TEST_CFLAGS)
+@NATIVE_TRUE@edtest_alloc_LDFLAGS = $(libbacktrace_testing_ldflags)
 @NATIVE_TRUE@edtest_alloc_LDADD = libbacktrace_alloc.la
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_SOURCES = ttest.c testlib.c
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_CFLAGS = $(libbacktrace_TEST_CFLAGS) -pthread
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_LDFLAGS = $(libbacktrace_testing_ldflags)
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_LDADD = libbacktrace.la
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_alloc_SOURCES = $(ttest_SOURCES)
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_alloc_CFLAGS = $(ttest_CFLAGS)
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_alloc_LDFLAGS = $(libbacktrace_testing_ldflags)
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_alloc_LDADD = libbacktrace_alloc.la
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctestg_SOURCES = btest.c testlib.c
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctestg_CFLAGS = $(libbacktrace_TEST_CFLAGS)
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctestg_LDFLAGS = -Wl,--compress-debug-sections=zlib-gnu
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctestg_LDADD = libbacktrace.la
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_SOURCES = btest.c testlib.c
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_CFLAGS = $(libbacktrace_TEST_CFLAGS)
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_LDFLAGS = -Wl,--compress-debug-sections=zlib-gabi
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_LDADD = libbacktrace.la
-@HAVE_COMPRESSED_DEBUG_TRUE@@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@ctestzstd_SOURCES = btest.c testlib.c
-@HAVE_COMPRESSED_DEBUG_TRUE@@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@ctestzstd_CFLAGS = $(libbacktrace_TEST_CFLAGS)
-@HAVE_COMPRESSED_DEBUG_TRUE@@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@ctestzstd_LDFLAGS = -Wl,--compress-debug-sections=zstd
-@HAVE_COMPRESSED_DEBUG_TRUE@@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@ctestzstd_LDADD = libbacktrace.la
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctestg_alloc_SOURCES = $(ctestg_SOURCES)
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctestg_alloc_CFLAGS = $(ctestg_CFLAGS)
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctestg_alloc_LDFLAGS = $(ctestg_LDFLAGS)
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctestg_alloc_LDADD = libbacktrace_alloc.la
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_alloc_SOURCES = $(ctesta_SOURCES)
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_alloc_CFLAGS = $(ctesta_CFLAGS)
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_alloc_LDFLAGS = $(ctesta_LDFLAGS)
-@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_alloc_LDADD = libbacktrace_alloc.la
+@HAVE_COMPRESSED_DEBUG_ZLIB_GNU_TRUE@@NATIVE_TRUE@ctestg_SOURCES = btest.c testlib.c
+@HAVE_COMPRESSED_DEBUG_ZLIB_GNU_TRUE@@NATIVE_TRUE@ctestg_CFLAGS = $(libbacktrace_TEST_CFLAGS)
+@HAVE_COMPRESSED_DEBUG_ZLIB_GNU_TRUE@@NATIVE_TRUE@ctestg_LDFLAGS = -Wl,--compress-debug-sections=zlib-gnu $(libbacktrace_testing_ldflags)
+@HAVE_COMPRESSED_DEBUG_ZLIB_GNU_TRUE@@NATIVE_TRUE@ctestg_LDADD = libbacktrace.la
+@HAVE_COMPRESSED_DEBUG_ZLIB_GNU_TRUE@@NATIVE_TRUE@ctestg_alloc_SOURCES = $(ctestg_SOURCES)
+@HAVE_COMPRESSED_DEBUG_ZLIB_GNU_TRUE@@NATIVE_TRUE@ctestg_alloc_CFLAGS = $(ctestg_CFLAGS)
+@HAVE_COMPRESSED_DEBUG_ZLIB_GNU_TRUE@@NATIVE_TRUE@ctestg_alloc_LDFLAGS = $(ctestg_LDFLAGS) $(libbacktrace_testing_ldflags)
+@HAVE_COMPRESSED_DEBUG_ZLIB_GNU_TRUE@@NATIVE_TRUE@ctestg_alloc_LDADD = libbacktrace_alloc.la
+@HAVE_COMPRESSED_DEBUG_ZLIB_GABI_TRUE@@NATIVE_TRUE@ctesta_SOURCES = btest.c testlib.c
+@HAVE_COMPRESSED_DEBUG_ZLIB_GABI_TRUE@@NATIVE_TRUE@ctesta_CFLAGS = $(libbacktrace_TEST_CFLAGS)
+@HAVE_COMPRESSED_DEBUG_ZLIB_GABI_TRUE@@NATIVE_TRUE@ctesta_LDFLAGS = -Wl,--compress-debug-sections=zlib-gabi $(libbacktrace_testing_ldflags)
+@HAVE_COMPRESSED_DEBUG_ZLIB_GABI_TRUE@@NATIVE_TRUE@ctesta_LDADD = libbacktrace.la
+@HAVE_COMPRESSED_DEBUG_ZLIB_GABI_TRUE@@NATIVE_TRUE@ctesta_alloc_SOURCES = $(ctesta_SOURCES)
+@HAVE_COMPRESSED_DEBUG_ZLIB_GABI_TRUE@@NATIVE_TRUE@ctesta_alloc_CFLAGS = $(ctesta_CFLAGS)
+@HAVE_COMPRESSED_DEBUG_ZLIB_GABI_TRUE@@NATIVE_TRUE@ctesta_alloc_LDFLAGS = $(ctesta_LDFLAGS) $(libbacktrace_testing_ldflags)
+@HAVE_COMPRESSED_DEBUG_ZLIB_GABI_TRUE@@NATIVE_TRUE@ctesta_alloc_LDADD = libbacktrace_alloc.la
+@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@ctestzstd_SOURCES = btest.c testlib.c
+@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@ctestzstd_CFLAGS = $(libbacktrace_TEST_CFLAGS)
+@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@ctestzstd_LDFLAGS = -Wl,--compress-debug-sections=zstd $(libbacktrace_testing_ldflags)
+@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@ctestzstd_LDADD = libbacktrace.la
+@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@ctestzstd_alloc_SOURCES = $(ctestzstd_SOURCES)
+@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@ctestzstd_alloc_CFLAGS = $(ctestzstd_CFLAGS)
+@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@ctestzstd_alloc_LDFLAGS = $(ctestzstd_LDFLAGS) $(libbacktrace_testing_ldflags)
+@HAVE_COMPRESSED_DEBUG_ZSTD_TRUE@@NATIVE_TRUE@ctestzstd_alloc_LDADD = libbacktrace_alloc.la
 @HAVE_DWARF5_TRUE@@NATIVE_TRUE@dwarf5_SOURCES = btest.c testlib.c
 @HAVE_DWARF5_TRUE@@NATIVE_TRUE@dwarf5_CFLAGS = $(libbacktrace_TEST_CFLAGS) -gdwarf-5
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@dwarf5_LDFLAGS = $(libbacktrace_testing_ldflags)
 @HAVE_DWARF5_TRUE@@NATIVE_TRUE@dwarf5_LDADD = libbacktrace.la
 @HAVE_DWARF5_TRUE@@NATIVE_TRUE@dwarf5_alloc_SOURCES = $(dwarf5_SOURCES)
 @HAVE_DWARF5_TRUE@@NATIVE_TRUE@dwarf5_alloc_CFLAGS = $(dwarf5_CFLAGS)
+@HAVE_DWARF5_TRUE@@NATIVE_TRUE@dwarf5_alloc_LDFLAGS = $(libbacktrace_testing_ldflags)
 @HAVE_DWARF5_TRUE@@NATIVE_TRUE@dwarf5_alloc_LDADD = libbacktrace_alloc.la
 @NATIVE_TRUE@mtest_SOURCES = mtest.c testlib.c
 @NATIVE_TRUE@mtest_CFLAGS = $(libbacktrace_TEST_CFLAGS) -O
+@NATIVE_TRUE@mtest_LDFLAGS = $(libbacktrace_testing_ldflags)
 @NATIVE_TRUE@mtest_LDADD = libbacktrace.la
 @HAVE_ELF_TRUE@xztest_SOURCES = xztest.c testlib.c
 @HAVE_ELF_TRUE@xztest_CFLAGS = $(libbacktrace_TEST_CFLAGS) -DSRCDIR=\"$(srcdir)\"
+@HAVE_ELF_TRUE@xztest_LDFLAGS = $(libbacktrace_testing_ldflags)
 @HAVE_ELF_TRUE@xztest_LDADD = libbacktrace.la $(am__append_31) \
 @HAVE_ELF_TRUE@	$(CLOCK_GETTIME_LINK)
 @HAVE_ELF_TRUE@xztest_alloc_SOURCES = $(xztest_SOURCES)
 @HAVE_ELF_TRUE@xztest_alloc_CFLAGS = $(xztest_CFLAGS)
+@HAVE_ELF_TRUE@xztest_alloc_LDFLAGS = $(libbacktrace_testing_ldflags)
 @HAVE_ELF_TRUE@xztest_alloc_LDADD = libbacktrace_alloc.la \
 @HAVE_ELF_TRUE@	$(am__append_32) $(CLOCK_GETTIME_LINK)
 CLEANFILES = \
@@ -1358,6 +1400,10 @@ ctestg_alloc$(EXEEXT): $(ctestg_alloc_OBJECTS) $(ctestg_alloc_DEPENDENCIES) $(EX
 ctestzstd$(EXEEXT): $(ctestzstd_OBJECTS) $(ctestzstd_DEPENDENCIES) $(EXTRA_ctestzstd_DEPENDENCIES) 
 	@rm -f ctestzstd$(EXEEXT)
 	$(AM_V_CCLD)$(ctestzstd_LINK) $(ctestzstd_OBJECTS) $(ctestzstd_LDADD) $(LIBS)
+
+ctestzstd_alloc$(EXEEXT): $(ctestzstd_alloc_OBJECTS) $(ctestzstd_alloc_DEPENDENCIES) $(EXTRA_ctestzstd_alloc_DEPENDENCIES) 
+	@rm -f ctestzstd_alloc$(EXEEXT)
+	$(AM_V_CCLD)$(ctestzstd_alloc_LINK) $(ctestzstd_alloc_OBJECTS) $(ctestzstd_alloc_LDADD) $(LIBS)
 
 dwarf5$(EXEEXT): $(dwarf5_OBJECTS) $(dwarf5_DEPENDENCIES) $(EXTRA_dwarf5_DEPENDENCIES) 
 	@rm -f dwarf5$(EXEEXT)
@@ -1601,6 +1647,18 @@ ctestzstd-testlib.o: testlib.c
 
 ctestzstd-testlib.obj: testlib.c
 	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctestzstd_CFLAGS) $(CFLAGS) -c -o ctestzstd-testlib.obj `if test -f 'testlib.c'; then $(CYGPATH_W) 'testlib.c'; else $(CYGPATH_W) '$(srcdir)/testlib.c'; fi`
+
+ctestzstd_alloc-btest.o: btest.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctestzstd_alloc_CFLAGS) $(CFLAGS) -c -o ctestzstd_alloc-btest.o `test -f 'btest.c' || echo '$(srcdir)/'`btest.c
+
+ctestzstd_alloc-btest.obj: btest.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctestzstd_alloc_CFLAGS) $(CFLAGS) -c -o ctestzstd_alloc-btest.obj `if test -f 'btest.c'; then $(CYGPATH_W) 'btest.c'; else $(CYGPATH_W) '$(srcdir)/btest.c'; fi`
+
+ctestzstd_alloc-testlib.o: testlib.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctestzstd_alloc_CFLAGS) $(CFLAGS) -c -o ctestzstd_alloc-testlib.o `test -f 'testlib.c' || echo '$(srcdir)/'`testlib.c
+
+ctestzstd_alloc-testlib.obj: testlib.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctestzstd_alloc_CFLAGS) $(CFLAGS) -c -o ctestzstd_alloc-testlib.obj `if test -f 'testlib.c'; then $(CYGPATH_W) 'testlib.c'; else $(CYGPATH_W) '$(srcdir)/testlib.c'; fi`
 
 dwarf5-btest.o: btest.c
 	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(dwarf5_CFLAGS) $(CFLAGS) -c -o dwarf5-btest.o `test -f 'btest.c' || echo '$(srcdir)/'`btest.c
@@ -2113,9 +2171,23 @@ b2test_buildid.log: b2test_buildid
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+b2test_buildidfull.log: b2test_buildidfull
+	@p='b2test_buildidfull'; \
+	b='b2test_buildidfull'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 b3test_dwz_buildid.log: b3test_dwz_buildid
 	@p='b3test_dwz_buildid'; \
 	b='b3test_dwz_buildid'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+b3test_dwz_buildidfull.log: b3test_dwz_buildidfull
+	@p='b3test_dwz_buildidfull'; \
+	b='b3test_dwz_buildidfull'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -2137,6 +2209,13 @@ btest_dwz_gnudebuglink.log: btest_dwz_gnudebuglink
 btest_gnudebuglink.log: btest_gnudebuglink
 	@p='btest_gnudebuglink'; \
 	b='btest_gnudebuglink'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+btest_gnudebuglinkfull.log: btest_gnudebuglinkfull
+	@p='btest_gnudebuglinkfull'; \
+	b='btest_gnudebuglinkfull'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -2309,9 +2388,23 @@ ctestg.log: ctestg$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+ctestg_alloc.log: ctestg_alloc$(EXEEXT)
+	@p='ctestg_alloc$(EXEEXT)'; \
+	b='ctestg_alloc'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 ctesta.log: ctesta$(EXEEXT)
 	@p='ctesta$(EXEEXT)'; \
 	b='ctesta'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+ctesta_alloc.log: ctesta_alloc$(EXEEXT)
+	@p='ctesta_alloc$(EXEEXT)'; \
+	b='ctesta_alloc'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -2323,16 +2416,9 @@ ctestzstd.log: ctestzstd$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-ctestg_alloc.log: ctestg_alloc$(EXEEXT)
-	@p='ctestg_alloc$(EXEEXT)'; \
-	b='ctestg_alloc'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-ctesta_alloc.log: ctesta_alloc$(EXEEXT)
-	@p='ctesta_alloc$(EXEEXT)'; \
-	b='ctesta_alloc'; \
+ctestzstd_alloc.log: ctestzstd_alloc$(EXEEXT)
+	@p='ctestzstd_alloc$(EXEEXT)'; \
+	b='ctestzstd_alloc'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -2578,11 +2664,21 @@ uninstall-am:
 @HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@	$(OBJCOPY) --only-keep-debug $< $@.debug
 @HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@	$(OBJCOPY) --strip-debug --add-gnu-debuglink=$@.debug $< $@
 
+@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@%_gnudebuglinkfull: %
+@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@	$(OBJCOPY) --only-keep-debug $< $@.debug
+@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@	$(OBJCOPY) --strip-all --add-gnu-debuglink=$@.debug $< $@
+
 @NATIVE_TRUE@%_buildid: %
 @NATIVE_TRUE@	./install-debuginfo-for-buildid.sh \
 @NATIVE_TRUE@	  "$(TEST_BUILD_ID_DIR)" \
 @NATIVE_TRUE@	  $<
 @NATIVE_TRUE@	$(OBJCOPY) --strip-debug $< $@
+
+@NATIVE_TRUE@%_buildidfull: %
+@NATIVE_TRUE@	./install-debuginfo-for-buildid.sh \
+@NATIVE_TRUE@	  "$(TEST_BUILD_ID_DIR)" \
+@NATIVE_TRUE@	  $<
+@NATIVE_TRUE@	$(OBJCOPY) --strip-all $< $@
 
 @HAVE_MINIDEBUG_TRUE@@NATIVE_TRUE@%_minidebug: %
 @HAVE_MINIDEBUG_TRUE@@NATIVE_TRUE@	$(NM) -D $< -P --defined-only | $(AWK) '{ print $$1 }' | sort > $<.dsyms

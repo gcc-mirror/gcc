@@ -1,5 +1,6 @@
 ! { dg-options "-cpp -std=gnu" }
 ! { dg-do run { xfail i?86-*-freebsd* } }
+! { dg-skip-if "No long double libc functions" { hppa*-*-hpux* } }
 !
 ! Test extra math intrinsics formerly offered by -fdec-math,
 ! now included with -std=gnu or -std=legacy.

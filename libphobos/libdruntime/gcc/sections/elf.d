@@ -1,5 +1,5 @@
 // ELF-specific support for sections with shared libraries.
-// Copyright (C) 2019-2023 Free Software Foundation, Inc.
+// Copyright (C) 2019-2024 Free Software Foundation, Inc.
 
 // GCC is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -1060,6 +1060,8 @@ else version (MIPS32)
 else version (MIPS64)
     enum TLS_DTV_OFFSET = 0x8000;
 else version (IBMZ_Any)
+    enum TLS_DTV_OFFSET = 0x0;
+else version (LoongArch64)
     enum TLS_DTV_OFFSET = 0x0;
 else
     static assert( false, "Platform not supported." );

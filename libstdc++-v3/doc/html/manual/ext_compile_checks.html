@@ -24,8 +24,7 @@
    </p><p>The new version imposes a much smaller space overhead on the generated
       object file.  The checks are also cleaner and easier to read and
       understand.
-   </p><p>They are off by default for all versions of GCC from 3.0 to 3.4 (the
-      latest release at the time of writing).
+   </p><p>They are off by default for all GCC 3.0 and all later versions.
       They can be enabled at configure time with
       <a class="link" href="configure.html" title="Configure"><code class="literal">--enable-concept-checks</code></a>.
       You can enable them on a per-translation-unit basis with
@@ -34,8 +33,15 @@
       (or with <code class="code">#define _GLIBCPP_CONCEPT_CHECKS</code> for versions
       3.1, 3.2 and 3.3).
    </p><p>Please note that the concept checks only validate the requirements
-   of the old C++03 standard. C++11 was expected to have first-class
-   support for template parameter constraints based on concepts in the core
-   language. This would have obviated the need for the library-simulated concept
-   checking described above, but was not part of C++11.
+   of the old C++03 standard and reject some valid code that meets the relaxed
+   requirements of C++11 and later standards.
+   C++11 was expected to have first-class support for template parameter
+   constraints based on concepts in the core language.
+   This would have obviated the need for the library-simulated concept checking
+   described above, but was not part of C++11.
+   C++20 adds a different model of concepts, which is now used to constrain
+   some new parts of the C++20 library, e.g. the
+   <code class="filename">&lt;ranges&gt;</code> header and the new overloads in the
+   <code class="filename">&lt;algorithm&gt;</code> header for working with ranges.
+   The old library-simulated concept checks might be removed at a future date.
    </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ext_preface.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="extensions.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="debug_mode.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 17. Debug Mode</td></tr></table></div></body></html>

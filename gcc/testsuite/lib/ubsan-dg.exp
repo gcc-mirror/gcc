@@ -1,4 +1,4 @@
-# Copyright (C) 2013-2023 Free Software Foundation, Inc.
+# Copyright (C) 2013-2024 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ proc check_effective_target_fsanitize_undefined {} {
 # (originally from g++.exp)
 #
 
-proc ubsan_link_flags { paths } {
+proc ubsan_link_flags { paths needs_cxx } {
     global srcdir
     global ld_library_path
     global shlib_ext
@@ -43,15 +43,24 @@ proc ubsan_link_flags { paths } {
     set shlib_ext [get_shlib_extension]
     set ubsan_saved_library_path $ld_library_path
 
+    # Providing -B instead of -L means that it works for targets that use
+    # spec substitution for handling -static-xxxxx, it also works for targets
+    # the use the startfile paths to provide a runpath for uninstalled test.
+    # Each -B option will produce a -L on the link line (for paths that exist).
     if { $gccpath != "" } {
       if { [file exists "${gccpath}/libsanitizer/ubsan/.libs/libubsan.a"]
 	   || [file exists "${gccpath}/libsanitizer/ubsan/.libs/libubsan.${shlib_ext}"] } {
 	  append flags " -B${gccpath}/libsanitizer/ "
 	  append flags " -B${gccpath}/libsanitizer/ubsan/ "
-	  append flags " -L${gccpath}/libsanitizer/ubsan/.libs"
+	  append flags " -B${gccpath}/libsanitizer/ubsan/.libs"
 	  append ld_library_path ":${gccpath}/libsanitizer/ubsan/.libs"
-	  append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
       }
+      # libasan links to libstdc++, so we must include it for C testcases.
+      if { $needs_cxx && ( [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.a"]
+	   || [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.${shlib_ext}"] ) } {
+	append flags " -B${gccpath}/libstdc++-v3/src/.libs "
+	append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
+      }      
     } else {
       global tool_root_dir
 
@@ -79,6 +88,7 @@ proc ubsan_init { args } {
     global ubsan_saved_ALWAYS_CXXFLAGS
     global orig_ubsan_options_saved
     global orig_ubsan_options
+    set needs_cxx [lindex $args 0]
 
     if { $orig_ubsan_options_saved == 0 } {
 	# Save the original environment.
@@ -92,9 +102,9 @@ proc ubsan_init { args } {
     set link_flags ""
     if ![is_remote host] {
 	if [info exists TOOL_OPTIONS] {
-	    set link_flags "[ubsan_link_flags [get_multilibs ${TOOL_OPTIONS}]]"
+	    set link_flags "[ubsan_link_flags [get_multilibs ${TOOL_OPTIONS}] $needs_cxx]"
 	} else {
-	    set link_flags "[ubsan_link_flags [get_multilibs]]"
+	    set link_flags "[ubsan_link_flags [get_multilibs] $needs_cxx]"
 	}
     }
 

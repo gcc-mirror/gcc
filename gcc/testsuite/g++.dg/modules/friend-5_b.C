@@ -4,7 +4,7 @@
 export module bar;
 import foo;
 
-class B { // { dg-error "in a different module" }
+class B { // { dg-error "conflicts with import" }
   B() { object.value = 42; }
   A object;
 };

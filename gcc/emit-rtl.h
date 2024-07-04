@@ -1,5 +1,5 @@
 /* Exported functions from emit-rtl.cc
-   Copyright (C) 2004-2023 Free Software Foundation, Inc.
+   Copyright (C) 2004-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -140,6 +140,9 @@ struct GTY(()) rtl_data {
      If stack grows down, this is the address of the last stack slot allocated.
      If stack grows up, this is the address for the next slot.  */
   poly_int64 x_frame_offset;
+
+  /* The function's FUNCTION_BEG note.  */
+  rtx_insn *x_function_beg_insn;
 
   /* Insn after which register parms and SAVE_EXPRs are born, if nonopt.  */
   rtx_insn *x_parm_birth_insn;
@@ -323,6 +326,7 @@ struct GTY(()) rtl_data {
 #define return_label (crtl->x_return_label)
 #define naked_return_label (crtl->x_naked_return_label)
 #define stack_slot_list (crtl->x_stack_slot_list)
+#define function_beg_insn (crtl->x_function_beg_insn)
 #define parm_birth_insn (crtl->x_parm_birth_insn)
 #define frame_offset (crtl->x_frame_offset)
 #define stack_check_probe_note (crtl->x_stack_check_probe_note)
@@ -518,6 +522,28 @@ extern rtx adjust_address_1 (rtx, machine_mode, poly_int64, int, int,
 			     int, poly_int64);
 extern rtx adjust_automodify_address_1 (rtx, machine_mode, rtx,
 					poly_int64, int);
+
+/* Class wrapping emit_autoinc which allows derived classes to control
+   how reload pseudos are created.  */
+struct address_reload_context
+{
+  /* Can be overriden by derived classes.  */
+  virtual rtx get_reload_reg () const { return gen_reg_rtx (Pmode); }
+
+  /* Emit insns to reload VALUE into a new register.  VALUE is an
+     auto-increment or auto-decrement RTX whose operand is a register or
+     memory location; so reloading involves incrementing that location.
+
+     AMOUNT is the number to increment or decrement by (always
+     positive and ignored for POST_MODIFY/PRE_MODIFY).
+
+     Return a pseudo containing the result.  */
+  rtx emit_autoinc (rtx value, poly_int64 amount);
+};
+
+/* Return a memory reference like MEM, but with the address reloaded into a
+   pseudo register.  */
+extern rtx force_reload_address (rtx mem);
 
 /* Return a memory reference like MEMREF, but whose address is changed by
    adding OFFSET, an RTX, to it.  POW2 is the highest power of two factor

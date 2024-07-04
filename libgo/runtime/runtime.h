@@ -7,6 +7,7 @@
 #include "go-assert.h"
 #include <complex.h>
 #include <signal.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,7 +52,6 @@ typedef uintptr		uintreg;
 
 /* Defined types.  */
 
-typedef	_Bool			bool;
 typedef	uint8			byte;
 typedef	struct	g		G;
 typedef	struct	mutex		Lock;
@@ -114,11 +114,6 @@ extern M*	runtime_m(void);
 extern G*	runtime_g(void)
   __asm__(GOSYM_PREFIX "runtime.getg");
 
-enum
-{
-	true	= 1,
-	false	= 0,
-};
 enum
 {
 	PtrSize = sizeof(void*),

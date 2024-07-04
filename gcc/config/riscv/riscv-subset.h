@@ -1,5 +1,5 @@
 /* Definition of data structure of RISC-V subset for GNU compiler.
-   Copyright (C) 2011-2023 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
    Based on MIPS target for GNU compiler.
 
@@ -67,14 +67,17 @@ private:
   const char *parsing_subset_version (const char *, const char *, unsigned *,
 				      unsigned *, bool, bool *);
 
-  const char *parse_std_ext (const char *);
+  const char *parse_base_ext (const char *);
 
-  const char *parse_multiletter_ext (const char *, const char *,
-				     const char *);
+  const char *parse_single_std_ext (const char *, bool);
+
+  const char *parse_single_multiletter_ext (const char *, const char *,
+					    const char *, bool);
 
   void handle_implied_ext (const char *);
   bool check_implied_ext ();
   void handle_combine_ext ();
+  void check_conflict_ext ();
 
 public:
   ~riscv_subset_list ();
@@ -91,14 +94,27 @@ public:
 
   unsigned xlen () const {return m_xlen;};
 
+  riscv_subset_list *clone () const;
+
   static riscv_subset_list *parse (const char *, location_t);
+  const char *parse_single_ext (const char *, bool exact_single_p = true);
 
   const riscv_subset_t *begin () const {return m_head;};
   const riscv_subset_t *end () const {return NULL;};
 
   int match_score (riscv_subset_list *) const;
+
+  void set_loc (location_t);
+
+  void finalize ();
 };
 
 extern const riscv_subset_list *riscv_current_subset_list (void);
+extern const riscv_subset_list *riscv_cmdline_subset_list (void);
+extern std::string * riscv_func_target_get (tree);
+extern void riscv_func_target_put (tree, std::string);
+extern void riscv_func_target_remove_and_destory (tree);
+extern void
+riscv_set_arch_by_subset_list (riscv_subset_list *, struct gcc_options *);
 
 #endif /* ! GCC_RISCV_SUBSET_H */

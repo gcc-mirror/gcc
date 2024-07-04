@@ -1,5 +1,5 @@
 /* Header file for mixed range operator class.
-   Copyright (C) 2017-2023 Free Software Foundation, Inc.
+   Copyright (C) 2017-2024 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RANGE_OP_MIXED_H
 #define GCC_RANGE_OP_MIXED_H
 
-void update_known_bitmask (irange &, tree_code, const irange &, const irange &);
+void update_known_bitmask (vrange &, tree_code, const vrange &, const vrange &);
 bool minus_op1_op2_relation_effect (irange &lhs_range, tree type,
 				    const irange &, const irange &,
 				    relation_kind rel);
@@ -111,8 +111,12 @@ public:
   using range_operator::op1_range;
   using range_operator::op2_range;
   using range_operator::op1_op2_relation;
+  using range_operator::update_bitmask;
   bool fold_range (irange &r, tree type,
 		   const irange &op1, const irange &op2,
+		   relation_trio = TRIO_VARYING) const final override;
+  bool fold_range (irange &r, tree type,
+		   const prange &op1, const prange &op2,
 		   relation_trio = TRIO_VARYING) const final override;
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -121,6 +125,9 @@ public:
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &val,
 		  relation_trio = TRIO_VARYING) const final override;
+  bool op1_range (prange &r, tree type,
+		  const irange &lhs, const prange &val,
+		  relation_trio = TRIO_VARYING) const final override;
   bool op1_range (frange &r, tree type,
 		  const irange &lhs, const frange &op2,
 		  relation_trio = TRIO_VARYING) const final override;
@@ -128,16 +135,24 @@ public:
   bool op2_range (irange &r, tree type,
 		  const irange &lhs, const irange &val,
 		  relation_trio = TRIO_VARYING) const final override;
+  bool op2_range (prange &r, tree type,
+		  const irange &lhs, const prange &val,
+		  relation_trio = TRIO_VARYING) const final override;
   bool op2_range (frange &r, tree type,
 		  const irange &lhs, const frange &op1,
 		  relation_trio rel = TRIO_VARYING) const final override;
 
   relation_kind op1_op2_relation (const irange &lhs, const irange &,
 				  const irange &) const final override;
+  relation_kind op1_op2_relation (const irange &lhs, const prange &,
+				  const prange &) const final override;
   relation_kind op1_op2_relation (const irange &lhs, const frange &,
 				  const frange &) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
+  // Check op1 and op2 for compatibility.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+  { return range_compatible_p (t2, t3) && INTEGRAL_TYPE_P (t1); }
 };
 
 class operator_not_equal : public range_operator
@@ -147,15 +162,22 @@ public:
   using range_operator::op1_range;
   using range_operator::op2_range;
   using range_operator::op1_op2_relation;
+  using range_operator::update_bitmask;
   bool fold_range (irange &r, tree type,
 		   const irange &op1, const irange &op2,
 		   relation_trio = TRIO_VARYING) const final override;
+  bool fold_range (irange &r, tree type,
+		   const prange &op1, const prange &op2,
+		   relation_trio rel = TRIO_VARYING) const final override;
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
 		   relation_trio rel = TRIO_VARYING) const final override;
 
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
+		  relation_trio = TRIO_VARYING) const final override;
+  bool op1_range (prange &r, tree type,
+		  const irange &lhs, const prange &op2,
 		  relation_trio = TRIO_VARYING) const final override;
   bool op1_range (frange &r, tree type,
 		  const irange &lhs, const frange &op2,
@@ -164,16 +186,24 @@ public:
   bool op2_range (irange &r, tree type,
 		  const irange &lhs, const irange &op1,
 		  relation_trio = TRIO_VARYING) const final override;
+  bool op2_range (prange &r, tree type,
+		  const irange &lhs, const prange &op1,
+		  relation_trio = TRIO_VARYING) const final override;
   bool op2_range (frange &r, tree type,
 		  const irange &lhs, const frange &op1,
 		  relation_trio = TRIO_VARYING) const final override;
 
   relation_kind op1_op2_relation (const irange &lhs, const irange &,
 				  const irange &) const final override;
+  relation_kind op1_op2_relation (const irange &lhs, const prange &,
+				  const prange &) const final override;
   relation_kind op1_op2_relation (const irange &lhs, const frange &,
 				  const frange &) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
+  // Check op1 and op2 for compatibility.
+  bool operand_check_p (tree t0, tree t1, tree t2) const final override
+  { return range_compatible_p (t1, t2) && INTEGRAL_TYPE_P (t0); }
 };
 
 class operator_lt :  public range_operator
@@ -183,8 +213,12 @@ public:
   using range_operator::op1_range;
   using range_operator::op2_range;
   using range_operator::op1_op2_relation;
+  using range_operator::update_bitmask;
   bool fold_range (irange &r, tree type,
 		   const irange &op1, const irange &op2,
+		   relation_trio = TRIO_VARYING) const final override;
+  bool fold_range (irange &r, tree type,
+		   const prange &op1, const prange &op2,
 		   relation_trio = TRIO_VARYING) const final override;
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -192,21 +226,32 @@ public:
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
 		  relation_trio = TRIO_VARYING) const final override;
+  bool op1_range (prange &r, tree type,
+		  const irange &lhs, const prange &op2,
+		  relation_trio = TRIO_VARYING) const final override;
   bool op1_range (frange &r, tree type,
 		  const irange &lhs, const frange &op2,
 		  relation_trio = TRIO_VARYING) const final override;
   bool op2_range (irange &r, tree type,
 		  const irange &lhs, const irange &op1,
 		  relation_trio = TRIO_VARYING) const final override;
+  bool op2_range (prange &r, tree type,
+		  const irange &lhs, const prange &op1,
+		  relation_trio = TRIO_VARYING) const final override;
   bool op2_range (frange &r, tree type,
 		  const irange &lhs, const frange &op1,
 		  relation_trio = TRIO_VARYING) const final override;
   relation_kind op1_op2_relation (const irange &lhs, const irange &,
 				  const irange &) const final override;
+  relation_kind op1_op2_relation (const irange &lhs, const prange &,
+				  const prange &) const final override;
   relation_kind op1_op2_relation (const irange &lhs, const frange &,
 				  const frange &) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
+  // Check op1 and op2 for compatibility.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+  { return range_compatible_p (t2, t3) && INTEGRAL_TYPE_P (t1); }
 };
 
 class operator_le :  public range_operator
@@ -216,8 +261,12 @@ public:
   using range_operator::op1_range;
   using range_operator::op2_range;
   using range_operator::op1_op2_relation;
+  using range_operator::update_bitmask;
   bool fold_range (irange &r, tree type,
 		   const irange &op1, const irange &op2,
+		   relation_trio = TRIO_VARYING) const final override;
+  bool fold_range (irange &r, tree type,
+		   const prange &op1, const prange &op2,
 		   relation_trio = TRIO_VARYING) const final override;
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -226,6 +275,9 @@ public:
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
 		  relation_trio = TRIO_VARYING) const final override;
+  bool op1_range (prange &r, tree type,
+		  const irange &lhs, const prange &op2,
+		  relation_trio = TRIO_VARYING) const final override;
   bool op1_range (frange &r, tree type,
 		  const irange &lhs, const frange &op2,
 		  relation_trio rel = TRIO_VARYING) const final override;
@@ -233,16 +285,24 @@ public:
   bool op2_range (irange &r, tree type,
 		  const irange &lhs, const irange &op1,
 		  relation_trio = TRIO_VARYING) const final override;
+  bool op2_range (prange &r, tree type,
+		  const irange &lhs, const prange &op1,
+		  relation_trio = TRIO_VARYING) const final override;
   bool op2_range (frange &r, tree type,
 		  const irange &lhs, const frange &op1,
 		  relation_trio rel = TRIO_VARYING) const final override;
 
   relation_kind op1_op2_relation (const irange &lhs, const irange &,
 				  const irange &) const final override;
+  relation_kind op1_op2_relation (const irange &lhs, const prange &,
+				  const prange &) const final override;
   relation_kind op1_op2_relation (const irange &lhs, const frange &,
 				  const frange &) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
+  // Check op1 and op2 for compatibility.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+  { return range_compatible_p (t2, t3) && INTEGRAL_TYPE_P (t1); }
 };
 
 class operator_gt :  public range_operator
@@ -252,8 +312,12 @@ public:
   using range_operator::op1_range;
   using range_operator::op2_range;
   using range_operator::op1_op2_relation;
+  using range_operator::update_bitmask;
   bool fold_range (irange &r, tree type,
 		   const irange &op1, const irange &op2,
+		   relation_trio = TRIO_VARYING) const final override;
+  bool fold_range (irange &r, tree type,
+		   const prange &op1, const prange &op2,
 		   relation_trio = TRIO_VARYING) const final override;
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -262,6 +326,9 @@ public:
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
 		  relation_trio = TRIO_VARYING) const final override;
+  bool op1_range (prange &r, tree type,
+		  const irange &lhs, const prange &op2,
+		  relation_trio = TRIO_VARYING) const final override;
   bool op1_range (frange &r, tree type,
 		  const irange &lhs, const frange &op2,
 		  relation_trio = TRIO_VARYING) const final override;
@@ -269,15 +336,23 @@ public:
   bool op2_range (irange &r, tree type,
 		  const irange &lhs, const irange &op1,
 		  relation_trio = TRIO_VARYING) const final override;
+  bool op2_range (prange &r, tree type,
+		  const irange &lhs, const prange &op1,
+		  relation_trio = TRIO_VARYING) const final override;
   bool op2_range (frange &r, tree type,
 		  const irange &lhs, const frange &op1,
 		  relation_trio = TRIO_VARYING) const final override;
   relation_kind op1_op2_relation (const irange &lhs, const irange &,
 				  const irange &) const final override;
+  relation_kind op1_op2_relation (const irange &lhs, const prange &,
+				  const prange &) const final override;
   relation_kind op1_op2_relation (const irange &lhs, const frange &,
 				  const frange &) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
+  // Check op1 and op2 for compatibility.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+  { return range_compatible_p (t2, t3) && INTEGRAL_TYPE_P (t1); }
 };
 
 class operator_ge :  public range_operator
@@ -287,8 +362,12 @@ public:
   using range_operator::op1_range;
   using range_operator::op2_range;
   using range_operator::op1_op2_relation;
+  using range_operator::update_bitmask;
   bool fold_range (irange &r, tree type,
 		   const irange &op1, const irange &op2,
+		   relation_trio = TRIO_VARYING) const final override;
+  bool fold_range (irange &r, tree type,
+		   const prange &op1, const prange &op2,
 		   relation_trio = TRIO_VARYING) const final override;
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -297,6 +376,9 @@ public:
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
 		  relation_trio = TRIO_VARYING) const final override;
+  bool op1_range (prange &r, tree type,
+		  const irange &lhs, const prange &op2,
+		  relation_trio = TRIO_VARYING) const final override;
   bool op1_range (frange &r, tree type,
 		  const irange &lhs, const frange &op2,
 		  relation_trio = TRIO_VARYING) const final override;
@@ -304,16 +386,24 @@ public:
   bool op2_range (irange &r, tree type,
 		  const irange &lhs, const irange &op1,
 		  relation_trio = TRIO_VARYING) const final override;
+  bool op2_range (prange &r, tree type,
+		  const irange &lhs, const prange &op1,
+		  relation_trio = TRIO_VARYING) const final override;
   bool op2_range (frange &r, tree type,
 		  const irange &lhs, const frange &op1,
 		  relation_trio = TRIO_VARYING) const final override;
 
   relation_kind op1_op2_relation (const irange &lhs, const irange &,
 				  const irange &) const final override;
+  relation_kind op1_op2_relation (const irange &lhs, const prange &,
+				  const prange &) const final override;
   relation_kind op1_op2_relation (const irange &lhs, const frange &,
 				  const frange &) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
+  // Check op1 and op2 for compatibility.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+  { return range_compatible_p (t2, t3) && INTEGRAL_TYPE_P (t1); }
 };
 
 class operator_identity : public range_operator
@@ -325,17 +415,26 @@ public:
   bool fold_range (irange &r, tree type,
 		   const irange &op1, const irange &op2,
 		   relation_trio rel = TRIO_VARYING) const final override;
+  bool fold_range (prange &r, tree type,
+		   const prange &op1, const prange &op2,
+		   relation_trio rel = TRIO_VARYING) const final override;
   bool fold_range (frange &r, tree type ATTRIBUTE_UNUSED,
 		   const frange &op1, const frange &op2 ATTRIBUTE_UNUSED,
 		   relation_trio = TRIO_VARYING) const final override;
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
 		  relation_trio rel = TRIO_VARYING) const final override;
+  bool op1_range (prange &r, tree type,
+		  const prange &lhs, const prange &op2,
+		  relation_trio rel = TRIO_VARYING) const final override;
   bool op1_range (frange &r, tree type ATTRIBUTE_UNUSED,
 		  const frange &lhs, const frange &op2 ATTRIBUTE_UNUSED,
 		  relation_trio = TRIO_VARYING) const final override;
   relation_kind lhs_op1_relation (const irange &lhs,
 				  const irange &op1, const irange &op2,
+				  relation_kind rel) const final override;
+  relation_kind lhs_op1_relation (const prange &lhs,
+				  const prange &op1, const prange &op2,
 				  relation_kind rel) const final override;
 };
 
@@ -345,6 +444,9 @@ public:
   using range_operator::fold_range;
   bool fold_range (irange &r, tree type,
 		   const irange &op1, const irange &op2,
+		   relation_trio rel = TRIO_VARYING) const final override;
+  bool fold_range (prange &r, tree type,
+		   const prange &op1, const prange &op2,
 		   relation_trio rel = TRIO_VARYING) const final override;
   bool fold_range (frange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -358,14 +460,42 @@ public:
   using range_operator::fold_range;
   using range_operator::op1_range;
   using range_operator::lhs_op1_relation;
+  using range_operator::update_bitmask;
   bool fold_range (irange &r, tree type,
 		   const irange &op1, const irange &op2,
+		   relation_trio rel = TRIO_VARYING) const final override;
+  bool fold_range (prange &r, tree type,
+		   const prange &op1, const prange &op2,
+		   relation_trio rel = TRIO_VARYING) const final override;
+  bool fold_range (irange &r, tree type,
+		   const prange &op1, const irange &op2,
+		   relation_trio rel = TRIO_VARYING) const final override;
+  bool fold_range (prange &r, tree type,
+		   const irange &op1, const prange &op2,
 		   relation_trio rel = TRIO_VARYING) const final override;
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
 		  relation_trio rel = TRIO_VARYING) const final override;
+  bool op1_range (prange &r, tree type,
+		  const prange &lhs, const prange &op2,
+		  relation_trio rel = TRIO_VARYING) const final override;
+  bool op1_range (irange &r, tree type,
+		  const prange &lhs, const irange &op2,
+		  relation_trio rel = TRIO_VARYING) const final override;
+  bool op1_range (prange &r, tree type,
+		  const irange &lhs, const prange &op2,
+		  relation_trio rel = TRIO_VARYING) const final override;
   relation_kind lhs_op1_relation (const irange &lhs,
 				  const irange &op1, const irange &op2,
+				  relation_kind) const final override;
+  relation_kind lhs_op1_relation (const prange &lhs,
+				  const prange &op1, const prange &op2,
+				  relation_kind) const final override;
+  relation_kind lhs_op1_relation (const prange &lhs,
+				  const irange &op1, const irange &op2,
+				  relation_kind) const final override;
+  relation_kind lhs_op1_relation (const irange &lhs,
+				  const prange &op1, const prange &op2,
 				  relation_kind) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
@@ -384,6 +514,7 @@ public:
   using range_operator::op2_range;
   using range_operator::lhs_op1_relation;
   using range_operator::lhs_op2_relation;
+  using range_operator::update_bitmask;
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
 		  relation_trio) const final override;
@@ -409,13 +540,14 @@ public:
 
   virtual bool overflow_free_p (const irange &lh, const irange &rh,
 				relation_trio = TRIO_VARYING) const;
-
+  // Check compatibility of all operands.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+    { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
 private:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
 		const wide_int &rh_ub) const final override;
-  void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
-		bool &maybe_nan, tree type,
+  void rv_fold (frange &r, tree type,
 		const REAL_VALUE_TYPE &lh_lb, const REAL_VALUE_TYPE &lh_ub,
 		const REAL_VALUE_TYPE &rh_lb, const REAL_VALUE_TYPE &rh_ub,
 		relation_kind) const final override;
@@ -426,6 +558,7 @@ class operator_abs : public range_operator
  public:
   using range_operator::fold_range;
   using range_operator::op1_range;
+  using range_operator::update_bitmask;
   bool fold_range (frange &r, tree type,
 		   const frange &op1, const frange &,
 		   relation_trio = TRIO_VARYING) const final override;
@@ -437,6 +570,9 @@ class operator_abs : public range_operator
 		  relation_trio rel = TRIO_VARYING) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
+  // Check compatibility of LHS and op1.
+  bool operand_check_p (tree t1, tree t2, tree) const final override
+    { return range_compatible_p (t1, t2); }
 private:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
@@ -451,6 +587,8 @@ public:
   using range_operator::op1_range;
   using range_operator::op2_range;
   using range_operator::lhs_op1_relation;
+  using range_operator::op1_op2_relation_effect;
+  using range_operator::update_bitmask;
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
 		  relation_trio) const final override;
@@ -478,13 +616,14 @@ public:
 
   virtual bool overflow_free_p (const irange &lh, const irange &rh,
 				relation_trio = TRIO_VARYING) const;
-
+  // Check compatibility of all operands.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+    { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
 private:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
 		const wide_int &rh_ub) const final override;
-  void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
-		bool &maybe_nan, tree type,
+  void rv_fold (frange &r, tree type,
 		const REAL_VALUE_TYPE &lh_lb, const REAL_VALUE_TYPE &lh_ub,
 		const REAL_VALUE_TYPE &rh_lb, const REAL_VALUE_TYPE &rh_ub,
 		relation_kind) const final override;
@@ -508,6 +647,9 @@ class operator_negate : public range_operator
   bool op1_range (frange &r, tree type,
 		  const frange &lhs, const frange &op2,
 		  relation_trio rel = TRIO_VARYING) const final override;
+  // Check compatibility of LHS and op1.
+  bool operand_check_p (tree t1, tree t2, tree) const final override
+    { return range_compatible_p (t1, t2); }
 };
 
 
@@ -530,6 +672,7 @@ class operator_mult : public cross_product_operator
 public:
   using range_operator::op1_range;
   using range_operator::op2_range;
+  using range_operator::update_bitmask;
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
 		  relation_trio) const final override;
@@ -553,14 +696,15 @@ public:
   bool wi_op_overflows (wide_int &res, tree type, const wide_int &w0,
 			const wide_int &w1) const final override;
 
-  void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
-		bool &maybe_nan, tree type,
+  void rv_fold (frange &r, tree type,
 		const REAL_VALUE_TYPE &lh_lb, const REAL_VALUE_TYPE &lh_ub,
 		const REAL_VALUE_TYPE &rh_lb, const REAL_VALUE_TYPE &rh_ub,
 		relation_kind kind) const final override;
   virtual bool overflow_free_p (const irange &lh, const irange &rh,
 				relation_trio = TRIO_VARYING) const;
-
+  // Check compatibility of all operands.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+    { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
 };
 
 class operator_addr_expr : public range_operator
@@ -574,6 +718,9 @@ public:
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
 		  relation_trio rel = TRIO_VARYING) const final override;
+  bool op1_range (prange &r, tree type,
+		  const prange &lhs, const prange &op2,
+		  relation_trio rel = TRIO_VARYING) const final override;
 };
 
 class operator_bitwise_not : public range_operator
@@ -581,6 +728,7 @@ class operator_bitwise_not : public range_operator
 public:
   using range_operator::fold_range;
   using range_operator::op1_range;
+  using range_operator::update_bitmask;
   bool fold_range (irange &r, tree type,
 		   const irange &lh, const irange &rh,
 		   relation_trio rel = TRIO_VARYING) const final override;
@@ -589,6 +737,9 @@ public:
 		  relation_trio rel = TRIO_VARYING) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
+  // Check compatibility of all operands.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+    { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
 };
 
 class operator_bitwise_xor : public range_operator
@@ -596,6 +747,8 @@ class operator_bitwise_xor : public range_operator
 public:
   using range_operator::op1_range;
   using range_operator::op2_range;
+  using range_operator::op1_op2_relation_effect;
+  using range_operator::update_bitmask;
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
 		  relation_trio rel = TRIO_VARYING) const final override;
@@ -609,6 +762,9 @@ public:
 					relation_kind rel) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
+  // Check compatibility of all operands.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+    { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
 private:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
@@ -618,9 +774,15 @@ private:
 class operator_bitwise_and : public range_operator
 {
 public:
+  using range_operator::fold_range;
   using range_operator::op1_range;
   using range_operator::op2_range;
   using range_operator::lhs_op1_relation;
+  using range_operator::update_bitmask;
+  bool fold_range (prange &r, tree type,
+		   const prange &op1,
+		   const prange &op2,
+		   relation_trio) const final override;
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
 		  relation_trio rel = TRIO_VARYING) const override;
@@ -632,6 +794,9 @@ public:
 				  relation_kind) const override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const override;
+  // Check compatibility of all operands.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+    { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
 protected:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
@@ -646,6 +811,7 @@ class operator_bitwise_or : public range_operator
 public:
   using range_operator::op1_range;
   using range_operator::op2_range;
+  using range_operator::update_bitmask;
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
 		  relation_trio rel = TRIO_VARYING) const override;
@@ -654,6 +820,9 @@ public:
 		  relation_trio rel = TRIO_VARYING) const override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const override;
+  // Check compatibility of all operands.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+    { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
 protected:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
@@ -663,8 +832,17 @@ protected:
 class operator_min : public range_operator
 {
 public:
+  using range_operator::fold_range;
+  using range_operator::update_bitmask;
+  bool fold_range (prange &r, tree type,
+		   const prange &op1,
+		   const prange &op2,
+		   relation_trio) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const override;
+  // Check compatibility of all operands.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+    { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
 protected:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
@@ -674,8 +852,17 @@ protected:
 class operator_max : public range_operator
 {
 public:
+  using range_operator::fold_range;
+  using range_operator::update_bitmask;
+  bool fold_range (prange &r, tree type,
+		   const prange &op1,
+		   const prange &op2,
+		   relation_trio) const final override;
   void update_bitmask (irange &r, const irange &lh,
       const irange &rh) const override;
+  // Check compatibility of all operands.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+    { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
 protected:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,

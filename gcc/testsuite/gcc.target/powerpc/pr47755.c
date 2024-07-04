@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O3 -mdejagnu-cpu=power7" } */
+/* { dg-require-effective-target powerpc_vsx } */
 /* { dg-final { scan-assembler "xxlxor\|vspltis\[bhw\]" } } */
 /* { dg-final { scan-assembler-not "lxvd2x" } } */
 /* { dg-final { scan-assembler-not "lxvw4x" } } */

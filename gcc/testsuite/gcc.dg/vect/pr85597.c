@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3" } */
+/* { dg-additional-options "-O3" } */
 /* { dg-additional-options "-mfma" { target { x86_64-*-* i?86-*-* } } } */
 
 extern double fma (double, double, double);

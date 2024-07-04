@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2023, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2024, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -33,7 +33,9 @@
 #include "tree.h"
 #include "inchash.h"
 #include "builtins.h"
+#include "expmed.h"
 #include "fold-const.h"
+#include "optabs-query.h"
 #include "stor-layout.h"
 #include "stringpool.h"
 #include "varasm.h"
@@ -281,7 +283,7 @@ find_common_type (tree t1, tree t2)
    tests in as efficient a manner as possible.  */
 
 static tree
-compare_arrays (location_t loc, tree result_type, tree a1, tree a2)
+compare_arrays_for_equality (location_t loc, tree result_type, tree a1, tree a2)
 {
   tree result = convert (result_type, boolean_true_node);
   tree a1_is_null = convert (result_type, boolean_false_node);
@@ -355,8 +357,6 @@ compare_arrays (location_t loc, tree result_type, tree a1, tree a2)
 	  ub1 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (ub1, a1);
 
 	  comparison = fold_build2_loc (loc, LT_EXPR, result_type, ub1, lb1);
-	  if (EXPR_P (comparison))
-	    SET_EXPR_LOCATION (comparison, loc);
 
 	  this_a1_is_null = comparison;
 	  this_a2_is_null = convert (result_type, boolean_true_node);
@@ -378,9 +378,6 @@ compare_arrays (location_t loc, tree result_type, tree a1, tree a2)
 						ub1, lb1),
 			       build_binary_op (MINUS_EXPR, base_type,
 						ub2, lb2));
-	  if (EXPR_P (comparison))
-	    SET_EXPR_LOCATION (comparison, loc);
-
 	  this_a1_is_null
 	    = fold_build2_loc (loc, LT_EXPR, result_type, ub1, lb1);
 
@@ -395,8 +392,6 @@ compare_arrays (location_t loc, tree result_type, tree a1, tree a2)
 
 	  comparison
 	    = fold_build2_loc (loc, EQ_EXPR, result_type, length1, length2);
-	  if (EXPR_P (comparison))
-	    SET_EXPR_LOCATION (comparison, loc);
 
 	  lb1 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (lb1, a1);
 	  ub1 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (ub1, a1);
@@ -449,6 +444,89 @@ compare_arrays (location_t loc, tree result_type, tree a1, tree a2)
 			    build_binary_op (TRUTH_ANDIF_EXPR, result_type,
 					     a1_is_null, a2_is_null),
 			    result);
+
+  /* If the operands have side-effects, they need to be evaluated before
+     doing the tests above since the place they otherwise would end up
+     being evaluated at run time could be wrong.  */
+  if (a1_side_effects_p)
+    result = build2 (COMPOUND_EXPR, result_type, a1, result);
+
+  if (a2_side_effects_p)
+    result = build2 (COMPOUND_EXPR, result_type, a2, result);
+
+  return result;
+}
+
+/* Return an expression tree representing an ordering comparison of A1 and A2,
+   two objects of type ARRAY_TYPE.  The result should be of type RESULT_TYPE.
+
+   A1 is less than A2 according to the following alternative:
+     - when A1's length is less than A2'length: if every element of A1 is equal
+       to its counterpart in A2 or the first differing is lesser in A1 than A2,
+     - otherwise: if not every element of A2 is equal to its counterpart in A1
+       and the first differing is lesser in A1 than A2.
+
+   The other 3 ordering comparisons can be easily deduced from this one.  */
+
+static tree
+compare_arrays_for_ordering (location_t loc, tree result_type, tree a1, tree a2)
+{
+  const bool a1_side_effects_p = TREE_SIDE_EFFECTS (a1);
+  const bool a2_side_effects_p = TREE_SIDE_EFFECTS (a2);
+  tree t1 = TREE_TYPE (a1);
+  tree t2 = TREE_TYPE (a2);
+  tree dom1 = TYPE_DOMAIN (t1);
+  tree dom2 = TYPE_DOMAIN (t2);
+  tree length1 = size_binop (PLUS_EXPR,
+			     size_binop (MINUS_EXPR,
+					 TYPE_MAX_VALUE (dom1),
+					 TYPE_MIN_VALUE (dom1)),
+			     size_one_node);
+  tree length2 = size_binop (PLUS_EXPR,
+			     size_binop (MINUS_EXPR,
+					 TYPE_MAX_VALUE (dom2),
+					 TYPE_MIN_VALUE (dom2)),
+			     size_one_node);
+  tree addr1, addr2, fndecl, result;
+
+  /* If the lengths are known at compile time, fold the alternative and let the
+     gimplifier optimize the case of power-of-two lengths.  */
+  if (TREE_CODE (length1) == INTEGER_CST && TREE_CODE (length2) == INTEGER_CST)
+    return tree_int_cst_compare (length1, length2) < 0
+	   ? fold_build2_loc (loc, LE_EXPR, result_type, a1, convert (t1, a2))
+	   : fold_build2_loc (loc, LT_EXPR, result_type, convert (t2, a1), a2);
+
+  /* If the operands have side-effects, they need to be evaluated only once
+     in spite of the multiple references in the comparison.  */
+  if (a1_side_effects_p)
+    a1 = gnat_protect_expr (a1);
+
+  if (a2_side_effects_p)
+    a2 = gnat_protect_expr (a2);
+
+  length1 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (length1, a1);
+  length2 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (length2, a2);
+
+  /* If the lengths are not known at compile time, call memcmp directly with
+     the actual lengths since a1 and a2 may have the same nominal subtype.  */
+  addr1 = build_fold_addr_expr_loc (loc, a1);
+  addr2 = build_fold_addr_expr_loc (loc, a2);
+  fndecl = builtin_decl_implicit (BUILT_IN_MEMCMP);
+
+  result
+    = fold_build3_loc (loc, COND_EXPR, result_type,
+		       fold_build2_loc (loc, LT_EXPR, boolean_type_node,
+				        length1, length2),
+		       fold_build2_loc (loc, LE_EXPR, result_type,
+				        build_call_expr_loc (loc, fndecl, 3,
+							     addr1, addr2,
+							     length1),
+					integer_zero_node),
+		       fold_build2_loc (loc, LT_EXPR, result_type,
+					build_call_expr_loc (loc, fndecl, 3,
+							     addr1, addr2,
+							     length2),
+					integer_zero_node));
 
   /* If the operands have side-effects, they need to be evaluated before
      doing the tests above since the place they otherwise would end up
@@ -534,85 +612,146 @@ compare_fat_pointers (location_t loc, tree result_type, tree p1, tree p2)
 					   p1_array_is_null, same_bounds));
 }
 
+/* Try to compute the reduction of OP modulo MODULUS in PRECISION bits with a
+   division-free algorithm.  Return NULL_TREE if this is not easily doable.  */
+
+tree
+fast_modulo_reduction (tree op, tree modulus, unsigned int precision)
+{
+  const tree type = TREE_TYPE (op);
+  const unsigned int type_precision = TYPE_PRECISION (type);
+
+  /* The implementation is host-dependent for the time being.  */
+  if (type_precision <= HOST_BITS_PER_WIDE_INT)
+    {
+      const unsigned HOST_WIDE_INT d = tree_to_uhwi (modulus);
+      unsigned HOST_WIDE_INT ml, mh;
+      int pre_shift, post_shift;
+      tree t;
+
+      /* The trick is to replace the division by d with a multiply-and-shift
+	 sequence parameterized by a (multiplier, shifter) pair computed from
+	 d, the precision of the type and the needed precision:
+
+	   op / d = (op * multiplier) >> shifter
+
+	 But choose_multiplier provides a slightly different interface:
+
+	  op / d = (op h* multiplier) >> reduced_shifter
+
+	 that makes things easier by using a high-part multiplication.  */
+      mh = choose_multiplier (d, type_precision, precision, &ml, &post_shift);
+
+      /* If the suggested multiplier is more than TYPE_PRECISION bits, we can
+	 do better for even divisors, using an initial right shift.  */
+      if (mh != 0 && (d & 1) == 0)
+	{
+	  pre_shift = ctz_or_zero (d);
+	  mh = choose_multiplier (d >> pre_shift, type_precision,
+				  precision - pre_shift, &ml, &post_shift);
+	}
+      else
+	pre_shift = 0;
+
+      /* If the suggested multiplier is still more than TYPE_PRECISION bits,
+	 or the TYPE_MODE does not have a high-part multiply, try again with
+	 a larger type up to the word size.  */
+      if (mh != 0 || !can_mult_highpart_p (TYPE_MODE (type), true))
+	{
+	  if (type_precision < BITS_PER_WORD)
+	    {
+	      const scalar_int_mode m
+		= smallest_int_mode_for_size (type_precision + 1);
+	      tree new_type = gnat_type_for_mode (m, 1);
+	      op = fold_convert (new_type, op);
+	      modulus = fold_convert (new_type, modulus);
+	      t = fast_modulo_reduction (op, modulus, precision);
+	      if (t)
+		return fold_convert (type, t);
+	    }
+
+	  return NULL_TREE;
+	}
+
+      /* This computes op - (op / modulus) * modulus with PRECISION bits.  */
+      op = gnat_protect_expr (op);
+
+      /* t = op >> pre_shift
+	 t = t h* ml
+	 t = t >> post_shift
+	 t = t * modulus  */
+      if (pre_shift)
+	t = fold_build2 (RSHIFT_EXPR, type, op,
+			 build_int_cst (type, pre_shift));
+      else
+	t = op;
+      t = fold_build2 (MULT_HIGHPART_EXPR, type, t, build_int_cst (type, ml));
+      if (post_shift)
+	t = fold_build2 (RSHIFT_EXPR, type, t,
+			 build_int_cst (type, post_shift));
+      t = fold_build2 (MULT_EXPR, type, t, modulus);
+
+      return fold_build2 (MINUS_EXPR, type, op, t);
+    }
+
+  else
+    return NULL_TREE;
+}
+
 /* Compute the result of applying OP_CODE to LHS and RHS, where both are of
-   type TYPE.  We know that TYPE is a modular type with a nonbinary
-   modulus.  */
+   TYPE.  We know that TYPE is a modular type with a nonbinary modulus.  */
 
 static tree
 nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
                              tree rhs)
 {
   tree modulus = TYPE_MODULUS (type);
-  unsigned int needed_precision = tree_floor_log2 (modulus) + 1;
-  unsigned int precision;
-  bool unsignedp = true;
-  tree op_type = type;
-  tree result;
+  unsigned precision = tree_floor_log2 (modulus) + 1;
+  tree op_type, result, fmr;
 
-  /* If this is an addition of a constant, convert it to a subtraction
-     of a constant since we can do that faster.  */
-  if (op_code == PLUS_EXPR && TREE_CODE (rhs) == INTEGER_CST)
-    {
-      rhs = fold_build2 (MINUS_EXPR, type, modulus, rhs);
-      op_code = MINUS_EXPR;
-    }
-
-  /* For the logical operations, we only need PRECISION bits.  For
-     addition and subtraction, we need one more and for multiplication we
-     need twice as many.  But we never want to make a size smaller than
-     our size. */
+  /* For the logical operations, we only need PRECISION bits.  For addition and
+     subtraction, we need one more, and for multiplication twice as many.  */
   if (op_code == PLUS_EXPR || op_code == MINUS_EXPR)
-    needed_precision += 1;
+    precision += 1;
   else if (op_code == MULT_EXPR)
-    needed_precision *= 2;
+    precision *= 2;
 
-  precision = MAX (needed_precision, TYPE_PRECISION (op_type));
-
-  /* Unsigned will do for everything but subtraction.  */
-  if (op_code == MINUS_EXPR)
-    unsignedp = false;
-
-  /* If our type is the wrong signedness or isn't wide enough, make a new
-     type and convert both our operands to it.  */
-  if (TYPE_PRECISION (op_type) < precision
-      || TYPE_UNSIGNED (op_type) != unsignedp)
+  /* If the type is not wide enough, make a new type of the needed precision
+     and convert modulus and operands to it.  Use a type with full precision
+     for its mode since operations are ultimately performed in the mode.  */
+  if (TYPE_PRECISION (type) < precision)
     {
-      /* Copy the type so we ensure it can be modified to make it modular.  */
-      op_type = copy_type (gnat_type_for_size (precision, unsignedp));
-      modulus = convert (op_type, modulus);
-      SET_TYPE_MODULUS (op_type, modulus);
-      TYPE_MODULAR_P (op_type) = 1;
-      lhs = convert (op_type, lhs);
-      rhs = convert (op_type, rhs);
+      const scalar_int_mode m = smallest_int_mode_for_size (precision);
+      op_type = gnat_type_for_mode (m, 1);
+      modulus = fold_convert (op_type, modulus);
+      lhs = fold_convert (op_type, lhs);
+      rhs = fold_convert (op_type, rhs);
     }
+  else
+    op_type = type;
 
   /* Do the operation, then we'll fix it up.  */
   result = fold_build2 (op_code, op_type, lhs, rhs);
 
-  /* For multiplication, we have no choice but to do a full modulus
-     operation.  However, we want to do this in the narrowest
-     possible size.  */
+  /* Unconditionally add the modulus to the result for a subtraction, this gets
+     rid of all its peculiarities by cancelling out the addition of the binary
+     modulus in the case where the subtraction wraps around in OP_TYPE, and may
+     even generate better code on architectures with conditional moves.  */
+  if (op_code == MINUS_EXPR)
+    result = fold_build2 (PLUS_EXPR, op_type, result, modulus);
+
+  /* For a multiplication, we first try to do a modulo reduction by means of a
+     (multiplier, shifter) pair in the needed precision up to the word size, or
+     else we fall back to a standard modulo operation.  But not when optimizing
+     for size, because it will be longer than a div+mul+sub sequence.  */
   if (op_code == MULT_EXPR)
     {
-      /* Copy the type so we ensure it can be modified to make it modular.  */
-      tree div_type = copy_type (gnat_type_for_size (needed_precision, 1));
-      modulus = convert (div_type, modulus);
-      SET_TYPE_MODULUS (div_type, modulus);
-      TYPE_MODULAR_P (div_type) = 1;
-      result = convert (op_type,
-			fold_build2 (TRUNC_MOD_EXPR, div_type,
-				     convert (div_type, result), modulus));
-    }
-
-  /* For subtraction, add the modulus back if we are negative.  */
-  else if (op_code == MINUS_EXPR)
-    {
-      result = gnat_protect_expr (result);
-      result = fold_build3 (COND_EXPR, op_type,
-			    fold_build2 (LT_EXPR, boolean_type_node, result,
-					 build_int_cst (op_type, 0)),
-			    fold_build2 (PLUS_EXPR, op_type, result, modulus),
-			    result);
+      if (!optimize_size
+	  && precision <= BITS_PER_WORD
+	  && (fmr = fast_modulo_reduction (result, modulus, precision)))
+	result = fmr;
+      else
+	result = fold_build2 (TRUNC_MOD_EXPR, op_type, result, modulus);
     }
 
   /* For the other operations, subtract the modulus if we are >= it.  */
@@ -627,7 +766,7 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
 			    result);
     }
 
-  return convert (type, result);
+  return fold_convert (type, result);
 }
 
 /* This page contains routines that implement the Ada semantics with regard
@@ -1036,9 +1175,9 @@ build_binary_op (enum tree_code op_code, tree result_type,
       if (op_code == ARRAY_RANGE_REF
 	  && TREE_TYPE (operation_type) != TREE_TYPE (left_type))
 	{
-	  operation_type
-	    = build_nonshared_array_type (TREE_TYPE (left_type),
-					  TYPE_DOMAIN (operation_type));
+          operation_type = copy_type (operation_type);
+          TREE_TYPE (operation_type) = TREE_TYPE (left_type);
+
 	  /* Declare it now since it will never be declared otherwise.  This
 	     is necessary to ensure that its subtrees are properly marked.  */
 	  create_type_decl (TYPE_NAME (operation_type), operation_type, true,
@@ -1113,12 +1252,32 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	      || (TREE_CODE (right_type) == INTEGER_TYPE
 		  && TYPE_HAS_ACTUAL_BOUNDS_P (right_type))))
 	{
-	  result = compare_arrays (input_location,
-				   result_type, left_operand, right_operand);
-	  if (op_code == NE_EXPR)
-	    result = invert_truthvalue_loc (EXPR_LOCATION (result), result);
+          if (op_code == EQ_EXPR || op_code == NE_EXPR)
+	    {
+	      result
+		= compare_arrays_for_equality (input_location, result_type,
+					       left_operand, right_operand);
+	      if (op_code == NE_EXPR)
+		result = invert_truthvalue_loc (input_location, result);
+	    }
+
 	  else
-	    gcc_assert (op_code == EQ_EXPR);
+	    {
+	      /* Swap the operands to canonicalize to LT_EXPR or GE_EXPR.  */
+	      if (op_code == GT_EXPR || op_code == LE_EXPR)
+		result
+		  = compare_arrays_for_ordering (input_location, result_type,
+						 right_operand, left_operand);
+
+	      else
+		result
+		  = compare_arrays_for_ordering (input_location, result_type,
+						 left_operand, right_operand);
+
+	      /* GE_EXPR is (not LT_EXPR) for discrete array types.  */
+	      if (op_code == GE_EXPR || op_code == LE_EXPR)
+		result = invert_truthvalue_loc (input_location, result);
+	    }
 
 	  return result;
 	}
@@ -1142,14 +1301,10 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	      tree left_ref_type = TREE_TYPE (left_base_type);
 	      tree right_ref_type = TREE_TYPE (right_base_type);
 
-	      /* Anonymous access types in Ada 2005 can point to different
-		 members of a tagged hierarchy or different function types.  */
-	      gcc_assert (TYPE_MAIN_VARIANT (left_ref_type)
-			  == TYPE_MAIN_VARIANT (right_ref_type)
-			  || (TYPE_ALIGN_OK (left_ref_type)
-			      && TYPE_ALIGN_OK (right_ref_type))
-			  || (TREE_CODE (left_ref_type) == FUNCTION_TYPE
-			      && TREE_CODE (right_ref_type) == FUNCTION_TYPE));
+	      /* Anonymous access types in Ada 2005 may point to compatible
+		 object subtypes or function types in the language sense.  */
+	      gcc_assert (FUNCTION_POINTER_TYPE_P (left_ref_type)
+			  == FUNCTION_POINTER_TYPE_P (right_ref_type));
 	      best_type = left_base_type;
 	    }
 
@@ -1715,12 +1870,14 @@ build_cond_expr (tree result_type, tree condition_operand,
   true_operand = convert (result_type, true_operand);
   false_operand = convert (result_type, false_operand);
 
-  /* If the result type is unconstrained, take the address of the operands and
-     then dereference the result.  Likewise if the result type is passed by
-     reference, because creating a temporary of this type is not allowed.  */
+  /* If the result type is unconstrained or variable-sized, take the address
+     of the operands and then dereference the result.  Likewise if the result
+     type is passed by reference, because creating a temporary of this type is
+     not allowed.  */
   if (TREE_CODE (result_type) == UNCONSTRAINED_ARRAY_TYPE
-      || TYPE_IS_BY_REFERENCE_P (result_type)
-      || CONTAINS_PLACEHOLDER_P (TYPE_SIZE (result_type)))
+      || type_contains_placeholder_p (result_type)
+      || !TREE_CONSTANT (TYPE_SIZE (result_type))
+      || TYPE_IS_BY_REFERENCE_P (result_type))
     {
       result_type = build_pointer_type (result_type);
       true_operand = build_unary_op (ADDR_EXPR, result_type, true_operand);
@@ -2021,7 +2178,10 @@ build_simple_component_ref (tree record, tree field, bool no_fold)
 
   /* The failure of this assertion will very likely come from a missing
      insertion of an explicit dereference.  */
-  gcc_assert (RECORD_OR_UNION_TYPE_P (type) && COMPLETE_TYPE_P (type));
+  gcc_assert (RECORD_OR_UNION_TYPE_P (type));
+
+  /* The type must be frozen at this point.  */
+  gcc_assert (COMPLETE_TYPE_P (type));
 
   /* Try to fold a conversion from another record or union type unless the type
      contains a placeholder as it might be needed for a later substitution.  */
@@ -2188,15 +2348,16 @@ build_call_alloc_dealloc_proc (tree gnu_obj, tree gnu_size, tree gnu_type,
 	= Etype (Next_Formal (First_Formal (gnat_proc)));
       tree gnu_size_type = gnat_to_gnu_type (gnat_size_type);
 
+      /* Deallocation is not supported for return and secondary stacks.  */
+      gcc_assert (!gnu_obj);
+
       gnu_size = convert (gnu_size_type, gnu_size);
       gnu_align = convert (gnu_size_type, gnu_align);
 
       if (DECL_BUILT_IN_CLASS (gnu_proc) == BUILT_IN_FRONTEND
 	  && DECL_FE_FUNCTION_CODE (gnu_proc) == BUILT_IN_RETURN_SLOT)
 	{
-	  /* This must be an allocation of the return stack in a function that
-	     returns by invisible reference.  */
-	  gcc_assert (!gnu_obj);
+	  /* This must be a function that returns by invisible reference.  */
 	  gcc_assert (current_function_decl
 		      && TREE_ADDRESSABLE (TREE_TYPE (current_function_decl)));
 	  tree gnu_ret_size;
@@ -2221,11 +2382,6 @@ build_call_alloc_dealloc_proc (tree gnu_obj, tree gnu_size, tree gnu_type,
 			   build_call_raise (PE_Explicit_Raise, Empty,
 					     N_Raise_Program_Error));
 	}
-
-      /* The first arg is the address of the object, for a deallocator,
-	 then the size.  */
-      else if (gnu_obj)
-	gnu_call = build_call_n_expr (gnu_proc, 2, gnu_obj, gnu_size);
 
       else
 	gnu_call = build_call_n_expr (gnu_proc, 2, gnu_size, gnu_align);
@@ -2890,7 +3046,11 @@ gnat_save_expr (tree exp)
 
 /* Protect EXP for immediate reuse.  This is a variant of gnat_save_expr that
    is optimized under the assumption that EXP's value doesn't change before
-   its subsequent reuse(s) except through its potential reevaluation.  */
+   its subsequent reuse(s) except potentially through its reevaluation.
+
+   gnat_protect_expr guarantees that multiple evaluations of the expression
+   will not generate multiple side effects, whereas gnat_save_expr further
+   guarantees that all evaluations will yield the same result.  */
 
 tree
 gnat_protect_expr (tree exp)
@@ -2918,7 +3078,7 @@ gnat_protect_expr (tree exp)
   if (code == NON_LVALUE_EXPR
       || CONVERT_EXPR_CODE_P (code)
       || code == VIEW_CONVERT_EXPR)
-  return build1 (code, type, gnat_protect_expr (TREE_OPERAND (exp, 0)));
+    return build1 (code, type, gnat_protect_expr (TREE_OPERAND (exp, 0)));
 
   /* If we're indirectly referencing something, we only need to protect the
      address since the data itself can't change in these situations.  */
@@ -2934,6 +3094,13 @@ gnat_protect_expr (tree exp)
       && INDIRECT_REF_P (TREE_OPERAND (exp, 0)))
     return build3 (code, type, gnat_protect_expr (TREE_OPERAND (exp, 0)),
 		   TREE_OPERAND (exp, 1), NULL_TREE);
+
+  /* An atomic load is an INDIRECT_REF of its first argument, so apply the
+     same transformation as in the INDIRECT_REF case above.  */
+  if (code == CALL_EXPR && call_is_atomic_load (exp))
+    return build_call_expr (TREE_OPERAND (CALL_EXPR_FN (exp), 0), 2,
+			    gnat_protect_expr (CALL_EXPR_ARG (exp, 0)),
+			    CALL_EXPR_ARG (exp, 1));
 
   /* If this is a COMPONENT_REF of a fat pointer, save the entire fat pointer.
      This may be more efficient, but will also allow us to more easily find

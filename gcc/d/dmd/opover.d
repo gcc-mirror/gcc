@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/operatoroverloading.html, Operator Overloading)
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/opover.d, _opover.d)
@@ -23,6 +23,7 @@ import dmd.declaration;
 import dmd.dscope;
 import dmd.dstruct;
 import dmd.dsymbol;
+import dmd.dsymbolsem;
 import dmd.dtemplate;
 import dmd.errors;
 import dmd.expression;
@@ -34,7 +35,9 @@ import dmd.id;
 import dmd.identifier;
 import dmd.location;
 import dmd.mtype;
+import dmd.optimize;
 import dmd.statement;
+import dmd.templatesem;
 import dmd.tokens;
 import dmd.typesem;
 import dmd.visitor;
@@ -405,7 +408,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                     {
                         // @@@DEPRECATED_2.110@@@.
                         // Deprecated in 2.088, made an error in 2.100
-                        e.error("`%s` is obsolete.  Use `opUnary(string op)() if (op == \"%s\")` instead.", id.toChars(), EXPtoString(e.op).ptr);
+                        error(e.loc, "`%s` is obsolete.  Use `opUnary(string op)() if (op == \"%s\")` instead.", id.toChars(), EXPtoString(e.op).ptr);
                         return ErrorExp.get();
                     }
                 }
@@ -644,7 +647,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                     s = search_function(ad1, Id.opBinary);
                     if (s && !s.isTemplateDeclaration())
                     {
-                        e.e1.error("`%s.opBinary` isn't a template", e.e1.toChars());
+                        error(e.e1.loc, "`%s.opBinary` isn't a template", e.e1.toChars());
                         return ErrorExp.get();
                     }
                 }
@@ -653,7 +656,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                     s_r = search_function(ad2, Id.opBinaryRight);
                     if (s_r && !s_r.isTemplateDeclaration())
                     {
-                        e.e2.error("`%s.opBinaryRight` isn't a template", e.e2.toChars());
+                        error(e.e2.loc, "`%s.opBinaryRight` isn't a template", e.e2.toChars());
                         return ErrorExp.get();
                     }
                     if (s_r && s_r == s) // https://issues.dlang.org/show_bug.cgi?id=12778
@@ -678,9 +681,9 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                         // @@@DEPRECATED_2.110@@@.
                         // Deprecated in 2.088, made an error in 2.100
                         if (id == Id.postinc || id == Id.postdec)
-                            e.error("`%s` is obsolete.  Use `opUnary(string op)() if (op == \"%s\")` instead.", id.toChars(), EXPtoString(e.op).ptr);
+                            error(e.loc, "`%s` is obsolete.  Use `opUnary(string op)() if (op == \"%s\")` instead.", id.toChars(), EXPtoString(e.op).ptr);
                         else
-                            e.error("`%s` is obsolete.  Use `opBinary(string op)(...) if (op == \"%s\")` instead.", id.toChars(), EXPtoString(e.op).ptr);
+                            error(e.loc, "`%s` is obsolete.  Use `opBinary(string op)(...) if (op == \"%s\")` instead.", id.toChars(), EXPtoString(e.op).ptr);
                         return ErrorExp.get();
                     }
                 }
@@ -696,7 +699,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                     {
                         // @@@DEPRECATED_2.110@@@.
                         // Deprecated in 2.088, made an error in 2.100
-                        e.error("`%s` is obsolete.  Use `opBinaryRight(string op)(...) if (op == \"%s\")` instead.", id_r.toChars(), EXPtoString(e.op).ptr);
+                        error(e.loc, "`%s` is obsolete.  Use `opBinaryRight(string op)(...) if (op == \"%s\")` instead.", id_r.toChars(), EXPtoString(e.op).ptr);
                         return ErrorExp.get();
                     }
                 }
@@ -738,7 +741,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 if (m.count > 1)
                 {
                     // Error, ambiguous
-                    e.error("overloads `%s` and `%s` both match argument list for `%s`", m.lastf.type.toChars(), m.nextf.type.toChars(), m.lastf.toChars());
+                    error(e.loc, "overloads `%s` and `%s` both match argument list for `%s`", m.lastf.type.toChars(), m.nextf.type.toChars(), m.lastf.toChars());
                 }
                 else if (m.last == MATCH.nomatch)
                 {
@@ -820,7 +823,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                         if (m.count > 1)
                         {
                             // Error, ambiguous
-                            e.error("overloads `%s` and `%s` both match argument list for `%s`", m.lastf.type.toChars(), m.nextf.type.toChars(), m.lastf.toChars());
+                            error(e.loc, "overloads `%s` and `%s` both match argument list for `%s`", m.lastf.type.toChars(), m.nextf.type.toChars(), m.lastf.toChars());
                         }
                         else if (m.last == MATCH.nomatch)
                         {
@@ -890,7 +893,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
             }
             if (rewrittenLhs)
             {
-                e.error("cannot use `alias this` to partially initialize variable `%s` of type `%s`. Use `%s`",
+                error(e.loc, "cannot use `alias this` to partially initialize variable `%s` of type `%s`. Use `%s`",
                         e.e1.toChars(), ad1.toChars(), rewrittenLhs.toChars());
                 return ErrorExp.get();
             }
@@ -918,7 +921,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
             if (t1.ty == Tclass && e.e2.op == EXP.null_ ||
                 t2.ty == Tclass && e.e1.op == EXP.null_)
             {
-                e.error("use `%s` instead of `%s` when comparing with `null`",
+                error(e.loc, "use `%s` instead of `%s` when comparing with `null`",
                     EXPtoString(e.op == EXP.equal ? EXP.identity : EXP.notIdentity).ptr,
                     EXPtoString(e.op).ptr);
                 return ErrorExp.get();
@@ -943,7 +946,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                      */
                     if (!ClassDeclaration.object)
                     {
-                        e.error("cannot compare classes for equality because `object.Object` was not declared");
+                        error(e.loc, "cannot compare classes for equality because `object.Object` was not declared");
                         return null;
                     }
 
@@ -1045,7 +1048,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 size_t dim = tup1.exps.length;
                 if (dim != tup2.exps.length)
                 {
-                    e.error("mismatched sequence lengths, `%d` and `%d`",
+                    error(e.loc, "mismatched sequence lengths, `%d` and `%d`",
                         cast(int)dim, cast(int)tup2.exps.length);
                     return ErrorExp.get();
                 }
@@ -1210,7 +1213,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 s = search_function(ad1, Id.opOpAssign);
                 if (s && !s.isTemplateDeclaration())
                 {
-                    e.error("`%s.opOpAssign` isn't a template", e.e1.toChars());
+                    error(e.loc, "`%s.opOpAssign` isn't a template", e.e1.toChars());
                     return ErrorExp.get();
                 }
             }
@@ -1231,7 +1234,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                     // Deprecated in 2.088, made an error in 2.100
                     scope char[] op = EXPtoString(e.op).dup;
                     op[$-1] = '\0'; // remove trailing `=`
-                    e.error("`%s` is obsolete.  Use `opOpAssign(string op)(...) if (op == \"%s\")` instead.", id.toChars(), op.ptr);
+                    error(e.loc, "`%s` is obsolete.  Use `opOpAssign(string op)(...) if (op == \"%s\")` instead.", id.toChars(), op.ptr);
                     return ErrorExp.get();
                 }
             }
@@ -1253,7 +1256,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 if (m.count > 1)
                 {
                     // Error, ambiguous
-                    e.error("overloads `%s` and `%s` both match argument list for `%s`", m.lastf.type.toChars(), m.nextf.type.toChars(), m.lastf.toChars());
+                    error(e.loc, "overloads `%s` and `%s` both match argument list for `%s`", m.lastf.type.toChars(), m.nextf.type.toChars(), m.lastf.toChars());
                 }
                 else if (m.last == MATCH.nomatch)
                 {
@@ -1366,7 +1369,7 @@ private Expression compare_overload(BinExp e, Scope* sc, Identifier id, EXP* pop
             if (!(m.lastf == lastf && m.count == 2 && count == 1))
             {
                 // Error, ambiguous
-                e.error("overloads `%s` and `%s` both match argument list for `%s`", m.lastf.type.toChars(), m.nextf.type.toChars(), m.lastf.toChars());
+                error(e.loc, "overloads `%s` and `%s` both match argument list for `%s`", m.lastf.type.toChars(), m.nextf.type.toChars(), m.lastf.toChars());
             }
         }
         else if (m.last == MATCH.nomatch)
@@ -1767,10 +1770,10 @@ private FuncDeclaration findBestOpApplyMatch(Expression ethis, FuncDeclaration f
 
     if (fd_ambig)
     {
-        .error(ethis.loc, "`%s.%s` matches more than one declaration:\n`%s`:     `%s`\nand:\n`%s`:     `%s`",
-            ethis.toChars(), fstart.ident.toChars(),
-            fd_best.loc.toChars(), fd_best.type.toChars(),
-            fd_ambig.loc.toChars(), fd_ambig.type.toChars());
+        .error(ethis.loc, "`%s.%s` matches more than one declaration:",
+            ethis.toChars(), fstart.ident.toChars());
+        .errorSupplemental(fd_best.loc, "`%s`\nand:", fd_best.type.toChars());
+        .errorSupplemental(fd_ambig.loc, "`%s`", fd_ambig.type.toChars());
         return null;
     }
 

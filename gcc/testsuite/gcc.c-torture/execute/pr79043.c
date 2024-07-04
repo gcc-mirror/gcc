@@ -3,16 +3,17 @@
 int val;
 
 int *ptr = &val;
-float *ptr2 = &val;
+float *ptr2 = (float *) &val;
 
-static
+static void
 __attribute__((always_inline, optimize ("-fno-strict-aliasing")))
 typepun ()
 {
   *ptr2=0;
 }
 
-main()
+int
+main(void)
 {
   *ptr=1;
   typepun ();

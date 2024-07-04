@@ -1,6 +1,6 @@
 // basic test to ensure contracts work for class and member specializations
 // { dg-do run }
-// { dg-options "-std=c++2a -fcontracts -fcontract-continuation-mode=on" }
+// { dg-options "-std=c++2a -fcontracts -fcontract-continuation-mode=on -fsigned-char" }
 #include <cstdio>
 
 // template specializations can have differing contracts

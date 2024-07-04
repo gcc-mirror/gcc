@@ -1,5 +1,5 @@
 /* Description of builtins used by the ARM backend.
-   Copyright (C) 2014-2023 Free Software Foundation, Inc.
+   Copyright (C) 2014-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1580,20 +1580,20 @@ arm_init_simd_builtin_types (void)
       TYPE_STRING_FLAG (arm_simd_polyHI_type_node) = false;
     }
   /* Init all the element types built by the front-end.  */
-  arm_simd_types[Int8x8_t].eltype = intQI_type_node;
-  arm_simd_types[Int8x16_t].eltype = intQI_type_node;
-  arm_simd_types[Int16x4_t].eltype = intHI_type_node;
-  arm_simd_types[Int16x8_t].eltype = intHI_type_node;
-  arm_simd_types[Int32x2_t].eltype = intSI_type_node;
-  arm_simd_types[Int32x4_t].eltype = intSI_type_node;
-  arm_simd_types[Int64x2_t].eltype = intDI_type_node;
-  arm_simd_types[Uint8x8_t].eltype = unsigned_intQI_type_node;
-  arm_simd_types[Uint8x16_t].eltype = unsigned_intQI_type_node;
-  arm_simd_types[Uint16x4_t].eltype = unsigned_intHI_type_node;
-  arm_simd_types[Uint16x8_t].eltype = unsigned_intHI_type_node;
-  arm_simd_types[Uint32x2_t].eltype = unsigned_intSI_type_node;
-  arm_simd_types[Uint32x4_t].eltype = unsigned_intSI_type_node;
-  arm_simd_types[Uint64x2_t].eltype = unsigned_intDI_type_node;
+  arm_simd_types[Int8x8_t].eltype = get_typenode_from_name (INT8_TYPE);
+  arm_simd_types[Int8x16_t].eltype = get_typenode_from_name (INT8_TYPE);
+  arm_simd_types[Int16x4_t].eltype = get_typenode_from_name (INT16_TYPE);
+  arm_simd_types[Int16x8_t].eltype = get_typenode_from_name (INT16_TYPE);
+  arm_simd_types[Int32x2_t].eltype = get_typenode_from_name (INT32_TYPE);
+  arm_simd_types[Int32x4_t].eltype = get_typenode_from_name (INT32_TYPE);
+  arm_simd_types[Int64x2_t].eltype = get_typenode_from_name (INT64_TYPE);
+  arm_simd_types[Uint8x8_t].eltype = get_typenode_from_name (UINT8_TYPE);
+  arm_simd_types[Uint8x16_t].eltype = get_typenode_from_name (UINT8_TYPE);
+  arm_simd_types[Uint16x4_t].eltype = get_typenode_from_name (UINT16_TYPE);
+  arm_simd_types[Uint16x8_t].eltype = get_typenode_from_name (UINT16_TYPE);
+  arm_simd_types[Uint32x2_t].eltype = get_typenode_from_name (UINT32_TYPE);
+  arm_simd_types[Uint32x4_t].eltype = get_typenode_from_name (UINT32_TYPE);
+  arm_simd_types[Uint64x2_t].eltype = get_typenode_from_name (UINT64_TYPE);
 
   /* Note: poly64x2_t is defined in arm_neon.h, to ensure it gets default
      mangling.  */

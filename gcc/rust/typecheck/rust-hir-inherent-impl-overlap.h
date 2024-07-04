@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -20,47 +20,10 @@
 #define RUST_HIR_INHERENT_IMPL_ITEM_OVERLAP_H
 
 #include "rust-hir-type-check-base.h"
-#include "rust-hir-full.h"
+#include "rust-type-util.h"
 
 namespace Rust {
 namespace Resolver {
-
-class ImplItemToName : private TypeCheckBase, private HIR::HIRImplVisitor
-{
-public:
-  static bool resolve (HIR::ImplItem *item, std::string &name_result)
-  {
-    ImplItemToName resolver (name_result);
-    item->accept_vis (resolver);
-    return resolver.ok;
-  }
-
-  void visit (HIR::TypeAlias &alias) override
-  {
-    ok = true;
-    result.assign (alias.get_new_type_name ());
-  }
-
-  void visit (HIR::Function &function) override
-  {
-    ok = true;
-    result.assign (function.get_function_name ());
-  }
-
-  void visit (HIR::ConstantItem &constant) override
-  {
-    ok = true;
-    result.assign (constant.get_identifier ());
-  }
-
-private:
-  ImplItemToName (std::string &result)
-    : TypeCheckBase (), ok (false), result (result)
-  {}
-
-  bool ok;
-  std::string &result;
-};
 
 class OverlappingImplItemPass : public TypeCheckBase
 {
@@ -97,10 +60,7 @@ public:
     if (!ok)
       return;
 
-    std::string impl_item_name;
-    ok = ImplItemToName::resolve (impl_item, impl_item_name);
-    rust_assert (ok);
-
+    std::string impl_item_name = impl_item->get_impl_item_name ();
     std::pair<HIR::ImplItem *, std::string> elem (impl_item, impl_item_name);
     impl_mappings[impl_type].insert (std::move (elem));
   }
@@ -168,9 +128,12 @@ public:
   void collision_detected (HIR::ImplItem *query, HIR::ImplItem *dup,
 			   const std::string &name)
   {
-    RichLocation r (dup->get_locus ());
+    rich_location r (line_table, dup->get_locus ());
+    std::string msg = "duplicate definitions for " + name;
+    r.add_fixit_replace (query->get_locus (), msg.c_str ());
     r.add_range (query->get_locus ());
-    rust_error_at (r, "duplicate definitions with name %s", name.c_str ());
+    rust_error_at (r, ErrorCode::E0592, "duplicate definitions with name %qs",
+		   name.c_str ());
   }
 
 private:

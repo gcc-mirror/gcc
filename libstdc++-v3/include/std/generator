@@ -1,0 +1,821 @@
+// <generator> -*- C++ -*-
+
+// Copyright (C) 2023-2024 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 3, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received a copy of the GNU General Public License and
+// a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+/** @file include/generator
+ *  This is a Standard C++ Library header.
+ */
+
+#ifndef _GLIBCXX_GENERATOR
+#define _GLIBCXX_GENERATOR
+
+#include <ranges>
+#pragma GCC system_header
+
+#include <bits/c++config.h>
+
+#define __glibcxx_want_generator
+#include <bits/version.h>
+
+#ifdef __cpp_lib_generator  // C++ >= 23 && __glibcxx_coroutine
+#include <new>
+#include <bits/move.h>
+#include <bits/ranges_util.h>
+#include <bits/elements_of.h>
+#include <bits/uses_allocator.h>
+#include <bits/exception_ptr.h>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <coroutine>
+
+#include <type_traits>
+#include <variant>
+#include <concepts>
+
+#if _GLIBCXX_HOSTED
+# include <bits/memory_resource.h>
+#endif // HOSTED
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  /**
+   * @defgroup generator_coros Range generator coroutines
+   * @addtogroup ranges
+   * @since C++23
+   * @{
+   */
+
+  /** @brief A range specified using a yielding coroutine.
+   *
+   * `std::generator` is a utility class for defining ranges using coroutines
+   * that yield elements as a range.  Generator coroutines are synchronous.
+   *
+   * @headerfile generator
+   * @since C++23
+   */
+  template<typename _Ref, typename _Val = void, typename _Alloc = void>
+    class generator;
+
+  /// @cond undocumented
+  namespace __gen
+  {
+    /// _Reference type for a generator whose reference (first argument) and
+    /// value (second argument) types are _Ref and _Val.
+    template<typename _Ref, typename _Val>
+    using _Reference_t = __conditional_t<is_void_v<_Val>,
+					 _Ref&&, _Ref>;
+
+    /// Type yielded by a generator whose _Reference type is _Reference.
+    template<typename _Reference>
+    using _Yield_t = __conditional_t<is_reference_v<_Reference>,
+				     _Reference,
+				     const _Reference&>;
+
+    /// _Yield_t * _Reference_t
+    template<typename _Ref, typename _Val>
+    using _Yield2_t = _Yield_t<_Reference_t<_Ref, _Val>>;
+
+    template<typename> constexpr bool __is_generator = false;
+    template<typename _Val, typename _Ref, typename _Alloc>
+    constexpr bool __is_generator<std::generator<_Val, _Ref, _Alloc>> = true;
+
+    /// Allocator and value type erased generator promise type.
+    /// \tparam _Yielded The corresponding generators yielded type.
+    template<typename _Yielded>
+      class _Promise_erased
+      {
+	static_assert(is_reference_v<_Yielded>);
+	using _Yielded_deref = remove_reference_t<_Yielded>;
+	using _Yielded_decvref = remove_cvref_t<_Yielded>;
+	using _ValuePtr = add_pointer_t<_Yielded>;
+	using _Coro_handle = std::coroutine_handle<_Promise_erased>;
+
+	template<typename, typename, typename>
+	friend class std::generator;
+
+	template<typename _Gen>
+	  struct _Recursive_awaiter;
+	template<typename>
+	friend struct _Recursive_awaiter;
+	struct _Copy_awaiter;
+	struct _Subyield_state;
+	struct _Final_awaiter;
+      public:
+	suspend_always
+	initial_suspend() const noexcept
+	{ return {}; }
+
+	suspend_always
+	yield_value(_Yielded __val) noexcept
+	{
+	  _M_bottom_value() = ::std::addressof(__val);
+	  return {};
+	}
+
+	auto
+	yield_value(const _Yielded_deref& __val)
+	  noexcept (is_nothrow_constructible_v<_Yielded_decvref,
+		    const _Yielded_deref&>)
+	  requires (is_rvalue_reference_v<_Yielded>
+		    && constructible_from<_Yielded_decvref,
+		    const _Yielded_deref&>)
+	{ return _Copy_awaiter(__val, _M_bottom_value()); }
+
+	template<typename _R2, typename _V2, typename _A2, typename _U2>
+	requires std::same_as<_Yield2_t<_R2, _V2>, _Yielded>
+	auto
+	yield_value(ranges::elements_of<generator<_R2, _V2, _A2>&&, _U2> __r)
+	  noexcept
+	{ return _Recursive_awaiter { std::move(__r.range) }; }
+
+	template<ranges::input_range _R, typename _Alloc>
+	requires convertible_to<ranges::range_reference_t<_R>, _Yielded>
+	auto
+	yield_value(ranges::elements_of<_R, _Alloc> __r)
+	{
+	  auto __n = [] (allocator_arg_t, _Alloc,
+			 ranges::iterator_t<_R> __i,
+			 ranges::sentinel_t<_R> __s)
+	    -> generator<_Yielded, ranges::range_value_t<_R>, _Alloc> {
+	    for (; __i != __s; ++__i)
+	      co_yield static_cast<_Yielded>(*__i);
+	  };
+	  return yield_value(ranges::elements_of(__n(allocator_arg,
+						     __r.allocator,
+						     ranges::begin(__r.range),
+						     ranges::end(__r.range))));
+	}
+
+
+	_Final_awaiter
+	final_suspend() noexcept
+	{ return {}; }
+
+	void
+	unhandled_exception()
+	{
+	  // To get to this point, this coroutine must have been active.  In that
+	  // case, it must be the top of the stack.  The current coroutine is
+	  // the sole entry of the stack iff it is both the top and the bottom.  As
+	  // it is the top implicitly in this context it will be the sole entry iff
+	  // it is the bottom.
+	  if (_M_nest._M_is_bottom())
+	    throw;
+	  else
+	    this->_M_except = std::current_exception();
+	}
+
+	void await_transform() = delete;
+	void return_void() const noexcept {}
+
+      private:
+	_ValuePtr&
+	_M_bottom_value() noexcept
+	{ return _M_nest._M_bottom_value(*this); }
+
+	_ValuePtr&
+	_M_value() noexcept
+	{ return _M_nest._M_value(*this); }
+
+	_Subyield_state _M_nest;
+	std::exception_ptr _M_except;
+      };
+
+    template<typename _Yielded>
+      struct _Promise_erased<_Yielded>::_Subyield_state
+      {
+	struct _Frame
+	{
+	  _Coro_handle _M_bottom;
+	  _Coro_handle _M_parent;
+	};
+
+	struct _Bottom_frame
+	{
+	  _Coro_handle _M_top;
+	  _ValuePtr _M_value = nullptr;
+	};
+
+	std::variant<
+	  _Bottom_frame,
+	  _Frame
+	  > _M_stack;
+
+	bool
+	_M_is_bottom() const noexcept
+	{ return !std::holds_alternative<_Frame>(this->_M_stack); }
+
+	_Coro_handle&
+	_M_top() noexcept
+	{
+	  if (auto __f = std::get_if<_Frame>(&this->_M_stack))
+	    return __f->_M_bottom.promise()._M_nest._M_top();
+
+	  auto __bf = std::get_if<_Bottom_frame>(&this->_M_stack);
+	  __glibcxx_assert(__bf);
+	  return __bf->_M_top;
+	}
+
+	void
+	_M_push(_Coro_handle __current, _Coro_handle __subyield) noexcept
+	{
+	  __glibcxx_assert(&__current.promise()._M_nest == this);
+	  __glibcxx_assert(this->_M_top() == __current);
+
+	  __subyield.promise()._M_nest._M_jump_in(__current, __subyield);
+	}
+
+	std::coroutine_handle<>
+	_M_pop() noexcept
+	{
+	  if (auto __f = std::get_if<_Frame>(&this->_M_stack))
+	    {
+	      // We aren't a bottom coroutine.  Restore the parent to the top
+	      // and resume.
+	      auto __p = this->_M_top() = __f->_M_parent;
+	      return __p;
+	    }
+	  else
+	    // Otherwise, there's nothing to resume.
+	    return std::noop_coroutine();
+	}
+
+	void
+	_M_jump_in(_Coro_handle __rest, _Coro_handle __new) noexcept
+	{
+	  __glibcxx_assert(&__new.promise()._M_nest == this);
+	  __glibcxx_assert(this->_M_is_bottom());
+	  // We're bottom.  We're also top if top is unset (note that this is
+	  // not true if something was added to the coro stack and then popped,
+	  // but in that case we can't possibly be yielded from, as it would
+	  // require rerunning begin()).
+	  __glibcxx_assert(!this->_M_top());
+
+	  auto& __rn = __rest.promise()._M_nest;
+	  __rn._M_top() = __new;
+
+	  // Presume we're the second frame...
+	  auto __bott = __rest;
+	  if (auto __f = std::get_if<_Frame>(&__rn._M_stack))
+	    // But, if we aren't, get the actual bottom.  We're only the second
+	    // frame if our parent is the bottom frame, i.e. it doesn't have a
+	    // _Frame member.
+	    __bott = __f->_M_bottom;
+
+	  this->_M_stack = _Frame {
+	    ._M_bottom = __bott,
+	    ._M_parent = __rest
+	  };
+	}
+
+	_ValuePtr&
+	_M_bottom_value(_Promise_erased& __current) noexcept
+	{
+	  __glibcxx_assert(&__current._M_nest == this);
+	  if (auto __bf = std::get_if<_Bottom_frame>(&this->_M_stack))
+	    return __bf->_M_value;
+	  auto __f = std::get_if<_Frame>(&this->_M_stack);
+	  __glibcxx_assert(__f);
+	  auto& __p = __f->_M_bottom.promise();
+	  return __p._M_nest._M_value(__p);
+	}
+
+	_ValuePtr&
+	_M_value(_Promise_erased& __current) noexcept
+	{
+	  __glibcxx_assert(&__current._M_nest == this);
+	  auto __bf = std::get_if<_Bottom_frame>(&this->_M_stack);
+	  __glibcxx_assert(__bf);
+	  return __bf->_M_value;
+	}
+      };
+
+    template<typename _Yielded>
+      struct _Promise_erased<_Yielded>::_Final_awaiter
+      {
+	bool await_ready() noexcept
+	{ return false; }
+
+	template<typename _Promise>
+	auto await_suspend(std::coroutine_handle<_Promise> __c) noexcept
+	{
+#ifdef __glibcxx_is_pointer_interconvertible
+	  static_assert(is_pointer_interconvertible_base_of_v<
+			_Promise_erased, _Promise>);
+#endif
+
+	  auto& __n = __c.promise()._M_nest;
+	  return __n._M_pop();
+	}
+
+	void await_resume() noexcept {}
+      };
+
+    template<typename _Yielded>
+      struct _Promise_erased<_Yielded>::_Copy_awaiter
+      {
+	_Yielded_decvref _M_value;
+	_ValuePtr& _M_bottom_value;
+
+	constexpr bool await_ready() noexcept
+	{ return false; }
+
+	template<typename _Promise>
+	void await_suspend(std::coroutine_handle<_Promise>) noexcept
+	{
+#ifdef __glibcxx_is_pointer_interconvertible
+	  static_assert(is_pointer_interconvertible_base_of_v<
+			_Promise_erased, _Promise>);
+#endif
+	  _M_bottom_value = ::std::addressof(_M_value);
+	}
+
+	constexpr void
+	await_resume() const noexcept
+	{}
+      };
+
+    template<typename _Yielded>
+    template<typename _Gen>
+      struct _Promise_erased<_Yielded>::_Recursive_awaiter
+      {
+	_Gen _M_gen;
+	static_assert(__is_generator<_Gen>);
+	static_assert(std::same_as<typename _Gen::yielded, _Yielded>);
+
+	_Recursive_awaiter(_Gen __gen) noexcept
+	  : _M_gen(std::move(__gen))
+	{ this->_M_gen._M_mark_as_started(); }
+
+	constexpr bool
+	await_ready() const noexcept
+	{ return false; }
+
+
+	template<typename _Promise>
+	std::coroutine_handle<>
+	await_suspend(std::coroutine_handle<_Promise> __p) noexcept
+	{
+#ifdef __glibcxx_is_pointer_interconvertible
+	  static_assert(is_pointer_interconvertible_base_of_v<
+			_Promise_erased, _Promise>);
+#endif
+
+	  auto __c = _Coro_handle::from_address(__p.address());
+	  auto __t = _Coro_handle::from_address(this->_M_gen._M_coro.address());
+	  __p.promise()._M_nest._M_push(__c, __t);
+	  return __t;
+	}
+
+	void await_resume()
+	{
+	  if (auto __e = _M_gen._M_coro.promise()._M_except)
+	    std::rethrow_exception(__e);
+	}
+      };
+
+    struct _Alloc_block
+    {
+      alignas(__STDCPP_DEFAULT_NEW_ALIGNMENT__)
+      char _M_data[__STDCPP_DEFAULT_NEW_ALIGNMENT__];
+
+      static auto
+      _M_cnt(std::size_t __sz) noexcept
+      {
+	auto __blksz = sizeof(_Alloc_block);
+	return (__sz + __blksz - 1) / __blksz;
+      }
+    };
+
+    template<typename _All>
+    concept _Stateless_alloc = (allocator_traits<_All>::is_always_equal::value
+				&& default_initializable<_All>);
+
+    template<typename _Alloc>
+      class _Promise_alloc
+      {
+	using _ATr = allocator_traits<_Alloc>;
+	using _Rebound = typename _ATr::template rebind_alloc<_Alloc_block>;
+	using _Rebound_ATr = typename _ATr
+	  ::template rebind_traits<_Alloc_block>;
+	static_assert(is_pointer_v<typename _Rebound_ATr::pointer>,
+		      "Must use allocators for true pointers with generators");
+
+	static auto
+	_M_alloc_address(std::uintptr_t __fn, std::uintptr_t __fsz) noexcept
+	{
+	  auto __an = __fn + __fsz;
+	  auto __ba = alignof(_Rebound);
+	  return reinterpret_cast<_Rebound*>(((__an + __ba - 1) / __ba) * __ba);
+	}
+
+	static auto
+	_M_alloc_size(std::size_t __csz) noexcept
+	{
+	  auto __ba = alignof(_Rebound);
+	  // Our desired layout is placing the coroutine frame, then pad out to
+	  // align, then place the allocator.  The total size of that is the
+	  // size of the coroutine frame, plus up to __ba bytes, plus the size
+	  // of the allocator.
+	  return __csz + __ba + sizeof(_Rebound);
+	}
+
+	static void*
+	_M_allocate(_Rebound __b, std::size_t __csz)
+	{
+	  if constexpr (_Stateless_alloc<_Rebound>)
+	    // Only need room for the coroutine.
+	    return __b.allocate(_Alloc_block::_M_cnt(__csz));
+	  else
+	    {
+	      auto __nsz = _Alloc_block::_M_cnt(_M_alloc_size(__csz));
+	      auto __f = __b.allocate(__nsz);
+	      auto __fn = reinterpret_cast<std::uintptr_t>(__f);
+	      auto __an = _M_alloc_address(__fn, __csz);
+	      ::new (__an) _Rebound(std::move(__b));
+	      return __f;
+	    }
+	}
+
+      public:
+	void*
+	operator new(std::size_t __sz)
+	  requires default_initializable<_Rebound> // _Alloc is non-void
+	{ return _M_allocate({}, __sz); }
+
+	template<typename _Na, typename... _Args>
+	void*
+	operator new(std::size_t __sz,
+		     allocator_arg_t, const _Na& __na,
+		     const _Args&...)
+	  requires convertible_to<const _Na&, _Alloc>
+	{
+	  return _M_allocate(static_cast<_Rebound>(static_cast<_Alloc>(__na)),
+			     __sz);
+	}
+
+	template<typename _This, typename _Na, typename... _Args>
+	void*
+	operator new(std::size_t __sz,
+		     const _This&,
+		     allocator_arg_t, const _Na& __na,
+		     const _Args&...)
+	  requires convertible_to<const _Na&, _Alloc>
+	{
+	  return _M_allocate(static_cast<_Rebound>(static_cast<_Alloc>(__na)),
+			     __sz);
+	}
+
+	void
+	operator delete(void* __ptr, std::size_t __csz) noexcept
+	{
+	  if constexpr (_Stateless_alloc<_Rebound>)
+	    {
+	      _Rebound __b;
+	      return __b.deallocate(reinterpret_cast<_Alloc_block*>(__ptr),
+				    _Alloc_block::_M_cnt(__csz));
+	    }
+	  else
+	    {
+	      auto __nsz = _Alloc_block::_M_cnt(_M_alloc_size(__csz));
+	      auto __fn = reinterpret_cast<std::uintptr_t>(__ptr);
+	      auto __an = _M_alloc_address(__fn, __csz);
+	      _Rebound __b(std::move(*__an));
+	      __an->~_Rebound();
+	      __b.deallocate(reinterpret_cast<_Alloc_block*>(__ptr), __nsz);
+	    }
+	}
+      };
+
+    template<>
+      class _Promise_alloc<void>
+      {
+	using _Dealloc_fn = void (*)(void*, std::size_t);
+
+	static auto
+	_M_dealloc_address(std::uintptr_t __fn, std::uintptr_t __fsz) noexcept
+	{
+	  auto __an = __fn + __fsz;
+	  auto __ba = alignof(_Dealloc_fn);
+	  auto __aligned = ((__an + __ba - 1) / __ba) * __ba;
+	  return reinterpret_cast<_Dealloc_fn*>(__aligned);
+	}
+
+	template<typename _Rebound>
+	static auto
+	_M_alloc_address(std::uintptr_t __fn, std::uintptr_t __fsz) noexcept
+	  requires (!_Stateless_alloc<_Rebound>)
+	{
+	  auto __ba = alignof(_Rebound);
+	  auto __da = _M_dealloc_address(__fn, __fsz);
+	  auto __aan = reinterpret_cast<std::uintptr_t>(__da);
+	  __aan += sizeof(_Dealloc_fn);
+	  auto __aligned = ((__aan + __ba - 1) / __ba) * __ba;
+	  return reinterpret_cast<_Rebound*>(__aligned);
+	}
+
+	template<typename _Rebound>
+	static auto
+	_M_alloc_size(std::size_t __csz) noexcept
+	{
+	  // This time, we want the coroutine frame, then the deallocator
+	  // pointer, then the allocator itself, if any.
+	  std::size_t __aa = 0;
+	  std::size_t __as = 0;
+	  if constexpr (!std::same_as<_Rebound, void>)
+	    {
+	      __aa = alignof(_Rebound);
+	      __as = sizeof(_Rebound);
+	    }
+	  auto __ba = __aa + alignof(_Dealloc_fn);
+	  return __csz + __ba + __as + sizeof(_Dealloc_fn);
+	}
+
+	template<typename _Rebound>
+	static void
+	_M_deallocator(void* __ptr, std::size_t __csz) noexcept
+	{
+	  auto __asz = _M_alloc_size<_Rebound>(__csz);
+	  auto __nblk = _Alloc_block::_M_cnt(__asz);
+
+	  if constexpr (_Stateless_alloc<_Rebound>)
+	    {
+	      _Rebound __b;
+	      __b.deallocate(reinterpret_cast<_Alloc_block*>(__ptr), __nblk);
+	    }
+	  else
+	    {
+	      auto __fn = reinterpret_cast<std::uintptr_t>(__ptr);
+	      auto __an = _M_alloc_address<_Rebound>(__fn, __csz);
+	      _Rebound __b(std::move(*__an));
+	      __an->~_Rebound();
+	      __b.deallocate(reinterpret_cast<_Alloc_block*>(__ptr), __nblk);
+	    }
+	}
+
+	template<typename _Na>
+	static void*
+	_M_allocate(const _Na& __na, std::size_t __csz)
+	{
+	  using _Rebound = typename std::allocator_traits<_Na>
+	    ::template rebind_alloc<_Alloc_block>;
+	  using _Rebound_ATr = typename std::allocator_traits<_Na>
+	    ::template rebind_traits<_Alloc_block>;
+
+	  static_assert(is_pointer_v<typename _Rebound_ATr::pointer>,
+			"Must use allocators for true pointers with generators");
+
+	  _Dealloc_fn __d = &_M_deallocator<_Rebound>;
+	  auto __b = static_cast<_Rebound>(__na);
+	  auto __asz = _M_alloc_size<_Rebound>(__csz);
+	  auto __nblk = _Alloc_block::_M_cnt(__asz);
+	  void* __p = __b.allocate(__nblk);
+	  auto __pn = reinterpret_cast<std::uintptr_t>(__p);
+	  *_M_dealloc_address(__pn, __csz) = __d;
+	  if constexpr (!_Stateless_alloc<_Rebound>)
+	    {
+	      auto __an = _M_alloc_address<_Rebound>(__pn, __csz);
+	      ::new (__an) _Rebound(std::move(__b));
+	    }
+	  return __p;
+	}
+      public:
+	void*
+	operator new(std::size_t __sz)
+	{
+	  auto __nsz = _M_alloc_size<void>(__sz);
+	  _Dealloc_fn __d = [] (void* __ptr, std::size_t __sz)
+	  {
+	    ::operator delete(__ptr, _M_alloc_size<void>(__sz));
+	  };
+	  auto __p = ::operator new(__nsz);
+	  auto __pn = reinterpret_cast<uintptr_t>(__p);
+	  *_M_dealloc_address(__pn, __sz) = __d;
+	  return __p;
+	}
+
+	template<typename _Na, typename... _Args>
+	void*
+	operator new(std::size_t __sz,
+		     allocator_arg_t, const _Na& __na,
+		     const _Args&...)
+	{ return _M_allocate(__na, __sz); }
+
+	template<typename _This, typename _Na, typename... _Args>
+	void*
+	operator new(std::size_t __sz,
+		     const _This&,
+		     allocator_arg_t, const _Na& __na,
+		     const _Args&...)
+	{ return _M_allocate(__na, __sz); }
+
+	void
+	operator delete(void* __ptr, std::size_t __sz) noexcept
+	{
+	  _Dealloc_fn __d;
+	  auto __pn = reinterpret_cast<uintptr_t>(__ptr);
+	  __d = *_M_dealloc_address(__pn, __sz);
+	  __d(__ptr, __sz);
+	}
+      };
+
+    template<typename _Tp>
+    concept _Cv_unqualified_object = is_object_v<_Tp>
+      && same_as<_Tp, remove_cv_t<_Tp>>;
+  } // namespace __gen
+  /// @endcond
+
+  template<typename _Ref, typename _Val, typename _Alloc>
+    class generator
+      : public ranges::view_interface<generator<_Ref, _Val, _Alloc>>
+    {
+      using _Value = __conditional_t<is_void_v<_Val>,
+				     remove_cvref_t<_Ref>,
+				     _Val>;
+      static_assert(__gen::_Cv_unqualified_object<_Value>,
+		    "Generator value must be a cv-unqualified object type");
+      using _Reference = __gen::_Reference_t<_Ref, _Val>;
+      static_assert(is_reference_v<_Reference>
+		    || (__gen::_Cv_unqualified_object<_Reference>
+			&& copy_constructible<_Reference>),
+		    "Generator reference type must be either a cv-unqualified "
+		    "object type that is trivially constructible or a "
+		    "reference type");
+
+      using _RRef = __conditional_t<
+	is_reference_v<_Reference>,
+	remove_reference_t<_Reference>&&,
+	_Reference>;
+
+      /* Required to model indirectly_readable, and input_iterator.  */
+      static_assert(common_reference_with<_Reference&&, _Value&&>);
+      static_assert(common_reference_with<_Reference&&, _RRef&&>);
+      static_assert(common_reference_with<_RRef&&, const _Value&>);
+
+      using _Yielded = __gen::_Yield_t<_Reference>;
+      using _Erased_promise = __gen::_Promise_erased<_Yielded>;
+
+      struct _Iterator;
+
+      friend _Erased_promise;
+      friend struct _Erased_promise::_Subyield_state;
+    public:
+      using yielded = _Yielded;
+
+      struct promise_type : _Erased_promise, __gen::_Promise_alloc<_Alloc>
+      {
+	generator get_return_object() noexcept
+	{ return { coroutine_handle<promise_type>::from_promise(*this) }; }
+      };
+
+#ifdef __glibcxx_is_pointer_interconvertible
+      static_assert(is_pointer_interconvertible_base_of_v<_Erased_promise,
+		    promise_type>);
+#endif
+
+      generator(const generator&) = delete;
+
+      generator(generator&& __other) noexcept
+	: _M_coro(std::__exchange(__other._M_coro, nullptr)),
+	  _M_began(std::__exchange(__other._M_began, false))
+      {}
+
+      ~generator()
+      {
+	if (auto& __c = this->_M_coro)
+	  __c.destroy();
+      }
+
+      generator&
+      operator=(generator __other) noexcept
+      {
+	swap(__other._M_coro, this->_M_coro);
+	swap(__other._M_began, this->_M_began);
+      }
+
+      _Iterator
+      begin()
+      {
+	this->_M_mark_as_started();
+	auto __h = _Coro_handle::from_promise(_M_coro.promise());
+	__h.promise()._M_nest._M_top() = __h;
+	return { __h };
+      }
+
+      default_sentinel_t
+      end() const noexcept
+      { return default_sentinel; }
+
+    private:
+      using _Coro_handle = std::coroutine_handle<_Erased_promise>;
+
+      generator(coroutine_handle<promise_type> __coro) noexcept
+	: _M_coro { move(__coro) }
+      {}
+
+      void
+      _M_mark_as_started() noexcept
+      {
+	__glibcxx_assert(!this->_M_began);
+	this->_M_began = true;
+      }
+
+      coroutine_handle<promise_type> _M_coro;
+      bool _M_began = false;
+    };
+
+  template<class _Ref, class _Val, class _Alloc>
+    struct generator<_Ref, _Val, _Alloc>::_Iterator
+    {
+      using value_type = _Value;
+      using difference_type = ptrdiff_t;
+
+      friend bool
+      operator==(const _Iterator& __i, default_sentinel_t) noexcept
+      { return __i._M_coro.done(); }
+
+      friend class generator;
+
+      _Iterator(_Iterator&& __o) noexcept
+	: _M_coro(std::__exchange(__o._M_coro, {}))
+      {}
+
+      _Iterator&
+      operator=(_Iterator&& __o) noexcept
+      {
+	this->_M_coro = std::__exchange(__o._M_coro, {});
+	return *this;
+      }
+
+      _Iterator&
+      operator++()
+      {
+	_M_next();
+	return *this;
+      }
+
+      void
+      operator++(int)
+      { this->operator++(); }
+
+      _Reference
+      operator*()
+	const noexcept(is_nothrow_move_constructible_v<_Reference>)
+      {
+	auto& __p = this->_M_coro.promise();
+	return static_cast<_Reference>(*__p._M_value());
+      }
+
+    private:
+      friend class generator;
+
+      _Iterator(_Coro_handle __g)
+	: _M_coro { __g }
+      { this->_M_next(); }
+
+      void _M_next()
+      {
+	auto& __t = this->_M_coro.promise()._M_nest._M_top();
+	__t.resume();
+      }
+
+      _Coro_handle _M_coro;
+    };
+
+  /// @}
+
+#if _GLIBCXX_HOSTED
+  namespace pmr {
+    template<typename _Ref, typename _Val = void>
+    using generator = std::generator<_Ref, _Val, polymorphic_allocator<std::byte>>;
+  }
+#endif // HOSTED
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+#endif  // __cpp_lib_generator
+
+#endif  // _GLIBCXX_GENERATOR

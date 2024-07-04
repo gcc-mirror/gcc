@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 pub enum Either<T, E> {
     Left(T),
     Right(E),

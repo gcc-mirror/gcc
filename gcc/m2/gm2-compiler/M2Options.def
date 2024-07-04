@@ -1,6 +1,6 @@
 (* M2Options.def initializes the user options.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -34,72 +34,6 @@ FROM SYSTEM IMPORT ADDRESS ;
 FROM DynamicStrings IMPORT String ;
 FROM m2linemap IMPORT location_t ;
 
-EXPORT QUALIFIED SetReturnCheck, SetNilCheck, SetCaseCheck,
-                 SetCheckAll, SetVerboseUnbounded, SetQuiet, SetCpp, GetCpp,
-                 (* SetMakeall, SetMakeall0, SetIncludePath, *) SetAutoInit,
-                 SetUnboundedByReference,
-                 SetSearchPath, SetISO, SetPIM, SetPIM2, SetPIM3, SetPIM4,
-                 SetPositiveModFloor, SetCompilerDebugging, SetExceptions,
-                 SetStyle, SetPedantic, SetPedanticParamNames, SetPedanticCast,
-                 SetExtendedOpaque, SetXCode, SetQuadDebugging, SetSources,
-                 SetDumpSystemExports,
-                 SetSwig, SetOptimizing, SetForcedLocation,
-                 SetCC1Quiet, SetWholeProgram, SetDebugTraceQuad, SetDebugTraceAPI,
-                 SetVerbose, SetM2g, GetM2g,
-		 GetISO, GetPIM, GetPIM2, GetPIM3, GetPIM4,
-		 GetPositiveModFloor,
-		 SetFloatValueCheck, GetFloatValueCheck,
-		 SetWholeValueCheck, GetWholeValueCheck,
-                 SetLowerCaseKeywords,
-                 SetIndex, SetRange, SetWholeDiv, SetStrictTypeChecking,
-                 Setc, Getc, SetPPOnly, GetPPOnly,
-                 SetUselist, GetUselist, GetUselistFilename,
-                 SetShared,
-
-                 Iso, Pim, Pim2, Pim3, Pim4,
-                 PPonly, cflag,
-                 PositiveModFloorDiv,
-                 Pedantic, Verbose, Statistics,
-                 UnboundedByReference, VerboseUnbounded,
-                 Profiling, Coding, Optimizing,
-                 OptimizeBasicBlock, OptimizeUncalledProcedures,
-                 OptimizeCommonSubExpressions,
-                 StyleChecking, WholeProgram,
-                 NilChecking,
-                 WholeDivChecking, WholeValueChecking,
-                 IndexChecking, RangeChecking,
-                 ReturnChecking, CaseElseChecking,
-                 AutoInit,
-                 VariantValueChecking, CaseEnumChecking,
-                 UnusedVariableChecking, UnusedParameterChecking,
-                 UninitVariableChecking, SetUninitVariableChecking,
-                 UninitVariableConditionalChecking,
-                 SetUnusedVariableChecking, SetUnusedParameterChecking,
-                 Quiet, LineDirectives, StrictTypeChecking,
-                 CPreProcessor, Xcode, ExtendedOpaque,
-                 LowerCaseKeywords,
-                 PedanticParamNames, PedanticCast,
-      	       	 DisplayQuadruples, DebugTraceQuad, DebugTraceAPI,
-                 CompilerDebugging, GenerateDebugging, GenerateLineDebug,
-                 DumpSystemExports, GenerateSwig, Exceptions,
-                 OverrideLocation, FinaliseOptions,
-                 DebugBuiltins, setdefextension, setmodextension,
-                 SetStatistics, SetWall,
-                 SetSaveTemps, SetSaveTempsDir, SaveTemps, GetSaveTempsDir,
-                 SetDumpDir, GetDumpDir, GenModuleList,
-                 CppArg, CppCommandLine, CppRemember,
-		 SetDebugFunctionLineNumbers, DebugFunctionLineNumbers,
-		 SetGenerateStatementNote, GenerateStatementNote,
-                 ScaffoldDynamic, ScaffoldStatic,
-                 SetScaffoldDynamic, SetScaffoldStatic,
-                 SetScaffoldMain, ScaffoldMain,
-                 SetRuntimeModuleOverride, GetRuntimeModuleOverride,
-                 SetGenModuleList, GetGenModuleFilename, SharedFlag,
-                 SetB, GetB, SetMD, GetMD, SetMMD, GetMMD, SetObj, GetObj,
-                 GetMQ, SetMQ, SetM2Prefix, GetM2Prefix,
-                 SetM2PathName, GetM2PathName, SetCaseEnumChecking,
-                 SetDebugBuiltins ;
-
 
 VAR
    PPonly,                       (* -E/M/MM present? - preprocessing only    *)
@@ -111,8 +45,6 @@ VAR
    Pim4,                         (* -fpim4 use strict rules.                 *)
    PositiveModFloorDiv,          (* Force PIM4 behaviour for DIV and MOD     *)
    CompilerDebugging,            (* -fd internal debugging messages          *)
-   DebugTraceQuad,               (* -fdebug-trace-quad                       *)
-   DebugTraceAPI,                (* -fdebug-trace-api                        *)
    GenerateDebugging,            (* -g option to generate info for gdb/dbx   *)
    GenerateLineDebug,            (* -gline to generate line debugging.       *)
    Verbose,                      (* -verbose produce verbose error messages. *)
@@ -121,7 +53,6 @@ VAR
    PedanticCast,                 (* -Wpedantic-cast warns if sizes differ.   *)
    Statistics,                   (* -fstatistics information about code      *)
    StyleChecking,                (* -Wstudents checks for common student errs*)
-   DisplayQuadruples,            (* -Wq option will display quadruples.      *)
    UnboundedByReference,         (* -funbounded-by-reference                 *)
    VerboseUnbounded,             (* -Wverbose-unbounded                      *)
    OptimizeUncalledProcedures,   (* -Ouncalled removes uncalled procedures   *)
@@ -183,11 +114,52 @@ VAR
                                  (* the shared library version of the        *)
                                  (* scaffold.                                *)
    ForcedLocation,
-   DebugFunctionLineNumbers,
    GenerateStatementNote,
    Optimizing,
    Coding,
    Profiling               : BOOLEAN ;
+
+
+(*
+   SetM - set the MFlag.
+*)
+
+PROCEDURE SetM (value: BOOLEAN) ;
+
+
+(*
+   GetM - set the MFlag.
+*)
+
+PROCEDURE GetM () : BOOLEAN ;
+
+
+(*
+   SetMM - set the MMFlag.
+*)
+
+PROCEDURE SetMM (value: BOOLEAN) ;
+
+
+(*
+   GetMM - set the MMFlag.
+*)
+
+PROCEDURE GetMM () : BOOLEAN ;
+
+
+(*
+   SetMF - assigns MFarg to the filename from arg.
+*)
+
+PROCEDURE SetMF (arg: ADDRESS) ;
+
+
+(*
+   GetMF - returns MFarg or NIL if never set.
+*)
+
+PROCEDURE GetMF () : ADDRESS ;
 
 
 (*
@@ -231,6 +203,7 @@ PROCEDURE SetPPOnly (value: BOOLEAN) ;
 
 PROCEDURE GetPPOnly () : BOOLEAN ;
 
+
 (*
    Setc - set the cflag (compile only flag -c) to value.
 *)
@@ -251,52 +224,90 @@ PROCEDURE Getc () : BOOLEAN ;
 
 PROCEDURE SetB (arg: ADDRESS) ;
 
+
 (*
    GetB - returns argument to the -B option as a string or NIL if it were never set.
 *)
 
 PROCEDURE GetB () : ADDRESS ;
 
+
 (*
-   SetMD - assigns MD file to arg.
+   SetMD - set the MDFlag to value.
 *)
 
-PROCEDURE SetMD (arg: ADDRESS) ;
+PROCEDURE SetMD (value: BOOLEAN) ;
+
 
 (*
-   GetMD - returns the filename set for MD or NIL if it was never set.
+   GetMD - return the MDFlag.
 *)
 
-PROCEDURE GetMD () : ADDRESS ;
+PROCEDURE GetMD () : BOOLEAN ;
 
 
 (*
-   SetMMD - assigns MMD file to arg.
+   SetMMD - set the MMDFlag to value.
 *)
 
-PROCEDURE SetMMD (arg: ADDRESS) ;
+PROCEDURE SetMMD (value: BOOLEAN) ;
+
 
 (*
-   GetMMD - returns the filename set for MMD or NIL if it was never set.
+   GetMMD - return the MMDFlag.
 *)
 
-PROCEDURE GetMMD () : ADDRESS ;
+PROCEDURE GetMMD () : BOOLEAN ;
+
 
 (*
-   SetMQ - assigns MQ file to arg.
+   SetMQ - adds a quoted target arg to the DepTarget sentence.
 *)
 
 PROCEDURE SetMQ (arg: ADDRESS) ;
 
+
 (*
-   GetMQ - returns the filename set for MQ or NIL if it was never set.
+   GetMQ - returns a C string containing all the -MQ arg values.
 *)
 
 PROCEDURE GetMQ () : ADDRESS ;
 
+
 (*
-   SetScaffoldDynamic - set the -fscaffold-dynamic flag.
+   SetMT - adds a target arg to the DepTarget sentence.
 *)
+
+PROCEDURE SetMT (arg: ADDRESS) ;
+
+
+(*
+   GetMT - returns a C string containing all the -MT arg values.
+*)
+
+PROCEDURE GetMT () : ADDRESS ;
+
+
+(*
+   GetDepTarget - returns the DepTarget as a C string.
+*)
+
+PROCEDURE GetDepTarget () : ADDRESS ;
+
+
+(*
+   SetMP - set the MPflag to value.
+*)
+
+PROCEDURE SetMP (value: BOOLEAN) ;
+
+
+(*
+   GetMP - get the MPflag.
+*)
+
+PROCEDURE GetMP () : BOOLEAN ;
+
 
 (*
    SetObj - assigns given object file to arg.
@@ -309,6 +320,29 @@ PROCEDURE SetObj (arg: ADDRESS) ;
 *)
 
 PROCEDURE GetObj () : ADDRESS ;
+
+
+(*
+   SetCpp - enables the source to be preprocessed and enables the
+            recognition of C preprocessor line directives.
+*)
+
+PROCEDURE SetCpp (value: BOOLEAN) : BOOLEAN ;
+
+
+(*
+   GetCpp - returns TRUE if the C preprocessor was used.
+*)
+
+PROCEDURE GetCpp () : BOOLEAN ;
+
+
+(*
+   GetLineDirectives - returns TRUE if line directives are allowed.
+*)
+
+PROCEDURE GetLineDirectives () : BOOLEAN ;
+
 
 (*
    SetScaffoldDynamic - set the -fscaffold-dynamic flag.
@@ -447,20 +481,6 @@ PROCEDURE SetQuiet (value: BOOLEAN) : BOOLEAN ;
 *)
 
 PROCEDURE SetCC1Quiet (value: BOOLEAN) ;
-
-
-(*
-   SetCpp -
-*)
-
-PROCEDURE SetCpp (value: BOOLEAN) : BOOLEAN ;
-
-
-(*
-   GetCpp - returns TRUE if the C preprocessor was used.
-*)
-
-PROCEDURE GetCpp () : BOOLEAN ;
 
 
 (*
@@ -646,22 +666,16 @@ PROCEDURE SetQuadDebugging (value: BOOLEAN) ;
 
 
 (*
-   SetDebugTraceQuad -
+   SetM2DebugTraceFilter - set internal debug flags.  The flags should be
+                           specified as a comma separated list.  The full
+                           list allowed is quad,line,token,tree.
 *)
 
-PROCEDURE SetDebugTraceQuad (value: BOOLEAN) ;
+PROCEDURE SetM2DebugTraceFilter (value: BOOLEAN; filter: ADDRESS) ;
 
 
 (*
-   SetDebugTraceAPI -
-*)
-
-PROCEDURE SetDebugTraceAPI (value: BOOLEAN) ;
-
-
-(*
-   SetDebugFunctionLineNumbers - turn DebugFunctionLineNumbers on/off
-                                 (used internally for debugging).
+   SetDebugFunctionLineNumbers - set DebugFunctionLineNumbers.
 *)
 
 PROCEDURE SetDebugFunctionLineNumbers (value: BOOLEAN) ;
@@ -893,6 +907,7 @@ PROCEDURE SetSaveTempsDir (arg: ADDRESS) ;
 
 PROCEDURE GetSaveTempsDir () : String ;
 
+
 (*
    SetDumpDir - Specify dump dir.
 *)
@@ -951,6 +966,158 @@ PROCEDURE SetCaseEnumChecking (value: BOOLEAN) ;
 *)
 
 PROCEDURE SetDebugBuiltins (value: BOOLEAN) ;
+
+
+(*
+   SetIBMLongDouble - enable/disable LONGREAL to map onto the
+                      IBM long double 128 bit data type.
+                      (Only available on the ppc).
+*)
+
+PROCEDURE SetIBMLongDouble (value: BOOLEAN) ;
+
+
+(*
+   GetIBMLongDouble - return the value of IBMLongDouble.
+*)
+
+PROCEDURE GetIBMLongDouble () : BOOLEAN ;
+
+
+(*
+   SetIEEELongDouble - enable/disable LONGREAL to map onto the
+                       IEEE long double 128 bit data type.
+                       (Only available on the ppc).
+*)
+
+PROCEDURE SetIEEELongDouble (value: BOOLEAN) ;
+
+
+(*
+   GetIEEELongDouble - return the value of IEEELongDouble.
+*)
+
+PROCEDURE GetIEEELongDouble () : BOOLEAN ;
+
+
+(*
+   GetDumpDeclFilename - returns the DumpLangDeclFilename.
+*)
+
+PROCEDURE GetDumpDeclFilename () : String ;
+
+
+(*
+   SetDumpDeclFilename - set DumpDeclFilename to filename.
+*)
+
+PROCEDURE SetDumpDeclFilename (value: BOOLEAN; filename: ADDRESS) ;
+
+
+(*
+   GetDumpQuadFilename - returns the DumpQuadFilename.
+*)
+
+PROCEDURE GetDumpQuadFilename () : String ;
+
+
+(*
+   SetDumpQuadFilename - set DumpQuadFilename to filename.
+*)
+
+PROCEDURE SetDumpQuadFilename (value: BOOLEAN; filename: ADDRESS) ;
+
+
+(*
+   GetDumpGimpleFilename - returns the DumpGimpleFilename.
+*)
+
+PROCEDURE GetDumpGimpleFilename () : String ;
+
+
+(*
+   SetDumpGimpleFilename - set DumpGimpleFilename to filename.
+*)
+
+PROCEDURE SetDumpGimpleFilename (value: BOOLEAN; filename: ADDRESS) ;
+
+
+(*
+   SetM2DumpFilter - sets the filter to a comma separated list of procedures
+                     and modules.
+*)
+
+PROCEDURE SetM2DumpFilter (value: BOOLEAN; filter: ADDRESS) ;
+
+
+(*
+   GetM2DumpFilter - returns the dump filter.
+*)
+
+PROCEDURE GetM2DumpFilter () : ADDRESS ;
+
+
+(*
+   SetM2Dump - sets the dump via a comma separated list: quad,decl,gimple,all.
+*)
+
+PROCEDURE SetM2Dump (value: BOOLEAN; filter: ADDRESS) : BOOLEAN ;
+
+
+(*
+   GetDumpGimple - return TRUE if the dump gimple flag is set from SetM2Dump.
+*)
+
+PROCEDURE GetDumpGimple () : BOOLEAN ;
+
+
+(*
+   GetDumpQuad - return TRUE if the dump quad flag is set from SetM2Dump.
+*)
+
+PROCEDURE GetDumpQuad () : BOOLEAN ;
+
+
+(*
+   GetDumpDecl - return TRUE if the dump quad flag is set from SetM2Dump.
+*)
+
+PROCEDURE GetDumpDecl () : BOOLEAN ;
+
+
+(*
+   GetDebugTraceQuad - return DebugTraceQuad.
+*)
+
+PROCEDURE GetDebugTraceQuad () : BOOLEAN ;
+
+
+(*
+   GetDebugTraceTree - return DebugTraceTree.
+*)
+
+PROCEDURE GetDebugTraceTree () : BOOLEAN ;
+
+
+(*
+   GetDebugTraceToken - return DebugTraceToken.
+*)
+
+PROCEDURE GetDebugTraceToken () : BOOLEAN ;
+
+
+(*
+   GetDebugTraceLine - return DebugTraceLine.
+*)
+
+PROCEDURE GetDebugTraceLine () : BOOLEAN ;
+
+
+(*
+   GetDebugFunctionLineNumbers - return DebugFunctionLineNumbers.
+*)
+
+PROCEDURE GetDebugFunctionLineNumbers () : BOOLEAN ;
 
 
 (*

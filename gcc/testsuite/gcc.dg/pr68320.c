@@ -1,6 +1,6 @@
 /* PR c/68320 */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-fpermissive" } */
 
 void
 fn1 (void)

@@ -1,3 +1,6 @@
+void abort(void);
+void exit(int);
+
 #include <limits.h>
 
 #if ULONG_LONG_MAX != 18446744073709551615ull && ULONG_MAX != 18446744073709551615ull
@@ -13,7 +16,7 @@ typedef unsigned long ull;
 
 void checkit(int);
 
-main () {
+int main (void) {
     const ull a = 0x1400000000ULL;
     const ull b = 0x80000000ULL;
     const ull c = a/b;

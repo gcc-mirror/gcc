@@ -1,6 +1,6 @@
 // 2000-09-11 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2000-2023 Free Software Foundation, Inc.
+// Copyright (C) 2000-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,7 +48,7 @@ void test02()
   // Derivation, MF check.
   locale loc_gnu(loc_c, new gnu_collate);
   gnu_count = 0;
-  loc_gnu(s01, s02);
+  loc_gnu(s01, s02); // { dg-warning "nodiscard" "" { target c++17 } }
   VERIFY( gnu_count == 1 );
 }
 

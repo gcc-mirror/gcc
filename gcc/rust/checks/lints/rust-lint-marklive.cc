@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2023 Free Software Foundation, Inc.
+// Copyright (C) 2021-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -41,17 +41,15 @@ public:
   static std::vector<HirId> find (HIR::Crate &crate)
   {
     FindEntryPoint findEntryPoint;
-    for (auto it = crate.items.begin (); it != crate.items.end (); it++)
-      {
-	it->get ()->accept_vis (findEntryPoint);
-      }
+    for (auto &it : crate.get_items ())
+      it->accept_vis (findEntryPoint);
     return findEntryPoint.getEntryPoint ();
   }
 
   // TODO not only fn main can be a entry point.
   void visit (HIR::Function &function) override
   {
-    if (function.get_function_name () == "main")
+    if (function.get_function_name ().as_string () == "main")
       {
 	entryPoints.push_back (function.get_mappings ().get_hirid ());
       }
@@ -224,7 +222,8 @@ MarkLive::visit (HIR::FieldAccessExpr &expr)
   // get the field index
   size_t index;
   TyTy::StructFieldType *field;
-  bool ok = variant->lookup_field (expr.get_field_name (), &field, &index);
+  bool ok = variant->lookup_field (expr.get_field_name ().as_string (), &field,
+				   &index);
   rust_assert (ok);
   if (index >= variant->num_fields ())
     {

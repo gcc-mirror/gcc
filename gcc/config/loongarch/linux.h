@@ -1,5 +1,5 @@
 /* Definitions for Linux-based systems with libraries in ELF format.
-   Copyright (C) 2021-2023 Free Software Foundation, Inc.
+   Copyright (C) 2021-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -21,7 +21,9 @@ along with GCC; see the file COPYING3.  If not see
  * This ensures that a compiler configured with --disable-multilib
  * can work in a multilib environment.  */
 
-#if defined(LA_DISABLE_MULTILIB) && defined(LA_DISABLE_MULTIARCH)
+#if !defined(LA_DEFAULT_TARGET_MUSL) \
+  && defined(LA_DISABLE_MULTILIB) \
+  && defined(LA_DISABLE_MULTIARCH)
 
   #if DEFAULT_ABI_BASE == ABI_BASE_LP64D
     #define ABI_LIBDIR "lib64"

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2019-2023, Free Software Foundation, Inc.      --
+--             Copyright (C) 2019-2024, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -103,7 +103,9 @@ package body Bindo.Units is
 
    begin
       pragma Assert (U_Rec.Utype = Is_Spec);
-      return U_Id - 1;
+      return Result : constant Unit_Id := U_Id - 1 do
+         pragma Assert (ALI.Units.Table (Result).Utype = Is_Body);
+      end return;
    end Corresponding_Body;
 
    ------------------------
@@ -117,7 +119,9 @@ package body Bindo.Units is
 
    begin
       pragma Assert (U_Rec.Utype = Is_Body);
-      return U_Id + 1;
+      return Result : constant Unit_Id := U_Id + 1 do
+         pragma Assert (ALI.Units.Table (Result).Utype = Is_Spec);
+      end return;
    end Corresponding_Spec;
 
    ------------------------

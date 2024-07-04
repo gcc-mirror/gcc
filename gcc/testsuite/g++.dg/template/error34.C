@@ -3,27 +3,27 @@
 
 template<typename T> struct A
 {
-  A<__builtin_offsetof(T, x)>();	// { dg-error "type/value mismatch|offsetof\\(T, x\\)|expected" }
+  A<__builtin_offsetof(T, x)>();	// { dg-error "type/value mismatch|offsetof\\(T, x\\)|template-id" }
 };
 
 template<typename T> struct B
 {
-  B<__builtin_offsetof(T, x.y)>();	// { dg-error "type/value mismatch|offsetof\\(T, x.y\\)|expected" }
+  B<__builtin_offsetof(T, x.y)>();	// { dg-error "type/value mismatch|offsetof\\(T, x.y\\)|template-id" }
 };
 
 template<typename T> struct C
 {
-  C<__builtin_offsetof(T, x[6])>();	// { dg-error "type/value mismatch|offsetof\\(T, x\\\[6\\\]\\)|expected" }
+  C<__builtin_offsetof(T, x[6])>();	// { dg-error "type/value mismatch|offsetof\\(T, x\\\[6\\\]\\)|template-id" }
 };
 
 template<typename T> struct D
 {
-  D<__builtin_offsetof(T, x.y[6].z)>();	// { dg-error "type/value mismatch|offsetof\\(T, x.y\\\[6\\\].z\\)|expected" }
+  D<__builtin_offsetof(T, x.y[6].z)>();	// { dg-error "type/value mismatch|offsetof\\(T, x.y\\\[6\\\].z\\)|template-id" }
 };
 
 struct E { int x; };
 
 template<typename T> struct F
 {
-  F<__builtin_offsetof(E, x)>();	// { dg-error "type/value mismatch|offsetof\\(E, x\\)|expected" }
+  F<__builtin_offsetof(E, x)>();	// { dg-error "type/value mismatch|offsetof\\(E, x\\)|template-id" }
 };

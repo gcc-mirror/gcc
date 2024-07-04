@@ -3,6 +3,10 @@
 
 #define PREC (__CHAR_BIT__)
 
+#if __SIZEOF_INT__ < 4
+#define int __INT32_TYPE__
+#endif
+
 int clz_complement_count1 (unsigned char b) {
     int c = 0;
 

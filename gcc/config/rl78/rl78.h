@@ -1,5 +1,5 @@
 /* GCC backend definitions for the Renesas RL78 processor.
-   Copyright (C) 2011-2023 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -112,10 +112,6 @@
 #define INT_TYPE_SIZE			16
 #define LONG_TYPE_SIZE			32
 #define LONG_LONG_TYPE_SIZE		64
-
-#define FLOAT_TYPE_SIZE 		32
-#define DOUBLE_TYPE_SIZE 		32 /*64*/
-#define LONG_DOUBLE_TYPE_SIZE		64 /*DOUBLE_TYPE_SIZE*/
 
 #define DEFAULT_SIGNED_CHAR		0
 

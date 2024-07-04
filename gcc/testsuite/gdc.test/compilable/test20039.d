@@ -1,5 +1,5 @@
 void foo()() { }
-class bar { }
+void bar(int) { }
 
 alias bug = foo;
 alias bug = bar;

@@ -1,4 +1,5 @@
 // { dg-do compile }
+// Explicit { dg-require-effective-target exceptions_enabled } to avoid verify compiler messages FAILs for '-fno-exceptions'.
 
 void
 a (int b)

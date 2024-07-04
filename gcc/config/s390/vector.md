@@ -1,5 +1,5 @@
 ;;- Instruction patterns for the System z vector facility
-;;  Copyright (C) 2015-2023 Free Software Foundation, Inc.
+;;  Copyright (C) 2015-2024 Free Software Foundation, Inc.
 ;;  Contributed by Andreas Krebbel (Andreas.Krebbel@de.ibm.com)
 
 ;; This file is part of GCC.
@@ -86,7 +86,8 @@
 
 ; 32 bit int<->fp vector conversion instructions are available since VXE2 (z15).
 (define_mode_iterator VX_VEC_CONV_BFP [V2DF (V4SF "TARGET_VXE2")])
-(define_mode_iterator VX_VEC_CONV_INT [V2DI (V4SI "TARGET_VXE2")])
+
+(define_mode_iterator VI_EXTEND [V2QI V2HI V2SI V4QI V4HI])
 
 ; Empty string for all but TImode.  This is used to hide the TImode
 ; expander name in case it is defined already.  See addti3 for an
@@ -196,12 +197,19 @@
 				(V1DF "V2DF") (V2DF "V4DF")])
 
 ; Vector with widened element size and the same number of elements.
-(define_mode_attr vec_2x_wide [(V1QI "V1HI") (V2QI "V2HI") (V4QI "V4HI") (V8QI "V8HI") (V16QI "V16HI")
+(define_mode_attr VEC_2X_WIDE [(V1QI "V1HI") (V2QI "V2HI") (V4QI "V4HI") (V8QI "V8HI") (V16QI "V16HI")
 			       (V1HI "V1SI") (V2HI "V2SI") (V4HI "V4SI") (V8HI "V8SI")
 			       (V1SI "V1DI") (V2SI "V2DI") (V4SI "V4DI")
 			       (V1DI "V1TI") (V2DI "V2TI")
 			       (V1SF "V1DF") (V2SF "V2DF") (V4SF "V4DF")
 			       (V1DF "V1TF") (V2DF "V2TF")])
+
+(define_mode_attr vec_2x_wide [(V1QI "v1hi") (V2QI "v2hi") (V4QI "v4hi") (V8QI "v8hi") (V16QI "v16hi")
+			       (V1HI "v1si") (V2HI "v2si") (V4HI "v4si") (V8HI "v8si")
+			       (V1SI "v1di") (V2SI "v2di") (V4SI "v4di")
+			       (V1DI "v1ti") (V2DI "v2ti")
+			       (V1SF "v1df") (V2SF "v2df") (V4SF "v4df")
+			       (V1DF "v1tf") (V2DF "v2tf")])
 
 ; Vector with half the element size AND half the number of elements.
 (define_mode_attr vec_halfhalf
@@ -532,12 +540,14 @@
          (match_operand:V        1 "nonmemory_operand"  "v,v")
          (parallel
           [(match_operand:SI     2 "nonmemory_operand" "an,I")])))]
-  "TARGET_VX
-   && (!CONST_INT_P (operands[2])
-       || UINTVAL (operands[2]) < GET_MODE_NUNITS (<V:MODE>mode))"
-  "@
-   vlgv<bhfgq>\t%0,%v1,%Y2
-   vste<bhfgq>\t%v1,%0,%2"
+  "TARGET_VX"
+  {
+    if (CONST_INT_P (operands[2]))
+	  operands[2] = GEN_INT (UINTVAL (operands[2]) & (GET_MODE_NUNITS (<V:MODE>mode) - 1));
+    if (which_alternative == 0)
+      return "vlgv<bhfgq>\t%0,%v1,%Y2";
+	return "vste<bhfgq>\t%v1,%0,%2";
+  }
   [(set_attr "op_type" "VRS,VRX")])
 
 ; vlgvb, vlgvh, vlgvf, vlgvg
@@ -885,6 +895,17 @@
   "vmrhf\t%0,%1,%2";
   [(set_attr "op_type" "VRR")])
 
+(define_insn "*vmrhf_half<mode>"
+  [(set (match_operand:V_HW_4                                0 "register_operand" "=v")
+	(vec_select:V_HW_4
+	 (vec_concat:V_HW_4 (match_operand:<vec_halfnumelts> 1 "register_operand"  "v")
+			    (match_operand:<vec_halfnumelts> 2 "register_operand"  "v"))
+	 (parallel [(const_int 0) (const_int 2)
+		    (const_int 1) (const_int 3)])))]
+  "TARGET_VX"
+  "vmrhf\t%0,%1,%2";
+  [(set_attr "op_type" "VRR")])
+
 (define_insn "*vmrlf"
   [(set (match_operand:V_HW_4                              0 "register_operand" "=v")
         (vec_select:V_HW_4
@@ -948,6 +969,152 @@
   operands[5] = simplify_gen_subreg (DFmode, operands[1], TFmode, 8);
 })
 
+;; VECTOR REVERSE ELEMENTS V16QI
+
+(define_expand "eltswapv16qi"
+  [(parallel
+    [(set (match_operand:V16QI  0 "nonimmediate_operand")
+	  (vec_select:V16QI
+	   (match_operand:V16QI 1 "nonimmediate_operand")
+	   (match_dup 2)))
+     (use (match_dup 3))])]
+  "TARGET_VX"
+{
+  rtvec vec = rtvec_alloc (16);
+  for (int i = 0; i < 16; ++i)
+    RTVEC_ELT (vec, i) = GEN_INT (15 - i);
+  operands[2] = gen_rtx_PARALLEL (VOIDmode, vec);
+  operands[3] = gen_rtx_CONST_VECTOR (V16QImode, vec);
+})
+
+(define_insn_and_split "*eltswapv16qi"
+  [(set (match_operand:V16QI  0 "nonimmediate_operand" "=v,^R,^v")
+	(vec_select:V16QI
+	 (match_operand:V16QI 1 "nonimmediate_operand"  "v,^v,^R")
+	 (parallel [(const_int 15)
+		    (const_int 14)
+		    (const_int 13)
+		    (const_int 12)
+		    (const_int 11)
+		    (const_int 10)
+		    (const_int 9)
+		    (const_int 8)
+		    (const_int 7)
+		    (const_int 6)
+		    (const_int 5)
+		    (const_int 4)
+		    (const_int 3)
+		    (const_int 2)
+		    (const_int 1)
+		    (const_int 0)])))
+   (use (match_operand:V16QI 2 "permute_pattern_operand" "v,X,X"))]
+  "TARGET_VX"
+  "@
+   #
+   vstbrq\t%v1,%0
+   vlbrq\t%v0,%1"
+  "&& reload_completed && REG_P (operands[0]) && REG_P (operands[1])"
+  [(set (match_dup 0)
+	(unspec:V16QI [(match_dup 1)
+		       (match_dup 1)
+		       (match_dup 2)]
+		      UNSPEC_VEC_PERM))]
+  ""
+  [(set_attr "cpu_facility" "*,vxe2,vxe2")
+   (set_attr "op_type" "*,VRX,VRX")])
+
+;; VECTOR REVERSE ELEMENTS V8HI
+
+(define_insn_and_split "eltswapv8hi"
+  [(set (match_operand:V8HI  0 "nonimmediate_operand" "=v,R,v")
+	(vec_select:V8HI
+	 (match_operand:V8HI 1 "nonimmediate_operand"  "v,v,R")
+	 (parallel [(const_int 7)
+		    (const_int 6)
+		    (const_int 5)
+		    (const_int 4)
+		    (const_int 3)
+		    (const_int 2)
+		    (const_int 1)
+		    (const_int 0)])))
+   (clobber (match_scratch:V2DI 2 "=&v,X,X"))
+   (clobber (match_scratch:V4SI 3 "=&v,X,X"))]
+  "TARGET_VX"
+  "@
+   #
+   vsterh\t%v1,%0
+   vlerh\t%v0,%1"
+  "&& reload_completed && REG_P (operands[0]) && REG_P (operands[1])"
+  [(set (match_dup 2)
+	(subreg:V2DI (match_dup 1) 0))
+   (set (match_dup 2)
+	(vec_select:V2DI
+	 (match_dup 2)
+	 (parallel [(const_int 1) (const_int 0)])))
+   (set (match_dup 2)
+	(rotate:V2DI
+	 (match_dup 2)
+	 (const_int 32)))
+   (set (match_dup 3)
+	(subreg:V4SI (match_dup 2) 0))
+   (set (match_dup 3)
+	(rotate:V4SI
+	 (match_dup 3)
+	 (const_int 16)))
+   (set (match_dup 0)
+	(subreg:V8HI (match_dup 3) 0))]
+  ""
+  [(set_attr "cpu_facility" "*,vxe2,vxe2")
+   (set_attr "op_type" "*,VRX,VRX")])
+
+;; VECTOR REVERSE ELEMENTS V4SI / V4SF
+
+(define_insn_and_split "eltswap<mode>"
+  [(set (match_operand:V_HW_4  0 "nonimmediate_operand" "=v,R,v")
+	(vec_select:V_HW_4
+	 (match_operand:V_HW_4 1 "nonimmediate_operand"  "v,v,R")
+	 (parallel [(const_int 3)
+		    (const_int 2)
+		    (const_int 1)
+		    (const_int 0)])))
+   (clobber (match_scratch:V2DI 2 "=&v,X,X"))]
+  "TARGET_VX"
+  "@
+   #
+   vsterf\t%v1,%0
+   vlerf\t%v0,%1"
+  "&& reload_completed && REG_P (operands[0]) && REG_P (operands[1])"
+  [(set (match_dup 2)
+	(subreg:V2DI (match_dup 1) 0))
+   (set (match_dup 2)
+	(vec_select:V2DI
+	 (match_dup 2)
+	 (parallel [(const_int 1) (const_int 0)])))
+   (set (match_dup 2)
+	(rotate:V2DI
+	 (match_dup 2)
+	 (const_int 32)))
+   (set (match_dup 0)
+	(subreg:V_HW_4 (match_dup 2) 0))]
+  ""
+  [(set_attr "cpu_facility" "*,vxe2,vxe2")
+   (set_attr "op_type" "*,VRX,VRX")])
+
+;; VECTOR REVERSE ELEMENTS V2DI / V2DF
+
+(define_insn "eltswap<mode>"
+  [(set (match_operand:V_HW_2  0 "nonimmediate_operand" "=v,R,v")
+	(vec_select:V_HW_2
+	 (match_operand:V_HW_2 1 "nonimmediate_operand"  "v,v,R")
+	 (parallel [(const_int 1)
+		    (const_int 0)])))]
+  "TARGET_VX"
+  "@
+   vpdi\t%v0,%v1,%v1,4
+   vsterg\t%v1,%0
+   vlerg\t%v0,%1"
+  [(set_attr "cpu_facility" "vx,vxe2,vxe2")
+   (set_attr "op_type" "VRR,VRX,VRX")])
 
 ;;
 ;; Vector integer arithmetic instructions
@@ -1154,14 +1321,14 @@
 	(plus:V16QI (match_dup 2) (match_dup 3)))
    ; Generate mask for the odd numbered byte elements
    (set (match_dup 3)
-	(const_vector:V16QI [(const_int 0) (const_int 255)
-			     (const_int 0) (const_int 255)
-			     (const_int 0) (const_int 255)
-			     (const_int 0) (const_int 255)
-			     (const_int 0) (const_int 255)
-			     (const_int 0) (const_int 255)
-			     (const_int 0) (const_int 255)
-			     (const_int 0) (const_int 255)]))
+	(const_vector:V16QI [(const_int 0) (const_int -1)
+			     (const_int 0) (const_int -1)
+			     (const_int 0) (const_int -1)
+			     (const_int 0) (const_int -1)
+			     (const_int 0) (const_int -1)
+			     (const_int 0) (const_int -1)
+			     (const_int 0) (const_int -1)
+			     (const_int 0) (const_int -1)]))
    ; Zero out the even indexed bytes
    (set (match_operand:V8HI 0 "register_operand" "=v")
 	(and:V8HI (subreg:V8HI (match_dup 2) 0)
@@ -1457,7 +1624,7 @@
 			     UNSPEC_VEC_UMULT_ODD))
    (set (match_operand:<vec_double>                 0 "register_operand" "")
         (vec_select:<vec_double>
-	 (vec_concat:<vec_2x_wide> (match_dup 3) (match_dup 4))
+	 (vec_concat:<VEC_2X_WIDE> (match_dup 3) (match_dup 4))
 	 (match_dup 5)))]
   "TARGET_VX"
  {
@@ -1476,7 +1643,7 @@
 			     UNSPEC_VEC_UMULT_ODD))
    (set (match_operand:<vec_double>                 0 "register_operand" "")
         (vec_select:<vec_double>
-	 (vec_concat:<vec_2x_wide> (match_dup 3) (match_dup 4))
+	 (vec_concat:<VEC_2X_WIDE> (match_dup 3) (match_dup 4))
 	 (match_dup 5)))]
   "TARGET_VX"
  {
@@ -1495,7 +1662,7 @@
 			     UNSPEC_VEC_SMULT_ODD))
    (set (match_operand:<vec_double>                 0 "register_operand" "")
         (vec_select:<vec_double>
-	 (vec_concat:<vec_2x_wide> (match_dup 3) (match_dup 4))
+	 (vec_concat:<VEC_2X_WIDE> (match_dup 3) (match_dup 4))
 	 (match_dup 5)))]
   "TARGET_VX"
  {
@@ -1514,7 +1681,7 @@
 			     UNSPEC_VEC_SMULT_ODD))
    (set (match_operand:<vec_double>                 0 "register_operand" "")
         (vec_select:<vec_double>
-	 (vec_concat:<vec_2x_wide> (match_dup 3) (match_dup 4))
+	 (vec_concat:<VEC_2X_WIDE> (match_dup 3) (match_dup 4))
 	 (match_dup 5)))]
   "TARGET_VX"
  {
@@ -2228,6 +2395,33 @@
   "vpkls<bhfgq>\t%0,%1,%2"
   [(set_attr "op_type" "VRR")])
 
+;; vector unpack / extend
+
+(define_insn "<extend_insn><VI_EXTEND:mode><vec_2x_wide>2"
+  [(set (match_operand:<VEC_2X_WIDE> 0 "register_operand" "=v")
+	(any_extend:<VEC_2X_WIDE>
+	 (match_operand:VI_EXTEND 1 "register_operand" "v")))]
+  "TARGET_VX"
+  "vup<zero_extend>h<bhfgq>\t%0,%1"
+  [(set_attr "op_type" "VRR")])
+
+(define_expand "extendv2sfv2df2"
+  [(set (match_dup 2)
+	(vec_select:V4SF
+	 (vec_concat:V4SF (match_operand:V2SF 1 "register_operand")
+			  (match_dup 1))
+	 (parallel [(const_int 0) (const_int 2)
+		    (const_int 1) (const_int 3)])))
+   (set (match_operand:V2DF 0 "register_operand")
+	(float_extend:V2DF
+	 (vec_select:V2SF
+	  (match_dup 2)
+	  (parallel [(const_int 0) (const_int 2)]))))]
+  "TARGET_VX"
+{
+  operands[2] = gen_reg_rtx (V4SFmode);
+})
+
 ;; vector unpack v16qi
 
 ; signed
@@ -2508,12 +2702,11 @@
 ; op2: inexact exception not suppressed (IEEE 754 2008)
 ; op3: according to current rounding mode
 ; vcdgb, vcefb
-(define_insn "float<VX_VEC_CONV_INT:mode><VX_VEC_CONV_BFP:mode>2"
-  [(set (match_operand:VX_VEC_CONV_BFP                        0 "register_operand" "=v")
-	(float:VX_VEC_CONV_BFP (match_operand:VX_VEC_CONV_INT 1 "register_operand"  "v")))]
-  "TARGET_VX
-   && GET_MODE_UNIT_SIZE (<VX_VEC_CONV_INT:MODE>mode) == GET_MODE_UNIT_SIZE (<VX_VEC_CONV_BFP:MODE>mode)"
-  "vc<VX_VEC_CONV_BFP:xde><VX_VEC_CONV_INT:bhfgq>b\t%v0,%v1,0,0"
+(define_insn "float<tointvec><mode>2"
+  [(set (match_operand:VX_VEC_CONV_BFP                   0 "register_operand" "=v")
+	(float:VX_VEC_CONV_BFP (match_operand:<TOINTVEC> 1 "register_operand"  "v")))]
+  "TARGET_VX"
+  "vc<xde><bhfgq>b\t%v0,%v1,0,0"
   [(set_attr "op_type" "VRR")])
 
 ; There is no instruction for loading a signed integer into an extended BFP
@@ -2539,12 +2732,11 @@
 ; op2: inexact exception not suppressed (IEEE 754 2008)
 ; op3: according to current rounding mode
 ; vcdlgb, vcelfb
-(define_insn "floatuns<VX_VEC_CONV_INT:mode><VX_VEC_CONV_BFP:mode>2"
-  [(set (match_operand:VX_VEC_CONV_BFP                                 0 "register_operand" "=v")
-	(unsigned_float:VX_VEC_CONV_BFP (match_operand:VX_VEC_CONV_INT 1 "register_operand"  "v")))]
-  "TARGET_VX
-   && GET_MODE_UNIT_SIZE (<VX_VEC_CONV_INT:MODE>mode) == GET_MODE_UNIT_SIZE (<VX_VEC_CONV_BFP:MODE>mode)"
-  "vc<VX_VEC_CONV_BFP:xde>l<VX_VEC_CONV_INT:bhfgq>b\t%v0,%v1,0,0"
+(define_insn "floatuns<tointvec><mode>2"
+  [(set (match_operand:VX_VEC_CONV_BFP                            0 "register_operand" "=v")
+	(unsigned_float:VX_VEC_CONV_BFP (match_operand:<TOINTVEC> 1 "register_operand"  "v")))]
+  "TARGET_VX"
+  "vc<xde>l<bhfgq>b\t%v0,%v1,0,0"
   [(set_attr "op_type" "VRR")])
 
 ; There is no instruction for loading an unsigned integer into an extended BFP
@@ -2570,12 +2762,11 @@
 ; op2: inexact exception not suppressed (IEEE 754 2008)
 ; op3: rounding mode 5 (round towards 0 C11 6.3.1.4)
 ; vcgdb, vcfeb
-(define_insn "fix_trunc<VX_VEC_CONV_BFP:mode><VX_VEC_CONV_INT:mode>2"
-  [(set (match_operand:VX_VEC_CONV_INT                      0 "register_operand" "=v")
-	(fix:VX_VEC_CONV_INT (match_operand:VX_VEC_CONV_BFP 1 "register_operand"  "v")))]
-  "TARGET_VX
-   && GET_MODE_UNIT_SIZE (<VX_VEC_CONV_INT:MODE>mode) == GET_MODE_UNIT_SIZE (<VX_VEC_CONV_BFP:MODE>mode)"
-  "vc<VX_VEC_CONV_INT:bhfgq><VX_VEC_CONV_BFP:xde>b\t%v0,%v1,0,5"
+(define_insn "fix_trunc<mode><tointvec>2"
+  [(set (match_operand:<TOINTVEC>                      0 "register_operand" "=v")
+	(fix:<TOINTVEC> (match_operand:VX_VEC_CONV_BFP 1 "register_operand"  "v")))]
+  "TARGET_VX"
+  "vc<bhfgq><xde>b\t%v0,%v1,0,5"
   [(set_attr "op_type" "VRR")])
 
 ; There is no instruction for rounding an extended BFP operand in a VR into
@@ -2604,12 +2795,11 @@
 ; op2: inexact exception not suppressed (IEEE 754 2008)
 ; op3: rounding mode 5 (round towards 0 C11 6.3.1.4)
 ; vclgdb, vclfeb
-(define_insn "fixuns_trunc<VX_VEC_CONV_BFP:mode><VX_VEC_CONV_INT:mode>2"
-  [(set (match_operand:VX_VEC_CONV_INT                               0 "register_operand" "=v")
-	(unsigned_fix:VX_VEC_CONV_INT (match_operand:VX_VEC_CONV_BFP 1 "register_operand"  "v")))]
-  "TARGET_VX
-   && GET_MODE_UNIT_SIZE (<VX_VEC_CONV_INT:MODE>mode) == GET_MODE_UNIT_SIZE (<VX_VEC_CONV_BFP:MODE>mode)"
-  "vcl<VX_VEC_CONV_INT:bhfgq><VX_VEC_CONV_BFP:xde>b\t%v0,%v1,0,5"
+(define_insn "fixuns_trunc<VX_VEC_CONV_BFP:mode><tointvec>2"
+  [(set (match_operand:<TOINTVEC>                               0 "register_operand" "=v")
+	(unsigned_fix:<TOINTVEC> (match_operand:VX_VEC_CONV_BFP 1 "register_operand"  "v")))]
+  "TARGET_VX"
+  "vcl<bhfgq><xde>b\t%v0,%v1,0,5"
   [(set_attr "op_type" "VRR")])
 
 ; There is no instruction for rounding an extended BFP operand in a VR into

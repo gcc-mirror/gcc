@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,8 +30,6 @@
 with Atree;          use Atree;
 with Casing;         use Casing;
 with Csets;          use Csets;
-with Einfo;          use Einfo;
-with Einfo.Utils;    use Einfo.Utils;
 with Err_Vars;       use Err_Vars;
 with Errout;
 with Opt;            use Opt;
@@ -193,87 +191,6 @@ package body Styleg is
          Require_Following_Space;
       end if;
    end Check_Binary_Operator;
-
-   ----------------------------
-   -- Check_Boolean_Operator --
-   ----------------------------
-
-   procedure Check_Boolean_Operator (Node : Node_Id) is
-
-      function OK_Boolean_Operand (N : Node_Id) return Boolean;
-      --  Returns True for simple variable, or "not X1" or "X1 and X2" or
-      --  "X1 or X2" where X1, X2 are recursively OK_Boolean_Operand's.
-
-      ------------------------
-      -- OK_Boolean_Operand --
-      ------------------------
-
-      function OK_Boolean_Operand (N : Node_Id) return Boolean is
-      begin
-         if Nkind (N) in N_Identifier | N_Expanded_Name then
-            return True;
-
-         elsif Nkind (N) = N_Op_Not then
-            return OK_Boolean_Operand (Original_Node (Right_Opnd (N)));
-
-         elsif Nkind (N) in N_Op_And | N_Op_Or then
-            return OK_Boolean_Operand (Original_Node (Left_Opnd (N)))
-                     and then
-                   OK_Boolean_Operand (Original_Node (Right_Opnd (N)));
-
-         else
-            return False;
-         end if;
-      end OK_Boolean_Operand;
-
-   --  Start of processing for Check_Boolean_Operator
-
-   begin
-      if Style_Check_Boolean_And_Or
-        and then Comes_From_Source (Node)
-      then
-         declare
-            Orig : constant Node_Id := Original_Node (Node);
-
-         begin
-            if Nkind (Orig) in N_Op_And | N_Op_Or then
-               declare
-                  L : constant Node_Id := Original_Node (Left_Opnd  (Orig));
-                  R : constant Node_Id := Original_Node (Right_Opnd (Orig));
-
-               begin
-                  --  First OK case, simple boolean constants/identifiers
-
-                  if OK_Boolean_Operand (L)
-                       and then
-                     OK_Boolean_Operand (R)
-                  then
-                     return;
-
-                  --  Second OK case, modular types
-
-                  elsif Is_Modular_Integer_Type (Etype (Node)) then
-                     return;
-
-                  --  Third OK case, array types
-
-                  elsif Is_Array_Type (Etype (Node)) then
-                     return;
-
-                  --  Otherwise we have an error
-
-                  elsif Nkind (Orig) = N_Op_And then
-                     Error_Msg -- CODEFIX
-                       ("(style) `AND THEN` required?B?", Sloc (Orig));
-                  else
-                     Error_Msg -- CODEFIX
-                       ("(style) `OR ELSE` required?B?", Sloc (Orig));
-                  end if;
-               end;
-            end if;
-         end;
-      end if;
-   end Check_Boolean_Operator;
 
    ---------------
    -- Check_Box --
@@ -1136,28 +1053,6 @@ package body Styleg is
            ("(style) redundant parentheses?x?", Errout.First_Sloc (N));
       end if;
    end Check_Xtra_Parens;
-
-   ----------------------------------
-   -- Check_Xtra_Parens_Precedence --
-   ----------------------------------
-
-   procedure Check_Xtra_Parens_Precedence (N : Node_Id) is
-   begin
-      if Style_Check_Xtra_Parens_Precedence
-        and then
-          Paren_Count (N) >
-            (if Nkind (N) in N_Case_Expression
-                           | N_Expression_With_Actions
-                           | N_If_Expression
-                           | N_Quantified_Expression
-                           | N_Raise_Expression
-             then 1
-             else 0)
-      then
-         Error_Msg -- CODEFIX
-           ("(style) redundant parentheses?z?", Errout.First_Sloc (N));
-      end if;
-   end Check_Xtra_Parens_Precedence;
 
    ----------------------------
    -- Determine_Token_Casing --

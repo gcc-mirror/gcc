@@ -1,6 +1,6 @@
 (* P2SymBuild.def pass 2 symbol creation.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -887,7 +887,7 @@ PROCEDURE BuildNoReturnAttribute (procedureSym: CARDINAL) ;
                       |------------|              |-------------|
 *)
 
-PROCEDURE BuildPointerType ;
+PROCEDURE BuildPointerType (pointerpos: CARDINAL) ;
 
 
 (*
@@ -906,7 +906,7 @@ PROCEDURE BuildPointerType ;
                   |------------|              |-------------|
 *)
 
-PROCEDURE BuildSetType (ispacked: BOOLEAN) ;
+PROCEDURE BuildSetType (setpos: CARDINAL; ispacked: BOOLEAN) ;
 
 
 (*

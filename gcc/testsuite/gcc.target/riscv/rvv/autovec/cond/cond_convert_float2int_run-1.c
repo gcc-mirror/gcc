@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-additional-options "--param=riscv-autovec-preference=scalable -fno-vect-cost-model" } */
+/* { dg-additional-options "-mrvv-vector-bits=scalable -fno-vect-cost-model" } */
 
 #include "cond_convert_float2int-1.h"
 
@@ -11,15 +11,18 @@
     OLD_TYPE a[N], pred[N];                                                    \
     for (int i = 0; i < N; ++i)                                                \
       {                                                                        \
-	a[i] = (i & 1 ? i : 3 * i) * (i % 3 == 0 ? 1 : -1);                    \
+	a[i] = (i & 1 ? i : 1.1 * i) * (i % 3 == 0 ? 1.2 : -1.5);              \
 	b[i] = (i % 9) * (i % 7 + 1);                                          \
 	pred[i] = (i % 7 < 4);                                                 \
-	asm volatile("" ::: "memory");                                         \
+	asm volatile ("" ::: "memory");                                        \
       }                                                                        \
     test_##OLD_TYPE##_2_##NEW_TYPE (r, a, b, pred, N);                         \
     for (int i = 0; i < N; ++i)                                                \
-      if (r[i] != (pred[i] ? (NEW_TYPE) a[i] : b[i]))                          \
-	__builtin_abort ();                                                    \
+      {                                                                        \
+	NEW_TYPE ref = pred[i] ? a[i] : b[i];                                  \
+	if (r[i] != ref)                                                       \
+	  __builtin_abort ();                                                  \
+      }                                                                        \
   }
 
 int

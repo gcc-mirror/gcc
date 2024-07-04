@@ -1,5 +1,5 @@
 ;; VSX patterns.
-;; Copyright (C) 2009-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2024 Free Software Foundation, Inc.
 ;; Contributed by Michael Meissner <meissner@linux.vnet.ibm.com>
 
 ;; This file is part of GCC.
@@ -411,8 +411,35 @@
 			   (V2DF  "d")
 			   (V4SF  "w")])
 
+;; Iterator and attribute for vector count leading/trailing
+;; zero least-significant bits byte
+(define_int_iterator VCZLSBB [UNSPEC_VCLZLSBB
+			      UNSPEC_VCTZLSBB])
+(define_int_attr vczlsbb_char [(UNSPEC_VCLZLSBB "l")
+			       (UNSPEC_VCTZLSBB "t")])
 
 ;; VSX moves
+
+;; TImode memory to memory move optimization on LE with p8vector
+(define_insn_and_split "*vsx_le_mem_to_mem_mov_ti"
+  [(set (match_operand:TI 0 "indexed_or_indirect_operand" "=Z")
+	(match_operand:TI 1 "indexed_or_indirect_operand" "Z"))]
+  "!BYTES_BIG_ENDIAN
+   && TARGET_VSX
+   && !TARGET_P9_VECTOR
+   && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  rtx tmp = gen_reg_rtx (V2DImode);
+  rtx src =  adjust_address (operands[1], V2DImode, 0);
+  emit_insn (gen_vsx_ld_elemrev_v2di (tmp, src));
+  rtx dest = adjust_address (operands[0], V2DImode, 0);
+  emit_insn (gen_vsx_st_elemrev_v2di (dest, tmp));
+  DONE;
+}
+  [(set_attr "length" "16")])
 
 ;; The patterns for LE permuted loads and stores come before the general
 ;; VSX moves so they match first.
@@ -3341,6 +3368,31 @@
   "stxvd2x %x1,%y0"
   [(set_attr "type" "vecstore")])
 
+(define_insn_and_split "vsx_stxvd2x4_le_const_<mode>"
+  [(set (match_operand:VSX_W 0 "memory_operand" "=Z")
+	(match_operand:VSX_W 1 "immediate_operand" "W"))]
+  "!BYTES_BIG_ENDIAN
+   && VECTOR_MEM_VSX_P (<MODE>mode)
+   && !TARGET_P9_VECTOR
+   && const_vec_duplicate_p (operands[1])
+   && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 2)
+	(match_dup 1))
+   (set (match_dup 0)
+	(vec_select:VSX_W
+	  (match_dup 2)
+	  (parallel [(const_int 2) (const_int 3)
+		     (const_int 0) (const_int 1)])))]
+{
+  /* Here all the constants must be loaded without memory.  */
+  gcc_assert (easy_altivec_constant (operands[1], <MODE>mode));
+  operands[2] = gen_reg_rtx (<MODE>mode);
+}
+  [(set_attr "type" "vecstore")
+   (set_attr "length" "8")])
+
 (define_insn "*vsx_stxvd2x8_le_V8HI"
   [(set (match_operand:V8HI 0 "memory_operand" "=Z")
         (vec_select:V8HI
@@ -4639,8 +4691,8 @@
   rtx op1 = operands[1];
   if (MEM_P (op1))
     operands[1] = rs6000_force_indexed_or_indirect_mem (op1);
-  else if (!REG_P (op1))
-    op1 = force_reg (<VSX_D:VEC_base>mode, op1);
+  else
+    operands[1] = force_reg (<VSX_D:VEC_base>mode, op1);
 })
 
 (define_insn "vsx_splat_<mode>_reg"
@@ -4771,12 +4823,14 @@
 		     (const_int 1) (const_int 5)])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
-  rtx (*fun) (rtx, rtx, rtx);
-  fun = BYTES_BIG_ENDIAN ? gen_altivec_vmrghw_direct_<mode>
-			 : gen_altivec_vmrglw_direct_<mode>;
-  if (!BYTES_BIG_ENDIAN)
-    std::swap (operands[1], operands[2]);
-  emit_insn (fun (operands[0], operands[1], operands[2]));
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vmrghw_direct_v4si_be (operands[0],
+						  operands[1],
+						  operands[2]));
+  else
+    emit_insn (gen_altivec_vmrglw_direct_v4si_le (operands[0],
+						  operands[2],
+						  operands[1]));
   DONE;
 }
   [(set_attr "type" "vecperm")])
@@ -4791,12 +4845,14 @@
 		     (const_int 3) (const_int 7)])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
-  rtx (*fun) (rtx, rtx, rtx);
-  fun = BYTES_BIG_ENDIAN ? gen_altivec_vmrglw_direct_<mode>
-			 : gen_altivec_vmrghw_direct_<mode>;
-  if (!BYTES_BIG_ENDIAN)
-    std::swap (operands[1], operands[2]);
-  emit_insn (fun (operands[0], operands[1], operands[2]));
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vmrglw_direct_v4si_be (operands[0],
+						  operands[1],
+						  operands[2]));
+  else
+    emit_insn (gen_altivec_vmrghw_direct_v4si_le (operands[0],
+						  operands[2],
+						  operands[1]));
   DONE;
 }
   [(set_attr "type" "vecperm")])
@@ -5834,35 +5890,24 @@
   "vcmpnezw %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
-;; Vector Count Leading Zero Least-Significant Bits Byte
-(define_insn "vclzlsbb_<mode>"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(unspec:SI
-	 [(match_operand:VSX_EXTRACT_I 1 "altivec_register_operand" "v")]
-	 UNSPEC_VCLZLSBB))]
-  "TARGET_P9_VECTOR"
-  "vclzlsbb %0,%1"
-  [(set_attr "type" "vecsimple")])
-
-;; Vector Count Trailing Zero Least-Significant Bits Byte
-(define_insn "*vctzlsbb_zext_<mode>"
+;; Vector Count Leading/Trailing Zero Least-Significant Bits Byte
+(define_insn "*vc<vczlsbb_char>zlsbb_zext_<mode>"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(zero_extend:DI
-	(unspec:SI
-	 [(match_operand:VSX_EXTRACT_I 1 "altivec_register_operand" "v")]
-	 UNSPEC_VCTZLSBB)))]
+	  (zero_extend:DI
+	    (unspec:SI
+	      [(match_operand:VSX_EXTRACT_I 1 "altivec_register_operand" "v")]
+	      VCZLSBB)))]
   "TARGET_P9_VECTOR"
-  "vctzlsbb %0,%1"
+  "vc<vczlsbb_char>zlsbb %0,%1"
   [(set_attr "type" "vecsimple")])
 
-;; Vector Count Trailing Zero Least-Significant Bits Byte
-(define_insn "vctzlsbb_<mode>"
+(define_insn "vc<vczlsbb_char>zlsbb_<mode>"
   [(set (match_operand:SI 0 "register_operand" "=r")
-        (unspec:SI
-         [(match_operand:VSX_EXTRACT_I 1 "altivec_register_operand" "v")]
-         UNSPEC_VCTZLSBB))]
+	  (unspec:SI
+	    [(match_operand:VSX_EXTRACT_I 1 "altivec_register_operand" "v")]
+	    VCZLSBB))]
   "TARGET_P9_VECTOR"
-  "vctzlsbb %0,%1"
+  "vc<vczlsbb_char>zlsbb %0,%1"
   [(set_attr "type" "vecsimple")])
 
 ;; Vector Extract Unsigned Byte Left-Indexed

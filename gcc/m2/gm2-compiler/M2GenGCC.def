@@ -1,6 +1,6 @@
 (* M2GenGCC.def convert the quadruples into GCC trees.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -34,10 +34,7 @@ DEFINITION MODULE M2GenGCC ;
 FROM M2GCCDeclare IMPORT WalkAction ;
 FROM m2tree IMPORT Tree ;
 FROM m2linemap IMPORT location_t ;
-EXPORT QUALIFIED ConvertQuadsToTree, ResolveConstantExpressions,
-                 GetHighFromUnbounded, StringToChar,
-                 LValueToGenericPtr, ZConstToTypedConst,
-                 PrepareCopyString ;
+FROM M2BasicBlock IMPORT BasicBlock ;
 
 
 (*
@@ -45,7 +42,7 @@ EXPORT QUALIFIED ConvertQuadsToTree, ResolveConstantExpressions,
                         the GCC tree structure.
 *)
 
-PROCEDURE ConvertQuadsToTree (Scope: CARDINAL; Start, End: CARDINAL) ;
+PROCEDURE ConvertQuadsToTree (Start, End: CARDINAL) ;
 
 
 (*
@@ -55,7 +52,7 @@ PROCEDURE ConvertQuadsToTree (Scope: CARDINAL; Start, End: CARDINAL) ;
                                 p(sym) is invoked.
 *)
 
-PROCEDURE ResolveConstantExpressions (p: WalkAction; start, end: CARDINAL) : BOOLEAN ;
+PROCEDURE ResolveConstantExpressions (p: WalkAction; bb: BasicBlock) : BOOLEAN ;
 
 
 (*

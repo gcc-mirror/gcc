@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2015-2024 Free Software Foundation, Inc.
    Contributed by Alexander Monakov <amonakov@ispras.ru>
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -56,13 +56,6 @@
       printf ("%c", ptr[i]); \
   } while (0)
 #endif
-
-
-/* The 'exit (EXIT_FAILURE);' of an Fortran (only, huh?) OpenMP 'error'
-   directive with 'severity (fatal)' causes a hang, so 'abort' instead of
-   'exit'.  */
-#undef exit
-#define exit(status) abort ()
 
 
 #include "../../error.c"

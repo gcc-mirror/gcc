@@ -1,3 +1,5 @@
+void exit (int);
+
 #ifdef __OPTIMIZE__
 extern void undef (void);
 

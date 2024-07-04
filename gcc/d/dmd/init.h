@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -20,6 +20,7 @@ class Expression;
 class Type;
 class ErrorInitializer;
 class VoidInitializer;
+class DefaultInitializer;
 class StructInitializer;
 class ArrayInitializer;
 class ExpInitializer;
@@ -35,10 +36,9 @@ public:
 
     DYNCAST dyncast() const override { return DYNCAST_INITIALIZER; }
 
-    const char *toChars() const override final;
-
     ErrorInitializer   *isErrorInitializer();
     VoidInitializer    *isVoidInitializer();
+    DefaultInitializer *isDefaultInitializer();
     StructInitializer  *isStructInitializer();
     ArrayInitializer   *isArrayInitializer();
     ExpInitializer     *isExpInitializer();
@@ -48,6 +48,14 @@ public:
 };
 
 class VoidInitializer final : public Initializer
+{
+public:
+    Type *type;         // type that this will initialize to
+
+    void accept(Visitor *v) override { v->visit(this); }
+};
+
+class DefaultInitializer final : public Initializer
 {
 public:
     Type *type;         // type that this will initialize to
@@ -81,7 +89,6 @@ public:
     d_bool isCarray;      // C array semantics
 
     bool isAssociativeArray() const;
-    Expression *toAssocArrayLiteral();
 
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -117,4 +124,8 @@ public:
     void accept(Visitor *v) override { v->visit(this); }
 };
 
-Expression *initializerToExpression(Initializer *init, Type *t = NULL, const bool isCfile = false);
+namespace dmd
+{
+    Expression *initializerToExpression(Initializer *init, Type *t = NULL, const bool isCfile = false);
+    Initializer *initializerSemantic(Initializer *init, Scope *sc, Type *&tx, NeedInterpret needInterpret);
+}

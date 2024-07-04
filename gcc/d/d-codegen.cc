@@ -1,5 +1,5 @@
 /* d-codegen.cc --  Code generation and routines for manipulation of GCC trees.
-   Copyright (C) 2006-2023 Free Software Foundation, Inc.
+   Copyright (C) 2006-2024 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -150,14 +150,14 @@ declaration_type (Declaration *decl)
       TypeFunction *tf = TypeFunction::create (NULL, decl->type,
 					       VARARGnone, LINK::d);
       TypeDelegate *t = TypeDelegate::create (tf);
-      return build_ctype (t->merge2 ());
+      return build_ctype (dmd::merge2 (t));
     }
 
   /* Static array va_list have array->pointer conversions applied.  */
   if (decl->isParameter () && valist_array_p (decl->type))
     {
-      Type *valist = decl->type->nextOf ()->pointerTo ();
-      valist = valist->castMod (decl->type->mod);
+      Type *valist = dmd::pointerTo (decl->type->nextOf ());
+      valist = dmd::castMod (valist, decl->type->mod);
       return build_ctype (valist);
     }
 
@@ -200,14 +200,14 @@ parameter_type (Parameter *arg)
       TypeFunction *tf = TypeFunction::create (NULL, arg->type,
 					       VARARGnone, LINK::d);
       TypeDelegate *t = TypeDelegate::create (tf);
-      return build_ctype (t->merge2 ());
+      return build_ctype (dmd::merge2 (t));
     }
 
   /* Static array va_list have array->pointer conversions applied.  */
   if (valist_array_p (arg->type))
     {
-      Type *valist = arg->type->nextOf ()->pointerTo ();
-      valist = valist->castMod (arg->type->mod);
+      Type *valist = dmd::pointerTo (arg->type->nextOf ());
+      valist = dmd::castMod (valist, arg->type->mod);
       return build_ctype (valist);
     }
 
@@ -1006,6 +1006,7 @@ lower_struct_comparison (tree_code code, StructDeclaration *sd,
 	      if (tmode == NULL_TREE)
 		tmode = make_unsigned_type (GET_MODE_BITSIZE (mode.require ()));
 
+	      tmode = build_aligned_type (tmode, TYPE_ALIGN (stype));
 	      t1ref = build_vconvert (tmode, t1ref);
 	      t2ref = build_vconvert (tmode, t2ref);
 
@@ -1089,7 +1090,7 @@ build_array_struct_comparison (tree_code code, StructDeclaration *sd,
   add_stmt (build_assign (INIT_EXPR, result, init));
 
   /* Cast pointer-to-array to pointer-to-struct.  */
-  tree ptrtype = build_ctype (sd->type->pointerTo ());
+  tree ptrtype = build_ctype (dmd::pointerTo (sd->type));
   tree lentype = TREE_TYPE (length);
 
   push_binding_level (level_block);
@@ -1115,7 +1116,7 @@ build_array_struct_comparison (tree_code code, StructDeclaration *sd,
 	if (length == 0 || result OP 0) break;  */
   t = build_boolop (EQ_EXPR, length, d_convert (lentype, integer_zero_node));
   t = build_boolop (TRUTH_ORIF_EXPR, t, build_boolop (code, result,
-						      boolean_false_node));
+						      d_bool_false_node));
   t = build1 (EXIT_EXPR, void_type_node, t);
   add_stmt (t);
 
@@ -1859,7 +1860,7 @@ void_okay_p (tree t)
 
   if (VOID_TYPE_P (TREE_TYPE (type)))
     {
-      tree totype = build_ctype (Type::tuns8->pointerTo ());
+      tree totype = build_ctype (dmd::pointerTo (Type::tuns8));
       return fold_convert (totype, t);
     }
 
@@ -1905,7 +1906,7 @@ build_assert_call (const Loc &loc, libcall_fn libcall, tree msg)
 	  tree str = build_string (len, filename);
 	  TREE_TYPE (str) = make_array_type (Type::tchar, len);
 
-	  file = d_array_value (build_ctype (Type::tchar->arrayOf ()),
+	  file = d_array_value (build_ctype (dmd::arrayOf (Type::tchar)),
 				size_int (len), build_address (str));
 	}
       else
@@ -2102,6 +2103,60 @@ get_function_type (Type *t)
   return tf;
 }
 
+/* Returns TRUE if calling the function FUNC, or calling a function or delegate
+   object of type TYPE is be free of side effects.  */
+
+bool
+call_side_effect_free_p (FuncDeclaration *func, Type *type)
+{
+  gcc_assert (func != NULL || type != NULL);
+
+  if (func != NULL)
+    {
+      /* Constructor and invariant calls can't be `pure'.  */
+      if (func->isCtorDeclaration () || func->isInvariantDeclaration ())
+	return false;
+
+      /* Must be a `nothrow' function.  */
+      TypeFunction *tf = func->type->toTypeFunction ();
+      if (!tf->isnothrow ())
+	return false;
+
+      /* Return type can't be `void' or `noreturn', as that implies all work is
+	 done via side effects.  */
+      if (tf->next->ty == TY::Tvoid || tf->next->ty == TY::Tnoreturn)
+	return false;
+
+      /* Only consider it as `pure' if it can't modify its arguments.  */
+      if (func->isPure () == PURE::const_)
+	return true;
+    }
+
+  if (type != NULL)
+    {
+      TypeFunction *tf = get_function_type (type);
+
+      /* Must be a `nothrow` function type.  */
+      if (tf == NULL || !tf->isnothrow ())
+	return false;
+
+      /* Return type can't be `void' or `noreturn', as that implies all work is
+	 done via side effects.  */
+      if (tf->next->ty == TY::Tvoid || tf->next->ty == TY::Tnoreturn)
+	return false;
+
+      /* Delegates that can modify its context can't be `pure'.  */
+      if (type->isTypeDelegate () && tf->isMutable ())
+	return false;
+
+      /* Only consider it as `pure' if it can't modify its arguments.  */
+      if (tf->purity == PURE::const_)
+	return true;
+    }
+
+  return false;
+}
+
 /* Returns TRUE if CALLEE is a plain nested function outside the scope of
    CALLER.  In which case, CALLEE is being called through an alias that was
    passed to CALLER.  */
@@ -2191,14 +2246,16 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
       for (size_t i = 0; i < arguments->length; ++i)
 	{
 	  Expression *arg = (*arguments)[i];
-	  tree targ = build_expr (arg);
+	  tree targ;
 
 	  if (i - varargs < nparams && i >= varargs)
 	    {
 	      /* Actual arguments for declared formal arguments.  */
 	      Parameter *parg = tf->parameterList[i - varargs];
-	      targ = convert_for_argument (targ, parg);
+	      targ = convert_for_argument (arg, parg);
 	    }
+	  else
+	    targ = build_expr (arg);
 
 	  /* Don't pass empty aggregates by value.  */
 	  if (empty_aggregate_p (TREE_TYPE (targ)) && !TREE_ADDRESSABLE (targ)
@@ -2214,10 +2271,17 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 	      Type *t = arg->type->toBasetype ();
 	      StructDeclaration *sd = t->baseElemOf ()->isTypeStruct ()->sym;
 
-	      /* Nested structs also have ADDRESSABLE set, but if the type has
-		 neither a copy constructor nor a destructor available, then we
-		 need to take care of copying its value before passing it.  */
-	      if (arg->op == EXP::structLiteral || (!sd->postblit && !sd->dtor))
+	      /* Need to take care of copying its value before passing the
+		 argument in the following scenarios:
+		 - The argument is a literal expression; a CONSTRUCTOR can't
+		 have its address taken.
+		 - The type has neither a copy constructor nor a destructor
+		 available; nested structs also have ADDRESSABLE set.
+		 - The ABI of the function expects the callee to destroy its
+		 arguments; when the caller is handles destruction, then `targ'
+		 has already been made into a temporary. */
+	      if (arg->op == EXP::structLiteral || (!sd->postblit && !sd->dtor)
+		  || target.isCalleeDestroyingArgs (tf))
 		targ = force_target_expr (targ);
 
 	      targ = convert (build_reference_type (TREE_TYPE (targ)),

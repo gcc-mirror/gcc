@@ -1,5 +1,5 @@
 /* Forward propagation of expressions for single use variables.
-   Copyright (C) 2004-2023 Free Software Foundation, Inc.
+   Copyright (C) 2004-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -47,6 +47,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "cfganal.h"
 #include "optabs-tree.h"
+#include "insn-config.h"
+#include "recog.h"
 #include "tree-vector-builder.h"
 #include "vec-perm-indices.h"
 #include "internal-fn.h"
@@ -205,6 +207,10 @@ fwprop_set_lattice_val (tree name, tree val)
 	  lattice.quick_grow_cleared (num_ssa_names);
 	}
       lattice[SSA_NAME_VERSION (name)] = val;
+      /* As this now constitutes a copy duplicate points-to
+	 and range info appropriately.  */
+      if (TREE_CODE (val) == SSA_NAME)
+	maybe_duplicate_ssa_info_at_copy (name, val);
     }
 }
 
@@ -2381,6 +2387,7 @@ simplify_count_trailing_zeroes (gimple_stmt_iterator *gsi)
       HOST_WIDE_INT type_size = tree_to_shwi (TYPE_SIZE (type));
       bool zero_ok
 	= CTZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (type), ctz_val) == 2;
+      int nargs = 2;
 
       /* If the input value can't be zero, don't special case ctz (0).  */
       if (tree_expr_nonzero_p (res_ops[0]))
@@ -2388,6 +2395,7 @@ simplify_count_trailing_zeroes (gimple_stmt_iterator *gsi)
 	  zero_ok = true;
 	  zero_val = 0;
 	  ctz_val = 0;
+	  nargs = 1;
 	}
 
       /* Skip if there is no value defined at zero, or if we can't easily
@@ -2399,7 +2407,11 @@ simplify_count_trailing_zeroes (gimple_stmt_iterator *gsi)
 
       gimple_seq seq = NULL;
       gimple *g;
-      gcall *call = gimple_build_call_internal (IFN_CTZ, 1, res_ops[0]);
+      gcall *call
+	= gimple_build_call_internal (IFN_CTZ, nargs, res_ops[0],
+				      nargs == 1 ? NULL_TREE
+				      : build_int_cst (integer_type_node,
+						       ctz_val));
       gimple_set_location (call, gimple_location (stmt));
       gimple_set_lhs (call, make_ssa_name (integer_type_node));
       gimple_seq_add_stmt (&seq, call);
@@ -2972,6 +2984,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	  /* Only few targets implement direct conversion patterns so try
 	     some simple special cases via VEC_[UN]PACK[_FLOAT]_LO_EXPR.  */
 	  optab optab;
+	  insn_code icode;
 	  tree halfvectype, dblvectype;
 	  enum tree_code unpack_op;
 
@@ -3009,8 +3022,9 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	      && (optab = optab_for_tree_code (unpack_op,
 					       dblvectype,
 					       optab_default))
-	      && (optab_handler (optab, TYPE_MODE (dblvectype))
-		  != CODE_FOR_nothing))
+	      && ((icode = optab_handler (optab, TYPE_MODE (dblvectype)))
+		  != CODE_FOR_nothing)
+	      && (insn_data[icode].operand[0].mode == TYPE_MODE (type)))
 	    {
 	      gimple_seq stmts = NULL;
 	      tree dbl;
@@ -3048,8 +3062,9 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 		   && (optab = optab_for_tree_code (VEC_PACK_TRUNC_EXPR,
 						    halfvectype,
 						    optab_default))
-		   && (optab_handler (optab, TYPE_MODE (halfvectype))
-		       != CODE_FOR_nothing))
+		   && ((icode = optab_handler (optab, TYPE_MODE (halfvectype)))
+		       != CODE_FOR_nothing)
+		   && (insn_data[icode].operand[0].mode == TYPE_MODE (type)))
 	    {
 	      gimple_seq stmts = NULL;
 	      tree low = gimple_build (&stmts, BIT_FIELD_REF, halfvectype,
@@ -3751,6 +3766,8 @@ pass_forwprop::execute (function *fun)
 		  && gimple_store_p (use_stmt)
 		  && !gimple_has_volatile_ops (use_stmt)
 		  && is_gimple_assign (use_stmt)
+		  && (TREE_CODE (TREE_TYPE (gimple_assign_lhs (use_stmt)))
+		      == COMPLEX_TYPE)
 		  && (TREE_CODE (gimple_assign_lhs (use_stmt))
 		      != TARGET_MEM_REF))
 		{

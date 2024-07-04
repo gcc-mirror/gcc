@@ -1,7 +1,8 @@
 /* { dg-do run } */
 /* { dg-require-effective-target int128 } */
 /* { dg-require-effective-target p8vector_hw } */
-/* { dg-options "-mpower8-vector" } */
+/* { dg-options "-mvsx" } */
+/* { dg-additional-options "-mdejagnu-cpu=power8" { target { ! has_arch_pwr8 } } } */
 
 #include <inttypes.h>
 #include <altivec.h> // vector

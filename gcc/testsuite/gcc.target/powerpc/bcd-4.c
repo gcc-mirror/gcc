@@ -1,9 +1,9 @@
 /* { dg-do run } */
 /* { dg-require-effective-target int128 } */
-/* { dg-require-effective-target power10_hw } */
-/* { dg-options "-mdejagnu-cpu=power10 -O2 -save-temps" } */
-/* { dg-final { scan-assembler-times {\mbcdadd\M} 7 } } */
-/* { dg-final { scan-assembler-times {\mbcdsub\M} 18 } } */
+/* { dg-require-effective-target p9vector_hw } */
+/* { dg-options "-mdejagnu-cpu=power9 -O2 -save-temps" } */
+/* { dg-final { scan-assembler-times {\mbcdadd\M} 5 } } */
+/* { dg-final { scan-assembler-times {\mbcdsub\M} 20 } } */
 /* { dg-final { scan-assembler-times {\mbcds\M} 2 } } */
 /* { dg-final { scan-assembler-times {\mdenbcdq\M} 1 } } */
 
@@ -44,10 +44,20 @@ vector unsigned char maxbcd(unsigned int sign)
   vector unsigned char result;
   int i;
 
+#ifdef __BIG_ENDIAN__
+  for (i = 0; i < 15; i++)
+#else
   for (i = 15; i > 0; i--)
+#endif
     result[i] = 0x99;
 
-  result[0] = sign << 4 | 0x9;
+#ifdef __BIG_ENDIAN__
+  result[15] = 0x90 | sign;
+#else
+  result[0] = 0x90 | sign;
+#endif
+
+  return result;
 }
 
 vector unsigned char num2bcd(long int a, int encoding)
@@ -70,9 +80,17 @@ vector unsigned char num2bcd(long int a, int encoding)
 
   hi = a % 10;   // 1st digit
   a = a / 10;
+#ifdef __BIG_ENDIAN__
+  result[15] = hi << 4| sign;
+#else
   result[0] = hi << 4| sign;
+#endif
 
+#ifdef __BIG_ENDIAN__
+  for (i = 14; i >= 0; i--)
+#else
   for (i = 1; i < 16; i++)
+#endif
     {
       low = a % 10;
       a = a / 10;
@@ -117,7 +135,11 @@ int main ()
     }
 
   /* result should be positive */
+#ifdef __BIG_ENDIAN__
+  if ((result[15] & 0xF) != BCD_POS0)
+#else
   if ((result[0] & 0xF) != BCD_POS0)
+#endif
 #if DEBUG
       printf("ERROR: __builtin_bcdadd sign of result is %d.  Does not match "
 	     "expected_result = %d\n",
@@ -150,7 +172,11 @@ int main ()
     }
 
   /* Result should be positive, alternate encoding.  */
+#ifdef __BIG_ENDIAN__
+  if ((result[15] & 0xF) != BCD_POS1)
+#else
   if ((result[0] & 0xF) != BCD_POS1)
+#endif
 #if DEBUG
     printf("ERROR: __builtin_bcdadd sign of result is %d.  Does not "
 	   "match expected_result = %d\n",
@@ -183,7 +209,11 @@ int main ()
     }
 
   /* result should be negative */
+#ifdef __BIG_ENDIAN__
+  if ((result[15] & 0xF) != BCD_NEG)
+#else
   if ((result[0] & 0xF) != BCD_NEG)
+#endif
 #if DEBUG
     printf("ERROR: __builtin_bcdadd sign, neg of result is %d.  Does not "
 	   "match expected_result = %d\n",
@@ -216,8 +246,12 @@ int main ()
 #endif
     }
 
-  /* result should be positive, alt encoding */
+  /* result should be positive */
+#ifdef __BIG_ENDIAN__
+  if ((result[15] & 0xF) != BCD_NEG)
+#else
   if ((result[0] & 0xF) != BCD_NEG)
+#endif
 #if DEBUG
     printf("ERROR: __builtin_bcdadd sign, of result is %d.  Does not match "
 	   "expected_result = %d\n",
@@ -250,7 +284,11 @@ int main ()
     }
 
   /* result should be positive */
+#ifdef __BIG_ENDIAN__
+  if ((result[15] & 0xF) != BCD_POS1)
+#else
   if ((result[0] & 0xF) != BCD_POS1)
+#endif
 #if DEBUG
     printf("ERROR: __builtin_bcdsub sign, result is %d.  Does not match "
 	   "expected_result = %d\n",
@@ -283,7 +321,7 @@ int main ()
     abort();
 #endif
 
-  a = maxbcd(BCD_NEG);
+  a = maxbcd(BCD_POS0);
   b = maxbcd(BCD_NEG);
 
   if (__builtin_bcdsub_ofl (a, b, 0) == 0)
@@ -462,8 +500,12 @@ int main ()
     }
 
   /* result should be positive */
+#ifdef __BIG_ENDIAN__
+  if ((result[15] & 0xF) != BCD_POS0)
+#else
   if ((result[0] & 0xF) != BCD_POS0)
-#if 0
+#endif
+#if DEBUG
     printf("ERROR: __builtin_bcdmul10 sign, result is %d.  Does not match "
 	   "expected_result = %d\n",
 	   result[0] & 0xF, BCD_POS1);
@@ -492,7 +534,11 @@ int main ()
     }
 
   /* result should be positive */
+#ifdef __BIG_ENDIAN__
+  if ((result[15] & 0xF) != BCD_POS0)
+#else
   if ((result[0] & 0xF) != BCD_POS0)
+#endif
 #if DEBUG
     printf("ERROR: __builtin_bcddiv10 sign, result is %d.  Does not match "
 	   "expected_result = %d\n",

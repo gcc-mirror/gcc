@@ -1,5 +1,5 @@
 /* RunTime Type Identification
-   Copyright (C) 1995-2023 Free Software Foundation, Inc.
+   Copyright (C) 1995-2024 Free Software Foundation, Inc.
    Mostly written by Jason Merrill (jason@cygnus.com).
 
 This file is part of GCC.
@@ -794,6 +794,8 @@ build_dynamic_cast_1 (location_t loc, tree type, tree expr,
 	      pop_abi_namespace (flags);
 	      dynamic_cast_node = dcast_fn;
 	    }
+	  if (dcast_fn == error_mark_node)
+	    return error_mark_node;
 	  result = build_cxx_call (dcast_fn, 4, elems, complain);
 	  SET_EXPR_LOCATION (result, loc);
 

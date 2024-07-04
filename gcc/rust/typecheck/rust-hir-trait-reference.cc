@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -37,7 +37,7 @@ bool
 TraitItemReference::is_optional () const
 {
   return optional_flag;
-};
+}
 
 std::string
 TraitItemReference::get_identifier () const
@@ -57,7 +57,7 @@ TraitItemReference::get_hir_trait_item () const
   return hir_trait_item;
 }
 
-Location
+location_t
 TraitItemReference::get_locus () const
 {
   return locus;
@@ -94,7 +94,7 @@ TraitItemReference::get_tyty () const
       return get_error ();
     }
 
-  gcc_unreachable ();
+  rust_unreachable ();
   return get_error ();
 }
 
@@ -148,7 +148,7 @@ TraitReference::is_error () const
   return hir_trait_ref == nullptr;
 }
 
-Location
+location_t
 TraitReference::get_locus () const
 {
   return hir_trait_ref->get_locus ();
@@ -158,7 +158,7 @@ std::string
 TraitReference::get_name () const
 {
   rust_assert (!is_error ());
-  return hir_trait_ref->get_name ();
+  return hir_trait_ref->get_name ().as_string ();
 }
 
 std::string
@@ -381,13 +381,13 @@ TraitReference::get_super_traits () const
 }
 
 bool
-TraitReference::is_object_safe (bool emit_error, Location locus) const
+TraitReference::is_object_safe (bool emit_error, location_t locus) const
 {
   // https: // doc.rust-lang.org/reference/items/traits.html#object-safety
   std::vector<const TraitReference *> non_object_super_traits;
   for (auto &item : super_traits)
     {
-      if (!item->is_object_safe (false, Location ()))
+      if (!item->is_object_safe (false, UNDEF_LOCATION))
 	non_object_super_traits.push_back (item);
     }
 
@@ -402,7 +402,7 @@ TraitReference::is_object_safe (bool emit_error, Location locus) const
     = non_object_super_traits.empty () && non_object_safe_items.empty ();
   if (emit_error && !is_safe)
     {
-      RichLocation r (locus);
+      rich_location r (line_table, locus);
       for (auto &item : non_object_super_traits)
 	r.add_range (item->get_locus ());
       for (auto &item : non_object_safe_items)
@@ -442,16 +442,18 @@ TraitReference::satisfies_bound (const TraitReference &reference) const
 }
 
 AssociatedImplTrait::AssociatedImplTrait (TraitReference *trait,
+					  TyTy::TypeBoundPredicate predicate,
 					  HIR::ImplBlock *impl,
 					  TyTy::BaseType *self,
 					  Resolver::TypeCheckContext *context)
-  : trait (trait), impl (impl), self (self), context (context)
+  : trait (trait), predicate (predicate), impl (impl), self (self),
+    context (context)
 {}
 
-TraitReference *
-AssociatedImplTrait::get_trait ()
+TyTy::TypeBoundPredicate &
+AssociatedImplTrait::get_predicate ()
 {
-  return trait;
+  return predicate;
 }
 
 HIR::ImplBlock *
@@ -465,6 +467,7 @@ AssociatedImplTrait::get_self ()
 {
   return self;
 }
+
 const TyTy::BaseType *
 AssociatedImplTrait::get_self () const
 {

@@ -2,6 +2,7 @@
 
 /* { dg-require-effective-target sockets } */
 /* { dg-skip-if "" { powerpc*-*-aix* } } */
+/* { dg-skip-if "PR analyzer/107750" { *-*-solaris2* } } */
 
 #include <string.h>
 #include <sys/types.h>
@@ -18,7 +19,7 @@ void test_read_on_new_socket (void *buf)
   int fd = socket (AF_UNIX, SOCK_STREAM, 0); /* { dg-message "stream socket created here" } */
   if (fd == -1)
     return;
-  read (fd, buf, 1); /* { dg-warning "'read' on file descriptor 'fd' in wrong phase \\\[-Wanalyzer-fd-phase-mismatch\\\]" "warning" } */
+  read (fd, buf, 1); /* { dg-warning "'read' on file descriptor 'fd' in wrong phase \\\[CWE-666\\\] \\\[-Wanalyzer-fd-phase-mismatch\\\]" "warning" } */
   /* { dg-message "'read' expects a stream socket to be connected via 'accept' but 'fd' has not yet been bound" "final event" { target *-*-* } .-1 } */
   close (fd);
 }

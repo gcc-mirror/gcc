@@ -1,5 +1,5 @@
 ;; Predicate description for RISC-V target.
-;; Copyright (C) 2011-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2024 Free Software Foundation, Inc.
 ;; Contributed by Andrew Waterman (andrew@sifive.com).
 ;; Based on MIPS target for GNU compiler.
 ;;
@@ -27,12 +27,6 @@
   (ior (match_operand 0 "const_arith_operand")
        (match_operand 0 "register_operand")))
 
-(define_predicate "arith_operand_or_mode_mask"
-  (ior (match_operand 0 "arith_operand")
-       (and (match_code "const_int")
-            (match_test "UINTVAL (op) == GET_MODE_MASK (HImode)
-			 || UINTVAL (op) == GET_MODE_MASK (SImode)"))))
-
 (define_predicate "lui_operand"
   (and (match_code "const_int")
        (match_test "LUI_OPERAND (INTVAL (op))")))
@@ -41,9 +35,23 @@
   (ior (match_operand 0 "arith_operand")
        (match_operand 0 "lui_operand")))
 
+(define_predicate "movcc_operand"
+  (if_then_else (match_test "TARGET_SFB_ALU || TARGET_XTHEADCONDMOV
+			     || TARGET_ZICOND_LIKE")
+		(match_operand 0 "sfb_alu_operand")
+		(match_operand 0 "arith_operand")))
+
 (define_predicate "const_csr_operand"
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 0, 31)")))
+
+(define_predicate "const_0_3_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 3)")))
+
+(define_predicate "const_0_10_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 10)")))
 
 (define_predicate "csr_operand"
   (ior (match_operand 0 "const_csr_operand")
@@ -77,6 +85,10 @@
 (define_predicate "const_1_or_4_operand"
   (and (match_code "const_int")
        (match_test "INTVAL (op) == 1 || INTVAL (op) == 4")))
+
+(define_predicate "const_1_or_8_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) == 1 || INTVAL (op) == 8")))
 
 (define_predicate "reg_or_0_operand"
   (ior (match_operand 0 "const_0_operand")
@@ -283,7 +295,8 @@
     case SYMBOL_REF:
     case LABEL_REF:
       return riscv_symbolic_constant_p (op, &symbol_type)
-	      && !riscv_split_symbol_type (symbol_type);
+	     && !riscv_split_symbol_type (symbol_type)
+	     && symbol_type != SYMBOL_FORCE_TO_MEM;
 
     case HIGH:
       op = XEXP (op, 0);
@@ -320,18 +333,24 @@
 })
 
 (define_predicate "call_insn_operand"
-  (ior (match_operand 0 "absolute_symbolic_operand")
-       (match_operand 0 "plt_symbolic_operand")
-       (match_operand 0 "register_operand")))
+  (match_operand 0 "general_operand")
+{
+  if (riscv_cmodel == CM_LARGE)
+    return register_operand (op, mode);
+  else
+    return (absolute_symbolic_operand (op, mode)
+	    || plt_symbolic_operand (op, mode)
+	    || register_operand (op, mode));
+})
 
 (define_predicate "modular_operator"
   (match_code "plus,minus,mult,ashift"))
 
+(define_predicate "ne_operator"
+  (match_code "ne"))
+
 (define_predicate "equality_operator"
   (match_code "eq,ne"))
-
-(define_predicate "order_operator"
-  (match_code "eq,ne,lt,ltu,le,leu,ge,geu,gt,gtu"))
 
 (define_predicate "signed_order_operator"
   (match_code "eq,ne,lt,le,ge,gt"))
@@ -361,9 +380,25 @@
   (and (match_code "const_int")
        (match_test "SINGLE_BIT_MASK_OPERAND (UINTVAL (op))")))
 
+;; Register, small constant or single bit constant for use in
+;; bseti/binvi.
+(define_predicate "arith_or_zbs_operand"
+  (ior (match_operand 0 "const_arith_operand")
+       (match_operand 0 "register_operand")
+       (and (match_test "TARGET_ZBS")
+	    (match_operand 0 "single_bit_mask_operand"))))
+
 (define_predicate "not_single_bit_mask_operand"
   (and (match_code "const_int")
        (match_test "SINGLE_BIT_MASK_OPERAND (~UINTVAL (op))")))
+
+(define_predicate "arith_or_mode_mask_or_zbs_operand"
+  (ior (match_operand 0 "arith_operand")
+       (and (match_test "TARGET_ZBS")
+	    (match_operand 0 "not_single_bit_mask_operand"))
+       (and (match_code "const_int")
+	    (match_test "UINTVAL (op) == GET_MODE_MASK (HImode)
+			 || UINTVAL (op) == GET_MODE_MASK (SImode)"))))
 
 (define_predicate "const_si_mask_operand"
   (and (match_code "const_int")
@@ -395,10 +430,47 @@
 	return true;
 })
 
+(define_predicate "const_two_s12"
+  (match_code "const_int")
+{
+  return SUM_OF_TWO_S12 (INTVAL (op));
+})
+
+;; CORE-V Predicates:
+(define_predicate "immediate_register_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_code "const_int")))
+
+(define_predicate "const_int6s_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), -32, 31)")))
+
+(define_predicate "int6s_operand"
+  (ior (match_operand 0 "const_int6s_operand")
+       (match_operand 0 "register_operand")))
+
+(define_predicate "const_int2_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 3)")))
+
+(define_predicate "const_int6_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 63)")))
+
+(define_predicate "int6_operand"
+  (ior (match_operand 0 "const_int6_operand")
+       (match_operand 0 "register_operand")))
+
+(define_predicate "const_int5s_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), -16, 15)")))
+
 ;; Predicates for the V extension.
 (define_special_predicate "vector_length_operand"
   (ior (match_operand 0 "pmode_register_operand")
-       (match_operand 0 "const_csr_operand")))
+       (and (ior (match_test "TARGET_XTHEADVECTOR && rtx_equal_p (op, const0_rtx)")
+		 (match_test "!TARGET_XTHEADVECTOR"))
+    (match_operand 0 "const_csr_operand"))))
 
 (define_special_predicate "autovec_length_operand"
   (ior (match_operand 0 "pmode_register_operand")
@@ -475,10 +547,6 @@
   (ior (match_operand 0 "register_operand")
        (match_code "const_vector")))
 
-(define_predicate "vector_gs_scale_operand_64"
-  (and (match_code "const_int")
-       (match_test "INTVAL (op) == 1 || (INTVAL (op) == 8 && Pmode == DImode)")))
-
 (define_predicate "vector_gs_extension_operand"
   (ior (match_operand 0 "const_1_operand")
        (and (match_operand 0 "const_0_operand")
@@ -500,8 +568,8 @@
 (define_predicate "comparison_except_ltge_operator"
   (match_code "eq,ne,le,leu,gt,gtu"))
 
-(define_predicate "comparison_except_eqge_operator"
-  (match_code "le,leu,gt,gtu,lt,ltu"))
+(define_predicate "comparison_except_ge_operator"
+  (match_code "eq,ne,le,leu,gt,gtu,lt,ltu"))
 
 (define_predicate "ge_operator"
   (match_code "ge,geu"))
@@ -542,14 +610,7 @@
 
 ;; The scalar operand can be directly broadcast by RVV instructions.
 (define_predicate "direct_broadcast_operand"
-  (and (match_test "!(reload_completed && !FLOAT_MODE_P (GET_MODE (op))
-		&& (register_operand (op, GET_MODE (op)) || CONST_INT_P (op)
-		|| rtx_equal_p (op, CONST0_RTX (GET_MODE (op))))
-		&& maybe_gt (GET_MODE_BITSIZE (GET_MODE (op)), GET_MODE_BITSIZE (Pmode)))")
-    (ior (match_test "rtx_equal_p (op, CONST0_RTX (GET_MODE (op)))")
-         (ior (match_code "const_int,const_poly_int")
-              (ior (match_operand 0 "register_operand")
-                   (match_test "satisfies_constraint_Wdm (op)"))))))
+  (match_test "riscv_vector::can_be_broadcasted_p (op)"))
 
 ;; A CONST_INT operand that has exactly two bits cleared.
 (define_predicate "const_nottwobits_operand"
@@ -607,3 +668,11 @@
   (and (match_code "const_int")
        (ior (match_operand 0 "not_uimm_extra_bit_operand")
 	    (match_operand 0 "const_nottwobits_not_arith_operand"))))
+
+(define_predicate "pcrel_symbol_operand"
+  (match_code "symbol_ref")
+{
+  enum riscv_symbol_type type;
+  return (riscv_symbolic_constant_p (op, &type)
+         && type == SYMBOL_PCREL);
+})

@@ -1,5 +1,6 @@
 #include <limits.h>
 
+/* { dg-options " -fno-trapping-math" } */
 void foo (int j)
 {
   int i1 = (int)(double)1.0 + INT_MAX; /* { dg-warning "integer overflow" } */

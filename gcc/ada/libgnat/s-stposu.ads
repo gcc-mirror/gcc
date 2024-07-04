@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -34,7 +34,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Finalization;
-with System.Finalization_Masters;
+with System.Finalization_Primitives;
 with System.Storage_Elements;
 
 package System.Storage_Pools.Subpools is
@@ -130,32 +130,8 @@ package System.Storage_Pools.Subpools is
       (System.Storage_Elements.Storage_Count'Last);
 
 private
-   --  Model
-   --             Pool_With_Subpools     SP_Node    SP_Node    SP_Node
-   --       +-->+--------------------+   +-----+    +-----+    +-----+
-   --       |   |      Subpools -------->|  ------->|  ------->|  ------->
-   --       |   +--------------------+   +-----+    +-----+    +-----+
-   --       |   |Finalization_Started|<------  |<-------  |<-------  |<---
-   --       |   +--------------------+   +-----+    +-----+    +-----+
-   --       +--- Controller.Encl_Pool|   | nul |    |  +  |    |  +  |
-   --       |   +--------------------+   +-----+    +--|--+    +--:--+
-   --       |   :                    :    Dummy        |  ^       :
-   --       |   :                    :                 |  |       :
-   --       |                            Root_Subpool  V  |
-   --       |                            +-------------+  |
-   --       +-------------------------------- Owner    |  |
-   --               FM_Node   FM_Node    +-------------+  |
-   --               +-----+   +-----+<-- Master.Objects|  |
-   --            <------  |<------  |    +-------------+  |
-   --               +-----+   +-----+    |    Node -------+
-   --               |  ------>|  ----->  +-------------+
-   --               +-----+   +-----+    :             :
-   --               |ctrl |    Dummy     :             :
-   --               | obj |
-   --               +-----+
-   --
-   --  SP_Nodes are created on the heap. FM_Nodes and associated objects are
-   --  created on the pool_with_subpools.
+   --  SP_Nodes are created on the heap, while collection nodes and associated
+   --  objects are created on the pool_with_subpools.
 
    type Any_Storage_Pool_With_Subpools_Ptr
      is access all Root_Storage_Pool_With_Subpools'Class;
@@ -205,7 +181,7 @@ private
 
       Finalization_Started : Boolean := False;
       pragma Atomic (Finalization_Started);
-      --  A flag which prevents the creation of new subpools while the master
+      --  A flag which prevents the creation of new subpools while the parent
       --  pool is being finalized. The flag needs to be atomic because it is
       --  accessed without Lock_Task / Unlock_Task.
 
@@ -219,32 +195,35 @@ private
    --  contains links to all controlled objects allocated on a particular
    --  subpool.
 
-   --        Pool_With_Subpools   SP_Node    SP_Node    SP_Node
-   --    +-->+----------------+   +-----+    +-----+    +-----+
-   --    |   |    Subpools ------>|  ------->|  ------->|  ------->
-   --    |   +----------------+   +-----+    +-----+    +-----+
-   --    |   :                :<------  |<-------  |<-------  |
-   --    |   :                :   +-----+    +-----+    +-----+
-   --    |                        |null |    |  +  |    |  +  |
-   --    |                        +-----+    +--|--+    +--:--+
-   --    |                                      |  ^       :
-   --    |                        Root_Subpool  V  |
-   --    |                        +-------------+  |
-   --    +---------------------------- Owner    |  |
-   --                             +-------------+  |
-   --                      .......... Master    |  |
-   --                             +-------------+  |
-   --                             |    Node -------+
-   --                             +-------------+
-   --                             :   End-user  :
-   --                             :  components :
+   --             Pool_With_Subpools     SP_Node    SP_Node    SP_Node
+   --       +-->+--------------------+   +-----+    +-----+    +-----+
+   --       |   |      Subpools -------->|  ------->|  ------->|  ------->
+   --       |   +--------------------+   +-----+    +-----+    +-----+
+   --       |   |Finalization_Started|<------  |<-------  |<-------  |<---
+   --       |   +--------------------+   +-----+    +-----+    +-----+
+   --       +--- Controller.Encl_Pool|   | nul |    |  +  |    |  +  |
+   --       |   +--------------------+   +-----+    +--|--+    +--:--+
+   --       |   :                    :    Dummy        |  ^       :
+   --       |   :                    :                 |  |       :
+   --       |                            Root_Subpool  V  |
+   --       |                            +-------------+  |
+   --       +-------------------------------- Owner    |  |
+   --                Collection nodes    +-------------+  |
+   --               +-----+   +-----+<-- | Collection  |
+   --            <------  |<------  |    +-------------+  |
+   --               +-----+   +-----+    |    Node -------+
+   --               |  ------>|  ----->  +-------------+
+   --               +-----+   +-----+    :             :
+   --               |ctrl |    Dummy     :             :
+   --               | obj |
+   --               +-----+
 
    type Root_Subpool is abstract tagged limited record
       Owner : Any_Storage_Pool_With_Subpools_Ptr := null;
-      --  A reference to the master pool_with_subpools
+      --  A reference to the parent pool_with_subpools
 
-      Master : aliased System.Finalization_Masters.Finalization_Master;
-      --  A heterogeneous collection of controlled objects
+      Collection : aliased Finalization_Primitives.Finalization_Collection;
+      --  A collection of controlled objects
 
       Node : SP_Node_Ptr := null;
       --  A link to the doubly linked list node which contains the subpool.
@@ -257,21 +236,21 @@ private
       Alignment    : System.Storage_Elements.Storage_Count);
    --  Given the memory attributes of a heap-allocated object that is known to
    --  be controlled, adjust the address and size of the object to include the
-   --  two hidden pointers inserted by the finalization machinery.
+   --  hidden header inserted by the finalization machinery and its padding.
 
    --  ??? Once Storage_Pools.Allocate_Any is removed, this should be renamed
    --  to Allocate_Any.
 
    procedure Allocate_Any_Controlled
-     (Pool            : in out Root_Storage_Pool'Class;
-      Context_Subpool : Subpool_Handle;
-      Context_Master  : Finalization_Masters.Finalization_Master_Ptr;
-      Fin_Address     : Finalization_Masters.Finalize_Address_Ptr;
-      Addr            : out System.Address;
-      Storage_Size    : System.Storage_Elements.Storage_Count;
-      Alignment       : System.Storage_Elements.Storage_Count;
-      Is_Controlled   : Boolean;
-      On_Subpool      : Boolean);
+     (Pool          : in out Root_Storage_Pool'Class;
+      Named_Subpool : Subpool_Handle;
+      Collection    : in out
+                        Finalization_Primitives.Finalization_Collection_Ptr;
+      Addr          : out System.Address;
+      Storage_Size  : System.Storage_Elements.Storage_Count;
+      Alignment     : System.Storage_Elements.Storage_Count;
+      Is_Controlled : Boolean;
+      On_Subpool    : Boolean);
    --  Compiler interface. This version of Allocate handles all possible cases,
    --  either on a pool or a pool_with_subpools, regardless of the controlled
    --  status of the allocated object. Parameter usage:
@@ -279,16 +258,13 @@ private
    --    * Pool - The pool associated with the access type. Pool can be any
    --    derivation from Root_Storage_Pool, including a pool_with_subpools.
    --
-   --    * Context_Subpool - The subpool handle name of an allocator. If no
-   --    subpool handle is present at the point of allocation, the actual
-   --    would be null.
+   --    * Named_Subpool - The subpool identified by the handle name of an
+   --    allocator. If no handle name is present, the actual would be null.
    --
-   --    * Context_Master - The finalization master associated with the access
-   --    type. If the access type's designated type is not controlled, the
-   --    actual would be null.
-   --
-   --    * Fin_Address - TSS routine Finalize_Address of the designated type.
-   --    If the designated type is not controlled, the actual would be null.
+   --    * Collection - The finalization collection associated with the access
+   --    type if its designated type is controlled. If it is not, the actual
+   --    would be null. If the object is allocated on a subpool, the parameter
+   --    is updated to the collection of the subpool.
    --
    --    * Addr - The address of the allocated object.
    --
@@ -297,8 +273,8 @@ private
    --    * Alignment - The alignment of the allocated object.
    --
    --    * Is_Controlled - A flag which determines whether the allocated object
-   --    is controlled. When set to True, the machinery generates additional
-   --    data.
+   --    is controlled. When set to True, the machinery allocates more space
+   --    and returns a displaced address.
    --
    --    * On_Subpool - A flag which determines whether the a subpool handle
    --    name is present at the point of allocation. This is used for error
@@ -324,8 +300,7 @@ private
    --    * Alignment - The alignment of the allocated object.
    --
    --    * Is_Controlled - A flag which determines whether the allocated object
-   --    is controlled. When set to True, the machinery generates additional
-   --    data.
+   --    is controlled. When set to True, the address must be displaced.
 
    procedure Detach (N : not null SP_Node_Ptr);
    --  Unhook a subpool node from an arbitrary subpool list
@@ -335,8 +310,8 @@ private
 
    procedure Finalize_Pool (Pool : in out Root_Storage_Pool_With_Subpools);
    --  Iterate over all subpools of Pool, detach them one by one and finalize
-   --  their masters. This action first detaches a controlled object from a
-   --  particular master, then invokes its Finalize_Address primitive.
+   --  their collections. This action first detaches a controlled object from a
+   --  particular collection, then invokes its Finalize_Address primitive.
 
    function Header_Size_With_Padding
      (Alignment : System.Storage_Elements.Storage_Count)

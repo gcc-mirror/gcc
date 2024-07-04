@@ -165,7 +165,7 @@ pass_test_groups::execute (function *fun)
 
 void
 test_diagnostic_starter (diagnostic_context *context,
-			 diagnostic_info *diagnostic)
+			 const diagnostic_info *diagnostic)
 {
   pp_set_prefix (context->printer, xstrdup ("PREFIX: "));
 }
@@ -224,8 +224,8 @@ plugin_init (struct plugin_name_args *plugin_info,
     return 1;
 
   diagnostic_starter (global_dc) = test_diagnostic_starter;
-  global_dc->m_text_callbacks.start_span = test_diagnostic_start_span_fn;
-  global_dc->m_output_format = new test_output_format (*global_dc);
+  diagnostic_start_span (global_dc) = test_diagnostic_start_span_fn;
+  global_dc->set_output_format (new test_output_format (*global_dc));
 
   pass_info.pass = new pass_test_groups (g);
   pass_info.reference_pass_name = "*warn_function_noreturn";

@@ -1,5 +1,5 @@
 /* Subclasses of custom_edge_info for describing outcomes of function calls.
-   Copyright (C) 2021-2023 Free Software Foundation, Inc.
+   Copyright (C) 2021-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_MEMORY
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -139,6 +140,14 @@ call_info::get_call_details (region_model *model,
 call_info::call_info (const call_details &cd)
 : m_call_stmt (cd.get_call_stmt ()),
   m_fndecl (cd.get_fndecl_for_call ())
+{
+  gcc_assert (m_fndecl);
+}
+
+call_info::call_info (const call_details &cd,
+		      const function &called_fn)
+: m_call_stmt (cd.get_call_stmt ()),
+  m_fndecl (called_fn.decl)
 {
   gcc_assert (m_fndecl);
 }

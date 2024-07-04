@@ -6,6 +6,9 @@
 /* function brk exists */
 #undef HAVE_BRK
 
+/* Define to 1 if the target assembler supports thread-local storage. */
+#undef HAVE_CC_TLS
+
 /* function cfmakeraw exists */
 #undef HAVE_CFMAKERAW
 
@@ -26,6 +29,10 @@
 
 /* function daylight exists */
 #undef HAVE_DAYLIGHT
+
+/* Define to 1 if you have the declaration of `getenv', and to 0 if you don't.
+   */
+#undef HAVE_DECL_GETENV
 
 /* Define to 1 if you have the <direct.h> header file. */
 #undef HAVE_DIRECT_H
@@ -48,6 +55,15 @@
 /* function exit exists */
 #undef HAVE_EXIT
 
+/* function exp10 exists */
+#undef HAVE_EXP10
+
+/* function exp10f exists */
+#undef HAVE_EXP10F
+
+/* function exp10l exists */
+#undef HAVE_EXP10L
+
 /* function fcntl exists */
 #undef HAVE_FCNTL
 
@@ -63,11 +79,20 @@
 /* function getgid exists */
 #undef HAVE_GETGID
 
+/* Define to 1 if you have the <getopt.h> header file. */
+#undef HAVE_GETOPT_H
+
+/* function getopt_long exists */
+#undef HAVE_GETOPT_LONG
+
+/* function getopt_long_only exists */
+#undef HAVE_GETOPT_LONG_ONLY
+
 /* function getpid exists */
 #undef HAVE_GETPID
 
 /* function gettimeofday exists */
-#undef HAVE_GETTIMEOFD
+#undef HAVE_GETTIMEOFDAY
 
 /* function getuid exists */
 #undef HAVE_GETUID
@@ -138,6 +163,9 @@
 /* function setitimer exists */
 #undef HAVE_SETITIMER
 
+/* function settimeofday exists */
+#undef HAVE_SETTIMEOFDAY
+
 /* function setuid exists */
 #undef HAVE_SETUID
 
@@ -152,6 +180,9 @@
 
 /* function signbitl exists */
 #undef HAVE_SIGNBITL
+
+/* Defined if sleep exists. */
+#undef HAVE_SLEEP
 
 /* function stat exists */
 #undef HAVE_STAT
@@ -264,6 +295,9 @@
 /* function unlink exists */
 #undef HAVE_UNLINK
 
+/* Defined if usleep exists. */
+#undef HAVE_USLEEP
+
 /* function wait exists */
 #undef HAVE_WAIT
 
@@ -301,6 +335,9 @@
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
+/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
+#undef TIME_WITH_SYS_TIME
+
 /* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE
 # undef _ALL_SOURCE
@@ -325,6 +362,31 @@
 
 /* Version number of package */
 #undef VERSION
+
+/* Defined if no way to sleep is available. */
+#undef _GLIBCXX_NO_SLEEP
+
+/* Defined if clock_gettime syscall has monotonic and realtime clock support.
+   */
+#undef _GLIBCXX_USE_CLOCK_GETTIME_SYSCALL
+
+/* Defined if clock_gettime has monotonic clock support. */
+#undef _GLIBCXX_USE_CLOCK_MONOTONIC
+
+/* Defined if clock_gettime has realtime clock support. */
+#undef _GLIBCXX_USE_CLOCK_REALTIME
+
+/* Defined if gettimeofday is available. */
+#undef _GLIBCXX_USE_GETTIMEOFDAY
+
+/* Defined if nanosleep is available. */
+#undef _GLIBCXX_USE_NANOSLEEP
+
+/* Defined if sched_yield is available. */
+#undef _GLIBCXX_USE_SCHED_YIELD
+
+/* Defined if Sleep exists. */
+#undef _GLIBCXX_USE_WIN32_SLEEP
 
 /* Define to 1 if on MINIX. */
 #undef _MINIX

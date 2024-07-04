@@ -1,6 +1,6 @@
 (* M2Const.mod maintain and resolve the types of constants.
 
-Copyright (C) 2010-2023 Free Software Foundation, Inc.
+Copyright (C) 2010-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -373,7 +373,7 @@ BEGIN
    WITH h^ DO
       IF findConstMetaExpr(h)=str
       THEN
-         PutConstString(constsym, MakeKey('')) ;
+         PutConstStringKnown (constsym, MakeKey(''), FALSE, FALSE) ;
          IF DebugConsts
          THEN
             n := GetSymName(constsym) ;

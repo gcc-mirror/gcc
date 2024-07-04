@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -623,6 +623,7 @@ package body Ada.Strings.Search with SPARK_Mode is
            (if (for some J in From .. Source'Last - PL1 =>
                  Match (Source, Pattern, Mapping, J))
             then Result in From .. Source'Last - PL1
+              and then Match (Source, Pattern, Mapping, Result)
             else Result = 0);
 
       else
@@ -636,6 +637,7 @@ package body Ada.Strings.Search with SPARK_Mode is
            (if (for some J in Source'First .. From - PL1 =>
                   Match (Source, Pattern, Mapping, J))
             then Result in Source'First .. From - PL1
+              and then Match (Source, Pattern, Mapping, Result)
             else Result = 0);
       end if;
 

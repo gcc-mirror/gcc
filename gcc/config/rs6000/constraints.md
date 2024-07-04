@@ -1,5 +1,5 @@
 ;; Constraint definitions for RS6000
-;; Copyright (C) 2006-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2024 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -78,8 +78,8 @@
 ;; It is currently used for that purpose in LLVM.
 
 (define_register_constraint "we" "rs6000_constraints[RS6000_CONSTRAINT_we]"
-  "@internal Like @code{wa}, if @option{-mpower9-vector} and @option{-m64} are
-   used; otherwise, @code{NO_REGS}.")
+  "@internal Like @code{wa}, if this is a POWER9 or later and @option{-mvsx}
+   and @option{-m64} are used; otherwise, @code{NO_REGS}.")
 
 ;; NO_REGs register constraint, used to merge mov{sd,sf}, since movsd can use
 ;; direct move directly, and movsf can't to move between the register sets.

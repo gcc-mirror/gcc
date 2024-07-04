@@ -200,8 +200,7 @@ libffi_version_dep = libffi.map-sun
 libffi.map-sun : libffi.map $(top_srcdir)/../contrib/make_sunver.pl \
 		 $(libffi_la_OBJECTS) $(libffi_la_LIBADD)
 	perl $(top_srcdir)/../contrib/make_sunver.pl libffi.map \
-	 `echo $(libffi_la_OBJECTS) $(libffi_la_LIBADD) | \
-	    sed 's,\([^/        ]*\)\.l\([ao]\),.libs/\1.\2,g'` \
+	 $(libffi_la_OBJECTS) $(libffi_la_LIBADD) \
 	 > $@ || (rm -f $@ ; exit 1)
 endif
 else
@@ -214,7 +213,12 @@ libffi.map: $(top_srcdir)/libffi.map.in
 	$(COMPILE) -D$(TARGET) -DGENERATE_LIBFFI_MAP \
 	 -E -x assembler-with-cpp -o $@ $(top_srcdir)/libffi.map.in
 
-libffi_la_LDFLAGS = -no-undefined $(libffi_version_info) $(libffi_version_script) $(LTLDFLAGS) $(AM_LTLDFLAGS)
+if ENABLE_DARWIN_AT_RPATH
+libffi_darwin_rpath = -Wl,-rpath,@loader_path
+endif
+libffi_la_LDFLAGS = -no-undefined $(libffi_version_info) \
+	$(libffi_version_script) $(LTLDFLAGS) $(AM_LTLDFLAGS) \
+	$(libffi_darwin_rpath)
 libffi_la_DEPENDENCIES = $(libffi_la_LIBADD) $(libffi_version_dep)
 
 AM_CPPFLAGS = -I. -I$(top_srcdir)/include -Iinclude -I$(top_srcdir)/src

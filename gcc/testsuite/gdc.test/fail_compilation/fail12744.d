@@ -14,10 +14,10 @@ fail_compilation/fail12744.d(61): Error: template instance `fail12744.bar12744L!
 fail_compilation/fail12744.d(40): Error: incompatible parameter storage classes `lazy` and `out`
 fail_compilation/fail12744.d(62): Error: template instance `fail12744.bar12744L!(foo12744O)` error instantiating
 fail_compilation/fail12744.d(41): Error: incompatible parameter storage classes `auto ref` and `out`
-fail_compilation/fail12744.d(67): Error: template `fail12744.bar12744A` is not callable using argument types `!(foo12744O)(int)`
+fail_compilation/fail12744.d(67): Error: template `bar12744A` is not callable using argument types `!(foo12744O)(int)`
 fail_compilation/fail12744.d(41):        Candidate is: `bar12744A(alias f)(auto ref PTT12744!f args)`
 fail_compilation/fail12744.d(41): Error: incompatible parameter storage classes `auto ref` and `lazy`
-fail_compilation/fail12744.d(68): Error: template `fail12744.bar12744A` is not callable using argument types `!(foo12744L)(int)`
+fail_compilation/fail12744.d(68): Error: template `bar12744A` is not callable using argument types `!(foo12744L)(int)`
 fail_compilation/fail12744.d(41):        Candidate is: `bar12744A(alias f)(auto ref PTT12744!f args)`
 ---
 */

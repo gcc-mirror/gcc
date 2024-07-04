@@ -1,5 +1,5 @@
 /* Decompose multiword subregs.
-   Copyright (C) 2007-2023 Free Software Foundation, Inc.
+   Copyright (C) 2007-2024 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>
 		  Ian Lance Taylor <iant@google.com>
 
@@ -927,6 +927,21 @@ resolve_simple_move (rtx set, rtx_insn *insn)
 	     SRC's operator.  */
 	  dest = resolve_operand_for_swap_move_operator (dest);
 	  src = src_op;
+	  if (resolve_reg_p (src))
+	    {
+	      gcc_assert (GET_CODE (src) == CONCATN);
+	      if (reg_overlap_mentioned_p (XVECEXP (dest, 0, 0),
+					   XVECEXP (src, 0, 1)))
+		{
+		  /* If there is overlap between the first half of the
+		     destination and what will be stored to the second one,
+		     use a temporary pseudo.  See PR114211.  */
+		  rtx tem = gen_reg_rtx (GET_MODE (XVECEXP (src, 0, 1)));
+		  emit_move_insn (tem, XVECEXP (src, 0, 1));
+		  src = copy_rtx (src);
+		  XVECEXP (src, 0, 1) = tem;
+		}
+	    }
 	}
       else if (resolve_reg_p (src_op))
 	{

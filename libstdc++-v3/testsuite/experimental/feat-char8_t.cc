@@ -1,5 +1,6 @@
 // { dg-do preprocess { target c++11 } }
 // { dg-options "-fchar8_t" }
+// { dg-add-options no_pch }
 
 #include <atomic>
 #include <filesystem>

@@ -2,4 +2,4 @@
 // { dg-do preprocess }
 // { dg-options "" }
 
-#include "../../gcc.dg/cpp/c2x-elifdef-1.c"
+#include "../../gcc.dg/cpp/c23-elifdef-1.c"

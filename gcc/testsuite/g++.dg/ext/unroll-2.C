@@ -1,6 +1,5 @@
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 // { dg-options "-O2 -fdump-tree-cunrolli-details" }
-// { dg-skip-if "range for" { *-*-* } { "-std=gnu++98" } { "" } }
 
 void
 foo (int (&a)[8], int *b, int *c)

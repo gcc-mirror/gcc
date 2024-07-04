@@ -1,5 +1,5 @@
 /* CPU mode switching
-   Copyright (C) 1998-2023 Free Software Foundation, Inc.
+   Copyright (C) 1998-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lcm.h"
 #include "cfgcleanup.h"
 #include "tree-pass.h"
+#include "cfgbuild.h"
 
 /* We want target macros for the mode switching code to be able to refer
    to instruction attribute values.  */
@@ -65,13 +66,12 @@ along with GCC; see the file COPYING3.  If not see
    MODE is the mode this insn must be executed in.
    INSN_PTR is the insn to be executed (may be the note that marks the
    beginning of a basic block).
-   BBNUM is the flow graph basic block this insn occurs in.
    NEXT is the next insn in the same basic block.  */
 struct seginfo
 {
+  int prev_mode;
   int mode;
   rtx_insn *insn_ptr;
-  int bbnum;
   struct seginfo *next;
   HARD_REG_SET regs_live;
 };
@@ -82,12 +82,8 @@ struct bb_info
   int computing;
   int mode_out;
   int mode_in;
+  int single_succ;
 };
-
-static struct seginfo * new_seginfo (int, rtx_insn *, int, HARD_REG_SET);
-static void add_seginfo (struct bb_info *, struct seginfo *);
-static void reg_dies (rtx, HARD_REG_SET *);
-static void reg_becomes_live (rtx, const_rtx, void *);
 
 /* Clear ode I from entity J in bitmap B.  */
 #define clear_mode_bit(b, j, i) \
@@ -112,10 +108,10 @@ commit_mode_sets (struct edge_list *edge_list, int e, struct bb_info *info)
   for (int ed = NUM_EDGES (edge_list) - 1; ed >= 0; ed--)
     {
       edge eg = INDEX_EDGE (edge_list, ed);
-      int mode;
 
-      if ((mode = (int)(intptr_t)(eg->aux)) != -1)
+      if (eg->aux)
 	{
+	  int mode = (int) (intptr_t) eg->aux - 1;
 	  HARD_REG_SET live_at_edge;
 	  basic_block src_bb = eg->src;
 	  int cur_mode = info[src_bb->index].mode_out;
@@ -147,46 +143,38 @@ commit_mode_sets (struct edge_list *edge_list, int e, struct bb_info *info)
   return need_commit;
 }
 
-/* Allocate a new BBINFO structure, initialized with the MODE, INSN,
-   and basic block BB parameters.
+/* Allocate a new BBINFO structure, initialized with the PREV_MODE, MODE,
+   INSN, and REGS_LIVE parameters.
    INSN may not be a NOTE_INSN_BASIC_BLOCK, unless it is an empty
    basic block; that allows us later to insert instructions in a FIFO-like
    manner.  */
 
 static struct seginfo *
-new_seginfo (int mode, rtx_insn *insn, int bb, HARD_REG_SET regs_live)
+new_seginfo (int prev_mode, int mode, rtx_insn *insn,
+	     const HARD_REG_SET &regs_live)
 {
   struct seginfo *ptr;
 
   gcc_assert (!NOTE_INSN_BASIC_BLOCK_P (insn)
 	      || insn == BB_END (NOTE_BASIC_BLOCK (insn)));
   ptr = XNEW (struct seginfo);
+  ptr->prev_mode = prev_mode;
   ptr->mode = mode;
   ptr->insn_ptr = insn;
-  ptr->bbnum = bb;
   ptr->next = NULL;
   ptr->regs_live = regs_live;
   return ptr;
 }
 
 /* Add a seginfo element to the end of a list.
-   HEAD is a pointer to the list beginning.
+   TAIL is a pointer to the list's null terminator.
    INFO is the structure to be linked in.  */
 
 static void
-add_seginfo (struct bb_info *head, struct seginfo *info)
+add_seginfo (struct seginfo ***tail_ptr, struct seginfo *info)
 {
-  struct seginfo *ptr;
-
-  if (head->seginfo == NULL)
-    head->seginfo = info;
-  else
-    {
-      ptr = head->seginfo;
-      while (ptr->next != NULL)
-	ptr = ptr->next;
-      ptr->next = info;
-    }
+  **tail_ptr = info;
+  *tail_ptr = &info->next;
 }
 
 /* Record in LIVE that register REG died.  */
@@ -268,6 +256,9 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 	    && GET_CODE (PATTERN (last_insn)) == USE
 	    && GET_CODE ((ret_reg = XEXP (PATTERN (last_insn), 0))) == REG)
 	  {
+	    auto_bitmap live;
+	    df_simulate_initialize_backwards (src_bb, live);
+
 	    int ret_start = REGNO (ret_reg);
 	    int nregs = REG_NREGS (ret_reg);
 	    int ret_end = ret_start + nregs;
@@ -276,12 +267,16 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 	    bool forced_late_switch = false;
 	    rtx_insn *before_return_copy;
 
+	    df_simulate_one_insn_backwards (src_bb, last_insn, live);
+
 	    do
 	      {
 		rtx_insn *return_copy = PREV_INSN (last_insn);
 		rtx return_copy_pat, copy_reg;
 		int copy_start, copy_num;
 		int j;
+
+		df_simulate_one_insn_backwards (src_bb, return_copy, live);
 
 		if (NONDEBUG_INSN_P (return_copy))
 		  {
@@ -382,11 +377,14 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 		       the case for floating point on SH4 - then it might
 		       be set by an arithmetic operation that needs a
 		       different mode than the exit block.  */
+		    HARD_REG_SET hard_regs_live;
+		    REG_SET_TO_HARD_REG_SET (hard_regs_live, live);
 		    for (j = n_entities - 1; j >= 0; j--)
 		      {
 			int e = entity_map[j];
 			int mode =
-			  targetm.mode_switching.needed (e, return_copy);
+			  targetm.mode_switching.needed (e, return_copy,
+							 hard_regs_live);
 
 			if (mode != num_modes[e]
 			    && mode != targetm.mode_switching.exit (e))
@@ -489,6 +487,308 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
   return pre_exit;
 }
 
+/* Return the confluence of modes MODE1 and MODE2 for entity ENTITY,
+   using NO_MODE to represent an unknown mode if nothing more precise
+   is available.  */
+
+int
+mode_confluence (int entity, int mode1, int mode2, int no_mode)
+{
+  if (mode1 == mode2)
+    return mode1;
+
+  if (mode1 != no_mode
+      && mode2 != no_mode
+      && targetm.mode_switching.confluence)
+    return targetm.mode_switching.confluence (entity, mode1, mode2);
+
+  return no_mode;
+}
+
+/* Information for the dataflow problems below.  */
+struct
+{
+  /* Information about each basic block, indexed by block id.  */
+  struct bb_info *bb_info;
+
+  /* A bitmap of blocks for which the current entity is transparent.  */
+  sbitmap transp;
+
+  /* The entity that we're processing.  */
+  int entity;
+
+  /* The number of modes defined for the entity, and thus the identifier
+     of the "don't know" mode.  */
+  int no_mode;
+} confluence_info;
+
+/* Propagate information about any mode change on edge E to the
+   destination block's mode_in.  Return true if something changed.
+
+   The mode_in and mode_out fields use no_mode + 1 to mean "not yet set".  */
+
+static bool
+forward_confluence_n (edge e)
+{
+  /* The entry and exit blocks have no useful mode information.  */
+  if (e->src->index == ENTRY_BLOCK || e->dest->index == EXIT_BLOCK)
+    return false;
+
+  /* We don't control mode changes across abnormal edges.  */
+  if (e->flags & EDGE_ABNORMAL)
+    return false;
+
+  /* E->aux is nonzero if we have computed the LCM problem and scheduled
+     E to change the mode to E->aux - 1.  Otherwise model the change
+     from the source to the destination.  */
+  struct bb_info *bb_info = confluence_info.bb_info;
+  int no_mode = confluence_info.no_mode;
+  int src_mode = bb_info[e->src->index].mode_out;
+  if (e->aux)
+    src_mode = (int) (intptr_t) e->aux - 1;
+  if (src_mode == no_mode + 1)
+    return false;
+
+  int dest_mode = bb_info[e->dest->index].mode_in;
+  if (dest_mode == no_mode + 1)
+    {
+      bb_info[e->dest->index].mode_in = src_mode;
+      return true;
+    }
+
+  int entity = confluence_info.entity;
+  int new_mode = mode_confluence (entity, src_mode, dest_mode, no_mode);
+  if (dest_mode == new_mode)
+    return false;
+
+  bb_info[e->dest->index].mode_in = new_mode;
+  return true;
+}
+
+/* Update block BB_INDEX's mode_out based on its mode_in.  Return true if
+   something changed.  */
+
+static bool
+forward_transfer (int bb_index)
+{
+  /* The entry and exit blocks have no useful mode information.  */
+  if (bb_index == ENTRY_BLOCK || bb_index == EXIT_BLOCK)
+    return false;
+
+  /* Only propagate through a block if the entity is transparent.  */
+  struct bb_info *bb_info = confluence_info.bb_info;
+  if (bb_info[bb_index].computing != confluence_info.no_mode
+      || bb_info[bb_index].mode_out == bb_info[bb_index].mode_in)
+    return false;
+
+  bb_info[bb_index].mode_out = bb_info[bb_index].mode_in;
+  return true;
+}
+
+/* A backwards confluence function.  Update the bb_info single_succ
+   field for E's source block, based on changes to E's destination block.
+   At the end of the dataflow problem, single_succ is the single mode
+   that all successors require (directly or indirectly), or no_mode
+   if there are conflicting requirements.
+
+   Initially, a value of no_mode + 1 means "don't know".  */
+
+static bool
+single_succ_confluence_n (edge e)
+{
+  /* The entry block has no associated mode information.  */
+  if (e->src->index == ENTRY_BLOCK)
+    return false;
+
+  /* We don't control mode changes across abnormal edges.  */
+  if (e->flags & EDGE_ABNORMAL)
+    return false;
+
+  /* Do nothing if we've already found a conflict.  */
+  struct bb_info *bb_info = confluence_info.bb_info;
+  int no_mode = confluence_info.no_mode;
+  int src_mode = bb_info[e->src->index].single_succ;
+  if (src_mode == no_mode)
+    return false;
+
+  /* Work out what mode the destination block (or its successors) require.  */
+  int dest_mode;
+  if (e->dest->index == EXIT_BLOCK)
+    dest_mode = no_mode;
+  else if (bitmap_bit_p (confluence_info.transp, e->dest->index))
+    dest_mode = bb_info[e->dest->index].single_succ;
+  else
+    dest_mode = bb_info[e->dest->index].seginfo->mode;
+
+  /* Do nothing if the destination block has no new information.  */
+  if (dest_mode == no_mode + 1 || dest_mode == src_mode)
+    return false;
+
+  /* Detect conflicting modes.  */
+  if (src_mode != no_mode + 1)
+    dest_mode = no_mode;
+
+  bb_info[e->src->index].single_succ = dest_mode;
+  return true;
+}
+
+/* A backward transfer function for computing the bb_info single_succ
+   fields, as described above single_succ_confluence.  */
+
+static bool
+single_succ_transfer (int bb_index)
+{
+  /* We don't have any field to transfer to.  Assume that, after the
+     first iteration, we are only called if single_succ has changed.
+     We should then process incoming edges if the entity is transparent.  */
+  return bitmap_bit_p (confluence_info.transp, bb_index);
+}
+
+/* Check whether the target wants to back-propagate a mode change across
+   edge E, and update the source block's computed mode if so.  Return true
+   if something changed.  */
+
+static bool
+backprop_confluence_n (edge e)
+{
+  /* The entry and exit blocks have no useful mode information.  */
+  if (e->src->index == ENTRY_BLOCK || e->dest->index == EXIT_BLOCK)
+    return false;
+
+  /* We don't control mode changes across abnormal edges.  */
+  if (e->flags & EDGE_ABNORMAL)
+    return false;
+
+  /* We can only require a new mode in the source block if the entity
+     was originally transparent there.  */
+  if (!bitmap_bit_p (confluence_info.transp, e->src->index))
+    return false;
+
+  /* Exit now if there is no required mode, or if all paths into the
+     source block leave the entity in the required mode.  */
+  struct bb_info *bb_info = confluence_info.bb_info;
+  int no_mode = confluence_info.no_mode;
+  int src_mode = bb_info[e->src->index].mode_out;
+  int dest_mode = bb_info[e->dest->index].mode_in;
+  if (dest_mode == no_mode || src_mode == dest_mode)
+    return false;
+
+  /* See what the target thinks about this transition.  */
+  int entity = confluence_info.entity;
+  int new_mode = targetm.mode_switching.backprop (entity, src_mode,
+						  dest_mode);
+  if (new_mode == no_mode)
+    return false;
+
+  /* The target doesn't like the current transition, but would be happy
+     with a transition from NEW_MODE.
+
+     If we force the source block to use NEW_MODE, we might introduce a
+     double transition on at least one path through the function (one to
+     NEW_MODE and then one to DEST_MODE).  Therefore, if all destination
+     blocks require the same mode, it is usually better to bring that
+     mode requirement forward.
+
+     If that isn't possible, merge the preference for this edge with
+     the preferences for other edges.  no_mode + 1 indicates that there
+     was no previous preference.  */
+  int old_mode = bb_info[e->src->index].computing;
+  if (bb_info[e->src->index].single_succ != no_mode)
+    new_mode = bb_info[e->src->index].single_succ;
+  else if (old_mode != no_mode + 1)
+    new_mode = mode_confluence (entity, old_mode, new_mode, no_mode);
+
+  if (old_mode == new_mode)
+    return false;
+
+  bb_info[e->src->index].computing = new_mode;
+  return true;
+}
+
+/* If the current entity was originally transparent in block BB_INDEX,
+   update the incoming mode to match the outgoing mode.  Register a mode
+   change if the entity is no longer transparent.
+
+   Also, as an on-the-fly optimization, check whether the entity was
+   originally transparent in BB_INDEX and if all successor blocks require
+   the same mode.  If so, anticipate the mode change in BB_INDEX if
+   doing it on the incoming edges would require no more mode changes than
+   doing it on the outgoing edges.  The aim is to reduce the total number
+   of mode changes emitted for the function (and thus reduce code size and
+   cfg complexity) without increasing the number of mode changes on any
+   given path through the function.  A typical case where it helps is:
+
+	  T
+	 / \
+	T   M
+	 \ /
+	  M
+
+   where the entity is transparent in the T blocks and is required to have
+   mode M in the M blocks.  If there are no redundancies leading up to this,
+   there will be two mutually-exclusive changes to mode M, one on each of
+   the T->M edges.  The optimization instead converts it to:
+
+	  T            T            M
+	 / \          / \          / \
+	T   M   ->   M   M   ->   M   M
+	 \ /          \ /          \ /
+	  M            M            M
+
+   which creates a single transition to M for both paths through the diamond.
+
+   Return true if something changed.  */
+
+static bool
+backprop_transfer (int bb_index)
+{
+  /* The entry and exit blocks have no useful mode information.  */
+  if (bb_index == ENTRY_BLOCK || bb_index == EXIT_BLOCK)
+    return false;
+
+  /* We can only require a new mode if the entity was previously
+     transparent.  */
+  if (!bitmap_bit_p (confluence_info.transp, bb_index))
+    return false;
+
+  struct bb_info *bb_info = confluence_info.bb_info;
+  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
+  int no_mode = confluence_info.no_mode;
+  int mode_in = bb_info[bb_index].mode_in;
+  int mode_out = bb_info[bb_index].computing;
+  if (mode_out == no_mode + 1)
+    {
+      /* The entity is still transparent for this block.  See whether
+	 all successor blocks need the same mode, either directly or
+	 indirectly.  */
+      mode_out = bb_info[bb_index].single_succ;
+      if (mode_out == no_mode)
+	return false;
+
+      /* Get a minimum bound on the number of transitions that would be
+	 removed if BB itself required MODE_OUT.  */
+      unsigned int moved = 0;
+      for (edge e : bb->succs)
+	if (e->dest->index != EXIT_BLOCK
+	    && mode_out == bb_info[e->dest->index].seginfo->mode)
+	  moved += 1;
+
+      /* See whether making the mode change on all incoming edges would
+	 be no worse than making it on MOVED outgoing edges.  */
+      if (moved < EDGE_COUNT (bb->preds))
+	return false;
+
+      bb_info[bb_index].mode_out = mode_out;
+      bb_info[bb_index].computing = mode_out;
+    }
+  else if (mode_out == mode_in)
+    return false;
+
+  bb_info[bb_index].mode_in = mode_out;
+  bb_info[bb_index].seginfo->mode = mode_out;
+  return true;
+}
+
 /* Find all insns that need a particular mode setting, and insert the
    necessary mode switches.  Return true if we did work.  */
 
@@ -549,6 +849,7 @@ optimize_mode_switching (void)
       pre_exit = create_pre_exit (n_entities, entity_map, num_modes);
     }
 
+  df_note_add_problem ();
   df_analyze ();
 
   /* Create the bitmap vectors.  */
@@ -569,6 +870,45 @@ optimize_mode_switching (void)
   bitmap_vector_clear (antic, last_basic_block_for_fn (cfun));
   bitmap_vector_clear (comp, last_basic_block_for_fn (cfun));
 
+  auto_sbitmap transp_all (last_basic_block_for_fn (cfun));
+
+  auto_bitmap blocks;
+
+  /* Forward-propagate mode information through blocks where the entity
+     is transparent, so that mode_in describes the mode on entry to each
+     block and mode_out describes the mode on exit from each block.  */
+  auto forwprop_mode_info = [&](struct bb_info *info,
+				int entity, int no_mode)
+    {
+      /* Use no_mode + 1 to mean "not yet set".  */
+      FOR_EACH_BB_FN (bb, cfun)
+	{
+	  if (bb_has_abnormal_pred (bb))
+	    info[bb->index].mode_in = info[bb->index].seginfo->mode;
+	  else
+	    info[bb->index].mode_in = no_mode + 1;
+	  if (info[bb->index].computing != no_mode)
+	    info[bb->index].mode_out = info[bb->index].computing;
+	  else
+	    info[bb->index].mode_out = no_mode + 1;
+	}
+
+      confluence_info.bb_info = info;
+      confluence_info.transp = nullptr;
+      confluence_info.entity = entity;
+      confluence_info.no_mode = no_mode;
+
+      bitmap_set_range (blocks, 0, last_basic_block_for_fn (cfun));
+      df_simple_dataflow (DF_FORWARD, NULL, NULL, forward_confluence_n,
+			  forward_transfer, blocks,
+			  df_get_postorder (DF_FORWARD),
+			  df_get_n_blocks (DF_FORWARD));
+
+    };
+
+  if (targetm.mode_switching.backprop)
+    clear_aux_for_edges ();
+
   for (j = n_entities - 1; j >= 0; j--)
     {
       int e = entity_map[j];
@@ -576,11 +916,14 @@ optimize_mode_switching (void)
       struct bb_info *info = bb_info[j];
       rtx_insn *insn;
 
+      bitmap_ones (transp_all);
+
       /* Determine what the first use (if any) need for a mode of entity E is.
 	 This will be the mode that is anticipatable for this block.
 	 Also compute the initial transparency settings.  */
       FOR_EACH_BB_FN (bb, cfun)
 	{
+	  struct seginfo **tail_ptr = &info[bb->index].seginfo;
 	  struct seginfo *ptr;
 	  int last_mode = no_mode;
 	  bool any_set_required = false;
@@ -605,33 +948,30 @@ optimize_mode_switching (void)
 		gcc_assert (NOTE_INSN_BASIC_BLOCK_P (ins_pos));
 		if (ins_pos != BB_END (bb))
 		  ins_pos = NEXT_INSN (ins_pos);
-		ptr = new_seginfo (no_mode, ins_pos, bb->index, live_now);
-		add_seginfo (info + bb->index, ptr);
-		for (i = 0; i < no_mode; i++)
-		  clear_mode_bit (transp[bb->index], j, i);
+		if (bb_has_eh_pred (bb)
+		    && targetm.mode_switching.eh_handler)
+		  last_mode = targetm.mode_switching.eh_handler (e);
+		ptr = new_seginfo (no_mode, last_mode, ins_pos, live_now);
+		add_seginfo (&tail_ptr, ptr);
+		bitmap_clear_bit (transp_all, bb->index);
 	      }
 	  }
 
 	  FOR_BB_INSNS (bb, insn)
 	    {
-	      if (INSN_P (insn))
+	      if (NONDEBUG_INSN_P (insn))
 		{
-		  int mode = targetm.mode_switching.needed (e, insn);
+		  int mode = targetm.mode_switching.needed (e, insn, live_now);
 		  rtx link;
 
 		  if (mode != no_mode && mode != last_mode)
 		    {
+		      ptr = new_seginfo (last_mode, mode, insn, live_now);
+		      add_seginfo (&tail_ptr, ptr);
+		      bitmap_clear_bit (transp_all, bb->index);
 		      any_set_required = true;
 		      last_mode = mode;
-		      ptr = new_seginfo (mode, insn, bb->index, live_now);
-		      add_seginfo (info + bb->index, ptr);
-		      for (i = 0; i < no_mode; i++)
-			clear_mode_bit (transp[bb->index], j, i);
 		    }
-
-		  if (targetm.mode_switching.after)
-		    last_mode = targetm.mode_switching.after (e, last_mode,
-							      insn);
 
 		  /* Update LIVE_NOW.  */
 		  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
@@ -642,6 +982,10 @@ optimize_mode_switching (void)
 		  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
 		    if (REG_NOTE_KIND (link) == REG_UNUSED)
 		      reg_dies (XEXP (link, 0), &live_now);
+
+		  if (targetm.mode_switching.after)
+		    last_mode = targetm.mode_switching.after (e, last_mode,
+							      insn, live_now);
 		}
 	    }
 
@@ -652,45 +996,86 @@ optimize_mode_switching (void)
 	     mark the block as nontransparent.  */
 	  if (!any_set_required)
 	    {
-	      ptr = new_seginfo (no_mode, BB_END (bb), bb->index, live_now);
-	      add_seginfo (info + bb->index, ptr);
+	      ptr = new_seginfo (last_mode, no_mode, BB_END (bb), live_now);
+	      add_seginfo (&tail_ptr, ptr);
 	      if (last_mode != no_mode)
-		for (i = 0; i < no_mode; i++)
-		  clear_mode_bit (transp[bb->index], j, i);
+		bitmap_clear_bit (transp_all, bb->index);
 	    }
 	}
       if (targetm.mode_switching.entry && targetm.mode_switching.exit)
 	{
-	  int mode = targetm.mode_switching.entry (e);
-
 	  info[post_entry->index].mode_out =
 	    info[post_entry->index].mode_in = no_mode;
+
+	  int mode = targetm.mode_switching.entry (e);
+	  if (mode != no_mode)
+	    {
+	      /* Insert a fake computing definition of MODE into entry
+		 blocks which compute no mode. This represents the mode on
+		 entry.  */
+	      info[post_entry->index].computing = mode;
+	      bitmap_clear_bit (transp_all, post_entry->index);
+	    }
+
 	  if (pre_exit)
 	    {
 	      info[pre_exit->index].mode_out =
 		info[pre_exit->index].mode_in = no_mode;
-	    }
 
-	  if (mode != no_mode)
+	      int mode = targetm.mode_switching.exit (e);
+	      if (mode != no_mode)
+		{
+		  info[pre_exit->index].seginfo->mode = mode;
+		  bitmap_clear_bit (transp_all, pre_exit->index);
+		}
+	    }
+	}
+
+      /* If the target requests it, back-propagate selected mode requirements
+	 through transparent blocks.  */
+      if (targetm.mode_switching.backprop)
+	{
+	  /* First work out the mode on entry to and exit from each block.  */
+	  forwprop_mode_info (info, e, no_mode);
+
+	  /* Compute the single_succ fields, as described above
+	     single_succ_confluence.  */
+	  FOR_EACH_BB_FN (bb, cfun)
+	    info[bb->index].single_succ = no_mode + 1;
+
+	  confluence_info.transp = transp_all;
+	  bitmap_set_range (blocks, 0, last_basic_block_for_fn (cfun));
+	  df_simple_dataflow (DF_BACKWARD, NULL, NULL,
+			      single_succ_confluence_n,
+			      single_succ_transfer, blocks,
+			      df_get_postorder (DF_BACKWARD),
+			      df_get_n_blocks (DF_BACKWARD));
+
+	  FOR_EACH_BB_FN (bb, cfun)
 	    {
-	      bb = post_entry;
+	      /* Repurpose mode_in as the first mode required by the block,
+		 or the output mode if none.  */
+	      if (info[bb->index].seginfo->mode != no_mode)
+		info[bb->index].mode_in = info[bb->index].seginfo->mode;
 
-	      /* By always making this nontransparent, we save
-		 an extra check in make_preds_opaque.  We also
-		 need this to avoid confusing pre_edge_lcm when
-		 antic is cleared but transp and comp are set.  */
-	      for (i = 0; i < no_mode; i++)
-		clear_mode_bit (transp[bb->index], j, i);
-
-	      /* Insert a fake computing definition of MODE into entry
-		 blocks which compute no mode. This represents the mode on
-		 entry.  */
-	      info[bb->index].computing = mode;
-
-	      if (pre_exit)
-		info[pre_exit->index].seginfo->mode =
-		  targetm.mode_switching.exit (e);
+	      /* In transparent blocks, use computing == no_mode + 1
+		 to indicate that no propagation has taken place.  */
+	      if (info[bb->index].computing == no_mode)
+		info[bb->index].computing = no_mode + 1;
 	    }
+
+	  bitmap_set_range (blocks, 0, last_basic_block_for_fn (cfun));
+	  df_simple_dataflow (DF_BACKWARD, NULL, NULL, backprop_confluence_n,
+			      backprop_transfer, blocks,
+			      df_get_postorder (DF_BACKWARD),
+			      df_get_n_blocks (DF_BACKWARD));
+
+	  /* Any block that now computes a mode is no longer transparent.  */
+	  FOR_EACH_BB_FN (bb, cfun)
+	    if (info[bb->index].computing == no_mode + 1)
+	      info[bb->index].computing = no_mode;
+	    else if (info[bb->index].computing != no_mode)
+	      bitmap_clear_bit (transp_all, bb->index);
 	}
 
       /* Set the anticipatable and computing arrays.  */
@@ -700,6 +1085,9 @@ optimize_mode_switching (void)
 
 	  FOR_EACH_BB_FN (bb, cfun)
 	    {
+	      if (!bitmap_bit_p (transp_all, bb->index))
+		clear_mode_bit (transp[bb->index], j, m);
+
 	      if (info[bb->index].seginfo->mode == m)
 		set_mode_bit (antic[bb->index], j, m);
 
@@ -718,9 +1106,12 @@ optimize_mode_switching (void)
   edge_list = pre_edge_lcm_avs (n_entities * max_num_modes, transp, comp, antic,
 				kill, avin, avout, &insert, &del);
 
+  auto_sbitmap jumping_blocks (last_basic_block_for_fn (cfun));
+  bitmap_clear (jumping_blocks);
   for (j = n_entities - 1; j >= 0; j--)
     {
       int no_mode = num_modes[entity_map[j]];
+      struct bb_info *info = bb_info[j];
 
       /* Insert all mode sets that have been inserted by lcm.  */
 
@@ -728,56 +1119,66 @@ optimize_mode_switching (void)
 	{
 	  edge eg = INDEX_EDGE (edge_list, ed);
 
-	  eg->aux = (void *)(intptr_t)-1;
+	  eg->aux = (void *) (intptr_t) 0;
 
 	  for (i = 0; i < no_mode; i++)
 	    {
 	      int m = targetm.mode_switching.priority (entity_map[j], i);
 	      if (mode_bit_p (insert[ed], j, m))
 		{
-		  eg->aux = (void *)(intptr_t)m;
+		  eg->aux = (void *) (intptr_t) (m + 1);
 		  break;
 		}
 	    }
 	}
 
+      /* mode_in and mode_out can be calculated directly from avin and
+	 avout if all the modes are mutually exclusive.  Use the target-
+	 provided confluence function otherwise.  */
+      if (targetm.mode_switching.confluence)
+	forwprop_mode_info (info, entity_map[j], no_mode);
+
       FOR_EACH_BB_FN (bb, cfun)
 	{
-	  struct bb_info *info = bb_info[j];
-	  int last_mode = no_mode;
-
-	  /* intialize mode in availability for bb.  */
-	  for (i = 0; i < no_mode; i++)
-	    if (mode_bit_p (avout[bb->index], j, i))
-	      {
-		if (last_mode == no_mode)
-		  last_mode = i;
-		if (last_mode != i)
+	  auto modes_confluence = [&](sbitmap *av)
+	    {
+	      for (int i = 0; i < no_mode; ++i)
+		if (mode_bit_p (av[bb->index], j, i))
 		  {
-		    last_mode = no_mode;
-		    break;
+		    for (int i2 = i + 1; i2 < no_mode; ++i2)
+		      if (mode_bit_p (av[bb->index], j, i2))
+			return no_mode;
+		    return i;
 		  }
-	      }
-	  info[bb->index].mode_out = last_mode;
+	      return no_mode;
+	    };
 
-	  /* intialize mode out availability for bb.  */
-	  last_mode = no_mode;
-	  for (i = 0; i < no_mode; i++)
-	    if (mode_bit_p (avin[bb->index], j, i))
-	      {
-		if (last_mode == no_mode)
-		  last_mode = i;
-		if (last_mode != i)
-		  {
-		    last_mode = no_mode;
-		    break;
-		  }
-	      }
-	  info[bb->index].mode_in = last_mode;
+	  /* intialize mode in/out availability for bb.  */
+	  if (!targetm.mode_switching.confluence)
+	    {
+	      info[bb->index].mode_out = modes_confluence (avout);
+	      info[bb->index].mode_in = modes_confluence (avin);
+	    }
 
 	  for (i = 0; i < no_mode; i++)
 	    if (mode_bit_p (del[bb->index], j, i))
 	      info[bb->index].seginfo->mode = no_mode;
+
+	  /* See whether the target can perform the first transition.
+	     If not, push it onto the incoming edges.  The earlier backprop
+	     pass should ensure that the resulting transitions are valid.  */
+	  if (targetm.mode_switching.backprop)
+	    {
+	      int from_mode = info[bb->index].mode_in;
+	      int to_mode = info[bb->index].seginfo->mode;
+	      if (targetm.mode_switching.backprop (entity_map[j], from_mode,
+						   to_mode) != no_mode)
+		{
+		  for (edge e : bb->preds)
+		    e->aux = (void *) (intptr_t) (to_mode + 1);
+		  info[bb->index].mode_in = to_mode;
+		}
+	    }
 	}
 
       /* Now output the remaining mode sets in all the segments.  */
@@ -793,9 +1194,9 @@ optimize_mode_switching (void)
       FOR_EACH_BB_FN (bb, cfun)
 	{
 	  struct seginfo *ptr, *next;
-	  int cur_mode = bb_info[j][bb->index].mode_in;
+	  struct seginfo *first = bb_info[j][bb->index].seginfo;
 
-	  for (ptr = bb_info[j][bb->index].seginfo; ptr; ptr = next)
+	  for (ptr = first; ptr; ptr = next)
 	    {
 	      next = ptr->next;
 	      if (ptr->mode != no_mode)
@@ -805,17 +1206,25 @@ optimize_mode_switching (void)
 		  rtl_profile_for_bb (bb);
 		  start_sequence ();
 
+		  int cur_mode = (ptr == first && ptr->prev_mode == no_mode
+				  ? bb_info[j][bb->index].mode_in
+				  : ptr->prev_mode);
+
 		  targetm.mode_switching.emit (entity_map[j], ptr->mode,
 					       cur_mode, ptr->regs_live);
 		  mode_set = get_insns ();
 		  end_sequence ();
 
-		  /* modes kill each other inside a basic block.  */
-		  cur_mode = ptr->mode;
-
 		  /* Insert MODE_SET only if it is nonempty.  */
 		  if (mode_set != NULL_RTX)
 		    {
+		      for (auto insn = mode_set; insn; insn = NEXT_INSN (insn))
+			if (JUMP_P (insn))
+			  {
+			    rebuild_jump_labels_chain (mode_set);
+			    bitmap_set_bit (jumping_blocks, bb->index);
+			    break;
+			  }
 		      emitted = true;
 		      if (NOTE_INSN_BASIC_BLOCK_P (ptr->insn_ptr))
 			/* We need to emit the insns in a FIFO-like manner,
@@ -852,6 +1261,11 @@ optimize_mode_switching (void)
   sbitmap_vector_free (comp);
   sbitmap_vector_free (avin);
   sbitmap_vector_free (avout);
+
+  gcc_assert (SBITMAP_SIZE ((sbitmap) jumping_blocks)
+	      == (unsigned int) last_basic_block_for_fn (cfun));
+  if (!bitmap_empty_p (jumping_blocks))
+    find_many_sub_basic_blocks (jumping_blocks);
 
   if (need_commit)
     commit_edge_insertions ();

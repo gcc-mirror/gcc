@@ -1,5 +1,5 @@
 ;;- Machine description for ARM for GNU compiler
-;;  Copyright (C) 1991-2023 Free Software Foundation, Inc.
+;;  Copyright (C) 1991-2024 Free Software Foundation, Inc.
 ;;  Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
 ;;  and Martin Simmons (@harleqn.co.uk).
 ;;  More major hacks by Richard Earnshaw (rearnsha@arm.com).
@@ -123,6 +123,18 @@
 ; predicate.  We default to 'no' because no Thumb patterns match this rule
 ; and not all ARM insns do.
 (define_attr "predicated" "yes,no" (const_string "no"))
+
+; An attribute that encodes the CODE_FOR_<insn> of the MVE VPT unpredicated
+; version of a VPT-predicated instruction.  For unpredicated instructions
+; that are predicable, encode the same pattern's CODE_FOR_<insn> as a way to
+; encode that it is a predicable instruction.
+(define_attr "mve_unpredicated_insn" "" (symbol_ref "CODE_FOR_nothing"))
+
+; An attribute used by the loop-doloop pass when determining whether it is
+; safe to predicate a MVE instruction, that operates across lanes, and was
+; previously not predicated.  The pass will still check whether all inputs
+; are predicated by the VCTP predication mask.
+(define_attr "mve_safe_imp_xlane_pred" "yes,no" (const_string "no"))
 
 ; LENGTH of an instruction (in bytes)
 (define_attr "length" ""
@@ -307,6 +319,8 @@
 ;
 ; NOCOND means that the instruction does not use or alter the condition
 ;   codes but can be converted into a conditionally exectuted instruction.
+;   Given that NOCOND is the default for most instructions if omitted,
+;   the attribute predicable must be set to yes as well.
 
 (define_attr "conds" "use,set,clob,unconditional,nocond"
 	(if_then_else
@@ -4997,7 +5011,7 @@
 
 (define_insn "unaligned_loadsi"
   [(set (match_operand:SI 0 "s_register_operand" "=l,l,r")
-	(unspec:SI [(match_operand:SI 1 "memory_operand" "m,Uw,m")]
+	(unspec:SI [(match_operand:SI 1 "mem_and_no_t1_wback_op" "Uw,Uw,m")]
 		   UNSPEC_UNALIGNED_LOAD))]
   "unaligned_access"
   "@
@@ -5027,7 +5041,7 @@
 (define_insn "unaligned_loadhiu"
   [(set (match_operand:SI 0 "s_register_operand" "=l,l,r")
 	(zero_extend:SI
-	  (unspec:HI [(match_operand:HI 1 "memory_operand" "m,Uw,m")]
+	  (unspec:HI [(match_operand:HI 1 "mem_and_no_t1_wback_op" "Uw,Uw,m")]
 		     UNSPEC_UNALIGNED_LOAD)))]
   "unaligned_access"
   "@
@@ -5052,7 +5066,7 @@
    (set_attr "type" "store_8")])
 
 (define_insn "unaligned_storesi"
-  [(set (match_operand:SI 0 "memory_operand" "=m,Uw,m")
+  [(set (match_operand:SI 0 "mem_and_no_t1_wback_op" "=Uw,Uw,m")
 	(unspec:SI [(match_operand:SI 1 "s_register_operand" "l,l,r")]
 		   UNSPEC_UNALIGNED_STORE))]
   "unaligned_access"
@@ -5067,7 +5081,7 @@
    (set_attr "type" "store_4")])
 
 (define_insn "unaligned_storehi"
-  [(set (match_operand:HI 0 "memory_operand" "=m,Uw,m")
+  [(set (match_operand:HI 0 "mem_and_no_t1_wback_op" "=Uw,Uw,m")
 	(unspec:HI [(match_operand:HI 1 "s_register_operand" "l,l,r")]
 		   UNSPEC_UNALIGNED_STORE))]
   "unaligned_access"
@@ -9514,7 +9528,9 @@
    (match_operand:SI 2 "const_int_operand")	; total range
    (match_operand:SI 3 "" "")			; table label
    (match_operand:SI 4 "" "")]			; Out of range label
-  "(TARGET_32BIT || optimize_size || flag_pic) && !target_pure_code"
+   "(TARGET_ARM
+     || (!target_pure_code
+         && (TARGET_THUMB2 || optimize_size || flag_pic)))"
   "
   {
     enum insn_code code;
@@ -9556,13 +9572,15 @@
 		(match_dup 4)
 		(label_ref:SI (match_operand 3 ""))))
 	      (clobber (reg:CC CC_REGNUM))
+	      (clobber (match_scratch:SI 5))
 	      (use (label_ref:SI (match_operand 2 "")))])]
   "TARGET_ARM"
 {
-  operands[4] = gen_rtx_MULT (SImode, operands[0], GEN_INT (4));
-  operands[4] = gen_rtx_PLUS (SImode, operands[4],
-			      gen_rtx_LABEL_REF (SImode, operands[2]));
-  operands[4] = gen_rtx_MEM (SImode, operands[4]);
+  rtx vec_table_ref = force_reg (SImode, gen_rtx_LABEL_REF (SImode, operands[2]));
+  rtx tmp = gen_rtx_MULT (SImode, operands[0], GEN_INT (4));
+  tmp = gen_rtx_PLUS (SImode, tmp,
+			      vec_table_ref);
+  operands[4] = gen_rtx_MEM (SImode, tmp);
   MEM_READONLY_P (operands[4]) = 1;
   MEM_NOTRAP_P (operands[4]) = 1;
 })
@@ -9573,18 +9591,17 @@
 		(leu (match_operand:SI 0 "s_register_operand" "r")
 		     (match_operand:SI 1 "arm_rhs_operand" "rI"))
 		(mem:SI (plus:SI (mult:SI (match_dup 0) (const_int 4))
-				 (label_ref:SI (match_operand 2 "" ""))))
+				 (match_operand:SI 5 "s_register_operand" "r")))
 		(label_ref:SI (match_operand 3 "" ""))))
 	      (clobber (reg:CC CC_REGNUM))
-	      (use (label_ref:SI (match_dup 2)))])]
+	      (clobber (match_scratch:SI 4 "=r"))
+	      (use (label_ref:SI (match_operand 2 "")))])]
   "TARGET_ARM"
-  "*
-    if (flag_pic)
-      return \"cmp\\t%0, %1\;addls\\t%|pc, %|pc, %0, asl #2\;b\\t%l3\";
-    return   \"cmp\\t%0, %1\;ldrls\\t%|pc, [%|pc, %0, asl #2]\;b\\t%l3\";
-  "
+  {
+    return arm_output_casesi (operands);
+  }
   [(set_attr "conds" "clob")
-   (set_attr "length" "12")
+   (set_attr "length" "24")
    (set_attr "type" "multiple")]
 )
 
@@ -12544,6 +12561,7 @@
   revsh%?\t%0, %1"
   [(set_attr "arch" "t1,t2,32")
    (set_attr "length" "2,2,4")
+   (set_attr "predicable" "no,yes,yes")
    (set_attr "type" "rev")]
 )
 
@@ -12557,6 +12575,7 @@
    rev16%?\t%0, %1"
   [(set_attr "arch" "t1,t2,32")
    (set_attr "length" "2,2,4")
+   (set_attr "predicable" "no,yes,yes")
    (set_attr "type" "rev")]
 )
 
@@ -12575,9 +12594,13 @@
   "arm_arch6
    && aarch_rev16_shleft_mask_imm_p (operands[3], SImode)
    && aarch_rev16_shright_mask_imm_p (operands[2], SImode)"
-  "rev16\\t%0, %1"
+  "@
+   rev16\t%0, %1
+   rev16%?\t%0, %1
+   rev16%?\t%0, %1"
   [(set_attr "arch" "t1,t2,32")
    (set_attr "length" "2,2,4")
+   (set_attr "predicable" "no,yes,yes")
    (set_attr "type" "rev")]
 )
 
@@ -12592,22 +12615,29 @@
   "arm_arch6
    && aarch_rev16_shleft_mask_imm_p (operands[3], SImode)
    && aarch_rev16_shright_mask_imm_p (operands[2], SImode)"
-  "rev16\\t%0, %1"
+  "@
+   rev16\t%0, %1
+   rev16%?\t%0, %1
+   rev16%?\t%0, %1"
   [(set_attr "arch" "t1,t2,32")
    (set_attr "length" "2,2,4")
+   (set_attr "predicable" "no,yes,yes")
    (set_attr "type" "rev")]
 )
 
-(define_expand "arm_rev16si2"
-  [(set (match_operand:SI 0 "s_register_operand")
-	(bswap:SI (match_operand:SI 1 "s_register_operand")))]
+;; Similar pattern to match (rotate (bswap) 16)
+(define_insn "arm_rev16si2"
+  [(set (match_operand:SI 0 "register_operand" "=l,l,r")
+        (rotate:SI (bswap:SI (match_operand:SI 1 "register_operand" "l,l,r"))
+                   (const_int 16)))]
   "arm_arch6"
-  {
-    rtx left = gen_int_mode (HOST_WIDE_INT_C (0xff00ff00ff00ff00), SImode);
-    rtx right = gen_int_mode (HOST_WIDE_INT_C (0xff00ff00ff00ff), SImode);
-    emit_insn (gen_arm_rev16si2_alt1 (operands[0], operands[1], right, left));
-    DONE;
-  }
+  "@
+   rev16\t%0, %1
+   rev16%?\t%0, %1
+   rev16%?\t%0, %1"
+  [(set_attr "arch" "t1,t2,32")
+   (set_attr "length" "2,2,4")
+   (set_attr "type" "rev")]
 )
 
 (define_expand "bswaphi2"
@@ -12615,6 +12645,72 @@
 	(bswap:HI (match_operand:HI 1 "s_register_operand")))]
 "arm_arch6"
 ""
+)
+
+;; Implement zero_extract using uxtb/uxth instruction with 
+;; the ror #N qualifier when applicable.
+
+(define_insn "*arm_zeroextractsi2_8_8"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(zero_extract:SI (match_operand:SI 1 "s_register_operand" "r")
+			 (const_int 8) (const_int 8)))]
+  "TARGET_ARM && arm_arch6"
+  "uxtb%?\\t%0, %1, ror #8"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "extend")]
+)
+
+(define_insn "*arm_zeroextractsi2_8_16"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(zero_extract:SI (match_operand:SI 1 "s_register_operand" "r")
+			 (const_int 8) (const_int 16)))]
+  "TARGET_ARM && arm_arch6"
+  "uxtb%?\\t%0, %1, ror #16"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "extend")]
+)
+
+(define_insn "*arm_zeroextractsi2_16_8"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(zero_extract:SI (match_operand:SI 1 "s_register_operand" "r")
+			 (const_int 16) (const_int 8)))]
+  "TARGET_ARM && arm_arch6"
+  "uxth%?\\t%0, %1, ror #8"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "extend")]
+)
+
+;; Implement sign_extract using sxtb/sxth instruction with 
+;; the ror #N qualifier when applicable.
+
+(define_insn "*arm_signextractsi2_8_8"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(sign_extract:SI (match_operand:SI 1 "s_register_operand" "r")
+			 (const_int 8) (const_int 8)))]
+  "TARGET_ARM && arm_arch6"
+  "sxtb%?\\t%0, %1, ror #8"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "extend")]
+)
+
+(define_insn "*arm_signextractsi2_8_16"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(sign_extract:SI (match_operand:SI 1 "s_register_operand" "r")
+			 (const_int 8) (const_int 16)))]
+  "TARGET_ARM && arm_arch6"
+  "sxtb%?\\t%0, %1, ror #16"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "extend")]
+)
+
+(define_insn "*arm_signextractsi2_16_8"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(sign_extract:SI (match_operand:SI 1 "s_register_operand" "r")
+			 (const_int 16) (const_int 8)))]
+  "TARGET_ARM && arm_arch6"
+  "sxth%?\\t%0, %1, ror #8"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "extend")]
 )
 
 ;; Patterns for LDRD/STRD in Thumb2 mode

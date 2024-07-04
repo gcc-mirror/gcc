@@ -17,7 +17,7 @@ contains
   subroutine f04 ()
     !$omp declare variant (f01) match (device={isa("avx512f","avx512vl")}) ! 16
     !$omp declare variant (f02) match (implementation={vendor(score(15):gnu)})
-    !$omp declare variant (f03) match (user={condition(score(11):1)})
+    !$omp declare variant (f03) match (user={condition(score(11):.true.)})
   end subroutine
 
   subroutine f05 ()
@@ -32,7 +32,7 @@ contains
   subroutine f08 ()
     !$omp declare variant (f05) match (device={isa(avx512f,avx512vl)}) ! 16
     !$omp declare variant (f06) match (implementation={vendor(score(15):gnu)})
-    !$omp declare variant (f07) match (user={condition(score(17):1)})
+    !$omp declare variant (f07) match (user={condition(score(17):.true.)})
   end subroutine
 
   subroutine f09 ()
@@ -48,7 +48,7 @@ contains
   end subroutine
 
   subroutine f13 ()
-    !$omp declare variant (f09) match (device={arch(x86_64)},user={condition(score(65):1)}) ! 64+65
+    !$omp declare variant (f09) match (device={arch(x86_64)},user={condition(score(65):.true.)}) ! 64+65
     !$omp declare variant (f10) match (implementation={vendor(score(127):"gnu")})
     !$omp declare variant (f11) match (device={isa(ssse3)}) ! 128
     !$omp declare variant (f12) match (implementation={atomic_default_mem_order(score(126):seq_cst)})
@@ -65,7 +65,7 @@ contains
 
   subroutine f17 ()
     !$omp declare variant (f14) match (construct={teams,parallel,do}) ! 16+8+4
-    !$omp declare variant (f15) match (construct={parallel},user={condition(score(19):1)}) ! 8+19
+    !$omp declare variant (f15) match (construct={parallel},user={condition(score(19):.true.)}) ! 8+19
     !$omp declare variant (f16) match (implementation={atomic_default_mem_order(score(27):seq_cst)})
   end subroutine
 
@@ -80,7 +80,7 @@ contains
 
   subroutine f21 ()
     !$omp declare variant (f18) match (construct={teams,parallel,do}) ! 16+8+4
-    !$omp declare variant (f19) match (construct={do},user={condition(score(25):1)}) ! 4+25
+    !$omp declare variant (f19) match (construct={do},user={condition(score(25):.true.)}) ! 4+25
     !$omp declare variant (f20) match (implementation={atomic_default_mem_order(score(28):seq_cst)})
   end subroutine
 
@@ -110,7 +110,7 @@ contains
 
   subroutine f29 ()
     !$omp declare variant (f26) match (construct={parallel,do}) ! 2+1
-    !$omp declare variant (f27) match (construct={do},user={condition(1)}) ! 4
+    !$omp declare variant (f27) match (construct={do},user={condition(.true.)}) ! 4
     !$omp declare variant (f28) match (implementation={atomic_default_mem_order(score(3):seq_cst)})
   end subroutine
 

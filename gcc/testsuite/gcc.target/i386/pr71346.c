@@ -1,6 +1,6 @@
 /* PR target/71346 */
 /* { dg-do compile { target { ! ia32 } }  } */
-/* { dg-options "-O2 -ftree-vectorize -ffast-math -march=knl" } */
+/* { dg-options "-O2 -ftree-vectorize -ffast-math -march=skylake-avx512 -mno-avx512vl" } */
 
 typedef int rvec[3];
 int a;

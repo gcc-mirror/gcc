@@ -1,5 +1,5 @@
 fn func() -> i32 {
-    return; // { dg-error "expected .i32. got ...." }
+    return; // { dg-error "mismatched types, expected .i32. but got ...." }
 }
 
 fn main() {

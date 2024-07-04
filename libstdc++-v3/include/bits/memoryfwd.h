@@ -1,6 +1,6 @@
 // <memory> Forward declarations -*- C++ -*-
 
-// Copyright (C) 2001-2023 Free Software Foundation, Inc.
+// Copyright (C) 2001-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -60,13 +60,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
-#if _GLIBCXX_HOSTED
+  // Included in freestanding as a libstdc++ extension.
   template<typename>
     class allocator;
 
   template<>
     class allocator<void>;
-#endif
 
 #if __cplusplus >= 201103L
   /// Declare uses_allocator so it can be specialized in `<queue>` etc.

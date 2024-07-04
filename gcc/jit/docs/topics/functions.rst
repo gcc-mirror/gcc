@@ -1,4 +1,4 @@
-.. Copyright (C) 2014-2023 Free Software Foundation, Inc.
+.. Copyright (C) 2014-2024 Free Software Foundation, Inc.
    Originally contributed by David Malcolm <dmalcolm@redhat.com>
 
    This is free software: you can redistribute it and/or modify it
@@ -196,6 +196,69 @@ Functions
       #ifdef LIBGCCJIT_HAVE_REFLECTION
 
    .. type:: gcc_jit_case
+
+.. function::  void\
+               gcc_jit_function_add_attribute (gcc_jit_function *func,
+                                               enum gcc_jit_fn_attribute attribute)
+
+     Add an attribute ``attribute`` to a function ``func``.
+
+     This is equivalent to the following code:
+
+  .. code-block:: c
+
+    __attribute__((always_inline))
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_26`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_ATTRIBUTES
+
+.. function::  void\
+               gcc_jit_function_add_string_attribute (gcc_jit_function *func,
+                                                      enum gcc_jit_fn_attribute attribute,
+                                                      const char *value)
+
+     Add a string attribute ``attribute`` with value ``value`` to a function
+     ``func``.
+
+     This is equivalent to the following code:
+
+  .. code-block:: c
+
+    __attribute__ ((alias ("xxx")))
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_26`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_ATTRIBUTES
+
+.. function::  void\
+               gcc_jit_function_add_integer_array_attribute (gcc_jit_function *func,
+                                                             enum gcc_jit_fn_attribute attribute,
+                                                             const int *value,
+                                                             size_t length)
+
+     Add an attribute ``attribute`` with ``length`` integer values ``value`` to a
+     function ``func``. The integer values must be the same as you would write
+     them in a C code.
+
+     This is equivalent to the following code:
+
+  .. code-block:: c
+
+    __attribute__ ((nonnull (1, 2)))
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_26`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_ATTRIBUTES
 
 Blocks
 ------

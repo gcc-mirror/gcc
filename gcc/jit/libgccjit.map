@@ -1,5 +1,5 @@
 # Linker script for libgccjit.so
-#   Copyright (C) 2013-2023 Free Software Foundation, Inc.
+#   Copyright (C) 2013-2024 Free Software Foundation, Inc.
 #   Contributed by David Malcolm <dmalcolm@redhat.com>.
 #
 # This file is part of GCC.
@@ -276,3 +276,21 @@ LIBGCCJIT_ABI_25 {
   global:
     gcc_jit_type_get_restrict;
 } LIBGCCJIT_ABI_24;
+
+LIBGCCJIT_ABI_26 {
+  global:
+    gcc_jit_function_add_attribute;
+    gcc_jit_function_add_string_attribute;
+    gcc_jit_lvalue_add_string_attribute;
+    gcc_jit_function_add_integer_array_attribute;
+} LIBGCCJIT_ABI_25;
+
+LIBGCCJIT_ABI_27 {
+  global:
+    gcc_jit_context_new_sizeof;
+} LIBGCCJIT_ABI_26;
+
+LIBGCCJIT_ABI_28 {
+  global:
+    gcc_jit_context_new_alignof;
+} LIBGCCJIT_ABI_27;

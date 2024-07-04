@@ -123,6 +123,8 @@ int main (void)
   return 0;
 } 
 
-/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" } } */
+/* The second loop in octfapg_universe requires long multiply to do the vectorization. */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { ! vect_long_mult } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { target vect_long_mult  } } } */
 /* { dg-final { scan-tree-dump-times "vector alignment may not be reachable" 1 "vect" { target { ! vector_alignment_reachable  } } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 1 "vect" { target { ! vector_alignment_reachable } } } } */

@@ -1,5 +1,3 @@
-/* { dg-do run } */
-
 #include <stdarg.h>
 #include "dfp-dbg.h"
 

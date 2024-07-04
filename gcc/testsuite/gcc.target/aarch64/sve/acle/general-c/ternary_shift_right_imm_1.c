@@ -11,11 +11,11 @@ f1 (svbool_t pg, svuint8_t u8, svint8_t s8, svint16_t s16,
 {
   const int one = 1;
   pg = svsra (pg, pg, 1); /* { dg-error {'svsra' has no form that takes 'svbool_t' arguments} } */
-  pg = svsra (pg, s8, 1); /* { dg-error {passing 'svint8_t' to argument 2 of 'svsra', but previous arguments had type 'svbool_t'} } */
-  s8 = svsra (1, s8, 1); /* { dg-error {passing 'int' to argument 1 of 'svsra', which expects an SVE vector type} } */
-  s8 = svsra (s8, u8, 1); /* { dg-error {passing 'svuint8_t' to argument 2 of 'svsra', but previous arguments had type 'svint8_t'} } */
-  s8 = svsra (s8, pg, 1); /* { dg-error {passing 'svbool_t' to argument 2 of 'svsra', but previous arguments had type 'svint8_t'} } */
-  s8 = svsra (s8, 1, 1); /* { dg-error {passing 'int' to argument 2 of 'svsra', which expects an SVE vector type} } */
+  pg = svsra (pg, s8, 1); /* { dg-error {passing 'svint8_t' to argument 2 of 'svsra', but argument 1 had type 'svbool_t'} } */
+  s8 = svsra (1, s8, 1); /* { dg-error {passing 'int' to argument 1 of 'svsra', which expects an SVE type rather than a scalar} } */
+  s8 = svsra (s8, u8, 1); /* { dg-error {passing 'svuint8_t' to argument 2 of 'svsra', but argument 1 had type 'svint8_t'} } */
+  s8 = svsra (s8, pg, 1); /* { dg-error {passing 'svbool_t' to argument 2 of 'svsra', but argument 1 had type 'svint8_t'} } */
+  s8 = svsra (s8, 1, 1); /* { dg-error {passing 'int' to argument 2 of 'svsra', which expects an SVE type rather than a scalar} } */
   s8 = svsra (s8, s8, x); /* { dg-error {argument 3 of 'svsra' must be an integer constant expression} } */
   s8 = svsra (s8, s8, one); /* { dg-error {argument 3 of 'svsra' must be an integer constant expression} } */
   s8 = svsra (s8, s8, 0.4); /* { dg-error {passing 0 to argument 3 of 'svsra', which expects a value in the range \[1, 8\]} } */

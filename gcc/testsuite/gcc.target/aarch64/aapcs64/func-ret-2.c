@@ -4,6 +4,7 @@
    Homogeneous floating-point aggregate types are covered in func-ret-3.c.  */
 
 /* { dg-do run { target aarch64*-*-* } } */
+/* { dg-additional-options "-mbranch-protection=none" } */
 /* { dg-additional-sources "abitest.S" } */
 
 #ifndef IN_FRAMEWORK

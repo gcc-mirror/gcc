@@ -5,7 +5,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/float.html#fp_const_folding, Floating Point Constant Folding)
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/constfold.d, _constfold.d)
@@ -20,6 +20,7 @@ import core.stdc.stdio;
 import dmd.arraytypes;
 import dmd.astenums;
 import dmd.ctfeexpr;
+import dmd.dcast;
 import dmd.declaration;
 import dmd.dstruct;
 import dmd.errors;
@@ -35,6 +36,7 @@ import dmd.root.utf;
 import dmd.sideeffect;
 import dmd.target;
 import dmd.tokens;
+import dmd.typesem : toDsymbol, equivalent, sarrayOf;
 
 private enum LOG = false;
 
@@ -46,29 +48,6 @@ private Expression expType(Type type, Expression e)
         e.type = type;
     }
     return e;
-}
-
-/************************************
- * Returns:
- *    true if e is a constant
- */
-int isConst(Expression e) @safe
-{
-    //printf("Expression::isConst(): %s\n", e.toChars());
-    switch (e.op)
-    {
-    case EXP.int64:
-    case EXP.float64:
-    case EXP.complex80:
-        return 1;
-    case EXP.null_:
-        return 0;
-    case EXP.symbolOffset:
-        return 2;
-    default:
-        return 0;
-    }
-    assert(0);
 }
 
 /**********************************
@@ -336,7 +315,7 @@ UnionExp Div(const ref Loc loc, Type type, Expression e1, Expression e2)
         n2 = e2.toInteger();
         if (n2 == 0)
         {
-            e2.error("divide by 0");
+            error(e2.loc, "divide by 0");
             emplaceExp!(ErrorExp)(&ue);
             return ue;
         }
@@ -345,13 +324,13 @@ UnionExp Div(const ref Loc loc, Type type, Expression e1, Expression e2)
             // Check for int.min / -1
             if (n1 == 0xFFFFFFFF80000000UL && type.toBasetype().ty != Tint64)
             {
-                e2.error("integer overflow: `int.min / -1`");
+                error(e2.loc, "integer overflow: `int.min / -1`");
                 emplaceExp!(ErrorExp)(&ue);
                 return ue;
             }
             else if (n1 == 0x8000000000000000L) // long.min / -1
             {
-                e2.error("integer overflow: `long.min / -1L`");
+                error(e2.loc, "integer overflow: `long.min / -1L`");
                 emplaceExp!(ErrorExp)(&ue);
                 return ue;
             }
@@ -401,7 +380,7 @@ UnionExp Mod(const ref Loc loc, Type type, Expression e1, Expression e2)
         n2 = e2.toInteger();
         if (n2 == 0)
         {
-            e2.error("divide by 0");
+            error(e2.loc, "divide by 0");
             emplaceExp!(ErrorExp)(&ue);
             return ue;
         }
@@ -410,13 +389,13 @@ UnionExp Mod(const ref Loc loc, Type type, Expression e1, Expression e2)
             // Check for int.min % -1
             if (n1 == 0xFFFFFFFF80000000UL && type.toBasetype().ty != Tint64)
             {
-                e2.error("integer overflow: `int.min %% -1`");
+                error(e2.loc, "integer overflow: `int.min %% -1`");
                 emplaceExp!(ErrorExp)(&ue);
                 return ue;
             }
             else if (n1 == 0x8000000000000000L) // long.min % -1
             {
-                e2.error("integer overflow: `long.min %% -1L`");
+                error(e2.loc, "integer overflow: `long.min %% -1L`");
                 emplaceExp!(ErrorExp)(&ue);
                 return ue;
             }
@@ -733,7 +712,7 @@ UnionExp Equal(EXP op, const ref Loc loc, Type type, Expression e1, Expression e
             cmp = 1; // if dim1 winds up being 0
             foreach (i; 0 .. dim1)
             {
-                uinteger_t c = es1.getCodeUnit(i);
+                uinteger_t c = es1.getIndex(i);
                 auto ee2 = es2[i];
                 if (ee2.isConst() != 1)
                 {
@@ -1135,12 +1114,12 @@ UnionExp Index(Type type, Expression e1, Expression e2, bool indexIsInBounds)
         uinteger_t i = e2.toInteger();
         if (i >= es1.len)
         {
-            e1.error("string index %llu is out of bounds `[0 .. %llu]`", i, cast(ulong)es1.len);
+            error(e1.loc, "string index %llu is out of bounds `[0 .. %llu]`", i, cast(ulong)es1.len);
             emplaceExp!(ErrorExp)(&ue);
         }
         else
         {
-            emplaceExp!(IntegerExp)(&ue, loc, es1.getCodeUnit(cast(size_t) i), type);
+            emplaceExp!(IntegerExp)(&ue, loc, es1.getIndex(cast(size_t) i), type);
         }
     }
     else if (e1.type.toBasetype().ty == Tsarray && e2.op == EXP.int64)
@@ -1151,7 +1130,7 @@ UnionExp Index(Type type, Expression e1, Expression e2, bool indexIsInBounds)
         if (i >= length && (e1.op == EXP.arrayLiteral || !indexIsInBounds))
         {
             // C code only checks bounds if an ArrayLiteralExp
-            e1.error("array index %llu is out of bounds `%s[0 .. %llu]`", i, e1.toChars(), length);
+            error(e1.loc, "array index %llu is out of bounds `%s[0 .. %llu]`", i, e1.toChars(), length);
             emplaceExp!(ErrorExp)(&ue);
         }
         else if (ArrayLiteralExp ale = e1.isArrayLiteralExp())
@@ -1174,7 +1153,7 @@ UnionExp Index(Type type, Expression e1, Expression e2, bool indexIsInBounds)
         {
             if (i >= ale.elements.length)
             {
-                e1.error("array index %llu is out of bounds `%s[0 .. %llu]`", i, e1.toChars(), cast(ulong) ale.elements.length);
+                error(e1.loc, "array index %llu is out of bounds `%s[0 .. %llu]`", i, e1.toChars(), cast(ulong) ale.elements.length);
                 emplaceExp!(ErrorExp)(&ue);
             }
             else
@@ -1303,7 +1282,7 @@ void sliceAssignArrayLiteralFromString(ArrayLiteralExp existingAE, const StringE
     Type elemType = existingAE.type.nextOf();
     foreach (j; 0 .. len)
     {
-        const val = newval.getCodeUnit(j);
+        const val = newval.getIndex(j);
         (*existingAE.elements)[j + firstIndex] = new IntegerExp(newval.loc, val, elemType);
     }
 }
@@ -1352,9 +1331,9 @@ int sliceCmpStringWithArray(const StringExp se1, ArrayLiteralExp ae2, size_t lo1
 {
     foreach (j; 0 .. len)
     {
-        const val2 = cast(dchar)ae2[j + lo2].toInteger();
-        const val1 = se1.getCodeUnit(j + lo1);
-        const int c = val1 - val2;
+        const val2 = ae2[j + lo2].toInteger();
+        const val1 = se1.getIndex(j + lo1);
+        const int c = (val1 > val2) - (val1 < val2);
         if (c)
             return c;
     }

@@ -1,5 +1,5 @@
 @ignore
-Copyright (C) 2005-2023 Free Software Foundation, Inc.
+Copyright (C) 2005-2024 Free Software Foundation, Inc.
 This is part of the GNU Fortran manual.   
 For copying conditions, see the file gfortran.texi.
 
@@ -281,6 +281,7 @@ Some basic guidelines for editing this document:
 * @code{SECOND}:        SECOND,    CPU time function
 * @code{SELECTED_CHAR_KIND}: SELECTED_CHAR_KIND,  Choose character kind
 * @code{SELECTED_INT_KIND}: SELECTED_INT_KIND,  Choose integer kind
+* @code{SELECTED_LOGICAL_KIND}: SELECTED_LOGICAL_KIND,  Choose logical kind
 * @code{SELECTED_REAL_KIND}: SELECTED_REAL_KIND,  Choose real kind
 * @code{SET_EXPONENT}:  SET_EXPONENT, Set the exponent of the model
 * @code{SHAPE}:         SHAPE,     Determine the shape of an array
@@ -649,11 +650,8 @@ Degrees function: @*
 @code{ACOSD(X)} computes the arccosine of @var{X} in degrees (inverse of
 @code{COSD(X)}).
 
-This function is for compatibility only and should be avoided in favor of
-standard constructs wherever possible.
-
 @item @emph{Standard}:
-GNU extension, enabled with @option{-fdec-math}
+Fortran 2023
 
 @item @emph{Class}:
 Elemental function
@@ -664,7 +662,7 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall either be @code{REAL} with a magnitude that is
-less than or equal to one - or the type shall be @code{COMPLEX}.
+less than or equal to one.
 @end multitable
 
 @item @emph{Return value}:
@@ -683,7 +681,7 @@ end program test_acosd
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .23 .20 .33
 @headitem Name            @tab Argument         @tab Return type     @tab Standard
-@item @code{ACOSD(X)}  @tab @code{REAL(4) X} @tab @code{REAL(4)}  @tab GNU extension
+@item @code{ACOSD(X)}  @tab @code{REAL(4) X} @tab @code{REAL(4)}  @tab Fortran 2023
 @item @code{DACOSD(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)}  @tab GNU extension
 @end multitable
 
@@ -1369,11 +1367,8 @@ Degrees function: @*
 @code{ASIND(X)} computes the arcsine of its @var{X} in degrees (inverse of
 @code{SIND(X)}).
 
-This function is for compatibility only and should be avoided in favor of
-standard constructs wherever possible.
-
 @item @emph{Standard}:
-GNU extension, enabled with @option{-fdec-math}.
+Fortran 2023
 
 @item @emph{Class}:
 Elemental function
@@ -1384,12 +1379,12 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be either @code{REAL} and a magnitude that is
-less than or equal to one - or be @code{COMPLEX}.
+less than or equal to one.
 @end multitable
 
 @item @emph{Return value}:
 The return value is of the same type and kind as @var{X}.
-The real part of the result is in degrees and lies in the range
+The result is in degrees and lies in the range
 @math{-90 \leq \Re \asin(x) \leq 90}.
 
 @item @emph{Example}:
@@ -1403,7 +1398,7 @@ end program test_asind
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .23 .20 .33
 @headitem Name            @tab Argument          @tab Return type       @tab Standard
-@item @code{ASIND(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab GNU extension
+@item @code{ASIND(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab Fortran 2023
 @item @code{DASIND(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
 
@@ -1413,8 +1408,6 @@ Inverse function: @*
 Radians function: @*
 @ref{ASIN}
 @end table
-
-
 
 @node ASINH
 @section @code{ASINH} --- Inverse hyperbolic sine function
@@ -1620,11 +1613,8 @@ Degrees function: @*
 @code{ATAND(X)} computes the arctangent of @var{X} in degrees (inverse of
 @ref{TAND}).
 
-This function is for compatibility only and should be avoided in favor of
-standard constructs wherever possible.
-
 @item @emph{Standard}:
-GNU extension, enabled with @option{-fdec-math}.
+Fortran 2023
 
 @item @emph{Class}:
 Elemental function
@@ -1632,21 +1622,18 @@ Elemental function
 @item @emph{Syntax}:
 @multitable @columnfractions .80
 @item @code{RESULT = ATAND(X)}
-@item @code{RESULT = ATAND(Y, X)}
 @end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL} or @code{COMPLEX};
+@item @var{X} @tab The type shall be @code{REAL};
 if @var{Y} is present, @var{X} shall be REAL.
 @item @var{Y} @tab The type and kind type parameter shall be the same as @var{X}.
 @end multitable
 
 @item @emph{Return value}:
 The return value is of the same type and kind as @var{X}.
-If @var{Y} is present, the result is identical to @code{ATAND2(Y,X)}.
-Otherwise, it is the arcus tangent of @var{X}, where the real part of
-the result is in degrees and lies in the range
+The result is in degrees and lies in the range
 @math{-90 \leq \Re \atand(x) \leq 90}.
 
 @item @emph{Example}:
@@ -1660,7 +1647,7 @@ end program test_atand
 @item @emph{Specific names}:
 @multitable @columnfractions .23 .23 .20 .30
 @headitem Name            @tab Argument          @tab Return type       @tab Standard
-@item @code{ATAND(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab GNU extension
+@item @code{ATAND(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab Fortran 2023
 @item @code{DATAND(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
 
@@ -1752,11 +1739,8 @@ function of the complex number @math{X + i Y} in degrees.  This function can
 be used to transform from Cartesian into polar coordinates and
 allows to determine the angle in the correct quadrant.
 
-This function is for compatibility only and should be avoided in favor of
-standard constructs wherever possible.
-
 @item @emph{Standard}:
-GNU extension, enabled with @option{-fdec-math}.
+Fortran 2023
 
 @item @emph{Class}:
 Elemental function
@@ -1793,7 +1777,7 @@ end program test_atan2d
 @item @emph{Specific names}:
 @multitable @columnfractions .23 .23 .20 .30
 @headitem Name                @tab Argument            @tab Return type    @tab Standard
-@item @code{ATAN2D(X, Y)}  @tab @code{REAL(4) X, Y} @tab @code{REAL(4)} @tab GNU extension
+@item @code{ATAN2D(X, Y)}  @tab @code{REAL(4) X, Y} @tab @code{REAL(4)} @tab Fortran 2023
 @item @code{DATAN2D(X, Y)} @tab @code{REAL(8) X, Y} @tab @code{REAL(8)} @tab GNU extension
 @end multitable
 
@@ -1803,8 +1787,6 @@ Alias: @*
 Radians function: @*
 @ref{ATAN2}
 @end table
-
-
 
 @node ATANH
 @section @code{ATANH} --- Inverse hyperbolic tangent function
@@ -4282,11 +4264,8 @@ Degrees function: @*
 @item @emph{Description}:
 @code{COSD(X)} computes the cosine of @var{X} in degrees.
 
-This function is for compatibility only and should be avoided in favor of
-standard constructs wherever possible.
-
 @item @emph{Standard}:
-GNU extension, enabled with @option{-fdec-math}.
+Fortran 2023
 
 @item @emph{Class}:
 Elemental function
@@ -4296,14 +4275,12 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL} or
-@code{COMPLEX}.
+@item @var{X} @tab The type shall be @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of the same type and kind as @var{X}. The real part
-of the result is in degrees.  If @var{X} is of the type @code{REAL},
-the return value lies in the range @math{ -1 \leq \cosd (x) \leq 1}.
+The return value is of the same type and kind as @var{X} and
+lies in the range @math{ -1 \leq \cosd (x) \leq 1}.
 
 @item @emph{Example}:
 @smallexample
@@ -4316,7 +4293,7 @@ end program test_cosd
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .23 .20 .33
 @headitem Name            @tab Argument            @tab Return type       @tab Standard
-@item @code{COSD(X)}   @tab @code{REAL(4) X}    @tab @code{REAL(4)}    @tab GNU extension
+@item @code{COSD(X)}   @tab @code{REAL(4) X}    @tab @code{REAL(4)}    @tab Fortran 2023
 @item @code{DCOSD(X)}  @tab @code{REAL(8) X}    @tab @code{REAL(8)}    @tab GNU extension
 @item @code{CCOSD(X)}  @tab @code{COMPLEX(4) X} @tab @code{COMPLEX(4)} @tab GNU extension
 @item @code{ZCOSD(X)}  @tab @code{COMPLEX(8) X} @tab @code{COMPLEX(8)} @tab GNU extension
@@ -4455,7 +4432,7 @@ Degrees function: @*
 @code{COSD(x)} divided by @code{SIND(x)}, or @code{1 / TAND(x)}.
 
 @item @emph{Standard}:
-GNU extension, enabled with @option{-fdec-math}.
+GNU extension.
 
 This function is for compatibility only and should be avoided in favor of
 standard constructs wherever possible.
@@ -4468,7 +4445,7 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL} or @code{COMPLEX}.
+@item @var{X} @tab The type shall be @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
@@ -4753,22 +4730,22 @@ end program test_ctime
 @item @emph{Description}:
 @code{DATE_AND_TIME(DATE, TIME, ZONE, VALUES)} gets the corresponding date and
 time information from the real-time system clock.  @var{DATE} is
-@code{INTENT(OUT)} and has form ccyymmdd.  @var{TIME} is @code{INTENT(OUT)} and
-has form hhmmss.sss.  @var{ZONE} is @code{INTENT(OUT)} and has form (+-)hhmm,
-representing the difference with respect to Coordinated Universal Time (UTC).
-Unavailable time and date parameters return blanks.
+@code{INTENT(OUT)} and of the form ccyymmdd.  @var{TIME} is @code{INTENT(OUT)}
+and of the form hhmmss.sss.  @var{ZONE} is @code{INTENT(OUT)} and of the form
+(+-)hhmm, representing the difference with respect to Coordinated Universal
+Time (UTC).  Unavailable time and date parameters return blanks.
 
 @var{VALUES} is @code{INTENT(OUT)} and provides the following:
 
 @multitable @columnfractions .15 .70
-@item @code{VALUE(1)}: @tab The year
-@item @code{VALUE(2)}: @tab The month
-@item @code{VALUE(3)}: @tab The day of the month
-@item @code{VALUE(4)}: @tab Time difference with UTC in minutes
-@item @code{VALUE(5)}: @tab The hour of the day
-@item @code{VALUE(6)}: @tab The minutes of the hour
-@item @code{VALUE(7)}: @tab The seconds of the minute
-@item @code{VALUE(8)}: @tab The milliseconds of the second
+@item @code{VALUES(1)}: @tab The year, including the century
+@item @code{VALUES(2)}: @tab The month of the year
+@item @code{VALUES(3)}: @tab The day of the month
+@item @code{VALUES(4)}: @tab The time difference from UTC in minutes
+@item @code{VALUES(5)}: @tab The hour of the day
+@item @code{VALUES(6)}: @tab The minutes of the hour
+@item @code{VALUES(7)}: @tab The seconds of the minute
+@item @code{VALUES(8)}: @tab The milliseconds of the second
 @end multitable
 
 @item @emph{Standard}:
@@ -4782,13 +4759,14 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{DATE}  @tab (Optional) The type shall be @code{CHARACTER(LEN=8)}
-or larger, and of default kind.
-@item @var{TIME}  @tab (Optional) The type shall be @code{CHARACTER(LEN=10)}
-or larger, and of default kind.
-@item @var{ZONE}  @tab (Optional) The type shall be @code{CHARACTER(LEN=5)}
-or larger, and of default kind.
-@item @var{VALUES}@tab (Optional) The type shall be @code{INTEGER(8)}.
+@item @var{DATE}  @tab (Optional) Scalar of type default @code{CHARACTER}.
+Recommended length is 8 or larger.
+@item @var{TIME}  @tab (Optional) Scalar of type default @code{CHARACTER}.
+Recommended length is 10 or larger.
+@item @var{ZONE}  @tab (Optional) Scalar of type default @code{CHARACTER}.
+Recommended length is 5 or larger.
+@item @var{VALUES}@tab (Optional) Rank-1 array of type @code{INTEGER} with
+a decimal exponent range of at least four and array size at least 8.
 @end multitable
 
 @item @emph{Return value}:
@@ -12811,6 +12789,48 @@ end program large_integers
 
 
 
+@node SELECTED_LOGICAL_KIND
+@section @code{SELECTED_LOGICAL_KIND} --- Choose logical kind
+@fnindex SELECTED_LOGICAL_KIND
+@cindex logical kind
+@cindex kind, logical
+
+@table @asis
+@item @emph{Description}:
+@code{SELECTED_LOGICAL_KIND(BITS)} return the kind value of the smallest
+logical type whose storage size in bits is at least @var{BITS}. If there
+is no such logical kind, @code{SELECTED_LOGICAL_KIND} returns @math{-1}.
+
+@item @emph{Standard}:
+Fortran 2023 and later
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@code{RESULT = SELECTED_LOGICAL_KIND(BITS)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{BITS} @tab Shall be a scalar and of type @code{INTEGER}.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program logical_kinds
+  integer, parameter :: k1 = selected_logical_kind(1)
+  integer, parameter :: k40 = selected_logical_kind(40)
+  logical(kind=k1) :: l1    ! At least one bit
+  logical(kind=k40) :: l40  ! At least 40 bits
+
+  ! What is their actual size?
+  print *, storage_size(l1), storage_size(l40)
+end program logical_kinds
+@end smallexample
+@end table
+
+
+
 @node SELECTED_REAL_KIND
 @section @code{SELECTED_REAL_KIND} --- Choose real kind
 @fnindex SELECTED_REAL_KIND
@@ -13168,10 +13188,10 @@ end program test_sign
 @table @asis
 @item @emph{Description}:
 @code{SIGNAL(NUMBER, HANDLER [, STATUS])} causes external subroutine
-@var{HANDLER} to be executed with a single integer argument when signal
-@var{NUMBER} occurs.  If @var{HANDLER} is an integer, it can be used to
-turn off handling of signal @var{NUMBER} or revert to its default
-action.  See @code{signal(2)}.
+@var{HANDLER} to be executed with a single integer argument passed by
+value when signal @var{NUMBER} occurs.  If @var{HANDLER} is an integer,
+it can be used to turn off handling of signal @var{NUMBER} or revert to
+its default action.  See @code{signal(2)}.
 
 If @code{SIGNAL} is called as a subroutine and the @var{STATUS} argument
 is supplied, it is set to the value returned by @code{signal(2)}.
@@ -13197,19 +13217,26 @@ Subroutine, function
 @item @var{STATUS} @tab (Optional) @var{STATUS} shall be a scalar
 integer. It has @code{INTENT(OUT)}.
 @end multitable
-@c TODO: What should the interface of the handler be?  Does it take arguments?
 
 @item @emph{Return value}:
 The @code{SIGNAL} function returns the value returned by @code{signal(2)}.
 
 @item @emph{Example}:
 @smallexample
+module m_handler
+contains
+  ! POSIX.1-2017:  void (*func)(int)
+  subroutine handler_print(signum) bind(C)
+    use iso_c_binding, only: c_int
+    integer(c_int), value :: signum
+    print *, 'handler_print invoked with signum =', signum
+  end subroutine
+end module
 program test_signal
-  intrinsic signal
-  external handler_print
-
-  call signal (12, handler_print)
-  call signal (10, 1)
+  use m_handler
+  intrinsic :: signal, sleep
+  call signal (12, handler_print)  ! 12 = SIGUSR2 (on some systems)
+  call signal (10, 1)  ! 10 = SIGUSR1 and 1 = SIG_IGN (on some systems)
 
   call sleep (30)
 end program test_signal
@@ -13291,11 +13318,8 @@ Degrees function: @*
 @item @emph{Description}:
 @code{SIND(X)} computes the sine of @var{X} in degrees.
 
-This function is for compatibility only and should be avoided in favor of
-standard constructs wherever possible.
-
 @item @emph{Standard}:
-GNU extension, enabled with @option{-fdec-math}.
+Fortran 2023
 
 @item @emph{Class}:
 Elemental function
@@ -13305,8 +13329,7 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL} or
-@code{COMPLEX}.
+@item @var{X} @tab The type shall be @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
@@ -13323,7 +13346,7 @@ end program test_sind
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .23 .20 .33
 @headitem Name            @tab Argument             @tab Return type       @tab Standard
-@item @code{SIND(X)}   @tab @code{REAL(4) X}     @tab @code{REAL(4)}    @tab GNU extension
+@item @code{SIND(X)}   @tab @code{REAL(4) X}     @tab @code{REAL(4)}    @tab Fortran 2023
 @item @code{DSIND(X)}  @tab @code{REAL(8) X}     @tab @code{REAL(8)}    @tab GNU extension
 @item @code{CSIND(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)} @tab GNU extension
 @item @code{ZSIND(X)}  @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)} @tab GNU extension
@@ -13336,8 +13359,6 @@ Inverse function: @*
 Radians function: @*
 @ref{SIN} @*
 @end table
-
-
 
 @node SINH
 @section @code{SINH} --- Hyperbolic sine function 
@@ -14140,11 +14161,8 @@ Degrees function: @*
 @item @emph{Description}:
 @code{TAND(X)} computes the tangent of @var{X} in degrees.
 
-This function is for compatibility only and should be avoided in favor of
-standard constructs wherever possible.
-
 @item @emph{Standard}:
-GNU extension, enabled with @option{-fdec-math}.
+Fortran 2023
 
 @item @emph{Class}:
 Elemental function
@@ -14154,16 +14172,16 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL} or @code{COMPLEX}.
+@item @var{X} @tab The type shall be @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
-The return value has same type and kind as @var{X}, and its value is in degrees.
+The return value has same type and kind as @var{X}.
 
 @item @emph{Example}:
 @smallexample
 program test_tand
-  real(8) :: x = 0.165_8
+  real(8) :: x = 45_8
   x = tand(x)
 end program test_tand
 @end smallexample
@@ -14171,7 +14189,7 @@ end program test_tand
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .23 .20 .33
 @headitem Name            @tab Argument          @tab Return type     @tab Standard
-@item @code{TAND(X)}   @tab @code{REAL(4) X}  @tab @code{REAL(4)}  @tab GNU extension
+@item @code{TAND(X)}   @tab @code{REAL(4) X}  @tab @code{REAL(4)}  @tab Fortran 2023
 @item @code{DTAND(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}  @tab GNU extension
 @end multitable
 

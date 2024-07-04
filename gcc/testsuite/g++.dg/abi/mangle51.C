@@ -1,5 +1,5 @@
 // { dg-do compile { target c++11 } }
-// { dg-options "-fabi-version=0" }
+// { dg-options "-fabi-version=0 -fabi-compat-version=0" }
 
 void* operator new (__SIZE_TYPE__, void *p) { return p; }
 int i;

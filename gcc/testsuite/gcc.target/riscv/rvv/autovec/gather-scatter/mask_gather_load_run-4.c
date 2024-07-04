@@ -1,7 +1,7 @@
 /* { dg-do run { target { riscv_v } } } */
 
 
-#include "mask_gather_load-4.c"
+#include "mask_gather_load_64-4.c"
 #include <assert.h>
 
 int

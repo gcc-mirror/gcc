@@ -1,4 +1,4 @@
-/* Copyright (C) 2013-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2013-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -28,9 +28,9 @@
 #ifndef __AVX512VBMI2INTRIN_H_INCLUDED
 #define __AVX512VBMI2INTRIN_H_INCLUDED
 
-#if !defined(__AVX512VBMI2__)
+#if !defined(__AVX512VBMI2__) || !defined (__EVEX512__)
 #pragma GCC push_options
-#pragma GCC target("avx512vbmi2")
+#pragma GCC target("avx512vbmi2,evex512")
 #define __DISABLE_AVX512VBMI2__
 #endif /* __AVX512VBMI2__ */
 

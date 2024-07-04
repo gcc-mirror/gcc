@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -w" } */
+/* { dg-options "-O2 -Wno-pointer-to-int-cast" } */
 
 #include <stdint.h>
 int a;
@@ -15,7 +15,7 @@ void b() {
           ;
     g:
       for (; a;) {
-        int16_t i = &d;
+        int16_t i = (int16_t) &d;
         *c = i && *f;
       }
     }

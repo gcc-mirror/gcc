@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 foo (long long *p, int a, int b)
 {
   *(p + a + b) = 876243243874343LL;

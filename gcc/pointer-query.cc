@@ -1,6 +1,6 @@
 /* Definitions of the pointer_query and related classes.
 
-   Copyright (C) 2020-2023 Free Software Foundation, Inc.
+   Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -316,7 +316,7 @@ get_size_range (range_query *query, tree exp, gimple *stmt, tree range[2],
 
   if (integral)
     {
-      value_range vr;
+      int_range_max vr;
       tree tmin, tmax;
 
       query->range_of_expr (vr, exp, stmt);

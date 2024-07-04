@@ -3,7 +3,7 @@
  *
  * Does not have any dependencies on the rest of DMD.
  *
- * Copyright: Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright: Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:   Walter Bright, https://www.digitalmars.com
  * License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/root/speller.d, root/_speller.d)
@@ -42,7 +42,7 @@ private:
 
 import core.stdc.stdlib;
 import core.stdc.string;
-import dmd.common.string : SmallBuffer;
+import dmd.common.smallbuffer : SmallBuffer;
 
 enum isSearchFunction(alias fun) = is(searchFunctionType!fun);
 alias searchFunctionType(alias fun) = typeof(() {int x; return fun("", x);}());

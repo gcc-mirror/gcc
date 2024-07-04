@@ -554,9 +554,9 @@ baseline file.
      make src
    </para>
    <para>
-     Generates two convenience libraries, one for C++98 and one for
-     C++11, various compatibility files for shared and static
-     libraries, and then collects all the generated bits and creates
+     Generates several convenience libraries,
+     various compatibility files for shared and static libraries,
+     and then collects all the generated bits and creates
      the final libstdc++ libraries.
   </para>
 <orderedlist>
@@ -566,8 +566,8 @@ baseline file.
    </para>
    <para>
      Generates a libtool convenience library,
-     <filename>libc++98convenience</filename> with language-support
-     routines. Uses the <option>-std=gnu++98</option> dialect.
+     <filename>libc++98convenience</filename> with the library components
+     defined by C++98. Uses the <option>-std=gnu++98</option> dialect.
    </para>
  </listitem>
  <listitem>
@@ -576,8 +576,84 @@ baseline file.
    </para>
    <para>
      Generates a libtool convenience library,
-     <filename>libc++11convenience</filename> with language-support
-     routines. Uses the <option>-std=gnu++11</option> dialect.
+     <filename>libc++11convenience</filename> with the library components
+     that were added or changed in C++11.
+     Uses the <option>-std=gnu++11</option> dialect.
+   </para>
+ </listitem>
+ <listitem>
+   <para>
+     make src/c++17
+   </para>
+   <para>
+     Generates a libtool convenience library,
+     <filename>libc++17convenience</filename> with the library components
+     that were added or changed in C++17.
+     Uses the <option>-std=gnu++17</option> dialect.
+   </para>
+ </listitem>
+ <listitem>
+   <para>
+     make src/c++20
+   </para>
+   <para>
+     Generates a libtool convenience library,
+     <filename>libc++20convenience</filename> with the library components
+     that were added or changed in C++20.
+     Uses the <option>-std=gnu++20</option> dialect.
+   </para>
+ </listitem>
+ <listitem>
+   <para>
+     make src/c++23
+   </para>
+   <para>
+     Generates a libtool convenience library,
+     <filename>libc++23convenience</filename> with the library components
+     that were added or changed in C++23.
+     At the time of writing (GCC 14) this convenience library is included
+     in <filename>libstdc++exp.a</filename> and not in the final
+     <filename>libstdc++</filename> libraries.
+     Uses the <option>-std=gnu++23</option> dialect.
+   </para>
+ </listitem>
+ <listitem>
+   <para>
+     make src/filesystem
+   </para>
+   <para>
+     Generates a libtool convenience library,
+     <filename>libstdc++fsconvenience</filename>,
+     and a standalone static library,
+     <filename>libstdc++fs.a</filename>.
+     These contain definitions of the Filesystem TS extensions.
+     Uses the <option>-std=gnu++17</option> dialect.
+   </para>
+ </listitem>
+ <listitem>
+   <para>
+     make src/libbacktrace
+   </para>
+   <para>
+     Generates a libtool convenience library,
+     <filename>libstdc++_libbacktrace</filename>,
+     containing the libbacktrace definitions used by the C++23
+     <classname>std::stacktrace</classname> feature.
+   </para>
+ </listitem>
+ <listitem>
+   <para>
+     make src/experimental
+   </para>
+   <para>
+     Generates a standalone static library,
+     <filename>libstdc++exp.a</filename>, containing the symbol definitions
+     for experimental features and extensions. This collects the convenience
+     libraries <filename>libstdc++fsconvenience</filename>,
+     <filename>libstdc++_libbacktrace</filename>, and
+     (at the time of writing) <filename>libc++23convenience</filename>
+     and combines them into one.
+     Uses the <option>-std=gnu++17</option> dialect.
    </para>
  </listitem>
  <listitem>
@@ -591,10 +667,11 @@ baseline file.
    </para>
 
    <para>
-     Then, collects all the generated convenience libraries, adds in
-     any required compatibility objects, and creates the final shared
-     and static libraries: <filename>libstdc++.so</filename> and
-     <filename>libstdc++.a</filename>.
+     Then, collects all the generated convenience libraries that weren't
+     added to <filename>libstdc++exp.a</filename>,
+     adds in any required compatibility objects,
+     and creates the final shared and static libraries:
+     <filename>libstdc++.so</filename> and <filename>libstdc++.a</filename>.
    </para>
 
  </listitem>
@@ -603,5 +680,70 @@ baseline file.
 </orderedlist>
 
 </section> <!-- make -->
+
+<section xml:id="build_hacking.generated"><info><title>Generated files</title></info>
+
+<para>
+  Some files in the libstdc++ source tree are auto-generated from other files.
+  In general, these are not regenerated automatically, so it must be done
+  manually when the files they depend on are updated.
+</para>
+
+<itemizedlist>
+ <listitem>
+   <para>
+   The header file
+   <filename class="headerfile">include/bits/version.h</filename>
+   is generated from <filename>version.def</filename> and
+   <filename>version.tpl</filename> in the same directory.
+   After editing those files, either run <command>autogen version.def</command>
+   in the <filename class="directory">include</filename> directory of the
+   source tree, or run <command>make update-version</command> in the
+   <filename class="directory">include</filename> directory of the build tree.
+   </para>
+ </listitem>
+ <listitem>
+   <para>
+   The header file
+   <filename class="headerfile">include/bits/unicode-data.h</filename>
+   is generated by the Python script
+   <filename>../contrib/unicode/gen_libstdcxx_unicode_data.py</filename>
+   using data files in the same directory. The script contains information
+   on which data files it uses and how to update them.
+   </para>
+ </listitem>
+ <listitem>
+   <para>
+   The header file
+   <filename class="headerfile">include/bits/text_encoding-data.h</filename>
+   is generated by the Python script
+   <filename>scripts/gen_text_encoding_data.py</filename>
+   using the CSV file <link xmlns:xlink="http://www.w3.org/1999/xlink"
+     xlink:href="https://www.iana.org/assignments/character-sets/character-sets-1.csv"/>
+   from the <link xmlns:xlink="http://www.w3.org/1999/xlink"
+     xlink:href="https://www.iana.org/time-zones">IANA Character Sets</link>
+   registry.
+   </para>
+ </listitem>
+ <listitem>
+   <para>
+   The data file <filename>src/c++20/tzdata.zi</filename> is copied verbatim
+   from the
+   <link xmlns:xlink="http://www.w3.org/1999/xlink"
+     xlink:href="https://www.iana.org/time-zones">IANA Time Zone Database</link>
+   (the latest version can be downloaded from
+   <link xmlns:xlink="http://www.w3.org/1999/xlink"
+     xlink:href="https://data.iana.org/time-zones/tzdb/tzdata.zi"/>).
+   Libstdc++ uses this data file to populate a
+   <classname>std::chrono::tzdb</classname> object in case the system does not
+   provide a copy of the file.
+   See <xref linkend="manual.intro.setup.configure"/> for the
+   <code>--with-libstdcxx-zoneinfo</code> option that determines whether
+   this file is used.
+   </para>
+ </listitem>
+</itemizedlist>
+
+</section> <!-- Generated files -->
 
 </section>

@@ -1,5 +1,5 @@
 /* intrinsics.cc -- D language compiler intrinsics.
-   Copyright (C) 2006-2023 Free Software Foundation, Inc.
+   Copyright (C) 2006-2024 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -60,12 +60,15 @@ struct intrinsic_decl
 
   /* True if the intrinsic is only handled in CTFE.  */
   bool ctfeonly;
+
+  /* True if the intrinsic has a library implementation.  */
+  bool fallback;
 };
 
 static const intrinsic_decl intrinsic_decls[] =
 {
-#define DEF_D_INTRINSIC(CODE, BUILTIN, NAME, MODULE, DECO, CTFE) \
-    { CODE, BUILTIN, NAME, MODULE, DECO, CTFE },
+#define DEF_D_INTRINSIC(CODE, BUILTIN, NAME, MODULE, DECO, CTFE, FALLBACK) \
+    { CODE, BUILTIN, NAME, MODULE, DECO, CTFE, FALLBACK },
 
 #include "intrinsics.def"
 
@@ -123,7 +126,7 @@ maybe_set_intrinsic (FuncDeclaration *decl)
 	    return;
 
 	  OutBuffer buf;
-	  mangleToBuffer (fd->type, buf);
+	  dmd::mangleToBuffer (fd->type, buf);
 	  tdeco = buf.extractChars ();
 	}
 
@@ -271,7 +274,7 @@ build_shuffle_mask_type (tree type)
   gcc_assert (t != NULL);
   unsigned HOST_WIDE_INT nunits = TYPE_VECTOR_SUBPARTS (type).to_constant ();
 
-  return build_ctype (TypeVector::create (t->sarrayOf (nunits)));
+  return build_ctype (TypeVector::create (dmd::sarrayOf (t, nunits)));
 }
 
 /* Checks if call to intrinsic FUNCTION in CALLEXP matches the internal
@@ -411,7 +414,7 @@ maybe_warn_intrinsic_mismatch (tree function, tree callexp)
 	      break;
 
 	    Type *inner = build_frontend_type (TREE_TYPE (vec0));
-	    Type *vector = TypeVector::create (inner->sarrayOf (nunits));
+	    Type *vector = TypeVector::create (dmd::sarrayOf (inner, nunits));
 	    return warn_mismatched_argument (callexp, 1,
 					     build_ctype (vector), true);
 	  }
@@ -476,7 +479,7 @@ maybe_warn_intrinsic_mismatch (tree function, tree callexp)
 	      break;
 
 	    Type *inner = build_frontend_type (TREE_TYPE (arg));
-	    Type *vector = TypeVector::create (inner->sarrayOf (nunits));
+	    Type *vector = TypeVector::create (dmd::sarrayOf (inner, nunits));
 	    return warn_mismatched_argument (callexp, 0,
 					     build_ctype (vector), true);
 	  }
@@ -716,7 +719,7 @@ expand_intrinsic_rotate (intrinsic_code intrinsic, tree callexp)
       TemplateInstance *ti = DECL_LANG_FRONTEND (callee)->isInstantiated ();
       gcc_assert (ti && ti->tiargs && ti->tiargs->length == 2);
 
-      Expression *e = isExpression ((*ti->tiargs)[0]);
+      Expression *e = dmd::isExpression ((*ti->tiargs)[0]);
       gcc_assert (e && e->op == EXP::int64);
       count = build_expr (e, true);
     }
@@ -1435,4 +1438,44 @@ maybe_expand_intrinsic (tree callexp)
     default:
       gcc_unreachable ();
     }
+}
+
+/* If FNDECL is an intrinsic, return the FUNCTION_DECL that has a library
+   fallback implementation of it, otherwise raise an error.  */
+
+tree
+maybe_reject_intrinsic (tree fndecl)
+{
+  gcc_assert (TREE_CODE (fndecl) == FUNCTION_DECL);
+
+  intrinsic_code intrinsic = DECL_INTRINSIC_CODE (fndecl);
+
+  if (intrinsic == INTRINSIC_NONE)
+    {
+      /* Not an intrinsic, but it still might be a declaration from the
+	 `gcc.builtins' module.  */
+      if (fndecl_built_in_p (fndecl) && DECL_IS_UNDECLARED_BUILTIN (fndecl)
+	  && !DECL_ASSEMBLER_NAME_SET_P (fndecl))
+	error ("built-in function %qE must be directly called", fndecl);
+
+      return fndecl;
+    }
+
+  /* Nothing to do if the intrinsic has a D library implementation.  */
+  if (intrinsic_decls[intrinsic].fallback)
+    return fndecl;
+
+  /* Check the GCC built-in decl if the intrinsic maps to one.  */
+  built_in_function code = intrinsic_decls[intrinsic].built_in;
+  if (code != BUILT_IN_NONE)
+    {
+      tree builtin = builtin_decl_explicit (code);
+      if (!DECL_IS_UNDECLARED_BUILTIN (builtin)
+	  || DECL_ASSEMBLER_NAME_SET_P (builtin))
+	return builtin;
+    }
+
+  /* It's a D language intrinsic with no library implementation.  */
+  error ("intrinsic function %qE must be directly called", fndecl);
+  return fndecl;
 }

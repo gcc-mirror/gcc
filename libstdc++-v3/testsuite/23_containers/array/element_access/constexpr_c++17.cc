@@ -1,6 +1,7 @@
 // { dg-do compile { target c++17 } }
+// { dg-add-options no_pch }
 
-// Copyright (C) 2011-2023 Free Software Foundation, Inc.
+// Copyright (C) 2011-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -65,3 +66,47 @@ constexpr bool test_zero()
 }
 
 static_assert( test_zero() );
+
+#ifdef __cpp_concepts
+template<typename T = int>
+  constexpr std::false_type
+  access_empty() { return {}; }
+
+template<typename T = int>
+  requires (std::bool_constant<&std::array<T, 0>{}.at(0) != nullptr>::value)
+  constexpr std::true_type
+  access_empty() { return {}; }
+
+template<typename T = int>
+  requires (std::bool_constant<&std::array<T, 0>{}[0] != nullptr>::value)
+  constexpr std::true_type
+  access_empty() { return {}; }
+
+template<typename T = int>
+  requires (std::bool_constant<&std::array<T, 0>{}.front() != nullptr>::value)
+  constexpr std::true_type
+  access_empty() { return {}; }
+
+template<typename T = int>
+  requires (std::bool_constant<&std::array<T, 0>{}.back() != nullptr>::value)
+  constexpr std::true_type
+  access_empty() { return {}; }
+
+static_assert( ! access_empty() );
+
+template<typename T = int>
+  constexpr std::false_type
+  access_past_the_end() { return {}; }
+
+template<typename T = int>
+  requires (std::bool_constant<std::array<T, 1>{}.at(0) != nullptr>::value)
+  constexpr std::true_type
+  access_past_the_end() { return {}; }
+
+template<typename T = int>
+  requires (std::bool_constant<&std::array<T, 1>{}[1] != nullptr>::value)
+  constexpr std::true_type
+  access_past_the_end() { return {}; }
+
+static_assert( ! access_past_the_end() );
+#endif

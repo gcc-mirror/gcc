@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2023 Free Software Foundation, Inc.
+// Copyright (C) 2015-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,6 +29,7 @@ test01()
   // convert from UCS-4 to UTF16BE with BOM.
   using cvt = std::codecvt_utf16<char32_t, 0x10FFFF, std::generate_header>;
   std::wstring_convert<cvt, char32_t> conv;
+  // { dg-warning "deprecated" "" { target c++17 } 31 }
   auto to = conv.to_bytes(U"ab\u00e7");
 
   VERIFY( to.length() == 8 );

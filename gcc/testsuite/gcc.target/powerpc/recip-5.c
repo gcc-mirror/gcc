@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O3 -ftree-vectorize -mrecip=all -ffast-math -mdejagnu-cpu=power7 -fno-unroll-loops" } */
+/* { dg-require-effective-target powerpc_vsx } */
 /* { dg-final { scan-assembler-times "xvredp" 4 } } */
 /* { dg-final { scan-assembler-times "xvresp" 5 } } */
 /* { dg-final { scan-assembler-times "xsredp\|fre\ " 2 } } */

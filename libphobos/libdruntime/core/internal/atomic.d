@@ -49,10 +49,22 @@ version (DigitalMars)
         enum SizedReg(int reg, T = size_t) = registerNames[reg][RegIndex!T];
     }
 
+    enum IsAtomicLockFree(T) = T.sizeof <= size_t.sizeof * 2;
+
     inout(T) atomicLoad(MemoryOrder order = MemoryOrder.seq, T)(inout(T)* src) pure nothrow @nogc @trusted
         if (CanCAS!T)
     {
-        static assert(order != MemoryOrder.rel, "invalid MemoryOrder for atomicLoad()");
+        static assert(order != MemoryOrder.rel && order != MemoryOrder.acq_rel,
+                      "invalid MemoryOrder for atomicLoad()");
+
+        // We place some storage on the stack,
+        //  get a pointer to that (which is also stored on the stack)
+        //  and then store the result of the load into the storage.
+        // Finally returning it.
+        // Anything other than this is calling convention specific,
+        //  and that is very fail heavy.
+        size_t[2] storage = void;
+        size_t* resultValuePtr = cast(size_t*)&storage[0];
 
         static if (T.sizeof == size_t.sizeof * 2)
         {
@@ -60,107 +72,87 @@ version (DigitalMars)
             {
                 asm pure nothrow @nogc @trusted
                 {
+                    push EBX; // call preserved
                     push EDI;
-                    push EBX;
+
                     mov EBX, 0;
                     mov ECX, 0;
                     mov EAX, 0;
                     mov EDX, 0;
+
                     mov EDI, src;
                     lock; cmpxchg8b [EDI];
-                    pop EBX;
+
+                    lea EBX, resultValuePtr;
+                    mov EBX, [EBX];
+                    mov [EBX], EAX;
+                    mov [EBX + size_t.sizeof], EDX;
+
                     pop EDI;
+                    pop EBX;
                 }
             }
             else version (D_InlineAsm_X86_64)
             {
-                version (Windows)
+                asm pure nothrow @nogc @trusted
                 {
-                    static if (RegisterReturn!T)
-                    {
-                        enum SrcPtr = SizedReg!CX;
-                        enum RetPtr = null;
-                    }
-                    else
-                    {
-                        enum SrcPtr = SizedReg!DX;
-                        enum RetPtr = SizedReg!CX;
-                    }
+                    push RBX; // call preserved
 
-                    mixin (simpleFormat(q{
-                        asm pure nothrow @nogc @trusted
-                        {
-                            naked;
-                            push RBX;
-                            mov R8, %0;
-    ?1                        mov R9, %1;
-                            mov RBX, 0;
-                            mov RCX, 0;
-                            mov RAX, 0;
-                            mov RDX, 0;
-                            lock; cmpxchg16b [R8];
-    ?1                        mov [R9], RAX;
-    ?1                        mov 8[R9], RDX;
-                            pop RBX;
-                            ret;
-                        }
-                    }, [SrcPtr, RetPtr]));
-                }
-                else
-                {
-                    asm pure nothrow @nogc @trusted
-                    {
-                        naked;
-                        push RBX;
-                        mov RBX, 0;
-                        mov RCX, 0;
-                        mov RAX, 0;
-                        mov RDX, 0;
-                        lock; cmpxchg16b [RDI];
-                        pop RBX;
-                        ret;
-                    }
+                    mov RBX, 0;
+                    mov RCX, 0;
+                    mov RAX, 0;
+                    mov RDX, 0;
+
+                    mov R8, src;
+                    lock; cmpxchg16b [R8];
+
+                    lea RBX, resultValuePtr;
+                    mov RBX, [RBX];
+                    mov [RBX], RAX;
+                    mov [RBX + size_t.sizeof], RDX;
+
+                    pop RBX;
                 }
             }
+            else
+                static assert(0, "Operation not supported");
+
+            return *cast(inout(T)*)resultValuePtr;
         }
         else static if (needsLoadBarrier!order)
         {
             version (D_InlineAsm_X86)
             {
-                enum SrcReg = SizedReg!CX;
-                enum ZeroReg = SizedReg!(DX, T);
-                enum ResReg = SizedReg!(AX, T);
-
-                mixin (simpleFormat(q{
-                    asm pure nothrow @nogc @trusted
-                    {
-                        mov %1, 0;
-                        mov %2, 0;
-                        mov %0, src;
-                        lock; cmpxchg [%0], %1;
-                    }
-                }, [SrcReg, ZeroReg, ResReg]));
             }
             else version (D_InlineAsm_X86_64)
             {
-                version (Windows)
-                    enum SrcReg = SizedReg!CX;
-                else
-                    enum SrcReg = SizedReg!DI;
-                enum ZeroReg = SizedReg!(DX, T);
-                enum ResReg = SizedReg!(AX, T);
-
-                mixin (simpleFormat(q{
-                    asm pure nothrow @nogc @trusted
-                    {
-                        naked;
-                        mov %1, 0;
-                        mov %2, 0;
-                        lock; cmpxchg [%0], %1;
-                        ret;
-                    }
-                }, [SrcReg, ZeroReg, ResReg]));
             }
+            else
+                static assert(0, "Operation not supported");
+
+            enum SrcReg = SizedReg!CX;
+            enum ZeroReg = SizedReg!(DX, T);
+            enum ResReg = SizedReg!(AX, T);
+            enum TemporaryReg = SizedReg!(BX);
+
+            mixin (simpleFormat(q{
+                asm pure nothrow @nogc @trusted
+                {
+                    push %3; // call preserved
+
+                    mov %1, 0;
+                    mov %2, 0;
+                    mov %0, src;
+                    lock; cmpxchg [%0], %1;
+                    lea %3, resultValuePtr;
+                    mov %3, [%3];
+                    mov [%3], %2;
+
+                    pop %3;
+                }
+            }, [SrcReg, ZeroReg, ResReg, TemporaryReg]));
+
+            return *cast(inout(T)*)resultValuePtr;
         }
         else
             return *src;
@@ -169,7 +161,8 @@ version (DigitalMars)
     void atomicStore(MemoryOrder order = MemoryOrder.seq, T)(T* dest, T value) pure nothrow @nogc @trusted
         if (CanCAS!T)
     {
-        static assert(order != MemoryOrder.acq, "Invalid MemoryOrder for atomicStore()");
+        static assert(order != MemoryOrder.acq && order != MemoryOrder.acq_rel,
+                      "Invalid MemoryOrder for atomicStore()");
 
         static if (T.sizeof == size_t.sizeof * 2)
         {
@@ -291,48 +284,38 @@ version (DigitalMars)
     T atomicExchange(MemoryOrder order = MemoryOrder.seq, bool result = true, T)(T* dest, T value) pure nothrow @nogc @trusted
     if (CanCAS!T)
     {
+        static assert(order != MemoryOrder.acq, "Invalid MemoryOrder for atomicExchange()");
+        // We place some storage on the stack,
+        //  this storage and cast it to appropriete type.
+        // This is calling convention agnostic.
+        size_t storage = void;
+
         version (D_InlineAsm_X86)
         {
-            static assert(T.sizeof <= 4, "64bit atomicExchange not supported on 32bit target." );
-
-            enum DestReg = SizedReg!CX;
-            enum ValReg = SizedReg!(AX, T);
-
-            mixin (simpleFormat(q{
-                asm pure nothrow @nogc @trusted
-                {
-                    mov %1, value;
-                    mov %0, dest;
-                    xchg [%0], %1;
-                }
-            }, [DestReg, ValReg]));
+            static assert(T.sizeof <= 4, "64bit atomicExchange not supported on 32bit target.");
         }
         else version (D_InlineAsm_X86_64)
         {
-            version (Windows)
-            {
-                enum DestReg = SizedReg!DX;
-                enum ValReg = SizedReg!(CX, T);
-            }
-            else
-            {
-                enum DestReg = SizedReg!SI;
-                enum ValReg = SizedReg!(DI, T);
-            }
-            enum ResReg = result ? SizedReg!(AX, T) : null;
-
-            mixin (simpleFormat(q{
-                asm pure nothrow @nogc @trusted
-                {
-                    naked;
-                    xchg [%0], %1;
-    ?2                mov %2, %1;
-                    ret;
-                }
-            }, [DestReg, ValReg, ResReg]));
         }
         else
-            static assert (false, "Unsupported architecture.");
+            static assert(0, "Operation not supported");
+
+        enum DestReg = SizedReg!CX;
+        enum ValReg = SizedReg!(AX, T);
+
+        mixin (simpleFormat(q{
+            asm pure nothrow @nogc @trusted
+            {
+                mov %1, value;
+                mov %0, dest;
+                lock; xchg [%0], %1;
+
+                lea %0, storage;
+                mov [%0], %1;
+            }
+        }, [DestReg, ValReg]));
+
+        return *cast(T*)&storage;
     }
 
     alias atomicCompareExchangeWeak = atomicCompareExchangeStrong;
@@ -340,142 +323,102 @@ version (DigitalMars)
     bool atomicCompareExchangeStrong(MemoryOrder succ = MemoryOrder.seq, MemoryOrder fail = MemoryOrder.seq, T)(T* dest, T* compare, T value) pure nothrow @nogc @trusted
         if (CanCAS!T)
     {
-        version (D_InlineAsm_X86)
-        {
-            static if (T.sizeof <= 4)
-            {
-                enum DestAddr = SizedReg!CX;
-                enum CmpAddr = SizedReg!DI;
-                enum Val = SizedReg!(DX, T);
-                enum Cmp = SizedReg!(AX, T);
+        static assert(fail != MemoryOrder.rel && fail != MemoryOrder.acq_rel,
+                      "Invalid fail MemoryOrder for atomicCompareExchangeStrong()");
+        static assert (succ >= fail, "The first MemoryOrder argument for atomicCompareExchangeStrong() cannot be weaker than the second argument");
+        bool success;
 
-                mixin (simpleFormat(q{
-                    asm pure nothrow @nogc @trusted
-                    {
-                        push %1;
-                        mov %2, value;
-                        mov %1, compare;
-                        mov %3, [%1];
-                        mov %0, dest;
-                        lock; cmpxchg [%0], %2;
-                        mov [%1], %3;
-                        setz AL;
-                        pop %1;
-                    }
-                }, [DestAddr, CmpAddr, Val, Cmp]));
-            }
-            else static if (T.sizeof == 8)
+        static if (T.sizeof == size_t.sizeof * 2)
+        {
+            // some values simply cannot be loa'd here, so we'll use an intermediary pointer that we can move instead
+            T* valuePointer = &value;
+
+            version (D_InlineAsm_X86)
             {
                 asm pure nothrow @nogc @trusted
                 {
+                    push EBX; // call preserved
                     push EDI;
-                    push EBX;
-                    lea EDI, value;
+
+                    mov EDI, valuePointer; // value
                     mov EBX, [EDI];
-                    mov ECX, 4[EDI];
-                    mov EDI, compare;
+                    mov ECX, [EDI + size_t.sizeof];
+                    mov EDI, compare; // [compare]
                     mov EAX, [EDI];
-                    mov EDX, 4[EDI];
+                    mov EDX, [EDI + size_t.sizeof];
+
                     mov EDI, dest;
                     lock; cmpxchg8b [EDI];
+
+                    setz success;
                     mov EDI, compare;
                     mov [EDI], EAX;
-                    mov 4[EDI], EDX;
-                    setz AL;
-                    pop EBX;
-                    pop EDI;
-                }
-            }
-            else
-                static assert(T.sizeof <= 8, "128bit atomicCompareExchangeStrong not supported on 32bit target." );
-        }
-        else version (D_InlineAsm_X86_64)
-        {
-            static if (T.sizeof <= 8)
-            {
-                version (Windows)
-                {
-                    enum DestAddr = SizedReg!R8;
-                    enum CmpAddr = SizedReg!DX;
-                    enum Val = SizedReg!(CX, T);
-                }
-                else
-                {
-                    enum DestAddr = SizedReg!DX;
-                    enum CmpAddr = SizedReg!SI;
-                    enum Val = SizedReg!(DI, T);
-                }
-                enum Res = SizedReg!(AX, T);
+                    mov [EDI + size_t.sizeof], EDX;
 
-                mixin (simpleFormat(q{
-                    asm pure nothrow @nogc @trusted
-                    {
-                        naked;
-                        mov %3, [%1];
-                        lock; cmpxchg [%0], %2;
-                        jne compare_fail;
-                        mov AL, 1;
-                        ret;
-                    compare_fail:
-                        mov [%1], %3;
-                        xor AL, AL;
-                        ret;
-                    }
-                }, [DestAddr, CmpAddr, Val, Res]));
+                    pop EDI;
+                    pop EBX;
+                }
+            }
+            else version (D_InlineAsm_X86_64)
+            {
+                asm pure nothrow @nogc @trusted
+                {
+                    push RBX; // call preserved
+
+                    mov R8, valuePointer; // value
+                    mov RBX, [R8];
+                    mov RCX, [R8 + size_t.sizeof];
+                    mov R8, compare; // [compare]
+                    mov RAX, [R8];
+                    mov RDX, [R8 + size_t.sizeof];
+
+                    mov R8, dest;
+                    lock; cmpxchg16b [R8];
+
+                    setz success;
+                    mov R8, compare;
+                    mov [R8], RAX;
+                    mov [R8 + size_t.sizeof], RDX;
+
+                    pop RBX;
+                }
             }
             else
-            {
-                version (Windows)
-                {
-                    asm pure nothrow @nogc @trusted
-                    {
-                        naked;
-                        push RBX;
-                        mov R9, RDX;
-                        mov RAX, [RDX];
-                        mov RDX, 8[RDX];
-                        mov RBX, [RCX];
-                        mov RCX, 8[RCX];
-                        lock; cmpxchg16b [R8];
-                        pop RBX;
-                        jne compare_fail;
-                        mov AL, 1;
-                        ret;
-                    compare_fail:
-                        mov [R9], RAX;
-                        mov 8[R9], RDX;
-                        xor AL, AL;
-                        ret;
-                    }
-                }
-                else
-                {
-                    asm pure nothrow @nogc @trusted
-                    {
-                        naked;
-                        push RBX;
-                        mov R8, RCX;
-                        mov R9, RDX;
-                        mov RAX, [RDX];
-                        mov RDX, 8[RDX];
-                        mov RBX, RDI;
-                        mov RCX, RSI;
-                        lock; cmpxchg16b [R8];
-                        pop RBX;
-                        jne compare_fail;
-                        mov AL, 1;
-                        ret;
-                    compare_fail:
-                        mov [R9], RAX;
-                        mov 8[R9], RDX;
-                        xor AL, AL;
-                        ret;
-                    }
-                }
-            }
+                static assert(0, "Operation not supported");
         }
         else
-            static assert (false, "Unsupported architecture.");
+        {
+            version (D_InlineAsm_X86)
+            {
+            }
+            else version (D_InlineAsm_X86_64)
+            {
+            }
+            else
+                static assert(0, "Operation not supported");
+
+            enum SrcReg = SizedReg!CX;
+            enum ValueReg = SizedReg!(DX, T);
+            enum CompareReg = SizedReg!(AX, T);
+
+            mixin (simpleFormat(q{
+                asm pure nothrow @nogc @trusted
+                {
+                    mov %1, value;
+                    mov %0, compare;
+                    mov %2, [%0];
+
+                    mov %0, dest;
+                    lock; cmpxchg [%0], %1;
+
+                    setz success;
+                    mov %0, compare;
+                    mov [%0], %2;
+                }
+            }, [SrcReg, ValueReg, CompareReg]));
+        }
+
+        return success;
     }
 
     alias atomicCompareExchangeWeakNoResult = atomicCompareExchangeStrongNoResult;
@@ -483,114 +426,94 @@ version (DigitalMars)
     bool atomicCompareExchangeStrongNoResult(MemoryOrder succ = MemoryOrder.seq, MemoryOrder fail = MemoryOrder.seq, T)(T* dest, const T compare, T value) pure nothrow @nogc @trusted
         if (CanCAS!T)
     {
-        version (D_InlineAsm_X86)
-        {
-            static if (T.sizeof <= 4)
-            {
-                enum DestAddr = SizedReg!CX;
-                enum Cmp = SizedReg!(AX, T);
-                enum Val = SizedReg!(DX, T);
+        static assert(fail != MemoryOrder.rel && fail != MemoryOrder.acq_rel,
+                      "Invalid fail MemoryOrder for atomicCompareExchangeStrongNoResult()");
+        static assert (succ >= fail, "The first MemoryOrder argument for atomicCompareExchangeStrongNoResult() cannot be weaker than the second argument");
+        bool success;
 
-                mixin (simpleFormat(q{
-                    asm pure nothrow @nogc @trusted
-                    {
-                        mov %2, value;
-                        mov %1, compare;
-                        mov %0, dest;
-                        lock; cmpxchg [%0], %2;
-                        setz AL;
-                    }
-                }, [DestAddr, Cmp, Val]));
-            }
-            else static if (T.sizeof == 8)
+        static if (T.sizeof == size_t.sizeof * 2)
+        {
+            // some values simply cannot be loa'd here, so we'll use an intermediary pointer that we can move instead
+            T* valuePointer = &value;
+            const(T)* comparePointer = &compare;
+
+            version (D_InlineAsm_X86)
             {
                 asm pure nothrow @nogc @trusted
                 {
+                    push EBX; // call preserved
                     push EDI;
-                    push EBX;
-                    lea EDI, value;
+
+                    mov EDI, valuePointer; // value
                     mov EBX, [EDI];
-                    mov ECX, 4[EDI];
-                    lea EDI, compare;
+                    mov ECX, [EDI + size_t.sizeof];
+                    mov EDI, comparePointer; // compare
                     mov EAX, [EDI];
-                    mov EDX, 4[EDI];
+                    mov EDX, [EDI + size_t.sizeof];
+
                     mov EDI, dest;
                     lock; cmpxchg8b [EDI];
-                    setz AL;
-                    pop EBX;
-                    pop EDI;
-                }
-            }
-            else
-                static assert(T.sizeof <= 8, "128bit atomicCompareExchangeStrong not supported on 32bit target." );
-        }
-        else version (D_InlineAsm_X86_64)
-        {
-            static if (T.sizeof <= 8)
-            {
-                version (Windows)
-                {
-                    enum DestAddr = SizedReg!R8;
-                    enum Cmp = SizedReg!(DX, T);
-                    enum Val = SizedReg!(CX, T);
-                }
-                else
-                {
-                    enum DestAddr = SizedReg!DX;
-                    enum Cmp = SizedReg!(SI, T);
-                    enum Val = SizedReg!(DI, T);
-                }
-                enum AXReg = SizedReg!(AX, T);
 
-                mixin (simpleFormat(q{
-                    asm pure nothrow @nogc @trusted
-                    {
-                        naked;
-                        mov %3, %1;
-                        lock; cmpxchg [%0], %2;
-                        setz AL;
-                        ret;
-                    }
-                }, [DestAddr, Cmp, Val, AXReg]));
+                    setz success;
+
+                    pop EDI;
+                    pop EBX;
+                }
+            }
+            else version (D_InlineAsm_X86_64)
+            {
+                asm pure nothrow @nogc @trusted
+                {
+                    push RBX; // call preserved
+
+                    mov R8, valuePointer; // value
+                    mov RBX, [R8];
+                    mov RCX, [R8 + size_t.sizeof];
+                    mov R8, comparePointer; // compare
+                    mov RAX, [R8];
+                    mov RDX, [R8 + size_t.sizeof];
+
+                    mov R8, dest;
+                    lock; cmpxchg16b [R8];
+
+                    setz success;
+
+                    pop RBX;
+                }
             }
             else
-            {
-                version (Windows)
-                {
-                    asm pure nothrow @nogc @trusted
-                    {
-                        naked;
-                        push RBX;
-                        mov RAX, [RDX];
-                        mov RDX, 8[RDX];
-                        mov RBX, [RCX];
-                        mov RCX, 8[RCX];
-                        lock; cmpxchg16b [R8];
-                        setz AL;
-                        pop RBX;
-                        ret;
-                    }
-                }
-                else
-                {
-                    asm pure nothrow @nogc @trusted
-                    {
-                        naked;
-                        push RBX;
-                        mov RAX, RDX;
-                        mov RDX, RCX;
-                        mov RBX, RDI;
-                        mov RCX, RSI;
-                        lock; cmpxchg16b [R8];
-                        setz AL;
-                        pop RBX;
-                        ret;
-                    }
-                }
-            }
+                static assert(0, "Operation not supported");
         }
         else
-            static assert (false, "Unsupported architecture.");
+        {
+            version (D_InlineAsm_X86)
+            {
+            }
+            else version (D_InlineAsm_X86_64)
+            {
+            }
+            else
+                static assert(0, "Operation not supported");
+
+            enum SrcReg = SizedReg!CX;
+            enum ValueReg = SizedReg!(DX, T);
+            enum CompareReg = SizedReg!(AX, T);
+
+            mixin (simpleFormat(q{
+                asm pure nothrow @nogc @trusted
+                {
+                    mov %1, value;
+                    mov %2, compare;
+
+                    mov %0, dest;
+                    lock; cmpxchg [%0], %1;
+
+                    setz success;
+                }
+            }, [SrcReg, ValueReg, CompareReg]));
+        }
+
+        return success;
     }
 
     void atomicFence(MemoryOrder order = MemoryOrder.seq)() pure nothrow @nogc @trusted
@@ -649,6 +572,11 @@ version (DigitalMars)
         }
     }
 
+    void atomicSignalFence(MemoryOrder order = MemoryOrder.seq)() pure nothrow @nogc @trusted
+    {
+        // no-op, dmd doesn't reorder instructions
+    }
+
     void pause() pure nothrow @nogc @trusted
     {
         version (D_InlineAsm_X86)
@@ -656,7 +584,7 @@ version (DigitalMars)
             asm pure nothrow @nogc @trusted
             {
                 naked;
-                rep; nop;
+                pause;
                 ret;
             }
         }
@@ -665,8 +593,7 @@ version (DigitalMars)
             asm pure nothrow @nogc @trusted
             {
                 naked;
-    //            pause; // TODO: DMD should add this opcode to its inline asm
-                rep; nop;
+                pause;
                 ret;
             }
         }
@@ -682,10 +609,13 @@ else version (GNU)
     import gcc.builtins;
     import gcc.config;
 
+    enum IsAtomicLockFree(T) = __traits(compiles, { enum E = __atomic_is_lock_free(T.sizeof, null); });
+
     inout(T) atomicLoad(MemoryOrder order = MemoryOrder.seq, T)(inout(T)* src) pure nothrow @nogc @trusted
         if (CanCAS!T)
     {
-        static assert(order != MemoryOrder.rel, "invalid MemoryOrder for atomicLoad()");
+        static assert(order != MemoryOrder.rel && order != MemoryOrder.acq_rel,
+                      "invalid MemoryOrder for atomicLoad()");
 
         static if (GNU_Have_Atomics || GNU_Have_LibAtomic)
         {
@@ -712,7 +642,7 @@ else version (GNU)
             else static if (GNU_Have_LibAtomic)
             {
                 T value;
-                __atomic_load(T.sizeof, cast(shared)src, &value, order);
+                __atomic_load(T.sizeof, cast(shared)src, cast(void*)&value, order);
                 return *cast(typeof(return)*)&value;
             }
             else
@@ -729,7 +659,8 @@ else version (GNU)
     void atomicStore(MemoryOrder order = MemoryOrder.seq, T)(T* dest, T value) pure nothrow @nogc @trusted
         if (CanCAS!T)
     {
-        static assert(order != MemoryOrder.acq, "Invalid MemoryOrder for atomicStore()");
+        static assert(order != MemoryOrder.acq && order != MemoryOrder.acq_rel,
+                      "Invalid MemoryOrder for atomicStore()");
 
         static if (GNU_Have_Atomics || GNU_Have_LibAtomic)
         {
@@ -811,8 +742,10 @@ else version (GNU)
     }
 
     T atomicExchange(MemoryOrder order = MemoryOrder.seq, bool result = true, T)(T* dest, T value) pure nothrow @nogc @trusted
-        if (is(T : ulong) || is(T == class) || is(T == interface) || is(T U : U*))
+        if (CanCAS!T)
     {
+        static assert(order != MemoryOrder.acq, "Invalid MemoryOrder for atomicExchange()");
+
         static if (GNU_Have_Atomics || GNU_Have_LibAtomic)
         {
             static if (T.sizeof == byte.sizeof)
@@ -882,6 +815,10 @@ else version (GNU)
     private bool atomicCompareExchangeImpl(MemoryOrder succ = MemoryOrder.seq, MemoryOrder fail = MemoryOrder.seq, bool weak, T)(T* dest, T* compare, T value) pure nothrow @nogc @trusted
         if (CanCAS!T)
     {
+        static assert(fail != MemoryOrder.rel && fail != MemoryOrder.acq_rel,
+                      "Invalid fail MemoryOrder for atomicCompareExchange()");
+        static assert (succ >= fail, "The first MemoryOrder argument for atomicCompareExchange() cannot be weaker than the second argument");
+
         bool res = void;
 
         static if (GNU_Have_Atomics || GNU_Have_LibAtomic)
@@ -944,6 +881,11 @@ else version (GNU)
             getAtomicMutex.lock();
             getAtomicMutex.unlock();
         }
+    }
+
+    void atomicSignalFence(MemoryOrder order = MemoryOrder.seq)() pure nothrow @nogc @trusted
+    {
+        __atomic_signal_fence(order);
     }
 
     void pause() pure nothrow @nogc @trusted
@@ -1058,10 +1000,10 @@ version (Windows)
     enum RegisterReturn(T) = is(T : U[], U) || is(T : R delegate(A), R, A...);
 }
 
-enum CanCAS(T) = is(T : ulong) ||
+enum CanCAS(T) = (__traits(isScalar, T) && // check to see if it is some kind of basic type like an integer/float/pointer
+                  T.sizeof <= size_t.sizeof * 2) || // make sure if it is, that it is no more than 2 words
                  is(T == class) ||
                  is(T == interface) ||
-                 is(T : U*, U) ||
                  is(T : U[], U) ||
                  is(T : R delegate(A), R, A...) ||
                  (is(T == struct) && __traits(isPOD, T) &&

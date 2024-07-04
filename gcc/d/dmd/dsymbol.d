@@ -1,7 +1,7 @@
 /**
  * The base class for a D symbol, which can be a module, variable, function, enum, etc.
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/dsymbol.d, _dsymbol.d)
@@ -31,11 +31,9 @@ import dmd.dmodule;
 import dmd.dversion;
 import dmd.dscope;
 import dmd.dstruct;
-import dmd.dsymbolsem;
 import dmd.dtemplate;
 import dmd.errors;
 import dmd.expression;
-import dmd.expressionsem;
 import dmd.func;
 import dmd.globals;
 import dmd.id;
@@ -45,16 +43,16 @@ import dmd.lexer;
 import dmd.location;
 import dmd.mtype;
 import dmd.nspace;
-import dmd.opover;
 import dmd.root.aav;
 import dmd.root.rmem;
-import dmd.root.rootobject;
-import dmd.root.speller;
+import dmd.rootobject;
 import dmd.root.string;
 import dmd.statement;
 import dmd.staticassert;
 import dmd.tokens;
 import dmd.visitor;
+
+import dmd.common.outbuffer;
 
 /***************************************
  * Calls dg(Dsymbol *sym) for each Dsymbol.
@@ -141,12 +139,13 @@ struct Visibility
     Kind kind;
     Package pkg;
 
-    extern (D):
-
-    this(Visibility.Kind kind) pure nothrow @nogc @safe
+    extern(C++) this(Visibility.Kind kind, Package pkg = null) pure nothrow @nogc @safe
     {
         this.kind = kind;
+        this.pkg  = pkg;
     }
+
+    extern (D):
 
     /**
      * Checks if `this` is less or more visible than `other`
@@ -204,20 +203,21 @@ enum PASS : ubyte
 }
 
 // Search options
-enum : int
+alias SearchOptFlags = uint;
+enum SearchOpt : SearchOptFlags
 {
-    IgnoreNone              = 0x00, // default
-    IgnorePrivateImports    = 0x01, // don't search private imports
-    IgnoreErrors            = 0x02, // don't give error messages
-    IgnoreAmbiguous         = 0x04, // return NULL if ambiguous
-    SearchLocalsOnly        = 0x08, // only look at locals (don't search imports)
-    SearchImportsOnly       = 0x10, // only look in imports
-    SearchUnqualifiedModule = 0x20, // the module scope search is unqualified,
+    all                     = 0x00, // search for all symbols
+    ignorePrivateImports    = 0x01, // don't search private imports
+    ignoreErrors            = 0x02, // don't give error messages
+    ignoreAmbiguous         = 0x04, // return NULL if ambiguous
+    localsOnly              = 0x08, // only look at locals (don't search imports)
+    importsOnly             = 0x10, // only look in imports
+    unqualifiedModule       = 0x20, // the module scope search is unqualified,
                                     // meaning don't search imports in that scope,
                                     // because qualified module searches search
                                     // their imports
-    IgnoreSymbolVisibility  = 0x80, // also find private and package protected symbols
-    TagNameSpace            = 0x100, // search ImportC tag symbol table
+    tagNameSpace            = 0x40, // search ImportC tag symbol table
+    ignoreVisibility        = 0x80, // also find private and package protected symbols
 }
 
 /***********************************************************
@@ -235,6 +235,15 @@ struct FieldState
     uint bitOffset;     /// bit offset for field
 
     bool inFlight;      /// bit field is in flight
+
+    void print() const
+    {
+        printf("FieldState.offset      = %d bytes\n",   offset);
+        printf("          .fieldOffset = %d bytes\n",   fieldOffset);
+        printf("          .bitOffset   = %d bits\n",    bitOffset);
+        printf("          .fieldSize   = %d bytes\n",   fieldSize);
+        printf("          .inFlight    = %d\n",         inFlight);
+    }
 }
 
 // 99.9% of Dsymbols don't have attributes (at least in druntime and Phobos),
@@ -373,113 +382,6 @@ extern (C++) class Dsymbol : ASTNode
     {
         const cstr = toPrettyChars();
         return '`' ~ cstr.toDString() ~ "`\0";
-    }
-
-    static if (__VERSION__ < 2092)
-    {
-        final void error(const ref Loc loc, const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            .verrorReport(loc, format, ap, ErrorKind.error, kind(), prettyFormatHelper().ptr);
-            va_end(ap);
-        }
-
-        final void error(const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            const loc = getLoc();
-            .verrorReport(loc, format, ap, ErrorKind.error, kind(), prettyFormatHelper().ptr);
-            va_end(ap);
-        }
-
-        final void deprecation(const ref Loc loc, const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            .verrorReport(loc, format, ap, ErrorKind.deprecation, kind(), prettyFormatHelper().ptr);
-            va_end(ap);
-        }
-
-        final void deprecation(const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            const loc = getLoc();
-            .verrorReport(loc, format, ap, ErrorKind.deprecation, kind(), prettyFormatHelper().ptr);
-            va_end(ap);
-        }
-    }
-    else
-    {
-        pragma(printf) final void error(const ref Loc loc, const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            .verrorReport(loc, format, ap, ErrorKind.error, kind(), prettyFormatHelper().ptr);
-            va_end(ap);
-        }
-
-        pragma(printf) final void error(const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            const loc = getLoc();
-            .verrorReport(loc, format, ap, ErrorKind.error, kind(), prettyFormatHelper().ptr);
-            va_end(ap);
-        }
-
-        pragma(printf) final void deprecation(const ref Loc loc, const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            .verrorReport(loc, format, ap, ErrorKind.deprecation, kind(), prettyFormatHelper().ptr);
-            va_end(ap);
-        }
-
-        pragma(printf) final void deprecation(const(char)* format, ...)
-        {
-            va_list ap;
-            va_start(ap, format);
-            const loc = getLoc();
-            .verrorReport(loc, format, ap, ErrorKind.deprecation, kind(), prettyFormatHelper().ptr);
-            va_end(ap);
-        }
-    }
-
-    final bool checkDeprecated(const ref Loc loc, Scope* sc)
-    {
-        if (global.params.useDeprecated == DiagnosticReporting.off)
-            return false;
-        if (!this.isDeprecated())
-            return false;
-        // Don't complain if we're inside a deprecated symbol's scope
-        if (sc.isDeprecated())
-            return false;
-        // Don't complain if we're inside a template constraint
-        // https://issues.dlang.org/show_bug.cgi?id=21831
-        if (sc.flags & SCOPE.constraint)
-            return false;
-
-        const(char)* message = null;
-        for (Dsymbol p = this; p; p = p.parent)
-        {
-            message = p.depdecl ? p.depdecl.getMessage() : null;
-            if (message)
-                break;
-        }
-        if (message)
-            deprecation(loc, "is deprecated - %s", message);
-        else
-            deprecation(loc, "is deprecated");
-
-        if (auto ti = sc.parent ? sc.parent.isInstantiated() : null)
-            ti.printInstantiationTrace(Classification.deprecation);
-        else if (auto ti = sc.parent ? sc.parent.isTemplateInstance() : null)
-            ti.printInstantiationTrace(Classification.deprecation);
-
-        return true;
     }
 
     /**********************************
@@ -756,7 +658,7 @@ extern (C++) class Dsymbol : ASTNode
     const(char)* toPrettyChars(bool QualifyTypes = false)
     {
         if (prettystring && !QualifyTypes)
-            return prettystring;
+            return prettystring; // value cached for speed
 
         //printf("Dsymbol::toPrettyChars() '%s'\n", toChars());
         if (!parent)
@@ -767,42 +669,22 @@ extern (C++) class Dsymbol : ASTNode
             return s;
         }
 
-        // Computer number of components
-        size_t complength = 0;
-        for (Dsymbol p = this; p; p = p.parent)
-            ++complength;
+        OutBuffer buf;
 
-        // Allocate temporary array comp[]
-        alias T = const(char)[];
-        auto compptr = cast(T*)Mem.check(malloc(complength * T.sizeof));
-        auto comp = compptr[0 .. complength];
-
-        // Fill in comp[] and compute length of final result
-        size_t length = 0;
-        int i;
-        for (Dsymbol p = this; p; p = p.parent)
+        void addQualifiers(Dsymbol p)
         {
+            if (p.parent)
+            {
+                addQualifiers(p.parent);
+                buf.writeByte('.');
+            }
             const s = QualifyTypes ? p.toPrettyCharsHelper() : p.toChars();
-            const len = strlen(s);
-            comp[i] = s[0 .. len];
-            ++i;
-            length += len + 1;
+            buf.writestring(s);
         }
 
-        auto s = cast(char*)mem.xmalloc_noscan(length);
-        auto q = s + length - 1;
-        *q = 0;
-        foreach (j; 0 .. complength)
-        {
-            const t = comp[j].ptr;
-            const len = comp[j].length;
-            q -= len;
-            memcpy(q, t, len);
-            if (q == s)
-                break;
-            *--q = '.';
-        }
-        free(comp.ptr);
+        addQualifiers(this);
+        auto s = buf.extractSlice(true).ptr;
+
         if (!QualifyTypes)
             prettystring = s;
         return s;
@@ -831,189 +713,6 @@ extern (C++) class Dsymbol : ASTNode
         return toAlias();
     }
 
-    void addMember(Scope* sc, ScopeDsymbol sds)
-    {
-        //printf("Dsymbol::addMember('%s')\n", toChars());
-        //printf("Dsymbol::addMember(this = %p, '%s' scopesym = '%s')\n", this, toChars(), sds.toChars());
-        //printf("Dsymbol::addMember(this = %p, '%s' sds = %p, sds.symtab = %p)\n", this, toChars(), sds, sds.symtab);
-        parent = sds;
-        if (isAnonymous()) // no name, so can't add it to symbol table
-            return;
-
-        if (!sds.symtabInsert(this)) // if name is already defined
-        {
-            if (isAliasDeclaration() && !_scope)
-                setScope(sc);
-            Dsymbol s2 = sds.symtabLookup(this,ident);
-            /* https://issues.dlang.org/show_bug.cgi?id=17434
-             *
-             * If we are trying to add an import to the symbol table
-             * that has already been introduced, then keep the one with
-             * larger visibility. This is fine for imports because if
-             * we have multiple imports of the same file, if a single one
-             * is public then the symbol is reachable.
-             */
-            if (auto i1 = isImport())
-            {
-                if (auto i2 = s2.isImport())
-                {
-                    if (sc.explicitVisibility && sc.visibility > i2.visibility)
-                        sds.symtab.update(this);
-                }
-            }
-
-            // If using C tag/prototype/forward declaration rules
-            if (sc.flags & SCOPE.Cfile && !this.isImport())
-            {
-                if (handleTagSymbols(*sc, this, s2, sds))
-                    return;
-                if (handleSymbolRedeclarations(*sc, this, s2, sds))
-                    return;
-
-                sds.multiplyDefined(Loc.initial, this, s2);  // ImportC doesn't allow overloading
-                errors = true;
-                return;
-            }
-
-            if (!s2.overloadInsert(this))
-            {
-                sds.multiplyDefined(Loc.initial, this, s2);
-                errors = true;
-            }
-        }
-        if (sds.isAggregateDeclaration() || sds.isEnumDeclaration())
-        {
-            if (ident == Id.__sizeof ||
-                !(sc && sc.flags & SCOPE.Cfile) && (ident == Id.__xalignof || ident == Id._mangleof))
-            {
-                error("`.%s` property cannot be redefined", ident.toChars());
-                errors = true;
-            }
-        }
-    }
-
-    /*************************************
-     * Set scope for future semantic analysis so we can
-     * deal better with forward references.
-     */
-    void setScope(Scope* sc)
-    {
-        //printf("Dsymbol::setScope() %p %s, %p stc = %llx\n", this, toChars(), sc, sc.stc);
-        if (!sc.nofree)
-            sc.setNoFree(); // may need it even after semantic() finishes
-        _scope = sc;
-        if (sc.depdecl)
-            depdecl = sc.depdecl;
-        if (!userAttribDecl)
-            userAttribDecl = sc.userAttribDecl;
-    }
-
-    void importAll(Scope* sc)
-    {
-    }
-
-    /*********************************************
-     * Search for ident as member of s.
-     * Params:
-     *  loc = location to print for error messages
-     *  ident = identifier to search for
-     *  flags = IgnoreXXXX
-     * Returns:
-     *  null if not found
-     */
-    Dsymbol search(const ref Loc loc, Identifier ident, int flags = IgnoreNone)
-    {
-        //printf("Dsymbol::search(this=%p,%s, ident='%s')\n", this, toChars(), ident.toChars());
-        return null;
-    }
-
-    extern (D) final Dsymbol search_correct(Identifier ident)
-    {
-        /***************************************************
-         * Search for symbol with correct spelling.
-         */
-        extern (D) Dsymbol symbol_search_fp(const(char)[] seed, out int cost)
-        {
-            /* If not in the lexer's string table, it certainly isn't in the symbol table.
-             * Doing this first is a lot faster.
-             */
-            if (!seed.length)
-                return null;
-            Identifier id = Identifier.lookup(seed);
-            if (!id)
-                return null;
-            cost = 0;   // all the same cost
-            Dsymbol s = this;
-            Module.clearCache();
-            return s.search(Loc.initial, id, IgnoreErrors);
-        }
-
-        if (global.gag)
-            return null; // don't do it for speculative compiles; too time consuming
-        // search for exact name first
-        if (auto s = search(Loc.initial, ident, IgnoreErrors))
-            return s;
-        return speller!symbol_search_fp(ident.toString());
-    }
-
-    /***************************************
-     * Search for identifier id as a member of `this`.
-     * `id` may be a template instance.
-     *
-     * Params:
-     *  loc = location to print the error messages
-     *  sc = the scope where the symbol is located
-     *  id = the id of the symbol
-     *  flags = the search flags which can be `SearchLocalsOnly` or `IgnorePrivateImports`
-     *
-     * Returns:
-     *      symbol found, NULL if not
-     */
-    extern (D) final Dsymbol searchX(const ref Loc loc, Scope* sc, RootObject id, int flags)
-    {
-        //printf("Dsymbol::searchX(this=%p,%s, ident='%s')\n", this, toChars(), ident.toChars());
-        Dsymbol s = toAlias();
-        Dsymbol sm;
-        if (Declaration d = s.isDeclaration())
-        {
-            if (d.inuse)
-            {
-                .error(loc, "circular reference to `%s`", d.toPrettyChars());
-                return null;
-            }
-        }
-        switch (id.dyncast())
-        {
-        case DYNCAST.identifier:
-            sm = s.search(loc, cast(Identifier)id, flags);
-            break;
-        case DYNCAST.dsymbol:
-            {
-                // It's a template instance
-                //printf("\ttemplate instance id\n");
-                Dsymbol st = cast(Dsymbol)id;
-                TemplateInstance ti = st.isTemplateInstance();
-                sm = s.search(loc, ti.name);
-                if (!sm)
-                    return null;
-                sm = sm.toAlias();
-                TemplateDeclaration td = sm.isTemplateDeclaration();
-                if (!td)
-                    return null; // error but handled later
-                ti.tempdecl = td;
-                if (!ti.semanticRun)
-                    ti.dsymbolSemantic(sc);
-                sm = ti.toAlias();
-                break;
-            }
-        case DYNCAST.type:
-        case DYNCAST.expression:
-        default:
-            assert(0);
-        }
-        return sm;
-    }
-
     bool overloadInsert(Dsymbol s)
     {
         //printf("Dsymbol::overloadInsert('%s')\n", s.toChars());
@@ -1026,7 +725,7 @@ extern (C++) class Dsymbol : ASTNode
      */
     uinteger_t size(const ref Loc loc)
     {
-        error("symbol `%s` has no size", toChars());
+        .error(loc, "%s `%s` symbol `%s` has no size", kind, toPrettyChars, toChars());
         return SIZE_INVALID;
     }
 
@@ -1146,27 +845,27 @@ extern (C++) class Dsymbol : ASTNode
     /**************************************
      * Determine if this symbol is only one.
      * Returns:
-     *      false, *ps = NULL: There are 2 or more symbols
-     *      true,  *ps = NULL: There are zero symbols
-     *      true,  *ps = symbol: The one and only one symbol
+     *      false, ps = null: There are 2 or more symbols
+     *      true,  ps = null: There are zero symbols
+     *      true,  ps = symbol: The one and only one symbol
      */
-    bool oneMember(Dsymbol* ps, Identifier ident)
+    bool oneMember(out Dsymbol ps, Identifier ident)
     {
         //printf("Dsymbol::oneMember()\n");
-        *ps = this;
+        ps = this;
         return true;
     }
 
     /*****************************************
      * Same as Dsymbol::oneMember(), but look at an array of Dsymbols.
      */
-    extern (D) static bool oneMembers(Dsymbols* members, Dsymbol* ps, Identifier ident)
+    extern (D) static bool oneMembers(Dsymbols* members, out Dsymbol ps, Identifier ident)
     {
         //printf("Dsymbol::oneMembers() %d\n", members ? members.length : 0);
         Dsymbol s = null;
         if (!members)
         {
-            *ps = null;
+            ps = null;
             return true;
         }
 
@@ -1178,21 +877,21 @@ extern (C++) class Dsymbol : ASTNode
             if (!x)
             {
                 //printf("\tfalse 1\n");
-                assert(*ps is null);
+                assert(ps is null);
                 return false;
             }
-            if (*ps)
+            if (ps)
             {
                 assert(ident);
-                if (!(*ps).ident || !(*ps).ident.equals(ident))
+                if (!ps.ident || !ps.ident.equals(ident))
                     continue;
                 if (!s)
-                    s = *ps;
-                else if (s.isOverloadable() && (*ps).isOverloadable())
+                    s = ps;
+                else if (s.isOverloadable() && ps.isOverloadable())
                 {
                     // keep head of overload set
                     FuncDeclaration f1 = s.isFuncDeclaration();
-                    FuncDeclaration f2 = (*ps).isFuncDeclaration();
+                    FuncDeclaration f2 = ps.isFuncDeclaration();
                     if (f1 && f2)
                     {
                         assert(!f1.isFuncAliasDeclaration());
@@ -1209,19 +908,15 @@ extern (C++) class Dsymbol : ASTNode
                 }
                 else // more than one symbol
                 {
-                    *ps = null;
+                    ps = null;
                     //printf("\tfalse 2\n");
                     return false;
                 }
             }
         }
-        *ps = s; // s is the one symbol, null if none
+        ps = s; // s is the one symbol, null if none
         //printf("\ttrue\n");
         return true;
-    }
-
-    void setFieldOffset(AggregateDeclaration ad, ref FieldState fieldState, bool isunion)
-    {
     }
 
     /*****************************************
@@ -1410,6 +1105,7 @@ extern (C++) class Dsymbol : ASTNode
     inout(MixinDeclaration)            isMixinDeclaration()            inout { return null; }
     inout(StaticAssert)                isStaticAssert()                inout { return null; }
     inout(StaticIfDeclaration)         isStaticIfDeclaration()         inout { return null; }
+    inout(CAsmDeclaration)             isCAsmDeclaration()             inout { return null; }
 }
 
 /***********************************************************
@@ -1420,11 +1116,11 @@ extern (C++) class ScopeDsymbol : Dsymbol
     Dsymbols* members;          // all Dsymbol's in this scope
     DsymbolTable symtab;        // members[] sorted into table
     uint endlinnum;             // the linnumber of the statement after the scope (0 if unknown)
-
-private:
     /// symbols whose members have been imported, i.e. imported modules and template mixins
     Dsymbols* importedScopes;
     Visibility.Kind* visibilities; // array of Visibility.Kind, one for each import
+
+private:
 
     import dmd.root.bitarray;
     BitArray accessiblePackages, privateAccessiblePackages;// whitelists of accessible (imported) packages
@@ -1454,166 +1150,7 @@ public:
         return sds;
     }
 
-    /*****************************************
-     * This function is #1 on the list of functions that eat cpu time.
-     * Be very, very careful about slowing it down.
-     */
-    override Dsymbol search(const ref Loc loc, Identifier ident, int flags = SearchLocalsOnly)
-    {
-        //printf("%s.ScopeDsymbol::search(ident='%s', flags=x%x)\n", toChars(), ident.toChars(), flags);
-        //if (strcmp(ident.toChars(),"c") == 0) *(char*)0=0;
-
-        // Look in symbols declared in this module
-        if (symtab && !(flags & SearchImportsOnly))
-        {
-            //printf(" look in locals\n");
-            auto s1 = symtab.lookup(ident);
-            if (s1)
-            {
-                //printf("\tfound in locals = '%s.%s'\n",toChars(),s1.toChars());
-                return s1;
-            }
-        }
-        //printf(" not found in locals\n");
-
-        // Look in imported scopes
-        if (!importedScopes)
-            return null;
-
-        //printf(" look in imports\n");
-        Dsymbol s = null;
-        OverloadSet a = null;
-        // Look in imported modules
-        for (size_t i = 0; i < importedScopes.length; i++)
-        {
-            // If private import, don't search it
-            if ((flags & IgnorePrivateImports) && visibilities[i] == Visibility.Kind.private_)
-                continue;
-            int sflags = flags & (IgnoreErrors | IgnoreAmbiguous); // remember these in recursive searches
-            Dsymbol ss = (*importedScopes)[i];
-            //printf("\tscanning import '%s', visibilities = %d, isModule = %p, isImport = %p\n", ss.toChars(), visibilities[i], ss.isModule(), ss.isImport());
-
-            if (ss.isModule())
-            {
-                if (flags & SearchLocalsOnly)
-                    continue;
-            }
-            else // mixin template
-            {
-                if (flags & SearchImportsOnly)
-                    continue;
-
-                sflags |= SearchLocalsOnly;
-            }
-
-            /* Don't find private members if ss is a module
-             */
-            Dsymbol s2 = ss.search(loc, ident, sflags | (ss.isModule() ? IgnorePrivateImports : IgnoreNone));
-            import dmd.access : symbolIsVisible;
-            if (!s2 || !(flags & IgnoreSymbolVisibility) && !symbolIsVisible(this, s2))
-                continue;
-            if (!s)
-            {
-                s = s2;
-                if (s && s.isOverloadSet())
-                    a = mergeOverloadSet(ident, a, s);
-            }
-            else if (s2 && s != s2)
-            {
-                if (s.toAlias() == s2.toAlias() || s.getType() == s2.getType() && s.getType())
-                {
-                    /* After following aliases, we found the same
-                     * symbol, so it's not an ambiguity.  But if one
-                     * alias is deprecated or less accessible, prefer
-                     * the other.
-                     */
-                    if (s.isDeprecated() || s.visible() < s2.visible() && s2.visible().kind != Visibility.Kind.none)
-                        s = s2;
-                }
-                else
-                {
-                    /* Two imports of the same module should be regarded as
-                     * the same.
-                     */
-                    Import i1 = s.isImport();
-                    Import i2 = s2.isImport();
-                    if (!(i1 && i2 && (i1.mod == i2.mod || (!i1.parent.isImport() && !i2.parent.isImport() && i1.ident.equals(i2.ident)))))
-                    {
-                        /* https://issues.dlang.org/show_bug.cgi?id=8668
-                         * Public selective import adds AliasDeclaration in module.
-                         * To make an overload set, resolve aliases in here and
-                         * get actual overload roots which accessible via s and s2.
-                         */
-                        s = s.toAlias();
-                        s2 = s2.toAlias();
-                        /* If both s2 and s are overloadable (though we only
-                         * need to check s once)
-                         */
-
-                        auto so2 = s2.isOverloadSet();
-                        if ((so2 || s2.isOverloadable()) && (a || s.isOverloadable()))
-                        {
-                            if (symbolIsVisible(this, s2))
-                            {
-                                a = mergeOverloadSet(ident, a, s2);
-                            }
-                            if (!symbolIsVisible(this, s))
-                                s = s2;
-                            continue;
-                        }
-
-                        /* Two different overflow sets can have the same members
-                         * https://issues.dlang.org/show_bug.cgi?id=16709
-                         */
-                        auto so = s.isOverloadSet();
-                        if (so && so2)
-                        {
-                            if (so.a.length == so2.a.length)
-                            {
-                                foreach (j; 0 .. so.a.length)
-                                {
-                                    if (so.a[j] !is so2.a[j])
-                                        goto L1;
-                                }
-                                continue;  // the same
-                              L1:
-                                {   } // different
-                            }
-                        }
-
-                        if (flags & IgnoreAmbiguous) // if return NULL on ambiguity
-                            return null;
-
-                        /* If two imports from C import files, pick first one, as C has global name space
-                         */
-                        if (s.isCsymbol() && s2.isCsymbol())
-                            continue;
-
-                        if (!(flags & IgnoreErrors))
-                            ScopeDsymbol.multiplyDefined(loc, s, s2);
-                        break;
-                    }
-                }
-            }
-        }
-        if (s)
-        {
-            /* Build special symbol if we had multiple finds
-             */
-            if (a)
-            {
-                if (!s.isOverloadSet())
-                    a = mergeOverloadSet(ident, a, s);
-                s = a;
-            }
-            //printf("\tfound in imports %s.%s\n", toChars(), s.toChars());
-            return s;
-        }
-        //printf(" not found in imports\n");
-        return null;
-    }
-
-    extern (D) private OverloadSet mergeOverloadSet(Identifier ident, OverloadSet os, Dsymbol s)
+    extern (D) final OverloadSet mergeOverloadSet(Identifier ident, OverloadSet os, Dsymbol s)
     {
         if (!os)
         {
@@ -1720,7 +1257,7 @@ public:
         (*pary)[p.tag] = true;
     }
 
-    bool isPackageAccessible(Package p, Visibility visibility, int flags = 0) nothrow
+    bool isPackageAccessible(Package p, Visibility visibility, SearchOptFlags flags = SearchOpt.all) nothrow
     {
         if (p.tag < accessiblePackages.length && accessiblePackages[p.tag] ||
             visibility.kind == Visibility.Kind.private_ && p.tag < privateAccessiblePackages.length && privateAccessiblePackages[p.tag])
@@ -1729,7 +1266,7 @@ public:
         {
             // only search visible scopes && imported modules should ignore private imports
             if (visibility.kind <= visibilities[i] &&
-                ss.isScopeDsymbol.isPackageAccessible(p, visibility, IgnorePrivateImports))
+                ss.isScopeDsymbol.isPackageAccessible(p, visibility, SearchOpt.ignorePrivateImports))
                 return true;
         }
         return false;
@@ -1776,44 +1313,13 @@ public:
         }
         else
         {
-            s1.error(s1.loc, "conflicts with %s `%s` at %s", s2.kind(), s2.toPrettyChars(), s2.locToChars());
+            .error(s1.loc, "%s `%s` conflicts with %s `%s` at %s", s1.kind, s1.toPrettyChars, s2.kind(), s2.toPrettyChars(), s2.locToChars());
         }
     }
 
     override const(char)* kind() const
     {
         return "ScopeDsymbol";
-    }
-
-    /*******************************************
-     * Look for member of the form:
-     *      const(MemberInfo)[] getMembers(string);
-     * Returns NULL if not found
-     */
-    final FuncDeclaration findGetMembers()
-    {
-        Dsymbol s = search_function(this, Id.getmembers);
-        FuncDeclaration fdx = s ? s.isFuncDeclaration() : null;
-        version (none)
-        {
-            // Finish
-            __gshared TypeFunction tfgetmembers;
-            if (!tfgetmembers)
-            {
-                Scope sc;
-                auto parameters = new Parameters();
-                Parameters* p = new Parameter(STC.in_, Type.tchar.constOf().arrayOf(), null, null);
-                parameters.push(p);
-                Type tret = null;
-                tfgetmembers = new TypeFunction(parameters, tret, VarArg.none, LINK.d);
-                tfgetmembers = cast(TypeFunction)tfgetmembers.dsymbolSemantic(Loc.initial, &sc);
-            }
-            if (fdx)
-                fdx = fdx.overloadExactMatch(tfgetmembers);
-        }
-        if (fdx && fdx.isVirtual())
-            fdx = null;
-        return fdx;
     }
 
     /********************************
@@ -1859,48 +1365,6 @@ public:
         return false;
     }
 
-    extern (D) alias ForeachDg = int delegate(size_t idx, Dsymbol s);
-
-    /***************************************
-     * Expands attribute declarations in members in depth first
-     * order. Calls dg(size_t symidx, Dsymbol *sym) for each
-     * member.
-     * If dg returns !=0, stops and returns that value else returns 0.
-     * Use this function to avoid the O(N + N^2/2) complexity of
-     * calculating dim and calling N times getNth.
-     * Returns:
-     *  last value returned by dg()
-     */
-    extern (D) static int _foreach(Scope* sc, Dsymbols* members, scope ForeachDg dg, size_t* pn = null)
-    {
-        assert(dg);
-        if (!members)
-            return 0;
-        size_t n = pn ? *pn : 0; // take over index
-        int result = 0;
-        foreach (size_t i; 0 .. members.length)
-        {
-            Dsymbol s = (*members)[i];
-            if (AttribDeclaration a = s.isAttribDeclaration())
-                result = _foreach(sc, a.include(sc), dg, &n);
-            else if (TemplateMixin tm = s.isTemplateMixin())
-                result = _foreach(sc, tm.members, dg, &n);
-            else if (s.isTemplateInstance())
-            {
-            }
-            else if (s.isUnitTestDeclaration())
-            {
-            }
-            else
-                result = dg(n++, s);
-            if (result)
-                break;
-        }
-        if (pn)
-            *pn = n; // update index
-        return result;
-    }
-
     override final inout(ScopeDsymbol) isScopeDsymbol() inout
     {
         return this;
@@ -1924,40 +1388,6 @@ extern (C++) final class WithScopeSymbol : ScopeDsymbol
         this.withstate = withstate;
     }
 
-    override Dsymbol search(const ref Loc loc, Identifier ident, int flags = SearchLocalsOnly)
-    {
-        //printf("WithScopeSymbol.search(%s)\n", ident.toChars());
-        if (flags & SearchImportsOnly)
-            return null;
-        // Acts as proxy to the with class declaration
-        Dsymbol s = null;
-        Expression eold = null;
-        for (Expression e = withstate.exp; e && e != eold; e = resolveAliasThis(_scope, e, true))
-        {
-            if (e.op == EXP.scope_)
-            {
-                s = (cast(ScopeExp)e).sds;
-            }
-            else if (e.op == EXP.type)
-            {
-                s = e.type.toDsymbol(null);
-            }
-            else
-            {
-                Type t = e.type.toBasetype();
-                s = t.toDsymbol(null);
-            }
-            if (s)
-            {
-                s = s.search(loc, ident, flags);
-                if (s)
-                    return s;
-            }
-            eold = e;
-        }
-        return null;
-    }
-
     override inout(WithScopeSymbol) isWithScopeSymbol() inout
     {
         return this;
@@ -1976,214 +1406,26 @@ extern (C++) final class ArrayScopeSymbol : ScopeDsymbol
 {
     // either a SliceExp, an IndexExp, an ArrayExp, a TypeTuple or a TupleDeclaration.
     // Discriminated using DYNCAST and, for expressions, also EXP
-    private RootObject arrayContent;
-    Scope* sc;
+    RootObject arrayContent;
 
     extern (D) this(Scope* sc, Expression exp) nothrow @safe
     {
         super(exp.loc, null);
         assert(exp.op == EXP.index || exp.op == EXP.slice || exp.op == EXP.array);
-        this.sc = sc;
+        this._scope = sc;
         this.arrayContent = exp;
     }
 
     extern (D) this(Scope* sc, TypeTuple type) nothrow @safe
     {
-        this.sc = sc;
+        this._scope = sc;
         this.arrayContent = type;
     }
 
     extern (D) this(Scope* sc, TupleDeclaration td) nothrow @safe
     {
-        this.sc = sc;
+        this._scope = sc;
         this.arrayContent = td;
-    }
-
-    /// This override is used to solve `$`
-    override Dsymbol search(const ref Loc loc, Identifier ident, int flags = IgnoreNone)
-    {
-        //printf("ArrayScopeSymbol::search('%s', flags = %d)\n", ident.toChars(), flags);
-        if (ident != Id.dollar)
-            return null;
-
-        VarDeclaration* pvar;
-        Expression ce;
-
-        static Dsymbol dollarFromTypeTuple(const ref Loc loc, TypeTuple tt, Scope* sc)
-        {
-
-            /* $ gives the number of type entries in the type tuple
-             */
-            auto v = new VarDeclaration(loc, Type.tsize_t, Id.dollar, null);
-            Expression e = new IntegerExp(Loc.initial, tt.arguments.length, Type.tsize_t);
-            v._init = new ExpInitializer(Loc.initial, e);
-            v.storage_class |= STC.temp | STC.static_ | STC.const_;
-            v.dsymbolSemantic(sc);
-            return v;
-        }
-
-        const DYNCAST kind = arrayContent.dyncast();
-        switch (kind) with (DYNCAST)
-        {
-        case dsymbol:
-            TupleDeclaration td = cast(TupleDeclaration) arrayContent;
-            /* $ gives the number of elements in the tuple
-             */
-            auto v = new VarDeclaration(loc, Type.tsize_t, Id.dollar, null);
-            Expression e = new IntegerExp(Loc.initial, td.objects.length, Type.tsize_t);
-            v._init = new ExpInitializer(Loc.initial, e);
-            v.storage_class |= STC.temp | STC.static_ | STC.const_;
-            v.dsymbolSemantic(sc);
-            return v;
-        case type:
-            return dollarFromTypeTuple(loc, cast(TypeTuple) arrayContent, sc);
-        default:
-            break;
-        }
-        Expression exp = cast(Expression) arrayContent;
-        if (auto ie = exp.isIndexExp())
-        {
-            /* array[index] where index is some function of $
-             */
-            pvar = &ie.lengthVar;
-            ce = ie.e1;
-        }
-        else if (auto se = exp.isSliceExp())
-        {
-            /* array[lwr .. upr] where lwr or upr is some function of $
-             */
-            pvar = &se.lengthVar;
-            ce = se.e1;
-        }
-        else if (auto ae = exp.isArrayExp())
-        {
-            /* array[e0, e1, e2, e3] where e0, e1, e2 are some function of $
-             * $ is a opDollar!(dim)() where dim is the dimension(0,1,2,...)
-             */
-            pvar = &ae.lengthVar;
-            ce = ae.e1;
-        }
-        else
-        {
-            /* Didn't find $, look in enclosing scope(s).
-             */
-            return null;
-        }
-        ce = ce.lastComma();
-        /* If we are indexing into an array that is really a type
-         * tuple, rewrite this as an index into a type tuple and
-         * try again.
-         */
-        if (auto te = ce.isTypeExp())
-        {
-            if (auto ttp = te.type.isTypeTuple())
-                return dollarFromTypeTuple(loc, ttp, sc);
-        }
-        /* *pvar is lazily initialized, so if we refer to $
-         * multiple times, it gets set only once.
-         */
-        if (!*pvar) // if not already initialized
-        {
-            /* Create variable v and set it to the value of $
-             */
-            VarDeclaration v;
-            Type t;
-            if (auto tupexp = ce.isTupleExp())
-            {
-                /* It is for an expression tuple, so the
-                 * length will be a const.
-                 */
-                Expression e = new IntegerExp(Loc.initial, tupexp.exps.length, Type.tsize_t);
-                v = new VarDeclaration(loc, Type.tsize_t, Id.dollar, new ExpInitializer(Loc.initial, e));
-                v.storage_class |= STC.temp | STC.static_ | STC.const_;
-            }
-            else if (ce.type && (t = ce.type.toBasetype()) !is null && (t.ty == Tstruct || t.ty == Tclass))
-            {
-                // Look for opDollar
-                assert(exp.op == EXP.array || exp.op == EXP.slice);
-                AggregateDeclaration ad = isAggregate(t);
-                assert(ad);
-                Dsymbol s = ad.search(loc, Id.opDollar);
-                if (!s) // no dollar exists -- search in higher scope
-                    return null;
-                s = s.toAlias();
-                Expression e = null;
-                // Check for multi-dimensional opDollar(dim) template.
-                if (TemplateDeclaration td = s.isTemplateDeclaration())
-                {
-                    dinteger_t dim = 0;
-                    if (exp.op == EXP.array)
-                    {
-                        dim = (cast(ArrayExp)exp).currentDimension;
-                    }
-                    else if (exp.op == EXP.slice)
-                    {
-                        dim = 0; // slices are currently always one-dimensional
-                    }
-                    else
-                    {
-                        assert(0);
-                    }
-                    auto tiargs = new Objects();
-                    Expression edim = new IntegerExp(Loc.initial, dim, Type.tsize_t);
-                    edim = edim.expressionSemantic(sc);
-                    tiargs.push(edim);
-                    e = new DotTemplateInstanceExp(loc, ce, td.ident, tiargs);
-                }
-                else
-                {
-                    /* opDollar exists, but it's not a template.
-                     * This is acceptable ONLY for single-dimension indexing.
-                     * Note that it's impossible to have both template & function opDollar,
-                     * because both take no arguments.
-                     */
-                    if (exp.op == EXP.array && (cast(ArrayExp)exp).arguments.length != 1)
-                    {
-                        exp.error("`%s` only defines opDollar for one dimension", ad.toChars());
-                        return null;
-                    }
-                    Declaration d = s.isDeclaration();
-                    assert(d);
-                    e = new DotVarExp(loc, ce, d);
-                }
-                e = e.expressionSemantic(sc);
-                if (!e.type)
-                    exp.error("`%s` has no value", e.toChars());
-                t = e.type.toBasetype();
-                if (t && t.ty == Tfunction)
-                    e = new CallExp(e.loc, e);
-                v = new VarDeclaration(loc, null, Id.dollar, new ExpInitializer(Loc.initial, e));
-                v.storage_class |= STC.temp | STC.ctfe | STC.rvalue;
-            }
-            else
-            {
-                /* For arrays, $ will either be a compile-time constant
-                 * (in which case its value in set during constant-folding),
-                 * or a variable (in which case an expression is created in
-                 * toir.c).
-                 */
-
-                // https://issues.dlang.org/show_bug.cgi?id=16213
-                // For static arrays $ is known at compile time,
-                // so declare it as a manifest constant.
-                auto tsa = ce.type ? ce.type.isTypeSArray() : null;
-                if (tsa)
-                {
-                    auto e = new ExpInitializer(loc, tsa.dim);
-                    v = new VarDeclaration(loc, tsa.dim.type, Id.dollar, e, STC.manifest);
-                }
-                else
-                {
-                    auto e = new VoidInitializer(Loc.initial);
-                    e.type = Type.tsize_t;
-                    v = new VarDeclaration(loc, Type.tsize_t, Id.dollar, e);
-                    v.storage_class |= STC.temp | STC.ctfe; // it's never a true static variable
-                }
-            }
-            *pvar = v;
-        }
-        (*pvar).dsymbolSemantic(sc);
-        return (*pvar);
     }
 
     override inout(ArrayScopeSymbol) isArrayScopeSymbol() inout
@@ -2459,275 +1701,25 @@ extern (C++) final class DsymbolTable : RootObject
     }
 }
 
-/**********************************************
- * ImportC tag symbols sit in a parallel symbol table,
- * so that this C code works:
- * ---
- * struct S { a; };
- * int S;
- * struct S s;
- * ---
- * But there are relatively few such tag symbols, so that would be
- * a waste of memory and complexity. An additional problem is we'd like the D side
- * to find the tag symbols with ordinary lookup, not lookup in both
- * tables, if the tag symbol is not conflicting with an ordinary symbol.
- * The solution is to put the tag symbols that conflict into an associative
- * array, indexed by the address of the ordinary symbol that conflicts with it.
- * C has no modules, so this associative array is tagSymTab[] in ModuleDeclaration.
- * A side effect of our approach is that D code cannot access a tag symbol that is
- * hidden by an ordinary symbol. This is more of a theoretical problem, as nobody
- * has mentioned it when importing C headers. If someone wants to do it,
- * too bad so sad. Change the C code.
- * This function fixes up the symbol table when faced with adding a new symbol
- * `s` when there is an existing symbol `s2` with the same name.
- * C also allows forward and prototype declarations of tag symbols,
- * this function merges those.
- * Params:
- *      sc = context
- *      s = symbol to add to symbol table
- *      s2 = existing declaration
- *      sds = symbol table
- * Returns:
- *      if s and s2 are successfully put in symbol table then return the merged symbol,
- *      null if they conflict
+/**
+ * ImportC global `asm` definition.
  */
-Dsymbol handleTagSymbols(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsymbol sds)
+extern (C++) final class CAsmDeclaration : Dsymbol
 {
-    enum log = false;
-    if (log) printf("handleTagSymbols('%s') add %p existing %p\n", s.toChars(), s, s2);
-    if (log) printf("  add %s %s, existing %s %s\n", s.kind(), s.toChars(), s2.kind(), s2.toChars());
-    auto sd = s.isScopeDsymbol(); // new declaration
-    auto sd2 = s2.isScopeDsymbol(); // existing declaration
-
-    static if (log) void print(EnumDeclaration sd)
+    Expression code;
+    extern (D) this(Expression e) nothrow @safe
     {
-        printf("members: %p\n", sd.members);
-        printf("symtab: %p\n", sd.symtab);
-        printf("endlinnum: %d\n", sd.endlinnum);
-        printf("type: %s\n", sd.type.toChars());
-        printf("memtype: %s\n", sd.memtype.toChars());
+        super();
+        this.code = e;
     }
 
-    if (!sd2)
+    override inout(CAsmDeclaration) isCAsmDeclaration() inout nothrow
     {
-        /* Look in tag table
-         */
-        if (log) printf(" look in tag table\n");
-        if (auto p = cast(void*)s2 in sc._module.tagSymTab)
-        {
-            Dsymbol s2tag = *p;
-            sd2 = s2tag.isScopeDsymbol();
-            assert(sd2);        // only tags allowed in tag symbol table
-        }
+        return this;
     }
 
-    if (sd && sd2) // `s` is a tag, `sd2` is the same tag
+    override void accept(Visitor v)
     {
-        if (log) printf(" tag is already defined\n");
-
-        if (sd.kind() != sd2.kind())  // being enum/struct/union must match
-            return null;              // conflict
-
-        /* Not a redeclaration if one is a forward declaration.
-         * Move members to the first declared type, which is sd2.
-         */
-        if (sd2.members)
-        {
-            if (!sd.members)
-                return sd2;  // ignore the sd redeclaration
-        }
-        else if (sd.members)
-        {
-            sd2.members = sd.members; // transfer definition to sd2
-            sd.members = null;
-            if (auto ed2 = sd2.isEnumDeclaration())
-            {
-                auto ed = sd.isEnumDeclaration();
-                if (ed.memtype != ed2.memtype)
-                    return null;        // conflict
-
-                // transfer ed's members to sd2
-                ed2.members.foreachDsymbol( (s)
-                {
-                    if (auto em = s.isEnumMember())
-                        em.ed = ed2;
-                });
-
-                ed2.type = ed.type;
-                ed2.memtype = ed.memtype;
-                ed2.added = false;
-            }
-            return sd2;
-        }
-        else
-            return sd2; // ignore redeclaration
+        v.visit(this);
     }
-    else if (sd) // `s` is a tag, `s2` is not
-    {
-        if (log) printf(" s is tag, s2 is not\n");
-        /* add `s` as tag indexed by s2
-         */
-        sc._module.tagSymTab[cast(void*)s2] = s;
-        return s;
-    }
-    else if (s2 is sd2) // `s2` is a tag, `s` is not
-    {
-        if (log) printf(" s2 is tag, s is not\n");
-        /* replace `s2` in symbol table with `s`,
-         * then add `s2` as tag indexed by `s`
-         */
-        sds.symtab.update(s);
-        sc._module.tagSymTab[cast(void*)s] = s2;
-        return s;
-    }
-    // neither s2 nor s is a tag
-    if (log) printf(" collision\n");
-    return null;
-}
-
-
-/**********************************************
- * ImportC allows redeclarations of C variables, functions and typedefs.
- *    extern int x;
- *    int x = 3;
- * and:
- *    extern void f();
- *    void f() { }
- * Attempt to merge them.
- * Params:
- *      sc = context
- *      s = symbol to add to symbol table
- *      s2 = existing declaration
- *      sds = symbol table
- * Returns:
- *      if s and s2 are successfully put in symbol table then return the merged symbol,
- *      null if they conflict
- */
-Dsymbol handleSymbolRedeclarations(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsymbol sds)
-{
-    enum log = false;
-    if (log) printf("handleSymbolRedeclarations('%s')\n", s.toChars());
-    if (log) printf("  add %s %s, existing %s %s\n", s.kind(), s.toChars(), s2.kind(), s2.toChars());
-
-    static Dsymbol collision()
-    {
-        if (log) printf(" collision\n");
-        return null;
-    }
-    /*
-    Handle merging declarations with asm("foo") and their definitions
-    */
-    static void mangleWrangle(Declaration oldDecl, Declaration newDecl)
-    {
-        if (oldDecl && newDecl)
-        {
-            newDecl.mangleOverride = oldDecl.mangleOverride ? oldDecl.mangleOverride : null;
-        }
-    }
-
-    auto vd = s.isVarDeclaration(); // new declaration
-    auto vd2 = s2.isVarDeclaration(); // existing declaration
-
-    if (vd && vd.isCmacro())
-        return vd2;
-
-    assert(!(vd2 && vd2.isCmacro()));
-
-    if (vd && vd2)
-    {
-        /* if one is `static` and the other isn't, the result is undefined
-         * behavior, C11 6.2.2.7
-         */
-        if ((vd.storage_class ^ vd2.storage_class) & STC.static_)
-            return collision();
-
-        const i1 =  vd._init && ! vd._init.isVoidInitializer();
-        const i2 = vd2._init && !vd2._init.isVoidInitializer();
-
-        if (i1 && i2)
-            return collision();         // can't both have initializers
-
-        mangleWrangle(vd2, vd);
-
-        if (i1)                         // vd is the definition
-        {
-            vd2.storage_class |= STC.extern_;  // so toObjFile() won't emit it
-            sds.symtab.update(vd);      // replace vd2 with the definition
-            return vd;
-        }
-
-        /* BUG: the types should match, which needs semantic() to be run on it
-         *    extern int x;
-         *    int x;  // match
-         *    typedef int INT;
-         *    INT x;  // match
-         *    long x; // collision
-         * We incorrectly ignore these collisions
-         */
-        return vd2;
-    }
-
-    auto fd = s.isFuncDeclaration(); // new declaration
-    auto fd2 = s2.isFuncDeclaration(); // existing declaration
-    if (fd && fd2)
-    {
-        /* if one is `static` and the other isn't, the result is undefined
-         * behavior, C11 6.2.2.7
-         * However, match what gcc allows:
-         *    static int sun1(); int sun1() { return 0; }
-         * and:
-         *    static int sun2() { return 0; } int sun2();
-         * Both produce a static function.
-         *
-         * Both of these should fail:
-         *    int sun3(); static int sun3() { return 0; }
-         * and:
-         *    int sun4() { return 0; } static int sun4();
-         */
-        // if adding `static`
-        if (   fd.storage_class & STC.static_ &&
-            !(fd2.storage_class & STC.static_))
-        {
-            return collision();
-        }
-
-        if (fd.fbody && fd2.fbody)
-            return collision();         // can't both have bodies
-
-        mangleWrangle(fd2, fd);
-
-        if (fd.fbody)                   // fd is the definition
-        {
-            if (log) printf(" replace existing with new\n");
-            sds.symtab.update(fd);      // replace fd2 in symbol table with fd
-            fd.overnext = fd2;
-
-            /* If fd2 is covering a tag symbol, then fd has to cover the same one
-             */
-            auto ps = cast(void*)fd2 in sc._module.tagSymTab;
-            if (ps)
-                sc._module.tagSymTab[cast(void*)fd] = *ps;
-
-            return fd;
-        }
-
-        /* Just like with VarDeclaration, the types should match, which needs semantic() to be run on it.
-         * FuncDeclaration::semantic() detects this, but it relies on .overnext being set.
-         */
-        fd2.overloadInsert(fd);
-
-        return fd2;
-    }
-
-    auto td  = s.isAliasDeclaration();  // new declaration
-    auto td2 = s2.isAliasDeclaration(); // existing declaration
-    if (td && td2)
-    {
-        /* BUG: just like with variables and functions, the types should match, which needs semantic() to be run on it.
-         * FuncDeclaration::semantic2() can detect this, but it relies overnext being set.
-         */
-        return td2;
-    }
-
-    return collision();
 }

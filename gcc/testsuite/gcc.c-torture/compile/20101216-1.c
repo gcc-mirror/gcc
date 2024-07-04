@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 typedef signed int __int32_t;
 typedef unsigned int __uint32_t;
 typedef union

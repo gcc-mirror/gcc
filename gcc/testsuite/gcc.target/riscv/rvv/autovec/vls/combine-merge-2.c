@@ -1,0 +1,97 @@
+/* { dg-do compile } */
+/* { dg-options "-march=rv64gcv_zvfh_zvl4096b -mabi=lp64d -O3 -mrvv-max-lmul=m8" } */
+
+#include "def.h"
+
+DEF_REPEAT (v16hi, int16_t, 16, var0, var0, var0, var0, var1, var1, var1, var1,
+	    var1, var1, var1, var1, var1, var1, var1, var1)
+DEF_REPEAT (v32hi, int16_t, 32, var0, var0, var0, var0, var1, var1, var1, var1,
+	    var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+	    var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+	    var1, var1)
+DEF_REPEAT (v64hi, int16_t, 64, var0, var0, var0, var0, var1, var1, var1, var1,
+	    var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+	    var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+	    var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+	    var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+	    var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+	    var1)
+DEF_REPEAT (v128hi, int16_t, 128, var0, var0, var0, var0, var1, var1, var1, var1,
+	    var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+	    var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+	    var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+	    var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+	    var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+	    var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+	    var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+	    var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+	    var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+	    var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+	    var1, var1, var1, var1, var1, var1, var1, var1, var1, var1)
+DEF_REPEAT (
+  v256hi, int16_t, 256, var0, var0, var0, var0, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1)
+DEF_REPEAT (
+  v512hi, int16_t, 512, var0, var0, var0, var0, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1, var1,
+  var1, var1, var1, var1, var1, var1, var1, var1, var1)
+
+/* { dg-final { scan-assembler-times {vmv\.v\.x} 6 } } */
+/* { dg-final { scan-assembler-times {vid\.v} 6 } } */
+/* { dg-final { scan-assembler-times {vmsgtu\.vi} 6 } } */
+/* { dg-final { scan-assembler-times {vmerge\.vxm} 6 } } */

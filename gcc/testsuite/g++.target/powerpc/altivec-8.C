@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec" } */
+/* { dg-require-effective-target powerpc_altivec } */
 /* Author: Ziemowit Laski  <zlaski@apple.com>  */
 
 /* This test case exercises intrinsic/argument combinations that,

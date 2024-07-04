@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 2006-2023, Free Software Foundation, Inc.          --
+--         Copyright (C) 2006-2024, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -901,7 +901,7 @@ is
               (for all KK in R'Range (2) => R (J, KK)'Initialized);
          end loop;
       end return;
-   end  Matrix_Matrix_Product;
+   end Matrix_Matrix_Product;
 
    ----------------------------
    -- Matrix_Vector_Solution --

@@ -1,5 +1,8 @@
 /* { dg-require-effective-target trampolines } */
 
+void abort (void);
+void exit (int);
+
 int
 g (int a, int b, int (*gi) (int, int))
 {
@@ -9,6 +12,7 @@ g (int a, int b, int (*gi) (int, int))
     return b;
 }
 
+void
 f ()
 {
   int i, j;
@@ -21,7 +25,8 @@ f ()
     abort ();
 }
 
-main ()
+int
+main (void)
 {
   f ();
   exit (0);

@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -14,6 +14,7 @@
 
 struct Loc;
 
+// Constants used to discriminate kinds of error messages.
 enum class ErrorKind
 {
     warning = 0,
@@ -22,8 +23,6 @@ enum class ErrorKind
     tip = 3,
     message = 4,
 };
-
-bool isConsoleColorSupported();
 
 #if defined(__GNUC__)
 #define D_ATTRIBUTE_FORMAT(m, n) __attribute__((format(printf, m, n))) __attribute__((nonnull (m)))
@@ -43,7 +42,7 @@ D_ATTRIBUTE_FORMAT(1, 2) void message(const char *format, ...);
 D_ATTRIBUTE_FORMAT(2, 3) void message(const Loc& loc, const char *format, ...);
 D_ATTRIBUTE_FORMAT(1, 2) void tip(const char *format, ...);
 
-D_ATTRIBUTE_FORMAT(2, 0) void verrorReport(const Loc& loc, const char *format, va_list ap, const char *p1 = NULL, const char *p2 = NULL);
+D_ATTRIBUTE_FORMAT(2, 0) void verrorReport(const Loc& loc, const char *format, va_list ap, ErrorKind kind, const char *p1 = NULL, const char *p2 = NULL);
 D_ATTRIBUTE_FORMAT(2, 0) void verrorReportSupplemental(const Loc& loc, const char* format, va_list ap, ErrorKind kind);
 
 #if defined(__GNUC__) || defined(__clang__)

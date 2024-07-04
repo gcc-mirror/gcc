@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Renesas RX processors.
-   Copyright (C) 2008-2023 Free Software Foundation, Inc.
+   Copyright (C) 2008-2024 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -2760,7 +2760,7 @@ rx_handle_vector_attribute (tree * node,
 }
 
 /* Table of RX specific attributes.  */
-const struct attribute_spec rx_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (rx_attribute_table,
 {
   /* Name, min_len, max_len, decl_req, type_req, fn_type_req,
      affects_type_identity, handler, exclude.  */
@@ -2771,9 +2771,8 @@ const struct attribute_spec rx_attribute_table[] =
   { "naked",          0, 0, true, false, false, false,
     rx_handle_func_attribute, NULL },
   { "vector",         1, -1, true, false, false, false,
-    rx_handle_vector_attribute, NULL },
-  { NULL,             0, 0, false, false, false, false, NULL, NULL }
-};
+    rx_handle_vector_attribute, NULL }
+});
 
 /* Implement TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE.  */
 
@@ -3649,6 +3648,18 @@ rx_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 	  == (GET_MODE_CLASS (mode2) == MODE_FLOAT
 	      || GET_MODE_CLASS (mode2) == MODE_COMPLEX_FLOAT));
 }
+
+/* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return SFmode or DFmode
+   for TI_{LONG_,}DOUBLE_TYPE which is for {long,} double type, go with
+   the default one for the others.  */
+
+static machine_mode
+rx_c_mode_for_floating_type (enum tree_index ti)
+{
+  if (ti == TI_DOUBLE_TYPE || ti == TI_LONG_DOUBLE_TYPE)
+    return TARGET_64BIT_DOUBLES ? DFmode : SFmode;
+  return default_mode_for_floating_type (ti);
+}
 
 #undef  TARGET_NARROW_VOLATILE_BITFIELD
 #define TARGET_NARROW_VOLATILE_BITFIELD		rx_narrow_volatile_bitfield
@@ -3807,6 +3818,9 @@ rx_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 
 #undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
 #define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
+#undef TARGET_C_MODE_FOR_FLOATING_TYPE
+#define TARGET_C_MODE_FOR_FLOATING_TYPE rx_c_mode_for_floating_type
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

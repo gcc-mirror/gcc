@@ -1,5 +1,5 @@
 /* GCC backend functions for C-SKY targets.
-   Copyright (C) 2018-2023 Free Software Foundation, Inc.
+   Copyright (C) 2018-2024 Free Software Foundation, Inc.
    Contributed by C-SKY Microsystems and Mentor Graphics.
 
    This file is part of GCC.
@@ -211,16 +211,15 @@ const int csky_debugger_regno[FIRST_PSEUDO_REGISTER] =
 /* Table of machine attributes.  */
 static tree csky_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static tree csky_handle_isr_attribute (tree *, tree, tree, int, bool *);
-static const struct attribute_spec csky_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (csky_attribute_table,
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
   { "naked",	 0, 0, true,  false, false, false, csky_handle_fndecl_attribute, NULL },
   /* Interrupt Service Routines have special prologue and epilogue requirements.  */
   { "interrupt", 0, 1, false, false, false, false, csky_handle_isr_attribute,	 NULL },
-  { "isr",	 0, 1, false, false, false, false, csky_handle_isr_attribute,	 NULL },
-  { NULL,	 0, 0, false, false, false, false, NULL,			 NULL }
-};
+  { "isr",	 0, 1, false, false, false, false, csky_handle_isr_attribute,	 NULL }
+});
 
 /* A C structure for machine-specific, per-function data.
    This is added to the cfun structure.  */
@@ -2091,7 +2090,8 @@ csky_setup_incoming_varargs (cumulative_args_t pcum_v,
 
   cfun->machine->uses_anonymous_args = 1;
   local_cum = *pcum;
-  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl))
+      || arg.type != NULL_TREE)
     csky_function_arg_advance (local_cum_v, arg);
   regs_to_push = CSKY_NPARM_REGS - local_cum.reg;
   if (regs_to_push)

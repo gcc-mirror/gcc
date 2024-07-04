@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 trait Foo {
     type A;
 
@@ -10,9 +13,9 @@ impl<T> Foo for Bar<T> {
     type A = i32;
 
     fn baz(a: f32) -> f32 {
-        // { dg-error "method .baz. has an incompatible type for trait .Foo." "" { target *-*-* } .-1 }
+        // { dg-error "expected" "" { target *-*-* } .-1 }
+        // { dg-error "method .baz. has an incompatible type for trait .Foo." "" { target *-*-* } .-2 }
         a
-        // { dg-error "expected .i32. got .f32." "" { target *-*-* } .-1 }
     }
 }
 

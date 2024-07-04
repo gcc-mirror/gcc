@@ -2,6 +2,9 @@
 
 #![feature(intrinsics)]
 
+#[lang = "sized"]
+pub trait Sized {}
+
 extern "rust-intrinsic" {
     pub fn size_of<T>() -> usize;
 }

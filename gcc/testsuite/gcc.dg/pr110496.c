@@ -7,7 +7,7 @@ int f_MV0__x;
 void f() {
   unsigned char *rptr;
   unsigned char valbuf[6];
-  rptr = (unsigned char *)contents;
+  rptr = (unsigned char *)contents;  /* { dg-warning "-Wint-to-pointer-cast" "" { target { ! ptr_eq_long } } } */
   if (decide())
     do {
       __builtin_memcpy(valbuf, &f_MV0__x, sizeof(int));

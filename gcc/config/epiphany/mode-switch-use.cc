@@ -1,6 +1,6 @@
 /* Insert USEs in instructions that require mode switching.
    This should probably be merged into mode-switching.cc .
-   Copyright (C) 2011-2023 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
    Contributed by Embecosm on behalf of Adapteva, Inc.
 
 This file is part of GCC.
@@ -58,7 +58,7 @@ insert_uses (void)
 	{
 	  if (!INSN_P (insn))
 	    continue;
-	  mode = epiphany_mode_needed (e, insn);
+	  mode = epiphany_mode_needed (e, insn, {});
 	  if (mode == no_mode)
 	    continue;
 	  if (target_insert_mode_switch_use)

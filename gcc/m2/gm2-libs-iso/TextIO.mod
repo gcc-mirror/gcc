@@ -1,6 +1,6 @@
 (* TextIO.mod implement the ISO TextIO specification.
 
-Copyright (C) 2008-2023 Free Software Foundation, Inc.
+Copyright (C) 2008-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -27,7 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 IMPLEMENTATION MODULE TextIO ;
 
 
-IMPORT IOChan, IOConsts, CharClass, ASCII ;
+IMPORT IOConsts, CharClass, ASCII ;
 FROM SYSTEM IMPORT ADR ;
 FROM FIO IMPORT FlushOutErr ;
 FROM libc IMPORT printf ;
@@ -114,22 +114,25 @@ PROCEDURE ReadRestLine (cid: IOChan.ChanId; VAR s: ARRAY OF CHAR);
   *)
 VAR
    i, h    : CARDINAL ;
+   ignore  : CHAR ;
    finished: BOOLEAN ;
 BEGIN
    h := HIGH(s) ;
    i := 0 ;
    finished := FALSE ;
-   WHILE (i<=h) AND CharAvailable (cid) AND (NOT finished) DO
-      ReadChar (cid, s[i]) ;
+   WHILE CharAvailable (cid) AND (NOT finished) DO
+      IF i <= h
+      THEN
+         ReadChar (cid, s[i])
+      ELSE
+         ReadChar (cid, ignore)
+      END ;
       IF EofOrEoln (cid)
       THEN
          finished := TRUE
       ELSE
          INC (i)
       END
-   END ;
-   WHILE CharAvailable (cid) DO
-      IOChan.Skip (cid)
    END ;
    SetNul (cid, i, s, TRUE)
 END ReadRestLine ;

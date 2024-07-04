@@ -24,9 +24,9 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
        typedef struct { PROC_t proc; } PROC;
 #   endif
 
-#define _mcDebug_H
 #define _mcDebug_C
 
+#include "GmcDebug.h"
 #   include "GStrIO.h"
 #   include "GmcOptions.h"
 #   include "GmcError.h"
@@ -55,7 +55,7 @@ extern "C" void mcDebug_assert (bool q)
 {
   if (! q)
     {
-      mcError_internalError ((const char *) "assert failed", 13, (const char *) "../../gcc-read-write/gcc/m2/mc/mcDebug.mod", 42, 35);
+      mcError_internalError ((const char *) "assert failed", 13, (const char *) "../../gcc/m2/mc/mcDebug.mod", 27, 35);
     }
 }
 
@@ -78,10 +78,10 @@ extern "C" void mcDebug_writeDebug (const char *a_, unsigned int _a_high)
     }
 }
 
-extern "C" void _M2_mcDebug_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcDebug_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_mcDebug_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcDebug_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

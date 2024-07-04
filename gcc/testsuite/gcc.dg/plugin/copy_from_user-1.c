@@ -1,3 +1,7 @@
+/* { dg-do compile } */
+/* { dg-options "-fanalyzer" } */
+/* { dg-require-effective-target analyzer } */
+
 typedef __SIZE_TYPE__ size_t;
 
 #define __user

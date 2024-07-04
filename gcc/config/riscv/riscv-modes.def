@@ -1,5 +1,5 @@
 /* Extra machine modes for RISC-V target.
-   Copyright (C) 2011-2023 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
    Based on MIPS target for GNU compiler.
 
@@ -21,6 +21,9 @@ along with GCC; see the file COPYING3.  If not see
 
 FLOAT_MODE (HF, 2, ieee_half_format);
 FLOAT_MODE (TF, 16, ieee_quad_format);
+FLOAT_MODE (BF, 2, 0);
+/* Reuse definition from arm.  */
+ADJUST_FLOAT_FORMAT (BF, &arm_bfloat_half_format);
 
 /* Vector modes.  */
 

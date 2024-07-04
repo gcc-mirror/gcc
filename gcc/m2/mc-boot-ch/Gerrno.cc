@@ -1,6 +1,6 @@
 /* Gerrno.cc provides access to errno for Modula-2.
 
-Copyright (C) 2016-2023 Free Software Foundation, Inc.
+Copyright (C) 2016-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -38,14 +38,14 @@ errno_geterrno (void)
 /* init constructor for the module.  */
 
 void
-_M2_errno_init (int argc, char *p)
+_M2_errno_init (int argc, char *argv[], char *envp[])
 {
 }
 
 /* finish deconstructor for the module.  */
 
 void
-_M2_errno_fini (int argc, char *p)
+_M2_errno_fini (int argc, char *argv[], char *envp[])
 {
 }
 

@@ -18,6 +18,6 @@ int foo1()
   return __builtin_riscv_zicbop_cbo_prefetchi(1);
 }
 
-/* { dg-final { scan-assembler-times "prefetch.i" 1 } } */
-/* { dg-final { scan-assembler-times "prefetch.r" 4 } } */
-/* { dg-final { scan-assembler-times "prefetch.w" 4 } } */
+/* { dg-final { scan-assembler-times "prefetch.i\t" 1 } } */
+/* { dg-final { scan-assembler-times "prefetch.r\t" 4 } } */
+/* { dg-final { scan-assembler-times "prefetch.w\t" 4 } } */

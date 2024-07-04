@@ -6,10 +6,15 @@
 
    So: If we know how, ask the kernel to deliver SIGBUS instead so
    that the test case visibly fails.  */
-   
+
+void abort (void);
+void exit (int);
+
 #if defined(__alpha__) && defined(__linux__)
 #include <asm/sysinfo.h>
 #include <asm/unistd.h>
+
+int syscall (int, ...);
 
 static inline int
 setsysinfo(unsigned long op, void *buffer, unsigned long size,

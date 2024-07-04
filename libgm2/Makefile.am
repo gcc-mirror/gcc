@@ -35,8 +35,6 @@ AM_CFLAGS = -I $(srcdir)/../libgcc -I $(MULTIBUILDTOP)../../gcc/include
 gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 TOP_GCCDIR := $(shell cd $(top_srcdir) && cd .. && pwd)
 
-TARGET_LONGDOUBLE_ABI := $(if $(strip $(filter powerpc64le%,$(target))),-mabi=ieeelongdouble)
-
 GCC_DIR = $(TOP_GCCDIR)/gcc
 GM2_SRC = $(GCC_DIR)/m2
 
@@ -47,6 +45,12 @@ GM2_FOR_TARGET=@GM2_FOR_TARGET@
 SUBDIRS = libm2min libm2log libm2cor libm2iso libm2pim
 GM2_BUILDDIR := $(shell pwd)
 gm2_cdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
+
+if ENABLE_DARWIN_AT_RPATH
+DARWIN_AT_RPATH=yes
+else
+DARWIN_AT_RPATH=yes
+endif
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
@@ -63,6 +67,7 @@ AM_MAKEFLAGS = \
 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
 	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" \
         "CFLAGS_LONGDOUBLE=$(CFLAGS_LONGDOUBLE)" \
+	"EXPECT=$(EXPECT)" \
 	"INSTALL=$(INSTALL)" \
 	"INSTALL_DATA=$(INSTALL_DATA)" \
 	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" \
@@ -94,8 +99,8 @@ AM_MAKEFLAGS = \
 	"WERROR=$(WERROR)" \
         "TARGET_LIB_PATH=$(TARGET_LIB_PATH)" \
         "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)" \
-        "TARGET_LONGDOUBLE_ABI=$(TARGET_LONGDOUBLE_ABI)" \
-	"LIBTOOL=$(GM2_BUILDDIR)/libtool"
+	"LIBTOOL=$(GM2_BUILDDIR)/libtool" \
+	"DARWIN_AT_RPATH=$(DARWIN_AT_RPATH)"
 
 # Subdir rules rely on $(FLAGS_TO_PASS)
 FLAGS_TO_PASS = $(AM_MAKEFLAGS)

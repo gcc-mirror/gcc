@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2023, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2024, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1079,7 +1079,7 @@ package body System.Tasking.Stages is
       Stack_Guard (Self_ID, True);
 
       --  Initialize low-level TCB components, that cannot be initialized by
-      --  the creator. Enter_Task sets Self_ID.LL.Thread.
+      --  the creator.
 
       Enter_Task (Self_ID);
 

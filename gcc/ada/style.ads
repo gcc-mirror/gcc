@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -90,8 +90,7 @@ package Style is
    --  designator is a reserved word (access, digits, delta or range) to allow
    --  differing rules for the two cases.
 
-   procedure Check_Boolean_Operator (Node : Node_Id)
-     renames Style_Inst.Check_Boolean_Operator;
+   procedure Check_Boolean_Operator (Node : Node_Id);
    --  Called after resolving AND or OR node to check short circuit rules
 
    procedure Check_Box
@@ -197,8 +196,7 @@ package Style is
    --  Called after scanning an entire expression (N) that does not require an
    --  extra level of parentheses.
 
-   procedure Check_Xtra_Parens_Precedence (N : Node_Id)
-     renames Style_Inst.Check_Xtra_Parens_Precedence;
+   procedure Check_Xtra_Parens_Precedence (N : Node_Id);
    --  Called after scanning a subexpression (N) that does not require an
    --  extra level of parentheses according to operator precedence rules.
 

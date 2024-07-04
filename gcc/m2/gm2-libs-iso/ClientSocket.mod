@@ -1,6 +1,6 @@
 (* ClientSocket.mod provides a client TCP interface for ChanId's.
 
-Copyright (C) 2008-2023 Free Software Foundation, Inc.
+Copyright (C) 2008-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -28,7 +28,7 @@ IMPLEMENTATION MODULE ClientSocket ;
 
 
 FROM ASCII IMPORT nul, lf, cr ;
-FROM ChanConsts IMPORT OpenResults, ChanFlags ;
+FROM ChanConsts IMPORT ChanFlags ;
 FROM RTio IMPORT GetDeviceId ;
 FROM RTgenif IMPORT GenDevIF, InitGenDevIF ;
 FROM RTdata IMPORT ModuleId, MakeModuleId, InitData, GetData, KillData ;

@@ -41,9 +41,9 @@
 
 <para>
   The API documentation, rendered into HTML, can be viewed online
-  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/">for each GCC release</link>
+  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/onlinedocs/">for each GCC release</link>
   and
-  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/index.html">
+  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/index.html">
   for the main development tree
   </link>
   (see the date on the first page).
@@ -54,7 +54,7 @@
   gcc.gnu.org site in a directory located at
    <literal>&lt;URL:https://gcc.gnu.org/pub/gcc/libstdc++/doxygen/&gt;</literal>.
    You will almost certainly need to use one of the
-   <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/mirrors.html">mirror sites</link> to download
+   <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/mirrors.html">mirror sites</link> to download
    the tarball. After unpacking, simply load libstdc++-html-*/index.html
    into a browser.
 </para>

@@ -10,6 +10,6 @@ char y[3];
 
 void bar(void)
 {
-    memcpy(bs.a, y, 3);
+    __builtin_memcpy(bs.a, y, 3);
     bs.a[1] = ((x ? &bs.b : &bs.c) - (char *)&bs) - 2;
 }

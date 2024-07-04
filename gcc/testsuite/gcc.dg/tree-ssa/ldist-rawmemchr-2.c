@@ -1,9 +1,9 @@
-/* { dg-do run { target s390x-*-* } } */
+/* { dg-do run { target { { s390x-*-* } || { riscv_v } } } } */
 /* { dg-options "-O2 -ftree-loop-distribution -fdump-tree-ldist-details" } */
 /* { dg-additional-options "-march=z13 -mzarch" { target s390x-*-* } } */
-/* { dg-final { scan-tree-dump-times "generated rawmemchrQI" 2 "ldist" { target s390x-*-* } } } */
-/* { dg-final { scan-tree-dump-times "generated rawmemchrHI" 2 "ldist" { target s390x-*-* } } } */
-/* { dg-final { scan-tree-dump-times "generated rawmemchrSI" 2 "ldist" { target s390x-*-* } } } */
+/* { dg-final { scan-tree-dump-times "generated rawmemchrQI" 2 "ldist" { target { { s390x-*-* } || { riscv_v } } } } } */
+/* { dg-final { scan-tree-dump-times "generated rawmemchrHI" 2 "ldist" { target { { s390x-*-* } || { riscv_v } } } } } */
+/* { dg-final { scan-tree-dump-times "generated rawmemchrSI" 2 "ldist" { target { { s390x-*-* } || { riscv_v } } } } } */
 
 /* Rawmemchr pattern: reduction stmt and store */
 

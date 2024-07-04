@@ -89,7 +89,6 @@ AM_MAKEFLAGS = \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
 	"DESTDIR=$(DESTDIR)" \
 	"WERROR=$(WERROR)" \
-        "TARGET_LONGDOUBLE_ABI=$(TARGET_LONGDOUBLE_ABI)" \
         "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)"
 
 # Subdir rules rely on $(FLAGS_TO_PASS)
@@ -104,16 +103,19 @@ libm2mindir = libm2min
 toolexeclib_LTLIBRARIES = libm2min.la
 libm2min_la_SOURCES = $(M2MODS) libc.c
 libm2min_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2min_la_SOURCES)))
-libm2min_la_CFLAGS = -I. -I$(GM2_SRC)/gm2-libs-min -I$(GM2_SRC)/gm2-libs $(TARGET_LONGDOUBLE_ABI)
+libm2min_la_CFLAGS = -I. -I$(GM2_SRC)/gm2-libs-min -I$(GM2_SRC)/gm2-libs
 libm2min_la_M2FLAGS = \
    -fm2-pathname=m2min -I. -I$(GM2_SRC)/gm2-libs-min \
    -fm2-pathname=m2pim -I$(GM2_SRC)/gm2-libs -fno-exceptions \
-   -fno-m2-plugin -fno-scaffold-dynamic -fno-scaffold-main -fm2-prefix=m2min \
-   $(TARGET_LONGDOUBLE_ABI)
+   -fno-m2-plugin -fno-scaffold-dynamic -fno-scaffold-main -fm2-prefix=m2min
+
 if TARGET_DARWIN
 libm2min_la_link_flags = -Wl,-undefined,dynamic_lookup
 else
 libm2min_la_link_flags =
+endif
+if ENABLE_DARWIN_AT_RPATH
+libm2min_la_link_flags += -nodefaultrpaths -Wl,-rpath,@loader_path/
 endif
 libm2min_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2min_la_link_flags)
 BUILT_SOURCES = SYSTEM.def

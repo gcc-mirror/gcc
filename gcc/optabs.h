@@ -1,5 +1,5 @@
 /* Definitions for code generation pass of GNU compiler.
-   Copyright (C) 2001-2023 Free Software Foundation, Inc.
+   Copyright (C) 2001-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -182,7 +182,7 @@ enum optab_methods
   OPTAB_MUST_WIDEN
 };
 
-extern rtx expand_widen_pattern_expr (struct separate_ops *, rtx , rtx , rtx,
+extern rtx expand_widen_pattern_expr (const struct separate_ops *, rtx , rtx , rtx,
                                       rtx, int);
 extern rtx expand_ternary_op (machine_mode mode, optab ternary_optab,
 			      rtx op0, rtx op1, rtx op2, rtx target,

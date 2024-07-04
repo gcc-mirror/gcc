@@ -1,6 +1,6 @@
 /* PR c/102989 */
 /* { dg-do compile { target bitint } } */
-/* { dg-options "-O2 -std=gnu2x -w" } */
+/* { dg-options "-O2 -std=gnu23 -w" } */
 
 _BitInt(37)
 foo (_BitInt(37) x, _BitInt(37) y)

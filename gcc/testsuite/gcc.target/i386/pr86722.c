@@ -6,5 +6,5 @@ void f(double*d,double*e){
     *d=(*d<.5)?.7:0;
 }
 
-/* { dg-final { scan-assembler-not "andnpd" } } */
+/* { dg-final { scan-assembler-times {(?n)(?:andnpd|andpd|blendvpd)} 1 } } */
 /* { dg-final { scan-assembler-not "orpd" } } */

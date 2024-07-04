@@ -1,5 +1,5 @@
 /* Classes for modeling the state of memory.
-   Copyright (C) 2020-2023 Free Software Foundation, Inc.
+   Copyright (C) 2020-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_MEMORY
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -38,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "tree-pretty-print.h"
 #include "diagnostic-color.h"
-#include "diagnostic-metadata.h"
 #include "bitmap.h"
 #include "selftest.h"
 #include "analyzer/analyzer.h"
@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/call-summary.h"
 #include "analyzer/analyzer-selftests.h"
 #include "stor-layout.h"
+#include "text-art/tree-widget.h"
 
 #if ENABLE_ANALYZER
 
@@ -109,7 +110,7 @@ uncertainty_t::dump (bool simple) const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   dump_to_pp (&pp, simple);
   pp_newline (&pp);
   pp_flush (&pp);
@@ -146,7 +147,7 @@ binding_key::dump (bool simple) const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   dump_to_pp (&pp, simple);
   pp_newline (&pp);
   pp_flush (&pp);
@@ -230,10 +231,25 @@ DEBUG_FUNCTION void
 bit_range::dump () const
 {
   pretty_printer pp;
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   dump_to_pp (&pp);
   pp_newline (&pp);
   pp_flush (&pp);
+}
+
+/* Generate a JSON value for this bit_range.
+   This is intended for debugging the analyzer rather
+   than serialization.  */
+
+json::object *
+bit_range::to_json () const
+{
+  json::object *obj = new json::object ();
+  obj->set ("start_bit_offset",
+	    bit_offset_to_json (m_start_bit_offset));
+  obj->set ("size_in_bits",
+	    bit_offset_to_json (m_size_in_bits));
+  return obj;
 }
 
 /* If OTHER is a subset of this, return true and, if OUT is
@@ -276,10 +292,93 @@ bit_range::intersects_p (const bit_range &other,
       bit_offset_t overlap_next
 	= MIN (get_next_bit_offset (),
 	       other.get_next_bit_offset ());
-      gcc_assert (overlap_next > overlap_start);
+      if (overlap_next <= overlap_start)
+	/* If this has happened, some kind of overflow has happened in
+	   our arithmetic.  For now, reject such cases.  */
+	return false;
       bit_range abs_overlap_bits (overlap_start, overlap_next - overlap_start);
       *out_this = abs_overlap_bits - get_start_bit_offset ();
       *out_other = abs_overlap_bits - other.get_start_bit_offset ();
+      return true;
+    }
+  else
+    return false;
+}
+
+/* Return true if THIS and OTHER intersect and write the number
+   of bits both buffers overlap to *OUT_NUM_OVERLAP_BITS.
+
+   Otherwise return false.  */
+
+bool
+bit_range::intersects_p (const bit_range &other,
+			 bit_size_t *out_num_overlap_bits) const
+{
+  if (get_start_bit_offset () < other.get_next_bit_offset ()
+      && other.get_start_bit_offset () < get_next_bit_offset ())
+    {
+      bit_offset_t overlap_start = MAX (get_start_bit_offset (),
+					 other.get_start_bit_offset ());
+      bit_offset_t overlap_next = MIN (get_next_bit_offset (),
+					other.get_next_bit_offset ());
+      if (overlap_next <= overlap_start)
+	/* If this has happened, some kind of overflow has happened in
+	   our arithmetic.  For now, reject such cases.  */
+	return false;
+      *out_num_overlap_bits = overlap_next - overlap_start;
+      return true;
+    }
+  else
+    return false;
+}
+
+/* Return true if THIS exceeds OTHER and write the overhanging
+   bit range to OUT_OVERHANGING_BIT_RANGE.  */
+
+bool
+bit_range::exceeds_p (const bit_range &other,
+		      bit_range *out_overhanging_bit_range) const
+{
+  gcc_assert (!empty_p ());
+
+  if (other.get_next_bit_offset () < get_next_bit_offset ())
+    {
+      /* THIS definitely exceeds OTHER.  */
+      bit_offset_t start = MAX (get_start_bit_offset (),
+				 other.get_next_bit_offset ());
+      bit_offset_t size = get_next_bit_offset () - start;
+      if (size <= 0)
+	/* If this has happened, some kind of overflow has happened in
+	   our arithmetic.  For now, reject such cases.  */
+	return false;
+      out_overhanging_bit_range->m_start_bit_offset = start;
+      out_overhanging_bit_range->m_size_in_bits = size;
+      return true;
+    }
+  else
+    return false;
+}
+
+/* Return true if THIS falls short of OFFSET and write the
+   bit range fallen short to OUT_FALL_SHORT_BITS.  */
+
+bool
+bit_range::falls_short_of_p (bit_offset_t offset,
+			     bit_range *out_fall_short_bits) const
+{
+  gcc_assert (!empty_p ());
+
+  if (get_start_bit_offset () < offset)
+    {
+      /* THIS falls short of OFFSET.  */
+      bit_offset_t start = get_start_bit_offset ();
+      bit_offset_t size = MIN (offset, get_next_bit_offset ()) - start;
+      if (size <= 0)
+	/* If this has happened, some kind of overflow has happened in
+	   our arithmetic.  For now, reject such cases.  */
+	return false;
+      out_fall_short_bits->m_start_bit_offset = start;
+      out_fall_short_bits->m_size_in_bits = size;
       return true;
     }
   else
@@ -408,10 +507,25 @@ DEBUG_FUNCTION void
 byte_range::dump () const
 {
   pretty_printer pp;
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   dump_to_pp (&pp);
   pp_newline (&pp);
   pp_flush (&pp);
+}
+
+/* Generate a JSON value for this byte_range.
+   This is intended for debugging the analyzer rather
+   than serialization.  */
+
+json::object *
+byte_range::to_json () const
+{
+  json::object *obj = new json::object ();
+  obj->set ("start_byte_offset",
+	    byte_offset_to_json (m_start_byte_offset));
+  obj->set ("size_in_bytes",
+	    byte_offset_to_json (m_size_in_bytes));
+  return obj;
 }
 
 /* If OTHER is a subset of this, return true and write
@@ -426,77 +540,6 @@ byte_range::contains_p (const byte_range &other, byte_range *out) const
     {
       out->m_start_byte_offset = other.m_start_byte_offset - m_start_byte_offset;
       out->m_size_in_bytes = other.m_size_in_bytes;
-      return true;
-    }
-  else
-    return false;
-}
-
-/* Return true if THIS and OTHER intersect and write the number
-   of bytes both buffers overlap to *OUT_NUM_OVERLAP_BYTES.
-
-   Otherwise return false.  */
-
-bool
-byte_range::intersects_p (const byte_range &other,
-			  byte_size_t *out_num_overlap_bytes) const
-{
-  if (get_start_byte_offset () < other.get_next_byte_offset ()
-      && other.get_start_byte_offset () < get_next_byte_offset ())
-    {
-      byte_offset_t overlap_start = MAX (get_start_byte_offset (),
-					 other.get_start_byte_offset ());
-      byte_offset_t overlap_next = MIN (get_next_byte_offset (),
-					other.get_next_byte_offset ());
-      gcc_assert (overlap_next > overlap_start);
-      *out_num_overlap_bytes = overlap_next - overlap_start;
-      return true;
-    }
-  else
-    return false;
-}
-
-/* Return true if THIS exceeds OTHER and write the overhanging
-   byte range to OUT_OVERHANGING_BYTE_RANGE.  */
-
-bool
-byte_range::exceeds_p (const byte_range &other,
-		       byte_range *out_overhanging_byte_range) const
-{
-  gcc_assert (!empty_p ());
-
-  if (other.get_next_byte_offset () < get_next_byte_offset ())
-    {
-      /* THIS definitely exceeds OTHER.  */
-      byte_offset_t start = MAX (get_start_byte_offset (),
-				 other.get_next_byte_offset ());
-      byte_offset_t size = get_next_byte_offset () - start;
-      gcc_assert (size > 0);
-      out_overhanging_byte_range->m_start_byte_offset = start;
-      out_overhanging_byte_range->m_size_in_bytes = size;
-      return true;
-    }
-  else
-    return false;
-}
-
-/* Return true if THIS falls short of OFFSET and write the
-   byte range fallen short to OUT_FALL_SHORT_BYTES.  */
-
-bool
-byte_range::falls_short_of_p (byte_offset_t offset,
-			      byte_range *out_fall_short_bytes) const
-{
-  gcc_assert (!empty_p ());
-
-  if (get_start_byte_offset () < offset)
-    {
-      /* THIS falls short of OFFSET.  */
-      byte_offset_t start = get_start_byte_offset ();
-      byte_offset_t size = MIN (offset, get_next_byte_offset ()) - start;
-      gcc_assert (size > 0);
-      out_fall_short_bytes->m_start_byte_offset = start;
-      out_fall_short_bytes->m_size_in_bytes = size;
       return true;
     }
   else
@@ -733,7 +776,7 @@ binding_map::dump (bool simple) const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   dump_to_pp (&pp, simple, true);
   pp_newline (&pp);
   pp_flush (&pp);
@@ -768,6 +811,56 @@ binding_map::to_json () const
 
   return map_obj;
 }
+
+/* Add a child to PARENT_WIDGET expressing a binding between
+   KEY and SVAL.  */
+
+static void
+add_binding_to_tree_widget (text_art::tree_widget &parent_widget,
+			    const text_art::dump_widget_info &dwi,
+			    const binding_key *key,
+			    const svalue *sval)
+{
+  pretty_printer the_pp;
+  pretty_printer * const pp = &the_pp;
+  pp_format_decoder (pp) = default_tree_printer;
+  pp_show_color (pp) = true;
+  const bool simple = true;
+
+  key->dump_to_pp (pp, simple);
+  pp_string (pp, ": ");
+  if (tree t = sval->get_type ())
+    dump_quoted_tree (pp, t);
+  pp_string (pp, " {");
+  sval->dump_to_pp (pp, simple);
+  pp_string (pp, "}");
+
+  parent_widget.add_child (text_art::tree_widget::make (dwi, pp));
+}
+
+void
+binding_map::add_to_tree_widget (text_art::tree_widget &parent_widget,
+				 const text_art::dump_widget_info &dwi) const
+{
+  auto_vec <const binding_key *> binding_keys;
+  for (map_t::iterator iter = m_map.begin ();
+       iter != m_map.end (); ++iter)
+    {
+      const binding_key *key = (*iter).first;
+      binding_keys.safe_push (key);
+    }
+  binding_keys.qsort (binding_key::cmp_ptrs);
+
+  const binding_key *key;
+  unsigned i;
+  FOR_EACH_VEC_ELT (binding_keys, i, key)
+    {
+      const svalue *sval = *const_cast <map_t &> (m_map).get (key);
+      add_binding_to_tree_widget (parent_widget, dwi,
+				  key, sval);
+    }
+}
+
 
 /* Comparator for imposing an order on binding_maps.  */
 
@@ -1310,7 +1403,7 @@ binding_cluster::dump (bool simple) const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   pp_string (&pp, "  cluster for: ");
   m_base_region->dump_to_pp (&pp, simple);
   pp_string (&pp, ": ");
@@ -1356,6 +1449,48 @@ binding_cluster::to_json () const
   cluster_obj->set ("map", m_map.to_json ());
 
   return cluster_obj;
+}
+
+std::unique_ptr<text_art::tree_widget>
+binding_cluster::make_dump_widget (const text_art::dump_widget_info &dwi,
+				   store_manager *mgr) const
+{
+  pretty_printer the_pp;
+  pretty_printer * const pp = &the_pp;
+  pp_format_decoder (pp) = default_tree_printer;
+  pp_show_color (pp) = true;
+  const bool simple = true;
+
+  m_base_region->dump_to_pp (pp, simple);
+  pp_string (pp, ": ");
+
+  if (const svalue *sval = maybe_get_simple_value (mgr))
+    {
+      /* Special-case to simplify dumps for the common case where
+	 we just have one value directly bound to the whole of a
+	 region.  */
+      sval->dump_to_pp (pp, simple);
+      if (escaped_p ())
+	pp_string (pp, " (ESCAPED)");
+      if (touched_p ())
+	pp_string (pp, " (TOUCHED)");
+
+      return text_art::tree_widget::make (dwi, pp);
+    }
+  else
+    {
+      if (escaped_p ())
+	pp_string (pp, " (ESCAPED)");
+      if (touched_p ())
+	pp_string (pp, " (TOUCHED)");
+
+      std::unique_ptr<text_art::tree_widget> cluster_widget
+	(text_art::tree_widget::make (dwi, pp));
+
+      m_map.add_to_tree_widget (*cluster_widget, dwi);
+
+      return cluster_widget;
+    }
 }
 
 /* Add a binding of SVAL of kind KIND to REG, unpacking SVAL if it is a
@@ -1730,7 +1865,16 @@ binding_cluster::maybe_get_compound_binding (store_manager *mgr,
   else
     default_sval = sval_mgr->get_or_create_initial_value (reg);
   const binding_key *default_key = binding_key::make (mgr, reg);
-  default_map.put (default_key, default_sval);
+
+  /* Express the bit-range of the default key for REG relative to REG,
+     rather than to the base region.  */
+  const concrete_binding *concrete_default_key
+    = default_key->dyn_cast_concrete_binding ();
+  if (!concrete_default_key)
+    return nullptr;
+  const concrete_binding *default_key_relative_to_reg
+     = mgr->get_concrete_binding (0, concrete_default_key->get_size_in_bits ());
+  default_map.put (default_key_relative_to_reg, default_sval);
 
   for (map_t::iterator iter = m_map.begin (); iter != m_map.end (); ++iter)
     {
@@ -2137,6 +2281,7 @@ binding_cluster::get_representative_path_vars (const region_model *model,
 					       svalue_set *visited,
 					       const region *base_reg,
 					       const svalue *sval,
+					       logger *logger,
 					       auto_vec<path_var> *out_pvs)
   const
 {
@@ -2164,7 +2309,8 @@ binding_cluster::get_representative_path_vars (const region_model *model,
 		{
 		  if (path_var pv
 		      = model->get_representative_path_var (subregion,
-							    visited))
+							    visited,
+							    logger))
 		    append_pathvar_with_type (pv, sval->get_type (), out_pvs);
 		}
 	    }
@@ -2173,7 +2319,8 @@ binding_cluster::get_representative_path_vars (const region_model *model,
 	      const symbolic_binding *skey = (const symbolic_binding *)key;
 	      if (path_var pv
 		  = model->get_representative_path_var (skey->get_region (),
-							visited))
+							visited,
+							logger))
 		append_pathvar_with_type (pv, sval->get_type (), out_pvs);
 	    }
 	}
@@ -2492,7 +2639,7 @@ store::dump (bool simple) const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   dump_to_pp (&pp, simple, true, NULL);
   pp_newline (&pp);
   pp_flush (&pp);
@@ -2561,6 +2708,68 @@ store::to_json () const
   store_obj->set ("called_unknown_fn", new json::literal (m_called_unknown_fn));
 
   return store_obj;
+}
+
+std::unique_ptr<text_art::tree_widget>
+store::make_dump_widget (const text_art::dump_widget_info &dwi,
+			 store_manager *mgr) const
+{
+  std::unique_ptr<text_art::tree_widget> store_widget
+    (text_art::tree_widget::make (dwi, "Store"));
+
+  store_widget->add_child
+    (text_art::tree_widget::from_fmt (dwi, nullptr,
+				      "m_called_unknown_fn: %s",
+				      m_called_unknown_fn ? "true" : "false"));
+
+    /* Sort into some deterministic order.  */
+  auto_vec<const region *> base_regions;
+  for (cluster_map_t::iterator iter = m_cluster_map.begin ();
+       iter != m_cluster_map.end (); ++iter)
+    {
+      const region *base_reg = (*iter).first;
+      base_regions.safe_push (base_reg);
+    }
+  base_regions.qsort (region::cmp_ptr_ptr);
+
+  /* Gather clusters, organize by parent region, so that we can group
+     together locals, globals, etc.  */
+  auto_vec<const region *> parent_regions;
+  get_sorted_parent_regions (&parent_regions, base_regions);
+
+  const region *parent_reg;
+  unsigned i;
+  FOR_EACH_VEC_ELT (parent_regions, i, parent_reg)
+    {
+      gcc_assert (parent_reg);
+
+      pretty_printer the_pp;
+      pretty_printer * const pp = &the_pp;
+      pp_format_decoder (pp) = default_tree_printer;
+      pp_show_color (pp) = true;
+      const bool simple = true;
+
+      parent_reg->dump_to_pp (pp, simple);
+
+      std::unique_ptr<text_art::tree_widget> parent_reg_widget
+	(text_art::tree_widget::make (dwi, pp));
+
+      const region *base_reg;
+      unsigned j;
+      FOR_EACH_VEC_ELT (base_regions, j, base_reg)
+	{
+	  /* This is O(N * M), but N ought to be small.  */
+	  if (base_reg->get_parent_region () != parent_reg)
+	    continue;
+	  binding_cluster *cluster
+	    = *const_cast<cluster_map_t &> (m_cluster_map).get (base_reg);
+	  parent_reg_widget->add_child
+	    (cluster->make_dump_widget (dwi, mgr));
+	}
+      store_widget->add_child (std::move (parent_reg_widget));
+    }
+
+  return store_widget;
 }
 
 /* Get any svalue bound to REG, or NULL.  */
@@ -3076,6 +3285,7 @@ void
 store::get_representative_path_vars (const region_model *model,
 				     svalue_set *visited,
 				     const svalue *sval,
+				     logger *logger,
 				     auto_vec<path_var> *out_pvs) const
 {
   gcc_assert (sval);
@@ -3087,6 +3297,7 @@ store::get_representative_path_vars (const region_model *model,
       const region *base_reg = (*iter).first;
       binding_cluster *cluster = (*iter).second;
       cluster->get_representative_path_vars (model, visited, base_reg, sval,
+					     logger,
 					     out_pvs);
     }
 
@@ -3094,7 +3305,8 @@ store::get_representative_path_vars (const region_model *model,
     {
       const region *reg = init_sval->get_region ();
       if (path_var pv = model->get_representative_path_var (reg,
-							    visited))
+							    visited,
+							    logger))
 	out_pvs->safe_push (pv);
     }
 }
@@ -3372,6 +3584,7 @@ store::replay_call_summary_cluster (call_summary_replay &r,
     case RK_HEAP_ALLOCATED:
     case RK_DECL:
     case RK_ERRNO:
+    case RK_PRIVATE:
       {
 	const region *caller_dest_reg
 	  = r.convert_region_from_summary (summary_base_reg);

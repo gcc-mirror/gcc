@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-O -maltivec -mno-vsx" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 typedef unsigned char V __attribute__((vector_size(16)));
 

@@ -3,6 +3,7 @@
 ! { dg-options "-w" }
 ! the -w option is to prevent the warning about long long ints
 module bind_c_coms
+! { dg-additional-options "-fcommon" { target hppa*-*-hpux* } }
   use, intrinsic :: iso_c_binding
   implicit none
 

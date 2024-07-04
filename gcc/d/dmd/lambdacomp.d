@@ -5,7 +5,7 @@
  * The serialization is a string which contains the type of the parameters and the string
  * represantation of the lambda expression.
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/lamdbacomp.d, _lambdacomp.d)
@@ -22,6 +22,7 @@ import dmd.astenums;
 import dmd.declaration;
 import dmd.denum;
 import dmd.dsymbol;
+import dmd.dsymbolsem;
 import dmd.dtemplate;
 import dmd.expression;
 import dmd.func;
@@ -243,7 +244,7 @@ public:
         {
             // we must check what the identifier expression is.
             Dsymbol scopesym;
-            Dsymbol s = sc.search(exp.loc, exp.ident, &scopesym);
+            Dsymbol s = sc.search(exp.loc, exp.ident, scopesym);
             if (s)
             {
                 auto v = s.isVarDeclaration();

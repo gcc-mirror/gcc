@@ -1,5 +1,5 @@
 ;;- Machine description for Renesas / SuperH SH.
-;;  Copyright (C) 1993-2023 Free Software Foundation, Inc.
+;;  Copyright (C) 1993-2024 Free Software Foundation, Inc.
 ;;  Contributed by Steve Chamberlain (sac@cygnus.com).
 ;;  Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -842,7 +842,7 @@
   if (SUBREG_P (reg))
     reg = SUBREG_REG (reg);
   gcc_assert (REG_P (reg));
-  if (find_regno_note (curr_insn, REG_DEAD, REGNO (reg)) != NULL_RTX)
+  if (find_regno_note (curr_insn, REG_DEAD, REGNO (reg)) == NULL_RTX)
     FAIL;
 
   /* FIXME: Maybe also search the predecessor basic blocks to catch
@@ -1642,9 +1642,9 @@
 ;; matched.  Split this up into a simple sub add sequence, as this will save
 ;; us one sett insn.
 (define_insn_and_split "*minus_plus_one"
-  [(set (match_operand:SI 0 "arith_reg_dest" "")
-	(plus:SI (minus:SI (match_operand:SI 1 "arith_reg_operand" "")
-			   (match_operand:SI 2 "arith_reg_operand" ""))
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(plus:SI (minus:SI (match_operand:SI 1 "arith_reg_operand" "0")
+			   (match_operand:SI 2 "arith_reg_operand" "r"))
 		 (const_int 1)))]
   "TARGET_SH1"
   "#"
@@ -10093,6 +10093,25 @@
   [(set (reg:SI T_REG) (zero_extract:SI (xor:SI (match_dup 0) (match_dup 1))
 				    	(const_int 1) (match_dup 2)))])
 
+;; Same thing, but when we use a PLUS rather than IOR/XOR for the rotation
+;; which causes things to simplify somewhat differently.
+(define_insn_and_split "*neg_zero_extract_4b"
+  [(set (reg:SI T_REG)
+	(and:SI (not:SI (plus:SI
+		  (lshiftrt:SI (match_operand:SI 0 "arith_reg_operand")
+			       (match_operand 1 "const_int_operand"))
+		  (ashift:SI (match_operand:SI 2 "arith_reg_operand")
+			     (match_operand 3 "const_int_operand"))))
+		(const_int 1)))]
+  "TARGET_SH1 && can_create_pseudo_p ()
+   && INTVAL (operands[3]) > 0
+   && INTVAL (operands[1]) + INTVAL (operands[3]) == 32"
+  "#"
+  "&& 1"
+  [(set (reg:SI T_REG) (zero_extract:SI (xor:SI (match_dup 0) (match_dup 4))
+					(const_int 1) (match_dup 1)))]
+  { operands[4] = GEN_INT (1 << INTVAL (operands[1])); })
+
 (define_insn_and_split "*neg_zero_extract_5"
   [(set (reg:SI T_REG)
 	(and:SI (not:SI (subreg:SI
@@ -10936,7 +10955,7 @@
 
 ;; Switch to a new stack with its address in sp_switch (a SYMBOL_REF).
 (define_insn "sp_switch_1"
-  [(set (reg:SI SP_REG) (unspec_volatile [(match_operand:SI 0 "" "")]
+  [(set (reg:SI SP_REG) (unspec_volatile:SI [(match_operand:SI 0 "" "")]
     UNSPECV_SP_SWITCH_B))]
   "TARGET_SH1"
 {

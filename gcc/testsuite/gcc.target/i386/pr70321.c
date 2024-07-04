@@ -1,5 +1,5 @@
 /* { dg-do compile { target ia32 } } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -fomit-frame-pointer" } */
 
 void foo (long long ixi)
 {

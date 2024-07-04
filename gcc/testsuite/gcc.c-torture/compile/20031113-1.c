@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 /* On Darwin, the stub for simple_cst_equal was not being emitted at all 
    causing the as to die and not create an object file.  */
 

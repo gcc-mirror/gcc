@@ -83,3 +83,8 @@ int ctz4 (unsigned long x)
 /* { dg-final { scan-assembler-times "ctz\t" 3 { target { rv32 } } } } */
 /* { dg-final { scan-assembler-times "andi\t" 1 { target { rv32 } } } } */
 /* { dg-final { scan-assembler-times "mul\t" 1 { target { rv32 } } } } */
+
+/* { dg-final { scan-tree-dump-times {= \.CTZ} 4 "forwprop2" { target { loongarch64*-*-* } } } } */
+/* { dg-final { scan-assembler-times "ctz.d\t" 1 { target { loongarch64*-*-* } } } } */
+/* { dg-final { scan-assembler-times "ctz.w\t" 3 { target { loongarch64*-*-* } } } } */
+/* { dg-final { scan-assembler-times "andi\t" 4 { target { loongarch64*-*-* } } } } */

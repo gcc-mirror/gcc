@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-save-temps -Wint-conversion" } */
+/* { dg-options "-fpermissive -save-temps -Wint-conversion" } */
 #include "pr60014-1.h"
 int main ()
 {

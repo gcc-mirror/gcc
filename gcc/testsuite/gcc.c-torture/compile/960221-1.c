@@ -5,6 +5,7 @@ struct s2 {
   int f2;
 };
 
+void
 foo (struct s2 *ptr)
 {
   *ptr = (struct s2) {{}, 0};

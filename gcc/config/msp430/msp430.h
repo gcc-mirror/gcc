@@ -1,5 +1,5 @@
 /* GCC backend definitions for the TI MSP430 Processor
-   Copyright (C) 2012-2023 Free Software Foundation, Inc.
+   Copyright (C) 2012-2024 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -177,10 +177,6 @@ extern const char *msp430_get_linker_devices_include_path (int, const char **);
 #define INT_TYPE_SIZE			16
 #define LONG_TYPE_SIZE			32
 #define LONG_LONG_TYPE_SIZE		64
-
-#define FLOAT_TYPE_SIZE 		32
-#define DOUBLE_TYPE_SIZE 		64
-#define LONG_DOUBLE_TYPE_SIZE		64 /*DOUBLE_TYPE_SIZE*/
 
 #define DEFAULT_SIGNED_CHAR		0
 

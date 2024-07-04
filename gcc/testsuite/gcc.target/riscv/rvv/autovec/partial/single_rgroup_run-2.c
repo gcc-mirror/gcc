@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-additional-options "--param riscv-autovec-preference=fixed-vlmax" } */
+/* { dg-additional-options "-mrvv-vector-bits=zvl" } */
 
 #include "single_rgroup-2.c"
 

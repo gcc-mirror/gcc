@@ -1,4 +1,5 @@
 // PR c++/45008
+// { dg-additional-options -fabi-compat-version=0 }
 
 template <typename T>
 struct A

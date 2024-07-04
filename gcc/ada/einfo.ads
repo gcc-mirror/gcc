@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -426,15 +426,14 @@ package Einfo is
 --       definition clause with an (obsolescent) mod clause is converted
 --       into an attribute definition clause for this purpose.
 
---    Anonymous_Designated_Type
---       Defined in variables which represent anonymous finalization masters.
---       Contains the designated type which is being serviced by the master.
-
---    Anonymous_Masters
+--    Anonymous_Collections
 --       Defined in packages, subprograms, and subprogram bodies. Contains a
---       list of anonymous finalization masters declared within the related
---       unit. The list acts as a mapping between a master and a designated
---       type.
+--       list of anonymous finalization collections declared in this unit.
+--       The list acts as a mapping between collections and designated types.
+
+--    Anonymous_Designated_Type
+--       Defined in entities that represent anonymous finalization collections.
+--       Contains the designated type that is being serviced by the collection.
 
 --    Anonymous_Object
 --       Present in protected and task type entities. Contains the entity of
@@ -633,6 +632,10 @@ package Einfo is
 --       Defined in all type entities. For a tagged type or subtype, returns
 --       the corresponding implicitly declared class-wide type. For a
 --       class-wide type, returns itself. Set to Empty for untagged types.
+
+--    Class_Wide_Equivalent_Type
+--       Defined in all type entities. Used to store an internally generated
+--       class-wide equivalent type for an associated mutably tagged type.
 
 --    Cloned_Subtype
 --       Defined in E_Record_Subtype and E_Class_Wide_Subtype entities.
@@ -929,18 +932,17 @@ package Einfo is
 --       subtypes. Contains the Digits value specified in the declaration.
 
 --    Direct_Primitive_Operations
---       Defined in tagged types and subtypes (including synchronized types),
---       in tagged private types, and in tagged incomplete types. Moreover, it
---       is also defined for untagged types, both when Extensions_Allowed is
---       True (-gnatX) to support the extension feature of prefixed calls for
---       untagged types, and when Extensions_Allowed is False to get better
---       error messages. This field is an element list of entities for
---       primitive operations of the type. For incomplete types the list is
---       always empty. In order to follow the C++ ABI, entities of primitives
---       that come from source must be stored in this list in the order of
---       their occurrence in the sources. When expansion is disabled, the
---       corresponding record type of a synchronized type is not constructed.
---       In that case, such types carry this attribute directly.
+--       Defined in concurrent types, tagged record types and subtypes, tagged
+--       private types, and tagged incomplete types. Moreover, it is also
+--       defined in untagged types, both when GNAT extensions are allowed, to
+--       support prefixed calls for untagged types, and when GNAT extensions
+--       are not allowed, to give better error messages. Set to a list of
+--       entities for primitive operations of the type. For incomplete types
+--       the list is always empty. In order to follow the C++ ABI, entities of
+--       primitives that come from source must be stored in this list in the
+--       order of their occurrence in the sources. When expansion is disabled,
+--       the corresponding record type of concurrent types is not constructed;
+--       in this case, such types carry this attribute directly.
 
 --    Directly_Designated_Type
 --       Defined in access types. This field points to the type that is
@@ -1298,12 +1300,21 @@ package Einfo is
 --       families. Returns first extra formal of the subprogram or entry.
 --       Returns Empty if there are no extra formals.
 
---    Finalization_Master [root type only]
+--    Finalization_Collection [root type only]
 --       Defined in access-to-controlled or access-to-class-wide types. The
---       field contains the entity of the finalization master which handles
---       dynamically allocated controlled objects referenced by the access
---       type. Empty for access-to-subprogram types. Empty for access types
---       whose designated type does not need finalization actions.
+--       field contains the entity of the finalization collection of a type,
+--       which is the set of objects created by allocators of the type, or
+--       of types derived from the type. Empty for access-to-object types
+--       whose designated type does not need finalization actions as well
+--       as for access-to-subprogram types.
+
+--    Finalization_Master_Node
+--       Defined in variables and constants that require finalization actions.
+--       The field contains the entity of an object (called a Master_Node) that
+--       contains the address of the finalizable object, along with an access
+--       value denoting the finalizable object's finalization procedure. The
+--       Master_Node may be attached to a finalization list associated with
+--       either the global scope or some dynamic scope (block or subprogram).
 
 --    Finalize_Storage_Only [base type only]
 --       Defined in all types. Set on direct controlled types to which a
@@ -1322,13 +1333,17 @@ package Einfo is
 --    First_Component (synthesized)
 --       Applies to incomplete, private, protected, record and task types.
 --       Returns the first component by following the chain of declared
---       entities for the type a component is found (one with an Ekind of
+--       entities for the type until a component is found (one with an Ekind of
 --       E_Component). The discriminants are skipped. If the record is null,
 --       then Empty is returned.
 
 --    First_Component_Or_Discriminant (synthesized)
 --       Similar to First_Component, but discriminants are not skipped, so will
 --       find the first discriminant if discriminants are present.
+
+--    First_Discriminant (synthesized)
+--       Defined for types with discriminants or unknown discriminants.
+--       Returns the first in the Next_Discriminant chain; see Sem_Aux.
 
 --    First_Entity
 --       Defined in all entities that act as scopes to which a list of
@@ -1363,12 +1378,11 @@ package Einfo is
 --    First_Index
 --       Defined in array types and subtypes. By introducing implicit subtypes
 --       for the index constraints, we have the same structure for constrained
---       and unconstrained arrays, subtype marks and discrete ranges are
---       both represented by a subtype. This function returns the tree node
---       corresponding to an occurrence of the first index (NOT the entity for
---       the type). Subsequent indices are obtained using Next_Index. Note that
---       this field is defined for the case of string literal subtypes, but is
---       always Empty.
+--       and unconstrained arrays, subtype marks and discrete ranges are both
+--       represented by a subtype. This function returns the N_Is_Index tree
+--       node corresponding to the first index (not an entity). Subsequent
+--       indices are obtained using Next_Index. Note that this field is defined
+--       for the case of string literal subtypes, but is always Empty.
 
 --    First_Literal
 --       Defined in all enumeration types, including character and boolean
@@ -2022,6 +2036,10 @@ package Einfo is
 --       is detected while analyzing the body. Used to activate some error
 --       checks for infinite recursion.
 
+--    Has_Relaxed_Finalization [base type only]
+--       Defined in all type entities. Indicates that the type is subject to
+--       relaxed semantics for the finalization operations.
+
 --    Has_Shift_Operator [base type only]
 --       Defined in integer types. Set in the base type of an integer type for
 --       which at least one of the shift operators is defined.
@@ -2474,16 +2492,16 @@ package Einfo is
 --       and subtypes, string types and subtypes, and all numeric types).
 --       Set if the type or subtype is constrained.
 
+--    Is_Constr_Array_Subt_With_Bounds
+--       Defined in all types and subtypes. Set only for an array subtype
+--       which is constrained but nevertheless requires objects of this
+--       subtype to be allocated with their bounds. This flag is used by
+--       the back end to determine whether the bounds must be constructed.
+
 --    Is_Constr_Subt_For_U_Nominal
 --       Defined in all types and subtypes. Set only for the constructed
 --       subtype of an object whose nominal subtype is unconstrained. Note
 --       that the constructed subtype itself will be constrained.
-
---    Is_Constr_Subt_For_UN_Aliased
---       Defined in all types and subtypes. This flag can be set only if
---       Is_Constr_Subt_For_U_Nominal is also set. It indicates that in
---       addition the object concerned is aliased. This flag is used by
---       the backend to determine whether a template must be constructed.
 
 --    Is_Constructor
 --       Defined in function and procedure entities. Set if a pragma
@@ -2491,8 +2509,11 @@ package Einfo is
 
 --    Is_Controlled_Active [base type only]
 --       Defined in all type entities. Indicates that the type is controlled,
---       i.e. is either a descendant of Ada.Finalization.Controlled or of
---       Ada.Finalization.Limited_Controlled.
+--       i.e. has been declared with the Finalizable aspect or has inherited
+--       the Finalizable aspect from an ancestor. Can only be set for record
+--       types, tagged or untagged. System.Finalization_Root.Root_Controlled
+--       is an example of the former case while Ada.Finalization.Controlled
+--       and Ada.Finalization.Limited_Controlled are examples of the latter.
 
 --    Is_Controlled (synth) [base type only]
 --       Defined in all type entities. Set if Is_Controlled_Active is set for
@@ -2720,12 +2741,17 @@ package Einfo is
 --       Defined in all entities. Set for implicitly declared subprograms
 --       that require overriding or are null procedures, and are hidden by
 --       a non-fully conformant homograph with the same characteristics
---       (Ada RM 8.3 12.3/2).
+--       (RM 8.3(12.3/2)).
 
 --    Is_Hidden_Open_Scope
 --       Defined in all entities. Set for a scope that contains the
 --       instantiation of a child unit, and whose entities are not visible
 --       during analysis of the instance.
+
+--    Is_Ignored_For_Finalization
+--       Defined in constants and variables. Set when an object must be ignored
+--       by the general finalization mechanism because its cleanup actions are
+--       already accounted for.
 
 --    Is_Ignored_Ghost_Entity
 --       Applies to all entities. Set for abstract states, [generic] packages,
@@ -2733,13 +2759,6 @@ package Einfo is
 --       objects, package bodies, subprogram bodies, and [sub]types subject to
 --       pragma Ghost or inherit "ghostness" from an enclosing construct, and
 --       subject to Assertion_Policy Ghost => Ignore.
-
---    Is_Ignored_Transient
---       Defined in constants, loop parameters of generalized iterators, and
---       variables. Set when a transient object must be processed by one of
---       the transient finalization mechanisms. Once marked, a transient is
---       intentionally ignored by the general finalization mechanism because
---       its clean up actions are context specific.
 
 --    Is_Immediately_Visible
 --       Defined in all entities. Set if entity is immediately visible, i.e.
@@ -2973,6 +2992,10 @@ package Einfo is
 
 --    Is_Modular_Integer_Type (synthesized)
 --       Applies to all entities. True if entity is a modular integer type
+
+--    Is_Mutably_Tagged_Type
+--       Defined in all type entities. Used to signify that a given type is a
+--       "mutably tagged" class-wide type where 'Size'Class has been specified.
 
 --    Is_Non_Static_Subtype
 --       Defined in all type and subtype entities. It is set in some (but not
@@ -3212,10 +3235,6 @@ package Einfo is
 --    Is_Record_Type (synthesized)
 --       Applies to all entities, true for record types and subtypes,
 --       includes class-wide types and subtypes (which are also records).
-
---    Is_Relaxed_Initialization_State (synthesized)
---       Applies to all entities, true for abstract states that are subject to
---       option Relaxed_Initialization.
 
 --    Is_Remote_Call_Interface
 --       Defined in all entities. Set in E_Package and E_Generic_Package
@@ -3582,10 +3601,11 @@ package Einfo is
 --       tasks implementing such interface.
 
 --    Materialize_Entity
---       Defined in all entities. Set only for renamed obects which should be
+--       Defined in all entities. Set mostly for renamed objects that should be
 --       materialized for debugging purposes. This means that a memory location
 --       containing the renamed address should be allocated. This is needed so
---       that the debugger can find the entity.
+--       that the debugger can find the entity. Also set on types built in the
+--       case of unanalyzed packages referenced through a limited_with clause.
 
 --    May_Inherit_Delayed_Rep_Aspects
 --       Defined in all entities for types and subtypes. Set if the type is
@@ -3738,13 +3758,11 @@ package Einfo is
 --       all the extra formals (see description of Extra_Formal field)
 
 --    Next_Index (synthesized)
---       Applies to array types and subtypes and to string types and
---       subtypes. Yields the next index. The first index is obtained by
---       using the First_Index attribute, and then subsequent indexes are
---       obtained by applying Next_Index to the previous index. Empty is
---       returned to indicate that there are no more indexes. Note that
---       unlike most attributes in this package, Next_Index applies to
---       nodes for the indexes, not to entities.
+--       Applies to the N_Is_Index node returned by First_Index/Next_Index;
+--       returns the next N_Is_Index node in the chain. Empty is returned to
+--       indicate that there are no more indexes. Note that unlike most
+--       attributes in this package, Next_Index applies to nodes for the
+--       indexes, not to entities.
 
 --    Next_Inlined_Subprogram
 --       Defined in subprograms. Used to chain inlined subprograms used in
@@ -4006,17 +4024,6 @@ package Einfo is
 --       has unknown discriminants. A default initialization of an object of
 --       the type does not require an invariant check (AI12-0133).
 
---    Pending_Access_Types
---       Defined in all types. Set for incomplete, private, Taft-amendment
---       types, and their corresponding full views. This list contains all
---       access types, both named and anonymous, declared between the partial
---       and the full view. The list is used by the finalization machinery to
---       ensure that the finalization masters of all pending access types are
---       fully initialized when the full view is frozen.
-
---    Postconditions_Proc
---       Obsolete field which can be removed once CodePeer is fixed ???
-
 --    Predicate_Function (synthesized)
 --       Defined in all types. Set for types for which (Has_Predicates is True)
 --       and for which a predicate procedure has been built that tests that the
@@ -4065,10 +4072,13 @@ package Einfo is
 
 --    Primitive_Operations (synthesized)
 --       Defined in concurrent types, tagged record types and subtypes, tagged
---       private types and tagged incomplete types. For concurrent types whose
---       Corresponding_Record_Type (CRT) is available, returns the list of
---       Direct_Primitive_Operations of its CRT; otherwise returns No_Elist.
---       For all the other types returns the Direct_Primitive_Operations.
+--       private types, and tagged incomplete types. Moreover, it is also
+--       defined in untagged types, both when GNAT extensions are allowed, to
+--       support prefixed calls for untagged types, and when GNAT extensions
+--       are not allowed, to give better error messages.  For concurrent types
+--       whose Corresponding_Record_Type (CRT) is available, returns the list
+--       of Direct_Primitive_Operations of this CRT. In all the other cases,
+--       returns the list of Direct_Primitive_Operations.
 
 --    Prival
 --       Defined in private components of protected types. Refers to the entity
@@ -4514,15 +4524,6 @@ package Einfo is
 --       inherited predicate (from typ2). Finally for a predicate that inherits
 --       from another predicate but does not add a predicate of its own, the
 --       expression may consist of the above xxxPredicate call on its own.
-
---    Status_Flag_Or_Transient_Decl
---       Defined in constant, loop, and variable entities. Applies to objects
---       that require special treatment by the finalization machinery, such as
---       extended return objects, conditional expression results, and objects
---       inside N_Expression_With_Actions nodes. The attribute contains the
---       entity of a flag which specifies a particular behavior over a region
---       of the extended return for the return objects, or the declaration of a
---       hook object for conditional expressions and N_Expression_With_Actions.
 
 --    Storage_Size_Variable [implementation base type only]
 --       Defined in access types and task type entities. This flag is set
@@ -5005,7 +5006,6 @@ package Einfo is
    --    Esize
    --    RM_Size
    --    Alignment
-   --    Pending_Access_Types
    --    Related_Expression
    --    Current_Use_Clause
    --    Subprograms_For_Type
@@ -5060,8 +5060,8 @@ package Einfo is
    --    Is_Abstract_Type
    --    Is_Asynchronous
    --    Is_Atomic
+   --    Is_Constr_Array_Subt_With_Bounds
    --    Is_Constr_Subt_For_U_Nominal
-   --    Is_Constr_Subt_For_UN_Aliased
    --    Is_Controlled_Active                 (base type only)
    --    Is_Eliminated
    --    Is_Frozen
@@ -5132,7 +5132,6 @@ package Einfo is
    --    Has_Null_Visible_Refinement         (synth)
    --    Is_External_State                   (synth)
    --    Is_Null_State                       (synth)
-   --    Is_Relaxed_Initialization_State     (synth)
    --    Is_Synchronized_State               (synth)
    --    Partial_Refinement_Constituents     (synth)
 
@@ -5159,8 +5158,8 @@ package Einfo is
    --    Direct_Primitive_Operations $$$ type
    --    Master_Id
    --    Directly_Designated_Type
-   --    Associated_Storage_Pool               (base type only)
-   --    Finalization_Master                   (base type only)
+   --    Associated_Storage_Pool               (root type only)
+   --    Finalization_Collection               (root type only)
    --    Storage_Size_Variable                 (base type only)
    --    Has_Pragma_Controlled                 (base type only)
    --    Has_Storage_Size_Clause               (base type only)
@@ -5193,7 +5192,7 @@ package Einfo is
 
    --  E_Anonymous_Access_Type
    --    Directly_Designated_Type
-   --    Finalization_Master
+   --    Finalization_Collection
    --    Storage_Size_Variable                 is this needed ???
    --    Associated_Storage_Pool $$$
    --    (plus type attributes)
@@ -5296,7 +5295,6 @@ package Einfo is
    --    Esize
    --    Extra_Accessibility                   (constants only)
    --    Alignment
-   --    Status_Flag_Or_Transient_Decl
    --    Actual_Subtype
    --    Renamed_Object
    --    Renamed_Entity $$$
@@ -5306,6 +5304,7 @@ package Einfo is
    --    Related_Type                          (constants only)
    --    Initialization_Statements
    --    BIP_Initialization_Call
+   --    Finalization_Master_Node
    --    Last_Aggregate_Assignment
    --    Activation_Record_Component
    --    Encapsulating_State                   (constants only)
@@ -5325,7 +5324,7 @@ package Einfo is
    --    Is_Elaboration_Warnings_OK_Id         (constants only)
    --    Is_Eliminated
    --    Is_Finalized_Transient
-   --    Is_Ignored_Transient
+   --    Is_Ignored_For_Finalization
    --    Is_Independent
    --    Is_Return_Object
    --    Is_True_Constant
@@ -5520,7 +5519,7 @@ package Einfo is
    --    Overridden_Operation
    --    Wrapped_Entity                       (non-generic case only)
    --    Extra_Formals
-   --    Anonymous_Masters                    (non-generic case only)
+   --    Anonymous_Collections                (non-generic case only)
    --    Corresponding_Equality               (implicit /= only)
    --    Thunk_Entity                         (thunk case only)
    --    Corresponding_Procedure              (generate C code only)
@@ -5605,7 +5604,7 @@ package Einfo is
    --    Master_Id
    --    Directly_Designated_Type
    --    Associated_Storage_Pool              (root type only)
-   --    Finalization_Master                  (root type only)
+   --    Finalization_Collection              (root type only)
    --    Storage_Size_Variable                (base type only)
    --    (plus type attributes)
 
@@ -5784,7 +5783,7 @@ package Einfo is
    --    Package_Instantiation
    --    Current_Use_Clause
    --    Finalizer                            (non-generic case only)
-   --    Anonymous_Masters                    (non-generic case only)
+   --    Anonymous_Collections                (non-generic case only)
    --    Contract
    --    SPARK_Pragma
    --    SPARK_Aux_Pragma
@@ -5881,7 +5880,7 @@ package Einfo is
    --    Overridden_Operation                 (never for init proc)
    --    Wrapped_Entity                       (non-generic case only)
    --    Extra_Formals
-   --    Anonymous_Masters                    (non-generic case only)
+   --    Anonymous_Collections                (non-generic case only)
    --    Static_Initialization                (init_proc only)
    --    Thunk_Entity                         (thunk case only)
    --    Corresponding_Function               (generate C code only)
@@ -6105,7 +6104,7 @@ package Einfo is
    --    Last_Entity
    --    Scope_Depth_Value
    --    Extra_Formals
-   --    Anonymous_Masters
+   --    Anonymous_Collections
    --    Contract
    --    SPARK_Pragma
    --    Contains_Ignored_Ghost_Code
@@ -6176,7 +6175,6 @@ package Einfo is
    --    Esize
    --    Extra_Accessibility
    --    Alignment
-   --    Status_Flag_Or_Transient_Decl        (transient object only)
    --    Unset_Reference
    --    Actual_Subtype
    --    Renamed_Object
@@ -6193,6 +6191,7 @@ package Einfo is
    --    Related_Type
    --    Initialization_Statements
    --    BIP_Initialization_Call
+   --    Finalization_Master_Node
    --    Last_Aggregate_Assignment
    --    Activation_Record_Component
    --    Encapsulating_State
@@ -6213,7 +6212,7 @@ package Einfo is
    --    Is_Elaboration_Warnings_OK_Id
    --    Is_Eliminated
    --    Is_Finalized_Transient
-   --    Is_Ignored_Transient
+   --    Is_Ignored_For_Finalization
    --    Is_Independent
    --    Is_Return_Object
    --    Is_Safe_To_Reevaluate

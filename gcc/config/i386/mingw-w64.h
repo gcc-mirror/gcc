@@ -1,7 +1,7 @@
 /* Operating system specific defines to be used when targeting GCC for
    hosting on Windows 32/64 via mingw-w64 runtime, using GNU tools and
    the Windows API Library.
-   Copyright (C) 2009-2023 Free Software Foundation, Inc.
+   Copyright (C) 2009-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -30,6 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 		 "%{mcrtdll=msvcrt10*:-D__MSVCRT_VERSION__=0x100} " \
 		 "%{mcrtdll=msvcrt20*:-D__MSVCRT_VERSION__=0x200} " \
 		 "%{mcrtdll=msvcrt40*:-D__MSVCRT_VERSION__=0x400} " \
+		 "%{mcrtdll=msvcr40*:-D__MSVCRT_VERSION__=0x400} " \
+		 "%{mcrtdll=msvcrtd*:-D__MSVCRT_VERSION__=0x600} " \
 		 "%{mcrtdll=msvcrt-os*:-D__MSVCRT_VERSION__=0x700} " \
 		 "%{mcrtdll=msvcr70*:-D__MSVCRT_VERSION__=0x700} " \
 		 "%{mcrtdll=msvcr71*:-D__MSVCRT_VERSION__=0x701} " \

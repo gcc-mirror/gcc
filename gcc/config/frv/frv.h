@@ -1,5 +1,5 @@
 /* Target macros for the FRV port of GCC.
-   Copyright (C) 1999-2023 Free Software Foundation, Inc.
+   Copyright (C) 1999-2024 Free Software Foundation, Inc.
    Contributed by Red Hat Inc.
 
    This file is part of GCC.
@@ -366,9 +366,6 @@
 #define INT_TYPE_SIZE         32
 #define LONG_TYPE_SIZE        32
 #define LONG_LONG_TYPE_SIZE   64
-#define FLOAT_TYPE_SIZE       32
-#define DOUBLE_TYPE_SIZE      64
-#define LONG_DOUBLE_TYPE_SIZE 64
 
 /* An expression whose value is 1 or 0, according to whether the type `char'
    should be signed or unsigned by default.  The user can always override this
@@ -1241,6 +1238,7 @@ typedef struct frv_stack {
 #if ! __FRV_FDPIC__
 #define TRANSFER_FROM_TRAMPOLINE					\
 extern int Twrite (int, const void *, unsigned);			\
+extern void exit (int);							\
 									\
 void									\
 __trampoline_setup (short * addr, int size, int fnaddr, int sc)		\
@@ -1284,6 +1282,7 @@ __asm__("\n"								\
 #else
 #define TRANSFER_FROM_TRAMPOLINE					\
 extern int Twrite (int, const void *, unsigned);			\
+extern void exit (int);							\
 									\
 void									\
 __trampoline_setup (addr, size, fnaddr, sc)				\

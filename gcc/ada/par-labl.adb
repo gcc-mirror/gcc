@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -356,9 +356,6 @@ procedure Labl is
 
          Remove (Loop_Header);
          Rewrite (Loop_End, Loop_Stmt);
-         Error_Msg_N
-           ("info: code between label and backwards goto rewritten as loop??",
-             Loop_End);
       end Rewrite_As_Loop;
 
       --------------

@@ -1,6 +1,8 @@
 /* { dg-do run } */
 /* { dg-skip-if "" { *-*-* } { "*" } { "-DACC_MEM_SHARED=0" } } */
 
+/* Fortran version at libgomp.oacc-fortran/acc-memcpy-2.f90.  */
+
 #include <string.h>
 #include <stdlib.h>
 #include <openacc.h>

@@ -1,4 +1,4 @@
-/* { dg-options "-O3 -mcpu=v6.00.a -mhard-float -mxl-float-sqrt" } */
+/* { dg-options "-O3 -mcpu=v10.0 -mhard-float -mxl-float-sqrt" } */
 #include <math.h>
 
 float sqrt_func (float f) 

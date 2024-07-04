@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-Wcompare-distinct-pointer-types" } */
 
-typedef int __u32;
+typedef __INT32_TYPE__ __u32;
 
 struct xdp_md
 {
@@ -11,8 +11,8 @@ struct xdp_md
 
 int xdp_context (struct xdp_md *xdp)
 {
-  void *data = (void *)(long)xdp->data;
-  __u32 *metadata = (void *)(long)xdp->data_meta;
+  void *data = (void *)(__INTPTR_TYPE__)xdp->data;
+  __u32 *metadata = (void *)(__INTPTR_TYPE__)xdp->data_meta;
   __u32 ret;
 
   if (metadata + 1 > data) /* { dg-warning "comparison of distinct pointer types" } */

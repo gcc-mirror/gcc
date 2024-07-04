@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2009-2023 Free Software Foundation, Inc.
+   Copyright (C) 2009-2024 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -48,16 +48,19 @@ ADJUST_FLOAT_FORMAT (HF, &ieee_half_format);
 
 /* Vector modes.  */
 
+VECTOR_BOOL_MODE (VNx32BI, 32, BI, 4);
 VECTOR_BOOL_MODE (VNx16BI, 16, BI, 2);
 VECTOR_BOOL_MODE (VNx8BI, 8, BI, 2);
 VECTOR_BOOL_MODE (VNx4BI, 4, BI, 2);
 VECTOR_BOOL_MODE (VNx2BI, 2, BI, 2);
 
+ADJUST_NUNITS (VNx32BI, aarch64_sve_vg * 16);
 ADJUST_NUNITS (VNx16BI, aarch64_sve_vg * 8);
 ADJUST_NUNITS (VNx8BI, aarch64_sve_vg * 4);
 ADJUST_NUNITS (VNx4BI, aarch64_sve_vg * 2);
 ADJUST_NUNITS (VNx2BI, aarch64_sve_vg);
 
+ADJUST_ALIGNMENT (VNx32BI, 2);
 ADJUST_ALIGNMENT (VNx16BI, 2);
 ADJUST_ALIGNMENT (VNx8BI, 2);
 ADJUST_ALIGNMENT (VNx4BI, 2);
@@ -93,8 +96,12 @@ INT_MODE (XI, 64);
 
 /* V8DI mode.  */
 VECTOR_MODE_WITH_PREFIX (V, INT, DI, 8, 5);
-
 ADJUST_ALIGNMENT (V8DI, 8);
+
+/* V2x4QImode.  Used in load/store pair patterns.  */
+VECTOR_MODE_WITH_PREFIX (V2x, INT, QI, 4, 5);
+ADJUST_NUNITS (V2x4QI, 8);
+ADJUST_ALIGNMENT (V2x4QI, 4);
 
 /* Define Advanced SIMD modes for structures of 2, 3 and 4 d-registers.  */
 #define ADV_SIMD_D_REG_STRUCT_MODES(NVECS, VB, VH, VS, VD) \
@@ -156,7 +163,7 @@ ADV_SIMD_Q_REG_STRUCT_MODES (4, V4x16, V4x8, V4x4, V4x2)
    for 8-bit, 16-bit, 32-bit and 64-bit elements respectively.  It isn't
    strictly necessary to set the alignment here, since the default would
    be clamped to BIGGEST_ALIGNMENT anyhow, but it seems clearer.  */
-#define SVE_MODES(NVECS, VB, VH, VS, VD) \
+#define SVE_MODES(NVECS, VB, VH, VS, VD, VT) \
   VECTOR_MODES_WITH_PREFIX (VNx, INT, 16 * NVECS, NVECS == 1 ? 1 : 4); \
   VECTOR_MODES_WITH_PREFIX (VNx, FLOAT, 16 * NVECS, NVECS == 1 ? 1 : 4); \
   \
@@ -164,6 +171,7 @@ ADV_SIMD_Q_REG_STRUCT_MODES (4, V4x16, V4x8, V4x4, V4x2)
   ADJUST_NUNITS (VH##HI, aarch64_sve_vg * NVECS * 4); \
   ADJUST_NUNITS (VS##SI, aarch64_sve_vg * NVECS * 2); \
   ADJUST_NUNITS (VD##DI, aarch64_sve_vg * NVECS); \
+  ADJUST_NUNITS (VT##TI, exact_div (aarch64_sve_vg * NVECS, 2)); \
   ADJUST_NUNITS (VH##BF, aarch64_sve_vg * NVECS * 4); \
   ADJUST_NUNITS (VH##HF, aarch64_sve_vg * NVECS * 4); \
   ADJUST_NUNITS (VS##SF, aarch64_sve_vg * NVECS * 2); \
@@ -173,17 +181,23 @@ ADV_SIMD_Q_REG_STRUCT_MODES (4, V4x16, V4x8, V4x4, V4x2)
   ADJUST_ALIGNMENT (VH##HI, 16); \
   ADJUST_ALIGNMENT (VS##SI, 16); \
   ADJUST_ALIGNMENT (VD##DI, 16); \
+  ADJUST_ALIGNMENT (VT##TI, 16); \
   ADJUST_ALIGNMENT (VH##BF, 16); \
   ADJUST_ALIGNMENT (VH##HF, 16); \
   ADJUST_ALIGNMENT (VS##SF, 16); \
   ADJUST_ALIGNMENT (VD##DF, 16);
 
-/* Give SVE vectors the names normally used for 256-bit vectors.
-   The actual number depends on command-line flags.  */
-SVE_MODES (1, VNx16, VNx8, VNx4, VNx2)
-SVE_MODES (2, VNx32, VNx16, VNx8, VNx4)
-SVE_MODES (3, VNx48, VNx24, VNx12, VNx6)
-SVE_MODES (4, VNx64, VNx32, VNx16, VNx8)
+/* Give SVE vectors names of the form VNxX, where X describes what is
+   stored in each 128-bit unit.  The actual size of the mode depends
+   on command-line flags.
+
+   VNx1TI isn't really a native SVE mode, but it can be useful in some
+   limited situations.  */
+VECTOR_MODE_WITH_PREFIX (VNx, INT, TI, 1, 1);
+SVE_MODES (1, VNx16, VNx8, VNx4, VNx2, VNx1)
+SVE_MODES (2, VNx32, VNx16, VNx8, VNx4, VNx2)
+SVE_MODES (3, VNx48, VNx24, VNx12, VNx6, VNx3)
+SVE_MODES (4, VNx64, VNx32, VNx16, VNx8, VNx4)
 
 /* Partial SVE vectors:
 

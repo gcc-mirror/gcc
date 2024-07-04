@@ -1,4 +1,4 @@
-/* Copyright (C) 2012-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2024 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Atomic Library (libatomic).
@@ -22,6 +22,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#define LAT_FOP_N
 #include <libatomic_i.h>
 
 
@@ -198,3 +199,4 @@ SIZE(C3(libat_,NAME,_fetch)) (UTYPE *mptr, UTYPE opval, int smodel UNUSED)
 
 EXPORT_ALIAS (SIZE(C2(fetch_,NAME)));
 EXPORT_ALIAS (SIZE(C2(NAME,_fetch)));
+#undef LAT_FOP_N

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec -Wall -Wno-unused-but-set-variable -Wno-deprecated" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 /* This test checks if AltiVec builtins accept const-qualified
    arguments.  */

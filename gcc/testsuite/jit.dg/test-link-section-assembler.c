@@ -34,4 +34,4 @@ create_code (gcc_jit_context *ctxt, void *user_data)
 }
 
 /* { dg-final { jit-verify-output-file-was-created "" } } */
-/* { dg-final { jit-verify-assembler-output ".section	.my_section" } } */
+/* { dg-final { jit-verify-assembler-output ".section\\s.my_section" } } */

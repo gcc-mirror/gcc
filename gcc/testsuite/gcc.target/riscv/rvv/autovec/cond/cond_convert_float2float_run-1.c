@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-additional-options "--param=riscv-autovec-preference=scalable -fno-vect-cost-model  -ffast-math" } */
+/* { dg-additional-options "-mrvv-vector-bits=scalable -fno-vect-cost-model  -ffast-math" } */
 
 #include "cond_convert_float2float-1.h"
 

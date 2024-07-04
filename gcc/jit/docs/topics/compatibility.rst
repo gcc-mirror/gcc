@@ -1,4 +1,4 @@
-.. Copyright (C) 2015-2023 Free Software Foundation, Inc.
+.. Copyright (C) 2015-2024 Free Software Foundation, Inc.
    Originally contributed by David Malcolm <dmalcolm@redhat.com>
 
    This is free software: you can redistribute it and/or modify it
@@ -378,3 +378,29 @@ alignment of a variable:
 --------------------
 ``LIBGCCJIT_ABI_25`` covers the addition of
 :func:`gcc_jit_type_get_restrict`
+
+.. _LIBGCCJIT_ABI_26:
+
+``LIBGCCJIT_ABI_26``
+--------------------
+``LIBGCCJIT_ABI_26`` covers the addition of functions to set attributes
+on functions and variables:
+
+  * :func:`gcc_jit_function_add_attribute`
+  * :func:`gcc_jit_function_add_string_attribute`
+  * :func:`gcc_jit_function_add_integer_array_attribute`
+  * :func:`gcc_jit_lvalue_add_string_attribute`
+
+.. _LIBGCCJIT_ABI_27:
+
+``LIBGCCJIT_ABI_27``
+--------------------
+``LIBGCCJIT_ABI_27`` covers the addition of
+:func:`gcc_jit_context_new_sizeof`
+
+.. _LIBGCCJIT_ABI_28:
+
+``LIBGCCJIT_ABI_28``
+--------------------
+``LIBGCCJIT_ABI_28`` covers the addition of
+:func:`gcc_jit_context_new_alignof`

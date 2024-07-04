@@ -7,6 +7,6 @@ ARX=$(shell echo $(AR) | sed -e 's/-X[^ ]*//g')
 all-local:
 	$(ARX) -X$(BITS) rc .libs/$(PACKAGE).a ../ppc$(BITS)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR)
 	$(ARX) -X$(BITS) rc ../pthread/$(PACKAGE)/.libs/$(PACKAGE).a ../pthread/ppc$(BITS)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR)
-	$(ARX) -X$(BITS) rc .libs/libcaf_single.a ../ppc$(BITS)/$(PACKAGE)/.libs/$(libcaf_single_la_OBJECTS:.lo=.o)
-	$(ARX) -X$(BITS) rc ../pthread/$(PACKAGE)/.libs/libcaf_single.a ../pthread/ppc$(BITS)/$(PACKAGE)/.libs/$(libcaf_single_la_OBJECTS:.lo=.o)
+	$(ARX) -X$(BITS) rc .libs/libcaf_single.a ../ppc$(BITS)/$(PACKAGE)/caf/.libs/single.o
+	$(ARX) -X$(BITS) rc ../pthread/$(PACKAGE)/.libs/libcaf_single.a ../pthread/ppc$(BITS)/$(PACKAGE)/caf/.libs/single.o
 endif

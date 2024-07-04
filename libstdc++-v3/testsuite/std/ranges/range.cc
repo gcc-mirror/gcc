@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023 Free Software Foundation, Inc.
+// Copyright (C) 2019-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -83,3 +83,9 @@ static_assert( same_as<std::ranges::range_rvalue_reference_t<I>,
 		       char&&> );
 static_assert( same_as<std::ranges::range_rvalue_reference_t<O>,
 		      WritableObject<char>> );
+
+// LWG 3860. range_common_reference_t is missing
+static_assert( same_as<std::ranges::range_common_reference_t<C>,
+		       char&> );
+static_assert( same_as<std::ranges::range_common_reference_t<I>,
+		       char&> );

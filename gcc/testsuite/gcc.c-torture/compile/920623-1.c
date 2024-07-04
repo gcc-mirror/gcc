@@ -1,2 +1,2 @@
 int f(int c){return f(c--);}
-g(){}
+void g(void){}

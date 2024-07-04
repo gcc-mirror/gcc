@@ -1,5 +1,5 @@
 /* Header file for range operator class.
-   Copyright (C) 2017-2023 Free Software Foundation, Inc.
+   Copyright (C) 2017-2024 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -21,6 +21,16 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GCC_RANGE_OP_H
 #define GCC_RANGE_OP_H
+
+enum range_op_dispatch_type
+{
+  DISPATCH_FOLD_RANGE,
+  DISPATCH_OP1_RANGE,
+  DISPATCH_OP2_RANGE,
+  DISPATCH_LHS_OP1_RELATION,
+  DISPATCH_LHS_OP2_RELATION,
+  DISPATCH_OP1_OP2_RELATION
+};
 
 // This class is implemented for each kind of operator supported by
 // the range generator.  It serves various purposes.
@@ -76,6 +86,26 @@ public:
 			   const irange &lh,
 			   const irange &rh,
 			   relation_trio = TRIO_VARYING) const;
+  virtual bool fold_range (prange &r, tree type,
+			   const prange &lh,
+			   const prange &rh,
+			   relation_trio = TRIO_VARYING) const;
+  virtual bool fold_range (prange &r, tree type,
+			   const prange &lh,
+			   const irange &rh,
+			   relation_trio = TRIO_VARYING) const;
+  virtual bool fold_range (irange &r, tree type,
+			   const prange &lh,
+			   const prange &rh,
+			   relation_trio = TRIO_VARYING) const;
+  virtual bool fold_range (prange &r, tree type,
+			   const irange &lh,
+			   const prange &rh,
+			   relation_trio = TRIO_VARYING) const;
+  virtual bool fold_range (irange &r, tree type,
+			   const prange &lh,
+			   const irange &rh,
+			   relation_trio = TRIO_VARYING) const;
 
   // Return the range for op[12] in the general case.  LHS is the range for
   // the LHS of the expression, OP[12]is the range for the other
@@ -92,6 +122,22 @@ public:
 			  const irange &lhs,
 			  const irange &op2,
 			  relation_trio = TRIO_VARYING) const;
+  virtual bool op1_range (prange &r, tree type,
+			  const prange &lhs,
+			  const prange &op2,
+			  relation_trio = TRIO_VARYING) const;
+  virtual bool op1_range (prange &r, tree type,
+			  const irange &lhs,
+			  const prange &op2,
+			  relation_trio = TRIO_VARYING) const;
+  virtual bool op1_range (prange &r, tree type,
+			  const prange &lhs,
+			  const irange &op2,
+			  relation_trio = TRIO_VARYING) const;
+  virtual bool op1_range (irange &r, tree type,
+			  const prange &lhs,
+			  const irange &op2,
+			  relation_trio = TRIO_VARYING) const;
   virtual bool op1_range (frange &r, tree type,
 			  const frange &lhs,
 			  const frange &op2,
@@ -105,6 +151,14 @@ public:
   virtual bool op2_range (irange &r, tree type,
 			  const irange &lhs,
 			  const irange &op1,
+			  relation_trio = TRIO_VARYING) const;
+  virtual bool op2_range (prange &r, tree type,
+			  const irange &lhs,
+			  const prange &op1,
+			  relation_trio = TRIO_VARYING) const;
+  virtual bool op2_range (irange &r, tree type,
+			  const prange &lhs,
+			  const prange &op1,
 			  relation_trio = TRIO_VARYING) const;
   virtual bool op2_range (frange &r, tree type,
 			  const frange &lhs,
@@ -122,6 +176,18 @@ public:
   virtual relation_kind lhs_op1_relation (const irange &lhs,
 					  const irange &op1,
 					  const irange &op2,
+					  relation_kind = VREL_VARYING) const;
+  virtual relation_kind lhs_op1_relation (const prange &lhs,
+					  const prange &op1,
+					  const prange &op2,
+					  relation_kind = VREL_VARYING) const;
+  virtual relation_kind lhs_op1_relation (const prange &lhs,
+					  const irange &op1,
+					  const irange &op2,
+					  relation_kind = VREL_VARYING) const;
+  virtual relation_kind lhs_op1_relation (const irange &lhs,
+					  const prange &op1,
+					  const prange &op2,
 					  relation_kind = VREL_VARYING) const;
   virtual relation_kind lhs_op1_relation (const frange &lhs,
 					  const frange &op1,
@@ -149,6 +215,9 @@ public:
 					  const irange &op1,
 					  const irange &op2) const;
   virtual relation_kind op1_op2_relation (const irange &lhs,
+					  const prange &op1,
+					  const prange &op2) const;
+  virtual relation_kind op1_op2_relation (const irange &lhs,
 					  const frange &op1,
 					  const frange &op2) const;
   virtual relation_kind op1_op2_relation (const frange &lhs,
@@ -157,6 +226,10 @@ public:
 
   virtual bool overflow_free_p (const irange &lh, const irange &rh,
 				relation_trio = TRIO_VARYING) const;
+
+  // Compatability check for operands.
+  virtual bool operand_check_p (tree, tree, tree) const;
+
 protected:
   // Perform an integral operation between 2 sub-ranges and return it.
   virtual void wi_fold (irange &r, tree type,
@@ -167,6 +240,26 @@ protected:
   // Effect of relation for generic fold_range clients.
   virtual bool op1_op2_relation_effect (irange &lhs_range, tree type,
 					const irange &op1_range,
+					const irange &op2_range,
+					relation_kind rel) const;
+  virtual bool op1_op2_relation_effect (prange &lhs_range, tree type,
+					const prange &op1_range,
+					const prange &op2_range,
+					relation_kind rel) const;
+  virtual bool op1_op2_relation_effect (prange &lhs_range, tree type,
+					const prange &op1_range,
+					const irange &op2_range,
+					relation_kind rel) const;
+  virtual bool op1_op2_relation_effect (irange &lhs_range, tree type,
+					const prange &op1_range,
+					const prange &op2_range,
+					relation_kind rel) const;
+  virtual bool op1_op2_relation_effect (prange &lhs_range, tree type,
+					const irange &op1_range,
+					const prange &op2_range,
+					relation_kind rel) const;
+  virtual bool op1_op2_relation_effect (irange &lhs_range, tree type,
+					const prange &op1_range,
 					const irange &op2_range,
 					relation_kind rel) const;
   // Called by fold range to split small subranges into parts.
@@ -183,11 +276,10 @@ protected:
 			       unsigned limit) const;
   // Apply any bitmasks implied by these ranges.
   virtual void update_bitmask (irange &, const irange &, const irange &) const;
+  virtual void update_bitmask (irange &, const prange &, const prange &) const;
 
   // Perform an float operation between 2 ranges and return it.
-  virtual void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
-			bool &maybe_nan,
-			tree type,
+  virtual void rv_fold (frange &r, tree type,
 			const REAL_VALUE_TYPE &lh_lb,
 			const REAL_VALUE_TYPE &lh_ub,
 			const REAL_VALUE_TYPE &rh_lb,
@@ -228,9 +320,13 @@ public:
 				  const vrange &op2) const;
   bool overflow_free_p (const vrange &lh, const vrange &rh,
 			relation_trio = TRIO_VARYING) const;
+  bool operand_check_p (tree, tree, tree) const;
 protected:
   unsigned dispatch_kind (const vrange &lhs, const vrange &op1,
 			  const vrange& op2) const;
+  void discriminator_fail (const vrange &,
+			   const vrange &,
+			   const vrange &) const;
   range_operator *m_operator;
 };
 
@@ -240,8 +336,8 @@ inline bool
 range_cast (vrange &r, tree type)
 {
   gcc_checking_assert (r.supports_type_p (type));
-  Value_Range tmp (r);
-  Value_Range varying (type);
+  value_range tmp (r);
+  value_range varying (type);
   varying.set_varying (type);
   // Call op_convert, if it fails, the result is varying.
   if (!range_op_handler (CONVERT_EXPR).fold_range (r, type, tmp, varying))
@@ -256,10 +352,10 @@ range_cast (vrange &r, tree type)
 // ie for float to int.
 
 inline bool
-range_cast (Value_Range &r, tree type)
+range_cast (value_range &r, tree type)
 {
-  Value_Range tmp (r);
-  Value_Range varying (type);
+  value_range tmp (r);
+  value_range varying (type);
   varying.set_varying (type);
 
   // Ensure we are in the correct mode for the call to fold.
@@ -313,4 +409,5 @@ protected:
   void initialize_pointer_ops ();
   void initialize_float_ops ();
 };
+
 #endif // GCC_RANGE_OP_H

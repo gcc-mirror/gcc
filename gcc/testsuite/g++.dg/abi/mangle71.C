@@ -1,5 +1,6 @@
 // Verify mangling of class literals of types with ctors.
 // { dg-do compile { target c++2a } }
+// { dg-additional-options -fabi-compat-version=0 }
 
 struct A
 {

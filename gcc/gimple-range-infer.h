@@ -1,5 +1,5 @@
 /* Header file for gimple range inference.
-   Copyright (C) 2022-2023 Free Software Foundation, Inc.
+   Copyright (C) 2022-2024 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>.
 
 This file is part of GCC.
@@ -31,21 +31,36 @@ along with GCC; see the file COPYING3.  If not see
 class gimple_infer_range
 {
 public:
-  gimple_infer_range (gimple *s);
+  gimple_infer_range (gimple *s, bool use_rangeops = false);
+  gimple_infer_range (tree name, vrange &r);
   inline unsigned num () const { return num_args; }
   inline tree name (unsigned index) const
     { gcc_checking_assert (index < num_args); return m_names[index]; }
   inline const vrange& range (unsigned index) const
     { gcc_checking_assert (index < num_args); return m_ranges[index]; }
+private:
   void add_range (tree name, vrange &range);
   void add_nonzero (tree name);
-private:
   void check_assume_func (gcall *call);
   unsigned num_args;
   static const int size_limit = 10;
   tree m_names[size_limit];
-  Value_Range m_ranges[size_limit];
+  value_range m_ranges[size_limit];
   inline void bump_index () { if (num_args < size_limit - 1) num_args++; }
+  friend class non_null_wrapper;
+};
+
+// This is the basic infer oracle API.  Default functionaility does nothing.
+
+class infer_range_oracle
+{
+public:
+  infer_range_oracle () { }
+  virtual ~infer_range_oracle () { }
+  virtual void add_ranges (gimple *, gimple_infer_range &) { }
+  virtual bool has_range_p (basic_block, tree = NULL_TREE) { return false; }
+  virtual bool maybe_adjust_range (vrange &, tree, basic_block)
+      { return false; }
 };
 
 // This class manages a list of inferred ranges for each basic block.
@@ -54,17 +69,17 @@ private:
 // followed the first time a name is referenced and block populated if
 // there are any inferred ranges.
 
-class infer_range_manager
+class infer_range_manager : public infer_range_oracle
 {
 public:
   infer_range_manager (bool do_search);
-  ~infer_range_manager ();
-  void add_range (tree name, basic_block bb, const vrange &r);
-  void add_nonzero (tree name, basic_block bb);
-  bool has_range_p (tree name, basic_block bb);
-  bool has_range_p (basic_block bb);
-  bool maybe_adjust_range (vrange &r, tree name, basic_block bb);
+  virtual ~infer_range_manager ();
+  virtual void add_ranges (gimple *s, gimple_infer_range &ir);
+  virtual bool has_range_p (basic_block bb, tree name = NULL_TREE);
+  virtual bool maybe_adjust_range (vrange &r, tree name, basic_block bb);
 private:
+  void add_range (tree name, gimple *s, const vrange &r);
+  void add_nonzero (tree name, gimple *s);
   class exit_range_head
   {
   public:

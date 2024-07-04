@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 int
 ts(a)
      int a;
@@ -18,8 +21,8 @@ tu(a)
     return 0;
 }
 
-
-main()
+int
+main(void)
 {
   if (ts (0) || tu (0))
     abort ();

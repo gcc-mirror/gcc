@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O2 -ffast-math -mdejagnu-cpu=power7" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 #include <math.h>
 

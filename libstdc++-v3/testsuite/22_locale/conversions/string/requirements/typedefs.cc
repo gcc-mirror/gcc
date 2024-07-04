@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2015-2023 Free Software Foundation, Inc.
+// Copyright (C) 2015-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,6 +26,7 @@ void test01()
   // Check for required typedefs
   typedef std::codecvt<wchar_t, char, mbstate_t> codecvt_type;
   typedef std::wstring_convert<codecvt_type> test_type;
+  // { dg-warning "deprecated" "" { target c++17 } 28 }
   typedef test_type::byte_string byte_string;
   typedef test_type::wide_string wide_string;
   typedef test_type::state_type state_type;

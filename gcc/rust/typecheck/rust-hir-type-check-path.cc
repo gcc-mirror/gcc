@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -18,7 +18,12 @@
 
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-type-check-type.h"
+#include "rust-hir-type-check-item.h"
 #include "rust-hir-trait-resolve.h"
+#include "rust-substitution-mapper.h"
+#include "rust-hir-path-probe.h"
+#include "rust-type-util.h"
+#include "rust-hir-type-bounds.h"
 
 namespace Rust {
 namespace Resolver {
@@ -56,42 +61,14 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
     return;
 
   // get the predicate for the bound
-  auto specified_bound = get_predicate_from_bound (*trait_path_ref.get ());
+  auto specified_bound
+    = get_predicate_from_bound (*trait_path_ref.get (),
+				qual_path_type.get_type ().get ());
   if (specified_bound.is_error ())
     return;
 
   // inherit the bound
   root->inherit_bounds ({specified_bound});
-
-  // setup the associated types
-  const TraitReference *specified_bound_ref = specified_bound.get ();
-  auto candidates = TypeBoundsProbe::Probe (root);
-  AssociatedImplTrait *associated_impl_trait = nullptr;
-  for (auto &probed_bound : candidates)
-    {
-      const TraitReference *bound_trait_ref = probed_bound.first;
-      const HIR::ImplBlock *associated_impl = probed_bound.second;
-
-      HirId impl_block_id = associated_impl->get_mappings ().get_hirid ();
-      AssociatedImplTrait *associated = nullptr;
-      bool found_impl_trait
-	= context->lookup_associated_trait_impl (impl_block_id, &associated);
-      if (found_impl_trait)
-	{
-	  bool found_trait = specified_bound_ref->is_equal (*bound_trait_ref);
-	  bool found_self = associated->get_self ()->can_eq (root, false);
-	  if (found_trait && found_self)
-	    {
-	      associated_impl_trait = associated;
-	      break;
-	    }
-	}
-    }
-
-  if (associated_impl_trait != nullptr)
-    {
-      associated_impl_trait->setup_associated_types (root, specified_bound);
-    }
 
   // lookup the associated item from the specified bound
   HIR::PathExprSegment &item_seg = expr.get_segments ().at (0);
@@ -104,13 +81,59 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
       return;
     }
 
-  // infer the root type
-  infered = item.get_tyty_for_receiver (root);
+  // we try to look for the real impl item if possible
+  HIR::ImplItem *impl_item = nullptr;
+
+  // lookup the associated impl trait for this if we can (it might be generic)
+  AssociatedImplTrait *associated_impl_trait
+    = lookup_associated_impl_block (specified_bound, root);
+  if (associated_impl_trait != nullptr)
+    {
+      associated_impl_trait->setup_associated_types (root, specified_bound);
+
+      for (auto &i :
+	   associated_impl_trait->get_impl_block ()->get_impl_items ())
+	{
+	  bool found = i->get_impl_item_name ().compare (
+			 item_seg_identifier.as_string ())
+		       == 0;
+	  if (found)
+	    {
+	      impl_item = i.get ();
+	      break;
+	    }
+	}
+    }
+
+  NodeId root_resolved_node_id = UNKNOWN_NODEID;
+  if (impl_item == nullptr)
+    {
+      // this may be valid as there could be a default trait implementation here
+      // and we dont need to worry if the trait item is actually implemented or
+      // not because this will have already been validated as part of the trait
+      // impl block
+      infered = item.get_tyty_for_receiver (root);
+      root_resolved_node_id
+	= item.get_raw_item ()->get_mappings ().get_nodeid ();
+    }
+  else
+    {
+      HirId impl_item_id = impl_item->get_impl_mappings ().get_hirid ();
+      bool ok = query_type (impl_item_id, &infered);
+      if (!ok)
+	{
+	  // FIXME
+	  // I think query_type should error if required here anyway
+	  return;
+	}
+
+      root_resolved_node_id = impl_item->get_impl_mappings ().get_nodeid ();
+    }
 
   // turbo-fish segment path::<ty>
   if (item_seg.has_generic_args ())
     {
-      if (!infered->can_substitute ())
+      if (!infered->has_substitutions_defined ())
 	{
 	  rust_error_at (item_seg.get_locus (),
 			 "substitutions not supported for %s",
@@ -118,15 +141,16 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
 	  infered = new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
 	  return;
 	}
+      std::vector<TyTy::Region> regions;
+
       infered = SubstMapper::Resolve (infered, expr.get_locus (),
-				      &item_seg.get_generic_args ());
+				      &item_seg.get_generic_args (),
+				      context->regions_from_generic_args (
+					item_seg.get_generic_args ()));
     }
 
   // continue on as a path-in-expression
-  const TraitItemReference *trait_item_ref = item.get_raw_item ();
-  NodeId root_resolved_node_id = trait_item_ref->get_mappings ().get_nodeid ();
   bool fully_resolved = expr.get_segments ().size () <= 1;
-
   if (fully_resolved)
     {
       resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
@@ -147,11 +171,6 @@ TypeCheckExpr::visit (HIR::PathInExpression &expr)
   TyTy::BaseType *tyseg = resolve_root_path (expr, &offset, &resolved_node_id);
   if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
     return;
-
-  if (tyseg->needs_generic_substitutions ())
-    {
-      tyseg = SubstMapper::InferSubst (tyseg, expr.get_locus ());
-    }
 
   bool fully_resolved = offset == expr.get_segments ().size ();
   if (fully_resolved)
@@ -246,6 +265,19 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 	  return root_tyty;
 	}
 
+      // is it an enum item?
+      std::pair<HIR::Enum *, HIR::EnumItem *> enum_item_lookup
+	= mappings->lookup_hir_enumitem (ref);
+      bool is_enum_item = enum_item_lookup.first != nullptr
+			  && enum_item_lookup.second != nullptr;
+      if (is_enum_item)
+	{
+	  HirId expr_id = expr.get_mappings ().get_hirid ();
+	  HirId variant_id
+	    = enum_item_lookup.second->get_mappings ().get_hirid ();
+	  context->insert_variant_definition (expr_id, variant_id);
+	}
+
       // if we have a previous segment type
       if (root_tyty != nullptr)
 	{
@@ -269,18 +301,16 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
       // turbo-fish segment path::<ty>
       if (seg.has_generic_args ())
 	{
-	  if (!lookup->can_substitute ())
-	    {
-	      rust_error_at (expr.get_locus (),
-			     "substitutions not supported for %s",
-			     root_tyty->as_string ().c_str ());
-	      return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
-	    }
-
 	  lookup = SubstMapper::Resolve (lookup, expr.get_locus (),
-					 &seg.get_generic_args ());
+					 &seg.get_generic_args (),
+					 context->regions_from_generic_args (
+					   seg.get_generic_args ()));
 	  if (lookup->get_kind () == TyTy::TypeKind::ERROR)
 	    return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
+	}
+      else if (lookup->needs_generic_substitutions ())
+	{
+	  lookup = SubstMapper::InferSubst (lookup, expr.get_locus ());
 	}
 
       *root_resolved_node_id = ref_node_id;
@@ -296,7 +326,7 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 				 std::vector<HIR::PathExprSegment> &segments,
 				 size_t offset, TyTy::BaseType *tyseg,
 				 const Analysis::NodeMapping &expr_mappings,
-				 Location expr_locus)
+				 location_t expr_locus)
 {
   NodeId resolved_node_id = root_resolved_node_id;
   TyTy::BaseType *prev_segment = tyseg;
@@ -305,21 +335,20 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
   for (size_t i = offset; i < segments.size (); i++)
     {
       HIR::PathExprSegment &seg = segments.at (i);
-
-      bool probe_bounds = true;
       bool probe_impls = !reciever_is_generic;
-      bool ignore_mandatory_trait_items = !reciever_is_generic;
 
       // probe the path is done in two parts one where we search impls if no
       // candidate is found then we search extensions from traits
       auto candidates
 	= PathProbeType::Probe (prev_segment, seg.get_segment (), probe_impls,
-				false, ignore_mandatory_trait_items);
+				false /*probe_bounds*/,
+				true /*ignore_mandatory_trait_items*/);
       if (candidates.size () == 0)
 	{
 	  candidates
 	    = PathProbeType::Probe (prev_segment, seg.get_segment (), false,
-				    probe_bounds, ignore_mandatory_trait_items);
+				    true /*probe_bounds*/,
+				    false /*ignore_mandatory_trait_items*/);
 
 	  if (candidates.size () == 0)
 	    {
@@ -347,9 +376,13 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 	  const TyTy::VariantDef *variant = candidate.item.enum_field.variant;
 
 	  HirId variant_id = variant->get_id ();
-	  HIR::Item *enum_item = mappings->lookup_hir_item (variant_id);
-	  rust_assert (enum_item != nullptr);
+	  std::pair<HIR::Enum *, HIR::EnumItem *> enum_item_lookup
+	    = mappings->lookup_hir_enumitem (variant_id);
+	  bool enum_item_ok = enum_item_lookup.first != nullptr
+			      && enum_item_lookup.second != nullptr;
+	  rust_assert (enum_item_ok);
 
+	  HIR::EnumItem *enum_item = enum_item_lookup.second;
 	  resolved_node_id = enum_item->get_mappings ().get_nodeid ();
 
 	  // insert the id of the variant we are resolved to
@@ -387,71 +420,56 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 	  bool found_impl_trait
 	    = context->lookup_associated_trait_impl (impl_block_id,
 						     &associated);
-	  TyTy::BaseType *impl_block_ty = nullptr;
-	  if (found_impl_trait)
-	    {
-	      TyTy::TypeBoundPredicate predicate (*associated->get_trait (),
-						  seg.get_locus ());
-	      impl_block_ty
-		= associated->setup_associated_types (prev_segment, predicate);
-	    }
-	  else
-	    {
-	      // get the type of the parent Self
-	      HirId impl_ty_id = associated_impl_block->get_type ()
-				   ->get_mappings ()
-				   .get_hirid ();
 
-	      bool ok = query_type (impl_ty_id, &impl_block_ty);
-	      rust_assert (ok);
+	  auto mappings = TyTy::SubstitutionArgumentMappings::error ();
+	  TyTy::BaseType *impl_block_ty
+	    = TypeCheckItem::ResolveImplBlockSelfWithInference (
+	      *associated_impl_block, seg.get_locus (), &mappings);
 
-	      if (impl_block_ty->needs_generic_substitutions ())
-		impl_block_ty
-		  = SubstMapper::InferSubst (impl_block_ty, seg.get_locus ());
-	    }
+	  // we need to apply the arguments to the segment type so they get
+	  // unified properly
+	  if (!mappings.is_error ())
+	    tyseg = SubstMapperInternal::Resolve (tyseg, mappings);
 
 	  prev_segment = unify_site (seg.get_mappings ().get_hirid (),
 				     TyTy::TyWithLocation (prev_segment),
 				     TyTy::TyWithLocation (impl_block_ty),
 				     seg.get_locus ());
-	}
+	  bool ok = prev_segment->get_kind () != TyTy::TypeKind::ERROR;
+	  if (!ok)
+	    return;
 
-      if (tyseg->needs_generic_substitutions ())
-	{
-	  if (!prev_segment->needs_generic_substitutions ())
+	  if (found_impl_trait)
 	    {
-	      auto used_args_in_prev_segment
-		= GetUsedSubstArgs::From (prev_segment);
+	      // we need to setup with apropriate bounds
+	      HIR::TypePath &bound_path
+		= *associated->get_impl_block ()->get_trait_ref ().get ();
+	      const auto &trait_ref = *TraitResolver::Resolve (bound_path);
+	      rust_assert (!trait_ref.is_error ());
 
-	      if (!used_args_in_prev_segment.is_error ())
-		{
-		  if (SubstMapperInternal::mappings_are_bound (
-			tyseg, used_args_in_prev_segment))
-		    {
-		      tyseg = SubstMapperInternal::Resolve (
-			tyseg, used_args_in_prev_segment);
-		    }
-		}
+	      const auto &predicate
+		= impl_block_ty->lookup_predicate (trait_ref.get_defid ());
+	      if (!predicate.is_error ())
+		impl_block_ty
+		  = associated->setup_associated_types (prev_segment,
+							predicate);
 	    }
 	}
 
       if (seg.has_generic_args ())
 	{
-	  if (!tyseg->can_substitute ())
-	    {
-	      rust_error_at (expr_locus, "substitutions not supported for %s",
-			     tyseg->as_string ().c_str ());
-	      return;
-	    }
-
-	  tyseg = SubstMapper::Resolve (tyseg, expr_locus,
-					&seg.get_generic_args ());
+	  rust_debug_loc (seg.get_locus (), "applying segment generics: %s",
+			  tyseg->as_string ().c_str ());
+	  tyseg
+	    = SubstMapper::Resolve (tyseg, expr_locus, &seg.get_generic_args (),
+				    context->regions_from_generic_args (
+				      seg.get_generic_args ()));
 	  if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
 	    return;
 	}
       else if (tyseg->needs_generic_substitutions () && !reciever_is_generic)
 	{
-	  Location locus = seg.get_locus ();
+	  location_t locus = seg.get_locus ();
 	  tyseg = SubstMapper::InferSubst (tyseg, locus);
 	  if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
 	    return;
@@ -461,7 +479,7 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
   rust_assert (resolved_node_id != UNKNOWN_NODEID);
   if (tyseg->needs_generic_substitutions () && !reciever_is_generic)
     {
-      Location locus = segments.back ().get_locus ();
+      location_t locus = segments.back ().get_locus ();
       tyseg = SubstMapper::InferSubst (tyseg, locus);
       if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
 	return;

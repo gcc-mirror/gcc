@@ -1,6 +1,6 @@
 /* Gimple IR definitions.
 
-   Copyright (C) 2007-2023 Free Software Foundation, Inc.
+   Copyright (C) 2007-2024 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -150,6 +150,7 @@ enum gf_mask {
     GF_CALL_BY_DESCRIPTOR	= 1 << 10,
     GF_CALL_NOCF_CHECK		= 1 << 11,
     GF_CALL_FROM_NEW_OR_DELETE	= 1 << 12,
+    GF_CALL_XTHROW		= 1 << 13,
     GF_OMP_PARALLEL_COMBINED	= 1 << 0,
     GF_OMP_TASK_TASKLOOP	= 1 << 0,
     GF_OMP_TASK_TASKWAIT	= 1 << 1,
@@ -235,7 +236,8 @@ struct GTY((desc ("gimple_statement_structure (&%h)"), tag ("GSS_BASE"),
      for clearing this bit before using it.  */
   unsigned int visited		: 1;
 
-  /* Nonzero if this tuple represents a non-temporal move.  */
+  /* Nonzero if this tuple represents a non-temporal move; currently
+     only stores are supported.  */
   unsigned int nontemporal_move	: 1;
 
   /* Pass local flags.  These flags are free for any pass to use as
@@ -3559,6 +3561,28 @@ inline bool
 gimple_call_nothrow_p (gcall *s)
 {
   return (gimple_call_flags (s) & ECF_NOTHROW) != 0;
+}
+
+/* If EXPECTED_THROW_P is true, GIMPLE_CALL S is a call that is known
+   to be more likely to throw than to run forever, terminate the
+   program or return by other means.  */
+
+static inline void
+gimple_call_set_expected_throw (gcall *s, bool expected_throw_p)
+{
+  if (expected_throw_p)
+    s->subcode |= GF_CALL_XTHROW;
+  else
+    s->subcode &= ~GF_CALL_XTHROW;
+}
+
+/* Return true if S is a call that is more likely to end by
+   propagating an exception than by other means.  */
+
+static inline bool
+gimple_call_expected_throw_p (gcall *s)
+{
+  return (gimple_call_flags (s) & ECF_XTHROW) != 0;
 }
 
 /* If FOR_VAR is true, GIMPLE_CALL S is a call to builtin_alloca that

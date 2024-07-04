@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-2017, Florida State University            --
---          Copyright (C) 1995-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,10 +38,11 @@
 --  PLEASE DO NOT add any with-clauses to this package or remove the pragma
 --  Preelaborate. This package is designed to be a bottom-level (leaf) package.
 
-with Interfaces.C;
-
 with Ada.Unchecked_Conversion;
 
+with Interfaces.C;
+
+with System.OS_Locks;
 with System.Parameters;
 
 package System.OS_Interface is
@@ -297,7 +298,7 @@ package System.OS_Interface is
 
    function To_thread_t is new Ada.Unchecked_Conversion (Integer, thread_t);
 
-   type mutex_t is limited private;
+   subtype mutex_t is System.OS_Locks.mutex_t;
 
    type cond_t is limited private;
 
@@ -542,13 +543,6 @@ private
    pragma Convention (C, record_type_3);
 
    type upad64_t is new Interfaces.Unsigned_64;
-
-   type mutex_t is record
-      flags : record_type_3;
-      lock  : upad64_t;
-      data  : upad64_t;
-   end record;
-   pragma Convention (C, mutex_t);
 
    type cond_t is record
       flags : record_type_3;

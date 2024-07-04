@@ -1,4 +1,4 @@
-/* { dg-options "-Wall -fdiagnostics-show-caret" } */
+/* { dg-options "-fpermissive -Wall -fdiagnostics-show-caret" } */
 int bch_stats_show ()
 {
   return __builtin_types_compatible_p (unsigned, int) ? "" : "";  /* { dg-warning "cast" } */

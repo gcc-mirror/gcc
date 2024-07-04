@@ -9,6 +9,7 @@ struct _ColRowInfo
   unsigned margin_b:3;
   unsigned visible:1;
 };
+int
 colrow_equal (ColRowInfo const *a, ColRowInfo const *b)
 {
   return a->size_pts == b->size_pts && a->margin_a == b->margin_a

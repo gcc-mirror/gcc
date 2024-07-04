@@ -1,5 +1,5 @@
 // -*- C++ -*- Exception handling and frame unwind runtime interface routines.
-// Copyright (C) 2001-2023 Free Software Foundation, Inc.
+// Copyright (C) 2001-2024 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -167,7 +167,7 @@ struct __cxa_eh_globals
 // throws, and if bad_exception needs to be thrown.  Called from the
 // compiler.
 extern "C" void __cxa_call_unexpected (void *) __attribute__((__noreturn__));
-extern "C" void __cxa_call_terminate (_Unwind_Exception*) throw ()
+extern "C" void __cxa_call_terminate (void*) throw ()
   __attribute__((__noreturn__));
 
 #ifdef __ARM_EABI_UNWINDER__

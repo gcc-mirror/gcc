@@ -1,15 +1,11 @@
 // { dg-module-do run }
 // { dg-additional-options "-fmodules-ts -fcontracts -fcontract-role=default:ignore,ignore,ignore" }
-module;
 #include <cstdio>
-export module bar;
-// { dg-module-cmi bar }
 import foo;
 
 template<typename T>
 bool bar_fn_pre(T n) { printf("bar fn pre(%d)\n", n); return true; }
 
-export
 template<typename T>
 T bar_fn(T n)
   [[ pre: bar_fn_pre(n) && n > 0 ]]

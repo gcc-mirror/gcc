@@ -1,5 +1,5 @@
 /* Definition of RISC-V target for GNU compiler.
-   Copyright (C) 2016-2023 Free Software Foundation, Inc.
+   Copyright (C) 2016-2024 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
 
 This file is part of GCC.
@@ -27,6 +27,7 @@ enum riscv_abi_type {
   ABI_ILP32F,
   ABI_ILP32D,
   ABI_LP64,
+  ABI_LP64E,
   ABI_LP64F,
   ABI_LP64D
 };
@@ -35,6 +36,7 @@ extern enum riscv_abi_type riscv_abi;
 enum riscv_code_model {
   CM_MEDLOW,
   CM_MEDANY,
+  CM_LARGE,
   CM_PIC
 };
 extern enum riscv_code_model riscv_cmodel;
@@ -52,7 +54,11 @@ extern enum riscv_isa_spec_class riscv_isa_spec;
 /* Keep this list in sync with define_attr "tune" in riscv.md.  */
 enum riscv_microarchitecture_type {
   generic,
-  sifive_7
+  sifive_7,
+  sifive_p400,
+  sifive_p600,
+  xiangshan,
+  generic_ooo
 };
 extern enum riscv_microarchitecture_type riscv_microarchitecture;
 
@@ -67,15 +73,8 @@ enum stack_protector_guard {
   SSP_GLOBAL			/* global canary */
 };
 
-/* RISC-V auto-vectorization preference.  */
-enum riscv_autovec_preference_enum {
-  NO_AUTOVEC,
-  RVV_SCALABLE,
-  RVV_FIXED_VLMAX
-};
-
 /* RISC-V auto-vectorization RVV LMUL.  */
-enum riscv_autovec_lmul_enum {
+enum rvv_max_lmul_enum {
   RVV_M1 = 1,
   RVV_M2 = 2,
   RVV_M4 = 4,
@@ -101,6 +100,37 @@ enum riscv_entity
   MAX_RISCV_ENTITIES
 };
 
+/* RISC-V stringop strategy. */
+enum stringop_strategy_enum {
+  /* No expansion. */
+  STRATEGY_LIBCALL = 1,
+  /* Use scalar expansion if possible. */
+  STRATEGY_SCALAR = 2,
+  /* Only vector expansion if possible. */
+  STRATEGY_VECTOR = 4,
+  /* Use any. */
+  STRATEGY_AUTO = STRATEGY_SCALAR | STRATEGY_VECTOR
+};
+
+/* Behavior of VSETVL Pass.  */
+enum vsetvl_strategy_enum {
+  /* Optimized: Run LCM dataflow analysis to reduce vsetvl* insns and
+     delete any redundant ones generated in the process.  */
+  VSETVL_OPT,
+  /* Simple: Insert a vsetvl* instruction for each Vector instruction.  */
+  VSETVL_SIMPLE,
+  /* No fusion: Disable Phase 2 earliest global fusion.  */
+  VSETVL_OPT_NO_FUSION,
+};
+
+/* RVV vector bits for option -mrvv-vector-bits, default is scalable.  */
+enum rvv_vector_bits_enum {
+  /* scalable indicates taking the value of zvl*b as the minimal vlen.  */
+  RVV_VECTOR_BITS_SCALABLE,
+  /* zvl indicates taking the value of zvl*b as the exactly vlen.  */
+  RVV_VECTOR_BITS_ZVL,
+};
+
 #define TARGET_ZICOND_LIKE (TARGET_ZICOND || (TARGET_XVENTANACONDOPS && TARGET_64BIT))
 
 /* Bit of riscv_zvl_flags will set contintuly, N-1 bit will set if N-bit is
@@ -111,9 +141,20 @@ enum riscv_entity
    ? 0 \
    : 32 << (__builtin_popcount (riscv_zvl_flags) - 1))
 
-/* We only enable VLS modes for VLA vectorization since fixed length VLMAX mode
-   is the highest priority choice and should not conflict with VLS modes.  */
-#define TARGET_VECTOR_VLS                                                      \
-  (TARGET_VECTOR && riscv_autovec_preference == RVV_SCALABLE)
+/* Same as TARGET_MIN_VLEN, but take an OPTS as gcc_options.  */
+#define TARGET_MIN_VLEN_OPTS(opts)                                             \
+  ((opts->x_riscv_zvl_flags == 0)                                              \
+     ? 0                                                                       \
+     : 32 << (__builtin_popcount (opts->x_riscv_zvl_flags) - 1))
+
+/* The maximmum LMUL according to user configuration.  */
+#define TARGET_MAX_LMUL                                                        \
+  (int) (rvv_max_lmul == RVV_DYNAMIC ? RVV_M8 : rvv_max_lmul)
+
+/* TLS types.  */
+enum riscv_tls_type {
+  TLS_TRADITIONAL,
+  TLS_DESCRIPTORS
+};
 
 #endif /* ! GCC_RISCV_OPTS_H */

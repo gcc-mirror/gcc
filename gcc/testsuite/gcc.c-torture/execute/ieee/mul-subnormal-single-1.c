@@ -4,6 +4,9 @@
 /* This test requires that float and unsigned int are the same size and
    that the sign-bit of the float is at MSB of the unsigned int.  */
 
+void abort (void);
+void exit (int);
+
 #if __INT_MAX__ != 2147483647L
 int main () { exit (0); }
 #else

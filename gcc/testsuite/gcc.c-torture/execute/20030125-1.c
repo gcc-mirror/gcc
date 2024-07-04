@@ -1,6 +1,7 @@
 /* Verify whether math functions are simplified.  */
 /* { dg-require-effective-target c99_runtime } */
 /* { dg-require-weak "" } */
+void abort(void);
 double sin(double);
 double floor(double);
 float 
@@ -18,7 +19,8 @@ q1(float a)
 {
 	return floor(a);
 }
-main()
+int
+main(void)
 {
 #ifdef __OPTIMIZE__
 	if (t(0)!=0)

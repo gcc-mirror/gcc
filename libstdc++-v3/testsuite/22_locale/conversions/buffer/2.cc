@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2023 Free Software Foundation, Inc.
+// Copyright (C) 2017-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,6 +27,7 @@ test01()
   struct Cvt : std::codecvt<char, char, std::mbstate_t> { };
   std::stringstream ss;
   std::wbuffer_convert<Cvt, char> cvt(ss.rdbuf());
+  // { dg-warning "deprecated" "" { target c++17 } 29 }
   auto p = ss.std::ios::rdbuf(&cvt);
   ss << "hello";
   VERIFY( ss.flush().good() );

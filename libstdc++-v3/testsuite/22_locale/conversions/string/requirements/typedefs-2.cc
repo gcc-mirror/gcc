@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2015-2023 Free Software Foundation, Inc.
+// Copyright (C) 2015-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,6 +33,7 @@ template<typename C>
 struct cvt : std::codecvt<wchar_t, char, std::mbstate_t> { };
 
 using wconv = std::wstring_convert<cvt, wchar_t, alloc<wchar_t>, alloc<char>>;
+// { dg-warning "deprecated" "" { target c++17 } 35 }
 
 static_assert( std::is_same<wconv::byte_string, Str<char>>::value,
 	       "byte string is std::string" );

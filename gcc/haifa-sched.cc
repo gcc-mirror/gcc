@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.
-   Copyright (C) 1992-2023 Free Software Foundation, Inc.
+   Copyright (C) 1992-2024 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -1560,8 +1560,7 @@ contributes_to_priority_p (dep_t dep)
 }
 
 /* Compute the number of nondebug deps in list LIST for INSN.  */
-
-static int
+int
 dep_list_size (rtx_insn *insn, sd_list_types_def list)
 {
   sd_iterator_def sd_it;
@@ -1570,6 +1569,11 @@ dep_list_size (rtx_insn *insn, sd_list_types_def list)
 
   if (!MAY_HAVE_DEBUG_INSNS)
     return sd_lists_size (insn, list);
+
+  /* TODO: We should split normal and debug insns into separate SD_LIST_*
+     sub-lists, and then we'll be able to use something like
+     sd_lists_size(insn, list & SD_LIST_NON_DEBUG)
+     instead of walking dependencies below.  */
 
   FOR_EACH_DEP (insn, list, sd_it, dep)
     {
@@ -9044,7 +9048,7 @@ extend_h_i_d (void)
   if (reserve > 0
       && ! h_i_d.space (reserve))
     {
-      h_i_d.safe_grow_cleared (3 * get_max_uid () / 2, true);
+      h_i_d.safe_grow_cleared (3U * get_max_uid () / 2, true);
       sched_extend_target ();
     }
 }

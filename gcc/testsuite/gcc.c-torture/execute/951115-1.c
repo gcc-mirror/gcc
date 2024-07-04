@@ -1,10 +1,15 @@
+void abort (void);
+void exit (int);
+
 int var = 0;
 
+void
 g ()
 {
   var = 1;
 }
 
+void
 f ()
 {
   int f2 = 0;
@@ -15,7 +20,8 @@ f ()
   g ();
 }
 
-main ()
+int
+main (void)
 {
   f ();
   if (var != 1)

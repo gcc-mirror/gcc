@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -22,6 +22,7 @@
 #include "rust-hir-full.h"
 #include "rust-macro-builtins.h"
 #include "rust-mapping-common.h"
+#include "rust-attribute-values.h"
 
 namespace Rust {
 namespace Analysis {
@@ -29,7 +30,7 @@ namespace Analysis {
 NodeMapping
 NodeMapping::get_error ()
 {
-  return NodeMapping (UNKNOWN_CREATENUM, UNKNOWN_NODEID, UNKNOWN_HIRID,
+  return NodeMapping (UNKNOWN_CRATENUM, UNKNOWN_NODEID, UNKNOWN_HIRID,
 		      UNKNOWN_LOCAL_DEFID);
 }
 
@@ -94,15 +95,15 @@ static const HirId kDefaultHirIdBegin = 1;
 static const HirId kDefaultCrateNumBegin = 0;
 
 Mappings::Mappings ()
-  : crateNumItr (kDefaultCrateNumBegin), currentCrateNum (UNKNOWN_CREATENUM),
+  : crateNumItr (kDefaultCrateNumBegin), currentCrateNum (UNKNOWN_CRATENUM),
     hirIdIter (kDefaultHirIdBegin), nodeIdIter (kDefaultNodeIdBegin)
 {
   Analysis::NodeMapping node (0, 0, 0, 0);
   builtinMarker
     = new HIR::ImplBlock (node, {}, {}, nullptr, nullptr, HIR::WhereClause ({}),
-			  Positive,
+			  BoundPolarity::RegularBound,
 			  HIR::Visibility (HIR::Visibility::VisType::PUBLIC),
-			  {}, {}, Location ());
+			  {}, {}, UNDEF_LOCATION);
 }
 
 Mappings::~Mappings () { delete builtinMarker; }
@@ -378,6 +379,27 @@ Mappings::lookup_hir_item (HirId id)
   auto it = hirItemMappings.find (id);
   if (it == hirItemMappings.end ())
     return nullptr;
+
+  return it->second;
+}
+
+void
+Mappings::insert_hir_enumitem (HIR::Enum *parent, HIR::EnumItem *item)
+{
+  auto id = item->get_mappings ().get_hirid ();
+  auto result = lookup_hir_enumitem (id);
+  rust_assert (result.first == nullptr);
+
+  hirEnumItemMappings[id] = {parent, item};
+  insert_node_to_hir (item->get_mappings ().get_nodeid (), id);
+}
+
+std::pair<HIR::Enum *, HIR::EnumItem *>
+Mappings::lookup_hir_enumitem (HirId id)
+{
+  auto it = hirEnumItemMappings.find (id);
+  if (it == hirEnumItemMappings.end ())
+    return {nullptr, nullptr};
 
   return it->second;
 }
@@ -687,11 +709,11 @@ Mappings::lookup_hir_struct_field (HirId id)
 void
 Mappings::insert_hir_pattern (HIR::Pattern *pattern)
 {
-  auto id = pattern->get_pattern_mappings ().get_hirid ();
+  auto id = pattern->get_mappings ().get_hirid ();
   rust_assert (lookup_hir_pattern (id) == nullptr);
 
   hirPatternMappings[id] = pattern;
-  insert_node_to_hir (pattern->get_pattern_mappings ().get_nodeid (), id);
+  insert_node_to_hir (pattern->get_mappings ().get_nodeid (), id);
 }
 
 HIR::Pattern *
@@ -771,17 +793,17 @@ Mappings::lookup_hir_to_node (HirId id, NodeId *ref)
 }
 
 void
-Mappings::insert_location (HirId id, Location locus)
+Mappings::insert_location (HirId id, location_t locus)
 {
   locations[id] = locus;
 }
 
-Location
+location_t
 Mappings::lookup_location (HirId id)
 {
   auto it = locations.find (id);
   if (it == locations.end ())
-    return Location ();
+    return UNDEF_LOCATION;
 
   return it->second;
 }
@@ -847,37 +869,28 @@ Mappings::iterate_trait_items (
 void
 Mappings::insert_macro_def (AST::MacroRulesDefinition *macro)
 {
-  static std::map<
-    std::string, std::function<AST::Fragment (Location, AST::MacroInvocData &)>>
-    builtin_macros = {
-      {"assert", MacroBuiltin::assert_handler},
-      {"file", MacroBuiltin::file_handler},
-      {"line", MacroBuiltin::line_handler},
-      {"column", MacroBuiltin::column_handler},
-      {"include_bytes", MacroBuiltin::include_bytes_handler},
-      {"include_str", MacroBuiltin::include_str_handler},
-      {"compile_error", MacroBuiltin::compile_error_handler},
-      {"concat", MacroBuiltin::concat_handler},
-      {"env", MacroBuiltin::env_handler},
-      {"cfg", MacroBuiltin::cfg_handler},
-      {"include", MacroBuiltin::include_handler},
-    };
-
   auto outer_attrs = macro->get_outer_attrs ();
   bool should_be_builtin
     = std::any_of (outer_attrs.begin (), outer_attrs.end (),
 		   [] (AST::Attribute attr) {
-		     return attr.get_path () == "rustc_builtin_macro";
+		     return attr.get_path ()
+			    == Values::Attributes::RUSTC_BUILTIN_MACRO;
 		   });
   if (should_be_builtin)
     {
-      auto builtin = builtin_macros.find (macro->get_rule_name ());
-      if (builtin != builtin_macros.end ())
-	macro->set_builtin_transcriber (builtin->second);
-      else
-	rust_error_at (macro->get_locus (),
-		       "cannot find a built-in macro with name %qs",
-		       macro->get_rule_name ().c_str ());
+      auto builtin
+	= MacroBuiltin::builtins.lookup (macro->get_rule_name ().as_string ());
+      if (!MacroBuiltin::builtins.is_iter_ok (builtin))
+	{
+	  rust_error_at (macro->get_locus (),
+			 "cannot find a built-in macro with name %qs",
+			 macro->get_rule_name ().as_string ().c_str ());
+	  return;
+	}
+
+      auto transcriber = MacroBuiltin::builtin_transcribers.find (
+	macro->get_rule_name ().as_string ());
+      macro->set_builtin_transcriber (transcriber->second);
     }
 
   auto it = macroMappings.find (macro->get_node_id ());
@@ -920,6 +933,195 @@ Mappings::lookup_macro_invocation (AST::MacroInvocation &invoc,
 }
 
 void
+Mappings::insert_exported_macro (AST::MacroRulesDefinition &def)
+{
+  exportedMacros.emplace_back (def.get_node_id ());
+}
+
+std::vector<NodeId> &
+Mappings::get_exported_macros ()
+{
+  return exportedMacros;
+}
+
+void
+Mappings::insert_derive_proc_macros (CrateNum num,
+				     std::vector<CustomDeriveProcMacro> macros)
+{
+  auto it = procmacrosDeriveMappings.find (num);
+  rust_assert (it == procmacrosDeriveMappings.end ());
+
+  procmacrosDeriveMappings[num] = macros;
+}
+
+void
+Mappings::insert_bang_proc_macros (CrateNum num,
+				   std::vector<BangProcMacro> macros)
+{
+  auto it = procmacrosBangMappings.find (num);
+  rust_assert (it == procmacrosBangMappings.end ());
+
+  procmacrosBangMappings[num] = macros;
+}
+
+void
+Mappings::insert_attribute_proc_macros (CrateNum num,
+					std::vector<AttributeProcMacro> macros)
+{
+  auto it = procmacrosAttributeMappings.find (num);
+  rust_assert (it == procmacrosAttributeMappings.end ());
+
+  procmacrosAttributeMappings[num] = macros;
+}
+
+tl::optional<std::vector<CustomDeriveProcMacro> &>
+Mappings::lookup_derive_proc_macros (CrateNum num)
+{
+  auto it = procmacrosDeriveMappings.find (num);
+  if (it == procmacrosDeriveMappings.end ())
+    return tl::nullopt;
+
+  return it->second;
+}
+
+tl::optional<std::vector<BangProcMacro> &>
+Mappings::lookup_bang_proc_macros (CrateNum num)
+{
+  auto it = procmacrosBangMappings.find (num);
+  if (it == procmacrosBangMappings.end ())
+    return tl::nullopt;
+
+  return it->second;
+}
+
+tl::optional<std::vector<AttributeProcMacro> &>
+Mappings::lookup_attribute_proc_macros (CrateNum num)
+{
+  auto it = procmacrosAttributeMappings.find (num);
+  if (it == procmacrosAttributeMappings.end ())
+    return tl::nullopt;
+
+  return it->second;
+}
+
+void
+Mappings::insert_derive_proc_macro_def (CustomDeriveProcMacro macro)
+{
+  auto it = procmacroDeriveMappings.find (macro.get_node_id ());
+  rust_assert (it == procmacroDeriveMappings.end ());
+
+  procmacroDeriveMappings[macro.get_node_id ()] = macro;
+}
+
+void
+Mappings::insert_bang_proc_macro_def (BangProcMacro macro)
+{
+  auto it = procmacroBangMappings.find (macro.get_node_id ());
+  rust_assert (it == procmacroBangMappings.end ());
+
+  procmacroBangMappings[macro.get_node_id ()] = macro;
+}
+
+void
+Mappings::insert_attribute_proc_macro_def (AttributeProcMacro macro)
+{
+  auto it = procmacroAttributeMappings.find (macro.get_node_id ());
+  rust_assert (it == procmacroAttributeMappings.end ());
+
+  procmacroAttributeMappings[macro.get_node_id ()] = macro;
+}
+
+tl::optional<CustomDeriveProcMacro &>
+Mappings::lookup_derive_proc_macro_def (NodeId id)
+{
+  auto it = procmacroDeriveMappings.find (id);
+  if (it == procmacroDeriveMappings.end ())
+    return tl::nullopt;
+
+  return it->second;
+}
+
+tl::optional<BangProcMacro &>
+Mappings::lookup_bang_proc_macro_def (NodeId id)
+{
+  auto it = procmacroBangMappings.find (id);
+  if (it == procmacroBangMappings.end ())
+    return tl::nullopt;
+
+  return it->second;
+}
+
+tl::optional<AttributeProcMacro &>
+Mappings::lookup_attribute_proc_macro_def (NodeId id)
+{
+  auto it = procmacroAttributeMappings.find (id);
+  if (it == procmacroAttributeMappings.end ())
+    return tl::nullopt;
+
+  return it->second;
+}
+
+void
+Mappings::insert_derive_proc_macro_invocation (AST::SimplePath &invoc,
+					       CustomDeriveProcMacro def)
+{
+  auto it = procmacroDeriveInvocations.find (invoc.get_node_id ());
+  rust_assert (it == procmacroDeriveInvocations.end ());
+
+  procmacroDeriveInvocations[invoc.get_node_id ()] = def;
+}
+
+tl::optional<CustomDeriveProcMacro &>
+Mappings::lookup_derive_proc_macro_invocation (AST::SimplePath &invoc)
+{
+  auto it = procmacroDeriveInvocations.find (invoc.get_node_id ());
+  if (it == procmacroDeriveInvocations.end ())
+    return tl::nullopt;
+
+  return it->second;
+}
+
+void
+Mappings::insert_bang_proc_macro_invocation (AST::MacroInvocation &invoc,
+					     BangProcMacro def)
+{
+  auto it = procmacroBangInvocations.find (invoc.get_macro_node_id ());
+  rust_assert (it == procmacroBangInvocations.end ());
+
+  procmacroBangInvocations[invoc.get_macro_node_id ()] = def;
+}
+
+tl::optional<BangProcMacro &>
+Mappings::lookup_bang_proc_macro_invocation (AST::MacroInvocation &invoc)
+{
+  auto it = procmacroBangInvocations.find (invoc.get_macro_node_id ());
+  if (it == procmacroBangInvocations.end ())
+    return tl::nullopt;
+
+  return it->second;
+}
+
+void
+Mappings::insert_attribute_proc_macro_invocation (AST::SimplePath &invoc,
+						  AttributeProcMacro def)
+{
+  auto it = procmacroAttributeInvocations.find (invoc.get_node_id ());
+  rust_assert (it == procmacroAttributeInvocations.end ());
+
+  procmacroAttributeInvocations[invoc.get_node_id ()] = def;
+}
+
+tl::optional<AttributeProcMacro &>
+Mappings::lookup_attribute_proc_macro_invocation (AST::SimplePath &invoc)
+{
+  auto it = procmacroAttributeInvocations.find (invoc.get_node_id ());
+  if (it == procmacroAttributeInvocations.end ())
+    return tl::nullopt;
+
+  return it->second;
+}
+
+void
 Mappings::insert_visibility (NodeId id, Privacy::ModuleVisibility visibility)
 {
   visibility_map.insert ({id, visibility});
@@ -946,14 +1148,14 @@ Mappings::insert_module_child (NodeId module, NodeId child)
     it->second.emplace_back (child);
 }
 
-Optional<std::vector<NodeId> &>
+tl::optional<std::vector<NodeId> &>
 Mappings::lookup_module_children (NodeId module)
 {
   auto it = module_child_map.find (module);
   if (it == module_child_map.end ())
-    return Optional<std::vector<NodeId> &>::none ();
+    return tl::nullopt;
 
-  return Optional<std::vector<NodeId> &>::some (it->second);
+  return it->second;
 }
 
 void
@@ -970,33 +1172,34 @@ Mappings::insert_module_child_item (NodeId module,
     it->second.emplace_back (child);
 }
 
-Optional<std::vector<Resolver::CanonicalPath> &>
+tl::optional<std::vector<Resolver::CanonicalPath> &>
 Mappings::lookup_module_chidren_items (NodeId module)
 {
   auto it = module_child_items.find (module);
   if (it == module_child_items.end ())
-    return Optional<std::vector<Resolver::CanonicalPath> &>::none ();
+    return tl::nullopt;
 
-  return Optional<std::vector<Resolver::CanonicalPath> &>::some (it->second);
+  return it->second;
 }
 
-Optional<Resolver::CanonicalPath &>
+tl::optional<Resolver::CanonicalPath &>
 Mappings::lookup_module_child (NodeId module, const std::string &item_name)
 {
-  Optional<std::vector<Resolver::CanonicalPath> &> children
+  tl::optional<std::vector<Resolver::CanonicalPath> &> children
     = lookup_module_chidren_items (module);
-  if (children.is_none ())
-    return Optional<Resolver::CanonicalPath &>::none ();
+  if (!children.has_value ())
+    return tl::nullopt;
 
   // lookup the children to match the name if we can
-  for (auto &child : children.get ())
+  for (auto &child : children.value ())
     {
       const std::string &raw_identifier = child.get ();
       bool found = raw_identifier.compare (item_name) == 0;
       if (found)
-	return Optional<Resolver::CanonicalPath &>::some (child);
+	return child;
     }
-  return Optional<Resolver::CanonicalPath &>::none ();
+
+  return tl::nullopt;
 }
 
 void
@@ -1006,14 +1209,14 @@ Mappings::insert_child_item_to_parent_module_mapping (NodeId child_item,
   child_to_parent_module_map.insert ({child_item, parent_module});
 }
 
-Optional<NodeId>
+tl::optional<NodeId>
 Mappings::lookup_parent_module (NodeId child_item)
 {
   auto it = child_to_parent_module_map.find (child_item);
   if (it == child_to_parent_module_map.end ())
-    return Optional<NodeId>::none ();
+    return tl::nullopt;
 
-  return Optional<NodeId>::some (it->second);
+  return it->second;
 }
 
 bool
@@ -1046,6 +1249,26 @@ HIR::ImplBlock *
 Mappings::lookup_builtin_marker ()
 {
   return builtinMarker;
+}
+
+DefId
+Mappings::get_lang_item (RustLangItem::ItemType item_type, location_t locus)
+{
+  DefId item = UNKNOWN_DEFID;
+  bool ok = lookup_lang_item (item_type, &item);
+  if (!ok)
+    rust_fatal_error (locus, "failed to find lang item %s",
+		      RustLangItem::ToString (item_type).c_str ());
+
+  return item;
+}
+
+HIR::TraitItem *
+Mappings::lookup_trait_item_lang_item (Analysis::RustLangItem::ItemType item,
+				       location_t locus)
+{
+  DefId trait_item_id = get_lang_item (item, locus);
+  return lookup_trait_item_defid (trait_item_id);
 }
 
 } // namespace Analysis

@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2023 Free Software Foundation, Inc.
+# Copyright (C) 2012-2024 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -163,6 +163,9 @@ proc gdc-convert-args { args } {
 	    upvar 2 compilable_do_what compilable_do_what
 	    set compilable_do_what "compile"
 
+	} elseif [string match "-nothrow" $arg] {
+	    lappend out "-fno-exceptions"
+
 	} elseif [string match "-vgc" $arg] {
 	    lappend out "-ftransition=nogc"
 
@@ -241,6 +244,7 @@ proc gdc-copy-file { srcdir filename } {
 #   POST_SCRIPT:	Not handled.
 #   REQUIRED_ARGS:	Arguments to add to the compiler command line.
 #   DISABLED:		Not handled.
+#   UNICODE_NAMES:	Requires ucn support.
 #
 
 proc gdc-convert-test { base test } {
@@ -362,6 +366,10 @@ proc gdc-convert-test { base test } {
 	    # COMPILABLE_MATH_TEST annotates tests that import the std.math
 	    # module.  Which will need skipping if not available on the target.
 	    set needs_phobos 1
+	} elseif [regexp -- {UNICODE_NAMES} $copy_line] {
+	    # Require ucn support.
+	    puts $fdout "// { dg-require-effective-target ucn }"
+
 	}
     }
 

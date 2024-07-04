@@ -1,5 +1,5 @@
 /* Induction variable optimizations.
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1036,10 +1036,12 @@ niter_for_exit (struct ivopts_data *data, edge exit)
 	 names that appear in phi nodes on abnormal edges, so that we do not
 	 create overlapping life ranges for them (PR 27283).  */
       desc = XNEW (class tree_niter_desc);
+      ::new (static_cast<void*> (desc)) tree_niter_desc ();
       if (!number_of_iterations_exit (data->current_loop,
 				      exit, desc, true)
      	  || contains_abnormal_ssa_name_p (desc->niter))
 	{
+	  desc->~tree_niter_desc ();
 	  XDELETE (desc);
 	  desc = NULL;
 	}
@@ -2827,12 +2829,29 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
       else if (integer_zerop (op0))
 	{
 	  if (code == MINUS_EXPR)
-	    expr = fold_build1 (NEGATE_EXPR, type, op1);
+	    {
+	      if (TYPE_OVERFLOW_UNDEFINED (type))
+		{
+		  type = unsigned_type_for (type);
+		  op1 = fold_convert (type, op1);
+		}
+	      expr = fold_build1 (NEGATE_EXPR, type, op1);
+	    }
 	  else
 	    expr = op1;
 	}
       else
-	expr = fold_build2 (code, type, op0, op1);
+	{
+	  if (TYPE_OVERFLOW_UNDEFINED (type))
+	    {
+	      type = unsigned_type_for (type);
+	      if (code == POINTER_PLUS_EXPR)
+		code = PLUS_EXPR;
+	      op0 = fold_convert (type, op0);
+	      op1 = fold_convert (type, op1);
+	    }
+	  expr = fold_build2 (code, type, op0, op1);
+	}
 
       return fold_convert (orig_type, expr);
 
@@ -2850,7 +2869,15 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
       if (integer_zerop (op0))
 	expr = op0;
       else
-	expr = fold_build2 (MULT_EXPR, type, op0, op1);
+	{
+	  if (TYPE_OVERFLOW_UNDEFINED (type))
+	    {
+	      type = unsigned_type_for (type);
+	      op0 = fold_convert (type, op0);
+	      op1 = fold_convert (type, op1);
+	    }
+	  expr = fold_build2 (MULT_EXPR, type, op0, op1);
+	}
 
       return fold_convert (orig_type, expr);
 
@@ -5500,7 +5527,8 @@ may_eliminate_iv (struct ivopts_data *data,
 
   /* It is unlikely that computing the number of iterations using division
      would be more profitable than keeping the original induction variable.  */
-  if (expression_expensive_p (*bound))
+  bool cond_overflow_p;
+  if (expression_expensive_p (*bound, &cond_overflow_p))
     return false;
 
   /* Sometimes, it is possible to handle the situation that the number of
@@ -7894,7 +7922,11 @@ remove_unused_ivs (struct ivopts_data *data, bitmap toremove)
 bool
 free_tree_niter_desc (edge const &, tree_niter_desc *const &value, void *)
 {
-  free (value);
+  if (value)
+    {
+      value->~tree_niter_desc ();
+      free (value);
+    }
   return true;
 }
 

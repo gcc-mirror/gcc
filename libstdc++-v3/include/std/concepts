@@ -1,6 +1,6 @@
 // <concepts> -*- C++ -*-
 
-// Copyright (C) 2019-2023 Free Software Foundation, Inc.
+// Copyright (C) 2019-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -61,6 +61,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Up>
     concept same_as
       = __detail::__same_as<_Tp, _Up> && __detail::__same_as<_Up, _Tp>;
+
+  namespace __detail
+  {
+    template<typename _Tp, typename _Up>
+      concept __different_from
+	= !same_as<remove_cvref_t<_Tp>, remove_cvref_t<_Up>>;
+  } // namespace __detail
 
   /// [concept.derived], concept derived_from
   template<typename _Derived, typename _Base>
@@ -185,8 +192,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Tp, typename _Up>
 	concept __adl_swap
-	  = (__detail::__class_or_enum<remove_reference_t<_Tp>>
-	    || __detail::__class_or_enum<remove_reference_t<_Up>>)
+	  = (std::__detail::__class_or_enum<remove_reference_t<_Tp>>
+	    || std::__detail::__class_or_enum<remove_reference_t<_Up>>)
 	  && requires(_Tp&& __t, _Up&& __u) {
 	    swap(static_cast<_Tp&&>(__t), static_cast<_Up&&>(__u));
 	  };

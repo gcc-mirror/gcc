@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -80,12 +80,12 @@ package Csets is
    Fold_Lower : Translate_Table;
    --  Table to fold upper case identifier letters to lower case
 
-   Identifier_Char : Char_Array_Flags;
-   --  This table has True entries for all characters that can legally appear
-   --  in identifiers, including digits, the underline character, all letters
-   --  including upper and lower case and extended letters (as controlled by
-   --  the setting of Opt.Identifier_Character_Set), left bracket for brackets
-   --  notation wide characters and also ESC if wide characters are permitted
-   --  in identifiers using escape sequences starting with ESC.
+   function Identifier_Char (Item : Character) return Boolean;
+   --  Return True for all characters that can legally appear in identifiers,
+   --  including digits, the underline character, all letters including upper
+   --  and lower case and extended letters (as controlled by the setting of
+   --  Opt.Identifier_Character_Set), left bracket for brackets notation wide
+   --  characters and also ESC if wide characters are permitted in identifiers
+   --  using escape sequences starting with ESC.
 
 end Csets;

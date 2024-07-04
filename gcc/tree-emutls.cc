@@ -1,5 +1,5 @@
 /* Lower TLS operations to emulation functions.
-   Copyright (C) 2006-2023 Free Software Foundation, Inc.
+   Copyright (C) 2006-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "tree-iterator.h"
 #include "gimplify.h"
+#include "diagnostic-core.h" /* for seen_error */
 
 /* Whenever a target does not support thread-local storage (TLS) natively,
    we can emulate it with some run-time support in libgcc.  This will in
@@ -841,7 +842,7 @@ public:
   bool gate (function *) final override
     {
       /* If the target supports TLS natively, we need do nothing here.  */
-      return !targetm.have_tls;
+      return !targetm.have_tls && !seen_error ();
     }
 
   unsigned int execute (function *) final override

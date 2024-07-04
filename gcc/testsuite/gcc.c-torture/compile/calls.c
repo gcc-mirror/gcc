@@ -1,6 +1,7 @@
 /* { dg-require-effective-target ptr32plus } */
 /* { dg-require-effective-target untyped_assembly } */
 /* { dg-require-effective-target indirect_calls } */
+/* { dg-additional-options "-std=gnu89" } */
 
 typedef void  *(*T)(void);
 f1 ()

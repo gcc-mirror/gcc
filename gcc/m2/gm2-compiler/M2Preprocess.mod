@@ -1,6 +1,6 @@
 (* M2Preprocess.mod provides a mechanism to invoke the C preprocessor.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -33,22 +33,35 @@ FROM libc IMPORT system, exit, unlink, printf, atexit ;
 FROM Lists IMPORT List, InitList, KillList, IncludeItemIntoList, ForeachItemInListDo ;
 FROM FIO IMPORT StdErr, StdOut ;
 FROM M2Printf IMPORT fprintf1 ;
-FROM M2Options IMPORT Verbose, PPonly, GetObj, GetMD, GetMMD, GetMQ,
-                      CppCommandLine, SaveTemps, GetSaveTempsDir, GetDumpDir ;
+
+FROM M2Options IMPORT Verbose, PPonly, GetObj, GetMD, GetMMD, GetCpp, GetMQ,
+                      CppCommandLine, SaveTemps, GetSaveTempsDir, GetDumpDir,
+                      GetM, GetMM ;
+
 FROM NameKey IMPORT Name, MakeKey, KeyToCharStar, makekey ;
 
+
+CONST
+   Debugging = FALSE ;
 
 VAR
    ListOfFiles: List ;
 
 
 (*
-   OnExitDelete -
+   OnExitDelete - when the application finishes delete filename.
 *)
 
 PROCEDURE OnExitDelete (filename: String) : String ;
 BEGIN
-   IncludeItemIntoList (ListOfFiles, makekey (filename)) ;
+   IF filename # NIL
+   THEN
+      IF Debugging
+      THEN
+         printf ("scheduling removal: %s\n", string (filename))
+      END ;
+      IncludeItemIntoList (ListOfFiles, makekey (string (filename)))
+   END ;
    RETURN filename
 END OnExitDelete ;
 
@@ -62,6 +75,10 @@ VAR
    n: Name ;
 BEGIN
    n := w ;
+   IF Debugging
+   THEN
+      printf ("removing: %s\n", KeyToCharStar (n))
+   END ;
    IF unlink (KeyToCharStar (n)) # 0
    THEN
    END
@@ -98,63 +115,136 @@ END GetFileName ;
 
 
 (*
-   Return basename.
-*)
-
-(*
-PROCEDURE BaseName (Path: String) : String ;
-VAR
-   ext,
-   basename: INTEGER ;
-BEGIN
-   basename := RIndex(Path, '/', 0) ;
-   IF basename=-1
-   THEN
-      basename := 0
-   ELSE
-      basename := basename + 1
-   END ;
-   ext := RIndex(Path, '.', 0) ;
-   IF ext=-1
-   THEN
-      ext := 0
-   END ;
-   RETURN Dup (Slice(Path, basename, ext))
-END BaseName ;
-*)
-
-(*
-   MakeSaveTempsFileName - return a temporary file like 
-   "./filename.{def,mod}.m2i" in the CWD unless SaveTempsDir = obj,
-   when we put it in the dumpdir if that is specified (or fallback to '.'
-   if not).
+   MakeSaveTempsFileName - return a temporary file like
+   "./filename.{def,mod}.m2i" in the current working directory unless
+   SaveTempsDir = obj, when we put it in the dumpdir if that is specified
+   (or fallback to '.' if not).
    We have to keep the original extension because that disambiguates .def
    and .mod files (otherwise, we'd need two 'preprocessed' extensions).
 *)
 
 PROCEDURE MakeSaveTempsFileName (filename: String) : String ;
+BEGIN
+   RETURN MakeSaveTempsFileNameExt (filename, InitString ('.m2i'))
+END MakeSaveTempsFileName ;
+
+
+(*
+   MakeSaveTempsFileNameExt - creates and return the temporary filename.ext.
+                              in the current working directory unless
+                              SaveTempsDir = obj, when we put it in the dumpdir
+                              if that is specified (or fallback to '.' if not).
+*)
+
+PROCEDURE MakeSaveTempsFileNameExt (filename, ext: String) : String ;
 VAR
    NewName,
    DumpDir,
    NewDir : String ;
 BEGIN
-   NewName := ConCat (GetFileName (filename), InitString ('.m2i')) ;
-   NewDir := GetSaveTempsDir () ;
-   DumpDir := GetDumpDir () ;
-(*   IF Verbose
+   NewName := ConCat (Dup (GetFileName (filename)), ext) ;
+   NewDir := Dup (GetSaveTempsDir ()) ;
+   DumpDir := Dup (GetDumpDir ()) ;
+   IF Debugging
    THEN
       fprintf1 (StdOut, "newname: %s", NewName) ;
       fprintf1 (StdOut, " NewDir: %s", NewDir) ;
       fprintf1 (StdOut, " DumpDir: %s\n", DumpDir)
    END ;
-*)
    IF (NewDir#NIL) AND EqualArray (NewDir, 'obj') AND (DumpDir#NIL)
    THEN
-      RETURN Dup (ConCat (DumpDir, NewName))
+      RETURN ConCat (DumpDir, NewName)
    ELSE
-      RETURN Dup (ConCat (InitString ('./'), NewName))
+      RETURN ConCat (InitString ('./'), NewName)
    END ;
-END MakeSaveTempsFileName ;
+END MakeSaveTempsFileNameExt ;
+
+
+(*
+   BuildCommandLineExecute - build the cpp command line and execute the command and return
+                             the tempfile containing the preprocessed source.
+*)
+
+PROCEDURE BuildCommandLineExecute (filename: String;
+                                   topSource, deleteDep: BOOLEAN;
+                                   command, outputdep: String) : String ;
+VAR
+   tempfile,
+   commandLine: String ;
+BEGIN
+   commandLine := Dup (command) ;
+   tempfile := NIL ;
+   (* We support MD and MMD for the main file only, at present.  *)
+   IF topSource OR PPonly
+   THEN
+      IF GetMD ()
+      THEN
+         tempfile := ConCat (InitString(' -MD '), outputdep)
+      ELSIF GetMMD ()
+      THEN
+         tempfile := ConCat (InitString(' -MMD '), outputdep)
+      END ;
+      IF tempfile#NIL
+      THEN
+         commandLine := ConCat (Dup (commandLine), Dup (tempfile)) ;
+         (* We can only add MQ if we already have an MD/MMD.  *)
+         IF GetMQ () # NIL
+         THEN
+            tempfile := InitStringCharStar (GetMQ ()) ;
+            commandLine := ConCat (Dup (commandLine), Dup (tempfile))
+         END
+      END
+   END ;
+   (* The output file depends on whether we are in stand-alone PP mode, and
+      if an output file is specified.  *)
+   tempfile := NIL ;
+   IF PPonly
+   THEN
+      IF GetObj () # NIL
+      THEN
+         tempfile := InitStringCharStar (GetObj ())
+      END
+   ELSIF SaveTemps
+   THEN
+      tempfile := MakeSaveTempsFileName (filename)
+   ELSE
+      tempfile := InitStringCharStar (make_temp_file (KeyToCharStar (MakeKey('.m2i'))))
+   END ;
+   commandLine := ConCat (ConCatChar (Dup (commandLine), ' '), filename) ;
+   IF tempfile # NIL
+   THEN
+      commandLine := ConCat (ConCat (Dup (commandLine),
+                                     Mark (InitString(' -o '))), tempfile) ;
+   END ;
+   IF (outputdep # NIL) AND (Length (outputdep) > 0) AND (GetM () OR GetMM ())
+   THEN
+      commandLine := ConCat (commandLine, ConCat (Mark (InitString (' -MF ')),
+                                                  outputdep)) ;
+      IF deleteDep AND (NOT SaveTemps)
+      THEN
+         outputdep := OnExitDelete (outputdep)
+      END
+   END ;
+   (* use pexecute in the future
+      res := pexecute(string(Slice(commandLine, 0, Index(commandLine, ' ', 0))), etc etc );  *)
+   (* for now we'll use system *)
+   IF Verbose
+   THEN
+      fprintf1 (StdOut, "preprocess: %s\n", commandLine)
+   END ;
+   IF system (string (commandLine)) # 0
+   THEN
+      fprintf1 (StdErr, 'C preprocessor failed when preprocessing %s\n', filename) ;
+      exit (1)
+   END ;
+   commandLine := KillString (commandLine) ;
+   IF SaveTemps
+   THEN
+      RETURN tempfile
+   ELSE
+      RETURN OnExitDelete (tempfile)
+   END
+END BuildCommandLineExecute ;
 
 
 (*
@@ -165,86 +255,34 @@ END MakeSaveTempsFileName ;
                       If preprocessing occurs then a temporary file is created
                       and its name is returned.
                       All temporary files will be deleted when the compiler exits.
+                      outputdep is the filename which will contain the dependency
+                      info if -M, -MM is provided.  outputdep can be NIL in which case
+                      it is ignored.
 *)
 
-PROCEDURE PreprocessModule (filename: String; isMain: BOOLEAN) : String ;
+PROCEDURE PreprocessModule (filename: String;
+                            topSource, deleteDep: BOOLEAN;
+                            outputDep: String) : String ;
 VAR
-   tempfile,
-   command,
-   commandLine: String ;
+   command: String ;
 BEGIN
-   command := CppCommandLine () ;
-   IF (command = NIL) OR EqualArray (command, '')
+   IF GetCpp ()
    THEN
-      RETURN Dup (filename)
-   ELSE
-      commandLine := Dup (command) ;
-      tempfile := NIL ;
-      (* We support MD and MMD for the main file only, at present.  *)
-      IF isMain OR PPonly
+      command := CppCommandLine () ;
+      IF (command = NIL) OR EqualArray (command, '')
       THEN
-         IF GetMD () # NIL
-         THEN
-            tempfile := ConCat( Mark (InitString(' -MD ')),
-                                InitStringCharStar (GetMD ()))
-         ELSIF GetMMD () # NIL
-         THEN
-            tempfile := ConCat( Mark (InitString(' -MMD ')),
-                                InitStringCharStar (GetMMD ()))
-         END ;
-         IF tempfile#NIL
-         THEN
-            commandLine := ConCat (Dup (commandLine), Dup (tempfile)) ;
-            (* We can only add MQ if we already have an MD/MMD.  *)
-            IF GetMQ () # NIL
-            THEN
-               tempfile := ConCat( Mark (InitString(' -MQ ')),
-                                 InitStringCharStar (GetMQ ())) ;
-               commandLine := ConCat (Dup (commandLine), Dup (tempfile))
-            END ;
-         END ;
+         RETURN Dup (filename)
       END ;
-      (* The output file depends on whether we are in stand-alone PP mode, and
-         if an output file is specified.  *)
-      tempfile := NIL ;
-      IF PPonly
+      command := BuildCommandLineExecute (filename, topSource, deleteDep,
+                                          command, outputDep) ;
+      IF command = NIL
       THEN
-         IF GetObj () # NIL
-         THEN
-           tempfile := InitStringCharStar (GetObj ())
-         END ;
-      ELSIF SaveTemps
-      THEN
-         tempfile := MakeSaveTempsFileName (filename)
+         RETURN filename
       ELSE
-         tempfile := InitStringCharStar (make_temp_file (KeyToCharStar (MakeKey('.m2i'))))
-      END ;
-      commandLine := ConCat (ConCatChar (Dup (commandLine), ' '), filename) ;
-      IF tempfile # NIL
-      THEN
-         commandLine := ConCat (ConCat (Dup (commandLine),
-                                        Mark (InitString(' -o '))), tempfile) ;
-      END ;
-(*  use pexecute in the future
-      res := pexecute(string(Slice(commandLine, 0, Index(commandLine, ' ', 0))), etc etc );
-*)
-      (* for now we'll use system *)
-      IF Verbose
-      THEN
-         fprintf1 (StdOut, "preprocess: %s\n", commandLine)
-      END ;
-      IF system (string (commandLine)) # 0
-      THEN
-         fprintf1 (StdErr, 'C preprocessor failed when preprocessing %s\n', filename) ;
-         exit (1)
-      END ;
-      commandLine := KillString (commandLine) ;
-      IF SaveTemps
-      THEN
-         RETURN tempfile
-      ELSE
-         RETURN OnExitDelete (tempfile)
+         RETURN command
       END
+   ELSE
+      RETURN Dup (filename)
    END
 END PreprocessModule ;
 

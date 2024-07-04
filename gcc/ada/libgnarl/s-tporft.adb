@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 2002-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -98,6 +98,7 @@ begin
    System.Soft_Links.Create_TSD
      (Self_Id.Common.Compiler_Data, null, Sec_Stack_Size);
 
+   Self_Id.Common.LL.Thread := Thread;
    Enter_Task (Self_Id);
 
    return Self_Id;

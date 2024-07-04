@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,6 +50,7 @@ with Sem_Ch3;        use Sem_Ch3;
 with Sem_Ch8;        use Sem_Ch8;
 with Sem_Cat;        use Sem_Cat;
 with Sem_Disp;       use Sem_Disp;
+with Sem_Elab;       use Sem_Elab;
 with Sem_Eval;       use Sem_Eval;
 with Sem_Mech;       use Sem_Mech;
 with Sem_Res;        use Sem_Res;
@@ -322,7 +323,8 @@ package body Checks is
    --  that the access value is non-null, since the checks do not
    --  not apply to null access values.
 
-   procedure Install_Static_Check (R_Cno : Node_Id; Loc : Source_Ptr);
+   procedure Install_Static_Check
+     (R_Cno : Node_Id; Loc : Source_Ptr; Reason : RT_Exception_Code);
    --  Called by Apply_{Length,Range}_Checks to rewrite the tree with the
    --  Constraint_Error node.
 
@@ -346,7 +348,7 @@ package body Checks is
       Warn_Node  : Node_Id) return Check_Result;
    --  Like Apply_Selected_Length_Checks, except it doesn't modify
    --  anything, just returns a list of nodes as described in the spec of
-   --  this package for the Range_Check function.
+   --  this package for the Get_Range_Checks function.
    --  ??? In fact it does construct the test and insert it into the tree,
    --  and insert actions in various ways (calling Insert_Action directly
    --  in particular) so we do not call it in GNATprove mode, contrary to
@@ -359,7 +361,7 @@ package body Checks is
       Warn_Node  : Node_Id) return Check_Result;
    --  Like Apply_Range_Check, except it does not modify anything, just
    --  returns a list of nodes as described in the spec of this package
-   --  for the Range_Check function.
+   --  for the Get_Range_Checks function.
 
    ------------------------------
    -- Access_Checks_Suppressed --
@@ -1664,7 +1666,7 @@ package body Checks is
                end if;
 
                --  If the expressions for the discriminants are identical
-               --  and it is side-effect free (for now just an entity),
+               --  and it is side-effect-free (for now just an entity),
                --  this may be a shared constraint, e.g. from a subtype
                --  without a constraint introduced as a generic actual.
                --  Examine other discriminants if any.
@@ -2720,15 +2722,20 @@ package body Checks is
    ---------------------------
 
    procedure Apply_Predicate_Check
-     (N   : Node_Id;
-      Typ : Entity_Id;
-      Fun : Entity_Id := Empty)
+     (N     : Node_Id;
+      Typ   : Entity_Id;
+      Deref : Boolean := False;
+      Fun   : Entity_Id := Empty)
    is
-      Par : Node_Id;
-      S   : Entity_Id;
+      Loc            : constant Source_Ptr := Sloc (N);
+      Check_Disabled : constant Boolean :=
+        not Predicate_Enabled (Typ)
+          or else not Predicate_Check_In_Scope (N);
 
-      Check_Disabled : constant Boolean := not Predicate_Enabled (Typ)
-        or else not Predicate_Check_In_Scope (N);
+      Expr : Node_Id;
+      Par  : Node_Id;
+      S    : Entity_Id;
+
    begin
       S := Current_Scope;
       while Present (S) and then not Is_Subprogram (S) loop
@@ -2757,7 +2764,7 @@ package body Checks is
 
          if not Check_Disabled then
             Insert_Action (N,
-              Make_Raise_Storage_Error (Sloc (N),
+              Make_Raise_Storage_Error (Loc,
                 Reason => SE_Infinite_Recursion));
             return;
          end if;
@@ -2824,19 +2831,9 @@ package body Checks is
          Par := Parent (Par);
       end if;
 
-      --  For an entity of the type, generate a call to the predicate
-      --  function, unless its type is an actual subtype, which is not
-      --  visible outside of the enclosing subprogram.
+      --  Try to avoid creating a temporary if the expression is an aggregate
 
-      if Is_Entity_Name (N)
-        and then not Is_Actual_Subtype (Typ)
-      then
-         Insert_Action (N,
-           Make_Predicate_Check
-             (Typ, New_Occurrence_Of (Entity (N), Sloc (N))));
-         return;
-
-      elsif Nkind (N) in N_Aggregate | N_Extension_Aggregate then
+      if Nkind (N) in N_Aggregate | N_Extension_Aggregate then
 
          --  If the expression is an aggregate in an assignment, apply the
          --  check to the LHS after the assignment, rather than create a
@@ -2871,21 +2868,36 @@ package body Checks is
             then
                Insert_Action_After (Par,
                   Make_Predicate_Check (Typ,
-                    New_Occurrence_Of (Defining_Identifier (Par), Sloc (N))));
+                    New_Occurrence_Of (Defining_Identifier (Par), Loc)));
                return;
             end if;
 
          end if;
       end if;
 
-      --  If the expression is not an entity it may have side effects,
-      --  and the following call will create an object declaration for
-      --  it. We disable checks during its analysis, to prevent an
-      --  infinite recursion.
+      --  For an entity of the type, generate a call to the predicate
+      --  function, unless its type is an actual subtype, which is not
+      --  visible outside of the enclosing subprogram.
 
-      Insert_Action (N,
-        Make_Predicate_Check
-          (Typ, Duplicate_Subexpr (N)), Suppress => All_Checks);
+      if Is_Entity_Name (N) and then not Is_Actual_Subtype (Typ) then
+         Expr := New_Occurrence_Of (Entity (N), Loc);
+
+      --  If the expression is not an entity, it may have side effects
+
+      else
+         Expr := Duplicate_Subexpr (N);
+      end if;
+
+      --  Make the dereference if requested
+
+      if Deref then
+         Expr := Make_Explicit_Dereference (Loc, Prefix => Expr);
+      end if;
+
+      --  Disable checks to prevent an infinite recursion
+
+      Insert_Action
+        (N, Make_Predicate_Check (Typ, Expr), Suppress => All_Checks);
    end Apply_Predicate_Check;
 
    -----------------------
@@ -2991,7 +3003,7 @@ package body Checks is
             Insert_Action (Insert_Node, R_Cno);
 
          else
-            Install_Static_Check (R_Cno, Loc);
+            Install_Static_Check (R_Cno, Loc, CE_Range_Check_Failed);
          end if;
       end loop;
    end Apply_Range_Check;
@@ -3459,7 +3471,7 @@ package body Checks is
             end if;
 
          else
-            Install_Static_Check (R_Cno, Loc);
+            Install_Static_Check (R_Cno, Loc, CE_Length_Check_Failed);
          end if;
       end loop;
    end Apply_Selected_Length_Checks;
@@ -6828,6 +6840,9 @@ package body Checks is
       then
          return True;
 
+      elsif Is_Static_Expression (Expr) then
+         return True;
+
       --  If the expression is the value of an object that is known to be
       --  valid, then clearly the expression value itself is valid.
 
@@ -7234,7 +7249,8 @@ package body Checks is
       Loc   : constant Source_Ptr := Sloc (N);
       A     : constant Node_Id    := Prefix (N);
       A_Ent : constant Entity_Id  := Entity_Of_Prefix;
-      Sub   : Node_Id;
+
+      Expr : Node_Id;
 
    --  Start of processing for Generate_Index_Checks
 
@@ -7280,13 +7296,13 @@ package body Checks is
       --  us to omit the check have already been taken into account in the
       --  setting of the Do_Range_Check flag earlier on.
 
-      Sub := First (Expressions (N));
+      Expr := First (Expressions (N));
 
       --  Handle string literals
 
       if Ekind (Etype (A)) = E_String_Literal_Subtype then
-         if Do_Range_Check (Sub) then
-            Set_Do_Range_Check (Sub, False);
+         if Do_Range_Check (Expr) then
+            Set_Do_Range_Check (Expr, False);
 
             --  For string literals we obtain the bounds of the string from the
             --  associated subtype.
@@ -7296,8 +7312,8 @@ package body Checks is
                 Condition =>
                    Make_Not_In (Loc,
                      Left_Opnd  =>
-                       Convert_To (Base_Type (Etype (Sub)),
-                         Duplicate_Subexpr_Move_Checks (Sub)),
+                       Convert_To (Base_Type (Etype (Expr)),
+                         Duplicate_Subexpr_Move_Checks (Expr)),
                      Right_Opnd =>
                        Make_Attribute_Reference (Loc,
                          Prefix         => New_Occurrence_Of (Etype (A), Loc),
@@ -7316,11 +7332,19 @@ package body Checks is
             Ind     : Pos;
             Num     : List_Id;
             Range_N : Node_Id;
+            Stmt    : Node_Id;
+            Sub     : Node_Id;
 
          begin
             A_Idx := First_Index (Etype (A));
             Ind   := 1;
-            while Present (Sub) loop
+            while Present (Expr) loop
+               if Nkind (Expr) = N_Expression_With_Actions then
+                  Sub := Expression (Expr);
+               else
+                  Sub := Expr;
+               end if;
+
                if Do_Range_Check (Sub) then
                   Set_Do_Range_Check (Sub, False);
 
@@ -7382,7 +7406,7 @@ package body Checks is
                          Expressions    => Num);
                   end if;
 
-                  Insert_Action (N,
+                  Stmt :=
                     Make_Raise_Constraint_Error (Loc,
                       Condition =>
                          Make_Not_In (Loc,
@@ -7390,14 +7414,21 @@ package body Checks is
                              Convert_To (Base_Type (Etype (Sub)),
                                Duplicate_Subexpr_Move_Checks (Sub)),
                            Right_Opnd => Range_N),
-                      Reason => CE_Index_Check_Failed));
+                      Reason => CE_Index_Check_Failed);
+
+                  if Nkind (Expr) = N_Expression_With_Actions then
+                     Append_To (Actions (Expr), Stmt);
+                     Analyze (Stmt);
+                  else
+                     Insert_Action (Expr, Stmt);
+                  end if;
 
                   Checks_Generated.Elements (Ind) := True;
                end if;
 
                Next_Index (A_Idx);
                Ind := Ind + 1;
-               Next (Sub);
+               Next (Expr);
             end loop;
          end;
       end if;
@@ -8592,8 +8623,9 @@ package body Checks is
       --  need to be called while elaboration is taking place.
 
       elsif Is_Controlled (Tag_Typ)
-        and then
-          Chars (Subp_Id) in Name_Adjust | Name_Finalize | Name_Initialize
+        and then (Is_Controlled_Procedure (Subp_Id, Name_Adjust)
+                   or else Is_Controlled_Procedure (Subp_Id, Name_Finalize)
+                   or else Is_Controlled_Procedure (Subp_Id, Name_Initialize))
       then
          return;
       end if;
@@ -8682,14 +8714,16 @@ package body Checks is
    -- Install_Static_Check --
    --------------------------
 
-   procedure Install_Static_Check (R_Cno : Node_Id; Loc : Source_Ptr) is
+   procedure Install_Static_Check
+     (R_Cno : Node_Id; Loc : Source_Ptr; Reason : RT_Exception_Code)
+   is
       Stat : constant Boolean   := Is_OK_Static_Expression (R_Cno);
       Typ  : constant Entity_Id := Etype (R_Cno);
 
    begin
       Rewrite (R_Cno,
         Make_Raise_Constraint_Error (Loc,
-          Reason => CE_Range_Check_Failed));
+          Reason => Reason));
       Set_Analyzed (R_Cno);
       Set_Etype (R_Cno, Typ);
       Set_Raises_Constraint_Error (R_Cno);

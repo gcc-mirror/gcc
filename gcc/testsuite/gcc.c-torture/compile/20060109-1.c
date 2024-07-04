@@ -16,11 +16,15 @@ struct cpp_callbacks
   void (*ident) (cpp_reader *, unsigned int, const cpp_string *);
 };
 static void cb_ident (cpp_reader *, unsigned int, const cpp_string *);
+int cpp_interpret_string (cpp_reader *, const cpp_string *, int,
+                          cpp_string *, int);
+void
 init_c_lex (void)
 {
   struct cpp_callbacks *cb;
   cb->ident = cb_ident;
 }
+static void
 cb_ident (cpp_reader * pfile __attribute__ ((__unused__)), unsigned int
 line
           __attribute__ ((__unused__)), const cpp_string * str

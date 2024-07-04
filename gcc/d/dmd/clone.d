@@ -2,7 +2,7 @@
  * Builds struct member functions if needed and not defined by the user.
  * Includes `opEquals`, `opAssign`, post blit, copy constructor and destructor.
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/clone.d, _clone.d)
@@ -27,6 +27,7 @@ import dmd.errors;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
+import dmd.funcsem;
 import dmd.globals;
 import dmd.id;
 import dmd.identifier;
@@ -297,7 +298,7 @@ FuncDeclaration buildOpAssign(StructDeclaration sd, Scope* sc)
     }
 
     auto fparams = new Parameters();
-    fparams.push(new Parameter(STC.nodtor, sd.type, Id.p, null, null));
+    fparams.push(new Parameter(loc, STC.nodtor, sd.type, Id.p, null, null));
     auto tf = new TypeFunction(ParameterList(fparams), sd.handleType(), LINK.d, stc | STC.ref_);
     auto fop = new FuncDeclaration(declLoc, Loc.initial, Id.assign, stc, tf);
     fop.storage_class |= STC.inference;
@@ -326,10 +327,19 @@ FuncDeclaration buildOpAssign(StructDeclaration sd, Scope* sc)
         auto e2 = new BlitExp(loc, new VarExp(loc, swap), new ThisExp(loc));
         auto e3 = new BlitExp(loc, new ThisExp(loc), new IdentifierExp(loc, Id.p));
 
-        /* Instead of running the destructor on s, run it
-         * on swap. This avoids needing to copy swap back in to s.
-         */
-        auto e4 = new CallExp(loc, new DotVarExp(loc, new VarExp(loc, swap), sd.dtor, false));
+        Expression e4;
+        if (target.isCalleeDestroyingArgs(tf))
+        {   /* callee destroys s
+             * Instead of running the destructor on s, run it
+             * on swap.
+             */
+            e4 = new CallExp(loc, new DotVarExp(loc, new VarExp(loc, swap), sd.dtor, false));
+        }
+        else
+        {   /* caller destroys s, so copy contents of swap back into s
+             */
+            e4 = new BlitExp(loc, new IdentifierExp(loc, Id.p), new VarExp(loc, swap));
+        }
 
         e = Expression.combine(e1, e2, e3, e4);
     }
@@ -546,10 +556,11 @@ FuncDeclaration buildXopEquals(StructDeclaration sd, Scope* sc)
             TypeFunction tfeqptr;
             {
                 Scope scx;
+                scx.eSink = sc.eSink;
                 /* const bool opEquals(ref const S s);
                  */
                 auto parameters = new Parameters();
-                parameters.push(new Parameter(STC.ref_ | STC.const_, sd.type, null, null, null));
+                parameters.push(new Parameter(Loc.initial, STC.ref_ | STC.const_, sd.type, null, null, null));
                 tfeqptr = new TypeFunction(ParameterList(parameters), Type.tbool, LINK.d);
                 tfeqptr.mod = MODFlags.const_;
                 tfeqptr = cast(TypeFunction)tfeqptr.typeSemantic(Loc.initial, &scx);
@@ -577,7 +588,7 @@ FuncDeclaration buildXopEquals(StructDeclaration sd, Scope* sc)
     Loc declLoc; // loc is unnecessary so __xopEquals is never called directly
     Loc loc; // loc is unnecessary so errors are gagged
     auto parameters = new Parameters();
-    parameters.push(new Parameter(STC.ref_ | STC.const_, sd.type, Id.p, null, null));
+    parameters.push(new Parameter(loc, STC.ref_ | STC.const_, sd.type, Id.p, null, null));
     auto tf = new TypeFunction(ParameterList(parameters), Type.tbool, LINK.d, STC.const_);
     tf = tf.addSTC(STC.const_).toTypeFunction();
     Identifier id = Id.xopEquals;
@@ -620,10 +631,11 @@ FuncDeclaration buildXopCmp(StructDeclaration sd, Scope* sc)
             TypeFunction tfcmpptr;
             {
                 Scope scx;
+                scx.eSink = sc.eSink;
                 /* const int opCmp(ref const S s);
                  */
                 auto parameters = new Parameters();
-                parameters.push(new Parameter(STC.ref_ | STC.const_, sd.type, null, null, null));
+                parameters.push(new Parameter(Loc.initial, STC.ref_ | STC.const_, sd.type, null, null, null));
                 tfcmpptr = new TypeFunction(ParameterList(parameters), Type.tint32, LINK.d);
                 tfcmpptr.mod = MODFlags.const_;
                 tfcmpptr = cast(TypeFunction)tfcmpptr.typeSemantic(Loc.initial, &scx);
@@ -701,7 +713,7 @@ FuncDeclaration buildXopCmp(StructDeclaration sd, Scope* sc)
     Loc declLoc; // loc is unnecessary so __xopCmp is never called directly
     Loc loc; // loc is unnecessary so errors are gagged
     auto parameters = new Parameters();
-    parameters.push(new Parameter(STC.ref_ | STC.const_, sd.type, Id.p, null, null));
+    parameters.push(new Parameter(loc, STC.ref_ | STC.const_, sd.type, Id.p, null, null));
     auto tf = new TypeFunction(ParameterList(parameters), Type.tint32, LINK.d, STC.const_);
     tf = tf.addSTC(STC.const_).toTypeFunction();
     Identifier id = Id.xopCmp;
@@ -820,7 +832,7 @@ FuncDeclaration buildXtoHash(StructDeclaration sd, Scope* sc)
     Loc declLoc; // loc is unnecessary so __xtoHash is never called directly
     Loc loc; // internal code should have no loc to prevent coverage
     auto parameters = new Parameters();
-    parameters.push(new Parameter(STC.ref_ | STC.const_, sd.type, Id.p, null, null));
+    parameters.push(new Parameter(loc, STC.ref_ | STC.const_, sd.type, Id.p, null, null));
     auto tf = new TypeFunction(ParameterList(parameters), Type.thash_t, LINK.d, STC.nothrow_ | STC.trusted);
     Identifier id = Id.xtoHash;
     auto fop = new FuncDeclaration(declLoc, Loc.initial, id, STC.static_, tf);
@@ -903,7 +915,7 @@ void buildDtors(AggregateDeclaration ad, Scope* sc)
                 a.addMember(sc, ad); // temporarily add to symbol table
             }
 
-            sdv.dtor.functionSemantic();
+            functionSemantic(sdv.dtor);
 
             stc = mergeFuncAttrs(stc, sdv.dtor);
             if (stc & STC.disable)
@@ -1074,7 +1086,7 @@ private DtorDeclaration buildWindowsCppDtor(AggregateDeclaration ad, DtorDeclara
     //   // TODO: if (del) delete (char*)this;
     //   return (void*) this;
     // }
-    Parameter delparam = new Parameter(STC.undefined_, Type.tuns32, Identifier.idPool("del"), new IntegerExp(dtor.loc, 0, Type.tuns32), null);
+    Parameter delparam = new Parameter(Loc.initial, STC.undefined_, Type.tuns32, Identifier.idPool("del"), new IntegerExp(dtor.loc, 0, Type.tuns32), null);
     Parameters* params = new Parameters;
     params.push(delparam);
     const stc = dtor.storage_class & ~STC.scope_; // because we add the `return this;` later
@@ -1126,7 +1138,7 @@ private DtorDeclaration buildExternDDtor(AggregateDeclaration ad, Scope* sc)
         return null;
 
     // Generate shim only when ABI incompatible on target platform
-    if (ad.classKind != ClassKind.cpp || !target.cpp.wrapDtorInExternD)
+    if (dtor._linkage != LINK.cpp || !target.cpp.wrapDtorInExternD)
         return dtor;
 
     // generate member function that adjusts calling convention
@@ -1152,7 +1164,7 @@ private DtorDeclaration buildExternDDtor(AggregateDeclaration ad, Scope* sc)
     ad.members.push(func);
     func.addMember(sc2, ad);
     func.dsymbolSemantic(sc2);
-    func.functionSemantic(); // to infer attributes
+    functionSemantic(func); // to infer attributes
 
     sc2.pop();
     return func;
@@ -1199,7 +1211,7 @@ FuncDeclaration buildInv(AggregateDeclaration ad, Scope* sc)
                 version (all)
                 {
                     // currently rejects
-                    ad.error(inv.loc, "mixing invariants with different `shared`/`synchronized` qualifiers is not supported");
+                    .error(inv.loc, "%s `%s` mixing invariants with different `shared`/`synchronized` qualifiers is not supported", ad.kind(), ad.toPrettyChars());
                     e = null;
                     break;
                 }
@@ -1334,7 +1346,7 @@ FuncDeclaration buildPostBlit(StructDeclaration sd, Scope* sc)
         // perform semantic on the member postblit in order to
         // be able to aggregate it later on with the rest of the
         // postblits
-        sdv.postblit.functionSemantic();
+        functionSemantic(sdv.postblit);
 
         stc = mergeFuncAttrs(stc, sdv.postblit);
         stc = mergeFuncAttrs(stc, sdv.dtor);
@@ -1399,7 +1411,7 @@ FuncDeclaration buildPostBlit(StructDeclaration sd, Scope* sc)
          */
         if (sdv.dtor)
         {
-            sdv.dtor.functionSemantic();
+            functionSemantic(sdv.dtor);
 
             // keep a list of fields that need to be destroyed in case
             // of a future postblit failure
@@ -1514,7 +1526,7 @@ private CtorDeclaration generateCopyCtorDeclaration(StructDeclaration sd, const 
 {
     auto fparams = new Parameters();
     auto structType = sd.type;
-    fparams.push(new Parameter(paramStc | STC.ref_ | STC.return_ | STC.scope_, structType, Id.p, null, null));
+    fparams.push(new Parameter(Loc.initial, paramStc | STC.ref_ | STC.return_ | STC.scope_, structType, Id.p, null, null));
     ParameterList pList = ParameterList(fparams);
     auto tf = new TypeFunction(pList, structType, LINK.d, STC.ref_);
     auto ccd = new CtorDeclaration(sd.loc, Loc.initial, STC.ref_, tf, true);
@@ -1569,7 +1581,7 @@ private Statement generateCopyCtorBody(StructDeclaration sd)
  *  `true` if one needs to be generated
  *  `false` otherwise
  */
-private bool needCopyCtor(StructDeclaration sd, out bool hasCpCtor)
+bool needCopyCtor(StructDeclaration sd, out bool hasCpCtor)
 {
     if (global.errors)
         return false;

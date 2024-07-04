@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-options "-mdejagnu-cpu=power7 -O2" } */
+/* { dg-require-effective-target powerpc_vsx } */
+/* { dg-skip-if "" { powerpc*-*-darwin* } } */
 
 /* Test to make sure double values are allocated to the Altivec registers as
    well as the traditional FPR registers.  */

@@ -1,3 +1,97 @@
+2024-04-02  Tom Tromey  <tom@tromey.com>
+
+	* cplus-dem.c (cplus_demangle): Try the D demangler with
+	"auto" format.
+	* testsuite/d-demangle-expected: Add --format=auto test.
+
+2024-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* regex.c (byte_re_match_2_internal): Fix duplicated words in comment;
+	next next -> next.
+	* dyn-string.c (dyn_string_init): Fix duplicated words in comment;
+	of of -> of.
+
+2024-02-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR other/113957
+	* pex-unix.c (pex_unix_exec_child): Set pid = -1 in the error
+	paths, since that is used to signal an erroneous outcome for
+	the routine.
+
+2024-02-15  Richard Biener  <rguenther@suse.de>
+
+	* hashtab.c (iterative_hash): Remove TBAA violating handling
+	of aligned little-endian case in favor of just keeping the
+	aligned case special-cased.  Use | for composing a larger word.
+
+2024-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* vprintf-support.c (libiberty_vprintf_buffer_size): Handle
+	properly l, ll, z, t or on _WIN32 I64 modifiers for diouxX
+	and L modifier for fFgGeE.
+
+2024-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-demangle.c (FNQUAL_COMPONENT_CASE): Add case for
+	DEMANGLE_COMPONENT_XOBJ_MEMBER_FUNCTION.
+	(d_dump): Handle DEMANGLE_COMPONENT_XOBJ_MEMBER_FUNCTION.
+	(d_nested_name): Parse H after N in nested name.
+	(d_count_templates_scopes): Handle
+	DEMANGLE_COMPONENT_XOBJ_MEMBER_FUNCTION.
+	(d_print_mod): Likewise.
+	(d_print_function_type): Likewise.
+	* testsuite/demangle-expected: Add tests for explicit object
+	member functions.
+
+2023-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac (HAVE_X86_SHA1_HW_SUPPORT): Verify __get_cpuid and
+	__get_cpuid_count are not implicitly declared.
+	* configure: Regenerated.
+
+2023-12-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* pex-unix.c (pex_unix_wait): Change return type to pid_t.
+
+2023-12-01  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (d_make_comp): Handle
+	DEMANGLE_COMPONENT_CONSTRAINTS.
+	(d_count_templates_scopes): Likewise.
+	(d_print_comp_inner): Likewise.
+	(d_maybe_constraints): New.
+	(d_encoding, d_template_args_1): Call it.
+	(d_parmlist): Handle 'Q'.
+	* testsuite/demangle-expected: Add some constraint tests.
+
+2023-11-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (GCC_CHECK_ASSEMBLER_HWCAP): Invoke.
+	* configure, aclocal.m4: Regenerate.
+	* Makefile.in (COMPILE.c): Add HWCAP_CFLAGS.
+
+2023-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac (HAVE_X86_SHA1_HW_SUPPORT): New check.
+	* sha1.c: If HAVE_X86_SHA1_HW_SUPPORT is defined, include x86intrin.h
+	and cpuid.h.
+	(sha1_hw_process_bytes, sha1_hw_process_block,
+	sha1_choose_process_bytes): New functions.
+	* config.in: Regenerated.
+	* configure: Regenerated.
+
+2023-11-15  Mark Wielaard  <mjw@redhat.com>
+
+	* aclocal.m4: Rebuild.
+
+2023-11-10  Brendan Shanks  <bshanks@codeweavers.com>
+
+	* configure.ac (AC_CHECK_HEADERS): Add spawn.h.
+	(checkfuncs): Add posix_spawn, posix_spawnp.
+	(AC_CHECK_FUNCS): Add posix_spawn, posix_spawnp.
+	* aclocal.m4, configure, config.in: Rebuild.
+	* pex-unix.c [HAVE_POSIX_SPAWN] (pex_unix_exec_child): New function.
+
 2023-08-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/109751

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gcv -mabi=ilp32 --param riscv-autovec-preference=scalable -fdump-tree-vect-details" } */
+/* { dg-options "-march=rv32gcv -mabi=ilp32 -O3 -ftree-vectorize -mrvv-max-lmul=dynamic -fdump-tree-vect-details" } */
 
 #include <stdint-gcc.h>
 
@@ -115,7 +115,7 @@ foo (int32_t *__restrict a, int32_t *__restrict b,    int32_t *__restrict c,
 
 /* { dg-final { scan-assembler {e32,m1} } } */
 /* { dg-final { scan-assembler-not {csrr} } } */
+/* { dg-final { scan-tree-dump-times "Preferring smaller LMUL loop because it has unexpected spills" 3 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Maximum lmul = 8" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Maximum lmul = 4" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Maximum lmul = 2" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Maximum lmul = 1" 1 "vect" } } */

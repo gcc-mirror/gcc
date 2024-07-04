@@ -1,4 +1,4 @@
-// Copyright (C) 2001-2023 Free Software Foundation, Inc.
+// Copyright (C) 2001-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,10 +40,14 @@
   A list of valid replacements is as follows:
 
   Use:					Instead of:
-  <sstream>, basic_stringbuf	   	<strstream>, strstreambuf
-  <sstream>, basic_istringstream	<strstream>, istrstream
-  <sstream>, basic_ostringstream	<strstream>, ostrstream
-  <sstream>, basic_stringstream		<strstream>, strstream
+  <sstream>, stringbuf
+    or <spanstream>, spanbuf		<strstream>, strstreambuf
+  <sstream>, istringstream
+    or <spanstream>, ispanstream	<strstream>, istrstream
+  <sstream>, ostringstream
+    or <spanstream>, ospanstream	<strstream>, ostrstream
+  <sstream>, stringstream
+    or <spanstream>, spanstream		<strstream>, strstream
   <unordered_set>, unordered_set     	<ext/hash_set>, hash_set
   <unordered_set>, unordered_multiset	<ext/hash_set>, hash_multiset
   <unordered_map>, unordered_map	<ext/hash_map>, hash_map

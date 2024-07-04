@@ -1,4 +1,6 @@
 // { dg-do assemble  }
+// Explicit { dg-require-effective-target exceptions_enabled } to avoid verify compiler messages FAILs for '-fno-exceptions'.
+
 struct A
 {
   A();

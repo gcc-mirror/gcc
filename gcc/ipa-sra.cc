@@ -1,5 +1,5 @@
 /* Interprocedural scalar replacement of aggregates
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by Martin Jambor <mjambor@suse.cz>
 
 This file is part of GCC.
@@ -84,6 +84,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "symtab-clones.h"
 #include "attribs.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
 
 static void ipa_sra_summarize_function (cgraph_node *);
@@ -4104,35 +4106,10 @@ mark_callers_calls_comdat_local (struct cgraph_node *node, void *)
 static void
 zap_useless_ipcp_results (const isra_func_summary *ifs, ipcp_transformation *ts)
 {
-  unsigned ts_len = vec_safe_length (ts->m_agg_values);
-
-  if (ts_len == 0)
-    return;
-
-  bool removed_item = false;
-  unsigned dst_index = 0;
-
-  for (unsigned i = 0; i < ts_len; i++)
-    {
-      ipa_argagg_value *v = &(*ts->m_agg_values)[i];
-      const isra_param_desc *desc = &(*ifs->m_parameters)[v->index];
-
-      if (!desc->locally_unused)
-	{
-	  if (removed_item)
-	    (*ts->m_agg_values)[dst_index] = *v;
-	  dst_index++;
-	}
-      else
-	removed_item = true;
-    }
-  if (dst_index == 0)
-    {
-      ggc_free (ts->m_agg_values);
-      ts->m_agg_values = NULL;
-    }
-  else if (removed_item)
-    ts->m_agg_values->truncate (dst_index);
+  ts->remove_argaggs_if ([ifs](const ipa_argagg_value &v)
+  {
+    return (*ifs->m_parameters)[v.index].locally_unused;
+  });
 
   bool useful_vr = false;
   unsigned count = vec_safe_length (ts->m_vr);
@@ -4732,5 +4709,17 @@ make_pass_ipa_sra (gcc::context *ctxt)
   return new pass_ipa_sra (ctxt);
 }
 
+/* Reset all state within ipa-sra.cc so that we can rerun the compiler
+   within the same process.  For use by toplev::finalize.  */
+
+void
+ipa_sra_cc_finalize (void)
+{
+  if (func_sums)
+    ggc_delete (func_sums);
+  func_sums = NULL;
+  delete call_sums;
+  call_sums = NULL;
+}
 
 #include "gt-ipa-sra.h"

@@ -1,5 +1,5 @@
 /* Main parser.
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -833,18 +833,18 @@ check_omp_allocate_stmt (locus *loc)
 		      &n->expr->where, gfc_ascii_statement (ST_OMP_ALLOCATE));
 	  return false;
 	}
+      /* Procedure pointers are not allocatable; hence, we do not regard them as
+	 pointers here - and reject them later in gfc_resolve_omp_allocate.  */
       bool alloc_ptr;
       if (n->sym->ts.type == BT_CLASS && n->sym->attr.class_ok)
 	alloc_ptr = (CLASS_DATA (n->sym)->attr.allocatable
 		     || CLASS_DATA (n->sym)->attr.class_pointer);
       else
-	alloc_ptr = (n->sym->attr.allocatable || n->sym->attr.pointer
-		     || n->sym->attr.proc_pointer);
+	alloc_ptr = n->sym->attr.allocatable || n->sym->attr.pointer;
       if (alloc_ptr
 	  || (n->sym->ns && n->sym->ns->proc_name
 	      && (n->sym->ns->proc_name->attr.allocatable
-		  || n->sym->ns->proc_name->attr.pointer
-		  || n->sym->ns->proc_name->attr.proc_pointer)))
+		  || n->sym->ns->proc_name->attr.pointer)))
 	has_allocatable = true;
       else
 	has_non_allocatable = true;
@@ -1006,14 +1006,22 @@ decode_omp_directive (void)
     case 'e':
       matchs ("end assume", gfc_match_omp_eos_error, ST_OMP_END_ASSUME);
       matchs ("end simd", gfc_match_omp_eos_error, ST_OMP_END_SIMD);
+      matchs ("end tile", gfc_match_omp_eos_error, ST_OMP_END_TILE);
+      matchs ("end unroll", gfc_match_omp_eos_error, ST_OMP_END_UNROLL);
       matcho ("error", gfc_match_omp_error, ST_OMP_ERROR);
+      break;
+    case 'n':
+      matcho ("nothing", gfc_match_omp_nothing, ST_NONE);
       break;
     case 's':
       matchs ("scan", gfc_match_omp_scan, ST_OMP_SCAN);
       matchs ("simd", gfc_match_omp_simd, ST_OMP_SIMD);
       break;
-    case 'n':
-      matcho ("nothing", gfc_match_omp_nothing, ST_NONE);
+    case 't':
+      matchs ("tile", gfc_match_omp_tile, ST_OMP_TILE);
+      break;
+    case 'u':
+      matchs ("unroll", gfc_match_omp_unroll, ST_OMP_UNROLL);
       break;
     }
 
@@ -1364,6 +1372,8 @@ decode_omp_directive (void)
 	  prog_unit->omp_target_seen = true;
 	break;
       }
+    case ST_OMP_ALLOCATE_EXEC:
+    case ST_OMP_ALLOCATORS:
     case ST_OMP_TEAMS:
     case ST_OMP_TEAMS_DISTRIBUTE:
     case ST_OMP_TEAMS_DISTRIBUTE_SIMD:
@@ -1386,7 +1396,10 @@ decode_omp_directive (void)
 	    case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_TARGET_PARALLEL_LOOP:
 	    case EXEC_OMP_TARGET_SIMD:
-	      stk->tail->ext.omp_clauses->contains_teams_construct = 1;
+	      if (ret == ST_OMP_ALLOCATE_EXEC || ret == ST_OMP_ALLOCATORS)
+		new_st.ext.omp_clauses->contained_in_target_construct = 1;
+	      else
+		stk->tail->ext.omp_clauses->contains_teams_construct = 1;
 	      break;
 	    default:
 	      break;
@@ -1795,6 +1808,7 @@ next_statement (void)
   locus old_locus;
 
   gfc_enforce_clean_symbol_state ();
+  gfc_save_module_list ();
 
   gfc_new_block = NULL;
 
@@ -1910,6 +1924,7 @@ next_statement (void)
   case ST_OMP_LOOP: case ST_OMP_PARALLEL_LOOP: case ST_OMP_TEAMS_LOOP: \
   case ST_OMP_TARGET_PARALLEL_LOOP: case ST_OMP_TARGET_TEAMS_LOOP: \
   case ST_OMP_ALLOCATE_EXEC: case ST_OMP_ALLOCATORS: case ST_OMP_ASSUME: \
+  case ST_OMP_TILE: case ST_OMP_UNROLL: \
   case ST_CRITICAL: \
   case ST_OACC_PARALLEL_LOOP: case ST_OACC_PARALLEL: case ST_OACC_KERNELS: \
   case ST_OACC_DATA: case ST_OACC_HOST_DATA: case ST_OACC_LOOP: \
@@ -2780,6 +2795,12 @@ gfc_ascii_statement (gfc_statement st, bool strip_sentinel)
     case ST_OMP_END_TEAMS_LOOP:
       p = "!$OMP END TEAMS LOOP";
       break;
+    case ST_OMP_END_TILE:
+      p = "!$OMP END TILE";
+      break;
+    case ST_OMP_END_UNROLL:
+      p = "!$OMP END UNROLL";
+      break;
     case ST_OMP_END_WORKSHARE:
       p = "!$OMP END WORKSHARE";
       break;
@@ -2962,6 +2983,12 @@ gfc_ascii_statement (gfc_statement st, bool strip_sentinel)
     case ST_OMP_THREADPRIVATE:
       p = "!$OMP THREADPRIVATE";
       break;
+    case ST_OMP_TILE:
+      p = "!$OMP TILE";
+      break;
+    case ST_OMP_UNROLL:
+      p = "!$OMP UNROLL";
+      break;
     case ST_OMP_WORKSHARE:
       p = "!$OMP WORKSHARE";
       break;
@@ -3098,6 +3125,9 @@ reject_statement (void)
 				      previous_interface_head);
 
   gfc_reject_data (gfc_current_ns);
+
+  /* Don't queue use-association of a module if we reject the use statement.  */
+  gfc_restore_old_module_list ();
 
   gfc_new_block = NULL;
   gfc_undo_symbols ();
@@ -4033,6 +4063,7 @@ loop:
     default:
       gfc_error ("Unexpected %s statement in INTERFACE block at %C",
 		 gfc_ascii_statement (st));
+      current_interface = save;
       reject_statement ();
       gfc_free_namespace (gfc_current_ns);
       goto loop;
@@ -5131,8 +5162,9 @@ parse_associate (void)
   gfc_current_ns = my_ns;
   for (a = new_st.ext.block.assoc; a; a = a->next)
     {
-      gfc_symbol* sym;
+      gfc_symbol *sym, *tsym;
       gfc_expr *target;
+      int rank;
 
       if (gfc_get_sym_tree (a->name, NULL, &a->st, false))
 	gcc_unreachable ();
@@ -5142,6 +5174,17 @@ parse_associate (void)
       sym->assoc = a;
       sym->declared_at = a->where;
       gfc_set_sym_referenced (sym);
+
+      /* If the selector is a inferred type then the associate_name had better
+	 be as well. Use array references, if present, to identify it as an
+	 array.  */
+      if (IS_INFERRED_TYPE (a->target))
+	{
+	  sym->assoc->inferred_type = 1;
+	  for (gfc_ref *r = a->target->ref; r; r = r->next)
+	    if (r->type == REF_ARRAY)
+	      sym->attr.dimension = 1;
+	}
 
       /* Initialize the typespec.  It is not available in all cases,
 	 however, as it may only be set on the target during resolution.
@@ -5169,21 +5212,41 @@ parse_associate (void)
 	       && sym->ts.u.cl->length->expr_type == EXPR_CONSTANT))
 	sym->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
 
+      /* If the function has been parsed, go straight to the result to
+	 obtain the expression rank.  */
+      if (target->expr_type == EXPR_FUNCTION
+	  && target->symtree
+	  && target->symtree->n.sym)
+	{
+	  tsym = target->symtree->n.sym;
+	  if (!tsym->result)
+	    tsym->result = tsym;
+	  sym->ts = tsym->result->ts;
+	  if (sym->ts.type == BT_CLASS)
+	    {
+	      if (CLASS_DATA (sym)->as)
+		target->rank = CLASS_DATA (sym)->as->rank;
+	      sym->attr.class_ok = 1;
+	    }
+	  else
+	    target->rank = tsym->result->as ? tsym->result->as->rank : 0;
+	}
+
       /* Check if the target expression is array valued. This cannot be done
 	 by calling gfc_resolve_expr because the context is unavailable.
 	 However, the references can be resolved and the rank of the target
 	 expression set.  */
-      if (target->ref && gfc_resolve_ref (target)
+      if (!sym->assoc->inferred_type
+	  && target->ref && gfc_resolve_ref (target)
 	  && target->expr_type != EXPR_ARRAY
 	  && target->expr_type != EXPR_COMPCALL)
 	gfc_expression_rank (target);
 
       /* Determine whether or not function expressions with unknown type are
 	 structure constructors. If so, the function result can be converted
-	 to be a derived type.
-	 TODO: Deal with references to sibling functions that have not yet been
-	 parsed (PRs 89645 and 99065).  */
-      if (target->expr_type == EXPR_FUNCTION && target->ts.type == BT_UNKNOWN)
+	 to be a derived type.  */
+      if (target->expr_type == EXPR_FUNCTION
+	  && target->ts.type == BT_UNKNOWN)
 	{
 	  gfc_symbol *derived;
 	  /* The derived type has a leading uppercase character.  */
@@ -5193,65 +5256,61 @@ parse_associate (void)
 	    {
 	      sym->ts.type = BT_DERIVED;
 	      sym->ts.u.derived = derived;
+	      sym->assoc->inferred_type = 0;
 	    }
 	}
 
-      if (target->rank)
+      rank = target->rank;
+      /* Fixup cases where the ranks are mismatched.  */
+      if (sym->ts.type == BT_CLASS && CLASS_DATA (sym))
 	{
-	  int rank = 0;
-	  rank = target->rank;
-	  /* When the rank is greater than zero then sym will be an array.  */
-	  if (sym->ts.type == BT_CLASS && CLASS_DATA (sym))
+	  if ((!CLASS_DATA (sym)->as && rank != 0)
+	       || (CLASS_DATA (sym)->as
+		   && CLASS_DATA (sym)->as->rank != rank))
 	    {
-	      if ((!CLASS_DATA (sym)->as && rank != 0)
-		  || (CLASS_DATA (sym)->as
-		      && CLASS_DATA (sym)->as->rank != rank))
-		{
-		  /* Don't just (re-)set the attr and as in the sym.ts,
-		     because this modifies the target's attr and as.  Copy the
-		     data and do a build_class_symbol.  */
-		  symbol_attribute attr = CLASS_DATA (target)->attr;
-		  int corank = gfc_get_corank (target);
-		  gfc_typespec type;
+	      /* Don't just (re-)set the attr and as in the sym.ts,
+	      because this modifies the target's attr and as.  Copy the
+	      data and do a build_class_symbol.  */
+	      symbol_attribute attr = CLASS_DATA (target)->attr;
+	      int corank = gfc_get_corank (target);
+	      gfc_typespec type;
 
-		  if (rank || corank)
-		    {
-		      as = gfc_get_array_spec ();
-		      as->type = AS_DEFERRED;
-		      as->rank = rank;
-		      as->corank = corank;
-		      attr.dimension = rank ? 1 : 0;
-		      attr.codimension = corank ? 1 : 0;
-		    }
-		  else
-		    {
-		      as = NULL;
-		      attr.dimension = attr.codimension = 0;
-		    }
-		  attr.class_ok = 0;
-		  type = CLASS_DATA (sym)->ts;
-		  if (!gfc_build_class_symbol (&type,
-					       &attr, &as))
-		    gcc_unreachable ();
-		  sym->ts = type;
-		  sym->ts.type = BT_CLASS;
-		  sym->attr.class_ok = 1;
+	      if (rank || corank)
+		{
+		  as = gfc_get_array_spec ();
+		  as->type = AS_DEFERRED;
+		  as->rank = rank;
+		  as->corank = corank;
+		  attr.dimension = rank ? 1 : 0;
+		  attr.codimension = corank ? 1 : 0;
 		}
 	      else
-		sym->attr.class_ok = 1;
+		{
+		  as = NULL;
+		  attr.dimension = attr.codimension = 0;
+		}
+	      attr.class_ok = 0;
+	      type = CLASS_DATA (sym)->ts;
+	      if (!gfc_build_class_symbol (&type, &attr, &as))
+		gcc_unreachable ();
+	      sym->ts = type;
+	      sym->ts.type = BT_CLASS;
+	      sym->attr.class_ok = 1;
 	    }
-	  else if ((!sym->as && rank != 0)
-		   || (sym->as && sym->as->rank != rank))
-	    {
-	      as = gfc_get_array_spec ();
-	      as->type = AS_DEFERRED;
-	      as->rank = rank;
-	      as->corank = gfc_get_corank (target);
-	      sym->as = as;
-	      sym->attr.dimension = 1;
-	      if (as->corank)
-		sym->attr.codimension = 1;
-	    }
+	  else
+	    sym->attr.class_ok = 1;
+	}
+      else if ((!sym->as && rank != 0)
+	       || (sym->as && sym->as->rank != rank))
+	{
+	  as = gfc_get_array_spec ();
+	  as->type = AS_DEFERRED;
+	  as->rank = rank;
+	  as->corank = gfc_get_corank (target);
+	  sym->as = as;
+	  sym->attr.dimension = 1;
+	  if (as->corank)
+	    sym->attr.codimension = 1;
 	}
     }
 
@@ -5296,27 +5355,51 @@ parse_do_block (void)
   do_op = new_st.op;
   s.ext.end_do_label = new_st.label1;
 
-  if (new_st.ext.iterator != NULL)
+  if (do_op == EXEC_DO_CONCURRENT)
+    {
+      gfc_forall_iterator *fa;
+      for (fa = new_st.ext.forall_iterator; fa; fa = fa->next)
+	{
+	  /* Apply unroll only to innermost loop (first control
+	     variable).  */
+	  if (directive_unroll != -1)
+	    {
+	      fa->annot.unroll = directive_unroll;
+	      directive_unroll = -1;
+	    }
+	  if (directive_ivdep)
+	    fa->annot.ivdep = directive_ivdep;
+	  if (directive_vector)
+	    fa->annot.vector = directive_vector;
+	  if (directive_novector)
+	    fa->annot.novector = directive_novector;
+	}
+      directive_ivdep = false;
+      directive_vector = false;
+      directive_novector = false;
+      stree = NULL;
+    }
+  else if (new_st.ext.iterator != NULL)
     {
       stree = new_st.ext.iterator->var->symtree;
       if (directive_unroll != -1)
 	{
-	  new_st.ext.iterator->unroll = directive_unroll;
+	  new_st.ext.iterator->annot.unroll = directive_unroll;
 	  directive_unroll = -1;
 	}
       if (directive_ivdep)
 	{
-	  new_st.ext.iterator->ivdep = directive_ivdep;
+	  new_st.ext.iterator->annot.ivdep = directive_ivdep;
 	  directive_ivdep = false;
 	}
       if (directive_vector)
 	{
-	  new_st.ext.iterator->vector = directive_vector;
+	  new_st.ext.iterator->annot.vector = directive_vector;
 	  directive_vector = false;
 	}
       if (directive_novector)
 	{
-	  new_st.ext.iterator->novector = directive_novector;
+	  new_st.ext.iterator->annot.novector = directive_novector;
 	  directive_novector = false;
 	}
     }
@@ -5379,7 +5462,7 @@ loop:
 /* Parse the statements of OpenMP do/parallel do.  */
 
 static gfc_statement
-parse_omp_do (gfc_statement omp_st)
+parse_omp_do (gfc_statement omp_st, int nested)
 {
   gfc_statement st;
   gfc_code *cp, *np;
@@ -5400,11 +5483,20 @@ parse_omp_do (gfc_statement omp_st)
 	unexpected_eof ();
       else if (st == ST_DO)
 	break;
+      else if (st == ST_OMP_UNROLL || st == ST_OMP_TILE)
+	{
+	  st = parse_omp_do (st, nested + 1);
+	  if (st == ST_IMPLIED_ENDDO)
+	    return st;
+	  goto do_end;
+	}
       else
 	unexpected_statement (st);
     }
 
   parse_do_block ();
+  for (; nested; --nested)
+    pop_state ();
   if (gfc_statement_label != NULL
       && gfc_state_stack->previous != NULL
       && gfc_state_stack->previous->state == COMP_DO
@@ -5425,6 +5517,7 @@ parse_omp_do (gfc_statement omp_st)
   pop_state ();
 
   st = next_statement ();
+do_end:
   gfc_statement omp_end_st = ST_OMP_END_DO;
   switch (omp_st)
     {
@@ -5508,9 +5601,9 @@ parse_omp_do (gfc_statement omp_st)
     case ST_OMP_TEAMS_DISTRIBUTE_SIMD:
       omp_end_st = ST_OMP_END_TEAMS_DISTRIBUTE_SIMD;
       break;
-    case ST_OMP_TEAMS_LOOP:
-      omp_end_st = ST_OMP_END_TEAMS_LOOP;
-      break;
+    case ST_OMP_TEAMS_LOOP: omp_end_st = ST_OMP_END_TEAMS_LOOP; break;
+    case ST_OMP_TILE: omp_end_st = ST_OMP_END_TILE; break;
+    case ST_OMP_UNROLL: omp_end_st = ST_OMP_END_UNROLL; break;
     default: gcc_unreachable ();
     }
   if (st == omp_end_st)
@@ -5814,7 +5907,7 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 {
   gfc_statement st, omp_end_st, first_st;
   gfc_code *cp, *np;
-  gfc_state_data s;
+  gfc_state_data s, s2;
 
   accept_statement (omp_st);
 
@@ -5915,13 +6008,21 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
       gfc_notify_std (GFC_STD_F2008, "BLOCK construct at %C");
 
       my_ns = gfc_build_block_ns (gfc_current_ns);
-      gfc_current_ns = my_ns;
-      my_parent = my_ns->parent;
-
       new_st.op = EXEC_BLOCK;
       new_st.ext.block.ns = my_ns;
       new_st.ext.block.assoc = NULL;
       accept_statement (ST_BLOCK);
+
+      push_state (&s2, COMP_BLOCK, my_ns->proc_name);
+      gfc_current_ns = my_ns;
+      my_parent = my_ns->parent;
+      if (omp_st == ST_OMP_SECTIONS
+	  || omp_st == ST_OMP_PARALLEL_SECTIONS)
+	{
+	  np = new_level (cp);
+	  np->op = cp->op;
+	}
+
       first_st = next_statement ();
       st = parse_spec (first_st);
     }
@@ -5937,6 +6038,8 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
       case ST_OMP_TEAMS_LOOP:
 	{
 	  gfc_state_data *stk = gfc_state_stack->previous;
+	  if (stk->state == COMP_OMP_STRICTLY_STRUCTURED_BLOCK)
+	    stk = stk->previous;
 	  stk->tail->ext.omp_clauses->target_first_st_is_teams = true;
 	  break;
 	}
@@ -6001,7 +6104,7 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 
 		case ST_OMP_PARALLEL_DO:
 		case ST_OMP_PARALLEL_DO_SIMD:
-		  st = parse_omp_do (st);
+		  st = parse_omp_do (st, 0);
 		  continue;
 
 		case ST_OMP_ATOMIC:
@@ -6035,8 +6138,10 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
       else if (block_construct && st == ST_END_BLOCK)
 	{
 	  accept_statement (st);
+	  gfc_current_ns->code = gfc_state_stack->head;
 	  gfc_current_ns = my_parent;
-	  pop_state ();
+	  pop_state ();  /* Inner BLOCK */
+	  pop_state ();  /* Outer COMP_OMP_STRICTLY_STRUCTURED_BLOCK */
 
 	  st = next_statement ();
 	  if (st == omp_end_st)
@@ -6296,7 +6401,9 @@ parse_executable (gfc_statement st)
 	case ST_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
 	case ST_OMP_TEAMS_DISTRIBUTE_SIMD:
 	case ST_OMP_TEAMS_LOOP:
-	  st = parse_omp_do (st);
+	case ST_OMP_TILE:
+	case ST_OMP_UNROLL:
+	  st = parse_omp_do (st, 0);
 	  if (st == ST_IMPLIED_ENDDO)
 	    return st;
 	  continue;
@@ -7261,9 +7368,17 @@ done:
       omp_requires_mask
 	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_ACQ_REL);
       break;
+    case OMP_REQ_ATOMIC_MEM_ORDER_ACQUIRE:
+      omp_requires_mask
+	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_ACQUIRE);
+      break;
     case OMP_REQ_ATOMIC_MEM_ORDER_RELAXED:
       omp_requires_mask
 	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_RELAXED);
+      break;
+    case OMP_REQ_ATOMIC_MEM_ORDER_RELEASE:
+      omp_requires_mask
+	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_RELEASE);
       break;
     }
 

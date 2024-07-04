@@ -1,6 +1,6 @@
 (* M2GCCDeclare.def declares Modula-2 types to GCC.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -32,6 +32,7 @@ DEFINITION MODULE M2GCCDeclare ;
 
 FROM SYSTEM IMPORT WORD ;
 FROM m2tree IMPORT Tree ;
+FROM M2BasicBlock IMPORT BasicBlock ;
 
 TYPE
    WalkAction = PROCEDURE (WORD) ;
@@ -42,7 +43,7 @@ TYPE
    FoldConstants - a wrapper for ResolveConstantExpressions.
 *)
 
-PROCEDURE FoldConstants (start, end: CARDINAL) ;
+PROCEDURE FoldConstants (bb: BasicBlock) ;
 
 
 (*
@@ -221,6 +222,27 @@ PROCEDURE GetTypeMax (type: CARDINAL) : CARDINAL ;
 *)
 
 PROCEDURE PrintSym (sym: CARDINAL) ;
+
+
+(*
+   IncludeDumpSymbol - include sym into the watch list and all syms dependants.
+*)
+
+PROCEDURE IncludeDumpSymbol (sym: CARDINAL) ;
+
+
+(*
+   DumpFilteredResolver - dumps the gimple or tree representation of all watched symbols.
+*)
+
+PROCEDURE DumpFilteredResolver ;
+
+
+(*
+   DumpFilteredDefinitive - dumps the gimple or tree representation of all watched symbols.
+*)
+
+PROCEDURE DumpFilteredDefinitive ;
 
 
 (*

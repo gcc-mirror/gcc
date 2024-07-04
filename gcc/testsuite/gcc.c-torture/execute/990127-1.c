@@ -1,7 +1,8 @@
 extern void abort (void);
 extern void exit (int);
 
-main()
+int
+main(void)
 {
     int a,b,c;
     int *pa, *pb, *pc;

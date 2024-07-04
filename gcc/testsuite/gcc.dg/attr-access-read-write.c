@@ -1,7 +1,7 @@
 /* PR middle-end/83859 - attribute to establish relation between parameters
    for buffer and its size
    { dg-do compile }
-   { dg-options "-Wall -ftrack-macro-expansion=0" } */
+   { dg-options "-fpermissive -Wall -ftrack-macro-expansion=0" } */
 
 int  __attribute__ ((access))
 access_v (void);       /* { dg-error "wrong number of arguments specified for 'access' attribute" } */

@@ -1,6 +1,17 @@
 #include "quadmath-imp.h"
 #include <math.h>
 #include <float.h>
+#if __has_include("../../libgcc/soft-fp/soft-fp.h") \
+    && __has_include("../../libgcc/soft-fp/quad.h") \
+    && defined(FE_TONEAREST) \
+    && defined(FE_UPWARD) \
+    && defined(FE_DOWNWARD) \
+    && defined(FE_TOWARDZERO) \
+    && defined(FE_INEXACT)
+#define USE_SOFT_FP 1
+#include "../../libgcc/soft-fp/soft-fp.h"
+#include "../../libgcc/soft-fp/quad.h"
+#endif
 
 __float128
 sqrtq (const __float128 x)
@@ -20,6 +31,18 @@ sqrtq (const __float128 x)
       return (x - x) / (x - x);
     }
 
+#if USE_SOFT_FP
+  FP_DECL_EX;
+  FP_DECL_Q (X);
+  FP_DECL_Q (Y);
+
+  FP_INIT_ROUNDMODE;
+  FP_UNPACK_Q (X, x);
+  FP_SQRT_Q (Y, X);
+  FP_PACK_Q (y, Y);
+  FP_HANDLE_EXCEPTIONS;
+  return y;
+#else
   if (x <= DBL_MAX && x >= DBL_MIN)
   {
     /* Use double result as starting point.  */
@@ -59,5 +82,5 @@ sqrtq (const __float128 x)
   y -= 0.5q * (y - x / y);
   y -= 0.5q * (y - x / y);
   return y;
+#endif
 }
-

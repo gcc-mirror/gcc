@@ -1,7 +1,7 @@
 /*{{{  Comment.  */ 
 
 /* Definitions of FR30 target. 
-   Copyright (C) 1998-2023 Free Software Foundation, Inc.
+   Copyright (C) 1998-2024 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
 This file is part of GCC.
@@ -99,9 +99,6 @@ along with GCC; see the file COPYING3.  If not see
 #define INT_TYPE_SIZE 		32
 #define LONG_TYPE_SIZE 		32
 #define LONG_LONG_TYPE_SIZE 	64
-#define FLOAT_TYPE_SIZE 	32
-#define DOUBLE_TYPE_SIZE 	64
-#define LONG_DOUBLE_TYPE_SIZE 	64
 
 #define DEFAULT_SIGNED_CHAR 1
 

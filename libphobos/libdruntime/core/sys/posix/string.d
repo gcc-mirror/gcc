@@ -39,8 +39,6 @@ char*  stpncpy(return scope char* dst, const char* src, size_t len) pure;
 int    strcoll_l(scope const char* s1, scope const char* s2, locale_t locale);
 ///
 char*  strerror_l(int, locale_t);
-/// Save a copy of a string
-char*  strndup(scope const char* str, size_t len);
 /// Find length of string up to `maxlen`
 size_t strnlen(scope const char* str, size_t maxlen) pure;
 /// System signal messages

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -156,26 +156,28 @@ package Freeze is
    --    RM_Size field is set to the required size, allowing for possible front
    --    end packing of an array using this type as a component type.
    --
-   --  Note: the flag Size_Known_At_Compile_Time is used to determine if the
-   --  secondary stack must be used to return a value of the type, and also
-   --  to determine whether a component clause is allowed for a component
-   --  of the given type.
-   --
-   --  Note: this is public because of one dubious use in Sem_Res???
+   --  Note: the flag Size_Known_At_Compile_Time is used to determine whether a
+   --  size clause is allowed for the type, and also whether a component clause
+   --  is allowed for a component of the type.
    --
    --  Note: Check_Compile_Time_Size does not test the case of the size being
    --  known because a size clause is specifically given. That is because we
    --  do not allow a size clause if the size would not otherwise be known at
    --  compile time in any case.
+   --
+   --  ??? This is public because of dubious uses in Sem_Ch3 and Sem_Res
 
    procedure Check_Inherited_Conditions
     (R               : Entity_Id;
      Late_Overriding : Boolean := False);
-   --  For a tagged derived type R, create wrappers for inherited operations
-   --  that have class-wide conditions, so it can be properly rewritten if
-   --  it involves calls to other overriding primitives. Late_Overriding is
-   --  True when we are processing the body of a primitive with no previous
-   --  spec defined after R is frozen (see Check_Dispatching_Operation).
+   --  R is a derived tagged type or a derived interface type. For a derived
+   --  interface type R, check strub mode compatibility of its primitives; for
+   --  a tagged derived type R, in addition to check strub mode compatibility,
+   --  create wrappers for inherited operations that have class-wide conditions
+   --  so it can be properly rewritten if it involves calls to other overriding
+   --  primitives. Late_Overriding is True when we are processing the body of a
+   --  primitive with no previous spec defined after R is frozen (see procedure
+   --  Check_Dispatching_Operation).
 
    procedure Explode_Initialization_Compound_Statement (E : Entity_Id);
    --  If Initialization_Statements (E) is an N_Compound_Statement, insert its

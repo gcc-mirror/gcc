@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-march=rv32gcv -mabi=ilp32d --param riscv-autovec-preference=scalable -fno-vect-cost-model -fno-tree-loop-distribute-patterns -fdump-tree-vect-details" } */
+/* { dg-additional-options "-march=rv32gcv -mabi=ilp32d -mrvv-vector-bits=scalable -fno-vect-cost-model -fno-tree-loop-distribute-patterns -fdump-tree-vect-details" } */
 
 #include "single_rgroup-1.h"
 

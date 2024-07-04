@@ -1,5 +1,5 @@
 ;; XSTORMY16 Machine description template
-;; Copyright (C) 1997-2023 Free Software Foundation, Inc.
+;; Copyright (C) 1997-2024 Free Software Foundation, Inc.
 ;; Contributed by Red Hat, Inc.
 
 ;; This file is part of GCC.
@@ -1359,6 +1359,20 @@
 		  (const_int 240))
 	  (and:HI (lshiftrt:HI (match_dup 1) (const_int 4))
 		  (const_int 15))))]
+  ""
+  "swpn %0 | and %0,#255"
+  [(set_attr "length" "6")])
+
+;; Alternate form when we use PLUS instead of IOR early in the
+;; expanders.
+(define_insn "*swpn_zext"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(zero_extend:HI
+	  (subreg:QI
+	    (any_or_plus:HI
+	      (ashift:HI (match_operand:HI 1 "register_operand" "0")
+			 (const_int 4))
+	      (lshiftrt:HI (match_dup 1) (const_int 4))) 0)))]
   ""
   "swpn %0 | and %0,#255"
   [(set_attr "length" "6")])

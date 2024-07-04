@@ -1,7 +1,10 @@
-
+void abort (void);
+void exit (int);
 
 int blah;
-foo()
+
+int
+foo(void)
 {
   int i;
 
@@ -15,8 +18,8 @@ foo()
   return blah;
 }
 
-
-main()
+int
+main(void)
 {
   if (foo () != 0xfcc)
     abort ();

@@ -181,5 +181,5 @@ contains
         
     end subroutine
 end program
-! { dg-output "All kinds rounded to nearest" { xfail { i?86-*-solaris2.9* hppa*-*-hpux* } } }
+! { dg-output "All kinds rounded to nearest" { xfail hppa*-*-hpux* } }
 ! { dg-final { cleanup-saved-temps } }

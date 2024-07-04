@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-options "-O3 --param riscv-autovec-preference=fixed-vlmax -Wno-psabi" } */
+/* { dg-options "-O3 -mrvv-vector-bits=zvl" } */
 
 #include "merge-5.c"
 

@@ -7,6 +7,7 @@
 
 #include "rust-system.h"
 #include "rust-location.h"
+#include "rust-proc-macro.h"
 
 namespace Rust {
 
@@ -68,14 +69,14 @@ public:
 
     // Give an error if the next bytes do not match STR.  Advance the
     // read position by the length of STR.
-    void require_c_string (Location location, const char *str)
+    void require_c_string (location_t location, const char *str)
     {
       this->require_bytes (location, str, strlen (str));
     }
 
     // Given an error if the next LENGTH bytes do not match BYTES.
     // Advance the read position by LENGTH.
-    void require_bytes (Location, const char *bytes, size_t length);
+    void require_bytes (location_t, const char *bytes, size_t length);
 
     // Advance the read position by SKIP bytes.
     void advance (size_t skip)
@@ -109,14 +110,18 @@ public:
   // returns a pointer to a Stream object to read the data that it
   // exports.  LOCATION is the location of the import statement.
   // RELATIVE_IMPORT_PATH is used as a prefix for a relative import.
-  static Stream *open_package (const std::string &filename, Location location,
-			       const std::string &relative_import_path);
+  static std::pair<std::unique_ptr<Stream>, std::vector<ProcMacro::Procmacro>>
+  open_package (const std::string &filename, location_t location,
+		const std::string &relative_import_path);
+
+  static std::pair<std::unique_ptr<Stream>, std::vector<ProcMacro::Procmacro>>
+  try_package_in_directory (const std::string &, location_t);
 
   // Constructor.
-  Import (Stream *, Location);
+  Import (std::unique_ptr<Stream>, location_t);
 
   // The location of the import statement.
-  Location location () const { return this->location_; }
+  location_t location () const { return this->location_; }
 
   // Return the next character.
   int peek_char () { return this->stream_->peek_char (); }
@@ -153,25 +158,24 @@ public:
   void clear_stream () { this->stream_ = NULL; }
 
 private:
-  static Stream *try_package_in_directory (const std::string &, Location);
-
   static int try_suffixes (std::string *);
 
-  static Stream *find_export_data (const std::string &filename, int fd,
-				   Location);
+  static std::unique_ptr<Stream> find_export_data (const std::string &filename,
+						   int fd, location_t);
 
-  static Stream *find_object_export_data (const std::string &filename, int fd,
-					  off_t offset, Location);
+  static std::unique_ptr<Stream>
+  find_object_export_data (const std::string &filename, int fd, off_t offset,
+			   location_t);
 
   static bool is_archive_magic (const char *);
 
-  static Stream *find_archive_export_data (const std::string &filename, int fd,
-					   Location);
+  static std::unique_ptr<Stream>
+  find_archive_export_data (const std::string &filename, int fd, location_t);
 
   // The stream from which to read import data.
-  Stream *stream_;
+  std::unique_ptr<Stream> stream_;
   // The location of the import statement we are processing.
-  Location location_;
+  location_t location_;
 };
 
 // Read import data from a string.

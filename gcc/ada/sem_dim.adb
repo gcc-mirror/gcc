@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,7 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
@@ -220,6 +219,7 @@ package body Sem_Dim is
       N_Real_Literal              => True,
       N_Selected_Component        => True,
       N_Slice                     => True,
+      N_Target_Name               => True,
       N_Type_Conversion           => True,
       N_Unchecked_Type_Conversion => True,
 
@@ -1180,6 +1180,7 @@ package body Sem_Dim is
             | N_Qualified_Expression
             | N_Selected_Component
             | N_Slice
+            | N_Target_Name
             | N_Unchecked_Type_Conversion
          =>
             Analyze_Dimension_Has_Etype (N);
@@ -2922,7 +2923,6 @@ package body Sem_Dim is
                Subtype_Indication  => New_Occurrence_Of (Btyp_Of_L, Loc));
 
          Append (New_Aspect, New_Aspects);
-         Set_Parent (New_Aspects, New_Subtyp_Decl_For_L);
          Set_Aspect_Specifications (New_Subtyp_Decl_For_L, New_Aspects);
 
          Analyze (New_Subtyp_Decl_For_L);

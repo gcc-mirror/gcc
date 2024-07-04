@@ -165,9 +165,12 @@ See_Also:
 
 Params:
     R = type to be tested
+    E = if present, the elements of the range must be
+        $(DDSUBLINK spec/const3, implicit_qualifier_conversions, qualifier-convertible)
+        to this type
 
 Returns:
-    `true` if R is an input range, `false` if not
+    `true` if R is an input range (possibly with element type `E`), `false` if not
  */
 enum bool isInputRange(R) =
     is(typeof(R.init) == R)
@@ -175,6 +178,10 @@ enum bool isInputRange(R) =
     && (is(typeof((return ref R r) => r.front)) || is(typeof(ref (return ref R r) => r.front)))
     && !is(typeof((R r) { return r.front; } (R.init)) == void)
     && is(typeof((R r) => r.popFront));
+
+/// ditto
+enum bool isInputRange(R, E) =
+    .isInputRange!R && isQualifierConvertible!(ElementType!R, E);
 
 ///
 @safe unittest
@@ -192,6 +199,18 @@ enum bool isInputRange(R) =
     static assert( isInputRange!(char[]));
     static assert(!isInputRange!(char[4]));
     static assert( isInputRange!(inout(int)[]));
+    static assert(!isInputRange!(int[], string));
+    static assert( isInputRange!(int[], int));
+    static assert( isInputRange!(int[], const int));
+    static assert(!isInputRange!(int[], immutable int));
+
+    static assert(!isInputRange!(const(int)[], int));
+    static assert( isInputRange!(const(int)[], const int));
+    static assert(!isInputRange!(const(int)[], immutable int));
+
+    static assert(!isInputRange!(immutable(int)[], int));
+    static assert( isInputRange!(immutable(int)[], const int));
+    static assert( isInputRange!(immutable(int)[], immutable int));
 
     static struct NotDefaultConstructible
     {
@@ -524,13 +543,9 @@ private void putChar(R, E)(ref R r, E e)
 if (isSomeChar!E)
 {
     // https://issues.dlang.org/show_bug.cgi?id=9186: Can't use (E[]).init
-    ref const( char)[] cstringInit();
-    ref const(wchar)[] wstringInit();
-    ref const(dchar)[] dstringInit();
-
-    enum csCond = is(typeof(doPut(r, cstringInit())));
-    enum wsCond = is(typeof(doPut(r, wstringInit())));
-    enum dsCond = is(typeof(doPut(r, dstringInit())));
+    enum csCond = is(typeof(doPut(r, (){ ref const( char)[] cstringInit(); return cstringInit(); }())));
+    enum wsCond = is(typeof(doPut(r, (){ ref const(wchar)[] wstringInit(); return wstringInit(); }())));
+    enum dsCond = is(typeof(doPut(r, (){ ref const(dchar)[] dstringInit(); return dstringInit(); }())));
 
     //Use "max" to avoid static type demotion
     enum ccCond = is(typeof(doPut(r,  char.max)));
@@ -996,9 +1011,22 @@ have a `save` function.
 
 See_Also:
     The header of $(MREF std,range) for tutorials on ranges.
+
+Params:
+    R = type to be tested
+    E = if present, the elements of the range must be
+        $(DDSUBLINK spec/const3, implicit_qualifier_conversions, qualifier-convertible)
+        to this type
+
+Returns:
+    `true` if R is a forward range (possibly with element type `E`), `false` if not
  */
 enum bool isForwardRange(R) = isInputRange!R
     && is(typeof((R r) { return r.save; } (R.init)) == R);
+
+/// ditto
+enum bool isForwardRange(R, E) =
+    .isForwardRange!R && isQualifierConvertible!(ElementType!R, E);
 
 ///
 @safe unittest
@@ -1006,6 +1034,17 @@ enum bool isForwardRange(R) = isInputRange!R
     static assert(!isForwardRange!(int));
     static assert( isForwardRange!(int[]));
     static assert( isForwardRange!(inout(int)[]));
+
+    static assert( isForwardRange!(int[], const int));
+    static assert(!isForwardRange!(int[], immutable int));
+
+    static assert(!isForwardRange!(const(int)[], int));
+    static assert( isForwardRange!(const(int)[], const int));
+    static assert(!isForwardRange!(const(int)[], immutable int));
+
+    static assert(!isForwardRange!(immutable(int)[], int));
+    static assert( isForwardRange!(immutable(int)[], const int));
+    static assert( isForwardRange!(immutable(int)[], immutable int));
 }
 
 @safe unittest
@@ -1038,11 +1077,24 @@ element in the range. Calling `r.back` is allowed only if calling
 
 See_Also:
     The header of $(MREF std,range) for tutorials on ranges.
+
+Params:
+    R = type to be tested
+    E = if present, the elements of the range must be
+        $(DDSUBLINK spec/const3, implicit_qualifier_conversions, qualifier-convertible)
+        to this type
+
+Returns:
+    `true` if R is a bidirectional range (possibly with element type `E`), `false` if not
  */
 enum bool isBidirectionalRange(R) = isForwardRange!R
     && is(typeof((R r) => r.popBack))
     && (is(typeof((return ref R r) => r.back)) || is(typeof(ref (return ref R r) => r.back)))
     && is(typeof(R.init.back.init) == ElementType!R);
+
+/// ditto
+enum bool isBidirectionalRange(R, E) =
+    .isBidirectionalRange!R && isQualifierConvertible!(ElementType!R, E);
 
 ///
 @safe unittest
@@ -1054,6 +1106,18 @@ enum bool isBidirectionalRange(R) = isForwardRange!R
     auto t = r.back;                           // can get the back of the range
     auto w = r.front;
     static assert(is(typeof(t) == typeof(w))); // same type for front and back
+
+    // Checking the element type
+    static assert( isBidirectionalRange!(int[], const int));
+    static assert(!isBidirectionalRange!(int[], immutable int));
+
+    static assert(!isBidirectionalRange!(const(int)[], int));
+    static assert( isBidirectionalRange!(const(int)[], const int));
+    static assert(!isBidirectionalRange!(const(int)[], immutable int));
+
+    static assert(!isBidirectionalRange!(immutable(int)[], int));
+    static assert( isBidirectionalRange!(immutable(int)[], const int));
+    static assert( isBidirectionalRange!(immutable(int)[], immutable int));
 }
 
 @safe unittest
@@ -1103,6 +1167,15 @@ are bidirectional ranges only.
 
 See_Also:
     The header of $(MREF std,range) for tutorials on ranges.
+
+Params:
+    R = type to be tested
+    E = if present, the elements of the range must be
+        $(DDSUBLINK spec/const3, implicit_qualifier_conversions, qualifier-convertible)
+        to this type
+
+Returns:
+    `true` if R is a random-access range (possibly with element type `E`), `false` if not
  */
 enum bool isRandomAccessRange(R) =
     is(typeof(lvalueOf!R[1]) == ElementType!R)
@@ -1112,6 +1185,10 @@ enum bool isRandomAccessRange(R) =
     && (hasLength!R || isInfinite!R)
     && (isInfinite!R || !is(typeof(lvalueOf!R[$ - 1]))
         || is(typeof(lvalueOf!R[$ - 1]) == ElementType!R));
+
+/// ditto
+enum bool isRandomAccessRange(R, E) =
+    .isRandomAccessRange!R && isQualifierConvertible!(ElementType!R, E);
 
 ///
 @safe unittest
@@ -1141,6 +1218,18 @@ enum bool isRandomAccessRange(R) =
         static if (!isInfinite!R)
             static assert(is(typeof(f) == typeof(r[$ - 1])));
     }
+
+    // Checking the element type
+    static assert( isRandomAccessRange!(int[], const int));
+    static assert(!isRandomAccessRange!(int[], immutable int));
+
+    static assert(!isRandomAccessRange!(const(int)[], int));
+    static assert( isRandomAccessRange!(const(int)[], const int));
+    static assert(!isRandomAccessRange!(const(int)[], immutable int));
+
+    static assert(!isRandomAccessRange!(immutable(int)[], int));
+    static assert( isRandomAccessRange!(immutable(int)[], const int));
+    static assert( isRandomAccessRange!(immutable(int)[], immutable int));
 }
 
 @safe unittest
@@ -1665,11 +1754,9 @@ For finite ranges, the result of `opSlice` must be of the same type as the
 original range type. If the range defines `opDollar`, then it must support
 subtraction.
 
-For infinite ranges, when $(I not) using `opDollar`, the result of
-`opSlice` must be the result of $(LREF take) or $(LREF takeExactly) on the
-original range (they both return the same type for infinite ranges). However,
-when using `opDollar`, the result of `opSlice` must be that of the
-original range type.
+For infinite ranges, when $(I not) using `opDollar`, the result of `opSlice`
+may be a forward range of any type. However, when using `opDollar`, the result
+of `opSlice` must be of the same type as the original range type.
 
 The following expression must be true for `hasSlicing` to be `true`:
 
@@ -1742,6 +1829,38 @@ enum bool hasSlicing(R) = isForwardRange!R
     }
 
     static assert(hasSlicing!InfOnes);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=24348
+@safe unittest
+{
+    static struct Slice
+    {
+        size_t length;
+        bool empty() => length == 0;
+        int front() => 0;
+        void popFront() { --length; }
+        Slice save() => this;
+    }
+
+    static struct InfZeros
+    {
+        enum empty = false;
+        int front() => 0;
+        void popFront() {}
+        InfZeros save() => this;
+
+        Slice opIndex(size_t[2] bounds)
+        {
+            size_t i = bounds[0], j = bounds[1];
+            size_t length = i <= j ? j - i : 0;
+            return Slice(length);
+        }
+
+        size_t[2] opSlice(size_t dim : 0)(size_t i, size_t j) => [i, j];
+    }
+
+    static assert(hasSlicing!InfZeros);
 }
 
 /**

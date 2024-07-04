@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2024 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
@@ -32,7 +32,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <string.h>
 
 
-static const fnode colon_node = { FMT_COLON, 0, NULL, NULL, {{ 0, 0, 0 }}, 0,
+static const fnode colon_node = { FMT_COLON, FMT_NONE, 0, NULL, NULL, {{ 0, 0, 0 }}, 0,
 				  NULL };
 
 /* Error messages. */
@@ -225,6 +225,7 @@ get_fnode (format_data *fmt, fnode **head, fnode **tail, format_token t)
     }
   f = fmt->avail++;
   memset (f, '\0', sizeof (fnode));
+  f->pushed = FMT_NONE;
 
   if (*head == NULL)
     *head = *tail = f;
@@ -922,6 +923,7 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
       *seen_dd = true;
       get_fnode (fmt, &head, &tail, t);
       tail->repeat = repeat;
+      tail->pushed = FMT_NONE;
 
       u = format_lex (fmt);
       

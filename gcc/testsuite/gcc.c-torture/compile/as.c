@@ -1,3 +1,4 @@
+/* { dg-additional-options "-std=gnu89" } */
 
 #define S 31
 #define A 17

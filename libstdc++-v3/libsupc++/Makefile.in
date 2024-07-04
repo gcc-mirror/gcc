@@ -973,6 +973,12 @@ cp-demangle.o: cp-demangle.c
 atomicity.cc: ${atomicity_file}
 	$(LN_S) ${atomicity_file} ./atomicity.cc || true
 
+# See PR 112397
+@OS_IS_DARWIN_TRUE@new_opvnt.lo: new_opvnt.cc
+@OS_IS_DARWIN_TRUE@	$(LTCXXCOMPILE) -fno-reorder-blocks-and-partition -I. -c $<
+@OS_IS_DARWIN_TRUE@new_opvnt.o: new_opvnt.cc
+@OS_IS_DARWIN_TRUE@	$(CXXCOMPILE) -fno-reorder-blocks-and-partition -I. -c $<
+
 install-stdHEADERS: $(std_HEADERS)
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(stddir)

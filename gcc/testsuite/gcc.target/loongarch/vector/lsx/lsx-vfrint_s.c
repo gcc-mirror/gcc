@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-options "-mlsx -w -fno-strict-aliasing" } */
 /* { dg-timeout 500 } */
 #include "../simd_correctness_check.h"
@@ -80,7 +79,7 @@ main ()
   *((int *)&__m128_result[1]) = 0x00000000;
   *((int *)&__m128_result[0]) = 0x00000000;
   __m128_out = __lsx_vfrintrne_s (__m128_op0);
-  ASSERTEQ_64 (__LINE__, __m128_result, __m128_out);
+  ASSERTEQ_32 (__LINE__, __m128_result, __m128_out);
 
   *((int *)&__m128_op0[3]) = 0x00130013;
   *((int *)&__m128_op0[2]) = 0x00130013;
@@ -91,7 +90,7 @@ main ()
   *((int *)&__m128_result[1]) = 0x00000000;
   *((int *)&__m128_result[0]) = 0x00000000;
   __m128_out = __lsx_vfrintrne_s (__m128_op0);
-  ASSERTEQ_64 (__LINE__, __m128_result, __m128_out);
+  ASSERTEQ_32 (__LINE__, __m128_result, __m128_out);
 
   *((int *)&__m128_op0[3]) = 0x20202020;
   *((int *)&__m128_op0[2]) = 0x20202020;
@@ -102,7 +101,7 @@ main ()
   *((int *)&__m128_result[1]) = 0x00000000;
   *((int *)&__m128_result[0]) = 0x00000000;
   __m128_out = __lsx_vfrintrne_s (__m128_op0);
-  ASSERTEQ_64 (__LINE__, __m128_result, __m128_out);
+  ASSERTEQ_32 (__LINE__, __m128_result, __m128_out);
 
   *((int *)&__m128_op0[3]) = 0x00000000;
   *((int *)&__m128_op0[2]) = 0x00000000;
@@ -113,7 +112,7 @@ main ()
   *((int *)&__m128_result[1]) = 0x00000000;
   *((int *)&__m128_result[0]) = 0x00000000;
   __m128_out = __lsx_vfrintrne_s (__m128_op0);
-  ASSERTEQ_64 (__LINE__, __m128_result, __m128_out);
+  ASSERTEQ_32 (__LINE__, __m128_result, __m128_out);
 
   *((int *)&__m128_op0[3]) = 0xffffffff;
   *((int *)&__m128_op0[2]) = 0xffffffff;
@@ -124,7 +123,7 @@ main ()
   *((int *)&__m128_result[1]) = 0xffffffff;
   *((int *)&__m128_result[0]) = 0xffffffff;
   __m128_out = __lsx_vfrintrne_s (__m128_op0);
-  ASSERTEQ_64 (__LINE__, __m128_result, __m128_out);
+  ASSERTEQ_32 (__LINE__, __m128_result, __m128_out);
 
   *((int *)&__m128_op0[3]) = 0x00000000;
   *((int *)&__m128_op0[2]) = 0x00000001;
@@ -135,7 +134,7 @@ main ()
   *((int *)&__m128_result[1]) = 0x00000000;
   *((int *)&__m128_result[0]) = 0x00000000;
   __m128_out = __lsx_vfrintrne_s (__m128_op0);
-  ASSERTEQ_64 (__LINE__, __m128_result, __m128_out);
+  ASSERTEQ_32 (__LINE__, __m128_result, __m128_out);
 
   *((int *)&__m128_op0[3]) = 0x00000000;
   *((int *)&__m128_op0[2]) = 0x00000000;
@@ -146,7 +145,7 @@ main ()
   *((int *)&__m128_result[1]) = 0x00000000;
   *((int *)&__m128_result[0]) = 0x00000000;
   __m128_out = __lsx_vfrintrne_s (__m128_op0);
-  ASSERTEQ_64 (__LINE__, __m128_result, __m128_out);
+  ASSERTEQ_32 (__LINE__, __m128_result, __m128_out);
 
   *((int *)&__m128_op0[3]) = 0xfffbfffb;
   *((int *)&__m128_op0[2]) = 0xfffbfffb;
@@ -157,7 +156,7 @@ main ()
   *((int *)&__m128_result[1]) = 0xfffbfffb;
   *((int *)&__m128_result[0]) = 0xfffbfffb;
   __m128_out = __lsx_vfrintrne_s (__m128_op0);
-  ASSERTEQ_64 (__LINE__, __m128_result, __m128_out);
+  ASSERTEQ_32 (__LINE__, __m128_result, __m128_out);
 
   *((int *)&__m128_op0[3]) = 0x0ff780a1;
   *((int *)&__m128_op0[2]) = 0x0efc01af;
@@ -168,7 +167,7 @@ main ()
   *((int *)&__m128_result[1]) = 0x00000000;
   *((int *)&__m128_result[0]) = 0xfe7f0000;
   __m128_out = __lsx_vfrintrne_s (__m128_op0);
-  ASSERTEQ_64 (__LINE__, __m128_result, __m128_out);
+  ASSERTEQ_32 (__LINE__, __m128_result, __m128_out);
 
   *((int *)&__m128_op0[3]) = 0x00000000;
   *((int *)&__m128_op0[2]) = 0x00000000;
@@ -179,7 +178,7 @@ main ()
   *((int *)&__m128_result[1]) = 0x00000000;
   *((int *)&__m128_result[0]) = 0x00000000;
   __m128_out = __lsx_vfrintrp_s (__m128_op0);
-  ASSERTEQ_64 (__LINE__, __m128_result, __m128_out);
+  ASSERTEQ_32 (__LINE__, __m128_result, __m128_out);
 
   *((int *)&__m128_op0[3]) = 0x00000000;
   *((int *)&__m128_op0[2]) = 0xefffffff;
@@ -190,7 +189,7 @@ main ()
   *((int *)&__m128_result[1]) = 0x00000000;
   *((int *)&__m128_result[0]) = 0x00000000;
   __m128_out = __lsx_vfrintrp_s (__m128_op0);
-  ASSERTEQ_64 (__LINE__, __m128_result, __m128_out);
+  ASSERTEQ_32 (__LINE__, __m128_result, __m128_out);
 
   *((int *)&__m128_op0[3]) = 0xffffffff;
   *((int *)&__m128_op0[2]) = 0xffffff00;
@@ -201,7 +200,7 @@ main ()
   *((int *)&__m128_result[1]) = 0xffffffff;
   *((int *)&__m128_result[0]) = 0xffffff00;
   __m128_out = __lsx_vfrintrp_s (__m128_op0);
-  ASSERTEQ_64 (__LINE__, __m128_result, __m128_out);
+  ASSERTEQ_32 (__LINE__, __m128_result, __m128_out);
 
   *((int *)&__m128_op0[3]) = 0xffffb96b;
   *((int *)&__m128_op0[2]) = 0xffff57c9;
@@ -212,7 +211,7 @@ main ()
   *((int *)&__m128_result[1]) = 0xffff6080;
   *((int *)&__m128_result[0]) = 0xffff4417;
   __m128_out = __lsx_vfrintrp_s (__m128_op0);
-  ASSERTEQ_64 (__LINE__, __m128_result, __m128_out);
+  ASSERTEQ_32 (__LINE__, __m128_result, __m128_out);
 
   *((int *)&__m128_op0[3]) = 0x00ff00ff;
   *((int *)&__m128_op0[2]) = 0x00ff00ff;
@@ -223,7 +222,7 @@ main ()
   *((int *)&__m128_result[1]) = 0x62cbf96e;
   *((int *)&__m128_result[0]) = 0x4acfaf40;
   __m128_out = __lsx_vfrintrp_s (__m128_op0);
-  ASSERTEQ_64 (__LINE__, __m128_result, __m128_out);
+  ASSERTEQ_32 (__LINE__, __m128_result, __m128_out);
 
   *((int *)&__m128_op0[3]) = 0x00000000;
   *((int *)&__m128_op0[2]) = 0x00002000;
@@ -234,7 +233,7 @@ main ()
   *((int *)&__m128_result[1]) = 0x00000000;
   *((int *)&__m128_result[0]) = 0x3f800000;
   __m128_out = __lsx_vfrintrp_s (__m128_op0);
-  ASSERTEQ_64 (__LINE__, __m128_result, __m128_out);
+  ASSERTEQ_32 (__LINE__, __m128_result, __m128_out);
 
   *((int *)&__m128_op0[3]) = 0xffffffff;
   *((int *)&__m128_op0[2]) = 0xffffffff;
@@ -245,7 +244,7 @@ main ()
   *((int *)&__m128_result[1]) = 0xffffffff;
   *((int *)&__m128_result[0]) = 0xffffffff;
   __m128_out = __lsx_vfrintrp_s (__m128_op0);
-  ASSERTEQ_64 (__LINE__, __m128_result, __m128_out);
+  ASSERTEQ_32 (__LINE__, __m128_result, __m128_out);
 
   *((int *)&__m128_op0[3]) = 0x63636363;
   *((int *)&__m128_op0[2]) = 0x63abdf16;
@@ -256,7 +255,7 @@ main ()
   *((int *)&__m128_result[1]) = 0x42000000;
   *((int *)&__m128_result[0]) = 0x3f800000;
   __m128_out = __lsx_vfrintrp_s (__m128_op0);
-  ASSERTEQ_64 (__LINE__, __m128_result, __m128_out);
+  ASSERTEQ_32 (__LINE__, __m128_result, __m128_out);
 
   *((int *)&__m128_op0[3]) = 0x00000000;
   *((int *)&__m128_op0[2]) = 0x00000000;
@@ -267,7 +266,7 @@ main ()
   *((int *)&__m128_result[1]) = 0x00000000;
   *((int *)&__m128_result[0]) = 0x00000000;
   __m128_out = __lsx_vfrintrm_s (__m128_op0);
-  ASSERTEQ_64 (__LINE__, __m128_result, __m128_out);
+  ASSERTEQ_32 (__LINE__, __m128_result, __m128_out);
 
   *((int *)&__m128_op0[3]) = 0xa5c4c774;
   *((int *)&__m128_op0[2]) = 0x856ba83b;
@@ -278,7 +277,7 @@ main ()
   *((int *)&__m128_result[1]) = 0xbf800000;
   *((int *)&__m128_result[0]) = 0x54691124;
   __m128_out = __lsx_vfrintrm_s (__m128_op0);
-  ASSERTEQ_64 (__LINE__, __m128_result, __m128_out);
+  ASSERTEQ_32 (__LINE__, __m128_result, __m128_out);
 
   *((int *)&__m128_op0[3]) = 0x00000000;
   *((int *)&__m128_op0[2]) = 0x00010002;
@@ -289,7 +288,7 @@ main ()
   *((int *)&__m128_result[1]) = 0xffffffff;
   *((int *)&__m128_result[0]) = 0xffd60015;
   __m128_out = __lsx_vfrintrm_s (__m128_op0);
-  ASSERTEQ_64 (__LINE__, __m128_result, __m128_out);
+  ASSERTEQ_32 (__LINE__, __m128_result, __m128_out);
 
   *((int *)&__m128_op0[3]) = 0xffffffff;
   *((int *)&__m128_op0[2]) = 0x3c992b2e;
@@ -300,7 +299,7 @@ main ()
   *((int *)&__m128_result[1]) = 0xffffffff;
   *((int *)&__m128_result[0]) = 0xffff730f;
   __m128_out = __lsx_vfrintrz_s (__m128_op0);
-  ASSERTEQ_64 (__LINE__, __m128_result, __m128_out);
+  ASSERTEQ_32 (__LINE__, __m128_result, __m128_out);
 
   *((int *)&__m128_op0[3]) = 0x00000000;
   *((int *)&__m128_op0[2]) = 0x00000001;
@@ -311,7 +310,7 @@ main ()
   *((int *)&__m128_result[1]) = 0x00000000;
   *((int *)&__m128_result[0]) = 0x00000000;
   __m128_out = __lsx_vfrintrz_s (__m128_op0);
-  ASSERTEQ_64 (__LINE__, __m128_result, __m128_out);
+  ASSERTEQ_32 (__LINE__, __m128_result, __m128_out);
 
   *((int *)&__m128_op0[3]) = 0x18171615;
   *((int *)&__m128_op0[2]) = 0x17161514;
@@ -322,7 +321,7 @@ main ()
   *((int *)&__m128_result[1]) = 0x00000000;
   *((int *)&__m128_result[0]) = 0x00000000;
   __m128_out = __lsx_vfrintrz_s (__m128_op0);
-  ASSERTEQ_64 (__LINE__, __m128_result, __m128_out);
+  ASSERTEQ_32 (__LINE__, __m128_result, __m128_out);
 
   *((int *)&__m128_op0[3]) = 0x62cbf96e;
   *((int *)&__m128_op0[2]) = 0x4acfaf40;
@@ -333,7 +332,7 @@ main ()
   *((int *)&__m128_result[1]) = 0xf0bc9a52;
   *((int *)&__m128_result[0]) = 0x78285a4a;
   __m128_out = __lsx_vfrintrz_s (__m128_op0);
-  ASSERTEQ_64 (__LINE__, __m128_result, __m128_out);
+  ASSERTEQ_32 (__LINE__, __m128_result, __m128_out);
 
   *((int *)&__m128_op0[3]) = 0x00000000;
   *((int *)&__m128_op0[2]) = 0x00000000;
@@ -344,7 +343,7 @@ main ()
   *((int *)&__m128_result[1]) = 0x00000000;
   *((int *)&__m128_result[0]) = 0x00000000;
   __m128_out = __lsx_vfrintrz_s (__m128_op0);
-  ASSERTEQ_64 (__LINE__, __m128_result, __m128_out);
+  ASSERTEQ_32 (__LINE__, __m128_result, __m128_out);
 
   return 0;
 }

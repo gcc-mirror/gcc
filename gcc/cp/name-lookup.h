@@ -1,5 +1,5 @@
 /* Declarations for -*- C++ -*- name lookup routines.
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -213,7 +213,8 @@ enum scope_kind {
 			explicit specialization is introduced by
 			"template <>", this scope is always empty.  */
   sk_transaction,    /* A synchronized or atomic statement.  */
-  sk_omp	     /* An OpenMP structured block.  */
+  sk_omp,	     /* An OpenMP structured block.  */
+  sk_count	     /* Number of scope_kind enumerations.  */
 };
 
 struct GTY(()) cp_class_binding {
@@ -494,6 +495,7 @@ enum WMB_Flags
   WMB_Export = 1 << 1,
   WMB_Using = 1 << 2,
   WMB_Hidden = 1 << 3,
+  WMB_Purview = 1 << 4,
 };
 
 extern unsigned walk_module_binding (tree binding, bitmap partitions,

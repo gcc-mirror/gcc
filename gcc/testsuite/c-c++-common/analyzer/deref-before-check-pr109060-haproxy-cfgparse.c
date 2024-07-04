@@ -1,5 +1,7 @@
 /* Reduced from haproxy-2.7.1's cfgparse.c.  */
 
+/* { dg-additional-options "-Wno-analyzer-too-complex -Wno-analyzer-symbol-too-complex" } */
+
 typedef __SIZE_TYPE__ size_t;
 
 extern int

@@ -1,5 +1,5 @@
 /* SSA Dominator optimizations for trees
-   Copyright (C) 2001-2023 Free Software Foundation, Inc.
+   Copyright (C) 2001-2024 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -1430,15 +1430,14 @@ dom_opt_dom_walker::set_global_ranges_from_unreachable_edges (basic_block bb)
     return;
 
   tree name;
-  gori_compute &gori = m_ranger->gori ();
-  FOR_EACH_GORI_EXPORT_NAME (gori, pred_e->src, name)
+  FOR_EACH_GORI_EXPORT_NAME (m_ranger->gori_ssa (), pred_e->src, name)
     if (all_uses_feed_or_dominated_by_stmt (name, stmt)
 	// The condition must post-dominate the definition point.
 	&& (SSA_NAME_IS_DEFAULT_DEF (name)
 	    || (gimple_bb (SSA_NAME_DEF_STMT (name))
 		== pred_e->src)))
       {
-	Value_Range r (TREE_TYPE (name));
+	value_range r (TREE_TYPE (name));
 
 	if (m_ranger->range_on_edge (r, pred_e, name)
 	    && !r.varying_p ()
@@ -1482,9 +1481,10 @@ record_equivalences_from_incoming_edge (basic_block bb,
 static void
 htab_statistics (FILE *file, const hash_table<expr_elt_hasher> &htab)
 {
-  fprintf (file, "size %ld, %ld elements, %f collision/search ratio\n",
-	   (long) htab.size (),
-	   (long) htab.elements (),
+  fprintf (file, "size " HOST_SIZE_T_PRINT_DEC ", " HOST_SIZE_T_PRINT_DEC
+	   " elements, %f collision/search ratio\n",
+	   (fmt_size_t) htab.size (),
+	   (fmt_size_t) htab.elements (),
 	   htab.collisions ());
 }
 
@@ -2032,7 +2032,7 @@ cprop_operand (gimple *stmt, use_operand_p op_p, range_query *query)
   val = SSA_NAME_VALUE (op);
   if (!val)
     {
-      Value_Range r (TREE_TYPE (op));
+      value_range r (TREE_TYPE (op));
       tree single;
       if (query->range_of_expr (r, op, stmt) && r.singleton_p (&single))
 	val = single;

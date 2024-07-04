@@ -10,7 +10,7 @@ f1 (svbool_t pg, svint32_t s32, svuint32_t u32, svfloat32_t f32,
 {
   svlogb_m (s32, pg); /* { dg-error {too few arguments to function 'svlogb_m'} } */
   svlogb_m (s32, pg, f32, s32); /* { dg-error {too many arguments to function 'svlogb_m'} } */
-  svlogb_m (0, pg, f32); /* { dg-error {passing 'int' to argument 1 of 'svlogb_m', which expects an SVE vector type} } */
+  svlogb_m (0, pg, f32); /* { dg-error {passing 'int' to argument 1 of 'svlogb_m', which expects an SVE type rather than a scalar} } */
   svlogb_m (s32, u32, f32); /* { dg-error {passing 'svuint32_t' to argument 2 of 'svlogb_m', which expects 'svbool_t'} } */
   svlogb_m (s32, 0, f32); /* { dg-error {passing 'int' to argument 2 of 'svlogb_m', which expects 'svbool_t'} } */
   svlogb_m (s32, pg, s32); /* { dg-error {'svlogb_m' has no form that takes 'svint32_t' arguments} } */

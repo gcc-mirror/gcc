@@ -1,3 +1,4 @@
+void abort (void);
 #if (__SIZEOF_INT__ == 4)
 typedef int int32;
 #elif (__SIZEOF_LONG__ == 4)

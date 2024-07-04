@@ -1,5 +1,5 @@
 /* "Supergraph" classes that combine CFGs and callgraph into one digraph.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -111,14 +111,14 @@ public:
   supergraph (logger *logger);
   ~supergraph ();
 
-  supernode *get_node_for_function_entry (function *fun) const
+  supernode *get_node_for_function_entry (const function &fun) const
   {
-    return get_node_for_block (ENTRY_BLOCK_PTR_FOR_FN (fun));
+    return get_node_for_block (ENTRY_BLOCK_PTR_FOR_FN (&fun));
   }
 
-  supernode *get_node_for_function_exit (function *fun) const
+  supernode *get_node_for_function_exit (const function &fun) const
   {
-    return get_node_for_block (EXIT_BLOCK_PTR_FOR_FN (fun));
+    return get_node_for_block (EXIT_BLOCK_PTR_FOR_FN (&fun));
   }
 
   supernode *get_node_for_block (basic_block bb) const
@@ -531,6 +531,8 @@ class cfg_superedge : public superedge
 
   size_t get_phi_arg_idx () const;
   tree get_phi_arg (const gphi *phi) const;
+
+  location_t get_goto_locus () const { return m_cfg_edge->goto_locus; }
 
  private:
   const ::edge m_cfg_edge;

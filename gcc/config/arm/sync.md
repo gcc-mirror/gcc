@@ -1,5 +1,5 @@
 ;; Machine description for ARM processor synchronization primitives.
-;; Copyright (C) 2010-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2024 Free Software Foundation, Inc.
 ;; Written by Marcus Shawcroft (marcus.shawcroft@arm.com)
 ;; 64bit Atomics by Dave Gilbert (david.gilbert@linaro.org)
 ;;
@@ -65,7 +65,7 @@
 (define_insn "arm_atomic_load<mode>"
   [(set (match_operand:QHSI 0 "register_operand" "=r,l")
     (unspec_volatile:QHSI
-      [(match_operand:QHSI 1 "memory_operand" "m,m")]
+      [(match_operand:QHSI 1 "mem_and_no_t1_wback_op" "m,Uw")]
       VUNSPEC_LDR))]
   ""
   "ldr<sync_sfx>\t%0, %1"
@@ -81,7 +81,7 @@
 )
 
 (define_insn "arm_atomic_store<mode>"
-  [(set (match_operand:QHSI 0 "memory_operand" "=m,m")
+  [(set (match_operand:QHSI 0 "mem_and_no_t1_wback_op" "=m,Uw")
     (unspec_volatile:QHSI
       [(match_operand:QHSI 1 "register_operand" "r,l")]
       VUNSPEC_STR))]

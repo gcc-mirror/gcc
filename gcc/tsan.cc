@@ -1,5 +1,5 @@
 /* GCC instrumentation plugin for ThreadSanitizer.
-   Copyright (C) 2011-2023 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
    Contributed by Dmitry Vyukov <dvyukov@google.com>
 
 This file is part of GCC.
@@ -137,6 +137,9 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
     }
 
   if (TREE_READONLY (base) || (VAR_P (base) && DECL_HARD_REGISTER (base)))
+    return false;
+
+  if (!ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (TREE_TYPE (base))))
     return false;
 
   stmt = gsi_stmt (gsi);

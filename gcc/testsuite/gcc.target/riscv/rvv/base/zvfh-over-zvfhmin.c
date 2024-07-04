@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv_zvfh -mabi=lp64 -O3 -Wno-psabi" } */
+/* { dg-options "-march=rv64gcv_zvfh -mabi=lp64 -O3" } */
 
 #include "riscv_vector.h"
 
@@ -72,17 +72,7 @@ vfloat16m4_t test_vget_v_f16m8_f16m4(vfloat16m8_t src, size_t index) {
 /* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e16,\s*mf4,\s*t[au],\s*m[au]} 3 } } */
 /* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e16,\s*m4,\s*t[au],\s*m[au]} 2 } } */
 /* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e16,\s*m8,\s*t[au],\s*m[au]} 1 } } */
-/* { dg-final { scan-assembler-times {vsetvli\s+[a-x0-9]+,\s*zero,\s*e16,\s*mf4,\s*t[au],\s*m[au]} 8 } } */
-/* { dg-final { scan-assembler-times {vsetvli\s+[a-x0-9]+,\s*zero,\s*e16,\s*mf2,\s*t[au],\s*m[au]} 2 } } */
 /* { dg-final { scan-assembler-times {vsetvli\s+[a-x0-9]+,\s*zero,\s*e16,\s*m8,\s*t[au],\s*m[au]} 1 } } */
 /* { dg-final { scan-assembler-times {vfwcvt\.f\.f\.v\s+v[0-9]+,\s*v[0-9]+} 2 } } */
 /* { dg-final { scan-assembler-times {vfncvt\.f\.f\.w\s+v[0-9]+,\s*v[0-9]+} 2 } } */
-/* { dg-final { scan-assembler-times {vle16\.v\s+v[0-9]+,\s*0\([0-9ax]+\)} 7 } } */
-/* { dg-final { scan-assembler-times {vse16\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 6 } } */
-/* { dg-final { scan-assembler-times {vl1re16\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 1 } } */
-/* { dg-final { scan-assembler-times {vl2re16\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 1 } } */
-/* { dg-final { scan-assembler-times {vl4re16\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 3 } } */
-/* { dg-final { scan-assembler-times {vl8re16\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 1 } } */
-/* { dg-final { scan-assembler-times {vs2r\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 1 } } */
-/* { dg-final { scan-assembler-times {vs4r\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 3 } } */
-/* { dg-final { scan-assembler-times {vs8r\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 5 } } */
+/* { dg-final { scan-assembler-times {vle16\.v\s+v[0-9]+,\s*0\([0-9ax]+\)} 2 } } */

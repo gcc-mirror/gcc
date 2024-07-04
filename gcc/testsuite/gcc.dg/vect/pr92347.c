@@ -1,6 +1,6 @@
 /* Copied from PR 92347.  */
 /* { dg-do compile } */
-/* { dg-options "-O1 -fopenmp-simd" } */
+/* { dg-additional-options "-O1 -fopenmp-simd" } */
 /* { dg-additional-options "-mavx" { target { i?86-*-* x86_64-*-* } } } */
 
 int by;

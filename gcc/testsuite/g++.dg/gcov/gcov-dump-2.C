@@ -1,4 +1,4 @@
-/* { dg-options "-fprofile-generate -ftest-coverage -lgcov" } */
+/* { dg-options "-fprofile-generate -ftest-coverage " } */
 /* { dg-do run { target native } } */
 
 int value;

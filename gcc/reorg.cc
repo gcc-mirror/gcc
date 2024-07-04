@@ -1,5 +1,5 @@
 /* Perform instruction reorganizations for delay slot filling.
-   Copyright (C) 1992-2023 Free Software Foundation, Inc.
+   Copyright (C) 1992-2024 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu).
    Hacked by Michael Tiemann (tiemann@cygnus.com).
 
@@ -2641,7 +2641,8 @@ fill_slots_from_thread (rtx_jump_insn *insn, rtx condition,
      arithmetic insn after the jump insn and put the arithmetic insn in the
      delay slot.  If we can't do this, return.  */
   if (delay_list->is_empty () && likely
-      && new_thread && !ANY_RETURN_P (new_thread)
+      && new_thread
+      && !ANY_RETURN_P (new_thread)
       && NONJUMP_INSN_P (new_thread)
       && !RTX_FRAME_RELATED_P (new_thread)
       && GET_CODE (PATTERN (new_thread)) != ASM_INPUT
@@ -2729,14 +2730,16 @@ fill_slots_from_thread (rtx_jump_insn *insn, rtx condition,
 
       gcc_assert (thread_if_true);
 
-      if (new_thread && simplejump_or_return_p (new_thread)
+      if (new_thread
+	  && simplejump_or_return_p (new_thread)
 	  && redirect_with_delay_list_safe_p (insn,
 					      JUMP_LABEL (new_thread),
 					      *delay_list))
-	new_thread = follow_jumps (JUMP_LABEL (new_thread), insn,
-				   &crossing);
+	new_thread = follow_jumps (JUMP_LABEL (new_thread), insn, &crossing);
 
-      if (ANY_RETURN_P (new_thread))
+      if (!new_thread)
+	label = find_end_label (simple_return_rtx);
+      else if (ANY_RETURN_P (new_thread))
 	label = find_end_label (new_thread);
       else if (LABEL_P (new_thread))
 	label = new_thread;

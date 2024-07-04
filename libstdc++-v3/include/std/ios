@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997-2023 Free Software Foundation, Inc.
+// Copyright (C) 1997-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,5 +44,8 @@
 #include <bits/ios_base.h>	// For ios_base declarations.
 #include <streambuf>
 #include <bits/basic_ios.h>
+
+#define __glibcxx_want_ios_noreplace
+#include <bits/version.h>
 
 #endif	/* _GLIBCXX_IOS */

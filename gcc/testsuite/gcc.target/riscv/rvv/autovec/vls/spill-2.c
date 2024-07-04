@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv_zvfh_zvl4096b -mabi=lp64d -O3 -fno-schedule-insns -fno-schedule-insns2" } */
+/* { dg-options "-march=rv64gcv_zvfh_zvl4096b -mabi=lp64d -mrvv-max-lmul=m8 -O3 -fno-schedule-insns -fno-schedule-insns2" } */
 
 #include "def.h"
 
@@ -120,5 +120,5 @@ spill_11 (int16_t *in, int16_t *out)
 /* { dg-final { scan-assembler-times {addi\tsp,sp,-256} 1 } } */
 /* { dg-final { scan-assembler-times {addi\tsp,sp,-512} 1 } } */
 /* { dg-final { scan-assembler-times {addi\tsp,sp,-1024} 1 } } */
-/* { dg-final { scan-assembler-times {addi\tsp,sp,-2048} 1 } } */
-/* { dg-final { scan-assembler-times {li\t[a-x0-9]+,-4096\s+add\tsp,sp,[a-x0-9]+} 1 } } */
+/* { dg-final { scan-assembler-times {addi\tsp,sp,-2048} 3 } } */
+/* { dg-final { scan-assembler-times {addi\tsp,sp,2032} 1 } } */

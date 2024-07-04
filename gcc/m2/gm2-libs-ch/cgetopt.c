@@ -1,6 +1,6 @@
 /* getopt.c provide access to the C getopt library.
 
-Copyright (C) 2017-2023 Free Software Foundation, Inc.
+Copyright (C) 2017-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -59,7 +59,7 @@ cgetopt_getopt (int argc, char *argv[], char *optstring)
 
 int
 cgetopt_cgetopt_long (int argc, char *argv[], char *optstring, const struct option *longopts,
-                    int *longindex)
+		      int *longindex)
 {
   int r = getopt_long (argc, argv, optstring, longopts, longindex);
 
@@ -74,7 +74,7 @@ cgetopt_cgetopt_long (int argc, char *argv[], char *optstring, const struct opti
 
 int
 cgetopt_cgetopt_long_only (int argc, char *argv[], char *optstring,
-                         const struct option *longopts, int *longindex)
+			   const struct option *longopts, int *longindex)
 {
   int r = getopt_long_only (argc, argv, optstring, longopts, longindex);
 
@@ -121,8 +121,8 @@ cgetopt_KillOptions (cgetopt_Options *o)
 
 void
 cgetopt_SetOption (cgetopt_Options *o, unsigned int index,
-		  char *name, bool has_arg,
-		  int *flag, int val)
+		   char *name, int has_arg,
+		   int *flag, int val)
 {
   if (index > o->high)
     {
@@ -131,6 +131,8 @@ cgetopt_SetOption (cgetopt_Options *o, unsigned int index,
     }
   o->cinfo[index].name = name;
   o->cinfo[index].has_arg = has_arg;
+  if (name == NULL)
+    flag = NULL;
   o->cinfo[index].flag = flag;
   o->cinfo[index].val = val;
 }

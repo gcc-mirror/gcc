@@ -1,5 +1,5 @@
 /* General-purpose hooks.
-   Copyright (C) 2002-2023 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -83,7 +83,6 @@ extern void hook_void_FILEptr_constcharptr (FILE *, const char *);
 extern void hook_void_FILEptr_constcharptr_const_tree (FILE *, const char *,
 						       const_tree);
 extern bool hook_bool_FILEptr_rtx_false (FILE *, rtx);
-extern void hook_void_rtx_tree (rtx, tree);
 extern void hook_void_FILEptr_tree (FILE *, tree);
 extern void hook_void_tree (tree);
 extern void hook_void_tree_treeptr (tree, tree *);

@@ -1,6 +1,6 @@
 (* M2SSA.mod discover very obvious single assignment temporaries.
 
-Copyright (C) 2021-2023 Free Software Foundation, Inc.
+Copyright (C) 2021-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -31,7 +31,7 @@ FROM NumberIO IMPORT WriteCard ;
 FROM M2Error IMPORT InternalError ;
 FROM M2Batch IMPORT GetModuleNo ;
 FROM M2Quiet IMPORT qprintf1 ;
-FROM M2Scope IMPORT ScopeBlock, InitScopeBlock, KillScopeBlock, ForeachScopeBlockDo ;
+FROM M2Scope IMPORT ScopeBlock, InitScopeBlock, KillScopeBlock ;
 FROM M2StackWord IMPORT StackOfWord, InitStackWord, KillStackWord, PushWord, PopWord, PeepWord ;
 FROM M2Options IMPORT CompilerDebugging ;
 FROM Lists IMPORT InitList, KillList, List, IncludeItemIntoList, IsItemInList ;

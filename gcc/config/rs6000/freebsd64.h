@@ -1,5 +1,5 @@
 /* Definitions for 64-bit PowerPC running FreeBSD using the ELF format
-   Copyright (C) 2012-2023 Free Software Foundation, Inc.
+   Copyright (C) 2012-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -112,6 +112,7 @@ extern int dot_symbols;
 
 #define LINK_OS_FREEBSD_SPEC_DEF "\
   %{p:%nconsider using `-pg' instead of `-p' with gprof(1)} \
+  " FBSD_LINK_PG_NOTE " \
   %{v:-V} \
   %{assert*} %{R*} %{rpath*} %{defsym*} \
   %{shared:-Bshareable %{h*} %{soname*}} \

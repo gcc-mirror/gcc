@@ -1,5 +1,5 @@
 /* Conditional Dead Call Elimination pass for the GNU compiler.
-   Copyright (C) 2008-2023 Free Software Foundation, Inc.
+   Copyright (C) 2008-2024 Free Software Foundation, Inc.
    Contributed by Xinliang David Li <davidxl@google.com>
 
 This file is part of GCC.
@@ -260,7 +260,7 @@ check_pow (gcall *pow_call)
       /* If the type of the base is too wide,
          the resulting shrink wrapping condition
 	 will be too conservative.  */
-      if (bit_sz > MAX_BASE_INT_BIT_SIZE)
+      if (bit_sz != 8 && bit_sz != 16 && bit_sz != MAX_BASE_INT_BIT_SIZE)
         return false;
 
       return true;
@@ -677,14 +677,14 @@ gen_conditions_for_pow (gcall *pow_call, vec<gimple *> conds,
    Since IEEE only sets minimum requirements for long double format,
    different long double formats exist under different implementations
    (e.g, 64 bit double precision (DF), 80 bit double-extended
-   precision (XF), and 128 bit quad precision (QF) ).  For simplicity,
+   precision (XF), and 128 bit quad precision (TF) ).  For simplicity,
    in this implementation, the computed bounds for long double assume
-   64 bit format (DF), and are therefore conservative.  Another
-   assumption is that single precision float type is always SF mode,
-   and double type is DF mode.  This function is quite
-   implementation specific, so it may not be suitable to be part of
-   builtins.cc.  This needs to be revisited later to see if it can
-   be leveraged in x87 assembly expansion.  */
+   64 bit format (DF) except when it is IEEE quad or extended with the same
+   emax, and are therefore sometimes conservative.  Another assumption is
+   that single precision float type is always SF mode, and double type is DF
+   mode.  This function is quite implementation specific, so it may not be
+   suitable to be part of builtins.cc.  This needs to be revisited later
+   to see if it can be leveraged in x87 assembly expansion.  */
 
 static inp_domain
 get_no_error_domain (enum built_in_function fnc)
@@ -723,10 +723,10 @@ get_no_error_domain (enum built_in_function fnc)
                          89, true, false);
     case BUILT_IN_COSH:
     case BUILT_IN_SINH:
-    case BUILT_IN_COSHL:
-    case BUILT_IN_SINHL:
     case BUILT_IN_COSHF64:
     case BUILT_IN_SINHF64:
+    case BUILT_IN_COSHF32X:
+    case BUILT_IN_SINHF32X:
       /* cosh: (-710, +710)  */
       return get_domain (-710, true, false,
                          710, true, false);
@@ -735,6 +735,16 @@ get_no_error_domain (enum built_in_function fnc)
       /* coshf128: (-11357, +11357)  */
       return get_domain (-11357, true, false,
 			 11357, true, false);
+    case BUILT_IN_COSHL:
+    case BUILT_IN_SINHL:
+      if (REAL_MODE_FORMAT (TYPE_MODE (long_double_type_node))->emax == 16384)
+	return get_no_error_domain (BUILT_IN_COSHF128);
+      return get_no_error_domain (BUILT_IN_COSH);
+    case BUILT_IN_COSHF64X:
+    case BUILT_IN_SINHF64X:
+      if (REAL_MODE_FORMAT (TYPE_MODE (float64x_type_node))->emax == 16384)
+	return get_no_error_domain (BUILT_IN_COSHF128);
+      return get_no_error_domain (BUILT_IN_COSH);
     /* Log functions: (0, +inf)  */
     CASE_FLT_FN (BUILT_IN_LOG):
     CASE_FLT_FN_FLOATN_NX (BUILT_IN_LOG):
@@ -751,7 +761,7 @@ get_no_error_domain (enum built_in_function fnc)
     /* Exp functions.  */
     case BUILT_IN_EXPF16:
     case BUILT_IN_EXPM1F16:
-      /* expf: (-inf, 11)  */
+      /* expf16: (-inf, 11)  */
       return get_domain (-1, false, false,
 			 11, true, false);
     case BUILT_IN_EXPF:
@@ -763,10 +773,10 @@ get_no_error_domain (enum built_in_function fnc)
                          88, true, false);
     case BUILT_IN_EXP:
     case BUILT_IN_EXPM1:
-    case BUILT_IN_EXPL:
-    case BUILT_IN_EXPM1L:
     case BUILT_IN_EXPF64:
     case BUILT_IN_EXPM1F64:
+    case BUILT_IN_EXPF32X:
+    case BUILT_IN_EXPM1F32X:
       /* exp: (-inf, 709)  */
       return get_domain (-1, false, false,
                          709, true, false);
@@ -775,6 +785,16 @@ get_no_error_domain (enum built_in_function fnc)
       /* expf128: (-inf, 11356)  */
       return get_domain (-1, false, false,
 			 11356, true, false);
+    case BUILT_IN_EXPL:
+    case BUILT_IN_EXPM1L:
+      if (REAL_MODE_FORMAT (TYPE_MODE (long_double_type_node))->emax == 16384)
+	return get_no_error_domain (BUILT_IN_EXPF128);
+      return get_no_error_domain (BUILT_IN_EXP);
+    case BUILT_IN_EXPF64X:
+    case BUILT_IN_EXPM1F64X:
+      if (REAL_MODE_FORMAT (TYPE_MODE (float64x_type_node))->emax == 16384)
+	return get_no_error_domain (BUILT_IN_EXPF128);
+      return get_no_error_domain (BUILT_IN_EXP);
     case BUILT_IN_EXP2F16:
       /* exp2f16: (-inf, 16)  */
       return get_domain (-1, false, false,
@@ -785,8 +805,8 @@ get_no_error_domain (enum built_in_function fnc)
       return get_domain (-1, false, false,
                          128, true, false);
     case BUILT_IN_EXP2:
-    case BUILT_IN_EXP2L:
     case BUILT_IN_EXP2F64:
+    case BUILT_IN_EXP2F32X:
       /* exp2: (-inf, 1024)  */
       return get_domain (-1, false, false,
                          1024, true, false);
@@ -794,6 +814,14 @@ get_no_error_domain (enum built_in_function fnc)
       /* exp2f128: (-inf, 16384)  */
       return get_domain (-1, false, false,
 			 16384, true, false);
+    case BUILT_IN_EXP2L:
+      if (REAL_MODE_FORMAT (TYPE_MODE (long_double_type_node))->emax == 16384)
+	return get_no_error_domain (BUILT_IN_EXP2F128);
+      return get_no_error_domain (BUILT_IN_EXP2);
+    case BUILT_IN_EXP2F64X:
+      if (REAL_MODE_FORMAT (TYPE_MODE (float64x_type_node))->emax == 16384)
+	return get_no_error_domain (BUILT_IN_EXP2F128);
+      return get_no_error_domain (BUILT_IN_EXP2);
     case BUILT_IN_EXP10F:
     case BUILT_IN_POW10F:
       /* exp10f: (-inf, 38)  */
@@ -801,11 +829,16 @@ get_no_error_domain (enum built_in_function fnc)
                          38, true, false);
     case BUILT_IN_EXP10:
     case BUILT_IN_POW10:
-    case BUILT_IN_EXP10L:
-    case BUILT_IN_POW10L:
       /* exp10: (-inf, 308)  */
       return get_domain (-1, false, false,
                          308, true, false);
+    case BUILT_IN_EXP10L:
+    case BUILT_IN_POW10L:
+      if (REAL_MODE_FORMAT (TYPE_MODE (long_double_type_node))->emax == 16384)
+	/* exp10l: (-inf, 4932)  */
+	return get_domain (-1, false, false,
+			   4932, true, false);
+      return get_no_error_domain (BUILT_IN_EXP10);
     /* sqrt: [0, +inf)  */
     CASE_FLT_FN (BUILT_IN_SQRT):
     CASE_FLT_FN_FLOATN_NX (BUILT_IN_SQRT):

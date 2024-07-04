@@ -1,15 +1,17 @@
 // { dg-do run { target c++23 } }
+// { dg-add-options no_pch }
 
 #include <ranges>
+
+#if __cpp_lib_ranges_zip != 202110L
+# error "Feature-test macro __cpp_lib_ranges_zip has wrong value in <ranges>"
+#endif
+
 #include <algorithm>
 #include <utility>
 #include <vector>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
-
-#if __cpp_lib_ranges_zip != 202110L
-# error "Feature-test macro __cpp_lib_ranges_zip has wrong value in <ranges>"
-#endif
 
 namespace ranges = std::ranges;
 namespace views = std::views;
@@ -39,8 +41,8 @@ test01()
   VERIFY( i2 == z2.end() );
   VERIFY( ranges::size(z2) == 2 );
   VERIFY( ranges::size(std::as_const(z2)) == 2 );
-  VERIFY( z2[0].first == 1 && z2[0].second == 3 );
-  VERIFY( z2[1].first == 2 && z2[1].second == 4 );
+  VERIFY( std::get<0>(z2[0]) == 1 && std::get<1>(z2[0]) == 3 );
+  VERIFY( std::get<0>(z2[1]) == 2 && std::get<1>(z2[1]) == 4 );
   for (const auto [x, y] : z2)
     {
       VERIFY( y - x == 2 );
@@ -122,6 +124,18 @@ test04()
   return true;
 }
 
+constexpr bool
+test05()
+{
+  // PR libstdc++/109203
+  int x[] = {1, 1, 2};
+  int y[] = {2, 1, 3};
+  auto r = views::zip(x, y);
+  ranges::sort(r);
+
+  return true;
+}
+
 int
 main()
 {
@@ -129,4 +143,5 @@ main()
   static_assert(test02());
   static_assert(test03());
   static_assert(test04());
+  static_assert(test05());
 }

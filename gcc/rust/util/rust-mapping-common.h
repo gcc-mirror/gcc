@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -61,9 +61,9 @@ struct DefId
   }
 };
 
-#define UNKNOWN_CREATENUM ((uint32_t) (0))
-#define UNKNOWN_NODEID ((uint32_t) (0))
-#define UNKNOWN_HIRID ((uint32_t) (0))
+#define UNKNOWN_CRATENUM ((uint32_t) (UINT32_MAX))
+#define UNKNOWN_NODEID ((uint32_t) (UINT32_MAX))
+#define UNKNOWN_HIRID ((uint32_t) (UINT32_MAX))
 #define UNKNOWN_LOCAL_DEFID ((uint32_t) (0))
 #define UNKNOWN_DEFID (DefId{0, 0})
 

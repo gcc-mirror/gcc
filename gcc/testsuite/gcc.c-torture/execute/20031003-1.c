@@ -1,5 +1,7 @@
 /* PR optimization/9325  */
 
+/* { dg-additional-options "-fno-trapping-math" } */
+
 #include <limits.h>
 
 extern void abort (void);

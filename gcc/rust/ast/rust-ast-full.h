@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -20,6 +20,7 @@
 #define RUST_AST_FULL_H
 // Use as a fast way of including all aspects of the AST (i.e. all headers)
 #include "rust-ast.h"
+#include "rust-ast-formatting.h"
 #include "rust-expr.h"
 #include "rust-item.h"
 #include "rust-path.h"

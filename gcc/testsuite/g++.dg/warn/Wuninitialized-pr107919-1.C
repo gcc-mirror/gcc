@@ -1,6 +1,6 @@
 // { dg-do compile }
 // { dg-require-effective-target c++17 }
-// { dg-options "-O -Wuninitialized" }
+// { dg-options "-O2 -Wuninitialized" }
 
 #include <memory>
 #include <variant>

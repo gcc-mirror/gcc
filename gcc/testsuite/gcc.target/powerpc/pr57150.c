@@ -1,8 +1,8 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target longdouble128 } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O3 -mdejagnu-cpu=power7 -fcaller-saves" } */
+/* { dg-require-effective-target longdouble128 } */
+/* { dg-require-effective-target powerpc_vsx } */
 /* { dg-final { scan-assembler-not "lxvd2x" } } */
 /* { dg-final { scan-assembler-not "lxvw4x" } } */
 /* { dg-final { scan-assembler-not "lvx" } } */

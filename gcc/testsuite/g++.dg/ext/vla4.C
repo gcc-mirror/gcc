@@ -1,4 +1,5 @@
 // PR c++/29318
+// Explicit { dg-require-effective-target exceptions_enabled } to avoid verify compiler messages FAILs for '-fno-exceptions'.
 // { dg-options "" }
 
 #include <typeinfo>

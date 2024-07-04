@@ -1,5 +1,5 @@
 /* Routines for liveness in SSA trees.
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod  <amacleod@redhat.com>
 
 This file is part of GCC.
@@ -237,9 +237,6 @@ typedef struct tree_live_info_d
   /* Var map this relates to.  */
   var_map map;
 
-  /* Bitmap indicating which partitions are global.  */
-  bitmap global;
-
   /* Bitmaps of live on entry blocks for partition elements.  */
   bitmap_head *livein;
 
@@ -275,15 +272,6 @@ extern vec<bitmap_head> compute_live_vars (struct function *, live_vars_map *);
 extern bitmap live_vars_at_stmt (vec<bitmap_head> &, live_vars_map *,
 				 gimple *);
 extern void destroy_live_vars (vec<bitmap_head> &);
-
-/*  Return TRUE if P is marked as a global in LIVE.  */
-
-inline int
-partition_is_global (tree_live_info_p live, int p)
-{
-  gcc_checking_assert (live->global);
-  return bitmap_bit_p (live->global, p);
-}
 
 
 /* Return the bitmap from LIVE representing the live on entry blocks for
@@ -329,7 +317,6 @@ inline void
 make_live_on_entry (tree_live_info_p live, basic_block bb , int p)
 {
   bitmap_set_bit (&live->livein[bb->index], p);
-  bitmap_set_bit (live->global, p);
 }
 
 

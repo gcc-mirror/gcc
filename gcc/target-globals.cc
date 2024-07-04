@@ -1,5 +1,5 @@
 /* Target-dependent globals.
-   Copyright (C) 2010-2023 Free Software Foundation, Inc.
+   Copyright (C) 2010-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bb-reorder.h"
 #include "lower-subreg.h"
 #include "function-abi.h"
+#include "tm_p.h"
 
 #if SWITCHABLE_TARGET
 class target_globals default_target_globals = {
@@ -60,7 +61,8 @@ class target_globals default_target_globals = {
   &default_target_builtins,
   &default_target_gcse,
   &default_target_bb_reorder,
-  &default_target_lower_subreg
+  &default_target_lower_subreg,
+  &default_target_constraints
 };
 
 class target_globals *
@@ -84,6 +86,7 @@ save_target_globals (void)
   g->gcse = XCNEW (struct target_gcse);
   g->bb_reorder = XCNEW (struct target_bb_reorder);
   g->lower_subreg = XCNEW (struct target_lower_subreg);
+  g->constraints = XCNEW (target_constraints);
   restore_target_globals (g);
   init_reg_sets ();
   target_reinit ();
@@ -141,6 +144,7 @@ target_globals::~target_globals ()
       XDELETE (gcse);
       XDELETE (bb_reorder);
       XDELETE (lower_subreg);
+      XDELETE (constraints);
     }
 }
 

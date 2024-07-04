@@ -4,9 +4,9 @@
 
 /*
 ** create3_s8:
-**	mov	z0\.d, z6\.d
-**	mov	z1\.d, z4\.d
-**	mov	z2\.d, z7\.d
+**	mov	[^\n]+
+**	mov	[^\n]+
+**	mov	[^\n]+
 **	ret
 */
 TEST_CREATE (create3_s8, svint8x3_t, svint8_t,
@@ -15,9 +15,9 @@ TEST_CREATE (create3_s8, svint8x3_t, svint8_t,
 
 /*
 ** create3_u8:
-**	mov	z0\.d, z4\.d
-**	mov	z1\.d, z6\.d
-**	mov	z2\.d, z5\.d
+**	mov	[^\n]+
+**	mov	[^\n]+
+**	mov	[^\n]+
 **	ret
 */
 TEST_CREATE (create3_u8, svuint8x3_t, svuint8_t,
@@ -26,9 +26,9 @@ TEST_CREATE (create3_u8, svuint8x3_t, svuint8_t,
 
 /*
 ** create3_s16:
-**	mov	z0\.d, z6\.d
-**	mov	z1\.d, z4\.d
-**	mov	z2\.d, z5\.d
+**	mov	[^\n]+
+**	mov	[^\n]+
+**	mov	[^\n]+
 **	ret
 */
 TEST_CREATE (create3_s16, svint16x3_t, svint16_t,
@@ -37,9 +37,9 @@ TEST_CREATE (create3_s16, svint16x3_t, svint16_t,
 
 /*
 ** create3_u16:
-**	mov	z0\.d, z6\.d
-**	mov	z1\.d, z5\.d
-**	mov	z2\.d, z4\.d
+**	mov	[^\n]+
+**	mov	[^\n]+
+**	mov	[^\n]+
 **	ret
 */
 TEST_CREATE (create3_u16, svuint16x3_t, svuint16_t,
@@ -48,9 +48,9 @@ TEST_CREATE (create3_u16, svuint16x3_t, svuint16_t,
 
 /*
 ** create3_bf16:
-**	mov	z0\.d, z4\.d
-**	mov	z1\.d, z5\.d
-**	mov	z2\.d, z6\.d
+**	mov	[^\n]+
+**	mov	[^\n]+
+**	mov	[^\n]+
 **	ret
 */
 TEST_CREATE (create3_bf16, svbfloat16x3_t, svbfloat16_t,
@@ -59,9 +59,9 @@ TEST_CREATE (create3_bf16, svbfloat16x3_t, svbfloat16_t,
 
 /*
 ** create3_f16:
-**	mov	z0\.d, z4\.d
-**	mov	z1\.d, z5\.d
-**	mov	z2\.d, z6\.d
+**	mov	[^\n]+
+**	mov	[^\n]+
+**	mov	[^\n]+
 **	ret
 */
 TEST_CREATE (create3_f16, svfloat16x3_t, svfloat16_t,
@@ -70,9 +70,9 @@ TEST_CREATE (create3_f16, svfloat16x3_t, svfloat16_t,
 
 /*
 ** create3_s32:
-**	mov	z0\.d, z6\.d
-**	mov	z1\.d, z7\.d
-**	mov	z2\.d, z4\.d
+**	mov	[^\n]+
+**	mov	[^\n]+
+**	mov	[^\n]+
 **	ret
 */
 TEST_CREATE (create3_s32, svint32x3_t, svint32_t,
@@ -81,9 +81,9 @@ TEST_CREATE (create3_s32, svint32x3_t, svint32_t,
 
 /*
 ** create3_u32:
-**	mov	z0\.d, z7\.d
-**	mov	z1\.d, z5\.d
-**	mov	z2\.d, z6\.d
+**	mov	[^\n]+
+**	mov	[^\n]+
+**	mov	[^\n]+
 **	ret
 */
 TEST_CREATE (create3_u32, svuint32x3_t, svuint32_t,
@@ -92,9 +92,9 @@ TEST_CREATE (create3_u32, svuint32x3_t, svuint32_t,
 
 /*
 ** create3_f32:
-**	mov	z0\.d, z7\.d
-**	mov	z1\.d, z4\.d
-**	mov	z2\.d, z6\.d
+**	mov	[^\n]+
+**	mov	[^\n]+
+**	mov	[^\n]+
 **	ret
 */
 TEST_CREATE (create3_f32, svfloat32x3_t, svfloat32_t,
@@ -103,9 +103,9 @@ TEST_CREATE (create3_f32, svfloat32x3_t, svfloat32_t,
 
 /*
 ** create3_s64:
-**	mov	z0\.d, z5\.d
-**	mov	z1\.d, z7\.d
-**	mov	z2\.d, z6\.d
+**	mov	[^\n]+
+**	mov	[^\n]+
+**	mov	[^\n]+
 **	ret
 */
 TEST_CREATE (create3_s64, svint64x3_t, svint64_t,
@@ -114,9 +114,9 @@ TEST_CREATE (create3_s64, svint64x3_t, svint64_t,
 
 /*
 ** create3_u64:
-**	mov	z0\.d, z7\.d
-**	mov	z1\.d, z6\.d
-**	mov	z2\.d, z4\.d
+**	mov	[^\n]+
+**	mov	[^\n]+
+**	mov	[^\n]+
 **	ret
 */
 TEST_CREATE (create3_u64, svuint64x3_t, svuint64_t,
@@ -125,9 +125,9 @@ TEST_CREATE (create3_u64, svuint64x3_t, svuint64_t,
 
 /*
 ** create3_f64:
-**	mov	z0\.d, z5\.d
-**	mov	z1\.d, z4\.d
-**	mov	z2\.d, z7\.d
+**	mov	[^\n]+
+**	mov	[^\n]+
+**	mov	[^\n]+
 **	ret
 */
 TEST_CREATE (create3_f64, svfloat64x3_t, svfloat64_t,

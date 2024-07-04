@@ -1,5 +1,5 @@
 /* Template classes for directed graphs.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -201,7 +201,7 @@ digraph<GraphTraits>::dump_dot_to_file (FILE *fp,
   pretty_printer pp;
   // TODO:
   pp_format_decoder (&pp) = default_tree_printer;
-  pp.buffer->stream = fp;
+  pp.set_output_stream (fp);
   dump_dot_to_pp (&pp, root_cluster, args);
   pp_flush (&pp);
 }

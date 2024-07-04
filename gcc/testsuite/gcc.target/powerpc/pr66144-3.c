@@ -1,6 +1,6 @@
-/* { dg-do compile { target { powerpc64*-*-* } } } */
-/* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-options "-mdejagnu-cpu=power8 -O2 -ftree-vectorize" } */
+/* { dg-do compile } */
+/* { dg-options "-mdejagnu-cpu=power8 -O2 -ftree-vectorize -fno-unroll-loops" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Verify that we can optimize a vector conditional move, where one of the arms
    is all 1's into using the mask as one of the inputs to XXSEL.  */
@@ -20,7 +20,7 @@ test (void)
     a[i] = (b[i] == c[i]) ? -1 : a[i];
 }
 
-/* { dg-final { scan-assembler     {\mvcmpequw\M} } } */
-/* { dg-final { scan-assembler     {\mxxsel\M}    } } */
+/* { dg-final { scan-assembler-times {\mvcmpequw\M} 1 } } */
+/* { dg-final { scan-assembler-times {\m(?:xxsel|xxlor|vor)\M} 1 } } */
 /* { dg-final { scan-assembler-not {\mvspltisw\M} } } */
 /* { dg-final { scan-assembler-not {\mxxlorc\M}   } } */

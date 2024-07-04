@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 struct {
   unsigned int f1, f2;
 } s;

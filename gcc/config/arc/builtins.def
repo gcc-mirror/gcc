@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2015-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -50,14 +50,14 @@ DEF_BUILTIN (CORE_WRITE, 2, void_ftype_usint_usint, core_write, 1)
 DEF_BUILTIN (SETI,       1, void_ftype_int,         seti,       TARGET_V2)
 
 /* Regular builtins.  */
-DEF_BUILTIN (NORM,       1, int_ftype_int,          clrsbsi2,   TARGET_NORM)
-DEF_BUILTIN (NORMW,      1, int_ftype_short,        normw,      TARGET_NORM)
-DEF_BUILTIN (SWAP,       1, int_ftype_int,          swap,       TARGET_SWAP)
-DEF_BUILTIN (DIVAW,      2, int_ftype_int_int,      divaw,      TARGET_EA_SET)
-DEF_BUILTIN (CORE_READ,  1, usint_ftype_usint,      core_read,  1)
-DEF_BUILTIN (LR,         1, usint_ftype_usint,      lr,         1)
-DEF_BUILTIN (FFS,        1, int_ftype_int,          ffs,        (TARGET_EM && TARGET_NORM) || TARGET_HS)
-DEF_BUILTIN (FLS,        1, int_ftype_int,          fls,        (TARGET_EM && TARGET_NORM) || TARGET_HS)
+DEF_BUILTIN (NORM,       1, int_ftype_int,     clrsbsi2,      TARGET_NORM)
+DEF_BUILTIN (NORMW,      1, int_ftype_short,   normw,         TARGET_NORM)
+DEF_BUILTIN (SWAP,       1, int_ftype_int,     rotlsi2_cnt16, TARGET_SWAP)
+DEF_BUILTIN (DIVAW,      2, int_ftype_int_int, divaw,         TARGET_EA_SET)
+DEF_BUILTIN (CORE_READ,  1, usint_ftype_usint, core_read,     1)
+DEF_BUILTIN (LR,         1, usint_ftype_usint, lr,            1)
+DEF_BUILTIN (FFS,        1, int_ftype_int,     ffs,           (TARGET_EM && TARGET_NORM) || TARGET_HS)
+DEF_BUILTIN (FLS,        1, int_ftype_int,     fls,           (TARGET_EM && TARGET_NORM) || TARGET_HS)
 
 /* ARC SIMD extenssion.  */
 /* BEGIN SIMD marker.  */

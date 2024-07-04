@@ -1,5 +1,5 @@
 // { dg-do compile { target msp430*-*-* } }
-// { dg-options "-std=gnu++11" }
+// { dg-options "-std=gnu++11 -fabi-compat-version=0" }
 // { dg-skip-if "" { msp430*-*-* } { "-mcpu=msp430" } { "" } }
 
 __int20 x;

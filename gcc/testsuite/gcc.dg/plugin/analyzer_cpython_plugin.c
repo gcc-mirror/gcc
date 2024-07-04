@@ -2,6 +2,7 @@
 /* { dg-options "-g" } */
 
 #define INCLUDE_MEMORY
+#define INCLUDE_VECTOR
 #include "gcc-plugin.h"
 #include "config.h"
 #include "system.h"
@@ -273,6 +274,11 @@ public:
     return NULL;
   }
 
+  void update_event_loc_info (event_loc_info &) final override
+  {
+    /* No-op.  */
+  }
+
 private:
   const exploded_graph &m_eg;
   tree m_var;
@@ -310,18 +316,16 @@ public:
   }
 
   bool
-  emit (rich_location *rich_loc, logger *) final override
+  emit (diagnostic_emission_context &ctxt) final override
   {
-    diagnostic_metadata m;
     bool warned;
     // just assuming constants for now
     auto actual_refcnt
 	= m_actual_refcnt->dyn_cast_constant_svalue ()->get_constant ();
     auto ob_refcnt = m_ob_refcnt->dyn_cast_constant_svalue ()->get_constant ();
-    warned = warning_meta (rich_loc, m, get_controlling_option (),
-			   "expected %qE to have "
-			   "reference count: %qE but ob_refcnt field is: %qE",
-			   m_reg_tree, actual_refcnt, ob_refcnt);
+    warned = ctxt.warn ("expected %qE to have "
+			"reference count: %qE but ob_refcnt field is: %qE",
+			m_reg_tree, actual_refcnt, ob_refcnt);
 
     // location_t loc = rich_loc->get_loc ();
     // foo (loc);
@@ -526,7 +530,7 @@ dump_refcnt_info (const hash_map<const region *, int> &region_to_refcnt,
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
 
   for (const auto &region_refcnt : region_to_refcnt)
     {

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -24,7 +24,7 @@ class SubstituteCtx
 {
   std::vector<std::unique_ptr<AST::Token>> &input;
   std::vector<std::unique_ptr<AST::Token>> &macro;
-  std::map<std::string, MatchedFragmentContainer> &fragments;
+  std::map<std::string, MatchedFragmentContainer *> &fragments;
 
   /**
    * Find the repetition amount to use when expanding a repetition, and
@@ -40,7 +40,7 @@ class SubstituteCtx
 public:
   SubstituteCtx (std::vector<std::unique_ptr<AST::Token>> &input,
 		 std::vector<std::unique_ptr<AST::Token>> &macro,
-		 std::map<std::string, MatchedFragmentContainer> &fragments)
+		 std::map<std::string, MatchedFragmentContainer *> &fragments)
     : input (input), macro (macro), fragments (fragments)
   {}
 
@@ -49,12 +49,13 @@ public:
    * i.e. replacing $var with the associated fragment.
    *
    * @param metavar Metavariable to try and replace
+   * @param expanded Reference to a vector upon which expanded tokens will be
+   * pushed
    *
-   * @return A token containing the associated fragment expanded into tokens if
-   * any, or the cloned token if no fragment was associated
+   * @return True iff the substitution succeeded
    */
-  std::vector<std::unique_ptr<AST::Token>>
-  substitute_metavar (std::unique_ptr<AST::Token> &metavar);
+  bool substitute_metavar (std::unique_ptr<AST::Token> &metavar,
+			   std::vector<std::unique_ptr<AST::Token>> &expanded);
 
   /**
    * Substitute a macro repetition by its given fragments

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -22,11 +22,38 @@
 #include "rust-ast.h"
 
 namespace Rust {
-class MacroInvocLexer
+template <class T> class MacroInvocLexerBase
+{
+public:
+  MacroInvocLexerBase (std::vector<T> stream)
+    : offs (0), token_stream (std::move (stream))
+  {}
+
+  // Advances current token to n + 1 tokens ahead of current position.
+  void skip_token (int n) { offs += (n + 1); }
+
+  // Skips the current token.
+  void skip_token () { skip_token (0); }
+
+  std::string get_filename () const
+  {
+    // FIXME
+    rust_unreachable ();
+    return "FIXME";
+  }
+
+  size_t get_offs () const { return offs; }
+
+protected:
+  size_t offs;
+  std::vector<T> token_stream;
+};
+
+class MacroInvocLexer : public MacroInvocLexerBase<std::unique_ptr<AST::Token>>
 {
 public:
   MacroInvocLexer (std::vector<std::unique_ptr<AST::Token>> stream)
-    : offs (0), token_stream (std::move (stream))
+    : MacroInvocLexerBase (std::move (stream))
   {}
 
   // Returns token n tokens ahead of current position.
@@ -35,32 +62,15 @@ public:
   // Peeks the current token.
   const_TokenPtr peek_token () { return peek_token (0); }
 
-  // Advances current token to n + 1 tokens ahead of current position.
-  void skip_token (int n);
-
-  // Skips the current token.
-  void skip_token () { skip_token (0); }
-
   // Splits the current token into two. Intended for use with nested generics
   // closes (i.e. T<U<X>> where >> is wrongly lexed as one token). Note that
   // this will only work with "simple" tokens like punctuation.
   void split_current_token (TokenId new_left, TokenId new_right);
 
-  std::string get_filename () const
-  {
-    // FIXME
-    gcc_unreachable ();
-    return "FIXME";
-  }
-
-  size_t get_offs () const { return offs; }
+  void split_current_token (std::vector<TokenPtr> new_tokens);
 
   std::vector<std::unique_ptr<AST::Token>>
   get_token_slice (size_t start_idx, size_t end_idx) const;
-
-private:
-  size_t offs;
-  std::vector<std::unique_ptr<AST::Token>> token_stream;
 };
 } // namespace Rust
 

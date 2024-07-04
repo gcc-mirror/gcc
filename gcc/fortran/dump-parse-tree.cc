@@ -1,5 +1,5 @@
 /* Parse tree dumper
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
    Contributed by Steven Bosscher
 
 This file is part of GCC.
@@ -914,6 +914,8 @@ show_attr (symbol_attribute *attr, const char * module)
     fputs (" OMP-DECLARE-TARGET", dumpfile);
   if (attr->omp_declare_target_link)
     fputs (" OMP-DECLARE-TARGET-LINK", dumpfile);
+  if (attr->omp_declare_target_indirect)
+    fputs (" OMP-DECLARE-TARGET-INDIRECT", dumpfile);
   if (attr->elemental)
     fputs (" ELEMENTAL", dumpfile);
   if (attr->pure)
@@ -1398,6 +1400,9 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	    fputs (") ALLOCATE(", dumpfile);
 	  continue;
 	}
+      if ((list_type == OMP_LIST_MAP || list_type == OMP_LIST_CACHE)
+	  && n->u.map.readonly)
+	fputs ("readonly,", dumpfile);
       if (list_type == OMP_LIST_REDUCTION)
 	switch (n->u.reduction_op)
 	  {
@@ -1465,7 +1470,7 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	  default: break;
 	  }
       else if (list_type == OMP_LIST_MAP)
-	switch (n->u.map_op)
+	switch (n->u.map.op)
 	  {
 	  case OMP_MAP_ALLOC: fputs ("alloc:", dumpfile); break;
 	  case OMP_MAP_TO: fputs ("to:", dumpfile); break;
@@ -1591,6 +1596,33 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
     {
       fputs (" IF(", dumpfile);
       show_expr (omp_clauses->if_expr);
+      fputc (')', dumpfile);
+    }
+  for (i = 0; i < OMP_IF_LAST; i++)
+    if (omp_clauses->if_exprs[i])
+      {
+	static const char *ifs[] = {
+	  "CANCEL",
+	  "PARALLEL",
+	  "SIMD",
+	  "TASK",
+	  "TASKLOOP",
+	  "TARGET",
+	  "TARGET DATA",
+	  "TARGET UPDATE",
+	  "TARGET ENTER DATA",
+	  "TARGET EXIT DATA"
+	};
+      fputs (" IF(", dumpfile);
+      fputs (ifs[i], dumpfile);
+      fputs (": ", dumpfile);
+      show_expr (omp_clauses->if_exprs[i]);
+      fputc (')', dumpfile);
+    }
+  if (omp_clauses->self_expr)
+    {
+      fputs (" SELF(", dumpfile);
+      show_expr (omp_clauses->self_expr);
       fputc (')', dumpfile);
     }
   if (omp_clauses->final_expr)
@@ -1999,27 +2031,6 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
       show_expr (omp_clauses->detach);
       fputc (')', dumpfile);
     }
-  for (i = 0; i < OMP_IF_LAST; i++)
-    if (omp_clauses->if_exprs[i])
-      {
-	static const char *ifs[] = {
-	  "CANCEL",
-	  "PARALLEL",
-	  "SIMD",
-	  "TASK",
-	  "TASKLOOP",
-	  "TARGET",
-	  "TARGET DATA",
-	  "TARGET UPDATE",
-	  "TARGET ENTER DATA",
-	  "TARGET EXIT DATA"
-	};
-      fputs (" IF(", dumpfile);
-      fputs (ifs[i], dumpfile);
-      fputs (": ", dumpfile);
-      show_expr (omp_clauses->if_exprs[i]);
-      fputc (')', dumpfile);
-    }
   if (omp_clauses->destroy)
     fputs (" DESTROY", dumpfile);
   if (omp_clauses->depend_source)
@@ -2108,6 +2119,26 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
     }
   if (omp_clauses->assume)
     show_omp_assumes (omp_clauses->assume);
+  if (omp_clauses->full)
+    fputs (" FULL", dumpfile);
+  if (omp_clauses->partial)
+    {
+      fputs (" PARTIAL", dumpfile);
+      if (omp_clauses->partial > 0)
+	fprintf (dumpfile, "(%d)", omp_clauses->partial);
+    }
+  if (omp_clauses->sizes_list)
+    {
+      gfc_expr_list *sizes;
+      fputs (" SIZES(", dumpfile);
+      for (sizes = omp_clauses->sizes_list; sizes; sizes = sizes->next)
+	{
+	  show_expr (sizes->expr);
+	  if (sizes->next)
+	    fputs (", ", dumpfile);
+	}
+      fputc (')', dumpfile);
+    }
 }
 
 /* Show a single OpenMP or OpenACC directive node and everything underneath it
@@ -2220,6 +2251,8 @@ show_omp_node (int level, gfc_code *c)
       name = "TEAMS DISTRIBUTE PARALLEL DO SIMD"; break;
     case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD: name = "TEAMS DISTRIBUTE SIMD"; break;
     case EXEC_OMP_TEAMS_LOOP: name = "TEAMS LOOP"; break;
+    case EXEC_OMP_TILE: name = "TILE"; break;
+    case EXEC_OMP_UNROLL: name = "UNROLL"; break;
     case EXEC_OMP_WORKSHARE: name = "WORKSHARE"; break;
     default:
       gcc_unreachable ();
@@ -2241,6 +2274,8 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OACC_CACHE:
     case EXEC_OACC_ENTER_DATA:
     case EXEC_OACC_EXIT_DATA:
+    case EXEC_OMP_ALLOCATE:
+    case EXEC_OMP_ALLOCATORS:
     case EXEC_OMP_ASSUME:
     case EXEC_OMP_CANCEL:
     case EXEC_OMP_CANCELLATION_POINT:
@@ -2296,6 +2331,8 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
     case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
     case EXEC_OMP_TEAMS_LOOP:
+    case EXEC_OMP_TILE:
+    case EXEC_OMP_UNROLL:
     case EXEC_OMP_WORKSHARE:
       omp_clauses = c->ext.omp_clauses;
       break;
@@ -2688,11 +2725,20 @@ show_code_node (int level, gfc_code *c)
 
     case EXEC_BLOCK:
       {
-	const char* blocktype;
+	const char *blocktype, *sname = NULL;
 	gfc_namespace *saved_ns;
 	gfc_association_list *alist;
 
-	if (c->ext.block.assoc)
+	if (c->ext.block.ns && c->ext.block.ns->code
+	    && c->ext.block.ns->code->op == EXEC_SELECT_TYPE)
+	  {
+	    gfc_expr *fcn = c->ext.block.ns->code->expr1;
+	    blocktype = "SELECT TYPE";
+	    /* expr1 is _loc(assoc_name->vptr)  */
+	    if (fcn && fcn->expr_type == EXPR_FUNCTION)
+	      sname = fcn->value.function.actual->expr->symtree->n.sym->name;
+	  }
+	else if (c->ext.block.assoc)
 	  blocktype = "ASSOCIATE";
 	else
 	  blocktype = "BLOCK";
@@ -2700,7 +2746,7 @@ show_code_node (int level, gfc_code *c)
 	fprintf (dumpfile, "%s ", blocktype);
 	for (alist = c->ext.block.assoc; alist; alist = alist->next)
 	  {
-	    fprintf (dumpfile, " %s = ", alist->name);
+	    fprintf (dumpfile, " %s = ", sname ? sname : alist->name);
 	    show_expr (alist->target);
 	  }
 
@@ -2731,7 +2777,7 @@ show_code_node (int level, gfc_code *c)
       if (c->op == EXEC_SELECT_RANK)
 	fputs ("SELECT RANK ", dumpfile);
       else if (c->op == EXEC_SELECT_TYPE)
-	fputs ("SELECT TYPE ", dumpfile);
+	fputs ("SELECT CASE ", dumpfile); // Preceded by SELECT TYPE construct
       else
 	fputs ("SELECT CASE ", dumpfile);
       show_expr (c->expr1);
@@ -3537,6 +3583,8 @@ show_code_node (int level, gfc_code *c)
     case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
     case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
     case EXEC_OMP_TEAMS_LOOP:
+    case EXEC_OMP_TILE:
+    case EXEC_OMP_UNROLL:
     case EXEC_OMP_WORKSHARE:
       show_omp_node (level, c);
       break;

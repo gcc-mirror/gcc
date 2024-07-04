@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Runs doxygen and massages the output files.
-# Copyright (C) 2001-2023 Free Software Foundation, Inc.
+# Copyright (C) 2001-2024 Free Software Foundation, Inc.
 #
 # Synopsis:  run_doxygen --mode=[html|latex|man|xml] --host_alias=<alias> \
 #                        v3srcdir \
@@ -294,7 +294,11 @@ $gxx $cppflags $cxxflags ${srcdir}/doc/doxygen/stdheader.cc -o ./stdheader || ex
 problematic=`grep -E -l '#include <.*h>' [a-z]*.3`
 for f in $problematic; do
     # this is also slow, but safe and easy to debug
-    oldh=`sed -n '/fC#include </s/.*<\(.*\)>.*/\1/p' $f`
+    oldh=`sed -n '/f[CR]#include </s/.*<\(.*\)>.*/\1/p' $f`
+    if [ "$oldh" == "" ]; then
+      echo "ERROR: Doxygen man page formatting changed" 2>&1
+      continue
+    fi
     newh=`echo $oldh | sed 's/\\\\&\\././g' | ./stdheader`
     sed "s=${oldh/\\/.}=${newh}=" $f > TEMP && mv TEMP $f
 done
@@ -411,8 +415,21 @@ for f in __cxxabiv1_*; do
     mv $f $newname
 done
 
+mv std::__unspecified___exception_ptr.3 std::exception_ptr.3
+
 # Then piecemeal nested classes
 
+for f in std*distribution_param_type.3; do
+    newname=`echo $f | sed 's/distribution_param_type/distribution::param_type/'`
+    mv $f $newname
+done
+
+for f in std*filesystem::path_iterator.3; do
+    newname=`echo $f | sed 's/path_iterator/path::iterator/'`
+    mv $f $newname
+done
+
+mv std::chrono::tzdb_list_const_iterator.3 std::chrono::tzdb_list::const_iterator.3
 
 # Generic removal bits, where there are things in the generated man
 # pages that need to be killed.

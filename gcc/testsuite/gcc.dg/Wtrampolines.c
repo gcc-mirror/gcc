@@ -5,6 +5,9 @@
 /* { dg-require-effective-target trampolines } */
 /* { dg-options "-O2 -Wtrampolines" } */
 
+/* macOS 11 and above use heap-based trampolines, which do not emit a warning.  */
+/* { dg-skip-if "" { *-*-darwin2* } } */
+
 /* This used to fail on various versions of Solaris 2 because the
    trampoline couldn't be made executable.  */
 

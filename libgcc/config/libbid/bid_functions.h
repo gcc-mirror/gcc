@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -67,8 +67,12 @@ ALIGN (16)
 #endif
 
 
+#if defined __NO_BINARY80__
+#define __ENABLE_BINARY80__  0
+#else
 #if !defined _MSC_VER || defined __INTEL_COMPILER
 #define __ENABLE_BINARY80__  1
+#endif
 #endif
 
 #ifndef HPUX_OS
@@ -90,6 +94,19 @@ ALIGN (16)
        UINT64 w[4];
      } UINT256;
      typedef unsigned int FPSC;	// floating-point status and control
+
+     typedef enum class_types {
+       signalingNaN,
+       quietNaN,
+       negativeInfinity,
+       negativeNormal,
+       negativeSubnormal,
+       negativeZero,
+       positiveZero,
+       positiveSubnormal,
+       positiveNormal,
+       positiveInfinity
+     } class_t;
 
 // TYPE parameters
 #define BID128_MAXDIGITS	34
@@ -2948,7 +2965,7 @@ ALIGN (16)
      extern UINT64 bid64_copySign (UINT64 x,
 				   UINT64 y _EXC_MASKS_PARAM
 				   _EXC_INFO_PARAM);
-     extern int bid64_class (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern class_t bid64_class (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      extern int bid64_sameQuantum (UINT64 x, UINT64 y
 				   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
      extern int bid64_totalOrder (UINT64 x, UINT64 y
@@ -2984,8 +3001,8 @@ ALIGN (16)
      extern UINT128 bid128_copySign (UINT128 x,
 				     UINT128 y _EXC_MASKS_PARAM
 				     _EXC_INFO_PARAM);
-     extern int bid128_class (UINT128 x _EXC_MASKS_PARAM
-			      _EXC_INFO_PARAM);
+     extern class_t bid128_class (UINT128 x _EXC_MASKS_PARAM
+				  _EXC_INFO_PARAM);
      extern int bid128_sameQuantum (UINT128 x,
 				    UINT128 y _EXC_MASKS_PARAM
 				    _EXC_INFO_PARAM);

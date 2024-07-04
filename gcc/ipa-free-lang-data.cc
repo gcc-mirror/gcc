@@ -1,7 +1,7 @@
 /* Pass to free or clear language-specific data structures from
    the IL before they reach the middle end.
 
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -234,7 +234,7 @@ fld_decl_context (tree ctx)
   return ctx;
 }
 
-/* For T being aggregate type try to turn it into a incomplete variant.
+/* For T being aggregate type try to turn it into an incomplete variant.
    Return T if no simplification is possible.  */
 
 static tree

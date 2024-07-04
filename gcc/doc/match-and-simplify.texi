@@ -1,4 +1,4 @@
-@c Copyright (C) 2014-2023 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2024 Free Software Foundation, Inc.
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -360,6 +360,22 @@ type of a generated expression with the @code{:type} syntax where
 Usually the types of the generated result expressions are
 determined from the context, but sometimes like in the above case
 it is required that you specify them explicitly.
+
+Another modifier for generated expressions is @code{^} which
+tells the machinery to try more matches for some special cases.
+For example, normally the @code{cond} only allows the gimple
+assign when matching.  It will also try to match the gimple @code{PHI}
+besides gimple assign if appending the @code{^} to the @code{cond}.
+Aka @code{cond^}.  Consider below example
+
+@smallexample
+(match (unsigned_sat_add @@0 @@1)
+ (cond^ (ge (plus:c@@2 @@0 @@1) @@0) @@2 integer_minus_onep))
+@end smallexample
+
+The above matching will generate the predicate function named
+@code{gimple_unsigned_sat_add} that accepts both the gimple
+assign and gimple @code{PHI}.
 
 Another modifier for generated expressions is @code{!} which
 tells the machinery to only consider the simplification in case

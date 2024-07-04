@@ -7,7 +7,7 @@ test (svbool_t pg, svint8_t s8, svuint8_t u8,
 {
   svqincp (s32); /* { dg-error {too few arguments to function 'svqincp'} } */
   svqincp (s32, pg, pg); /* { dg-error {too many arguments to function 'svqincp'} } */
-  svqincp (i, pg); /* { dg-error {passing 'int' to argument 1 of 'svqincp', which expects an SVE vector type} } */
+  svqincp (i, pg); /* { dg-error {passing 'int' to argument 1 of 'svqincp', which expects an SVE type rather than a scalar} } */
   svqincp (pg, pg); /* { dg-error {'svqincp' has no form that takes 'svbool_t' arguments} } */
   svqincp (s8, pg); /* { dg-error {'svqincp' has no form that takes 'svint8_t' arguments} } */
   svqincp (u8, pg); /* { dg-error {'svqincp' has no form that takes 'svuint8_t' arguments} } */

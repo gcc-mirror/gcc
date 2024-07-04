@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 
 with Ada.Unchecked_Deallocation;
 
-with System.Finalization_Masters; use System.Finalization_Masters;
+with System.Finalization_Primitives; use System.Finalization_Primitives;
 
 package body System.Storage_Pools.Subpools.Finalization is
 
@@ -53,9 +53,9 @@ package body System.Storage_Pools.Subpools.Finalization is
          return;
       end if;
 
-      --  Clean up all controlled objects chained on the subpool's master
+      --  Clean up all controlled objects chained on the subpool's collection
 
-      Finalize (Subpool.Master);
+      Finalize (Subpool.Collection);
 
       --  Remove the subpool from its owner's list of subpools
 

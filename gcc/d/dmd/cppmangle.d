@@ -4,7 +4,7 @@
  * This is the POSIX side of the implementation.
  * It exports two functions to C++, `toCppMangleItanium` and `cppTypeInfoMangleItanium`.
  *
- * Copyright: Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright: Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors: Walter Bright, https://www.digitalmars.com
  * License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/cppmangle.d, _cppmangle.d)
@@ -23,7 +23,6 @@
 
 module dmd.cppmangle;
 
-import core.stdc.string;
 import core.stdc.stdio;
 
 import dmd.arraytypes;
@@ -43,10 +42,9 @@ import dmd.mtype;
 import dmd.nspace;
 import dmd.root.array;
 import dmd.common.outbuffer;
-import dmd.root.rootobject;
+import dmd.rootobject;
 import dmd.root.string;
 import dmd.target;
-import dmd.tokens;
 import dmd.typesem;
 import dmd.visitor;
 
@@ -67,7 +65,7 @@ package CppOperator isCppOperator(Identifier id)
 }
 
 ///
-extern(C++) const(char)* toCppMangleItanium(Dsymbol s)
+const(char)* toCppMangleItanium(Dsymbol s)
 {
     //printf("toCppMangleItanium(%s)\n", s.toChars());
     OutBuffer buf;
@@ -77,7 +75,7 @@ extern(C++) const(char)* toCppMangleItanium(Dsymbol s)
 }
 
 ///
-extern(C++) const(char)* cppTypeInfoMangleItanium(Dsymbol s)
+const(char)* cppTypeInfoMangleItanium(Dsymbol s)
 {
     //printf("cppTypeInfoMangle(%s)\n", s.toChars());
     OutBuffer buf;
@@ -88,7 +86,7 @@ extern(C++) const(char)* cppTypeInfoMangleItanium(Dsymbol s)
 }
 
 ///
-extern(C++) const(char)* cppThunkMangleItanium(FuncDeclaration fd, int offset)
+const(char)* cppThunkMangleItanium(FuncDeclaration fd, int offset)
 {
     //printf("cppThunkMangleItanium(%s)\n", fd.toChars());
     OutBuffer buf;
@@ -485,7 +483,7 @@ private final class CppMangleVisitor : Visitor
             }
             else
             {
-                ti.error("internal compiler error: C++ `%s` template value parameter is not supported", tv.valType.toChars());
+                .error(ti.loc, "%s `%s` internal compiler error: C++ `%s` template value parameter is not supported", ti.kind, ti.toPrettyChars, tv.valType.toChars());
                 fatal();
             }
         }
@@ -520,13 +518,13 @@ private final class CppMangleVisitor : Visitor
             }
             else
             {
-                ti.error("internal compiler error: C++ `%s` template alias parameter is not supported", o.toChars());
+                .error(ti.loc, "%s `%s` internal compiler error: C++ `%s` template alias parameter is not supported", ti.kind, ti.toPrettyChars, o.toChars());
                 fatal();
             }
         }
         else if (tp.isTemplateThisParameter())
         {
-            ti.error("internal compiler error: C++ `%s` template this parameter is not supported", o.toChars());
+            .error(ti.loc, "%s `%s` internal compiler error: C++ `%s` template this parameter is not supported", ti.kind, ti.toPrettyChars, o.toChars());
             fatal();
         }
         else
@@ -575,7 +573,7 @@ private final class CppMangleVisitor : Visitor
                     Type t = isType((*ti.tiargs)[j]);
                     if (t is null)
                     {
-                        ti.error("internal compiler error: C++ `%s` template value parameter is not supported", (*ti.tiargs)[j].toChars());
+                        .error(ti.loc, "%s `%s` internal compiler error: C++ `%s` template value parameter is not supported", ti.kind, ti.toPrettyChars, (*ti.tiargs)[j].toChars());
                         fatal();
                     }
                     t.accept(this);
@@ -1013,7 +1011,7 @@ private final class CppMangleVisitor : Visitor
         // fake mangling for fields to fix https://issues.dlang.org/show_bug.cgi?id=16525
         if (!(d.storage_class & (STC.extern_ | STC.field | STC.gshared)))
         {
-            d.error("internal compiler error: C++ static non-`__gshared` non-`extern` variables not supported");
+            .error(d.loc, "%s `%s` internal compiler error: C++ static non-`__gshared` non-`extern` variables not supported", d.kind, d.toPrettyChars);
             fatal();
         }
         Dsymbol p = d.toParent();

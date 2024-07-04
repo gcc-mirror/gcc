@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -25,14 +25,15 @@
 
 namespace Rust {
 
-struct Feature;
-
-class FeatureGate : public AST::ASTVisitor
+class FeatureGate : public AST::DefaultASTVisitor
 {
 public:
   FeatureGate () {}
 
+  using AST::DefaultASTVisitor::visit;
+
   void check (AST::Crate &crate);
+  void visit (AST::Crate &crate) override;
 
   void visit (AST::Token &tok) override {}
   void visit (AST::DelimTokenTree &delim_tok_tree) override {}
@@ -50,6 +51,7 @@ public:
   void visit (AST::QualifiedPathInType &path) override {}
   void visit (AST::LiteralExpr &expr) override {}
   void visit (AST::AttrInputLiteral &attr_input) override {}
+  void visit (AST::AttrInputMacro &attr_input) override {}
   void visit (AST::MetaItemLitExpr &meta_item) override {}
   void visit (AST::MetaItemPathLit &meta_item) override {}
   void visit (AST::BorrowExpr &expr) override {}
@@ -97,26 +99,21 @@ public:
   void visit (AST::ForLoopExpr &expr) override {}
   void visit (AST::IfExpr &expr) override {}
   void visit (AST::IfExprConseqElse &expr) override {}
-  void visit (AST::IfExprConseqIf &expr) override {}
-  void visit (AST::IfExprConseqIfLet &expr) override {}
   void visit (AST::IfLetExpr &expr) override {}
   void visit (AST::IfLetExprConseqElse &expr) override {}
-  void visit (AST::IfLetExprConseqIf &expr) override {}
-  void visit (AST::IfLetExprConseqIfLet &expr) override {}
   void visit (AST::MatchExpr &expr) override {}
   void visit (AST::AwaitExpr &expr) override {}
   void visit (AST::AsyncBlockExpr &expr) override {}
   void visit (AST::TypeParam &param) override {}
   void visit (AST::LifetimeWhereClauseItem &item) override {}
   void visit (AST::TypeBoundWhereClauseItem &item) override {}
-  void visit (AST::Method &method) override {}
   void visit (AST::Module &module) override {}
   void visit (AST::ExternCrate &crate) override {}
   void visit (AST::UseTreeGlob &use_tree) override {}
   void visit (AST::UseTreeList &use_tree) override {}
   void visit (AST::UseTreeRebind &use_tree) override {}
   void visit (AST::UseDeclaration &use_decl) override {}
-  void visit (AST::Function &function) override {}
+  void visit (AST::Function &function) override;
   void visit (AST::TypeAlias &type_alias) override {}
   void visit (AST::StructStruct &struct_item) override {}
   void visit (AST::TupleStruct &tuple_struct) override {}
@@ -128,20 +125,17 @@ public:
   void visit (AST::Union &union_item) override {}
   void visit (AST::ConstantItem &const_item) override {}
   void visit (AST::StaticItem &static_item) override {}
-  void visit (AST::TraitItemFunc &item) override {}
-  void visit (AST::TraitItemMethod &item) override {}
   void visit (AST::TraitItemConst &item) override {}
   void visit (AST::TraitItemType &item) override {}
   void visit (AST::Trait &trait) override {}
-  void visit (AST::InherentImpl &impl) override {}
-  void visit (AST::TraitImpl &impl) override {}
+  void visit (AST::ExternalTypeItem &item) override;
   void visit (AST::ExternalStaticItem &item) override {}
   void visit (AST::ExternalFunctionItem &item) override {}
   void visit (AST::ExternBlock &block) override;
   void visit (AST::MacroMatchFragment &match) override {}
   void visit (AST::MacroMatchRepetition &match) override {}
   void visit (AST::MacroMatcher &matcher) override {}
-  void visit (AST::MacroRulesDefinition &rules_def) override {}
+  void visit (AST::MacroRulesDefinition &rules_def) override;
   void visit (AST::MacroInvocation &macro_invoc) override {}
   void visit (AST::MetaItemPath &meta_item) override {}
   void visit (AST::MetaItemSeq &meta_item) override {}
@@ -152,6 +146,7 @@ public:
   void visit (AST::LiteralPattern &pattern) override {}
   void visit (AST::IdentifierPattern &pattern) override {}
   void visit (AST::WildcardPattern &pattern) override {}
+  void visit (AST::RestPattern &pattern) override {}
   void visit (AST::RangePatternBoundLiteral &bound) override {}
   void visit (AST::RangePatternBoundPath &bound) override {}
   void visit (AST::RangePatternBoundQualPath &bound) override {}
@@ -172,8 +167,7 @@ public:
   void visit (AST::AltPattern &pattern) override {}
   void visit (AST::EmptyStmt &stmt) override {}
   void visit (AST::LetStmt &stmt) override {}
-  void visit (AST::ExprStmtWithoutBlock &stmt) override {}
-  void visit (AST::ExprStmtWithBlock &stmt) override {}
+  void visit (AST::ExprStmt &stmt) override {}
   void visit (AST::TraitBound &bound) override {}
   void visit (AST::ImplTraitType &type) override {}
   void visit (AST::TraitObjectType &type) override {}
@@ -188,9 +182,13 @@ public:
   void visit (AST::SliceType &type) override {}
   void visit (AST::InferredType &type) override {}
   void visit (AST::BareFunctionType &type) override {}
+  void visit (AST::FunctionParam &param) override {}
+  void visit (AST::VariadicParam &param) override {}
+  void visit (AST::SelfParam &param) override {}
 
 private:
-  void gate (Feature::Name name, Location loc, const std::string &error_msg);
+  void gate (Feature::Name name, location_t loc, const std::string &error_msg);
+  void check_rustc_attri (const std::vector<AST::Attribute> &attributes);
   std::set<Feature::Name> valid_features;
 };
 } // namespace Rust

@@ -1,5 +1,5 @@
 /* Classes for analyzer diagnostics.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_MEMORY
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -107,6 +108,51 @@ evdesc::event_desc::formatted_print (const char *fmt, ...) const
   label_text result = label_text::take (xstrdup (pp_formatted_text (pp)));
   delete pp;
   return result;
+}
+
+/* class diagnostic_emission_context.  */
+
+/* Get the pending_diagnostic being emitted.  */
+
+const pending_diagnostic &
+diagnostic_emission_context::get_pending_diagnostic () const
+{
+  return *m_sd.m_d.get ();
+}
+
+/* Emit a warning, using the rich_location, metadata, and the
+   pending_diagnostic's option.  */
+
+bool
+diagnostic_emission_context::warn (const char *gmsgid, ...)
+{
+  const pending_diagnostic &pd = get_pending_diagnostic ();
+  auto_diagnostic_group d;
+  va_list ap;
+  va_start (ap, gmsgid);
+  const bool result = emit_diagnostic_valist_meta (DK_WARNING,
+						   &m_rich_loc, &m_metadata,
+						   pd.get_controlling_option (),
+						   gmsgid, &ap);
+  va_end (ap);
+  return result;
+}
+
+/* Emit a note, using the rich_location and metadata (and the
+   pending_diagnostic's option).  */
+
+void
+diagnostic_emission_context::inform (const char *gmsgid, ...)
+{
+  const pending_diagnostic &pd = get_pending_diagnostic ();
+  auto_diagnostic_group d;
+  va_list ap;
+  va_start (ap, gmsgid);
+  emit_diagnostic_valist_meta (DK_NOTE,
+			       &m_rich_loc, &m_metadata,
+			       pd.get_controlling_option (),
+			       gmsgid, &ap);
+  va_end (ap);
 }
 
 /* Return true if T1 and T2 are "the same" for the purposes of
@@ -224,15 +270,13 @@ pending_diagnostic::add_region_creation_events (const region *reg,
 void
 pending_diagnostic::add_final_event (const state_machine *sm,
 				     const exploded_node *enode,
-				     const gimple *stmt,
+				     const event_loc_info &loc_info,
 				     tree var, state_machine::state_t state,
 				     checker_path *emission_path)
 {
   emission_path->add_event
     (make_unique<warning_event>
-     (event_loc_info (get_stmt_location (stmt, enode->get_function ()),
-		      enode->get_function ()->decl,
-		      enode->get_stack_depth ()),
+     (loc_info,
       enode,
       sm, var, state));
 }

@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in arm.cc and pe.c
-   Copyright (C) 1999-2023 Free Software Foundation, Inc.
+   Copyright (C) 1999-2024 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@arm.com)
    Minor hacks by Nick Clifton (nickc@cygnus.com)
 
@@ -65,8 +65,8 @@ extern void arm_emit_speculation_barrier_function (void);
 extern void arm_decompose_di_binop (rtx, rtx, rtx *, rtx *, rtx *, rtx *);
 extern bool arm_q_bit_access (void);
 extern bool arm_ge_bits_access (void);
-extern bool arm_target_insn_ok_for_lob (rtx);
-
+extern bool arm_target_bb_ok_for_lob (basic_block);
+extern int arm_attempt_dlstp_transform (rtx);
 #ifdef RTX_CODE
 enum reg_class
 arm_mode_base_reg_class (machine_mode);
@@ -261,6 +261,7 @@ extern void thumb_expand_cpymemqi (rtx *);
 extern rtx arm_return_addr (int, rtx);
 extern void thumb_reload_out_hi (rtx *);
 extern void thumb_set_return_address (rtx, rtx);
+extern const char *arm_output_casesi (rtx *);
 extern const char *thumb1_output_casesi (rtx *);
 extern const char *thumb2_output_casesi (rtx *);
 #endif

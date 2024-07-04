@@ -1,5 +1,5 @@
 /* The analysis "engine".
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_MEMORY
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "make-unique.h"
@@ -68,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "analyzer/known-function-manager.h"
 #include "analyzer/call-summary.h"
+#include "text-art/dump.h"
 
 /* For an overview, see gcc/doc/analyzer.texi.  */
 
@@ -85,7 +87,8 @@ impl_region_model_context (exploded_graph &eg,
 			   uncertainty_t *uncertainty,
 			   path_context *path_ctxt,
 			   const gimple *stmt,
-			   stmt_finder *stmt_finder)
+			   stmt_finder *stmt_finder,
+			   bool *out_could_have_done_work)
 : m_eg (&eg), m_logger (eg.get_logger ()),
   m_enode_for_diag (enode_for_diag),
   m_old_state (old_state),
@@ -94,7 +97,8 @@ impl_region_model_context (exploded_graph &eg,
   m_stmt_finder (stmt_finder),
   m_ext_state (eg.get_ext_state ()),
   m_uncertainty (uncertainty),
-  m_path_ctxt (path_ctxt)
+  m_path_ctxt (path_ctxt),
+  m_out_could_have_done_work (out_could_have_done_work)
 {
 }
 
@@ -110,7 +114,8 @@ impl_region_model_context (program_state *state,
   m_stmt_finder (NULL),
   m_ext_state (ext_state),
   m_uncertainty (uncertainty),
-  m_path_ctxt (NULL)
+  m_path_ctxt (NULL),
+  m_out_could_have_done_work (nullptr)
 {
 }
 
@@ -176,7 +181,7 @@ on_liveness_change (const svalue_set &live_svalues,
 		    const region_model *model)
 {
   for (sm_state_map *smap : m_new_state->m_checker_states)
-    smap->on_liveness_change (live_svalues, model, this);
+    smap->on_liveness_change (live_svalues, model, m_ext_state, this);
 }
 
 void
@@ -258,6 +263,26 @@ setjmp_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
     pp_printf (pp, "SETJMP(EN: %i)", get_enode_index ());
   else
     pp_printf (pp, "setjmp_svalue(EN%i)", get_enode_index ());
+}
+
+/* Implementation of svalue::print_dump_widget_label vfunc for
+   setjmp_svalue.  */
+
+void
+setjmp_svalue::print_dump_widget_label (pretty_printer *pp) const
+{
+  pp_printf (pp, "setjmp_svalue(EN: %i)", get_enode_index ());
+}
+
+/* Implementation of svalue::add_dump_widget_children vfunc for
+   setjmp_svalue.  */
+
+void
+setjmp_svalue::
+add_dump_widget_children (text_art::tree_widget &,
+			  const text_art::dump_widget_info &) const
+{
+  /* No children.  */
 }
 
 /* Get the index of the stored exploded_node.  */
@@ -471,6 +496,11 @@ public:
     m_new_state->m_checker_states[m_sm_idx]->set_global_state (state);
   }
 
+  void clear_all_per_svalue_state () final override
+  {
+    m_new_state->m_checker_states[m_sm_idx]->clear_all_per_svalue_state ();
+  }
+
   void on_custom_transition (custom_transition *transition) final override
   {
     transition->impl_transition (&m_eg,
@@ -649,6 +679,11 @@ public:
 
     gcc_unreachable ();
     return NULL;
+  }
+
+  void update_event_loc_info (event_loc_info &) final override
+  {
+    /* No-op.  */
   }
 
 private:
@@ -868,7 +903,8 @@ impl_region_model_context::on_state_leak (const state_machine &sm,
   svalue_set visited;
   path_var leaked_pv
     = m_old_state->m_region_model->get_representative_path_var (sval,
-								&visited);
+								&visited,
+								nullptr);
 
   /* Strip off top-level casts  */
   if (leaked_pv.m_tree && TREE_CODE (leaked_pv.m_tree) == NOP_EXPR)
@@ -1024,6 +1060,17 @@ impl_region_model_context::on_unexpected_tree_code (tree t,
     m_new_state->m_valid = false;
 }
 
+/* Implementation of region_model_context::maybe_did_work vfunc.
+   Mark that "externally visible work" has occurred, and thus we
+   shouldn't report an infinite loop here.  */
+
+void
+impl_region_model_context::maybe_did_work ()
+{
+  if (m_out_could_have_done_work)
+    *m_out_could_have_done_work = true;
+}
+
 /* struct point_and_state.  */
 
 /* Assert that this object is sane.  */
@@ -1053,7 +1100,7 @@ point_and_state::validate (const extrinsic_state &ext_state) const
     {
       int index = iter_frame->get_index ();
       gcc_assert (m_point.get_function_at_depth (index)
-		  == iter_frame->get_function ());
+		  == &iter_frame->get_function ());
     }
 }
 
@@ -1375,7 +1422,7 @@ exploded_node::dump (FILE *fp,
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = fp;
+  pp.set_output_stream (fp);
   dump_to_pp (&pp, ext_state);
   pp_flush (&pp);
 }
@@ -1439,6 +1486,7 @@ exploded_node::on_stmt (exploded_graph &eg,
 			const gimple *stmt,
 			program_state *state,
 			uncertainty_t *uncertainty,
+			bool *out_could_have_done_work,
 			path_context *path_ctxt)
 {
   logger *logger = eg.get_logger ();
@@ -1464,7 +1512,8 @@ exploded_node::on_stmt (exploded_graph &eg,
 
   impl_region_model_context ctxt (eg, this,
 				  &old_state, state, uncertainty,
-				  path_ctxt, stmt);
+				  path_ctxt, stmt, nullptr,
+				  out_could_have_done_work);
 
   /* Handle call summaries here.  */
   if (cgraph_edge *cgedge
@@ -1475,14 +1524,17 @@ exploded_node::on_stmt (exploded_graph &eg,
 	per_function_data *called_fn_data
 	  = eg.get_per_function_data (called_fn);
 	if (called_fn_data)
-	  return replay_call_summaries (eg,
-					snode,
-					as_a <const gcall *> (stmt),
-					state,
-					path_ctxt,
-					called_fn,
-					called_fn_data,
-					&ctxt);
+	  {
+	    gcc_assert (called_fn);
+	    return replay_call_summaries (eg,
+					  snode,
+					  as_a <const gcall *> (stmt),
+					  state,
+					  path_ctxt,
+					  *called_fn,
+					  *called_fn_data,
+					  &ctxt);
+	  }
       }
 
   bool unknown_side_effects = false;
@@ -1551,12 +1603,16 @@ exploded_node::on_stmt_pre (exploded_graph &eg,
       else if (is_setjmp_call_p (call))
 	{
 	  state->m_region_model->on_setjmp (call, this, ctxt);
+	  if (ctxt)
+	    ctxt->maybe_did_work ();
 	  return;
 	}
       else if (is_longjmp_call_p (call))
 	{
 	  on_longjmp (eg, call, state, ctxt);
 	  *out_terminate_path = true;
+	  if (ctxt)
+	    ctxt->maybe_did_work ();
 	  return;
 	}
     }
@@ -1585,10 +1641,10 @@ class call_summary_edge_info : public call_info
 {
 public:
   call_summary_edge_info (const call_details &cd,
-			  function *called_fn,
+			  const function &called_fn,
 			  call_summary *summary,
 			  const extrinsic_state &ext_state)
-  : call_info (cd),
+  : call_info (cd, called_fn),
     m_called_fn (called_fn),
     m_summary (summary),
     m_ext_state (ext_state)
@@ -1623,7 +1679,7 @@ public:
   }
 
 private:
-  function *m_called_fn;
+  const function &m_called_fn;
   call_summary *m_summary;
   const extrinsic_state &m_ext_state;
 };
@@ -1637,18 +1693,15 @@ exploded_node::replay_call_summaries (exploded_graph &eg,
 				      const gcall *call_stmt,
 				      program_state *state,
 				      path_context *path_ctxt,
-				      function *called_fn,
-				      per_function_data *called_fn_data,
+				      const function &called_fn,
+				      per_function_data &called_fn_data,
 				      region_model_context *ctxt)
 {
   logger *logger = eg.get_logger ();
   LOG_SCOPE (logger);
 
-  gcc_assert (called_fn);
-  gcc_assert (called_fn_data);
-
   /* Each summary will call bifurcate on the PATH_CTXT.  */
-  for (auto summary : called_fn_data->m_summaries)
+  for (auto summary : called_fn_data.m_summaries)
     replay_call_summary (eg, snode, call_stmt, state,
 			 path_ctxt, called_fn, summary, ctxt);
   path_ctxt->terminate_path ();
@@ -1666,7 +1719,7 @@ exploded_node::replay_call_summary (exploded_graph &eg,
 				    const gcall *call_stmt,
 				    program_state *old_state,
 				    path_context *path_ctxt,
-				    function *called_fn,
+				    const function &called_fn,
 				    call_summary *summary,
 				    region_model_context *ctxt)
 {
@@ -1675,13 +1728,12 @@ exploded_node::replay_call_summary (exploded_graph &eg,
   gcc_assert (snode);
   gcc_assert (call_stmt);
   gcc_assert (old_state);
-  gcc_assert (called_fn);
   gcc_assert (summary);
 
   if (logger)
     logger->log ("using %s as summary for call to %qE from %qE",
 		 summary->get_desc ().get (),
-		 called_fn->decl,
+		 called_fn.decl,
 		 snode->get_function ()->decl);
   const extrinsic_state &ext_state = eg.get_ext_state ();
   const program_state &summary_end_state = summary->get_state ();
@@ -1791,13 +1843,11 @@ public:
     return OPT_Wanalyzer_stale_setjmp_buffer;
   }
 
-  bool emit (rich_location *richloc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    return warning_at
-      (richloc, get_controlling_option (),
-       "%qs called after enclosing function of %qs has returned",
-       get_user_facing_name (m_longjmp_call),
-       get_user_facing_name (m_setjmp_call));
+    return ctxt.warn ("%qs called after enclosing function of %qs has returned",
+		      get_user_facing_name (m_longjmp_call),
+		      get_user_facing_name (m_setjmp_call));
   }
 
   const char *get_kind () const final override
@@ -1938,8 +1988,9 @@ exploded_node::on_longjmp (exploded_graph &eg,
   if (next)
     {
       exploded_edge *eedge
-	= eg.add_edge (const_cast<exploded_node *> (this), next, NULL,
-		       make_unique<rewind_info_t> (tmp_setjmp_record, longjmp_call));
+	= eg.add_edge (const_cast<exploded_node *> (this), next, NULL, true,
+		       make_unique<rewind_info_t> (tmp_setjmp_record,
+						   longjmp_call));
 
       /* For any diagnostics that were queued here (such as leaks) we want
 	 the checker_path to show the rewinding events after the "final event"
@@ -2011,7 +2062,7 @@ exploded_node::detect_leaks (exploded_graph &eg)
 				  &old_state, &new_state, &uncertainty, NULL,
 				  get_stmt ());
   const svalue *result = NULL;
-  new_state.m_region_model->pop_frame (NULL, &result, &ctxt);
+  new_state.m_region_model->pop_frame (NULL, &result, &ctxt, nullptr);
   program_state::detect_leaks (old_state, new_state, result,
 			       eg.get_ext_state (), &ctxt);
 }
@@ -2161,10 +2212,11 @@ rewind_info_t::add_events_to_path (checker_path *emission_path,
 /* exploded_edge's ctor.  */
 
 exploded_edge::exploded_edge (exploded_node *src, exploded_node *dest,
-			      const superedge *sedge,
+			      const superedge *sedge, bool could_do_work,
 			      std::unique_ptr<custom_edge_info> custom_info)
 : dedge<eg_traits> (src, dest), m_sedge (sedge),
-  m_custom_info (std::move (custom_info))
+  m_custom_info (std::move (custom_info)),
+  m_could_do_work_p (could_do_work)
 {
 }
 
@@ -2227,6 +2279,9 @@ exploded_edge::dump_dot_label (pretty_printer *pp) const
     m_sedge->dump_label_to_pp (pp, false);
   else if (m_custom_info)
     m_custom_info->print (pp);
+
+  pp_printf (pp, "%s",
+	     could_do_work_p () ? "(could do work)" : "DOES NO WORK");
 
   //pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/false);
 
@@ -2756,16 +2811,17 @@ private:
    Return the exploded_node for the entrypoint to the function.  */
 
 exploded_node *
-exploded_graph::add_function_entry (function *fun)
+exploded_graph::add_function_entry (const function &fun)
 {
-  gcc_assert (gimple_has_body_p (fun->decl));
+  gcc_assert (gimple_has_body_p (fun.decl));
 
   /* Be idempotent.  */
-  if (m_functions_with_enodes.contains (fun))
+  function *key = const_cast<function *> (&fun);
+  if (m_functions_with_enodes.contains (key))
     {
       logger * const logger = get_logger ();
        if (logger)
-	logger->log ("entrypoint for %qE already exists", fun->decl);
+	logger->log ("entrypoint for %qE already exists", fun.decl);
       return NULL;
     }
 
@@ -2777,10 +2833,10 @@ exploded_graph::add_function_entry (function *fun)
 
   std::unique_ptr<custom_edge_info> edge_info = NULL;
 
-  if (lookup_attribute ("tainted_args", DECL_ATTRIBUTES (fun->decl)))
+  if (lookup_attribute ("tainted_args", DECL_ATTRIBUTES (fun.decl)))
     {
-      if (mark_params_as_tainted (&state, fun->decl, m_ext_state))
-	edge_info = make_unique<tainted_args_function_info> (fun->decl);
+      if (mark_params_as_tainted (&state, fun.decl, m_ext_state))
+	edge_info = make_unique<tainted_args_function_info> (fun.decl);
     }
 
   if (!state.m_valid)
@@ -2790,9 +2846,9 @@ exploded_graph::add_function_entry (function *fun)
   if (!enode)
     return NULL;
 
-  add_edge (m_origin, enode, NULL, std::move (edge_info));
+  add_edge (m_origin, enode, NULL, false, std::move (edge_info));
 
-  m_functions_with_enodes.add (fun);
+  m_functions_with_enodes.add (key);
 
   return enode;
 }
@@ -2988,19 +3044,20 @@ exploded_graph::get_or_create_node (const program_point &point,
 
 /* Add an exploded_edge from SRC to DEST, recording its association
    with SEDGE (which may be NULL), and, if non-NULL, taking ownership
-   of CUSTOM_INFO.
+   of CUSTOM_INFO.  COULD_DO_WORK is used for detecting infinite loops.
    Return the newly-created eedge.  */
 
 exploded_edge *
 exploded_graph::add_edge (exploded_node *src, exploded_node *dest,
-			  const superedge *sedge,
-			    std::unique_ptr<custom_edge_info> custom_info)
+			  const superedge *sedge, bool could_do_work,
+			  std::unique_ptr<custom_edge_info> custom_info)
 {
   if (get_logger ())
     get_logger ()->log ("creating edge EN: %i -> EN: %i",
 			src->m_index, dest->m_index);
-  exploded_edge *e = new exploded_edge (src, dest, sedge,
-					std::move (custom_info));
+  exploded_edge *e
+    = new exploded_edge (src, dest, sedge, could_do_work,
+			 std::move (custom_info));
   digraph<eg_traits>::add_edge (e);
   return e;
 }
@@ -3079,7 +3136,7 @@ exploded_graph::get_per_function_data (function *fun) const
    called via other functions.  */
 
 static bool
-toplevel_function_p (function *fun, logger *logger)
+toplevel_function_p (const function &fun, logger *logger)
 {
   /* Don't directly traverse into functions that have an "__analyzer_"
      prefix.  Doing so is useful for the analyzer test suite, allowing
@@ -3090,17 +3147,17 @@ toplevel_function_p (function *fun, logger *logger)
      excess messages from the case of the first function being traversed
      directly.  */
 #define ANALYZER_PREFIX "__analyzer_"
-  if (!strncmp (IDENTIFIER_POINTER (DECL_NAME (fun->decl)), ANALYZER_PREFIX,
+  if (!strncmp (IDENTIFIER_POINTER (DECL_NAME (fun.decl)), ANALYZER_PREFIX,
 		strlen (ANALYZER_PREFIX)))
     {
       if (logger)
 	logger->log ("not traversing %qE (starts with %qs)",
-		     fun->decl, ANALYZER_PREFIX);
+		     fun.decl, ANALYZER_PREFIX);
       return false;
     }
 
   if (logger)
-    logger->log ("traversing %qE (all checks passed)", fun->decl);
+    logger->log ("traversing %qE (all checks passed)", fun.decl);
 
   return true;
 }
@@ -3225,9 +3282,9 @@ add_tainted_args_callback (exploded_graph *eg, tree field, tree fndecl,
 
   program_point point
     = program_point::from_function_entry (*ext_state.get_model_manager (),
-					  eg->get_supergraph (), fun);
+					  eg->get_supergraph (), *fun);
   program_state state (ext_state);
-  state.push_frame (ext_state, fun);
+  state.push_frame (ext_state, *fun);
 
   if (!mark_params_as_tainted (&state, fndecl, ext_state))
     return;
@@ -3249,7 +3306,7 @@ add_tainted_args_callback (exploded_graph *eg, tree field, tree fndecl,
 	}
     }
 
-  eg->add_edge (eg->get_origin (), enode, NULL,
+  eg->add_edge (eg->get_origin (), enode, NULL, false,
 		make_unique<tainted_args_call_info> (field, fndecl, loc));
 }
 
@@ -3301,9 +3358,10 @@ exploded_graph::build_initial_worklist ()
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
   {
     function *fun = node->get_fun ();
-    if (!toplevel_function_p (fun, logger))
+    gcc_assert (fun);
+    if (!toplevel_function_p (*fun, logger))
       continue;
-    exploded_node *enode = add_function_entry (fun);
+    exploded_node *enode = add_function_entry (*fun);
     if (logger)
       {
 	if (enode)
@@ -3403,7 +3461,7 @@ exploded_graph::process_worklist ()
 		    if (merged_state == state)
 		      {
 			/* Then merge node_2 into node by adding an edge.  */
-			add_edge (node_2, node, NULL);
+			add_edge (node_2, node, NULL, false);
 
 			/* Remove node_2 from the worklist.  */
 			m_worklist.take_next ();
@@ -3416,7 +3474,7 @@ exploded_graph::process_worklist ()
 			/* Then merge node into node_2, and leave node_2
 			   in the worklist, to be processed on the next
 			   iteration.  */
-			add_edge (node, node_2, NULL);
+			add_edge (node, node_2, NULL, false);
 			node->set_status (exploded_node::STATUS_MERGER);
 			continue;
 		      }
@@ -3461,7 +3519,7 @@ exploded_graph::process_worklist ()
 			  m_worklist.add_node (merged_enode);
 			else
 			  {
-			    add_edge (node, merged_enode, NULL);
+			    add_edge (node, merged_enode, NULL, false);
 			    node->set_status (exploded_node::STATUS_MERGER);
 			  }
 
@@ -3469,7 +3527,7 @@ exploded_graph::process_worklist ()
 			  m_worklist.add_node (merged_enode);
 			else
 			  {
-			    add_edge (node_2, merged_enode, NULL);
+			    add_edge (node_2, merged_enode, NULL, false);
 			    node_2->set_status (exploded_node::STATUS_MERGER);
 			  }
 
@@ -3704,7 +3762,8 @@ maybe_process_run_of_before_supernode_enodes (exploded_node *enode)
     {
       exploded_node *next = next_enodes[it->m_merger_idx];
       if (next)
-	add_edge (it->m_input_enode, next, NULL);
+	add_edge (it->m_input_enode, next, NULL,
+		  false); /* no "work" is done during merger.  */
       it->m_input_enode->set_status (exploded_node::STATUS_BULK_MERGED);
     }
 
@@ -3737,7 +3796,7 @@ stmt_requires_new_enode_p (const gimple *stmt,
 	 regular next state, which defeats the "detect state change" logic
 	 in process_node.  Work around this via special-casing, to ensure
 	 we split the enode immediately before any "signal" call.  */
-      if (is_special_named_call_p (call, "signal", 2))
+      if (is_special_named_call_p (call, "signal", 2, true))
 	return true;
     }
 
@@ -3808,8 +3867,8 @@ exploded_graph::maybe_create_dynamic_call (const gcall *call,
   if (fun)
     {
       const supergraph &sg = this->get_supergraph ();
-      supernode *sn_entry = sg.get_node_for_function_entry (fun);
-      supernode *sn_exit = sg.get_node_for_function_exit (fun);
+      supernode *sn_entry = sg.get_node_for_function_entry (*fun);
+      supernode *sn_exit = sg.get_node_for_function_exit (*fun);
 
       program_point new_point
 	= program_point::before_supernode (sn_entry,
@@ -3847,6 +3906,7 @@ exploded_graph::maybe_create_dynamic_call (const gcall *call,
 						     node);
 	  if (enode)
 	    add_edge (node,enode, NULL,
+		      false, /* No work is done by the call itself.  */
 		      make_unique<dynamic_call_info_t> (call));
 	  return true;
 	}
@@ -3954,10 +4014,9 @@ public:
     return OPT_Wanalyzer_jump_through_null;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    return warning_at (rich_loc, get_controlling_option (),
-		       "jump through null pointer");
+    return ctxt.warn ("jump through null pointer");
   }
 
   label_text describe_final_event (const evdesc::final_event &ev) final override
@@ -4039,7 +4098,8 @@ exploded_graph::process_node (exploded_node *node)
 	program_point next_point (point.get_next ());
 	exploded_node *next = get_or_create_node (next_point, next_state, node);
 	if (next)
-	  add_edge (node, next, NULL);
+	  add_edge (node, next, NULL,
+		    false); /* Assume no work is done at phi nodes.  */
       }
       break;
     case PK_BEFORE_STMT:
@@ -4067,6 +4127,7 @@ exploded_graph::process_node (exploded_node *node)
 
 	impl_path_context path_ctxt (&next_state, logger);
 
+	bool could_have_done_work = false;
 	uncertainty_t uncertainty;
 	const supernode *snode = point.get_supernode ();
 	unsigned stmt_idx;
@@ -4090,7 +4151,7 @@ exploded_graph::process_node (exploded_node *node)
 	    /* Process the stmt.  */
 	    exploded_node::on_stmt_flags flags
 	      = node->on_stmt (*this, snode, stmt, &next_state, &uncertainty,
-			       &path_ctxt);
+			       &could_have_done_work, &path_ctxt);
 	    node->m_num_processed_stmts++;
 
 	    /* If flags.m_terminate_path, stop analyzing; any nodes/edges
@@ -4147,7 +4208,7 @@ exploded_graph::process_node (exploded_node *node)
 		    node->m_num_processed_stmts--;
 		    if (logger)
 		      logger->log ("creating edge to split_enode");
-		    add_edge (node, split_enode, NULL);
+		    add_edge (node, split_enode, NULL, could_have_done_work);
 		    return;
 		  }
 		else
@@ -4174,7 +4235,7 @@ exploded_graph::process_node (exploded_node *node)
 	    exploded_node *next
 	      = get_or_create_node (next_point, next_state, node);
 	    if (next)
-	      add_edge (node, next, NULL);
+	      add_edge (node, next, NULL, could_have_done_work);
 	  }
 
 	/* If we have custom edge infos, "bifurcate" the state
@@ -4212,7 +4273,9 @@ exploded_graph::process_node (exploded_node *node)
 		exploded_node *next2
 		  = get_or_create_node (next_point, bifurcated_new_state, node);
 		if (next2)
-		  add_edge (node, next2, NULL, std::move (edge_info));
+		  add_edge (node, next2, NULL,
+			    true /* assume that work could be done */,
+			    std::move (edge_info));
 	      }
 	    else
 	      {
@@ -4327,7 +4390,8 @@ exploded_graph::process_node (exploded_node *node)
 					    next_state,
 					    node);
 		    if (next)
-		      add_edge (node, next, succ);
+		      add_edge (node, next, succ,
+				true /* assume that work is done */);
 		  }
 	      }
 
@@ -4343,7 +4407,7 @@ exploded_graph::process_node (exploded_node *node)
 						      node);
 	    if (next)
 	      {
-		add_edge (node, next, succ);
+		add_edge (node, next, succ, false);
 
 		/* We might have a function entrypoint.  */
 		detect_infinite_recursion (next);
@@ -4377,7 +4441,7 @@ exploded_graph::process_node (exploded_node *node)
 							   next_state,
 							   node);
 		if (enode)
-		  add_edge (node, enode, NULL,
+		  add_edge (node, enode, NULL, false,
 			    make_unique<dynamic_call_info_t> (call, true));
 	      }
 	  }
@@ -4708,7 +4772,7 @@ exploded_path::feasible_p (logger *logger,
 		     eedge->m_dest->m_index);
 
       std::unique_ptr <rejected_constraint> rc;
-      if (!state.maybe_update_for_edge (logger, eedge, &rc))
+      if (!state.maybe_update_for_edge (logger, eedge, nullptr, &rc))
 	{
 	  gcc_assert (rc);
 	  if (out)
@@ -4768,7 +4832,7 @@ exploded_path::dump (FILE *fp, const extrinsic_state *ext_state) const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = fp;
+  pp.set_output_stream (fp);
   dump_to_pp (&pp, ext_state);
   pp_flush (&pp);
 }
@@ -4792,7 +4856,7 @@ exploded_path::dump_to_file (const char *filename,
     return;
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
-  pp.buffer->stream = fp;
+  pp.set_output_stream (fp);
   dump_to_pp (&pp, &ext_state);
   pp_flush (&pp);
   fclose (fp);
@@ -4835,6 +4899,22 @@ feasibility_state::feasibility_state (const feasibility_state &other)
   bitmap_copy (m_snodes_visited, other.m_snodes_visited);
 }
 
+feasibility_state::feasibility_state (const region_model &model,
+				      const supergraph &sg)
+: m_model (model),
+  m_snodes_visited (sg.m_nodes.length ())
+{
+  bitmap_clear (m_snodes_visited);
+}
+
+feasibility_state &
+feasibility_state::operator= (const feasibility_state &other)
+{
+  m_model = other.m_model;
+  bitmap_copy (m_snodes_visited, other.m_snodes_visited);
+  return *this;
+}
+
 /* The heart of feasibility-checking.
 
    Attempt to update this state in-place based on traversing EEDGE
@@ -4849,6 +4929,7 @@ bool
 feasibility_state::
 maybe_update_for_edge (logger *logger,
 		       const exploded_edge *eedge,
+		       region_model_context *ctxt,
 		       std::unique_ptr<rejected_constraint> *out_rc)
 {
   const exploded_node &src_enode = *eedge->m_src;
@@ -4887,12 +4968,14 @@ maybe_update_for_edge (logger *logger,
 	}
 
       const gimple *last_stmt = src_point.get_supernode ()->get_last_stmt ();
-      if (!m_model.maybe_update_for_edge (*sedge, last_stmt, NULL, out_rc))
+      if (!m_model.maybe_update_for_edge (*sedge, last_stmt, ctxt, out_rc))
 	{
 	  if (logger)
 	    {
-	      logger->log ("rejecting due to region model");
+	      logger->start_log_line ();
+	      logger->log_partial ("rejecting due to region model: ");
 	      m_model.dump_to_pp (logger->get_printer (), true, false);
+	      logger->end_log_line ();
 	    }
 	  return false;
 	}
@@ -4908,13 +4991,13 @@ maybe_update_for_edge (logger *logger,
 		      == PK_BEFORE_SUPERNODE);
 	  function *fun = eedge->m_dest->get_function ();
 	  gcc_assert (fun);
-	  m_model.push_frame (fun, NULL, NULL);
+	  m_model.push_frame (*fun, NULL, ctxt);
 	  if (logger)
 	    logger->log ("  pushing frame for %qD", fun->decl);
 	}
       else if (eedge->m_custom_info)
 	{
-	  eedge->m_custom_info->update_model (&m_model, eedge, NULL);
+	  eedge->m_custom_info->update_model (&m_model, eedge, ctxt);
 	}
     }
 
@@ -4933,7 +5016,7 @@ maybe_update_for_edge (logger *logger,
 	    logger->log ("  update for phis");
 	  m_model.update_for_phis (src_enode.get_supernode (),
 				  last_cfg_superedge,
-				  NULL);
+				  ctxt);
 	  /* If we've entering an snode that we've already visited on this
 	     epath, then we need do fix things up for loops; see the
 	     comment for store::loop_replay_fixup.
@@ -5365,7 +5448,7 @@ exploded_graph::dump_exploded_nodes () const
 	  pretty_printer pp;
 	  enode->get_point ().print (&pp, format (true));
 	  fprintf (outf, "%s\n", pp_formatted_text (&pp));
-	  enode->get_state ().dump_to_file (m_ext_state, false, true, outf);
+	  text_art::dump_to_file (enode->get_state (), outf);
 	}
 
       fclose (outf);
@@ -5384,7 +5467,8 @@ exploded_graph::dump_exploded_nodes () const
 	    = xasprintf ("%s.en-%i.txt", dump_base_name, i);
 	  FILE *outf = fopen (filename, "w");
 	  if (!outf)
-	    error_at (UNKNOWN_LOCATION, "unable to open %qs for writing", filename);
+	    error_at (UNKNOWN_LOCATION, "unable to open %qs for writing",
+		      filename);
 	  free (filename);
 
 	  fprintf (outf, "EN %i:\n", enode->m_index);
@@ -5392,7 +5476,7 @@ exploded_graph::dump_exploded_nodes () const
 	  pretty_printer pp;
 	  enode->get_point ().print (&pp, format (true));
 	  fprintf (outf, "%s\n", pp_formatted_text (&pp));
-	  enode->get_state ().dump_to_file (m_ext_state, false, true, outf);
+	  text_art::dump_to_file (enode->get_state (), outf);
 
 	  fclose (outf);
 	}
@@ -5528,7 +5612,7 @@ exploded_graph::on_escaped_function (tree fndecl)
   if (!gimple_has_body_p (fndecl))
     return;
 
-  exploded_node *enode = add_function_entry (fun);
+  exploded_node *enode = add_function_entry (*fun);
   if (logger)
     {
       if (enode)
@@ -6020,7 +6104,7 @@ dump_analyzer_json (const supergraph &sg,
   toplev_obj->set ("egraph", eg.to_json ());
 
   pretty_printer pp;
-  toplev_obj->print (&pp);
+  toplev_obj->print (&pp, flag_diagnostics_json_formatting);
   pp_formatted_text (&pp);
 
   delete toplev_obj;
@@ -6123,7 +6207,8 @@ impl_run_checkers (logger *logger)
   auto_delete_vec <state_machine> checkers;
   make_checkers (checkers, logger);
 
-  register_known_functions (*eng.get_known_function_manager ());
+  register_known_functions (*eng.get_known_function_manager (),
+			    *eng.get_model_manager ());
 
   plugin_analyzer_init_impl data (&checkers,
 				  eng.get_known_function_manager (),
@@ -6152,6 +6237,9 @@ impl_run_checkers (logger *logger)
 
   /* Now process the worklist, exploring the <point, state> graph.  */
   eg.process_worklist ();
+
+  if (warn_analyzer_infinite_loop)
+    eg.detect_infinite_loops ();
 
   if (flag_dump_analyzer_exploded_graph)
     {
@@ -6192,6 +6280,13 @@ impl_run_checkers (logger *logger)
     eng.get_model_manager ()->dump_untracked_regions ();
 
   delete purge_map;
+
+  /* Free up any dominance info that we may have created.  */
+  FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
+    {
+      function *fun = node->get_fun ();
+      free_dominance_info (fun, CDI_DOMINATORS);
+    }
 }
 
 /* Handle -fdump-analyzer and -fdump-analyzer-stderr.  */

@@ -2,6 +2,9 @@
 #include <signal.h>
 #endif
 
+void abort (void);
+void exit (int);
+
 long double dnan = 1.0l/0.0l - 1.0l/0.0l;
 long double x = 1.0l;
 
@@ -10,7 +13,8 @@ void leave ()
   exit (0);
 }
 
-main ()
+int
+main (void)
 {
 #if ! defined (__vax__) && ! defined (_CRAY)
   /* Move this line earlier, for architectures (like alpha) that issue 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 2005-2023, Free Software Foundation, Inc.        --
+--           Copyright (C) 2005-2024, Free Software Foundation, Inc.        --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -60,6 +60,12 @@ package Ada.Real_Time.Timing_Events is
       Cancelled : out Boolean);
 
    function Time_Of_Event (Event : Timing_Event) return Time;
+
+   --  The compilation closure of this version (as opposed to the hie version)
+   --  of Ada.Real_TIme.Timing_Events includes a specification of a
+   --  Concurrent Partition_Elaboration_Policy. Thus, a bind-time error
+   --  will result if this unit occurs in the same partition as a conflicting
+   --  Partition_Elaboration_Policy specification.
 
 private
 

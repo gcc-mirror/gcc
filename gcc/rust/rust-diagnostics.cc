@@ -1,5 +1,5 @@
 // rust-diagnostics.cc -- GCC implementation of rust diagnostics interface.
-// Copyright (C) 2016-2023 Free Software Foundation, Inc.
+// Copyright (C) 2016-2024 Free Software Foundation, Inc.
 // Contributed by Than McIntosh, Google.
 
 // This file is part of GCC.
@@ -119,7 +119,7 @@ expand_message (const char *fmt, va_list ap)
   if (nwr == -1)
     {
       // memory allocation failed
-      rust_be_error_at (Linemap::unknown_location (),
+      rust_be_error_at (UNKNOWN_LOCATION,
 			"memory allocation failed in vasprintf");
       rust_assert (0);
     }
@@ -157,7 +157,7 @@ rust_close_quote ()
 }
 
 void
-rust_be_internal_error_at (const Location location, const std::string &errmsg)
+rust_be_internal_error_at (const location_t location, const std::string &errmsg)
 {
   std::string loc_str = Linemap::location_to_string (location);
   if (loc_str.empty ())
@@ -167,7 +167,7 @@ rust_be_internal_error_at (const Location location, const std::string &errmsg)
 }
 
 void
-rust_internal_error_at (const Location location, const char *fmt, ...)
+rust_internal_error_at (const location_t location, const char *fmt, ...)
 {
   va_list ap;
 
@@ -177,14 +177,13 @@ rust_internal_error_at (const Location location, const char *fmt, ...)
 }
 
 void
-rust_be_error_at (const Location location, const std::string &errmsg)
+rust_be_error_at (const location_t location, const std::string &errmsg)
 {
-  location_t gcc_loc = location.gcc_location ();
-  error_at (gcc_loc, "%s", errmsg.c_str ());
+  error_at (location, "%s", errmsg.c_str ());
 }
 
 void
-rust_error_at (const Location location, const char *fmt, ...)
+rust_error_at (const location_t location, const char *fmt, ...)
 {
   va_list ap;
 
@@ -198,15 +197,35 @@ class rust_error_code_rule : public diagnostic_metadata::rule
 public:
   rust_error_code_rule (const ErrorCode code) : m_code (code) {}
 
+  void format_error_code (char *buffer) const
+  {
+    // we can use the `u` format specifier because the `ErrorCode` enum class
+    // "inherits" from `unsigned int` - add a static assertion to make sure
+    // that's the case before we do the formatting
+    static_assert (
+      std::is_same<std::underlying_type<ErrorCode>::type, unsigned int>::value,
+      "invalid format specifier for ErrorCode's underlying type");
+
+    snprintf (buffer, 6, "E%04u",
+	      (std::underlying_type<ErrorCode>::type) m_code);
+  }
+
   char *make_description () const final override
   {
-    return xstrdup (m_code.m_str);
+    // 'E' + 4 characters + \0
+    char *buffer = static_cast<char *> (xcalloc (6, sizeof (char)));
+
+    format_error_code (buffer);
+
+    return buffer;
   }
 
   char *make_url () const final override
   {
-    return concat ("https://doc.rust-lang.org/error-index.html#", m_code.m_str,
-		   NULL);
+    char buffer[6] = {0};
+    format_error_code (buffer);
+
+    return concat ("https://doc.rust-lang.org/error-index.html#", buffer, NULL);
   }
 
 private:
@@ -214,11 +233,10 @@ private:
 };
 
 void
-rust_be_error_at (const RichLocation &location, const ErrorCode code,
+rust_be_error_at (const location_t location, const ErrorCode code,
 		  const std::string &errmsg)
 {
-  /* TODO: 'error_at' would like a non-'const' 'rich_location *'.  */
-  rich_location &gcc_loc = const_cast<rich_location &> (location.get ());
+  rich_location gcc_loc (line_table, location);
   diagnostic_metadata m;
   rust_error_code_rule rule (code);
   m.add_rule (rule);
@@ -226,7 +244,30 @@ rust_be_error_at (const RichLocation &location, const ErrorCode code,
 }
 
 void
-rust_error_at (const RichLocation &location, const ErrorCode code,
+rust_error_at (const location_t location, const ErrorCode code, const char *fmt,
+	       ...)
+{
+  va_list ap;
+
+  va_start (ap, fmt);
+  rust_be_error_at (location, code, expand_message (fmt, ap));
+  va_end (ap);
+}
+
+void
+rust_be_error_at (const rich_location &location, const ErrorCode code,
+		  const std::string &errmsg)
+{
+  /* TODO: 'error_at' would like a non-'const' 'rich_location *'.  */
+  rich_location &gcc_loc = const_cast<rich_location &> (location);
+  diagnostic_metadata m;
+  rust_error_code_rule rule (code);
+  m.add_rule (rule);
+  error_meta (&gcc_loc, m, "%s", errmsg.c_str ());
+}
+
+void
+rust_error_at (const rich_location &location, const ErrorCode code,
 	       const char *fmt, ...)
 {
   va_list ap;
@@ -237,15 +278,36 @@ rust_error_at (const RichLocation &location, const ErrorCode code,
 }
 
 void
-rust_be_warning_at (const Location location, int opt,
-		    const std::string &warningmsg)
+rust_be_error_at (rich_location *richloc, const ErrorCode code,
+		  const std::string &errmsg)
 {
-  location_t gcc_loc = location.gcc_location ();
-  warning_at (gcc_loc, opt, "%s", warningmsg.c_str ());
+  diagnostic_metadata m;
+  rust_error_code_rule rule (code);
+  m.add_rule (rule);
+  error_meta (richloc, m, "%s", errmsg.c_str ());
 }
 
 void
-rust_warning_at (const Location location, int opt, const char *fmt, ...)
+rust_error_at (rich_location *richloc, const ErrorCode code, const char *fmt,
+	       ...)
+{
+  /* TODO: Refactoring diagnostics to this overload */
+  va_list ap;
+
+  va_start (ap, fmt);
+  rust_be_error_at (richloc, code, expand_message (fmt, ap));
+  va_end (ap);
+}
+
+void
+rust_be_warning_at (const location_t location, int opt,
+		    const std::string &warningmsg)
+{
+  warning_at (location, opt, "%s", warningmsg.c_str ());
+}
+
+void
+rust_warning_at (const location_t location, int opt, const char *fmt, ...)
 {
   va_list ap;
 
@@ -255,14 +317,13 @@ rust_warning_at (const Location location, int opt, const char *fmt, ...)
 }
 
 void
-rust_be_fatal_error (const Location location, const std::string &fatalmsg)
+rust_be_fatal_error (const location_t location, const std::string &fatalmsg)
 {
-  location_t gcc_loc = location.gcc_location ();
-  fatal_error (gcc_loc, "%s", fatalmsg.c_str ());
+  fatal_error (location, "%s", fatalmsg.c_str ());
 }
 
 void
-rust_fatal_error (const Location location, const char *fmt, ...)
+rust_fatal_error (const location_t location, const char *fmt, ...)
 {
   va_list ap;
 
@@ -272,14 +333,13 @@ rust_fatal_error (const Location location, const char *fmt, ...)
 }
 
 void
-rust_be_inform (const Location location, const std::string &infomsg)
+rust_be_inform (const location_t location, const std::string &infomsg)
 {
-  location_t gcc_loc = location.gcc_location ();
-  inform (gcc_loc, "%s", infomsg.c_str ());
+  inform (location, "%s", infomsg.c_str ());
 }
 
 void
-rust_inform (const Location location, const char *fmt, ...)
+rust_inform (const location_t location, const char *fmt, ...)
 {
   va_list ap;
 
@@ -290,20 +350,37 @@ rust_inform (const Location location, const char *fmt, ...)
 
 // Rich Locations
 void
-rust_be_error_at (const RichLocation &location, const std::string &errmsg)
+rust_be_error_at (const rich_location &location, const std::string &errmsg)
 {
   /* TODO: 'error_at' would like a non-'const' 'rich_location *'.  */
-  rich_location &gcc_loc = const_cast<rich_location &> (location.get ());
+  rich_location &gcc_loc = const_cast<rich_location &> (location);
   error_at (&gcc_loc, "%s", errmsg.c_str ());
 }
 
 void
-rust_error_at (const RichLocation &location, const char *fmt, ...)
+rust_error_at (const rich_location &location, const char *fmt, ...)
 {
   va_list ap;
 
   va_start (ap, fmt);
   rust_be_error_at (location, expand_message (fmt, ap));
+  va_end (ap);
+}
+
+void
+rust_be_error_at (rich_location *richloc, const std::string &errmsg)
+{
+  error_at (richloc, "%s", errmsg.c_str ());
+}
+
+void
+rust_error_at (rich_location *richloc, const char *fmt, ...)
+{
+  /* TODO: Refactoring diagnostics to this overload */
+  va_list ap;
+
+  va_start (ap, fmt);
+  rust_be_error_at (richloc, expand_message (fmt, ap));
   va_end (ap);
 }
 
@@ -314,7 +391,7 @@ rust_be_debug_p (void)
 }
 
 void
-rust_debug_loc (const Location location, const char *fmt, ...)
+rust_debug_loc (const location_t location, const char *fmt, ...)
 {
   if (!rust_be_debug_p ())
     return;
@@ -327,7 +404,7 @@ rust_debug_loc (const Location location, const char *fmt, ...)
   va_end (ap);
   if (nwr == -1)
     {
-      rust_be_error_at (Linemap::unknown_location (),
+      rust_be_error_at (UNKNOWN_LOCATION,
 			"memory allocation failed in vasprintf");
       rust_assert (0);
     }
@@ -341,12 +418,31 @@ namespace Rust {
 /**
  * This function takes ownership of `args` and calls `va_end` on it
  */
-static Error
-va_constructor (Error::Kind kind, Location locus, const char *fmt, va_list args)
-  RUST_ATTRIBUTE_GCC_DIAG (3, 0);
 
+// simple location
 static Error
-va_constructor (Error::Kind kind, Location locus, const char *fmt, va_list args)
+va_constructor (Error::Kind kind, location_t locus, const char *fmt,
+		va_list args) RUST_ATTRIBUTE_GCC_DIAG (3, 0);
+
+// simple location + error code
+static Error
+va_constructor (Error::Kind kind, location_t locus, const ErrorCode code,
+		const char *fmt, va_list args) RUST_ATTRIBUTE_GCC_DIAG (4, 0);
+
+// rich location
+static Error
+va_constructor (Error::Kind kind, rich_location *r_locus, const char *fmt,
+		va_list args) RUST_ATTRIBUTE_GCC_DIAG (3, 0);
+
+// rich location + error code
+static Error
+va_constructor (Error::Kind kind, rich_location *r_locus, const ErrorCode code,
+		const char *fmt, va_list args) RUST_ATTRIBUTE_GCC_DIAG (4, 0);
+
+// simple location
+static Error
+va_constructor (Error::Kind kind, location_t locus, const char *fmt,
+		va_list args)
 {
   std::string message = expand_message (fmt, args);
   message.shrink_to_fit ();
@@ -355,7 +451,44 @@ va_constructor (Error::Kind kind, Location locus, const char *fmt, va_list args)
   return Error (kind, locus, message);
 }
 
-Error::Error (const Location location, const char *fmt, ...)
+// simple location + error code
+static Error
+va_constructor (Error::Kind kind, location_t locus, const ErrorCode code,
+		const char *fmt, va_list args)
+{
+  std::string message = expand_message (fmt, args);
+  message.shrink_to_fit ();
+  va_end (args);
+
+  return Error (kind, locus, code, message);
+}
+
+// rich location
+static Error
+va_constructor (Error::Kind kind, rich_location *r_locus, const char *fmt,
+		va_list args)
+{
+  std::string message = expand_message (fmt, args);
+  message.shrink_to_fit ();
+  va_end (args);
+
+  return Error (kind, r_locus, message);
+}
+
+// rich location + error code
+static Error
+va_constructor (Error::Kind kind, rich_location *r_locus, const ErrorCode code,
+		const char *fmt, va_list args)
+{
+  std::string message = expand_message (fmt, args);
+  message.shrink_to_fit ();
+  va_end (args);
+
+  return Error (kind, r_locus, code, message);
+}
+
+// simple location
+Error::Error (const location_t location, const char *fmt, ...)
   : kind (Kind::Err), locus (location)
 {
   va_list ap;
@@ -364,8 +497,40 @@ Error::Error (const Location location, const char *fmt, ...)
   *this = va_constructor (Kind::Err, location, fmt, ap);
 }
 
+// simple location + error code
+Error::Error (const location_t location, const ErrorCode code, const char *fmt,
+	      ...)
+  : kind (Kind::Err), locus (location), errorcode (code)
+{
+  va_list ap;
+  va_start (ap, fmt);
+
+  *this = va_constructor (Kind::Err, location, code, fmt, ap);
+}
+
+// rich location
+Error::Error (rich_location *r_locus, const char *fmt, ...)
+  : kind (Kind::Err), richlocus (r_locus)
+{
+  va_list ap;
+  va_start (ap, fmt);
+
+  *this = va_constructor (Kind::Err, r_locus, fmt, ap);
+}
+
+// rich location + error code
+Error::Error (rich_location *r_locus, const ErrorCode code, const char *fmt,
+	      ...)
+  : kind (Kind::Err), richlocus (r_locus), errorcode (code)
+{
+  va_list ap;
+  va_start (ap, fmt);
+
+  *this = va_constructor (Kind::Err, r_locus, code, fmt, ap);
+}
+
 Error
-Error::Hint (const Location location, const char *fmt, ...)
+Error::Hint (const location_t location, const char *fmt, ...)
 {
   va_list ap;
   va_start (ap, fmt);
@@ -374,7 +539,7 @@ Error::Hint (const Location location, const char *fmt, ...)
 }
 
 Error
-Error::Fatal (const Location location, const char *fmt, ...)
+Error::Fatal (const location_t location, const char *fmt, ...)
 {
   va_list ap;
   va_start (ap, fmt);

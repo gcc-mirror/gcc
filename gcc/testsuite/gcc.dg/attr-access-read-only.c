@@ -2,7 +2,7 @@
    for buffer and its size
    Test to verify the handling of attribute access (read_only) syntax.
    { dg-do compile }
-   { dg-options "-Wall -ftrack-macro-expansion=0" } */
+   { dg-options "-fpermissive -Wall -ftrack-macro-expansion=0" } */
 
 int  __attribute__ ((access))
 access_v (void);       // { dg-error "wrong number of arguments specified for 'access' attribute" }

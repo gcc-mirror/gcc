@@ -11,6 +11,8 @@
 // { dg-final { scan-assembler-times " DW_AT_\[^\n\r]*linkage_name" 7 } }
 
 inline int a;
+int& ar = a;
+
 struct S
 {
   static inline double b = 4.0;

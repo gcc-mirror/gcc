@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -247,8 +247,6 @@ arm_cpu_builtins (struct cpp_reader* pfile)
   if (aarch_ra_sign_scope != AARCH_FUNCTION_NONE)
   {
     unsigned int pac = 1;
-
-    gcc_assert (aarch_ra_sign_key == AARCH_KEY_A);
 
     if (aarch_ra_sign_scope == AARCH_FUNCTION_ALL)
       pac |= 0x4;

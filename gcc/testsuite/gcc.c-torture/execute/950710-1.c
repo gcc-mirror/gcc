@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 struct twelve
 {
   int a;
@@ -47,7 +50,8 @@ f ()
     }
 }
 
-main ()
+int
+main (void)
 {
   f ();
   exit (0);

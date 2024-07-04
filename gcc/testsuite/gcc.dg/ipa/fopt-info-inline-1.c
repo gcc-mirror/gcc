@@ -1,4 +1,4 @@
-/* { dg-options "-O3 -fopt-info-inline-optimized-missed" } */
+/* { dg-options "-O3 -fopt-info-inline-optimized-missed -fno-ipa-vrp" } */
 
 static int foo (int a)
 {

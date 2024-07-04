@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-march=rv64gcv_zvfh_zvl128b -mabi=lp64d --param riscv-autovec-preference=fixed-vlmax --param riscv-autovec-lmul=m2 -fno-vect-cost-model -ffast-math" } */
+/* { dg-additional-options "-march=rv64gcv_zvfh_zvl128b -mabi=lp64d -mrvv-vector-bits=zvl -mrvv-max-lmul=m2 -fno-vect-cost-model -ffast-math" } */
 #include <stdint-gcc.h>
 
 #define TEST_TYPE(TYPE1, TYPE2, N)                                             \

@@ -1,5 +1,5 @@
 /* { dg-do compile { target ia32 } } */
-/* { dg-options "-O2 -msse4.1 -mstv -mno-stackrealign" } */
+/* { dg-options "-O2 -msse4.1 -mstv -mno-stackrealign -fno-tree-vectorize" } */
 long long a[1024];
 long long b[1024];
 

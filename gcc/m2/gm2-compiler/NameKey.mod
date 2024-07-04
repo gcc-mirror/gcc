@@ -1,6 +1,6 @@
 (* NameKey.mod provides a dynamic binary tree name to key.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -251,13 +251,16 @@ VAR
    i: CARDINAL ;
    p: PtrToChar ;
 BEGIN
-   p := KeyToCharStar(Key) ;
    i := 0 ;
-   WHILE p^#nul DO
-      INC(i) ;
-      INC(p)
+   IF Key # NulName
+   THEN
+      p := KeyToCharStar (Key) ;
+      WHILE p^ # nul DO
+         INC (i) ;
+         INC (p)
+      END
    END ;
-   RETURN( i )
+   RETURN i
 END LengthKey ;
 
 

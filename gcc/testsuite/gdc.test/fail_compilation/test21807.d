@@ -27,8 +27,9 @@ class Foo
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/test21807.d(117): Error: function `test21807.addr(return ref int b)` is not callable using argument types `(int)`
+fail_compilation/test21807.d(117): Error: function `addr` is not callable using argument types `(int)`
 fail_compilation/test21807.d(117):        cannot pass rvalue argument `S(0).i` of type `int` to parameter `return ref int b`
+fail_compilation/test21807.d(106):        `test21807.addr(return ref int b)` declared here
 ---
 */
 #line 100

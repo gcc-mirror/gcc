@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 long double
 f (d, i)
      long double d;
@@ -17,7 +20,8 @@ f (d, i)
   return d;
 }
 
-main ()
+int
+main (void)
 {
   if (! (int) (f (2.0L, 1)))
     abort ();

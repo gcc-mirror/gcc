@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -20,12 +20,13 @@
 #include "rust-compile-expr.h"
 #include "rust-compile-resolve-path.h"
 #include "rust-constexpr.h"
+#include "rust-compile-type.h"
 
 namespace Rust {
 namespace Compile {
 
 void
-CompilePatternCaseLabelExpr::visit (HIR::PathInExpression &pattern)
+CompilePatternCheckExpr::visit (HIR::PathInExpression &pattern)
 {
   // lookup the type
   TyTy::BaseType *lookup = nullptr;
@@ -35,6 +36,7 @@ CompilePatternCaseLabelExpr::visit (HIR::PathInExpression &pattern)
   rust_assert (ok);
 
   // this must be an enum
+  // TODO: might not be
   rust_assert (lookup->get_kind () == TyTy::TypeKind::ADT);
   TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (lookup);
   rust_assert (adt->is_enum ());
@@ -49,43 +51,33 @@ CompilePatternCaseLabelExpr::visit (HIR::PathInExpression &pattern)
   ok = adt->lookup_variant_by_id (variant_id, &variant);
   rust_assert (ok);
 
+  // find discriminant field of scrutinee
+  tree scrutinee_record_expr
+    = Backend::struct_field_expression (match_scrutinee_expr, 0,
+					pattern.get_locus ());
+  tree scrutinee_expr_qualifier_expr
+    = Backend::struct_field_expression (scrutinee_record_expr, 0,
+					pattern.get_locus ());
+
+  // must be enum
+  match_scrutinee_expr = scrutinee_expr_qualifier_expr;
+
   HIR::Expr *discrim_expr = variant->get_discriminant ();
   tree discrim_expr_node = CompileExpr::Compile (discrim_expr, ctx);
-  tree folded_discrim_expr = fold_expr (discrim_expr_node);
-  tree case_low = folded_discrim_expr;
 
-  case_label_expr
-    = build_case_label (case_low, NULL_TREE, associated_case_label);
+  check_expr
+    = Backend::comparison_expression (ComparisonOperator::EQUAL,
+				      match_scrutinee_expr, discrim_expr_node,
+				      pattern.get_locus ());
 }
 
 void
-CompilePatternCaseLabelExpr::visit (HIR::StructPattern &pattern)
-{
-  CompilePatternCaseLabelExpr::visit (pattern.get_path ());
-}
-
-void
-CompilePatternCaseLabelExpr::visit (HIR::TupleStructPattern &pattern)
-{
-  CompilePatternCaseLabelExpr::visit (pattern.get_path ());
-}
-
-void
-CompilePatternCaseLabelExpr::visit (HIR::WildcardPattern &pattern)
-{
-  // operand 0 being NULL_TREE signifies this is the default case label see:
-  // tree.def for documentation for CASE_LABEL_EXPR
-  case_label_expr
-    = build_case_label (NULL_TREE, NULL_TREE, associated_case_label);
-}
-
-void
-CompilePatternCaseLabelExpr::visit (HIR::LiteralPattern &pattern)
+CompilePatternCheckExpr::visit (HIR::LiteralPattern &pattern)
 {
   // Compile the literal
   HIR::LiteralExpr *litexpr
-    = new HIR::LiteralExpr (pattern.get_pattern_mappings (),
-			    pattern.get_literal (), pattern.get_locus (),
+    = new HIR::LiteralExpr (pattern.get_mappings (), pattern.get_literal (),
+			    pattern.get_locus (),
 			    std::vector<AST::Attribute> ());
 
   // Note: Floating point literals are currently accepted but will likely be
@@ -100,12 +92,14 @@ CompilePatternCaseLabelExpr::visit (HIR::LiteralPattern &pattern)
 
   tree lit = CompileExpr::Compile (litexpr, ctx);
 
-  case_label_expr = build_case_label (lit, NULL_TREE, associated_case_label);
+  check_expr = Backend::comparison_expression (ComparisonOperator::EQUAL,
+					       match_scrutinee_expr, lit,
+					       pattern.get_locus ());
 }
 
 static tree
 compile_range_pattern_bound (HIR::RangePatternBound *bound,
-			     Analysis::NodeMapping mappings, Location locus,
+			     Analysis::NodeMapping mappings, location_t locus,
 			     Context *ctx)
 {
   tree result = NULL_TREE;
@@ -149,16 +143,283 @@ compile_range_pattern_bound (HIR::RangePatternBound *bound,
 }
 
 void
-CompilePatternCaseLabelExpr::visit (HIR::RangePattern &pattern)
+CompilePatternCheckExpr::visit (HIR::RangePattern &pattern)
 {
   tree upper = compile_range_pattern_bound (pattern.get_upper_bound ().get (),
-					    pattern.get_pattern_mappings (),
+					    pattern.get_mappings (),
 					    pattern.get_locus (), ctx);
   tree lower = compile_range_pattern_bound (pattern.get_lower_bound ().get (),
-					    pattern.get_pattern_mappings (),
+					    pattern.get_mappings (),
 					    pattern.get_locus (), ctx);
 
-  case_label_expr = build_case_label (lower, upper, associated_case_label);
+  tree check_lower
+    = Backend::comparison_expression (ComparisonOperator::GREATER_OR_EQUAL,
+				      match_scrutinee_expr, lower,
+				      pattern.get_locus ());
+  tree check_upper
+    = Backend::comparison_expression (ComparisonOperator::LESS_OR_EQUAL,
+				      match_scrutinee_expr, upper,
+				      pattern.get_locus ());
+  check_expr = Backend::arithmetic_or_logical_expression (
+    ArithmeticOrLogicalOperator::BITWISE_AND, check_lower, check_upper,
+    pattern.get_locus ());
+}
+
+void
+CompilePatternCheckExpr::visit (HIR::ReferencePattern &pattern)
+{
+  match_scrutinee_expr
+    = indirect_expression (match_scrutinee_expr, pattern.get_locus ());
+  pattern.get_referenced_pattern ()->accept_vis (*this);
+}
+
+void
+CompilePatternCheckExpr::visit (HIR::AltPattern &pattern)
+{
+  auto &alts = pattern.get_alts ();
+
+  check_expr = CompilePatternCheckExpr::Compile (alts.at (0).get (),
+						 match_scrutinee_expr, ctx);
+  auto end = alts.end ();
+  for (auto i = alts.begin () + 1; i != end; i++)
+    {
+      tree next_expr
+	= CompilePatternCheckExpr::Compile (i->get (), match_scrutinee_expr,
+					    ctx);
+      check_expr = Backend::arithmetic_or_logical_expression (
+	ArithmeticOrLogicalOperator::BITWISE_OR, check_expr, next_expr,
+	(*i)->get_locus ());
+    }
+}
+
+void
+CompilePatternCheckExpr::visit (HIR::StructPattern &pattern)
+{
+  // lookup the type
+  TyTy::BaseType *lookup = nullptr;
+  bool ok = ctx->get_tyctx ()->lookup_type (
+    pattern.get_path ().get_mappings ().get_hirid (), &lookup);
+  rust_assert (ok);
+
+  // this might be an enum
+  rust_assert (lookup->get_kind () == TyTy::TypeKind::ADT);
+  TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (lookup);
+
+  rust_assert (adt->number_of_variants () > 0);
+  TyTy::VariantDef *variant = nullptr;
+  if (adt->is_enum ())
+    {
+      // lookup the variant
+      HirId variant_id;
+      ok = ctx->get_tyctx ()->lookup_variant_definition (
+	pattern.get_path ().get_mappings ().get_hirid (), &variant_id);
+      rust_assert (ok);
+
+      int variant_index = 0;
+      ok = adt->lookup_variant_by_id (variant_id, &variant, &variant_index);
+      rust_assert (ok);
+
+      // find expected discriminant
+      // // need to access qualifier the field, if we use QUAL_UNION_TYPE this
+      // // would be DECL_QUALIFIER i think. For now this will just access the
+      // // first record field and its respective qualifier because it will
+      // // always be set because this is all a big special union
+      HIR::Expr *discrim_expr = variant->get_discriminant ();
+      tree discrim_expr_node = CompileExpr::Compile (discrim_expr, ctx);
+
+      // find discriminant field of scrutinee
+      tree scrutinee_record_expr
+	= Backend::struct_field_expression (match_scrutinee_expr, variant_index,
+					    pattern.get_path ().get_locus ());
+      tree scrutinee_expr_qualifier_expr
+	= Backend::struct_field_expression (scrutinee_record_expr, 0,
+					    pattern.get_path ().get_locus ());
+
+      check_expr
+	= Backend::comparison_expression (ComparisonOperator::EQUAL,
+					  scrutinee_expr_qualifier_expr,
+					  discrim_expr_node,
+					  pattern.get_path ().get_locus ());
+
+      match_scrutinee_expr = scrutinee_record_expr;
+    }
+  else
+    {
+      variant = adt->get_variants ().at (0);
+      check_expr = boolean_true_node;
+    }
+
+  auto &struct_pattern_elems = pattern.get_struct_pattern_elems ();
+  for (auto &field : struct_pattern_elems.get_struct_pattern_fields ())
+    {
+      switch (field->get_item_type ())
+	{
+	  case HIR::StructPatternField::ItemType::TUPLE_PAT: {
+	    // TODO
+	    rust_unreachable ();
+	  }
+	  break;
+
+	  case HIR::StructPatternField::ItemType::IDENT_PAT: {
+	    HIR::StructPatternFieldIdentPat &ident
+	      = static_cast<HIR::StructPatternFieldIdentPat &> (*field.get ());
+
+	    size_t offs = 0;
+	    ok = variant->lookup_field (ident.get_identifier ().as_string (),
+					nullptr, &offs);
+	    rust_assert (ok);
+
+	    // we may be offsetting by + 1 here since the first field in the
+	    // record is always the discriminator
+	    offs += adt->is_enum ();
+	    tree field_expr
+	      = Backend::struct_field_expression (match_scrutinee_expr, offs,
+						  ident.get_locus ());
+
+	    tree check_expr_sub
+	      = CompilePatternCheckExpr::Compile (ident.get_pattern ().get (),
+						  field_expr, ctx);
+	    check_expr = Backend::arithmetic_or_logical_expression (
+	      ArithmeticOrLogicalOperator::BITWISE_AND, check_expr,
+	      check_expr_sub, ident.get_pattern ()->get_locus ());
+	  }
+	  break;
+
+	  case HIR::StructPatternField::ItemType::IDENT: {
+	    // ident pattern always matches - do nothing
+	  }
+	  break;
+	}
+    }
+}
+
+void
+CompilePatternCheckExpr::visit (HIR::TupleStructPattern &pattern)
+{
+  size_t tuple_field_index;
+
+  // lookup the type
+  TyTy::BaseType *lookup = nullptr;
+  bool ok = ctx->get_tyctx ()->lookup_type (
+    pattern.get_path ().get_mappings ().get_hirid (), &lookup);
+  rust_assert (ok);
+
+  // this might be an enum
+  rust_assert (lookup->get_kind () == TyTy::TypeKind::ADT);
+  TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (lookup);
+
+  rust_assert (adt->number_of_variants () > 0);
+  TyTy::VariantDef *variant = nullptr;
+  if (adt->is_enum ())
+    {
+      // lookup the variant
+      HirId variant_id;
+      ok = ctx->get_tyctx ()->lookup_variant_definition (
+	pattern.get_path ().get_mappings ().get_hirid (), &variant_id);
+      rust_assert (ok);
+
+      int variant_index = 0;
+      ok = adt->lookup_variant_by_id (variant_id, &variant, &variant_index);
+      rust_assert (ok);
+
+      // find expected discriminant
+      HIR::Expr *discrim_expr = variant->get_discriminant ();
+      tree discrim_expr_node = CompileExpr::Compile (discrim_expr, ctx);
+
+      // find discriminant field of scrutinee
+      tree scrutinee_record_expr
+	= Backend::struct_field_expression (match_scrutinee_expr, variant_index,
+					    pattern.get_path ().get_locus ());
+      tree scrutinee_expr_qualifier_expr
+	= Backend::struct_field_expression (scrutinee_record_expr, 0,
+					    pattern.get_path ().get_locus ());
+
+      check_expr
+	= Backend::comparison_expression (ComparisonOperator::EQUAL,
+					  scrutinee_expr_qualifier_expr,
+					  discrim_expr_node,
+					  pattern.get_path ().get_locus ());
+
+      match_scrutinee_expr = scrutinee_record_expr;
+      // we are offsetting by + 1 here since the first field in the record
+      // is always the discriminator
+      tuple_field_index = 1;
+    }
+  else
+    {
+      variant = adt->get_variants ().at (0);
+      check_expr = boolean_true_node;
+      tuple_field_index = 0;
+    }
+
+  std::unique_ptr<HIR::TupleStructItems> &items = pattern.get_items ();
+  switch (items->get_item_type ())
+    {
+      case HIR::TupleStructItems::RANGED: {
+	// TODO
+	rust_unreachable ();
+      }
+      break;
+
+      case HIR::TupleStructItems::MULTIPLE: {
+	HIR::TupleStructItemsNoRange &items_no_range
+	  = static_cast<HIR::TupleStructItemsNoRange &> (*items.get ());
+
+	rust_assert (items_no_range.get_patterns ().size ()
+		     == variant->num_fields ());
+
+	for (auto &pattern : items_no_range.get_patterns ())
+	  {
+	    tree field_expr
+	      = Backend::struct_field_expression (match_scrutinee_expr,
+						  tuple_field_index++,
+						  pattern->get_locus ());
+
+	    tree check_expr_sub
+	      = CompilePatternCheckExpr::Compile (pattern.get (), field_expr,
+						  ctx);
+	    check_expr = Backend::arithmetic_or_logical_expression (
+	      ArithmeticOrLogicalOperator::BITWISE_AND, check_expr,
+	      check_expr_sub, pattern->get_locus ());
+	  }
+      }
+      break;
+    }
+}
+
+void
+CompilePatternCheckExpr::visit (HIR::TuplePattern &pattern)
+{
+  check_expr = boolean_true_node;
+
+  switch (pattern.get_items ()->get_item_type ())
+    {
+      case HIR::TuplePatternItems::RANGED: {
+	// TODO
+	gcc_unreachable ();
+      }
+      break;
+
+      case HIR::TuplePatternItems::MULTIPLE: {
+	auto &items = static_cast<HIR::TuplePatternItemsMultiple &> (
+	  *pattern.get_items ());
+	size_t tuple_field_index = 0;
+
+	for (auto &pat : items.get_patterns ())
+	  {
+	    tree field_expr
+	      = Backend::struct_field_expression (match_scrutinee_expr,
+						  tuple_field_index++,
+						  pat->get_locus ());
+
+	    tree check_expr_sub
+	      = CompilePatternCheckExpr::Compile (pat.get (), field_expr, ctx);
+	    check_expr = Backend::arithmetic_or_logical_expression (
+	      ArithmeticOrLogicalOperator::BITWISE_AND, check_expr,
+	      check_expr_sub, pat->get_locus ());
+	  }
+      }
+    }
 }
 
 // setup the bindings
@@ -196,13 +457,13 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
   std::unique_ptr<HIR::TupleStructItems> &items = pattern.get_items ();
   switch (items->get_item_type ())
     {
-      case HIR::TupleStructItems::RANGE: {
+      case HIR::TupleStructItems::RANGED: {
 	// TODO
-	gcc_unreachable ();
+	rust_unreachable ();
       }
       break;
 
-      case HIR::TupleStructItems::NO_RANGE: {
+      case HIR::TupleStructItems::MULTIPLE: {
 	HIR::TupleStructItemsNoRange &items_no_range
 	  = static_cast<HIR::TupleStructItemsNoRange &> (*items.get ());
 
@@ -217,14 +478,17 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
 	    for (auto &pattern : items_no_range.get_patterns ())
 	      {
 		tree variant_accessor
-		  = ctx->get_backend ()->struct_field_expression (
-		    match_scrutinee_expr, variant_index, pattern->get_locus ());
+		  = Backend::struct_field_expression (match_scrutinee_expr,
+						      variant_index,
+						      pattern->get_locus ());
 
-		tree binding = ctx->get_backend ()->struct_field_expression (
-		  variant_accessor, tuple_field_index++, pattern->get_locus ());
+		tree binding
+		  = Backend::struct_field_expression (variant_accessor,
+						      tuple_field_index++,
+						      pattern->get_locus ());
 
 		ctx->insert_pattern_binding (
-		  pattern->get_pattern_mappings ().get_hirid (), binding);
+		  pattern->get_mappings ().get_hirid (), binding);
 	      }
 	  }
 	else
@@ -234,11 +498,13 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
 	      {
 		tree variant_accessor = match_scrutinee_expr;
 
-		tree binding = ctx->get_backend ()->struct_field_expression (
-		  variant_accessor, tuple_field_index++, pattern->get_locus ());
+		tree binding
+		  = Backend::struct_field_expression (variant_accessor,
+						      tuple_field_index++,
+						      pattern->get_locus ());
 
 		ctx->insert_pattern_binding (
-		  pattern->get_pattern_mappings ().get_hirid (), binding);
+		  pattern->get_mappings ().get_hirid (), binding);
 	      }
 	  }
       }
@@ -283,13 +549,13 @@ CompilePatternBindings::visit (HIR::StructPattern &pattern)
 	{
 	  case HIR::StructPatternField::ItemType::TUPLE_PAT: {
 	    // TODO
-	    gcc_unreachable ();
+	    rust_unreachable ();
 	  }
 	  break;
 
 	  case HIR::StructPatternField::ItemType::IDENT_PAT: {
 	    // TODO
-	    gcc_unreachable ();
+	    rust_unreachable ();
 	  }
 	  break;
 
@@ -298,27 +564,30 @@ CompilePatternBindings::visit (HIR::StructPattern &pattern)
 	      = static_cast<HIR::StructPatternFieldIdent &> (*field.get ());
 
 	    size_t offs = 0;
-	    ok
-	      = variant->lookup_field (ident.get_identifier (), nullptr, &offs);
+	    ok = variant->lookup_field (ident.get_identifier ().as_string (),
+					nullptr, &offs);
 	    rust_assert (ok);
 
 	    tree binding = error_mark_node;
 	    if (adt->is_enum ())
 	      {
 		tree variant_accessor
-		  = ctx->get_backend ()->struct_field_expression (
-		    match_scrutinee_expr, variant_index, ident.get_locus ());
+		  = Backend::struct_field_expression (match_scrutinee_expr,
+						      variant_index,
+						      ident.get_locus ());
 
 		// we are offsetting by + 1 here since the first field in the
 		// record is always the discriminator
-		binding = ctx->get_backend ()->struct_field_expression (
-		  variant_accessor, offs + 1, ident.get_locus ());
+		binding = Backend::struct_field_expression (variant_accessor,
+							    offs + 1,
+							    ident.get_locus ());
 	      }
 	    else
 	      {
 		tree variant_accessor = match_scrutinee_expr;
-		binding = ctx->get_backend ()->struct_field_expression (
-		  variant_accessor, offs, ident.get_locus ());
+		binding
+		  = Backend::struct_field_expression (variant_accessor, offs,
+						      ident.get_locus ());
 	      }
 
 	    ctx->insert_pattern_binding (ident.get_mappings ().get_hirid (),
@@ -330,30 +599,41 @@ CompilePatternBindings::visit (HIR::StructPattern &pattern)
 }
 
 void
+CompilePatternBindings::visit (HIR::ReferencePattern &pattern)
+{
+  tree derefed
+    = indirect_expression (match_scrutinee_expr, pattern.get_locus ());
+
+  CompilePatternBindings::Compile (pattern.get_referenced_pattern ().get (),
+				   derefed, ctx);
+}
+
+void
+CompilePatternBindings::visit (HIR::IdentifierPattern &pattern)
+{
+  ctx->insert_pattern_binding (pattern.get_mappings ().get_hirid (),
+			       match_scrutinee_expr);
+}
+
+void
 CompilePatternLet::visit (HIR::IdentifierPattern &pattern)
 {
   Bvariable *var = nullptr;
   rust_assert (
-    ctx->lookup_var_decl (pattern.get_pattern_mappings ().get_hirid (), &var));
+    ctx->lookup_var_decl (pattern.get_mappings ().get_hirid (), &var));
 
   auto fnctx = ctx->peek_fn ();
   if (ty->is_unit ())
     {
       ctx->add_statement (init_expr);
 
-      tree stmt_type = TyTyResolveCompile::compile (ctx, ty);
-
-      auto unit_type_init_expr
-	= ctx->get_backend ()->constructor_expression (stmt_type, false, {}, -1,
-						       rval_locus);
-      auto s = ctx->get_backend ()->init_statement (fnctx.fndecl, var,
-						    unit_type_init_expr);
+      auto unit_type_init_expr = unit_expression (ctx, rval_locus);
+      auto s = Backend::init_statement (fnctx.fndecl, var, unit_type_init_expr);
       ctx->add_statement (s);
     }
   else
     {
-      auto s
-	= ctx->get_backend ()->init_statement (fnctx.fndecl, var, init_expr);
+      auto s = Backend::init_statement (fnctx.fndecl, var, init_expr);
       ctx->add_statement (s);
     }
 }
@@ -364,9 +644,9 @@ CompilePatternLet::visit (HIR::WildcardPattern &pattern)
   tree init_stmt = NULL;
   tree stmt_type = TyTyResolveCompile::compile (ctx, ty);
 
-  ctx->get_backend ()->temporary_variable (ctx->peek_fn ().fndecl, NULL_TREE,
-					   stmt_type, init_expr, false,
-					   pattern.get_locus (), &init_stmt);
+  Backend::temporary_variable (ctx->peek_fn ().fndecl, NULL_TREE, stmt_type,
+			       init_expr, false, pattern.get_locus (),
+			       &init_stmt);
 
   ctx->add_statement (init_stmt);
 }
@@ -379,17 +659,15 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
   tree tuple_type = TyTyResolveCompile::compile (ctx, ty);
   tree init_stmt;
   Bvariable *tmp_var
-    = ctx->get_backend ()->temporary_variable (ctx->peek_fn ().fndecl,
-					       NULL_TREE, tuple_type, init_expr,
-					       false, pattern.get_locus (),
-					       &init_stmt);
-  tree access_expr
-    = ctx->get_backend ()->var_expression (tmp_var, pattern.get_locus ());
+    = Backend::temporary_variable (ctx->peek_fn ().fndecl, NULL_TREE,
+				   tuple_type, init_expr, false,
+				   pattern.get_locus (), &init_stmt);
+  tree access_expr = Backend::var_expression (tmp_var, pattern.get_locus ());
   ctx->add_statement (init_stmt);
 
-  switch (pattern.get_items ()->get_pattern_type ())
+  switch (pattern.get_items ()->get_item_type ())
     {
-      case HIR::TuplePatternItems::TuplePatternItemType::RANGED: {
+      case HIR::TuplePatternItems::ItemType::RANGED: {
 	size_t tuple_idx = 0;
 	auto &items
 	  = static_cast<HIR::TuplePatternItemsRanged &> (*pattern.get_items ());
@@ -400,12 +678,13 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
 	for (auto &sub : items_lower)
 	  {
 	    TyTy::BaseType *ty_sub = nullptr;
-	    HirId pattern_id = pattern.get_pattern_mappings ().get_hirid ();
-	    bool ok = ctx->get_tyctx ()->lookup_type (pattern_id, &ty_sub);
+	    HirId sub_id = sub->get_mappings ().get_hirid ();
+	    bool ok = ctx->get_tyctx ()->lookup_type (sub_id, &ty_sub);
 	    rust_assert (ok);
 
-	    tree sub_init = ctx->get_backend ()->struct_field_expression (
-	      access_expr, tuple_idx, sub->get_locus ());
+	    tree sub_init
+	      = Backend::struct_field_expression (access_expr, tuple_idx,
+						  sub->get_locus ());
 	    CompilePatternLet::Compile (sub.get (), sub_init, ty_sub,
 					rval_locus, ctx);
 	    tuple_idx++;
@@ -418,12 +697,13 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
 	for (auto &sub : items_upper)
 	  {
 	    TyTy::BaseType *ty_sub = nullptr;
-	    HirId pattern_id = pattern.get_pattern_mappings ().get_hirid ();
-	    bool ok = ctx->get_tyctx ()->lookup_type (pattern_id, &ty_sub);
+	    HirId sub_id = sub->get_mappings ().get_hirid ();
+	    bool ok = ctx->get_tyctx ()->lookup_type (sub_id, &ty_sub);
 	    rust_assert (ok);
 
-	    tree sub_init = ctx->get_backend ()->struct_field_expression (
-	      access_expr, tuple_idx, sub->get_locus ());
+	    tree sub_init
+	      = Backend::struct_field_expression (access_expr, tuple_idx,
+						  sub->get_locus ());
 	    CompilePatternLet::Compile (sub.get (), sub_init, ty_sub,
 					rval_locus, ctx);
 	    tuple_idx++;
@@ -431,7 +711,7 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
 
 	return;
       }
-      case HIR::TuplePatternItems::TuplePatternItemType::MULTIPLE: {
+      case HIR::TuplePatternItems::ItemType::MULTIPLE: {
 	size_t tuple_idx = 0;
 	auto &items = static_cast<HIR::TuplePatternItemsMultiple &> (
 	  *pattern.get_items ());
@@ -439,12 +719,13 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
 	for (auto &sub : items.get_patterns ())
 	  {
 	    TyTy::BaseType *ty_sub = nullptr;
-	    HirId pattern_id = pattern.get_pattern_mappings ().get_hirid ();
-	    bool ok = ctx->get_tyctx ()->lookup_type (pattern_id, &ty_sub);
+	    HirId sub_id = sub->get_mappings ().get_hirid ();
+	    bool ok = ctx->get_tyctx ()->lookup_type (sub_id, &ty_sub);
 	    rust_assert (ok);
 
-	    tree sub_init = ctx->get_backend ()->struct_field_expression (
-	      access_expr, tuple_idx, sub->get_locus ());
+	    tree sub_init
+	      = Backend::struct_field_expression (access_expr, tuple_idx,
+						  sub->get_locus ());
 	    CompilePatternLet::Compile (sub.get (), sub_init, ty_sub,
 					rval_locus, ctx);
 	    tuple_idx++;
@@ -453,7 +734,7 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
 	return;
       }
       default: {
-	gcc_unreachable ();
+	rust_unreachable ();
       }
     }
 }

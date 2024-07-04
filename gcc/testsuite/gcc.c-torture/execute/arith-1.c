@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 unsigned
 sat_add (unsigned i)
 {
@@ -33,7 +36,9 @@ sat_add4 (unsigned i)
     return ret;
   return i;
 }
-main ()
+
+int
+main (void)
 {
   if (sat_add (~0U) != ~0U)
     abort ();

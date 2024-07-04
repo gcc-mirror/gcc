@@ -1,5 +1,5 @@
 /* Data flow functions for trees.
-   Copyright (C) 2001-2023 Free Software Foundation, Inc.
+   Copyright (C) 2001-2024 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -230,9 +230,10 @@ dump_dfa_stats (FILE *file)
   fprintf (file, "\n");
 
   if (dfa_stats.num_phis)
-    fprintf (file, "Average number of arguments per PHI node: %.1f (max: %ld)\n",
+    fprintf (file, "Average number of arguments per PHI node: %.1f (max: "
+	     HOST_SIZE_T_PRINT_DEC ")\n",
 	     (float) dfa_stats.num_phi_args / (float) dfa_stats.num_phis,
-	     (long) dfa_stats.max_num_phi_args);
+	     (fmt_size_t) dfa_stats.max_num_phi_args);
 
   fprintf (file, "\n");
 }
@@ -529,12 +530,9 @@ get_ref_base_and_extent (tree exp, poly_int64 *poffset,
 		   index.  */
 		seen_variable_array_ref = true;
 
-		value_range vr;
+		int_range_max vr;
 		range_query *query;
-		if (cfun)
-		  query = get_range_query (cfun);
-		else
-		  query = get_global_range_query ();
+		query = get_range_query (cfun);
 
 		if (TREE_CODE (index) == SSA_NAME
 		    && (low_bound = array_ref_low_bound (exp),
@@ -551,7 +549,8 @@ get_ref_base_and_extent (tree exp, poly_int64 *poffset,
 		    /* Try to constrain maxsize with range information.  */
 		    offset_int omax
 		      = offset_int::from (max, TYPE_SIGN (TREE_TYPE (index)));
-		    if (known_lt (lbound, omax))
+		    if (wi::get_precision (max) <= ADDR_MAX_BITSIZE
+			&& known_lt (lbound, omax))
 		      {
 			poly_offset_int rmaxsize;
 			rmaxsize = (omax - lbound + 1)
@@ -569,7 +568,8 @@ get_ref_base_and_extent (tree exp, poly_int64 *poffset,
 		    /* Try to adjust bit_offset with range information.  */
 		    offset_int omin
 		      = offset_int::from (min, TYPE_SIGN (TREE_TYPE (index)));
-		    if (known_le (lbound, omin))
+		    if (wi::get_precision (min) <= ADDR_MAX_BITSIZE
+			&& known_le (lbound, omin))
 		      {
 			poly_offset_int woffset
 			  = wi::sext (omin - lbound,

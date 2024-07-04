@@ -1,4 +1,4 @@
-#   Copyright (C) 2009-2023 Free Software Foundation, Inc.
+#   Copyright (C) 2009-2024 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -150,6 +150,9 @@ set plugin_test_list [list \
 	  infoleak-CVE-2017-18550-1.c \
 	  infoleak-antipatterns-1.c \
 	  infoleak-fixit-1.c \
+	  infoleak-pr112969.c \
+	  infoleak-uninit-size-1.c \
+	  infoleak-uninit-size-2.c \
 	  infoleak-net-ethtool-ioctl.c \
 	  infoleak-vfio_iommu_type1.c \
 	  taint-CVE-2011-0521-1-fixed.c \
@@ -162,7 +165,16 @@ set plugin_test_list [list \
 	  taint-CVE-2011-0521-5.c \
 	  taint-CVE-2011-0521-5-fixed.c \
 	  taint-CVE-2011-0521-6.c \
-	  taint-antipatterns-1.c } \
+	  taint-antipatterns-1.c \
+	  taint-modulus.c \
+	  taint-pr112850.c \
+	  taint-pr112850-precise.c \
+	  taint-pr112850-too-complex.c \
+	  taint-pr112850-unsanitized.c \
+	  taint-pr112927.c \
+	  taint-pr112974.c \
+	  taint-pr112975.c \
+	  taint-pr112977.c } \
     { analyzer_cpython_plugin.c \
 	  cpython-plugin-test-no-Python-h.c \
 	  cpython-plugin-test-PyList_Append.c \

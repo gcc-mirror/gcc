@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1673,9 +1673,13 @@ procedure Gnatls is
       end if;
 
       if Lib_Path /= null then
-         Osint.Fail ("RTS path not valid: missing adainclude directory");
+         Osint.Fail
+           ("RTS path """ & Name
+            & """ not valid: missing adainclude directory");
       elsif Src_Path /= null then
-         Osint.Fail ("RTS path not valid: missing adalib directory");
+         Osint.Fail
+           ("RTS path """ & Name
+            & """ not valid: missing adalib directory");
       end if;
 
       --  Try to find the RTS on the project path. First setup the project path
@@ -1710,7 +1714,8 @@ procedure Gnatls is
       end if;
 
       Osint.Fail
-        ("RTS path not valid: missing adainclude and adalib directories");
+        ("RTS path """ & Name
+          & """ not valid: missing adainclude and adalib directories");
    end Search_RTS;
 
    -------------------

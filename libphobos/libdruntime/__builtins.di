@@ -53,6 +53,10 @@ version (CRuntime_Microsoft)
 
 version (DigitalMars)
 {
+    immutable float __nan = float.nan;
+
+    float __builtin_nanf()(char*)  { return float.nan; }
+
     double __builtin_inf()()  { return double.infinity; }
     float  __builtin_inff()() { return float.infinity; }
     real   __builtin_infl()() { return real.infinity; }

@@ -381,14 +381,14 @@ void test_memcpy_range_exceed (char *d, const char *s)
   T (d + i, s + 1, 3);   /* { dg-warning "accessing 3 bytes at offsets \\\[\[0-9\]+, \[0-9\]+] and 1 overlaps 1 byte" "memcpy" } */
 
 #if __SIZEOF_SIZE_T__ == 8
-  /* Verfiy the offset and size computation is correct.  The overlap
-     offset mentioned in the warning plus sthe size of the access must
+  /* Verify the offset and size computation is correct.  The overlap
+     offset mentioned in the warning plus the size of the access must
      not exceed DIFF_MAX.  */
-  T (d, d + i, 5);   /* { dg-warning "accessing 5 bytes at offsets 0 and \\\[9223372036854775805, 9223372036854775807] overlaps 3 bytes at offset 9223372036854775802" "LP64" { target lp64 } } */
-  T (d + i, d, 5);   /* { dg-warning "accessing 5 bytes at offsets \\\[9223372036854775805, 9223372036854775807] and 0 overlaps 3 bytes at offset 9223372036854775802" "LP64" { target lp64 } } */
+  T (d, d + i, 5);   /* { dg-warning "accessing 5 bytes at offsets 0 and \\\[9223372036854775805, 9223372036854775807] overlaps 3 bytes at offset 9223372036854775802" "LP64" { target { lp64 || llp64 } } } */
+  T (d + i, d, 5);   /* { dg-warning "accessing 5 bytes at offsets \\\[9223372036854775805, 9223372036854775807] and 0 overlaps 3 bytes at offset 9223372036854775802" "LP64" { target { lp64 || llp64 } } } */
 
-  T (d, s + i, 5);   /* { dg-warning "accessing 5 bytes at offsets 0 and \\\[9223372036854775805, 9223372036854775807] overlaps 3 bytes at offset 9223372036854775802" "LP64" { target lp64 } } */
-  T (d + i, s, 5);   /* { dg-warning "accessing 5 bytes at offsets \\\[9223372036854775805, 9223372036854775807] and 0 overlaps 3 bytes at offset 9223372036854775802" "LP64" { target lp64 } } */
+  T (d, s + i, 5);   /* { dg-warning "accessing 5 bytes at offsets 0 and \\\[9223372036854775805, 9223372036854775807] overlaps 3 bytes at offset 9223372036854775802" "LP64" { target { lp64 || llp64 } } } */
+  T (d + i, s, 5);   /* { dg-warning "accessing 5 bytes at offsets \\\[9223372036854775805, 9223372036854775807] and 0 overlaps 3 bytes at offset 9223372036854775802" "LP64" { target { lp64 || llp64 } } } */
 #elif __SIZEOF_SIZE_T__ == 4
   T (d, d + i, 5);   /* { dg-warning "accessing 5 bytes at offsets 0 and \\\[2147483645, 2147483647] overlaps 3 bytes at offset 2147483642" "ILP32" { target ilp32 } } */
   T (d + i, d, 5);   /* { dg-warning "accessing 5 bytes at offsets \\\[2147483645, 2147483647] and 0 overlaps 3 bytes at offset 2147483642" "ILP32" { target ilp32 } } */

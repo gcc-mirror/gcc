@@ -17,11 +17,11 @@
 #error 0x1234	/* { dg-bogus "error" "wide charconst recognition 3" } */
 #endif
 
-/* The 'character constant (is )?too long' message is produced by 16-bit targets.  */
-#if 'abcd' /* { dg-warning "(multi-character character constant)|(character constant (is )?too long)" "multi-character charconst" } */
+/* The 'multi-character literal with 4 characters exceeds 'int' size of \[0-9]+ bytes' message is produced by 16-bit targets.  */
+#if 'abcd' /* { dg-warning "(multi-character character constant)|(multi-character literal with 4 characters exceeds 'int' size of \[0-9]+ bytes)" "multi-character charconst" } */
 #endif
 
-#if 'abcdefghi' /* { dg-warning "character constant (is )?too long" "charconst too long" } */
+#if 'abcdefghi' /* { dg-warning "multi-character literal with \[0-9]+ characters exceeds 'int' size of \[0-9]+ bytes" } */
 #endif
 
 #if '' /* { dg-error "empty character constant" "empty charconst" } */

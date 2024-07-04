@@ -1,5 +1,5 @@
 /* Export function prototypes from explow.cc.
-   Copyright (C) 2015-2023 Free Software Foundation, Inc.
+   Copyright (C) 2015-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -41,6 +41,10 @@ extern rtx copy_to_suggested_reg (rtx, rtx, machine_mode);
 /* Copy a value to a register if it isn't already a register.
    Args are mode (in case value is a constant) and the value.  */
 extern rtx force_reg (machine_mode, rtx);
+
+extern rtx force_subreg (machine_mode, rtx, machine_mode, poly_uint64);
+extern rtx force_lowpart_subreg (machine_mode, rtx, machine_mode);
+extern rtx force_highpart_subreg (machine_mode, rtx, machine_mode);
 
 /* Return given rtx, copied into a new temp reg if it was in memory.  */
 extern rtx force_not_mem (rtx);

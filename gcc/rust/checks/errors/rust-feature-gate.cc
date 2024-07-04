@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -18,11 +18,18 @@
 
 #include "rust-feature-gate.h"
 #include "rust-abi.h"
+#include "rust-ast-visitor.h"
 
 namespace Rust {
 
 void
 FeatureGate::check (AST::Crate &crate)
+{
+  visit (crate);
+}
+
+void
+FeatureGate::visit (AST::Crate &crate)
 {
   valid_features.clear ();
 
@@ -42,30 +49,25 @@ FeatureGate::check (AST::Crate &crate)
 		{
 		  const auto &name_str = item->as_string ();
 		  auto tname = Feature::as_name (name_str);
-		  if (!tname.is_none ())
+		  if (tname.has_value ())
 		    {
-		      auto name = tname.get ();
+		      auto name = tname.value ();
 		      valid_features.insert (name);
 		    }
 
 		  else
-		    rust_error_at (item->get_locus (), "unknown feature '%s'",
-				   name_str.c_str ());
+		    rust_error_at (item->get_locus (), ErrorCode::E0635,
+				   "unknown feature %qs", name_str.c_str ());
 		}
 	    }
 	}
     }
 
-  auto &items = crate.items;
-  for (auto it = items.begin (); it != items.end (); it++)
-    {
-      auto &item = *it;
-      item->accept_vis (*this);
-    }
+  AST::DefaultASTVisitor::visit (crate);
 }
 
 void
-FeatureGate::gate (Feature::Name name, Location loc,
+FeatureGate::gate (Feature::Name name, location_t loc,
 		   const std::string &error_msg)
 {
   if (!valid_features.count (name))
@@ -75,18 +77,18 @@ FeatureGate::gate (Feature::Name name, Location loc,
       if (issue > 0)
 	{
 	  const char *fmt_str
-	    = "%s. see issue %ld "
-	      "<https://github.com/rust-lang/rust/issues/%ld> for more "
+	    = "%s. see issue %u "
+	      "<https://github.com/rust-lang/rust/issues/%u> for more "
 	      "information. add `#![feature(%s)]` to the crate attributes to "
 	      "enable.";
-	  rust_error_at (loc, fmt_str, error_msg.c_str (), issue, issue,
-			 feature.as_string ().c_str ());
+	  rust_error_at (loc, ErrorCode::E0658, fmt_str, error_msg.c_str (),
+			 issue, issue, feature.as_string ().c_str ());
 	}
       else
 	{
 	  const char *fmt_str
 	    = "%s. add `#![feature(%s)]` to the crate attributes to enable.";
-	  rust_error_at (loc, fmt_str, error_msg.c_str (),
+	  rust_error_at (loc, ErrorCode::E0658, fmt_str, error_msg.c_str (),
 			 feature.as_string ().c_str ());
 	}
     }
@@ -103,6 +105,42 @@ FeatureGate::visit (AST::ExternBlock &block)
 	gate (Feature::Name::INTRINSICS, block.get_locus (),
 	      "intrinsics are subject to change");
     }
+  AST::DefaultASTVisitor::visit (block);
+}
+
+void
+FeatureGate::check_rustc_attri (const std::vector<AST::Attribute> &attributes)
+{
+  for (const AST::Attribute &attr : attributes)
+    {
+      auto name = attr.get_path ().as_string ();
+      if (name.rfind ("rustc_", 0) == 0)
+	{
+	  gate (Feature::Name::RUSTC_ATTRS, attr.get_locus (),
+		"internal implementation detail");
+	}
+    }
+}
+
+void
+FeatureGate::visit (AST::MacroRulesDefinition &rules_def)
+{
+  check_rustc_attri (rules_def.get_outer_attrs ());
+}
+
+void
+FeatureGate::visit (AST::Function &function)
+{
+  check_rustc_attri (function.get_outer_attrs ());
+}
+
+void
+FeatureGate::visit (AST::ExternalTypeItem &item)
+{
+  // TODO(mxlol233): The gating needs a complete visiting chain to activate
+  // `AST::ExternalTypeItem`.
+  gate (Feature::Name::EXTERN_TYPES, item.get_locus (),
+	"extern types are experimental");
 }
 
 } // namespace Rust

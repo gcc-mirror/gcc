@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2023 Free Software Foundation, Inc.
+// Copyright (C) 2013-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,6 +29,7 @@ void test01()
   int count = 0;
   std::search_n(a.begin(), a.end(), 10, 1,
 		[&count](int t, int u) { ++count; return t == u; });
+  // { dg-warning "ignoring return value" "" { target c++17 } 30 }
   VERIFY( count <= 11 );
 }
 

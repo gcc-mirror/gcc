@@ -1,5 +1,5 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
-   Copyright (C) 1988-2023 Free Software Foundation, Inc.
+   Copyright (C) 1988-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -80,8 +80,11 @@ static bool emit_block_move_via_pattern (rtx, rtx, rtx, unsigned, unsigned,
 					 HOST_WIDE_INT, unsigned HOST_WIDE_INT,
 					 unsigned HOST_WIDE_INT,
 					 unsigned HOST_WIDE_INT, bool);
-static void emit_block_move_via_loop (rtx, rtx, rtx, unsigned);
-static void clear_by_pieces (rtx, unsigned HOST_WIDE_INT, unsigned int);
+static void emit_block_move_via_loop (rtx, rtx, rtx, unsigned, int);
+static void emit_block_move_via_sized_loop (rtx, rtx, rtx, unsigned, unsigned);
+static void emit_block_move_via_oriented_loop (rtx, rtx, rtx, unsigned, unsigned);
+static rtx emit_block_cmp_via_loop (rtx, rtx, rtx, tree, rtx, bool,
+				    unsigned, unsigned);
 static rtx_insn *compress_float_constant (rtx, rtx);
 static rtx get_subtarget (rtx);
 static rtx store_field (rtx, poly_int64, poly_int64, poly_uint64, poly_uint64,
@@ -91,7 +94,7 @@ static unsigned HOST_WIDE_INT highest_pow2_factor_for_target (const_tree, const_
 
 static bool is_aligning_offset (const_tree, const_tree);
 static rtx reduce_to_bit_field_precision (rtx, rtx, tree);
-static rtx do_store_flag (sepops, rtx, machine_mode);
+static rtx do_store_flag (const_sepops, rtx, machine_mode);
 #ifdef PUSH_ROUNDING
 static void emit_single_push_insn (machine_mode, rtx, tree);
 #endif
@@ -298,7 +301,7 @@ convert_move (rtx to, rtx from, int unsignedp)
 			    GET_MODE_BITSIZE (to_mode)));
 
       if (VECTOR_MODE_P (to_mode))
-	from = simplify_gen_subreg (to_mode, from, GET_MODE (from), 0);
+	from = force_subreg (to_mode, from, GET_MODE (from), 0);
       else
 	to = simplify_gen_subreg (from_mode, to, GET_MODE (to), 0);
 
@@ -351,8 +354,16 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
 		      && REAL_MODE_FORMAT (from_mode) == &ieee_half_format));
 
       if (GET_MODE_PRECISION (from_mode) == GET_MODE_PRECISION (to_mode))
-	/* Conversion between decimal float and binary float, same size.  */
-	tab = DECIMAL_FLOAT_MODE_P (from_mode) ? trunc_optab : sext_optab;
+	{
+	  if (REAL_MODE_FORMAT (to_mode) == &arm_bfloat_half_format
+	      && REAL_MODE_FORMAT (from_mode) == &ieee_half_format)
+	    /* libgcc implements just __trunchfbf2, not __extendhfbf2.  */
+	    tab = trunc_optab;
+	  else
+	    /* Conversion between decimal float and binary float, same
+	       size.  */
+	    tab = DECIMAL_FLOAT_MODE_P (from_mode) ? trunc_optab : sext_optab;
+	}
       else if (GET_MODE_PRECISION (from_mode) < GET_MODE_PRECISION (to_mode))
 	tab = sext_optab;
       else
@@ -388,7 +399,7 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
 		 BFmode -> SFmode -> HFmode conversion where SFmode
 		 has superset of BFmode values.  We don't need
 		 to handle sNaNs by raising exception and turning
-		 into into qNaN though, as that can be done in the
+		 it into qNaN though, as that can be done in the
 		 SFmode -> HFmode conversion too.  */
 	      rtx temp = gen_reg_rtx (SFmode);
 	      int save_flag_finite_math_only = flag_finite_math_only;
@@ -412,7 +423,8 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
 					0).exists (&toi_mode))
 		{
 		  start_sequence ();
-		  rtx fromi = lowpart_subreg (fromi_mode, from, from_mode);
+		  rtx fromi = force_lowpart_subreg (fromi_mode, from,
+						    from_mode);
 		  rtx tof = NULL_RTX;
 		  if (fromi)
 		    {
@@ -432,7 +444,7 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
 					      NULL_RTX, 1);
 		      if (toi)
 			{
-			  tof = lowpart_subreg (to_mode, toi, toi_mode);
+			  tof = force_lowpart_subreg (to_mode, toi, toi_mode);
 			  if (tof)
 			    emit_move_insn (to, tof);
 			}
@@ -464,7 +476,7 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
 				    0).exists (&toi_mode))
 	    {
 	      start_sequence ();
-	      rtx fromi = lowpart_subreg (fromi_mode, from, from_mode);
+	      rtx fromi = force_lowpart_subreg (fromi_mode, from, from_mode);
 	      rtx tof = NULL_RTX;
 	      do
 		{
@@ -499,11 +511,11 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
 						  temp4, shift, NULL_RTX, 1);
 		  if (!temp5)
 		    break;
-		  rtx temp6 = lowpart_subreg (toi_mode, temp5, fromi_mode);
+		  rtx temp6 = force_lowpart_subreg (toi_mode, temp5,
+						    fromi_mode);
 		  if (!temp6)
 		    break;
-		  tof = lowpart_subreg (to_mode, force_reg (toi_mode, temp6),
-					toi_mode);
+		  tof = force_lowpart_subreg (to_mode, temp6, toi_mode);
 		  if (tof)
 		    emit_move_insn (to, tof);
 		}
@@ -924,7 +936,7 @@ convert_modes (machine_mode mode, machine_mode oldmode, rtx x, int unsignedp)
     {
       gcc_assert (known_eq (GET_MODE_BITSIZE (mode),
 			    GET_MODE_BITSIZE (oldmode)));
-      return simplify_gen_subreg (mode, x, oldmode, 0);
+      return force_subreg (mode, x, oldmode, 0);
     }
 
   temp = gen_reg_rtx (mode);
@@ -988,18 +1000,47 @@ alignment_for_piecewise_move (unsigned int max_pieces, unsigned int align)
   return align;
 }
 
-/* Return the widest QI vector, if QI_MODE is true, or integer mode
-   that is narrower than SIZE bytes.  */
+/* Return true if we know how to implement OP using vectors of bytes.  */
+static bool
+can_use_qi_vectors (by_pieces_operation op)
+{
+  return (op == COMPARE_BY_PIECES
+	  || op == SET_BY_PIECES
+	  || op == CLEAR_BY_PIECES);
+}
 
+/* Return true if optabs exists for the mode and certain by pieces
+   operations.  */
+static bool
+by_pieces_mode_supported_p (fixed_size_mode mode, by_pieces_operation op)
+{
+  if (optab_handler (mov_optab, mode) == CODE_FOR_nothing)
+    return false;
+
+  if ((op == SET_BY_PIECES || op == CLEAR_BY_PIECES)
+      && VECTOR_MODE_P (mode)
+      && optab_handler (vec_duplicate_optab, mode) == CODE_FOR_nothing)
+    return false;
+
+  if (op == COMPARE_BY_PIECES
+      && !can_compare_p (EQ, mode, ccp_jump))
+    return false;
+
+  return true;
+}
+
+/* Return the widest mode that can be used to perform part of an
+   operation OP on SIZE bytes.  Try to use QI vector modes where
+   possible.  */
 static fixed_size_mode
-widest_fixed_size_mode_for_size (unsigned int size, bool qi_vector)
+widest_fixed_size_mode_for_size (unsigned int size, by_pieces_operation op)
 {
   fixed_size_mode result = NARROWEST_INT_MODE;
 
   gcc_checking_assert (size > 1);
 
   /* Use QI vector only if size is wider than a WORD.  */
-  if (qi_vector && size > UNITS_PER_WORD)
+  if (can_use_qi_vectors (op) && size > UNITS_PER_WORD)
     {
       machine_mode mode;
       fixed_size_mode candidate;
@@ -1009,8 +1050,7 @@ widest_fixed_size_mode_for_size (unsigned int size, bool qi_vector)
 	  {
 	    if (GET_MODE_SIZE (candidate) >= size)
 	      break;
-	    if (optab_handler (vec_duplicate_optab, candidate)
-		!= CODE_FOR_nothing)
+	    if (by_pieces_mode_supported_p (candidate, op))
 	      result = candidate;
 	  }
 
@@ -1019,9 +1059,14 @@ widest_fixed_size_mode_for_size (unsigned int size, bool qi_vector)
     }
 
   opt_scalar_int_mode tmode;
+  scalar_int_mode mode;
   FOR_EACH_MODE_IN_CLASS (tmode, MODE_INT)
-    if (GET_MODE_SIZE (tmode.require ()) < size)
-      result = tmode.require ();
+    {
+      mode = tmode.require ();
+      if (GET_MODE_SIZE (mode) < size
+	  && by_pieces_mode_supported_p (mode, op))
+      result = mode;
+    }
 
   return result;
 }
@@ -1057,33 +1102,28 @@ by_pieces_ninsns (unsigned HOST_WIDE_INT l, unsigned int align,
   unsigned HOST_WIDE_INT n_insns = 0;
   fixed_size_mode mode;
 
-  if (targetm.overlap_op_by_pieces_p () && op != COMPARE_BY_PIECES)
+  if (targetm.overlap_op_by_pieces_p ())
     {
       /* NB: Round up L and ALIGN to the widest integer mode for
 	 MAX_SIZE.  */
-      mode = widest_fixed_size_mode_for_size (max_size,
-					      op == SET_BY_PIECES);
-      if (optab_handler (mov_optab, mode) != CODE_FOR_nothing)
-	{
-	  unsigned HOST_WIDE_INT up = ROUND_UP (l, GET_MODE_SIZE (mode));
-	  if (up > l)
-	    l = up;
-	  align = GET_MODE_ALIGNMENT (mode);
-	}
+      mode = widest_fixed_size_mode_for_size (max_size, op);
+      gcc_assert (optab_handler (mov_optab, mode) != CODE_FOR_nothing);
+      unsigned HOST_WIDE_INT up = ROUND_UP (l, GET_MODE_SIZE (mode));
+      if (up > l)
+	l = up;
+      align = GET_MODE_ALIGNMENT (mode);
     }
 
   align = alignment_for_piecewise_move (MOVE_MAX_PIECES, align);
 
   while (max_size > 1 && l > 0)
     {
-      mode = widest_fixed_size_mode_for_size (max_size,
-					      op == SET_BY_PIECES);
-      enum insn_code icode;
+      mode = widest_fixed_size_mode_for_size (max_size, op);
+      gcc_assert (optab_handler (mov_optab, mode) != CODE_FOR_nothing);
 
       unsigned int modesize = GET_MODE_SIZE (mode);
 
-      icode = optab_handler (mov_optab, mode);
-      if (icode != CODE_FOR_nothing && align >= GET_MODE_ALIGNMENT (mode))
+      if (align >= GET_MODE_ALIGNMENT (mode))
 	{
 	  unsigned HOST_WIDE_INT n_pieces = l / modesize;
 	  l %= modesize;
@@ -1317,8 +1357,8 @@ class op_by_pieces_d
   bool m_push;
   /* True if targetm.overlap_op_by_pieces_p () returns true.  */
   bool m_overlap_op_by_pieces;
-  /* True if QI vector mode can be used.  */
-  bool m_qi_vector_mode;
+  /* The type of operation that we're performing.  */
+  by_pieces_operation m_op;
 
   /* Virtual functions, overriden by derived classes for the specific
      operation.  */
@@ -1331,7 +1371,7 @@ class op_by_pieces_d
  public:
   op_by_pieces_d (unsigned int, rtx, bool, rtx, bool, by_pieces_constfn,
 		  void *, unsigned HOST_WIDE_INT, unsigned int, bool,
-		  bool = false);
+		  by_pieces_operation);
   void run ();
 };
 
@@ -1349,11 +1389,11 @@ op_by_pieces_d::op_by_pieces_d (unsigned int max_pieces, rtx to,
 				void *from_cfn_data,
 				unsigned HOST_WIDE_INT len,
 				unsigned int align, bool push,
-				bool qi_vector_mode)
+				by_pieces_operation op)
   : m_to (to, to_load, NULL, NULL),
     m_from (from, from_load, from_cfn, from_cfn_data),
     m_len (len), m_max_size (max_pieces + 1),
-    m_push (push), m_qi_vector_mode (qi_vector_mode)
+    m_push (push), m_op (op)
 {
   int toi = m_to.get_addr_inc ();
   int fromi = m_from.get_addr_inc ();
@@ -1375,8 +1415,7 @@ op_by_pieces_d::op_by_pieces_d (unsigned int max_pieces, rtx to,
     {
       /* Find the mode of the largest comparison.  */
       fixed_size_mode mode
-	= widest_fixed_size_mode_for_size (m_max_size,
-					   m_qi_vector_mode);
+	= widest_fixed_size_mode_for_size (m_max_size, m_op);
 
       m_from.decide_autoinc (mode, m_reverse, len);
       m_to.decide_autoinc (mode, m_reverse, len);
@@ -1401,7 +1440,7 @@ op_by_pieces_d::get_usable_mode (fixed_size_mode mode, unsigned int len)
       if (len >= size && prepare_mode (mode, m_align))
 	break;
       /* widest_fixed_size_mode_for_size checks SIZE > 1.  */
-      mode = widest_fixed_size_mode_for_size (size, m_qi_vector_mode);
+      mode = widest_fixed_size_mode_for_size (size, m_op);
     }
   while (1);
   return mode;
@@ -1414,7 +1453,7 @@ fixed_size_mode
 op_by_pieces_d::smallest_fixed_size_mode_for_size (unsigned int size)
 {
   /* Use QI vector only for > size of WORD.  */
-  if (m_qi_vector_mode && size > UNITS_PER_WORD)
+  if (can_use_qi_vectors (m_op) && size > UNITS_PER_WORD)
     {
       machine_mode mode;
       fixed_size_mode candidate;
@@ -1427,8 +1466,7 @@ op_by_pieces_d::smallest_fixed_size_mode_for_size (unsigned int size)
 	      break;
 
 	    if (GET_MODE_SIZE (candidate) >= size
-		&& (optab_handler (vec_duplicate_optab, candidate)
-		    != CODE_FOR_nothing))
+		&& by_pieces_mode_supported_p (candidate, m_op))
 	      return candidate;
 	  }
     }
@@ -1451,7 +1489,7 @@ op_by_pieces_d::run ()
 
   /* widest_fixed_size_mode_for_size checks M_MAX_SIZE > 1.  */
   fixed_size_mode mode
-    = widest_fixed_size_mode_for_size (m_max_size, m_qi_vector_mode);
+    = widest_fixed_size_mode_for_size (m_max_size, m_op);
   mode = get_usable_mode (mode, length);
 
   by_pieces_prev to_prev = { nullptr, mode };
@@ -1516,8 +1554,7 @@ op_by_pieces_d::run ()
       else
 	{
 	  /* widest_fixed_size_mode_for_size checks SIZE > 1.  */
-	  mode = widest_fixed_size_mode_for_size (size,
-						  m_qi_vector_mode);
+	  mode = widest_fixed_size_mode_for_size (size, m_op);
 	  mode = get_usable_mode (mode, length);
 	}
     }
@@ -1543,7 +1580,7 @@ class move_by_pieces_d : public op_by_pieces_d
   move_by_pieces_d (rtx to, rtx from, unsigned HOST_WIDE_INT len,
 		    unsigned int align)
     : op_by_pieces_d (MOVE_MAX_PIECES, to, false, from, true, NULL,
-		      NULL, len, align, PUSHG_P (to))
+		      NULL, len, align, PUSHG_P (to), MOVE_BY_PIECES)
   {
   }
   rtx finish_retmode (memop_ret);
@@ -1632,15 +1669,16 @@ move_by_pieces (rtx to, rtx from, unsigned HOST_WIDE_INT len,
 class store_by_pieces_d : public op_by_pieces_d
 {
   insn_gen_fn m_gen_fun;
+
   void generate (rtx, rtx, machine_mode) final override;
   bool prepare_mode (machine_mode, unsigned int) final override;
 
  public:
   store_by_pieces_d (rtx to, by_pieces_constfn cfn, void *cfn_data,
 		     unsigned HOST_WIDE_INT len, unsigned int align,
-		     bool qi_vector_mode)
+		     by_pieces_operation op)
     : op_by_pieces_d (STORE_MAX_PIECES, to, false, NULL_RTX, true, cfn,
-		      cfn_data, len, align, false, qi_vector_mode)
+		      cfn_data, len, align, false, op)
   {
   }
   rtx finish_retmode (memop_ret);
@@ -1729,8 +1767,8 @@ can_store_by_pieces (unsigned HOST_WIDE_INT len,
       max_size = STORE_MAX_PIECES + 1;
       while (max_size > 1 && l > 0)
 	{
-	  fixed_size_mode mode
-	    = widest_fixed_size_mode_for_size (max_size, memsetp);
+	  auto op = memsetp ? SET_BY_PIECES : STORE_BY_PIECES;
+	  auto mode = widest_fixed_size_mode_for_size (max_size, op);
 
 	  icode = optab_handler (mov_optab, mode);
 	  if (icode != CODE_FOR_nothing
@@ -1793,7 +1831,7 @@ store_by_pieces (rtx to, unsigned HOST_WIDE_INT len,
 		 optimize_insn_for_speed_p ()));
 
   store_by_pieces_d data (to, constfun, constfundata, len, align,
-			  memsetp);
+			  memsetp ? SET_BY_PIECES : STORE_BY_PIECES);
   data.run ();
 
   if (retmode != RETURN_BEGIN)
@@ -1802,10 +1840,7 @@ store_by_pieces (rtx to, unsigned HOST_WIDE_INT len,
     return to;
 }
 
-/* Generate several move instructions to clear LEN bytes of block TO.  (A MEM
-   rtx with BLKmode).  ALIGN is maximum alignment we can assume.  */
-
-static void
+void
 clear_by_pieces (rtx to, unsigned HOST_WIDE_INT len, unsigned int align)
 {
   if (len == 0)
@@ -1814,7 +1849,7 @@ clear_by_pieces (rtx to, unsigned HOST_WIDE_INT len, unsigned int align)
   /* Use builtin_memset_read_str to support vector mode broadcast.  */
   char c = 0;
   store_by_pieces_d data (to, builtin_memset_read_str, &c, len, align,
-			  true);
+			  CLEAR_BY_PIECES);
   data.run ();
 }
 
@@ -1832,12 +1867,13 @@ class compare_by_pieces_d : public op_by_pieces_d
   void generate (rtx, rtx, machine_mode) final override;
   bool prepare_mode (machine_mode, unsigned int) final override;
   void finish_mode (machine_mode) final override;
+
  public:
   compare_by_pieces_d (rtx op0, rtx op1, by_pieces_constfn op1_cfn,
 		       void *op1_cfn_data, HOST_WIDE_INT len, int align,
 		       rtx_code_label *fail_label)
     : op_by_pieces_d (COMPARE_MAX_PIECES, op0, true, op1, true, op1_cfn,
-		      op1_cfn_data, len, align, false)
+		      op1_cfn_data, len, align, false, COMPARE_BY_PIECES)
   {
     m_fail_label = fail_label;
   }
@@ -1955,6 +1991,8 @@ compare_by_pieces (rtx arg0, rtx arg1, unsigned HOST_WIDE_INT len,
    MIN_SIZE is the minimal size of block to move
    MAX_SIZE is the maximal size of block to move, if it cannot be represented
    in unsigned HOST_WIDE_INT, than it is mask of all ones.
+   CTZ_SIZE is the trailing-zeros count of SIZE; even a nonconstant SIZE is
+   known to be a multiple of 1<<CTZ_SIZE.
 
    Return the address of the new block, if memcpy is called and returns it,
    0 otherwise.  */
@@ -1966,7 +2004,7 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
 		       unsigned HOST_WIDE_INT max_size,
 		       unsigned HOST_WIDE_INT probable_max_size,
 		       bool bail_out_libcall, bool *is_move_done,
-		       bool might_overlap)
+		       bool might_overlap, unsigned ctz_size)
 {
   int may_use_call;
   rtx retval = 0;
@@ -2052,6 +2090,14 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
 	}
     }
 
+  bool dynamic_direction = false;
+  if (!pattern_ok && !pieces_ok && may_use_call
+      && (flag_inline_stringops & (might_overlap ? ILSOP_MEMMOVE : ILSOP_MEMCPY)))
+    {
+      may_use_call = 0;
+      dynamic_direction = might_overlap;
+    }
+
   if (pattern_ok)
     ;
   else if (pieces_ok)
@@ -2073,10 +2119,12 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
       retval = emit_block_copy_via_libcall (x, y, size,
 					    method == BLOCK_OP_TAILCALL);
     }
+  else if (dynamic_direction)
+    emit_block_move_via_oriented_loop (x, y, size, align, ctz_size);
   else if (might_overlap)
     *is_move_done = false;
   else
-    emit_block_move_via_loop (x, y, size, align);
+    emit_block_move_via_sized_loop (x, y, size, align, ctz_size);
 
   if (method == BLOCK_OP_CALL_PARM)
     OK_DEFER_POP;
@@ -2085,7 +2133,8 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
 }
 
 rtx
-emit_block_move (rtx x, rtx y, rtx size, enum block_op_methods method)
+emit_block_move (rtx x, rtx y, rtx size, enum block_op_methods method,
+		 unsigned int ctz_size)
 {
   unsigned HOST_WIDE_INT max, min = 0;
   if (GET_CODE (size) == CONST_INT)
@@ -2093,7 +2142,8 @@ emit_block_move (rtx x, rtx y, rtx size, enum block_op_methods method)
   else
     max = GET_MODE_MASK (GET_MODE (size));
   return emit_block_move_hints (x, y, size, method, 0, -1,
-				min, max, max);
+				min, max, max,
+				false, NULL, false, ctz_size);
 }
 
 /* A subroutine of emit_block_move.  Returns true if calling the
@@ -2255,13 +2305,117 @@ emit_block_move_via_pattern (rtx x, rtx y, rtx size, unsigned int align,
   return false;
 }
 
+/* Like emit_block_move_via_loop, but choose a suitable INCR based on
+   ALIGN and CTZ_SIZE.  */
+
+static void
+emit_block_move_via_sized_loop (rtx x, rtx y, rtx size,
+				unsigned int align,
+				unsigned int ctz_size)
+{
+  int incr = align / BITS_PER_UNIT;
+
+  if (CONST_INT_P (size))
+    ctz_size = MAX (ctz_size, (unsigned) wi::ctz (UINTVAL (size)));
+
+  if (HOST_WIDE_INT_1U << ctz_size < (unsigned HOST_WIDE_INT) incr)
+    incr = HOST_WIDE_INT_1U << ctz_size;
+
+  while (incr > 1 && !can_move_by_pieces (incr, align))
+    incr >>= 1;
+
+  gcc_checking_assert (incr);
+
+  return emit_block_move_via_loop (x, y, size, align, incr);
+}
+
+/* Like emit_block_move_via_sized_loop, but besides choosing INCR so
+   as to ensure safe moves even in case of overlap, output dynamic
+   tests to choose between two loops, one moving downwards, another
+   moving upwards.  */
+
+static void
+emit_block_move_via_oriented_loop (rtx x, rtx y, rtx size,
+				   unsigned int align,
+				   unsigned int ctz_size)
+{
+  int incr = align / BITS_PER_UNIT;
+
+  if (CONST_INT_P (size))
+    ctz_size = MAX (ctz_size, (unsigned) wi::ctz (UINTVAL (size)));
+
+  if (HOST_WIDE_INT_1U << ctz_size < (unsigned HOST_WIDE_INT) incr)
+    incr = HOST_WIDE_INT_1U << ctz_size;
+
+  while (incr > 1 && !int_mode_for_size (incr, 0).exists ())
+    incr >>= 1;
+
+  gcc_checking_assert (incr);
+
+  rtx_code_label *upw_label, *end_label;
+  upw_label = gen_label_rtx ();
+  end_label = gen_label_rtx ();
+
+  rtx x_addr = force_operand (XEXP (x, 0), NULL_RTX);
+  rtx y_addr = force_operand (XEXP (y, 0), NULL_RTX);
+  do_pending_stack_adjust ();
+
+  machine_mode mode = GET_MODE (x_addr);
+  if (mode != GET_MODE (y_addr))
+    {
+      scalar_int_mode xmode
+	= smallest_int_mode_for_size (GET_MODE_BITSIZE (mode));
+      scalar_int_mode ymode
+	= smallest_int_mode_for_size (GET_MODE_BITSIZE
+				      (GET_MODE (y_addr)));
+      if (GET_MODE_BITSIZE (xmode) < GET_MODE_BITSIZE (ymode))
+	mode = ymode;
+      else
+	mode = xmode;
+
+#ifndef POINTERS_EXTEND_UNSIGNED
+      const int POINTERS_EXTEND_UNSIGNED = 1;
+#endif
+      x_addr = convert_modes (mode, GET_MODE (x_addr), x_addr,
+			      POINTERS_EXTEND_UNSIGNED);
+      y_addr = convert_modes (mode, GET_MODE (y_addr), y_addr,
+			      POINTERS_EXTEND_UNSIGNED);
+    }
+
+  /* Test for overlap: if (x >= y || x + size <= y) goto upw_label.  */
+  emit_cmp_and_jump_insns (x_addr, y_addr, GEU, NULL_RTX, mode,
+			   true, upw_label,
+			   profile_probability::guessed_always ()
+				.apply_scale (5, 10));
+  rtx tmp = convert_modes (GET_MODE (x_addr), GET_MODE (size), size, true);
+  tmp = simplify_gen_binary (PLUS, GET_MODE (x_addr), x_addr, tmp);
+
+  emit_cmp_and_jump_insns (tmp, y_addr, LEU, NULL_RTX, mode,
+			   true, upw_label,
+			   profile_probability::guessed_always ()
+				.apply_scale (8, 10));
+
+  emit_block_move_via_loop (x, y, size, align, -incr);
+
+  emit_jump (end_label);
+  emit_label (upw_label);
+
+  emit_block_move_via_loop (x, y, size, align, incr);
+
+  emit_label (end_label);
+}
+
 /* A subroutine of emit_block_move.  Copy the data via an explicit
-   loop.  This is used only when libcalls are forbidden.  */
-/* ??? It'd be nice to copy in hunks larger than QImode.  */
+   loop.  This is used only when libcalls are forbidden, or when
+   inlining is required.  INCR is the block size to be copied in each
+   loop iteration.  If it is negative, the absolute value is used, and
+   the block is copied backwards.  INCR must be a power of two, an
+   exact divisor for SIZE and ALIGN, and imply a mode that can be
+   safely copied per iteration assuming no overlap.  */
 
 static void
 emit_block_move_via_loop (rtx x, rtx y, rtx size,
-			  unsigned int align ATTRIBUTE_UNUSED)
+			  unsigned int align, int incr)
 {
   rtx_code_label *cmp_label, *top_label;
   rtx iter, x_addr, y_addr, tmp;
@@ -2277,7 +2431,37 @@ emit_block_move_via_loop (rtx x, rtx y, rtx size,
   cmp_label = gen_label_rtx ();
   iter = gen_reg_rtx (iter_mode);
 
-  emit_move_insn (iter, const0_rtx);
+  bool downwards = incr < 0;
+  rtx iter_init;
+  rtx_code iter_cond;
+  rtx iter_limit;
+  rtx iter_incr;
+  machine_mode move_mode;
+  if (downwards)
+    {
+      incr = -incr;
+      iter_init = size;
+      iter_cond = GEU;
+      iter_limit = const0_rtx;
+      iter_incr = GEN_INT (incr);
+    }
+  else
+    {
+      iter_init = const0_rtx;
+      iter_cond = LTU;
+      iter_limit = size;
+      iter_incr = GEN_INT (incr);
+    }
+  emit_move_insn (iter, iter_init);
+
+  opt_scalar_int_mode int_move_mode
+    = int_mode_for_size (incr * BITS_PER_UNIT, 1);
+  if (!int_move_mode.exists (&move_mode)
+      || GET_MODE_BITSIZE (int_move_mode.require ()) != incr * BITS_PER_UNIT)
+    {
+      move_mode = BLKmode;
+      gcc_checking_assert (can_move_by_pieces (incr, align));
+    }
 
   x_addr = force_operand (XEXP (x, 0), NULL_RTX);
   y_addr = force_operand (XEXP (y, 0), NULL_RTX);
@@ -2293,19 +2477,32 @@ emit_block_move_via_loop (rtx x, rtx y, rtx size,
     tmp = convert_modes (y_addr_mode, iter_mode, iter, true);
   y_addr = simplify_gen_binary (PLUS, y_addr_mode, y_addr, tmp);
 
-  x = change_address (x, QImode, x_addr);
-  y = change_address (y, QImode, y_addr);
+  x = change_address (x, move_mode, x_addr);
+  y = change_address (y, move_mode, y_addr);
 
-  emit_move_insn (x, y);
+  if (move_mode == BLKmode)
+    {
+      bool done;
+      emit_block_move_hints (x, y, iter_incr, BLOCK_OP_NO_LIBCALL,
+			     align, incr, incr, incr, incr,
+			     false, &done, false);
+      gcc_checking_assert (done);
+    }
+  else
+    emit_move_insn (x, y);
 
-  tmp = expand_simple_binop (iter_mode, PLUS, iter, const1_rtx, iter,
+  if (downwards)
+    emit_label (cmp_label);
+
+  tmp = expand_simple_binop (iter_mode, PLUS, iter, iter_incr, iter,
 			     true, OPTAB_LIB_WIDEN);
   if (tmp != iter)
     emit_move_insn (iter, tmp);
 
-  emit_label (cmp_label);
+  if (!downwards)
+    emit_label (cmp_label);
 
-  emit_cmp_and_jump_insns (iter, size, LT, NULL_RTX, iter_mode,
+  emit_cmp_and_jump_insns (iter, iter_limit, iter_cond, NULL_RTX, iter_mode,
 			   true, top_label,
 			   profile_probability::guessed_always ()
 				.apply_scale (9, 10));
@@ -2405,7 +2602,8 @@ emit_block_cmp_via_cmpmem (rtx x, rtx y, rtx len, tree len_type, rtx target,
 
    Both X and Y must be MEM rtx's.  LEN is an rtx that says how long
    they are.  LEN_TYPE is the type of the expression that was used to
-   calculate it.
+   calculate it, and CTZ_LEN is the known trailing-zeros count of LEN,
+   so LEN must be a multiple of 1<<CTZ_LEN even if it's not constant.
 
    If EQUALITY_ONLY is true, it means we don't have to return the tri-state
    value of a normal memcmp call, instead we can just compare for equality.
@@ -2421,7 +2619,7 @@ emit_block_cmp_via_cmpmem (rtx x, rtx y, rtx len, tree len_type, rtx target,
 rtx
 emit_block_cmp_hints (rtx x, rtx y, rtx len, tree len_type, rtx target,
 		      bool equality_only, by_pieces_constfn y_cfn,
-		      void *y_cfndata)
+		      void *y_cfndata, unsigned ctz_len)
 {
   rtx result = 0;
 
@@ -2443,8 +2641,202 @@ emit_block_cmp_hints (rtx x, rtx y, rtx len, tree len_type, rtx target,
   else
     result = emit_block_cmp_via_cmpmem (x, y, len, len_type, target, align);
 
+  if (!result && (flag_inline_stringops & ILSOP_MEMCMP))
+    result = emit_block_cmp_via_loop (x, y, len, len_type,
+				      target, equality_only,
+				      align, ctz_len);
+
   return result;
 }
+
+/* Like emit_block_cmp_hints, but with known alignment and no support
+   for constats.  Always expand to a loop with iterations that compare
+   blocks of the largest compare-by-pieces size that divides both len
+   and align, and then, if !EQUALITY_ONLY, identify the word and then
+   the unit that first differs to return the result.  */
+
+rtx
+emit_block_cmp_via_loop (rtx x, rtx y, rtx len, tree len_type, rtx target,
+			 bool equality_only, unsigned align, unsigned ctz_len)
+{
+  unsigned incr = align / BITS_PER_UNIT;
+
+  if (CONST_INT_P (len))
+    ctz_len = MAX (ctz_len, (unsigned) wi::ctz (UINTVAL (len)));
+
+  if (HOST_WIDE_INT_1U << ctz_len < (unsigned HOST_WIDE_INT) incr)
+    incr = HOST_WIDE_INT_1U << ctz_len;
+
+  while (incr > 1
+	 && !can_do_by_pieces (incr, align, COMPARE_BY_PIECES))
+    incr >>= 1;
+
+  rtx_code_label *cmp_label, *top_label, *ne_label, *res_label;
+  rtx iter, x_addr, y_addr, tmp;
+  machine_mode x_addr_mode = get_address_mode (x);
+  machine_mode y_addr_mode = get_address_mode (y);
+  machine_mode iter_mode;
+
+  iter_mode = GET_MODE (len);
+  if (iter_mode == VOIDmode)
+    iter_mode = word_mode;
+
+  rtx iter_init = const0_rtx;
+  rtx_code iter_cond = LTU;
+  rtx_code entry_cond = GEU;
+  rtx iter_limit = len;
+  rtx iter_incr = GEN_INT (incr);
+  machine_mode cmp_mode;
+
+  /* We can drop the loop back edge if we know there's exactly one
+     iteration.  */
+  top_label = (!rtx_equal_p (len, iter_incr)
+	       ? gen_label_rtx ()
+	       : NULL);
+  /* We need not test before entering the loop if len is known
+     nonzero.  ??? This could be even stricter, testing whether a
+     nonconstant LEN could possibly be zero.  */
+  cmp_label = (!CONSTANT_P (len) || rtx_equal_p (len, iter_init)
+	       ? gen_label_rtx ()
+	       : NULL);
+  ne_label = gen_label_rtx ();
+  res_label = gen_label_rtx ();
+
+  iter = gen_reg_rtx (iter_mode);
+  emit_move_insn (iter, iter_init);
+
+  opt_scalar_int_mode int_cmp_mode
+    = int_mode_for_size (incr * BITS_PER_UNIT, 1);
+  if (!int_cmp_mode.exists (&cmp_mode)
+      || GET_MODE_BITSIZE (int_cmp_mode.require ()) != incr * BITS_PER_UNIT
+      || !can_compare_p (NE, cmp_mode, ccp_jump))
+    {
+      cmp_mode = BLKmode;
+      gcc_checking_assert (incr != 1);
+    }
+
+  /* Save the base addresses.  */
+  x_addr = force_operand (XEXP (x, 0), NULL_RTX);
+  y_addr = force_operand (XEXP (y, 0), NULL_RTX);
+  do_pending_stack_adjust ();
+
+  if (cmp_label)
+    {
+      if (top_label)
+	emit_jump (cmp_label);
+      else
+	emit_cmp_and_jump_insns (iter, iter_limit, entry_cond,
+				 NULL_RTX, iter_mode,
+				 true, cmp_label,
+				 profile_probability::guessed_always ()
+				 .apply_scale (1, 10));
+    }
+  if (top_label)
+    emit_label (top_label);
+
+  /* Offset the base addresses by ITER.  */
+  tmp = convert_modes (x_addr_mode, iter_mode, iter, true);
+  x_addr = simplify_gen_binary (PLUS, x_addr_mode, x_addr, tmp);
+
+  if (x_addr_mode != y_addr_mode)
+    tmp = convert_modes (y_addr_mode, iter_mode, iter, true);
+  y_addr = simplify_gen_binary (PLUS, y_addr_mode, y_addr, tmp);
+
+  x = change_address (x, cmp_mode, x_addr);
+  y = change_address (y, cmp_mode, y_addr);
+
+  /* Compare one block.  */
+  rtx part_res;
+  if (cmp_mode == BLKmode)
+    part_res = compare_by_pieces (x, y, incr, target, align, 0, 0);
+  else
+    part_res = expand_binop (cmp_mode, sub_optab, x, y, NULL_RTX,
+			     true, OPTAB_LIB_WIDEN);
+
+  /* Stop if we found a difference.  */
+  emit_cmp_and_jump_insns (part_res, GEN_INT (0), NE, NULL_RTX,
+			   GET_MODE (part_res), true, ne_label,
+			   profile_probability::guessed_always ()
+				.apply_scale (1, 10));
+
+  /* Increment ITER.  */
+  tmp = expand_simple_binop (iter_mode, PLUS, iter, iter_incr, iter,
+			     true, OPTAB_LIB_WIDEN);
+  if (tmp != iter)
+    emit_move_insn (iter, tmp);
+
+  if (cmp_label)
+    emit_label (cmp_label);
+  /* Loop until we reach the limit.  */
+
+  if (top_label)
+    emit_cmp_and_jump_insns (iter, iter_limit, iter_cond, NULL_RTX, iter_mode,
+			     true, top_label,
+			     profile_probability::guessed_always ()
+			     .apply_scale (9, 10));
+
+  /* We got to the end without differences, so the result is zero.  */
+  if (target == NULL_RTX
+      || !REG_P (target) || REGNO (target) < FIRST_PSEUDO_REGISTER)
+    target = gen_reg_rtx (TYPE_MODE (integer_type_node));
+
+  emit_move_insn (target, const0_rtx);
+  emit_jump (res_label);
+
+  emit_label (ne_label);
+
+  /* Return nonzero, or pinpoint the difference to return the expected
+     result for non-equality tests.  */
+  if (equality_only)
+    emit_move_insn (target, const1_rtx);
+  else
+    {
+      if (incr > UNITS_PER_WORD)
+	/* ??? Re-compare the block found to be different one word at a
+	   time.  */
+	part_res = emit_block_cmp_via_loop (x, y, GEN_INT (incr), len_type,
+					    target, equality_only,
+					    BITS_PER_WORD, 0);
+      else if (incr > 1)
+	/* ??? Re-compare the block found to be different one byte at a
+	   time.  We could do better using part_res, and being careful
+	   about endianness.  */
+	part_res = emit_block_cmp_via_loop (x, y, GEN_INT (incr), len_type,
+					    target, equality_only,
+					    BITS_PER_UNIT, 0);
+      else if (known_gt (GET_MODE_BITSIZE (GET_MODE (target)),
+			 GET_MODE_BITSIZE (cmp_mode)))
+	part_res = expand_binop (GET_MODE (target), sub_optab, x, y, target,
+				 true, OPTAB_LIB_WIDEN);
+      else
+	{
+	  /* In the odd chance target is QImode, we can't count on
+	     widening subtract to capture the result of the unsigned
+	     compares.  */
+	  rtx_code_label *ltu_label;
+	  ltu_label = gen_label_rtx ();
+	  emit_cmp_and_jump_insns (x, y, LTU, NULL_RTX,
+				   cmp_mode, true, ltu_label,
+				   profile_probability::guessed_always ()
+				   .apply_scale (5, 10));
+
+	  emit_move_insn (target, const1_rtx);
+	  emit_jump (res_label);
+
+	  emit_label (ltu_label);
+	  emit_move_insn (target, constm1_rtx);
+	  part_res = target;
+	}
+
+      if (target != part_res)
+	convert_move (target, part_res, false);
+    }
+
+  emit_label (res_label);
+
+  return target;
+}
+
 
 /* Copy all or part of a value X into registers starting at REGNO.
    The number of registers to be filled is NREGS.  */
@@ -2681,8 +3073,8 @@ emit_group_load_1 (rtx *tmps, rtx dst, rtx orig_src, tree type,
 	    }
 	}
       else if (CONSTANT_P (src) && GET_MODE (dst) != BLKmode
-               && XVECLEN (dst, 0) > 1)
-        tmps[i] = simplify_gen_subreg (mode, src, GET_MODE (dst), bytepos);
+	       && XVECLEN (dst, 0) > 1)
+	tmps[i] = force_subreg (mode, src, GET_MODE (dst), bytepos);
       else if (CONSTANT_P (src))
 	{
 	  if (known_eq (bytelen, ssize))
@@ -2906,7 +3298,7 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED,
 	  if (known_eq (rtx_to_poly_int64 (XEXP (XVECEXP (src, 0, start), 1)),
 			bytepos))
 	    {
-	      temp = simplify_gen_subreg (outer, tmps[start], inner, 0);
+	      temp = force_subreg (outer, tmps[start], inner, 0);
 	      if (temp)
 		{
 		  emit_move_insn (dst, temp);
@@ -2926,7 +3318,7 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED,
 							  finish - 1), 1)),
 			bytepos))
 	    {
-	      temp = simplify_gen_subreg (outer, tmps[finish - 1], inner, 0);
+	      temp = force_subreg (outer, tmps[finish - 1], inner, 0);
 	      if (temp)
 		{
 		  emit_move_insn (dst, temp);
@@ -5079,6 +5471,7 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
 	  /* If source is a constant VAR_DECL with a simple constructor,
              store the constructor to the stack instead of moving it.  */
 	  const_tree decl;
+	  HOST_WIDE_INT sz;
 	  if (partial == 0
 	      && MEM_P (xinner)
 	      && SYMBOL_REF_P (XEXP (xinner, 0))
@@ -5086,9 +5479,11 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
 	      && VAR_P (decl)
 	      && TREE_READONLY (decl)
 	      && !TREE_SIDE_EFFECTS (decl)
-	      && immediate_const_ctor_p (DECL_INITIAL (decl), 2))
-	    store_constructor (DECL_INITIAL (decl), target, 0,
-			       int_expr_size (DECL_INITIAL (decl)), false);
+	      && immediate_const_ctor_p (DECL_INITIAL (decl), 2)
+	      && (sz = int_expr_size (DECL_INITIAL (decl))) > 0
+	      && CONST_INT_P (size)
+	      && INTVAL (size) == sz)
+	    store_constructor (DECL_INITIAL (decl), target, 0, sz, false);
 	  else
 	    emit_block_move (target, xinner, size, BLOCK_OP_CALL_PARM);
 	}
@@ -5145,11 +5540,12 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
       /* Loop over all the words allocated on the stack for this arg.  */
       /* We can do it by words, because any scalar bigger than a word
 	 has a size a multiple of a word.  */
+      tree word_mode_type = lang_hooks.types.type_for_mode (word_mode, 1);
       for (i = num_words - 1; i >= not_stack; i--)
 	if (i >= not_stack + offset)
 	  if (!emit_push_insn (operand_subword_force (x, i, mode),
-			  word_mode, NULL_TREE, NULL_RTX, align, 0, NULL_RTX,
-			  0, args_addr,
+			  word_mode, word_mode_type, NULL_RTX, align, 0,
+			  NULL_RTX, 0, args_addr,
 			  GEN_INT (args_offset + ((i - not_stack + skip)
 						  * UNITS_PER_WORD)),
 			  reg_parm_stack_space, alignment_pad, sibcall_p))
@@ -5673,6 +6069,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	    to_rtx = adjust_address (to_rtx, BLKmode, 0);
 	}
  
+      rtx stemp = NULL_RTX, old_to_rtx = NULL_RTX;
       if (offset != 0)
 	{
 	  machine_mode address_mode;
@@ -5682,9 +6079,22 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	    {
 	      /* We can get constant negative offsets into arrays with broken
 		 user code.  Translate this to a trap instead of ICEing.  */
-	      gcc_assert (TREE_CODE (offset) == INTEGER_CST);
-	      expand_builtin_trap ();
-	      to_rtx = gen_rtx_MEM (BLKmode, const0_rtx);
+	      if (TREE_CODE (offset) == INTEGER_CST)
+		{
+		  expand_builtin_trap ();
+		  to_rtx = gen_rtx_MEM (BLKmode, const0_rtx);
+		}
+	      /* Else spill for variable offset to the destination.  We expect
+		 to run into this only for hard registers.  */
+	      else
+		{
+		  gcc_assert (VAR_P (tem) && DECL_HARD_REGISTER (tem));
+		  stemp = assign_stack_temp (GET_MODE (to_rtx),
+					     GET_MODE_SIZE (GET_MODE (to_rtx)));
+		  emit_move_insn (stemp, to_rtx);
+		  old_to_rtx = to_rtx;
+		  to_rtx = stemp;
+		}
 	    }
 
 	  offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode, EXPAND_SUM);
@@ -5782,11 +6192,9 @@ expand_assignment (tree to, tree from, bool nontemporal)
 		  to_mode = GET_MODE_INNER (to_mode);
 		  machine_mode from_mode = GET_MODE_INNER (GET_MODE (result));
 		  rtx from_real
-		    = simplify_gen_subreg (to_mode, XEXP (result, 0),
-					   from_mode, 0);
+		    = force_subreg (to_mode, XEXP (result, 0), from_mode, 0);
 		  rtx from_imag
-		    = simplify_gen_subreg (to_mode, XEXP (result, 1),
-					   from_mode, 0);
+		    = force_subreg (to_mode, XEXP (result, 1), from_mode, 0);
 		  if (!from_real || !from_imag)
 		    goto concat_store_slow;
 		  emit_move_insn (XEXP (to_rtx, 0), from_real);
@@ -5802,8 +6210,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 		  if (MEM_P (result))
 		    from_rtx = change_address (result, to_mode, NULL_RTX);
 		  else
-		    from_rtx
-		      = simplify_gen_subreg (to_mode, result, from_mode, 0);
+		    from_rtx = force_subreg (to_mode, result, from_mode, 0);
 		  if (from_rtx)
 		    {
 		      emit_move_insn (XEXP (to_rtx, 0),
@@ -5815,10 +6222,10 @@ expand_assignment (tree to, tree from, bool nontemporal)
 		    {
 		      to_mode = GET_MODE_INNER (to_mode);
 		      rtx from_real
-			= simplify_gen_subreg (to_mode, result, from_mode, 0);
+			= force_subreg (to_mode, result, from_mode, 0);
 		      rtx from_imag
-			= simplify_gen_subreg (to_mode, result, from_mode,
-					       GET_MODE_SIZE (to_mode));
+			= force_subreg (to_mode, result, from_mode,
+					GET_MODE_SIZE (to_mode));
 		      if (!from_real || !from_imag)
 			goto concat_store_slow;
 		      emit_move_insn (XEXP (to_rtx, 0), from_real);
@@ -5885,25 +6292,41 @@ expand_assignment (tree to, tree from, bool nontemporal)
 		  && known_eq (bitpos, 0)
 		  && known_eq (bitsize, GET_MODE_BITSIZE (GET_MODE (to_rtx))))
 		result = store_expr (from, to_rtx, 0, nontemporal, false);
-	      else
+	      /* Check if the field overlaps the MSB, requiring extension.  */
+	      else if (maybe_eq (bitpos + bitsize,
+				 GET_MODE_BITSIZE (GET_MODE (to_rtx))))
 		{
-		  rtx to_rtx1
-		    = lowpart_subreg (subreg_unpromoted_mode (to_rtx),
-				      SUBREG_REG (to_rtx),
-				      subreg_promoted_mode (to_rtx));
+		  scalar_int_mode imode = subreg_unpromoted_mode (to_rtx);
+		  scalar_int_mode omode = subreg_promoted_mode (to_rtx);
+		  rtx to_rtx1 = lowpart_subreg (imode, SUBREG_REG (to_rtx),
+						omode);
 		  result = store_field (to_rtx1, bitsize, bitpos,
 					bitregion_start, bitregion_end,
 					mode1, from, get_alias_set (to),
 					nontemporal, reversep);
+		  /* If the target usually keeps IMODE appropriately
+		     extended in OMODE it's unsafe to refer to it using
+		     a SUBREG whilst this invariant doesn't hold.  */
+		  if (targetm.mode_rep_extended (imode, omode) != UNKNOWN)
+		    to_rtx1 = simplify_gen_unary (TRUNCATE, imode,
+						  SUBREG_REG (to_rtx), omode);
 		  convert_move (SUBREG_REG (to_rtx), to_rtx1,
 				SUBREG_PROMOTED_SIGN (to_rtx));
 		}
+	      else
+		result = store_field (to_rtx, bitsize, bitpos,
+				      bitregion_start, bitregion_end,
+				      mode1, from, get_alias_set (to),
+				      nontemporal, reversep);
 	    }
 	  else
 	    result = store_field (to_rtx, bitsize, bitpos,
 				  bitregion_start, bitregion_end,
 				  mode1, from, get_alias_set (to),
 				  nontemporal, reversep);
+	  /* Move the temporary storage back to the non-MEM_P.  */
+	  if (stemp)
+	    emit_move_insn (old_to_rtx, stemp);
 	}
 
       if (result)
@@ -6632,6 +7055,7 @@ count_type_elements (const_tree type, bool for_ctor_p)
     case REFERENCE_TYPE:
     case NULLPTR_TYPE:
     case OPAQUE_TYPE:
+    case BITINT_TYPE:
       return 1;
 
     case ERROR_MARK:
@@ -7440,16 +7864,30 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	    break;
 	  }
 	/* Use sign-extension for uniform boolean vectors with
-	   integer modes.  */
-	if (!TREE_SIDE_EFFECTS (exp)
+	   integer modes and single-bit mask entries.
+	   Effectively "vec_duplicate" for bitmasks.  */
+	if (elt_size == 1
+	    && !TREE_SIDE_EFFECTS (exp)
 	    && VECTOR_BOOLEAN_TYPE_P (type)
-	    && SCALAR_INT_MODE_P (mode)
+	    && SCALAR_INT_MODE_P (TYPE_MODE (type))
 	    && (elt = uniform_vector_p (exp))
 	    && !VECTOR_TYPE_P (TREE_TYPE (elt)))
 	  {
 	    rtx op0 = force_reg (TYPE_MODE (TREE_TYPE (elt)),
 				 expand_normal (elt));
-	    convert_move (target, op0, 0);
+	    rtx tmp = gen_reg_rtx (mode);
+	    convert_move (tmp, op0, 0);
+
+	    /* Ensure no excess bits are set.
+	       GCN needs this for nunits < 64.
+	       x86 needs this for nunits < 8.  */
+	    auto nunits = TYPE_VECTOR_SUBPARTS (type).to_constant ();
+	    if (maybe_ne (GET_MODE_PRECISION (mode), nunits))
+	      tmp = expand_binop (mode, and_optab, tmp,
+				  GEN_INT ((HOST_WIDE_INT_1U << nunits) - 1),
+				  target, true, OPTAB_WIDEN);
+	    if (tmp != target)
+	      emit_move_insn (target, tmp);
 	    break;
 	  }
 
@@ -9203,7 +9641,7 @@ expand_expr_divmod (tree_code code, machine_mode mode, tree treeop0,
 }
 
 rtx
-expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
+expand_expr_real_2 (const_sepops ops, rtx target, machine_mode tmode,
 		    enum expand_modifier modifier)
 {
   rtx op0, op1, op2, temp;
@@ -9329,13 +9767,6 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	  op0 = expand_expr (treeop0, target, VOIDmode,
 			     modifier);
 
-	  /* If the signedness of the conversion differs and OP0 is
-	     a promoted SUBREG, clear that indication since we now
-	     have to do the proper extension.  */
-	  if (TYPE_UNSIGNED (TREE_TYPE (treeop0)) != unsignedp
-	      && GET_CODE (op0) == SUBREG)
-	    SUBREG_PROMOTED_VAR_P (op0) = 0;
-
 	  return REDUCE_BIT_FIELD (op0);
 	}
 
@@ -9354,9 +9785,9 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	    inner_mode = TYPE_MODE (inner_type);
 
 	  if (modifier == EXPAND_INITIALIZER)
-	    op0 = lowpart_subreg (mode, op0, inner_mode);
+	    op0 = force_lowpart_subreg (mode, op0, inner_mode);
 	  else
-	    op0=  convert_modes (mode, inner_mode, op0,
+	    op0 = convert_modes (mode, inner_mode, op0,
 				 TYPE_UNSIGNED (inner_type));
 	}
 
@@ -9814,8 +10245,9 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
       /* Expand X*Y as X&-Y when Y must be zero or one.  */
       if (SCALAR_INT_MODE_P (mode))
 	{
-	  bool bit0_p = tree_nonzero_bits (treeop0) == 1;
-	  bool bit1_p = tree_nonzero_bits (treeop1) == 1;
+	  bool gimple_zero_one_valued_p (tree, tree (*)(tree));
+	  bool bit0_p = gimple_zero_one_valued_p (treeop0, nullptr);
+	  bool bit1_p = gimple_zero_one_valued_p (treeop1, nullptr);
 
 	  /* Expand X*Y as X&Y when both X and Y must be zero or one.  */
 	  if (bit0_p && bit1_p)
@@ -9832,12 +10264,12 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 					  &algorithm, &variant, cost)
 		  : cost < mul_cost (speed, mode))
 		{
-		  target = bit0_p ? expand_and (mode, negate_rtx (mode, op0),
-						op1, target)
-				  : expand_and (mode, op0,
-						negate_rtx (mode, op1),
-						target);
-		  return REDUCE_BIT_FIELD (target);
+		  temp = bit0_p ? expand_and (mode, negate_rtx (mode, op0),
+					      op1, target)
+				: expand_and (mode, op0,
+					      negate_rtx (mode, op1),
+					      target);
+		  return REDUCE_BIT_FIELD (temp);
 		}
 	    }
 	}
@@ -10628,6 +11060,62 @@ stmt_is_replaceable_p (gimple *stmt)
   return false;
 }
 
+/* A subroutine of expand_expr_real_1.  Expand gimple assignment G,
+   which is known to set an SSA_NAME result.  The other arguments are
+   as for expand_expr_real_1.  */
+
+rtx
+expand_expr_real_gassign (gassign *g, rtx target, machine_mode tmode,
+			  enum expand_modifier modifier, rtx *alt_rtl,
+			  bool inner_reference_p)
+{
+  separate_ops ops;
+  rtx r;
+  location_t saved_loc = curr_insn_location ();
+  auto loc = gimple_location (g);
+  if (loc != UNKNOWN_LOCATION)
+    set_curr_insn_location (loc);
+  tree lhs = gimple_assign_lhs (g);
+  ops.code = gimple_assign_rhs_code (g);
+  ops.type = TREE_TYPE (lhs);
+  switch (get_gimple_rhs_class (ops.code))
+    {
+    case GIMPLE_TERNARY_RHS:
+      ops.op2 = gimple_assign_rhs3 (g);
+      /* Fallthru */
+    case GIMPLE_BINARY_RHS:
+      ops.op1 = gimple_assign_rhs2 (g);
+
+      /* Try to expand conditonal compare.  */
+      if (targetm.have_ccmp ())
+	{
+	  gcc_checking_assert (targetm.gen_ccmp_next != NULL);
+	  r = expand_ccmp_expr (g, TYPE_MODE (ops.type));
+	  if (r)
+	    break;
+	}
+      /* Fallthru */
+    case GIMPLE_UNARY_RHS:
+      ops.op0 = gimple_assign_rhs1 (g);
+      ops.location = loc;
+      r = expand_expr_real_2 (&ops, target, tmode, modifier);
+      break;
+    case GIMPLE_SINGLE_RHS:
+      {
+	r = expand_expr_real (gimple_assign_rhs1 (g), target,
+			      tmode, modifier, alt_rtl,
+			      inner_reference_p);
+	break;
+      }
+    default:
+      gcc_unreachable ();
+    }
+  set_curr_insn_location (saved_loc);
+  if (REG_P (r) && !REG_EXPR (r))
+    set_reg_attrs_for_decl_rtl (lhs, r);
+  return r;
+}
+
 rtx
 expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 		    enum expand_modifier modifier, rtx *alt_rtl,
@@ -10663,6 +11151,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
     && mode != BLKmode							\
     && modifier != EXPAND_MEMORY					\
     && modifier != EXPAND_WRITE						\
+    && modifier != EXPAND_INITIALIZER					\
     && modifier != EXPAND_CONST_ADDRESS)				\
    ? reduce_to_bit_field_precision ((expr), NULL_RTX, type) : (expr))
 
@@ -10790,51 +11279,8 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  && stmt_is_replaceable_p (SSA_NAME_DEF_STMT (exp)))
 	g = SSA_NAME_DEF_STMT (exp);
       if (g)
-	{
-	  rtx r;
-	  location_t saved_loc = curr_insn_location ();
-	  loc = gimple_location (g);
-	  if (loc != UNKNOWN_LOCATION)
-	    set_curr_insn_location (loc);
-	  ops.code = gimple_assign_rhs_code (g);
-          switch (get_gimple_rhs_class (ops.code))
-	    {
-	    case GIMPLE_TERNARY_RHS:
-	      ops.op2 = gimple_assign_rhs3 (g);
-	      /* Fallthru */
-	    case GIMPLE_BINARY_RHS:
-	      ops.op1 = gimple_assign_rhs2 (g);
-
-	      /* Try to expand conditonal compare.  */
-	      if (targetm.gen_ccmp_first)
-		{
-		  gcc_checking_assert (targetm.gen_ccmp_next != NULL);
-		  r = expand_ccmp_expr (g, mode);
-		  if (r)
-		    break;
-		}
-	      /* Fallthru */
-	    case GIMPLE_UNARY_RHS:
-	      ops.op0 = gimple_assign_rhs1 (g);
-	      ops.type = TREE_TYPE (gimple_assign_lhs (g));
-	      ops.location = loc;
-	      r = expand_expr_real_2 (&ops, target, tmode, modifier);
-	      break;
-	    case GIMPLE_SINGLE_RHS:
-	      {
-		r = expand_expr_real (gimple_assign_rhs1 (g), target,
-				      tmode, modifier, alt_rtl,
-				      inner_reference_p);
-		break;
-	      }
-	    default:
-	      gcc_unreachable ();
-	    }
-	  set_curr_insn_location (saved_loc);
-	  if (REG_P (r) && !REG_EXPR (r))
-	    set_reg_attrs_for_decl_rtl (SSA_NAME_VAR (exp), r);
-	  return r;
-	}
+	return expand_expr_real_gassign (as_a<gassign *> (g), target, tmode,
+					 modifier, alt_rtl, inner_reference_p);
 
       ssa_name = exp;
       decl_rtl = get_rtx_for_ssa_name (ssa_name);
@@ -11909,7 +12355,8 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    return expand_builtin (exp, target, subtarget, tmode, ignore);
 	  }
       }
-      return expand_call (exp, target, ignore);
+      temp = expand_call (exp, target, ignore);
+      return EXTEND_BITINT (temp);
 
     case VIEW_CONVERT_EXPR:
       op0 = NULL_RTX;
@@ -11979,6 +12426,10 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
       /* If the input and output modes are both the same, we are done.  */
       if (mode == GET_MODE (op0))
 	;
+      /* Similarly if the output mode is BLKmode and input is a MEM,
+	 adjust_address done below is all we need.  */
+      else if (mode == BLKmode && MEM_P (op0))
+	;
       /* If neither mode is BLKmode, and both modes are the same size
 	 then we can use gen_lowpart.  */
       else if (mode != BLKmode
@@ -12000,7 +12451,10 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    }
 	}
       /* If both types are integral, convert from one mode to the other.  */
-      else if (INTEGRAL_TYPE_P (type) && INTEGRAL_TYPE_P (TREE_TYPE (treeop0)))
+      else if (INTEGRAL_TYPE_P (type)
+	       && INTEGRAL_TYPE_P (TREE_TYPE (treeop0))
+	       && mode != BLKmode
+	       && GET_MODE (op0) != BLKmode)
 	op0 = convert_modes (mode, GET_MODE (op0), op0,
 			     TYPE_UNSIGNED (TREE_TYPE (treeop0)));
       /* If the output type is a bit-field type, do an extraction.  */
@@ -13048,7 +13502,7 @@ expand_single_bit_test (location_t loc, enum tree_code code,
    set/jump/set sequence.  */
 
 static rtx
-do_store_flag (sepops ops, rtx target, machine_mode mode)
+do_store_flag (const_sepops ops, rtx target, machine_mode mode)
 {
   enum rtx_code code;
   tree arg0, arg1, type;
@@ -13057,6 +13511,7 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
   rtx op0, op1;
   rtx subtarget = target;
   location_t loc = ops->location;
+  unsigned HOST_WIDE_INT nunits;
 
   arg0 = ops->op0;
   arg1 = ops->op1;
@@ -13109,7 +13564,7 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
       if (new_code != ops->code)
 	{
 	  struct separate_ops nops = *ops;
-	  nops.code = ops->code = new_code;
+	  nops.code = new_code;
 	  nops.op0 = arg0;
 	  nops.op1 = arg1;
 	  nops.type = TREE_TYPE (arg0);
@@ -13211,16 +13666,19 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
   if ((code == NE || code == EQ)
       && (integer_zerop (arg1)
 	  || integer_pow2p (arg1))
+      /* vector types are not handled here. */
+      && TREE_CODE (TREE_TYPE (arg1)) != VECTOR_TYPE
       && (TYPE_PRECISION (ops->type) != 1 || TYPE_UNSIGNED (ops->type)))
     {
-      wide_int nz = tree_nonzero_bits (arg0);
-      gimple *srcstmt = get_def_for_expr (arg0, BIT_AND_EXPR);
+      tree narg0 = arg0;
+      wide_int nz = tree_nonzero_bits (narg0);
+      gimple *srcstmt = get_def_for_expr (narg0, BIT_AND_EXPR);
       /* If the defining statement was (x & POW2), then use that instead of
 	 the non-zero bits.  */
       if (srcstmt && integer_pow2p (gimple_assign_rhs2 (srcstmt)))
 	{
 	  nz = wi::to_wide (gimple_assign_rhs2 (srcstmt));
-	  arg0 = gimple_assign_rhs1 (srcstmt);
+	  narg0 = gimple_assign_rhs1 (srcstmt);
 	}
 
       if (wi::popcount (nz) == 1
@@ -13234,7 +13692,7 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
 
 	  type = lang_hooks.types.type_for_mode (mode, unsignedp);
 	  return expand_single_bit_test (loc, tcode,
-					 arg0,
+					 narg0,
 					 bitnum, type, target, mode);
 	}
     }
@@ -13245,6 +13703,22 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
     subtarget = 0;
 
   expand_operands (arg0, arg1, subtarget, &op0, &op1, EXPAND_NORMAL);
+
+  /* For boolean vectors with less than mode precision
+     make sure to fill padding with consistent values.  */
+  if (VECTOR_BOOLEAN_TYPE_P (type)
+      && SCALAR_INT_MODE_P (operand_mode)
+      && TYPE_VECTOR_SUBPARTS (type).is_constant (&nunits)
+      && maybe_ne (GET_MODE_PRECISION (operand_mode), nunits))
+    {
+      gcc_assert (code == EQ || code == NE);
+      op0 = expand_binop (mode, and_optab, op0,
+			  GEN_INT ((HOST_WIDE_INT_1U << nunits) - 1),
+			  NULL_RTX, true, OPTAB_WIDEN);
+      op1 = expand_binop (mode, and_optab, op1,
+			  GEN_INT ((HOST_WIDE_INT_1U << nunits) - 1),
+			  NULL_RTX, true, OPTAB_WIDEN);
+    }
 
   if (target == 0)
     target = gen_reg_rtx (mode);

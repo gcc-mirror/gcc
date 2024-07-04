@@ -1,4 +1,4 @@
-/* Copyright (C) 2012-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2024 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Atomic Library (libatomic).
@@ -22,6 +22,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#define LAT_GLOAD
 #include "libatomic_i.h"
 
 
@@ -98,3 +99,4 @@ libat_load (size_t n, void *mptr, void *rptr, int smodel)
 }
 
 EXPORT_ALIAS (load);
+#undef LAT_GLOAD

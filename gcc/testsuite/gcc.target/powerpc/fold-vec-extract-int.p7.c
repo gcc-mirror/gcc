@@ -2,16 +2,15 @@
    inputs produce the right code with a P7 (BE) target.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power7 -O2 " } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 // Targeting P7 (BE).  6 tests total.
 // P7 constant:   li, addi, stxvw4x, rldic, addi, lwzx/lwax
 // P7 variables:  li, addi, stxvw4x, lwa/lwz
 
 /* { dg-final { scan-assembler-times {\mli\M} 6 } } */
-/* { dg-final { scan-assembler-times {\maddi\M|\madd\M} 9 { target lp64 } } } */
-/* { dg-final { scan-assembler-times {\maddi\M|\madd\M} 12 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\maddi?\M} 9 } } */
 /* { dg-final { scan-assembler-times {\mstxvw4x\M|\mstvx\M|\mstxv\M} 6 } } */
 /* { dg-final { scan-assembler-times {\mrldic\M|\mrlwinm\M} 3 } } */
 /* { dg-final { scan-assembler-times {\mlwz\M|\mlwa\M|\mlwzx\M|\mlwax\M} 6 } } */

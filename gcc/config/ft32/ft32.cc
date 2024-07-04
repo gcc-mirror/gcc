@@ -1,5 +1,5 @@
 /* Target Code for ft32
-   Copyright (C) 2015-2023 Free Software Foundation, Inc.
+   Copyright (C) 2015-2024 Free Software Foundation, Inc.
    Contributed by FTDI <support@ftdi.com>
 
    This file is part of GCC.
@@ -635,9 +635,10 @@ ft32_setup_incoming_varargs (cumulative_args_t cum_v,
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int named_size = 0;
-  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
-    named_size =
-      GET_MODE_SIZE (SImode) * (*cum - FT32_R0) + GET_MODE_SIZE (arg.mode);
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl))
+      || arg.type != NULL_TREE)
+    named_size
+      = GET_MODE_SIZE (SImode) * (*cum - FT32_R0) + GET_MODE_SIZE (arg.mode);
 
   if (named_size < 24)
     *pretend_size = 24 - named_size;

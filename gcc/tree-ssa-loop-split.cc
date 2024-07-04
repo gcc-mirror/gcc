@@ -1,5 +1,5 @@
 /* Loop splitting.
-   Copyright (C) 2015-2023 Free Software Foundation, Inc.
+   Copyright (C) 2015-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -144,18 +144,18 @@ split_at_bb_p (class loop *loop, basic_block bb, tree *border, affine_iv *iv,
 	   value range.  */
 	else
 	  {
-	    int_range<2> r;
+	    value_range r (TREE_TYPE (op0));
 	    get_global_range_query ()->range_of_expr (r, op0, stmt);
 	    if (!r.varying_p () && !r.undefined_p ()
 		&& TREE_CODE (op1) == INTEGER_CST)
 	      {
 		wide_int val = wi::to_wide (op1);
-		if (known_eq (val, r.lower_bound ()))
+		if (known_eq (val, wi::to_wide (r.lbound ())))
 		  {
 		    code = (code == EQ_EXPR) ? LE_EXPR : GT_EXPR;
 		    break;
 		  }
-		else if (known_eq (val, r.upper_bound ()))
+		else if (known_eq (val, wi::to_wide (r.ubound ())))
 		  {
 		    code = (code == EQ_EXPR) ? GE_EXPR : LT_EXPR;
 		    break;
@@ -194,13 +194,12 @@ split_at_bb_p (class loop *loop, basic_block bb, tree *border, affine_iv *iv,
    also be true/false in the next iteration.  */
 
 static void
-patch_loop_exit (class loop *loop, gcond *guard, tree nextval, tree newbound,
-		 bool initial_true)
+patch_loop_exit (class loop *loop, tree_code guard_code, tree nextval,
+		 tree newbound, bool initial_true)
 {
   edge exit = single_exit (loop);
   gcond *stmt = as_a <gcond *> (*gsi_last_bb (exit->src));
-  gimple_cond_set_condition (stmt, gimple_cond_code (guard),
-			     nextval, newbound);
+  gimple_cond_set_condition (stmt, guard_code, nextval, newbound);
   update_stmt (stmt);
 
   edge stay = EDGE_SUCC (exit->src, EDGE_SUCC (exit->src, 0) == exit);
@@ -654,8 +653,26 @@ split_loop (class loop *loop1)
 	gimple_seq stmts2;
 	border = force_gimple_operand (border, &stmts2, true, NULL_TREE);
 	if (stmts2)
-	  gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop1),
-					    stmts2);
+	  {
+	    /* When the split condition is not always evaluated make sure
+	       to rewrite it to defined overflow.  */
+	    if (!dominated_by_p (CDI_DOMINATORS, exit1->src, bbs[i]))
+	      {
+		gimple_stmt_iterator gsi;
+		gsi = gsi_start (stmts2);
+		while (!gsi_end_p (gsi))
+		  {
+		    gimple *stmt = gsi_stmt (gsi);
+		    if (is_gimple_assign (stmt)
+			&& arith_code_with_undefined_signed_overflow
+						(gimple_assign_rhs_code (stmt)))
+		      rewrite_to_defined_overflow (&gsi);
+		    gsi_next (&gsi);
+		  }
+	      }
+	    gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop1),
+					      stmts2);
+	  }
 	tree cond = fold_build2 (guard_code, boolean_type_node,
 				 guard_init, border);
 	if (!initial_true)
@@ -713,7 +730,8 @@ split_loop (class loop *loop1)
 			  ? true_edge->probability.to_sreal () : (sreal)1;
 	    sreal scale2 = false_edge->probability.reliable_p ()
 			  ? false_edge->probability.to_sreal () : (sreal)1;
-	    sreal div1 = loop1_prob.to_sreal ();
+	    sreal div1 = loop1_prob.initialized_p ()
+			 ? loop1_prob.to_sreal () : (sreal)1/(sreal)2;
 	    /* +1 to get header interations rather than latch iterations and then
 	       -1 to convert back.  */
 	    if (div1 != 0)
@@ -745,7 +763,7 @@ split_loop (class loop *loop1)
 	  gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop1),
 					    stmts);
 	tree guard_next = PHI_ARG_DEF_FROM_EDGE (phi, loop_latch_edge (loop1));
-	patch_loop_exit (loop1, guard_stmt, guard_next, newend, initial_true);
+	patch_loop_exit (loop1, guard_code, guard_next, newend, initial_true);
 
 	/* Finally patch out the two copies of the condition to be always
 	   true/false (or opposite).  */

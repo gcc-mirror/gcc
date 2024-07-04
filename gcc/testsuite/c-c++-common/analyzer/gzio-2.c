@@ -6,6 +6,6 @@ void gzseek (long offset, int whence)
     offset -= 1;
   if (offset < 0)
     return;
-  while (offset > 0) {
+  while (offset > 0) { /* { dg-warning "infinite loop" "" { xfail *-*-* } } */
   }
 }

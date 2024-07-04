@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-march=rv64gcv -mabi=lp64d -Wno-psabi" } */
+/* { dg-additional-options "-march=rv64gcv -mabi=lp64d" } */
 
 #include "perm.h"
 

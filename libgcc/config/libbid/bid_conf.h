@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -517,6 +517,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #ifndef BID_BIG_ENDIAN
 #define BID_BIG_ENDIAN __FLOAT_WORD_ORDER__ == __ORDER_BIG_ENDIAN__
+#endif
+
+#if BID_BIG_ENDIAN
+#define BID_HIGH_128W 0
+#define BID_LOW_128W  1
+#else
+#define BID_HIGH_128W 1
+#define BID_LOW_128W  0
 #endif
 
 #ifndef BID_THREAD

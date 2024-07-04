@@ -1,6 +1,6 @@
 /* Form lists of pseudo register references for autoinc optimization
    for GNU compiler.  This is part of flow optimization.
-   Copyright (C) 1999-2023 Free Software Foundation, Inc.
+   Copyright (C) 1999-2024 Free Software Foundation, Inc.
    Originally contributed by Michael P. Hayes
              (m.hayes@elec.canterbury.ac.nz, mhayes@redhat.com)
    Major rewrite contributed by Danny Berlin (dberlin@dberlin.org)
@@ -987,6 +987,7 @@ extern void df_check_cfg_clean (void);
 #endif
 extern df_ref df_bb_regno_first_def_find (basic_block, unsigned int);
 extern df_ref df_bb_regno_last_def_find (basic_block, unsigned int);
+extern df_ref df_bb_regno_only_def_find (basic_block, unsigned int);
 extern df_ref df_find_def (rtx_insn *, rtx);
 extern bool df_reg_defined (rtx_insn *, rtx);
 extern df_ref df_find_use (rtx_insn *, rtx);

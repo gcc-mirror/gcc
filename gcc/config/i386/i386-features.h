@@ -1,4 +1,4 @@
-/* Copyright (C) 1988-2023 Free Software Foundation, Inc.
+/* Copyright (C) 1988-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -155,6 +155,7 @@ class scalar_chain
   hash_map<rtx, rtx> defs_map;
   unsigned n_sse_to_integer;
   unsigned n_integer_to_sse;
+  auto_vec<rtx_insn *> control_flow_insns;
 
   bool build (bitmap candidates, unsigned insn_uid, bitmap disallowed);
   virtual int compute_convert_gain () = 0;
@@ -169,13 +170,13 @@ class scalar_chain
   void convert_insn_common (rtx_insn *insn);
   void make_vector_copies (rtx_insn *, rtx);
   void convert_registers ();
+  void convert_op (rtx *op, rtx_insn *insn);
 
  private:
   bool add_insn (bitmap candidates, unsigned insn_uid, bitmap disallowed);
   bool analyze_register_chain (bitmap candidates, df_ref ref,
 			       bitmap disallowed);
   virtual void convert_insn (rtx_insn *insn) = 0;
-  virtual void convert_op (rtx *op, rtx_insn *insn) = 0;
 };
 
 class general_scalar_chain : public scalar_chain
@@ -187,7 +188,6 @@ class general_scalar_chain : public scalar_chain
 
  private:
   void convert_insn (rtx_insn *insn) final override;
-  void convert_op (rtx *op, rtx_insn *insn) final override;
   int vector_const_cost (rtx exp);
   rtx convert_rotate (enum rtx_code, rtx op0, rtx op1, rtx_insn *insn);
 };
@@ -201,7 +201,6 @@ class timode_scalar_chain : public scalar_chain
  private:
   void fix_debug_reg_uses (rtx reg);
   void convert_insn (rtx_insn *insn) final override;
-  void convert_op (rtx *op, rtx_insn *insn) final override;
 };
 
 } // anon namespace

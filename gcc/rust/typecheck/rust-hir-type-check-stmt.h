@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -20,6 +20,7 @@
 #define RUST_HIR_TYPE_CHECK_STMT
 
 #include "rust-hir-type-check-base.h"
+#include "rust-hir-visitor.h"
 
 namespace Rust {
 namespace Resolver {
@@ -29,8 +30,7 @@ class TypeCheckStmt : private TypeCheckBase, private HIR::HIRStmtVisitor
 public:
   static TyTy::BaseType *Resolve (HIR::Stmt *stmt);
 
-  void visit (HIR::ExprStmtWithBlock &stmt) override;
-  void visit (HIR::ExprStmtWithoutBlock &stmt) override;
+  void visit (HIR::ExprStmt &stmt) override;
   void visit (HIR::EmptyStmt &stmt) override;
   void visit (HIR::ExternBlock &extern_block) override;
   void visit (HIR::ConstantItem &constant) override;
@@ -52,7 +52,7 @@ public:
   // this seems like it should not be part of this visitor
   void visit (HIR::TypePathSegmentFunction &segment) override
   {
-    gcc_unreachable ();
+    rust_unreachable ();
   }
 
   // nothing to do for these

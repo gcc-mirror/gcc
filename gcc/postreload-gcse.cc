@@ -1,5 +1,5 @@
 /* Post reload partially redundant load elimination
-   Copyright (C) 2004-2023 Free Software Foundation, Inc.
+   Copyright (C) 2004-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -487,9 +487,10 @@ static void
 dump_hash_table (FILE *file)
 {
   fprintf (file, "\n\nexpression hash table\n");
-  fprintf (file, "size %ld, %ld elements, %f collision/search ratio\n",
-           (long) expr_table->size (),
-           (long) expr_table->elements (),
+  fprintf (file, "size " HOST_SIZE_T_PRINT_DEC ", " HOST_SIZE_T_PRINT_DEC
+	   " elements, %f collision/search ratio\n",
+           (fmt_size_t) expr_table->size (),
+           (fmt_size_t) expr_table->elements (),
            expr_table->collisions ());
   if (!expr_table->is_empty ())
     {

@@ -1,5 +1,5 @@
 /* jit-builtins.cc -- Handling of builtin functions during JIT-compilation.
-   Copyright (C) 2014-2023 Free Software Foundation, Inc.
+   Copyright (C) 2014-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -609,6 +609,9 @@ builtins_manager::ensure_optimization_builtins_exist ()
      We can't loop through all of the builtin_data array, we don't
      support all types yet.  */
   (void)get_builtin_function_by_id (BUILT_IN_TRAP);
+  (void)get_builtin_function_by_id (BUILT_IN_POPCOUNT);
+  (void)get_builtin_function_by_id (BUILT_IN_POPCOUNTL);
+  (void)get_builtin_function_by_id (BUILT_IN_POPCOUNTLL);
 }
 
 /* Playback support.  */

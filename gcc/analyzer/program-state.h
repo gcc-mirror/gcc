@@ -1,5 +1,5 @@
 /* Classes for representing the state of interest at a given path of analysis.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GCC_ANALYZER_PROGRAM_STATE_H
 #define GCC_ANALYZER_PROGRAM_STATE_H
+
+#include "text-art/widget.h"
 
 namespace ana {
 
@@ -117,6 +119,10 @@ public:
 
   json::object *to_json () const;
 
+  std::unique_ptr<text_art::tree_widget>
+  make_dump_widget (const text_art::dump_widget_info &dwi,
+		    const region_model *model) const;
+
   bool is_empty_p () const;
 
   hashval_t hash () const;
@@ -146,6 +152,7 @@ public:
 		       const svalue *origin,
 		       const extrinsic_state &ext_state);
   void clear_any_state (const svalue *sval);
+  void clear_all_per_svalue_state ();
 
   void set_global_state (state_machine::state_t state);
   state_machine::state_t get_global_state () const;
@@ -154,6 +161,7 @@ public:
 		       impl_region_model_context *ctxt);
   void on_liveness_change (const svalue_set &live_svalues,
 			   const region_model *model,
+			   const extrinsic_state &ext_state,
 			   impl_region_model_context *ctxt);
 
   void on_unknown_change (const svalue *sval,
@@ -221,11 +229,15 @@ public:
   void dump_to_file (const extrinsic_state &ext_state, bool simple,
 		     bool multiline, FILE *outf) const;
   void dump (const extrinsic_state &ext_state, bool simple) const;
+  void dump () const;
 
   json::object *to_json (const extrinsic_state &ext_state) const;
 
-  void push_frame (const extrinsic_state &ext_state, function *fun);
-  function * get_current_function () const;
+  std::unique_ptr<text_art::tree_widget>
+  make_dump_widget (const text_art::dump_widget_info &dwi) const;
+
+  void push_frame (const extrinsic_state &ext_state, const function &fun);
+  const function * get_current_function () const;
 
   void push_call (exploded_graph &eg,
 		  exploded_node *enode,

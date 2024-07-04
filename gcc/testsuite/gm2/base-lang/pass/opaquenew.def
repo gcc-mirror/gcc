@@ -1,0 +1,8 @@
+DEFINITION MODULE opaquenew ;  (*!m2pim*)
+
+TYPE
+   List ;
+
+PROCEDURE dupList (l: List) : List ;
+
+END opaquenew.

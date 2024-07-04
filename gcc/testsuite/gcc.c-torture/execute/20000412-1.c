@@ -1,3 +1,6 @@
+void abort(void);
+void exit(int);
+
 short int i = -1;
 const char * const wordlist[207];
 

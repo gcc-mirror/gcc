@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -33,7 +33,7 @@ ConstChecker::ConstChecker ()
 void
 ConstChecker::go (HIR::Crate &crate)
 {
-  for (auto &item : crate.items)
+  for (auto &item : crate.get_items ())
     item->accept_vis (*this);
 }
 
@@ -72,7 +72,7 @@ ConstChecker::ctx_to_str (ConstGenericCtx ctx)
     case ConstGenericCtx::Impl:
       return "impl";
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 
@@ -214,8 +214,8 @@ ConstChecker::visit (AssignmentExpr &expr)
 void
 ConstChecker::visit (CompoundAssignmentExpr &expr)
 {
-  expr.get_left_expr ()->accept_vis (*this);
-  expr.get_right_expr ()->accept_vis (*this);
+  expr.get_lhs ()->accept_vis (*this);
+  expr.get_rhs ()->accept_vis (*this);
 }
 
 void
@@ -301,7 +301,7 @@ ConstChecker::visit (StructExprStructBase &)
 {}
 
 void
-ConstChecker::check_function_call (HirId fn_id, Location locus)
+ConstChecker::check_function_call (HirId fn_id, location_t locus)
 {
   if (!const_context.is_in_context ())
     return;
@@ -339,18 +339,18 @@ ConstChecker::check_function_call (HirId fn_id, Location locus)
     }
 
   if (is_error)
-    rust_error_at (locus, "only functions marked as %<const%> are allowed to "
-			  "be called from constant contexts");
+    rust_error_at (locus, ErrorCode::E0015,
+		   "only functions marked as %<const%> are allowed to be "
+		   "called from constant contexts");
 }
 
 void
 ConstChecker::visit (CallExpr &expr)
 {
-  auto fn = expr.get_fnexpr ();
-  if (!fn)
+  if (!expr.get_fnexpr ())
     return;
 
-  NodeId ast_node_id = fn->get_mappings ().get_nodeid ();
+  NodeId ast_node_id = expr.get_fnexpr ()->get_mappings ().get_nodeid ();
   NodeId ref_node_id;
   HirId definition_id;
 
@@ -478,13 +478,6 @@ ConstChecker::visit (WhileLetLoopExpr &expr)
 }
 
 void
-ConstChecker::visit (ForLoopExpr &expr)
-{
-  expr.get_iterator_expr ()->accept_vis (*this);
-  expr.get_loop_block ()->accept_vis (*this);
-}
-
-void
 ConstChecker::visit (IfExpr &expr)
 {
   expr.get_if_condition ()->accept_vis (*this);
@@ -497,23 +490,6 @@ ConstChecker::visit (IfExprConseqElse &expr)
   expr.get_if_condition ()->accept_vis (*this);
   expr.get_if_block ()->accept_vis (*this);
   expr.get_else_block ()->accept_vis (*this);
-}
-
-void
-ConstChecker::visit (IfExprConseqIf &expr)
-{
-  expr.get_if_condition ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
-  expr.get_conseq_if_expr ()->accept_vis (*this);
-}
-
-void
-ConstChecker::visit (IfExprConseqIfLet &expr)
-{
-  expr.get_if_condition ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
-
-  // TODO: Visit conseq if let expression
 }
 
 void
@@ -530,22 +506,6 @@ ConstChecker::visit (IfLetExprConseqElse &expr)
   expr.get_if_block ()->accept_vis (*this);
 
   // TODO: Visit else expression
-}
-
-void
-ConstChecker::visit (IfLetExprConseqIf &expr)
-{
-  expr.get_scrutinee_expr ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
-}
-
-void
-ConstChecker::visit (IfLetExprConseqIfLet &expr)
-{
-  expr.get_scrutinee_expr ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
-
-  // TODO: Visit conseq if let expression
 }
 
 void
@@ -839,6 +799,10 @@ ConstChecker::visit (SlicePattern &)
 {}
 
 void
+ConstChecker::visit (AltPattern &)
+{}
+
+void
 ConstChecker::visit (EmptyStmt &)
 {}
 
@@ -850,13 +814,7 @@ ConstChecker::visit (LetStmt &stmt)
 }
 
 void
-ConstChecker::visit (ExprStmtWithoutBlock &stmt)
-{
-  stmt.get_expr ()->accept_vis (*this);
-}
-
-void
-ConstChecker::visit (ExprStmtWithBlock &stmt)
+ConstChecker::visit (ExprStmt &stmt)
 {
   stmt.get_expr ()->accept_vis (*this);
 }
@@ -897,7 +855,7 @@ void
 ConstChecker::visit (ReferenceType &type)
 {
   if (const_context.is_in_context () && type.is_mut ())
-    rust_error_at (type.get_locus (),
+    rust_error_at (type.get_locus (), ErrorCode::E0658,
 		   "mutable references are not allowed in constant functions");
 }
 

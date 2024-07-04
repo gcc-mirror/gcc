@@ -7,44 +7,44 @@
 
 #define MAKE_FN(name, op) \
   template<typename... Ts> \
-    constexpr auto name (Ts... ts) { return (... op ts); } // { dg-error "empty" }
+    constexpr auto name (Ts... ts) { return (... op ts); } // { dg-message "" }
 
-MAKE_FN (add, +);
-MAKE_FN (sub, -);
-MAKE_FN (mul, *);
-MAKE_FN (div, /);
-MAKE_FN (mod, %);
-MAKE_FN (bxor, ^);
-MAKE_FN (bor, |);
-MAKE_FN (band, &);
-MAKE_FN (lsh, <<);
-MAKE_FN (rsh, >>);
+MAKE_FN (add, +);		// { dg-message "" }
+MAKE_FN (sub, -);		// { dg-message "" }
+MAKE_FN (mul, *);		// { dg-message "" }
+MAKE_FN (div, /);		// { dg-message "" }
+MAKE_FN (mod, %);		// { dg-message "" }
+MAKE_FN (bxor, ^);		// { dg-message "" }
+MAKE_FN (bor, |);		// { dg-message "" }
+MAKE_FN (band, &);		// { dg-message "" }
+MAKE_FN (lsh, <<);		// { dg-message "" }
+MAKE_FN (rsh, >>);		// { dg-message "" }
 
-MAKE_FN (assign, =);
-MAKE_FN (addi, +=);
-MAKE_FN (subi, -=);
-MAKE_FN (muli, *=);
-MAKE_FN (divi, /=);
-MAKE_FN (modi, %=);
-MAKE_FN (bxori, ^=);
-MAKE_FN (bori, |=);
-MAKE_FN (bandi, &=);
-MAKE_FN (lshi, <<=);
-MAKE_FN (rshi, >>=);
+MAKE_FN (assign, =);		// { dg-message "" }
+MAKE_FN (addi, +=);		// { dg-message "" }
+MAKE_FN (subi, -=);		// { dg-message "" }
+MAKE_FN (muli, *=);		// { dg-message "" }
+MAKE_FN (divi, /=);		// { dg-message "" }
+MAKE_FN (modi, %=);		// { dg-message "" }
+MAKE_FN (bxori, ^=);		// { dg-message "" }
+MAKE_FN (bori, |=);		// { dg-message "" }
+MAKE_FN (bandi, &=);		// { dg-message "" }
+MAKE_FN (lshi, <<=);		// { dg-message "" }
+MAKE_FN (rshi, >>=);		// { dg-message "" }
 
-MAKE_FN (eq, ==);
-MAKE_FN (ne, !=);
-MAKE_FN (lt, <);
-MAKE_FN (gt, >);
-MAKE_FN (le, <);
-MAKE_FN (ge, >);
+MAKE_FN (eq, ==);		// { dg-message "" }
+MAKE_FN (ne, !=);		// { dg-message "" }
+MAKE_FN (lt, <);		// { dg-message "" }
+MAKE_FN (gt, >);		// { dg-message "" }
+MAKE_FN (le, <);		// { dg-message "" }
+MAKE_FN (ge, >);		// { dg-message "" }
 
 MAKE_FN (land, &&);
 MAKE_FN (lor, ||);
 
 MAKE_FN (comma, COMMA);
-MAKE_FN (dot_star, .*);
-MAKE_FN (arrow_star, ->*);
+MAKE_FN (dot_star, .*);		// { dg-message "" }
+MAKE_FN (arrow_star, ->*);	// { dg-message "" }
 
 int main() {
   static_assert(land() == true, "");
@@ -52,7 +52,7 @@ int main() {
   comma(); // No value to theck
 
   // These are all errors, but the error is emitted at the point
-  // of instantiation (line 10).
+  // of macro definition or expansion above.
   add();			// { dg-message "required from here" }
   mul();			// { dg-message "required from here" }
   bor();			// { dg-message "required from here" }

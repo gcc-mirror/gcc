@@ -190,6 +190,13 @@ else version (CRuntime_Glibc)
         ///
         enum int FP_ILOGBNAN      = int.max;
     }
+    else version (LoongArch64)
+    {
+        ///
+        enum int FP_ILOGB0        = -int.max;
+        ///
+        enum int FP_ILOGBNAN      = int.max;
+    }
     else
     {
         static assert(false, "Architecture not supported.");
@@ -4129,7 +4136,18 @@ else version (CRuntime_UClibc)
     ///
     pure float   modff(float value, float* iptr);
     ///
-    extern(D) pure real modfl(real value, real *iptr) { return modf(cast(double) value, cast(double*) iptr); }
+    extern(D) pure real modfl(real value, real *iptr)
+    {
+        static if (double.sizeof == real.sizeof)
+             return modf(cast(double) value, cast(double*) iptr);
+        else
+        {
+            double i;
+            double r = modf(cast(double) value, &i);
+            *iptr = i;
+            return r;
+        }
+    }
 
     ///
     double  scalbn(double x, int n);

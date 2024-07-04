@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 struct S
 {
   char f1;
@@ -6,7 +9,8 @@ struct S
 
 struct S object = {'X', 8, 9};
 
-main ()
+int
+main (void)
 {
   if (object.f1 != 'X' || object.f2[0] != 8 || object.f2[1] != 9)
     abort ();

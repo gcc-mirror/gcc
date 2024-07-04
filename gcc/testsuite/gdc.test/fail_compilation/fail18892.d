@@ -1,8 +1,10 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail18892.d(20): Error: no property `foo` for `a` of type `fail18892.MT`
-fail_compilation/fail18892.d(21): Error: no property `foo` for `MT` of type `fail18892.MT`
+fail_compilation/fail18892.d(22): Error: no property `foo` for `a` of type `fail18892.MT`
+fail_compilation/fail18892.d(13):        struct `MT` defined here
+fail_compilation/fail18892.d(23): Error: no property `foo` for `MT` of type `fail18892.MT`
+fail_compilation/fail18892.d(13):        struct `MT` defined here
 ---
 */
 

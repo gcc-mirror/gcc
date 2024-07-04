@@ -2,7 +2,7 @@
    constant expressions.  */
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
 /* { dg-do compile } */
-/* { dg-options "-std=iso9899:1990 -pedantic-errors -O2" } */
+/* { dg-options "-std=iso9899:1990 -pedantic-errors -O2 -fno-trapping-math" } */
 
 #include <float.h>
 #include <limits.h>

@@ -1,11 +1,12 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fnconstraint.d(13): Error: template constraint must follow parameter lists and attributes
-fail_compilation/fnconstraint.d(13): Error: declaration expected, not `if`
-fail_compilation/fnconstraint.d(22): Error: template constraint must follow parameter lists and attributes
-fail_compilation/fnconstraint.d(22): Error: declaration expected, not `if`
-fail_compilation/fnconstraint.d(26): Error: `}` expected following members in `struct` declaration at fail_compilation/fnconstraint.d(18)
+fail_compilation/fnconstraint.d(14): Error: template constraint must follow parameter lists and attributes
+fail_compilation/fnconstraint.d(14): Error: declaration expected, not `if`
+fail_compilation/fnconstraint.d(23): Error: template constraint must follow parameter lists and attributes
+fail_compilation/fnconstraint.d(23): Error: declaration expected, not `if`
+fail_compilation/fnconstraint.d(27): Error: `}` expected following members in `struct` declaration
+fail_compilation/fnconstraint.d(19):        struct `S` starts here
 ---
 */
 void foo()()

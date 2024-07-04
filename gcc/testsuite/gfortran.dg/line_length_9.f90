@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-Wall" }
+! { dg-options "-std=f2018 -Wall" }
 !
 ! By default, for free-form source code: Error out
 ! Even with -Wall, we still get an error

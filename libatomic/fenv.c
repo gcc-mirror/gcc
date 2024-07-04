@@ -1,4 +1,4 @@
-/* Copyright (C) 2012-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2024 Free Software Foundation, Inc.
 
    This file is part of the GNU Atomic Library (libatomic).
 
@@ -21,6 +21,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#define LAT_FENV
 #include "libatomic_i.h"
 
 #ifdef HAVE_FENV_H
@@ -70,3 +71,4 @@ __atomic_feraiseexcept (int excepts __attribute__ ((unused)))
     }
 #endif
 }
+#undef LAT_FENV

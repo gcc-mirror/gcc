@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Renesas H8/300 (linux variant)
-   Copyright (C) 2015-2023 Free Software Foundation, Inc.
+   Copyright (C) 2015-2024 Free Software Foundation, Inc.
    Contributed by Yoshinori Sato <ysato@users.sourceforge.jp>
 
 This file is part of GCC.
@@ -36,8 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_DEFAULT (MASK_QUICKCALL | MASK_INT32 | MASK_H8300H)
 
 /* Width of a word, in units (bytes).  */
-#undef DOUBLE_TYPE_SIZE
-#define DOUBLE_TYPE_SIZE	64
+#undef DOUBLE_TYPE_MODE
+#define DOUBLE_TYPE_MODE	DFmode
 
 #undef DEFAULT_SIGNED_CHAR
 #define DEFAULT_SIGNED_CHAR 1

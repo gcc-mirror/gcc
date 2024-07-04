@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2024 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
@@ -1773,7 +1773,7 @@ find_file (const char *file, gfc_charlen_type file_len)
   id = id_from_path (path);
 #endif
 
-  LOCK (&unit_lock);
+  RDLOCK (&unit_rwlock);
 retry:
   u = find_file0 (unit_root, FIND_FILE0_ARGS);
   if (u != NULL)
@@ -1782,19 +1782,19 @@ retry:
       if (! __gthread_mutex_trylock (&u->lock))
 	{
 	  /* assert (u->closed == 0); */
-	  UNLOCK (&unit_lock);
+	  RWUNLOCK (&unit_rwlock);
 	  goto done;
 	}
 
       inc_waiting_locked (u);
     }
-  UNLOCK (&unit_lock);
+  RWUNLOCK (&unit_rwlock);
   if (u != NULL)
     {
       LOCK (&u->lock);
       if (u->closed)
 	{
-	  LOCK (&unit_lock);
+	  RDLOCK (&unit_rwlock);
 	  UNLOCK (&u->lock);
 	  if (predec_waiting_locked (u) == 0)
 	    free (u);
@@ -1838,13 +1838,13 @@ flush_all_units (void)
   gfc_unit *u;
   int min_unit = 0;
 
-  LOCK (&unit_lock);
+  WRLOCK (&unit_rwlock);
   do
     {
       u = flush_all_units_1 (unit_root, min_unit);
       if (u != NULL)
 	inc_waiting_locked (u);
-      UNLOCK (&unit_lock);
+      RWUNLOCK (&unit_rwlock);
       if (u == NULL)
 	return;
 
@@ -1855,13 +1855,13 @@ flush_all_units (void)
       if (u->closed == 0)
 	{
 	  sflush (u->s);
-	  LOCK (&unit_lock);
+	  WRLOCK (&unit_rwlock);
 	  UNLOCK (&u->lock);
 	  (void) predec_waiting_locked (u);
 	}
       else
 	{
-	  LOCK (&unit_lock);
+	  WRLOCK (&unit_rwlock);
 	  UNLOCK (&u->lock);
 	  if (predec_waiting_locked (u) == 0)
 	    free (u);

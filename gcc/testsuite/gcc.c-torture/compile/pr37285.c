@@ -1,3 +1,5 @@
+void _bfd_abort (const char *);
+void
 _bfd_xcoff_canonicalize_dynamic_reloc (unsigned long long l_symndx)
 {
   if (l_symndx < 3)

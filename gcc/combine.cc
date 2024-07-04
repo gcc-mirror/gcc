@@ -1,5 +1,5 @@
 /* Optimize by combining instructions for GNU compiler.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3222,8 +3222,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 #endif
 	      /* Cases for modifying the CC-using comparison.  */
 	      if (compare_code != orig_compare_code
-		  /* ??? Do we need to verify the zero rtx?  */
-		  && XEXP (*cc_use_loc, 1) == const0_rtx)
+		  && COMPARISON_P (*cc_use_loc))
 		{
 		  /* Replace cc_use_loc with entire new RTX.  */
 		  SUBST (*cc_use_loc,
@@ -3233,8 +3232,19 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 		}
 	      else if (compare_mode != orig_compare_mode)
 		{
+		  subrtx_ptr_iterator::array_type array;
+
 		  /* Just replace the CC reg with a new mode.  */
-		  SUBST (XEXP (*cc_use_loc, 0), newpat_dest);
+		  FOR_EACH_SUBRTX_PTR (iter, array, cc_use_loc, NONCONST)
+		    {
+		      rtx *loc = *iter;
+		      if (REG_P (*loc)
+			  && REGNO (*loc) == REGNO (newpat_dest))
+			{
+			  SUBST (*loc, newpat_dest);
+			  iter.skip_subrtxes ();
+			}
+		    }
 		  undobuf.other_insn = cc_use_insn;
 		}
 	    }
@@ -4184,6 +4194,17 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
     {
       PATTERN (i3) = newpat;
       adjust_for_new_dest (i3);
+    }
+
+  /* If I2 didn't change, this is not a combination (but a simplification or
+     canonicalisation with context), which should not be done here.  Doing
+     it here explodes the algorithm.  Don't.  */
+  if (rtx_equal_p (newi2pat, PATTERN (i2)))
+    {
+      if (dump_file)
+	fprintf (dump_file, "i2 didn't change, not doing this\n");
+      undo_all ();
+      return 0;
     }
 
   /* We now know that we can do this combination.  Merge the insns and
@@ -7466,6 +7487,11 @@ expand_field_assignment (const_rtx x)
       if (!targetm.scalar_mode_supported_p (compute_mode))
 	break;
 
+      /* gen_lowpart_for_combine returns CLOBBER on failure.  */
+      rtx lowpart = gen_lowpart (compute_mode, SET_SRC (x));
+      if (GET_CODE (lowpart) == CLOBBER)
+	break;
+
       /* Now compute the equivalent expression.  Make a copy of INNER
 	 for the SET_DEST in case it is a MEM into which we will substitute;
 	 we don't want shared RTL in that case.  */
@@ -7480,9 +7506,7 @@ expand_field_assignment (const_rtx x)
 				     inner);
       masked = simplify_gen_binary (ASHIFT, compute_mode,
 				    simplify_gen_binary (
-				      AND, compute_mode,
-				      gen_lowpart (compute_mode, SET_SRC (x)),
-				      mask),
+				      AND, compute_mode, lowpart, mask),
 				    pos);
 
       x = gen_rtx_SET (copy_rtx (inner),
@@ -8224,12 +8248,20 @@ make_compound_operation_int (scalar_int_mode mode, rtx *x_ptr,
 	  int sub_width;
 	  if ((REG_P (sub) || MEM_P (sub))
 	      && GET_MODE_PRECISION (sub_mode).is_constant (&sub_width)
-	      && sub_width < mode_width)
+	      && sub_width < mode_width
+	      && (!WORD_REGISTER_OPERATIONS
+		  || sub_width >= BITS_PER_WORD
+		  /* On WORD_REGISTER_OPERATIONS targets the bits
+		     beyond sub_mode aren't considered undefined,
+		     so optimize only if it is a MEM load when MEM loads
+		     zero extend, because then the upper bits are all zero.  */
+		  || (MEM_P (sub)
+		      && load_extend_op (sub_mode) == ZERO_EXTEND)))
 	    {
 	      unsigned HOST_WIDE_INT mode_mask = GET_MODE_MASK (sub_mode);
 	      unsigned HOST_WIDE_INT mask;
 
-	      /* original AND constant with all the known zero bits set */
+	      /* Original AND constant with all the known zero bits set.  */
 	      mask = UINTVAL (XEXP (x, 1)) | (~nonzero_bits (sub, sub_mode));
 	      if ((mask & mode_mask) == mode_mask)
 		{
@@ -8449,8 +8481,8 @@ make_compound_operation (rtx x, enum rtx_code in_code)
   if (code == ZERO_EXTEND)
     {
       new_rtx = make_compound_operation (XEXP (x, 0), next_code);
-      tem = simplify_const_unary_operation (ZERO_EXTEND, GET_MODE (x),
-					    new_rtx, GET_MODE (XEXP (x, 0)));
+      tem = simplify_unary_operation (ZERO_EXTEND, GET_MODE (x),
+				      new_rtx, GET_MODE (XEXP (x, 0)));
       if (tem)
 	return tem;
       SUBST (XEXP (x, 0), new_rtx);
@@ -9734,7 +9766,7 @@ make_field_assignment (rtx x)
       if (width >= HOST_BITS_PER_WIDE_INT)
 	ze_mask = -1;
       else
-	ze_mask = ((unsigned HOST_WIDE_INT)1 << width) - 1;
+	ze_mask = (HOST_WIDE_INT_1U << width) - 1;
 
       /* Complete overlap.  We can remove the source AND.  */
       if ((and_mask & ze_mask) == ze_mask)
@@ -11820,8 +11852,10 @@ simplify_compare_const (enum rtx_code code, machine_mode mode,
      `and'ed with that bit), we can replace this with a comparison
      with zero.  */
   if (const_op
-      && (code == EQ || code == NE || code == GE || code == GEU
-	  || code == LT || code == LTU)
+      && (code == EQ || code == NE || code == GEU || code == LTU
+	  /* This optimization is incorrect for signed >= INT_MIN or
+	     < INT_MIN, those are always true or always false.  */
+	  || ((code == GE || code == LT) && const_op > 0))
       && is_a <scalar_int_mode> (mode, &int_mode)
       && GET_MODE_PRECISION (int_mode) - 1 < HOST_BITS_PER_WIDE_INT
       && pow2p_hwi (const_op & GET_MODE_MASK (int_mode))
@@ -11923,7 +11957,7 @@ simplify_compare_const (enum rtx_code code, machine_mode mode,
       /* (unsigned) < 0x80000000 is equivalent to >= 0.  */
       else if (is_a <scalar_int_mode> (mode, &int_mode)
 	       && GET_MODE_PRECISION (int_mode) - 1 < HOST_BITS_PER_WIDE_INT
-	       && ((unsigned HOST_WIDE_INT) const_op
+	       && (((unsigned HOST_WIDE_INT) const_op & GET_MODE_MASK (int_mode))
 		   == HOST_WIDE_INT_1U << (GET_MODE_PRECISION (int_mode) - 1)))
 	{
 	  const_op = 0;
@@ -11962,7 +11996,7 @@ simplify_compare_const (enum rtx_code code, machine_mode mode,
       /* (unsigned) >= 0x80000000 is equivalent to < 0.  */
       else if (is_a <scalar_int_mode> (mode, &int_mode)
 	       && GET_MODE_PRECISION (int_mode) - 1 < HOST_BITS_PER_WIDE_INT
-	       && ((unsigned HOST_WIDE_INT) const_op
+	       && (((unsigned HOST_WIDE_INT) const_op & GET_MODE_MASK (int_mode))
 		   == HOST_WIDE_INT_1U << (GET_MODE_PRECISION (int_mode) - 1)))
 	{
 	  const_op = 0;
@@ -12539,9 +12573,22 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	    }
 
 	  /* If the inner mode is narrower and we are extracting the low part,
-	     we can treat the SUBREG as if it were a ZERO_EXTEND.  */
+	     we can treat the SUBREG as if it were a ZERO_EXTEND ...  */
 	  if (paradoxical_subreg_p (op0))
-	    ;
+	    {
+	      if (WORD_REGISTER_OPERATIONS
+		  && is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (op0)),
+					     &inner_mode)
+		  && GET_MODE_PRECISION (inner_mode) < BITS_PER_WORD
+		  /* On WORD_REGISTER_OPERATIONS targets the bits
+		     beyond sub_mode aren't considered undefined,
+		     so optimize only if it is a MEM load when MEM loads
+		     zero extend, because then the upper bits are all zero.  */
+		  && !(MEM_P (SUBREG_REG (op0))
+		       && load_extend_op (inner_mode) == ZERO_EXTEND))
+		break;
+	      /* FALLTHROUGH to case ZERO_EXTEND */
+	    }
 	  else if (subreg_lowpart_p (op0)
 		   && GET_MODE_CLASS (mode) == MODE_INT
 		   && is_int_mode (GET_MODE (SUBREG_REG (op0)), &inner_mode)

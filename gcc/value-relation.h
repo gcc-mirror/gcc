@@ -1,5 +1,5 @@
 /* Header file for the value range relational processing.
-   Copyright (C) 2020-2023 Free Software Foundation, Inc.
+   Copyright (C) 2020-2024 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
 
 This file is part of GCC.
@@ -91,41 +91,42 @@ inline bool relation_equiv_p (relation_kind r)
 
 void print_relation (FILE *f, relation_kind rel);
 
-// Return relation for NAME == NAME with RANGE.
-relation_kind get_identity_relation (tree name, vrange &range);
+// Adjust range as an equivalence.
+void adjust_equivalence_range (vrange &range);
 
 class relation_oracle
 {
 public:
   virtual ~relation_oracle () { }
-  // register a relation between 2 ssa names at a stmt.
-  void register_stmt (gimple *, relation_kind, tree, tree);
-  // register a relation between 2 ssa names on an edge.
-  void register_edge (edge, relation_kind, tree, tree);
 
-  // register a relation between 2 ssa names in a basic block.
-  virtual void register_relation (basic_block, relation_kind, tree, tree) = 0;
-  // Query for a relation between two ssa names in a basic block.
-  virtual relation_kind query_relation (basic_block, tree, tree) = 0;
+  // register a relation between 2 ssa names.
+  void record (gimple *, relation_kind, tree, tree);
+  void record (edge, relation_kind, tree, tree);
+  virtual void record (basic_block, relation_kind, tree, tree) { }
 
-  relation_kind validate_relation (relation_kind, tree, tree);
-  relation_kind validate_relation (relation_kind, vrange &, vrange &);
+  // Query if there is any relation between SSA1 and SSA2.
+  relation_kind query (gimple *s, tree ssa1, tree ssa2);
+  relation_kind query (edge e, tree ssa1, tree ssa2);
+  virtual relation_kind query (basic_block, tree, tree) { return VREL_VARYING; }
 
-  virtual void dump (FILE *, basic_block) const = 0;
-  virtual void dump (FILE *) const = 0;
+  virtual void dump (FILE *, basic_block) const { }
+  virtual void dump (FILE *) const  { }
   void debug () const;
 protected:
   friend class equiv_relation_iterator;
   // Return equivalency set for an SSA name in a basic block.
-  virtual const_bitmap equiv_set (tree, basic_block) = 0;
+  virtual const_bitmap equiv_set (tree, basic_block) { return NULL; }
   // Return partial equivalency record for an SSA name.
   virtual const class pe_slice *partial_equiv_set (tree) { return NULL; }
   void valid_equivs (bitmap b, const_bitmap equivs, basic_block bb);
   // Query for a relation between two equivalency sets in a basic block.
-  virtual relation_kind query_relation (basic_block, const_bitmap,
-					const_bitmap) = 0;
+  virtual relation_kind query (basic_block, const_bitmap, const_bitmap)
+    { return VREL_VARYING; }
   friend class path_oracle;
 };
+
+// Instance with no storage used for default queries with no active oracle.
+extern relation_oracle default_relation_oracle;
 
 // This class represents an equivalency set, and contains a link to the next
 // one in the list to be searched.
@@ -160,19 +161,17 @@ public:
   ~equiv_oracle ();
 
   const_bitmap equiv_set (tree ssa, basic_block bb) final override;
-  const pe_slice *partial_equiv_set (tree name) final override;
-  void register_relation (basic_block bb, relation_kind k, tree ssa1,
-			  tree ssa2) override;
+  void record (basic_block bb, relation_kind k, tree ssa1, tree ssa2) override;
 
-  void add_partial_equiv (relation_kind, tree, tree);
   relation_kind partial_equiv (tree ssa1, tree ssa2, tree *base = NULL) const;
-  relation_kind query_relation (basic_block, tree, tree) override;
-  relation_kind query_relation (basic_block, const_bitmap, const_bitmap)
-    override;
+  relation_kind query (basic_block, tree, tree) override;
+  relation_kind query (basic_block, const_bitmap, const_bitmap) override;
   void dump (FILE *f, basic_block bb) const override;
   void dump (FILE *f) const override;
 
 protected:
+  void add_partial_equiv (relation_kind, tree, tree);
+  const pe_slice *partial_equiv_set (tree name) final override;
   inline bool has_equiv_p (unsigned v) { return bitmap_bit_p (m_equiv_set, v); }
   bitmap_obstack m_bitmaps;
   struct obstack m_chain_obstack;
@@ -217,20 +216,20 @@ public:
 class dom_oracle : public equiv_oracle
 {
 public:
-  dom_oracle ();
+  dom_oracle (bool do_trans_p = true);
   ~dom_oracle ();
 
-  void register_relation (basic_block bb, relation_kind k, tree op1, tree op2)
+  void record (basic_block bb, relation_kind k, tree op1, tree op2)
     final override;
 
-  relation_kind query_relation (basic_block bb, tree ssa1, tree ssa2)
+  relation_kind query (basic_block bb, tree ssa1, tree ssa2) final override;
+  relation_kind query (basic_block bb, const_bitmap b1, const_bitmap b2)
     final override;
-  relation_kind query_relation (basic_block bb, const_bitmap b1,
-				const_bitmap b2) final override;
 
   void dump (FILE *f, basic_block bb) const final override;
   void dump (FILE *f) const final override;
 private:
+  bool m_do_trans_p;
   bitmap m_tmp, m_tmp2;
   bitmap m_relation_set;  // Index by ssa-name. True if a relation exists
   vec <relation_chain_head> m_relations;  // Index by BB, list of relations.
@@ -267,11 +266,10 @@ public:
   path_oracle (relation_oracle *oracle = NULL);
   ~path_oracle ();
   const_bitmap equiv_set (tree, basic_block) final override;
-  void register_relation (basic_block, relation_kind, tree, tree) final override;
+  void record (basic_block, relation_kind, tree, tree) final override;
   void killing_def (tree);
-  relation_kind query_relation (basic_block, tree, tree) final override;
-  relation_kind query_relation (basic_block, const_bitmap, const_bitmap)
-    final override;
+  relation_kind query (basic_block, tree, tree) final override;
+  relation_kind query (basic_block, const_bitmap, const_bitmap) final override;
   void reset_path (relation_oracle *oracle = NULL);
   void set_root_oracle (relation_oracle *oracle) { m_root = oracle; }
   void dump (FILE *, basic_block) const final override;

@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! ia32 } } } */
+/* { dg-do compile { target lp64 } } */
 /* { dg-options "-mavx -mcmodel=large -O3" } */
 
 typedef double v2df __attribute__ ((vector_size (16)));

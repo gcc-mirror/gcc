@@ -1,4 +1,4 @@
-/* Copyright (C) 2011-2023 by The D Language Foundation, All Rights Reserved
+/* Copyright (C) 2011-2024 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -9,7 +9,6 @@
 #pragma once
 
 #include "dsystem.h"
-#include "object.h"
 #include "rmem.h"
 
 struct BitArray

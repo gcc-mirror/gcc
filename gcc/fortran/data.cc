@@ -1,5 +1,5 @@
 /* Supporting functions for resolving DATA statement.
-   Copyright (C) 2002-2023 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
    Contributed by Lifang Zeng <zlf605@hotmail.com>
 
 This file is part of GCC.
@@ -209,8 +209,8 @@ create_character_initializer (gfc_expr *init, gfc_typespec *ts,
       else
 	{
 	  gfc_warning_now (0, "Initialization string at %L was truncated to "
-			   "fit the variable (%ld/%ld)", &rvalue->where,
-			   (long) tlen, (long) len);
+			   "fit the variable (%wd/%wd)", &rvalue->where,
+			   tlen, len);
 	  len = tlen;
 	}
     }

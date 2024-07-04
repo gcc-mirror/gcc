@@ -7,7 +7,7 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-assembler {\.arch armv8.6-a\+crc\+fp16\+aes\+sha3\+rng} } } */
+/* { dg-final { scan-assembler {\.arch armv8.6-a\+rng\+crc\+aes\+sha3\+fp16\+nopauth\n} } } */
 
 /* Test one where the boundary of buffer size would overwrite the last
    character read when stitching the fgets-calls together.  With the

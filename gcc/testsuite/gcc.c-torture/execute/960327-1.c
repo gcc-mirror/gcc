@@ -1,10 +1,16 @@
 #include <stdio.h>
-g ()
+
+void abort (void);
+void exit (int);
+
+int
+g (void)
 {
   return '\n';
 }
 
-f ()
+void
+f (void)
 {
   char s[] = "abcedfg012345";
   char *sp = s + 12;
@@ -23,7 +29,8 @@ f ()
     abort ();
 }
 
-main ()
+int
+main (void)
 {
   f ();
   exit (0);

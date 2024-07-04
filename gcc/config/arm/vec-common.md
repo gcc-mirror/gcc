@@ -1,5 +1,5 @@
 ;; Machine Description for shared bits common to IWMMXT and Neon.
-;; Copyright (C) 2006-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2024 Free Software Foundation, Inc.
 ;; Written by CodeSourcery.
 ;;
 ;; This file is part of GCC.
@@ -366,7 +366,8 @@
   "@
    <mve_insn>.<supf>%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2
    * return neon_output_shift_immediate (\"vshl\", 'i', &operands[2], <MODE>mode, VALID_NEON_QREG_MODE (<MODE>mode), true);"
-  [(set_attr "type" "neon_shift_reg<q>, neon_shift_imm<q>")]
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_<supf><mode>"))
+  (set_attr "type" "neon_shift_reg<q>, neon_shift_imm<q>")]
 )
 
 (define_expand "vashl<mode>3"

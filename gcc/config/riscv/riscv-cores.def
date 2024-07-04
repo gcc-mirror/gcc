@@ -1,5 +1,5 @@
 /* List of supported core and tune info for RISC-V.
-   Copyright (C) 2020-2023 Free Software Foundation, Inc.
+   Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -37,7 +37,11 @@ RISCV_TUNE("rocket", generic, rocket_tune_info)
 RISCV_TUNE("sifive-3-series", generic, rocket_tune_info)
 RISCV_TUNE("sifive-5-series", generic, rocket_tune_info)
 RISCV_TUNE("sifive-7-series", sifive_7, sifive_7_tune_info)
+RISCV_TUNE("sifive-p400-series", sifive_p400, sifive_p400_tune_info)
+RISCV_TUNE("sifive-p600-series", sifive_p600, sifive_p600_tune_info)
 RISCV_TUNE("thead-c906", generic, thead_c906_tune_info)
+RISCV_TUNE("xiangshan-nanhu", xiangshan, xiangshan_nanhu_tune_info)
+RISCV_TUNE("generic-ooo", generic_ooo, generic_ooo_tune_info)
 RISCV_TUNE("size", generic, optimize_size_tune_info)
 
 #undef RISCV_TUNE
@@ -72,9 +76,24 @@ RISCV_CORE("sifive-s76",      "rv64imafdc", "sifive-7-series")
 
 RISCV_CORE("sifive-u54",      "rv64imafdc", "sifive-5-series")
 RISCV_CORE("sifive-u74",      "rv64imafdc", "sifive-7-series")
+RISCV_CORE("sifive-x280",     "rv64imafdcv_zfh_zba_zbb_zvfh_zvl512b", "sifive-7-series")
+RISCV_CORE("sifive-p450",     "rv64imafdc_za64rs_zic64b_zicbom_zicbop_zicboz_"
+			      "ziccamoa_ziccif_zicclsm_ziccrse_zicsr_zifencei_"
+			      "zihintntl_zihintpause_zihpm_zfhmin_zba_zbb_zbs",
+			      "sifive-p400-series")
+RISCV_CORE("sifive-p670",     "rv64imafdcv_za64rs_zic64b_zicbom_zicbop_zicboz_"
+			      "ziccamoa_ziccif_zicclsm_ziccrse_zicsr_zifencei_"
+			      "zihintntl_zihintpause_zihpm_zfhmin_zba_zbb_zbs_"
+			      "zvl128b_zvbb_zvknc_zvkng_zvksc_zvksg",
+			      "sifive-p600-series")
 
 RISCV_CORE("thead-c906",      "rv64imafdc_xtheadba_xtheadbb_xtheadbs_xtheadcmo_"
 			      "xtheadcondmov_xtheadfmemidx_xtheadmac_"
 			      "xtheadmemidx_xtheadmempair_xtheadsync",
 			      "thead-c906")
+
+RISCV_CORE("xiangshan-nanhu",      "rv64imafdc_zba_zbb_zbc_zbs_"
+			      "zbkb_zbkc_zbkx_zknd_zkne_zknh_zksed_zksh_"
+			      "svinval_zicbom_zicboz",
+			      "xiangshan-nanhu")
 #undef RISCV_CORE

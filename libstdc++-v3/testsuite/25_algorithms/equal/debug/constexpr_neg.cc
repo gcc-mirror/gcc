@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,7 +32,7 @@ test01()
 }
 
 static_assert(test01()); // { dg-error "non-constant condition" }
-// { dg-error "builtin_unreachable" "" { target *-*-* } 0 }
+// { dg-error "_Error_formatter::_M_error()" "" { target *-*-* } 0 }
 
 constexpr bool
 test02()

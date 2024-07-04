@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-2017, Florida State University            --
---          Copyright (C) 1995-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,9 +39,12 @@
 --  Preelaborate. This package is designed to be a bottom-level (leaf) package.
 
 with Ada.Unchecked_Conversion;
+
 with Interfaces.C;
+
 with System.Linux;
 with System.OS_Constants;
+with System.OS_Locks;
 
 package System.OS_Interface is
    pragma Preelaborate;
@@ -301,7 +304,7 @@ package System.OS_Interface is
    function To_pthread_t is
      new Ada.Unchecked_Conversion (unsigned_long, pthread_t);
 
-   type pthread_mutex_t      is limited private;
+   subtype pthread_mutex_t   is System.OS_Locks.pthread_mutex_t;
    type pthread_rwlock_t     is limited private;
    type pthread_cond_t       is limited private;
    type pthread_attr_t       is limited private;
@@ -652,15 +655,9 @@ private
 
    type pthread_mutexattr_t is record
       Data : char_array (1 .. OS_Constants.PTHREAD_MUTEXATTR_SIZE);
-   end  record;
+   end record;
    pragma Convention (C, pthread_mutexattr_t);
    for pthread_mutexattr_t'Alignment use Interfaces.C.int'Alignment;
-
-   type pthread_mutex_t is record
-      Data : char_array (1 .. OS_Constants.PTHREAD_MUTEX_SIZE);
-   end record;
-   pragma Convention (C, pthread_mutex_t);
-   for pthread_mutex_t'Alignment use Interfaces.C.unsigned_long'Alignment;
 
    type pthread_rwlockattr_t is record
       Data : char_array (1 .. OS_Constants.PTHREAD_RWLOCKATTR_SIZE);

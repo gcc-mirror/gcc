@@ -7,6 +7,6 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-assembler {\.arch armv8-a\+nofp} } } */
+/* { dg-final { scan-assembler {\.arch armv8-a\+nofp\n} } } */
 
 /* Test one with no entry in feature list.  */

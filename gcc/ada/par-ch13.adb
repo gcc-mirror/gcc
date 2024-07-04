@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -194,20 +194,16 @@ package body Ch13 is
    -- Get_Aspect_Specifications --
    -------------------------------
 
-   function Get_Aspect_Specifications
-     (Semicolon : Boolean := True) return List_Id
-   is
+   function Get_Aspect_Specifications (Semicolon : Boolean) return List_Id is
       A_Id    : Aspect_Id;
       Aspect  : Node_Id;
-      Aspects : List_Id;
+      Aspects : List_Id := Empty_List;
       OK      : Boolean;
 
       Opt : Boolean;
       --  True if current aspect takes an optional argument
 
    begin
-      Aspects := Empty_List;
-
       --  Check if aspect specification present
 
       if not Aspect_Specifications_Present then
@@ -909,25 +905,13 @@ package body Ch13 is
 
    procedure P_Aspect_Specifications
      (Decl      : Node_Id;
-      Semicolon : Boolean := True)
+      Semicolon : Boolean)
    is
-      Aspects : List_Id;
-      Ptr     : Source_Ptr;
+      Ptr     : constant Source_Ptr := Token_Ptr;
+      Aspects : constant List_Id := Get_Aspect_Specifications (Semicolon);
 
    begin
-      --  Aspect Specification is present
-
-      Ptr := Token_Ptr;
-
-      --  Here we have an aspect specification to scan, note that we don't
-      --  set the flag till later, because it may turn out that we have no
-      --  valid aspects in the list.
-
-      Aspects := Get_Aspect_Specifications (Semicolon);
-
-      --  Here if aspects present
-
-      if Is_Non_Empty_List (Aspects) then
+      if Is_Non_Empty_List (Aspects) then -- Aspects present?
 
          --  If Decl is Empty, we just ignore the aspects (the caller in this
          --  case has always issued an appropriate error message).
@@ -935,7 +919,7 @@ package body Ch13 is
          if Decl = Empty then
             null;
 
-         --  If Decl is Error, we ignore the aspects, and issue a message
+         --  Cases where we issue an error
 
          elsif Decl = Error
            or else not Permits_Aspect_Specifications (Decl)
@@ -945,7 +929,6 @@ package body Ch13 is
          --  Here aspects are allowed, and we store them
 
          else
-            Set_Parent (Aspects, Decl);
             Set_Aspect_Specifications (Decl, Aspects);
          end if;
       end if;

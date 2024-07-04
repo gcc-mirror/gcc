@@ -1,5 +1,7 @@
 /* Bombed with a segfault on powerpc-linux.  doloop.c generated wrong
    loop count.  */
+void abort (void);
+
 void
 foo (unsigned long *start, unsigned long *end)
 {

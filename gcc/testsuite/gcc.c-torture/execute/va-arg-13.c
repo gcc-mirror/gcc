@@ -2,6 +2,9 @@
 
 #include <stdarg.h>
 
+void abort (void);
+void exit (int);
+
 typedef struct {
   void *stream;
   va_list ap;

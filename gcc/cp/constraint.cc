@@ -1,5 +1,5 @@
 /* Processing rules for constraints.
-   Copyright (C) 2013-2023 Free Software Foundation, Inc.
+   Copyright (C) 2013-2024 Free Software Foundation, Inc.
    Contributed by Andrew Sutton (andrew.n.sutton@gmail.com)
 
 This file is part of GCC.
@@ -85,7 +85,7 @@ struct subst_info
   /* True if we should not diagnose errors.  */
   bool quiet() const
   {
-    return complain == tf_none;
+    return !(complain & tf_warning_or_error);
   }
 
   /* True if we should diagnose errors.  */
@@ -240,7 +240,9 @@ combine_constraint_expressions (tree lhs, tree rhs)
     return rhs;
   if (!rhs)
     return lhs;
-  return finish_constraint_and_expr (input_location, lhs, rhs);
+  /* Use UNKNOWN_LOCATION so write_template_args can tell the difference
+     between this and a && the user wrote.  */
+  return finish_constraint_and_expr (UNKNOWN_LOCATION, lhs, rhs);
 }
 
 /* Extract the template-id from a concept check. For standard and variable
@@ -620,33 +622,29 @@ parameter_mapping_equivalent_p (tree t1, tree t2)
 
 struct norm_info : subst_info
 {
-  explicit norm_info (tsubst_flags_t cmp)
-    : norm_info (NULL_TREE, cmp)
+  explicit norm_info (bool diag)
+    : norm_info (NULL_TREE, diag)
   {}
 
   /* Construct a top-level context for DECL.  */
 
-  norm_info (tree in_decl, tsubst_flags_t complain)
-    : subst_info (tf_warning_or_error | complain, in_decl)
+  norm_info (tree in_decl, bool diag)
+    : subst_info (tf_warning_or_error, in_decl),
+      generate_diagnostics (diag)
   {
     if (in_decl)
       {
 	initial_parms = DECL_TEMPLATE_PARMS (in_decl);
-	if (generate_diagnostics ())
+	if (generate_diagnostics)
 	  context = build_tree_list (NULL_TREE, in_decl);
       }
     else
       initial_parms = current_template_parms;
   }
 
-  bool generate_diagnostics() const
-  {
-    return complain & tf_norm;
-  }
-
   void update_context(tree expr, tree args)
   {
-    if (generate_diagnostics ())
+    if (generate_diagnostics)
       {
 	tree map = build_parameter_mapping (expr, args, ctx_parms ());
 	context = tree_cons (map, expr, context);
@@ -677,6 +675,10 @@ struct norm_info : subst_info
      template parameters of ORIG_DECL.  */
 
   tree initial_parms = NULL_TREE;
+
+  /* Whether to build diagnostic information during normalization.  */
+
+  bool generate_diagnostics;
 };
 
 static tree normalize_expression (tree, tree, norm_info);
@@ -691,7 +693,7 @@ normalize_logical_operation (tree t, tree args, tree_code c, norm_info info)
   tree t1 = normalize_expression (TREE_OPERAND (t, 1), args, info);
 
   /* Build a new info object for the constraint.  */
-  tree ci = info.generate_diagnostics()
+  tree ci = info.generate_diagnostics
     ? build_tree_list (t, info.context)
     : NULL_TREE;
 
@@ -775,7 +777,7 @@ normalize_concept_check (tree check, tree args, norm_info info)
   if (!norm_cache)
     norm_cache = hash_table<norm_hasher>::create_ggc (31);
   norm_entry *entry = nullptr;
-  if (!info.generate_diagnostics ())
+  if (!info.generate_diagnostics)
     {
       /* Cache the normal form of the substituted concept-id (when not
 	 diagnosing).  */
@@ -829,7 +831,7 @@ normalize_atom (tree t, tree args, norm_info info)
   if (info.in_decl && concept_definition_p (info.in_decl))
     ATOMIC_CONSTR_EXPR_FROM_CONCEPT_P (atom) = true;
 
-  if (!info.generate_diagnostics ())
+  if (!info.generate_diagnostics)
     {
       /* Cache the ATOMIC_CONSTRs that we return, so that sat_hasher::equal
 	 later can cheaply compare two atoms using just pointer equality.  */
@@ -908,7 +910,7 @@ get_normalized_constraints_from_info (tree ci, tree in_decl, bool diag = false)
 
   /* Substitution errors during normalization are fatal.  */
   ++processing_template_decl;
-  norm_info info (in_decl, diag ? tf_norm : tf_none);
+  norm_info info (in_decl, diag);
   tree t = get_normalized_constraints (CI_ASSOCIATED_CONSTRAINTS (ci), info);
   --processing_template_decl;
 
@@ -1010,7 +1012,7 @@ normalize_concept_definition (tree tmpl, bool diag)
   gcc_assert (TREE_CODE (tmpl) == TEMPLATE_DECL);
   tree def = get_concept_definition (DECL_TEMPLATE_RESULT (tmpl));
   ++processing_template_decl;
-  norm_info info (tmpl, diag ? tf_norm : tf_none);
+  norm_info info (tmpl, diag);
   tree norm = get_normalized_constraints (def, info);
   --processing_template_decl;
 
@@ -1033,7 +1035,7 @@ normalize_constraint_expression (tree expr, norm_info info)
   if (!expr || expr == error_mark_node)
     return expr;
 
-  if (!info.generate_diagnostics ())
+  if (!info.generate_diagnostics)
     if (tree *p = hash_map_safe_get (normalized_map, expr))
       return *p;
 
@@ -1041,7 +1043,7 @@ normalize_constraint_expression (tree expr, norm_info info)
   tree norm = get_normalized_constraints (expr, info);
   --processing_template_decl;
 
-  if (!info.generate_diagnostics ())
+  if (!info.generate_diagnostics)
     hash_map_safe_put<hm_ggc> (normalized_map, expr, norm);
 
   return norm;
@@ -1605,9 +1607,12 @@ finish_shorthand_constraint (tree decl, tree constr)
     check = ovl_make (tmpl);
   check = build_concept_check (check, arg, args, tf_warning_or_error);
 
-  /* Make the check a fold-expression if needed.  */
+  /* Make the check a fold-expression if needed.
+     Use UNKNOWN_LOCATION so write_template_args can tell the
+     difference between this and a fold the user wrote.  */
   if (apply_to_each_p && declared_pack_p)
-    check = finish_left_unary_fold_expr (check, TRUTH_ANDIF_EXPR);
+    check = finish_left_unary_fold_expr (UNKNOWN_LOCATION,
+					 check, TRUTH_ANDIF_EXPR);
 
   return check;
 }
@@ -1986,8 +1991,9 @@ hash_placeholder_constraint (tree c)
 static tree
 tsubst_valid_expression_requirement (tree t, tree args, sat_info info)
 {
-  tree r = tsubst_expr (t, args, tf_none, info.in_decl);
-  if (convert_to_void (r, ICV_STATEMENT, tf_none) != error_mark_node)
+  tsubst_flags_t quiet = info.complain & ~tf_warning_or_error;
+  tree r = tsubst_expr (t, args, quiet, info.in_decl);
+  if (convert_to_void (r, ICV_STATEMENT, quiet) != error_mark_node)
     return r;
 
   if (info.diagnose_unsatisfaction_p ())
@@ -2023,6 +2029,8 @@ tsubst_simple_requirement (tree t, tree args, sat_info info)
   tree expr = tsubst_valid_expression_requirement (t0, args, info);
   if (expr == error_mark_node)
     return error_mark_node;
+  if (processing_template_decl)
+    return finish_simple_requirement (EXPR_LOCATION (t), expr);
   return boolean_true_node;
 }
 
@@ -2032,7 +2040,8 @@ tsubst_simple_requirement (tree t, tree args, sat_info info)
 static tree
 tsubst_type_requirement_1 (tree t, tree args, sat_info info, location_t loc)
 {
-  tree r = tsubst (t, args, tf_none, info.in_decl);
+  tsubst_flags_t quiet = info.complain & ~tf_warning_or_error;
+  tree r = tsubst (t, args, quiet, info.in_decl);
   if (r != error_mark_node)
     return r;
 
@@ -2063,6 +2072,8 @@ tsubst_type_requirement (tree t, tree args, sat_info info)
   tree type = tsubst_type_requirement_1 (t0, args, info, EXPR_LOCATION (t));
   if (type == error_mark_node)
     return error_mark_node;
+  if (processing_template_decl)
+    return finish_type_requirement (EXPR_LOCATION (t), type);
   return boolean_true_node;
 }
 
@@ -2119,9 +2130,12 @@ tsubst_compound_requirement (tree t, tree args, sat_info info)
 
   location_t loc = cp_expr_loc_or_input_loc (expr);
 
+  subst_info quiet (info.complain & ~tf_warning_or_error, info.in_decl);
+
   /* Check the noexcept condition.  */
   bool noexcept_p = COMPOUND_REQ_NOEXCEPT_P (t);
-  if (noexcept_p && !expr_noexcept_p (expr, tf_none))
+  if (noexcept_p && !processing_template_decl
+      && !expr_noexcept_p (expr, quiet.complain))
     {
       if (info.diagnose_unsatisfaction_p ())
 	inform (loc, "%qE is not %<noexcept%>", expr);
@@ -2134,10 +2148,8 @@ tsubst_compound_requirement (tree t, tree args, sat_info info)
   if (type == error_mark_node)
     return error_mark_node;
 
-  subst_info quiet (tf_none, info.in_decl);
-
   /* Check expression against the result type.  */
-  if (type)
+  if (type && !processing_template_decl)
     {
       if (tree placeholder = type_uses_auto (type))
 	{
@@ -2177,6 +2189,9 @@ tsubst_compound_requirement (tree t, tree args, sat_info info)
 	}
     }
 
+  if (processing_template_decl)
+    return finish_compound_requirement (EXPR_LOCATION (t),
+					expr, type, noexcept_p);
   return boolean_true_node;
 }
 
@@ -2185,7 +2200,16 @@ tsubst_compound_requirement (tree t, tree args, sat_info info)
 static tree
 tsubst_nested_requirement (tree t, tree args, sat_info info)
 {
-  sat_info quiet (tf_none, info.in_decl);
+  if (processing_template_decl)
+    {
+      tree req = TREE_OPERAND (t, 0);
+      req = tsubst_constraint (req, args, info.complain, info.in_decl);
+      if (req == error_mark_node)
+	return error_mark_node;
+      return finish_nested_requirement (EXPR_LOCATION (t), req);
+    }
+
+  sat_info quiet (info.complain & ~tf_warning_or_error, info.in_decl);
   tree result = constraint_satisfaction_value (t, args, quiet);
   if (result == boolean_true_node)
     return boolean_true_node;
@@ -2325,18 +2349,26 @@ tsubst_requires_expr (tree t, tree args, sat_info info)
 
   args = add_extra_args (REQUIRES_EXPR_EXTRA_ARGS (t), args,
 			 info.complain, info.in_decl);
-  if (processing_template_decl)
+  if (processing_template_decl
+      && !processing_constraint_expression_p ())
     {
       /* We're partially instantiating a generic lambda.  Substituting into
 	 this requires-expression now may cause its requirements to get
 	 checked out of order, so instead just remember the template
-	 arguments and wait until we can substitute them all at once.  */
+	 arguments and wait until we can substitute them all at once.
+
+	 Except if this requires-expr is part of associated constraints
+	 that we're substituting into directly (for e.g. declaration
+	 matching or dguide constraint rewriting), in which case we need
+	 to partially substitute.  */
       t = copy_node (t);
+      REQUIRES_EXPR_EXTRA_ARGS (t) = NULL_TREE;
       REQUIRES_EXPR_EXTRA_ARGS (t) = build_extra_args (t, args, info.complain);
       return t;
     }
 
-  if (tree parms = REQUIRES_EXPR_PARMS (t))
+  tree parms = REQUIRES_EXPR_PARMS (t);
+  if (parms)
     {
       parms = tsubst_constraint_variables (parms, args, info);
       if (parms == error_mark_node)
@@ -2344,10 +2376,13 @@ tsubst_requires_expr (tree t, tree args, sat_info info)
     }
 
   tree result = boolean_true_node;
+  if (processing_template_decl)
+    result = NULL_TREE;
   for (tree reqs = REQUIRES_EXPR_REQS (t); reqs; reqs = TREE_CHAIN (reqs))
     {
       tree req = TREE_VALUE (reqs);
-      if (tsubst_requirement (req, args, info) == error_mark_node)
+      req = tsubst_requirement (req, args, info);
+      if (req == error_mark_node)
 	{
 	  result = boolean_false_node;
 	  if (info.diagnose_unsatisfaction_p ())
@@ -2355,7 +2390,11 @@ tsubst_requires_expr (tree t, tree args, sat_info info)
 	  else
 	    break;
 	}
+      else if (processing_template_decl)
+	result = tree_cons (NULL_TREE, req, result);
     }
+  if (processing_template_decl && result != boolean_false_node)
+    result = finish_requires_expr (EXPR_LOCATION (t), parms, nreverse (result));
   return result;
 }
 
@@ -3151,7 +3190,7 @@ normalize_placeholder_type_constraints (tree t, bool diag)
 			   ? TMPL_PARMS_DEPTH (initial_parms) + 1 : 1),
 		 make_tree_vec (0), initial_parms);
 
-  norm_info info (diag ? tf_norm : tf_none);
+  norm_info info (diag);
   info.initial_parms = initial_parms;
   return normalize_constraint_expression (constr, info);
 }
@@ -3187,7 +3226,7 @@ satisfy_nondeclaration_constraints (tree t, tree args, sat_info info)
     }
   else if (TREE_CODE (t) == NESTED_REQ)
     {
-      norm_info ninfo (info.noisy () ? tf_norm : tf_none);
+      norm_info ninfo (info.noisy ());
       /* The TREE_TYPE contains the set of template parameters that were in
 	 scope for this nested requirement; use them as the initial template
 	 parameters for normalization.  */
@@ -3702,17 +3741,44 @@ diagnose_trait_expr (tree expr, tree args)
     case CPTK_HAS_TRIVIAL_DESTRUCTOR:
       inform (loc, "  %qT is not trivially destructible", t1);
       break;
+    case CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS:
+      inform (loc, "  %qT does not have unique object representations", t1);
+      break;
     case CPTK_HAS_VIRTUAL_DESTRUCTOR:
       inform (loc, "  %qT does not have a virtual destructor", t1);
       break;
     case CPTK_IS_ABSTRACT:
       inform (loc, "  %qT is not an abstract class", t1);
       break;
+    case CPTK_IS_AGGREGATE:
+      inform (loc, "  %qT is not an aggregate", t1);
+      break;
+    case CPTK_IS_ARRAY:
+      inform (loc, "  %qT is not an array", t1);
+      break;
+    case CPTK_IS_ASSIGNABLE:
+      inform (loc, "  %qT is not assignable from %qT", t1, t2);
+      break;
     case CPTK_IS_BASE_OF:
       inform (loc, "  %qT is not a base of %qT", t1, t2);
       break;
+    case CPTK_IS_BOUNDED_ARRAY:
+      inform (loc, "  %qT is not a bounded array", t1);
+      break;
     case CPTK_IS_CLASS:
       inform (loc, "  %qT is not a class", t1);
+      break;
+    case CPTK_IS_CONST:
+      inform (loc, "  %qT is not a const type", t1);
+      break;
+    case CPTK_IS_CONSTRUCTIBLE:
+      if (!t2)
+    inform (loc, "  %qT is not default constructible", t1);
+      else
+    inform (loc, "  %qT is not constructible from %qE", t1, t2);
+      break;
+    case CPTK_IS_CONVERTIBLE:
+      inform (loc, "  %qT is not convertible from %qE", t2, t1);
       break;
     case CPTK_IS_EMPTY:
       inform (loc, "  %qT is not an empty class", t1);
@@ -3723,11 +3789,50 @@ diagnose_trait_expr (tree expr, tree args)
     case CPTK_IS_FINAL:
       inform (loc, "  %qT is not a final class", t1);
       break;
+    case CPTK_IS_FUNCTION:
+      inform (loc, "  %qT is not a function", t1);
+      break;
+    case CPTK_IS_INVOCABLE:
+      if (!t2)
+    inform (loc, "  %qT is not invocable", t1);
+      else
+    inform (loc, "  %qT is not invocable by %qE", t1, t2);
+      break;
     case CPTK_IS_LAYOUT_COMPATIBLE:
       inform (loc, "  %qT is not layout compatible with %qT", t1, t2);
       break;
     case CPTK_IS_LITERAL_TYPE:
       inform (loc, "  %qT is not a literal type", t1);
+      break;
+    case CPTK_IS_MEMBER_FUNCTION_POINTER:
+      inform (loc, "  %qT is not a member function pointer", t1);
+      break;
+    case CPTK_IS_MEMBER_OBJECT_POINTER:
+      inform (loc, "  %qT is not a member object pointer", t1);
+      break;
+    case CPTK_IS_MEMBER_POINTER:
+      inform (loc, "  %qT is not a member pointer", t1);
+      break;
+    case CPTK_IS_NOTHROW_ASSIGNABLE:
+      inform (loc, "  %qT is not nothrow assignable from %qT", t1, t2);
+      break;
+    case CPTK_IS_NOTHROW_CONSTRUCTIBLE:
+      if (!t2)
+	inform (loc, "  %qT is not nothrow default constructible", t1);
+      else
+	inform (loc, "  %qT is not nothrow constructible from %qE", t1, t2);
+      break;
+    case CPTK_IS_NOTHROW_CONVERTIBLE:
+	  inform (loc, "  %qT is not nothrow convertible from %qE", t2, t1);
+      break;
+    case CPTK_IS_NOTHROW_INVOCABLE:
+	if (!t2)
+	  inform (loc, "  %qT is not nothrow invocable", t1);
+	else
+	  inform (loc, "  %qT is not nothrow invocable by %qE", t1, t2);
+	break;
+    case CPTK_IS_OBJECT:
+      inform (loc, "  %qT is not an object type", t1);
       break;
     case CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF:
       inform (loc, "  %qT is not pointer-interconvertible base of %qT",
@@ -3736,11 +3841,20 @@ diagnose_trait_expr (tree expr, tree args)
     case CPTK_IS_POD:
       inform (loc, "  %qT is not a POD type", t1);
       break;
+    case CPTK_IS_POINTER:
+      inform (loc, "  %qT is not a pointer", t1);
+      break;
     case CPTK_IS_POLYMORPHIC:
       inform (loc, "  %qT is not a polymorphic type", t1);
       break;
+    case CPTK_IS_REFERENCE:
+      inform (loc, "  %qT is not a reference", t1);
+      break;
     case CPTK_IS_SAME:
       inform (loc, "  %qT is not the same as %qT", t1, t2);
+      break;
+    case CPTK_IS_SCOPED_ENUM:
+      inform (loc, "  %qT is not a scoped enum", t1);
       break;
     case CPTK_IS_STD_LAYOUT:
       inform (loc, "  %qT is not an standard layout type", t1);
@@ -3748,29 +3862,8 @@ diagnose_trait_expr (tree expr, tree args)
     case CPTK_IS_TRIVIAL:
       inform (loc, "  %qT is not a trivial type", t1);
       break;
-    case CPTK_IS_UNION:
-      inform (loc, "  %qT is not a union", t1);
-      break;
-    case CPTK_IS_AGGREGATE:
-      inform (loc, "  %qT is not an aggregate", t1);
-      break;
-    case CPTK_IS_TRIVIALLY_COPYABLE:
-      inform (loc, "  %qT is not trivially copyable", t1);
-      break;
-    case CPTK_IS_ASSIGNABLE:
-      inform (loc, "  %qT is not assignable from %qT", t1, t2);
-      break;
     case CPTK_IS_TRIVIALLY_ASSIGNABLE:
       inform (loc, "  %qT is not trivially assignable from %qT", t1, t2);
-      break;
-    case CPTK_IS_NOTHROW_ASSIGNABLE:
-      inform (loc, "  %qT is not nothrow assignable from %qT", t1, t2);
-      break;
-    case CPTK_IS_CONSTRUCTIBLE:
-      if (!t2)
-	inform (loc, "  %qT is not default constructible", t1);
-      else
-	inform (loc, "  %qT is not constructible from %qE", t1, t2);
       break;
     case CPTK_IS_TRIVIALLY_CONSTRUCTIBLE:
       if (!t2)
@@ -3778,20 +3871,20 @@ diagnose_trait_expr (tree expr, tree args)
       else
 	inform (loc, "  %qT is not trivially constructible from %qE", t1, t2);
       break;
-    case CPTK_IS_NOTHROW_CONSTRUCTIBLE:
-      if (!t2)
-	inform (loc, "  %qT is not nothrow default constructible", t1);
-      else
-	inform (loc, "  %qT is not nothrow constructible from %qE", t1, t2);
+    case CPTK_IS_TRIVIALLY_COPYABLE:
+      inform (loc, "  %qT is not trivially copyable", t1);
       break;
-    case CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS:
-      inform (loc, "  %qT does not have unique object representations", t1);
+    case CPTK_IS_UNBOUNDED_ARRAY:
+      inform (loc, "  %qT is not an unbounded array", t1);
       break;
-    case CPTK_IS_CONVERTIBLE:
-      inform (loc, "  %qT is not convertible from %qE", t2, t1);
+    case CPTK_IS_UNION:
+      inform (loc, "  %qT is not a union", t1);
       break;
-    case CPTK_IS_NOTHROW_CONVERTIBLE:
-	inform (loc, "  %qT is not nothrow convertible from %qE", t2, t1);
+    case CPTK_IS_VOLATILE:
+      inform (loc, "  %qT is not a volatile type", t1);
+      break;
+    case CPTK_RANK:
+      inform (loc, "  %qT cannot yield a rank", t1);
       break;
     case CPTK_REF_CONSTRUCTS_FROM_TEMPORARY:
       inform (loc, "  %qT is not a reference that binds to a temporary "

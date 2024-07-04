@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -52,8 +52,7 @@ class GenericParam;
 class LifetimeParam;
 class ConstGenericParam;
 class TraitItem;
-class InherentImplItem;
-class TraitImplItem;
+class AssociatedItem;
 struct Crate;
 class PathExpr;
 
@@ -77,6 +76,7 @@ class QualifiedPathInType;
 class ExprWithBlock;
 class LiteralExpr;
 class AttrInputLiteral;
+class AttrInputMacro;
 class MetaItemLitExpr;
 class MetaItemPathLit;
 class OperatorExpr;
@@ -135,12 +135,8 @@ class WhileLetLoopExpr;
 class ForLoopExpr;
 class IfExpr;
 class IfExprConseqElse;
-class IfExprConseqIf;
 class IfLetExpr;
-class IfExprConseqIfLet;
 class IfLetExprConseqElse;
-class IfLetExprConseqIf;
-class IfLetExprConseqIfLet;
 struct MatchArm;
 // class MatchCase;
 // class MatchCaseBlockExpr;
@@ -149,26 +145,31 @@ struct MatchCase;
 class MatchExpr;
 class AwaitExpr;
 class AsyncBlockExpr;
+enum class InlineAsmOptions;
+struct AnonConst;
+struct InlineAsmRegOrRegClass;
+struct InlineAsmOperand;
+struct InlineAsmPlaceHolder;
+struct InlineAsmTemplatePiece;
+struct TupleClobber;
+struct TupleTemplateStr;
 class InlineAsm;
 
 // rust-stmt.h
 class EmptyStmt;
 class LetStmt;
 class ExprStmt;
-class ExprStmtWithoutBlock;
-class ExprStmtWithBlock;
 
 // rust-item.h
 class TypeParam;
 class WhereClauseItem;
 class LifetimeWhereClauseItem;
 class TypeBoundWhereClauseItem;
-struct WhereClause;
-struct SelfParam;
-struct FunctionQualifiers;
-struct FunctionParam;
+class WhereClause;
+class SelfParam;
+class FunctionQualifiers;
+class FunctionParam;
 struct Visibility;
-class Method;
 class VisItem;
 class Module;
 class ExternCrate;
@@ -180,9 +181,9 @@ class UseDeclaration;
 class Function;
 class TypeAlias;
 class Struct;
-struct StructField;
+class StructField;
 class StructStruct;
-struct TupleField;
+class TupleField;
 class TupleStruct;
 class EnumItem;
 class EnumItemTuple;
@@ -192,10 +193,6 @@ class Enum;
 class Union;
 class ConstantItem;
 class StaticItem;
-struct TraitFunctionDecl;
-class TraitItemFunc;
-struct TraitMethodDecl;
-class TraitItemMethod;
 class TraitItemConst;
 class TraitItemType;
 class Trait;
@@ -203,8 +200,9 @@ class Impl;
 class InherentImpl;
 class TraitImpl;
 class ExternalItem;
+class ExternalTypeItem;
 class ExternalStaticItem;
-struct NamedFunctionParam;
+class NamedFunctionParam;
 class ExternalFunctionItem;
 class ExternBlock;
 
@@ -227,6 +225,7 @@ class MetaListNameValueStr;
 class LiteralPattern;
 class IdentifierPattern;
 class WildcardPattern;
+class RestPattern;
 class RangePatternBound;
 class RangePatternBoundLiteral;
 class RangePatternBoundPath;
@@ -238,7 +237,7 @@ class StructPatternField;
 class StructPatternFieldTuplePat;
 class StructPatternFieldIdentPat;
 class StructPatternFieldIdent;
-struct StructPatternElements;
+class StructPatternElements;
 class StructPattern;
 class TupleStructItems;
 class TupleStructItemsNoRange;

@@ -1,5 +1,5 @@
 /* Definitions for specs for GNU Modula-2.
-   Copyright (C) 2001-2023 Free Software Foundation, Inc.
+   Copyright (C) 2001-2024 Free Software Foundation, Inc.
    Contributed by Gaius Mulley.
 
 This file is part of GCC.
@@ -23,10 +23,14 @@ along with GCC; see the file COPYING3.  If not see
 
 /* A spec for the 'integrated' preprocessor implementation for Modula-2.  */
 #define M2CPP \
-  "%{E|M|MM|fcpp: %{E} -fcpp-begin " \
+  "%{E|M|MM|fcpp: %{E} %{MF} -fcpp-begin " \
   "      %{!E:-E} %(cpp_unique_options) -traditional-cpp -ansi " \
   "      -fcpp-end %{B*} %{save-temps*} ; \
      : %{v} %I %{B*} %{save-temps*} } "
+
+#define MDMMD \
+  " %{MD:-MD %{!o:%b.d}%{o*:%.d%*} %{!MT:-MT %b%O} %{MT} %{MQ} %{MF}} " \
+  " %{MMD:-MMD %{!o:%b.d}%{o*:%.d%*} %{!MT:-MT %b%O} %{MT} %{MQ} %{MF}} "
 
 /* We have three modes:
    1. When the preprocessing step is explict and there is no following
@@ -43,9 +47,7 @@ along with GCC; see the file COPYING3.  If not see
    "%{E|M|MM:\
       cc1gm2 " M2CPP " %{!fcpp:-fcpp;:%{fcpp}} %{fm2-pathname*} %i } \
     %{!E:%{!M:%{!MM:\
-      cc1gm2 " M2CPP " %(cc1_options) %{fm2-pathname*} %i %{c} \
-      %{!fcpp:%{MD|MMD|MF*: \
-		%eto generate dependencies you must specify '-fcpp' }} \
+      cc1gm2 " M2CPP MDMMD " %(cc1_options) %{fm2-pathname*} %i %{c} \
       %{!fsyntax-only:%(invoke_as)} \
     }}}", 0, 0, 0},
   {".m2i", "@modula-2-cpp-output", 0, 0, 0},

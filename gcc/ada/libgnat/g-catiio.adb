@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2023, AdaCore                     --
+--                     Copyright (C) 1999-2024, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -849,7 +849,7 @@ package body GNAT.Calendar.Time_IO is
       begin
          Advance_Digits (Num_Digits => 1);
 
-         while Index <= Date'Length and then Symbol in '0' .. '9' loop
+         while Index <= Date'Last and then Symbol in '0' .. '9' loop
             Advance;
          end loop;
 
@@ -1005,7 +1005,7 @@ package body GNAT.Calendar.Time_IO is
 
       --  Check for trailing characters
 
-      if Index /= Date'Length + 1 then
+      if Index /= Date'Last + 1 then
          raise Wrong_Syntax;
       end if;
 

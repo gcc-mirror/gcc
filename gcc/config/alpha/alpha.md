@@ -1,5 +1,5 @@
 ;; Machine description for DEC Alpha for GNU C compiler
-;; Copyright (C) 1992-2023 Free Software Foundation, Inc.
+;; Copyright (C) 1992-2024 Free Software Foundation, Inc.
 ;; Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 ;;
 ;; This file is part of GCC.
@@ -683,41 +683,10 @@
   [(set_attr "type" "imul")
    (set_attr "opsize" "<mode>")])
 
-(define_expand "umuldi3_highpart"
-  [(set (match_operand:DI 0 "register_operand")
-	(truncate:DI
-	 (lshiftrt:TI
-	  (mult:TI (zero_extend:TI
-		     (match_operand:DI 1 "register_operand"))
-		   (match_operand:DI 2 "reg_or_8bit_operand"))
-	  (const_int 64))))]
-  ""
-{
-  if (REG_P (operands[2]))
-    operands[2] = gen_rtx_ZERO_EXTEND (TImode, operands[2]);
-})
-
-(define_insn "*umuldi3_highpart_reg"
+(define_insn "umuldi3_highpart"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(truncate:DI
-	 (lshiftrt:TI
-	  (mult:TI (zero_extend:TI
-		     (match_operand:DI 1 "register_operand" "r"))
-		   (zero_extend:TI
-		     (match_operand:DI 2 "register_operand" "r")))
-	  (const_int 64))))]
-  ""
-  "umulh %1,%2,%0"
-  [(set_attr "type" "imul")
-   (set_attr "opsize" "udi")])
-
-(define_insn "*umuldi3_highpart_const"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(truncate:DI
-	 (lshiftrt:TI
-	  (mult:TI (zero_extend:TI (match_operand:DI 1 "register_operand" "r"))
-		   (match_operand:TI 2 "cint8_operand" "I"))
-	  (const_int 64))))]
+	(umul_highpart:DI (match_operand:DI 1 "reg_or_0_operand" "%rJ")
+			  (match_operand:DI 2 "reg_or_8bit_operand" "rI")))]
   ""
   "umulh %1,%2,%0"
   [(set_attr "type" "imul")
@@ -756,7 +725,8 @@
 	(sign_extend:DI (match_operand:SI 2 "nonimmediate_operand")))
    (parallel [(set (match_dup 5)
 		   (sign_extend:DI
-		    (any_divmod:SI (match_dup 3) (match_dup 4))))
+		    (any_divmod:SI (truncate:SI (match_dup 3))
+				   (truncate:SI (match_dup 4)))))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "nonimmediate_operand")
@@ -782,9 +752,10 @@
 
 (define_insn_and_split "*divmodsi_internal_er"
   [(set (match_operand:DI 0 "register_operand" "=c")
-	(sign_extend:DI (match_operator:SI 3 "divmod_operator"
-			[(match_operand:DI 1 "register_operand" "a")
-			 (match_operand:DI 2 "register_operand" "b")])))
+	(sign_extend:DI
+	 (match_operator:SI 3 "divmod_operator"
+	  [(truncate:SI (match_operand:DI 1 "register_operand" "a"))
+	   (truncate:SI (match_operand:DI 2 "register_operand" "b"))])))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
   "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
@@ -826,8 +797,8 @@
 (define_insn "*divmodsi_internal_er_1"
   [(set (match_operand:DI 0 "register_operand" "=c")
 	(sign_extend:DI (match_operator:SI 3 "divmod_operator"
-                        [(match_operand:DI 1 "register_operand" "a")
-                         (match_operand:DI 2 "register_operand" "b")])))
+	 [(truncate:SI (match_operand:DI 1 "register_operand" "a"))
+	  (truncate:SI (match_operand:DI 2 "register_operand" "b"))])))
    (use (match_operand:DI 4 "register_operand" "c"))
    (use (match_operand 5 "const_int_operand"))
    (clobber (reg:DI 23))
@@ -839,9 +810,10 @@
 
 (define_insn "*divmodsi_internal"
   [(set (match_operand:DI 0 "register_operand" "=c")
-	(sign_extend:DI (match_operator:SI 3 "divmod_operator"
-			[(match_operand:DI 1 "register_operand" "a")
-			 (match_operand:DI 2 "register_operand" "b")])))
+	(sign_extend:DI
+	 (match_operator:SI 3 "divmod_operator"
+	  [(truncate:SI (match_operand:DI 1 "register_operand" "a"))
+	   (truncate:SI (match_operand:DI 2 "register_operand" "b"))])))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
   "TARGET_ABI_OSF"

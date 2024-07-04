@@ -1,5 +1,5 @@
 /* Define builtin-in macros for the C family front ends.
-   Copyright (C) 2002-2023 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -279,7 +279,7 @@ builtin_define_float_constants (const char *name_prefix,
   /* The difference between 1 and the least value greater than 1 that is
      representable in the given floating point type, b**(1-p).  */
   sprintf (name, "__%s_EPSILON__", name_prefix);
-  if (fmt->pnan < fmt->p && (c_dialect_cxx () || !flag_isoc2x))
+  if (fmt->pnan < fmt->p && (c_dialect_cxx () || !flag_isoc23))
     /* This is an IBM extended double format, so 1.0 + any double is
        representable precisely.  */
       sprintf (buf, "0x1p%d", fmt->emin - fmt->p);
@@ -318,7 +318,7 @@ builtin_define_float_constants (const char *name_prefix,
       builtin_define_with_int_value (name, 1);
     }
 
-  /* For C2x *_IS_IEC_60559.  0 means the type does not match an IEC
+  /* For C23 *_IS_IEC_60559.  0 means the type does not match an IEC
      60559 format, 1 that it matches a format but not necessarily
      operations.  */
   sprintf (name, "__%s_IS_IEC_60559__", name_prefix);
@@ -954,7 +954,10 @@ c_cpp_builtins (cpp_reader *pfile)
 	}
 
       if (cxx_dialect >= cxx11)
-        cpp_define (pfile, "__GXX_EXPERIMENTAL_CXX0X__");
+	{
+	  cpp_define (pfile, "__GXX_EXPERIMENTAL_CXX0X__");
+	  cpp_define (pfile, "__GXX_CONSTEXPR_ASM__");
+	}
 
       /* Binary literals have been allowed in g++ before C++11
 	 and were standardized for C++14.  */
@@ -1023,7 +1026,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	{
 	  /* Set feature test macros for C++17.  */
 	  cpp_define (pfile, "__cpp_unicode_characters=201411L");
-	  cpp_define (pfile, "__cpp_static_assert=201411L");
+	  if (cxx_dialect <= cxx23)
+	    cpp_define (pfile, "__cpp_static_assert=201411L");
 	  cpp_define (pfile, "__cpp_namespace_attributes=201411L");
 	  cpp_define (pfile, "__cpp_enumerator_attributes=201411L");
 	  cpp_define (pfile, "__cpp_nested_namespace_definitions=201411L");
@@ -1043,7 +1047,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	  /* Old macro, superseded by
 	     __cpp_nontype_template_parameter_auto.  */
 	  cpp_define (pfile, "__cpp_template_auto=201606L");
-	  cpp_define (pfile, "__cpp_structured_bindings=201606L");
+	  if (cxx_dialect <= cxx23)
+	    cpp_define (pfile, "__cpp_structured_bindings=201606L");
 	  cpp_define (pfile, "__cpp_variadic_using=201611L");
 	  cpp_define (pfile, "__cpp_guaranteed_copy_elision=201606L");
 	  cpp_define (pfile, "__cpp_nontype_template_parameter_auto=201606L");
@@ -1058,7 +1063,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	    cpp_define (pfile, "__cpp_constexpr=202002L");
 	  cpp_define (pfile, "__cpp_constexpr_in_decltype=201711L");
 	  cpp_define (pfile, "__cpp_conditional_explicit=201806L");
-	  cpp_define (pfile, "__cpp_consteval=201811L");
+	  cpp_define (pfile, "__cpp_consteval=202211L");
 	  cpp_define (pfile, "__cpp_constinit=201907L");
 	  cpp_define (pfile, "__cpp_deduction_guides=201907L");
 	  cpp_define (pfile, "__cpp_nontype_template_args=201911L");
@@ -1081,11 +1086,17 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_named_character_escapes=202207L");
 	  cpp_define (pfile, "__cpp_static_call_operator=202207L");
 	  cpp_define (pfile, "__cpp_implicit_move=202207L");
+	  cpp_define (pfile, "__cpp_explicit_this_parameter=202110L");
 	}
       if (cxx_dialect > cxx23)
 	{
 	  /* Set feature test macros for C++26.  */
 	  cpp_define (pfile, "__cpp_constexpr=202306L");
+	  cpp_define (pfile, "__cpp_static_assert=202306L");
+	  cpp_define (pfile, "__cpp_placeholder_variables=202306L");
+	  cpp_define (pfile, "__cpp_structured_bindings=202403L");
+	  cpp_define (pfile, "__cpp_deleted_function=202403L");
+	  cpp_define (pfile, "__cpp_variadic_friend=202403L");
 	}
       if (flag_concepts)
         {
@@ -1567,8 +1578,8 @@ c_cpp_builtins (cpp_reader *pfile)
       /* For libgcov.  */
       builtin_define_with_int_value ("__LIBGCC_VTABLE_USES_DESCRIPTORS__",
 				     TARGET_VTABLE_USES_DESCRIPTORS);
-      builtin_define_with_int_value ("__LIBGCC_GCOV_TYPE_SIZE",
-				     targetm.gcov_type_size());
+      builtin_define_with_int_value ("__LIBGCC_HAVE_LIBATOMIC",
+				     targetm.have_libatomic);
     }
 
   /* For use in assembly language.  */

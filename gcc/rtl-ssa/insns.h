@@ -1,5 +1,5 @@
 // Instruction-related RTL SSA classes                              -*- C++ -*-
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -306,6 +306,8 @@ public:
   // Print a full description of the instruction.
   void print_full (pretty_printer *) const;
 
+  bool is_temporary () const { return m_is_temp; }
+
 private:
   // The first-order way of representing the order between instructions
   // is to assign "program points", with higher point numbers coming
@@ -414,8 +416,11 @@ private:
   unsigned int m_has_pre_post_modify : 1;
   unsigned int m_has_volatile_refs : 1;
 
+  // Indicates the insn is a temporary / new user-allocated insn.
+  unsigned int m_is_temp : 1;
+
   // For future expansion.
-  unsigned int m_spare : 27;
+  unsigned int m_spare : 26;
 
   // The program point at which the instruction occurs.
   //
@@ -486,18 +491,6 @@ public:
   // The lower and upper bounds of the range.
   insn_info *first;
   insn_info *last;
-};
-
-// A class that represents a closure of operator== for instructions.
-// This is used by insn_is; see there for details.
-class insn_is_closure
-{
-public:
-  insn_is_closure (const insn_info *insn) : m_insn (insn) {}
-  bool operator() (const insn_info *other) const { return m_insn == other; }
-
-private:
-  const insn_info *m_insn;
 };
 
 void pp_insn (pretty_printer *, const insn_info *);

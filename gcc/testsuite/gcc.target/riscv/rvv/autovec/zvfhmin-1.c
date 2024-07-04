@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gcv_zvfhmin -mabi=ilp32d --param riscv-autovec-preference=scalable -ffast-math -fdump-rtl-final" } */
+/* { dg-options "-march=rv32gcv_zvfhmin -mabi=ilp32d -mrvv-vector-bits=scalable -ffast-math -fdump-rtl-final" } */
 
 #include <stdint-gcc.h>
 

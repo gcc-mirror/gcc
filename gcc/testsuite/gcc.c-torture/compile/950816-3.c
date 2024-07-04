@@ -1,4 +1,5 @@
-f ()
+int
+f (void)
 {
   int i;
   short	x, z;

@@ -265,6 +265,8 @@ AC_SUBST(NOASANFLAG)
 GCC_CET_HOST_FLAGS(CET_HOST_FLAGS)
 AC_SUBST(CET_HOST_FLAGS)
 
+GCC_CHECK_ASSEMBLER_HWCAP
+
 echo "# Warning: this fragment is automatically generated" > temp-frag
 
 if [[ -n "${frag}" ]] && [[ -f "${frag}" ]]; then
@@ -289,7 +291,7 @@ AC_SUBST_FILE(host_makefile_frag)
 # It's OK to check for header files.  Although the compiler may not be
 # able to link anything, it had better be able to at least compile
 # something.
-AC_CHECK_HEADERS(sys/file.h sys/param.h limits.h stdlib.h malloc.h string.h unistd.h strings.h sys/time.h time.h sys/resource.h sys/stat.h sys/mman.h fcntl.h alloca.h sys/pstat.h sys/sysmp.h sys/sysinfo.h machine/hal_sysinfo.h sys/table.h sys/sysctl.h sys/systemcfg.h stdint.h stdio_ext.h process.h sys/prctl.h)
+AC_CHECK_HEADERS(sys/file.h sys/param.h limits.h stdlib.h malloc.h string.h unistd.h strings.h sys/time.h time.h sys/resource.h sys/stat.h sys/mman.h fcntl.h alloca.h sys/pstat.h sys/sysmp.h sys/sysinfo.h machine/hal_sysinfo.h sys/table.h sys/sysctl.h sys/systemcfg.h stdint.h stdio_ext.h process.h sys/prctl.h spawn.h)
 AC_HEADER_SYS_WAIT
 AC_HEADER_TIME
 
@@ -412,7 +414,8 @@ funcs="$funcs setproctitle"
 vars="sys_errlist sys_nerr sys_siglist"
 
 checkfuncs="__fsetlocking canonicalize_file_name dup3 getrlimit getrusage \
- getsysinfo gettimeofday on_exit pipe2 psignal pstat_getdynamic pstat_getstatic \
+ getsysinfo gettimeofday on_exit pipe2 posix_spawn posix_spawnp psignal \
+ pstat_getdynamic pstat_getstatic \
  realpath setrlimit spawnve spawnvpe strerror strsignal sysconf sysctl \
  sysmp table times wait3 wait4"
 
@@ -435,7 +438,8 @@ if test "x" = "y"; then
     index insque \
     memchr memcmp memcpy memmem memmove memset mkstemps \
     on_exit \
-    pipe2 psignal pstat_getdynamic pstat_getstatic putenv \
+    pipe2 posix_spawn posix_spawnp psignal \
+    pstat_getdynamic pstat_getstatic putenv \
     random realpath rename rindex \
     sbrk setenv setproctitle setrlimit sigsetmask snprintf spawnve spawnvpe \
      stpcpy stpncpy strcasecmp strchr strdup \
@@ -739,6 +743,48 @@ case "${host}" in
      *)				pexecute=pex-unix   ;;
 esac
 AC_SUBST(pexecute)
+
+AC_MSG_CHECKING([for SHA1 HW acceleration support])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <x86intrin.h>
+#include <cpuid.h>
+
+__attribute__((__target__ ("sse4.1,sha")))
+void foo (__m128i *buf, unsigned int e, __m128i msg0, __m128i msg1)
+{
+  __m128i abcd = _mm_loadu_si128 ((const __m128i *) buf);
+  __m128i e0 = _mm_set_epi32 (e, 0, 0, 0);
+  abcd = _mm_shuffle_epi32 (abcd, 0x1b);
+  const __m128i shuf_mask = _mm_set_epi64x (0x0001020304050607ULL, 0x08090a0b0c0d0e0fULL);
+  abcd = _mm_shuffle_epi8 (abcd, shuf_mask);
+  e0 = _mm_sha1nexte_epu32 (e0, msg1);
+  abcd = _mm_sha1rnds4_epu32 (abcd, e0, 0);
+  msg0 = _mm_sha1msg1_epu32 (msg0, msg1);
+  msg0 = _mm_sha1msg2_epu32 (msg0, msg1);
+  msg0 = _mm_xor_si128 (msg0, msg1);
+  e0 = _mm_add_epi32 (e0, msg0);
+  e0 = abcd;
+  _mm_storeu_si128 (buf, abcd);
+  e = _mm_extract_epi32 (e0, 3);
+}
+
+int bar (void)
+{
+  unsigned int eax, ebx, ecx, edx;
+  (void) __get_cpuid;
+  (void) __get_cpuid_count;
+  if (__get_cpuid_count (7, 0, &eax, &ebx, &ecx, &edx)
+      && (ebx & bit_SHA) != 0
+      && __get_cpuid (1, &eax, &ebx, &ecx, &edx)
+      && (ecx & bit_SSE4_1) != 0)
+    return 1;
+  return 0;
+}
+]], [[bar ();]])],
+  [AC_MSG_RESULT([x86 SHA1])
+  AC_DEFINE(HAVE_X86_SHA1_HW_SUPPORT, 1,
+	    [Define if you have x86 SHA1 HW acceleration support.])],
+  [AC_MSG_RESULT([no])])
 
 libiberty_AC_FUNC_STRNCMP
 

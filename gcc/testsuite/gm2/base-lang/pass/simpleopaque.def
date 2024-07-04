@@ -1,0 +1,13 @@
+DEFINITION MODULE simpleopaque ;  (*!m2pim*)
+
+TYPE
+   List ;
+
+PROCEDURE init () : List ;
+
+PROCEDURE join (left, right: List) : List ;
+
+PROCEDURE delete (VAR l: List) ;
+
+
+END simpleopaque.

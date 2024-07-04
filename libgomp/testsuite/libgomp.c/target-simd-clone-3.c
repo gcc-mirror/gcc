@@ -36,5 +36,5 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-offload-ipa-dump "device doesn't match" "simdclone" { target x86_64-*-* } } } */
-/* { dg-final { scan-offload-ipa-dump-not "Generated .* clone" "simdclone" { target x86_64-*-* } } } */
+/* { dg-final { only_for_offload_target amdgcn-amdhsa scan-offload-ipa-dump "device doesn't match" "simdclone" { target x86_64-*-* } } } */
+/* { dg-final { only_for_offload_target amdgcn-amdhsa scan-offload-ipa-dump-not "Generated .* clone" "simdclone" { target x86_64-*-* } } } */

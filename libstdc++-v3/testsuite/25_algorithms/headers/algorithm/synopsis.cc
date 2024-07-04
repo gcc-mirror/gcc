@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// Copyright (C) 2007-2023 Free Software Foundation, Inc.
+// Copyright (C) 2007-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,6 +18,14 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <algorithm>
+
+#if __cplusplus >= 202002L
+#ifndef __cpp_lib_ranges
+# error "Feature test macro for ranges is missing in <algorithm>"
+#elif __cpp_lib_ranges < 201911L
+# error "Feature test macro for ranges has wrong value in <algorithm>"
+#endif
+#endif
 
 namespace std
  {

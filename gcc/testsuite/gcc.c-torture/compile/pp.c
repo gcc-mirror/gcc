@@ -1,4 +1,5 @@
 /* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
+/* { dg-additional-options "-std=gnu89" } */
 
 foo (a, b, c, d, e, i0, f, i1)
      double a, b, c, d, e, f;

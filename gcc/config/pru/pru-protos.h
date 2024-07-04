@@ -1,5 +1,5 @@
 /* Subroutine declarations for TI PRU target support.
-   Copyright (C) 2014-2023 Free Software Foundation, Inc.
+   Copyright (C) 2014-2024 Free Software Foundation, Inc.
    Contributed by Dimitar Dimitrov <dimitar@dinux.eu>
 
    This file is part of GCC.
@@ -72,7 +72,8 @@ extern int pru_get_ctable_base_offset (unsigned HOST_WIDE_INT caddr);
 
 extern int pru_symref2ioregno (rtx op);
 
-extern void pru_register_abicheck_pass (void);
+extern rtl_opt_pass *make_pru_tiabi_check (gcc::context *);
+extern rtl_opt_pass *make_pru_minrt_check (gcc::context *);
 
 #endif /* RTX_CODE */
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   S p e c                                --
 --                                                                          --
---          Copyright (C) 1997-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,7 +51,9 @@
 --  It is designed to be a bottom-level (leaf) package.
 
 with Interfaces.C;
+
 with System.OS_Constants;
+with System.OS_Locks;
 with System.Parameters;
 
 package System.OS_Interface is
@@ -247,7 +249,7 @@ package System.OS_Interface is
    type pthread_t           is private;
    subtype Thread_Id        is pthread_t;
 
-   type pthread_mutex_t      is limited private;
+   subtype pthread_mutex_t   is System.OS_Locks.pthread_mutex_t;
    type pthread_rwlock_t     is limited private;
    type pthread_cond_t       is limited private;
    type pthread_attr_t       is limited private;
@@ -617,7 +619,7 @@ private
 
    type pthread_mutexattr_t is record
       Data : char_array (1 .. OS_Constants.PTHREAD_MUTEXATTR_SIZE);
-   end  record;
+   end record;
    pragma Convention (C, pthread_mutexattr_t);
    for pthread_mutexattr_t'Alignment use Interfaces.C.int'Alignment;
 
@@ -628,12 +630,6 @@ private
    for pthread_rwlockattr_t'Alignment use Interfaces.C.int'Alignment;
 
    type pthread_t is new rtems_id;
-
-   type pthread_mutex_t is record
-      Data : char_array (1 .. OS_Constants.PTHREAD_MUTEX_SIZE);
-   end record;
-   pragma Convention (C, pthread_mutex_t);
-   for pthread_mutex_t'Alignment use Interfaces.C.double'Alignment;
 
    type pthread_rwlock_t is record
       Data : char_array (1 .. OS_Constants.PTHREAD_RWLOCK_SIZE);

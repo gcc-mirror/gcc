@@ -1,6 +1,6 @@
 // <optional> -*- C++ -*-
 
-// Copyright (C) 2013-2023 Free Software Foundation, Inc.
+// Copyright (C) 2013-2024 Free Software Foundation, Inc.
 // Copyright The GNU Toolchain Authors.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -32,7 +32,9 @@
 
 #pragma GCC system_header
 
+#define __glibcxx_want_freestanding_optional
 #define __glibcxx_want_optional
+#define __glibcxx_want_constrained_equality
 #include <bits/version.h>
 
 #ifdef __cpp_lib_optional // C++ >= 17
@@ -311,6 +313,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	if (this->_M_engaged)
 	  _M_destroy();
+	else // This seems redundant but improves codegen, see PR 112480.
+	  this->_M_engaged = false;
       }
     };
 
@@ -1048,7 +1052,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	and_then(_Fn&& __f) &
 	{
 	  using _Up = remove_cvref_t<invoke_result_t<_Fn, _Tp&>>;
-	  static_assert(__is_optional_v<remove_cvref_t<_Up>>);
+	  static_assert(__is_optional_v<remove_cvref_t<_Up>>,
+			"the function passed to std::optional<T>::and_then "
+			"must return a std::optional");
 	  if (has_value())
 	    return std::__invoke(std::forward<_Fn>(__f), **this);
 	  else
@@ -1060,7 +1066,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	and_then(_Fn&& __f) const &
 	{
 	  using _Up = remove_cvref_t<invoke_result_t<_Fn, const _Tp&>>;
-	  static_assert(__is_optional_v<_Up>);
+	  static_assert(__is_optional_v<_Up>,
+			"the function passed to std::optional<T>::and_then "
+			"must return a std::optional");
 	  if (has_value())
 	    return std::__invoke(std::forward<_Fn>(__f), **this);
 	  else
@@ -1072,7 +1080,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	and_then(_Fn&& __f) &&
 	{
 	  using _Up = remove_cvref_t<invoke_result_t<_Fn, _Tp>>;
-	  static_assert(__is_optional_v<remove_cvref_t<_Up>>);
+	  static_assert(__is_optional_v<remove_cvref_t<_Up>>,
+			"the function passed to std::optional<T>::and_then "
+			"must return a std::optional");
 	  if (has_value())
 	    return std::__invoke(std::forward<_Fn>(__f), std::move(**this));
 	  else
@@ -1084,7 +1094,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	and_then(_Fn&& __f) const &&
 	{
 	  using _Up = remove_cvref_t<invoke_result_t<_Fn, const _Tp>>;
-	  static_assert(__is_optional_v<remove_cvref_t<_Up>>);
+	  static_assert(__is_optional_v<remove_cvref_t<_Up>>,
+			"the function passed to std::optional<T>::and_then "
+			"must return a std::optional");
 	  if (has_value())
 	    return std::__invoke(std::forward<_Fn>(__f), std::move(**this));
 	  else
@@ -1140,7 +1152,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	or_else(_Fn&& __f) const&
 	{
 	  using _Up = invoke_result_t<_Fn>;
-	  static_assert( is_same_v<remove_cvref_t<_Up>, optional> );
+	  static_assert(is_same_v<remove_cvref_t<_Up>, optional>,
+			"the function passed to std::optional<T>::or_else "
+			"must return a std::optional<T>");
 
 	  if (has_value())
 	    return *this;
@@ -1153,7 +1167,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	or_else(_Fn&& __f) &&
 	{
 	  using _Up = invoke_result_t<_Fn>;
-	  static_assert( is_same_v<remove_cvref_t<_Up>, optional> );
+	  static_assert(is_same_v<remove_cvref_t<_Up>, optional>,
+			"the function passed to std::optional<T>::or_else "
+			"must return a std::optional<T>");
 
 	  if (has_value())
 	    return std::move(*this);
@@ -1179,7 +1195,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     using __optional_relop_t =
-      enable_if_t<is_convertible<_Tp, bool>::value, bool>;
+      enable_if_t<is_convertible_v<_Tp, bool>, bool>;
 
   template<typename _Tp, typename _Up>
     using __optional_eq_t = __optional_relop_t<
@@ -1264,6 +1280,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifdef __cpp_lib_three_way_comparison
   template<typename _Tp, three_way_comparable_with<_Tp> _Up>
+    [[nodiscard]]
     constexpr compare_three_way_result_t<_Tp, _Up>
     operator<=>(const optional<_Tp>& __x, const optional<_Up>& __y)
     {
@@ -1273,12 +1290,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Comparisons with nullopt.
   template<typename _Tp>
+    [[nodiscard]]
     constexpr bool
     operator==(const optional<_Tp>& __lhs, nullopt_t) noexcept
     { return !__lhs; }
 
 #ifdef __cpp_lib_three_way_comparison
   template<typename _Tp>
+    [[nodiscard]]
     constexpr strong_ordering
     operator<=>(const optional<_Tp>& __x, nullopt_t) noexcept
     { return bool(__x) <=> false; }
@@ -1339,85 +1358,105 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return !__rhs; }
 #endif // three-way-comparison
 
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 4072. std::optional comparisons: constrain harder
+#if __cpp_lib_concepts
+# define _REQUIRES_NOT_OPTIONAL(T) requires (!__is_optional_v<T>)
+#else
+# define _REQUIRES_NOT_OPTIONAL(T)
+#endif
+
   // Comparisons with value type.
   template<typename _Tp, typename _Up>
+    _REQUIRES_NOT_OPTIONAL(_Up)
     constexpr auto
-    operator==(const optional<_Tp>& __lhs, const _Up& __rhs)
+    operator== [[nodiscard]] (const optional<_Tp>& __lhs, const _Up& __rhs)
     -> __optional_eq_t<_Tp, _Up>
     { return __lhs && *__lhs == __rhs; }
 
   template<typename _Tp, typename _Up>
+    _REQUIRES_NOT_OPTIONAL(_Up)
     constexpr auto
     operator==(const _Up& __lhs, const optional<_Tp>& __rhs)
     -> __optional_eq_t<_Up, _Tp>
     { return __rhs && __lhs == *__rhs; }
 
   template<typename _Tp, typename _Up>
+    _REQUIRES_NOT_OPTIONAL(_Up)
     constexpr auto
-    operator!=(const optional<_Tp>& __lhs, const _Up& __rhs)
+    operator!= [[nodiscard]] (const optional<_Tp>& __lhs, const _Up& __rhs)
     -> __optional_ne_t<_Tp, _Up>
     { return !__lhs || *__lhs != __rhs; }
 
   template<typename _Tp, typename _Up>
+    _REQUIRES_NOT_OPTIONAL(_Up)
     constexpr auto
-    operator!=(const _Up& __lhs, const optional<_Tp>& __rhs)
+    operator!= [[nodiscard]] (const _Up& __lhs, const optional<_Tp>& __rhs)
     -> __optional_ne_t<_Up, _Tp>
     { return !__rhs || __lhs != *__rhs; }
 
   template<typename _Tp, typename _Up>
+    _REQUIRES_NOT_OPTIONAL(_Up)
     constexpr auto
-    operator<(const optional<_Tp>& __lhs, const _Up& __rhs)
+    operator< [[nodiscard]] (const optional<_Tp>& __lhs, const _Up& __rhs)
     -> __optional_lt_t<_Tp, _Up>
     { return !__lhs || *__lhs < __rhs; }
 
   template<typename _Tp, typename _Up>
+    _REQUIRES_NOT_OPTIONAL(_Up)
     constexpr auto
-    operator<(const _Up& __lhs, const optional<_Tp>& __rhs)
+    operator< [[nodiscard]] (const _Up& __lhs, const optional<_Tp>& __rhs)
     -> __optional_lt_t<_Up, _Tp>
     { return __rhs && __lhs < *__rhs; }
 
   template<typename _Tp, typename _Up>
+    _REQUIRES_NOT_OPTIONAL(_Up)
     constexpr auto
-    operator>(const optional<_Tp>& __lhs, const _Up& __rhs)
+    operator> [[nodiscard]] (const optional<_Tp>& __lhs, const _Up& __rhs)
     -> __optional_gt_t<_Tp, _Up>
     { return __lhs && *__lhs > __rhs; }
 
   template<typename _Tp, typename _Up>
+    _REQUIRES_NOT_OPTIONAL(_Up)
     constexpr auto
-    operator>(const _Up& __lhs, const optional<_Tp>& __rhs)
+    operator> [[nodiscard]] (const _Up& __lhs, const optional<_Tp>& __rhs)
     -> __optional_gt_t<_Up, _Tp>
     { return !__rhs || __lhs > *__rhs; }
 
   template<typename _Tp, typename _Up>
+    _REQUIRES_NOT_OPTIONAL(_Up)
     constexpr auto
-    operator<=(const optional<_Tp>& __lhs, const _Up& __rhs)
+    operator<= [[nodiscard]] (const optional<_Tp>& __lhs, const _Up& __rhs)
     -> __optional_le_t<_Tp, _Up>
     { return !__lhs || *__lhs <= __rhs; }
 
   template<typename _Tp, typename _Up>
+    _REQUIRES_NOT_OPTIONAL(_Up)
     constexpr auto
-    operator<=(const _Up& __lhs, const optional<_Tp>& __rhs)
+    operator<= [[nodiscard]] (const _Up& __lhs, const optional<_Tp>& __rhs)
     -> __optional_le_t<_Up, _Tp>
     { return __rhs && __lhs <= *__rhs; }
 
   template<typename _Tp, typename _Up>
+    _REQUIRES_NOT_OPTIONAL(_Up)
     constexpr auto
-    operator>=(const optional<_Tp>& __lhs, const _Up& __rhs)
+    operator>= [[nodiscard]] (const optional<_Tp>& __lhs, const _Up& __rhs)
     -> __optional_ge_t<_Tp, _Up>
     { return __lhs && *__lhs >= __rhs; }
 
   template<typename _Tp, typename _Up>
+    _REQUIRES_NOT_OPTIONAL(_Up)
     constexpr auto
-    operator>=(const _Up& __lhs, const optional<_Tp>& __rhs)
+    operator>= [[nodiscard]] (const _Up& __lhs, const optional<_Tp>& __rhs)
     -> __optional_ge_t<_Up, _Tp>
     { return !__rhs || __lhs >= *__rhs; }
 
 #ifdef __cpp_lib_three_way_comparison
   template<typename _Tp, typename _Up>
     requires (!__is_optional_v<_Up>)
-      && three_way_comparable_with<_Tp, _Up>
+      && three_way_comparable_with<_Up, _Tp>
     constexpr compare_three_way_result_t<_Tp, _Up>
-    operator<=>(const optional<_Tp>& __x, const _Up& __v)
+    operator<=> [[nodiscard]] (const optional<_Tp>& __x, const _Up& __v)
     { return bool(__x) ? *__x <=> __v : strong_ordering::less; }
 #endif
 

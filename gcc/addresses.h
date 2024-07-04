@@ -1,5 +1,5 @@
 /* Inline functions to test validity of reg classes for addressing modes.
-   Copyright (C) 2006-2023 Free Software Foundation, Inc.
+   Copyright (C) 2006-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,8 +28,12 @@ inline enum reg_class
 base_reg_class (machine_mode mode ATTRIBUTE_UNUSED,
 		addr_space_t as ATTRIBUTE_UNUSED,
 		enum rtx_code outer_code ATTRIBUTE_UNUSED,
-		enum rtx_code index_code ATTRIBUTE_UNUSED)
+		enum rtx_code index_code ATTRIBUTE_UNUSED,
+		rtx_insn *insn ATTRIBUTE_UNUSED = NULL)
 {
+#ifdef INSN_BASE_REG_CLASS
+  return INSN_BASE_REG_CLASS (insn);
+#else
 #ifdef MODE_CODE_BASE_REG_CLASS
   return MODE_CODE_BASE_REG_CLASS (MACRO_MODE (mode), as, outer_code,
 				   index_code);
@@ -44,6 +48,17 @@ base_reg_class (machine_mode mode ATTRIBUTE_UNUSED,
   return BASE_REG_CLASS;
 #endif
 #endif
+#endif
+}
+
+inline enum reg_class
+index_reg_class (rtx_insn *insn ATTRIBUTE_UNUSED = NULL)
+{
+#ifdef INSN_INDEX_REG_CLASS
+  return INSN_INDEX_REG_CLASS (insn);
+#else
+  return INDEX_REG_CLASS;
+#endif
 }
 
 /* Wrapper function to unify target macros REGNO_MODE_CODE_OK_FOR_BASE_P,
@@ -56,8 +71,12 @@ ok_for_base_p_1 (unsigned regno ATTRIBUTE_UNUSED,
 		 machine_mode mode ATTRIBUTE_UNUSED,
 		 addr_space_t as ATTRIBUTE_UNUSED,
 		 enum rtx_code outer_code ATTRIBUTE_UNUSED,
-		 enum rtx_code index_code ATTRIBUTE_UNUSED)
+		 enum rtx_code index_code ATTRIBUTE_UNUSED,
+		 rtx_insn* insn ATTRIBUTE_UNUSED = NULL)
 {
+#ifdef REGNO_OK_FOR_INSN_BASE_P
+  return REGNO_OK_FOR_INSN_BASE_P (regno, insn);
+#else
 #ifdef REGNO_MODE_CODE_OK_FOR_BASE_P
   return REGNO_MODE_CODE_OK_FOR_BASE_P (regno, MACRO_MODE (mode), as,
 					outer_code, index_code);
@@ -72,6 +91,7 @@ ok_for_base_p_1 (unsigned regno ATTRIBUTE_UNUSED,
   return REGNO_OK_FOR_BASE_P (regno);
 #endif
 #endif
+#endif
 }
 
 /* Wrapper around ok_for_base_p_1, for use after register allocation is
@@ -79,12 +99,13 @@ ok_for_base_p_1 (unsigned regno ATTRIBUTE_UNUSED,
 
 inline bool
 regno_ok_for_base_p (unsigned regno, machine_mode mode, addr_space_t as,
-		     enum rtx_code outer_code, enum rtx_code index_code)
+		     enum rtx_code outer_code, enum rtx_code index_code,
+		     rtx_insn *insn = NULL)
 {
   if (regno >= FIRST_PSEUDO_REGISTER && reg_renumber[regno] >= 0)
     regno = reg_renumber[regno];
 
-  return ok_for_base_p_1 (regno, mode, as, outer_code, index_code);
+  return ok_for_base_p_1 (regno, mode, as, outer_code, index_code, insn);
 }
 
 #endif /* GCC_ADDRESSES_H */

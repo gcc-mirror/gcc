@@ -113,7 +113,7 @@ __bid_floatbitinttd (const UBILtype *i, SItype iprec)
 			   buf + BITINT_END (q_limbs - 1, 0), q_limbs);
 	  inexact = buf[q_limbs + pow10_limbs];
 	  for (j = 1; j < pow10_limbs; ++j)
-	    inexact |= buf[q_limbs + pow10_limbs + 1];
+	    inexact |= buf[q_limbs + pow10_limbs + j];
 	}
       else
 	{
@@ -196,10 +196,12 @@ __bid_floatbitinttd (const UBILtype *i, SItype iprec)
 	  mantissalo = buf[q_limbs + pow10_limbs * 2 + 1 + BITINT_END (1, 0)];
 #else
 	  mantissahi
-	    = ((buf[q_limbs + pow10_limbs * 2 + 1 + BITINT_END (0, 3)] << 32)
+	    = ((UDItype)
+	       buf[q_limbs + pow10_limbs * 2 + 1 + BITINT_END (0, 3)] << 32
 	       | buf[q_limbs + pow10_limbs * 2 + 1 + BITINT_END (1, 2)]);
 	  mantissalo
-	    = ((buf[q_limbs + pow10_limbs * 2 + 1 + BITINT_END (2, 1)] << 32)
+	    = ((UDItype)
+	       buf[q_limbs + pow10_limbs * 2 + 1 + BITINT_END (2, 1)] << 32
 	       | buf[q_limbs + pow10_limbs * 2 + 1 + BITINT_END (3, 0)]);
 #endif
 	}
@@ -209,8 +211,10 @@ __bid_floatbitinttd (const UBILtype *i, SItype iprec)
 	  mantissahi = buf[BITINT_END (0, 1)];
 	  mantissalo = buf[BITINT_END (1, 0)];
 #else
-	  mantissahi = (buf[BITINT_END (0, 3)] << 32) | buf[BITINT_END (1, 2)];
-	  mantissalo = (buf[BITINT_END (2, 1)] << 32) | buf[BITINT_END (3, 0)];
+	  mantissahi = ((UDItype) buf[BITINT_END (0, 3)] << 32
+			| buf[BITINT_END (1, 2)]);
+	  mantissalo = ((UDItype) buf[BITINT_END (2, 1)] << 32
+			| buf[BITINT_END (3, 0)]);
 #endif
 	}
     }
@@ -231,15 +235,15 @@ __bid_floatbitinttd (const UBILtype *i, SItype iprec)
 	  if (in == 1)
 	    mantissalo = iprec < 0 ? (UDItype) (BILtype) msb : (UDItype) msb;
 	  else
-	    mantissalo = (msb << 32) | i[BITINT_END (1, 0)];
+	    mantissalo = (UDItype) msb << 32 | i[BITINT_END (1, 0)];
 	}
       else
 	{
 	  if (in == 3)
 	    mantissahi = iprec < 0 ? (UDItype) (BILtype) msb : (UDItype) msb;
 	  else
-	    mantissahi = (msb << 32) | i[BITINT_END (1, 2)];
-	  mantissalo = ((i[BITINT_END (in - 2, 1)] << 32)
+	    mantissahi = (UDItype) msb << 32 | i[BITINT_END (1, 2)];
+	  mantissalo = ((UDItype) i[BITINT_END (in - 2, 1)] << 32
 			| i[BITINT_END (in - 1, 0)]);
 	}
 #endif

@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 unsigned calc_mp(unsigned mod)
 {
       unsigned a,b,c;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,10 +34,14 @@
 package System.Finalization_Root is
    pragma Preelaborate;
 
-   --  The base for types Controlled and Limited_Controlled declared in Ada.
-   --  Finalization.
+   --  The root type for types Controlled and Limited_Controlled declared in
+   --  Ada.Finalization (False needs to be qualified due to RTSfind quirks).
 
-   type Root_Controlled is abstract tagged null record;
+   type Root_Controlled is abstract tagged null record
+     with Finalizable => (Initialize           => Initialize,
+                          Adjust               => Adjust,
+                          Finalize             => Finalize,
+                          Relaxed_Finalization => Standard.False);
 
    procedure Adjust     (Object : in out Root_Controlled);
    procedure Finalize   (Object : in out Root_Controlled);

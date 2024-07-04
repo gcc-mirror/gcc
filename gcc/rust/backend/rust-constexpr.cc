@@ -120,7 +120,7 @@ struct constexpr_global_ctx
 /* In constexpr.cc */
 /* Representation of entries in the constexpr function definition table.  */
 
-struct GTY ((for_user)) constexpr_fundef
+struct GTY ((for_user)) rust_constexpr_fundef
 {
   tree decl;
   tree body;
@@ -132,16 +132,16 @@ struct GTY ((for_user)) constexpr_fundef
  along with the bindings of parameters to their arguments, for
  the purpose of compile time evaluation.  */
 
-struct GTY ((for_user)) constexpr_call
+struct GTY ((for_user)) rust_constexpr_call
 {
   /* Description of the constexpr function definition.  */
-  constexpr_fundef *fundef;
+  rust_constexpr_fundef *fundef;
   /* Parameter bindings environment.  A TREE_VEC of arguments.  */
   tree bindings;
   /* Result of the call.
        NULL means the call is being evaluated.
        error_mark_node means that the evaluation was erroneous;
-       otherwise, the actuall value of the call.  */
+       otherwise, the actual value of the call.  */
   tree result;
   /* The hash of this call; we remember it here to avoid having to
      recalculate it when expanding the hash table.  */
@@ -150,10 +150,10 @@ struct GTY ((for_user)) constexpr_call
   bool manifestly_const_eval;
 };
 
-struct constexpr_call_hasher : ggc_ptr_hash<constexpr_call>
+struct rust_constexpr_call_hasher : ggc_ptr_hash<rust_constexpr_call>
 {
-  static hashval_t hash (constexpr_call *);
-  static bool equal (constexpr_call *, constexpr_call *);
+  static hashval_t hash (rust_constexpr_call *);
+  static bool equal (rust_constexpr_call *, rust_constexpr_call *);
 };
 
 enum constexpr_switch_state
@@ -175,7 +175,7 @@ struct constexpr_ctx
      cxx_eval_outermost_constant_expr invocation.  */
   constexpr_global_ctx *global;
   /* The innermost call we're evaluating.  */
-  constexpr_call *call;
+  rust_constexpr_call *call;
   /* SAVE_EXPRs and TARGET_EXPR_SLOT vars of TARGET_EXPRs that we've seen
      within the current LOOP_EXPR.  NULL if we aren't inside a loop.  */
   vec<tree> *save_exprs;
@@ -201,24 +201,26 @@ struct constexpr_ctx
   bool manifestly_const_eval;
 };
 
-struct constexpr_fundef_hasher : ggc_ptr_hash<constexpr_fundef>
+struct rust_constexpr_fundef_hasher : ggc_ptr_hash<rust_constexpr_fundef>
 {
-  static hashval_t hash (const constexpr_fundef *);
-  static bool equal (const constexpr_fundef *, const constexpr_fundef *);
+  static hashval_t hash (const rust_constexpr_fundef *);
+  static bool equal (const rust_constexpr_fundef *,
+		     const rust_constexpr_fundef *);
 };
 
 /* This table holds all constexpr function definitions seen in
    the current translation unit.  */
 
-static GTY (()) hash_table<constexpr_fundef_hasher> *constexpr_fundef_table;
+static GTY (())
+  hash_table<rust_constexpr_fundef_hasher> *constexpr_fundef_table;
 
 /* Utility function used for managing the constexpr function table.
    Return true if the entries pointed to by P and Q are for the
    same constexpr function.  */
 
 inline bool
-constexpr_fundef_hasher::equal (const constexpr_fundef *lhs,
-				const constexpr_fundef *rhs)
+rust_constexpr_fundef_hasher::equal (const rust_constexpr_fundef *lhs,
+				     const rust_constexpr_fundef *rhs)
 {
   return lhs->decl == rhs->decl;
 }
@@ -227,20 +229,20 @@ constexpr_fundef_hasher::equal (const constexpr_fundef *lhs,
    Return a hash value for the entry pointed to by Q.  */
 
 inline hashval_t
-constexpr_fundef_hasher::hash (const constexpr_fundef *fundef)
+rust_constexpr_fundef_hasher::hash (const rust_constexpr_fundef *fundef)
 {
   return DECL_UID (fundef->decl);
 }
 
 /* Return a previously saved definition of function FUN.   */
 
-constexpr_fundef *
+rust_constexpr_fundef *
 retrieve_constexpr_fundef (tree fun)
 {
   if (constexpr_fundef_table == NULL)
     return NULL;
 
-  constexpr_fundef fundef = {fun, NULL_TREE, NULL_TREE, NULL_TREE};
+  rust_constexpr_fundef fundef = {fun, NULL_TREE, NULL_TREE, NULL_TREE};
   return constexpr_fundef_table->find (&fundef);
 }
 
@@ -343,12 +345,12 @@ uid_sensitive_constexpr_evaluation_checker::evaluation_restricted_p () const
 /* A table of all constexpr calls that have been evaluated by the
    compiler in this translation unit.  */
 
-static GTY (()) hash_table<constexpr_call_hasher> *constexpr_call_table;
+static GTY (()) hash_table<rust_constexpr_call_hasher> *constexpr_call_table;
 
 /* Compute a hash value for a constexpr call representation.  */
 
 inline hashval_t
-constexpr_call_hasher::hash (constexpr_call *info)
+rust_constexpr_call_hasher::hash (rust_constexpr_call *info)
 {
   return info->hash;
 }
@@ -358,7 +360,8 @@ constexpr_call_hasher::hash (constexpr_call *info)
    Otherwise, return false.  */
 
 bool
-constexpr_call_hasher::equal (constexpr_call *lhs, constexpr_call *rhs)
+rust_constexpr_call_hasher::equal (rust_constexpr_call *lhs,
+				   rust_constexpr_call *rhs)
 {
   if (lhs == rhs)
     return true;
@@ -366,7 +369,7 @@ constexpr_call_hasher::equal (constexpr_call *lhs, constexpr_call *rhs)
     return false;
   if (lhs->manifestly_const_eval != rhs->manifestly_const_eval)
     return false;
-  if (!constexpr_fundef_hasher::equal (lhs->fundef, rhs->fundef))
+  if (!rust_constexpr_fundef_hasher::equal (lhs->fundef, rhs->fundef))
     return false;
   return rs_tree_equal (lhs->bindings, rhs->bindings);
 }
@@ -377,7 +380,8 @@ static void
 maybe_initialize_constexpr_call_table (void)
 {
   if (constexpr_call_table == NULL)
-    constexpr_call_table = hash_table<constexpr_call_hasher>::create_ggc (101);
+    constexpr_call_table
+      = hash_table<rust_constexpr_call_hasher>::create_ggc (101);
 }
 
 /* During constexpr CALL_EXPR evaluation, to avoid issues with sharing when
@@ -399,7 +403,7 @@ static GTY (()) decl_tree_map *fundef_copies_table;
    is parms, TYPE is result.  */
 
 static tree
-get_fundef_copy (constexpr_fundef *fundef)
+get_fundef_copy (rust_constexpr_fundef *fundef)
 {
   tree copy;
   bool existed;
@@ -1131,7 +1135,7 @@ base_field_constructor_elt (vec<constructor_elt, va_gc> *v, tree ref)
     if (ce->index == field)
       return ce;
 
-  gcc_unreachable ();
+  rust_unreachable ();
   return NULL;
 }
 
@@ -1617,7 +1621,7 @@ eval_array_reference (const constexpr_ctx *ctx, tree t, bool lval,
       /* We can't do anything with other tree codes, so use
 	 VERIFY_CONSTANT to complain and fail.  */
       VERIFY_CONSTANT (ary);
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 
   bool found;
@@ -1854,7 +1858,7 @@ label_matches (const constexpr_ctx *ctx, tree *jump_target, tree stmt)
       break;
 
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
   return false;
 }
@@ -1912,7 +1916,7 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
   if (++ctx->global->constexpr_ops_count >= constexpr_ops_limit)
     {
       rust_error_at (
-	Location (loc),
+	loc,
 	"%<constexpr%> evaluation operation count exceeds limit of "
 	"%wd (use %<-fconstexpr-ops-limit=%> to increase the limit)",
 	constexpr_ops_limit);
@@ -2247,7 +2251,6 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
 	/* Don't VERIFY_CONSTANT here.  */
 	if (*non_constant_p)
 	  return t;
-	gcc_checking_assert (TREE_CODE (op) != CONSTRUCTOR);
 	/* This function does more aggressive folding than fold itself.  */
 	r = build_fold_addr_expr_with_type (op, TREE_TYPE (t));
 	if (TREE_CODE (r) == ADDR_EXPR && TREE_OPERAND (r, 0) == oldop)
@@ -2695,7 +2698,7 @@ eval_store_expression (const constexpr_ctx *ctx, tree t, bool lval,
 	    if (TREE_CODE (probe) == ARRAY_REF)
 	      {
 		// TODO
-		gcc_unreachable ();
+		rust_unreachable ();
 		// elt = eval_and_check_array_index (ctx, probe, false,
 		// 				  non_constant_p, overflow_p);
 		if (*non_constant_p)
@@ -3365,14 +3368,15 @@ eval_call_expression (const constexpr_ctx *ctx, tree t, bool lval,
 {
   location_t loc = EXPR_LOCATION (t);
   tree fun = get_function_named_in_call (t);
-  constexpr_call new_call = {NULL, NULL, NULL, 0, ctx->manifestly_const_eval};
+  rust_constexpr_call new_call
+    = {NULL, NULL, NULL, 0, ctx->manifestly_const_eval};
   int depth_ok;
 
   if (fun == NULL_TREE)
     {
       // return cxx_eval_internal_function (ctx, t, lval,
       //     			       non_constant_p, overflow_p);
-      gcc_unreachable ();
+      rust_unreachable ();
       return error_mark_node;
     }
 
@@ -3459,17 +3463,17 @@ eval_call_expression (const constexpr_ctx *ctx, tree t, bool lval,
   depth_ok = push_cx_call_context (t);
 
   tree result = NULL_TREE;
-  constexpr_call *entry = NULL;
+  rust_constexpr_call *entry = NULL;
   if (depth_ok && !non_constant_args && ctx->strict)
     {
-      new_call.hash = constexpr_fundef_hasher::hash (new_call.fundef);
+      new_call.hash = rust_constexpr_fundef_hasher::hash (new_call.fundef);
       new_call.hash = iterative_hash_object (new_call.bindings, new_call.hash);
       new_call.hash
 	= iterative_hash_object (ctx->manifestly_const_eval, new_call.hash);
 
       /* If we have seen this call before, we are done.  */
       maybe_initialize_constexpr_call_table ();
-      constexpr_call **slot
+      rust_constexpr_call **slot
 	= constexpr_call_table->find_slot (&new_call, INSERT);
       entry = *slot;
       if (entry == NULL)
@@ -3479,7 +3483,7 @@ eval_call_expression (const constexpr_ctx *ctx, tree t, bool lval,
 	    {
 	      /* We need to keep a pointer to the entry, not just the slot, as
 		 the slot can move during evaluation of the body.  */
-	      *slot = entry = ggc_alloc<constexpr_call> ();
+	      *slot = entry = ggc_alloc<rust_constexpr_call> ();
 	      *entry = new_call;
 	      fb.preserve ();
 	    }
@@ -3831,7 +3835,8 @@ build_data_member_initialization (tree t, vec<constructor_elt, va_gc> **vec)
 	member = TREE_OPERAND (member, 1);
       else if (ANON_AGGR_TYPE_P (TREE_TYPE (aggr)))
 	/* Initializing a member of an anonymous union.  */
-	rust_sorry_at (Location (), "cannot handle value initialization yet");
+	rust_sorry_at (UNDEF_LOCATION,
+		       "cannot handle value initialization yet");
       // return build_anon_member_initialization (member, init, vec);
       else
 	/* We're initializing a vtable pointer in a base.  Leave it as
@@ -3842,10 +3847,10 @@ build_data_member_initialization (tree t, vec<constructor_elt, va_gc> **vec)
   /* Value-initialization can produce multiple initializers for the
      same field; use the last one.  */
   if (!vec_safe_is_empty (*vec) && (*vec)->last ().index == member)
-    rust_sorry_at (Location (), "cannot handle value initialization yet");
+    rust_sorry_at (UNDEF_LOCATION, "cannot handle value initialization yet");
   // (*vec)->last ().value = init;
   else
-    rust_sorry_at (Location (), "cannot handle value initialization yet");
+    rust_sorry_at (UNDEF_LOCATION, "cannot handle value initialization yet");
   // CONSTRUCTOR_APPEND_ELT (*vec, member, init);
   return true;
 }
@@ -3875,7 +3880,7 @@ build_data_member_initialization (tree t, vec<constructor_elt, va_gc> **vec)
 //	goto found;
 //
 //      default:
-//	gcc_unreachable ();
+//	rust_unreachable ();
 //      }
 // found:
 //
@@ -4142,7 +4147,7 @@ array_index_cmp (tree key, tree index)
 	  return 0;
       }
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 
@@ -4434,7 +4439,7 @@ get_array_or_vector_nelts (const constexpr_ctx *ctx, tree type,
   else if (VECTOR_TYPE_P (type))
     nelts = size_int (TYPE_VECTOR_SUBPARTS (type));
   else
-    gcc_unreachable ();
+    rust_unreachable ();
 
   /* For VLAs, the number of elements won't be an integer constant.  */
   nelts
@@ -4522,7 +4527,7 @@ is_valid_constexpr_fn (tree fun, bool complain)
 	    // error ("invalid type for parameter %d of %<constexpr%> "
 	    //        "function %q+#D",
 	    //        DECL_PARM_INDEX (parm), fun);
-	    Location locus = Location (DECL_SOURCE_LOCATION (fun));
+	    location_t locus = DECL_SOURCE_LOCATION (fun);
 	    rust_error_at (
 	      locus, "invalid type for parameter %d of %<constexpr%> function",
 	      DECL_PARM_INDEX (parm));
@@ -4577,18 +4582,18 @@ explain_invalid_constexpr_fn (tree fun)
    function.  Register it in the hash table.  */
 
 void
-register_constexpr_fundef (const constexpr_fundef &value)
+register_constexpr_fundef (const rust_constexpr_fundef &value)
 {
   /* Create the constexpr function table if necessary.  */
   if (constexpr_fundef_table == NULL)
     constexpr_fundef_table
-      = hash_table<constexpr_fundef_hasher>::create_ggc (101);
+      = hash_table<rust_constexpr_fundef_hasher>::create_ggc (101);
 
-  constexpr_fundef **slot = constexpr_fundef_table->find_slot (
-    const_cast<constexpr_fundef *> (&value), INSERT);
+  rust_constexpr_fundef **slot = constexpr_fundef_table->find_slot (
+    const_cast<rust_constexpr_fundef *> (&value), INSERT);
 
   gcc_assert (*slot == NULL);
-  *slot = ggc_alloc<constexpr_fundef> ();
+  *slot = ggc_alloc<rust_constexpr_fundef> ();
   **slot = value;
 }
 
@@ -4601,7 +4606,7 @@ maybe_save_constexpr_fundef (tree fun)
 {
   // FIXME
 
-  constexpr_fundef entry = {fun, NULL_TREE, NULL_TREE, NULL_TREE};
+  rust_constexpr_fundef entry = {fun, NULL_TREE, NULL_TREE, NULL_TREE};
   bool clear_ctx = false;
   if (DECL_RESULT (fun) && DECL_CONTEXT (DECL_RESULT (fun)) == NULL_TREE)
     {
@@ -4786,7 +4791,7 @@ eval_bit_field_ref (const constexpr_ctx *ctx, tree t, bool lval,
     }
   if (fld_seen)
     return fold_convert (TREE_TYPE (t), retval);
-  gcc_unreachable ();
+  rust_unreachable ();
   return error_mark_node;
 }
 
@@ -4875,7 +4880,7 @@ eval_loop_expr (const constexpr_ctx *ctx, tree t, bool *non_constant_p,
       count = -1;
       break;
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
   auto_vec<tree, 10> save_exprs;
   new_ctx.save_exprs = &save_exprs;
@@ -5599,10 +5604,10 @@ is_std_allocator_allocate (tree fndecl)
   return decl_in_std_namespace_p (decl);
 }
 
-/* Overload for the above taking constexpr_call*.  */
+/* Overload for the above taking rust_constexpr_call*.  */
 
 static inline bool
-is_std_allocator_allocate (const constexpr_call *call)
+is_std_allocator_allocate (const rust_constexpr_call *call)
 {
   return (call && call->fundef
 	  && is_std_allocator_allocate (call->fundef->decl));
@@ -6151,7 +6156,6 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case CLEANUP_POINT_EXPR:
     case EXPR_STMT:
     case PAREN_EXPR:
-    case NON_DEPENDENT_EXPR:
       /* For convenience.  */
     case LOOP_EXPR:
     case EXIT_EXPR:
@@ -6432,7 +6436,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 
     default:
       sorry ("unexpected AST of kind %s", get_tree_code_name (TREE_CODE (t)));
-      gcc_unreachable ();
+      rust_unreachable ();
       return false;
     }
 #undef RECUR
@@ -6473,7 +6477,9 @@ fold_non_dependent_init (tree t, tsubst_flags_t /*=tf_warning_or_error*/,
   return maybe_constant_init (t, object, manifestly_const_eval);
 }
 
-// #include "gt-rust-rust-constexpr.h"
-
 } // namespace Compile
 } // namespace Rust
+
+using namespace Rust::Compile;
+
+#include "gt-rust-rust-constexpr.h"

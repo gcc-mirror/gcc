@@ -1,3 +1,4 @@
+int macarg (char *, int);
 void
 cpplib_macroExpand (char * pfile)
 {

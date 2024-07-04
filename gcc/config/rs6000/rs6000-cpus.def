@@ -1,5 +1,5 @@
 /* IBM RS/6000 CPU names..
-   Copyright (C) 1991-2023 Free Software Foundation, Inc.
+   Copyright (C) 1991-2024 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -47,9 +47,9 @@
    fusion here, instead set it in rs6000.cc if we are tuning for a power8
    system.  */
 #define ISA_2_7_MASKS_SERVER	(ISA_2_6_MASKS_SERVER			\
+				 | OPTION_MASK_POWER8			\
 				 | OPTION_MASK_P8_VECTOR		\
 				 | OPTION_MASK_CRYPTO			\
-				 | OPTION_MASK_DIRECT_MOVE		\
 				 | OPTION_MASK_EFFICIENT_UNALIGNED_VSX	\
 				 | OPTION_MASK_QUAD_MEMORY		\
 				 | OPTION_MASK_QUAD_MEMORY_ATOMIC)
@@ -86,21 +86,14 @@
 				 | OPTION_MASK_POWER10			\
 				 | OTHER_POWER10_MASKS)
 
-/* Flags that need to be turned off if -mno-power9-vector.  */
-#define OTHER_P9_VECTOR_MASKS	(OPTION_MASK_FLOAT128_HW		\
-				 | OPTION_MASK_P9_MINMAX)
-
-/* Flags that need to be turned off if -mno-power8-vector.  */
-#define OTHER_P8_VECTOR_MASKS	(OTHER_P9_VECTOR_MASKS			\
-				 | OPTION_MASK_P9_VECTOR		\
-				 | OPTION_MASK_DIRECT_MOVE		\
-				 | OPTION_MASK_CRYPTO)
-
 /* Flags that need to be turned off if -mno-vsx.  */
-#define OTHER_VSX_VECTOR_MASKS	(OTHER_P8_VECTOR_MASKS			\
-				 | OPTION_MASK_EFFICIENT_UNALIGNED_VSX	\
+#define OTHER_VSX_VECTOR_MASKS	(OPTION_MASK_EFFICIENT_UNALIGNED_VSX	\
 				 | OPTION_MASK_FLOAT128_KEYWORD		\
-				 | OPTION_MASK_P8_VECTOR)
+				 | OPTION_MASK_P8_VECTOR		\
+				 | OPTION_MASK_CRYPTO			\
+				 | OPTION_MASK_P9_VECTOR		\
+				 | OPTION_MASK_FLOAT128_HW		\
+				 | OPTION_MASK_P9_MINMAX)
 
 /* Flags that need to be turned off if -mno-altivec.  */
 #define OTHER_ALTIVEC_MASKS	(OTHER_VSX_VECTOR_MASKS			\
@@ -124,7 +117,6 @@
 				 | OPTION_MASK_CMPB			\
 				 | OPTION_MASK_CRYPTO			\
 				 | OPTION_MASK_DFP			\
-				 | OPTION_MASK_DIRECT_MOVE		\
 				 | OPTION_MASK_DLMZB			\
 				 | OPTION_MASK_EFFICIENT_UNALIGNED_VSX	\
 				 | OPTION_MASK_FLOAT128_HW		\
@@ -139,6 +131,7 @@
 				 | OPTION_MASK_MODULO			\
 				 | OPTION_MASK_MULHW			\
 				 | OPTION_MASK_NO_UPDATE		\
+				 | OPTION_MASK_POWER8			\
 				 | OPTION_MASK_P8_FUSION		\
 				 | OPTION_MASK_P8_VECTOR		\
 				 | OPTION_MASK_P9_MINMAX		\

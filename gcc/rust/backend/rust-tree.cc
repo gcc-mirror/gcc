@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -72,7 +72,6 @@ mark_exp_read (tree exp)
     case ADDR_EXPR:
     case INDIRECT_REF:
     case FLOAT_EXPR:
-    case NON_DEPENDENT_EXPR:
     case VIEW_CONVERT_EXPR:
       mark_exp_read (TREE_OPERAND (exp, 0));
       break;
@@ -128,7 +127,6 @@ mark_use (tree expr, bool rvalue_p, bool read_p,
   switch (TREE_CODE (expr))
     {
     case COMPONENT_REF:
-    case NON_DEPENDENT_EXPR:
       recurse_op[0] = true;
       break;
     case COMPOUND_EXPR:
@@ -384,7 +382,7 @@ convert_to_void (tree expr, impl_conv_void implicit)
 			    type);
 		break;
 	      default:
-		gcc_unreachable ();
+		rust_unreachable ();
 	      }
 	  }
 	/* Don't load the value if this is an implicit dereference, or if
@@ -440,7 +438,7 @@ convert_to_void (tree expr, impl_conv_void implicit)
 			    type);
 		break;
 	      default:
-		gcc_unreachable ();
+		rust_unreachable ();
 	      }
 	  }
 	else if (is_volatile && TREE_ADDRESSABLE (type))
@@ -495,7 +493,7 @@ convert_to_void (tree expr, impl_conv_void implicit)
 			    type);
 		break;
 	      default:
-		gcc_unreachable ();
+		rust_unreachable ();
 	      }
 	  }
 	if (is_reference || !is_volatile || !is_complete
@@ -573,7 +571,7 @@ convert_to_void (tree expr, impl_conv_void implicit)
 			  expr, type);
 	      break;
 	    default:
-	      gcc_unreachable ();
+	      rust_unreachable ();
 	    }
 
 	break;
@@ -1311,7 +1309,7 @@ type_memfn_quals (const_tree type)
   else if (TREE_CODE (type) == METHOD_TYPE)
     return rs_type_quals (class_of_this_parm (type));
   else
-    gcc_unreachable ();
+    rust_unreachable ();
 }
 
 // forked from gcc/cp/pt.cc find_parameter_pack_data
@@ -1336,7 +1334,7 @@ struct find_parameter_pack_data
 // forked from gcc/cp/lex.cc conv_type_hasher
 
 /* Hasher for the conversion operator name hash table.  */
-struct conv_type_hasher : ggc_ptr_hash<tree_node>
+struct rust_conv_type_hasher : ggc_ptr_hash<tree_node>
 {
   /* Hash NODE, an identifier node in the table.  TYPE_UID is
      suitable, as we're not concerned about matching canonicalness
@@ -1351,7 +1349,7 @@ struct conv_type_hasher : ggc_ptr_hash<tree_node>
   static bool equal (tree node, tree type) { return TREE_TYPE (node) == type; }
 };
 
-static GTY (()) hash_table<conv_type_hasher> *conv_type_names;
+static GTY (()) hash_table<rust_conv_type_hasher> *conv_type_names;
 
 // forked from gcc/cp/lex.cc make_conv_op_name
 
@@ -1370,7 +1368,7 @@ make_conv_op_name (tree type)
     return error_mark_node;
 
   if (conv_type_names == NULL)
-    conv_type_names = hash_table<conv_type_hasher>::create_ggc (31);
+    conv_type_names = hash_table<rust_conv_type_hasher>::create_ggc (31);
 
   tree *slot
     = conv_type_names->find_slot_with_hash (type, (hashval_t) TYPE_UID (type),
@@ -1659,6 +1657,56 @@ build_min_array_type (tree elt_type, tree index_type)
   return t;
 }
 
+// forked from gcc/cp/name-lookup.cc resort_data
+
+} // namespace Rust
+
+static struct
+{
+  gt_pointer_operator new_value;
+  void *cookie;
+} resort_data;
+
+// forked from gcc/cp/name-lookup.cc resort_member_name_cmp
+
+/* This routine compares two fields like member_name_cmp but using the
+   pointer operator in resort_field_decl_data.  We don't have to deal
+   with duplicates here.  */
+
+static int
+resort_member_name_cmp (const void *a_p, const void *b_p)
+{
+  tree a = *(const tree *) a_p;
+  tree b = *(const tree *) b_p;
+  tree name_a = OVL_NAME (a);
+  tree name_b = OVL_NAME (b);
+
+  resort_data.new_value (&name_a, &name_a, resort_data.cookie);
+  resort_data.new_value (&name_b, &name_b, resort_data.cookie);
+
+  gcc_checking_assert (name_a != name_b);
+
+  return name_a < name_b ? -1 : +1;
+}
+
+// forked from gcc/cp/name-lookup.cc resort_type_member_vec
+
+/* Resort CLASSTYPE_MEMBER_VEC because pointers have been reordered.  */
+
+void
+resort_type_member_vec (void *obj, void * /*orig_obj*/,
+			gt_pointer_operator new_value, void *cookie)
+{
+  if (vec<tree, va_gc> *member_vec = (vec<tree, va_gc> *) obj)
+    {
+      resort_data.new_value = new_value;
+      resort_data.cookie = cookie;
+      member_vec->qsort (resort_member_name_cmp);
+    }
+}
+
+namespace Rust {
+
 // forked from gcc/cp/name-lookup.cc fields_linear_search
 
 /* Linear search of (partially ordered) fields of KLASS for NAME.  */
@@ -1882,7 +1930,7 @@ rs_tree_equal (tree t1, tree t2)
     case VOID_CST:
       /* There's only a single VOID_CST node, so we should never reach
 	 here.  */
-      gcc_unreachable ();
+      rust_unreachable ();
 
     case INTEGER_CST:
       return tree_int_cst_equal (t1, t2);
@@ -2049,7 +2097,7 @@ rs_tree_equal (tree t1, tree t2)
       return same_type_p (t1, t2);
 
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 
   /* We can get here with --disable-checking.  */
@@ -2253,7 +2301,7 @@ struct cplus_array_info
 
 // forked from gcc/cp/tree.cc cplus_array_hasher
 
-struct cplus_array_hasher : ggc_ptr_hash<tree_node>
+struct rust_cplus_array_hasher : ggc_ptr_hash<tree_node>
 {
   typedef cplus_array_info *compare_type;
 
@@ -2264,7 +2312,7 @@ struct cplus_array_hasher : ggc_ptr_hash<tree_node>
 /* Hash an ARRAY_TYPE.  K is really of type `tree'.  */
 
 hashval_t
-cplus_array_hasher::hash (tree t)
+rust_cplus_array_hasher::hash (tree t)
 {
   hashval_t hash;
 
@@ -2278,7 +2326,7 @@ cplus_array_hasher::hash (tree t)
    of type `cplus_array_info*'. */
 
 bool
-cplus_array_hasher::equal (tree t1, cplus_array_info *t2)
+rust_cplus_array_hasher::equal (tree t1, cplus_array_info *t2)
 {
   return (TREE_TYPE (t1) == t2->type && TYPE_DOMAIN (t1) == t2->domain);
 }
@@ -2287,7 +2335,7 @@ cplus_array_hasher::equal (tree t1, cplus_array_info *t2)
 
 /* Hash table containing dependent array types, which are unsuitable for
    the language-independent type hash table.  */
-static GTY (()) hash_table<cplus_array_hasher> *cplus_array_htab;
+static GTY (()) hash_table<rust_cplus_array_hasher> *cplus_array_htab;
 
 // forked from gcc/cp/tree.cc is_byte_access_type
 
@@ -2334,7 +2382,7 @@ build_cplus_array_type (tree elt_type, tree index_type, int dependent)
       hashval_t hash;
 
       if (cplus_array_htab == NULL)
-	cplus_array_htab = hash_table<cplus_array_hasher>::create_ggc (61);
+	cplus_array_htab = hash_table<rust_cplus_array_hasher>::create_ggc (61);
 
       hash = TYPE_UID (elt_type);
       if (index_type)
@@ -3645,7 +3693,7 @@ fold_offsetof (tree expr, tree type, enum tree_code ctx)
       return fold_offsetof (t, type);
 
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 
   if (!POINTER_TYPE_P (type))
@@ -3922,7 +3970,7 @@ retry:
       break;
 
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 
@@ -4249,9 +4297,20 @@ struct GTY ((for_user)) source_location_table_entry
   tree var;
 };
 
+// exit/reenter namespace to declare some external functions
+
+} // namespace Rust
+
+extern void
+gt_pch_nx (Rust::source_location_table_entry &);
+extern void
+gt_pch_nx (Rust::source_location_table_entry *, gt_pointer_operator, void *);
+
+namespace Rust {
+
 /* Traits class for function start hash maps below.  */
 
-struct source_location_table_entry_hash
+struct rust_source_location_table_entry_hash
   : ggc_remove<source_location_table_entry>
 {
   typedef source_location_table_entry value_type;
@@ -4299,23 +4358,17 @@ struct source_location_table_entry_hash
 	    && ref.var == NULL_TREE);
   }
 
-  static void pch_nx (source_location_table_entry &p)
-  {
-    extern void gt_pch_nx (source_location_table_entry &);
-    gt_pch_nx (p);
-  }
+  static void pch_nx (source_location_table_entry &p) { gt_pch_nx (p); }
 
   static void pch_nx (source_location_table_entry &p, gt_pointer_operator op,
 		      void *cookie)
   {
-    extern void gt_pch_nx (source_location_table_entry *, gt_pointer_operator,
-			   void *);
     gt_pch_nx (&p, op, cookie);
   }
 };
 
 static GTY (())
-  hash_table<source_location_table_entry_hash> *source_location_table;
+  hash_table<rust_source_location_table_entry_hash> *source_location_table;
 static GTY (()) unsigned int source_location_id;
 
 // Above is forked from gcc/cp/cp-gimplify.cc
@@ -4520,7 +4573,6 @@ lvalue_kind (const_tree ref)
 	 lvalues.  */
       return (DECL_NONSTATIC_MEMBER_FUNCTION_P (ref) ? clk_none : clk_ordinary);
 
-    case NON_DEPENDENT_EXPR:
     case PAREN_EXPR:
       return lvalue_kind (TREE_OPERAND (ref, 0));
 
@@ -4758,7 +4810,7 @@ fold_builtin_source_location (location_t loc)
     return build_zero_cst (const_ptr_type_node);
   if (source_location_table == NULL)
     source_location_table
-      = hash_table<source_location_table_entry_hash>::create_ggc (64);
+      = hash_table<rust_source_location_table_entry_hash>::create_ggc (64);
   const line_map_ordinary *map;
   source_location_table_entry entry;
   entry.loc = linemap_resolve_location (line_table, loc,
@@ -4817,7 +4869,7 @@ fold_builtin_source_location (location_t loc)
 	  else if (strcmp (n, "_M_column") == 0)
 	    val = build_int_cst (TREE_TYPE (field), LOCATION_COLUMN (loc));
 	  else
-	    gcc_unreachable ();
+	    rust_unreachable ();
 	  CONSTRUCTOR_APPEND_ELT (v, field, val);
 	}
 
@@ -5943,7 +5995,7 @@ lvalue_error (location_t loc, enum lvalue_use use)
       error_at (loc, "lvalue required in %<asm%> statement");
       break;
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 
@@ -6155,3 +6207,7 @@ array_string_literal_compatible_p (tree type, tree init)
 }
 
 } // namespace Rust
+
+using namespace Rust;
+
+#include "gt-rust-rust-tree.h"

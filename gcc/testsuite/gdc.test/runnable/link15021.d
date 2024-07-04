@@ -13,7 +13,7 @@ class AliasDecl {}
 
 void aliasDecl(AliasDecl ad)
 {
-    AliasDecl* zis;
+    AliasDecl* zis = &ad;
 
     static if (is(typeof(to!string(*zis))))
     {

@@ -16,6 +16,9 @@
    Reported to nvidia 2016-05-18.  */
 /* { dg-skip-if "PTX assembler bug" { nvptx-*-* } { "-O0" } { "" } } */
 
+void abort (void);
+void exit (int);
+
 struct xx
  {
    int a;

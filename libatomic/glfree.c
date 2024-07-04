@@ -1,4 +1,4 @@
-/* Copyright (C) 2012-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2024 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Atomic Library (libatomic).
@@ -22,6 +22,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#define LAT_GLFREE
 #include "libatomic_i.h"
 
 /* Accesses with a power-of-two size are not lock-free if we don't have an
@@ -80,3 +81,4 @@ libat_is_lock_free (size_t n, void *ptr)
 }
 
 EXPORT_ALIAS (is_lock_free);
+#undef LAT_GLFREE

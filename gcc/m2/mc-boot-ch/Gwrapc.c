@@ -1,6 +1,6 @@
 /* Gwrapc.c wrap libc functions for mc.
 
-Copyright (C) 2005-2023 Free Software Foundation, Inc.
+Copyright (C) 2005-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -162,6 +162,38 @@ wrapc_signbitf (float r)
 #else
   return 0;
 #endif
+}
+
+/* SeekSet return the system libc SEEK_SET value.  */
+
+int
+wrapc_SeekSet (void)
+{
+  return SEEK_SET;
+}
+
+/* SeekEnd return the system libc SEEK_END value.  */
+
+int
+wrapc_SeekEnd (void)
+{
+  return SEEK_END;
+}
+
+/* ReadOnly return the system value of O_RDONLY.  */
+
+int
+wrapc_ReadOnly (void)
+{
+  return O_RDONLY;
+}
+
+/* WriteOnly return the system value of O_WRONLY.  */
+
+int
+wrapc_WriteOnly (void)
+{
+  return O_WRONLY;
 }
 
 /* init constructor for the module.  */

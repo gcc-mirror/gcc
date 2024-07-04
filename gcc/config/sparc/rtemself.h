@@ -1,5 +1,5 @@
 /* Definitions for rtems targeting a SPARC using ELF.
-   Copyright (C) 1996-2023 Free Software Foundation, Inc.
+   Copyright (C) 1996-2024 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
    This file is part of GCC.
@@ -40,5 +40,3 @@
 
 /* Use the default */
 #undef LINK_GCC_C_SEQUENCE_SPEC
-
-#define SPARC_GCOV_TYPE_SIZE 32

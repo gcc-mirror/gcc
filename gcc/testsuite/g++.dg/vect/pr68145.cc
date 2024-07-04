@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-Wno-return-type" } */
+/* { dg-additional-options "-fno-tree-pta -Wno-return-type" } */
 
 struct A {
   bool operator()(int p1, int p2) { return p1 && p2; }

@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 struct a_struct
 {
   unsigned char a_character;
@@ -35,7 +38,8 @@ f (a, b)
   a_ptr->a_character = (unsigned char) r;
 }
 
-main ()
+int
+main (void)
 {
   if (f (1, 0UL) != 0)
     abort ();

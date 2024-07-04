@@ -1,6 +1,6 @@
 // vector<bool> specialization -*- C++ -*-
 
-// Copyright (C) 2001-2023 Free Software Foundation, Inc.
+// Copyright (C) 2001-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -55,6 +55,10 @@
 
 #ifndef _STL_BVECTOR_H
 #define _STL_BVECTOR_H 1
+
+#ifndef _GLIBCXX_ALWAYS_INLINE
+#define _GLIBCXX_ALWAYS_INLINE inline __attribute__((__always_inline__))
+#endif
 
 #if __cplusplus >= 201103L
 #include <initializer_list>
@@ -177,6 +181,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     _Bit_type * _M_p;
     unsigned int _M_offset;
 
+    _GLIBCXX20_CONSTEXPR _GLIBCXX_ALWAYS_INLINE
+    void
+    _M_assume_normalized() const
+    {
+#if __has_attribute(__assume__) && !defined(_GLIBCXX_CLANG)
+      unsigned int __ofst = _M_offset;
+      __attribute__ ((__assume__ (__ofst < unsigned(_S_word_bit))));
+#endif
+    }
+
     _GLIBCXX20_CONSTEXPR
     _Bit_iterator_base(_Bit_type * __x, unsigned int __y)
     : _M_p(__x), _M_offset(__y) { }
@@ -185,6 +199,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     void
     _M_bump_up()
     {
+      _M_assume_normalized();
       if (_M_offset++ == int(_S_word_bit) - 1)
 	{
 	  _M_offset = 0;
@@ -196,6 +211,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     void
     _M_bump_down()
     {
+      _M_assume_normalized();
       if (_M_offset-- == 0)
 	{
 	  _M_offset = int(_S_word_bit) - 1;
@@ -207,6 +223,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     void
     _M_incr(ptrdiff_t __i)
     {
+      _M_assume_normalized();
       difference_type __n = __i + _M_offset;
       _M_p += __n / int(_S_word_bit);
       __n = __n % int(_S_word_bit);
@@ -221,7 +238,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     _GLIBCXX_NODISCARD
     friend _GLIBCXX20_CONSTEXPR bool
     operator==(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
-    { return __x._M_p == __y._M_p && __x._M_offset == __y._M_offset; }
+    {
+      __x._M_assume_normalized();
+      __y._M_assume_normalized();
+      return __x._M_p == __y._M_p && __x._M_offset == __y._M_offset;
+    }
 
 #if __cpp_lib_three_way_comparison
     [[nodiscard]]
@@ -229,6 +250,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     operator<=>(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
     noexcept
     {
+      __x._M_assume_normalized();
+      __y._M_assume_normalized();
       if (const auto __cmp = __x._M_p <=> __y._M_p; __cmp != 0)
 	return __cmp;
       return __x._M_offset <=> __y._M_offset;
@@ -238,6 +261,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     friend bool
     operator<(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
     {
+      __x._M_assume_normalized();
+      __y._M_assume_normalized();
       return __x._M_p < __y._M_p
 	    || (__x._M_p == __y._M_p && __x._M_offset < __y._M_offset);
     }
@@ -266,6 +291,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     friend _GLIBCXX20_CONSTEXPR ptrdiff_t
     operator-(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
     {
+      __x._M_assume_normalized();
+      __y._M_assume_normalized();
       return (int(_S_word_bit) * (__x._M_p - __y._M_p)
 	      + __x._M_offset - __y._M_offset);
     }
@@ -297,7 +324,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     reference
     operator*() const
-    { return reference(_M_p, 1UL << _M_offset); }
+    {
+      _M_assume_normalized();
+      return reference(_M_p, 1UL << _M_offset);
+    }
 
     _GLIBCXX20_CONSTEXPR
     iterator&
@@ -408,7 +438,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     const_reference
     operator*() const
-    { return _Bit_reference(_M_p, 1UL << _M_offset); }
+    {
+      _M_assume_normalized();
+      return _Bit_reference(_M_p, 1UL << _M_offset);
+    }
 
     _GLIBCXX20_CONSTEXPR
     const_iterator&
@@ -560,6 +593,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_GLIBCXX20_CONSTEXPR
 	_Bvector_impl() _GLIBCXX_NOEXCEPT_IF(
 	  is_nothrow_default_constructible<_Bit_alloc_type>::value)
+#if __cpp_concepts
+	requires is_default_constructible_v<_Bit_alloc_type>
+#endif
 	: _Bit_alloc_type()
 	{ }
 
@@ -641,13 +677,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_allocate(size_t __n)
       {
 	_Bit_pointer __p = _Bit_alloc_traits::allocate(_M_impl, _S_nword(__n));
-#if __cpp_lib_is_constant_evaluated
+#if __cpp_lib_is_constant_evaluated && __cpp_constexpr_dynamic_alloc
 	if (std::is_constant_evaluated())
-	{
-	  __n = _S_nword(__n);
-	  for (size_t __i = 0; __i < __n; ++__i)
-	    __p[__i] = 0ul;
-	}
+	  {
+	    __n = _S_nword(__n);
+	    for (size_t __i = 0; __i < __n; ++__i)
+	      std::construct_at(std::to_address(__p) + __i);
+	  }
 #endif
 	return __p;
       }
@@ -1048,12 +1084,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       reference
       operator[](size_type __n)
-      { return begin()[__n]; }
+      {
+	__glibcxx_requires_subscript(__n);
+	return begin()[__n];
+      }
 
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_reference
       operator[](size_type __n) const
-      { return begin()[__n]; }
+      {
+	__glibcxx_requires_subscript(__n);
+	return begin()[__n];
+      }
 
     protected:
       _GLIBCXX20_CONSTEXPR
@@ -1068,7 +1110,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
     public:
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       reference
       at(size_type __n)
       {
@@ -1076,7 +1118,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return (*this)[__n];
       }
 
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_reference
       at(size_type __n) const
       {
@@ -1097,22 +1139,34 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       reference
       front()
-      { return *begin(); }
+      {
+	__glibcxx_requires_nonempty();
+	return *begin();
+      }
 
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_reference
       front() const
-      { return *begin(); }
+      {
+	__glibcxx_requires_nonempty();
+	return *begin();
+      }
 
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       reference
       back()
-      { return *(end() - 1); }
+      {
+	__glibcxx_requires_nonempty();
+	return *(end() - 1);
+      }
 
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_reference
       back() const
-      { return *(end() - 1); }
+      {
+	__glibcxx_requires_nonempty();
+	return *(end() - 1);
+      }
 
       _GLIBCXX20_CONSTEXPR
       void

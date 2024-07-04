@@ -1,6 +1,6 @@
 // Allocator that wraps operator new -*- C++ -*-
 
-// Copyright (C) 2001-2023 Free Software Foundation, Inc.
+// Copyright (C) 2001-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -140,7 +140,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    std::__throw_bad_alloc();
 	  }
 
-#if __cpp_aligned_new
+#if __cpp_aligned_new && __cplusplus >= 201103L
 	if (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
 	  {
 	    std::align_val_t __al = std::align_val_t(alignof(_Tp));
@@ -161,7 +161,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 # define _GLIBCXX_SIZED_DEALLOC(p, n) (p)
 #endif
 
-#if __cpp_aligned_new
+#if __cpp_aligned_new && __cplusplus >= 201103L
 	if (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
 	  {
 	    _GLIBCXX_OPERATOR_DELETE(_GLIBCXX_SIZED_DEALLOC(__p, __n),

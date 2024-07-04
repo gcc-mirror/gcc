@@ -1,6 +1,6 @@
 // 2001-12-28  Phil Edwards  <pme@gcc.gnu.org>
 //
-// Copyright (C) 2001-2023 Free Software Foundation, Inc.
+// Copyright (C) 2001-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -73,6 +73,10 @@ test2054( )
   upper_bound(Index.begin(), Index.end(), SearchTerm, aComparison);
   equal_range(Index.begin(), Index.end(), SearchTerm, aComparison);
   binary_search(Index.begin(), Index.end(), SearchTerm, aComparison);
+  // { dg-warning "ignoring return value" "" { target c++17 } 72 }
+  // { dg-warning "ignoring return value" "" { target c++17 } 73 }
+  // { dg-warning "ignoring return value" "" { target c++17 } 74 }
+  // { dg-warning "ignoring return value" "" { target c++17 } 75 }
 }
 
 int main()

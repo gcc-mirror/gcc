@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -177,6 +177,7 @@ case ROUNDING_TO_ZERO:
     BID_RETURN (res);
   }
   break;
+default: break; // default added to avoid compiler warning
 }
 
   // q = nr. of decimal digits in x
@@ -804,6 +805,7 @@ case ROUNDING_TO_ZERO:
     BID_RETURN (res);
   }
   break;
+default: break; // default added to avoid compiler warning
 }
 
 BID_RETURN (res);

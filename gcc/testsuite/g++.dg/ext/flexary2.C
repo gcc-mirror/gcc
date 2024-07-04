@@ -13,7 +13,7 @@ struct A {
 
 struct B {
   B() {}
-  A a[];   // { dg-error "extension|flexible array .* in an otherwise empty" }
+  A a[];
 };
 
 struct C {

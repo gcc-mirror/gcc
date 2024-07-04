@@ -1,5 +1,5 @@
 /* Tree based alias analysis and alias oracle.
-   Copyright (C) 2008-2023 Free Software Foundation, Inc.
+   Copyright (C) 2008-2024 Free Software Foundation, Inc.
    Contributed by Richard Guenther  <rguenther@suse.de>
 
    This file is part of GCC.
@@ -46,6 +46,11 @@ struct GTY(()) pt_solution
   /* Nonzero if the points-to set includes 'nothing', the points-to set
      includes memory at address NULL.  */
   unsigned int null : 1;
+
+  /* Nonzero if the points-to set includes a readonly object like a
+     STRING_CST that does not have an underlying declaration but will
+     end up in the constant pool.  */
+  unsigned int const_pool : 1;
 
   /* Nonzero if the vars bitmap includes a variable included in 'nonlocal'.  */
   unsigned int vars_contains_nonlocal : 1;
@@ -139,6 +144,8 @@ extern bool call_may_clobber_ref_p (gcall *, tree, bool = true);
 extern bool call_may_clobber_ref_p_1 (gcall *, ao_ref *, bool = true);
 extern bool stmt_kills_ref_p (gimple *, tree);
 extern bool stmt_kills_ref_p (gimple *, ao_ref *);
+extern bool ref_can_have_store_data_races (tree);
+
 enum translate_flags
   { TR_TRANSLATE, TR_VALUEIZE_AND_DISAMBIGUATE, TR_DISAMBIGUATE };
 extern tree get_continuation_for_phi (gimple *, ao_ref *, bool,
@@ -173,6 +180,7 @@ extern bool pt_solution_empty_p (const pt_solution *);
 extern bool pt_solution_singleton_or_null_p (struct pt_solution *, unsigned *);
 extern bool pt_solution_includes_global (struct pt_solution *, bool);
 extern bool pt_solution_includes (struct pt_solution *, const_tree);
+extern bool pt_solution_includes_const_pool (struct pt_solution *);
 extern bool pt_solutions_intersect (struct pt_solution *, struct pt_solution *);
 extern void pt_solution_reset (struct pt_solution *);
 extern void pt_solution_set (struct pt_solution *, bitmap, bool);

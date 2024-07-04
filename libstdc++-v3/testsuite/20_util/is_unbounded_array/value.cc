@@ -1,6 +1,7 @@
 // { dg-do compile { target c++20 } }
+// { dg-add-options no_pch }
 
-// Copyright (C) 2019-2023 Free Software Foundation, Inc.
+// Copyright (C) 2019-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,13 +19,14 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <type_traits>
-#include <testsuite_tr1.h>
 
 #ifndef __cpp_lib_bounded_array_traits
 # error "Feature test macro for is_unbounded_array is missing"
 #elif __cpp_lib_bounded_array_traits < 201902L
 # error "Feature test macro for is_unbounded_array has wrong value"
 #endif
+
+#include <testsuite_tr1.h>
 
 void test01()
 {

@@ -1,3 +1,4 @@
+/* { dg-additional-options "-fpermissive" } */
 fp (double a, int b)
 {
   if (a != 33 || b != 11)

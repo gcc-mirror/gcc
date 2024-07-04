@@ -1,7 +1,8 @@
 int foo;
 int bar;
 
-main ()
+int
+main (void)
 {
   return foo + bar;
 }

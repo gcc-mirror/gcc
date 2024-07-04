@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 int caller (unsigned int reg_type)
 {
   switch (reg_type)

@@ -1,4 +1,4 @@
-@c Copyright (C) 2019-2023 Free Software Foundation, Inc.
+@c Copyright (C) 2019-2024 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 @c Contributed by David Malcolm <dmalcolm@redhat.com>.
@@ -20,6 +20,9 @@
 @cindex static analyzer, internals
 
 @subsection Overview
+
+At a high-level, we're doing coverage-guided symbolic execution of the
+user's code.
 
 The analyzer implementation works on the gimple-SSA representation.
 (I chose this in the hopes of making it easy to work with LTO to
@@ -55,7 +58,9 @@ Next is the heart of the analyzer: we use a worklist to explore state
 within the supergraph, building an "exploded graph".
 Nodes in the exploded graph correspond to <point,@w{ }state> pairs, as in
      "Precise Interprocedural Dataflow Analysis via Graph Reachability"
-     (Thomas Reps, Susan Horwitz and Mooly Sagiv).
+     (Thomas Reps, Susan Horwitz and Mooly Sagiv) - but note that
+we're not using the algorithm described in that paper, just the
+``exploded graph'' terminology.
 
 We reuse nodes for <point, state> pairs we've already seen, and avoid
 tracking state too closely, so that (hopefully) we rapidly converge
@@ -254,56 +259,175 @@ memory, with a @code{store} recording a binding between @code{region}
 instances, to @code{svalue} instances.  The bindings are organized into
 clusters, where regions accessible via well-defined pointer arithmetic
 are in the same cluster.  The representation is graph-like because values
-can be pointers to regions.  It also stores a constraint_manager,
+can be pointers to regions.  It also stores a @code{constraint_manager},
 capturing relationships between the values.
 
 Because each node in the @code{exploded_graph} has a @code{region_model},
 and each of the latter is graph-like, the @code{exploded_graph} is in some
 ways a graph of graphs.
 
-Here's an example of printing a @code{program_state}, showing the
-@code{region_model} within it, along with state for the @code{malloc}
-state machine.
+There are several ``dump'' functions for use when debugging the analyzer.
 
-@smallexample
-(gdb) call debug (*this)
-rmodel:
-stack depth: 1
-  frame (index 0): frame: ‘test’@@1
-clusters within frame: ‘test’@@1
-  cluster for: ptr_3: &HEAP_ALLOCATED_REGION(12)
-m_called_unknown_fn: FALSE
-constraint_manager:
-  equiv classes:
-  constraints:
-malloc:
-  0x2e89590: &HEAP_ALLOCATED_REGION(12): unchecked ('ptr_3')
-@end smallexample
-
-This is the state at the point of returning from @code{calls_malloc} back
-to @code{test} in the following:
+Consider this example C code:
 
 @smallexample
 void *
-calls_malloc (void)
+calls_malloc (size_t n)
 @{
   void *result = malloc (1024);
-  return result;
+  return result; /* HERE */
 @}
 
-void test (void)
+void test (size_t n)
 @{
-  void *ptr = calls_malloc ();
+  void *ptr = calls_malloc (n * 4);
   /* etc.  */
 @}
 @end smallexample
 
-Within the store, there is the cluster for @code{ptr_3} within the frame
-for @code{test}, where the whole cluster is bound to a pointer value,
-pointing at @code{HEAP_ALLOCATED_REGION(12)}.  Additionally, this pointer
-has the @code{unchecked} state for the @code{malloc} state machine
-indicating it hasn't yet been checked against NULL since the allocation
-call.
+and the state at the point @code{/* HERE */} for the interprocedural
+analysis case where @code{calls_malloc} returns back to @code{test}.
+
+Here's an example of printing a @code{program_state} at @code{/* HERE */},
+showing the @code{region_model} within it, along with state for the
+@code{malloc} state machine.
+
+@smallexample
+(gdb) break region_model::on_return
+[..snip...]
+(gdb) run
+[..snip...]
+(gdb) up
+[..snip...]
+(gdb) call state->dump()
+State
+├─ Region Model
+│  ├─ Current Frame: frame: ‘calls_malloc’@@2
+│  ├─ Store
+│  │  ├─ m_called_unknown_fn: false
+│  │  ├─ frame: ‘test’@@1
+│  │  │  ╰─ _1: (INIT_VAL(n_2(D))*(size_t)4)
+│  │  ╰─ frame: ‘calls_malloc’@@2
+│  │     ├─ result_4: &HEAP_ALLOCATED_REGION(27)
+│  │     ╰─ _5: &HEAP_ALLOCATED_REGION(27)
+│  ╰─ Dynamic Extents
+│     ╰─ HEAP_ALLOCATED_REGION(27): (INIT_VAL(n_2(D))*(size_t)4)
+╰─ ‘malloc’ state machine
+   ╰─ 0x468cb40: &HEAP_ALLOCATED_REGION(27): unchecked (@{free@}) (‘result_4’)
+@end smallexample
+
+Within the store, there are bindings clusters for the SSA names for the
+various local variables within frames for @code{test} and
+@code{calls_malloc}.  For example,
+
+@itemize @bullet
+@item
+within @code{test} the whole cluster for @code{_1} is bound
+to a @code{binop_svalue} representing @code{n * 4}, and
+@item
+within @code{test} the whole cluster for @code{result_4} is bound to a
+@code{region_svalue} pointing at @code{HEAP_ALLOCATED_REGION(12)}.
+@end itemize
+
+Additionally, this latter pointer has the @code{unchecked} state for the
+@code{malloc} state machine indicating it hasn't yet been checked against
+@code{NULL} since the allocation call.
+
+We also see that the state has captured the size of the heap-allocated
+region (``Dynamic Extents'').
+
+This visualization can also be seen within the output of
+@option{-fdump-analyzer-exploded-nodes-2} and
+@option{-fdump-analyzer-exploded-nodes-3}.
+
+As well as the above visualizations of states, there are tree-like
+visualizations for instances of @code{svalue} and @code{region}, showing
+their IDs and how they are constructed from simpler symbols:
+
+@smallexample
+(gdb) break region_model::set_dynamic_extents
+[..snip...]
+(gdb) run
+[..snip...]
+(gdb) up
+[..snip...]
+(gdb) call size_in_bytes->dump()
+(17): ‘long unsigned int’: binop_svalue(mult_expr: ‘*’)
+├─ (15): ‘size_t’: initial_svalue
+│  ╰─ m_reg: (12): ‘size_t’: decl_region(‘n_2(D)’)
+│     ╰─ parent: (9): frame_region(‘test’, index: 0, depth: 1)
+│        ╰─ parent: (1): stack region
+│           ╰─ parent: (0): root region
+╰─ (16): ‘size_t’: constant_svalue (‘4’)
+@end smallexample
+
+i.e. that @code{size_in_bytes} is a @code{binop_svalue} expressing
+the result of multiplying
+
+@itemize @bullet
+@item
+the initial value of the @code{PARM_DECL} @code{n_2(D)} for the
+parameter @code{n} within the frame for @code{test} by
+@item
+the constant value @code{4}.
+@end itemize
+
+The above visualizations rely on the @code{text_art::widget} framework,
+which performs significant work to lay out the output, so there is also
+an earlier, simpler, form of dumping available.  For states there is:
+
+@smallexample
+(gdb) call state->dump(eg.m_ext_state, true)
+rmodel:
+stack depth: 2
+  frame (index 1): frame: ‘calls_malloc’@@2
+  frame (index 0): frame: ‘test’@@1
+clusters within frame: ‘test’@@1
+  cluster for: _1: (INIT_VAL(n_2(D))*(size_t)4)
+clusters within frame: ‘calls_malloc’@@2
+  cluster for: result_4: &HEAP_ALLOCATED_REGION(27)
+  cluster for: _5: &HEAP_ALLOCATED_REGION(27)
+m_called_unknown_fn: FALSE
+constraint_manager:
+  equiv classes:
+  constraints:
+dynamic_extents:
+  HEAP_ALLOCATED_REGION(27): (INIT_VAL(n_2(D))*(size_t)4)
+malloc:
+  0x468cb40: &HEAP_ALLOCATED_REGION(27): unchecked (@{free@}) (‘result_4’)
+@end smallexample
+
+or for @code{region_model} just:
+
+@smallexample
+(gdb) call state->m_region_model->debug()
+stack depth: 2
+  frame (index 1): frame: ‘calls_malloc’@@2
+  frame (index 0): frame: ‘test’@@1
+clusters within frame: ‘test’@@1
+  cluster for: _1: (INIT_VAL(n_2(D))*(size_t)4)
+clusters within frame: ‘calls_malloc’@@2
+  cluster for: result_4: &HEAP_ALLOCATED_REGION(27)
+  cluster for: _5: &HEAP_ALLOCATED_REGION(27)
+m_called_unknown_fn: FALSE
+constraint_manager:
+  equiv classes:
+  constraints:
+dynamic_extents:
+  HEAP_ALLOCATED_REGION(27): (INIT_VAL(n_2(D))*(size_t)4)
+@end smallexample
+
+and for instances of @code{svalue} and @code{region} there is this
+older dump implementation, which takes a @code{bool simple} flag
+controlling the verbosity of the dump:
+
+@smallexample
+(gdb) call size_in_bytes->dump(true)
+(INIT_VAL(n_2(D))*(size_t)4)
+
+(gdb) call size_in_bytes->dump(false)
+binop_svalue (mult_expr, initial_svalue(‘size_t’, decl_region(frame_region(‘test’, index: 0, depth: 1), ‘size_t’, ‘n_2(D)’)), constant_svalue(‘size_t’, 4))
+@end smallexample
 
 @subsection Analyzer Paths
 
@@ -499,7 +623,8 @@ which dumps a @file{SRC.eg.txt} file containing the full @code{exploded_graph}.
 
 Assuming that you have the
 @uref{https://gcc-newbies-guide.readthedocs.io/en/latest/debugging.html,,python support scripts for gdb}
-installed, you can use:
+installed (which you should do, it makes debugging GCC much easier),
+you can use:
 
 @smallexample
 (gdb) break-on-saved-diagnostic

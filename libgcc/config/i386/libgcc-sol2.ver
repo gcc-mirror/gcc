@@ -1,4 +1,4 @@
-# Copyright (C) 2010-2023 Free Software Foundation, Inc.
+# Copyright (C) 2010-2024 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -114,4 +114,40 @@ GCC_4.8.0 {
 
 GCC_7.0.0 {
   __signbittf2
+}
+
+GCC_14.0.0 {
+  # Added to GCC_12.0.0 in i386/libgcc-glibc.ver.
+  __divhc3
+  __mulhc3
+  __eqhf2
+  __nehf2
+  __extendhfdf2
+  __extendhfsf2
+  __extendhftf2
+  __extendhfxf2
+  __fixhfti
+  __fixunshfti
+  __floattihf
+  __floatuntihf
+  __truncdfhf2
+  __truncsfhf2
+  __trunctfhf2
+  __truncxfhf2
+  # Added to GCC_13.0.0 in i386/libgcc-glibc.ver.
+  __extendbfsf2
+  __floattibf
+  __floatuntibf
+  __truncdfbf2
+  __truncsfbf2
+  __trunctfbf2
+  __truncxfbf2
+  __trunchfbf2
+  # Added to GCC_14.0.0 in i386/libgcc-glibc.ver.
+  __fixxfbitint
+  __fixtfbitint
+  __floatbitintbf
+  __floatbitinthf
+  __floatbitintxf
+  __floatbitinttf
 }

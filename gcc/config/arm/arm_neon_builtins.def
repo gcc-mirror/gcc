@@ -1,5 +1,5 @@
 /* NEON builtin definitions for ARM.
-   Copyright (C) 2013-2023 Free Software Foundation, Inc.
+   Copyright (C) 2013-2024 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -301,6 +301,12 @@ VAR1 (TERNOP, vtbx4, v8qi)
 VAR13 (LOAD1, vld1,
         v8qi, v4hi, v4hf, v2si, v2sf, v16qi, v8hi, v8hf, v4si, v4sf, v2di,
         v4bf, v8bf)
+VAR7 (LOAD1, vld1_x2, v8qi, v4hi, v2si, di, v4hf, v2sf, v4bf)
+VAR7 (LOAD1, vld1q_x2, v16qi, v8hi, v4si, v2di, v8hf, v4sf, v8bf)
+VAR7 (LOAD1, vld1_x3, v8qi, v4hi, v2si, di, v4hf, v2sf, v4bf)
+VAR7 (LOAD1, vld1q_x3, v16qi, v8hi, v4si, v2di, v8hf, v4sf, v8bf)
+VAR7 (LOAD1, vld1_x4, v8qi, v4hi, v2si, di, v4hf, v2sf, v4bf)
+VAR7 (LOAD1, vld1q_x4, v16qi, v8hi, v4si, v2di, v8hf, v4sf, v8bf)
 VAR12 (LOAD1LANE, vld1_lane,
 	v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di, v4bf, v8bf)
 VAR10 (LOAD1, vld1_dup,
@@ -308,6 +314,12 @@ VAR10 (LOAD1, vld1_dup,
 VAR14 (STORE1, vst1,
         v8qi, v4hi, v4hf, v2si, v2sf, di, v16qi, v8hi, v8hf, v4si, v4sf, v2di,
         v4bf, v8bf)
+VAR7 (STORE1, vst1_x2, v8qi, v4hi, v2si, di, v4hf, v2sf, v4bf)
+VAR7 (STORE1, vst1q_x2, v16qi, v8hi, v4si, v2di, v8hf, v4sf, v8bf)
+VAR7 (STORE1, vst1_x3, v8qi, v4hi, v2si, di, v4hf, v2sf, v4bf)
+VAR7 (STORE1, vst1q_x3, v16qi, v8hi, v4si, v2di, v8hf, v4sf, v8bf)
+VAR7 (STORE1, vst1_x4, v8qi, v4hi, v2si, di, v4hf, v2sf, v4bf)
+VAR7 (STORE1, vst1q_x4, v16qi, v8hi, v4si, v2di, v8hf, v4sf, v8bf)
 VAR14 (STORE1LANE, vst1_lane,
        v8qi, v4hi, v4hf, v2si, v2sf, di, v16qi, v8hi, v8hf, v4si, v4sf, v2di, v4bf, v8bf)
 VAR13 (LOAD1, vld2,

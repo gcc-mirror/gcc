@@ -1,5 +1,5 @@
 /* Part of CPP library.
-   Copyright (C) 1997-2023 Free Software Foundation, Inc.
+   Copyright (C) 1997-2024 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -24,6 +24,7 @@ along with this program; see the file COPYING3.  If not see
 
 #include "symtab.h"
 #include "cpplib.h"
+#include "rich-location.h"
 
 #if HAVE_ICONV
 #include <iconv.h>
@@ -555,6 +556,9 @@ struct cpp_reader
   /* Identifier hash table.  */
   struct ht *hash_table;
 
+  /* Identifier ancillary data hash table.  */
+  struct ht *extra_hash_table;
+
   /* Expression parser stack.  */
   struct op *op_stack, *op_limit;
 
@@ -566,7 +570,7 @@ struct cpp_reader
   struct spec_nodes spec_nodes;
 
   /* Whether cpplib owns the hashtable.  */
-  bool our_hashtable;
+  bool our_hashtable, our_extra_hashtable;
 
   /* Traditional preprocessing output buffer (a logical line).  */
   struct
@@ -704,7 +708,8 @@ extern void _cpp_push_token_context (cpp_reader *, cpp_hashnode *,
 extern void _cpp_backup_tokens_direct (cpp_reader *, unsigned int);
 
 /* In identifiers.cc */
-extern void _cpp_init_hashtable (cpp_reader *, cpp_hash_table *);
+extern void
+_cpp_init_hashtable (cpp_reader *, cpp_hash_table *, cpp_hash_table *);
 extern void _cpp_destroy_hashtable (cpp_reader *);
 
 /* In files.cc */
@@ -935,7 +940,7 @@ location_t linemap_add_macro_token (const line_map_macro *,
    LOCATION is the location of token that is part of the
    expansion-list of a macro expansion return the line number of the
    macro expansion point.  */
-int linemap_get_expansion_line (class line_maps *,
+int linemap_get_expansion_line (const line_maps *,
 				location_t);
 
 /* Return the path of the file corresponding to source code location
@@ -946,7 +951,7 @@ int linemap_get_expansion_line (class line_maps *,
    macro expansion point.
 
    SET is the line map set LOCATION comes from.  */
-const char* linemap_get_expansion_filename (class line_maps *,
+const char* linemap_get_expansion_filename (const line_maps *,
 					    location_t);
 
 /* A subclass of rich_location for emitting a diagnostic

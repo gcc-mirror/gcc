@@ -1,6 +1,7 @@
 !{ dg-do compile }
 !
 program p
+  implicit none
   type t
     real :: a = 1.0
   end type

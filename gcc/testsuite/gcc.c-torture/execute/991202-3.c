@@ -1,3 +1,5 @@
+void abort (void);
+void exit (int);
 
 unsigned int f (unsigned int a)
 {

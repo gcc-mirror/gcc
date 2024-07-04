@@ -1,6 +1,6 @@
 ; Options for the eBPF compiler port.
 
-; Copyright (C) 2019-2023 Free Software Foundation, Inc.
+; Copyright (C) 2019-2024 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -77,9 +77,11 @@ Enable signed move and memory load instructions.
 
 mcpu=
 Target RejectNegative Joined Var(bpf_isa) Enum(bpf_isa) Init(ISA_V4)
+Select the eBPF ISA version to target in code generation.
 
 Enum
 Name(bpf_isa) Type(enum bpf_isa_version)
+Valid ISA versions (for use with the -mcpu= option)
 
 EnumValue
 Enum(bpf_isa) String(v1) Value(ISA_V1)
@@ -94,7 +96,7 @@ EnumValue
 Enum(bpf_isa) String(v4) Value(ISA_V4)
 
 masm=
-Target RejectNegative Joined Var(asm_dialect) Enum(asm_dialect) Init(ASM_NORMAL)
+Target RejectNegative Joined Var(asm_dialect) Enum(asm_dialect) Init(ASM_PSEUDOC)
 Use given assembler dialect.
 
 Enum
@@ -106,3 +108,7 @@ Enum(asm_dialect) String(normal) Value(ASM_NORMAL)
 
 EnumValue
 Enum(asm_dialect) String(pseudoc) Value(ASM_PSEUDOC)
+
+minline-memops-threshold=
+Target RejectNegative Joined UInteger Var(bpf_inline_memops_threshold) Init(1024)
+-minline-memops-threshold=<number> Maximum size of memset/memmove/memcpy to inline, larger sizes will use a library call.

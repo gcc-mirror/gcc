@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -40,27 +40,27 @@ public:
     return checker.resolved;
   }
 
-  void visit (InferType &) override { gcc_unreachable (); }
-  void visit (TupleType &) override { gcc_unreachable (); }
-  void visit (ArrayType &) override { gcc_unreachable (); }
-  void visit (SliceType &) override { gcc_unreachable (); }
-  void visit (BoolType &) override { gcc_unreachable (); }
-  void visit (IntType &) override { gcc_unreachable (); }
-  void visit (UintType &) override { gcc_unreachable (); }
-  void visit (FloatType &) override { gcc_unreachable (); }
-  void visit (USizeType &) override { gcc_unreachable (); }
-  void visit (ISizeType &) override { gcc_unreachable (); }
-  void visit (ErrorType &) override { gcc_unreachable (); }
-  void visit (CharType &) override { gcc_unreachable (); }
-  void visit (ReferenceType &) override { gcc_unreachable (); }
-  void visit (PointerType &) override { gcc_unreachable (); }
-  void visit (ParamType &) override { gcc_unreachable (); }
-  void visit (StrType &) override { gcc_unreachable (); }
-  void visit (NeverType &) override { gcc_unreachable (); }
-  void visit (PlaceholderType &) override { gcc_unreachable (); }
-  void visit (ProjectionType &) override { gcc_unreachable (); }
-  void visit (DynamicObjectType &) override { gcc_unreachable (); }
-  void visit (ClosureType &type) override { gcc_unreachable (); }
+  void visit (InferType &) override { rust_unreachable (); }
+  void visit (TupleType &) override { rust_unreachable (); }
+  void visit (ArrayType &) override { rust_unreachable (); }
+  void visit (SliceType &) override { rust_unreachable (); }
+  void visit (BoolType &) override { rust_unreachable (); }
+  void visit (IntType &) override { rust_unreachable (); }
+  void visit (UintType &) override { rust_unreachable (); }
+  void visit (FloatType &) override { rust_unreachable (); }
+  void visit (USizeType &) override { rust_unreachable (); }
+  void visit (ISizeType &) override { rust_unreachable (); }
+  void visit (ErrorType &) override { rust_unreachable (); }
+  void visit (CharType &) override { rust_unreachable (); }
+  void visit (ReferenceType &) override { rust_unreachable (); }
+  void visit (PointerType &) override { rust_unreachable (); }
+  void visit (ParamType &) override { rust_unreachable (); }
+  void visit (StrType &) override { rust_unreachable (); }
+  void visit (NeverType &) override { rust_unreachable (); }
+  void visit (PlaceholderType &) override { rust_unreachable (); }
+  void visit (ProjectionType &) override { rust_unreachable (); }
+  void visit (DynamicObjectType &) override { rust_unreachable (); }
+  void visit (ClosureType &type) override { rust_unreachable (); }
 
   // tuple-structs
   void visit (ADTType &type) override;
@@ -88,11 +88,11 @@ class Argument
 {
 public:
   Argument (Analysis::NodeMapping mapping, BaseType *argument_type,
-	    Location locus)
+	    location_t locus)
     : mapping (mapping), argument_type (argument_type), locus (locus)
   {}
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
   BaseType *get_argument_type () { return argument_type; }
 
@@ -101,7 +101,7 @@ public:
 private:
   Analysis::NodeMapping mapping;
   BaseType *argument_type;
-  Location locus;
+  location_t locus;
 };
 
 class TypeCheckMethodCallExpr
@@ -112,23 +112,23 @@ public:
 		       Resolver::TypeCheckContext *context);
 
   static BaseType *go (FnType *ref, Analysis::NodeMapping call_mappings,
-		       std::vector<Argument> &args, Location call_locus,
-		       Location receiver_locus, TyTy::BaseType *adjusted_self,
+		       std::vector<Argument> &args, location_t call_locus,
+		       location_t receiver_locus, TyTy::BaseType *adjusted_self,
 		       Resolver::TypeCheckContext *context);
 
 protected:
   BaseType *check (FnType &type);
 
   TypeCheckMethodCallExpr (Analysis::NodeMapping call_mappings,
-			   std::vector<Argument> &args, Location call_locus,
-			   Location receiver_locus,
+			   std::vector<Argument> &args, location_t call_locus,
+			   location_t receiver_locus,
 			   TyTy::BaseType *adjusted_self,
 			   Resolver::TypeCheckContext *context);
 
   Analysis::NodeMapping call_mappings;
   std::vector<Argument> &arguments;
-  Location call_locus;
-  Location receiver_locus;
+  location_t call_locus;
+  location_t receiver_locus;
   TyTy::BaseType *adjusted_self;
   Resolver::TypeCheckContext *context;
   Analysis::Mappings *mappings;

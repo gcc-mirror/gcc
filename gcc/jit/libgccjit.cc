@@ -1,5 +1,5 @@
 /* Implementation of the C API; all wrappers into the internal C++ API
-   Copyright (C) 2013-2023 Free Software Foundation, Inc.
+   Copyright (C) 2013-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -560,8 +560,8 @@ gcc_jit_type_get_size (gcc_jit_type *type)
 {
   RETURN_VAL_IF_FAIL (type, -1, NULL, NULL, "NULL type");
   RETURN_VAL_IF_FAIL
-    (type->is_int () || type->is_float (), -1, NULL, NULL,
-     "only getting the size of integer or floating-point types is supported for now");
+    (type->is_int () || type->is_float () || type->is_pointer (), -1, NULL, NULL,
+     "only getting the size of integer or floating-point or pointer types is supported for now");
   return type->get_size ();
 }
 
@@ -2076,6 +2076,42 @@ gcc_jit_context_null (gcc_jit_context *ctxt,
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, the real work is done by the
+   gcc::jit::recording::context::new_sizeof method in
+   jit-recording.cc.  */
+
+gcc_jit_rvalue *
+gcc_jit_context_new_sizeof (gcc_jit_context *ctxt,
+			    gcc_jit_type *type)
+{
+  RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  RETURN_NULL_IF_FAIL (type, ctxt, NULL, "NULL type");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+
+  return ((gcc_jit_rvalue *)ctxt
+	  ->new_sizeof (type));
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::context::new_alignof method in
+   jit-recording.cc.  */
+
+gcc_jit_rvalue *
+gcc_jit_context_new_alignof (gcc_jit_context *ctxt,
+			     gcc_jit_type *type)
+{
+  RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  RETURN_NULL_IF_FAIL (type, ctxt, NULL, "NULL type");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+
+  return ((gcc_jit_rvalue *)ctxt
+	  ->new_alignof (type));
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
    gcc::jit::recording::context::new_string_literal method in
    jit-recording.cc.  */
 
@@ -2114,7 +2150,7 @@ gcc_jit_context_new_unary_op (gcc_jit_context *ctxt,
     op);
   RETURN_NULL_IF_FAIL (result_type, ctxt, loc, "NULL result_type");
   RETURN_NULL_IF_FAIL_PRINTF3 (
-    result_type->is_numeric (), ctxt, loc,
+    result_type->is_numeric () || result_type->is_numeric_vector (), ctxt, loc,
     "gcc_jit_unary_op %s with operand %s "
     "has non-numeric result_type: %s",
     gcc::jit::unary_op_reproducer_strings[op],
@@ -2171,7 +2207,7 @@ gcc_jit_context_new_binary_op (gcc_jit_context *ctxt,
     b->get_debug_string (),
     b->get_type ()->get_debug_string ());
   RETURN_NULL_IF_FAIL_PRINTF4 (
-    result_type->is_numeric (), ctxt, loc,
+    result_type->is_numeric () || result_type->is_numeric_vector (), ctxt, loc,
     "gcc_jit_binary_op %s with operands a: %s b: %s "
     "has non-numeric result_type: %s",
     gcc::jit::binary_op_reproducer_strings[op],
@@ -3963,6 +3999,73 @@ gcc_jit_type_get_aligned (gcc_jit_type *type,
   RETURN_NULL_IF_FAIL (!type->is_void (), ctxt, NULL, "void type");
 
   return (gcc_jit_type *)type->get_aligned (alignment_in_bytes);
+}
+
+void
+gcc_jit_function_add_attribute (gcc_jit_function *func,
+				gcc_jit_fn_attribute attribute)
+{
+  RETURN_IF_FAIL (func, NULL, NULL, "NULL func");
+  RETURN_IF_FAIL ((attribute >= 0 && attribute < GCC_JIT_FN_ATTRIBUTE_MAX),
+		  NULL,
+		  NULL,
+		  "attribute should be a `gcc_jit_fn_attribute` enum value");
+
+  func->add_attribute (attribute);
+}
+
+void
+gcc_jit_function_add_string_attribute (gcc_jit_function *func,
+				       gcc_jit_fn_attribute attribute,
+				       const char* value)
+{
+  RETURN_IF_FAIL (func, NULL, NULL, "NULL func");
+  RETURN_IF_FAIL (value, NULL, NULL, "NULL value");
+  RETURN_IF_FAIL ((attribute >= 0 && attribute < GCC_JIT_FN_ATTRIBUTE_MAX),
+		  NULL,
+		  NULL,
+		  "attribute should be a `gcc_jit_fn_attribute` enum value");
+
+  func->add_string_attribute (attribute, value);
+}
+
+/* This function adds an attribute with multiple integer values.  For example
+   `nonnull(1, 2)`.  The numbers in `values` are supposed to map how they
+   should be written in C code.  So for `nonnull(1, 2)`, you should pass `1`
+   and `2` in `values` (and set `length` to `2`). */
+void
+gcc_jit_function_add_integer_array_attribute (gcc_jit_function *func,
+					      gcc_jit_fn_attribute attribute,
+					      const int* values,
+					      size_t length)
+{
+  RETURN_IF_FAIL (func, NULL, NULL, "NULL func");
+  RETURN_IF_FAIL (values, NULL, NULL, "NULL values");
+  RETURN_IF_FAIL ((attribute >= 0 && attribute < GCC_JIT_FN_ATTRIBUTE_MAX),
+		  NULL,
+		  NULL,
+		  "attribute should be a `gcc_jit_fn_attribute` enum value");
+
+  func->add_integer_array_attribute (attribute, values, length);
+}
+
+void
+gcc_jit_lvalue_add_string_attribute (gcc_jit_lvalue *variable,
+				     gcc_jit_variable_attribute attribute,
+				     const char* value)
+{
+  RETURN_IF_FAIL (variable, NULL, NULL, "NULL variable");
+  RETURN_IF_FAIL (value, NULL, NULL, "NULL value");
+  RETURN_IF_FAIL (variable->is_global () || variable->is_local (),
+		  NULL,
+		  NULL,
+		  "variable should be a variable");
+  RETURN_IF_FAIL ((attribute >= 0 && attribute < GCC_JIT_VARIABLE_ATTRIBUTE_MAX),
+		  NULL,
+		  NULL,
+		  "attribute should be a `gcc_jit_variable_attribute` enum value");
+
+  variable->add_string_attribute (attribute, value);
 }
 
 /* Public entrypoint.  See description in libgccjit.h.

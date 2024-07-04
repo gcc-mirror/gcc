@@ -1,6 +1,6 @@
 // <condition_variable> -*- C++ -*-
 
-// Copyright (C) 2008-2023 Free Software Foundation, Inc.
+// Copyright (C) 2008-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -363,7 +363,7 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 	       const chrono::duration<_Rep, _Period>& __rtime, _Predicate __p)
       { return wait_until(__lock, __clock_t::now() + __rtime, std::move(__p)); }
 
-#ifdef __cpp_lib_jthread
+#ifdef __glibcxx_jthread
     template <class _Lock, class _Predicate>
     bool wait(_Lock& __lock,
               stop_token __stoken,

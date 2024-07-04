@@ -1,0 +1,112 @@
+/* { dg-final { check-function-bodies "**" "" "-DCHECK_ASM" } } */
+
+#include "test_sme_acle.h"
+
+/*
+** st1_vnum_za64_3_0_1:
+**	incb	x1
+**	mov	(w1[2-5]), (?:wzr|#?0)
+**	st1d	{ za3h\.d\[\1, 1\] }, p0, \[x1\]
+**	ret
+*/
+TEST_STORE_ZA (st1_vnum_za64_3_0_1,
+	       svst1_hor_vnum_za64 (3, 0, p0, x1, 1),
+	       svst1_hor_vnum_za64 (3, 0, p0, x1, 1))
+
+/*
+** st1_vnum_za64_7_1_1:
+**	incb	x1
+**	mov	(w1[2-5]), #?1
+**	st1d	{ za7h\.d\[\1, 1\] }, p0, \[x1\]
+**	ret
+*/
+TEST_STORE_ZA (st1_vnum_za64_7_1_1,
+	       svst1_hor_vnum_za64 (7, 1, p0, x1, 1),
+	       svst1_hor_vnum_za64 (7, 1, p0, x1, 1))
+
+/*
+** st1_vnum_za64_0_0_2:
+**	incb	x1, all, mul #2
+**	mov	(w1[2-5]), #?2
+**	st1d	{ za0h\.d\[\1, 0\] }, p0, \[x1\]
+**	ret
+*/
+TEST_STORE_ZA (st1_vnum_za64_0_0_2,
+	       svst1_hor_vnum_za64 (0, 0, p0, x1, 2),
+	       svst1_hor_vnum_za64 (0, 0, p0, x1, 2))
+
+/*
+** st1_vnum_za64_5_1_2:
+**	incb	x1, all, mul #2
+**	mov	(w1[2-5]), #?3
+**	st1d	{ za5h\.d\[\1, 0\] }, p0, \[x1\]
+**	ret
+*/
+TEST_STORE_ZA (st1_vnum_za64_5_1_2,
+	       svst1_hor_vnum_za64 (5, 1, p0, x1, 2),
+	       svst1_hor_vnum_za64 (5, 1, p0, x1, 2))
+
+/*
+** st1_vnum_za64_0_w0_0:
+**	mov	(w1[2-5]), w0
+**	st1d	{ za0h\.d\[\1, 0\] }, p0, \[x1\]
+**	ret
+*/
+TEST_STORE_ZA (st1_vnum_za64_0_w0_0,
+	       svst1_hor_vnum_za64 (0, w0, p0, x1, 0),
+	       svst1_hor_vnum_za64 (0, w0, p0, x1, 0))
+
+/*
+** st1_vnum_za64_0_w0_1:
+**	incb	x1
+**	mov	(w1[2-5]), w0
+**	st1d	{ za0h\.d\[\1, 1\] }, p0, \[x1\]
+**	ret
+*/
+TEST_STORE_ZA (st1_vnum_za64_0_w0_1,
+	       svst1_hor_vnum_za64 (0, w0, p0, x1, 1),
+	       svst1_hor_vnum_za64 (0, w0, p0, x1, 1))
+
+/*
+** st1_vnum_za64_6_w0_2:
+**	incb	x1, all, mul #2
+**	add	(w1[2-5]), w0, #?2
+**	st1d	{ za6h\.d\[\1, 0\] }, p0, \[x1\]
+**	ret
+*/
+TEST_STORE_ZA (st1_vnum_za64_6_w0_2,
+	       svst1_hor_vnum_za64 (6, w0, p0, x1, 2),
+	       svst1_hor_vnum_za64 (6, w0, p0, x1, 2))
+
+/*
+** st1_vnum_za64_2_w0_13:
+**	incb	x1, all, mul #13
+**	add	(w1[2-5]), w0, #?13
+**	st1d	{ za2h\.d\[\1, 0\] }, p0, \[x1\]
+**	ret
+*/
+TEST_STORE_ZA (st1_vnum_za64_2_w0_13,
+	       svst1_hor_vnum_za64 (2, w0, p0, x1, 13),
+	       svst1_hor_vnum_za64 (2, w0, p0, x1, 13))
+
+/*
+** st1_vnum_za64_4_w0_x2:
+**	cntb	(x[0-9]+)
+**	madd	(x[0-9]+), (?:\1, x2|x2, \1), x1
+**	add	(w1[2-5]), (?:w0, w2|w2, w0)
+**	st1d	{ za4h\.d\[\3, 0\] }, p0, \[\2\]
+**	ret
+*/
+TEST_STORE_ZA (st1_vnum_za64_4_w0_x2,
+	       svst1_hor_vnum_za64 (4, w0, p0, x1, x2),
+	       svst1_hor_vnum_za64 (4, w0, p0, x1, x2))
+
+/*
+** st1_vnum_za64_1_w0p1_0:
+**	mov	(w1[2-5]), w0
+**	st1d	{ za1h\.d\[\1, 1\] }, p0, \[x1\]
+**	ret
+*/
+TEST_STORE_ZA (st1_vnum_za64_1_w0p1_0,
+	       svst1_hor_vnum_za64 (1, w0 + 1, p0, x1, 0),
+	       svst1_hor_vnum_za64 (1, w0 + 1, p0, x1, 0))

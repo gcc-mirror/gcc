@@ -20,7 +20,7 @@
    scan for.   We scan for both the positive and negative cases.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -fstack-clash-protection -fdump-rtl-pro_and_epilogue -fno-optimize-sibling-calls" } */
+/* { dg-options "-O2 -fstack-clash-protection -fdump-rtl-pro_and_epilogue -fno-optimize-sibling-calls -fno-shrink-wrap" } */
 /* { dg-require-effective-target supports_stack_clash_protection } */
 
 extern void arf (char *);

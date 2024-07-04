@@ -1,5 +1,7 @@
+void abort(void);
 int a,b;
-main()
+int
+main(void)
 {
   int c=-2;
   int d=0xfe;

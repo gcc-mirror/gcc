@@ -1,5 +1,5 @@
 /* Mainly the interface between cpplib and the C front ends.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "file-prefix-map.h" /* remap_macro_filename()  */
 #include "langhooks.h"
 #include "attribs.h"
+#include "rich-location.h"
 
 /* We may keep statistics about how long which files took to compile.  */
 static int header_time, body_time;
@@ -82,6 +83,7 @@ init_c_lex (void)
   cb->read_pch = c_common_read_pch;
   cb->has_attribute = c_common_has_attribute;
   cb->has_builtin = c_common_has_builtin;
+  cb->has_feature = c_common_has_feature;
   cb->get_source_date_epoch = cb_get_source_date_epoch;
   cb->get_suggestion = cb_get_suggestion;
   cb->remap_filename = remap_macro_filename;
@@ -355,7 +357,27 @@ c_common_has_attribute (cpp_reader *pfile, bool std_syntax)
       do
 	nxt_token = cpp_peek_token (pfile, idx++);
       while (nxt_token->type == CPP_PADDING);
-      if (nxt_token->type == CPP_SCOPE)
+      if (!c_dialect_cxx ()
+	  && nxt_token->type == CPP_COLON
+	  && (nxt_token->flags & COLON_SCOPE) != 0)
+	{
+	  const cpp_token *prev_token = nxt_token;
+	  do
+	    nxt_token = cpp_peek_token (pfile, idx++);
+	  while (nxt_token->type == CPP_PADDING);
+	  if (nxt_token->type == CPP_COLON)
+	    {
+	      /* __has_attribute (vendor::attr) in -std=c17 etc. modes.
+		 :: isn't CPP_SCOPE but 2 CPP_COLON tokens, where the
+		 first one should have COLON_SCOPE flag to distinguish
+		 it from : :.  */
+	      have_scope = true;
+	      get_token_no_padding (pfile); // Eat first colon.
+	    }
+	  else
+	    nxt_token = prev_token;
+	}
+      if (nxt_token->type == CPP_SCOPE || have_scope)
 	{
 	  have_scope = true;
 	  get_token_no_padding (pfile); // Eat scope.
@@ -367,15 +389,13 @@ c_common_has_attribute (cpp_reader *pfile, bool std_syntax)
 		= get_identifier ((const char *)
 				  cpp_token_as_text (pfile, nxt_token));
 	      attr_id = canonicalize_attr_name (attr_id);
-	      if (c_dialect_cxx ())
-		{
-		  /* OpenMP attributes need special handling.  */
-		  if ((flag_openmp || flag_openmp_simd)
-		      && is_attribute_p ("omp", attr_ns)
-		      && (is_attribute_p ("directive", attr_id)
-			  || is_attribute_p ("sequence", attr_id)))
-		    result = 1;
-		}
+	      /* OpenMP attributes need special handling.  */
+	      if ((flag_openmp || flag_openmp_simd)
+		  && is_attribute_p ("omp", attr_ns)
+		  && (is_attribute_p ("directive", attr_id)
+		      || is_attribute_p ("sequence", attr_id)
+		      || is_attribute_p ("decl", attr_id)))
+		result = 1;
 	      if (result)
 		attr_name = NULL_TREE;
 	      else
@@ -453,16 +473,16 @@ c_common_has_attribute (cpp_reader *pfile, bool std_syntax)
   return result;
 }
 
-/* Callback for has_builtin.  */
+/* Helper for __has_{builtin,feature,extension}.  */
 
-int
-c_common_has_builtin (cpp_reader *pfile)
+static const char *
+c_common_lex_availability_macro (cpp_reader *pfile, const char *builtin)
 {
   const cpp_token *token = get_token_no_padding (pfile);
   if (token->type != CPP_OPEN_PAREN)
     {
       cpp_error (pfile, CPP_DL_ERROR,
-		 "missing '(' after \"__has_builtin\"");
+		 "missing '(' after \"__has_%s\"", builtin);
       return 0;
     }
 
@@ -482,7 +502,7 @@ c_common_has_builtin (cpp_reader *pfile)
   else
     {
       cpp_error (pfile, CPP_DL_ERROR,
-		 "macro \"__has_builtin\" requires an identifier");
+		 "macro \"__has_%s\" requires an identifier", builtin);
       if (token->type == CPP_CLOSE_PAREN)
 	return 0;
     }
@@ -501,7 +521,36 @@ c_common_has_builtin (cpp_reader *pfile)
 	break;
     }
 
+  return name;
+}
+
+/* Callback for has_builtin.  */
+
+int
+c_common_has_builtin (cpp_reader *pfile)
+{
+  const char *name = c_common_lex_availability_macro (pfile, "builtin");
+  if (!name)
+    return 0;
+
   return names_builtin_p (name);
+}
+
+/* Callback for has_feature.  STRICT_P is true for has_feature and false
+   for has_extension.  */
+
+int
+c_common_has_feature (cpp_reader *pfile, bool strict_p)
+{
+  const char *builtin = strict_p ? "feature" : "extension";
+  const char *name = c_common_lex_availability_macro (pfile, builtin);
+  if (!name)
+    return 0;
+
+  /* If -pedantic-errors is given, __has_extension is equivalent to
+     __has_feature.  */
+  strict_p |= flag_pedantic_errors;
+  return has_feature_p (name, strict_p);
 }
 
 
@@ -1187,21 +1236,21 @@ interpret_float (const cpp_token *token, unsigned int flags,
 	  }
 	else if (!c_dialect_cxx ())
 	  {
-	    if (warn_c11_c2x_compat > 0)
+	    if (warn_c11_c23_compat > 0)
 	      {
-		if (pedantic && !flag_isoc2x)
-		  pedwarn (input_location, OPT_Wc11_c2x_compat,
+		if (pedantic && !flag_isoc23)
+		  pedwarn (input_location, OPT_Wc11_c23_compat,
 			   "non-standard suffix on floating constant "
-			   "before C2X");
+			   "before C23");
 		else
-		  warning (OPT_Wc11_c2x_compat,
+		  warning (OPT_Wc11_c23_compat,
 			   "non-standard suffix on floating constant "
-			   "before C2X");
+			   "before C23");
 	      }
-	    else if (warn_c11_c2x_compat != 0 && pedantic && !flag_isoc2x)
+	    else if (warn_c11_c23_compat != 0 && pedantic && !flag_isoc23)
 	      pedwarn (input_location, OPT_Wpedantic,
 		       "non-standard suffix on floating constant "
-		       "before C2X");
+		       "before C23");
 	  }
 	else if (!extended)
 	  {
@@ -1273,7 +1322,7 @@ interpret_float (const cpp_token *token, unsigned int flags,
     }
 
   copy = (char *) alloca (copylen + 1);
-  if (c_dialect_cxx () ? cxx_dialect > cxx11 : flag_isoc2x)
+  if (c_dialect_cxx () ? cxx_dialect > cxx11 : flag_isoc23)
     {
       size_t maxlen = 0;
       for (size_t i = 0; i < copylen; ++i)

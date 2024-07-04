@@ -224,6 +224,15 @@ struct Params final
         ddocfiles(ddocfiles)
         {}
 };
+
+struct Loc final
+{
+    static int32_t showColumns;
+    void toChars(int32_t showColumns = Loc::showColumns);
+    Loc()
+    {
+    }
+};
 ---
 */
 
@@ -336,4 +345,10 @@ extern (C++) struct Params
 {
     bool obj = true;
     Array ddocfiles;
+}
+
+extern (C++) struct Loc
+{
+    __gshared int showColumns;
+    void toChars(int showColumns = Loc.showColumns) {}
 }

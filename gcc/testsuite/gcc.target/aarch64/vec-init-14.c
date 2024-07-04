@@ -67,7 +67,7 @@ int32x2_t s32_6(int32_t a0, int32_t a1) {
 
 /*
 ** f32_1:
-**	ins	v0\.s\[1\], v1\.s\[0\]
+**	uzp1	v0\.2s, v0\.2s, v1\.2s
 **	ret
 */
 float32x2_t f32_1(float32_t a0, float32_t a1) {
@@ -90,7 +90,7 @@ float32x2_t f32_2(float32_t a0, float32_t *ptr) {
 /*
 ** f32_3:
 **	ldr	s0, \[x0\]
-**	ins	v0\.s\[1\], v1\.s\[0\]
+**	uzp1	v0\.2s, v0\.2s, v1\.2s
 **	ret
 */
 float32x2_t f32_3(float32_t a0, float32_t a1, float32_t *ptr) {

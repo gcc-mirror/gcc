@@ -1,5 +1,5 @@
 /* Support for thunks in symbol table.
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -479,21 +479,15 @@ expand_thunk (cgraph_node *node, bool output_asm_thunks,
 				 resdecl,
 				 build_int_cst (TREE_TYPE (resdecl), 0));
 	    }
-	  else if (!is_gimple_reg_type (restype))
+	  else if (aggregate_value_p (resdecl, TREE_TYPE (thunk_fndecl)))
 	    {
-	      if (aggregate_value_p (resdecl, TREE_TYPE (thunk_fndecl)))
-		{
-		  restmp = resdecl;
+	      restmp = resdecl;
 
-		  if (VAR_P (restmp))
-		    {
-		      add_local_decl (cfun, restmp);
-		      BLOCK_VARS (DECL_INITIAL (current_function_decl))
-			= restmp;
-		    }
+	      if (VAR_P (restmp))
+		{
+		  add_local_decl (cfun, restmp);
+		  BLOCK_VARS (DECL_INITIAL (current_function_decl)) = restmp;
 		}
-	      else
-		restmp = create_tmp_var (restype, "retval");
 	    }
 	  else
 	    restmp = create_tmp_reg (restype, "retval");

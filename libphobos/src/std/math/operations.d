@@ -44,7 +44,7 @@ import std.traits : CommonType, isFloatingPoint, isIntegral, Unqual;
  */
 real NaN(ulong payload) @trusted pure nothrow @nogc
 {
-    import std.math : floatTraits, RealFormat;
+    import std.math.traits : floatTraits, RealFormat;
 
     alias F = floatTraits!(real);
     static if (F.realFormat == RealFormat.ieeeExtended ||
@@ -136,7 +136,7 @@ real NaN(ulong payload) @trusted pure nothrow @nogc
 
 @system pure nothrow @nogc unittest // not @safe because taking address of local.
 {
-    import std.math : floatTraits, RealFormat;
+    import std.math.traits : floatTraits, RealFormat;
 
     static if (floatTraits!(real).realFormat == RealFormat.ieeeDouble)
     {
@@ -159,7 +159,7 @@ real NaN(ulong payload) @trusted pure nothrow @nogc
  */
 ulong getNaNPayload(real x) @trusted pure nothrow @nogc
 {
-    import std.math : floatTraits, RealFormat;
+    import std.math.traits : floatTraits, RealFormat;
 
     //  assert(isNaN(x));
     alias F = floatTraits!(real);
@@ -283,7 +283,7 @@ debug(UnitTest)
  */
 real nextUp(real x) @trusted pure nothrow @nogc
 {
-    import std.math : floatTraits, RealFormat, MANTISSA_MSB, MANTISSA_LSB;
+    import std.math.traits : floatTraits, RealFormat, MANTISSA_MSB, MANTISSA_LSB;
 
     alias F = floatTraits!(real);
     static if (F.realFormat != RealFormat.ieeeDouble)
@@ -522,8 +522,7 @@ float nextDown(float x) @safe pure nothrow @nogc
 
 @safe pure nothrow @nogc unittest
 {
-    import std.math : floatTraits, RealFormat;
-    import std.math.traits : isIdentical;
+    import std.math.traits : floatTraits, RealFormat, isIdentical;
 
     static if (floatTraits!(real).realFormat == RealFormat.ieeeExtended ||
                floatTraits!(real).realFormat == RealFormat.ieeeDouble ||
@@ -865,7 +864,7 @@ real fma(real x, real y, real z) @safe pure nothrow @nogc { return (x * y) + z; 
 int feqrel(X)(const X x, const X y) @trusted pure nothrow @nogc
 if (isFloatingPoint!(X))
 {
-    import std.math : floatTraits, RealFormat;
+    import std.math.traits : floatTraits, RealFormat;
     import core.math : fabs;
 
     /* Public Domain. Author: Don Clugston, 18 Aug 2005.
@@ -1495,7 +1494,7 @@ private template FloatingPointBaseType(T)
 int cmp(T)(const(T) x, const(T) y) @nogc @trusted pure nothrow
 if (isFloatingPoint!T)
 {
-    import std.math : floatTraits, RealFormat;
+    import std.math.traits : floatTraits, RealFormat;
 
     alias F = floatTraits!T;
 
@@ -1723,7 +1722,7 @@ if (isFloatingPoint!T)
 FloatingPointBitpattern!T extractBitpattern(T)(const(T) value) @trusted
 if (isFloatingPoint!T)
 {
-    import std.math : floatTraits, RealFormat;
+    import std.math.traits : floatTraits, RealFormat;
 
     T val = value;
     FloatingPointBitpattern!T ret;
@@ -1895,7 +1894,7 @@ if (isFloatingPoint!T)
 
 @safe pure unittest
 {
-    import std.math : floatTraits, RealFormat;
+    import std.math.traits : floatTraits, RealFormat;
 
     alias F = floatTraits!real;
     static if (F.realFormat == RealFormat.ieeeExtended)
@@ -1946,7 +1945,7 @@ if (isFloatingPoint!T)
 
 @safe pure unittest
 {
-    import std.math : floatTraits, RealFormat;
+    import std.math.traits : floatTraits, RealFormat;
     import std.math.exponential : log2;
 
     alias F = floatTraits!real;

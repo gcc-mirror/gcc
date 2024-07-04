@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_arch_v6_arm_ok } */
-/* { dg-options "-O3 -marm -march=armv6 -std=c99" } */
+/* { dg-options "-O3 -std=c99" } */
+/* { dg-add-options arm_arch_v6_arm } */
 
 typedef struct {
   int i;

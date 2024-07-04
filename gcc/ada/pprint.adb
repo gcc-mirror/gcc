@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2008-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -130,7 +130,11 @@ package body Pprint is
                   end loop;
                end;
                Append (Buf, " => ");
-               Append (Buf, Expr_Name (Expression (Elmt)));
+               if Box_Present (Elmt) then
+                  Append (Buf, "<>");
+               else
+                  Append (Buf, Expr_Name (Expression (Elmt)));
+               end if;
 
             --  Print parameter_association as "x => 12345"
 

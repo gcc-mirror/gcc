@@ -1,8 +1,8 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
-/* { dg-require-effective-target powerpc_fprs } */
 /* { dg-options "-O3 -ftree-vectorize -mdejagnu-cpu=power6 -ffast-math" } */
+/* { dg-require-effective-target powerpc_altivec } */
+/* { dg-require-effective-target powerpc_fprs } */
 /* { dg-final { scan-assembler-times "fmadd" 1 } } */
 /* { dg-final { scan-assembler-times "fmsub " 1 } } */
 /* { dg-final { scan-assembler-not "fmul" } } */

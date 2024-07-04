@@ -96,7 +96,7 @@ if [ -d "$1" -a -d "$2" ] ; then
 	ret=$?
 	if [ $ret -ne 0 ]; then
 		exit_status=`expr $exit_status + 1`
-		echo "## Differences found: $fname"
+		echo "## Differences found"
 	fi
 	if [ $exit_status -ne 0 ]; then
 		echo "# $exit_status differences in $cmnsums common sum files found"
@@ -108,8 +108,8 @@ elif [ -d "$1" -o -d "$2" ] ; then
 	usage "Must specify either two directories or two files"
 fi
 
-sed 's/^XFAIL/FAIL/; s/^ERROR/FAIL/; s/^XPASS/PASS/' < "$1" | awk '/^Running target / {target = $3} { if (target != "unix") { sub(/: /, "&"target": " ); }; print $0; }' | cut -c1-2000 >$tmp1
-sed 's/^XFAIL/FAIL/; s/^ERROR/FAIL/; s/^XPASS/PASS/' < "$2" | awk '/^Running target / {target = $3} { if (target != "unix") { sub(/: /, "&"target": " ); }; print $0; }' | cut -c1-2000 >$tmp2
+sed 's/^XFAIL/FAIL/; s/^ERROR/FAIL/; s/^XPASS/PASS/' < "$1" | awk '/^[	 ]*=== [^ ]* tests ===$/ {tool = $2} /^Running target / {target = $3} { if (tool != "") { sub(/:[ 	]/, "&"tool": " ); }; if (target != "unix") { sub(/:[ 	]/, "&"target": " ); }; print $0; }' | cut -c1-2000 >$tmp1
+sed 's/^XFAIL/FAIL/; s/^ERROR/FAIL/; s/^XPASS/PASS/' < "$2" | awk '/^[	 ]*=== [^ ]* tests ===$/ {tool = $2} /^Running target / {target = $3} { if (tool != "") { sub(/:[ 	]/, "&"tool": " ); }; if (target != "unix") { sub(/:[ 	]/, "&"target": " ); }; print $0; }' | cut -c1-2000 >$tmp2
 
 before=$tmp1
 now=$tmp2

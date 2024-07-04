@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -20,45 +20,6 @@
 
 namespace Rust {
 namespace AST {
-
-BuiltinMacro
-builtin_macro_from_string (const std::string &identifier)
-{
-  if (identifier == "assert")
-    return BuiltinMacro::Assert;
-
-  if (identifier == "file")
-    return BuiltinMacro::File;
-
-  if (identifier == "line")
-    return BuiltinMacro::Line;
-
-  if (identifier == "column")
-    return BuiltinMacro::Column;
-
-  if (identifier == "include_bytes")
-    return BuiltinMacro::IncludeBytes;
-
-  if (identifier == "include_str")
-    return BuiltinMacro::IncludeStr;
-
-  if (identifier == "compile_error")
-    return BuiltinMacro::CompileError;
-
-  if (identifier == "concat")
-    return BuiltinMacro::Concat;
-
-  if (identifier == "env")
-    return BuiltinMacro::Env;
-
-  if (identifier == "cfg")
-    return BuiltinMacro::Cfg;
-
-  if (identifier == "include")
-    return BuiltinMacro::Include;
-
-  gcc_unreachable ();
-}
 
 } // namespace AST
 } // namespace Rust

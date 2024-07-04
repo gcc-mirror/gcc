@@ -7,6 +7,9 @@
 
 #include <string.h>
 
+void abort (void);
+void exit (int);
+
 #ifndef MAX_OFFSET
 #define MAX_OFFSET (sizeof (long long))
 #endif
@@ -29,7 +32,8 @@ static union {
 
 char A = 'A';
 
-main ()
+int
+main (void)
 {
   int off, len, i;
   char *p, *q;

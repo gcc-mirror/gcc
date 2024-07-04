@@ -1,5 +1,5 @@
 ;; Predicate definitions for IA-32 and x86-64.
-;; Copyright (C) 2004-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2004-2024 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -88,7 +88,7 @@
        (match_test "REGNO (op) == AX_REG")))
 
 ;; Return true if op is the flags register.
-(define_predicate "flags_reg_operand"
+(define_special_predicate "flags_reg_operand"
   (and (match_code "reg")
        (match_test "REGNO (op) == FLAGS_REG")))
 
@@ -113,20 +113,6 @@
 	    (match_test "GET_MODE (op) == SImode")
 	    (match_test "GET_MODE (op) == HImode")
 	    (match_test "GET_MODE (op) == QImode"))))
-
-;; Match nonimmediate operand, but exclude non-constant addresses for x86_64.
-(define_predicate "nonimm_x64constmem_operand"
-  (ior (match_operand 0 "register_operand")
-       (and (match_operand 0 "memory_operand")
-	    (ior (not (match_test "TARGET_64BIT"))
-		 (match_test "constant_address_p (XEXP (op, 0))")))))
-
-;; Match general operand, but exclude non-constant addresses for x86_64.
-(define_predicate "general_x64constmem_operand"
-  (ior (match_operand 0 "nonmemory_operand")
-       (and (match_operand 0 "memory_operand")
-	    (ior (not (match_test "TARGET_64BIT"))
-		 (match_test "constant_address_p (XEXP (op, 0))")))))
 
 ;; Match register operands, but include memory operands for TARGET_SSE_MATH.
 (define_predicate "register_ssemem_operand"
@@ -323,7 +309,7 @@
   switch (GET_CODE (op))
     {
     case CONST_INT:
-      return !(INTVAL (op) & ~(HOST_WIDE_INT) 0xffffffff);
+      return !(INTVAL (op) & ~HOST_WIDE_INT_C (0xffffffff));
 
     case SYMBOL_REF:
       /* TLS symbols are not constant.  */
@@ -853,7 +839,7 @@
 (define_predicate "const_32bit_mask"
   (and (match_code "const_int")
        (match_test "trunc_int_for_mode (INTVAL (op), DImode)
-		    == (HOST_WIDE_INT) 0xffffffff")))
+		    == HOST_WIDE_INT_C (0xffffffff)")))
 
 ;; Match 2, 4, or 8.  Used for leal multiplicands.
 (define_predicate "const248_operand"
@@ -1070,6 +1056,11 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 28, 31)")))
 
+(define_predicate "cmpps_imm_operand"
+  (ior (match_operand 0 "const_0_to_7_operand")
+       (and (match_test "TARGET_AVX")
+	    (match_operand 0 "const_0_to_31_operand"))))
+
 ;; True if this is a constant appropriate for an increment or decrement.
 (define_predicate "incdec_operand"
   (match_code "const_int")
@@ -1111,6 +1102,11 @@
   (ior (match_operand 0 "nonimmediate_operand")
        (and (match_code "not")
 	    (match_test "nonimmediate_operand (XEXP (op, 0), mode)"))))
+
+;; True for expressions valid for 3-operand ternlog instructions.
+(define_predicate "ternlog_operand"
+  (and (match_code "not,and,ior,xor")
+       (match_test "ix86_ternlog_operand_p (op)")))
 
 ;; True if OP is acceptable as operand of DImode shift expander.
 (define_predicate "shiftdi_operand"
@@ -1276,7 +1272,8 @@
   (and (match_code "vec_duplicate")
        (and (match_test "TARGET_AVX512F")
 	    (ior (match_test "TARGET_AVX512VL")
-		 (match_test "GET_MODE_SIZE (GET_MODE (op)) == 64")))
+		 (and (match_test "GET_MODE_SIZE (GET_MODE (op)) == 64")
+		      (match_test "TARGET_EVEX512"))))
        (match_test "VALID_BCST_MODE_P (GET_MODE_INNER (GET_MODE (op)))")
        (match_test "GET_MODE (XEXP (op, 0))
 		    == GET_MODE_INNER (GET_MODE (op))")
@@ -1336,10 +1333,6 @@
 (define_predicate "nonimm_or_0_operand"
   (ior (match_operand 0 "nonimmediate_operand")
        (match_operand 0 "const0_operand")))
-
-(define_predicate "norex_memory_operand"
-  (and (match_operand 0 "memory_operand")
-       (not (match_test "x86_extended_reg_mentioned_p (op)"))))
 
 ;; Return true for RTX codes that force SImode address.
 (define_predicate "SImode_address_operand"
@@ -2259,8 +2252,89 @@
 	  || GET_CODE (SET_SRC (elt)) != UNSPEC_VOLATILE
 	  || GET_MODE (SET_SRC (elt)) != V2DImode
 	  || XVECLEN (SET_SRC (elt), 0) != 1
+	  || !REG_P (XVECEXP (SET_SRC (elt), 0, 0))
 	  || REGNO (XVECEXP (SET_SRC (elt), 0, 0)) != GET_SSE_REGNO (i))
 	return false;
     }
+  return true;
+})
+
+;; Return true if OP is a memory operand that can be also used in APX
+;; NDD patterns with immediate operand.  With non-default address space,
+;; segment register or address size prefix, APX NDD instruction length
+;; can exceed the 15 byte size limit.
+(define_predicate "apx_ndd_memory_operand"
+  (match_operand 0 "memory_operand")
+{
+  /* OK if immediate operand size < 4 bytes.  */
+  if (GET_MODE_SIZE (mode) < 4)
+    return true;
+
+  bool default_addr = ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (op));
+  bool address_size_prefix = TARGET_X32 && Pmode == SImode;
+
+  struct ix86_address parts;
+  int ok;
+
+  op = XEXP (op, 0);
+  ok = ix86_decompose_address (op, &parts);
+  gcc_assert (ok);
+
+  if (default_addr)
+    {
+      /* Default address space.  */
+
+      /* Not OK with address size prefix, index register and disp.  */
+      if (address_size_prefix
+          && parts.index
+          && parts.disp
+          && parts.disp != const0_rtx)
+        return false;
+    }
+  else
+    {
+      /* Non-default address space.  */
+
+      /* Not OK without base register.  */
+      if (!parts.base)
+        return false;
+
+      /* Not OK with disp and address size prefix.  */
+      if (address_size_prefix && parts.disp)
+        return false;
+    }
+
+  return true;
+})
+
+;; Return true if OP is a memory operand which can be used in APX NDD
+;; ADD with register source operand.  UNSPEC_GOTNTPOFF memory operand
+;; is allowed with APX NDD ADD only if R_X86_64_CODE_6_GOTTPOFF works.
+(define_predicate "apx_ndd_add_memory_operand"
+  (match_operand 0 "memory_operand")
+{
+  /* OK if "add %reg1, name@gottpoff(%rip), %reg2" is supported.  */
+  if (HAVE_AS_R_X86_64_CODE_6_GOTTPOFF)
+    return true;
+
+  op = XEXP (op, 0);
+
+  /* Disallow APX NDD ADD with UNSPEC_GOTNTPOFF.  */
+  if (GET_CODE (op) == CONST
+      && GET_CODE (XEXP (op, 0)) == UNSPEC
+      && XINT (XEXP (op, 0), 1) == UNSPEC_GOTNTPOFF)
+    return false;
+
+  return true;
+})
+
+;; Check that each element is odd and incrementally increasing from 1
+(define_predicate "vcvtne2ps2bf_parallel"
+  (and (match_code "const_vector")
+       (match_code "const_int" "a"))
+{
+  for (int i = 0; i < XVECLEN (op, 0); ++i)
+    if (INTVAL (XVECEXP (op, 0, i)) != (2 * i + 1))
+      return false;
   return true;
 })

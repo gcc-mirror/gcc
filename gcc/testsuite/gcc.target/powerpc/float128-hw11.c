@@ -1,7 +1,8 @@
 /* { dg-do run { target lp64 } } */
 /* { dg-require-effective-target p9vector_hw } */
 /* { dg-require-effective-target float128 } */
-/* { dg-options "-mpower9-vector -O2" } */
+/* { dg-options "-mvsx -O2" } */
+/* { dg-additional-options "-mdejagnu-cpu=power9" { target { ! has_arch_pwr9 } } } */
 
 #define __STDC_WANT_IEC_60559_TYPES_EXT__ 1
 #define __STDC_WANT_IEC_60559_FUNCS_EXT__ 1

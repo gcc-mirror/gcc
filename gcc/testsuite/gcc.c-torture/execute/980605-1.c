@@ -2,12 +2,15 @@
 
 #include <stdio.h>
 
+void abort (void);
+void exit (int);
+
 #ifndef STACK_SIZE
 #define STACK_SIZE 200000
 #endif
 
 __inline__ static int
-dummy (x)
+dummy (int x)
 {
   int y;
   y = (long) (x * 4711.3);
@@ -73,7 +76,8 @@ f ()
     abort ();
 }
 
-main ()
+int
+main (void)
 {
   f ();
   exit (0);

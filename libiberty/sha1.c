@@ -1,7 +1,7 @@
 /* sha1.c - Functions to compute SHA1 message digest of files or
    memory blocks according to the NIST specification FIPS-180-1.
 
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -28,6 +28,11 @@
 
 #include <stddef.h>
 #include <string.h>
+
+#ifdef HAVE_X86_SHA1_HW_SUPPORT
+# include <x86intrin.h>
+# include <cpuid.h>
+#endif
 
 #if USE_UNLOCKED_IO
 # include "unlocked-io.h"
@@ -411,4 +416,304 @@ sha1_process_block (const void *buffer, size_t len, struct sha1_ctx *ctx)
       d = ctx->D += d;
       e = ctx->E += e;
     }
+}
+
+#if defined(HAVE_X86_SHA1_HW_SUPPORT)
+/* HW specific version of sha1_process_bytes.  */
+
+static void sha1_hw_process_block (const void *, size_t, struct sha1_ctx *);
+
+static void
+sha1_hw_process_bytes (const void *buffer, size_t len, struct sha1_ctx *ctx)
+{
+  /* When we already have some bits in our internal buffer concatenate
+     both inputs first.  */
+  if (ctx->buflen != 0)
+    {
+      size_t left_over = ctx->buflen;
+      size_t add = 128 - left_over > len ? len : 128 - left_over;
+
+      memcpy (&((char *) ctx->buffer)[left_over], buffer, add);
+      ctx->buflen += add;
+
+      if (ctx->buflen > 64)
+	{
+	  sha1_hw_process_block (ctx->buffer, ctx->buflen & ~63, ctx);
+
+	  ctx->buflen &= 63;
+	  /* The regions in the following copy operation cannot overlap.  */
+	  memcpy (ctx->buffer,
+		  &((char *) ctx->buffer)[(left_over + add) & ~63],
+		  ctx->buflen);
+	}
+
+      buffer = (const char *) buffer + add;
+      len -= add;
+    }
+
+  /* Process available complete blocks.  */
+  if (len >= 64)
+    {
+#if !_STRING_ARCH_unaligned
+# define alignof(type) offsetof (struct { char c; type x; }, x)
+# define UNALIGNED_P(p) (((size_t) p) % alignof (sha1_uint32) != 0)
+      if (UNALIGNED_P (buffer))
+	while (len > 64)
+	  {
+	    sha1_hw_process_block (memcpy (ctx->buffer, buffer, 64), 64, ctx);
+	    buffer = (const char *) buffer + 64;
+	    len -= 64;
+	  }
+      else
+#endif
+	{
+	  sha1_hw_process_block (buffer, len & ~63, ctx);
+	  buffer = (const char *) buffer + (len & ~63);
+	  len &= 63;
+	}
+    }
+
+  /* Move remaining bytes in internal buffer.  */
+  if (len > 0)
+    {
+      size_t left_over = ctx->buflen;
+
+      memcpy (&((char *) ctx->buffer)[left_over], buffer, len);
+      left_over += len;
+      if (left_over >= 64)
+	{
+	  sha1_hw_process_block (ctx->buffer, 64, ctx);
+	  left_over -= 64;
+	  memmove (ctx->buffer, &ctx->buffer[16], left_over);
+	}
+      ctx->buflen = left_over;
+    }
+}
+
+/* Process LEN bytes of BUFFER, accumulating context into CTX.
+   Using CPU specific intrinsics.  */
+
+#ifdef HAVE_X86_SHA1_HW_SUPPORT
+__attribute__((__target__ ("sse4.1,sha")))
+#endif
+static void
+sha1_hw_process_block (const void *buffer, size_t len, struct sha1_ctx *ctx)
+{
+#ifdef HAVE_X86_SHA1_HW_SUPPORT
+  /* Implemented from
+     https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sha-extensions.html  */
+  const __m128i *words = (const __m128i *) buffer;
+  const __m128i *endp = (const __m128i *) ((const char *) buffer + len);
+  __m128i abcd, abcd_save, e0, e0_save, e1, msg0, msg1, msg2, msg3;
+  const __m128i shuf_mask
+    = _mm_set_epi64x (0x0001020304050607ULL, 0x08090a0b0c0d0e0fULL);
+  char check[((offsetof (struct sha1_ctx, B)
+	     == offsetof (struct sha1_ctx, A) + sizeof (ctx->A))
+		   && (offsetof (struct sha1_ctx, C)
+		       == offsetof (struct sha1_ctx, A) + 2 * sizeof (ctx->A))
+		   && (offsetof (struct sha1_ctx, D)
+		       == offsetof (struct sha1_ctx, A) + 3 * sizeof (ctx->A)))
+		  ? 1 : -1];
+
+  /* First increment the byte count.  RFC 1321 specifies the possible
+     length of the file up to 2^64 bits.  Here we only compute the
+     number of bytes.  Do a double word increment.  */
+  ctx->total[0] += len;
+  ctx->total[1] += ((len >> 31) >> 1) + (ctx->total[0] < len);
+
+  (void) &check[0];
+  abcd = _mm_loadu_si128 ((const __m128i *) &ctx->A);
+  e0 = _mm_set_epi32 (ctx->E, 0, 0, 0);
+  abcd = _mm_shuffle_epi32 (abcd, 0x1b); /* 0, 1, 2, 3 */
+
+  while (words < endp)
+    {
+      abcd_save = abcd;
+      e0_save = e0;
+
+      /* 0..3 */
+      msg0 = _mm_loadu_si128 (words);
+      msg0 = _mm_shuffle_epi8 (msg0, shuf_mask);
+      e0 = _mm_add_epi32 (e0, msg0);
+      e1 = abcd;
+      abcd = _mm_sha1rnds4_epu32 (abcd, e0, 0);
+
+      /* 4..7 */
+      msg1 = _mm_loadu_si128 (words + 1);
+      msg1 = _mm_shuffle_epi8 (msg1, shuf_mask);
+      e1 = _mm_sha1nexte_epu32 (e1, msg1);
+      e0 = abcd;
+      abcd = _mm_sha1rnds4_epu32 (abcd, e1, 0);
+      msg0 = _mm_sha1msg1_epu32 (msg0, msg1);
+
+      /* 8..11 */
+      msg2 = _mm_loadu_si128 (words + 2);
+      msg2 = _mm_shuffle_epi8 (msg2, shuf_mask);
+      e0 = _mm_sha1nexte_epu32 (e0, msg2);
+      e1 = abcd;
+      abcd = _mm_sha1rnds4_epu32 (abcd, e0, 0);
+      msg1 = _mm_sha1msg1_epu32 (msg1, msg2);
+      msg0 = _mm_xor_si128 (msg0, msg2);
+
+      /* 12..15 */
+      msg3 = _mm_loadu_si128 (words + 3);
+      msg3 = _mm_shuffle_epi8 (msg3, shuf_mask);
+      e1 = _mm_sha1nexte_epu32 (e1, msg3);
+      e0 = abcd;
+      msg0 = _mm_sha1msg2_epu32 (msg0, msg3);
+      abcd = _mm_sha1rnds4_epu32 (abcd, e1, 0);
+      msg2 = _mm_sha1msg1_epu32 (msg2, msg3);
+      msg1 = _mm_xor_si128 (msg1, msg3);
+
+      /* 16..19 */
+      e0 = _mm_sha1nexte_epu32 (e0, msg0);
+      e1 = abcd;
+      msg1 = _mm_sha1msg2_epu32 (msg1, msg0);
+      abcd = _mm_sha1rnds4_epu32 (abcd, e0, 0);
+      msg3 = _mm_sha1msg1_epu32 (msg3, msg0);
+      msg2 = _mm_xor_si128 (msg2, msg0);
+
+      /* 20..23 */
+      e1 = _mm_sha1nexte_epu32 (e1, msg1);
+      e0 = abcd;
+      msg2 = _mm_sha1msg2_epu32 (msg2, msg1);
+      abcd = _mm_sha1rnds4_epu32 (abcd, e1, 1);
+      msg0 = _mm_sha1msg1_epu32 (msg0, msg1);
+      msg3 = _mm_xor_si128 (msg3, msg1);
+
+      /* 24..27 */
+      e0 = _mm_sha1nexte_epu32 (e0, msg2);
+      e1 = abcd;
+      msg3 = _mm_sha1msg2_epu32 (msg3, msg2);
+      abcd = _mm_sha1rnds4_epu32 (abcd, e0, 1);
+      msg1 = _mm_sha1msg1_epu32 (msg1, msg2);
+      msg0 = _mm_xor_si128 (msg0, msg2);
+
+      /* 28..31 */
+      e1 = _mm_sha1nexte_epu32 (e1, msg3);
+      e0 = abcd;
+      msg0 = _mm_sha1msg2_epu32 (msg0, msg3);
+      abcd = _mm_sha1rnds4_epu32 (abcd, e1, 1);
+      msg2 = _mm_sha1msg1_epu32 (msg2, msg3);
+      msg1 = _mm_xor_si128 (msg1, msg3);
+
+      /* 32..35 */
+      e0 = _mm_sha1nexte_epu32 (e0, msg0);
+      e1 = abcd;
+      msg1 = _mm_sha1msg2_epu32 (msg1, msg0);
+      abcd = _mm_sha1rnds4_epu32 (abcd, e0, 1);
+      msg3 = _mm_sha1msg1_epu32 (msg3, msg0);
+      msg2 = _mm_xor_si128 (msg2, msg0);
+
+      /* 36..39 */
+      e1 = _mm_sha1nexte_epu32 (e1, msg1);
+      e0 = abcd;
+      msg2 = _mm_sha1msg2_epu32 (msg2, msg1);
+      abcd = _mm_sha1rnds4_epu32 (abcd, e1, 1);
+      msg0 = _mm_sha1msg1_epu32 (msg0, msg1);
+      msg3 = _mm_xor_si128 (msg3, msg1);
+
+      /* 40..43 */
+      e0 = _mm_sha1nexte_epu32 (e0, msg2);
+      e1 = abcd;
+      msg3 = _mm_sha1msg2_epu32 (msg3, msg2);
+      abcd = _mm_sha1rnds4_epu32 (abcd, e0, 2);
+      msg1 = _mm_sha1msg1_epu32 (msg1, msg2);
+      msg0 = _mm_xor_si128 (msg0, msg2);
+
+      /* 44..47 */
+      e1 = _mm_sha1nexte_epu32 (e1, msg3);
+      e0 = abcd;
+      msg0 = _mm_sha1msg2_epu32 (msg0, msg3);
+      abcd = _mm_sha1rnds4_epu32 (abcd, e1, 2);
+      msg2 = _mm_sha1msg1_epu32 (msg2, msg3);
+      msg1 = _mm_xor_si128 (msg1, msg3);
+
+      /* 48..51 */
+      e0 = _mm_sha1nexte_epu32 (e0, msg0);
+      e1 = abcd;
+      msg1 = _mm_sha1msg2_epu32 (msg1, msg0);
+      abcd = _mm_sha1rnds4_epu32 (abcd, e0, 2);
+      msg3 = _mm_sha1msg1_epu32 (msg3, msg0);
+      msg2 = _mm_xor_si128 (msg2, msg0);
+
+      /* 52..55 */
+      e1 = _mm_sha1nexte_epu32 (e1, msg1);
+      e0 = abcd;
+      msg2 = _mm_sha1msg2_epu32 (msg2, msg1);
+      abcd = _mm_sha1rnds4_epu32 (abcd, e1, 2);
+      msg0 = _mm_sha1msg1_epu32 (msg0, msg1);
+      msg3 = _mm_xor_si128 (msg3, msg1);
+
+      /* 56..59 */
+      e0 = _mm_sha1nexte_epu32 (e0, msg2);
+      e1 = abcd;
+      msg3 = _mm_sha1msg2_epu32 (msg3, msg2);
+      abcd = _mm_sha1rnds4_epu32 (abcd, e0, 2);
+      msg1 = _mm_sha1msg1_epu32 (msg1, msg2);
+      msg0 = _mm_xor_si128 (msg0, msg2);
+
+      /* 60..63 */
+      e1 = _mm_sha1nexte_epu32 (e1, msg3);
+      e0 = abcd;
+      msg0 = _mm_sha1msg2_epu32 (msg0, msg3);
+      abcd = _mm_sha1rnds4_epu32 (abcd, e1, 3);
+      msg2 = _mm_sha1msg1_epu32 (msg2, msg3);
+      msg1 = _mm_xor_si128 (msg1, msg3);
+
+      /* 64..67 */
+      e0 = _mm_sha1nexte_epu32 (e0, msg0);
+      e1 = abcd;
+      msg1 = _mm_sha1msg2_epu32 (msg1, msg0);
+      abcd = _mm_sha1rnds4_epu32 (abcd, e0, 3);
+      msg3 = _mm_sha1msg1_epu32 (msg3, msg0);
+      msg2 = _mm_xor_si128 (msg2, msg0);
+
+      /* 68..71 */
+      e1 = _mm_sha1nexte_epu32 (e1, msg1);
+      e0 = abcd;
+      msg2 = _mm_sha1msg2_epu32 (msg2, msg1);
+      abcd = _mm_sha1rnds4_epu32 (abcd, e1, 3);
+      msg3 = _mm_xor_si128 (msg3, msg1);
+
+      /* 72..75 */
+      e0 = _mm_sha1nexte_epu32 (e0, msg2);
+      e1 = abcd;
+      msg3 = _mm_sha1msg2_epu32 (msg3, msg2);
+      abcd = _mm_sha1rnds4_epu32 (abcd, e0, 3);
+
+      /* 76..79 */
+      e1 = _mm_sha1nexte_epu32 (e1, msg3);
+      e0 = abcd;
+      abcd = _mm_sha1rnds4_epu32 (abcd, e1, 3);
+
+      /* Finalize. */
+      e0 = _mm_sha1nexte_epu32 (e0, e0_save);
+      abcd = _mm_add_epi32 (abcd, abcd_save);
+
+      words = words + 4;
+    }
+
+  abcd = _mm_shuffle_epi32 (abcd, 0x1b); /* 0, 1, 2, 3 */
+  _mm_storeu_si128 ((__m128i *) &ctx->A, abcd);
+  ctx->E = _mm_extract_epi32 (e0, 3);
+#endif
+}
+#endif
+
+/* Return sha1_process_bytes or some hardware optimized version thereof
+   depending on current CPU.  */
+
+sha1_process_bytes_fn
+sha1_choose_process_bytes (void)
+{
+#ifdef HAVE_X86_SHA1_HW_SUPPORT
+  unsigned int eax, ebx, ecx, edx;
+  if (__get_cpuid_count (7, 0, &eax, &ebx, &ecx, &edx)
+      && (ebx & bit_SHA) != 0
+      && __get_cpuid (1, &eax, &ebx, &ecx, &edx)
+      && (ecx & bit_SSE4_1) != 0)
+    return sha1_hw_process_bytes;
+#endif
+  return sha1_process_bytes;
 }

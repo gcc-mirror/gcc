@@ -1,3 +1,28 @@
+2024-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.am [LIBSSP_USE_SYMVER_SUN] (ssp.map-sun): Pass
+	$(libssp_la_OBJECTS), $(libssp_la_LIBADD) to make_sunver.pl
+	unmodified.
+	* Makefile.in: Regenerate.
+
+2024-02-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (AC_CHECK_DECLS): Check for gets.
+	* configure, config.h.in: Regenerate.
+	* gets-chk.c (gets): Guard declaration with !HAVE_DECL_GETS.
+
+2023-12-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* Makefile.am: Allow overriding EXEPCT.
+	* Makefile.in: Regenerate.
+
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.am: Handle Darwin rpaths.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Handle Darwin rpaths.
+
 2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
 
 	* configure: Regenerate.

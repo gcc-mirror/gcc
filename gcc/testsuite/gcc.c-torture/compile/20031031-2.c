@@ -1,5 +1,9 @@
 /* PR/10239 */
 
+void foo ();
+void bar ();
+void baz ();
+
 enum node_type
 {
   INITIAL = 0, FREE,

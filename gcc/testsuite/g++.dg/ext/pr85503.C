@@ -1,7 +1,7 @@
 // PR target/85503
 // { dg-do compile { target { { powerpc64le-*-* } && c++11 } } }
-// { dg-require-effective-target powerpc_vsx_ok }
 // { dg-options "-O2 -mvsx" }
+// { dg-require-effective-target powerpc_vsx }
 
 namespace b {
 template < int c > struct d { static constexpr int e = c; };

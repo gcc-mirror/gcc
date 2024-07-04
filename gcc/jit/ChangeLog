@@ -1,3 +1,197 @@
+2024-06-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit-recording.cc
+	(recording::memento_of_typeinfo::make_debug_string): Default the value
+	of ident.
+	(recording::memento_of_typeinfo::write_reproducer): Default the value
+	of type.
+
+2024-06-27  Antoni Boucher  <bouanto@zoho.com>
+
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_28): New ABI tag.
+	* docs/topics/expressions.rst: Document gcc_jit_context_new_alignof.
+	* jit-playback.cc (new_alignof): New method.
+	* jit-playback.h: New method.
+	* jit-recording.cc (recording::context::new_alignof): New
+	method.
+	(recording::memento_of_sizeof::replay_into,
+	recording::memento_of_typeinfo::replay_into,
+	recording::memento_of_sizeof::make_debug_string,
+	recording::memento_of_typeinfo::make_debug_string,
+	recording::memento_of_sizeof::write_reproducer,
+	recording::memento_of_typeinfo::write_reproducer): Rename.
+	* jit-recording.h (enum type_info_type): New enum.
+	(class memento_of_sizeof class memento_of_typeinfo): Rename.
+	* libgccjit.cc (gcc_jit_context_new_alignof): New function.
+	* libgccjit.h (gcc_jit_context_new_alignof): New function.
+	* libgccjit.map: New function.
+
+2024-06-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	* jit-recording.cc (recording::memento_of_get_type::get_size): Update
+	macros {FLOAT,DOUBLE,LONG_DOUBLE}_TYPE_SIZE by calling
+	targetm.c.mode_for_floating_type with
+	TI_{FLOAT,DOUBLE,LONG_DOUBLE}_TYPE.
+
+2024-06-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-recording.cc (recording::function::dump_to_dot): Update for
+	fields of pretty_printer becoming private.
+
+2024-06-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR jit/115442
+	* jit-recording.cc: Define INCLUDE_SSTREAM before including
+	system.h and don't directly incldue sstream.
+
+2024-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* docs/topics/expressions.rst (Constructor expressions): Fix
+	duplicated words; have have -> have.
+
+2024-04-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Make-lang.in: Implement exports list, and use a shared
+	libgcc.
+	* libgccjit.exports: New file.
+
+2024-03-29  Guillaume Gomez  <guillaume1.gomez@gmail.com>
+
+	* libgccjit.cc (gcc_jit_type_get_size): Add pointer support
+
+2024-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* jit-playback.cc (new_bitcast): Use HOST_WIDE_INT_PRINT_DEC instead
+	of "%ld" and casts to long.
+
+2024-02-02  Antoni Boucher  <bouanto@zoho.com>
+
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_27): New ABI tag.
+	* docs/topics/expressions.rst: Document gcc_jit_context_new_sizeof.
+	* jit-playback.cc (new_sizeof): New method.
+	* jit-playback.h (new_sizeof): New method.
+	* jit-recording.cc (recording::context::new_sizeof,
+	recording::memento_of_sizeof::replay_into,
+	recording::memento_of_sizeof::make_debug_string,
+	recording::memento_of_sizeof::write_reproducer): New methods.
+	* jit-recording.h (class memento_of_sizeof): New class.
+	* libgccjit.cc (gcc_jit_context_new_sizeof): New function.
+	* libgccjit.h (gcc_jit_context_new_sizeof): New function.
+	* libgccjit.map: New function.
+
+2024-01-19  Antoni Boucher  <bouanto@zoho.com>
+
+	* jit-builtins.cc (ensure_optimization_builtins_exist): Add
+	popcount builtins.
+
+2024-01-19  Antoni Boucher  <bouanto@zoho.com>
+
+	* jit-recording.h (is_numeric_vector, vector_type::new_int): New
+	functions.
+	* libgccjit.cc (gcc_jit_context_new_unary_op,
+	gcc_jit_context_new_binary_op): add checks for
+	is_numeric_vector.
+
+2024-01-12  Guillaume Gomez  <guillaume1.gomez@gmail.com>
+	    Antoni Boucher  <bouanto@zoho.com>
+
+	* docs/topics/compatibility.rst: Add documentation for LIBGCCJIT_ABI_26.
+	* docs/topics/functions.rst: Add documentation for new functions.
+	* docs/topics/expressions.rst: Add documentation for new functions.
+
+2024-01-12  Guillaume Gomez  <guillaume1.gomez@gmail.com>
+	    Antoni Boucher  <bouanto@zoho.com>
+
+	* dummy-frontend.cc (handle_alias_attribute): New function.
+	(handle_always_inline_attribute): New function.
+	(handle_cold_attribute): New function.
+	(handle_fnspec_attribute): New function.
+	(handle_format_arg_attribute): New function.
+	(handle_format_attribute): New function.
+	(handle_noinline_attribute): New function.
+	(handle_target_attribute): New function.
+	(handle_used_attribute): New function.
+	(handle_visibility_attribute): New function.
+	(handle_weak_attribute): New function.
+	(handle_alias_ifunc_attribute): New function.
+	* jit-playback.cc (fn_attribute_to_string): New function.
+	(variable_attribute_to_string): New function.
+	(global_new_decl): Add attributes support.
+	(set_variable_attribute): New function.
+	(new_global): Add attributes support.
+	(new_global_initialized): Add attributes support.
+	(new_local): Add attributes support.
+	* jit-playback.h (fn_attribute_to_string): New function.
+	(set_variable_attribute): New function.
+	* jit-recording.cc (recording::lvalue::add_attribute): New function.
+	(recording::function::function): New function.
+	(recording::function::write_to_dump): Add attributes support.
+	(recording::function::add_attribute): New function.
+	(recording::function::add_string_attribute): New function.
+	(recording::function::add_integer_array_attribute): New function.
+	(recording::global::replay_into): Add attributes support.
+	(recording::local::replay_into): Add attributes support.
+	* jit-recording.h: Add attributes support.
+	* libgccjit.cc (gcc_jit_function_add_attribute): New function.
+	(gcc_jit_function_add_string_attribute): New function.
+	(gcc_jit_function_add_integer_array_attribute): New function.
+	(gcc_jit_lvalue_add_attribute): New function.
+	* libgccjit.h (enum gcc_jit_fn_attribute): New enum.
+	(gcc_jit_function_add_attribute): New function.
+	(gcc_jit_function_add_string_attribute): New function.
+	(gcc_jit_function_add_integer_array_attribute): New function.
+	(enum gcc_jit_variable_attribute): New function.
+	(gcc_jit_lvalue_add_string_attribute): New function.
+	* libgccjit.map: Declare new functions.
+
+2023-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* dummy-frontend.cc (jit_begin_diagnostic): Make diagnostic_info
+	param const.
+	(jit_end_diagnostic): Likewise.  Pass to add_diagnostic by
+	reference.
+	* jit-playback.cc (jit::playback::context::add_diagnostic):
+	Convert diagnostic_info to const reference.
+	* jit-playback.h (jit::playback::context::add_diagnostic):
+	Likewise.
+
+2023-12-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* dummy-frontend.cc (jit_gnu_attribute_table): Add extra braces
+	to work around PR 16333 in older compilers.
+	(jit_format_attribute_table): Likewise.
+
+2023-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* dummy-frontend.cc (jit_format_attribute_table): Change type to
+	scoped_attribute_specs, using...
+	(jit_format_attributes): ...this as the underlying array.
+	(jit_attribute_table): Change to an array of scoped_attribute_specs
+	pointers, using...
+	(jit_gnu_attributes, jit_gnu_attribute_table): ...these new globals
+	for the original array.  Include the format attributes.
+	(LANG_HOOKS_COMMON_ATTRIBUTE_TABLE): Delete.
+	(LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE): Delete.
+	(LANG_HOOKS_ATTRIBUTE_TABLE): Define.
+
+2023-11-09  Guillaume Gomez  <guillaume1.gomez@gmail.com>
+
+	* libgccjit++.h:
+
+2023-11-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.cc: Update for changes to diagnostic_context.
+	* jit-playback.h: Likewise.
+
+2023-10-25  Vibhav Pant  <vibhavp@gmail.com>
+
+	* jit-recording.cc (recording::global::write_to_dump): Fix
+	dump of string literal initializers.
+
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Make-lang.in: Handle Darwin rpaths.
+
 2023-10-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* dummy-frontend.cc (jit_langhook_init): Update for change to
@@ -4137,7 +4331,7 @@
 
 	* Initial creation
 
-Copyright (C) 2013-2023 Free Software Foundation, Inc.
+Copyright (C) 2013-2024 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

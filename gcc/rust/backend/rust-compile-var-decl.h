@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -30,30 +30,75 @@ class CompileVarDecl : public HIRCompileBase, public HIR::HIRPatternVisitor
   using HIR::HIRPatternVisitor::visit;
 
 public:
-  static void compile (tree fndecl, tree translated_type, HIR::Pattern *pattern,
-		       std::vector<Bvariable *> &locals, Context *ctx)
+  static std::vector<Bvariable *> compile (tree fndecl, tree translated_type,
+					   HIR::Pattern *pattern, Context *ctx)
   {
-    CompileVarDecl compiler (ctx, fndecl, translated_type, locals);
+    CompileVarDecl compiler (ctx, fndecl, translated_type);
     pattern->accept_vis (compiler);
+    return compiler.vars;
   }
 
   void visit (HIR::IdentifierPattern &pattern) override
   {
     if (!pattern.is_mut ())
-      translated_type = ctx->get_backend ()->immutable_type (translated_type);
+      translated_type = Backend::immutable_type (translated_type);
 
-    Bvariable *var
-      = ctx->get_backend ()->local_variable (fndecl, pattern.get_identifier (),
-					     translated_type, NULL /*decl_var*/,
-					     pattern.get_locus ());
+    tree bind_tree = ctx->peek_enclosing_scope ();
+    std::string identifier = pattern.get_identifier ().as_string ();
+    tree decl
+      = build_decl (pattern.get_locus (), VAR_DECL,
+		    Backend::get_identifier_node (identifier), translated_type);
+    DECL_CONTEXT (decl) = fndecl;
 
-    HirId stmt_id = pattern.get_pattern_mappings ().get_hirid ();
+    gcc_assert (TREE_CODE (bind_tree) == BIND_EXPR);
+    tree block_tree = BIND_EXPR_BLOCK (bind_tree);
+    gcc_assert (TREE_CODE (block_tree) == BLOCK);
+    DECL_CHAIN (decl) = BLOCK_VARS (block_tree);
+    BLOCK_VARS (block_tree) = decl;
+    BIND_EXPR_VARS (bind_tree) = BLOCK_VARS (block_tree);
+
+    rust_preserve_from_gc (decl);
+    Bvariable *var = new Bvariable (decl);
+
+    HirId stmt_id = pattern.get_mappings ().get_hirid ();
     ctx->insert_var_decl (stmt_id, var);
 
-    locals.push_back (var);
+    vars.push_back (var);
+  }
+
+  void visit (HIR::TuplePattern &pattern) override
+  {
+    switch (pattern.get_items ()->get_item_type ())
+      {
+	case HIR::TuplePatternItems::ItemType::MULTIPLE: {
+	  rust_assert (TREE_CODE (translated_type) == RECORD_TYPE);
+	  auto &items = static_cast<HIR::TuplePatternItemsMultiple &> (
+	    *pattern.get_items ());
+
+	  size_t offs = 0;
+	  for (auto &sub : items.get_patterns ())
+	    {
+	      tree sub_ty = error_mark_node;
+	      tree field = TYPE_FIELDS (translated_type);
+	      for (size_t i = 0; i < offs; i++)
+		{
+		  field = DECL_CHAIN (field);
+		  gcc_assert (field != NULL_TREE);
+		}
+	      sub_ty = TREE_TYPE (field);
+	      CompileVarDecl::compile (fndecl, sub_ty, sub.get (), ctx);
+	      offs++;
+	    }
+	}
+	break;
+
+      default:
+	break;
+      }
   }
 
   // Empty visit for unused Pattern HIR nodes.
+  void visit (HIR::AltPattern &) override {}
   void visit (HIR::LiteralPattern &) override {}
   void visit (HIR::PathInExpression &) override {}
   void visit (HIR::QualifiedPathInExpression &) override {}
@@ -61,21 +106,18 @@ public:
   void visit (HIR::ReferencePattern &) override {}
   void visit (HIR::SlicePattern &) override {}
   void visit (HIR::StructPattern &) override {}
-  void visit (HIR::TuplePattern &) override {}
   void visit (HIR::TupleStructPattern &) override {}
   void visit (HIR::WildcardPattern &) override {}
 
 private:
-  CompileVarDecl (Context *ctx, tree fndecl, tree translated_type,
-		  std::vector<Bvariable *> &locals)
-    : HIRCompileBase (ctx), fndecl (fndecl), translated_type (translated_type),
-      locals (locals)
+  CompileVarDecl (Context *ctx, tree fndecl, tree translated_type)
+    : HIRCompileBase (ctx), fndecl (fndecl), translated_type (translated_type)
   {}
 
   tree fndecl;
   tree translated_type;
 
-  std::vector<Bvariable *> &locals;
+  std::vector<Bvariable *> vars;
 };
 
 } // namespace Compile

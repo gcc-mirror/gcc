@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2012-2023, AdaCore                     --
+--                     Copyright (C) 2012-2024, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,8 @@
 
 --  This is the Windows specific version of this package
 
-with System.Win32; use System.Win32;
+with System.Storage_Elements; use System.Storage_Elements;
+with System.Win32;            use System.Win32;
 
 separate (System.Traceback.Symbolic)
 
@@ -50,27 +51,26 @@ package body Module_Name is
    -- Get --
    ---------
 
-   function Get (Addr : System.Address;
-                 Load_Addr : access System.Address)
-     return String
+   function Get
+     (Addr      : System.Address;
+      Load_Addr : access System.Address) return String
    is
       Res     : DWORD;
       hModule : aliased HANDLE;
-      Path    : String (1 .. 1_024);
+      Path    : String (1 .. 1024);
 
    begin
       Load_Addr.all := System.Null_Address;
 
       if GetModuleHandleEx
-           (GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+           (GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS +
+              GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
             Addr,
             hModule'Access) = Win32.TRUE
       then
-         Res := GetModuleFileName (hModule, Path'Address, Path'Length);
+         Load_Addr.all := To_Address (Integer_Address (hModule));
 
-         if FreeLibrary (hModule) = Win32.FALSE then
-            null;
-         end if;
+         Res := GetModuleFileName (hModule, Path'Address, Path'Length);
 
          if Res > 0 then
             return Path (1 .. Positive (Res));

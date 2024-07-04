@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 barfoo (a)
 {
   return (a << 16) & ~0xffff;

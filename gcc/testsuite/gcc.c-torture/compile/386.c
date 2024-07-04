@@ -1,4 +1,6 @@
 /* { dg-require-effective-target untyped_assembly } */
+/* { dg-additional-options "-std=gnu89" } */
+
 foo (a, p)
      int *p;
 {

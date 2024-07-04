@@ -1,6 +1,6 @@
 /* Definitions for LoongArch systems using GNU (glibc-based) userspace,
    or other userspace with libc derived from glibc.
-   Copyright (C) 2021-2023 Free Software Foundation, Inc.
+   Copyright (C) 2021-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -34,9 +34,9 @@ along with GCC; see the file COPYING3.  If not see
   "/lib" ABI_GRLEN_SPEC "/ld-linux-loongarch-" ABI_SPEC ".so.1"
 
 #define MUSL_ABI_SPEC \
-  "%{mabi=lp64d:-lp64d}" \
-  "%{mabi=lp64f:-lp64f}" \
-  "%{mabi=lp64s:-lp64s}"
+  "%{mabi=lp64d:}" \
+  "%{mabi=lp64f:-sp}" \
+  "%{mabi=lp64s:-sf}"
 
 #undef MUSL_DYNAMIC_LINKER
 #define MUSL_DYNAMIC_LINKER \

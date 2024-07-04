@@ -1,6 +1,6 @@
 // -*- C++ -*- header.
 
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,10 +32,10 @@
 
 #pragma GCC system_header
 
-#define __glibcxx_want_atomic_wait
 #include <bits/version.h>
 
-#if __cpp_lib_atomic_wait
+#if __glibcxx_atomic_wait
+#include <cstdint>
 #include <bits/functional_hash.h>
 #include <bits/gthr.h>
 #include <ext/numeric_traits.h>
@@ -476,5 +476,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-#endif // __cpp_lib_atomic_wait
+#endif // __glibcxx_atomic_wait
 #endif // _GLIBCXX_ATOMIC_WAIT_H

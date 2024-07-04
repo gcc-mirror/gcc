@@ -39,10 +39,13 @@ f3 (int *restrict y, int *restrict x, int *restrict indices)
       y[i * 2] = (indices[i * 2] < N * 2
 		  ? x[indices[i * 2]] + 1
 		  : 1);
-      y[i * 2 + 1] = (indices[i * 2 + 1] < N * 2
-		      ? x[(unsigned int) indices[i * 2 + 1]] + 2
+      y[i * 2 + 1] = (((unsigned int *)indices)[i * 2 + 1] < N * 2
+		      ? x[((unsigned int *) indices)[i * 2 + 1]] + 2
 		      : 2);
     }
 }
 
-/* { dg-final { scan-tree-dump-not "Loop contains only SLP stmts" vect { target vect_gather_load_ifn } } } */
+/* We do not want to see a two-lane .MASK_LOAD or .MASK_GATHER_LOAD since
+   the gathers are different on each lane.  This is a bit fragile and
+   should possibly be turned into a runtime test.  */
+/* { dg-final { scan-tree-dump-not "stmt 1 \[^\r\n\]* = .MASK" vect } } */

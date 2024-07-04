@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,6 +29,9 @@ template <class T>
     invoke_test<simd<T, simd_abi::scalar>>(int());
     invoke_test<simd<T, simd_abi::_VecBuiltin<16>>>(int());
     invoke_test<simd<T, simd_abi::_VecBltnBtmsk<64>>>(int());
+    invoke_test<simd<T, simd_abi::_SveAbi<16>>>(int());
+    invoke_test<simd<T, simd_abi::_SveAbi<32>>>(int());
+    invoke_test<simd<T, simd_abi::_SveAbi<64>>>(int());
 #elif EXTENDEDTESTS == 0
     invoke_test<simd<T, simd_abi::_VecBuiltin<8>>>(int());
     invoke_test<simd<T, simd_abi::_VecBuiltin<12>>>(int());

@@ -1,5 +1,5 @@
 ;; Constraint definitions for DEC Alpha.
-;; Copyright (C) 2007-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2024 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -27,7 +27,7 @@
  "General register 24, input to division routine")
 
 (define_register_constraint "b" "R25_REG"
- "General register 24, input to division routine")
+ "General register 25, input to division routine")
 
 (define_register_constraint "c" "R27_REG"
  "General register 27, function call address")

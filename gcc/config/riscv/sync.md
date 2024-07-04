@@ -1,5 +1,5 @@
 ;; Machine description for RISC-V atomic operations.
-;; Copyright (C) 2011-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2024 Free Software Foundation, Inc.
 ;; Contributed by Andrew Waterman (andrew@sifive.com).
 ;; Based on MIPS target for GNU compiler.
 
@@ -57,10 +57,10 @@
 ;; Atomic memory operations.
 
 (define_expand "atomic_load<mode>"
-  [(match_operand:GPR 0 "register_operand")
-   (match_operand:GPR 1 "memory_operand")
+  [(match_operand:ANYI 0 "register_operand")
+   (match_operand:ANYI 1 "memory_operand")
    (match_operand:SI 2 "const_int_operand")] ;; model
-  "TARGET_ATOMIC"
+  ""
   {
     if (TARGET_ZTSO)
       emit_insn (gen_atomic_load_ztso<mode> (operands[0], operands[1],
@@ -72,10 +72,10 @@
   })
 
 (define_expand "atomic_store<mode>"
-  [(match_operand:GPR 0 "memory_operand")
-   (match_operand:GPR 1 "reg_or_0_operand")
+  [(match_operand:ANYI 0 "memory_operand")
+   (match_operand:ANYI 1 "reg_or_0_operand")
    (match_operand:SI 2 "const_int_operand")] ;; model
-  "TARGET_ATOMIC"
+  ""
   {
     if (TARGET_ZTSO)
       emit_insn (gen_atomic_store_ztso<mode> (operands[0], operands[1],
@@ -86,19 +86,73 @@
     DONE;
   })
 
-(define_insn "atomic_<atomic_optab><mode>"
+;; AMO ops
+
+(define_expand "atomic_<atomic_optab><mode>"
+  [(any_atomic:GPR (match_operand:GPR 0 "memory_operand")    ;; mem location
+		   (match_operand:GPR 1 "reg_or_0_operand")) ;; value for op
+   (match_operand:SI 2 "const_int_operand")]		     ;; model
+  "TARGET_ZAAMO || TARGET_ZALRSC"
+{
+  if (TARGET_ZAAMO)
+    emit_insn (gen_amo_atomic_<atomic_optab><mode> (operands[0], operands[1],
+						    operands[2]));
+  else
+    emit_insn (gen_lrsc_atomic_<atomic_optab><mode> (operands[0], operands[1],
+						     operands[2]));
+  DONE;
+})
+
+(define_insn "amo_atomic_<atomic_optab><mode>"
   [(set (match_operand:GPR 0 "memory_operand" "+A")
 	(unspec_volatile:GPR
 	  [(any_atomic:GPR (match_dup 0)
 		     (match_operand:GPR 1 "reg_or_0_operand" "rJ"))
 	   (match_operand:SI 2 "const_int_operand")] ;; model
 	 UNSPEC_SYNC_OLD_OP))]
-  "TARGET_ATOMIC"
+  "TARGET_ZAAMO"
   "amo<insn>.<amo>%A2\tzero,%z1,%0"
   [(set_attr "type" "atomic")
    (set (attr "length") (const_int 4))])
 
-(define_insn "atomic_fetch_<atomic_optab><mode>"
+(define_insn "lrsc_atomic_<atomic_optab><mode>"
+  [(set (match_operand:GPR 0 "memory_operand" "+A")
+	(unspec_volatile:GPR
+	  [(any_atomic:GPR (match_dup 0)
+		     (match_operand:GPR 1 "reg_or_0_operand" "rJ"))
+	   (match_operand:SI 2 "const_int_operand")] ;; model
+	 UNSPEC_SYNC_OLD_OP))
+   (clobber (match_scratch:GPR 3 "=&r"))]	     ;; tmp_1
+  "!TARGET_ZAAMO && TARGET_ZALRSC"
+  {
+    return "1:\;"
+	   "lr.<amo>%I2\t%3, %0\;"
+	   "<insn>\t%3, %3, %1\;"
+	   "sc.<amo>%J2\t%3, %3, %0\;"
+	   "bnez\t%3, 1b";
+  }
+  [(set_attr "type" "atomic")
+   (set (attr "length") (const_int 16))])
+
+;; AMO fetch ops
+
+(define_expand "atomic_fetch_<atomic_optab><mode>"
+  [(match_operand:GPR 0 "register_operand")		     ;; old value at mem
+   (any_atomic:GPR (match_operand:GPR 1 "memory_operand")    ;; mem location
+		   (match_operand:GPR 2 "reg_or_0_operand")) ;; value for op
+   (match_operand:SI 3 "const_int_operand")]		     ;; model
+  "TARGET_ZAAMO || TARGET_ZALRSC"
+  {
+    if (TARGET_ZAAMO)
+      emit_insn (gen_amo_atomic_fetch_<atomic_optab><mode> (operands[0], operands[1],
+							    operands[2], operands[3]));
+    else
+      emit_insn (gen_lrsc_atomic_fetch_<atomic_optab><mode> (operands[0], operands[1],
+							     operands[2], operands[3]));
+    DONE;
+  })
+
+(define_insn "amo_atomic_fetch_<atomic_optab><mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&r")
 	(match_operand:GPR 1 "memory_operand" "+A"))
    (set (match_dup 1)
@@ -107,10 +161,31 @@
 		     (match_operand:GPR 2 "reg_or_0_operand" "rJ"))
 	   (match_operand:SI 3 "const_int_operand")] ;; model
 	 UNSPEC_SYNC_OLD_OP))]
-  "TARGET_ATOMIC"
+  "TARGET_ZAAMO"
   "amo<insn>.<amo>%A3\t%0,%z2,%1"
   [(set_attr "type" "atomic")
    (set (attr "length") (const_int 4))])
+
+(define_insn "lrsc_atomic_fetch_<atomic_optab><mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=&r")
+	(match_operand:GPR 1 "memory_operand" "+A"))
+   (set (match_dup 1)
+	(unspec_volatile:GPR
+	  [(any_atomic:GPR (match_dup 1)
+		     (match_operand:GPR 2 "reg_or_0_operand" "rJ"))
+	   (match_operand:SI 3 "const_int_operand")] ;; model
+	 UNSPEC_SYNC_OLD_OP))
+   (clobber (match_scratch:GPR 4 "=&r"))]	  ;; tmp_1
+  "!TARGET_ZAAMO && TARGET_ZALRSC"
+  {
+    return "1:\;"
+	   "lr.<amo>%I3\t%0, %1\;"
+	   "<insn>\t%4, %0, %2\;"
+	   "sc.<amo>%J3\t%4, %4, %1\;"
+	   "bnez\t%4, 1b";
+  }
+  [(set_attr "type" "atomic")
+   (set (attr "length") (const_int 20))])
 
 (define_insn "subword_atomic_fetch_strong_<atomic_optab>"
   [(set (match_operand:SI 0 "register_operand" "=&r")		   ;; old value at mem
@@ -125,7 +200,7 @@
     (match_operand:SI 5 "register_operand" "rI")		   ;; not_mask
     (clobber (match_scratch:SI 6 "=&r"))			   ;; tmp_1
     (clobber (match_scratch:SI 7 "=&r"))]			   ;; tmp_2
-  "TARGET_ATOMIC && TARGET_INLINE_SUBWORD_ATOMIC"
+  "TARGET_ZALRSC && TARGET_INLINE_SUBWORD_ATOMIC"
   {
     return "1:\;"
 	   "lr.w%I3\t%0, %1\;"
@@ -144,7 +219,7 @@
    (not:SHORT (and:SHORT (match_operand:SHORT 1 "memory_operand")     ;; mem location
 			 (match_operand:SHORT 2 "reg_or_0_operand"))) ;; value for op
    (match_operand:SI 3 "const_int_operand")]			      ;; model
-  "TARGET_ATOMIC && TARGET_INLINE_SUBWORD_ATOMIC"
+  "TARGET_ZALRSC && TARGET_INLINE_SUBWORD_ATOMIC"
 {
   /* We have no QImode/HImode atomics, so form a mask, then use
      subword_atomic_fetch_strong_nand to implement a LR/SC version of the
@@ -192,7 +267,7 @@
     (match_operand:SI 5 "register_operand" "rI")			  ;; not_mask
     (clobber (match_scratch:SI 6 "=&r"))				  ;; tmp_1
     (clobber (match_scratch:SI 7 "=&r"))]				  ;; tmp_2
-  "TARGET_ATOMIC && TARGET_INLINE_SUBWORD_ATOMIC"
+  "TARGET_ZALRSC && TARGET_INLINE_SUBWORD_ATOMIC"
   {
     return "1:\;"
 	   "lr.w%I3\t%0, %1\;"
@@ -212,7 +287,7 @@
    (any_atomic:SHORT (match_operand:SHORT 1 "memory_operand")	 ;; mem location
 		     (match_operand:SHORT 2 "reg_or_0_operand")) ;; value for op
    (match_operand:SI 3 "const_int_operand")]			 ;; model
-  "TARGET_ATOMIC && TARGET_INLINE_SUBWORD_ATOMIC"
+  "TARGET_ZALRSC && TARGET_INLINE_SUBWORD_ATOMIC"
 {
   /* We have no QImode/HImode atomics, so form a mask, then use
      subword_atomic_fetch_strong_<mode> to implement a LR/SC version of the
@@ -248,7 +323,23 @@
   DONE;
 })
 
-(define_insn "atomic_exchange<mode>"
+(define_expand "atomic_exchange<mode>"
+  [(match_operand:GPR 0 "register_operand")  ;; old value at mem
+   (match_operand:GPR 1 "memory_operand")    ;; mem location
+   (match_operand:GPR 2 "register_operand")  ;; value for op
+   (match_operand:SI 3 "const_int_operand")] ;; model
+  "TARGET_ZAAMO || TARGET_ZALRSC"
+  {
+    if (TARGET_ZAAMO)
+      emit_insn (gen_amo_atomic_exchange<mode> (operands[0], operands[1],
+					    operands[2], operands[3]));
+    else
+      emit_insn (gen_lrsc_atomic_exchange<mode> (operands[0], operands[1],
+					     operands[2], operands[3]));
+    DONE;
+  })
+
+(define_insn "amo_atomic_exchange<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&r")
 	(unspec_volatile:GPR
 	  [(match_operand:GPR 1 "memory_operand" "+A")
@@ -256,17 +347,37 @@
 	  UNSPEC_SYNC_EXCHANGE))
    (set (match_dup 1)
 	(match_operand:GPR 2 "register_operand" "0"))]
-  "TARGET_ATOMIC"
+  "TARGET_ZAAMO"
   "amoswap.<amo>%A3\t%0,%z2,%1"
   [(set_attr "type" "atomic")
    (set (attr "length") (const_int 4))])
+
+(define_insn "lrsc_atomic_exchange<mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=&r")
+	(unspec_volatile:GPR
+	  [(match_operand:GPR 1 "memory_operand" "+A")
+	   (match_operand:SI 3 "const_int_operand")] ;; model
+	  UNSPEC_SYNC_EXCHANGE))
+   (set (match_dup 1)
+	(match_operand:GPR 2 "register_operand" "0"))
+   (clobber (match_scratch:GPR 4 "=&r"))]	  ;; tmp_1
+  "!TARGET_ZAAMO && TARGET_ZALRSC"
+  {
+    return "1:\;"
+	   "lr.<amo>%I3\t%4, %1\;"
+	   "sc.<amo>%J3\t%0, %0, %1\;"
+	   "bnez\t%0, 1b\;"
+	   "mv\t%0, %4";
+  }
+  [(set_attr "type" "atomic")
+   (set (attr "length") (const_int 20))])
 
 (define_expand "atomic_exchange<mode>"
   [(match_operand:SHORT 0 "register_operand") ;; old value at mem
    (match_operand:SHORT 1 "memory_operand")   ;; mem location
    (match_operand:SHORT 2 "register_operand") ;; value
    (match_operand:SI 3 "const_int_operand")]  ;; model
-  "TARGET_ATOMIC && TARGET_INLINE_SUBWORD_ATOMIC"
+  "TARGET_ZALRSC && TARGET_INLINE_SUBWORD_ATOMIC"
 {
   rtx old = gen_reg_rtx (SImode);
   rtx mem = operands[1];
@@ -303,7 +414,7 @@
       UNSPEC_SYNC_EXCHANGE_SUBWORD))
     (match_operand:SI 4 "reg_or_0_operand" "rI")	 ;; not_mask
     (clobber (match_scratch:SI 5 "=&r"))]		 ;; tmp_1
-  "TARGET_ATOMIC && TARGET_INLINE_SUBWORD_ATOMIC"
+  "TARGET_ZALRSC && TARGET_INLINE_SUBWORD_ATOMIC"
   {
     return "1:\;"
 	   "lr.w%I3\t%0, %1\;"
@@ -325,7 +436,7 @@
 			      (match_operand:SI 5 "const_int_operand")] ;; mod_f
 	 UNSPEC_COMPARE_AND_SWAP))
    (clobber (match_scratch:GPR 6 "=&r"))]
-  "TARGET_ATOMIC"
+  "TARGET_ZALRSC"
   {
     enum memmodel model_success = (enum memmodel) INTVAL (operands[4]);
     enum memmodel model_failure = (enum memmodel) INTVAL (operands[5]);
@@ -351,8 +462,17 @@
    (match_operand:SI 5 "const_int_operand" "")  ;; is_weak
    (match_operand:SI 6 "const_int_operand" "")  ;; mod_s
    (match_operand:SI 7 "const_int_operand" "")] ;; mod_f
-  "TARGET_ATOMIC"
+  "TARGET_ZALRSC"
 {
+  if (word_mode != <MODE>mode && operands[3] != const0_rtx)
+    {
+      /* We don't have SI mode compare on RV64, so we need to make sure expected
+	 value is sign-extended.  */
+      rtx tmp0 = gen_reg_rtx (word_mode);
+      emit_insn (gen_extend_insn (tmp0, operands[3], word_mode, <MODE>mode, 0));
+      operands[3] = simplify_gen_subreg (<MODE>mode, tmp0, word_mode, 0);
+    }
+
   emit_insn (gen_atomic_cas_value_strong<mode> (operands[1], operands[2],
 						operands[3], operands[4],
 						operands[6], operands[7]));
@@ -385,7 +505,7 @@
    (match_operand:SI 5 "const_int_operand")   ;; is_weak
    (match_operand:SI 6 "const_int_operand")   ;; mod_s
    (match_operand:SI 7 "const_int_operand")]  ;; mod_f
-  "TARGET_ATOMIC && TARGET_INLINE_SUBWORD_ATOMIC"
+  "TARGET_ZALRSC && TARGET_INLINE_SUBWORD_ATOMIC"
 {
   emit_insn (gen_atomic_cas_value_strong<mode> (operands[1], operands[2],
 						operands[3], operands[4],
@@ -430,7 +550,7 @@
    (match_operand:SI 4 "const_int_operand")   ;; mod_s
    (match_operand:SI 5 "const_int_operand")   ;; mod_f
    (match_scratch:SHORT 6)]
-  "TARGET_ATOMIC && TARGET_INLINE_SUBWORD_ATOMIC"
+  "TARGET_ZALRSC && TARGET_INLINE_SUBWORD_ATOMIC"
 {
   /* We have no QImode/HImode atomics, so form a mask, then use
      subword_atomic_cas_strong<mode> to implement a LR/SC version of the
@@ -488,7 +608,7 @@
 	(match_operand:SI 5 "register_operand" "rI")			   ;; mask
 	(match_operand:SI 6 "register_operand" "rI")			   ;; not_mask
 	(clobber (match_scratch:SI 7 "=&r"))]				   ;; tmp_1
-  "TARGET_ATOMIC && TARGET_INLINE_SUBWORD_ATOMIC"
+  "TARGET_ZALRSC && TARGET_INLINE_SUBWORD_ATOMIC"
   {
     return "1:\;"
 	   "lr.w%I4\t%0, %1\;"
@@ -504,43 +624,39 @@
    (set (attr "length") (const_int 28))])
 
 (define_expand "atomic_test_and_set"
-  [(match_operand:QI 0 "register_operand" "")     ;; bool output
+  [(match_operand:QI 0 "register_operand" "")    ;; bool output
    (match_operand:QI 1 "memory_operand" "+A")    ;; memory
-   (match_operand:SI 2 "const_int_operand" "")]   ;; model
-  "TARGET_ATOMIC"
+   (match_operand:SI 2 "const_int_operand" "")]  ;; model
+  "TARGET_ZAAMO || TARGET_ZALRSC"
 {
   /* We have no QImode atomics, so use the address LSBs to form a mask,
      then use an aligned SImode atomic.  */
-  rtx result = operands[0];
+  rtx old = gen_reg_rtx (SImode);
   rtx mem = operands[1];
   rtx model = operands[2];
-  rtx addr = force_reg (Pmode, XEXP (mem, 0));
+  rtx set = gen_reg_rtx (QImode);
+  rtx aligned_mem = gen_reg_rtx (SImode);
+  rtx shift = gen_reg_rtx (SImode);
 
-  rtx aligned_addr = gen_reg_rtx (Pmode);
-  emit_move_insn (aligned_addr, gen_rtx_AND (Pmode, addr, GEN_INT (-4)));
+  /* Unused.  */
+  rtx _mask = gen_reg_rtx (SImode);
+  rtx _not_mask = gen_reg_rtx (SImode);
 
-  rtx aligned_mem = change_address (mem, SImode, aligned_addr);
-  set_mem_alias_set (aligned_mem, 0);
+  riscv_subword_address (mem, &aligned_mem, &shift, &_mask, &_not_mask);
 
-  rtx offset = gen_reg_rtx (SImode);
-  emit_move_insn (offset, gen_rtx_AND (SImode, gen_lowpart (SImode, addr),
-				       GEN_INT (3)));
+  emit_move_insn (set, GEN_INT (1));
+  rtx shifted_set = gen_reg_rtx (SImode);
+  riscv_lshift_subword (QImode, set, shift, &shifted_set);
 
-  rtx tmp = gen_reg_rtx (SImode);
-  emit_move_insn (tmp, GEN_INT (1));
+  if (TARGET_ZAAMO)
+    emit_insn (gen_amo_atomic_fetch_orsi (old, aligned_mem, shifted_set, model));
+  else if (TARGET_ZALRSC)
+    emit_insn (gen_lrsc_atomic_fetch_orsi (old, aligned_mem, shifted_set, model));
 
-  rtx shmt = gen_reg_rtx (SImode);
-  emit_move_insn (shmt, gen_rtx_ASHIFT (SImode, offset, GEN_INT (3)));
+  emit_move_insn (old, gen_rtx_ASHIFTRT (SImode, old,
+					 gen_lowpart (QImode, shift)));
 
-  rtx word = gen_reg_rtx (SImode);
-  emit_move_insn (word, gen_rtx_ASHIFT (SImode, tmp,
-					gen_lowpart (QImode, shmt)));
+  emit_move_insn (operands[0], gen_lowpart (QImode, old));
 
-  tmp = gen_reg_rtx (SImode);
-  emit_insn (gen_atomic_fetch_orsi (tmp, aligned_mem, word, model));
-
-  emit_move_insn (gen_lowpart (SImode, result),
-		  gen_rtx_LSHIFTRT (SImode, tmp,
-				    gen_lowpart (QImode, shmt)));
   DONE;
 })

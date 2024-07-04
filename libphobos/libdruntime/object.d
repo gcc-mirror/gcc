@@ -65,7 +65,7 @@ alias ptrdiff_t = typeof(cast(void*)0 - cast(void*)0);
 alias sizediff_t = ptrdiff_t; // For backwards compatibility only.
 /**
  * Bottom type.
- * See $(DDSUBLINK spec/type, noreturn).
+ * See $(DDSUBLINK spec/type, noreturn, `noreturn`).
  */
 alias noreturn = typeof(*null);
 
@@ -526,6 +526,12 @@ unittest
 
 private extern(C) void _d_setSameMutex(shared Object ownee, shared Object owner) nothrow;
 
+/** Makes ownee use owner's mutex.
+ * This will initialize owner's mutex if it hasn't been set yet.
+ * Params:
+ * ownee = object to change
+ * owner = source object
+ */
 void setSameMutex(shared Object ownee, shared Object owner)
 {
     import core.atomic : atomicLoad;
@@ -642,7 +648,8 @@ class TypeInfo
      */
     size_t getHash(scope const void* p) @trusted nothrow const
     {
-        return hashOf(p);
+        // by default, do not assume anything about the type
+        return 0;
     }
 
     /// Compares two instances for equality.
@@ -1639,10 +1646,10 @@ class TypeInfo_Class : TypeInfo
     string      name;           /// class name
     void*[]     vtbl;           /// virtual function pointer table
     Interface[] interfaces;     /// interfaces this class implements
-    TypeInfo_Class   base;           /// base class
+    TypeInfo_Class   base;      /// base class
     void*       destructor;
     void function(Object) classInvariant;
-    enum ClassFlags : uint
+    enum ClassFlags : ushort
     {
         isCOMclass = 0x1,
         noPointers = 0x2,
@@ -1653,14 +1660,18 @@ class TypeInfo_Class : TypeInfo
         isAbstract = 0x40,
         isCPPclass = 0x80,
         hasDtor = 0x100,
+        hasNameSig = 0x200,
     }
     ClassFlags m_flags;
-    void*       deallocator;
+    ushort     depth;           /// inheritance distance from Object
+    void*      deallocator;
     OffsetTypeInfo[] m_offTi;
     void function(Object) defaultConstructor;   // default Constructor
 
     immutable(void)* m_RTInfo;        // data for precise GC
     override @property immutable(void)* rtInfo() const { return m_RTInfo; }
+
+    uint[4] nameSig;            /// unique signature for `name`
 
     /**
      * Search all modules for TypeInfo_Class corresponding to classname.
@@ -2903,6 +2914,14 @@ void* aaLiteral(Key, Value)(Key[] keys, Value[] values) @trusted pure
     return _d_assocarrayliteralTX(typeid(Value[Key]), *cast(void[]*)&keys, *cast(void[]*)&values);
 }
 
+// Lower an Associative Array to a newaa struct for static initialization.
+auto _aaAsStruct(K, V)(V[K] aa) @safe
+{
+    import core.internal.newaa : makeAA;
+    assert(__ctfe);
+    return makeAA!(K, V)(aa);
+}
+
 alias AssociativeArray(Key, Value) = Value[Key];
 
 /***********************************
@@ -2910,19 +2929,19 @@ alias AssociativeArray(Key, Value) = Value[Key];
  * Params:
  *      aa =     The associative array.
  */
-void clear(Value, Key)(Value[Key] aa)
+void clear(Value, Key)(Value[Key] aa) @trusted
 {
     _aaClear(*cast(AA *) &aa);
 }
 
 /** ditto */
-void clear(Value, Key)(Value[Key]* aa)
+void clear(Value, Key)(Value[Key]* aa) @trusted
 {
     _aaClear(*cast(AA *) aa);
 }
 
 ///
-@system unittest
+@safe unittest
 {
     auto aa = ["k1": 2];
     aa.clear;
@@ -4658,16 +4677,21 @@ public import core.internal.array.appending : _d_arrayappendT;
 version (D_ProfileGC)
 {
     public import core.internal.array.appending : _d_arrayappendTTrace;
+    public import core.internal.array.appending : _d_arrayappendcTXTrace;
     public import core.internal.array.concatenation : _d_arraycatnTXTrace;
     public import core.lifetime : _d_newitemTTrace;
+    public import core.internal.array.construction : _d_newarrayTTrace;
+    public import core.internal.array.construction : _d_newarraymTXTrace;
 }
-public import core.internal.array.appending : _d_arrayappendcTXImpl;
+public import core.internal.array.appending : _d_arrayappendcTX;
 public import core.internal.array.comparison : __cmp;
 public import core.internal.array.equality : __equals;
 public import core.internal.array.casting: __ArrayCast;
 public import core.internal.array.concatenation : _d_arraycatnTX;
 public import core.internal.array.construction : _d_arrayctor;
 public import core.internal.array.construction : _d_arraysetctor;
+public import core.internal.array.construction : _d_newarrayT;
+public import core.internal.array.construction : _d_newarraymTX;
 public import core.internal.array.arrayassign : _d_arrayassign_l;
 public import core.internal.array.arrayassign : _d_arrayassign_r;
 public import core.internal.array.arrayassign : _d_arraysetassign;

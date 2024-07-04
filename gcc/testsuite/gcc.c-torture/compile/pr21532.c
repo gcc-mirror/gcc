@@ -1,4 +1,4 @@
-
+int foo (int);
 
 int
 bar (unsigned char key)

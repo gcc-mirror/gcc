@@ -1,5 +1,5 @@
 /* Generate built-in function initialization and recognition for Power.
-   Copyright (C) 2020-2023 Free Software Foundation, Inc.
+   Copyright (C) 2020-2024 Free Software Foundation, Inc.
    Contributed by Bill Schmidt, IBM <wschmidt@linux.ibm.com>
 
 This file is part of GCC.
@@ -2261,20 +2261,19 @@ write_decls (void)
   fprintf (header_file, "};\n\n");
 
   fprintf (header_file, "#define PPC_MAXRESTROPNDS 3\n");
-  fprintf (header_file, "struct GTY(()) bifdata\n");
+  fprintf (header_file, "struct bifdata\n");
   fprintf (header_file, "{\n");
-  fprintf (header_file, "  const char *GTY((skip(\"\"))) bifname;\n");
-  fprintf (header_file, "  bif_enable GTY((skip(\"\"))) enable;\n");
-  fprintf (header_file, "  tree fntype;\n");
-  fprintf (header_file, "  insn_code GTY((skip(\"\"))) icode;\n");
-  fprintf (header_file, "  int  nargs;\n");
-  fprintf (header_file, "  int  bifattrs;\n");
-  fprintf (header_file, "  int  restr_opnd[PPC_MAXRESTROPNDS];\n");
-  fprintf (header_file, "  restriction GTY((skip(\"\"))) restr[PPC_MAXRESTROPNDS];\n");
-  fprintf (header_file, "  int  restr_val1[PPC_MAXRESTROPNDS];\n");
-  fprintf (header_file, "  int  restr_val2[PPC_MAXRESTROPNDS];\n");
-  fprintf (header_file, "  const char *GTY((skip(\"\"))) attr_string;\n");
-  fprintf (header_file, "  rs6000_gen_builtins GTY((skip(\"\"))) assoc_bif;\n");
+  fprintf (header_file, "  const char *bifname;\n");
+  fprintf (header_file, "  bif_enable enable;\n");
+  fprintf (header_file, "  insn_code icode;\n");
+  fprintf (header_file, "  int nargs;\n");
+  fprintf (header_file, "  int bifattrs;\n");
+  fprintf (header_file, "  int restr_opnd[PPC_MAXRESTROPNDS];\n");
+  fprintf (header_file, "  restriction restr[PPC_MAXRESTROPNDS];\n");
+  fprintf (header_file, "  int restr_val1[PPC_MAXRESTROPNDS];\n");
+  fprintf (header_file, "  int restr_val2[PPC_MAXRESTROPNDS];\n");
+  fprintf (header_file, "  const char *attr_string;\n");
+  fprintf (header_file, "  rs6000_gen_builtins assoc_bif;\n");
   fprintf (header_file, "};\n\n");
 
   fprintf (header_file, "#define bif_init_bit\t\t(0x00000001)\n");
@@ -2353,27 +2352,34 @@ write_decls (void)
   fprintf (header_file, "\n");
 
   fprintf (header_file,
-	   "extern GTY(()) bifdata rs6000_builtin_info[RS6000_BIF_MAX];\n\n");
+	   "extern bifdata rs6000_builtin_info[RS6000_BIF_MAX];\n\n");
 
-  fprintf (header_file, "struct GTY(()) ovlddata\n");
+  fprintf (header_file,
+	   "extern GTY(()) tree rs6000_builtin_info_fntype[RS6000_BIF_MAX];\n\n");
+
+  fprintf (header_file, "struct ovlddata\n");
   fprintf (header_file, "{\n");
-  fprintf (header_file, "  const char *GTY((skip(\"\"))) bifname;\n");
-  fprintf (header_file, "  rs6000_gen_builtins GTY((skip(\"\"))) bifid;\n");
-  fprintf (header_file, "  tree fntype;\n");
-  fprintf (header_file, "  ovlddata *GTY((skip(\"\"))) next;\n");
+  fprintf (header_file, "  const char *bifname;\n");
+  fprintf (header_file, "  rs6000_gen_builtins bifid;\n");
+  fprintf (header_file, "  int next;\n");
   fprintf (header_file, "};\n\n");
 
   fprintf (header_file, "struct ovldrecord\n");
   fprintf (header_file, "{\n");
   fprintf (header_file, "  const char *ovld_name;\n");
-  fprintf (header_file, "  ovlddata *first_instance;\n");
+  fprintf (header_file, "  int first_instance;\n");
   fprintf (header_file, "};\n\n");
 
   fprintf (header_file,
-	   "extern GTY(()) ovlddata rs6000_instance_info[RS6000_INST_MAX];\n");
+	   "extern ovlddata rs6000_instance_info[RS6000_INST_MAX];\n");
+  fprintf (header_file, "extern GTY(()) tree "
+	   "rs6000_instance_info_fntype[RS6000_INST_MAX];\n");
   fprintf (header_file, "extern ovldrecord rs6000_overload_info[];\n\n");
 
-  fprintf (header_file, "extern void rs6000_init_generated_builtins ();\n\n");
+  fprintf (header_file,
+	   "extern void rs6000_init_generated_builtins (tree *, tree *,\n");
+  fprintf (header_file,
+	   "\t\t\t\t\t    ovldrecord *, tree *);\n\n");
   fprintf (header_file,
 	   "extern bool rs6000_builtin_is_supported (rs6000_gen_builtins);\n");
   fprintf (header_file,
@@ -2481,7 +2487,7 @@ write_bif_static_init (void)
   fprintf (init_file, "bifdata rs6000_builtin_info[RS6000_BIF_MAX] =\n");
   fprintf (init_file, "  {\n");
   fprintf (init_file, "    { /* RS6000_BIF_NONE: */\n");
-  fprintf (init_file, "      \"\", ENB_ALWAYS, 0, CODE_FOR_nothing, 0,\n");
+  fprintf (init_file, "      \"\", ENB_ALWAYS, CODE_FOR_nothing, 0,\n");
   fprintf (init_file, "      0, {0, 0, 0}, {RES_NONE, RES_NONE, RES_NONE},\n");
   fprintf (init_file, "      {0, 0, 0}, {0, 0, 0}, \"\", RS6000_BIF_NONE\n");
   fprintf (init_file, "    },\n");
@@ -2493,8 +2499,6 @@ write_bif_static_init (void)
 	       bifp->proto.bifname);
       fprintf (init_file, "      /* enable*/\t%s,\n",
 	       enable_string[bifp->stanza]);
-      /* Type must be instantiated at run time.  */
-      fprintf (init_file, "      /* fntype */\t0,\n");
       fprintf (init_file, "      /* icode */\tCODE_FOR_%s,\n",
 	       bifp->patname);
       fprintf (init_file, "      /* nargs */\t%d,\n",
@@ -2586,6 +2590,8 @@ write_bif_static_init (void)
       fprintf (init_file, "    },\n");
     }
   fprintf (init_file, "  };\n\n");
+
+  fprintf (init_file, "tree rs6000_builtin_info_fntype[RS6000_BIF_MAX];\n\n");
 }
 
 /* Write the decls and initializers for rs6000_overload_info[] and
@@ -2598,7 +2604,7 @@ write_ovld_static_init (void)
 	   "- RS6000_OVLD_NONE] =\n");
   fprintf (init_file, "  {\n");
   fprintf (init_file, "    { /* RS6000_OVLD_NONE: */\n");
-  fprintf (init_file, "      \"\", NULL\n");
+  fprintf (init_file, "      \"\", -1\n");
   fprintf (init_file, "    },\n");
   for (int i = 0; i <= curr_ovld_stanza; i++)
     {
@@ -2607,7 +2613,7 @@ write_ovld_static_init (void)
       fprintf (init_file, "      /* ovld_name */\t\"%s\",\n",
 	       ovld_stanzas[i].intern_name);
       /* First-instance must currently be instantiated at run time.  */
-      fprintf (init_file, "      /* first_instance */\tNULL\n");
+      fprintf (init_file, "      /* first_instance */\t-1\n");
       fprintf (init_file, "    },\n");
     }
   fprintf (init_file, "  };\n\n");
@@ -2615,7 +2621,7 @@ write_ovld_static_init (void)
   fprintf (init_file, "ovlddata rs6000_instance_info[RS6000_INST_MAX] =\n");
   fprintf (init_file, "  {\n");
   fprintf (init_file, "    { /* RS6000_INST_NONE: */\n");
-  fprintf (init_file, "      \"\", RS6000_BIF_NONE, NULL_TREE, NULL\n");
+  fprintf (init_file, "      \"\", RS6000_BIF_NONE, -1\n");
   fprintf (init_file, "    },\n");
   for (int i = 0; i <= curr_ovld; i++)
     {
@@ -2625,19 +2631,20 @@ write_ovld_static_init (void)
 	       ovlds[i].proto.bifname);
       fprintf (init_file, "      /* bifid */\tRS6000_BIF_%s,\n",
 	       ovlds[i].bif_id_name);
-      /* Type must be instantiated at run time.  */
-      fprintf (init_file, "      /* fntype */\t0,\n");
       fprintf (init_file, "      /* next */\t");
       if (i < curr_ovld
 	  && !strcmp (ovlds[i+1].proto.bifname, ovlds[i].proto.bifname))
 	fprintf (init_file,
-		 "&rs6000_instance_info[RS6000_INST_%s]\n",
+		 "RS6000_INST_%s\n",
 		 ovlds[i+1].ovld_id_name);
       else
-	fprintf (init_file, "NULL\n");
+	fprintf (init_file, "-1\n");
       fprintf (init_file, "    },\n");
     }
   fprintf (init_file, "  };\n\n");
+
+  fprintf (init_file,
+	   "tree rs6000_instance_info_fntype[RS6000_INST_MAX];\n\n");
 }
 
 /* Write code to initialize the built-in function table.  */
@@ -2647,7 +2654,7 @@ write_init_bif_table (void)
   for (int i = 0; i <= curr_bif; i++)
     {
       fprintf (init_file,
-	       "  rs6000_builtin_info[RS6000_BIF_%s].fntype"
+	       "  builtin_info_fntype[RS6000_BIF_%s]"
 	       "\n    = %s;\n",
 	       bifs[i].idname, bifs[i].fndecl);
 
@@ -2674,7 +2681,7 @@ write_init_bif_table (void)
 	}
 
       fprintf (init_file,
-	       "  rs6000_builtin_decls[(int)RS6000_BIF_%s] = t\n",
+	       "  builtin_decls[(int)RS6000_BIF_%s] = t\n",
 	       bifs[i].idname);
       fprintf (init_file,
 	       "    = add_builtin_function (\"%s\",\n",
@@ -2715,7 +2722,7 @@ write_init_bif_table (void)
 	  fprintf (init_file, "    }\n");
 	  fprintf (init_file, "  else\n");
 	  fprintf (init_file, "    {\n");
-	  fprintf (init_file, "      rs6000_builtin_decls"
+	  fprintf (init_file, "      builtin_decls"
 		   "[(int)RS6000_BIF_%s] = NULL_TREE;\n", bifs[i].idname);
 	  fprintf (init_file, "    }\n");
 	}
@@ -2736,7 +2743,7 @@ write_init_ovld_table (void)
   for (int i = 0; i <= curr_ovld; i++)
     {
       fprintf (init_file,
-	       "  rs6000_instance_info[RS6000_INST_%s].fntype"
+	       "  instance_info_fntype[RS6000_INST_%s]"
 	       "\n    = %s;\n",
 	       ovlds[i].ovld_id_name, ovlds[i].fndecl);
 
@@ -2768,7 +2775,7 @@ write_init_ovld_table (void)
 	    }
 
 	  fprintf (init_file,
-		   "  rs6000_builtin_decls[(int)RS6000_OVLD_%s] = t\n",
+		   "  builtin_decls[(int)RS6000_OVLD_%s] = t\n",
 		   stanza->stanza_id);
 	  fprintf (init_file,
 		   "    = add_builtin_function (\"%s\",\n",
@@ -2789,11 +2796,11 @@ write_init_ovld_table (void)
 	  fprintf (init_file, "\n");
 
 	  fprintf (init_file,
-		   "  rs6000_overload_info[RS6000_OVLD_%s - base]"
+		   "  overload_info[RS6000_OVLD_%s - base]"
 		   ".first_instance\n",
 		   stanza->stanza_id);
 	  fprintf (init_file,
-		   "    = &rs6000_instance_info[RS6000_INST_%s];\n\n",
+		   "    = RS6000_INST_%s;\n\n",
 		   ovlds[i].ovld_id_name);
 	}
     }
@@ -2822,19 +2829,30 @@ write_init_file (void)
   write_bif_static_init ();
   write_ovld_static_init ();
 
+  /* The reason to pass pointers to the function instead of accessing
+     the rs6000_{{builtin,instance}_info_fntype,overload_info,builtin_decls}
+     arrays directly is to decrease size of the already large function and
+     noipa prevents the compiler with LTO to undo that optimization.  */
+  fprintf (init_file, "#if GCC_VERSION >= 8001\n");
+  fprintf (init_file, "__attribute__((__noipa__))\n");
+  fprintf (init_file, "#endif\n");
   fprintf (init_file, "void\n");
-  fprintf (init_file, "rs6000_init_generated_builtins ()\n");
+  fprintf (init_file,
+	   "rs6000_init_generated_builtins (tree *builtin_info_fntype,\n");
+  fprintf (init_file, "\t\t\t\ttree *instance_info_fntype,\n");
+  fprintf (init_file, "\t\t\t\tovldrecord *overload_info,\n");
+  fprintf (init_file, "\t\t\t\ttree *builtin_decls)\n");
   fprintf (init_file, "{\n");
   fprintf (init_file, "  tree t;\n");
   rbt_inorder_callback (&fntype_rbt, fntype_rbt.rbt_root, write_fntype_init);
   fprintf (init_file, "\n");
 
   fprintf (init_file,
-	   "  rs6000_builtin_decls[RS6000_BIF_NONE] = NULL_TREE;\n");
+	   "  builtin_decls[RS6000_BIF_NONE] = NULL_TREE;\n");
   fprintf (init_file,
-	   "  rs6000_builtin_decls[RS6000_BIF_MAX] = NULL_TREE;\n");
+	   "  builtin_decls[RS6000_BIF_MAX] = NULL_TREE;\n");
   fprintf (init_file,
-	   "  rs6000_builtin_decls[RS6000_OVLD_NONE] = NULL_TREE;\n\n");
+	   "  builtin_decls[RS6000_OVLD_NONE] = NULL_TREE;\n\n");
 
   write_init_bif_table ();
   write_init_ovld_table ();

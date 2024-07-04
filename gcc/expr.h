@@ -1,5 +1,5 @@
 /* Definitions for code generation pass of GNU compiler.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -53,6 +53,8 @@ typedef struct separate_ops
   tree type;
   tree op0, op1, op2;
 } *sepops;
+
+typedef const struct separate_ops *const_sepops;
 
 /* This is run during target initialization to set up which modes can be
    used directly in memory and to initialize the block move optab.  */
@@ -126,7 +128,8 @@ struct by_pieces_prev
   fixed_size_mode mode;
 };
 
-extern rtx emit_block_move (rtx, rtx, rtx, enum block_op_methods);
+extern rtx emit_block_move (rtx, rtx, rtx, enum block_op_methods,
+			    unsigned ctz_size = 0);
 extern rtx emit_block_move_hints (rtx, rtx, rtx, enum block_op_methods,
 			          unsigned int, HOST_WIDE_INT,
 				  unsigned HOST_WIDE_INT,
@@ -134,9 +137,11 @@ extern rtx emit_block_move_hints (rtx, rtx, rtx, enum block_op_methods,
 				  unsigned HOST_WIDE_INT,
 				  bool bail_out_libcall = false,
 				  bool *is_move_done = NULL,
-				  bool might_overlap = false);
+				  bool might_overlap = false,
+				  unsigned ctz_size = 0);
 extern rtx emit_block_cmp_hints (rtx, rtx, rtx, tree, rtx, bool,
-				 by_pieces_constfn, void *);
+				 by_pieces_constfn, void *,
+				 unsigned ctz_len = 0);
 extern bool emit_storent_insn (rtx to, rtx from);
 
 /* Copy all or part of a value X into registers starting at REGNO.
@@ -242,6 +247,11 @@ extern bool can_store_by_pieces (unsigned HOST_WIDE_INT,
 extern rtx store_by_pieces (rtx, unsigned HOST_WIDE_INT, by_pieces_constfn,
 			    void *, unsigned int, bool, memop_ret);
 
+/* Generate several move instructions to clear LEN bytes of block TO.  (A MEM
+   rtx with BLKmode).  ALIGN is maximum alignment we can assume.  */
+
+extern void clear_by_pieces (rtx, unsigned HOST_WIDE_INT, unsigned int);
+
 /* If can_store_by_pieces passes for worst-case values near MAX_LEN, call
    store_by_pieces within conditionals so as to handle variable LEN efficiently,
    storing VAL, if non-NULL_RTX, or valc instead.  */
@@ -297,8 +307,11 @@ extern rtx expand_expr_real (tree, rtx, machine_mode,
 			     enum expand_modifier, rtx *, bool);
 extern rtx expand_expr_real_1 (tree, rtx, machine_mode,
 			       enum expand_modifier, rtx *, bool);
-extern rtx expand_expr_real_2 (sepops, rtx, machine_mode,
+extern rtx expand_expr_real_2 (const_sepops, rtx, machine_mode,
 			       enum expand_modifier);
+extern rtx expand_expr_real_gassign (gassign *, rtx, machine_mode,
+				     enum expand_modifier modifier,
+				     rtx * = nullptr, bool = false);
 
 /* Generate code for computing expression EXP.
    An rtx for the computed value is returned.  The value is never null.

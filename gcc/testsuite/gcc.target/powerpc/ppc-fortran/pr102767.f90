@@ -1,5 +1,5 @@
-! { dg-require-effective-target powerpc_vsx_ok }
 ! { dg-options "-mvsx -O2 -ftree-vectorize -mno-efficient-unaligned-vsx" }
+! { dg-require-effective-target powerpc_vsx }
 
 INTERFACE
   FUNCTION elemental_mult (a, b, c)

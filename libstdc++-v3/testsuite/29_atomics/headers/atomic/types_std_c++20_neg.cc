@@ -1,7 +1,7 @@
 // { dg-do compile { target c++20 } }
 // { dg-require-cstdint "" }
 
-// Copyright (C) 2009-2023 Free Software Foundation, Inc.
+// Copyright (C) 2009-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,9 +47,7 @@ void test01()
   using atomic_llong;		// { dg-error "expected nested-name-specifier" }
   using atomic_ullong;		// { dg-error "expected nested-name-specifier" }
   using atomic_wchar_t;		// { dg-error "expected nested-name-specifier" }
-#ifdef _GLIBCXX_USE_CHAR8_T
   using atomic_char8_t;		// { dg-error "expected nested-name-specifier" }
-#endif
   using atomic_char16_t;	// { dg-error "expected nested-name-specifier" }
   using atomic_char32_t;	// { dg-error "expected nested-name-specifier" }
 

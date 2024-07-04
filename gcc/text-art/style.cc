@@ -1,5 +1,5 @@
 /* Classes for styling text cells (color, URLs).
-   Copyright (C) 2023 Free Software Foundation, Inc.
+   Copyright (C) 2023-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "text-art/selftests.h"
 #include "text-art/types.h"
 #include "color-macros.h"
+#include "diagnostic-color.h"
 
 using namespace text_art;
 
@@ -231,7 +232,7 @@ style::print_changes (pretty_printer *pp,
     {
       if (!old_style.m_url.empty ())
 	pp_end_url (pp);
-      if (pp->url_format != URL_FORMAT_NONE
+      if (pp->supports_urls_p ()
 	  && !new_style.m_url.empty ())
 	{
 	  /* Adapted from pp_begin_url, but encoding the
@@ -240,7 +241,7 @@ style::print_changes (pretty_printer *pp,
 	  pp_string (pp, "\33]8;;");
 	  for (auto ch : new_style.m_url)
 	    pp_unicode_character (pp, ch);
-	  switch (pp->url_format)
+	  switch (pp->get_url_format ())
 	    {
 	    default:
 	    case URL_FORMAT_NONE:
@@ -254,6 +255,23 @@ style::print_changes (pretty_printer *pp,
 	    }
 	}
     }
+}
+
+/* Look up the current SGR codes for a color capability NAME
+   (from GCC_COLORS or the defaults), and convert them to
+   a text_art::style.  */
+
+style
+text_art::get_style_from_color_cap_name (const char *name)
+{
+  const char *sgr_codes = colorize_start (true, name);
+  gcc_assert (sgr_codes);
+
+  /* Parse the sgr codes.  We expect the resulting styled_string to be
+     empty; we're interested in the final style created during parsing.  */
+  style_manager sm;
+  styled_string styled_str (sm, sgr_codes);
+  return sm.get_style (sm.get_num_styles () - 1);
 }
 
 /* class text_art::style_manager.  */

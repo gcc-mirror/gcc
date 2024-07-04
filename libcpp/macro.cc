@@ -1,5 +1,5 @@
 /* Part of CPP library.  (Macro and #define handling.)
-   Copyright (C) 1986-2023 Free Software Foundation, Inc.
+   Copyright (C) 1986-2024 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -398,6 +398,8 @@ builtin_has_include (cpp_reader *pfile, cpp_hashnode *op, bool has_next)
 	       NODE_NAME (op));
 
   pfile->state.angled_headers = true;
+  const auto sav_padding = pfile->state.directive_wants_padding;
+  pfile->state.directive_wants_padding = true;
   const cpp_token *token = cpp_get_token_no_padding (pfile);
   bool paren = token->type == CPP_OPEN_PAREN;
   if (paren)
@@ -406,6 +408,7 @@ builtin_has_include (cpp_reader *pfile, cpp_hashnode *op, bool has_next)
     cpp_error (pfile, CPP_DL_ERROR,
 	       "missing '(' before \"%s\" operand", NODE_NAME (op));
   pfile->state.angled_headers = false;
+  pfile->state.directive_wants_padding = sav_padding;
 
   bool bracket = token->type != CPP_STRING;
   char *fname = NULL;
@@ -676,6 +679,12 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
     case BT_HAS_INCLUDE_NEXT:
       number = builtin_has_include (pfile, node,
 				    node->value.builtin == BT_HAS_INCLUDE_NEXT);
+      break;
+
+    case BT_HAS_FEATURE:
+    case BT_HAS_EXTENSION:
+      number = pfile->cb.has_feature (pfile,
+				      node->value.builtin == BT_HAS_FEATURE);
       break;
     }
 
@@ -1093,7 +1102,7 @@ _cpp_arguments_ok (cpp_reader *pfile, cpp_macro *macro, const cpp_hashnode *node
 
   if (argc < macro->paramc)
     {
-      /* In C++20 and C2X (here the va_opt flag is used), and also as a GNU
+      /* In C++20 and C23 (here the va_opt flag is used), and also as a GNU
 	 extension, variadic arguments are allowed to not appear in
 	 the invocation at all.
 	 e.g. #define debug(format, args...) something
@@ -3431,7 +3440,7 @@ _cpp_unsave_parameters (cpp_reader *pfile, unsigned n)
 */
 
 static bool
-parse_params (cpp_reader *pfile, unsigned *n_ptr, bool *varadic_ptr)
+parse_params (cpp_reader *pfile, unsigned *n_ptr, bool *variadic_ptr)
 {
   unsigned nparms = 0;
   bool ok = false;
@@ -3462,7 +3471,7 @@ parse_params (cpp_reader *pfile, unsigned *n_ptr, bool *varadic_ptr)
 	      };
 	    unsigned ix = prev_ident;
 	    const unsigned char *as_text = NULL;
-	    if (*varadic_ptr)
+	    if (*variadic_ptr)
 	      ix = 4;
 	    else if (token->type == CPP_EOF)
 	      ix += 2;
@@ -3473,7 +3482,7 @@ parse_params (cpp_reader *pfile, unsigned *n_ptr, bool *varadic_ptr)
 	  goto out;
 
 	case CPP_NAME:
-	  if (prev_ident || *varadic_ptr)
+	  if (prev_ident || *variadic_ptr)
 	    goto bad;
 	  prev_ident = true;
 
@@ -3484,7 +3493,7 @@ parse_params (cpp_reader *pfile, unsigned *n_ptr, bool *varadic_ptr)
 	  break;
 
 	case CPP_CLOSE_PAREN:
-	  if (prev_ident || !nparms || *varadic_ptr)
+	  if (prev_ident || !nparms || *variadic_ptr)
 	    {
 	      ok = true;
 	      goto out;
@@ -3492,15 +3501,15 @@ parse_params (cpp_reader *pfile, unsigned *n_ptr, bool *varadic_ptr)
 
 	  /* FALLTHRU */
 	case CPP_COMMA:
-	  if (!prev_ident || *varadic_ptr)
+	  if (!prev_ident || *variadic_ptr)
 	    goto bad;
 	  prev_ident = false;
 	  break;
 
 	case CPP_ELLIPSIS:
-	  if (*varadic_ptr)
+	  if (*variadic_ptr)
 	    goto bad;
-	  *varadic_ptr = true;
+	  *variadic_ptr = true;
 	  if (!prev_ident)
 	    {
 	      /* An ISO bare ellipsis.  */
@@ -3577,7 +3586,7 @@ create_iso_definition (cpp_reader *pfile)
   unsigned int num_extra_tokens = 0;
   unsigned nparms = 0;
   cpp_hashnode **params = NULL;
-  bool varadic = false;
+  bool variadic = false;
   bool ok = false;
   cpp_macro *macro = NULL;
 
@@ -3594,7 +3603,7 @@ create_iso_definition (cpp_reader *pfile)
   else if (token->type == CPP_OPEN_PAREN)
     {
       /* An open-paren, get a parameter list.  */
-      if (!parse_params (pfile, &nparms, &varadic))
+      if (!parse_params (pfile, &nparms, &variadic))
 	goto out;
 
       params = (cpp_hashnode **)_cpp_commit_buff
@@ -3645,7 +3654,7 @@ create_iso_definition (cpp_reader *pfile)
 
   if (!token)
     {
-      macro->variadic = varadic;
+      macro->variadic = variadic;
       macro->paramc = nparms;
       macro->parm.params = params;
       macro->fun_like = true;

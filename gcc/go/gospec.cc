@@ -1,5 +1,5 @@
 /* gospec.cc -- Specific flags and argument handling of the gcc Go front end.
-   Copyright (C) 2009-2023 Free Software Foundation, Inc.
+   Copyright (C) 2009-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -443,8 +443,11 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
      using the GNU linker, the Solaris linker needs an option to not
      warn about this.  Everything works without this option, but you
      get unsightly warnings at link time.  */
-  generate_option (OPT_Wl_, "-t", 1, CL_DRIVER, &new_decoded_options[j]);
-  j++;
+  if (library > 0)
+    {
+      generate_option (OPT_Wl_, "-t", 1, CL_DRIVER, &new_decoded_options[j]);
+      j++;
+    }
 #endif
 
   *in_decoded_options_count = j;

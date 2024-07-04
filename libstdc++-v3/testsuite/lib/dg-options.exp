@@ -1,6 +1,6 @@
 # Handlers for additional dg-xxx keywords in tests.
 
-# Copyright (C) 2004-2023 Free Software Foundation, Inc.
+# Copyright (C) 2004-2024 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -126,6 +126,15 @@ proc dg-require-cmath { args } {
 
 proc dg-require-thread-fence { args } {
     if { ![ check_v3_target_thread_fence ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+    return
+}
+
+proc dg-require-atomic-cmpxchg-word { args } {
+    if { ![ check_v3_target_atomic_cmpxchg_word ] } {
 	upvar dg-do-what dg-do-what
 	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
 	return
@@ -268,6 +277,15 @@ proc dg-require-target-fs-lwt { args } {
     return
 }
 
+proc dg-require-cpp-feature-test { n args } {
+    if { ![ check_v3_target_cpp_feature_test $args ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+    return
+}
+
 proc add_options_for_no_pch { flags } {
     # Remove any inclusion of bits/stdc++.h from the options.
     regsub -all -- "-include bits/stdc...h" $flags "" flags
@@ -278,11 +296,7 @@ proc add_options_for_no_pch { flags } {
 # Add to FLAGS all the target-specific flags needed for networking.
 
 proc add_options_for_net_ts { flags } {
-    # Before they were integrated into libc in Solaris 11.4, Solaris needs
-    # libsocket and libnsl for networking applications.
-    if { [istarget *-*-solaris2*] } {
-	return "$flags -lsocket -lnsl"
-    } elseif { [istarget *-*-rtems*] } {
+    if { [istarget *-*-rtems*] } {
 	return "$flags -lbsd -Wl,--gc-sections"
     }
     return $flags
@@ -305,7 +319,7 @@ proc atomic_link_flags { paths } {
       if { [file exists "${gccpath}/libatomic/.libs/libatomic.a"]
            || [file exists "${gccpath}/libatomic/.libs/libatomic.${shlib_ext}"] } {
           append flags " -B${gccpath}/libatomic/ "
-          append flags " -L${gccpath}/libatomic/.libs"
+          append flags " -B${gccpath}/libatomic/.libs"
           append ld_library_path ":${gccpath}/libatomic/.libs"
       }
     } else {
@@ -324,6 +338,11 @@ proc atomic_link_flags { paths } {
 }
 
 proc add_options_for_libatomic { flags } {
+    # We don't (need to) build libatomic for vxworks.  Don't try to
+    # link it in, even on arches that support libatomic.
+    if { [istarget *-*-vxworks*] } {
+	return $flags
+    }
     if { [istarget hppa*-*-hpux*]
 	 || ([istarget powerpc*-*-*] && [check_effective_target_ilp32])
 	 || [istarget riscv*-*-*]

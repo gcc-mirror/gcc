@@ -72,7 +72,7 @@ load_waveform (u8 * mem, size_t size, int m, int t, struct metronomefb_par *par)
     cksum_idx = tta + trn * 4 + 3;
     cksum = calc_cksum (cksum_idx - 3, cksum_idx, mem);
     if (cksum != mem[cksum_idx]) {
-	abort();
+	__builtin_abort();
     }
 }
 extern struct firmware *fw_entry;

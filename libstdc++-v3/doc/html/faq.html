@@ -131,9 +131,8 @@
     (<span class="command"><strong>gcc</strong></span>, <span class="command"><strong>g++</strong></span>, etc) is widely
     considered to be one of the leading compilers in the world.  Its
     development is overseen by the
-    <a class="link" href="https://gcc.gnu.org/" target="_top">GCC team</a>.  All of
-    the rapid development and near-legendary
-    <a class="link" href="https://gcc.gnu.org/buildstat.html" target="_top">portability</a>
+    <a class="link" href="https://gcc.gnu.org/" target="_top">GCC team</a>.
+    All of the rapid development and near-legendary portability
     that are the hallmarks of an open-source project are applied to libstdc++.
     </p><p>
     All of the standard classes and functions from C++98/C++03, C++11 and C++14
@@ -148,7 +147,7 @@
      The libstdc++ project is contributed to by several developers
      all over the world, in the same way as GCC or the Linux kernel.
      The current maintainers are listed in the
-     <a class="link" href="https://gcc.gnu.org/viewcvs/gcc/trunk/MAINTAINERS?view=co" target="_top"><code class="filename">MAINTAINERS</code></a>
+     <a class="link" href="https://gcc.gnu.org/cgit/gcc/tree/MAINTAINERS" target="_top"><code class="filename">MAINTAINERS</code></a>
      file (look for "c++ runtime libs").
     </p><p>
     Development and discussion is held on the libstdc++ mailing
@@ -269,7 +268,7 @@
     Libstdc++ comes with its own validation testsuite, which includes
     conformance testing, regression testing, ABI testing, and
     performance testing. Please consult the
-    <a class="link" href="http://gcc.gnu.org/install/test.html" target="_top">testing
+    <a class="link" href="https://gcc.gnu.org/install/test.html" target="_top">testing
     documentation</a> for GCC and
     <a class="link" href="manual/test.html" title="Testing">Testing</a> in the libstdc++
     manual for more details.
@@ -459,14 +458,14 @@
          <span class="command"><strong>g++ -E -dM -x c++ /dev/null</strong></span> to display
          a list of predefined macros for any particular installation.
       </p><p>This has been discussed on the mailing lists
-         <a class="link" href="http://gcc.gnu.org/cgi-bin/htsearch?method=and&amp;format=builtin-long&amp;sort=score&amp;words=_XOPEN_SOURCE+Solaris" target="_top">quite a bit</a>.
+         <a class="link" href="https://gcc.gnu.org/cgi-bin/htsearch?method=and&amp;format=builtin-long&amp;sort=score&amp;words=_XOPEN_SOURCE+Solaris" target="_top">quite a bit</a>.
       </p><p>This method is something of a wart.  We'd like to find a cleaner
          solution, but nobody yet has contributed the time.
       </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.darwin_ctype"></a><a id="q-darwin_ctype"></a><p><strong>4.4.</strong></p></td><td align="left" valign="top"><p>
       Mac OS X <code class="filename">ctype.h</code> is broken! How can I fix it?
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-darwin_ctype"></a></td><td align="left" valign="top"><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This answer is old and probably no longer be relevant.</p></div><p>
          This was a long-standing bug in the OS X support.  Fortunately, the
-         <a class="link" href="http://gcc.gnu.org/ml/gcc/2002-03/msg00817.html" target="_top">patch</a>
+         <a class="link" href="https://gcc.gnu.org/ml/gcc/2002-03/msg00817.html" target="_top">patch</a>
 	 was quite simple, and well-known.
       </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.threads_i386"></a><a id="q-threads_i386"></a><p><strong>4.5.</strong></p></td><td align="left" valign="top"><p>
       Threading is broken on i386?
@@ -637,7 +636,7 @@
     <code class="filename">&lt;iterator&gt;</code> header),
     then you will suddenly be faced with huge numbers of ambiguity
     errors.  This was discussed on the mailing list; Nathan Myers
-    <a class="link" href="http://gcc.gnu.org/ml/libstdc++/2001-01/msg00247.html" target="_top">sums
+    <a class="link" href="https://gcc.gnu.org/ml/libstdc++/2001-01/msg00247.html" target="_top">sums
       things up here</a>.  The collisions with vector/string iterator
     types have been fixed for 3.1.
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.v2_headers"></a><a id="q-v2_headers"></a><p><strong>6.4.</strong></p></td><td align="left" valign="top"><p>
@@ -730,7 +729,7 @@
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-easy_to_fix"></a></td><td align="left" valign="top"><p>
     If you have found a bug in the library and you think you have
     a working fix, then send it in!  The main GCC site has a page
-    on <a class="link" href="http://gcc.gnu.org/contribute.html" target="_top">submitting
+    on <a class="link" href="https://gcc.gnu.org/contribute.html" target="_top">submitting
     patches</a> that covers the procedure, but for libstdc++ you
     should also send the patch to our mailing list in addition to
     the GCC patches mailing list.  The libstdc++

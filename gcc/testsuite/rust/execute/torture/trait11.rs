@@ -1,4 +1,7 @@
 /* { dg-output "3\r*\n" } */
+#[lang = "sized"]
+pub trait Sized {}
+
 extern "C" {
     fn printf(s: *const i8, ...);
 }

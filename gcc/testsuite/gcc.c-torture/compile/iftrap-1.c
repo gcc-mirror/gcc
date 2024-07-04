@@ -1,5 +1,8 @@
 /* Verify that ifcvt doesn't crash under a number of interesting conditions. */
 
+void bar (void);
+void baz (void);
+
 void f1(int p)
 {
   if (p)
@@ -39,13 +42,13 @@ void f5(int p)
   if (p)
     __builtin_trap();
   else
-    abort();
+    __builtin_abort();
 }
 
 void f6(int p)
 {
   if (p)
-    abort();
+    __builtin_abort();
   else
     __builtin_trap();
 }

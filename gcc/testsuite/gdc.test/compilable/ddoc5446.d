@@ -1,4 +1,4 @@
-﻿// PERMUTE_ARGS:
+// PERMUTE_ARGS:
 // REQUIRED_ARGS: -D -Dd${RESULTS_DIR}/compilable -o-
 // EXTRA_FILES: ddoc5446a.d ddoc5446b.d
 // POST_SCRIPT: compilable/extra-files/ddocAny-postscript.sh

@@ -4,7 +4,7 @@
 
 template <class T>
 struct A {
-  A<T>(); // { dg-error "expected" "" { target c++20 } }
+  A<T>(); // { dg-error "template-id" "" { target c++20 } }
 };
 
 template <class T>

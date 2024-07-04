@@ -1,6 +1,6 @@
 /* PR target/70728 */
 /* { dg-do compile } */
-/* { dg-options "-S -Ofast -march=knl" } */
+/* { dg-options "-S -Ofast -march=skylake-avx512" } */
 
 short a = -15726;
 int b = (int)-7003557328690506537LL;

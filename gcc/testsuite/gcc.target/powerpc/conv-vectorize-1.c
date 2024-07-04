@@ -1,5 +1,5 @@
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O2 -ftree-vectorize -mvsx -fno-vect-cost-model" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Test vectorizer can exploit vector conversion instructions to convert
    unsigned/signed long long to float.  */

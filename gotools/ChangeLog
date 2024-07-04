@@ -1,3 +1,14 @@
+2024-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am (install-exec-local, uninstall-local): Add goals
+	on the else branch of if NATIVE to ensure reproducibility.
+	* Makefile.in: Regenerate.
+
+2023-11-03  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* Makefile.am: Update "Running <sub-testsuite> ..." output
+	* Makefile.in: Regenerate.
+
 2022-08-30  Martin Liska  <mliska@suse.cz>
 
 	* Makefile.in: Regenerate.

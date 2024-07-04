@@ -1,5 +1,5 @@
 // { dg-do compile { target { ! default_packed } } }
-// Test that -Waddress-of-packed-member works with member functions.
+// { dg-additional-options -Wcast-align=strict }
 
 struct S {
   char c;
@@ -16,8 +16,8 @@ S**
 f ()
 {
   S **s;
-  s = reinterpret_cast<S**>(foo ()); // { dg-warning "converting a packed" }
-  s = reinterpret_cast<S**>(x.memfn ()); // { dg-warning "converting a packed" }
-  s = reinterpret_cast<S**>(X::smemfn ()); // { dg-warning "converting a packed" }
+  s = reinterpret_cast<S**>(foo ()); // { dg-warning "increases required alignment" }
+  s = reinterpret_cast<S**>(x.memfn ()); // { dg-warning "increases required alignment" }
+  s = reinterpret_cast<S**>(X::smemfn ()); // { dg-warning "increases required alignment" }
   return s;
 }

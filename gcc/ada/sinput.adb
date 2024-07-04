@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -244,9 +244,28 @@ package body Sinput is
          Append (Buf, ':');
          Append (Buf, Nat (Get_Logical_Line_Number (Ptr)));
 
+         --  For inherited pragmas, the location will be appended to a messsage
+         --  that already says "inherited"; also, we are not interested where
+         --  the pragma has been inherited. Progress directly to instantiation
+         --  locations.
+
+         if Comes_From_Inherited_Pragma (Ptr) then
+            Ptr := Instantiation_Location (Ptr);
+         end if;
+
          Ptr := Instantiation_Location (Ptr);
          exit when Ptr = No_Location;
-         Append (Buf, " instantiated at ");
+
+         --  Make sure that we don't mention "instantiated" when in fact the
+         --  location comes from other mechanisms.
+
+         pragma Assert (not Comes_From_Inherited_Pragma (Ptr));
+
+         if Comes_From_Inlined_Body (Ptr) then
+            Append (Buf, " inlined at ");
+         else
+            Append (Buf, " instantiated at ");
+         end if;
       end loop;
    end Build_Location_String;
 
@@ -459,19 +478,6 @@ package body Sinput is
          return SFR.Logical_Lines_Table (L);
       end if;
    end Get_Logical_Line_Number;
-
-   ---------------------------------
-   -- Get_Logical_Line_Number_Img --
-   ---------------------------------
-
-   function Get_Logical_Line_Number_Img
-     (P : Source_Ptr) return String
-   is
-   begin
-      Name_Len := 0;
-      Add_Nat_To_Name_Buffer (Nat (Get_Logical_Line_Number (P)));
-      return Name_Buffer (1 .. Name_Len);
-   end Get_Logical_Line_Number_Img;
 
    ------------------------------
    -- Get_Physical_Line_Number --

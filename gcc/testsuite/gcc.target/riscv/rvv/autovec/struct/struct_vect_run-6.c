@@ -1,9 +1,11 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-additional-options "-std=c99 --param=riscv-autovec-preference=scalable -fno-vect-cost-model" } */
+/* { dg-additional-options "-std=c99 -mrvv-vector-bits=scalable -fno-vect-cost-model" } */
 
 #include "struct_vect-6.c"
 
+#ifndef N
 #define N 93
+#endif
 
 TYPE a[N], b[N], c[N], d[N], a2[N], b2[N], c2[N], d2[N], e[N * 8];
 

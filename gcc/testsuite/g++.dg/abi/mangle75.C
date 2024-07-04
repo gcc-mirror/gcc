@@ -1,5 +1,6 @@
 // PR c++/91377
 // { dg-do compile { target c++11 } }
+// { dg-additional-options -fabi-compat-version=0 }
 
 struct f {
   static constexpr int d = 3;

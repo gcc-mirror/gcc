@@ -1,6 +1,7 @@
 // { dg-do compile { target c++17 } }
+// { dg-add-options no_pch }
 
-// Copyright (C) 2016-2023 Free Software Foundation, Inc.
+// Copyright (C) 2016-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,13 +19,14 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <type_traits>
-#include <testsuite_tr1.h>
 
 #ifndef __cpp_lib_is_swappable
 # error "Feature-test macro for is_nothrow_swappable_with missing"
 #elif __cpp_lib_is_swappable != 201603
 # error "Feature-test macro for is_nothrow_swappable_with has wrong value"
 #endif
+
+#include <testsuite_tr1.h>
 
 namespace funny {
   struct T0 {};

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -28,16 +28,16 @@ namespace HIR {
 // Just a semi-colon, which apparently is a statement.
 class EmptyStmt : public Stmt
 {
-  Location locus;
+  location_t locus;
 
 public:
   std::string as_string () const override { return std::string (1, ';'); }
 
-  EmptyStmt (Analysis::NodeMapping mappings, Location locus)
+  EmptyStmt (Analysis::NodeMapping mappings, location_t locus)
     : Stmt (std::move (mappings)), locus (locus)
   {}
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRStmtVisitor &vis) override;
@@ -65,7 +65,7 @@ class LetStmt : public Stmt
   // bool has_init_expr;
   std::unique_ptr<Expr> init_expr;
 
-  Location locus;
+  location_t locus;
 
 public:
   // Returns whether let statement has outer attributes.
@@ -82,7 +82,7 @@ public:
   LetStmt (Analysis::NodeMapping mappings,
 	   std::unique_ptr<Pattern> variables_pattern,
 	   std::unique_ptr<Expr> init_expr, std::unique_ptr<Type> type,
-	   AST::AttrVec outer_attrs, Location locus)
+	   AST::AttrVec outer_attrs, location_t locus)
     : Stmt (std::move (mappings)), outer_attrs (std::move (outer_attrs)),
       variables_pattern (std::move (variables_pattern)),
       type (std::move (type)), init_expr (std::move (init_expr)), locus (locus)
@@ -133,16 +133,22 @@ public:
   LetStmt (LetStmt &&other) = default;
   LetStmt &operator= (LetStmt &&other) = default;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRStmtVisitor &vis) override;
 
-  HIR::Type *get_type () { return type.get (); }
+  const std::vector<AST::Attribute> &get_outer_attrs () const
+  {
+    return outer_attrs;
+  }
+  std::vector<AST::Attribute> &get_outer_attrs () { return outer_attrs; }
 
-  HIR::Expr *get_init_expr () { return init_expr.get (); }
+  std::unique_ptr<HIR::Type> &get_type () { return type; }
 
-  HIR::Pattern *get_pattern () { return variables_pattern.get (); }
+  std::unique_ptr<HIR::Expr> &get_init_expr () { return init_expr; }
+
+  std::unique_ptr<HIR::Pattern> &get_pattern () { return variables_pattern; }
 
   bool is_item () const override final { return false; }
 
@@ -152,119 +158,61 @@ protected:
   LetStmt *clone_stmt_impl () const override { return new LetStmt (*this); }
 };
 
-/* Abstract base class for expression statements (statements containing an
- * expression) */
+/* class for expression statements (statements containing an expression) */
 class ExprStmt : public Stmt
 {
-  // TODO: add any useful virtual functions
-
-  Location locus;
-
-public:
-  Location get_locus () const override final { return locus; }
-
-  bool is_item () const override final { return false; }
-
-protected:
-  ExprStmt (Analysis::NodeMapping mappings, Location locus)
-    : Stmt (std::move (mappings)), locus (locus)
-  {}
-};
-
-/* Statement containing an expression without a block (or, due to technical
- * difficulties, can only be guaranteed to hold an expression). */
-class ExprStmtWithoutBlock : public ExprStmt
-{
   std::unique_ptr<Expr> expr;
-
-public:
-  std::string as_string () const override;
-
-  ExprStmtWithoutBlock (Analysis::NodeMapping mappings,
-			std::unique_ptr<Expr> expr, Location locus)
-    : ExprStmt (std::move (mappings), locus), expr (std::move (expr))
-  {}
-
-  // Copy constructor with clone
-  ExprStmtWithoutBlock (ExprStmtWithoutBlock const &other)
-    : ExprStmt (other), expr (other.expr->clone_expr ())
-  {}
-
-  // Overloaded assignment operator to clone
-  ExprStmtWithoutBlock &operator= (ExprStmtWithoutBlock const &other)
-  {
-    ExprStmt::operator= (other);
-    expr = other.expr->clone_expr ();
-
-    return *this;
-  }
-
-  // move constructors
-  ExprStmtWithoutBlock (ExprStmtWithoutBlock &&other) = default;
-  ExprStmtWithoutBlock &operator= (ExprStmtWithoutBlock &&other) = default;
-
-  void accept_vis (HIRFullVisitor &vis) override;
-  void accept_vis (HIRStmtVisitor &vis) override;
-
-  Expr *get_expr () { return expr.get (); }
-
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  ExprStmtWithoutBlock *clone_stmt_impl () const override
-  {
-    return new ExprStmtWithoutBlock (*this);
-  }
-};
-
-// Statement containing an expression with a block
-class ExprStmtWithBlock : public ExprStmt
-{
-  std::unique_ptr<ExprWithBlock> expr;
+  location_t locus;
   bool must_be_unit;
 
 public:
-  std::string as_string () const override;
-
-  ExprStmtWithBlock (Analysis::NodeMapping mappings,
-		     std::unique_ptr<ExprWithBlock> expr, Location locus,
-		     bool must_be_unit)
-    : ExprStmt (std::move (mappings), locus), expr (std::move (expr)),
+  ExprStmt (Analysis::NodeMapping mappings, std::unique_ptr<Expr> expr,
+	    location_t locus, bool must_be_unit)
+    : Stmt (std::move (mappings)), expr (std::move (expr)), locus (locus),
       must_be_unit (must_be_unit)
   {}
 
+  ExprStmt (Analysis::NodeMapping mappings, std::unique_ptr<Expr> expr,
+	    location_t locus)
+    : ExprStmt (std::move (mappings), std::move (expr), locus, false)
+  {}
+
+  std::string as_string () const override;
+
+  location_t get_locus () const override final { return locus; }
+
+  void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRStmtVisitor &vis) override;
+
+  bool is_item () const override final { return false; }
+
+  std::unique_ptr<Expr> &get_expr () { return expr; }
+
   // Copy constructor with clone
-  ExprStmtWithBlock (ExprStmtWithBlock const &other)
-    : ExprStmt (other), expr (other.expr->clone_expr_with_block ())
+  ExprStmt (ExprStmt const &other)
+    : Stmt (other), expr (other.expr->clone_expr ()), locus (other.locus)
   {}
 
   // Overloaded assignment operator to clone
-  ExprStmtWithBlock &operator= (ExprStmtWithBlock const &other)
+  ExprStmt &operator= (ExprStmt const &other)
   {
-    ExprStmt::operator= (other);
-    expr = other.expr->clone_expr_with_block ();
+    Stmt::operator= (other);
+    expr = other.expr->clone_expr ();
+    locus = other.locus;
 
     return *this;
   }
 
   // move constructors
-  ExprStmtWithBlock (ExprStmtWithBlock &&other) = default;
-  ExprStmtWithBlock &operator= (ExprStmtWithBlock &&other) = default;
-
-  void accept_vis (HIRFullVisitor &vis) override;
-  void accept_vis (HIRStmtVisitor &vis) override;
-
-  ExprWithBlock *get_expr () { return expr.get (); }
+  ExprStmt (ExprStmt &&other) = default;
+  ExprStmt &operator= (ExprStmt &&other) = default;
 
   bool is_unit_check_needed () const override { return must_be_unit; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  ExprStmtWithBlock *clone_stmt_impl () const override
-  {
-    return new ExprStmtWithBlock (*this);
-  }
+  ExprStmt *clone_stmt_impl () const override { return new ExprStmt (*this); }
 };
 
 } // namespace HIR

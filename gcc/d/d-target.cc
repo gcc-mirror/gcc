@@ -1,5 +1,5 @@
 /* d-target.cc -- Target interface for the D front end.
-   Copyright (C) 2013-2023 Free Software Foundation, Inc.
+   Copyright (C) 2013-2024 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -163,7 +163,7 @@ Target::_init (const Param &)
   this->c.intsize = (INT_TYPE_SIZE / BITS_PER_UNIT);
   this->c.longsize = (LONG_TYPE_SIZE / BITS_PER_UNIT);
   this->c.long_longsize = (LONG_LONG_TYPE_SIZE / BITS_PER_UNIT);
-  this->c.long_doublesize = (LONG_DOUBLE_TYPE_SIZE / BITS_PER_UNIT);
+  this->c.long_doublesize = int_size_in_bytes (long_double_type_node);
   this->c.wchar_tsize = (WCHAR_TYPE_SIZE / BITS_PER_UNIT);
 
   this->c.bitFieldStyle = targetm.ms_bitfield_layout_p (unknown_type_node)
@@ -335,7 +335,7 @@ Target::isVectorOpSupported (Type *type, EXP op, Type *)
 const char *
 TargetCPP::toMangle (Dsymbol *s)
 {
-  return toCppMangleItanium (s);
+  return dmd::toCppMangleItanium (s);
 }
 
 /* Return the symbol mangling of CD for C++ linkage.  */
@@ -343,7 +343,7 @@ TargetCPP::toMangle (Dsymbol *s)
 const char *
 TargetCPP::typeInfoMangle (ClassDeclaration *cd)
 {
-  return cppTypeInfoMangleItanium (cd);
+  return dmd::cppTypeInfoMangleItanium (cd);
 }
 
 /* Get mangle name of a this-adjusting thunk to the function declaration FD
@@ -352,7 +352,7 @@ TargetCPP::typeInfoMangle (ClassDeclaration *cd)
 const char *
 TargetCPP::thunkMangle (FuncDeclaration *fd, int offset)
 {
-  return cppThunkMangleItanium (fd, offset);
+  return dmd::cppThunkMangleItanium (fd, offset);
 }
 
 /* For a vendor-specific type, return a string containing the C++ mangling.
@@ -381,11 +381,11 @@ TargetCPP::parameterType (Type *type)
   Type *tvalist = target.va_listType (Loc (), NULL);
   if (type->ty == TY::Tsarray && tvalist->ty == TY::Tsarray)
     {
-      Type *tb = type->toBasetype ()->mutableOf ();
+      Type *tb = dmd::mutableOf (type->toBasetype ());
       if (tb == tvalist)
 	{
-	  tb = type->nextOf ()->pointerTo ();
-	  type = tb->castMod (type->mod);
+	  tb = dmd::pointerTo (type->nextOf ());
+	  type = dmd::castMod (tb, type->mod);
 	}
     }
 
@@ -575,31 +575,16 @@ Target::supportsLinkerDirective (void) const
 }
 
 /* Decides whether an `in' parameter of the specified POD type PARAM_TYPE is to
-   be passed by reference or by valie.  This is used only when compiling with
+   be passed by reference or by value.  This is used only when compiling with
    `-fpreview=in' enabled.  */
 
 bool
 Target::preferPassByRef (Type *param_type)
 {
-  if (param_type->size () == SIZE_INVALID)
+  /* See note in Target::isReturnOnStack.  */
+  Type *tb = param_type->toBasetype ();
+  if (tb->size () == SIZE_INVALID)
     return false;
 
-  tree type = build_ctype (param_type);
-
-  /* Prefer a `ref' if the type is an aggregate, and its size is greater than
-     its alignment.  */
-  if (AGGREGATE_TYPE_P (type)
-      && (!valid_constant_size_p (TYPE_SIZE_UNIT (type))
-	  || compare_tree_int (TYPE_SIZE_UNIT (type), TYPE_ALIGN (type)) > 0))
-    return true;
-
-  /* If the back-end is always going to pass this by invisible reference.  */
-  if (pass_by_reference (NULL, function_arg_info (type, true)))
-    return true;
-
-  /* If returning the parameter means the caller will do RVO.  */
-  if (targetm.calls.return_in_memory (type, NULL_TREE))
-    return true;
-
-  return false;
+  return (tb->ty == TY::Tstruct || tb->ty == TY::Tsarray);
 }

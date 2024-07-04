@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target supports_stack_clash_protection } */
-/* { dg-options "-O3 -fopenmp-simd -fstack-clash-protection --param stack-clash-protection-guard-size=16" } */
+/* { dg-options "-O3 -fopenmp-simd -fstack-clash-protection --param stack-clash-protection-guard-size=16 -fno-stack-protector" } */
 
 #include <stdint.h>
 

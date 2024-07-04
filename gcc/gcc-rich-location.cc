@@ -1,5 +1,5 @@
 /* Implementation of gcc_rich_location class
-   Copyright (C) 2014-2023 Free Software Foundation, Inc.
+   Copyright (C) 2014-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -75,10 +75,11 @@ gcc_rich_location::add_fixit_misspelled_id (location_t misspelled_token_loc,
 /* Return true if there is nothing on LOC's line before LOC.  */
 
 static bool
-blank_line_before_p (location_t loc)
+blank_line_before_p (file_cache &fc,
+		     location_t loc)
 {
   expanded_location exploc = expand_location (loc);
-  char_span line = location_get_source_line (exploc.file, exploc.line);
+  char_span line = fc.get_source_line (exploc.file, exploc.line);
   if (!line)
     return false;
   if (line.length () < (size_t)exploc.column)
@@ -96,7 +97,8 @@ blank_line_before_p (location_t loc)
    If true is returned then *OUT_START_OF_LINE is written to.  */
 
 static bool
-use_new_line (location_t insertion_point, location_t indent,
+use_new_line (file_cache &fc,
+	      location_t insertion_point, location_t indent,
 	      location_t *out_start_of_line)
 {
   if (indent == UNKNOWN_LOCATION)
@@ -105,7 +107,7 @@ use_new_line (location_t insertion_point, location_t indent,
   if (linemap_macro_expansion_map_p (indent_map))
     return false;
 
-  if (!blank_line_before_p (insertion_point))
+  if (!blank_line_before_p (fc, insertion_point))
     return false;
 
   /* Locate the start of the line containing INSERTION_POINT.  */
@@ -162,7 +164,8 @@ gcc_rich_location::add_fixit_insert_formatted (const char *content,
 					       location_t indent)
 {
   location_t start_of_line;
-  if (use_new_line (insertion_point, indent, &start_of_line))
+  if (use_new_line (global_dc->get_file_cache (),
+		    insertion_point, indent, &start_of_line))
     {
       /* Add CONTENT on its own line, using the indentation of INDENT.  */
 
@@ -181,93 +184,4 @@ gcc_rich_location::add_fixit_insert_formatted (const char *content,
     }
   else
     add_fixit_insert_before (insertion_point, content);
-}
-
-/* Implementation of range_label::get_text for
-   maybe_range_label_for_tree_type_mismatch.
-
-   If both expressions are non-NULL, then generate text describing
-   the first expression's type (using the other expression's type
-   for comparison, analogous to %H and %I in the C++ frontend, but
-   on expressions rather than types).  */
-
-label_text
-maybe_range_label_for_tree_type_mismatch::get_text (unsigned range_idx) const
-{
-  if (m_expr == NULL_TREE
-      || !EXPR_P (m_expr))
-    return label_text::borrow (NULL);
-  tree expr_type = TREE_TYPE (m_expr);
-
-  tree other_type = NULL_TREE;
-  if (CAN_HAVE_LOCATION_P (m_other_expr))
-    other_type = TREE_TYPE (m_other_expr);
-
-  range_label_for_type_mismatch inner (expr_type, other_type);
-  return inner.get_text (range_idx);
-}
-
-/* binary_op_rich_location's ctor.
-
-   If use_operator_loc_p (LOC, ARG0, ARG1), then attempt to make a 3-location
-   rich_location of the form:
-
-     arg_0 op arg_1
-     ~~~~~ ^~ ~~~~~
-       |        |
-       |        arg1 type
-       arg0 type
-
-   labelling the types of the arguments if SHOW_TYPES is true.
-
-   Otherwise, make a 1-location rich_location using the compound
-   location within LOC:
-
-     arg_0 op arg_1
-     ~~~~~~^~~~~~~~
-
-   for which we can't label the types.  */
-
-binary_op_rich_location::binary_op_rich_location (const op_location_t &loc,
-						  tree arg0, tree arg1,
-						  bool show_types)
-: gcc_rich_location (loc.m_combined_loc),
-  m_label_for_arg0 (arg0, arg1),
-  m_label_for_arg1 (arg1, arg0)
-{
-  /* Default (above) to using the combined loc.
-     Potentially override it here: if we have location information for the
-     operator and for both arguments, then split them all out.
-     Alternatively, override it if we don't have the combined location.  */
-  if (use_operator_loc_p (loc, arg0, arg1))
-    {
-      set_range (0, loc.m_operator_loc, SHOW_RANGE_WITH_CARET);
-      maybe_add_expr (arg0, show_types ? &m_label_for_arg0 : NULL);
-      maybe_add_expr (arg1, show_types ? &m_label_for_arg1 : NULL);
-    }
-}
-
-/* Determine if binary_op_rich_location's ctor should attempt to make
-   a 3-location rich_location (the location of the operator and of
-   the 2 arguments), or fall back to a 1-location rich_location showing
-   just the combined location of the operation as a whole.  */
-
-bool
-binary_op_rich_location::use_operator_loc_p (const op_location_t &loc,
-					     tree arg0, tree arg1)
-{
-  /* If we don't have a combined location, then use the operator location,
-     and try to add ranges for the operators.  */
-  if (loc.m_combined_loc == UNKNOWN_LOCATION)
-    return true;
-
-  /* If we don't have the operator location, then use the
-     combined location.  */
-  if (loc.m_operator_loc == UNKNOWN_LOCATION)
-    return false;
-
-  /* We have both operator location and combined location: only use the
-     operator location if we have locations for both arguments.  */
-  return (EXPR_HAS_LOCATION (arg0)
-	  && EXPR_HAS_LOCATION (arg1));
 }

@@ -337,6 +337,30 @@ void print_f (vector float vec_expected,
 }
 #endif
 
+typedef union
+{
+  vector __int128_t i1;
+  __int128_t i2;
+  vector __uint128_t u1;
+  __uint128_t u2;
+  struct
+  {
+    long long d1;
+    long long d2;
+  };
+} U128;
+
+/* For a given long long VALUE, ensure it's stored from the beginning
+   of {u,}int128 memory storage (the low address), it avoids to load
+   unexpected data without the whole vector length.  */
+
+static inline void
+getU128 (U128 *pu, unsigned long long value)
+{
+  pu->d1 = value;
+  pu->d2 = 0;
+}
+
 int main() {
   int i, j;
   size_t len;
@@ -835,21 +859,24 @@ int main() {
 #endif
     }
 
+  U128 u_temp;
   /* vec_xl_len() tests */
   for (i = 0; i < 100; i++)
     {
-      data_c[i] = i;
-      data_uc[i] = i+1;
-      data_ssi[i] = i+10;
-      data_usi[i] = i+11;
-      data_si[i] = i+100;
-      data_ui[i] = i+101;
-      data_sll[i] = i+1000;
-      data_ull[i] = i+1001;
-      data_f[i] = i+100000.0;
-      data_d[i] = i+1000000.0;
-      data_128[i] = i + 12800000;
-      data_u128[i] = i + 12800001;
+       data_c[i] = i;
+       data_uc[i] = i + 1;
+       data_ssi[i] = i + 10;
+       data_usi[i] = i + 11;
+       data_si[i] = i + 100;
+       data_ui[i] = i + 101;
+       data_sll[i] = i + 1000;
+       data_ull[i] = i + 1001;
+       data_f[i] = i + 100000.0;
+       data_d[i] = i + 1000000.0;
+       getU128 (&u_temp, i + 12800000);
+       data_128[i] = u_temp.i2;
+       getU128 (&u_temp, i + 12800001);
+       data_u128[i] = u_temp.u2;
     }
 
   len = 16;
@@ -1160,34 +1187,38 @@ int main() {
 #endif
     }
 
-  vec_s128_expected1 = (vector __int128_t){12800000};
+  getU128 (&u_temp, 12800000);
+  vec_s128_expected1 = u_temp.i1;
   vec_s128_result1 = vec_xl_len (data_128, len);
 
   if (vec_s128_expected1[0] != vec_s128_result1[0])
     {
 #ifdef DEBUG
-       printf("Error: vec_xl_len(), len = %d, vec_s128_result1[0] = %lld %llu; ",
-	      len, vec_s128_result1[0] >> 64,
-	      vec_s128_result1[0] & (__int128_t)0xFFFFFFFFFFFFFFFF);
-       printf("vec_s128_expected1[0] = %lld %llu\n",
-	      vec_s128_expected1[0] >> 64,
-	      vec_s128_expected1[0] & (__int128_t)0xFFFFFFFFFFFFFFFF);
+      U128 u1, u2;
+      u1.i1 = vec_s128_result1;
+      u2.i1 = vec_s128_expected1;
+      printf ("Error: vec_xl_len(), len = %d,"
+	      "vec_s128_result1[0] = %llx %llx; ",
+	      len, u1.d1, u1.d2);
+      printf ("vec_s128_expected1[0] = %llx %llx\n", u2.d1, u2.d2);
 #else
        abort ();
 #endif
     }
 
   vec_u128_result1 = vec_xl_len (data_u128, len);
-  vec_u128_expected1 = (vector __uint128_t){12800001};
+  getU128 (&u_temp, 12800001);
+  vec_u128_expected1 = u_temp.u1;
   if (vec_u128_expected1[0] != vec_u128_result1[0])
 #ifdef DEBUG
     {
-       printf("Error: vec_xl_len(), len = %d, vec_u128_result1[0] = %lld; ",
-	      len, vec_u128_result1[0] >> 64,
-	      vec_u128_result1[0] & (__int128_t)0xFFFFFFFFFFFFFFFF);
-       printf("vec_u128_expected1[0] = %lld\n",
-	      vec_u128_expected1[0] >> 64,
-	      vec_u128_expected1[0] & (__int128_t)0xFFFFFFFFFFFFFFFF);
+      U128 u1, u2;
+      u1.u1 = vec_u128_result1;
+      u2.u1 = vec_u128_expected1;
+      printf ("Error: vec_xl_len(), len = %d,"
+	      "vec_u128_result1[0] = %llx %llx; ",
+	      len, u1.d1, u1.d2);
+      printf ("vec_u128_expected1[0] = %llx %llx\n", u2.d1, u2.d2);
     }
 #else
     abort ();
@@ -1421,8 +1452,13 @@ int main() {
        and post data initialization is done.  */
 
   len = 16;
-  vec_uc_expected1 = (vector unsigned char){ 16,15, 14, 13, 12, 11, 10, 9,
-					     8, 7, 6, 5, 4, 3, 2, 1 };
+#if __LITTLE_ENDIAN__
+  vec_uc_expected1 = (vector unsigned char){16, 15, 14, 13, 12, 11, 10, 9,
+					    8,	7,  6,	5,  4,	3,  2,	1};
+#else
+  vec_uc_expected1 = (vector unsigned char){1, 2,  3,  4,  5,  6,  7,  8,
+					    9, 10, 11, 12, 13, 14, 15, 16};
+#endif
   input_uc = (vector unsigned char){ 1, 2, 3, 4, 5, 6, 7, 8, 9,
 				   10, 11, 12, 13, 14, 15, 16 };
   vec_uc_result1 = vec_xl_len_r (&input_uc[0], len);
@@ -1441,30 +1477,3 @@ int main() {
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

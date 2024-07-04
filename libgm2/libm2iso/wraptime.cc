@@ -113,7 +113,7 @@ EXPORT(KillTimezone) (struct timezone *tv)
 
 /* InitTM - returns a newly created opaque type.  */
 
-#if defined(HAVE_STRUCT_TM) && defined(HAVE_MALLOC_H)
+#if defined(HAVE_SYS_TIME_H) && defined(HAVE_MALLOC_H)
 extern "C" struct tm *
 EXPORT(InitTM) (void)
 {
@@ -145,7 +145,7 @@ EXPORT(KillTM) (struct tm *tv)
 extern "C" int
 EXPORT(gettimeofday) (void *tv, struct timezone *tz)
 {
-  return gettimeofday (tv, tz);
+  return gettimeofday ((struct timeval *) tv, tz);
 }
 #else
 extern "C" int
@@ -162,7 +162,7 @@ EXPORT(gettimeofday) (void *tv, void *tz)
 extern "C" int
 EXPORT(settimeofday) (void *tv, struct timezone *tz)
 {
-  return settimeofday (tv, tz);
+  return settimeofday ((struct timeval *) tv, tz);
 }
 #else
 extern "C" int

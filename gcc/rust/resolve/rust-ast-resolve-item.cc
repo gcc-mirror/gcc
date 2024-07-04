@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -17,7 +17,13 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-ast-resolve-item.h"
+#include "rust-ast-full-decls.h"
+#include "rust-ast-resolve-toplevel.h"
+#include "rust-ast-resolve-type.h"
+#include "rust-ast-resolve-pattern.h"
 #include "rust-ast-resolve-path.h"
+
+#include "rust-item.h"
 #include "selftest.h"
 
 namespace Rust {
@@ -29,7 +35,7 @@ ResolveTraitItems::ResolveTraitItems (const CanonicalPath &prefix,
 {}
 
 void
-ResolveTraitItems::go (AST::TraitItem *item, const CanonicalPath &prefix,
+ResolveTraitItems::go (AST::AssociatedItem *item, const CanonicalPath &prefix,
 		       const CanonicalPath &canonical_prefix)
 {
   if (item->is_marked_for_strip ())
@@ -40,10 +46,98 @@ ResolveTraitItems::go (AST::TraitItem *item, const CanonicalPath &prefix,
 }
 
 void
-ResolveTraitItems::visit (AST::TraitItemType &type)
+ResolveTraitItems::visit (AST::Function &function)
 {
   auto decl
-    = CanonicalPath::new_seg (type.get_node_id (), type.get_identifier ());
+    = CanonicalPath::new_seg (function.get_node_id (),
+			      function.get_function_name ().as_string ());
+  auto path = prefix.append (decl);
+  auto cpath = canonical_prefix.append (decl);
+  mappings->insert_canonical_path (function.get_node_id (), cpath);
+
+  NodeId scope_node_id = function.get_node_id ();
+  resolver->get_name_scope ().push (scope_node_id);
+  resolver->get_type_scope ().push (scope_node_id);
+  resolver->get_label_scope ().push (scope_node_id);
+  resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
+  resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+
+  if (function.has_generics ())
+    for (auto &generic : function.get_generic_params ())
+      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
+
+  if (function.has_return_type ())
+    ResolveType::go (function.get_return_type ().get ());
+
+  // self turns into (self: Self) as a function param
+  std::vector<PatternBinding> bindings
+    = {PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ())};
+
+  // we make a new scope so the names of parameters are resolved and shadowed
+  // correctly
+  for (auto &p : function.get_function_params ())
+    {
+      if (p->is_variadic ())
+	{
+	  auto param = static_cast<AST::VariadicParam *> (p.get ());
+	  PatternDeclaration::go (param->get_pattern ().get (),
+				  Rib::ItemType::Param, bindings);
+	}
+      else if (p->is_self ())
+	{
+	  auto param = static_cast<AST::SelfParam *> (p.get ());
+	  // FIXME: which location should be used for Rust::Identifier `self`?
+	  AST::IdentifierPattern self_pattern (
+	    param->get_node_id (), {"self"}, param->get_locus (),
+	    param->get_has_ref (), param->get_is_mut (),
+	    std::unique_ptr<AST::Pattern> (nullptr));
+
+	  PatternDeclaration::go (&self_pattern, Rib::ItemType::Param);
+
+	  if (param->has_type ())
+	    {
+	      // This shouldn't happen the parser should already error for this
+	      rust_assert (!param->get_has_ref ());
+	      ResolveType::go (param->get_type ().get ());
+	    }
+	  else
+	    {
+	      // here we implicitly make self have a type path of Self
+	      std::vector<std::unique_ptr<AST::TypePathSegment>> segments;
+	      segments.push_back (std::unique_ptr<AST::TypePathSegment> (
+		new AST::TypePathSegment ("Self", false, param->get_locus ())));
+
+	      AST::TypePath self_type_path (std::move (segments),
+					    param->get_locus ());
+	      ResolveType::go (&self_type_path);
+	    }
+	}
+      else
+	{
+	  auto param = static_cast<AST::FunctionParam *> (p.get ());
+	  ResolveType::go (param->get_type ().get ());
+	  PatternDeclaration::go (param->get_pattern ().get (),
+				  Rib::ItemType::Param, bindings);
+	}
+    }
+
+  if (function.has_where_clause ())
+    ResolveWhereClause::Resolve (function.get_where_clause ());
+
+  // trait items have an optional body
+  if (function.has_body ())
+    ResolveExpr::go (function.get_definition ()->get (), path, cpath);
+
+  resolver->get_name_scope ().pop ();
+  resolver->get_type_scope ().pop ();
+  resolver->get_label_scope ().pop ();
+}
+void
+ResolveTraitItems::visit (AST::TraitItemType &type)
+{
+  auto decl = CanonicalPath::new_seg (type.get_node_id (),
+				      type.get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (type.get_node_id (), cpath);
@@ -53,120 +147,10 @@ ResolveTraitItems::visit (AST::TraitItemType &type)
 }
 
 void
-ResolveTraitItems::visit (AST::TraitItemFunc &func)
-{
-  auto decl = CanonicalPath::new_seg (
-    func.get_node_id (), func.get_trait_function_decl ().get_identifier ());
-  auto path = prefix.append (decl);
-  auto cpath = canonical_prefix.append (decl);
-  mappings->insert_canonical_path (func.get_node_id (), cpath);
-
-  NodeId scope_node_id = func.get_node_id ();
-  resolver->get_name_scope ().push (scope_node_id);
-  resolver->get_type_scope ().push (scope_node_id);
-  resolver->get_label_scope ().push (scope_node_id);
-  resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
-  resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
-
-  AST::TraitFunctionDecl &function = func.get_trait_function_decl ();
-  if (function.has_generics ())
-    for (auto &generic : function.get_generic_params ())
-      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
-
-  if (function.has_return_type ())
-    ResolveType::go (function.get_return_type ().get ());
-
-  // we make a new scope so the names of parameters are resolved and shadowed
-  // correctly
-  for (auto &param : function.get_function_params ())
-    {
-      ResolveType::go (param.get_type ().get ());
-      PatternDeclaration::go (param.get_pattern ().get (),
-			      Rib::ItemType::Param);
-    }
-
-  if (function.has_where_clause ())
-    ResolveWhereClause::Resolve (function.get_where_clause ());
-
-  // trait items have an optional body
-  if (func.has_definition ())
-    ResolveExpr::go (func.get_definition ().get (), path, cpath);
-
-  resolver->get_name_scope ().pop ();
-  resolver->get_type_scope ().pop ();
-  resolver->get_label_scope ().pop ();
-}
-
-void
-ResolveTraitItems::visit (AST::TraitItemMethod &func)
-{
-  auto decl
-    = CanonicalPath::new_seg (func.get_node_id (),
-			      func.get_trait_method_decl ().get_identifier ());
-  auto path = prefix.append (decl);
-  auto cpath = canonical_prefix.append (decl);
-  mappings->insert_canonical_path (func.get_node_id (), cpath);
-
-  NodeId scope_node_id = func.get_node_id ();
-  resolver->get_name_scope ().push (scope_node_id);
-  resolver->get_type_scope ().push (scope_node_id);
-  resolver->get_label_scope ().push (scope_node_id);
-  resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
-  resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
-
-  AST::TraitMethodDecl &function = func.get_trait_method_decl ();
-  if (function.has_generics ())
-    for (auto &generic : function.get_generic_params ())
-      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
-
-  if (function.has_return_type ())
-    ResolveType::go (function.get_return_type ().get ());
-
-  // self turns into (self: Self) as a function param
-  AST::SelfParam &self_param = function.get_self_param ();
-  AST::IdentifierPattern self_pattern (self_param.get_node_id (), "self",
-				       self_param.get_locus (),
-				       self_param.get_has_ref (),
-				       self_param.get_is_mut (),
-				       std::unique_ptr<AST::Pattern> (nullptr));
-
-  std::vector<std::unique_ptr<AST::TypePathSegment>> segments;
-  segments.push_back (std::unique_ptr<AST::TypePathSegment> (
-    new AST::TypePathSegment ("Self", false, self_param.get_locus ())));
-
-  AST::TypePath self_type_path (std::move (segments), self_param.get_locus ());
-
-  ResolveType::go (&self_type_path);
-  PatternDeclaration::go (&self_pattern, Rib::ItemType::Param);
-
-  // we make a new scope so the names of parameters are resolved and shadowed
-  // correctly
-  for (auto &param : function.get_function_params ())
-    {
-      ResolveType::go (param.get_type ().get ());
-      PatternDeclaration::go (param.get_pattern ().get (),
-			      Rib::ItemType::Param);
-    }
-
-  if (function.has_where_clause ())
-    ResolveWhereClause::Resolve (function.get_where_clause ());
-
-  // trait items have an optional body
-  if (func.has_definition ())
-    ResolveExpr::go (func.get_definition ().get (), path, cpath);
-
-  resolver->get_name_scope ().pop ();
-  resolver->get_type_scope ().pop ();
-  resolver->get_label_scope ().pop ();
-}
-
-void
 ResolveTraitItems::visit (AST::TraitItemConst &constant)
 {
   auto decl = CanonicalPath::new_seg (constant.get_node_id (),
-				      constant.get_identifier ());
+				      constant.get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (constant.get_node_id (), cpath);
@@ -194,7 +178,8 @@ void
 ResolveItem::visit (AST::TypeAlias &alias)
 {
   auto talias
-    = CanonicalPath::new_seg (alias.get_node_id (), alias.get_new_type_name ());
+    = CanonicalPath::new_seg (alias.get_node_id (),
+			      alias.get_new_type_name ().as_string ());
   auto path = prefix.append (talias);
   auto cpath = canonical_prefix.append (talias);
   mappings->insert_canonical_path (alias.get_node_id (), cpath);
@@ -217,7 +202,8 @@ ResolveItem::visit (AST::TypeAlias &alias)
 void
 ResolveItem::visit (AST::Module &module)
 {
-  auto mod = CanonicalPath::new_seg (module.get_node_id (), module.get_name ());
+  auto mod = CanonicalPath::new_seg (module.get_node_id (),
+				     module.get_name ().as_string ());
   auto path = prefix.append (mod);
   auto cpath = canonical_prefix.append (mod);
   mappings->insert_canonical_path (module.get_node_id (), cpath);
@@ -251,8 +237,9 @@ ResolveItem::visit (AST::Module &module)
 void
 ResolveItem::visit (AST::TupleStruct &struct_decl)
 {
-  auto decl = CanonicalPath::new_seg (struct_decl.get_node_id (),
-				      struct_decl.get_identifier ());
+  auto decl
+    = CanonicalPath::new_seg (struct_decl.get_node_id (),
+			      struct_decl.get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (struct_decl.get_node_id (), cpath);
@@ -286,7 +273,7 @@ void
 ResolveItem::visit (AST::Enum &enum_decl)
 {
   auto decl = CanonicalPath::new_seg (enum_decl.get_node_id (),
-				      enum_decl.get_identifier ());
+				      enum_decl.get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (enum_decl.get_node_id (), cpath);
@@ -317,8 +304,8 @@ ResolveItem::visit (AST::EnumItem &item)
   // Since at this point we cannot have visibilities on enum items anymore, we
   // can skip handling them
 
-  auto decl
-    = CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ());
+  auto decl = CanonicalPath::new_seg (item.get_node_id (),
+				      item.get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (item.get_node_id (), cpath);
@@ -327,8 +314,8 @@ ResolveItem::visit (AST::EnumItem &item)
 void
 ResolveItem::visit (AST::EnumItemTuple &item)
 {
-  auto decl
-    = CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ());
+  auto decl = CanonicalPath::new_seg (item.get_node_id (),
+				      item.get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (item.get_node_id (), cpath);
@@ -345,8 +332,8 @@ ResolveItem::visit (AST::EnumItemTuple &item)
 void
 ResolveItem::visit (AST::EnumItemStruct &item)
 {
-  auto decl
-    = CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ());
+  auto decl = CanonicalPath::new_seg (item.get_node_id (),
+				      item.get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (item.get_node_id (), cpath);
@@ -363,8 +350,8 @@ ResolveItem::visit (AST::EnumItemStruct &item)
 void
 ResolveItem::visit (AST::EnumItemDiscriminant &item)
 {
-  auto decl
-    = CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ());
+  auto decl = CanonicalPath::new_seg (item.get_node_id (),
+				      item.get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
 
@@ -374,8 +361,9 @@ ResolveItem::visit (AST::EnumItemDiscriminant &item)
 void
 ResolveItem::visit (AST::StructStruct &struct_decl)
 {
-  auto decl = CanonicalPath::new_seg (struct_decl.get_node_id (),
-				      struct_decl.get_identifier ());
+  auto decl
+    = CanonicalPath::new_seg (struct_decl.get_node_id (),
+			      struct_decl.get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (struct_decl.get_node_id (), cpath);
@@ -408,8 +396,9 @@ ResolveItem::visit (AST::StructStruct &struct_decl)
 void
 ResolveItem::visit (AST::Union &union_decl)
 {
-  auto decl = CanonicalPath::new_seg (union_decl.get_node_id (),
-				      union_decl.get_identifier ());
+  auto decl
+    = CanonicalPath::new_seg (union_decl.get_node_id (),
+			      union_decl.get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (union_decl.get_node_id (), cpath);
@@ -440,8 +429,8 @@ ResolveItem::visit (AST::Union &union_decl)
 void
 ResolveItem::visit (AST::StaticItem &var)
 {
-  auto decl
-    = CanonicalPath::new_seg (var.get_node_id (), var.get_identifier ());
+  auto decl = CanonicalPath::new_seg (var.get_node_id (),
+				      var.get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (var.get_node_id (), cpath);
@@ -468,8 +457,9 @@ ResolveItem::visit (AST::ConstantItem &constant)
 void
 ResolveItem::visit (AST::Function &function)
 {
-  auto decl = CanonicalPath::new_seg (function.get_node_id (),
-				      function.get_function_name ());
+  auto decl
+    = CanonicalPath::new_seg (function.get_node_id (),
+			      function.get_function_name ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
 
@@ -496,17 +486,70 @@ ResolveItem::visit (AST::Function &function)
   if (function.has_return_type ())
     ResolveType::go (function.get_return_type ().get ());
 
+  if (function.has_self_param ())
+    {
+      // self turns into (self: Self) as a function param
+      std::unique_ptr<AST::Param> &s_param = function.get_self_param ();
+      auto self_param = static_cast<AST::SelfParam *> (s_param.get ());
+
+      // FIXME: which location should be used for Rust::Identifier `self`?
+      AST::IdentifierPattern self_pattern (
+	self_param->get_node_id (), {"self"}, self_param->get_locus (),
+	self_param->get_has_ref (), self_param->get_is_mut (),
+	std::unique_ptr<AST::Pattern> (nullptr));
+      PatternDeclaration::go (&self_pattern, Rib::ItemType::Param);
+
+      if (self_param->has_type ())
+	{
+	  // This shouldn't happen the parser should already error for this
+	  rust_assert (!self_param->get_has_ref ());
+	  ResolveType::go (self_param->get_type ().get ());
+	}
+      else
+	{
+	  // here we implicitly make self have a type path of Self
+	  std::vector<std::unique_ptr<AST::TypePathSegment>> segments;
+	  segments.push_back (std::unique_ptr<AST::TypePathSegment> (
+	    new AST::TypePathSegment ("Self", false,
+				      self_param->get_locus ())));
+
+	  AST::TypePath self_type_path (std::move (segments),
+					self_param->get_locus ());
+	  ResolveType::go (&self_type_path);
+	}
+    }
+
+  std::vector<PatternBinding> bindings
+    = {PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ())};
+
   // we make a new scope so the names of parameters are resolved and shadowed
   // correctly
-  for (auto &param : function.get_function_params ())
+  for (auto &p : function.get_function_params ())
     {
-      ResolveType::go (param.get_type ().get ());
-      PatternDeclaration::go (param.get_pattern ().get (),
-			      Rib::ItemType::Param);
+      if (p->is_variadic ())
+	{
+	  auto param = static_cast<AST::VariadicParam *> (p.get ());
+	  if (param->has_pattern ())
+	    PatternDeclaration::go (param->get_pattern ().get (),
+				    Rib::ItemType::Param, bindings);
+	}
+      else if (p->is_self ())
+	{
+	  auto param = static_cast<AST::SelfParam *> (p.get ());
+	  if (param->has_type ())
+	    ResolveType::go (param->get_type ().get ());
+	}
+      else
+	{
+	  auto param = static_cast<AST::FunctionParam *> (p.get ());
+	  ResolveType::go (param->get_type ().get ());
+	  PatternDeclaration::go (param->get_pattern ().get (),
+				  Rib::ItemType::Param, bindings);
+	}
     }
 
   // resolve the function body
-  ResolveExpr::go (function.get_definition ().get (), path, cpath);
+  ResolveExpr::go (function.get_definition ()->get (), path, cpath);
 
   resolver->get_name_scope ().pop ();
   resolver->get_type_scope ().pop ();
@@ -534,6 +577,7 @@ ResolveItem::visit (AST::InherentImpl &impl_block)
 
   // FIXME this needs to be protected behind nominal type-checks see:
   // rustc --explain E0118
+  // issue #2634
   ResolveType::go (impl_block.get_type ().get ());
 
   // Setup paths
@@ -545,13 +589,15 @@ ResolveItem::visit (AST::InherentImpl &impl_block)
 	      self_cpath.get ().c_str ());
 
   CanonicalPath impl_type = self_cpath;
-  CanonicalPath impl_prefix = prefix.append (impl_type);
+  CanonicalPath impl_type_seg
+    = CanonicalPath::inherent_impl_seg (impl_block.get_node_id (), impl_type);
+  CanonicalPath impl_prefix = prefix.append (impl_type_seg);
 
   // see https://godbolt.org/z/a3vMbsT6W
   CanonicalPath cpath = CanonicalPath::create_empty ();
   if (canonical_prefix.size () <= 1)
     {
-      cpath = self_cpath;
+      cpath = impl_prefix;
     }
   else
     {
@@ -586,75 +632,6 @@ ResolveItem::visit (AST::InherentImpl &impl_block)
 }
 
 void
-ResolveItem::visit (AST::Method &method)
-{
-  auto decl
-    = CanonicalPath::new_seg (method.get_node_id (), method.get_method_name ());
-  auto path = prefix.append (decl);
-  auto cpath = canonical_prefix.append (decl);
-  mappings->insert_canonical_path (method.get_node_id (), cpath);
-
-  NodeId scope_node_id = method.get_node_id ();
-
-  resolve_visibility (method.get_visibility ());
-
-  resolver->get_name_scope ().push (scope_node_id);
-  resolver->get_type_scope ().push (scope_node_id);
-  resolver->get_label_scope ().push (scope_node_id);
-  resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
-  resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
-
-  if (method.has_generics ())
-    for (auto &generic : method.get_generic_params ())
-      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
-
-  // resolve any where clause items
-  if (method.has_where_clause ())
-    ResolveWhereClause::Resolve (method.get_where_clause ());
-
-  if (method.has_return_type ())
-    ResolveType::go (method.get_return_type ().get ());
-
-  // self turns into (self: Self) as a function param
-  AST::SelfParam &self_param = method.get_self_param ();
-  AST::IdentifierPattern self_pattern (self_param.get_node_id (), "self",
-				       self_param.get_locus (),
-				       self_param.get_has_ref (),
-				       self_param.get_is_mut (),
-				       std::unique_ptr<AST::Pattern> (nullptr));
-
-  std::vector<std::unique_ptr<AST::TypePathSegment>> segments;
-  segments.push_back (std::unique_ptr<AST::TypePathSegment> (
-    new AST::TypePathSegment ("Self", false, self_param.get_locus ())));
-
-  AST::TypePath self_type_path (std::move (segments), self_param.get_locus ());
-
-  ResolveType::go (&self_type_path);
-  PatternDeclaration::go (&self_pattern, Rib::ItemType::Param);
-
-  // we make a new scope so the names of parameters are resolved and shadowed
-  // correctly
-  for (auto &param : method.get_function_params ())
-    {
-      ResolveType::go (param.get_type ().get ());
-      PatternDeclaration::go (param.get_pattern ().get (),
-			      Rib::ItemType::Param);
-    }
-
-  // resolve any where clause items
-  if (method.has_where_clause ())
-    ResolveWhereClause::Resolve (method.get_where_clause ());
-
-  // resolve the function body
-  ResolveExpr::go (method.get_definition ().get (), path, cpath);
-
-  resolver->get_name_scope ().pop ();
-  resolver->get_type_scope ().pop ();
-  resolver->get_label_scope ().pop ();
-}
-
-void
 ResolveItem::visit (AST::TraitImpl &impl_block)
 {
   NodeId scope_node_id = impl_block.get_node_id ();
@@ -663,8 +640,10 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
 
   resolver->get_name_scope ().push (scope_node_id);
   resolver->get_type_scope ().push (scope_node_id);
+  resolver->get_label_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
 
   if (impl_block.has_generics ())
     for (auto &generic : impl_block.get_generic_params ())
@@ -678,8 +657,9 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
   NodeId trait_resolved_node = ResolveType::go (&impl_block.get_trait_path ());
   if (trait_resolved_node == UNKNOWN_NODEID)
     {
-      resolver->get_type_scope ().pop ();
       resolver->get_name_scope ().pop ();
+      resolver->get_type_scope ().pop ();
+      resolver->get_label_scope ().pop ();
       return;
     }
 
@@ -687,8 +667,9 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
   NodeId type_resolved_node = ResolveType::go (impl_block.get_type ().get ());
   if (type_resolved_node == UNKNOWN_NODEID)
     {
-      resolver->get_type_scope ().pop ();
       resolver->get_name_scope ().pop ();
+      resolver->get_type_scope ().pop ();
+      resolver->get_label_scope ().pop ();
       return;
     }
 
@@ -756,9 +737,12 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
       resolve_impl_item (impl_item.get (), impl_prefix, cpath);
     }
 
-  resolver->get_type_scope ().peek ()->clear_name (
-    Self, impl_block.get_type ()->get_node_id ());
+  Rib *r = resolver->get_type_scope ().peek ();
+  r->clear_name (Self, impl_block.get_type ()->get_node_id ());
+
+  resolver->get_name_scope ().pop ();
   resolver->get_type_scope ().pop ();
+  resolver->get_label_scope ().pop ();
 }
 
 void
@@ -774,8 +758,9 @@ ResolveItem::visit (AST::Trait &trait)
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
 
   // we need to inject an implicit self TypeParam here
+  // FIXME: which location should be used for Rust::Identifier `Self`?
   AST::TypeParam *implicit_self
-    = new AST::TypeParam ("Self", trait.get_locus ());
+    = new AST::TypeParam ({"Self"}, trait.get_locus ());
   trait.insert_implict_self (
     std::unique_ptr<AST::GenericParam> (implicit_self));
   CanonicalPath Self = CanonicalPath::get_big_self (trait.get_node_id ());
@@ -825,15 +810,7 @@ ResolveItem::visit (AST::ExternBlock &extern_block)
 }
 
 void
-ResolveItem::resolve_impl_item (AST::TraitImplItem *item,
-				const CanonicalPath &prefix,
-				const CanonicalPath &canonical_prefix)
-{
-  ResolveImplItems::go (item, prefix, canonical_prefix);
-}
-
-void
-ResolveItem::resolve_impl_item (AST::InherentImplItem *item,
+ResolveItem::resolve_impl_item (AST::AssociatedItem *item,
 				const CanonicalPath &prefix,
 				const CanonicalPath &canonical_prefix)
 {
@@ -847,33 +824,30 @@ ResolveItem::resolve_extern_item (AST::ExternalItem *item)
 }
 
 static void
-flatten_glob (const AST::UseTreeGlob &glob,
-	      std::vector<AST::SimplePath> &paths);
+flatten_glob (const AST::UseTreeGlob &glob, std::vector<Import> &imports);
 static void
-flatten_rebind (const AST::UseTreeRebind &glob,
-		std::vector<AST::SimplePath> &paths);
+flatten_rebind (const AST::UseTreeRebind &glob, std::vector<Import> &imports);
 static void
-flatten_list (const AST::UseTreeList &glob,
-	      std::vector<AST::SimplePath> &paths);
+flatten_list (const AST::UseTreeList &glob, std::vector<Import> &imports);
 
 static void
-flatten (const AST::UseTree *tree, std::vector<AST::SimplePath> &paths)
+flatten (const AST::UseTree *tree, std::vector<Import> &imports)
 {
   switch (tree->get_kind ())
     {
       case AST::UseTree::Glob: {
 	auto glob = static_cast<const AST::UseTreeGlob *> (tree);
-	flatten_glob (*glob, paths);
+	flatten_glob (*glob, imports);
 	break;
       }
       case AST::UseTree::Rebind: {
 	auto rebind = static_cast<const AST::UseTreeRebind *> (tree);
-	flatten_rebind (*rebind, paths);
+	flatten_rebind (*rebind, imports);
 	break;
       }
       case AST::UseTree::List: {
 	auto list = static_cast<const AST::UseTreeList *> (tree);
-	flatten_list (*list, paths);
+	flatten_list (*list, imports);
 	break;
       }
       break;
@@ -881,36 +855,28 @@ flatten (const AST::UseTree *tree, std::vector<AST::SimplePath> &paths)
 }
 
 static void
-flatten_glob (const AST::UseTreeGlob &glob, std::vector<AST::SimplePath> &paths)
+flatten_glob (const AST::UseTreeGlob &glob, std::vector<Import> &imports)
 {
   if (glob.has_path ())
-    paths.emplace_back (glob.get_path ());
+    imports.emplace_back (glob.get_path (), true, std::string ());
 }
 
 static void
-flatten_rebind (const AST::UseTreeRebind &rebind,
-		std::vector<AST::SimplePath> &paths)
+flatten_rebind (const AST::UseTreeRebind &rebind, std::vector<Import> &imports)
 {
   auto path = rebind.get_path ();
-  if (rebind.has_path ())
-    paths.emplace_back (path);
 
-  // FIXME: Do we want to emplace the rebind here as well?
+  std::string label;
   if (rebind.has_identifier ())
-    {
-      auto rebind_path = path;
-      auto new_seg = rebind.get_identifier ();
+    label = rebind.get_identifier ().as_string ();
+  else
+    label = path.get_final_segment ().as_string ();
 
-      // Add the identifier as a new path
-      rebind_path.get_segments ().back ()
-	= AST::SimplePathSegment (new_seg, Location ());
-
-      paths.emplace_back (rebind_path);
-    }
+  imports.emplace_back (path, false, label);
 }
 
 static void
-flatten_list (const AST::UseTreeList &list, std::vector<AST::SimplePath> &paths)
+flatten_list (const AST::UseTreeList &list, std::vector<Import> &imports)
 {
   auto prefix = AST::SimplePath::create_empty ();
   if (list.has_path ())
@@ -918,19 +884,23 @@ flatten_list (const AST::UseTreeList &list, std::vector<AST::SimplePath> &paths)
 
   for (const auto &tree : list.get_trees ())
     {
-      auto sub_paths = std::vector<AST::SimplePath> ();
-      flatten (tree.get (), sub_paths);
+      // append imports to the main list, then modify them in-place
+      auto start_idx = imports.size ();
+      flatten (tree.get (), imports);
 
-      for (auto &sub_path : sub_paths)
-	{
-	  auto new_path = prefix;
-	  std::copy (sub_path.get_segments ().begin (),
-		     sub_path.get_segments ().end (),
-		     std::back_inserter (new_path.get_segments ()));
-
-	  paths.emplace_back (new_path);
-	}
+      for (auto import = imports.begin () + start_idx; import != imports.end ();
+	   import++)
+	import->add_prefix (prefix);
     }
+}
+
+void
+Import::add_prefix (AST::SimplePath prefix)
+{
+  AST::SimplePath old_path (std::move (path));
+  path = std::move (prefix);
+  std::move (old_path.get_segments ().begin (), old_path.get_segments ().end (),
+	     std::back_inserter (path.get_segments ()));
 }
 
 /**
@@ -953,21 +923,21 @@ flatten_list (const AST::UseTreeList &list, std::vector<AST::SimplePath> &paths)
  * Finally in the third case, we want to create two SimplePaths to resolve:
  * [some::path::one, some::path::two]
  */
-static std::vector<AST::SimplePath>
-flatten_use_dec_to_paths (const AST::UseDeclaration &use_item)
+static std::vector<Import>
+flatten_use_dec_to_imports (const AST::UseDeclaration &use_item)
 {
-  auto paths = std::vector<AST::SimplePath> ();
+  auto imports = std::vector<Import> ();
 
   const auto &tree = use_item.get_tree ();
-  flatten (tree.get (), paths);
+  flatten (tree.get (), imports);
 
-  return paths;
+  return imports;
 }
 
 void
 ResolveItem::visit (AST::UseDeclaration &use_item)
 {
-  auto to_resolve = flatten_use_dec_to_paths (use_item);
+  std::vector<Import> to_resolve = flatten_use_dec_to_imports (use_item);
 
   // FIXME: I think this does not actually resolve glob use-decls and is going
   // the wrong way about it. RFC #1560 specifies the following:
@@ -977,8 +947,29 @@ ResolveItem::visit (AST::UseDeclaration &use_item)
   // importing module.
   //
   // Which is the opposite of what we're doing if I understand correctly?
-  for (auto &path : to_resolve)
-    ResolvePath::go (&path);
+
+  NodeId current_module = resolver->peek_current_module_scope ();
+  for (auto &import : to_resolve)
+    {
+      auto &path = import.get_path ();
+
+      rust_debug ("resolving use-decl path: [%s]", path.as_string ().c_str ());
+      NodeId resolved_node_id = ResolvePath::go (&path);
+      bool ok = resolved_node_id != UNKNOWN_NODEID;
+      if (!ok)
+	continue;
+
+      if (import.is_glob ())
+	continue;
+
+      auto decl = CanonicalPath::new_seg (resolved_node_id, import.get_name ());
+      mappings->insert_module_child_item (current_module, decl);
+
+      resolver->get_type_scope ().insert (decl, resolved_node_id,
+					  path.get_locus (),
+					  Rib::ItemType::Type);
+      rust_debug ("use-decl rexporting: [%s]", decl.get ().c_str ());
+    }
 }
 
 ResolveImplItems::ResolveImplItems (const CanonicalPath &prefix,
@@ -987,18 +978,7 @@ ResolveImplItems::ResolveImplItems (const CanonicalPath &prefix,
 {}
 
 void
-ResolveImplItems::go (AST::InherentImplItem *item, const CanonicalPath &prefix,
-		      const CanonicalPath &canonical_prefix)
-{
-  if (item->is_marked_for_strip ())
-    return;
-
-  ResolveImplItems resolver (prefix, canonical_prefix);
-  item->accept_vis (resolver);
-}
-
-void
-ResolveImplItems::go (AST::TraitImplItem *item, const CanonicalPath &prefix,
+ResolveImplItems::go (AST::AssociatedItem *item, const CanonicalPath &prefix,
 		      const CanonicalPath &canonical_prefix)
 {
   if (item->is_marked_for_strip ())
@@ -1033,7 +1013,7 @@ ResolveExternItem::visit (AST::ExternalFunctionItem &function)
 {
   NodeId scope_node_id = function.get_node_id ();
   auto decl = CanonicalPath::new_seg (function.get_node_id (),
-				      function.get_identifier ());
+				      function.get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
 
@@ -1059,9 +1039,8 @@ ResolveExternItem::visit (AST::ExternalFunctionItem &function)
   // we make a new scope so the names of parameters are resolved and shadowed
   // correctly
   for (auto &param : function.get_function_params ())
-    {
+    if (!param.is_variadic ())
       ResolveType::go (param.get_type ().get ());
-    }
 
   // done
   resolver->get_name_scope ().pop ();
@@ -1087,138 +1066,138 @@ namespace selftest {
 static void
 rust_flatten_nested_glob (void)
 {
-  auto foo = Rust::AST::SimplePathSegment ("foo", Location ());
-  auto bar = Rust::AST::SimplePathSegment ("bar", Location ());
+  auto foo = Rust::AST::SimplePathSegment ("foo", UNDEF_LOCATION);
+  auto bar = Rust::AST::SimplePathSegment ("bar", UNDEF_LOCATION);
   auto foobar = Rust::AST::SimplePath ({foo, bar});
 
   auto glob
     = Rust::AST::UseTreeGlob (Rust::AST::UseTreeGlob::PathType::PATH_PREFIXED,
-			      foobar, Location ());
+			      foobar, UNDEF_LOCATION);
 
-  auto paths = std::vector<Rust::AST::SimplePath> ();
-  Rust::Resolver::flatten_glob (glob, paths);
+  auto imports = std::vector<Rust::Resolver::Import> ();
+  Rust::Resolver::flatten_glob (glob, imports);
 
-  ASSERT_TRUE (!paths.empty ());
-  ASSERT_EQ (paths.size (), 1);
-  ASSERT_EQ (paths[0].get_segments ()[0].as_string (), "foo");
-  ASSERT_EQ (paths[0].get_segments ()[1].as_string (), "bar");
+  ASSERT_TRUE (!imports.empty ());
+  ASSERT_EQ (imports.size (), 1);
+  ASSERT_EQ (imports[0].get_path ().get_segments ()[0].as_string (), "foo");
+  ASSERT_EQ (imports[0].get_path ().get_segments ()[1].as_string (), "bar");
 }
 
 static void
 rust_flatten_glob (void)
 {
-  auto frob = Rust::AST::SimplePath::from_str ("frobulator", Location ());
+  auto frob = Rust::AST::SimplePath::from_str ("frobulator", UNDEF_LOCATION);
 
   auto glob
     = Rust::AST::UseTreeGlob (Rust::AST::UseTreeGlob::PathType::PATH_PREFIXED,
-			      frob, Location ());
+			      frob, UNDEF_LOCATION);
 
-  auto paths = std::vector<Rust::AST::SimplePath> ();
-  Rust::Resolver::flatten_glob (glob, paths);
+  auto imports = std::vector<Rust::Resolver::Import> ();
+  Rust::Resolver::flatten_glob (glob, imports);
 
-  ASSERT_TRUE (!paths.empty ());
-  ASSERT_EQ (paths.size (), 1);
-  ASSERT_EQ (paths[0], "frobulator");
+  ASSERT_TRUE (!imports.empty ());
+  ASSERT_EQ (imports.size (), 1);
+  ASSERT_EQ (imports[0].get_path (), "frobulator");
 }
 
 static void
 rust_flatten_rebind_none (void)
 {
-  auto foo = Rust::AST::SimplePathSegment ("foo", Location ());
-  auto bar = Rust::AST::SimplePathSegment ("bar", Location ());
+  auto foo = Rust::AST::SimplePathSegment ("foo", UNDEF_LOCATION);
+  auto bar = Rust::AST::SimplePathSegment ("bar", UNDEF_LOCATION);
   auto foobar = Rust::AST::SimplePath ({foo, bar});
 
   auto rebind = Rust::AST::UseTreeRebind (Rust::AST::UseTreeRebind::NONE,
-					  foobar, Location ());
+					  foobar, UNDEF_LOCATION);
 
-  auto paths = std::vector<Rust::AST::SimplePath> ();
-  Rust::Resolver::flatten_rebind (rebind, paths);
+  auto imports = std::vector<Rust::Resolver::Import> ();
+  Rust::Resolver::flatten_rebind (rebind, imports);
 
-  ASSERT_TRUE (!paths.empty ());
-  ASSERT_EQ (paths.size (), 1);
-  ASSERT_EQ (paths[0].get_segments ()[0].as_string (), "foo");
-  ASSERT_EQ (paths[0].get_segments ()[1].as_string (), "bar");
+  ASSERT_TRUE (!imports.empty ());
+  ASSERT_EQ (imports.size (), 1);
+  ASSERT_EQ (imports[0].get_path ().get_segments ()[0].as_string (), "foo");
+  ASSERT_EQ (imports[0].get_path ().get_segments ()[1].as_string (), "bar");
 }
 
 static void
 rust_flatten_rebind (void)
 {
-  auto frob = Rust::AST::SimplePath::from_str ("frobulator", Location ());
+  auto frob = Rust::AST::SimplePath::from_str ("frobulator", UNDEF_LOCATION);
 
   auto rebind = Rust::AST::UseTreeRebind (Rust::AST::UseTreeRebind::IDENTIFIER,
-					  frob, Location (), "saindoux");
+					  frob, UNDEF_LOCATION, {"saindoux"});
 
-  auto paths = std::vector<Rust::AST::SimplePath> ();
-  Rust::Resolver::flatten_rebind (rebind, paths);
+  auto imports = std::vector<Rust::Resolver::Import> ();
+  Rust::Resolver::flatten_rebind (rebind, imports);
 
-  ASSERT_TRUE (!paths.empty ());
-  ASSERT_EQ (paths.size (), 2);
-  ASSERT_EQ (paths[0], "frobulator");
-  ASSERT_EQ (paths[1], "saindoux");
+  ASSERT_TRUE (!imports.empty ());
+  ASSERT_EQ (imports.size (), 1);
+  ASSERT_EQ (imports[0].get_path (), "frobulator");
+  ASSERT_EQ (imports[0].get_name (), "saindoux");
 }
 
 static void
 rust_flatten_rebind_nested (void)
 {
-  auto foo = Rust::AST::SimplePathSegment ("foo", Location ());
-  auto bar = Rust::AST::SimplePathSegment ("bar", Location ());
-  auto baz = Rust::AST::SimplePathSegment ("baz", Location ());
+  auto foo = Rust::AST::SimplePathSegment ("foo", UNDEF_LOCATION);
+  auto bar = Rust::AST::SimplePathSegment ("bar", UNDEF_LOCATION);
+  auto baz = Rust::AST::SimplePathSegment ("baz", UNDEF_LOCATION);
 
   auto foo_bar_baz = Rust::AST::SimplePath ({foo, bar, baz});
 
-  auto rebind = Rust::AST::UseTreeRebind (Rust::AST::UseTreeRebind::IDENTIFIER,
-					  foo_bar_baz, Location (), "saindoux");
+  auto rebind
+    = Rust::AST::UseTreeRebind (Rust::AST::UseTreeRebind::IDENTIFIER,
+				foo_bar_baz, UNDEF_LOCATION, {"saindoux"});
 
-  auto paths = std::vector<Rust::AST::SimplePath> ();
-  Rust::Resolver::flatten_rebind (rebind, paths);
+  auto imports = std::vector<Rust::Resolver::Import> ();
+  Rust::Resolver::flatten_rebind (rebind, imports);
 
-  ASSERT_TRUE (!paths.empty ());
-  ASSERT_EQ (paths.size (), 2);
-  ASSERT_EQ (paths[0].get_segments ()[0].as_string (), "foo");
-  ASSERT_EQ (paths[0].get_segments ()[1].as_string (), "bar");
-  ASSERT_EQ (paths[0].get_segments ()[2].as_string (), "baz");
-  ASSERT_EQ (paths[1].get_segments ()[0].as_string (), "foo");
-  ASSERT_EQ (paths[1].get_segments ()[1].as_string (), "bar");
-  ASSERT_EQ (paths[1].get_segments ()[2].as_string (), "saindoux");
+  ASSERT_TRUE (!imports.empty ());
+  ASSERT_EQ (imports.size (), 1);
+  ASSERT_EQ (imports[0].get_path ().get_segments ()[0].as_string (), "foo");
+  ASSERT_EQ (imports[0].get_path ().get_segments ()[1].as_string (), "bar");
+  ASSERT_EQ (imports[0].get_path ().get_segments ()[2].as_string (), "baz");
+  ASSERT_EQ (imports[0].get_name (), "saindoux");
 }
 
 static void
 rust_flatten_list (void)
 {
-  auto foo = Rust::AST::SimplePathSegment ("foo", Location ());
-  auto bar = Rust::AST::SimplePathSegment ("bar", Location ());
+  auto foo = Rust::AST::SimplePathSegment ("foo", UNDEF_LOCATION);
+  auto bar = Rust::AST::SimplePathSegment ("bar", UNDEF_LOCATION);
   auto foo_bar = Rust::AST::SimplePath ({foo, bar});
 
-  auto baz = Rust::AST::SimplePath::from_str ("baz", Location ());
-  auto bul = Rust::AST::SimplePath::from_str ("bul", Location ());
+  auto baz = Rust::AST::SimplePath::from_str ("baz", UNDEF_LOCATION);
+  auto bul = Rust::AST::SimplePath::from_str ("bul", UNDEF_LOCATION);
 
   // use foo::bar::{baz, bul};
 
   auto use0 = std::unique_ptr<Rust::AST::UseTree> (
     new Rust::AST::UseTreeRebind (Rust::AST::UseTreeRebind::NONE, baz,
-				  Location ()));
+				  UNDEF_LOCATION));
   auto use1 = std::unique_ptr<Rust::AST::UseTree> (
     new Rust::AST::UseTreeRebind (Rust::AST::UseTreeRebind::NONE, bul,
-				  Location ()));
+				  UNDEF_LOCATION));
 
   auto uses = std::vector<std::unique_ptr<Rust::AST::UseTree>> ();
   uses.emplace_back (std::move (use0));
   uses.emplace_back (std::move (use1));
 
-  auto list = Rust::AST::UseTreeList (Rust::AST::UseTreeList::PATH_PREFIXED,
-				      foo_bar, std::move (uses), Location ());
+  auto list
+    = Rust::AST::UseTreeList (Rust::AST::UseTreeList::PATH_PREFIXED, foo_bar,
+			      std::move (uses), UNDEF_LOCATION);
 
-  auto paths = std::vector<Rust::AST::SimplePath> ();
-  Rust::Resolver::flatten_list (list, paths);
+  auto imports = std::vector<Rust::Resolver::Import> ();
+  Rust::Resolver::flatten_list (list, imports);
 
-  ASSERT_TRUE (!paths.empty ());
-  ASSERT_EQ (paths.size (), 2);
-  ASSERT_EQ (paths[0].get_segments ()[0].as_string (), "foo");
-  ASSERT_EQ (paths[0].get_segments ()[1].as_string (), "bar");
-  ASSERT_EQ (paths[0].get_segments ()[2].as_string (), "baz");
-  ASSERT_EQ (paths[1].get_segments ()[0].as_string (), "foo");
-  ASSERT_EQ (paths[1].get_segments ()[1].as_string (), "bar");
-  ASSERT_EQ (paths[1].get_segments ()[2].as_string (), "bul");
+  ASSERT_TRUE (!imports.empty ());
+  ASSERT_EQ (imports.size (), 2);
+  ASSERT_EQ (imports[0].get_path ().get_segments ()[0].as_string (), "foo");
+  ASSERT_EQ (imports[0].get_path ().get_segments ()[1].as_string (), "bar");
+  ASSERT_EQ (imports[0].get_path ().get_segments ()[2].as_string (), "baz");
+  ASSERT_EQ (imports[1].get_path ().get_segments ()[0].as_string (), "foo");
+  ASSERT_EQ (imports[1].get_path ().get_segments ()[1].as_string (), "bar");
+  ASSERT_EQ (imports[1].get_path ().get_segments ()[2].as_string (), "bul");
 }
 
 static void

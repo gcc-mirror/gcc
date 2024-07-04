@@ -1,6 +1,6 @@
 // Utilities for representing and manipulating ranges -*- C++ -*-
 
-// Copyright (C) 2019-2023 Free Software Foundation, Inc.
+// Copyright (C) 2019-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,8 +33,9 @@
 #if __cplusplus > 201703L
 # include <bits/ranges_base.h>
 # include <bits/utility.h>
+# include <bits/invoke.h>
 
-#ifdef __cpp_lib_ranges
+#ifdef __glibcxx_ranges
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -223,6 +224,10 @@ namespace ranges
 	&& !__uses_nonqualification_pointer_conversion<decay_t<_From>,
 						       decay_t<_To>>;
 
+#if __glibcxx_tuple_like // >= C++23
+    // P2165R4 version of __pair_like is defined in <bits/stl_pair.h>.
+#else
+    // C++20 version of __pair_like from P2321R2.
     template<typename _Tp>
       concept __pair_like
 	= !is_reference_v<_Tp> && requires(_Tp __t)
@@ -234,10 +239,11 @@ namespace ranges
 	  { get<0>(__t) } -> convertible_to<const tuple_element_t<0, _Tp>&>;
 	  { get<1>(__t) } -> convertible_to<const tuple_element_t<1, _Tp>&>;
 	};
+#endif
 
     template<typename _Tp, typename _Up, typename _Vp>
       concept __pair_like_convertible_from
-	= !range<_Tp> && __pair_like<_Tp>
+	= !range<_Tp> && !is_reference_v<_Vp> && __pair_like<_Tp>
 	&& constructible_from<_Tp, _Up, _Vp>
 	&& __convertible_to_non_slicing<_Up, tuple_element_t<0, _Tp>>
 	&& convertible_to<_Vp, tuple_element_t<1, _Tp>>;
@@ -267,13 +273,21 @@ namespace ranges
       using __size_type
 	= __detail::__make_unsigned_like_t<iter_difference_t<_It>>;
 
-      template<typename, bool = _S_store_size>
+      template<typename _Tp, bool = _S_store_size>
 	struct _Size
-	{ };
+	{
+	  [[__gnu__::__always_inline__]]
+	  constexpr _Size(_Tp = {}) { }
+	};
 
       template<typename _Tp>
 	struct _Size<_Tp, true>
-	{ _Tp _M_size; };
+	{
+	  [[__gnu__::__always_inline__]]
+	  constexpr _Size(_Tp __s = {}) : _M_size(__s) { }
+
+	  _Tp _M_size;
+	};
 
       [[no_unique_address]] _Size<__size_type> _M_size = {};
 
@@ -294,11 +308,8 @@ namespace ranges
       noexcept(is_nothrow_constructible_v<_It, decltype(__i)>
 	       && is_nothrow_constructible_v<_Sent, _Sent&>)
 	requires (_Kind == subrange_kind::sized)
-      : _M_begin(std::move(__i)), _M_end(__s)
-      {
-	if constexpr (_S_store_size)
-	  _M_size._M_size = __n;
-      }
+      : _M_begin(std::move(__i)), _M_end(__s), _M_size(__n)
+      { }
 
       template<__detail::__different_from<subrange> _Rng>
 	requires borrowed_range<_Rng>
@@ -457,7 +468,17 @@ namespace ranges
     using borrowed_subrange_t = __conditional_t<borrowed_range<_Range>,
 						subrange<iterator_t<_Range>>,
 						dangling>;
+
+  // __is_subrange is defined in <bits/utility.h>.
+  template<typename _Iter, typename _Sent, subrange_kind _Kind>
+    inline constexpr bool __detail::__is_subrange<subrange<_Iter, _Sent, _Kind>> = true;
 } // namespace ranges
+
+#if __glibcxx_tuple_like // >= C++23
+  // __is_tuple_like_v is defined in <bits/stl_pair.h>.
+  template<typename _It, typename _Sent, ranges::subrange_kind _Kind>
+    inline constexpr bool __is_tuple_like_v<ranges::subrange<_It, _Sent, _Kind>> = true;
+#endif
 
 // The following ranges algorithms are used by <ranges>, and are defined here
 // so that <ranges> can avoid including all of <bits/ranges_algo.h>.

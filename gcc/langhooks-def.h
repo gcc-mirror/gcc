@@ -1,5 +1,5 @@
 /* Default macros to initialize the lang_hooks data structure.
-   Copyright (C) 2001-2023 Free Software Foundation, Inc.
+   Copyright (C) 2001-2024 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -50,7 +50,8 @@ extern const char *lhd_decl_printable_name (tree, int);
 extern const char *lhd_dwarf_name (tree, int);
 extern int lhd_types_compatible_p (tree, tree);
 extern void lhd_print_error_function (diagnostic_context *,
-				      const char *, struct diagnostic_info *);
+				      const char *,
+				      const struct diagnostic_info *);
 extern void lhd_set_decl_assembler_name (tree decl);
 extern void lhd_overwrite_decl_assembler_name (tree decl, tree name);
 extern bool lhd_warn_unused_global_decl (const_tree);
@@ -153,9 +154,7 @@ extern const char *lhd_get_sarif_source_language (const char *);
 #define LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE lhd_get_sarif_source_language
 
 /* Attribute hooks.  */
-#define LANG_HOOKS_ATTRIBUTE_TABLE		NULL
-#define LANG_HOOKS_COMMON_ATTRIBUTE_TABLE	NULL
-#define LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE	NULL
+#define LANG_HOOKS_ATTRIBUTE_TABLE
 
 /* Tree inlining hooks.  */
 #define LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P \
@@ -366,9 +365,7 @@ extern void lhd_end_section (void);
   LANG_HOOKS_TYPES_COMPATIBLE_P, \
   LANG_HOOKS_PRINT_ERROR_FUNCTION, \
   LANG_HOOKS_TO_TARGET_CHARSET, \
-  LANG_HOOKS_ATTRIBUTE_TABLE, \
-  LANG_HOOKS_COMMON_ATTRIBUTE_TABLE, \
-  LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE, \
+  { LANG_HOOKS_ATTRIBUTE_TABLE }, \
   LANG_HOOKS_TREE_INLINING_INITIALIZER, \
   LANG_HOOKS_TREE_DUMP_INITIALIZER, \
   LANG_HOOKS_DECLS, \

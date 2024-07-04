@@ -7,6 +7,9 @@
 
 #include <string.h>
 
+void abort (void);
+void exit (int);
+
 #ifndef MAX_OFFSET
 #define MAX_OFFSET (sizeof (long long))
 #endif
@@ -32,7 +35,8 @@ static union {
   long double align_fp;
 } u1, u2;
 
-main ()
+int
+main (void)
 {
   int off1, off2, len, i;
   char *p, *q, c;

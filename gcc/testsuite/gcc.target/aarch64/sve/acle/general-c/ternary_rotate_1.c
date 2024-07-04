@@ -10,11 +10,11 @@ f1 (svbool_t pg, svfloat32_t f32, svfloat64_t f64, svint32_t s32, int i)
   svcmla_x (f32, f32, f32, f32, 90); /* { dg-error {passing 'svfloat32_t' to argument 1 of 'svcmla_x', which expects 'svbool_t'} } */
   svcmla_x (pg, pg, pg, pg, 90); /* { dg-error {'svcmla_x' has no form that takes 'svbool_t' arguments} } */
   svcmla_x (pg, s32, s32, s32, 90); /* { dg-error {'svcmla_x' has no form that takes 'svint32_t' arguments} } */
-  svcmla_x (pg, 1, f32, f32, 90); /* { dg-error {passing 'int' to argument 2 of 'svcmla_x', which expects an SVE vector type} } */
-  svcmla_x (pg, f32, 1, f32, 90); /* { dg-error {passing 'int' to argument 3 of 'svcmla_x', which expects an SVE vector type} } */
-  svcmla_x (pg, f32, f32, 1, 90); /* { dg-error {passing 'int' to argument 4 of 'svcmla_x', which expects an SVE vector type} } */
-  svcmla_x (pg, f32, f64, f32, 90); /* { dg-error {passing 'svfloat64_t' to argument 3 of 'svcmla_x', but previous arguments had type 'svfloat32_t'} } */
-  svcmla_x (pg, f32, f32, f64, 90); /* { dg-error {passing 'svfloat64_t' to argument 4 of 'svcmla_x', but previous arguments had type 'svfloat32_t'} } */
+  svcmla_x (pg, 1, f32, f32, 90); /* { dg-error {passing 'int' to argument 2 of 'svcmla_x', which expects an SVE type rather than a scalar} } */
+  svcmla_x (pg, f32, 1, f32, 90); /* { dg-error {passing 'int' to argument 3 of 'svcmla_x', which expects an SVE type rather than a scalar} } */
+  svcmla_x (pg, f32, f32, 1, 90); /* { dg-error {passing 'int' to argument 4 of 'svcmla_x', which expects an SVE type rather than a scalar} } */
+  svcmla_x (pg, f32, f64, f32, 90); /* { dg-error {passing 'svfloat64_t' to argument 3 of 'svcmla_x', but argument 2 had type 'svfloat32_t'} } */
+  svcmla_x (pg, f32, f32, f64, 90); /* { dg-error {passing 'svfloat64_t' to argument 4 of 'svcmla_x', but argument 2 had type 'svfloat32_t'} } */
   svcmla_x (pg, f32, f32, f32, s32); /* { dg-error {argument 5 of 'svcmla_x' must be an integer constant expression} } */
   svcmla_x (pg, f32, f32, f32, i); /* { dg-error {argument 5 of 'svcmla_x' must be an integer constant expression} } */
   svcmla_x (pg, f32, f32, f32, -90); /* { dg-error {passing -90 to argument 5 of 'svcmla_x', which expects 0, 90, 180 or 270} } */

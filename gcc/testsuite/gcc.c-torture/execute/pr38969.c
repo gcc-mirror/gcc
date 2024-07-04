@@ -1,3 +1,5 @@
+void abort (void);
+
 __complex__ float
 __attribute__ ((noinline)) foo (__complex__ float x)
 {

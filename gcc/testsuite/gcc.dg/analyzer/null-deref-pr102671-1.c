@@ -1,5 +1,5 @@
 /* { dg-require-effective-target ptr_eq_long } */
-/* { dg-additional-options "-O2 -Wno-shift-count-overflow" } */
+/* { dg-additional-options "-O2 -Wno-shift-count-overflow -Wno-analyzer-symbol-too-complex" } */
 
 struct lisp;
 union vectorlike_header { long size; };

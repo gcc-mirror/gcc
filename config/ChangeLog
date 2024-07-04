@@ -1,3 +1,34 @@
+2024-04-16  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* acx.m4 (ACX_PROG_CARGO): Use 'AC_CHECK_PROGS'.
+
+2024-04-15  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* acx.m4: Add a macro to check for rust
+	components.
+
+2024-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* lcmessage.m4: Fix duplicated words; can can -> can,
+	package package -> package.
+
+2024-01-11  Mike Frysinger  <vapier@gentoo.org>
+
+	* acinclude.m4 (CYG_AC_PATH_LIBERTY): Delete.
+
+2023-11-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* hwcaps.m4 (GCC_CHECK_ASSEMBLER_HWCAP): Require
+	AC_CANONICAL_TARGET.
+
+2023-11-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	* intlmacosx.m4: Import from gettext-0.22 (serial 8).
+	* gettext.m4: Sync with gettext-0.22 (serial 77).
+	* gettext-sister.m4 (ZW_GNU_GETTEXT_SISTER_DIR): Load gettext's
+	uninstalled-config.sh, or call AM_GNU_GETTEXT if missing.
+	* iconv.m4: Sync with gettext-0.22 (serial 26).
+
 2023-09-15  Yang Yujie  <yangyujie@loongson.cn>
 
 	* mt-loongarch-mlib: New file.  Pass -fmultiflags when building

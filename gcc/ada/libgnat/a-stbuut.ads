@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2020-2023, Free Software Foundation, Inc.       --
+--            Copyright (C) 2020-2024, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,7 +33,7 @@ with Ada.Strings.UTF_Encoding.Wide_Wide_Strings;
 
 package Ada.Strings.Text_Buffers.Utils with Pure is
 
-   --  Ada.Strings.Text_Buffers is a predefined unit (see Ada RM A.4.12).
+   --  Ada.Strings.Text_Buffers is a predefined unit (see RM A.4.12).
    --  This is a GNAT-defined child unit of that parent.
 
    subtype Character_7 is

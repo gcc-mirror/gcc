@@ -2,7 +2,7 @@
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-options "-O3 -mdejagnu-cpu=power7" } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 #define NO_WARN_X86_INTRINSICS 1
 #include <x86intrin.h>

@@ -1,5 +1,5 @@
 /* Compilation switch flag definitions for GCC.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -52,6 +52,10 @@ extern bool btf_with_core_debuginfo_p ();
 /* Return true iff CTF debug info is enabled.  */
 
 extern bool ctf_debuginfo_p ();
+
+/* Return true iff CodeView debug info is enabled.  */
+
+extern bool codeview_debuginfo_p ();
 
 /* Return true iff DWARF2 debug info is enabled.  */
 

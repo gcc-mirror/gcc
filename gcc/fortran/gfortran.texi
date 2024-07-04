@@ -1,7 +1,7 @@
 \input texinfo  @c -*-texinfo-*-
 @c %**start of header
 @setfilename gfortran.info
-@set copyrights-gfortran 1999-2023
+@set copyrights-gfortran 1999-2024
 
 @include gcc-common.texi
 
@@ -862,8 +862,8 @@ data types are:
 The @code{KIND} value matches the storage size in bytes, except for
 @code{COMPLEX} where the storage size is twice as much (or both real and
 imaginary part are a real value of the given size).  It is recommended to use
-the @ref{SELECTED_CHAR_KIND}, @ref{SELECTED_INT_KIND} and
-@ref{SELECTED_REAL_KIND} intrinsics or the @code{INT8}, @code{INT16},
+the @ref{SELECTED_CHAR_KIND}, @ref{SELECTED_INT_KIND}, @ref{SELECTED_LOGICAL_KIND}
+and @ref{SELECTED_REAL_KIND} intrinsics or the @code{INT8}, @code{INT16},
 @code{INT32}, @code{INT64}, @code{REAL32}, @code{REAL64}, and @code{REAL128}
 parameters of the @code{ISO_FORTRAN_ENV} module instead of the concrete values.
 The available kind parameters can be found in the constant arrays
@@ -1239,7 +1239,6 @@ additional compatibility extensions along with those enabled by
 * UNION and MAP::
 * Type variants for integer intrinsics::
 * AUTOMATIC and STATIC attributes::
-* Extended math intrinsics::
 * Form feed as whitespace::
 * TYPE as an alias for PRINT::
 * %LOC as an rvalue::
@@ -1273,8 +1272,9 @@ equivalent to the standard-conforming declaration
 @noindent
 where @code{k} is the kind parameter suitable for the intended precision.  As
 kind parameters are implementation-dependent, use the @code{KIND},
-@code{SELECTED_INT_KIND} and @code{SELECTED_REAL_KIND} intrinsics to retrieve
-the correct value, for instance @code{REAL*8 x} can be replaced by:
+@code{SELECTED_INT_KIND}, @code{SELECTED_LOGICAL_KIND} and
+@code{SELECTED_REAL_KIND} intrinsics to retrieve the correct value, for
+instance @code{REAL*8 x} can be replaced by:
 @smallexample
 INTEGER, PARAMETER :: dbl = KIND(1.0d0)
 REAL(KIND=dbl) :: x
@@ -2317,42 +2317,6 @@ subroutine f
 endsubroutine
 @end example
 
-@node Extended math intrinsics
-@subsection Extended math intrinsics
-@cindex intrinsics, math
-@cindex intrinsics, trigonometric functions
-
-GNU Fortran supports an extended list of mathematical intrinsics with the
-compile flag @option{-fdec-math} for compatability with legacy code.
-These intrinsics are described fully in @ref{Intrinsic Procedures} where it is
-noted that they are extensions and should be avoided whenever possible.
-
-Specifically, @option{-fdec-math} enables the @ref{COTAN} intrinsic, and
-trigonometric intrinsics which accept or produce values in degrees instead of
-radians.  Here is a summary of the new intrinsics:
-
-@multitable @columnfractions .5 .5
-@headitem Radians @tab Degrees
-@item @code{@ref{ACOS}}   @tab @code{@ref{ACOSD}}*
-@item @code{@ref{ASIN}}   @tab @code{@ref{ASIND}}*
-@item @code{@ref{ATAN}}   @tab @code{@ref{ATAND}}*
-@item @code{@ref{ATAN2}}  @tab @code{@ref{ATAN2D}}*
-@item @code{@ref{COS}}    @tab @code{@ref{COSD}}*
-@item @code{@ref{COTAN}}* @tab @code{@ref{COTAND}}*
-@item @code{@ref{SIN}}    @tab @code{@ref{SIND}}*
-@item @code{@ref{TAN}}    @tab @code{@ref{TAND}}*
-@end multitable
-
-* Enabled with @option{-fdec-math}.
-
-For advanced users, it may be important to know the implementation of these
-functions. They are simply wrappers around the standard radian functions, which
-have more accurate builtin versions. These functions convert their arguments
-(or results) to degrees (or radians) by taking the value modulus 360 (or 2*pi)
-and then multiplying it by a constant radian-to-degree (or degree-to-radian)
-factor, as appropriate. The factor is computed at compile-time as 180/pi (or
-pi/180).
-
 @node Form feed as whitespace
 @subsection Form feed as whitespace
 @cindex form feed whitespace
@@ -3299,6 +3263,9 @@ It must be placed immediately before a @code{DO} loop and applies only to the
 loop that follows.  N is an integer constant specifying the unrolling factor.
 The values of 0 and 1 block any unrolling of the loop.
 
+For @code{DO CONCURRENT} constructs the unrolling specification applies
+only to the first loop control variable.
+
 
 @node BUILTIN directive
 @subsection BUILTIN directive
@@ -3337,6 +3304,9 @@ whether a particular loop is vectorizable due to potential
 dependencies between iterations.  The purpose of the directive is to
 tell the compiler that vectorization is safe.
 
+For @code{DO CONCURRENT} constructs this annotation is implicit to all
+loop control variables.
+
 This directive is intended for annotation of existing code.  For new
 code it is recommended to consider OpenMP SIMD directives as potential
 alternative.
@@ -3353,6 +3323,9 @@ This directive tells the compiler to vectorize the following loop.  It
 must be placed immediately before a @code{DO} loop and applies only to
 the loop that follows.
 
+For @code{DO CONCURRENT} constructs this annotation applies to all loops
+specified in the concurrent header.
+
 
 @node NOVECTOR directive
 @subsection NOVECTOR directive
@@ -3364,6 +3337,9 @@ The syntax of the directive is
 This directive tells the compiler to not vectorize the following loop.
 It must be placed immediately before a @code{DO} loop and applies only
 to the loop that follows.
+
+For @code{DO CONCURRENT} constructs this annotation applies to all loops
+specified in the concurrent header.
 
 
 @node Non-Fortran Main Program
@@ -3476,12 +3452,13 @@ standard.  Possible values are (bitwise or-ed) @code{GFC_STD_F77} (1),
 @code{GFC_STD_F95_OBS} (2), @code{GFC_STD_F95_DEL} (4),
 @code{GFC_STD_F95} (8), @code{GFC_STD_F2003} (16), @code{GFC_STD_GNU}
 (32), @code{GFC_STD_LEGACY} (64), @code{GFC_STD_F2008} (128),
-@code{GFC_STD_F2008_OBS} (256), @code{GFC_STD_F2008_TS} (512),
-@code{GFC_STD_F2018} (1024), @code{GFC_STD_F2018_OBS} (2048), and
-@code{GFC_STD=F2018_DEL} (4096). Default: @code{GFC_STD_F95_OBS |
-GFC_STD_F95_DEL | GFC_STD_F95 | GFC_STD_F2003 | GFC_STD_F2008 |
-GFC_STD_F2008_TS | GFC_STD_F2008_OBS | GFC_STD_F77 | GFC_STD_F2018 |
-GFC_STD_F2018_OBS | GFC_STD_F2018_DEL | GFC_STD_GNU | GFC_STD_LEGACY}.
+@code{GFC_STD_F2008_OBS} (256), @code{GFC_STD_F2018} (512),
+@code{GFC_STD_F2018_OBS} (1024), @code{GFC_STD_F2018_DEL} (2048),
+@code{GFC_STD_F2023} (4096), and @code{GFC_STD_F2023_DEL} (8192).
+Default: @code{GFC_STD_F95_OBS | GFC_STD_F95_DEL | GFC_STD_F95 |
+GFC_STD_F2003 | GFC_STD_F2008 | GFC_STD_F2008_OBS
+| GFC_STD_F77 | GFC_STD_F2018 | GFC_STD_F2018_OBS | GFC_STD_F2018_DEL
+| GFC_STD_F2023 | GFC_STD_F2023_DEL | GFC_STD_GNU | GFC_STD_LEGACY}.
 @item @var{option}[1] @tab Standard-warning flag; prints a warning to
 standard error.  Default: @code{GFC_STD_F95_DEL | GFC_STD_LEGACY}.
 @item @var{option}[2] @tab If non zero, enable pedantic checking.

@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 typedef int *loop_p;
 typedef struct VEC_loop_p_base
 {

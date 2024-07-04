@@ -1,6 +1,6 @@
 (* SYSTEM.mod implement the ISO SYSTEM specification.
 
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -26,7 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 IMPLEMENTATION MODULE SYSTEM ;
 
-FROM libc IMPORT memcpy, memcpy, memset ;
+FROM libc IMPORT memcpy, memset ;
 
 CONST
    BitsPerBitset = MAX(BITSET)+1 ;

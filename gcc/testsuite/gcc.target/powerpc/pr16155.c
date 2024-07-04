@@ -1,6 +1,6 @@
 /* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec -ansi" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 /* PR 16155
  * Compilation of a simple altivec test program fails if the -ansi flag is

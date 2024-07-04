@@ -1,5 +1,5 @@
 /* Definitions of target machine of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2023 Free Software Foundation, Inc.
+   Copyright (C) 2012-2024 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -1060,10 +1060,6 @@ enum nds32_builtins
 #define SHORT_TYPE_SIZE         16
 #define LONG_TYPE_SIZE          32
 #define LONG_LONG_TYPE_SIZE     64
-
-#define FLOAT_TYPE_SIZE         32
-#define DOUBLE_TYPE_SIZE        64
-#define LONG_DOUBLE_TYPE_SIZE   64
 
 #define DEFAULT_SIGNED_CHAR 1
 

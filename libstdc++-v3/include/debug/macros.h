@@ -1,6 +1,6 @@
 // Debugging support implementation -*- C++ -*-
 
-// Copyright (C) 2003-2023 Free Software Foundation, Inc.
+// Copyright (C) 2003-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,15 +38,12 @@
  * the user error and where the error is reported.
  *
  */
-#define _GLIBCXX_DEBUG_VERIFY_COND_AT(_Cond,_ErrMsg,_File,_Line,_Func)	\
-  if (__builtin_expect(!bool(_Cond), false))				\
-    __gnu_debug::_Error_formatter::_S_at(_File, _Line, _Func)		\
-      ._ErrMsg._M_error()
 
 #define _GLIBCXX_DEBUG_VERIFY_AT_F(_Cond,_ErrMsg,_File,_Line,_Func)	\
   do {									\
-    __glibcxx_constexpr_assert(_Cond);					\
-    _GLIBCXX_DEBUG_VERIFY_COND_AT(_Cond,_ErrMsg,_File,_Line,_Func);	\
+    if (__builtin_expect(!bool(_Cond), false))				\
+      __gnu_debug::_Error_formatter::_S_at(_File, _Line, _Func)		\
+	._ErrMsg._M_error();						\
   } while (false)
 
 #define _GLIBCXX_DEBUG_VERIFY_AT(_Cond,_ErrMsg,_File,_Line)		\

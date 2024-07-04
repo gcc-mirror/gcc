@@ -1408,6 +1408,7 @@ Import::register_builtin_types(Gogo* gogo)
   this->register_builtin_type(gogo, "error", BUILTIN_ERROR);
   this->register_builtin_type(gogo, "byte", BUILTIN_BYTE);
   this->register_builtin_type(gogo, "rune", BUILTIN_RUNE);
+  this->register_builtin_type(gogo, "any", BUILTIN_ANY);
 }
 
 // Register a single builtin type.

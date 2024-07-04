@@ -1,4 +1,3 @@
-! { dg-do run }
 ! { dg-require-effective-target vect_double }
 ! { dg-require-effective-target vect_intdouble_cvt }
 ! { dg-additional-options "-fno-inline -ffast-math" }
@@ -17,6 +16,7 @@
 
       program test
       real*8 x(1024),y(1024),a
+      a = 0.0
       do i=1,1024
         x(i) = i
         y(i) = i+1

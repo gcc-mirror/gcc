@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 typedef struct {
      double epsilon;
 } material_type;
@@ -10,7 +13,8 @@ material_type foo(double x)
      return m;
 }
 
-main()
+int
+main(void)
 {
   int i;
   material_type x;

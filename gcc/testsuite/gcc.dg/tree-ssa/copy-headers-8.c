@@ -1,5 +1,8 @@
+/* For targets where LOGICAL_OP_NON_SHORT_CIRCUIT evaluates to false, two
+   conditional jumps are emitted instead of a combined conditional which this
+   test is all about.  Thus, set it to true.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-ch2-details" } */
+/* { dg-options "-O2 -fdump-tree-ch2-details --param logical-op-non-short-circuit=1" } */
 
 int is_sorted(int *a, int n, int m, int k)
 {

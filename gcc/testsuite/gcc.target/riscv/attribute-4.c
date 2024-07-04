@@ -3,12 +3,12 @@
 int foo()
 {
 
-#if !defined(__riscv_unaligned_avoid)
-#error "__riscv_unaligned_avoid is not set"
+#if !defined(__riscv_misaligned_avoid)
+#error "__riscv_misaligned_avoid is not set"
 #endif
 
-#if defined(__riscv_unaligned_fast) || defined(__riscv_unaligned_slow)
-#error "__riscv_unaligned_fast or __riscv_unaligned_slow is unexpectedly set"
+#if defined(__riscv_misaligned_fast) || defined(__riscv_misaligned_slow)
+#error "__riscv_misaligned_fast or __riscv_misaligned_slow is unexpectedly set"
 #endif
 
   return 0;

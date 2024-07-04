@@ -1,6 +1,7 @@
 /* { dg-do run { target { aarch64*-*-* alpha*-*-* arm*-*-* hppa*-*-* powerpc*-*-* s390*-*-* } } } */
 /* { dg-options "-O2 -fdump-tree-esra --param sra-max-scalarization-size-Ospeed=32" } */
 /* { dg-additional-options "-mcpu=ev4" { target alpha*-*-* } } */
+/* { dg-additional-options "-mno-vsx" { target { powerpc*-*-* && ilp32 } } } */
 
 extern void abort (void);
 struct foo { long x; };
@@ -22,8 +23,8 @@ main (int argc, char **argv)
   abort ();
 }
 
-/* { dg-final { scan-tree-dump-times "Removing load: a = \\\*.?L.?C.?.?.?0;" 1 "esra" } } */
-/* { dg-final { scan-tree-dump-times "SR\[.$\]\[0-9_\]+ = \\\*.?L.?C.?.?.?0\\.b\\\[0\\\]\\.f\\\[0\\\]\\.x" 1 "esra" } } */
-/* { dg-final { scan-tree-dump-times "SR\[.$\]\[0-9_\]+ = \\\*.?L.?C.?.?.?0\\.b\\\[0\\\]\\.f\\\[1\\\]\\.x" 1 "esra" } } */
-/* { dg-final { scan-tree-dump-times "SR\[.$\]\[0-9_\]+ = \\\*.?L.?C.?.?.?0\\.b\\\[1\\\]\\.f\\\[0\\\]\\.x" 1 "esra" } } */
-/* { dg-final { scan-tree-dump-times "SR\[.$\]\[0-9_\]+ = \\\*.?L.?C.?.?.?0\\.b\\\[1\\\]\\.f\\\[1\\\]\\.x" 1 "esra" } } */
+/* { dg-final { scan-tree-dump-times "Removing load: a = \\\*.?L.?C.?.?.?0;" 1 "esra" { xfail hppa*64*-*-* } } } */
+/* { dg-final { scan-tree-dump-times "SR\[.$\]\[0-9_\]+ = \\\*.?L.?C.?.?.?0\\.b\\\[0\\\]\\.f\\\[0\\\]\\.x" 1 "esra" { xfail hppa*64*-*-* } } } */
+/* { dg-final { scan-tree-dump-times "SR\[.$\]\[0-9_\]+ = \\\*.?L.?C.?.?.?0\\.b\\\[0\\\]\\.f\\\[1\\\]\\.x" 1 "esra" { xfail hppa*64*-*-* } } } */
+/* { dg-final { scan-tree-dump-times "SR\[.$\]\[0-9_\]+ = \\\*.?L.?C.?.?.?0\\.b\\\[1\\\]\\.f\\\[0\\\]\\.x" 1 "esra" { xfail hppa*64*-*-* } } } */
+/* { dg-final { scan-tree-dump-times "SR\[.$\]\[0-9_\]+ = \\\*.?L.?C.?.?.?0\\.b\\\[1\\\]\\.f\\\[1\\\]\\.x" 1 "esra" { xfail hppa*64*-*-* } } } */

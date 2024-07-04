@@ -1,4 +1,4 @@
-# Copyright (C) 2005-2023 Free Software Foundation, Inc.
+# Copyright (C) 2005-2024 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -57,7 +57,7 @@ proc check_for_all_options {language gcc_options compiler_pattern as_pattern ld_
 	remote_file build delete $dumpfile
     }   
 
-    if {![regexp -- "/${compiler}(\\.exe)? -quiet.*$compiler_pattern" $gcc_output]} {
+    if {![regexp -- "/${compiler}(\\.exe)? \[^\r\n\]*-quiet.*$compiler_pattern" $gcc_output]} {
 	fail "$test (compiler options)"
 	return
     }

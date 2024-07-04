@@ -1,6 +1,9 @@
 /* { dg-require-stack-size "8192+4" } */
 
-main ()
+int write (int, void *, __SIZE_TYPE__);
+
+int
+main (void)
 {
   char audio[8192];
   int i;

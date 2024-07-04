@@ -51,8 +51,9 @@ enum Builtin_code
   BUILTIN_ERROR = -19,
   BUILTIN_BYTE = -20,
   BUILTIN_RUNE = -21,
+  BUILTIN_ANY = -22,
 
-  SMALLEST_BUILTIN_CODE = -21
+  SMALLEST_BUILTIN_CODE = -22
 };
 
 // Export data version number. New export data is written with the

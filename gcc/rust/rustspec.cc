@@ -1,5 +1,5 @@
 /* rustspec.c -- Specific flags and argument handling of the gcc Rust front end.
-   Copyright (C) 2009-2023 Free Software Foundation, Inc.
+   Copyright (C) 2009-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -159,8 +159,8 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
     }
 
   /* If we didn't see a -o option, add one.  This is because we need
-     the driver to pass all .rs files to rust1.  Without a -o option the
-     driver will invoke rust1 separately for each input file.  FIXME:
+     the driver to pass all .rs files to crab1.  Without a -o option the
+     driver will invoke crab1 separately for each input file.  FIXME:
      This should probably use some other interface to force the driver
      to set combine_inputs.  */
   if (!saw_opt_o)

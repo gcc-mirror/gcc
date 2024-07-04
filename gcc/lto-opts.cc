@@ -1,6 +1,6 @@
 /* LTO IL options.
 
-   Copyright (C) 2009-2023 Free Software Foundation, Inc.
+   Copyright (C) 2009-2024 Free Software Foundation, Inc.
    Contributed by Simon Baldwin <simonb@google.com>
 
 This file is part of GCC.
@@ -152,6 +152,7 @@ lto_write_options (void)
 	case OPT_fprofile_prefix_map_:
 	case OPT_fcanon_prefix_map:
 	case OPT_fwhole_program:
+	case OPT_fltrans_output_list_:
 	  continue;
 
 	default:

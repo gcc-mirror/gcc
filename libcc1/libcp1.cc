@@ -1,5 +1,5 @@
 /* The library used by gdb.
-   Copyright (C) 2014-2023 Free Software Foundation, Inc.
+   Copyright (C) 2014-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -55,7 +55,7 @@ struct libcp1 : public cc1_plugin::base_gdb_plugin<gcc_cp_context>
 libcp1::libcp1 (const gcc_cp_fe_vtable *cv)
   : cc1_plugin::base_gdb_plugin<gcc_cp_context> ("libcp1plugin",
 						 CP_COMPILER_NAME,
-						 GCC_CP_FE_VERSION_0)
+						 cv->cp_version)
 {
   cp_ops = cv;
 }

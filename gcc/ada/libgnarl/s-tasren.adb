@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1992-2023, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2024, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1317,18 +1317,6 @@ package body System.Tasking.Rendezvous is
 
             Self_Id.Common.State := Acceptor_Delay_Sleep;
 
-            --  Try to remove calls to Sleep in the loop below by letting the
-            --  caller a chance of getting ready immediately, using Unlock
-            --  Yield. See similar action in Wait_For_Completion/Wait_For_Call.
-
-            Unlock (Self_Id);
-
-            if Self_Id.Open_Accepts /= null then
-               Yield;
-            end if;
-
-            Write_Lock (Self_Id);
-
             --  Check if this task has been aborted while the lock was released
 
             if Self_Id.Pending_ATC_Level < Self_Id.ATC_Nesting_Level then
@@ -1509,18 +1497,6 @@ package body System.Tasking.Rendezvous is
    procedure Wait_For_Call (Self_Id : Task_Id) is
    begin
       Self_Id.Common.State := Acceptor_Sleep;
-
-      --  Try to remove calls to Sleep in the loop below by letting the caller
-      --  a chance of getting ready immediately, using Unlock & Yield.
-      --  See similar action in Wait_For_Completion & Timed_Selective_Wait.
-
-      Unlock (Self_Id);
-
-      if Self_Id.Open_Accepts /= null then
-         Yield;
-      end if;
-
-      Write_Lock (Self_Id);
 
       --  Check if this task has been aborted while the lock was released
 

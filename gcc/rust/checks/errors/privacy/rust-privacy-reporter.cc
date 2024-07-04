@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -17,9 +17,11 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-privacy-reporter.h"
+#include "rust-session-manager.h"
 #include "rust-hir-expr.h"
 #include "rust-hir-stmt.h"
 #include "rust-hir-item.h"
+#include "rust-attribute-values.h"
 
 namespace Rust {
 namespace Privacy {
@@ -28,14 +30,63 @@ PrivacyReporter::PrivacyReporter (
   Analysis::Mappings &mappings, Resolver::Resolver &resolver,
   const Rust::Resolver::TypeCheckContext &ty_ctx)
   : mappings (mappings), resolver (resolver), ty_ctx (ty_ctx),
-    current_module (Optional<NodeId>::none ())
+    current_module (tl::nullopt)
 {}
+
+// Find a proc_macro, proc_macro_derive or proc_macro_attribute
+// attribute in a vector of attribute
+static tl::optional<std::string>
+find_proc_macro_attribute (const AST::AttrVec &outer_attrs)
+{
+  for (auto &a : outer_attrs)
+    {
+      auto &segments = a.get_path ().get_segments ();
+      if (segments.size () != 1)
+	continue;
+      auto name = segments.at (0).get_segment_name ();
+      if (name == Values::Attributes::PROC_MACRO
+	  || name == Values::Attributes::PROC_MACRO_ATTRIBUTE
+	  || name == Values::Attributes::PROC_MACRO_DERIVE)
+	return name;
+    }
+
+  return tl::nullopt;
+}
+
+// Common check on crate items when dealing with 'proc-macro' crate type.
+static void
+proc_macro_privacy_check (std::unique_ptr<HIR::Item> &item)
+{
+  if (item->get_hir_kind () == HIR::Node::BaseKind::VIS_ITEM)
+    {
+      auto attribute = find_proc_macro_attribute (item->get_outer_attrs ());
+
+      bool pub_item = static_cast<HIR::VisItem *> (item.get ())
+			->get_visibility ()
+			.is_public ();
+
+      if (pub_item && !attribute.has_value ()) // Public non proc-macro
+	rust_error_at (
+	  item->get_locus (),
+	  "%<proc-macro%> crate types currently cannot export any "
+	  "items other than functions tagged with %<#[proc_macro]%>, "
+	  "%<#[proc_macro_derive]%> or %<#[proc_macro_attribute]%>");
+      else if (!pub_item && attribute.has_value ()) // Private proc-macro
+	rust_error_at (item->get_locus (),
+		       "functions tagged with %<#[%s]%> must be %<pub%>",
+		       attribute.value ().c_str ());
+    }
+}
 
 void
 PrivacyReporter::go (HIR::Crate &crate)
 {
-  for (auto &item : crate.items)
-    item->accept_vis (*this);
+  for (auto &item : crate.get_items ())
+    {
+      if (Session::get_instance ().options.is_proc_macro ())
+	proc_macro_privacy_check (item);
+      item->accept_vis (*this);
+    }
 }
 
 static bool
@@ -63,7 +114,7 @@ is_child_module (Analysis::Mappings &mappings, NodeId parent,
 // FIXME: This function needs a lot of refactoring
 void
 PrivacyReporter::check_for_privacy_violation (const NodeId &use_id,
-					      const Location &locus)
+					      const location_t locus)
 {
   NodeId ref_node_id = UNKNOWN_NODEID;
 
@@ -92,7 +143,7 @@ PrivacyReporter::check_for_privacy_violation (const NodeId &use_id,
       case ModuleVisibility::Restricted: {
 	// If we are in the crate, everything is restricted correctly, but we
 	// can't get a module for it
-	if (current_module.is_none ())
+	if (!current_module.has_value ())
 	  return;
 
 	auto module = mappings.lookup_defid (vis.get_module_id ());
@@ -102,12 +153,12 @@ PrivacyReporter::check_for_privacy_violation (const NodeId &use_id,
 
 	// We are in the module referenced by the pub(restricted) visibility.
 	// This is valid
-	if (mod_node_id == current_module.get ())
+	if (mod_node_id == current_module.value ())
 	  break;
 
 	// FIXME: This needs a LOT of TLC: hinting about the definition, a
 	// string to say if it's a module, function, type, etc...
-	if (!is_child_module (mappings, mod_node_id, current_module.get ()))
+	if (!is_child_module (mappings, mod_node_id, current_module.value ()))
 	  valid = false;
       }
       break;
@@ -117,13 +168,18 @@ PrivacyReporter::check_for_privacy_violation (const NodeId &use_id,
     }
 
   if (!valid)
-    rust_error_at (locus, "definition is private in this context");
+    {
+      rich_location richloc (line_table, locus);
+      richloc.add_fixit_replace ("item is private");
+      rust_error_at (richloc, ErrorCode::E0603,
+		     "definition is private in this context");
+    }
 }
 
 void
 PrivacyReporter::check_base_type_privacy (Analysis::NodeMapping &node_mappings,
 					  const TyTy::BaseType *ty,
-					  const Location &locus)
+					  const location_t locus)
 {
   // Avoids repeating commong argument such as `use_id` or `locus` since we're
   // doing a lot of recursive calls here
@@ -201,7 +257,7 @@ PrivacyReporter::check_base_type_privacy (Analysis::NodeMapping &node_mappings,
     case TyTy::INFER:
       return;
     case TyTy::ERROR:
-      rust_unreachable ();
+      return;
     }
 }
 
@@ -319,8 +375,8 @@ PrivacyReporter::visit (HIR::AssignmentExpr &expr)
 void
 PrivacyReporter::visit (HIR::CompoundAssignmentExpr &expr)
 {
-  expr.get_left_expr ()->accept_vis (*this);
-  expr.get_right_expr ()->accept_vis (*this);
+  expr.get_lhs ()->accept_vis (*this);
+  expr.get_rhs ()->accept_vis (*this);
 }
 
 void
@@ -493,9 +549,8 @@ PrivacyReporter::visit (HIR::RangeToInclExpr &)
 void
 PrivacyReporter::visit (HIR::ReturnExpr &expr)
 {
-  auto return_expr = expr.get_expr ();
-  if (return_expr)
-    return_expr->accept_vis (*this);
+  if (expr.get_expr ())
+    expr.get_expr ()->accept_vis (*this);
 }
 
 void
@@ -525,13 +580,6 @@ PrivacyReporter::visit (HIR::WhileLetLoopExpr &expr)
 }
 
 void
-PrivacyReporter::visit (HIR::ForLoopExpr &expr)
-{
-  expr.get_iterator_expr ()->accept_vis (*this);
-  expr.get_loop_block ()->accept_vis (*this);
-}
-
-void
 PrivacyReporter::visit (HIR::IfExpr &expr)
 {
   expr.get_if_condition ()->accept_vis (*this);
@@ -547,23 +595,6 @@ PrivacyReporter::visit (HIR::IfExprConseqElse &expr)
 }
 
 void
-PrivacyReporter::visit (HIR::IfExprConseqIf &expr)
-{
-  expr.get_if_condition ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
-  expr.get_conseq_if_expr ()->accept_vis (*this);
-}
-
-void
-PrivacyReporter::visit (HIR::IfExprConseqIfLet &expr)
-{
-  expr.get_if_condition ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
-
-  // TODO: We need to visit the if_let_expr as well
-}
-
-void
 PrivacyReporter::visit (HIR::IfLetExpr &)
 {
   // TODO: We need to visit the if_let_expr
@@ -572,22 +603,6 @@ PrivacyReporter::visit (HIR::IfLetExpr &)
 
 void
 PrivacyReporter::visit (HIR::IfLetExprConseqElse &)
-{
-  // TODO: We need to visit the if_let_expr
-  // TODO: We need to visit the if_block as well
-  // TODO: We need to visit the else_block as well
-}
-
-void
-PrivacyReporter::visit (HIR::IfLetExprConseqIf &)
-{
-  // TODO: We need to visit the if_let_expr
-  // TODO: We need to visit the if_block as well
-  // TODO: We need to visit the else_block as well
-}
-
-void
-PrivacyReporter::visit (HIR::IfLetExprConseqIfLet &)
 {
   // TODO: We need to visit the if_let_expr
   // TODO: We need to visit the if_block as well
@@ -618,8 +633,7 @@ PrivacyReporter::visit (HIR::Module &module)
   // FIXME: We also need to think about module privacy
 
   auto old_module = current_module;
-  current_module
-    = Optional<NodeId>::some (module.get_mappings ().get_nodeid ());
+  current_module = module.get_mappings ().get_nodeid ();
 
   for (auto &item : module.get_items ())
     item->accept_vis (*this);
@@ -641,7 +655,7 @@ void
 PrivacyReporter::visit (HIR::Function &function)
 {
   for (auto &param : function.get_function_params ())
-    check_type_privacy (param.get_type ());
+    check_type_privacy (param.get_type ().get ());
 
   function.get_definition ()->accept_vis (*this);
 }
@@ -740,23 +754,15 @@ PrivacyReporter::visit (HIR::EmptyStmt &)
 void
 PrivacyReporter::visit (HIR::LetStmt &stmt)
 {
-  auto type = stmt.get_type ();
-  if (type)
-    check_type_privacy (type);
+  if (stmt.get_type ())
+    check_type_privacy (stmt.get_type ().get ());
 
-  auto init_expr = stmt.get_init_expr ();
-  if (init_expr)
-    init_expr->accept_vis (*this);
+  if (stmt.get_init_expr ())
+    stmt.get_init_expr ()->accept_vis (*this);
 }
 
 void
-PrivacyReporter::visit (HIR::ExprStmtWithoutBlock &stmt)
-{
-  stmt.get_expr ()->accept_vis (*this);
-}
-
-void
-PrivacyReporter::visit (HIR::ExprStmtWithBlock &stmt)
+PrivacyReporter::visit (HIR::ExprStmt &stmt)
 {
   stmt.get_expr ()->accept_vis (*this);
 }

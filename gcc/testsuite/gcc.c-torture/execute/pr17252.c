@@ -1,9 +1,12 @@
 /* PR 17252.  When a char * pointer P takes its own address, storing
    into *P changes P itself.  */
 
+void abort (void);
+
 char *a;
 
-main ()
+int
+main (void)
 {
   /* Make 'a' point to itself.  */
   a = (char *)&a;

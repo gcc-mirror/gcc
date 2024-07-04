@@ -2,7 +2,7 @@
    directives to separate functions, converts others into explicit calls to the
    runtime library (libgomp) and so forth
 
-Copyright (C) 2005-2023 Free Software Foundation, Inc.
+Copyright (C) 2005-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3416,8 +3416,9 @@ expand_omp_ordered_sink (gimple_stmt_iterator *gsi, struct omp_for_data *fd,
 	      forward = tree_int_cst_sgn (step) != -1;
 	    }
 	  if (forward ^ OMP_CLAUSE_DOACROSS_SINK_NEGATIVE (deps))
-	    warning_at (loc, 0, "%qs clause with %<sink%> modifier "
-				"waiting for lexically later iteration",
+	    warning_at (loc, OPT_Wopenmp,
+			"%qs clause with %<sink%> modifier "
+			"waiting for lexically later iteration",
 			OMP_CLAUSE_DOACROSS_DEPEND (c)
 			? "depend" : "doacross");
 	  break;
@@ -3555,9 +3556,9 @@ expand_omp_ordered_sink (gimple_stmt_iterator *gsi, struct omp_for_data *fd,
 			       build_int_cst (itype, 0));
 	  if (integer_zerop (t) && !warned_step)
 	    {
-	      warning_at (loc, 0, "%qs clause with %<sink%> modifier "
-				  "refers to iteration never in the iteration "
-				  "space",
+	      warning_at (loc, OPT_Wopenmp,
+			  "%qs clause with %<sink%> modifier refers to "
+			  "iteration never in the iteration space",
 			  OMP_CLAUSE_DOACROSS_DEPEND (c)
 			  ? "depend" : "doacross");
 	      warned_step = true;
@@ -4074,7 +4075,7 @@ expand_omp_for_generic (struct omp_region *region,
 
   /* See if we need to bias by LLONG_MIN.  */
   if (fd->iter_type == long_long_unsigned_type_node
-      && TREE_CODE (type) == INTEGER_TYPE
+      && (TREE_CODE (type) == INTEGER_TYPE || TREE_CODE (type) == BITINT_TYPE)
       && !TYPE_UNSIGNED (type)
       && fd->ordered == 0)
     {
@@ -7190,7 +7191,7 @@ expand_omp_taskloop_for_outer (struct omp_region *region,
 
   /* See if we need to bias by LLONG_MIN.  */
   if (fd->iter_type == long_long_unsigned_type_node
-      && TREE_CODE (type) == INTEGER_TYPE
+      && (TREE_CODE (type) == INTEGER_TYPE || TREE_CODE (type) == BITINT_TYPE)
       && !TYPE_UNSIGNED (type))
     {
       tree n1, n2;
@@ -7351,7 +7352,7 @@ expand_omp_taskloop_for_inner (struct omp_region *region,
 
   /* See if we need to bias by LLONG_MIN.  */
   if (fd->iter_type == long_long_unsigned_type_node
-      && TREE_CODE (type) == INTEGER_TYPE
+      && (TREE_CODE (type) == INTEGER_TYPE || TREE_CODE (type) == BITINT_TYPE)
       && !TYPE_UNSIGNED (type))
     {
       tree n1, n2;
@@ -10330,6 +10331,57 @@ expand_omp_target (struct omp_region *region)
 	  adj_gsi = gsi_for_stmt (stmt);
 	  device = tmp_var;
 	}
+    }
+
+  if ((c = omp_find_clause (clauses, OMP_CLAUSE_SELF)) != NULL_TREE)
+    {
+      gcc_assert ((is_gimple_omp_oacc (entry_stmt) && offloaded)
+		  || (gimple_omp_target_kind (entry_stmt)
+		      == GF_OMP_TARGET_KIND_OACC_DATA_KERNELS));
+
+      edge e;
+      if (offloaded)
+	e = split_block_after_labels (new_bb);
+      else
+	{
+	  gsi = gsi_last_nondebug_bb (new_bb);
+	  gsi_prev (&gsi);
+	  e = split_block (new_bb, gsi_stmt (gsi));
+	}
+      basic_block cond_bb = e->src;
+      new_bb = e->dest;
+      remove_edge (e);
+
+      basic_block then_bb = create_empty_bb (cond_bb);
+      basic_block else_bb = create_empty_bb (then_bb);
+      set_immediate_dominator (CDI_DOMINATORS, then_bb, cond_bb);
+      set_immediate_dominator (CDI_DOMINATORS, else_bb, cond_bb);
+
+      tree self_cond = gimple_boolify (OMP_CLAUSE_SELF_EXPR (c));
+      stmt = gimple_build_cond_empty (self_cond);
+      gsi = gsi_last_bb (cond_bb);
+      gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
+
+      tree tmp_var = create_tmp_var (TREE_TYPE (goacc_flags));
+      stmt = gimple_build_assign (tmp_var, BIT_IOR_EXPR, goacc_flags,
+				  build_int_cst (integer_type_node,
+						 GOACC_FLAG_LOCAL_DEVICE));
+      gsi = gsi_start_bb (then_bb);
+      gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
+
+      gsi = gsi_start_bb (else_bb);
+      stmt = gimple_build_assign (tmp_var, goacc_flags);
+      gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
+
+      make_edge (cond_bb, then_bb, EDGE_TRUE_VALUE);
+      make_edge (cond_bb, else_bb, EDGE_FALSE_VALUE);
+      add_bb_to_loop (then_bb, cond_bb->loop_father);
+      add_bb_to_loop (else_bb, cond_bb->loop_father);
+      make_edge (then_bb, new_bb, EDGE_FALLTHRU);
+      make_edge (else_bb, new_bb, EDGE_FALLTHRU);
+
+      goacc_flags = tmp_var;
+      gsi = gsi_last_nondebug_bb (new_bb);
     }
 
   if (need_device_adjustment)

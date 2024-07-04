@@ -7,6 +7,7 @@ typedef struct {
   _Complex long double *vqd;
 } vsorc_t;
 vsorc_t vsorc;
+long double cabsl(_Complex long double);
 
 void foo(int next_job, int ain_num, int iped, long t) {
   long double zpnorm;

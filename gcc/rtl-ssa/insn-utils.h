@@ -1,5 +1,5 @@
 // Instruction-related utilities for RTL SSA                        -*- C++ -*-
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -33,14 +33,6 @@ inline insn_info *
 later_insn (insn_info *insn1, insn_info *insn2)
 {
   return *insn1 < *insn2 ? insn2 : insn1;
-}
-
-// Return a closure of operator== for INSN.  See insn_is_changing for
-// the rationale for defining the function this way.
-inline insn_is_closure
-insn_is (const insn_info *insn)
-{
-  return insn_is_closure (insn);
 }
 
 }

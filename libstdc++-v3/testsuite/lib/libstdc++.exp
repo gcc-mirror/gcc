@@ -1,6 +1,6 @@
 # libstdc++ "tool init file" for DejaGNU
 
-# Copyright (C) 2001-2023 Free Software Foundation, Inc.
+# Copyright (C) 2001-2024 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -615,13 +615,29 @@ proc v3_target_compile { source dest type options } {
 	}
     }
 
-    # Small adjustment for MinGW hosts.
-    if { $dest == "/dev/null" && [ishost "*-*-mingw*"] } {
+    # For Windows and Darwin we might want to create a temporary file.
+    # Note that it needs deleting.
+    set file_to_delete ""
+    # Small adjustment for Windows hosts.
+    if { $dest == "/dev/null"
+	  && [info exists ::env(OS)] && [string match "Windows*" $::env(OS)] } {
 	if { $type == "executable" } {
 	    set dest "x.exe"
+	    set file_to_delete ${dest}
 	} else {
+	    # Windows uses special file named "nul" as a substitute for
+	    # /dev/null
 	    set dest "nul"
 	}
+    }
+
+    # Using /dev/null as the executable name does not work on Darwin when
+    # debug is enabled, since the debug linker does not accept /dev/null as
+    # a valid executable name.
+    if { $dest == "/dev/null" && [istarget *-*-darwin*]
+         && $type == "executable" } {
+	set dest dev-null-[pid].exe
+	set file_to_delete ${dest}
     }
 
     lappend options "compiler=$cxx_final"
@@ -634,7 +650,12 @@ proc v3_target_compile { source dest type options } {
     }
 
     set comp_output [target_compile $source $dest $type $options]
-
+    if { $type == "executable" && $file_to_delete != "" } {
+	file delete $file_to_delete
+	if { [istarget *-*-darwin*] && [file exists $file_to_delete.dSYM] } {
+	    file delete -force $file_to_delete.dSYM
+	}
+    }
     return $comp_output
 }
 
@@ -1113,6 +1134,21 @@ proc v3_check_preprocessor_condition { name cond { inc "" } } {
     return [v3_try_preprocess name $code $flags]
 }
 
+# Return 1 if libstdc++ defines macro for the current target, 0 otherwise.
+proc check_v3_target_cpp_feature_test { cond } {
+    global cxxflags
+    set cxxflags_saved $cxxflags
+    # Use the latest standard, so that all feature test macros are defined.
+    # We need to do it here, because this check happens before v3-dg-runtest
+    # runs its loop to test multiple times with different -std options.
+    # This should be updated when a new -std is added.
+    set cxxflags "$cxxflags -std=gnu++26"
+    set inc "#include <version>"
+    set result [v3_check_preprocessor_condition cpp_feature_test "$cond" $inc]
+    set cxxflags $cxxflags_saved
+    return $result
+}
+
 # Return 1 if Debug Mode is active, 0 otherwise.
 proc check_v3_target_debug_mode { } {
     global cxxflags
@@ -1216,6 +1252,43 @@ proc check_v3_target_thread_fence { } {
 	    return 1
 	} else {
 	    verbose "check_v3_target_thread_fence: compilation failed" 2
+	    return 0
+	}
+    }]
+}
+
+proc check_v3_target_atomic_cmpxchg_word { } {
+    return [check_v3_target_prop_cached et_atomic_cmpxchg_word {
+	global cxxflags
+	global DEFAULT_CXXFLAGS
+
+	# Set up and link a C++11 test program that depends on
+	# atomic-compare-exchange being available for a pointer-sized
+	# integer.  It should be sufficient as gcc can derive all
+	# other operations when a target implements this operation.
+	set src atomic_cmpxchg_word[pid].cc
+
+	set f [open $src "w"]
+	puts $f "
+	__UINTPTR_TYPE__ i, j, k;
+	int main() {
+	__atomic_compare_exchange (&i, &j, &k, 1, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+	return 0;
+	}"
+	close $f
+
+	set cxxflags_saved $cxxflags
+	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror -std=gnu++11"
+
+	set lines [v3_target_compile $src /dev/null executable ""]
+	set cxxflags $cxxflags_saved
+	file delete $src
+
+	if [string match "" $lines] {
+	    # No error message, linking succeeded.
+	    return 1
+	} else {
+	    verbose "check_v3_target_atomic_cmpxchg_word: compilation failed" 2
 	    return 0
 	}
     }]
@@ -1494,14 +1567,6 @@ proc check_effective_target_std_allocator_new { } {
     return [check_v3_target_prop_cached et_std_alloc_new {
 	set cond "_GLIBCXX_USE_ALLOCATOR_NEW"
 	return [v3_check_preprocessor_condition std_alloc_new $cond]
-    }]
-}
-
-# Return 1 if libstdc++ was built as --enable-libstdcxx-backtrace
-proc check_effective_target_stacktrace { } {
-    return [check_v3_target_prop_cached et_stacktrace {
-	set cond "_GLIBCXX_HAVE_STACKTRACE && _GLIBCXX_HOSTED"
-	return [v3_check_preprocessor_condition stacktrace $cond]
     }]
 }
 

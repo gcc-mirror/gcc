@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.cc for SPARC.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -718,16 +718,16 @@ static bool sparc_vectorize_vec_perm_const (machine_mode, machine_mode,
 					    const vec_perm_indices &);
 static bool sparc_can_follow_jump (const rtx_insn *, const rtx_insn *);
 static HARD_REG_SET sparc_zero_call_used_regs (HARD_REG_SET);
+static machine_mode sparc_c_mode_for_floating_type (enum tree_index);
 
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
 /* Table of valid machine attributes.  */
-static const struct attribute_spec sparc_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (sparc_attribute_table,
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        do_diagnostic, handler, exclude } */
-  SUBTARGET_ATTRIBUTE_TABLE,
-  { NULL,        0, 0, false, false, false, false, NULL, NULL }
-};
+  SUBTARGET_ATTRIBUTE_TABLE
+});
 #endif
 
 char sparc_hard_reg_printed[8];
@@ -972,16 +972,8 @@ char sparc_hard_reg_printed[8];
 #undef TARGET_ZERO_CALL_USED_REGS
 #define TARGET_ZERO_CALL_USED_REGS sparc_zero_call_used_regs
 
-#ifdef SPARC_GCOV_TYPE_SIZE
-static HOST_WIDE_INT
-sparc_gcov_type_size (void)
-{
-  return SPARC_GCOV_TYPE_SIZE;
-}
-
-#undef TARGET_GCOV_TYPE_SIZE
-#define TARGET_GCOV_TYPE_SIZE sparc_gcov_type_size
-#endif
+#undef TARGET_C_MODE_FOR_FLOATING_TYPE
+#define TARGET_C_MODE_FOR_FLOATING_TYPE sparc_c_mode_for_floating_type
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1064,6 +1056,7 @@ atomic_insn_for_leon3_p (rtx_insn *insn)
 {
   switch (INSN_CODE (insn))
     {
+    case CODE_FOR_membar_storeload:
     case CODE_FOR_swapsi:
     case CODE_FOR_ldstub:
     case CODE_FOR_atomic_compare_and_swap_leon3_1:
@@ -1130,6 +1123,7 @@ next_active_non_empty_insn (rtx_insn *insn)
   while (insn
 	 && (GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
 	     || GET_CODE (PATTERN (insn)) == ASM_INPUT
+	     || get_attr_length (insn) == 0
 	     || (USEFUL_INSN_P (insn)
 		 && (asm_noperands (PATTERN (insn)) >= 0)
 		 && !strcmp (decode_asm_operands (PATTERN (insn),
@@ -6792,6 +6786,22 @@ sparc_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 	    || GET_MODE_SIZE (mode) > 16);
 }
 
+/* Return true if TYPE is considered as a floating-point type by the ABI.  */
+
+static bool
+fp_type_for_abi (const_tree type)
+{
+  /* This is the original GCC implementation.  */
+  if (FLOAT_TYPE_P (type) || VECTOR_TYPE_P (type))
+    return true;
+
+  /* This has been introduced in GCC 14 to match the vendor compiler.  */
+  if (SUN_V9_ABI_COMPATIBILITY && TREE_CODE (type) == ARRAY_TYPE)
+    return fp_type_for_abi (TREE_TYPE (type));
+
+  return false;
+}
+
 /* Traverse the record TYPE recursively and call FUNC on its fields.
    NAMED is true if this is for a named parameter.  DATA is passed
    to FUNC for each field.  OFFSET is the starting position and
@@ -6830,8 +6840,7 @@ traverse_record_type (const_tree type, bool named, T *data,
 					 packed);
 	else
 	  {
-	    const bool fp_type
-	      = FLOAT_TYPE_P (field_type) || VECTOR_TYPE_P (field_type);
+	    const bool fp_type = fp_type_for_abi (field_type);
 	    Func (field, bitpos, fp_type && named && !packed && TARGET_FPU,
 		  data);
 	  }
@@ -7081,6 +7090,13 @@ compute_fp_layout (const_tree field, int bitpos, assign_data_t *data,
     {
       mode = TYPE_MODE (TREE_TYPE (TREE_TYPE (field)));
       nregs = 2;
+    }
+  else if (TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE)
+    {
+      tree elt_type = strip_array_types (TREE_TYPE (field));
+      mode = TYPE_MODE (elt_type);
+      nregs
+	= int_size_in_bytes (TREE_TYPE (field)) / int_size_in_bytes (elt_type);
     }
   else
     nregs = 1;
@@ -9812,18 +9828,6 @@ sparc_assemble_integer (rtx x, unsigned int size, int aligned_p)
 #define LONG_LONG_TYPE_SIZE (BITS_PER_WORD * 2)
 #endif
 
-#ifndef FLOAT_TYPE_SIZE
-#define FLOAT_TYPE_SIZE BITS_PER_WORD
-#endif
-
-#ifndef DOUBLE_TYPE_SIZE
-#define DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
-#endif
-
-#ifndef LONG_DOUBLE_TYPE_SIZE
-#define LONG_DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
-#endif
-
 unsigned long
 sparc_type_code (tree type)
 {
@@ -9908,7 +9912,7 @@ sparc_type_code (tree type)
 	  /* Carefully distinguish all the standard types of C,
 	     without messing up if the language is not C.  */
 
-	  if (TYPE_PRECISION (type) == FLOAT_TYPE_SIZE)
+	  if (TYPE_PRECISION (type) == TYPE_PRECISION (float_type_node))
 	    return (qualifiers | 6);
 
 	  else
@@ -13970,6 +13974,17 @@ sparc_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
       }
 
   return need_zeroed_hardregs;
+}
+
+/* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return TFmode or DFmode
+   for TI_LONG_DOUBLE_TYPE and the default for others.  */
+
+static machine_mode
+sparc_c_mode_for_floating_type (enum tree_index ti)
+{
+  if (ti == TI_LONG_DOUBLE_TYPE)
+    return SPARC_LONG_DOUBLE_TYPE_SIZE == 128 ? TFmode : DFmode;
+  return default_mode_for_floating_type (ti);
 }
 
 #include "gt-sparc.h"

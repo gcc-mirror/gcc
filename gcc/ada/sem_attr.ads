@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -288,6 +288,10 @@ package Sem_Attr is
       --  attribute is primarily intended for use in implementation of the
       --  standard input-output functions for fixed-point values.
 
+      --------------------
+      --  Invalid_Value --
+      --------------------
+
       Attribute_Invalid_Value => True,
       --  For every scalar type, S'Invalid_Value designates an undefined value
       --  of the type. If possible this value is an invalid value, and in fact
@@ -297,6 +301,10 @@ package Sem_Attr is
       --  set a value where initialization is required (e.g. as a result of the
       --  coding standards in use), but logically no initialization is needed,
       --  and the value should never be accessed.
+
+      ----------------
+      -- Loop_Entry --
+      ----------------
 
       Attribute_Loop_Entry => True,
       --  For every object of a non-limited type, S'Loop_Entry [(Loop_Name)]
@@ -373,17 +381,6 @@ package Sem_Attr is
       --  other composite object passed by reference, there is no other way
       --  of specifying that a zero address should be passed.
 
-      -----------------
-      -- Object_Size --
-      -----------------
-
-      Attribute_Object_Size => True,
-      --  Type'Object_Size is the same as Type'Size for all types except
-      --  fixed-point types and discrete types. For fixed-point types and
-      --  discrete types, this attribute gives the size used for default
-      --  allocation of objects and components of the size. See section in
-      --  Einfo ("Handling of Type'Size values") for further details.
-
       -------------------------
       -- Passed_By_Reference --
       -------------------------
@@ -446,6 +443,14 @@ package Sem_Attr is
       --  By construction, the layout of T'Stub_Type is identical to that of
       --  System.Partition_Interface.RACW_Stub_Type (see implementation notes
       --  in body of Exp_Dist).
+
+      -----------
+      -- Super --
+      -----------
+
+      Attribute_Super => True,
+      --  Applied to objects of tagged types in order to obtain a view
+      --  conversion to their statically detected (nonabstract) parent type.
 
       -----------------
       -- Target_Name --
@@ -593,43 +598,70 @@ package Sem_Attr is
       --  for constructing this definition in package System (see note above
       --  in Default_Bit_Order description). This is a static attribute.
 
+      Attribute_Atomic_Always_Lock_Free    |
+      Attribute_Bit_Position               |
+      Attribute_Compiler_Version           |
+      Attribute_Descriptor_Size            |
+      Attribute_Enabled                    |
+      Attribute_Fast_Math                  |
+      Attribute_From_Any                   |
+      Attribute_Has_Access_Values          |
+      Attribute_Has_Tagged_Values          |
+      Attribute_Initialized                |
+      Attribute_Library_Level              |
+      Attribute_Pool_Address               |
+      Attribute_Restriction_Set            |
+      Attribute_Scalar_Storage_Order       |
+      Attribute_Simple_Storage_Pool        |
+      Attribute_Small_Denominator          |
+      Attribute_Small_Numerator            |
+      Attribute_System_Allocator_Alignment |
+      Attribute_To_Any                     |
+      Attribute_TypeCode                   |
+      Attribute_Type_Key                   |
+      Attribute_Unconstrained_Array        |
+      Attribute_Update                     |
+      Attribute_Valid_Value                |
+      Attribute_Wchar_T_Size               => True,
+      --  See description in GNAT RM
+
       others => False);
 
    --  The following table lists all attributes that yield a result of a
    --  universal type.
 
    Universal_Type_Attribute : constant array (Attribute_Id) of Boolean :=
-     (Attribute_Aft                          => True,
-      Attribute_Alignment                    => True,
-      Attribute_Component_Size               => True,
-      Attribute_Count                        => True,
-      Attribute_Delta                        => True,
-      Attribute_Digits                       => True,
-      Attribute_Exponent                     => True,
-      Attribute_First_Bit                    => True,
-      Attribute_Fore                         => True,
-      Attribute_Last_Bit                     => True,
-      Attribute_Length                       => True,
-      Attribute_Machine_Emax                 => True,
-      Attribute_Machine_Emin                 => True,
-      Attribute_Machine_Mantissa             => True,
-      Attribute_Machine_Radix                => True,
-      Attribute_Max_Alignment_For_Allocation => True,
-      Attribute_Max_Size_In_Storage_Elements => True,
-      Attribute_Model_Emin                   => True,
-      Attribute_Model_Epsilon                => True,
-      Attribute_Model_Mantissa               => True,
-      Attribute_Model_Small                  => True,
-      Attribute_Modulus                      => True,
-      Attribute_Pos                          => True,
-      Attribute_Position                     => True,
-      Attribute_Safe_First                   => True,
-      Attribute_Safe_Last                    => True,
-      Attribute_Scale                        => True,
-      Attribute_Size                         => True,
-      Attribute_Small                        => True,
-      Attribute_Wide_Wide_Width              => True,
-      Attribute_Wide_Width                   => True,
+     (Attribute_Aft                          |
+      Attribute_Alignment                    |
+      Attribute_Component_Size               |
+      Attribute_Count                        |
+      Attribute_Delta                        |
+      Attribute_Digits                       |
+      Attribute_Exponent                     |
+      Attribute_First_Bit                    |
+      Attribute_Fore                         |
+      Attribute_Last_Bit                     |
+      Attribute_Length                       |
+      Attribute_Machine_Emax                 |
+      Attribute_Machine_Emin                 |
+      Attribute_Machine_Mantissa             |
+      Attribute_Machine_Radix                |
+      Attribute_Max_Alignment_For_Allocation |
+      Attribute_Max_Size_In_Storage_Elements |
+      Attribute_Model_Emin                   |
+      Attribute_Model_Epsilon                |
+      Attribute_Model_Mantissa               |
+      Attribute_Model_Small                  |
+      Attribute_Modulus                      |
+      Attribute_Pos                          |
+      Attribute_Position                     |
+      Attribute_Safe_First                   |
+      Attribute_Safe_Last                    |
+      Attribute_Scale                        |
+      Attribute_Size                         |
+      Attribute_Small                        |
+      Attribute_Wide_Wide_Width              |
+      Attribute_Wide_Width                   |
       Attribute_Width                        => True,
       others                                 => False);
 

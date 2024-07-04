@@ -8,5 +8,3 @@ namespace M {
 #pragma omp requires atomic_default_mem_order(seq_cst)
 }
 }
-
-/* { dg-prune-output "not supported yet" } */

@@ -42,7 +42,7 @@ main (int argc, char **argv)
 /* Because we disable the cost model, targets with variable-length
    vectors can end up vectorizing the store to a[0..7] on its own.
    With the cost model we do something sensible.  */
-/* { dg-final { scan-tree-dump-times "optimized: basic block" 2 "slp2" { target { ! amdgcn-*-* } xfail vect_variable_length } } } */
+/* { dg-final { scan-tree-dump-times "optimized: basic block" 2 "slp2" { target { ! amdgcn-*-* } xfail { vect_variable_length && { ! vect128 } } } } } */
 
 /* amdgcn can do this in one vector.  */
 /* { dg-final { scan-tree-dump-times "optimized: basic block" 1 "slp2" { target amdgcn-*-* } } } */

@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <stdint-gcc.h>
 
 #define N 777
@@ -22,9 +21,13 @@ int cond[N] = {0};
   for (unsigned int i = 0; i < N; i++)                                         \
     {                                                                          \
       if (cond[i] && i < 5)                                                    \
-	assert (b_##TYPE[i] == a_##TYPE[i]);                                   \
+        {                                                                      \
+          if (b_##TYPE[i] != a_##TYPE[i]) __builtin_abort();                   \
+        }								       \
       else                                                                     \
-	assert (b_##TYPE[i] == 0);                                             \
+        {                                                                      \
+          if (b_##TYPE[i] != 0) __builtin_abort();                             \
+        }								       \
     }
 
 #define run_2(TYPE)                                                            \
@@ -34,9 +37,13 @@ int cond[N] = {0};
   for (unsigned int i = 0; i < N; i++)                                         \
     {                                                                          \
       if (cond[i] && i < 17)                                                   \
-	assert (b_##TYPE[i] == a_##TYPE[i]);                                   \
+        {                                                                      \
+          if (b_##TYPE[i] != a_##TYPE[i]) __builtin_abort();                   \
+        }								       \
       else                                                                     \
-	assert (b_##TYPE[i] == 0);                                             \
+        {                                                                      \
+          if (b_##TYPE[i] != 0) __builtin_abort();                             \
+        }								       \
     }
 
 #define run_3(TYPE)                                                            \
@@ -46,9 +53,13 @@ int cond[N] = {0};
   for (unsigned int i = 0; i < N; i++)                                         \
     {                                                                          \
       if (cond[i] && i < 32)                                                   \
-	assert (b_##TYPE[i] == a_##TYPE[i]);                                   \
+        {                                                                      \
+          if (b_##TYPE[i] != a_##TYPE[i]) __builtin_abort();                   \
+        }								       \
       else                                                                     \
-	assert (b_##TYPE[i] == 0);                                             \
+        {                                                                      \
+          if (b_##TYPE[i] != 0) __builtin_abort();                             \
+        }								       \
     }
 
 #define run_4(TYPE)                                                            \
@@ -58,9 +69,13 @@ int cond[N] = {0};
   for (unsigned int i = 0; i < N; i++)                                         \
     {                                                                          \
       if (cond[i] && i < 128)                                                  \
-	assert (b_##TYPE[i] == a_##TYPE[i]);                                   \
+        {                                                                      \
+          if (b_##TYPE[i] != a_##TYPE[i]) __builtin_abort();                   \
+        }								       \
       else                                                                     \
-	assert (b_##TYPE[i] == 0);                                             \
+        {                                                                      \
+          if (b_##TYPE[i] != 0) __builtin_abort();                             \
+        }								       \
     }
 
 #define run_5(TYPE)                                                            \
@@ -70,9 +85,13 @@ int cond[N] = {0};
   for (unsigned int i = 0; i < N; i++)                                         \
     {                                                                          \
       if (cond[i] && i < 177)                                                  \
-	assert (b_##TYPE[i] == a_##TYPE[i]);                                   \
+        {                                                                      \
+          if (b_##TYPE[i] != a_##TYPE[i]) __builtin_abort();                   \
+        }								       \
       else                                                                     \
-	assert (b_##TYPE[i] == 0);                                             \
+        {                                                                      \
+          if (b_##TYPE[i] != 0) __builtin_abort();                             \
+        }								       \
     }
 
 #define run_6(TYPE)                                                            \
@@ -82,9 +101,13 @@ int cond[N] = {0};
   for (unsigned int i = 0; i < N; i++)                                         \
     {                                                                          \
       if (cond[i] && i < 255)                                                  \
-	assert (b_##TYPE[i] == a_##TYPE[i]);                                   \
+        {                                                                      \
+          if (b_##TYPE[i] != a_##TYPE[i]) __builtin_abort();                   \
+        }								       \
       else                                                                     \
-	assert (b_##TYPE[i] == 0);                                             \
+        {                                                                      \
+          if (b_##TYPE[i] != 0) __builtin_abort();                             \
+        }								       \
     }
 
 #define run_7(TYPE)                                                            \
@@ -94,9 +117,13 @@ int cond[N] = {0};
   for (unsigned int i = 0; i < N; i++)                                         \
     {                                                                          \
       if (cond[i] && i < 333)                                                  \
-	assert (b_##TYPE[i] == a_##TYPE[i]);                                   \
+        {                                                                      \
+          if (b_##TYPE[i] != a_##TYPE[i]) __builtin_abort();                   \
+        }								       \
       else                                                                     \
-	assert (b_##TYPE[i] == 0);                                             \
+        {                                                                      \
+          if (b_##TYPE[i] != 0) __builtin_abort();                             \
+        }								       \
     }
 
 #define run_8(TYPE)                                                            \
@@ -106,9 +133,13 @@ int cond[N] = {0};
   for (unsigned int i = 0; i < N; i++)                                         \
     {                                                                          \
       if (cond[i] && i < 512)                                                  \
-	assert (b_##TYPE[i] == a_##TYPE[i]);                                   \
+        {                                                                      \
+          if (b_##TYPE[i] != a_##TYPE[i]) __builtin_abort();                   \
+        }								       \
       else                                                                     \
-	assert (b_##TYPE[i] == 0);                                             \
+        {                                                                      \
+          if (b_##TYPE[i] != 0) __builtin_abort();                             \
+        }								       \
     }
 
 #define run_9(TYPE)                                                            \
@@ -118,9 +149,13 @@ int cond[N] = {0};
   for (unsigned int i = 0; i < N; i++)                                         \
     {                                                                          \
       if (cond[i] && i < 637)                                                  \
-	assert (b_##TYPE[i] == a_##TYPE[i]);                                   \
+        {                                                                      \
+          if (b_##TYPE[i] != a_##TYPE[i]) __builtin_abort();                   \
+        }								       \
       else                                                                     \
-	assert (b_##TYPE[i] == 0);                                             \
+        {                                                                      \
+          if (b_##TYPE[i] != 0) __builtin_abort();                             \
+        }								       \
     }
 
 #define run_10(TYPE)                                                           \
@@ -130,9 +165,13 @@ int cond[N] = {0};
   for (unsigned int i = 0; i < N; i++)                                         \
     {                                                                          \
       if (cond[i] && i < 777)                                                  \
-	assert (b_##TYPE[i] == a_##TYPE[i]);                                   \
+        {                                                                      \
+          if (b_##TYPE[i] != a_##TYPE[i]) __builtin_abort();                   \
+        }								       \
       else                                                                     \
-	assert (b_##TYPE[i] == 0);                                             \
+        {                                                                      \
+          if (b_##TYPE[i] != 0) __builtin_abort();                             \
+        }								       \
     }
 
 #define TEST_ALL(T)                                                            \

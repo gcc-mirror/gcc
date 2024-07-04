@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,6 +36,7 @@ with Osint;
 with Output;   use Output;
 with Rident;   use Rident;
 with Types;    use Types;
+with Uname;
 
 package body Bcheck is
 
@@ -67,6 +68,12 @@ package body Bcheck is
    function Same_Unit (U1 : Unit_Name_Type; U2 : Name_Id) return Boolean;
    --  Used to compare two unit names for No_Dependence checks. U1 is in
    --  standard unit name format, and U2 is in literal form with periods.
+
+   procedure Check_Consistency_Of_Sdep
+     (A : ALIs_Record; D : Sdep_Record; Src : Source_Record);
+   --  Called by Check_Consistency to check the consistency of one Sdep record,
+   --  where A is the ALI, and D represents the unit it depends on, and Src is
+   --  the source file corresponding to D.
 
    -------------------------------------
    -- Check_Configuration_Consistency --
@@ -107,15 +114,133 @@ package body Bcheck is
       Check_Consistent_Dispatching_Policy;
    end Check_Configuration_Consistency;
 
+   -------------------------------
+   -- Check_Consistency_Of_Sdep --
+   -------------------------------
+
+   procedure Check_Consistency_Of_Sdep
+     (A : ALIs_Record; D : Sdep_Record; Src : Source_Record)
+   is
+      use Uname;
+      ALI_Path_Id : File_Name_Type;
+   begin
+      --  Check for special case of withing a unit that does not exist any
+      --  more. If the unit was completely missing we would already have
+      --  detected this, but a nasty case arises when we have a subprogram body
+      --  with no spec, and some obsolete unit with's a previous (now
+      --  disappeared) spec. We detect this nasty case by noticing we're
+      --  depending on a spec that has no corresponding unit table entry,
+      --  but the body does.
+
+      if Present (D.Unit_Name)
+        and then Is_Spec_Name (D.Unit_Name)
+        and then Get_Name_Table_Int (D.Unit_Name) = 0 -- no unit table entry?
+        and then Get_Name_Table_Int (Get_Body_Name (D.Unit_Name)) /= 0
+      then
+         Error_Msg_File_1 := A.Sfile;
+         Error_Msg_Unit_1 := D.Unit_Name;
+         Error_Msg ("{ depends on $ which no longer exists");
+      end if;
+
+      --  Now if the time stamps match, or all checksums match, then we are OK;
+      --  otherwise we have an error.
+
+      if D.Stamp /= Src.Stamp and then not Src.All_Checksums_Match then
+         Error_Msg_File_1 := A.Sfile;
+         Error_Msg_File_2 := D.Sfile;
+
+         --  Two styles of message, depending on whether or not
+         --  the updated file is the one that must be recompiled
+
+         if Error_Msg_File_1 = Error_Msg_File_2 then
+            if Tolerate_Consistency_Errors then
+               Error_Msg
+                  ("?{ has been modified and should be recompiled");
+            else
+               Error_Msg
+                 ("{ has been modified and must be recompiled");
+            end if;
+
+         else
+            ALI_Path_Id := Osint.Full_Lib_File_Name (A.Afile);
+
+            --  Guard against Find_File not finding (again) the file because
+            --  Primary_Directory has been clobbered in between.
+
+            if Present (ALI_Path_Id)
+              and then Osint.Is_Readonly_Library (ALI_Path_Id)
+            then
+               if Tolerate_Consistency_Errors then
+                  Error_Msg ("?{ should be recompiled");
+                  Error_Msg_File_1 := ALI_Path_Id;
+                  Error_Msg ("?({ is obsolete and read-only)");
+               else
+                  Error_Msg ("{ must be compiled");
+                  Error_Msg_File_1 := ALI_Path_Id;
+                  Error_Msg ("({ is obsolete and read-only)");
+               end if;
+
+            elsif Tolerate_Consistency_Errors then
+               Error_Msg
+                 ("?{ should be recompiled ({ has been modified)");
+
+            else
+               Error_Msg ("{ must be recompiled ({ has been modified)");
+            end if;
+         end if;
+
+         if not Tolerate_Consistency_Errors and Verbose_Mode then
+            Error_Msg_File_1 := Src.Stamp_File;
+
+            if Src.Source_Found then
+               Error_Msg_File_1 :=
+                 Osint.Full_Source_Name (Error_Msg_File_1);
+            else
+               Error_Msg_File_1 :=
+                 Osint.Full_Lib_File_Name (Error_Msg_File_1);
+            end if;
+
+            Error_Msg
+              ("time stamp from { " & String (Src.Stamp));
+
+            Error_Msg_File_1 := D.Sfile;
+            Error_Msg
+              (" conflicts with { timestamp " &
+               String (D.Stamp));
+
+            Error_Msg_File_1 :=
+              Osint.Full_Lib_File_Name (A.Afile);
+            Error_Msg (" from {");
+         end if;
+      end if;
+   end Check_Consistency_Of_Sdep;
+
    -----------------------
    -- Check_Consistency --
    -----------------------
 
    procedure Check_Consistency is
-      Src : Source_Id;
-      --  Source file Id for this Sdep entry
+      function Reified_Child_Spec (A : ALI_Id; D : Sdep_Id) return Boolean;
+      --  When we have a child subprogram body with no spec, the missing spec
+      --  is reified in the ALI file. This returns True if D is a dependency on
+      --  such a reified spec. The body always immediately follows the spec
+      --  and there is no no unit table entry for the spec in this case.
+      --  We do not want to call Check_Consistency_Of_Sdep for these specs,
+      --  because it confuses the detection of (truly) missing specs.
 
-      ALI_Path_Id : File_Name_Type;
+      function Reified_Child_Spec (A : ALI_Id; D : Sdep_Id) return Boolean is
+         use Uname;
+      begin
+         return Present (Sdep.Table (D).Unit_Name)
+           and then Get_Name_Table_Int (Sdep.Table (D).Unit_Name) = 0
+           and then D /= ALIs.Table (A).Last_Sdep
+           and then Sdep.Table (D).Sfile = Sdep.Table (D + 1).Sfile
+           and then Is_Spec_Name (Sdep.Table (D).Unit_Name)
+           and then Get_Body_Name (Sdep.Table (D).Unit_Name) =
+                    Sdep.Table (D + 1).Unit_Name;
+      end Reified_Child_Spec;
+
+   --  Start of processing for Check_Consistency
 
    begin
       --  First, we go through the source table to see if there are any cases
@@ -172,89 +297,14 @@ package body Bcheck is
          Sdep_Loop : for D in
            ALIs.Table (A).First_Sdep .. ALIs.Table (A).Last_Sdep
          loop
-            if Sdep.Table (D).Dummy_Entry then
-               goto Continue;
-            end if;
-
-            Src := Source_Id (Get_Name_Table_Int (Sdep.Table (D).Sfile));
-
-            --  If the time stamps match, or all checksums match, then we
-            --  are OK, otherwise we have a definite error.
-
-            if Sdep.Table (D).Stamp /= Source.Table (Src).Stamp
-              and then not Source.Table (Src).All_Checksums_Match
+            if not Sdep.Table (D).Dummy_Entry
+              and then not Reified_Child_Spec (A, D)
             then
-               Error_Msg_File_1 := ALIs.Table (A).Sfile;
-               Error_Msg_File_2 := Sdep.Table (D).Sfile;
-
-               --  Two styles of message, depending on whether or not
-               --  the updated file is the one that must be recompiled
-
-               if Error_Msg_File_1 = Error_Msg_File_2 then
-                  if Tolerate_Consistency_Errors then
-                     Error_Msg
-                        ("?{ has been modified and should be recompiled");
-                  else
-                     Error_Msg
-                       ("{ has been modified and must be recompiled");
-                  end if;
-
-               else
-                  ALI_Path_Id :=
-                    Osint.Full_Lib_File_Name (ALIs.Table (A).Afile);
-
-                  if Osint.Is_Readonly_Library (ALI_Path_Id) then
-                     if Tolerate_Consistency_Errors then
-                        Error_Msg ("?{ should be recompiled");
-                        Error_Msg_File_1 := ALI_Path_Id;
-                        Error_Msg ("?({ is obsolete and read-only)");
-                     else
-                        Error_Msg ("{ must be compiled");
-                        Error_Msg_File_1 := ALI_Path_Id;
-                        Error_Msg ("({ is obsolete and read-only)");
-                     end if;
-
-                  elsif Tolerate_Consistency_Errors then
-                     Error_Msg
-                       ("?{ should be recompiled ({ has been modified)");
-
-                  else
-                     Error_Msg ("{ must be recompiled ({ has been modified)");
-                  end if;
-               end if;
-
-               if not Tolerate_Consistency_Errors and Verbose_Mode then
-                  Error_Msg_File_1 := Source.Table (Src).Stamp_File;
-
-                  if Source.Table (Src).Source_Found then
-                     Error_Msg_File_1 :=
-                       Osint.Full_Source_Name (Error_Msg_File_1);
-                  else
-                     Error_Msg_File_1 :=
-                       Osint.Full_Lib_File_Name (Error_Msg_File_1);
-                  end if;
-
-                  Error_Msg
-                    ("time stamp from { " & String (Source.Table (Src).Stamp));
-
-                  Error_Msg_File_1 := Sdep.Table (D).Sfile;
-                  Error_Msg
-                    (" conflicts with { timestamp " &
-                     String (Sdep.Table (D).Stamp));
-
-                  Error_Msg_File_1 :=
-                    Osint.Full_Lib_File_Name (ALIs.Table (A).Afile);
-                  Error_Msg (" from {");
-               end if;
-
-               --  Exit from the loop through Sdep entries once we find one
-               --  that does not match.
-
-               exit Sdep_Loop;
+               Check_Consistency_Of_Sdep
+                 (ALIs.Table (A), Sdep.Table (D),
+                  Source.Table
+                    (Source_Id (Get_Name_Table_Int (Sdep.Table (D).Sfile))));
             end if;
-
-         <<Continue>>
-            null;
          end loop Sdep_Loop;
       end loop ALIs_Loop;
    end Check_Consistency;
@@ -1263,7 +1313,7 @@ package body Bcheck is
    procedure Check_Duplicated_Subunits is
    begin
       for J in Sdep.First .. Sdep.Last loop
-         if Sdep.Table (J).Subunit_Name /= No_Name then
+         if Sdep.Table (J).Subunit_Name /= No_Unit_Name then
             Get_Decoded_Name_String (Sdep.Table (J).Subunit_Name);
             Name_Len := Name_Len + 2;
             Name_Buffer (Name_Len - 1) := '%';

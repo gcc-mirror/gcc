@@ -1,5 +1,5 @@
 /* Unicode characters and various properties.
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -16,7 +16,7 @@
    <http://www.gnu.org/licenses/>.
 
 
-   Copyright (C) 1991-2022 Unicode, Inc.  All rights reserved.
+   Copyright (C) 1991-2023 Unicode, Inc.  All rights reserved.
    Distributed under the Terms of Use in
    http://www.unicode.org/copyright.html.
 
@@ -1379,7 +1379,8 @@ static const struct ucnrange ucnranges[] = {
 {   0|  0|  0|C11|  0|    0|    0|CID|NFC|  0|  0,   0, 0x1ffe },
 {   0|  0|  0|C11|  0|    0|    0|CID|NFC|NKC|  0,   0, 0x1fff },
 {   0|  0|  0|  0|  0|    0|    0|CID|  0|  0|  0,   0, 0x200a },
-{   0|  0|  0|C11|  0|    0|    0|CID|NFC|NKC|  0,   0, 0x200d },
+{   0|  0|  0|C11|  0|    0|    0|CID|NFC|NKC|  0,   0, 0x200b },
+{   0|  0|  0|C11|  0|CXX23|NXX23|CID|NFC|NKC|  0,   0, 0x200d },
 {   0|  0|  0|  0|  0|    0|    0|CID|NFC|NKC|  0,   0, 0x2029 },
 {   0|  0|  0|C11|  0|    0|    0|CID|NFC|NKC|  0,   0, 0x202e },
 {   0|  0|  0|  0|  0|    0|    0|CID|NFC|  0|  0,   0, 0x203e },
@@ -1625,7 +1626,7 @@ static const struct ucnrange ucnranges[] = {
 { C99|  0|CXX|C11|  0|CXX23|    0|  0|NFC|NKC|  0,   0, 0x30f4 },
 { C99|  0|CXX|C11|  0|CXX23|    0|CID|NFC|NKC|  0,   0, 0x30f6 },
 {   0|  0|CXX|C11|  0|CXX23|    0|  0|NFC|NKC|  0,   0, 0x30fa },
-{ C99|  0|CXX|C11|  0|    0|    0|CID|NFC|NKC|  0,   0, 0x30fb },
+{ C99|  0|CXX|C11|  0|CXX23|NXX23|CID|NFC|NKC|  0,   0, 0x30fb },
 { C99|  0|CXX|C11|  0|CXX23|    0|CID|NFC|NKC|  0,   0, 0x30fc },
 {   0|  0|CXX|C11|  0|CXX23|    0|CID|NFC|NKC|  0,   0, 0x30fd },
 {   0|  0|CXX|C11|  0|CXX23|    0|  0|NFC|NKC|  0,   0, 0x30fe },
@@ -1906,7 +1907,8 @@ static const struct ucnrange ucnranges[] = {
 {   0|  0|  0|C11|  0|CXX23|NXX23|CID|NFC|  0|  0,   0, 0xff3f },
 {   0|  0|  0|C11|  0|    0|    0|CID|NFC|  0|  0,   0, 0xff40 },
 {   0|  0|CXX|C11|  0|CXX23|    0|CID|NFC|  0|  0,   0, 0xff5a },
-{   0|  0|  0|C11|  0|    0|    0|CID|NFC|  0|  0,   0, 0xff65 },
+{   0|  0|  0|C11|  0|    0|    0|CID|NFC|  0|  0,   0, 0xff64 },
+{   0|  0|  0|C11|  0|CXX23|NXX23|CID|NFC|  0|  0,   0, 0xff65 },
 {   0|  0|CXX|C11|  0|CXX23|    0|CID|NFC|  0|  0,   0, 0xff9d },
 {   0|  0|CXX|C11|  0|CXX23|NXX23|CID|NFC|  0|  0,   0, 0xff9f },
 {   0|  0|CXX|C11|  0|CXX23|    0|CID|NFC|  0|  0,   0, 0xffbe },
@@ -2786,6 +2788,8 @@ static const struct ucnrange ucnranges[] = {
 {   0|  0|  0|C11|  0|CXX23|    0|CID|NFC|NKC|  0,   0, 0x2cea1 },
 {   0|  0|  0|C11|  0|    0|    0|CID|NFC|NKC|  0,   0, 0x2ceaf },
 {   0|  0|  0|C11|  0|CXX23|    0|CID|NFC|NKC|  0,   0, 0x2ebe0 },
+{   0|  0|  0|C11|  0|    0|    0|CID|NFC|NKC|  0,   0, 0x2ebef },
+{   0|  0|  0|C11|  0|CXX23|    0|CID|NFC|NKC|  0,   0, 0x2ee5d },
 {   0|  0|  0|C11|  0|    0|    0|CID|NFC|NKC|  0,   0, 0x2f7ff },
 {   0|  0|  0|C11|  0|CXX23|    0|  0|  0|  0|  0,   0, 0x2fa1d },
 {   0|  0|  0|C11|  0|    0|    0|CID|NFC|NKC|  0,   0, 0x2fffd },

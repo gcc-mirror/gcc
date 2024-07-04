@@ -1,0 +1,87 @@
+(* ShortStr.def provides conversion between shortreal and strings.
+
+Copyright (C) 2023-2024 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaiusmod2@gmail.com>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE ShortStr;
+
+  (* SHORTREAL/string conversions *)
+
+IMPORT
+   ConvTypes;
+
+TYPE
+   (* strAllRight, strOutOfRange, strWrongFormat, strEmpty *)
+   ConvResults = ConvTypes.ConvResults;
+
+(* the string form of a signed fixed-point real number is
+     ["+" | "-"], decimal digit, {decimal digit}, [".",
+     {decimal digit}]
+*)
+
+(* the string form of a signed floating-point real number is
+     signed fixed-point real number, "E", ["+" | "-"],
+     decimal digit, {decimal digit}
+*)
+
+PROCEDURE StrToReal (str: ARRAY OF CHAR; VAR real: SHORTREAL;
+                     VAR res: ConvResults);
+  (* Ignores any leading spaces in str. If the subsequent characters
+     in str are in the format of a signed real number, assigns a
+     corresponding value to real.  Assigns a value indicating the
+     format of str to res.
+  *)
+
+PROCEDURE RealToFloat (real: SHORTREAL; sigFigs: CARDINAL;
+                       VAR str: ARRAY OF CHAR);
+  (* Converts the value of real to floating-point string form, with
+     sigFigs significant figures, and copies the possibly truncated
+     result to str.
+  *)
+
+PROCEDURE RealToEng (real: SHORTREAL; sigFigs: CARDINAL;
+                     VAR str: ARRAY OF CHAR);
+  (* Converts the value of real to floating-point string form, with
+     sigFigs significant figures, and copies the possibly truncated
+     result to str. The number is scaled with one to three digits
+     in the whole number part and with an exponent that is a
+     multiple of three.
+  *)
+
+PROCEDURE RealToFixed (real: SHORTREAL; place: INTEGER;
+                       VAR str: ARRAY OF CHAR);
+  (* Converts the value of real to fixed-point string form, rounded
+     to the given place relative to the decimal point, and copies
+     the possibly truncated result to str.
+  *)
+
+PROCEDURE RealToStr (real: SHORTREAL; VAR str: ARRAY OF CHAR);
+  (* Converts the value of real as RealToFixed if the sign and
+     magnitude can be shown within the capacity of str, or
+     otherwise as RealToFloat, and copies the possibly truncated
+     result to str. The number of places or significant digits
+     depend on the capacity of str.
+  *)
+
+END ShortStr.

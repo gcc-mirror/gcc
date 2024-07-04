@@ -1,6 +1,6 @@
 /* Plugin for NVPTX execution.
 
-   Copyright (C) 2013-2023 Free Software Foundation, Inc.
+   Copyright (C) 2013-2024 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -126,7 +126,7 @@ init_cuda_lib (void)
 # define CUDA_ONE_CALL_1(call, allow_null)		\
   cuda_lib.call = dlsym (h, #call);	\
   if (!allow_null && cuda_lib.call == NULL)		\
-    return false;
+    GOMP_PLUGIN_fatal ("'%s' is missing '%s'", cuda_runtime_lib, #call);
 #include "cuda-lib.def"
 # undef CUDA_ONE_CALL
 # undef CUDA_ONE_CALL_1
@@ -149,6 +149,8 @@ init_cuda_lib (void)
 #endif
 
 #include "secure_getenv.h"
+
+static void notify_var (const char *, const char *);
 
 #undef MIN
 #undef MAX
@@ -266,6 +268,8 @@ typedef struct nvptx_tdata
 
   const struct targ_fn_launch *fn_descs;
   unsigned fn_num;
+
+  unsigned ind_fn_num;
 } nvptx_tdata_t;
 
 /* Descriptor of a loaded function.  */
@@ -338,6 +342,19 @@ struct ptx_device
 };
 
 static struct ptx_device **ptx_devices;
+
+/* "Native" GPU thread stack size.  */
+static unsigned native_gpu_thread_stack_size = 0;
+
+/* OpenMP kernels reserve a small amount of ".shared" space for use by
+   omp_alloc.  The size is configured using GOMP_NVPTX_LOWLAT_POOL, but the
+   default is set here.  */
+static unsigned lowlat_pool_size = 8 * 1024;
+
+static bool nvptx_do_global_cdtors (CUmodule, struct ptx_device *,
+				    const char *);
+static size_t nvptx_stacks_size ();
+static void *nvptx_stacks_acquire (struct ptx_device *, size_t, int);
 
 static inline struct nvptx_thread *
 nvptx_thread (void)
@@ -543,6 +560,46 @@ nvptx_open_device (int n)
   ptx_dev->free_blocks = NULL;
   pthread_mutex_init (&ptx_dev->free_blocks_lock, NULL);
 
+  /* "Native" GPU thread stack size.  */
+  {
+    /* This is intentionally undocumented, until we work out a proper, common
+       scheme (as much as makes sense) between all offload plugins as well
+       as between nvptx offloading use of "native" stacks for OpenACC vs.
+       OpenMP "soft stacks" vs. OpenMP '-msoft-stack-reserve-local=[...]'.
+
+       GCN offloading has a 'GCN_STACK_SIZE' environment variable (without
+       'GOMP_' prefix): documented; presumably used for all things OpenACC and
+       OpenMP?  Based on GCN command-line option '-mstack-size=[...]' (marked
+       "obsolete"), that one may be set via a GCN 'mkoffload'-synthesized
+       'constructor' function.  */
+    const char *var_name = "GOMP_NVPTX_NATIVE_GPU_THREAD_STACK_SIZE";
+    const char *env_var = secure_getenv (var_name);
+    notify_var (var_name, env_var);
+
+    if (env_var != NULL)
+      {
+	char *endptr;
+	unsigned long val = strtoul (env_var, &endptr, 10);
+	if (endptr == NULL || *endptr != '\0'
+	    || errno == ERANGE || errno == EINVAL
+	    || val > UINT_MAX)
+	  GOMP_PLUGIN_error ("Error parsing %s", var_name);
+	else
+	  native_gpu_thread_stack_size = val;
+      }
+  }
+  if (native_gpu_thread_stack_size == 0)
+    ; /* Zero means use default.  */
+  else
+    {
+      GOMP_PLUGIN_debug (0, "Setting \"native\" GPU thread stack size"
+			 " ('CU_LIMIT_STACK_SIZE') to %u bytes\n",
+			 native_gpu_thread_stack_size);
+      CUDA_CALL (cuCtxSetLimit,
+		 CU_LIMIT_STACK_SIZE, (size_t) native_gpu_thread_stack_size);
+    }
+
+  /* OpenMP "soft stacks".  */
   ptx_dev->omp_stacks.ptr = 0;
   ptx_dev->omp_stacks.size = 0;
   pthread_mutex_init (&ptx_dev->omp_stacks.lock, NULL);
@@ -557,6 +614,18 @@ nvptx_close_device (struct ptx_device *ptx_dev)
 {
   if (!ptx_dev)
     return true;
+
+  bool ret = true;
+
+  for (struct ptx_image_data *image = ptx_dev->images;
+       image != NULL;
+       image = image->next)
+    {
+      if (!nvptx_do_global_cdtors (image->module, ptx_dev,
+				   "__do_global_dtors__entry"
+				   /* or "__do_global_dtors__entry__mgomp" */))
+	ret = false;
+    }
 
   for (struct ptx_free_block *b = ptx_dev->free_blocks; b;)
     {
@@ -578,7 +647,8 @@ nvptx_close_device (struct ptx_device *ptx_dev)
     CUDA_CALL (cuCtxDestroy, ptx_dev->ctx);
 
   free (ptx_dev);
-  return true;
+
+  return ret;
 }
 
 static int
@@ -597,15 +667,17 @@ nvptx_get_num_devices (void)
       CUresult r = CUDA_CALL_NOCHECK (cuInit, 0);
       /* This is not an error: e.g. we may have CUDA libraries installed but
          no devices available.  */
-      if (r != CUDA_SUCCESS)
+      if (r == CUDA_ERROR_NO_DEVICE)
 	{
 	  GOMP_PLUGIN_debug (0, "Disabling nvptx offloading; cuInit: %s\n",
 			     cuda_error (r));
 	  return 0;
 	}
+      else if (r != CUDA_SUCCESS)
+	GOMP_PLUGIN_fatal ("cuInit error: %s", cuda_error (r));
     }
 
-  CUDA_CALL_ERET (-1, cuDeviceGetCount, &n);
+  CUDA_CALL_ASSERT (cuDeviceGetCount, &n);
   return n;
 }
 
@@ -1192,8 +1264,23 @@ GOMP_OFFLOAD_get_num_devices (unsigned int omp_requires_mask)
   if (num_devices > 0
       && ((omp_requires_mask
 	   & ~(GOMP_REQUIRES_UNIFIED_ADDRESS
+	       | GOMP_REQUIRES_UNIFIED_SHARED_MEMORY
 	       | GOMP_REQUIRES_REVERSE_OFFLOAD)) != 0))
     return -1;
+  /* Check whether host page access (direct or via migration) is supported;
+     if so, enable USM.  Currently, capabilities is per device type, hence,
+     check all devices.  */
+  if (num_devices > 0
+      && (omp_requires_mask & GOMP_REQUIRES_UNIFIED_SHARED_MEMORY))
+    for (int dev = 0; dev < num_devices; dev++)
+      {
+	int pi;
+	CUresult r;
+	r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &pi,
+			       CU_DEVICE_ATTRIBUTE_PAGEABLE_MEMORY_ACCESS, dev);
+	if (r != CUDA_SUCCESS || pi == 0)
+	  return -1;
+      }
   return num_devices;
 }
 
@@ -1215,6 +1302,22 @@ GOMP_OFFLOAD_init_device (int n)
     {
       ptx_devices[n] = dev;
       instantiated_devices++;
+    }
+
+  const char *var_name = "GOMP_NVPTX_LOWLAT_POOL";
+  const char *env_var = secure_getenv (var_name);
+  notify_var (var_name, env_var);
+
+  if (env_var != NULL)
+    {
+      char *endptr;
+      unsigned long val = strtoul (env_var, &endptr, 10);
+      if (endptr == NULL || *endptr != '\0'
+	  || errno == ERANGE || errno == EINVAL
+	  || val > UINT_MAX)
+	GOMP_PLUGIN_error ("Error parsing %s", var_name);
+      else
+	lowlat_pool_size = val;
     }
 
   pthread_mutex_unlock (&ptx_dev_lock);
@@ -1277,6 +1380,93 @@ nvptx_set_clocktick (CUmodule module, struct ptx_device *dev)
     GOMP_PLUGIN_fatal ("cuMemcpyHtoD error: %s", cuda_error (r));
 }
 
+/* Invoke MODULE's global constructors/destructors.  */
+
+static bool
+nvptx_do_global_cdtors (CUmodule module, struct ptx_device *ptx_dev,
+			const char *funcname)
+{
+  bool ret = true;
+  char *funcname_mgomp = NULL;
+  CUresult r;
+  CUfunction funcptr;
+  r = CUDA_CALL_NOCHECK (cuModuleGetFunction,
+			 &funcptr, module, funcname);
+  GOMP_PLUGIN_debug (0, "cuModuleGetFunction (%s): %s\n",
+		     funcname, cuda_error (r));
+  if (r == CUDA_ERROR_NOT_FOUND)
+    {
+      /* Try '[funcname]__mgomp'.  */
+
+      size_t funcname_len = strlen (funcname);
+      const char *mgomp_suffix = "__mgomp";
+      size_t mgomp_suffix_len = strlen (mgomp_suffix);
+      funcname_mgomp
+	= GOMP_PLUGIN_malloc (funcname_len + mgomp_suffix_len + 1);
+      memcpy (funcname_mgomp, funcname, funcname_len);
+      memcpy (funcname_mgomp + funcname_len,
+	      mgomp_suffix, mgomp_suffix_len + 1);
+      funcname = funcname_mgomp;
+
+      r = CUDA_CALL_NOCHECK (cuModuleGetFunction,
+			     &funcptr, module, funcname);
+      GOMP_PLUGIN_debug (0, "cuModuleGetFunction (%s): %s\n",
+			 funcname, cuda_error (r));
+    }
+  if (r == CUDA_ERROR_NOT_FOUND)
+    ;
+  else if (r != CUDA_SUCCESS)
+    {
+      GOMP_PLUGIN_error ("cuModuleGetFunction (%s) error: %s",
+			 funcname, cuda_error (r));
+      ret = false;
+    }
+  else
+    {
+      /* If necessary, set up soft stack.  */
+      void *nvptx_stacks_0;
+      void *kargs[1];
+      if (funcname_mgomp)
+	{
+	  size_t stack_size = nvptx_stacks_size ();
+	  pthread_mutex_lock (&ptx_dev->omp_stacks.lock);
+	  nvptx_stacks_0 = nvptx_stacks_acquire (ptx_dev, stack_size, 1);
+	  nvptx_stacks_0 += stack_size;
+	  kargs[0] = &nvptx_stacks_0;
+	}
+      r = CUDA_CALL_NOCHECK (cuLaunchKernel,
+			     funcptr,
+			     1, 1, 1, 1, 1, 1,
+			     /* sharedMemBytes */ 0,
+			     /* hStream */ NULL,
+			     /* kernelParams */ funcname_mgomp ? kargs : NULL,
+			     /* extra */ NULL);
+      if (r != CUDA_SUCCESS)
+	{
+	  GOMP_PLUGIN_error ("cuLaunchKernel (%s) error: %s",
+			     funcname, cuda_error (r));
+	  ret = false;
+	}
+
+      r = CUDA_CALL_NOCHECK (cuStreamSynchronize,
+			     NULL);
+      if (r != CUDA_SUCCESS)
+	{
+	  GOMP_PLUGIN_error ("cuStreamSynchronize (%s) error: %s",
+			     funcname, cuda_error (r));
+	  ret = false;
+	}
+
+      if (funcname_mgomp)
+	pthread_mutex_unlock (&ptx_dev->omp_stacks.lock);
+    }
+
+  if (funcname_mgomp)
+    free (funcname_mgomp);
+
+  return ret;
+}
+
 /* Load the (partial) program described by TARGET_DATA to device
    number ORD.  Allocate and return TARGET_TABLE.  If not NULL, REV_FN_TABLE
    will contain the on-device addresses of the functions for reverse offload.
@@ -1285,12 +1475,13 @@ nvptx_set_clocktick (CUmodule module, struct ptx_device *dev)
 int
 GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 			 struct addr_pair **target_table,
-			 uint64_t **rev_fn_table)
+			 uint64_t **rev_fn_table,
+			 uint64_t *host_ind_fn_table)
 {
   CUmodule module;
   const char *const *var_names;
   const struct targ_fn_launch *fn_descs;
-  unsigned int fn_entries, var_entries, other_entries, i, j;
+  unsigned int fn_entries, var_entries, ind_fn_entries, other_entries, i, j;
   struct targ_fn_descriptor *targ_fns;
   struct addr_pair *targ_tbl;
   const nvptx_tdata_t *img_header = (const nvptx_tdata_t *) target_data;
@@ -1319,6 +1510,8 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
   var_names = img_header->var_names;
   fn_entries = img_header->fn_num;
   fn_descs = img_header->fn_descs;
+  ind_fn_entries = GOMP_VERSION_SUPPORTS_INDIRECT_FUNCS (version)
+		     ? img_header->ind_fn_num : 0;
 
   /* Currently, other_entries contains only the struct of ICVs.  */
   other_entries = 1;
@@ -1371,6 +1564,60 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 
       targ_tbl->start = (uintptr_t) var;
       targ_tbl->end = targ_tbl->start + bytes;
+    }
+
+  if (ind_fn_entries > 0)
+    {
+      CUdeviceptr var;
+      size_t bytes;
+
+      /* Read indirect function table from image.  */
+      CUresult r = CUDA_CALL_NOCHECK (cuModuleGetGlobal, &var, &bytes, module,
+				      "$offload_ind_func_table");
+      if (r != CUDA_SUCCESS)
+	GOMP_PLUGIN_fatal ("cuModuleGetGlobal error: %s", cuda_error (r));
+      assert (bytes == sizeof (uint64_t) * ind_fn_entries);
+
+      uint64_t ind_fn_table[ind_fn_entries];
+      r = CUDA_CALL_NOCHECK (cuMemcpyDtoH, ind_fn_table, var, bytes);
+      if (r != CUDA_SUCCESS)
+	GOMP_PLUGIN_fatal ("cuMemcpyDtoH error: %s", cuda_error (r));
+
+      /* Build host->target address map for indirect functions.  */
+      uint64_t ind_fn_map[ind_fn_entries * 2 + 1];
+      for (unsigned k = 0; k < ind_fn_entries; k++)
+	{
+	  ind_fn_map[k * 2] = host_ind_fn_table[k];
+	  ind_fn_map[k * 2 + 1] = ind_fn_table[k];
+	  GOMP_PLUGIN_debug (0, "Indirect function %d: %lx->%lx\n",
+			     k, host_ind_fn_table[k], ind_fn_table[k]);
+	}
+      ind_fn_map[ind_fn_entries * 2] = 0;
+
+      /* Write the map onto the target.  */
+      void *map_target_addr
+	= GOMP_OFFLOAD_alloc (ord, sizeof (ind_fn_map));
+      GOMP_PLUGIN_debug (0, "Allocated indirect map at %p\n", map_target_addr);
+
+      GOMP_OFFLOAD_host2dev (ord, map_target_addr,
+			     (void*) ind_fn_map,
+			     sizeof (ind_fn_map));
+
+      /* Write address of the map onto the target.  */
+      CUdeviceptr varptr;
+      size_t varsize;
+      r = CUDA_CALL_NOCHECK (cuModuleGetGlobal, &varptr, &varsize,
+			     module, XSTRING (GOMP_INDIRECT_ADDR_MAP));
+      if (r != CUDA_SUCCESS)
+	GOMP_PLUGIN_fatal ("Indirect map variable not found in image: %s",
+			   cuda_error (r));
+
+      GOMP_PLUGIN_debug (0,
+			 "Indirect map variable found at %llx with size %ld\n",
+			 varptr, varsize);
+
+      GOMP_OFFLOAD_host2dev (ord, (void *) varptr, &map_target_addr,
+			     sizeof (map_target_addr));
     }
 
   CUdeviceptr varptr;
@@ -1449,6 +1696,11 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 
   nvptx_set_clocktick (module, dev);
 
+  if (!nvptx_do_global_cdtors (module, dev,
+			       "__do_global_ctors__entry"
+			       /* or "__do_global_ctors__entry__mgomp" */))
+    return -1;
+
   return fn_entries + var_entries + other_entries;
 }
 
@@ -1474,6 +1726,11 @@ GOMP_OFFLOAD_unload_image (int ord, unsigned version, const void *target_data)
   for (prev_p = &dev->images; (image = *prev_p) != 0; prev_p = &image->next)
     if (image->target_data == target_data)
       {
+	if (!nvptx_do_global_cdtors (image->module, dev,
+				     "__do_global_dtors__entry"
+				     /* or "__do_global_dtors__entry__mgomp" */))
+	  ret = false;
+
 	*prev_p = image->next;
 	if (CUDA_CALL_NOCHECK (cuModuleUnload, image->module) != CUDA_SUCCESS)
 	  ret = false;
@@ -1827,6 +2084,35 @@ GOMP_OFFLOAD_memcpy2d (int dst_ord, int src_ord, size_t dim1_size,
   data.srcXInBytes = src_offset1_size;
   data.srcY = src_offset0_len;
 
+  if (data.srcXInBytes != 0 || data.srcY != 0)
+    {
+      /* Adjust origin to the actual array data, else the CUDA 2D memory
+	 copy API calls below may fail to validate source/dest pointers
+	 correctly (especially for Fortran where the "virtual origin" of an
+	 array is often outside the stored data).  */
+      if (src_ord == -1)
+	data.srcHost = (const void *) ((const char *) data.srcHost
+				      + data.srcY * data.srcPitch
+				      + data.srcXInBytes);
+      else
+	data.srcDevice += data.srcY * data.srcPitch + data.srcXInBytes;
+      data.srcXInBytes = 0;
+      data.srcY = 0;
+    }
+
+  if (data.dstXInBytes != 0 || data.dstY != 0)
+    {
+      /* As above.  */
+      if (dst_ord == -1)
+	data.dstHost = (void *) ((char *) data.dstHost
+				 + data.dstY * data.dstPitch
+				 + data.dstXInBytes);
+      else
+	data.dstDevice += data.dstY * data.dstPitch + data.dstXInBytes;
+      data.dstXInBytes = 0;
+      data.dstY = 0;
+    }
+
   CUresult res = CUDA_CALL_NOCHECK (cuMemcpy2D, &data);
   if (res == CUDA_ERROR_INVALID_VALUE)
     /* If pitch > CU_DEVICE_ATTRIBUTE_MAX_PITCH or for device-to-device
@@ -1894,6 +2180,44 @@ GOMP_OFFLOAD_memcpy3d (int dst_ord, int src_ord, size_t dim2_size,
   data.srcXInBytes = src_offset2_size;
   data.srcY = src_offset1_len;
   data.srcZ = src_offset0_len;
+
+  if (data.srcXInBytes != 0 || data.srcY != 0 || data.srcZ != 0)
+    {
+      /* Adjust origin to the actual array data, else the CUDA 3D memory
+	 copy API call below may fail to validate source/dest pointers
+	 correctly (especially for Fortran where the "virtual origin" of an
+	 array is often outside the stored data).  */
+      if (src_ord == -1)
+	data.srcHost
+	  = (const void *) ((const char *) data.srcHost
+			    + (data.srcZ * data.srcHeight + data.srcY)
+			      * data.srcPitch
+			    + data.srcXInBytes);
+      else
+	data.srcDevice
+	  += (data.srcZ * data.srcHeight + data.srcY) * data.srcPitch
+	     + data.srcXInBytes;
+      data.srcXInBytes = 0;
+      data.srcY = 0;
+      data.srcZ = 0;
+    }
+
+  if (data.dstXInBytes != 0 || data.dstY != 0 || data.dstZ != 0)
+    {
+      /* As above.  */
+      if (dst_ord == -1)
+	data.dstHost = (void *) ((char *) data.dstHost
+				 + (data.dstZ * data.dstHeight + data.dstY)
+				   * data.dstPitch
+				 + data.dstXInBytes);
+      else
+	data.dstDevice
+	  += (data.dstZ * data.dstHeight + data.dstY) * data.dstPitch
+	     + data.dstXInBytes;
+      data.dstXInBytes = 0;
+      data.dstY = 0;
+      data.dstZ = 0;
+    }
 
   CUDA_CALL (cuMemcpy3D, &data);
   return true;
@@ -2119,7 +2443,7 @@ GOMP_OFFLOAD_run (int ord, void *tgt_fn, void *tgt_vars, void **args)
 		     " [(teams: %u), 1, 1] [(lanes: 32), (threads: %u), 1]\n",
 		     __FUNCTION__, fn_name, teams, threads);
   r = CUDA_CALL_NOCHECK (cuLaunchKernel, function, teams, 1, 1,
-			 32, threads, 1, 0, NULL, NULL, config);
+			 32, threads, 1, lowlat_pool_size, NULL, NULL, config);
   if (r != CUDA_SUCCESS)
     GOMP_PLUGIN_fatal ("cuLaunchKernel error: %s", cuda_error (r));
   if (reverse_offload)

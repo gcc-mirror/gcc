@@ -1,4 +1,4 @@
-(* Copyright (C) 2015-2023 Free Software Foundation, Inc. *)
+(* Copyright (C) 2015-2024 Free Software Foundation, Inc. *)
 (* This file is part of GNU Modula-2.
 
 GNU Modula-2 is free software; you can redistribute it and/or modify it under
@@ -752,7 +752,8 @@ BEGIN
       setOutputFile (Slice (arg, 3, 0))
    ELSIF optionIs ("--extended-opaque", arg)
    THEN
-      setExtendedOpaque (TRUE)
+      (* setExtendedOpaque (TRUE) *)
+      printf0 ("IGNORING --extended-opaque - this option is no longer implemented - please adjust the call to mc\n")
    ELSIF optionIs ("--debug-top", arg)
    THEN
       setDebugTopological (TRUE)

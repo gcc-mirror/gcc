@@ -1,5 +1,5 @@
 /* Subroutines for the Rust front end on the x86 architecture.
-   Copyright (C) 2022 Free Software Foundation, Inc.
+   Copyright (C) 2022-2024 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -59,12 +59,8 @@ ix86_rust_target_cpu_info (void)
     rust_add_target_info ("target_feature", "avx2");
   if (TARGET_AVX512F)
     rust_add_target_info ("target_feature", "avx512f");
-  if (TARGET_AVX512ER)
-    rust_add_target_info ("target_feature", "avx512er");
   if (TARGET_AVX512CD)
     rust_add_target_info ("target_feature", "avx512cd");
-  if (TARGET_AVX512PF)
-    rust_add_target_info ("target_feature", "avx512pf");
   if (TARGET_AVX512DQ)
     rust_add_target_info ("target_feature", "avx512dq");
   if (TARGET_AVX512BW)

@@ -1,5 +1,5 @@
 /* Implements exception handling.
-   Copyright (C) 1989-2023 Free Software Foundation, Inc.
+   Copyright (C) 1989-2024 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
 This file is part of GCC.
@@ -2167,6 +2167,9 @@ expand_builtin_eh_return_data_regno (tree exp)
       return constm1_rtx;
     }
 
+  if (!tree_fits_uhwi_p (which))
+    return constm1_rtx;
+
   iwhich = tree_to_uhwi (which);
   iwhich = EH_RETURN_DATA_REGNO (iwhich);
   if (iwhich == INVALID_REGNUM)
@@ -2281,6 +2284,10 @@ expand_eh_return (void)
   emit_move_insn (EH_RETURN_STACKADJ_RTX, const0_rtx);
 #endif
 
+#ifdef EH_RETURN_TAKEN_RTX
+  emit_move_insn (EH_RETURN_TAKEN_RTX, const0_rtx);
+#endif
+
   around_label = gen_label_rtx ();
   emit_jump (around_label);
 
@@ -2289,6 +2296,10 @@ expand_eh_return (void)
 
 #ifdef EH_RETURN_STACKADJ_RTX
   emit_move_insn (EH_RETURN_STACKADJ_RTX, crtl->eh.ehr_stackadj);
+#endif
+
+#ifdef EH_RETURN_TAKEN_RTX
+  emit_move_insn (EH_RETURN_TAKEN_RTX, const1_rtx);
 #endif
 
   if (targetm.have_eh_return ())
@@ -2301,7 +2312,19 @@ expand_eh_return (void)
 	error ("%<__builtin_eh_return%> not supported on this target");
     }
 
+#ifdef EH_RETURN_TAKEN_RTX
+  rtx_code_label *eh_done_label = gen_label_rtx ();
+  emit_jump (eh_done_label);
+#endif
+
   emit_label (around_label);
+
+#ifdef EH_RETURN_TAKEN_RTX
+  for (rtx tmp : { EH_RETURN_STACKADJ_RTX, EH_RETURN_HANDLER_RTX })
+    if (tmp && REG_P (tmp))
+      emit_clobber (tmp);
+  emit_label (eh_done_label);
+#endif
 }
 
 /* Convert a ptr_mode address ADDR_TREE to a Pmode address controlled by
@@ -3199,9 +3222,6 @@ output_one_function_exception_table (int section)
 void
 output_function_exception_table (int section)
 {
-  const char *fnname = get_fnname_from_decl (current_function_decl);
-  rtx personality = get_personality_function (current_function_decl);
-
   /* Not all functions need anything.  */
   if (!crtl->uses_eh_lsda
       || targetm_common.except_unwind_info (&global_options) == UI_NONE)
@@ -3210,6 +3230,9 @@ output_function_exception_table (int section)
   /* No need to emit any boilerplate stuff for the cold part.  */
   if (section == 1 && !crtl->eh.call_site_record_v[1])
     return;
+
+  const char *fnname = get_fnname_from_decl (current_function_decl);
+  rtx personality = get_personality_function (current_function_decl);
 
   if (personality)
     {

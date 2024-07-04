@@ -1,6 +1,6 @@
 ## Makefile for experimental additions to the GNU C++ Standard library.
 ##
-## Copyright (C) 2014-2023 Free Software Foundation, Inc.
+## Copyright (C) 2014-2024 Free Software Foundation, Inc.
 ##
 ## Process this file with automake to produce Makefile.in.
 ##
@@ -25,7 +25,7 @@ include $(top_srcdir)/fragment.am
 toolexeclib_LTLIBRARIES = libstdc++exp.la
 
 if ENABLE_FILESYSTEM_TS
-filesystem_lib = $(top_builddir)/src/filesystem/libstdc++fs.la
+filesystem_lib = $(top_builddir)/src/filesystem/libstdc++fsconvenience.la
 else
 filesystem_lib =
 endif
@@ -47,10 +47,12 @@ libstdc__exp_la_SOURCES = $(sources)
 
 libstdc__exp_la_LIBADD = \
 	$(top_builddir)/src/c++23/libc++23convenience.la \
+	$(top_builddir)/src/c++26/libc++26convenience.la \
 	$(filesystem_lib) $(backtrace_lib)
 
 libstdc__exp_la_DEPENDENCIES = \
 	$(top_builddir)/src/c++23/libc++23convenience.la \
+	$(top_builddir)/src/c++26/libc++26convenience.la \
 	$(filesystem_lib) $(backtrace_lib)
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be

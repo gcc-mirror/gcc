@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -27,9 +27,9 @@ namespace Rust {
 struct RustIdent
 {
   Resolver::CanonicalPath path;
-  Location locus;
+  location_t locus;
 
-  RustIdent (const Resolver::CanonicalPath &path, Location locus)
+  RustIdent (const Resolver::CanonicalPath &path, location_t locus)
     : path (path), locus (locus)
   {}
 

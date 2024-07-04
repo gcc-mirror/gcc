@@ -197,13 +197,13 @@
       it is intended to precede the recommendations of the GNU Coding<br />
       Standard, which can be referenced in full here:<br />
 <br />
-      <a class="link" href="http://www.gnu.org/prep/standards/standards.html#Formatting" target="_top">http://www.gnu.org/prep/standards/standards.html#Formatting</a><br />
+      <a class="link" href="https://www.gnu.org/prep/standards/standards.html#Formatting" target="_top">https://www.gnu.org/prep/standards/standards.html#Formatting</a><br />
 <br />
       The rest of this is also interesting reading, but skip the "Design<br />
       Advice" part.<br />
 <br />
       The GCC coding conventions are here, and are also useful:<br />
-      <a class="link" href="http://gcc.gnu.org/codingconventions.html" target="_top">http://gcc.gnu.org/codingconventions.html</a><br />
+      <a class="link" href="https://gcc.gnu.org/codingconventions.html" target="_top">https://gcc.gnu.org/codingconventions.html</a><br />
 <br />
       In addition, because it doesn't seem to be stated explicitly anywhere<br />
       else, there is an 80 column source limit.<br />
@@ -468,7 +468,7 @@
 <br />
       Type names and template formal-argument names: <code class="literal">_[A-Z][^_].*</code><br />
 <br />
-      Examples:  <code class="code">_Helper  _CharT  _N</code><br />
+      Examples:  <code class="code">_Helper  _CharT  _Nm</code><br />
 <br />
       Member data and function names: <code class="literal">_M_.*</code><br />
 <br />
@@ -480,7 +480,7 @@
 <br />
       Don't use names in the same scope that differ only in the prefix,<br />
       e.g. _S_top and _M_top. See <a class="link" href="source_code_style.html#coding_style.bad_identifiers" title="Bad Identifiers">BADNAMES</a> for a list of forbidden names.<br />
-      (The most tempting of these seem to be and "_T" and "__sz".)<br />
+      (The most tempting of these seem to be and "_T" and "_N".)<br />
 <br />
       Names must never have "__" internally; it would confuse name<br />
       unmanglers on some targets. Also, never use "__[0-9]", same reason.<br />

@@ -1,5 +1,5 @@
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 /* Test vec_ld and vec_st can support both scalar and vector
    type address points, the list is:

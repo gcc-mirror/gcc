@@ -1,5 +1,7 @@
 // { dg-additional-options "-w -frust-cfg=A" }
 // { dg-output "A\r*\nB\r*\n" }
+#![feature(rustc_attrs)]
+
 #[rustc_builtin_macro]
 macro_rules! cfg {
     () => {{}};

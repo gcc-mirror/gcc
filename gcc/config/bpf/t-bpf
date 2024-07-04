@@ -1,10 +1,16 @@
 
-TM_H += $(srcdir)/config/bpf/coreout.h $(srcdir)/config/bpf/core-builtins.h
+TM_H += $(srcdir)/config/bpf/btfext-out.h $(srcdir)/config/bpf/core-builtins.h
 
-coreout.o: $(srcdir)/config/bpf/coreout.cc
+bpf-c.o: $(srcdir)/config/bpf/bpf-c.cc
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
+btfext-out.o: $(srcdir)/config/bpf/btfext-out.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
 core-builtins.o: $(srcdir)/config/bpf/core-builtins.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
+
+PASSES_EXTRA += $(srcdir)/config/bpf/bpf-passes.def

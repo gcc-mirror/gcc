@@ -8,8 +8,8 @@ foo (int * x, int n)
   int i;
   int sum;
   int _1;
-  long unsigned int _2;
-  long unsigned int _3;
+  __SIZETYPE__ _2;
+  __SIZETYPE__ _3;
   int * _4;
   int _5;
   __SIZETYPE__ _7;
@@ -38,7 +38,7 @@ foo (int * x, int n)
   sum_30 = __PHI (__BB5: 0, __BB6: sum_27);
   i_32 = __PHI (__BB5: 0, __BB6: i_28);
   _1 = i_32 * 4;
-  _2 = (long unsigned int) _1;
+  _2 = (__SIZETYPE__) _1;
   _3 = _2 * 4ul;
   _4 = x_23(D) + _3;
   _5 = __MEM <int> (_4);

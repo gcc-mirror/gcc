@@ -36,6 +36,7 @@ public:
     void visit(AST.DebugSymbol s) { visit(cast(AST.Dsymbol)s); }
     void visit(AST.VersionSymbol s) { visit(cast(AST.Dsymbol)s); }
     void visit(AST.AliasAssign s) { visit(cast(AST.Dsymbol)s); }
+    void visit(AST.CAsmDeclaration s) { visit(cast(AST.Dsymbol)s); }
 
     // ScopeDsymbols
     void visit(AST.Package s) { visit(cast(AST.ScopeDsymbol)s); }
@@ -183,6 +184,7 @@ public:
     void visit(AST.TypeidExp e) { visit(cast(AST.Expression)e); }
     void visit(AST.TraitsExp e) { visit(cast(AST.Expression)e); }
     void visit(AST.StringExp e) { visit(cast(AST.Expression)e); }
+    void visit(AST.InterpExp e) { visit(cast(AST.Expression)e); }
     void visit(AST.NewExp e) { visit(cast(AST.Expression)e); }
     void visit(AST.AssocArrayLiteralExp e) { visit(cast(AST.Expression)e); }
     void visit(AST.ArrayLiteralExp e) { visit(cast(AST.Expression)e); }
@@ -298,5 +300,6 @@ public:
     void visit(AST.StructInitializer i) { visit(cast(AST.Initializer)i); }
     void visit(AST.ArrayInitializer i) { visit(cast(AST.Initializer)i); }
     void visit(AST.VoidInitializer i) { visit(cast(AST.Initializer)i); }
+    void visit(AST.DefaultInitializer i) { visit(cast(AST.Initializer)i); }
     void visit(AST.CInitializer i) { visit(cast(AST.CInitializer)i); }
 }

@@ -1,5 +1,5 @@
 /* Register note definitions.
-   Copyright (C) 2004-2023 Free Software Foundation, Inc.
+   Copyright (C) 2004-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -96,8 +96,9 @@ REG_NOTE (DEP_CONTROL)
    to extract the actual value.  */
 REG_NOTE (BR_PROB)
 
-/* Attached to a call insn; indicates that the call is malloc-like and
-   that the pointer returned cannot alias anything else.  */
+/* Attached to a move insn which receives the result of a call; indicates that
+   the call is malloc-like and that the pointer returned cannot alias anything
+   else.  */
 REG_NOTE (NOALIAS)
 
 /* REG_BR_PRED is attached to JUMP_INSNs.  It contains

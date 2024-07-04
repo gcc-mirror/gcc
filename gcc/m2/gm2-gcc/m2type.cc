@@ -1,6 +1,6 @@
 /* m2type.cc provides an interface to GCC type trees.
 
-Copyright (C) 2012-2023 Free Software Foundation, Inc.
+Copyright (C) 2012-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -894,22 +894,6 @@ m2type_GetCardinalAddressType (void)
   return m2_cardinal_address_type_node;
 }
 
-/* noBitsRequired returns the number of bits required to contain,
-   values.  How many bits are required to represent all numbers
-   between: 0..values-1 */
-
-static tree
-noBitsRequired (tree values)
-{
-  int bits = tree_floor_log2 (values);
-
-  if (integer_pow2p (values))
-    /* remember we start counting from zero.  */
-    return m2decl_BuildIntegerConstant (bits);
-  else
-    return m2decl_BuildIntegerConstant (bits + 1);
-}
-
 #if 0
 /* build_set_type creates a set type from the, domain, [low..high].
    The values low..high all have type, range_type.  */
@@ -1118,9 +1102,7 @@ m2type_BuildSmallestTypeRange (location_t location, tree low, tree high)
   m2assert_AssertLocation (location);
   low = fold (low);
   high = fold (high);
-  bits = fold (noBitsRequired (
-      m2expr_BuildAdd (location, m2expr_BuildSub (location, high, low, false),
-                       m2expr_GetIntegerOne (location), false)));
+  bits = fold (m2expr_calcNbits (location, low, high));
   return build_m2_specific_size_type (location, INTEGER_TYPE,
                                       TREE_INT_CST_LOW (bits),
                                       tree_int_cst_sgn (low) < 0);
@@ -1433,48 +1415,31 @@ build_m2_char_node (void)
 static tree
 build_m2_short_real_node (void)
 {
-  tree c;
-
-  /* Define `REAL'.  */
-
-  c = make_node (REAL_TYPE);
-  TYPE_PRECISION (c) = FLOAT_TYPE_SIZE;
-  layout_type (c);
-  return c;
+  /* Define `SHORTREAL'.  */
+  ASSERT_CONDITION (TYPE_SIZE (float_type_node));
+  return float_type_node;
 }
 
 static tree
 build_m2_real_node (void)
 {
-  tree c;
-
   /* Define `REAL'.  */
-
-  c = make_node (REAL_TYPE);
-  TYPE_PRECISION (c) = DOUBLE_TYPE_SIZE;
-  layout_type (c);
-  return c;
+  ASSERT_CONDITION (TYPE_SIZE (double_type_node));
+  return double_type_node;
 }
 
 static tree
 build_m2_long_real_node (void)
 {
-  tree c;
+  tree longreal;
 
   /* Define `LONGREAL'.  */
-
-  if (m2configure_M2CLongRealFloat128 ())
-    c = float128_type_node;
-  else if (m2configure_M2CLongRealIBM128 ())
-    {
-      c = make_node (REAL_TYPE);
-      TYPE_PRECISION (c) = LONG_DOUBLE_TYPE_SIZE;
-    }
+  if (M2Options_GetIEEELongDouble ())
+    longreal = float128_type_node;
   else
-    c = long_double_type_node;
-
-  layout_type (c);
-  return c;
+    longreal = long_double_type_node;
+  ASSERT_CONDITION (TYPE_SIZE (longreal));
+  return longreal;
 }
 
 static tree
@@ -2519,8 +2484,7 @@ m2type_BuildSubrangeType (location_t location, char *name, tree type,
     error ("high bound for the subrange has overflowed");
 
   /* First build a type with the base range.  */
-  range_type = build_range_type (type, TYPE_MIN_VALUE (type),
-				 TYPE_MAX_VALUE (type));
+  range_type = build_range_type (type, lowval, highval);
 
   TYPE_UNSIGNED (range_type) = TYPE_UNSIGNED (type);
 #if 0

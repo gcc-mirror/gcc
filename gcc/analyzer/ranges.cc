@@ -1,5 +1,5 @@
 /* Symbolic offsets and ranges.
-   Copyright (C) 2023 Free Software Foundation, Inc.
+   Copyright (C) 2023-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_MEMORY
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -97,10 +98,16 @@ symbolic_byte_offset::dump (bool simple) const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   dump_to_pp (&pp, simple);
   pp_newline (&pp);
   pp_flush (&pp);
+}
+
+json::value *
+symbolic_byte_offset::to_json () const
+{
+  return m_num_bytes_sval->to_json ();
 }
 
 tree
@@ -150,10 +157,19 @@ symbolic_byte_range::dump (bool simple, region_model_manager &mgr) const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   dump_to_pp (&pp, simple, mgr);
   pp_newline (&pp);
   pp_flush (&pp);
+}
+
+json::value *
+symbolic_byte_range::to_json () const
+{
+  json::object *obj = new json::object ();
+  obj->set ("start", m_start.to_json ());
+  obj->set ("size", m_size.to_json ());
+  return obj;
 }
 
 bool
@@ -193,6 +209,12 @@ tristate
 symbolic_byte_range::intersection (const symbolic_byte_range &other,
 				   const region_model &model) const
 {
+  /* If either is empty, then there is no intersection.  */
+  if (empty_p ())
+    return tristate::TS_FALSE;
+  if (other.empty_p ())
+    return tristate::TS_FALSE;
+
   /* For brevity, consider THIS to be "range A", and OTHER to be "range B".  */
 
   region_model_manager *mgr = model.get_manager ();
@@ -262,12 +284,17 @@ static void test_intersects (void)
   ASSERT_EQ (r0_9.get_next_byte_offset (mgr), ten);
   ASSERT_EQ (r0_9.get_last_byte_offset (mgr), nine);
 
+  symbolic_byte_range concrete_empty (zero, zero);
+  ASSERT_TRUE (concrete_empty.empty_p ());
+
   ASSERT_EQ (r0_9.intersection (r0, m), tristate::TS_TRUE);
   ASSERT_EQ (r0.intersection (r0_9, m), tristate::TS_TRUE);
   ASSERT_EQ (r0_9.intersection (r9, m), tristate::TS_TRUE);
   ASSERT_EQ (r9.intersection (r0_9, m), tristate::TS_TRUE);
   ASSERT_EQ (r0_9.intersection (r10, m), tristate::TS_FALSE);
   ASSERT_EQ (r10.intersection (r0_9, m), tristate::TS_FALSE);
+  ASSERT_EQ (concrete_empty.intersection (r0_9, m), tristate::TS_FALSE);
+  ASSERT_EQ (r0_9.intersection (concrete_empty, m), tristate::TS_FALSE);
 
   ASSERT_EQ (r5_9.intersection (r0, m), tristate::TS_FALSE);
   ASSERT_EQ (r0.intersection (r5_9, m), tristate::TS_FALSE);
@@ -286,6 +313,9 @@ static void test_intersects (void)
   symbolic_byte_range ry (y_init_sval, one);
   symbolic_byte_range rx_x_plus_y_minus_1 (x_init_sval, y_init_sval);
 
+  symbolic_byte_range symbolic_empty (x_init_sval, zero);
+  ASSERT_TRUE (symbolic_empty.empty_p ());
+
   ASSERT_EQ (rx_x_plus_y_minus_1.get_start_byte_offset (), x_init_sval);
   ASSERT_EQ (rx_x_plus_y_minus_1.get_size_in_bytes (), y_init_sval);
   ASSERT_EQ
@@ -296,6 +326,10 @@ static void test_intersects (void)
      SK_BINOP);
 
   ASSERT_EQ (rx.intersection (ry, m), tristate::TS_UNKNOWN);
+  ASSERT_EQ (rx.intersection (concrete_empty, m), tristate::TS_FALSE);
+  ASSERT_EQ (concrete_empty.intersection (rx, m), tristate::TS_FALSE);
+  ASSERT_EQ (rx.intersection (symbolic_empty, m), tristate::TS_FALSE);
+  ASSERT_EQ (symbolic_empty.intersection (rx, m), tristate::TS_FALSE);
   ASSERT_EQ (r0_x_minus_1.intersection (r0, m), tristate::TS_TRUE);
 #if 0
   ASSERT_EQ (r0_x_minus_1.intersection (rx, m), tristate::TS_FALSE);

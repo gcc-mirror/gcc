@@ -9,6 +9,7 @@ union tree_node
 {
   struct tree_common common;
 };
+void bar (tree);
 static void
 java_check_regular_methods (tree class_decl)
 {

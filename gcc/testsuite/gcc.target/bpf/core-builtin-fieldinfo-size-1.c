@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O0 -dA -gbtf -mco-re" } */
+/* { dg-options "-O0 -dA -gbtf -mco-re -masm=normal" } */
 
 struct S {
   unsigned int a1: 7;
@@ -29,10 +29,10 @@ unsigned int foo (union U *u)
   return ls + s + a2 + a3 + ca;
 }
 
-/* { dg-final { scan-assembler-times "\[\t \]mov\[\t \]%r\[0-9\],24" 1 } } */
-/* { dg-final { scan-assembler-times "\[\t \]mov\[\t \]%r\[0-9\],20" 1 } } */
-/* { dg-final { scan-assembler-times "\[\t \]mov\[\t \]%r\[0-9\],4" 2 } } */
-/* { dg-final { scan-assembler-times "\[\t \]mov\[\t \]%r\[0-9\],15" 1 } } */
+/* { dg-final { scan-assembler-times "\[\t \]lddw\[\t \]%r\[0-9\],24" 1 } } */
+/* { dg-final { scan-assembler-times "\[\t \]lddw\[\t \]%r\[0-9\],20" 1 } } */
+/* { dg-final { scan-assembler-times "\[\t \]lddw\[\t \]%r\[0-9\],4" 2 } } */
+/* { dg-final { scan-assembler-times "\[\t \]lddw\[\t \]%r\[0-9\],15" 1 } } */
 
 /* { dg-final { scan-assembler-times "ascii \"0:0.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
 /* { dg-final { scan-assembler-times "ascii \"0:1.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */

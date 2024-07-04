@@ -2,7 +2,7 @@
 REQUIRED_ARGS: -m64
 TEST_OUTPUT:
 ---
-fail_compilation/test16381.d(15): Error: `foo()` is not an lvalue and cannot be modified
+fail_compilation/test16381.d(15): Error: cannot take address of expression `foo()` because it is not an lvalue
 ---
 */
 

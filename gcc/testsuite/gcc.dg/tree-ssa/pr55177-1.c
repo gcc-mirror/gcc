@@ -1,10 +1,10 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
-extern int x;
+extern __INT32_TYPE__ x;
 
 void foo(void)
 {
-  int a = __builtin_bswap32(x);
+  __INT32_TYPE__ a = __builtin_bswap32(x);
   a &= 0x5a5b5c5d;
   x = __builtin_bswap32(a);
 }

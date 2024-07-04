@@ -18,6 +18,10 @@
 /* Only 2 members.  */
 /* { dg-final { scan-assembler-times "MEMBER" 2 } } */
 
+#if __SIZEOF_INT__ < 4
+#define unsigned __UINT32_TYPE__
+#endif
+
 struct foo
 {
   unsigned a : 31;

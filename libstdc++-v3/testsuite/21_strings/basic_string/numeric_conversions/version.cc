@@ -1,4 +1,6 @@
 // { dg-do compile }
+// { dg-add-options no_pch }
+
 #include <version>
 
 #if __cplusplus > 202302L

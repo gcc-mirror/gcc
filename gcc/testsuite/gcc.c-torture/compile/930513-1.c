@@ -8,6 +8,7 @@ struct s {
   int f2 : 8;
 };
 
+int
 f (struct s *x)
 {
   return x->f2++ == 0;

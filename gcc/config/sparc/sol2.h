@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC, for SPARC running Solaris 2
-   Copyright (C) 1992-2023 Free Software Foundation, Inc.
+   Copyright (C) 1992-2024 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@netcom.com).
    Additional changes by David V. Henkel-Wallace (gumby@cygnus.com).
 
@@ -37,6 +37,9 @@ along with GCC; see the file COPYING3.  If not see
    and changed it to CM_MEDMID in the Studio 9 compiler.  */
 #undef SPARC_DEFAULT_CMODEL
 #define SPARC_DEFAULT_CMODEL CM_MEDMID
+
+/* Redue ggc-page.cc's chunk size to account for mmap red-zone pages.  */
+#define GGC_QUIRE_SIZE 510
 
 /* Select a format to encode pointers in exception handling data.  CODE
    is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is
@@ -437,7 +440,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 /* Define for support of TFmode long double.
    SPARC ABI says that long double is 4 words.  */
-#define LONG_DOUBLE_TYPE_SIZE 128
+#define SPARC_LONG_DOUBLE_TYPE_SIZE 128
 
 /* Solaris's _Qp_* library routine implementation clobbers the output
    memory before the inputs are fully consumed.  */
@@ -456,3 +459,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #undef SPARC_LOW_FE_EXCEPT_VALUES
 #define SPARC_LOW_FE_EXCEPT_VALUES 1
+
+#undef SUN_V9_ABI_COMPATIBILITY
+#define SUN_V9_ABI_COMPATIBILITY 1

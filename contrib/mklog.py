@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2020-2023 Free Software Foundation, Inc.
+# Copyright (C) 2020-2024 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -277,7 +277,7 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False,
                 # it used to be path.source_file[2:]
                 relative_path = get_rel_path_if_prefixed(file.source_file[2:],
                                                          changelog)
-                out = append_changelog_line(out, relative_path, 'Moved to...')
+                out = append_changelog_line(out, relative_path, 'Move to...')
                 new_path = get_rel_path_if_prefixed(file.target_file[2:],
                                                     changelog)
                 out += f'\t* {new_path}: ...here.\n'

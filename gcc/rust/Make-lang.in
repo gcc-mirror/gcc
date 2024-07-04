@@ -1,6 +1,6 @@
 # Make-lang.in -- Top level -*- makefile -*- fragment for GCC Rust frontend.
 
-# Copyright (C) 2009-2023 Free Software Foundation, Inc.
+# Copyright (C) 2009-2024 Free Software Foundation, Inc.
 
 # This file is part of GCC.
 
@@ -33,9 +33,9 @@ GCCRS_INSTALL_NAME := $(shell echo gccrs|sed '$(program_transform_name)')
 GCCRS_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gccrs|sed '$(program_transform_name)')
 
 # Define the names for selecting rust in LANGUAGES.
-rust: rust1$(exeext)
+rust: crab1$(exeext)
 
-rust.serial = rust1$(exeext)
+rust.serial = crab1$(exeext)
 
 # Tell GNU make to ignore files by these names if they exist.
 .PHONY: rust
@@ -64,6 +64,7 @@ gccrs$(exeext): $(GCCRS_D_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBDEPS)
 # The compiler proper, not driver
 GRS_OBJS = \
     rust/rust-lang.o \
+    rust/rust-attribs.o \
     rust/rust-object-export.o \
     rust/rust-linemap.o \
     rust/rust-diagnostics.o \
@@ -73,29 +74,53 @@ GRS_OBJS = \
     rust/rust-cfg-parser.o \
     rust/rust-parse.o \
     rust/rust-ast.o \
+    rust/rust-ast-formatting.o \
+    rust/rust-path.o \
+    rust/rust-pattern.o \
     rust/rust-ast-fragment.o \
     rust/rust-ast-dump.o \
+    rust/rust-ast-collector.o \
+    rust/rust-ast-visitor.o \
     rust/rust-hir-dump.o \
     rust/rust-session-manager.o \
     rust/rust-compile.o \
     rust/rust-mangle.o \
+    rust/rust-mangle-v0.o \
+    rust/rust-mangle-legacy.o \
     rust/rust-compile-resolve-path.o \
     rust/rust-macro-expand.o \
-    rust/rust-attribute-visitor.o \
+    rust/rust-cfg-strip.o \
+    rust/rust-expand-visitor.o \
+    rust/rust-ast-builder.o \
+    rust/rust-derive.o \
+    rust/rust-derive-clone.o \
+    rust/rust-derive-copy.o \
+    rust/rust-proc-macro.o \
     rust/rust-macro-invoc-lexer.o \
+    rust/rust-proc-macro-invoc-lexer.o \
     rust/rust-macro-substitute-ctx.o \
     rust/rust-macro-builtins.o \
     rust/rust-hir.o \
     rust/rust-hir-map.o \
     rust/rust-attributes.o \
+    rust/rust-keyword-values.o \
     rust/rust-abi.o \
-	rust/rust-macro.o \
+    rust/rust-token-converter.o \
+    rust/rust-macro.o \
     rust/rust-ast-lower.o \
     rust/rust-ast-lower-base.o \
     rust/rust-ast-lower-pattern.o \
     rust/rust-ast-lower-item.o \
+    rust/rust-ast-lower-implitem.o \
     rust/rust-ast-lower-expr.o \
     rust/rust-ast-lower-type.o \
+    rust/rust-ast-lower-stmt.o \
+    rust/rust-rib.o \
+    rust/rust-name-resolution-context.o \
+    rust/rust-default-resolver.o \
+    rust/rust-toplevel-name-resolver-2.0.o \
+    rust/rust-early-name-resolver-2.0.o \
+    rust/rust-late-name-resolver-2.0.o \
     rust/rust-early-name-resolver.o \
     rust/rust-name-resolver.o \
     rust/rust-ast-resolve.o \
@@ -120,7 +145,6 @@ GRS_OBJS = \
     rust/rust-tyty-subst.o \
     rust/rust-typecheck-context.o \
     rust/rust-tyty-bounds.o \
-    rust/rust-hir-type-check-util.o \
     rust/rust-hir-trait-resolve.o \
     rust/rust-hir-trait-reference.o \
     rust/rust-hir-type-check-item.o \
@@ -131,6 +155,9 @@ GRS_OBJS = \
     rust/rust-hir-type-check-stmt.o \
     rust/rust-hir-type-check-enumitem.o \
     rust/rust-hir-type-check-implitem.o \
+    rust/rust-borrow-checker.o \
+    rust/rust-bir-builder-expr-stmt.o \
+    rust/rust-bir-dump.o \
     rust/rust-hir-dot-operator.o \
     rust/rust-hir-path-probe.o \
     rust/rust-type-util.o \
@@ -143,13 +170,14 @@ GRS_OBJS = \
     rust/rust-const-checker.o \
     rust/rust-lint-marklive.o \
     rust/rust-lint-unused-var.o \
+    rust/rust-readonly-check.o \
     rust/rust-hir-type-check-path.o \
     rust/rust-unsafe-checker.o \
     rust/rust-compile-intrinsic.o \
     rust/rust-compile-pattern.o \
     rust/rust-compile-fnparam.o \
+    rust/rust-compile-proc-macro.o \
     rust/rust-base62.o \
-    rust/rust-optional-test.o \
     rust/rust-compile-item.o \
     rust/rust-compile-implitem.o \
     rust/rust-compile-stmt.o \
@@ -168,6 +196,10 @@ GRS_OBJS = \
     rust/rust-builtins.o \
     rust/rust-feature.o \
     rust/rust-feature-gate.o \
+    rust/rust-ast-validation.o \
+    rust/rust-dir-owner.o \
+    rust/rust-unicode.o \
+    rust/rust-punycode.o \
     $(END)
 # removed object files from here
 
@@ -176,11 +208,16 @@ RUST_ALL_OBJS = $(GRS_OBJS) $(RUST_TARGET_OBJS)
 
 rust_OBJS = $(RUST_ALL_OBJS) rust/rustspec.o
 
-# The compiler itself is called rust1 (formerly grs1)
-rust1$(exeext): $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(LIBDEPS) $(rust.prev)
+LIBPROC_MACRO_INTERNAL = ../libgrust/libproc_macro_internal/libproc_macro_internal.a
+
+
+RUST_LIBDEPS = $(LIBDEPS) $(LIBPROC_MACRO_INTERNAL)
+
+# The compiler itself is called crab1
+crab1$(exeext): $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(RUST_LIBDEPS) $(rust.prev)
 	@$(call LINK_PROGRESS,$(INDEX.rust),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-	      $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
+	      $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(LIBS) $(LIBPROC_MACRO_INTERNAL) $(BACKENDLIBS)
 	@$(call LINK_PROGRESS,$(INDEX.rust),end)
 
 # Build hooks.
@@ -284,7 +321,7 @@ rust.uninstall:
 selftest-rust: s-selftest-rust
 
 RUST_SELFTEST_FLAGS = -xrust -frust-incomplete-and-experimental-compiler-do-not-use $(SELFTEST_FLAGS)
-RUST_SELFTEST_DEPS = rust1$(exeext) $(SELFTEST_DEPS)
+RUST_SELFTEST_DEPS = crab1$(exeext) $(SELFTEST_DEPS)
 
 # Run the rust selftests
 s-selftest-rust: $(RUST_SELFTEST_DEPS)
@@ -307,6 +344,8 @@ selftest-rust-valgrind: $(RUST_SELFTEST_DEPS)
 # should have dependencies on info files that should be installed.
 rust.install-info:
 
+rust.install-dvi:
+rust.install-html:
 rust.install-pdf:
 
 # Install man pages for the front end. This target should ignore errors.
@@ -348,8 +387,10 @@ RUST_INCLUDES = -I $(srcdir)/rust \
 	-I $(srcdir)/rust/checks/lints \
 	-I $(srcdir)/rust/checks/errors \
 	-I $(srcdir)/rust/checks/errors/privacy \
+	-I $(srcdir)/rust/checks/errors/borrowck \
 	-I $(srcdir)/rust/util \
-        -I $(srcdir)/rust/metadata
+        -I $(srcdir)/rust/metadata \
+		-I $(srcdir)/../libgrust
 
 # add files that require cross-folder includes - currently rust-lang.o, rust-lex.o
 CFLAGS-rust/rust-lang.o += $(RUST_INCLUDES)
@@ -421,6 +462,11 @@ rust/%.o: rust/checks/errors/%.cc
 
 # build privacy pass files in rust folder
 rust/%.o: rust/checks/errors/privacy/%.cc
+	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
+	$(POSTCOMPILE)
+
+# build borrow checking pass files in rust folder
+rust/%.o: rust/checks/errors/borrowck/%.cc
 	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
 	$(POSTCOMPILE)
 

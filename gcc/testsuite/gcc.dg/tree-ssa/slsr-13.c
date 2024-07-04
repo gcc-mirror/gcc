@@ -20,5 +20,5 @@ f (int s, int c)
   return x;
 }
 
-/* { dg-final { scan-tree-dump-times " \\* 4" 2 "optimized" } } */
-/* { dg-final { scan-tree-dump-times " \\* 5" 0 "optimized" } } */
+/* { dg-final { scan-tree-dump-times " \\* 4" 2 "optimized" {xfail hppa*64*-*-* } } } */
+/* { dg-final { scan-tree-dump-times " \\* 5" 0 "optimized" {xfail hppa*64*-*-* } } } */

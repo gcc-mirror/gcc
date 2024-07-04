@@ -12,8 +12,8 @@
   })
 
 (define_insn_and_split "*zero_extendqihi2"
-  [(set (match_operand:HI 0 "register_operand" "=r,r")
-	(zero_extend:HI (match_operand:QI 1 "general_operand_src" "0,g>")))]
+  [(set (match_operand:HI 0 "register_operand" "=r,r,r")
+	(zero_extend:HI (match_operand:QI 1 "general_operand_src" "0,r,g>")))]
   ""
   "#"
   "&& reload_completed"
@@ -21,14 +21,15 @@
 	      (clobber (reg:CC CC_REG))])])
 
 (define_insn "*zero_extendqihi2<cczn>"
-  [(set (match_operand:HI 0 "register_operand" "=r,r")
-	(zero_extend:HI (match_operand:QI 1 "general_operand_src" "0,g>")))
+  [(set (match_operand:HI 0 "register_operand" "=r,r,r")
+	(zero_extend:HI (match_operand:QI 1 "general_operand_src" "0,r,g>")))
    (clobber (reg:CC CC_REG))]
   ""
   "@
   extu.w	%T0
+  mov.b\t%X1,%R0\;extu.w\t%T0
   #"
-  [(set_attr "length" "2,10")])
+  [(set_attr "length" "2,4,10")])
 
 ;; Split the zero extension of a general operand (actually a memory
 ;; operand) into a load of the operand and the actual zero extension

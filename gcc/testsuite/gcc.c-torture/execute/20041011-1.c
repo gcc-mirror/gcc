@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 typedef unsigned long long ull;
 volatile int gvol[32];
 ull gull;

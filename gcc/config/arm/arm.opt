@@ -1,6 +1,6 @@
 ; Options for the ARM port of the compiler.
 
-; Copyright (C) 2005-2023 Free Software Foundation, Inc.
+; Copyright (C) 2005-2024 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -29,9 +29,6 @@ enum aarch_function_type aarch_ra_sign_scope = AARCH_FUNCTION_NONE
 
 TargetVariable
 unsigned aarch_enable_bti = 0
-
-TargetVariable
-enum aarch_key_type aarch_ra_sign_key = AARCH_KEY_A
 
 Enum
 Name(tls_type) Type(enum arm_tls_type)
@@ -365,6 +362,9 @@ mstack-protector-guard-offset=
 Target Joined RejectNegative String Var(arm_stack_protector_guard_offset_str)
 Use an immediate to offset from the TLS register. This option is for use with
 fstack-protector-guard=tls and not for use in user-land code.
+
+mdlstp
+Target Var(dlstp_enabled) Init(1) Undocumented
 
 TargetVariable
 long arm_stack_protector_guard_offset = 0

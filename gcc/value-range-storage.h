@@ -1,5 +1,5 @@
 /* Support routines for vrange storage.
-   Copyright (C) 2022-2023 Free Software Foundation, Inc.
+   Copyright (C) 2022-2024 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>.
 
 This file is part of GCC.
@@ -73,12 +73,8 @@ public:
 private:
   DISABLE_COPY_AND_ASSIGN (irange_storage);
   static size_t size (const irange &r);
-  const unsigned char *lengths_address () const;
-  unsigned char *write_lengths_address ();
-  friend void gt_ggc_mx_irange_storage (void *);
-  friend void gt_pch_p_14irange_storage (void *, void *,
-					      gt_pointer_operator, void *);
-  friend void gt_pch_nx_irange_storage (void *);
+  const unsigned short *lengths_address () const;
+  unsigned short *write_lengths_address ();
 
   // The shared precision of each number.
   unsigned short m_precision;
@@ -97,9 +93,42 @@ private:
   // Another variable-length part of the structure following the HWIs.
   // This is the length of each wide_int in m_val.
   //
-  // unsigned char m_len[];
+  // unsigned short m_len[];
 
   irange_storage (const irange &r);
+};
+
+// Efficient memory storage for a prange.
+
+class prange_storage : public vrange_storage
+{
+public:
+  static prange_storage *alloc (vrange_internal_alloc &, const prange &);
+  void set_prange (const prange &r);
+  void get_prange (prange &r, tree type) const;
+  bool equal_p (const prange &r) const;
+  bool fits_p (const prange &r) const;
+  void dump () const;
+private:
+  DISABLE_COPY_AND_ASSIGN (prange_storage);
+  prange_storage (const prange &r);
+
+  enum value_range_kind m_kind : 3;
+
+  // We don't use TRAILING_WIDE_INT_ACCESSOR because the getters here
+  // must be const.  Perhaps TRAILING_WIDE_INT_ACCESSOR could be made
+  // const and return wide_int instead of trailing_wide_int.
+  wide_int get_low () const { return m_trailing_ints[0]; }
+  wide_int get_high () const { return m_trailing_ints[1]; }
+  wide_int get_value () const { return m_trailing_ints[2]; }
+  wide_int get_mask () const { return m_trailing_ints[3]; }
+  template <typename T> void set_low (const T &x) { m_trailing_ints[0] = x; }
+  template <typename T> void set_high (const T &x) { m_trailing_ints[1] = x; }
+  template <typename T> void set_value (const T &x) { m_trailing_ints[2] = x; }
+  template <typename T> void set_mask (const T &x) { m_trailing_ints[3] = x; }
+
+  static const unsigned int NINTS = 4;
+  trailing_wide_ints<NINTS> m_trailing_ints;
 };
 
 // Efficient memory storage for an frange.

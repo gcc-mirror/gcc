@@ -1,5 +1,5 @@
 /* Control flow graph building code for GNU compiler.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -693,6 +693,43 @@ compute_outgoing_frequencies (basic_block b)
     }
 }
 
+/* Update the profile information for BB, which was created by splitting
+   an RTL block that had a non-final jump.  */
+
+static void
+update_profile_for_new_sub_basic_block (basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+
+  bool initialized_src = false, uninitialized_src = false;
+  bb->count = profile_count::zero ();
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      if (e->count ().initialized_p ())
+	{
+	  bb->count += e->count ();
+	  initialized_src = true;
+	}
+      else
+	uninitialized_src = true;
+    }
+  /* When some edges are missing with read profile, this is
+     most likely because RTL expansion introduced loop.
+     When profile is guessed we may have BB that is reachable
+     from unlikely path as well as from normal path.
+
+     TODO: We should handle loops created during BB expansion
+     correctly here.  For now we assume all those loop to cycle
+     precisely once.  */
+  if (!initialized_src
+      || (uninitialized_src
+	   && profile_status_for_fn (cfun) < PROFILE_GUESSED))
+    bb->count = profile_count::uninitialized ();
+
+  compute_outgoing_frequencies (bb);
+}
+
 /* Assume that some pass has inserted labels or control flow
    instructions within a basic block.  Split basic blocks as needed
    and create edges.  */
@@ -744,40 +781,15 @@ find_many_sub_basic_blocks (sbitmap blocks)
   if (profile_status_for_fn (cfun) != PROFILE_ABSENT)
     FOR_BB_BETWEEN (bb, min, max->next_bb, next_bb)
       {
-	edge e;
-	edge_iterator ei;
-
 	if (STATE (bb) == BLOCK_ORIGINAL)
 	  continue;
 	if (STATE (bb) == BLOCK_NEW)
 	  {
-	    bool initialized_src = false, uninitialized_src = false;
-	    bb->count = profile_count::zero ();
-	    FOR_EACH_EDGE (e, ei, bb->preds)
-	      {
-		if (e->count ().initialized_p ())
-		  {
-		    bb->count += e->count ();
-		    initialized_src = true;
-		  }
-		else
-		  uninitialized_src = true;
-	      }
-	    /* When some edges are missing with read profile, this is
-	       most likely because RTL expansion introduced loop.
-	       When profile is guessed we may have BB that is reachable
-	       from unlikely path as well as from normal path.
-
-	       TODO: We should handle loops created during BB expansion
-	       correctly here.  For now we assume all those loop to cycle
-	       precisely once.  */
-	    if (!initialized_src
-		|| (uninitialized_src
-		     && profile_status_for_fn (cfun) < PROFILE_GUESSED))
-	      bb->count = profile_count::uninitialized ();
+	    update_profile_for_new_sub_basic_block (bb);
+	    continue;
 	  }
- 	/* If nothing changed, there is no need to create new BBs.  */
-	else if (EDGE_COUNT (bb->succs) == n_succs[bb->index])
+	/* If nothing changed, there is no need to create new BBs.  */
+	if (EDGE_COUNT (bb->succs) == n_succs[bb->index])
 	  {
 	    /* In rare occassions RTL expansion might have mistakely assigned
 	       a probabilities different from what is in CFG.  This happens
@@ -788,10 +800,33 @@ find_many_sub_basic_blocks (sbitmap blocks)
 	      update_br_prob_note (bb);
 	    continue;
 	  }
-
 	compute_outgoing_frequencies (bb);
       }
 
   FOR_EACH_BB_FN (bb, cfun)
     SET_STATE (bb, 0);
+}
+
+/* Like find_many_sub_basic_blocks, but look only within BB.  */
+
+void
+find_sub_basic_blocks (basic_block bb)
+{
+  basic_block end_bb = bb->next_bb;
+  find_bb_boundaries (bb);
+  if (bb->next_bb == end_bb)
+    return;
+
+  /* Re-scan and wire in all edges.  This expects simple (conditional)
+     jumps at the end of each new basic blocks.  */
+  make_edges (bb, end_bb->prev_bb, 1);
+
+  /* Update branch probabilities.  Expect only (un)conditional jumps
+     to be created with only the forward edges.  */
+  if (profile_status_for_fn (cfun) != PROFILE_ABSENT)
+    {
+      compute_outgoing_frequencies (bb);
+      for (bb = bb->next_bb; bb != end_bb; bb = bb->next_bb)
+	update_profile_for_new_sub_basic_block (bb);
+    }
 }

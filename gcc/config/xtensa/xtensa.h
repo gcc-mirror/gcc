@@ -1,5 +1,5 @@
 /* Definitions of Tensilica's Xtensa target machine for GNU compiler.
-   Copyright (C) 2001-2023 Free Software Foundation, Inc.
+   Copyright (C) 2001-2024 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -54,7 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_WINDOWED_ABI	xtensa_windowed_abi
 #define TARGET_DEBUG		XCHAL_HAVE_DEBUG
 #define TARGET_L32R		XCHAL_HAVE_L32R
-#define TARGET_SALT		(XTENSA_MARCH_EARLIEST >= 260000)
+#define TARGET_SALT		(XTENSA_MARCH_EARLIEST >= 270000)
 
 #define TARGET_DEFAULT (MASK_SERIALIZE_VOLATILE)
 
@@ -120,9 +120,6 @@ along with GCC; see the file COPYING3.  If not see
 #define SHORT_TYPE_SIZE 16
 #define LONG_TYPE_SIZE 32
 #define LONG_LONG_TYPE_SIZE 64
-#define FLOAT_TYPE_SIZE 32
-#define DOUBLE_TYPE_SIZE 64
-#define LONG_DOUBLE_TYPE_SIZE 64
 
 /* Allocation boundary (in *bits*) for storing pointers in memory.  */
 #define POINTER_BOUNDARY 32
@@ -602,17 +599,17 @@ typedef struct xtensa_args
    valid address.  This is defined to be the same as 'CONSTANT_P (X)',
    but rejecting CONST_DOUBLE.  */
 #define CONSTANT_ADDRESS_P(X)						\
-  ((GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
-    || GET_CODE (X) == CONST_INT || GET_CODE (X) == HIGH		\
+  ((LABEL_REF_P (X) || SYMBOL_REF_P (X) || CONST_INT_P (X)		\
+    || (GET_CODE (X) == HIGH)						\
     || (GET_CODE (X) == CONST)))
 
 /* A C expression that is nonzero if X is a legitimate immediate
    operand on the target machine when generating position independent
    code.  */
 #define LEGITIMATE_PIC_OPERAND_P(X)					\
-  ((GET_CODE (X) != SYMBOL_REF						\
-    || (SYMBOL_REF_LOCAL_P (X) && !SYMBOL_REF_EXTERNAL_P (X)))		\
-   && GET_CODE (X) != LABEL_REF						\
+  ((! SYMBOL_REF_P (X)							\
+    || (SYMBOL_REF_LOCAL_P (X) && ! SYMBOL_REF_EXTERNAL_P (X)))		\
+   && ! LABEL_REF_P (X)							\
    && GET_CODE (X) != CONST)
 
 /* Specify the machine mode that this machine uses

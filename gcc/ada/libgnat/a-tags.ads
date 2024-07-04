@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -260,6 +260,7 @@ private
 
    type Prim_Ptr is access procedure;
    type Address_Array is array (Positive range <>) of Prim_Ptr;
+   pragma Suppress_Initialization (Address_Array);
 
    subtype Dispatch_Table is Address_Array (1 .. 1);
    --  Used by GDB to identify the _tags and traverse the run-time structure

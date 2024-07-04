@@ -1,3 +1,34 @@
+2024-06-27  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* fixincl.x: Regenerate.
+	* inclhack.def (apple_local_stdio_fn_deprecation): Also apply to
+	_stdio.h.
+
+2024-06-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* fixincl.x: Regenerate.
+	* inclhack.def (math_exception): Bypass on __cplusplus.
+	* tests/base/math.h: Regenerate.
+
+2024-06-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* fixincl.x: Regenerate.
+	* inclhack.def (darwin_stdint_7, darwin_dispatch_object_1,
+	darwin_os_trace_2, darwin_os_base_1): Include bypasses
+	for recent headers, fixed by Apple.
+
+2024-05-07  Zac Walker  <zacwalker@microsoft.com>
+
+	* mkfixinc.sh: Extend for *-mingw32* targets.
+
+2023-11-22  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* configure: Regenerated.
+
+2023-10-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+
 2023-08-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* inclhack.def (darwin_flt_eval_method): Handle macOS 14 guard

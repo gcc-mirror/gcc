@@ -1,4 +1,4 @@
-#Copyright(C) 2023 Free Software Foundation, Inc.
+# Copyright (C) 2023-2024 Free Software Foundation, Inc.
 
 #This program is free software; you can redistribute it and / or modify
 #it under the terms of the GNU General Public License as published by
@@ -33,9 +33,32 @@ if ![info exists DEFAULT_CFLAGS] then {
 #Initialize `dg'.
 dg-init
 
+# If the target hardware supports LSX, the default action is "run", otherwise
+# just "compile".
+global dg-do-what-default
+if {[check_effective_target_loongarch_sx_hw]} then {
+  set dg-do-what-default run
+} else {
+  set dg-do-what-default compile
+}
+
 #Main loop.
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/lsx/*.\[cS\]]] \
 	" -mlsx" $DEFAULT_CFLAGS
+
+dg-finish
+
+dg-init
+# If the target hardware supports LASX, the default action is "run", otherwise
+# just "compile".
+
+global dg-do-what-default
+if {[check_effective_target_loongarch_asx_hw]} then {
+  set dg-do-what-default run
+} else {
+  set dg-do-what-default compile
+}
+
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/lasx/*.\[cS\]]] \
 	" -mlasx" $DEFAULT_CFLAGS
 # All done.

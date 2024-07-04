@@ -53,7 +53,7 @@
 // the actual GCC version on the system.
 #define _PSTL_GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
 
-#if defined(__clang__)
+#if defined(_GLIBCXX_CLANG)
 // according to clang documentation, version can be vendor specific
 #    define _PSTL_CLANG_VERSION (__clang_major__ * 10000 + __clang_minor__ * 100 + __clang_patchlevel__)
 #endif
@@ -62,7 +62,7 @@
 #if (defined(_OPENMP) && _OPENMP >= 201307) || \
     (defined(__INTEL_COMPILER) && __INTEL_COMPILER >= 1600) || \
     (!defined(__INTEL_COMPILER) && _PSTL_GCC_VERSION >= 40900) || \
-    defined(__clang__)
+    defined(_GLIBCXX_CLANG)
 #    define _PSTL_PRAGMA_SIMD _PSTL_PRAGMA(omp simd)
 #    define _PSTL_PRAGMA_DECLARE_SIMD _PSTL_PRAGMA(omp declare simd)
 #    define _PSTL_PRAGMA_SIMD_REDUCTION(PRM) _PSTL_PRAGMA(omp simd reduction(PRM))
@@ -177,7 +177,7 @@
 
 #define _PSTL_PRAGMA_MESSAGE_IMPL(x) _PSTL_PRAGMA(message(_PSTL_STRING_CONCAT(_PSTL_PRAGMA_LOCATION, x)))
 
-#if defined(_PSTL_USAGE_WARNINGS)
+#if _PSTL_USAGE_WARNINGS
 #    define _PSTL_PRAGMA_MESSAGE(x) _PSTL_PRAGMA_MESSAGE_IMPL(x)
 #    define _PSTL_PRAGMA_MESSAGE_POLICIES(x) _PSTL_PRAGMA_MESSAGE_IMPL(x)
 #else

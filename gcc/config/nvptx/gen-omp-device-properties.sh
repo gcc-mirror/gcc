@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright (C) 2022-2023 Free Software Foundation, Inc.
+# Copyright (C) 2022-2024 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -23,7 +23,7 @@ nvptx_sm_def="$1/nvptx-sm.def"
 sms=$(grep ^NVPTX_SM $nvptx_sm_def | sed 's/.*(//;s/,.*//')
 
 echo kind: gpu
-echo arch: nvptx
+echo arch: nvptx nvptx64
 
 isa=""
 for sm in $sms; do

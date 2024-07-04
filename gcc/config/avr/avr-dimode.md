@@ -1,6 +1,6 @@
 ;;   Machine description for GNU compiler,
 ;;   for Atmel AVR micro controllers.
-;;   Copyright (C) 1998-2023 Free Software Foundation, Inc.
+;;   Copyright (C) 1998-2024 Free Software Foundation, Inc.
 ;;   Contributed by Georg Lay (avr@gjlay.de)
 ;;
 ;; This file is part of GCC.
@@ -43,8 +43,8 @@
 ;; so that no DImode insn contains pseudos or needs reloading.
 
 (define_constants
-  [(ACC_A	18)
-   (ACC_B	10)])
+  [(ACC_A  18)
+   (ACC_B  10)])
 
 ;; Supported modes that are 8 bytes wide
 (define_mode_iterator ALL8 [DI DQ UDQ DA UDA TA UTA])

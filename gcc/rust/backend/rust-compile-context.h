@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -35,12 +35,20 @@ struct fncontext
 {
   tree fndecl;
   ::Bvariable *ret_addr;
+  TyTy::BaseType *retty;
+};
+
+struct CustomDeriveInfo
+{
+  tree fndecl;
+  std::string trait_name;
+  std::vector<std::string> attributes;
 };
 
 class Context
 {
 public:
-  Context (::Backend *backend);
+  Context ();
 
   void setup_builtins ();
 
@@ -78,7 +86,6 @@ public:
     return type;
   }
 
-  ::Backend *get_backend () { return backend; }
   Resolver::Resolver *get_resolver () { return resolver; }
   Resolver::TypeCheckContext *get_tyctx () { return tyctx; }
   Analysis::Mappings *get_mappings () { return mappings; }
@@ -97,7 +104,7 @@ public:
     auto stmts = statements.back ();
     statements.pop_back ();
 
-    backend->block_add_statements (block, stmts);
+    Backend::block_add_statements (block, stmts);
 
     return block;
   }
@@ -267,9 +274,9 @@ public:
     return true;
   }
 
-  void push_fn (tree fn, ::Bvariable *ret_addr)
+  void push_fn (tree fn, ::Bvariable *ret_addr, TyTy::BaseType *retty)
   {
-    fn_stack.push_back (fncontext{fn, ret_addr});
+    fn_stack.push_back (fncontext{fn, ret_addr, retty});
   }
   void pop_fn () { fn_stack.pop_back (); }
 
@@ -289,7 +296,7 @@ public:
 
   void write_to_backend ()
   {
-    backend->write_global_definitions (type_decls, const_decls, func_decls,
+    Backend::write_global_definitions (type_decls, const_decls, func_decls,
 				       var_decls);
   }
 
@@ -340,9 +347,9 @@ public:
   bool const_context_p (void) { return (const_context > 0); }
 
   std::string mangle_item (const TyTy::BaseType *ty,
-			   const Resolver::CanonicalPath &path) const
+			   const Resolver::CanonicalPath &path)
   {
-    return mangler.mangle_item (ty, path);
+    return mangler.mangle_item (this, ty, path);
   }
 
   void push_closure_context (HirId id);
@@ -357,8 +364,29 @@ public:
 
   static hashval_t type_hasher (tree type);
 
+  void collect_attribute_proc_macro (tree fndecl)
+  {
+    attribute_macros.push_back (fndecl);
+  }
+
+  void collect_bang_proc_macro (tree fndecl) { bang_macros.push_back (fndecl); }
+
+  void collect_derive_proc_macro (CustomDeriveInfo macro)
+  {
+    custom_derive_macros.push_back (macro);
+  }
+
+  const std::vector<tree> &get_bang_proc_macros () const { return bang_macros; }
+  const std::vector<tree> &get_attribute_proc_macros () const
+  {
+    return attribute_macros;
+  }
+  const std::vector<CustomDeriveInfo> &get_derive_proc_macros () const
+  {
+    return custom_derive_macros;
+  }
+
 private:
-  ::Backend *backend;
   Resolver::Resolver *resolver;
   Resolver::TypeCheckContext *tyctx;
   Analysis::Mappings *mappings;
@@ -381,6 +409,10 @@ private:
     mono_closure_fns;
   std::map<HirId, tree> implicit_pattern_bindings;
   std::map<hashval_t, tree> main_variants;
+
+  std::vector<CustomDeriveInfo> custom_derive_macros;
+  std::vector<tree> attribute_macros;
+  std::vector<tree> bang_macros;
 
   // closure bindings
   std::vector<HirId> closure_scope_bindings;

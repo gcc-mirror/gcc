@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -25,7 +25,7 @@ namespace Privacy {
 
 bool
 PubRestrictedVisitor::is_restriction_valid (NodeId item_id,
-					    const Location &locus)
+					    const location_t locus)
 {
   ModuleVisibility visibility;
 
@@ -57,7 +57,7 @@ PubRestrictedVisitor::go (HIR::Crate &crate)
   // FIXME: When do we insert `super`? `self`?
   // We need wrapper function for these
 
-  for (auto &item : crate.items)
+  for (auto &item : crate.get_items ())
     {
       if (item->get_hir_kind () == HIR::Node::VIS_ITEM)
 	{

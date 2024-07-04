@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 typedef unsigned long long ULL;
 ULL back;
 ULL hpart, lpart;
@@ -12,7 +15,8 @@ build(long h, long l)
   return back;
 }
 
-main()
+int
+main(void)
 {
   if (build(0, 1) != 0x0000000000000001LL)
     abort();

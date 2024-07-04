@@ -559,6 +559,14 @@ private template isBuildableFrom(U)
     enum isBuildableFrom(T) = isBuildable!(T, U);
 }
 
+private enum hasCopyCtor(T) = __traits(hasCopyConstructor, T);
+
+// T is expected to be an instantiation of Tuple.
+private template noMemberHasCopyCtor(T)
+{
+    import std.meta : anySatisfy;
+    enum noMemberHasCopyCtor = !anySatisfy!(hasCopyCtor, T.Types);
+}
 
 /**
 _Tuple of values, for example $(D Tuple!(int, string)) is a record that
@@ -745,7 +753,8 @@ if (distinctFieldNames!(Specs))
          *               compatible with the target `Tuple`'s type.
          */
         this(U)(U another)
-        if (areBuildCompatibleTuples!(typeof(this), U))
+        if (areBuildCompatibleTuples!(typeof(this), U) &&
+            (noMemberHasCopyCtor!(typeof(this)) || !is(Unqual!U == Unqual!(typeof(this)))))
         {
             field[] = another.field[];
         }
@@ -1653,6 +1662,42 @@ if (distinctFieldNames!(Specs))
     }
 
     Tuple!(MyStruct) t;
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=24465
+@safe unittest
+{
+    {
+        static struct S
+        {
+            this(ref return scope inout(S) rhs) scope @trusted inout pure nothrow {}
+        }
+
+        static void foo(Tuple!S)
+        {
+        }
+
+        Tuple!S t;
+        foo(t);
+
+        auto t2 = Tuple!S(t);
+    }
+
+    {
+        static struct S {}
+        Tuple!S t;
+        auto t2 = Tuple!S(t);
+
+        // This can't be done if Tuple has a copy constructor, because it's not
+        // allowed to have an rvalue constructor at that point, and the
+        // compiler doesn't to something intelligent like transform it into a
+        // move instead. However, it has been legal with Tuple for a while
+        // (maybe even since it was first added) when the type doesn't have a
+        // copy constructor, so this is testing to make sure that the fix to
+        // make copy constructors work doesn't mess up the rvalue constructor
+        // when none of the Tuple's members have copy constructors.
+        auto t3 = Tuple!S(Tuple!S.init);
+    }
 }
 
 /**
@@ -3256,11 +3301,19 @@ struct Nullable(T)
      * Params:
      *     value = The value to initialize this `Nullable` with.
      */
-    this(inout T value) inout
-    {
-        _value.payload = value;
-        _isNull = false;
-    }
+    static if (isCopyable!T)
+        this(inout T value) inout
+        {
+            _value.payload = value;
+            _isNull = false;
+        }
+    else
+        this(T value) inout
+        {
+            import std.algorithm.mutation : move;
+            _value.payload = move(value);
+            _isNull = false;
+        }
 
     static if (hasElaborateDestructor!T)
     {
@@ -3268,11 +3321,16 @@ struct Nullable(T)
         {
             if (!_isNull)
             {
-                destroy(_value.payload);
+                import std.traits : Unqual;
+                auto ptr = () @trusted { return cast(Unqual!T*) &_value.payload; }();
+                destroy!false(*ptr);
             }
         }
     }
 
+    static if (!isCopyable!T)
+        @disable this(this);
+    else
     static if (__traits(hasPostblit, T))
     {
         this(this)
@@ -3511,22 +3569,18 @@ struct Nullable(T)
      * Params:
      *     value = A value of type `T` to assign to this `Nullable`.
      */
-    Nullable opAssign()(T value)
+    ref Nullable opAssign()(T value) return
     {
         import std.algorithm.mutation : moveEmplace, move;
-
-        // the lifetime of the value in copy shall be managed by
-        // this Nullable, so we must avoid calling its destructor.
-        auto copy = DontCallDestructorT(value);
 
         if (_isNull)
         {
             // trusted since payload is known to be uninitialized.
-            () @trusted { moveEmplace(copy.payload, _value.payload); }();
+            () @trusted { moveEmplace(value, _value.payload); }();
         }
         else
         {
-            move(copy.payload, _value.payload);
+            move(value, _value.payload);
         }
         _isNull = false;
         return this;
@@ -3604,12 +3658,14 @@ struct Nullable(T)
     alias back = front;
 
     /// ditto
+    static if (isCopyable!T)
     @property inout(typeof(this)) save() inout
     {
         return this;
     }
 
     /// ditto
+    static if (isCopyable!T)
     inout(typeof(this)) opIndex(size_t[2] dim) inout
     in (dim[0] <= length && dim[1] <= length && dim[1] >= dim[0])
     {
@@ -4088,16 +4144,12 @@ auto nullable(T)(T t)
 
     struct Test
     {
-        bool b;
-
-        nothrow invariant { assert(b == true); }
-
         SysTime _st;
 
         static bool destroyed;
 
         @disable this();
-        this(bool b) { this.b = b; }
+        this(int _dummy) {}
         ~this() @safe { destroyed = true; }
 
         // mustn't call opAssign on Test.init in Nullable!Test, because the invariant
@@ -4109,7 +4161,7 @@ auto nullable(T)(T t)
     {
         Nullable!Test nt;
 
-        nt = Test(true);
+        nt = Test(1);
 
         // destroy value
         Test.destroyed = false;
@@ -4312,6 +4364,37 @@ auto nullable(T)(T t)
     b.popFront();
     assert(!a.empty);
     assert(b.empty);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=24403
+@safe unittest
+{
+    static bool destroyed;
+    static struct S { ~this() { destroyed = true; } }
+
+    {
+        Nullable!S s = S.init;
+        destroyed = false;
+    }
+    assert(destroyed);
+
+    {
+        Nullable!(const S) s = S.init;
+        destroyed = false;
+    }
+    assert(destroyed);
+
+    {
+        Nullable!(immutable S) s = S.init;
+        destroyed = false;
+    }
+    assert(destroyed);
+
+    {
+        Nullable!(shared S) s = S.init;
+        destroyed = false;
+    }
+    assert(destroyed);
 }
 
 /**
@@ -10674,6 +10757,21 @@ unittest
     assert(s1.get().b == 2);
     Nullable!S s2 = s1;
     assert(s2.get().b == 3);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=24318
+@system unittest
+{
+    static struct S
+    {
+        @disable this(this);
+        int i;
+    }
+
+    Nullable!S s = S(1);
+    assert(s.get().i == 1);
+    s = S(2);
+    assert(s.get().i == 2);
 }
 
 /// The old version of $(LREF SafeRefCounted), before $(LREF borrow) existed.

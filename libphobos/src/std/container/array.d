@@ -594,6 +594,10 @@ if (!is(immutable T == immutable bool))
         assert(capacity == values.length); // We check that reserve has been called before the loop.
     }
 
+    /// ditto
+    // needed when T is an array and only one argument is passed
+    this(T single) { __ctor!T(single); }
+
     /**
      * Constructor taking an $(REF_ALTTEXT input range, isInputRange, std,range,primitives)
      */
@@ -1280,6 +1284,13 @@ if (!is(immutable T == immutable bool))
         assert(e == i + 1);
         i++;
     }
+}
+
+@system unittest
+{
+    import std.algorithm.comparison : equal;
+    auto a = Array!string("test");
+    assert(a[].equal(["test"]));
 }
 
 @safe unittest

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -29,29 +29,29 @@ namespace HIR {
 class LiteralPattern : public Pattern
 {
   Literal lit;
-  Location locus;
+  location_t locus;
   Analysis::NodeMapping mappings;
 
 public:
   std::string as_string () const override;
 
   // Constructor for a literal pattern
-  LiteralPattern (Analysis::NodeMapping mappings, Literal lit, Location locus)
+  LiteralPattern (Analysis::NodeMapping mappings, Literal lit, location_t locus)
     : lit (std::move (lit)), locus (locus), mappings (mappings)
   {}
 
   LiteralPattern (Analysis::NodeMapping mappings, std::string val,
-		  Literal::LitType type, Location locus)
+		  Literal::LitType type, location_t locus)
     : lit (Literal (std::move (val), type, PrimitiveCoreType::CORETYPE_STR)),
       locus (locus), mappings (mappings)
   {}
 
-  Location get_locus () const override { return locus; }
+  location_t get_locus () const override { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
 
-  Analysis::NodeMapping get_pattern_mappings () const override final
+  const Analysis::NodeMapping &get_mappings () const override final
   {
     return mappings;
   }
@@ -80,7 +80,7 @@ class IdentifierPattern : public Pattern
   bool is_ref;
   Mutability mut;
   std::unique_ptr<Pattern> to_bind;
-  Location locus;
+  location_t locus;
   Analysis::NodeMapping mappings;
 
 public:
@@ -91,7 +91,7 @@ public:
 
   // Constructor
   IdentifierPattern (Analysis::NodeMapping mappings, Identifier ident,
-		     Location locus, bool is_ref = false,
+		     location_t locus, bool is_ref = false,
 		     Mutability mut = Mutability::Imm,
 		     std::unique_ptr<Pattern> to_bind = nullptr)
     : variable_ident (std::move (ident)), is_ref (is_ref), mut (mut),
@@ -128,14 +128,16 @@ public:
   IdentifierPattern (IdentifierPattern &&other) = default;
   IdentifierPattern &operator= (IdentifierPattern &&other) = default;
 
-  Location get_locus () const override { return locus; }
+  location_t get_locus () const override { return locus; }
 
   bool is_mut () const { return mut == Mutability::Mut; }
+  bool get_is_ref () const { return is_ref; }
+  std::unique_ptr<Pattern> &get_to_bind () { return to_bind; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
 
-  Analysis::NodeMapping get_pattern_mappings () const override final
+  const Analysis::NodeMapping &get_mappings () const override final
   {
     return mappings;
   }
@@ -159,22 +161,22 @@ protected:
 // HIR node for using the '_' wildcard "match any value" pattern
 class WildcardPattern : public Pattern
 {
-  Location locus;
+  location_t locus;
   Analysis::NodeMapping mappings;
 
 public:
   std::string as_string () const override { return std::string (1, '_'); }
 
-  WildcardPattern (Analysis::NodeMapping mappings, Location locus)
+  WildcardPattern (Analysis::NodeMapping mappings, location_t locus)
     : locus (locus), mappings (mappings)
   {}
 
-  Location get_locus () const override { return locus; }
+  location_t get_locus () const override { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
 
-  Analysis::NodeMapping get_pattern_mappings () const override final
+  const Analysis::NodeMapping &get_mappings () const override final
   {
     return mappings;
   }
@@ -234,20 +236,21 @@ class RangePatternBoundLiteral : public RangePatternBound
   // Minus prefixed to literal (if integer or floating-point)
   bool has_minus;
 
-  Location locus;
+  location_t locus;
 
 public:
   // Constructor
-  RangePatternBoundLiteral (Literal literal, Location locus,
+  RangePatternBoundLiteral (Literal literal, location_t locus,
 			    bool has_minus = false)
     : literal (literal), has_minus (has_minus), locus (locus)
   {}
 
   std::string as_string () const override;
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
   Literal get_literal () const { return literal; }
+  bool get_has_minus () const { return has_minus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
 
@@ -278,7 +281,7 @@ public:
 
   std::string as_string () const override { return path.as_string (); }
 
-  Location get_locus () const { return path.get_locus (); }
+  location_t get_locus () const { return path.get_locus (); }
 
   PathInExpression &get_path () { return path; }
   const PathInExpression &get_path () const { return path; }
@@ -314,7 +317,7 @@ public:
 
   std::string as_string () const override { return path.as_string (); }
 
-  Location get_locus () const { return path.get_locus (); }
+  location_t get_locus () const { return path.get_locus (); }
 
   void accept_vis (HIRFullVisitor &vis) override;
 
@@ -345,7 +348,7 @@ class RangePattern : public Pattern
 
   /* location only stored to avoid a dereference - lower pattern should give
    * correct location so maybe change in future */
-  Location locus;
+  location_t locus;
   Analysis::NodeMapping mappings;
 
 public:
@@ -354,7 +357,7 @@ public:
   // Constructor
   RangePattern (Analysis::NodeMapping mappings,
 		std::unique_ptr<RangePatternBound> lower,
-		std::unique_ptr<RangePatternBound> upper, Location locus,
+		std::unique_ptr<RangePatternBound> upper, location_t locus,
 		bool has_ellipsis_syntax = false)
     : lower (std::move (lower)), upper (std::move (upper)),
       has_ellipsis_syntax (has_ellipsis_syntax), locus (locus),
@@ -385,12 +388,14 @@ public:
   RangePattern (RangePattern &&other) = default;
   RangePattern &operator= (RangePattern &&other) = default;
 
-  Location get_locus () const override { return locus; }
+  location_t get_locus () const override { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
 
-  Analysis::NodeMapping get_pattern_mappings () const override final
+  bool get_has_ellipsis_syntax () { return has_ellipsis_syntax; };
+
+  const Analysis::NodeMapping &get_mappings () const override final
   {
     return mappings;
   }
@@ -400,17 +405,9 @@ public:
     return PatternType::RANGE;
   }
 
-  std::unique_ptr<RangePatternBound> &get_lower_bound ()
-  {
-    rust_assert (lower != nullptr);
-    return lower;
-  }
+  std::unique_ptr<RangePatternBound> &get_lower_bound () { return lower; }
 
-  std::unique_ptr<RangePatternBound> &get_upper_bound ()
-  {
-    rust_assert (upper != nullptr);
-    return upper;
-  }
+  std::unique_ptr<RangePatternBound> &get_upper_bound () { return upper; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -426,7 +423,7 @@ class ReferencePattern : public Pattern
 {
   Mutability mut;
   std::unique_ptr<Pattern> pattern;
-  Location locus;
+  location_t locus;
   Analysis::NodeMapping mappings;
 
 public:
@@ -434,7 +431,7 @@ public:
 
   ReferencePattern (Analysis::NodeMapping mappings,
 		    std::unique_ptr<Pattern> pattern, Mutability reference_mut,
-		    Location locus)
+		    location_t locus)
     : mut (reference_mut), pattern (std::move (pattern)), locus (locus),
       mappings (mappings)
   {}
@@ -462,20 +459,24 @@ public:
 
   bool is_mut () const { return mut == Mutability::Mut; }
 
+  Mutability get_mutability () const { return mut; }
+
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
 
-  Analysis::NodeMapping get_pattern_mappings () const override final
+  const Analysis::NodeMapping &get_mappings () const override final
   {
     return mappings;
   }
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   PatternType get_pattern_type () const override final
   {
     return PatternType::REFERENCE;
   }
+
+  std::unique_ptr<Pattern> &get_referenced_pattern () { return pattern; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -490,7 +491,7 @@ protected:
 class StructPatternField
 {
   AST::AttrVec outer_attrs;
-  Location locus;
+  location_t locus;
   Analysis::NodeMapping mappings;
 
 public:
@@ -514,12 +515,13 @@ public:
   virtual void accept_vis (HIRFullVisitor &vis) = 0;
   virtual ItemType get_item_type () const = 0;
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
   Analysis::NodeMapping get_mappings () const { return mappings; };
+  AST::AttrVec get_outer_attrs () { return outer_attrs; }
 
 protected:
   StructPatternField (Analysis::NodeMapping mappings,
-		      AST::AttrVec outer_attribs, Location locus)
+		      AST::AttrVec outer_attribs, location_t locus)
     : outer_attrs (std::move (outer_attribs)), locus (locus),
       mappings (mappings)
   {}
@@ -537,7 +539,7 @@ class StructPatternFieldTuplePat : public StructPatternField
 public:
   StructPatternFieldTuplePat (Analysis::NodeMapping mappings, TupleIndex index,
 			      std::unique_ptr<Pattern> tuple_pattern,
-			      AST::AttrVec outer_attribs, Location locus)
+			      AST::AttrVec outer_attribs, location_t locus)
     : StructPatternField (mappings, std::move (outer_attribs), locus),
       index (index), tuple_pattern (std::move (tuple_pattern))
   {}
@@ -569,6 +571,9 @@ public:
 
   void accept_vis (HIRFullVisitor &vis) override;
 
+  TupleIndex get_index () { return index; }
+  std::unique_ptr<Pattern> &get_tuple_pattern () { return tuple_pattern; }
+
   ItemType get_item_type () const override final { return ItemType::TUPLE_PAT; }
 
 protected:
@@ -589,7 +594,7 @@ class StructPatternFieldIdentPat : public StructPatternField
 public:
   StructPatternFieldIdentPat (Analysis::NodeMapping mappings, Identifier ident,
 			      std::unique_ptr<Pattern> ident_pattern,
-			      AST::AttrVec outer_attrs, Location locus)
+			      AST::AttrVec outer_attrs, location_t locus)
     : StructPatternField (mappings, std::move (outer_attrs), locus),
       ident (std::move (ident)), ident_pattern (std::move (ident_pattern))
   {}
@@ -623,6 +628,10 @@ public:
 
   ItemType get_item_type () const override final { return ItemType::IDENT_PAT; }
 
+  Identifier get_identifier () const { return ident; }
+
+  std::unique_ptr<Pattern> &get_pattern () { return ident_pattern; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -642,7 +651,7 @@ class StructPatternFieldIdent : public StructPatternField
 public:
   StructPatternFieldIdent (Analysis::NodeMapping mappings, Identifier ident,
 			   bool is_ref, Mutability mut,
-			   AST::AttrVec outer_attrs, Location locus)
+			   AST::AttrVec outer_attrs, location_t locus)
     : StructPatternField (mappings, std::move (outer_attrs), locus),
       has_ref (is_ref), mut (mut), ident (std::move (ident))
   {}
@@ -654,7 +663,7 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
 
   ItemType get_item_type () const override final { return ItemType::IDENT; }
-
+  bool get_has_ref () const { return has_ref; }
   Identifier get_identifier () const { return ident; };
 
 protected:
@@ -667,10 +676,9 @@ protected:
 };
 
 // Elements of a struct pattern
-struct StructPatternElements
+class StructPatternElements
 {
-private:
-  std::vector<std::unique_ptr<StructPatternField> > fields;
+  std::vector<std::unique_ptr<StructPatternField>> fields;
 
 public:
   // Returns whether there are any struct pattern fields
@@ -682,7 +690,7 @@ public:
 
   // Constructor for StructPatternElements with both (potentially)
   StructPatternElements (
-    std::vector<std::unique_ptr<StructPatternField> > fields)
+    std::vector<std::unique_ptr<StructPatternField>> fields)
     : fields (std::move (fields))
   {}
 
@@ -697,6 +705,7 @@ public:
   // Overloaded assignment operator with vector clone
   StructPatternElements &operator= (StructPatternElements const &other)
   {
+    fields.clear ();
     fields.reserve (other.fields.size ());
     for (const auto &e : other.fields)
       fields.push_back (e->clone_struct_pattern_field ());
@@ -712,13 +721,12 @@ public:
   static StructPatternElements create_empty ()
   {
     return StructPatternElements (
-      std::vector<std::unique_ptr<StructPatternField> > ());
+      std::vector<std::unique_ptr<StructPatternField>> ());
   }
 
   std::string as_string () const;
 
-  std::vector<std::unique_ptr<StructPatternField> > &
-  get_struct_pattern_fields ()
+  std::vector<std::unique_ptr<StructPatternField>> &get_struct_pattern_fields ()
   {
     return fields;
   }
@@ -742,7 +750,7 @@ public:
 
   bool has_struct_pattern_elems () const { return !elems.is_empty (); }
 
-  Location get_locus () const override { return path.get_locus (); }
+  location_t get_locus () const override { return path.get_locus (); }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
@@ -750,7 +758,7 @@ public:
   PathInExpression &get_path () { return path; }
   StructPatternElements &get_struct_pattern_elems () { return elems; }
 
-  Analysis::NodeMapping get_pattern_mappings () const override final
+  const Analysis::NodeMapping &get_mappings () const override final
   {
     return mappings;
   }
@@ -769,44 +777,57 @@ protected:
   }
 };
 
-// Base abstract class for patterns used in TupleStructPattern
-class TupleStructItems
+// Base abstract class for TupleStructItems and TuplePatternItems
+class TupleItems : public FullVisitable
 {
 public:
   enum ItemType
   {
-    RANGE,
-    NO_RANGE
+    MULTIPLE,
+    RANGED,
   };
 
-  virtual ~TupleStructItems () {}
+  virtual ~TupleItems () {}
 
   // TODO: should this store location data?
 
   // Unique pointer custom clone function
-  std::unique_ptr<TupleStructItems> clone_tuple_struct_items () const
+  std::unique_ptr<TupleItems> clone_tuple_items () const
   {
-    return std::unique_ptr<TupleStructItems> (clone_tuple_struct_items_impl ());
+    return std::unique_ptr<TupleItems> (clone_tuple_items_impl ());
   }
-
-  virtual std::string as_string () const = 0;
-
-  virtual void accept_vis (HIRFullVisitor &vis) = 0;
 
   virtual ItemType get_item_type () const = 0;
 
+  virtual std::string as_string () const = 0;
+
 protected:
   // pure virtual clone implementation
-  virtual TupleStructItems *clone_tuple_struct_items_impl () const = 0;
+  virtual TupleItems *clone_tuple_items_impl () const = 0;
+};
+
+// Base abstract class for patterns used in TupleStructPattern
+class TupleStructItems : public TupleItems
+{
+public:
+  // Unique pointer custom clone function
+  std::unique_ptr<TupleStructItems> clone_tuple_struct_items () const
+  {
+    return std::unique_ptr<TupleStructItems> (clone_tuple_items_impl ());
+  }
+
+protected:
+  // pure virtual clone implementation
+  virtual TupleStructItems *clone_tuple_items_impl () const override = 0;
 };
 
 // Class for non-ranged tuple struct pattern patterns
 class TupleStructItemsNoRange : public TupleStructItems
 {
-  std::vector<std::unique_ptr<Pattern> > patterns;
+  std::vector<std::unique_ptr<Pattern>> patterns;
 
 public:
-  TupleStructItemsNoRange (std::vector<std::unique_ptr<Pattern> > patterns)
+  TupleStructItemsNoRange (std::vector<std::unique_ptr<Pattern>> patterns)
     : patterns (std::move (patterns))
   {}
 
@@ -821,6 +842,7 @@ public:
   // Overloaded assignment operator with vector clone
   TupleStructItemsNoRange &operator= (TupleStructItemsNoRange const &other)
   {
+    patterns.clear ();
     patterns.reserve (other.patterns.size ());
     for (const auto &e : other.patterns)
       patterns.push_back (e->clone_pattern ());
@@ -837,18 +859,18 @@ public:
 
   void accept_vis (HIRFullVisitor &vis) override;
 
-  std::vector<std::unique_ptr<Pattern> > &get_patterns () { return patterns; }
-  const std::vector<std::unique_ptr<Pattern> > &get_patterns () const
+  std::vector<std::unique_ptr<Pattern>> &get_patterns () { return patterns; }
+  const std::vector<std::unique_ptr<Pattern>> &get_patterns () const
   {
     return patterns;
   }
 
-  ItemType get_item_type () const override final { return ItemType::NO_RANGE; }
+  ItemType get_item_type () const override final { return ItemType::MULTIPLE; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  TupleStructItemsNoRange *clone_tuple_struct_items_impl () const override
+  TupleStructItemsNoRange *clone_tuple_items_impl () const override
   {
     return new TupleStructItemsNoRange (*this);
   }
@@ -857,12 +879,12 @@ protected:
 // Class for ranged tuple struct pattern patterns
 class TupleStructItemsRange : public TupleStructItems
 {
-  std::vector<std::unique_ptr<Pattern> > lower_patterns;
-  std::vector<std::unique_ptr<Pattern> > upper_patterns;
+  std::vector<std::unique_ptr<Pattern>> lower_patterns;
+  std::vector<std::unique_ptr<Pattern>> upper_patterns;
 
 public:
-  TupleStructItemsRange (std::vector<std::unique_ptr<Pattern> > lower_patterns,
-			 std::vector<std::unique_ptr<Pattern> > upper_patterns)
+  TupleStructItemsRange (std::vector<std::unique_ptr<Pattern>> lower_patterns,
+			 std::vector<std::unique_ptr<Pattern>> upper_patterns)
     : lower_patterns (std::move (lower_patterns)),
       upper_patterns (std::move (upper_patterns))
   {}
@@ -882,10 +904,12 @@ public:
   // Overloaded assignment operator to clone
   TupleStructItemsRange &operator= (TupleStructItemsRange const &other)
   {
+    lower_patterns.clear ();
     lower_patterns.reserve (other.lower_patterns.size ());
     for (const auto &e : other.lower_patterns)
       lower_patterns.push_back (e->clone_pattern ());
 
+    upper_patterns.clear ();
     upper_patterns.reserve (other.upper_patterns.size ());
     for (const auto &e : other.upper_patterns)
       upper_patterns.push_back (e->clone_pattern ());
@@ -901,31 +925,31 @@ public:
 
   void accept_vis (HIRFullVisitor &vis) override;
 
-  std::vector<std::unique_ptr<Pattern> > &get_lower_patterns ()
+  std::vector<std::unique_ptr<Pattern>> &get_lower_patterns ()
   {
     return lower_patterns;
   }
-  const std::vector<std::unique_ptr<Pattern> > &get_lower_patterns () const
+  const std::vector<std::unique_ptr<Pattern>> &get_lower_patterns () const
   {
     return lower_patterns;
   }
 
   // TODO: seems kinda dodgy. Think of better way.
-  std::vector<std::unique_ptr<Pattern> > &get_upper_patterns ()
+  std::vector<std::unique_ptr<Pattern>> &get_upper_patterns ()
   {
     return upper_patterns;
   }
-  const std::vector<std::unique_ptr<Pattern> > &get_upper_patterns () const
+  const std::vector<std::unique_ptr<Pattern>> &get_upper_patterns () const
   {
     return upper_patterns;
   }
 
-  ItemType get_item_type () const override final { return ItemType::RANGE; }
+  ItemType get_item_type () const override final { return ItemType::RANGED; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  TupleStructItemsRange *clone_tuple_struct_items_impl () const override
+  TupleStructItemsRange *clone_tuple_items_impl () const override
   {
     return new TupleStructItemsRange (*this);
   }
@@ -971,7 +995,7 @@ public:
   TupleStructPattern (TupleStructPattern &&other) = default;
   TupleStructPattern &operator= (TupleStructPattern &&other) = default;
 
-  Location get_locus () const override { return path.get_locus (); }
+  location_t get_locus () const override { return path.get_locus (); }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
@@ -980,7 +1004,7 @@ public:
 
   std::unique_ptr<TupleStructItems> &get_items () { return items; }
 
-  Analysis::NodeMapping get_pattern_mappings () const override final
+  const Analysis::NodeMapping &get_mappings () const override final
   {
     return mappings;
   }
@@ -1000,44 +1024,27 @@ protected:
 };
 
 // Base abstract class representing TuplePattern patterns
-class TuplePatternItems
+class TuplePatternItems : public TupleItems
 {
 public:
-  enum TuplePatternItemType
-  {
-    MULTIPLE,
-    RANGED,
-  };
-
-  virtual ~TuplePatternItems () {}
-
-  // TODO: should this store location data?
-
   // Unique pointer custom clone function
   std::unique_ptr<TuplePatternItems> clone_tuple_pattern_items () const
   {
-    return std::unique_ptr<TuplePatternItems> (
-      clone_tuple_pattern_items_impl ());
+    return std::unique_ptr<TuplePatternItems> (clone_tuple_items_impl ());
   }
-
-  virtual std::string as_string () const = 0;
-
-  virtual void accept_vis (HIRFullVisitor &vis) = 0;
-
-  virtual TuplePatternItemType get_pattern_type () const = 0;
 
 protected:
   // pure virtual clone implementation
-  virtual TuplePatternItems *clone_tuple_pattern_items_impl () const = 0;
+  virtual TuplePatternItems *clone_tuple_items_impl () const override = 0;
 };
 
 // Class representing TuplePattern patterns where there are multiple patterns
 class TuplePatternItemsMultiple : public TuplePatternItems
 {
-  std::vector<std::unique_ptr<Pattern> > patterns;
+  std::vector<std::unique_ptr<Pattern>> patterns;
 
 public:
-  TuplePatternItemsMultiple (std::vector<std::unique_ptr<Pattern> > patterns)
+  TuplePatternItemsMultiple (std::vector<std::unique_ptr<Pattern>> patterns)
     : patterns (std::move (patterns))
   {}
 
@@ -1052,6 +1059,7 @@ public:
   // Overloaded assignment operator to vector clone
   TuplePatternItemsMultiple &operator= (TuplePatternItemsMultiple const &other)
   {
+    patterns.clear ();
     patterns.reserve (other.patterns.size ());
     for (const auto &e : other.patterns)
       patterns.push_back (e->clone_pattern ());
@@ -1068,13 +1076,10 @@ public:
 
   void accept_vis (HIRFullVisitor &vis) override;
 
-  TuplePatternItemType get_pattern_type () const override
-  {
-    return TuplePatternItemType::MULTIPLE;
-  }
+  ItemType get_item_type () const override { return ItemType::MULTIPLE; }
 
-  std::vector<std::unique_ptr<Pattern> > &get_patterns () { return patterns; }
-  const std::vector<std::unique_ptr<Pattern> > &get_patterns () const
+  std::vector<std::unique_ptr<Pattern>> &get_patterns () { return patterns; }
+  const std::vector<std::unique_ptr<Pattern>> &get_patterns () const
   {
     return patterns;
   }
@@ -1082,7 +1087,7 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  TuplePatternItemsMultiple *clone_tuple_pattern_items_impl () const override
+  TuplePatternItemsMultiple *clone_tuple_items_impl () const override
   {
     return new TuplePatternItemsMultiple (*this);
   }
@@ -1091,13 +1096,12 @@ protected:
 // Class representing TuplePattern patterns where there are a range of patterns
 class TuplePatternItemsRanged : public TuplePatternItems
 {
-  std::vector<std::unique_ptr<Pattern> > lower_patterns;
-  std::vector<std::unique_ptr<Pattern> > upper_patterns;
+  std::vector<std::unique_ptr<Pattern>> lower_patterns;
+  std::vector<std::unique_ptr<Pattern>> upper_patterns;
 
 public:
-  TuplePatternItemsRanged (
-    std::vector<std::unique_ptr<Pattern> > lower_patterns,
-    std::vector<std::unique_ptr<Pattern> > upper_patterns)
+  TuplePatternItemsRanged (std::vector<std::unique_ptr<Pattern>> lower_patterns,
+			   std::vector<std::unique_ptr<Pattern>> upper_patterns)
     : lower_patterns (std::move (lower_patterns)),
       upper_patterns (std::move (upper_patterns))
   {}
@@ -1117,10 +1121,12 @@ public:
   // Overloaded assignment operator to clone
   TuplePatternItemsRanged &operator= (TuplePatternItemsRanged const &other)
   {
+    lower_patterns.clear ();
     lower_patterns.reserve (other.lower_patterns.size ());
     for (const auto &e : other.lower_patterns)
       lower_patterns.push_back (e->clone_pattern ());
 
+    lower_patterns.clear ();
     upper_patterns.reserve (other.upper_patterns.size ());
     for (const auto &e : other.upper_patterns)
       upper_patterns.push_back (e->clone_pattern ());
@@ -1137,25 +1143,22 @@ public:
 
   void accept_vis (HIRFullVisitor &vis) override;
 
-  TuplePatternItemType get_pattern_type () const override
-  {
-    return TuplePatternItemType::RANGED;
-  }
+  ItemType get_item_type () const override { return ItemType::RANGED; }
 
-  std::vector<std::unique_ptr<Pattern> > &get_lower_patterns ()
+  std::vector<std::unique_ptr<Pattern>> &get_lower_patterns ()
   {
     return lower_patterns;
   }
-  const std::vector<std::unique_ptr<Pattern> > &get_lower_patterns () const
+  const std::vector<std::unique_ptr<Pattern>> &get_lower_patterns () const
   {
     return lower_patterns;
   }
 
-  std::vector<std::unique_ptr<Pattern> > &get_upper_patterns ()
+  std::vector<std::unique_ptr<Pattern>> &get_upper_patterns ()
   {
     return upper_patterns;
   }
-  const std::vector<std::unique_ptr<Pattern> > &get_upper_patterns () const
+  const std::vector<std::unique_ptr<Pattern>> &get_upper_patterns () const
   {
     return upper_patterns;
   }
@@ -1163,7 +1166,7 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  TuplePatternItemsRanged *clone_tuple_pattern_items_impl () const override
+  TuplePatternItemsRanged *clone_tuple_items_impl () const override
   {
     return new TuplePatternItemsRanged (*this);
   }
@@ -1173,7 +1176,7 @@ protected:
 class TuplePattern : public Pattern
 {
   std::unique_ptr<TuplePatternItems> items;
-  Location locus;
+  location_t locus;
   Analysis::NodeMapping mappings;
 
 public:
@@ -1183,7 +1186,7 @@ public:
   bool has_tuple_pattern_items () const { return items != nullptr; }
 
   TuplePattern (Analysis::NodeMapping mappings,
-		std::unique_ptr<TuplePatternItems> items, Location locus)
+		std::unique_ptr<TuplePatternItems> items, location_t locus)
     : items (std::move (items)), locus (locus), mappings (mappings)
   {}
 
@@ -1203,12 +1206,12 @@ public:
     return *this;
   }
 
-  Location get_locus () const override { return locus; }
+  location_t get_locus () const override { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
 
-  Analysis::NodeMapping get_pattern_mappings () const override final
+  const Analysis::NodeMapping &get_mappings () const override final
   {
     return mappings;
   }
@@ -1233,15 +1236,15 @@ protected:
 // HIR node representing patterns that can match slices and arrays
 class SlicePattern : public Pattern
 {
-  std::vector<std::unique_ptr<Pattern> > items;
-  Location locus;
+  std::vector<std::unique_ptr<Pattern>> items;
+  location_t locus;
   Analysis::NodeMapping mappings;
 
 public:
   std::string as_string () const override;
 
   SlicePattern (Analysis::NodeMapping mappings,
-		std::vector<std::unique_ptr<Pattern> > items, Location locus)
+		std::vector<std::unique_ptr<Pattern>> items, location_t locus)
     : items (std::move (items)), locus (locus), mappings (mappings)
   {}
 
@@ -1260,6 +1263,7 @@ public:
     locus = other.locus;
     mappings = other.mappings;
 
+    items.clear ();
     items.reserve (other.items.size ());
     for (const auto &e : other.items)
       items.push_back (e->clone_pattern ());
@@ -1271,12 +1275,18 @@ public:
   SlicePattern (SlicePattern &&other) = default;
   SlicePattern &operator= (SlicePattern &&other) = default;
 
-  Location get_locus () const override { return locus; }
+  std::vector<std::unique_ptr<Pattern>> &get_items () { return items; }
+  const std::vector<std::unique_ptr<Pattern>> &get_items () const
+  {
+    return items;
+  }
+
+  location_t get_locus () const override { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
 
-  Analysis::NodeMapping get_pattern_mappings () const override final
+  const Analysis::NodeMapping &get_mappings () const override final
   {
     return mappings;
   }
@@ -1292,6 +1302,78 @@ protected:
   SlicePattern *clone_pattern_impl () const override
   {
     return new SlicePattern (*this);
+  }
+};
+
+// HIR node for alternative patterns
+class AltPattern : public Pattern
+{
+  std::vector<std::unique_ptr<Pattern>> alts;
+  location_t locus;
+  Analysis::NodeMapping mappings;
+
+public:
+  std::string as_string () const override;
+
+  AltPattern (Analysis::NodeMapping mappings,
+	      std::vector<std::unique_ptr<Pattern>> alts, location_t locus)
+    : alts (std::move (alts)), locus (locus), mappings (mappings)
+  {}
+
+  // Copy constructor with vector clone
+  AltPattern (AltPattern const &other)
+    : locus (other.locus), mappings (other.mappings)
+  {
+    alts.reserve (other.alts.size ());
+    for (const auto &e : other.alts)
+      alts.push_back (e->clone_pattern ());
+  }
+
+  // Overloaded assignment operator to vector clone
+  AltPattern &operator= (AltPattern const &other)
+  {
+    locus = other.locus;
+    mappings = other.mappings;
+
+    alts.clear ();
+    alts.reserve (other.alts.size ());
+    for (const auto &e : other.alts)
+      alts.push_back (e->clone_pattern ());
+
+    return *this;
+  }
+
+  // move constructors
+  AltPattern (AltPattern &&other) = default;
+  AltPattern &operator= (AltPattern &&other) = default;
+
+  std::vector<std::unique_ptr<Pattern>> &get_alts () { return alts; }
+  const std::vector<std::unique_ptr<Pattern>> &get_alts () const
+  {
+    return alts;
+  }
+
+  location_t get_locus () const override { return locus; }
+
+  void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRPatternVisitor &vis) override;
+
+  const Analysis::NodeMapping &get_mappings () const override final
+  {
+    return mappings;
+  }
+
+  PatternType get_pattern_type () const override final
+  {
+    return PatternType::ALT;
+  }
+
+protected:
+  /* Use covariance to implement clone function as returning this object rather
+   * than base */
+  AltPattern *clone_pattern_impl () const override
+  {
+    return new AltPattern (*this);
   }
 };
 

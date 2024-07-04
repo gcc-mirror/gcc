@@ -1,5 +1,5 @@
 ! { dg-do run }
-!
+! { dg-skip-if "PR libfortran/78314" { aarch64*-*-gnu* arm*-*-gnueabi arm*-*-gnueabihf } }
 ! Test IEEE_MODES_TYPE, IEEE_GET_MODES and IEEE_SET_MODES
 
 

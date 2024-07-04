@@ -1,6 +1,6 @@
 // Filesystem operations -*- C++ -*-
 
-// Copyright (C) 2014-2023 Free Software Foundation, Inc.
+// Copyright (C) 2014-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -897,7 +897,7 @@ fs::equivalent(const path& p1, const path& p2, error_code& ec) noexcept
       return st1.st_dev == st2.st_dev && st1.st_ino == st2.st_ino;
 #endif
     }
-  else if (!exists(s1) && !exists(s2))
+  else if (!exists(s1) || !exists(s2))
     ec = std::make_error_code(std::errc::no_such_file_or_directory);
   else if (err)
     ec.assign(err, std::generic_category());
@@ -1312,7 +1312,13 @@ fs::remove_all(const path& p)
     // Our work here is done.
     return 0;
   case ENOTDIR:
-  case ELOOP:
+  case ELOOP:  // POSIX says openat with O_NOFOLLOW sets ELOOP for a symlink.
+#if defined __FreeBSD__ || defined __DragonFly__
+  case EMLINK: // Used instead of ELOOP
+#endif
+#if defined __NetBSD__ && defined EFTYPE
+  case EFTYPE: // Used instead of ELOOP
+#endif
     // Not a directory, will remove below.
     break;
 #endif
@@ -1352,7 +1358,13 @@ fs::remove_all(const path& p, error_code& ec)
     ec.clear();
     return 0;
   case ENOTDIR:
-  case ELOOP:
+  case ELOOP:  // POSIX says openat with O_NOFOLLOW sets ELOOP for a symlink.
+#if defined __FreeBSD__ || defined __DragonFly__
+  case EMLINK: // Used instead of ELOOP
+#endif
+#if defined __NetBSD__ && defined EFTYPE
+  case EFTYPE: // Used instead of ELOOP
+#endif
     // Not a directory, will remove below.
     break;
 #endif

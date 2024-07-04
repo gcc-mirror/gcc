@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2008-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -157,7 +157,8 @@ package System.Win32 is
    FILE_ATTRIBUTE_VALID_FLAGS         : constant := 16#00007fb7#;
    FILE_ATTRIBUTE_VALID_SET_FLAGS     : constant := 16#000031a7#;
 
-   GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS : constant := 16#00000004#;
+   GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS       : constant := 16#04#;
+   GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT : constant := 16#02#;
 
    type OVERLAPPED is record
       Internal     : access ULONG;
@@ -315,8 +316,8 @@ package System.Win32 is
    pragma Import (Stdcall, FileTimeToLocalFileTime, "FileTimeToLocalFileTime");
 
    function LocalFileTimeToFileTime
-     (lpFileTime      : access Long_Long_Integer;
-      lpLocalFileTime : access Long_Long_Integer) return BOOL;
+     (lpLocalFileTime : access Long_Long_Integer;
+      lpFileTime      : access Long_Long_Integer) return BOOL;
    pragma Import (Stdcall, LocalFileTimeToFileTime, "LocalFileTimeToFileTime");
 
    procedure Sleep (dwMilliseconds : DWORD);

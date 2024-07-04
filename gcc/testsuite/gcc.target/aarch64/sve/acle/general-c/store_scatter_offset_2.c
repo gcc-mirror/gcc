@@ -20,13 +20,13 @@ f1 (svbool_t pg, signed char *s8_ptr, short *s16_ptr,
   svst1_scatter_offset (pg, 0, s32, s32);
   svst1_scatter_offset (pg, (int32_t *) 0, s32, s32);
   svst1_scatter_offset (pg, void_ptr, s32, s32);
-  svst1_scatter_offset (pg, s_ptr, s32, s32); /* { dg-warning "passing argument 2 of 'svst1_scatter_s32offset_s32' from incompatible pointer type" } */
-  svst1_scatter_offset (pg, f32_ptr, s32, s32); /* { dg-warning "passing argument 2 of 'svst1_scatter_s32offset_s32' from incompatible pointer type" } */
+  svst1_scatter_offset (pg, s_ptr, s32, s32); /* { dg-error "passing argument 2 of 'svst1_scatter_s32offset_s32' from incompatible pointer type" } */
+  svst1_scatter_offset (pg, f32_ptr, s32, s32); /* { dg-error "passing argument 2 of 'svst1_scatter_s32offset_s32' from incompatible pointer type" } */
   svst1_scatter_offset (pg, f32_ptr, s32, f32);
-  svst1_scatter_offset (pg, cf32_ptr, s32, f32); /* { dg-warning "passing argument 2 of 'svst1_scatter_s32offset_f32' from incompatible pointer type" } */
+  svst1_scatter_offset (pg, cf32_ptr, s32, f32); /* { dg-error "passing argument 2 of 'svst1_scatter_s32offset_f32' from incompatible pointer type" } */
   svst1_scatter_offset (pg, s, s32, s32); /* { dg-error {passing 'struct s' to argument 2 of 'svst1_scatter_offset', which expects a vector or pointer base address} } */
 
-  svst1_scatter_offset (pg, u32, void_ptr, s32); /* { dg-warning "passing argument 3 of 'svst1_scatter_u32base_offset_s32' makes integer from pointer without a cast" } */
+  svst1_scatter_offset (pg, u32, void_ptr, s32); /* { dg-error "passing argument 3 of 'svst1_scatter_u32base_offset_s32' makes integer from pointer without a cast" } */
   svst1_scatter_offset (pg, u32, pg, s32); /* { dg-error {passing 'svbool_t' to argument 3 of 'svst1_scatter_offset', which expects 'int64_t'} } */
   svst1_scatter_offset (pg, u32, s32, s32); /* { dg-error {passing 'svint32_t' to argument 3 of 'svst1_scatter_offset', which expects 'int64_t'} } */
 

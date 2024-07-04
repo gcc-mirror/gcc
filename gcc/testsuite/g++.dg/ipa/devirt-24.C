@@ -37,4 +37,6 @@ C *b = new (C);
   }
 }
 /* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target" 1 "inline" { xfail *-*-* } } } */
-/* { dg-final { scan-ipa-dump-times "Aggregate passed by reference" 2 "cp"  } } */
+/* We used to have IPA CP see two aggregates passed to sort() but as the
+   first argument is unused DSE now elides the vptr initialization.  */
+/* { dg-final { scan-ipa-dump-times "Aggregate passed by reference" 1 "cp"  } } */

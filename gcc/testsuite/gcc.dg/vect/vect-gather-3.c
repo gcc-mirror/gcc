@@ -62,4 +62,4 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "Loop contains only SLP stmts" vect { target { vect_gather_load_ifn && vect_masked_load } } } } */
+/* { dg-final { scan-tree-dump "Loop contains only SLP stmts" vect { target { { vect_gather_load_ifn || avx2 } && vect_masked_load } } } } */

@@ -1,6 +1,6 @@
 // { dg-do run { target c++11 } }
 
-// Copyright (C) 2015-2023 Free Software Foundation, Inc.
+// Copyright (C) 2015-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,6 +28,7 @@ struct cvt : std::codecvt<Elem, char, std::mbstate_t> { };
 
 template<typename Elem>
 using str_conv = std::wstring_convert<cvt<Elem>, Elem>;
+// { dg-warning "deprecated" "" { target c++17 } 30 }
 
 using std::string;
 using std::u16string;

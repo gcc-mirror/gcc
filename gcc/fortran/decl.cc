@@ -1,5 +1,5 @@
 /* Declaration statement matcher
-   Copyright (C) 2002-2023 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1404,7 +1404,9 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
       /* Trap declarations of attributes in encompassing scope.  The
 	 signature for this is that ts.kind is nonzero for no-CLASS
 	 entity.  For a CLASS entity, ts.kind is zero.  */
-      if ((sym->ts.kind != 0 || sym->ts.type == BT_CLASS)
+      if ((sym->ts.kind != 0
+	   || sym->ts.type == BT_CLASS
+	   || sym->ts.type == BT_DERIVED)
 	  && !sym->attr.implicit_type
 	  && sym->attr.proc == 0
 	  && gfc_current_ns->parent != NULL
@@ -1711,7 +1713,7 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 /* Function called by variable_decl() that adds a name to the symbol table.  */
 
 static bool
-build_sym (const char *name, gfc_charlen *cl, bool cl_deferred,
+build_sym (const char *name, int elem, gfc_charlen *cl, bool cl_deferred,
 	   gfc_array_spec **as, locus *var_locus)
 {
   symbol_attribute attr;
@@ -1776,7 +1778,10 @@ build_sym (const char *name, gfc_charlen *cl, bool cl_deferred,
 
   if (sym->ts.type == BT_CHARACTER)
     {
-      sym->ts.u.cl = cl;
+      if (elem > 1)
+	sym->ts.u.cl = gfc_new_charlen (sym->ns, cl);
+      else
+	sym->ts.u.cl = cl;
       sym->ts.deferred = cl_deferred;
     }
 
@@ -2958,7 +2963,7 @@ variable_decl (int elem)
      create a symbol for those yet.  If we fail to create the symbol,
      bail out.  */
   if (!gfc_comp_struct (gfc_current_state ())
-      && !build_sym (name, cl, cl_deferred, &as, &var_locus))
+      && !build_sym (name, elem, cl, cl_deferred, &as, &var_locus))
     {
       m = MATCH_ERROR;
       goto cleanup;
@@ -4079,6 +4084,21 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	  instance->attr.extension = c2->ts.u.derived->attr.extension + 1;
 
 	  continue;
+	}
+
+      /* Addressing PR82943, this will fix the issue where a function or
+	 subroutine is declared as not a member of the PDT instance.
+	 The reason for this is because the PDT instance did not have access
+	 to its template's f2k_derived namespace in order to find the
+	 typebound procedures.
+
+	 The number of references to the PDT template's f2k_derived will
+	 ensure that f2k_derived is properly freed later on.  */
+
+      if (!instance->f2k_derived && pdt->f2k_derived)
+	{
+	  instance->f2k_derived = pdt->f2k_derived;
+	  instance->f2k_derived->refs++;
 	}
 
       /* Set the component kind using the parameterized expression.  */
@@ -6794,12 +6814,25 @@ ok:
 	      || (p->next == NULL && q->next != NULL))
 	    arg_count_mismatch = true;
 	  else if ((p->sym == NULL && q->sym == NULL)
-		    || strcmp (p->sym->name, q->sym->name) == 0)
+		    || (p->sym && q->sym
+			&& strcmp (p->sym->name, q->sym->name) == 0))
 	    continue;
 	  else
-	    gfc_error_now ("Mismatch in MODULE PROCEDURE formal "
-			   "argument names (%s/%s) at %C",
-			   p->sym->name, q->sym->name);
+	    {
+	      if (q->sym == NULL)
+		gfc_error_now ("MODULE PROCEDURE formal argument %qs "
+			       "conflicts with alternate return at %C",
+			       p->sym->name);
+	      else if (p->sym == NULL)
+		gfc_error_now ("MODULE PROCEDURE formal argument is "
+			       "alternate return and conflicts with "
+			       "%qs in the separate declaration at %C",
+			       q->sym->name);
+	      else
+		gfc_error_now ("Mismatch in MODULE PROCEDURE formal "
+			       "argument names (%s/%s) at %C",
+			       p->sym->name, q->sym->name);
+	    }
 	}
 
       if (arg_count_mismatch)
@@ -10908,7 +10941,7 @@ enumerator_decl (void)
   /* OK, we've successfully matched the declaration.  Now put the
      symbol in the current namespace. If we fail to create the symbol,
      bail out.  */
-  if (!build_sym (name, NULL, false, &as, &var_locus))
+  if (!build_sym (name, 1, NULL, false, &as, &var_locus))
     {
       m = MATCH_ERROR;
       goto cleanup;

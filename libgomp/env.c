@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2024 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -61,6 +61,7 @@
 
 #include "secure_getenv.h"
 #include "environ.h"
+#include "spincount.h"
 
 /* Default values of ICVs according to the OpenMP standard,
    except for default-device-var.  */
@@ -1263,6 +1264,7 @@ parse_allocator (const char *env, const char *val, void *const params[])
   C (omp_cgroup_mem_alloc, false)
   C (omp_pteam_mem_alloc, false)
   C (omp_thread_mem_alloc, false)
+  C (ompx_gnu_pinned_mem_alloc, false)
   C (omp_default_mem_space, true)
   C (omp_large_cap_mem_space, true)
   C (omp_const_mem_space, true)
@@ -2431,7 +2433,10 @@ initialize_env (void)
       if (wait_policy > 0)
 	gomp_spin_count_var = 30000000000LL;
       else if (wait_policy < 0)
-	gomp_spin_count_var = 300000LL;
+	{
+	  gomp_spin_count_var = 300000LL;
+	  do_adjust_default_spincount ();
+	}
     }
   /* gomp_throttled_spin_count_var is used when there are more libgomp
      managed threads than available CPUs.  Use very short spinning.  */

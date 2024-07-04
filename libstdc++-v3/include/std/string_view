@@ -1,6 +1,6 @@
 // Components for manipulating non-owning sequences of characters -*- C++ -*-
 
-// Copyright (C) 2013-2023 Free Software Foundation, Inc.
+// Copyright (C) 2013-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,8 +35,10 @@
 
 #pragma GCC system_header
 
-#define __glibcxx_want_string_view
+#define __glibcxx_want_constexpr_char_traits
 #define __glibcxx_want_constexpr_string_view
+#define __glibcxx_want_freestanding_string_view
+#define __glibcxx_want_string_view
 #define __glibcxx_want_starts_ends_with
 #define __glibcxx_want_string_contains
 #include <bits/version.h>
@@ -165,8 +167,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  && (!requires (_DRange& __d) {
 		__d.operator ::std::basic_string_view<_CharT, _Traits>();
 	      })
-	  && (!requires { typename _DRange::traits_type; }
-	      || is_same_v<typename _DRange::traits_type, _Traits>)
 	constexpr explicit
 	basic_string_view(_Range&& __r)
 	noexcept(noexcept(ranges::size(__r)) && noexcept(ranges::data(__r)))
@@ -301,7 +301,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr void
       remove_suffix(size_type __n) noexcept
-      { this->_M_len -= __n; }
+      {
+	__glibcxx_assert(this->_M_len >= __n);
+	this->_M_len -= __n;
+      }
 
       constexpr void
       swap(basic_string_view& __sv) noexcept
@@ -382,7 +385,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       [[nodiscard]]
       constexpr bool
       starts_with(basic_string_view __x) const noexcept
-      { return this->substr(0, __x.size()) == __x; }
+      {
+	return _M_len >= __x._M_len
+	  && traits_type::compare(_M_str, __x._M_str, __x._M_len) == 0;
+      }
 
       [[nodiscard]]
       constexpr bool
@@ -599,29 +605,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // deduction and the other argument gets implicitly converted to the deduced
   // type (see N3766).
 
-  template<typename _CharT, typename _Traits>
-    [[nodiscard]]
-    constexpr bool
-    operator==(basic_string_view<_CharT, _Traits> __x,
-               basic_string_view<_CharT, _Traits> __y) noexcept
-    { return __x.size() == __y.size() && __x.compare(__y) == 0; }
-
-  template<typename _CharT, typename _Traits>
-    [[nodiscard]]
-    constexpr bool
-    operator==(basic_string_view<_CharT, _Traits> __x,
-               __type_identity_t<basic_string_view<_CharT, _Traits>> __y)
-    noexcept
-    { return __x.size() == __y.size() && __x.compare(__y) == 0; }
-
 #if __cpp_lib_three_way_comparison
   template<typename _CharT, typename _Traits>
     [[nodiscard]]
-    constexpr auto
-    operator<=>(basic_string_view<_CharT, _Traits> __x,
-		basic_string_view<_CharT, _Traits> __y) noexcept
-    -> decltype(__detail::__char_traits_cmp_cat<_Traits>(0))
-    { return __detail::__char_traits_cmp_cat<_Traits>(__x.compare(__y)); }
+    constexpr bool
+    operator==(basic_string_view<_CharT, _Traits> __x,
+	       type_identity_t<basic_string_view<_CharT, _Traits>> __y)
+    noexcept
+    { return __x.size() == __y.size() && __x.compare(__y) == 0; }
 
   template<typename _CharT, typename _Traits>
     [[nodiscard]]
@@ -632,6 +623,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     -> decltype(__detail::__char_traits_cmp_cat<_Traits>(0))
     { return __detail::__char_traits_cmp_cat<_Traits>(__x.compare(__y)); }
 #else
+  template<typename _CharT, typename _Traits>
+    [[nodiscard]]
+    constexpr bool
+    operator==(basic_string_view<_CharT, _Traits> __x,
+	       __type_identity_t<basic_string_view<_CharT, _Traits>> __y)
+    noexcept
+    { return __x.size() == __y.size() && __x.compare(__y) == 0; }
+
+  template<typename _CharT, typename _Traits>
+    [[nodiscard]]
+    constexpr bool
+    operator==(basic_string_view<_CharT, _Traits> __x,
+	       basic_string_view<_CharT, _Traits> __y) noexcept
+    { return __x.size() == __y.size() && __x.compare(__y) == 0; }
+
   template<typename _CharT, typename _Traits>
     [[nodiscard]]
     constexpr bool

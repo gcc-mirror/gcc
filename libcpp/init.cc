@@ -1,5 +1,5 @@
 /* CPP Library.
-   Copyright (C) 1986-2023 Free Software Foundation, Inc.
+   Copyright (C) 1986-2024 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -108,13 +108,15 @@ static const struct lang_flags lang_defaults[] =
   /* GNUC99   */  { 1,  0,  1,  1,  0,  0,    0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1,     0,   0,   0,      0,      0,    0 },
   /* GNUC11   */  { 1,  0,  1,  1,  1,  0,    0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1,     0,   0,   0,      0,      0,    0 },
   /* GNUC17   */  { 1,  0,  1,  1,  1,  0,    0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1,     0,   0,   0,      0,      0,    0 },
-  /* GNUC2X   */  { 1,  0,  1,  1,  1,  1,    0,  1,   1,   1,   0,    1,     1,     0,   1,      1,   1,     1,   0,   1,      1,      0,    1 },
+  /* GNUC23   */  { 1,  0,  1,  1,  1,  1,    0,  1,   1,   1,   0,    1,     1,     0,   1,      1,   1,     1,   0,   1,      1,      0,    1 },
+  /* GNUC2Y   */  { 1,  0,  1,  1,  1,  1,    0,  1,   1,   1,   0,    1,     1,     0,   1,      1,   1,     1,   0,   1,      1,      0,    1 },
   /* STDC89   */  { 0,  0,  0,  0,  0,  0,    1,  0,   0,   0,   0,    0,     0,     1,   0,      0,   0,     0,   0,   0,      0,      0,    0 },
   /* STDC94   */  { 0,  0,  0,  0,  0,  0,    1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   0,     0,   0,   0,      0,      0,    0 },
   /* STDC99   */  { 1,  0,  1,  1,  0,  0,    1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   0,     0,   0,   0,      0,      0,    0 },
   /* STDC11   */  { 1,  0,  1,  1,  1,  0,    1,  1,   1,   0,   0,    0,     0,     1,   0,      0,   0,     0,   0,   0,      0,      0,    0 },
   /* STDC17   */  { 1,  0,  1,  1,  1,  0,    1,  1,   1,   0,   0,    0,     0,     1,   0,      0,   0,     0,   0,   0,      0,      0,    0 },
-  /* STDC2X   */  { 1,  0,  1,  1,  1,  1,    1,  1,   1,   0,   0,    1,     1,     0,   1,      1,   1,     1,   0,   1,      1,      0,    1 },
+  /* STDC23   */  { 1,  0,  1,  1,  1,  1,    1,  1,   1,   0,   0,    1,     1,     0,   1,      1,   1,     1,   0,   1,      1,      0,    1 },
+  /* STDC2Y   */  { 1,  0,  1,  1,  1,  1,    1,  1,   1,   0,   0,    1,     1,     0,   1,      1,   1,     1,   0,   1,      1,      0,    1 },
   /* GNUCXX   */  { 0,  1,  1,  1,  0,  1,    0,  1,   0,   0,   0,    0,     0,     0,   0,      1,   1,     0,   0,   0,      0,      0,    1 },
   /* CXX98    */  { 0,  1,  0,  1,  0,  1,    1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   1,     0,   0,   0,      0,      0,    1 },
   /* GNUCXX11 */  { 1,  1,  1,  1,  1,  1,    0,  1,   1,   1,   1,    0,     0,     0,   0,      1,   1,     0,   0,   0,      0,      0,    1 },
@@ -191,7 +193,7 @@ init_library (void)
 /* Initialize a cpp_reader structure.  */
 cpp_reader *
 cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
-		   class line_maps *line_table)
+		   class line_maps *line_table, cpp_hash_table *extra_table)
 {
   cpp_reader *pfile;
 
@@ -210,7 +212,7 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
   CPP_OPTION (pfile, warn_trigraphs) = 2;
   CPP_OPTION (pfile, warn_endif_labels) = 1;
   CPP_OPTION (pfile, cpp_warn_c90_c99_compat) = -1;
-  CPP_OPTION (pfile, cpp_warn_c11_c2x_compat) = -1;
+  CPP_OPTION (pfile, cpp_warn_c11_c23_compat) = -1;
   CPP_OPTION (pfile, cpp_warn_cxx11_compat) = 0;
   CPP_OPTION (pfile, cpp_warn_cxx20_compat) = 0;
   CPP_OPTION (pfile, cpp_warn_deprecated) = 1;
@@ -307,7 +309,7 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
 
   _cpp_init_files (pfile);
 
-  _cpp_init_hashtable (pfile, table);
+  _cpp_init_hashtable (pfile, table, extra_table);
 
   return pfile;
 }
@@ -435,6 +437,8 @@ static const struct builtin_macro builtin_array[] =
   B("__has_builtin",	 BT_HAS_BUILTIN,   true),
   B("__has_include",	 BT_HAS_INCLUDE,   true),
   B("__has_include_next",BT_HAS_INCLUDE_NEXT,   true),
+  B("__has_feature",	 BT_HAS_FEATURE, true),
+  B("__has_extension",	 BT_HAS_EXTENSION, true),
   /* Keep builtins not used for -traditional-cpp at the end, and
      update init_builtins() if any more are added.  */
   B("_Pragma",		 BT_PRAGMA,        true),
@@ -590,9 +594,12 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
     _cpp_define_builtin (pfile, "__ASSEMBLER__ 1");
   else if (CPP_OPTION (pfile, lang) == CLK_STDC94)
     _cpp_define_builtin (pfile, "__STDC_VERSION__ 199409L");
-  else if (CPP_OPTION (pfile, lang) == CLK_STDC2X
-	   || CPP_OPTION (pfile, lang) == CLK_GNUC2X)
-    _cpp_define_builtin (pfile, "__STDC_VERSION__ 202000L");
+  else if (CPP_OPTION (pfile, lang) == CLK_STDC23
+	   || CPP_OPTION (pfile, lang) == CLK_GNUC23)
+    _cpp_define_builtin (pfile, "__STDC_VERSION__ 202311L");
+  else if (CPP_OPTION (pfile, lang) == CLK_STDC2Y
+	   || CPP_OPTION (pfile, lang) == CLK_GNUC2Y)
+    _cpp_define_builtin (pfile, "__STDC_VERSION__ 202500L");
   else if (CPP_OPTION (pfile, lang) == CLK_STDC17
 	   || CPP_OPTION (pfile, lang) == CLK_GNUC17)
     _cpp_define_builtin (pfile, "__STDC_VERSION__ 201710L");
@@ -788,7 +795,7 @@ read_original_filename (cpp_reader *pfile)
 	      penult[1].reason = penult[0].reason;
 	      penult[0] = penult[1];
 	      pfile->line_table->info_ordinary.used--;
-	      pfile->line_table->info_ordinary.cache = 0;
+	      pfile->line_table->info_ordinary.m_cache = 0;
 	    }
 
 	  return true;

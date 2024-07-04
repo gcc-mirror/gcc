@@ -1,5 +1,5 @@
 # Machine description for AArch64 architecture.
-# Copyright (C) 2009-2023 Free Software Foundation, Inc.
+# Copyright (C) 2009-2024 Free Software Foundation, Inc.
 # Contributed by ARM Ltd.
 #
 # This file is free software; you can redistribute it and/or modify it
@@ -21,11 +21,7 @@
 # see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # <http://www.gnu.org/licenses/>.
 
-/* An executable stack is *not* required for these functions.  */
-#if defined(__ELF__) && defined(__linux__)
-.section .note.GNU-stack,"",%progbits
-.previous
-#endif
+#include "aarch64-asm.h"
 
 # This file just makes sure that the .fini and .init sections do in
 # fact return.  Users may put any desired instructions in those sections.

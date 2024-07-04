@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 int a3[3];
 
 void f(int *a)

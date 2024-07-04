@@ -1,6 +1,6 @@
 /* m2expr.h header file for m2expr.cc.
 
-Copyright (C) 2012-2023 Free Software Foundation, Inc.
+Copyright (C) 2012-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -239,8 +239,12 @@ EXTERN void m2expr_ConstantExpressionWarning (tree value);
 EXTERN tree m2expr_BuildAddAddress (location_t location, tree op1, tree op2);
 EXTERN tree m2expr_BuildRDiv (location_t location, tree op1, tree op2,
                               bool needconvert);
+EXTERN tree m2expr_BuildCondIfExpression (tree condition, tree type,
+					  tree left, tree right);
 EXTERN int m2expr_GetCstInteger (tree cst);
-
+EXTERN tree m2expr_calcNbits (location_t location, tree min, tree max);
+EXTERN bool m2expr_OverflowZType (location_t location, const char *str,
+				  unsigned int base, bool issueError);
 EXTERN void m2expr_init (location_t location);
 
 #undef EXTERN

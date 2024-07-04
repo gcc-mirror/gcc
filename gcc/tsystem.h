@@ -1,6 +1,6 @@
 /* Get common system includes and various definitions and declarations
    based on target macros.
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -48,6 +48,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #ifndef malloc
 extern void *malloc (size_t);
+#endif
+
+#ifndef calloc
+extern void *calloc(size_t, size_t);
+#endif
+
+#ifndef realloc
+extern void *realloc(void *, size_t);
 #endif
 
 #ifndef free

@@ -1,6 +1,6 @@
 // Filesystem directory utilities -*- C++ -*-
 
-// Copyright (C) 2014-2023 Free Software Foundation, Inc.
+// Copyright (C) 2014-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -449,10 +449,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     }
 
 #if __cplusplus >= 202002L
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 3719. Directory iterators should be usable with default sentinel
-      bool operator==(default_sentinel_t) const noexcept
-      { return !_M_dir; }
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 3719. Directory iterators should be usable with default sentinel
+    bool operator==(default_sentinel_t) const noexcept
+    { return !_M_dir; }
 #endif
 
 #if __cpp_impl_three_way_comparison < 201907L
@@ -565,10 +565,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     }
 
 #if __cplusplus >= 202002L
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 3719. Directory iterators should be usable with default sentinel
-      bool operator==(default_sentinel_t) const noexcept
-      { return !_M_dirs; }
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 3719. Directory iterators should be usable with default sentinel
+    bool operator==(default_sentinel_t) const noexcept
+    { return !_M_dirs; }
 #endif
 
 #if __cpp_impl_three_way_comparison < 201907L

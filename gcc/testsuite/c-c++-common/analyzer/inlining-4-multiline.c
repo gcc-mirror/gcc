@@ -56,12 +56,19 @@ outer (int flag)
                   |      |
                   |      (4) following 'true' branch (when 'flag != 0')...
                   |
+                'inner': event 5 (depth 3)
+                  |
+                  |
+                  | #define NULL ((void *)0)
+                  |              ^
+                  |              |
+                  |              (5) ...to here
+   { dg-end-multiline-output "" { target c } } */
+/* { dg-begin-multiline-output "" }
+                  |     return NULL;
+                  |            ^~~~
+                  |
     <-------------+
-    |
-  'outer': event 5 (depth 1)
-    |
-    |cc1:
-    | (5): ...to here
     |
   'outer': event 6 (depth 1)
     |
@@ -100,12 +107,19 @@ outer (int flag)
                   |   |
                   |   (4) following 'true' branch (when 'flag != 0')...
                   |
+                'const char* inner(int)': event 5 (depth 3)
+                  |
+                  |
+                  | #define NULL
+                  |
+                  |              |
+                  |              (5) ...to here
+   { dg-end-multiline-output "" { target c++ } } */
+/* { dg-begin-multiline-output "" }
+                  |     return NULL;
+                  |            ^~~~
+                  |
     <-------------+
-    |
-  'char outer(int)': event 5 (depth 1)
-    |
-    |cc1plus:
-    | (5): ...to here
     |
   'char outer(int)': event 6 (depth 1)
     |

@@ -36,9 +36,9 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 #   undef NULL
 #   define NULL 0
 #endif
-#define _mcMetaError_H
 #define _mcMetaError_C
 
+#include "GmcMetaError.h"
 #   include "GnameKey.h"
 #   include "GStrLib.h"
 #   include "GmcLexBuf.h"
@@ -409,7 +409,7 @@ static void internalFormat (DynamicStrings_String s, int i, const char *m_, unsi
   s = DynamicStrings_ConCatChar (s, '^');
   s = SFIO_WriteS (FIO_StdOut, s);
   FIO_WriteLine (FIO_StdOut);
-  mcError_internalError ((const char *) m, _m_high, (const char *) "../../gcc-read-write/gcc/m2/mc/mcMetaError.mod", 46, 97);
+  mcError_internalError ((const char *) m, _m_high, (const char *) "../../gcc/m2/mc/mcMetaError.mod", 31, 97);
 }
 
 
@@ -421,7 +421,7 @@ static DynamicStrings_String x (DynamicStrings_String a, DynamicStrings_String b
 {
   if (a != b)
     {
-      mcError_internalError ((const char *) "different string returned", 25, (const char *) "../../gcc-read-write/gcc/m2/mc/mcMetaError.mod", 46, 109);
+      mcError_internalError ((const char *) "different string returned", 25, (const char *) "../../gcc/m2/mc/mcMetaError.mod", 31, 109);
     }
   return a;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -735,7 +735,7 @@ static mcError_error doError (mcError_error e, mcMetaError_errorType t, unsigned
       case mcMetaError_chained:
         if (e == NULL)
           {
-            mcError_internalError ((const char *) "should not be chaining an error onto an empty error note", 56, (const char *) "../../gcc-read-write/gcc/m2/mc/mcMetaError.mod", 46, 355);
+            mcError_internalError ((const char *) "should not be chaining an error onto an empty error note", 56, (const char *) "../../gcc/m2/mc/mcMetaError.mod", 31, 355);
           }
         else
           {
@@ -759,7 +759,7 @@ static mcError_error doError (mcError_error e, mcMetaError_errorType t, unsigned
 
 
       default:
-        mcError_internalError ((const char *) "unexpected enumeration value", 28, (const char *) "../../gcc-read-write/gcc/m2/mc/mcMetaError.mod", 46, 369);
+        mcError_internalError ((const char *) "unexpected enumeration value", 28, (const char *) "../../gcc/m2/mc/mcMetaError.mod", 31, 369);
         break;
     }
   return e;
@@ -1270,7 +1270,7 @@ static void ebnf (mcError_error *e, mcMetaError_errorType *t, DynamicStrings_Str
             break;
 
           case '}':
-            return ;
+            return;
             break;
 
 
@@ -1872,10 +1872,10 @@ extern "C" void mcMetaError_metaErrorStringT4 (unsigned int tok, DynamicStrings_
   varargs_end (&sym);
 }
 
-extern "C" void _M2_mcMetaError_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcMetaError_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_mcMetaError_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcMetaError_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

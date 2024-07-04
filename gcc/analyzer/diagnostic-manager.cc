@@ -1,5 +1,5 @@
 /* Classes for saving, deduplicating, and emitting analyzer diagnostics.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -20,15 +20,16 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_MEMORY
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
 #include "input.h"
+#include "diagnostic-core.h"
 #include "pretty-print.h"
 #include "gcc-rich-location.h"
 #include "gimple-pretty-print.h"
 #include "function.h"
-#include "diagnostic-core.h"
 #include "diagnostic-event-id.h"
 #include "diagnostic-path.h"
 #include "bitmap.h"
@@ -58,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/checker-path.h"
 #include "analyzer/reachability.h"
 #include "make-unique.h"
+#include "diagnostic-format-sarif.h"
 
 #if ENABLE_ANALYZER
 
@@ -517,7 +519,7 @@ process_worklist_item (feasible_worklist *worklist,
 
       feasibility_state succ_state (fnode->get_state ());
       std::unique_ptr<rejected_constraint> rc;
-      if (succ_state.maybe_update_for_edge (logger, succ_eedge, &rc))
+      if (succ_state.maybe_update_for_edge (logger, succ_eedge, nullptr, &rc))
 	{
 	  gcc_assert (rc == NULL);
 	  feasible_node *succ_fnode
@@ -1018,6 +1020,31 @@ saved_diagnostic::emit_any_notes () const
     pn->emit ();
 }
 
+/* For SARIF output, add additional properties to the "result" object
+   for this diagnostic.
+   This extra data is intended for use when debugging the analyzer.  */
+
+void
+saved_diagnostic::maybe_add_sarif_properties (sarif_object &result_obj) const
+{
+  sarif_property_bag &props = result_obj.get_or_create_properties ();
+#define PROPERTY_PREFIX "gcc/analyzer/saved_diagnostic/"
+  if (m_sm)
+    props.set_string (PROPERTY_PREFIX "sm", m_sm->get_name ());
+  props.set_integer (PROPERTY_PREFIX "enode", m_enode->m_index);
+  props.set_integer (PROPERTY_PREFIX "snode", m_snode->m_index);
+  if (m_sval)
+    props.set (PROPERTY_PREFIX "sval", m_sval->to_json ());
+  if (m_state)
+    props.set (PROPERTY_PREFIX "state", m_state->to_json ());
+  if (m_best_epath)
+  props.set (PROPERTY_PREFIX "idx", new json::integer_number (m_idx));
+#undef PROPERTY_PREFIX
+
+  /* Potentially add pending_diagnostic-specific properties.  */
+  m_d->maybe_add_sarif_properties (result_obj);
+}
+
 /* State for building a checker_path from a particular exploded_path.
    In particular, this precomputes reachability information: the set of
    source enodes for which a path be found to the diagnostic enode.  */
@@ -1498,6 +1525,29 @@ diagnostic_manager::emit_saved_diagnostics (const exploded_graph &eg)
   best_candidates.emit_best (this, eg);
 }
 
+/* Custom subclass of diagnostic_metadata which, for SARIF output,
+   populates the property bag of the diagnostic's "result" object
+   with information from the saved_diagnostic and the
+   pending_diagnostic.  */
+
+class pending_diagnostic_metadata : public diagnostic_metadata
+{
+public:
+  pending_diagnostic_metadata (const saved_diagnostic &sd)
+  : m_sd (sd)
+  {
+  }
+
+  void
+  maybe_add_sarif_properties (sarif_object &result_obj) const override
+  {
+    m_sd.maybe_add_sarif_properties (result_obj);
+  }
+
+private:
+  const saved_diagnostic &m_sd;
+};
+
 /* Given a saved_diagnostic SD with m_best_epath through EG,
    create an checker_path of suitable events and use it to call
    SD's underlying pending_diagnostic "emit" vfunc to emit a diagnostic.  */
@@ -1538,8 +1588,17 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
      We use the final enode from the epath, which might be different from
      the sd.m_enode, as the dedupe code doesn't care about enodes, just
      snodes.  */
-  sd.m_d->add_final_event (sd.m_sm, epath->get_final_enode (), sd.m_stmt,
-			   sd.m_var, sd.m_state, &emission_path);
+  {
+    const exploded_node *const enode = epath->get_final_enode ();
+    const gimple *stmt = sd.m_stmt;
+    event_loc_info loc_info (get_stmt_location (stmt, enode->get_function ()),
+			     enode->get_function ()->decl,
+			     enode->get_stack_depth ());
+    if (sd.m_stmt_finder)
+      sd.m_stmt_finder->update_event_loc_info (loc_info);
+    sd.m_d->add_final_event (sd.m_sm, enode, loc_info,
+			     sd.m_var, sd.m_state, &emission_path);
+  }
 
   /* The "final" event might not be final; if the saved_diagnostic has a
      trailing eedge stashed, add any events for it.  This is for use
@@ -1563,7 +1622,9 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
 
   auto_diagnostic_group d;
   auto_cfun sentinel (sd.m_snode->m_fun);
-  if (sd.m_d->emit (&rich_loc, get_logger ()))
+  pending_diagnostic_metadata m (sd);
+  diagnostic_emission_context diag_ctxt (sd, rich_loc, m, get_logger ());
+  if (sd.m_d->emit (diag_ctxt))
     {
       sd.emit_any_notes ();
 
@@ -1988,6 +2049,11 @@ struct null_assignment_sm_context : public sm_context
   }
 
   void set_global_state (state_machine::state_t) final override
+  {
+    /* No-op.  */
+  }
+
+  void clear_all_per_svalue_state () final override
   {
     /* No-op.  */
   }

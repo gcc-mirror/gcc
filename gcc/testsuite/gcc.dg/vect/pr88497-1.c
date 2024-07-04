@@ -1,7 +1,7 @@
 /* { dg-require-effective-target vect_double } */
 /* { dg-require-effective-target vsx_hw { target { powerpc*-*-* } } } */
 /* { dg-require-effective-target sse2_runtime { target { i?86-*-* x86_64-*-* } } } */
-/* { dg-options "-O2 -ffast-math -fdump-tree-reassoc1" } */
+/* { dg-additional-options "-O2 -ffast-math -fdump-tree-reassoc1" } */
 /* { dg-additional-options "-mvsx" { target { powerpc*-*-* } } } */
 /* { dg-additional-options "-msse2" { target { i?86-*-* x86_64-*-* } } } */
 

@@ -3,8 +3,10 @@
    __fp16 via float.  */
 
 /* { dg-do run } */
+/* { dg-require-effective-target arm_fp16_hw } */
 /* { dg-require-effective-target arm_fp16_alternative_ok } */
-/* { dg-options "-mfp16-format=alternative" } */
+/* { dg-options "-std=c99" } */
+/* { dg-add-options arm_fp16_alternative } */
 
 #include <stdlib.h>
 

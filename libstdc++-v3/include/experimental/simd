@@ -1,6 +1,6 @@
 // Components for element-wise operations on data-parallel objects -*- C++ -*-
 
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -59,7 +59,7 @@
 #pragma GCC diagnostic push
 // Many [[gnu::vector_size(N)]] types might lead to a -Wpsabi warning which is
 // irrelevant as those functions never appear on ABI borders
-#ifndef __clang__
+#ifndef _GLIBCXX_CLANG
 #pragma GCC diagnostic ignored "-Wpsabi"
 #endif
 
@@ -80,6 +80,9 @@
 #include "bits/simd_x86.h"
 #elif _GLIBCXX_SIMD_HAVE_NEON
 #include "bits/simd_neon.h"
+#if _GLIBCXX_SIMD_HAVE_SVE
+#include "bits/simd_sve.h"
+#endif
 #elif __ALTIVEC__
 #include "bits/simd_ppc.h"
 #endif

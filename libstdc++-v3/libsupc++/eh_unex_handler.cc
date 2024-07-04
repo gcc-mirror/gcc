@@ -1,5 +1,5 @@
 // -*- C++ -*- std::unexpected handler
-// Copyright (C) 2002-2023 Free Software Foundation, Inc.
+// Copyright (C) 2002-2024 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -25,5 +25,5 @@
 #include "unwind-cxx.h"
 
 /* The current installed user handler.  */
-std::unexpected_handler __cxxabiv1::__unexpected_handler = std::terminate;
+std::terminate_handler __cxxabiv1::__unexpected_handler = std::terminate;
 

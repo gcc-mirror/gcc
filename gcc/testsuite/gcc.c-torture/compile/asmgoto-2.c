@@ -1,5 +1,5 @@
 /* This test should be switched off for a new target with less than 4 allocatable registers */
-/* { dg-do compile { target lra } } */
+/* { dg-do compile { target asm_goto_with_outputs } } */
 int
 foo (void)
 {

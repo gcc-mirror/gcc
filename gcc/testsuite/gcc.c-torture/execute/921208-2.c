@@ -1,5 +1,6 @@
 /* { dg-require-effective-target untyped_assembly } */
 /* { dg-require-stack-size "100000 * 4 + 1024" } */
+/* { dg-additional-options "-std=gnu89" } */
 
 g(){}
 

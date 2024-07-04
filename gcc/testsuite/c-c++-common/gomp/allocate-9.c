@@ -20,7 +20,7 @@ typedef enum omp_allocator_handle_t
 static int A[5] = {1,2,3,4,5};
 int B, C, D;
 
-/* If the following fails bacause of added predefined allocators, please update
+/* If the following fails because of added predefined allocators, please update
    - c/c-parser.c's c_parser_omp_allocate
    - fortran/openmp.cc's is_predefined_allocator
    - libgomp/env.c's parse_allocator

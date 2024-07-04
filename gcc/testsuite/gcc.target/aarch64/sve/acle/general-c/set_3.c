@@ -17,8 +17,8 @@ f1 (svbool_t pg, svfloat16_t f16, svfloat16x3_t f16x3, svfloat16x4_t f16x4,
   f16x3 = svset3 (f16x4, 0, f16); /* { dg-error {passing 'svfloat16x4_t' to argument 1 of 'svset3', which expects a tuple of 3 vectors} } */
   f16x3 = svset3 (pg, 0, f16); /* { dg-error {passing 'svbool_t' to argument 1 of 'svset3', which expects a tuple of 3 vectors} } */
   f16x3 = svset3 (f16x3, 0, f16x3); /* { dg-error {passing 'svfloat16x3_t' to argument 3 of 'svset3', which expects a single SVE vector rather than a tuple} } */
-  f16x3 = svset3 (f16x3, 0, f64); /* { dg-error {passing 'svfloat64_t' instead of the expected 'svfloat16_t' to argument 3 of 'svset3', after passing 'svfloat16x3_t' to argument 1} } */
-  f16x3 = svset3 (f16x3, 0, pg); /* { dg-error {passing 'svbool_t' instead of the expected 'svfloat16_t' to argument 3 of 'svset3', after passing 'svfloat16x3_t' to argument 1} } */
+  f16x3 = svset3 (f16x3, 0, f64); /* { dg-error {passing 'svfloat64_t' to argument 3 of 'svset3', but argument 1 was a tuple of 'svfloat16_t'} } */
+  f16x3 = svset3 (f16x3, 0, pg); /* { dg-error {passing 'svbool_t' to argument 3 of 'svset3', but argument 1 was a tuple of 'svfloat16_t'} } */
   f16x3 = svset3 (f16x3, x, f16); /* { dg-error {argument 2 of 'svset3' must be an integer constant expression} } */
   f16x3 = svset3 (f16x3, 0, f16);
   f64 = svset3 (f16x3, 0, f16); /* { dg-error {incompatible types when assigning to type 'svfloat64_t' from type 'svfloat16x3_t'} } */

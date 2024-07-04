@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1997-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,6 +26,7 @@
 --  This package contains routines which handle access-before-elaboration
 --  run-time checks and compile-time diagnostics. See the body for details.
 
+with Namet; use Namet;
 with Types; use Types;
 
 package Sem_Elab is
@@ -118,6 +119,12 @@ package Sem_Elab is
    procedure Initialize;
    pragma Inline (Initialize);
    --  Initialize the internal structures of this unit
+
+   function Is_Controlled_Procedure
+     (Id  : Entity_Id;
+      Nam : Name_Id) return Boolean;
+   --  Determine whether subprogram Id denotes controlled primitive operation
+   --  Adjust, Finalize, or Initialize as specified by Nam.
 
    procedure Kill_Elaboration_Scenario (N : Node_Id);
    --  Determine whether arbitrary node N denotes a scenario which requires

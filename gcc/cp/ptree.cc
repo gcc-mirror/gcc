@@ -1,5 +1,5 @@
 /* Prints out trees in human readable form.
-   Copyright (C) 1992-2023 Free Software Foundation, Inc.
+   Copyright (C) 1992-2024 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -265,8 +265,6 @@ cxx_print_identifier (FILE *file, tree node, int indent)
 void
 cxx_print_lambda_node (FILE *file, tree node, int indent)
 {
-  if (LAMBDA_EXPR_MUTABLE_P (node))
-    fprintf (file, " /mutable");
   fprintf (file, " default_capture_mode=[");
   switch (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (node))
     {

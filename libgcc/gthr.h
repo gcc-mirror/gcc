@@ -1,6 +1,6 @@
 /* Threads compatibility routines for libgcc2.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1997-2023 Free Software Foundation, Inc.
+/* Copyright (C) 1997-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -139,6 +139,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifdef __MINGW32__
 #undef GTHREAD_USE_WEAK
 #define GTHREAD_USE_WEAK 0
+#endif
+
+#ifdef __GLIBC_PREREQ
+#if __GLIBC_PREREQ(2, 34) && !defined(__gnu_hurd__)
+/* glibc 2.34 and later has all pthread_* APIs inside of libc,
+   no need to link separately with -lpthread.  */
+#undef GTHREAD_USE_WEAK
+#define GTHREAD_USE_WEAK 0
+#endif
 #endif
 
 #ifndef GTHREAD_USE_WEAK

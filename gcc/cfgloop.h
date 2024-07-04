@@ -1,5 +1,5 @@
 /* Natural loop functions
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -44,6 +44,9 @@ enum iv_extend_code
   IV_UNKNOWN_EXTEND
 };
 
+typedef generic_wide_int <fixed_wide_int_storage <WIDE_INT_MAX_INL_PRECISION> >
+  bound_wide_int;
+
 /* The structure describing a bound on number of iterations of a loop.  */
 
 class GTY ((chain_next ("%h.next"))) nb_iter_bound {
@@ -58,7 +61,7 @@ public:
         overflows (as MAX + 1 is sometimes produced as the estimate on number
 	of executions of STMT).
      b) it is consistent with the result of number_of_iterations_exit.  */
-  widest_int bound;
+  bound_wide_int bound;
 
   /* True if, after executing the statement BOUND + 1 times, we will
      leave the loop; that is, all the statements after it are executed at most
@@ -161,14 +164,14 @@ public:
 
   /* An integer guaranteed to be greater or equal to nb_iterations.  Only
      valid if any_upper_bound is true.  */
-  widest_int nb_iterations_upper_bound;
+  bound_wide_int nb_iterations_upper_bound;
 
-  widest_int nb_iterations_likely_upper_bound;
+  bound_wide_int nb_iterations_likely_upper_bound;
 
   /* An integer giving an estimate on nb_iterations.  Unlike
      nb_iterations_upper_bound, there is no guarantee that it is at least
      nb_iterations.  */
-  widest_int nb_iterations_estimate;
+  bound_wide_int nb_iterations_estimate;
 
   /* If > 0, an integer, where the user asserted that for any
      I in [ 0, nb_iterations ) and for any J in

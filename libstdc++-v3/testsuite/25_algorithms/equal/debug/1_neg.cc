@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2023 Free Software Foundation, Inc.
+// Copyright (C) 2018-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,6 +27,7 @@ test01()
   std::vector<int> vect;
   vect.push_back(1);
   std::equal(vect.end(), vect.begin(), vect.begin());
+  // { dg-warning "ignoring return value" "" { target c++17 } 29 }
 }
 
 int

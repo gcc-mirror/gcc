@@ -1,5 +1,5 @@
 /* Loop distribution.
-   Copyright (C) 2006-2023 Free Software Foundation, Inc.
+   Copyright (C) 2006-2024 Free Software Foundation, Inc.
    Contributed by Georges-Andre Silber <Georges-Andre.Silber@ensmp.fr>
    and Sebastian Pop <sebastian.pop@amd.com>.
 
@@ -345,9 +345,9 @@ static void
 dot_rdg_1 (FILE *file, struct graph *rdg)
 {
   int i;
-  pretty_printer buffer;
-  pp_needs_newline (&buffer) = false;
-  buffer.buffer->stream = file;
+  pretty_printer pp;
+  pp_needs_newline (&pp) = false;
+  pp.set_output_stream (file);
 
   fprintf (file, "digraph RDG {\n");
 
@@ -357,8 +357,8 @@ dot_rdg_1 (FILE *file, struct graph *rdg)
       struct graph_edge *e;
 
       fprintf (file, "%d [label=\"[%d] ", i, i);
-      pp_gimple_stmt_1 (&buffer, RDGV_STMT (v), 0, TDF_SLIM);
-      pp_flush (&buffer);
+      pp_gimple_stmt_1 (&pp, RDGV_STMT (v), 0, TDF_SLIM);
+      pp_flush (&pp);
       fprintf (file, "\"]\n");
 
       /* Highlight reads from memory.  */
@@ -778,7 +778,7 @@ loop_distribution::stmts_from_loop (class loop *loop, vec<gimple *> *stmts)
 /* Free the reduced dependence graph RDG.  */
 
 static void
-free_rdg (struct graph *rdg)
+free_rdg (struct graph *rdg, loop_p loop)
 {
   int i;
 
@@ -792,13 +792,25 @@ free_rdg (struct graph *rdg)
 
       if (v->data)
 	{
-	  gimple_set_uid (RDGV_STMT (v), -1);
 	  (RDGV_DATAREFS (v)).release ();
 	  free (v->data);
 	}
     }
 
   free_graph (rdg);
+
+  /* Reset UIDs of stmts still in the loop.  */
+  basic_block *bbs = get_loop_body (loop);
+  for (unsigned i = 0; i < loop->num_nodes; ++i)
+    {
+      basic_block bb = bbs[i];
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	gimple_set_uid (gsi_stmt (gsi), -1);
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	gimple_set_uid (gsi_stmt (gsi), -1);
+    }
+  free (bbs);
 }
 
 struct graph *
@@ -812,7 +824,7 @@ loop_distribution::build_rdg (class loop *loop, control_dependences *cd)
   rdg = new_graph (stmts.length ());
   if (!create_rdg_vertices (rdg, stmts, loop))
     {
-      free_rdg (rdg);
+      free_rdg (rdg, loop);
       return NULL;
     }
   stmts.release ();
@@ -949,7 +961,8 @@ copy_loop_before (class loop *loop, bool redirect_lc_phi_defs)
   edge preheader = loop_preheader_edge (loop);
 
   initialize_original_copy_tables ();
-  res = slpeel_tree_duplicate_loop_to_edge_cfg (loop, NULL, preheader);
+  res = slpeel_tree_duplicate_loop_to_edge_cfg (loop, single_exit (loop), NULL,
+						NULL, preheader, NULL, false);
   gcc_assert (res != NULL);
 
   /* When a not last partition is supposed to keep the LC PHIs computed
@@ -964,8 +977,11 @@ copy_loop_before (class loop *loop, bool redirect_lc_phi_defs)
 	  if (virtual_operand_p (gimple_phi_result (phi)))
 	    continue;
 	  use_operand_p use_p = PHI_ARG_DEF_PTR_FROM_EDGE (phi, exit);
-	  tree new_def = get_current_def (USE_FROM_PTR (use_p));
-	  SET_USE (use_p, new_def);
+	  if (TREE_CODE (USE_FROM_PTR (use_p)) == SSA_NAME)
+	    {
+	      tree new_def = get_current_def (USE_FROM_PTR (use_p));
+	      SET_USE (use_p, new_def);
+	    }
 	}
     }
 
@@ -1439,7 +1455,7 @@ loop_distribution::data_dep_in_cycle_p (struct graph *rdg,
   else if (DDR_NUM_DIST_VECTS (ddr) > 1)
     return true;
   else if (DDR_REVERSED_P (ddr)
-	   || lambda_vector_zerop (DDR_DIST_VECT (ddr, 0), 1))
+	   || lambda_vector_zerop (DDR_DIST_VECT (ddr, 0), DDR_NB_LOOPS (ddr)))
     return false;
 
   return true;
@@ -1827,11 +1843,11 @@ loop_distribution::classify_builtin_ldst (loop_p loop, struct graph *rdg,
   /* Now check that if there is a dependence.  */
   ddr_p ddr = get_data_dependence (rdg, src_dr, dst_dr);
 
-  /* Classify as memmove if no dependence between load and store.  */
+  /* Classify as memcpy if no dependence between load and store.  */
   if (DDR_ARE_DEPENDENT (ddr) == chrec_known)
     {
       partition->builtin = alloc_builtin (dst_dr, src_dr, base, src_base, size);
-      partition->kind = PKIND_MEMMOVE;
+      partition->kind = PKIND_MEMCPY;
       return;
     }
 
@@ -2154,9 +2170,6 @@ loop_distribution::pg_add_dependence_edges (struct graph *rdg, int dir,
 	    }
 	  else if (DDR_ARE_DEPENDENT (ddr) == NULL_TREE)
 	    {
-	      if (DDR_REVERSED_P (ddr))
-		this_dir = -this_dir;
-
 	      /* Known dependences can still be unordered througout the
 		 iteration space, see gcc.dg/tree-ssa/ldist-16.c and
 		 gcc.dg/tree-ssa/pr94969.c.  */
@@ -2169,7 +2182,20 @@ loop_distribution::pg_add_dependence_edges (struct graph *rdg, int dir,
 	      /* Else as the distance vector is lexicographic positive swap
 		 the dependence direction.  */
 	      else
-		this_dir = -this_dir;
+		{
+		  if (DDR_REVERSED_P (ddr))
+		    this_dir = -this_dir;
+		  this_dir = -this_dir;
+
+		  /* When then dependence distance of the innermost common
+		     loop of the DRs is zero we have a conflict.  */
+		  auto l1 = gimple_bb (DR_STMT (dr1))->loop_father;
+		  auto l2 = gimple_bb (DR_STMT (dr2))->loop_father;
+		  int idx = index_in_loop_nest (find_common_loop (l1, l2)->num,
+						DDR_LOOP_NEST (ddr));
+		  if (DDR_DIST_VECT (ddr, 0)[idx] == 0)
+		    this_dir = 2;
+		}
 	    }
 	  else
 	    this_dir = 0;
@@ -3051,7 +3077,7 @@ loop_distribution::distribute_loop (class loop *loop,
 		 "Loop %d not distributed: too many memory references.\n",
 		 loop->num);
 
-      free_rdg (rdg);
+      free_rdg (rdg, loop);
       loop_nest.release ();
       free_data_refs (datarefs_vec);
       delete ddrs_table;
@@ -3248,7 +3274,7 @@ loop_distribution::distribute_loop (class loop *loop,
   FOR_EACH_VEC_ELT (partitions, i, partition)
     partition_free (partition);
 
-  free_rdg (rdg);
+  free_rdg (rdg, loop);
   return nbp - *nb_calls;
 }
 
@@ -3654,7 +3680,7 @@ loop_distribution::transform_reduction_loop (loop_p loop)
   auto_bitmap partition_stmts;
   bitmap_set_range (partition_stmts, 0, rdg->n_vertices);
   find_single_drs (loop, rdg, partition_stmts, &store_dr, &load_dr);
-  free_rdg (rdg);
+  free_rdg (rdg, loop);
 
   /* Bail out if there is no single load.  */
   if (load_dr == NULL)

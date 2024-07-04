@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4478,13 +4478,14 @@ package body Make is
                RTS_Switch := True;
 
                declare
+                  RTS_Arg_Path : constant String := Argv (7 .. Argv'Last);
                   Src_Path_Name : constant String_Ptr :=
                                     Get_RTS_Search_Dir
-                                      (Argv (7 .. Argv'Last), Include);
+                                      (RTS_Arg_Path, Include);
 
                   Lib_Path_Name : constant String_Ptr :=
                                     Get_RTS_Search_Dir
-                                      (Argv (7 .. Argv'Last), Objects);
+                                      (RTS_Arg_Path, Objects);
 
                begin
                   if Src_Path_Name /= null
@@ -4501,16 +4502,19 @@ package body Make is
                     and then Lib_Path_Name = null
                   then
                      Make_Failed
-                       ("RTS path not valid: missing adainclude and adalib "
+                       ("RTS path """ & RTS_Arg_Path
+                        & """ not valid: missing adainclude and adalib "
                         & "directories");
 
                   elsif Src_Path_Name = null then
                      Make_Failed
-                       ("RTS path not valid: missing adainclude directory");
+                       ("RTS path """ & RTS_Arg_Path
+                        & """ not valid: missing adainclude directory");
 
-                  elsif Lib_Path_Name = null then
+                  else pragma Assert (Lib_Path_Name = null);
                      Make_Failed
-                       ("RTS path not valid: missing adalib directory");
+                       ("RTS path """ & RTS_Arg_Path
+                        & """ not valid: missing adalib directory");
                   end if;
                end;
             end if;

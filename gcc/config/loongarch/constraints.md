@@ -1,5 +1,5 @@
 ;; Constraint definitions for LoongArch.
-;; Copyright (C) 2021-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2021-2024 Free Software Foundation, Inc.
 ;; Contributed by Loongson Ltd.
 ;;
 ;; This file is part of GCC.
@@ -94,6 +94,7 @@
 ;;       "A constant @code{move_operand} that can be safely loaded using
 ;;	  @code{la}."
 ;;    "Yx"
+;;    "Yy"
 ;; "Z" -
 ;;    "ZC"
 ;;      "A memory operand whose address is formed by a base register and offset
@@ -290,6 +291,10 @@
 (define_constraint "Yx"
    "@internal"
    (match_operand 0 "low_bitmask_operand"))
+
+(define_constraint "Yy"
+   "@internal"
+   (match_operand 0 "high_bitmask_operand"))
 
 (define_constraint "YI"
   "@internal

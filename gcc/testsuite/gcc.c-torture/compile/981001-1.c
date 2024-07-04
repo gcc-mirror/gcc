@@ -14,5 +14,5 @@ int main (void)
       low  |= 0x4000;
     }
   
-  exit (0);
+  __builtin_exit (0);
 }

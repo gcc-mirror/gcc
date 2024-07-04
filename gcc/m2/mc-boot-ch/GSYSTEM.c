@@ -1,6 +1,6 @@
 /* GSYSTEM.c a handwritten dummy module for mc.
 
-Copyright (C) 2018-2023 Free Software Foundation, Inc.
+Copyright (C) 2018-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -27,12 +27,12 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 EXTERN
 void
-_M2_SYSTEM_init (int argc, char *p)
+_M2_SYSTEM_init (int argc, char *argv[], char *envp[])
 {
 }
 
 EXTERN
 void
-_M2_SYSTEM_fini (int argc, char *p)
+_M2_SYSTEM_fini (int argc, char *argv[], char *envp[])
 {
 }

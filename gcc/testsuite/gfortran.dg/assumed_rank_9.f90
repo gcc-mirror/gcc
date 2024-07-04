@@ -26,19 +26,20 @@ program main
 
   type(t), target :: y
   class(t), allocatable, target :: yac
-  
+  type(t),  pointer             :: ypt
+
   y%i = 489
   allocate (yac)
   yac%i = 489
   j = 0
   call fc()
-  call fc(null())
+  call fc(null(yac))
   call fc(y)
   call fc(yac)
   if (j /= 2) STOP 1
 
   j = 0
-  call gc(null())
+! call gc(null(yac)) ! ICE
   call gc(y)
   call gc(yac)
   deallocate (yac)
@@ -54,13 +55,14 @@ program main
 
   j = 0
   call ft()
-  call ft(null())
+  call ft(null(yac))
   call ft(y)
   call ft(yac)
   if (j /= 2) STOP 4
 
   j = 0
-  call gt(null())
+  call gt(null(ypt))
+! call gt(null(yac)) ! ICE
   call gt(y)
   call gt(yac)
   deallocate (yac)
@@ -73,6 +75,7 @@ program main
   yac%i = 489
   call ht(yac)
   if (j /= 1) STOP 6
+  deallocate (yac)
 
 contains
 

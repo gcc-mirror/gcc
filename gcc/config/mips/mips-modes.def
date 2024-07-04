@@ -1,5 +1,5 @@
 /* MIPS extra machine modes. 
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -54,4 +54,5 @@ ADJUST_ALIGNMENT (CCV4, 16);
 CC_MODE (CCDSP);
 
 /* For floating point conditions in FP registers.  */
+CC_MODE (CCE);
 CC_MODE (CCF);

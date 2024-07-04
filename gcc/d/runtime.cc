@@ -1,5 +1,5 @@
 /* runtime.cc -- D runtime functions called by generated code.
-   Copyright (C) 2006-2023 Free Software Foundation, Inc.
+   Copyright (C) 2006-2024 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -150,59 +150,59 @@ get_libcall_type (d_libcall_type type)
       break;
 
     case LCT_CONST_TYPEINFO:
-      libcall_types[type] = Type::dtypeinfo->type->constOf ();
+      libcall_types[type] = dmd::constOf (Type::dtypeinfo->type);
       break;
 
     case LCT_CONST_CLASSINFO:
-      libcall_types[type] = Type::typeinfoclass->type->constOf ();
+      libcall_types[type] = dmd::constOf (Type::typeinfoclass->type);
       break;
 
     case LCT_ARRAY_VOID:
-      libcall_types[type] = Type::tvoid->arrayOf ();
+      libcall_types[type] = dmd::arrayOf (Type::tvoid);
       break;
 
     case LCT_ARRAY_SIZE_T:
-      libcall_types[type] = Type::tsize_t->arrayOf ();
+      libcall_types[type] = dmd::arrayOf (Type::tsize_t);
       break;
 
     case LCT_ARRAY_BYTE:
-      libcall_types[type] = Type::tint8->arrayOf ();
+      libcall_types[type] = dmd::arrayOf (Type::tint8);
       break;
 
     case LCT_ARRAY_STRING:
-      libcall_types[type] = Type::tstring->arrayOf ();
+      libcall_types[type] = dmd::arrayOf (Type::tstring);
       break;
 
     case LCT_ARRAY_WSTRING:
-      libcall_types[type] = Type::twstring->arrayOf ();
+      libcall_types[type] = dmd::arrayOf (Type::twstring);
       break;
 
     case LCT_ARRAY_DSTRING:
-      libcall_types[type] = Type::tdstring->arrayOf ();
+      libcall_types[type] = dmd::arrayOf (Type::tdstring);
       break;
 
     case LCT_ARRAYARRAY_BYTE:
-      libcall_types[type] = Type::tint8->arrayOf ()->arrayOf ();
+      libcall_types[type] = dmd::arrayOf (Type::tint8);
       break;
 
     case LCT_POINTER_ASSOCARRAY:
-      libcall_types[type] = get_libcall_type (LCT_ASSOCARRAY)->pointerTo ();
+      libcall_types[type] = dmd::pointerTo (get_libcall_type (LCT_ASSOCARRAY));
       break;
 
     case LCT_POINTER_VOIDPTR:
-      libcall_types[type] = Type::tvoidptr->arrayOf ();
+      libcall_types[type] = dmd::arrayOf (Type::tvoidptr);
       break;
 
     case LCT_ARRAYPTR_VOID:
-      libcall_types[type] = Type::tvoid->arrayOf ()->pointerTo ();
+      libcall_types[type] = dmd::pointerTo (dmd::arrayOf (Type::tvoid));
       break;
 
     case LCT_ARRAYPTR_BYTE:
-      libcall_types[type] = Type::tint8->arrayOf ()->pointerTo ();
+      libcall_types[type] = dmd::pointerTo (dmd::arrayOf (Type::tint8));
       break;
 
     case LCT_IMMUTABLE_CHARPTR:
-      libcall_types[type] = Type::tchar->pointerTo ()->immutableOf ();
+      libcall_types[type] = dmd::immutableOf (dmd::pointerTo (Type::tchar));
       break;
 
     default:

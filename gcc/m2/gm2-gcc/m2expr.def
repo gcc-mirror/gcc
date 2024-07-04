@@ -1,6 +1,6 @@
 (* m2expr.def definition module for m2expr.cc.
 
-Copyright (C) 2011-2023 Free Software Foundation, Inc.
+Copyright (C) 2011-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -719,6 +719,30 @@ PROCEDURE ConstantExpressionWarning (value: Tree) ;
 *)
 
 PROCEDURE BuildAddAddress (location: location_t; op1, op2: Tree) : Tree ;
+
+
+(*
+   calcNbits - return the smallest number of bits required to
+               represent: min..max.
+*)
+
+PROCEDURE calcNbits (location: location_t; min, max: Tree) : Tree ;
+
+
+(*
+   OverflowZType - return TRUE if str exceeds the ZTYPE range.
+*)
+
+PROCEDURE OverflowZType (location: location_t;
+                         str: ADDRESS; base: CARDINAL;
+                         issueError: BOOLEAN) : BOOLEAN ;
+
+(*
+   BuildCondIfExpression - returns a tree containing
+                           (condition) ? (left) : right.
+*)
+
+PROCEDURE BuildCondIfExpression (condition, type, left, right: Tree) : Tree ;
 
 
 END m2expr.

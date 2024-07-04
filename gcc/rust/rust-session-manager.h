@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -30,6 +30,8 @@
 #include "coretypes.h"
 #include "options.h"
 
+#include "optional.h"
+
 namespace Rust {
 // parser forward decl
 template <typename ManagedTokenSource> class Parser;
@@ -40,7 +42,7 @@ struct Crate;
 }
 // crate forward decl
 namespace HIR {
-struct Crate;
+class Crate;
 }
 
 /* Data related to target, most useful for conditional compilation and
@@ -49,13 +51,35 @@ struct TargetOptions
 {
   /* TODO: maybe make private and access through helpers to allow changes to
    * impl */
-  std::unordered_map<std::string, std::unordered_set<std::string> > features;
+  std::unordered_map<std::string, std::unordered_set<tl::optional<std::string>>>
+    features;
+
+  enum class CrateType
+  {
+    BIN = 0,
+    LIB,
+    RLIB,
+    DYLIB,
+    CDYLIB,
+    STATICLIB,
+    PROC_MACRO
+  } crate_type
+    = CrateType::BIN;
 
 public:
+  void set_crate_type (int raw_type)
+  {
+    crate_type = static_cast<CrateType> (raw_type);
+  }
+
+  const CrateType &get_crate_type () const { return crate_type; }
+
   // Returns whether a key is defined in the feature set.
   bool has_key (std::string key) const
   {
-    return features.find (key) != features.end ();
+    auto it = features.find (key);
+    return it != features.end ()
+	   && it->second.find (tl::nullopt) != it->second.end ();
   }
 
   // Returns whether a key exists with the given value in the feature set.
@@ -80,8 +104,8 @@ public:
     if (it != features.end ())
       {
 	auto set = it->second;
-	if (set.size () == 1)
-	  return *set.begin ();
+	if (set.size () == 1 && set.begin ()->has_value ())
+	  return set.begin ()->value ();
       }
     return "";
   }
@@ -90,10 +114,17 @@ public:
    * set if no key is found. */
   std::unordered_set<std::string> get_values_for_key (std::string key) const
   {
+    std::unordered_set<std::string> ret;
+
     auto it = features.find (key);
-    if (it != features.end ())
-      return it->second;
-    return {};
+    if (it == features.end ())
+      return {};
+
+    for (auto &val : it->second)
+      if (val.has_value ())
+	ret.insert (val.value ());
+
+    return ret;
   }
 
   /* Inserts a key (no value) into the feature set. This will do nothing if
@@ -101,17 +132,33 @@ public:
    * (i.e. whether key already existed). */
   bool insert_key (std::string key)
   {
-    return features
-      .insert (std::make_pair (key, std::unordered_set<std::string> ()))
-      .second;
+    auto it = features.find (key);
+
+    if (it == features.end ())
+      it
+	= features
+	    .insert (
+	      std::make_pair (std::move (key),
+			      std::unordered_set<tl::optional<std::string>> ()))
+	    .first;
+
+    return it->second.insert (tl::nullopt).second;
   }
 
   // Inserts a key-value pair into the feature set.
   void insert_key_value_pair (std::string key, std::string value)
   {
-    auto existing_set = get_values_for_key (key);
-    existing_set.insert (std::move (value));
-    features[std::move (key)] = std::move (existing_set);
+    auto it = features.find (key);
+
+    if (it == features.end ())
+      it
+	= features
+	    .insert (
+	      std::make_pair (std::move (key),
+			      std::unordered_set<tl::optional<std::string>> ()))
+	    .first;
+
+    it->second.insert (std::move (value));
   }
 
   // Dump all target options to stderr.
@@ -166,7 +213,6 @@ struct CompileOptions
   enum DumpOption
   {
     LEXER_DUMP,
-    PARSER_AST_DUMP,
     AST_DUMP_PRETTY,
     REGISTER_PLUGINS_DUMP,
     INJECTION_DUMP,
@@ -175,7 +221,7 @@ struct CompileOptions
     TARGET_OPTION_DUMP,
     HIR_DUMP,
     HIR_DUMP_PRETTY,
-    TYPE_RESOLUTION_DUMP,
+    BIR_DUMP,
   };
 
   std::set<DumpOption> dump_options;
@@ -188,7 +234,6 @@ struct CompileOptions
   bool crate_name_set_manually = false;
   bool enable_test = false;
   bool debug_assertions = false;
-  bool proc_macro = false;
   std::string metadata_output_path;
 
   enum class Edition
@@ -204,12 +249,15 @@ struct CompileOptions
     Ast,
     AttributeCheck,
     Expansion,
+    ASTValidation,
+    FeatureGating,
     NameResolution,
     Lowering,
     TypeCheck,
     Privacy,
     Unsafety,
     Const,
+    BorrowCheck,
     Compilation,
     End,
   } compile_until
@@ -225,7 +273,6 @@ struct CompileOptions
   void enable_all_dump_options ()
   {
     enable_dump_option (DumpOption::LEXER_DUMP);
-    enable_dump_option (DumpOption::PARSER_AST_DUMP);
     enable_dump_option (DumpOption::AST_DUMP_PRETTY);
     enable_dump_option (DumpOption::REGISTER_PLUGINS_DUMP);
     enable_dump_option (DumpOption::INJECTION_DUMP);
@@ -234,7 +281,7 @@ struct CompileOptions
     enable_dump_option (DumpOption::TARGET_OPTION_DUMP);
     enable_dump_option (DumpOption::HIR_DUMP);
     enable_dump_option (DumpOption::HIR_DUMP_PRETTY);
-    enable_dump_option (DumpOption::TYPE_RESOLUTION_DUMP);
+    enable_dump_option (DumpOption::BIR_DUMP);
   }
 
   void set_crate_name (std::string name)
@@ -256,6 +303,14 @@ struct CompileOptions
   }
 
   const Edition &get_edition () const { return edition; }
+
+  void set_crate_type (int raw_type) { target_data.set_crate_type (raw_type); }
+
+  bool is_proc_macro () const
+  {
+    return target_data.get_crate_type ()
+	   == TargetOptions::CrateType::PROC_MACRO;
+  }
 
   void set_compile_step (int raw_step)
   {
@@ -288,13 +343,11 @@ struct Session
   /* This should really be in a per-crate storage area but it is wiped with
    * every file so eh. */
   std::string injected_crate_name;
+  std::map<std::string, std::string> extern_crates;
 
   /* extra files get included during late stages of compilation (e.g. macro
    * expansion) */
   std::vector<std::string> extra_files;
-
-  // backend wrapper to GCC GENERIC
-  Backend *backend;
 
   // backend linemap
   Linemap *linemap;
@@ -334,19 +387,16 @@ public:
     return extra_files.back ().c_str ();
   }
 
-  NodeId load_extern_crate (const std::string &crate_name, Location locus);
+  NodeId load_extern_crate (const std::string &crate_name, location_t locus);
 
 private:
   void compile_crate (const char *filename);
   bool enable_dump (std::string arg);
 
   void dump_lex (Parser<Lexer> &parser) const;
-  void dump_ast (Parser<Lexer> &parser, AST::Crate &crate) const;
   void dump_ast_pretty (AST::Crate &crate, bool expanded = false) const;
-  void dump_ast_expanded (Parser<Lexer> &parser, AST::Crate &crate) const;
   void dump_hir (HIR::Crate &crate) const;
   void dump_hir_pretty (HIR::Crate &crate) const;
-  void dump_type_resolution (HIR::Crate &crate) const;
 
   // pipeline stages - TODO maybe move?
   /* Register plugins pipeline stage. TODO maybe move to another object?
@@ -367,6 +417,8 @@ private:
 
   // handle cfg_option
   bool handle_cfg_option (std::string &data);
+
+  bool handle_extern_option (std::string &data);
 };
 
 } // namespace Rust

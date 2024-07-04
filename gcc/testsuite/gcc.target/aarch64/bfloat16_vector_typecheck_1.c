@@ -127,12 +127,12 @@ bfloat16x4_t footest (bfloat16x4_t vector0)
   (void) glob_bfloat_vec;
   (bfloat16x4_t) glob_bfloat_vec;
 
-  (bfloat16_t) glob_bfloat_vec; /* { dg-error {aggregate value used where a floating-point was expected} } */
+  (bfloat16_t) glob_bfloat_vec; /* { dg-error {vector value used where a floating-point was expected} } */
   (short) glob_bfloat_vec; /* { dg-error {cannot convert a vector of type 'bfloat16x4_t' to type 'short int' which has different size} } */
   (int) glob_bfloat_vec; /* { dg-error {cannot convert a vector of type 'bfloat16x4_t' to type 'int' which has different size} } */
-  (float16_t) glob_bfloat_vec; /* { dg-error {aggregate value used where a floating-point was expected} } */
-  (float) glob_bfloat_vec; /* { dg-error {aggregate value used where a floating-point was expected} } */
-  (double) glob_bfloat_vec; /* { dg-error {aggregate value used where a floating-point was expected} } */
+  (float16_t) glob_bfloat_vec; /* { dg-error {vector value used where a floating-point was expected} } */
+  (float) glob_bfloat_vec; /* { dg-error {vector value used where a floating-point was expected} } */
+  (double) glob_bfloat_vec; /* { dg-error {vector value used where a floating-point was expected} } */
 
   (int32x4_t) glob_bfloat_vec; /* { dg-error {cannot convert a value of type 'bfloat16x4_t' to vector type '__Int32x4_t' which has different size} } */
   (float32x4_t) glob_bfloat_vec; /* { dg-error {cannot convert a value of type 'bfloat16x4_t' to vector type '__Float32x4_t' which has different size} } */

@@ -1,5 +1,5 @@
 /* Header file for jump threading path solver.
-   Copyright (C) 2021-2023 Free Software Foundation, Inc.
+   Copyright (C) 2021-2024 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>.
 
 This file is part of GCC.
@@ -51,7 +51,7 @@ private:
   void compute_exit_dependencies (bitmap_head *dependencies);
   bool defined_outside_path (tree name);
   void range_on_path_entry (vrange &r, tree name);
-  path_oracle *get_path_oracle () { return (path_oracle *)m_oracle; }
+  path_oracle *get_path_oracle () { return (path_oracle *)m_relation; }
 
   // Cache manipulation.
   bool get_cache (vrange &r, tree name);

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha.
-   Copyright (C) 1992-2023 Free Software Foundation, Inc.
+   Copyright (C) 1992-2024 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.
@@ -194,14 +194,6 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 
 /* Define the size of `long long'.  The default is the twice the word size.  */
 #define LONG_LONG_TYPE_SIZE 64
-
-/* The two floating-point formats we support are S-floating, which is
-   4 bytes, and T-floating, which is 8 bytes.  `float' is S and `double'
-   and `long double' are T.  */
-
-#define FLOAT_TYPE_SIZE 32
-#define DOUBLE_TYPE_SIZE 64
-#define LONG_DOUBLE_TYPE_SIZE (TARGET_LONG_DOUBLE_128 ? 128 : 64)
 
 /* Work around target_flags dependency in ada/targtyps.cc.  */
 #define WIDEST_HARDWARE_FP_SIZE 64

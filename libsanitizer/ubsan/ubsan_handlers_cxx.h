@@ -34,10 +34,7 @@ extern "C" SANITIZER_INTERFACE_ATTRIBUTE
 void __ubsan_handle_dynamic_type_cache_miss_abort(
   DynamicTypeCacheMissData *Data, ValueHandle Pointer, ValueHandle Hash);
 
-struct FunctionTypeMismatchData {
-  SourceLocation Loc;
-  const TypeDescriptor &Type;
-};
+struct FunctionTypeMismatchData;
 
 extern "C" SANITIZER_INTERFACE_ATTRIBUTE void
 __ubsan_handle_function_type_mismatch_v1(FunctionTypeMismatchData *Data,

@@ -1,7 +1,7 @@
 /* Bits of OpenMP and OpenACC handling that is specific to device offloading
    and a lowering pass for OpenACC device directives.
 
-   Copyright (C) 2005-2023 Free Software Foundation, Inc.
+   Copyright (C) 2005-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -86,7 +86,7 @@ struct oacc_loop
 };
 
 /* Holds offload tables with decls.  */
-vec<tree, va_gc> *offload_funcs, *offload_vars;
+vec<tree, va_gc> *offload_funcs, *offload_vars, *offload_ind_funcs;
 
 /* Return level at which oacc routine may spawn a partitioned loop, or
    -1 if it is not a routine (i.e. is an offload fn).  */
@@ -351,6 +351,9 @@ omp_discover_implicit_declare_target (void)
     if (DECL_SAVED_TREE (node->decl))
       {
 	struct cgraph_node *cgn;
+	if (lookup_attribute ("omp declare target indirect",
+			      DECL_ATTRIBUTES (node->decl)))
+	  vec_safe_push (offload_ind_funcs, node->decl);
         if (omp_declare_target_fn_p (node->decl))
 	  worklist.safe_push (node->decl);
 	else if (DECL_STRUCT_FUNCTION (node->decl)
@@ -397,49 +400,66 @@ omp_finish_file (void)
 {
   unsigned num_funcs = vec_safe_length (offload_funcs);
   unsigned num_vars = vec_safe_length (offload_vars);
+  unsigned num_ind_funcs = vec_safe_length (offload_ind_funcs);
 
-  if (num_funcs == 0 && num_vars == 0)
+  if (num_funcs == 0 && num_vars == 0 && num_ind_funcs == 0)
     return;
 
   if (targetm_common.have_named_sections)
     {
-      vec<constructor_elt, va_gc> *v_f, *v_v;
+      vec<constructor_elt, va_gc> *v_f, *v_v, *v_if;
       vec_alloc (v_f, num_funcs);
       vec_alloc (v_v, num_vars * 2);
+      vec_alloc (v_if, num_ind_funcs);
 
       add_decls_addresses_to_decl_constructor (offload_funcs, v_f);
       add_decls_addresses_to_decl_constructor (offload_vars, v_v);
+      add_decls_addresses_to_decl_constructor (offload_ind_funcs, v_if);
 
       tree vars_decl_type = build_array_type_nelts (pointer_sized_int_node,
 						    vec_safe_length (v_v));
       tree funcs_decl_type = build_array_type_nelts (pointer_sized_int_node,
 						     num_funcs);
+      tree ind_funcs_decl_type = build_array_type_nelts (pointer_sized_int_node,
+							 num_ind_funcs);
+
       SET_TYPE_ALIGN (vars_decl_type, TYPE_ALIGN (pointer_sized_int_node));
       SET_TYPE_ALIGN (funcs_decl_type, TYPE_ALIGN (pointer_sized_int_node));
+      SET_TYPE_ALIGN (ind_funcs_decl_type, TYPE_ALIGN (pointer_sized_int_node));
       tree ctor_v = build_constructor (vars_decl_type, v_v);
       tree ctor_f = build_constructor (funcs_decl_type, v_f);
-      TREE_CONSTANT (ctor_v) = TREE_CONSTANT (ctor_f) = 1;
-      TREE_STATIC (ctor_v) = TREE_STATIC (ctor_f) = 1;
+      tree ctor_if = build_constructor (ind_funcs_decl_type, v_if);
+      TREE_CONSTANT (ctor_v) = TREE_CONSTANT (ctor_f) = TREE_CONSTANT (ctor_if) = 1;
+      TREE_STATIC (ctor_v) = TREE_STATIC (ctor_f) = TREE_STATIC (ctor_if) = 1;
       tree funcs_decl = build_decl (UNKNOWN_LOCATION, VAR_DECL,
 				    get_identifier (".offload_func_table"),
 				    funcs_decl_type);
       tree vars_decl = build_decl (UNKNOWN_LOCATION, VAR_DECL,
 				   get_identifier (".offload_var_table"),
 				   vars_decl_type);
-      TREE_STATIC (funcs_decl) = TREE_STATIC (vars_decl) = 1;
+      tree ind_funcs_decl = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+					get_identifier (".offload_ind_func_table"),
+					ind_funcs_decl_type);
+      TREE_STATIC (funcs_decl) = TREE_STATIC (ind_funcs_decl) = 1;
+      TREE_STATIC (vars_decl) = 1;
       /* Do not align tables more than TYPE_ALIGN (pointer_sized_int_node),
 	 otherwise a joint table in a binary will contain padding between
 	 tables from multiple object files.  */
-      DECL_USER_ALIGN (funcs_decl) = DECL_USER_ALIGN (vars_decl) = 1;
+      DECL_USER_ALIGN (funcs_decl) = DECL_USER_ALIGN (ind_funcs_decl) = 1;
+      DECL_USER_ALIGN (vars_decl) = 1;
       SET_DECL_ALIGN (funcs_decl, TYPE_ALIGN (funcs_decl_type));
       SET_DECL_ALIGN (vars_decl, TYPE_ALIGN (vars_decl_type));
+      SET_DECL_ALIGN (ind_funcs_decl, TYPE_ALIGN (ind_funcs_decl_type));
       DECL_INITIAL (funcs_decl) = ctor_f;
       DECL_INITIAL (vars_decl) = ctor_v;
+      DECL_INITIAL (ind_funcs_decl) = ctor_if;
       set_decl_section_name (funcs_decl, OFFLOAD_FUNC_TABLE_SECTION_NAME);
       set_decl_section_name (vars_decl, OFFLOAD_VAR_TABLE_SECTION_NAME);
-
+      set_decl_section_name (ind_funcs_decl,
+			     OFFLOAD_IND_FUNC_TABLE_SECTION_NAME);
       varpool_node::finalize_decl (vars_decl);
       varpool_node::finalize_decl (funcs_decl);
+      varpool_node::finalize_decl (ind_funcs_decl);
     }
   else
     {
@@ -470,6 +490,15 @@ omp_finish_file (void)
 	  else
 #endif
 	    targetm.record_offload_symbol (it);
+	}
+      for (unsigned i = 0; i < num_ind_funcs; i++)
+	{
+	  tree it = (*offload_ind_funcs)[i];
+	  /* See also add_decls_addresses_to_decl_constructor
+	     and output_offload_tables in lto-cgraph.cc.  */
+	  if (!in_lto_p && !symtab_node::get (it))
+	    continue;
+	  targetm.record_offload_symbol (it);
 	}
     }
 }
@@ -2603,6 +2632,11 @@ execute_omp_device_lower ()
   gimple_stmt_iterator gsi;
   bool calls_declare_variant_alt
     = cgraph_node::get (cfun->decl)->calls_declare_variant_alt;
+#ifdef ACCEL_COMPILER
+  bool omp_redirect_indirect_calls = vec_safe_length (offload_ind_funcs) > 0;
+  tree map_ptr_fn
+    = builtin_decl_explicit (BUILT_IN_GOMP_TARGET_MAP_INDIRECT_PTR);
+#endif
   FOR_EACH_BB_FN (bb, cfun)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
@@ -2621,6 +2655,33 @@ execute_omp_device_lower ()
 		      update_stmt (stmt);
 		    }
 		}
+#ifdef ACCEL_COMPILER
+	    if (omp_redirect_indirect_calls
+		&& gimple_call_fndecl (stmt) == NULL_TREE)
+	      {
+		gcall *orig_call = dyn_cast <gcall *> (stmt);
+		tree call_fn = gimple_call_fn (stmt);
+		tree fn_ty = TREE_TYPE (call_fn);
+
+		if (TREE_CODE (call_fn) == OBJ_TYPE_REF)
+		  {
+		    tree obj_ref = create_tmp_reg (TREE_TYPE (call_fn),
+						   ".ind_fn_objref");
+		    gimple *gassign = gimple_build_assign (obj_ref, call_fn);
+		    gsi_insert_before  (&gsi, gassign, GSI_SAME_STMT);
+		    call_fn = obj_ref;
+		  }
+		tree mapped_fn = create_tmp_reg (fn_ty, ".ind_fn");
+		gimple *gcall =
+		    gimple_build_call (map_ptr_fn, 1, call_fn);
+		gimple_set_location (gcall, gimple_location (stmt));
+		gimple_call_set_lhs (gcall, mapped_fn);
+		gsi_insert_before (&gsi, gcall, GSI_SAME_STMT);
+
+		gimple_call_set_fn (orig_call, mapped_fn);
+		update_stmt (orig_call);
+	      }
+#endif
 	    continue;
 	  }
 	tree lhs = gimple_call_lhs (stmt), rhs = NULL_TREE;
@@ -2757,9 +2818,15 @@ public:
   /* opt_pass methods: */
   bool gate (function *fun) final override
     {
+#ifdef ACCEL_COMPILER
+      bool offload_ind_funcs_p = vec_safe_length (offload_ind_funcs) > 0;
+#else
+      bool offload_ind_funcs_p = false;
+#endif
       return (!(fun->curr_properties & PROP_gimple_lomp_dev)
 	      || (flag_openmp
-		  && cgraph_node::get (fun->decl)->calls_declare_variant_alt));
+		  && (cgraph_node::get (fun->decl)->calls_declare_variant_alt
+		      || offload_ind_funcs_p)));
     }
   unsigned int execute (function *) final override
     {

@@ -1,5 +1,5 @@
 /* Builtins' description for AArch64 SIMD architecture.
-   Copyright (C) 2011-2023 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -47,6 +47,8 @@
 #include "stringpool.h"
 #include "attribs.h"
 #include "gimple-fold.h"
+#include "builtins.h"
+#include "aarch64-builtins.h"
 
 #define v8qi_UP  E_V8QImode
 #define v8di_UP  E_V8DImode
@@ -183,46 +185,7 @@
 #define SIMD_INTR_QUAL(suffix) QUAL_##suffix
 #define SIMD_INTR_LENGTH_CHAR(length) LENGTH_##length
 
-
 #define SIMD_MAX_BUILTIN_ARGS 5
-
-enum aarch64_type_qualifiers
-{
-  /* T foo.  */
-  qualifier_none = 0x0,
-  /* unsigned T foo.  */
-  qualifier_unsigned = 0x1, /* 1 << 0  */
-  /* const T foo.  */
-  qualifier_const = 0x2, /* 1 << 1  */
-  /* T *foo.  */
-  qualifier_pointer = 0x4, /* 1 << 2  */
-  /* Used when expanding arguments if an operand could
-     be an immediate.  */
-  qualifier_immediate = 0x8, /* 1 << 3  */
-  qualifier_maybe_immediate = 0x10, /* 1 << 4  */
-  /* void foo (...).  */
-  qualifier_void = 0x20, /* 1 << 5  */
-  /* 1 << 6 is now unused */
-  /* Some builtins should use the T_*mode* encoded in a simd_builtin_datum
-     rather than using the type of the operand.  */
-  qualifier_map_mode = 0x80, /* 1 << 7  */
-  /* qualifier_pointer | qualifier_map_mode  */
-  qualifier_pointer_map_mode = 0x84,
-  /* qualifier_const | qualifier_pointer | qualifier_map_mode  */
-  qualifier_const_pointer_map_mode = 0x86,
-  /* Polynomial types.  */
-  qualifier_poly = 0x100,
-  /* Lane indices - must be in range, and flipped for bigendian.  */
-  qualifier_lane_index = 0x200,
-  /* Lane indices for single lane structure loads and stores.  */
-  qualifier_struct_load_store_lane_index = 0x400,
-  /* Lane indices selected in pairs. - must be in range, and flipped for
-     bigendian.  */
-  qualifier_lane_pair_index = 0x800,
-  /* Lane indices selected in quadtuplets. - must be in range, and flipped for
-     bigendian.  */
-  qualifier_lane_quadtup_index = 0x1000,
-};
 
 /* Flags that describe what a function might do.  */
 const unsigned int FLAG_NONE = 0U;
@@ -571,6 +534,22 @@ BUILTIN_VDQ_BHSI (urhadd, uavg, _ceil, 0)
 BUILTIN_VDQ_BHSI (shadd, avg, _floor, 0)
 BUILTIN_VDQ_BHSI (uhadd, uavg, _floor, 0)
 
+/* The builtins below should be expanded through the standard optabs
+   CODE_FOR_extend<mode><Vwide>2. */
+#undef VAR1
+#define VAR1(F,T,N,M) \
+  constexpr insn_code CODE_FOR_aarch64_##F##M = CODE_FOR_##T##N##M##2;
+
+VAR1 (float_extend_lo_, extend, v2sf, v2df)
+VAR1 (float_extend_lo_, extend, v4hf, v4sf)
+
+/* __builtin_aarch64_float_truncate_lo_<mode> should be expanded through the
+   standard optabs CODE_FOR_trunc<Vwide><mode>2. */
+constexpr insn_code CODE_FOR_aarch64_float_truncate_lo_v4hf
+    = CODE_FOR_truncv4sfv4hf2;
+constexpr insn_code CODE_FOR_aarch64_float_truncate_lo_v2sf
+    = CODE_FOR_truncv2dfv2sf2;
+
 #undef VAR1
 #define VAR1(T, N, MAP, FLAG, A) \
   {#N #A, UP (A), CF##MAP (N, A), 0, TYPES_##T, FLAG_##FLAG},
@@ -695,6 +674,40 @@ static aarch64_simd_builtin_datum aarch64_simd_builtin_data[] = {
   VREINTERPRET_BUILTINS \
   VREINTERPRETQ_BUILTINS
 
+#define AARCH64_SIMD_VGET_LOW_BUILTINS \
+  VGET_LOW_BUILTIN(f16) \
+  VGET_LOW_BUILTIN(f32) \
+  VGET_LOW_BUILTIN(f64) \
+  VGET_LOW_BUILTIN(p8) \
+  VGET_LOW_BUILTIN(p16) \
+  VGET_LOW_BUILTIN(p64) \
+  VGET_LOW_BUILTIN(s8) \
+  VGET_LOW_BUILTIN(s16) \
+  VGET_LOW_BUILTIN(s32) \
+  VGET_LOW_BUILTIN(s64) \
+  VGET_LOW_BUILTIN(u8) \
+  VGET_LOW_BUILTIN(u16) \
+  VGET_LOW_BUILTIN(u32) \
+  VGET_LOW_BUILTIN(u64) \
+  VGET_LOW_BUILTIN(bf16)
+
+#define AARCH64_SIMD_VGET_HIGH_BUILTINS \
+  VGET_HIGH_BUILTIN(f16) \
+  VGET_HIGH_BUILTIN(f32) \
+  VGET_HIGH_BUILTIN(f64) \
+  VGET_HIGH_BUILTIN(p8) \
+  VGET_HIGH_BUILTIN(p16) \
+  VGET_HIGH_BUILTIN(p64) \
+  VGET_HIGH_BUILTIN(s8) \
+  VGET_HIGH_BUILTIN(s16) \
+  VGET_HIGH_BUILTIN(s32) \
+  VGET_HIGH_BUILTIN(s64) \
+  VGET_HIGH_BUILTIN(u8) \
+  VGET_HIGH_BUILTIN(u16) \
+  VGET_HIGH_BUILTIN(u32) \
+  VGET_HIGH_BUILTIN(u64) \
+  VGET_HIGH_BUILTIN(bf16)
+
 typedef struct
 {
   const char *name;
@@ -734,6 +747,12 @@ typedef struct
 #define VREINTERPRET_BUILTIN(A, B, L) \
   AARCH64_SIMD_BUILTIN_VREINTERPRET##L##_##A##_##B,
 
+#define VGET_LOW_BUILTIN(A) \
+  AARCH64_SIMD_BUILTIN_VGET_LOW_##A,
+
+#define VGET_HIGH_BUILTIN(A)                     \
+  AARCH64_SIMD_BUILTIN_VGET_HIGH_##A,
+
 #undef VAR1
 #define VAR1(T, N, MAP, FLAG, A) \
   AARCH64_SIMD_BUILTIN_##T##_##N##A,
@@ -769,6 +788,8 @@ enum aarch64_builtins
   AARCH64_CRC32_BUILTIN_MAX,
   /* SIMD intrinsic builtins.  */
   AARCH64_SIMD_VREINTERPRET_BUILTINS
+  AARCH64_SIMD_VGET_LOW_BUILTINS
+  AARCH64_SIMD_VGET_HIGH_BUILTINS
   /* ARMv8.3-A Pointer Authentication Builtins.  */
   AARCH64_PAUTH_BUILTIN_AUTIA1716,
   AARCH64_PAUTH_BUILTIN_PACIA1716,
@@ -808,6 +829,23 @@ enum aarch64_builtins
   AARCH64_RBIT,
   AARCH64_RBITL,
   AARCH64_RBITLL,
+  /* System register builtins.  */
+  AARCH64_RSR,
+  AARCH64_RSRP,
+  AARCH64_RSR64,
+  AARCH64_RSRF,
+  AARCH64_RSRF64,
+  AARCH64_RSR128,
+  AARCH64_WSR,
+  AARCH64_WSRP,
+  AARCH64_WSR64,
+  AARCH64_WSRF,
+  AARCH64_WSRF64,
+  AARCH64_WSR128,
+  AARCH64_PLD,
+  AARCH64_PLDX,
+  AARCH64_PLI,
+  AARCH64_PLIX,
   AARCH64_BUILTIN_MAX
 };
 
@@ -843,8 +881,32 @@ static aarch64_fcmla_laneq_builtin_datum aarch64_fcmla_lane_builtin_data[] = {
      && SIMD_INTR_QUAL(A) == SIMD_INTR_QUAL(B) \
   },
 
+#undef VGET_LOW_BUILTIN
+#define VGET_LOW_BUILTIN(A) \
+  {"vget_low_" #A, \
+   AARCH64_SIMD_BUILTIN_VGET_LOW_##A, \
+   2, \
+   { SIMD_INTR_MODE(A, d), SIMD_INTR_MODE(A, q) }, \
+   { SIMD_INTR_QUAL(A), SIMD_INTR_QUAL(A) }, \
+   FLAG_AUTO_FP, \
+   false \
+  },
+
+#undef VGET_HIGH_BUILTIN
+#define VGET_HIGH_BUILTIN(A) \
+  {"vget_high_" #A, \
+   AARCH64_SIMD_BUILTIN_VGET_HIGH_##A, \
+   2, \
+   { SIMD_INTR_MODE(A, d), SIMD_INTR_MODE(A, q) }, \
+   { SIMD_INTR_QUAL(A), SIMD_INTR_QUAL(A) }, \
+   FLAG_AUTO_FP, \
+   false \
+  },
+
 static const aarch64_simd_intrinsic_datum aarch64_simd_intrinsic_data[] = {
   AARCH64_SIMD_VREINTERPRET_BUILTINS
+  AARCH64_SIMD_VGET_LOW_BUILTINS
+  AARCH64_SIMD_VGET_HIGH_BUILTINS
 };
 
 
@@ -883,47 +945,11 @@ const char *aarch64_scalar_builtin_types[] = {
   NULL
 };
 
-#define ENTRY(E, M, Q, G) E,
-enum aarch64_simd_type
-{
-#include "aarch64-simd-builtin-types.def"
-  ARM_NEON_H_TYPES_LAST
-};
-#undef ENTRY
-
-struct GTY(()) aarch64_simd_type_info
-{
-  enum aarch64_simd_type type;
-
-  /* Internal type name.  */
-  const char *name;
-
-  /* Internal type name(mangled).  The mangled names conform to the
-     AAPCS64 (see "Procedure Call Standard for the ARM 64-bit Architecture",
-     Appendix A).  To qualify for emission with the mangled names defined in
-     that document, a vector type must not only be of the correct mode but also
-     be of the correct internal AdvSIMD vector type (e.g. __Int8x8_t); these
-     types are registered by aarch64_init_simd_builtin_types ().  In other
-     words, vector types defined in other ways e.g. via vector_size attribute
-     will get default mangled names.  */
-  const char *mangle;
-
-  /* Internal type.  */
-  tree itype;
-
-  /* Element type.  */
-  tree eltype;
-
-  /* Machine mode the internal type maps to.  */
-  enum machine_mode mode;
-
-  /* Qualifiers.  */
-  enum aarch64_type_qualifiers q;
-};
+extern GTY(()) aarch64_simd_type_info aarch64_simd_types[];
 
 #define ENTRY(E, M, Q, G)  \
   {E, "__" #E, #G "__" #E, NULL_TREE, NULL_TREE, E_##M##mode, qualifier_##Q},
-static GTY(()) struct aarch64_simd_type_info aarch64_simd_types [] = {
+struct aarch64_simd_type_info aarch64_simd_types [] = {
 #include "aarch64-simd-builtin-types.def"
 };
 #undef ENTRY
@@ -1787,7 +1813,8 @@ aarch64_init_tme_builtins (void)
 static void
 aarch64_init_rng_builtins (void)
 {
-  tree unsigned_ptr_type = build_pointer_type (unsigned_intDI_type_node);
+  tree unsigned_ptr_type
+    = build_pointer_type (get_typenode_from_name (UINT64_TYPE));
   tree ftype
     = build_function_type_list (integer_type_node, unsigned_ptr_type, NULL);
   aarch64_builtin_decls[AARCH64_BUILTIN_RNG_RNDR]
@@ -1798,8 +1825,104 @@ aarch64_init_rng_builtins (void)
 				   AARCH64_BUILTIN_RNG_RNDRRS);
 }
 
+/* Add builtins for reading system register.  */
+static void
+aarch64_init_rwsr_builtins (void)
+{
+  tree fntype = NULL;
+  tree const_char_ptr_type
+    = build_pointer_type (build_type_variant (char_type_node, true, false));
+
+#define AARCH64_INIT_RWSR_BUILTINS_DECL(F, N, T) \
+  aarch64_builtin_decls[AARCH64_##F] \
+    = aarch64_general_add_builtin ("__builtin_aarch64_"#N, T, AARCH64_##F);
+
+  fntype
+    = build_function_type_list (uint32_type_node, const_char_ptr_type, NULL);
+  AARCH64_INIT_RWSR_BUILTINS_DECL (RSR, rsr, fntype);
+
+  fntype
+    = build_function_type_list (ptr_type_node, const_char_ptr_type, NULL);
+  AARCH64_INIT_RWSR_BUILTINS_DECL (RSRP, rsrp, fntype);
+
+  fntype
+    = build_function_type_list (uint64_type_node, const_char_ptr_type, NULL);
+  AARCH64_INIT_RWSR_BUILTINS_DECL (RSR64, rsr64, fntype);
+
+  fntype
+    = build_function_type_list (float_type_node, const_char_ptr_type, NULL);
+  AARCH64_INIT_RWSR_BUILTINS_DECL (RSRF, rsrf, fntype);
+
+  fntype
+    = build_function_type_list (double_type_node, const_char_ptr_type, NULL);
+  AARCH64_INIT_RWSR_BUILTINS_DECL (RSRF64, rsrf64, fntype);
+
+  fntype
+    = build_function_type_list (uint128_type_node, const_char_ptr_type, NULL);
+  AARCH64_INIT_RWSR_BUILTINS_DECL (RSR128, rsr128, fntype);
+
+  fntype
+    = build_function_type_list (void_type_node, const_char_ptr_type,
+				uint32_type_node, NULL);
+
+  AARCH64_INIT_RWSR_BUILTINS_DECL (WSR, wsr, fntype);
+
+  fntype
+    = build_function_type_list (void_type_node, const_char_ptr_type,
+				const_ptr_type_node, NULL);
+  AARCH64_INIT_RWSR_BUILTINS_DECL (WSRP, wsrp, fntype);
+
+  fntype
+    = build_function_type_list (void_type_node, const_char_ptr_type,
+				uint64_type_node, NULL);
+  AARCH64_INIT_RWSR_BUILTINS_DECL (WSR64, wsr64, fntype);
+
+  fntype
+    = build_function_type_list (void_type_node, const_char_ptr_type,
+				float_type_node, NULL);
+  AARCH64_INIT_RWSR_BUILTINS_DECL (WSRF, wsrf, fntype);
+
+  fntype
+    = build_function_type_list (void_type_node, const_char_ptr_type,
+				double_type_node, NULL);
+  AARCH64_INIT_RWSR_BUILTINS_DECL (WSRF64, wsrf64, fntype);
+
+  fntype
+    = build_function_type_list (void_type_node, const_char_ptr_type,
+				uint128_type_node, NULL);
+  AARCH64_INIT_RWSR_BUILTINS_DECL (WSR128, wsr128, fntype);
+}
+
+/* Add builtins for data and instrution prefetch.  */
+static void
+aarch64_init_prefetch_builtin (void)
+{
+#define AARCH64_INIT_PREFETCH_BUILTIN(INDEX, N)				\
+  aarch64_builtin_decls[INDEX] =					\
+    aarch64_general_add_builtin ("__builtin_aarch64_" N, ftype, INDEX)
+
+  tree ftype;
+  tree cv_argtype;
+  cv_argtype = build_qualified_type (void_type_node, TYPE_QUAL_CONST
+						     | TYPE_QUAL_VOLATILE);
+  cv_argtype = build_pointer_type (cv_argtype);
+
+  ftype = build_function_type_list (void_type_node, cv_argtype, NULL);
+  AARCH64_INIT_PREFETCH_BUILTIN (AARCH64_PLD, "pld");
+  AARCH64_INIT_PREFETCH_BUILTIN (AARCH64_PLI, "pli");
+
+  ftype = build_function_type_list (void_type_node, unsigned_type_node,
+				    unsigned_type_node, unsigned_type_node,
+				    cv_argtype, NULL);
+  AARCH64_INIT_PREFETCH_BUILTIN (AARCH64_PLDX, "pldx");
+
+  ftype = build_function_type_list (void_type_node, unsigned_type_node,
+				    unsigned_type_node, cv_argtype, NULL);
+  AARCH64_INIT_PREFETCH_BUILTIN (AARCH64_PLIX, "plix");
+}
+
 /* Initialize the memory tagging extension (MTE) builtins.  */
-struct
+static GTY(()) struct GTY(())
 {
   tree ftype;
   enum insn_code icode;
@@ -2019,6 +2142,9 @@ aarch64_general_init_builtins (void)
   aarch64_init_rng_builtins ();
   aarch64_init_data_intrinsics ();
 
+  aarch64_init_rwsr_builtins ();
+  aarch64_init_prefetch_builtin ();
+
   tree ftype_jcvt
     = build_function_type_list (intSI_type_node, double_type_node, NULL);
   aarch64_builtin_decls[AARCH64_JSCVT]
@@ -2052,6 +2178,37 @@ aarch64_general_builtin_decl (unsigned code, bool)
     return error_mark_node;
 
   return aarch64_builtin_decls[code];
+}
+
+bool
+aarch64_general_check_builtin_call (location_t location, vec<location_t>,
+			    unsigned int code, tree fndecl,
+			    unsigned int nargs ATTRIBUTE_UNUSED, tree *args)
+{
+  switch (code)
+    {
+    case AARCH64_RSR:
+    case AARCH64_RSRP:
+    case AARCH64_RSR64:
+    case AARCH64_RSRF:
+    case AARCH64_RSRF64:
+    case AARCH64_WSR:
+    case AARCH64_WSRP:
+    case AARCH64_WSR64:
+    case AARCH64_WSRF:
+    case AARCH64_WSRF64:
+      tree addr = STRIP_NOPS (args[0]);
+      if (TREE_CODE (TREE_TYPE (addr)) != POINTER_TYPE
+	  || TREE_CODE (addr) != ADDR_EXPR
+	  || TREE_CODE (TREE_OPERAND (addr, 0)) != STRING_CST)
+	{
+	  error_at (location, "first argument to %qD must be a string literal",
+		    fndecl);
+	  return false;
+	}
+    }
+  /* Default behavior.  */
+  return true;
 }
 
 typedef enum
@@ -2422,8 +2579,7 @@ aarch64_expand_fcmla_builtin (tree exp, rtx target, int fcode)
   int lane = INTVAL (lane_idx);
 
   if (lane < nunits / 4)
-    op2 = simplify_gen_subreg (d->mode, op2, quadmode,
-			       subreg_lowpart_offset (d->mode, quadmode));
+    op2 = force_lowpart_subreg (d->mode, op2, quadmode);
   else
     {
       /* Select the upper 64 bits, either a V2SF or V4HF, this however
@@ -2433,14 +2589,13 @@ aarch64_expand_fcmla_builtin (tree exp, rtx target, int fcode)
 	 gen_highpart_mode generates code that isn't optimal.  */
       rtx temp1 = gen_reg_rtx (d->mode);
       rtx temp2 = gen_reg_rtx (DImode);
-      temp1 = simplify_gen_subreg (d->mode, op2, quadmode,
-				   subreg_lowpart_offset (d->mode, quadmode));
-      temp1 = simplify_gen_subreg (V2DImode, temp1, d->mode, 0);
+      temp1 = force_lowpart_subreg (d->mode, op2, quadmode);
+      temp1 = force_subreg (V2DImode, temp1, d->mode, 0);
       if (BYTES_BIG_ENDIAN)
 	emit_insn (gen_aarch64_get_lanev2di (temp2, temp1, const0_rtx));
       else
 	emit_insn (gen_aarch64_get_lanev2di (temp2, temp1, const1_rtx));
-      op2 = simplify_gen_subreg (d->mode, temp2, GET_MODE (temp2), 0);
+      op2 = force_subreg (d->mode, temp2, GET_MODE (temp2), 0);
 
       /* And recalculate the index.  */
       lane -= nunits / 4;
@@ -2597,6 +2752,218 @@ aarch64_expand_rng_builtin (tree exp, rtx target, int fcode, int ignore)
   rtx cmp_rtx = gen_rtx_fmt_ee (EQ, SImode, cc_reg, const0_rtx);
   emit_insn (gen_aarch64_cstoresi (target, cmp_rtx, cc_reg));
   return target;
+}
+
+/* Expand the read/write system register builtin EXPs.  */
+rtx
+aarch64_expand_rwsr_builtin (tree exp, rtx target, int fcode)
+{
+  tree arg0, arg1;
+  rtx const_str, input_val, subreg;
+  enum machine_mode mode;
+  enum insn_code icode;
+  class expand_operand ops[2];
+
+  arg0 = CALL_EXPR_ARG (exp, 0);
+
+  bool write_op = (fcode == AARCH64_WSR
+		   || fcode == AARCH64_WSRP
+		   || fcode == AARCH64_WSR64
+		   || fcode == AARCH64_WSRF
+		   || fcode == AARCH64_WSRF64
+		   || fcode == AARCH64_WSR128);
+
+  bool op128 = (fcode == AARCH64_RSR128 || fcode == AARCH64_WSR128);
+  enum machine_mode sysreg_mode = op128 ? TImode : DImode;
+
+  if (op128 && !TARGET_D128)
+    {
+      error_at (EXPR_LOCATION (exp), "128-bit system register support requires"
+				     " the %<d128%> extension");
+      return const0_rtx;
+    }
+
+  /* Argument 0 (system register name) must be a string literal.  */
+  gcc_assert (TREE_CODE (arg0) == ADDR_EXPR
+	      && TREE_CODE (TREE_TYPE (arg0)) == POINTER_TYPE
+	      && TREE_CODE (TREE_OPERAND (arg0, 0)) == STRING_CST);
+
+  const char *name_input = TREE_STRING_POINTER (TREE_OPERAND (arg0, 0));
+
+  tree len_tree = c_strlen (arg0, 1);
+  if (len_tree == NULL_TREE)
+    {
+      error_at (EXPR_LOCATION (exp), "invalid system register name provided");
+      return const0_rtx;
+    }
+
+  size_t len = TREE_INT_CST_LOW (len_tree);
+  char *sysreg_name = xstrdup (name_input);
+
+  for (unsigned pos = 0; pos <= len; pos++)
+    sysreg_name[pos] = TOLOWER (sysreg_name[pos]);
+
+  const char* name_output = aarch64_retrieve_sysreg ((const char *) sysreg_name,
+						     write_op, op128);
+  if (name_output == NULL)
+    {
+      error_at (EXPR_LOCATION (exp), "invalid system register name %qs",
+		sysreg_name);
+      return const0_rtx;
+    }
+
+  /* Assign the string corresponding to the system register name to an RTX.  */
+  const_str = rtx_alloc (CONST_STRING);
+  PUT_CODE (const_str, CONST_STRING);
+  XSTR (const_str, 0) = ggc_strdup (name_output);
+
+  /* Set up expander operands and call instruction expansion.  */
+  if (write_op)
+    {
+      arg1 = CALL_EXPR_ARG (exp, 1);
+      mode = TYPE_MODE (TREE_TYPE (arg1));
+      input_val = copy_to_mode_reg (mode, expand_normal (arg1));
+
+      icode = (op128 ? CODE_FOR_aarch64_write_sysregti
+		     : CODE_FOR_aarch64_write_sysregdi);
+
+      switch (fcode)
+	{
+	case AARCH64_WSR:
+	case AARCH64_WSRP:
+	case AARCH64_WSR64:
+	case AARCH64_WSRF64:
+	case AARCH64_WSR128:
+	  subreg = force_lowpart_subreg (sysreg_mode, input_val, mode);
+	  break;
+	case AARCH64_WSRF:
+	  subreg = gen_lowpart_SUBREG (SImode, input_val);
+	  subreg = gen_lowpart_SUBREG (DImode, subreg);
+	  break;
+	}
+
+      create_fixed_operand (&ops[0], const_str);
+      create_input_operand (&ops[1], subreg, sysreg_mode);
+      expand_insn (icode, 2, ops);
+
+      return target;
+    }
+
+  /* Read operations are implied by !write_op.  */
+  gcc_assert (call_expr_nargs (exp) == 1);
+
+  icode = (op128 ? CODE_FOR_aarch64_read_sysregti
+		 : CODE_FOR_aarch64_read_sysregdi);
+
+  /* Emit the initial read_sysregdi rtx.  */
+  create_output_operand (&ops[0], target, sysreg_mode);
+  create_fixed_operand (&ops[1], const_str);
+  expand_insn (icode, 2, ops);
+  target = ops[0].value;
+
+  /* Do any necessary post-processing on the result.  */
+  switch (fcode)
+    {
+    case AARCH64_RSR:
+    case AARCH64_RSRP:
+    case AARCH64_RSR64:
+    case AARCH64_RSRF64:
+    case AARCH64_RSR128:
+      return force_lowpart_subreg (TYPE_MODE (TREE_TYPE (exp)),
+				   target, sysreg_mode);
+    case AARCH64_RSRF:
+      subreg = gen_lowpart_SUBREG (SImode, target);
+      return gen_lowpart_SUBREG (SFmode, subreg);
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Ensure argument ARGNO in EXP represents a const-type argument in the range
+   [MINVAL, MAXVAL).  */
+static HOST_WIDE_INT
+require_const_argument (tree exp, unsigned int argno, HOST_WIDE_INT minval,
+			HOST_WIDE_INT maxval)
+{
+  maxval--;
+  tree arg = CALL_EXPR_ARG (exp, argno);
+  if (TREE_CODE (arg) != INTEGER_CST)
+      error_at (EXPR_LOCATION (exp), "Constant-type argument expected");
+
+  auto argval = wi::to_widest (arg);
+
+  if (argval < minval || argval > maxval)
+    error_at (EXPR_LOCATION (exp),
+	      "argument %d must be a constant immediate "
+	      "in range [%wd,%wd]", argno + 1, minval, maxval);
+
+  HOST_WIDE_INT retval = argval.to_shwi ();
+  return retval;
+}
+
+
+/* Expand a prefetch builtin EXP.  */
+void
+aarch64_expand_prefetch_builtin (tree exp, int fcode)
+{
+  int kind_id = -1;
+  int level_id = -1;
+  int rettn_id = -1;
+  char prfop[11];
+  class expand_operand ops[2];
+
+  static const char *kind_s[] = {"PLD", "PST", "PLI"};
+  static const char *level_s[] = {"L1", "L2", "L3", "SLC"};
+  static const char *rettn_s[] = {"KEEP", "STRM"};
+
+  /* Each of the four prefetch builtins takes a different number of arguments,
+     but proceeds to call the PRFM insn which requires 4 pieces of information
+     to be fully defined.  Where one of these takes less than 4 arguments, set
+     sensible defaults.  */
+  switch (fcode)
+    {
+    case AARCH64_PLDX:
+      break;
+    case AARCH64_PLIX:
+      kind_id = 2;
+      break;
+    case AARCH64_PLI:
+    case AARCH64_PLD:
+      kind_id  = (fcode == AARCH64_PLD) ? 0 : 2;
+      level_id = 0;
+      rettn_id = 0;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  /* Any -1 id variable is to be user-supplied.  Here we fill these in and run
+     bounds checks on them.  "PLI" is used only implicitly by AARCH64_PLI &
+     AARCH64_PLIX, never explicitly.  */
+  int argno = 0;
+  if (kind_id < 0)
+    kind_id = require_const_argument (exp, argno++, 0, ARRAY_SIZE (kind_s) - 1);
+  if (level_id < 0)
+    level_id = require_const_argument (exp, argno++, 0, ARRAY_SIZE (level_s));
+  if (rettn_id < 0)
+    rettn_id = require_const_argument (exp, argno++, 0, ARRAY_SIZE (rettn_s));
+  rtx address = expand_expr (CALL_EXPR_ARG (exp, argno), NULL_RTX, Pmode,
+			     EXPAND_NORMAL);
+
+  if (seen_error ())
+    return;
+
+  sprintf (prfop, "%s%s%s", kind_s[kind_id],
+			    level_s[level_id],
+			    rettn_s[rettn_id]);
+
+  rtx const_str = rtx_alloc (CONST_STRING);
+  PUT_CODE (const_str, CONST_STRING);
+  XSTR (const_str, 0) = ggc_strdup (prfop);
+
+  create_fixed_operand (&ops[0], const_str);
+  create_address_operand (&ops[1], address);
+  maybe_expand_insn (CODE_FOR_aarch64_pldx, 2, ops);
 }
 
 /* Expand an expression EXP that calls a MEMTAG built-in FCODE
@@ -2832,6 +3199,25 @@ aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target,
     case AARCH64_BUILTIN_RNG_RNDR:
     case AARCH64_BUILTIN_RNG_RNDRRS:
       return aarch64_expand_rng_builtin (exp, target, fcode, ignore);
+    case AARCH64_RSR:
+    case AARCH64_RSRP:
+    case AARCH64_RSR64:
+    case AARCH64_RSRF:
+    case AARCH64_RSRF64:
+    case AARCH64_RSR128:
+    case AARCH64_WSR:
+    case AARCH64_WSRP:
+    case AARCH64_WSR64:
+    case AARCH64_WSRF:
+    case AARCH64_WSRF64:
+    case AARCH64_WSR128:
+      return aarch64_expand_rwsr_builtin (exp, target, fcode);
+    case AARCH64_PLD:
+    case AARCH64_PLDX:
+    case AARCH64_PLI:
+    case AARCH64_PLIX:
+      aarch64_expand_prefetch_builtin (exp, fcode);
+      return target;
     }
 
   if (fcode >= AARCH64_SIMD_BUILTIN_BASE && fcode <= AARCH64_SIMD_BUILTIN_MAX)
@@ -2911,6 +3297,13 @@ aarch64_fold_builtin_lane_check (tree arg0, tree arg1, tree arg2)
 #define VREINTERPRET_BUILTIN(A, B, L) \
   case AARCH64_SIMD_BUILTIN_VREINTERPRET##L##_##A##_##B:
 
+#undef VGET_LOW_BUILTIN
+#define VGET_LOW_BUILTIN(A) \
+  case AARCH64_SIMD_BUILTIN_VGET_LOW_##A:
+
+#undef VGET_HIGH_BUILTIN
+#define VGET_HIGH_BUILTIN(A) \
+  case AARCH64_SIMD_BUILTIN_VGET_HIGH_##A:
 
 /* Try to fold a call to the built-in function with subcode FCODE.  The
    function is passed the N_ARGS arguments in ARGS and it returns a value
@@ -2930,6 +3323,20 @@ aarch64_general_fold_builtin (unsigned int fcode, tree type,
 	return fold_build1 (FLOAT_EXPR, type, args[0]);
       AARCH64_SIMD_VREINTERPRET_BUILTINS
 	return fold_build1 (VIEW_CONVERT_EXPR, type, args[0]);
+      AARCH64_SIMD_VGET_LOW_BUILTINS
+	{
+	  auto pos = BYTES_BIG_ENDIAN ? 64 : 0;
+
+	  return fold_build3 (BIT_FIELD_REF, type, args[0], bitsize_int (64),
+			      bitsize_int (pos));
+	}
+      AARCH64_SIMD_VGET_HIGH_BUILTINS
+	{
+	  auto pos = BYTES_BIG_ENDIAN ? 0 : 64;
+
+	  return fold_build3 (BIT_FIELD_REF, type, args[0], bitsize_int (64),
+			      bitsize_int (pos));
+	}
       case AARCH64_SIMD_BUILTIN_LANE_CHECK:
 	gcc_assert (n_args == 3);
 	if (aarch64_fold_builtin_lane_check (args[0], args[1], args[2]))

@@ -3,8 +3,7 @@ fn main() {
     let mut b = 1;
 
     let _fib = {
-        continue; // { dg-error "cannot 'continue' outside of a loop" }
-        // { dg-error "failed to type resolve expression" "" { target *-*-* } .-1 }
+        continue;   // { dg-error ".continue. outside of a loop" }
         123
     };
 }

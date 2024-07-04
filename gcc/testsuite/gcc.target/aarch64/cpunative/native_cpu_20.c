@@ -7,7 +7,7 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-assembler {\.arch armv9-a\+crc\+profile\+memtag\+sve2-sm4\+sve2-aes\+sve2-sha3\+sve2-bitperm\+i8mm\+bf16\n} } } */
+/* { dg-final { scan-assembler {\.arch armv9-a\+crc\+i8mm\+bf16\+sve2-aes\+sve2-bitperm\+sve2-sha3\+sve2-sm4\+memtag\+profile\n} } } */
 
 /* Check whether features that don't have a midr name during detection are
    correctly ignored.  These features shouldn't affect the native detection.

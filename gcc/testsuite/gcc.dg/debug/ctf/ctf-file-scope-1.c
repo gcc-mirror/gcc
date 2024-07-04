@@ -9,7 +9,7 @@
 
 int foo (int n)
 {
-  typedef struct { int a[n]; } SFOO;
+  typedef struct { int a[6]; } SFOO;
 
   SFOO a;
   __attribute__ ((noinline)) SFOO gfoo (void) { return a; }

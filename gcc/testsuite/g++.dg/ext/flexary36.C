@@ -25,7 +25,7 @@ struct {
 
 
 union {
-  int a[];          // { dg-error "flexible array member in union" }
+  int a[];
   int b;
 } du = { 1 };
 

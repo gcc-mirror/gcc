@@ -52,3 +52,55 @@ test_passthrough (const char *str)
    - complain if NULL str
    - should it be tainted if str's bytes are tainted?
 */
+
+static size_t __attribute__((noinline))
+call_strlen_3 (const char *p)
+{
+  return __builtin_strlen (p);
+}
+
+void test_array_initialization_from_shorter_literal (void)
+{
+  const char buf[10] = "abc";
+  __analyzer_eval (call_strlen_3 (buf) == 3); /* { dg-warning "TRUE" } */
+  __analyzer_eval (call_strlen_3 (buf + 5) == 0); /* { dg-warning "TRUE" } */
+  __analyzer_eval (buf[5] == 0); /* { dg-warning "TRUE" } */
+}
+
+static size_t __attribute__((noinline))
+call_strlen_4 (const char *p)
+{
+  return __builtin_strlen (p); /* { dg-warning "stack-based buffer over-read" } */
+}
+
+char test_array_initialization_from_longer_literal (void)
+{
+  const char buf[3] = "abcdefg"; /* { dg-warning "initializer-string for array of 'char' is too long" } */
+  __analyzer_eval (call_strlen_4 (buf) == 3); /* { dg-warning "UNKNOWN" } */
+  return buf[5]; /* { dg-warning "stack-based buffer over-read" } */
+}
+
+static size_t __attribute__((noinline))
+call_strlen_5 (const char *p)
+{
+  return __builtin_strlen (p);
+}
+
+static size_t __attribute__((noinline))
+call_strlen_5a (const char *p)
+{
+  return __builtin_strlen (p); /* { dg-warning "stack-based buffer over-read" } */
+}
+
+char test_array_initialization_implicit_length (void)
+{
+  const char buf[] = "abc";
+  __analyzer_eval (call_strlen_5 (buf) == 3); /* { dg-warning "TRUE" } */
+  __analyzer_eval (call_strlen_5 (buf + 2) == 1); /* { dg-warning "TRUE" } */
+  __analyzer_eval (call_strlen_5 (buf + 3) == 0); /* { dg-warning "TRUE" } */
+  __analyzer_eval (buf[0] == 'a'); /* { dg-warning "TRUE" } */
+  __analyzer_eval (buf[3] == 0); /* { dg-warning "TRUE" } */
+  __analyzer_eval (call_strlen_5a (buf + 4) == 0); /* { dg-warning "UNKNOWN" } */
+  return buf[4]; /* { dg-warning "stack-based buffer over-read" } */
+}
+

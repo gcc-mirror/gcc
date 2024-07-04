@@ -32,7 +32,44 @@ make_a_list_of_random_ints_badly(PyObject *self,
   return list;
 }
 
-/* FIXME: test the events within a path.  */
-/* { dg-regexp "\"kind\": \"error\"" } */
-/* { dg-regexp "\"path\": " } */
-/* { dg-regexp ".*" } */
+/* { dg-begin-multiline-output "" }
+[{"kind": "error",
+  "message": "passing NULL as argument 1 to 'PyList_Append' which requires a non-NULL parameter",
+  "children": [],
+  "column-origin": 1,
+  "locations": [{"caret": {"file": "
+                           "line": 29,
+                           "display-column": 5,
+                           "byte-column": 5,
+                           "column": 5},
+                 "finish": {"file": "
+                            "line": 29,
+                            "display-column": 29,
+                            "byte-column": 29,
+                            "column": 29}}],
+  "path": [{"location": {"file": "
+                         "line": 25,
+                         "display-column": 10,
+                         "byte-column": 10,
+                         "column": 10},
+            "description": "when 'PyList_New' fails, returning NULL",
+            "function": "make_a_list_of_random_ints_badly",
+            "depth": 0},
+           {"location": {"file": "
+                         "line": 27,
+                         "display-column": 17,
+                         "byte-column": 17,
+                         "column": 17},
+            "description": "when 'i < count'",
+            "function": "make_a_list_of_random_ints_badly",
+            "depth": 0},
+           {"location": {"file": "
+                         "line": 29,
+                         "display-column": 5,
+                         "byte-column": 5,
+                         "column": 5},
+            "description": "when calling 'PyList_Append', passing NULL from (1) as argument 1",
+            "function": "make_a_list_of_random_ints_badly",
+            "depth": 0}],
+  "escape-source": false}]
+{ dg-end-multiline-output "" } */

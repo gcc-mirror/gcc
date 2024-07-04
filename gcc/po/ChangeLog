@@ -1,3 +1,83 @@
+2024-05-16  Joseph Myers  <josmyers@redhat.com>
+
+	* sv.po: Update.
+
+2024-05-13  Joseph Myers  <josmyers@redhat.com>
+
+	* be.po, da.po, de.po, el.po, es.po, fi.po, fr.po, hr.po, id.po,
+	ja.po, nl.po, ru.po, sr.po, sv.po, tr.po, uk.po, vi.po, zh_CN.po,
+	zh_TW.po: Update.
+
+2024-05-02  Joseph Myers  <josmyers@redhat.com>
+
+	* gcc.pot: Regenerate.
+
+2024-04-23  Joseph Myers  <josmyers@redhat.com>
+
+	* gcc.pot: Regenerate.
+
+2024-04-19  Joseph Myers  <josmyers@redhat.com>
+
+	* sv.po: Update.
+
+2024-04-10  Joseph Myers  <josmyers@redhat.com>
+
+	* gcc.pot: Regenerate.
+
+2024-04-08  Joseph Myers  <josmyers@redhat.com>
+
+	* fr.po: Update.
+
+2024-04-03  Joseph Myers  <josmyers@redhat.com>
+
+	* sv.po: Update.
+
+2024-03-25  Joseph Myers  <josmyers@redhat.com>
+
+	* de.po: Update.
+
+2024-03-25  Joseph Myers  <josmyers@redhat.com>
+
+	* sv.po: Update.
+
+2024-03-19  Joseph Myers  <josmyers@redhat.com>
+
+	* de.po: Update.
+
+2024-03-18  Joseph Myers  <josmyers@redhat.com>
+
+	* fr.po, sv.po: Update.
+
+2024-03-11  Joseph Myers  <josmyers@redhat.com>
+
+	* sv.po: Update.
+
+2024-03-04  Joseph Myers  <josmyers@redhat.com>
+
+	* sv.po: Update.
+
+2024-02-26  Joseph Myers  <josmyers@redhat.com>
+
+	* sv.po, zh_CN.po: Update.
+
+2024-02-19  Joseph Myers  <josmyers@redhat.com>
+
+	* be.po, da.po, de.po, el.po, es.po, fi.po, fr.po, hr.po, id.po,
+	ja.po, nl.po, ru.po, sr.po, sv.po, tr.po, uk.po, vi.po, zh_CN.po,
+	zh_TW.po: Update.
+
+2024-02-16  Joseph Myers  <josmyers@redhat.com>
+
+	* gcc.pot: Regenerate.
+
+2024-02-07  Joseph Myers  <josmyers@redhat.com>
+
+	* zh_CN.po: Update.
+
+2024-02-05  Joseph Myers  <josmyers@redhat.com>
+
+	* zh_CN.po: Update.
+
 2023-07-31  Joseph Myers  <joseph@codesourcery.com>
 
 	* sv.po: Update.
@@ -3268,7 +3348,7 @@ Sun Oct 31 17:17:18 1999  Jeffrey A Law  (law@cygnus.com)
 	libiberty/include directories.
 
 
-Copyright (C) 1999-2023 Free Software Foundation, Inc.
+Copyright (C) 1999-2024 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

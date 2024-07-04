@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fcf-protection" } */
+/* { dg-options "-fpermissive -fcf-protection" } */
 
 int  foo (void) __attribute__ ((nocf_check));
 void (*foo1) (void) __attribute__((nocf_check));

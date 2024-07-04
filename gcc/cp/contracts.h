@@ -1,6 +1,6 @@
 /* Definitions for C++ contract levels.  Implements functionality described in
    the N4820 working draft version of contracts, P1290, P1332, and P1429.
-   Copyright (C) 2020-2023 Free Software Foundation, Inc.
+   Copyright (C) 2020-2024 Free Software Foundation, Inc.
    Contributed by Jeff Chapman II (jchapman@lock3software.com)
 
 This file is part of GCC.
@@ -295,8 +295,9 @@ extern void update_late_contract		(tree, tree, tree);
 extern tree splice_out_contracts		(tree);
 extern bool all_attributes_are_contracts_p	(tree);
 extern void inherit_base_contracts		(tree, tree);
-extern tree apply_postcondition_to_return	(tree);
+//extern tree apply_postcondition_to_return	(tree);
 extern void start_function_contracts		(tree);
+extern void maybe_apply_function_contracts	(tree);
 extern void finish_function_contracts		(tree);
 extern void set_contract_functions		(tree, tree, tree);
 extern tree build_contract_check		(tree);

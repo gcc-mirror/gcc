@@ -28,6 +28,8 @@ main ()
 
   if (__builtin_memcmp (x, res, sizeof (x)) != 0)
     abort ();
+
+#pragma GCC novector
   for (int i = 0; i < 32; ++i)
     if (flag[i] != 0 && flag[i] != 1)
       abort ();

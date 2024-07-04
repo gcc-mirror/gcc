@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -61,6 +61,11 @@ public:
   static Fragment create_error ();
 
   /**
+   * Create an empty fragment
+   */
+  static Fragment create_empty ();
+
+  /**
    * Create a complete AST fragment
    */
   Fragment (std::vector<AST::SingleASTNode> nodes,
@@ -117,6 +122,14 @@ private:
   bool is_single_fragment_of_kind (SingleASTNode::NodeType expected) const;
   void assert_single_fragment (SingleASTNode::NodeType expected) const;
 };
+
+/**
+ * This is the type for transcriber functions found in
+ * rust-macro-builtins.{h,cc}.
+ */
+using MacroTranscriberFunc
+  = std::function<tl::optional<Fragment> (location_t, MacroInvocData &)>;
+
 } // namespace AST
 } // namespace Rust
 

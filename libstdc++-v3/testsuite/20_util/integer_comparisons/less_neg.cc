@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,8 +25,8 @@ bool c = std::cmp_less(2, L'2'); // { dg-error "here" }
 bool d = std::cmp_less(L'2', 2); // { dg-error "here" }
 bool e = std::cmp_less(true, 1); // { dg-error "here" }
 bool f = std::cmp_less(0, false); // { dg-error "here" }
-bool g = std::cmp_less(97, u8'a'); // { dg-error "here" }
-bool h = std::cmp_less(u8'a', 97); // { dg-error "here" }
+bool g = std::cmp_less(97, u8'a'); // { dg-error "here" "" { target { no-opts "-fno-char8_t" } } }
+bool h = std::cmp_less(u8'a', 97); // { dg-error "here" "" { target { no-opts "-fno-char8_t" } } }
 bool i = std::cmp_less(97, u'a'); // { dg-error "here" }
 bool j = std::cmp_less(u'a', 97); // { dg-error "here" }
 bool k = std::cmp_less(97, U'a'); // { dg-error "here" }

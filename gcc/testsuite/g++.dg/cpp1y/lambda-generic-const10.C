@@ -11,7 +11,7 @@ int main()
   constexpr auto x = f(); //ok, call constexpr const non-static method
 
   [](auto const &f) {
-    constexpr auto x = f();	// { dg-error "" }
+    constexpr auto x = f();
   }(f);
 
   [&]() {

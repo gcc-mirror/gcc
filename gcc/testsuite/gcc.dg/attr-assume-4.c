@@ -1,6 +1,6 @@
 /* PR tree-optimization/107369 */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -O1" } */
+/* { dg-options "-std=c23 -O1" } */
 
 void
 foo (int x)

@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 typedef struct sec { 
 const char *name;
 int id;

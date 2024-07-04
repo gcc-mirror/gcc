@@ -1,6 +1,6 @@
 // Internal macros for the simd implementation -*- C++ -*-
 
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -60,6 +60,16 @@
 #define _GLIBCXX_SIMD_HAVE_NEON_A64 1
 #else
 #define _GLIBCXX_SIMD_HAVE_NEON_A64 0
+#endif
+#if (__ARM_FEATURE_SVE_BITS > 0 && __ARM_FEATURE_SVE_VECTOR_OPERATORS==1)
+#define _GLIBCXX_SIMD_HAVE_SVE 1
+#else
+#define _GLIBCXX_SIMD_HAVE_SVE 0
+#endif
+#ifdef __ARM_FEATURE_SVE2
+#define _GLIBCXX_SIMD_HAVE_SVE2 1
+#else
+#define _GLIBCXX_SIMD_HAVE_SVE2 0
 #endif
 //}}}
 // x86{{{
@@ -252,7 +262,7 @@
 #endif
 //}}}
 
-#ifdef __clang__
+#ifdef _GLIBCXX_CLANG
 #define _GLIBCXX_SIMD_NORMAL_MATH
 #define _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA
 #else
@@ -267,7 +277,7 @@
 #define _GLIBCXX_SIMD_IS_UNLIKELY(__x) __builtin_expect(__x, 0)
 #define _GLIBCXX_SIMD_IS_LIKELY(__x) __builtin_expect(__x, 1)
 
-#if __STRICT_ANSI__ || defined __clang__
+#if _GLIBCXX_SIMD_HAVE_SVE || __STRICT_ANSI__ || defined _GLIBCXX_CLANG
 #define _GLIBCXX_SIMD_CONSTEXPR
 #define _GLIBCXX_SIMD_USE_CONSTEXPR_API const
 #else
@@ -275,7 +285,7 @@
 #define _GLIBCXX_SIMD_USE_CONSTEXPR_API constexpr
 #endif
 
-#if defined __clang__
+#if defined _GLIBCXX_CLANG
 #define _GLIBCXX_SIMD_USE_CONSTEXPR const
 #else
 #define _GLIBCXX_SIMD_USE_CONSTEXPR constexpr
@@ -320,7 +330,7 @@
 #endif
 
 // integer division not optimized
-#ifndef __clang__
+#ifndef _GLIBCXX_CLANG
 #define _GLIBCXX_SIMD_WORKAROUND_PR90993 1
 #endif
 

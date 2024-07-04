@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/iasm.html, Inline Assembler)
  *
- *              Copyright (C) 2018-2023 by The D Language Foundation, All Rights Reserved
+ *              Copyright (C) 2018-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/iasm.d, _iasm.d)
@@ -16,6 +16,7 @@ module dmd.iasm;
 import core.stdc.stdio;
 
 import dmd.dscope;
+import dmd.dsymbol;
 import dmd.expression;
 import dmd.func;
 import dmd.mtype;
@@ -23,7 +24,10 @@ import dmd.tokens;
 import dmd.statement;
 import dmd.statementsem;
 
-version (IN_GCC)
+version (NoBackend)
+{
+}
+else version (IN_GCC)
 {
     import dmd.iasmgcc;
 }
@@ -35,7 +39,7 @@ else
 
 /************************ AsmStatement ***************************************/
 
-extern(C++) Statement asmSemantic(AsmStatement s, Scope *sc)
+Statement asmSemantic(AsmStatement s, Scope *sc)
 {
     //printf("AsmStatement.semantic()\n");
 
@@ -48,7 +52,11 @@ extern(C++) Statement asmSemantic(AsmStatement s, Scope *sc)
     // Assume assembler code takes care of setting the return value
     sc.func.hasReturnExp |= 8;
 
-    version (MARS)
+    version (NoBackend)
+    {
+        return null;
+    }
+    else version (MARS)
     {
         /* If it starts with a string literal, it's gcc inline asm
          */
@@ -64,6 +72,7 @@ extern(C++) Statement asmSemantic(AsmStatement s, Scope *sc)
             return statementSemantic(se, sc);
         }
         auto ias = new InlineAsmStatement(s.loc, s.tokens);
+        ias.caseSensitive = s.caseSensitive;
         return inlineAsmSemantic(ias, sc);
     }
     else version (IN_GCC)
@@ -75,5 +84,23 @@ extern(C++) Statement asmSemantic(AsmStatement s, Scope *sc)
     {
         s.error("D inline assembler statements are not supported");
         return new ErrorStatement();
+    }
+}
+
+/************************ CAsmDeclaration ************************************/
+
+void asmSemantic(CAsmDeclaration ad, Scope *sc)
+{
+    version (NoBackend)
+    {
+    }
+    else version (IN_GCC)
+    {
+        return gccAsmSemantic(ad, sc);
+    }
+    else
+    {
+        import dmd.errors : error;
+        error(ad.code.loc, "Gnu Asm not supported - compile this file with gcc or clang");
     }
 }

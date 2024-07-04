@@ -1,6 +1,6 @@
 // wstring_convert implementation -*- C++ -*-
 
-// Copyright (C) 2015-2023 Free Software Foundation, Inc.
+// Copyright (C) 2015-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -259,7 +259,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   template<typename _Codecvt, typename _Elem = wchar_t,
 	   typename _Wide_alloc = allocator<_Elem>,
 	   typename _Byte_alloc = allocator<char>>
-    class wstring_convert
+    class _GLIBCXX17_DEPRECATED wstring_convert
     {
     public:
       typedef basic_string<char, char_traits<char>, _Byte_alloc>   byte_string;
@@ -406,7 +406,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
   /// Buffer conversions
   template<typename _Codecvt, typename _Elem = wchar_t,
 	   typename _Tr = char_traits<_Elem>>
-    class wbuffer_convert : public basic_streambuf<_Elem, _Tr>
+    class _GLIBCXX17_DEPRECATED wbuffer_convert
+    : public basic_streambuf<_Elem, _Tr>
     {
       typedef basic_streambuf<_Elem, _Tr> _Wide_streambuf;
 

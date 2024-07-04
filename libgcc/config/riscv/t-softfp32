@@ -42,7 +42,11 @@ softfp_extras += divsf3 divdf3 divtf3
 
 endif
 
-softfp_extensions += hfsf hfdf hftf
-softfp_truncations += tfhf dfhf sfhf
+softfp_extensions += hfsf hfdf hftf \
+		     bfsf
+softfp_truncations += tfhf dfhf sfhf \
+		      tfbf dfbf sfbf \
+		      hfbf bfhf
 softfp_extras += fixhfsi fixhfdi fixunshfsi fixunshfdi \
-                 floatsihf floatdihf floatunsihf floatundihf
+		 floatsihf floatdihf floatunsihf floatundihf \
+		 floatsibf floatdibf floatunsibf floatundibf

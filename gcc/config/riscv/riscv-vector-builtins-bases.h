@@ -1,5 +1,5 @@
 /* function_base declaration for RISC-V 'V' Extension for GNU compiler.
-   Copyright (C) 2022-2023 Free Software Foundation, Inc.
+   Copyright (C) 2022-2024 Free Software Foundation, Inc.
    Contributed by Ju-Zhe Zhong (juzhe.zhong@rivai.ai), RiVAI Technologies Ltd.
 
    This file is part of GCC.
@@ -280,6 +280,65 @@ extern const function_base *const vloxseg;
 extern const function_base *const vsuxseg;
 extern const function_base *const vsoxseg;
 extern const function_base *const vlsegff;
+extern const function_base *const vlb;
+extern const function_base *const vlh;
+extern const function_base *const vlw;
+extern const function_base *const vlbu;
+extern const function_base *const vlhu;
+extern const function_base *const vlwu;
+extern const function_base *const vsb;
+extern const function_base *const vsh;
+extern const function_base *const vsw;
+extern const function_base *const vlsb;
+extern const function_base *const vlsh;
+extern const function_base *const vlsw;
+extern const function_base *const vlsbu;
+extern const function_base *const vlshu;
+extern const function_base *const vlswu;
+extern const function_base *const vssb;
+extern const function_base *const vssh;
+extern const function_base *const vssw;
+extern const function_base *const vlxb;
+extern const function_base *const vlxh;
+extern const function_base *const vlxw;
+extern const function_base *const vlxbu;
+extern const function_base *const vlxhu;
+extern const function_base *const vlxwu;
+extern const function_base *const vsxb;
+extern const function_base *const vsxh;
+extern const function_base *const vsxw;
+extern const function_base *const vsuxb;
+extern const function_base *const vsuxh;
+extern const function_base *const vsuxw;
+extern const function_base *const vext_x_v;
+/* Below function_base are Vectro Crypto*/
+extern const function_base *const vandn;
+extern const function_base *const vbrev;
+extern const function_base *const vbrev8;
+extern const function_base *const vrev8;
+extern const function_base *const vclz;
+extern const function_base *const vctz;
+extern const function_base *const vrol;
+extern const function_base *const vror;
+extern const function_base *const vwsll;
+extern const function_base *const vclmul;
+extern const function_base *const vclmulh;
+extern const function_base *const vghsh;
+extern const function_base *const vgmul;
+extern const function_base *const vaesef;
+extern const function_base *const vaesem;
+extern const function_base *const vaesdf;
+extern const function_base *const vaesdm;
+extern const function_base *const vaesz;
+extern const function_base *const vaeskf1;
+extern const function_base *const vaeskf2;
+extern const function_base *const vsha2ms;
+extern const function_base *const vsha2ch;
+extern const function_base *const vsha2cl;
+extern const function_base *const vsm4k;
+extern const function_base *const vsm4r;
+extern const function_base *const vsm3me;
+extern const function_base *const vsm3c;
 }
 
 } // end namespace riscv_vector

@@ -1,3 +1,64 @@
+2024-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.am [LIBQUAD_USE_SYMVER_SUN] (quadmath.map-sun): Pass
+	$(libquadmath_la_OBJECTS), $(libquadmath_la_LIBADD) to
+	make_sunver.pl unmodified.
+	* Makefile.in: Regenerate.
+
+2024-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* sfp-machine.h (__LITTLE_ENDIAN, __BIG_ENDIAN, __BYTE_ORDER): Define
+	if __BYTE_ORDER isn't defined.
+
+2024-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libquadmath/114623
+	* sfp-machine.h: New file.
+	* math/sqrtq.c: Include from libgcc/soft-fp also soft-fp.h and quad.h
+	if possible.
+	(USE_SOFT_FP): Define in that case.
+	(sqrtq): Use soft-fp based implementation for the finite positive
+	arguments if possible.
+
+2024-04-03  Simon Chopin  <simon.chopin@canonical.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR libquadmath/114533
+	* printf/printf_fp.c (__quadmath_printf_fp): Use memcpy to copy
+	__float128 out of args.
+	* printf/printf_fphex.c (__quadmath_printf_fphex): Likewise.
+
+2024-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* libquadmath.texi: Bump @copying's copyright year.
+
+2023-12-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* Makefile.am: Allow overriding EXEPCT.
+	* Makefile.in: Regenerate.
+
+2023-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libquadmath/112963
+	* configure.ac (LIBM): Readd AC_CHECK_LIBM-like check without doing
+	AC_CHECK_LIB in it.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+
+2023-10-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR libquadmath/111928
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Remove AC_CHECK_LIBM.
+
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.am: Handle Darwin rpaths.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Handle Darwin rpaths.
+
 2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
 
 	* configure: Regenerate.
@@ -1262,7 +1323,7 @@
 	PR fortran/32049
 	Initial implementation and checkin.
 
-Copyright (C) 2010-2018 Free Software Foundation, Inc.
+Copyright (C) 2010-2024 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

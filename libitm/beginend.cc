@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2024 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -200,7 +200,7 @@ GTM::gtm_thread::begin_transaction (uint32_t prop, const gtm_jmpbuf *jb)
     {
       // Note that the snapshot of htm_fastpath that we take here could be
       // outdated, and a different method group than dispatch_htm may have
-      // been chosen in the meantime.  Therefore, take care not not touch
+      // been chosen in the meantime.  Therefore, take care not to touch
       // anything besides the serial lock, which is independent of method
       // groups.
       for (uint32_t t = serial_lock.get_htm_fastpath(); t; t--)

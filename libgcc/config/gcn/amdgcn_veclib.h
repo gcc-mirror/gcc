@@ -1,7 +1,7 @@
 /* Macro library used to help during conversion of scalar math functions to
    vectorized SIMD equivalents on AMD GCN.
 
-   Copyright (C) 2023 Free Software Foundation, Inc.
+   Copyright (C) 2023-2024 Free Software Foundation, Inc.
    Contributed by Siemens.
   
    This file is free software; you can redistribute it and/or modify it
@@ -229,7 +229,8 @@ do { \
 
 
 #if defined (__GCN3__) || defined (__GCN5__) \
-    || defined (__CDNA1__) || defined (__CDNA2__)
+    || defined (__CDNA1__) || defined (__CDNA2__) \
+    || defined (__RDNA2__) || defined (__RDNA3__)
 #define CDNA3_PLUS 0
 #else
 #define CDNA3_PLUS 1

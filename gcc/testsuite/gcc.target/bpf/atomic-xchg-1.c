@@ -1,6 +1,6 @@
 /* Test atomic exchange instruction.  */
 /* { dg-do compile } */
-/* { dg-options "-mv3-atomics -O2" } */
+/* { dg-options "-mv3-atomics -O2 -masm=normal" } */
 
 int foo (int *p, int *new)
 {

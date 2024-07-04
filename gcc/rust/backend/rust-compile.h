@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -36,6 +36,8 @@ public:
 private:
   CompileCrate (HIR::Crate &crate, Context *ctx);
   void go ();
+
+  void add_proc_macro_symbols ();
 
   HIR::Crate &crate;
   Context *ctx;

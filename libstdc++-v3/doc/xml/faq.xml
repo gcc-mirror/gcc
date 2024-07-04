@@ -64,9 +64,8 @@
     (<command>gcc</command>, <command>g++</command>, etc) is widely
     considered to be one of the leading compilers in the world.  Its
     development is overseen by the
-    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/">GCC team</link>.  All of
-    the rapid development and near-legendary
-    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/buildstat.html">portability</link>
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/">GCC team</link>.
+    All of the rapid development and near-legendary portability
     that are the hallmarks of an open-source project are applied to libstdc++.
     </para>
     <para>
@@ -91,7 +90,7 @@
      The libstdc++ project is contributed to by several developers
      all over the world, in the same way as GCC or the Linux kernel.
      The current maintainers are listed in the
-     <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/viewcvs/gcc/trunk/MAINTAINERS?view=co"><filename>MAINTAINERS</filename></link>
+     <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/cgit/gcc/tree/MAINTAINERS"><filename>MAINTAINERS</filename></link>
      file (look for "c++ runtime libs").
     </para>
     <para>
@@ -314,7 +313,7 @@
     Libstdc++ comes with its own validation testsuite, which includes
     conformance testing, regression testing, ABI testing, and
     performance testing. Please consult the
-    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/install/test.html">testing
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/install/test.html">testing
     documentation</link> for GCC and
     <link linkend="manual.intro.setup.test">Testing</link> in the libstdc++
     manual for more details.
@@ -584,7 +583,7 @@
          a list of predefined macros for any particular installation.
       </para>
       <para>This has been discussed on the mailing lists
-         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/cgi-bin/htsearch?method=and&amp;format=builtin-long&amp;sort=score&amp;words=_XOPEN_SOURCE+Solaris">quite a bit</link>.
+         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/cgi-bin/htsearch?method=and&amp;format=builtin-long&amp;sort=score&amp;words=_XOPEN_SOURCE+Solaris">quite a bit</link>.
       </para>
       <para>This method is something of a wart.  We'd like to find a cleaner
          solution, but nobody yet has contributed the time.
@@ -605,7 +604,7 @@
       </note>
       <para>
          This was a long-standing bug in the OS X support.  Fortunately, the
-         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/gcc/2002-03/msg00817.html">patch</link>
+         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/ml/gcc/2002-03/msg00817.html">patch</link>
 	 was quite simple, and well-known.
       </para>
 
@@ -886,7 +885,7 @@
     <filename class="headerfile">&lt;iterator&gt;</filename> header),
     then you will suddenly be faced with huge numbers of ambiguity
     errors.  This was discussed on the mailing list; Nathan Myers
-    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/libstdc++/2001-01/msg00247.html">sums
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/ml/libstdc++/2001-01/msg00247.html">sums
       things up here</link>.  The collisions with vector/string iterator
     types have been fixed for 3.1.
     </para>
@@ -1042,7 +1041,7 @@
     <para>
     If you have found a bug in the library and you think you have
     a working fix, then send it in!  The main GCC site has a page
-    on <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/contribute.html">submitting
+    on <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/contribute.html">submitting
     patches</link> that covers the procedure, but for libstdc++ you
     should also send the patch to our mailing list in addition to
     the GCC patches mailing list.  The libstdc++

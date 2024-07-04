@@ -1,5 +1,5 @@
 ;; GCC machine description for AVX512F instructions
-;; Copyright (C) 2013-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2013-2024 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -211,7 +211,6 @@
 							      || <MODE>mode == V16SImode
 							      || <MODE>mode == V32HFmode)")
 
-(define_subst_attr "round_modev8sf_condition" "round" "1" "(<MODE>mode == V8SFmode)")
 (define_subst_attr "round_modev4sf_condition" "round" "1" "(<MODE>mode == V4SFmode)")
 (define_subst_attr "round_codefor" "round" "*" "")
 (define_subst_attr "round_opnum" "round" "5" "6")
@@ -257,7 +256,6 @@
 									      || <MODE>mode == V16SImode
 									      || <MODE>mode == V32HFmode)")
 
-(define_subst_attr "round_saeonly_modev8sf_condition" "round_saeonly" "1" "(<MODE>mode == V8SFmode)")
 
 (define_subst "round_saeonly"
   [(set (match_operand:SUBST_A 0)

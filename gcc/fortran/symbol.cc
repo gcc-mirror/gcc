@@ -1,5 +1,5 @@
 /* Maintain binary trees of symbols.
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -95,11 +95,6 @@ const mstring dtio_procs[] =
     minit ("_dtio_unformatted_read", DTIO_RUF),
     minit ("_dtio_unformatted_write", DTIO_WUF),
 };
-
-/* This is to make sure the backend generates setup code in the correct
-   order.  */
-
-static int next_dummy_order = 1;
 
 
 gfc_namespace *gfc_current_ns;
@@ -291,6 +286,19 @@ bool
 gfc_set_default_type (gfc_symbol *sym, int error_flag, gfc_namespace *ns)
 {
   gfc_typespec *ts;
+  gfc_expr *e;
+
+  /* Check to see if a function selector of unknown type can be resolved.  */
+  if (sym->assoc
+      && (e = sym->assoc->target)
+      && e->expr_type == EXPR_FUNCTION)
+    {
+      if (e->ts.type == BT_UNKNOWN)
+	gfc_resolve_expr (e);
+      sym->ts = e->ts;
+      if (sym->ts.type != BT_UNKNOWN)
+	return true;
+    }
 
   if (sym->ts.type != BT_UNKNOWN)
     gfc_internal_error ("gfc_set_default_type(): symbol already has a type");
@@ -394,18 +402,36 @@ gfc_check_function_type (gfc_namespace *ns)
 
 /******************** Symbol attribute stuff *********************/
 
+/* Older standards produced conflicts for some attributes that are allowed
+   in newer standards.  Check for the conflict and issue an error depending
+   on the standard in play.  */
+
+static bool
+conflict_std (int standard, const char *a1, const char *a2, const char *name,
+	      locus *where)
+{
+  if (name == NULL)
+    {
+      return gfc_notify_std (standard, "%s attribute conflicts "
+			     "with %s attribute at %L", a1, a2,
+			     where);
+    }
+  else
+    {
+      return gfc_notify_std (standard, "%s attribute conflicts "
+			     "with %s attribute in %qs at %L",
+			     a1, a2, name, where);
+    }
+}
+
 /* This is a generic conflict-checker.  We do this to avoid having a
    single conflict in two places.  */
 
 #define conf(a, b) if (attr->a && attr->b) { a1 = a; a2 = b; goto conflict; }
 #define conf2(a) if (attr->a) { a2 = a; goto conflict; }
-#define conf_std(a, b, std) if (attr->a && attr->b)\
-                              {\
-                                a1 = a;\
-                                a2 = b;\
-                                standard = std;\
-                                goto conflict_std;\
-                              }
+#define conf_std(a, b, std) if (attr->a && attr->b \
+				&& !conflict_std (std, a, b, name, where)) \
+				return false;
 
 bool
 gfc_check_conflict (symbol_attribute *attr, const char *name, locus *where)
@@ -438,7 +464,6 @@ gfc_check_conflict (symbol_attribute *attr, const char *name, locus *where)
 						"OACC DECLARE DEVICE_RESIDENT";
 
   const char *a1, *a2;
-  int standard;
 
   if (attr->artificial)
     return true;
@@ -447,20 +472,10 @@ gfc_check_conflict (symbol_attribute *attr, const char *name, locus *where)
     where = &gfc_current_locus;
 
   if (attr->pointer && attr->intent != INTENT_UNKNOWN)
-    {
-      a1 = pointer;
-      a2 = intent;
-      standard = GFC_STD_F2003;
-      goto conflict_std;
-    }
+    conf_std (pointer, intent, GFC_STD_F2003);
 
-  if (attr->in_namelist && (attr->allocatable || attr->pointer))
-    {
-      a1 = in_namelist;
-      a2 = attr->allocatable ? allocatable : pointer;
-      standard = GFC_STD_F2003;
-      goto conflict_std;
-    }
+  conf_std (in_namelist, allocatable, GFC_STD_F2003);
+  conf_std (in_namelist, pointer, GFC_STD_F2003);
 
   /* Check for attributes not allowed in a BLOCK DATA.  */
   if (gfc_current_state () == COMP_BLOCK_DATA)
@@ -909,20 +924,6 @@ conflict:
 	       a1, a2, name, where);
 
   return false;
-
-conflict_std:
-  if (name == NULL)
-    {
-      return gfc_notify_std (standard, "%s attribute conflicts "
-                             "with %s attribute at %L", a1, a2,
-                             where);
-    }
-  else
-    {
-      return gfc_notify_std (standard, "%s attribute conflicts "
-			     "with %s attribute in %qs at %L",
-                             a1, a2, name, where);
-    }
 }
 
 #undef conf
@@ -935,15 +936,10 @@ conflict_std:
 void
 gfc_set_sym_referenced (gfc_symbol *sym)
 {
-
   if (sym->attr.referenced)
     return;
 
   sym->attr.referenced = 1;
-
-  /* Remember which order dummy variables are accessed in.  */
-  if (sym->attr.dummy)
-    sym->dummy_order = next_dummy_order++;
 }
 
 
@@ -2402,6 +2398,67 @@ bad:
 }
 
 
+/* Find all derived types in the uppermost namespace that have a component
+   a component called name and stash them in the assoc field of an
+   associate name variable.
+   This is used to infer the derived type of an associate name, whose selector
+   is a sibling derived type function that has not yet been parsed. Either
+   the derived type is use associated in both contained and sibling procedures
+   or it appears in the uppermost namespace.  */
+
+static int cts = 0;
+static void
+find_derived_types (gfc_symbol *sym, gfc_symtree *st, const char *name,
+		    bool contained, bool stash)
+{
+  if (st->n.sym && st->n.sym->attr.flavor == FL_DERIVED
+      && !st->n.sym->attr.is_class
+      && ((contained && st->n.sym->attr.use_assoc) || !contained)
+      && gfc_find_component (st->n.sym, name, true, true, NULL))
+    {
+      /* Do the stashing, if required.  */
+      cts++;
+      if (stash)
+	{
+	  if (sym->assoc->derived_types)
+	    st->n.sym->dt_next = sym->assoc->derived_types;
+	  sym->assoc->derived_types = st->n.sym;
+	}
+    }
+
+  if (st->left)
+    find_derived_types (sym, st->left, name, contained, stash);
+
+  if (st->right)
+    find_derived_types (sym, st->right, name, contained, stash);
+}
+
+int
+gfc_find_derived_types (gfc_symbol *sym, gfc_namespace *ns,
+			const char *name, bool stash)
+{
+  gfc_namespace *encompassing = NULL;
+  gcc_assert (sym->assoc);
+
+  cts = 0;
+  while (ns->parent)
+    {
+      if (!ns->parent->parent && ns->proc_name
+	  && (ns->proc_name->attr.function || ns->proc_name->attr.subroutine))
+	encompassing = ns;
+      ns = ns->parent;
+    }
+
+  /* Search the top level namespace first.  */
+  find_derived_types (sym, ns->sym_root, name, false, stash);
+
+  /* Then the encompassing namespace.  */
+  if (encompassing && encompassing != ns)
+    find_derived_types (sym, encompassing->sym_root, name, true, stash);
+
+  return cts;
+}
+
 /* Find the component with the given name in the union type symbol.
    If ref is not NULL it will be set to the chain of components through which
    the component can actually be accessed. This is necessary for unions because
@@ -3105,6 +3162,57 @@ gfc_free_symbol (gfc_symbol *&sym)
 }
 
 
+/* Returns true if the symbol SYM has, through its FORMAL_NS field, a reference
+   to itself which should be eliminated for the symbol memory to be released
+   via normal reference counting.
+
+   The implementation is crucial as it controls the proper release of symbols,
+   especially (contained) procedure symbols, which can represent a lot of memory
+   through the namespace of their body.
+
+   We try to avoid freeing too much memory (causing dangling pointers), to not
+   leak too much (wasting memory), and to avoid expensive walks of the symbol
+   tree (which would be the correct way to check for a cycle).  */
+
+bool
+cyclic_reference_break_needed (gfc_symbol *sym)
+{
+  /* Normal symbols don't reference themselves.  */
+  if (sym->formal_ns == nullptr)
+    return false;
+
+  /* Procedures at the root of the file do have a self reference, but they don't
+     have a reference in a parent namespace preventing the release of the
+     procedure namespace, so they can use the normal reference counting.  */
+  if (sym->formal_ns == sym->ns)
+    return false;
+
+  /* If sym->refs == 1, we can use normal reference counting.  If sym->refs > 2,
+     the symbol won't be freed anyway, with or without cyclic reference.  */
+  if (sym->refs != 2)
+    return false;
+
+  /* Procedure symbols host-associated from a module in submodules are special,
+     because the namespace of the procedure block in the submodule is different
+     from the FORMAL_NS namespace generated by host-association.  So there are
+     two different namespaces representing the same procedure namespace.  As
+     FORMAL_NS comes from host-association, which only imports symbols visible
+     from the outside (dummy arguments basically), we can assume there is no
+     self reference through FORMAL_NS in that case.  */
+  if (sym->attr.host_assoc && sym->attr.used_in_submodule)
+    return false;
+
+  /* We can assume that contained procedures have cyclic references, because
+     the symbol of the procedure itself is accessible in the procedure body
+     namespace.  So we assume that symbols with a formal namespace different
+     from the declaration namespace and two references, one of which is about
+     to be removed, are procedures with just the self reference left.  At this
+     point, the symbol SYM matches that pattern, so we return true here to
+     permit the release of SYM.  */
+  return true;
+}
+
+
 /* Decrease the reference counter and free memory when we reach zero.
    Returns true if the symbol has been freed, false otherwise.  */
 
@@ -3114,8 +3222,7 @@ gfc_release_symbol (gfc_symbol *&sym)
   if (sym == NULL)
     return false;
 
-  if (sym->formal_ns != NULL && sym->refs == 2 && sym->formal_ns != sym->ns
-      && (!sym->attr.entry || !sym->module))
+  if (cyclic_reference_break_needed (sym))
     {
       /* As formal_ns contains a reference to sym, delete formal_ns just
 	 before the deletion of sym.  */
@@ -5172,6 +5279,33 @@ gfc_type_is_extension_of (gfc_symbol *t1, gfc_symbol *t2)
   return gfc_compare_derived_types (t1, t2);
 }
 
+/* Check if parameterized derived type t2 is an instance of pdt template t1
+
+   gfc_symbol *t1 -> pdt template to verify t2 against.
+   gfc_symbol *t2 -> pdt instance to be verified.
+
+   In decl.cc, gfc_get_pdt_instance, a pdt instance is given a 3 character
+   prefix "Pdt", followed by an underscore list of the kind parameters,
+   up to a maximum of 8 kind parameters.  To verify if a PDT Type corresponds
+   to the template, this functions extracts t2's derive_type name,
+   and compares it to the derive_type name of t1 for compatibility.
+
+   For example:
+
+   t2->name = Pdtf_2_2; extract out the 'f' and compare with t1->name.  */
+
+bool
+gfc_pdt_is_instance_of (gfc_symbol *t1, gfc_symbol *t2)
+{
+  if ( !t1->attr.pdt_template || !t2->attr.pdt_type )
+    return false;
+
+  /* Limit comparison to length of t1->name to ignore new kind params.  */
+  if ( !(strncmp (&(t2->name[3]), t1->name, strlen (t1->name)) == 0) )
+    return false;
+
+  return true;
+}
 
 /* Check if two typespecs are type compatible (F03:5.1.1.2):
    If ts1 is nonpolymorphic, ts2 must be the same type.
@@ -5306,4 +5440,62 @@ gfc_sym_get_dummy_args (gfc_symbol *sym)
     dummies = sym->ts.interface->formal;
 
   return dummies;
+}
+
+
+/* Given a procedure, returns the associated namespace.
+   The resulting NS should match the condition NS->PROC_NAME == SYM.  */
+
+gfc_namespace *
+gfc_get_procedure_ns (gfc_symbol *sym)
+{
+  if (sym->formal_ns
+      && sym->formal_ns->proc_name == sym)
+    return sym->formal_ns;
+
+  /* The above should have worked in most cases.  If it hasn't, try some other
+     heuristics, eventually returning SYM->NS.  */
+  if (gfc_current_ns->proc_name == sym)
+    return gfc_current_ns;
+
+  /* For contained procedures, the symbol's NS field is the
+     hosting namespace, not the procedure namespace.  */
+  if (sym->attr.flavor == FL_PROCEDURE && sym->attr.contained)
+    for (gfc_namespace *ns = sym->ns->contained; ns; ns = ns->sibling)
+      if (ns->proc_name == sym)
+	return ns;
+
+  if (sym->formal)
+    for (gfc_formal_arglist *f = sym->formal; f != nullptr; f = f->next)
+      if (f->sym)
+	{
+	  gfc_namespace *ns = f->sym->ns;
+	  if (ns && ns->proc_name == sym)
+	    return ns;
+	}
+
+  return sym->ns;
+}
+
+
+/* Given a symbol, returns the namespace in which the symbol is specified.
+   In most cases, it is the namespace hosting the symbol.  This is the case
+   for variables.  For functions, however, it is the function namespace
+   itself.  This specification namespace is used to check conformance of
+   array spec bound expressions.  */
+
+gfc_namespace *
+gfc_get_spec_ns (gfc_symbol *sym)
+{
+  if (sym->attr.flavor == FL_PROCEDURE
+      && sym->attr.function)
+    {
+      if (sym->result == sym)
+	return gfc_get_procedure_ns (sym);
+      /* Generic and intrinsic functions can have a null result.  */
+      else if (sym->result != nullptr)
+	return sym->result->ns;
+    }
+
+  return sym->ns;
 }

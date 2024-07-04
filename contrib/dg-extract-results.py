@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (C) 2014-2023 Free Software Foundation, Inc.
+# Copyright (C) 2014-2024 Free Software Foundation, Inc.
 #
 # This script is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -113,7 +113,8 @@ class Prog:
         # Whether to create .sum rather than .log output.
         self.do_sum = True
         # Regexps used while parsing.
-        self.test_run_re = re.compile (r'^Test run by (\S+) on (.*)$')
+        self.test_run_re = re.compile (r'^Test run by (\S+) on (.*)$',
+                                       re.IGNORECASE)
         self.tool_re = re.compile (r'^\t\t=== (.*) tests ===$')
         self.result_re = re.compile (r'^(PASS|XPASS|FAIL|XFAIL|UNRESOLVED'
                                      r'|WARNING|ERROR|UNSUPPORTED|UNTESTED'

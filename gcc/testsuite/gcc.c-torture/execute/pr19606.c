@@ -3,6 +3,9 @@
    that does not preserve the semantics of the original computation.
    Make sure that won't happen.  */
 
+void abort (void);
+void exit (int);
+
 signed char a = -4;
 
 int

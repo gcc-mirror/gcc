@@ -1,4 +1,4 @@
-#  Copyright (C) 2003-2023 Free Software Foundation, Inc.
+#  Copyright (C) 2003-2024 Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -191,6 +191,21 @@ function switch_bit_fields (flags)
 function var_name(flags)
 {
 	return nth_arg(0, opt_args("Var", flags))
+}
+
+# If FLAGS includes a UrlSuffix flag, return the value it specifies.
+# Return the empty string otherwise.
+function url_suffix(flags)
+{
+	return nth_arg(0, opt_args("UrlSuffix", flags))
+}
+
+# If FLAGS includes a LangUrlSuffix_LANG flag, return the
+# value it specifies.
+# Return the empty string otherwise.
+function lang_url_suffix(flags, lang)
+{
+	return nth_arg(0, opt_args("LangUrlSuffix_" lang, flags))
 }
 
 # Return the name of the variable if FLAGS has a HOST_WIDE_INT variable. 

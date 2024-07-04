@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2023 Free Software Foundation, Inc.
+// Copyright (C) 2021-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -20,25 +20,40 @@
 
 #ifndef RUST_COMMON
 #define RUST_COMMON
+#include "rust-system.h"
+#include <string>
 
 namespace Rust {
 
-enum Mutability
+enum class Mutability
 {
   Imm,
   Mut
 };
 
-enum Unsafety
+enum class Unsafety
 {
   Unsafe,
   Normal
 };
 
-enum Polarity
+enum class Const
 {
-  Positive,
-  Negative
+  Yes,
+  No,
+};
+
+enum class Async
+{
+  Yes,
+  No
+};
+
+enum BoundPolarity
+{
+  RegularBound,
+  NegativeBound,
+  AntiBound,
 };
 
 enum AsyncConstStatus
@@ -47,6 +62,20 @@ enum AsyncConstStatus
   CONST_FN,
   ASYNC_FN
 };
+
+inline std::string
+enum_to_str (Mutability mut)
+{
+  std::string str;
+  switch (mut)
+    {
+    case Mutability::Imm:
+      return "Imm";
+    case Mutability::Mut:
+      return "Mut";
+    }
+  gcc_unreachable ();
+}
 
 } // namespace Rust
 

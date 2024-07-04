@@ -5,10 +5,12 @@ typedef __UINT8_TYPE__ uint8_t;
 typedef __INT8_TYPE__ int8_t;
 typedef uint8_t pixel;
 
+#define MSB (__CHAR_BIT__ * __SIZEOF_INT__ - 1)
+
 /* get the sign of input variable (TODO: this is a dup, make common) */
 static inline int8_t signOf(int x)
 {
-  return (x >> 31) | ((int)((((uint32_t)-x)) >> 31));
+  return (x >> MSB) | ((int)((((uint32_t)-x)) >> MSB));
 }
 
 __attribute__((noipa))

@@ -1,10 +1,12 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-std=c99 -fno-vect-cost-model -march=rv64gcv_zvfh -mabi=lp64d --param=riscv-autovec-preference=fixed-vlmax -ffast-math -fdump-tree-optimized-details" } */
+/* { dg-additional-options "-std=c99 -fno-vect-cost-model -march=rv64gcv_zvfh -mabi=lp64d -mrvv-vector-bits=zvl -ffast-math -fdump-tree-optimized-details" } */
 
 #include "vdiv-template.h"
 
-/* { dg-final { scan-assembler-times {\tvdiv\.vv} 8 } } */
-/* { dg-final { scan-assembler-times {\tvdivu\.vv} 8 } } */
+/* { dg-final { scan-assembler-times {\tvdiv\.vv} 4 } } */
+/* { dg-final { scan-assembler-times {\tvdiv\.vx} 4 } } */
+/* { dg-final { scan-assembler-times {\tvdivu\.vv} 4 } } */
+/* { dg-final { scan-assembler-times {\tvdivu\.vx} 4 } } */
 
 /* Division by constant is done by calculating a reciprocal and
    then multiplying.  Hence we do not expect 6 vfdivs.  */

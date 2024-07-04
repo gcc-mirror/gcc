@@ -1,5 +1,5 @@
 /* Miscellaneous stuff that doesn't fit anywhere else.
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -138,7 +138,12 @@ gfc_typename (gfc_typespec *ts, bool for_hash)
   switch (ts->type)
     {
     case BT_INTEGER:
-      sprintf (buffer, "INTEGER(%d)", ts->kind);
+      if (ts->f90_type == BT_VOID
+	  && ts->u.derived
+	  && ts->u.derived->from_intmod == INTMOD_ISO_C_BINDING)
+	sprintf (buffer, "TYPE(%s)", ts->u.derived->name);
+      else
+	sprintf (buffer, "INTEGER(%d)", ts->kind);
       break;
     case BT_REAL:
       sprintf (buffer, "REAL(%d)", ts->kind);

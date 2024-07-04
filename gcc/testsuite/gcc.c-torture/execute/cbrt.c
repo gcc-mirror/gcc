@@ -9,6 +9,9 @@
  * ====================================================
 */
 
+void abort (void);
+void exit (int);
+
 #ifndef __vax__
 static const unsigned long
 	B1 = 715094163, /* B1 = (682-0.03306235651)*2**20 */
@@ -80,7 +83,8 @@ cbrtl (double x)
   return lt;
 }
 
-main ()
+int
+main (void)
 {
   if ((int) (cbrtl (27.0) + 0.5) != 3)
     abort ();
@@ -88,5 +92,5 @@ main ()
   exit (0);
 }
 #else
-main () { exit (0); }
+int main (void) { exit (0); }
 #endif

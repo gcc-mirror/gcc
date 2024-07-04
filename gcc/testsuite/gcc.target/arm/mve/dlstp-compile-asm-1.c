@@ -1,0 +1,146 @@
+/* { dg-do compile } */
+/* { dg-require-effective-target arm_v8_1m_mve_ok } */
+/* { dg-options "-O3 -save-temps" } */
+/* { dg-add-options arm_v8_1m_mve } */
+
+#include <arm_mve.h>
+
+#define IMM 5
+
+#define TEST_COMPILE_IN_DLSTP_TERNARY(BITS, LANES, LDRSTRYTPE, TYPE, SIGN, NAME, PRED)				\
+void test_##NAME##PRED##_##SIGN##BITS (TYPE##BITS##_t *a, TYPE##BITS##_t *b,  TYPE##BITS##_t *c, int n)	\
+{											\
+  while (n > 0)										\
+    {											\
+      mve_pred16_t p = vctp##BITS##q (n);						\
+      TYPE##BITS##x##LANES##_t va = vldr##LDRSTRYTPE##q_z_##SIGN##BITS (a, p);		\
+      TYPE##BITS##x##LANES##_t vb = vldr##LDRSTRYTPE##q_z_##SIGN##BITS (b, p);		\
+      TYPE##BITS##x##LANES##_t vc = NAME##PRED##_##SIGN##BITS (va, vb, p);		\
+      vstr##LDRSTRYTPE##q_p_##SIGN##BITS (c, vc, p);					\
+      c += LANES;									\
+      a += LANES;									\
+      b += LANES;									\
+      n -= LANES;									\
+    }											\
+}
+
+#define TEST_COMPILE_IN_DLSTP_SIGNED_UNSIGNED_TERNARY(BITS, LANES, LDRSTRYTPE, NAME, PRED)	\
+TEST_COMPILE_IN_DLSTP_TERNARY (BITS, LANES, LDRSTRYTPE, int, s, NAME, PRED)			\
+TEST_COMPILE_IN_DLSTP_TERNARY (BITS, LANES, LDRSTRYTPE, uint, u, NAME, PRED)
+
+#define TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY(NAME, PRED)			\
+TEST_COMPILE_IN_DLSTP_SIGNED_UNSIGNED_TERNARY (8, 16, b, NAME, PRED)				\
+TEST_COMPILE_IN_DLSTP_SIGNED_UNSIGNED_TERNARY (16, 8, h, NAME, PRED)				\
+TEST_COMPILE_IN_DLSTP_SIGNED_UNSIGNED_TERNARY (32, 4, w, NAME, PRED)
+
+
+TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY (vaddq, _x)
+TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY (vmulq, _x)
+TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY (vsubq, _x)
+TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY (vhaddq, _x)
+TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY (vorrq, _x)
+
+
+#define TEST_COMPILE_IN_DLSTP_TERNARY_M(BITS, LANES, LDRSTRYTPE, TYPE, SIGN, NAME, PRED)				\
+void test_##NAME##PRED##_##SIGN##BITS (TYPE##BITS##x##LANES##_t __inactive, TYPE##BITS##_t *a, TYPE##BITS##_t *b,  TYPE##BITS##_t *c, int n)	\
+{											\
+  while (n > 0)										\
+    {											\
+      mve_pred16_t p = vctp##BITS##q (n);						\
+      TYPE##BITS##x##LANES##_t va = vldr##LDRSTRYTPE##q_z_##SIGN##BITS (a, p);		\
+      TYPE##BITS##x##LANES##_t vb = vldr##LDRSTRYTPE##q_z_##SIGN##BITS (b, p);		\
+      TYPE##BITS##x##LANES##_t vc = NAME##PRED##_##SIGN##BITS (__inactive, va, vb, p);		\
+      vstr##LDRSTRYTPE##q_p_##SIGN##BITS (c, vc, p);					\
+      c += LANES;									\
+      a += LANES;									\
+      b += LANES;									\
+      n -= LANES;									\
+    }											\
+}
+
+#define TEST_COMPILE_IN_DLSTP_SIGNED_UNSIGNED_TERNARY_M(BITS, LANES, LDRSTRYTPE, NAME, PRED)	\
+TEST_COMPILE_IN_DLSTP_TERNARY_M (BITS, LANES, LDRSTRYTPE, int, s, NAME, PRED)			\
+TEST_COMPILE_IN_DLSTP_TERNARY_M (BITS, LANES, LDRSTRYTPE, uint, u, NAME, PRED)
+
+#define TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY_M(NAME, PRED)			\
+TEST_COMPILE_IN_DLSTP_SIGNED_UNSIGNED_TERNARY_M (8, 16, b, NAME, PRED)				\
+TEST_COMPILE_IN_DLSTP_SIGNED_UNSIGNED_TERNARY_M (16, 8, h, NAME, PRED)				\
+TEST_COMPILE_IN_DLSTP_SIGNED_UNSIGNED_TERNARY_M (32, 4, w, NAME, PRED)
+
+
+TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY_M (vaddq, _m)
+TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY_M (vmulq, _m)
+TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY_M (vsubq, _m)
+TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY_M (vhaddq, _m)
+TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY_M (vorrq, _m)
+
+#define TEST_COMPILE_IN_DLSTP_TERNARY_N(BITS, LANES, LDRSTRYTPE, TYPE, SIGN, NAME, PRED)	\
+void test_##NAME##PRED##_n_##SIGN##BITS (TYPE##BITS##_t *a,  TYPE##BITS##_t *c, int n)	\
+{											\
+  while (n > 0)										\
+    {											\
+      mve_pred16_t p = vctp##BITS##q (n);						\
+      TYPE##BITS##x##LANES##_t va = vldr##LDRSTRYTPE##q_z_##SIGN##BITS (a, p);		\
+      TYPE##BITS##x##LANES##_t vc = NAME##PRED##_n_##SIGN##BITS (va, IMM, p);		\
+      vstr##LDRSTRYTPE##q_p_##SIGN##BITS (c, vc, p);					\
+      c += LANES;									\
+      a += LANES;									\
+      n -= LANES;									\
+    }											\
+}
+
+#define TEST_COMPILE_IN_DLSTP_SIGNED_UNSIGNED_TERNARY_N(BITS, LANES, LDRSTRYTPE, NAME, PRED)	\
+TEST_COMPILE_IN_DLSTP_TERNARY_N (BITS, LANES, LDRSTRYTPE, int, s, NAME, PRED)			\
+TEST_COMPILE_IN_DLSTP_TERNARY_N (BITS, LANES, LDRSTRYTPE, uint, u, NAME, PRED)
+
+#define TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY_N(NAME, PRED)			\
+TEST_COMPILE_IN_DLSTP_SIGNED_UNSIGNED_TERNARY_N (8, 16, b, NAME, PRED)				\
+TEST_COMPILE_IN_DLSTP_SIGNED_UNSIGNED_TERNARY_N (16, 8, h, NAME, PRED)				\
+TEST_COMPILE_IN_DLSTP_SIGNED_UNSIGNED_TERNARY_N (32, 4, w, NAME, PRED)
+
+TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY_N (vaddq, _x)
+TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY_N (vmulq, _x)
+TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY_N (vsubq, _x)
+TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY_N (vhaddq, _x)
+
+TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY_N (vbrsrq, _x)
+TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY_N (vshlq, _x)
+TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY_N (vshrq, _x)
+
+#define TEST_COMPILE_IN_DLSTP_TERNARY_M_N(BITS, LANES, LDRSTRYTPE, TYPE, SIGN, NAME, PRED)	\
+void test_##NAME##PRED##_n_##SIGN##BITS (TYPE##BITS##x##LANES##_t __inactive, TYPE##BITS##_t *a,  TYPE##BITS##_t *c, int n)	\
+{											\
+  while (n > 0)										\
+    {											\
+      mve_pred16_t p = vctp##BITS##q (n);						\
+      TYPE##BITS##x##LANES##_t va = vldr##LDRSTRYTPE##q_z_##SIGN##BITS (a, p);		\
+      TYPE##BITS##x##LANES##_t vc = NAME##PRED##_n_##SIGN##BITS (__inactive, va, IMM, p);		\
+      vstr##LDRSTRYTPE##q_p_##SIGN##BITS (c, vc, p);					\
+      c += LANES;									\
+      a += LANES;									\
+      n -= LANES;									\
+    }											\
+}
+
+#define TEST_COMPILE_IN_DLSTP_SIGNED_UNSIGNED_TERNARY_M_N(BITS, LANES, LDRSTRYTPE, NAME, PRED)	\
+TEST_COMPILE_IN_DLSTP_TERNARY_M_N (BITS, LANES, LDRSTRYTPE, int, s, NAME, PRED)			\
+TEST_COMPILE_IN_DLSTP_TERNARY_M_N (BITS, LANES, LDRSTRYTPE, uint, u, NAME, PRED)
+
+#define TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY_M_N(NAME, PRED)			\
+TEST_COMPILE_IN_DLSTP_SIGNED_UNSIGNED_TERNARY_M_N (8, 16, b, NAME, PRED)				\
+TEST_COMPILE_IN_DLSTP_SIGNED_UNSIGNED_TERNARY_M_N (16, 8, h, NAME, PRED)				\
+TEST_COMPILE_IN_DLSTP_SIGNED_UNSIGNED_TERNARY_M_N (32, 4, w, NAME, PRED)
+
+TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY_M_N (vaddq, _m)
+TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY_M_N (vmulq, _m)
+TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY_M_N (vsubq, _m)
+TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY_M_N (vhaddq, _m)
+
+TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY_M_N (vbrsrq, _m)
+TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY_M_N (vshlq, _m)
+TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY_M_N (vshrq, _m)
+
+/* The final number of DLSTPs currently is calculated by the number of
+  `TEST_COMPILE_IN_DLSTP_INTBITS_SIGNED_UNSIGNED_TERNARY.*` macros * 6.  */
+/* { dg-final { scan-assembler-times {\tdlstp} 144 } } */
+/* { dg-final { scan-assembler-times {\tletp} 144 } } */

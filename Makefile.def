@@ -74,8 +74,23 @@ host_modules= { module= isl; lib_path=.libs; bootstrap=true;
 host_modules= { module= gold; bootstrap=true; };
 host_modules= { module= gprof; };
 host_modules= { module= gprofng; };
-// intl acts on 'host_shared' directly, and does not support --with-pic.
-host_modules= { module= intl; bootstrap=true; };
+host_modules= { module= gettext; bootstrap=true; no_install=true;
+                module_srcdir= "gettext/gettext-runtime";
+		// We always build gettext with pic, because some packages (e.g. gdbserver)
+		// need it in some configuratons, which is determined via nontrivial tests.
+		// Always enabling pic seems to make sense for something tied to
+		// user-facing output.
+		extra_configure_flags='--disable-shared --disable-threads --disable-java --disable-csharp --with-pic --disable-libasprintf';
+		missing= pdf;
+		missing= html;
+		missing= info;
+		missing= dvi;
+		missing= install-pdf;
+		missing= install-html;
+		missing= install-info;
+		missing= install-dvi;
+		missing= TAGS;
+		no_install= true; };
 host_modules= { module= tcl;
                 missing=mostlyclean; };
 host_modules= { module= itcl; };
@@ -149,6 +164,7 @@ host_modules= { module= libcc1; extra_configure_flags=--enable-shared; };
 host_modules= { module= gotools; };
 host_modules= { module= libctf; bootstrap=true; };
 host_modules= { module= libsframe; bootstrap=true; };
+host_modules= { module= libgrust; bootstrap=true; };
 
 target_modules = { module= libstdc++-v3;
 		   bootstrap=true;
@@ -192,6 +208,7 @@ target_modules = { module= libgm2; lib_path=.libs; };
 target_modules = { module= libgomp; bootstrap= true; lib_path=.libs; };
 target_modules = { module= libitm; lib_path=.libs; };
 target_modules = { module= libatomic; bootstrap=true; lib_path=.libs; };
+target_modules = { module= libgrust; };
 
 // These are (some of) the make targets to be done in each subdirectory.
 // Not all; these are the ones which don't have special options.
@@ -295,6 +312,7 @@ flags_to_pass = { flag= GNATBIND ; };
 flags_to_pass = { flag= GNATMAKE ; };
 flags_to_pass = { flag= GDC ; };
 flags_to_pass = { flag= GDCFLAGS ; };
+flags_to_pass = { flag= GUILE ; };
 
 // Target tools
 flags_to_pass = { flag= AR_FOR_TARGET ; };
@@ -345,7 +363,7 @@ dependencies = { module=all-build-fixincludes; on=all-build-libiberty; };
 dependencies = { module=all-build-libcpp; on=all-build-libiberty; };
 
 // Host modules specific to gcc.
-dependencies = { module=configure-gcc; on=configure-intl; };
+dependencies = { module=configure-gcc; on=configure-gettext; };
 dependencies = { module=configure-gcc; on=all-gmp; };
 dependencies = { module=configure-gcc; on=all-mpfr; };
 dependencies = { module=configure-gcc; on=all-mpc; };
@@ -357,7 +375,8 @@ dependencies = { module=configure-gcc; on=all-ld; };
 dependencies = { module=configure-gcc; on=all-gold; };
 dependencies = { module=configure-gcc; on=all-libiconv; };
 dependencies = { module=all-gcc; on=all-libiberty; hard=true; };
-dependencies = { module=all-gcc; on=all-intl; };
+dependencies = { module=all-gcc; on=all-libgrust; };
+dependencies = { module=all-gcc; on=all-gettext; };
 dependencies = { module=all-gcc; on=all-mpfr; };
 dependencies = { module=all-gcc; on=all-mpc; };
 dependencies = { module=all-gcc; on=all-isl; };
@@ -386,10 +405,10 @@ dependencies = { module=install-strip-gcc ; on=install-strip-fixincludes; };
 dependencies = { module=install-strip-gcc ; on=install-strip-lto-plugin; };
 
 dependencies = { module=configure-libcpp; on=configure-libiberty; hard=true; };
-dependencies = { module=configure-libcpp; on=configure-intl; };
+dependencies = { module=configure-libcpp; on=configure-gettext; };
 dependencies = { module=configure-libcpp; on=all-libiconv; };
 dependencies = { module=all-libcpp; on=all-libiberty; hard=true; };
-dependencies = { module=all-libcpp; on=all-intl; };
+dependencies = { module=all-libcpp; on=all-gettext; };
 dependencies = { module=all-libcpp; on=all-libiconv; };
 
 dependencies = { module=all-fixincludes; on=all-libiberty; };
@@ -411,16 +430,16 @@ dependencies = { module=all-gotools; on=all-target-libgo; };
 
 dependencies = { module=all-utils; on=all-libiberty; };
 
-dependencies = { module=configure-intl; on=all-libiconv; };
+dependencies = { module=configure-gettext; on=all-libiconv; };
 dependencies = { module=configure-mpfr; on=all-gmp; };
 dependencies = { module=configure-mpc; on=all-mpfr; };
 dependencies = { module=configure-isl; on=all-gmp; };
-dependencies = { module=all-intl; on=all-libiconv; };
+dependencies = { module=all-gettext; on=all-libiconv; };
 
 // Host modules specific to gdb.
 dependencies = { module=configure-gdb; on=all-gmp; };
 dependencies = { module=configure-gdb; on=all-mpfr; };
-dependencies = { module=configure-gdb; on=all-intl; };
+dependencies = { module=configure-gdb; on=all-gettext; };
 dependencies = { module=configure-gdb; on=configure-sim; };
 dependencies = { module=configure-gdb; on=all-bfd; };
 dependencies = { module=configure-gdb; on=all-gnulib; };
@@ -454,17 +473,17 @@ dependencies = { module=all-libgui; on=all-tk; };
 dependencies = { module=all-libgui; on=all-itcl; };
 
 dependencies = { module=configure-gdbsupport; on=configure-gnulib; };
-dependencies = { module=configure-gdbsupport; on=configure-intl; };
+dependencies = { module=configure-gdbsupport; on=configure-gettext; };
 dependencies = { module=all-gdbsupport; on=all-gnulib; };
-dependencies = { module=all-gdbsupport; on=all-intl; };
+dependencies = { module=all-gdbsupport; on=all-gettext; };
 
 // Host modules specific to binutils.
 // build libsframe before bfd for encoder/decoder support for linking
 // SFrame sections
 dependencies = { module=configure-bfd; on=configure-libiberty; hard=true; };
-dependencies = { module=configure-bfd; on=configure-intl; };
+dependencies = { module=configure-bfd; on=configure-gettext; };
 dependencies = { module=all-bfd; on=all-libiberty; };
-dependencies = { module=all-bfd; on=all-intl; };
+dependencies = { module=all-bfd; on=all-gettext; };
 dependencies = { module=all-bfd; on=all-zlib; };
 dependencies = { module=all-bfd; on=all-libsframe; };
 dependencies = { module=configure-opcodes; on=configure-libiberty; hard=true; };
@@ -473,13 +492,13 @@ dependencies = { module=all-opcodes; on=all-libiberty; };
 // We must build gas before binutils, gprof, ld and gold to avoid race
 // condition in the prev-gcc/as script during bootstrap of combined tree
 // with GCC and binutils.  See PR gas/14899 for details.
-dependencies = { module=configure-binutils; on=configure-intl; };
+dependencies = { module=configure-binutils; on=configure-gettext; };
 dependencies = { module=all-binutils; on=all-libiberty; };
 dependencies = { module=all-binutils; on=all-opcodes; };
 dependencies = { module=all-binutils; on=all-bfd; };
 dependencies = { module=all-binutils; on=all-build-flex; };
 dependencies = { module=all-binutils; on=all-build-bison; };
-dependencies = { module=all-binutils; on=all-intl; };
+dependencies = { module=all-binutils; on=all-gettext; };
 dependencies = { module=all-binutils; on=all-gas; };
 dependencies = { module=all-binutils; on=all-libctf; };
 dependencies = { module=all-ld; on=all-libctf; };
@@ -508,51 +527,51 @@ dependencies = { module=configure-opcodes; on=configure-bfd; hard=true; };
 dependencies = { module=install-opcodes; on=install-bfd; };
 dependencies = { module=install-strip-opcodes; on=install-strip-bfd; };
 
-dependencies = { module=configure-gas; on=configure-intl; };
+dependencies = { module=configure-gas; on=configure-gettext; };
 dependencies = { module=all-gas; on=all-libiberty; };
 dependencies = { module=all-gas; on=all-opcodes; };
 dependencies = { module=all-gas; on=all-bfd; };
-dependencies = { module=all-gas; on=all-intl; };
-dependencies = { module=configure-gprof; on=configure-intl; };
+dependencies = { module=all-gas; on=all-gettext; };
+dependencies = { module=configure-gprof; on=configure-gettext; };
 dependencies = { module=all-gprof; on=all-libiberty; };
 dependencies = { module=all-gprof; on=all-bfd; };
 dependencies = { module=all-gprof; on=all-opcodes; };
-dependencies = { module=all-gprof; on=all-intl; };
+dependencies = { module=all-gprof; on=all-gettext; };
 dependencies = { module=all-gprof; on=all-gas; };
 
-dependencies = { module=configure-gprofng; on=configure-intl; };
+dependencies = { module=configure-gprofng; on=configure-gettext; };
 dependencies = { module=all-gprofng; on=all-libiberty; };
 dependencies = { module=all-gprofng; on=all-bfd; };
 dependencies = { module=all-gprofng; on=all-opcodes; };
-dependencies = { module=all-gprofng; on=all-intl; };
+dependencies = { module=all-gprofng; on=all-gettext; };
 dependencies = { module=all-gprofng; on=all-gas; };
 dependencies = { module=install-gprofng; on=install-opcodes; };
 dependencies = { module=install-gprofng; on=install-bfd; };
 
-dependencies = { module=configure-ld; on=configure-intl; };
+dependencies = { module=configure-ld; on=configure-gettext; };
 dependencies = { module=all-ld; on=all-libiberty; };
 dependencies = { module=all-ld; on=all-bfd; };
 dependencies = { module=all-ld; on=all-opcodes; };
 dependencies = { module=all-ld; on=all-build-bison; };
 dependencies = { module=all-ld; on=all-build-flex; };
-dependencies = { module=all-ld; on=all-intl; };
+dependencies = { module=all-ld; on=all-gettext; };
 dependencies = { module=all-ld; on=all-gas; };
 dependencies = { module=all-ld; on=all-binutils; };
 dependencies = { module=install-ld; on=install-gold; };
 dependencies = { module=install-strip-ld; on=install-strip-gold; };
-dependencies = { module=configure-gold; on=configure-intl; };
+dependencies = { module=configure-gold; on=configure-gettext; };
 dependencies = { module=all-gold; on=all-libiberty; };
-dependencies = { module=all-gold; on=all-intl; };
+dependencies = { module=all-gold; on=all-gettext; };
 dependencies = { module=all-gold; on=all-bfd; };
 dependencies = { module=all-gold; on=all-build-bison; };
 dependencies = { module=all-gold; on=all-gas; };
 dependencies = { module=check-gold; on=all-binutils; };
 dependencies = { module=check-gold; on=all-gas; };
 
-dependencies = { module=configure-opcodes; on=configure-intl; };
+dependencies = { module=configure-opcodes; on=configure-gettext; };
 dependencies = { module=all-opcodes; on=all-bfd; };
 dependencies = { module=all-opcodes; on=all-libiberty; };
-dependencies = { module=all-opcodes; on=all-intl; };
+dependencies = { module=all-opcodes; on=all-gettext; };
 
 // Other host modules in the 'src' repository.
 dependencies = { module=all-dejagnu; on=all-tcl; };
@@ -586,8 +605,8 @@ dependencies = { module=install-sid; on=install-tk; };
 dependencies = { module=install-strip-sid; on=install-strip-tk; };
 
 dependencies = { module=configure-sim; on=all-gnulib; };
-dependencies = { module=configure-sim; on=configure-intl; };
-dependencies = { module=all-sim; on=all-intl; };
+dependencies = { module=configure-sim; on=configure-gettext; };
+dependencies = { module=all-sim; on=all-gettext; };
 dependencies = { module=all-sim; on=all-libiberty; };
 dependencies = { module=all-sim; on=all-bfd; };
 dependencies = { module=all-sim; on=all-opcodes; };
@@ -602,7 +621,7 @@ dependencies = { module=all-libctf; on=all-bfd; };
 dependencies = { module=all-libctf; on=all-zlib; };
 // So that checking for ELF support in BFD from libctf configure is possible.
 dependencies = { module=configure-libctf; on=all-bfd; };
-dependencies = { module=configure-libctf; on=all-intl; };
+dependencies = { module=configure-libctf; on=all-gettext; };
 dependencies = { module=configure-libctf; on=all-zlib; };
 dependencies = { module=configure-libctf; on=all-libiconv; };
 dependencies = { module=check-libctf; on=all-ld; };
@@ -612,15 +631,16 @@ dependencies = { module=check-libctf; on=all-ld; };
 // gdb and gdbserver.
 dependencies = { module=distclean-gnulib; on=distclean-gdb; };
 dependencies = { module=distclean-gnulib; on=distclean-gdbserver; };
+dependencies = { module=distclean-gnulib; on=distclean-sim; };
 
 // Warning, these are not well tested.
-dependencies = { module=all-bison; on=all-intl; };
+dependencies = { module=all-bison; on=all-gettext; };
 dependencies = { module=all-bison; on=all-build-texinfo; };
 dependencies = { module=all-flex; on=all-build-bison; };
-dependencies = { module=all-flex; on=all-intl; };
+dependencies = { module=all-flex; on=all-gettext; };
 dependencies = { module=all-flex; on=all-m4; };
 dependencies = { module=all-flex; on=all-build-texinfo; };
-dependencies = { module=all-m4; on=all-intl; };
+dependencies = { module=all-m4; on=all-gettext; };
 dependencies = { module=all-m4; on=all-build-texinfo; };
 
 // Target modules.  These can also have dependencies on the language
@@ -653,6 +673,7 @@ dependencies = { module=all-target-libphobos; on=all-target-libatomic; };
 dependencies = { module=configure-target-libstdc++-v3; on=configure-target-libgomp; };
 dependencies = { module=configure-target-libsanitizer; on=all-target-libstdc++-v3; };
 dependencies = { module=configure-target-libvtv; on=all-target-libstdc++-v3; };
+dependencies = { module=configure-target-libgrust; on=all-target-libstdc++-v3; };
 // parallel_list.o and parallel_settings.o depend on omp.h, which is
 // generated by the libgomp configure.  Unfortunately, due to the use of
 //  recursive make, we can't be that specific.

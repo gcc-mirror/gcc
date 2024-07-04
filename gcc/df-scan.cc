@@ -1,5 +1,5 @@
 /* Scanning of rtl for dataflow analysis.
-   Copyright (C) 1999-2023 Free Software Foundation, Inc.
+   Copyright (C) 1999-2024 Free Software Foundation, Inc.
    Originally contributed by Michael P. Hayes
              (m.hayes@elec.canterbury.ac.nz, mhayes@redhat.com)
    Major rewrite contributed by Danny Berlin (dberlin@dberlin.org)
@@ -3702,19 +3702,23 @@ df_get_exit_block_use_set (bitmap exit_block_uses)
 
   /* Mark the registers that will contain data for the handler.  */
   if (reload_completed && crtl->calls_eh_return)
-    for (i = 0; ; ++i)
-      {
-	unsigned regno = EH_RETURN_DATA_REGNO (i);
-	if (regno == INVALID_REGNUM)
-	  break;
-	bitmap_set_bit (exit_block_uses, regno);
-      }
+    IOR_REG_SET_HRS (exit_block_uses, eh_return_data_regs);
 
 #ifdef EH_RETURN_STACKADJ_RTX
   if ((!targetm.have_epilogue () || ! epilogue_completed)
       && crtl->calls_eh_return)
     {
       rtx tmp = EH_RETURN_STACKADJ_RTX;
+      if (tmp && REG_P (tmp))
+	df_mark_reg (tmp, exit_block_uses);
+    }
+#endif
+
+#ifdef EH_RETURN_TAKEN_RTX
+  if ((!targetm.have_epilogue () || ! epilogue_completed)
+      && crtl->calls_eh_return)
+    {
+      rtx tmp = EH_RETURN_TAKEN_RTX;
       if (tmp && REG_P (tmp))
 	df_mark_reg (tmp, exit_block_uses);
     }

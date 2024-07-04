@@ -16,7 +16,7 @@ foo (unsigned int offset)
     return i * 0xce2f;
 
   buffer = next_buffer;
-  data = buffer * 0xce2f;
+  data = (char *) (buffer * 0xce2f);
   for (i = 0; i < 2; i++)
     bar ();
   buffer = next_buffer;
@@ -33,9 +33,9 @@ int
 main ()
 {
   if (foo (3) != 3)
-    abort ();
+    __builtin_abort ();
   next_buffer = 1;
   if (foo (2) != 0xce2f + 2)
-    abort ();
-  exit (0);
+    __builtin_abort ();
+  __builtin_exit (0);
 }

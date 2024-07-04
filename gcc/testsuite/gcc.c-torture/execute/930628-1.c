@@ -1,10 +1,15 @@
+void abort (void);
+void exit (int);
+
+void
 f (double x[2], double y[2])
 {
   if (x == y)
     abort ();
 }
 
-main ()
+int
+main (void)
 {
   struct { int f[3]; double x[1][2]; } tp[4][2];
   int i, j, ki, kj, mi, mj;

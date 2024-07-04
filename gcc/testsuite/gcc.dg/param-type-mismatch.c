@@ -1,4 +1,4 @@
-/* { dg-options "-fdiagnostics-show-caret -Wpointer-sign" }  */
+/* { dg-options "-fpermissive -fdiagnostics-show-caret -Wpointer-sign" }  */
 
 /* A collection of calls where argument 2 is of the wrong type.  */
 

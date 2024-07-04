@@ -1,6 +1,6 @@
 // <variant> -*- C++ -*-
 
-// Copyright (C) 2016-2023 Free Software Foundation, Inc.
+// Copyright (C) 2016-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,7 +31,9 @@
 
 #pragma GCC system_header
 
+#define __glibcxx_want_freestanding_variant
 #define __glibcxx_want_variant
+#define __glibcxx_want_constrained_equality
 #include <bits/version.h>
 
 #ifdef __cpp_lib_variant // C++ >= 17
@@ -41,11 +43,12 @@
 #include <bits/exception_defines.h>
 #include <bits/functional_hash.h>
 #include <bits/invoke.h>
-#include <bits/parse_numbers.h>
+#include <bits/parse_numbers.h> // _Select_int
 #include <bits/stl_iterator_base_funcs.h>
 #include <bits/stl_construct.h>
 #include <bits/utility.h> // in_place_index_t
 #if __cplusplus >= 202002L
+# include <concepts>
 # include <compare>
 #endif
 
@@ -391,7 +394,7 @@ namespace __variant
     };
 
   // Defines members and ctors.
-  template<typename... _Types>
+  template<bool __trivially_destructible, typename... _Types>
     union _Variadic_union
     {
       _Variadic_union() = default;
@@ -400,8 +403,8 @@ namespace __variant
 	_Variadic_union(in_place_index_t<_Np>, _Args&&...) = delete;
     };
 
-  template<typename _First, typename... _Rest>
-    union _Variadic_union<_First, _Rest...>
+  template<bool __trivially_destructible, typename _First, typename... _Rest>
+    union _Variadic_union<__trivially_destructible, _First, _Rest...>
     {
       constexpr _Variadic_union() : _M_rest() { }
 
@@ -426,13 +429,12 @@ namespace __variant
       ~_Variadic_union() = default;
 
       constexpr ~_Variadic_union()
-	requires (!__has_trivial_destructor(_First))
-	      || (!__has_trivial_destructor(_Variadic_union<_Rest...>))
+	requires (!__trivially_destructible)
       { }
 #endif
 
       _Uninitialized<_First> _M_first;
-      _Variadic_union<_Rest...> _M_rest;
+      _Variadic_union<__trivially_destructible, _Rest...> _M_rest;
     };
 
   // _Never_valueless_alt is true for variant alternatives that can
@@ -513,7 +515,7 @@ namespace __variant
 	return this->_M_index != __index_type(variant_npos);
       }
 
-      _Variadic_union<_Types...> _M_u;
+      _Variadic_union<false, _Types...> _M_u;
       using __index_type = __select_index<_Types...>;
       __index_type _M_index;
     };
@@ -551,7 +553,7 @@ namespace __variant
 	return this->_M_index != static_cast<__index_type>(variant_npos);
       }
 
-      _Variadic_union<_Types...> _M_u;
+      _Variadic_union<true, _Types...> _M_u;
       using __index_type = __select_index<_Types...>;
       __index_type _M_index;
     };
@@ -1236,39 +1238,125 @@ namespace __variant
 
   struct monostate { };
 
-#define _VARIANT_RELATION_FUNCTION_TEMPLATE(__OP, __NAME) \
-  template<typename... _Types> \
-    constexpr bool operator __OP(const variant<_Types...>& __lhs, \
-				 const variant<_Types...>& __rhs) \
-    { \
-      bool __ret = true; \
-      __detail::__variant::__raw_idx_visit( \
-        [&__ret, &__lhs] (auto&& __rhs_mem, auto __rhs_index) mutable \
-        { \
-	  if constexpr (__rhs_index != variant_npos) \
-	    { \
-	      if (__lhs.index() == __rhs_index) \
-	        { \
-		  auto& __this_mem = std::get<__rhs_index>(__lhs);	\
-                  __ret = __this_mem __OP __rhs_mem; \
-                } \
-	      else \
-		__ret = (__lhs.index() + 1) __OP (__rhs_index + 1); \
-            } \
-          else \
-            __ret = (__lhs.index() + 1) __OP (__rhs_index + 1); \
-	}, __rhs); \
-      return __ret; \
+namespace __detail::__variant
+{
+  template<typename _Ret, typename _Vp, typename _Op>
+    constexpr _Ret
+    __compare(_Ret __ret, const _Vp& __lhs, const _Vp& __rhs, _Op __op)
+    {
+      __variant::__raw_idx_visit(
+	[&__ret, &__lhs, __op] (auto&& __rhs_mem, auto __rhs_index) mutable
+	{
+	  if constexpr (__rhs_index != variant_npos)
+	    {
+	      if (__lhs.index() == __rhs_index.value)
+		{
+		  auto& __this_mem = std::get<__rhs_index>(__lhs);
+		  __ret = __op(__this_mem, __rhs_mem);
+		  return;
+		}
+	    }
+	  __ret = __op(__lhs.index() + 1, __rhs_index + 1);
+	}, __rhs);
+      return __ret;
+    }
+} // namespace __detail::__variant
+
+  template<typename... _Types>
+#if __cpp_lib_concepts
+    requires ((requires (const _Types& __t) {
+      { __t == __t } -> convertible_to<bool>; }) && ...)
+#endif
+    constexpr bool
+    operator== [[nodiscard]] (const variant<_Types...>& __lhs,
+			      const variant<_Types...>& __rhs)
+    {
+      namespace __variant = __detail::__variant;
+      return __variant::__compare(true, __lhs, __rhs,
+				  [](auto&& __l, auto&& __r) -> bool {
+				    return __l == __r;
+				  });
     }
 
-  _VARIANT_RELATION_FUNCTION_TEMPLATE(<, less)
-  _VARIANT_RELATION_FUNCTION_TEMPLATE(<=, less_equal)
-  _VARIANT_RELATION_FUNCTION_TEMPLATE(==, equal)
-  _VARIANT_RELATION_FUNCTION_TEMPLATE(!=, not_equal)
-  _VARIANT_RELATION_FUNCTION_TEMPLATE(>=, greater_equal)
-  _VARIANT_RELATION_FUNCTION_TEMPLATE(>, greater)
+  template<typename... _Types>
+#if __cpp_lib_concepts
+    requires ((requires (const _Types& __t) {
+      { __t != __t } -> convertible_to<bool>; }) && ...)
+#endif
+    constexpr bool
+    operator!= [[nodiscard]] (const variant<_Types...>& __lhs,
+			      const variant<_Types...>& __rhs)
+    {
+      namespace __variant = __detail::__variant;
+      return __variant::__compare(true, __lhs, __rhs,
+				  [](auto&& __l, auto&& __r) -> bool {
+				    return __l != __r;
+				  });
+    }
 
-#undef _VARIANT_RELATION_FUNCTION_TEMPLATE
+  template<typename... _Types>
+#if __cpp_lib_concepts
+    requires ((requires (const _Types& __t) {
+      { __t < __t } -> convertible_to<bool>; }) && ...)
+#endif
+    constexpr bool
+    operator< [[nodiscard]] (const variant<_Types...>& __lhs,
+			     const variant<_Types...>& __rhs)
+    {
+      namespace __variant = __detail::__variant;
+      return __variant::__compare(true, __lhs, __rhs,
+				  [](auto&& __l, auto&& __r) -> bool {
+				    return __l < __r;
+				  });
+    }
+
+  template<typename... _Types>
+#if __cpp_lib_concepts
+    requires ((requires (const _Types& __t) {
+      { __t <= __t } -> convertible_to<bool>; }) && ...)
+#endif
+    constexpr bool
+    operator<= [[nodiscard]] (const variant<_Types...>& __lhs,
+			      const variant<_Types...>& __rhs)
+    {
+      namespace __variant = __detail::__variant;
+      return __variant::__compare(true, __lhs, __rhs,
+				  [](auto&& __l, auto&& __r) -> bool {
+				    return __l <= __r;
+				  });
+    }
+
+  template<typename... _Types>
+#if __cpp_lib_concepts
+    requires ((requires (const _Types& __t) {
+      { __t > __t } -> convertible_to<bool>; }) && ...)
+#endif
+    constexpr bool
+    operator> [[nodiscard]] (const variant<_Types...>& __lhs,
+			     const variant<_Types...>& __rhs)
+    {
+      namespace __variant = __detail::__variant;
+      return __variant::__compare(true, __lhs, __rhs,
+				  [](auto&& __l, auto&& __r) -> bool {
+				    return __l > __r;
+				  });
+    }
+
+  template<typename... _Types>
+#if __cpp_lib_concepts
+    requires ((requires (const _Types& __t) {
+      { __t >= __t } -> convertible_to<bool>; }) && ...)
+#endif
+    constexpr bool
+    operator>= [[nodiscard]] (const variant<_Types...>& __lhs,
+			      const variant<_Types...>& __rhs)
+    {
+      namespace __variant = __detail::__variant;
+      return __variant::__compare(true, __lhs, __rhs,
+				  [](auto&& __l, auto&& __r) -> bool {
+				    return __l >= __r;
+				  });
+    }
 
   constexpr bool operator==(monostate, monostate) noexcept { return true; }
 
@@ -1281,22 +1369,11 @@ namespace __variant
     {
       common_comparison_category_t<compare_three_way_result_t<_Types>...> __ret
 	= strong_ordering::equal;
-
-      __detail::__variant::__raw_idx_visit(
-	[&__ret, &__v] (auto&& __w_mem, auto __w_index) mutable
-	{
-	  if constexpr (__w_index != variant_npos)
-	    {
-	      if (__v.index() == __w_index)
-		{
-		  auto& __this_mem = std::get<__w_index>(__v);
-		  __ret = __this_mem <=> __w_mem;
-		  return;
-		}
-	    }
-	  __ret = (__v.index() + 1) <=> (__w_index + 1);
-	}, __w);
-      return __ret;
+      namespace __variant = __detail::__variant;
+      return __variant::__compare(__ret, __v, __w,
+				  [](auto&& __l, auto&& __r) {
+				    return __l <=> __r;
+				  });
     }
 
   constexpr strong_ordering
@@ -1414,7 +1491,8 @@ namespace __variant
 
       template<typename _Tp>
 	static constexpr bool __not_in_place_tag
-	  = !__is_in_place_tag<__remove_cvref_t<_Tp>>::value;
+	  = !__is_in_place_type_v<__remove_cvref_t<_Tp>>
+	      && !__is_in_place_index_v<__remove_cvref_t<_Tp>>;
 
     public:
 #if __cpp_concepts
@@ -1680,30 +1758,10 @@ namespace __variant
 	  }, __rhs);
       }
 
-#if defined(__clang__) && __clang_major__ <= 7
-    public:
-      using _Base::_M_u; // See https://bugs.llvm.org/show_bug.cgi?id=31852
-#endif
-
     private:
       template<size_t _Np, typename _Vp>
 	friend constexpr decltype(auto)
 	__detail::__variant::__get(_Vp&& __v) noexcept;
-
-#define _VARIANT_RELATION_FUNCTION_TEMPLATE(__OP) \
-      template<typename... _Tp> \
-	friend constexpr bool \
-	operator __OP(const variant<_Tp...>& __lhs, \
-		      const variant<_Tp...>& __rhs);
-
-      _VARIANT_RELATION_FUNCTION_TEMPLATE(<)
-      _VARIANT_RELATION_FUNCTION_TEMPLATE(<=)
-      _VARIANT_RELATION_FUNCTION_TEMPLATE(==)
-      _VARIANT_RELATION_FUNCTION_TEMPLATE(!=)
-      _VARIANT_RELATION_FUNCTION_TEMPLATE(>=)
-      _VARIANT_RELATION_FUNCTION_TEMPLATE(>)
-
-#undef _VARIANT_RELATION_FUNCTION_TEMPLATE
     };
 
   template<size_t _Np, typename... _Types>

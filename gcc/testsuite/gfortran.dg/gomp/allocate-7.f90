@@ -47,7 +47,6 @@ integer, pointer :: ptr
 integer, parameter :: prm=5
 
 !$omp allocate(prm) align(64) ! { dg-error "Argument 'prm' at .1. to declarative !.OMP ALLOCATE directive must be a variable" }
-! { dg-error "Sorry, declarative !.OMP ALLOCATE at .1. not yet supported" "" { target *-*-* } .-1 }
 
 !$omp allocate(used) allocator(omp_pteam_mem_alloc)  ! { dg-error "Argument 'used' at .1. to declarative !.OMP ALLOCATE shall be in the same scope as the variable declaration" }
 !$omp allocate(n) allocator(omp_pteam_mem_alloc) ! { dg-error "Unexpected dummy argument 'n' as argument at .1. to declarative !.OMP ALLOCATE" }
@@ -59,7 +58,6 @@ contains
 
   subroutine inner
     !$omp allocate(a) allocator(omp_pteam_mem_alloc)  ! { dg-error "Argument 'a' at .1. to declarative !.OMP ALLOCATE shall be in the same scope as the variable declaration" }
-! { dg-error "Sorry, declarative !.OMP ALLOCATE at .1. not yet supported" "" { target *-*-* } .-1 }
   end
 end
 
@@ -74,7 +72,6 @@ common /com4/ y,z
 allocatable :: q
 pointer :: b
 !$omp allocate (c, d) allocator (omp_pteam_mem_alloc)
-! { dg-error "Sorry, declarative !.OMP ALLOCATE at .1. not yet supported" "" { target *-*-* } .-1 }
 !$omp allocate (/com4/) allocator (omp_pteam_mem_alloc)
 !$omp allocate (c) allocator (omp_pteam_mem_alloc) ! { dg-error "Duplicated variable 'c' in !.OMP ALLOCATE" }
 !$omp allocate (/com4/) allocator (omp_pteam_mem_alloc) ! { dg-error "Duplicated common block '/com4/' in !.OMP ALLOCATE" }
@@ -86,7 +83,6 @@ end
 subroutine four(n)
   integer :: qq, rr, ss, tt, uu, vv,n
 !$omp allocate (qq) align(3+n) ! { dg-error "ALIGN requires a scalar positive constant integer alignment expression at .1. that is a power of two" }
-! { dg-error "Sorry, declarative !.OMP ALLOCATE at .1. not yet supported" "" { target *-*-* } .-1 }
 !$omp allocate (rr) align([4]) ! { dg-error "ALIGN requires a scalar positive constant integer alignment expression at .1. that is a power of two" }
 !$omp allocate (ss) align([4]) ! { dg-error "ALIGN requires a scalar positive constant integer alignment expression at .1. that is a power of two" }
 !$omp allocate (tt) align(32.0) ! { dg-error "ALIGN requires a scalar positive constant integer alignment expression at .1. that is a power of two" }
@@ -99,7 +95,6 @@ subroutine five(n,my_alloc)
   integer :: qq, rr, ss, tt, uu, vv,n
   integer(omp_allocator_handle_kind) :: my_alloc
 !$omp allocate (qq) allocator(3.0)  ! { dg-error "Expected integer expression of the 'omp_allocator_handle_kind' kind" }
-! { dg-error "Sorry, declarative !.OMP ALLOCATE at .1. not yet supported" "" { target *-*-* } .-1 }
 !$omp allocate (rr) allocator(3_2)  ! { dg-error "Expected integer expression of the 'omp_allocator_handle_kind' kind" }
 !$omp allocate (ss) allocator([omp_pteam_mem_alloc])  ! { dg-error "Expected integer expression of the 'omp_allocator_handle_kind' kind" }
 !$omp allocate (tt) allocator(my_alloc)  ! OK
@@ -113,7 +108,6 @@ subroutine five_SaveAll(n,my_alloc)
   integer :: qq, rr, ss, tt, uu, vv,n
   integer(omp_allocator_handle_kind) :: my_alloc
 !$omp allocate (qq) allocator(3.0)  ! { dg-error "Predefined allocator required in ALLOCATOR clause at .1. as the list item 'qq' at .2. has the SAVE attribute" }
-! { dg-error "Sorry, declarative !.OMP ALLOCATE at .1. not yet supported" "" { target *-*-* } .-1 }
 !$omp allocate (rr) allocator(3_2)  ! { dg-error "Predefined allocator required in ALLOCATOR clause at .1. as the list item 'rr' at .2. has the SAVE attribute" }
 !$omp allocate (ss) allocator([omp_pteam_mem_alloc])  ! { dg-error "Predefined allocator required in ALLOCATOR clause at .1. as the list item 'ss' at .2. has the SAVE attribute" }
 !$omp allocate (tt) allocator(my_alloc)  ! { dg-error "Predefined allocator required in ALLOCATOR clause at .1. as the list item 'tt' at .2. has the SAVE attribute" }
@@ -127,7 +121,6 @@ subroutine five_Save(n,my_alloc)
   integer, save :: qq, rr, ss, tt, uu, vv
   integer(omp_allocator_handle_kind) :: my_alloc
 !$omp allocate (qq) allocator(3.0)  ! { dg-error "Predefined allocator required in ALLOCATOR clause at .1. as the list item 'qq' at .2. has the SAVE attribute" }
-! { dg-error "Sorry, declarative !.OMP ALLOCATE at .1. not yet supported" "" { target *-*-* } .-1 }
 !$omp allocate (rr) allocator(3_2)  ! { dg-error "Predefined allocator required in ALLOCATOR clause at .1. as the list item 'rr' at .2. has the SAVE attribute" }
 !$omp allocate (ss) allocator([omp_pteam_mem_alloc])  ! { dg-error "Predefined allocator required in ALLOCATOR clause at .1. as the list item 'ss' at .2. has the SAVE attribute" }
 !$omp allocate (tt) allocator(my_alloc)  ! { dg-error "Predefined allocator required in ALLOCATOR clause at .1. as the list item 'tt' at .2. has the SAVE attribute" }
@@ -139,7 +132,6 @@ module five_Module
   integer, save :: qq, rr, ss, tt, uu, vv,n
   integer(omp_allocator_handle_kind) :: my_alloc
 !$omp allocate (qq) allocator(3.0)  ! { dg-error "Predefined allocator required in ALLOCATOR clause at .1. as the list item 'qq' at .2. has the SAVE attribute" }
-! { dg-error "Sorry, declarative !.OMP ALLOCATE at .1. not yet supported" "" { target *-*-* } .-1 }
 !$omp allocate (rr) allocator(3_2)  ! { dg-error "Predefined allocator required in ALLOCATOR clause at .1. as the list item 'rr' at .2. has the SAVE attribute" }
 !$omp allocate (ss) allocator([omp_pteam_mem_alloc])  ! { dg-error "Predefined allocator required in ALLOCATOR clause at .1. as the list item 'ss' at .2. has the SAVE attribute" }
 !$omp allocate (tt) allocator(my_alloc)  ! { dg-error "Predefined allocator required in ALLOCATOR clause at .1. as the list item 'tt' at .2. has the SAVE attribute" }
@@ -151,7 +143,6 @@ program five_program
   integer, save :: qq, rr, ss, tt, uu, vv,n
   integer(omp_allocator_handle_kind) :: my_alloc
 !$omp allocate (qq) allocator(3.0)  ! { dg-error "Predefined allocator required in ALLOCATOR clause at .1. as the list item 'qq' at .2. has the SAVE attribute" }
-! { dg-error "Sorry, declarative !.OMP ALLOCATE at .1. not yet supported" "" { target *-*-* } .-1 }
 !$omp allocate (rr) allocator(3_2)  ! { dg-error "Predefined allocator required in ALLOCATOR clause at .1. as the list item 'rr' at .2. has the SAVE attribute" }
 !$omp allocate (ss) allocator([omp_pteam_mem_alloc])  ! { dg-error "Predefined allocator required in ALLOCATOR clause at .1. as the list item 'ss' at .2. has the SAVE attribute" }
 !$omp allocate (tt) allocator(my_alloc)  ! { dg-error "Predefined allocator required in ALLOCATOR clause at .1. as the list item 'tt' at .2. has the SAVE attribute" }
@@ -170,7 +161,6 @@ subroutine six(n,my_alloc)
   integer(omp_allocator_handle_kind) :: my_alloc
 
 !$omp allocate (/com6qq/) allocator(3.0)  ! { dg-error "Predefined allocator required in ALLOCATOR clause at .1. as the list item '/com6qq/' at .2. has the SAVE attribute" }
-! { dg-error "Sorry, declarative !.OMP ALLOCATE at .1. not yet supported" "" { target *-*-* } .-1 }
 !$omp allocate (/com6rr/) allocator(3_2)  ! { dg-error "Predefined allocator required in ALLOCATOR clause at .1. as the list item '/com6rr/' at .2. has the SAVE attribute" }
 !$omp allocate (/com6ss/) allocator([omp_pteam_mem_alloc])  ! { dg-error "Predefined allocator required in ALLOCATOR clause at .1. as the list item '/com6ss/' at .2. has the SAVE attribute" }
 !$omp allocate (/com6tt/) allocator(my_alloc)  ! { dg-error "Predefined allocator required in ALLOCATOR clause at .1. as the list item '/com6tt/' at .2. has the SAVE attribute" }

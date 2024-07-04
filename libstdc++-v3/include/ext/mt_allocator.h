@@ -1,6 +1,6 @@
 // MT-optimized allocator -*- C++ -*-
 
-// Copyright (C) 2003-2023 Free Software Foundation, Inc.
+// Copyright (C) 2003-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -693,7 +693,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (__n > this->max_size())
 	std::__throw_bad_alloc();
 
-#if __cpp_aligned_new
+#if __cpp_aligned_new && __cplusplus >= 201103L
       // Types with extended alignment are handled by operator new/delete.
       if (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
 	{
@@ -748,7 +748,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       if (__builtin_expect(__p != 0, true))
 	{
-#if __cpp_aligned_new
+#if __cpp_aligned_new && __cplusplus >= 201103L
 	  // Types with extended alignment are handled by operator new/delete.
 	  if (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
 	    {

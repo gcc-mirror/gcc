@@ -92,12 +92,12 @@ module m2
     end function
 
     ! function result is a type that is not interoperable
-    function g (x) bind (c)  ! { dg-error "BIND\\(C\\)" }
+    function g (x) bind (c)  ! { dg-error "has no IMPLICIT type" }
       use ISO_C_BINDING
       use m1
       implicit none
       integer(C_INT) :: x
-      integer(C_INT), allocatable :: g
+      integer(C_INT), allocatable :: g  ! { dg-error "BIND\\(C\\) attribute conflicts with ALLOCATABLE" }
     end function
 
   end interface

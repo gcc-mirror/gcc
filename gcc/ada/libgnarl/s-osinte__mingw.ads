@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-2017, Florida State University            --
---          Copyright (C) 1995-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,6 +43,8 @@ with Ada.Unchecked_Conversion;
 
 with Interfaces.C;
 with Interfaces.C.Strings;
+
+with System.OS_Locks;
 with System.Win32;
 
 package System.OS_Interface is
@@ -144,7 +146,24 @@ package System.OS_Interface is
    -- Critical sections --
    -----------------------
 
-   type CRITICAL_SECTION is private;
+   subtype CRITICAL_SECTION is System.OS_Locks.CRITICAL_SECTION;
+
+   procedure InitializeCriticalSection
+     (pCriticalSection : access CRITICAL_SECTION);
+   pragma Import
+     (Stdcall, InitializeCriticalSection, "InitializeCriticalSection");
+
+   procedure EnterCriticalSection
+     (pCriticalSection : access CRITICAL_SECTION);
+   pragma Import (Stdcall, EnterCriticalSection, "EnterCriticalSection");
+
+   procedure LeaveCriticalSection
+     (pCriticalSection : access CRITICAL_SECTION);
+   pragma Import (Stdcall, LeaveCriticalSection, "LeaveCriticalSection");
+
+   procedure DeleteCriticalSection
+     (pCriticalSection : access CRITICAL_SECTION);
+   pragma Import (Stdcall, DeleteCriticalSection, "DeleteCriticalSection");
 
    -------------------------------------------------------------
    -- Thread Creation, Activation, Suspension And Termination --
@@ -358,18 +377,5 @@ package System.OS_Interface is
 private
 
    type sigset_t is new Interfaces.C.unsigned_long;
-
-   type CRITICAL_SECTION is record
-      DebugInfo : System.Address;
-
-      LockCount      : Long_Integer;
-      RecursionCount : Long_Integer;
-      OwningThread   : Win32.HANDLE;
-      --  The above three fields control entering and exiting the critical
-      --  section for the resource.
-
-      LockSemaphore : Win32.HANDLE;
-      SpinCount     : Interfaces.C.size_t;
-   end record;
 
 end System.OS_Interface;

@@ -3,6 +3,7 @@
   Test 64-bit singleton vector types which should be in FP/SIMD registers.  */
 
 /* { dg-do run { target aarch64*-*-* } } */
+/* { dg-additional-options "-mbranch-protection=none" } */
 /* { dg-additional-sources "abitest.S" } */
 
 #ifndef IN_FRAMEWORK

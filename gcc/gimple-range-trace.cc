@@ -1,5 +1,5 @@
 /* Code for GIMPLE range trace and debugging related routines.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -152,7 +152,7 @@ debug_seed_ranger (gimple_ranger &ranger)
 
 	if (tree type = gimple_range_type (stmt))
 	  {
-	    Value_Range r (type);
+	    value_range r (type);
 	    ranger.range_of_stmt (r, stmt);
 	  }
       }

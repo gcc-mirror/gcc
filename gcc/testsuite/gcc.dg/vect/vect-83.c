@@ -1,4 +1,4 @@
-/* { dg-skip-if "powerpc and integer vectorization only" { ! { powerpc*-*-* && vect_int } }  } */
+/* { dg-skip-if "powerpc/loongarch and integer vectorization only" { ! { { powerpc*-*-* || loongarch*-*-* } && vect_int } }  } */
 /* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 
 #include <stdarg.h>

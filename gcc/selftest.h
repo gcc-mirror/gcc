@@ -1,5 +1,5 @@
 /* A self-testing framework, for use by -fself-test.
-   Copyright (C) 2015-2023 Free Software Foundation, Inc.
+   Copyright (C) 2015-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,6 +24,8 @@ along with GCC; see the file COPYING3.  If not see
    configuration, hence we guard all of it with #if CHECKING_P.  */
 
 #if CHECKING_P
+
+class file_cache;
 
 namespace selftest {
 
@@ -91,17 +93,20 @@ extern void assert_str_startswith (const location &loc,
 /* A named temporary file for use in selftests.
    Usable for writing out files, and as the base class for
    temp_source_file.
-   The file is unlinked in the destructor.  */
+   The file is unlinked in the destructor.
+   If the file_cache is non-null, the filename is evicted from
+   the file_cache when the named_temp_file is destroyed.  */
 
 class named_temp_file
 {
  public:
-  named_temp_file (const char *suffix);
+  named_temp_file (const char *suffix, file_cache *fc = nullptr);
   ~named_temp_file ();
   const char *get_filename () const { return m_filename; }
 
  private:
   char *m_filename;
+  file_cache *m_file_cache;
 };
 
 /* A class for writing out a temporary sourcefile for use in selftests
@@ -111,7 +116,7 @@ class temp_source_file : public named_temp_file
 {
  public:
   temp_source_file (const location &loc, const char *suffix,
-		    const char *content);
+		    const char *content, file_cache *fc = nullptr);
   temp_source_file (const location &loc, const char *suffix,
 		    const char *content, size_t sz);
 };
@@ -173,13 +178,6 @@ class line_table_test
   ~line_table_test ();
 };
 
-/* Helper function for selftests that need a function decl.  */
-
-extern tree make_fndecl (tree return_type,
-			 const char *name,
-			 vec <tree> &param_types,
-			 bool is_variadic = false);
-
 /* Run TESTCASE multiple times, once for each case in our test matrix.  */
 
 extern void
@@ -222,7 +220,9 @@ extern void attribs_cc_tests ();
 extern void bitmap_cc_tests ();
 extern void cgraph_cc_tests ();
 extern void convert_cc_tests ();
+extern void diagnostic_color_cc_tests ();
 extern void diagnostic_format_json_cc_tests ();
+extern void diagnostic_path_cc_tests ();
 extern void diagnostic_show_locus_cc_tests ();
 extern void digraph_cc_tests ();
 extern void dumpfile_cc_tests ();
@@ -231,6 +231,7 @@ extern void et_forest_cc_tests ();
 extern void fibonacci_heap_cc_tests ();
 extern void fold_const_cc_tests ();
 extern void function_tests_cc_tests ();
+extern void gcc_urlifier_cc_tests ();
 extern void ggc_tests_cc_tests ();
 extern void gimple_cc_tests ();
 extern void hash_map_tests_cc_tests ();
@@ -250,6 +251,7 @@ extern void read_rtl_function_cc_tests ();
 extern void rtl_tests_cc_tests ();
 extern void sbitmap_cc_tests ();
 extern void selftest_cc_tests ();
+extern void simple_diagnostic_path_cc_tests ();
 extern void simplify_rtx_cc_tests ();
 extern void spellcheck_cc_tests ();
 extern void spellcheck_tree_cc_tests ();
@@ -258,7 +260,6 @@ extern void sreal_cc_tests ();
 extern void store_merging_cc_tests ();
 extern void tree_cc_tests ();
 extern void tree_cfg_cc_tests ();
-extern void tree_diagnostic_path_cc_tests ();
 extern void tristate_cc_tests ();
 extern void typed_splay_tree_cc_tests ();
 extern void vec_cc_tests ();
@@ -363,6 +364,18 @@ extern int num_passes;
     ::selftest::pass (SELFTEST_LOCATION, desc_);	       \
   else							       \
     ::selftest::fail (SELFTEST_LOCATION, desc_);	       \
+  SELFTEST_END_STMT
+
+/* Like ASSERT_NE, but treat LOC as the effective location of the
+   selftest.  */
+
+#define ASSERT_NE_AT(LOC, VAL1, VAL2)		       \
+  SELFTEST_BEGIN_STMT					       \
+  const char *desc_ = "ASSERT_NE (" #VAL1 ", " #VAL2 ")"; \
+  if ((VAL1) != (VAL2))				       \
+    ::selftest::pass ((LOC), desc_);			       \
+  else							       \
+    ::selftest::fail ((LOC), desc_);			       \
   SELFTEST_END_STMT
 
 /* Evaluate VAL1 and VAL2 and compare them with maybe_ne, calling

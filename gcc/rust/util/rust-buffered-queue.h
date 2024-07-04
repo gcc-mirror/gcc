@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -102,7 +102,7 @@ public:
 	/* iterate through buffer and invoke operator () on source on values
 	 * past original end */
 	for (int i = 0; i < num_items_to_read; i++)
-	  buffer[end + i] = source.next ();
+	  buffer[end + i] = source.get ().next ();
 
 	// move end based on additional items added
 	end += num_items_to_read;

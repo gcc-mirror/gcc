@@ -1,6 +1,6 @@
 (* M2Swig.mod generates a swig interface file for the main module.
 
-Copyright (C) 2008-2023 Free Software Foundation, Inc.
+Copyright (C) 2008-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -57,7 +57,8 @@ FROM SymbolTable IMPORT GetSymName, IsType, IsProcedure, IsConst, IsVar,
                         NulSym ;
 
 FROM M2BasicBlock IMPORT BasicBlock, InitBasicBlocks, KillBasicBlocks,
-                         ForeachBasicBlockDo ;
+                         ForeachBasicBlockDo,
+                         GetBasicBlockStart, GetBasicBlockEnd ;
 
 
 TYPE
@@ -520,8 +521,12 @@ VAR
    DoBasicBlock -
 *)
 
-PROCEDURE DoBasicBlock (start, end: CARDINAL) ;
+PROCEDURE DoBasicBlock (bb: BasicBlock) ;
+VAR
+   start, end: CARDINAL ;
 BEGIN
+   start := GetBasicBlockStart (bb) ;
+   end := GetBasicBlockEnd (bb) ;
    IF IsProcedureScope(start)
    THEN
       (* skip this basic block, as this will not modify the parameter *)

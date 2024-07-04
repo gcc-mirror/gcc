@@ -1,6 +1,6 @@
 /* Generic streaming support for various data types.
 
-   Copyright (C) 2011-2023 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -93,7 +93,7 @@ gcov_type streamer_read_gcov_count (class lto_input_block *);
 wide_int streamer_read_wide_int (class lto_input_block *);
 widest_int streamer_read_widest_int (class lto_input_block *);
 void streamer_read_value_range (class lto_input_block *, class data_in *,
-				class Value_Range &);
+				class value_range &);
 
 /* Returns a new bit-packing context for bit-packing into S.  */
 inline struct bitpack_d

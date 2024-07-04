@@ -1,5 +1,5 @@
 /* Support routines for value ranges.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Major hacks by Aldy Hernandez <aldyh@redhat.com> and
    Andrew MacLeod <amacleod@redhat.com>.
 
@@ -31,6 +31,30 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "gimple-range.h"
 
+// Return the bitmask inherent in a range.
+
+static irange_bitmask
+get_bitmask_from_range (tree type,
+			const wide_int &min, const wide_int &max)
+{
+  unsigned prec = TYPE_PRECISION (type);
+
+  // All the bits of a singleton are known.
+  if (min == max)
+    {
+      wide_int mask = wi::zero (prec);
+      wide_int value = min;
+      return irange_bitmask (value, mask);
+    }
+
+  wide_int xorv = min ^ max;
+
+  if (xorv != 0)
+    xorv = wi::mask (prec - wi::clz (xorv), false, prec);
+
+  return irange_bitmask (wi::zero (prec), min | xorv);
+}
+
 void
 irange::accept (const vrange_visitor &v) const
 {
@@ -38,33 +62,7 @@ irange::accept (const vrange_visitor &v) const
 }
 
 void
-unsupported_range::accept (const vrange_visitor &v) const
-{
-  v.visit (*this);
-}
-
-// Convenience function only available for integers and pointers.
-
-wide_int
-Value_Range::lower_bound () const
-{
-  if (is_a <irange> (*m_vrange))
-    return as_a <irange> (*m_vrange).lower_bound ();
-  gcc_unreachable ();
-}
-
-// Convenience function only available for integers and pointers.
-
-wide_int
-Value_Range::upper_bound () const
-{
-  if (is_a <irange> (*m_vrange))
-    return as_a <irange> (*m_vrange).upper_bound ();
-  gcc_unreachable ();
-}
-
-void
-Value_Range::dump (FILE *out) const
+value_range::dump (FILE *out) const
 {
   if (m_vrange)
     m_vrange->dump (out);
@@ -73,7 +71,7 @@ Value_Range::dump (FILE *out) const
 }
 
 DEBUG_FUNCTION void
-debug (const Value_Range &r)
+debug (const value_range &r)
 {
   r.dump (stderr);
   fprintf (stderr, "\n");
@@ -86,53 +84,73 @@ debug (const irange_bitmask &bm)
   fprintf (stderr, "\n");
 }
 
-// Default vrange definitions.
+// Definitions for unsupported_range.
+
+void
+unsupported_range::accept (const vrange_visitor &v) const
+{
+  v.visit (*this);
+}
+
+void
+vrange::update_bitmask (const class irange_bitmask &)
+{
+}
+
+irange_bitmask
+vrange::get_bitmask () const
+{
+  // Return all unknown bits for the given precision.
+  return irange_bitmask (TYPE_PRECISION (type ()));
+}
 
 bool
-vrange::contains_p (tree) const
+unsupported_range::contains_p (tree) const
 {
   return varying_p ();
 }
 
 bool
-vrange::singleton_p (tree *) const
+unsupported_range::singleton_p (tree *) const
 {
   return false;
 }
 
 void
-vrange::set (tree min, tree, value_range_kind)
+unsupported_range::set (tree min, tree, value_range_kind)
 {
   set_varying (TREE_TYPE (min));
 }
 
 tree
-vrange::type () const
+unsupported_range::type () const
 {
   return void_type_node;
 }
 
 bool
-vrange::supports_type_p (const_tree) const
+unsupported_range::supports_type_p (const_tree) const
 {
   return false;
 }
 
 void
-vrange::set_undefined ()
+unsupported_range::set_undefined ()
 {
   m_kind = VR_UNDEFINED;
 }
 
 void
-vrange::set_varying (tree)
+unsupported_range::set_varying (tree)
 {
   m_kind = VR_VARYING;
 }
 
 bool
-vrange::union_ (const vrange &r)
+unsupported_range::union_ (const vrange &v)
 {
+  const unsupported_range &r = as_a <unsupported_range> (v);
+
   if (r.undefined_p () || varying_p ())
     return false;
   if (undefined_p () || r.varying_p ())
@@ -145,8 +163,10 @@ vrange::union_ (const vrange &r)
 }
 
 bool
-vrange::intersect (const vrange &r)
+unsupported_range::intersect (const vrange &v)
 {
+  const unsupported_range &r = as_a <unsupported_range> (v);
+
   if (undefined_p () || r.varying_p ())
     return false;
   if (r.undefined_p ())
@@ -164,39 +184,63 @@ vrange::intersect (const vrange &r)
 }
 
 bool
-vrange::zero_p () const
+unsupported_range::zero_p () const
 {
   return false;
 }
 
 bool
-vrange::nonzero_p () const
+unsupported_range::nonzero_p () const
 {
   return false;
 }
 
 void
-vrange::set_nonzero (tree type)
+unsupported_range::set_nonzero (tree type)
 {
   set_varying (type);
 }
 
 void
-vrange::set_zero (tree type)
+unsupported_range::set_zero (tree type)
 {
   set_varying (type);
 }
 
 void
-vrange::set_nonnegative (tree type)
+unsupported_range::set_nonnegative (tree type)
 {
   set_varying (type);
 }
 
 bool
-vrange::fits_p (const vrange &) const
+unsupported_range::fits_p (const vrange &) const
 {
   return true;
+}
+
+unsupported_range &
+unsupported_range::operator= (const unsupported_range &r)
+{
+  if (r.undefined_p ())
+    set_undefined ();
+  else if (r.varying_p ())
+    set_varying (void_type_node);
+  else
+    gcc_unreachable ();
+  return *this;
+}
+
+tree
+unsupported_range::lbound () const
+{
+  return NULL;
+}
+
+tree
+unsupported_range::ubound () const
+{
+  return NULL;
 }
 
 // Assignment operator for generic ranges.  Copying incompatible types
@@ -207,6 +251,8 @@ vrange::operator= (const vrange &src)
 {
   if (is_a <irange> (src))
     as_a <irange> (*this) = as_a <irange> (src);
+  else if (is_a <prange> (src))
+    as_a <prange> (*this) = as_a <prange> (src);
   else if (is_a <frange> (src))
     as_a <frange> (*this) = as_a <frange> (src);
   else
@@ -224,6 +270,8 @@ vrange::operator== (const vrange &src) const
 {
   if (is_a <irange> (src))
     return as_a <irange> (*this) == as_a <irange> (src);
+  if (is_a <prange> (src))
+    return as_a <prange> (*this) == as_a <prange> (src);
   if (is_a <frange> (src))
     return as_a <frange> (*this) == as_a <frange> (src);
   gcc_unreachable ();
@@ -234,29 +282,35 @@ vrange::operator== (const vrange &src) const
 void
 vrange::dump (FILE *file) const
 {
-  pretty_printer buffer;
-  pp_needs_newline (&buffer) = true;
-  buffer.buffer->stream = file;
-  vrange_printer vrange_pp (&buffer);
+  pretty_printer pp;
+  pp_needs_newline (&pp) = true;
+  pp.set_output_stream (file);
+  vrange_printer vrange_pp (&pp);
   this->accept (vrange_pp);
-  pp_flush (&buffer);
+  pp_flush (&pp);
 }
 
 void
 irange_bitmask::dump (FILE *file) const
 {
-  char buf[WIDE_INT_PRINT_BUFFER_SIZE];
-  pretty_printer buffer;
+  char buf[WIDE_INT_PRINT_BUFFER_SIZE], *p;
+  pretty_printer pp;
 
-  pp_needs_newline (&buffer) = true;
-  buffer.buffer->stream = file;
-  pp_string (&buffer, "MASK ");
-  print_hex (m_mask, buf);
-  pp_string (&buffer, buf);
-  pp_string (&buffer, " VALUE ");
-  print_hex (m_value, buf);
-  pp_string (&buffer, buf);
-  pp_flush (&buffer);
+  pp_needs_newline (&pp) = true;
+  pp.set_output_stream (file);
+  pp_string (&pp, "MASK ");
+  unsigned len_mask, len_val;
+  if (print_hex_buf_size (m_mask, &len_mask)
+      | print_hex_buf_size (m_value, &len_val))
+    p = XALLOCAVEC (char, MAX (len_mask, len_val));
+  else
+    p = buf;
+  print_hex (m_mask, p);
+  pp_string (&pp, p);
+  pp_string (&pp, " VALUE ");
+  print_hex (m_value, p);
+  pp_string (&pp, p);
+  pp_flush (&pp);
 }
 
 namespace inchash
@@ -290,6 +344,22 @@ add_vrange (const vrange &v, inchash::hash &hstate,
       irange_bitmask bm = r.get_bitmask ();
       hstate.add_wide_int (bm.value ());
       hstate.add_wide_int (bm.mask ());
+      return;
+    }
+  if (is_a <prange> (v))
+    {
+      const prange &r = as_a <prange> (v);
+      if (r.varying_p ())
+	hstate.add_int (VR_VARYING);
+      else
+	{
+	  hstate.add_int (VR_RANGE);
+	  hstate.add_wide_int (r.lower_bound ());
+	  hstate.add_wide_int (r.upper_bound ());
+	  irange_bitmask bm = r.get_bitmask ();
+	  hstate.add_wide_int (bm.value ());
+	  hstate.add_wide_int (bm.mask ());
+	}
       return;
     }
   if (is_a <frange> (v))
@@ -347,10 +417,309 @@ irange::set_nonnegative (tree type)
        wi::to_wide (TYPE_MAX_VALUE (type)));
 }
 
+// Prange implementation.
+
+void
+prange::accept (const vrange_visitor &v) const
+{
+  v.visit (*this);
+}
+
+void
+prange::set_nonnegative (tree type)
+{
+  set (type,
+       wi::zero (TYPE_PRECISION (type)),
+       wi::max_value (TYPE_PRECISION (type), UNSIGNED));
+}
+
+void
+prange::set (tree min, tree max, value_range_kind kind)
+{
+  return set (TREE_TYPE (min), wi::to_wide (min), wi::to_wide (max), kind);
+}
+
+void
+prange::set (tree type, const wide_int &min, const wide_int &max,
+	     value_range_kind kind)
+{
+  if (kind == VR_UNDEFINED)
+    {
+      set_undefined ();
+      return;
+    }
+  if (kind == VR_VARYING)
+    {
+      set_varying (type);
+      return;
+    }
+  if (kind == VR_ANTI_RANGE)
+    {
+      gcc_checking_assert (min == 0 && max == 0);
+      set_nonzero (type);
+      return;
+    }
+  m_type = type;
+  m_min = min;
+  m_max = max;
+  if (m_min == 0 && m_max == -1)
+    {
+      m_kind = VR_VARYING;
+      m_bitmask.set_unknown (TYPE_PRECISION (type));
+      if (flag_checking)
+	verify_range ();
+      return;
+    }
+
+  m_kind = VR_RANGE;
+  m_bitmask = get_bitmask_from_range (type, min, max);
+  if (flag_checking)
+    verify_range ();
+}
+
+bool
+prange::contains_p (const wide_int &w) const
+{
+  if (undefined_p ())
+    return false;
+
+  if (varying_p ())
+    return true;
+
+  return (wi::le_p (lower_bound (), w, UNSIGNED)
+	  && wi::ge_p (upper_bound (), w, UNSIGNED));
+}
+
+bool
+prange::singleton_p (tree *result) const
+{
+  if (m_kind == VR_RANGE && lower_bound () == upper_bound ())
+    {
+      if (result)
+	*result = wide_int_to_tree (type (), m_min);
+      return true;
+    }
+  return false;
+}
+
+tree
+prange::lbound () const
+{
+  return wide_int_to_tree (type (), m_min);
+}
+
+tree
+prange::ubound () const
+{
+  return wide_int_to_tree (type (), m_max);
+}
+
+bool
+prange::union_ (const vrange &v)
+{
+  const prange &r = as_a <prange> (v);
+
+  if (r.undefined_p ())
+    return false;
+  if (undefined_p ())
+    {
+      *this = r;
+      if (flag_checking)
+	verify_range ();
+      return true;
+    }
+  if (varying_p ())
+    return false;
+  if (r.varying_p ())
+    {
+      set_varying (type ());
+      return true;
+    }
+
+  wide_int new_lb = wi::min (r.lower_bound (), lower_bound (), UNSIGNED);
+  wide_int new_ub = wi::max (r.upper_bound (), upper_bound (), UNSIGNED);
+  prange new_range (type (), new_lb, new_ub);
+  new_range.m_bitmask.union_ (m_bitmask);
+  new_range.m_bitmask.union_ (r.m_bitmask);
+  if (new_range.varying_compatible_p ())
+    {
+      set_varying (type ());
+      return true;
+    }
+  if (flag_checking)
+    new_range.verify_range ();
+  if (new_range == *this)
+    return false;
+  *this = new_range;
+  return true;
+}
+
+bool
+prange::intersect (const vrange &v)
+{
+  const prange &r = as_a <prange> (v);
+  gcc_checking_assert (undefined_p () || r.undefined_p ()
+		       || range_compatible_p (type (), r.type ()));
+
+  if (undefined_p ())
+    return false;
+  if (r.undefined_p ())
+    {
+      set_undefined ();
+      return true;
+    }
+  if (r.varying_p ())
+    return false;
+  if (varying_p ())
+    {
+      *this = r;
+      return true;
+    }
+
+  prange save = *this;
+  m_min = wi::max (r.lower_bound (), lower_bound (), UNSIGNED);
+  m_max = wi::min (r.upper_bound (), upper_bound (), UNSIGNED);
+  if (wi::gt_p (m_min, m_max, UNSIGNED))
+    {
+      set_undefined ();
+      return true;
+    }
+
+  // Intersect all bitmasks: the old one, the new one, and the other operand's.
+  irange_bitmask new_bitmask = get_bitmask_from_range (m_type, m_min, m_max);
+  m_bitmask.intersect (new_bitmask);
+  m_bitmask.intersect (r.m_bitmask);
+  if (varying_compatible_p ())
+    {
+      set_varying (type ());
+      return true;
+    }
+
+  if (flag_checking)
+    verify_range ();
+  if (*this == save)
+    return false;
+  return true;
+}
+
+prange &
+prange::operator= (const prange &src)
+{
+  m_type = src.m_type;
+  m_kind = src.m_kind;
+  m_min = src.m_min;
+  m_max = src.m_max;
+  m_bitmask = src.m_bitmask;
+  if (flag_checking)
+    verify_range ();
+  return *this;
+}
+
+bool
+prange::operator== (const prange &src) const
+{
+  if (m_kind == src.m_kind)
+    {
+      if (undefined_p ())
+	return true;
+
+      if (varying_p ())
+	return types_compatible_p (type (), src.type ());
+
+      return (m_min == src.m_min && m_max == src.m_max
+	      && m_bitmask == src.m_bitmask);
+    }
+  return false;
+}
+
+void
+prange::invert ()
+{
+  gcc_checking_assert (!undefined_p () && !varying_p ());
+
+  wide_int new_lb, new_ub;
+  unsigned prec = TYPE_PRECISION (type ());
+  wide_int type_min = wi::zero (prec);
+  wide_int type_max = wi::max_value (prec, UNSIGNED);
+  wi::overflow_type ovf;
+
+  if (lower_bound () == type_min)
+    {
+      new_lb = wi::add (upper_bound (), 1, UNSIGNED, &ovf);
+      if (ovf)
+	new_lb = type_min;
+      new_ub = type_max;
+      set (type (), new_lb, new_ub);
+    }
+  else if (upper_bound () == type_max)
+    {
+      wi::overflow_type ovf;
+      new_lb = type_min;
+      new_ub = wi::sub (lower_bound (), 1, UNSIGNED, &ovf);
+      if (ovf)
+	new_ub = type_max;
+      set (type (), new_lb, new_ub);
+    }
+  else
+    set_varying (type ());
+}
+
+void
+prange::verify_range () const
+{
+  gcc_checking_assert (m_discriminator == VR_PRANGE);
+
+  if (m_kind == VR_UNDEFINED)
+    return;
+
+  gcc_checking_assert (supports_p (type ()));
+
+  if (m_kind == VR_VARYING)
+    {
+      gcc_checking_assert (varying_compatible_p ());
+      return;
+    }
+  gcc_checking_assert (!varying_compatible_p ());
+  gcc_checking_assert (m_kind == VR_RANGE);
+}
+
+void
+prange::update_bitmask (const irange_bitmask &bm)
+{
+  gcc_checking_assert (!undefined_p ());
+
+  // If all the bits are known, this is a singleton.
+  if (bm.mask () == 0)
+    {
+      set (type (), bm.value (), bm.value ());
+      return;
+    }
+
+  // Drop VARYINGs with known bits to a plain range.
+  if (m_kind == VR_VARYING && !bm.unknown_p ())
+    m_kind = VR_RANGE;
+
+  m_bitmask = bm;
+  if (varying_compatible_p ())
+    m_kind = VR_VARYING;
+
+  if (flag_checking)
+    verify_range ();
+}
+
+
+// Frange implementation.
+
 void
 frange::accept (const vrange_visitor &v) const
 {
   v.visit (*this);
+}
+
+bool
+frange::fits_p (const vrange &) const
+{
+  return true;
 }
 
 // Flush denormal endpoints to the appropriate 0.0.
@@ -933,6 +1302,18 @@ frange::set_nonnegative (tree type)
   set (type, dconst0, frange_val_max (type));
 }
 
+tree
+frange::lbound () const
+{
+  return build_real (type (), lower_bound ());
+}
+
+tree
+frange::ubound () const
+{
+  return build_real (type (), upper_bound ());
+}
+
 // Here we copy between any two irange's.
 
 irange &
@@ -964,7 +1345,7 @@ irange::operator= (const irange &src)
   return *this;
 }
 
-value_range_kind
+static value_range_kind
 get_legacy_range (const irange &r, tree &min, tree &max)
 {
   if (r.undefined_p ())
@@ -999,6 +1380,52 @@ get_legacy_range (const irange &r, tree &min, tree &max)
   min = wide_int_to_tree (type, r.lower_bound ());
   max = wide_int_to_tree (type, r.upper_bound ());
   return VR_RANGE;
+}
+
+static value_range_kind
+get_legacy_range (const prange &r, tree &min, tree &max)
+{
+  if (r.undefined_p ())
+    {
+      min = NULL_TREE;
+      max = NULL_TREE;
+      return VR_UNDEFINED;
+    }
+
+  tree type = r.type ();
+  if (r.varying_p ())
+    {
+      min = r.lbound ();
+      max = r.ubound ();
+      return VR_VARYING;
+    }
+  if (r.zero_p ())
+    {
+      min = max = r.lbound ();
+      return VR_RANGE;
+    }
+  if (r.nonzero_p ())
+    {
+      min = max = build_zero_cst (type);
+      return VR_ANTI_RANGE;
+    }
+  min = r.lbound ();
+  max = r.ubound ();
+  return VR_RANGE;
+}
+
+// Given a range in V, return an old-style legacy range consisting of
+// a value_range_kind with a MIN/MAX.  This is to maintain
+// compatibility with passes that still depend on VR_ANTI_RANGE, and
+// only works for integers and pointers.
+
+value_range_kind
+get_legacy_range (const vrange &v, tree &min, tree &max)
+{
+  if (is_a <irange> (v))
+    return get_legacy_range (as_a <irange> (v), min, max);
+
+  return get_legacy_range (as_a <prange> (v), min, max);
 }
 
 /* Set value range to the canonical form of {VRTYPE, MIN, MAX, EQUIV}.
@@ -1096,6 +1523,7 @@ irange::verify_range ()
       gcc_checking_assert (m_num_ranges == 0);
       return;
     }
+  gcc_checking_assert (supports_p (type ()));
   gcc_checking_assert (m_num_ranges <= m_max_ranges);
 
   // Legacy allowed these to represent VARYING for unknown types.
@@ -1285,6 +1713,45 @@ irange::irange_single_pair_union (const irange &r)
   return true;
 }
 
+// Append R to this range, knowing that R occurs after all of these subranges.
+// Return TRUE as something must have changed.
+
+bool
+irange::union_append (const irange &r)
+{
+  // Check if the first range in R is an immmediate successor to the last
+  // range, ths requiring a merge.
+  signop sign = TYPE_SIGN (m_type);
+  wide_int lb = r.lower_bound ();
+  wide_int ub = upper_bound ();
+  unsigned start = 0;
+  if (widest_int::from (ub, sign) + 1
+      == widest_int::from (lb, sign))
+    {
+      m_base[m_num_ranges * 2 - 1] = r.m_base[1];
+      start = 1;
+    }
+  maybe_resize (m_num_ranges + r.m_num_ranges - start);
+  for ( ; start < r.m_num_ranges; start++)
+    {
+      // Merge the last ranges if it exceeds the maximum size.
+      if (m_num_ranges + 1 > m_max_ranges)
+	{
+	  m_base[m_max_ranges * 2 - 1] = r.m_base[r.m_num_ranges * 2 - 1];
+	  break;
+	}
+      m_base[m_num_ranges * 2] = r.m_base[start * 2];
+      m_base[m_num_ranges * 2 + 1] = r.m_base[start * 2 + 1];
+      m_num_ranges++;
+    }
+
+  if (!union_bitmask (r))
+    normalize_kind ();
+  if (flag_checking)
+    verify_range ();
+  return true;
+}
+
 // Return TRUE if anything changes.
 
 bool
@@ -1316,6 +1783,11 @@ irange::union_ (const vrange &v)
   if (m_num_ranges == 1 && r.m_num_ranges == 1)
     return irange_single_pair_union (r);
 
+  signop sign = TYPE_SIGN (m_type);
+  // Check for an append to the end.
+  if (m_kind == VR_RANGE && wi::gt_p (r.lower_bound (), upper_bound (), sign))
+    return union_append (r);
+
   // If this ranges fully contains R, then we need do nothing.
   if (irange_contains_p (r))
     return union_bitmask (r);
@@ -1334,7 +1806,6 @@ irange::union_ (const vrange &v)
   // [Xi,Yi]..[Xn,Yn]  U  [Xj,Yj]..[Xm,Ym]   -->  [Xk,Yk]..[Xp,Yp]
   auto_vec<wide_int, 20> res (m_num_ranges * 2 + r.m_num_ranges * 2);
   unsigned i = 0, j = 0, k = 0;
-  signop sign = TYPE_SIGN (m_type);
 
   while (i < m_num_ranges * 2 && j < r.m_num_ranges * 2)
     {
@@ -1783,32 +2254,36 @@ irange::invert ()
     verify_range ();
 }
 
-// Return the bitmask inherent in the range.
+// Remove trailing ranges that this bitmask indicates can't exist.
 
-irange_bitmask
-irange::get_bitmask_from_range () const
+void
+irange_bitmask::adjust_range (irange &r) const
 {
-  unsigned prec = TYPE_PRECISION (type ());
-  wide_int min = lower_bound ();
-  wide_int max = upper_bound ();
+  if (unknown_p () || r.undefined_p ())
+    return;
 
-  // All the bits of a singleton are known.
-  if (min == max)
+  int_range_max range;
+  tree type = r.type ();
+  int prec = TYPE_PRECISION (type);
+  // If there are trailing zeros, create a range representing those bits.
+  gcc_checking_assert (m_mask != 0);
+  int z = wi::ctz (m_mask);
+  if (z)
     {
-      wide_int mask = wi::zero (prec);
-      wide_int value = lower_bound ();
-      return irange_bitmask (value, mask);
+      wide_int ub = (wi::one (prec) << z) - 1;
+      range = int_range<5> (type, wi::zero (prec), ub);
+      // Then remove the specific value these bits contain from the range.
+      wide_int value = m_value & ub;
+      range.intersect (int_range<2> (type, value, value, VR_ANTI_RANGE));
+      // Inverting produces a list of ranges which can be valid.
+      range.invert ();
+      // And finally select R from only those valid values.
+      r.intersect (range);
+      return;
     }
-
-  wide_int xorv = min ^ max;
-
-  if (xorv != 0)
-    xorv = wi::mask (prec - wi::clz (xorv), false, prec);
-
-  return irange_bitmask (wi::zero (prec), min | xorv);
 }
 
-// If the the mask can be trivially converted to a range, do so and
+// If the mask can be trivially converted to a range, do so and
 // return TRUE.
 
 bool
@@ -1900,7 +2375,8 @@ irange::get_bitmask () const
   // in the mask.
   //
   // See also the note in irange_bitmask::intersect.
-  irange_bitmask bm = get_bitmask_from_range ();
+  irange_bitmask bm
+    = get_bitmask_from_range (type (), lower_bound (), upper_bound ());
   if (!m_bitmask.unknown_p ())
     bm.intersect (m_bitmask);
   return bm;
@@ -1910,7 +2386,7 @@ irange::get_bitmask () const
 // normalize the range if anything changed.
 
 void
-irange::set_nonzero_bits (const wide_int &bits)
+vrange::set_nonzero_bits (const wide_int &bits)
 {
   gcc_checking_assert (!undefined_p ());
   irange_bitmask bm (wi::zero (TYPE_PRECISION (type ())), bits);
@@ -1920,7 +2396,7 @@ irange::set_nonzero_bits (const wide_int &bits)
 // Return the nonzero bits in R.
 
 wide_int
-irange::get_nonzero_bits () const
+vrange::get_nonzero_bits () const
 {
   gcc_checking_assert (!undefined_p ());
   irange_bitmask bm = get_bitmask ();
@@ -1940,7 +2416,8 @@ irange::intersect_bitmask (const irange &r)
 
   irange_bitmask bm = get_bitmask ();
   irange_bitmask save = bm;
-  if (!bm.intersect (r.get_bitmask ()))
+  bm.intersect (r.get_bitmask ());
+  if (save == bm)
     return false;
 
   m_bitmask = bm;
@@ -1953,6 +2430,7 @@ irange::intersect_bitmask (const irange &r)
 
   if (!set_range_from_bitmask ())
     normalize_kind ();
+  m_bitmask.adjust_range (*this);
   if (flag_checking)
     verify_range ();
   return true;
@@ -1971,7 +2449,8 @@ irange::union_bitmask (const irange &r)
 
   irange_bitmask bm = get_bitmask ();
   irange_bitmask save = bm;
-  if (!bm.union_ (r.get_bitmask ()))
+  bm.union_ (r.get_bitmask ());
+  if (save == bm)
     return false;
 
   m_bitmask = bm;
@@ -1989,10 +2468,23 @@ irange::union_bitmask (const irange &r)
   return true;
 }
 
+tree
+irange::lbound () const
+{
+  return wide_int_to_tree (type (), lower_bound ());
+}
+
+tree
+irange::ubound () const
+{
+  return wide_int_to_tree (type (), upper_bound ());
+}
+
 void
 irange_bitmask::verify_mask () const
 {
   gcc_assert (m_value.get_precision () == m_mask.get_precision ());
+  gcc_checking_assert (wi::bit_and (m_mask, m_value) == 0);
 }
 
 void
@@ -2014,20 +2506,6 @@ debug (const vrange &vr)
   debug (&vr);
 }
 
-DEBUG_FUNCTION void
-debug (const value_range *vr)
-{
-  dump_value_range (stderr, vr);
-  fprintf (stderr, "\n");
-}
-
-DEBUG_FUNCTION void
-debug (const value_range &vr)
-{
-  dump_value_range (stderr, &vr);
-  fprintf (stderr, "\n");
-}
-
 /* Return true, if VAL1 and VAL2 are equal values for VRP purposes.  */
 
 bool
@@ -2038,79 +2516,6 @@ vrp_operand_equal_p (const_tree val1, const_tree val2)
   if (!val1 || !val2 || !operand_equal_p (val1, val2, 0))
     return false;
   return true;
-}
-
-void
-gt_ggc_mx (irange *x)
-{
-  if (!x->undefined_p ())
-    gt_ggc_mx (x->m_type);
-}
-
-void
-gt_pch_nx (irange *x)
-{
-  if (!x->undefined_p ())
-    gt_pch_nx (x->m_type);
-}
-
-void
-gt_pch_nx (irange *x, gt_pointer_operator op, void *cookie)
-{
-  for (unsigned i = 0; i < x->m_num_ranges; ++i)
-    {
-      op (&x->m_base[i * 2], NULL, cookie);
-      op (&x->m_base[i * 2 + 1], NULL, cookie);
-    }
-}
-
-void
-gt_ggc_mx (frange *x)
-{
-  gt_ggc_mx (x->m_type);
-}
-
-void
-gt_pch_nx (frange *x)
-{
-  gt_pch_nx (x->m_type);
-}
-
-void
-gt_pch_nx (frange *x, gt_pointer_operator op, void *cookie)
-{
-  op (&x->m_type, NULL, cookie);
-}
-
-void
-gt_ggc_mx (vrange *x)
-{
-  if (is_a <irange> (*x))
-    return gt_ggc_mx ((irange *) x);
-  if (is_a <frange> (*x))
-    return gt_ggc_mx ((frange *) x);
-  gcc_unreachable ();
-}
-
-void
-gt_pch_nx (vrange *x)
-{
-  if (is_a <irange> (*x))
-    return gt_pch_nx ((irange *) x);
-  if (is_a <frange> (*x))
-    return gt_pch_nx ((frange *) x);
-  gcc_unreachable ();
-}
-
-void
-gt_pch_nx (vrange *x, gt_pointer_operator op, void *cookie)
-{
-  if (is_a <irange> (*x))
-    gt_pch_nx ((irange *) x, op, cookie);
-  else if (is_a <frange> (*x))
-    gt_pch_nx ((frange *) x, op, cookie);
-  else
-    gcc_unreachable ();
 }
 
 #define DEFINE_INT_RANGE_INSTANCE(N)					\
@@ -2380,7 +2785,8 @@ range_tests_misc ()
   ASSERT_TRUE (not_255 == range_uchar (0, 254));
 
   // Test that NOT(0) is [1..255] in 8-bit land.
-  int_range<2> not_zero = range_nonzero (unsigned_char_type_node);
+  int_range<2> not_zero;
+  not_zero.set_nonzero (unsigned_char_type_node);
   ASSERT_TRUE (not_zero == range_uchar (1, 255));
 
   // Check that [0,127][0x..ffffff80,0x..ffffff]
@@ -2459,7 +2865,7 @@ range_tests_misc ()
   ASSERT_TRUE (r0 == r2);
 
   // Test that booleans and their inverse work as expected.
-  r0 = range_zero (boolean_type_node);
+  r0.set_zero (boolean_type_node);
   ASSERT_TRUE (r0 == range_false ());
   r0.invert ();
   ASSERT_TRUE (r0 == range_true ());
@@ -2467,11 +2873,28 @@ range_tests_misc ()
   // Make sure NULL and non-NULL of pointer types work, and that
   // inverses of them are consistent.
   tree voidp = build_pointer_type (void_type_node);
-  r0 = range_zero (voidp);
-  r1 = r0;
-  r0.invert ();
-  r0.invert ();
-  ASSERT_TRUE (r0 == r1);
+  prange p0;
+  p0.set_zero (voidp);
+  prange p1 = p0;
+  p0.invert ();
+  p0.invert ();
+  ASSERT_TRUE (p0 == p1);
+
+  // The intersection of:
+  //    [0, +INF] MASK 0xff..00 VALUE 0xf8
+  //    [0, +INF] MASK 0xff..00 VALUE 0x00
+  // is [0, +INF] MASK 0xff..ff VALUE 0x00, which is VARYING.
+  // Test that we normalized to VARYING.
+  unsigned prec = TYPE_PRECISION (voidp);
+  p0.set_varying (voidp);
+  wide_int mask = wi::mask (8, true, prec);
+  wide_int value = wi::uhwi (0xf8, prec);
+  irange_bitmask bm (wi::uhwi (0xf8, prec), mask);
+  p0.update_bitmask (bm);
+  p1.set_varying (voidp);
+  bm = irange_bitmask (wi::zero (prec), mask);
+  p1.update_bitmask (bm);
+  p0.intersect (p1);
 
   // [10,20] U [15, 30] => [10, 30].
   r0 = range_int (10, 20);

@@ -8,14 +8,24 @@
 #define N 1024
 #endif
 
-int a[N];
-long long int b[N];
-short c[N];
+#ifdef __aarch64__
+#define TYPE1 int
+#define TYPE2 int
+#define TYPE3 short
+#else
+#define TYPE1 int
+#define TYPE2 long long int
+#define TYPE3 short
+#endif
+
+TYPE1 a[N];
+TYPE2 b[N];
+TYPE3 c[N];
 
 #pragma omp declare simd
 #pragma omp declare simd uniform(b) linear(c:3)
-__attribute__((noinline)) short
-foo (int a, long long int b, short c)
+__attribute__((noinline)) TYPE3
+foo (TYPE1 a, TYPE2 b, TYPE3 c)
 {
   return a + b + c;
 }

@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 struct s {
   unsigned long long a:8, b:32;
 };
@@ -9,7 +12,8 @@ f(struct s x)
   return x;
 }
 
-main()
+int
+main(void)
 {
   static struct s i;
   i.a = 12;

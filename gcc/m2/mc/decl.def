@@ -1,6 +1,6 @@
 (* decl.def declaration nodes used to create the AST.
 
-Copyright (C) 2015-2023 Free Software Foundation, Inc.
+Copyright (C) 2015-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -247,6 +247,21 @@ PROCEDURE isTypeHidden (n: node) : BOOLEAN ;
 *)
 
 PROCEDURE hasHidden (n: node) : BOOLEAN ;
+
+
+(*
+   putTypeOpaque - marks type, des, as being an opaque type.
+                   TYPE des ;
+*)
+
+PROCEDURE putTypeOpaque (des: node) ;
+
+
+(*
+   isTypeOpaque - returns TRUE if type, n, is an opaque type.
+*)
+
+PROCEDURE isTypeOpaque (n: node) : BOOLEAN ;
 
 
 (*

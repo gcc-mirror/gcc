@@ -1,5 +1,5 @@
 /* Source locations within string literals.
-   Copyright (C) 2016-2023 Free Software Foundation, Inc.
+   Copyright (C) 2016-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -116,6 +116,7 @@ class format_string_diagnostic_t
    LANG_HOOKS_GET_SUBSTRING_LOCATION.  */
 
 extern const char *get_location_within_string (cpp_reader *pfile,
+					       file_cache &fc,
 					       string_concat_db *concats,
 					       location_t strloc,
 					       enum cpp_ttype type,

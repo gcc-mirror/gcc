@@ -1,5 +1,6 @@
 // PR c++/108566
 // { dg-do compile { target c++20 } }
+// { dg-additional-options "-fabi-version=18 -fabi-compat-version=18" }
 
 template<typename T>
 struct wrapper1 {

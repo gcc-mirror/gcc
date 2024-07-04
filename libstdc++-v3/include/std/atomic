@@ -1,6 +1,6 @@
 // -*- C++ -*- header.
 
-// Copyright (C) 2008-2023 Free Software Foundation, Inc.
+// Copyright (C) 2008-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,9 +39,12 @@
 #else
 
 #define __glibcxx_want_atomic_is_always_lock_free
+#define __glibcxx_want_atomic_flag_test
 #define __glibcxx_want_atomic_float
 #define __glibcxx_want_atomic_ref
 #define __glibcxx_want_atomic_lock_free_type_aliases
+#define __glibcxx_want_atomic_value_initialization
+#define __glibcxx_want_atomic_wait
 #include <bits/version.h>
 
 #include <bits/atomic_base.h>
@@ -1771,13 +1774,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     = atomic<make_signed_t<__detail::__platform_wait_t>>;
   using atomic_unsigned_lock_free
     = atomic<make_unsigned_t<__detail::__platform_wait_t>>;
-# elif ATOMIC_INT_LOCK_FREE || !(ATOMIC_LONG_LOCK_FREE || ATOMIC_CHAR_LOCK_FREE)
+# elif ATOMIC_INT_LOCK_FREE == 2
   using atomic_signed_lock_free = atomic<signed int>;
   using atomic_unsigned_lock_free = atomic<unsigned int>;
-# elif ATOMIC_LONG_LOCK_FREE
+# elif ATOMIC_LONG_LOCK_FREE == 2
   using atomic_signed_lock_free = atomic<signed long>;
   using atomic_unsigned_lock_free = atomic<unsigned long>;
-# elif ATOMIC_CHAR_LOCK_FREE
+# elif ATOMIC_CHAR_LOCK_FREE == 2
   using atomic_signed_lock_free = atomic<signed char>;
   using atomic_unsigned_lock_free = atomic<unsigned char>;
 # else

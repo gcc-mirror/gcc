@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -132,11 +132,11 @@ package Expander is
    --  exceptions where it makes sense to temporarily change its value are:
    --
    --    (a) when starting/completing the processing of a generic definition
-   --        or declaration (see routines Start_Generic_Processing and
-   --        End_Generic_Processing in Sem_Ch12)
+   --        or declaration (see routines Start_Generic and End_Generic in
+   --        Sem_Ch12).
    --
    --    (b) when starting/completing the preanalysis of an expression
-   --        (see the spec of package Sem for more info on preanalysis.)
+   --        (see the spec of package Sem for more info on preanalysis).
    --
    --  Note that when processing a spec expression (In_Spec_Expression
    --  is True) or performing semantic analysis of a generic spec or body

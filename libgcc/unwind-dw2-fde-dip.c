@@ -1,4 +1,4 @@
-/* Copyright (C) 2001-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2001-2024 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of GCC.
@@ -543,8 +543,9 @@ _Unwind_Find_FDE (void *pc, struct dwarf_eh_bases *bases)
     return ret;
 
   /* Use DLFO_STRUCT_HAS_EH_DBASE as a proxy for the existence of a glibc-style
-     _dl_find_object function.  */
-#ifdef DLFO_STRUCT_HAS_EH_DBASE
+     _dl_find_object function.  However, do not use _dl_find_object on nios2,
+     which uses the GOT address as the base for DW_EH_PE_datarel instead.  */
+#if defined(DLFO_STRUCT_HAS_EH_DBASE) && !defined(__nios2__)
   {
     struct dl_find_object dlfo;
     if (_dl_find_object (pc, &dlfo) == 0 && dlfo.dlfo_eh_frame != NULL)

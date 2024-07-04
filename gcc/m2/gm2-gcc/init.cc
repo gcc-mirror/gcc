@@ -1,6 +1,6 @@
 /* init.cc initializes the modules of the GNU Modula-2 front end.
 
-Copyright (C) 2012-2023 Free Software Foundation, Inc.
+Copyright (C) 2012-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -78,6 +78,7 @@ EXTERN void _M2_SymbolKey_init (int argc, char *argv[], char *envp[]);
 EXTERN void _M2_FifoQueue_init (int argc, char *argv[], char *envp[]);
 EXTERN void _M2_M2Reserved_init (int argc, char *argv[], char *envp[]);
 EXTERN void _M2_M2Const_init (int argc, char *argv[], char *envp[]);
+EXTERN void _M2_M2LangDump_init (int argc, char *argv[], char *envp[]);
 EXTERN void _M2_P1SymBuild_init (int argc, char *argv[], char *envp[]);
 EXTERN void _M2_P2SymBuild_init (int argc, char *argv[], char *envp[]);
 EXTERN void _M2_P3SymBuild_init (int argc, char *argv[], char *envp[]);
@@ -198,5 +199,6 @@ init_PerCompilationInit (const char *filename)
   _M2_M2SSA_init (0, NULL, NULL);
   _M2_M2SymInit_init (0, NULL, NULL);
   _M2_M2Check_init (0, NULL, NULL);
+  _M2_M2LangDump_init (0, NULL, NULL);
   M2Comp_compile (filename);
 }

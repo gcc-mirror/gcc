@@ -1,6 +1,6 @@
-/* Copyright (C) 2007-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2024 Free Software Foundation, Inc.
    Contributed by Andy Vaught
-   Write float code factoring to this file by Jerry DeLisle   
+   Write float code factoring to this file by Jerry DeLisle
    F2003 I/O support contributed by Jerry DeLisle
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -89,8 +89,8 @@ determine_precision (st_parameter_dt * dtp, const fnode * f, int len)
   /* If the scale factor has a large negative value, we must do our
      own rounding? Use ROUND='NEAREST', which should be what snprintf
      is using as well.  */
-  if (precision < 0 && 
-      (dtp->u.p.current_unit->round_status == ROUND_UNSPECIFIED 
+  if (precision < 0 &&
+      (dtp->u.p.current_unit->round_status == ROUND_UNSPECIFIED
        || dtp->u.p.current_unit->round_status == ROUND_PROCDEFINED))
     dtp->u.p.current_unit->round_status = ROUND_NEAREST;
 
@@ -154,7 +154,7 @@ build_float_string (st_parameter_dt *dtp, const fnode *f, char *buffer,
     internal_error (&dtp->common, "Unspecified precision");
 
   sign = calculate_sign (dtp, sign_bit);
-  
+
   /* Calculate total number of digits.  */
   if (ft == FMT_F)
     ndigits = nprinted - 2;
@@ -351,7 +351,7 @@ build_float_string (st_parameter_dt *dtp, const fnode *f, char *buffer,
 	 let snprintf handle the rounding.  On system claiming support
 	 for IEEE 754, this ought to be round to nearest, ties to
 	 even, corresponding to the Fortran ROUND='NEAREST'.  */
-      case ROUND_PROCDEFINED: 
+      case ROUND_PROCDEFINED:
       case ROUND_UNSPECIFIED:
       case ROUND_ZERO: /* Do nothing and truncation occurs.  */
 	goto skip;
@@ -409,9 +409,9 @@ build_float_string (st_parameter_dt *dtp, const fnode *f, char *buffer,
 	goto do_rnd;
     }
   goto skip;
-    
+
   do_rnd:
- 
+
   if (nbefore + nafter == 0)
     /* Handle the case Fw.0 and value < 1.0 */
     {
@@ -476,49 +476,71 @@ build_float_string (st_parameter_dt *dtp, const fnode *f, char *buffer,
 
   skip:
 
-  /* Calculate the format of the exponent field.  */
-  if (expchar && !(dtp->u.p.g0_no_blanks && e == 0))
+  /* Calculate the format of the exponent field.  The number of exponent digits
+     required is needed to determine padding of the float string before the
+     expenent is written down. */
+  edigits = 0; // Assume there is no exponent character set.
+  if (expchar)
     {
-      edigits = 1;
-      for (i = abs (e); i >= 10; i /= 10)
-	edigits++;
-
-      if (f->u.real.e < 0)
-	{
-	  /* Width not specified.  Must be no more than 3 digits.  */
-	  if (e > 999 || e < -999)
-	    edigits = -1;
-	  else
+      switch (ft)
+      {
+	case FMT_D:
+	case FMT_E:
+	case FMT_EN:
+	case FMT_ES:
+	  if (f->pushed == FMT_NONE)
 	    {
-	      edigits = 4;
-	      if (e > 99 || e < -99)
-		expchar = ' ';
+	      if (f->u.real.e == 0 && e == 0)
+		{
+		  edigits = 3;
+		  break;
+		}
+	      else if (f->u.real.e > 0)
+		edigits = f->u.real.e + 2;
 	    }
-	}
-      else if (f->u.real.e == 0)
-	{
-	  /* Zero width specified, no leading zeros in exponent  */
-	  if (e > 999 || e < -999)
-	    edigits = 6;
-	  else if (e > 99 || e < -99)
-	    edigits = 5;
-	  else if (e > 9 || e < -9)
-	    edigits = 4;
-	  else
-	    edigits = 3;
-	}
-      else
-	{
-	  /* Exponent width specified, check it is wide enough.  */
-	  if (edigits > f->u.real.e)
-	    edigits = -1;
-	  else
-	    edigits = f->u.real.e + 2;
-	}
-    }
-  else
-    edigits = 0;
+	/* Fall through.  */
+	default:
+	  if (!(dtp->u.p.g0_no_blanks && e == 0))
+	    {
+	      edigits = 1;
+	      for (i = abs (e); i >= 10; i /= 10)
+		edigits++;
 
+	      if (f->u.real.e < 0)
+		{
+		  /* Width not specified.  Must be no more than 3 digits.  */
+		  if (e > 999 || e < -999)
+		    edigits = -1;
+		  else
+		    {
+		      edigits = 4;
+		      if (e > 99 || e < -99)
+			expchar = ' ';
+		    }
+		}
+	      else if (f->u.real.e == 0)
+		{
+		  /* Zero width specified, no leading zeros in exponent  */
+		  if (e > 999 || e < -999)
+		    edigits = 6;
+		  else if (e > 99 || e < -99)
+		    edigits = 5;
+		  else if (e > 9 || e < -9)
+		    edigits = 4;
+		  else
+		    edigits = 3;
+		}
+	      else
+		{
+		  /* Exponent width specified, check it is wide enough.  */
+		  if (edigits > f->u.real.e)
+		    edigits = -1;
+		  else
+		    edigits = f->u.real.e + 2;
+		}
+	    }
+      }
+  }
   /* Scan the digits string and count the number of zeros.  If we make it
      all the way through the loop, we know the value is zero after the
      rounding completed above.  */
@@ -631,7 +653,7 @@ build_float_string (st_parameter_dt *dtp, const fnode *f, char *buffer,
   /* Set the decimal point.  */
   *(put++) = dtp->u.p.current_unit->decimal_status == DECIMAL_POINT ? '.' : ',';
   if (ft == FMT_F
-	  && (dtp->u.p.current_unit->round_status == ROUND_UNSPECIFIED 
+	  && (dtp->u.p.current_unit->round_status == ROUND_UNSPECIFIED
 	      || dtp->u.p.current_unit->round_status == ROUND_PROCDEFINED))
     digits++;
 
@@ -661,16 +683,49 @@ build_float_string (st_parameter_dt *dtp, const fnode *f, char *buffer,
     }
 
   /* Set the exponent.  */
-  if (expchar && !(dtp->u.p.g0_no_blanks && e == 0))
+  if (expchar)
     {
-      if (expchar != ' ')
-	{
-	  *(put++) = expchar;
-	  edigits--;
+      switch (ft)
+      {
+	case FMT_D:
+	case FMT_E:
+	case FMT_EN:
+	case FMT_ES:
+	if (f->pushed == FMT_NONE)
+	  {
+	    if ((f->u.real.e == 0) && (e == 0))
+	      {
+		*(put++) = expchar;
+		edigits--;
+		snprintf (buffer, size, "%+0*d", edigits, e);
+		memcpy (put, buffer, edigits);
+		put += edigits;
+		break;
+	      }
+	    if (f->u.real.e > 0)
+	      {
+		*(put++) = expchar;
+		edigits--;
+		snprintf (buffer, size, "%+0*d", edigits, e);
+		memcpy (put, buffer, edigits);
+		put += edigits;
+		break;
+	      }
+	  }
+	  /* Fall through.  */
+	default:
+	  if (!(dtp->u.p.g0_no_blanks && e == 0))
+	    {
+	      if (expchar != ' ')
+		{
+		  *(put++) = expchar;
+		  edigits--;
+		}
+	      snprintf (buffer, size, "%+0*d", edigits, e);
+	      memcpy (put, buffer, edigits);
+	      put += edigits;
+	    }
 	}
-      snprintf (buffer, size, "%+0*d", edigits, e);
-      memcpy (put, buffer, edigits);
-      put += edigits;
     }
 
   if (dtp->u.p.no_leading_blank)
@@ -688,7 +743,7 @@ build_float_string (st_parameter_dt *dtp, const fnode *f, char *buffer,
 
   /* NULL terminate the string.  */
   *put = '\0';
-  
+
   return;
 }
 
@@ -712,9 +767,9 @@ build_infnan_string (st_parameter_dt *dtp, const fnode *f, int isnan_flag,
       nb =  f->u.real.w;
       *len = nb;
 
-      /* If the field width is zero, the processor must select a width 
+      /* If the field width is zero, the processor must select a width
 	 not zero.  4 is chosen to allow output of '-Inf' or '+Inf' */
-     
+
       if ((nb == 0) || dtp->u.p.g0_no_blanks)
 	{
 	  if (isnan_flag)
@@ -746,12 +801,12 @@ build_infnan_string (st_parameter_dt *dtp, const fnode *f, int isnan_flag,
 		}
 	      /* The negative sign is mandatory */
 	      fin = '-';
-	    }    
+	    }
 	  else
 	    /* The positive sign is optional, but we output it for
 	       consistency */
 	    fin = '+';
-	    
+
 	  if (nb > mark)
 	    /* We have room, so output 'Infinity' */
 	    memcpy(p + nb - 8, "Infinity", 8);
@@ -809,7 +864,7 @@ CALCULATE_EXP(17)
 /* Define macros to build code for format_float.  */
 
   /* Note: Before output_float is called, snprintf is used to print to buffer the
-     number in the format +D.DDDDe+ddd. 
+     number in the format +D.DDDDe+ddd.
 
      #   The result will always contain a decimal point, even if no
 	 digits follow it
@@ -932,7 +987,7 @@ quadmath_snprintf (buffer, size, "%+-#.*Qf", (prec), (val))
    10.0**e even when the final result will not be rounded to 10.0**e.
    For these values the exponent returned by atoi has to be decremented
    by one. The values y in the ranges
-       (1000.0-0.5*10.0**(-d))*10.0**(3*n) <= y < 10.0*(3*(n+1))  
+       (1000.0-0.5*10.0**(-d))*10.0**(3*n) <= y < 10.0*(3*(n+1))
         (100.0-0.5*10.0**(-d))*10.0**(3*n) <= y < 10.0*(3*n+2)
          (10.0-0.5*10.0**(-d))*10.0**(3*n) <= y < 10.0*(3*n+1)
    are correctly rounded respectively to 1.0...0*10.0*(3*(n+1)),
@@ -962,7 +1017,7 @@ quadmath_snprintf (buffer, size, "%+-#.*Qf", (prec), (val))
 }\
 
 static int
-determine_en_precision (st_parameter_dt *dtp, const fnode *f, 
+determine_en_precision (st_parameter_dt *dtp, const fnode *f,
 			const char *source, int len)
 {
   int nprinted;
@@ -1012,7 +1067,7 @@ determine_en_precision (st_parameter_dt *dtp, const fnode *f,
     prec += 2 * len + 4;
   return prec;
 }
-  
+
 
 /* Generate corresponding I/O format. and output.
    The rules to translate FMT_G to FMT_E or FMT_F from DEC fortran
@@ -1045,12 +1100,12 @@ determine_en_precision (st_parameter_dt *dtp, const fnode *f,
     }\
   m = sign_bit ? -m : m;\
   zero_flag = (m == 0.0);\
+  fnode newf;\
+  int e = f->u.real.e;\
+  int d = f->u.real.d;\
+  int w = f->u.real.w;\
   if (f->format == FMT_G)\
     {\
-      int e = f->u.real.e;\
-      int d = f->u.real.d;\
-      int w = f->u.real.w;\
-      fnode newf;\
       GFC_REAL_ ## x exp_d, r = 0.5, r_sc;\
       int low, high, mid;\
       int ubound, lbound;\
@@ -1140,6 +1195,7 @@ determine_en_precision (st_parameter_dt *dtp, const fnode *f,
 	  precision = determine_precision (dtp, &newf, x);\
 	  nprinted = FDTOA(y,precision,m);\
 	}\
+      newf.pushed = FMT_G;\
       build_float_string (dtp, &newf, buffer, size, nprinted, precision,\
 				   sign_bit, zero_flag, npad, default_width,\
 				   result, res_len);\
@@ -1147,11 +1203,16 @@ determine_en_precision (st_parameter_dt *dtp, const fnode *f,
     }\
   else\
     {\
+      newf.format = f->format;\
+      newf.u.real.w = w;\
+      newf.u.real.d = d;\
+      newf.u.real.e = e;\
+      newf.pushed = FMT_NONE;\
       if (f->format == FMT_F)\
 	nprinted = FDTOA(y,precision,m);\
       else\
 	nprinted = DTOA(y,precision,m);\
-      build_float_string (dtp, f, buffer, size, nprinted, precision,\
+      build_float_string (dtp, &newf, buffer, size, nprinted, precision,\
 				   sign_bit, zero_flag, npad, default_width,\
 				   result, res_len);\
     }\

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---         Copyright (C) 2005-2023, Free Software Foundation, Inc.          --
+--         Copyright (C) 2005-2024, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -58,6 +58,7 @@ package GNAT.Altivec.Vector_Views is
    type VUC_View is record
       Values : Varray_unsigned_char;
    end record;
+   pragma Universal_Aliasing (VUC_View);
 
    type Varray_signed_char is array (Vchar_Range) of signed_char;
    for Varray_signed_char'Alignment use VECTOR_ALIGNMENT;
@@ -65,6 +66,7 @@ package GNAT.Altivec.Vector_Views is
    type VSC_View is record
       Values : Varray_signed_char;
    end record;
+   pragma Universal_Aliasing (VSC_View);
 
    type Varray_bool_char is array (Vchar_Range) of bool_char;
    for Varray_bool_char'Alignment use VECTOR_ALIGNMENT;
@@ -72,6 +74,7 @@ package GNAT.Altivec.Vector_Views is
    type VBC_View is record
       Values : Varray_bool_char;
    end record;
+   pragma Universal_Aliasing (VBC_View);
 
    ----------------------
    -- short components --
@@ -85,6 +88,7 @@ package GNAT.Altivec.Vector_Views is
    type VUS_View is record
       Values : Varray_unsigned_short;
    end record;
+   pragma Universal_Aliasing (VUS_View);
 
    type Varray_signed_short is array (Vshort_Range) of signed_short;
    for Varray_signed_short'Alignment use VECTOR_ALIGNMENT;
@@ -92,6 +96,7 @@ package GNAT.Altivec.Vector_Views is
    type VSS_View is record
       Values : Varray_signed_short;
    end record;
+   pragma Universal_Aliasing (VSS_View);
 
    type Varray_bool_short is array (Vshort_Range) of bool_short;
    for Varray_bool_short'Alignment use VECTOR_ALIGNMENT;
@@ -99,6 +104,7 @@ package GNAT.Altivec.Vector_Views is
    type VBS_View is record
       Values : Varray_bool_short;
    end record;
+   pragma Universal_Aliasing (VBS_View);
 
    --------------------
    -- int components --
@@ -112,6 +118,7 @@ package GNAT.Altivec.Vector_Views is
    type VUI_View is record
       Values : Varray_unsigned_int;
    end record;
+   pragma Universal_Aliasing (VUI_View);
 
    type Varray_signed_int is array (Vint_Range) of signed_int;
    for Varray_signed_int'Alignment use VECTOR_ALIGNMENT;
@@ -119,6 +126,7 @@ package GNAT.Altivec.Vector_Views is
    type VSI_View is record
       Values : Varray_signed_int;
    end record;
+   pragma Universal_Aliasing (VSI_View);
 
    type Varray_bool_int is array (Vint_Range) of bool_int;
    for Varray_bool_int'Alignment use VECTOR_ALIGNMENT;
@@ -126,6 +134,7 @@ package GNAT.Altivec.Vector_Views is
    type VBI_View is record
       Values : Varray_bool_int;
    end record;
+   pragma Universal_Aliasing (VBI_View);
 
    ----------------------
    -- float components --
@@ -139,6 +148,7 @@ package GNAT.Altivec.Vector_Views is
    type VF_View is record
       Values : Varray_float;
    end record;
+   pragma Universal_Aliasing (VF_View);
 
    ----------------------
    -- pixel components --
@@ -152,5 +162,6 @@ package GNAT.Altivec.Vector_Views is
    type VP_View is record
       Values : Varray_pixel;
    end record;
+   pragma Universal_Aliasing (VP_View);
 
 end GNAT.Altivec.Vector_Views;

@@ -1,6 +1,6 @@
 ; Options for the S/390 / zSeries port of the compiler.
 
-; Copyright (C) 2005-2023 Free Software Foundation, Inc.
+; Copyright (C) 2005-2024 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -332,7 +332,8 @@ Store all argument registers on the stack.
 
 munaligned-symbols
 Target Var(s390_unaligned_symbols_p) Init(0)
-Assume external symbols to be potentially unaligned.  By default all
-symbols without explicit alignment are assumed to reside on a 2 byte
-boundary as mandated by the IBM Z ABI.
+Assume external symbols, whose natural alignment would be 1, to be
+potentially unaligned.  By default all symbols without explicit
+alignment are assumed to reside on a 2 byte boundary as mandated by
+the IBM Z ABI.
 

@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Vitesse IQ2000 processors
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3127,7 +3127,7 @@ iq2000_print_operand (FILE *file, rtx op, int letter)
     {
       int value;
       if (code != CONST_INT
-	  || (value = exact_log2 (INTVAL (op))) < 0)
+	  || (value = exact_log2 (UINTVAL (op) & 0xffffffff)) < 0)
 	output_operand_lossage ("invalid %%p value");
       else
 	fprintf (file, "%d", value);

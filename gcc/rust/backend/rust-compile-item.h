@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -20,6 +20,7 @@
 #define RUST_COMPILE_ITEM
 
 #include "rust-compile-base.h"
+#include "rust-hir-visitor.h"
 
 namespace Rust {
 namespace Compile {
@@ -31,7 +32,7 @@ public:
   static tree compile (HIR::Item *item, Context *ctx,
 		       TyTy::BaseType *concrete = nullptr,
 		       bool is_query_mode = false,
-		       Location ref_locus = Location ())
+		       location_t ref_locus = UNDEF_LOCATION)
   {
     CompileItem compiler (ctx, concrete, ref_locus);
     item->accept_vis (compiler);
@@ -68,18 +69,17 @@ public:
   void visit (HIR::Trait &) override {}
   void visit (HIR::EmptyStmt &) override {}
   void visit (HIR::LetStmt &) override {}
-  void visit (HIR::ExprStmtWithoutBlock &) override {}
-  void visit (HIR::ExprStmtWithBlock &) override {}
+  void visit (HIR::ExprStmt &) override {}
 
 protected:
-  CompileItem (Context *ctx, TyTy::BaseType *concrete, Location ref_locus)
+  CompileItem (Context *ctx, TyTy::BaseType *concrete, location_t ref_locus)
     : HIRCompileBase (ctx), concrete (concrete), reference (error_mark_node),
       ref_locus (ref_locus)
   {}
 
   TyTy::BaseType *concrete;
   tree reference;
-  Location ref_locus;
+  location_t ref_locus;
 };
 
 } // namespace Compile

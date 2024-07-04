@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2023 Free Software Foundation, Inc.
+// Copyright (C) 2021-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -20,6 +20,7 @@
 #define RUST_HIR_TRAIT_RESOLVE_H
 
 #include "rust-hir-type-check-type.h"
+#include "rust-hir-visitor.h"
 
 namespace Rust {
 namespace Resolver {

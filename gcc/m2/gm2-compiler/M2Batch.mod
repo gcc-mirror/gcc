@@ -1,6 +1,6 @@
 (* M2Batch.mod implements a queue for modules pending compilation.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -23,7 +23,11 @@ IMPLEMENTATION MODULE M2Batch ;
 
 
 FROM M2Debug IMPORT Assert ;
-FROM SymbolTable IMPORT MakeModule, MakeDefImp, IsModule, IsDefImp, GetScope, GetLocalSym, GetCurrentScope, GetSym, NulSym ;
+
+FROM SymbolTable IMPORT MakeModule, MakeDefImp, IsModule, IsDefImp,
+                        GetScope, GetLocalSym, GetCurrentScope,
+                        PutDeclared, GetSym, NulSym ;
+
 FROM NameKey IMPORT GetKey, WriteKey ;
 FROM M2Printf IMPORT printf2 ;
 FROM M2Error IMPORT InternalError ;
@@ -69,6 +73,8 @@ BEGIN
       Sym := MakeModule (tok, n) ;
       Put (Sym, n) ;
       Push (Sym)
+   ELSE
+      PutDeclared (tok, Sym)
    END ;
    RETURN Sym
 END MakeProgramSource ;
@@ -96,6 +102,8 @@ BEGIN
       Sym := MakeDefImp (tok, n) ;
       Put (Sym, n) ;
       Push (Sym)
+   ELSE
+      PutDeclared (tok, Sym)
    END ;
    RETURN Sym
 END MakeDefinitionSource ;
@@ -123,6 +131,8 @@ BEGIN
       Sym := MakeDefImp (tok, n) ;
       Put (Sym, n) ;
       Push (Sym)
+   ELSE
+      PutDeclared (tok, Sym)
    END ;
    RETURN Sym
 END MakeImplementationSource ;

@@ -1,5 +1,5 @@
 /* Diagnostic routines shared by all languages that are variants of C.
-   Copyright (C) 1992-2023 Free Software Foundation, Inc.
+   Copyright (C) 1992-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
-#include "gcc-rich-location.h"
+#include "c-family/c-type-mismatch.h"
 #include "gimplify.h"
 #include "c-family/c-indentation.h"
 #include "c-family/c-spellcheck.h"
@@ -1350,9 +1350,7 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
 	  break;
 
 	if (arith_ops
-	    && global_dc->option_enabled (warnopt,
-					  global_dc->lang_mask,
-					  global_dc->option_state))
+	    && global_dc->option_enabled_p (warnopt))
 	  {
 	    for (int i = 0; i < arith_ops; ++i)
 	      {
@@ -1517,13 +1515,15 @@ match_case_to_enum_1 (tree key, tree type, tree label)
     return;
 
   char buf[WIDE_INT_PRINT_BUFFER_SIZE];
+  wide_int w = wi::to_wide (key);
 
+  gcc_assert (w.get_precision () <= WIDE_INT_MAX_INL_PRECISION);
   if (tree_fits_uhwi_p (key))
-    print_dec (wi::to_wide (key), buf, UNSIGNED);
+    print_dec (w, buf, UNSIGNED);
   else if (tree_fits_shwi_p (key))
-    print_dec (wi::to_wide (key), buf, SIGNED);
+    print_dec (w, buf, SIGNED);
   else
-    print_hex (wi::to_wide (key), buf);
+    print_hex (w, buf);
 
   if (TYPE_NAME (type) == NULL_TREE)
     warning_at (DECL_SOURCE_LOCATION (CASE_LABEL (label)),
@@ -2176,7 +2176,6 @@ warn_about_parentheses (location_t loc, enum tree_code code,
 	}
       return;
     }
-#undef NOT_A_BOOLEAN_EXPR_P
 }
 
 /* If LABEL (a LABEL_DECL) has not been used, issue a warning.  */
@@ -2186,7 +2185,9 @@ warn_for_unused_label (tree label)
 {
   if (!TREE_USED (label))
     {
-      if (DECL_INITIAL (label))
+      if (warning_suppressed_p (label, OPT_Wunused_label))
+	/* Don't warn.  */;
+      else if (DECL_INITIAL (label))
 	warning (OPT_Wunused_label, "label %q+D defined but not used", label);
       else
 	warning (OPT_Wunused_label, "label %q+D declared but not defined", label);
@@ -2261,6 +2262,76 @@ warn_for_memset (location_t loc, tree arg0, tree arg2,
 			"by element size");
 	}
     }
+}
+
+/* Warn for calloc (sizeof (X), n).  */
+
+void
+warn_for_calloc (location_t *sizeof_arg_loc, tree callee,
+		 vec<tree, va_gc> *params, tree *sizeof_arg, tree attr)
+{
+  if (!TREE_VALUE (attr) || !TREE_CHAIN (TREE_VALUE (attr)))
+    return;
+
+  int arg1 = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attr))) - 1;
+  int arg2
+    = TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (TREE_VALUE (attr)))) - 1;
+  if (arg1 < 0
+      || (unsigned) arg1 >= vec_safe_length (params)
+      || arg1 >= 6
+      || arg2 < 0
+      || (unsigned) arg2 >= vec_safe_length (params)
+      || arg2 >= 6
+      || arg1 >= arg2)
+    return;
+
+  if (sizeof_arg[arg1] == NULL_TREE || sizeof_arg[arg2] != NULL_TREE)
+    return;
+
+  if (warning_at (sizeof_arg_loc[arg1], OPT_Wcalloc_transposed_args,
+		  "%qD sizes specified with %<sizeof%> in the earlier "
+		  "argument and not in the later argument", callee))
+    inform (sizeof_arg_loc[arg1], "earlier argument should specify number "
+	    "of elements, later size of each element");
+}
+
+/* Warn for allocator calls where the constant allocated size is smaller
+   than sizeof (TYPE).  */
+
+void
+warn_for_alloc_size (location_t loc, tree type, tree call, tree alloc_size)
+{
+  if (!TREE_VALUE (alloc_size))
+    return;
+
+  tree arg1 = TREE_VALUE (TREE_VALUE (alloc_size));
+  int idx1 = TREE_INT_CST_LOW (arg1) - 1;
+  if (idx1 < 0 || idx1 >= call_expr_nargs (call))
+    return;
+  arg1 = CALL_EXPR_ARG (call, idx1);
+  if (TREE_CODE (arg1) != INTEGER_CST)
+    return;
+  if (TREE_CHAIN (TREE_VALUE (alloc_size)))
+    {
+      tree arg2 = TREE_VALUE (TREE_CHAIN (TREE_VALUE (alloc_size)));
+      int idx2 = TREE_INT_CST_LOW (arg2) - 1;
+      if (idx2 < 0 || idx2 >= call_expr_nargs (call))
+	return;
+      arg2 = CALL_EXPR_ARG (call, idx2);
+      if (TREE_CODE (arg2) != INTEGER_CST)
+	return;
+      arg1 = int_const_binop (MULT_EXPR, fold_convert (sizetype, arg1),
+			      fold_convert (sizetype, arg2));
+      if (TREE_CODE (arg1) != INTEGER_CST)
+	return;
+    }
+  if (!VOID_TYPE_P (type)
+      && TYPE_SIZE_UNIT (type)
+      && TREE_CODE (TYPE_SIZE_UNIT (type)) == INTEGER_CST
+      && tree_int_cst_lt (arg1, TYPE_SIZE_UNIT (type)))
+    warning_at (loc, OPT_Walloc_size,
+		"allocation of insufficient size %qE for type %qT with "
+		"size %qE", arg1, type, TYPE_SIZE_UNIT (type));
 }
 
 /* Subroutine of build_binary_op. Give warnings for comparisons
@@ -2949,7 +3020,7 @@ warn_for_multistatement_macros (location_t body_loc, location_t next_loc,
   while (linemap_macro_expansion_map_p (guard_map))
     {
       const line_map_macro *mm = linemap_check_macro (guard_map);
-      guard_loc_exp = MACRO_MAP_EXPANSION_POINT_LOCATION (mm);
+      guard_loc_exp = mm->get_expansion_point_location ();
       guard_map = linemap_lookup (line_table, guard_loc_exp);
       if (guard_map == body_map)
 	return;
@@ -2991,14 +3062,13 @@ check_alignment_of_packed_member (tree type, tree field, bool rvalue)
   return NULL_TREE;
 }
 
-/* Return struct or union type if the right hand value, RHS:
-   1. Is a pointer value which isn't aligned to a pointer type TYPE.
-   2. Is an address which takes the unaligned address of packed member
-      of struct or union when assigning to TYPE.
+/* Return struct or union type if the right hand value, RHS,
+   is an address which takes the unaligned address of packed member
+   of struct or union when assigning to TYPE.
    Otherwise, return NULL_TREE.  */
 
 static tree
-check_address_or_pointer_of_packed_member (tree type, tree rhs)
+check_address_of_packed_member (tree type, tree rhs)
 {
   bool rvalue = true;
   bool indirect = false;
@@ -3020,57 +3090,6 @@ check_address_or_pointer_of_packed_member (tree type, tree rhs)
     return NULL_TREE;
 
   type = TREE_TYPE (type);
-
-  if (TREE_CODE (rhs) == PARM_DECL
-      || VAR_P (rhs)
-      || TREE_CODE (rhs) == CALL_EXPR)
-    {
-      tree rhstype = TREE_TYPE (rhs);
-      if (TREE_CODE (rhs) == CALL_EXPR)
-	{
-	  rhs = CALL_EXPR_FN (rhs);	/* Pointer expression.  */
-	  if (rhs == NULL_TREE)
-	    return NULL_TREE;
-	  rhs = TREE_TYPE (rhs);	/* Pointer type.  */
-	  /* We could be called while processing a template and RHS could be
-	     a functor.  In that case it's a class, not a pointer.  */
-	  if (!POINTER_TYPE_P (rhs))
-	    return NULL_TREE;
-	  rhs = TREE_TYPE (rhs);	/* Function type.  */
-	  rhstype = TREE_TYPE (rhs);
-	  if (!rhstype || !POINTER_TYPE_P (rhstype))
-	    return NULL_TREE;
-	  rvalue = true;
-	}
-      if (rvalue && POINTER_TYPE_P (rhstype))
-	rhstype = TREE_TYPE (rhstype);
-      while (TREE_CODE (rhstype) == ARRAY_TYPE)
-	rhstype = TREE_TYPE (rhstype);
-      if (TYPE_PACKED (rhstype))
-	{
-	  unsigned int type_align = min_align_of_type (type);
-	  unsigned int rhs_align = min_align_of_type (rhstype);
-	  if (rhs_align < type_align)
-	    {
-	      auto_diagnostic_group d;
-	      location_t location = EXPR_LOC_OR_LOC (rhs, input_location);
-	      if (warning_at (location, OPT_Waddress_of_packed_member,
-			      "converting a packed %qT pointer (alignment %d) "
-			      "to a %qT pointer (alignment %d) may result in "
-			      "an unaligned pointer value",
-			      rhstype, rhs_align, type, type_align))
-		{
-		  tree decl = TYPE_STUB_DECL (rhstype);
-		  if (decl)
-		    inform (DECL_SOURCE_LOCATION (decl), "defined here");
-		  decl = TYPE_STUB_DECL (type);
-		  if (decl)
-		    inform (DECL_SOURCE_LOCATION (decl), "defined here");
-		}
-	    }
-	}
-      return NULL_TREE;
-    }
 
   tree context = NULL_TREE;
 
@@ -3094,14 +3113,12 @@ check_address_or_pointer_of_packed_member (tree type, tree rhs)
   return context;
 }
 
-/* Check and warn if the right hand value, RHS:
-   1. Is a pointer value which isn't aligned to a pointer type TYPE.
-   2. Is an address which takes the unaligned address of packed member
-      of struct or union when assigning to TYPE.
- */
+/* Check and warn if the right hand value, RHS,
+   is an address which takes the unaligned address of packed member
+   of struct or union when assigning to TYPE.  */
 
 static void
-check_and_warn_address_or_pointer_of_packed_member (tree type, tree rhs)
+check_and_warn_address_of_packed_member (tree type, tree rhs)
 {
   bool nop_p = false;
   tree orig_rhs;
@@ -3119,11 +3136,11 @@ check_and_warn_address_or_pointer_of_packed_member (tree type, tree rhs)
   if (TREE_CODE (rhs) == COND_EXPR)
     {
       /* Check the THEN path.  */
-      check_and_warn_address_or_pointer_of_packed_member
+      check_and_warn_address_of_packed_member
 	(type, TREE_OPERAND (rhs, 1));
 
       /* Check the ELSE path.  */
-      check_and_warn_address_or_pointer_of_packed_member
+      check_and_warn_address_of_packed_member
 	(type, TREE_OPERAND (rhs, 2));
     }
   else
@@ -3147,7 +3164,7 @@ check_and_warn_address_or_pointer_of_packed_member (tree type, tree rhs)
 	}
 
       tree context
-	= check_address_or_pointer_of_packed_member (type, rhs);
+	= check_address_of_packed_member (type, rhs);
       if (context)
 	{
 	  location_t loc = EXPR_LOC_OR_LOC (rhs, input_location);
@@ -3159,14 +3176,12 @@ check_and_warn_address_or_pointer_of_packed_member (tree type, tree rhs)
     }
 }
 
-/* Warn if the right hand value, RHS:
-   1. Is a pointer value which isn't aligned to a pointer type TYPE.
-   2. Is an address which takes the unaligned address of packed member
-      of struct or union when assigning to TYPE.
-*/
+/* Warn if the right hand value, RHS,
+   is an address which takes the unaligned address of packed member
+   of struct or union when assigning to TYPE.  */
 
 void
-warn_for_address_or_pointer_of_packed_member (tree type, tree rhs)
+warn_for_address_of_packed_member (tree type, tree rhs)
 {
   if (!warn_address_of_packed_member)
     return;
@@ -3175,7 +3190,7 @@ warn_for_address_or_pointer_of_packed_member (tree type, tree rhs)
   if (!POINTER_TYPE_P (type))
     return;
 
-  check_and_warn_address_or_pointer_of_packed_member (type, rhs);
+  check_and_warn_address_of_packed_member (type, rhs);
 }
 
 /* Return EXPR + 1.  Convenience helper used below.  */
@@ -3817,11 +3832,16 @@ do_warn_array_compare (location_t location, tree_code code, tree op0, tree op1)
       /* C doesn't allow +arr.  */
       if (c_dialect_cxx ())
 	inform (location, "use unary %<+%> which decays operands to pointers "
-		"or %<&%D[0] %s &%D[0]%> to compare the addresses",
-		op0, op_symbol_code (code), op1);
+		"or %<&%s%E%s[0] %s &%s%E%s[0]%> to compare the addresses",
+		DECL_P (op0) ? "" : "(", op0, DECL_P (op0) ? "" : ")",
+		op_symbol_code (code),
+		DECL_P (op1) ? "" : "(", op1, DECL_P (op1) ? "" : ")");
       else
-	inform (location, "use %<&%D[0] %s &%D[0]%> to compare the addresses",
-		op0, op_symbol_code (code), op1);
+	inform (location,
+		"use %<&%s%E%s[0] %s &%s%E%s[0]%> to compare the addresses",
+		DECL_P (op0) ? "" : "(", op0, DECL_P (op0) ? "" : ")",
+		op_symbol_code (code),
+		DECL_P (op1) ? "" : "(", op1, DECL_P (op1) ? "" : ")");
     }
 }
 

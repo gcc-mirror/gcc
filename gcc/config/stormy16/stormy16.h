@@ -1,5 +1,5 @@
 /* Xstormy16 cpu description.
-   Copyright (C) 1997-2023 Free Software Foundation, Inc.
+   Copyright (C) 1997-2024 Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
    This file is part of GCC.
@@ -100,12 +100,6 @@
 #define LONG_TYPE_SIZE 32
 
 #define LONG_LONG_TYPE_SIZE 64
-
-#define FLOAT_TYPE_SIZE 32
-
-#define DOUBLE_TYPE_SIZE 64
-
-#define LONG_DOUBLE_TYPE_SIZE 64
 
 #define DEFAULT_SIGNED_CHAR 0
 

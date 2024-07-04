@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -161,9 +161,7 @@ package body ALI.Util is
       --  Process all dependent units
 
       for U in ALIs.Table (Id).First_Unit .. ALIs.Table (Id).Last_Unit loop
-         for
-           W in Units.Table (U).First_With .. Units.Table (U).Last_With
-         loop
+         for W in Units.Table (U).First_With .. Units.Table (U).Last_With loop
             Afile := Withs.Table (W).Afile;
 
             --  Only process if not a generic (Afile /= No_File) and if

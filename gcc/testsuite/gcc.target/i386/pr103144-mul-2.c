@@ -16,12 +16,12 @@ avx2_test (void)
 
   __builtin_memset (epi32_exp, 0, N * sizeof (int));
   int b = 8;
-  v8si init = __extension__(v8si) { b, b * 3, b * 9, b * 27, b * 81, b * 243, b * 729, b * 2187 };
+  v8si init = __extension__(v8si) { b, b * 4, b * 16, b * 64, b * 256, b * 1024, b * 4096, b * 16384 };
 
   for (int i = 0; i != N / 8; i++)
     {
       memcpy (epi32_exp + i * 8, &init, 32);
-      init *= 6561;
+      init *= 65536;
     }
 
   foo_mul (epi32_dst, b);
@@ -32,11 +32,11 @@ avx2_test (void)
   if (__builtin_memcmp (epi32_dst, epi32_exp, 39 * 4) != 0)
     __builtin_abort ();
 
-  init = __extension__(v8si) { 1, 3, 9, 27, 81, 243, 729, 2187 };
+  init = __extension__(v8si) { 1, 4, 16, 64, 256, 1024, 4096, 16384 };
   for (int i = 0; i != N / 8; i++)
     {
       memcpy (epi32_exp + i * 8, &init, 32);
-      init *= 6561;
+      init *= 65536;
     }
 
   foo_mul_const (epi32_dst);

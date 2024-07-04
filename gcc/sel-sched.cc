@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.  Selective scheduler and pipeliner.
-   Copyright (C) 2006-2023 Free Software Foundation, Inc.
+   Copyright (C) 2006-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1614,7 +1614,15 @@ try_replace_dest_reg (ilist_t orig_insns, rtx best_reg, expr_t expr)
   /* Make sure that EXPR has the right destination
      register.  */
   if (expr_dest_regno (expr) != REGNO (best_reg))
-    replace_dest_with_reg_in_expr (expr, best_reg);
+    {
+      rtx_insn *vinsn = EXPR_INSN_RTX (expr);
+      validate_change (vinsn, &SET_DEST (PATTERN (vinsn)), best_reg, 1);
+      bool res = verify_changes (0);
+      cancel_changes (0);
+      if (!res)
+	return false;
+      replace_dest_with_reg_in_expr (expr, best_reg);
+    }
   else
     EXPR_TARGET_AVAILABLE (expr) = 1;
 

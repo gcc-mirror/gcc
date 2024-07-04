@@ -1,6 +1,6 @@
 (* M2Options.mod initializes the user options.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -31,12 +31,14 @@ FROM FIO IMPORT StdErr ;
 FROM libc IMPORT exit, printf ;
 FROM Debug IMPORT Halt ;
 FROM m2linemap IMPORT location_t ;
-FROM m2configure IMPORT FullPathCPP ;
-
+FROM m2configure IMPORT FullPathCPP, TargetIEEEQuadDefault ;
+FROM M2Error IMPORT InternalError ;
+FROM FormatStrings IMPORT Sprintf1 ;
+FROM m2misc IMPORT cerror ;
 
 FROM DynamicStrings IMPORT String, Length, InitString, Mark, Slice, EqualArray,
                            InitStringCharStar, ConCatChar, ConCat, KillString,
-                           Dup, string,
+                           Dup, string, char, Index,
                            PushAllocation, PopAllocationExemption,
                            InitStringDB, InitStringCharStarDB,
                            InitStringCharDB, MultDB, DupDB, SliceDB ;
@@ -55,12 +57,18 @@ CONST
    DefaultRuntimeModuleOverride = "m2iso:RTentity,m2iso:Storage,m2iso:SYSTEM,m2iso:M2RTS,m2iso:RTExceptions,m2iso:IOLink" ;
 
 VAR
+   DumpDeclFilename,
+   DumpQuadFilename,
+   DumpGimpleFilename,
+   M2Dump,
+   M2DumpFilter,
    M2Prefix,
    M2PathName,
    Barg,
-   MDarg,
-   MMDarg,
-   MQarg,
+   MFarg,
+   MTFlag,
+   MQFlag,
+   DepTarget,
    CmdLineObj,
    SaveTempsDir,
    DumpDir,
@@ -68,6 +76,21 @@ VAR
    UselistFilename,
    RuntimeModuleOverride,
    CppArgs              : String ;
+   DebugFunctionLineNumbers,
+   DebugTraceQuad,   (* -fm2-debug-trace=quad.  *)
+   DebugTraceLine,   (* -fm2-debug-trace=line.  *)
+   DebugTraceToken,  (* -fm2-debug-trace=token. *)
+   DebugTraceTree,   (* -fm2-debug-trace=tree.  (not yet implemented).  *)
+   DumpDecl,         (* -fm2-dump=decl.  *)
+   DumpGimple,       (* -fm2-dump=gimple.  *)
+   DumpQuad,         (* -fq, -fm2-dump=quad dump quadruples.  *)
+   MFlag,
+   MMFlag,
+   MPFlag,
+   MDFlag,
+   MMDFlag,
+   IBMLongDouble,
+   IEEELongDouble,
    UselistFlag,
    CC1Quiet,
    SeenSources          : BOOLEAN ;
@@ -185,70 +208,241 @@ END GetB ;
 
 
 (*
-   SetMD - assigns MDarg to the filename from arg.
-   This overrides any previous MMD.
+   SetM - set the MFlag.
 *)
 
-PROCEDURE SetMD (arg: ADDRESS) ;
+PROCEDURE SetM (value: BOOLEAN) ;
 BEGIN
-   MMDarg := KillString (MMDarg) ;
-   MDarg := KillString (MDarg) ;
-   MDarg := InitStringCharStar (arg)
+   MFlag := value
+END SetM ;
+
+
+(*
+   GetM - set the MFlag.
+*)
+
+PROCEDURE GetM () : BOOLEAN ;
+BEGIN
+   RETURN MFlag
+END GetM ;
+
+
+(*
+   SetMM - set the MMFlag.
+*)
+
+PROCEDURE SetMM (value: BOOLEAN) ;
+BEGIN
+   MMFlag := value
+END SetMM ;
+
+
+(*
+   GetMM - set the MMFlag.
+*)
+
+PROCEDURE GetMM () : BOOLEAN ;
+BEGIN
+   RETURN MMFlag
+END GetMM ;
+
+
+(*
+   SetMD - set the MDFlag to value.
+*)
+
+PROCEDURE SetMD (value: BOOLEAN) ;
+BEGIN
+   MDFlag := value
 END SetMD ;
 
 
 (*
-   GetMD - returns MDarg filename as a c-string or NIL if it was never set.
+   GetMD - return the MDFlag.
 *)
 
-PROCEDURE GetMD () : ADDRESS ;
+PROCEDURE GetMD () : BOOLEAN ;
 BEGIN
-   RETURN string (MDarg)
+   RETURN MDFlag
 END GetMD ;
 
 
 (*
-   SetMMD - assigns MMDarg to the filename from arg.
-   This overrides any previous MD.
+   SetMMD - set the MMDFlag to value.
 *)
 
-PROCEDURE SetMMD (arg: ADDRESS) ;
+PROCEDURE SetMMD (value: BOOLEAN) ;
 BEGIN
-   MDarg := KillString (MDarg) ;
-   MMDarg := KillString (MMDarg) ;
-   MMDarg := InitStringCharStar (arg)
+   MMDFlag := value
 END SetMMD ;
 
 
 (*
-   GetMMD - returns MMDarg filename as a c-string or NIL if it was never set.
+   GetMMD - return the MMDFlag.
 *)
 
-PROCEDURE GetMMD () : ADDRESS ;
+PROCEDURE GetMMD () : BOOLEAN ;
 BEGIN
-   RETURN string (MMDarg)
+   RETURN MMDFlag
 END GetMMD ;
 
 
 (*
-   SetMQ - assigns MQarg to the filename from arg.
+   SetMF - assigns MFarg to the filename from arg.
+*)
+
+PROCEDURE SetMF (arg: ADDRESS) ;
+BEGIN
+   MFarg := KillString (MFarg) ;
+   MFarg := InitStringCharStar (arg)
+END SetMF ;
+
+
+(*
+   GetMF - returns MFarg or NIL if never set.
+*)
+
+PROCEDURE GetMF () : ADDRESS ;
+BEGIN
+   RETURN string (MFarg)
+END GetMF ;
+
+
+(*
+   SetMP - set the MPflag to value.
+*)
+
+PROCEDURE SetMP (value: BOOLEAN) ;
+BEGIN
+   MPFlag := value
+END SetMP ;
+
+
+(*
+   GetMP - get the MPflag.
+*)
+
+PROCEDURE GetMP () : BOOLEAN ;
+BEGIN
+   RETURN MPFlag
+END GetMP ;
+
+
+(*
+   errors1 -
+*)
+
+PROCEDURE errors1 (format: ARRAY OF CHAR; arg: String) ;
+VAR
+   message: String ;
+   cstr   : ADDRESS ;
+BEGIN
+   message := Sprintf1 (InitString (format), arg) ;
+   cstr := string (message) ;
+   cerror (cstr) ;
+   exit (1)
+END errors1 ;
+
+
+(*
+   AddWord - concats a word to sentence inserting a space if necessary.
+             sentence is returned.  sentence will be created if it is NIL.
+*)
+
+PROCEDURE AddWord (sentence, word: String) : String ;
+BEGIN
+   IF word # NIL
+   THEN
+      IF sentence = NIL
+      THEN
+         sentence := Dup (word)
+      ELSE
+         sentence := ConCatChar (sentence, ' ') ;
+         sentence := ConCat (sentence, word)
+      END
+   END ;
+   RETURN sentence
+END AddWord ;
+
+
+(*
+   QuoteTarget - quote the '$' character.
+*)
+
+PROCEDURE QuoteTarget (target: String) : String ;
+VAR
+   quoted: String ;
+   i, n  : CARDINAL ;
+BEGIN
+   quoted := InitString ('') ;
+   i := 0 ;
+   n := Length (target) ;
+   WHILE i < n DO
+      CASE char (target, i) OF
+
+      '$':  quoted := ConCat (quoted, Mark (InitString ('$$')))
+
+      ELSE
+         quoted := ConCatChar (quoted, char (target, i))
+      END ;
+      INC (i)
+   END ;
+   RETURN quoted
+END QuoteTarget ;
+
+
+(*
+   SetMQ - adds a quoted target arg to the DepTarget sentence.
 *)
 
 PROCEDURE SetMQ (arg: ADDRESS) ;
 BEGIN
-   MQarg := KillString (MQarg) ;
-   MQarg := InitStringCharStar (arg)
+   DepTarget := AddWord (DepTarget, QuoteTarget (InitStringCharStar (arg))) ;
+   MQFlag := AddWord (MQFlag, Mark (InitString ('-MQ'))) ;
+   MQFlag := AddWord (MQFlag, Mark (InitStringCharStar (arg)))
 END SetMQ ;
 
 
 (*
-   GetMMD - returns MQarg filename as a c-string or NIL if it was never set.
+   GetMQ - returns a C string containing all the -MQ arg values.
 *)
 
 PROCEDURE GetMQ () : ADDRESS ;
 BEGIN
-   RETURN string (MQarg)
+   RETURN string (MQFlag)
 END GetMQ ;
+
+
+(*
+   SetMT - adds a target arg to the DepTarget sentence.
+*)
+
+PROCEDURE SetMT (arg: ADDRESS) ;
+BEGIN
+   DepTarget := AddWord (DepTarget, InitStringCharStar (arg)) ;
+   MTFlag := AddWord (MTFlag, Mark (InitString ('-MT'))) ;
+   MTFlag := AddWord (MTFlag, Mark (InitStringCharStar (arg)))
+END SetMT ;
+
+
+(*
+   GetMT - returns a C string containing all the -MT arg values.
+*)
+
+PROCEDURE GetMT () : ADDRESS ;
+BEGIN
+   RETURN string (MTFlag)
+END GetMT ;
+
+
+(*
+   GetDepTarget - returns the DepTarget as a C string.
+*)
+
+PROCEDURE GetDepTarget () : ADDRESS ;
+BEGIN
+   RETURN string (DepTarget)
+END GetDepTarget ;
 
 
 (*
@@ -503,6 +697,16 @@ PROCEDURE GetCpp () : BOOLEAN ;
 BEGIN
    RETURN CPreProcessor
 END GetCpp ;
+
+
+(*
+   GetLineDirectives - returns TRUE if line directives are allowed.
+*)
+
+PROCEDURE GetLineDirectives () : BOOLEAN ;
+BEGIN
+   RETURN LineDirectives
+END GetLineDirectives ;
 
 
 (*
@@ -885,7 +1089,9 @@ END SetSwig ;
 
 PROCEDURE SetQuadDebugging (value: BOOLEAN) ;
 BEGIN
-   DisplayQuadruples := value
+   DumpQuad := value ;
+   DumpQuadFilename := KillString (DumpQuadFilename) ;
+   DumpQuadFilename := InitString ('-')
 END SetQuadDebugging ;
 
 
@@ -900,23 +1106,121 @@ END SetCompilerDebugging ;
 
 
 (*
-   SetDebugTraceQuad -
+   SetM2DebugTraceFilter - set internal debug flags.  The flags should be
+                           specified as a comma separated list.  The full
+                           list allowed is quad,line,token,all.
 *)
 
-PROCEDURE SetDebugTraceQuad (value: BOOLEAN) ;
+PROCEDURE SetM2DebugTraceFilter (value: BOOLEAN; filter: ADDRESS) ;
+VAR
+   word,
+   full  : String ;
+   start,
+   i     : INTEGER ;
 BEGIN
-   DebugTraceQuad := value
-END SetDebugTraceQuad ;
+   full := InitStringCharStar (filter) ;
+   start := 0 ;
+   REPEAT
+      i := Index (full, ',', start) ;
+      IF i = -1
+      THEN
+         word := Slice (full, start, 0)
+      ELSE
+         word := Slice (full, start, i)
+      END ;
+      SetM2DebugTrace (word, value) ;
+      word := KillString (word) ;
+      start := i+1 ;
+   UNTIL i = -1 ;
+   full := KillString (full) ;
+END SetM2DebugTraceFilter ;
 
 
 (*
-   SetDebugTraceAPI -
+   SetM2DebugTrace -
 *)
 
-PROCEDURE SetDebugTraceAPI (value: BOOLEAN) ;
+PROCEDURE SetM2DebugTrace (word: String; value: BOOLEAN) ;
 BEGIN
-   DebugTraceAPI := value
-END SetDebugTraceAPI ;
+   IF EqualArray (word, 'all')
+   THEN
+      (* DebugTraceTree := value ;  *)
+      DebugTraceQuad := value ;
+      DebugTraceToken := value ;
+      DebugTraceLine := value
+   ELSIF EqualArray (word, 'quad')
+   THEN
+      DebugTraceQuad := value
+   ELSIF EqualArray (word, 'token')
+   THEN
+      DebugTraceToken := value
+   ELSIF EqualArray (word, 'line')
+   THEN
+      DebugTraceLine := value
+   ELSE
+      errors1 ("unrecognized filter %s seen in -fm2-debug-trace= option\n", word)
+   END
+END SetM2DebugTrace ;
+
+
+(*
+   SetDebugFunctionLineNumbers - set DebugFunctionLineNumbers.
+*)
+
+PROCEDURE SetDebugFunctionLineNumbers (value: BOOLEAN) ;
+BEGIN
+   DebugFunctionLineNumbers := value
+END SetDebugFunctionLineNumbers ;
+
+
+(*
+   GetDebugTraceQuad - return DebugTraceQuad.
+*)
+
+PROCEDURE GetDebugTraceQuad () : BOOLEAN ;
+BEGIN
+   RETURN DebugTraceQuad
+END GetDebugTraceQuad ;
+
+
+(*
+   GetDebugTraceTree - return DebugTraceTree.
+*)
+
+PROCEDURE GetDebugTraceTree () : BOOLEAN ;
+BEGIN
+   RETURN DebugTraceTree
+END GetDebugTraceTree ;
+
+
+(*
+   GetDebugTraceToken - return DebugTraceToken.
+*)
+
+PROCEDURE GetDebugTraceToken () : BOOLEAN ;
+BEGIN
+   RETURN DebugTraceToken
+END GetDebugTraceToken ;
+
+
+(*
+   GetDebugTraceLine - return DebugTraceLine.
+*)
+
+PROCEDURE GetDebugTraceLine () : BOOLEAN ;
+BEGIN
+   RETURN DebugTraceLine
+END GetDebugTraceLine ;
+
+
+(*
+   GetDebugFunctionLineNumbers - return DebugFunctionLineNumbers.
+*)
+
+PROCEDURE GetDebugFunctionLineNumbers () : BOOLEAN ;
+BEGIN
+   RETURN DebugFunctionLineNumbers
+END GetDebugFunctionLineNumbers ;
 
 
 (*
@@ -1055,17 +1359,6 @@ BEGIN
       RETURN( location )
    END
 END OverrideLocation ;
-
-
-(*
-   SetDebugFunctionLineNumbers - turn DebugFunctionLineNumbers on/off
-                                 (used internally for debugging).
-*)
-
-PROCEDURE SetDebugFunctionLineNumbers (value: BOOLEAN) ;
-BEGIN
-   DebugFunctionLineNumbers := value
-END SetDebugFunctionLineNumbers ;
 
 
 (*
@@ -1433,6 +1726,297 @@ BEGIN
 END SetDebugBuiltins ;
 
 
+(*
+   SetIBMLongDouble - enable/disable LONGREAL to map onto the
+                      IBM long double 128 bit data type.
+                      (Only available on the ppc).
+*)
+
+PROCEDURE SetIBMLongDouble (value: BOOLEAN) ;
+BEGIN
+   IBMLongDouble := value ;
+   IF value
+   THEN
+      IEEELongDouble := FALSE
+   END
+END SetIBMLongDouble ;
+
+
+(*
+   GetIBMLongDouble - return the value of IBMLongDouble.
+*)
+
+PROCEDURE GetIBMLongDouble () : BOOLEAN ;
+BEGIN
+   RETURN IBMLongDouble
+END GetIBMLongDouble ;
+
+
+(*
+   SetIEEELongDouble - enable/disable LONGREAL to map onto the
+                       IEEE long double 128 bit data type.
+                       (Only available on the ppc).
+*)
+
+PROCEDURE SetIEEELongDouble (value: BOOLEAN) ;
+BEGIN
+   IEEELongDouble := value ;
+   IF value
+   THEN
+      IBMLongDouble := FALSE
+   END
+END SetIEEELongDouble ;
+
+
+(*
+   GetIEEELongDouble - return the value of IEEELongDouble.
+*)
+
+PROCEDURE GetIEEELongDouble () : BOOLEAN ;
+BEGIN
+   RETURN IEEELongDouble
+END GetIEEELongDouble ;
+
+
+(*
+   InitializeLongDoubleFlags - initialize the long double related flags
+                               with default values given during gcc configure.
+*)
+
+PROCEDURE InitializeLongDoubleFlags ;
+BEGIN
+   IBMLongDouble := FALSE ;
+   IEEELongDouble := FALSE ;
+   CASE TargetIEEEQuadDefault () OF
+
+   -1: |
+    0: IBMLongDouble := TRUE |
+    1: IEEELongDouble := TRUE
+
+   ELSE
+      InternalError ('unexpected value returned from TargetIEEEQuadDefault ()')
+   END
+END InitializeLongDoubleFlags ;
+
+
+(*
+   GetDumpDeclFilename - returns the DumpDeclFilename.
+*)
+
+PROCEDURE GetDumpDeclFilename () : String ;
+BEGIN
+   RETURN DumpDeclFilename
+END GetDumpDeclFilename ;
+
+
+(*
+   SetDumpDeclFilename -
+*)
+
+PROCEDURE SetDumpDeclFilename (value: BOOLEAN; filename: ADDRESS) ;
+BEGIN
+   DumpDecl := value ;
+   DumpDeclFilename := KillString (DumpDeclFilename) ;
+   IF filename # NIL
+   THEN
+      DumpDeclFilename := InitStringCharStar (filename)
+   END
+END SetDumpDeclFilename ;
+
+
+(*
+   GetDumpQuadFilename - returns the DumpQuadFilename.
+*)
+
+PROCEDURE GetDumpQuadFilename () : String ;
+BEGIN
+   RETURN DumpQuadFilename
+END GetDumpQuadFilename ;
+
+
+(*
+   SetDumpQuadFilename -
+*)
+
+PROCEDURE SetDumpQuadFilename (value: BOOLEAN; filename: ADDRESS) ;
+BEGIN
+   DumpQuad := value ;
+   DumpQuadFilename := KillString (DumpQuadFilename) ;
+   IF filename # NIL
+   THEN
+      DumpQuadFilename := InitStringCharStar (filename)
+   END
+END SetDumpQuadFilename ;
+
+
+(*
+   GetDumpGimpleFilename - returns the DumpGimpleFilename.
+*)
+
+PROCEDURE GetDumpGimpleFilename () : String ;
+BEGIN
+   RETURN DumpGimpleFilename
+END GetDumpGimpleFilename ;
+
+
+(*
+   SetDumpGimpleFilename - set DumpGimpleFilename to filename.
+*)
+
+PROCEDURE SetDumpGimpleFilename (value: BOOLEAN; filename: ADDRESS) ;
+BEGIN
+   DumpGimple := value ;
+   DumpGimpleFilename := KillString (DumpGimpleFilename) ;
+   IF value AND (filename # NIL)
+   THEN
+      DumpGimpleFilename := InitStringCharStar (filename)
+   END
+END SetDumpGimpleFilename ;
+
+
+(*
+   SetM2DumpFilter - sets the filter to a comma separated list of procedures
+                     and modules.  Not to be confused with SetM2Dump below
+                     which enables the class of data structures to be dumped.
+*)
+
+PROCEDURE SetM2DumpFilter (value: BOOLEAN; filter: ADDRESS) ;
+BEGIN
+   M2DumpFilter := KillString (M2DumpFilter) ;
+   IF value AND (filter # NIL)
+   THEN
+      M2DumpFilter := InitStringCharStar (filter)
+   END
+END SetM2DumpFilter ;
+
+
+(*
+   GetM2DumpFilter - returns the dump filter.
+*)
+
+PROCEDURE GetM2DumpFilter () : ADDRESS ;
+BEGIN
+   IF M2DumpFilter = NIL
+   THEN
+      RETURN NIL
+   ELSE
+      RETURN string (M2DumpFilter)
+   END
+END GetM2DumpFilter ;
+
+
+(*
+   MatchDump - enable/disable dump using value.  It returns TRUE if dump
+               is valid.
+*)
+
+PROCEDURE MatchDump (dump: String; value: BOOLEAN) : BOOLEAN ;
+BEGIN
+   IF EqualArray (dump, 'all')
+   THEN
+      DumpDecl := value ;
+      DumpQuad := value ;
+      DumpGimple := value ;
+      RETURN TRUE
+   ELSIF EqualArray (dump, 'decl')
+   THEN
+      DumpDecl := value ;
+      RETURN TRUE
+   ELSIF EqualArray (dump, 'gimple')
+   THEN
+      DumpGimple := value ;
+      RETURN TRUE
+   ELSIF EqualArray (dump, 'quad')
+   THEN
+      DumpQuad := value ;
+      RETURN TRUE
+   END ;
+   RETURN FALSE
+END MatchDump ;
+
+
+(*
+   SetM2Dump - sets the dump via a comma separated list: quad,decl,gimple,all.
+               It returns TRUE if the comma separated list is valid.
+*)
+
+PROCEDURE SetM2Dump (value: BOOLEAN; filter: ADDRESS) : BOOLEAN ;
+VAR
+   result: BOOLEAN ;
+   dump  : String ;
+   start,
+   i     : INTEGER ;
+BEGIN
+   IF filter = NIL
+   THEN
+      RETURN FALSE
+   END ;
+   IF M2Dump # NIL
+   THEN
+      M2Dump := KillString (M2Dump)
+   END ;
+   M2Dump := InitStringCharStar (filter) ;
+   start := 0 ;
+   REPEAT
+      i := Index (M2Dump, ',', start) ;
+      IF i = -1
+      THEN
+         dump := Slice (M2Dump, start, 0)
+      ELSE
+         dump := Slice (M2Dump, start, i)
+      END ;
+      result := MatchDump (dump, value) ;
+      dump := KillString (dump) ;
+      IF NOT result
+      THEN
+         RETURN FALSE
+      END ;
+      start := i+1 ;
+   UNTIL i = -1 ;
+   RETURN TRUE
+END SetM2Dump ;
+
+
+(*
+   GetDumpGimple - return TRUE if the dump gimple flag is set from SetM2Dump.
+*)
+
+PROCEDURE GetDumpGimple () : BOOLEAN ;
+BEGIN
+   RETURN DumpGimple
+END GetDumpGimple ;
+
+
+(*
+   GetDumpQuad - return TRUE if the dump quad flag is set from SetM2Dump.
+*)
+
+PROCEDURE GetDumpQuad () : BOOLEAN ;
+BEGIN
+   RETURN DumpQuad
+END GetDumpQuad ;
+
+
+(*
+   GetDumpDecl - return TRUE if the dump decl flag is set from SetM2Dump.
+*)
+
+PROCEDURE GetDumpDecl () : BOOLEAN ;
+BEGIN
+   RETURN DumpDecl
+END GetDumpDecl ;
+
+
+(*
+   GetDumpLangGimple - return TRUE if the gimple flag is set from SetM2Dump.
+*)
+
+PROCEDURE GetDumpGimple () : BOOLEAN ;
+BEGIN
+   RETURN DumpGimple
+END GetDumpGimple ;
+
+
 BEGIN
    cflag                             := FALSE ;  (* -c.  *)
    RuntimeModuleOverride             := InitString (DefaultRuntimeModuleOverride) ;
@@ -1454,7 +2038,7 @@ BEGIN
    Quiet                             :=  TRUE ;
    CC1Quiet                          :=  TRUE ;
    Profiling                         := FALSE ;
-   DisplayQuadruples                 := FALSE ;
+   DumpQuad                          := FALSE ;
    OptimizeBasicBlock                := FALSE ;
    OptimizeUncalledProcedures        := FALSE ;
    OptimizeCommonSubExpressions      := FALSE ;
@@ -1467,7 +2051,7 @@ BEGIN
    ReturnChecking                    := FALSE ;
    CaseElseChecking                  := FALSE ;
    CPreProcessor                     := FALSE ;
-   LineDirectives                    := FALSE ;
+   LineDirectives                    := TRUE ;
    ExtendedOpaque                    := FALSE ;
    UnboundedByReference              := FALSE ;
    VerboseUnbounded                  := FALSE ;
@@ -1481,7 +2065,9 @@ BEGIN
    ForcedLocation                    := FALSE ;
    WholeProgram                      := FALSE ;
    DebugTraceQuad                    := FALSE ;
-   DebugTraceAPI                     := FALSE ;
+   DebugTraceTree                    := FALSE ;
+   DebugTraceLine                    := FALSE ;
+   DebugTraceToken                   := FALSE ;
    DebugFunctionLineNumbers          := FALSE ;
    GenerateStatementNote             := FALSE ;
    LowerCaseKeywords                 := FALSE ;
@@ -1498,14 +2084,29 @@ BEGIN
    GenModuleListFilename             := NIL ;
    SharedFlag                        := FALSE ;
    Barg                              := NIL ;
-   MDarg                             := NIL ;
-   MMDarg                            := NIL ;
-   MQarg                             := NIL ;
+   MDFlag                            := FALSE ;
+   MMDFlag                           := FALSE ;
+   DepTarget                         := NIL ;
+   MPFlag                            := FALSE ;
    SaveTempsDir                      := NIL ;
    DumpDir                           := NIL ;
    UninitVariableChecking            := FALSE ;
    UninitVariableConditionalChecking := FALSE ;
    CaseEnumChecking                  := FALSE ;
+   MFlag                             := FALSE ;
+   MMFlag                            := FALSE ;
+   MFarg                             := NIL ;
+   MTFlag                            := NIL ;
+   MQFlag                            := NIL ;
+   InitializeLongDoubleFlags ;
    M2Prefix                          := InitString ('') ;
-   M2PathName                        := InitString ('')
+   M2PathName                        := InitString ('') ;
+   DumpQuadFilename                  := NIL ;
+   DumpGimpleFilename                := NIL ;
+   DumpDeclFilename                  := NIL ;
+   DumpDecl                          := FALSE ;
+   DumpQuad                          := FALSE ;
+   DumpGimple                        := FALSE ;
+   M2Dump                            := NIL ;
+   M2DumpFilter                      := NIL
 END M2Options.

@@ -1,5 +1,5 @@
 /* Scheduler hooks for IA-32 which implement CPU specific logic.
-   Copyright (C) 1988-2023 Free Software Foundation, Inc.
+   Copyright (C) 1988-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -44,8 +44,6 @@ ix86_issue_rate (void)
     case PROCESSOR_LAKEMONT:
     case PROCESSOR_BONNELL:
     case PROCESSOR_SILVERMONT:
-    case PROCESSOR_KNL:
-    case PROCESSOR_KNM:
     case PROCESSOR_INTEL:
     case PROCESSOR_K6:
     case PROCESSOR_BTVER2:
@@ -69,6 +67,7 @@ ix86_issue_rate (void)
     case PROCESSOR_ZNVER2:
     case PROCESSOR_ZNVER3:
     case PROCESSOR_ZNVER4:
+    case PROCESSOR_ZNVER5:
     case PROCESSOR_CORE2:
     case PROCESSOR_NEHALEM:
     case PROCESSOR_SANDYBRIDGE:
@@ -79,6 +78,8 @@ ix86_issue_rate (void)
     case PROCESSOR_CASCADELAKE:
     case PROCESSOR_CANNONLAKE:
     case PROCESSOR_ALDERLAKE:
+    case PROCESSOR_YONGFENG:
+    case PROCESSOR_SHIJIDADAO:
     case PROCESSOR_GENERIC:
       return 4;
 
@@ -384,7 +385,6 @@ ix86_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
 
     case PROCESSOR_ATHLON:
     case PROCESSOR_K8:
-    case PROCESSOR_LUJIAZUI:
       memory = get_attr_memory (insn);
 
       /* Show ability of reorder buffer to hide latency of load by executing
@@ -417,6 +417,7 @@ ix86_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
     case PROCESSOR_ZNVER2:
     case PROCESSOR_ZNVER3:
     case PROCESSOR_ZNVER4:
+    case PROCESSOR_ZNVER5:
       /* Stack engine allows to execute push&pop instructions in parall.  */
       if ((insn_type == TYPE_PUSH || insn_type == TYPE_POP)
 	  && (dep_insn_type == TYPE_PUSH || dep_insn_type == TYPE_POP))
@@ -444,6 +445,32 @@ ix86_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
 	    cost = 0;
 	}
       break;
+
+    case PROCESSOR_YONGFENG:
+    case PROCESSOR_SHIJIDADAO:
+      /* Stack engine allows to execute push&pop instructions in parallel.  */
+      if ((insn_type == TYPE_PUSH || insn_type == TYPE_POP)
+	  && (dep_insn_type == TYPE_PUSH || dep_insn_type == TYPE_POP))
+	return 0;
+      /* FALLTHRU */
+
+    case PROCESSOR_LUJIAZUI:
+      memory = get_attr_memory (insn);
+
+      /* Show ability of reorder buffer to hide latency of load by executing
+	  in parallel with previous instruction in case
+	  previous instruction is not needed to compute the address.  */
+      if ((memory == MEMORY_LOAD || memory == MEMORY_BOTH)
+	  && !ix86_agi_dependent (dep_insn, insn))
+	  {
+	    int loadcost = 4;
+
+	    if (cost >= loadcost)
+	      cost -= loadcost;
+	    else
+	      cost = 0;
+	  }
+       break;
 
     case PROCESSOR_CORE2:
     case PROCESSOR_NEHALEM:
@@ -473,8 +500,6 @@ ix86_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
       break;
 
     case PROCESSOR_SILVERMONT:
-    case PROCESSOR_KNL:
-    case PROCESSOR_KNM:
     case PROCESSOR_INTEL:
       if (!reload_completed)
 	return cost;

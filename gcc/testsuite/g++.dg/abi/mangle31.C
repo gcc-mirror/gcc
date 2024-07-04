@@ -1,5 +1,6 @@
 // PR c++/39095
 // { dg-do compile }
+// { dg-additional-options -fabi-compat-version=0 }
 
 struct B
 {

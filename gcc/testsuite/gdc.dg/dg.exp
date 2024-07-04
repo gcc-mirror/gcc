@@ -1,4 +1,4 @@
-#   Copyright (C) 2017-2023 Free Software Foundation, Inc.
+#   Copyright (C) 2017-2024 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,7 +30,8 @@ dg-init
 
 # Main loop.
 gdc-dg-runtest [lsort \
-       [glob -nocomplain $srcdir/$subdir/*.d ] ] "" $DEFAULT_DFLAGS
+       [prune [glob -nocomplain $srcdir/$subdir/*.d ] \
+	      $srcdir/$subdir/gcov*.d ] ] "" $DEFAULT_DFLAGS
 
 # All done.
 dg-finish

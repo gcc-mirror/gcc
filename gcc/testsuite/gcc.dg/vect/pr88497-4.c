@@ -2,7 +2,7 @@
 /* { dg-require-effective-target vect_int } */
 /* { dg-require-effective-target powerpc_altivec_ok { target { powerpc*-*-* } } } */
 /* { dg-require-effective-target sse2 { target { i?86-*-* x86_64-*-* } } } */
-/* { dg-options "-O2 -ffast-math -fdump-tree-reassoc1" } */
+/* { dg-additional-options "-O2 -ffast-math -fdump-tree-reassoc1" } */
 /* { dg-additional-options "-maltivec" { target { powerpc*-*-* } } } */
 /* { dg-additional-options "-msse2" { target { i?86-*-* x86_64-*-* } } } */
 

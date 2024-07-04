@@ -1,5 +1,5 @@
 /* Character scanner.
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -877,7 +877,7 @@ skip_free_comments (void)
 
 	  /* If -fopenmp/-fopenacc, we need to handle here 2 things:
 	     1) don't treat !$omp/!$acc as comments, but directives
-	     2) handle OpenMP/OpenACC conditional compilation, where
+	     2) handle OpenMP conditional compilation, where
 		!$ should be treated as 2 spaces (for initial lines
 		only if followed by space).  */
 	  if (at_bol)
@@ -1106,7 +1106,7 @@ skip_fixed_comments (void)
 	  /* If -fopenmp/-fopenacc, we need to handle here 2 things:
 	     1) don't treat !$omp/!$acc|c$omp/c$acc|*$omp / *$acc as comments, 
 		but directives
-	     2) handle OpenMP/OpenACC conditional compilation, where
+	     2) handle OpenMP conditional compilation, where
 		!$|c$|*$ should be treated as 2 spaces if the characters
 		in columns 3 to 6 are valid fixed form label columns
 		characters.  */

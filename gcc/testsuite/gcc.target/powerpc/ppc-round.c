@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O2 -mdejagnu-cpu=power7" } */
+/* { dg-require-effective-target powerpc_vsx } */
 /* { dg-final { scan-assembler-times {\mstfiwx\M|\mstxsiwx\M}     4 } } */
 /* { dg-final { scan-assembler-times {\mlfiwax\M|\mlxsiwax\M}     2 } } */
 /* { dg-final { scan-assembler-times {\mlfiwzx\M|\mlxsiwzx\M}     2 } } */

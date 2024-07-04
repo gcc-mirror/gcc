@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gcv -mabi=ilp32d -O3 --param riscv-autovec-preference=scalable" } */
+/* { dg-options "-march=rv32gcv -mabi=ilp32d -O3 -mrvv-vector-bits=scalable" } */
 
 void __attribute__((noinline, noclone))
 f (int * __restrict dst, int * __restrict op1, int * __restrict op2, int count)

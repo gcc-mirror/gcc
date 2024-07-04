@@ -1,0 +1,73 @@
+(* ShortStr.mod provides low level SHORTREAL/string conversions.
+
+Copyright (C) 2023-2024 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE ShortConv;
+
+IMPORT
+  ConvTypes;
+
+TYPE
+  ConvResults = ConvTypes.ConvResults; (* strAllRight, strOutOfRange,
+                                          strWrongFormat, strEmpty *)
+
+PROCEDURE ScanReal (inputCh: CHAR; VAR chClass: ConvTypes.ScanClass;
+                    VAR nextState: ConvTypes.ScanState);
+  (* Represents the start state of a finite state scanner for real
+     numbers - assigns class of inputCh to chClass and a procedure
+     representing the next state to nextState.
+  *)
+
+PROCEDURE FormatReal (str: ARRAY OF CHAR): ConvResults;
+  (* Returns the format of the string value for conversion to LONGREAL. *)
+
+PROCEDURE ValueReal (str: ARRAY OF CHAR): SHORTREAL;
+  (* Returns the value corresponding to the real number string value
+     str if str is well-formed; otherwise raises the ShortConv exception.
+  *)
+
+PROCEDURE LengthFloatReal (real: SHORTREAL; sigFigs: CARDINAL): CARDINAL;
+  (* Returns the number of characters in the floating-point string
+     representation of real with sigFigs significant figures.
+  *)
+
+PROCEDURE LengthEngReal (real: SHORTREAL; sigFigs: CARDINAL): CARDINAL;
+  (* Returns the number of characters in the floating-point engineering
+     string representation of real with sigFigs significant figures.
+  *)
+
+PROCEDURE LengthFixedReal (real: SHORTREAL; place: INTEGER): CARDINAL;
+  (* Returns the number of characters in the fixed-point string
+     representation of real rounded to the given place relative to the
+     decimal point.
+  *)
+
+PROCEDURE IsRConvException (): BOOLEAN;
+  (* Returns TRUE if the current coroutine is in the exceptional
+     execution state because of the raising of an exception in a
+     routine from this module; otherwise returns FALSE.
+  *)
+
+END ShortConv.

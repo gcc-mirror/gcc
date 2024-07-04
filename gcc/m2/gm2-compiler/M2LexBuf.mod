@@ -1,6 +1,6 @@
 (* M2LexBuf.mod provides a buffer for m2.lex.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -22,9 +22,10 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 IMPLEMENTATION MODULE M2LexBuf ;
 
 IMPORT m2flex ;
+IMPORT FIO ;
 
 FROM libc IMPORT strlen ;
-FROM SYSTEM IMPORT ADDRESS ;
+FROM SYSTEM IMPORT ADDRESS, ADR ;
 FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
 FROM DynamicStrings IMPORT string, InitString, InitStringCharStar, Equal, Mark, KillString ;
 FROM FormatStrings IMPORT Sprintf1 ;
@@ -33,14 +34,25 @@ FROM M2Reserved IMPORT toktype, tokToTok ;
 FROM M2Printf IMPORT printf0, printf1, printf2, printf3 ;
 FROM M2Debug IMPORT Assert ;
 FROM NameKey IMPORT makekey ;
+FROM NumberIO IMPORT CardToStr ;
 FROM m2linemap IMPORT location_t, GetLocationBinary ;
 FROM M2Emit IMPORT UnknownLocation, BuiltinsLocation ;
 FROM M2Error IMPORT WarnStringAt ;
+FROM M2MetaError IMPORT MetaErrorT0 ;
+FROM M2Options IMPORT GetDebugTraceToken ;
+FROM M2LangDump IMPORT GetDumpFile ;
+
+FROM Indexing IMPORT Index, InitIndex, GetIndice, PutIndice,
+                     KillIndex, ForeachIndiceInIndexDo,
+                     LowIndice, HighIndice, IsEmpty, InBounds,
+                     InitIndexTuned ;
+
 
 CONST
-   MaxBucketSize      = 100 ;
+   Tracing            = FALSE ;
    Debugging          = FALSE ;
    DebugRecover       = FALSE ;
+   BadTokenNo         = 32579 ;
    InitialSourceToken = 2 ;   (* 0 is unknown, 1 is builtin.  *)
 
 TYPE
@@ -52,7 +64,7 @@ TYPE
                               col  : CARDINAL ;
                            END ;
 
-   TokenDesc = RECORD
+   TokenDesc = POINTER TO RECORD
                   token : toktype ;
                   str   : Name ;          (* ident name or string literal.  *)
                   int   : INTEGER ;
@@ -60,61 +72,89 @@ TYPE
                   col   : CARDINAL ;
                   file  : SourceList ;
                   loc   : location_t ;
-                  insert: TokenBucket ;   (* contains any inserted tokens.  *)
+                  insert: Index ;         (* Contains any inserted tokens.  *)
                END ;
-
-   TokenBucket = POINTER TO RECORD
-                               buf : ARRAY [0..MaxBucketSize] OF TokenDesc ;
-                               len : CARDINAL ;
-                               next: TokenBucket ;
-                            END ;
-
-   ListDesc = RECORD
-                 head,
-                 tail            : TokenBucket ;
-                 LastBucketOffset: CARDINAL ;
-              END ;
 
 VAR
    CurrentSource    : SourceList ;
    UseBufferedTokens,
    CurrentUsed      : BOOLEAN ;
-   ListOfTokens     : ListDesc ;
+   ListOfTokens     : Index ;
    CurrentTokNo     : CARDINAL ;
    InsertionIndex   : CARDINAL ;
    SeenEof          : BOOLEAN ;  (* Have we seen eof since the last call
                                     to OpenSource.  *)
 
 
+PROCEDURE stop ;
+END stop ;
+
+
+(*
+   InitTokenDesc - returns a TokenDesc filled in with the parameters and
+                   the insert field set to NIL.
+*)
+
+PROCEDURE InitTokenDesc (token: toktype; str: Name; int: INTEGER;
+                         line, col: CARDINAL;
+                         file: SourceList; loc: location_t) : TokenDesc ;
+VAR
+   tokdesc: TokenDesc ;
+BEGIN
+   NEW (tokdesc) ;
+   tokdesc^.token := token ;
+   tokdesc^.str := str ;
+   tokdesc^.int := int ;
+   tokdesc^.line := line ;
+   tokdesc^.col := col ;
+   tokdesc^.file := file ;
+   tokdesc^.loc := loc ;
+   tokdesc^.insert := NIL ;
+   RETURN tokdesc
+END InitTokenDesc ;
+
+
+(*
+   DeleteTokenDesc - delete tokdesc and any sub indices.
+*)
+
+PROCEDURE DeleteTokenDesc (tokdesc: TokenDesc) ;
+BEGIN
+   IF tokdesc^.insert # NIL
+   THEN
+      ForeachIndiceInIndexDo (tokdesc^.insert, DeleteTokenDesc)
+   END ;
+   DISPOSE (tokdesc)
+END DeleteTokenDesc ;
+
+
+(*
+   Append - appends tokdesc to the end of the list defined by index.
+*)
+
+PROCEDURE Append (index: Index; tokdesc: TokenDesc) ;
+BEGIN
+   IF IsEmpty (index)
+   THEN
+      PutIndice (index, LowIndice (index), tokdesc)
+   ELSE
+      PutIndice (index, HighIndice (index) +1, tokdesc)
+   END
+END Append ;
+
+
 (*
    InitTokenList - creates an empty token list, which starts the first source token
-                   at position 2.  This allows position 0 to be for unknown location
-                   and position 1 for builtin token.
+                   at position 2.  This allows position 0 to be used for the unknown
+                   location and position 1 for the builtin token.
 *)
 
 PROCEDURE InitTokenList ;
 BEGIN
-   NEW (ListOfTokens.head) ;
-   ListOfTokens.tail := ListOfTokens.head ;
-   WITH ListOfTokens.tail^.buf[0] DO
-      token := eoftok ;
-      str := NulName ;
-      int := 0 ;
-      line := 0 ;
-      col := 0 ;
-      file := NIL ;
-      loc := UnknownLocation ()
-   END ;
-   WITH ListOfTokens.tail^.buf[1] DO
-      token := eoftok ;
-      str := NulName ;
-      int := 0 ;
-      line := 0 ;
-      col := 0 ;
-      file := NIL ;
-      loc := BuiltinsLocation ()
-   END ;
-   ListOfTokens.tail^.len := InitialSourceToken
+   (* 65K elements in the array and when it becomes full it will grow to 1M, 16M etc elements.  *)
+   ListOfTokens := InitIndexTuned (0, 1024*1024 DIV 16, 16) ;
+   Append (ListOfTokens, InitTokenDesc (eoftok, NulName, 0, 0, 0, NIL, UnknownLocation ())) ;
+   Append (ListOfTokens, InitTokenDesc (eoftok, NulName, 0, 0, 0, NIL, BuiltinsLocation ()))
 END InitTokenList ;
 
 
@@ -129,8 +169,6 @@ BEGIN
    currenttoken := eoftok ;
    CurrentTokNo := InitialSourceToken ;
    CurrentSource := NIL ;
-   ListOfTokens.head := NIL ;
-   ListOfTokens.tail := NIL ;
    UseBufferedTokens := FALSE ;
    InitTokenList
 END Init ;
@@ -302,20 +340,10 @@ END KillList ;
 *)
 
 PROCEDURE ReInitialize ;
-VAR
-   s, t: TokenBucket ;
 BEGIN
-   IF ListOfTokens.head#NIL
-   THEN
-      t := ListOfTokens.head ;
-      REPEAT
-         s := t ;
-         t := t^.next ;
-         DISPOSE(s) ;
-      UNTIL t=NIL ;
-      CurrentUsed := FALSE ;
-      KillList
-   END ;
+   ForeachIndiceInIndexDo (ListOfTokens, DeleteTokenDesc) ;
+   CurrentUsed := FALSE ;
+   KillList ;
    Init
 END ReInitialize ;
 
@@ -340,6 +368,7 @@ END SetFile ;
 
 PROCEDURE OpenSource (s: String) : BOOLEAN ;
 BEGIN
+   tprintf1 ("OpenSource (%s)\n", s) ;
    SeenEof := FALSE ;
    IF UseBufferedTokens
    THEN
@@ -349,8 +378,11 @@ BEGIN
       IF m2flex.OpenSource (string (s))
       THEN
          SetFile (string (s)) ;
-         SyncOpenWithBuffer ;
          GetToken ;
+         IF IsLastTokenEof ()
+         THEN
+            MetaErrorT0 (GetTokenNo (), "source file is empty")
+         END ;
          RETURN TRUE
       ELSE
          RETURN FALSE
@@ -365,6 +397,7 @@ END OpenSource ;
 
 PROCEDURE CloseSource ;
 BEGIN
+   tprintf0 ("CloseSource\n") ;
    IF UseBufferedTokens
    THEN
       WHILE currenttoken#eoftok DO
@@ -483,138 +516,133 @@ BEGIN
 END DisplayToken ;
 
 
-(*
-   UpdateFromBucket - updates the global variables:  currenttoken,
-                      currentstring, currentcolumn and currentinteger
-                      from TokenBucket, b, and, offset.
-*)
-
-PROCEDURE UpdateFromBucket (b: TokenBucket; offset: CARDINAL) ;
-BEGIN
-   IF InsertionIndex > 0
-   THEN
-      (* we have an inserted token to use.  *)
-      Assert (b^.buf[offset].insert # NIL) ;
-      WITH b^.buf[offset].insert^.buf[InsertionIndex] DO
-         currenttoken   := token ;
-         currentstring  := KeyToCharStar(str) ;
-         currentcolumn  := col ;
-         currentinteger := int ;
-         IF Debugging
-         THEN
-            printf3('line %d (# %d  %d) ', line, offset, CurrentTokNo)
-         END
-      END ;
-      INC (InsertionIndex) ;
-      IF InsertionIndex = b^.buf[offset].insert^.len
-      THEN
-         InsertionIndex := 0 ;  (* finished consuming the inserted tokens.  *)
-         INC (CurrentTokNo)
-      END
-   ELSIF (b^.buf[offset].insert # NIL) AND (InsertionIndex = 0)
-   THEN
-      (* this source token has extra tokens appended after it by the error recovery.  *)
-      Assert (b^.buf[offset].insert^.len > 0) ;  (* we must have at least one token.  *)
-      InsertionIndex := 1 ; (* so set the index ready for the next UpdateFromBucket.  *)
-      (* and read the original token.  *)
-      WITH b^.buf[offset] DO
-         currenttoken   := token ;
-         currentstring  := KeyToCharStar(str) ;
-         currentcolumn  := col ;
-         currentinteger := int ;
-         IF Debugging
-         THEN
-            printf3('line %d (# %d  %d) ', line, offset, CurrentTokNo)
-         END
-      END
-   ELSE
-      (* no inserted tokens after this token so read it and move on.  *)
-      WITH b^.buf[offset] DO
-         currenttoken   := token ;
-         currentstring  := KeyToCharStar(str) ;
-         currentcolumn  := col ;
-         currentinteger := int ;
-         IF Debugging
-         THEN
-            printf3('line %d (# %d  %d) ', line, offset, CurrentTokNo)
-         END
-      END ;
-      INC (CurrentTokNo)
-   END
-END UpdateFromBucket ;
-
-
-(*
-   DisplayTokenEntry -
-*)
-
-PROCEDURE DisplayTokenEntry (topBucket: TokenBucket; index, total: CARDINAL) ;
 VAR
-   i: CARDINAL ;
-BEGIN
-   printf1 ("%d: ", total) ;
-   DisplayToken (topBucket^.buf[index].token) ;
-   printf1 (" %a ", topBucket^.buf[index].str) ;
-   IF total = GetTokenNo ()
-   THEN
-      printf0 (" <- current token")
-   END ;
-   printf0 ("\n") ;
-   (* now check for inserted tokens.  *)
-   IF topBucket^.buf[index].insert # NIL
-   THEN
-      i := 1 ;
-      WHILE i < topBucket^.buf[index].insert^.len DO
-         printf1 ("   %d: ", i) ;
-         DisplayToken (topBucket^.buf[index].insert^.buf[i].token) ;
-         printf1 (" %a\n", topBucket^.buf[index].insert^.buf[i].str) ;
-         INC (i)
-      END
-   END
-END DisplayTokenEntry ;
+   indent: CARDINAL ;
 
 
 (*
-   DumpTokens - developer debugging aid.
+   DumpToken -
+*)
+
+PROCEDURE DumpToken (tokdesc: TokenDesc) ;
+VAR
+   n: CARDINAL ;
+BEGIN
+   n := indent ;
+   WHILE n > 0 DO
+      printf0 (" ") ;
+      DEC (n)
+   END ;
+   WITH tokdesc^ DO
+      DisplayToken (token) ;
+      IF str # NulName
+      THEN
+         printf1 (" %a", str)
+      END ;
+      IF insert # NIL
+      THEN
+         printf0 ("inserted error recovery tokens\n") ;
+         INC (indent, 2) ;
+         ForeachIndiceInIndexDo (insert, DumpToken) ;
+         DEC (indent, 2)
+      END
+   END
+END DumpToken ;
+
+
+(*
+   DumpTokens - displays all tokens.
 *)
 
 PROCEDURE DumpTokens ;
 VAR
-   tb    : TokenBucket ;
-   i,
-   tokenNo,
-   total,
-   length : CARDINAL ;
+   high,
+   ind : CARDINAL ;
 BEGIN
-   tokenNo := GetTokenNo () ;
-   tb := ListOfTokens.head ;
-   total := 0 ;
-   WHILE tb # NIL DO
-      length := tb^.len ;
-      i := 0 ;
-      WHILE i < length DO
-         DisplayTokenEntry (tb, i, total) ;
-         INC (i) ;
-         INC (total)
-      END ;
-      tb := tb^.next
-   END ;
-   printf2 ("%d: tokenNo,  %d: total\n", tokenNo, total) ;
-   IF (total # 0) AND (tokenNo = total)
+   IF IsEmpty (ListOfTokens)
    THEN
-      printf1 ("%d: end of buffer ", total) ;
-      printf0 (" <- current token") ;
-      printf0 ("\n") ;
-   END ;
+      printf0 ("The token buffer is empty\n")
+   ELSE
+      ind := LowIndice (ListOfTokens) ;
+      high := HighIndice (ListOfTokens) ;
+      WHILE ind <= high DO
+         printf1 ("%5d ", ind) ;
+         DumpToken (GetIndice (ListOfTokens, ind)) ;
+         INC (ind)
+      END
+   END
 END DumpTokens ;
 
 
 (*
-   GetNonEofToken - providing that we have not already seen an eof for this source
-                    file call m2flex.GetToken and GetToken if requested.
+   CopyOutCurrent - copies the token in buffer[index][insertion] into
+                    then current token global variables.
 *)
 
-PROCEDURE GetNonEofToken (callGetToken: BOOLEAN) ;
+PROCEDURE CopyOutCurrent (buffer: Index; index, insertion: CARDINAL) ;
+VAR
+   tokdesc: TokenDesc ;
+BEGIN
+   tokdesc := GetIndice (buffer, index) ;
+   IF insertion # 0
+   THEN
+      tokdesc := GetIndice (tokdesc^.insert, insertion)
+   END ;
+   WITH tokdesc^ DO
+      currenttoken   := token ;
+      currentstring  := KeyToCharStar (str) ;
+      currentcolumn  := col ;
+      currentinteger := int
+   END
+END CopyOutCurrent ;
+
+
+(*
+   UpdateToken - update the global current token variables from buffer[index]
+                 using inserted tokens if directed by InsertionIndex.
+*)
+
+PROCEDURE UpdateToken (buffer: Index; index: CARDINAL) ;
+VAR
+   tokdesc: TokenDesc ;
+BEGIN
+   tokdesc := GetIndice (buffer, index) ;
+   IF InsertionIndex > 0
+   THEN
+      (* We have an inserted token to use.  *)
+      Assert (tokdesc^.insert # NIL) ;
+      CopyOutCurrent (buffer, index, InsertionIndex) ;
+      (* Move InsertionIndex to the next position.  *)
+      INC (InsertionIndex) ;
+      IF InsertionIndex > HighIndice (tokdesc^.insert)
+      THEN
+         (* We are done consuming the inserted tokens, so move
+            onto the next original source token.  *)
+         InsertionIndex := 0 ;
+         INC (CurrentTokNo)
+      END
+   ELSIF (tokdesc^.insert # NIL) AND (InsertionIndex = 0)
+   THEN
+      (* This source token has extra tokens appended after it by the error recovery.
+         Set the index ready for the next UpdateToken which will read the extra
+         tokens.  *)
+      InsertionIndex := 1 ;
+      (* However this call must read the original token.  *)
+      CopyOutCurrent (buffer, index, 0)
+   ELSE
+      CopyOutCurrent (buffer, index, 0) ;
+      (* Move onto the next original source token.  *)
+      INC (CurrentTokNo)
+   END
+END UpdateToken ;
+
+
+(*
+   GetTokenFiltered - providing that we have not already seen an eof for this source
+                      file call m2flex.GetToken and GetToken if requested.
+*)
+
+PROCEDURE GetTokenFiltered (callGetToken: BOOLEAN) ;
 BEGIN
    IF SeenEof
    THEN
@@ -627,7 +655,7 @@ BEGIN
          GetToken
       END
    END
-END GetNonEofToken ;
+END GetTokenFiltered ;
 
 
 (*
@@ -636,133 +664,108 @@ END GetNonEofToken ;
 
 PROCEDURE GetToken ;
 VAR
-   t: CARDINAL ;
-   b: TokenBucket ;
+   buf: ARRAY [0..20] OF CHAR ;
 BEGIN
    IF UseBufferedTokens
    THEN
-      t := CurrentTokNo ;
-      b := FindTokenBucket(t) ;
-      UpdateFromBucket (b, t)
+      UpdateToken (ListOfTokens, CurrentTokNo) ;
+      IF GetDebugTraceToken ()
+      THEN
+         CardToStr (CurrentTokNo, 0, buf) ;
+         FIO.WriteString (GetDumpFile (), 'token: ') ;
+         FIO.WriteString (GetDumpFile (), buf) ;
+         FIO.WriteLine (GetDumpFile ())
+      END
    ELSE
-      IF ListOfTokens.tail=NIL
+      IF NOT InBounds (ListOfTokens, CurrentTokNo)
       THEN
-         GetNonEofToken (FALSE) ;
-         IF ListOfTokens.tail=NIL
-         THEN
-            HALT
-         END
+         GetTokenFiltered (FALSE)
       END ;
-      IF CurrentTokNo>=ListOfTokens.LastBucketOffset
+      UpdateToken (ListOfTokens, CurrentTokNo) ;
+      IF GetDebugTraceToken ()
       THEN
-         (* CurrentTokNo is in the last bucket or needs to be read.  *)
-         IF CurrentTokNo-ListOfTokens.LastBucketOffset<ListOfTokens.tail^.len
-         THEN
-            UpdateFromBucket (ListOfTokens.tail,
-                              CurrentTokNo-ListOfTokens.LastBucketOffset)
-         ELSE
-            (* and call ourselves again to collect the token from bucket *)
-            GetNonEofToken (TRUE)
-         END
-      ELSE
-         t := CurrentTokNo ;
-         b := FindTokenBucket (t) ;
-         UpdateFromBucket (b, t)
+         CardToStr (CurrentTokNo, 0, buf) ;
+         m2flex.M2Error (ADR (buf))
       END
    END
 END GetToken ;
 
 
 (*
-   SyncOpenWithBuffer - synchronise the buffer with the start of a file.
-                        Skips all the tokens to do with the previous file.
+   AppendInsertToken -
 *)
 
-PROCEDURE SyncOpenWithBuffer ;
+PROCEDURE AppendInsertToken (index: Index; tokdesc: TokenDesc) ;
 BEGIN
-   IF ListOfTokens.tail#NIL
+   IF IsEmpty (index)
    THEN
-      WITH ListOfTokens.tail^ DO
-         CurrentTokNo := ListOfTokens.LastBucketOffset+len
-      END
+      PutIndice (index, LowIndice (index), tokdesc)
+   ELSE
+      PutIndice (index, HighIndice (index) +1, tokdesc)
    END
-END SyncOpenWithBuffer ;
+END AppendInsertToken ;
 
 
 (*
-   GetInsertBucket - returns the insertion bucket associated with token count
-                     and the topBucket.  It creates a new TokenBucket if necessary.
+   DupTok - duplicate tokdesc and replaces the token field with token.
 *)
 
-PROCEDURE GetInsertBucket (topBucket: TokenBucket; count: CARDINAL) : TokenBucket ;
+PROCEDURE DupTok (tokdesc: TokenDesc; token: toktype) : TokenDesc ;
+VAR
+   dup: TokenDesc ;
 BEGIN
-   IF topBucket^.buf[count].insert = NIL
-   THEN
-      NEW (topBucket^.buf[count].insert) ;
-      topBucket^.buf[count].insert^.buf[0] := topBucket^.buf[count] ;
-      topBucket^.buf[count].insert^.buf[0].insert := NIL ;
-      topBucket^.buf[count].insert^.len := 1  (* empty, slot 0 contains the original token for ease.  *)
-   END ;
-   RETURN topBucket^.buf[count].insert
-END GetInsertBucket ;
+   NEW (dup) ;
+   Assert (dup # NIL) ;
+   dup^ := tokdesc^ ;
+   dup^.token := token ;
+   RETURN dup
+END DupTok ;
 
 
 (*
-   AppendToken - appends desc to the end of the insertionBucket.
-*)
-
-PROCEDURE AppendToken (insertionBucket: TokenBucket; desc: TokenDesc) ;
-BEGIN
-   IF insertionBucket^.len < MaxBucketSize
-   THEN
-      insertionBucket^.buf[insertionBucket^.len] := desc ;
-      INC (insertionBucket^.len)
-   END
-END AppendToken ;
-
-
-(*
-   InsertToken - inserts a symbol, token, infront of the current token
+   InsertToken - inserts a symbol token infront of the current token
                  ready for the next pass.
 *)
 
 PROCEDURE InsertToken (token: toktype) ;
 VAR
-   topBucket, insertionBucket: TokenBucket ;
-   count : CARDINAL ;
-   desc  : TokenDesc ;
+   prev   : CARDINAL ;
+   tokdesc: TokenDesc ;
 BEGIN
-   Assert (ListOfTokens.tail # NIL) ;
-   count := GetTokenNo () -1 ;
-   topBucket := FindTokenBucket (count) ;
-   insertionBucket := GetInsertBucket (topBucket, count) ;
-   desc := topBucket^.buf[count] ;
-   desc.token := token ;
-   desc.insert := NIL ;
-   AppendToken (insertionBucket, desc) ;
-   IF DebugRecover
+   Assert (ListOfTokens # NIL) ;
+   Assert (NOT IsEmpty (ListOfTokens)) ;
+   prev := GetTokenNo () -1 ;
+   tokdesc := GetIndice (ListOfTokens, prev) ;
+   IF tokdesc^.insert = NIL
    THEN
-      DumpTokens
-   END
+      tokdesc^.insert := InitIndex (1)
+   END ;
+   AppendInsertToken (tokdesc^.insert, DupTok (tokdesc, token))
 END InsertToken ;
 
 
 (*
-   InsertTokenAndRewind - inserts a symbol, token, infront of the current token
-                          and then moves the token stream back onto the inserted token.
+   InsertTokenAndRewind - inserts a symbol token infront of the current token
+                          and then moves the token stream back onto the inserted
+                          token.
 *)
 
 PROCEDURE InsertTokenAndRewind (token: toktype) ;
 VAR
-   offset   : CARDINAL ;
-   topBucket: TokenBucket ;
+   position : CARDINAL ;
+   tokdesc  : TokenDesc ;
 BEGIN
    IF GetTokenNo () > 0
    THEN
       InsertToken (token) ;
-      offset := CurrentTokNo -2 ;
-      topBucket := FindTokenBucket (offset) ;
-      InsertionIndex := topBucket^.buf[offset].insert^.len -1 ;
+      position := CurrentTokNo -2 ;
+      tokdesc := GetIndice (ListOfTokens, position) ;
+      IF tokdesc^.insert = NIL
+      THEN
+         tokdesc^.insert := InitIndex (1)
+      END ;
+      AppendInsertToken (tokdesc^.insert, DupTok (tokdesc, token)) ;
+      InsertionIndex := HighIndice (tokdesc^.insert) ;
       DEC (CurrentTokNo, 2) ;
       GetToken
    END
@@ -775,14 +778,6 @@ END InsertTokenAndRewind ;
 
 PROCEDURE GetPreviousTokenLineNo () : CARDINAL ;
 BEGIN
-   (*
-   IF GetTokenNo()>0
-   THEN
-      RETURN( TokenToLineNo(GetTokenNo()-1, 0) )
-   ELSE
-      RETURN( 0 )
-   END
-      *)
    RETURN GetLineNo ()
 END GetPreviousTokenLineNo ;
 
@@ -840,158 +835,122 @@ END GetTokenNo ;
 
 PROCEDURE GetTokenName (tokenno: CARDINAL) : Name ;
 VAR
-   b: TokenBucket ;
-   n: Name ;
+   tokdesc: TokenDesc ;
+   name   : Name ;
 BEGIN
-   b := FindTokenBucket (tokenno) ;
-   IF b=NIL
+   IF InBounds (ListOfTokens, tokenno)
    THEN
-      RETURN NulName
-   ELSE
-      WITH b^.buf[tokenno] DO
-         n := tokToTok (token) ;
-	 IF n=NulName
-         THEN
-            RETURN str
-         ELSE
-            RETURN n
-         END
+      tokdesc := GetIndice (ListOfTokens, tokenno) ;
+      name := tokToTok (tokdesc^.token) ;
+      IF name = NulName
+      THEN
+         RETURN tokdesc^.str
+      ELSE
+         RETURN name
       END
-   END
+   END ;
+   RETURN NulName
 END GetTokenName ;
 
 
 (*
-   FindTokenBucket - returns the TokenBucket corresponding to the TokenNo.
-*)
-
-PROCEDURE FindTokenBucket (VAR TokenNo: CARDINAL) : TokenBucket ;
-VAR
-   b: TokenBucket ;
-BEGIN
-   b := ListOfTokens.head ;
-   WHILE b#NIL DO
-      WITH b^ DO
-         IF TokenNo<len
-         THEN
-            RETURN b
-         ELSE
-            DEC (TokenNo, len)
-         END
-      END ;
-      b := b^.next
-   END ;
-   RETURN NIL
-END FindTokenBucket ;
-
-
-(*
    TokenToLineNo - returns the line number of the current file for the
-                   TokenNo. The depth refers to the include depth.
+                   tokenno. The depth refers to the include depth.
                    A depth of 0 is the current file, depth of 1 is the file
                    which included the current file. Zero is returned if the
                    depth exceeds the file nesting level.
 *)
 
-PROCEDURE TokenToLineNo (TokenNo: CARDINAL; depth: CARDINAL) : CARDINAL ;
+PROCEDURE TokenToLineNo (tokenno: CARDINAL; depth: CARDINAL) : CARDINAL ;
 VAR
-   b: TokenBucket ;
-   l: SourceList ;
-BEGIN
-   IF (TokenNo = UnknownTokenNo) OR (TokenNo = BuiltinTokenNo)
+   tokdesc: TokenDesc ;
+   level  : SourceList ;
+ BEGIN
+   IF (tokenno # UnknownTokenNo) AND (tokenno # BuiltinTokenNo)
    THEN
-      RETURN 0
-   ELSE
-      b := FindTokenBucket (TokenNo) ;
-      IF b = NIL
+      IF InBounds (ListOfTokens, tokenno)
       THEN
-         RETURN 0
-      ELSE
+         tokdesc := GetIndice (ListOfTokens, tokenno) ;
          IF depth = 0
          THEN
-            RETURN b^.buf[TokenNo].line
+            RETURN tokdesc^.line
          ELSE
-            l := b^.buf[TokenNo].file^.left ;
-            WHILE depth>0 DO
-               l := l^.left ;
-               IF l=b^.buf[TokenNo].file^.left
+            level := tokdesc^.file^.left ;
+            WHILE depth > 0 DO
+               level := level^.left ;
+               IF level = tokdesc^.file^.left
                THEN
                   RETURN 0
                END ;
                DEC (depth)
             END ;
-            RETURN l^.line
+            RETURN level^.line
          END
       END
-   END
+   END ;
+   RETURN 0
 END TokenToLineNo ;
 
 
 (*
    TokenToColumnNo - returns the column number of the current file for the
-                     TokenNo. The depth refers to the include depth.
+                     tokenno. The depth refers to the include depth.
                      A depth of 0 is the current file, depth of 1 is the file
                      which included the current file. Zero is returned if the
                      depth exceeds the file nesting level.
 *)
 
-PROCEDURE TokenToColumnNo (TokenNo: CARDINAL; depth: CARDINAL) : CARDINAL ;
+PROCEDURE TokenToColumnNo (tokenno: CARDINAL; depth: CARDINAL) : CARDINAL ;
 VAR
-   b: TokenBucket ;
-   l: SourceList ;
+   tokdesc: TokenDesc ;
+   level  : SourceList ;
 BEGIN
-   IF (TokenNo = UnknownTokenNo) OR (TokenNo = BuiltinTokenNo)
+   IF (tokenno # UnknownTokenNo) AND (tokenno # BuiltinTokenNo)
    THEN
-      RETURN 0
-   ELSE
-      b := FindTokenBucket (TokenNo) ;
-      IF b=NIL
+      IF InBounds (ListOfTokens, tokenno)
       THEN
-         RETURN 0
-      ELSE
+         tokdesc := GetIndice (ListOfTokens, tokenno) ;
          IF depth = 0
          THEN
-            RETURN b^.buf[TokenNo].col
+            RETURN tokdesc^.col
          ELSE
-            l := b^.buf[TokenNo].file^.left ;
-            WHILE depth>0 DO
-               l := l^.left ;
-               IF l=b^.buf[TokenNo].file^.left
+            level := tokdesc^.file^.left ;
+            WHILE depth > 0 DO
+               level := level^.left ;
+               IF level = tokdesc^.file^.left
                THEN
                   RETURN 0
                END ;
                DEC (depth)
             END ;
-            RETURN l^.col
+            RETURN level^.col
          END
       END
-   END
+   END ;
+   RETURN 0
 END TokenToColumnNo ;
 
 
 (*
-   TokenToLocation - returns the location_t corresponding to, TokenNo.
+   TokenToLocation - returns the location_t corresponding to tokenno.
 *)
 
-PROCEDURE TokenToLocation (TokenNo: CARDINAL) : location_t ;
+PROCEDURE TokenToLocation (tokenno: CARDINAL) : location_t ;
 VAR
-   b: TokenBucket ;
+   tokdesc: TokenDesc ;
 BEGIN
-   IF TokenNo = UnknownTokenNo
+   IF tokenno = UnknownTokenNo
    THEN
       RETURN UnknownLocation ()
-   ELSIF TokenNo = BuiltinTokenNo
+   ELSIF tokenno = BuiltinTokenNo
    THEN
       RETURN BuiltinsLocation ()
-   ELSE
-      b := FindTokenBucket (TokenNo) ;
-      IF b=NIL
-      THEN
-         RETURN UnknownLocation ()
-      ELSE
-         RETURN b^.buf[TokenNo].loc
-      END
-   END
+   ELSIF InBounds (ListOfTokens, tokenno)
+   THEN
+      tokdesc := GetIndice (ListOfTokens, tokenno) ;
+      RETURN tokdesc^.loc
+   END ;
+   RETURN UnknownLocation ()
 END TokenToLocation ;
 
 
@@ -1003,35 +962,29 @@ END TokenToLocation ;
                            is requested.
 *)
 
-PROCEDURE FindFileNameFromToken (TokenNo: CARDINAL; depth: CARDINAL) : String ;
+PROCEDURE FindFileNameFromToken (tokenno: CARDINAL; depth: CARDINAL) : String ;
 VAR
-   b: TokenBucket ;
-   l: SourceList ;
+   tokdesc: TokenDesc ;
+   level  : SourceList ;
 BEGIN
-   b := FindTokenBucket (TokenNo) ;
-   IF b=NIL
+   IF (tokenno # UnknownTokenNo) AND (tokenno # BuiltinTokenNo)
    THEN
-      RETURN NIL
-   ELSE
-      IF TokenNo = UnknownTokenNo
+      IF InBounds (ListOfTokens, tokenno)
       THEN
-         RETURN NIL
-      ELSIF TokenNo = BuiltinTokenNo
-      THEN
-         RETURN NIL
-      ELSE
-         l := b^.buf[TokenNo].file^.left ;
-         WHILE depth>0 DO
-            l := l^.left ;
-            IF l=b^.buf[TokenNo].file^.left
+         tokdesc := GetIndice (ListOfTokens, tokenno) ;
+         level := tokdesc^.file^.left ;
+         WHILE depth > 0 DO
+            level := level^.left ;
+            IF level = tokdesc^.file^.left
             THEN
                RETURN NIL
             END ;
             DEC (depth)
          END ;
-         RETURN l^.name
+         RETURN level^.name
       END
-   END
+   END ;
+   RETURN NIL
 END FindFileNameFromToken ;
 
 
@@ -1049,46 +1002,12 @@ END GetFileName ;
    AddTokToList - adds a token to a dynamic list.
 *)
 
-PROCEDURE AddTokToList (t: toktype; n: Name;
-                        i: INTEGER; l: CARDINAL; c: CARDINAL;
-                        f: SourceList; location: location_t) ;
+PROCEDURE AddTokToList (token: toktype; str: Name;
+                        int: INTEGER; line: CARDINAL; col: CARDINAL;
+                        file: SourceList; location: location_t) ;
 BEGIN
-   IF ListOfTokens.head=NIL
-   THEN
-      NEW (ListOfTokens.head) ;
-      IF ListOfTokens.head=NIL
-      THEN
-         (* list error *)
-      END ;
-      ListOfTokens.tail := ListOfTokens.head ;
-      ListOfTokens.tail^.len := 0
-   ELSIF ListOfTokens.tail^.len=MaxBucketSize
-   THEN
-      Assert(ListOfTokens.tail^.next=NIL) ;
-      NEW (ListOfTokens.tail^.next) ;
-      IF ListOfTokens.tail^.next=NIL
-      THEN
-         (* list error *)
-      ELSE
-         ListOfTokens.tail := ListOfTokens.tail^.next ;
-         ListOfTokens.tail^.len := 0
-      END ;
-      INC (ListOfTokens.LastBucketOffset, MaxBucketSize)
-   END ;
-   WITH ListOfTokens.tail^ DO
-      next := NIL ;
-      WITH buf[len] DO
-         token  := t ;
-         str    := n ;
-         int    := i ;
-         line   := l ;
-         col    := c ;
-         file   := f ;
-         loc    := location ;
-         insert := NIL ;
-      END ;
-      INC (len)
-   END
+   Append (ListOfTokens, InitTokenDesc (token, str, int, line,
+                                        col, file, location))
 END AddTokToList ;
 
 
@@ -1098,29 +1017,15 @@ END AddTokToList ;
 
 PROCEDURE IsLastTokenEof () : BOOLEAN ;
 VAR
-   b: TokenBucket ;
+   tokdesc: TokenDesc ;
 BEGIN
-   IF ListOfTokens.tail#NIL
+   IF IsEmpty (ListOfTokens)
    THEN
-      IF ListOfTokens.tail^.len=0
-      THEN
-         b := ListOfTokens.head ;
-         IF b=ListOfTokens.tail
-         THEN
-            RETURN FALSE
-         END ;
-         WHILE b^.next#ListOfTokens.tail DO
-            b := b^.next
-         END ;
-      ELSE
-         b := ListOfTokens.tail
-      END ;
-      WITH b^ DO
-         Assert (len>0) ;     (* len should always be >0 *)
-         RETURN buf[len-1].token=eoftok
-      END
-   END ;
-   RETURN FALSE
+      RETURN FALSE
+   ELSE
+      tokdesc := GetIndice (ListOfTokens, HighIndice (ListOfTokens)) ;
+      RETURN tokdesc^.token = eoftok
+   END
 END IsLastTokenEof ;
 
 
@@ -1154,34 +1059,77 @@ END isSrcToken ;
    MakeVirtualTok - providing caret, left, right are associated with a source file
                     and exist on the same src line then
                     create and return a new tokenno which is created from
-                    tokenno range1 and range2.  Otherwise return caret.
+                    tokenno left and right.  Otherwise return caret.
 *)
 
 PROCEDURE MakeVirtualTok (caret, left, right: CARDINAL) : CARDINAL ;
 VAR
-   bufLeft, bufRight: TokenBucket ;
-   lc, ll, lr       : location_t ;
+   descLeft, descRight: TokenDesc ;
+   lc, ll, lr         : location_t ;
 BEGIN
    IF isSrcToken (caret) AND isSrcToken (left) AND isSrcToken (right)
    THEN
       lc := TokenToLocation (caret) ;
       ll := TokenToLocation (left) ;
       lr := TokenToLocation (right) ;
-      bufLeft := FindTokenBucket (left) ;   (* left maybe changed now.  *)
-      bufRight := FindTokenBucket (right) ;  (* right maybe changed now.  *)
-
-      IF (bufLeft^.buf[left].line = bufRight^.buf[right].line) AND
-         (bufLeft^.buf[left].file = bufRight^.buf[right].file)
+      IF InBounds (ListOfTokens, left) AND InBounds (ListOfTokens, right)
       THEN
-         (* on the same line, create a new token and location.  *)
-         AddTokToList (virtualrangetok, NulName, 0,
-                       bufLeft^.buf[left].line, bufLeft^.buf[left].col, bufLeft^.buf[left].file,
-                       GetLocationBinary (lc, ll, lr)) ;
-         RETURN ListOfTokens.LastBucketOffset + ListOfTokens.tail^.len - 1
+         descLeft := GetIndice (ListOfTokens, left) ;
+         descRight := GetIndice (ListOfTokens, right) ;
+         IF (descLeft^.line = descRight^.line) AND
+            (descLeft^.file = descRight^.file)
+         THEN
+            (* On the same line, create a new token and location.  *)
+            AddTokToList (virtualrangetok, NulName, 0,
+                          descLeft^.line, descLeft^.col, descLeft^.file,
+                          GetLocationBinary (lc, ll, lr)) ;
+            caret := HighIndice (ListOfTokens)
+         END
       END
+   END ;
+   IF caret = BadTokenNo
+   THEN
+      stop
    END ;
    RETURN caret
 END MakeVirtualTok ;
+
+
+(*
+   MakeVirtual2Tok - creates and return a new tokenno which is created from
+                     two tokens left and right.
+*)
+
+PROCEDURE MakeVirtual2Tok (left, right: CARDINAL) : CARDINAL ;
+BEGIN
+   RETURN MakeVirtualTok (left, left, right) ;
+END MakeVirtual2Tok ;
+
+
+(*
+   tprintf0 -
+*)
+
+PROCEDURE tprintf0 (format: ARRAY OF CHAR) ;
+BEGIN
+   IF Tracing
+   THEN
+      printf0 (format)
+   END
+END tprintf0 ;
+
+
+(*
+   tprintf1 -
+*)
+
+PROCEDURE tprintf1 (format: ARRAY OF CHAR; str: String) ;
+BEGIN
+   IF Tracing
+   THEN
+      printf1 (format, str)
+   END
+END tprintf1 ;
 
 
 (* ***********************************************************************
@@ -1198,12 +1146,24 @@ PROCEDURE AddTok (t: toktype) ;
 VAR
    s: String ;
 BEGIN
-   IF t = eoftok
+   IF Tracing
    THEN
-      SeenEof := TRUE
+      printf0 (" m2.flex -> AddTok ") ;
+      DisplayToken (t) ;
+      printf0 ("\n") ;
    END ;
-   IF NOT ((t=eoftok) AND IsLastTokenEof())
+   IF (t=eoftok) AND SeenEof
    THEN
+      IF Debugging
+      THEN
+         printf0 ("extra eoftok ignored as buffer already contains eoftok\n")
+      END
+   ELSE
+      IF Debugging
+      THEN
+         printf0 ("adding token: ") ; DisplayToken (t) ;
+         printf0 ("\n")
+      END ;
       AddTokToList(t, NulName, 0,
                    m2flex.GetLineNo(), m2flex.GetColumnNo(), CurrentSource,
                    m2flex.GetLocation()) ;
@@ -1213,6 +1173,10 @@ BEGIN
          (* display each token as a warning.  *)
          s := InitStringCharStar (KeyToCharStar (GetTokenName (GetTokenNo ()))) ;
          WarnStringAt (s, GetTokenNo ())
+      END ;
+      IF t = eoftok
+      THEN
+         SeenEof := TRUE
       END
    END
 END AddTok ;
@@ -1224,7 +1188,22 @@ END AddTok ;
 *)
 
 PROCEDURE AddTokCharStar (t: toktype; s: ADDRESS) ;
+VAR
+   str: String ;
 BEGIN
+   Assert (t # eoftok) ;
+   IF Tracing
+   THEN
+      printf0 (" m2.flex -> AddTokCharStar ") ;
+      DisplayToken (t) ;
+      str := InitStringCharStar (s) ;
+      printf1 (" %s\n", str) ;
+      str := KillString (str)
+   END ;
+   IF Debugging
+   THEN
+      printf0 ("AddTokCharStar: ") ; DisplayToken (t) ; printf0 ("\n")
+   END ;
    AddTokToList(t, makekey(s), 0, m2flex.GetLineNo(),
                 m2flex.GetColumnNo(), CurrentSource, m2flex.GetLocation()) ;
    CurrentUsed := TRUE
@@ -1241,6 +1220,13 @@ VAR
    c,
    l: CARDINAL ;
 BEGIN
+   Assert (t # eoftok) ;
+   IF Tracing
+   THEN
+      printf0 (" m2.flex -> AddTokInteger ") ;
+      DisplayToken (t) ;
+      printf1 (" %d\n", i) ;
+   END ;
    l := m2flex.GetLineNo() ;
    c := m2flex.GetColumnNo() ;
    s := Sprintf1(Mark(InitString('%d')), i) ;

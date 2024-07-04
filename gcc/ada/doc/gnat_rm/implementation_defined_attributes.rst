@@ -81,10 +81,9 @@ Attribute Atomic_Always_Lock_Free
 =================================
 .. index:: Atomic_Always_Lock_Free
 
-The prefix of the ``Atomic_Always_Lock_Free`` attribute is a type.
-The result is a Boolean value which is True if the type has discriminants,
-and False otherwise.  The result indicate whether atomic operations are
-supported by the target for the given type.
+The prefix of the ``Atomic_Always_Lock_Free`` attribute is a type. The
+result indicates whether atomic operations are supported by the target
+for the given type.
 
 Attribute Bit
 =============
@@ -566,12 +565,6 @@ uninitialized value of the type if pragma Initialize_Scalars is used,
 including the ability to modify the value with the binder -Sxx flag and
 relevant environment variables at run time.
 
-Attribute Iterable
-==================
-.. index:: Iterable
-
-Equivalent to Aspect Iterable.
-
 Attribute Large
 ===============
 .. index:: Ada 83 attributes
@@ -917,6 +910,14 @@ for a function. The prefix must be the name of the corresponding function. This
 is used to refer to the result of the function in the postcondition expression.
 For a further discussion of the use of this attribute and examples of its use,
 see the description of pragma Postcondition.
+
+Attribute Round
+=====================
+.. index:: Round
+
+In addition to the usage of this attribute in the Ada RM, GNAT
+also permits the use of the ``'Round`` attribute for ordinary
+fixed point types.
 
 Attribute Safe_Emax
 ===================

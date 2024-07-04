@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -79,15 +79,20 @@ public:
 	  ? ASTLoweringType::translate (function.get_return_type ().get ())
 	  : nullptr;
 
+    bool is_variadic = function.is_variadic ();
+    auto begin = function.get_function_params ().begin ();
+    auto end = is_variadic ? function.get_function_params ().end () - 1
+			   : function.get_function_params ().end ();
+
     std::vector<HIR::NamedFunctionParam> function_params;
-    for (auto &param : function.get_function_params ())
+    for (auto it = begin; it != end; it++)
       {
 	HIR::Type *param_type
-	  = ASTLoweringType::translate (param.get_type ().get ());
-	Identifier param_name = param.get_name ();
+	  = ASTLoweringType::translate (it->get_type ().get ());
+	Identifier param_name = it->get_name ();
 
 	auto crate_num = mappings->get_current_crate ();
-	Analysis::NodeMapping mapping (crate_num, param.get_node_id (),
+	Analysis::NodeMapping mapping (crate_num, it->get_node_id (),
 				       mappings->get_next_hir_id (crate_num),
 				       mappings->get_next_localdef_id (
 					 crate_num));
@@ -105,7 +110,7 @@ public:
     translated = new HIR::ExternalFunctionItem (
       mapping, function.get_identifier (), std::move (generic_params),
       std::unique_ptr<HIR::Type> (return_type), std::move (where_clause),
-      std::move (function_params), function.is_variadic (), std::move (vis),
+      std::move (function_params), is_variadic, std::move (vis),
       function.get_outer_attrs (), function.get_locus ());
   }
 

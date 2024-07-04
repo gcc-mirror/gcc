@@ -1,7 +1,8 @@
 /* { dg-do compile { target lp64 } } */
-/* { dg-require-effective-target powerpc_p9vector_ok } */
+/* { dg-options "-mvsx -O2 -ffast-math" } */
+/* { dg-additional-options "-mdejagnu-cpu=power9" { target { ! has_arch_pwr9 } } } */
+/* { dg-require-effective-target powerpc_vsx } */
 /* { dg-require-effective-target float128 } */
-/* { dg-options "-mpower9-vector -O2 -ffast-math" } */
 
 extern _Float128 sqrtf128 (_Float128);
 

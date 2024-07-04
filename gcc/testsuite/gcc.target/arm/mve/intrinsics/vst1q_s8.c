@@ -18,7 +18,7 @@ extern "C" {
 void
 foo (int8_t *base, int8x16_t value)
 {
-  return vst1q_s8 (base, value);
+  vst1q_s8 (base, value);
 }
 
 
@@ -31,7 +31,7 @@ foo (int8_t *base, int8x16_t value)
 void
 foo1 (int8_t *base, int8x16_t value)
 {
-  return vst1q (base, value);
+  vst1q (base, value);
 }
 
 #ifdef __cplusplus

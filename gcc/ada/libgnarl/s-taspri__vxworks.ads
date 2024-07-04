@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 2001-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,17 +32,13 @@
 --  This is a VxWorks version of this package
 
 with System.OS_Interface;
+with System.OS_Locks;
 
 package System.Task_Primitives is
    pragma Preelaborate;
 
    type Lock is limited private;
    --  Should be used for implementation of protected objects
-
-   type RTS_Lock is limited private;
-   --  Should be used inside the runtime system. The difference between Lock
-   --  and the RTS_Lock is that the later one serves only as a semaphore so
-   --  that do not check for ceiling violations.
 
    type Suspension_Object is limited private;
    --  Should be used for the implementation of Ada.Synchronous_Task_Control
@@ -65,17 +61,7 @@ package System.Task_Primitives is
 
 private
 
-   type Priority_Type is (Prio_None, Prio_Protect, Prio_Inherit);
-
-   type Lock is record
-      Mutex    : System.OS_Interface.SEM_ID;
-      Protocol : Priority_Type;
-
-      Prio_Ceiling : System.OS_Interface.int;
-      --  Priority ceiling of lock
-   end record;
-
-   type RTS_Lock is new Lock;
+   type Lock is new System.OS_Locks.RTS_Lock;
 
    type Suspension_Object is record
       State : Boolean;
@@ -109,8 +95,9 @@ private
       --  On targets where lwp is not relevant, this is equivalent to Thread.
 
       CV : aliased System.OS_Interface.SEM_ID;
+      --  Condition variable used to queue threads until condition is signaled
 
-      L  : aliased RTS_Lock;
+      L  : aliased System.OS_Locks.RTS_Lock;
       --  Protection for all components is lock L
    end record;
 

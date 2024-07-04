@@ -19,6 +19,19 @@ void __switch_errorT()(string file = __FILE__, size_t line = __LINE__) @trusted
         assert(0, "No appropriate switch clause found");
 }
 
+/*
+ * Make sure template __switch_errorT is always instantiated when building
+ * druntime. This works around https://issues.dlang.org/show_bug.cgi?id=20802.
+ * When druntime and phobos are compiled with -release, the instance for
+ * __switch_errorT is not needed. An application compiled with -release
+ * could need the instance for __switch_errorT, but the compiler would
+ * not generate code for it, because it assumes, that it was already
+ * generated for druntime. Always including the instance in a compiled
+ * druntime allows to use an application without -release with druntime
+ * with -release.
+ */
+private alias dummy__switch_errorT = __switch_errorT!();
+
 /**
  * Thrown on a range error.
  */
@@ -697,17 +710,17 @@ else
      * Throws:
      *  $(LREF OutOfMemoryError).
      */
-    extern (C) noreturn onOutOfMemoryError(void* pretend_sideffect = null) @trusted pure nothrow @nogc /* dmd @@@BUG11461@@@ */
+    extern (C) noreturn onOutOfMemoryError(void* pretend_sideffect = null, string file = __FILE__, size_t line = __LINE__) @trusted pure nothrow @nogc /* dmd @@@BUG11461@@@ */
     {
         // NOTE: Since an out of memory condition exists, no allocation must occur
         //       while generating this object.
-        throw staticError!OutOfMemoryError();
+        throw staticError!OutOfMemoryError(file, line);
     }
 
-    extern (C) noreturn onOutOfMemoryErrorNoGC() @trusted nothrow @nogc
+    extern (C) noreturn onOutOfMemoryErrorNoGC(string file = __FILE__, size_t line = __LINE__) @trusted nothrow @nogc
     {
         // suppress stacktrace until they are @nogc
-        throw staticError!OutOfMemoryError(false);
+        throw staticError!OutOfMemoryError(false, file, line);
     }
 }
 
@@ -718,11 +731,11 @@ else
  * Throws:
  *  $(LREF InvalidMemoryOperationError).
  */
-extern (C) noreturn onInvalidMemoryOperationError(void* pretend_sideffect = null) @trusted pure nothrow @nogc /* dmd @@@BUG11461@@@ */
+extern (C) noreturn onInvalidMemoryOperationError(void* pretend_sideffect = null, string file = __FILE__, size_t line = __LINE__) @trusted pure nothrow @nogc /* dmd @@@BUG11461@@@ */
 {
     // The same restriction applies as for onOutOfMemoryError. The GC is in an
     // undefined state, thus no allocation must occur while generating this object.
-    throw staticError!InvalidMemoryOperationError();
+    throw staticError!InvalidMemoryOperationError(file, line);
 }
 
 

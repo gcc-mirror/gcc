@@ -1,7 +1,7 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target vect_int } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-additional-options "-mvsx" } */
+/* { dg-require-effective-target vect_int } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Verify we do cost the required vec_perm.  */
 

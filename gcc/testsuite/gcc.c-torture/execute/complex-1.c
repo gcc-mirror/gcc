@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 double
 g0 (double x)
 {
@@ -27,7 +30,8 @@ xcexp (__complex__ double x)
   return x;
 }
 
-main ()
+int
+main (void)
 {
   __complex__ double x;
 

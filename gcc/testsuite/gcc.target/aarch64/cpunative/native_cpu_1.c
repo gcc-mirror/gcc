@@ -7,6 +7,6 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-assembler {\.arch armv8-a\+nosimd} } } */
+/* { dg-final { scan-assembler {\.arch armv8-a\+nosimd\n} } } */
 
 /* Test one where fp is on by default so turn off simd.  */

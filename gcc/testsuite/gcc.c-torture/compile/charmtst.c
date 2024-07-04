@@ -1,3 +1,7 @@
+void foo (int);
+void bar (int, int);
+
+int
 c_move_tst (char b)
 {
   char a;

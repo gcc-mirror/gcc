@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler, Lattice Mico32 architecture.
    Contributed by Jon Beniston <jon@beniston.com>
 
-   Copyright (C) 2009-2023 Free Software Foundation, Inc.
+   Copyright (C) 2009-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -121,10 +121,6 @@ do {                                                    \
 #define SHORT_TYPE_SIZE		    16
 #define LONG_TYPE_SIZE		    32
 #define LONG_LONG_TYPE_SIZE	    64
-
-#define FLOAT_TYPE_SIZE		    32
-#define DOUBLE_TYPE_SIZE	    64
-#define LONG_DOUBLE_TYPE_SIZE       64
 
 #define DEFAULT_SIGNED_CHAR         0
 

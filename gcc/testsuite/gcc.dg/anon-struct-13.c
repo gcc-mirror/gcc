@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fplan9-extensions" } */
+/* { dg-options "-fpermissive -fplan9-extensions" } */
 
 /* Test for ambiguity when using the Plan 9 extensions.  */
 

@@ -14,14 +14,15 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-diagnostics.h"
+#include "rust-system.h"
 #include "rust-builtins.h"
+
+#include "target.h"
+#include "stringpool.h"
 
 namespace Rust {
 namespace Compile {
-
-static const int builtin_const = 1 << 0;
-static const int builtin_noreturn = 1 << 1;
-static const int builtin_novops = 1 << 2;
 
 BuiltinsContext &
 BuiltinsContext::get ()
@@ -33,268 +34,341 @@ BuiltinsContext::get ()
 bool
 BuiltinsContext::lookup_simple_builtin (const std::string &name, tree *builtin)
 {
-  auto it = rust_intrinsic_to_gcc_builtin.find (name);
-  if (it == rust_intrinsic_to_gcc_builtin.end ())
-    return false;
+  auto *to_search = &name;
 
-  return lookup_gcc_builtin (it->second, builtin);
+  auto it = rust_intrinsic_to_gcc_builtin.find (name);
+  if (it != rust_intrinsic_to_gcc_builtin.end ())
+    to_search = &it->second;
+
+  return lookup_gcc_builtin (*to_search, builtin);
 }
 
 BuiltinsContext::BuiltinsContext () { setup (); }
 
+/**
+ * Define a function type according to `builtin-types.def`
+ *
+ * *Heavily* inspired by the D frontend's `def_fn_type` function
+ */
 void
-BuiltinsContext::setup_overflow_fns ()
+BuiltinsContext::define_function_type (Type def_idx, Type ret_idx,
+				       bool is_variadic, size_t n, ...)
 {
-  tree overflow_type
-    = build_varargs_function_type_list (boolean_type_node, NULL_TREE);
+  va_list list;
+  va_start (list, n);
 
-  define_builtin ("add_overflow", BUILT_IN_ADD_OVERFLOW,
-		  "__builtin_add_overflow", "add_overflow", overflow_type, 0);
-  define_builtin ("sub_overflow", BUILT_IN_SUB_OVERFLOW,
-		  "__builtin_sub_overflow", "sub_overflow", overflow_type, 0);
-  define_builtin ("mul_overflow", BUILT_IN_MUL_OVERFLOW,
-		  "__builtin_mul_overflow", "mul_overflow", overflow_type, 0);
+  auto args = std::vector<tree> ();
+
+  for (size_t i = 0; i < n; i++)
+    {
+      // The argument is an enum Type, but it's promoted to int when passed
+      // though '...'.
+      auto arg_idx = va_arg (list, int);
+      auto arg_type = builtin_types[arg_idx];
+
+      args.emplace_back (arg_type);
+    }
+
+  auto return_type = builtin_types[ret_idx];
+  if (return_type == error_mark_node)
+    {
+      // Mark the builtin as not available.
+      builtin_types[def_idx] = error_mark_node;
+      va_end (list);
+      return;
+    }
+
+  auto fn_type = NULL_TREE;
+  if (is_variadic)
+    fn_type = build_varargs_function_type_array (return_type, n, args.data ());
+  else
+    fn_type = build_function_type_array (return_type, n, args.data ());
+
+  builtin_types[def_idx] = fn_type;
+  va_end (list);
 }
 
-void
-BuiltinsContext::setup_math_fns ()
+// Taken directly from the D frontend
+static void
+build_c_type_nodes (void)
 {
-  tree fn_type_f32_to_f32
-    = build_function_type_list (float_type_node, float_type_node, NULL_TREE);
-  tree fn_type_f64_to_f64
-    = build_function_type_list (double_type_node, double_type_node, NULL_TREE);
-  tree fn_type_f32_f32_to_f32
-    = build_function_type_list (float_type_node, float_type_node,
-				float_type_node, NULL_TREE);
-  tree fn_type_f64_f64_to_f64
-    = build_function_type_list (double_type_node, double_type_node,
-				double_type_node, NULL_TREE);
-  tree fn_type_f32_i32_to_f32
-    = build_function_type_list (float_type_node, float_type_node,
-				integer_type_node, NULL_TREE);
-  tree fn_type_f64_i32_to_f64
-    = build_function_type_list (double_type_node, double_type_node,
-				integer_type_node, NULL_TREE);
+  string_type_node = build_pointer_type (char_type_node);
+  const_string_type_node = build_pointer_type (
+    build_qualified_type (char_type_node, TYPE_QUAL_CONST));
 
-  define_builtin ("sqrtf32", BUILT_IN_SQRTF, "__builtin_sqrtf", "sqrtf",
-		  fn_type_f32_to_f32, builtin_const);
-  define_builtin ("sqrtf64", BUILT_IN_SQRT, "__builtin_sqrt", "sqrt",
-		  fn_type_f64_to_f64, builtin_const);
+  if (strcmp (UINTMAX_TYPE, "unsigned int") == 0)
+    {
+      intmax_type_node = integer_type_node;
+      uintmax_type_node = unsigned_type_node;
+    }
+  else if (strcmp (UINTMAX_TYPE, "long unsigned int") == 0)
+    {
+      intmax_type_node = long_integer_type_node;
+      uintmax_type_node = long_unsigned_type_node;
+    }
+  else if (strcmp (UINTMAX_TYPE, "long long unsigned int") == 0)
+    {
+      intmax_type_node = long_long_integer_type_node;
+      uintmax_type_node = long_long_unsigned_type_node;
+    }
+  else
+    gcc_unreachable ();
 
-  define_builtin ("powif32", BUILT_IN_POWIF, "__builtin_powif", "powif",
-		  fn_type_f32_i32_to_f32, builtin_const);
-  define_builtin ("powif64", BUILT_IN_POWI, "__builtin_powi", "powi",
-		  fn_type_f64_i32_to_f64, builtin_const);
-
-  define_builtin ("sinf32", BUILT_IN_SINF, "__builtin_sinf", "sinf",
-		  fn_type_f32_to_f32, builtin_const);
-  define_builtin ("sinf64", BUILT_IN_SIN, "__builtin_sin", "sin",
-		  fn_type_f64_to_f64, builtin_const);
-
-  define_builtin ("cosf32", BUILT_IN_COSF, "__builtin_cosf", "cosf",
-		  fn_type_f32_to_f32, builtin_const);
-  define_builtin ("cosf64", BUILT_IN_COS, "__builtin_cos", "cos",
-		  fn_type_f64_to_f64, builtin_const);
-
-  define_builtin ("powf32", BUILT_IN_POWF, "__builtin_powf", "powf",
-		  fn_type_f32_f32_to_f32, builtin_const);
-  define_builtin ("powf64", BUILT_IN_POW, "__builtin_pow", "pow",
-		  fn_type_f64_f64_to_f64, builtin_const);
-
-  define_builtin ("expf32", BUILT_IN_EXPF, "__builtin_expf", "expf",
-		  fn_type_f32_to_f32, builtin_const);
-  define_builtin ("expf64", BUILT_IN_EXP, "__builtin_exp", "exp",
-		  fn_type_f64_to_f64, builtin_const);
-
-  define_builtin ("exp2f32", BUILT_IN_EXP2F, "__builtin_exp2f", "exp2f",
-		  fn_type_f32_to_f32, builtin_const);
-  define_builtin ("exp2f64", BUILT_IN_EXP2, "__builtin_exp2", "exp2",
-		  fn_type_f64_to_f64, builtin_const);
-
-  define_builtin ("logf32", BUILT_IN_LOGF, "__builtin_logf", "logf",
-		  fn_type_f32_to_f32, builtin_const);
-  define_builtin ("logf64", BUILT_IN_LOG, "__builtin_log", "log",
-		  fn_type_f64_to_f64, builtin_const);
-
-  define_builtin ("log10f32", BUILT_IN_LOG10F, "__builtin_log10f", "log10f",
-		  fn_type_f32_to_f32, builtin_const);
-  define_builtin ("log10f64", BUILT_IN_LOG10, "__builtin_log10", "log10",
-		  fn_type_f64_to_f64, builtin_const);
-
-  define_builtin ("log2f32", BUILT_IN_LOG2F, "__builtin_log2f", "log2f",
-		  fn_type_f32_to_f32, builtin_const);
-  define_builtin ("log2f64", BUILT_IN_LOG2, "__builtin_log2", "log2",
-		  fn_type_f64_to_f64, builtin_const);
-
-  define_builtin ("fmaf32", BUILT_IN_FMAF, "__builtin_fmaf", "fmaf",
-		  fn_type_f32_f32_to_f32, builtin_const);
-  define_builtin ("fmaf64", BUILT_IN_FMA, "__builtin_fma", "fma",
-		  fn_type_f64_f64_to_f64, builtin_const);
-
-  define_builtin ("fabsf32", BUILT_IN_FABSF, "__builtin_fabsf", "fabsf",
-		  fn_type_f32_to_f32, builtin_const);
-  define_builtin ("fabsf64", BUILT_IN_FABS, "__builtin_fabs", "fabs",
-		  fn_type_f64_to_f64, builtin_const);
-
-  define_builtin ("minnumf32", BUILT_IN_FMINF, "__builtin_fminf", "fminf",
-		  fn_type_f32_f32_to_f32, builtin_const);
-  define_builtin ("minnumf64", BUILT_IN_FMIN, "__builtin_fmin", "fmin",
-		  fn_type_f64_f64_to_f64, builtin_const);
-
-  define_builtin ("maxnumf32", BUILT_IN_FMAXF, "__builtin_fmaxf", "fmaxf",
-		  fn_type_f32_f32_to_f32, builtin_const);
-  define_builtin ("maxnumf64", BUILT_IN_FMAX, "__builtin_fmax", "fmax",
-		  fn_type_f64_f64_to_f64, builtin_const);
-
-  define_builtin ("copysignf32", BUILT_IN_COPYSIGNF, "__builtin_copysignf",
-		  "copysignf", fn_type_f32_f32_to_f32, builtin_const);
-  define_builtin ("copysignf64", BUILT_IN_COPYSIGN, "__builtin_copysign",
-		  "copysign", fn_type_f64_f64_to_f64, builtin_const);
-
-  define_builtin ("floorf32", BUILT_IN_FLOORF, "__builtin_floorf", "floorf",
-		  fn_type_f32_to_f32, builtin_const);
-  define_builtin ("floorf64", BUILT_IN_FLOOR, "__builtin_floor", "floor",
-		  fn_type_f64_to_f64, builtin_const);
-
-  define_builtin ("ceilf32", BUILT_IN_CEILF, "__builtin_ceilf", "ceilf",
-		  fn_type_f32_to_f32, builtin_const);
-  define_builtin ("ceilf64", BUILT_IN_CEIL, "__builtin_ceil", "ceil",
-		  fn_type_f64_to_f64, builtin_const);
-
-  define_builtin ("truncf32", BUILT_IN_TRUNCF, "__builtin_truncf", "truncf",
-		  fn_type_f32_to_f32, builtin_const);
-  define_builtin ("truncf64", BUILT_IN_TRUNC, "__builtin_trunc", "trunc",
-		  fn_type_f64_to_f64, builtin_const);
-
-  define_builtin ("rintf32", BUILT_IN_RINTF, "__builtin_rintf", "rintf",
-		  fn_type_f32_to_f32, builtin_const);
-  define_builtin ("rintf64", BUILT_IN_RINT, "__builtin_rint", "rint",
-		  fn_type_f64_to_f64, builtin_const);
-
-  define_builtin ("nearbyintf32", BUILT_IN_NEARBYINTF, "__builtin_nearbyintf",
-		  "nearbyintf", fn_type_f32_to_f32, builtin_const);
-  define_builtin ("nearbyintf64", BUILT_IN_NEARBYINT, "__builtin_nearbyint",
-		  "nearbyint", fn_type_f64_to_f64, builtin_const);
-
-  define_builtin ("roundf32", BUILT_IN_ROUNDF, "__builtin_roundf", "roundf",
-		  fn_type_f32_to_f32, builtin_const);
-  define_builtin ("roundf64", BUILT_IN_ROUND, "__builtin_round", "round",
-		  fn_type_f64_to_f64, builtin_const);
+  signed_size_type_node = signed_type_for (size_type_node);
+  wint_type_node = unsigned_type_node;
+  pid_type_node = integer_type_node;
 }
 
+/**
+ * Define all builtin types in the `builtin_types` array
+ */
 void
-BuiltinsContext::setup_atomic_fns ()
+BuiltinsContext::define_builtin_types ()
 {
-  auto atomic_store_type
-    = build_varargs_function_type_list (void_type_node, NULL_TREE);
-  auto atomic_load_type = [] (tree ret_type_node) {
-    return build_function_type_list (ret_type_node,
-				     ptr_type_node, // const_ptr_type_node?
-				     integer_type_node, NULL_TREE);
+  // This is taken directly from the D frontend's handling of builtins
+  auto va_list_ref_type_node = build_reference_type (va_list_type_node);
+  auto va_list_arg_type_node = va_list_type_node;
+
+  build_c_type_nodes ();
+
+  auto builtin_type_for_size = [] (int size, bool unsignedp) {
+    tree type = lang_hooks.types.type_for_size (size, unsignedp);
+    return type ? type : error_mark_node;
   };
 
-  // FIXME: These should be the definition for the generic version of the
-  // atomic_store builtins, but I cannot get them to work properly. Revisit
-  // later. define_builtin ("atomic_store", BUILT_IN_ATOMIC_STORE,
-  // "__atomic_store", NULL,
-  //   atomic_store_type, 0);
-  // define_builtin ("atomic_store_n", BUILT_IN_ATOMIC_STORE_N,
-  // "__atomic_store_n",
-  //   NULL, atomic_store_type, 0);
+#define DEF_PRIMITIVE_TYPE(ENUM, VALUE) builtin_types[ENUM] = VALUE;
+#define DEF_FUNCTION_TYPE_0(ENUM, RETURN)                                      \
+  define_function_type (ENUM, RETURN, 0, 0);
+#define DEF_FUNCTION_TYPE_1(ENUM, RETURN, A1)                                  \
+  define_function_type (ENUM, RETURN, 0, 1, A1);
+#define DEF_FUNCTION_TYPE_2(ENUM, RETURN, A1, A2)                              \
+  define_function_type (ENUM, RETURN, 0, 2, A1, A2);
+#define DEF_FUNCTION_TYPE_3(ENUM, RETURN, A1, A2, A3)                          \
+  define_function_type (ENUM, RETURN, 0, 3, A1, A2, A3);
+#define DEF_FUNCTION_TYPE_4(ENUM, RETURN, A1, A2, A3, A4)                      \
+  define_function_type (ENUM, RETURN, 0, 4, A1, A2, A3, A4);
+#define DEF_FUNCTION_TYPE_5(ENUM, RETURN, A1, A2, A3, A4, A5)                  \
+  define_function_type (ENUM, RETURN, 0, 5, A1, A2, A3, A4, A5);
+#define DEF_FUNCTION_TYPE_6(ENUM, RETURN, A1, A2, A3, A4, A5, A6)              \
+  define_function_type (ENUM, RETURN, 0, 6, A1, A2, A3, A4, A5, A6);
+#define DEF_FUNCTION_TYPE_7(ENUM, RETURN, A1, A2, A3, A4, A5, A6, A7)          \
+  define_function_type (ENUM, RETURN, 0, 7, A1, A2, A3, A4, A5, A6, A7);
+#define DEF_FUNCTION_TYPE_8(ENUM, RETURN, A1, A2, A3, A4, A5, A6, A7, A8)      \
+  define_function_type (ENUM, RETURN, 0, 8, A1, A2, A3, A4, A5, A6, A7, A8);
+#define DEF_FUNCTION_TYPE_9(ENUM, RETURN, A1, A2, A3, A4, A5, A6, A7, A8, A9)  \
+  define_function_type (ENUM, RETURN, 0, 9, A1, A2, A3, A4, A5, A6, A7, A8, A9);
+#define DEF_FUNCTION_TYPE_10(ENUM, RETURN, A1, A2, A3, A4, A5, A6, A7, A8, A9, \
+			     A10)                                              \
+  define_function_type (ENUM, RETURN, 0, 10, A1, A2, A3, A4, A5, A6, A7, A8,   \
+			A9, A10);
+#define DEF_FUNCTION_TYPE_11(ENUM, RETURN, A1, A2, A3, A4, A5, A6, A7, A8, A9, \
+			     A10, A11)                                         \
+  define_function_type (ENUM, RETURN, 0, 11, A1, A2, A3, A4, A5, A6, A7, A8,   \
+			A9, A10, A11);
+#define DEF_FUNCTION_TYPE_VAR_0(ENUM, RETURN)                                  \
+  define_function_type (ENUM, RETURN, 1, 0);
+#define DEF_FUNCTION_TYPE_VAR_1(ENUM, RETURN, A1)                              \
+  define_function_type (ENUM, RETURN, 1, 1, A1);
+#define DEF_FUNCTION_TYPE_VAR_2(ENUM, RETURN, A1, A2)                          \
+  define_function_type (ENUM, RETURN, 1, 2, A1, A2);
+#define DEF_FUNCTION_TYPE_VAR_3(ENUM, RETURN, A1, A2, A3)                      \
+  define_function_type (ENUM, RETURN, 1, 3, A1, A2, A3);
+#define DEF_FUNCTION_TYPE_VAR_4(ENUM, RETURN, A1, A2, A3, A4)                  \
+  define_function_type (ENUM, RETURN, 1, 4, A1, A2, A3, A4);
+#define DEF_FUNCTION_TYPE_VAR_5(ENUM, RETURN, A1, A2, A3, A4, A5)              \
+  define_function_type (ENUM, RETURN, 1, 5, A1, A2, A3, A4, A5);
+#define DEF_FUNCTION_TYPE_VAR_6(ENUM, RETURN, A1, A2, A3, A4, A5, A6)          \
+  define_function_type (ENUM, RETURN, 1, 6, A1, A2, A3, A4, A5, A6);
+#define DEF_FUNCTION_TYPE_VAR_7(ENUM, RETURN, A1, A2, A3, A4, A5, A6, A7)      \
+  define_function_type (ENUM, RETURN, 1, 7, A1, A2, A3, A4, A5, A6, A7);
+#define DEF_FUNCTION_TYPE_VAR_11(ENUM, RETURN, A1, A2, A3, A4, A5, A6, A7, A8, \
+				 A9, A10, A11)                                 \
+  define_function_type (ENUM, RETURN, 1, 11, A1, A2, A3, A4, A5, A6, A7, A8,   \
+			A9, A10, A11);
+#define DEF_POINTER_TYPE(ENUM, TYPE)                                           \
+  builtin_types[ENUM] = build_pointer_type (builtin_types[TYPE]);
 
-  define_builtin ("atomic_store_1", BUILT_IN_ATOMIC_STORE_1, "__atomic_store_1",
-		  NULL, atomic_store_type, 0);
-  define_builtin ("atomic_store_2", BUILT_IN_ATOMIC_STORE_2, "__atomic_store_2",
-		  NULL, atomic_store_type, 0);
-  define_builtin ("atomic_store_4", BUILT_IN_ATOMIC_STORE_4, "__atomic_store_4",
-		  NULL, atomic_store_type, 0);
-  define_builtin ("atomic_store_8", BUILT_IN_ATOMIC_STORE_8, "__atomic_store_8",
-		  NULL, atomic_store_type, 0);
-  define_builtin ("atomic_store_16", BUILT_IN_ATOMIC_STORE_16,
-		  "__atomic_store_16", NULL, atomic_store_type, 0);
+#include "builtin-types.def"
 
-  define_builtin ("atomic_load_1", BUILT_IN_ATOMIC_LOAD_1, "__atomic_load_1",
-		  NULL, atomic_load_type (integer_type_node), 0);
-  define_builtin ("atomic_load_2", BUILT_IN_ATOMIC_LOAD_2, "__atomic_load_2",
-		  NULL, atomic_load_type (integer_type_node), 0);
-  define_builtin ("atomic_load_4", BUILT_IN_ATOMIC_LOAD_4, "__atomic_load_4",
-		  NULL, atomic_load_type (integer_type_node), 0);
-  define_builtin ("atomic_load_8", BUILT_IN_ATOMIC_LOAD_8, "__atomic_load_8",
-		  NULL, atomic_load_type (integer_type_node), 0);
+#undef DEF_PRIMITIVE_TYPE
+#undef DEF_FUNCTION_TYPE_1
+#undef DEF_FUNCTION_TYPE_2
+#undef DEF_FUNCTION_TYPE_3
+#undef DEF_FUNCTION_TYPE_4
+#undef DEF_FUNCTION_TYPE_5
+#undef DEF_FUNCTION_TYPE_6
+#undef DEF_FUNCTION_TYPE_7
+#undef DEF_FUNCTION_TYPE_8
+#undef DEF_FUNCTION_TYPE_9
+#undef DEF_FUNCTION_TYPE_10
+#undef DEF_FUNCTION_TYPE_11
+#undef DEF_FUNCTION_TYPE_VAR_0
+#undef DEF_FUNCTION_TYPE_VAR_1
+#undef DEF_FUNCTION_TYPE_VAR_2
+#undef DEF_FUNCTION_TYPE_VAR_3
+#undef DEF_FUNCTION_TYPE_VAR_4
+#undef DEF_FUNCTION_TYPE_VAR_5
+#undef DEF_FUNCTION_TYPE_VAR_6
+#undef DEF_FUNCTION_TYPE_VAR_7
+#undef DEF_FUNCTION_TYPE_VAR_11
+#undef DEF_POINTER_TYPE
+
+  builtin_types[Type::BT_LAST] = NULL_TREE;
+}
+
+/**
+ * Define all builtin attributes in the `builtin_types` array
+ */
+void
+BuiltinsContext::define_builtin_attributes ()
+
+{
+  auto *built_in_attributes = builtin_attributes;
+
+#define DEF_ATTR_NULL_TREE(ENUM) built_in_attributes[(int) ENUM] = NULL_TREE;
+#define DEF_ATTR_INT(ENUM, VALUE)                                              \
+  built_in_attributes[ENUM] = build_int_cst (NULL_TREE, VALUE);
+#define DEF_ATTR_STRING(ENUM, VALUE)                                           \
+  built_in_attributes[ENUM] = build_string (strlen (VALUE), VALUE);
+#define DEF_ATTR_IDENT(ENUM, STRING)                                           \
+  built_in_attributes[ENUM] = get_identifier (STRING);
+#define DEF_ATTR_TREE_LIST(ENUM, PURPOSE, VALUE, CHAIN)                        \
+  built_in_attributes[ENUM]                                                    \
+    = tree_cons (built_in_attributes[PURPOSE], built_in_attributes[VALUE],     \
+		 built_in_attributes[CHAIN]);
+#include "builtin-attrs.def"
+#undef DEF_ATTR_NULL_TREE
+#undef DEF_ATTR_INT
+#undef DEF_ATTR_STRING
+#undef DEF_ATTR_IDENT
+#undef DEF_ATTR_TREE_LIST
+}
+
+/**
+ * Define all builtin functions during the first initialization of the
+ * `BuiltinsContext`.
+ */
+void
+BuiltinsContext::define_builtins ()
+{
+  auto *built_in_attributes = builtin_attributes;
+  auto build_builtin = [this] (built_in_function fn_code, const char *fn_name,
+			       built_in_class fn_class, tree fn_type, bool both,
+			       bool fallback, tree attributes, bool implicit) {
+    if (fn_type == error_mark_node)
+      return;
+
+    static auto to_skip = strlen ("__builtin_");
+
+    auto libname = fn_name + to_skip;
+    auto decl = add_builtin_function (fn_name, fn_type, fn_code, fn_class,
+				      fallback ? libname : NULL, attributes);
+
+    set_builtin_decl (fn_code, decl, implicit);
+
+    builtin_functions.insert ({std::string (fn_name), decl});
+  };
+
+#define DEF_BUILTIN(ENUM, NAME, CLASS, TYPE, LIBTYPE, BOTH_P, FALLBACK_P,      \
+		    NONANSI_P, ATTRS, IMPLICIT, COND)                          \
+  if (NAME && COND)                                                            \
+    build_builtin (ENUM, NAME, CLASS, builtin_types[TYPE], BOTH_P, FALLBACK_P, \
+		   built_in_attributes[ATTRS], IMPLICIT);
+#include "builtins.def"
+#undef DEF_BUILTIN
+}
+
+/**
+ * Register direct mappings between Rust functions and GCC builtins
+ */
+void
+BuiltinsContext::register_rust_mappings ()
+{
+  rust_intrinsic_to_gcc_builtin = {
+    {"unreachable", "__builtin_unreachable"},
+    {"abort", "__builtin_abort"},
+
+    // Math intrinsics
+    {"sqrtf32", "__builtin_sqrtf"},
+    {"sqrtf64", "__builtin_sqrt"},
+
+    {"sinf32", "__builtin_sinf"},
+    {"sinf64", "__builtin_sin"},
+
+    {"cosf32", "__builtin_cosf"},
+    {"cosf64", "__builtin_cos"},
+
+    {"powf32", "__builtin_powf"},
+    {"powf64", "__builtin_pow"},
+
+    {"powif32", "__builtin_powif"},
+    {"powif64", "__builtin_powi"},
+
+    {"expf32", "__builtin_expf"},
+    {"expf64", "__builtin_exp"},
+
+    {"exp2f32", "__builtin_exp2f"},
+    {"exp2f64", "__builtin_exp2"},
+
+    {"logf32", "__builtin_logf"},
+    {"logf64", "__builtin_log"},
+
+    {"log10f32", "__builtin_log10f"},
+    {"log10f64", "__builtin_log10"},
+
+    {"log2f32", "__builtin_log2f"},
+    {"log2f64", "__builtin_log2"},
+
+    {"fmaf32", "__builtin_fmaf"},
+    {"fmaf64", "__builtin_fma"},
+
+    {"fabsf32", "__builtin_fabsf"},
+    {"fabsf64", "__builtin_fabs"},
+
+    {"minnumf32", "__builtin_fminf"},
+    {"minnumf64", "__builtin_fmin"},
+
+    {"maxnumf32", "__builtin_fmaxf"},
+    {"maxnumf64", "__builtin_fmax"},
+
+    {"copysignf32", "__builtin_copysignf"},
+    {"copysignf64", "__builtin_copysign"},
+
+    {"floorf32", "__builtin_floorf"},
+    {"floorf64", "__builtin_floor"},
+
+    {"ceilf32", "__builtin_ceilf"},
+    {"ceilf64", "__builtin_ceil"},
+
+    {"truncf32", "__builtin_truncf"},
+    {"truncf64", "__builtin_trunc"},
+
+    {"rintf32", "__builtin_rintf"},
+    {"rintf64", "__builtin_rint"},
+
+    {"nearbyintf32", "__builtin_nearbyintf"},
+    {"nearbyintf64", "__builtin_nearbyint"},
+
+    {"roundf32", "__builtin_roundf"},
+    {"roundf64", "__builtin_round"},
+  };
 }
 
 void
 BuiltinsContext::setup ()
 {
-  setup_math_fns ();
-  setup_overflow_fns ();
-  setup_atomic_fns ();
+  define_builtin_types ();
+  define_builtin_attributes ();
+  define_builtins ();
 
-  define_builtin ("unreachable", BUILT_IN_UNREACHABLE, "__builtin_unreachable",
-		  NULL, build_function_type (void_type_node, void_list_node),
-		  builtin_const | builtin_noreturn);
-
-  define_builtin ("abort", BUILT_IN_ABORT, "__builtin_abort", "abort",
-		  build_function_type (void_type_node, void_list_node),
-		  builtin_const | builtin_noreturn);
-
-  define_builtin ("breakpoint", BUILT_IN_TRAP, "__builtin_trap", "breakpoint",
-		  build_function_type (void_type_node, void_list_node),
-		  builtin_const | builtin_noreturn);
-
-  define_builtin ("memcpy", BUILT_IN_MEMCPY, "__builtin_memcpy", "memcpy",
-		  build_function_type_list (build_pointer_type (void_type_node),
-					    build_pointer_type (void_type_node),
-					    build_pointer_type (void_type_node),
-					    size_type_node, NULL_TREE),
-		  0);
-
-  define_builtin ("prefetch", BUILT_IN_PREFETCH, "__builtin_prefetch",
-		  "prefetch",
-		  build_varargs_function_type_list (
-		    build_pointer_type (const_ptr_type_node), NULL_TREE),
-		  builtin_const);
-}
-
-static void
-handle_flags (tree decl, int flags)
-{
-  if (flags & builtin_const)
-    TREE_READONLY (decl) = 1;
-  if (flags & builtin_noreturn)
-    TREE_READONLY (decl) = 1;
-  if (flags & builtin_novops)
-    DECL_IS_NOVOPS (decl) = 1;
-}
-
-void
-BuiltinsContext::define_builtin (const std::string rust_name,
-				 built_in_function bcode, const char *name,
-				 const char *libname, tree fntype, int flags)
-{
-  tree decl = add_builtin_function (name, fntype, bcode, BUILT_IN_NORMAL,
-				    libname, NULL_TREE);
-  handle_flags (decl, flags);
-  set_builtin_decl (bcode, decl, true);
-
-  this->builtin_functions_[name] = decl;
-  if (libname != NULL)
-    {
-      decl = add_builtin_function (libname, fntype, bcode, BUILT_IN_NORMAL,
-				   NULL, NULL_TREE);
-      handle_flags (decl, flags);
-
-      this->builtin_functions_[libname] = decl;
-    }
-
-  rust_intrinsic_to_gcc_builtin[rust_name] = name;
+  register_rust_mappings ();
 }
 
 bool
 BuiltinsContext::lookup_gcc_builtin (const std::string &name, tree *builtin)
 {
-  auto it = builtin_functions_.find (name);
-  if (it == builtin_functions_.end ())
+  auto it = builtin_functions.find (name);
+  if (it == builtin_functions.end ())
     return false;
 
   *builtin = it->second;

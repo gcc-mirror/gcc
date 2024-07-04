@@ -1,5 +1,8 @@
 /* Leaf functions with many arguments.  */
 
+void abort (void);
+void exit (int);
+
 int
 add (int a,
     int b,

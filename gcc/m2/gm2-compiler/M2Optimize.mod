@@ -1,6 +1,6 @@
 (* M2Optimize.mod removes redundant quadruples.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -38,7 +38,8 @@ FROM NumberIO IMPORT WriteCard ;
 FROM M2Error IMPORT InternalError ;
 FROM M2Batch IMPORT GetModuleNo ;
 FROM M2Quiet IMPORT qprintf1 ;
-FROM M2Scope IMPORT ScopeBlock, InitScopeBlock, KillScopeBlock, ForeachScopeBlockDo ;
+FROM M2Scope IMPORT ScopeBlock, InitScopeBlock, KillScopeBlock,
+                    ForeachScopeBlockDo2, ForeachScopeBlockDo3 ;
 
 FROM SymbolTable IMPORT GetSymName,
                         GetProcedureQuads, GetModuleQuads,
@@ -153,6 +154,7 @@ PROCEDURE ReduceBranch (Operator: QuadOperator;
                         VAR NextQuad: CARDINAL;
                         Folded: BOOLEAN) : BOOLEAN ;
 VAR
+   constExpr,
    overflowChecking: BOOLEAN ;
    OpNext          : QuadOperator ;
    tok,
@@ -187,11 +189,11 @@ BEGIN
          THEN
             GetQuadOtok (CurrentQuad, tok, Operator,
                          CurrentOperand1, CurrentOperand2, CurrentOperand3,
-                         overflowChecking, op1tok, op2tok, op3tok) ;
+                         overflowChecking, constExpr, op1tok, op2tok, op3tok) ;
             SubQuad (NextQuad) ;
             PutQuadOtok (CurrentQuad, tok, Opposite (Operator),
                          CurrentOperand1, CurrentOperand2, Op3Next,
-                         overflowChecking,
+                         overflowChecking, constExpr,
                          op1tok, op2tok, op3tok) ;
             NextQuad := NextPlusOne ;
             Folded := TRUE
@@ -336,13 +338,13 @@ BEGIN
    IF IsProcedure(scope)
    THEN
       PutProcedureReachable(scope) ;
-      ForeachScopeBlockDo(sb, KnownReachable)
+      ForeachScopeBlockDo2 (sb, KnownReachable)
    ELSIF IsModuleWithinProcedure(scope)
    THEN
-      ForeachScopeBlockDo(sb, KnownReachable) ;
+      ForeachScopeBlockDo2 (sb, KnownReachable) ;
       ForeachProcedureDo(scope, CheckExportedReachable)
    ELSE
-      ForeachScopeBlockDo(sb, KnownReachable) ;
+      ForeachScopeBlockDo2 (sb, KnownReachable) ;
       ForeachProcedureDo(scope, CheckExportedReachable)
    END ;
    ForeachInnerModuleDo(scope, RemoveProcedures) ;
@@ -351,8 +353,7 @@ BEGIN
 END RemoveProcedures ;
 
 
-PROCEDURE KnownReachable (Scope: CARDINAL;
-                          Start, End: CARDINAL) ;
+PROCEDURE KnownReachable (Start, End: CARDINAL) ;
 VAR
    Op           : QuadOperator ;
    Op1, Op2, Op3: CARDINAL ;

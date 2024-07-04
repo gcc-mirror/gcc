@@ -1,6 +1,5 @@
 /* { dg-do compile } */
-// TODO: remove need for -fanalyzer-checker=taint here:
-/* { dg-options "-fanalyzer -fanalyzer-checker=taint" } */
+/* { dg-options "-fanalyzer" } */
 /* { dg-require-effective-target analyzer } */
 
 #include "test-uaccess.h"

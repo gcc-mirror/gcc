@@ -1,5 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-require-effective-target powerpc_popcntb_ok } */
+/* Skip powerpc*-*-darwin* powerpc-*-eabi as dropped popcntb_ok.  */
+/* { dg-skip-if "" { powerpc*-*-darwin* powerpc-*-eabi } } */
 /* { dg-options "-mdejagnu-cpu=power5" } */
 
 void abort ();

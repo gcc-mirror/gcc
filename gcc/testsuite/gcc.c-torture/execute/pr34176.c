@@ -30,7 +30,7 @@ extern void abort (void);
 struct mult_index * __attribute__((noinline))
 foo (size_t n)
 {
-  static count = 0;
+  static int count = 0;
   if (count++ > 0)
     abort ();
   return 0;

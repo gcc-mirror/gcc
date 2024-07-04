@@ -1,6 +1,6 @@
 ; Options for the language- and target-independent parts of the compiler.
 
-; Copyright (C) 2003-2023 Free Software Foundation, Inc.
+; Copyright (C) 2003-2024 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -422,6 +422,12 @@ Display target specific command line options (including assembler and linker opt
 -time
 Driver Alias(time)
 
+;; Truncate the file specified after linking.
+;; This option is used by lto-wrapper to reduce the peak disk-usage when
+;; linking with many .LTRANS units.
+truncate
+Driver Separate Undocumented MissingArgError(missing filename after %qs)
+
 -verbose
 Driver Alias(v)
 
@@ -634,6 +640,10 @@ Wfree-nonheap-object
 Common Var(warn_free_nonheap_object) Init(1) Warning
 Warn when attempting to free a non-heap object.
 
+Whardened
+Common Var(warn_hardened) Init(1) Warning
+Warn when -fhardened did not enable an option from its set.
+
 Whsa
 Common Ignore Warning
 Does nothing.  Preserved for backward compatibility.
@@ -781,6 +791,10 @@ Wsuggest-attribute=malloc
 Common Var(warn_suggest_attribute_malloc) Warning
 Warn about functions which might be candidates for __attribute__((malloc)).
 
+Wsuggest-attribute=returns_nonnull
+Common Var(warn_suggest_attribute_returns_nonnull) Warning
+Warn about functions which might be candidates for __attribute__((returns_nonnull)).
+
 Wsuggest-final-types
 Common Var(warn_suggest_final_types) Warning
 Warn about C++ polymorphic types where adding final keyword would improve code quality.
@@ -861,6 +875,11 @@ Warn in case profiles in -fprofile-use do not match.
 Wcoverage-invalid-line-number
 Common Var(warn_coverage_invalid_linenum) Init(1) Warning
 Warn in case a function ends earlier than it begins due to an invalid linenum macros.
+
+Wcoverage-too-many-conditions
+Common Var(warn_too_many_conditions) Init(1) Warning
+Warn when a conditional has too many terms and condition coverage profiling
+gives up instrumenting the expression.
 
 Wmissing-profile
 Common Var(warn_missing_profile) Init(1) Warning
@@ -1012,6 +1031,7 @@ Driver Undocumented
 ;
 ; 19: Emits ABI tags if needed in structured binding mangled names.
 ;     Ignores cv-quals on [[no_unique_object]] members.
+;     Mangles constraints on function templates.
 ;     Default in G++ 14.
 ;
 ; Additional positive integers will be assigned as new versions of
@@ -1030,9 +1050,6 @@ Align the start of functions.
 
 falign-functions=
 Common RejectNegative Joined Var(str_align_functions) Optimization
-
-flimit-function-alignment
-Common Var(flag_limit_function_alignment) Optimization Init(0)
 
 falign-jumps
 Common Var(flag_align_jumps) Optimization
@@ -1252,6 +1269,10 @@ fcprop-registers
 Common Var(flag_cprop_registers) Optimization
 Perform a register copy-propagation optimization pass.
 
+ffold-mem-offsets
+Common Var(flag_fold_mem_offsets) Init(1) Optimization
+Fold instructions calculating memory offsets to the memory access instruction if possible.
+
 fcrossjumping
 Common Var(flag_crossjumping) Optimization
 Perform cross-jumping optimization.
@@ -1347,6 +1368,10 @@ fdiagnostics-show-caret
 Common Var(flag_diagnostics_show_caret) Init(1)
 Show the source line with a caret indicating the column.
 
+fdiagnostics-show-event-links
+Common Var(flag_diagnostics_show_event_links) Init(1)
+Show lines linking related events in diagnostic paths.
+
 fdiagnostics-show-labels
 Common Var(flag_diagnostics_show_labels) Init(1)
 Show labels annotating ranges of source code when showing source.
@@ -1378,6 +1403,10 @@ Enum(diagnostic_color_rule) String(always) Value(DIAGNOSTICS_COLOR_YES)
 
 EnumValue
 Enum(diagnostic_color_rule) String(auto) Value(DIAGNOSTICS_COLOR_AUTO)
+
+fdiagnostics-json-formatting
+Common Var(flag_diagnostics_json_formatting) Init(1)
+Enable formatting of JSON output.
 
 fdiagnostics-urls=
 Driver Common Joined RejectNegative Var(flag_diagnostics_show_urls) Enum(diagnostic_url_rule) Init(DIAGNOSTICS_URL_AUTO)
@@ -1509,10 +1538,6 @@ Show stack depths of events in paths.
 fdiagnostics-text-art-charset=
 Driver Common Joined RejectNegative Var(flag_diagnostics_text_art_charset) Enum(diagnostic_text_art_charset) Init(DIAGNOSTICS_TEXT_ART_CHARSET_EMOJI)
 -fdiagnostics-text-art-charset=[none|ascii|unicode|emoji]	Determine which characters to use in text arg diagrams.
-
-; Required for these enum values.
-SourceInclude
-diagnostic-text-art.h
 
 Enum
 Name(diagnostic_text_art_charset) Type(int)
@@ -1771,6 +1796,11 @@ Common Var(flag_large_source_files) Init(0)
 Improve GCC's ability to track column numbers in large source files,
 at the expense of slower compilation.
 
+flate-combine-instructions
+Common Var(flag_late_combine_instructions) Optimization Init(0)
+Run two instruction combination passes late in the pass pipeline;
+one before register allocation and one after.
+
 floop-parallelize-all
 Common Var(flag_loop_parallelize_all) Optimization
 Mark all loops as parallel.
@@ -1819,6 +1849,10 @@ fguess-branch-probability
 Common Var(flag_guess_branch_prob) Optimization
 Enable guessing of branch probabilities.
 
+fhardened
+Common Driver Var(flag_hardened)
+Enable various security-relevant flags.
+
 fharden-compares
 Common Var(flag_harden_compares) Optimization
 Harden conditionals not used in branches, checking reversed conditions.
@@ -1826,6 +1860,41 @@ Harden conditionals not used in branches, checking reversed conditions.
 fharden-conditional-branches
 Common Var(flag_harden_conditional_branches) Optimization
 Harden conditional branches by checking reversed conditions.
+
+fharden-control-flow-redundancy
+Common Var(flag_harden_control_flow_redundancy) Optimization
+Harden control flow by recording and checking execution paths.
+
+fhardcfr-skip-leaf
+Common Var(flag_harden_control_flow_redundancy_skip_leaf) Optimization
+Disable CFR in leaf functions.
+
+fhardcfr-check-returning-calls
+Common Var(flag_harden_control_flow_redundancy_check_returning_calls) Init(-1) Optimization
+Check CFR execution paths also before calls followed by returns of their results.
+
+fhardcfr-check-exceptions
+Common Var(flag_harden_control_flow_redundancy_check_exceptions) Init(-1) Optimization
+Check CFR execution paths also when exiting a function through an exception.
+
+fhardcfr-check-noreturn-calls=
+Common Joined RejectNegative Enum(hardcfr_check_noreturn_calls) Var(flag_harden_control_flow_redundancy_check_noreturn) Init(HCFRNR_UNSPECIFIED) Optimization
+-fhardcfr-check-noreturn-calls=[always|no-xthrow|nothrow|never]	Check CFR execution paths also before calling noreturn functions.
+
+Enum
+Name(hardcfr_check_noreturn_calls) Type(enum hardcfr_noret) UnknownError(unknown hardcfr noreturn checking level %qs)
+
+EnumValue
+Enum(hardcfr_check_noreturn_calls) String(never) Value(HCFRNR_NEVER)
+
+EnumValue
+Enum(hardcfr_check_noreturn_calls) String(nothrow) Value(HCFRNR_NOTHROW)
+
+EnumValue
+Enum(hardcfr_check_noreturn_calls) String(no-xthrow) Value(HCFRNR_NO_XTHROW)
+
+EnumValue
+Enum(hardcfr_check_noreturn_calls) String(always) Value(HCFRNR_ALWAYS)
 
 ; Nonzero means ignore `#ident' directives.  0 means handle them.
 ; Generate position-independent code for executables if possible
@@ -1907,6 +1976,40 @@ Common RejectNegative Joined UInteger
 finline-atomics
 Common Var(flag_inline_atomics) Init(1) Optimization
 Inline __atomic operations when a lock free instruction sequence is available.
+
+finline-stringops
+Common RejectNegative Enum(ilsop_fn) Var(flag_inline_stringops, ILSOP_ALL) Enum(ilsop_fn) Init(ILSOP_NONE) Optimization Undocumented
+
+fno-inline-stringops
+Common RejectNegative Enum(ilsop_fn) Var(flag_inline_stringops, ILSOP_NONE) Enum(ilsop_fn) Optimization Undocumented
+
+finline-stringops=
+Common Joined Var(flag_inline_stringops) EnumSet Enum(ilsop_fn) Optimization
+-finline-stringops[=memcmp|memcpy|memmove|memset]
+Expand supported mem/str operations inline, even if against optimization.
+
+Enum
+Name(ilsop_fn) Type(enum ilsop_fn) UnknownError(unavailable stringop for inlining %qs)
+
+; This is not part of any set.
+; EnumValue
+; Enum(ilsop_fn) String(none) Value(ILSOP_NONE)
+
+EnumValue
+Enum(ilsop_fn) String(memcmp) Value(ILSOP_MEMCMP) Set(1)
+
+EnumValue
+Enum(ilsop_fn) String(memcpy) Value(ILSOP_MEMCPY) Set(2)
+
+EnumValue
+Enum(ilsop_fn) String(memmove) Value(ILSOP_MEMMOVE) Set(3)
+
+EnumValue
+Enum(ilsop_fn) String(memset) Value(ILSOP_MEMSET) Set(4)
+
+; This is not part of any set either.
+; EnumValue
+; Enum(ilsop_fn) String(all) Value(ILSOP_ALL)
 
 fcf-protection
 Common RejectNegative Alias(fcf-protection=,full)
@@ -2135,6 +2238,9 @@ Enum(lto_partition_model) String(1to1) Value(LTO_PARTITION_1TO1)
 EnumValue
 Enum(lto_partition_model) String(max) Value(LTO_PARTITION_MAX)
 
+EnumValue
+Enum(lto_partition_model) String(cache) Value(LTO_PARTITION_CACHE)
+
 flto-partition=
 Common Joined RejectNegative Enum(lto_partition_model) Var(flag_lto_partition) Init(LTO_PARTITION_BALANCED)
 Specify the algorithm to partition symbols and vars at linktime.
@@ -2191,6 +2297,10 @@ fmessage-length=
 Common RejectNegative Joined UInteger
 -fmessage-length=<number>	Limit diagnostics to <number> characters per line.  0 suppresses line-wrapping.
 
+fmin-function-alignment=
+Common Joined RejectNegative UInteger Var(flag_min_function_alignment) Optimization
+Align the start of every function.
+
 fmodulo-sched
 Common Var(flag_modulo_sched) Optimization
 Perform SMS based modulo scheduling before the first scheduling pass.
@@ -2208,7 +2318,7 @@ Common Var(flag_move_loop_stores) Optimization
 Move stores out of loops.
 
 fmultiflags
-Common Driver
+Common Driver RejectNegative
 Building block for specs-based multilib-aware TFLAGS.
 
 fdce
@@ -2314,7 +2424,7 @@ Common RejectNegative Joined UInteger Optimization
 -fpack-struct=<number>	Set initial maximum structure member alignment.
 
 fpcc-struct-return
-Common Var(flag_pcc_struct_return,1) Init(DEFAULT_PCC_STRUCT_RETURN)
+Common Var(flag_pcc_struct_return,1) Init(DEFAULT_PCC_STRUCT_RETURN) Optimization
 Return small aggregates in memory, not registers.
 
 fpeel-loops
@@ -2376,6 +2486,10 @@ Generate absolute source path names for gcov.
 fprofile-arcs
 Common Var(profile_arc_flag)
 Insert arc-based program profiling code.
+
+fcondition-coverage
+Common Var(condition_coverage_flag)
+Insert condition coverage profiling code.
 
 fprofile-dir=
 Common Joined RejectNegative Var(profile_data_prefix)
@@ -2500,7 +2614,7 @@ Common Var(flag_record_gcc_switches)
 Record gcc command line switches in the object file.
 
 freg-struct-return
-Common Var(flag_pcc_struct_return,0) Optimization
+Common NegativeAlias Alias(fpcc_struct_return) Optimization
 Return small aggregates in registers.
 
 fregmove
@@ -2514,6 +2628,9 @@ starts and when the destructor finishes.
 
 flifetime-dse=
 Common Joined RejectNegative UInteger Var(flag_lifetime_dse) Optimization IntegerRange(0, 2)
+
+flimit-function-alignment
+Common Var(flag_limit_function_alignment) Optimization Init(0)
 
 flive-patching
 Common RejectNegative Alias(flive-patching=,inline-clone) Optimization
@@ -2836,6 +2953,35 @@ fstrict-overflow
 Common
 Treat signed overflow as undefined.  Negated as -fwrapv -fwrapv-pointer.
 
+fstrub=disable
+Common RejectNegative Var(flag_strub, 0)
+Disable stack scrub entirely, disregarding strub attributes.
+
+fstrub=strict
+Common RejectNegative Var(flag_strub, -4)
+Enable stack scrub as per attributes, with strict call checking.
+
+; If any strub-enabling attribute is seen when the default or strict
+; initializer values are in effect, flag_strub is bumped up by 2.  The
+; scrub mode gate function will then bump these initializer values to
+; 0 if no strub-enabling attribute is seen.  This minimizes the strub
+; overhead.
+fstrub=relaxed
+Common RejectNegative Var(flag_strub, -3) Init(-3)
+Restore default strub mode: as per attributes, with relaxed checking.
+
+fstrub=all
+Common RejectNegative Var(flag_strub, 3)
+Enable stack scrubbing for all viable functions.
+
+fstrub=at-calls
+Common RejectNegative Var(flag_strub, 1)
+Enable at-calls stack scrubbing for all viable functions.
+
+fstrub=internal
+Common RejectNegative Var(flag_strub, 2)
+Enable internal stack scrubbing for all viable functions.
+
 fsync-libcalls
 Common Var(flag_sync_libcalls) Init(1)
 Implement __atomic operations via libcalls to legacy __sync functions.
@@ -2888,9 +3034,24 @@ Common Var(flag_tracer) Optimization
 Perform superblock formation via tail duplication.
 
 ftrampolines
-Common Var(flag_trampolines) Init(0)
+Common Var(flag_trampolines) Init(HEAP_TRAMPOLINES_INIT)
 For targets that normally need trampolines for nested functions, always
 generate them instead of using descriptors.
+
+ftrampoline-impl=
+Common Joined RejectNegative Enum(trampoline_impl) Var(flag_trampoline_impl) Init(HEAP_TRAMPOLINES_INIT ? TRAMPOLINE_IMPL_HEAP : TRAMPOLINE_IMPL_STACK)
+Whether trampolines are generated in executable memory rather than
+executable stack.
+
+Enum
+Name(trampoline_impl) Type(enum trampoline_impl) UnknownError(unknown trampoline implementation %qs)
+
+EnumValue
+Enum(trampoline_impl) String(stack) Value(TRAMPOLINE_IMPL_STACK)
+
+EnumValue
+Enum(trampoline_impl) String(heap) Value(TRAMPOLINE_IMPL_HEAP)
+
 
 ; Zero means that floating-point math operations cannot generate a
 ; (user-visible) trap.  This is the case, for example, in nonstop
@@ -3377,6 +3538,10 @@ Generate CTF debug information at default level.
 gbtf
 Common Driver RejectNegative JoinedOrMissing
 Generate BTF debug information at default level.
+
+gprune-btf
+Common Driver Var(debug_prune_btf) Init(0)
+Generate pruned BTF when emitting BTF info.
 
 gdwarf
 Common Driver JoinedOrMissing RejectNegative

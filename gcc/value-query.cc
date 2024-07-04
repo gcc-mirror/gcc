@@ -1,5 +1,5 @@
 /* Support routines for value queries.
-   Copyright (C) 2020-2023 Free Software Foundation, Inc.
+   Copyright (C) 2020-2024 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com> and
    Andrew MacLeod <amacleod@redhat.com>.
 
@@ -42,6 +42,18 @@ range_query::range_on_edge (vrange &r, edge, tree expr)
 }
 
 bool
+range_query::range_on_entry (vrange &r, basic_block, tree expr)
+{
+  return range_of_expr (r, expr);
+}
+
+bool
+range_query::range_on_exit (vrange &r, basic_block, tree expr)
+{
+  return range_of_expr (r, expr);
+}
+
+bool
 range_query::range_of_stmt (vrange &r, gimple *stmt, tree name)
 {
   if (!name)
@@ -54,15 +66,18 @@ range_query::range_of_stmt (vrange &r, gimple *stmt, tree name)
   return false;
 }
 
+// If the range of expr EXPR at STMT is a single value, return it.
+// Otherwise return NULL_TREE.
+
 tree
 range_query::value_of_expr (tree expr, gimple *stmt)
 {
   tree t;
 
-  if (!Value_Range::supports_type_p (TREE_TYPE (expr)))
+  if (!value_range::supports_type_p (TREE_TYPE (expr)))
     return NULL_TREE;
 
-  Value_Range r (TREE_TYPE (expr));
+  value_range r (TREE_TYPE (expr));
 
   if (range_of_expr (r, expr, stmt))
     {
@@ -76,14 +91,17 @@ range_query::value_of_expr (tree expr, gimple *stmt)
   return NULL_TREE;
 }
 
+// If the range on edge E for EXPR is a single value, return it.
+// Otherwise return NULL_TREE.
+
 tree
 range_query::value_on_edge (edge e, tree expr)
 {
   tree t;
 
-  if (!Value_Range::supports_type_p (TREE_TYPE (expr)))
+  if (!value_range::supports_type_p (TREE_TYPE (expr)))
     return NULL_TREE;
-  Value_Range r (TREE_TYPE (expr));
+  value_range r (TREE_TYPE (expr));
   if (range_on_edge (r, e, expr))
     {
       // A constant used in an unreachable block often returns as UNDEFINED.
@@ -94,8 +112,10 @@ range_query::value_on_edge (edge e, tree expr)
 	return t;
     }
   return NULL_TREE;
-
 }
+
+// If the range of STMT for NAME is a single value, return it.
+// Otherwise return NULL_TREE.
 
 tree
 range_query::value_of_stmt (gimple *stmt, tree name)
@@ -107,13 +127,50 @@ range_query::value_of_stmt (gimple *stmt, tree name)
 
   gcc_checking_assert (!name || name == gimple_get_lhs (stmt));
 
-  if (!name || !Value_Range::supports_type_p (TREE_TYPE (name)))
+  if (!name || !value_range::supports_type_p (TREE_TYPE (name)))
     return NULL_TREE;
-  Value_Range r (TREE_TYPE (name));
+  value_range r (TREE_TYPE (name));
   if (range_of_stmt (r, stmt, name) && r.singleton_p (&t))
     return t;
   return NULL_TREE;
+}
 
+// If the range on entry to BB for EXPR is a single value, return it.
+// Otherwise return NULL_TREE.
+
+tree
+range_query::value_on_entry (basic_block bb, tree expr)
+{
+  tree t;
+
+  gcc_checking_assert (bb);
+  if (!value_range::supports_type_p (TREE_TYPE (expr)))
+    return NULL_TREE;
+
+  value_range r (TREE_TYPE (expr));
+
+  if (range_on_entry (r, bb, expr) && r.singleton_p (&t))
+    return t;
+  return NULL_TREE;
+}
+
+// If the range on exit to BB for EXPR is a single value, return it.
+// Otherwise return NULL_TREE.
+
+tree
+range_query::value_on_exit (basic_block bb, tree expr)
+{
+  tree t;
+
+  gcc_checking_assert (bb);
+  if (!value_range::supports_type_p (TREE_TYPE (expr)))
+    return NULL_TREE;
+
+  value_range r (TREE_TYPE (expr));
+
+  if (range_on_exit (r, bb, expr) && r.singleton_p (&t))
+    return t;
+  return NULL_TREE;
 }
 
 void
@@ -121,20 +178,139 @@ range_query::dump (FILE *)
 {
 }
 
+// Default oracle for all range queries.  This contains no storage and thus
+// can be used anywhere.
+relation_oracle default_relation_oracle;
+infer_range_oracle default_infer_oracle;
+gimple_outgoing_range default_gori;
+
+void
+range_query::create_gori (int not_executable_flag, int sw_max_edges)
+{
+  gcc_checking_assert (m_gori == &default_gori);
+  gcc_checking_assert (m_map == NULL);
+  m_map = new gori_map ();
+  gcc_checking_assert (m_map);
+  m_gori = new gori_compute (*m_map, not_executable_flag, sw_max_edges);
+  gcc_checking_assert (m_gori);
+}
+
+void
+range_query::destroy_gori ()
+{
+  if (m_gori && m_gori != &default_gori)
+    delete m_gori;
+  if (m_map)
+    delete m_map;
+  m_map = NULL;
+  m_gori= &default_gori;
+}
+
+void
+range_query::create_infer_oracle (bool do_search)
+{
+  gcc_checking_assert (m_infer == &default_infer_oracle);
+  m_infer = new infer_range_manager (do_search);
+  gcc_checking_assert (m_infer);
+}
+
+void
+range_query::destroy_infer_oracle ()
+{
+  if (m_infer && m_infer != &default_infer_oracle)
+    delete m_infer;
+  m_infer = &default_infer_oracle;
+}
+
+// Create dominance based range oracle for the current query if dom info is
+// available.  DO_TRANS_P indicates whether transitive relations should
+// be created.  This can cost more in compile time.
+
+void
+range_query::create_relation_oracle (bool do_trans_p)
+{
+  gcc_checking_assert (this != &global_ranges);
+  gcc_checking_assert (m_relation == &default_relation_oracle);
+
+  if (!dom_info_available_p (CDI_DOMINATORS))
+    return;
+  m_relation = new dom_oracle (do_trans_p);
+  gcc_checking_assert (m_relation);
+}
+
+// Destroy any relation oracle that was created.
+
+void
+range_query::destroy_relation_oracle ()
+{
+  // m_relation can be NULL if a derived range_query class took care of
+  // disposing its own oracle.
+  if (m_relation && m_relation != &default_relation_oracle)
+    {
+      delete m_relation;
+      m_relation = &default_relation_oracle;
+    }
+}
+
+void
+range_query::share_query (range_query &q)
+{
+  m_relation = q.m_relation;
+  m_infer = q.m_infer;
+  m_gori = q.m_gori;
+  m_map = q.m_map;
+  m_shared_copy_p = true;
+}
+
 range_query::range_query ()
 {
-  m_oracle = NULL;
+  m_relation = &default_relation_oracle;
+  m_infer = &default_infer_oracle;
+  m_gori = &default_gori;
+  m_map = NULL;
+  m_shared_copy_p = false;
 }
 
 range_query::~range_query ()
 {
+  // Do not destroy anything if this is a shared copy.
+  if (m_shared_copy_p)
+    return;
+  destroy_gori ();
+  destroy_infer_oracle ();
+  destroy_relation_oracle ();
 }
 
-// Return a range in R for the tree EXPR.  Return true if a range is
-// representable, and UNDEFINED/false if not.
+// This routine will invoke the equivalent of range_of_expr on
+// either a gimple statement STMT, on entry to block BBENTRY, or on
+// exit from block BBEXIT.   Only one of these 3 fields may be set.
+// It is valid for none of them to be set, in wqhich case there is no context.
 
 bool
-range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
+range_query::invoke_range_of_expr (vrange &r, tree expr, gimple *stmt,
+				   basic_block bbentry, basic_block bbexit)
+{
+  if (bbentry)
+    {
+      gcc_checking_assert (!stmt && !bbexit);
+      return range_on_entry (r, bbentry, expr);
+    }
+  if (bbexit)
+    {
+      gcc_checking_assert (!stmt);
+      return range_on_exit (r, bbexit, expr);
+    }
+
+  return range_of_expr (r, expr, stmt);
+}
+
+// Return a range in R for the tree EXPR.  The context can be either a STMT,
+// or on entry to block BBENTRY or exit from block BBEXIT.
+// Return true if a range is representable, and UNDEFINED/false if not.
+
+bool
+range_query::get_tree_range (vrange &r, tree expr, gimple *stmt,
+			     basic_block bbentry, basic_block bbexit)
 {
   tree type;
   if (TYPE_P (expr))
@@ -142,7 +318,7 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
   else
     type = TREE_TYPE (expr);
 
-  if (!Value_Range::supports_type_p (type))
+  if (!value_range::supports_type_p (type))
     {
       r.set_undefined ();
       return false;
@@ -156,11 +332,9 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
     {
     case INTEGER_CST:
       {
-	irange &i = as_a <irange> (r);
 	if (TREE_OVERFLOW_P (expr))
 	  expr = drop_tree_overflow (expr);
-	wide_int w = wi::to_wide (expr);
-	i.set (TREE_TYPE (expr), w, w);
+	r.set (expr, expr);
 	return true;
       }
 
@@ -182,6 +356,9 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
       }
 
     case SSA_NAME:
+      // If this is not an abnormal or virtual ssa, invoke range_of_expr.
+      if (gimple_range_ssa_p (expr))
+	return invoke_range_of_expr (r, expr, stmt, bbentry, bbexit);
       gimple_range_global (r, expr);
       return true;
 
@@ -205,15 +382,15 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
       tree op0 = TREE_OPERAND (expr, 0);
       tree op1 = TREE_OPERAND (expr, 1);
       if (COMPARISON_CLASS_P (expr)
-	  && !Value_Range::supports_type_p (TREE_TYPE (op0)))
+	  && !value_range::supports_type_p (TREE_TYPE (op0)))
 	return false;
       range_op_handler op (TREE_CODE (expr));
       if (op)
 	{
-	  Value_Range r0 (TREE_TYPE (op0));
-	  Value_Range r1 (TREE_TYPE (op1));
-	  range_of_expr (r0, op0, stmt);
-	  range_of_expr (r1, op1, stmt);
+	  value_range r0 (TREE_TYPE (op0));
+	  value_range r1 (TREE_TYPE (op1));
+	  invoke_range_of_expr (r0, op0, stmt, bbentry, bbexit);
+	  invoke_range_of_expr (r1, op1, stmt, bbentry, bbexit);
 	  if (!op.fold_range (r, type, r0, r1))
 	    r.set_varying (type);
 	}
@@ -225,12 +402,13 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
     {
       range_op_handler op (TREE_CODE (expr));
       tree op0_type = TREE_TYPE (TREE_OPERAND (expr, 0));
-      if (op && Value_Range::supports_type_p (op0_type))
+      if (op && value_range::supports_type_p (op0_type))
 	{
-	  Value_Range r0 (TREE_TYPE (TREE_OPERAND (expr, 0)));
-	  Value_Range r1 (type);
+	  value_range r0 (TREE_TYPE (TREE_OPERAND (expr, 0)));
+	  value_range r1 (type);
 	  r1.set_varying (type);
-	  range_of_expr (r0, TREE_OPERAND (expr, 0), stmt);
+	  invoke_range_of_expr (r0, TREE_OPERAND (expr, 0), stmt, bbentry,
+				bbexit);
 	  if (!op.fold_range (r, type, r0, r1))
 	    r.set_varying (type);
 	}
@@ -282,11 +460,15 @@ get_ssa_name_ptr_info_nonnull (const_tree name)
 // Update the global range for NAME into the SSA_RANGE_NAME_INFO and
 // Return the legacy global range for NAME if it has one, otherwise
 // return VARYING.
+// See discussion here regarding why there use to be a wrapper function:
+// https://gcc.gnu.org/pipermail/gcc-patches/2021-June/571709.html
+// Legacy EVRP has been removed, leaving just this function.
 
-static void
-get_range_global (vrange &r, tree name, struct function *fun = cfun)
+void
+gimple_range_global (vrange &r, tree name, struct function *fun)
 {
   tree type = TREE_TYPE (name);
+  gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
 
   if (SSA_NAME_IS_DEFAULT_DEF (name))
     {
@@ -334,36 +516,6 @@ get_range_global (vrange &r, tree name, struct function *fun = cfun)
     r.set_varying (type);
 }
 
-// This is where the ranger picks up global info to seed initial
-// requests.  It is a slightly restricted version of
-// get_range_global() above.
-//
-// The reason for the difference is that we can always pick the
-// default definition of an SSA with no adverse effects, but for other
-// SSAs, if we pick things up to early, we may prematurely eliminate
-// builtin_unreachables.
-//
-// Without this restriction, the test in g++.dg/tree-ssa/pr61034.C has
-// all of its unreachable calls removed too early.
-//
-// See discussion here:
-// https://gcc.gnu.org/pipermail/gcc-patches/2021-June/571709.html
-
-void
-gimple_range_global (vrange &r, tree name, struct function *fun)
-{
-  tree type = TREE_TYPE (name);
-  gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
-
-  if (SSA_NAME_IS_DEFAULT_DEF (name) || (fun && fun->after_inlining)
-      || is_a<gphi *> (SSA_NAME_DEF_STMT (name)))
-    {
-      get_range_global (r, name, fun);
-      return;
-    }
-  r.set_varying (type);
-}
-
 // ----------------------------------------------
 // global_range_query implementation.
 
@@ -375,57 +527,7 @@ global_range_query::range_of_expr (vrange &r, tree expr, gimple *stmt)
   if (!gimple_range_ssa_p (expr))
     return get_tree_range (r, expr, stmt);
 
-  get_range_global (r, expr);
+  gimple_range_global (r, expr);
 
   return true;
-}
-
-// Return any known relation between SSA1 and SSA2 before stmt S is executed.
-// If GET_RANGE is true, query the range of both operands first to ensure
-// the definitions have been processed and any relations have be created.
-
-relation_kind
-range_query::query_relation (gimple *s, tree ssa1, tree ssa2, bool get_range)
-{
-  if (!m_oracle || TREE_CODE (ssa1) != SSA_NAME || TREE_CODE (ssa2) != SSA_NAME)
-    return VREL_VARYING;
-
-  // Ensure ssa1 and ssa2 have both been evaluated.
-  if (get_range)
-    {
-      Value_Range tmp1 (TREE_TYPE (ssa1));
-      Value_Range tmp2 (TREE_TYPE (ssa2));
-      range_of_expr (tmp1, ssa1, s);
-      range_of_expr (tmp2, ssa2, s);
-    }
-  return m_oracle->query_relation (gimple_bb (s), ssa1, ssa2);
-}
-
-// Return any known relation between SSA1 and SSA2 on edge E.
-// If GET_RANGE is true, query the range of both operands first to ensure
-// the definitions have been processed and any relations have be created.
-
-relation_kind
-range_query::query_relation (edge e, tree ssa1, tree ssa2, bool get_range)
-{
-  basic_block bb;
-  if (!m_oracle || TREE_CODE (ssa1) != SSA_NAME || TREE_CODE (ssa2) != SSA_NAME)
-    return VREL_VARYING;
-
-  // Use destination block if it has a single predecessor, and this picks
-  // up any relation on the edge.
-  // Otherwise choose the src edge and the result is the same as on-exit.
-  if (!single_pred_p (e->dest))
-    bb = e->src;
-  else
-    bb = e->dest;
-
-  // Ensure ssa1 and ssa2 have both been evaluated.
-  if (get_range)
-    {
-      Value_Range tmp (TREE_TYPE (ssa1));
-      range_on_edge (tmp, e, ssa1);
-      range_on_edge (tmp, e, ssa2);
-    }
-  return m_oracle->query_relation (bb, ssa1, ssa2);
 }

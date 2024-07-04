@@ -1,6 +1,6 @@
 // Core concepts and definitions for <ranges> -*- C++ -*-
 
-// Copyright (C) 2019-2023 Free Software Foundation, Inc.
+// Copyright (C) 2019-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,6 +37,7 @@
 #include <bits/stl_iterator.h>
 #include <ext/numeric_traits.h>
 #include <bits/max_size_type.h>
+#include <bits/version.h>
 
 #ifdef __cpp_lib_concepts
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -512,7 +513,7 @@ namespace ranges
   template<range _Range>
     using sentinel_t = decltype(ranges::end(std::declval<_Range&>()));
 
-#if __cplusplus > 202002L
+#if __glibcxx_ranges_as_const // >= C++23
   template<range _Range>
     using const_iterator_t = const_iterator<iterator_t<_Range>>;
 
@@ -535,6 +536,12 @@ namespace ranges
   template<range _Range>
     using range_rvalue_reference_t
       = iter_rvalue_reference_t<iterator_t<_Range>>;
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3860. range_common_reference_t is missing
+  template<range _Range>
+    using range_common_reference_t
+      = iter_common_reference_t<iterator_t<_Range>>;
 
   /// [range.sized] The sized_range concept.
   template<typename _Tp>
@@ -615,7 +622,7 @@ namespace ranges
     concept common_range
       = range<_Tp> && same_as<iterator_t<_Tp>, sentinel_t<_Tp>>;
 
-#if __cplusplus > 202002L
+#if __glibcxx_ranges_as_const // >= C++23
   template<typename _Tp>
     concept constant_range
       = input_range<_Tp> && std::__detail::__constant_iterator<iterator_t<_Tp>>;
@@ -623,7 +630,7 @@ namespace ranges
 
   namespace __access
   {
-#if __cplusplus > 202020L
+#if __glibcxx_ranges_as_const // >= C++23
     template<typename _Range>
       constexpr auto&
       __possibly_const_range(_Range& __r) noexcept
@@ -650,7 +657,7 @@ namespace ranges
 
     struct _CBegin
     {
-#if __cplusplus > 202002L
+#if __glibcxx_ranges_as_const // >= C++23
       template<__maybe_borrowed_range _Tp>
 	[[nodiscard]]
 	constexpr auto
@@ -678,7 +685,7 @@ namespace ranges
 
     struct _CEnd final
     {
-#if __cplusplus > 202002L
+#if __glibcxx_ranges_as_const // >= C++23
       template<__maybe_borrowed_range _Tp>
 	[[nodiscard]]
 	constexpr auto
@@ -706,7 +713,7 @@ namespace ranges
 
     struct _CRBegin
     {
-#if __cplusplus > 202002L
+#if __glibcxx_ranges_as_const // >= C++23
       template<__maybe_borrowed_range _Tp>
 	[[nodiscard]]
 	constexpr auto
@@ -734,7 +741,7 @@ namespace ranges
 
     struct _CREnd
     {
-#if __cplusplus > 202002L
+#if __glibcxx_ranges_as_const // >= C++23
       template<__maybe_borrowed_range _Tp>
 	[[nodiscard]]
 	constexpr auto
@@ -762,7 +769,7 @@ namespace ranges
 
     struct _CData
     {
-#if __cplusplus > 202002L
+#if __glibcxx_ranges_as_const // >= C++23
       template<__maybe_borrowed_range _Tp>
 	[[nodiscard]]
 	constexpr const auto*
@@ -1056,8 +1063,13 @@ namespace ranges
     using borrowed_iterator_t = __conditional_t<borrowed_range<_Range>,
 						iterator_t<_Range>,
 						dangling>;
-
 } // namespace ranges
+
+#if __glibcxx_ranges_to_container // C++ >= 23
+  struct from_range_t { explicit from_range_t() = default; };
+  inline constexpr from_range_t from_range{};
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // library concepts

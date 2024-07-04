@@ -7,12 +7,6 @@
     This had to be done to correct non-standard usages in the
     original, manufacturer supplied header file.  */
 
-#ifndef FIXINC_WRAP_MATH_H_MATH_EXCEPTION
-#define FIXINC_WRAP_MATH_H_MATH_EXCEPTION 1
-
-#ifdef __cplusplus
-#define exception __math_exception
-#endif
 
 
 #if defined( BROKEN_CABS_CHECK )
@@ -146,8 +140,3 @@ int foo;
 #endif /* _C99 */
 
 #endif  /* VXWORKS_MATH_H_FP_C99_CHECK */
-#ifdef __cplusplus
-#undef exception
-#endif
-
-#endif  /* FIXINC_WRAP_MATH_H_MATH_EXCEPTION */

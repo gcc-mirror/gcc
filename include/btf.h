@@ -1,5 +1,5 @@
 /* Declarations and definitions relating to the BPF Type Format (BTF).
-   Copyright (C) 2021-2023 Free Software Foundation, Inc.
+   Copyright (C) 2021-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -55,6 +55,11 @@ struct btf_header
 #define BTF_MAX_NAME_OFFSET	0x00ffffff
 /* Maximum number of struct, union, enum members or func args.  */
 #define BTF_MAX_VLEN	0xffff
+
+/* Type ID 0 represents the void type.  */
+#define BTF_VOID_TYPEID 0
+/* Initial type ID for regular types.  */
+#define BTF_INIT_TYPEID 1
 
 struct btf_type
 {

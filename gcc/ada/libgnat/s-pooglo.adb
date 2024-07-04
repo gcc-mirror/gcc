@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,9 +75,10 @@ package body System.Pool_Global is
 
          --  Realign the returned address
 
-         Aligned_Address := To_Address
-           (To_Integer (Allocated) + Integer_Address (Alignment)
-              - (To_Integer (Allocated) mod Integer_Address (Alignment)));
+         Aligned_Address :=
+           Allocated + Alignment
+           - Storage_Offset (To_Integer (Allocated)
+                             mod Integer_Address (Alignment));
 
          --  Save the block address
 

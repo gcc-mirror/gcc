@@ -153,28 +153,28 @@ void f_vint32m2x4_t () {vint32m2x4_t t;}
 void f_vuint32m2x4_t () {vuint32m2x4_t t;}
 void f_vint32m4x2_t () {vint32m4x2_t t;}
 void f_vuint32m4x2_t () {vuint32m4x2_t t;}
-void f_vint64m1x2_t () {vint64m1x2_t t;} /* { dg-error {unknown type name 'vint64m1x2_t'} } */
-void f_vuint64m1x2_t () {vuint64m1x2_t t;} /* { dg-error {unknown type name 'vuint64m1x2_t'} } */
-void f_vint64m1x3_t () {vint64m1x3_t t;} /* { dg-error {unknown type name 'vint64m1x3_t'} } */
-void f_vuint64m1x3_t () {vuint64m1x3_t t;} /* { dg-error {unknown type name 'vuint64m1x3_t'} } */
-void f_vint64m1x4_t () {vint64m1x4_t t;} /* { dg-error {unknown type name 'vint64m1x4_t'} } */
-void f_vuint64m1x4_t () {vuint64m1x4_t t;} /* { dg-error {unknown type name 'vuint64m1x4_t'} } */
-void f_vint64m1x5_t () {vint64m1x5_t t;} /* { dg-error {unknown type name 'vint64m1x5_t'} } */
-void f_vuint64m1x5_t () {vuint64m1x5_t t;} /* { dg-error {unknown type name 'vuint64m1x5_t'} } */
-void f_vint64m1x6_t () {vint64m1x6_t t;} /* { dg-error {unknown type name 'vint64m1x6_t'} } */
-void f_vuint64m1x6_t () {vuint64m1x6_t t;} /* { dg-error {unknown type name 'vuint64m1x6_t'} } */
-void f_vint64m1x7_t () {vint64m1x7_t t;} /* { dg-error {unknown type name 'vint64m1x7_t'} } */
-void f_vuint64m1x7_t () {vuint64m1x7_t t;} /* { dg-error {unknown type name 'vuint64m1x7_t'} } */
-void f_vint64m1x8_t () {vint64m1x8_t t;} /* { dg-error {unknown type name 'vint64m1x8_t'} } */
-void f_vuint64m1x8_t () {vuint64m1x8_t t;} /* { dg-error {unknown type name 'vuint64m1x8_t'} } */
-void f_vint64m2x2_t () {vint64m2x2_t t;} /* { dg-error {unknown type name 'vint64m2x2_t'} } */
-void f_vuint64m2x2_t () {vuint64m2x2_t t;} /* { dg-error {unknown type name 'vuint64m2x2_t'} } */
-void f_vint64m2x3_t () {vint64m2x3_t t;} /* { dg-error {unknown type name 'vint64m2x3_t'} } */
-void f_vuint64m2x3_t () {vuint64m2x3_t t;} /* { dg-error {unknown type name 'vuint64m2x3_t'} } */
-void f_vint64m2x4_t () {vint64m2x4_t t;} /* { dg-error {unknown type name 'vint64m2x4_t'} } */
-void f_vuint64m2x4_t () {vuint64m2x4_t t;} /* { dg-error {unknown type name 'vuint64m2x4_t'} } */
-void f_vint64m4x2_t () {vint64m4x2_t t;} /* { dg-error {unknown type name 'vint64m4x2_t'} } */
-void f_vuint64m4x2_t () {vuint64m4x2_t t;} /* { dg-error {unknown type name 'vuint64m4x2_t'} } */
+void f_vint64m1x2_t () {vint64m1x2_t t;}
+void f_vuint64m1x2_t () {vuint64m1x2_t t;}
+void f_vint64m1x3_t () {vint64m1x3_t t;}
+void f_vuint64m1x3_t () {vuint64m1x3_t t;}
+void f_vint64m1x4_t () {vint64m1x4_t t;}
+void f_vuint64m1x4_t () {vuint64m1x4_t t;}
+void f_vint64m1x5_t () {vint64m1x5_t t;}
+void f_vuint64m1x5_t () {vuint64m1x5_t t;}
+void f_vint64m1x6_t () {vint64m1x6_t t;}
+void f_vuint64m1x6_t () {vuint64m1x6_t t;}
+void f_vint64m1x7_t () {vint64m1x7_t t;}
+void f_vuint64m1x7_t () {vuint64m1x7_t t;}
+void f_vint64m1x8_t () {vint64m1x8_t t;}
+void f_vuint64m1x8_t () {vuint64m1x8_t t;}
+void f_vint64m2x2_t () {vint64m2x2_t t;}
+void f_vuint64m2x2_t () {vuint64m2x2_t t;}
+void f_vint64m2x3_t () {vint64m2x3_t t;}
+void f_vuint64m2x3_t () {vuint64m2x3_t t;}
+void f_vint64m2x4_t () {vint64m2x4_t t;}
+void f_vuint64m2x4_t () {vuint64m2x4_t t;}
+void f_vint64m4x2_t () {vint64m4x2_t t;}
+void f_vuint64m4x2_t () {vuint64m4x2_t t;}
 void f_vfloat32mf2x2_t () {vfloat32mf2x2_t t;}
 void f_vfloat32mf2x3_t () {vfloat32mf2x3_t t;}
 void f_vfloat32mf2x4_t () {vfloat32mf2x4_t t;}
@@ -193,14 +193,54 @@ void f_vfloat32m2x2_t () {vfloat32m2x2_t t;}
 void f_vfloat32m2x3_t () {vfloat32m2x3_t t;}
 void f_vfloat32m2x4_t () {vfloat32m2x4_t t;}
 void f_vfloat32m4x2_t () {vfloat32m4x2_t t;}
-void f_vfloat64m1x2_t () {vfloat64m1x2_t t;} /* { dg-error {unknown type name 'vfloat64m1x2_t'} } */
-void f_vfloat64m1x3_t () {vfloat64m1x3_t t;} /* { dg-error {unknown type name 'vfloat64m1x3_t'} } */
-void f_vfloat64m1x4_t () {vfloat64m1x4_t t;} /* { dg-error {unknown type name 'vfloat64m1x4_t'} } */
-void f_vfloat64m1x5_t () {vfloat64m1x5_t t;} /* { dg-error {unknown type name 'vfloat64m1x5_t'} } */
-void f_vfloat64m1x6_t () {vfloat64m1x6_t t;} /* { dg-error {unknown type name 'vfloat64m1x6_t'} } */
-void f_vfloat64m1x7_t () {vfloat64m1x7_t t;} /* { dg-error {unknown type name 'vfloat64m1x7_t'} } */
-void f_vfloat64m1x8_t () {vfloat64m1x8_t t;} /* { dg-error {unknown type name 'vfloat64m1x8_t'} } */
-void f_vfloat64m2x2_t () {vfloat64m2x2_t t;} /* { dg-error {unknown type name 'vfloat64m2x2_t'} } */
-void f_vfloat64m2x3_t () {vfloat64m2x3_t t;} /* { dg-error {unknown type name 'vfloat64m2x3_t'} } */
-void f_vfloat64m2x4_t () {vfloat64m2x4_t t;} /* { dg-error {unknown type name 'vfloat64m2x4_t'} } */
-void f_vfloat64m4x2_t () {vfloat64m4x2_t t;} /* { dg-error {unknown type name 'vfloat64m4x2_t'} } */
+
+/* To support target attribute, the vfloat*m*x*_t need to be registered
+   in advance.  We add type and args/return value check during the
+   set current function but cannot cover below cases.  It is the same
+   behavior compared to aarch64 sve.  */
+void f_vfloat64m1x2_t () {vfloat64m1x2_t t;}
+void f_vfloat64m1x3_t () {vfloat64m1x3_t t;}
+void f_vfloat64m1x4_t () {vfloat64m1x4_t t;}
+void f_vfloat64m1x5_t () {vfloat64m1x5_t t;}
+void f_vfloat64m1x6_t () {vfloat64m1x6_t t;}
+void f_vfloat64m1x7_t () {vfloat64m1x7_t t;}
+void f_vfloat64m1x8_t () {vfloat64m1x8_t t;}
+void f_vfloat64m2x2_t () {vfloat64m2x2_t t;}
+void f_vfloat64m2x3_t () {vfloat64m2x3_t t;}
+void f_vfloat64m2x4_t () {vfloat64m2x4_t t;}
+void f_vfloat64m4x2_t () {vfloat64m4x2_t t;}
+
+void new_f_vint64m1x2_t (vint64m1x2_t t) { }   /* { dg-error {argument type 'vint64m1x2_t' requires the zve64x, zve64f, zve64d or v ISA extension} } */
+void new_f_vuint64m1x2_t (vuint64m1x2_t t) { } /* { dg-error {argument type 'vuint64m1x2_t' requires the zve64x, zve64f, zve64d or v ISA extension} } */
+void new_f_vint64m1x3_t (vint64m1x3_t t) { }   /* { dg-error {argument type 'vint64m1x3_t' requires the zve64x, zve64f, zve64d or v ISA extension} } */
+void new_f_vuint64m1x3_t (vuint64m1x3_t t) { } /* { dg-error {argument type 'vuint64m1x3_t' requires the zve64x, zve64f, zve64d or v ISA extension} } */
+void new_f_vint64m1x4_t (vint64m1x4_t t) { }   /* { dg-error {argument type 'vint64m1x4_t' requires the zve64x, zve64f, zve64d or v ISA extension} } */
+void new_f_vuint64m1x4_t (vuint64m1x4_t t) { } /* { dg-error {argument type 'vuint64m1x4_t' requires the zve64x, zve64f, zve64d or v ISA extension} } */
+void new_f_vint64m1x5_t (vint64m1x5_t t) { }   /* { dg-error {argument type 'vint64m1x5_t' requires the zve64x, zve64f, zve64d or v ISA extension} } */
+void new_f_vuint64m1x5_t (vuint64m1x5_t t) { } /* { dg-error {argument type 'vuint64m1x5_t' requires the zve64x, zve64f, zve64d or v ISA extension} } */
+void new_f_vint64m1x6_t (vint64m1x6_t t) { }   /* { dg-error {argument type 'vint64m1x6_t' requires the zve64x, zve64f, zve64d or v ISA extension} } */
+void new_f_vuint64m1x6_t (vuint64m1x6_t t) { } /* { dg-error {argument type 'vuint64m1x6_t' requires the zve64x, zve64f, zve64d or v ISA extension} } */
+void new_f_vint64m1x7_t (vint64m1x7_t t) { }   /* { dg-error {argument type 'vint64m1x7_t' requires the zve64x, zve64f, zve64d or v ISA extension} } */
+void new_f_vuint64m1x7_t (vuint64m1x7_t t) { } /* { dg-error {argument type 'vuint64m1x7_t' requires the zve64x, zve64f, zve64d or v ISA extension} } */
+void new_f_vint64m1x8_t (vint64m1x8_t t) { }   /* { dg-error {argument type 'vint64m1x8_t' requires the zve64x, zve64f, zve64d or v ISA extension} } */
+void new_f_vuint64m1x8_t (vuint64m1x8_t t) { } /* { dg-error {argument type 'vuint64m1x8_t' requires the zve64x, zve64f, zve64d or v ISA extension} } */
+void new_f_vint64m2x2_t (vint64m2x2_t t) { }   /* { dg-error {argument type 'vint64m2x2_t' requires the zve64x, zve64f, zve64d or v ISA extension} } */
+void new_f_vuint64m2x2_t (vuint64m2x2_t t) { } /* { dg-error {argument type 'vuint64m2x2_t' requires the zve64x, zve64f, zve64d or v ISA extension} } */
+void new_f_vint64m2x3_t (vint64m2x3_t t) { }   /* { dg-error {argument type 'vint64m2x3_t' requires the zve64x, zve64f, zve64d or v ISA extension} } */
+void new_f_vuint64m2x3_t (vuint64m2x3_t t) { } /* { dg-error {argument type 'vuint64m2x3_t' requires the zve64x, zve64f, zve64d or v ISA extension} } */
+void new_f_vint64m2x4_t (vint64m2x4_t t) { }   /* { dg-error {argument type 'vint64m2x4_t' requires the zve64x, zve64f, zve64d or v ISA extension} } */
+void new_f_vuint64m2x4_t (vuint64m2x4_t t) { } /* { dg-error {argument type 'vuint64m2x4_t' requires the zve64x, zve64f, zve64d or v ISA extension} } */
+void new_f_vint64m4x2_t (vint64m4x2_t t) { }   /* { dg-error {argument type 'vint64m4x2_t' requires the zve64x, zve64f, zve64d or v ISA extension} } */
+void new_f_vuint64m4x2_t (vuint64m4x2_t t) { } /* { dg-error {argument type 'vuint64m4x2_t' requires the zve64x, zve64f, zve64d or v ISA extension} } */
+
+void new_f_vfloat64m1x2_t (vfloat64m1x2_t t) { } /* { dg-error {argument type 'vfloat64m1x2_t' requires the zve64d or v ISA extension} } */
+void new_f_vfloat64m1x3_t (vfloat64m1x3_t t) { } /* { dg-error {argument type 'vfloat64m1x3_t' requires the zve64d or v ISA extension} } */
+void new_f_vfloat64m1x4_t (vfloat64m1x4_t t) { } /* { dg-error {argument type 'vfloat64m1x4_t' requires the zve64d or v ISA extension} } */
+void new_f_vfloat64m1x5_t (vfloat64m1x5_t t) { } /* { dg-error {argument type 'vfloat64m1x5_t' requires the zve64d or v ISA extension} } */
+void new_f_vfloat64m1x6_t (vfloat64m1x6_t t) { } /* { dg-error {argument type 'vfloat64m1x6_t' requires the zve64d or v ISA extension} } */
+void new_f_vfloat64m1x7_t (vfloat64m1x7_t t) { } /* { dg-error {argument type 'vfloat64m1x7_t' requires the zve64d or v ISA extension} } */
+void new_f_vfloat64m1x8_t (vfloat64m1x8_t t) { } /* { dg-error {argument type 'vfloat64m1x8_t' requires the zve64d or v ISA extension} } */
+void new_f_vfloat64m2x2_t (vfloat64m2x2_t t) { } /* { dg-error {argument type 'vfloat64m2x2_t' requires the zve64d or v ISA extension} } */
+void new_f_vfloat64m2x3_t (vfloat64m2x3_t t) { } /* { dg-error {argument type 'vfloat64m2x3_t' requires the zve64d or v ISA extension} } */
+void new_f_vfloat64m2x4_t (vfloat64m2x4_t t) { } /* { dg-error {argument type 'vfloat64m2x4_t' requires the zve64d or v ISA extension} } */
+void new_f_vfloat64m4x2_t (vfloat64m4x2_t t) { } /* { dg-error {argument type 'vfloat64m4x2_t' requires the zve64d or v ISA extension} } */

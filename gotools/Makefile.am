@@ -332,8 +332,8 @@ check: check-head check-go-tool check-runtime check-cgo-test check-carchive-test
 	@cp gotools.sum gotools.log
 	@for file in cmd_go-testlog runtime-testlog cgo-testlog carchive-testlog cmd_vet-testlog embed-testlog; do \
 	  testname=`echo $${file} | sed -e 's/-testlog//' -e 's|_|/|'`; \
-	  echo "Running $${testname}" >> gotools.sum; \
-	  echo "Running $${testname}" >> gotools.log; \
+	  echo "Running $${testname} ..." >> gotools.sum; \
+	  echo "Running $${testname} ..." >> gotools.log; \
 	  sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' < $${file} >> gotools.log; \
 	  grep '^--- ' $${file} | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' -e 's/SKIP/UNTESTED/' | sort -k 2 >> gotools.sum; \
 	done
@@ -366,5 +366,7 @@ else
 # only do this if such a compiler is available.  We also need to get
 # the right values for GOARCH and GOOS in the default build context in
 # the go/build package.  Figure this out later.
+install-exec-local:
+uninstall-local:
 
 endif

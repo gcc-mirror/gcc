@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 #define NG   0x100L
 
 unsigned long flg = 0;

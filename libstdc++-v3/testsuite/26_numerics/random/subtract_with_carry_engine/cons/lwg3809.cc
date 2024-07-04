@@ -2,10 +2,11 @@
 #include <random>
 #include <testsuite_hooks.h>
 
-// LWG 3809. Is std::subtract_with_carry_engine<uint16_t> supposed to work?
 // PR 107466 - invalid -Wnarrowing error with std::subtract_with_carry_engine
 
-int main()
+// LWG 3809. Is std::subtract_with_carry_engine<uint16_t> supposed to work?
+void
+test_lwg3809()
 {
   // It should be possible to construct this engine with a 16-bit result_type:
   std::subtract_with_carry_engine<uint16_t, 12, 5, 12> s16;
@@ -23,4 +24,18 @@ int main()
   s32.seed(101);
   for (int i = 0; i < 10; ++i)
     VERIFY( s16() == s32() );
+}
+
+// LWG 4014. LWG 3809 changes behavior of some existing code
+void
+test_lwg4014()
+{
+  std::ranlux48_base g(-1U + 1LL);
+  VERIFY( g() == 22575453646312 );
+}
+
+int main()
+{
+  test_lwg3809();
+  test_lwg4014();
 }

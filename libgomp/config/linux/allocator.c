@@ -1,4 +1,4 @@
-/* Copyright (C) 2022-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2022-2024 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -33,5 +33,124 @@
 #define LIBGOMP_USE_MEMKIND
 #define LIBGOMP_USE_LIBNUMA
 #endif
+
+/* Implement malloc routines that can handle pinned memory on Linux.
+   
+   It's possible to use mlock on any heap memory, but using munlock is
+   problematic if there are multiple pinned allocations on the same page.
+   Tracking all that manually would be possible, but adds overhead. This may
+   be worth it if there are a lot of small allocations getting pinned, but
+   this seems less likely in a HPC application.
+
+   Instead we optimize for large pinned allocations, and use mmap to ensure
+   that two pinned allocations don't share the same page.  This also means
+   that large allocations don't pin extra pages by being poorly aligned.  */
+
+#define _GNU_SOURCE
+#include <sys/mman.h>
+#include <string.h>
+#include "libgomp.h"
+#ifdef HAVE_INTTYPES_H
+# include <inttypes.h>  /* For PRIu64.  */
+#endif
+
+static void *
+linux_memspace_alloc (omp_memspace_handle_t memspace, size_t size, int pin)
+{
+  (void)memspace;
+
+  if (pin)
+    {
+      /* Note that mmap always returns zeroed memory and is therefore also a
+	 suitable implementation of calloc.  */
+      void *addr = mmap (NULL, size, PROT_READ | PROT_WRITE,
+			 MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+      if (addr == MAP_FAILED)
+	return NULL;
+
+      if (mlock (addr, size))
+	{
+#ifdef HAVE_INTTYPES_H
+	  gomp_debug (0, "libgomp: failed to pin %"PRIu64" bytes of"
+		      " memory (ulimit too low?)\n", (uint64_t) size);
+#else
+	  gomp_debug (0, "libgomp: failed to pin %lu bytes of"
+		      " memory (ulimit too low?)\n", (unsigned long) size);
+#endif
+	  munmap (addr, size);
+	  return NULL;
+	}
+
+      return addr;
+    }
+  else
+    return malloc (size);
+}
+
+static void *
+linux_memspace_calloc (omp_memspace_handle_t memspace, size_t size, int pin)
+{
+  if (pin)
+    return linux_memspace_alloc (memspace, size, pin);
+  else
+    return calloc (1, size);
+}
+
+static void
+linux_memspace_free (omp_memspace_handle_t memspace, void *addr, size_t size,
+		     int pin)
+{
+  (void)memspace;
+
+  if (pin)
+    munmap (addr, size);
+  else
+    free (addr);
+}
+
+static void *
+linux_memspace_realloc (omp_memspace_handle_t memspace, void *addr,
+			size_t oldsize, size_t size, int oldpin, int pin)
+{
+  if (oldpin && pin)
+    {
+      void *newaddr = mremap (addr, oldsize, size, MREMAP_MAYMOVE);
+      if (newaddr == MAP_FAILED)
+	return NULL;
+
+      return newaddr;
+    }
+  else if (oldpin || pin)
+    {
+      void *newaddr = linux_memspace_alloc (memspace, size, pin);
+      if (newaddr)
+	{
+	  memcpy (newaddr, addr, oldsize < size ? oldsize : size);
+	  linux_memspace_free (memspace, addr, oldsize, oldpin);
+	}
+
+      return newaddr;
+    }
+  else
+    return realloc (addr, size);
+}
+
+static int
+linux_memspace_validate (omp_memspace_handle_t, unsigned, int)
+{
+  /* Everything should be accepted on Linux, including pinning.  */
+  return 1;
+}
+
+#define MEMSPACE_ALLOC(MEMSPACE, SIZE, PIN) \
+  linux_memspace_alloc (MEMSPACE, SIZE, PIN)
+#define MEMSPACE_CALLOC(MEMSPACE, SIZE, PIN) \
+  linux_memspace_calloc (MEMSPACE, SIZE, PIN)
+#define MEMSPACE_REALLOC(MEMSPACE, ADDR, OLDSIZE, SIZE, OLDPIN, PIN) \
+  linux_memspace_realloc (MEMSPACE, ADDR, OLDSIZE, SIZE, OLDPIN, PIN)
+#define MEMSPACE_FREE(MEMSPACE, ADDR, SIZE, PIN) \
+  linux_memspace_free (MEMSPACE, ADDR, SIZE, PIN)
+#define MEMSPACE_VALIDATE(MEMSPACE, ACCESS, PIN) \
+  linux_memspace_validate (MEMSPACE, ACCESS, PIN)
 
 #include "../../allocator.c"

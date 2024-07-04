@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -322,7 +322,7 @@ package body Exp_Ch13 is
          return;
       end if;
 
-      --  Use the base type to perform the check for finalization master
+      --  Use the base type to perform the check for finalization collection
 
       Typ := Etype (Expr);
 
@@ -338,12 +338,11 @@ package body Exp_Ch13 is
          Typ := Full_View (Typ);
       end if;
 
-      --  Do not create a custom Deallocate when freeing an object with
-      --  suppressed finalization. In such cases the object is never attached
-      --  to a master, so it does not need to be detached. Use a regular free
-      --  statement instead.
+      --  Do not create a custom Deallocate when the object has not been
+      --  attached to a collection, since it does not need to be detached.
+      --  Use a regular free statement instead.
 
-      if No (Finalization_Master (Typ)) then
+      if No (Finalization_Collection (Typ)) then
          return;
       end if;
 
@@ -359,21 +358,16 @@ package body Exp_Ch13 is
          declare
             Expr_Typ : constant Entity_Id  := Etype (Expr);
             Loc      : constant Source_Ptr := Sloc (N);
-            New_Expr : Node_Id;
-            Temp_Id  : Entity_Id;
+            Temp_Id  : constant Entity_Id  := Make_Temporary (Loc, 'T');
 
          begin
-            Temp_Id := Make_Temporary (Loc, 'T');
             Insert_Action (N,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Temp_Id,
                 Object_Definition   => New_Occurrence_Of (Expr_Typ, Loc),
                 Expression          => Relocate_Node (Expr)));
 
-            New_Expr := New_Occurrence_Of (Temp_Id, Loc);
-            Set_Etype (New_Expr, Expr_Typ);
-
-            Set_Expression (N, New_Expr);
+            Set_Expression (N, New_Occurrence_Of (Temp_Id, Loc));
          end;
       end if;
 
@@ -381,7 +375,7 @@ package body Exp_Ch13 is
       --  ensures that the hidden list header will be deallocated along with
       --  the actual object.
 
-      Build_Allocate_Deallocate_Proc (N, Is_Allocate => False);
+      Build_Allocate_Deallocate_Proc (N);
    end Expand_N_Free_Statement;
 
    ----------------------------

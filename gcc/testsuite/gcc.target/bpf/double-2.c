@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mbig-endian" } */
+/* { dg-options "-mbig-endian -masm=normal" } */
 
 double f;
 double a() { f = 1.0; return 1.0; }

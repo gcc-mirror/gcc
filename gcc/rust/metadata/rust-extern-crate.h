@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -21,6 +21,7 @@
 
 #include "rust-system.h"
 #include "rust-imports.h"
+#include "optional.h"
 
 namespace Rust {
 namespace Imports {
@@ -29,21 +30,26 @@ class ExternCrate
 {
 public:
   ExternCrate (Import::Stream &stream);
+  ExternCrate (const std::string &crate_name,
+	       std::vector<ProcMacro::Procmacro> macros);
   ~ExternCrate ();
 
   bool ok () const;
 
-  bool load (Location locus);
+  bool load (location_t locus);
 
   const std::string &get_crate_name () const;
 
   const std::string &get_metadata () const;
 
-  static bool string_to_int (Location locus, const std::string &s,
+  std::vector<ProcMacro::Procmacro> &get_proc_macros () { return proc_macros; }
+
+  static bool string_to_int (location_t locus, const std::string &s,
 			     bool is_neg_ok, int *ret);
 
 private:
-  Import::Stream &import_stream;
+  tl::optional<std::reference_wrapper<Import::Stream>> import_stream;
+  std::vector<ProcMacro::Procmacro> proc_macros;
 
   std::string crate_name;
   std::string metadata_buffer;

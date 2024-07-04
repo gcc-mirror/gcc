@@ -1,4 +1,4 @@
-/* Copyright (C) 2019-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2019-2024 Free Software Foundation, Inc.
 
    This file is part of LIBF7, which is part of GCC.
 
@@ -440,11 +440,21 @@ f7_double_t f7_get_double (const f7_t *aa)
 
   mant &= 0x00ffffffffffffff;
 
-  // FIXME: For subnormals, rounding is premature and should be
-  //	    done *after* the mantissa has been shifted into place
-  //	    (or the round value be shifted left accordingly).
-  // Round.
-  mant += 1u << (F7_MANT_BITS - (1 + DBL_DIG_MANT) - 1);
+  // PR115419: The least significant nibble tells how to round:
+  // Tie breaks are rounded to even (Banker's rounding).
+  uint8_t lsn = mant & 0xff;
+  lsn &= 0xf;
+  // The LSB of the outgoing double is at bit 3.
+  if (lsn & (1 << 3))
+    ++lsn;
+  if (lsn > (1 << 2))
+    {
+      // FIXME: For subnormals, rounding is premature and should be
+      //        done *after* the mantissa has been shifted into place
+      //        (or the round value be shifted left accordingly).
+      // Round.
+      mant += 1u << (F7_MANT_BITS - (1 + DBL_DIG_MANT) - 1);
+    }
 
   uint8_t dex;
   register uint64_t r18 __asm ("r18") = mant;
@@ -1099,7 +1109,7 @@ f7_t* f7_ldexp (f7_t *cc, const f7_t *aa, int delta)
 
   F7_CONST_ADDR (<ident> CST, f7_t* PTMP)
 
-      Return an LD address to for some f7_const_X[_P] constant.
+      Return an LD address to some f7_const_X[_P] constant.
       *PTMP might be needed to hold a copy of f7_const_X_P in RAM.
 
   f7_t*       F7_U16_ADDR (uint16_t     X, f7_t* PTMP)   // USE_LPM
@@ -1188,40 +1198,6 @@ f7_t* f7_ldexp (f7_t *cc, const f7_t *aa, int delta)
 
 
 #ifdef F7MOD_sqrt_
-static void sqrt_worker (f7_t *cc, const f7_t *rr)
-{
-  f7_t tmp7, *tmp = &tmp7;
-  f7_t aa7, *aa = &aa7;
-
-  // aa in  [1/2, 2)  =>  aa->expo in { -1, 0 }.
-  int16_t a_expo = -(rr->expo & 1);
-  int16_t c_expo = (rr->expo - a_expo) >> 1;  // FIXME: r_expo = INT_MAX???
-
-  __asm ("" : "+r" (aa));
-
-  f7_copy (aa, rr);
-  aa->expo = a_expo;
-
-  // No use of rr or *cc past this point:  We may use cc as temporary.
-  // Approximate square-root of  A  by  X <-- (X + A / X) / 2.
-
-  f7_sqrt_approx_asm (cc, aa);
-
-  // Iterate  X <-- (X + A / X) / 2.
-  // 3 Iterations with 16, 32, 58 bits of precision for the quotient.
-
-  for (uint8_t prec = 16; (prec & 0x80) == 0; prec <<= 1)
-    {
-      f7_divx (tmp, aa, cc, (prec & 64) ? 2 + F7_MANT_BITS : prec);
-      f7_Iadd (cc, tmp);
-      // This will never underflow because |c_expo| is small.
-      cc->expo--;
-    }
-
-  // Similar: |c_expo| is small, hence no ldexp needed.
-  cc->expo += c_expo;
-}
-
 F7_WEAK
 void f7_sqrt (f7_t *cc, const f7_t *aa)
 {
@@ -1236,7 +1212,7 @@ void f7_sqrt (f7_t *cc, const f7_t *aa)
   if (f7_class_zero (a_class))
     return f7_clr (cc);
 
-  sqrt_worker (cc, aa);
+  f7_sqrt_approx_asm (cc, aa);
 }
 #endif // F7MOD_sqrt_
 
@@ -1786,20 +1762,33 @@ void f7_powi (f7_t *cc, const f7_t *aa, int ii)
 {
   uint16_t u16 = ii;
   f7_t xx27, *xx2 = &xx27;
+  bool cc_is_one = true;
+  bool expo_is_neg = false;
 
   if (ii < 0)
-    u16 = -u16;
+    {
+      u16 = -u16;
+      expo_is_neg = true;
+    }
 
   f7_copy (xx2, aa);
-
-  f7_set_u16 (cc, 1);
 
   while (1)
     {
       if (u16 & 1)
-	f7_Imul (cc, xx2);
+	{
+	  if (cc_is_one)
+	    {
+	      // C *= X2 simplifies to C = X2.
+	      f7_copy (cc, xx2);
+	      cc_is_one = false;
+	    }
+	  else
+	    f7_Imul (cc, xx2);
+	}
 
-      if (! f7_is_nonzero (cc))
+      if (! cc_is_one
+	  && ! f7_is_nonzero (cc))
 	break;
 
       u16 >>= 1;
@@ -1808,8 +1797,10 @@ void f7_powi (f7_t *cc, const f7_t *aa, int ii)
       f7_Isquare (xx2);
     }
 
-  if (ii < 0)
-    f7_div1 (xx2, aa);
+  if (cc_is_one)
+    f7_set_u16 (cc, 1);
+  else if (expo_is_neg)
+    f7_div1 (cc, cc);
 }
 #endif // F7MOD_powi_
 
@@ -2056,9 +2047,26 @@ void f7_sinhcosh (f7_t *cc, const f7_t *aa, bool do_sinh)
 
 
 #ifdef F7MOD_sinh_
+
+#define ARRAY_NAME coeff_sinh
+#include "libf7-array.def"
+#undef ARRAY_NAME
+
 F7_WEAK
 void f7_sinh (f7_t *cc, const f7_t *aa)
 {
+  if (aa->expo <= -2)
+    {
+      // For small values, exp(A) - exp(-A) suffers from cancellation, hence
+      // use a MiniMax polynomial for |A| < 0.5.
+      f7_t xx7, *xx = &xx7;
+      f7_t hh7, *hh = &hh7;
+      f7_square (xx, aa);
+      f7_horner (hh, xx, n_coeff_sinh, coeff_sinh, NULL);
+      f7_mul (cc, aa, hh);
+      return;
+    }
+
   f7_sinhcosh (cc, aa, true);
 }
 #endif // F7MOD_sinh_
@@ -2187,6 +2195,64 @@ void f7_atan (f7_t *cc, const f7_t *aa)
 }
 #undef MINIMAX_6_6_IN_0_1
 #endif // F7MOD_atan_
+
+
+#ifdef F7MOD_atan2_
+F7_WEAK
+void f7_atan2 (f7_t *cc, const f7_t *yy, const f7_t *xx)
+{
+  uint8_t y_class = f7_classify (yy);
+  uint8_t x_class = f7_classify (xx);
+
+  // (NaN, *) -> NaN
+  // (*, NaN) -> NaN
+  if (f7_class_nan (y_class | x_class))
+    return f7_set_nan (cc);
+
+  // (0, 0) -> 0
+  if (f7_class_zero (y_class & x_class))
+    return f7_clr (cc);
+
+  f7_t pi7, *pi = &pi7;
+  f7_const (pi, pi);
+
+  // (Inf, +Inf) -> +pi/4;    (-Inf, +Inf) -> +3pi/4
+  // (Inf, -Inf) -> -pi/4;    (-Inf, -Inf) -> -3pi/4
+  if (f7_class_inf (y_class & x_class))
+    {
+      f7_copy (cc, pi);
+      if (! f7_class_sign (x_class))
+	cc->expo = F7_(const_pi_expo) - 1; // pi / 2
+      pi->expo = F7_(const_pi_expo) - 2;   // pi / 4
+      f7_Isub (cc, pi);
+      cc->flags = y_class & F7_FLAG_sign;
+      return;
+    }
+
+  // sign(pi) := sign(y)
+  pi->flags = y_class & F7_FLAG_sign;
+
+  // Only use atan(*) with |*| <= 1.
+
+  if (f7_cmp_abs (yy, xx) > 0)
+    {
+      // |y| > |x|:  atan2 = sgn(y) * pi/2 - atan (x / y);
+      pi->expo = F7_(const_pi_expo) - 1;  // +- pi / 2
+      f7_div (cc, xx, yy);
+      f7_atan (cc, cc);
+      f7_IRsub (cc, pi);
+    }
+  else
+    {
+      // x >  |y|:  atan2 = atan (y / x)
+      // x < -|y|:  atan2 = atan (y / x) +- pi
+      f7_div (cc, yy, xx);
+      f7_atan (cc, cc);
+      if (f7_class_sign (x_class))
+	f7_Iadd (cc, pi);
+    }
+}
+#endif // F7MOD_atan2_
 
 
 #ifdef F7MOD_asinacos_

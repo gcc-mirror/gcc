@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-march=rv32gcv -mabi=ilp32d --param riscv-autovec-preference=scalable -fdump-tree-optimized-details" } */
+/* { dg-additional-options "-march=rv32gcv -mabi=ilp32d -mrvv-vector-bits=scalable -fdump-tree-optimized-details" } */
 
 #include <stdint-gcc.h>
 
@@ -20,5 +20,5 @@ f (int8_t *restrict a, int8_t *restrict b, int n)
 }
 
 /* FIXME: Since we don't have VECT cost model yet, LOAD_LANES/STORE_LANES are chosen
-   instead of SLP when riscv-autovec-lmul=m1 or m2.  */
-/* { dg-final { scan-tree-dump-times "\.VEC_PERM" 1 "optimized" { xfail { any-opts "--param riscv-autovec-lmul=m1" "--param riscv-autovec-lmul=m2" "--param riscv-autovec-lmul=m8" } } } } */
+   instead of SLP when rvv-autotec-max-lmul=m1.  */
+/* { dg-final { scan-tree-dump-times "\.VEC_PERM" 1 "optimized" { xfail { any-opts "-mrvv-max-lmul=m1" } } } } */

@@ -1,6 +1,6 @@
 /* Test _Float64 NaNs in <float.h>.  */
 /* { dg-do run } */
-/* { dg-options "-std=c2x -fsignaling-nans" } */
+/* { dg-options "-std=c23 -fsignaling-nans" } */
 /* { dg-add-options float64 } */
 /* { dg-add-options ieee } */
 /* { dg-require-effective-target float64_runtime } */

@@ -1,7 +1,7 @@
 /* Scalar Replacement of Aggregates (SRA) converts some structure
    references into scalar references, exposing them to the scalar
    optimizers.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -20,6 +20,9 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 bool type_internals_preclude_sra_p (tree type, const char **msg);
+unsigned HOST_WIDE_INT sra_get_max_scalarization_size (void);
+bool sra_total_scalarization_would_copy_same_data_p (tree t1, tree t2);
+
 
 /* Return true iff TYPE is stdarg va_list type (which early SRA and IPA-SRA
    should leave alone).  */

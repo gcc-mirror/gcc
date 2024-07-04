@@ -52,6 +52,10 @@ if test x$enable_linux_futex = xyes; then
 	config_path="linux posix"
 	;;
 
+    hppa*-*-linux*)
+	config_path="linux posix"
+	;;
+
     ia64*-*-linux*)
 	config_path="linux/ia64 linux posix"
 	;;

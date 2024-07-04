@@ -1,6 +1,6 @@
 // std::numpunct implementation details, GNU version -*- C++ -*-
 
-// Copyright (C) 2001-2023 Free Software Foundation, Inc.
+// Copyright (C) 2001-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -159,7 +159,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	}
 
-      // NB: There is no way to extact this info from posix locales.
+      // NB: There is no way to extract this info from posix locales.
       // _M_truename = __nl_langinfo_l(YESSTR, __cloc);
       _M_data->_M_truename = "true";
       _M_data->_M_truename_size = 4;
@@ -251,7 +251,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	}
 
-      // NB: There is no way to extact this info from posix locales.
+      // NB: There is no way to extract this info from posix locales.
       // _M_truename = __nl_langinfo_l(YESSTR, __cloc);
       _M_data->_M_truename = L"true";
       _M_data->_M_truename_size = 4;

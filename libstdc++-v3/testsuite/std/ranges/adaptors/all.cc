@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -156,11 +156,7 @@ test07()
 constexpr bool
 test08()
 {
-#ifdef _GLIBCXX_DEBUG
-  using std::_GLIBCXX_STD_C::vector;
-#else
   using std::vector;
-#endif
 
   // Verify P2415R2 "What is a view?" changes.
   // In particular, rvalue non-view non-borrowed ranges are now viewable.

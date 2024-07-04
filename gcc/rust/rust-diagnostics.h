@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -22,7 +22,12 @@
 #define RUST_DIAGNOSTICS_H
 
 #include "rust-linemap.h"
+#include "util/optional.h"
 
+// This macro is used to specify the position of format string & it's
+// arguments within the function's paramter list.
+// 'm' specifies the position of the format string parameter.
+// 'n' specifies the position of the first argument for the format string.
 #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 1)
 #define RUST_ATTRIBUTE_GCC_DIAG(m, n)                                          \
   __attribute__ ((__format__ (__gcc_tdiag__, m, n)))                           \
@@ -48,44 +53,66 @@
 // All other format specifiers are as defined by 'sprintf'. The final resulting
 // message is then sent to the back end via rust_be_error_at/rust_be_warning_at.
 
-// clang-format off
 // simple location
 
-struct ErrorCode
+// https://gist.github.com/MahadMuhammad/8c9d5fc88ea18d8c520937a8071d4185
+
+// We want E0005 to be mapped to the value `5` - this way, we can easily format
+// it in `make_description`. We also want to keep the value "5" only once when
+// defining the error code in rust-error-codes.def, so not have ERROR(E0005, 5)
+// as that is error prone. If we just use `0005` as the discriminant for the
+// `E0005` enum variant, then we are actually creating octal values (!) as `0`
+// is the C/C++ octal prefix. So this does not work for `E0009` for example,
+// since 0009 is not a valid octal literal.
+// We can circumvent this by doing a little bit of constant folding in the
+// discriminant expression. So for ERROR(E0009), this macro expands to the
+// following variant:
+//
+// E0009 = (10009 - 10000)
+//
+// which gets folded to the result of the substraction... 9. A valid decimal
+// literal which corresponds to E0009.
+#define ERROR(N) E##N = (1##N - 10000)
+enum class ErrorCode : unsigned int
 {
-  explicit ErrorCode (const char *str) : m_str (str)
-  {
-    gcc_assert (str);
-    gcc_assert (str[0] == 'E');
-  }
-
-  const char *m_str;
+#include "rust-error-codes.def"
 };
+#undef ERROR
 
+// clang-format off
 extern void
-rust_internal_error_at (const Location, const char *fmt, ...)
+rust_internal_error_at (const location_t, const char *fmt, ...)
   RUST_ATTRIBUTE_GCC_DIAG (2, 3)
   RUST_ATTRIBUTE_NORETURN;
 extern void
-rust_error_at (const Location, const char *fmt, ...)
+rust_error_at (const location_t, const char *fmt, ...)
   RUST_ATTRIBUTE_GCC_DIAG (2, 3);
 extern void
-rust_warning_at (const Location, int opt, const char *fmt, ...)
+rust_error_at (const location_t, const ErrorCode, const char *fmt, ...)
   RUST_ATTRIBUTE_GCC_DIAG (3, 4);
 extern void
-rust_fatal_error (const Location, const char *fmt, ...)
+rust_warning_at (const location_t, int opt, const char *fmt, ...)
+  RUST_ATTRIBUTE_GCC_DIAG (3, 4);
+extern void
+rust_fatal_error (const location_t, const char *fmt, ...)
   RUST_ATTRIBUTE_GCC_DIAG (2, 3)
   RUST_ATTRIBUTE_NORETURN;
 extern void
-rust_inform (const Location, const char *fmt, ...)
+rust_inform (const location_t, const char *fmt, ...)
   RUST_ATTRIBUTE_GCC_DIAG (2, 3);
 
 // rich locations
 extern void
-rust_error_at (const RichLocation &, const char *fmt, ...)
+rust_error_at (const rich_location &, const char *fmt, ...)
   RUST_ATTRIBUTE_GCC_DIAG (2, 3);
 extern void
-rust_error_at (const RichLocation &, const ErrorCode, const char *fmt, ...)
+rust_error_at (const rich_location &, const ErrorCode, const char *fmt, ...)
+  RUST_ATTRIBUTE_GCC_DIAG (3, 4);
+extern void /* similiar to other frontends */
+rust_error_at(rich_location *richloc,const char *fmt, ...)
+  RUST_ATTRIBUTE_GCC_DIAG (2, 3);
+extern void /* similiar to other frontends */
+rust_error_at(rich_location *richloc, const ErrorCode, const char *fmt, ...)
   RUST_ATTRIBUTE_GCC_DIAG (3, 4);
 // clang-format on
 
@@ -105,22 +132,30 @@ rust_close_quote ();
 
 // clang-format off
 extern void
-rust_be_internal_error_at (const Location, const std::string &errmsg)
+rust_be_internal_error_at (const location_t, const std::string &errmsg)
   RUST_ATTRIBUTE_NORETURN;
 extern void
-rust_be_error_at (const Location, const std::string &errmsg);
+rust_be_error_at (const location_t, const std::string &errmsg);
 extern void
-rust_be_error_at (const RichLocation &, const std::string &errmsg);
-extern void
-rust_be_error_at (const RichLocation &, const ErrorCode,
+rust_be_error_at (const location_t, const ErrorCode,
 		  const std::string &errmsg);
 extern void
-rust_be_warning_at (const Location, int opt, const std::string &warningmsg);
+rust_be_error_at (const rich_location &, const std::string &errmsg);
 extern void
-rust_be_fatal_error (const Location, const std::string &errmsg)
+rust_be_error_at (const rich_location &, const ErrorCode,
+		  const std::string &errmsg);
+extern void /* similiar to other frontends */
+rust_be_error_at (rich_location *richloc, const std::string &errmsg);
+extern void /* similiar to other frontends */
+rust_be_error_at (rich_location *richloc, const ErrorCode,
+      const std::string &errmsg);
+extern void
+rust_be_warning_at (const location_t, int opt, const std::string &warningmsg);
+extern void
+rust_be_fatal_error (const location_t, const std::string &errmsg)
   RUST_ATTRIBUTE_NORETURN;
 extern void
-rust_be_inform (const Location, const std::string &infomsg);
+rust_be_inform (const location_t, const std::string &infomsg);
 extern void
 rust_be_get_quotechars (const char **open_quote, const char **close_quote);
 extern bool
@@ -140,45 +175,99 @@ struct Error
   };
 
   Kind kind;
-  Location locus;
+  location_t locus;
+  rich_location *richlocus = nullptr;
+  ErrorCode errorcode;
   std::string message;
-  // TODO: store more stuff? e.g. node id?
+  bool is_errorcode = false;
 
-  Error (Kind kind, Location locus, std::string message)
+  // simple location
+  Error (Kind kind, location_t locus, std::string message)
     : kind (kind), locus (locus), message (std::move (message))
   {
     message.shrink_to_fit ();
   }
-
-  Error (Location locus, std::string message)
+  // simple location + error code
+  Error (Kind kind, location_t locus, ErrorCode code, std::string message)
+    : kind (kind), locus (locus), errorcode (std::move (code)),
+      message (std::move (message))
+  {
+    is_errorcode = true;
+    message.shrink_to_fit ();
+  }
+  // rich location
+  Error (Kind kind, rich_location *richlocus, std::string message)
+    : kind (kind), richlocus (richlocus), message (std::move (message))
+  {
+    message.shrink_to_fit ();
+  }
+  // rich location + error code
+  Error (Kind kind, rich_location *richlocus, ErrorCode code,
+	 std::string message)
+    : kind (kind), richlocus (richlocus), errorcode (std::move (code)),
+      message (std::move (message))
+  {
+    is_errorcode = true;
+    message.shrink_to_fit ();
+  }
+  // simple location
+  Error (location_t locus, std::string message)
   {
     Error (Kind::Err, locus, std::move (message));
   }
+  // simple location + error code
+  Error (location_t locus, ErrorCode code, std::string message)
+  {
+    Error (Kind::Err, locus, std::move (code), std::move (message));
+  }
+  // rich location
+  Error (rich_location *richlocus, std::string message)
+  {
+    Error (Kind::Err, richlocus, std::move (message));
+  }
+  // rich location + error code
+  Error (rich_location *richlocus, ErrorCode code, std::string message)
+  {
+    Error (Kind::Err, richlocus, std::move (code), std::move (message));
+  }
 
-  static Error Hint (Location locus, std::string message)
+  static Error Hint (location_t locus, std::string message)
   {
     return Error (Kind::Hint, locus, std::move (message));
   }
 
-  static Error Fatal (Location locus, std::string message)
+  static Error Fatal (location_t locus, std::string message)
   {
     return Error (Kind::FatalErr, locus, std::move (message));
   }
 
   // TODO: the attribute part might be incorrect
-  Error (Location locus, const char *fmt,
+  // simple location
+  Error (location_t locus, const char *fmt,
 	 ...) /*RUST_ATTRIBUTE_GCC_DIAG (2, 3)*/ RUST_ATTRIBUTE_GCC_DIAG (3, 4);
+
+  // simple location + error code
+  Error (location_t locus, ErrorCode code, const char *fmt,
+	 ...) /*RUST_ATTRIBUTE_GCC_DIAG (3, 4)*/ RUST_ATTRIBUTE_GCC_DIAG (4, 5);
+
+  // rich location
+  Error (rich_location *richlocus, const char *fmt,
+	 ...) /*RUST_ATTRIBUTE_GCC_DIAG (2, 3)*/ RUST_ATTRIBUTE_GCC_DIAG (3, 4);
+
+  // rich location + error code
+  Error (rich_location *richlocus, ErrorCode code, const char *fmt,
+	 ...) /*RUST_ATTRIBUTE_GCC_DIAG (3, 4)*/ RUST_ATTRIBUTE_GCC_DIAG (4, 5);
 
   /**
    * printf-like overload of Error::Hint
    */
-  static Error Hint (Location locus, const char *fmt, ...)
+  static Error Hint (location_t locus, const char *fmt, ...)
     RUST_ATTRIBUTE_GCC_DIAG (2, 3);
 
   /**
    * printf-like overload of Error::Fatal
    */
-  static Error Fatal (Location locus, const char *fmt, ...)
+  static Error Fatal (location_t locus, const char *fmt, ...)
     RUST_ATTRIBUTE_GCC_DIAG (2, 3);
 
   void emit () const
@@ -189,7 +278,20 @@ struct Error
 	rust_inform (locus, "%s", message.c_str ());
 	break;
       case Kind::Err:
-	rust_error_at (locus, "%s", message.c_str ());
+	if (is_errorcode)
+	  {
+	    if (richlocus == nullptr)
+	      rust_error_at (locus, errorcode, "%s", message.c_str ());
+	    else
+	      rust_error_at (*richlocus, errorcode, "%s", message.c_str ());
+	  }
+	else
+	  {
+	    if (richlocus == nullptr)
+	      rust_error_at (locus, "%s", message.c_str ());
+	    else
+	      rust_error_at (*richlocus, "%s", message.c_str ());
+	  }
 	break;
       case Kind::FatalErr:
 	rust_fatal_error (locus, "%s", message.c_str ());
@@ -200,15 +302,12 @@ struct Error
 } // namespace Rust
 
 // rust_debug uses normal printf formatting, not GCC diagnostic formatting.
-#define rust_debug(...) rust_debug_loc (Location (), __VA_ARGS__)
+#define rust_debug(...) rust_debug_loc (UNDEF_LOCATION, __VA_ARGS__)
 
-// rust_sorry_at wraps GCC diagnostic "sorry_at" to accept "Location" instead of
-// "location_t"
-#define rust_sorry_at(location, ...)                                           \
-  sorry_at (location.gcc_location (), __VA_ARGS__)
+#define rust_sorry_at(location, ...) sorry_at (location, __VA_ARGS__)
 
 void
-rust_debug_loc (const Location location, const char *fmt,
+rust_debug_loc (const location_t location, const char *fmt,
 		...) ATTRIBUTE_PRINTF_2;
 
 #endif // !defined(RUST_DIAGNOSTICS_H)

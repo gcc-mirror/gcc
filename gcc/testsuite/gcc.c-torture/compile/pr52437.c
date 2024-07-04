@@ -1,6 +1,7 @@
 /* PR target/52437 */
 
 int f, g, i, j;
+void fn2 (void);
 
 void
 fn1 ()

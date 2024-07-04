@@ -1,5 +1,5 @@
 /* Array prefetching.
-   Copyright (C) 2005-2023 Free Software Foundation, Inc.
+   Copyright (C) 2005-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -739,6 +739,8 @@ is_miss_rate_acceptable (unsigned HOST_WIDE_INT cache_line_size,
   if (delta >= (HOST_WIDE_INT) cache_line_size)
     return false;
 
+  gcc_assert (align_unit > 0);
+
   miss_positions = 0;
   total_positions = (cache_line_size / align_unit) * distinct_iters;
   max_allowed_miss_positions = (ACCEPTABLE_MISS_RATE * total_positions) / 1000;
@@ -1398,6 +1400,10 @@ determine_unroll_factor (class loop *loop, struct mem_ref_group *refs,
   unsigned nfactor, factor, mod_constraint;
   struct mem_ref_group *agp;
   struct mem_ref *ref;
+
+  /* Bail out early in case we must not unroll loops.  */
+  if (!flag_unroll_loops)
+    return 1;
 
   /* First check whether the loop is not too large to unroll.  We ignore
      PARAM_MAX_UNROLL_TIMES, because for small loops, it prevented us

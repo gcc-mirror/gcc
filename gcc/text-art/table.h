@@ -1,5 +1,5 @@
 /* Support for tabular/grid-based content.
-   Copyright (C) 2023 Free Software Foundation, Inc.
+   Copyright (C) 2023-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -115,6 +115,7 @@ class table
     const table_cell_content &get_content () const { return m_content; }
 
   private:
+    friend class table;
     friend class table_cell_sizes;
     rect_t m_rect;
     table_cell_content m_content;
@@ -130,11 +131,18 @@ class table
 
   const size_t &get_size () const { return m_size; }
 
+  int add_rows (unsigned num)
+  {
+    int topmost_new_row = m_size.h;
+    m_size.h += num;
+    for (unsigned i = 0; i < num; i++)
+      m_occupancy.add_row (-1);
+    return topmost_new_row;
+  }
+
   int add_row ()
   {
-    m_size.h++;
-    m_occupancy.add_row (-1);
-    return m_size.h - 1; // return the table_y of the newly-added row
+    return add_rows (1);
   }
 
   void set_cell (coord_t coord,
@@ -147,6 +155,11 @@ class table
 		      enum x_align x_align = x_align::CENTER,
 		      enum y_align y_align = y_align::CENTER);
 
+  void maybe_set_cell_span (rect_t span,
+			    table_cell_content &&content,
+			    enum x_align x_align = x_align::CENTER,
+			    enum y_align y_align = y_align::CENTER);
+
   canvas to_canvas (const theme &theme, const style_manager &sm) const;
 
   void paint_to_canvas(canvas &canvas,
@@ -155,6 +168,8 @@ class table
 		       const theme &theme) const;
 
   void debug () const;
+
+  void add_other_table (table &&other, table::coord_t offset);
 
   /* Self-test support.  */
   const cell_placement *get_placement_at (coord_t coord) const;

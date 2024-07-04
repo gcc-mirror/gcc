@@ -1,6 +1,6 @@
 // Temporary buffer implementation -*- C++ -*-
 
-// Copyright (C) 2001-2023 Free Software Foundation, Inc.
+// Copyright (C) 2001-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -66,19 +66,58 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#if __has_builtin(__builtin_operator_new) >= 201802L
+# define _GLIBCXX_OPERATOR_NEW __builtin_operator_new
+# define _GLIBCXX_OPERATOR_DELETE __builtin_operator_delete
+#else
+# define _GLIBCXX_OPERATOR_NEW ::operator new
+# define _GLIBCXX_OPERATOR_DELETE ::operator delete
+#endif
+
   namespace __detail
   {
+    // Equivalent to std::get_temporary_buffer but won't return a smaller size.
+    // It either returns a buffer of __len elements, or a null pointer.
+    template<typename _Tp>
+      inline _Tp*
+      __get_temporary_buffer(ptrdiff_t __len) _GLIBCXX_NOTHROW
+      {
+	if (__builtin_expect(size_t(__len) > (size_t(-1) / sizeof(_Tp)), 0))
+	  return 0;
+
+#if __cpp_aligned_new && __cplusplus >= 201103L
+	if (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+	  return (_Tp*) _GLIBCXX_OPERATOR_NEW(__len * sizeof(_Tp),
+					      align_val_t(alignof(_Tp)),
+					      nothrow_t());
+#endif
+	return (_Tp*) _GLIBCXX_OPERATOR_NEW(__len * sizeof(_Tp), nothrow_t());
+      }
+
+    // Equivalent to std::return_temporary_buffer but with a size argument.
+    // The size is the number of elements, not the number of bytes.
     template<typename _Tp>
       inline void
       __return_temporary_buffer(_Tp* __p,
 				size_t __len __attribute__((__unused__)))
       {
 #if __cpp_sized_deallocation
-	::operator delete(__p, __len * sizeof(_Tp));
+# define _GLIBCXX_SIZED_DEALLOC(T, p, n) (p), (n) * sizeof(T)
 #else
-	::operator delete(__p);
+# define _GLIBCXX_SIZED_DEALLOC(T, p, n) (p)
 #endif
+
+#if __cpp_aligned_new && __cplusplus >= 201103L
+	if (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+	  {
+	    _GLIBCXX_OPERATOR_DELETE(_GLIBCXX_SIZED_DEALLOC(_Tp, __p, __len),
+				     align_val_t(alignof(_Tp)));
+	    return;
+	  }
+#endif
+	_GLIBCXX_OPERATOR_DELETE(_GLIBCXX_SIZED_DEALLOC(_Tp, __p, __len));
       }
+#undef _GLIBCXX_SIZED_DEALLOC
   }
 
   /**
@@ -90,7 +129,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *
    *  This function tries to obtain storage for @c __len adjacent Tp
    *  objects.  The objects themselves are not constructed, of course.
-   *  A pair<> is returned containing <em>the buffer s address and
+   *  A pair<> is returned containing <em>the buffer's address and
    *  capacity (in the units of sizeof(_Tp)), or a pair of 0 values if
    *  no storage can be obtained.</em>  Note that the capacity obtained
    *  may be less than that requested if the memory is unavailable;
@@ -110,13 +149,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       while (__len > 0)
 	{
-	  _Tp* __tmp = static_cast<_Tp*>(::operator new(__len * sizeof(_Tp),
-							std::nothrow));
-	  if (__tmp != 0)
-	    return std::pair<_Tp*, ptrdiff_t>(__tmp, __len);
+	  if (_Tp* __tmp = __detail::__get_temporary_buffer<_Tp>(__len))
+	    return pair<_Tp*, ptrdiff_t>(__tmp, __len);
 	  __len = __len == 1 ? 0 : ((__len + 1) / 2);
 	}
-      return std::pair<_Tp*, ptrdiff_t>(static_cast<_Tp*>(0), 0);
+      return pair<_Tp*, ptrdiff_t>();
     }
 
   /**
@@ -127,9 +164,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  Frees the memory pointed to by __p.
    */
   template<typename _Tp>
+    _GLIBCXX17_DEPRECATED
     inline void
     return_temporary_buffer(_Tp* __p)
-    { ::operator delete(__p); }
+    {
+#if __cpp_aligned_new && __cplusplus >= 201103L
+      if (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+	_GLIBCXX_OPERATOR_DELETE(__p, align_val_t(alignof(_Tp)));
+      else
+#endif
+      _GLIBCXX_OPERATOR_DELETE(__p);
+    }
+
+#undef _GLIBCXX_OPERATOR_DELETE
+#undef _GLIBCXX_OPERATOR_NEW
 
   /**
    *  This class is used in two places: stl_algo.h and ext/memory,
@@ -150,14 +198,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     protected:
       size_type  _M_original_len;
-      size_type  _M_len;
-      pointer    _M_buffer;
+      struct _Impl
+      {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+	explicit
+	_Impl(ptrdiff_t __original_len)
+	{
+	  pair<pointer, size_type> __p(
+	    std::get_temporary_buffer<value_type>(__original_len));
+	  _M_len = __p.second;
+	  _M_buffer = __p.first;
+	}
+#pragma GCC diagnostic pop
+
+	~_Impl()
+	{ std::__detail::__return_temporary_buffer(_M_buffer, _M_len); }
+
+	size_type  _M_len;
+	pointer    _M_buffer;
+      } _M_impl;
 
     public:
       /// As per Table mumble.
       size_type
       size() const
-      { return _M_len; }
+      { return _M_impl._M_len; }
 
       /// Returns the size requested by the constructor; may be >size().
       size_type
@@ -167,12 +233,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /// As per Table mumble.
       iterator
       begin()
-      { return _M_buffer; }
+      { return _M_impl._M_buffer; }
 
       /// As per Table mumble.
       iterator
       end()
-      { return _M_buffer + _M_len; }
+      { return _M_impl._M_buffer + _M_impl._M_len; }
 
       /**
        * Constructs a temporary buffer of a size somewhere between
@@ -181,10 +247,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Temporary_buffer(_ForwardIterator __seed, size_type __original_len);
 
       ~_Temporary_buffer()
-      {
-	std::_Destroy(_M_buffer, _M_buffer + _M_len);
-	std::__detail::__return_temporary_buffer(_M_buffer, _M_len);
-      }
+      { std::_Destroy(_M_impl._M_buffer, _M_impl._M_buffer + _M_impl._M_len); }
 
     private:
       // Disable copy constructor and assignment operator.
@@ -203,7 +266,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         __ucr(_Pointer __first, _Pointer __last,
 	      _ForwardIterator __seed)
         {
-	  if (__first == __last)
+	  if (__builtin_expect(__first == __last, 0))
 	    return;
 
 	  _Pointer __cur = __first;
@@ -243,47 +306,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // the same value when the algorithm finishes, unless one of the
   // constructions throws.
   //
-  // Requirements: _Pointer::value_type(_Tp&&) is valid.
-  template<typename _Pointer, typename _ForwardIterator>
+  // Requirements:
+  // _Tp is move constructible and constructible from std::move(*__seed).
+  template<typename _Tp, typename _ForwardIterator>
     inline void
-    __uninitialized_construct_buf(_Pointer __first, _Pointer __last,
+    __uninitialized_construct_buf(_Tp* __first, _Tp* __last,
 				  _ForwardIterator __seed)
     {
-      typedef typename std::iterator_traits<_Pointer>::value_type
-	_ValueType;
-
       std::__uninitialized_construct_buf_dispatch<
-        __has_trivial_constructor(_ValueType)>::
+	__has_trivial_constructor(_Tp)>::
 	  __ucr(__first, __last, __seed);
     }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   template<typename _ForwardIterator, typename _Tp>
     _Temporary_buffer<_ForwardIterator, _Tp>::
     _Temporary_buffer(_ForwardIterator __seed, size_type __original_len)
-    : _M_original_len(__original_len), _M_len(0), _M_buffer(0)
+    : _M_original_len(__original_len), _M_impl(__original_len)
     {
-      std::pair<pointer, size_type> __p(
-		std::get_temporary_buffer<value_type>(_M_original_len));
-
-      if (__p.first)
-	{
-	  __try
-	    {
-	      std::__uninitialized_construct_buf(__p.first, __p.first + __p.second,
-						 __seed);
-	      _M_buffer = __p.first;
-	      _M_len = __p.second;
-	    }
-	  __catch(...)
-	    {
-	      std::__detail::__return_temporary_buffer(__p.first, __p.second);
-	      __throw_exception_again;
-	    }
-	}
+      std::__uninitialized_construct_buf(begin(), end(), __seed);
     }
-#pragma GCC diagnostic pop
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

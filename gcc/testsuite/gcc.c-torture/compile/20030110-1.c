@@ -1,4 +1,5 @@
 extern char bpp;
+int inb(int);
 
 void foo()
 {

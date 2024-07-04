@@ -1,5 +1,5 @@
 /* Structure for saving state for a nested function.
-   Copyright (C) 1989-2023 Free Software Foundation, Inc.
+   Copyright (C) 1989-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -270,6 +270,10 @@ struct GTY(()) function {
   /* Value histograms attached to particular statements.  */
   htab_t GTY((skip)) value_histograms;
 
+  /* Annotated gconds so that basic conditions in the same expression map to
+     the same uid.  This is used for condition coverage.  */
+  hash_map <gcond*, unsigned> *GTY((skip)) cond_uids;
+
   /* For function.cc.  */
 
   /* Points to the FUNCTION_DECL of this function.  */
@@ -518,6 +522,17 @@ set_loops_for_fn (struct function *fn, struct loops *loops)
   fn->x_current_loops = loops;
 }
 
+/* Get a new unique dependence clique or zero if none is left.  */
+
+inline unsigned short
+get_new_clique (function *fn)
+{
+  unsigned short clique = fn->last_clique + 1;
+  if (clique != 0)
+    fn->last_clique = clique;
+  return clique;
+}
+
 /* For backward compatibility... eventually these should all go away.  */
 #define current_function_funcdef_no (cfun->funcdef_no)
 
@@ -715,10 +730,11 @@ extern vec<edge> convert_jumps_to_returns (basic_block last_bb, bool simple_p,
 extern basic_block emit_return_for_exit (edge exit_fallthru_edge,
 					 bool simple_p);
 extern void reposition_prologue_and_epilogue_notes (void);
+extern poly_int64 get_stack_dynamic_offset ();
 
 /* Returns the name of the current function.  */
 extern const char *fndecl_name (tree);
-extern const char *function_name (struct function *);
+extern const char *function_name (const function *);
 extern const char *current_function_name (void);
 
 extern void used_types_insert (tree);

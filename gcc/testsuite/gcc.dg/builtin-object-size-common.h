@@ -30,3 +30,14 @@ unsigned nfails = 0;
       __builtin_abort ();						      \
     return 0;								      \
   } while (0)
+
+#define EXPECT(p, _v) do {						      \
+  size_t v = _v;							      \
+  if (p == v)								      \
+    __builtin_printf ("ok:  %s == %zd\n", #p, p);			      \
+  else									      \
+    {									      \
+      __builtin_printf ("WAT: %s == %zd (expected %zd)\n", #p, p, v);	      \
+      FAIL ();								      \
+    }									      \
+} while (0);

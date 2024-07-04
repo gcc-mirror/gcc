@@ -1,3 +1,4 @@
+int
 foo (int *p, int c)
 {
   int a, b;

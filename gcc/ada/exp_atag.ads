@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2006-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -162,9 +162,9 @@ package Exp_Atag is
 
    function Build_Set_Size_Function
      (Loc       : Source_Ptr;
-      Tag_Node  : Node_Id;
+      Typ       : Entity_Id;
       Size_Func : Entity_Id) return Node_Id;
-   --  Build code that saves in the TSD the address of the function
+   --  Build code that saves in the TSD of Typ the address of the function
    --  calculating _size of the object.
 
    function Build_Set_Static_Offset_To_Top

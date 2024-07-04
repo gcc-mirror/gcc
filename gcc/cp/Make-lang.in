@@ -1,5 +1,5 @@
 # Top level -*- makefile -*- fragment for GNU C++.
-#   Copyright (C) 1994-2023 Free Software Foundation, Inc.
+#   Copyright (C) 1994-2024 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -55,7 +55,7 @@ c++.serial = cc1plus$(exeext)
 CFLAGS-cp/g++spec.o += $(DRIVER_DEFINES)
 
 CFLAGS-cp/module.o += -DHOST_MACHINE=\"$(host)\" \
-	-DTARGET_MACHINE=\"$(target)\"
+	-DTARGET_MACHINE=\"$(target)\" $(ZLIBINC)
 
 # In non-release builds, use a date-related module version.
 ifneq ($(DEVPHASE_c),)
@@ -143,7 +143,7 @@ cc1plus-checksum.cc : build/genchecksum$(build_exeext) checksum-options \
 cc1plus$(exeext): $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(CODYLIB) $(LIBDEPS) $(c++.prev)
 	@$(call LINK_PROGRESS,$(INDEX.c++),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-	      $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(CODYLIB) $(NETLIBS) \
+	      $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(CODYLIB) \
 		$(LIBS) $(BACKENDLIBS)
 	@$(call LINK_PROGRESS,$(INDEX.c++),end)
 
@@ -344,7 +344,7 @@ c++.install-plugin: installdirs
 # Install import library.
 ifeq ($(plugin_implib),yes)
 	$(mkinstalldirs) $(DESTDIR)$(plugin_resourcesdir)
-	$(INSTALL_DATA) cc1plus$(exeext).a $(DESTDIR)/$(plugin_resourcesdir)/cc1plus$(exeext).a
+	$(INSTALL_DATA) cc1plus$(exeext).a $(DESTDIR)$(plugin_resourcesdir)/cc1plus$(exeext).a
 endif
 
 c++.uninstall:

@@ -16,7 +16,12 @@ ftp://ftp.unicode.org/Public/UNIDATA/DerivedNormalizationProps.txt
 ftp://ftp.unicode.org/Public/UNIDATA/DerivedCoreProperties.txt
 ftp://ftp.unicode.org/Public/UNIDATA/NameAliases.txt
 
-These files have been added to source control in this directory;
+Two additional files are needed for lookup tables in libstdc++:
+
+ftp://ftp.unicode.org/Public/UNIDATA/auxiliary/GraphemeBreakProperty.txt
+ftp://ftp.unicode.org/Public/UNIDATA/emoji/emoji-data.txt
+
+All these files have been added to source control in this directory;
 please see unicode-license.txt for the relevant copyright information.
 
 In order to keep in sync with glibc's wcwidth as much as possible, it is
@@ -24,13 +29,13 @@ desirable for the logic that processes the Unicode data to be the same as
 glibc's.  To that end, we also put in this directory, in the from_glibc/
 directory, the glibc python code that implements their logic.  This code was
 copied verbatim from glibc, and it can be updated at any time from the glibc
-source code repository.  The files copied from that respository are:
+source code repository.  The files copied from that repository are:
 
 localedata/unicode-gen/unicode_utils.py
 localedata/unicode-gen/utf8_gen.py
 
 And the most recent versions added to GCC are from glibc git commit:
-4c721f24fc190d1dc935eb0bab283de7cf13182e
+71de3aead9fffe89556e80ebc94aa918d8ee7bca
 
 The script gen_wcwidth.py found here contains the GCC-specific code to
 map glibc's output to the lookup tables we require.  This script should not need
@@ -40,14 +45,14 @@ produce ucnid.h.
 
 The procedure to update GCC's Unicode support is the following:
 
-1.  Update the five Unicode data files from the above URLs.
+1.  Update the six Unicode data files from the above URLs.
 
 2.  Update the two glibc files in from_glibc/ from glibc's git.  Update
     the commit number above in this README.
 
 3.  Run ./gen_wcwidth.py X.Y > ../../libcpp/generated_cpp_wcwidth.h
     (where X.Y is the version of the Unicode standard corresponding to the
-    Unicode data files being used, most recently, 15.0.0).
+    Unicode data files being used, most recently, 15.1.0).
 
 4.  Update Unicode Copyright years in libcpp/makeucnid.cc and in
     libcpp/makeuname2c.cc up to the year in which the Unicode
@@ -71,3 +76,6 @@ The procedure to update GCC's Unicode support is the following:
 9:  Generate uname2c.h as follows:
       ../../libcpp/makeuname2c UnicodeData.txt NameAliases.txt \
 	> ../../libcpp/uname2c.h
+
+See gen_libstdcxx_unicode_data.py for instructions on updating the lookup
+tables in libstdc++.

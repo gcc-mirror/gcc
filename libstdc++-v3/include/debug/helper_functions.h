@@ -1,6 +1,6 @@
 // Debugging support implementation -*- C++ -*-
 
-// Copyright (C) 2003-2023 Free Software Foundation, Inc.
+// Copyright (C) 2003-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -66,13 +66,12 @@ namespace __gnu_debug
       typedef
 	typename std::iterator_traits<_Iterator>::difference_type _ItDiffType;
 
-      template<typename _DiffType,
-	       typename = typename std::__is_void<_DiffType>::__type>
+      template<typename _DiffType, typename = _DiffType> // PR c++/85282
 	struct _DiffTraits
 	{ typedef _DiffType __type; };
 
       template<typename _DiffType>
-	struct _DiffTraits<_DiffType, std::__true_type>
+	struct _DiffTraits<_DiffType, void>
 	{ typedef std::ptrdiff_t __type; };
 
       typedef typename _DiffTraits<_ItDiffType>::__type _DiffType;
@@ -324,6 +323,7 @@ namespace __gnu_debug
 
   /* Remove debug mode safe iterator layer, if any. */
   template<typename _Iterator>
+    _GLIBCXX_CONSTEXPR
     inline _Iterator
     __unsafe(_Iterator __it)
     { return __it; }

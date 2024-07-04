@@ -1,5 +1,5 @@
 /* CPP Library. (Directive handling.)
-   Copyright (C) 1986-2023 Free Software Foundation, Inc.
+   Copyright (C) 1986-2024 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -56,11 +56,11 @@ struct pragma_entry
 
 /* Values for the origin field of struct directive.  KANDR directives
    come from traditional (K&R) C.  STDC89 directives come from the
-   1989 C standard.  STDC2X directives come from the C2X standard.  EXTENSION
+   1989 C standard.  STDC23 directives come from the C23 standard.  EXTENSION
    directives are extensions.  */
 #define KANDR		0
 #define STDC89		1
-#define STDC2X		2
+#define STDC23		2
 #define EXTENSION	3
 
 /* Values for the flags field of struct directive.  COND indicates a
@@ -154,11 +154,11 @@ static void cpp_pop_definition (cpp_reader *, struct def_pragma_macro *);
   D(undef,	T_UNDEF,	KANDR,     IN_I)			\
   D(line,	T_LINE,		KANDR,     EXPAND)			\
   D(elif,	T_ELIF,		STDC89,    COND | EXPAND)		\
-  D(elifdef,	T_ELIFDEF,	STDC2X,    COND | ELIFDEF)		\
-  D(elifndef,	T_ELIFNDEF,	STDC2X,    COND | ELIFDEF)		\
+  D(elifdef,	T_ELIFDEF,	STDC23,    COND | ELIFDEF)		\
+  D(elifndef,	T_ELIFNDEF,	STDC23,    COND | ELIFDEF)		\
   D(error,	T_ERROR,	STDC89,    0)				\
   D(pragma,	T_PRAGMA,	STDC89,    IN_I)			\
-  D(warning,	T_WARNING,	STDC2X,    0)				\
+  D(warning,	T_WARNING,	STDC23,    0)				\
   D(include_next, T_INCLUDE_NEXT, EXTENSION, INCL | EXPAND)		\
   D(ident,	T_IDENT,	EXTENSION, IN_I)			\
   D(import,	T_IMPORT,	EXTENSION, INCL | EXPAND)  /* ObjC */	\
@@ -394,11 +394,11 @@ directive_diagnostics (cpp_reader *pfile, const directive *dir, int indented)
 			   "#%s before C++23 is a GCC extension", dir->name);
 	      else
 		cpp_error (pfile, CPP_DL_PEDWARN,
-			   "#%s before C2X is a GCC extension", dir->name);
+			   "#%s before C23 is a GCC extension", dir->name);
 	    }
-	  else if (CPP_OPTION (pfile, cpp_warn_c11_c2x_compat) > 0)
-	    cpp_warning (pfile, CPP_W_C11_C2X_COMPAT,
-			 "#%s before C2X is a GCC extension", dir->name);
+	  else if (CPP_OPTION (pfile, cpp_warn_c11_c23_compat) > 0)
+	    cpp_warning (pfile, CPP_W_C11_C23_COMPAT,
+			 "#%s before C23 is a GCC extension", dir->name);
 	}
       else if (((dir->flags & DEPRECATED) != 0
 		|| (dir == &dtable[T_IMPORT] && !CPP_OPTION (pfile, objc)))
@@ -1737,6 +1737,9 @@ do_pragma_poison (cpp_reader *pfile)
 		   NODE_NAME (hp));
       _cpp_free_definition (hp);
       hp->flags |= NODE_POISONED | NODE_DIAGNOSTIC;
+      const auto data = (cpp_hashnode_extra *)
+	ht_lookup (pfile->extra_hash_table, hp->ident, HT_ALLOC);
+      data->poisoned_loc = tok->src_loc;
     }
   pfile->state.poisoned_ok = 0;
 }
@@ -2161,7 +2164,7 @@ do_elif (cpp_reader *pfile)
 			   pfile->directive->name);
 	      else
 		cpp_error (pfile, CPP_DL_PEDWARN,
-			   "#%s before C2X is a GCC extension",
+			   "#%s before C23 is a GCC extension",
 			   pfile->directive->name);
 	    }
 	  pfile->state.skipping = 1;
@@ -2200,7 +2203,7 @@ do_elif (cpp_reader *pfile)
 				   pfile->directive->name);
 		      else
 			cpp_error (pfile, CPP_DL_PEDWARN,
-				   "#%s before C2X is a GCC extension",
+				   "#%s before C23 is a GCC extension",
 				   pfile->directive->name);
 		    }
 		  pfile->state.skipping = skip;

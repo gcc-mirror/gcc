@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2015-2024 Free Software Foundation, Inc.
 
    This file is part of the GNU Atomic Library (libatomic).
 
@@ -21,6 +21,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#define LAT_FLAG
 #include "libatomic_i.h"
 
 #include <stdatomic.h>
@@ -62,3 +63,4 @@ void
 {
   return atomic_flag_clear_explicit (object, order);
 }
+#undef LAT_FLAG

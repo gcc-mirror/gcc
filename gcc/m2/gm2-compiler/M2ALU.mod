@@ -1,6 +1,6 @@
 (* M2ALU.mod gcc implementation of the M2ALU module.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -2922,10 +2922,20 @@ END AddField ;
    ElementsSolved - returns TRUE if all ranges in the set have been solved.
 *)
 
-PROCEDURE ElementsSolved (r: listOfRange) : BOOLEAN ;
+PROCEDURE ElementsSolved (tokenno: CARDINAL; r: listOfRange) : BOOLEAN ;
 BEGIN
    WHILE r#NIL DO
       WITH r^ DO
+         IF NOT IsConst (low)
+         THEN
+            MetaErrorT1 (tokenno, 'a constant set can only contain constant set elements, {%1Ead} is not a constant',
+                         low)
+         END ;
+         IF (high # low) AND (NOT IsConst (high))
+         THEN
+            MetaErrorT1 (tokenno, 'a constant set can only contain constant set elements, {%1Ead} is not a constant',
+                         high)
+         END ;
          IF NOT (IsSolvedGCC(low) AND IsSolvedGCC(high))
          THEN
             RETURN( FALSE )
@@ -3088,7 +3098,7 @@ END CombineElements ;
 
 PROCEDURE EvalSetValues (tokenno: CARDINAL; r: listOfRange) : BOOLEAN ;
 BEGIN
-   IF ElementsSolved(r)
+   IF ElementsSolved (tokenno, r)
    THEN
       SortElements(tokenno, r) ;
       CombineElements(tokenno, r) ;
@@ -4700,7 +4710,7 @@ BEGIN
    PushIntegerTree(BuildNumberOfArrayElements(location, Mod2Gcc(arrayType))) ;
    IF IsConstString(el)
    THEN
-      PushCard(GetStringLength(el))
+      PushCard(GetStringLength(tokenno, el))
    ELSIF IsConst(el) AND (SkipType(GetType(el))=Char) AND IsValueSolved(el)
    THEN
       PushCard(1)
@@ -4755,7 +4765,7 @@ BEGIN
    THEN
       isChar := FALSE ;
       s := InitStringCharStar(KeyToCharStar(GetString(el))) ;
-      l := GetStringLength(el)
+      l := GetStringLength(tokenno, el)
    ELSIF IsConst(el) AND (SkipType(GetType(el))=Char) AND IsValueSolved(el)
    THEN
       isChar := TRUE
@@ -4905,7 +4915,7 @@ BEGIN
       offset := totalLength ;
       IF IsConstString (element)
       THEN
-         INC (totalLength, GetStringLength (element)) ;
+         INC (totalLength, GetStringLength (tokenno, element)) ;
          IF totalLength > arrayIndex
          THEN
             key := GetString (element) ;

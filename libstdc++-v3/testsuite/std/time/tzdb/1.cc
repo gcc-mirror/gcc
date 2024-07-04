@@ -39,12 +39,28 @@ test_locate()
   const tzdb& db = get_tzdb();
   const time_zone* tz = db.locate_zone("GMT");
   VERIFY( tz != nullptr );
-  VERIFY( tz->name() == "Etc/GMT" );
   VERIFY( tz == std::chrono::locate_zone("GMT") );
   VERIFY( tz == db.locate_zone("Etc/GMT") );
   VERIFY( tz == db.locate_zone("Etc/GMT+0") );
 
+  // Since 2022f GMT is now a Zone and Etc/GMT a link instead of vice versa,
+  // but only when using the vanguard format. As of 2024a, the main and
+  // rearguard formats still have Etc/GMT as a Zone and GMT as a link.
+  VERIFY( tz->name() == "GMT" || tz->name() == "Etc/GMT" );
+
   VERIFY( db.locate_zone(db.current_zone()->name()) == db.current_zone() );
+}
+
+void
+test_all_zones()
+{
+  const tzdb& db = get_tzdb();
+
+  for (const auto& zone : db.zones)
+    VERIFY( locate_zone(zone.name())->name() == zone.name() );
+
+  for (const auto& link : db.links)
+    VERIFY( locate_zone(link.name()) == locate_zone(link.target()) );
 }
 
 int main()

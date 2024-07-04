@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gcv -mabi=ilp32d --param riscv-autovec-preference=fixed-vlmax --param riscv-autovec-lmul=m8 -O3 -fdump-tree-optimized-details" } */
+/* { dg-options "-march=rv32gcv -mabi=ilp32d -mrvv-vector-bits=zvl -mrvv-max-lmul=m8 -O3 -fdump-tree-optimized-details" } */
 
 #include <stdint-gcc.h>
 

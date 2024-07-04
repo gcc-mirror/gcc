@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -27,7 +27,6 @@
 #include "rust-diagnostics.h"
 
 namespace Rust {
-typedef std::string Identifier;
 typedef int TupleIndex;
 
 namespace HIR {
@@ -41,6 +40,36 @@ class HIRExpressionVisitor;
 class HIRPatternVisitor;
 class HIRImplVisitor;
 class HIRTypeVisitor;
+
+class WithOuterAttrs
+{
+protected:
+  AST::AttrVec outer_attrs;
+
+public:
+  AST::AttrVec &get_outer_attrs () { return outer_attrs; }
+  const AST::AttrVec &get_outer_attrs () const { return outer_attrs; }
+
+  WithOuterAttrs (AST::AttrVec outer_attrs)
+    : outer_attrs (std::move (outer_attrs)){};
+};
+
+class WithInnerAttrs
+{
+protected:
+  AST::AttrVec inner_attrs;
+
+public:
+  AST::AttrVec get_inner_attrs () const { return inner_attrs; }
+  WithInnerAttrs (AST::AttrVec inner_attrs)
+    : inner_attrs (std::move (inner_attrs)){};
+};
+
+class FullVisitable
+{
+public:
+  virtual void accept_vis (HIRFullVisitor &vis) = 0;
+};
 
 // forward decl for use in token tree method
 class Token;
@@ -132,9 +161,11 @@ public:
 
 /* Base statement abstract class. Note that most "statements" are not allowed in
  * top-level module scope - only a subclass of statements called "items" are. */
-class Stmt : public Node
+class Stmt : public Node, public FullVisitable
 {
 public:
+  using FullVisitable::accept_vis;
+
   // Unique pointer custom clone function
   std::unique_ptr<Stmt> clone_stmt () const
   {
@@ -147,10 +178,9 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual void accept_vis (HIRFullVisitor &vis) = 0;
   virtual void accept_vis (HIRStmtVisitor &vis) = 0;
 
-  virtual Location get_locus () const = 0;
+  virtual location_t get_locus () const = 0;
 
   virtual bool is_unit_check_needed () const { return false; }
 
@@ -168,12 +198,9 @@ protected:
 };
 
 // Rust "item" HIR node (declaration of top-level/module-level allowed stuff)
-class Item : public Stmt
+class Item : public Stmt, public WithOuterAttrs
 {
-  AST::AttrVec outer_attrs;
-
   // TODO: should outer attrs be defined here or in each derived class?
-
 public:
   enum class ItemKind
   {
@@ -211,16 +238,13 @@ public:
   add_crate_name (std::vector<std::string> &names ATTRIBUTE_UNUSED) const
   {}
 
-  AST::AttrVec &get_outer_attrs () { return outer_attrs; }
-  const AST::AttrVec &get_outer_attrs () const { return outer_attrs; }
-
   bool is_item () const override final { return true; }
 
 protected:
   // Constructor
   Item (Analysis::NodeMapping mappings,
 	AST::AttrVec outer_attribs = AST::AttrVec ())
-    : Stmt (std::move (mappings)), outer_attrs (std::move (outer_attribs))
+    : Stmt (std::move (mappings)), WithOuterAttrs (std::move (outer_attribs))
   {}
 
   // Clone function implementation as pure virtual method
@@ -236,8 +260,11 @@ protected:
 class ExprWithoutBlock;
 
 // Base expression HIR node - abstract
-class Expr : public Node
+class Expr : public Node, virtual public FullVisitable
 {
+public:
+  using FullVisitable::accept_vis;
+
 protected:
   AST::AttrVec outer_attrs;
   Analysis::NodeMapping mappings;
@@ -288,16 +315,12 @@ public:
     return std::unique_ptr<Expr> (clone_expr_impl ());
   }
 
-  /* HACK: downcasting without dynamic_cast (if possible) via polymorphism -
-   * overrided in subclasses of ExprWithoutBlock */
-  virtual ExprWithoutBlock *as_expr_without_block () const { return nullptr; }
-
   // TODO: make pure virtual if move out outer attributes to derived classes
   virtual std::string as_string () const;
 
   virtual ~Expr () {}
 
-  virtual Location get_locus () const = 0;
+  virtual location_t get_locus () const = 0;
 
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
 
@@ -309,7 +332,6 @@ public:
   virtual ExprType get_expression_type () const = 0;
 
   virtual void accept_vis (HIRExpressionVisitor &vis) = 0;
-  virtual void accept_vis (HIRFullVisitor &vis) = 0;
 
 protected:
   // Constructor
@@ -354,13 +376,6 @@ public:
     return std::unique_ptr<ExprWithoutBlock> (clone_expr_without_block_impl ());
   }
 
-  /* downcasting hack from expr to use pratt parsing with
-   * parse_expr_without_block */
-  ExprWithoutBlock *as_expr_without_block () const override
-  {
-    return clone_expr_without_block_impl ();
-  }
-
   BlockType get_block_expr_type () const final override
   {
     return BlockType::WITHOUT_BLOCK;
@@ -368,9 +383,11 @@ public:
 };
 
 // Pattern base HIR node
-class Pattern : public Node
+class Pattern : public Node, virtual public FullVisitable
 {
 public:
+  using FullVisitable::accept_vis;
+
   enum PatternType
   {
     PATH,
@@ -384,6 +401,7 @@ public:
     TUPLE,
     GROUPED,
     SLICE,
+    ALT
   };
 
   BaseKind get_hir_kind () override final { return PATTERN; }
@@ -400,12 +418,11 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual void accept_vis (HIRFullVisitor &vis) = 0;
   virtual void accept_vis (HIRPatternVisitor &vis) = 0;
 
-  virtual Analysis::NodeMapping get_pattern_mappings () const = 0;
+  virtual const Analysis::NodeMapping &get_mappings () const = 0;
 
-  virtual Location get_locus () const = 0;
+  virtual location_t get_locus () const = 0;
 
   virtual PatternType get_pattern_type () const = 0;
 
@@ -418,9 +435,10 @@ protected:
 class TraitBound;
 
 // Base class for types as represented in HIR - abstract
-class Type : public Node
+class Type : public Node, public FullVisitable
 {
 public:
+  using FullVisitable::accept_vis;
   // Unique pointer custom clone function
   std::unique_ptr<Type> clone_type () const
   {
@@ -443,14 +461,13 @@ public:
   /* as pointer, shouldn't require definition beforehand, only forward
    * declaration. */
 
-  virtual void accept_vis (HIRFullVisitor &vis) = 0;
   virtual void accept_vis (HIRTypeVisitor &vis) = 0;
 
   virtual Analysis::NodeMapping get_mappings () const { return mappings; }
-  virtual Location get_locus () const { return locus; }
+  virtual location_t get_locus () const { return locus; }
 
 protected:
-  Type (Analysis::NodeMapping mappings, Location locus)
+  Type (Analysis::NodeMapping mappings, location_t locus)
     : mappings (mappings), locus (locus)
   {}
 
@@ -458,7 +475,7 @@ protected:
   virtual Type *clone_type_impl () const = 0;
 
   Analysis::NodeMapping mappings;
-  Location locus;
+  location_t locus;
 };
 
 // A type without parentheses? - abstract
@@ -472,7 +489,7 @@ public:
   }
 
 protected:
-  TypeNoBounds (Analysis::NodeMapping mappings, Location locus)
+  TypeNoBounds (Analysis::NodeMapping mappings, location_t locus)
     : Type (mappings, locus)
   {}
 
@@ -490,9 +507,10 @@ protected:
 
 /* Abstract base class representing a type param bound - Lifetime and TraitBound
  * extends it */
-class TypeParamBound
+class TypeParamBound : public FullVisitable
 {
 public:
+  using FullVisitable::accept_vis;
   enum BoundType
   {
     LIFETIME,
@@ -509,11 +527,9 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual void accept_vis (HIRFullVisitor &vis) = 0;
-
   virtual Analysis::NodeMapping get_mappings () const = 0;
 
-  virtual Location get_locus () const = 0;
+  virtual location_t get_locus () const = 0;
 
   virtual BoundType get_bound_type () const = 0;
 
@@ -528,13 +544,13 @@ class Lifetime : public TypeParamBound
 private:
   AST::Lifetime::LifetimeType lifetime_type;
   std::string lifetime_name;
-  Location locus;
+  location_t locus;
   Analysis::NodeMapping mappings;
 
 public:
   // Constructor
   Lifetime (Analysis::NodeMapping mapping, AST::Lifetime::LifetimeType type,
-	    std::string name, Location locus)
+	    std::string name, location_t locus)
     : lifetime_type (type), lifetime_name (std::move (name)), locus (locus),
       mappings (mapping)
   {}
@@ -549,21 +565,24 @@ public:
   static Lifetime error ()
   {
     return Lifetime (Analysis::NodeMapping::get_error (),
-		     AST::Lifetime::LifetimeType::NAMED, "", Location ());
+		     AST::Lifetime::LifetimeType::NAMED, "", UNDEF_LOCATION);
   }
 
   std::string as_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
 
-  std::string get_name () const { return lifetime_name; }
+  WARN_UNUSED_RESULT const std::string &get_name () const
+  {
+    return lifetime_name;
+  }
 
   AST::Lifetime::LifetimeType get_lifetime_type () const
   {
     return lifetime_type;
   }
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   Analysis::NodeMapping get_mappings () const override final
   {
@@ -583,9 +602,11 @@ protected:
 
 /* Base generic parameter in HIR. Abstract - can be represented by a Lifetime or
  * Type param */
-class GenericParam
+class GenericParam : public FullVisitable
 {
 public:
+  using FullVisitable::accept_vis;
+
   virtual ~GenericParam () {}
 
   enum class GenericKind
@@ -603,9 +624,7 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual void accept_vis (HIRFullVisitor &vis) = 0;
-
-  virtual Location get_locus () const = 0;
+  virtual location_t get_locus () const = 0;
 
   Analysis::NodeMapping get_mappings () const { return mappings; }
 
@@ -638,13 +657,15 @@ class LifetimeParam : public GenericParam
   // std::unique_ptr<Attribute> outer_attr;
   AST::Attribute outer_attr;
 
-  Location locus;
+  location_t locus;
 
 public:
   Lifetime get_lifetime () { return lifetime; }
 
   // Returns whether the lifetime param has any lifetime bounds.
   bool has_lifetime_bounds () const { return !lifetime_bounds.empty (); }
+
+  std::vector<Lifetime> &get_lifetime_bounds () { return lifetime_bounds; }
 
   // Returns whether the lifetime param has an outer attribute.
   bool has_outer_attribute () const { return !outer_attr.is_empty (); }
@@ -654,7 +675,7 @@ public:
 
   // Constructor
   LifetimeParam (Analysis::NodeMapping mappings, Lifetime lifetime,
-		 Location locus = Location (),
+		 location_t locus = UNDEF_LOCATION,
 		 std::vector<Lifetime> lifetime_bounds
 		 = std::vector<Lifetime> (),
 		 AST::Attribute outer_attr = AST::Attribute::create_empty ())
@@ -693,7 +714,7 @@ public:
 
   void accept_vis (HIRFullVisitor &vis) override;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -709,7 +730,7 @@ class ConstGenericParam : public GenericParam
 public:
   ConstGenericParam (std::string name, std::unique_ptr<Type> type,
 		     std::unique_ptr<Expr> default_expression,
-		     Analysis::NodeMapping mapping, Location locus)
+		     Analysis::NodeMapping mapping, location_t locus)
     : GenericParam (mapping, GenericKind::CONST), name (std::move (name)),
       type (std::move (type)),
       default_expression (std::move (default_expression)), locus (locus)
@@ -730,15 +751,14 @@ public:
 
   void accept_vis (HIRFullVisitor &vis) override final;
 
-  Location get_locus () const override final { return locus; };
+  location_t get_locus () const override final { return locus; };
 
   bool has_default_expression () { return default_expression != nullptr; }
 
+  std::string get_name () { return name; }
   std::unique_ptr<Type> &get_type () { return type; }
   std::unique_ptr<Expr> &get_default_expression ()
   {
-    rust_assert (has_default_expression ());
-
     return default_expression;
   }
 
@@ -757,13 +777,14 @@ private:
   /* Optional - can be a null pointer if there is no default expression */
   std::unique_ptr<Expr> default_expression;
 
-  Location locus;
+  location_t locus;
 };
 
 // Item used in trait declarations - abstract base class
-class TraitItem : public Node
+class TraitItem : public Node, public FullVisitable
 {
 public:
+  using FullVisitable::accept_vis;
   enum TraitItemKind
   {
     FUNC,
@@ -793,13 +814,12 @@ public:
   virtual std::string as_string () const = 0;
 
   virtual void accept_vis (HIRTraitItemVisitor &vis) = 0;
-  virtual void accept_vis (HIRFullVisitor &vis) = 0;
 
   virtual const std::string trait_identifier () const = 0;
 
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
 
-  virtual Location get_trait_locus () const = 0;
+  virtual location_t get_trait_locus () const = 0;
 
   virtual TraitItemKind get_item_kind () const = 0;
 
@@ -807,9 +827,10 @@ public:
   virtual const AST::AttrVec &get_outer_attrs () const = 0;
 };
 
-class ImplItem : public Node
+class ImplItem : public Node, public FullVisitable
 {
 public:
+  using FullVisitable::accept_vis;
   enum ImplItemType
   {
     FUNCTION,
@@ -830,12 +851,11 @@ public:
   virtual std::string as_string () const = 0;
 
   virtual void accept_vis (HIRImplVisitor &vis) = 0;
-  virtual void accept_vis (HIRFullVisitor &vis) = 0;
   virtual void accept_vis (HIRStmtVisitor &vis) = 0;
 
   virtual Analysis::NodeMapping get_impl_mappings () const = 0;
 
-  virtual Location get_locus () const = 0;
+  virtual location_t get_locus () const = 0;
 
   virtual ImplItemType get_impl_item_type () const = 0;
 
@@ -847,27 +867,26 @@ protected:
 };
 
 // A crate HIR object - holds all the data for a single compilation unit
-struct Crate
+class Crate : public WithInnerAttrs
 {
-  AST::AttrVec inner_attrs;
   // dodgy spacing required here
   /* TODO: is it better to have a vector of items here or a module (implicit
    * top-level one)? */
-  std::vector<std::unique_ptr<Item> > items;
+  std::vector<std::unique_ptr<Item>> items;
 
   Analysis::NodeMapping mappings;
 
 public:
   // Constructor
-  Crate (std::vector<std::unique_ptr<Item> > items, AST::AttrVec inner_attrs,
+  Crate (std::vector<std::unique_ptr<Item>> items, AST::AttrVec inner_attrs,
 	 Analysis::NodeMapping mappings)
-    : inner_attrs (std::move (inner_attrs)), items (std::move (items)),
+    : WithInnerAttrs (std::move (inner_attrs)), items (std::move (items)),
       mappings (mappings)
   {}
 
   // Copy constructor with vector clone
   Crate (Crate const &other)
-    : inner_attrs (other.inner_attrs), mappings (other.mappings)
+    : WithInnerAttrs (other.inner_attrs), mappings (other.mappings)
   {
     items.reserve (other.items.size ());
     for (const auto &e : other.items)
@@ -897,6 +916,7 @@ public:
   std::string as_string () const;
 
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
+  std::vector<std::unique_ptr<Item>> &get_items () { return items; }
 };
 
 // Base path expression HIR node - abstract

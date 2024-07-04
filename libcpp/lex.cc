@@ -1,5 +1,5 @@
 /* CPP Library - lexical analysis.
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -1362,11 +1362,11 @@ get_location_for_byte_range_in_cur_line (cpp_reader *pfile,
   source_range src_range;
   src_range.m_start = start_loc;
   src_range.m_finish = end_loc;
-  location_t combined_loc = COMBINE_LOCATION_DATA (pfile->line_table,
-						   start_loc,
-						   src_range,
-						   NULL,
-						   0);
+  location_t combined_loc
+    = pfile->line_table->get_or_create_combined_loc (start_loc,
+						     src_range,
+						     nullptr,
+						     0);
   return combined_loc;
 }
 
@@ -2032,8 +2032,8 @@ warn_about_normalization (cpp_reader *pfile,
 	    = linemap_position_for_column (pfile->line_table,
 					   CPP_BUF_COLUMN (pfile->buffer,
 							   pfile->buffer->cur));
-	  loc = COMBINE_LOCATION_DATA (pfile->line_table,
-				       loc, tok_range, NULL, 0);
+	  loc = pfile->line_table->get_or_create_combined_loc (loc, tok_range,
+							       nullptr, 0);
 	}
 
       encoding_rich_location rich_loc (pfile, loc);
@@ -2144,7 +2144,7 @@ maybe_va_opt_error (cpp_reader *pfile)
 		       "__VA_OPT__ is not available until C++20");
 	  else
 	    cpp_error (pfile, CPP_DL_PEDWARN,
-		       "__VA_OPT__ is not available until C2X");
+		       "__VA_OPT__ is not available until C23");
 	}
     }
   else if (!pfile->state.va_args_ok)
@@ -2168,8 +2168,14 @@ identifier_diagnostics_on_lex (cpp_reader *pfile, cpp_hashnode *node)
 
   /* It is allowed to poison the same identifier twice.  */
   if ((node->flags & NODE_POISONED) && !pfile->state.poisoned_ok)
-    cpp_error (pfile, CPP_DL_ERROR, "attempt to use poisoned \"%s\"",
-	       NODE_NAME (node));
+    {
+      cpp_error (pfile, CPP_DL_ERROR, "attempt to use poisoned \"%s\"",
+		 NODE_NAME (node));
+      const auto data = (cpp_hashnode_extra *)
+	ht_lookup (pfile->extra_hash_table, node->ident, HT_NO_INSERT);
+      if (data && data->poisoned_loc)
+	cpp_error_at (pfile, CPP_DL_NOTE, data->poisoned_loc, "poisoned here");
+    }
 
   /* Constraint 6.10.3.5: __VA_ARGS__ should only appear in the
      replacement list of a variadic macro.  */
@@ -3803,7 +3809,7 @@ _cpp_get_fresh_line (cpp_reader *pfile)
 cpp_token *
 _cpp_lex_direct (cpp_reader *pfile)
 {
-  cppchar_t c;
+  cppchar_t c = 0;
   cpp_buffer *buffer;
   const unsigned char *comment_start;
   bool fallthrough_comment = false;
@@ -3827,6 +3833,7 @@ _cpp_lex_direct (cpp_reader *pfile)
 	  pfile->state.in_deferred_pragma = false;
 	  if (!pfile->state.pragma_allow_expansion)
 	    pfile->state.prevent_expansion--;
+	  result->src_loc = pfile->line_table->highest_line;
 	  return result;
 	}
       if (!_cpp_get_fresh_line (pfile))
@@ -3843,6 +3850,8 @@ _cpp_lex_direct (cpp_reader *pfile)
 	      /* Now pop the buffer that _cpp_get_fresh_line did not.  */
 	      _cpp_pop_buffer (pfile);
 	    }
+	  else if (c == 0)
+	    result->src_loc = pfile->line_table->highest_line;
 	  return result;
 	}
       if (buffer != pfile->buffer)
@@ -4226,8 +4235,13 @@ _cpp_lex_direct (cpp_reader *pfile)
 
     case ':':
       result->type = CPP_COLON;
-      if (*buffer->cur == ':' && CPP_OPTION (pfile, scope))
-	buffer->cur++, result->type = CPP_SCOPE;
+      if (*buffer->cur == ':')
+	{
+	  if (CPP_OPTION (pfile, scope))
+	    buffer->cur++, result->type = CPP_SCOPE;
+	  else
+	    result->flags |= COLON_SCOPE;
+	}
       else if (*buffer->cur == '>' && CPP_OPTION (pfile, digraphs))
 	{
 	  buffer->cur++;
@@ -4333,9 +4347,9 @@ _cpp_lex_direct (cpp_reader *pfile)
 	= linemap_position_for_column (pfile->line_table,
 				       CPP_BUF_COLUMN (buffer, buffer->cur));
 
-      result->src_loc = COMBINE_LOCATION_DATA (pfile->line_table,
-					       result->src_loc,
-					       tok_range, NULL, 0);
+      result->src_loc
+	= pfile->line_table->get_or_create_combined_loc (result->src_loc,
+							 tok_range, nullptr, 0);
     }
 
   return result;
@@ -4756,7 +4770,7 @@ new_buff (size_t len)
     len = MIN_BUFF_SIZE;
   len = CPP_ALIGN (len);
 
-#ifdef ENABLE_VALGRIND_ANNOTATIONS
+#ifdef ENABLE_VALGRIND_WORKAROUNDS
   /* Valgrind warns about uses of interior pointers, so put _cpp_buff
      struct first.  */
   size_t slen = CPP_ALIGN2 (sizeof (_cpp_buff), 2 * DEFAULT_ALIGNMENT);
@@ -4853,7 +4867,7 @@ _cpp_free_buff (_cpp_buff *buff)
   for (; buff; buff = next)
     {
       next = buff->next;
-#ifdef ENABLE_VALGRIND_ANNOTATIONS
+#ifdef ENABLE_VALGRIND_WORKAROUNDS
       free (buff);
 #else
       free (buff->base);
@@ -5024,7 +5038,7 @@ do_peek_prev (const unsigned char *peek, const unsigned char *bound)
 
   unsigned char c = *--peek;
   if (__builtin_expect (c == '\n', false)
-      || __builtin_expect (c == 'r', false))
+      || __builtin_expect (c == '\r', false))
     {
       if (peek == bound)
 	return peek;

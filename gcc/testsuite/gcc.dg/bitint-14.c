@@ -1,6 +1,6 @@
 /* PR c/102989 */
 /* { dg-do compile { target bitint575 } } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 enum A : _BitInt(15) { A0 = 0, A1 = 1 };		/* { dg-error "invalid 'enum' underlying type" } */
 enum B : unsigned _BitInt(575) { B0 = 0, B1 = 1 };	/* { dg-error "invalid 'enum' underlying type" } */

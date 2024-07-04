@@ -1,8 +1,11 @@
 // PR c++/95486
 // { dg-do compile { target c++20 } }
 
+template <class T>
+concept Int = __is_same (T, int);
+
 template<class T, class U>
-struct X { X(U) requires __is_same(U, int) {} };
+struct X { X(U) requires Int<U> {} };
 
 template<class U>
 using Y = X<void, U>;

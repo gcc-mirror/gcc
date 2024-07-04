@@ -3,7 +3,7 @@
 
 #include <vecintrin.h>
 
-vector short int
+vector unsigned short int
 test_vec_round_from_fp32 (vector float hi, vector float lo)
 {
   return vec_round_from_fp32 (hi, lo, 0);

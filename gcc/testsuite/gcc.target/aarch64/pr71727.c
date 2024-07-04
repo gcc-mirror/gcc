@@ -30,4 +30,4 @@ _start (void)
 }
 
 /* { dg-final { scan-assembler-times "mov\tx" 5 {target lp64} } } */
-/* { dg-final { scan-assembler-not "add\tx0, x0, :" {target lp64} } } */
+/* { dg-final { scan-assembler-not {st[rp]\tq[0-9]+} {target lp64} } } */

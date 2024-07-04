@@ -30,7 +30,7 @@ f (const char* p1, const char* p2, char p3)
 
   a = v2 = v1;
   e = v5 = v4;
-  memcpy (&e, &e, sizeof (e));
+  __builtin_memcpy (&e, &e, sizeof (e));
 
   v3 = strchr (v2, ',');
   v6 = strchr (v5, ',');

@@ -1,4 +1,4 @@
-/* Test C2x enumerations with fixed underlying type are diagnosed for C11.  */
+/* Test C23 enumerations with fixed underlying type are diagnosed for C11.  */
 /* { dg-do compile } */
 /* { dg-options "-std=c11 -pedantic-errors" } */
 

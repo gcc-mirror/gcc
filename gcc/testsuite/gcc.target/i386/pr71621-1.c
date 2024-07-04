@@ -20,7 +20,7 @@ y8 (void)
 	  gv |= sy ? 0 : v4;
 	  if (gv != 0)
 	    ++gv;
-	  t6 = &cn;
+	  t6 = (int **) &cn;
 	  if (gv != 0)
 	    *t6 = 0;
 	}

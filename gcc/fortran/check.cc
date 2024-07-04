@@ -1,5 +1,5 @@
 /* Check functions
-   Copyright (C) 2002-2023 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -1249,6 +1249,33 @@ gfc_check_same_strlen (const gfc_expr *a, const gfc_expr *b, const char *name)
 		  len_a, len_b, name, &a->where);
        return false;
      }
+}
+
+/* Check size of an array argument against a required size.
+   Returns true if the requirement is satisfied or if the size cannot be
+   determined, otherwise return false and raise a gfc_error  */
+
+static bool
+array_size_check (gfc_expr *a, int n, long size_min)
+{
+  bool ok = true;
+  mpz_t size;
+
+  if (gfc_array_size (a, &size))
+    {
+      HOST_WIDE_INT sz = gfc_mpz_get_hwi (size);
+      if (size_min >= 0 && sz < size_min)
+	{
+	  gfc_error ("Size of %qs argument of %qs intrinsic at %L "
+		     "too small (%wd/%ld)",
+		     gfc_current_intrinsic_arg[n]->name,
+		     gfc_current_intrinsic, &a->where, sz, size_min);
+	  ok = false;
+	}
+      mpz_clear (size);
+    }
+
+  return ok;
 }
 
 
@@ -4357,6 +4384,9 @@ gfc_check_null (gfc_expr *mold)
   if (mold == NULL)
     return true;
 
+  if (mold->expr_type == EXPR_NULL)
+    return true;
+
   if (!variable_check (mold, 0, true))
     return false;
 
@@ -5189,7 +5219,7 @@ is_c_interoperable (gfc_expr *expr, const char **msg, bool c_loc, bool c_f_ptr)
 {
   *msg = NULL;
 
-  if (expr->expr_type == EXPR_NULL)
+  if (expr->expr_type == EXPR_NULL && expr->ts.type == BT_UNKNOWN)
     {
       *msg = "NULL() is not interoperable";
       return false;
@@ -5269,18 +5299,14 @@ is_c_interoperable (gfc_expr *expr, const char **msg, bool c_loc, bool c_f_ptr)
       return false;
     }
 
-  if (!c_loc && expr->rank > 0 && expr->expr_type != EXPR_ARRAY)
+  /* Checks for C_SIZEOF need to take into account edits to 18-007r1, see
+     https://j3-fortran.org/doc/year/22/22-101r1.txt .  */
+  if (!c_loc && !c_f_ptr && expr->rank > 0 && expr->expr_type == EXPR_VARIABLE)
     {
       gfc_array_ref *ar = gfc_find_array_ref (expr);
-      if (ar->type != AR_FULL)
+      if (ar->type == AR_FULL && ar->as->type == AS_ASSUMED_SIZE)
 	{
-	  *msg = "Only whole-arrays are interoperable";
-	  return false;
-	}
-      if (!c_f_ptr && ar->as->type != AS_EXPLICIT
-	  && ar->as->type != AS_ASSUMED_SIZE)
-	{
-	  *msg = "Only explicit-size and assumed-size arrays are interoperable";
+	  *msg = "Assumed-size arrays are not interoperable";
 	  return false;
 	}
     }
@@ -5445,9 +5471,17 @@ gfc_check_c_f_pointer (gfc_expr *cptr, gfc_expr *fptr, gfc_expr *shape)
       return false;
     }
 
+  if (fptr->ts.type == BT_PROCEDURE && attr.function)
+    {
+      gfc_error ("FPTR argument to C_F_POINTER at %L is a function "
+		 "returning a pointer", &fptr->where);
+      return false;
+    }
+
   if (fptr->rank > 0 && !is_c_interoperable (fptr, &msg, false, true))
-    return gfc_notify_std (GFC_STD_F2018, "Noninteroperable array FPTR "
-			   "at %L to C_F_POINTER: %s", &fptr->where, msg);
+    return gfc_notify_std (GFC_STD_F2018,
+			   "Noninteroperable array FPTR argument to "
+			   "C_F_POINTER at %L: %s", &fptr->where, msg);
 
   return true;
 }
@@ -6271,8 +6305,8 @@ gfc_check_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
   if (source_size < result_size)
     gfc_warning (OPT_Wsurprising,
 		 "Intrinsic TRANSFER at %L has partly undefined result: "
-		 "source size %ld < result size %ld", &source->where,
-		 (long) source_size, (long) result_size);
+		 "source size %zd < result size %zd", &source->where,
+		 source_size, result_size);
 
   return true;
 }
@@ -6539,6 +6573,27 @@ gfc_check_date_and_time (gfc_expr *date, gfc_expr *time,
 	return false;
       if (!variable_check (values, 3, false))
 	return false;
+      if (!array_size_check (values, 3, 8))
+	return false;
+
+      if (values->ts.kind != gfc_default_integer_kind
+	  && !gfc_notify_std (GFC_STD_F2018, "VALUES argument of "
+			      "DATE_AND_TIME at %L has non-default kind",
+			      &values->where))
+	return false;
+
+      /* F2018:16.9.59 DATE_AND_TIME
+	 "VALUES shall be a rank-one array of type integer
+	 with a decimal exponent range of at least four."
+	 This is a hard limit also required by the implementation in
+	 libgfortran.  */
+      if (values->ts.kind < 2)
+	{
+	  gfc_error ("VALUES argument of DATE_AND_TIME at %L must have "
+		     "a decimal exponent range of at least four",
+		     &values->where);
+	  return false;
+	}
     }
 
   return true;
@@ -6774,6 +6829,8 @@ bool
 gfc_check_system_clock (gfc_expr *count, gfc_expr *count_rate,
 			gfc_expr *count_max)
 {
+  int first_int_kind = -1;
+
   if (count != NULL)
     {
       if (!scalar_check (count, 0))
@@ -6788,8 +6845,17 @@ gfc_check_system_clock (gfc_expr *count, gfc_expr *count_rate,
 			      &count->where))
 	return false;
 
+      if (count->ts.kind < gfc_default_integer_kind
+	  && !gfc_notify_std (GFC_STD_F2023_DEL,
+			      "COUNT argument to SYSTEM_CLOCK at %L "
+			      "with kind smaller than default integer",
+			      &count->where))
+	return false;
+
       if (!variable_check (count, 0, false))
 	return false;
+
+      first_int_kind = count->ts.kind;
     }
 
   if (count_rate != NULL)
@@ -6816,6 +6882,16 @@ gfc_check_system_clock (gfc_expr *count, gfc_expr *count_rate,
 				  "SYSTEM_CLOCK at %L has non-default kind",
 				  &count_rate->where))
 	    return false;
+
+	  if (count_rate->ts.kind < gfc_default_integer_kind
+	      && !gfc_notify_std (GFC_STD_F2023_DEL,
+				  "COUNT_RATE argument to SYSTEM_CLOCK at %L "
+				  "with kind smaller than default integer",
+				  &count_rate->where))
+	    return false;
+
+	  if (first_int_kind < 0)
+	    first_int_kind = count_rate->ts.kind;
 	}
 
     }
@@ -6835,6 +6911,35 @@ gfc_check_system_clock (gfc_expr *count, gfc_expr *count_rate,
 	return false;
 
       if (!variable_check (count_max, 2, false))
+	return false;
+
+      if (count_max->ts.kind < gfc_default_integer_kind
+	  && !gfc_notify_std (GFC_STD_F2023_DEL,
+			      "COUNT_MAX argument to SYSTEM_CLOCK at %L "
+			      "with kind smaller than default integer",
+			      &count_max->where))
+	return false;
+
+      if (first_int_kind < 0)
+	first_int_kind = count_max->ts.kind;
+    }
+
+  if (first_int_kind > 0)
+    {
+      if (count_rate
+	  && count_rate->ts.type == BT_INTEGER
+	  && count_rate->ts.kind != first_int_kind
+	  && !gfc_notify_std (GFC_STD_F2023_DEL,
+			      "integer arguments to SYSTEM_CLOCK at %L "
+			      "with different kind parameters",
+			      &count_rate->where))
+	return false;
+
+      if (count_max && count_max->ts.kind != first_int_kind
+	  && !gfc_notify_std (GFC_STD_F2023_DEL,
+			      "integer arguments to SYSTEM_CLOCK at %L "
+			      "with different kind parameters",
+			      &count_max->where))
 	return false;
     }
 

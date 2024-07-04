@@ -1,4 +1,4 @@
-#  Copyright (C) 2016-2023 Free Software Foundation, Inc.
+#  Copyright (C) 2016-2024 Free Software Foundation, Inc.
 #
 #  This file is free software; you can redistribute it and/or modify it under
 #  the terms of the GNU General Public License as published by the Free
@@ -15,10 +15,6 @@
 #  <http://www.gnu.org/licenses/>.
 
 GTM_H += $(HASH_TABLE_H)
-
-driver-gcn.o: $(srcdir)/config/gcn/driver-gcn.cc
-	$(COMPILE) $<
-	$(POSTCOMPILE)
 
 CFLAGS-mkoffload.o += $(DRIVER_DEFINES) \
 	-DGCC_INSTALL_NAME=\"$(GCC_INSTALL_NAME)\"
@@ -42,8 +38,12 @@ ALL_HOST_OBJS += gcn-run.o
 gcn-run$(exeext): gcn-run.o
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $< -ldl
 
-MULTILIB_OPTIONS = march=gfx900/march=gfx906/march=gfx908/march=gfx90a
-MULTILIB_DIRNAMES = gfx900 gfx906 gfx908 gfx90a
+empty :=
+space := $(empty) $(empty)
+comma := ,
+multilib_list := $(subst $(comma),$(space),$(TM_MULTILIB_CONFIG)) 
+MULTILIB_OPTIONS = $(subst $(space),/,$(addprefix march=,$(multilib_list)))
+MULTILIB_DIRNAMES = $(multilib_list)
 
 gcn-tree.o: $(srcdir)/config/gcn/gcn-tree.cc
 	$(COMPILE) $<

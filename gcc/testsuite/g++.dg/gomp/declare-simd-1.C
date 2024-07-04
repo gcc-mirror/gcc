@@ -2,19 +2,30 @@
 // { dg-do compile }
 // { dg-options "-fopenmp -ffat-lto-objects" }
 
+#ifdef __aarch64__
+#pragma omp declare simd uniform (a) aligned (b : 2 * sizeof (int)) \
+	    linear (c : 4) simdlen (2) notinbranch
+#else
 #pragma omp declare simd uniform (a) aligned (b : 8 * sizeof (int)) \
 	    linear (c : 4) simdlen (8) notinbranch
 #pragma omp declare simd uniform (c) aligned (b : 4 * sizeof (int)) linear (a \
 									    : 4) simdlen (4) inbranch
+#endif
 int f1 (int a, int *b, int c);
 
+#ifdef __aarch64__
+#pragma omp declare simd uniform (a) aligned (b : 2 * sizeof (int)) linear (c : 4) simdlen (2)
+#else
 #pragma omp declare simd uniform (a) aligned (b : 8 * sizeof (int)) linear (c : 4) simdlen (8)
+#endif
 int f2 (int a, int *b, int c)
 {
   return a + *b + c;
 }
 
-// { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-5 }
+// { dg-final { scan-assembler-times "_ZGVnN2uva8l4__Z2f2iPii:" 1 { target { aarch64*-*-* } } } }
+// { dg-final { scan-assembler-times "_ZGVnM2uva8l4__Z2f2iPii:" 1 { target { aarch64*-*-* } } } }
+
 // { dg-final { scan-assembler-times "_ZGVbM8uva32l4__Z2f2iPii:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVbN8uva32l4__Z2f2iPii:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVcM8uva32l4__Z2f2iPii:" 1 { target { i?86-*-* x86_64-*-* } } } }
@@ -24,14 +35,22 @@ int f2 (int a, int *b, int c)
 // { dg-final { scan-assembler-times "_ZGVeM8uva32l4__Z2f2iPii:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVeN8uva32l4__Z2f2iPii:" 1 { target { i?86-*-* x86_64-*-* } } } }
 
+#ifdef __aarch64__
+#pragma omp declare simd uniform (c) aligned (b : 2 * sizeof (int)) linear (a : 4) simdlen (2)
+#else
 #pragma omp declare simd uniform (c) aligned (b : 4 * sizeof (int)) linear (a : 4) simdlen (4)
+#endif
 template <typename T>
 T f3 (int a, int *b, T c);
 
 template <>
 int f3 (int, int *, int);
 
+#ifdef __aarch64__
+#pragma omp declare simd uniform (c) aligned (b : 2 * sizeof (int)) linear (a : 4) notinbranch simdlen (2)
+#else
 #pragma omp declare simd uniform (c) aligned (b : 4 * sizeof (int)) linear (a : 4) notinbranch simdlen (4)
+#endif
 template <typename T>
 int f4 (int a, int *b, T c)
 {
@@ -44,22 +63,38 @@ int f4 (int, int *, int);
 template <typename T>
 int f5 (int a, int *b, T c);
 
+#ifdef __aarch64__
+#pragma omp declare simd uniform (c) aligned (b : 2 * sizeof (int)) linear (a : 4) simdlen (2)
+#else
 #pragma omp declare simd uniform (c) aligned (b : 4 * sizeof (int)) linear (a : 4) simdlen (4)
+#endif
 template <>
 int f5 (int a, int *b, int c);
 
 template <int N>
 int f6 (int a, int *b, int c);
 
+#ifdef __aarch64__
+#pragma omp declare simd uniform (c) aligned (b : 2 * sizeof (int)) linear (a : 4) inbranch simdlen (2)
+#else
 #pragma omp declare simd uniform (c) aligned (b : 4 * sizeof (int)) linear (a : 4) inbranch simdlen (4)
+#endif
 template <>
 int f6<3> (int a, int *b, int c);
 
+#ifdef __aarch64__
+#pragma omp declare simd uniform (a) aligned (b : 2 * sizeof (long long)) linear (c : 4) simdlen (2)
+#else
 #pragma omp declare simd uniform (a) aligned (b : 8 * sizeof (long long)) linear (c : 4) simdlen (8)
+#endif
 __extension__
 long long f7 (long long a, long long *b, long long c);
 
+#ifdef __aarch64__
+#pragma omp declare simd uniform (a) aligned (b : 2 * sizeof (int)) linear (c : 4) notinbranch simdlen (2)
+#else
 #pragma omp declare simd uniform (a) aligned (b : 8 * sizeof (int)) linear (c : 4) notinbranch simdlen (8)
+#endif
 extern "C"
 int f8 (int a, int *b, int c);
 
@@ -82,6 +117,9 @@ namespace N1
   }
 }
 
+// { dg-final { scan-assembler-times "_ZGVnN2va16__ZN2N12N23f10EPx:" 1 { target { aarch64*-*-* } } } }
+// { dg-final { scan-assembler-times "_ZGVnM2va16__ZN2N12N23f10EPx:" 1 { target { aarch64*-*-* } } } }
+
 // { dg-final { scan-assembler-times "_ZGVbM2va16__ZN2N12N23f10EPx:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVbN2va16__ZN2N12N23f10EPx:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVcM2va16__ZN2N12N23f10EPx:" 1 { target { i?86-*-* x86_64-*-* } } } }
@@ -95,28 +133,48 @@ namespace N1
 
 struct A
 {
+#ifdef __aarch64__
+  #pragma omp declare simd uniform (a) aligned (b : 2 * sizeof (int)) linear (c : 4) simdlen (2)
+  #pragma omp declare simd uniform (c) aligned (b : 2 * sizeof (int)) linear (a : 4) simdlen (2)
+#else
   #pragma omp declare simd uniform (a) aligned (b : 8 * sizeof (int)) linear (c : 4) simdlen (8)
   #pragma omp declare simd uniform (c) aligned (b : 4 * sizeof (int)) linear (a : 4) simdlen (4)
+#endif
   int f11 (int a, int *b, int c);
 
   #pragma omp declare simd
   template <int N>
   int f12 (int a, int *b, int c);
 
+#ifdef __aarch64__
+  #pragma omp declare simd uniform (a) aligned (b : 2 * sizeof (int)) linear (c : 4) notinbranch simdlen (2)
+  #pragma omp declare simd uniform (c) aligned (b : 2 * sizeof (int)) linear (a : 4) simdlen (2) inbranch
+#else
   #pragma omp declare simd uniform (a) aligned (b : 8 * sizeof (int)) linear (c : 4) notinbranch simdlen (8)
   #pragma omp declare simd uniform (c) aligned (b : 4 * sizeof (int)) linear (a : 4) simdlen (4) inbranch
+#endif
   static int f13 (int a, int *b, int c);
 
+#ifdef __aarch64__
+  #pragma omp declare simd uniform (a) aligned (b : 2 * sizeof (int)) linear (c : 4) simdlen (2)
+  #pragma omp declare simd uniform (c) aligned (b : 2 * sizeof (int)) linear (a : 4) simdlen (2)
+#else
   #pragma omp declare simd uniform (a) aligned (b : 8 * sizeof (int)) linear (c : 4) simdlen (8)
   #pragma omp declare simd uniform (c) aligned (b : 4 * sizeof (int)) linear (a : 4) simdlen (4)
+#endif
   int f14 (int a, int *b, int c) { return a + *b + c; }
 
   #pragma omp declare simd
   template <int N>
   int f15 (int a, int *b, int c) { return a + *b + c; }
 
+#ifdef __aarch64__
+  #pragma omp declare simd uniform (a) aligned (b : 2 * sizeof (int)) linear (c : 4) simdlen (2)
+  #pragma omp declare simd uniform (c) aligned (b : 2 * sizeof (int)) linear (a : 4) simdlen (2)
+#else
   #pragma omp declare simd uniform (a) aligned (b : 8 * sizeof (int)) linear (c : 4) simdlen (8)
   #pragma omp declare simd uniform (c) aligned (b : 4 * sizeof (int)) linear (a : 4) simdlen (4)
+#endif
   static int f16 (int a, int *b, int c) { return a + *b + c; }
 };
 
@@ -129,28 +187,48 @@ int A::f15<2> (int, int *, int);
 template <typename T>
 struct B
 {
+#ifdef __aarch64__
+  #pragma omp declare simd uniform (a) aligned (b : 2 * sizeof (int)) linear (c : 4) simdlen (2) notinbranch
+  #pragma omp declare simd uniform (c) aligned (b : 2 * sizeof (int)) linear (a : 4) simdlen (2) inbranch
+#else
   #pragma omp declare simd uniform (a) aligned (b : 8 * sizeof (int)) linear (c : 4) simdlen (8) notinbranch
   #pragma omp declare simd uniform (c) aligned (b : 4 * sizeof (int)) linear (a : 4) simdlen (4) inbranch
+#endif
   int f17 (int a, int *b, int c);
 
   #pragma omp declare simd
   template <int N>
   int f18 (int a, int *b, int c);
 
+#ifdef __aarch64__
+  #pragma omp declare simd uniform (a) aligned (b : 2 * sizeof (int)) linear (c : 4) simdlen (2)
+  #pragma omp declare simd uniform (c) aligned (b : 2 * sizeof (int)) linear (a : 4) simdlen (2)
+#else
   #pragma omp declare simd uniform (a) aligned (b : 8 * sizeof (int)) linear (c : 4) simdlen (8)
   #pragma omp declare simd uniform (c) aligned (b : 4 * sizeof (int)) linear (a : 4) simdlen (4)
+#endif
   static int f19 (int a, int *b, int c);
 
+#ifdef __aarch64__
+  #pragma omp declare simd uniform (a) aligned (b : 2 * sizeof (int)) linear (c : 4) simdlen (2)
+  #pragma omp declare simd uniform (c) aligned (b : 2 * sizeof (int)) linear (a : 4) simdlen (2)
+#else
   #pragma omp declare simd uniform (a) aligned (b : 8 * sizeof (int)) linear (c : 4) simdlen (8)
   #pragma omp declare simd uniform (c) aligned (b : 4 * sizeof (int)) linear (a : 4) simdlen (4)
+#endif
   int f20 (int a, int *b, int c) { return a + *b + c; }
 
   #pragma omp declare simd
   template <int N>
   int f21 (int a, int *b, int c) { return a + *b + c; }
 
+#ifdef __aarch64__
+  #pragma omp declare simd uniform (a) aligned (b : 2 * sizeof (int)) linear (c : 4) simdlen (2)
+  #pragma omp declare simd uniform (c) aligned (b : 2 * sizeof (int)) linear (a : 4) simdlen (2)
+#else
   #pragma omp declare simd uniform (a) aligned (b : 8 * sizeof (int)) linear (c : 4) simdlen (8)
   #pragma omp declare simd uniform (c) aligned (b : 4 * sizeof (int)) linear (a : 4) simdlen (4)
+#endif
   static int f22 (int a, int *b, int c) { return a + *b + c; }
 
   template <int N>
@@ -176,25 +254,38 @@ template <>
 template <>
 int B<int>::f21<9> (int, int *, int);
 
+#ifdef __aarch64__
+#pragma omp declare simd simdlen (2) aligned (b : 2 * sizeof (int)) uniform (a, c)
+#else
 #pragma omp declare simd simdlen (8) aligned (b : 8 * sizeof (int)) uniform (a, c)
+#endif
 template <>
 template <>
 int B<int>::f23<7> (int a, int *b, int c);
 
+#ifdef __aarch64__
+#pragma omp declare simd simdlen (2) aligned (b : 4 * sizeof (int)) linear (a, c : 2)
+#else
 #pragma omp declare simd simdlen (4) aligned (b : 8 * sizeof (int)) linear (a, c : 2)
+#endif
 template <>
 template <>
 int B<int>::f24<-1> (int a, int *b, int c);
 
+#ifdef __aarch64__
+#pragma omp declare simd simdlen (2) aligned (b : 2 * sizeof (int)) uniform (a, c)
+#else
 #pragma omp declare simd simdlen (8) aligned (b : 8 * sizeof (int)) uniform (a, c)
+#endif
 template <>
 template <>
 int B<int>::f25<7> (int a, int *b, int c)
 {
   return a + *b + c;
 }
+// { dg-final { scan-assembler-times "_ZGVnN2vuva8u__ZN1BIiE3f25ILi7EEEiiPii:" 1 { target { aarch64*-*-* } } } }
+// { dg-final { scan-assembler-times "_ZGVnM2vuva8u__ZN1BIiE3f25ILi7EEEiiPii:" 1 { target { aarch64*-*-* } } } }
 
-// { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-5 }
 // { dg-final { scan-assembler-times "_ZGVbM8vuva32u__ZN1BIiE3f25ILi7EEEiiPii:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVbN8vuva32u__ZN1BIiE3f25ILi7EEEiiPii:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVcM8vuva32u__ZN1BIiE3f25ILi7EEEiiPii:" 1 { target { i?86-*-* x86_64-*-* } } } }
@@ -204,7 +295,11 @@ int B<int>::f25<7> (int a, int *b, int c)
 // { dg-final { scan-assembler-times "_ZGVeM8vuva32u__ZN1BIiE3f25ILi7EEEiiPii:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVeN8vuva32u__ZN1BIiE3f25ILi7EEEiiPii:" 1 { target { i?86-*-* x86_64-*-* } } } }
 
+#ifdef __aarch64__
+#pragma omp declare simd simdlen (2) aligned (b : 4 * sizeof (int)) linear (a, c : 2)
+#else
 #pragma omp declare simd simdlen (4) aligned (b : 8 * sizeof (int)) linear (a, c : 2)
+#endif
 template <>
 template <>
 int B<int>::f26<-1> (int a, int *b, int c)
@@ -212,7 +307,9 @@ int B<int>::f26<-1> (int a, int *b, int c)
   return a + *b + c;
 }
 
-// { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-5 }
+// { dg-final { scan-assembler-times "_ZGVnN2vl2va16__ZN1BIiE3f26ILin1EEEiiPii:" 1 { target { aarch64*-*-* } } } }
+// { dg-final { scan-assembler-times "_ZGVnM2vl2va16__ZN1BIiE3f26ILin1EEEiiPii:" 1 { target { aarch64*-*-* } } } }
+
 // { dg-final { scan-assembler-times "_ZGVbM4vl2va32__ZN1BIiE3f26ILin1EEEiiPii:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVbN4vl2va32__ZN1BIiE3f26ILin1EEEiiPii:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVcM4vl2va32__ZN1BIiE3f26ILin1EEEiiPii:" 1 { target { i?86-*-* x86_64-*-* } } } }
@@ -225,26 +322,45 @@ int B<int>::f26<-1> (int a, int *b, int c)
 int
 f27 (int x)
 {
+#ifdef __aarch64__
+  #pragma omp declare simd simdlen (2) aligned (b : 2 * sizeof (int))
+#else
   #pragma omp declare simd simdlen (8) aligned (b : 8 * sizeof (int))
+#endif
   extern int f28 (int a, int *b, int c);
   {
     x++;
+#ifdef __aarch64__
+    #pragma omp declare simd simdlen (2) linear (c)
+#else
     #pragma omp declare simd simdlen (4) linear (c)
+#endif
     extern int f29 (int a, int *b, int c);
   }
   return x;
 }
 
+#ifdef __aarch64__
+#pragma omp declare simd simdlen (4)
+#else
 #pragma omp declare simd simdlen (16)
+#endif
 int
 f30 (int x)
 {
+#ifdef __aarch64__
+  #pragma omp declare simd simdlen (2) aligned (b : 2 * sizeof (int))
+#else
   #pragma omp declare simd simdlen (8) aligned (b : 8 * sizeof (int))
+#endif
+
   extern int f31 (int a, int *b, int c);
   return x;
 }
 
-// { dg-warning "GCC does not currently support simdlen 16 for type 'int'" "" { target aarch64*-*-* } .-7 }
+// { dg-final { scan-assembler-times "_ZGVnN4v__Z3f30i:" 1 { target { aarch64*-*-* } } } }
+// { dg-final { scan-assembler-times "_ZGVnM4v__Z3f30i:" 1 { target { aarch64*-*-* } } } }
+
 // { dg-final { scan-assembler-times "_ZGVbM16v__Z3f30i:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVbN16v__Z3f30i:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVcM16v__Z3f30i:" 1 { target { i?86-*-* x86_64-*-* } } } }
@@ -267,10 +383,18 @@ int
 f33 (int x)
 {
   if (x)
+#ifdef __aarch64__
+    #pragma omp declare simd simdlen (2) aligned (b : 2 * sizeof (int))
+#else
     #pragma omp declare simd simdlen (8) aligned (b : 8 * sizeof (int))
+#endif
     extern int f34 (int a, int *b, int c);
   while (x < 10)
+#ifdef __aarch64__
+    #pragma omp declare simd simdlen (2) aligned (b : 2 * sizeof (int))
+#else
     #pragma omp declare simd simdlen (8) aligned (b : 8 * sizeof (int))
+#endif
     extern int f35 (int a, int *b, int c);
   return x;
 }
@@ -287,10 +411,13 @@ struct D
   int f37 (int a);
   int e;
 };
-// { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-3 }
 
 void
 f38 (D &d)
 {
+#ifdef __aarch64__
+  d.f37 <2> (6);
+#else
   d.f37 <16> (6);
+#endif
 }

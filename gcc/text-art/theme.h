@@ -1,5 +1,5 @@
 /* Classes for abstracting ascii vs unicode output.
-   Copyright (C) 2023 Free Software Foundation, Inc.
+   Copyright (C) 2023-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -63,6 +63,31 @@ class theme
     Y_ARROW_UP_TAIL,
     Y_ARROW_DOWN_HEAD,
     Y_ARROW_DOWN_TAIL,
+
+    /* The interprocedural depth indications shown in execution paths
+       with DPF_INLINE_EVENTS.  */
+    INTERPROCEDURAL_PUSH_FRAME_LEFT,   /* e.g. "+".  */
+    INTERPROCEDURAL_PUSH_FRAME_MIDDLE, /* e.g. "-".  */
+    INTERPROCEDURAL_PUSH_FRAME_RIGHT,  /* e.g. ">".  */
+    INTERPROCEDURAL_DEPTH_MARKER,       /* e.g. "|".  */
+    INTERPROCEDURAL_POP_FRAMES_LEFT,   /* e.g. "<".  */
+    INTERPROCEDURAL_POP_FRAMES_MIDDLE, /* e.g. "-".  */
+    INTERPROCEDURAL_POP_FRAMES_RIGHT,  /* e.g. "+".  */
+
+    /* CFG stuff.  */
+    CFG_RIGHT,              /* e.g. "-".  */
+    CFG_FROM_RIGHT_TO_DOWN, /* e.g. "+".  */
+    CFG_DOWN,               /* e.g. "|".  */
+    CFG_FROM_DOWN_TO_LEFT,  /* e.g. "+".  */
+    CFG_LEFT,               /* e.g. "-".  */
+    CFG_FROM_LEFT_TO_DOWN,  /* e.g. "+".  */
+    CFG_FROM_DOWN_TO_RIGHT, /* e.g. "+".  */
+
+    /* Tree stuff.  */
+    TREE_CHILD_NON_FINAL, /* e.g. "├" or "+".  */
+    TREE_CHILD_FINAL,     /* e.g. "╰" or "`".  */
+    TREE_X_CONNECTOR,     /* e.g. "─" or "-".  */
+    TREE_Y_CONNECTOR      /* e.g. "|" or "|".  */
   };
 
   virtual ~theme () = default;

@@ -3,6 +3,8 @@
 /* Source: Neil Booth, 4 Nov 2001, derived from PR 2820 - field lookup in
    nested anonymous entities was broken.  */
 
+void abort (void);
+
 struct
 {
   int x;

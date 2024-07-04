@@ -106,6 +106,20 @@ else version (Solaris)
     ///
     alias mbstate_t = __mbstate_t;
 }
+else version (CRuntime_Newlib)
+{
+    ///
+    struct mbstate_t
+    {
+        int __count;
+        union ___value
+        {
+            wint_t __wch = 0;
+            char[4] __wchb;
+        }
+        ___value __value;
+    }
+}
 else version (CRuntime_UClibc)
 {
     ///

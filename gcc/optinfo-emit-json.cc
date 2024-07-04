@@ -1,5 +1,5 @@
 /* Emit optimization information as JSON files.
-   Copyright (C) 2018-2023 Free Software Foundation, Inc.
+   Copyright (C) 2018-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -58,14 +58,14 @@ optrecord_json_writer::optrecord_json_writer ()
   /* Populate with metadata; compare with toplev.cc: print_version.  */
   json::object *metadata = new json::object ();
   m_root_tuple->append (metadata);
-  metadata->set ("format", new json::string ("1"));
+  metadata->set_string ("format", "1");
   json::object *generator = new json::object ();
   metadata->set ("generator", generator);
-  generator->set ("name", new json::string (lang_hooks.name));
-  generator->set ("pkgversion", new json::string (pkgversion_string));
-  generator->set ("version", new json::string (version_string));
+  generator->set_string ("name", lang_hooks.name);
+  generator->set_string ("pkgversion", pkgversion_string);
+  generator->set_string ("version", version_string);
   /* TARGET_NAME is passed in by the Makefile.  */
-  generator->set ("target", new json::string (TARGET_NAME));
+  generator->set_string ("target", TARGET_NAME);
 
   /* TODO: capture command-line?
      see gen_producer_string in dwarf2out.cc (currently static).  */
@@ -103,7 +103,7 @@ void
 optrecord_json_writer::write () const
 {
   pretty_printer pp;
-  m_root_tuple->print (&pp);
+  m_root_tuple->print (&pp, false);
 
   bool emitted_error = false;
   char *filename = concat (dump_base_name, ".opt-record.json.gz", NULL);
@@ -180,10 +180,10 @@ json::object *
 optrecord_json_writer::impl_location_to_json (dump_impl_location_t loc)
 {
   json::object *obj = new json::object ();
-  obj->set ("file", new json::string (loc.m_file));
-  obj->set ("line", new json::integer_number (loc.m_line));
+  obj->set_string ("file", loc.m_file);
+  obj->set_integer ("line", loc.m_line);
   if (loc.m_function)
-    obj->set ("function", new json::string (loc.m_function));
+    obj->set_string ("function", loc.m_function);
   return obj;
 }
 
@@ -195,9 +195,9 @@ optrecord_json_writer::location_to_json (location_t loc)
   gcc_assert (LOCATION_LOCUS (loc) != UNKNOWN_LOCATION);
   expanded_location exploc = expand_location (loc);
   json::object *obj = new json::object ();
-  obj->set ("file", new json::string (exploc.file));
-  obj->set ("line", new json::integer_number (exploc.line));
-  obj->set ("column", new json::integer_number (exploc.column));
+  obj->set_string ("file", exploc.file);
+  obj->set_integer ("line", exploc.line);
+  obj->set_integer ("column", exploc.column);
   return obj;
 }
 
@@ -207,9 +207,8 @@ json::object *
 optrecord_json_writer::profile_count_to_json (profile_count count)
 {
   json::object *obj = new json::object ();
-  obj->set ("value", new json::integer_number (count.to_gcov_type ()));
-  obj->set ("quality",
-	    new json::string (profile_quality_as_string (count.quality ())));
+  obj->set_integer ("value", count.to_gcov_type ());
+  obj->set_string ("quality", profile_quality_as_string (count.quality ()));
   return obj;
 }
 
@@ -250,8 +249,8 @@ optrecord_json_writer::pass_to_json (opt_pass *pass)
       break;
     }
   obj->set ("id", get_id_value_for_pass (pass));
-  obj->set ("type", new json::string (type));
-  obj->set ("name", new json::string (pass->name));
+  obj->set_string ("type", type);
+  obj->set_string ("name", pass->name);
   /* Represent the optgroup flags as an array.  */
   {
     json::array *optgroups = new json::array ();
@@ -262,7 +261,7 @@ optrecord_json_writer::pass_to_json (opt_pass *pass)
 	  && (pass->optinfo_flags & optgroup->value))
 	optgroups->append (new json::string (optgroup->name));
   }
-  obj->set ("num", new json::integer_number (pass->static_pass_number));
+  obj->set_integer ("num", pass->static_pass_number);
   return obj;
 }
 
@@ -315,7 +314,7 @@ optrecord_json_writer::inlining_chain_to_json (location_t loc)
 	  json::object *obj = new json::object ();
 	  const char *printable_name
 	    = lang_hooks.decl_printable_name (fndecl, 2);
-	  obj->set ("fndecl", new json::string (printable_name));
+	  obj->set_string ("fndecl", printable_name);
 	  if (LOCATION_LOCUS (*locus) != UNKNOWN_LOCATION)
 	    obj->set ("site", location_to_json (*locus));
 	  array->append (obj);
@@ -336,7 +335,7 @@ optrecord_json_writer::optinfo_to_json (const optinfo *optinfo)
 	    impl_location_to_json (optinfo->get_impl_location ()));
 
   const char *kind_str = optinfo_kind_to_string (optinfo->get_kind ());
-  obj->set ("kind", new json::string (kind_str));
+  obj->set_string ("kind", kind_str);
   json::array *message = new json::array ();
   obj->set ("message", message);
   for (unsigned i = 0; i < optinfo->num_items (); i++)
@@ -354,7 +353,7 @@ optrecord_json_writer::optinfo_to_json (const optinfo *optinfo)
 	case OPTINFO_ITEM_KIND_TREE:
 	  {
 	    json::object *json_item = new json::object ();
-	    json_item->set ("expr", new json::string (item->get_text ()));
+	    json_item->set_string ("expr", item->get_text ());
 
 	    /* Capture any location for the node.  */
 	    if (LOCATION_LOCUS (item->get_location ()) != UNKNOWN_LOCATION)
@@ -367,7 +366,7 @@ optrecord_json_writer::optinfo_to_json (const optinfo *optinfo)
 	case OPTINFO_ITEM_KIND_GIMPLE:
 	  {
 	    json::object *json_item = new json::object ();
-	    json_item->set ("stmt", new json::string (item->get_text ()));
+	    json_item->set_string ("stmt", item->get_text ());
 
 	    /* Capture any location for the stmt.  */
 	    if (LOCATION_LOCUS (item->get_location ()) != UNKNOWN_LOCATION)
@@ -380,7 +379,7 @@ optrecord_json_writer::optinfo_to_json (const optinfo *optinfo)
 	case OPTINFO_ITEM_KIND_SYMTAB_NODE:
 	  {
 	    json::object *json_item = new json::object ();
-	    json_item->set ("symtab_node", new json::string (item->get_text ()));
+	    json_item->set_string ("symtab_node", item->get_text ());
 
 	    /* Capture any location for the node.  */
 	    if (LOCATION_LOCUS (item->get_location ()) != UNKNOWN_LOCATION)
@@ -413,7 +412,7 @@ optrecord_json_writer::optinfo_to_json (const optinfo *optinfo)
     {
       const char *fnname
 	= IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl));
-      obj->set ("function", new json::string (fnname));
+      obj->set_string ("function", fnname);
     }
 
   if (loc != UNKNOWN_LOCATION)
@@ -467,7 +466,7 @@ test_building_json_from_dump_calls ()
 
   /* Verify that the json is sane.  */
   pretty_printer pp;
-  json_obj->print (&pp);
+  json_obj->print (&pp, false);
   const char *json_str = pp_formatted_text (&pp);
   ASSERT_STR_CONTAINS (json_str, "impl_location");
   ASSERT_STR_CONTAINS (json_str, "\"kind\": \"note\"");

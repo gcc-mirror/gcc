@@ -1,4 +1,7 @@
 // { dg-additional-options "-w" }
+#[lang = "sized"]
+pub trait Sized {}
+
 #[lang = "index"]
 trait Index<Idx> {
     type Output;

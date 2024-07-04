@@ -290,3 +290,15 @@ version (UdaGNUAbiTag) struct gnuAbiTag
  * ---
  */
 enum mustuse;
+
+/**
+ * Use this attribute to indicate that a shared module constructor does not depend on any
+ * other module constructor being run first. This avoids errors on cyclic module constructors.
+ *
+ * However, it is now up to the user to enforce safety.
+ * The module constructor must be marked `@system` as a result.
+ * Prefer to refactor the module constructor causing the cycle so it's in its own module if possible.
+ *
+ * This is only allowed on `shared` static constructors, not thread-local module constructors.
+ */
+enum standalone;

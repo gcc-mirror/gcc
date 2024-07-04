@@ -7,6 +7,6 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-assembler {\.arch armv8-a\+fp16} } } */
+/* { dg-final { scan-assembler {\.arch armv8-a\+fp16\n} } } */
 
 /* Test one where fp16 is available and so should be emitted.  */

@@ -1,7 +1,7 @@
 /* Various declarations for language-independent pretty-print
    subroutines that are only for use in the compilers proper and not
    the driver or other programs.
-   Copyright (C) 2002-2023 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -45,6 +45,7 @@ extern void dump_omp_atomic_memory_order (pretty_printer *,
 					  enum omp_memory_order);
 extern void dump_omp_loop_non_rect_expr (pretty_printer *, tree, int,
 					 dump_flags_t);
+extern void print_omp_context_selector (FILE *, tree, dump_flags_t);
 extern int dump_generic_node (pretty_printer *, tree, int, dump_flags_t, bool);
 extern void print_declaration (pretty_printer *, tree, int, dump_flags_t);
 extern int op_code_prio (enum tree_code);
@@ -55,6 +56,6 @@ extern void print_call_name (pretty_printer *, tree, dump_flags_t);
 extern void pp_tree_identifier (pretty_printer *, tree);
 extern void dump_function_header (FILE *, tree, dump_flags_t);
 extern void pp_double_int (pretty_printer *pp, double_int d, bool uns);
-extern void dump_location (pretty_printer *buffer, location_t loc);
+extern void dump_location (pretty_printer *pp, location_t loc);
 
 #endif /* ! GCC_TREE_PRETTY_PRINT_H */

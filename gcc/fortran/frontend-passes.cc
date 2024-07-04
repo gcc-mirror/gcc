@@ -1,5 +1,5 @@
 /* Pass manager for Fortran front end.
-   Copyright (C) 2010-2023 Free Software Foundation, Inc.
+   Copyright (C) 2010-2024 Free Software Foundation, Inc.
    Contributed by Thomas König.
 
 This file is part of GCC.
@@ -1326,7 +1326,7 @@ traverse_io_block (gfc_code *code, bool *has_reached, gfc_code *prev)
       if (iters[i])
 	{
 	  gfc_expr *var = iters[i]->var;
-	  for (int j = i - 1; j < i; j++)
+	  for (int j = 0; j < i; j++)
 	    {
 	      if (iters[j]
 		  && (var_in_expr (var, iters[j]->start)
@@ -5652,6 +5652,8 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 			OMP_LIST_MAP, OMP_LIST_TO, OMP_LIST_FROM };
 		  size_t idx;
 		  WALK_SUBEXPR (co->ext.omp_clauses->if_expr);
+		  for (idx = 0; idx < OMP_IF_LAST; idx++)
+		    WALK_SUBEXPR (co->ext.omp_clauses->if_exprs[idx]);
 		  WALK_SUBEXPR (co->ext.omp_clauses->final_expr);
 		  WALK_SUBEXPR (co->ext.omp_clauses->num_threads);
 		  WALK_SUBEXPR (co->ext.omp_clauses->chunk_size);
@@ -5667,8 +5669,6 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 		  WALK_SUBEXPR (co->ext.omp_clauses->num_tasks);
 		  WALK_SUBEXPR (co->ext.omp_clauses->priority);
 		  WALK_SUBEXPR (co->ext.omp_clauses->detach);
-		  for (idx = 0; idx < OMP_IF_LAST; idx++)
-		    WALK_SUBEXPR (co->ext.omp_clauses->if_exprs[idx]);
 		  for (idx = 0; idx < ARRAY_SIZE (list_types); idx++)
 		    for (n = co->ext.omp_clauses->lists[list_types[idx]];
 			 n; n = n->next)
@@ -5805,6 +5805,9 @@ check_externals_expr (gfc_expr **ep, int *walk_subtrees ATTRIBUTE_UNUSED,
   gfc_actual_arglist *actual;
 
   if (e->expr_type != EXPR_FUNCTION)
+    return 0;
+
+  if (e->symtree && e->symtree->n.sym->attr.subroutine)
     return 0;
 
   sym = e->value.function.esym;

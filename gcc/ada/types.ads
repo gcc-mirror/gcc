@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -145,9 +145,8 @@ package Types is
    --  standard 32-bit integer as an index value, since we count on all index
    --  values being the same size.
 
-   type Text_Ptr is new Int;
-   --  Type used for subscripts in text buffer
-
+   type Text_Ptr is new Int range -4 .. Int'Last;
+   --  -4 .. -1 are special; see constants below
    type Text_Buffer is array (Text_Ptr range <>) of Character;
    --  Text buffer used to hold source file or library information file
 
@@ -265,7 +264,7 @@ package Types is
    --  the location is in System, but we don't know exactly what line.
 
    First_Source_Ptr : constant Source_Ptr := 0;
-   --  Starting source pointer index value for first source program
+   --  Starting source pointer index value for first source file
 
    -------------------------------------
    -- Range Definitions for Tree Data --
@@ -405,9 +404,7 @@ package Types is
 
    subtype Entity_Id is Node_Id;
    --  A synonym for node types, used in the Einfo package to refer to nodes
-   --  that are entities (i.e. nodes with an Nkind of N_Defining_xxx). All such
-   --  nodes are extended nodes and these are the only extended nodes, so that
-   --  in practice entity and extended nodes are synonymous.
+   --  that are entities (i.e. nodes with an Nkind of N_Defining_xxx).
    --
    --  Note that Sinfo.Nodes.N_Entity_Id is the same as Entity_Id, except it
    --  has a predicate requiring the correct Nkind. Opt_N_Entity_Id is the same

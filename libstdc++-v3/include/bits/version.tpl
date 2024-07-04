@@ -2,7 +2,7 @@
 h
 (use-modules (srfi srfi-1))
 }*/
-// Copyright (C) 2023 Free Software Foundation, Inc.
+// Copyright (C) 2023-2024 Free Software Foundation, Inc.
 
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -125,8 +125,7 @@ h
 
   }*/
 /*{ FOR ftms
-  }*/// /*{ (def-file-line "name") }*/
-#if !defined(__cpp_lib_/*{name}*/)
+  }*/#if !defined(__cpp_lib_/*{name}*/)
 /*{ FOR values }*//*{ #
 
   This macro block defines two versions of each FTM:

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -58,7 +58,7 @@ public:
   {
     rust_assert (!path.empty ());
     return CanonicalPath ({std::pair<NodeId, std::string> (id, path)},
-			  UNKNOWN_CREATENUM);
+			  UNKNOWN_CRATENUM);
   }
 
   static CanonicalPath
@@ -67,6 +67,12 @@ public:
   {
     return CanonicalPath::new_seg (id, "<" + impl_type_seg.get () + " as "
 					 + trait_seg.get () + ">");
+  }
+
+  static CanonicalPath inherent_impl_seg (NodeId id,
+					  const CanonicalPath &impl_type_seg)
+  {
+    return CanonicalPath::new_seg (id, "<" + impl_type_seg.get () + ">");
   }
 
   std::string get () const
@@ -88,7 +94,7 @@ public:
 
   static CanonicalPath create_empty ()
   {
-    return CanonicalPath ({}, UNKNOWN_CREATENUM);
+    return CanonicalPath ({}, UNKNOWN_CRATENUM);
   }
 
   bool is_empty () const { return segs.size () == 0; }
@@ -171,7 +177,7 @@ public:
 
   CrateNum get_crate_num () const
   {
-    rust_assert (crate_num != UNKNOWN_CREATENUM);
+    rust_assert (crate_num != UNKNOWN_CRATENUM);
     return crate_num;
   }
 

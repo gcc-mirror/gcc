@@ -2,7 +2,7 @@ MODULE another ;
 
 TYPE
    MYSHORTREAL = REAL;
-   
+
 TYPE
    PROCA = PROCEDURE (VAR ARRAY OF REAL);
    PROCB = PROCEDURE (VAR ARRAY OF MYSHORTREAL);
@@ -11,7 +11,7 @@ VAR
    pa: PROCA; pb: PROCB;
    x: ARRAY [0..1] OF REAL;
    y: ARRAY [0..1] OF MYSHORTREAL;
-   
+
 PROCEDURE ProcA(VAR z: ARRAY OF REAL);
 BEGIN
 END ProcA ;
@@ -28,8 +28,8 @@ BEGIN
    pa(y);
    pb(x);
    pb(y);
-   pa := ProcB;
-   pb := ProcA;
+   pa := ProcA;
+   pb := ProcB;
    pa(x);
    pa(y);
    pb(x);

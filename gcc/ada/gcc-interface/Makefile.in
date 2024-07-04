@@ -1,5 +1,5 @@
 # Makefile for GNU Ada Compiler (GNAT).
-#   Copyright (C) 1994-2023 Free Software Foundation, Inc.
+#   Copyright (C) 1994-2024 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -148,7 +148,6 @@ host_vendor=@host_vendor@
 host_os=@host_os@
 target_cpu_default = @target_cpu_default@
 xmake_file = @xmake_file@
-tmake_file = @tmake_file@
 #version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < $(srcdir)/version.c`
 #mainversion=`sed -e 's/.*\"\([0-9]*\.[0-9]*\).*/\1/' < $(srcdir)/version.c`
 
@@ -208,11 +207,6 @@ all: all.indirect
 
 # This tells GNU Make version 3 not to put all variables in the environment.
 .NOEXPORT:
-
-# target overrides
-ifneq ($(tmake_file),)
-include $(tmake_file)
-endif
 
 # host overrides
 ifneq ($(xmake_file),)
@@ -794,12 +788,15 @@ gnatlib-shared-darwin:
 		$(GNATRTL_NONTASKING_OBJS) $(LIBGNAT_OBJS) \
 		$(SO_OPTS) \
 		-Wl,-install_name,@rpath/libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
-		$(MISCLIB)
+		-nodefaultrpaths -Wl,-rpath,@loader_path/,-rpath,@loader_path/.. \
+		-Wl,-rpath,@loader_path/../../../../ $(MISCLIB)
 	cd $(RTSDIR); $(GCC_FOR_ADA_RTS) -dynamiclib $(PICFLAG_FOR_TARGET) \
 		-o libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_TASKING_OBJS) \
 		$(SO_OPTS) \
 		-Wl,-install_name,@rpath/libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
+		-nodefaultrpaths -Wl,-rpath,@loader_path/,-rpath,@loader_path/.. \
+		-Wl,-rpath,@loader_path/../../../../ \
 		$(THREADSLIB) -Wl,libgnat$(hyphen)$(LIBRARY_VERSION)$(soext)
 	cd $(RTSDIR); $(LN_S) libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		libgnat$(soext)

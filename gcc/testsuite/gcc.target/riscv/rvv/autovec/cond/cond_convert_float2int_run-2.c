@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-additional-options "--param=riscv-autovec-preference=scalable -fno-vect-cost-model" } */
+/* { dg-additional-options "-mrvv-vector-bits=scalable -fno-vect-cost-model" } */
 
 #include "cond_convert_float2int-2.h"
 
@@ -11,7 +11,7 @@
     OLD_TYPE a[N], pred[N];                                                    \
     for (int i = 0; i < N; ++i)                                                \
       {                                                                        \
-	a[i] = (i & 1 ? i : 3 * i) * (i % 3 == 0 ? 1 : -1);                    \
+	a[i] = (i & 1 ? i : 1.2 * i) * (i % 3 == 0 ? 1 : -1);                  \
 	pred[i] = (i % 7 < 4);                                                 \
 	asm volatile("" ::: "memory");                                         \
       }                                                                        \

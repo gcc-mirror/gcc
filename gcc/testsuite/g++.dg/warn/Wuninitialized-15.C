@@ -65,8 +65,7 @@ struct H {
   G g;
   A a2;
   H() : g(a1) { }
-  // ??? clang++ doesn't warn here
-  H(int) : g(a2) { } // { dg-warning "member .H::a2. is used uninitialized" }
+  H(int) : g(a2) { } // { dg-bogus "member .H::a2. is used uninitialized" }
 };
 
 struct I {

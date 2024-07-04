@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Renesas H8/300 (generic)
-   Copyright (C) 1992-2023 Free Software Foundation, Inc.
+   Copyright (C) 1992-2024 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -149,9 +149,7 @@ extern const char * const *h8_reg_names;
 #define INT_TYPE_SIZE		(TARGET_INT32 ? 32 : 16)
 #define LONG_TYPE_SIZE		32
 #define LONG_LONG_TYPE_SIZE	64
-#define FLOAT_TYPE_SIZE	32
-#define DOUBLE_TYPE_SIZE	32
-#define LONG_DOUBLE_TYPE_SIZE	DOUBLE_TYPE_SIZE
+#define DOUBLE_TYPE_MODE	SFmode
 
 #define MAX_FIXED_MODE_SIZE	32
 
@@ -650,7 +648,7 @@ struct cum_arg
 #define GLOBAL_ASM_OP "\t.global "
 
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
-   ASM_OUTPUT_LABEL (FILE, NAME)
+   ASM_OUTPUT_FUNCTION_LABEL (FILE, NAME, DECL)
 
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where

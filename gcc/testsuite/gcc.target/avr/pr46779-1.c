@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target { ! avr_tiny } } } */
 /* { dg-options "-Os -fsplit-wide-types" } */
 
 /* This testcase should uncover bugs like

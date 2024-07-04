@@ -1,5 +1,5 @@
 ;; Machine description for RISC-V Bit Manipulation operations.
-;; Copyright (C) 2021-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2021-2024 Free Software Foundation, Inc.
 
 ;; This file is part of GCC.
 
@@ -50,11 +50,11 @@
 	(sign_extend:DI (div:SI (plus:SI (ashift:SI (subreg:SI (match_operand:DI 1 "register_operand") 0)
 						    (match_operand:QI 2 "imm123_operand"))
 					 (subreg:SI (match_operand:DI 3 "register_operand") 0))
-				(subreg:SI (match_operand:DI 4 "register_operand") 0))))
+				(match_operand:SI 4 "register_operand"))))
    (clobber (match_operand:DI 5 "register_operand"))]
   "TARGET_64BIT && TARGET_ZBA"
    [(set (match_dup 5) (plus:DI (ashift:DI (match_dup 1) (match_dup 2)) (match_dup 3)))
-    (set (match_dup 0) (sign_extend:DI (div:SI (subreg:SI (match_dup 5) 0) (subreg:SI (match_dup 4) 0))))])
+    (set (match_dup 0) (sign_extend:DI (div:SI (subreg:SI (match_dup 5) 0) (match_dup 4))))])
 
 ; Zba does not provide W-forms of sh[123]add(.uw)?, which leads to an
 ; interesting irregularity: we can generate a signed 32-bit result
@@ -184,6 +184,23 @@
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "DI")])
 
+;; Combine will reassociate the operands in the most useful way here.  We
+;; just have to give it guidance on where to split the result to facilitate
+;; shNadd.uw generation.
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(plus:DI (plus:DI (and:DI (ashift:DI (match_operand:DI 1 "register_operand")
+					     (match_operand:QI 2 "imm123_operand"))
+				  (match_operand 3 "consecutive_bits32_operand"))
+			  (match_operand:DI 4 "register_operand"))
+		 (match_operand 5 "immediate_operand")))]
+  "TARGET_64BIT && TARGET_ZBA"
+  [(set (match_dup 0)
+	(plus:DI (and:DI (ashift:DI (match_dup 1) (match_dup 2))
+			 (match_dup 3))
+		 (match_dup 4)))
+   (set (match_dup 0) (plus:DI (match_dup 0) (match_dup 5)))])
+
 ;; ZBB extension.
 
 (define_expand "clzdi2"
@@ -290,7 +307,7 @@
 (define_insn "*zero_extendhi<GPR:mode>2_bitmanip"
   [(set (match_operand:GPR 0 "register_operand" "=r,r")
         (zero_extend:GPR (match_operand:HI 1 "nonimmediate_operand" "r,m")))]
-  "TARGET_ZBB"
+  "TARGET_ZBB && !TARGET_XTHEADMEMIDX"
   "@
    zext.h\t%0,%1
    lhu\t%0,%1"
@@ -301,7 +318,7 @@
   [(set (match_operand:SUPERQI   0 "register_operand"     "=r,r")
 	(sign_extend:SUPERQI
 	    (match_operand:SHORT 1 "nonimmediate_operand" " r,m")))]
-  "TARGET_ZBB"
+  "TARGET_ZBB && !TARGET_XTHEADMEMIDX"
   "@
    sext.<SHORT:size>\t%0,%1
    l<SHORT:size>\t%0,%1"
@@ -443,8 +460,8 @@
 ;; orc.b (or-combine) is added as an unspec for the benefit of the support
 ;; for optimized string functions (such as strcmp).
 (define_insn "orcb<mode>2"
-  [(set (match_operand:X 0 "register_operand" "=r")
-	(unspec:X [(match_operand:X 1 "register_operand" "r")] UNSPEC_ORC_B))]
+  [(set (match_operand:GPR 0 "register_operand" "=r")
+	(unspec:GPR [(match_operand:GPR 1 "register_operand" "r")] UNSPEC_ORC_B))]
   "TARGET_ZBB"
   "orc.b\t%0,%1"
   [(set_attr "type" "bitmanip")])
@@ -552,24 +569,26 @@
 
 ;; ZBS extension.
 
-(define_insn "*bset<mode>"
+(define_insn "*<bit_optab><mode>"
   [(set (match_operand:X 0 "register_operand" "=r")
-	(ior:X (ashift:X (const_int 1)
-			 (match_operand:QI 2 "register_operand" "r"))
-	       (match_operand:X 1 "register_operand" "r")))]
+	(any_or:X (ashift:X (const_int 1)
+			    (match_operand:QI 2 "register_operand" "r"))
+		  (match_operand:X 1 "register_operand" "r")))]
   "TARGET_ZBS"
-  "bset\t%0,%1,%2"
+  "<bit_optab>\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
-(define_insn "*bset<mode>_mask"
+(define_insn "*<bit_optab><mode>_mask"
   [(set (match_operand:X 0 "register_operand" "=r")
-	(ior:X (ashift:X (const_int 1)
-			 (subreg:QI
-			  (and:X (match_operand:X 2 "register_operand" "r")
-				 (match_operand 3 "<X:shiftm1>" "<X:shiftm1p>")) 0))
-	       (match_operand:X 1 "register_operand" "r")))]
+	(any_or:X
+	  (ashift:X
+	    (const_int 1)
+	    (subreg:QI
+	      (and:X (match_operand:X 2 "register_operand" "r")
+		     (match_operand 3 "<X:shiftm1>" "<X:shiftm1p>")) 0))
+	  (match_operand:X 1 "register_operand" "r")))]
   "TARGET_ZBS"
-  "bset\t%0,%1,%2"
+  "<bit_optab>\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
 (define_insn "*bset<mode>_1"
@@ -579,6 +598,54 @@
   "TARGET_ZBS"
   "bset\t%0,x0,%1"
   [(set_attr "type" "bitmanip")])
+
+;; The result will always have bits 32..63 clear, so the zero-extend
+;; is redundant.  We could split it to bset<mode>_1, but it seems
+;; unnecessary.
+(define_insn "*bsetdi_2"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	  (ashift:SI (const_int 1)
+		     (match_operand:QI 1 "register_operand" "r"))))]
+  "TARGET_64BIT && TARGET_ZBS"
+  "bset\t%0,x0,%1"
+  [(set_attr "type" "bitmanip")])
+
+;; These two splitters take advantage of the limited range of the
+;; shift constant.  With the limited range we know the SImode sign
+;; bit is never set, thus we can treat this as zero extending and
+;; generate the bsetdi_2 pattern.
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(any_extend:DI
+	 (ashift:SI (const_int 1)
+		    (subreg:QI
+		      (and:DI (not:DI (match_operand:DI 1 "register_operand"))
+			      (match_operand 2 "const_int_operand")) 0))))
+   (clobber (match_operand:DI 3 "register_operand"))]
+  "TARGET_64BIT
+   && TARGET_ZBS
+   && (TARGET_ZBB || TARGET_ZBKB)
+   && (INTVAL (operands[2]) & 0x1f) != 0x1f"
+   [(set (match_dup 0) (and:DI (not:DI (match_dup 1)) (match_dup 2)))
+    (set (match_dup 0) (zero_extend:DI (ashift:SI
+				       (const_int 1)
+				       (subreg:QI (match_dup 0) 0))))])
+
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+       (any_extend:DI
+	 (ashift:SI (const_int 1)
+		    (subreg:QI
+		      (and:DI (match_operand:DI 1 "register_operand")
+			      (match_operand 2 "const_int_operand")) 0))))]
+  "TARGET_64BIT
+   && TARGET_ZBS
+   && (INTVAL (operands[2]) & 0x1f) != 0x1f"
+   [(set (match_dup 0) (and:DI (match_dup 1) (match_dup 2)))
+    (set (match_dup 0) (zero_extend:DI (ashift:SI
+				       (const_int 1)
+				       (subreg:QI (match_dup 0) 0))))])
 
 (define_insn "*bset<mode>_1_mask"
   [(set (match_operand:X 0 "register_operand" "=r")
@@ -590,24 +657,56 @@
   "bset\t%0,x0,%1"
   [(set_attr "type" "bitmanip")])
 
-(define_insn "*bseti<mode>"
+(define_insn "*<bit_optab>i<mode>"
   [(set (match_operand:X 0 "register_operand" "=r")
-	(ior:X (match_operand:X 1 "register_operand" "r")
-	       (match_operand:X 2 "single_bit_mask_operand" "DbS")))]
+	(any_or:X (match_operand:X 1 "register_operand" "r")
+		  (match_operand:X 2 "single_bit_mask_operand" "DbS")))]
   "TARGET_ZBS"
-  "bseti\t%0,%1,%S2"
+  "<bit_optab>i\t%0,%1,%S2"
   [(set_attr "type" "bitmanip")])
 
 ;; As long as the SImode operand is not a partial subreg, we can use a
 ;; bseti without postprocessing, as the middle end is smart enough to
 ;; stay away from the signbit.
-(define_insn "*bsetidisi"
+(define_insn "*<bit_optab>idisi"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(ior:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
-		(match_operand 2 "single_bit_mask_operand" "i")))]
+	(any_or:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
+		   (match_operand 2 "single_bit_mask_operand" "i")))]
   "TARGET_ZBS && TARGET_64BIT
    && !partial_subreg_p (operands[1])"
-  "bseti\t%0,%1,%S2"
+  "<bit_optab>i\t%0,%1,%S2"
+  [(set_attr "type" "bitmanip")])
+
+;; We can easily handle zero extensions
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+    (any_or:DI (zero_extend:DI
+		 (ashift:SI (const_int 1)
+			    (match_operand:QI 1 "register_operand")))
+	       (match_operand:DI 2 "single_bit_mask_operand")))
+   (clobber (match_operand:DI 3 "register_operand"))]
+  "TARGET_64BIT && TARGET_ZBS"
+  [(set (match_dup 3)
+        (match_dup 2))
+   (set (match_dup 0)
+     (any_or:DI (ashift:DI (const_int 1) (match_dup 1))
+		(match_dup 3)))])
+
+;; Yet another form of a bset/bclr that can be created by combine.
+(define_insn "*bsetclr_zero_extract"
+  [(set (zero_extract:X (match_operand:X 0 "register_operand" "+r")
+			(const_int 1)
+			(zero_extend:X
+			  (match_operand:QI 1 "register_operand" "r")))
+	(match_operand 2 "immediate_operand" "n"))]
+  "TARGET_ZBS
+   && (operands[2] == CONST0_RTX (<MODE>mode)
+       || operands[2] == CONST1_RTX (<MODE>mode))"
+  {
+    return (operands[2] == CONST0_RTX (<MODE>mode)
+	    ? "bclr\t%0,%0,%1"
+	    : "bset\t%0,%0,%1");
+  }
   [(set_attr "type" "bitmanip")])
 
 (define_insn "*bclr<mode>"
@@ -667,22 +766,22 @@
 }
 [(set_attr "type" "bitmanip")])
 
-(define_insn "*binv<mode>"
-  [(set (match_operand:X 0 "register_operand" "=r")
-	(xor:X (ashift:X (const_int 1)
-			 (match_operand:QI 2 "register_operand" "r"))
-	       (match_operand:X 1 "register_operand" "r")))]
-  "TARGET_ZBS"
-  "binv\t%0,%1,%2"
-  [(set_attr "type" "bitmanip")])
-
-(define_insn "*binvi<mode>"
-  [(set (match_operand:X 0 "register_operand" "=r")
-	(xor:X (match_operand:X 1 "register_operand" "r")
-	       (match_operand:X 2 "single_bit_mask_operand" "DbS")))]
-  "TARGET_ZBS"
-  "binvi\t%0,%1,%S2"
-  [(set_attr "type" "bitmanip")])
+;; An outer AND with a constant where bits 31..63 are 0 can be seen as
+;; a virtual zero extension from 31 to 64 bits.
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+    (and:DI (not:DI (subreg:DI
+		      (ashift:SI (const_int 1)
+				 (match_operand:QI 1 "register_operand")) 0))
+            (match_operand:DI 2 "arith_operand")))
+   (clobber (match_operand:DI 3 "register_operand"))]
+  "TARGET_64BIT && TARGET_ZBS
+   && clz_hwi (INTVAL (operands[2])) >= 33"
+  [(set (match_dup 3)
+        (match_dup 2))
+   (set (match_dup 0)
+	  (and:DI (rotate:DI (const_int -2) (match_dup 1))
+		  (match_dup 3)))])
 
 (define_insn "*bext<mode>"
   [(set (match_operand:X 0 "register_operand" "=r")
@@ -691,6 +790,61 @@
 			(zero_extend:X
 			 (match_operand:QI 2 "register_operand" "r"))))]
   "TARGET_ZBS"
+  "bext\t%0,%1,%2"
+  [(set_attr "type" "bitmanip")])
+
+;; This is a bext followed by a seqz.  Normally this would be a 3->2 split
+;; But the and-not pattern with a constant operand is a define_insn_and_split,
+;; so this looks like a 2->2 split, which combine rejects.  So implement it
+;; as a define_insn_and_split as well.
+(define_insn_and_split "*bextseqzdisi"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(and:DI
+	  (not:DI
+	    (subreg:DI
+	      (lshiftrt:SI
+		(match_operand:SI 1 "register_operand" "r")
+		(match_operand:QI 2 "register_operand" "r")) 0))
+	  (const_int 1)))]
+  "TARGET_64BIT && TARGET_ZBS"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(zero_extract:DI (match_dup 1)
+			 (const_int 1)
+			 (zero_extend:DI (match_dup 2))))
+   (set (match_dup 0) (eq:DI (match_dup 0) (const_int 0)))]
+  "operands[1] = gen_lowpart (word_mode, operands[1]);"
+  [(set_attr "type" "bitmanip")])
+
+(define_insn_and_split "*bextseqzdisi"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(and:X
+	  (not:X
+	    (lshiftrt:X
+	      (match_operand:X 1 "register_operand" "r")
+	      (match_operand:QI 2 "register_operand" "r")))
+	  (const_int 1)))]
+  "TARGET_ZBS"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(zero_extract:X (match_dup 1)
+			(const_int 1)
+			(zero_extend:X (match_dup 2))))
+   (set (match_dup 0) (eq:X (match_dup 0) (const_int 0)))]
+  "operands[1] = gen_lowpart (word_mode, operands[1]);"
+  [(set_attr "type" "bitmanip")])
+
+;; The logical-and against 0x1 implicitly extends the result.   So we can treat
+;; an SImode bext as-if it's DImode without any explicit extension.
+(define_insn "*bextdisi"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+    (and:DI (subreg:DI (lshiftrt:SI
+			 (match_operand:SI 1 "register_operand" "r")
+			 (match_operand:QI 2 "register_operand" "r")) 0)
+            (const_int 1)))]
+  "TARGET_64BIT && TARGET_ZBS"
   "bext\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
@@ -722,13 +876,14 @@
 (define_split
   [(set (match_operand:X 0 "register_operand")
 	(and:X (not:X (lshiftrt:X (match_operand:X 1 "register_operand")
-				  (subreg:QI (match_operand:X 2 "register_operand") 0)))
+				  (match_operand:QI 2 "register_operand")))
 	       (const_int 1)))]
   "TARGET_ZBS"
   [(set (match_dup 0) (zero_extract:X (match_dup 1)
 				      (const_int 1)
 				      (match_dup 2)))
-   (set (match_dup 0) (xor:X (match_dup 0) (const_int 1)))])
+   (set (match_dup 0) (xor:X (match_dup 0) (const_int 1)))]
+  "operands[2] = gen_lowpart (<MODE>mode, operands[2]);")
 
 ;; We can create a polarity-reversed mask (i.e. bit N -> { set = 0, clear = -1 })
 ;; using a bext(i) followed by an addi instruction.
@@ -781,6 +936,40 @@
 	operands[4] = GEN_INT (~topbit);
 }
 [(set_attr "type" "bitmanip")])
+
+;; If we have the ZBA extension, then we can clear the upper half of a 64
+;; bit object with a zext.w.  So if we have AND where the constant would
+;; require synthesis of two or more instructions, but 32->64 sign extension
+;; of the constant is a simm12, then we can use zext.w+andi.  If the adjusted
+;; constant is a single bit constant, then we can use zext.w+bclri
+;;
+;; With the mvconst_internal pattern claiming a single insn to synthesize
+;; constants, this must be a define_insn_and_split.
+(define_insn_and_split ""
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(and:DI (match_operand:DI 1 "register_operand" "r")
+		(match_operand 2 "const_int_operand" "n")))]
+  "TARGET_64BIT
+   && TARGET_ZBA
+   && !paradoxical_subreg_p (operands[1])
+   /* Only profitable if synthesis takes more than one insn.  */
+   && riscv_const_insns (operands[2]) != 1
+   /* We need the upper half to be zero.  */
+   && (INTVAL (operands[2]) & HOST_WIDE_INT_C (0xffffffff00000000)) == 0
+   /* And the the adjusted constant must either be something we can
+      implement with andi or bclri.  */
+   && ((SMALL_OPERAND (sext_hwi (INTVAL (operands[2]), 32))
+        || (TARGET_ZBS && popcount_hwi (INTVAL (operands[2])) == 31))
+       && INTVAL (operands[2]) != 0x7fffffff)"
+  "#"
+  "&& 1"
+  [(set (match_dup 0) (zero_extend:DI (match_dup 3)))
+   (set (match_dup 0) (and:DI (match_dup 0) (match_dup 2)))]
+  "{
+     operands[3] = gen_lowpart (SImode, operands[1]);
+     operands[2] = GEN_INT (sext_hwi (INTVAL (operands[2]), 32));
+   }"
+  [(set_attr "type" "bitmanip")])
 
 ;; IF_THEN_ELSE: test for 2 bits of opposite polarity
 (define_insn_and_split "*branch<X:mode>_mask_twobits_equals_singlebit"
@@ -852,9 +1041,9 @@
 
 ;; ZBKC or ZBC extension
 (define_insn "riscv_clmul_<mode>"
-  [(set (match_operand:X 0 "register_operand" "=r")
-        (unspec:X [(match_operand:X 1 "register_operand" "r")
-                  (match_operand:X 2 "register_operand" "r")]
+  [(set (match_operand:GPR 0 "register_operand" "=r")
+        (unspec:GPR [(match_operand:GPR 1 "register_operand" "r")
+                  (match_operand:GPR 2 "register_operand" "r")]
                   UNSPEC_CLMUL))]
   "TARGET_ZBKC || TARGET_ZBC"
   "clmul\t%0,%1,%2"

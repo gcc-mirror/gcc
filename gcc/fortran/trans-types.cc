@@ -1,5 +1,5 @@
 /* Backend support for Fortran 95 basic types and derived types.
-   Copyright (C) 2002-2023 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -873,13 +873,15 @@ gfc_build_real_type (gfc_real_info *info)
   int mode_precision = info->mode_precision;
   tree new_type;
 
-  if (mode_precision == FLOAT_TYPE_SIZE)
+  if (mode_precision == TYPE_PRECISION (float_type_node))
     info->c_float = 1;
-  if (mode_precision == DOUBLE_TYPE_SIZE)
+  if (mode_precision == TYPE_PRECISION (double_type_node))
     info->c_double = 1;
-  if (mode_precision == LONG_DOUBLE_TYPE_SIZE && !info->c_float128)
+  if (mode_precision == TYPE_PRECISION (long_double_type_node)
+      && !info->c_float128)
     info->c_long_double = 1;
-  if (mode_precision != LONG_DOUBLE_TYPE_SIZE && mode_precision == 128)
+  if (mode_precision != TYPE_PRECISION (long_double_type_node)
+      && mode_precision == 128)
     {
       /* TODO: see PR101835.  */
       info->c_float128 = 1;
@@ -1591,7 +1593,7 @@ gfc_get_dtype_rank_type (int rank, tree etype)
       size = size_in_bytes (etype);
       break;
     }
-      
+
   gcc_assert (size);
 
   STRIP_NOPS (size);
@@ -1601,6 +1603,10 @@ gfc_get_dtype_rank_type (int rank, tree etype)
 			     GFC_DTYPE_ELEM_LEN);
   CONSTRUCTOR_APPEND_ELT (v, field,
 			  fold_convert (TREE_TYPE (field), size));
+  field = gfc_advance_chain (TYPE_FIELDS (dtype_type_node),
+			     GFC_DTYPE_VERSION);
+  CONSTRUCTOR_APPEND_ELT (v, field,
+			  build_zero_cst (TREE_TYPE (field)));
 
   field = gfc_advance_chain (TYPE_FIELDS (dtype_type_node),
 			     GFC_DTYPE_RANK);
@@ -1736,7 +1742,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
 	tmp = gfc_conv_mpz_to_tree (expr->value.integer,
 				    gfc_index_integer_kind);
       else
-      	tmp = NULL_TREE;
+	tmp = NULL_TREE;
       GFC_TYPE_ARRAY_LBOUND (type, n) = tmp;
 
       expr = as->upper[n];
@@ -1791,7 +1797,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
 	  TYPE_LANG_SPECIFIC (type) = TYPE_LANG_SPECIFIC (TREE_TYPE (type));
 	}
 
-      return type;
+      goto array_type_done;
     }
 
   if (known_stride)
@@ -1809,10 +1815,6 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
   TREE_TYPE (type) = etype;
 
   layout_type (type);
-
-  mpz_clear (offset);
-  mpz_clear (stride);
-  mpz_clear (delta);
 
   /* Represent packed arrays as multi-dimensional if they have rank >
      1 and with proper bounds, instead of flat arrays.  This makes for
@@ -1844,6 +1846,12 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
       GFC_ARRAY_TYPE_P (type) = 1;
       TYPE_LANG_SPECIFIC (type) = TYPE_LANG_SPECIFIC (TREE_TYPE (type));
     }
+
+array_type_done:
+  mpz_clear (offset);
+  mpz_clear (stride);
+  mpz_clear (delta);
+
   return type;
 }
 
@@ -2327,8 +2335,8 @@ gfc_sym_type (gfc_symbol * sym, bool is_bind_c)
   else
     byref = 0;
 
-  restricted = !sym->attr.target && !sym->attr.pointer
-               && !sym->attr.proc_pointer && !sym->attr.cray_pointee;
+  restricted = (!sym->attr.target && !IS_POINTER (sym)
+		&& !IS_PROC_POINTER (sym) && !sym->attr.cray_pointee);
   if (!restricted)
     type = gfc_nonrestricted_type (type);
 
@@ -2384,11 +2392,10 @@ gfc_sym_type (gfc_symbol * sym, bool is_bind_c)
 	  || (sym->ns->proc_name && sym->ns->proc_name->attr.entry_master))
 	type = build_pointer_type (type);
       else
-	{
-	  type = build_reference_type (type);
-	  if (restricted)
-	    type = build_qualified_type (type, TYPE_QUAL_RESTRICT);
-	}
+	type = build_reference_type (type);
+
+      if (restricted)
+	type = build_qualified_type (type, TYPE_QUAL_RESTRICT);
     }
 
   return (type);

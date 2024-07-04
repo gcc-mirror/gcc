@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-options "-mlasx -w -fno-strict-aliasing" } */
 /* { dg-timeout 500 } */
 #include "../simd_correctness_check.h"
@@ -185,7 +184,7 @@ main ()
   *((int *)&__m256_result[1]) = 0x00000000;
   *((int *)&__m256_result[0]) = 0x00000000;
   __m256_out = __lasx_xvfrintrne_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0xffffffff;
   *((int *)&__m256_op0[6]) = 0xffffffff;
@@ -204,7 +203,7 @@ main ()
   *((int *)&__m256_result[1]) = 0x00000000;
   *((int *)&__m256_result[0]) = 0x00000000;
   __m256_out = __lasx_xvfrintrne_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0xffffffff;
   *((int *)&__m256_op0[6]) = 0xffffffff;
@@ -223,7 +222,7 @@ main ()
   *((int *)&__m256_result[1]) = 0xffffffff;
   *((int *)&__m256_result[0]) = 0xffffffff;
   __m256_out = __lasx_xvfrintrne_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0x01010101;
   *((int *)&__m256_op0[6]) = 0x01010101;
@@ -242,7 +241,7 @@ main ()
   *((int *)&__m256_result[1]) = 0x00000000;
   *((int *)&__m256_result[0]) = 0x00000000;
   __m256_out = __lasx_xvfrintrne_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0x00000000;
   *((int *)&__m256_op0[6]) = 0x00000000;
@@ -261,7 +260,7 @@ main ()
   *((int *)&__m256_result[1]) = 0x00000000;
   *((int *)&__m256_result[0]) = 0x00000000;
   __m256_out = __lasx_xvfrintrne_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0xffffffff;
   *((int *)&__m256_op0[6]) = 0xffffffff;
@@ -280,7 +279,7 @@ main ()
   *((int *)&__m256_result[1]) = 0x00000000;
   *((int *)&__m256_result[0]) = 0x00000000;
   __m256_out = __lasx_xvfrintrne_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0xffffffff;
   *((int *)&__m256_op0[6]) = 0xffffffff;
@@ -299,7 +298,7 @@ main ()
   *((int *)&__m256_result[1]) = 0xffffffff;
   *((int *)&__m256_result[0]) = 0xffffffff;
   __m256_out = __lasx_xvfrintrne_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0x01010101;
   *((int *)&__m256_op0[6]) = 0x01010101;
@@ -318,7 +317,7 @@ main ()
   *((int *)&__m256_result[1]) = 0x00000000;
   *((int *)&__m256_result[0]) = 0x00000000;
   __m256_out = __lasx_xvfrintrne_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0x55555555;
   *((int *)&__m256_op0[6]) = 0x36aaaaac;
@@ -337,7 +336,7 @@ main ()
   *((int *)&__m256_result[1]) = 0x55555555;
   *((int *)&__m256_result[0]) = 0x80000000;
   __m256_out = __lasx_xvfrintrp_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0x00000000;
   *((int *)&__m256_op0[6]) = 0x00000000;
@@ -356,7 +355,7 @@ main ()
   *((int *)&__m256_result[1]) = 0x00000000;
   *((int *)&__m256_result[0]) = 0x00000000;
   __m256_out = __lasx_xvfrintrp_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0xffffc741;
   *((int *)&__m256_op0[6]) = 0x8a023680;
@@ -375,7 +374,7 @@ main ()
   *((int *)&__m256_result[1]) = 0x00000000;
   *((int *)&__m256_result[0]) = 0x00000000;
   __m256_out = __lasx_xvfrintrp_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0x00000000;
   *((int *)&__m256_op0[6]) = 0xffffffff;
@@ -394,7 +393,7 @@ main ()
   *((int *)&__m256_result[1]) = 0x00000000;
   *((int *)&__m256_result[0]) = 0xffffffff;
   __m256_out = __lasx_xvfrintrp_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0x00200101;
   *((int *)&__m256_op0[6]) = 0x01610000;
@@ -413,7 +412,7 @@ main ()
   *((int *)&__m256_result[1]) = 0x3f800000;
   *((int *)&__m256_result[0]) = 0x3f800000;
   __m256_out = __lasx_xvfrintrp_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0x00000000;
   *((int *)&__m256_op0[6]) = 0x00000000;
@@ -432,7 +431,7 @@ main ()
   *((int *)&__m256_result[1]) = 0xfefefefe;
   *((int *)&__m256_result[0]) = 0x3f800000;
   __m256_out = __lasx_xvfrintrp_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0x1c1c1c1c;
   *((int *)&__m256_op0[6]) = 0x1c1c1c1c;
@@ -451,7 +450,7 @@ main ()
   *((int *)&__m256_result[1]) = 0xfffffffe;
   *((int *)&__m256_result[0]) = 0xffffff00;
   __m256_out = __lasx_xvfrintrp_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0x00000000;
   *((int *)&__m256_op0[6]) = 0x00000000;
@@ -470,7 +469,7 @@ main ()
   *((int *)&__m256_result[1]) = 0x00000000;
   *((int *)&__m256_result[0]) = 0x00000000;
   __m256_out = __lasx_xvfrintrm_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0x00000000;
   *((int *)&__m256_op0[6]) = 0x00000000;
@@ -489,7 +488,7 @@ main ()
   *((int *)&__m256_result[1]) = 0x00000000;
   *((int *)&__m256_result[0]) = 0x00000000;
   __m256_out = __lasx_xvfrintrm_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0xffffffff;
   *((int *)&__m256_op0[6]) = 0xffffffff;
@@ -508,7 +507,7 @@ main ()
   *((int *)&__m256_result[1]) = 0x00000000;
   *((int *)&__m256_result[0]) = 0xffffffff;
   __m256_out = __lasx_xvfrintrm_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0x5d20a0a1;
   *((int *)&__m256_op0[6]) = 0x5d20a0a1;
@@ -527,7 +526,7 @@ main ()
   *((int *)&__m256_result[1]) = 0x00000000;
   *((int *)&__m256_result[0]) = 0x00000000;
   __m256_out = __lasx_xvfrintrm_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0x00000000;
   *((int *)&__m256_op0[6]) = 0x001d001d;
@@ -546,7 +545,7 @@ main ()
   *((int *)&__m256_result[1]) = 0x00000000;
   *((int *)&__m256_result[0]) = 0x00000000;
   __m256_out = __lasx_xvfrintrm_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0x00000000;
   *((int *)&__m256_op0[6]) = 0x00000000;
@@ -565,7 +564,7 @@ main ()
   *((int *)&__m256_result[1]) = 0x00000000;
   *((int *)&__m256_result[0]) = 0x00000000;
   __m256_out = __lasx_xvfrintrm_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0x00000000;
   *((int *)&__m256_op0[6]) = 0x00000000;
@@ -584,7 +583,7 @@ main ()
   *((int *)&__m256_result[1]) = 0x00000000;
   *((int *)&__m256_result[0]) = 0x00000000;
   __m256_out = __lasx_xvfrintrm_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0x00000000;
   *((int *)&__m256_op0[6]) = 0x00000000;
@@ -603,7 +602,7 @@ main ()
   *((int *)&__m256_result[1]) = 0x00000000;
   *((int *)&__m256_result[0]) = 0x00000000;
   __m256_out = __lasx_xvfrintrz_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0xffffffff;
   *((int *)&__m256_op0[6]) = 0xfffffffe;
@@ -622,7 +621,7 @@ main ()
   *((int *)&__m256_result[1]) = 0xffffffff;
   *((int *)&__m256_result[0]) = 0xfffffffe;
   __m256_out = __lasx_xvfrintrz_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0x00000000;
   *((int *)&__m256_op0[6]) = 0x00000000;
@@ -641,7 +640,7 @@ main ()
   *((int *)&__m256_result[1]) = 0x00000000;
   *((int *)&__m256_result[0]) = 0x00000000;
   __m256_out = __lasx_xvfrintrz_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0x00000000;
   *((int *)&__m256_op0[6]) = 0x00000000;
@@ -660,7 +659,7 @@ main ()
   *((int *)&__m256_result[1]) = 0x00000000;
   *((int *)&__m256_result[0]) = 0xffffffff;
   __m256_out = __lasx_xvfrintrz_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0x80000000;
   *((int *)&__m256_op0[6]) = 0x80000000;
@@ -679,7 +678,7 @@ main ()
   *((int *)&__m256_result[1]) = 0xffffffff;
   *((int *)&__m256_result[0]) = 0xffffffff;
   __m256_out = __lasx_xvfrintrz_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0xffffffff;
   *((int *)&__m256_op0[6]) = 0xffffffff;
@@ -698,7 +697,7 @@ main ()
   *((int *)&__m256_result[1]) = 0xffffffff;
   *((int *)&__m256_result[0]) = 0xffffffff;
   __m256_out = __lasx_xvfrintrz_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   *((int *)&__m256_op0[7]) = 0xf5fffc00;
   *((int *)&__m256_op0[6]) = 0xfc000000;
@@ -717,7 +716,7 @@ main ()
   *((int *)&__m256_result[1]) = 0xf5fffc00;
   *((int *)&__m256_result[0]) = 0xfc000000;
   __m256_out = __lasx_xvfrintrz_s (__m256_op0);
-  ASSERTEQ_64 (__LINE__, __m256_result, __m256_out);
+  ASSERTEQ_32 (__LINE__, __m256_result, __m256_out);
 
   return 0;
 }

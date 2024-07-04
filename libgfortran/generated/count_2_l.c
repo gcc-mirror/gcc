@@ -1,5 +1,5 @@
 /* Implementation of the COUNT intrinsic
-   Copyright (C) 2002-2023 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -101,14 +101,9 @@ count_2_l (gfc_array_i2 * const restrict retarray,
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
+      retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_INTEGER_2));
       if (alloc_size == 0)
-	{
-	  /* Make sure we have a zero-sized array.  */
-	  GFC_DIMENSION_SET(retarray->dim[0], 0, -1, 1);
-	  return;
-	}
-      else
-	retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_INTEGER_2));
+	return;
     }
   else
     {

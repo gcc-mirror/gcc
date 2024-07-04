@@ -1,5 +1,5 @@
 /* Representation of adjustment made to virtual clones in the symbol table.
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.

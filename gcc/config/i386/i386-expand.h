@@ -1,4 +1,4 @@
-/* Copyright (C) 1988-2023 Free Software Foundation, Inc.
+/* Copyright (C) 1988-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -36,7 +36,6 @@ struct expand_vec_perm_d
 rtx legitimize_tls_address (rtx x, enum tls_model model, bool for_mov);
 alias_set_type ix86_GOT_alias_set (void);
 rtx legitimize_pic_address (rtx orig, rtx reg);
-rtx legitimize_pe_coff_symbol (rtx addr, bool inreg);
 
 bool insn_defines_reg (unsigned int regno1, unsigned int regno2,
 		       rtx_insn *insn);
@@ -44,8 +43,10 @@ void ix86_emit_binop (enum rtx_code code, machine_mode mode, rtx dst, rtx src);
 enum calling_abi ix86_function_abi (const_tree fndecl);
 bool ix86_function_ms_hook_prologue (const_tree fn);
 void warn_once_call_ms2sysv_xlogues (const char *feature);
-rtx gen_push (rtx arg);
-rtx gen_pop (rtx arg);
+rtx gen_push (rtx arg, bool = false);
+rtx gen_pushfl (void);
+rtx gen_pop (rtx arg, bool = false);
+rtx gen_popfl (void);
 rtx ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 			 machine_mode mode, int ignore);
 bool ix86_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
@@ -55,5 +56,6 @@ bool ix86_notrack_prefixed_insn_p (rtx_insn *);
 machine_mode ix86_split_reduction (machine_mode mode);
 void ix86_expand_divmod_libfunc (rtx libfunc, machine_mode mode, rtx op0,
 				 rtx op1, rtx *quot_p, rtx *rem_p);
+rtx ix86_convert_const_wide_int_to_broadcast (machine_mode mode, rtx op);
 
 #endif  /* GCC_I386_EXPAND_H */

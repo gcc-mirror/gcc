@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -665,6 +665,7 @@ package body ALI is
       No_Object_Specified                    := False;
       No_Component_Reordering_Specified      := False;
       GNATprove_Mode_Specified               := False;
+      Interrupts_Default_To_System_Specified := False;
       Normalize_Scalars_Specified            := False;
       Partition_Elaboration_Policy_Specified := ' ';
       Queuing_Policy_Specified               := ' ';
@@ -1351,7 +1352,7 @@ package body ALI is
          --  Check if we are on a number. In the case of bad ALI files, this
          --  may not be true.
 
-         if not (Nextc in '0' .. '9') then
+         if Nextc not in '0' .. '9' then
             Fatal_Error;
          end if;
 
@@ -1750,6 +1751,7 @@ package body ALI is
         First_Specific_Dispatching   => Specific_Dispatching.Last + 1,
         First_Unit                   => No_Unit_Id,
         GNATprove_Mode               => False,
+        Interrupts_Default_To_System => False,
         Invocation_Graph_Encoding    => No_Encoding,
         Last_CUDA_Kernel             => CUDA_Kernels.Last,
         Last_Interrupt_State         => Interrupt_States.Last,
@@ -2004,6 +2006,13 @@ package body ALI is
                Checkc ('P');
                GNATprove_Mode_Specified := True;
                ALIs.Table (Id).GNATprove_Mode := True;
+
+            --  Processing for ID (Interrupts Default to System)
+
+            elsif C = 'I' then
+               Checkc ('D');
+               Interrupts_Default_To_System_Specified := True;
+               ALIs.Table (Id).Interrupts_Default_To_System := True;
 
             --  Processing for Lx
 
@@ -3287,8 +3296,8 @@ package body ALI is
 
             --  Acquire (sub)unit and reference file name entries
 
-            Sdep.Table (Sdep.Last).Subunit_Name := No_Name;
-            Sdep.Table (Sdep.Last).Unit_Name    := No_Name;
+            Sdep.Table (Sdep.Last).Subunit_Name := No_Unit_Name;
+            Sdep.Table (Sdep.Last).Unit_Name    := No_Unit_Name;
             Sdep.Table (Sdep.Last).Rfile        :=
               Sdep.Table (Sdep.Last).Sfile;
             Sdep.Table (Sdep.Last).Start_Line   := 1;
@@ -3304,16 +3313,13 @@ package body ALI is
                      Add_Char_To_Name_Buffer (Getc);
                   end loop;
 
-                  --  Set the (sub)unit name. Note that we use Name_Find rather
-                  --  than Name_Enter here as the subunit name may already
-                  --  have been put in the name table by the Project Manager.
+                  --  Set the (sub)unit name.
 
                   if Name_Len <= 2
                     or else Name_Buffer (Name_Len - 1) /= '%'
                   then
                      Sdep.Table (Sdep.Last).Subunit_Name := Name_Find;
                   else
-                     Name_Len := Name_Len - 2;
                      Sdep.Table (Sdep.Last).Unit_Name := Name_Find;
                   end if;
 

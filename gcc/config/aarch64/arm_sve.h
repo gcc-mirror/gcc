@@ -1,5 +1,5 @@
 /* AArch64 SVE intrinsics include file.
-   Copyright (C) 2018-2023 Free Software Foundation, Inc.
+   Copyright (C) 2018-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 

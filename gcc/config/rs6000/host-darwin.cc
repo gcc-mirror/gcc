@@ -1,5 +1,5 @@
 /* Darwin/powerpc host-specific hook definitions.
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -119,7 +119,7 @@ segv_handler (int sig ATTRIBUTE_UNUSED,
 	      }
 	}
       
-      if (global_dc->abort_on_error)
+      if (global_dc->m_abort_on_error)
 	fancy_abort (__FILE__, __LINE__, __FUNCTION__);
 
       exit (FATAL_EXIT_CODE);

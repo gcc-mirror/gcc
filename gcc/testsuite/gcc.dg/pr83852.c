@@ -1,5 +1,5 @@
 /* { dg-do compile { target powerpc*-*-* ia64-*-* i?86-*-* x86_64-*-* } } */
-/* { dg-options "-std=gnu99 -O2 -fselective-scheduling -fno-if-conversion -fno-tree-dse -w" } */
+/* { dg-options "-std=gnu99 -fpermissive -O2 -fselective-scheduling -fno-if-conversion -fno-tree-dse -w" } */
 long long int uo;
 unsigned int vt;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2023, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2024, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,14 +34,14 @@
 --  This package contains all the GNULL primitives that interface directly with
 --  the underlying OS.
 
-with Interfaces.C; use Interfaces; use type Interfaces.C.int;
+with Interfaces.C;
 
-with System.Task_Info;
-with System.Tasking.Debug;
 with System.Interrupt_Management;
+with System.Multiprocessors;
 with System.OS_Constants;
 with System.OS_Primitives;
-with System.Multiprocessors;
+with System.Task_Info;
+with System.Tasking.Debug;
 
 with System.Soft_Links;
 --  We use System.Soft_Links instead of System.Tasking.Initialization
@@ -54,12 +54,17 @@ package body System.Task_Primitives.Operations is
    package OSC renames System.OS_Constants;
    package SSL renames System.Soft_Links;
 
-   use System.Tasking.Debug;
-   use System.Tasking;
-   use System.OS_Interface;
+   use Interfaces;
+
    use System.Parameters;
+   use System.OS_Interface;
+   use System.OS_Locks;
    use System.OS_Primitives;
    use System.Task_Info;
+   use System.Tasking.Debug;
+   use System.Tasking;
+
+   use type Interfaces.C.int;
 
    ----------------
    -- Local Data --
@@ -248,10 +253,10 @@ package body System.Task_Primitives.Operations is
    --  as in "sudo /sbin/setcap cap_sys_nice=ep exe_file". If it doesn't have
    --  permission, then a request for Ceiling_Locking is ignored.
 
-   type RTS_Lock_Ptr is not null access all RTS_Lock;
-
-   function Init_Mutex (L : RTS_Lock_Ptr; Prio : Any_Priority) return C.int;
-   --  Initialize the mutex L. If Ceiling_Support is True, then set the ceiling
+   function Initialize_Lock
+     (L    : not null access RTS_Lock;
+      Prio : Any_Priority) return C.int;
+   --  Initialize the lock L. If Ceiling_Support is True, then set the ceiling
    --  to Prio. Returns 0 for success, or ENOMEM for out-of-memory.
 
    -------------------
@@ -340,11 +345,20 @@ package body System.Task_Primitives.Operations is
 
    function Self return Task_Id renames Specific.Self;
 
-   ----------------
-   -- Init_Mutex --
-   ----------------
+   ---------------------
+   -- Initialize_Lock --
+   ---------------------
 
-   function Init_Mutex (L : RTS_Lock_Ptr; Prio : Any_Priority) return C.int is
+   --  Note: mutexes and cond_variables needed per-task basis are initialized
+   --  in Initialize_TCB and the Storage_Error is handled. Other mutexes (such
+   --  as RTS_Lock, Memory_Lock...) used in RTS is initialized before any
+   --  status change of RTS. Therefore raising Storage_Error in the following
+   --  routines should be able to be handled safely.
+
+   function Initialize_Lock
+     (L    : not null access RTS_Lock;
+      Prio : Any_Priority) return C.int
+   is
       Mutex_Attr : aliased pthread_mutexattr_t;
       Result, Result_2 : C.int;
 
@@ -377,17 +391,7 @@ package body System.Task_Primitives.Operations is
       Result_2 := pthread_mutexattr_destroy (Mutex_Attr'Access);
       pragma Assert (Result_2 = 0);
       return Result; -- of pthread_mutex_init, not pthread_mutexattr_destroy
-   end Init_Mutex;
-
-   ---------------------
-   -- Initialize_Lock --
-   ---------------------
-
-   --  Note: mutexes and cond_variables needed per-task basis are initialized
-   --  in Initialize_TCB and the Storage_Error is handled. Other mutexes (such
-   --  as RTS_Lock, Memory_Lock...) used in RTS is initialized before any
-   --  status change of RTS. Therefore raising Storage_Error in the following
-   --  routines should be able to be handled safely.
+   end Initialize_Lock;
 
    procedure Initialize_Lock
      (Prio : Any_Priority;
@@ -420,18 +424,19 @@ package body System.Task_Primitives.Operations is
          end;
 
       else
-         if Init_Mutex (L.WO'Access, Prio) = ENOMEM then
+         if Initialize_Lock (L.WO'Access, Prio) = ENOMEM then
             raise Storage_Error with "Failed to allocate a lock";
          end if;
       end if;
    end Initialize_Lock;
 
    procedure Initialize_Lock
-     (L : not null access RTS_Lock; Level : Lock_Level)
+     (L     : not null access RTS_Lock;
+      Level : Lock_Level)
    is
       pragma Unreferenced (Level);
    begin
-      if Init_Mutex (L.all'Access, Any_Priority'Last) = ENOMEM then
+      if Initialize_Lock (L, Any_Priority'Last) = ENOMEM then
          raise Storage_Error with "Failed to allocate a lock";
       end if;
    end Initialize_Lock;
@@ -725,7 +730,6 @@ package body System.Task_Primitives.Operations is
          raise Invalid_CPU_Number;
       end if;
 
-      Self_ID.Common.LL.Thread := pthread_self;
       Self_ID.Common.LL.LWP := lwp_self;
 
       --  Set thread name to ease debugging. If the name of the task is
@@ -840,7 +844,8 @@ package body System.Task_Primitives.Operations is
 
       Self_ID.Common.LL.Thread := Null_Thread_Id;
 
-      if Init_Mutex (Self_ID.Common.LL.L'Access, Any_Priority'Last) /= 0 then
+      if Initialize_Lock (Self_ID.Common.LL.L'Access, Any_Priority'Last) /= 0
+      then
          Succeeded := False;
          return;
       end if;
@@ -998,14 +1003,14 @@ package body System.Task_Primitives.Operations is
       --  do not need to manipulate caller's signal mask at this point.
       --  All tasks in RTS will have All_Tasks_Mask initially.
 
-      --  Note: the use of Unrestricted_Access in the following call is needed
-      --  because otherwise we have an error of getting a access-to-volatile
-      --  value which points to a non-volatile object. But in this case it is
-      --  safe to do this, since we know we have no problems with aliasing and
-      --  Unrestricted_Access bypasses this check.
+      --  The write to T.Common.LL.Thread is not racy with regard to the
+      --  created thread because the created thread will not access it until
+      --  we release the RTS lock (or the current task's lock when
+      --  Restricted.Stages is used). One can verify that by inspecting the
+      --  Task_Wrapper procedures.
 
       Result := pthread_create
-        (T.Common.LL.Thread'Unrestricted_Access,
+        (T.Common.LL.Thread'Access,
          Thread_Attr'Access,
          Thread_Body_Access (Wrapper),
          To_Address (T));
@@ -1379,6 +1384,7 @@ package body System.Task_Primitives.Operations is
 
    begin
       Environment_Task_Id := Environment_Task;
+      Environment_Task.Common.LL.Thread := pthread_self;
 
       Interrupt_Management.Initialize;
 
@@ -1460,12 +1466,13 @@ package body System.Task_Primitives.Operations is
         and then T.Common.LL.Thread /= Null_Thread_Id
       then
          declare
-            CPUs    : constant size_t :=
-                        C.size_t (Multiprocessors.Number_Of_CPUs);
-            CPU_Set : cpu_set_t_ptr := null;
-            Size    : constant size_t := CPU_ALLOC_SIZE (CPUs);
+            CPUs         : constant size_t :=
+              C.size_t (Multiprocessors.Number_Of_CPUs);
+            CPU_Set      : cpu_set_t_ptr := null;
+            Is_Set_Owned : Boolean := False;
+            Size         : constant size_t := CPU_ALLOC_SIZE (CPUs);
 
-            Result  : C.int;
+            Result       : C.int;
 
          begin
             --  We look at the specific CPU (Base_CPU) first, then at the
@@ -1477,6 +1484,7 @@ package body System.Task_Primitives.Operations is
                --  Set the affinity to an unique CPU
 
                CPU_Set := CPU_ALLOC (CPUs);
+               Is_Set_Owned := True;
                System.OS_Interface.CPU_ZERO (Size, CPU_Set);
                System.OS_Interface.CPU_SET
                  (int (T.Common.Base_CPU), Size, CPU_Set);
@@ -1493,6 +1501,7 @@ package body System.Task_Primitives.Operations is
                --  dispatching domain.
 
                CPU_Set := CPU_ALLOC (CPUs);
+               Is_Set_Owned := True;
                System.OS_Interface.CPU_ZERO (Size, CPU_Set);
 
                for Proc in T.Common.Domain'Range loop
@@ -1506,7 +1515,9 @@ package body System.Task_Primitives.Operations is
               pthread_setaffinity_np (T.Common.LL.Thread, Size, CPU_Set);
             pragma Assert (Result = 0);
 
-            CPU_FREE (CPU_Set);
+            if Is_Set_Owned then
+               CPU_FREE (CPU_Set);
+            end if;
          end;
       end if;
    end Set_Task_Affinity;

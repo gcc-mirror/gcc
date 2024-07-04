@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,11 +44,11 @@ with Ada.Unchecked_Conversion;
 
 with Interfaces.C;
 
-with System.Tasking.Debug;
 with System.Interrupt_Management;
 with System.OS_Constants;
 with System.OS_Primitives;
 with System.Task_Info;
+with System.Tasking.Debug;
 
 with System.Soft_Links;
 --  We use System.Soft_Links instead of System.Tasking.Initialization
@@ -61,12 +61,14 @@ package body System.Task_Primitives.Operations is
    package OSC renames System.OS_Constants;
    package SSL renames System.Soft_Links;
 
-   use System.Tasking.Debug;
-   use System.Tasking;
    use Interfaces.C;
+
    use System.OS_Interface;
-   use System.Parameters;
+   use System.OS_Locks;
    use System.OS_Primitives;
+   use System.Parameters;
+   use System.Tasking;
+   use System.Tasking.Debug;
 
    ----------------
    -- Local Data --
@@ -211,6 +213,11 @@ package body System.Task_Primitives.Operations is
    pragma Import (C,
      GNAT_pthread_condattr_setup, "__gnat_pthread_condattr_setup");
 
+   procedure Initialize_Lock
+     (L    : not null access RTS_Lock;
+      Prio : System.Any_Priority);
+   --  Initialize an RTS_Lock with the specified priority
+
    -------------------
    -- Abort_Handler --
    -------------------
@@ -319,11 +326,11 @@ package body System.Task_Primitives.Operations is
    --  routines should be able to be handled safely.
 
    procedure Initialize_Lock
-     (Prio : System.Any_Priority;
-      L    : not null access Lock)
+     (L    : not null access RTS_Lock;
+      Prio : System.Any_Priority)
    is
       Attributes : aliased pthread_mutexattr_t;
-      Result : Interfaces.C.int;
+      Result     : Interfaces.C.int;
 
    begin
       Result := pthread_mutexattr_init (Attributes'Access);
@@ -348,7 +355,7 @@ package body System.Task_Primitives.Operations is
          pragma Assert (Result = 0);
       end if;
 
-      Result := pthread_mutex_init (L.WO'Access, Attributes'Access);
+      Result := pthread_mutex_init (L, Attributes'Access);
       pragma Assert (Result = 0 or else Result = ENOMEM);
 
       if Result = ENOMEM then
@@ -361,46 +368,20 @@ package body System.Task_Primitives.Operations is
    end Initialize_Lock;
 
    procedure Initialize_Lock
-     (L : not null access RTS_Lock; Level : Lock_Level)
+     (Prio : System.Any_Priority;
+      L    : not null access Lock)
+   is
+   begin
+      Initialize_Lock (L.WO'Access, Prio);
+   end Initialize_Lock;
+
+   procedure Initialize_Lock
+     (L     : not null access RTS_Lock;
+      Level : Lock_Level)
    is
       pragma Unreferenced (Level);
-
-      Attributes : aliased pthread_mutexattr_t;
-      Result     : Interfaces.C.int;
-
    begin
-      Result := pthread_mutexattr_init (Attributes'Access);
-      pragma Assert (Result = 0 or else Result = ENOMEM);
-
-      if Result = ENOMEM then
-         raise Storage_Error;
-      end if;
-
-      if Locking_Policy = 'C' then
-         Result := pthread_mutexattr_setprotocol
-           (Attributes'Access, PTHREAD_PRIO_PROTECT);
-         pragma Assert (Result = 0);
-
-         Result := pthread_mutexattr_setprioceiling
-            (Attributes'Access, Interfaces.C.int (System.Any_Priority'Last));
-         pragma Assert (Result = 0);
-
-      elsif Locking_Policy = 'I' then
-         Result := pthread_mutexattr_setprotocol
-           (Attributes'Access, PTHREAD_PRIO_INHERIT);
-         pragma Assert (Result = 0);
-      end if;
-
-      Result := pthread_mutex_init (L, Attributes'Access);
-      pragma Assert (Result = 0 or else Result = ENOMEM);
-
-      if Result = ENOMEM then
-         Result := pthread_mutexattr_destroy (Attributes'Access);
-         raise Storage_Error;
-      end if;
-
-      Result := pthread_mutexattr_destroy (Attributes'Access);
-      pragma Assert (Result = 0);
+      Initialize_Lock (L, System.Any_Priority'Last);
    end Initialize_Lock;
 
    -------------------
@@ -655,7 +636,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Enter_Task (Self_ID : Task_Id) is
    begin
-      Self_ID.Common.LL.Thread := pthread_self;
       Self_ID.Common.LL.LWP := lwp_self;
 
       Specific.Set (Self_ID);
@@ -860,14 +840,14 @@ package body System.Task_Primitives.Operations is
       --  do not need to manipulate caller's signal mask at this point.
       --  All tasks in RTS will have All_Tasks_Mask initially.
 
-      --  Note: the use of Unrestricted_Access in the following call is needed
-      --  because otherwise we have an error of getting a access-to-volatile
-      --  value which points to a non-volatile object. But in this case it is
-      --  safe to do this, since we know we have no problems with aliasing and
-      --  Unrestricted_Access bypasses this check.
+      --  The write to T.Common.LL.Thread is not racy with regard to the
+      --  created thread because the created thread will not access it until
+      --  we release the RTS lock (or the current task's lock when
+      --  Restricted.Stages is used). One can verify that by inspecting the
+      --  Task_Wrapper procedures.
 
       Result := pthread_create
-        (T.Common.LL.Thread'Unrestricted_Access,
+        (T.Common.LL.Thread'Access,
          Attributes'Access,
          Thread_Body_Access (Wrapper),
          To_Address (T));
@@ -1279,6 +1259,7 @@ package body System.Task_Primitives.Operations is
 
    begin
       Environment_Task_Id := Environment_Task;
+      Environment_Task.Common.LL.Thread := pthread_self;
 
       Interrupt_Management.Initialize;
 

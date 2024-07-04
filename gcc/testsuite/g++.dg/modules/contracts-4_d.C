@@ -1,8 +1,6 @@
 // { dg-module-do run }
 // { dg-additional-options "-fmodules-ts -fcontracts" }
-module;
 #include <cstdio>
-export module baz;
 import foo;
 import bar;
 

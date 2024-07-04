@@ -60,4 +60,4 @@ void intrapred_luma_16x16(int * restrict sp) {
 	mprr_2[VERT_PRED_16][j][15]=sp[j*2];
       }
 }
-/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" {target vect_int } } } */
+/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" {target { vect_int && vect_perm } } } } */

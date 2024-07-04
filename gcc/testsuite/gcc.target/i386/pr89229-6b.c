@@ -3,4 +3,4 @@
 
 #include "pr89229-6a.c"
 
-/* { dg-final { scan-assembler-times "vmovaps\[^\n\r]*zmm1\[67]\[^\n\r]*zmm1\[67]" 1 } } */
+/* { dg-final { scan-assembler-times "vmovss\[^\n\r]*xmm1\[67]\[^\n\r]*xmm1\[67]\[^\n\r]*xmm1\[67]" 1 } } */

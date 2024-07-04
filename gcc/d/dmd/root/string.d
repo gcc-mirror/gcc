@@ -1,7 +1,7 @@
 /**
  * Contains various string related functions.
  *
- * Copyright: Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright: Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:   Walter Bright, https://www.digitalmars.com
  * License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/root/string.d, root/_string.d)
@@ -69,7 +69,7 @@ The return value of `T`
 auto toCStringThen(alias dg)(const(char)[] src) nothrow
 {
     import dmd.root.rmem : mem;
-    import dmd.common.string : SmallBuffer;
+    import dmd.common.smallbuffer : SmallBuffer;
 
     const len = src.length + 1;
     char[512] small = void;

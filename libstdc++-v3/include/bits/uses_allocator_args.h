@@ -1,6 +1,6 @@
 // Utility functions for uses-allocator construction -*- C++ -*-
 
-// Copyright (C) 2019-2023 Free Software Foundation, Inc.
+// Copyright (C) 2019-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,10 +32,9 @@
 
 #pragma GCC system_header
 
-#define __glibcxx_want_make_obj_using_allocator
 #include <bits/version.h>
 
-#ifdef __cpp_lib_make_obj_using_allocator // C++ >= 20 && concepts
+#ifdef __glibcxx_make_obj_using_allocator // C++ >= 20 && concepts
 #include <new>			// for placement operator new
 #include <tuple>		// for tuple, make_tuple, make_from_tuple
 #include <bits/stl_construct.h> // construct_at
@@ -245,5 +244,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 /// @}
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-#endif // __cpp_lib_make_obj_using_allocator
+#endif // __glibcxx_make_obj_using_allocator
 #endif // _USES_ALLOCATOR_ARGS

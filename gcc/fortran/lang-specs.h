@@ -1,6 +1,6 @@
 /* Contribution to the specs for the GNU Compiler Collection
    from GNU Fortran 95 compiler.
-   Copyright (C) 2002-2023 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -29,7 +29,8 @@
 /* Options that f951 should know about, even if not preprocessing.  */
 #define CPP_FORWARD_OPTIONS "%{i*} %{I*} %{M*}"
 
-#define F951_CPP_OPTIONS    "%{!nocpp: -cpp=%g.f90 %{E} %(cpp_unique_options) \
+#define F951_CPP_OPTIONS    "%{!nocpp: -cpp=%g" F951_CPP_EXTENSION \
+			     " %{E} %(cpp_unique_options) \
 			     %{E|M|MM:%(cpp_debug_options) " CPP_ONLY_OPTIONS \
 			     " -fsyntax-only};: " CPP_FORWARD_OPTIONS "}"
 
@@ -44,6 +45,7 @@
 #define F951_SOURCE_FORM    "%{!ffree-form:-ffixed-form}"
 
 
+#define F951_CPP_EXTENSION  ".fi"
 {".F",   "@f77-cpp-input", 0, 0, 0},
 {".FOR", "@f77-cpp-input", 0, 0, 0},
 {".FTN", "@f77-cpp-input", 0, 0, 0},
@@ -55,11 +57,15 @@
 {".f",   "@f77", 0, 0, 0},
 {".for", "@f77", 0, 0, 0},
 {".ftn", "@f77", 0, 0, 0},
+{".fi",  "@f77", 0, 0, 0},
 {"@f77",
     "f951 %i " F951_SOURCE_FORM " \
           %{E:%{!cpp:%egfortran does not support -E without -cpp}} \
           %{cpp:" F951_CPP_OPTIONS ";: " CPP_FORWARD_OPTIONS  "} \
 	  %{!E:" F951_OPTIONS "}", 0, 0, 0},
+
+#undef F951_CPP_EXTENSION
+#define F951_CPP_EXTENSION  ".fii"
 {".F90", "@f95-cpp-input", 0, 0, 0},
 {".F95", "@f95-cpp-input", 0, 0, 0},
 {".F03", "@f95-cpp-input", 0, 0, 0},
@@ -70,6 +76,7 @@
 {".f95", "@f95", 0, 0, 0},
 {".f03", "@f95", 0, 0, 0},
 {".f08", "@f95", 0, 0, 0},
+{".fii", "@f95", 0, 0, 0},
 {"@f95",
     "f951 %i %{E:%{!cpp:%egfortran does not support -E without -cpp}}\
 	  %{cpp:" F951_CPP_OPTIONS ";:  " CPP_FORWARD_OPTIONS  "} \
@@ -79,5 +86,6 @@
 #undef CPP_ONLY_OPTIONS
 #undef CPP_FORWARD_OPTIONS
 #undef F951_SOURCE_FORM
+#undef F951_CPP_EXTENSION
 #undef F951_CPP_OPTIONS
 #undef F951_OPTIONS

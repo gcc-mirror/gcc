@@ -1,5 +1,6 @@
 // { dg-do run { target c++20 } }
 // { dg-require-namedlocale "fr_FR.ISO8859-15" }
+// { dg-timeout-factor 2 }
 
 #include <chrono>
 #include <sstream>
@@ -83,7 +84,7 @@ test_format()
   s = std::format(loc_fr, "{:%x}", 2022y/December/19);
   VERIFY( s == "12/19/22" );
   s = std::format(loc_fr, "{:L%x}", 2022y/December/19);
-  VERIFY( s == "19/12/2022" );
+  VERIFY( s == "19/12/2022" || s == "19.12.2022" ); // depends on locale defs
   s = std::format(loc_fr, "{}", 2022y/December/19);
   VERIFY( s == "2022-12-19" );
   s = std::format(loc_fr, "{:L%F}", 2022y/December/19);
@@ -96,8 +97,8 @@ test_format()
     char fmt[] = { '{', ':', '%', c, '}' };
     try
     {
-      (void) std::vformat(std::string_view(fmt, 5),
-			  std::make_format_args(2022y/December/19));
+      year_month_day ymd = 2022y/December/19;
+      (void) std::vformat(std::string_view(fmt, 5), std::make_format_args(ymd));
       // The call above should throw for any conversion-spec not in my_specs:
       VERIFY(my_specs.find(c) != my_specs.npos);
     }

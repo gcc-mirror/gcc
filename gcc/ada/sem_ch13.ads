@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Local_Restrict;
 with Types; use Types;
 with Sem_Disp; use Sem_Disp;
 with Uintp; use Uintp;
@@ -78,8 +79,7 @@ package Sem_Ch13 is
    procedure Set_Enum_Esize (T : Entity_Id);
    --  This routine sets the Esize field for an enumeration type T, based
    --  on the current representation information available for T. Note that
-   --  the setting of the RM_Size field is not affected. This routine also
-   --  initializes the alignment field to zero.
+   --  the setting of the RM_Size field is not affected.
 
    Unknown_Minimum_Size : constant Nonzero_Int := -1;
 
@@ -146,6 +146,11 @@ package Sem_Ch13 is
    --  Utility to unpack the subprograms in an occurrence of aspect Aggregate;
    --  used to verify the structure of the aspect, and resolve and expand an
    --  aggregate for a container type that carries the aspect.
+
+   function Parse_Aspect_Local_Restrictions (Aspect_Spec : Node_Id)
+     return Local_Restrict.Local_Restriction_Set;
+   --  Utility to unpack the set of local restrictions specified in a
+   --  Local_Restrictions aspect specification.
 
    function Parse_Aspect_Stable_Properties
      (Aspect_Spec : Node_Id; Negated : out Boolean) return Subprogram_List;
@@ -307,18 +312,17 @@ package Sem_Ch13 is
    --  Quite an awkward approach, but this is an awkard requirement
 
    procedure Analyze_Aspects_At_Freeze_Point (E : Entity_Id);
-   --  Analyze all the delayed aspects for entity E at freezing point. This
-   --  includes dealing with inheriting delayed aspects from the parent type
-   --  in the case where a derived type is frozen.
+   --  Analyzes all the delayed aspects for entity E at the freeze point. Note
+   --  that this does not include dealing with inheriting delayed aspects from
+   --  the parent or base type in the case where a derived type or a subtype is
+   --  frozen. Callers should check that Has_Delayed_Aspects (E) is True before
+   --  calling this routine.
 
-   procedure Check_Aspect_At_Freeze_Point (ASN : Node_Id);
-   --  Performs the processing described above at the freeze point, ASN is the
-   --  N_Aspect_Specification node for the aspect.
-
-   procedure Check_Aspect_At_End_Of_Declarations (ASN : Node_Id);
+   procedure Check_Aspects_At_End_Of_Declarations (E : Entity_Id);
    --  Performs the processing described above at the freeze all point, and
    --  issues appropriate error messages if the visibility has indeed changed.
-   --  Again, ASN is the N_Aspect_Specification node for the aspect.
+   --  Callers should check that Has_Delayed_Aspects (E) is True before calling
+   --  this routine.
 
    procedure Inherit_Aspects_At_Freeze_Point (Typ : Entity_Id);
    --  Given an entity Typ that denotes a derived type or a subtype, this

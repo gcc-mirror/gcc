@@ -1,6 +1,3 @@
-// TODO: remove need for this option
-/* { dg-additional-options "-fanalyzer-checker=taint" } */
-
 typedef __SIZE_TYPE__ size_t;
 typedef const void *t_comptype;
 typedef int (*t_compfunc)(t_comptype, t_comptype);

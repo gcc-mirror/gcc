@@ -2,8 +2,8 @@
    inputs produce the right results when -mcpu=power7 is specified.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec -O2 -mdejagnu-cpu=power7 -fwrapv" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 #include <altivec.h>
 

@@ -1,6 +1,6 @@
 // Move, forward and identity for C++11 + swap -*- C++ -*-
 
-// Copyright (C) 2007-2023 Free Software Foundation, Inc.
+// Copyright (C) 2007-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,9 +36,6 @@
 #else
 # include <type_traits> // Brings in std::declval too.
 #endif
-
-#define __glibcxx_want_addressof_constexpr
-#include <bits/version.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -113,6 +110,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return static_cast<_Up&>(__x);
       }
   }
+
+  template<typename _Tp, typename _Up>
+    using __like_t = decltype(std::forward_like<_Tp>(std::declval<_Up>()));
 #endif
 
   /**

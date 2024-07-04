@@ -1,5 +1,5 @@
 /* Output routines for graphical representation.
-   Copyright (C) 1998-2023 Free Software Foundation, Inc.
+   Copyright (C) 1998-2024 Free Software Foundation, Inc.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1998.
    Rewritten for DOT output by Steven Bosscher, 2012.
 
@@ -310,7 +310,7 @@ void DEBUG_FUNCTION
 print_graph_cfg (FILE *fp, struct function *fun)
 {
   pretty_printer graph_slim_pp;
-  graph_slim_pp.buffer->stream = fp;
+  graph_slim_pp.set_output_stream (fp);
   pretty_printer *const pp = &graph_slim_pp;
   const char *funcname = function_name (fun);
   pp_printf (pp, "subgraph \"cluster_%s\" {\n"
@@ -354,7 +354,7 @@ static void
 start_graph_dump (FILE *fp, const char *base)
 {
   pretty_printer graph_slim_pp;
-  graph_slim_pp.buffer->stream = fp;
+  graph_slim_pp.set_output_stream (fp);
   pretty_printer *const pp = &graph_slim_pp;
   pp_string (pp, "digraph \"");
   pp_write_text_to_stream (pp);

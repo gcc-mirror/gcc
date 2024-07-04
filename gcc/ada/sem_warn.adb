@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -857,6 +857,10 @@ package body Sem_Warn is
       --  from another unit. This is true for entities in packages that are at
       --  the library level.
 
+      function Type_OK_For_No_Value_Assigned (T : Entity_Id) return Boolean;
+      --  Return True if it is OK for an object of type T to be referenced
+      --  without having been assigned a value in the source.
+
       function Warnings_Off_E1 return Boolean;
       --  Return True if Warnings_Off is set for E1, or for its Etype (E1T),
       --  or for the base type of E1T.
@@ -1120,6 +1124,37 @@ package body Sem_Warn is
             end case;
          end loop;
       end Publicly_Referenceable;
+
+      -----------------------------------
+      -- Type_OK_For_No_Value_Assigned --
+      -----------------------------------
+
+      function Type_OK_For_No_Value_Assigned (T : Entity_Id) return Boolean is
+      begin
+         --  No information for generic types, so be conservative
+
+         if Is_Generic_Type (T) then
+            return False;
+         end if;
+
+         --  Even if objects of access types are implicitly initialized to null
+
+         if Is_Access_Type (T) then
+            return False;
+         end if;
+
+         --  The criterion is whether the type is (partially) initialized in
+         --  the source, in other words we disregard implicit default values.
+         --  But we do not require full initialization for by-reference types
+         --  because they are complex and it may not be possible to have it.
+
+         if Is_By_Reference_Type (T) then
+            return
+              Is_Partially_Initialized_Type (T, Include_Implicit => False);
+         else
+            return Is_Fully_Initialized_Type (T);
+         end if;
+      end Type_OK_For_No_Value_Assigned;
 
       ---------------------
       -- Warnings_Off_E1 --
@@ -1414,10 +1449,7 @@ package body Sem_Warn is
                           and then not Warnings_Off_E1
                           and then not Has_Junk_Name (E1)
                         then
-                           if Is_Access_Type (E1T)
-                             or else
-                               not Is_Partially_Initialized_Type (E1T, False)
-                           then
+                           if not Type_OK_For_No_Value_Assigned (E1T) then
                               Output_Reference_Error
                                 ("?v?variable& is read but never assigned!");
                            end if;
@@ -1456,14 +1488,12 @@ package body Sem_Warn is
                   goto Continue;
                end if;
 
-               --  Check for unset reference. If type of object has
-               --  preelaborable initialization, warning is misleading.
+               --  Check for unset reference
 
                if Warn_On_No_Value_Assigned
                  and then Present (UR)
-                 and then not Known_To_Have_Preelab_Init (Etype (E1))
+                 and then not Type_OK_For_No_Value_Assigned (E1T)
                then
-
                   --  Don't issue warning if appearing inside Initial_Condition
                   --  pragma or aspect, since that expression is not evaluated
                   --  at the point where it occurs in the source.
@@ -1928,29 +1958,44 @@ package body Sem_Warn is
                      SR : Entity_Id;
                      SE : constant Entity_Id := Scope (E);
 
-                     function Within_Postcondition return Boolean;
-                     --  Returns True if N is within a Postcondition, a
-                     --  Refined_Post, an Ensures component in a Test_Case,
-                     --  or a Contract_Cases.
+                     function Within_Contract_Or_Predicate  return Boolean;
+                     --  Returns True if N is within a contract or predicate,
+                     --  an Ensures component in a Test_Case, or a
+                     --  Contract_Cases.
 
-                     --------------------------
-                     -- Within_Postcondition --
-                     --------------------------
+                     ----------------------------------
+                     -- Within_Contract_Or_Predicate --
+                     ----------------------------------
 
-                     function Within_Postcondition return Boolean is
+                     function Within_Contract_Or_Predicate return Boolean is
                         Nod, P : Node_Id;
 
                      begin
                         Nod := Parent (N);
                         while Present (Nod) loop
+                           --  General contract / predicate related pragma
+
                            if Nkind (Nod) = N_Pragma
                              and then
                                Pragma_Name_Unmapped (Nod)
-                                in Name_Postcondition
+                                in Name_Precondition
+                                 | Name_Postcondition
                                  | Name_Refined_Post
                                  | Name_Contract_Cases
                            then
                               return True;
+
+                           --  Verify we are not within a generated predicate
+                           --  function call.
+
+                           elsif Nkind (Nod) = N_Function_Call
+                             and then Is_Entity_Name (Name (Nod))
+                             and then Is_Predicate_Function
+                                        (Entity (Name (Nod)))
+                           then
+                              return True;
+
+                           --  Deal with special 'Ensures' Test_Case component
 
                            elsif Present (Parent (Nod)) then
                               P := Parent (Nod);
@@ -1972,7 +2017,7 @@ package body Sem_Warn is
                         end loop;
 
                         return False;
-                     end Within_Postcondition;
+                     end Within_Contract_Or_Predicate;
 
                   --  Start of processing for Potential_Unset_Reference
 
@@ -2096,7 +2141,7 @@ package body Sem_Warn is
                      --  postcondition, since the expression occurs in a
                      --  place unrelated to the actual test.
 
-                     if not Within_Postcondition then
+                     if not Within_Contract_Or_Predicate then
 
                         --  Here we definitely have a case for giving a warning
                         --  for a reference to an unset value. But we don't
@@ -3786,16 +3831,6 @@ package body Sem_Warn is
                   then
                      null;
 
-                  --  We only report warnings on overlapping arrays and record
-                  --  types if switch is set.
-
-                  elsif not Warn_On_Overlap
-                    and then not (Is_Elementary_Type (Etype (Form1))
-                                    and then
-                                  Is_Elementary_Type (Etype (Form2)))
-                  then
-                     null;
-
                   --  Here we may need to issue overlap message
 
                   else
@@ -3813,22 +3848,25 @@ package body Sem_Warn is
 
                        or else not
                         (Is_Elementary_Type (Etype (Form1))
-                         and then Is_Elementary_Type (Etype (Form2)))
+                         and then Is_Elementary_Type (Etype (Form2)));
 
-                       --  debug flag -gnatd.E changes the error to a warning
-                       --  even in Ada 2012 mode.
+                     if not Error_Msg_Warn or else Warn_On_Overlap then
+                        --  debug flag -gnatd.E changes the error to a warning
+                        --  even in Ada 2012 mode.
 
-                       or else Error_To_Warning;
+                        if Error_To_Warning then
+                           Error_Msg_Warn := True;
+                        end if;
 
-                     --  For greater clarity, give name of formal
+                        --  For greater clarity, give name of formal
 
-                     Error_Msg_Node_2 := Form2;
+                        Error_Msg_Node_2 := Form2;
 
-                     --  This is one of the messages
+                        --  This is one of the messages
 
-                     Error_Msg_FE
-                       ("<.i<writable actual for & overlaps with actual for &",
-                        Act1, Form1);
+                        Error_Msg_FE ("<.i<writable actual for & overlaps with"
+                          & " actual for &", Act1, Form1);
+                     end if;
                   end if;
                end if;
             end if;
@@ -4414,12 +4452,16 @@ package body Sem_Warn is
                  ("?u?literal & is not referenced!", E);
 
             when E_Function =>
-               Error_Msg_N -- CODEFIX
-                 ("?u?function & is not referenced!", E);
+               if not Is_Abstract_Subprogram (E) then
+                  Error_Msg_N -- CODEFIX
+                    ("?u?function & is not referenced!", E);
+               end if;
 
             when E_Procedure =>
-               Error_Msg_N -- CODEFIX
-                 ("?u?procedure & is not referenced!", E);
+               if not Is_Abstract_Subprogram (E) then
+                  Error_Msg_N -- CODEFIX
+                    ("?u?procedure & is not referenced!", E);
+               end if;
 
             when E_Package =>
                Error_Msg_N -- CODEFIX

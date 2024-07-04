@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/function.html#function-safety, Function Safety)
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/safe.d, _safe.d)
@@ -26,6 +26,7 @@ import dmd.identifier;
 import dmd.mtype;
 import dmd.target;
 import dmd.tokens;
+import dmd.typesem : hasPointers, arrayOf;
 import dmd.func : setUnsafe, setUnsafePreview;
 
 /*************************************************************
@@ -51,7 +52,7 @@ bool checkUnsafeAccess(Scope* sc, Expression e, bool readonly, bool printmsg)
     DotVarExp dve = cast(DotVarExp)e;
     if (VarDeclaration v = dve.var.isVarDeclaration())
     {
-        if (sc.intypeof || !sc.func || !sc.func.isSafeBypassingInference())
+        if (!sc.func)
             return false;
         auto ad = v.isMember2();
         if (!ad)
@@ -65,6 +66,11 @@ bool checkUnsafeAccess(Scope* sc, Expression e, bool readonly, bool printmsg)
                 return true;
         }
 
+        // This branch shouldn't be here, but unfortunately calling `ad.determineSize`
+        // breaks code with circular reference errors. Specifically, test23589.d fails
+        if (ad.sizeok != Sizeok.done && !sc.func.isSafeBypassingInference())
+            return false;
+
         // needed to set v.overlapped and v.overlapUnsafe
         if (ad.sizeok != Sizeok.done)
             ad.determineSize(ad.loc);
@@ -74,9 +80,23 @@ bool checkUnsafeAccess(Scope* sc, Expression e, bool readonly, bool printmsg)
         {
             if (v.overlapped)
             {
-                if (sc.setUnsafe(!printmsg, e.loc,
+                if (sc.func.isSafeBypassingInference() && sc.setUnsafe(!printmsg, e.loc,
                     "field `%s.%s` cannot access pointers in `@safe` code that overlap other fields", ad, v))
+                {
                     return true;
+                }
+                else
+                {
+                    import dmd.globals : FeatureState;
+                    // @@@DEPRECATED_2.116@@@
+                    // https://issues.dlang.org/show_bug.cgi?id=20655
+                    // Inferring `@system` because of union access breaks code,
+                    // so make it a deprecation safety violation as of 2.106
+                    // To turn into an error, remove `isSafeBypassingInference` check in the
+                    // above if statement and remove the else branch
+                    sc.setUnsafePreview(FeatureState.default_, !printmsg, e.loc,
+                        "field `%s.%s` cannot access pointers in `@safe` code that overlap other fields", ad, v);
+                }
             }
         }
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -20,6 +20,7 @@
 #define RUST_TYTY_BOUNDS_H
 
 #include "rust-location.h"
+#include "rust-mapping-common.h"
 
 namespace Rust {
 
@@ -51,7 +52,7 @@ public:
 
   const TypeBoundPredicate *get_parent () const;
 
-  Location get_locus () const;
+  location_t get_locus () const;
 
 private:
   const TypeBoundPredicate *parent;
@@ -67,6 +68,8 @@ public:
   std::vector<TypeBoundPredicate> &get_specified_bounds ();
 
   const std::vector<TypeBoundPredicate> &get_specified_bounds () const;
+
+  TypeBoundPredicate lookup_predicate (DefId id);
 
   size_t num_specified_bounds () const;
 

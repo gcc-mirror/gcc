@@ -1,3 +1,69 @@
+2024-05-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-runtime-abi-02.cc (WEAK_PROTOCOLS_AFTER): New.
+	(next_runtime_abi_02_protocol_decl): Use WEAK_PROTOCOLS_AFTER
+	to determine this ABI change.
+	(build_v2_protocol_list_address_table): Likewise.
+
+2024-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* objc-next-runtime-abi-02.cc (build_v2_class_ro_t_initializer): Use
+	integer_zero_node instead of build_int_cst (integer_type_node, 0).
+
+2024-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* objc-encoding.cc (encode_array): Use HOST_WIDE_INT_0 macros.
+
+2024-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-runtime-abi-02.cc (build_v2_address_table): Prevent
+	over-alignment of Objective-C metadata by setting DECL_USER_ALIGN
+	on relevant variables.
+	(build_v2_protocol_list_address_table): Likewise.
+	(generate_v2_protocol_list): Likewise.
+	(generate_v2_meth_descriptor_table): Likewise.
+	(generate_v2_meth_type_list): Likewise.
+	(generate_v2_property_table): Likewise.
+	(generate_v2_dispatch_table): Likewise.
+	(generate_v2_ivars_list): Likewise.
+	(generate_v2_class_structs): Likewise.
+	(build_ehtype): Likewise.
+	* objc-runtime-shared-support.cc (generate_strings): Likewise.
+
+2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-act.cc (objc_init): Initialize interface and class
+	name hash maps before the preprocessor uses them.
+
+2024-01-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-runtime-abi-02.cc
+	(build_v2_objc_method_fixup_call): Early exit for cases
+	where the sender or receiver are known to be in error.
+
+2023-11-27  Alex Coplan  <alex.coplan@arm.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/60512
+	* objc-act.cc (struct objc_feature_info): New.
+	(objc_nonfragile_abi_p): New.
+	(objc_common_register_features): New.
+	* objc-act.h (objc_common_register_features): New.
+	* objc-lang.cc (c_family_register_lang_features): New.
+
+2023-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* objc-act.h (objc_common_tree_size): Remove.
+	* objc-act.cc (objc_common_tree_size): Remove.
+	* objc-lang.cc (LANG_HOOKS_TREE_SIZE): Remove.
+
+2023-10-23  Andrew Pinski  <pinskia@gmail.com>
+
+	* objc-gnu-runtime-abi-01.cc (build_objc_method_call): Allow
+	for error_operand after call to build_c_cast.
+	* objc-next-runtime-abi-01.cc (build_objc_method_call): Likewise.
+	* objc-next-runtime-abi-02.cc (build_v2_build_objc_method_call): Likewise.
+
 2023-08-31  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* objc-act.cc: Change spelling to macOS.
@@ -4278,7 +4344,7 @@
 	Move to c-objc-common.h.
 
 
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

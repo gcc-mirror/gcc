@@ -1,4 +1,4 @@
-@c Copyright (C) 1999-2023 Free Software Foundation, Inc.
+@c Copyright (C) 1999-2024 Free Software Foundation, Inc.
 @c This is part of the CPP and GCC manuals.
 @c For copying conditions, see the file gcc.texi.
 
@@ -524,8 +524,7 @@ interpreted as a synonym for @option{-fdump-rtl-mach}.
 
 @opindex dD
 @item -dD
-Like @option{-dM} except in two respects: it does @emph{not} include the
-predefined macros, and it outputs @emph{both} the @samp{#define}
+Like @option{-dM} except that it outputs @emph{both} the @samp{#define}
 directives and the result of preprocessing.  Both kinds of output go to
 the standard output file.
 

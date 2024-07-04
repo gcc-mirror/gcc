@@ -2,9 +2,9 @@
    with a constant instead of register + offset.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -masm=normal" } */
 
-/* { dg-final { scan-assembler-times "ldxdw\t%r.,\\\[%r.+0\\\]" 1 } } */
+/* { dg-final { scan-assembler-times "ldxdw\t%r.,\\\[%r.\\+\[0-9\]+\\\]" 1 } } */
 /* { dg-final { scan-assembler-not "ldxdw\t%r.,\[0-9\]+" } } */
 
 unsigned long long test () {

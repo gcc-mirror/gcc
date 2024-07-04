@@ -1,5 +1,5 @@
 /* Exception handling and frame unwind runtime interface routines.
-   Copyright (C) 2001-2023 Free Software Foundation, Inc.
+   Copyright (C) 2001-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -172,6 +172,8 @@ read_sleb128 (const unsigned char *p, _sleb128_t *val)
   *val = (_sleb128_t) result;
   return p;
 }
+
+extern _Unwind_Ptr _Unwind_gnu_Find_got (_Unwind_Ptr);
 
 /* Load an encoded value from memory at P.  The value is returned in VAL;
    The function returns P incremented past the value.  BASE is as given

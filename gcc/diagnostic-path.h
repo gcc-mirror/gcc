@@ -1,5 +1,5 @@
 /* Paths through the code associated with a diagnostic.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>
 
 This file is part of GCC.
@@ -24,6 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h" /* for ATTRIBUTE_GCC_DIAG.  */
 #include "diagnostic-event-id.h"
 
+class sarif_object;
+
 /* A diagnostic_path is an optional additional piece of metadata associated
    with a diagnostic (via its rich_location).
 
@@ -39,22 +41,20 @@ along with GCC; see the file COPYING3.  If not see
         29 |     PyList_Append(list, item);
            |     ^~~~~~~~~~~~~~~~~~~~~~~~~
        'demo': events 1-3
-          |
-          |   25 |   list = PyList_New(0);
-          |      |          ^~~~~~~~~~~~~
-          |      |          |
-          |      |          (1) when 'PyList_New' fails, returning NULL
-          |   26 |
-          |   27 |   for (i = 0; i < count; i++) {
-          |      |   ~~~
-          |      |   |
-          |      |   (2) when 'i < count'
-          |   28 |     item = PyLong_FromLong(random());
-          |   29 |     PyList_Append(list, item);
-          |      |     ~~~~~~~~~~~~~~~~~~~~~~~~~
-          |      |     |
-          |      |     (3) when calling 'PyList_Append', passing NULL from (1) as argument 1
-          |
+        25 |   list = PyList_New(0);
+           |          ^~~~~~~~~~~~~
+           |          |
+           |          (1) when 'PyList_New' fails, returning NULL
+        26 |
+        27 |   for (i = 0; i < count; i++) {
+           |   ~~~
+           |   |
+           |   (2) when 'i < count'
+        28 |     item = PyLong_FromLong(random());
+        29 |     PyList_Append(list, item);
+           |     ~~~~~~~~~~~~~~~~~~~~~~~~~
+           |     |
+           |     (3) when calling 'PyList_Append', passing NULL from (1) as argument 1
 
     The diagnostic-printing code has consolidated the path into a single
     run of events, since all the events are near each other and within the same
@@ -142,21 +142,30 @@ class diagnostic_event
 
   virtual location_t get_location () const = 0;
 
-  virtual tree get_fndecl () const = 0;
-
-  /* Stack depth, so that consumers can visualizes the interprocedural
+  /* Stack depth, so that consumers can visualize the interprocedural
      calls, returns, and frame nesting.  */
   virtual int get_stack_depth () const = 0;
 
   /* Get a localized (and possibly colorized) description of this event.  */
   virtual label_text get_desc (bool can_colorize) const = 0;
 
-  /* Get a logical_location for this event, or NULL.  */
+  /* Get a logical_location for this event, or nullptr if there is none.  */
   virtual const logical_location *get_logical_location () const = 0;
 
   virtual meaning get_meaning () const = 0;
 
+  /* True iff we should draw a line connecting this event to the
+     next event (e.g. to highlight control flow).  */
+  virtual bool connect_to_next_event_p () const = 0;
+
   virtual diagnostic_thread_id_t get_thread_id () const = 0;
+
+  /* Hook for SARIF output to allow for adding diagnostic-specific
+     properties to the threadFlowLocation object's property bag.  */
+  virtual void
+  maybe_add_sarif_properties (sarif_object &/*thread_flow_loc_obj*/) const
+  {
+  }
 };
 
 /* Abstract base class representing a thread of execution within
@@ -183,6 +192,12 @@ class diagnostic_path
   virtual const diagnostic_thread &
   get_thread (diagnostic_thread_id_t) const = 0;
 
+  /* Return true iff the two events are both within the same function,
+     or both outside of any function.  */
+  virtual bool
+  same_function_p (int event_idx_a,
+		   int event_idx_b) const = 0;
+
   bool interprocedural_p () const;
   bool multithreaded_p () const;
 
@@ -190,93 +205,8 @@ private:
   bool get_first_event_in_a_function (unsigned *out_idx) const;
 };
 
-/* Concrete subclasses.  */
-
-/* A simple implementation of diagnostic_event.  */
-
-class simple_diagnostic_event : public diagnostic_event
-{
- public:
-  simple_diagnostic_event (location_t loc, tree fndecl, int depth,
-			   const char *desc,
-			   diagnostic_thread_id_t thread_id = 0);
-  ~simple_diagnostic_event ();
-
-  location_t get_location () const final override { return m_loc; }
-  tree get_fndecl () const final override { return m_fndecl; }
-  int get_stack_depth () const final override { return m_depth; }
-  label_text get_desc (bool) const final override
-  {
-    return label_text::borrow (m_desc);
-  }
-  const logical_location *get_logical_location () const final override
-  {
-    return NULL;
-  }
-  meaning get_meaning () const final override
-  {
-    return meaning ();
-  }
-  diagnostic_thread_id_t get_thread_id () const final override
-  {
-    return m_thread_id;
-  }
-
- private:
-  location_t m_loc;
-  tree m_fndecl;
-  int m_depth;
-  char *m_desc; // has been i18n-ed and formatted
-  diagnostic_thread_id_t m_thread_id;
-};
-
-/* A simple implementation of diagnostic_thread.  */
-
-class simple_diagnostic_thread : public diagnostic_thread
-{
-public:
-  simple_diagnostic_thread (const char *name) : m_name (name) {}
-  label_text get_name (bool) const final override
-  {
-    return label_text::borrow (m_name);
-  }
-
-private:
-  const char *m_name; // has been i18n-ed and formatted
-};
-
-/* A simple implementation of diagnostic_path, as a vector of
-   simple_diagnostic_event instances.  */
-
-class simple_diagnostic_path : public diagnostic_path
-{
- public:
-  simple_diagnostic_path (pretty_printer *event_pp);
-
-  unsigned num_events () const final override;
-  const diagnostic_event & get_event (int idx) const final override;
-  unsigned num_threads () const final override;
-  const diagnostic_thread &
-  get_thread (diagnostic_thread_id_t) const final override;
-
-  diagnostic_thread_id_t add_thread (const char *name);
-
-  diagnostic_event_id_t add_event (location_t loc, tree fndecl, int depth,
-				   const char *fmt, ...)
-    ATTRIBUTE_GCC_DIAG(5,6);
-  diagnostic_event_id_t
-  add_thread_event (diagnostic_thread_id_t thread_id,
-		    location_t loc, tree fndecl, int depth,
-		    const char *fmt, ...)
-    ATTRIBUTE_GCC_DIAG(6,7);
-
- private:
-  auto_delete_vec<simple_diagnostic_thread> m_threads;
-  auto_delete_vec<simple_diagnostic_event> m_events;
-
-  /* (for use by add_event).  */
-  pretty_printer *m_event_pp;
-};
+/* Concrete subclasses of the above can be found in
+   simple-diagnostic-path.h.  */
 
 extern void debug (diagnostic_path *path);
 

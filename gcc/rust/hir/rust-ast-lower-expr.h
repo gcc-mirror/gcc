@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -78,7 +78,8 @@ public:
   void visit (AST::TupleExpr &expr) override;
   void visit (AST::IfExpr &expr) override;
   void visit (AST::IfExprConseqElse &expr) override;
-  void visit (AST::IfExprConseqIf &expr) override;
+  void visit (AST::IfLetExpr &expr) override;
+  void visit (AST::IfLetExprConseqElse &expr) override;
   void visit (AST::BlockExpr &expr) override;
   void visit (AST::UnsafeBlockExpr &expr) override;
   void visit (AST::PathInExpression &expr) override;
@@ -110,6 +111,7 @@ public:
   void visit (AST::ContinueExpr &expr) override;
   void visit (AST::BorrowExpr &expr) override;
   void visit (AST::DereferenceExpr &expr) override;
+  void visit (AST::ErrorPropagationExpr &expr) override;
   void visit (AST::MatchExpr &expr) override;
   void visit (AST::RangeFromToExpr &expr) override;
   void visit (AST::RangeFromExpr &expr) override;

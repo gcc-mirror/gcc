@@ -13,7 +13,7 @@ do i=1,len(out)
 enddo
 
 write(out,nl1)
-if (out(1).ne."&NL1") STOP 1
+if (out(1).ne." &NL1") STOP 1
 if (out(2).ne." A=  1.00000000    ,") STOP 2
 if (out(3).ne." B=  2.00000000    ,") STOP 3
 if (out(4).ne." C=  3.00000000    ,") STOP 4

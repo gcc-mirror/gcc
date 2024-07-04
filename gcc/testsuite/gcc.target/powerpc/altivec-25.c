@@ -1,6 +1,6 @@
 /* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec -O2 -Wall" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 
 #define vector __attribute__((__vector_size__(16) ))

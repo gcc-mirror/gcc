@@ -1,5 +1,5 @@
 /* Definitions for option handling for MIPS.
-   Copyright (C) 1989-2023 Free Software Foundation, Inc.
+   Copyright (C) 1989-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -52,5 +52,12 @@ enum mips_cb_setting {
   MIPS_CB_NEVER,
   MIPS_CB_OPTIMAL,
   MIPS_CB_ALWAYS
+};
+
+/* Enumerates the setting of the -mexplicit-relocs= option.  */
+enum mips_explicit_relocs {
+  MIPS_EXPLICIT_RELOCS_NONE,
+  MIPS_EXPLICIT_RELOCS_BASE,
+  MIPS_EXPLICIT_RELOCS_PCREL
 };
 #endif

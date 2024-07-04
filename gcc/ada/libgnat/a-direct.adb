@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Calendar;               use Ada.Calendar;
+with Ada.Calendar.Formatting;    use Ada.Calendar;
 with Ada.Characters.Handling;    use Ada.Characters.Handling;
 with Ada.Containers.Vectors;
 with Ada.Directories.Validity;   use Ada.Directories.Validity;
@@ -1367,9 +1367,7 @@ package body Ada.Directories is
          --  the Filter add it to our search vector.
 
          declare
-            subtype File_Name_String is String (1 .. File_Name_Len);
-
-            File_Name : constant File_Name_String
+            File_Name : constant String (1 .. File_Name_Len)
               with Import, Address => File_Name_Addr;
 
          begin
@@ -1379,13 +1377,32 @@ package body Ada.Directories is
                              Compose (Directory, File_Name) & ASCII.NUL;
                   Path   : String renames
                              Path_C (Path_C'First .. Path_C'Last - 1);
-                  Found  : Boolean := False;
                   Attr   : aliased File_Attributes;
                   Exists : Integer;
                   Error  : Integer;
-                  Kind   : File_Kind;
-                  Size   : File_Size;
 
+                  type Result (Found : Boolean := False) is record
+                     case Found is
+                        when True =>
+                           Kind : File_Kind;
+                           Size : File_Size;
+                        when False =>
+                           null;
+                     end case;
+                  end record;
+
+                  Res : Result := (Found => False);
+
+                  --  This declaration of No_Time copied from GNAT.Calendar
+                  --  because adding a "with GNAT.Calendar;" to this unit
+                  --  results in problems.
+
+                  No_Time : constant Ada.Calendar.Time :=
+                    Ada.Calendar.Formatting.Time_Of
+                      (Ada.Calendar.Year_Number'First,
+                       Ada.Calendar.Month_Number'First,
+                       Ada.Calendar.Day_Number'First,
+                       Time_Zone => 0);
                begin
                   --  Get the file attributes for the directory item
 
@@ -1414,32 +1431,30 @@ package body Ada.Directories is
 
                   elsif Exists = 1 then
                      if Is_Regular_File_Attr (Path_C'Address, Attr'Access) = 1
-                       and then Filter (Ordinary_File)
                      then
-                        Found := True;
-                        Kind := Ordinary_File;
-                        Size :=
-                          File_Size
-                            (File_Length_Attr
-                               (-1, Path_C'Address, Attr'Access));
+                        if Filter (Ordinary_File) then
+                           Res := (Found => True,
+                                   Kind => Ordinary_File,
+                                   Size => File_Size
+                                     (File_Length_Attr
+                                        (-1, Path_C'Address, Attr'Access)));
 
+                        end if;
                      elsif Is_Directory_Attr (Path_C'Address, Attr'Access) = 1
-                       and then Filter (File_Kind'First)
                      then
-                        Found := True;
-                        Kind := File_Kind'First;
-                        --  File_Kind'First is used instead of Directory due
-                        --  to a name overload issue with the procedure
-                        --  parameter Directory.
-                        Size := 0;
+                        if Filter (File_Kind'First) then
+                           Res := (Found => True,
+                                   Kind => File_Kind'First,
+                                   Size => 0);
+                        end if;
 
                      elsif Filter (Special_File) then
-                        Found := True;
-                        Kind := Special_File;
-                        Size := 0;
+                        Res := (Found => True,
+                                Kind => Special_File,
+                                Size => 0);
                      end if;
 
-                     if Found then
+                     if Res.Found then
                         Search.State.Dir_Contents.Append
                           (Directory_Entry_Type'
                              (Valid             => True,
@@ -1447,9 +1462,12 @@ package body Ada.Directories is
                                 To_Unbounded_String (File_Name),
                               Full_Name         => To_Unbounded_String (Path),
                               Attr_Error_Code   => 0,
-                              Kind              => Kind,
-                              Modification_Time => Modification_Time (Path),
-                              Size              => Size));
+                              Kind              => Res.Kind,
+                              Modification_Time =>
+                               (if Res.Kind = Special_File
+                                  then No_Time
+                                  else Modification_Time (Path)),
+                              Size              => Res.Size));
                      end if;
                   end if;
                end;

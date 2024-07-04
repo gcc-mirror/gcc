@@ -2,7 +2,7 @@
 
 // 2006-02-03  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2006-2023 Free Software Foundation, Inc.
+// Copyright (C) 2006-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,7 +42,7 @@ void test01(int dummy, ...)
 #endif
 
 #if _GLIBCXX_HAVE_VFWSCANF
-  FILE* stream = 0;
+  FILE* stream = va_arg(arg, FILE*);
   const wchar_t* format1 = 0;
   int ret1;
   ret1 = std::tr1::vfwscanf(stream, format1, arg);

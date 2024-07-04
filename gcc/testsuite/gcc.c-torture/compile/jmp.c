@@ -1,4 +1,5 @@
-foo (a)
+int
+foo (int a)
 {
   if (a)
     goto a1;

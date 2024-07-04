@@ -7,7 +7,7 @@ void
 c1 (int oz, int dk, int ub)
 {
   int *hd = 0;
-  long int *th = &dk;
+  long int *th = (long int *) &dk;
 
   while (ub < 1)
     {
@@ -17,7 +17,7 @@ c1 (int oz, int dk, int ub)
 
   while (oz < 2)
     {
-      long int *lq = &oz;
+      long int *lq = (long int *) &oz;
 
       (*hd < (*lq = *th)) < oz;
 

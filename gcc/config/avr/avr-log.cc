@@ -1,5 +1,5 @@
 /* Subroutines for log output for Atmel AVR back end.
-   Copyright (C) 2011-2023 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
    Contributed by Georg-Johann Lay (avr@gjlay.de)
 
    This file is part of GCC.
@@ -85,7 +85,7 @@ int
 avr_vdump (FILE *stream, const char *caller, ...)
 {
   va_list ap;
-        
+
   if (stream == NULL && dump_file)
     stream = dump_file;
 
@@ -112,161 +112,161 @@ avr_log_vadump (FILE *file, const char *caller, va_list ap)
   while (*fmt)
     {
       switch (*fmt++)
-        {
-        default:
-          fputc (*(fmt-1), file);
-          break;
+	{
+	default:
+	  fputc (*(fmt-1), file);
+	  break;
 
-        case '\\':
-          bs[1] = *fmt++;
-          fputs (bs, file);
-          break;
+	case '\\':
+	  bs[1] = *fmt++;
+	  fputs (bs, file);
+	  break;
 
-        case '%':
-          switch (*fmt++)
-            {
-            case '%':
-              fputc ('%', file);
-              break;
+	case '%':
+	  switch (*fmt++)
+	    {
+	    case '%':
+	      fputc ('%', file);
+	      break;
 
-            case 't':
-              {
-                tree t = va_arg (ap, tree);
-                if (NULL_TREE == t)
-                  fprintf (file, "<NULL-TREE>");
-                else
-                  {
-                    if (stderr == file)
-                      debug_tree (t);
-                    else
-                      {
-                        print_node (file, "", t, 0);
-                        putc ('\n', file);
-                      }
-                  }
-                break;
-              }
+	    case 't':
+	      {
+		tree t = va_arg (ap, tree);
+		if (NULL_TREE == t)
+		  fprintf (file, "<NULL-TREE>");
+		else
+		  {
+		    if (stderr == file)
+		      debug_tree (t);
+		    else
+		      {
+			print_node (file, "", t, 0);
+			putc ('\n', file);
+		      }
+		  }
+		break;
+	      }
 
-            case 'T':
-              {
-                tree t = va_arg (ap, tree);
-                if (NULL_TREE == t)
-                  fprintf (file, "<NULL-TREE>");
-                else
-                  print_node_brief (file, "", t, 3);
-              }
-              break;
+	    case 'T':
+	      {
+		tree t = va_arg (ap, tree);
+		if (NULL_TREE == t)
+		  fprintf (file, "<NULL-TREE>");
+		else
+		  print_node_brief (file, "", t, 3);
+	      }
+	      break;
 
-            case 'd':
-              fprintf (file, "%d", va_arg (ap, int));
-              break;
+	    case 'd':
+	      fprintf (file, "%d", va_arg (ap, int));
+	      break;
 
-            case 'x':
-              fprintf (file, "%x", va_arg (ap, int));
-              break;
+	    case 'x':
+	      fprintf (file, "%x", va_arg (ap, int));
+	      break;
 
-            case 'b':
-              fprintf (file, "%s", va_arg (ap, int) ? "true" : "false");
-              break;
+	    case 'b':
+	      fprintf (file, "%s", va_arg (ap, int) ? "true" : "false");
+	      break;
 
-            case 'c':
-              fputc (va_arg (ap, int), file);
-              break;
+	    case 'c':
+	      fputc (va_arg (ap, int), file);
+	      break;
 
-            case 'r':
-              print_inline_rtx (file, va_arg (ap, rtx), 0);
-              break;
+	    case 'r':
+	      print_inline_rtx (file, va_arg (ap, rtx), 0);
+	      break;
 
-            case 'L':
-              {
-                rtx_insn *insn = safe_as_a <rtx_insn *> (va_arg (ap, rtx));
+	    case 'L':
+	      {
+		rtx_insn *insn = safe_as_a <rtx_insn *> (va_arg (ap, rtx));
 
-                while (insn)
-                  {
-                    print_inline_rtx (file, insn, 0);
-                    fprintf (file, "\n");
-                    insn = NEXT_INSN (insn);
-                  }
-                break;
-              }
+		while (insn)
+		  {
+		    print_inline_rtx (file, insn, 0);
+		    fprintf (file, "\n");
+		    insn = NEXT_INSN (insn);
+		  }
+		break;
+	      }
 
-            case 'f':
-              if (cfun && cfun->decl)
-                fputs (current_function_name(), file);
-              break;
+	    case 'f':
+	      if (cfun && cfun->decl)
+		fputs (current_function_name(), file);
+	      break;
 
-            case 's':
-              {
-                const char *str = va_arg (ap, char*);
-                fputs (str ? str : "(null)", file);
-              }
-              break;
+	    case 's':
+	      {
+		const char *str = va_arg (ap, char*);
+		fputs (str ? str : "(null)", file);
+	      }
+	      break;
 
-            case 'm':
-              fputs (GET_MODE_NAME ((machine_mode) va_arg (ap, int)),
-                     file);
-              break;
+	    case 'm':
+	      fputs (GET_MODE_NAME ((machine_mode) va_arg (ap, int)),
+		     file);
+	      break;
 
-            case 'C':
-              fputs (rtx_name[va_arg (ap, int)], file);
-              break;
+	    case 'C':
+	      fputs (rtx_name[va_arg (ap, int)], file);
+	      break;
 
-            case 'R':
-              fputs (reg_class_names[va_arg (ap, int)], file);
-              break;
+	    case 'R':
+	      fputs (reg_class_names[va_arg (ap, int)], file);
+	      break;
 
-            case 'F':
-              fputs (caller, file);
-              break;
+	    case 'F':
+	      fputs (caller, file);
+	      break;
 
-            case 'H':
-              {
-                location_t loc = va_arg (ap, location_t);
+	    case 'H':
+	      {
+		location_t loc = va_arg (ap, location_t);
 
-                if (BUILTINS_LOCATION == loc)
-                  fprintf (file, "<BUILTIN-LOCATION>");
-                else if (UNKNOWN_LOCATION == loc)
-                  fprintf (file, "<UNKNOWN-LOCATION>");
-                else
-                  fprintf (file, "%s:%d",
-                           LOCATION_FILE (loc), LOCATION_LINE (loc));
+		if (BUILTINS_LOCATION == loc)
+		  fprintf (file, "<BUILTIN-LOCATION>");
+		else if (UNKNOWN_LOCATION == loc)
+		  fprintf (file, "<UNKNOWN-LOCATION>");
+		else
+		  fprintf (file, "%s:%d",
+			   LOCATION_FILE (loc), LOCATION_LINE (loc));
 
-                break;
-              }
+		break;
+	      }
 
-            case '!':
-              if (!current_pass)
-                return;
-              /* FALLTHRU */
+	    case '!':
+	      if (!current_pass)
+		return;
+	      /* FALLTHRU */
 
-            case '?':
-              avr_vdump (file, caller, "%F[%f:%P]");
-              break;
+	    case '?':
+	      avr_vdump (file, caller, "%F[%f:%P]");
+	      break;
 
-            case 'P':
-              if (current_pass)
-                fprintf (file, "%s(%d)",
-                         current_pass->name,
-                         current_pass->static_pass_number);
-              else
-                fprintf (file, "pass=?");
+	    case 'P':
+	      if (current_pass)
+		fprintf (file, "%s(%d)",
+			 current_pass->name,
+			 current_pass->static_pass_number);
+	      else
+		fprintf (file, "pass=?");
 
-              break;
+	      break;
 
-            case 'A':
-              fflush (file);
-              abort();
+	    case 'A':
+	      fflush (file);
+	      abort();
 
-            default:
-              /* Unknown %-code: Stop printing */
+	    default:
+	      /* Unknown %-code: Stop printing */
 
-              fprintf (file, "??? %%%c ???%s\n", *(fmt-1), fmt);
-              fmt = "";
+	      fprintf (file, "??? %%%c ???%s\n", *(fmt-1), fmt);
+	      fmt = "";
 
-              break;
-            }
-          break; /* % */
-        }
+	      break;
+	    }
+	  break; /* % */
+	}
     }
 
   fflush (file);
@@ -283,7 +283,7 @@ avr_log_set_avr_log (void)
 
   if (all)
     avr_log_details = "all";
-	
+
   if (all || avr_log_details)
     {
       /* Adding , at beginning and end of string makes searching easier.  */
@@ -298,13 +298,13 @@ avr_log_set_avr_log (void)
       info = strstr (str, ",?,") != NULL;
 
       if (info)
-        fprintf (stderr, "\n-mlog=");
+	fprintf (stderr, "\n-mlog=");
 
 #define SET_DUMP_DETAIL(S)                                       \
       do {                                                       \
 	avr_log.S = (all || strstr (str, "," #S ",") != NULL);   \
-        if (info)                                                \
-          fprintf (stderr, #S ",");                              \
+	if (info)                                                \
+	  fprintf (stderr, #S ",");                              \
       } while (0)
 
       SET_DUMP_DETAIL (address_cost);
@@ -320,6 +320,6 @@ avr_log_set_avr_log (void)
 #undef SET_DUMP_DETAIL
 
       if (info)
-        fprintf (stderr, "?\n\n");
+	fprintf (stderr, "?\n\n");
     }
 }

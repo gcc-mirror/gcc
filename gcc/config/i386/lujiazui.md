@@ -1,4 +1,4 @@
-;; Copyright (C) 2012-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2024 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -137,7 +137,7 @@
 (define_insn_reservation "lua_lea" 1
 			 (and (eq_attr "cpu" "lujiazui")
 				  (eq_attr "type" "lea"))
-			 "hsw_decodern,lua_p45")
+			 "lua_decodern,lua_p45")
 
 (define_insn_reservation "lua_shift_rotate" 1
 			 (and (eq_attr "cpu" "lujiazui")

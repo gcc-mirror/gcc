@@ -7,7 +7,7 @@ di (int y9, int qw)
   if ((int) &y9 != 0)
     {
       int py;
-      int **fq = &py;
+      int **fq = (int **) &py;
 
       while (qw < 1)
         {

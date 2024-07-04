@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -129,5 +129,14 @@ package body Interfaces.C_Streams is
    begin
       return C_setvbuf (stream, buffer, mode, size);
    end setvbuf;
+
+   ------------
+   -- unlink --
+   ------------
+
+   function unlink (filename : chars) return int is
+   begin
+      return System.CRTL.unlink (filename);
+   end unlink;
 
 end Interfaces.C_Streams;

@@ -91,7 +91,7 @@
 # error "DEC128_SUBNORMAL_MIN not defined"
 #endif
 
-/* These macros from C2X should not be defined.  */
+/* These macros from C23 should not be defined.  */
 
 #ifdef DEC32_TRUE_MIN
 # error "DEC32_TRUE_MIN defined"

@@ -1,4 +1,7 @@
 /* { dg-additional-options "-fwrapv" } */
+void abort (void);
+void exit (int);
+
 int errflag;
 
 long long
@@ -22,7 +25,8 @@ f (long long x, long long y)
   return 0;
 }
 
-main ()
+int
+main (void)
 {
   f (0, 0);
   if (errflag)

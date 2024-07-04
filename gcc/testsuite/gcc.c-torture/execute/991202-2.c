@@ -1,3 +1,5 @@
+void abort (void);
+void exit (int);
 
 int
 f1 ()

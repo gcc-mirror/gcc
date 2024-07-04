@@ -1,5 +1,5 @@
 /* String length optimization
-   Copyright (C) 2011-2023 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>
 
 This file is part of GCC.
@@ -215,7 +215,7 @@ get_range (tree val, gimple *stmt, wide_int minmax[2],
       rvals = get_range_query (cfun);
     }
 
-  value_range vr;
+  value_range vr (TREE_TYPE (val));
   if (!rvals->range_of_expr (vr, val, stmt))
     return NULL_TREE;
 
@@ -235,9 +235,9 @@ get_range (tree val, gimple *stmt, wide_int minmax[2],
 class strlen_pass : public dom_walker
 {
 public:
-  strlen_pass (cdi_direction direction)
+  strlen_pass (function *fun, cdi_direction direction)
     : dom_walker (direction),
-      ptr_qry (&m_ranger),
+      ptr_qry (get_range_query (fun)),
       m_cleanup_cfg (false)
   {
   }
@@ -281,14 +281,14 @@ public:
 			    gimple *stmt,
 			    unsigned lenrange[3], bool *nulterm,
 			    bool *allnul, bool *allnonnul);
-  bool count_nonzero_bytes (tree exp,
+  bool count_nonzero_bytes (tree exp, tree vuse,
 			    gimple *stmt,
 			    unsigned HOST_WIDE_INT offset,
 			    unsigned HOST_WIDE_INT nbytes,
 			    unsigned lenrange[3], bool *nulterm,
 			    bool *allnul, bool *allnonnul,
 			    ssa_name_limit_t &snlim);
-  bool count_nonzero_bytes_addr (tree exp,
+  bool count_nonzero_bytes_addr (tree exp, tree vuse,
 				 gimple *stmt,
 				 unsigned HOST_WIDE_INT offset,
 				 unsigned HOST_WIDE_INT nbytes,
@@ -298,8 +298,6 @@ public:
   bool get_len_or_size (gimple *stmt, tree arg, int idx,
 			unsigned HOST_WIDE_INT lenrng[2],
 			unsigned HOST_WIDE_INT *size, bool *nulterm);
-
-  gimple_ranger m_ranger;
 
   /* A pointer_query object to store information about pointers and
      their targets in.  */
@@ -349,7 +347,7 @@ compare_nonzero_chars (strinfo *si, gimple *stmt,
   if (!rvals || TREE_CODE (si->nonzero_chars) != SSA_NAME)
     return -1;
 
-  value_range vr;
+  int_range_max vr;
   if (!rvals->range_of_expr (vr, si->nonzero_chars, stmt)
       || vr.varying_p ()
       || vr.undefined_p ())
@@ -982,7 +980,7 @@ dump_strlen_info (FILE *fp, gimple *stmt, range_query *rvals)
 		  print_generic_expr (fp, si->nonzero_chars);
 		  if (TREE_CODE (si->nonzero_chars) == SSA_NAME)
 		    {
-		      value_range vr;
+		      int_range_max vr;
 		      if (rvals)
 			rvals->range_of_expr (vr, si->nonzero_chars,
 					      si->stmt);
@@ -1220,7 +1218,7 @@ get_range_strlen_dynamic (tree src, gimple *stmt,
 	    pdata->minlen = si->nonzero_chars;
 	  else if (TREE_CODE (si->nonzero_chars) == SSA_NAME)
 	    {
-	      value_range vr;
+	      int_range_max vr;
 	      ptr_qry->rvals->range_of_expr (vr, si->nonzero_chars, si->stmt);
 	      if (vr.undefined_p () || vr.varying_p ())
 		pdata->minlen = build_zero_cst (size_type_node);
@@ -1228,7 +1226,6 @@ get_range_strlen_dynamic (tree src, gimple *stmt,
 		{
 		  tree type = vr.type ();
 		  pdata->minlen = wide_int_to_tree (type, vr.lower_bound ());
-		  pdata->maxlen = wide_int_to_tree (type, vr.upper_bound ());
 		}
 	    }
 	  else
@@ -1253,9 +1250,21 @@ get_range_strlen_dynamic (tree src, gimple *stmt,
 		{
 		  ++off;   /* Increment for the terminating nul.  */
 		  tree toffset = build_int_cst (size_type_node, off);
-		  pdata->maxlen = fold_build2 (MINUS_EXPR, size_type_node, size,
-					       toffset);
-		  pdata->maxbound = pdata->maxlen;
+		  pdata->maxlen = fold_build2 (MINUS_EXPR, size_type_node,
+					       size, toffset);
+		  if (tree_int_cst_lt (pdata->maxlen, pdata->minlen))
+		    /* This can happen when triggering UB, when base is an
+		       array which is known to be filled with at least size
+		       non-zero bytes.  E.g. for
+		       char a[2]; memcpy (a, "12", sizeof a);
+		       We don't want to create an invalid range [2, 1]
+		       where 2 comes from the number of non-zero bytes and
+		       1 from longest valid zero-terminated string that can
+		       be stored in such an array, so pick just one of
+		       those, pdata->minlen.  See PR110603.  */
+		    pdata->maxlen = build_all_ones_cst (size_type_node);
+		  else
+		    pdata->maxbound = pdata->maxlen;
 		}
 	      else	
 		pdata->maxlen = build_all_ones_cst (size_type_node);
@@ -1265,7 +1274,7 @@ get_range_strlen_dynamic (tree src, gimple *stmt,
 	}
       else if (pdata->minlen && TREE_CODE (pdata->minlen) == SSA_NAME)
 	{
-	  value_range vr;
+	  int_range_max vr;
 	  ptr_qry->rvals->range_of_expr (vr, si->nonzero_chars, stmt);
 	  if (vr.varying_p () || vr.undefined_p ())
 	    {
@@ -1910,7 +1919,7 @@ set_strlen_range (tree lhs, wide_int min, wide_int max,
 	}
       else if (TREE_CODE (bound) == SSA_NAME)
 	{
-	  value_range r;
+	  int_range_max r;
 	  get_range_query (cfun)->range_of_expr (r, bound);
 	  if (!r.undefined_p ())
 	    {
@@ -1928,7 +1937,7 @@ set_strlen_range (tree lhs, wide_int min, wide_int max,
   if (min == max)
     return wide_int_to_tree (size_type_node, min);
 
-  value_range vr (TREE_TYPE (lhs), min, max);
+  int_range_max vr (TREE_TYPE (lhs), min, max);
   set_range_info (lhs, vr);
   return lhs;
 }
@@ -2330,6 +2339,8 @@ strlen_pass::handle_builtin_strlen ()
 		  wide_int min = wi::to_wide (old);
 		  wide_int max
 		    = wi::to_wide (TYPE_MAX_VALUE (ptrdiff_type_node)) - 2;
+		  if (wi::gtu_p (min, max))
+		    max = wi::to_wide (TYPE_MAX_VALUE (TREE_TYPE (lhs)));
 		  set_strlen_range (lhs, min, max);
 		}
 	      else
@@ -2889,7 +2900,7 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt,
     return false;
 
   wide_int cntrange[2];
-  value_range r;
+  int_range_max r;
   if (!get_range_query (cfun)->range_of_expr (r, cnt)
       || r.varying_p ()
       || r.undefined_p ())
@@ -4064,7 +4075,7 @@ strlen_pass::get_len_or_size (gimple *stmt, tree arg, int idx,
 	}
       else if (TREE_CODE (si->nonzero_chars) == SSA_NAME)
 	{
-	  value_range r;
+	  int_range_max r;
 	  if (get_range_query (cfun)->range_of_expr (r, si->nonzero_chars)
 	      && !r.undefined_p ()
 	      && !r.varying_p ())
@@ -4359,7 +4370,7 @@ strlen_pass::handle_builtin_string_cmp ()
 	       known to be unequal set the range of the result to non-zero.
 	       This allows the call to be eliminated if its result is only
 	       used in tests for equality to zero.  */
-	    value_range nz;
+	    int_range_max nz;
 	    nz.set_nonzero (TREE_TYPE (lhs));
 	    set_range_info (lhs, nz);
 	    return false;
@@ -4531,8 +4542,8 @@ nonzero_bytes_for_type (tree type, unsigned lenrange[3],
 }
 
 /* Recursively determine the minimum and maximum number of leading nonzero
-   bytes in the representation of EXP and set LENRANGE[0] and LENRANGE[1]
-   to each.
+   bytes in the representation of EXP at memory state VUSE and set
+   LENRANGE[0] and LENRANGE[1] to each.
    Sets LENRANGE[2] to the total size of the access (which may be less
    than LENRANGE[1] when what's being referenced by EXP is a pointer
    rather than an array).
@@ -4546,7 +4557,7 @@ nonzero_bytes_for_type (tree type, unsigned lenrange[3],
    Returns true on success and false otherwise.  */
 
 bool
-strlen_pass::count_nonzero_bytes (tree exp, gimple *stmt,
+strlen_pass::count_nonzero_bytes (tree exp, tree vuse, gimple *stmt,
 				  unsigned HOST_WIDE_INT offset,
 				  unsigned HOST_WIDE_INT nbytes,
 				  unsigned lenrange[3], bool *nulterm,
@@ -4566,22 +4577,23 @@ strlen_pass::count_nonzero_bytes (tree exp, gimple *stmt,
 	     exact value is not known) recurse once to set the range
 	     for an arbitrary constant.  */
 	  exp = build_int_cst (type, 1);
-	  return count_nonzero_bytes (exp, stmt,
+	  return count_nonzero_bytes (exp, vuse, stmt,
 				      offset, 1, lenrange,
 				      nulterm, allnul, allnonnul, snlim);
 	}
 
-      gimple *stmt = SSA_NAME_DEF_STMT (exp);
-      if (gimple_assign_single_p (stmt))
+      gimple *g = SSA_NAME_DEF_STMT (exp);
+      if (gimple_assign_single_p (g))
 	{
-	  exp = gimple_assign_rhs1 (stmt);
+	  exp = gimple_assign_rhs1 (g);
 	  if (!DECL_P (exp)
 	      && TREE_CODE (exp) != CONSTRUCTOR
 	      && TREE_CODE (exp) != MEM_REF)
 	    return false;
 	  /* Handle DECLs, CONSTRUCTOR and MEM_REF below.  */
+	  stmt = g;
 	}
-      else if (gimple_code (stmt) == GIMPLE_PHI)
+      else if (gimple_code (g) == GIMPLE_PHI)
 	{
 	  /* Avoid processing an SSA_NAME that has already been visited
 	     or if an SSA_NAME limit has been reached.  Indicate success
@@ -4590,11 +4602,11 @@ strlen_pass::count_nonzero_bytes (tree exp, gimple *stmt,
 	    return res > 0;
 
 	  /* Determine the minimum and maximum from the PHI arguments.  */
-	  unsigned int n = gimple_phi_num_args (stmt);
+	  unsigned int n = gimple_phi_num_args (g);
 	  for (unsigned i = 0; i != n; i++)
 	    {
-	      tree def = gimple_phi_arg_def (stmt, i);
-	      if (!count_nonzero_bytes (def, stmt,
+	      tree def = gimple_phi_arg_def (g, i);
+	      if (!count_nonzero_bytes (def, vuse, g,
 					offset, nbytes, lenrange, nulterm,
 					allnul, allnonnul, snlim))
 		return false;
@@ -4652,7 +4664,7 @@ strlen_pass::count_nonzero_bytes (tree exp, gimple *stmt,
 	return false;
 
       /* Handle MEM_REF = SSA_NAME types of assignments.  */
-      return count_nonzero_bytes_addr (arg, stmt,
+      return count_nonzero_bytes_addr (arg, vuse, stmt,
 				       offset, nbytes, lenrange, nulterm,
 				       allnul, allnonnul, snlim);
     }
@@ -4765,7 +4777,7 @@ strlen_pass::count_nonzero_bytes (tree exp, gimple *stmt,
    bytes that are pointed to by EXP, which should be a pointer.  */
 
 bool
-strlen_pass::count_nonzero_bytes_addr (tree exp, gimple *stmt,
+strlen_pass::count_nonzero_bytes_addr (tree exp, tree vuse, gimple *stmt,
 				       unsigned HOST_WIDE_INT offset,
 				       unsigned HOST_WIDE_INT nbytes,
 				       unsigned lenrange[3], bool *nulterm,
@@ -4775,6 +4787,14 @@ strlen_pass::count_nonzero_bytes_addr (tree exp, gimple *stmt,
   int idx = get_stridx (exp, stmt);
   if (idx > 0)
     {
+      /* get_strinfo reflects string lengths before the current statement,
+	 where the current statement is the outermost count_nonzero_bytes
+	 stmt.  If there are any stores in between stmt and that
+	 current statement, the string length information might describe
+	 something significantly different.  */
+      if (gimple_vuse (stmt) != vuse)
+	return false;
+
       strinfo *si = get_strinfo (idx);
       if (!si)
 	return false;
@@ -4787,7 +4807,7 @@ strlen_pass::count_nonzero_bytes_addr (tree exp, gimple *stmt,
       else if (si->nonzero_chars
 	       && TREE_CODE (si->nonzero_chars) == SSA_NAME)
 	{
-	  value_range vr;
+	  int_range_max vr;
 	  if (!ptr_qry.rvals->range_of_expr (vr, si->nonzero_chars, stmt)
 	      || vr.undefined_p ()
 	      || vr.varying_p ())
@@ -4807,7 +4827,7 @@ strlen_pass::count_nonzero_bytes_addr (tree exp, gimple *stmt,
       if (maxlen + 1 < nbytes)
 	return false;
 
-      if (nbytes <= minlen)
+      if (nbytes <= minlen || !si->full_string_p)
 	*nulterm = false;
 
       if (nbytes < minlen)
@@ -4816,6 +4836,9 @@ strlen_pass::count_nonzero_bytes_addr (tree exp, gimple *stmt,
 	  if (nbytes < maxlen)
 	    maxlen = nbytes;
 	}
+
+      if (!si->full_string_p)
+	maxlen = nbytes;
 
       if (minlen < lenrange[0])
 	lenrange[0] = minlen;
@@ -4835,14 +4858,14 @@ strlen_pass::count_nonzero_bytes_addr (tree exp, gimple *stmt,
     }
 
   if (TREE_CODE (exp) == ADDR_EXPR)
-    return count_nonzero_bytes (TREE_OPERAND (exp, 0), stmt,
+    return count_nonzero_bytes (TREE_OPERAND (exp, 0), vuse, stmt,
 				offset, nbytes,
 				lenrange, nulterm, allnul, allnonnul, snlim);
 
   if (TREE_CODE (exp) == SSA_NAME)
     {
-      gimple *stmt = SSA_NAME_DEF_STMT (exp);
-      if (gimple_code (stmt) == GIMPLE_PHI)
+      gimple *g = SSA_NAME_DEF_STMT (exp);
+      if (gimple_code (g) == GIMPLE_PHI)
 	{
 	  /* Avoid processing an SSA_NAME that has already been visited
 	     or if an SSA_NAME limit has been reached.  Indicate success
@@ -4851,11 +4874,11 @@ strlen_pass::count_nonzero_bytes_addr (tree exp, gimple *stmt,
 	    return res > 0;
 
 	  /* Determine the minimum and maximum from the PHI arguments.  */
-	  unsigned int n = gimple_phi_num_args (stmt);
+	  unsigned int n = gimple_phi_num_args (g);
 	  for (unsigned i = 0; i != n; i++)
 	    {
-	      tree def = gimple_phi_arg_def (stmt, i);
-	      if (!count_nonzero_bytes_addr (def, stmt,
+	      tree def = gimple_phi_arg_def (g, i);
+	      if (!count_nonzero_bytes_addr (def, vuse, g,
 					     offset, nbytes, lenrange,
 					     nulterm, allnul, allnonnul,
 					     snlim))
@@ -4903,7 +4926,7 @@ strlen_pass::count_nonzero_bytes (tree expr_or_type, gimple *stmt,
 
   ssa_name_limit_t snlim;
   tree expr = expr_or_type;
-  return count_nonzero_bytes (expr, stmt,
+  return count_nonzero_bytes (expr, gimple_vuse (stmt), stmt,
 			      0, 0, lenrange, nulterm, allnul, allnonnul,
 			      snlim);
 }
@@ -5024,6 +5047,9 @@ strlen_pass::handle_store (bool *zero_write)
 
   if (si != NULL)
     {
+      /* The count_nonzero_bytes call above might have unshared si.
+	 Fetch it again from the vector.  */
+      si = get_strinfo (idx);
       /* The corresponding element is set to 1 if the first and last
 	 element, respectively, of the sequence of characters being
 	 written over the string described by SI ends before
@@ -5541,7 +5567,7 @@ strlen_pass::handle_integral_assign (bool *cleanup_eh)
 		  /* Reading a character before the final '\0'
 		     character.  Just set the value range to ~[0, 0]
 		     if we don't have anything better.  */
-		  value_range r;
+		  int_range_max r;
 		  if (!get_range_query (cfun)->range_of_expr (r, lhs)
 		      || r.varying_p ())
 		    {
@@ -5884,9 +5910,10 @@ printf_strlen_execute (function *fun, bool warn_only)
   ssa_ver_to_stridx.safe_grow_cleared (num_ssa_names, true);
   max_stridx = 1;
 
+  enable_ranger (fun);
   /* String length optimization is implemented as a walk of the dominator
      tree and a forward walk of statements within each block.  */
-  strlen_pass walker (CDI_DOMINATORS);
+  strlen_pass walker (fun, CDI_DOMINATORS);
   walker.walk (ENTRY_BLOCK_PTR_FOR_FN (fun));
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -5911,6 +5938,7 @@ printf_strlen_execute (function *fun, bool warn_only)
       strlen_to_stridx = NULL;
     }
 
+  disable_ranger (fun);
   scev_finalize ();
   loop_optimizer_finalize ();
 

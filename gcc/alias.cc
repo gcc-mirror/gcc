@@ -1,5 +1,5 @@
 /* Alias analysis for GNU C
-   Copyright (C) 1997-2023 Free Software Foundation, Inc.
+   Copyright (C) 1997-2024 Free Software Foundation, Inc.
    Contributed by John Carr (jfc@mit.edu).
 
 This file is part of GCC.
@@ -770,11 +770,23 @@ reference_alias_ptr_type_1 (tree *t)
   /* If the innermost reference is a MEM_REF that has a
      conversion embedded treat it like a VIEW_CONVERT_EXPR above,
      using the memory access type for determining the alias-set.  */
-  if (TREE_CODE (inner) == MEM_REF
-      && (TYPE_MAIN_VARIANT (TREE_TYPE (inner))
-	  != TYPE_MAIN_VARIANT
-	       (TREE_TYPE (TREE_TYPE (TREE_OPERAND (inner, 1))))))
-    return TREE_TYPE (TREE_OPERAND (inner, 1));
+  if (view_converted_memref_p (inner))
+    {
+      tree alias_ptrtype = TREE_TYPE (TREE_OPERAND (inner, 1));
+      /* Unless we have the (aggregate) effective type of the access
+	 somewhere on the access path.  If we have for example
+	 (&a->elts[i])->l.len exposed by abstraction we'd see
+	 MEM <A> [(B *)a].elts[i].l.len and we can use the alias set
+	 of 'len' when typeof (MEM <A> [(B *)a].elts[i]) == B for
+	 example.  See PR111715.  */
+      tree inner = *t;
+      while (handled_component_p (inner)
+	     && (TYPE_MAIN_VARIANT (TREE_TYPE (inner))
+		 != TYPE_MAIN_VARIANT (TREE_TYPE (alias_ptrtype))))
+	inner = TREE_OPERAND (inner, 0);
+      if (TREE_CODE (inner) == MEM_REF)
+	return alias_ptrtype;
+    }
 
   /* Otherwise, pick up the outermost object that we could have
      a pointer to.  */
@@ -1385,26 +1397,6 @@ unique_base_value_p (rtx x)
   return GET_CODE (x) == ADDRESS && GET_MODE (x) == Pmode;
 }
 
-/* Return true if X is known to be a base value.  */
-
-static bool
-known_base_value_p (rtx x)
-{
-  switch (GET_CODE (x))
-    {
-    case LABEL_REF:
-    case SYMBOL_REF:
-      return true;
-
-    case ADDRESS:
-      /* Arguments may or may not be bases; we don't know for sure.  */
-      return GET_MODE (x) != VOIDmode;
-
-    default:
-      return false;
-    }
-}
-
 /* Inside SRC, the source of a SET, find a base address.  */
 
 static rtx
@@ -1475,46 +1467,12 @@ find_base_value (rtx src)
     case PLUS:
     case MINUS:
       {
-	rtx temp, src_0 = XEXP (src, 0), src_1 = XEXP (src, 1);
+	rtx src_0 = XEXP (src, 0), src_1 = XEXP (src, 1);
 
-	/* If either operand is a REG that is a known pointer, then it
-	   is the base.  */
-	if (REG_P (src_0) && REG_POINTER (src_0))
+	/* If either operand is a CONST_INT, then the other is the base.  */
+	if (CONST_INT_P (src_1))
 	  return find_base_value (src_0);
-	if (REG_P (src_1) && REG_POINTER (src_1))
-	  return find_base_value (src_1);
-
-	/* If either operand is a REG, then see if we already have
-	   a known value for it.  */
-	if (REG_P (src_0))
-	  {
-	    temp = find_base_value (src_0);
-	    if (temp != 0)
-	      src_0 = temp;
-	  }
-
-	if (REG_P (src_1))
-	  {
-	    temp = find_base_value (src_1);
-	    if (temp!= 0)
-	      src_1 = temp;
-	  }
-
-	/* If either base is named object or a special address
-	   (like an argument or stack reference), then use it for the
-	   base term.  */
-	if (src_0 != 0 && known_base_value_p (src_0))
-	  return src_0;
-
-	if (src_1 != 0 && known_base_value_p (src_1))
-	  return src_1;
-
-	/* Guess which operand is the base address:
-	   If either operand is a symbol, then it is the base.  If
-	   either operand is a CONST_INT, then the other is the base.  */
-	if (CONST_INT_P (src_1) || CONSTANT_P (src_0))
-	  return find_base_value (src_0);
-	else if (CONST_INT_P (src_0) || CONSTANT_P (src_1))
+	else if (CONST_INT_P (src_0))
 	  return find_base_value (src_1);
 
 	return 0;
@@ -2062,31 +2020,13 @@ find_base_term (rtx x, vec<std::pair<cselib_val *,
 	if (tmp1 == pic_offset_table_rtx && CONSTANT_P (tmp2))
 	  return find_base_term (tmp2, visited_vals);
 
-	/* If either operand is known to be a pointer, then prefer it
-	   to determine the base term.  */
-	if (REG_P (tmp1) && REG_POINTER (tmp1))
-	  ;
-	else if (REG_P (tmp2) && REG_POINTER (tmp2))
-	  std::swap (tmp1, tmp2);
-	/* If second argument is constant which has base term, prefer it
-	   over variable tmp1.  See PR64025.  */
-	else if (CONSTANT_P (tmp2) && !CONST_INT_P (tmp2))
+	if (CONST_INT_P (tmp1))
 	  std::swap (tmp1, tmp2);
 
-	/* Go ahead and find the base term for both operands.  If either base
-	   term is from a pointer or is a named object or a special address
-	   (like an argument or stack reference), then use it for the
-	   base term.  */
-	rtx base = find_base_term (tmp1, visited_vals);
-	if (base != NULL_RTX
-	    && ((REG_P (tmp1) && REG_POINTER (tmp1))
-		 || known_base_value_p (base)))
-	  return base;
-	base = find_base_term (tmp2, visited_vals);
-	if (base != NULL_RTX
-	    && ((REG_P (tmp2) && REG_POINTER (tmp2))
-		 || known_base_value_p (base)))
-	  return base;
+	/* We can only handle binary operators when one of the operands
+	   never leads to a base value.  */
+	if (CONST_INT_P (tmp2))
+	  return find_base_term (tmp1, visited_vals);
 
 	/* We could not determine which of the two operands was the
 	   base register and which was the index.  So we can determine

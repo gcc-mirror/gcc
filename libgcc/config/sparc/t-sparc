@@ -1,0 +1,4 @@
+# This is needed for __strub_leave to omit the frame pointer, without
+# which it will allocate a register save area on the stack and leave
+# it unscrubbed and most likely unused, because it's a leaf function.
+CFLAGS-strub.c += -fno-PIC -fomit-frame-pointer

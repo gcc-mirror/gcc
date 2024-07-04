@@ -1,4 +1,4 @@
-# Copyright (C) 2004-2023 Free Software Foundation, Inc.
+# Copyright (C) 2004-2024 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -110,34 +110,43 @@ proc obj-c++_link_flags { paths } {
     set shlib_ext [get_shlib_extension]
     verbose "shared lib extension: $shlib_ext"
 
+    # We need to add options to locate libobjc/libobjc-gnu and libstdc++
+    # Usually '-L' options are added to point to the relevant directories for
+    # the uninstalled libraries.
+
+    # In cases where libraries are available as both shared and convenience
+    # some additional checks are made.
+
+    # For some targets -static-xxxx options are handled by specs substitution
+    # and need a '-B' option rather than '-L'.  For Darwin, when embedded
+    # runpaths are in use (the default for all versions after macOS 10.11),
+    # '-B' is also needed to provide the runpath.
+    # When '-B' is used, this results in a '-L' for each path that exists (so
+    # that appending a '-L' as well is a needless duplicate).  There are also
+    # cases where tools warn for duplicates, leading to spurious fails.
+    # Therefore the objective of the code below is to add just one '-L' or
+    # '-B' for each of the libraries.
+
+    set target_wants_B_option 0
+    if { [istarget *-*-darwin9* ] || [istarget *-*-darwin\[12\]* ] } {
+      set target_wants_B_option 1
+    }
+
     if { $gccpath != "" } {
-      if [file exists "${gccpath}/lib/libstdc++.a"] {
-          append ld_library_path ":${gccpath}/lib"
+      if { [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.a"] ||
+	  [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.${shlib_ext}"] } {
+		if { $target_wants_B_option } {
+		    append flags "-B${gccpath}/libstdc++-v3/src/.libs "
+		} else {
+		    append flags "-L${gccpath}/libstdc++-v3/src/.libs "
+		}
+		append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
       }
-      if [file exists "${gccpath}/libg++/libg++.a"] {
-          append flags " -L${gccpath}/libg++ "
-          append ld_library_path ":${gccpath}/libg++"
-      }
-      if [file exists "${gccpath}/libstdc++/libstdc++.a"] {
-          append flags " -L${gccpath}/libstdc++ "
-          append ld_library_path ":${gccpath}/libstdc++"
-      }
-      if [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.a"] {
-          # Allow for %s spec substitutions
-          append flags " -B${gccpath}/libstdc++-v3/src/.libs "
-          append flags " -L${gccpath}/libstdc++-v3/src/.libs "
-          append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
-      }
-      # Look for libstdc++.${shlib_ext}.
-      if [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.${shlib_ext}"] {
-	  # Allow for %s spec substitutions
-	  append flags " -B${gccpath}/libstdc++-v3/src/.libs "
-	  append flags " -L${gccpath}/libstdc++-v3/src/.libs "
-	  append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
-      }
+
       if [file exists "${gccpath}/libiberty/libiberty.a"] {
           append flags " -L${gccpath}/libiberty "
       }
+
       if [file exists "${gccpath}/librx/librx.a"] {
           append flags " -L${gccpath}/librx "
       }
@@ -159,9 +168,11 @@ proc obj-c++_link_flags { paths } {
 
       if { $libobjc_dir != "" } {
 	  set libobjc_dir [file dirname ${libobjc_dir}]
-	  # Allow for %s spec substitutions
-	  append flags " -B${libobjc_dir} "
-	  append flags " -L${libobjc_dir} "
+	  if { $target_wants_B_option } {
+	    append flags "-B${libobjc_dir} "
+	  } else {
+	    append flags "-L${libobjc_dir} "
+	  }
 	  append ld_library_path ":${libobjc_dir}"
       }
       append ld_library_path \
@@ -176,7 +187,11 @@ proc obj-c++_link_flags { paths } {
       }
       set libstdcpp [lookfor_file ${tool_root_dir} libstdc++];
       if { $libstdcpp != "" } {
-          append flags "-L${libstdcpp} ";
+	  if { $target_wants_B_option } {
+	    append flags "-B${libstdcpp} "
+	  } else {
+	    append flags "-L${libstdcpp} "
+	  }
           append ld_library_path ":${libstdcpp}"
       }
       set libiberty [lookfor_file ${tool_root_dir} libiberty];
@@ -373,7 +388,7 @@ proc obj-c++_target_compile { source dest type options } {
 
     set options [concat "$ALWAYS_OBJCXXFLAGS" $options];
 
-    set options [dg-additional-files-options $options $source]
+    set options [dg-additional-files-options $options $source $dest $type]
 
     set result [target_compile $source $dest $type $options]
 

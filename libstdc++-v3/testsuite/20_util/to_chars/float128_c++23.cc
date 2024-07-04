@@ -1,4 +1,4 @@
-// Copyright (C) 2022-2023 Free Software Foundation, Inc.
+// Copyright (C) 2022-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,6 +19,7 @@
 // { dg-require-effective-target ieee_floats }
 // { dg-require-effective-target size32plus }
 // { dg-add-options ieee }
+// { dg-xfail-run-if "from_chars limited to double-precision" { aarch64-*-vxworks* aarch64-*-rtems* } }
 
 #include <charconv>
 #include <stdfloat>

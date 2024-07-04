@@ -1,6 +1,7 @@
 RISCV_BUILTINS_H = $(srcdir)/config/riscv/riscv-vector-builtins.h \
 		   $(srcdir)/config/riscv/riscv-vector-builtins.def \
 		   $(srcdir)/config/riscv/riscv-vector-builtins-functions.def \
+       $(srcdir)/config/riscv/thead-vector-builtins-functions.def \
 		   riscv-vector-type-indexer.gen.def
 
 riscv-builtins.o: $(srcdir)/config/riscv/riscv-builtins.cc $(CONFIG_H) \
@@ -64,7 +65,7 @@ riscv-vsetvl.o: $(srcdir)/config/riscv/riscv-vsetvl.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(REGS_H) \
   $(TARGET_H) tree-pass.h df.h rtl-ssa.h cfgcleanup.h insn-config.h \
   insn-attr.h insn-opinit.h tm-constrs.h cfgrtl.h cfganal.h lcm.h \
-  predict.h profile-count.h $(srcdir)/config/riscv/riscv-vsetvl.h \
+  predict.h profile-count.h cfgloop.h \
   $(srcdir)/config/riscv/riscv-vsetvl.def
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/riscv/riscv-vsetvl.cc
@@ -73,10 +74,17 @@ riscv-vector-costs.o: $(srcdir)/config/riscv/riscv-vector-costs.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TARGET_H) $(FUNCTION_H) \
   $(TREE_H) basic-block.h $(RTL_H) gimple.h targhooks.h cfgloop.h \
   fold-const.h $(TM_P_H) tree-vectorizer.h gimple-iterator.h bitmap.h \
-  ssa.h backend.h \
+  ssa.h backend.h tree-data-ref.h tree-ssa-loop-niter.h \
   $(srcdir)/config/riscv/riscv-vector-costs.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/riscv/riscv-vector-costs.cc
+
+riscv-avlprop.o: $(srcdir)/config/riscv/riscv-avlprop.cc \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(REGS_H) \
+  $(TARGET_H) tree-pass.h df.h rtl-ssa.h cfgcleanup.h insn-attr.h \
+  tm-constrs.h insn-opinit.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/riscv/riscv-avlprop.cc
 
 riscv-d.o: $(srcdir)/config/riscv/riscv-d.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
@@ -107,6 +115,11 @@ riscv-v.o: $(srcdir)/config/riscv/riscv-v.cc \
   rtx-vector-builder.h
 	$(COMPILE) $<
 	$(POSTCOMPILE)
+
+riscv-target-attr.o: $(srcdir)/config/riscv/riscv-target-attr.cc $(CONFIG_H) \
+  $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(DIAGNOSTIC_CORE_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/riscv/riscv-target-attr.cc
 
 thead.o: $(srcdir)/config/riscv/thead.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TARGET_H) backend.h $(RTL_H) \

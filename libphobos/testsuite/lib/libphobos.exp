@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2023 Free Software Foundation, Inc.
+# Copyright (C) 2017-2024 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -234,7 +234,7 @@ proc libphobos_init { args } {
 	    if { "$mldir" == "." } {
 	      continue
 	    }
-	    if { [llength [glob -nocomplain ${gccdir}/${mldir}/libgcc_s*.so.*]] >= 1 } {
+	    if { [llength [glob -nocomplain ${gccdir}/${mldir}/libgcc_s*.${shlib_ext}*]] >= 1 } {
 	      append ld_library_path ":${gccdir}/${mldir}"
 	    }
 	  }
@@ -281,7 +281,7 @@ proc libphobos_target_compile { source dest type options } {
     lappend options "compiler=$gdc_final"
     lappend options "timeout=[timeout_value]"
 
-    set options [dg-additional-files-options $options $source]
+    set options [dg-additional-files-options $options $source $dest $type]
     set comp_output [target_compile $source $dest $type $options]
 
     return $comp_output

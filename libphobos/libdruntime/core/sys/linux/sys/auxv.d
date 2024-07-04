@@ -13,6 +13,7 @@ extern (C):
 
 version (MIPS32)  version = MIPS_Any;
 version (MIPS64)  version = MIPS_Any;
+version (LoongArch64) version = LoongArch_Any;
 version (PPC)     version = PPC_Any;
 version (PPC64)   version = PPC_Any;
 version (S390)    version = IBMZ_Any;
@@ -155,4 +156,20 @@ else version (IBMZ_Any)
   enum HWCAP_S390_HIGH_GPRS               = 512;
   enum HWCAP_S390_TE                      = 1024;
   enum HWCAP_S390_VX                      = 2048;
+}
+else version (LoongArch_Any)
+{
+  enum HWCAP_LOONGARCH_CPUCFG             = 0x00000001;
+  enum HWCAP_LOONGARCH_LAM                = 0x00000002;
+  enum HWCAP_LOONGARCH_UAL                = 0x00000004;
+  enum HWCAP_LOONGARCH_FPU                = 0x00000008;
+  enum HWCAP_LOONGARCH_LSX                = 0x00000010;
+  enum HWCAP_LOONGARCH_LASX               = 0x00000020;
+  enum HWCAP_LOONGARCH_CRC32              = 0x00000040;
+  enum HWCAP_LOONGARCH_COMPLEX            = 0x00000080;
+  enum HWCAP_LOONGARCH_CRYPTO             = 0x00000100;
+  enum HWCAP_LOONGARCH_LVZ                = 0x00000200;
+  enum HWCAP_LOONGARCH_LBT_X86            = 0x00000400;
+  enum HWCAP_LOONGARCH_LBT_ARM            = 0x00000800;
+  enum HWCAP_LOONGARCH_LBT_MIPS           = 0x00001000;
 }

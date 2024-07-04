@@ -1,5 +1,5 @@
 /* Profile counter container type.
-   Copyright (C) 2017-2023 Free Software Foundation, Inc.
+   Copyright (C) 2017-2024 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -910,7 +910,8 @@ public:
 
       profile_count ret;
       gcc_checking_assert (compatible_p (other));
-      ret.m_val = m_val + other.m_val;
+      uint64_t ret_val = m_val + other.m_val;
+      ret.m_val = MIN (ret_val, max_count);
       ret.m_quality = MIN (m_quality, other.m_quality);
       return ret;
     }
@@ -929,7 +930,8 @@ public:
       else
 	{
           gcc_checking_assert (compatible_p (other));
-	  m_val += other.m_val;
+	  uint64_t ret_val = m_val + other.m_val;
+	  m_val = MIN (ret_val, max_count);
 	  m_quality = MIN (m_quality, other.m_quality);
 	}
       return *this;
@@ -957,7 +959,7 @@ public:
       else
 	{
           gcc_checking_assert (compatible_p (other));
-	  m_val = m_val >= other.m_val ? m_val - other.m_val: 0;
+	  m_val = m_val >= other.m_val ? m_val - other.m_val : 0;
 	  m_quality = MIN (m_quality, other.m_quality);
 	}
       return *this;
@@ -1127,7 +1129,9 @@ public:
       if (!initialized_p ())
 	return uninitialized ();
       profile_count ret;
-      ret.m_val = RDIV (m_val * prob, REG_BR_PROB_BASE);
+      uint64_t tmp;
+      safe_scale_64bit (m_val, prob, REG_BR_PROB_BASE, &tmp);
+      ret.m_val = tmp;
       ret.m_quality = MIN (m_quality, ADJUSTED);
       return ret;
     }
@@ -1298,9 +1302,6 @@ public:
 
   /* Output THIS to F.  */
   void dump (FILE *f, struct function *fun = NULL) const;
-
-  /* Output THIS to BUFFER.  */
-  void dump (char *buffer, struct function *fun = NULL) const;
 
   /* Print THIS to stderr.  */
   void debug () const;

@@ -1,5 +1,5 @@
 /* Support routines for Value Range Propagation (VRP).
-   Copyright (C) 2005-2023 Free Software Foundation, Inc.
+   Copyright (C) 2005-2024 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>.
 
 This file is part of GCC.
@@ -52,6 +52,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "tree-dfa.h"
 #include "tree-ssa-dce.h"
+#include "alloc-pool.h"
+#include "cgraph.h"
+#include "symbol-summary.h"
+#include "ipa-utils.h"
+#include "sreal.h"
+#include "ipa-cp.h"
+#include "ipa-prop.h"
+#include "attribs.h"
+#include "diagnostic-core.h"
 
 // This class is utilized by VRP and ranger to remove __builtin_unreachable
 // calls, and reflect any resulting global ranges.
@@ -77,14 +86,15 @@ along with GCC; see the file COPYING3.  If not see
 
 class remove_unreachable {
 public:
-  remove_unreachable (gimple_ranger &r, bool all) : m_ranger (r), final_p (all)
+  remove_unreachable (range_query &r, bool all) : m_ranger (r), final_p (all)
     { m_list.create (30); }
   ~remove_unreachable () { m_list.release (); }
   void handle_early (gimple *s, edge e);
   void maybe_register (gimple *s);
+  bool remove ();
   bool remove_and_update_globals ();
   vec<std::pair<int, int> > m_list;
-  gimple_ranger &m_ranger;
+  range_query &m_ranger;
   bool final_p;
 };
 
@@ -123,7 +133,7 @@ remove_unreachable::maybe_register (gimple *s)
     m_list.safe_push (std::make_pair (e->src->index, e->dest->index));
 }
 
-// Return true if all uses of NAME are dominated by by block BB.  1 use
+// Return true if all uses of NAME are dominated by block BB.  1 use
 // is allowed in block BB, This is one we hope to remove.
 // ie
 //  _2 = _1 & 7;
@@ -187,6 +197,9 @@ fully_replaceable (tree name, basic_block bb)
 void
 remove_unreachable::handle_early (gimple *s, edge e)
 {
+  // If there is no gori_ssa, there is no early processsing.
+  if (!m_ranger.gori_ssa ())
+    return ;
   bool lhs_p = TREE_CODE (gimple_cond_lhs (s)) == SSA_NAME;
   bool rhs_p = TREE_CODE (gimple_cond_rhs (s)) == SSA_NAME;
   // Do not remove __builtin_unreachable if it confers a relation, or
@@ -202,29 +215,20 @@ remove_unreachable::handle_early (gimple *s, edge e)
 
   // Check if every export use is dominated by this branch.
   tree name;
-  FOR_EACH_GORI_EXPORT_NAME (m_ranger.gori (), e->src, name)
+  FOR_EACH_GORI_EXPORT_NAME (m_ranger.gori_ssa (), e->src, name)
     {
       if (!fully_replaceable (name, e->src))
 	return;
     }
 
   // Set the global value for each.
-  FOR_EACH_GORI_EXPORT_NAME (m_ranger.gori (), e->src, name)
+  FOR_EACH_GORI_EXPORT_NAME (m_ranger.gori_ssa (), e->src, name)
     {
-      Value_Range r (TREE_TYPE (name));
+      value_range r (TREE_TYPE (name));
       m_ranger.range_on_entry (r, e->dest, name);
       // Nothing at this late stage we can do if the write fails.
       if (!set_range_info (name, r))
 	continue;
-      if (dump_file)
-	{
-	  fprintf (dump_file, "Global Exported (via early unreachable): ");
-	  print_generic_expr (dump_file, name, TDF_SLIM);
-	  fprintf (dump_file, " = ");
-	  gimple_range_global (r, name);
-	  r.dump (dump_file);
-	  fputc ('\n', dump_file);
-	}
     }
 
   tree ssa = lhs_p ? gimple_cond_lhs (s) : gimple_cond_rhs (s);
@@ -245,6 +249,52 @@ remove_unreachable::handle_early (gimple *s, edge e)
     }
 }
 
+// Process the edges in the list, change the conditions and removing any
+// dead code feeding those conditions.   This removes the unreachables, but
+// makes no attempt to set globals values.
+
+bool
+remove_unreachable::remove ()
+{
+  if (!final_p || m_list.length () == 0)
+    return false;
+
+  bool change = false;
+  unsigned i;
+  for (i = 0; i < m_list.length (); i++)
+    {
+      auto eb = m_list[i];
+      basic_block src = BASIC_BLOCK_FOR_FN (cfun, eb.first);
+      basic_block dest = BASIC_BLOCK_FOR_FN (cfun, eb.second);
+      if (!src || !dest)
+	continue;
+      edge e = find_edge (src, dest);
+      gimple *s = gimple_outgoing_range_stmt_p (e->src);
+      gcc_checking_assert (gimple_code (s) == GIMPLE_COND);
+
+      tree name = gimple_range_ssa_p (gimple_cond_lhs (s));
+      if (!name)
+	name = gimple_range_ssa_p (gimple_cond_rhs (s));
+      // Check if global value can be set for NAME.
+      if (name && fully_replaceable (name, src))
+	{
+	  value_range r (TREE_TYPE (name));
+	  if (gori_name_on_edge (r, name, e, &m_ranger))
+	    set_range_info (name, r);
+	}
+
+      change = true;
+      // Rewrite the condition.
+      if (e->flags & EDGE_TRUE_VALUE)
+	gimple_cond_make_true (as_a<gcond *> (s));
+      else
+	gimple_cond_make_false (as_a<gcond *> (s));
+      update_stmt (s);
+    }
+
+  return change;
+}
+
 
 // Process the edges in the list, change the conditions and removing any
 // dead code feeding those conditions.  Calculate the range of any
@@ -258,9 +308,9 @@ remove_unreachable::remove_and_update_globals ()
   if (m_list.length () == 0)
     return false;
 
-  // Ensure the cache in SCEV has been cleared before processing
-  // globals to be removed.
-  scev_reset ();
+  // If there is no import/export info, Do basic removal.
+  if (!m_ranger.gori_ssa ())
+    return remove ();
 
   bool change = false;
   tree name;
@@ -279,11 +329,11 @@ remove_unreachable::remove_and_update_globals ()
       gcc_checking_assert (gimple_code (s) == GIMPLE_COND);
 
       bool dominate_exit_p = true;
-      FOR_EACH_GORI_EXPORT_NAME (m_ranger.gori (), e->src, name)
+      FOR_EACH_GORI_EXPORT_NAME (m_ranger.gori_ssa (), e->src, name)
 	{
 	  // Ensure the cache is set for NAME in the succ block.
-	  Value_Range r(TREE_TYPE (name));
-	  Value_Range ex(TREE_TYPE (name));
+	  value_range r(TREE_TYPE (name));
+	  value_range ex(TREE_TYPE (name));
 	  m_ranger.range_on_entry (r, e->dest, name);
 	  m_ranger.range_on_entry (ex, EXIT_BLOCK_PTR_FOR_FN (cfun), name);
 	  // If the range produced by this __builtin_unreachacble expression
@@ -296,7 +346,8 @@ remove_unreachable::remove_and_update_globals ()
       // If the exit is dominated, add to the export list.  Otherwise if this
       // isn't the final VRP pass, leave the call in the IL.
       if (dominate_exit_p)
-	bitmap_ior_into (all_exports, m_ranger.gori ().exports (e->src));
+	bitmap_ior_into (all_exports,
+			 m_ranger.gori_ssa ()->exports (e->src));
       else if (!final_p)
 	continue;
 
@@ -329,8 +380,8 @@ remove_unreachable::remove_and_update_globals ()
       name = ssa_name (i);
       if (!name || SSA_NAME_IN_FREE_LIST (name))
 	continue;
-      Value_Range r (TREE_TYPE (name));
-      Value_Range exp_range (TREE_TYPE (name));
+      value_range r (TREE_TYPE (name));
+      value_range exp_range (TREE_TYPE (name));
       r.set_undefined ();
       FOR_EACH_IMM_USE_FAST (use_p, iter, name)
 	{
@@ -352,15 +403,6 @@ remove_unreachable::remove_and_update_globals ()
       if (!set_range_info (name, r))
 	continue;
       change = true;
-      if (dump_file)
-	{
-	  fprintf (dump_file, "Global Exported (via unreachable): ");
-	  print_generic_expr (dump_file, name, TDF_SLIM);
-	  fprintf (dump_file, " = ");
-	  gimple_range_global (r, name);
-	  r.dump (dump_file);
-	  fputc ('\n', dump_file);
-	}
     }
   return change;
 }
@@ -886,8 +928,6 @@ find_case_label_range (gswitch *switch_stmt, const irange *range_of_op)
   size_t i, j;
   tree op = gimple_switch_index (switch_stmt);
   tree type = TREE_TYPE (op);
-  unsigned prec = TYPE_PRECISION (type);
-  signop sign = TYPE_SIGN (type);
   tree tmin = wide_int_to_tree (type, range_of_op->lower_bound ());
   tree tmax = wide_int_to_tree (type, range_of_op->upper_bound ());
   find_case_label_range (switch_stmt, tmin, tmax, &i, &j);
@@ -900,9 +940,7 @@ find_case_label_range (gswitch *switch_stmt, const irange *range_of_op)
 	= CASE_HIGH (label) ? CASE_HIGH (label) : CASE_LOW (label);
       wide_int wlow = wi::to_wide (CASE_LOW (label));
       wide_int whigh = wi::to_wide (case_high);
-      int_range_max label_range (type,
-				 wide_int::from (wlow, prec, sign),
-				 wide_int::from (whigh, prec, sign));
+      int_range_max label_range (TREE_TYPE (case_high), wlow, whigh);
       if (!types_compatible_p (label_range.type (), range_of_op->type ()))
 	range_cast (label_range, range_of_op->type ());
       label_range.intersect (*range_of_op);
@@ -1047,8 +1085,7 @@ private:
   from anywhere to perform a VRP pass, including from EVRP.  */
 
 unsigned int
-execute_ranger_vrp (struct function *fun, bool warn_array_bounds_p,
-		    bool final_p)
+execute_ranger_vrp (struct function *fun, bool final_p)
 {
   loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
   rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
@@ -1060,29 +1097,56 @@ execute_ranger_vrp (struct function *fun, bool warn_array_bounds_p,
   rvrp_folder folder (ranger, final_p);
   phi_analysis_initialize (ranger->const_query ());
   folder.substitute_and_fold ();
+  // Ensure the cache in SCEV has been cleared before processing
+  // globals to be removed.
+  scev_reset ();
   // Remove tagged builtin-unreachable and maybe update globals.
   folder.m_unreachable.remove_and_update_globals ();
   if (dump_file && (dump_flags & TDF_DETAILS))
     ranger->dump (dump_file);
 
-  if ((warn_array_bounds || warn_strict_flex_arrays) && warn_array_bounds_p)
+  if (value_range::supports_type_p (TREE_TYPE
+				     (TREE_TYPE (current_function_decl)))
+      && flag_ipa_vrp
+      && !lookup_attribute ("noipa", DECL_ATTRIBUTES (current_function_decl)))
     {
-      // Set all edges as executable, except those ranger says aren't.
-      int non_exec_flag = ranger->non_executable_edge_flag;
-      basic_block bb;
-      FOR_ALL_BB_FN (bb, fun)
-	{
-	  edge_iterator ei;
-	  edge e;
-	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    if (e->flags & non_exec_flag)
-	      e->flags &= ~EDGE_EXECUTABLE;
+      edge e;
+      edge_iterator ei;
+      bool found = false;
+      value_range return_range (TREE_TYPE (TREE_TYPE (current_function_decl)));
+      FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
+	if (greturn *ret = dyn_cast <greturn *> (*gsi_last_bb (e->src)))
+	  {
+	    tree retval = gimple_return_retval (ret);
+	    if (!retval)
+	      {
+		return_range.set_varying (TREE_TYPE (TREE_TYPE (current_function_decl)));
+		found = true;
+		continue;
+	      }
+	    value_range r (TREE_TYPE (retval));
+	    if (ranger->range_of_expr (r, retval, ret)
+		&& !r.undefined_p ()
+		&& !r.varying_p ())
+	      {
+		if (!found)
+		  return_range = r;
+		else
+		  return_range.union_ (r);
+	      }
 	    else
-	      e->flags |= EDGE_EXECUTABLE;
+	      return_range.set_varying (TREE_TYPE (retval));
+	    found = true;
+	  }
+      if (found && !return_range.varying_p ())
+	{
+	  ipa_record_return_value_range (return_range);
+	  if (POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl)))
+	      && return_range.nonzero_p ()
+	      && cgraph_node::get (current_function_decl)
+			->add_detected_attribute ("returns_nonnull"))
+	    warn_function_returns_nonnull (current_function_decl);
 	}
-      scev_reset ();
-      array_bounds_checker array_checker (fun, ranger);
-      array_checker.check ();
     }
 
   phi_analysis_finalize ();
@@ -1097,9 +1161,15 @@ execute_ranger_vrp (struct function *fun, bool warn_array_bounds_p,
 class fvrp_folder : public substitute_and_fold_engine
 {
 public:
-  fvrp_folder (dom_ranger *dr) : substitute_and_fold_engine (),
-				 m_simplifier (dr)
-  { m_dom_ranger = dr; }
+  fvrp_folder (dom_ranger *dr, bool final_p) : substitute_and_fold_engine (),
+					       m_simplifier (dr)
+  {
+    m_dom_ranger = dr;
+    if (final_p)
+      m_unreachable = new remove_unreachable (*dr, final_p);
+    else
+      m_unreachable = NULL;
+  }
 
   ~fvrp_folder () { }
 
@@ -1137,7 +1207,7 @@ public:
 	tree name = gimple_range_ssa_p (PHI_RESULT (psi.phi ()));
 	if (name)
 	  {
-	    Value_Range vr(TREE_TYPE (name));
+	    value_range vr(TREE_TYPE (name));
 	    m_dom_ranger->range_of_stmt (vr, psi.phi (), name);
 	  }
       }
@@ -1154,9 +1224,12 @@ public:
     tree type = gimple_range_type (s);
     if (type)
       {
-	Value_Range vr(type);
+	value_range vr(type);
 	m_dom_ranger->range_of_stmt (vr, s);
       }
+    if (m_unreachable && gimple_code (s) == GIMPLE_COND)
+      m_unreachable->maybe_register (s);
+
   }
 
   bool fold_stmt (gimple_stmt_iterator *gsi) override
@@ -1167,6 +1240,7 @@ public:
     return ret;
   }
 
+  remove_unreachable *m_unreachable;
 private:
   DISABLE_COPY_AND_ASSIGN (fvrp_folder);
   simplify_using_ranges m_simplifier;
@@ -1177,17 +1251,22 @@ private:
 // Main entry point for a FAST VRP pass using a dom ranger.
 
 unsigned int
-execute_fast_vrp (struct function *fun)
+execute_fast_vrp (struct function *fun, bool final_p)
 {
   calculate_dominance_info (CDI_DOMINATORS);
   dom_ranger dr;
-  fvrp_folder folder (&dr);
+  fvrp_folder folder (&dr, final_p);
 
   gcc_checking_assert (!fun->x_range_query);
   fun->x_range_query = &dr;
+  // Create a relation oracle without transitives.
+  get_range_query (fun)->create_relation_oracle (false);
 
   folder.substitute_and_fold ();
+  if (folder.m_unreachable)
+    folder.m_unreachable->remove ();
 
+  get_range_query (fun)->destroy_relation_oracle ();
   fun->x_range_query = NULL;
   return 0;
 }
@@ -1237,14 +1316,13 @@ const pass_data pass_data_fast_vrp =
 class pass_vrp : public gimple_opt_pass
 {
 public:
-  pass_vrp (gcc::context *ctxt, const pass_data &data_, bool warn_p)
-    : gimple_opt_pass (data_, ctxt), data (data_),
-      warn_array_bounds_p (warn_p), final_p (false)
+  pass_vrp (gcc::context *ctxt, const pass_data &data_)
+    : gimple_opt_pass (data_, ctxt), data (data_), final_p (false)
     { }
 
   /* opt_pass methods: */
   opt_pass * clone () final override
-    { return new pass_vrp (m_ctxt, data, false); }
+    { return new pass_vrp (m_ctxt, data); }
   void set_pass_param (unsigned int n, bool param) final override
     {
       gcc_assert (n == 0);
@@ -1254,15 +1332,23 @@ public:
   unsigned int execute (function *fun) final override
     {
       // Check for fast vrp.
-      if (&data == &pass_data_fast_vrp)
-	return execute_fast_vrp (fun);
-
-      return execute_ranger_vrp (fun, warn_array_bounds_p, final_p);
+      bool use_fvrp = (&data == &pass_data_fast_vrp);
+      if (!use_fvrp && last_basic_block_for_fn (fun) > param_vrp_block_limit)
+	{
+	  use_fvrp = true;
+	  warning (OPT_Wdisabled_optimization,
+		   "Using fast VRP algorithm. %d basic blocks"
+		   " exceeds %<--param=vrp-block-limit=%d%> limit",
+		   n_basic_blocks_for_fn (fun),
+		   param_vrp_block_limit);
+	}
+      if (use_fvrp)
+	return execute_fast_vrp (fun, final_p);
+      return execute_ranger_vrp (fun, final_p);
     }
 
  private:
   const pass_data &data;
-  bool warn_array_bounds_p;
   bool final_p;
 }; // class pass_vrp
 
@@ -1300,21 +1386,12 @@ public:
 	  if (!name || !gimple_range_ssa_p (name))
 	    continue;
 	  tree type = TREE_TYPE (name);
-	  if (!Value_Range::supports_type_p (type))
+	  if (!value_range::supports_type_p (type))
 	    continue;
-	  Value_Range assume_range (type);
+	  value_range assume_range (type);
+	  // Set the global range of NAME to anything calculated.
 	  if (query.assume_range_p (assume_range, name))
-	    {
-	      // Set the global range of NAME to anything calculated.
-	      set_range_info (name, assume_range);
-	      if (dump_file)
-		{
-		  print_generic_expr (dump_file, name, TDF_SLIM);
-		  fprintf (dump_file, " -> ");
-		  assume_range.dump (dump_file);
-		  fputc ('\n', dump_file);
-		}
-	    }
+	    set_range_info (name, assume_range);
 	}
       if (dump_file)
 	{
@@ -1333,19 +1410,19 @@ public:
 gimple_opt_pass *
 make_pass_vrp (gcc::context *ctxt)
 {
-  return new pass_vrp (ctxt, pass_data_vrp, true);
+  return new pass_vrp (ctxt, pass_data_vrp);
 }
 
 gimple_opt_pass *
 make_pass_early_vrp (gcc::context *ctxt)
 {
-  return new pass_vrp (ctxt, pass_data_early_vrp, false);
+  return new pass_vrp (ctxt, pass_data_early_vrp);
 }
 
 gimple_opt_pass *
 make_pass_fast_vrp (gcc::context *ctxt)
 {
-  return new pass_vrp (ctxt, pass_data_fast_vrp, false);
+  return new pass_vrp (ctxt, pass_data_fast_vrp);
 }
 
 gimple_opt_pass *

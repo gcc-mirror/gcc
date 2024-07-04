@@ -2,7 +2,7 @@
    not enabled.  */
 
 /* { dg-do compile } */
-/* { dg-options "-mno-alu32" } */
+/* { dg-options "-mno-alu32 -masm=normal" } */
 
 int foo (int a, int b)
 {

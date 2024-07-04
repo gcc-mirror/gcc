@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,7 +38,7 @@ test02()
 {
   using namespace std::literals;
   auto x = "the  quick  brown  fox"sv;
-  auto v1 = views::lazy_split(std::initializer_list<char>{' ', ' '})(x); // { dg-error "deleted" }
+  auto v1 = views::lazy_split(std::initializer_list<char>{' ', ' '})(x); // { dg-error "deleted|no match" }
   auto v2 = x | views::lazy_split(std::initializer_list<char>{' ', ' '}); // { dg-error "no match" }
 }
 

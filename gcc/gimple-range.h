@@ -1,5 +1,5 @@
 /* Header file for the GIMPLE range interface.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -52,11 +52,9 @@ public:
   virtual bool range_of_stmt (vrange &r, gimple *, tree name = NULL) override;
   virtual bool range_of_expr (vrange &r, tree name, gimple * = NULL) override;
   virtual bool range_on_edge (vrange &r, edge e, tree name) override;
-  virtual void update_stmt (gimple *) override;
-  void range_on_entry (vrange &r, basic_block bb, tree name);
-  void range_on_exit (vrange &r, basic_block bb, tree name);
+  virtual bool range_on_entry (vrange &r, basic_block bb, tree name) override;
+  virtual bool range_on_exit (vrange &r, basic_block bb, tree name) override;
   void export_global_ranges ();
-  inline gori_compute &gori ()  { return m_cache.m_gori; }
   virtual void dump (FILE *f) override;
   void debug ();
   void dump_bb (FILE *f, basic_block bb);
@@ -88,6 +86,7 @@ class assume_query : public range_query
 {
 public:
   assume_query ();
+  ~assume_query ();
   bool assume_range_p (vrange &r, tree name);
   virtual bool range_of_expr (vrange &r, tree expr, gimple * = NULL);
   void dump (FILE *f);
@@ -98,7 +97,6 @@ protected:
   void check_taken_edge (edge e, fur_source &src);
 
   ssa_lazy_cache global;
-  gori_compute m_gori;
 };
 
 // DOM based ranger for fast VRP.
@@ -114,20 +112,16 @@ public:
   virtual bool range_on_edge (vrange &r, edge e, tree expr) override;
   virtual bool range_of_stmt (vrange &r, gimple *s, tree name = NULL) override;
 
-  bool edge_range (vrange &r, edge e, tree name);
-  void range_in_bb (vrange &r, basic_block bb, tree name);
 
   void pre_bb (basic_block bb);
   void post_bb (basic_block bb);
 protected:
+  bitmap_obstack m_bitmaps;
+  void range_in_bb (vrange &r, basic_block bb, tree name);
   DISABLE_COPY_AND_ASSIGN (dom_ranger);
-  void maybe_push_edge (edge e, bool edge_0);
   ssa_cache m_global;
-  gimple_outgoing_range m_out;
   vec<ssa_lazy_cache *> m_freelist;
-  vec<ssa_lazy_cache *> m_e0;
-  vec<ssa_lazy_cache *> m_e1;
-  bitmap m_pop_list;
+  vec<ssa_lazy_cache *> m_bb;
   range_tracer tracer;
 };
 #endif // GCC_GIMPLE_RANGE_H

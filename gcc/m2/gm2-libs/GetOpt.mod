@@ -1,6 +1,6 @@
 (* GetOpt.mod allows users to manage long options to getopt.
 
-Copyright (C) 2017-2023 Free Software Foundation, Inc.
+Copyright (C) 2017-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -34,19 +34,8 @@ IMPORT cgetopt ;
 
 
 TYPE
-   Crecord = RECORD    (* see man 3 getopt.  *)
-                name   : ADDRESS ;
-                has_arg: INTEGER ;
-                flag   : PtrToInteger ;
-                val    : INTEGER ;
-             END ;
-
-   ptrToCrecord = POINTER TO Crecord ;
-
    LongOptions = POINTER TO RECORD
-                               cptr: ptrToCrecord ;
-                               len : CARDINAL ;
-                               size: CARDINAL ;
+                               cptr: cgetopt.Options
                             END ;
 
 
@@ -79,9 +68,7 @@ VAR
 BEGIN
    NEW (lo) ;
    WITH lo^ DO
-      cptr := NIL ;
-      len := 0 ;
-      size := 0
+      cptr := cgetopt.InitOptions ()
    END ;
    RETURN lo
 END InitLongOptions ;
@@ -110,60 +97,16 @@ END InitLongOptions ;
 
        val    is the value to return, or to load into the variable pointed to by flag.
 
-       The last element of the array has to be filled with zeros.
+       The last element of the array must be filled with zeros.
 *)
 
-PROCEDURE AddLongOption (lo: LongOptions;
+PROCEDURE AddLongOption (lo: LongOptions; index: CARDINAL;
                          name: String; has_arg: INTEGER;
-                         flag: PtrToInteger; val: INTEGER) : LongOptions ;
-VAR
-   old,
-   entry: ptrToCrecord ;
+                         VAR flag: INTEGER; val: INTEGER) : LongOptions ;
 BEGIN
-   IF lo^.cptr = NIL
-   THEN
-      NEW (lo^.cptr) ;
-      lo^.len := 1 ;
-      lo^.size := SIZE (Crecord) ;
-      entry := lo^.cptr
-   ELSE
-      old := lo^.cptr ;
-      INC (lo^.len) ;
-      lo^.size := lo^.len * SIZE (Crecord) ;
-      REALLOCATE (lo^.cptr, lo^.size) ;
-      IF lo^.cptr = NIL
-      THEN
-         entry := NIL
-      ELSIF old = lo^.cptr
-      THEN
-         entry := lo^.cptr ;
-         INC (entry, SIZE (Crecord) * lo^.len-1)
-      ELSE
-         MemCopy (old, lo^.len-1, lo^.cptr) ;
-         entry := lo^.cptr ;
-         INC (entry, SIZE (Crecord) * lo^.len-1)
-      END
-   END ;
-   fillIn (entry, name, has_arg, flag, val) ;
+   cgetopt.SetOption (lo^.cptr, index, name, has_arg, flag, val) ;
    RETURN lo
 END AddLongOption ;
-
-
-(*
-   fillIn - fills in
-*)
-
-PROCEDURE fillIn (entry: ptrToCrecord;
-                  name: String; has_arg: INTEGER; flag: PtrToInteger; val: INTEGER) ;
-BEGIN
-   IF entry # NIL
-   THEN
-      entry^.name := name ;
-      entry^.has_arg := has_arg ;
-      entry^.flag := flag ;
-      entry^.val := val
-   END
-END fillIn ;
 
 
 (*
@@ -172,7 +115,7 @@ END fillIn ;
 
 PROCEDURE KillLongOptions (lo: LongOptions) : LongOptions ;
 BEGIN
-   DEALLOCATE (lo^.cptr, lo^.size) ;
+   lo^.cptr := cgetopt.KillOptions (lo^.cptr) ;
    DISPOSE (lo) ;
    RETURN NIL
 END KillLongOptions ;
@@ -186,11 +129,9 @@ END KillLongOptions ;
 
 PROCEDURE GetOptLong (argc: INTEGER; argv: ADDRESS; optstring: String;
                       longopts: LongOptions; VAR longindex: INTEGER) : INTEGER ;
-VAR
-   r: INTEGER ;
 BEGIN
-   r := cgetopt.getopt_long (argc, argv, string (optstring), longopts^.cptr, longindex) ;
-   RETURN r
+   RETURN cgetopt.getopt_long (argc, argv, string (optstring),
+                               cgetopt.GetLongOptionArray (longopts^.cptr), longindex)
 END GetOptLong ;
 
 
@@ -201,12 +142,9 @@ END GetOptLong ;
 
 PROCEDURE GetOptLongOnly (argc: INTEGER; argv: ADDRESS; optstring: String;
                           longopts: LongOptions; VAR longindex: INTEGER) : INTEGER ;
-VAR
-   r: INTEGER ;
 BEGIN
-   r := cgetopt.getopt_long_only (argc, argv, string (optstring),
-                                 longopts^.cptr, longindex) ;
-   RETURN r
+   RETURN cgetopt.getopt_long_only (argc, argv, string (optstring),
+                                    cgetopt.GetLongOptionArray (longopts^.cptr), longindex)
 END GetOptLongOnly ;
 
 

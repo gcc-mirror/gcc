@@ -23,7 +23,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-O0 -gbtf -dA" } */
-/* { dg-options "-O0 -gbtf -gdwarf-4 -dA" { target { *-*-darwin* } } } */
+/* { dg-additional-options "-gdwarf-4" { target { *-*-darwin* } } } */
 
 /* { dg-final { scan-assembler-times "ascii \"int.0\"\[\t \]+\[^\n\]*btf_string" 1 } } */
 

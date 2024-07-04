@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fdump-tree-backprop-details" }  */
+/* { dg-additional-options "-msse -mfpmath=sse" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 
 void start (void *);
 void end (void *);
@@ -26,5 +27,9 @@ TEST_FUNCTION (float, f)
 TEST_FUNCTION (double, )
 TEST_FUNCTION (long double, l)
 
-/* { dg-final { scan-tree-dump-times {Deleting[^\n]* = -} 6 "backprop" } } */
-/* { dg-final { scan-tree-dump-times {Deleting[^\n]* = ABS_EXPR <} 3 "backprop" } } */
+/* { dg-final { scan-tree-dump-times {Deleting[^\n]* = -} 4 "backprop" { target { ifn_copysign && { ! { s390*-*-* } } } } } } */
+/* { dg-final { scan-tree-dump-times {Deleting[^\n]* = \.COPYSIGN} 2 "backprop" { target { ifn_copysign && { ! { s390*-*-* } } } } } } */
+/* { dg-final { scan-tree-dump-times {Deleting[^\n]* = ABS_EXPR <} 1 "backprop" { target { ifn_copysign && { ! { s390*-*-* } } } } } } */
+/* { dg-final { scan-tree-dump-times {Deleting[^\n]* = \.COPYSIGN} 3 "backprop" { target { ifn_copysign && s390*-*-* } } } } */
+/* { dg-final { scan-tree-dump-times {Deleting[^\n]* = -} 6 "backprop" { target { ! ifn_copysign } } } } */
+/* { dg-final { scan-tree-dump-times {Deleting[^\n]* = ABS_EXPR <} 3 "backprop" { target { ! ifn_copysign } } } } */

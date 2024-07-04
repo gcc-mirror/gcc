@@ -1,0 +1,130 @@
+/* { dg-do compile } */
+/* { dg-require-effective-target rv64 } */
+/* { dg-options "-march=rv64gc -mabi=lp64d -mtune=generic-ooo" } */
+/* { dg-skip-if "" { *-*-* } {"-O0" "-Os" "-Og" "-Oz" "-flto" } } */
+/* { dg-final { check-function-bodies "**" "" } } */
+/* { dg-allow-blank-lines-in-output 1 } */
+
+#define COPY_N(N)					\
+void copy_##N (void *to, void *from)			\
+{							\
+  __builtin_memcpy (to, from, N);			\
+}
+
+#define COPY_ALIGNED_N(N)				\
+void copy_aligned_##N (void *to, void *from)		\
+{							\
+  to = __builtin_assume_aligned(to, sizeof(long));	\
+  from = __builtin_assume_aligned(from, sizeof(long));	\
+  __builtin_memcpy (to, from, N);			\
+}
+
+/*
+**copy_7:
+**    ...
+**    lw\t[at][0-9],0\([at][0-9]\)
+**    sw\t[at][0-9],0\([at][0-9]\)
+**    lw\t[at][0-9],3\([at][0-9]\)
+**    sw\t[at][0-9],3\([at][0-9]\)
+**    ...
+*/
+COPY_N(7)
+
+/*
+**copy_aligned_7:
+**    ...
+**    lw\t[at][0-9],0\([at][0-9]\)
+**    sw\t[at][0-9],0\([at][0-9]\)
+**    lw\t[at][0-9],3\([at][0-9]\)
+**    sw\t[at][0-9],3\([at][0-9]\)
+**    ...
+*/
+COPY_ALIGNED_N(7)
+
+/*
+**copy_8:
+**    ...
+**    ld\ta[0-9],0\(a[0-9]\)
+**    sd\ta[0-9],0\(a[0-9]\)
+**    ...
+*/
+COPY_N(8)
+
+/*
+**copy_aligned_8:
+**    ...
+**    ld\ta[0-9],0\(a[0-9]\)
+**    sd\ta[0-9],0\(a[0-9]\)
+**    ...
+*/
+COPY_ALIGNED_N(8)
+
+/*
+**copy_11:
+**    ...
+**    ld\t[at][0-9],0\([at][0-9]\)
+**    sd\t[at][0-9],0\([at][0-9]\)
+**    lw\t[at][0-9],7\([at][0-9]\)
+**    sw\t[at][0-9],7\([at][0-9]\)
+**    ...
+*/
+COPY_N(11)
+
+/*
+**copy_aligned_11:
+**    ...
+**    ld\t[at][0-9],0\([at][0-9]\)
+**    sd\t[at][0-9],0\([at][0-9]\)
+**    lw\t[at][0-9],7\([at][0-9]\)
+**    sw\t[at][0-9],7\([at][0-9]\)
+**    ...
+*/
+COPY_ALIGNED_N(11)
+
+/*
+**copy_15:
+**    ...
+**    ld\t[at][0-9],0\([at][0-9]\)
+**    sd\t[at][0-9],0\([at][0-9]\)
+**    ld\t[at][0-9],7\([at][0-9]\)
+**    sd\t[at][0-9],7\([at][0-9]\)
+**    ...
+*/
+COPY_N(15)
+
+/*
+**copy_aligned_15:
+**    ...
+**    ld\t[at][0-9],0\([at][0-9]\)
+**    sd\t[at][0-9],0\([at][0-9]\)
+**    ld\t[at][0-9],7\([at][0-9]\)
+**    sd\t[at][0-9],7\([at][0-9]\)
+**    ...
+*/
+COPY_ALIGNED_N(15)
+
+/*
+**copy_27:
+**    ...
+**    ld\t[at][0-9],16\([at][0-9]\)
+**    ...
+**    sd\t[at][0-9],16\([at][0-9]\)
+**    ...
+**    lw\t[at][0-9],23\([at][0-9]\)
+**    sw\t[at][0-9],23\([at][0-9]\)
+**    ...
+*/
+COPY_N(27)
+
+/*
+**copy_aligned_27:
+**    ...
+**    ld\t[at][0-9],16\([at][0-9]\)
+**    ...
+**    sd\t[at][0-9],16\([at][0-9]\)
+**    ...
+**    lw\t[at][0-9],23\([at][0-9]\)
+**    sw\t[at][0-9],23\([at][0-9]\)
+**    ...
+*/
+COPY_ALIGNED_N(27)

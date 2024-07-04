@@ -1,4 +1,5 @@
-f ()
+int
+f (void)
 {
   long long i;
   int j;

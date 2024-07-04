@@ -1,5 +1,5 @@
 /* Header file for misc range functions. -*- C++ -*-
-   Copyright (C) 2017-2023 Free Software Foundation, Inc.
+   Copyright (C) 2017-2024 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>.
 
 This file is part of GCC.
@@ -21,10 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RANGE_H
 #define GCC_RANGE_H
 
-value_range range_zero (tree type);
-value_range range_nonzero (tree type);
-value_range range_positives (tree type);
-value_range range_negatives (tree type);
+int_range<2> range_positives (tree type);
+int_range<2> range_negatives (tree type);
 
 // Return an irange instance that is a boolean TRUE.
 

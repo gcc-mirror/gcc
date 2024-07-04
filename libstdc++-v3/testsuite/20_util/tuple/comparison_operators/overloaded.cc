@@ -1,6 +1,7 @@
-// { dg-do compile { target c++11 } }
+// { dg-do compile { target { c++11 && c++17_down } } }
+// Not valid in C++20, because TwistedLogic doesn't model boolean-testable.
 
-// Copyright (C) 2014-2023 Free Software Foundation, Inc.
+// Copyright (C) 2014-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,8 +50,5 @@ TwistedLogic operator<(const Compares&, const Compares&) { return {false}; }
 auto a = std::make_tuple(nullptr, Compares{}, 2, 'U');
 auto b = a == a;
 
-#if ! __cpp_lib_three_way_comparison
-// Not valid in C++20, because TwistedLogic doesn't model boolean-testable.
 auto c = std::make_tuple("", Compares{}, 2, 'U');
 auto d = c < c;
-#endif

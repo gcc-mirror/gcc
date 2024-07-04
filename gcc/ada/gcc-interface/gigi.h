@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2023, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2024, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -158,14 +158,14 @@ enum alias_set_op
   ALIAS_SET_SUPERSET
 };
 
-/* Relate the alias sets of GNU_NEW_TYPE and GNU_OLD_TYPE according to OP.
+/* Relate the alias sets of NEW_TYPE and OLD_TYPE according to OP.
    If this is a multi-dimensional array type, do this recursively.
 
    OP may be
    - ALIAS_SET_COPY:     the new set is made a copy of the old one.
    - ALIAS_SET_SUPERSET: the new set is made a superset of the old one.
    - ALIAS_SET_SUBSET:   the new set is made a subset of the old one.  */
-extern void relate_alias_sets (tree gnu_new_type, tree gnu_old_type,
+extern void relate_alias_sets (tree new_type, tree old_type,
 			       enum alias_set_op op);
 
 /* Given GNAT_ENTITY, an object (constant, variable, parameter, exception)
@@ -350,7 +350,7 @@ struct attrib
 };
 
 /* Table of machine-independent internal attributes.  */
-extern const struct attribute_spec gnat_internal_attribute_table[];
+extern const struct scoped_attribute_specs gnat_internal_attribute_table;
 
 /* Define the entries in the standard data array.  */
 enum standard_datatypes
@@ -906,7 +906,7 @@ extern tree build_call_alloc_dealloc (tree gnu_obj, tree gnu_size,
 				      Entity_Id gnat_pool, Node_Id gnat_node);
 
 /* Build a GCC tree to correspond to allocating an object of TYPE whose
-   initial value if INIT, if INIT is nonzero.  Convert the expression to
+   initial value is INIT, if INIT is nonzero.  Convert the expression to
    RESULT_TYPE, which must be some type of pointer.  Return the tree.
 
    GNAT_PROC and GNAT_POOL optionally give the procedure to call and
@@ -1039,6 +1039,11 @@ extern bool simple_constant_p (Entity_Id gnat_entity);
 
 /* Return the size of TYPE, which must be a positive power of 2.  */
 extern unsigned int resolve_atomic_size (tree type);
+
+/* Try to compute the reduction of OP modulo MODULUS in PRECISION bits with a
+   division-free algorithm.  Return NULL_TREE if this is not easily doable.  */
+extern tree fast_modulo_reduction (tree op, tree modulus,
+				   unsigned int precision);
 
 #ifdef __cplusplus
 extern "C" {
@@ -1236,6 +1241,14 @@ static inline tree
 operand_type (tree expr)
 {
   return TREE_TYPE (TREE_OPERAND (expr, 0));
+}
+
+/* Return the second value of a list.  */
+
+static inline tree
+list_second (tree list)
+{
+  return TREE_VALUE (TREE_CHAIN (list));
 }
 
 /* Return the third value of a list.  */

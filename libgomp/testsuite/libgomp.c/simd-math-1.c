@@ -1,7 +1,7 @@
 /* Check that the SIMD versions of math routines give the same (or
    sufficiently close) results as their scalar equivalents.  */
 
-/* { dg-do run } */
+/* { dg-do run { target { ! hppa*-*-hpux* } } } */
 /* { dg-options "-O2 -ftree-vectorize -fno-math-errno" } */
 /* { dg-additional-options -foffload-options=amdgcn-amdhsa=-mstack-size=3000000 { target offload_target_amdgcn } } */
 /* { dg-additional-options "-DNONSTDFUNC=1" { target nonstandard_math_functions } } */

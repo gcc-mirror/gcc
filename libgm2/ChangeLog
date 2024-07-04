@@ -1,3 +1,168 @@
+2024-05-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115276
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Use AC_HEADER_TIME.
+	* libm2iso/wraptime.cc (InitTM): Check HAVE_SYS_TIME_H
+	before using struct tm to obtain the size.
+
+2024-05-02  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Makefile.in: Regenerate.
+	* libm2cor/Makefile.in: Ditto.
+	* libm2iso/Makefile.in: Ditto.
+	* libm2log/Makefile.in: Ditto.
+	* libm2min/Makefile.in: Ditto.
+	* libm2pim/Makefile.in: Ditto.
+	* aclocal.m4: Ditto.
+
+2024-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.host: Fix duplicated words; the the -> the.
+
+2024-02-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/113749
+	* libm2pim/wrapc.cc: Include fcntl.h.
+	(SeekSet): New function.
+	(SeekEnd): Ditto.
+	(ReadOnly): Ditto.
+	(WriteOnly): Ditto.
+
+2024-02-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* libm2iso/wraptime.cc [HAVE_STRUCT_TIMEZONE && HAVE_GETTIMEOFDAY]
+	(EXPORT(gettimeofday)): Cast tv to struct timeval *.
+	[HAVE_STRUCT_TIMEZONE && HAVE_SETTIMEOFDAY]
+	(EXPORT(settimeofday)): Likewise.
+
+2024-02-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR modula2/113888
+	* configure.ac (GM2_CHECK_LIB): Rename gettimeofday guard to
+	HAVE_GETTIMEOFDAY.
+	(GM_CHECK_LIB): Check for settimeofday.
+	(GM2_CHECK_LIB): Check for exp10, exp10f, exp10l in libm.
+	(AC_CHECK_DECLS): Check for getenv.
+	* configure, config.h.in: Regenerate.
+	* libm2pim/dtoa.cc: Rename <strings.h>, <string.h> guards to
+	HAVE_STRINGS_H, HAVE_STRING_H.
+	* libm2pim/ldtoa.cc: Likewise.
+
+2024-01-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/111956
+	* Makefile.am (TARGET_LONGDOUBLE_ABI): Remove.
+	* Makefile.in: Regenerate.
+	* libm2cor/Makefile.am (TARGET_LONGDOUBLE_ABI): Remove.
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.am (TARGET_LONGDOUBLE_ABI): Remove.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2log/Makefile.am (TARGET_LONGDOUBLE_ABI): Remove.
+	* libm2log/Makefile.in: Regenerate.
+	* libm2min/Makefile.am (TARGET_LONGDOUBLE_ABI): Remove.
+	* libm2min/Makefile.in: Regenerate.
+	* libm2pim/Makefile.am (TARGET_LONGDOUBLE_ABI): Remove.
+	* libm2pim/Makefile.in: Regenerate.
+
+2024-01-05  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* libm2iso/RTco.cc (initialized): Use bool instead of int.
+
+2023-12-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* Makefile.am: Allow overriding EXEPCT.
+	* Makefile.in: Regenerate.
+
+2023-12-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/112921
+	* libm2iso/Makefile.am (M2DEFS): Add ConvStringShort.def,
+	ShortConv.def, ShortMath.def and ShortStr.def.
+	(M2MODS): Add ConvStringShort.mod,
+	ShortConv.mod, ShortMath.mod and ShortStr.mod.
+	* libm2iso/Makefile.in: Regenerate.
+
+2023-12-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* libm2iso/Makefile.am (libm2iso_la_M2FLAGS): Added line breaks.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2log/Makefile.am (libm2log_la_M2FLAGS): Added line breaks.
+	* libm2log/Makefile.in: Regenerate.
+	* libm2pim/Makefile.am (libm2pim_la_M2FLAGS): Added line breaks.
+	* libm2pim/Makefile.in: Regenerate.
+
+2023-11-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* configure: Regenerate.
+	* configure.ac:(libtool_VERSION): Bump to 19:0:0.
+
+2023-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110779
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Remove newline.
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2log/Makefile.in: Regenerate.
+	* libm2min/Makefile.in: Regenerate.
+	* libm2pim/Makefile.in: Regenerate.
+	* acinclude.m4: New file.
+	* configure.host: New file.
+
+2023-10-27  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/112110
+	* libm2iso/wrapclock.cc (timezone): Return 0 if unable
+	to get the timezone from the tm struct.
+
+2023-10-27  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/111530
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (AC_CHECK_HEADERS): Include getopt.h.
+	(GM2_CHECK_LIB): getopt_long check.
+	(GM2_CHECK_LIB): getopt_long_only check.
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2log/Makefile.in: Regenerate.
+	* libm2min/Makefile.in: Regenerate.
+	* libm2pim/Makefile.in: Regenerate.
+	* libm2pim/cgetopt.cc: Re-write using conditional on configure
+	and long function code from libiberty/getopt.c.
+
+2023-10-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/111955
+	* libm2pim/wrapc.cc (isnan): Export new function.
+	(isnanf): Export new function.
+	(isnanl): Export new function.
+
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.am: Handle Darwin rpaths.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Handle Darwin rpaths.
+	* libm2cor/Makefile.am: Handle Darwin rpaths.
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.am: Handle Darwin rpaths.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2log/Makefile.am: Handle Darwin rpaths.
+	* libm2log/Makefile.in: Regenerate.
+	* libm2min/Makefile.am: Handle Darwin rpaths.
+	* libm2min/Makefile.in: Regenerate.
+	* libm2pim/Makefile.am: Handle Darwin rpaths.
+	* libm2pim/Makefile.in: Regenerate.
+
 2023-09-29  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* libm2iso/wrapclock.cc (longint_t): New declaration.

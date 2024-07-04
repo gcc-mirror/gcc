@@ -1,5 +1,6 @@
 extern int ptbl[4];
 extern int ctbl[4];
+void g(void);
 
 void doViews(void) {
     int  *c = ctbl, *p = ptbl;

@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -54,10 +54,6 @@
 
 #include <avx512fintrin.h>
 
-#include <avx512erintrin.h>
-
-#include <avx512pfintrin.h>
-
 #include <avx512cdintrin.h>
 
 #include <avx512vlintrin.h>
@@ -78,10 +74,6 @@
 
 #include <avx512vbmivlintrin.h>
 
-#include <avx5124fmapsintrin.h>
-
-#include <avx5124vnniwintrin.h>
-
 #include <avx512vpopcntdqintrin.h>
 
 #include <avx512vbmi2intrin.h>
@@ -95,6 +87,8 @@
 #include <avx512vpopcntdqvlintrin.h>
 
 #include <avx512bitalgintrin.h>
+
+#include <avx512bitalgvlintrin.h>
 
 #include <avx512vp2intersectintrin.h>
 

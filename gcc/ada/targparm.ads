@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -272,15 +272,7 @@ package Targparm is
    --    If Command_Line_Args_On_Target is set to False, then the
    --    generation of these variables is suppressed completely.
    --
-   --    The binder generates the gnat_exit_status variable in the binder
-   --    file instead of being imported from the run-time library. If
-   --    Exit_Status_Supported_On_Target is set to False, then the
-   --    generation of this variable is suppressed entirely.
-   --
    --    The routine __gnat_break_start is defined within the binder file
-   --    instead of being imported from the run-time library.
-   --
-   --    The variable __gnat_exit_status is generated within the binder file
    --    instead of being imported from the run-time library.
 
    Suppress_Standard_Library_On_Target : Boolean := False;
@@ -367,11 +359,12 @@ package Targparm is
    --  the flag is set False, and composite assignments are not allowed.
 
    Support_Composite_Compare_On_Target : Boolean := True;
-   --  If this flag is True, then the back end supports bit-wise comparison
-   --  of composite objects for equality, either generating inline code or
-   --  calling appropriate (and available) run-time routines. If this flag
-   --  is False, then the back end does not provide this support, and the
-   --  front end uses component by component comparison for composites.
+   --  If this flag is True, then the back end supports byte-wise comparison
+   --  of arrays for equality operations and lexicographic comparison of 1-
+   --  dimensional arrays of bytes for ordering operations, either by means
+   --  of generating inline code or calling appropriate routines like memcmp.
+   --  If this flag is False, then the back end does not provide this support,
+   --  and the front end uses component by component comparison for arrays.
 
    Support_Long_Shifts_On_Target : Boolean := True;
    --  If True, the back end supports 64-bit shift operations. If False, then
@@ -461,19 +454,17 @@ package Targparm is
    --  required on such targets (RM A.15(13)).
 
    Command_Line_Args_On_Target : Boolean := True;
-   --  Set False if no command line arguments on target. Note that if this
-   --  is False in with Configurable_Run_Time_On_Target set to True, then
-   --  this causes suppression of generation of the argv/argc variables
-   --  used to record command line arguments.
+   --  Set False if no command line arguments on target. This will suppress
+   --  generation of references to the argv/argc variables used to record
+   --  command line arguments.
 
    --  Similarly, most targets support the use of an exit status, but other
    --  targets might not, as allowed by RM A.15(18-20).
 
    Exit_Status_Supported_On_Target : Boolean := True;
    --  Set False if returning of an exit status is not supported on target.
-   --  Note that if this False in with Configurable_Run_Time_On_Target
-   --  set to True, then this causes suppression of the gnat_exit_status
-   --  variable used to record the exit status.
+   --  This will cause the binder to not generate a reference to the
+   --  gnat_exit_status run-time symbol.
 
    -----------------------
    -- Main Program Name --

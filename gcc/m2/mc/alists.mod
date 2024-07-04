@@ -1,6 +1,6 @@
 (* alists.mod address lists module.
 
-Copyright (C) 2015-2023 Free Software Foundation, Inc.
+Copyright (C) 2015-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -300,6 +300,34 @@ BEGIN
    END ;
    RETURN m
 END duplicateList ;
+
+
+(*
+   equalList - returns TRUE if left contains the same information as right.
+*)
+
+PROCEDURE equalList (left, right: alist) : BOOLEAN ;
+VAR
+   leftn, rightn, i: CARDINAL ;
+BEGIN
+   leftn := noOfItemsInList (left) ;
+   rightn := noOfItemsInList (right) ;
+   IF leftn = rightn
+   THEN
+      i := 1 ;
+      WHILE i <= leftn DO
+         IF isItemInList (right, getItemFromList (left, i))
+         THEN
+            INC (i)
+         ELSE
+            RETURN FALSE
+         END
+      END
+   ELSE
+      RETURN FALSE
+   END ;
+   RETURN TRUE
+END equalList ;
 
 
 END alists.

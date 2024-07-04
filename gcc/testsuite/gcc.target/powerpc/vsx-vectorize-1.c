@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power7 -O2 -ftree-vectorize -fno-tree-loop-distribute-patterns -fno-vect-cost-model -fdump-tree-vect-details" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Taken from vect/vect-align-1.c.  */
 #include <stdlib.h>

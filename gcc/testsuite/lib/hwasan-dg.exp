@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Free Software Foundation, Inc.
+# Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -44,11 +44,25 @@ proc check_effective_target_hwaddress_exec {} {
 	#ifdef __cplusplus
 	extern "C" {
 	#endif
+	extern int arch_prctl (int, unsigned long int *);
 	extern int prctl(int, unsigned long, unsigned long, unsigned long, unsigned long);
 	#ifdef __cplusplus
 	}
 	#endif
 	int main (void) {
+	#ifdef __x86_64__
+	# ifdef __LP64__
+	#  define ARCH_GET_UNTAG_MASK 0x4001
+	#  define LAM_U57_MASK (0x3fULL << 57)
+	  unsigned long mask = 0;
+	  if (arch_prctl(ARCH_GET_UNTAG_MASK, &mask) != 0)
+	    return 1;
+	  if (mask != ~LAM_U57_MASK)
+	    return 1;
+	  return 0;
+	# endif
+	  return 1;
+	#else
 	#define PR_SET_TAGGED_ADDR_CTRL 55
 	#define PR_GET_TAGGED_ADDR_CTRL 56
 	#define PR_TAGGED_ADDR_ENABLE (1UL << 0)
@@ -58,6 +72,7 @@ proc check_effective_target_hwaddress_exec {} {
 	      || !prctl(PR_GET_TAGGED_ADDR_CTRL, 0, 0, 0, 0))
 	    return 1;
 	  return 0;
+	#endif
 	}
     }] {
 	return 0;
@@ -85,8 +100,8 @@ proc hwasan_include_flags {} {
 # (implementation in asan-dg.exp)
 #
 
-proc hwasan_link_flags { paths } {
-    return [asan_link_flags_1 $paths hwasan]
+proc hwasan_link_flags { paths needs_cxx } {
+    return [asan_link_flags_1 $paths hwasan $needs_cxx]
 }
 
 #
@@ -99,15 +114,22 @@ proc hwasan_init { args } {
     global TOOL_OPTIONS
     global hwasan_saved_TEST_ALWAYS_FLAGS
     global hwasan_saved_ALWAYS_CXXFLAGS
+    set needs_cxx [lindex $args 0]
 
     setenv HWASAN_OPTIONS "random_tags=0"
+
+    if [istarget x86_64-*-*] {
+      set target_hwasan_flags "-mlam=u57"
+    } else {
+      set target_hwasan_flags ""
+    }
 
     set link_flags ""
     if ![is_remote host] {
 	if [info exists TOOL_OPTIONS] {
-	    set link_flags "[hwasan_link_flags [get_multilibs ${TOOL_OPTIONS}]]"
+	    set link_flags "[hwasan_link_flags [get_multilibs ${TOOL_OPTIONS}] $needs_cxx]"
 	} else {
-	    set link_flags "[hwasan_link_flags [get_multilibs]]"
+	    set link_flags "[hwasan_link_flags [get_multilibs] $needs_cxx]"
 	}
     }
 
@@ -119,12 +141,12 @@ proc hwasan_init { args } {
     if [info exists ALWAYS_CXXFLAGS] {
 	set hwasan_saved_ALWAYS_CXXFLAGS $ALWAYS_CXXFLAGS
 	set ALWAYS_CXXFLAGS [concat "{ldflags=$link_flags}" $ALWAYS_CXXFLAGS]
-	set ALWAYS_CXXFLAGS [concat "{additional_flags=-fsanitize=hwaddress --param hwasan-random-frame-tag=0 -g $include_flags}" $ALWAYS_CXXFLAGS]
+	set ALWAYS_CXXFLAGS [concat "{additional_flags=-fsanitize=hwaddress $target_hwasan_flags --param hwasan-random-frame-tag=0 -g $include_flags}" $ALWAYS_CXXFLAGS]
     } else {
 	if [info exists TEST_ALWAYS_FLAGS] {
-	    set TEST_ALWAYS_FLAGS "$link_flags -fsanitize=hwaddress --param hwasan-random-frame-tag=0 -g $include_flags $TEST_ALWAYS_FLAGS"
+	    set TEST_ALWAYS_FLAGS "$link_flags -fsanitize=hwaddress $target_hwasan_flags --param hwasan-random-frame-tag=0 -g $include_flags $TEST_ALWAYS_FLAGS"
 	} else {
-	    set TEST_ALWAYS_FLAGS "$link_flags -fsanitize=hwaddress --param hwasan-random-frame-tag=0 -g $include_flags"
+	    set TEST_ALWAYS_FLAGS "$link_flags -fsanitize=hwaddress $target_hwasan_flags --param hwasan-random-frame-tag=0 -g $include_flags"
 	}
     }
 }

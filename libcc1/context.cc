@@ -1,5 +1,5 @@
 /* Generic plugin context
-   Copyright (C) 2020-2023 Free Software Foundation, Inc.
+   Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -63,7 +63,7 @@ cc1_plugin::plugin_context *cc1_plugin::current_context;
 
 static void
 plugin_print_error_function (diagnostic_context *context, const char *file,
-			     diagnostic_info *diagnostic)
+			     const diagnostic_info *diagnostic)
 {
   if (current_function_decl != NULL_TREE
       && DECL_NAME (current_function_decl) != NULL_TREE

@@ -1,5 +1,5 @@
 /* Common block and equivalence list handling
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
    Contributed by Canqun Yang <canqun@nudt.edu.cn>
 
 This file is part of GCC.
@@ -409,10 +409,10 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
       if (!tree_int_cst_equal (DECL_SIZE_UNIT (decl), size)
 	  && strcmp (com->name, BLANK_COMMON_NAME))
 	gfc_warning (0, "Named COMMON block %qs at %L shall be of the "
-		     "same size as elsewhere (%lu vs %lu bytes)", com->name,
+		     "same size as elsewhere (%wu vs %wu bytes)", com->name,
 		     &com->where,
-		     (unsigned long) TREE_INT_CST_LOW (size),
-		     (unsigned long) TREE_INT_CST_LOW (DECL_SIZE_UNIT (decl)));
+		     TREE_INT_CST_LOW (size),
+		     TREE_INT_CST_LOW (DECL_SIZE_UNIT (decl)));
 
       if (tree_int_cst_lt (DECL_SIZE_UNIT (decl), size))
 	{

@@ -1,7 +1,7 @@
 %{
 /* mc.flex implements lexical analysis for Modula-2.
 
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -27,6 +27,13 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 #include <time.h>
 #include <ctype.h>
+#include <stdbool.h>
+
+#ifndef alloca
+#ifdef __GNUC__
+#define alloca __builtin_alloca
+#endif
+#endif
 
 #if !defined(TRUE)
 #  define TRUE (1==1)
@@ -95,11 +102,11 @@ static  void pushFunction             (char *function, int module);
 static  void popFunction              (void);
 static  void checkFunction            (void);
         int  mcflex_getColumnNo       (void);
-	int  mcflex_openSource        (char *s);
+	bool mcflex_openSource        (char *s);
 	int  mcflex_getLineNo         (void);
 	void mcflex_closeSource       (void);
 	char *mcflex_getToken         (void);
-        void _M2_mcflex_init          (void);
+        void _M2_mcflex_init          (int argc, char *argv[], char *envp[]);
         int  mcflex_getTotalLines     (void);
 extern  void  yylex                   (void);
 
@@ -326,10 +333,10 @@ handleColumn (void)
 static void
 handleDate (void)
 {
-  time_t  clock = time ((long *)0);
+  time_t  clock = time ((time_t *)0);
   char   *sdate = ctime (&clock);
   char   *s     = (char *)alloca (strlen (sdate)+2+1);
-  char   *p     = index(sdate, '\n');
+  char   *p     = strchr(sdate, '\n');
 
   if (p != NULL) {
     *p = (char) 0;
@@ -653,13 +660,13 @@ mcflex_closeSource (void)
 /* openSource returns TRUE if file s can be opened and
    all tokens are taken from this file.  */
 
-int
+bool
 mcflex_openSource (char *s)
 {
   FILE *newInputFile = fopen (s, "r");
 
   if (newInputFile == NULL)
-    return FALSE;
+    return false;
   else
     {
       isDefinitionModule = FALSE;
@@ -681,7 +688,7 @@ mcflex_openSource (char *s)
       if (currentLine != NULL)
 	currentLine->actualline = lineno;
       START_FILE (filename, lineno);
-      return TRUE;
+      return true;
     }
 }
 
@@ -728,12 +735,12 @@ yywrap (void)
 }
 
 void
-_M2_mcflex_init (void)
+_M2_mcflex_init (int argc, char *argv[], char *envp[])
 {
 }
 
 void
-_M2_mcflex_fini (void)
+_M2_mcflex_fini (int argc, char *argv[], char *envp[])
 {
 }
 

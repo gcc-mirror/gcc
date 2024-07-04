@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 #[lang = "clone"]
 trait Clone {
     fn clone(&self) -> Self;

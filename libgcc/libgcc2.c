@@ -1,6 +1,6 @@
 /* More subroutines needed by GCC output code on some machines.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1989-2023 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1309,7 +1309,7 @@ __udivdi3 (UDWtype n, UDWtype d)
    some narrower _BitInt value, reduce precision.  */
 
 static inline __attribute__((__always_inline__)) SItype
-bitint_reduce_prec (const UWtype **p, SItype prec)
+bitint_reduce_prec (const UBILtype **p, SItype prec)
 {
   UWtype mslimb;
   SItype i;
@@ -1421,7 +1421,7 @@ bitint_reduce_prec (const UWtype **p, SItype prec)
 /* D = S * L.  */
 
 static UWtype
-bitint_mul_1 (UWtype *d, const UWtype *s, UWtype l, SItype n)
+bitint_mul_1 (UBILtype *d, const UBILtype *s, UWtype l, SItype n)
 {
   UWtype sv, hi, lo, c = 0;
   do
@@ -1440,7 +1440,7 @@ bitint_mul_1 (UWtype *d, const UWtype *s, UWtype l, SItype n)
 /* D += S * L.  */
 
 static UWtype
-bitint_addmul_1 (UWtype *d, const UWtype *s, UWtype l, SItype n)
+bitint_addmul_1 (UBILtype *d, const UBILtype *s, UWtype l, SItype n)
 {
   UWtype sv, hi, lo, c = 0;
   do
@@ -1465,9 +1465,9 @@ bitint_addmul_1 (UWtype *d, const UWtype *s, UWtype l, SItype n)
    positive.  */
 
 void
-__mulbitint3 (UWtype *ret, SItype retprec,
-	      const UWtype *u, SItype uprec,
-	      const UWtype *v, SItype vprec)
+__mulbitint3 (UBILtype *ret, SItype retprec,
+	      const UBILtype *u, SItype uprec,
+	      const UBILtype *v, SItype vprec)
 {
   uprec = bitint_reduce_prec (&u, uprec);
   vprec = bitint_reduce_prec (&v, vprec);
@@ -1480,7 +1480,7 @@ __mulbitint3 (UWtype *ret, SItype retprec,
       || (avprec > auprec && !(uprec >= 0 && vprec < 0)))
     {
       SItype p;
-      const UWtype *t;
+      const UBILtype *t;
       p = uprec; uprec = vprec; vprec = p;
       p = auprec; auprec = avprec; avprec = p;
       t = u; u = v; v = t;
@@ -1642,25 +1642,28 @@ __mulbitint3 (UWtype *ret, SItype retprec,
 #ifdef L_divmodbitint4
 /* D = -S.  */
 
-static void
-bitint_negate (UWtype *d, const UWtype *s, SItype n)
+static UWtype
+bitint_negate (UBILtype *d, const UBILtype *s, SItype n)
 {
   UWtype c = 1;
+  UWtype r = 0;
   do
     {
       UWtype sv = *s, lo;
+      r |= sv;
       s += BITINT_INC;
       c = __builtin_add_overflow (~sv, c, &lo);
       *d = lo;
       d += BITINT_INC;
     }
   while (--n);
+  return r;
 }
 
 /* D -= S * L.  */
 
 static UWtype
-bitint_submul_1 (UWtype *d, const UWtype *s, UWtype l, SItype n)
+bitint_submul_1 (UBILtype *d, const UBILtype *s, UWtype l, SItype n)
 {
   UWtype sv, hi, lo, c = 0;
   do
@@ -1687,10 +1690,10 @@ bitint_submul_1 (UWtype *d, const UWtype *s, UWtype l, SItype n)
    should be 0.  */
 
 void
-__divmodbitint4 (UWtype *q, SItype qprec,
-		 UWtype *r, SItype rprec,
-		 const UWtype *u, SItype uprec,
-		 const UWtype *v, SItype vprec)
+__divmodbitint4 (UBILtype *q, SItype qprec,
+		 UBILtype *r, SItype rprec,
+		 const UBILtype *u, SItype uprec,
+		 const UBILtype *v, SItype vprec)
 {
   uprec = bitint_reduce_prec (&u, uprec);
   vprec = bitint_reduce_prec (&v, vprec);
@@ -1702,9 +1705,32 @@ __divmodbitint4 (UWtype *q, SItype qprec,
   USItype rn = ((USItype) rprec + W_TYPE_SIZE - 1) / W_TYPE_SIZE;
   USItype up = auprec % W_TYPE_SIZE;
   USItype vp = avprec % W_TYPE_SIZE;
+  /* If vprec < 0 and the top limb of v is all ones and the second most
+     significant limb has most significant bit clear, then just decrease
+     vn/avprec/vp, because after negation otherwise v2 would have most
+     significant limb clear.  */
+  if (vprec < 0
+      && ((v[BITINT_END (0, vn - 1)] | (vp ? ((UWtype) -1 << vp) : 0))
+	  == (UWtype) -1)
+      && vn > 1
+      && (Wtype) v[BITINT_END (1, vn - 2)] >= 0)
+    {
+      /* Unless all bits below the most significant limb are zero.  */
+      SItype vn2;
+      for (vn2 = vn - 2; vn2 >= 0; --vn2)
+	if (v[BITINT_END (vn - 1 - vn2, vn2)])
+	  {
+	    vp = 0;
+	    --vn;
+#if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
+	    ++v;
+#endif
+	    break;
+	  }
+    }
   if (__builtin_expect (un < vn, 0))
     {
-      /* If abs(v) > abs(u), then q is 0 and r is u.  */
+      /* q is 0 and r is u.  */
       if (q)
 	__builtin_memset (q, 0, qn * sizeof (UWtype));
       if (r == NULL)
@@ -1747,7 +1773,7 @@ __divmodbitint4 (UWtype *q, SItype qprec,
   if (qn >= qn2)
     qn2 = 0;
   USItype sz = un + 1 + vn + qn2;
-  UWtype *buf = __builtin_alloca (sz * sizeof (UWtype));
+  UBILtype *buf = __builtin_alloca (sz * sizeof (UWtype));
   USItype uidx, vidx;
 #if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
   uidx = un - 1;
@@ -1768,9 +1794,9 @@ __divmodbitint4 (UWtype *q, SItype qprec,
     __builtin_memcpy (buf + un + 1, v, vn * sizeof (UWtype));
   if (vp)
     buf[un + 1 + BITINT_END (0, vn - 1)] &= (((UWtype) 1 << vp) - 1);
-  UWtype *u2 = buf;
-  UWtype *v2 = u2 + un + 1;
-  UWtype *q2 = v2 + vn;
+  UBILtype *u2 = buf;
+  UBILtype *v2 = u2 + un + 1;
+  UBILtype *q2 = v2 + vn;
   if (!qn2)
     q2 = q + BITINT_END (qn - (un - vn + 1), 0);
 
@@ -1863,12 +1889,46 @@ __divmodbitint4 (UWtype *q, SItype qprec,
 	      if (uv1 >= vv1)
 		{
 		  /* udiv_qrnnd doesn't support quotients which don't
-		     fit into UWtype, so subtract from uv1:uv0 vv1
-		     first.  */
-		  uv1 -= vv1 + __builtin_sub_overflow (uv0, vv1, &uv0);
-		  udiv_qrnnd (qhat, rhat, uv1, uv0, vv1);
-		  if (!__builtin_add_overflow (rhat, vv1, &rhat))
-		    goto again;
+		     fit into UWtype, while Knuth's algorithm originally
+		     uses a double-word by word to double-word division.
+		     Fortunately, the algorithm guarantees that uv1 <= vv1,
+		     because if uv1 > vv1, then even if v would have all
+		     bits in all words below vv1 set, the previous iteration
+		     would be supposed to use qhat larger by 1 and subtract
+		     v.  With uv1 == vv1 and uv0 >= vv1 the double-word
+		     qhat in Knuth's algorithm would be 1 in the upper word
+		     and 1 in the lower word, say for
+		     uv1 0x8000000000000000ULL
+		     uv0 0xffffffffffffffffULL
+		     vv1 0x8000000000000000ULL
+		     0x8000000000000000ffffffffffffffffuwb
+		     / 0x8000000000000000uwb == 0x10000000000000001uwb, and
+		     exactly like that also for any other value
+		     > 0x8000000000000000ULL in uv1 and vv1 and uv0 >= uv1.
+		     So we need to subtract one or at most two vv1s from
+		     uv1:uv0 (qhat because of that decreases by 1 or 2 and
+		     is then representable in UWtype) and need to increase
+		     rhat by vv1 once or twice because of that.  Now, if
+		     we need to subtract 2 vv1s, i.e. if
+		     uv1 == vv1 && uv0 >= vv1, then rhat (which is uv0 - vv1)
+		     + vv1 computation can't overflow, because it is equal
+		     to uv0 and therefore the original algorithm in that case
+		     performs goto again, but the second vv1 addition must
+		     overflow already because vv1 has msb set from the
+		     canonicalization.  */
+		  uv1 -= __builtin_sub_overflow (uv0, vv1, &uv0);
+		  if (uv1 >= vv1)
+		    {
+		      uv1 -= __builtin_sub_overflow (uv0, vv1, &uv0);
+		      udiv_qrnnd (qhat, rhat, uv1, uv0, vv1);
+		      rhat += 2 * vv1;
+		    }
+		  else
+		    {
+		      udiv_qrnnd (qhat, rhat, uv1, uv0, vv1);
+		      if (!__builtin_add_overflow (rhat, vv1, &rhat))
+			goto again;
+		    }
 		}
 	      else
 		{
@@ -1943,10 +2003,10 @@ __divmodbitint4 (UWtype *q, SItype qprec,
 	    n = qn;
 	  else
 	    n = un - vn + 1;
-	  bitint_negate (q + BITINT_END (qn - 1, 0),
-			 q2 + BITINT_END (un - vn, 0), n);
+	  SItype c = bitint_negate (q + BITINT_END (qn - 1, 0),
+				    q2 + BITINT_END (un - vn, 0), n) ? -1 : 0;
 	  if (qn > n)
-	    __builtin_memset (q + BITINT_END (0, n), -1,
+	    __builtin_memset (q + BITINT_END (0, n), c,
 			      (qn - n) * sizeof (UWtype));
 	}
       else
@@ -1965,11 +2025,11 @@ __divmodbitint4 (UWtype *q, SItype qprec,
       if (uprec < 0)
 	{
 	  /* Negative remainder.  */
-	  bitint_negate (r + BITINT_END (rn - 1, 0),
-			 r + BITINT_END (rn - 1, 0),
-			 rn > vn ? vn : rn);
+	  SItype c = bitint_negate (r + BITINT_END (rn - 1, 0),
+				    r + BITINT_END (rn - 1, 0),
+				    rn > vn ? vn : rn) ? -1 : 0;
 	  if (rn > vn)
-	    __builtin_memset (r + BITINT_END (0, vn), -1,
+	    __builtin_memset (r + BITINT_END (0, vn), c,
 			      (rn - vn) * sizeof (UWtype));
 	}
       else

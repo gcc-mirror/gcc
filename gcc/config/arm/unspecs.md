@@ -1,5 +1,5 @@
 ;; Unspec defintions.
-;; Copyright (C) 2012-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2024 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 
 ;; This file is part of GCC.
@@ -342,6 +342,10 @@
   UNSPEC_VHSUB_S
   UNSPEC_VHSUB_U
   UNSPEC_VLD1
+  UNSPEC_VLD1X3A
+  UNSPEC_VLD1X3B
+  UNSPEC_VLD1X4A
+  UNSPEC_VLD1X4B
   UNSPEC_VLD1_LANE
   UNSPEC_VLD2
   UNSPEC_VLD2_DUP
@@ -459,6 +463,10 @@
   UNSPEC_VRSRA_U_N
   UNSPEC_VSRI
   UNSPEC_VST1
+  UNSPEC_VST1X3A
+  UNSPEC_VST1X3B
+  UNSPEC_VST1X4A
+  UNSPEC_VST1X4B
   UNSPEC_VST1_LANE
   UNSPEC_VST2
   UNSPEC_VST2_LANE
@@ -583,6 +591,10 @@
   VADDLVQ_U
   VCTP
   VCTP_M
+  LETP8
+  LETP16
+  LETP32
+  LETP64
   VPNOT
   VCREATEQ_F
   VCVTQ_N_TO_F_S
@@ -709,7 +721,6 @@
   VCVTBQ_F16_F32
   VCVTTQ_F16_F32
   VMLALDAVQ_U
-  VMLALDAVXQ_U
   VMLALDAVXQ_S
   VMLALDAVQ_S
   VMLSLDAVQ_S
@@ -926,7 +937,6 @@
   VSHRNBQ_N_S
   VRSHRNBQ_N_S
   VRSHRNBQ_N_U
-  VMLALDAVXQ_P_U
   VMLALDAVXQ_P_S
   VQMOVNTQ_M_U
   VQMOVNTQ_M_S
@@ -935,7 +945,6 @@
   VQSHRNTQ_N_U
   VQSHRNTQ_N_S
   VMLALDAVAXQ_S
-  VMLALDAVAXQ_U
   VSHRNTQ_N_S
   VSHRNTQ_N_U
   VCVTBQ_M_F16_F32
@@ -1254,6 +1263,14 @@
   UQRSHLL_48
   SQRSHRL_64
   SQRSHRL_48
-  VSHLCQ_M_
   REINTERPRET
+])
+
+; DLSTP unspecs must be volatile to guarantee the scheduler does not reschedule
+; these instructions within the loop preheader.
+(define_c_enum "unspecv" [
+  DLSTP8
+  DLSTP16
+  DLSTP32
+  DLSTP64
 ])

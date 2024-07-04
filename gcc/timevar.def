@@ -1,6 +1,6 @@
 /* This file contains the definitions for timing variables used to
    measure run-time performance of the compiler.
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
    Contributed by Alex Samuel <samuel@codesourcery.com>
 
    This file is part of GCC.
@@ -161,6 +161,7 @@ DEFTIMEVAR (TV_TREE_VRP              , "tree VRP")
 DEFTIMEVAR (TV_TREE_VRP_THREADER     , "tree VRP threader")
 DEFTIMEVAR (TV_TREE_EARLY_VRP        , "tree Early VRP")
 DEFTIMEVAR (TV_TREE_FAST_VRP         , "tree Fast VRP")
+DEFTIMEVAR (TV_TREE_ARRAY_BOUNDS     , "warn array bounds")
 DEFTIMEVAR (TV_TREE_COPY_PROP        , "tree copy propagation")
 DEFTIMEVAR (TV_FIND_REFERENCED_VARS  , "tree find ref. vars")
 DEFTIMEVAR (TV_TREE_PTA		     , "tree PTA")
@@ -222,7 +223,7 @@ DEFTIMEVAR (TV_TREE_SWITCH_CONVERSION, "tree switch conversion")
 DEFTIMEVAR (TV_TREE_SWITCH_LOWERING,   "tree switch lowering")
 DEFTIMEVAR (TV_TREE_RECIP            , "gimple CSE reciprocals")
 DEFTIMEVAR (TV_TREE_SINCOS           , "gimple CSE sin/cos")
-DEFTIMEVAR (TV_TREE_POWCABS           , "gimple expand pow/cabs")
+DEFTIMEVAR (TV_TREE_POW              , "gimple expand pow")
 DEFTIMEVAR (TV_TREE_WIDEN_MUL        , "gimple widening/fma detection")
 DEFTIMEVAR (TV_TRANS_MEM             , "transactional memory")
 DEFTIMEVAR (TV_TREE_STRLEN           , "tree strlen optimization")
@@ -342,6 +343,7 @@ DEFTIMEVAR (TV_ANALYZER_STATE_PURGE  , "analyzer: state purge")
 DEFTIMEVAR (TV_ANALYZER_PLAN         , "analyzer: planning")
 DEFTIMEVAR (TV_ANALYZER_SCC          , "analyzer: scc")
 DEFTIMEVAR (TV_ANALYZER_WORKLIST     , "analyzer: processing worklist")
+DEFTIMEVAR (TV_ANALYZER_INFINITE_LOOPS, "analyzer: finding infinite loops")
 DEFTIMEVAR (TV_ANALYZER_DUMP         , "analyzer: dump")
 DEFTIMEVAR (TV_ANALYZER_DIAGNOSTICS  , "analyzer: emitting diagnostics")
 DEFTIMEVAR (TV_ANALYZER_SHORTEST_PATHS, "analyzer: shortest paths")

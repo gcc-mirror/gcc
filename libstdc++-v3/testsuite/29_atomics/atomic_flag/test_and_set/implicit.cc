@@ -1,7 +1,7 @@
 // { dg-do run { target c++11 } }
-// { dg-require-thread-fence "" }
+// { dg-require-atomic-cmpxchg-word "" }
 
-// Copyright (C) 2008-2023 Free Software Foundation, Inc.
+// Copyright (C) 2008-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

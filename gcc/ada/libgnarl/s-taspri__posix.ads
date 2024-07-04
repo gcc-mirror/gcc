@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                                                                          --
 --            Copyright (C) 1991-2017, Florida State University             --
---                     Copyright (C) 1995-2023, AdaCore                     --
+--                     Copyright (C) 1995-2024, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,17 +35,13 @@
 --  Note: this file can only be used for POSIX compliant systems
 
 with System.OS_Interface;
+with System.OS_Locks;
 
 package System.Task_Primitives is
    pragma Preelaborate;
 
    type Lock is limited private;
    --  Should be used for implementation of protected objects
-
-   type RTS_Lock is limited private;
-   --  Should be used inside the runtime system. The difference between Lock
-   --  and the RTS_Lock is that the latter serves only as a semaphore so that
-   --  we do not check for ceiling violations.
 
    type Suspension_Object is limited private;
    --  Should be used for the implementation of Ada.Synchronous_Task_Control
@@ -68,11 +64,9 @@ package System.Task_Primitives is
 
 private
 
-   type RTS_Lock is new System.OS_Interface.pthread_mutex_t;
-
    type Lock is record
       RW : aliased System.OS_Interface.pthread_rwlock_t;
-      WO : aliased RTS_Lock;
+      WO : aliased System.OS_Locks.RTS_Lock;
    end record;
 
    type Suspension_Object is record
@@ -85,7 +79,7 @@ private
       Waiting : Boolean;
       --  Flag showing if there is a task already suspended on this object
 
-      L : aliased RTS_Lock;
+      L : aliased System.OS_Locks.RTS_Lock;
       --  Protection for ensuring mutual exclusion on the Suspension_Object
 
       CV : aliased System.OS_Interface.pthread_cond_t;
@@ -94,12 +88,16 @@ private
 
    type Private_Data is limited record
       Thread : aliased System.OS_Interface.pthread_t;
-      pragma Atomic (Thread);
-      --  Thread field may be updated by two different threads of control.
-      --  (See, Enter_Task and Create_Task in s-taprop.adb). They put the same
-      --  value (thr_self value). We do not want to use lock on those
-      --  operations and the only thing we have to make sure is that they are
-      --  updated in atomic fashion.
+      --  This component is written to once before concurrent access to it is
+      --  possible, and then remains constant. The place where it is written to
+      --  depends on how the enclosing ATCB comes into existence:
+      --
+      --  1. For the environment task, the component is set in
+      --     System.Task_Primitive.Operations.Initialize.
+      --  2. For foreign threads, it happens in
+      --     System.Task_Primitives.Operations.Register_Foreign_Thread.
+      --  3. For others tasks, it's in
+      --     System.Task_Primitives.Operations.Create_Task.
 
       LWP : aliased System.Address;
       --  The purpose of this field is to provide a better tasking support on
@@ -107,9 +105,9 @@ private
       --  On targets where lwp is not relevant, this is equivalent to Thread.
 
       CV : aliased System.OS_Interface.pthread_cond_t;
-      --  Should be commented ??? (in all versions of taspri)
+      --  Condition variable used to queue threads until condition is signaled
 
-      L : aliased RTS_Lock;
+      L : aliased System.OS_Locks.RTS_Lock;
       --  Protection for all components is lock L
    end record;
 

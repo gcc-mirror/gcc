@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-options "--param riscv-autovec-preference=fixed-vlmax -O3 --param riscv-autovec-lmul=m2" } */
+/* { dg-options "-mrvv-vector-bits=zvl -O3 -mrvv-max-lmul=m2" } */
 #include <stdint-gcc.h>
 #include <assert.h>
 #define N 16

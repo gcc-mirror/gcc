@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 typedef unsigned long int st;
 typedef unsigned long long dt;
 typedef union
@@ -48,7 +51,8 @@ f (t afh, t bfh) \
 df(f_le, t_le)
 df(f_be, t_be)
 
-main ()
+int
+main (void)
 {
   t_be x;
   x.s.h = 0x10000000U;

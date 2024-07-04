@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -20,17 +20,43 @@
 #define RUST_TYPE_UTIL
 
 #include "rust-mapping-common.h"
+#include "rust-tyty.h"
 
 namespace Rust {
-
-namespace TyTy {
-class BaseType;
-}
-
 namespace Resolver {
 
-extern bool
+bool
 query_type (HirId reference, TyTy::BaseType **result);
+
+bool
+types_compatable (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
+		  location_t unify_locus, bool emit_errors);
+
+TyTy::BaseType *
+unify_site (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
+	    location_t unify_locus);
+
+TyTy::BaseType *
+unify_site_and (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
+		location_t unify_locus, bool emit_errors, bool commit_if_ok,
+		bool implicit_infer_vars, bool cleanup);
+
+TyTy::BaseType *
+coercion_site (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
+	       location_t coercion_locus);
+
+TyTy::BaseType *
+try_coercion (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
+	      location_t coercion_locus);
+
+TyTy::BaseType *
+cast_site (HirId id, TyTy::TyWithLocation from, TyTy::TyWithLocation to,
+	   location_t cast_locus);
+
+AssociatedImplTrait *
+lookup_associated_impl_block (const TyTy::TypeBoundPredicate &bound,
+			      const TyTy::BaseType *binding,
+			      bool *ambigious = nullptr);
 
 } // namespace Resolver
 } // namespace Rust

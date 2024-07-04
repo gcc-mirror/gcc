@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 struct a {
 	char a, b;
 	short c;

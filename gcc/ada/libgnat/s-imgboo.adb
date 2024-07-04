@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1992-2023, Free Software Foundation, Inc.        --
+--           Copyright (C) 1992-2024, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,8 +36,6 @@
 pragma Assertion_Policy (Ghost          => Ignore,
                          Loop_Invariant => Ignore,
                          Assert         => Ignore);
-
-with System.Val_Spec;
 
 package body System.Img_Bool
   with SPARK_Mode

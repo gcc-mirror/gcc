@@ -421,6 +421,13 @@ GOMP_5.1.1 {
 	GOMP_taskwait_depend_nowait;
 } GOMP_5.1;
 
+GOMP_5.1.2 {
+  global:
+	GOMP_add_alloc;
+	GOMP_is_alloc;
+	GOMP_target_map_indirect_ptr;
+} GOMP_5.1.1;
+
 OACC_2.0 {
   global:
 	acc_get_num_devices;

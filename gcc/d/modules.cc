@@ -1,5 +1,5 @@
 /* modules.cc -- D module initialization and termination.
-   Copyright (C) 2013-2023 Free Software Foundation, Inc.
+   Copyright (C) 2013-2024 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -84,6 +84,7 @@ struct module_info
   vec <tree, va_gc> *sharedctors;
   vec <tree, va_gc> *shareddtors;
   vec <tree, va_gc> *sharedctorgates;
+  vec <tree, va_gc> *standalonectors;
 
   vec <tree, va_gc> *unitTests;
 };
@@ -277,12 +278,13 @@ get_compiler_dso_type (void)
   DECL_CHAIN (field) = fields;
   fields = field;
 
-  field = create_field_decl (build_pointer_type (get_moduleinfo_type ()),
-			     NULL, 1, 1);
+  tree moduleinfo_ptr_ptr_type =
+    build_pointer_type (build_pointer_type (get_moduleinfo_type ()));
+
+  field = create_field_decl (moduleinfo_ptr_ptr_type, NULL, 1, 1);
   DECL_CHAIN (field) = fields;
   fields = field;
-  field = create_field_decl (build_pointer_type (get_moduleinfo_type ()),
-			     NULL, 1, 1);
+  field = create_field_decl (moduleinfo_ptr_ptr_type, NULL, 1, 1);
   DECL_CHAIN (field) = fields;
   fields = field;
 
@@ -329,7 +331,7 @@ static tree
 build_dso_cdtor_fn (bool ctor_p)
 {
   const char *name = ctor_p ? GDC_PREFIX ("dso_ctor") : GDC_PREFIX ("dso_dtor");
-  tree condition = ctor_p ? boolean_true_node : boolean_false_node;
+  tree condition = ctor_p ? d_bool_true_node : d_bool_false_node;
 
   /* Declaration of dso_ctor/dso_dtor is:
 
@@ -452,7 +454,7 @@ register_moduleinfo (Module *decl, tree minfo)
   d_finish_decl (dso_slot_node);
 
   dso_initialized_node = build_dso_registry_var (GDC_PREFIX ("dso_initialized"),
-						 boolean_type_node);
+						 d_bool_type);
   d_finish_decl (dso_initialized_node);
 
   /* Declare dso_ctor() and dso_dtor().  */
@@ -502,7 +504,7 @@ layout_moduleinfo_fields (Module *decl, tree type)
   if (decl->sshareddtor)
     layout_moduleinfo_field (ptr_type_node, type, offset);
 
-  if (decl->findGetMembers ())
+  if (dmd::findGetMembers (decl))
     layout_moduleinfo_field (ptr_type_node, type, offset);
 
   if (decl->sictor)
@@ -530,7 +532,7 @@ layout_moduleinfo_fields (Module *decl, tree type)
 
   /* Array of local ClassInfo decls are laid out in the same way.  */
   ClassDeclarations aclasses;
-  getLocalClasses (decl, aclasses);
+  dmd::getLocalClasses (decl, aclasses);
 
   if (aclasses.length)
     {
@@ -560,7 +562,7 @@ layout_moduleinfo (Module *decl)
   ClassDeclarations aclasses;
   FuncDeclaration *sgetmembers;
 
-  getLocalClasses (decl, aclasses);
+  dmd::getLocalClasses (decl, aclasses);
 
   size_t aimports_dim = decl->aimports.length;
   for (size_t i = 0; i < decl->aimports.length; i++)
@@ -570,7 +572,7 @@ layout_moduleinfo (Module *decl)
 	aimports_dim--;
     }
 
-  sgetmembers = decl->findGetMembers ();
+  sgetmembers = dmd::findGetMembers (decl);
 
   size_t flags = 0;
   if (decl->sctor)
@@ -762,6 +764,11 @@ build_module_tree (Module *decl)
 	tm->sdtor = build_funcs_gates_fn (get_identifier ("*__modtestdtor"),
 					  mitest.dtors, NULL);
 
+      if (mi.standalonectors)
+	tm->sictor
+	  = build_funcs_gates_fn (get_identifier ("*__modtestsharedictor"),
+				  mi.standalonectors, NULL);
+
       if (mitest.sharedctors || mitest.sharedctorgates)
 	tm->ssharedctor
 	  = build_funcs_gates_fn (get_identifier ("*__modtestsharedctor"),
@@ -791,6 +798,11 @@ build_module_tree (Module *decl)
       if (mi.dtors)
 	decl->sdtor = build_funcs_gates_fn (get_identifier ("*__moddtor"),
 					    mi.dtors, NULL);
+
+      if (mi.standalonectors)
+	decl->sictor
+	  = build_funcs_gates_fn (get_identifier ("*__modsharedictor"),
+				  mi.standalonectors, NULL);
 
       if (mi.sharedctors || mi.sharedctorgates)
 	decl->ssharedctor
@@ -857,8 +869,15 @@ register_module_decl (Declaration *d)
       /* If a static constructor, push into the current ModuleInfo.
 	 Checks for `shared' first because it derives from the non-shared
 	 constructor type in the front-end.  */
-      if (fd->isSharedStaticCtorDeclaration ())
-	vec_safe_push (minfo->sharedctors, decl);
+      if (SharedStaticCtorDeclaration *sctor
+	  = fd->isSharedStaticCtorDeclaration ())
+	{
+	  /* The `shared' static constructor was marked `@standalone'.  */
+	  if (sctor->standalone)
+	    vec_safe_push (minfo->standalonectors, decl);
+	  else
+	    vec_safe_push (minfo->sharedctors, decl);
+	}
       else if (fd->isStaticCtorDeclaration ())
 	vec_safe_push (minfo->ctors, decl);
 

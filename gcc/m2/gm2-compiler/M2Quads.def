@@ -1,6 +1,6 @@
 (* M2Quads.def generates quadruples.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -123,15 +123,21 @@ EXPORT QUALIFIED StartBuildDefFile, StartBuildModFile, EndBuildFile,
                  IsOptimizeOn,
                  IsPseudoQuad,
                  IsDefOrModFile,
-                 IsInitialisingConst,
+                 IsInitialisingConst, IsConstQuad, IsConditionalBooleanQuad,
+                 IsQuadConstExpr,
+                 IsBecomes,
+                 IsDummy,
+                 GetQuadOp1, GetQuadOp2, GetQuadOp3, GetQuadDest,
+                 SetQuadConstExpr,
 
-                 DisplayQuadList, DisplayQuadRange, DisplayQuad,
+                 DumpQuadruples, DisplayQuadRange, DisplayQuad,
                  WriteOperator, BackPatchSubrangesAndOptParam,
 
                  GetQuad, GetFirstQuad, GetNextQuad, PutQuad,
                  SubQuad, EraseQuad, GetRealQuad,
                  GetQuadtok, GetQuadOtok, PutQuadOtok,
                  GetQuadOp, GetM2OperatorDesc,
+                 GetQuadOTypetok,
                  CountQuads,
                  GetLastFileQuad,
                  GetLastQuadNo,
@@ -145,6 +151,8 @@ EXPORT QUALIFIED StartBuildDefFile, StartBuildModFile, EndBuildFile,
                  IsAutoPushOn, PushAutoOn, PushAutoOff, PopAuto,
                  PushInConstExpression, PopInConstExpression,
                  IsInConstExpression,
+                 PushInConstParameters, PopInConstParameters,
+                 IsInConstParameters,
                  MustCheckOverflow, BuildAsmElement, BuildAsmTrash,
                  GetQuadTrash ;
 
@@ -233,6 +241,9 @@ TYPE
                    SubOp,
                    SubrangeHighOp,
                    SubrangeLowOp,
+                   StringConvertCnulOp,
+                   StringConvertM2nulOp,
+                   StringLengthOp,
                    ThrowOp,
                    TryOp,
                    UnboundedOp,
@@ -391,11 +402,81 @@ PROCEDURE IsFinallyEnd (QuadNo: CARDINAL) : BOOLEAN ;
 
 
 (*
+   IsBecomes - return TRUE if QuadNo is a BecomesOp.
+*)
+
+PROCEDURE IsBecomes (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsDummy - return TRUE if QuadNo is a DummyOp.
+*)
+
+PROCEDURE IsDummy (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsQuadConstExpr - returns TRUE if QuadNo is part of a constant expression.
+*)
+
+PROCEDURE IsQuadConstExpr (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetQuadConstExpr - sets the constexpr field to value.
+*)
+
+PROCEDURE SetQuadConstExpr (QuadNo: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   GetQuadDest - returns the jump destination associated with quad.
+*)
+
+PROCEDURE GetQuadDest (QuadNo: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetQuadOp1 - returns the 1st operand associated with quad.
+*)
+
+PROCEDURE GetQuadOp1 (QuadNo: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetQuadOp2 - returns the 2nd operand associated with quad.
+*)
+
+PROCEDURE GetQuadOp2 (QuadNo: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetQuadOp3 - returns the 3rd operand associated with quad.
+*)
+
+PROCEDURE GetQuadOp3 (QuadNo: CARDINAL) : CARDINAL ;
+
+
+(*
    IsInitialisingConst - returns TRUE if the quadruple is setting
                          a const (op1) with a value.
 *)
 
 PROCEDURE IsInitialisingConst (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsConstQuad - return TRUE if the quadruple is marked as a constexpr.
+*)
+
+PROCEDURE IsConstQuad (quad: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsConditionalBooleanQuad - return TRUE if operand 1 is a boolean result.
+*)
+
+PROCEDURE IsConditionalBooleanQuad (quad: CARDINAL) : BOOLEAN ;
 
 
 (*
@@ -436,10 +517,12 @@ PROCEDURE IsDefOrModFile (QuadNo: CARDINAL) : BOOLEAN ;
 
 
 (*
-   DisplayQuadList - displays all quads.
+   DumpQuadruples - dump all quadruples providing the -fq, -fdump-lang-quad,
+                    -fdump-lang-quad= or -fdump-lang-all were issued to the
+                    command line.
 *)
 
-PROCEDURE DisplayQuadList ;
+PROCEDURE DumpQuadruples (title: ARRAY OF CHAR) ;
 
 
 (*
@@ -541,8 +624,20 @@ PROCEDURE GetQuadOtok (QuadNo: CARDINAL;
                        VAR tok: CARDINAL;
                        VAR Op: QuadOperator;
                        VAR Oper1, Oper2, Oper3: CARDINAL;
-                       VAR overflowChecking: BOOLEAN ;
+                       VAR overflowChecking, constExpr: BOOLEAN ;
                        VAR Op1Pos, Op2Pos, Op3Pos: CARDINAL) ;
+
+
+(*
+   GetQuadOTypetok - returns the fields associated with quadruple QuadNo.
+*)
+
+PROCEDURE GetQuadOTypetok (QuadNo: CARDINAL;
+                           VAR tok: CARDINAL;
+                           VAR Op: QuadOperator;
+                           VAR Oper1, Oper2, Oper3: CARDINAL;
+                           VAR overflowChecking, typeChecking, constExpr: BOOLEAN ;
+                           VAR Op1Pos, Op2Pos, Op3Pos: CARDINAL) ;
 
 
 (*
@@ -554,7 +649,7 @@ PROCEDURE PutQuadOtok (QuadNo: CARDINAL;
                        tok: CARDINAL;
                        Op: QuadOperator;
                        Oper1, Oper2, Oper3: CARDINAL;
-                       overflowChecking: BOOLEAN ;
+                       overflowChecking, constExpr: BOOLEAN ;
                        Op1Pos, Op2Pos, Op3Pos: CARDINAL) ;
 
 
@@ -931,7 +1026,7 @@ PROCEDURE BuildAssignConstant (equalsTokNo: CARDINAL) ;
                             |---------------|       empty
 *)
 
-PROCEDURE BuildAlignment ;
+PROCEDURE BuildAlignment (tokno: CARDINAL) ;
 
 
 (*
@@ -949,7 +1044,7 @@ PROCEDURE BuildAlignment ;
                            |------------|          empty
 *)
 
-PROCEDURE BuildBitLength ;
+PROCEDURE BuildBitLength (tokno: CARDINAL) ;
 
 
 (*
@@ -1919,9 +2014,10 @@ PROCEDURE BuildDesignatorPointer (ptrtok: CARDINAL) ;
                         Empty             +------------+
                                           | NulSym     |
                                           |------------|
+   tokpos is the position of the RETURN token.
 *)
 
-PROCEDURE BuildNulExpression ;
+PROCEDURE BuildNulExpression (tokpos: CARDINAL) ;
 
 
 (*
@@ -1938,7 +2034,7 @@ PROCEDURE BuildNulExpression ;
                                         |--------------|
 *)
 
-PROCEDURE BuildSetStart ;
+PROCEDURE BuildSetStart (tokpos: CARDINAL) ;
 
 
 (*
@@ -1971,9 +2067,10 @@ PROCEDURE BuildSetEnd ;
       	       	   | SetType   |     | SetType     |
                    |-----------|     |-------------|
 
+   tokpos points to the opening '{'.
 *)
 
-PROCEDURE BuildEmptySet ;
+PROCEDURE BuildEmptySet (tokpos: CARDINAL) ;
 
 
 (*
@@ -2082,9 +2179,12 @@ PROCEDURE BuildConstructorStart (cbratokpos: CARDINAL) ;
                          +------------+        +------------+
                          | const      |        | const      |
                          |------------+        |------------|
+
+   startpos is the start of the constructor, either the typename or '{'
+   cbratokpos is the '}'.
 *)
 
-PROCEDURE BuildConstructorEnd (cbratokpos: CARDINAL) ;
+PROCEDURE BuildConstructorEnd (startpos, cbratokpos: CARDINAL) ;
 
 
 (*
@@ -2101,7 +2201,7 @@ PROCEDURE NextConstructorField ;
                              it Pushes a Bitset type.
 *)
 
-PROCEDURE BuildTypeForConstructor ;
+PROCEDURE BuildTypeForConstructor (tokpos: CARDINAL) ;
 
 
 (*
@@ -2777,6 +2877,27 @@ PROCEDURE PopInConstExpression ;
 *)
 
 PROCEDURE IsInConstExpression () : BOOLEAN ;
+
+
+(*
+   PushInConstParameters - push the InConstParameters flag and then set it to TRUE.
+*)
+
+PROCEDURE PushInConstParameters ;
+
+
+(*
+   PopInConstParameters - restores the previous value of the InConstParameters.
+*)
+
+PROCEDURE PopInConstParameters ;
+
+
+(*
+   IsInConstParameters - returns the value of the InConstParameters.
+*)
+
+PROCEDURE IsInConstParameters () : BOOLEAN ;
 
 
 (*

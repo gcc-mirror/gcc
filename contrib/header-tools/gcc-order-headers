@@ -1,11 +1,11 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 import os
 import sys
 import shlex
 import re
 
 from headerutils import *
-import Queue
+import queue
 
 file_list = list ()
 usage = False
@@ -77,19 +77,19 @@ def create_master_list (fn, verbose):
     if fn != "diagnostic.h" and fn != "diagnostic-core.h":
       master_list.append (fn)
       if (verbose):
-        print fn + "      included by: " + includes[fn][0]
+        print (fn + "      included by: " + includes[fn][0])
 
 
 
 def print_dups ():
   if dups:
-    print "\nduplicated includes"
+    print ("\nduplicated includes")
   for i in dups:
     string =  "dup : " + i + " : "
     string += includes[i][0] 
     for i2 in dups[i]:
       string += ", "+i2
-    print string
+    print (string)
 
 
 def process_known_dups ():
@@ -230,11 +230,11 @@ for arg in sys.argv[1:]:
     elif arg[0:2] == "-v":
       show_master = True
     else:
-      print "Error: unrecognized option " + arg
+      print ("Error: unrecognized option " + arg)
   elif os.path.exists(arg):
     file_list.append (arg)
   else:
-    print "Error: file " + arg + " Does not exist."
+    print ("Error: file " + arg + " Does not exist.")
     usage = True
 
 if not file_list and not show_master:
@@ -242,7 +242,7 @@ if not file_list and not show_master:
 
 if not usage and not os.path.exists ("coretypes.h"):
   usage = True
-  print "Error: Must run command in main gcc source directory containing coretypes.h\n"
+  print ("Error: Must run command in main gcc source directory containing coretypes.h\n")
 
 # process diagnostic.h first.. it's special since GCC_DIAG_STYLE can be
 # overridden by languages, but must be done so by a file included BEFORE it.
@@ -268,20 +268,20 @@ process_known_dups ()
 desired_order = master_list
 
 if show_master:
-  print " Canonical order of gcc include files: "
+  print (" Canonical order of gcc include files: ")
   for x in master_list:
-    print x
-  print " "
+    print (x)
+  print (" ")
 
 if usage:
-  print "gcc-order-headers [-i] [-v] file1 [filen]"
-  print "    Ensures gcc's headers files are included in a normalized form with"
-  print "    redundant headers removed.  The original files are saved in filename.bak"
-  print "    Outputs a list of files which changed."
-  print " -i ignore conditional compilation."
-  print "    Use after examining the file to be sure includes within #ifs are safe"
-  print "    Any headers within conditional sections will be ignored."
-  print " -v Show the canonical order of known headers"
+  print ("gcc-order-headers [-i] [-v] file1 [filen]")
+  print ("    Ensures gcc's headers files are included in a normalized form with")
+  print ("    redundant headers removed.  The original files are saved in filename.bak")
+  print ("    Outputs a list of files which changed.")
+  print (" -i ignore conditional compilation.")
+  print ("    Use after examining the file to be sure includes within #ifs are safe")
+  print ("    Any headers within conditional sections will be ignored.")
+  print (" -v Show the canonical order of known headers")
   sys.exit(0)
 
 
@@ -303,7 +303,7 @@ for fn in file_list:
 
   if ii_include_list_cond (iinfo):
     if not ignore_conditional:
-      print fn + ": Cannot process due to conditional compilation of includes"
+      print (fn + ": Cannot process due to conditional compilation of includes")
       didnt_do.append (fn)
       src = list ()
 
@@ -329,8 +329,8 @@ for fn in file_list:
       src_line[nm] = ii_src_line(iinfo)[d]
       if src_line[nm].find("/*") != -1 and src_line[nm].find("*/") == -1:
         # this means we have a multi line comment, abort!'
-        print fn + ": Cannot process due to a multi-line comment :"
-        print "        " + src_line[nm]
+        print (fn + ": Cannot process due to a multi-line comment :")
+        print ("        " + src_line[nm])
         if fn not in didnt_do:
           didnt_do.append (fn)
         src = list ()
@@ -375,22 +375,22 @@ for fn in file_list:
     for line in new_src:
       fl.write (line)
     fl.close ()
-    print fn 
+    print (fn)
 
  
 if didnt_do:
-  print "\n\n Did not process the following files due to conditional dependencies:"
+  print ("\n\n Did not process the following files due to conditional dependencies:")
   str = ""
   for x in didnt_do:
     str += x + " "
-  print str
-  print "\n"
-  print "Please examine to see if they are safe to process, and re-try with -i. "
-  print "Safeness is determined by checking whether any of the reordered headers are"
-  print "within a conditional and could be hauled out of the conditional, thus changing"
-  print "what the compiler will see."
-  print "Multi-line comments after a #include can also cause failuer, they must be turned"
-  print "into single line comments or removed."
+  print (str)
+  print ("\n")
+  print ("Please examine to see if they are safe to process, and re-try with -i. ")
+  print ("Safeness is determined by checking whether any of the reordered headers are")
+  print ("within a conditional and could be hauled out of the conditional, thus changing")
+  print ("what the compiler will see.")
+  print ("Multi-line comments after a #include can also cause failure, they must be turned")
+  print ("into single line comments or removed.")
 
 
 

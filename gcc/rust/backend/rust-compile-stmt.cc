@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -19,6 +19,8 @@
 #include "rust-compile-pattern.h"
 #include "rust-compile-stmt.h"
 #include "rust-compile-expr.h"
+#include "rust-compile-type.h"
+#include "rust-compile-var-decl.h"
 
 namespace Rust {
 namespace Compile {
@@ -36,26 +38,16 @@ CompileStmt::Compile (HIR::Stmt *stmt, Context *ctx)
 }
 
 void
-CompileStmt::visit (HIR::ExprStmtWithBlock &stmt)
+CompileStmt::visit (HIR::ExprStmt &stmt)
 {
-  translated = CompileExpr::Compile (stmt.get_expr (), ctx);
-}
-
-void
-CompileStmt::visit (HIR::ExprStmtWithoutBlock &stmt)
-{
-  translated = CompileExpr::Compile (stmt.get_expr (), ctx);
+  translated = CompileExpr::Compile (stmt.get_expr ().get (), ctx);
 }
 
 void
 CompileStmt::visit (HIR::LetStmt &stmt)
 {
-  // nothing to do
-  if (!stmt.has_init_expr ())
-    return;
-
   HIR::Pattern &stmt_pattern = *stmt.get_pattern ();
-  HirId stmt_id = stmt_pattern.get_pattern_mappings ().get_hirid ();
+  HirId stmt_id = stmt_pattern.get_mappings ().get_hirid ();
 
   TyTy::BaseType *ty = nullptr;
   if (!ctx->get_tyctx ()->lookup_type (stmt_id, &ty))
@@ -66,7 +58,17 @@ CompileStmt::visit (HIR::LetStmt &stmt)
       return;
     }
 
-  tree init = CompileExpr::Compile (stmt.get_init_expr (), ctx);
+  // setup var decl nodes
+  fncontext fnctx = ctx->peek_fn ();
+  tree fndecl = fnctx.fndecl;
+  tree translated_type = TyTyResolveCompile::compile (ctx, ty);
+  CompileVarDecl::compile (fndecl, translated_type, &stmt_pattern, ctx);
+
+  // nothing to do
+  if (!stmt.has_init_expr ())
+    return;
+
+  tree init = CompileExpr::Compile (stmt.get_init_expr ().get (), ctx);
   // FIXME use error_mark_node, check that CompileExpr returns error_mark_node
   // on failure and make this an assertion
   if (init == nullptr)
@@ -77,8 +79,8 @@ CompileStmt::visit (HIR::LetStmt &stmt)
     stmt.get_init_expr ()->get_mappings ().get_hirid (), &actual);
   rust_assert (ok);
 
-  Location lvalue_locus = stmt.get_pattern ()->get_locus ();
-  Location rvalue_locus = stmt.get_init_expr ()->get_locus ();
+  location_t lvalue_locus = stmt.get_pattern ()->get_locus ();
+  location_t rvalue_locus = stmt.get_init_expr ()->get_locus ();
   TyTy::BaseType *expected = ty;
   init = coercion_site (stmt.get_mappings ().get_hirid (), init, actual,
 			expected, lvalue_locus, rvalue_locus);

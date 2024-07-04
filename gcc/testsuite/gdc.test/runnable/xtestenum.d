@@ -156,6 +156,19 @@ class C7379
 }
 
 /***********************************/
+// https://issues.dlang.org/show_bug.cgi?id=23515
+
+enum Easing : void function()
+{
+    identity1 = (){},
+}
+
+void test23515()
+{
+    Easing.identity1();
+}
+
+/***********************************/
 
 int main()
 {
@@ -166,6 +179,7 @@ int main()
     test5();
     test6();
     test7();
+    test23515();
 
     printf("Success\n");
     return 0;

@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 #ifdef __i386__
 f (rp)
      unsigned int *rp;

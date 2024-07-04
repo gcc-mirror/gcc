@@ -1,4 +1,5 @@
 /* { dg-require-effective-target indirect_calls } */
+/* { dg-additional-options "-std=gnu89" } */
 
 typedef long		__kernel_time_t;
 typedef __kernel_time_t		time_t;

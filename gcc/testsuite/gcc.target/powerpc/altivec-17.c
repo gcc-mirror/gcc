@@ -2,8 +2,8 @@
    typedef name as a vector type specifier.  */
 
 /* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec -mabi=altivec" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 typedef unsigned int ui;
 typedef signed char sc;

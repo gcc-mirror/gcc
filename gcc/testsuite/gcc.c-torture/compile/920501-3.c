@@ -1,2 +1,2 @@
 struct{long long x:24,y:40;}v;
-x(){v.y=0;}
+void x(void){v.y=0;}

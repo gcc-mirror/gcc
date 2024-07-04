@@ -90,7 +90,6 @@ AM_MAKEFLAGS = \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
 	"DESTDIR=$(DESTDIR)" \
 	"WERROR=$(WERROR)" \
-        "TARGET_LONGDOUBLE_ABI=$(TARGET_LONGDOUBLE_ABI)" \
         "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)"
 
 # Subdir rules rely on $(FLAGS_TO_PASS)
@@ -101,6 +100,7 @@ if BUILD_ISOLIB
 M2DEFS = ChanConsts.def  CharClass.def \
          ClientSocket.def  ComplexMath.def \
          ConvStringLong.def  ConvStringReal.def \
+         ConvStringShort.def \
          ConvTypes.def  COROUTINES.def \
          ErrnoCategory.def  EXCEPTIONS.def \
          GeneralUserExceptions.def  IOChan.def \
@@ -124,7 +124,10 @@ M2DEFS = ChanConsts.def  CharClass.def \
          RTgenif.def  RTio.def \
          Semaphores.def  SeqFile.def \
          ShortComplexMath.def \
-         ShortIO.def  ShortWholeIO.def \
+         ShortConv.def \
+         ShortIO.def \
+         ShortMath.def ShortStr.def \
+         ShortWholeIO.def \
          SimpleCipher.def  SIOResult.def \
          SLongIO.def  SLongWholeIO.def \
          SRawIO.def  SRealIO.def \
@@ -143,6 +146,7 @@ M2DEFS = ChanConsts.def  CharClass.def \
 M2MODS = ChanConsts.mod  CharClass.mod \
          ClientSocket.mod  ComplexMath.mod \
          ConvStringLong.mod  ConvStringReal.mod \
+         ConvStringShort.mod \
          ConvTypes.mod  COROUTINES.mod \
          EXCEPTIONS.mod  GeneralUserExceptions.mod \
          IOChan.mod  IOConsts.mod \
@@ -164,7 +168,10 @@ M2MODS = ChanConsts.mod  CharClass.mod \
          RTgen.mod  RTio.mod \
          Semaphores.mod  SeqFile.mod \
          ShortComplexMath.mod \
-         ShortIO.mod  ShortWholeIO.mod \
+         ShortConv.mod \
+         ShortIO.mod \
+         ShortMath.mod ShortStr.mod \
+         ShortWholeIO.mod \
          SimpleCipher.mod  SIOResult.mod \
          SLongIO.mod  SLongWholeIO.mod \
          SRawIO.mod  SRealIO.mod \
@@ -191,18 +198,23 @@ libm2iso_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2iso_la_
 libm2iso_la_CFLAGS = \
    $(C_INCLUDES) -I. -I.. -I$(GM2_SRC)/gm2-libs-iso -I$(GM2_SRC)/gm2-libs \
    -DBUILD_GM2_LIBS -I@srcdir@/../ -I../../../gcc -I$(GCC_DIR) -I$(GCC_DIR)/../include \
-   -I../../libgcc -I$(GCC_DIR)/../libgcc -I$(MULTIBUILDTOP)../../gcc/include \
-   $(TARGET_LONGDOUBLE_ABI)
+   -I../../libgcc -I$(GCC_DIR)/../libgcc -I$(MULTIBUILDTOP)../../gcc/include
+
 libm2iso_la_M2FLAGS = \
   -fm2-pathname=m2iso -I. -Ilibm2iso -I$(GM2_SRC)/gm2-libs-iso \
   -fm2-pathname=m2pim -I$(GM2_SRC)/gm2-libs \
-  -fiso -fextended-opaque -fm2-g -g -Wcase-enum -Wreturn-type -fcase -fm2-prefix=m2iso \
-   $(TARGET_LONGDOUBLE_ABI)
+  -fiso -fextended-opaque -fm2-g -g -Wcase-enum \
+  -Wreturn-type -fcase -fm2-prefix=m2iso
+
 if TARGET_DARWIN
 libm2iso_la_link_flags = -Wl,-undefined,dynamic_lookup
 else
 libm2iso_la_link_flags =
 endif
+if ENABLE_DARWIN_AT_RPATH
+libm2iso_la_link_flags += -nodefaultrpaths -Wl,-rpath,@loader_path/
+endif
+
 libm2iso_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2iso_la_link_flags)
 CLEANFILES = SYSTEM.def
 BUILT_SOURCES = SYSTEM.def

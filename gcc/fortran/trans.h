@@ -1,5 +1,5 @@
 /* Header for code translation functions
-   Copyright (C) 2002-2023 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -451,7 +451,9 @@ tree gfc_vptr_def_init_get (tree);
 tree gfc_vptr_copy_get (tree);
 tree gfc_vptr_final_get (tree);
 tree gfc_vptr_deallocate_get (tree);
-void gfc_reset_vptr (stmtblock_t *, gfc_expr *, tree = NULL_TREE);
+void gfc_reset_vptr (stmtblock_t *, gfc_expr *, tree = NULL_TREE,
+		     gfc_symbol * = nullptr);
+void gfc_class_set_vptr (stmtblock_t *, tree, tree);
 void gfc_reset_len (stmtblock_t *, gfc_expr *);
 tree gfc_get_class_from_gfc_expr (gfc_expr *);
 tree gfc_get_class_from_expr (tree);
@@ -471,7 +473,8 @@ void gfc_conv_class_to_class (gfc_se *, gfc_expr *, gfc_typespec, bool, bool,
 void gfc_start_wrapped_block (gfc_wrapped_block* block, tree code);
 /* Add a pair of init/cleanup code to the block.  Each one might be a
    NULL_TREE if not required.  */
-void gfc_add_init_cleanup (gfc_wrapped_block* block, tree init, tree cleanup);
+void gfc_add_init_cleanup (gfc_wrapped_block* block, tree init, tree cleanup,
+			   bool back = false);
 /* Finalize the block, that is, create a single expression encapsulating the
    original code together with init and clean-up code.  */
 tree gfc_finish_wrapped_block (gfc_wrapped_block* block);
@@ -764,10 +767,14 @@ void gfc_allocate_using_caf_lib (stmtblock_t *, tree, tree, tree, tree, tree,
 
 /* Allocate memory for allocatable variables, with optional status variable.  */
 void gfc_allocate_allocatable (stmtblock_t*, tree, tree, tree, tree,
-			       tree, tree, tree, gfc_expr*, int);
+			       tree, tree, tree, gfc_expr*, int,
+			       tree = NULL_TREE, tree = NULL_TREE,
+			       tree = NULL_TREE);
 
 /* Allocate memory, with optional status variable.  */
-void gfc_allocate_using_malloc (stmtblock_t *, tree, tree, tree);
+void gfc_allocate_using_malloc (stmtblock_t *, tree, tree, tree,
+				tree = NULL_TREE, tree = NULL_TREE,
+				tree = NULL_TREE);
 
 /* Generate code to deallocate an array.  */
 tree gfc_deallocate_with_status (tree, tree, tree, tree, tree, bool,
@@ -817,6 +824,8 @@ struct array_descr_info;
 bool gfc_get_array_descr_info (const_tree, struct array_descr_info *);
 
 /* In trans-openmp.cc */
+tree gfc_omp_call_add_alloc (tree);
+tree gfc_omp_call_is_alloc (tree);
 bool gfc_omp_is_allocatable_or_ptr (const_tree);
 tree gfc_omp_check_optional_argument (tree, bool);
 tree gfc_omp_array_data (tree, bool);
@@ -972,6 +981,7 @@ extern GTY(()) tree gfor_fndecl_is_contiguous0;
 /* Implemented in Fortran.  */
 extern GTY(()) tree gfor_fndecl_sc_kind;
 extern GTY(()) tree gfor_fndecl_si_kind;
+extern GTY(()) tree gfor_fndecl_sl_kind;
 extern GTY(()) tree gfor_fndecl_sr_kind;
 
 /* IEEE-related.  */

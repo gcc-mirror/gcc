@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC for Motorola 680x0/ColdFire.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -278,8 +278,8 @@ along with GCC; see the file COPYING3.  If not see
 /* "long double" is the same as "double" on ColdFire and fido
    targets.  */
 
-#define LONG_DOUBLE_TYPE_SIZE			\
-  ((TARGET_COLDFIRE || TARGET_FIDOA) ? 64 : 80)
+#define LONG_DOUBLE_TYPE_MODE			\
+  ((TARGET_COLDFIRE || TARGET_FIDOA) ? DFmode : XFmode)
 
 #define BITS_BIG_ENDIAN 1
 #define BYTES_BIG_ENDIAN 1

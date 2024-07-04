@@ -1,5 +1,5 @@
 /* Subclasses of diagnostic_event for analyzer diagnostics.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_MEMORY
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -55,6 +56,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/constraint-manager.h"
 #include "analyzer/checker-event.h"
 #include "analyzer/exploded-graph.h"
+#include "diagnostic-format-sarif.h"
+#include "tree-logical-location.h"
 
 #if ENABLE_ANALYZER
 
@@ -106,46 +109,6 @@ event_kind_to_string (enum event_kind ek)
     }
 }
 
-/* A class for fixing up fndecls and stack depths in checker_event, based
-   on inlining records.
-
-   The early inliner runs before the analyzer, which can lead to confusing
-   output.
-
-   Tne base fndecl and depth within a checker_event are from call strings
-   in program_points, which reflect the call strings after inlining.
-   This class lets us offset the depth and fix up the reported fndecl and
-   stack depth to better reflect the user's original code.  */
-
-class inlining_info
-{
-public:
-  inlining_info (location_t loc)
-  {
-    inlining_iterator iter (loc);
-    m_inner_fndecl = iter.get_fndecl ();
-    int num_frames = 0;
-    while (!iter.done_p ())
-      {
-	m_outer_fndecl = iter.get_fndecl ();
-	num_frames++;
-	iter.next ();
-      }
-    if (num_frames > 1)
-      m_extra_frames = num_frames - 1;
-    else
-      m_extra_frames = 0;
-  }
-
-  tree get_inner_fndecl () const { return m_inner_fndecl; }
-  int get_extra_frames () const { return m_extra_frames; }
-
-private:
-  tree m_outer_fndecl;
-  tree m_inner_fndecl;
-  int m_extra_frames;
-};
-
 /* class checker_event : public diagnostic_event.  */
 
 /* checker_event's ctor.  */
@@ -182,6 +145,30 @@ checker_event::get_meaning () const
   return meaning ();
 }
 
+/* Implementation of diagnostic_event::maybe_add_sarif_properties
+   for checker_event.  */
+
+void
+checker_event::
+maybe_add_sarif_properties (sarif_object &thread_flow_loc_obj) const
+{
+  sarif_property_bag &props = thread_flow_loc_obj.get_or_create_properties ();
+#define PROPERTY_PREFIX "gcc/analyzer/checker_event/"
+  props.set (PROPERTY_PREFIX "emission_id",
+	     diagnostic_event_id_to_json  (m_emission_id));
+  props.set_string (PROPERTY_PREFIX "kind", event_kind_to_string (m_kind));
+
+  if (m_original_fndecl != m_effective_fndecl)
+    {
+      tree_logical_location logical_loc (m_original_fndecl);
+      props.set (PROPERTY_PREFIX "original_fndecl",
+		 make_sarif_logical_location_object (logical_loc));
+    }
+  if (m_original_depth != m_effective_depth)
+    props.set_integer (PROPERTY_PREFIX "original_depth", m_original_depth);
+#undef PROPERTY_PREFIX
+}
+
 /* Dump this event to PP (for debugging/logging purposes).  */
 
 void
@@ -212,7 +199,7 @@ checker_event::debug () const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   dump (&pp);
   pp_newline (&pp);
   pp_flush (&pp);
@@ -457,25 +444,48 @@ state_change_event::get_desc (bool can_colorize) const
 	      meaning.dump_to_pp (&meaning_pp);
 
 	      /* Append debug version.  */
-	      if (m_origin)
-		return make_label_text
-		  (can_colorize,
-		   "%s (state of %qE: %qs -> %qs, origin: %qE, meaning: %s)",
-		   custom_desc.get (),
-		   var,
-		   m_from->get_name (),
-		   m_to->get_name (),
-		   origin,
-		   pp_formatted_text (&meaning_pp));
+	      if (var)
+		{
+		  if (m_origin)
+		    return make_label_text
+		      (can_colorize,
+		       "%s (state of %qE: %qs -> %qs, origin: %qE, meaning: %s)",
+		       custom_desc.get (),
+		       var,
+		       m_from->get_name (),
+		       m_to->get_name (),
+		       origin,
+		       pp_formatted_text (&meaning_pp));
+		  else
+		    return make_label_text
+		      (can_colorize,
+		       "%s (state of %qE: %qs -> %qs, NULL origin, meaning: %s)",
+		       custom_desc.get (),
+		       var,
+		       m_from->get_name (),
+		       m_to->get_name (),
+		       pp_formatted_text (&meaning_pp));
+		}
 	      else
-		return make_label_text
-		  (can_colorize,
-		   "%s (state of %qE: %qs -> %qs, NULL origin, meaning: %s)",
-		   custom_desc.get (),
-		   var,
-		   m_from->get_name (),
-		   m_to->get_name (),
-		   pp_formatted_text (&meaning_pp));
+		{
+		  if (m_origin)
+		    return make_label_text
+		      (can_colorize,
+		       "%s (state: %qs -> %qs, origin: %qE, meaning: %s)",
+		       custom_desc.get (),
+		       m_from->get_name (),
+		       m_to->get_name (),
+		       origin,
+		       pp_formatted_text (&meaning_pp));
+		  else
+		    return make_label_text
+		      (can_colorize,
+		       "%s (state: %qs -> %qs, NULL origin, meaning: %s)",
+		       custom_desc.get (),
+		       m_from->get_name (),
+		       m_to->get_name (),
+		       pp_formatted_text (&meaning_pp));
+		}
 	    }
 	  else
 	    return custom_desc;
@@ -538,6 +548,21 @@ state_change_event::get_meaning () const
 
 /* class superedge_event : public checker_event.  */
 
+/* Implementation of diagnostic_event::maybe_add_sarif_properties
+   for superedge_event.  */
+
+void
+superedge_event::maybe_add_sarif_properties (sarif_object &thread_flow_loc_obj)
+  const
+{
+  checker_event::maybe_add_sarif_properties (thread_flow_loc_obj);
+  sarif_property_bag &props = thread_flow_loc_obj.get_or_create_properties ();
+#define PROPERTY_PREFIX "gcc/analyzer/superedge_event/"
+  if (m_sedge)
+    props.set (PROPERTY_PREFIX "superedge", m_sedge->to_json ());
+#undef PROPERTY_PREFIX
+}
+
 /* Get the callgraph_superedge for this superedge_event, which must be
    for an interprocedural edge, rather than a CFG edge.  */
 
@@ -588,6 +613,8 @@ superedge_event::superedge_event (enum event_kind kind,
   m_eedge (eedge), m_sedge (eedge.m_sedge),
   m_var (NULL_TREE), m_critical_state (0)
 {
+  /* Note that m_sedge can be nullptr for e.g. jumps through
+     function pointers.  */
 }
 
 /* class cfg_edge_event : public superedge_event.  */

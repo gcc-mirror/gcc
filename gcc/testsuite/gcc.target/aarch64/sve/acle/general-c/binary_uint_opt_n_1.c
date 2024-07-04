@@ -11,7 +11,7 @@ f1 (svbool_t pg, svfloat16_t f16, svint16_t s16, svuint16_t u16,
   svlsl_x (s32, s32, u32); /* { dg-error {passing 'svint32_t' to argument 1 of 'svlsl_x', which expects 'svbool_t'} } */
   svlsl_x (1, s32, u32); /* { dg-error {passing 'int' to argument 1 of 'svlsl_x', which expects 'svbool_t'} } */
   svlsl_x (pg, pg, u16); /* { dg-error {'svlsl_x' has no form that takes 'svbool_t' arguments} } */
-  svlsl_x (pg, 1, s16); /* { dg-error {passing 'int' to argument 2 of 'svlsl_x', which expects an SVE vector type} } */
+  svlsl_x (pg, 1, s16); /* { dg-error {passing 'int' to argument 2 of 'svlsl_x', which expects an SVE type rather than a scalar} } */
   svlsl_x (pg, s16, s16); /* { dg-error {passing 'svint16_t' to argument 3 of 'svlsl_x', which expects a vector of unsigned integers} } */
   svlsl_x (pg, s16, u16);
   svlsl_x (pg, s16, f16); /* { dg-error {passing 'svfloat16_t' to argument 3 of 'svlsl_x', which expects a vector of unsigned integers} } */

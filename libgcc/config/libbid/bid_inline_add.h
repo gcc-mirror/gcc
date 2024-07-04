@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -918,6 +918,7 @@ get_add128 (UINT64 sign_x, int exponent_x, UINT64 coefficient_x,
 	      coefficient_x += D;
 	    }
 	    break;
+          default: break; // default added to avoid compiler warning
 	  }
 	  if (coefficient_x < 1000000000000000ull) {
 	    coefficient_x -= D;
@@ -1107,6 +1108,7 @@ get_add128 (UINT64 sign_x, int exponent_x, UINT64 coefficient_x,
       } else if (FS.w[1] | FS.w[0])
 	CYh++;
       break;
+    default: break; // default added to avoid compiler warning
     }
 #endif
 #endif

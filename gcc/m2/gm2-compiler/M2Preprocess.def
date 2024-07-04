@@ -1,6 +1,6 @@
 (* M2Preprocess.def provides a mechanism to invoke the C preprocessor.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -32,7 +32,6 @@ DEFINITION MODULE M2Preprocess ;
 *)
 
 FROM DynamicStrings IMPORT String ;
-EXPORT QUALIFIED PreprocessModule ;
 
 
 (*
@@ -43,9 +42,31 @@ EXPORT QUALIFIED PreprocessModule ;
                       If preprocessing occurs then a temporary file is created
                       and its name is returned.
                       All temporary files will be deleted when the compiler exits.
+                      outputdep is the filename which will contain the dependency
+                      info if -M, -MM is provided.  outputdep can be NIL in which case
+                      it is ignored.
 *)
 
-PROCEDURE PreprocessModule (filename: String; isMain: BOOLEAN) : String ;
+PROCEDURE PreprocessModule (filename: String;
+                            topSource, deleteDep: BOOLEAN;
+                            outputDep: String) : String ;
+
+
+(*
+   MakeSaveTempsFileNameExt - creates and return the temporary filename.ext.
+                              in the current working directory unless
+                              SaveTempsDir = obj, when we put it in the dumpdir
+                              if that is specified (or fallback to '.' if not).
+*)
+
+PROCEDURE MakeSaveTempsFileNameExt (filename, ext: String) : String ;
+
+
+(*
+   OnExitDelete - when the application finishes delete filename.
+*)
+
+PROCEDURE OnExitDelete (filename: String) : String ;
 
 
 END M2Preprocess.

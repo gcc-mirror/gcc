@@ -1,4 +1,5 @@
-f ()
+void
+f (void)
 {
   do
     {

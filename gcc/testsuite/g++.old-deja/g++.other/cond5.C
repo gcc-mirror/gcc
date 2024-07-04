@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// Explicit { dg-require-effective-target exceptions_enabled } to avoid verify compiler messages FAILs for '-fno-exceptions'.
 // { dg-options "-W -pedantic -ansi" }
 
 // Copyright (C) 1999, 2000 Free Software Foundation, Inc.

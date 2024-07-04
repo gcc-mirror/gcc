@@ -1,5 +1,5 @@
 /* Lower _BitInt(N) operations to scalar operations.
-   Copyright (C) 2023 Free Software Foundation, Inc.
+   Copyright (C) 2023-2024 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
 This file is part of GCC.
@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "tree-switch-conversion.h"
 #include "ubsan.h"
+#include "stor-layout.h"
 #include "gimple-lower-bitint.h"
 
 /* Split BITINT_TYPE precisions in 4 categories.  Small _BitInt, where
@@ -212,6 +213,7 @@ mergeable_op (gimple *stmt)
     case BIT_NOT_EXPR:
     case SSA_NAME:
     case INTEGER_CST:
+    case BIT_FIELD_REF:
       return true;
     case LSHIFT_EXPR:
       {
@@ -231,7 +233,8 @@ mergeable_op (gimple *stmt)
 	    && TREE_CODE (rhs_type) == BITINT_TYPE
 	    && bitint_precision_kind (lhs_type) >= bitint_prec_large
 	    && bitint_precision_kind (rhs_type) >= bitint_prec_large
-	    && tree_int_cst_equal (TYPE_SIZE (lhs_type), TYPE_SIZE (rhs_type)))
+	    && (CEIL (TYPE_PRECISION (lhs_type), limb_prec)
+		== CEIL (TYPE_PRECISION (rhs_type), limb_prec)))
 	  {
 	    if (TYPE_PRECISION (rhs_type) >= TYPE_PRECISION (lhs_type))
 	      return true;
@@ -305,6 +308,7 @@ optimizable_arith_overflow (gimple *stmt)
   imm_use_iterator ui;
   use_operand_p use_p;
   int seen = 0;
+  gimple *realpart = NULL, *cast = NULL;
   FOR_EACH_IMM_USE_FAST (use_p, ui, lhs)
     {
       gimple *g = USE_STMT (use_p);
@@ -317,6 +321,7 @@ optimizable_arith_overflow (gimple *stmt)
 	  if ((seen & 1) != 0)
 	    return 0;
 	  seen |= 1;
+	  realpart = g;
 	}
       else if (gimple_assign_rhs_code (g) == IMAGPART_EXPR)
 	{
@@ -338,13 +343,35 @@ optimizable_arith_overflow (gimple *stmt)
 	  if (!INTEGRAL_TYPE_P (TREE_TYPE (lhs2))
 	      || TREE_CODE (TREE_TYPE (lhs2)) == BITINT_TYPE)
 	    return 0;
+	  cast = use_stmt;
 	}
       else
 	return 0;
     }
   if ((seen & 2) == 0)
     return 0;
-  return seen == 3 ? 2 : 1;
+  if (seen == 3)
+    {
+      /* Punt if the cast stmt appears before realpart stmt, because
+	 if both appear, the lowering wants to emit all the code
+	 at the location of realpart stmt.  */
+      gimple_stmt_iterator gsi = gsi_for_stmt (realpart);
+      unsigned int cnt = 0;
+      do
+	{
+	  gsi_prev_nondebug (&gsi);
+	  if (gsi_end_p (gsi) || gsi_stmt (gsi) == cast)
+	    return 0;
+	  if (gsi_stmt (gsi) == stmt)
+	    return 2;
+	  /* If realpart is too far from stmt, punt as well.
+	     Usually it will appear right after it.  */
+	  if (++cnt == 32)
+	    return 0;
+	}
+      while (1);
+    }
+  return 1;
 }
 
 /* If STMT is some kind of comparison (GIMPLE_COND, comparison assignment)
@@ -392,24 +419,28 @@ struct bitint_large_huge
   bitint_large_huge ()
     : m_names (NULL), m_loads (NULL), m_preserved (NULL),
       m_single_use_names (NULL), m_map (NULL), m_vars (NULL),
-      m_limb_type (NULL_TREE), m_data (vNULL) {}
+      m_limb_type (NULL_TREE), m_data (vNULL),
+      m_returns_twice_calls (vNULL) {}
 
   ~bitint_large_huge ();
 
   void insert_before (gimple *);
   tree limb_access_type (tree, tree);
   tree limb_access (tree, tree, tree, bool);
+  tree build_bit_field_ref (tree, tree, unsigned HOST_WIDE_INT,
+			    unsigned HOST_WIDE_INT);
   void if_then (gimple *, profile_probability, edge &, edge &);
   void if_then_else (gimple *, profile_probability, edge &, edge &);
   void if_then_if_then_else (gimple *g, gimple *,
 			     profile_probability, profile_probability,
 			     edge &, edge &, edge &);
   tree handle_operand (tree, tree);
-  tree prepare_data_in_out (tree, tree, tree *);
+  tree prepare_data_in_out (tree, tree, tree *, tree = NULL_TREE);
   tree add_cast (tree, tree);
   tree handle_plus_minus (tree_code, tree, tree, tree);
   tree handle_lshift (tree, tree, tree);
   tree handle_cast (tree, tree, tree);
+  tree handle_bit_field_ref (tree, tree);
   tree handle_load (gimple *, tree);
   tree handle_stmt (gimple *, tree);
   tree handle_operand_addr (tree, gimple *, int *, int *);
@@ -427,6 +458,7 @@ struct bitint_large_huge
   void lower_mul_overflow (tree, gimple *);
   void lower_cplxpart_stmt (tree, gimple *);
   void lower_complexexpr_stmt (gimple *);
+  void lower_bit_query (gimple *);
   void lower_call (tree, gimple *);
   void lower_asm (gimple *);
   void lower_stmt (gimple *);
@@ -524,6 +556,7 @@ struct bitint_large_huge
   unsigned m_bitfld_load;
   vec<tree> m_data;
   unsigned int m_data_cnt;
+  vec<gimple *> m_returns_twice_calls;
 };
 
 bitint_large_huge::~bitint_large_huge ()
@@ -536,6 +569,7 @@ bitint_large_huge::~bitint_large_huge ()
     delete_var_map (m_map);
   XDELETEVEC (m_vars);
   m_data.release ();
+  m_returns_twice_calls.release ();
 }
 
 /* Insert gimple statement G before current location
@@ -575,12 +609,17 @@ bitint_large_huge::limb_access (tree type, tree var, tree idx, bool write_p)
 {
   tree atype = (tree_fits_uhwi_p (idx)
 		? limb_access_type (type, idx) : m_limb_type);
+  tree ltype = m_limb_type;
+  addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (var));
+  if (as != TYPE_ADDR_SPACE (ltype))
+    ltype = build_qualified_type (ltype, TYPE_QUALS (ltype)
+					 | ENCODE_QUAL_ADDR_SPACE (as));
   tree ret;
   if (DECL_P (var) && tree_fits_uhwi_p (idx))
     {
       tree ptype = build_pointer_type (strip_array_types (TREE_TYPE (var)));
       unsigned HOST_WIDE_INT off = tree_to_uhwi (idx) * m_limb_size;
-      ret = build2 (MEM_REF, m_limb_type,
+      ret = build2 (MEM_REF, ltype,
 		    build_fold_addr_expr (var),
 		    build_int_cst (ptype, off));
       TREE_THIS_VOLATILE (ret) = TREE_THIS_VOLATILE (var);
@@ -589,7 +628,7 @@ bitint_large_huge::limb_access (tree type, tree var, tree idx, bool write_p)
   else if (TREE_CODE (var) == MEM_REF && tree_fits_uhwi_p (idx))
     {
       ret
-	= build2 (MEM_REF, m_limb_type, TREE_OPERAND (var, 0),
+	= build2 (MEM_REF, ltype, unshare_expr (TREE_OPERAND (var, 0)),
 		  size_binop (PLUS_EXPR, TREE_OPERAND (var, 1),
 			      build_int_cst (TREE_TYPE (TREE_OPERAND (var, 1)),
 					     tree_to_uhwi (idx)
@@ -606,11 +645,11 @@ bitint_large_huge::limb_access (tree type, tree var, tree idx, bool write_p)
 					 TREE_TYPE (TREE_TYPE (var))))
 	{
 	  unsigned HOST_WIDE_INT nelts
-	    = CEIL (tree_to_uhwi (TYPE_SIZE (type)), limb_prec);
-	  tree atype = build_array_type_nelts (m_limb_type, nelts);
+	    = CEIL (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (var))), limb_prec);
+	  tree atype = build_array_type_nelts (ltype, nelts);
 	  var = build1 (VIEW_CONVERT_EXPR, atype, var);
 	}
-      ret = build4 (ARRAY_REF, m_limb_type, var, idx, NULL_TREE, NULL_TREE);
+      ret = build4 (ARRAY_REF, ltype, var, idx, NULL_TREE, NULL_TREE);
     }
   if (!write_p && !useless_type_conversion_p (atype, m_limb_type))
     {
@@ -620,6 +659,31 @@ bitint_large_huge::limb_access (tree type, tree var, tree idx, bool write_p)
       ret = build1 (NOP_EXPR, atype, ret);
     }
   return ret;
+}
+
+/* Build a BIT_FIELD_REF to access BITSIZE bits with FTYPE type at
+   offset BITPOS inside of OBJ.  */
+
+tree
+bitint_large_huge::build_bit_field_ref (tree ftype, tree obj,
+					unsigned HOST_WIDE_INT bitsize,
+					unsigned HOST_WIDE_INT bitpos)
+{
+  if (INTEGRAL_TYPE_P (TREE_TYPE (obj))
+      && !type_has_mode_precision_p (TREE_TYPE (obj)))
+    {
+      unsigned HOST_WIDE_INT nelts
+	= CEIL (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (obj))), limb_prec);
+      tree ltype = m_limb_type;
+      addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (obj));
+      if (as != TYPE_ADDR_SPACE (ltype))
+	ltype = build_qualified_type (ltype, TYPE_QUALS (ltype)
+				      | ENCODE_QUAL_ADDR_SPACE (as));
+      tree atype = build_array_type_nelts (ltype, nelts);
+      obj = build1 (VIEW_CONVERT_EXPR, atype, obj);
+    }
+  return build3 (BIT_FIELD_REF, ftype, obj, bitsize_int (bitsize),
+		 bitsize_int (bitpos));
 }
 
 /* Emit a half diamond,
@@ -805,7 +869,8 @@ bitint_large_huge::handle_operand (tree op, tree idx)
 	  && m_after_stmt
 	  && bitmap_bit_p (m_single_use_names, SSA_NAME_VERSION (op)))
 	{
-	  tree clobber = build_clobber (TREE_TYPE (m_vars[p]), CLOBBER_EOL);
+	  tree clobber = build_clobber (TREE_TYPE (m_vars[p]),
+					CLOBBER_STORAGE_END);
 	  g = gimple_build_assign (m_vars[p], clobber);
 	  gimple_stmt_iterator gsi = gsi_for_stmt (m_after_stmt);
 	  gsi_insert_after (&gsi, g, GSI_SAME_STMT);
@@ -842,7 +907,7 @@ bitint_large_huge::handle_operand (tree op, tree idx)
 	      && m_data[m_data_cnt + 1] == NULL_TREE))
 	{
 	  unsigned int prec = TYPE_PRECISION (TREE_TYPE (op));
-	  unsigned int rem = prec % (2 * limb_prec);
+	  unsigned int rem = prec % ((m_upwards_2limb ? 2 : 1) * limb_prec);
 	  int ext;
 	  unsigned min_prec = bitint_min_cst_precision (op, ext);
 	  if (m_first)
@@ -871,11 +936,8 @@ bitint_large_huge::handle_operand (tree op, tree idx)
 	      gcc_assert (m_first);
 	      m_data.pop ();
 	      m_data.pop ();
-	      prepare_data_in_out (fold_convert (m_limb_type, op), idx, &out);
-	      g = gimple_build_assign (m_data[m_data_cnt + 1],
-				       build_int_cst (m_limb_type, ext));
-	      insert_before (g);
-	      m_data[m_data_cnt + 1] = gimple_assign_rhs1 (g);
+	      prepare_data_in_out (fold_convert (m_limb_type, op), idx, &out,
+				   build_int_cst (m_limb_type, ext));
 	    }
 	  else if (min_prec > prec - rem - 2 * limb_prec)
 	    {
@@ -972,8 +1034,8 @@ bitint_large_huge::handle_operand (tree op, tree idx)
       if (m_data[m_data_cnt + 1] == integer_type_node)
 	{
 	  unsigned int prec = TYPE_PRECISION (TREE_TYPE (op));
-	  unsigned rem = prec % (2 * limb_prec);
-	  int ext = tree_int_cst_sgn (op) < 0 ? -1 : 0;
+	  unsigned rem = prec % ((m_upwards_2limb ? 2 : 1) * limb_prec);
+	  int ext = wi::neg_p (wi::to_wide (op)) ? -1 : 0;
 	  tree c = m_data[m_data_cnt];
 	  unsigned min_prec = TYPE_PRECISION (TREE_TYPE (c));
 	  g = gimple_build_cond (LT_EXPR, idx,
@@ -1007,10 +1069,13 @@ bitint_large_huge::handle_operand (tree op, tree idx)
 
 /* Helper method, add a PHI node with VAL from preheader edge if
    inside of a loop and m_first.  Keep state in a pair of m_data
-   elements.  */
+   elements.  If VAL_OUT is non-NULL, use that as PHI argument from
+   the latch edge, otherwise create a new SSA_NAME for it and let
+   caller initialize it.  */
 
 tree
-bitint_large_huge::prepare_data_in_out (tree val, tree idx, tree *data_out)
+bitint_large_huge::prepare_data_in_out (tree val, tree idx, tree *data_out,
+					tree val_out)
 {
   if (!m_first)
     {
@@ -1033,7 +1098,7 @@ bitint_large_huge::prepare_data_in_out (tree val, tree idx, tree *data_out)
   if (e1 == e2)
     e2 = EDGE_PRED (m_bb, 1);
   add_phi_arg (phi, val, e1, UNKNOWN_LOCATION);
-  tree out = make_ssa_name (TREE_TYPE (val));
+  tree out = val_out ? val_out : make_ssa_name (TREE_TYPE (val));
   add_phi_arg (phi, out, e2, UNKNOWN_LOCATION);
   m_data.safe_push (in);
   m_data.safe_push (out);
@@ -1223,7 +1288,7 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
 {
   tree rhs_type = TREE_TYPE (rhs1);
   gimple *g;
-  if (TREE_CODE (rhs1) == SSA_NAME
+  if ((TREE_CODE (rhs1) == SSA_NAME || TREE_CODE (rhs1) == INTEGER_CST)
       && TREE_CODE (lhs_type) == BITINT_TYPE
       && TREE_CODE (rhs_type) == BITINT_TYPE
       && bitint_precision_kind (lhs_type) >= bitint_prec_large
@@ -1235,13 +1300,17 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
 	     the most significant limb is handled in straight
 	     line code.  If m_var_msb (on left shifts) or
 	     if m_upwards_2limb * limb_prec is equal to
-	     lhs precision that is not the case.  */
+	     lhs precision or if not m_upwards_2limb and lhs_type
+	     has precision which is multiple of limb_prec that is
+	     not the case.  */
 	  || (!m_var_msb
-	      && tree_int_cst_equal (TYPE_SIZE (rhs_type),
-				     TYPE_SIZE (lhs_type))
-	      && (!m_upwards_2limb
-		  || (m_upwards_2limb * limb_prec
-		      < TYPE_PRECISION (lhs_type)))))
+	      && (CEIL (TYPE_PRECISION (lhs_type), limb_prec)
+		  == CEIL (TYPE_PRECISION (rhs_type), limb_prec))
+	      && ((!m_upwards_2limb
+		   && (TYPE_PRECISION (lhs_type) % limb_prec != 0))
+		  || (m_upwards_2limb
+		      && (m_upwards_2limb * limb_prec
+			  < TYPE_PRECISION (lhs_type))))))
 	{
 	  rhs1 = handle_operand (rhs1, idx);
 	  if (tree_fits_uhwi_p (idx))
@@ -1293,6 +1362,11 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
 	      g = gimple_build_assign (n, RSHIFT_EXPR, t, lpm1);
 	      insert_before (g);
 	      m_data[save_data_cnt + 1] = add_cast (m_limb_type, n);
+	      m_init_gsi = m_gsi;
+	      if (gsi_end_p (m_init_gsi))
+		m_init_gsi = gsi_last_bb (gsi_bb (m_init_gsi));
+	      else
+		gsi_prev (&m_init_gsi);
 	      m_gsi = save_gsi;
 	    }
 	  else if (m_upwards_2limb * limb_prec < TYPE_PRECISION (rhs_type))
@@ -1313,9 +1387,7 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
       if (!tree_fits_uhwi_p (idx))
 	{
 	  if (m_upwards_2limb
-	      && (m_upwards_2limb * limb_prec
-		  <= ((unsigned) TYPE_PRECISION (rhs_type)
-		      - !TYPE_UNSIGNED (rhs_type))))
+	      && low >= m_upwards_2limb - m_first)
 	    {
 	      rhs1 = handle_operand (rhs1, idx);
 	      if (m_first)
@@ -1326,8 +1398,21 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
 	    }
 	  bool single_comparison
 	    = low == high || (m_upwards_2limb && (low & 1) == m_first);
+	  tree idxc = idx;
+	  if (!single_comparison
+	      && m_upwards_2limb
+	      && !m_first
+	      && low + 1 == m_upwards_2limb)
+	    /* In this case we know that idx <= low always,
+	       so effectively we just needs a single comparison,
+	       idx < low or idx == low, but we'd need to emit different
+	       code for the 2 branches than single_comparison normally
+	       emits.  So, instead of special-casing that, emit a
+	       low <= low comparison which cfg cleanup will clean up
+	       at the end of the pass.  */
+	    idxc = size_int (low);
 	  g = gimple_build_cond (single_comparison ? LT_EXPR : LE_EXPR,
-				 idx, size_int (low), NULL_TREE, NULL_TREE);
+				 idxc, size_int (low), NULL_TREE, NULL_TREE);
 	  edge edge_true_true, edge_true_false, edge_false;
 	  if_then_if_then_else (g, (single_comparison ? NULL
 				    : gimple_build_cond (EQ_EXPR, idx,
@@ -1394,13 +1479,34 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
 	      add_phi_arg (phi, m_data[save_data_cnt], edge_false,
 			   UNKNOWN_LOCATION);
 	      add_phi_arg (phi, ext, edge_true_true, UNKNOWN_LOCATION);
-	      g = gimple_build_assign (m_data[save_data_cnt + 1], t4);
-	      insert_before (g);
+	      if (!save_cast_conditional)
+		{
+		  g = gimple_build_assign (m_data[save_data_cnt + 1], t4);
+		  insert_before (g);
+		}
+	      else
+		for (basic_block bb = gsi_bb (m_gsi);;)
+		  {
+		    edge e1 = single_succ_edge (bb);
+		    edge e2 = find_edge (e1->dest, m_bb), e3;
+		    tree t5 = (e2 ? m_data[save_data_cnt + 1]
+			       : make_ssa_name (m_limb_type));
+		    phi = create_phi_node (t5, e1->dest);
+		    edge_iterator ei;
+		    FOR_EACH_EDGE (e3, ei, e1->dest->preds)
+		      add_phi_arg (phi, (e3 == e1 ? t4
+					 : build_zero_cst (m_limb_type)),
+				   e3, UNKNOWN_LOCATION);
+		    if (e2)
+		      break;
+		    t4 = t5;
+		    bb = e1->dest;
+		  }
 	    }
 	  if (m_bitfld_load)
 	    {
 	      tree t4;
-	      if (!m_first)
+	      if (!save_first && !save_cast_conditional)
 		t4 = m_data[m_bitfld_load + 1];
 	      else
 		t4 = make_ssa_name (m_limb_type);
@@ -1413,6 +1519,24 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
 	      if (edge_true_true)
 		add_phi_arg (phi, m_data[m_bitfld_load], edge_true_true,
 			     UNKNOWN_LOCATION);
+	      if (save_cast_conditional)
+		for (basic_block bb = gsi_bb (m_gsi);;)
+		  {
+		    edge e1 = single_succ_edge (bb);
+		    edge e2 = find_edge (e1->dest, m_bb), e3;
+		    tree t5 = ((e2 && !save_first) ? m_data[m_bitfld_load + 1]
+			       : make_ssa_name (m_limb_type));
+		    phi = create_phi_node (t5, e1->dest);
+		    edge_iterator ei;
+		    FOR_EACH_EDGE (e3, ei, e1->dest->preds)
+		      add_phi_arg (phi, (e3 == e1 ? t4
+					 : build_zero_cst (m_limb_type)),
+				   e3, UNKNOWN_LOCATION);
+		    t4 = t5;
+		    if (e2)
+		      break;
+		    bb = e1->dest;
+		  }
 	      m_data[m_bitfld_load] = t4;
 	      m_data[m_bitfld_load + 2] = t4;
 	      m_bitfld_load = 0;
@@ -1463,6 +1587,8 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
 		m_data_cnt = tree_to_uhwi (m_data[save_data_cnt + 2]);
 	      if (TYPE_UNSIGNED (rhs_type))
 		t = build_zero_cst (m_limb_type);
+	      else if (m_bb && m_data[save_data_cnt])
+		t = m_data[save_data_cnt];
 	      else
 		t = m_data[save_data_cnt + 1];
 	    }
@@ -1522,6 +1648,11 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
 	      insert_before (g);
 	      rext = add_cast (m_limb_type, gimple_assign_lhs (g));
 	    }
+	  m_init_gsi = m_gsi;
+	  if (gsi_end_p (m_init_gsi))
+	    m_init_gsi = gsi_last_bb (gsi_bb (m_init_gsi));
+	  else
+	    gsi_prev (&m_init_gsi);
 	  m_gsi = save_gsi;
 	}
       tree t;
@@ -1530,14 +1661,10 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
 	  if (m_first)
 	    {
 	      tree out1, out2;
-	      prepare_data_in_out (r1, idx, &out1);
-	      g = gimple_build_assign (m_data[m_data_cnt + 1], rext);
-	      insert_before (g);
+	      prepare_data_in_out (r1, idx, &out1, rext);
 	      if (TYPE_PRECISION (rhs_type) > limb_prec)
 		{
-		  prepare_data_in_out (r2, idx, &out2);
-		  g = gimple_build_assign (m_data[m_data_cnt + 3], rext);
-		  insert_before (g);
+		  prepare_data_in_out (r2, idx, &out2, rext);
 		  m_data.pop ();
 		  t = m_data.pop ();
 		  m_data[m_data_cnt + 1] = t;
@@ -1609,6 +1736,107 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
   return NULL_TREE;
 }
 
+/* Helper function for handle_stmt method, handle a BIT_FIELD_REF.  */
+
+tree
+bitint_large_huge::handle_bit_field_ref (tree op, tree idx)
+{
+  if (tree_fits_uhwi_p (idx))
+    {
+      if (m_first)
+	m_data.safe_push (NULL);
+      ++m_data_cnt;
+      unsigned HOST_WIDE_INT sz = tree_to_uhwi (TYPE_SIZE (m_limb_type));
+      tree bfr = build3 (BIT_FIELD_REF, m_limb_type,
+			 TREE_OPERAND (op, 0),
+			 TYPE_SIZE (m_limb_type),
+			 size_binop (PLUS_EXPR, TREE_OPERAND (op, 2),
+				     bitsize_int (tree_to_uhwi (idx) * sz)));
+      tree r = make_ssa_name (m_limb_type);
+      gimple *g = gimple_build_assign (r, bfr);
+      insert_before (g);
+      tree type = limb_access_type (TREE_TYPE (op), idx);
+      if (!useless_type_conversion_p (type, m_limb_type))
+	r = add_cast (type, r);
+      return r;
+    }
+  tree var;
+  if (m_first)
+    {
+      unsigned HOST_WIDE_INT sz = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (op)));
+      machine_mode mode;
+      tree type, bfr;
+      if (bitwise_mode_for_size (sz).exists (&mode)
+	  && known_eq (GET_MODE_BITSIZE (mode), sz))
+	type = bitwise_type_for_mode (mode);
+      else
+	{
+	  mode = VOIDmode;
+	  type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (op, 0)));
+	}
+      if (TYPE_ALIGN (type) < TYPE_ALIGN (TREE_TYPE (op)))
+	type = build_aligned_type (type, TYPE_ALIGN (TREE_TYPE (op)));
+      var = create_tmp_var (type);
+      TREE_ADDRESSABLE (var) = 1;
+      gimple *g;
+      if (mode != VOIDmode)
+	{
+	  bfr = build3 (BIT_FIELD_REF, type, TREE_OPERAND (op, 0),
+			TYPE_SIZE (type), TREE_OPERAND (op, 2));
+	  g = gimple_build_assign (make_ssa_name (type),
+				   BIT_FIELD_REF, bfr);
+	  gimple_set_location (g, m_loc);
+	  gsi_insert_after (&m_init_gsi, g, GSI_NEW_STMT);
+	  bfr = gimple_assign_lhs (g);
+	}
+      else
+	bfr = TREE_OPERAND (op, 0);
+      g = gimple_build_assign (var, bfr);
+      gimple_set_location (g, m_loc);
+      gsi_insert_after (&m_init_gsi, g, GSI_NEW_STMT);
+      if (mode == VOIDmode)
+	{
+	  unsigned HOST_WIDE_INT nelts
+	    = CEIL (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (op))), limb_prec);
+	  tree atype = build_array_type_nelts (m_limb_type, nelts);
+	  var = build2 (MEM_REF, atype, build_fold_addr_expr (var),
+			build_int_cst (build_pointer_type (type),
+				       tree_to_uhwi (TREE_OPERAND (op, 2))
+				       / BITS_PER_UNIT));
+	}
+      m_data.safe_push (var);
+    }
+  else
+    var = unshare_expr (m_data[m_data_cnt]);
+  ++m_data_cnt;
+  var = limb_access (TREE_TYPE (op), var, idx, false);
+  tree r = make_ssa_name (m_limb_type);
+  gimple *g = gimple_build_assign (r, var);
+  insert_before (g);
+  return r;
+}
+
+/* Add a new EH edge from SRC to EH_EDGE->dest, where EH_EDGE
+   is an older EH edge, and except for virtual PHIs duplicate the
+   PHI argument from the EH_EDGE to the new EH edge.  */
+
+static void
+add_eh_edge (basic_block src, edge eh_edge)
+{
+  edge e = make_edge (src, eh_edge->dest, EDGE_EH);
+  e->probability = profile_probability::very_unlikely ();
+  for (gphi_iterator gsi = gsi_start_phis (eh_edge->dest);
+       !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gphi *phi = gsi.phi ();
+      tree lhs = gimple_phi_result (phi);
+      if (virtual_operand_p (lhs))
+	continue;
+      const phi_arg_d *arg = gimple_phi_arg (phi, eh_edge->dest_idx);
+      add_phi_arg (phi, arg->def, e, arg->locus);
+    }
+}
+
 /* Helper function for handle_stmt method, handle a load from memory.  */
 
 tree
@@ -1674,7 +1902,7 @@ bitint_large_huge::handle_load (gimple *stmt, tree idx)
 		m_gsi = gsi_after_labels (gsi_bb (m_gsi));
 	      else
 		gsi_next (&m_gsi);
-	      tree t = limb_access (rhs_type, nrhs1, size_int (bo_idx), true);
+	      tree t = limb_access (NULL_TREE, nrhs1, size_int (bo_idx), true);
 	      tree iv = make_ssa_name (m_limb_type);
 	      g = gimple_build_assign (iv, t);
 	      insert_before (g);
@@ -1684,11 +1912,24 @@ bitint_large_huge::handle_load (gimple *stmt, tree idx)
 		  if (eh_edge)
 		    {
 		      edge e = split_block (gsi_bb (m_gsi), g);
-		      make_edge (e->src, eh_edge->dest, EDGE_EH)->probability
-			= profile_probability::very_unlikely ();
-		      m_init_gsi.bb = e->dest;
+		      add_eh_edge (e->src, eh_edge);
+		      m_gsi = gsi_after_labels (e->dest);
+		      if (gsi_bb (save_gsi) == e->src)
+			{
+			  if (gsi_end_p (save_gsi))
+			    save_gsi = gsi_end_bb (e->dest);
+			  else
+			    save_gsi = gsi_for_stmt (gsi_stmt (save_gsi));
+			}
+		      if (m_preheader_bb == e->src)
+			m_preheader_bb = e->dest;
 		    }
 		}
+	      m_init_gsi = m_gsi;
+	      if (gsi_end_p (m_init_gsi))
+		m_init_gsi = gsi_last_bb (gsi_bb (m_init_gsi));
+	      else
+		gsi_prev (&m_init_gsi);
 	      m_gsi = save_gsi;
 	      tree out;
 	      prepare_data_in_out (iv, idx, &out);
@@ -1748,7 +1989,7 @@ bitint_large_huge::handle_load (gimple *stmt, tree idx)
       tree iv2 = NULL_TREE;
       if (nidx0)
 	{
-	  tree t = limb_access (rhs_type, nrhs1, nidx0, true);
+	  tree t = limb_access (NULL_TREE, nrhs1, nidx0, true);
 	  iv = make_ssa_name (m_limb_type);
 	  g = gimple_build_assign (iv, t);
 	  insert_before (g);
@@ -1773,7 +2014,7 @@ bitint_large_huge::handle_load (gimple *stmt, tree idx)
 	      if_then (g, profile_probability::likely (),
 		       edge_true, edge_false);
 	    }
-	  tree t = limb_access (rhs_type, nrhs1, nidx1, true);
+	  tree t = limb_access (NULL_TREE, nrhs1, nidx1, true);
 	  if (m_upwards_2limb
 	      && !m_first
 	      && !m_bitfld_load
@@ -1790,8 +2031,7 @@ bitint_large_huge::handle_load (gimple *stmt, tree idx)
 		{
 		  edge e = split_block (gsi_bb (m_gsi), g);
 		  m_gsi = gsi_after_labels (e->dest);
-		  make_edge (e->src, eh_edge->dest, EDGE_EH)->probability
-		    = profile_probability::very_unlikely ();
+		  add_eh_edge (e->src, eh_edge);
 		}
 	    }
 	  if (conditional)
@@ -1804,6 +2044,7 @@ bitint_large_huge::handle_load (gimple *stmt, tree idx)
 	      add_phi_arg (phi, build_zero_cst (m_limb_type),
 			   edge_false, UNKNOWN_LOCATION);
 	      m_gsi = gsi_after_labels (edge_true->dest);
+	      iv2 = iv3;
 	    }
 	}
       g = gimple_build_assign (make_ssa_name (m_limb_type), RSHIFT_EXPR,
@@ -1848,8 +2089,7 @@ normal_load:
 	{
 	  edge e = split_block (gsi_bb (m_gsi), g);
 	  m_gsi = gsi_after_labels (e->dest);
-	  make_edge (e->src, eh_edge->dest, EDGE_EH)->probability
-	    = profile_probability::very_unlikely ();
+	  add_eh_edge (e->src, eh_edge);
 	}
       if (tree_fits_uhwi_p (idx))
 	{
@@ -1905,9 +2145,14 @@ bitint_large_huge::handle_stmt (gimple *stmt, tree idx)
 	case INTEGER_CST:
 	  return handle_operand (gimple_assign_rhs1 (stmt), idx);
 	CASE_CONVERT:
-	case VIEW_CONVERT_EXPR:
 	  return handle_cast (TREE_TYPE (gimple_assign_lhs (stmt)),
 			      gimple_assign_rhs1 (stmt), idx);
+	case VIEW_CONVERT_EXPR:
+	  return handle_cast (TREE_TYPE (gimple_assign_lhs (stmt)),
+			      TREE_OPERAND (gimple_assign_rhs1 (stmt), 0),
+			      idx);
+	case BIT_FIELD_REF:
+	  return handle_bit_field_ref (gimple_assign_rhs1 (stmt), idx);
 	default:
 	  break;
 	}
@@ -1938,7 +2183,7 @@ range_to_prec (tree op, gimple *stmt)
       if (TYPE_UNSIGNED (type))
 	return prec;
       else
-	return -prec;
+	return MIN ((int) -prec, -2);
     }
 
   if (!TYPE_UNSIGNED (TREE_TYPE (op)))
@@ -2038,7 +2283,7 @@ bitint_large_huge::handle_operand_addr (tree op, gimple *stmt,
       tree ret = build_fold_addr_expr (var);
       if (!stmt_ends_bb_p (gsi_stmt (m_gsi)))
 	{
-	  tree clobber = build_clobber (atype, CLOBBER_EOL);
+	  tree clobber = build_clobber (atype, CLOBBER_STORAGE_END);
 	  g = gimple_build_assign (var, clobber);
 	  gsi_insert_after (&m_gsi, g, GSI_SAME_STMT);
 	}
@@ -2075,7 +2320,8 @@ bitint_large_huge::handle_operand_addr (tree op, gimple *stmt,
 	      ret = build_fold_addr_expr (var);
 	      if (!stmt_ends_bb_p (gsi_stmt (m_gsi)))
 		{
-		  tree clobber = build_clobber (m_limb_type, CLOBBER_EOL);
+		  tree clobber = build_clobber (m_limb_type,
+						CLOBBER_STORAGE_END);
 		  g = gimple_build_assign (var, clobber);
 		  gsi_insert_after (&m_gsi, g, GSI_SAME_STMT);
 		}
@@ -2085,6 +2331,8 @@ bitint_large_huge::handle_operand_addr (tree op, gimple *stmt,
 	      gcc_assert (gimple_assign_cast_p (g));
 	      tree rhs1 = gimple_assign_rhs1 (g);
 	      bitint_prec_kind kind = bitint_prec_small;
+	      if (TREE_CODE (rhs1) == VIEW_CONVERT_EXPR)
+		rhs1 = TREE_OPERAND (rhs1, 0);
 	      gcc_assert (INTEGRAL_TYPE_P (TREE_TYPE (rhs1)));
 	      if (TREE_CODE (TREE_TYPE (rhs1)) == BITINT_TYPE)
 		kind = bitint_precision_kind (TREE_TYPE (rhs1));
@@ -2154,7 +2402,11 @@ bitint_large_huge::handle_operand_addr (tree op, gimple *stmt,
 	  *prec = MIN ((int) -min_prec, -2);
 	}
       mp = CEIL (min_prec, limb_prec) * limb_prec;
-      if (mp >= (unsigned) TYPE_PRECISION (TREE_TYPE (op)))
+      if (mp == 0)
+	mp = 1;
+      if (mp >= (unsigned) TYPE_PRECISION (TREE_TYPE (op))
+	  && (TREE_CODE (TREE_TYPE (op)) == BITINT_TYPE
+	      || TYPE_PRECISION (TREE_TYPE (op)) <= limb_prec))
 	type = TREE_TYPE (op);
       else
 	type = build_bitint_type (mp, 1);
@@ -2164,11 +2416,15 @@ bitint_large_huge::handle_operand_addr (tree op, gimple *stmt,
 	  if (TYPE_PRECISION (type) <= limb_prec)
 	    type = m_limb_type;
 	  else
-	    /* This case is for targets which e.g. have 64-bit
-	       limb but categorize up to 128-bits _BitInts as
-	       small.  We could use type of m_limb_type[2] and
-	       similar instead to save space.  */
-	    type = build_bitint_type (mid_min_prec, 1);
+	    {
+	      while (bitint_precision_kind (mp) == bitint_prec_small)
+		mp += limb_prec;
+	      /* This case is for targets which e.g. have 64-bit
+		 limb but categorize up to 128-bits _BitInts as
+		 small.  We could use type of m_limb_type[2] and
+		 similar instead to save space.  */
+	      type = build_bitint_type (mp, 1);
+	    }
 	}
       if (prec_stored)
 	{
@@ -2319,6 +2575,8 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
       rhs1 = gimple_assign_rhs1 (store_operand
 				 ? SSA_NAME_DEF_STMT (store_operand)
 				 : stmt);
+      if (TREE_CODE (rhs1) == VIEW_CONVERT_EXPR)
+	rhs1 = TREE_OPERAND (rhs1, 0);
       /* Optimize mergeable ops ending with widening cast to _BitInt
 	 (or followed by store).  We can lower just the limbs of the
 	 cast operand and widen afterwards.  */
@@ -2358,11 +2616,7 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
       edge e = split_block (gsi_bb (gsi), gsi_stmt (gsi));
       edge_bb = e->src;
       if (kind == bitint_prec_large)
-	{
-	  m_gsi = gsi_last_bb (edge_bb);
-	  if (!gsi_end_p (m_gsi))
-	    gsi_next (&m_gsi);
-	}
+	m_gsi = gsi_end_bb (edge_bb);
     }
   else
     m_after_stmt = stmt;
@@ -2443,9 +2697,9 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
 		    }
 		  tree ftype
 		    = build_nonstandard_integer_type (limb_prec - bo_bit, 1);
-		  tree bfr = build3 (BIT_FIELD_REF, ftype, unshare_expr (nlhs),
-				     bitsize_int (limb_prec - bo_bit),
-				     bitsize_int (bo_idx * limb_prec + bo_bit));
+		  tree bfr = build_bit_field_ref (ftype, unshare_expr (nlhs),
+						  limb_prec - bo_bit,
+						  bo_idx * limb_prec + bo_bit);
 		  tree t = add_cast (ftype, rhs1);
 		  g = gimple_build_assign (bfr, t);
 		  insert_before (g);
@@ -2456,8 +2710,8 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
 			{
 			  edge e = split_block (gsi_bb (m_gsi), g);
 			  m_gsi = gsi_after_labels (e->dest);
-			  make_edge (e->src, eh_pad, EDGE_EH)->probability
-			    = profile_probability::very_unlikely ();
+			  add_eh_edge (e->src,
+				       find_edge (gimple_bb (stmt), eh_pad));
 			}
 		    }
 		  if (kind == bitint_prec_large)
@@ -2501,17 +2755,16 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
 		  && tree_fits_uhwi_p (idx))
 		{
 		  unsigned int tprec = TYPE_PRECISION (type);
-		  unsigned int rprec = tprec % limb_prec;
+		  unsigned int rprec = (tprec - 1) % limb_prec + 1;
 		  if (rprec + bo_bit < (unsigned) limb_prec)
 		    {
 		      tree ftype
 			= build_nonstandard_integer_type (rprec + bo_bit, 1);
-		      tree bfr = build3 (BIT_FIELD_REF, ftype,
-					 unshare_expr (nlhs),
-					 bitsize_int (rprec + bo_bit),
-					 bitsize_int ((bo_idx
-						       + tprec / limb_prec)
-						      * limb_prec));
+		      tree bfr
+			= build_bit_field_ref (ftype, unshare_expr (nlhs),
+					       rprec + bo_bit,
+					       (bo_idx + tprec / limb_prec)
+					       * limb_prec);
 		      tree t = add_cast (ftype, rhs1);
 		      g = gimple_build_assign (bfr, t);
 		      done = true;
@@ -2523,8 +2776,8 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
 	      /* Otherwise, stores to any other lhs.  */
 	      if (!done)
 		{
-		  tree l = limb_access (lhs_type, nlhs ? nlhs : lhs,
-					nidx, true);
+		  tree l = limb_access (nlhs ? NULL_TREE : lhs_type,
+					nlhs ? nlhs : lhs, nidx, true);
 		  g = gimple_build_assign (l, rhs1);
 		}
 	      insert_before (g);
@@ -2535,8 +2788,8 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
 		    {
 		      edge e = split_block (gsi_bb (m_gsi), g);
 		      m_gsi = gsi_after_labels (e->dest);
-		      make_edge (e->src, eh_pad, EDGE_EH)->probability
-			= profile_probability::very_unlikely ();
+		      add_eh_edge (e->src,
+				   find_edge (gimple_bb (stmt), eh_pad));
 		    }
 		}
 	      if (new_bb)
@@ -2565,6 +2818,7 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
 		m_gsi = gsi_after_labels (edge_bb);
 	      else
 		m_gsi = gsi_for_stmt (stmt);
+	      m_bb = NULL;
 	    }
 	}
     }
@@ -2601,7 +2855,7 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
 	{
 	  if (kind == bitint_prec_large || (i == 0 && bo_bit != 0))
 	    idx = size_int (start + i);
-	  else if (i == cnt - 1)
+	  else if (i == cnt - 1 && (rem != 0))
 	    idx = size_int (end);
 	  else if (i == (bo_bit != 0))
 	    idx = create_loop (size_int (start + i), &idx_next);
@@ -2646,16 +2900,16 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
 	  if (nlhs && i == cnt - 1)
 	    {
 	      unsigned int tprec = TYPE_PRECISION (type);
-	      unsigned int rprec = tprec % limb_prec;
+	      unsigned int rprec = (tprec - 1) % limb_prec + 1;
 	      if (rprec + bo_bit < (unsigned) limb_prec)
 		{
 		  tree ftype
 		    = build_nonstandard_integer_type (rprec + bo_bit, 1);
-		  tree bfr = build3 (BIT_FIELD_REF, ftype,
-				     unshare_expr (nlhs),
-				     bitsize_int (rprec + bo_bit),
-				     bitsize_int ((bo_idx + tprec / limb_prec)
-						  * limb_prec));
+		  tree bfr
+		    = build_bit_field_ref (ftype, unshare_expr (nlhs),
+					   rprec + bo_bit,
+					   (bo_idx + tprec / limb_prec)
+					   * limb_prec);
 		  tree t = add_cast (ftype, rhs1);
 		  g = gimple_build_assign (bfr, t);
 		  done = true;
@@ -2667,7 +2921,8 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
 	  /* Otherwise, stores to any other lhs.  */
 	  if (!done)
 	    {
-	      tree l = limb_access (lhs_type, nlhs ? nlhs : lhs, nidx, true);
+	      tree l = limb_access (nlhs ? NULL_TREE : lhs_type,
+				    nlhs ? nlhs : lhs, nidx, true);
 	      g = gimple_build_assign (l, rhs1);
 	    }
 	  insert_before (g);
@@ -2678,8 +2933,7 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
 		{
 		  edge e = split_block (gsi_bb (m_gsi), g);
 		  m_gsi = gsi_after_labels (e->dest);
-		  make_edge (e->src, eh_pad, EDGE_EH)->probability
-		    = profile_probability::very_unlikely ();
+		  add_eh_edge (e->src, find_edge (gimple_bb (stmt), eh_pad));
 		}
 	    }
 	  if (kind == bitint_prec_huge && i == (bo_bit != 0))
@@ -2691,18 +2945,19 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
 				     NULL_TREE, NULL_TREE);
 	      insert_before (g);
 	      m_gsi = gsi_for_stmt (stmt);
+	      m_bb = NULL;
 	    }
 	}
     }
   if (bf_cur != NULL_TREE)
     {
       unsigned int tprec = TYPE_PRECISION (type);
-      unsigned int rprec = tprec % limb_prec;
-      tree ftype = build_nonstandard_integer_type (rprec + bo_bit, 1);
-      tree bfr = build3 (BIT_FIELD_REF, ftype, unshare_expr (nlhs),
-			 bitsize_int (rprec + bo_bit),
-			 bitsize_int ((bo_idx + tprec / limb_prec)
-				      * limb_prec));
+      unsigned int rprec = (tprec + bo_bit) % limb_prec;
+      tree ftype = build_nonstandard_integer_type (rprec, 1);
+      tree bfr = build_bit_field_ref (ftype, unshare_expr (nlhs),
+				      rprec,
+				      (bo_idx + (tprec + bo_bit) / limb_prec)
+				      * limb_prec);
       rhs1 = bf_cur;
       if (bf_cur != ext)
 	{
@@ -2722,8 +2977,7 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
 	    {
 	      edge e = split_block (gsi_bb (m_gsi), g);
 	      m_gsi = gsi_after_labels (e->dest);
-	      make_edge (e->src, eh_pad, EDGE_EH)->probability
-		= profile_probability::very_unlikely ();
+	      add_eh_edge (e->src, find_edge (gimple_bb (stmt), eh_pad));
 	    }
 	}
     }
@@ -2815,9 +3069,7 @@ bitint_large_huge::lower_comparison_stmt (gimple *stmt, tree_code &cmp_code,
   gsi_prev (&gsi);
   edge e = split_block (gsi_bb (gsi), gsi_stmt (gsi));
   edge_bb = e->src;
-  m_gsi = gsi_last_bb (edge_bb);
-  if (!gsi_end_p (m_gsi))
-    gsi_next (&m_gsi);
+  m_gsi = gsi_end_bb (edge_bb);
 
   edge *edges = XALLOCAVEC (edge, cnt * 2);
   for (unsigned i = 0; i < cnt; i++)
@@ -2871,6 +3123,7 @@ bitint_large_huge::lower_comparison_stmt (gimple *stmt, tree_code &cmp_code,
 	  extract_true_false_edges_from_block (gsi_bb (m_gsi),
 					       &true_edge, &false_edge);
 	  m_gsi = gsi_after_labels (false_edge->dest);
+	  m_bb = NULL;
 	}
     }
 
@@ -3380,8 +3633,7 @@ bitint_large_huge::lower_muldiv_stmt (tree obj, gimple *stmt)
 	{
 	  edge e2 = split_block (gsi_bb (m_gsi), g);
 	  m_gsi = gsi_after_labels (e2->dest);
-	  make_edge (e2->src, e1->dest, EDGE_EH)->probability
-	    = profile_probability::very_unlikely ();
+	  add_eh_edge (e2->src, e1);
 	}
     }
 }
@@ -3663,6 +3915,8 @@ bitint_large_huge::finish_arith_overflow (tree var, tree obj, tree type,
 	      else
 		g = gimple_build_assign (lhs2, NOP_EXPR, ovf);
 	      gsi_replace (&gsi, g, true);
+	      if (gsi_stmt (m_gsi) == use_stmt)
+		m_gsi = gsi_for_stmt (g);
 	      break;
 	    }
 	}
@@ -3684,7 +3938,7 @@ bitint_large_huge::finish_arith_overflow (tree var, tree obj, tree type,
     }
   if (var)
     {
-      tree clobber = build_clobber (TREE_TYPE (var), CLOBBER_EOL);
+      tree clobber = build_clobber (TREE_TYPE (var), CLOBBER_STORAGE_END);
       g = gimple_build_assign (var, clobber);
       gsi_insert_after (&m_gsi, g, GSI_SAME_STMT);
     }
@@ -3771,11 +4025,45 @@ bitint_large_huge::lower_addsub_overflow (tree obj, gimple *stmt)
   int prec = TYPE_PRECISION (type);
   int prec0 = range_to_prec (arg0, stmt);
   int prec1 = range_to_prec (arg1, stmt);
-  int prec2 = ((prec0 < 0) == (prec1 < 0)
-	       ? MAX (prec0 < 0 ? -prec0 : prec0,
-		      prec1 < 0 ? -prec1 : prec1) + 1
-	       : MAX (prec0 < 0 ? -prec0 : prec0 + 1,
-		      prec1 < 0 ? -prec1 : prec1 + 1) + 1);
+  /* If PREC0 >= 0 && PREC1 >= 0 and CODE is not MINUS_EXPR, PREC2 is
+     the be minimum unsigned precision of any possible operation's
+     result, otherwise it is minimum signed precision.
+     Some examples:
+     If PREC0 or PREC1 is 8, it means that argument is [0, 0xff],
+     if PREC0 or PREC1 is 10, it means that argument is [0, 0x3ff],
+     if PREC0 or PREC1 is -8, it means that argument is [-0x80, 0x7f],
+     if PREC0 or PREC1 is -10, it means that argument is [-0x200, 0x1ff].
+     PREC0  CODE  PREC1  RESULT          PREC2  SIGNED vs. UNSIGNED
+       8      +     8    [0, 0x1fe]        9    UNSIGNED
+       8      +    10    [0, 0x4fe]       11    UNSIGNED
+      -8      +    -8    [-0x100, 0xfe]    9    SIGNED
+      -8      +   -10    [-0x280, 0x27e]  11    SIGNED
+       8      +    -8    [-0x80, 0x17e]   10    SIGNED
+       8      +   -10    [-0x200, 0x2fe]  11    SIGNED
+      10      +    -8    [-0x80, 0x47e]   12    SIGNED
+       8      -     8    [-0xff, 0xff]     9    SIGNED
+       8      -    10    [-0x3ff, 0xff]   11    SIGNED
+      10      -     8    [-0xff, 0x3ff]   11    SIGNED
+      -8      -    -8    [-0xff, 0xff]     9    SIGNED
+      -8      -   -10    [-0x27f, 0x27f]  11    SIGNED
+     -10      -    -8    [-0x27f, 0x27f]  11    SIGNED
+       8      -    -8    [-0x7f, 0x17f]   10    SIGNED
+       8      -   -10    [-0x1ff, 0x2ff]  11    SIGNED
+      10      -    -8    [-0x7f, 0x47f]   12    SIGNED
+      -8      -     8    [-0x17f, 0x7f]   10    SIGNED
+      -8      -    10    [-0x47f, 0x7f]   12    SIGNED
+     -10      -     8    [-0x2ff, 0x1ff]  11    SIGNED  */
+  int prec2 = MAX (prec0 < 0 ? -prec0 : prec0,
+		   prec1 < 0 ? -prec1 : prec1);
+	    /* If operands are either both signed or both unsigned,
+	       we need just one additional bit.  */
+  prec2 = (((prec0 < 0) == (prec1 < 0)
+	       /* If one operand is signed and one unsigned and
+		  the signed one has larger precision, we need
+		  just one extra bit, otherwise two.  */
+	    || (prec0 < 0 ? (prec2 == -prec0 && prec2 != prec1)
+			  : (prec2 == -prec1 && prec2 != prec0)))
+	   ? prec2 + 1 : prec2 + 2);
   int prec3 = MAX (prec0 < 0 ? -prec0 : prec0,
 		   prec1 < 0 ? -prec1 : prec1);
   prec3 = MAX (prec3, prec);
@@ -3854,15 +4142,18 @@ bitint_large_huge::lower_addsub_overflow (tree obj, gimple *stmt)
 
   tree type0 = TREE_TYPE (arg0);
   tree type1 = TREE_TYPE (arg1);
-  if (TYPE_PRECISION (type0) < prec3)
+  int prec5 = prec3;
+  if (bitint_precision_kind (prec5) < bitint_prec_large)
+    prec5 = MAX (TYPE_PRECISION (type0), TYPE_PRECISION (type1));
+  if (TYPE_PRECISION (type0) < prec5)
     {
-      type0 = build_bitint_type (prec3, TYPE_UNSIGNED (type0));
+      type0 = build_bitint_type (prec5, TYPE_UNSIGNED (type0));
       if (TREE_CODE (arg0) == INTEGER_CST)
 	arg0 = fold_convert (type0, arg0);
     }
-  if (TYPE_PRECISION (type1) < prec3)
+  if (TYPE_PRECISION (type1) < prec5)
     {
-      type1 = build_bitint_type (prec3, TYPE_UNSIGNED (type1));
+      type1 = build_bitint_type (prec5, TYPE_UNSIGNED (type1));
       if (TREE_CODE (arg1) == INTEGER_CST)
 	arg1 = fold_convert (type1, arg1);
     }
@@ -3878,7 +4169,7 @@ bitint_large_huge::lower_addsub_overflow (tree obj, gimple *stmt)
       if (kind != bitint_prec_huge)
 	idx = size_int (i);
       else if (i >= 2)
-	idx = size_int (fin + (i > 2));
+	idx = size_int (fin + i - 2);
       if (!last_ovf || i < cnt - 1)
 	{
 	  if (type0 != TREE_TYPE (arg0))
@@ -3995,11 +4286,7 @@ bitint_large_huge::lower_addsub_overflow (tree obj, gimple *stmt)
 		  bool single_comparison
 		    = (startlimb + 2 >= fin || (startlimb & 1) != (i & 1));
 		  if (!single_comparison)
-		    {
-		      cmp_code = GE_EXPR;
-		      if (!check_zero && (start % limb_prec) == 0)
-			single_comparison = true;
-		    }
+		    cmp_code = GE_EXPR;
 		  else if ((startlimb & 1) == (i & 1))
 		    cmp_code = EQ_EXPR;
 		  else
@@ -4009,11 +4296,11 @@ bitint_large_huge::lower_addsub_overflow (tree obj, gimple *stmt)
 		  edge edge_true_true, edge_true_false, edge_false;
 		  gimple *g2 = NULL;
 		  if (!single_comparison)
-		    g2 = gimple_build_cond (EQ_EXPR, idx,
+		    g2 = gimple_build_cond (NE_EXPR, idx,
 					    size_int (startlimb), NULL_TREE,
 					    NULL_TREE);
 		  if_then_if_then_else (g, g2, profile_probability::likely (),
-					profile_probability::unlikely (),
+					profile_probability::likely (),
 					edge_true_true, edge_true_false,
 					edge_false);
 		  unsigned tidx = startlimb + (cmp_code == GT_EXPR);
@@ -4098,12 +4385,12 @@ bitint_large_huge::lower_addsub_overflow (tree obj, gimple *stmt)
 				     NULL_TREE, NULL_TREE);
 	      gimple *g2 = NULL;
 	      if (!single_comparison)
-		g2 = gimple_build_cond (LT_EXPR, idx,
+		g2 = gimple_build_cond (EQ_EXPR, idx,
 					size_int (prec_limbs - 1),
 					NULL_TREE, NULL_TREE);
 	      edge edge_true_true, edge_true_false, edge_false;
 	      if_then_if_then_else (g, g2, profile_probability::likely (),
-				    profile_probability::likely (),
+				    profile_probability::unlikely (),
 				    edge_true_true, edge_true_false,
 				    edge_false);
 	      tree l = limb_access (type, var ? var : obj, idx, true);
@@ -4112,8 +4399,11 @@ bitint_large_huge::lower_addsub_overflow (tree obj, gimple *stmt)
 	      if (!single_comparison)
 		{
 		  m_gsi = gsi_after_labels (edge_true_true->src);
-		  l = limb_access (type, var ? var : obj,
-				   size_int (prec_limbs - 1), true);
+		  tree plm1idx = size_int (prec_limbs - 1);
+		  tree plm1type = limb_access_type (type, plm1idx);
+		  l = limb_access (type, var ? var : obj, plm1idx, true);
+		  if (!useless_type_conversion_p (plm1type, TREE_TYPE (rhs)))
+		    rhs = add_cast (plm1type, rhs);
 		  if (!useless_type_conversion_p (TREE_TYPE (l),
 						  TREE_TYPE (rhs)))
 		    rhs = add_cast (TREE_TYPE (l), rhs);
@@ -4150,6 +4440,7 @@ bitint_large_huge::lower_addsub_overflow (tree obj, gimple *stmt)
 				     NULL_TREE, NULL_TREE);
 	      insert_before (g);
 	      m_gsi = gsi_for_stmt (final_stmt);
+	      m_bb = NULL;
 	    }
 	}
     }
@@ -4180,8 +4471,9 @@ bitint_large_huge::lower_mul_overflow (tree obj, gimple *stmt)
   arg0 = handle_operand_addr (arg0, stmt, NULL, &prec0);
   arg1 = handle_operand_addr (arg1, stmt, NULL, &prec1);
   int prec2 = ((prec0 < 0 ? -prec0 : prec0)
-	       + (prec1 < 0 ? -prec1 : prec1)
-	       + ((prec0 < 0) != (prec1 < 0)));
+	       + (prec1 < 0 ? -prec1 : prec1));
+  if (prec0 == 1 || prec1 == 1)
+    --prec2;
   tree var = NULL_TREE;
   tree orig_obj = obj;
   bool force_var = false;
@@ -4287,9 +4579,7 @@ bitint_large_huge::lower_mul_overflow (tree obj, gimple *stmt)
 	  gsi_prev (&gsi);
 	  edge e = split_block (gsi_bb (gsi), gsi_stmt (gsi));
 	  edge_bb = e->src;
-	  m_gsi = gsi_last_bb (edge_bb);
-	  if (!gsi_end_p (m_gsi))
-	    gsi_next (&m_gsi);
+	  m_gsi = gsi_end_bb (edge_bb);
 
 	  tree cmp = build_zero_cst (m_limb_type);
 	  for (unsigned i = 0; i < cnt; i++)
@@ -4340,7 +4630,7 @@ bitint_large_huge::lower_mul_overflow (tree obj, gimple *stmt)
 					   size_one_node);
 		  insert_before (g);
 		  g = gimple_build_cond (NE_EXPR, idx_next,
-					 size_int (endlimb + (cnt == 1)),
+					 size_int (endlimb + (cnt == 2)),
 					 NULL_TREE, NULL_TREE);
 		  insert_before (g);
 		  edge true_edge, false_edge;
@@ -4348,6 +4638,7 @@ bitint_large_huge::lower_mul_overflow (tree obj, gimple *stmt)
 						       &true_edge,
 						       &false_edge);
 		  m_gsi = gsi_after_labels (false_edge->dest);
+		  m_bb = NULL;
 		}
 	    }
 
@@ -4455,6 +4746,520 @@ bitint_large_huge::lower_complexexpr_stmt (gimple *stmt)
   insert_before (g);
 }
 
+/* Lower a .{CLZ,CTZ,CLRSB,FFS,PARITY,POPCOUNT} call with one large/huge _BitInt
+   argument.  */
+
+void
+bitint_large_huge::lower_bit_query (gimple *stmt)
+{
+  tree arg0 = gimple_call_arg (stmt, 0);
+  tree arg1 = (gimple_call_num_args (stmt) == 2
+	       ? gimple_call_arg (stmt, 1) : NULL_TREE);
+  tree lhs = gimple_call_lhs (stmt);
+  gimple *g;
+
+  if (!lhs)
+    {
+      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+      gsi_remove (&gsi, true);
+      return;
+    }
+  tree type = TREE_TYPE (arg0);
+  gcc_assert (TREE_CODE (type) == BITINT_TYPE);
+  bitint_prec_kind kind = bitint_precision_kind (type);
+  gcc_assert (kind >= bitint_prec_large);
+  enum internal_fn ifn = gimple_call_internal_fn (stmt);
+  enum built_in_function fcode = END_BUILTINS;
+  gcc_assert (TYPE_PRECISION (unsigned_type_node) == limb_prec
+	      || TYPE_PRECISION (long_unsigned_type_node) == limb_prec
+	      || TYPE_PRECISION (long_long_unsigned_type_node) == limb_prec);
+  switch (ifn)
+    {
+    case IFN_CLZ:
+      if (TYPE_PRECISION (unsigned_type_node) == limb_prec)
+	fcode = BUILT_IN_CLZ;
+      else if (TYPE_PRECISION (long_unsigned_type_node) == limb_prec)
+	fcode = BUILT_IN_CLZL;
+      else
+	fcode = BUILT_IN_CLZLL;
+      break;
+    case IFN_FFS:
+      /* .FFS (X) is .CTZ (X, -1) + 1, though under the hood
+	 we don't add the addend at the end.  */
+      arg1 = integer_zero_node;
+      /* FALLTHRU */
+    case IFN_CTZ:
+      if (TYPE_PRECISION (unsigned_type_node) == limb_prec)
+	fcode = BUILT_IN_CTZ;
+      else if (TYPE_PRECISION (long_unsigned_type_node) == limb_prec)
+	fcode = BUILT_IN_CTZL;
+      else
+	fcode = BUILT_IN_CTZLL;
+      m_upwards = true;
+      break;
+    case IFN_CLRSB:
+      if (TYPE_PRECISION (unsigned_type_node) == limb_prec)
+	fcode = BUILT_IN_CLRSB;
+      else if (TYPE_PRECISION (long_unsigned_type_node) == limb_prec)
+	fcode = BUILT_IN_CLRSBL;
+      else
+	fcode = BUILT_IN_CLRSBLL;
+      break;
+    case IFN_PARITY:
+      if (TYPE_PRECISION (unsigned_type_node) == limb_prec)
+	fcode = BUILT_IN_PARITY;
+      else if (TYPE_PRECISION (long_unsigned_type_node) == limb_prec)
+	fcode = BUILT_IN_PARITYL;
+      else
+	fcode = BUILT_IN_PARITYLL;
+      m_upwards = true;
+      break;
+    case IFN_POPCOUNT:
+      if (TYPE_PRECISION (unsigned_type_node) == limb_prec)
+	fcode = BUILT_IN_POPCOUNT;
+      else if (TYPE_PRECISION (long_unsigned_type_node) == limb_prec)
+	fcode = BUILT_IN_POPCOUNTL;
+      else
+	fcode = BUILT_IN_POPCOUNTLL;
+      m_upwards = true;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  tree fndecl = builtin_decl_explicit (fcode), res = NULL_TREE;
+  unsigned cnt = 0, rem = 0, end = 0, prec = TYPE_PRECISION (type);
+  struct bq_details { edge e; tree val, addend; } *bqp = NULL;
+  basic_block edge_bb = NULL;
+  if (m_upwards)
+    {
+      tree idx = NULL_TREE, idx_first = NULL_TREE, idx_next = NULL_TREE;
+      if (kind == bitint_prec_large)
+	cnt = CEIL (prec, limb_prec);
+      else
+	{
+	  rem = (prec % (2 * limb_prec));
+	  end = (prec - rem) / limb_prec;
+	  cnt = 2 + CEIL (rem, limb_prec);
+	  idx = idx_first = create_loop (size_zero_node, &idx_next);
+	}
+
+      if (ifn == IFN_CTZ || ifn == IFN_FFS)
+	{
+	  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+	  gsi_prev (&gsi);
+	  edge e = split_block (gsi_bb (gsi), gsi_stmt (gsi));
+	  edge_bb = e->src;
+	  if (kind == bitint_prec_large)
+	    m_gsi = gsi_end_bb (edge_bb);
+	  bqp = XALLOCAVEC (struct bq_details, cnt);
+	}
+      else
+	m_after_stmt = stmt;
+      if (kind != bitint_prec_large)
+	m_upwards_2limb = end;
+
+      for (unsigned i = 0; i < cnt; i++)
+	{
+	  m_data_cnt = 0;
+	  if (kind == bitint_prec_large)
+	    idx = size_int (i);
+	  else if (i >= 2)
+	    idx = size_int (end + (i > 2));
+
+	  tree rhs1 = handle_operand (arg0, idx);
+	  if (!useless_type_conversion_p (m_limb_type, TREE_TYPE (rhs1)))
+	    {
+	      if (!TYPE_UNSIGNED (TREE_TYPE (rhs1)))
+		rhs1 = add_cast (unsigned_type_for (TREE_TYPE (rhs1)), rhs1);
+	      rhs1 = add_cast (m_limb_type, rhs1);
+	    }
+
+	  tree in, out, tem;
+	  if (ifn == IFN_PARITY)
+	    in = prepare_data_in_out (build_zero_cst (m_limb_type), idx, &out);
+	  else if (ifn == IFN_FFS)
+	    in = prepare_data_in_out (integer_one_node, idx, &out);
+	  else
+	    in = prepare_data_in_out (integer_zero_node, idx, &out);
+
+	  switch (ifn)
+	    {
+	    case IFN_CTZ:
+	    case IFN_FFS:
+	      g = gimple_build_cond (NE_EXPR, rhs1,
+				     build_zero_cst (m_limb_type),
+				     NULL_TREE, NULL_TREE);
+	      insert_before (g);
+	      edge e1, e2;
+	      e1 = split_block (gsi_bb (m_gsi), g);
+	      e1->flags = EDGE_FALSE_VALUE;
+	      e2 = make_edge (e1->src, gimple_bb (stmt), EDGE_TRUE_VALUE);
+	      e1->probability = profile_probability::unlikely ();
+	      e2->probability = e1->probability.invert ();
+	      if (i == 0)
+		set_immediate_dominator (CDI_DOMINATORS, e2->dest, e2->src);
+	      m_gsi = gsi_after_labels (e1->dest);
+	      bqp[i].e = e2;
+	      bqp[i].val = rhs1;
+	      if (tree_fits_uhwi_p (idx))
+		bqp[i].addend
+		  = build_int_cst (integer_type_node,
+				   tree_to_uhwi (idx) * limb_prec
+				   + (ifn == IFN_FFS));
+	      else
+		{
+		  bqp[i].addend = in;
+		  if (i == 1)
+		    res = out;
+		  else
+		    res = make_ssa_name (integer_type_node);
+		  g = gimple_build_assign (res, PLUS_EXPR, in,
+					   build_int_cst (integer_type_node,
+							  limb_prec));
+		  insert_before (g);
+		  m_data[m_data_cnt] = res;
+		}
+	      break;
+	    case IFN_PARITY:
+	      if (!integer_zerop (in))
+		{
+		  if (kind == bitint_prec_huge && i == 1)
+		    res = out;
+		  else
+		    res = make_ssa_name (m_limb_type);
+		  g = gimple_build_assign (res, BIT_XOR_EXPR, in, rhs1);
+		  insert_before (g);
+		}
+	      else
+		res = rhs1;
+	      m_data[m_data_cnt] = res;
+	      break;
+	    case IFN_POPCOUNT:
+	      g = gimple_build_call (fndecl, 1, rhs1);
+	      tem = make_ssa_name (integer_type_node);
+	      gimple_call_set_lhs (g, tem);
+	      insert_before (g);
+	      if (!integer_zerop (in))
+		{
+		  if (kind == bitint_prec_huge && i == 1)
+		    res = out;
+		  else
+		    res = make_ssa_name (integer_type_node);
+		  g = gimple_build_assign (res, PLUS_EXPR, in, tem);
+		  insert_before (g);
+		}
+	      else
+		res = tem;
+	      m_data[m_data_cnt] = res;
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+
+	  m_first = false;
+	  if (kind == bitint_prec_huge && i <= 1)
+	    {
+	      if (i == 0)
+		{
+		  idx = make_ssa_name (sizetype);
+		  g = gimple_build_assign (idx, PLUS_EXPR, idx_first,
+					   size_one_node);
+		  insert_before (g);
+		}
+	      else
+		{
+		  g = gimple_build_assign (idx_next, PLUS_EXPR, idx_first,
+					   size_int (2));
+		  insert_before (g);
+		  g = gimple_build_cond (NE_EXPR, idx_next, size_int (end),
+					 NULL_TREE, NULL_TREE);
+		  insert_before (g);
+		  if (ifn == IFN_CTZ || ifn == IFN_FFS)
+		    m_gsi = gsi_after_labels (edge_bb);
+		  else
+		    m_gsi = gsi_for_stmt (stmt);
+		  m_bb = NULL;
+		}
+	    }
+	}
+    }
+  else
+    {
+      tree idx = NULL_TREE, idx_next = NULL_TREE, first = NULL_TREE;
+      int sub_one = 0;
+      if (kind == bitint_prec_large)
+	cnt = CEIL (prec, limb_prec);
+      else
+	{
+	  rem = prec % limb_prec;
+	  if (rem == 0 && (!TYPE_UNSIGNED (type) || ifn == IFN_CLRSB))
+	    rem = limb_prec;
+	  end = (prec - rem) / limb_prec;
+	  cnt = 1 + (rem != 0);
+	  if (ifn == IFN_CLRSB)
+	    sub_one = 1;
+	}
+
+      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+      gsi_prev (&gsi);
+      edge e = split_block (gsi_bb (gsi), gsi_stmt (gsi));
+      edge_bb = e->src;
+      m_gsi = gsi_end_bb (edge_bb);
+
+      if (ifn == IFN_CLZ)
+	bqp = XALLOCAVEC (struct bq_details, cnt);
+      else
+	{
+	  gsi = gsi_for_stmt (stmt);
+	  gsi_prev (&gsi);
+	  e = split_block (gsi_bb (gsi), gsi_stmt (gsi));
+	  edge_bb = e->src;
+	  bqp = XALLOCAVEC (struct bq_details, 2 * cnt);
+	}
+
+      for (unsigned i = 0; i < cnt; i++)
+	{
+	  m_data_cnt = 0;
+	  if (kind == bitint_prec_large)
+	    idx = size_int (cnt - i - 1);
+	  else if (i == cnt - 1)
+	    idx = create_loop (size_int (end - 1), &idx_next);
+	  else
+	    idx = size_int (end);
+
+	  tree rhs1 = handle_operand (arg0, idx);
+	  if (!useless_type_conversion_p (m_limb_type, TREE_TYPE (rhs1)))
+	    {
+	      if (ifn == IFN_CLZ && !TYPE_UNSIGNED (TREE_TYPE (rhs1)))
+		rhs1 = add_cast (unsigned_type_for (TREE_TYPE (rhs1)), rhs1);
+	      else if (ifn == IFN_CLRSB && TYPE_UNSIGNED (TREE_TYPE (rhs1)))
+		rhs1 = add_cast (signed_type_for (TREE_TYPE (rhs1)), rhs1);
+	      rhs1 = add_cast (m_limb_type, rhs1);
+	    }
+
+	  if (ifn == IFN_CLZ)
+	    {
+	      g = gimple_build_cond (NE_EXPR, rhs1,
+				     build_zero_cst (m_limb_type),
+				     NULL_TREE, NULL_TREE);
+	      insert_before (g);
+	      edge e1 = split_block (gsi_bb (m_gsi), g);
+	      e1->flags = EDGE_FALSE_VALUE;
+	      edge e2 = make_edge (e1->src, gimple_bb (stmt), EDGE_TRUE_VALUE);
+	      e1->probability = profile_probability::unlikely ();
+	      e2->probability = e1->probability.invert ();
+	      if (i == 0)
+		set_immediate_dominator (CDI_DOMINATORS, e2->dest, e2->src);
+	      m_gsi = gsi_after_labels (e1->dest);
+	      bqp[i].e = e2;
+	      bqp[i].val = rhs1;
+	    }
+	  else
+	    {
+	      if (i == 0)
+		{
+		  first = rhs1;
+		  g = gimple_build_assign (make_ssa_name (m_limb_type),
+					   PLUS_EXPR, rhs1,
+					   build_int_cst (m_limb_type, 1));
+		  insert_before (g);
+		  g = gimple_build_cond (GT_EXPR, gimple_assign_lhs (g),
+					 build_int_cst (m_limb_type, 1),
+					 NULL_TREE, NULL_TREE);
+		  insert_before (g);
+		}
+	      else
+		{
+		  g = gimple_build_assign (make_ssa_name (m_limb_type),
+					   BIT_XOR_EXPR, rhs1, first);
+		  insert_before (g);
+		  tree stype = signed_type_for (m_limb_type);
+		  g = gimple_build_cond (LT_EXPR,
+					 add_cast (stype,
+						   gimple_assign_lhs (g)),
+					 build_zero_cst (stype),
+					 NULL_TREE, NULL_TREE);
+		  insert_before (g);
+		  edge e1 = split_block (gsi_bb (m_gsi), g);
+		  e1->flags = EDGE_FALSE_VALUE;
+		  edge e2 = make_edge (e1->src, gimple_bb (stmt),
+				       EDGE_TRUE_VALUE);
+		  e1->probability = profile_probability::unlikely ();
+		  e2->probability = e1->probability.invert ();
+		  if (i == 1)
+		    set_immediate_dominator (CDI_DOMINATORS, e2->dest,
+					     e2->src);
+		  m_gsi = gsi_after_labels (e1->dest);
+		  bqp[2 * i].e = e2;
+		  g = gimple_build_cond (NE_EXPR, rhs1, first,
+					 NULL_TREE, NULL_TREE);
+		  insert_before (g);
+		}
+	      edge e1 = split_block (gsi_bb (m_gsi), g);
+	      e1->flags = EDGE_FALSE_VALUE;
+	      edge e2 = make_edge (e1->src, edge_bb, EDGE_TRUE_VALUE);
+	      e1->probability = profile_probability::unlikely ();
+	      e2->probability = e1->probability.invert ();
+	      if (i == 0)
+		set_immediate_dominator (CDI_DOMINATORS, e2->dest, e2->src);
+	      m_gsi = gsi_after_labels (e1->dest);
+	      bqp[2 * i + 1].e = e2;
+	      bqp[i].val = rhs1;
+	    }
+	  if (tree_fits_uhwi_p (idx))
+	    bqp[i].addend
+	      = build_int_cst (integer_type_node,
+			       (int) prec
+			       - (((int) tree_to_uhwi (idx) + 1)
+				  * limb_prec) - sub_one);
+	  else
+	    {
+	      tree in, out;
+	      in = build_int_cst (integer_type_node, rem - sub_one);
+	      m_first = true;
+	      in = prepare_data_in_out (in, idx, &out);
+	      out = m_data[m_data_cnt + 1];
+	      bqp[i].addend = in;
+	      g = gimple_build_assign (out, PLUS_EXPR, in,
+				       build_int_cst (integer_type_node,
+						      limb_prec));
+	      insert_before (g);
+	      m_data[m_data_cnt] = out;
+	    }
+
+	  m_first = false;
+	  if (kind == bitint_prec_huge && i == cnt - 1)
+	    {
+	      g = gimple_build_assign (idx_next, PLUS_EXPR, idx,
+				       size_int (-1));
+	      insert_before (g);
+	      g = gimple_build_cond (NE_EXPR, idx, size_zero_node,
+				     NULL_TREE, NULL_TREE);
+	      insert_before (g);
+	      edge true_edge, false_edge;
+	      extract_true_false_edges_from_block (gsi_bb (m_gsi),
+						   &true_edge, &false_edge);
+	      m_gsi = gsi_after_labels (false_edge->dest);
+	      m_bb = NULL;
+	    }
+	}
+    }
+  switch (ifn)
+    {
+    case IFN_CLZ:
+    case IFN_CTZ:
+    case IFN_FFS:
+      gphi *phi1, *phi2, *phi3;
+      basic_block bb;
+      bb = gsi_bb (m_gsi);
+      remove_edge (find_edge (bb, gimple_bb (stmt)));
+      phi1 = create_phi_node (make_ssa_name (m_limb_type),
+			      gimple_bb (stmt));
+      phi2 = create_phi_node (make_ssa_name (integer_type_node),
+			      gimple_bb (stmt));
+      for (unsigned i = 0; i < cnt; i++)
+	{
+	  add_phi_arg (phi1, bqp[i].val, bqp[i].e, UNKNOWN_LOCATION);
+	  add_phi_arg (phi2, bqp[i].addend, bqp[i].e, UNKNOWN_LOCATION);
+	}
+      if (arg1 == NULL_TREE)
+	{
+	  g = gimple_build_builtin_unreachable (m_loc);
+	  insert_before (g);
+	}
+      m_gsi = gsi_for_stmt (stmt);
+      g = gimple_build_call (fndecl, 1, gimple_phi_result (phi1));
+      gimple_call_set_lhs (g, make_ssa_name (integer_type_node));
+      insert_before (g);
+      if (arg1 == NULL_TREE)
+	g = gimple_build_assign (lhs, PLUS_EXPR,
+				 gimple_phi_result (phi2),
+				 gimple_call_lhs (g));
+      else
+	{
+	  g = gimple_build_assign (make_ssa_name (integer_type_node),
+				   PLUS_EXPR, gimple_phi_result (phi2),
+				   gimple_call_lhs (g));
+	  insert_before (g);
+	  edge e1 = split_block (gimple_bb (stmt), g);
+	  edge e2 = make_edge (bb, e1->dest, EDGE_FALLTHRU);
+	  e2->probability = profile_probability::always ();
+	  set_immediate_dominator (CDI_DOMINATORS, e1->dest,
+				   get_immediate_dominator (CDI_DOMINATORS,
+							    e1->src));
+	  phi3 = create_phi_node (make_ssa_name (integer_type_node), e1->dest);
+	  add_phi_arg (phi3, gimple_assign_lhs (g), e1, UNKNOWN_LOCATION);
+	  add_phi_arg (phi3, arg1, e2, UNKNOWN_LOCATION);
+	  m_gsi = gsi_for_stmt (stmt);
+	  g = gimple_build_assign (lhs, gimple_phi_result (phi3));
+	}
+      gsi_replace (&m_gsi, g, true);
+      break;
+    case IFN_CLRSB:
+      bb = gsi_bb (m_gsi);
+      remove_edge (find_edge (bb, edge_bb));
+      edge e;
+      e = make_edge (bb, gimple_bb (stmt), EDGE_FALLTHRU);
+      e->probability = profile_probability::always ();
+      set_immediate_dominator (CDI_DOMINATORS, gimple_bb (stmt),
+			       get_immediate_dominator (CDI_DOMINATORS,
+							edge_bb));
+      phi1 = create_phi_node (make_ssa_name (m_limb_type),
+			      edge_bb);
+      phi2 = create_phi_node (make_ssa_name (integer_type_node),
+			      edge_bb);
+      phi3 = create_phi_node (make_ssa_name (integer_type_node),
+			      gimple_bb (stmt));
+      for (unsigned i = 0; i < cnt; i++)
+	{
+	  add_phi_arg (phi1, bqp[i].val, bqp[2 * i + 1].e, UNKNOWN_LOCATION);
+	  add_phi_arg (phi2, bqp[i].addend, bqp[2 * i + 1].e,
+		       UNKNOWN_LOCATION);
+	  tree a = bqp[i].addend;
+	  if (i && kind == bitint_prec_large)
+	    a = int_const_binop (PLUS_EXPR, a, integer_minus_one_node);
+	  if (i)
+	    add_phi_arg (phi3, a, bqp[2 * i].e, UNKNOWN_LOCATION);
+	}
+      add_phi_arg (phi3, build_int_cst (integer_type_node, prec - 1), e,
+		   UNKNOWN_LOCATION);
+      m_gsi = gsi_after_labels (edge_bb);
+      g = gimple_build_call (fndecl, 1,
+			     add_cast (signed_type_for (m_limb_type),
+				       gimple_phi_result (phi1)));
+      gimple_call_set_lhs (g, make_ssa_name (integer_type_node));
+      insert_before (g);
+      g = gimple_build_assign (make_ssa_name (integer_type_node),
+			       PLUS_EXPR, gimple_call_lhs (g),
+			       gimple_phi_result (phi2));
+      insert_before (g);
+      if (kind != bitint_prec_large)
+	{
+	  g = gimple_build_assign (make_ssa_name (integer_type_node),
+				   PLUS_EXPR, gimple_assign_lhs (g),
+				   integer_one_node);
+	  insert_before (g);
+	}
+      add_phi_arg (phi3, gimple_assign_lhs (g),
+		   find_edge (edge_bb, gimple_bb (stmt)), UNKNOWN_LOCATION);
+      m_gsi = gsi_for_stmt (stmt);
+      g = gimple_build_assign (lhs, gimple_phi_result (phi3));
+      gsi_replace (&m_gsi, g, true);
+      break;
+    case IFN_PARITY:
+      g = gimple_build_call (fndecl, 1, res);
+      gimple_call_set_lhs (g, lhs);
+      gsi_replace (&m_gsi, g, true);
+      break;
+    case IFN_POPCOUNT:
+      g = gimple_build_assign (lhs, res);
+      gsi_replace (&m_gsi, g, true);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Lower a call statement with one or more large/huge _BitInt
    arguments or large/huge _BitInt return value.  */
 
@@ -4476,9 +5281,18 @@ bitint_large_huge::lower_call (tree obj, gimple *stmt)
       case IFN_UBSAN_CHECK_MUL:
 	lower_mul_overflow (obj, stmt);
 	return;
+      case IFN_CLZ:
+      case IFN_CTZ:
+      case IFN_CLRSB:
+      case IFN_FFS:
+      case IFN_PARITY:
+      case IFN_POPCOUNT:
+	lower_bit_query (stmt);
+	return;
       default:
 	break;
       }
+  bool returns_twice = (gimple_call_flags (stmt) & ECF_RETURNS_TWICE) != 0;
   for (unsigned int i = 0; i < nargs; ++i)
     {
       tree arg = gimple_call_arg (stmt, i);
@@ -4486,14 +5300,28 @@ bitint_large_huge::lower_call (tree obj, gimple *stmt)
 	  || TREE_CODE (TREE_TYPE (arg)) != BITINT_TYPE
 	  || bitint_precision_kind (TREE_TYPE (arg)) <= bitint_prec_middle)
 	continue;
-      int p = var_to_partition (m_map, arg);
-      tree v = m_vars[p];
-      gcc_assert (v != NULL_TREE);
-      if (!types_compatible_p (TREE_TYPE (arg), TREE_TYPE (v)))
-	v = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (arg), v);
-      arg = make_ssa_name (TREE_TYPE (arg));
-      gimple *g = gimple_build_assign (arg, v);
-      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+      if (SSA_NAME_IS_DEFAULT_DEF (arg)
+	  && (!SSA_NAME_VAR (arg) || VAR_P (SSA_NAME_VAR (arg))))
+	{
+	  tree var = create_tmp_reg (TREE_TYPE (arg));
+	  arg = get_or_create_ssa_default_def (cfun, var);
+	}
+      else
+	{
+	  int p = var_to_partition (m_map, arg);
+	  tree v = m_vars[p];
+	  gcc_assert (v != NULL_TREE);
+	  if (!types_compatible_p (TREE_TYPE (arg), TREE_TYPE (v)))
+	    v = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (arg), v);
+	  arg = make_ssa_name (TREE_TYPE (arg));
+	  gimple *g = gimple_build_assign (arg, v);
+	  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+	  if (returns_twice && bb_has_abnormal_pred (gimple_bb (stmt)))
+	    {
+	      m_returns_twice_calls.safe_push (stmt);
+	      returns_twice = false;
+	    }
+	}
       gimple_call_set_arg (stmt, i, arg);
       if (m_preserved == NULL)
 	m_preserved = BITMAP_ALLOC (NULL);
@@ -4546,9 +5374,18 @@ bitint_large_huge::lower_asm (gimple *stmt)
 	  && TREE_CODE (TREE_TYPE (s)) == BITINT_TYPE
 	  && bitint_precision_kind (TREE_TYPE (s)) >= bitint_prec_large)
 	{
-	  int part = var_to_partition (m_map, s);
-	  gcc_assert (m_vars[part] != NULL_TREE);
-	  TREE_VALUE (t) = m_vars[part];
+	  if (SSA_NAME_IS_DEFAULT_DEF (s)
+	      && (!SSA_NAME_VAR (s) || VAR_P (SSA_NAME_VAR (s))))
+	    {
+	      TREE_VALUE (t) = create_tmp_var (TREE_TYPE (s), "bitint");
+	      mark_addressable (TREE_VALUE (t));
+	    }
+	  else
+	    {
+	      int part = var_to_partition (m_map, s);
+	      gcc_assert (m_vars[part] != NULL_TREE);
+	      TREE_VALUE (t) = m_vars[part];
+	    }
 	}
     }
   update_stmt (stmt);
@@ -4595,15 +5432,66 @@ bitint_large_huge::lower_stmt (gimple *stmt)
     {
       lhs = gimple_assign_lhs (stmt);
       tree rhs1 = gimple_assign_rhs1 (stmt);
+      if (TREE_CODE (rhs1) == VIEW_CONVERT_EXPR)
+	rhs1 = TREE_OPERAND (rhs1, 0);
       if (TREE_CODE (TREE_TYPE (lhs)) == BITINT_TYPE
 	  && bitint_precision_kind (TREE_TYPE (lhs)) >= bitint_prec_large
 	  && INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
 	mergeable_cast_p = true;
       else if (TREE_CODE (TREE_TYPE (rhs1)) == BITINT_TYPE
 	       && bitint_precision_kind (TREE_TYPE (rhs1)) >= bitint_prec_large
-	       && INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
+	       && (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+		   || POINTER_TYPE_P (TREE_TYPE (lhs))
+		   || gimple_assign_rhs_code (stmt) == VIEW_CONVERT_EXPR))
 	{
 	  final_cast_p = true;
+	  if (((TREE_CODE (TREE_TYPE (lhs)) == INTEGER_TYPE
+		&& TYPE_PRECISION (TREE_TYPE (lhs)) > MAX_FIXED_MODE_SIZE)
+	       || (!INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+		   && !POINTER_TYPE_P (TREE_TYPE (lhs))))
+	      && gimple_assign_rhs_code (stmt) == VIEW_CONVERT_EXPR)
+	    {
+	      /* Handle VIEW_CONVERT_EXPRs to not generally supported
+		 huge INTEGER_TYPEs like uint256_t or uint512_t.  These
+		 are usually emitted from memcpy folding and backends
+		 support moves with them but that is usually it.
+		 Similarly handle VCEs to vector/complex types etc.  */
+	      gcc_assert (TREE_CODE (rhs1) == SSA_NAME);
+	      if (SSA_NAME_IS_DEFAULT_DEF (rhs1)
+		  && (!SSA_NAME_VAR (rhs1) || VAR_P (SSA_NAME_VAR (rhs1))))
+		{
+		  tree var = create_tmp_reg (TREE_TYPE (lhs));
+		  rhs1 = get_or_create_ssa_default_def (cfun, var);
+		  gimple_assign_set_rhs1 (stmt, rhs1);
+		  gimple_assign_set_rhs_code (stmt, SSA_NAME);
+		}
+	      else if (m_names == NULL
+		       || !bitmap_bit_p (m_names, SSA_NAME_VERSION (rhs1)))
+		{
+		  gimple *g = SSA_NAME_DEF_STMT (rhs1);
+		  gcc_assert (gimple_assign_load_p (g));
+		  tree mem = gimple_assign_rhs1 (g);
+		  tree ltype = TREE_TYPE (lhs);
+		  addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (mem));
+		  if (as != TYPE_ADDR_SPACE (ltype))
+		    ltype
+		      = build_qualified_type (ltype,
+					      TYPE_QUALS (ltype)
+					      | ENCODE_QUAL_ADDR_SPACE (as));
+		  rhs1 = build1 (VIEW_CONVERT_EXPR, ltype, unshare_expr (mem));
+		  gimple_assign_set_rhs1 (stmt, rhs1);
+		}
+	      else
+		{
+		  int part = var_to_partition (m_map, rhs1);
+		  gcc_assert (m_vars[part] != NULL_TREE);
+		  rhs1 = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (lhs),
+				 m_vars[part]);
+		  gimple_assign_set_rhs1 (stmt, rhs1);
+		}
+	      update_stmt (stmt);
+	      return;
+	    }
 	  if (TREE_CODE (rhs1) == SSA_NAME
 	      && (m_names == NULL
 		  || !bitmap_bit_p (m_names, SSA_NAME_VERSION (rhs1))))
@@ -4633,6 +5521,18 @@ bitint_large_huge::lower_stmt (gimple *stmt)
 		    }
 		}
 	    }
+	}
+      else if (TREE_CODE (TREE_TYPE (lhs)) == BITINT_TYPE
+	       && bitint_precision_kind (TREE_TYPE (lhs)) >= bitint_prec_large
+	       && !INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
+	       && !POINTER_TYPE_P (TREE_TYPE (rhs1))
+	       && gimple_assign_rhs_code (stmt) == VIEW_CONVERT_EXPR)
+	{
+	  int part = var_to_partition (m_map, lhs);
+	  gcc_assert (m_vars[part] != NULL_TREE);
+	  lhs = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (rhs1), m_vars[part]);
+	  insert_before (gimple_build_assign (lhs, rhs1));
+	  return;
 	}
     }
   if (gimple_store_p (stmt))
@@ -4669,6 +5569,28 @@ bitint_large_huge::lower_stmt (gimple *stmt)
 	      case IMAGPART_EXPR:
 		lower_cplxpart_stmt (lhs, g);
 		goto handled;
+	      case VIEW_CONVERT_EXPR:
+		{
+		  tree rhs1 = gimple_assign_rhs1 (g);
+		  rhs1 = TREE_OPERAND (rhs1, 0);
+		  if (!INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
+		      && !POINTER_TYPE_P (TREE_TYPE (rhs1)))
+		    {
+		      tree ltype = TREE_TYPE (rhs1);
+		      addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (lhs));
+		      ltype
+			= build_qualified_type (ltype,
+						TYPE_QUALS (TREE_TYPE (lhs))
+						| ENCODE_QUAL_ADDR_SPACE (as));
+		      lhs = build1 (VIEW_CONVERT_EXPR, ltype, lhs);
+		      gimple_assign_set_lhs (stmt, lhs);
+		      gimple_assign_set_rhs1 (stmt, rhs1);
+		      gimple_assign_set_rhs_code (stmt, TREE_CODE (rhs1));
+		      update_stmt (stmt);
+		      return;
+		    }
+		}
+		break;
 	      default:
 		break;
 	      }
@@ -4730,8 +5652,9 @@ bitint_large_huge::lower_stmt (gimple *stmt)
 	 be needed.  */
       gcc_assert (TYPE_PRECISION (lhs_type) <= 2 * limb_prec);
       gimple *g;
-      if (TREE_CODE (lhs_type) == BITINT_TYPE
-	  && bitint_precision_kind (lhs_type) == bitint_prec_middle)
+      if ((TREE_CODE (lhs_type) == BITINT_TYPE
+	   && bitint_precision_kind (lhs_type) == bitint_prec_middle)
+	  || POINTER_TYPE_P (lhs_type))
 	lhs_type = build_nonstandard_integer_type (TYPE_PRECISION (lhs_type),
 						   TYPE_UNSIGNED (lhs_type));
       m_data_cnt = 0;
@@ -4805,7 +5728,8 @@ vuse_eq (ao_ref *, tree vuse1, void *data)
 
 /* Return true if STMT uses a library function and needs to take
    address of its inputs.  We need to avoid bit-fields in those
-   cases.  */
+   cases.  Similarly, we need to avoid overlap between destination
+   and source limb arrays.  */
 
 bool
 stmt_needs_operand_addr (gimple *stmt)
@@ -4872,7 +5796,7 @@ bitint_dom_walker::before_dom_children (basic_block bb)
       tree lhs = gimple_get_lhs (stmt);
       if (lhs
 	  && TREE_CODE (lhs) == SSA_NAME
-	  && TREE_CODE (TREE_TYPE (lhs)) != BITINT_TYPE
+	  && TREE_CODE (TREE_TYPE (lhs)) == BITINT_TYPE
 	  && bitint_precision_kind (TREE_TYPE (lhs)) >= bitint_prec_large
 	  && !bitmap_bit_p (m_names, SSA_NAME_VERSION (lhs)))
 	/* If lhs of stmt is large/huge _BitInt SSA_NAME not in m_names,
@@ -4924,7 +5848,8 @@ bitint_dom_walker::before_dom_children (basic_block bb)
 	  else if (!bitmap_bit_p (m_loads, SSA_NAME_VERSION (s)))
 	    continue;
 
-	  tree rhs1 = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (s));
+	  gimple *g = SSA_NAME_DEF_STMT (s);
+	  tree rhs1 = gimple_assign_rhs1 (g);
 	  if (needs_operand_addr
 	      && TREE_CODE (rhs1) == COMPONENT_REF
 	      && DECL_BIT_FIELD_TYPE (TREE_OPERAND (rhs1, 1)))
@@ -4946,15 +5871,14 @@ bitint_dom_walker::before_dom_children (basic_block bb)
 
 	  ao_ref ref;
 	  ao_ref_init (&ref, rhs1);
-	  tree lvop = gimple_vuse (SSA_NAME_DEF_STMT (s));
+	  tree lvop = gimple_vuse (g);
 	  unsigned limit = 64;
 	  tree vuse = cvop;
 	  if (vop != cvop
 	      && is_gimple_assign (stmt)
 	      && gimple_store_p (stmt)
-	      && !operand_equal_p (lhs,
-				   gimple_assign_rhs1 (SSA_NAME_DEF_STMT (s)),
-				   0))
+	      && (needs_operand_addr
+		  || !operand_equal_p (lhs, gimple_assign_rhs1 (g), 0)))
 	    vuse = vop;
 	  if (vuse != lvop
 	      && walk_non_aliased_vuses (&ref, vuse, false, vuse_eq,
@@ -4992,20 +5916,25 @@ build_bitint_stmt_ssa_conflicts (gimple *stmt, live_track *live,
   if (is_gimple_assign (stmt))
     {
       lhs = gimple_assign_lhs (stmt);
-      if (TREE_CODE (lhs) == SSA_NAME
-	  && TREE_CODE (TREE_TYPE (lhs)) == BITINT_TYPE
-	  && bitint_precision_kind (TREE_TYPE (lhs)) >= bitint_prec_large)
+      if (TREE_CODE (lhs) == SSA_NAME)
 	{
-	  if (!bitmap_bit_p (names, SSA_NAME_VERSION (lhs)))
-	    return;
-	  switch (gimple_assign_rhs_code (stmt))
+	  tree type = TREE_TYPE (lhs);
+	  if (TREE_CODE (type) == COMPLEX_TYPE)
+	    type = TREE_TYPE (type);
+	  if (TREE_CODE (type) == BITINT_TYPE
+	      && bitint_precision_kind (type) >= bitint_prec_large)
 	    {
-	    case MULT_EXPR:
-	    case TRUNC_DIV_EXPR:
-	    case TRUNC_MOD_EXPR:
-	      muldiv_p = true;
-	    default:
-	      break;
+	      if (!bitmap_bit_p (names, SSA_NAME_VERSION (lhs)))
+		return;
+	      switch (gimple_assign_rhs_code (stmt))
+		{
+		case MULT_EXPR:
+		case TRUNC_DIV_EXPR:
+		case TRUNC_MOD_EXPR:
+		  muldiv_p = true;
+		default:
+		  break;
+		}
 	    }
 	}
     }
@@ -5037,31 +5966,72 @@ build_bitint_stmt_ssa_conflicts (gimple *stmt, live_track *live,
 
   auto_vec<tree, 16> worklist;
   FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_USE)
-    if (TREE_CODE (TREE_TYPE (var)) == BITINT_TYPE
-	&& bitint_precision_kind (TREE_TYPE (var)) >= bitint_prec_large)
-      {
-	if (bitmap_bit_p (names, SSA_NAME_VERSION (var)))
-	  use (live, var);
-	else
-	  worklist.safe_push (var);
-      }
+    {
+      tree type = TREE_TYPE (var);
+      if (TREE_CODE (type) == COMPLEX_TYPE)
+	type = TREE_TYPE (type);
+      if (TREE_CODE (type) == BITINT_TYPE
+	  && bitint_precision_kind (type) >= bitint_prec_large)
+	{
+	  if (bitmap_bit_p (names, SSA_NAME_VERSION (var)))
+	    use (live, var);
+	  else
+	    worklist.safe_push (var);
+	}
+    }
 
   while (worklist.length () > 0)
     {
       tree s = worklist.pop ();
       FOR_EACH_SSA_TREE_OPERAND (var, SSA_NAME_DEF_STMT (s), iter, SSA_OP_USE)
-	if (TREE_CODE (TREE_TYPE (var)) == BITINT_TYPE
-	    && bitint_precision_kind (TREE_TYPE (var)) >= bitint_prec_large)
-	  {
-	    if (bitmap_bit_p (names, SSA_NAME_VERSION (var)))
-	      use (live, var);
-	    else
-	      worklist.safe_push (var);
-	  }
+	{
+	  tree type = TREE_TYPE (var);
+	  if (TREE_CODE (type) == COMPLEX_TYPE)
+	    type = TREE_TYPE (type);
+	  if (TREE_CODE (type) == BITINT_TYPE
+	      && bitint_precision_kind (type) >= bitint_prec_large)
+	    {
+	      if (bitmap_bit_p (names, SSA_NAME_VERSION (var)))
+		use (live, var);
+	      else
+		worklist.safe_push (var);
+	    }
+	}
     }
 
   if (muldiv_p)
     def (live, lhs, graph);
+}
+
+/* If STMT is .{ADD,SUB,MUL}_OVERFLOW with INTEGER_CST arguments,
+   return the largest bitint_prec_kind of them, otherwise return
+   bitint_prec_small.  */
+
+static bitint_prec_kind
+arith_overflow_arg_kind (gimple *stmt)
+{
+  bitint_prec_kind ret = bitint_prec_small;
+  if (is_gimple_call (stmt) && gimple_call_internal_p (stmt))
+    switch (gimple_call_internal_fn (stmt))
+      {
+      case IFN_ADD_OVERFLOW:
+      case IFN_SUB_OVERFLOW:
+      case IFN_MUL_OVERFLOW:
+	for (int i = 0; i < 2; ++i)
+	  {
+	    tree a = gimple_call_arg (stmt, i);
+	    if (TREE_CODE (a) == INTEGER_CST
+		&& TREE_CODE (TREE_TYPE (a)) == BITINT_TYPE)
+	      {
+		bitint_prec_kind kind = bitint_precision_kind (TREE_TYPE (a));
+		ret = MAX (ret, kind);
+	      }
+	  }
+	break;
+      default:
+	break;
+      }
+  return ret;
 }
 
 /* Entry point for _BitInt(N) operation lowering during optimization.  */
@@ -5080,7 +6050,12 @@ gimple_lower_bitint (void)
 	continue;
       tree type = TREE_TYPE (s);
       if (TREE_CODE (type) == COMPLEX_TYPE)
-	type = TREE_TYPE (type);
+	{
+	  if (arith_overflow_arg_kind (SSA_NAME_DEF_STMT (s))
+	      != bitint_prec_small)
+	    break;
+	  type = TREE_TYPE (type);
+	}
       if (TREE_CODE (type) == BITINT_TYPE
 	  && bitint_precision_kind (type) != bitint_prec_small)
 	break;
@@ -5095,6 +6070,21 @@ gimple_lower_bitint (void)
 	      if (TREE_CODE (TREE_TYPE (t)) == BITINT_TYPE
 		  && (bitint_precision_kind (TREE_TYPE (t))
 		      >= bitint_prec_large))
+		break;
+	    }
+	}
+      /* Similarly, e.g. with -frounding-math casts from _BitInt INTEGER_CSTs
+	 to floating point types need to be rewritten.  */
+      else if (SCALAR_FLOAT_TYPE_P (type))
+	{
+	  gimple *g = SSA_NAME_DEF_STMT (s);
+	  if (is_gimple_assign (g) && gimple_assign_rhs_code (g) == FLOAT_EXPR)
+	    {
+	      tree t = gimple_assign_rhs1 (g);
+	      if (TREE_CODE (t) == INTEGER_CST
+		  && TREE_CODE (TREE_TYPE (t)) == BITINT_TYPE
+		  && (bitint_precision_kind (TREE_TYPE (t))
+		      != bitint_prec_small))
 		break;
 	    }
 	}
@@ -5115,7 +6105,14 @@ gimple_lower_bitint (void)
 
 	  if (optimize)
 	    group_case_labels_stmt (swtch);
-	  switch_statements.safe_push (swtch);
+	  if (gimple_switch_num_labels (swtch) == 1)
+	    {
+	      single_succ_edge (bb)->flags |= EDGE_FALLTHRU;
+	      gimple_stmt_iterator gsi = gsi_for_stmt (swtch);
+	      gsi_remove (&gsi, true);
+	    }
+	  else
+	    switch_statements.safe_push (swtch);
 	}
     }
 
@@ -5153,7 +6150,12 @@ gimple_lower_bitint (void)
 	continue;
       tree type = TREE_TYPE (s);
       if (TREE_CODE (type) == COMPLEX_TYPE)
-	type = TREE_TYPE (type);
+	{
+	  if (arith_overflow_arg_kind (SSA_NAME_DEF_STMT (s))
+	      >= bitint_prec_large)
+	    has_large_huge = true;
+	  type = TREE_TYPE (type);
+	}
       if (TREE_CODE (type) == BITINT_TYPE
 	  && bitint_precision_kind (type) >= bitint_prec_large)
 	{
@@ -5164,10 +6166,51 @@ gimple_lower_bitint (void)
 	  tree_code rhs_code;
 	  /* Unoptimize certain constructs to simpler alternatives to
 	     avoid having to lower all of them.  */
-	  if (is_gimple_assign (stmt))
+	  if (is_gimple_assign (stmt) && gimple_bb (stmt))
 	    switch (rhs_code = gimple_assign_rhs_code (stmt))
 	      {
 	      default:
+		break;
+	      case MULT_EXPR:
+	      case TRUNC_DIV_EXPR:
+	      case TRUNC_MOD_EXPR:
+		if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (s))
+		  {
+		    location_t loc = gimple_location (stmt);
+		    gsi = gsi_for_stmt (stmt);
+		    tree rhs1 = gimple_assign_rhs1 (stmt);
+		    tree rhs2 = gimple_assign_rhs2 (stmt);
+		    /* For multiplication and division with (ab)
+		       lhs and one or both operands force the operands
+		       into new SSA_NAMEs to avoid coalescing failures.  */
+		    if (TREE_CODE (rhs1) == SSA_NAME
+			&& SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs1))
+		      {
+			first_large_huge = 0;
+			tree t = make_ssa_name (TREE_TYPE (rhs1));
+			g = gimple_build_assign (t, SSA_NAME, rhs1);
+			gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+			gimple_set_location (g, loc);
+			gimple_assign_set_rhs1 (stmt, t);
+			if (rhs1 == rhs2)
+			  {
+			    gimple_assign_set_rhs2 (stmt, t);
+			    rhs2 = t;
+			  }
+			update_stmt (stmt);
+		      }
+		    if (TREE_CODE (rhs2) == SSA_NAME
+			&& SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs2))
+		      {
+			first_large_huge = 0;
+			tree t = make_ssa_name (TREE_TYPE (rhs2));
+			g = gimple_build_assign (t, SSA_NAME, rhs2);
+			gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+			gimple_set_location (g, loc);
+			gimple_assign_set_rhs2 (stmt, t);
+			update_stmt (stmt);
+		      }
+		  }
 		break;
 	      case LROTATE_EXPR:
 	      case RROTATE_EXPR:
@@ -5318,6 +6361,21 @@ gimple_lower_bitint (void)
 		has_large_huge = true;
 	    }
 	}
+      /* Similarly, e.g. with -frounding-math casts from _BitInt INTEGER_CSTs
+	 to floating point types need to be rewritten.  */
+      else if (SCALAR_FLOAT_TYPE_P (type))
+	{
+	  gimple *g = SSA_NAME_DEF_STMT (s);
+	  if (is_gimple_assign (g) && gimple_assign_rhs_code (g) == FLOAT_EXPR)
+	    {
+	      tree t = gimple_assign_rhs1 (g);
+	      if (TREE_CODE (t) == INTEGER_CST
+		  && TREE_CODE (TREE_TYPE (t)) == BITINT_TYPE
+		  && (bitint_precision_kind (TREE_TYPE (t))
+		      >= bitint_prec_large))
+		has_large_huge = true;
+	    }
+	}
     }
   for (i = first_large_huge; i < num_ssa_names; ++i)
     {
@@ -5354,7 +6412,13 @@ gimple_lower_bitint (void)
 		  if (gimple_assign_cast_p (use_stmt))
 		    {
 		      tree lhs = gimple_assign_lhs (use_stmt);
-		      if (INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
+		      if (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+			  /* Don't merge with VIEW_CONVERT_EXPRs to
+			     huge INTEGER_TYPEs used sometimes in memcpy
+			     expansion.  */
+			  && (TREE_CODE (TREE_TYPE (lhs)) != INTEGER_TYPE
+			      || (TYPE_PRECISION (TREE_TYPE (lhs))
+				  <= MAX_FIXED_MODE_SIZE)))
 			continue;
 		    }
 		  else if (gimple_store_p (use_stmt)
@@ -5366,6 +6430,14 @@ gimple_lower_bitint (void)
 	      if (gimple_assign_cast_p (SSA_NAME_DEF_STMT (s)))
 		{
 		  tree rhs1 = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (s));
+		  if (TREE_CODE (rhs1) == VIEW_CONVERT_EXPR)
+		    {
+		      rhs1 = TREE_OPERAND (rhs1, 0);
+		      if (!INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
+			  && !POINTER_TYPE_P (TREE_TYPE (rhs1))
+			  && gimple_store_p (use_stmt))
+			continue;
+		    }
 		  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
 		      && ((is_gimple_assign (use_stmt)
 			   && (gimple_assign_rhs_code (use_stmt)
@@ -5378,12 +6450,63 @@ gimple_lower_bitint (void)
 		      && (TREE_CODE (rhs1) != SSA_NAME
 			  || !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs1)))
 		    {
+		      if (is_gimple_assign (use_stmt))
+			switch (gimple_assign_rhs_code (use_stmt))
+			  {
+			  case TRUNC_DIV_EXPR:
+			  case TRUNC_MOD_EXPR:
+			  case FLOAT_EXPR:
+			    /* For division, modulo and casts to floating
+			       point, avoid representing unsigned operands
+			       using negative prec if they were sign-extended
+			       from narrower precision.  */
+			    if (TYPE_UNSIGNED (TREE_TYPE (s))
+				&& !TYPE_UNSIGNED (TREE_TYPE (rhs1))
+				&& (TYPE_PRECISION (TREE_TYPE (s))
+				    > TYPE_PRECISION (TREE_TYPE (rhs1))))
+			      goto force_name;
+			    /* FALLTHRU */
+			  case MULT_EXPR:
+			    if (TREE_CODE (TREE_TYPE (rhs1)) != BITINT_TYPE
+				|| (bitint_precision_kind (TREE_TYPE (rhs1))
+				    < bitint_prec_large))
+			      continue;
+			    /* Uses which use handle_operand_addr can't
+			       deal with nested casts.  */
+			    if (TREE_CODE (rhs1) == SSA_NAME
+				&& gimple_assign_cast_p
+				     (SSA_NAME_DEF_STMT (rhs1))
+				&& has_single_use (rhs1)
+				&& (gimple_bb (SSA_NAME_DEF_STMT (rhs1))
+				    == gimple_bb (SSA_NAME_DEF_STMT (s))))
+			      goto force_name;
+			    break;
+			  case VIEW_CONVERT_EXPR:
+			    {
+			      tree lhs = gimple_assign_lhs (use_stmt);
+			      /* Don't merge with VIEW_CONVERT_EXPRs to
+				 non-integral types.  */
+			      if (!INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
+				goto force_name;
+			      /* Don't merge with VIEW_CONVERT_EXPRs to
+				 huge INTEGER_TYPEs used sometimes in memcpy
+				 expansion.  */
+			      if (TREE_CODE (TREE_TYPE (lhs)) == INTEGER_TYPE
+				  && (TYPE_PRECISION (TREE_TYPE (lhs))
+				      > MAX_FIXED_MODE_SIZE))
+				goto force_name;
+			    }
+			    break;
+			  default:
+			    break;
+			}
 		      if (TREE_CODE (TREE_TYPE (rhs1)) != BITINT_TYPE
 			  || (bitint_precision_kind (TREE_TYPE (rhs1))
-			      < bitint_prec_large)
-			  || (TYPE_PRECISION (TREE_TYPE (rhs1))
-			      >= TYPE_PRECISION (TREE_TYPE (s)))
-			  || mergeable_op (SSA_NAME_DEF_STMT (s)))
+			      < bitint_prec_large))
+			continue;
+		      if ((TYPE_PRECISION (TREE_TYPE (rhs1))
+			   >= TYPE_PRECISION (TREE_TYPE (s)))
+			  && mergeable_op (use_stmt))
 			continue;
 		      /* Prevent merging a widening non-mergeable cast
 			 on result of some narrower mergeable op
@@ -5402,7 +6525,9 @@ gimple_lower_bitint (void)
 			  || !mergeable_op (SSA_NAME_DEF_STMT (rhs1))
 			  || gimple_store_p (use_stmt))
 			continue;
-		      if (gimple_assign_cast_p (SSA_NAME_DEF_STMT (rhs1)))
+		      if ((TYPE_PRECISION (TREE_TYPE (rhs1))
+			   < TYPE_PRECISION (TREE_TYPE (s)))
+			  && gimple_assign_cast_p (SSA_NAME_DEF_STMT (rhs1)))
 			{
 			  /* Another exception is if the widening cast is
 			     from mergeable same precision cast from something
@@ -5473,6 +6598,7 @@ gimple_lower_bitint (void)
 	      && (!SSA_NAME_VAR (s) || VAR_P (SSA_NAME_VAR (s))))
 	    continue;
 
+	force_name:
 	  if (!large_huge.m_names)
 	    large_huge.m_names = BITMAP_ALLOC (NULL);
 	  bitmap_set_bit (large_huge.m_names, SSA_NAME_VERSION (s));
@@ -5503,7 +6629,11 @@ gimple_lower_bitint (void)
 		  if (is_gimple_debug (use_stmt))
 		    continue;
 		  if (gimple_code (use_stmt) == GIMPLE_PHI
-		      || is_gimple_call (use_stmt))
+		      || is_gimple_call (use_stmt)
+		      || gimple_code (use_stmt) == GIMPLE_ASM
+		      || (is_gimple_assign (use_stmt)
+			  && (gimple_assign_rhs_code (use_stmt)
+			      == COMPLEX_EXPR)))
 		    {
 		      optimizable_load = false;
 		      break;
@@ -5597,22 +6727,33 @@ gimple_lower_bitint (void)
 	      }
 	  }
       tree atype = NULL_TREE;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Mapping SSA_NAMEs to decls:\n");
       EXECUTE_IF_SET_IN_BITMAP (large_huge.m_names, 0, i, bi)
 	{
 	  tree s = ssa_name (i);
 	  int p = var_to_partition (large_huge.m_map, s);
-	  if (large_huge.m_vars[p] != NULL_TREE)
-	    continue;
-	  if (atype == NULL_TREE
-	      || !tree_int_cst_equal (TYPE_SIZE (atype),
-				      TYPE_SIZE (TREE_TYPE (s))))
+	  if (large_huge.m_vars[p] == NULL_TREE)
 	    {
-	      unsigned HOST_WIDE_INT nelts
-		= tree_to_uhwi (TYPE_SIZE (TREE_TYPE (s))) / limb_prec;
-	      atype = build_array_type_nelts (large_huge.m_limb_type, nelts);
+	      if (atype == NULL_TREE
+		  || !tree_int_cst_equal (TYPE_SIZE (atype),
+					  TYPE_SIZE (TREE_TYPE (s))))
+		{
+		  unsigned HOST_WIDE_INT nelts
+		    = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (s))) / limb_prec;
+		  atype = build_array_type_nelts (large_huge.m_limb_type,
+						  nelts);
+		}
+	      large_huge.m_vars[p] = create_tmp_var (atype, "bitint");
+	      mark_addressable (large_huge.m_vars[p]);
 	    }
-	  large_huge.m_vars[p] = create_tmp_var (atype, "bitint");
-	  mark_addressable (large_huge.m_vars[p]);
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      print_generic_expr (dump_file, s, TDF_SLIM);
+	      fprintf (dump_file, " -> ");
+	      print_generic_expr (dump_file, large_huge.m_vars[p], TDF_SLIM);
+	      fprintf (dump_file, "\n");
+	    }
 	}
     }
 
@@ -5635,8 +6776,7 @@ gimple_lower_bitint (void)
 	      {
 		bitint_prec_kind this_kind
 		  = bitint_precision_kind (TREE_TYPE (t));
-		if (this_kind > kind)
-		  kind = this_kind;
+		kind = MAX (kind, this_kind);
 	      }
 	  if (is_gimple_assign (stmt) && gimple_store_p (stmt))
 	    {
@@ -5645,21 +6785,34 @@ gimple_lower_bitint (void)
 		{
 		  bitint_prec_kind this_kind
 		    = bitint_precision_kind (TREE_TYPE (t));
-		  if (this_kind > kind)
-		    kind = this_kind;
+		  kind = MAX (kind, this_kind);
+		}
+	    }
+	  if (is_gimple_assign (stmt)
+	      && gimple_assign_rhs_code (stmt) == FLOAT_EXPR)
+	    {
+	      t = gimple_assign_rhs1 (stmt);
+	      if (TREE_CODE (TREE_TYPE (t)) == BITINT_TYPE
+		  && TREE_CODE (t) == INTEGER_CST)
+		{
+		  bitint_prec_kind this_kind
+		    = bitint_precision_kind (TREE_TYPE (t));
+		  kind = MAX (kind, this_kind);
 		}
 	    }
 	  if (is_gimple_call (stmt))
 	    {
 	      t = gimple_call_lhs (stmt);
-	      if (t
-		  && TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE
-		  && TREE_CODE (TREE_TYPE (TREE_TYPE (t))) == BITINT_TYPE)
+	      if (t && TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE)
 		{
-		  bitint_prec_kind this_kind
-		    = bitint_precision_kind (TREE_TYPE (TREE_TYPE (t)));
-		  if (this_kind > kind)
-		    kind = this_kind;
+		  bitint_prec_kind this_kind = arith_overflow_arg_kind (stmt);
+		  kind = MAX (kind, this_kind);
+		  if (TREE_CODE (TREE_TYPE (TREE_TYPE (t))) == BITINT_TYPE)
+		    {
+		      this_kind
+			= bitint_precision_kind (TREE_TYPE (TREE_TYPE (t)));
+		      kind = MAX (kind, this_kind);
+		    }
 		}
 	    }
 	  if (kind == bitint_prec_small)
@@ -5707,21 +6860,9 @@ gimple_lower_bitint (void)
 	      tree type = NULL_TREE;
 	      /* Middle _BitInt(N) is rewritten to casts to INTEGER_TYPEs
 		 with the same precision and back.  */
-	      if (tree lhs = gimple_get_lhs (stmt))
-		if (TREE_CODE (TREE_TYPE (lhs)) == BITINT_TYPE
-		    && (bitint_precision_kind (TREE_TYPE (lhs))
-			== bitint_prec_middle))
-		  {
-		    int prec = TYPE_PRECISION (TREE_TYPE (lhs));
-		    int uns = TYPE_UNSIGNED (TREE_TYPE (lhs));
-		    type = build_nonstandard_integer_type (prec, uns);
-		    tree lhs2 = make_ssa_name (type);
-		    gimple *g = gimple_build_assign (lhs, NOP_EXPR, lhs2);
-		    gsi_insert_after (&gsi, g, GSI_SAME_STMT);
-		    gimple_set_lhs (stmt, lhs2);
-		  }
 	      unsigned int nops = gimple_num_ops (stmt);
-	      for (unsigned int i = 0; i < nops; ++i)
+	      for (unsigned int i = is_gimple_assign (stmt) ? 1 : 0;
+		   i < nops; ++i)
 		if (tree op = gimple_op (stmt, i))
 		  {
 		    tree nop = maybe_cast_middle_bitint (&gsi, op, type);
@@ -5747,6 +6888,25 @@ gimple_lower_bitint (void)
 			  = maybe_cast_middle_bitint (&gsi, CASE_HIGH (op),
 						      type);
 		      }
+		  }
+	      if (tree lhs = gimple_get_lhs (stmt))
+		if (TREE_CODE (TREE_TYPE (lhs)) == BITINT_TYPE
+		    && (bitint_precision_kind (TREE_TYPE (lhs))
+			== bitint_prec_middle))
+		  {
+		    int prec = TYPE_PRECISION (TREE_TYPE (lhs));
+		    int uns = TYPE_UNSIGNED (TREE_TYPE (lhs));
+		    type = build_nonstandard_integer_type (prec, uns);
+		    tree lhs2 = make_ssa_name (type);
+		    gimple_set_lhs (stmt, lhs2);
+		    gimple *g = gimple_build_assign (lhs, NOP_EXPR, lhs2);
+		    if (stmt_ends_bb_p (stmt))
+		      {
+			edge e = find_fallthru_edge (gsi_bb (gsi)->succs);
+			gsi_insert_on_edge_immediate (e, g);
+		      }
+		    else
+		      gsi_insert_after (&gsi, g, GSI_SAME_STMT);
 		  }
 	      update_stmt (stmt);
 	      continue;
@@ -5861,8 +7021,12 @@ gimple_lower_bitint (void)
 			= build_array_type_nelts (large_huge.m_limb_type,
 						  nelts);
 		      tree ptype = build_pointer_type (TREE_TYPE (v1));
-		      tree off = fold_convert (ptype,
-					       TYPE_SIZE_UNIT (TREE_TYPE (c)));
+		      tree off;
+		      if (c)
+			off = fold_convert (ptype,
+					    TYPE_SIZE_UNIT (TREE_TYPE (c)));
+		      else
+			off = build_zero_cst (ptype);
 		      tree vd = build2 (MEM_REF, vtype,
 					build_fold_addr_expr (v1), off);
 		      g = gimple_build_assign (vd, build_zero_cst (vtype));
@@ -5969,6 +7133,11 @@ gimple_lower_bitint (void)
 		  release_ssa_name (s);
 		  continue;
 		}
+	      if (gimple_bb (g) == NULL)
+		{
+		  release_ssa_name (s);
+		  continue;
+		}
 	      if (gimple_code (g) != GIMPLE_ASM)
 		{
 		  gimple_stmt_iterator gsi = gsi_for_stmt (g);
@@ -5989,6 +7158,71 @@ gimple_lower_bitint (void)
 
   if (edge_insertions)
     gsi_commit_edge_inserts ();
+
+  /* Fix up arguments of ECF_RETURNS_TWICE calls.  Those were temporarily
+     inserted before the call, but that is invalid IL, so move them to the
+     right place and add corresponding PHIs.  */
+  if (!large_huge.m_returns_twice_calls.is_empty ())
+    {
+      auto_vec<gimple *, 16> arg_stmts;
+      while (!large_huge.m_returns_twice_calls.is_empty ())
+	{
+	  gimple *stmt = large_huge.m_returns_twice_calls.pop ();
+	  gimple_stmt_iterator gsi = gsi_after_labels (gimple_bb (stmt));
+	  while (gsi_stmt (gsi) != stmt)
+	    {
+	      if (is_gimple_debug (gsi_stmt (gsi)))
+		gsi_next (&gsi);
+	      else
+		{
+		  arg_stmts.safe_push (gsi_stmt (gsi));
+		  gsi_remove (&gsi, false);
+		}
+	    }
+	  gimple *g;
+	  basic_block bb = NULL;
+	  edge e = NULL, ead = NULL;
+	  FOR_EACH_VEC_ELT (arg_stmts, i, g)
+	    {
+	      gsi_safe_insert_before (&gsi, g);
+	      if (i == 0)
+		{
+		  bb = gimple_bb (stmt);
+		  gcc_checking_assert (EDGE_COUNT (bb->preds) == 2);
+		  e = EDGE_PRED (bb, 0);
+		  ead = EDGE_PRED (bb, 1);
+		  if ((ead->flags & EDGE_ABNORMAL) == 0)
+		    std::swap (e, ead);
+		  gcc_checking_assert ((e->flags & EDGE_ABNORMAL) == 0
+				       && (ead->flags & EDGE_ABNORMAL));
+		}
+	      tree lhs = gimple_assign_lhs (g);
+	      tree arg = lhs;
+	      gphi *phi = create_phi_node (copy_ssa_name (arg), bb);
+	      add_phi_arg (phi, arg, e, UNKNOWN_LOCATION);
+	      tree var = create_tmp_reg (TREE_TYPE (arg));
+	      suppress_warning (var, OPT_Wuninitialized);
+	      arg = get_or_create_ssa_default_def (cfun, var);
+	      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (arg) = 1;
+	      add_phi_arg (phi, arg, ead, UNKNOWN_LOCATION);
+	      arg = gimple_phi_result (phi);
+	      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (arg) = 1;
+	      imm_use_iterator iter;
+	      gimple *use_stmt;
+	      FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
+		{
+		  if (use_stmt == phi)
+		    continue;
+		  gcc_checking_assert (use_stmt == stmt);
+		  use_operand_p use_p;
+		  FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+		    SET_USE (use_p, arg);
+		}
+	    }
+	  update_stmt (stmt);
+	  arg_stmts.truncate (0);
+	}
+    }
 
   return ret;
 }

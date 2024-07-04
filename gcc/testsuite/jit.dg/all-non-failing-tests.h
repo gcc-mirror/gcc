@@ -32,12 +32,25 @@
 /* test-add-driver-options.c: We don't use this one, since the extra options
    affect the whole context.  */
 
+/* test-alias-attribute.c: This can't be in the testcases array as it
+   doesn't have a verify_code implementation.  */
+
 /* test-alignment.c */
 #define create_code create_code_alignment
 #define verify_code verify_code_alignment
 #include "test-alignment.c"
 #undef create_code
 #undef verify_code
+
+/* test-alignof.c */
+#define create_code create_code_alignof
+#define verify_code verify_code_alignof
+#include "test-alignof.c"
+#undef create_code
+#undef verify_code
+
+/* test-always_inline-attribute.c: This can't be in the testcases array as it needs
+   the `-O0` flag.  */
 
 /* test-arith-overflow.c */
 #define create_code create_code_arith_overflow
@@ -119,12 +132,18 @@
 #undef create_code
 #undef verify_code
 
+/* test-cold-attribute.c: This can't be in the testcases array as it needs
+   the `-O2` flag.  */
+
 /* test-constants.c */
 #define create_code create_code_constants
 #define verify_code verify_code_constants
 #include "test-constants.c"
 #undef create_code
 #undef verify_code
+
+/* test-const-attribute.c: This can't be in the testcases array as it needs
+   the `-O3` flag.  */
 
 /* test-debug-strings.c */
 #define create_code create_code_debug_strings
@@ -268,6 +287,19 @@
 #undef create_code
 #undef verify_code
 
+/* test-noinline-attribute.c: This can't be in the testcases array as it needs
+   the `-O2` flag.  */
+
+/* test-nonnull-attribute.c: This can't be in the testcases array as it needs
+   the `-O2` flag.  */
+
+/* test-popcount.c */
+#define create_code create_code_popcount
+#define verify_code verify_code_popcount
+#include "test-popcount.c"
+#undef create_code
+#undef verify_code
+
 /* test-pr103562.c: We don't add this one, since it touches
    the optimization level of the context as a whole.  */
 
@@ -299,6 +331,9 @@
 #undef create_code
 #undef verify_code
 
+/* test-pure-attribute.c: This can't be in the testcases array as it needs
+   the `-O3` flag.  */
+
 /* test-reading-struct.c */
 #define create_code create_code_reading_struct
 #define verify_code verify_code_reading_struct
@@ -316,11 +351,21 @@
 /* test-restrict.c: This can't be in the testcases array as it needs
    the `-O3` flag.  */
 
+/* test-restrict-attribute.c: This can't be in the testcases array as it needs
+   the `-O3` flag.  */
+
 /* test-register-variable.c: This can't be in the testcases array as it
    is target-specific.  */
 
 /* test-setting-alignment.c: This can't be in the testcases array as it
    is target-specific.  */
+
+/* test-sizeof.c */
+#define create_code create_code_sizeof
+#define verify_code verify_code_sizeof
+#include "test-sizeof.c"
+#undef create_code
+#undef verify_code
 
 /* test-string-literal.c */
 #define create_code create_code_string_literal
@@ -350,6 +395,9 @@
 #undef create_code
 #undef verify_code
 
+/* test-used-attribute.c: This can't be in the testcases array as it needs
+   the `-O2` flag.  */
+
 /* test-using-global.c */
 #define create_code create_code_using_global
 #define verify_code verify_code_using_global
@@ -360,6 +408,9 @@
 /* test-validly-unreachable-block.c: We don't use this one, since the use
    of gcc_jit_context_set_bool_allow_unreachable_blocks affects the whole
    context.  */
+
+/* test-variable-attribute.c: This can't be in the testcases array as it
+   doesn't have a verify_code implementation.  */
 
 /* test-vector-types.cc: We don't use this, since it's C++.  */
 
@@ -376,6 +427,13 @@
 #include "test-volatile.c"
 #undef create_code
 #undef verify_code
+
+/* test-ggc-bugfix.c: We don't use this once, since the use of
+   gcc_jit_context_add_command_line_option and
+   gcc_jit_context_add_driver_option affects the whole context.  */
+
+/* test-weak-attribute.c: This can't be in the testcases array as it
+   doesn't have a verify_code implementation.  */
 
 /* Now expose the individual testcases as instances of this struct.  */
 
@@ -398,6 +456,9 @@ const struct testcase testcases[] = {
   {"accessing_union",
    create_code_accessing_union,
    verify_code_accessing_union},
+  {"alignof",
+   create_code_alignof,
+   verify_code_alignof},
   {"alignment",
    create_code_alignment,
    verify_code_alignment},
@@ -488,6 +549,9 @@ const struct testcase testcases[] = {
   {"nested_loop",
    create_code_nested_loop,
    verify_code_nested_loop},
+  {"popcount",
+   create_code_popcount,
+   verify_code_popcount},
   {"pr66700_observing_write_through_ptr",
    create_code_pr66700_observing_write_through_ptr,
    verify_code_pr66700_observing_write_through_ptr},
@@ -506,6 +570,9 @@ const struct testcase testcases[] = {
   {"reflection",
    create_code_reflection ,
    verify_code_reflection },
+  {"sizeof",
+   create_code_sizeof,
+   verify_code_sizeof},
   {"string_literal",
    create_code_string_literal,
    verify_code_string_literal},

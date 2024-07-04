@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc_zvkned_zvknhb_zvbb_zvkt_zvkg" { target { rv64 } } } */
-/* { dg-options "-march=rv32gc_zvkned_zvknhb_zvbb_zvkt_zvkg" { target { rv32 } } } */
+/* { dg-options "-march=rv64gc_zvkned_zvknhb_zvkb_zvkt_zvkg" { target { rv64 } } } */
+/* { dg-options "-march=rv32gc_zvkned_zvknhb_zvkb_zvkt_zvkg" { target { rv32 } } } */
 
 #ifndef __riscv_zvkng
 #error "Feature macro for `Zvkng' not defined"
@@ -18,8 +18,8 @@
 #error "Feature macro for `Zvknhb' not defined"
 #endif
 
-#ifndef __riscv_zvbb
-#error "Feature macro for `Zvbb' not defined"
+#ifndef __riscv_zvkb
+#error "Feature macro for `Zvkb' not defined"
 #endif
 
 #ifndef __riscv_zvkt

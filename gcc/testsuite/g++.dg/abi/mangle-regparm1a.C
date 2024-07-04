@@ -1,5 +1,5 @@
 // { dg-do run { target { { i?86-*-* x86_64-*-* } && ia32 } } }
-// { dg-options "-fabi-version=8 -Wabi -save-temps" }
+// { dg-options "-fabi-version=8 -fabi-compat-version=8 -Wabi=0 -save-temps" }
 // { dg-final { scan-assembler "_Z18IndirectExternCallIPFviiEiEvT_T0_S3_" } }
 
 template <typename F, typename T>

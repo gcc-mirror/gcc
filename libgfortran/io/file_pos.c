@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2024 Free Software Foundation, Inc.
    Contributed by Andy Vaught and Janne Blomqvist
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -352,7 +352,6 @@ st_endfile (st_parameter_filepos *fpp)
 	  dtp.common = fpp->common;
 	  memset (&dtp.u.p, 0, sizeof (dtp.u.p));
 	  dtp.u.p.current_unit = u;
-	  next_record (&dtp, 1);
 	}
 
       unit_truncate (u, stell (u->s), &fpp->common);

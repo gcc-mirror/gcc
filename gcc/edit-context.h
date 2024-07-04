@@ -1,5 +1,5 @@
 /* Determining the results of applying fix-it hints.
-   Copyright (C) 2016-2023 Free Software Foundation, Inc.
+   Copyright (C) 2016-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "typed-splay-tree.h"
 
+class fixit_hint;
 class edit_context;
 class edited_file;
 
@@ -42,7 +43,7 @@ class edited_file;
 class edit_context
 {
  public:
-  edit_context ();
+  edit_context (file_cache &);
 
   bool valid_p () const { return m_valid; }
 
@@ -55,11 +56,14 @@ class edit_context
   char *generate_diff (bool show_filenames);
   void print_diff (pretty_printer *pp, bool show_filenames);
 
+  file_cache &get_file_cache () const { return m_file_cache; }
+
  private:
   bool apply_fixit (const fixit_hint *hint);
   edited_file *get_file (const char *filename);
   edited_file &get_or_insert_file (const char *filename);
 
+  file_cache &m_file_cache;
   bool m_valid;
   typed_splay_tree<const char *, edited_file *> m_files;
 };

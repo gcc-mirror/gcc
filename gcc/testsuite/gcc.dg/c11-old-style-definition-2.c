@@ -1,4 +1,4 @@
-/* Test old-style function definitions not in C2x: () does not give
+/* Test old-style function definitions not in C23: () does not give
    type with a prototype for older standards.  */
 /* { dg-do compile } */
 /* { dg-options "-std=c11" } */

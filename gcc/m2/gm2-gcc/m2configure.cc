@@ -1,6 +1,6 @@
 /* m2configure.cc provides an interface to some configuration values.
 
-Copyright (C) 2022-2023 Free Software Foundation, Inc.
+Copyright (C) 2022-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -18,10 +18,6 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
-
-#include "config.h"
-#include "system.h"
-#include "libiberty.h"
 
 #include "config.h"
 #include "system.h"
@@ -100,50 +96,17 @@ m2configure_FullPathCPP (void)
   return NULL;
 }
 
-/* Return true if M2C_LONGREAL_FLOAT128 is defined.  */
+/* Return the value of TARGET_IEEEQUAD_DEFAULT.  If it is undefined
+   -1 is returned.  A value of 0 indicates the default target long
+   double uses the IBM 128 representation.  A value of 1 indicates
+   the default target long double (LONGREAL) is __float128.  */
 
-bool
-m2configure_M2CLongRealFloat128 (void)
+int
+m2configure_TargetIEEEQuadDefault (void)
 {
-#if defined(M2C_LONGREAL_FLOAT128)
-  return true;
+#ifdef TARGET_IEEEQUAD_DEFAULT
+  return TARGET_IEEEQUAD_DEFAULT;
 #else
-  return false;
-#endif
-}
-
-/* Return true if M2C_LONGREAL_IBM128 is defined.  */
-
-bool
-m2configure_M2CLongRealIBM128 (void)
-{
-#if defined(M2C_LONGREAL_IBM128)
-  return true;
-#else
-  return false;
-#endif
-}
-
-/* Return true if M2C_LONGREAL_LONGDOUBLE is defined.  */
-
-bool
-m2configure_M2CLongRealLongDouble (void)
-{
-#if defined(M2C_LONGREAL_LONGDOUBLE)
-  return true;
-#else
-  return false;
-#endif
-}
-
-/* Return true if the target is ppc64le.  */
-
-bool
-m2configure_M2CLongRealLongDoublePPC64LE (void)
-{
-#if defined(M2C_LONGREAL_PPC64LE)
-  return true;
-#else
-  return false;
+  return -1;
 #endif
 }

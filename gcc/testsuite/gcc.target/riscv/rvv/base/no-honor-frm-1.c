@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64 -O3 -Wno-psabi" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64 -O3" } */
 
 void foo (void) {
   for (unsigned i = 0; i < sizeof(foo); i++)

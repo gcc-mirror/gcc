@@ -1,5 +1,5 @@
 macro_rules! zero_or_one {
-    ($($a:literal)?) => { // { dg-error "invalid amount of matches for macro invocation. Expected between 0 and 1, got 2" }
+    ($($a:literal)?) => {
         f();
     }
 }

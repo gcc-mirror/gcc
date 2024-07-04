@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mmcu=avr51 -Os" } */
+/* { dg-options "-Os" } */
 
 #include <stdbool.h>
 

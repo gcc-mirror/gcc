@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -877,11 +877,6 @@ package body Sem_Ch7 is
          New_N := Copy_Generic_Node (N, Empty, Instantiating => False);
          Rewrite (N, New_N);
 
-         --  Once the contents of the generic copy and the template are
-         --  swapped, do the same for their respective aspect specifications.
-
-         Exchange_Aspects (N, New_N);
-
          --  Collect all contract-related source pragmas found within the
          --  template and attach them to the contract of the package body.
          --  This contract is used in the capture of global references within
@@ -929,9 +924,7 @@ package body Sem_Ch7 is
       Set_Has_Completion (Spec_Id);
       Last_Spec_Entity := Last_Entity (Spec_Id);
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Body_Id);
-      end if;
+      Analyze_Aspect_Specifications (N, Body_Id);
 
       Push_Scope (Spec_Id);
 
@@ -1213,9 +1206,7 @@ package body Sem_Ch7 is
       --  Analyze aspect specifications immediately, since we need to recognize
       --  things like Pure early enough to diagnose violations during analysis.
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Id);
-      end if;
+      Analyze_Aspect_Specifications (N, Id);
 
       --  Ada 2005 (AI-217): Check if the package has been illegally named in
       --  a limited-with clause of its own context. In this case the error has
@@ -2094,9 +2085,7 @@ package body Sem_Ch7 is
       Set_SPARK_Pragma           (Id, SPARK_Mode_Pragma);
       Set_SPARK_Pragma_Inherited (Id);
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Id);
-      end if;
+      Analyze_Aspect_Specifications (N, Id);
    end Analyze_Private_Type_Declaration;
 
    ----------------------------------
@@ -2411,7 +2400,7 @@ package body Sem_Ch7 is
 
          --  Do not enter implicitly inherited non-overridden subprograms of
          --  a tagged type back into visibility if they have non-conformant
-         --  homographs (Ada RM 8.3 12.3/2).
+         --  homographs (RM 8.3(12.3/2)).
 
          elsif Is_Hidden_Non_Overridden_Subpgm (Id) then
             null;
@@ -2757,10 +2746,6 @@ package body Sem_Ch7 is
       Set_Is_First_Subtype (Id);
       Reinit_Size_Align (Id);
 
-      Set_Is_Constrained (Id,
-        No (Discriminant_Specifications (N))
-          and then not Unknown_Discriminants_Present (N));
-
       --  Set tagged flag before processing discriminants, to catch illegal
       --  usage.
 
@@ -2776,6 +2761,9 @@ package body Sem_Ch7 is
 
       elsif Unknown_Discriminants_Present (N) then
          Set_Has_Unknown_Discriminants (Id);
+
+      else
+         Set_Is_Constrained (Id);
       end if;
 
       Set_Private_Dependents (Id, New_Elmt_List);
@@ -2839,13 +2827,14 @@ package body Sem_Ch7 is
       --  Otherwise test to see if entity requires a completion. Note that
       --  subprogram entities whose declaration does not come from source are
       --  ignored here on the basis that we assume the expander will provide an
-      --  implicit completion at some point.
+      --  implicit completion at some point. In particular, an inherited
+      --  subprogram of a derived type should not cause us to return True here.
 
       elsif (Is_Overloadable (Id)
               and then Ekind (Id) not in E_Enumeration_Literal | E_Operator
               and then not Is_Abstract_Subprogram (Id)
               and then not Has_Completion (Id)
-              and then Comes_From_Source (Parent (Id)))
+              and then Comes_From_Source (Id))
 
         or else
           (Ekind (Id) = E_Package
@@ -2930,6 +2919,7 @@ package body Sem_Ch7 is
                                      (Priv, Has_Pragma_Unreferenced_Objects
                                                                        (Full));
          Set_Predicates_Ignored      (Priv, Predicates_Ignored         (Full));
+
          if Is_Unchecked_Union (Full) then
             Set_Is_Unchecked_Union (Base_Type (Priv));
          end if;
@@ -2939,14 +2929,8 @@ package body Sem_Ch7 is
          end if;
 
          if Priv_Is_Base_Type then
-            Set_Is_Controlled_Active
-                              (Priv, Is_Controlled_Active     (Full_Base));
-            Set_Finalize_Storage_Only
-                              (Priv, Finalize_Storage_Only    (Full_Base));
-            Set_Has_Controlled_Component
-                              (Priv, Has_Controlled_Component (Full_Base));
-
-            Propagate_Concurrent_Flags (Priv, Base_Type (Full));
+            Propagate_Concurrent_Flags (Priv, Full_Base);
+            Propagate_Controlled_Flags (Priv, Full_Base);
          end if;
 
          --  As explained in Freeze_Entity, private types are required to point

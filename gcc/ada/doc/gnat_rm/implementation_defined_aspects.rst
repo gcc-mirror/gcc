@@ -66,6 +66,12 @@ Aspect Abstract_State
 
 This aspect is equivalent to :ref:`pragma Abstract_State<Pragma-Abstract_State>`.
 
+Aspect Always_Terminates
+========================
+.. index:: Always_Terminates
+
+This boolean aspect is equivalent to :ref:`pragma Always_Terminates<Pragma-Always_Terminates>`.
+
 Aspect Annotate
 ===============
 
@@ -237,6 +243,18 @@ Aspect Effective_Writes
 
 This aspect is equivalent to :ref:`pragma Effective_Writes<Pragma-Effective_Writes>`.
 
+Aspect Exceptional_Cases
+========================
+.. index:: Exceptional_Cases
+
+This aspect may be specified for procedures and functions with side effects;
+it can be used to list exceptions that might be propagated by the subprogram
+with side effects in the context of its precondition, and associate them
+with a specific postcondition.
+
+For the syntax and semantics of this aspect, see the SPARK 2014 Reference
+Manual, section 6.1.9.
+
 Aspect Extensions_Visible
 =========================
 .. index:: Extensions_Visible
@@ -372,6 +390,58 @@ Aspect Linker_Section
 
 This aspect is equivalent to :ref:`pragma Linker_Section<Pragma-Linker_Section>`.
 
+Aspect Local_Restrictions
+=========================
+.. index:: Local_Restrictions
+
+This aspect may be specified for a subprogram (and for other declarations
+as described below). It is used to specify that a particular subprogram does
+not violate one or more local restrictions, nor can it call a subprogram
+that is not subject to the same requirement. Positional aggregate syntax
+(with parentheses, not square brackets) may be used to specify more than one
+local restriction, as in
+
+.. code-block:: ada
+
+  procedure Do_Something
+    with Local_Restrictions => (Some_Restriction, Another_Restriction);
+
+Parentheses are currently required even in the case of specifying a single
+local restriction (this requirement may be relaxed in the future).
+Supported local restrictions currently include (only) No_Heap_Allocations and
+No_Secondary_Stack.
+No_Secondary_Stack corresponds to the GNAT-defined (global) restriction
+of the same name. No_Heap_Allocations corresponds to the conjunction of the
+Ada-defined restrictions No_Allocators and No_Implicit_Heap_Allocations.
+
+Additional requirements are imposed in order to ensure that restriction
+violations cannot be achieved via overriding dispatching operations,
+calling through an access-to-subprogram value, calling a generic formal
+subprogram, or calling through a subprogram renaming.
+For a dispatching operation, an overrider must be subject to (at least) the
+same restrictions as the overridden inherited subprogram; similarly, the
+actual subprogram corresponding to a generic formal subprogram
+in an instantiation must be subject to (at least) the same restrictions
+as the formal subprogram. A call through an access-to-subprogram value
+is conservatively assumed to violate all local restrictions; tasking-related
+constructs (notably entry calls) are treated similarly. A renaming-as-body is
+treated like a subprogram body containing a call to the renamed subprogram.
+
+The Local_Restrictions aspect can be specified for a package specification,
+in which case the aspect specification also applies to all eligible entities
+declared with the package. This includes types. Default initialization of an
+object of a given type is treated like a call to an implicitly-declared
+initialization subprogram. Such a "call" is subject to the same local
+restriction checks as any other call. If a type is subject to a local
+restriction, then any violations of that restriction within the default
+initialization expressions (if any) of the type are rejected. This may
+include "calls" to the default initialization subprograms of other types.
+
+Local_Restrictions aspect specifications are additive (for example, in the
+case of a declaration that occurs within nested packages that each have
+a Local_Restrictions specification).
+
+
 Aspect Lock_Free
 ================
 .. index:: Lock_Free
@@ -504,6 +574,12 @@ Aspect Remote_Access_Type
 
 This aspect is equivalent to :ref:`pragma Remote_Access_Type<Pragma-Remote_Access_Type>`.
 
+Aspect Scalar_Storage_Order
+===========================
+.. index:: Scalar_Storage_Order
+
+This aspect is equivalent to a :ref:`attribute Scalar_Storage_Order<Attribute-Scalar_Storage_Order>`.
+
 Aspect Secondary_Stack_Size
 ===========================
 
@@ -511,19 +587,18 @@ Aspect Secondary_Stack_Size
 
 This aspect is equivalent to :ref:`pragma Secondary_Stack_Size<Pragma-Secondary_Stack_Size>`.
 
-
-Aspect Scalar_Storage_Order
-===========================
-.. index:: Scalar_Storage_Order
-
-This aspect is equivalent to a :ref:`attribute Scalar_Storage_Order<Attribute-Scalar_Storage_Order>`.
-
 Aspect Shared
 =============
 .. index:: Shared
 
 This boolean aspect is equivalent to :ref:`pragma Shared<Pragma-Shared>`
 and is thus a synonym for aspect ``Atomic``.
+
+Aspect Side_Effects
+===================
+.. index:: Side_Effects
+
+This aspect is equivalent to :ref:`pragma Side_Effects<Pragma-Side_Effects>`.
 
 Aspect Simple_Storage_Pool
 ==========================
@@ -544,6 +619,13 @@ Aspect SPARK_Mode
 This aspect is equivalent to :ref:`pragma SPARK_Mode<Pragma-SPARK_Mode>` and
 may be specified for either or both of the specification and body
 of a subprogram or package.
+
+Aspect Subprogram_Variant
+=========================
+.. index:: Subprogram_Variant
+
+For the syntax and semantics of this aspect, see the SPARK 2014 Reference
+Manual, section 6.1.8.
 
 Aspect Suppress_Debug_Info
 ==========================
@@ -596,6 +678,16 @@ Aspect Unreferenced_Objects
 .. index:: Unreferenced_Objects
 
 This boolean aspect is equivalent to :ref:`pragma Unreferenced_Objects<Pragma-Unreferenced_Objects>`.
+
+Aspect User_Aspect
+==================
+.. index:: User_Aspect
+
+This aspect takes an argument that is the name of an aspect defined by a
+User_Aspect_Definition configuration pragma.
+A User_Aspect aspect specification is semantically equivalent to
+replicating the set of aspect specifications associated with the named
+pragma-defined aspect.
 
 Aspect Value_Size
 =================

@@ -33,7 +33,7 @@ baz (int x)
   int r = 0;
   if not consteval	// { dg-warning "'if consteval' only available with" "" { target c++20_only } }
     {
-      r += foo (x);	// { dg-error "'x' is not a constant expression" }
+      r += foo (x);	// { dg-error "not a constant expression" }
     }
   else
     {
@@ -45,11 +45,11 @@ baz (int x)
     }
   else
     {
-      r += foo (8 * x);	// { dg-error "'x' is not a constant expression" }
+      r += foo (8 * x);	// { dg-error "is not a constant expression" }
     }
   if ! consteval	// { dg-warning "'if consteval' only available with" "" { target c++20_only } }
     {
-      r += foo (32 * x);// { dg-error "'x' is not a constant expression" }
+      r += foo (32 * x);// { dg-error "not a constant expression" }
     }
   if consteval		// { dg-warning "'if consteval' only available with" "" { target c++20_only } }
     {
@@ -98,7 +98,7 @@ corge (T x)
   T r = 0;
   if not consteval	// { dg-warning "'if consteval' only available with" "" { target c++20_only } }
     {
-      r += foo (x);	// { dg-error "'x' is not a constant expression" }
+      r += foo (x);
     }
   else
     {
@@ -110,11 +110,11 @@ corge (T x)
     }
   else
     {
-      r += foo (8 * x);	// { dg-error "is not a constant expression" }
+      r += foo (8 * x);
     }
   if ! consteval	// { dg-warning "'if consteval' only available with" "" { target c++20_only } }
     {
-      r += foo (32 * x);// { dg-error "is not a constant expression" }
+      r += foo (32 * x);
     }
   if consteval		// { dg-warning "'if consteval' only available with" "" { target c++20_only } }
     {
@@ -126,5 +126,5 @@ corge (T x)
 int
 garply (int x)
 {
-  return corge (x);
+  return corge (x); // { dg-error "is not a constant expression" }
 }

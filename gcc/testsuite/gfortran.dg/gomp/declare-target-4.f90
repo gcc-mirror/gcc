@@ -2,7 +2,7 @@
 ! { dg-additional-options "-fdump-tree-original" }
 
 subroutine f1
-  !$omp declare target device_type (any)  ! { dg-warning "OMP DECLARE TARGET directive at .1. with only DEVICE_TYPE clause is ignored" }
+  !$omp declare target device_type (any)  ! { dg-warning "OMP DECLARE TARGET directive at .1. with only DEVICE_TYPE or INDIRECT clauses is ignored" }
 end subroutine
 
 subroutine f2

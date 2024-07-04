@@ -1,5 +1,5 @@
 // Access-related utilities for RTL SSA                             -*- C++ -*-
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -33,6 +33,20 @@ accesses_include_hard_registers (const access_array &accesses)
   return accesses.size () && HARD_REGISTER_NUM_P (accesses.front ()->regno ());
 }
 
+// Return true if ACCESSES includes a reference to a non-fixed hard register.
+inline bool
+accesses_include_nonfixed_hard_registers (access_array accesses)
+{
+  for (access_info *access : accesses)
+    {
+      if (!HARD_REGISTER_NUM_P (access->regno ()))
+	break;
+      if (!fixed_regs[access->regno ()])
+	return true;
+    }
+  return false;
+}
+
 // Return true if sorted array ACCESSES includes an access to memory.
 inline bool
 accesses_include_memory (const access_array &accesses)
@@ -49,6 +63,59 @@ memory_access (T accesses) -> decltype (accesses[0])
   if (accesses.size () && accesses.back ()->is_mem ())
     return accesses.back ();
   return nullptr;
+}
+
+// If ACCESSES has a memory access, drop it.  Otherwise, return ACCESSES
+// unchanged.
+template<typename T>
+inline T
+drop_memory_access (T accesses)
+{
+  if (!memory_access (accesses))
+    return accesses;
+
+  access_array arr (accesses);
+  return T (arr.begin (), accesses.size () - 1);
+}
+
+// Filter ACCESSES to return an access_array of only those accesses that
+// satisfy PREDICATE.  Alocate the new array above WATERMARK.
+template<typename T, typename FilterPredicate>
+inline T
+filter_accesses (obstack_watermark &watermark,
+		 T accesses,
+		 FilterPredicate predicate)
+{
+  access_array_builder builder (watermark);
+  builder.reserve (accesses.size ());
+  for (auto access : accesses)
+    if (predicate (access))
+      builder.quick_push (access);
+  return T (builder.finish ());
+}
+
+// Given an array of ACCESSES, remove any access with regno REGNO.
+// Allocate the new access array above WM.
+template<typename T>
+inline T
+remove_regno_access (obstack_watermark &watermark,
+		     T accesses, unsigned int regno)
+{
+  using Access = decltype (accesses[0]);
+  auto pred = [regno](Access a) { return a->regno () != regno; };
+  return filter_accesses (watermark, accesses, pred);
+}
+
+// As above, but additionally check that we actually did remove an access.
+template<typename T>
+inline T
+check_remove_regno_access (obstack_watermark &watermark,
+			   T accesses, unsigned regno)
+{
+  auto orig_size = accesses.size ();
+  auto result = remove_regno_access (watermark, accesses, regno);
+  gcc_assert (result.size () < orig_size);
+  return result;
 }
 
 // If sorted array ACCESSES includes a reference to REGNO, return the
@@ -112,24 +179,6 @@ set_with_nondebug_insn_uses (access_info *access)
   if (access->is_set_with_nondebug_insn_uses ())
     return static_cast<set_info *> (access);
   return nullptr;
-}
-
-// Return true if SET is the only set of SET->resource () and if it
-// dominates all uses (excluding uses of SET->resource () at points
-// where SET->resource () is always undefined).
-inline bool
-is_single_dominating_def (const set_info *set)
-{
-  return set->is_first_def () && set->is_last_def ();
-}
-
-// SET is known to be available on entry to BB.  Return true if it is
-// also available on exit from BB.  (The value might or might not be live.)
-inline bool
-remains_available_on_exit (const set_info *set, bb_info *bb)
-{
-  return (set->is_last_def ()
-	  || *set->next_def ()->insn () > *bb->end_insn ());
 }
 
 // ACCESS is known to be associated with an instruction rather than
@@ -251,24 +300,43 @@ last_def (def_mux mux)
   return mux.last_def ();
 }
 
+// If INSN's definitions contain a single set, return that set, otherwise
+// return null.
+inline set_info *
+single_set_info (insn_info *insn)
+{
+  set_info *set = nullptr;
+  for (auto def : insn->defs ())
+    if (auto this_set = dyn_cast<set_info *> (def))
+      {
+	if (set)
+	  return nullptr;
+	set = this_set;
+      }
+  return set;
+}
+
 int lookup_use (splay_tree<use_info *> &, insn_info *);
 int lookup_def (def_splay_tree &, insn_info *);
 int lookup_clobber (clobber_tree &, insn_info *);
 int lookup_call_clobbers (insn_call_clobbers_tree &, insn_info *);
 
-// Search backwards from immediately before INSN for the first instruction
-// recorded in TREE, ignoring any instruction I for which IGNORE (I) is true.
-// Return null if no such instruction exists.
-template<typename IgnorePredicate>
+// Search backwards from immediately before INSN for the first "relevant"
+// instruction recorded in TREE.  IGNORE is an object that provides the same
+// interface as ignore_nothing; it defines which insns are "relevant"
+// and which should be ignored.
+//
+// Return null if no such relevant instruction exists.
+template<typename IgnorePredicates>
 insn_info *
-prev_call_clobbers_ignoring (insn_call_clobbers_tree &tree, insn_info *insn,
-			     IgnorePredicate ignore)
+prev_call_clobbers (insn_call_clobbers_tree &tree, insn_info *insn,
+		    IgnorePredicates ignore)
 {
   if (!tree)
     return nullptr;
 
   int comparison = lookup_call_clobbers (tree, insn);
-  while (comparison <= 0 || ignore (tree->insn ()))
+  while (comparison <= 0 || ignore.should_ignore_insn (tree->insn ()))
     {
       if (!tree.splay_prev_node ())
 	return nullptr;
@@ -278,19 +346,22 @@ prev_call_clobbers_ignoring (insn_call_clobbers_tree &tree, insn_info *insn,
   return tree->insn ();
 }
 
-// Search forwards from immediately after INSN for the first instruction
-// recorded in TREE, ignoring any instruction I for which IGNORE (I) is true.
-// Return null if no such instruction exists.
-template<typename IgnorePredicate>
+// Search forwards from immediately after INSN for the first "relevant"
+// instruction recorded in TREE.  IGNORE is an object that provides the
+// same interface as ignore_nothing; it defines which insns are "relevant"
+// and which should be ignored.
+//
+// Return null if no such relevant instruction exists.
+template<typename IgnorePredicates>
 insn_info *
-next_call_clobbers_ignoring (insn_call_clobbers_tree &tree, insn_info *insn,
-			     IgnorePredicate ignore)
+next_call_clobbers (insn_call_clobbers_tree &tree, insn_info *insn,
+		    IgnorePredicates ignore)
 {
   if (!tree)
     return nullptr;
 
   int comparison = lookup_call_clobbers (tree, insn);
-  while (comparison >= 0 || ignore (tree->insn ()))
+  while (comparison >= 0 || ignore.should_ignore_insn (tree->insn ()))
     {
       if (!tree.splay_next_node ())
 	return nullptr;
@@ -300,13 +371,23 @@ next_call_clobbers_ignoring (insn_call_clobbers_tree &tree, insn_info *insn,
   return tree->insn ();
 }
 
-// If ACCESS is a set, return the first use of ACCESS by a nondebug insn I
-// for which IGNORE (I) is false.  Return null if ACCESS is not a set or if
-// no such use exists.
-template<typename IgnorePredicate>
+// Search forwards from immediately after INSN for the first instruction
+// recorded in TREE.  Return null if no such instruction exists.
+inline insn_info *
+next_call_clobbers (insn_call_clobbers_tree &tree, insn_info *insn)
+{
+  return next_call_clobbers (tree, insn, ignore_nothing ());
+}
+
+// If ACCESS is a set, return the first "relevant" use of ACCESS by a
+// nondebug insn.  IGNORE is an object that provides the same interface
+// as ignore_nothing; it defines which accesses and insns are "relevant"
+// and which should be ignored.
+//
+// Return null if ACCESS is not a set or if no such relevant use exists.
+template<typename IgnorePredicates>
 inline use_info *
-first_nondebug_insn_use_ignoring (const access_info *access,
-				  IgnorePredicate ignore)
+first_nondebug_insn_use (const access_info *access, IgnorePredicates ignore)
 {
   if (const set_info *set = set_with_nondebug_insn_uses (access))
     {
@@ -315,7 +396,7 @@ first_nondebug_insn_use_ignoring (const access_info *access,
       use_info *use = set->first_use ();
       do
 	{
-	  if (!ignore (use->insn ()))
+	  if (!ignore.should_ignore_insn (use->insn ()))
 	    return use;
 	  use = use->next_nondebug_insn_use ();
 	}
@@ -324,13 +405,15 @@ first_nondebug_insn_use_ignoring (const access_info *access,
   return nullptr;
 }
 
-// If ACCESS is a set, return the last use of ACCESS by a nondebug insn I for
-// which IGNORE (I) is false.  Return null if ACCESS is not a set or if no
-// such use exists.
-template<typename IgnorePredicate>
+// If ACCESS is a set, return the last "relevant" use of ACCESS by a
+// nondebug insn.  IGNORE is an object that provides the same interface
+// as ignore_nothing; it defines which accesses and insns are "relevant"
+// and which should be ignored.
+//
+// Return null if ACCESS is not a set or if no such relevant use exists.
+template<typename IgnorePredicates>
 inline use_info *
-last_nondebug_insn_use_ignoring (const access_info *access,
-				 IgnorePredicate ignore)
+last_nondebug_insn_use (const access_info *access, IgnorePredicates ignore)
 {
   if (const set_info *set = set_with_nondebug_insn_uses (access))
     {
@@ -339,7 +422,7 @@ last_nondebug_insn_use_ignoring (const access_info *access,
       use_info *use = set->last_nondebug_insn_use ();
       do
 	{
-	  if (!ignore (use->insn ()))
+	  if (!ignore.should_ignore_insn (use->insn ()))
 	    return use;
 	  use = use->prev_use ();
 	}
@@ -353,7 +436,8 @@ last_nondebug_insn_use_ignoring (const access_info *access,
 // Otherwise, search backwards for an access to DEF->resource (), starting at
 // the end of DEF's live range.  Ignore clobbers if IGNORE_CLOBBERS_SETTING
 // is YES, otherwise treat them like any other access.  Also ignore any
-// access A for which IGNORE (access_insn (A)) is true.
+// accesses and insns that IGNORE says should be ignored, where IGNORE
+// is an object that provides the same interface as ignore_nothing.
 //
 // Thus if DEF is a set that is used by nondebug insns, the first access
 // that the function considers is the last such use of the set.  Otherwise,
@@ -364,23 +448,21 @@ last_nondebug_insn_use_ignoring (const access_info *access,
 //
 // Note that this function does not consider separately-recorded call clobbers,
 // although such clobbers are only relevant if IGNORE_CLOBBERS_SETTING is NO.
-template<typename IgnorePredicate>
+template<typename IgnorePredicates>
 access_info *
-last_access_ignoring (def_info *def, ignore_clobbers ignore_clobbers_setting,
-		      IgnorePredicate ignore)
+last_access (def_info *def, ignore_clobbers ignore_clobbers_setting,
+	     IgnorePredicates ignore)
 {
   while (def)
     {
       auto *clobber = dyn_cast<clobber_info *> (def);
       if (clobber && ignore_clobbers_setting == ignore_clobbers::YES)
 	def = first_clobber_in_group (clobber);
-      else
+      else if (!ignore.should_ignore_def (def))
 	{
-	  if (use_info *use = last_nondebug_insn_use_ignoring (def, ignore))
+	  if (use_info *use = last_nondebug_insn_use (def, ignore))
 	    return use;
-
-	  insn_info *insn = def->insn ();
-	  if (!ignore (insn))
+	  if (!ignore.should_ignore_insn (def->insn ()))
 	    return def;
 	}
       def = def->prev_def ();
@@ -391,8 +473,9 @@ last_access_ignoring (def_info *def, ignore_clobbers ignore_clobbers_setting,
 // Search backwards for an access to DEF->resource (), starting
 // immediately before the point at which DEF occurs.  Ignore clobbers
 // if IGNORE_CLOBBERS_SETTING is YES, otherwise treat them like any other
-// access.  Also ignore any access A for which IGNORE (access_insn (A))
-// is true.
+// access.  Also ignore any accesses and insns that IGNORE says should be
+// ignored, where IGNORE is an object that provides the same interface as
+// ignore_nothing.
 //
 // Thus if DEF->insn () uses DEF->resource (), that use is the first access
 // that the function considers, since an instruction's uses occur strictly
@@ -400,40 +483,44 @@ last_access_ignoring (def_info *def, ignore_clobbers ignore_clobbers_setting,
 //
 // Note that this function does not consider separately-recorded call clobbers,
 // although such clobbers are only relevant if IGNORE_CLOBBERS_SETTING is NO.
-template<typename IgnorePredicate>
+template<typename IgnorePredicates>
 inline access_info *
-prev_access_ignoring (def_info *def, ignore_clobbers ignore_clobbers_setting,
-		      IgnorePredicate ignore)
+prev_access (def_info *def, ignore_clobbers ignore_clobbers_setting,
+	     IgnorePredicates ignore)
 {
-  return last_access_ignoring (def->prev_def (), ignore_clobbers_setting,
-			       ignore);
+  return last_access (def->prev_def (), ignore_clobbers_setting, ignore);
 }
 
 // If DEF is null, return null.
 //
-// Otherwise, search forwards for a definition of DEF->resource (),
+// Otherwise, search forwards for an access to DEF->resource (),
 // starting at DEF itself.  Ignore clobbers if IGNORE_CLOBBERS_SETTING
 // is YES, otherwise treat them like any other access.  Also ignore any
-// definition D for which IGNORE (D->insn ()) is true.
+// accesses and insns that IGNORE says should be ignored, where IGNORE
+// is an object that provides the same interface as ignore_nothing.
 //
 // Return the definition found, or null if there is no access that meets
 // the criteria.
 //
 // Note that this function does not consider separately-recorded call clobbers,
 // although such clobbers are only relevant if IGNORE_CLOBBERS_SETTING is NO.
-template<typename IgnorePredicate>
-def_info *
-first_def_ignoring (def_info *def, ignore_clobbers ignore_clobbers_setting,
-		    IgnorePredicate ignore)
+template<typename IgnorePredicates>
+access_info *
+first_access (def_info *def, ignore_clobbers ignore_clobbers_setting,
+	      IgnorePredicates ignore)
 {
   while (def)
     {
       auto *clobber = dyn_cast<clobber_info *> (def);
       if (clobber && ignore_clobbers_setting == ignore_clobbers::YES)
 	def = last_clobber_in_group (clobber);
-      else if (!ignore (def->insn ()))
-	return def;
-
+      else if (!ignore.should_ignore_def (def))
+	{
+	  if (!ignore.should_ignore_insn (def->insn ()))
+	    return def;
+	  if (use_info *use = first_nondebug_insn_use (def, ignore))
+	    return use;
+	}
       def = def->next_def ();
     }
   return nullptr;
@@ -442,27 +529,29 @@ first_def_ignoring (def_info *def, ignore_clobbers ignore_clobbers_setting,
 // Search forwards for the next access to DEF->resource (),
 // starting immediately after DEF's instruction.  Ignore clobbers if
 // IGNORE_CLOBBERS_SETTING is YES, otherwise treat them like any other access.
-// Also ignore any access A for which IGNORE (access_insn (A)) is true;
-// in this context, ignoring a set includes ignoring all uses of the set.
+// Also ignore any accesses and insns that IGNORE says should be ignored,
+// where IGNORE is an object that provides the same interface as
+// ignore_nothing.
 //
 // Thus if DEF is a set with uses by nondebug insns, the first access that the
-// function considers is the first such use of the set.
+// function considers is the first such use of the set.  Otherwise, the first
+// access that the function considers is the definition after DEF.
 //
 // Return the access found, or null if there is no access that meets the
 // criteria.
 //
 // Note that this function does not consider separately-recorded call clobbers,
 // although such clobbers are only relevant if IGNORE_CLOBBERS_SETTING is NO.
-template<typename IgnorePredicate>
+template<typename IgnorePredicates>
 access_info *
-next_access_ignoring (def_info *def, ignore_clobbers ignore_clobbers_setting,
-		      IgnorePredicate ignore)
+next_access (def_info *def, ignore_clobbers ignore_clobbers_setting,
+	     IgnorePredicates ignore)
 {
-  if (use_info *use = first_nondebug_insn_use_ignoring (def, ignore))
-    return use;
+  if (!ignore.should_ignore_def (def))
+    if (use_info *use = first_nondebug_insn_use (def, ignore))
+      return use;
 
-  return first_def_ignoring (def->next_def (), ignore_clobbers_setting,
-			     ignore);
+  return first_access (def->next_def (), ignore_clobbers_setting, ignore);
 }
 
 // Return true if ACCESS1 should before ACCESS2 in an access_array.
@@ -535,6 +624,10 @@ insert_access (obstack_watermark &watermark,
   return T (insert_access_base (watermark, access1, accesses2));
 }
 
+// Return a copy of USES that drops any use of DEF.
+use_array remove_uses_of_def (obstack_watermark &, use_array uses,
+			      def_info *def);
+
 // The underlying non-template implementation of remove_note_accesses.
 access_array remove_note_accesses_base (obstack_watermark &, access_array);
 
@@ -549,5 +642,12 @@ remove_note_accesses (obstack_watermark &watermark, T accesses)
 {
   return T (remove_note_accesses_base (watermark, accesses));
 }
+
+// Return true if ACCESSES1 and ACCESSES2 have at least one resource in common.
+bool accesses_reference_same_resource (access_array accesses1,
+				       access_array accesses2);
+
+// Return true if INSN clobbers the value of any resources in ACCESSES.
+bool insn_clobbers_resources (insn_info *insn, access_array accesses);
 
 }

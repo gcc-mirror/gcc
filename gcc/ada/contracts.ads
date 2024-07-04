@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2015-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2015-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,6 +60,7 @@ package Contracts is
    --    Refined_Global
    --    Refined_Post
    --    Refined_States
+   --    Side_Effects
    --    Subprogram_Variant
    --    Test_Case
    --    Volatile_Function
@@ -227,6 +228,7 @@ package Contracts is
    --  Inherit relevant contract items from source subprogram From_Subp. Subp
    --  denotes the destination subprogram. The inherited items are:
    --    Extensions_Visible
+   --    Side_Effects
    --  ??? it would be nice if this routine handles Pre'Class and Post'Class
 
    procedure Instantiate_Subprogram_Contract (Templ : Node_Id; L : List_Id);

@@ -13,8 +13,8 @@ main (void)
   unsigned long long int u = (1ULL << 63) + 1;
 
   if ((f <=> u) >= 0)
-    abort ();
+    std::abort ();
 
   if ((u <=> f) <= 0)
-    abort ();
+    std::abort ();
 }

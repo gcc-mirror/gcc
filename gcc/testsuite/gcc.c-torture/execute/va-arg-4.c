@@ -3,6 +3,9 @@
 
 #include <stdarg.h>
 
+void abort (void);
+void exit (int);
+
 typedef struct {
   char a[32];
 } big;
@@ -24,7 +27,8 @@ f (big x, char *s, ...)
   va_end (ap);
 }
 
-main ()
+int
+main (void)
 {
   static big x = { "abc" };
 

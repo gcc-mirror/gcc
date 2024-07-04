@@ -1,6 +1,6 @@
 /* Gtermios.c handwritten module for mc.
 
-Copyright (C) 2010-2023 Free Software Foundation, Inc.
+Copyright (C) 2010-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -289,7 +289,7 @@ void
 EXPORT (cfmakeraw) (struct termios *t)
 {
 #if defined(HAVE_CFMAKERAW)
-  return cfmakeraw (t);
+  cfmakeraw (t);
 #endif
 }
 

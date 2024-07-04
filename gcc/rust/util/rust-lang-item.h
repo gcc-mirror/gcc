@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -68,15 +68,12 @@ public:
     RANGE_INCLUSIVE,
     RANGE_TO_INCLUSIVE,
 
-    // https://github.com/rust-lang/rust/blob/master/library/core/src/ptr/const_ptr.rs
-    CONST_PTR,
-    MUT_PTR,
-    CONST_SLICE_PTR,
-
     // https://github.com/rust-lang/rust/blob/master/library/core/src/marker.rs
     PHANTOM_DATA,
 
     // functions
+    FN,
+    FN_MUT,
     FN_ONCE,
     FN_ONCE_OUTPUT,
 
@@ -84,6 +81,40 @@ public:
     COPY,
     CLONE,
     SIZED,
+
+    // https://github.com/Rust-GCC/gccrs/issues/1896
+    // https://github.com/rust-lang/rust/commit/afbecc0f68c4dcfc4878ba5bcb1ac942544a1bdc
+    // https://github.com/Rust-GCC/gccrs/issues/1494
+    // https://github.com/rust-lang/rust/blob/master/library/core/src/ptr/const_ptr.rs
+    SLICE_ALLOC,
+    SLICE_U8_ALLOC,
+    STR_ALLOC,
+    ARRAY,
+    BOOL,
+    CHAR,
+    F32,
+    F64,
+    I8,
+    I16,
+    I32,
+    I64,
+    I128,
+    ISIZE,
+    U8,
+    U16,
+    U32,
+    U64,
+    U128,
+    USIZE,
+    CONST_PTR,
+    CONST_SLICE_PTR,
+    MUT_PTR,
+    MUT_SLICE_PTR,
+    SLICE_U8,
+    SLICE,
+    STR,
+    F32_RUNTIME,
+    F64_RUNTIME,
 
     // delimiter
     UNKNOWN,
@@ -219,21 +250,17 @@ public:
       {
 	return ItemType::RANGE_TO_INCLUSIVE;
       }
-    else if (item.compare ("const_ptr") == 0)
-      {
-	return ItemType::CONST_PTR;
-      }
-    else if (item.compare ("mut_ptr") == 0)
-      {
-	return ItemType::MUT_PTR;
-      }
-    else if (item.compare ("const_slice_ptr") == 0)
-      {
-	return ItemType::CONST_SLICE_PTR;
-      }
     else if (item.compare ("phantom_data") == 0)
       {
 	return ItemType::PHANTOM_DATA;
+      }
+    else if (item.compare ("fn") == 0)
+      {
+	return ItemType::FN;
+      }
+    else if (item.compare ("fn_mut") == 0)
+      {
+	return ItemType::FN_MUT;
       }
     else if (item.compare ("fn_once") == 0)
       {
@@ -254,6 +281,122 @@ public:
     else if (item.compare ("sized") == 0)
       {
 	return ItemType::SIZED;
+      }
+    else if (item.compare ("slice_alloc") == 0)
+      {
+	return ItemType::SLICE_ALLOC;
+      }
+    else if (item.compare ("slice_u8_alloc") == 0)
+      {
+	return ItemType::SLICE_U8_ALLOC;
+      }
+    else if (item.compare ("str_alloc") == 0)
+      {
+	return ItemType::STR_ALLOC;
+      }
+    else if (item.compare ("array") == 0)
+      {
+	return ItemType::ARRAY;
+      }
+    else if (item.compare ("bool") == 0)
+      {
+	return ItemType::BOOL;
+      }
+    else if (item.compare ("char") == 0)
+      {
+	return ItemType::CHAR;
+      }
+    else if (item.compare ("f32") == 0)
+      {
+	return ItemType::F32;
+      }
+    else if (item.compare ("f64") == 0)
+      {
+	return ItemType::F64;
+      }
+    else if (item.compare ("i8") == 0)
+      {
+	return ItemType::I8;
+      }
+    else if (item.compare ("i16") == 0)
+      {
+	return ItemType::I16;
+      }
+    else if (item.compare ("i32") == 0)
+      {
+	return ItemType::I32;
+      }
+    else if (item.compare ("i64") == 0)
+      {
+	return ItemType::I64;
+      }
+    else if (item.compare ("i128") == 0)
+      {
+	return ItemType::I128;
+      }
+    else if (item.compare ("isize") == 0)
+      {
+	return ItemType::ISIZE;
+      }
+    else if (item.compare ("u8") == 0)
+      {
+	return ItemType::U8;
+      }
+    else if (item.compare ("u16") == 0)
+      {
+	return ItemType::U16;
+      }
+    else if (item.compare ("u32") == 0)
+      {
+	return ItemType::U32;
+      }
+    else if (item.compare ("u64") == 0)
+      {
+	return ItemType::U64;
+      }
+    else if (item.compare ("u128") == 0)
+      {
+	return ItemType::U128;
+      }
+    else if (item.compare ("usize") == 0)
+      {
+	return ItemType::USIZE;
+      }
+    else if (item.compare ("const_ptr") == 0)
+      {
+	return ItemType::CONST_PTR;
+      }
+    else if (item.compare ("const_slice_ptr") == 0)
+      {
+	return ItemType::CONST_SLICE_PTR;
+      }
+    else if (item.compare ("mut_ptr") == 0)
+      {
+	return ItemType::MUT_PTR;
+      }
+    else if (item.compare ("mut_slice_ptr") == 0)
+      {
+	return ItemType::MUT_SLICE_PTR;
+      }
+    else if (item.compare ("slice_u8") == 0)
+      {
+	return ItemType::SLICE_U8;
+      }
+    else if (item.compare ("slice") == 0)
+      {
+	return ItemType::SLICE;
+      }
+    else if (item.compare ("str") == 0)
+      {
+	return ItemType::STR;
+      }
+    else if (item.compare ("f32_runtime") == 0)
+      {
+	return ItemType::F32_RUNTIME;
+      }
+    else if (item.compare ("f64_runtime") == 0)
+      {
+	return ItemType::F64_RUNTIME;
       }
 
     return ItemType::UNKNOWN;
@@ -327,14 +470,12 @@ public:
 	return "RangeInclusive";
       case RANGE_TO_INCLUSIVE:
 	return "RangeToInclusive";
-      case CONST_PTR:
-	return "const_ptr";
-      case MUT_PTR:
-	return "mut_ptr";
-      case CONST_SLICE_PTR:
-	return "const_slice_ptr";
       case PHANTOM_DATA:
 	return "phantom_data";
+      case FN:
+	return "fn";
+      case FN_MUT:
+	return "fn_mut";
       case FN_ONCE:
 	return "fn_once";
       case FN_ONCE_OUTPUT:
@@ -345,6 +486,64 @@ public:
 	return "clone";
       case SIZED:
 	return "sized";
+      case SLICE_ALLOC:
+	return "slice_alloc";
+      case SLICE_U8_ALLOC:
+	return "slice_u8_alloc";
+      case STR_ALLOC:
+	return "str_alloc";
+      case ARRAY:
+	return "array";
+      case BOOL:
+	return "bool";
+      case CHAR:
+	return "char";
+      case F32:
+	return "f32";
+      case F64:
+	return "f64";
+      case I8:
+	return "i8";
+      case I16:
+	return "i16";
+      case I32:
+	return "i32";
+      case I64:
+	return "i64";
+      case I128:
+	return "i128";
+      case ISIZE:
+	return "isize";
+      case U8:
+	return "u8";
+      case U16:
+	return "u16";
+      case U32:
+	return "u32";
+      case U64:
+	return "u64";
+      case U128:
+	return "u128";
+      case USIZE:
+	return "usize";
+      case CONST_PTR:
+	return "const_ptr";
+      case CONST_SLICE_PTR:
+	return "const_slice_ptr";
+      case MUT_PTR:
+	return "mut_ptr";
+      case MUT_SLICE_PTR:
+	return "mut_slice_ptr";
+      case SLICE_U8:
+	return "slice_u8";
+      case SLICE:
+	return "slice";
+      case STR:
+	return "str";
+      case F32_RUNTIME:
+	return "f32_runtime";
+      case F64_RUNTIME:
+	return "f64_runtime";
 
       case UNKNOWN:
 	return "<UNKNOWN>";

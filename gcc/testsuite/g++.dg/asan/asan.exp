@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2023 Free Software Foundation, Inc.
+# Copyright (C) 2012-2024 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -22,7 +22,8 @@ load_lib asan-dg.exp
 
 # Initialize `dg'.
 dg-init
-asan_init
+# libasan uses libstdc++ but we assume that's added by the g++ impl.
+asan_init 0
 
 # Main loop.
 if [check_effective_target_fsanitize_address] {

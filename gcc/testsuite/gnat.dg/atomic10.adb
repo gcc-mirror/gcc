@@ -14,8 +14,8 @@ procedure Atomic10 is
 
   subtype Index_Type is Positive range 1 .. Max;
 
-  type Array_Type is array (Index_Type) of aliased Atomic_Unsigned; -- { dg-error "cannot be guaranteed" }
-  for Array_Type'Component_Size use Comp_Size;
+  type Array_Type is array (Index_Type) of aliased Atomic_Unsigned;
+  for Array_Type'Component_Size use Comp_Size; -- { dg-error "incorrect|only" }
 
   Slots : Array_Type;
 begin

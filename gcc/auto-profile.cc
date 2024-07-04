@@ -1,5 +1,5 @@
 /* Read and annotate call graph profile from the auto profile data file.
-   Copyright (C) 2014-2023 Free Software Foundation, Inc.
+   Copyright (C) 2014-2024 Free Software Foundation, Inc.
    Contributed by Dehao Chen (dehao@google.com)
 
 This file is part of GCC.
@@ -42,6 +42,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "value-prof.h"
 #include "symbol-summary.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 #include "ipa-inline.h"
@@ -1434,7 +1436,7 @@ afdo_calculate_branch_prob (bb_set *annotated_bb)
       else
         total_count += AFDO_EINFO (e)->get_count ();
     }
-    if (num_unknown_succ == 0 && total_count > profile_count::zero ())
+    if (num_unknown_succ == 0 && total_count.nonzero_p())
       {
 	FOR_EACH_EDGE (e, ei, bb->succs)
 	  e->probability
@@ -1571,14 +1573,13 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
       DECL_SOURCE_LOCATION (current_function_decl));
   afdo_source_profile->mark_annotated (cfun->function_start_locus);
   afdo_source_profile->mark_annotated (cfun->function_end_locus);
-  if (max_count > profile_count::zero ())
+  if (max_count.nonzero_p())
     {
       /* Calculate, propagate count and probability information on CFG.  */
       afdo_calculate_branch_prob (&annotated_bb);
     }
   update_max_bb_count ();
   profile_status_for_fn (cfun) = PROFILE_READ;
-  cfun->cfg->full_profile = true;
   if (flag_value_profile_transformations)
     {
       gimple_value_profile_transformations ();

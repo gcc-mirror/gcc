@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-2017, Florida State University            --
---          Copyright (C) 1995-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,9 @@
 --  Elaborate_Body. It is designed to be a bottom-level (leaf) package.
 
 with Interfaces.C;
+
 with System.OS_Constants;
+with System.OS_Locks;
 with System.Parameters;
 
 package System.OS_Interface is
@@ -244,7 +246,7 @@ package System.OS_Interface is
    type pthread_t           is private;
    subtype Thread_Id        is pthread_t;
 
-   type pthread_mutex_t     is limited private;
+   subtype pthread_mutex_t  is System.OS_Locks.pthread_mutex_t;
    type pthread_cond_t      is limited private;
    type pthread_attr_t      is limited private;
    type pthread_mutexattr_t is limited private;
@@ -570,12 +572,6 @@ private
       opaque : padding (1 .. System.OS_Constants.PTHREAD_MUTEXATTR_SIZE);
    end record;
    pragma Convention (C, pthread_mutexattr_t);
-
-   type pthread_mutex_t is record
-      sig    : long;
-      opaque : padding (1 .. System.OS_Constants.PTHREAD_MUTEX_SIZE);
-   end record;
-   pragma Convention (C, pthread_mutex_t);
 
    type pthread_condattr_t is record
       sig    : long;

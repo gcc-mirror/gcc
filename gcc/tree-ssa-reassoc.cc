@@ -1,5 +1,5 @@
 /* Reassociation for trees.
-   Copyright (C) 2005-2023 Free Software Foundation, Inc.
+   Copyright (C) 2005-2024 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org>
 
 This file is part of GCC.
@@ -646,6 +646,9 @@ static bool
 can_reassociate_op_p (tree op)
 {
   if (TREE_CODE (op) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op))
+    return false;
+  /* Uninitialized variables can't participate in reassociation. */
+  if (TREE_CODE (op) == SSA_NAME && ssa_name_maybe_undef_p (op))
     return false;
   /* Make sure asm goto outputs do not participate in reassociation since
      we have no way to find an insertion place after asm goto.  */
@@ -2600,7 +2603,8 @@ init_range_entry (struct range_entry *r, tree exp, gimple *stmt)
 	}
 
       if (TREE_CODE (arg0) != SSA_NAME
-	  || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (arg0))
+	  || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (arg0)
+	  || ssa_name_maybe_undef_p (arg0))
 	break;
       loc = gimple_location (stmt);
       switch (code)
@@ -2933,7 +2937,7 @@ update_range_test (struct range_entry *range, struct range_entry *otherrange,
 		    gimple_stmt_iterator gsin = gsi;
 		    gsi_prev (&gsip);
 		    gsi_next (&gsin);
-		    rewrite_to_defined_overflow (stmt, true);
+		    rewrite_to_defined_overflow (&gsi);
 		    unsigned uid = gimple_uid (stmt);
 		    if (gsi_end_p (gsip))
 		      gsip = gsi_after_labels (bb);
@@ -3373,7 +3377,7 @@ optimize_range_tests_to_bit_test (enum tree_code opcode, int first, int length,
 	 case, if we would need otherwise 2 or more comparisons, then use
 	 the bit test; in the other cases, the threshold is 3 comparisons.  */
       bool entry_test_needed;
-      value_range r;
+      int_range_max r;
       if (TREE_CODE (exp) == SSA_NAME
 	  && get_range_query (cfun)->range_of_expr (r, exp)
 	  && !r.undefined_p ()
@@ -3414,7 +3418,8 @@ optimize_range_tests_to_bit_test (enum tree_code opcode, int first, int length,
 	     We can avoid then subtraction of the minimum value, but the
 	     mask constant could be perhaps more expensive.  */
 	  if (compare_tree_int (lowi, 0) > 0
-	      && compare_tree_int (high, prec) < 0)
+	      && compare_tree_int (high, prec) < 0
+	      && (entry_test_needed || wi::ltu_p (r.upper_bound (), prec)))
 	    {
 	      int cost_diff;
 	      HOST_WIDE_INT m = tree_to_uhwi (lowi);
@@ -5430,17 +5435,42 @@ get_required_cycles (int ops_num, int cpu_width)
   return res;
 }
 
+/* Given that the target fully pipelines FMA instructions, return the latency
+   of MULT_EXPRs that can't be hidden by the FMAs.  WIDTH is the number of
+   pipes.  */
+
+static inline int
+get_mult_latency_consider_fma (int ops_num, int mult_num, int width)
+{
+  gcc_checking_assert (mult_num && mult_num <= ops_num);
+
+  /* For each partition, if mult_num == ops_num, there's latency(MULT)*2.
+     e.g:
+
+	A * B + C * D
+	=>
+	_1 = A * B;
+	_2 = .FMA (C, D, _1);
+
+      Otherwise there's latency(MULT)*1 in the first FMA.  */
+  return CEIL (ops_num, width) == CEIL (mult_num, width) ? 2 : 1;
+}
+
 /* Returns an optimal number of registers to use for computation of
-   given statements.  */
+   given statements.
+
+   LHS is the result ssa name of OPS.  MULT_NUM is number of sub-expressions
+   that are MULT_EXPRs, when OPS are PLUS_EXPRs or MINUS_EXPRs.  */
 
 static int
-get_reassociation_width (int ops_num, enum tree_code opc,
-			 machine_mode mode)
+get_reassociation_width (vec<operand_entry *> *ops, int mult_num, tree lhs,
+			 enum tree_code opc, machine_mode mode)
 {
   int param_width = param_tree_reassoc_width;
   int width;
   int width_min;
   int cycles_best;
+  int ops_num = ops->length ();
 
   if (param_width > 0)
     width = param_width;
@@ -5459,16 +5489,123 @@ get_reassociation_width (int ops_num, enum tree_code opc,
      so we can perform a binary search for the minimal width that still
      results in the optimal cycle count.  */
   width_min = 1;
-  while (width > width_min)
-    {
-      int width_mid = (width + width_min) / 2;
 
-      if (get_required_cycles (ops_num, width_mid) == cycles_best)
-	width = width_mid;
-      else if (width_min < width_mid)
-	width_min = width_mid;
-      else
-	break;
+  /* If the target fully pipelines FMA instruction, the multiply part can start
+     already if its operands are ready.  Assuming symmetric pipes are used for
+     FMUL/FADD/FMA, then for a sequence of FMA like:
+
+	_8 = .FMA (_2, _3, _1);
+	_9 = .FMA (_5, _4, _8);
+	_10 = .FMA (_7, _6, _9);
+
+     , if width=1, the latency is latency(MULT) + latency(ADD)*3.
+     While with width=2:
+
+	_8 = _4 * _5;
+	_9 = .FMA (_2, _3, _1);
+	_10 = .FMA (_6, _7, _8);
+	_11 = _9 + _10;
+
+     , it is latency(MULT)*2 + latency(ADD)*2.  Assuming latency(MULT) >=
+     latency(ADD), the first variant is preferred.
+
+     Find out if we can get a smaller width considering FMA.  */
+  if (width > 1 && mult_num && param_fully_pipelined_fma)
+    {
+      /* When param_fully_pipelined_fma is set, assume FMUL and FMA use the
+	 same units that can also do FADD.  For other scenarios, such as when
+	 FMUL and FADD are using separated units, the following code may not
+	 appy.  */
+      int width_mult = targetm.sched.reassociation_width (MULT_EXPR, mode);
+      gcc_checking_assert (width_mult <= width);
+
+      /* Latency of MULT_EXPRs.  */
+      int lat_mul
+	= get_mult_latency_consider_fma (ops_num, mult_num, width_mult);
+
+      /* Quick search might not apply.  So start from 1.  */
+      for (int i = 1; i < width_mult; i++)
+	{
+	  int lat_mul_new
+	    = get_mult_latency_consider_fma (ops_num, mult_num, i);
+	  int lat_add_new = get_required_cycles (ops_num, i);
+
+	  /* Assume latency(MULT) >= latency(ADD).  */
+	  if (lat_mul - lat_mul_new >= lat_add_new - cycles_best)
+	    {
+	      width = i;
+	      break;
+	    }
+	}
+    }
+  else
+    {
+      while (width > width_min)
+	{
+	  int width_mid = (width + width_min) / 2;
+
+	  if (get_required_cycles (ops_num, width_mid) == cycles_best)
+	    width = width_mid;
+	  else if (width_min < width_mid)
+	    width_min = width_mid;
+	  else
+	    break;
+	}
+    }
+
+  /* If there's loop dependent FMA result, return width=2 to avoid it.  This is
+     better than skipping these FMA candidates in widening_mul.  */
+  if (width == 1
+      && maybe_le (tree_to_poly_int64 (TYPE_SIZE (TREE_TYPE (lhs))),
+		   param_avoid_fma_max_bits))
+    {
+      /* Look for cross backedge dependency:
+	1. LHS is a phi argument in the same basic block it is defined.
+	2. And the result of the phi node is used in OPS.  */
+      basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (lhs));
+
+      use_operand_p use_p;
+      imm_use_iterator iter;
+      FOR_EACH_IMM_USE_FAST (use_p, iter, lhs)
+	if (gphi *phi = dyn_cast<gphi *> (USE_STMT (use_p)))
+	  {
+	    if (gimple_phi_arg_edge (phi, phi_arg_index_from_use (use_p))->src
+		!= bb)
+	      continue;
+	    tree phi_result = gimple_phi_result (phi);
+	    operand_entry *oe;
+	    unsigned int j;
+	    FOR_EACH_VEC_ELT (*ops, j, oe)
+	      {
+		if (TREE_CODE (oe->op) != SSA_NAME)
+		  continue;
+
+		/* Result of phi is operand of PLUS_EXPR.  */
+		if (oe->op == phi_result)
+		  return 2;
+
+		/* Check is result of phi is operand of MULT_EXPR.  */
+		gimple *def_stmt = SSA_NAME_DEF_STMT (oe->op);
+		if (is_gimple_assign (def_stmt)
+		    && gimple_assign_rhs_code (def_stmt) == NEGATE_EXPR)
+		  {
+		    tree rhs = gimple_assign_rhs1 (def_stmt);
+		    if (TREE_CODE (rhs) == SSA_NAME)
+		      {
+			if (rhs == phi_result)
+			  return 2;
+			def_stmt = SSA_NAME_DEF_STMT (rhs);
+		      }
+		  }
+		if (is_gimple_assign (def_stmt)
+		    && gimple_assign_rhs_code (def_stmt) == MULT_EXPR)
+		  {
+		    if (gimple_assign_rhs1 (def_stmt) == phi_result
+			|| gimple_assign_rhs2 (def_stmt) == phi_result)
+		      return 2;
+		  }
+	      }
+	  }
     }
 
   return width;
@@ -6277,10 +6414,17 @@ compare_repeat_factors (const void *x1, const void *x2)
   const repeat_factor *rf1 = (const repeat_factor *) x1;
   const repeat_factor *rf2 = (const repeat_factor *) x2;
 
-  if (rf1->count != rf2->count)
-    return rf1->count - rf2->count;
+  if (rf1->count < rf2->count)
+    return -1;
+  else if (rf1->count > rf2->count)
+    return 1;
 
-  return rf2->rank - rf1->rank;
+  if (rf1->rank < rf2->rank)
+    return 1;
+  else if (rf1->rank > rf2->rank)
+    return -1;
+
+  return 0;
 }
 
 /* Look for repeated operands in OPS in the multiply tree rooted at
@@ -6783,8 +6927,10 @@ transform_stmt_to_multiply (gimple_stmt_iterator *gsi, gimple *stmt,
    Rearrange ops to -> e + a * b + c * d generates:
 
    _4  = .FMA (c_7(D), d_8(D), _3);
-   _11 = .FMA (a_5(D), b_6(D), _4);  */
-static bool
+   _11 = .FMA (a_5(D), b_6(D), _4);
+
+   Return the number of MULT_EXPRs in the chain.  */
+static int
 rank_ops_for_fma (vec<operand_entry *> *ops)
 {
   operand_entry *oe;
@@ -6798,9 +6944,26 @@ rank_ops_for_fma (vec<operand_entry *> *ops)
       if (TREE_CODE (oe->op) == SSA_NAME)
 	{
 	  gimple *def_stmt = SSA_NAME_DEF_STMT (oe->op);
-	  if (is_gimple_assign (def_stmt)
-	      && gimple_assign_rhs_code (def_stmt) == MULT_EXPR)
-	    ops_mult.safe_push (oe);
+	  if (is_gimple_assign (def_stmt))
+	    {
+	      if (gimple_assign_rhs_code (def_stmt) == MULT_EXPR)
+		ops_mult.safe_push (oe);
+	      /* A negate on the multiplication leads to FNMA.  */
+	      else if (gimple_assign_rhs_code (def_stmt) == NEGATE_EXPR
+		       && TREE_CODE (gimple_assign_rhs1 (def_stmt)) == SSA_NAME)
+		{
+		  gimple *neg_def_stmt
+		    = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (def_stmt));
+		  if (is_gimple_assign (neg_def_stmt)
+		      && gimple_bb (neg_def_stmt) == gimple_bb (def_stmt)
+		      && gimple_assign_rhs_code (neg_def_stmt) == MULT_EXPR)
+		    ops_mult.safe_push (oe);
+		  else
+		    ops_others.safe_push (oe);
+		}
+	      else
+		ops_others.safe_push (oe);
+	    }
 	  else
 	    ops_others.safe_push (oe);
 	}
@@ -6816,7 +6979,8 @@ rank_ops_for_fma (vec<operand_entry *> *ops)
      Putting ops that not def from mult in front can generate more FMAs.
 
      2. If all ops are defined with mult, we don't need to rearrange them.  */
-  if (ops_mult.length () >= 2 && ops_mult.length () != ops_length)
+  unsigned mult_num = ops_mult.length ();
+  if (mult_num >= 2 && mult_num != ops_length)
     {
       /* Put no-mult ops and mult ops alternately at the end of the
 	 queue, which is conducive to generating more FMA and reducing the
@@ -6832,9 +6996,8 @@ rank_ops_for_fma (vec<operand_entry *> *ops)
 	  if (opindex > 0)
 	    opindex--;
 	}
-      return true;
     }
-  return false;
+  return mult_num;
 }
 /* Reassociate expressions in basic block BB and its post-dominator as
    children.
@@ -6999,8 +7162,8 @@ reassociate_bb (basic_block bb)
 		{
 		  machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
 		  int ops_num = ops.length ();
-		  int width;
-		  bool has_fma = false;
+		  int width = 0;
+		  int mult_num = 0;
 
 		  /* For binary bit operations, if there are at least 3
 		     operands and the last operand in OPS is a constant,
@@ -7023,16 +7186,18 @@ reassociate_bb (basic_block bb)
 						      opt_type)
 		      && (rhs_code == PLUS_EXPR || rhs_code == MINUS_EXPR))
 		    {
-		      has_fma = rank_ops_for_fma (&ops);
+		      mult_num = rank_ops_for_fma (&ops);
 		    }
 
 		  /* Only rewrite the expression tree to parallel in the
 		     last reassoc pass to avoid useless work back-and-forth
 		     with initial linearization.  */
+		  bool has_fma = mult_num >= 2 && mult_num != ops_num;
 		  if (!reassoc_insert_powi_p
 		      && ops.length () > 3
-		      && (width = get_reassociation_width (ops_num, rhs_code,
-							   mode)) > 1)
+		      && (width = get_reassociation_width (&ops, mult_num, lhs,
+							   rhs_code, mode))
+			   > 1)
 		    {
 		      if (dump_file && (dump_flags & TDF_DETAILS))
 			fprintf (dump_file,
@@ -7049,7 +7214,15 @@ reassociate_bb (basic_block bb)
 			 to make sure the ones that get the double
 			 binary op are chosen wisely.  */
 		      int len = ops.length ();
-		      if (len >= 3 && !has_fma)
+		      if (len >= 3
+			  && (!has_fma
+			      /* width > 1 means ranking ops results in better
+				 parallelism.  Check current value to avoid
+				 calling get_reassociation_width again.  */
+			      || (width != 1
+				  && get_reassociation_width (
+				       &ops, mult_num, lhs, rhs_code, mode)
+				       > 1)))
 			swap_ops_for_binary_stmt (ops, len - 3);
 
 		      new_lhs = rewrite_expr_tree (stmt, rhs_code, 0, ops,
@@ -7257,6 +7430,7 @@ init_reassoc (void)
   free (bbs);
   calculate_dominance_info (CDI_POST_DOMINATORS);
   plus_negates = vNULL;
+  mark_ssa_maybe_undefs ();
 }
 
 /* Cleanup after the reassociation pass, and print stats if

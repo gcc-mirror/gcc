@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -98,9 +98,7 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
       bool in_middle_of_path = i > 0;
       if (in_middle_of_path && segment->is_lower_self_seg ())
 	{
-	  // error[E0433]: failed to resolve: `self` in paths can only be used
-	  // in start position
-	  rust_error_at (segment->get_locus (),
+	  rust_error_at (segment->get_locus (), ErrorCode::E0433,
 			 "failed to resolve: %<%s%> in paths can only be used "
 			 "in start position",
 			 segment->as_string ().c_str ());
@@ -200,10 +198,10 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
       if (resolved_node_id == UNKNOWN_NODEID
 	  && previous_resolved_node_id == module_scope_id)
 	{
-	  Optional<CanonicalPath &> resolved_child
+	  tl::optional<CanonicalPath &> resolved_child
 	    = mappings->lookup_module_child (module_scope_id,
 					     ident_seg.as_string ());
-	  if (resolved_child.is_some ())
+	  if (resolved_child.has_value ())
 	    {
 	      NodeId resolved_node = resolved_child->get_node_id ();
 	      if (resolver->get_name_scope ().decl_was_declared_here (
@@ -242,7 +240,7 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
 	}
       else if (is_first_segment)
 	{
-	  rust_error_at (segment->get_locus (),
+	  rust_error_at (segment->get_locus (), ErrorCode::E0412,
 			 "failed to resolve TypePath: %s in this scope",
 			 segment->as_string ().c_str ());
 	  return false;
@@ -266,7 +264,7 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
 	}
       else
 	{
-	  gcc_unreachable ();
+	  rust_unreachable ();
 	}
     }
 
@@ -321,16 +319,10 @@ ResolveRelativeQualTypePath::resolve_qual_seg (AST::QualifiedPathType &seg)
     }
 
   auto type = seg.get_type ().get ();
-  NodeId type_resolved_node = ResolveType::go (type);
-  if (type_resolved_node == UNKNOWN_NODEID)
-    return false;
+  ResolveType::go (type);
 
-  if (!seg.has_as_clause ())
-    return true;
-
-  NodeId trait_resolved_node = ResolveType::go (&seg.get_as_type_path ());
-  if (trait_resolved_node == UNKNOWN_NODEID)
-    return false;
+  if (seg.has_as_clause ())
+    ResolveType::go (&seg.get_as_type_path ());
 
   return true;
 }
@@ -404,7 +396,7 @@ ResolveTypeToCanonicalPath::visit (AST::TypePath &path)
 		    // constant or an ambiguous const generic?
 		    // TODO: At that point, will all generics have been
 		    // disambiguated? Can we thus canonical resolve types and
-		    // const and `gcc_unreachable` on ambiguous types?
+		    // const and `rust_unreachable` on ambiguous types?
 		    // This is probably fine as we just want to canonicalize
 		    // types, right?
 		    if (generic.get_kind () == AST::GenericArg::Kind::Type)
@@ -508,7 +500,7 @@ void
 ResolveTypeToCanonicalPath::visit (AST::TraitObjectType &)
 {
   // FIXME is this actually allowed? dyn A+B
-  gcc_unreachable ();
+  rust_unreachable ();
 }
 
 ResolveTypeToCanonicalPath::ResolveTypeToCanonicalPath ()
@@ -564,7 +556,7 @@ ResolveGenericArgs::resolve_disambiguated_generic (AST::GenericArg &arg)
       ResolveType::go (arg.get_type ().get ());
       break;
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 void

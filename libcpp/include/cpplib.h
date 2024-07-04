@@ -1,5 +1,5 @@
 /* Definitions for CPP library.
-   Copyright (C) 1995-2023 Free Software Foundation, Inc.
+   Copyright (C) 1995-2024 Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
 This program is free software; you can redistribute it and/or modify it
@@ -37,6 +37,8 @@ typedef struct cpp_callbacks cpp_callbacks;
 typedef struct cpp_dir cpp_dir;
 
 struct _cpp_file;
+
+class rich_location;
 
 /* The first three groups, apart from '=', can appear in preprocessor
    expressions (+= and -= are used to indicate unary + and - resp.).
@@ -129,17 +131,18 @@ struct _cpp_file;
   TK(UTF8STRING,	LITERAL) /* u8"string" */			\
   TK(OBJC_STRING,	LITERAL) /* @"string" - Objective-C */		\
   TK(HEADER_NAME,	LITERAL) /* <stdio.h> in #include */		\
+  TK(UNEVAL_STRING,	LITERAL) /* unevaluated "string" - C++26 */	\
 									\
-  TK(CHAR_USERDEF,	LITERAL) /* 'char'_suffix - C++-0x */		\
-  TK(WCHAR_USERDEF,	LITERAL) /* L'char'_suffix - C++-0x */		\
-  TK(CHAR16_USERDEF,	LITERAL) /* u'char'_suffix - C++-0x */		\
-  TK(CHAR32_USERDEF,	LITERAL) /* U'char'_suffix - C++-0x */		\
-  TK(UTF8CHAR_USERDEF,	LITERAL) /* u8'char'_suffix - C++-0x */		\
-  TK(STRING_USERDEF,	LITERAL) /* "string"_suffix - C++-0x */		\
-  TK(WSTRING_USERDEF,	LITERAL) /* L"string"_suffix - C++-0x */	\
-  TK(STRING16_USERDEF,	LITERAL) /* u"string"_suffix - C++-0x */	\
-  TK(STRING32_USERDEF,	LITERAL) /* U"string"_suffix - C++-0x */	\
-  TK(UTF8STRING_USERDEF,LITERAL) /* u8"string"_suffix - C++-0x */	\
+  TK(CHAR_USERDEF,	LITERAL) /* 'char'_suffix - C++11 */		\
+  TK(WCHAR_USERDEF,	LITERAL) /* L'char'_suffix - C++11 */		\
+  TK(CHAR16_USERDEF,	LITERAL) /* u'char'_suffix - C++11 */		\
+  TK(CHAR32_USERDEF,	LITERAL) /* U'char'_suffix - C++11 */		\
+  TK(UTF8CHAR_USERDEF,	LITERAL) /* u8'char'_suffix - C++11 */		\
+  TK(STRING_USERDEF,	LITERAL) /* "string"_suffix - C++11 */		\
+  TK(WSTRING_USERDEF,	LITERAL) /* L"string"_suffix - C++11 */		\
+  TK(STRING16_USERDEF,	LITERAL) /* u"string"_suffix - C++11 */		\
+  TK(STRING32_USERDEF,	LITERAL) /* U"string"_suffix - C++11 */		\
+  TK(UTF8STRING_USERDEF,LITERAL) /* u8"string"_suffix - C++11 */	\
 									\
   TK(COMMENT,		LITERAL) /* Only if output comments.  */	\
 				 /* SPELL_LITERAL happens to DTRT.  */	\
@@ -168,9 +171,10 @@ enum cpp_ttype
 #undef TK
 
 /* C language kind, used when calling cpp_create_reader.  */
-enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_GNUC11, CLK_GNUC17, CLK_GNUC2X,
+enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_GNUC11, CLK_GNUC17, CLK_GNUC23,
+	     CLK_GNUC2Y,
 	     CLK_STDC89, CLK_STDC94, CLK_STDC99, CLK_STDC11, CLK_STDC17,
-	     CLK_STDC2X,
+	     CLK_STDC23, CLK_STDC2Y,
 	     CLK_GNUCXX, CLK_CXX98, CLK_GNUCXX11, CLK_CXX11,
 	     CLK_GNUCXX14, CLK_CXX14, CLK_GNUCXX17, CLK_CXX17,
 	     CLK_GNUCXX20, CLK_CXX20, CLK_GNUCXX23, CLK_CXX23,
@@ -197,6 +201,7 @@ struct GTY(()) cpp_string {
 #define DECIMAL_INT     (1 << 6) /* Decimal integer, set in c-lex.cc.  */
 #define PURE_ZERO	(1 << 7) /* Single 0 digit, used by the C++ frontend,
 				    set in c-lex.cc.  */
+#define COLON_SCOPE	PURE_ZERO /* Adjacent colons in C < 23.  */
 #define SP_DIGRAPH	(1 << 8) /* # or ## token was a digraph.  */
 #define SP_PREV_WHITE	(1 << 9) /* If whitespace before a ##
 				    operator, or before this token
@@ -513,7 +518,7 @@ struct cpp_options
   /* Nonzero for C++ 2014 Standard digit separators.  */
   unsigned char digit_separators;
 
-  /* Nonzero for C2X decimal floating-point constants.  */
+  /* Nonzero for C23 decimal floating-point constants.  */
   unsigned char dfp_constants;
 
   /* Nonzero for C++20 __VA_OPT__ feature.  */
@@ -562,8 +567,8 @@ struct cpp_options
   /* True if warn about differences between C90 and C99.  */
   signed char cpp_warn_c90_c99_compat;
 
-  /* True if warn about differences between C11 and C2X.  */
-  signed char cpp_warn_c11_c2x_compat;
+  /* True if warn about differences between C11 and C23.  */
+  signed char cpp_warn_c11_c23_compat;
 
   /* True if warn about differences between C++98 and C++11.  */
   bool cpp_warn_cxx11_compat;
@@ -691,7 +696,7 @@ enum cpp_warning_reason {
   CPP_W_DATE_TIME,
   CPP_W_PEDANTIC,
   CPP_W_C90_C99_COMPAT,
-  CPP_W_C11_C2X_COMPAT,
+  CPP_W_C11_C23_COMPAT,
   CPP_W_CXX11_COMPAT,
   CPP_W_CXX20_COMPAT,
   CPP_W_EXPANSION_TO_DEFINED,
@@ -760,6 +765,9 @@ struct cpp_callbacks
 
   /* Callback to determine whether a built-in function is recognized.  */
   int (*has_builtin) (cpp_reader *);
+
+  /* Callback to determine whether a feature is available.  */
+  int (*has_feature) (cpp_reader *, bool);
 
   /* Callback that can change a user lazy into normal macro.  */
   void (*user_lazy_macro) (cpp_reader *, cpp_macro *, unsigned);
@@ -965,7 +973,9 @@ enum cpp_builtin_type
   BT_HAS_STD_ATTRIBUTE,		/* `__has_c_attribute(x)' */
   BT_HAS_BUILTIN,		/* `__has_builtin(x)' */
   BT_HAS_INCLUDE,		/* `__has_include(x)' */
-  BT_HAS_INCLUDE_NEXT		/* `__has_include_next(x)' */
+  BT_HAS_INCLUDE_NEXT,		/* `__has_include_next(x)' */
+  BT_HAS_FEATURE,		/* `__has_feature(x)' */
+  BT_HAS_EXTENSION		/* `__has_extension(x)' */
 };
 
 #define CPP_HASHNODE(HNODE)	((cpp_hashnode *) (HNODE))
@@ -1007,6 +1017,14 @@ struct GTY(()) cpp_hashnode {
   unsigned deferred;			/* Deferred cookie  */
 
   union _cpp_hashnode_value GTY ((desc ("%1.type"))) value;
+};
+
+/* Extra information we may need to store per identifier, which is needed rarely
+   enough that it's not worth adding directly into the main identifier hash.  */
+struct GTY(()) cpp_hashnode_extra
+{
+  struct ht_identifier ident;
+  location_t poisoned_loc;
 };
 
 /* A class for iterating through the source locations within a
@@ -1055,12 +1073,15 @@ class cpp_substring_ranges
 
 /* Call this first to get a handle to pass to other functions.
 
-   If you want cpplib to manage its own hashtable, pass in a NULL
-   pointer.  Otherwise you should pass in an initialized hash table
-   that cpplib will share; this technique is used by the C front
-   ends.  */
+   The first hash table argument is for associating a struct cpp_hashnode
+   with each identifier.  The second hash table argument is for associating
+   a struct cpp_hashnode_extra with each identifier that needs one.  For
+   either, pass in a NULL pointer if you want cpplib to create and manage
+   the hash table itself, or else pass a suitably initialized hash table to
+   be managed external to libcpp, as is done by the C-family frontends.  */
 extern cpp_reader *cpp_create_reader (enum c_lang, struct ht *,
-				      class line_maps *);
+				      class line_maps *,
+				      struct ht * = nullptr);
 
 /* Reset the cpp_reader's line_map.  This is only used after reading a
    PCH file.  */
@@ -1290,7 +1311,7 @@ struct cpp_num
 
 #define CPP_N_SIZE_T	0x2000000 /* C++23 size_t literal.  */
 #define CPP_N_BFLOAT16	0x4000000 /* std::bfloat16_t type.  */
-#define CPP_N_BITINT	0x8000000 /* C2X _BitInt literal.  */
+#define CPP_N_BITINT	0x8000000 /* C23 _BitInt literal.  */
 
 #define CPP_N_WIDTH_FLOATN_NX	0xF0000000 /* _FloatN / _FloatNx value
 					      of N, divided by 16.  */
@@ -1611,5 +1632,12 @@ bool cpp_valid_utf8_p (const char *data, size_t num_bytes);
 
 bool cpp_is_combining_char (cppchar_t c);
 bool cpp_is_printable_char (cppchar_t c);
+
+enum cpp_xid_property {
+  CPP_XID_START = 1,
+  CPP_XID_CONTINUE = 2
+};
+
+unsigned int cpp_check_xid_property (cppchar_t c);
 
 #endif /* ! LIBCPP_CPPLIB_H */

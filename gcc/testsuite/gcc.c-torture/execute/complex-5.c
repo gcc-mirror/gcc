@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 float __complex__
 p (float __complex__  a, float __complex__  b)
 {
@@ -9,7 +12,8 @@ float __complex__  y = 7.0 + 5.0 * (1.0fi);
 float __complex__  w = 8.0 + 19.0 * (1.0fi);
 float __complex__  z;
 
-main ()
+int
+main (void)
 {
 
   z = p (x,y);

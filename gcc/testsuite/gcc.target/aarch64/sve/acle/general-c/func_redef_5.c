@@ -8,6 +8,7 @@
    explicit definition "wins".  This isn't supported behavior though.  */
 __SVUint8_t
 svadd_u8_x (__SVBool_t pg, __SVUint8_t x, __SVUint8_t y)
+  __arm_streaming_compatible
 {
   return x;
 }

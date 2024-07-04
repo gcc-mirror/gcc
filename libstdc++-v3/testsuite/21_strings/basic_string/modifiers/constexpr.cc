@@ -50,3 +50,17 @@ test_erasure()
 }
 
 static_assert( test_erasure() );
+
+constexpr bool
+test_move()
+{
+  // PR libstdc++/113294
+  std::string s1;
+  std::string s2 = "1234567890123456"; // 16 chars: more than _S_local_capacity
+  s1 = std::move(s2);
+  VERIFY( s1 == "1234567890123456" );
+
+  return true;
+}
+
+static_assert( test_move() );

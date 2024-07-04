@@ -10,7 +10,11 @@ SUBROUTINE wsm32D(t, &
                      its,&
    ite, &
    kts, &
-   kte  &
+   kte, &
+   ims, &
+   ime, &
+   kms, &
+   kme  &
                       )
   REAL, DIMENSION( its:ite , kts:kte ),                           &
         INTENT(INOUT) ::                                          &

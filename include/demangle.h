@@ -1,5 +1,5 @@
 /* Defs for interface to demanglers.
-   Copyright (C) 1992-2023 Free Software Foundation, Inc.
+   Copyright (C) 1992-2024 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU Library General Public License
@@ -314,6 +314,8 @@ enum demangle_component_type
   /* C++11: An rvalue reference modifying a member function.  The one
      subtree is the type which is being referenced.  */
   DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS,
+  /* C++23: A member function with explict object parameter.  */
+  DEMANGLE_COMPONENT_XOBJ_MEMBER_FUNCTION,
   /* A vendor qualifier.  The left subtree is the type which is being
      qualified, and the right subtree is the name of the
      qualifier.  */
@@ -465,6 +467,8 @@ enum demangle_component_type
   DEMANGLE_COMPONENT_TEMPLATE_NON_TYPE_PARM,
   DEMANGLE_COMPONENT_TEMPLATE_TEMPLATE_PARM,
   DEMANGLE_COMPONENT_TEMPLATE_PACK_PARM,
+
+  DEMANGLE_COMPONENT_CONSTRAINTS,
 
   /* A builtin type with argument.  This holds the builtin type
      information.  */

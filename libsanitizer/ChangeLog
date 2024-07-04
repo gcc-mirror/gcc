@@ -1,3 +1,97 @@
+2024-02-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/113785
+	* asan/asan_interceptors.cpp: Cherry-pick llvm-project revision
+	8c2033719a843a1880427a5e8caa5563248bce78.
+
+2024-02-06  chenguoqi  <chenguoqi@loongson.cn>
+
+	* configure.tgt: Enable tsan and lsan for loongarch64.
+	* tsan/Makefile.am (EXTRA_libtsan_la_SOURCES): Add
+	tsan_rtl_loongarch64.S.
+	* tsan/Makefile.in: Regenerate.
+
+2024-01-19  Daniel Cederman  <cederman@gaisler.com>
+
+	* sanitizer_common/Makefile.am (DEFS): Add @AS_SYM_ASSIGN_DEFS@.
+	* sanitizer_common/Makefile.in: Regenerate.
+
+2024-01-17  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* interception/interception.h (substitution_##func_name):
+	Use macro C_ASM_TAIL_CALL.
+	* sanitizer_common/sanitizer_asm.h: Define C_ASM_TAIL_CALL
+	for MIPS with help of t9.
+
+2024-01-02  Andreas Schwab  <schwab@suse.de>
+
+	* configure.tgt (riscv64-*-linux*): Enable LSan and TSan.
+
+2023-11-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* LOCAL_PATCHES: Update.
+
+2023-11-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/112563
+	* sanitizer_common/sanitizer_redefine_builtins.h: Check
+	HAVE_AS_SYM_ASSIGN.
+
+2023-11-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/112563
+	* configure.ac (libsanitizer_cv_as_sym_assign): Check for
+	assembler symbol assignment support.
+	* configure: Regenerate.
+	* asan/Makefile.am (DEFS): Add @AS_SYM_ASSIGN_DEFS@.
+	* Makefile.in, asan/Makefile.in, hwasan/Makefile.in,
+	interception/Makefile.in, libbacktrace/Makefile.in,
+	lsan/Makefile.in, sanitizer_common/Makefile.in, tsan/Makefile.in,
+	ubsan/Makefile.in: Regenerate.
+
+2023-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/112562
+	* sanitizer_common/sanitizer_asm.h: Cherry-pick llvm-project revision
+	a855a16a02e76a0f4192c038bb64f3773947a2f7.
+	* interception/interception.h: Likewise.
+
+2023-11-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* asan/asan_mac.cpp: Protect Apple blocks behind the
+	MISSING_BLOCKS_SUPPORT macro.
+
+2023-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* LOCAL_PATCHES: Update revisions.
+
+2023-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* ubsan/ubsan_handlers_cxx.h (FunctionTypeMismatchData): Forward
+	declare.
+	(__ubsan_handle_function_type_mismatch_v1,
+	__ubsan_handle_function_type_mismatch_v1_abort): Declare.
+	* ubsan/ubsan_handlers_cxx.cpp (handleFunctionTypeMismatch,
+	__ubsan_handle_function_type_mismatch_v1,
+	__ubsan_handle_function_type_mismatch_v1_abort): New functions readded
+	for backwards compatibility from older ubsan.
+	* ubsan/ubsan_interface.inc (__ubsan_handle_function_type_mismatch_v1,
+	__ubsan_handle_function_type_mismatch_v1_abort): Readd.
+
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* asan/Makefile.am: Handle Darwin rpaths.
+	* asan/Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* hwasan/Makefile.am: Handle Darwin rpaths.
+	* hwasan/Makefile.in: Regenerate.
+	* lsan/Makefile.am: Handle Darwin rpaths.
+	* lsan/Makefile.in: Regenerate.
+	* tsan/Makefile.am: Handle Darwin rpaths.
+	* tsan/Makefile.in: Regenerate.
+	* ubsan/Makefile.am: Handle Darwin rpaths.
+	* ubsan/Makefile.in: Regenerate.
+
 2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
 
 	* configure: Regenerate.

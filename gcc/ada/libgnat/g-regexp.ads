@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1998-2023, AdaCore                     --
+--                     Copyright (C) 1998-2024, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,12 +52,11 @@
 --       it provides "globbing patterns" that are useful in implementing
 --       unix or DOS style wildcard matching for file names.
 
---     GNAT.Regpat (files g-regpat.ads/s-regpat.ads/g-regpat.adb)
+--     GNAT.Regpat (files g-regpat.ads/s-regpat.ads/s-regpat.adb)
 --       This is a more complete implementation of Unix-style regular
---       expressions, copied from the original V7 style regular expression
---       library written in C by Henry Spencer. It is functionally the
---       same as this library, and uses the same internal data structures
---       stored in a binary compatible manner.
+--       expressions, copied from the Perl regular expression engine,
+--       written originally in C by Henry Spencer. It is functionally the
+--       same as that library.
 
 --     GNAT.Spitbol.Patterns (files g-spipat.ads/g-spipat.adb)
 --       This is a completely general pattern matching package based on the

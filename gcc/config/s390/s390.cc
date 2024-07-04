@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IBM S/390 and zSeries
-   Copyright (C) 1999-2023 Free Software Foundation, Inc.
+   Copyright (C) 1999-2024 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com) and
                   Andreas Krebbel (Andreas.Krebbel@de.ibm.com).
@@ -78,11 +78,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "context.h"
 #include "builtins.h"
+#include "ifcvt.h"
 #include "rtl-iter.h"
 #include "intl.h"
 #include "tm-constrs.h"
 #include "tree-vrp.h"
 #include "symbol-summary.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 #include "sched-int.h"
@@ -815,8 +818,8 @@ s390_const_operand_ok (tree arg, int argnum, int op_flags, tree decl)
 {
   if (O_UIMM_P (op_flags))
     {
-      unsigned HOST_WIDE_INT bitwidths[] = { 1, 2, 3, 4, 5, 8, 12, 16, 32, 64,  4 };
-      unsigned HOST_WIDE_INT bitmasks[]  = { 0, 0, 0, 0, 0, 0,  0,  0,  0,  0, 12 };
+      unsigned HOST_WIDE_INT bitwidths[] = { 1, 2, 3, 4, 5, 8, 12, 16, 32, 4 };
+      unsigned HOST_WIDE_INT bitmasks[]  = { 0, 0, 0, 0, 0, 0,  0,  0,  0, 12 };
       unsigned HOST_WIDE_INT bitwidth = bitwidths[op_flags - O_U1];
       unsigned HOST_WIDE_INT bitmask = bitmasks[op_flags - O_U1];
 
@@ -824,7 +827,7 @@ s390_const_operand_ok (tree arg, int argnum, int op_flags, tree decl)
       gcc_assert(ARRAY_SIZE(bitmasks) == (O_M12 - O_U1 + 1));
 
       if (!tree_fits_uhwi_p (arg)
-	  || tree_to_uhwi (arg) > ((HOST_WIDE_INT_1U << (bitwidth - 1) << 1) - 1)
+	  || tree_to_uhwi (arg) > (HOST_WIDE_INT_1U << bitwidth) - 1
 	  || (bitmask && tree_to_uhwi (arg) & ~bitmask))
 	{
 	  if (bitmask)
@@ -1303,7 +1306,7 @@ s390_handle_string_attribute (tree *node, tree name ATTRIBUTE_UNUSED,
   return NULL_TREE;
 }
 
-static const struct attribute_spec s390_attribute_table[] = {
+TARGET_GNU_ATTRIBUTES (s390_attribute_table, {
   { "hotpatch", 2, 2, true, false, false, false,
     s390_handle_hotpatch_attribute, NULL },
   { "s390_vector_bool", 0, 0, false, true, false, true,
@@ -1319,11 +1322,8 @@ static const struct attribute_spec s390_attribute_table[] = {
   { "function_return_reg", 1, 1, true, false, false, false,
     s390_handle_string_attribute, NULL },
   { "function_return_mem", 1, 1, true, false, false, false,
-    s390_handle_string_attribute, NULL },
-
-  /* End element.  */
-  { NULL,        0, 0, false, false, false, false, NULL, NULL }
-};
+    s390_handle_string_attribute, NULL }
+});
 
 /* Return the alignment for LABEL.  We default to the -falign-labels
    value except for the literal pool base label.  */
@@ -1872,6 +1872,97 @@ s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 	    *op1 = gen_rtx_CONST_INT (VOIDmode, 1 << (3 - INTVAL (*op1)));
 	  *op0 = XVECEXP (*op0, 0, 0);
 	  *code = new_code;
+	}
+    }
+  /* Remove UNSPEC_CC_TO_INT from connectives.  This happens for
+     checks against multiple condition codes. */
+  if (GET_CODE (*op0) == AND
+      && GET_CODE (XEXP (*op0, 0)) == UNSPEC
+      && XINT (XEXP (*op0, 0), 1) == UNSPEC_CC_TO_INT
+      && XVECLEN (XEXP (*op0, 0), 0) == 1
+      && REGNO (XVECEXP (XEXP (*op0, 0), 0, 0)) == CC_REGNUM
+      && CONST_INT_P (XEXP (*op0, 1))
+      && CONST_INT_P (*op1)
+      && INTVAL (XEXP (*op0, 1)) == -3
+      && *code == EQ)
+    {
+      if (INTVAL (*op1) == 0)
+	{
+	  /* case cc == 0 || cc = 2 => mask = 0xa */
+	  *op0 = XVECEXP (XEXP (*op0, 0), 0, 0);
+	  *op1 = gen_rtx_CONST_INT (VOIDmode, 0xa);
+	}
+      else if (INTVAL (*op1) == 1)
+	{
+	  /* case cc == 1 || cc == 3 => mask = 0x5 */
+	  *op0 = XVECEXP (XEXP (*op0, 0), 0, 0);
+	  *op1 = gen_rtx_CONST_INT (VOIDmode, 0x5);
+	}
+    }
+  if (GET_CODE (*op0) == PLUS
+      && GET_CODE (XEXP (*op0, 0)) == UNSPEC
+      && XINT (XEXP (*op0, 0), 1) == UNSPEC_CC_TO_INT
+      && XVECLEN (XEXP (*op0, 0), 0) == 1
+      && REGNO (XVECEXP (XEXP (*op0, 0), 0, 0)) == CC_REGNUM
+      && CONST_INT_P (XEXP (*op0, 1))
+      && CONST_INT_P (*op1)
+      && (*code == LEU || *code == GTU))
+    {
+      if (INTVAL (*op1) == 1)
+	{
+	  if (INTVAL (XEXP (*op0, 1)) == -1)
+	    {
+	      /* case cc == 1 || cc == 2 => mask = 0x6 */
+	      *op0 = XVECEXP (XEXP (*op0, 0), 0, 0);
+	      *op1 = gen_rtx_CONST_INT (VOIDmode, 0x6);
+	      *code = *code == GTU ? NE : EQ;
+	    }
+	  else if (INTVAL (XEXP (*op0, 1)) == -2)
+	    {
+	      /* case cc == 2 || cc == 3 => mask = 0x3 */
+	      *op0 = XVECEXP (XEXP (*op0, 0), 0, 0);
+	      *op1 = gen_rtx_CONST_INT (VOIDmode, 0x3);
+	      *code = *code == GTU ? NE : EQ;
+	    }
+	}
+      else if (INTVAL (*op1) == 2
+	       && INTVAL (XEXP (*op0, 1)) == -1)
+	{
+	  /* case cc == 1 || cc == 2 || cc == 3 => mask = 0x7 */
+	  *op0 = XVECEXP (XEXP (*op0, 0), 0, 0);
+	  *op1 = gen_rtx_CONST_INT (VOIDmode, 0x7);
+	  *code = *code == GTU ? NE : EQ;
+	}
+    }
+  else if (*code == LEU || *code == GTU)
+    {
+      if (GET_CODE (*op0) == UNSPEC
+	  && XINT (*op0, 1) == UNSPEC_CC_TO_INT
+	  && XVECLEN (*op0, 0) == 1
+	  && REGNO (XVECEXP (*op0, 0, 0)) == CC_REGNUM
+	  && CONST_INT_P (*op1))
+	{
+	  if (INTVAL (*op1) == 1)
+	    {
+	      /* case cc == 0 || cc == 1 => mask = 0xc */
+	      *op0 = XVECEXP (*op0, 0, 0);
+	      *op1 = gen_rtx_CONST_INT (VOIDmode, 0xc);
+	      *code = *code == GTU ? NE : EQ;
+	    }
+	  else if (INTVAL (*op1) == 2)
+	    {
+	      /* case cc == 0 || cc == 1 || cc == 2 => mask = 0xd */
+	      *op0 = XVECEXP (*op0, 0, 0);
+	      *op1 = gen_rtx_CONST_INT (VOIDmode, 0xd);
+	      *code = *code == GTU ? NE : EQ;
+	    }
+	  else if (INTVAL (*op1) == 3)
+	    {
+	      /* always true */
+	      *op0 = const0_rtx;
+	      *op1 = const0_rtx;
+	      *code = *code == GTU ? NE : EQ;
+	    }
 	}
     }
 
@@ -3256,7 +3347,9 @@ s390_decompose_addrstyle_without_index (rtx op, rtx *base,
   while (op && GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
 
-  if (op && GET_CODE (op) != REG)
+  if (op && (!REG_P (op)
+	     || (reload_completed
+		 && !REGNO_OK_FOR_BASE_P (REGNO (op)))))
     return false;
 
   if (offset)
@@ -4689,7 +4782,7 @@ s390_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
       if (in_p
 	  && s390_loadrelative_operand_p (x, &symref, &offset)
 	  && mode == Pmode
-	  && !SYMBOL_FLAG_NOTALIGN2_P (symref)
+	  && (!SYMBOL_REF_P (symref) || !SYMBOL_FLAG_NOTALIGN2_P (symref))
 	  && (offset & 1) == 1)
 	sri->icode = ((mode == DImode) ? CODE_FOR_reloaddi_larl_odd_addend_z10
 		      : CODE_FOR_reloadsi_larl_odd_addend_z10);
@@ -8235,7 +8328,7 @@ s390_asm_output_function_label (FILE *out_file, const char *fname,
       asm_fprintf (out_file, "\t# fn:%s wd%d\n", fname,
 		   s390_warn_dynamicstack_p);
     }
-  ASM_OUTPUT_LABEL (out_file, fname);
+  assemble_function_label_raw (out_file, fname);
   if (hw_after > 0)
     asm_fprintf (out_file,
 		 "\t# post-label NOPs for hotpatch (%d halfwords)\n",
@@ -9894,7 +9987,7 @@ s390_const_int_pool_entry_p (rtx mem, HOST_WIDE_INT *val)
      - (mem (unspec [(symbol_ref) (reg)] UNSPEC_LTREF)).
      - (mem (symbol_ref)).  */
 
-  if (!MEM_P (mem))
+  if (!MEM_P (mem) || GET_MODE_CLASS (GET_MODE (mem)) != MODE_INT)
     return false;
 
   rtx addr = XEXP (mem, 0);
@@ -9908,8 +10001,18 @@ s390_const_int_pool_entry_p (rtx mem, HOST_WIDE_INT *val)
     return false;
 
   rtx val_rtx = get_pool_constant (sym);
-  if (!CONST_INT_P (val_rtx))
+  machine_mode mode = get_pool_mode (sym);
+  if (!CONST_INT_P (val_rtx)
+      || GET_MODE_CLASS (mode) != MODE_INT
+      || GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (mem)))
     return false;
+
+  if (mode != GET_MODE (mem))
+    {
+      val_rtx = simplify_subreg (GET_MODE (mem), val_rtx, mode, 0);
+      if (val_rtx == NULL_RTX || !CONST_INT_P (val_rtx))
+	return false;
+    }
 
   if (val != nullptr)
     *val = INTVAL (val_rtx);
@@ -12559,7 +12662,8 @@ s390_invalid_arg_for_unprototyped_fn (const_tree typelist, const_tree funcdecl, 
 	   && VECTOR_TYPE_P (TREE_TYPE (val))
 	   && (funcdecl == NULL_TREE
 	       || (TREE_CODE (funcdecl) == FUNCTION_DECL
-		   && DECL_BUILT_IN_CLASS (funcdecl) != BUILT_IN_MD)))
+		   && DECL_BUILT_IN_CLASS (funcdecl) != BUILT_IN_MD
+		   && !fndecl_built_in_p (funcdecl, BUILT_IN_CLASSIFY_TYPE))))
 	  ? N_("vector argument passed to unprototyped function")
 	  : NULL);
 }
@@ -13711,12 +13815,19 @@ s390_encode_section_info (tree decl, rtx rtl, int first)
 	 that can go wrong (i.e. no FUNC_DECLs).
 	 All symbols without an explicit alignment are assumed to be 2
 	 byte aligned as mandated by our ABI.  This behavior can be
-	 overridden for external symbols with the -munaligned-symbols
-	 switch.  */
-      if (DECL_ALIGN (decl) % 16
-	  && (DECL_USER_ALIGN (decl)
-	      || (!SYMBOL_REF_LOCAL_P (XEXP (rtl, 0))
-		  && s390_unaligned_symbols_p)))
+	 overridden for external and weak symbols with the
+	 -munaligned-symbols switch.
+	 For all external symbols without explicit alignment
+	 DECL_ALIGN is already trimmed down to 8, however for weak
+	 symbols this does not happen.  These cases are catched by the
+	 type size check.  */
+      const_tree size = TYPE_SIZE (TREE_TYPE (decl));
+      unsigned HOST_WIDE_INT size_num = (tree_fits_uhwi_p (size)
+					 ? tree_to_uhwi (size) : 0);
+      if ((DECL_USER_ALIGN (decl) && DECL_ALIGN (decl) % 16)
+	  || (s390_unaligned_symbols_p
+	      && !decl_binds_to_current_def_p (decl)
+	      && (DECL_USER_ALIGN (decl) ? DECL_ALIGN (decl) % 16 : size_num < 16)))
 	SYMBOL_FLAG_SET_NOTALIGN2 (XEXP (rtl, 0));
       else if (DECL_ALIGN (decl) % 32)
 	SYMBOL_FLAG_SET_NOTALIGN4 (XEXP (rtl, 0));
@@ -15996,7 +16107,7 @@ s390_option_override_internal (struct gcc_options *opts,
     }
   else
     {
-      if (TARGET_CPU_VX_P (opts))
+      if (TARGET_CPU_VX_P (opts) && TARGET_ZARCH_P (opts->x_target_flags))
 	/* Enable vector support if available and not explicitly disabled
 	   by user.  E.g. with -m31 -march=z13 -mzarch */
 	opts->x_target_flags |= MASK_OPT_VX;
@@ -17424,23 +17535,62 @@ s390_hard_fp_reg_p (rtx x)
 static rtx_insn *
 s390_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
 		    vec<machine_mode> &input_modes,
-		    vec<const char *> &constraints, vec<rtx> & /*clobbers*/,
-		    HARD_REG_SET & /*clobbered_regs*/, location_t /*loc*/)
+		    vec<const char *> &constraints,
+		    vec<rtx> &/*uses*/, vec<rtx> &/*clobbers*/,
+		    HARD_REG_SET &clobbered_regs, location_t loc)
 {
-  if (!TARGET_VXE)
-    /* Long doubles are stored in FPR pairs - nothing to do.  */
-    return NULL;
 
   rtx_insn *after_md_seq = NULL, *after_md_end = NULL;
+  bool saw_cc = false;
 
   unsigned ninputs = inputs.length ();
   unsigned noutputs = outputs.length ();
   for (unsigned i = 0; i < noutputs; i++)
     {
+      const char *constraint = constraints[i];
+      if (strncmp (constraint, "=@cc", 4) == 0)
+	{
+	  if (constraint[4] != 0)
+	    {
+	      error_at (loc, "invalid cc output constraint: %qs", constraint);
+	      continue;
+	    }
+	  if (saw_cc)
+	    {
+	      error_at (loc, "multiple cc output constraints not supported");
+	      continue;
+	    }
+	  if (TEST_HARD_REG_BIT (clobbered_regs, CC_REGNUM))
+	    {
+	      error_at (loc, "%<asm%> specifier for cc output conflicts with %<asm%> clobber list");
+	      continue;
+	    }
+	  rtx dest = outputs[i];
+	  if (GET_MODE (dest) != SImode)
+	    {
+	      error ("invalid type for cc output constraint");
+	      continue;
+	    }
+	  saw_cc = true;
+	  constraints[i] = "=c";
+	  outputs[i] = gen_rtx_REG (CCRAWmode, CC_REGNUM);
+
+	  push_to_sequence2 (after_md_seq, after_md_end);
+	  emit_insn (gen_rtx_SET (dest,
+				  gen_rtx_UNSPEC (SImode,
+						  gen_rtvec (1, outputs[i]),
+						  UNSPEC_CC_TO_INT)));
+	  after_md_seq = get_insns ();
+	  after_md_end = get_last_insn ();
+	  end_sequence ();
+	  continue;
+	}
+      if (!TARGET_VXE)
+	/* Long doubles are stored in FPR pairs - nothing to do.  */
+	continue;
       if (GET_MODE (outputs[i]) != TFmode)
 	/* Not a long double - nothing to do.  */
 	continue;
-      const char *constraint = constraints[i];
       bool allows_mem, allows_reg, is_inout;
       bool ok = parse_output_constraint (&constraint, i, ninputs, noutputs,
 					 &allows_mem, &allows_reg, &is_inout);
@@ -17474,6 +17624,10 @@ s390_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
       end_sequence ();
       outputs[i] = fprx2;
     }
+
+  if (!TARGET_VXE)
+    /* Long doubles are stored in FPR pairs - nothing left to do.  */
+    return after_md_seq;
 
   for (unsigned i = 0; i < ninputs; i++)
     {
@@ -17532,40 +17686,86 @@ struct expand_vec_perm_d
 static bool
 expand_perm_with_merge (const struct expand_vec_perm_d &d)
 {
-  bool merge_lo_p = true;
-  bool merge_hi_p = true;
+  static const unsigned char hi_perm_di[2] = {0, 2};
+  static const unsigned char hi_perm_si[4] = {0, 4, 1, 5};
+  static const unsigned char hi_perm_hi[8] = {0, 8, 1, 9, 2, 10, 3, 11};
+  static const unsigned char hi_perm_qi[16]
+    = {0, 16, 1, 17, 2, 18, 3, 19, 4, 20, 5, 21, 6, 22, 7, 23};
 
-  if (d.nelt % 2)
-    return false;
+  static const unsigned char hi_perm_di_swap[2] = {2, 0};
+  static const unsigned char hi_perm_si_swap[4] = {4, 0, 6, 2};
+  static const unsigned char hi_perm_hi_swap[8] = {8, 0, 10, 2, 12, 4, 14, 6};
+  static const unsigned char hi_perm_qi_swap[16]
+    = {16, 0, 18, 2, 20, 4, 22, 6, 24, 8, 26, 10, 28, 12, 30, 14};
 
-  // For V4SI this checks for: { 0, 4, 1, 5 }
-  for (int telt = 0; telt < d.nelt; telt++)
-    if (d.perm[telt] != telt / 2 + (telt % 2) * d.nelt)
-      {
-	merge_hi_p = false;
-	break;
-      }
+  static const unsigned char lo_perm_di[2] = {1, 3};
+  static const unsigned char lo_perm_si[4] = {2, 6, 3, 7};
+  static const unsigned char lo_perm_hi[8] = {4, 12, 5, 13, 6, 14, 7, 15};
+  static const unsigned char lo_perm_qi[16]
+    = {8, 24, 9, 25, 10, 26, 11, 27, 12, 28, 13, 29, 14, 30, 15, 31};
 
-  if (!merge_hi_p)
+  static const unsigned char lo_perm_di_swap[2] = {3, 1};
+  static const unsigned char lo_perm_si_swap[4] = {5, 1, 7, 3};
+  static const unsigned char lo_perm_hi_swap[8] = {9, 1, 11, 3, 13, 5, 15, 7};
+  static const unsigned char lo_perm_qi_swap[16]
+    = {17, 1, 19, 3, 21, 5, 23, 7, 25, 9, 27, 11, 29, 13, 31, 15};
+
+  bool merge_lo_p = false;
+  bool merge_hi_p = false;
+  bool swap_operands_p = false;
+
+  if ((d.nelt == 2 && memcmp (d.perm, hi_perm_di, 2) == 0)
+      || (d.nelt == 4 && memcmp (d.perm, hi_perm_si, 4) == 0)
+      || (d.nelt == 8 && memcmp (d.perm, hi_perm_hi, 8) == 0)
+      || (d.nelt == 16 && memcmp (d.perm, hi_perm_qi, 16) == 0))
     {
-      // For V4SI this checks for: { 2, 6, 3, 7 }
-      for (int telt = 0; telt < d.nelt; telt++)
-	if (d.perm[telt] != (telt + d.nelt) / 2 + (telt % 2) * d.nelt)
-	  {
-	    merge_lo_p = false;
-	    break;
-	  }
+      merge_hi_p = true;
     }
-  else
-    merge_lo_p = false;
+  else if ((d.nelt == 2 && memcmp (d.perm, hi_perm_di_swap, 2) == 0)
+	   || (d.nelt == 4 && memcmp (d.perm, hi_perm_si_swap, 4) == 0)
+	   || (d.nelt == 8 && memcmp (d.perm, hi_perm_hi_swap, 8) == 0)
+	   || (d.nelt == 16 && memcmp (d.perm, hi_perm_qi_swap, 16) == 0))
+    {
+      merge_hi_p = true;
+      swap_operands_p = true;
+    }
+  else if ((d.nelt == 2 && memcmp (d.perm, lo_perm_di, 2) == 0)
+	   || (d.nelt == 4 && memcmp (d.perm, lo_perm_si, 4) == 0)
+	   || (d.nelt == 8 && memcmp (d.perm, lo_perm_hi, 8) == 0)
+	   || (d.nelt == 16 && memcmp (d.perm, lo_perm_qi, 16) == 0))
+    {
+      merge_lo_p = true;
+    }
+  else if ((d.nelt == 2 && memcmp (d.perm, lo_perm_di_swap, 2) == 0)
+	   || (d.nelt == 4 && memcmp (d.perm, lo_perm_si_swap, 4) == 0)
+	   || (d.nelt == 8 && memcmp (d.perm, lo_perm_hi_swap, 8) == 0)
+	   || (d.nelt == 16 && memcmp (d.perm, lo_perm_qi_swap, 16) == 0))
+    {
+      merge_lo_p = true;
+      swap_operands_p = true;
+    }
+
+  if (!merge_lo_p && !merge_hi_p)
+    return false;
 
   if (d.testing_p)
     return merge_lo_p || merge_hi_p;
 
-  if (merge_lo_p || merge_hi_p)
-    s390_expand_merge (d.target, d.op0, d.op1, merge_hi_p);
+  rtx op0, op1;
+  if (swap_operands_p)
+    {
+      op0 = d.op1;
+      op1 = d.op0;
+    }
+  else
+    {
+      op0 = d.op0;
+      op1 = d.op1;
+    }
 
-  return merge_lo_p || merge_hi_p;
+  s390_expand_merge (d.target, op0, op1, merge_hi_p);
+
+  return true;
 }
 
 /* Try to expand the vector permute operation described by D using the
@@ -17582,6 +17782,7 @@ expand_perm_with_vpdi (const struct expand_vec_perm_d &d)
 {
   bool vpdi1_p = false;
   bool vpdi4_p = false;
+  bool swap_operands_p = false;
   rtx op0_reg, op1_reg;
 
   // Only V2DI and V2DF are supported here.
@@ -17590,11 +17791,20 @@ expand_perm_with_vpdi (const struct expand_vec_perm_d &d)
 
   if (d.perm[0] == 0 && d.perm[1] == 3)
     vpdi1_p = true;
-
-  if ((d.perm[0] == 1 && d.perm[1] == 2)
+  else if (d.perm[0] == 2 && d.perm[1] == 1)
+    {
+      vpdi1_p = true;
+      swap_operands_p = true;
+    }
+  else if ((d.perm[0] == 1 && d.perm[1] == 2)
       || (d.perm[0] == 1 && d.perm[1] == 0)
       || (d.perm[0] == 3 && d.perm[1] == 2))
     vpdi4_p = true;
+  else if (d.perm[0] == 3 && d.perm[1] == 0)
+    {
+      vpdi4_p = true;
+      swap_operands_p = true;
+    }
 
   if (!vpdi1_p && !vpdi4_p)
     return false;
@@ -17611,6 +17821,12 @@ expand_perm_with_vpdi (const struct expand_vec_perm_d &d)
     op1_reg = op0_reg;
   else if (d.only_op1)
     op0_reg = op1_reg;
+  else if (swap_operands_p)
+    {
+      rtx tmp = op0_reg;
+      op0_reg = op1_reg;
+      op1_reg = tmp;
+    }
 
   if (vpdi1_p)
     emit_insn (gen_vpdi1 (d.vmode, d.target, op0_reg, op1_reg));
@@ -17631,78 +17847,28 @@ is_reverse_perm_mask (const struct expand_vec_perm_d &d)
   return true;
 }
 
-/* The case of reversing a four-element vector [0, 1, 2, 3]
-   can be handled by first permuting the doublewords
-   [2, 3, 0, 1] and subsequently rotating them by 32 bits.  */
 static bool
-expand_perm_with_rot (const struct expand_vec_perm_d &d)
+expand_perm_reverse_elements (const struct expand_vec_perm_d &d)
 {
-  if (d.nelt != 4)
+  if (d.op0 != d.op1 || !is_reverse_perm_mask (d))
     return false;
 
-  if (d.op0 == d.op1 && is_reverse_perm_mask (d))
+  if (d.testing_p)
+    return true;
+
+  switch (d.vmode)
     {
-      if (d.testing_p)
-	return true;
-
-      rtx tmp = gen_reg_rtx (d.vmode);
-      rtx op0_reg = force_reg (GET_MODE (d.op0), d.op0);
-
-      emit_insn (gen_vpdi4_2 (d.vmode, tmp, op0_reg, op0_reg));
-      if (d.vmode == V4SImode)
-	emit_insn (gen_rotlv4si3_di (d.target, tmp));
-      else if (d.vmode == V4SFmode)
-	emit_insn (gen_rotlv4sf3_di (d.target, tmp));
-
-      return true;
+    case V1TImode: emit_move_insn (d.target, d.op0); break;
+    case V2DImode: emit_insn (gen_eltswapv2di (d.target, d.op0)); break;
+    case V4SImode: emit_insn (gen_eltswapv4si (d.target, d.op0)); break;
+    case V8HImode: emit_insn (gen_eltswapv8hi (d.target, d.op0)); break;
+    case V16QImode: emit_insn (gen_eltswapv16qi (d.target, d.op0)); break;
+    case V2DFmode: emit_insn (gen_eltswapv2df (d.target, d.op0)); break;
+    case V4SFmode: emit_insn (gen_eltswapv4sf (d.target, d.op0)); break;
+    default: gcc_unreachable();
     }
 
-  return false;
-}
-
-/* If we just reverse the elements, emit an eltswap if we have
-   vler/vster.  */
-static bool
-expand_perm_with_vster (const struct expand_vec_perm_d &d)
-{
-  if (TARGET_VXE2 && d.op0 == d.op1 && is_reverse_perm_mask (d)
-      && (d.vmode == V2DImode || d.vmode == V2DFmode
-	  || d.vmode == V4SImode || d.vmode == V4SFmode
-	  || d.vmode == V8HImode))
-    {
-      if (d.testing_p)
-	return true;
-
-      if (d.vmode == V2DImode)
-	emit_insn (gen_eltswapv2di (d.target, d.op0));
-      else if (d.vmode == V2DFmode)
-	emit_insn (gen_eltswapv2df (d.target, d.op0));
-      else if (d.vmode == V4SImode)
-	emit_insn (gen_eltswapv4si (d.target, d.op0));
-      else if (d.vmode == V4SFmode)
-	emit_insn (gen_eltswapv4sf (d.target, d.op0));
-      else if (d.vmode == V8HImode)
-	emit_insn (gen_eltswapv8hi (d.target, d.op0));
-      return true;
-    }
-  return false;
-}
-
-/* If we reverse a byte-vector this is the same as
-   byte reversing it which can be done with vstbrq.  */
-static bool
-expand_perm_with_vstbrq (const struct expand_vec_perm_d &d)
-{
-  if (TARGET_VXE2 && d.op0 == d.op1 && is_reverse_perm_mask (d)
-      && d.vmode == V16QImode)
-    {
-      if (d.testing_p)
-	return true;
-
-      emit_insn (gen_eltswapv16qi (d.target, d.op0));
-      return true;
-    }
-  return false;
+  return true;
 }
 
 /* Try to emit vlbr/vstbr.  Note, this is only a candidate insn since
@@ -17725,37 +17891,92 @@ expand_perm_as_a_vlbr_vstbr_candidate (const struct expand_vec_perm_d &d)
 
   if (memcmp (d.perm, perm[0], MAX_VECT_LEN) == 0)
     {
-      rtx target = gen_rtx_SUBREG (V8HImode, d.target, 0);
-      rtx op0 = gen_rtx_SUBREG (V8HImode, d.op0, 0);
-      emit_insn (gen_bswapv8hi (target, op0));
+      if (!d.testing_p)
+	{
+	  rtx target = gen_rtx_SUBREG (V8HImode, d.target, 0);
+	  rtx op0 = gen_rtx_SUBREG (V8HImode, d.op0, 0);
+	  emit_insn (gen_bswapv8hi (target, op0));
+	}
       return true;
     }
 
   if (memcmp (d.perm, perm[1], MAX_VECT_LEN) == 0)
     {
-      rtx target = gen_rtx_SUBREG (V4SImode, d.target, 0);
-      rtx op0 = gen_rtx_SUBREG (V4SImode, d.op0, 0);
-      emit_insn (gen_bswapv4si (target, op0));
+      if (!d.testing_p)
+	{
+	  rtx target = gen_rtx_SUBREG (V4SImode, d.target, 0);
+	  rtx op0 = gen_rtx_SUBREG (V4SImode, d.op0, 0);
+	  emit_insn (gen_bswapv4si (target, op0));
+	}
       return true;
     }
 
   if (memcmp (d.perm, perm[2], MAX_VECT_LEN) == 0)
     {
-      rtx target = gen_rtx_SUBREG (V2DImode, d.target, 0);
-      rtx op0 = gen_rtx_SUBREG (V2DImode, d.op0, 0);
-      emit_insn (gen_bswapv2di (target, op0));
+      if (!d.testing_p)
+	{
+	  rtx target = gen_rtx_SUBREG (V2DImode, d.target, 0);
+	  rtx op0 = gen_rtx_SUBREG (V2DImode, d.op0, 0);
+	  emit_insn (gen_bswapv2di (target, op0));
+	}
       return true;
     }
 
   if (memcmp (d.perm, perm[3], MAX_VECT_LEN) == 0)
     {
-      rtx target = gen_rtx_SUBREG (V1TImode, d.target, 0);
-      rtx op0 = gen_rtx_SUBREG (V1TImode, d.op0, 0);
-      emit_insn (gen_bswapv1ti (target, op0));
+      if (!d.testing_p)
+	{
+	  rtx target = gen_rtx_SUBREG (V1TImode, d.target, 0);
+	  rtx op0 = gen_rtx_SUBREG (V1TImode, d.op0, 0);
+	  emit_insn (gen_bswapv1ti (target, op0));
+	}
       return true;
     }
 
   return false;
+}
+
+static bool
+expand_perm_as_replicate (const struct expand_vec_perm_d &d)
+{
+  unsigned char i;
+  unsigned char elem;
+  rtx base = d.op0;
+  rtx insn = NULL_RTX;
+
+  /* Needed to silence maybe-uninitialized warning.  */
+  gcc_assert (d.nelt > 0);
+  elem = d.perm[0];
+  for (i = 1; i < d.nelt; ++i)
+    if (d.perm[i] != elem)
+      return false;
+  if (!d.testing_p)
+    {
+      if (elem >= d.nelt)
+	{
+	  base = d.op1;
+	  elem -= d.nelt;
+	}
+      if (memory_operand (base, d.vmode))
+	{
+	  /* Try to use vector load and replicate.  */
+	  rtx new_base = adjust_address (base, GET_MODE_INNER (d.vmode),
+					 elem * GET_MODE_UNIT_SIZE (d.vmode));
+	  insn = maybe_gen_vec_splats (d.vmode, d.target, new_base);
+	}
+      if (insn == NULL_RTX)
+	{
+	  base = force_reg (d.vmode, base);
+	  insn = maybe_gen_vec_splat (d.vmode, d.target, base, GEN_INT (elem));
+	}
+
+      if (insn == NULL_RTX)
+	return false;
+      emit_insn (insn);
+      return true;
+    }
+  else
+    return maybe_code_for_vec_splat (d.vmode) != CODE_FOR_nothing;
 }
 
 /* Try to find the best sequence for the vector permute operation
@@ -17764,22 +17985,19 @@ expand_perm_as_a_vlbr_vstbr_candidate (const struct expand_vec_perm_d &d)
 static bool
 vectorize_vec_perm_const_1 (const struct expand_vec_perm_d &d)
 {
+  if (expand_perm_reverse_elements (d))
+    return true;
+
   if (expand_perm_with_merge (d))
-    return true;
-
-  if (expand_perm_with_vster (d))
-    return true;
-
-  if (expand_perm_with_vstbrq (d))
     return true;
 
   if (expand_perm_with_vpdi (d))
     return true;
 
-  if (expand_perm_with_rot (d))
+  if (expand_perm_as_a_vlbr_vstbr_candidate (d))
     return true;
 
-  if (expand_perm_as_a_vlbr_vstbr_candidate (d))
+  if (expand_perm_as_replicate (d))
     return true;
 
   return false;
@@ -17833,6 +18051,46 @@ s390_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
     d.only_op1 = true;
 
   return vectorize_vec_perm_const_1 (d);
+}
+
+/* Consider a NOCE conversion as profitable if there is at least one
+   conditional move.  */
+
+static bool
+s390_noce_conversion_profitable_p (rtx_insn *seq, struct noce_if_info *if_info)
+{
+  if (if_info->speed_p)
+    {
+      for (rtx_insn *insn = seq; insn; insn = NEXT_INSN (insn))
+	{
+	  rtx set = single_set (insn);
+	  if (set == NULL)
+	    continue;
+	  if (GET_CODE (SET_SRC (set)) != IF_THEN_ELSE)
+	    continue;
+	  rtx src = SET_SRC (set);
+	  machine_mode mode = GET_MODE (src);
+	  if (GET_MODE_CLASS (mode) != MODE_INT
+	      && GET_MODE_CLASS (mode) != MODE_FLOAT)
+	    continue;
+	  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+	    continue;
+	  return true;
+	}
+    }
+  return default_noce_conversion_profitable_p (seq, if_info);
+}
+
+/* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return TFmode or DFmode
+   for TI_LONG_DOUBLE_TYPE which is for long double type, go with the
+   default one for the others.  */
+
+static machine_mode
+s390_c_mode_for_floating_type (enum tree_index ti)
+{
+  if (ti == TI_LONG_DOUBLE_TYPE)
+    return TARGET_LONG_DOUBLE_128 ? TFmode : DFmode;
+  return default_mode_for_floating_type (ti);
 }
 
 /* Initialize GCC target structure.  */
@@ -18147,6 +18405,12 @@ s390_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
 
 #undef TARGET_VECTORIZE_VEC_PERM_CONST
 #define TARGET_VECTORIZE_VEC_PERM_CONST s390_vectorize_vec_perm_const
+
+#undef TARGET_NOCE_CONVERSION_PROFITABLE_P
+#define TARGET_NOCE_CONVERSION_PROFITABLE_P s390_noce_conversion_profitable_p
+
+#undef TARGET_C_MODE_FOR_FLOATING_TYPE
+#define TARGET_C_MODE_FOR_FLOATING_TYPE s390_c_mode_for_floating_type
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

@@ -1,8 +1,7 @@
 /* { dg-do compile } */
-/* { dg-skip-if "avoid conflicting multilib options" { *-*-* } { "-march=*" } { "-march=armv7-m" } } */
-/* { dg-skip-if "avoid conflicting multilib options" { *-*-* } { "-mfloat-abi=*" } { "-mfloat-abi=soft" } } */
-/* { dg-skip-if "avoid conflicting multilib options" { *-*-* } { "-marm" } { "" } } */
-/* { dg-options "-march=armv7-m -mcpu=cortex-m3 -mfloat-abi=soft -mthumb" } */
+/* { dg-require-effective-target arm_arch_v7m_ok } */
+/* { dg-options "" } */
+/* { dg-add-options arm_arch_v7m } */
 
 #ifdef __ARM_FP
 #error __ARM_FP should not be defined

@@ -2,8 +2,8 @@
    inputs produce the right code with a P7 (BE) target.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power7 -O2 " } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 // targeting P7 (BE), 2 tests.
 // P7 constants: xscvspdp
@@ -12,13 +12,12 @@
 /* { dg-final { scan-assembler-times {\mxscvspdp\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mli\M} 1 } } */
 /* -m32 as an add in place of an addi. */
-/* { dg-final { scan-assembler-times {\maddi\M|\madd\M} 2 { target lp64 } } } */
-/* { dg-final { scan-assembler-times {\maddi\M|\madd\M} 3 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\maddi?\M} 2 } } */
 /* { dg-final { scan-assembler-times {\mstxvd2x\M|\mstvx\M|\mstxv\M} 1 } } */
 /* -m32 uses rlwinm in place of rldic */
 /* { dg-final { scan-assembler-times {\mrldic\M|\mrlwinm\M} 1 } } */
 /* -m32 has lfs in place of lfsx */
-/* { dg-final { scan-assembler-times {\mlfsx\M|\mlfs\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mlfsx?\M} 1 } } */
 
 #include <altivec.h>
 

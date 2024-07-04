@@ -1,6 +1,6 @@
 (* GetOpt.def allows users to manage long options to getopt.
 
-Copyright (C) 2017-2023 Free Software Foundation, Inc.
+Copyright (C) 2017-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -40,7 +40,7 @@ TYPE
 
 (*
    GetOpt - call C getopt and fill in the parameters:
-            optarg, optind, opterr and optop.
+            optarg, optind, opterr and optopt.
 *)
 
 PROCEDURE GetOpt (argc: INTEGER; argv: ADDRESS; optstring: String;
@@ -83,13 +83,12 @@ PROCEDURE InitLongOptions () : LongOptions ;
        val    is the value to return, or to load into the variable
               pointed to by flag.
 
-       The last element of the array has to be filled with zeros.
+       The last element of the array must be filled with zeros.
 *)
 
-PROCEDURE AddLongOption (lo: LongOptions;
+PROCEDURE AddLongOption (lo: LongOptions; index: CARDINAL;
                          name: String; has_arg: INTEGER;
-                         flag: PtrToInteger;
-                         val: INTEGER) : LongOptions ;
+                         VAR flag: INTEGER; val: INTEGER) : LongOptions ;
 
 
 (*
@@ -106,8 +105,8 @@ PROCEDURE KillLongOptions (lo: LongOptions) : LongOptions ;
                 then optstring should be an empty string, not NIL.
 *)
 
-PROCEDURE GetOptLong (argc: INTEGER; argv: ADDRESS; optstring: String;
-                      longopts: LongOptions;
+PROCEDURE GetOptLong (argc: INTEGER; argv: ADDRESS;
+                      optstring: String; longopts: LongOptions;
                       VAR longindex: INTEGER) : INTEGER ;
 
 

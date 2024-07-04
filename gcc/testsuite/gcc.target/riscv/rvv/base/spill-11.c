@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-msave-restore -march=rv32gc_zve64d -mabi=ilp32 -msave-restore -fno-schedule-insns -fno-schedule-insns2 -O3 -Wno-psabi" } */
+/* { dg-options "-msave-restore -march=rv32gc_zve64d -mabi=ilp32 -msave-restore -fno-schedule-insns -fno-schedule-insns2 -O3" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 #include "riscv_vector.h"
 
@@ -9,21 +9,22 @@ void fn3 (char*);
 
 /*
 ** stack_save_restore_2:
-**	call\tt0,__riscv_save_1
+**	call\tt0,__riscv_save_0
 **	csrr\tt0,vlenb
-**	slli\tt1,t0,1
-**	sub\tsp,sp,t1
-**	li\tt0,-8192
-**	addi\tt0,t0,192
-**	add\tsp,sp,t0
+**	sub\tsp,sp,t0
+**      vs1r.v\tv1,0\(sp\)
 **	...
 **	csrr\tt0,vlenb
-**	slli\tt1,t0,1
+**	slli\tt1,t0,2
+**      sub\tt1,t1,t0
 **	add\tsp,sp,t1
 **	li\tt0,8192
 **	addi\tt0,t0,-192
 **	add\tsp,sp,t0
-**	tail\t__riscv_restore_1
+**      ...
+**       vl1re64.v\tv1,0\(sp\)
+**      add\tsp,sp,t0
+**	tail\t__riscv_restore_0
 */
 int stack_save_restore_2 (float a1, float a2, float a3, float a4,
                       float a5, float a6, float a7, float a8,
