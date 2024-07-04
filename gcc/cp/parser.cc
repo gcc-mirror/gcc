@@ -13252,9 +13252,9 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 
 	      std_attrs = finish_contract_attribute (cont_assert, contract);
 
-	      // If there are errors in the contract, we do not create
-	      // the attribute tree.  This assumes no attributes on
-	      // 'contract_assert'
+	      /* If there are errors in the contract, we do not create the
+	      attribute tree. This assumes no attributes on
+	      'contract_assert' */
 	      if (std_attrs == error_mark_node)
 		 std_attrs = NULL_TREE;
 	    }
@@ -31567,8 +31567,8 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
       cp_expr condition = cp_parser_conditional_expression (parser);
       --processing_contract_condition;
 
-      /* For natural syntax, we eat the parens here. For the attribute syntax,
-         it will be done one level up, we just need to skip to it. */
+	/* For natural syntax, we eat the parens here. For the attribute
+	syntax, it will be done one level up, we just need to skip to it. */
       if (!attr_mode)
 	  parens.require_close (parser);
       /* Try to recover from errors by scanning up to the end of the
