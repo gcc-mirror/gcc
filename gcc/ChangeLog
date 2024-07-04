@@ -1,3 +1,84 @@
+2024-07-03  John David Anglin  <danglin@gcc.gnu.org>
+
+	Revert:
+	2023-10-05  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa32-linux.h (MALLOC_ABI_ALIGNMENT): Delete.
+
+2024-07-03  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/115691
+	* config/pa/pa.md: Remove incorrect xmpyu patterns.
+
+2024-07-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-07-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/98762
+	* config/avr/avr.cc (avr_out_movqi_r_mr_reg_disp_tiny): Properly
+	restore the base register when it is partially clobbered.
+
+2024-07-03  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2024-06-26  Kewen Lin  <linkw@linux.ibm.com>
+		    Xionghu Luo  <xionghuluo@tencent.com>
+
+	PR target/106069
+	PR target/115355
+	* config/rs6000/altivec.md (altivec_vmrghh_direct): Rename to ...
+	(altivec_vmrghh_direct_be): ... this.  Add condition BYTES_BIG_ENDIAN.
+	(altivec_vmrghh_direct_le): New define_insn.
+	(altivec_vmrglh_direct): Rename to ...
+	(altivec_vmrglh_direct_be): ... this.  Add condition BYTES_BIG_ENDIAN.
+	(altivec_vmrglh_direct_le): New define_insn.
+	(altivec_vmrghh): Adjust by calling gen_altivec_vmrghh_direct_be
+	for BE and gen_altivec_vmrglh_direct_le for LE.
+	(altivec_vmrglh): Adjust by calling gen_altivec_vmrglh_direct_be
+	for BE and gen_altivec_vmrghh_direct_le for LE.
+	(vec_widen_umult_hi_v16qi): Adjust the call to
+	gen_altivec_vmrghh_direct by gen_altivec_vmrghh for BE
+	and by gen_altivec_vmrglh for LE.
+	(vec_widen_smult_hi_v16qi): Likewise.
+	(vec_widen_umult_lo_v16qi): Adjust the call to
+	gen_altivec_vmrglh_direct by gen_altivec_vmrglh for BE
+	and by gen_altivec_vmrghh for LE.
+	(vec_widen_smult_lo_v16qi): Likewise.
+	* config/rs6000/rs6000.cc (altivec_expand_vec_perm_const): Replace
+	CODE_FOR_altivec_vmrghh_direct by
+	CODE_FOR_altivec_vmrghh_direct_be for BE and
+	CODE_FOR_altivec_vmrghh_direct_le for LE.  And replace
+	CODE_FOR_altivec_vmrglh_direct by
+	CODE_FOR_altivec_vmrglh_direct_be for BE and
+	CODE_FOR_altivec_vmrglh_direct_le for LE.
+
+2024-07-03  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2024-06-26  Kewen Lin  <linkw@linux.ibm.com>
+		    Xionghu Luo  <xionghuluo@tencent.com>
+
+	PR target/106069
+	PR target/115355
+	* config/rs6000/altivec.md (altivec_vmrghb_direct): Rename to ...
+	(altivec_vmrghb_direct_be): ... this.  Add condition BYTES_BIG_ENDIAN.
+	(altivec_vmrghb_direct_le): New define_insn.
+	(altivec_vmrglb_direct): Rename to ...
+	(altivec_vmrglb_direct_be): ... this.  Add condition BYTES_BIG_ENDIAN.
+	(altivec_vmrglb_direct_le): New define_insn.
+	(altivec_vmrghb): Adjust by calling gen_altivec_vmrghb_direct_be
+	for BE and gen_altivec_vmrglb_direct_le for LE.
+	(altivec_vmrglb): Adjust by calling gen_altivec_vmrglb_direct_be
+	for BE and gen_altivec_vmrghb_direct_le for LE.
+	* config/rs6000/rs6000.cc (altivec_expand_vec_perm_const): Replace
+	CODE_FOR_altivec_vmrghb_direct by
+	CODE_FOR_altivec_vmrghb_direct_be for BE and
+	CODE_FOR_altivec_vmrghb_direct_le for LE.  And replace
+	CODE_FOR_altivec_vmrglb_direct by
+	CODE_FOR_altivec_vmrglb_direct_be for BE and
+	CODE_FOR_altivec_vmrglb_direct_le for LE.
+
 2024-07-02  Alex Coplan  <alex.coplan@arm.com>
 
 	Backported from master:

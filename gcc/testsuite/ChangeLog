@@ -1,3 +1,37 @@
+2024-07-03  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR pch/115312
+	* g++.dg/pch/pr115312.C: New test.
+	* g++.dg/pch/pr115312.Hs: New test.
+
+2024-07-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-07-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/98762
+	* gcc.target/avr/torture/pr98762.c: New test.
+
+2024-07-03  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2024-06-26  Kewen Lin  <linkw@linux.ibm.com>
+		    Xionghu Luo  <xionghuluo@tencent.com>
+
+	PR target/106069
+	PR target/115355
+	* gcc.target/powerpc/pr106069-2.c: New test.
+
+2024-07-03  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2024-06-26  Kewen Lin  <linkw@linux.ibm.com>
+		    Xionghu Luo  <xionghuluo@tencent.com>
+
+	PR target/106069
+	PR target/115355
+	* gcc.target/powerpc/pr106069-1.c: New test.
+
 2024-07-01  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:

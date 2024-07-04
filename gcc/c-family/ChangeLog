@@ -1,3 +1,10 @@
+2024-07-03  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR pch/115312
+	* c-opts.cc (c_common_init): Call c_init_preprocess() before
+	c_finish_options() so that a parser is available to process any
+	includes specified on the command line.
+
 2024-06-25  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	Backported from master:
