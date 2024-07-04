@@ -1779,7 +1779,8 @@ riscv_set_arch_by_subset_list (riscv_subset_list *subset_list,
       else if (subset_list->xlen () == 64)
 	opts->x_target_flags |= MASK_64BIT;
 
-      for (arch_ext_flag_tab = &riscv_ext_flag_table[0]; arch_ext_flag_tab->ext;
+      for (arch_ext_flag_tab = &riscv_ext_flag_table[0];
+	   arch_ext_flag_tab->ext;
 	   ++arch_ext_flag_tab)
 	{
 	  if (subset_list->lookup (arch_ext_flag_tab->ext))
@@ -1803,30 +1804,6 @@ riscv_parse_arch_string (const char *isa,
   if (!subset_list)
     return;
 
-  if (opts)
-    {
-      const riscv_ext_flag_table_t *arch_ext_flag_tab;
-      /* Clean up target flags before we set.  */
-      for (arch_ext_flag_tab = &riscv_ext_flag_table[0];
-	   arch_ext_flag_tab->ext;
-	   ++arch_ext_flag_tab)
-	opts->*arch_ext_flag_tab->var_ref &= ~arch_ext_flag_tab->mask;
-
-      if (subset_list->xlen () == 32)
-	opts->x_target_flags &= ~MASK_64BIT;
-      else if (subset_list->xlen () == 64)
-	opts->x_target_flags |= MASK_64BIT;
-
-
-      for (arch_ext_flag_tab = &riscv_ext_flag_table[0];
-	   arch_ext_flag_tab->ext;
-	   ++arch_ext_flag_tab)
-	{
-	  if (subset_list->lookup (arch_ext_flag_tab->ext))
-	    opts->*arch_ext_flag_tab->var_ref |= arch_ext_flag_tab->mask;
-	}
-    }
-
   /* Avoid double delete if current_subset_list equals cmdline_subset_list.  */
   if (current_subset_list && current_subset_list != cmdline_subset_list)
     delete current_subset_list;
@@ -1834,7 +1811,10 @@ riscv_parse_arch_string (const char *isa,
   if (cmdline_subset_list)
     delete cmdline_subset_list;
 
-  current_subset_list = cmdline_subset_list = subset_list;
+  cmdline_subset_list = subset_list;
+  /* current_subset_list is set in the call below.  */
+
+  riscv_set_arch_by_subset_list (subset_list, opts);
 }
 
 /* Return the riscv_cpu_info entry for CPU, NULL if not found.  */
