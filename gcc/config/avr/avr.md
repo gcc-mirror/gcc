@@ -1035,8 +1035,7 @@
   [(parallel [(set (match_operand:MOVMODE 0 "nonimmediate_operand")
                    (match_operand:MOVMODE 1 "general_operand"))
               (clobber (reg:CC REG_CC))])]
-  "AVR_TINY
-   && reload_completed
+  "reload_completed
    && avr_fuse_add > 0
    // Only split this for .split2 when we are before
    // pass .avr-fuse-add (which runs after proep).

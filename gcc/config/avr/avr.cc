@@ -4471,28 +4471,21 @@ avr_out_lpm_no_lpmx (rtx_insn *insn, rtx *xop, int *plen)
       gcc_assert (REG_Z == REGNO (XEXP (addr, 0))
 		  && n_bytes <= 4);
 
-      if (regno_dest == LPM_REGNO)
-	avr_asm_len ("%4lpm"      CR_TAB
-		     "adiw %2,1", xop, plen, 2);
-      else
-	avr_asm_len ("%4lpm"      CR_TAB
-		     "mov %A0,%3" CR_TAB
-		     "adiw %2,1", xop, plen, 3);
+      for (int i = 0; i < n_bytes; ++i)
+	{
+	  rtx reg = simplify_gen_subreg (QImode, dest, GET_MODE (dest), i);
 
-      if (n_bytes >= 2)
-	avr_asm_len ("%4lpm"      CR_TAB
-		     "mov %B0,%3" CR_TAB
-		     "adiw %2,1", xop, plen, 3);
+	  if (i > 0)
+	    avr_asm_len ("adiw %2,1", xop, plen, 1);
 
-      if (n_bytes >= 3)
-	avr_asm_len ("%4lpm"      CR_TAB
-		     "mov %C0,%3" CR_TAB
-		     "adiw %2,1", xop, plen, 3);
+	  avr_asm_len ("%4lpm", xop, plen, 1);
 
-      if (n_bytes >= 4)
-	avr_asm_len ("%4lpm"      CR_TAB
-		     "mov %D0,%3" CR_TAB
-		     "adiw %2,1", xop, plen, 3);
+	  if (REGNO (reg) != LPM_REGNO)
+	    avr_asm_len ("mov %0,r0", &reg, plen, 1);
+	}
+
+      if (! _reg_unused_after (insn, xop[2], false))
+	avr_asm_len ("adiw %2,1", xop, plen, 1);
 
       break; /* POST_INC */
 
@@ -6683,6 +6676,14 @@ avr_split_tiny_move (rtx_insn * /*insn*/, rtx *xop)
     return false;
 
   if (REGNO (base) > REG_Z)
+    return false;
+
+  if (! AVR_TINY
+      // Only keep base registers that can't do PLUS addressing.
+      && ((REGNO (base) != REG_X
+	   && ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (mem)))
+	  || avr_load_libgcc_p (mem)
+	  || avr_mem_memx_p (mem)))
     return false;
 
   bool volatile_p = MEM_VOLATILE_P (mem);
