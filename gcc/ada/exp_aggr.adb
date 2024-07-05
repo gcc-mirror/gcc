@@ -1262,9 +1262,9 @@ package body Exp_Aggr is
             elsif Nkind (Parent (Expr)) = N_Component_Association
               and then Present (Loop_Actions (Parent (Expr)))
             then
-               Append_List (Lis, Loop_Actions (Parent (Expr)));
                Res := Loop_Actions (Parent (Expr));
                Set_Loop_Actions (Parent (Expr), No_List);
+               Append_List (Lis, To => Res);
                return Res;
 
             else
