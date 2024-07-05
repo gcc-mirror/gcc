@@ -3234,11 +3234,26 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
       && types_match (type, @0, @1))))
 
-/* Unsigned saturation truncate, case 1 (), sizeof (WT) > sizeof (NT).
+/* Unsigned saturation truncate, case 1, sizeof (WT) > sizeof (NT).
    SAT_U_TRUNC = (NT)x | (NT)(-(X > (WT)(NT)(-1))).  */
 (match (unsigned_integer_sat_trunc @0)
  (bit_ior:c (negate (convert (gt @0 INTEGER_CST@1)))
    (convert @0))
+ (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
+      && TYPE_UNSIGNED (TREE_TYPE (@0)))
+ (with
+  {
+   unsigned itype_precision = TYPE_PRECISION (TREE_TYPE (@0));
+   unsigned otype_precision = TYPE_PRECISION (type);
+   wide_int trunc_max = wi::mask (otype_precision, false, itype_precision);
+   wide_int int_cst = wi::to_wide (@1, itype_precision);
+  }
+  (if (otype_precision < itype_precision && wi::eq_p (trunc_max, int_cst))))))
+
+/* Unsigned saturation truncate, case 2, sizeof (WT) > sizeof (NT).
+   SAT_U_TRUNC = (NT)(MIN_EXPR (X, 255)).  */
+(match (unsigned_integer_sat_trunc @0)
+ (convert (min @0 INTEGER_CST@1))
  (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
       && TYPE_UNSIGNED (TREE_TYPE (@0)))
  (with

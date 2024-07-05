@@ -6170,6 +6170,10 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 	      match_unsigned_saturation_sub (&gsi, as_a<gassign *> (stmt));
 	      break;
 
+	    case NOP_EXPR:
+	      match_unsigned_saturation_trunc (&gsi, as_a<gassign *> (stmt));
+	      break;
+
 	    default:;
 	    }
 	}
