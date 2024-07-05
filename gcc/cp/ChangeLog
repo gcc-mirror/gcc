@@ -1,3 +1,16 @@
+2024-07-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR c++/115623
+	* semantics.cc (finish_for_cond): Add check for C++ cond.
+
+2024-07-04  Jason Merrill  <jason@redhat.com>
+
+	* error.cc (dump_decl) [OVERLOAD]: Recurse on single case.
+
+2024-07-04  Jason Merrill  <jason@redhat.com>
+
+	* pt.cc (ctad_template_p): Return false for trait names.
+
 2024-07-02  Jakub Jelinek  <jakub@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 

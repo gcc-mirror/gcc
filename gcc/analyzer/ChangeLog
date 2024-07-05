@@ -1,3 +1,28 @@
+2024-07-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-manager.cc
+	(diagnostic_manager::add_events_for_eedge): Pass sm_ctxt by
+	reference.
+	* engine.cc (impl_region_model_context::on_condition): Likewise.
+	(impl_region_model_context::on_bounded_ranges): Likewise.
+	(impl_region_model_context::on_phi): Likewise.
+	(exploded_node::on_stmt): Likewise.
+	* sm-fd.cc: Update all uses of sm_context * to sm_context &.
+	* sm-file.cc: Likewise.
+	* sm-malloc.cc: Likewise.
+	* sm-pattern-test.cc: Likewise.
+	* sm-sensitive.cc: Likewise.
+	* sm-signal.cc: Likewise.
+	* sm-taint.cc: Likewise.
+	* sm.h: Likewise.
+	* varargs.cc: Likewise.
+
+2024-07-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/115724
+	* kf.cc (register_known_functions): Add __error_alias and
+	__error_at_line_alias.
+
 2024-06-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* checker-event.h (checker_event::fndecl): Drop "final" and

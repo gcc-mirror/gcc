@@ -1,3 +1,8 @@
+2024-07-04  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libstdc++/98678
+	* testsuite/30_threads/future/members/poll.cc: Skip on hppa*-*-linux*.
+
 2024-06-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/115585

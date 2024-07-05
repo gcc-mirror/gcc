@@ -1,3 +1,51 @@
+2024-07-04  Siarhei Volkau  <lis8215@gmail.com>
+
+	* config/arm/arm.cc (thumb_load_double_from_address): Emit ldmia
+	when address reg rewritten by load.
+	* config/arm/thumb1.md (peephole2 to rewrite DI/DF load): New.
+	(peephole2 to rewrite DI/DF store): New.
+	* config/arm/iterators.md (DIDF): New.
+
+2024-07-04  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/114890
+	* config/aarch64/aarch64-simd.md: Remove bigendian operand swap.
+
+2024-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/115426
+	* gimplify.cc (gimplify_asm_expr): Handle "rm" output
+	constraint gimplified to a register (operation).
+
+2024-07-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (bswaphisi2_lowpart peephole2): New
+	peephole2 variant to eliminate register shuffling.
+
+2024-07-04  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/rx/rx.cc (rx_expand_prologue): Mark the copy from FP to SP
+	as frame related.
+	(rx_expand_epilogue): Mark the stack pointer adjustment as frame
+	related.
+
+2024-07-04  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386.cc (ix86_expand_prologue): Set apx_ppx_used
+	flag in m.fs with TARGET_APX_PPX && !crtl->calls_eh_return.
+	(ix86_emit_save_regs): Emit ppx is available only when
+	TARGET_APX_PPX && !crtl->calls_eh_return.
+	(ix86_expand_epilogue): Don't restore reg using mov when
+	apx_ppx_used flag is true.
+	* config/i386/i386.h (struct machine_frame_state):
+	Add apx_ppx_used flag.
+
+2024-07-04  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR tree-optimization/115753
+	* tree-vect-stmts.cc (supportable_indirect_convert_operation): Add
+	TYPE_CODE check before SSA_NAME_RANGE_INFO.
+
 2024-07-03  Jeff Law  <jlaw@ventanamicro.com>
 
 	* reorg.cc (relax_delay_slots): Do not optimize a conditional

@@ -1,3 +1,71 @@
+2024-07-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_gil_plugin.c: Update all uses of
+	sm_context * to sm_context &.
+
+2024-07-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/115724
+	* c-c++-common/analyzer/error-pr115724.c: New test.
+
+2024-07-04  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/base/vcreate.c: Update expected output.
+
+2024-07-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/115537
+	* gcc.dg/vect/pr115537.c: Update flag from neoverse-n1 to neoverse-v1.
+
+2024-07-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR c++/115623
+	* g++.dg/vect/vect-novector-pragma_2.cc: New test.
+
+2024-07-04  Siarhei Volkau  <lis8215@gmail.com>
+
+	* gcc.target/arm/thumb1-load-store-64bit.c: Add new test.
+
+2024-07-04  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/114890
+	* gcc.target/aarch64/vector_intrinsics_asm.c: Remove xfail.
+
+2024-07-04  Alfie Richards  <alfie.richards@arm.com>
+
+	* gcc.target/aarch64/vector_intrinsics_asm.c: New test.
+
+2024-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/115426
+	* gcc.dg/pr115426.c: New testcase.
+
+2024-07-04  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/115748
+	* gcc.target/i386/avx512-check.h: Use __builtin_cpu_support
+	instead of __get_cpuid_count.
+
+2024-07-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/xchg-4.c: New test case.
+
+2024-07-04  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/apx-ppx-2.c: New test.
+	* gcc.target/i386/apx-ppx-3.c: Likewise.
+
+2024-07-04  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/warn/pr61945.C: Adjust diagnostic.
+
+2024-07-04  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR tree-optimization/115753
+	* gcc.dg/vect/pr115753-1.c: New test.
+	* gcc.dg/vect/pr115753-2.c: Ditto.
+	* gcc.dg/vect/pr115753-3.c: Ditto.
+
 2024-07-03  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/115700
