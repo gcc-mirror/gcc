@@ -338,11 +338,11 @@ riscv_process_target_attr (tree fndecl, tree args, location_t loc,
   char *str_to_check = buf.get ();
   strcpy (str_to_check, TREE_STRING_POINTER (args));
 
-  /* Used to catch empty spaces between commas i.e.
+  /* Used to catch empty spaces between semi-colons i.e.
      attribute ((target ("attr1;;attr2"))).  */
-  unsigned int num_commas = num_occurences_in_str (';', str_to_check);
+  unsigned int num_semicolons = num_occurences_in_str (';', str_to_check);
 
-  /* Handle multiple target attributes separated by ','.  */
+  /* Handle multiple target attributes separated by ';'.  */
   char *token = strtok_r (str_to_check, ";", &str_to_check);
 
   riscv_target_attr_parser attr_parser (loc);
@@ -354,7 +354,7 @@ riscv_process_target_attr (tree fndecl, tree args, location_t loc,
       token = strtok_r (NULL, ";", &str_to_check);
     }
 
-  if (num_attrs != num_commas + 1)
+  if (num_attrs != num_semicolons + 1)
     {
       error_at (loc, "malformed %<target(\"%s\")%> attribute",
 		TREE_STRING_POINTER (args));
