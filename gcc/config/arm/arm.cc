@@ -8852,35 +8852,11 @@ arm_legitimate_index_p (machine_mode mode, rtx index, RTX_CODE outer,
 	    && INTVAL (index) > -1024
 	    && (INTVAL (index) & 3) == 0);
 
-  /* For quad modes, we restrict the constant offset to be slightly less
-     than what the instruction format permits.  We do this because for
-     quad mode moves, we will actually decompose them into two separate
-     double-mode reads or writes.  INDEX must therefore be a valid
-     (double-mode) offset and so should INDEX+8.  */
-  if (TARGET_NEON && VALID_NEON_QREG_MODE (mode))
-    return (code == CONST_INT
-	    && INTVAL (index) < 1016
-	    && INTVAL (index) > -1024
-	    && (INTVAL (index) & 3) == 0);
-
-  /* We have no such constraint on double mode offsets, so we permit the
-     full range of the instruction format.  */
-  if (TARGET_NEON && VALID_NEON_DREG_MODE (mode))
-    return (code == CONST_INT
-	    && INTVAL (index) < 1024
-	    && INTVAL (index) > -1024
-	    && (INTVAL (index) & 3) == 0);
-
-  if (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (mode))
-    return (code == CONST_INT
-	    && INTVAL (index) < 1024
-	    && INTVAL (index) > -1024
-	    && (INTVAL (index) & 3) == 0);
-
   if (arm_address_register_rtx_p (index, strict_p)
       && (GET_MODE_SIZE (mode) <= 4))
     return 1;
 
+  /* This handles DFmode only if !TARGET_HARD_FLOAT.  */
   if (mode == DImode || mode == DFmode)
     {
       if (code == CONST_INT)
@@ -8897,6 +8873,31 @@ arm_legitimate_index_p (machine_mode mode, rtx index, RTX_CODE outer,
 
       return TARGET_LDRD && arm_address_register_rtx_p (index, strict_p);
     }
+
+  /* For quad modes, we restrict the constant offset to be slightly less
+     than what the instruction format permits.  We do this because for
+     quad mode moves, we will actually decompose them into two separate
+     double-mode reads or writes.  INDEX must therefore be a valid
+     (double-mode) offset and so should INDEX+8.  */
+  if (TARGET_NEON && VALID_NEON_QREG_MODE (mode))
+    return (code == CONST_INT
+	    && INTVAL (index) < 1016
+	    && INTVAL (index) > -1024
+	    && (INTVAL (index) & 3) == 0);
+
+  /* We have no such constraint on double mode offsets, so we permit the
+     full range of the instruction format.  Note DImode is included here.  */
+  if (TARGET_NEON && VALID_NEON_DREG_MODE (mode))
+    return (code == CONST_INT
+	    && INTVAL (index) < 1024
+	    && INTVAL (index) > -1024
+	    && (INTVAL (index) & 3) == 0);
+
+  if (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (mode))
+    return (code == CONST_INT
+	    && INTVAL (index) < 1024
+	    && INTVAL (index) > -1024
+	    && (INTVAL (index) & 3) == 0);
 
   if (GET_MODE_SIZE (mode) <= 4
       && ! (arm_arch4
@@ -9000,7 +9001,7 @@ thumb2_legitimate_index_p (machine_mode mode, rtx index, int strict_p)
 	    && (INTVAL (index) & 3) == 0);
 
   /* We have no such constraint on double mode offsets, so we permit the
-     full range of the instruction format.  */
+     full range of the instruction format.  Note DImode is included here.  */
   if (TARGET_NEON && VALID_NEON_DREG_MODE (mode))
     return (code == CONST_INT
 	    && INTVAL (index) < 1024
@@ -9011,6 +9012,7 @@ thumb2_legitimate_index_p (machine_mode mode, rtx index, int strict_p)
       && (GET_MODE_SIZE (mode) <= 4))
     return 1;
 
+  /* This handles DImode if !TARGET_NEON, and DFmode if !TARGET_VFP_BASE.  */
   if (mode == DImode || mode == DFmode)
     {
       if (code == CONST_INT)
@@ -20859,10 +20861,9 @@ output_move_neon (rtx *operands)
 	int overlap = -1;
 	for (i = 0; i < nregs; i++)
 	  {
-	    /* We're only using DImode here because it's a convenient
-	       size.  */
-	    ops[0] = gen_rtx_REG (DImode, REGNO (reg) + 2 * i);
-	    ops[1] = adjust_address (mem, DImode, 8 * i);
+	    /* Use DFmode for vldr/vstr.  */
+	    ops[0] = gen_rtx_REG (DFmode, REGNO (reg) + 2 * i);
+	    ops[1] = adjust_address_nv (mem, DFmode, 8 * i);
 	    if (reg_overlap_mentioned_p (ops[0], mem))
 	      {
 		gcc_assert (overlap == -1);
@@ -20879,8 +20880,8 @@ output_move_neon (rtx *operands)
 	  }
 	if (overlap != -1)
 	  {
-	    ops[0] = gen_rtx_REG (DImode, REGNO (reg) + 2 * overlap);
-	    ops[1] = adjust_address (mem, SImode, 8 * overlap);
+	    ops[0] = gen_rtx_REG (DFmode, REGNO (reg) + 2 * overlap);
+	    ops[1] = adjust_address_nv (mem, DFmode, 8 * overlap);
 	    if (TARGET_HAVE_MVE && LABEL_REF_P (addr))
 	      sprintf (buff, "v%sr.32\t%%P0, %%1", load ? "ld" : "st");
 	    else
