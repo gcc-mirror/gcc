@@ -62,6 +62,9 @@ private:
   /* X-len of m_arch. */
   unsigned m_xlen;
 
+  /* Number of subsets. */
+  unsigned m_subset_num;
+
   riscv_subset_list (const char *, location_t);
 
   const char *parsing_subset_version (const char *, const char *, unsigned *,
