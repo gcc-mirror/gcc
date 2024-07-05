@@ -2735,15 +2735,9 @@ package body Sem_Aggr is
             -----------------
 
             function Empty_Range (A : Node_Id) return Boolean is
-               R : Node_Id;
+               R : constant Node_Id := First (Choice_List (A));
 
             begin
-               if Nkind (A) = N_Iterated_Component_Association then
-                  R := First (Discrete_Choices (A));
-               else
-                  R := First (Choices (A));
-               end if;
-
                return No (Next (R))
                  and then Nkind (R) = N_Range
                  and then Compile_Time_Compare

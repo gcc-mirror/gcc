@@ -1010,8 +1010,8 @@ package body Exp_Aggr is
       --  Returns a new reference to the index type name
 
       function Gen_Assign
-        (Ind     : Node_Id;
-         Expr    : Node_Id) return List_Id;
+        (Ind  : Node_Id;
+         Expr : Node_Id) return List_Id;
       --  Ind must be a side-effect-free expression. If the input aggregate N
       --  to Build_Loop contains no subaggregates, then this function returns
       --  the assignment statement:
@@ -1237,8 +1237,8 @@ package body Exp_Aggr is
       ----------------
 
       function Gen_Assign
-        (Ind     : Node_Id;
-         Expr    : Node_Id) return List_Id
+        (Ind  : Node_Id;
+         Expr : Node_Id) return List_Id
        is
          function Add_Loop_Actions (Lis : List_Id) return List_Id;
          --  Collect insert_actions generated in the construction of a loop,
