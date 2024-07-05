@@ -1,3 +1,11 @@
+2024-07-04  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2024-07-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR c++/115623
+	* semantics.cc (finish_for_cond): Add check for C++ cond.
+
 2024-06-28  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,21 @@
+2024-07-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2024-07-03  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/115475
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins):
+	Define __ARM_FEATURE_SVE_BF16 for TARGET_SVE_BF16.
+
+2024-07-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2024-07-03  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/115457
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins):
+	Define __ARM_FEATURE_BF16 for TARGET_BF16_FP.
+
 2024-07-03  John David Anglin  <danglin@gcc.gnu.org>
 
 	Revert:
