@@ -8186,9 +8186,6 @@ package body Exp_Util is
                   end if;
 
                   return;
-
-               else
-                  null;
                end if;
 
             --  Special case: an attribute denoting a procedure call
