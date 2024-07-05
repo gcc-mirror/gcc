@@ -39,6 +39,9 @@ void test01()
   // { dg-error "incomplete" "" { target *-*-* } 600 }
 }
 
+// { dg-error "-Wdelete-incomplete" "" { target c++26 } 283 }
+// { dg-error "-Wdelete-incomplete" "" { target c++26 } 305 }
+
 // Ignore additional diagnostic given with -Wsystem-headers:
 // { dg-prune-output "has incomplete type" }
 // { dg-prune-output "possible problem detected" }
