@@ -222,6 +222,9 @@ struct _slp_tree {
   unsigned int lanes;
   /* The operation of this node.  */
   enum tree_code code;
+  /* Whether uses of this load or feeders of this store are suitable
+     for load/store-lanes.  */
+  bool ldst_lanes;
 
   int vertex;
 
@@ -2313,6 +2316,7 @@ extern bool supportable_indirect_convert_operation (code_helper,
 						    tree, tree,
 						    vec<std::pair<tree, tree_code> > *,
 						    tree = NULL_TREE);
+extern int compare_step_with_zero (vec_info *, stmt_vec_info);
 
 extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
 				  enum vect_cost_for_stmt, stmt_vec_info,

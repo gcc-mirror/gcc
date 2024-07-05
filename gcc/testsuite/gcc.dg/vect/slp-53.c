@@ -12,4 +12,5 @@ void foo (int * __restrict x, int *y)
     }
 }
 
-/* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "vect" { target { vect_int && vect_int_mult } xfail vect_load_lanes } } } */
+/* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "vect" { target { vect_int && vect_int_mult } } } } */
+/* { dg-final { scan-tree-dump "LOAD_LANES" "vect" { target { vect_load_lanes } } } } */
