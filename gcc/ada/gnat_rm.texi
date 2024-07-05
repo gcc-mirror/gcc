@@ -21142,12 +21142,14 @@ build the type @code{Complex} and @code{Imaginary}.
 @item @code{Ada.Numerics.Discrete_Random}
 
 This generic package provides a random number generator suitable for generating
-uniformly distributed values of a specified discrete subtype.
+uniformly distributed values of a specified discrete subtype. It should not be
+used as a cryptographic pseudo-random source.
 
 @item @code{Ada.Numerics.Float_Random}
 
 This package provides a random number generator suitable for generating
-uniformly distributed floating point values in the unit interval.
+uniformly distributed floating point values in the unit interval. It should not
+be used as a cryptographic pseudo-random source.
 
 @item @code{Ada.Numerics.Generic_Complex_Elementary_Functions}
 
@@ -24688,7 +24690,9 @@ convenient for use with realtime applications.
 @geindex Random number generation
 
 Provides random number capabilities which extend those available in the
-standard Ada library and are more convenient to use.
+standard Ada library and are more convenient to use. This package is
+however NOT suitable for situations requiring cryptographically secure
+randomness.
 
 @node GNAT Regexp g-regexp ads,GNAT Registry g-regist ads,GNAT Random_Numbers g-rannum ads,The GNAT Library
 @anchor{gnat_rm/the_gnat_library gnat-regexp-g-regexp-ads}@anchor{270}@anchor{gnat_rm/the_gnat_library id90}@anchor{39b}

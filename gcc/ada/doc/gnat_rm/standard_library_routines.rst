@@ -302,12 +302,14 @@ the unit is not implemented.
 
 ``Ada.Numerics.Discrete_Random``
   This generic package provides a random number generator suitable for generating
-  uniformly distributed values of a specified discrete subtype.
+  uniformly distributed values of a specified discrete subtype. It should not be
+  used as a cryptographic pseudo-random source.
 
 
 ``Ada.Numerics.Float_Random``
   This package provides a random number generator suitable for generating
-  uniformly distributed floating point values in the unit interval.
+  uniformly distributed floating point values in the unit interval. It should not
+  be used as a cryptographic pseudo-random source.
 
 
 ``Ada.Numerics.Generic_Complex_Elementary_Functions``
