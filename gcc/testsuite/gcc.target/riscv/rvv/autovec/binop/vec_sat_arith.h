@@ -329,4 +329,26 @@ vec_sat_u_sub_trunc_##OUT_T##_fmt_1 (OUT_T *out, IN_T *op_1, IN_T y, \
 #define RUN_VEC_SAT_U_SUB_TRUNC_FMT_1(OUT_T, IN_T, out, op_1, y, N) \
   vec_sat_u_sub_trunc_##OUT_T##_fmt_1(out, op_1, y, N)
 
+/******************************************************************************/
+/* Saturation Truncation (Unsigned and Signed)                                */
+/******************************************************************************/
+#define DEF_VEC_SAT_U_TRUNC_FMT_1(NT, WT)                             \
+void __attribute__((noinline))                                        \
+vec_sat_u_trunc_##NT##_##WT##_fmt_1 (NT *out, WT *in, unsigned limit) \
+{                                                                     \
+  unsigned i;                                                         \
+  for (i = 0; i < limit; i++)                                         \
+    {                                                                 \
+      WT x = in[i];                                                   \
+      bool overflow = x > (WT)(NT)(-1);                               \
+      out[i] = ((NT)x) | (NT)-overflow;                               \
+    }                                                                 \
+}
+#define DEF_VEC_SAT_U_TRUNC_FMT_1_WRAP(NT, WT) DEF_VEC_SAT_U_TRUNC_FMT_1(NT, WT)
+
+#define RUN_VEC_SAT_U_TRUNC_FMT_1(NT, WT, out, in, N) \
+  vec_sat_u_trunc_##NT##_##WT##_fmt_1 (out, in, N)
+#define RUN_VEC_SAT_U_TRUNC_FMT_1_WRAP(NT, WT, out, in, N) \
+  RUN_VEC_SAT_U_TRUNC_FMT_1(NT, WT, out, in, N)
+
 #endif
