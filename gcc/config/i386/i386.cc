@@ -27025,6 +27025,29 @@ ix86_libm_function_max_error (unsigned cfn, machine_mode mode,
 #undef TARGET_LIBM_FUNCTION_MAX_ERROR
 #define TARGET_LIBM_FUNCTION_MAX_ERROR ix86_libm_function_max_error
 
+#if TARGET_MACHO
+static bool
+ix86_cannot_copy_insn_p (rtx_insn *insn)
+{
+  if (TARGET_64BIT)
+    return false;
+
+  rtx set = single_set (insn);
+  if (set)
+    {
+      rtx src = SET_SRC (set);
+      if (GET_CODE (src) == UNSPEC
+	  && XINT (src, 1) == UNSPEC_SET_GOT)
+	return true;
+    }
+  return false;
+}
+
+#undef TARGET_CANNOT_COPY_INSN_P
+#define TARGET_CANNOT_COPY_INSN_P ix86_cannot_copy_insn_p
+
+#endif
+
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS
 #define TARGET_RUN_TARGET_SELFTESTS selftest::ix86_run_selftests
