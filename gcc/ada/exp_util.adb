@@ -8146,12 +8146,13 @@ package body Exp_Util is
                  --  not already set can lead to gigi assertion failures that
                  --  are presumably due to malformed trees, so don't do that.
 
-                 and then (Nkind (P) /= N_Iterated_Component_Association
-                            or else not Is_List_Member (N)
-                            or else
-                              List_Containing (N) /= Discrete_Choices (P))
-                 and then (Nkind (P) /= N_Component_Association
-                            or else Present (Loop_Actions (P)))
+                 and then
+                   not (Nkind (P) = N_Iterated_Component_Association
+                          and then Is_List_Member (N)
+                          and then List_Containing (N) = Discrete_Choices (P))
+                 and then
+                   not (Nkind (P) = N_Component_Association
+                          and then No (Loop_Actions (P)))
                then
                   if Is_Empty_List (Loop_Actions (P)) then
                      Set_Loop_Actions (P, Ins_Actions);
