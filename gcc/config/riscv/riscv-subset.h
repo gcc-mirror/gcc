@@ -65,6 +65,9 @@ private:
   /* Allow adding the same extension more than once.  */
   bool m_allow_adding_dup;
 
+  /* Number of subsets. */
+  unsigned m_subset_num;
+
   riscv_subset_list (const char *, location_t);
 
   const char *parsing_subset_version (const char *, const char *, unsigned *,

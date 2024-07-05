@@ -458,7 +458,8 @@ riscv_subset_t::riscv_subset_t ()
 }
 
 riscv_subset_list::riscv_subset_list (const char *arch, location_t loc)
-  : m_arch (arch), m_loc (loc), m_head (NULL), m_tail (NULL), m_xlen (0)
+  : m_arch (arch), m_loc (loc), m_head (NULL), m_tail (NULL), m_xlen (0),
+    m_subset_num (0)
 {
 }
 
@@ -709,6 +710,7 @@ riscv_subset_list::add (const char *subset, int major_version,
       return;
     }
 
+  m_subset_num++;
   riscv_subset_t *s = new riscv_subset_t ();
   riscv_subset_t *itr;
 
@@ -1472,9 +1474,15 @@ void
 riscv_subset_list::finalize ()
 {
   riscv_subset_t *subset;
+  unsigned pre_subset_num;
 
-  for (subset = m_head; subset != NULL; subset = subset->next)
-    handle_implied_ext (subset->name.c_str ());
+  do
+    {
+      pre_subset_num = m_subset_num;
+      for (subset = m_head; subset != NULL; subset = subset->next)
+	handle_implied_ext (subset->name.c_str ());
+    }
+  while (pre_subset_num != m_subset_num);
 
   gcc_assert (check_implied_ext ());
 
