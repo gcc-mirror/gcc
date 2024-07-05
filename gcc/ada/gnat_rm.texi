@@ -28850,8 +28850,6 @@ A basic_declarative_item may appear at the place of any statement.
 This avoids the heavy syntax of block_statements just to declare
 something locally.
 
-Link to the original RFC:
-@indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-local-vars-without-block.md}
 For example:
 
 @example
@@ -28863,6 +28861,9 @@ if X > 5 then
    X := X + Squared;
 end if;
 @end example
+
+Link to the original RFC:
+@indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-local-vars-without-block.md}
 
 @node Conditional when constructs,Fixed lower bounds for array types and subtypes,Local Declarations Without Block,Curated Extensions
 @anchor{gnat_rm/gnat_language_extensions conditional-when-constructs}@anchor{443}
