@@ -23188,7 +23188,8 @@ aarch64_gen_shareable_zero (machine_mode mode)
    to split without that restriction and instead recombine shared zeros
    if they turn out not to be worthwhile.  This would allow splits in
    single-block functions and would also cope more naturally with
-   rematerialization.  */
+   rematerialization.  The downside of not doing this is that we lose the
+   optimizations for vector epilogues as well.  */
 
 bool
 aarch64_split_simd_shift_p (rtx_insn *insn)

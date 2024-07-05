@@ -1904,17 +1904,6 @@
 
 ;; Widening operations.
 
-(define_insn "aarch64_simd_vec_unpack<su>_lo_<mode>"
-  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-        (ANY_EXTEND:<VWIDE> (vec_select:<VHALF>
-			       (match_operand:VQW 1 "register_operand" "w")
-			       (match_operand:VQW 2 "vect_par_cnst_lo_half" "")
-			    )))]
-  "TARGET_SIMD"
-  "<su>xtl\t%0.<Vwtype>, %1.<Vhalftype>"
-  [(set_attr "type" "neon_shift_imm_long")]
-)
-
 (define_insn_and_split "aarch64_simd_vec_unpack<su>_hi_<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
         (ANY_EXTEND:<VWIDE> (vec_select:<VHALF>
@@ -1952,14 +1941,11 @@
 )
 
 (define_expand "vec_unpack<su>_lo_<mode>"
-  [(match_operand:<VWIDE> 0 "register_operand")
-   (ANY_EXTEND:<VWIDE> (match_operand:VQW 1 "register_operand"))]
+  [(set (match_operand:<VWIDE> 0 "register_operand")
+	(ANY_EXTEND:<VWIDE> (match_operand:VQW 1 "register_operand")))]
   "TARGET_SIMD"
   {
-    rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, false);
-    emit_insn (gen_aarch64_simd_vec_unpack<su>_lo_<mode> (operands[0],
-							  operands[1], p));
-    DONE;
+    operands[1] = lowpart_subreg (<VHALF>mode, operands[1], <MODE>mode);
   }
 )
 
