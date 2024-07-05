@@ -501,17 +501,16 @@ namespace ranges
 	      if constexpr (contiguous_iterator<_Iter>)
 		if (!is_constant_evaluated())
 		  {
-		    if (static_cast<iter_value_t<_Iter>>(__value) != __value)
-		      return __last;
-
+		    using _Vt = iter_value_t<_Iter>;
 		    auto __n = __last - __first;
-		    if (__n > 0)
-		      {
-			const int __ival = static_cast<int>(__value);
-			const void* __p0 = std::to_address(__first);
-			if (auto __p1 = __builtin_memchr(__p0, __ival, __n))
-			  __n = (const char*)__p1 - (const char*)__p0;
-		      }
+		    if (static_cast<_Vt>(__value) == __value) [[likely]]
+		      if (__n > 0)
+			{
+			  const int __ival = static_cast<int>(__value);
+			  const void* __p0 = std::to_address(__first);
+			  if (auto __p1 = __builtin_memchr(__p0, __ival, __n))
+			    __n = (const char*)__p1 - (const char*)__p0;
+			}
 		    return __first + __n;
 		  }
 
