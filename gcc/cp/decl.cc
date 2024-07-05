@@ -16737,12 +16737,14 @@ xref_tag (enum tag_types tag_code, tree name,
 	  if (CLASS_TYPE_P (t) && CLASSTYPE_IS_TEMPLATE (t))
 	    maybe_tmpl = CLASSTYPE_TI_TEMPLATE (t);
 
+	  /* FIXME: we should do a more precise check for redefinitions
+	     of a conflicting using-declaration here, as these diagnostics
+	     are not ideal.  */
 	  if (DECL_LANG_SPECIFIC (decl)
 	      && DECL_MODULE_IMPORT_P (decl)
-	      && TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
+	      && CP_DECL_CONTEXT (decl) == current_namespace)
 	    {
 	      /* Push it into this TU's symbol slot.  */
-	      gcc_checking_assert (current_namespace == CP_DECL_CONTEXT (decl));
 	      if (maybe_tmpl != decl)
 		/* We're in the template parm binding level.
 		   Pushtag has logic to slide under that, but we're

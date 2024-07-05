@@ -3782,18 +3782,30 @@ check_module_override (tree decl, tree mvec, bool hiding,
 	  /* Errors could cause there to be nothing.  */
 	  continue;
 
+	tree type = NULL_TREE;
 	if (STAT_HACK_P (bind))
-	  /* We do not have to check STAT_TYPE here, the xref_tag
-	     machinery deals with that problem. */
-	  bind = STAT_VISIBLE (bind);
+	  {
+	    /* If there was a matching STAT_TYPE here then xref_tag
+	       should have found it, but we need to check anyway because
+	       a conflicting using-declaration may exist.  */
+	    if (STAT_TYPE_VISIBLE_P (bind))
+	      type = STAT_TYPE (bind);
+	    bind = STAT_VISIBLE (bind);
+	  }
 
-	for (ovl_iterator iter (bind); iter; ++iter)
-	  if (!iter.using_p ())
-	    {
-	      match = duplicate_decls (decl, *iter, hiding);
-	      if (match)
-		goto matched;
-	    }
+	if (type)
+	  {
+	    match = duplicate_decls (decl, strip_using_decl (type), hiding);
+	    if (match)
+	      goto matched;
+	  }
+
+	for (ovl_iterator iter (strip_using_decl (bind)); iter; ++iter)
+	  {
+	    match = duplicate_decls (decl, *iter, hiding);
+	    if (match)
+	      goto matched;
+	  }
       }
 
   if (TREE_PUBLIC (scope) && TREE_PUBLIC (STRIP_TEMPLATE (decl))
