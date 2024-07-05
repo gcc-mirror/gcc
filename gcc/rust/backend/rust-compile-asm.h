@@ -29,7 +29,12 @@ namespace Compile {
 class CompileAsm
 {
 public:
+  static const int ASM_TREE_ARRAY_LENGTH = 5;
+  static tree add_stmt (tree);
+  static tree asm_build_asm_stmt (HIR::InlineAsm &);
   static tree asm_build_expr (HIR::InlineAsm &);
+  static tree asm_build_stmt (location_t, enum tree_code,
+			      const std::array<tree, ASM_TREE_ARRAY_LENGTH> &);
   static location_t asm_get_locus (HIR::InlineAsm &);
   static tree asm_construct_string_tree (HIR::InlineAsm &);
   static tree asm_construct_outputs (HIR::InlineAsm &);
