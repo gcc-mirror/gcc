@@ -1,3 +1,25 @@
+2024-07-05  Antoni Boucher  <bouanto@zoho.com>
+
+	* jit-common.h: Add array_type class.
+	* jit-recording.h (type::dyn_cast_array_type,
+	memento_of_get_aligned::dyn_cast_array_type,
+	array_type::dyn_cast_array_type, array_type::is_same_type_as):
+	New methods.
+
+2024-07-05  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/112574
+	* docs/topics/types.rst: Document GCC_JIT_TYPE_BFLOAT16.
+	* jit-common.h: Update NUM_GCC_JIT_TYPES.
+	* jit-playback.cc (get_tree_node_for_type): Support bfloat16.
+	* jit-recording.cc (recording::memento_of_get_type::get_size,
+	recording::memento_of_get_type::dereference,
+	recording::memento_of_get_type::is_int,
+	recording::memento_of_get_type::is_signed,
+	recording::memento_of_get_type::is_float,
+	recording::memento_of_get_type::is_bool): Support bfloat16.
+	* libgccjit.h (enum gcc_jit_types): Add GCC_JIT_TYPE_BFLOAT16.
+
 2024-06-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* jit-recording.cc

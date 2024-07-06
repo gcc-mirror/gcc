@@ -1,3 +1,79 @@
+2024-07-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/i386/i386.cc (ix86_cannot_copy_insn_p): New.
+	(TARGET_CANNOT_COPY_INSN_P): New.
+
+2024-07-05  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/115153
+	* config/arm/arm.cc (arm_legitimate_index_p): Move LDRD case before
+	NEON.
+	(thumb2_legitimate_index_p): Update comments.
+	(output_move_neon): Use DFmode for vldr/vstr and non-checking
+	adjust_address.
+
+2024-07-05  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md: Add TU policy.
+	* config/riscv/riscv-protos.h (enum insn_type): Define
+	SCALAR_MOVE_MERGED_OP_TU.
+
+2024-07-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/87376
+	* config/avr/avr-dimode.md: Use "nop_general_operand" instead
+	of "general_operand" as predicate for all input operands.
+
+2024-07-05  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.cc (struct expand_vec_perm_d): Add zero_op0_p
+	and zero_op_p1.
+	(aarch64_evpc_tbl): Implement register value remapping.
+	(aarch64_vectorize_vec_perm_const): Detect if operand is a zero dup
+	before it's forced to a reg.
+
+2024-07-05  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_simd_vec_unpack<su>_lo_<mode>): Remove.
+	(vec_unpack<su>_lo_<mode): Simplify.
+	* config/aarch64/aarch64.cc (aarch64_gen_shareable_zero): Update
+	comment.
+
+2024-07-05  Alex Coplan  <alex.coplan@arm.com>
+
+	* dominance.cc (dot_dominance_tree): New.
+
+2024-07-05  Hu, Lin1  <lin1.hu@intel.com>
+
+	* config/i386/sse.md (ssedoublemode): Remove mappings to twice
+	the number of same-sized elements. Add mappings to the same
+	number of double-sized elements.
+	(define_split for vec_concat_minus_plus): Change mode_attr from
+	ssedoublemode to ssedoublevecmode.
+	(define_split for vec_concat_plus_minus): Ditto.
+	(<mask_codefor>avx512dq_shuf_<shuffletype>64x2_1<mask_name>):
+	Ditto.
+	(avx512f_shuf_<shuffletype>64x2_1<mask_name>): Ditto.
+	(avx512vl_shuf_<shuffletype>32x4_1<mask_name>): Ditto.
+	(avx512f_shuf_<shuffletype>32x4_1<mask_name>): Ditto.
+
+2024-07-05  YunQiang Su  <syq@gcc.gnu.org>
+
+	* config/mips/mips-protos.h: New function mips_msa_shf_i8.
+	* config/mips/mips-msa.md(MSA_WHB_W): Not used anymore;
+	(msa_shf_<msafmt_f>): Use mips_msa_shf_i8.
+	* config/mips/mips.cc(mips_const_vector_shuffle_set_p):
+	Support more cases try to use alien mode instruction;
+	(mips_msa_shf_i8): New function to get the correct MSA SHF
+	instruction and IMM.
+
+2024-07-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_build_slp_instance): Special case
+	three input permute with the same number of lanes in store
+	permute lowering.
+
 2024-07-04  Siarhei Volkau  <lis8215@gmail.com>
 
 	* config/arm/arm.cc (thumb_load_double_from_address): Emit ldmia

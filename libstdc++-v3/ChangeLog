@@ -1,3 +1,33 @@
+2024-07-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/115747
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/43820_neg.cc:
+	Add dg-error for new C++26 diagnostics.
+
+2024-07-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_uninitialized.h (_UninitDestroyGuard): New
+	class template and partial specialization.
+	(__do_uninit_copy, __do_uninit_fill, __do_uninit_fill_n)
+	(__uninitialized_copy_a, __uninitialized_fill_a)
+	(__uninitialized_fill_n_a, __uninitialized_copy_move)
+	(__uninitialized_move_copy, __uninitialized_fill_move)
+	(__uninitialized_move_fill, __uninitialized_default_1)
+	(__uninitialized_default_n_a, __uninitialized_default_novalue_1)
+	(__uninitialized_default_novalue_n_1, __uninitialized_copy_n)
+	(__uninitialized_copy_n_pair): Use it.
+
+2024-07-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/88545
+	PR libstdc++/115040
+	* include/bits/cpp_type_traits.h (__can_use_memchr_for_find):
+	New variable template.
+	* include/bits/ranges_util.h (__find_fn): Use memchr when
+	possible.
+	* include/bits/stl_algo.h (find): Likewise.
+	* testsuite/25_algorithms/find/bytes.cc: New test.
+
 2024-07-04  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR libstdc++/98678
