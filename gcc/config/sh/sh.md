@@ -1542,9 +1542,9 @@
 	(plus:DI (match_operand:DI 1 "arith_reg_operand")
 		 (match_operand:DI 2 "arith_reg_operand")))
    (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
+  "TARGET_SH1 && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(const_int 0)]
 {
   emit_insn (gen_clrt ());
@@ -1934,9 +1934,9 @@
 	(minus:DI (match_operand:DI 1 "arith_reg_operand")
 		  (match_operand:DI 2 "arith_reg_operand")))
    (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
+  "TARGET_SH1 && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(const_int 0)]
 {
   emit_insn (gen_clrt ());
@@ -3174,9 +3174,9 @@
 		(and:SI (match_operand:SI 3 "arith_reg_or_t_reg_operand")
 			(const_int 1))))
    (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
+  "TARGET_SH1 && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(const_int 0)]
 {
   gcc_assert (INTVAL (operands[2]) > 0);
@@ -3259,9 +3259,9 @@
 			   (match_operand:SI 2 "const_int_operand"))
 		(match_operand 3 "treg_set_expr")))
    (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
+  "TARGET_SH1 && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(parallel [(set (match_dup 0)
 		   (ior:SI (ashift:SI (match_dup 1) (match_dup 2))
 			   (and:SI (match_dup 3) (const_int 1))))
@@ -3278,9 +3278,9 @@
 		(ashift:SI (match_operand:SI 2 "arith_reg_operand")
 			   (match_operand:SI 3 "const_int_operand"))))
    (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
+  "TARGET_SH1 && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(parallel [(set (match_dup 0)
 		   (ior:SI (ashift:SI (match_dup 2) (match_dup 3))
 			   (and:SI (match_dup 1) (const_int 1))))
@@ -3293,9 +3293,9 @@
 		(lshiftrt:SI (match_operand:SI 3 "arith_reg_operand")
 			     (const_int 31))))
    (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
+  "TARGET_SH1 && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(parallel [(set (match_dup 0)
 		   (ior:SI (ashift:SI (match_dup 1) (match_dup 2))
 			   (and:SI (reg:SI T_REG) (const_int 1))))
@@ -3312,9 +3312,9 @@
 		(ashift:SI (match_operand:SI 1 "arith_reg_operand")
 			   (match_operand:SI 2 "const_int_operand"))))
    (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
+  "TARGET_SH1 && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(parallel [(set (match_dup 0)
 		   (ior:SI (ashift:SI (match_dup 1) (match_dup 2))
 			   (and:SI (reg:SI T_REG) (const_int 1))))
@@ -3332,9 +3332,9 @@
 				 (const_int 1)
 				 (match_operand 4 "const_int_operand"))))
    (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
+  "TARGET_SH1 && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(parallel [(set (match_dup 0)
 		   (ior:SI (ashift:SI (match_dup 1) (match_dup 2))
 			   (and:SI (match_dup 5) (const_int 1))))
@@ -3377,9 +3377,9 @@
 		(lshiftrt:SI (match_operand:SI 2 "arith_reg_operand")
 			     (const_int 1))))
    (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
+  "TARGET_SH1 && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(const_int 0)]
 {
   rtx tmp = gen_reg_rtx (SImode);
@@ -3394,9 +3394,9 @@
 			     (const_int 1))
 		(const_int -2147483648))) ;; 0xffffffff80000000
    (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
+  "TARGET_SH1 && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(const_int 0)]
 {
   emit_insn (gen_sett ());
@@ -3411,9 +3411,9 @@
 		(lshiftrt:SI (match_operand:SI 2 "arith_reg_operand")
 			     (match_operand:SI 3 "const_int_operand"))))
    (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
+  "TARGET_SH1 && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(parallel [(set (match_dup 0)
 		   (ior:SI (lshiftrt:SI (match_dup 2) (match_dup 3))
 			   (ashift:SI (reg:SI T_REG) (const_int 31))))
@@ -3428,9 +3428,9 @@
 			     (match_operand:SI 2 "const_int_operand"))
 		(match_operand:SI 3 "negt_reg_shl31_operand")))
    (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
+  "TARGET_SH1 && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(parallel [(set (match_dup 0)
 		   (ior:SI (lshiftrt:SI (match_dup 1) (match_dup 2))
 			   (ashift:SI (reg:SI T_REG) (const_int 31))))
@@ -4379,9 +4379,9 @@
   [(set (match_operand:DI 0 "arith_reg_dest")
 	(neg:DI (match_operand:DI 1 "arith_reg_operand")))
    (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
+  "TARGET_SH1 && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(const_int 0)]
 {
   emit_insn (gen_clrt ());
@@ -4460,9 +4460,9 @@
   [(set (match_operand:SIDI 0 "arith_reg_dest")
   	(abs:SIDI (match_operand:SIDI 1 "arith_reg_operand")))
    (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
+  "TARGET_SH1 && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(const_int 0)]
 {
   if (<MODE>mode == SImode)
@@ -4482,9 +4482,9 @@
   [(set (match_operand:SIDI 0 "arith_reg_dest")
 	(neg:SIDI (abs:SIDI (match_operand:SIDI 1 "arith_reg_operand"))))
    (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
+  "TARGET_SH1 && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(const_int 0)]
 {
   if (<MODE>mode == SImode)
@@ -4551,9 +4551,9 @@
 	  (match_operand:DI 1 "arith_reg_operand")
 	  (neg:DI (match_operand:DI 2 "arith_reg_operand"))))
    (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
+  "TARGET_SH1 && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(const_int 0)]
 {
   rtx_code_label *skip_neg_label = gen_label_rtx ();
@@ -4622,9 +4622,9 @@
 				   (const_int 8))
 			(const_int 65280))
 		(match_operand:SI 2 "arith_reg_operand" "r")))]
-  "TARGET_SH1 && ! reload_in_progress && ! reload_completed"
+  "TARGET_SH1 && ! reload_in_progress && ! reload_completed && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(const_int 0)]
 {
   rtx tmp0 = gen_reg_rtx (SImode);
@@ -4644,9 +4644,9 @@
 				   (const_int 8))
 			(const_int 65280))
 		(zero_extract:SI (match_dup 1) (const_int 8) (const_int 8))))]
-  "TARGET_SH1 && ! reload_in_progress && ! reload_completed"
+  "TARGET_SH1 && ! reload_in_progress && ! reload_completed && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(const_int 0)]
 {
   rtx tmp = gen_reg_rtx (SImode);
@@ -5005,9 +5005,9 @@
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(match_operand:SI 1 "mem_index_disp_operand" "m"))
    (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
+  "TARGET_SH1 && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(set (match_dup 6) (plus:SI (match_dup 5) (match_dup 3)))
    (set (match_dup 0) (match_dup 7))]
 {
@@ -5033,9 +5033,9 @@
   [(set (match_operand:SI 0 "arith_reg_dest")
 	(SZ_EXTEND:SI (match_operand:HI 1 "mem_index_disp_operand")))
    (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
+  "TARGET_SH1 && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(const_int 0)]
 {
   rtx mem = operands[1];
@@ -5080,9 +5080,9 @@
   [(set (match_operand:HISI 0 "mem_index_disp_operand" "=m")
 	(match_operand:HISI 1 "arith_reg_operand" "r"))
    (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
+  "TARGET_SH1 && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(set (match_dup 6) (plus:SI (match_dup 5) (match_dup 3)))
    (set (match_dup 7) (match_dup 1))]
 {
@@ -8311,9 +8311,9 @@
 			 (const_int 1))
 		 (const_int 2147483647)))
    (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
+  "TARGET_SH1 && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(parallel [(set (match_dup 0)
 		   (plus:SI (zero_extract:SI (match_dup 1)
 					     (const_int 1) (const_int 0))
@@ -8325,9 +8325,9 @@
 	(plus:SI (match_operand 1 "treg_set_expr")
 		 (const_int 2147483647)))  ;; 0x7fffffff
    (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
+  "TARGET_SH1 && can_create_pseudo_p ()"
    "#"
-   "&& can_create_pseudo_p ()"
+   "&& 1"
   [(const_int 0)]
 {
   if (negt_reg_operand (operands[1], VOIDmode))
@@ -8474,9 +8474,9 @@
 (define_insn_and_split "*negt_msb"
   [(set (match_operand:SI 0 "arith_reg_dest")
 	(match_operand:SI 1 "negt_reg_shl31_operand"))]
-  "TARGET_SH1"
+  "TARGET_SH1 && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(const_int 0)]
 {
   rtx tmp = gen_reg_rtx (SImode);
@@ -8895,9 +8895,9 @@
   [(set (match_operand:SI 0 "arith_reg_dest")
 	(umin:SI (match_operand:SI 1 "arith_reg_operand") (const_int 1)))
    (clobber (reg:SI T_REG))]
-  "TARGET_SH2A"
+  "TARGET_SH2A && can_create_pseudo_p ()"
   "#"
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(const_int 0)]
 {
   emit_insn (gen_cmpeqsi_t (operands[1], const0_rtx));
