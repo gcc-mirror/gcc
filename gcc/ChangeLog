@@ -1,3 +1,24 @@
+2024-07-05  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	Backported from master:
+	2023-11-30  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/103100
+	* config/aarch64/aarch64.md (cpymemdi): Remove pattern condition.
+	(setmemdi): Likewise.
+	* config/aarch64/aarch64.cc (aarch64_expand_cpymem): Support
+	strict-align.  Cleanup condition for using MOPS.
+	(aarch64_expand_setmem): Likewise.
+
+2024-07-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-07-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/87376
+	* config/avr/avr-dimode.md: Use "nop_general_operand" instead
+	of "general_operand" as predicate for all input operands.
+
 2024-07-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	Backported from master:
