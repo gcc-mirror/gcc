@@ -1,3 +1,12 @@
+2024-07-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-07-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/87376
+	* config/avr/avr-dimode.md: Use "nop_general_operand" instead
+	of "general_operand" as predicate for all input operands.
+
 2024-07-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	Backported from master:
