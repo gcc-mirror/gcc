@@ -1,3 +1,19 @@
+2024-07-05  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	Backported from master:
+	2024-07-02  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/115188
+	* gcc.target/arm/pr115188.c: Add new test.
+
+2024-07-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-07-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/87376
+	* gcc.target/avr/torture/pr87376.c: New test.
+
 2024-07-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	Backported from master:

@@ -1,3 +1,27 @@
+2024-07-05  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	Backported from master:
+	2024-07-02  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/115188
+	* config/arm/arm.md (unaligned_loadsi): Use 'Uw' constraint and
+	'mem_and_no_t1_wback_op'.
+	(unaligned_loadhiu): Likewise.
+	(unaligned_storesi): Likewise.
+	(unaligned_storehi): Likewise.
+	* config/arm/predicates.md (mem_and_no_t1_wback_op): Add new predicate.
+	* config/arm/sync.md (arm_atomic_load<mode>): Use 'Uw' constraint.
+	(arm_atomic_store<mode>): Likewise.
+
+2024-07-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-07-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/87376
+	* config/avr/avr-dimode.md: Use "nop_general_operand" instead
+	of "general_operand" as predicate for all input operands.
+
 2024-07-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	Backported from master:
