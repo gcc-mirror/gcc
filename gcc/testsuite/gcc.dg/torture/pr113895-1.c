@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target int32plus } */
 
 int main_i;
 void transparent_crc(int);

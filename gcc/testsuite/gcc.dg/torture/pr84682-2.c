@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "impossible register constraint" { "avr-*-*" } } */
 
 int a;
 void b() {

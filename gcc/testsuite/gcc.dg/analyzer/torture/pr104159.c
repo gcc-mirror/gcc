@@ -1,4 +1,5 @@
 /* { dg-additional-options "-Wno-analyzer-use-of-uninitialized-value -Wno-psabi" } */
+/* { dg-skip-if "incompatible types" { "avr-*-*" } } */
 
 typedef int __attribute__((__vector_size__(4))) T;
 typedef unsigned __attribute__((__vector_size__(4))) U;
