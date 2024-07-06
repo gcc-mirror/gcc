@@ -1397,7 +1397,9 @@ riscv_valid_lo_sum_p (enum riscv_symbol_type sym_type, machine_mode mode,
       align = (SYMBOL_REF_DECL (x)
 	       ? DECL_ALIGN (SYMBOL_REF_DECL (x))
 	       : 1);
-      size = (SYMBOL_REF_DECL (x) && DECL_SIZE (SYMBOL_REF_DECL (x))
+      size = (SYMBOL_REF_DECL (x)
+	      && DECL_SIZE (SYMBOL_REF_DECL (x))
+	      && tree_fits_uhwi_p (DECL_SIZE (SYMBOL_REF_DECL (x)))
 	      ? tree_to_uhwi (DECL_SIZE (SYMBOL_REF_DECL (x)))
 	      : 2*BITS_PER_WORD);
     }
