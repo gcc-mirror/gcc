@@ -26050,14 +26050,25 @@ ix86_expand_ternlog (machine_mode mode, rtx op0, rtx op1, rtx op2, int idx,
       break;
     }
 
-  tmp0 = register_operand (op0, mode) ? op0 : force_reg (mode, op0);
+  if (!register_operand (op0, mode))
+    {
+      /* We can't use force_reg (mode, op0).  */
+      tmp0 = gen_reg_rtx (GET_MODE (op0));
+      emit_move_insn (tmp0,op0);
+    }
+  else
+    tmp0 = op0;
   if (GET_MODE (tmp0) != mode)
     tmp0 = gen_lowpart (mode, tmp0);
 
   if (!op1 || rtx_equal_p (op0, op1))
     tmp1 = copy_rtx (tmp0);
   else if (!register_operand (op1, mode))
-    tmp1 = force_reg (mode, op1);
+    {
+      /* We can't use force_reg (mode, op1).  */
+      tmp1 = gen_reg_rtx (GET_MODE (op1));
+      emit_move_insn (tmp1, op1);
+    }
   else
     tmp1 = op1;
   if (GET_MODE (tmp1) != mode)
