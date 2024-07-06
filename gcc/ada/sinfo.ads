@@ -1749,6 +1749,11 @@ package Sinfo is
    --    flag aids the ABE Processing phase to suppress the diagnostics of
    --    finalization actions in initialization contexts.
 
+   --  Is_Interpolated_String_Literal
+   --    Defined in string literals. Used to differentiate string literals
+   --    composed of interpolated string elements from string literals found
+   --    in interpolated expressions.
+
    --  Is_Known_Guaranteed_ABE
    --    NOTE: this flag is shared between the legacy ABE mechanism and the
    --    default ABE mechanism.
@@ -2610,6 +2615,7 @@ package Sinfo is
       --  Has_Wide_Character
       --  Has_Wide_Wide_Character
       --  Is_Folded_In_Parser
+      --  Is_Interpolated_String_Literal
       --  plus fields for expression
 
       ---------------------------------------
@@ -2617,8 +2623,7 @@ package Sinfo is
       ---------------------------------------
 
       --  INTERPOLATED_STRING_LITERAL ::=
-      --    '{' "{INTERPOLATED_STRING_ELEMENT}" {
-      --        "{INTERPOLATED_STRING_ELEMENT}" } '}'
+      --    'f' "{INTERPOLATED_STRING_ELEMENT}"
 
       --  INTERPOLATED_STRING_ELEMENT ::=
       --      ESCAPED_CHARACTER | INTERPOLATED_EXPRESSION

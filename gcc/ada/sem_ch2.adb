@@ -138,67 +138,113 @@ package body Sem_Ch2 is
 
    procedure Analyze_Interpolated_String_Literal (N : Node_Id) is
 
-      procedure Check_Ambiguous_Parameterless_Call (Func_Call : Node_Id);
-      --  Examine the interpretations of the call to the given parameterless
-      --  function call and report the location of each interpretation.
+      procedure Check_Ambiguous_Call (Func_Call : Node_Id);
+      --  Examine the interpretations of the call to the given function call
+      --  and report the location of each interpretation.
 
-      ----------------------------------------
-      -- Check_Ambiguous_Parameterless_Call --
-      ----------------------------------------
+      --------------------------
+      -- Check_Ambiguous_Call --
+      --------------------------
 
-      procedure Check_Ambiguous_Parameterless_Call (Func_Call : Node_Id) is
+      procedure Check_Ambiguous_Call (Func_Call : Node_Id) is
 
-         procedure Report_Interpretation (E : Entity_Id);
-         --  Report an interpretation of the function call
+         procedure Report_Interpretation (Nam : Entity_Id; Typ : Entity_Id);
+         --  Report an interpretation of the function call. When calling a
+         --  standard operator, use the location of the type, which may be
+         --  user-defined.
 
          ---------------------------
          -- Report_Interpretation --
          ---------------------------
 
-         procedure Report_Interpretation (E : Entity_Id) is
+         procedure Report_Interpretation (Nam : Entity_Id; Typ : Entity_Id) is
          begin
-            Error_Msg_Sloc := Sloc (E);
-
-            if Nkind (Parent (E)) = N_Full_Type_Declaration then
-               Error_Msg_N ("interpretation (inherited) #!", Func_Call);
+            if Sloc (Nam) = Standard_Location then
+               Error_Msg_Sloc := Sloc (Typ);
             else
-               Error_Msg_N ("interpretation #!", Func_Call);
+               Error_Msg_Sloc := Sloc (Nam);
+            end if;
+
+            if Nkind (Parent (Nam)) = N_Full_Type_Declaration then
+               Error_Msg_N
+                 ("\\possible interpretation (inherited)#!", Func_Call);
+            else
+               Error_Msg_N ("\\possible interpretation#!", Func_Call);
             end if;
          end Report_Interpretation;
 
-         --  Local variables
-
-         Error_Reported : Boolean;
-         I              : Interp_Index;
-         It             : Interp;
-
-      --  Start of processing for Check_Ambiguous_Parameterless_Call
+      --  Start of processing for Check_Ambiguous_Call
 
       begin
-         Error_Reported := False;
+         Check_Parameterless_Call (Func_Call);
 
-         --  Examine possible interpretations
+         if Is_Overloaded (Func_Call) then
+            declare
+               I   : Interp_Index;
+               I1  : Interp_Index;
+               It  : Interp;
+               It1 : Interp;
+               N1  : Entity_Id;
+               T1  : Entity_Id;
 
-         Get_First_Interp (Name (Func_Call), I, It);
-         while Present (It.Nam) loop
-            if It.Nam /= Entity (Name (Func_Call))
-              and then Ekind (It.Nam) = E_Function
-              and then No (First_Formal (It.Nam))
-            then
-               if not Error_Reported then
-                  Error_Msg_NE
-                    ("ambiguous call to&", Func_Call,
-                     Entity (Name (Func_Call)));
-                  Report_Interpretation (Entity (Name (Func_Call)));
-                  Error_Reported := True;
+            begin
+               --  Remove procedure calls, as they cannot syntactically appear
+               --  in interpolated expressions. These calls were not removed by
+               --  type checking because interpolated expressions do not impose
+               --  a context type.
+
+               Get_First_Interp (Func_Call, I, It);
+               while Present (It.Nam) loop
+                  if It.Typ = Standard_Void_Type then
+                     Remove_Interp (I);
+                  end if;
+
+                  Get_Next_Interp (I, It);
+               end loop;
+
+               Get_First_Interp (Func_Call, I, It);
+
+               if No (It.Nam) then
+                  Error_Msg_N ("illegal expression", Func_Call);
+                  return;
                end if;
 
-               Report_Interpretation (It.Nam);
-            end if;
+               I1  := I;
+               It1 := It;
 
-            Get_Next_Interp (I, It);
-         end loop;
-      end Check_Ambiguous_Parameterless_Call;
+               --  The node may be labeled overloaded, but still contain only
+               --  one interpretation because others were discarded earlier. If
+               --  this is the case, retain the single interpretation.
+
+               Get_Next_Interp (I, It);
+
+               if Present (It.Typ) then
+                  N1  := It1.Nam;
+                  T1  := It1.Typ;
+
+                  It1 := Disambiguate
+                           (N   => Func_Call,
+                            I1  => I1,
+                            I2  => I,
+                            Typ => Any_Type);
+
+                  if It1 = No_Interp then
+                     Error_Msg_NE ("ambiguous call to&", Func_Call,
+                       Entity (Name (Func_Call)));
+
+                     --  Report the first two interpretations
+
+                     Report_Interpretation (It.Nam, It.Typ);
+                     Report_Interpretation (N1, T1);
+
+                     return;
+                  end if;
+               end if;
+
+               Set_Etype (Func_Call, It1.Typ);
+            end;
+         end if;
+      end Check_Ambiguous_Call;
 
       --  Local variables
 
@@ -211,22 +257,114 @@ package body Sem_Ch2 is
 
       Str_Elem := First (Expressions (N));
       while Present (Str_Elem) loop
-
-         --  Before analyzed, a function call that has parameter is an
-         --  N_Indexed_Component node, and a call to a function that has
-         --  no parameters is an N_Identifier node.
-
          Analyze (Str_Elem);
 
-         --  After analyzed, if it is still an N_Identifier node then we
-         --  found ambiguity and could not rewrite it as N_Function_Call.
+         --  The parser has split the contents of the interpolated string
+         --  into its components. For example, f"before {expr} after" is
+         --  stored in the list of expressions of N as follows:
+         --     first = "before " (is_interpolated_string_literal)
+         --      next =  expr
+         --      next = " after"  (is_interpolated_string_literal)
+         --
+         --  No further action is needed for string literals with the
+         --  attribute Is_Interpolated_String_Literal set, as they are
+         --  components of the interpolated string literal. The type of
+         --  these components will be determined by the context when
+         --  resolved (see Expand_N_Interpolated_String_Literal). The
+         --  rest of the components in the list of expressions of N are
+         --  the root nodes of the interpolated expressions.
 
-         if Nkind (Str_Elem) = N_Identifier
-           and then Ekind (Entity (Str_Elem)) = E_Function
-           and then Is_Overloaded (Str_Elem)
+         if Nkind (Str_Elem) = N_String_Literal
+           and then Is_Interpolated_String_Literal (Str_Elem)
          then
-            Check_Parameterless_Call (Str_Elem);
-            Check_Ambiguous_Parameterless_Call (Str_Elem);
+            null;
+
+         elsif Nkind (Str_Elem) = N_Function_Call then
+            Check_Ambiguous_Call (Str_Elem);
+
+         --  Before analyzed, a function call that has parameters is an
+         --  N_Indexed_Component node, and a call to a function that has
+         --  no parameters is an N_Identifier or an N_Expanded_Name node.
+         --  If the analysis could not rewrite it as N_Function_Call, it
+         --  indicates that ambiguity may have been encountered.
+
+         elsif Nkind (Str_Elem) in N_Identifier | N_Expanded_Name
+           and then Ekind (Entity (Str_Elem)) = E_Function
+         then
+            Check_Ambiguous_Call (Str_Elem);
+
+         --  Report common errors
+
+         elsif Nkind (Str_Elem) = N_String_Literal then
+
+            --  No further action needed for components of the interpolated
+            --  string literal; its type will be imposed by its context when
+            --  resolved.
+
+            if Is_Interpolated_String_Literal (Str_Elem) then
+               null;
+
+            else
+               Error_Msg_N
+                 ("ambiguous string literal in interpolated expression",
+                  Str_Elem);
+               Error_Msg_N
+                 ("\\possible interpretation 'Ada.'String type!",
+                  Str_Elem);
+               Error_Msg_N
+                 ("\\possible interpretation 'Ada.'Wide_'String type!",
+                  Str_Elem);
+               Error_Msg_N
+                 ("\\possible interpretation 'Ada.'Wide_'Wide_'String"
+                  & " type!", Str_Elem);
+               Error_Msg_N
+                 ("\\must use a qualified expression", Str_Elem);
+            end if;
+
+         elsif Nkind (Str_Elem) = N_Character_Literal then
+            Error_Msg_N
+              ("ambiguous character literal in interpolated expression",
+               Str_Elem);
+            Error_Msg_N
+              ("\\possible interpretation 'Ada.'Character type!",
+               Str_Elem);
+            Error_Msg_N
+              ("\\possible interpretation 'Ada.'Wide_'Character type!",
+               Str_Elem);
+            Error_Msg_N
+              ("\\possible interpretation 'Ada.'Wide_'Wide_'Character"
+               & " type!", Str_Elem);
+            Error_Msg_N
+              ("\\must use a qualified expression", Str_Elem);
+
+         elsif Nkind (Str_Elem) in N_Integer_Literal
+                                 | N_Real_Literal
+         then
+            Error_Msg_N
+              ("ambiguous number in interpolated expression",
+               Str_Elem);
+            Error_Msg_N
+              ("\\must use a qualified expression", Str_Elem);
+
+         elsif Nkind (Str_Elem) = N_Interpolated_String_Literal then
+            Error_Msg_N ("nested interpolated string not allowed", Str_Elem);
+
+         elsif Etype (Str_Elem) in Any_Type
+                                 | Any_Array
+                                 | Any_Composite
+                                 | Any_Discrete
+                                 | Any_Fixed
+                                 | Any_Integer
+                                 | Any_Modular
+                                 | Any_Numeric
+                                 | Any_Real
+                                 | Any_String
+                                 | Universal_Integer
+                                 | Universal_Real
+                                 | Universal_Fixed
+                                 | Universal_Access
+         then
+            Error_Msg_N ("ambiguous interpolated expression", Str_Elem);
          end if;
 
          Next (Str_Elem);

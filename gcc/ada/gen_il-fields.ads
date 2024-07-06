@@ -263,6 +263,7 @@ package Gen_IL.Fields is
       Is_In_Discriminant_Check,
       Is_Inherited_Pragma,
       Is_Initialization_Block,
+      Is_Interpolated_String_Literal,
       Is_Known_Guaranteed_ABE,
       Is_Machine_Number,
       Is_Null_Loop,

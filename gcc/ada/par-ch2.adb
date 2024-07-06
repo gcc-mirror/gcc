@@ -237,6 +237,7 @@ package body Ch2 is
          Error_Msg_SC ("string literal expected");
 
       else
+         Set_Is_Interpolated_String_Literal (Token_Node);
          Append_To (Elements_List, Token_Node);
          Scan;  --  past string_literal
 
@@ -261,6 +262,7 @@ package body Ch2 is
                   Error_Msg_SC ("unexpected string literal");
                end if;
 
+               Set_Is_Interpolated_String_Literal (Token_Node);
                Append_To (Elements_List, Token_Node);
                Scan; --  past string_literal
             end if;
