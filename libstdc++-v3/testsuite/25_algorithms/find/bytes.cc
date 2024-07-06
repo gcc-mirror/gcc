@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstddef> // std::byte
 #include <testsuite_hooks.h>
+#include <testsuite_iterators.h>
 
 // PR libstdc++/88545 made std::find use memchr as an optimization.
 // This test verifies that it didn't change any semantics.
@@ -111,6 +112,12 @@ test_non_characters()
   xres = std::find(x, x+1, E('x'));
   VERIFY( xres == std::ranges::end(x) );
 #endif
+}
+
+void
+test_pr115799c2(__gnu_test::input_iterator_wrapper<char> i)
+{
+  (void) std::find(i, i, 'a');
 }
 
 int main()

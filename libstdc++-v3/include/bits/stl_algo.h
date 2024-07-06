@@ -3849,32 +3849,28 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 #if __cpp_if_constexpr && __glibcxx_type_trait_variable_templates
       using _ValT = typename iterator_traits<_InputIterator>::value_type;
       if constexpr (__can_use_memchr_for_find<_ValT, _Tp>)
-	{
-	  // If converting the value to the 1-byte value_type alters its value,
-	  // then it would not be found by std::find using equality comparison.
-	  // We need to check this here, because otherwise something like
-	  // memchr("a", 'a'+256, 1) would give a false positive match.
-	  if (!(static_cast<_ValT>(__val) == __val))
-	    return __last;
-	  else if (!__is_constant_evaluated())
-	    {
-	      const void* __p0 = nullptr;
-	      if constexpr (is_pointer_v<decltype(std::__niter_base(__first))>)
-		__p0 = std::__niter_base(__first);
+	if constexpr (is_pointer_v<decltype(std::__niter_base(__first))>
 #if __cpp_lib_concepts
-	      else if constexpr (contiguous_iterator<_InputIterator>)
-		__p0 = std::to_address(__first);
+			|| contiguous_iterator<_InputIterator>
 #endif
-	      if (__p0)
-		{
-		  const int __ival = static_cast<int>(__val);
-		  if (auto __n = std::distance(__first, __last); __n > 0)
-		    if (auto __p1 = __builtin_memchr(__p0, __ival, __n))
-		      return __first + ((const char*)__p1 - (const char*)__p0);
-		  return __last;
-		}
-	    }
-	}
+		     )
+	  {
+	    // If conversion to the 1-byte value_type alters the value,
+	    // it would not be found by std::find using equality comparison.
+	    // We need to check this here, because otherwise something like
+	    // memchr("a", 'a'+256, 1) would give a false positive match.
+	    if (!(static_cast<_ValT>(__val) == __val))
+	      return __last;
+	    else if (!__is_constant_evaluated())
+	      {
+		const void* __p0 = std::__to_address(__first);
+		const int __ival = static_cast<int>(__val);
+		if (auto __n = std::distance(__first, __last); __n > 0)
+		  if (auto __p1 = __builtin_memchr(__p0, __ival, __n))
+		    return __first + ((const char*)__p1 - (const char*)__p0);
+		return __last;
+	      }
+	  }
 #endif
 
       return std::__find_if(__first, __last,
