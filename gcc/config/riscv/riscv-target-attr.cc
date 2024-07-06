@@ -110,6 +110,8 @@ riscv_target_attr_parser::parse_arch (const char *str)
 		      ? riscv_subset_list::parse (local_arch_str, m_loc)
 		      : riscv_cmdline_subset_list ()->clone ();
       m_subset_list->set_loc (m_loc);
+      m_subset_list->set_allow_adding_dup (true);
+
       while (token)
 	{
 	  if (token[0] != '+')
@@ -135,6 +137,7 @@ riscv_target_attr_parser::parse_arch (const char *str)
 	  token = strtok_r (NULL, ",", &str_to_check);
 	}
 
+      m_subset_list->set_allow_adding_dup (false);
       m_subset_list->finalize ();
       return true;
     }
