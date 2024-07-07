@@ -1,3 +1,9 @@
+2024-07-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/115591
+	* config/riscv/riscv.cc (riscv_valid_lo_sum_p): Add missing test on
+	tree_fits_uhwi_p before calling tree_to_uhwi.
+
 2024-07-05  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	Backported from master:

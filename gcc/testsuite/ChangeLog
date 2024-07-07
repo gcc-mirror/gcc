@@ -1,3 +1,7 @@
+2024-07-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/array41.ads, gnat.dg/array41.adb: New test.
+
 2024-07-05  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	Backported from master:
