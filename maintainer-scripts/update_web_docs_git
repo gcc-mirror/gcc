@@ -45,7 +45,7 @@ MANUALS="cpp
   libiberty
   porting"
 
-BUGURL="http://gcc.gnu.org/bugs/"
+BUGURL="https://gcc.gnu.org/bugs/"
 CSS=/texinfo-manuals.css
 
 WWWBASE=${WWWBASE:-"/www/gcc/htdocs"}
