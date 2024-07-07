@@ -24,7 +24,7 @@
   Here are all of the configure options specific to libstdc++.  Keep
   in mind that
    <!-- This SECnn should be the "Choosing Package Options" section. -->
-   <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://sourceware.org/autobook/autobook/autobook_14.html">they
+   <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://sourceware.org/autobook/autobook/autobook_14.html">they
    all have opposite forms as well</link> (enable/disable and
    with/without).  The defaults are for the <emphasis>current
    development sources</emphasis>, which may be different than those
@@ -148,7 +148,7 @@
  <varlistentry><term><code>--enable-threads=OPTION</code></term>
  <listitem><para>Select a threading library.  A full description is
 	given in the
-	general <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/install/configure.html">compiler
+	general <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/install/configure.html">compiler
 	configuration instructions</link>. This option can change the
 	library ABI.
      </para>
