@@ -2017,14 +2017,19 @@ LifetimeParam::as_string () const
 {
   std::string str ("LifetimeParam: ");
 
-  str += "\n Outer attribute: ";
-  if (!has_outer_attribute ())
+  str += "\n Outer attributes: ";
+  if (outer_attrs.empty ())
     {
       str += "none";
     }
   else
     {
-      str += outer_attr.as_string ();
+      /* note that this does not print them with "outer attribute" syntax -
+       * just the body */
+      for (const auto &attr : outer_attrs)
+	{
+	  str += "\n " + attr.as_string ();
+	}
     }
 
   str += "\n Lifetime: " + lifetime.as_string ();
@@ -2106,14 +2111,19 @@ TypeParam::as_string () const
 {
   std::string str ("TypeParam: ");
 
-  str += "\n Outer attribute: ";
-  if (!has_outer_attribute ())
+  str += "\n Outer attributes: ";
+  if (outer_attrs.empty ())
     {
       str += "none";
     }
   else
     {
-      str += outer_attr.as_string ();
+      /* note that this does not print them with "outer attribute" syntax -
+       * just the body */
+      for (const auto &attr : outer_attrs)
+	{
+	  str += "\n " + attr.as_string ();
+	}
     }
 
   str += "\n Identifier: " + type_representation.as_string ();

@@ -1508,7 +1508,8 @@ void
 Dump::visit (TypeParam &e)
 {
   begin ("TypeParam");
-  put_field ("outer_attr", e.get_outer_attribute ().as_string ());
+  auto &outer_attrs = e.get_outer_attrs ();
+  do_outer_attrs (outer_attrs);
 
   put_field ("type_representation", e.get_type_representation ().as_string ());
 

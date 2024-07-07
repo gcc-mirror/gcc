@@ -617,6 +617,9 @@ public:
     CONST,
   };
 
+  virtual AST::AttrVec &get_outer_attrs () = 0;
+  virtual bool has_outer_attribute () const = 0;
+
   // Unique pointer custom clone function
   std::unique_ptr<GenericParam> clone_generic_param () const
   {
@@ -654,9 +657,7 @@ class LifetimeParam : public GenericParam
   // LifetimeBounds lifetime_bounds;
   std::vector<Lifetime> lifetime_bounds; // inlined LifetimeBounds
 
-  // bool has_outer_attribute;
-  // std::unique_ptr<Attribute> outer_attr;
-  AST::Attribute outer_attr;
+  AST::AttrVec outer_attrs;
 
   location_t locus;
 
@@ -669,7 +670,9 @@ public:
   std::vector<Lifetime> &get_lifetime_bounds () { return lifetime_bounds; }
 
   // Returns whether the lifetime param has an outer attribute.
-  bool has_outer_attribute () const { return !outer_attr.is_empty (); }
+  bool has_outer_attribute () const override { return outer_attrs.size () > 1; }
+
+  AST::AttrVec &get_outer_attrs () { return outer_attrs; }
 
   // Returns whether the lifetime param is in an error state.
   bool is_error () const { return lifetime.is_error (); }
@@ -679,11 +682,11 @@ public:
 		 location_t locus = UNDEF_LOCATION,
 		 std::vector<Lifetime> lifetime_bounds
 		 = std::vector<Lifetime> (),
-		 AST::Attribute outer_attr = AST::Attribute::create_empty ())
+		 AST::AttrVec outer_attrs = std::vector<AST::Attribute> ())
     : GenericParam (mappings, GenericKind::LIFETIME),
       lifetime (std::move (lifetime)),
       lifetime_bounds (std::move (lifetime_bounds)),
-      outer_attr (std::move (outer_attr)), locus (locus)
+      outer_attrs (std::move (outer_attrs)), locus (locus)
   {}
 
   // TODO: remove copy and assignment operator definitions - not required
@@ -692,7 +695,7 @@ public:
   LifetimeParam (LifetimeParam const &other)
     : GenericParam (other.mappings, GenericKind::LIFETIME),
       lifetime (other.lifetime), lifetime_bounds (other.lifetime_bounds),
-      outer_attr (other.outer_attr), locus (other.locus)
+      outer_attrs (other.outer_attrs), locus (other.locus)
   {}
 
   // Overloaded assignment operator to clone attribute
@@ -700,7 +703,7 @@ public:
   {
     lifetime = other.lifetime;
     lifetime_bounds = other.lifetime_bounds;
-    outer_attr = other.outer_attr;
+    outer_attrs = other.outer_attrs;
     locus = other.locus;
     mappings = other.mappings;
 
@@ -748,6 +751,10 @@ public:
       default_expression = other.default_expression->clone_expr ();
   }
 
+  bool has_outer_attribute () const override { return false; }
+
+  AST::AttrVec &get_outer_attrs () override { return outer_attrs; }
+
   std::string as_string () const override final;
 
   void accept_vis (HIRFullVisitor &vis) override final;
@@ -774,6 +781,9 @@ protected:
 private:
   std::string name;
   std::unique_ptr<Type> type;
+
+  /* const params have no outer attrs, should be empty */
+  AST::AttrVec outer_attrs = std::vector<AST::Attribute> ();
 
   /* Optional - can be a null pointer if there is no default expression */
   std::unique_ptr<Expr> default_expression;

@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-ast-lower-type.h"
+#include "rust-attribute-values.h"
 
 namespace Rust {
 namespace HIR {
@@ -446,16 +447,17 @@ void
 ASTLowerGenericParam::visit (AST::LifetimeParam &param)
 {
   auto crate_num = mappings.get_current_crate ();
+  AST::Lifetime lifetime = param.get_lifetime ();
   Analysis::NodeMapping mapping (crate_num, param.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 mappings.get_next_localdef_id (crate_num));
 
-  HIR::Lifetime lt (mapping, param.get_lifetime ().get_lifetime_type (),
-		    param.get_lifetime ().get_lifetime_name (),
-		    param.get_lifetime ().get_locus ());
+  HIR::Lifetime lt (mapping, lifetime.get_lifetime_type (),
+		    lifetime.get_lifetime_name (), lifetime.get_locus ());
 
   translated = new HIR::LifetimeParam (mapping, lt, param.get_locus (),
-				       std::vector<Lifetime> ());
+				       std::vector<Lifetime> (),
+				       param.get_outer_attrs ());
 }
 
 void
@@ -482,7 +484,6 @@ ASTLowerGenericParam::visit (AST::ConstGenericParam &param)
 void
 ASTLowerGenericParam::visit (AST::TypeParam &param)
 {
-  AST::Attribute outer_attr = AST::Attribute::create_empty ();
   std::vector<std::unique_ptr<HIR::TypeParamBound>> type_param_bounds;
   if (param.has_type_param_bounds ())
     {
@@ -506,7 +507,8 @@ ASTLowerGenericParam::visit (AST::TypeParam &param)
   translated
     = new HIR::TypeParam (mapping, param.get_type_representation (),
 			  param.get_locus (), std::move (type_param_bounds),
-			  std::unique_ptr<Type> (type), std::move (outer_attr));
+			  std::unique_ptr<Type> (type),
+			  param.get_outer_attrs ());
 }
 
 HIR::TypeParamBound *

@@ -311,7 +311,8 @@ Attribute::get_traits_to_derive ()
 
 // Copy constructor must deep copy attr_input as unique pointer
 Attribute::Attribute (Attribute const &other)
-  : path (other.path), locus (other.locus)
+  : path (other.path), locus (other.locus),
+    inner_attribute (other.inner_attribute)
 {
   // guard to protect from null pointer dereference
   if (other.attr_input != nullptr)
@@ -324,6 +325,7 @@ Attribute::operator= (Attribute const &other)
 {
   path = other.path;
   locus = other.locus;
+  inner_attribute = other.inner_attribute;
   // guard to protect from null pointer dereference
   if (other.attr_input != nullptr)
     attr_input = other.attr_input->clone_attr_input ();

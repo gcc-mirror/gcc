@@ -784,7 +784,23 @@ UnsafeChecker::visit (Trait &trait)
 void
 UnsafeChecker::visit (ImplBlock &impl)
 {
-  // FIXME: Handle unsafe impls
+  bool safe = !impl.is_unsafe ();
+  // Check for unsafe-only attributes on generics and lifetimes
+  if (safe)
+    for (auto &parm : impl.get_generic_params ())
+      {
+	for (auto o_attr : parm->get_outer_attrs ())
+	  {
+	    rust_assert (!o_attr.is_inner_attribute ());
+
+	    Rust::AST::SimplePath path = o_attr.get_path ();
+	    if (path == Values::Attributes::MAY_DANGLE)
+	      rust_error_at (
+		o_attr.get_locus (), ErrorCode::E0569,
+		"use of %<may_dangle%> is unsafe and requires unsafe impl");
+	  }
+      }
+
   for (auto &item : impl.get_impl_items ())
     item->accept_vis (*this);
 }
