@@ -1,3 +1,36 @@
+2024-07-06  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/binv-for-simode-1.c: New test.
+	* gcc.target/riscv/bset-for-simode-1.c: New test.
+	* gcc.target/riscv/bclr-for-simode-1.c: New test.
+
+2024-07-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	* gcc.dg/analyzer/torture/boxed-ptr-1.c: Requires size24plus.
+	* gcc.dg/analyzer/torture/pr102692.c: Use intptr_t instead of long.
+	* gcc.dg/ipa/pr102714.c: Use uintptr_t instead of unsigned long.
+	* gcc.dg/torture/pr115387-1.c: Same.
+	* gcc.dg/torture/pr113895-1.c : Same.
+	* gcc.dg/ipa/pr108007.c: Require int32plus.
+	* gcc.dg/ipa/pr109318.c: Same.
+	* gcc.dg/ipa/pr96040.c: Use size_t instead of unsigned long.
+	* gcc.dg/torture/pr113126.c: Use vectors of same dimension.
+	* gcc.dg/tree-ssa/builtin-sprintf-9.c: Requires double64.
+	* gcc.dg/spellcheck-inttypes.c [avr]: Avoid include of inttypes.h.
+	* gcc.dg/analyzer/torture/pr104159.c [avr]: Skip.
+	* gcc.dg/torture/pr84682-2.c [avr]: Skip.
+	* gcc.dg/wtr-conversion-1.c [avr]: Remove avr selector since
+	long double is a 64-bit type by now.
+
+2024-07-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/torture/fuse-add.c: New test.
+
+2024-07-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/array41.ads, gnat.dg/array41.adb: New test.
+
 2024-07-05  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* gfortran.dg/ieee/signaling_2.f90: Adjust test.

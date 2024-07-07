@@ -1,3 +1,58 @@
+2024-07-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/headers/c++1998/all_attributes.cc: Add
+	attribute names from later standards and remove dg-options.
+	* testsuite/17_intro/headers/c++1998/stdc++.cc: Add c++98_only
+	target selector.
+	* testsuite/17_intro/headers/c++1998/stdc++_multiple_inclusion.cc:
+	Remove content and include stdc++.cc twice instead.
+	* testsuite/17_intro/headers/c++2011/stdc++.cc: Replace
+	dg-options with c++11 target selector.
+	* testsuite/17_intro/headers/c++2011/stdc++_multiple_inclusion.cc:
+	Remove content and include stdc++.cc twice instead.
+	* testsuite/17_intro/headers/c++2011/all_attributes.cc: Removed.
+	* testsuite/17_intro/headers/c++2011/all_no_exceptions.cc: Removed.
+	* testsuite/17_intro/headers/c++2011/all_no_rtti.cc: Removed.
+	* testsuite/17_intro/headers/c++2011/all_pedantic_errors.cc: Removed.
+	* testsuite/17_intro/headers/c++2011/charset.cc: Removed.
+	* testsuite/17_intro/headers/c++2011/operator_names.cc: Removed.
+	* testsuite/17_intro/headers/c++2014/all_attributes.cc: Removed.
+	* testsuite/17_intro/headers/c++2014/all_no_exceptions.cc: Removed.
+	* testsuite/17_intro/headers/c++2014/all_no_rtti.cc: Removed.
+	* testsuite/17_intro/headers/c++2014/all_pedantic_errors.cc: Removed.
+	* testsuite/17_intro/headers/c++2014/charset.cc: Removed.
+	* testsuite/17_intro/headers/c++2014/operator_names.cc: Removed.
+	* testsuite/17_intro/headers/c++2014/stdc++.cc: Removed.
+	* testsuite/17_intro/headers/c++2014/stdc++_multiple_inclusion.cc: Removed.
+	* testsuite/17_intro/headers/c++2017/all_attributes.cc: Removed.
+	* testsuite/17_intro/headers/c++2017/all_no_exceptions.cc: Removed.
+	* testsuite/17_intro/headers/c++2017/all_no_rtti.cc: Removed.
+	* testsuite/17_intro/headers/c++2017/all_pedantic_errors.cc: Removed.
+	* testsuite/17_intro/headers/c++2017/charset.cc: Removed.
+	* testsuite/17_intro/headers/c++2017/operator_names.cc: Removed.
+	* testsuite/17_intro/headers/c++2017/stdc++.cc: Removed.
+	* testsuite/17_intro/headers/c++2017/stdc++_multiple_inclusion.cc: Removed.
+	* testsuite/17_intro/headers/c++2020/all_attributes.cc: Removed.
+	* testsuite/17_intro/headers/c++2020/all_no_exceptions.cc: Removed.
+	* testsuite/17_intro/headers/c++2020/all_no_rtti.cc: Removed.
+	* testsuite/17_intro/headers/c++2020/all_pedantic_errors.cc: Removed.
+	* testsuite/17_intro/headers/c++2020/charset.cc: Removed.
+	* testsuite/17_intro/headers/c++2020/operator_names.cc: Removed.
+	* testsuite/17_intro/headers/c++2020/stdc++.cc: Removed.
+	* testsuite/17_intro/headers/c++2020/stdc++_multiple_inclusion.cc: Removed.
+
+2024-07-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (_Variant_storage::_M_reset): Use
+	__unlikely__ form of attribute instead of unlikely.
+
+2024-07-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115797
+	* include/std/type_traits: Ensure "C++" language linkage.
+	* testsuite/17_intro/headers/c++2011/linkage.cc: Replace
+	dg-options with c++11 target selector.
+
 2024-07-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/115747

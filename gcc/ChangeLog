@@ -1,3 +1,42 @@
+2024-07-06  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/bitmanip.md (bset splitters): Turn into define_and_splits.
+	Don't depend on combine splitting the "andn with constant" form.
+	(bset, binv, bclr with masked bit position): New patterns.
+
+2024-07-06  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/sh/sh.md (adddi3): Only allow matching when we can
+	still create new pseudos.
+	(subdi3, *rotcl, *rotcr, *rotcr_neg_t, negdi2): Likewise.
+	(abs<mode>2, negabs<mode>2, negdi_cond): Likewise.
+	(*swapbisi2_and_shl8, *swapbhisi2, *movsi_index_disp_load): Likewise.
+	(*movhi_index_disp_load, *mov<mode>index_disp_store): Likewise.
+	(*mov_t_msb_neg, *negt_msb, clipu_one): Likewise.
+
+2024-07-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md: Also split with avr_split_tiny_move()
+	for non-AVR_TINY.
+	* config/avr/avr.cc (avr_split_tiny_move): Don't change memory
+	references with base regs that can do PLUS addressing.
+	(avr_out_lpm_no_lpmx) [POST_INC]: Don't output final ADIW when the
+	address register is unused after.
+
+2024-07-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/115591
+	* config/riscv/riscv.cc (riscv_valid_lo_sum_p): Add missing test on
+	tree_fits_uhwi_p before calling tree_to_uhwi.
+
+2024-07-06  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/115751
+	* config/i386/i386-expand.cc (ix86_expand_ternlog): Avoid use of
+	force_reg to "reload" non-register operands, as these may contain
+	vec_duplicate (broadcast) operands that aren't supported by
+	force_reg.  Use (safer) gen_reg_rtx and emit_move instead.
+
 2024-07-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/i386/i386.cc (ix86_cannot_copy_insn_p): New.
