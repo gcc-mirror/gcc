@@ -35,9 +35,7 @@ class TypePath;
 // A type generic parameter (as opposed to a lifetime generic parameter)
 class TypeParam : public GenericParam
 {
-  // bool has_outer_attribute;
-  // std::unique_ptr<Attribute> outer_attr;
-  AST::Attribute outer_attr;
+  AST::AttrVec outer_attrs;
 
   Identifier type_representation;
 
@@ -59,16 +57,16 @@ public:
   bool has_type_param_bounds () const { return !type_param_bounds.empty (); }
 
   // Returns whether the type param has an outer attribute.
-  bool has_outer_attribute () const { return !outer_attr.is_empty (); }
-  AST::Attribute &get_outer_attribute () { return outer_attr; }
+  bool has_outer_attribute () const override { return outer_attrs.size () > 0; }
+  AST::AttrVec &get_outer_attrs () override { return outer_attrs; }
 
   TypeParam (Analysis::NodeMapping mappings, Identifier type_representation,
 	     location_t locus = UNDEF_LOCATION,
 	     std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds
 	     = std::vector<std::unique_ptr<TypeParamBound>> (),
 	     std::unique_ptr<Type> type = nullptr,
-	     AST::Attribute outer_attr = AST::Attribute::create_empty ())
-    : GenericParam (mappings), outer_attr (std::move (outer_attr)),
+	     AST::AttrVec outer_attrs = std::vector<AST::Attribute> ())
+    : GenericParam (mappings), outer_attrs (std::move (outer_attrs)),
       type_representation (std::move (type_representation)),
       type_param_bounds (std::move (type_param_bounds)),
       type (std::move (type)), locus (locus)
@@ -76,7 +74,7 @@ public:
 
   // Copy constructor uses clone
   TypeParam (TypeParam const &other)
-    : GenericParam (other.mappings), outer_attr (other.outer_attr),
+    : GenericParam (other.mappings), outer_attrs (other.outer_attrs),
       type_representation (other.type_representation), locus (other.locus)
   {
     // guard to prevent null pointer dereference
@@ -92,7 +90,7 @@ public:
   TypeParam &operator= (TypeParam const &other)
   {
     type_representation = other.type_representation;
-    outer_attr = other.outer_attr;
+    outer_attrs = other.outer_attrs;
     locus = other.locus;
     mappings = other.mappings;
 
@@ -2741,6 +2739,7 @@ class ImplBlock : public VisItem, public WithInnerAttrs
   BoundPolarity polarity;
   location_t locus;
   std::vector<std::unique_ptr<ImplItem>> impl_items;
+  bool unsafe;
 
 public:
   ImplBlock (Analysis::NodeMapping mappings,
@@ -2749,20 +2748,20 @@ public:
 	     std::unique_ptr<Type> impl_type,
 	     std::unique_ptr<TypePath> trait_ref, WhereClause where_clause,
 	     BoundPolarity polarity, Visibility vis, AST::AttrVec inner_attrs,
-	     AST::AttrVec outer_attrs, location_t locus)
+	     AST::AttrVec outer_attrs, location_t locus, bool unsafe = false)
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
       WithInnerAttrs (std::move (inner_attrs)),
       generic_params (std::move (generic_params)),
       impl_type (std::move (impl_type)), trait_ref (std::move (trait_ref)),
       where_clause (std::move (where_clause)), polarity (polarity),
-      locus (locus), impl_items (std::move (impl_items))
+      locus (locus), impl_items (std::move (impl_items)), unsafe (unsafe)
   {}
 
   ImplBlock (ImplBlock const &other)
     : VisItem (other), WithInnerAttrs (other.inner_attrs),
       impl_type (other.impl_type->clone_type ()),
       where_clause (other.where_clause), polarity (other.polarity),
-      locus (other.locus)
+      locus (other.locus), unsafe (other.unsafe)
   {
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
@@ -2781,6 +2780,7 @@ public:
     polarity = other.polarity;
     inner_attrs = other.inner_attrs;
     locus = other.locus;
+    unsafe = other.unsafe;
 
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
@@ -2800,6 +2800,8 @@ public:
 
   // Returns whether inherent impl block has inherent impl items.
   bool has_impl_items () const { return !impl_items.empty (); }
+
+  bool is_unsafe () const { return unsafe; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRStmtVisitor &vis) override;

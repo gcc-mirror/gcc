@@ -542,7 +542,7 @@ ASTLoweringItem::visit (AST::InherentImpl &impl_block)
     mapping, std::move (impl_items), std::move (generic_params),
     std::unique_ptr<HIR::Type> (impl_type), nullptr, where_clause, polarity,
     vis, impl_block.get_inner_attrs (), impl_block.get_outer_attrs (),
-    impl_block.get_locus ());
+    impl_block.get_locus (), false);
   translated = hir_impl_block;
 
   mappings.insert_hir_impl_block (hir_impl_block);
@@ -623,6 +623,7 @@ void
 ASTLoweringItem::visit (AST::TraitImpl &impl_block)
 {
   std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
+  bool unsafe = impl_block.is_unsafe ();
   for (auto &item : impl_block.get_where_clause ().get_items ())
     {
       HIR::WhereClauseItem *i = ASTLowerWhereClauseItem::translate (*item);
@@ -696,7 +697,7 @@ ASTLoweringItem::visit (AST::TraitImpl &impl_block)
     std::unique_ptr<HIR::Type> (impl_type),
     std::unique_ptr<HIR::TypePath> (trait_ref), where_clause, polarity, vis,
     impl_block.get_inner_attrs (), impl_block.get_outer_attrs (),
-    impl_block.get_locus ());
+    impl_block.get_locus (), unsafe);
   translated = hir_impl_block;
 
   mappings.insert_hir_impl_block (hir_impl_block);
