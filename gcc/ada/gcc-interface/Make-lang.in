@@ -780,6 +780,7 @@ regnattools:
 cross-gnattools: force
 	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools1-re
 	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2
+	$(GNATTOOLS_CROSS_MV)
 
 canadian-gnattools: force
 	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools1-re
@@ -795,19 +796,23 @@ gnatlib gnatlib-sjlj gnatlib-zcx gnatlib-shared: force
 	   FORCE_DEBUG_ADAFLAGS="$(FORCE_DEBUG_ADAFLAGS)" \
 	   $@
 
+gnattools-cross-mv:
+	$(GNATTOOLS_CROSS_MV)
+
+GNATTOOLS_CROSS_MV=\
+  for tool in $(ADA_TOOLS) ; do \
+    if [ -f $$tool$(exeext) ] ; \
+    then \
+      $(MV) $$tool$(exeext) $$tool-cross$(exeext); \
+    fi; \
+  done
+
 # use only for native compiler
 gnatlib_and_tools: gnatlib gnattools
 
 # Build hooks:
 
 ada.all.cross:
-	for tool in $(ADA_TOOLS) ; do \
-	  if [ -f $$tool$(exeext) ] ; \
-	  then \
-	    $(MV) $$tool$(exeext) $$tool-cross$(exeext); \
-	  fi; \
-	done
-
 ada.start.encap:
 ada.rest.encap:
 ada.man:

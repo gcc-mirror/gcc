@@ -199,12 +199,19 @@ proc prune_gnat_output { text } {
 # which prevent multilib from working, so define a new one.
 
 proc local_find_gnatmake {} {
+    global target_triplet
     global tool_root_dir
+    global host_triplet
 
     if ![is_remote host] {
-        set file [lookfor_file $tool_root_dir gnatmake]
+	if { "$host_triplet" == "$target_triplet" } {
+	    set gnatmake gnatmake
+	} else {
+	    set gnatmake gnatmake-cross
+	}
+	set file [lookfor_file $tool_root_dir $gnatmake]
         if { $file == "" } {
-	    set file [lookfor_file $tool_root_dir gcc/gnatmake]
+	    set file [lookfor_file $tool_root_dir gcc/$gnatmake]
         }
         if { $file != "" } {
 	    set root [file dirname $file]
@@ -225,12 +232,19 @@ proc local_find_gnatmake {} {
 }
 
 proc find_gnatclean {} {
+    global target_triplet
     global tool_root_dir
+    global host_triplet
 
     if ![is_remote host] {
-        set file [lookfor_file $tool_root_dir gnatclean]
+	if { "$host_triplet" == "$target_triplet" } {
+	    set gnatclean gnatclean
+	} else {
+	    set gnatclean gnatclean-cross
+	}
+	set file [lookfor_file $tool_root_dir $gnatclean]
         if { $file == "" } {
-	    set file [lookfor_file $tool_root_dir gcc/gnatclean]
+	    set file [lookfor_file $tool_root_dir gcc/$gnatclean]
         }
         if { $file != "" } {
 	    set gnatclean $file;
