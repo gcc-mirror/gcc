@@ -19517,7 +19517,7 @@ lazy_load_binding (unsigned mod, tree ns, tree id, binding_slot *mslot)
 {
   int count = errorcount + warningcount;
 
-  timevar_start (TV_MODULE_IMPORT);
+  bool timer_running = timevar_cond_start (TV_MODULE_IMPORT);
 
   /* Make sure lazy loading from a template context behaves as if
      from a non-template context.  */
@@ -19547,7 +19547,7 @@ lazy_load_binding (unsigned mod, tree ns, tree id, binding_slot *mslot)
 
   function_depth--;
 
-  timevar_stop (TV_MODULE_IMPORT);
+  timevar_cond_stop (TV_MODULE_IMPORT, timer_running);
 
   if (!ok)
     fatal_error (input_location,
@@ -19586,7 +19586,7 @@ lazy_load_pendings (tree decl)
 
   int count = errorcount + warningcount;
 
-  timevar_start (TV_MODULE_IMPORT);
+  bool timer_running = timevar_cond_start (TV_MODULE_IMPORT);
   bool ok = !recursive_lazy ();
   if (ok)
     {
@@ -19620,7 +19620,7 @@ lazy_load_pendings (tree decl)
       function_depth--;
     }
 
-  timevar_stop (TV_MODULE_IMPORT);
+  timevar_cond_stop (TV_MODULE_IMPORT, timer_running);
 
   if (!ok)
     fatal_error (input_location, "failed to load pendings for %<%E%s%E%>",
