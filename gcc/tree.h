@@ -6929,6 +6929,8 @@ extern bool warning_suppressed_at (location_t, opt_code = all_warnings);
    at a location to disabled by default.  */
 extern bool suppress_warning_at (location_t, opt_code = all_warnings,
 				 bool = true);
+/* Overwrite warning disposition bitmap for a location with given spec.  */
+extern void put_warning_spec_at (location_t loc, unsigned);
 /* Copy warning disposition from one location to another.  */
 extern void copy_warning (location_t, location_t);
 
@@ -6941,6 +6943,13 @@ extern void suppress_warning (tree, opt_code = all_warnings, bool = true)
   ATTRIBUTE_NONNULL (1);
 /* Copy warning disposition from one expression to another.  */
 extern void copy_warning (tree, const_tree);
+
+/* Whether the tree might have a warning spec.  */
+extern bool has_warning_spec (const_tree);
+/* Retrieve warning spec bitmap for tree streaming.  */
+extern unsigned get_warning_spec (const_tree);
+/* Overwrite warning spec bitmap for a tree with given spec.  */
+extern void put_warning_spec (tree, unsigned);
 
 /* Return the zero-based number corresponding to the argument being
    deallocated if FNDECL is a deallocation function or an out-of-bounds

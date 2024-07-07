@@ -56,6 +56,13 @@ public:
 
   nowarn_spec_t (opt_code);
 
+  static nowarn_spec_t from_bits (unsigned bits)
+  {
+    nowarn_spec_t spec;
+    spec.m_bits = bits;
+    return spec;
+  }
+
   /* Return the raw bitset.  */
   operator unsigned() const
   {
