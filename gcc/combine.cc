@@ -15102,6 +15102,12 @@ make_more_copies (void)
 	    continue;
 
 	  rtx new_reg = gen_reg_rtx (GET_MODE (dest));
+
+	  /* The "original" pseudo copies have important attributes
+	     attached, like pointerness.  We want that for these copies
+	     too, for use by insn recognition and later passes.  */
+	  set_reg_attrs_from_value (new_reg, dest);
+
 	  rtx_insn *new_insn = gen_move_insn (new_reg, src);
 	  SET_SRC (set) = new_reg;
 	  emit_insn_before (new_insn, insn);
