@@ -5543,6 +5543,16 @@ means of constraints requiring operands 1 and 0 to be the same location.
 @itemx @samp{and@var{m}3}, @samp{ior@var{m}3}, @samp{xor@var{m}3}
 Similar, for other arithmetic operations.
 
+@cindex @code{andc@var{m}3} instruction pattern
+@item @samp{andc@var{m}3}
+Like @code{and@var{m}3}, but it uses bitwise-complement of operand 2
+rather than operand 2 itself.
+
+@cindex @code{iorc@var{m}3} instruction pattern
+@item @samp{iorc@var{m}3}
+Like @code{ior@var{m}3}, but it uses bitwise-complement of operand 2
+rather than operand 2 itself.
+
 @cindex @code{addv@var{m}4} instruction pattern
 @item @samp{addv@var{m}4}
 Like @code{add@var{m}3} but takes a @code{code_label} as operand 3 and
