@@ -594,6 +594,7 @@ extern rtl_opt_pass *make_pass_reginfo_init (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_inc_dec (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_stack_ptr_mod (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_initialize_regs (gcc::context *ctxt);
+extern rtl_opt_pass *make_pass_ext_dce (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_combine (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_if_after_combine (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_jump_after_combine (gcc::context *ctxt);

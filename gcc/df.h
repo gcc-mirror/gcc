@@ -1094,6 +1094,7 @@ extern bool df_epilogue_uses_p (unsigned int);
 extern void df_set_regs_ever_live (unsigned int, bool);
 extern void df_compute_regs_ever_live (bool);
 extern void df_scan_verify (void);
+extern void df_get_exit_block_use_set (bitmap);
 
 
 /*----------------------------------------------------------------------------

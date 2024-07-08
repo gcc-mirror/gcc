@@ -1455,6 +1455,7 @@ OBJS = \
 	explow.o \
 	expmed.o \
 	expr.o \
+	ext-dce.o \
 	fibonacci_heap.o \
 	file-prefix-map.o \
 	final.o \

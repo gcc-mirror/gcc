@@ -3881,4 +3881,8 @@ fipa-ra
 Common Var(flag_ipa_ra) Optimization
 Use caller save register across calls if possible.
 
+fext-dce
+Common Var(flag_ext_dce, 1) Optimization Init(0)
+Perform dead code elimination on zero and sign extensions with special dataflow analysis.
+
 ; This comment is to ensure we retain the blank line above.
