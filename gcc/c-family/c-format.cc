@@ -1021,6 +1021,20 @@ static int n_format_types = ARRAY_SIZE (format_types_orig);
    many leaves resulting from nested conditional expressions.  */
 struct format_check_results
 {
+  format_check_results (location_t format_string_loc_)
+  : number_non_literal (0),
+    number_extra_args (0),
+    extra_arg_loc (UNKNOWN_LOCATION),
+    number_dollar_extra_args (0),
+    number_wide (0),
+    number_non_char (0),
+    number_empty (0),
+    number_unterminated (0),
+    number_other (0),
+    format_string_loc (format_string_loc_)
+  {
+  }
+
   /* Number of leaves of the format argument that could not be checked
      as they were not string literals.  */
   int number_non_literal;
@@ -1050,10 +1064,21 @@ struct format_check_results
 
 struct format_check_context
 {
-  format_check_results *res;
-  function_format_info *info;
-  tree params;
-  vec<location_t> *arglocs;
+  format_check_context (format_check_results *res,
+			function_format_info *info,
+			tree params,
+			vec<location_t> *arglocs)
+  : m_res (res),
+    m_info (info),
+    m_params (params),
+    m_arglocs (arglocs)
+  {
+  }
+
+  format_check_results *m_res;
+  function_format_info *m_info;
+  tree m_params;
+  vec<location_t> *m_arglocs;
 };
 
 /* Return the format name (as specified in the original table) for the format
@@ -1539,10 +1564,8 @@ static void
 check_format_info (function_format_info *info, tree params,
 		   vec<location_t> *arglocs)
 {
-  format_check_context format_ctx;
   unsigned HOST_WIDE_INT arg_num;
   tree format_tree;
-  format_check_results res;
   /* Skip to format argument.  If the argument isn't available, there's
      no work for us to do; prototype checking will catch the problem.  */
   for (arg_num = 1; ; ++arg_num)
@@ -1558,26 +1581,14 @@ check_format_info (function_format_info *info, tree params,
   if (format_tree == 0)
     return;
 
-  res.number_non_literal = 0;
-  res.number_extra_args = 0;
-  res.extra_arg_loc = UNKNOWN_LOCATION;
-  res.number_dollar_extra_args = 0;
-  res.number_wide = 0;
-  res.number_non_char = 0;
-  res.number_empty = 0;
-  res.number_unterminated = 0;
-  res.number_other = 0;
-  res.format_string_loc = input_location;
+  format_check_results res (input_location);
 
-  format_ctx.res = &res;
-  format_ctx.info = info;
-  format_ctx.params = params;
-  format_ctx.arglocs = arglocs;
+  format_check_context format_ctx (&res, info, params, arglocs);
 
   check_function_arguments_recurse (check_format_arg, &format_ctx,
 				    format_tree, arg_num, OPT_Wformat_);
 
-  location_t loc = format_ctx.res->format_string_loc;
+  location_t loc = format_ctx.m_res->format_string_loc;
 
   if (res.number_non_literal > 0)
     {
@@ -1659,10 +1670,10 @@ check_format_arg (void *ctx, tree format_tree,
 		  unsigned HOST_WIDE_INT arg_num)
 {
   format_check_context *format_ctx = (format_check_context *) ctx;
-  format_check_results *res = format_ctx->res;
-  function_format_info *info = format_ctx->info;
-  tree params = format_ctx->params;
-  vec<location_t> *arglocs = format_ctx->arglocs;
+  format_check_results *res = format_ctx->m_res;
+  function_format_info *info = format_ctx->m_info;
+  tree params = format_ctx->m_params;
+  vec<location_t> *arglocs = format_ctx->m_arglocs;
 
   int format_length;
   HOST_WIDE_INT offset;
