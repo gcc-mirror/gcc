@@ -4294,7 +4294,6 @@ gfc_trans_preloop_setup (gfc_loopinfo * loop, int dim, int flag,
   gfc_ss *ss, *pss;
   gfc_loopinfo *ploop;
   gfc_array_ref *ar;
-  int i;
 
   /* This code will be executed before entering the scalarization loop
      for this dimension.  */
@@ -4340,19 +4339,12 @@ gfc_trans_preloop_setup (gfc_loopinfo * loop, int dim, int flag,
 	  pss = ss;
 	}
 
-      if (dim == loop->dimen - 1)
-	i = 0;
-      else
-	i = dim + 1;
-
-      /* For the time being, there is no loop reordering.  */
-      gcc_assert (i == ploop->order[i]);
-      i = ploop->order[i];
-
       if (dim == loop->dimen - 1 && loop->parent == NULL)
 	{
+	  gcc_assert (0 == ploop->order[0]);
+
 	  stride = gfc_conv_array_stride (info->descriptor,
-					  innermost_ss (ss)->dim[i]);
+					  innermost_ss (ss)->dim[0]);
 
 	  /* Calculate the stride of the innermost loop.  Hopefully this will
 	     allow the backend optimizers to do their stuff more effectively.
@@ -4364,7 +4356,7 @@ gfc_trans_preloop_setup (gfc_loopinfo * loop, int dim, int flag,
 	     base offset of the array.  */
 	  if (info->ref)
 	    {
-	      for (i = 0; i < ar->dimen; i++)
+	      for (int i = 0; i < ar->dimen; i++)
 		{
 		  if (ar->dimen_type[i] != DIMEN_ELEMENT)
 		    continue;
@@ -4374,8 +4366,21 @@ gfc_trans_preloop_setup (gfc_loopinfo * loop, int dim, int flag,
 	    }
 	}
       else
-	/* Add the offset for the previous loop dimension.  */
-	add_array_offset (pblock, ploop, ss, ar, pss->dim[i], i);
+	{
+	  int i;
+
+	  if (dim == loop->dimen - 1)
+	    i = 0;
+	  else
+	    i = dim + 1;
+
+	  /* For the time being, there is no loop reordering.  */
+	  gcc_assert (i == ploop->order[i]);
+	  i = ploop->order[i];
+
+	  /* Add the offset for the previous loop dimension.  */
+	  add_array_offset (pblock, ploop, ss, ar, pss->dim[i], i);
+	}
 
       /* Remember this offset for the second loop.  */
       if (dim == loop->temp_dim - 1 && loop->parent == NULL)
