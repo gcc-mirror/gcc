@@ -1,3 +1,10 @@
+2024-07-07  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* gcc-interface/Make-lang.in (ada.all.cross): Move recipe to...
+	(GNATTOOLS_CROSS_MV): ... this new variable.
+	(cross-gnattools): Paste it here.
+	(gnattools-cross-mv): New target.
+
 2024-07-03  Alexandre Oliva  <oliva@adacore.com>
 
 	* gcc-interface/misc.cc (gnat_get_array_descr_info): Only follow

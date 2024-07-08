@@ -1,3 +1,9 @@
+2024-07-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* module.cc (trees_out::get_merge_kind): Use
+	LAMBDA_TYPE_EXTRA_SCOPE instead of LAMBDA_EXPR_EXTRA_SCOPE.
+	(trees_out::key_mergeable): Likewise.
+
 2024-07-04  Tamar Christina  <tamar.christina@arm.com>
 
 	PR c++/115623

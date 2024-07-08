@@ -1,3 +1,26 @@
+2024-07-07  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/configure.xml: Update Autobook 14 link.
+	Update GCC installation instructions link.
+	* doc/html/manual/configure.html: Regenerate.
+
+2024-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115799
+	* include/bits/stl_algo.h (find): Use 'if constexpr' so that
+	memchr optimization is a discarded statement for non-contiguous
+	iterators.
+	* testsuite/25_algorithms/find/bytes.cc: Check with input
+	iterators.
+
+2024-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115799
+	* include/bits/ranges_util.h (__find_fn): Return iterator
+	instead of sentinel.
+	* testsuite/25_algorithms/find/constrained.cc: Check non-common
+	contiguous sized range of char.
+
 2024-07-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/17_intro/headers/c++1998/all_attributes.cc: Add

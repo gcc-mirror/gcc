@@ -1,3 +1,7 @@
+2024-07-07  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/bugreport.texi (Bug Criteria): Remove dubious example.
+
 2024-07-06  Jeff Law  <jlaw@ventanamicro.com>
 
 	* config/riscv/bitmanip.md (bset splitters): Turn into define_and_splits.

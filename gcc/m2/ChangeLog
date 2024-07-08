@@ -1,3 +1,17 @@
+2024-07-07  Gaius Mulley  <gaiusmod2@gmail.com>
+	    Stefan Schulze Frielinghaus   <stefansf@linux.ibm.com>
+	    Andrew Pinski   <quic_apinski@quicinc.com>
+
+	PR modula2/115804
+	* gm2-gcc/m2builtins.cc (builtin_function_entry): Add GTY.
+	(DoBuiltinMemCopy): Add rettype and use rettype in the call.
+	(DoBuiltinAlloca): Ditto.
+	(DoBuiltinIsfinite): Ditto.
+	(DoBuiltinIsnan): Ditto.
+	(m2builtins_BuiltInHugeVal): Ditto.
+	(m2builtins_BuiltInHugeValShort): Ditto.
+	(m2builtins_BuiltInHugeValLong): Ditto.
+
 2024-06-25  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-compiler/M2GenGCC.mod (QuadCondition): Remove.

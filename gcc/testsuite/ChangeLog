@@ -1,3 +1,8 @@
+2024-07-07  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* lib/gnat.exp (local_find_gnatmake, find_gnatclean): Use
+	'-cross' suffix where testing a cross-compiler.
+
 2024-07-06  Jeff Law  <jlaw@ventanamicro.com>
 
 	* gcc.target/riscv/binv-for-simode-1.c: New test.
