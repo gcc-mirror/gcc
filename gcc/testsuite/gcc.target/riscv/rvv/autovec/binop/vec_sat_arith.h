@@ -158,11 +158,28 @@ vec_sat_u_add_imm##IMM##_##T##_fmt_1 (T *out, T *in, unsigned limit) \
 #define DEF_VEC_SAT_U_ADD_IMM_FMT_1_WRAP(T, IMM) \
   DEF_VEC_SAT_U_ADD_IMM_FMT_1(T, IMM)
 
+#define DEF_VEC_SAT_U_ADD_IMM_FMT_2(T, IMM)                          \
+T __attribute__((noinline))                                          \
+vec_sat_u_add_imm##IMM##_##T##_fmt_2 (T *out, T *in, unsigned limit) \
+{                                                                    \
+  unsigned i;                                                        \
+  for (i = 0; i < limit; i++)                                        \
+    out[i] = (T)(in[i] + IMM) < in[i] ? -1 : (in[i] + IMM);          \
+}
+#define DEF_VEC_SAT_U_ADD_IMM_FMT_2_WRAP(T, IMM) \
+  DEF_VEC_SAT_U_ADD_IMM_FMT_2(T, IMM)
+
 #define RUN_VEC_SAT_U_ADD_IMM_FMT_1(T, out, op_1, expect, IMM, N) \
   vec_sat_u_add_imm##IMM##_##T##_fmt_1(out, op_1, N);             \
   VALIDATE_RESULT (out, expect, N)
 #define RUN_VEC_SAT_U_ADD_IMM_FMT_1_WRAP(T, out, op_1, expect, IMM, N) \
   RUN_VEC_SAT_U_ADD_IMM_FMT_1(T, out, op_1, expect, IMM, N)
+
+#define RUN_VEC_SAT_U_ADD_IMM_FMT_2(T, out, op_1, expect, IMM, N) \
+  vec_sat_u_add_imm##IMM##_##T##_fmt_2(out, op_1, N);             \
+  VALIDATE_RESULT (out, expect, N)
+#define RUN_VEC_SAT_U_ADD_IMM_FMT_2_WRAP(T, out, op_1, expect, IMM, N) \
+  RUN_VEC_SAT_U_ADD_IMM_FMT_2(T, out, op_1, expect, IMM, N)
 
 /******************************************************************************/
 /* Saturation Sub (Unsigned and Signed)                                       */
