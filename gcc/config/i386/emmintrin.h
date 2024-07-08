@@ -56,7 +56,7 @@ typedef double __m128d __attribute__ ((__vector_size__ (16), __may_alias__));
 /* Unaligned version of the same types.  */
 typedef long long __m128i_u __attribute__ ((__vector_size__ (16), __may_alias__, __aligned__ (1)));
 typedef double __m128d_u __attribute__ ((__vector_size__ (16), __may_alias__, __aligned__ (1)));
-typedef double __double_u __attribute__ ((__may_alias__, __aligned__ (1)));
+typedef double __x86_double_u __attribute__ ((__may_alias__, __aligned__ (1)));
 
 /* Create a selector for use with the SHUFPD instruction.  */
 #define _MM_SHUFFLE2(fp1,fp0) \
@@ -146,7 +146,7 @@ _mm_load1_pd (double const *__P)
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_load_sd (double const *__P)
 {
-  return __extension__ (__m128d) { *(__double_u *)__P, 0.0 };
+  return __extension__ (__m128d) { *(__x86_double_u *)__P, 0.0 };
 }
 
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -181,7 +181,7 @@ _mm_storeu_pd (double *__P, __m128d __A)
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_store_sd (double *__P, __m128d __A)
 {
-  *(__double_u *)__P = ((__v2df)__A)[0] ;
+  *(__x86_double_u *)__P = ((__v2df)__A)[0] ;
 }
 
 extern __inline double __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -974,13 +974,13 @@ _mm_unpacklo_pd (__m128d __A, __m128d __B)
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_loadh_pd (__m128d __A, double const *__B)
 {
-  return __extension__ (__m128d) { ((__v2df)__A)[0], *(__double_u*)__B };
+  return __extension__ (__m128d) { ((__v2df)__A)[0], *(__x86_double_u*)__B };
 }
 
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_loadl_pd (__m128d __A, double const *__B)
 {
-  return __extension__ (__m128d) { *(__double_u*)__B, ((__v2df)__A)[1] };
+  return __extension__ (__m128d) { *(__x86_double_u*)__B, ((__v2df)__A)[1] };
 }
 
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
