@@ -95,8 +95,8 @@
    (set_attr "neg_pool_range" "*,*,*,*,996,*,*,*")])
 
 (define_insn "mve_vdup<mode>"
-  [(set (match_operand:MVE_vecs 0 "s_register_operand" "=w")
-	(vec_duplicate:MVE_vecs
+  [(set (match_operand:MVE_VLD_ST 0 "s_register_operand" "=w")
+	(vec_duplicate:MVE_VLD_ST
 	  (match_operand:<V_elem> 1 "s_register_operand" "r")))]
   "TARGET_HAVE_MVE || TARGET_HAVE_MVE_FLOAT"
   "vdup.<V_sz_elem>\t%q0, %1"
