@@ -1,3 +1,14 @@
+2024-07-07  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-07-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/115700
+	* trans-stmt.cc (trans_associate_var): When the associate target
+	is an array-valued character variable, the length is known at entry
+	of the associate block.  Move setting of string length of the
+	selector to the initialization part of the block.
+
 2024-06-30  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
