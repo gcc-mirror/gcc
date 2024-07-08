@@ -2147,40 +2147,40 @@
     NEG_V2DI negv2di2 {}
 
   const vsc __builtin_altivec_orc_v16qi (vsc, vsc);
-    ORC_V16QI orcv16qi3 {}
+    ORC_V16QI iorcv16qi3 {}
 
   const vuc __builtin_altivec_orc_v16qi_uns (vuc, vuc);
-    ORC_V16QI_UNS orcv16qi3 {}
+    ORC_V16QI_UNS iorcv16qi3 {}
 
   const vsq __builtin_altivec_orc_v1ti (vsq, vsq);
-    ORC_V1TI orcv1ti3 {}
+    ORC_V1TI iorcv1ti3 {}
 
   const vuq __builtin_altivec_orc_v1ti_uns (vuq, vuq);
-    ORC_V1TI_UNS orcv1ti3 {}
+    ORC_V1TI_UNS iorcv1ti3 {}
 
   const vd __builtin_altivec_orc_v2df (vd, vd);
-    ORC_V2DF orcv2df3 {}
+    ORC_V2DF iorcv2df3 {}
 
   const vsll __builtin_altivec_orc_v2di (vsll, vsll);
-    ORC_V2DI orcv2di3 {}
+    ORC_V2DI iorcv2di3 {}
 
   const vull __builtin_altivec_orc_v2di_uns (vull, vull);
-    ORC_V2DI_UNS orcv2di3 {}
+    ORC_V2DI_UNS iorcv2di3 {}
 
   const vf __builtin_altivec_orc_v4sf (vf, vf);
-    ORC_V4SF orcv4sf3 {}
+    ORC_V4SF iorcv4sf3 {}
 
   const vsi __builtin_altivec_orc_v4si (vsi, vsi);
-    ORC_V4SI orcv4si3 {}
+    ORC_V4SI iorcv4si3 {}
 
   const vui __builtin_altivec_orc_v4si_uns (vui, vui);
-    ORC_V4SI_UNS orcv4si3 {}
+    ORC_V4SI_UNS iorcv4si3 {}
 
   const vss __builtin_altivec_orc_v8hi (vss, vss);
-    ORC_V8HI orcv8hi3 {}
+    ORC_V8HI iorcv8hi3 {}
 
   const vus __builtin_altivec_orc_v8hi_uns (vus, vus);
-    ORC_V8HI_UNS orcv8hi3 {}
+    ORC_V8HI_UNS iorcv8hi3 {}
 
   const vsc __builtin_altivec_vclzb (vsc);
     VCLZB clzv16qi2 {}
