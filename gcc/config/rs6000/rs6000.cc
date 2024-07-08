@@ -3933,8 +3933,12 @@ rs6000_option_override_internal (bool global_init_p)
      not for 32-bit.  Don't move this before the above code using ignore_masks,
      since it can reset the cleared VSX/ALTIVEC flag again.  */
   if (main_target_opt && !main_target_opt->x_rs6000_altivec_abi)
-    rs6000_isa_flags &= ~((OPTION_MASK_VSX | OPTION_MASK_ALTIVEC)
-			  & ~rs6000_isa_flags_explicit);
+    {
+      rs6000_isa_flags &= ~(OPTION_MASK_VSX & ~rs6000_isa_flags_explicit);
+      /* Don't mask off ALTIVEC if it is enabled by an explicit VSX.  */
+      if (!TARGET_VSX)
+	rs6000_isa_flags &= ~(OPTION_MASK_ALTIVEC & ~rs6000_isa_flags_explicit);
+    }
 
   if (TARGET_CRYPTO && !TARGET_ALTIVEC)
     {
