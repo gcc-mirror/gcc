@@ -3120,6 +3120,16 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
   if (TREE_CODE (newdecl) == FIELD_DECL)
     DECL_PACKED (olddecl) = DECL_PACKED (newdecl);
 
+  /* Merge module entity mapping information.  */
+  if (DECL_LANG_SPECIFIC (olddecl)
+      && (DECL_MODULE_ENTITY_P (olddecl)
+	  || DECL_MODULE_KEYED_DECLS_P (olddecl)))
+    {
+      retrofit_lang_decl (newdecl);
+      DECL_MODULE_ENTITY_P (newdecl) = DECL_MODULE_ENTITY_P (olddecl);
+      DECL_MODULE_KEYED_DECLS_P (newdecl) = DECL_MODULE_KEYED_DECLS_P (olddecl);
+    }
+
   /* The DECL_LANG_SPECIFIC information in OLDDECL will be replaced
      with that from NEWDECL below.  */
   if (DECL_LANG_SPECIFIC (olddecl))
