@@ -352,6 +352,10 @@ append_imported_binding_slot (tree *slot, tree name, unsigned ix)
 
       tree new_vec = make_binding_vec (name, want);
       BINDING_VECTOR_NUM_CLUSTERS (new_vec) = have + 1;
+      BINDING_VECTOR_GLOBAL_DUPS_P (new_vec)
+	= BINDING_VECTOR_GLOBAL_DUPS_P (*slot);
+      BINDING_VECTOR_PARTITION_DUPS_P (new_vec)
+	= BINDING_VECTOR_PARTITION_DUPS_P (*slot);
       memcpy (BINDING_VECTOR_CLUSTER_BASE (new_vec),
 	      BINDING_VECTOR_CLUSTER_BASE (*slot),
 	      have * sizeof (binding_cluster));
