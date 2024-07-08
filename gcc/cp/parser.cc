@@ -31601,9 +31601,6 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
       return error_mark_node;
     }
 
-  if (contract == error_mark_node)
-    return error_mark_node;
-
   return finish_contract_attribute (attribute, contract);
 }
 
