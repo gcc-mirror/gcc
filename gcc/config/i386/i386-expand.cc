@@ -2174,20 +2174,28 @@ ix86_expand_fp_absneg_operator (enum rtx_code code, machine_mode mode,
   machine_mode vmode = mode;
   rtvec par;
 
-  if (vector_mode || mode == TFmode || mode == HFmode)
-    {
-      use_sse = true;
-      if (mode == HFmode)
-	vmode = V8HFmode;
-    }
-  else if (TARGET_SSE_MATH)
-    {
-      use_sse = SSE_FLOAT_MODE_P (mode);
-      if (mode == SFmode)
-	vmode = V4SFmode;
-      else if (mode == DFmode)
-	vmode = V2DFmode;
-    }
+  switch (mode)
+  {
+  case HFmode:
+    use_sse = true;
+    vmode = V8HFmode;
+    break;
+  case BFmode:
+    use_sse = true;
+    vmode = V8BFmode;
+    break;
+  case SFmode:
+    use_sse = TARGET_SSE_MATH && TARGET_SSE;
+    vmode = V4SFmode;
+    break;
+  case DFmode:
+    use_sse = TARGET_SSE_MATH && TARGET_SSE2;
+    vmode = V2DFmode;
+    break;
+  default:
+    use_sse = vector_mode || mode == TFmode;
+    break;
+  }
 
   dst = operands[0];
   src = operands[1];
@@ -2320,16 +2328,26 @@ ix86_expand_copysign (rtx operands[])
 
   mode = GET_MODE (operands[0]);
 
-  if (mode == HFmode)
+  switch (mode)
+  {
+  case HFmode:
     vmode = V8HFmode;
-  else if (mode == SFmode)
+    break;
+  case BFmode:
+    vmode = V8BFmode;
+    break;
+  case SFmode:
     vmode = V4SFmode;
-  else if (mode == DFmode)
+    break;
+  case DFmode:
     vmode = V2DFmode;
-  else if (mode == TFmode)
+    break;
+  case TFmode:
     vmode = mode;
-  else
-    gcc_unreachable ();
+    break;
+  default:
+    gcc_unreachable();
+  }
 
   if (rtx_equal_p (operands[1], operands[2]))
     {
@@ -2390,14 +2408,24 @@ ix86_expand_xorsign (rtx operands[])
 
   mode = GET_MODE (dest);
 
-  if (mode == HFmode)
+  switch (mode)
+  {
+  case HFmode:
     vmode = V8HFmode;
-  else if (mode == SFmode)
+    break;
+  case BFmode:
+    vmode = V8BFmode;
+    break;
+  case SFmode:
     vmode = V4SFmode;
-  else if (mode == DFmode)
+    break;
+  case DFmode:
     vmode = V2DFmode;
-  else
+    break;
+  default:
     gcc_unreachable ();
+    break;
+  }
 
   temp = gen_reg_rtx (vmode);
   mask = ix86_build_signbit_mask (vmode, 0, 0);

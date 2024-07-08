@@ -351,7 +351,9 @@
 
 ;; 128-, 256- and 512-bit float vector modes for bitwise operations
 (define_mode_iterator VFB
-  [(V32HF "TARGET_AVX512F && TARGET_EVEX512")
+  [(V32BF "TARGET_AVX512F && TARGET_EVEX512")
+   (V16BF "TARGET_AVX") (V8BF "TARGET_SSE2")
+   (V32HF "TARGET_AVX512F && TARGET_EVEX512")
    (V16HF "TARGET_AVX") (V8HF "TARGET_SSE2")
    (V16SF "TARGET_AVX512F && TARGET_EVEX512") (V8SF "TARGET_AVX") V4SF
    (V8DF "TARGET_AVX512F && TARGET_EVEX512")
@@ -364,7 +366,8 @@
 
 ;; 128- and 256-bit float vector modes for bitwise operations
 (define_mode_iterator VFB_128_256
-  [(V16HF "TARGET_AVX") (V8HF "TARGET_SSE2")
+  [(V16BF "TARGET_AVX") (V8BF "TARGET_SSE2")
+   (V16HF "TARGET_AVX") (V8HF "TARGET_SSE2")
    (V8SF "TARGET_AVX") V4SF
    (V4DF "TARGET_AVX") (V2DF "TARGET_SSE2")])
 
@@ -422,7 +425,10 @@
 
 ;; All 512bit vector float modes for bitwise operations
 (define_mode_iterator VFB_512
-  [(V32HF "TARGET_EVEX512") (V16SF "TARGET_EVEX512") (V8DF "TARGET_EVEX512")])
+  [(V32BF "TARGET_EVEX512")
+   (V32HF "TARGET_EVEX512")
+   (V16SF "TARGET_EVEX512")
+   (V8DF "TARGET_EVEX512")])
 
 (define_mode_iterator V4SF_V8HF
   [V4SF V8HF])
@@ -929,6 +935,8 @@
 (define_mode_attr sse
   [(SF "sse") (DF "sse2") (HF "avx512fp16")
    (V4SF "sse") (V2DF "sse2")
+   (V32BF "avx512bf16") (V16BF "avx512bf16")
+   (V8BF "avx512bf16")
    (V32HF "avx512fp16") (V16HF "avx512fp16")
    (V8HF "avx512fp16")
    (V16SF "avx512f") (V8SF "avx")
@@ -1058,7 +1066,8 @@
 (define_mode_attr sseintvecmode2
   [(V8DF "XI") (V4DF "OI") (V2DF "TI")
    (V8SF "OI") (V4SF "TI")
-   (V16HF "OI") (V8HF "TI")])
+   (V16HF "OI") (V8HF "TI")
+   (V16BF "OI") (V8BF "TI")])
 
 (define_mode_attr sseintvecmodelower
   [(V32HF "v32hi") (V32BF "v32hi") (V16SF "v16si") (V8DF "v8di")
@@ -4967,7 +4976,7 @@
 	    (match_operand:VFB_128_256 1 "register_operand" "0,x,v,v"))
 	  (match_operand:VFB_128_256 2 "vector_operand" "xBm,xjm,vm,vm")))]
   "TARGET_SSE && <mask_avx512vl_condition>
-   && (!<mask_applied> || <ssescalarmode>mode != HFmode)"
+   && (!<mask_applied> || <ssescalarsize> != 16)"
 {
   char buf[128];
   const char *ops;
@@ -4989,6 +4998,8 @@
 
   switch (get_attr_mode (insn))
     {
+    case MODE_V16BF:
+    case MODE_V8BF:
     case MODE_V16HF:
     case MODE_V8HF:
     case MODE_V8SF:
@@ -5039,7 +5050,7 @@
 	  (not:VFB_512
 	    (match_operand:VFB_512 1 "register_operand" "v"))
 	  (match_operand:VFB_512 2 "nonimmediate_operand" "vm")))]
-  "TARGET_AVX512F && (!<mask_applied> || <ssescalarmode>mode != HFmode)"
+  "TARGET_AVX512F && (!<mask_applied> || <ssescalarsize> != 16)"
 {
   char buf[128];
   const char *ops;
@@ -5050,7 +5061,7 @@
 
   /* Since there are no vandnp[sd] without AVX512DQ nor vandnph,
      use vp<logic>[dq].  */
-  if (!TARGET_AVX512DQ || <MODE>mode == V32HFmode)
+  if (!TARGET_AVX512DQ || <MODE>mode == V32HFmode || <MODE>mode == V32BFmode)
     {
       suffix = GET_MODE_INNER (<MODE>mode) == DFmode ? "q" : "d";
       ops = "p";
@@ -5075,7 +5086,7 @@
          (match_operand:VFB_128_256 1 "vector_operand")
          (match_operand:VFB_128_256 2 "vector_operand")))]
   "TARGET_SSE && <mask_avx512vl_condition>
-   && (!<mask_applied> || <ssescalarmode>mode != HFmode)"
+   && (!<mask_applied> || <ssescalarsize> != 16)"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
 (define_expand "<code><mode>3<mask_name>"
@@ -5083,7 +5094,7 @@
        (any_logic:VFB_512
          (match_operand:VFB_512 1 "nonimmediate_operand")
          (match_operand:VFB_512 2 "nonimmediate_operand")))]
-  "TARGET_AVX512F && (!<mask_applied> || <ssescalarmode>mode != HFmode)"
+  "TARGET_AVX512F && (!<mask_applied> || <ssescalarsize> != 16)"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
 (define_insn "*<code><mode>3<mask_name>"
@@ -5092,7 +5103,7 @@
 	  (match_operand:VFB_128_256 1 "vector_operand" "%0,x,v,v")
 	  (match_operand:VFB_128_256 2 "vector_operand" "xBm,xm,vm,vm")))]
   "TARGET_SSE && <mask_avx512vl_condition>
-   && (!<mask_applied> || <ssescalarmode>mode != HFmode)
+   && (!<mask_applied> || <ssescalarsize> != 16)
    && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
 {
   char buf[128];
@@ -5115,6 +5126,8 @@
 
   switch (get_attr_mode (insn))
     {
+    case MODE_V16BF:
+    case MODE_V8BF:
     case MODE_V16HF:
     case MODE_V8HF:
     case MODE_V8SF:
@@ -5160,7 +5173,7 @@
 	  (match_operand:VFB_512 1 "nonimmediate_operand" "%v")
 	  (match_operand:VFB_512 2 "nonimmediate_operand" "vm")))]
   "TARGET_AVX512F && !(MEM_P (operands[1]) && MEM_P (operands[2]))
-   && (!<mask_applied> || <ssescalarmode>mode != HFmode)"
+   && (!<mask_applied> || <ssescalarsize> != 16)"
 {
   char buf[128];
   const char *ops;
@@ -5171,7 +5184,7 @@
 
   /* Since there are no v<logic>p[sd] without AVX512DQ nor v<logic>ph,
      use vp<logic>[dq].  */
-  if (!TARGET_AVX512DQ || <MODE>mode == V32HFmode)
+  if (!TARGET_AVX512DQ || <MODE>mode == V32HFmode || <MODE>mode == V32BFmode)
     {
       suffix = GET_MODE_INNER (<MODE>mode) == DFmode ? "q" : "d";
       ops = "p";
