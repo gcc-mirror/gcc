@@ -8801,6 +8801,16 @@ package body Sem_Ch8 is
             Error_Msg_NE ("\\found & declared#", N, T_Name);
             Set_Entity (N, Any_Type);
 
+         elsif Is_Current_Instance (N) and then Comes_From_Source (N) then
+            if Nkind (Parent (T_Name)) = N_Subtype_Declaration then
+               Error_Msg_N ("reference to current instance of subtype" &
+                            " does not denote a subtype (RM 8.6)", N);
+            else
+               Error_Msg_N ("reference to current instance of type" &
+                            " does not denote a type (RM 8.6)", N);
+            end if;
+            Set_Entity (N, Any_Type);
+
          else
             --  If the type is an incomplete type created to handle
             --  anonymous access components of a record type, then the
@@ -8831,12 +8841,9 @@ package body Sem_Ch8 is
             if In_Open_Scopes (T_Name) then
                if Ekind (Base_Type (T_Name)) = E_Task_Type then
 
-                  --  In Ada 2005, a task name can be used in an access
-                  --  definition within its own body.
+                  --  OK if the "current instance" rule does not apply.
 
-                  if Ada_Version >= Ada_2005
-                    and then Nkind (Parent (N)) = N_Access_Definition
-                  then
+                  if not Is_Current_Instance (N) then
                      Set_Entity (N, T_Name);
                      Set_Etype  (N, T_Name);
                      return;
@@ -8849,12 +8856,9 @@ package body Sem_Ch8 is
 
                elsif Ekind (Base_Type (T_Name)) = E_Protected_Type then
 
-                  --  In Ada 2005, a protected name can be used in an access
-                  --  definition within its own body.
+                  --  OK if the "current instance" rule does not apply.
 
-                  if Ada_Version >= Ada_2005
-                    and then Nkind (Parent (N)) = N_Access_Definition
-                  then
+                  if not Is_Current_Instance (N) then
                      Set_Entity (N, T_Name);
                      Set_Etype  (N, T_Name);
                      return;
