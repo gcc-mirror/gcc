@@ -14697,7 +14697,7 @@ package body Sem_Res is
 
       --  If it was legal in the generic, it's legal in the instance
 
-      elsif In_Instance_Body then
+      elsif In_Instance then
          return True;
 
       --  Ignore privacy for streaming or Put_Image routines
