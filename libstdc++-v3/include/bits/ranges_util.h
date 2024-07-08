@@ -506,9 +506,10 @@ namespace ranges
 		    if (static_cast<_Vt>(__value) == __value) [[likely]]
 		      if (__n > 0)
 			{
+			  const size_t __nu = static_cast<size_t>(__n);
 			  const int __ival = static_cast<int>(__value);
 			  const void* __p0 = std::to_address(__first);
-			  if (auto __p1 = __builtin_memchr(__p0, __ival, __n))
+			  if (auto __p1 = __builtin_memchr(__p0, __ival, __nu))
 			    __n = (const char*)__p1 - (const char*)__p0;
 			}
 		    return __first + __n;

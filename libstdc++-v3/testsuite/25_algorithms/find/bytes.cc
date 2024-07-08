@@ -114,9 +114,19 @@ test_non_characters()
 #endif
 }
 
+#if __cpp_lib_ranges
+void
+test_pr115799c0(__gnu_test::test_contiguous_range<char> r)
+{
+  // Non-common range with integer-class type as difference_type.
+  (void) std::ranges::find(r, 'a');
+}
+#endif
+
 void
 test_pr115799c2(__gnu_test::input_iterator_wrapper<char> i)
 {
+  // Non-contiguous range of character type.
   (void) std::find(i, i, 'a');
 }
 
