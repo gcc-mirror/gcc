@@ -195,7 +195,7 @@ public:
 			m_callee_fndecl,
 			m_new_entry_enode->get_stack_depth ()),
 	enode,
-	NULL, NULL, NULL));
+	nullptr, nullptr, nullptr));
   }
 
   /* Reject paths in which conjured svalues have affected control flow

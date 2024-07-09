@@ -678,12 +678,12 @@ saved_diagnostic::saved_diagnostic (const state_machine *sm,
   m_stmt (ploc.m_stmt),
   /* stmt_finder could be on-stack; we want our own copy that can
      outlive that.  */
-  m_stmt_finder (ploc.m_finder ? ploc.m_finder->clone () : NULL),
+  m_stmt_finder (ploc.m_finder ? ploc.m_finder->clone () : nullptr),
   m_loc (ploc.m_loc),
   m_var (var), m_sval (sval), m_state (state),
-  m_d (std::move (d)), m_trailing_eedge (NULL),
+  m_d (std::move (d)), m_trailing_eedge (nullptr),
   m_idx (idx),
-  m_best_epath (NULL), m_problem (NULL),
+  m_best_epath (nullptr), m_problem (nullptr),
   m_notes ()
 {
   /* We must have an enode in order to be able to look for paths
@@ -1790,10 +1790,10 @@ public:
 					stmt,
 					stack_depth,
 					sm,
-					NULL,
+					nullptr,
 					src_sm_val,
 					dst_sm_val,
-					NULL,
+					nullptr,
 					dst_state,
 					src_node));
     return false;
@@ -1983,9 +1983,9 @@ struct null_assignment_sm_context : public sm_context
 					m_sm,
 					var_new_sval,
 					from, to,
-					NULL,
+					nullptr,
 					*m_new_state,
-					NULL));
+					nullptr));
   }
 
   void set_next_state (const gimple *stmt,
@@ -2009,9 +2009,9 @@ struct null_assignment_sm_context : public sm_context
 					m_sm,
 					sval,
 					from, to,
-					NULL,
+					nullptr,
 					*m_new_state,
-					NULL));
+					nullptr));
   }
 
   void warn (const supernode *, const gimple *,

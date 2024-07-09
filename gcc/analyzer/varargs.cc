@@ -630,7 +630,7 @@ va_list_state_machine::on_va_end (sm_context *sm_ctxt,
 std::unique_ptr<pending_diagnostic>
 va_list_state_machine::on_leak (tree var) const
 {
-  return make_unique<va_list_leak> (*this, NULL, var);
+  return make_unique<va_list_leak> (*this, nullptr, var);
 }
 
 } // anonymous namespace
