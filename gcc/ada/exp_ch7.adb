@@ -337,6 +337,64 @@ package body Exp_Ch7 is
    --  directly by the compiler during the expansion of allocators and calls to
    --  instances of the Unchecked_Deallocation procedure.
 
+   --------------------------
+   -- Relaxed Finalization --
+   --------------------------
+
+   --  This paragraph describes the differences between the implementation of
+   --  finalization as specified by the Ada RM (called "strict" and documented
+   --  in the previous paragraph) and that of finalization as specified by the
+   --  GNAT RM (called "relaxed") for a second category of controlled objects.
+
+   --  For objects (statically) declared in a scope, the default implementation
+   --  documented in the previous paragraph is used for the scope as a whole as
+   --  soon as one controlled object with strict finalization is present in it,
+   --  including one transient controlled object. Otherwise, that is to say, if
+   --  all the controlled objects in the scope have relaxed finalization, then
+   --  no Finalization_Master is built for this scope, and all the objects are
+   --  finalized explicitly in the reverse order of their creation:
+
+   --    declare
+   --       X : Ctrl := Init;
+   --       Y : Ctrl := Init;
+
+   --    begin
+   --       null;
+   --    end;
+
+   --  is expanded into:
+
+   --    declare
+   --       XMN : aliased System.Finalization_Primitives.Master_Node;
+   --       X : Ctrl := Init;
+   --       System.Finalization_Primitives.Attach_To_Node
+   --         (X'address,
+   --          CtrlFD'unrestricted_access,
+   --          XMN'unrestricted_access);
+   --       YMN : aliased System.Finalization_Primitives.Master_Node;
+   --       Y : Ctrl := Init;
+   --       System.Finalization_Primitives.Attach_To_Node
+   --         (Y'address,
+   --          CtrlFD'unrestricted_access,
+   --          YMN'unrestricted_access);
+
+   --       procedure _Finalizer is
+   --       begin
+   --          Abort_Defer;
+   --          System.Finalization_Primitives.Finalize_Object (YMN);
+   --          System.Finalization_Primitives.Finalize_Object (XMN);
+   --          Abort_Undefer;
+   --       end _Finalizer;
+
+   --    begin
+   --       null;
+   --    end;
+   --    at end
+   --       _Finalizer;
+
+   --  Dynamically allocated objects with relaxed finalization need not be
+   --  finalized and, therefore, are not attached to any finalization chain.
+
    type Final_Primitives is
      (Initialize_Case, Adjust_Case, Finalize_Case, Address_Case);
    --  This enumeration type is defined in order to ease sharing code for
