@@ -21444,6 +21444,26 @@ Additional built-in functions are available for the 64-bit PowerPC
 family of processors, for efficient use of 128-bit floating point
 (@code{__float128}) values.
 
+Vector select
+
+@smallexample
+vector signed __int128 vec_sel (vector signed __int128,
+               vector signed __int128, vector bool __int128);
+vector signed __int128 vec_sel (vector signed __int128,
+               vector signed __int128, vector unsigned __int128);
+vector unsigned __int128 vec_sel (vector unsigned __int128,
+               vector unsigned __int128, vector bool __int128);
+vector unsigned __int128 vec_sel (vector unsigned __int128,
+               vector unsigned __int128, vector unsigned __int128);
+vector bool __int128 vec_sel (vector bool __int128,
+               vector bool __int128, vector bool __int128);
+vector bool __int128 vec_sel (vector bool __int128,
+               vector bool __int128, vector unsigned __int128);
+@end smallexample
+
+The instance is an extension of the exiting overloaded built-in @code{vec_sel}
+that is documented in the PVIPR.
+
 @node Basic PowerPC Built-in Functions Available on ISA 2.06
 @subsubsection Basic PowerPC Built-in Functions Available on ISA 2.06
 

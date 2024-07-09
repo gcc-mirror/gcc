@@ -1907,12 +1907,6 @@
   const vuc __builtin_vsx_xxsel_16qi_uns (vuc, vuc, vuc);
     XXSEL_16QI_UNS vector_select_v16qi_uns {}
 
-  const vsq __builtin_vsx_xxsel_1ti (vsq, vsq, vsq);
-    XXSEL_1TI vector_select_v1ti {}
-
-  const vsq __builtin_vsx_xxsel_1ti_uns (vsq, vsq, vsq);
-    XXSEL_1TI_UNS vector_select_v1ti_uns {}
-
   const vd __builtin_vsx_xxsel_2df (vd, vd, vd);
     XXSEL_2DF vector_select_v2df {}
 

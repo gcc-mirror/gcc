@@ -3266,6 +3266,18 @@
     VSEL_2DI_UNS  VSEL_2DI_BB
   vbll __builtin_vec_sel (vbll, vbll, vull);
     VSEL_2DI_UNS  VSEL_2DI_BU
+  vsq __builtin_vec_sel (vsq, vsq, vbq);
+    VSEL_1TI  VSEL_1TI_B
+  vsq __builtin_vec_sel (vsq, vsq, vuq);
+    VSEL_1TI  VSEL_1TI_U
+  vuq __builtin_vec_sel (vuq, vuq, vbq);
+    VSEL_1TI_UNS  VSEL_1TI_UB
+  vuq __builtin_vec_sel (vuq, vuq, vuq);
+    VSEL_1TI_UNS  VSEL_1TI_UU
+  vbq __builtin_vec_sel (vbq, vbq, vbq);
+    VSEL_1TI_UNS  VSEL_1TI_BB
+  vbq __builtin_vec_sel (vbq, vbq, vuq);
+    VSEL_1TI_UNS  VSEL_1TI_BU
   vf __builtin_vec_sel (vf, vf, vbi);
     VSEL_4SF  VSEL_4SF_B
   vf __builtin_vec_sel (vf, vf, vui);
