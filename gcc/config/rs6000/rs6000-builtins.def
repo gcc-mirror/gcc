@@ -1263,19 +1263,6 @@
   const signed long long __builtin_vec_ext_v2di (vsll, signed int);
     VEC_EXT_V2DI nothing {extract}
 
-;; VEC_SET_V1TI, VEC_SET_V2DF and VEC_SET_V2DI are used in
-;; resolve_vec_insert(), rs6000-c.cc
-;; TODO: Remove VEC_SET_V1TI, VEC_SET_V2DF and VEC_SET_V2DI once the uses
-;; in resolve_vec_insert are replaced by the equivalent gimple statements.
-  const vsq __builtin_vec_set_v1ti (vsq, signed __int128, const int<0,0>);
-    VEC_SET_V1TI nothing {set}
-
-  const vd __builtin_vec_set_v2df (vd, double, const int<1>);
-    VEC_SET_V2DF nothing {set}
-
-  const vsll __builtin_vec_set_v2di (vsll, signed long long, const int<1>);
-    VEC_SET_V2DI nothing {set}
-
   const vsc __builtin_vsx_cmpge_16qi (vsc, vsc);
     CMPGE_16QI vector_nltv16qi {}
 
