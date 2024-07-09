@@ -1165,11 +1165,11 @@ ftms = {
   // 202305 P2757R3 Type checking format args
   // 202306 P2637R3 Member visit
   // 202311 P2918R2 Runtime format strings II
-  // values = {
-    // v = 202305;
-    // cxxmin = 26;
-    // hosted = yes;
-  // };
+  values = {
+    v = 202305;
+    cxxmin = 26;
+    hosted = yes;
+  };
   // 201907 Text Formatting, Integration of chrono, printf corner cases.
   // 202106 std::format improvements.
   // 202110 Fixing locale handling in chrono formatters, generator-like types.
