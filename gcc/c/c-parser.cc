@@ -26431,23 +26431,19 @@ c_parser_omp_tile_sizes (c_parser *parser, location_t loc)
   if (!parens.require_open (parser))
     return error_mark_node;
 
-  do
+  vec<tree, va_gc> *sizes_vec
+    = c_parser_expr_list (parser, true, true, NULL, NULL, NULL, NULL);
+  sizes = build_tree_list_vec (sizes_vec);
+  release_tree_vector (sizes_vec);
+
+  for (tree s = sizes; s; s = TREE_CHAIN (s))
     {
-      if (sizes && !c_parser_require (parser, CPP_COMMA, "expected %<,%>"))
-	return error_mark_node;
-
-      location_t expr_loc = c_parser_peek_token (parser)->location;
-      c_expr cexpr = c_parser_expr_no_commas (parser, NULL);
-      cexpr = convert_lvalue_to_rvalue (expr_loc, cexpr, false, true);
-      tree expr = cexpr.value;
-
+      tree expr = TREE_VALUE (s);
       if (expr == error_mark_node)
 	{
 	  parens.skip_until_found_close (parser);
 	  return error_mark_node;
 	}
-
-      expr = c_fully_fold (expr, false, NULL);
 
       HOST_WIDE_INT n;
       if (!INTEGRAL_TYPE_P (TREE_TYPE (expr))
@@ -26457,17 +26453,14 @@ c_parser_omp_tile_sizes (c_parser *parser, location_t loc)
 	{
 	  c_parser_error (parser, "%<sizes%> argument needs positive"
 				  " integral constant");
-	  expr = integer_one_node;
+	  TREE_VALUE (s) = integer_one_node;
 	}
-
-      sizes = tree_cons (NULL_TREE, expr, sizes);
     }
-  while (c_parser_next_token_is_not (parser, CPP_CLOSE_PAREN));
   parens.require_close (parser);
 
   gcc_assert (sizes);
   tree c = build_omp_clause (loc, OMP_CLAUSE_SIZES);
-  OMP_CLAUSE_SIZES_LIST (c) = nreverse (sizes);
+  OMP_CLAUSE_SIZES_LIST (c) = sizes;
 
   return c;
 }
