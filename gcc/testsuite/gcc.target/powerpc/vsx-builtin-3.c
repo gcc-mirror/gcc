@@ -37,6 +37,8 @@
 /* { dg-final { scan-assembler "xvcvsxdsp" } } */
 /* { dg-final { scan-assembler "xvcvuxdsp" } } */
 
+#include <altivec.h>
+
 extern __vector int si[][4];
 extern __vector short ss[][4];
 extern __vector signed char sc[][4];
@@ -61,23 +63,23 @@ int do_sel(void)
 {
   int i = 0;
 
-  si[i][0] = __builtin_vsx_xxsel_4si (si[i][1], si[i][2], si[i][3]); i++;
-  ss[i][0] = __builtin_vsx_xxsel_8hi (ss[i][1], ss[i][2], ss[i][3]); i++;
-  sc[i][0] = __builtin_vsx_xxsel_16qi (sc[i][1], sc[i][2], sc[i][3]); i++;
-  f[i][0] = __builtin_vsx_xxsel_4sf (f[i][1], f[i][2], f[i][3]); i++;
-  d[i][0] = __builtin_vsx_xxsel_2df (d[i][1], d[i][2], d[i][3]); i++;
+  si[i][0] = vec_sel (si[i][1], si[i][2], ui[i][3]); i++;
+  ss[i][0] = vec_sel (ss[i][1], ss[i][2], us[i][3]); i++;
+  sc[i][0] = vec_sel (sc[i][1], sc[i][2], uc[i][3]); i++;
+  f[i][0] = vec_sel (f[i][1], f[i][2], f[i][3]); i++;
+  d[i][0] = vec_sel (d[i][1], d[i][2], d[i][3]); i++;
 
-  si[i][0] = __builtin_vsx_xxsel (si[i][1], si[i][2], bi[i][3]); i++;
-  ss[i][0] = __builtin_vsx_xxsel (ss[i][1], ss[i][2], bs[i][3]); i++;
-  sc[i][0] = __builtin_vsx_xxsel (sc[i][1], sc[i][2], bc[i][3]); i++;
-  f[i][0] = __builtin_vsx_xxsel (f[i][1], f[i][2], bi[i][3]); i++;
-  d[i][0] = __builtin_vsx_xxsel (d[i][1], d[i][2], bl[i][3]); i++;
+  si[i][0] = vec_sel (si[i][1], si[i][2], bi[i][3]); i++;
+  ss[i][0] = vec_sel (ss[i][1], ss[i][2], bs[i][3]); i++;
+  sc[i][0] = vec_sel (sc[i][1], sc[i][2], bc[i][3]); i++;
+  f[i][0] = vec_sel (f[i][1], f[i][2], bi[i][3]); i++;
+  d[i][0] = vec_sel (d[i][1], d[i][2], bl[i][3]); i++;
 
-  si[i][0] = __builtin_vsx_xxsel (si[i][1], si[i][2], ui[i][3]); i++;
-  ss[i][0] = __builtin_vsx_xxsel (ss[i][1], ss[i][2], us[i][3]); i++;
-  sc[i][0] = __builtin_vsx_xxsel (sc[i][1], sc[i][2], uc[i][3]); i++;
-  f[i][0] = __builtin_vsx_xxsel (f[i][1], f[i][2], ui[i][3]); i++;
-  d[i][0] = __builtin_vsx_xxsel (d[i][1], d[i][2], ul[i][3]); i++;
+  si[i][0] = vec_sel (si[i][1], si[i][2], ui[i][3]); i++;
+  ss[i][0] = vec_sel (ss[i][1], ss[i][2], us[i][3]); i++;
+  sc[i][0] = vec_sel (sc[i][1], sc[i][2], uc[i][3]); i++;
+  f[i][0] = vec_sel (f[i][1], f[i][2], ui[i][3]); i++;
+  d[i][0] = vec_sel (d[i][1], d[i][2], ul[i][3]); i++;
 
   return i;
 }

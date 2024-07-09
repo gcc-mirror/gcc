@@ -1901,36 +1901,6 @@
   const vss __builtin_vsx_xxpermdi_8hi (vss, vss, const int<2>);
     XXPERMDI_8HI vsx_xxpermdi_v8hi {}
 
-  const vsc __builtin_vsx_xxsel_16qi (vsc, vsc, vsc);
-    XXSEL_16QI vector_select_v16qi {}
-
-  const vuc __builtin_vsx_xxsel_16qi_uns (vuc, vuc, vuc);
-    XXSEL_16QI_UNS vector_select_v16qi_uns {}
-
-  const vd __builtin_vsx_xxsel_2df (vd, vd, vd);
-    XXSEL_2DF vector_select_v2df {}
-
-  const vsll __builtin_vsx_xxsel_2di (vsll, vsll, vsll);
-    XXSEL_2DI vector_select_v2di {}
-
-  const vull __builtin_vsx_xxsel_2di_uns (vull, vull, vull);
-    XXSEL_2DI_UNS vector_select_v2di_uns {}
-
-  const vf __builtin_vsx_xxsel_4sf (vf, vf, vf);
-    XXSEL_4SF vector_select_v4sf {}
-
-  const vsi __builtin_vsx_xxsel_4si (vsi, vsi, vsi);
-    XXSEL_4SI vector_select_v4si {}
-
-  const vui __builtin_vsx_xxsel_4si_uns (vui, vui, vui);
-    XXSEL_4SI_UNS vector_select_v4si_uns {}
-
-  const vss __builtin_vsx_xxsel_8hi (vss, vss, vss);
-    XXSEL_8HI vector_select_v8hi {}
-
-  const vus __builtin_vsx_xxsel_8hi_uns (vus, vus, vus);
-    XXSEL_8HI_UNS vector_select_v8hi_uns {}
-
   const vsc __builtin_vsx_xxsldwi_16qi (vsc, vsc, const int<2>);
     XXSLDWI_16QI vsx_xxsldwi_v16qi {}
 
