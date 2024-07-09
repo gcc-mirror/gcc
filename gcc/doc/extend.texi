@@ -22634,6 +22634,10 @@ void vec_vsx_st (vector bool char, int, signed char *);
 
 vector double vec_xxpermdi (vector double, vector double, const int);
 vector float vec_xxpermdi (vector float, vector float, const int);
+vector __int128 vec_xxpermdi (vector __int128,
+                              vector __int128, const int);
+vector __uint128 vec_xxpermdi (vector __uint128,
+                               vector __uint128, const int);
 vector long long vec_xxpermdi (vector long long, vector long long, const int);
 vector unsigned long long vec_xxpermdi (vector unsigned long long,
                                         vector unsigned long long, const int);

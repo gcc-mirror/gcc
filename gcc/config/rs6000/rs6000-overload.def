@@ -4936,6 +4936,10 @@
     XXPERMDI_2DI  XXPERMDI_VSLL
   vull __builtin_vsx_xxpermdi (vull, vull, const int);
     XXPERMDI_2DI  XXPERMDI_VULL
+  vsq __builtin_vsx_xxpermdi (vsq, vsq, const int);
+    XXPERMDI_1TI  XXPERMDI_SQ
+  vuq __builtin_vsx_xxpermdi (vuq, vuq, const int);
+    XXPERMDI_1TI  XXPERMDI_UQ
   vf __builtin_vsx_xxpermdi (vf, vf, const int);
     XXPERMDI_4SF  XXPERMDI_VF
   vd __builtin_vsx_xxpermdi (vd, vd, const int);
