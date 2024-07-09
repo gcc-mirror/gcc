@@ -2100,20 +2100,16 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     /* vec_mergel (integrals).  */
     case RS6000_BIF_VMRGLH:
     case RS6000_BIF_VMRGLW:
-    case RS6000_BIF_XXMRGLW_4SI:
     case RS6000_BIF_VMRGLB:
     case RS6000_BIF_VEC_MERGEL_V2DI:
-    case RS6000_BIF_XXMRGLW_4SF:
     case RS6000_BIF_VEC_MERGEL_V2DF:
       fold_mergehl_helper (gsi, stmt, 1);
       return true;
     /* vec_mergeh (integrals).  */
     case RS6000_BIF_VMRGHH:
     case RS6000_BIF_VMRGHW:
-    case RS6000_BIF_XXMRGHW_4SI:
     case RS6000_BIF_VMRGHB:
     case RS6000_BIF_VEC_MERGEH_V2DI:
-    case RS6000_BIF_XXMRGHW_4SF:
     case RS6000_BIF_VEC_MERGEH_V2DF:
       fold_mergehl_helper (gsi, stmt, 0);
       return true;

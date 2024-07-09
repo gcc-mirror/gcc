@@ -1880,18 +1880,6 @@
   const signed int __builtin_vsx_xvtsqrtsp_fg (vf);
     XVTSQRTSP_FG vsx_tsqrtv4sf2_fg {}
 
-  const vf __builtin_vsx_xxmrghw (vf, vf);
-    XXMRGHW_4SF vsx_xxmrghw_v4sf {}
-
-  const vsi __builtin_vsx_xxmrghw_4si (vsi, vsi);
-    XXMRGHW_4SI vsx_xxmrghw_v4si {}
-
-  const vf __builtin_vsx_xxmrglw (vf, vf);
-    XXMRGLW_4SF vsx_xxmrglw_v4sf {}
-
-  const vsi __builtin_vsx_xxmrglw_4si (vsi, vsi);
-    XXMRGLW_4SI vsx_xxmrglw_v4si {}
-
   const vsc __builtin_vsx_xxpermdi_16qi (vsc, vsc, const int<2>);
     XXPERMDI_16QI vsx_xxpermdi_v16qi {}
 

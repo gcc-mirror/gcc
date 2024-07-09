@@ -4896,51 +4896,6 @@
 }
   [(set_attr "type" "vecperm")])
 
-;; V4SF/V4SI interleave
-(define_expand "vsx_xxmrghw_<mode>"
-  [(set (match_operand:VSX_W 0 "vsx_register_operand" "=wa")
-        (vec_select:VSX_W
-	  (vec_concat:<VS_double>
-	    (match_operand:VSX_W 1 "vsx_register_operand" "wa")
-	    (match_operand:VSX_W 2 "vsx_register_operand" "wa"))
-	  (parallel [(const_int 0) (const_int 4)
-		     (const_int 1) (const_int 5)])))]
-  "VECTOR_MEM_VSX_P (<MODE>mode)"
-{
-  if (BYTES_BIG_ENDIAN)
-    emit_insn (gen_altivec_vmrghw_direct_v4si_be (operands[0],
-						  operands[1],
-						  operands[2]));
-  else
-    emit_insn (gen_altivec_vmrglw_direct_v4si_le (operands[0],
-						  operands[2],
-						  operands[1]));
-  DONE;
-}
-  [(set_attr "type" "vecperm")])
-
-(define_expand "vsx_xxmrglw_<mode>"
-  [(set (match_operand:VSX_W 0 "vsx_register_operand" "=wa")
-	(vec_select:VSX_W
-	  (vec_concat:<VS_double>
-	    (match_operand:VSX_W 1 "vsx_register_operand" "wa")
-	    (match_operand:VSX_W 2 "vsx_register_operand" "wa"))
-	  (parallel [(const_int 2) (const_int 6)
-		     (const_int 3) (const_int 7)])))]
-  "VECTOR_MEM_VSX_P (<MODE>mode)"
-{
-  if (BYTES_BIG_ENDIAN)
-    emit_insn (gen_altivec_vmrglw_direct_v4si_be (operands[0],
-						  operands[1],
-						  operands[2]));
-  else
-    emit_insn (gen_altivec_vmrghw_direct_v4si_le (operands[0],
-						  operands[2],
-						  operands[1]));
-  DONE;
-}
-  [(set_attr "type" "vecperm")])
-
 ;; Shift left double by word immediate
 (define_insn "vsx_xxsldwi_<mode>"
   [(set (match_operand:VSX_L 0 "vsx_register_operand" "=wa")
