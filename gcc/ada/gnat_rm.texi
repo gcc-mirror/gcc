@@ -7901,21 +7901,94 @@ activated.  These are additive, so they apply in addition to any previously
 set style check options.  The codes for the options are the same as those
 used in the `-gnaty' switch to `gcc' or `gnatmake'.
 For example the following two methods can be used to enable
-layout checking:
+layout checking and to change the maximum nesting level value:
 
 
 @itemize *
 
 @item 
 @example
+--  switch on layout checks
 pragma Style_Checks ("l");
+--  set the number of maximum allowed nesting levels to 15
+pragma Style_Checks ("L15");
 @end example
 
 @item 
 @example
-gcc -c -gnatyl ...
+gcc -c -gnatyl -gnatyL15 ...
 @end example
 @end itemize
+
+The string literal values can be cumulatively switched on and off by prefixing
+the value with @code{+} or @code{-}, where:
+
+
+@itemize *
+
+@item 
+@code{+} is equivalent to no prefix. It applies the check referenced by the
+literal value;
+
+@item 
+@code{-} switches the referenced check off.
+@end itemize
+
+@example
+--  allow misaligned block by disabling layout check
+pragma Style_Checks ("-l");
+declare
+    msg : constant String := "Hello";
+begin
+    Put_Line (msg);
+    end;
+
+--  enable the layout check again
+pragma Style_Checks ("l");
+declare
+    msg : constant String := "Hello";
+begin
+    Put_Line (msg);
+    end;
+@end example
+
+The code above contains two layout errors, however, only
+the last line is picked up by the compiler.
+
+Similarly, the switches containing a numeric value can be applied in sequence.
+In the example below, the permitted nesting level is reduced in in the middle
+block and the compiler raises a warning on the highlighted line.
+
+@example
+-- Permit 3 levels of nesting
+pragma Style_Checks ("L3");
+
+procedure Main is
+begin
+    if True then
+      if True then
+          null;
+      end if;
+    end if;
+    --  Reduce permitted nesting levels to 2.
+    --  Note that "+L2" and "L2" are equivalent.
+    pragma Style_Checks ("+L2");
+    if True then
+      if True then
+          null;
+      end if;
+    end if;
+    --  Disable checking permitted nesting levels.
+    --  Note that the number after "-L" is insignificant,
+    --  "-L", "-L3" and "-Lx" are all equivalent.
+    pragma Style_Checks ("-L3");
+    if True then
+      if True then
+          null;
+      end if;
+    end if;
+end Main;
+@end example
 
 The form @code{ALL_CHECKS} activates all standard checks (its use is equivalent
 to the use of the @code{gnaty} switch with no options.
