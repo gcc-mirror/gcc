@@ -479,6 +479,11 @@ ftms = {
 ftms = {
   name = variant;
   values = {
+    v = 202306;
+    cxxmin = 26;
+    extra_cond = "__cpp_concepts >= 202002L && __cpp_constexpr >= 201811L && __cpp_explicit_this_parameter";
+  };
+  values = {
     v = 202106;
     cxxmin = 20;
     extra_cond = "__cpp_concepts >= 202002L && __cpp_constexpr >= 201811L";

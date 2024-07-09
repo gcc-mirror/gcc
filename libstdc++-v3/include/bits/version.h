@@ -529,7 +529,12 @@
 #undef __glibcxx_want_type_trait_variable_templates
 
 #if !defined(__cpp_lib_variant)
-# if (__cplusplus >= 202002L) && (__cpp_concepts >= 202002L && __cpp_constexpr >= 201811L)
+# if (__cplusplus >  202302L) && (__cpp_concepts >= 202002L && __cpp_constexpr >= 201811L && __cpp_explicit_this_parameter)
+#  define __glibcxx_variant 202306L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_variant)
+#   define __cpp_lib_variant 202306L
+#  endif
+# elif (__cplusplus >= 202002L) && (__cpp_concepts >= 202002L && __cpp_constexpr >= 201811L)
 #  define __glibcxx_variant 202106L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_variant)
 #   define __cpp_lib_variant 202106L

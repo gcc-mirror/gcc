@@ -1390,6 +1390,12 @@ namespace __detail::__variant
     constexpr __detail::__variant::__visit_result_t<_Visitor, _Variants...>
     visit(_Visitor&&, _Variants&&...);
 
+#if __cplusplus > 201703L
+  template<typename _Res, typename _Visitor, typename... _Variants>
+    constexpr _Res
+    visit(_Visitor&&, _Variants&&...);
+#endif
+
   template<typename... _Types>
     _GLIBCXX20_CONSTEXPR
     inline enable_if_t<(is_move_constructible_v<_Types> && ...)
@@ -1757,6 +1763,46 @@ namespace __detail::__variant
 	      }
 	  }, __rhs);
       }
+
+#if __cpp_lib_variant >= 202306L // >= C++26
+      // [variant.visit], visitation
+
+      /** Simple visitation for a single variant
+       *
+       * To visit a single variant you can use `var.visit(visitor)`
+       * instead of `std::visit(visitor, var)`.
+       *
+       * @since C++26
+       */
+      template<int = 0, typename _Self, typename _Visitor>
+	constexpr decltype(auto)
+	visit(this _Self&& __self, _Visitor&& __vis)
+	{
+	  using _CVar = __conditional_t<is_const_v<remove_reference_t<_Self>>,
+					const variant, variant>;
+	  using _Var = __conditional_t<is_rvalue_reference_v<_Self&&>,
+				       _CVar&&, _CVar&>;
+	  return std::visit(std::forward<_Visitor>(__vis), (_Var)__self);
+	}
+
+      /** Simple visitation for a single variant, with explicit return type
+       *
+       * To visit a single variant you can use `var.visit<R>(visitor)`
+       * instead of `std::visit<R>(visitor, var)`.
+       *
+       * @since C++26
+       */
+      template<typename _Res, typename _Self, typename _Visitor>
+	constexpr _Res
+	visit(this _Self&& __self, _Visitor&& __vis)
+	{
+	  using _CVar = __conditional_t<is_const_v<remove_reference_t<_Self>>,
+					const variant, variant>;
+	  using _Var = __conditional_t<is_rvalue_reference_v<_Self&&>,
+				       _CVar&&, _CVar&>;
+	  return std::visit<_Res>(std::forward<_Visitor>(__vis), (_Var)__self);
+	}
+#endif
 
     private:
       template<size_t _Np, typename _Vp>
