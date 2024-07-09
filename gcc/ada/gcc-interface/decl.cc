@@ -2003,7 +2003,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	  /* Create a stripped-down declaration, mainly for debugging.  */
 	  t = create_type_decl (gnu_entity_name, gnu_type, true, debug_info_p,
-				gnat_entity);
+				gnat_entity, false);
 
 	  /* Now save it and build the enclosing record type.  */
 	  gnu_field_type = gnu_type;
@@ -2276,7 +2276,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    ? create_concat_name (gnat_name, "XUP")
 	    : gnu_entity_name;
 	create_type_decl (xup_name, gnu_fat_type, true, debug_info_p,
-			  gnat_entity);
+			  gnat_entity, false);
 
 	/* Build a reference to the template from a PLACEHOLDER_EXPR that
 	   is the fat pointer.  This will be used to access the individual
@@ -3022,7 +3022,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		= create_type_decl (gnu_entity_name, gnu_type,
 				    is_artificial (Etype (gnat_entity))
 				    && artificial_p, debug_info_p,
-				    gnat_entity);
+				    gnat_entity, false);
 	      /* Save it as our equivalent in case the call below elaborates
 		 this type again.  */
 	      save_gnu_tree (gnat_entity, gnu_tmp_decl, false);
