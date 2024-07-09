@@ -1524,46 +1524,6 @@ resolve_vec_insert (resolution *res, vec<tree, va_gc> *arglist,
       return error_mark_node;
     }
 
-  /* If we can use the VSX xxpermdi instruction, use that for insert.  */
-  machine_mode mode = TYPE_MODE (arg1_type);
-
-  if ((mode == V2DFmode || mode == V2DImode)
-      && VECTOR_UNIT_VSX_P (mode)
-      && TREE_CODE (arg2) == INTEGER_CST)
-    {
-      wide_int selector = wi::to_wide (arg2);
-      selector = wi::umod_trunc (selector, 2);
-      arg2 = wide_int_to_tree (TREE_TYPE (arg2), selector);
-
-      tree call = NULL_TREE;
-      if (mode == V2DFmode)
-	call = rs6000_builtin_decls[RS6000_BIF_VEC_SET_V2DF];
-      else if (mode == V2DImode)
-	call = rs6000_builtin_decls[RS6000_BIF_VEC_SET_V2DI];
-
-      /* Note, __builtin_vec_insert_<xxx> has vector and scalar types
-	 reversed.  */
-      if (call)
-	{
-	  *res = resolved;
-	  return build_call_expr (call, 3, arg1, arg0, arg2);
-	}
-    }
-
-  else if (mode == V1TImode
-	   && VECTOR_UNIT_VSX_P (mode)
-	   && TREE_CODE (arg2) == INTEGER_CST)
-    {
-      tree call = rs6000_builtin_decls[RS6000_BIF_VEC_SET_V1TI];
-      wide_int selector = wi::zero(32);
-      arg2 = wide_int_to_tree (TREE_TYPE (arg2), selector);
-
-      /* Note, __builtin_vec_insert_<xxx> has vector and scalar types
-	 reversed.  */
-      *res = resolved;
-      return build_call_expr (call, 3, arg1, arg0, arg2);
-    }
-
   /* Build *(((arg1_inner_type*) & (vector type){arg1}) + arg2) = arg0 with
      VIEW_CONVERT_EXPR.  i.e.:
        D.3192 = v1;
