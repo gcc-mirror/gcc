@@ -1579,17 +1579,11 @@
   const signed int __builtin_vsx_xvcmpeqdp_p (signed int, vd, vd);
     XVCMPEQDP_P vector_eq_v2df_p {pred}
 
-  const vf __builtin_vsx_xvcmpeqsp (vf, vf);
-    XVCMPEQSP vector_eqv4sf {}
-
   const vd __builtin_vsx_xvcmpgedp (vd, vd);
     XVCMPGEDP vector_gev2df {}
 
   const signed int __builtin_vsx_xvcmpgedp_p (signed int, vd, vd);
     XVCMPGEDP_P vector_ge_v2df_p {pred}
-
-  const vf __builtin_vsx_xvcmpgesp (vf, vf);
-    XVCMPGESP vector_gev4sf {}
 
   const signed int __builtin_vsx_xvcmpgesp_p (signed int, vf, vf);
     XVCMPGESP_P vector_ge_v4sf_p {pred}
@@ -1599,9 +1593,6 @@
 
   const signed int __builtin_vsx_xvcmpgtdp_p (signed int, vd, vd);
     XVCMPGTDP_P vector_gt_v2df_p {pred}
-
-  const vf __builtin_vsx_xvcmpgtsp (vf, vf);
-    XVCMPGTSP vector_gtv4sf {}
 
   const signed int __builtin_vsx_xvcmpgtsp_p (signed int, vf, vf);
     XVCMPGTSP_P vector_gt_v4sf_p {pred}
