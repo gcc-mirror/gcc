@@ -216,6 +216,8 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"ssstateen", "zicsr"},
   {"sstc", "zicsr"},
 
+  {"xsfvcp", "zve32x"},
+
   {NULL, NULL}
 };
 
@@ -414,6 +416,9 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"xtheadvector", ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"xventanacondops", ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"xsfvcp",   ISA_SPEC_CLASS_NONE, 1, 0},
+  {"xsfcease", ISA_SPEC_CLASS_NONE, 1, 0},
 
   /* Terminate the list.  */
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
@@ -1821,6 +1826,9 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"xtheadvector",  &gcc_options::x_target_flags, MASK_VECTOR},
 
   {"xventanacondops", &gcc_options::x_riscv_xventana_subext, MASK_XVENTANACONDOPS},
+
+  {"xsfvcp",   &gcc_options::x_riscv_sifive_subext, MASK_XSFVCP},
+  {"xsfcease", &gcc_options::x_riscv_sifive_subext, MASK_XSFCEASE},
 
   {NULL, NULL, 0}
 };
