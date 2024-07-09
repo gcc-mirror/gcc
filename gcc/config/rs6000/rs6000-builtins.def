@@ -1739,12 +1739,6 @@
   const vf __builtin_vsx_xvnabssp (vf);
     XVNABSSP vsx_nabsv4sf2 {}
 
-  const vd __builtin_vsx_xvnegdp (vd);
-    XVNEGDP negv2df2 {}
-
-  const vf __builtin_vsx_xvnegsp (vf);
-    XVNEGSP negv4sf2 {}
-
   const vd __builtin_vsx_xvnmadddp (vd, vd, vd);
     XVNMADDDP nfmav2df4 {}
 
