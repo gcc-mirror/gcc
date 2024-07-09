@@ -1697,11 +1697,17 @@
   const vd __builtin_vsx_xvcvspdp (vf);
     XVCVSPDP vsx_xvcvspdp {}
 
-  const vsll __builtin_vsx_xvcvspsxds (vf);
-    XVCVSPSXDS vsx_xvcvspsxds {}
+  const vsll __builtin_vsignede_v4sf (vf);
+    VEC_VSIGNEDE_V4SF vsignede_v4sf {}
 
-  const vsll __builtin_vsx_xvcvspuxds (vf);
-    XVCVSPUXDS vsx_xvcvspuxds {}
+  const vsll __builtin_vsignedo_v4sf (vf);
+    VEC_VSIGNEDO_V4SF vsignedo_v4sf {}
+
+  const vull __builtin_vunsignede_v4sf (vf);
+    VEC_VUNSIGNEDE_V4SF vunsignede_v4sf {}
+
+  const vull __builtin_vunsignedo_v4sf (vf);
+    VEC_VUNSIGNEDO_V4SF vunsignedo_v4sf {}
 
   const vd __builtin_vsx_xvcvsxddp (vsll);
     XVCVSXDDP vsx_floatv2div2df2 {}

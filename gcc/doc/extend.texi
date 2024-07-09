@@ -22649,6 +22649,16 @@ if the VSX instruction set is available.  The @samp{vec_vsx_ld} and
 @samp{vec_vsx_st} built-in functions always generate the VSX @samp{LXVD2X},
 @samp{LXVW4X}, @samp{STXVD2X}, and @samp{STXVW4X} instructions.
 
+@smallexample
+vector signed long long vec_signedo (vector float);
+vector signed long long vec_signede (vector float);
+vector unsigned long long vec_unsignedo (vector float);
+vector unsigned long long vec_unsignede (vector float);
+@end smallexample
+
+The overloaded built-ins @code{vec_signedo} and @code{vec_signede} are
+additional extensions to the built-ins as documented in the PVIPR.
+
 @node PowerPC AltiVec Built-in Functions Available on ISA 2.07
 @subsubsection PowerPC AltiVec Built-in Functions Available on ISA 2.07
 

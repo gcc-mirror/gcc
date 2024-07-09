@@ -2704,6 +2704,90 @@
   DONE;
 })
 
+;; Convert float vector even elements to signed long long vector
+(define_expand "vsignede_v4sf"
+  [(match_operand:V2DI 0 "vsx_register_operand")
+   (match_operand:V4SF 1 "vsx_register_operand")]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+{
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_vsx_xvcvspsxds_be (operands[0], operands[1]));
+  else
+    {
+      /* Shift left one word to put even word in correct location.  */
+      rtx rtx_tmp = gen_reg_rtx (V4SFmode);
+      rtx rtx_val = GEN_INT (4);
+      emit_insn (gen_altivec_vsldoi_v4sf (rtx_tmp, operands[1], operands[1],
+					  rtx_val));
+      emit_insn (gen_vsx_xvcvspsxds_le (operands[0], rtx_tmp));
+    }
+
+  DONE;
+})
+
+;; Convert float vector odd elements to signed long long vector
+(define_expand "vsignedo_v4sf"
+  [(match_operand:V2DI 0 "vsx_register_operand")
+   (match_operand:V4SF 1 "vsx_register_operand")]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+{
+  if (BYTES_BIG_ENDIAN)
+    {
+      /* Shift left one word to put even word in correct location.  */
+      rtx rtx_tmp = gen_reg_rtx (V4SFmode);
+      rtx rtx_val = GEN_INT (4);
+      emit_insn (gen_altivec_vsldoi_v4sf (rtx_tmp, operands[1], operands[1],
+					  rtx_val));
+      emit_insn (gen_vsx_xvcvspsxds_be (operands[0], rtx_tmp));
+    }
+  else
+    emit_insn (gen_vsx_xvcvspsxds_le (operands[0], operands[1]));
+
+  DONE;
+})
+
+;; Convert float vector of even vector elements to unsigned long long vector
+(define_expand "vunsignede_v4sf"
+  [(match_operand:V2DI 0 "vsx_register_operand")
+   (match_operand:V4SF 1 "vsx_register_operand")]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+{
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_vsx_xvcvspuxds_be (operands[0], operands[1]));
+  else
+    {
+      /* Shift left one word to put even word in correct location.  */
+      rtx rtx_tmp = gen_reg_rtx (V4SFmode);
+      rtx rtx_val = GEN_INT (4);
+      emit_insn (gen_altivec_vsldoi_v4sf (rtx_tmp, operands[1], operands[1],
+					  rtx_val));
+      emit_insn (gen_vsx_xvcvspuxds_le (operands[0], rtx_tmp));
+    }
+
+  DONE;
+})
+
+;; Convert float vector of odd elements to unsigned long long vector
+(define_expand "vunsignedo_v4sf"
+  [(match_operand:V2DI 0 "vsx_register_operand")
+   (match_operand:V4SF 1 "vsx_register_operand")]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+{
+  if (BYTES_BIG_ENDIAN)
+    {
+      /* Shift left one word to put even word in correct location.  */
+      rtx rtx_tmp = gen_reg_rtx (V4SFmode);
+      rtx rtx_val = GEN_INT (4);
+      emit_insn (gen_altivec_vsldoi_v4sf (rtx_tmp, operands[1], operands[1],
+					  rtx_val));
+      emit_insn (gen_vsx_xvcvspuxds_be (operands[0], rtx_tmp));
+    }
+  else
+    emit_insn (gen_vsx_xvcvspuxds_le (operands[0], operands[1]));
+
+  DONE;
+})
+
 ;; Generate float2 double
 ;; convert two double to float
 (define_expand "float2_v2df"

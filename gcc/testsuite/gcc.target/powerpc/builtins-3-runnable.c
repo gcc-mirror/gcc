@@ -81,14 +81,15 @@ void test_unsigned_int_result(int check, vector unsigned int vec_result,
 }
 
 void test_ll_int_result(vector long long int vec_result,
-			vector long long int vec_expected)
+			vector long long int vec_expected,
+			char *string)
 {
 	int i;
 
 	for (i = 0; i < 2; i++)
 		if (vec_result[i] != vec_expected[i]) {
 #ifdef DEBUG
-			printf("Test_ll_int_result: ");
+			printf("Test_ll_int_result %s: ", string);
 			printf("vec_result[%d] (%lld) != vec_expected[%d] (%lld)\n",
 			       i, vec_result[i], i, vec_expected[i]);
 #else
@@ -98,14 +99,15 @@ void test_ll_int_result(vector long long int vec_result,
 }
 
 void test_ll_unsigned_int_result(vector long long unsigned int vec_result,
-				 vector long long unsigned int vec_expected)
+				 vector long long unsigned int vec_expected,
+				 char *string)
 {
 	int i;
 
 	for (i = 0; i < 2; i++)
 		if (vec_result[i] != vec_expected[i]) {
 #ifdef DEBUG
-			printf("Test_ll_unsigned_int_result: ");
+			printf("Test_ll_unsigned_int_result %s: ", string);
 			printf("vec_result[%d] (%lld) != vec_expected[%d] (%lld)\n",
 			       i, vec_result[i], i, vec_expected[i]);
 #else
@@ -292,7 +294,8 @@ int main()
 	vec_dble0 = (vector double){-124.930, 81234.49};
 	vec_ll_int_expected = (vector long long signed int){-124, 81234};
 	vec_ll_int_result = vec_signed (vec_dble0);
-	test_ll_int_result (vec_ll_int_result, vec_ll_int_expected);
+	test_ll_int_result (vec_ll_int_result, vec_ll_int_expected,
+			    "vec_signed");
 
 	/* Convert double precision vector float to vector int, even words */
 	vec_dble0 = (vector double){-124.930, 81234.49};
@@ -321,12 +324,44 @@ int main()
 	test_unsigned_int_result (ALL, vec_uns_int_result,
 				  vec_uns_int_expected);
 
+	/* Convert single precision vector float, even args, to vector
+	   signed long long int.  */
+	vec_flt0 = (vector float){14.930, 834.49, -3.3, -5.4};
+	vec_ll_int_expected = (vector signed long long int){14, -3};
+	vec_ll_int_result = vec_signede (vec_flt0);
+	test_ll_int_result (vec_ll_int_result, vec_ll_int_expected,
+			    "vec_signede");
+
+	/* Convert single precision vector float, odd args, to vector
+	   signed long long int.  */
+	vec_flt0 = (vector float){14.930, 834.49, -3.3, -5.4};
+	vec_ll_int_expected = (vector signed long long int){834, -5};
+	vec_ll_int_result = vec_signedo (vec_flt0);
+	test_ll_int_result (vec_ll_int_result, vec_ll_int_expected,
+			    "vec_signedo");
+
+	/* Convert single precision vector float, even args, to vector
+	   unsigned long long int.  */
+	vec_flt0 = (vector float){14.930, 834.49, -3.3, -5.4};
+	vec_ll_uns_int_expected = (vector unsigned long long int){14, 0};
+	vec_ll_uns_int_result = vec_unsignede (vec_flt0);
+	test_ll_unsigned_int_result (vec_ll_uns_int_result,
+				     vec_ll_uns_int_expected, "vec_unsignede");
+
+	/* Convert single precision vector float, odd args, to vector
+	   unsigned long long int.  */
+	vec_flt0 = (vector float){14.930, 834.49, -3.3, -5.4};
+	vec_ll_uns_int_expected = (vector unsigned long long int){834, 0};
+	vec_ll_uns_int_result = vec_unsignedo (vec_flt0);
+	test_ll_unsigned_int_result (vec_ll_uns_int_result,
+				     vec_ll_uns_int_expected, "vec_unsignedo");
+
 	/* Convert double precision float to long long unsigned int */
 	vec_dble0 = (vector double){124.930, 8134.49};
 	vec_ll_uns_int_expected = (vector long long unsigned int){124, 8134};
 	vec_ll_uns_int_result = vec_unsigned (vec_dble0);
 	test_ll_unsigned_int_result (vec_ll_uns_int_result,
-				     vec_ll_uns_int_expected);
+				     vec_ll_uns_int_expected, "vec_unsigned");
 
 	/* Convert double precision float to long long unsigned int. Negative
 	   arguments.  */
@@ -334,7 +369,7 @@ int main()
 	vec_ll_uns_int_expected = (vector long long unsigned int){0, 0};
 	vec_ll_uns_int_result = vec_unsigned (vec_dble0);
 	test_ll_unsigned_int_result (vec_ll_uns_int_result,
-				     vec_ll_uns_int_expected);
+				     vec_ll_uns_int_expected, "vec_unsigned");
 
 	/* Convert double precision vector float to vector unsigned int,
 	   even words.  Negative arguments */

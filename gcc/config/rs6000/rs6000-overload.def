@@ -3307,10 +3307,14 @@
 [VEC_SIGNEDE, vec_signede, __builtin_vec_vsignede]
   vsi __builtin_vec_vsignede (vd);
     VEC_VSIGNEDE_V2DF
+  vsll __builtin_vec_vsignede (vf);
+    VEC_VSIGNEDE_V4SF
 
 [VEC_SIGNEDO, vec_signedo, __builtin_vec_vsignedo]
   vsi __builtin_vec_vsignedo (vd);
     VEC_VSIGNEDO_V2DF
+  vsll __builtin_vec_vsignedo (vf);
+    VEC_VSIGNEDO_V4SF
 
 [VEC_SIGNEXTI, vec_signexti, __builtin_vec_signexti]
   vsi __builtin_vec_signexti (vsc);
@@ -4433,10 +4437,14 @@
 [VEC_UNSIGNEDE, vec_unsignede, __builtin_vec_vunsignede]
   vui __builtin_vec_vunsignede (vd);
     VEC_VUNSIGNEDE_V2DF
+  vull __builtin_vec_vunsignede (vf);
+    VEC_VUNSIGNEDE_V4SF
 
 [VEC_UNSIGNEDO, vec_unsignedo, __builtin_vec_vunsignedo]
   vui __builtin_vec_vunsignedo (vd);
     VEC_VUNSIGNEDO_V2DF
+  vull __builtin_vec_vunsignedo (vf);
+    VEC_VUNSIGNEDO_V4SF
 
 [VEC_VEE, vec_extract_exp, __builtin_vec_extract_exp]
   vui __builtin_vec_extract_exp (vf);
