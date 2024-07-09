@@ -2030,19 +2030,6 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       fold_compare_helper (gsi, GT_EXPR, stmt);
       return true;
 
-    case RS6000_BIF_CMPLE_16QI:
-    case RS6000_BIF_CMPLE_U16QI:
-    case RS6000_BIF_CMPLE_8HI:
-    case RS6000_BIF_CMPLE_U8HI:
-    case RS6000_BIF_CMPLE_4SI:
-    case RS6000_BIF_CMPLE_U4SI:
-    case RS6000_BIF_CMPLE_2DI:
-    case RS6000_BIF_CMPLE_U2DI:
-    case RS6000_BIF_CMPLE_1TI:
-    case RS6000_BIF_CMPLE_U1TI:
-      fold_compare_helper (gsi, LE_EXPR, stmt);
-      return true;
-
     /* flavors of vec_splat_[us]{8,16,32}.  */
     case RS6000_BIF_VSPLTISB:
     case RS6000_BIF_VSPLTISH:

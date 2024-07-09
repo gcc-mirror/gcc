@@ -1337,30 +1337,6 @@
   const vss __builtin_vsx_cmpge_u8hi (vus, vus);
     CMPGE_U8HI vector_nltuv8hi {}
 
-  const vsc __builtin_vsx_cmple_16qi (vsc, vsc);
-    CMPLE_16QI vector_ngtv16qi {}
-
-  const vsll __builtin_vsx_cmple_2di (vsll, vsll);
-    CMPLE_2DI vector_ngtv2di {}
-
-  const vsi __builtin_vsx_cmple_4si (vsi, vsi);
-    CMPLE_4SI vector_ngtv4si {}
-
-  const vss __builtin_vsx_cmple_8hi (vss, vss);
-    CMPLE_8HI vector_ngtv8hi {}
-
-  const vsc __builtin_vsx_cmple_u16qi (vsc, vsc);
-    CMPLE_U16QI vector_ngtuv16qi {}
-
-  const vsll __builtin_vsx_cmple_u2di (vsll, vsll);
-    CMPLE_U2DI vector_ngtuv2di {}
-
-  const vsi __builtin_vsx_cmple_u4si (vsi, vsi);
-    CMPLE_U4SI vector_ngtuv4si {}
-
-  const vss __builtin_vsx_cmple_u8hi (vss, vss);
-    CMPLE_U8HI vector_ngtuv8hi {}
-
   const vd __builtin_vsx_concat_2df (double, double);
     CONCAT_2DF vsx_concat_v2df {}
 
@@ -3116,12 +3092,6 @@
 
   const vbq __builtin_altivec_cmpge_u1ti (vuq, vuq);
     CMPGE_U1TI vector_nltuv1ti {}
-
-  const vbq __builtin_altivec_cmple_1ti (vsq, vsq);
-    CMPLE_1TI vector_ngtv1ti {}
-
-  const vbq __builtin_altivec_cmple_u1ti (vuq, vuq);
-    CMPLE_U1TI vector_ngtuv1ti {}
 
   const unsigned long long __builtin_altivec_cntmbb (vuc, const int<1>);
     VCNTMBB vec_cntmb_v16qi {}
