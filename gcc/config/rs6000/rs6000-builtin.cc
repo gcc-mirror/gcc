@@ -2313,43 +2313,6 @@ altivec_expand_predicate_builtin (enum insn_code icode, tree exp, rtx target)
   return target;
 }
 
-/* Expand vec_init builtin.  */
-static rtx
-altivec_expand_vec_init_builtin (tree type, tree exp, rtx target)
-{
-  machine_mode tmode = TYPE_MODE (type);
-  machine_mode inner_mode = GET_MODE_INNER (tmode);
-  int i, n_elt = GET_MODE_NUNITS (tmode);
-
-  gcc_assert (VECTOR_MODE_P (tmode));
-  gcc_assert (n_elt == call_expr_nargs (exp));
-
-  if (!target || !register_operand (target, tmode))
-    target = gen_reg_rtx (tmode);
-
-  /* If we have a vector compromised of a single element, such as V1TImode, do
-     the initialization directly.  */
-  if (n_elt == 1 && GET_MODE_SIZE (tmode) == GET_MODE_SIZE (inner_mode))
-    {
-      rtx x = expand_normal (CALL_EXPR_ARG (exp, 0));
-      emit_move_insn (target, gen_lowpart (tmode, x));
-    }
-  else
-    {
-      rtvec v = rtvec_alloc (n_elt);
-
-      for (i = 0; i < n_elt; ++i)
-	{
-	  rtx x = expand_normal (CALL_EXPR_ARG (exp, i));
-	  RTVEC_ELT (v, i) = gen_lowpart (inner_mode, x);
-	}
-
-      rs6000_expand_vector_init (target, gen_rtx_PARALLEL (tmode, v));
-    }
-
-  return target;
-}
-
 /* Return the integer constant in ARG.  Constrain it to be in the range
    of the subparts of VEC_TYPE; issue an error if not.  */
 
@@ -3400,9 +3363,6 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
 
   if (bif_is_cpu (*bifaddr))
     return cpu_expand_builtin (fcode, exp, target);
-
-  if (bif_is_init (*bifaddr))
-    return altivec_expand_vec_init_builtin (TREE_TYPE (exp), exp, target);
 
   if (bif_is_set (*bifaddr))
     return altivec_expand_vec_set_builtin (exp);

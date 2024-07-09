@@ -70,7 +70,6 @@ along with GCC; see the file COPYING3.  If not see
 
    Attributes are strings, such as these:
 
-     init     Process as a vec_init function
      set      Process as a vec_set function
      extract  Process as a vec_extract function
      nosoft   Not valid with -msoft-float
@@ -371,7 +370,6 @@ struct typelist
 /* Attributes of a builtin function.  */
 struct attrinfo
 {
-  bool isinit;
   bool isset;
   bool isextract;
   bool isnosoft;
@@ -1396,9 +1394,7 @@ parse_bif_attrs (attrinfo *attrptr)
     attrname = match_identifier ();
     if (attrname)
       {
-	if (!strcmp (attrname, "init"))
-	  attrptr->isinit = 1;
-	else if (!strcmp (attrname, "set"))
+	if (!strcmp (attrname, "set"))
 	  attrptr->isset = 1;
 	else if (!strcmp (attrname, "extract"))
 	  attrptr->isextract = 1;
@@ -1473,19 +1469,18 @@ parse_bif_attrs (attrinfo *attrptr)
 
 #ifdef DEBUG
   diag (0,
-	"attribute set: init = %d, set = %d, extract = %d, nosoft = %d, "
+	"attribute set: set = %d, extract = %d, nosoft = %d, "
 	"ldvec = %d, stvec = %d, reve = %d, pred = %d, htm = %d, "
 	"htmspr = %d, htmcr = %d, mma = %d, quad = %d, pair = %d, "
 	"mmaint = %d, no32bit = %d, 32bit = %d, cpu = %d, ldstmask = %d, "
 	"lxvrse = %d, lxvrze = %d, endian = %d, ibmdld = %d, ibm128 = %d.\n",
-	attrptr->isinit, attrptr->isset, attrptr->isextract,
-	attrptr->isnosoft, attrptr->isldvec, attrptr->isstvec,
-	attrptr->isreve, attrptr->ispred, attrptr->ishtm, attrptr->ishtmspr,
-	attrptr->ishtmcr, attrptr->ismma, attrptr->isquad, attrptr->ispair,
-	attrptr->ismmaint, attrptr->isno32bit, attrptr->is32bit,
-	attrptr->iscpu, attrptr->isldstmask, attrptr->islxvrse,
-	attrptr->islxvrze, attrptr->isendian, attrptr->isibmld,
-	attrptr->isibm128);
+	attrptr->isset, attrptr->isextract, attrptr->isnosoft,
+	attrptr->isldvec, attrptr->isstvec, attrptr->isreve, attrptr->ispred,
+	attrptr->ishtm, attrptr->ishtmspr, attrptr->ishtmcr, attrptr->ismma,
+	attrptr->isquad, attrptr->ispair, attrptr->ismmaint,
+	attrptr->isno32bit, attrptr->is32bit, attrptr->iscpu,
+	attrptr->isldstmask, attrptr->islxvrse,	attrptr->islxvrze,
+	attrptr->isendian, attrptr->isibmld, attrptr->isibm128);
 #endif
 
   return PC_OK;
@@ -2276,7 +2271,7 @@ write_decls (void)
   fprintf (header_file, "  rs6000_gen_builtins assoc_bif;\n");
   fprintf (header_file, "};\n\n");
 
-  fprintf (header_file, "#define bif_init_bit\t\t(0x00000001)\n");
+  /* Bit pattern 0x00000001 is available.  */
   fprintf (header_file, "#define bif_set_bit\t\t(0x00000002)\n");
   fprintf (header_file, "#define bif_extract_bit\t\t(0x00000004)\n");
   fprintf (header_file, "#define bif_nosoft_bit\t\t(0x00000008)\n");
@@ -2301,8 +2296,6 @@ write_decls (void)
   fprintf (header_file, "#define bif_ibmld_bit\t\t(0x00400000)\n");
   fprintf (header_file, "#define bif_ibm128_bit\t\t(0x00800000)\n");
   fprintf (header_file, "\n");
-  fprintf (header_file,
-	   "#define bif_is_init(x)\t\t((x).bifattrs & bif_init_bit)\n");
   fprintf (header_file,
 	   "#define bif_is_set(x)\t\t((x).bifattrs & bif_set_bit)\n");
   fprintf (header_file,
@@ -2504,8 +2497,6 @@ write_bif_static_init (void)
       fprintf (init_file, "      /* nargs */\t%d,\n",
 	       bifp->proto.nargs);
       fprintf (init_file, "      /* bifattrs */\t0");
-      if (bifp->attrs.isinit)
-	fprintf (init_file, " | bif_init_bit");
       if (bifp->attrs.isset)
 	fprintf (init_file, " | bif_set_bit");
       if (bifp->attrs.isextract)

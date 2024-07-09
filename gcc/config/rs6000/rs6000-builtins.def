@@ -115,7 +115,6 @@
 ;
 ; Attributes are strings, and the allowed ones are listed below.
 ;
-;   init     Process as a vec_init function
 ;   set      Process as a vec_set function
 ;   extract  Process as a vec_extract function
 ;   nosoft   Not valid with -msoft-float
@@ -1118,37 +1117,6 @@
   const signed short __builtin_vec_ext_v8hi (vss, signed int);
     VEC_EXT_V8HI nothing {extract}
 
-  const vsc __builtin_vec_init_v16qi (signed char, signed char, signed char, \
-            signed char, signed char, signed char, signed char, signed char, \
-            signed char, signed char, signed char, signed char, signed char, \
-            signed char, signed char, signed char);
-    VEC_INIT_V16QI nothing {init}
-
-  const vf __builtin_vec_init_v4sf (float, float, float, float);
-    VEC_INIT_V4SF nothing {init}
-
-  const vsi __builtin_vec_init_v4si (signed int, signed int, signed int, \
-                                     signed int);
-    VEC_INIT_V4SI nothing {init}
-
-  const vss __builtin_vec_init_v8hi (signed short, signed short, signed short,\
-             signed short, signed short, signed short, signed short, \
-             signed short);
-    VEC_INIT_V8HI nothing {init}
-
-  const vsc __builtin_vec_set_v16qi (vsc, signed char, const int<4>);
-    VEC_SET_V16QI nothing {set}
-
-  const vf __builtin_vec_set_v4sf (vf, float, const int<2>);
-    VEC_SET_V4SF nothing {set}
-
-  const vsi __builtin_vec_set_v4si (vsi, signed int, const int<2>);
-    VEC_SET_V4SI nothing {set}
-
-  const vss __builtin_vec_set_v8hi (vss, signed short, const int<3>);
-    VEC_SET_V8HI nothing {set}
-
-
 ; Cell builtins.
 [cell]
   pure vsc __builtin_altivec_lvlx (signed long, const void *);
@@ -1295,15 +1263,10 @@
   const signed long long __builtin_vec_ext_v2di (vsll, signed int);
     VEC_EXT_V2DI nothing {extract}
 
-  const vsq __builtin_vec_init_v1ti (signed __int128);
-    VEC_INIT_V1TI nothing {init}
-
-  const vd __builtin_vec_init_v2df (double, double);
-    VEC_INIT_V2DF nothing {init}
-
-  const vsll __builtin_vec_init_v2di (signed long long, signed long long);
-    VEC_INIT_V2DI nothing {init}
-
+;; VEC_SET_V1TI, VEC_SET_V2DF and VEC_SET_V2DI are used in
+;; resolve_vec_insert(), rs6000-c.cc
+;; TODO: Remove VEC_SET_V1TI, VEC_SET_V2DF and VEC_SET_V2DI once the uses
+;; in resolve_vec_insert are replaced by the equivalent gimple statements.
   const vsq __builtin_vec_set_v1ti (vsq, signed __int128, const int<0,0>);
     VEC_SET_V1TI nothing {set}
 
