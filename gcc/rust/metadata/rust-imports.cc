@@ -179,7 +179,7 @@ Import::try_package_in_directory (const std::string &filename,
 		   "%s exists but does not contain any Rust export data",
 		   found_filename.c_str ());
 
-  return std::make_pair (NULL, macros);
+  return std::make_pair (nullptr, macros);
 }
 
 // Given import "*PFILENAME", where *PFILENAME does not exist, try
