@@ -27787,9 +27787,10 @@ package body Sem_Util is
       Pref : Node_Id;
 
    begin
-      --  Deal with indexed or selected component where prefix is modified
+      --  Deal with indexed components, selected components, or slices where
+      --  the prefix is modified.
 
-      if Nkind (N) in N_Indexed_Component | N_Selected_Component then
+      if Nkind (N) in N_Indexed_Component | N_Selected_Component | N_Slice then
 
          --  Grab the original node to avoid looking at internally generated
          --  objects.
