@@ -865,7 +865,12 @@ SHAPE (binary_opt_n)
    int16x8_t [__arm_]vorrq_m[_s16](int16x8_t inactive, int16x8_t a, int16x8_t b, mve_pred16_t p)
    int16x8_t [__arm_]vorrq_x[_s16](int16x8_t a, int16x8_t b, mve_pred16_t p)
    int16x8_t [__arm_]vorrq[_n_s16](int16x8_t a, const int16_t imm)
-   int16x8_t [__arm_]vorrq_m_n[_s16](int16x8_t a, const int16_t imm, mve_pred16_t p)  */
+   int16x8_t [__arm_]vorrq_m_n[_s16](int16x8_t a, const int16_t imm, mve_pred16_t p)
+
+   No "_n" forms for floating-point, nor 8-bit integers:
+   float16x8_t [__arm_]vorrq[_f16](float16x8_t a, float16x8_t b)
+   float16x8_t [__arm_]vorrq_m[_f16](float16x8_t inactive, float16x8_t a, float16x8_t b, mve_pred16_t p)
+   float16x8_t [__arm_]vorrq_x[_f16](float16x8_t a, float16x8_t b, mve_pred16_t p)  */
 struct binary_orrq_def : public overloaded_base<0>
 {
   bool
