@@ -1,3 +1,53 @@
+2024-07-08  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/aarch64/sve/pred_clobber_1.c: Update expected output.
+	* gcc.target/aarch64/sve/pred_clobber_2.c: Likewise.
+	* gcc.target/aarch64/sve/pred_clobber_3.c: Likewise.
+	* gcc.target/aarch64/tbz_2.c: Likewise.
+	* gcc.target/riscv/core_bench_list.c: New test.
+	* gcc.target/riscv/core_init_matrix.c: New test.
+	* gcc.target/riscv/core_list_init.c: New test.
+	* gcc.target/riscv/matrix_add_const.c: New test.
+	* gcc.target/riscv/mem-extend.c: New test.
+	* gcc.target/riscv/pr111384.c: New test.
+	Co-authored-by: Jivan Hakobyan <jivanhakobyan9@gmail.com>
+	Co-authored-by: Joern Rennecke <joern.rennecke@embecosm.com>
+
+2024-07-08  Levy Hsu  <admin@levyhsu.com>
+
+	* gcc.target/i386/avx2-bf16-vec-absneg.c: New test.
+	* gcc.target/i386/avx512f-bf16-vec-absneg.c: New test.
+
+2024-07-08  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/110040
+	* gcc.target/powerpc/pr110040-1.c: New testcase.
+	* gcc.target/powerpc/pr110040-2.c: New testcase.
+
+2024-07-08  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_arith.h: Add helper
+	test macros.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_data.h: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-run-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-run-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-run-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_unary_vv_run.h: New test.
+
+2024-07-08  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/115688
+	* gcc.target/powerpc/pr115688.c: New test.
+
 2024-07-07  Maciej W. Rozycki  <macro@orcam.me.uk>
 
 	* lib/gnat.exp (local_find_gnatmake, find_gnatclean): Use

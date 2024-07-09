@@ -1,3 +1,13 @@
+2024-07-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.cc (format_check_results::format_check_results): New
+	ctor.
+	(struct format_check_context): Add ctor; add "m_" prefix to all
+	fields.
+	(check_format_info): Use above ctors.
+	(check_format_arg): Update for "m_" prefix to
+	format_check_context.
+
 2024-07-03  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR pch/115312

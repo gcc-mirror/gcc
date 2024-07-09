@@ -1,3 +1,103 @@
+2024-07-08  Jeff Law  <jlaw@ventanamicro.com>
+
+	* Makefile.in (OBJS): Add ext-dce.o
+	* common.opt (ext-dce): Document new option.
+	* df-scan.cc (df_get_ext_block_use_set): Delete prototype and
+	make extern.
+	* df.h (df_get_exit_block_use_set): Prototype.
+	* ext-dce.cc: New file/pass.
+	* opts.cc (default_options_table): Handle ext-dce at -O2 or higher.
+	* passes.def: Add ext-dce before combine.
+	* tree-pass.h (make_pass_ext_dce): Prototype.
+
+2024-07-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (x86_mov<mode>cc_0_m1_neg splitter to SImode):
+	New splitter.
+	(NEG and NOT splitter to SImode): Remove optimize_insn_for_size_p
+	predicate from insn condition.
+
+2024-07-08  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* doc/invoke.texi: Remove trailing whitespace.
+
+2024-07-08  Levy Hsu  <admin@levyhsu.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_fp_absneg_operator): Add VBF modes.
+	(ix86_expand_copysign): Ditto.
+	(ix86_expand_xorsign): Ditto.
+	* config/i386/i386.cc (ix86_build_const_vector): Ditto.
+	(ix86_build_signbit_mask): Ditto.
+	* config/i386/sse.md: Ditto.
+
+2024-07-08  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/110040
+	* config/rs6000/vsx.md (split pattern for V1TI to DI move): New define.
+
+2024-07-08  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (ustrunc<mode><v_double_trunc>2): Add
+	new pattern for double truncation.
+	(ustrunc<mode><v_quad_trunc>2): Ditto but for quad truncation.
+	(ustrunc<mode><v_oct_trunc>2): Ditto but for oct truncation.
+	* config/riscv/riscv-protos.h (expand_vec_double_ustrunc): Add
+	new func decl to expand double vec ustrunc.
+	(expand_vec_quad_ustrunc): Ditto but for quad.
+	(expand_vec_oct_ustrunc): Ditto but for oct.
+	* config/riscv/riscv-v.cc (expand_vec_double_ustrunc): Add new
+	func impl to expand vector double ustrunc.
+	(expand_vec_quad_ustrunc): Ditto but for quad.
+	(expand_vec_oct_ustrunc): Ditto but for oct.
+
+2024-07-08  Fei Gao  <gaofei@eswincomputing.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_subset_list::riscv_subset_list):
+	init m_subset_num to 0.
+	(riscv_subset_list::add): increase m_subset_num once a subset added.
+	(riscv_subset_list::finalize): call handle_implied_ext repeatly
+	until no change in m_subset_num.
+	* config/riscv/riscv-subset.h: add m_subset_num member.
+
+2024-07-08  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/115659
+	* config/rs6000/rs6000-builtins.def: Update some bif expanders by
+	replacing orc<mode>3 with iorc<mode>3.
+	* config/rs6000/rs6000-string.cc (expand_cmp_vec_sequence): Update gen
+	function by replacing orc<mode>3 with iorc<mode>3.
+	* config/rs6000/rs6000.md (orc<mode>3): Rename to ...
+	(iorc<mode>3): ... this.
+
+2024-07-08  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/115659
+	* doc/md.texi: Document andcm3 and iorcm3.
+	* gimple-isel.cc (gimple_expand_vec_cond_expr): Add more foldings for
+	patterns x CMP y ? 0 : z and x CMP y ? z : -1.
+	* internal-fn.def (BIT_ANDC): New internal function.
+	(BIT_IORC): Likewise.
+	* optabs.def (andc, iorc): New optab.
+
+2024-07-08  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/115688
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Consider
+	explicit VSX when masking off ALTIVEC.
+
+2024-07-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/i386/i386.cc (ix86_print_operand): Always generate
+	branch hint for conditional branches.
+	* config/i386/i386.h (TARGET_BRANCH_PREDICTION_HINTS): Split
+	into ..
+	(TARGET_BRANCH_PREDICTION_HINTS_TAKEN): .. this, and ..
+	(TARGET_BRANCH_PREDICTION_HINTS_NOT_TAKEN): .. this.
+	* config/i386/x86-tune.def (X86_TUNE_BRANCH_PREDICTION_HINTS):
+	Split into ..
+	(X86_TUNE_BRANCH_PREDICTION_HINTS_TAKEN): .. this, and ..
+	(X86_TUNE_BRANCH_PREDICTION_HINTS_NOT_TAKEN): .. this.
+
 2024-07-07  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/bugreport.texi (Bug Criteria): Remove dubious example.

@@ -1,3 +1,10 @@
+2024-07-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115807
+	* include/c_compatibility/stdatomic.h (_Atomic): Ensure it
+	refers to std::atomic in the global namespace.
+	* testsuite/29_atomics/headers/stdatomic.h/115807.cc: New test.
+
 2024-07-07  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/configure.xml: Update Autobook 14 link.
