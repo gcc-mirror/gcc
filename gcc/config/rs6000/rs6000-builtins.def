@@ -1688,20 +1688,11 @@
   const vsll __builtin_vsx_xvcvdpsxds_scale (vd, const int);
     XVCVDPSXDS_SCALE vsx_xvcvdpsxds_scale {}
 
-  const vsi __builtin_vsx_xvcvdpsxws (vd);
-    XVCVDPSXWS vsx_xvcvdpsxws {}
-
   const vsll __builtin_vsx_xvcvdpuxds (vd);
     XVCVDPUXDS vsx_fixuns_truncv2dfv2di2 {}
 
   const vsll __builtin_vsx_xvcvdpuxds_scale (vd, const int);
     XVCVDPUXDS_SCALE vsx_xvcvdpuxds_scale {}
-
-  const vull __builtin_vsx_xvcvdpuxds_uns (vd);
-    XVCVDPUXDS_UNS vsx_fixuns_truncv2dfv2di2 {}
-
-  const vsi __builtin_vsx_xvcvdpuxws (vd);
-    XVCVDPUXWS vsx_xvcvdpuxws {}
 
   const vd __builtin_vsx_xvcvspdp (vf);
     XVCVSPDP vsx_xvcvspdp {}
@@ -1709,14 +1700,8 @@
   const vsll __builtin_vsx_xvcvspsxds (vf);
     XVCVSPSXDS vsx_xvcvspsxds {}
 
-  const vsi __builtin_vsx_xvcvspsxws (vf);
-    XVCVSPSXWS vsx_fix_truncv4sfv4si2 {}
-
   const vsll __builtin_vsx_xvcvspuxds (vf);
     XVCVSPUXDS vsx_xvcvspuxds {}
-
-  const vsi __builtin_vsx_xvcvspuxws (vf);
-    XVCVSPUXWS vsx_fixuns_truncv4sfv4si2 {}
 
   const vd __builtin_vsx_xvcvsxddp (vsll);
     XVCVSXDDP vsx_floatv2div2df2 {}
