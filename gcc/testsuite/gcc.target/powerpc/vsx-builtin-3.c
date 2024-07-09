@@ -88,17 +88,17 @@ int do_perm(void)
 {
   int i = 0;
 
-  si[i][0] = __builtin_vsx_vperm_4si (si[i][1], si[i][2], uc[i][3]); i++;
-  ss[i][0] = __builtin_vsx_vperm_8hi (ss[i][1], ss[i][2], uc[i][3]); i++;
-  sc[i][0] = __builtin_vsx_vperm_16qi (sc[i][1], sc[i][2], uc[i][3]); i++;
-  f[i][0] = __builtin_vsx_vperm_4sf (f[i][1], f[i][2], uc[i][3]); i++;
-  d[i][0] = __builtin_vsx_vperm_2df (d[i][1], d[i][2], uc[i][3]); i++;
+  si[i][0] = vec_perm (si[i][1], si[i][2], uc[i][3]); i++;
+  ss[i][0] = vec_perm (ss[i][1], ss[i][2], uc[i][3]); i++;
+  sc[i][0] = vec_perm (sc[i][1], sc[i][2], uc[i][3]); i++;
+  f[i][0] = vec_perm (f[i][1], f[i][2], uc[i][3]); i++;
+  d[i][0] = vec_perm (d[i][1], d[i][2], uc[i][3]); i++;
 
-  si[i][0] = __builtin_vsx_vperm (si[i][1], si[i][2], uc[i][3]); i++;
-  ss[i][0] = __builtin_vsx_vperm (ss[i][1], ss[i][2], uc[i][3]); i++;
-  sc[i][0] = __builtin_vsx_vperm (sc[i][1], sc[i][2], uc[i][3]); i++;
-  f[i][0] = __builtin_vsx_vperm (f[i][1], f[i][2], uc[i][3]); i++;
-  d[i][0] = __builtin_vsx_vperm (d[i][1], d[i][2], uc[i][3]); i++;
+  si[i][0] = vec_perm (si[i][1], si[i][2], uc[i][3]); i++;
+  ss[i][0] = vec_perm (ss[i][1], ss[i][2], uc[i][3]); i++;
+  sc[i][0] = vec_perm (sc[i][1], sc[i][2], uc[i][3]); i++;
+  f[i][0] = vec_perm (f[i][1], f[i][2], uc[i][3]); i++;
+  d[i][0] = vec_perm (d[i][1], d[i][2], uc[i][3]); i++;
 
   return i;
 }

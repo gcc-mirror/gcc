@@ -1529,39 +1529,6 @@
   const vf __builtin_vsx_uns_floato_v2di (vsll);
     UNS_FLOATO_V2DI unsfloatov2di {}
 
-; These are duplicates of __builtin_altivec_* counterparts, and are being
-; kept for backwards compatibility.  The reason for their existence is
-; unclear.  TODO: Consider deprecation/removal at some point.
-  const vsc __builtin_vsx_vperm_16qi (vsc, vsc, vuc);
-    VPERM_16QI_X altivec_vperm_v16qi {}
-
-  const vuc __builtin_vsx_vperm_16qi_uns (vuc, vuc, vuc);
-    VPERM_16QI_UNS_X altivec_vperm_v16qi_uns {}
-
-  const vsq __builtin_vsx_vperm_1ti (vsq, vsq, vsc);
-    VPERM_1TI_X altivec_vperm_v1ti {}
-
-  const vsq __builtin_vsx_vperm_1ti_uns (vsq, vsq, vsc);
-    VPERM_1TI_UNS_X altivec_vperm_v1ti_uns {}
-
-  const vd __builtin_vsx_vperm_2df (vd, vd, vuc);
-    VPERM_2DF_X altivec_vperm_v2df {}
-
-  const vsll __builtin_vsx_vperm_2di (vsll, vsll, vuc);
-    VPERM_2DI_X altivec_vperm_v2di {}
-
-  const vull __builtin_vsx_vperm_2di_uns (vull, vull, vuc);
-    VPERM_2DI_UNS_X altivec_vperm_v2di_uns {}
-
-  const vf __builtin_vsx_vperm_4sf (vf, vf, vuc);
-    VPERM_4SF_X altivec_vperm_v4sf {}
-
-  const vsi __builtin_vsx_vperm_4si (vsi, vsi, vuc);
-    VPERM_4SI_X altivec_vperm_v4si {}
-
-  const vui __builtin_vsx_vperm_4si_uns (vui, vui, vuc);
-    VPERM_4SI_UNS_X altivec_vperm_v4si_uns {}
-
   const vss __builtin_vsx_vperm_8hi (vss, vss, vuc);
     VPERM_8HI_X altivec_vperm_v8hi {}
 
