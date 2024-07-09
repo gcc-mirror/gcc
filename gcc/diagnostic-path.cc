@@ -225,7 +225,7 @@ class path_label : public range_label
 {
  public:
   path_label (const diagnostic_context &ctxt,
-	      const diagnostic_path *path,
+	      const diagnostic_path &path,
 	      unsigned start_idx)
   : m_ctxt (ctxt), m_path (path), m_start_idx (start_idx), m_effects (*this)
   {}
@@ -233,7 +233,7 @@ class path_label : public range_label
   label_text get_text (unsigned range_idx) const final override
   {
     unsigned event_idx = m_start_idx + range_idx;
-    const diagnostic_event &event = m_path->get_event (event_idx);
+    const diagnostic_event &event = m_path.get_event (event_idx);
 
     /* Get the description of the event, perhaps with colorization:
        normally, we don't colorize within a range_label, but this
@@ -305,7 +305,7 @@ class path_label : public range_label
   const diagnostic_event &get_event (unsigned range_idx) const
   {
     unsigned event_idx = m_start_idx + range_idx;
-    return m_path->get_event (event_idx);
+    return m_path.get_event (event_idx);
   }
 
   const diagnostic_event *get_prev_event (unsigned range_idx) const
@@ -313,11 +313,11 @@ class path_label : public range_label
     if (m_start_idx + range_idx == 0)
       return nullptr;
     unsigned event_idx = m_start_idx + range_idx - 1;
-    return &m_path->get_event (event_idx);
+    return &m_path.get_event (event_idx);
   }
 
   const diagnostic_context &m_ctxt;
-  const diagnostic_path *m_path;
+  const diagnostic_path &m_path;
   unsigned m_start_idx;
   path_label_effects m_effects;
 };
@@ -508,7 +508,7 @@ struct event_range
   };
 
   event_range (const diagnostic_context &ctxt,
-	       const diagnostic_path *path, unsigned start_idx,
+	       const diagnostic_path &path, unsigned start_idx,
 	       const diagnostic_event &initial_event,
 	       per_thread_summary &t,
 	       bool show_event_links)
@@ -559,7 +559,7 @@ struct event_range
 			unsigned new_ev_idx,
 			bool check_rich_locations)
   {
-    if (!can_consolidate_events (*m_path,
+    if (!can_consolidate_events (m_path,
 				 m_initial_event, m_start_idx,
 				 new_ev, new_ev_idx,
 				 check_rich_locations))
@@ -574,7 +574,7 @@ struct event_range
       = get_per_source_line_info (exploc.line);
     const diagnostic_event *prev_event = nullptr;
     if (new_ev_idx > 0)
-      prev_event = &m_path->get_event (new_ev_idx - 1);
+      prev_event = &m_path.get_event (new_ev_idx - 1);
     const bool has_in_edge = (prev_event
 			      ? prev_event->connect_to_next_event_p ()
 			      : false);
@@ -604,7 +604,7 @@ struct event_range
   /* Print the events in this range to DC, typically as a single
      call to the printer's diagnostic_show_locus.  */
 
-  void print (diagnostic_context *dc, pretty_printer *pp,
+  void print (diagnostic_context &dc, pretty_printer *pp,
 	      diagnostic_source_effect_info *effect_info)
   {
     location_t initial_loc = m_initial_event.get_location ();
@@ -612,13 +612,13 @@ struct event_range
     /* Emit a span indicating the filename (and line/column) if the
        line has changed relative to the last call to
        diagnostic_show_locus.  */
-    if (dc->m_source_printing.enabled)
+    if (dc.m_source_printing.enabled)
       {
 	expanded_location exploc
 	  = linemap_client_expand_location_to_spelling_point
 	  (line_table, initial_loc, LOCATION_ASPECT_CARET);
-	if (exploc.file != LOCATION_FILE (dc->m_last_location))
-	  diagnostic_start_span (dc) (dc, exploc);
+	if (exploc.file != LOCATION_FILE (dc.m_last_location))
+	  diagnostic_start_span (&dc) (&dc, exploc);
       }
 
     /* If we have an UNKNOWN_LOCATION (or BUILTINS_LOCATION) as the
@@ -632,7 +632,7 @@ struct event_range
       {
 	for (unsigned i = m_start_idx; i <= m_end_idx; i++)
 	  {
-	    const diagnostic_event &iter_event = m_path->get_event (i);
+	    const diagnostic_event &iter_event = m_path.get_event (i);
 	    diagnostic_event_id_t event_id (i);
 	    label_text event_text (iter_event.get_desc (true));
 	    pp_printf (pp, " %@: %s", &event_id, event_text.get ());
@@ -642,18 +642,18 @@ struct event_range
       }
 
     /* Call diagnostic_show_locus to show the events using labels.  */
-    diagnostic_show_locus (dc, &m_richloc, DK_DIAGNOSTIC_PATH, pp,
+    diagnostic_show_locus (&dc, &m_richloc, DK_DIAGNOSTIC_PATH, pp,
 			   effect_info);
 
     /* If we have a macro expansion, show the expansion to the user.  */
     if (linemap_location_from_macro_expansion_p (line_table, initial_loc))
       {
 	gcc_assert (m_start_idx == m_end_idx);
-	maybe_unwind_expanded_macro_loc (dc, initial_loc);
+	maybe_unwind_expanded_macro_loc (&dc, initial_loc);
       }
   }
 
-  const diagnostic_path *m_path;
+  const diagnostic_path &m_path;
   const diagnostic_event &m_initial_event;
   const logical_location *m_logical_loc;
   int m_stack_depth;
@@ -758,7 +758,7 @@ path_summary::path_summary (const diagnostic_context &ctxt,
 					      idx, check_rich_locations))
 	  continue;
 
-      cur_event_range = new event_range (ctxt, &path, idx, event, pts,
+      cur_event_range = new event_range (ctxt, path, idx, event, pts,
 					 show_event_links);
       m_ranges.safe_push (cur_event_range);
       pts.m_event_ranges.safe_push (cur_event_range);
@@ -812,7 +812,7 @@ public:
   }
 
   void
-  print_swimlane_for_event_range (diagnostic_context *dc,
+  print_swimlane_for_event_range (diagnostic_context &dc,
 				  pretty_printer *pp,
 				  event_range *range,
 				  diagnostic_source_effect_info *effect_info)
@@ -823,7 +823,7 @@ public:
     const char *end_line_color = colorize_stop (pp_show_color (pp));
 
     text_art::ascii_theme fallback_theme;
-    text_art::theme *theme = dc->get_diagram_theme ();
+    text_art::theme *theme = dc.get_diagram_theme ();
     if (!theme)
       theme = &fallback_theme;
 
@@ -1022,24 +1022,25 @@ private:
    For events with UNKNOWN_LOCATION, print a summary of each the event.  */
 
 static void
-print_path_summary_as_text (const path_summary *ps, diagnostic_context *dc,
+print_path_summary_as_text (const path_summary &ps,
+			    diagnostic_context &dc,
 			    bool show_depths)
 {
-  pretty_printer *pp = dc->printer;
+  pretty_printer *pp = dc.printer;
 
   std::vector<thread_event_printer> thread_event_printers;
-  for (auto t : ps->m_per_thread_summary)
+  for (auto t : ps.m_per_thread_summary)
     thread_event_printers.push_back (thread_event_printer (*t, show_depths));
 
   unsigned i;
   event_range *range;
   int last_out_edge_column = -1;
-  FOR_EACH_VEC_ELT (ps->m_ranges, i, range)
+  FOR_EACH_VEC_ELT (ps.m_ranges, i, range)
     {
       const int swimlane_idx
 	= range->m_per_thread_summary.get_swimlane_index ();
-      if (ps->multithreaded_p ())
-	if (i == 0 || ps->m_ranges[i - 1]->m_thread_id != range->m_thread_id)
+      if (ps.multithreaded_p ())
+	if (i == 0 || ps.m_ranges[i - 1]->m_thread_id != range->m_thread_id)
 	  {
 	    if (i > 0)
 	      pp_newline (pp);
@@ -1062,11 +1063,9 @@ print_path_summary_as_text (const path_summary *ps, diagnostic_context *dc,
 /* Print PATH according to this context's path_format.  */
 
 void
-diagnostic_context::print_path (const diagnostic_path *path)
+diagnostic_context::print_path (const diagnostic_path &path)
 {
-  gcc_assert (path);
-
-  const unsigned num_events = path->num_events ();
+  const unsigned num_events = path.num_events ();
 
   switch (get_path_format ())
     {
@@ -1079,7 +1078,7 @@ diagnostic_context::print_path (const diagnostic_path *path)
 	/* A note per event.  */
 	for (unsigned i = 0; i < num_events; i++)
 	  {
-	    const diagnostic_event &event = path->get_event (i);
+	    const diagnostic_event &event = path.get_event (i);
 	    label_text event_text (event.get_desc (false));
 	    gcc_assert (event_text.get ());
 	    diagnostic_event_id_t event_id (i);
@@ -1114,11 +1113,11 @@ diagnostic_context::print_path (const diagnostic_path *path)
     case DPF_INLINE_EVENTS:
       {
 	/* Consolidate related events.  */
-	path_summary summary (*this, *path, true,
+	path_summary summary (*this, path, true,
 			      m_source_printing.show_event_links_p);
 	char *saved_prefix = pp_take_prefix (this->printer);
 	pp_set_prefix (this->printer, NULL);
-	print_path_summary_as_text (&summary, this,
+	print_path_summary_as_text (summary, *this,
 				    show_path_depths_p ());
 	pp_flush (this->printer);
 	pp_set_prefix (this->printer, saved_prefix);
@@ -1164,7 +1163,7 @@ test_empty_path (pretty_printer *event_pp)
   path_summary summary (dc, path, false);
   ASSERT_EQ (summary.get_num_ranges (), 0);
 
-  print_path_summary_as_text (&summary, &dc, true);
+  print_path_summary_as_text (summary, dc, true);
   ASSERT_STREQ ("",
 		pp_formatted_text (dc.printer));
 }
@@ -1185,7 +1184,7 @@ test_intraprocedural_path (pretty_printer *event_pp)
   path_summary summary (dc, path, false);
   ASSERT_EQ (summary.get_num_ranges (), 1);
 
-  print_path_summary_as_text (&summary, &dc, true);
+  print_path_summary_as_text (summary, dc, true);
   ASSERT_STREQ ("  `foo': events 1-2 (depth 0)\n"
 		" (1): first `free'\n"
 		" (2): double `free'\n",
@@ -1221,7 +1220,7 @@ test_interprocedural_path_1 (pretty_printer *event_pp)
     ASSERT_EQ (summary.get_num_ranges (), 9);
 
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
-    print_path_summary_as_text (&summary, &dc, true);
+    print_path_summary_as_text (summary, dc, true);
     ASSERT_STREQ
       ("  `test': events 1-2 (depth 0)\n"
        "    |\n"
@@ -1278,7 +1277,7 @@ test_interprocedural_path_1 (pretty_printer *event_pp)
     test_diagnostic_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_UNICODE);
     path_summary summary (dc, path, false);
-    print_path_summary_as_text (&summary, &dc, true);
+    print_path_summary_as_text (summary, dc, true);
     ASSERT_STREQ
       ("  `test': events 1-2 (depth 0)\n"
        "    │\n"
@@ -1355,7 +1354,7 @@ test_interprocedural_path_2 (pretty_printer *event_pp)
     path_summary summary (dc, path, false);
     ASSERT_EQ (summary.get_num_ranges (), 5);
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
-    print_path_summary_as_text (&summary, &dc, true);
+    print_path_summary_as_text (summary, dc, true);
     ASSERT_STREQ
       ("  `foo': events 1-2 (depth 0)\n"
        "    |\n"
@@ -1388,7 +1387,7 @@ test_interprocedural_path_2 (pretty_printer *event_pp)
     test_diagnostic_context dc;
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_UNICODE);
     path_summary summary (dc, path, false);
-    print_path_summary_as_text (&summary, &dc, true);
+    print_path_summary_as_text (summary, dc, true);
     ASSERT_STREQ
       ("  `foo': events 1-2 (depth 0)\n"
        "    │\n"
@@ -1440,7 +1439,7 @@ test_recursion (pretty_printer *event_pp)
     path_summary summary (dc, path, false);
     ASSERT_EQ (summary.get_num_ranges (), 4);
 
-    print_path_summary_as_text (&summary, &dc, true);
+    print_path_summary_as_text (summary, dc, true);
     ASSERT_STREQ
       ("  `factorial': events 1-2 (depth 0)\n"
        "    |\n"
@@ -1468,7 +1467,7 @@ test_recursion (pretty_printer *event_pp)
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_UNICODE);
 
     path_summary summary (dc, path, false);
-    print_path_summary_as_text (&summary, &dc, true);
+    print_path_summary_as_text (summary, dc, true);
     ASSERT_STREQ
       ("  `factorial': events 1-2 (depth 0)\n"
        "    │\n"
@@ -1588,7 +1587,7 @@ test_control_flow_1 (const line_table_case &case_,
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
     dc.m_source_printing.show_event_links_p = true;
     path_summary summary (dc, path, true);
-    print_path_summary_as_text (&summary, &dc, false);
+    print_path_summary_as_text (summary, dc, false);
     ASSERT_STREQ
       ("  events 1-3\n"
        "FILENAME:3:7:\n"
@@ -1612,7 +1611,7 @@ test_control_flow_1 (const line_table_case &case_,
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
     dc.m_source_printing.show_event_links_p = false;
     path_summary summary (dc, path, true);
-    print_path_summary_as_text (&summary, &dc, false);
+    print_path_summary_as_text (summary, dc, false);
     ASSERT_STREQ
       ("  events 1-3\n"
        "FILENAME:3:7:\n"
@@ -1634,7 +1633,7 @@ test_control_flow_1 (const line_table_case &case_,
     dc.m_source_printing.show_line_numbers_p = true;
     dc.m_source_printing.show_event_links_p = true;
     path_summary summary (dc, path, true);
-    print_path_summary_as_text (&summary, &dc, false);
+    print_path_summary_as_text (summary, dc, false);
     ASSERT_STREQ
       ("  events 1-3\n"
        "FILENAME:3:7:\n"
@@ -1659,7 +1658,7 @@ test_control_flow_1 (const line_table_case &case_,
     dc.m_source_printing.show_line_numbers_p = true;
     dc.m_source_printing.show_event_links_p = false;
     path_summary summary (dc, path, true);
-    print_path_summary_as_text (&summary, &dc, false);
+    print_path_summary_as_text (summary, dc, false);
     ASSERT_STREQ
       ("  events 1-3\n"
        "FILENAME:3:7:\n"
@@ -1680,7 +1679,7 @@ test_control_flow_1 (const line_table_case &case_,
     dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_UNICODE);
     dc.m_source_printing.show_event_links_p = true;
     path_summary summary (dc, path, true);
-    print_path_summary_as_text (&summary, &dc, false);
+    print_path_summary_as_text (summary, dc, false);
     ASSERT_STREQ
       ("  events 1-3\n"
        "FILENAME:3:7:\n"
@@ -1705,7 +1704,7 @@ test_control_flow_1 (const line_table_case &case_,
     dc.m_source_printing.show_event_links_p = true;
     dc.m_source_printing.show_line_numbers_p = true;
     path_summary summary (dc, path, true);
-    print_path_summary_as_text (&summary, &dc, false);
+    print_path_summary_as_text (summary, dc, false);
     ASSERT_STREQ
       ("  events 1-3\n"
        "FILENAME:3:7:\n"
@@ -1774,7 +1773,7 @@ test_control_flow_2 (const line_table_case &case_,
     dc.m_source_printing.show_event_links_p = true;
     dc.m_source_printing.show_line_numbers_p = true;
     path_summary summary (dc, path, true);
-    print_path_summary_as_text (&summary, &dc, false);
+    print_path_summary_as_text (summary, dc, false);
     ASSERT_STREQ
       ("  events 1-3\n"
        "FILENAME:4:31:\n"
@@ -1859,7 +1858,7 @@ test_control_flow_3 (const line_table_case &case_,
     dc.m_source_printing.show_event_links_p = true;
     dc.m_source_printing.show_line_numbers_p = true;
     path_summary summary (dc, path, true);
-    print_path_summary_as_text (&summary, &dc, false);
+    print_path_summary_as_text (summary, dc, false);
     ASSERT_STREQ
       ("  events 1-2\n"
        "FILENAME:3:19:\n"
@@ -1915,7 +1914,7 @@ assert_cfg_edge_path_streq (const location &loc,
   dc.m_source_printing.show_event_links_p = true;
   dc.m_source_printing.show_line_numbers_p = true;
   path_summary summary (dc, path, true);
-  print_path_summary_as_text (&summary, &dc, false);
+  print_path_summary_as_text (summary, dc, false);
   ASSERT_STREQ_AT (loc, expected_str,
 		   pp_formatted_text (dc.printer));
 }
@@ -2237,7 +2236,7 @@ test_control_flow_5 (const line_table_case &case_,
     dc.m_source_printing.show_event_links_p = true;
     dc.m_source_printing.show_line_numbers_p = true;
     path_summary summary (dc, path, true);
-    print_path_summary_as_text (&summary, &dc, false);
+    print_path_summary_as_text (summary, dc, false);
     ASSERT_STREQ
       ("  events 1-5\n"
        "FILENAME:1:6:\n"
@@ -2324,7 +2323,7 @@ test_control_flow_6 (const line_table_case &case_,
     dc.m_source_printing.show_event_links_p = true;
     dc.m_source_printing.show_line_numbers_p = true;
     path_summary summary (dc, path, true);
-    print_path_summary_as_text (&summary, &dc, false);
+    print_path_summary_as_text (summary, dc, false);
     ASSERT_STREQ
       ("  events 1-3\n"
        "FILENAME:6:25:\n"

@@ -906,7 +906,7 @@ diagnostic_context::show_any_path (const diagnostic_info &diagnostic)
   if (!path)
     return;
 
-  print_path (path);
+  print_path (*path);
 }
 
 /* class logical_location.  */
