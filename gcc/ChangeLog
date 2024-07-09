@@ -1,3 +1,51 @@
+2024-07-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115723
+	* tree-vect-loop.cc (check_reduction_path): For a .COND_ADD
+	verify the else value also refers to the reduction chain op.
+
+2024-07-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115694
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Check the
+	store is complex before rewriting it.
+
+2024-07-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-06-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115669
+	* tree-vect-slp.cc (vect_build_slp_tree_2): Do not reassociate
+	chains that participate in a reduction.
+
+2024-07-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115646
+	* tree-call-cdce.cc (check_pow): Check for bit_sz values
+	as allowed by transform.
+
+2024-07-08  Pali Rohár  <pali@kernel.org>
+
+	Backported from master:
+	2024-06-24  Pali Rohár  <pali@kernel.org>
+
+	* config/i386/mingw-w64.h (CPP_SPEC): Add missing -mcrtdll=
+	cases: msvcr40*, msvcrtd*.
+	* config/i386/mingw32.h (CPP_SPEC): Add missing -mcrtdll=
+	cases: msvcr40*, msvcrtd*.
+	* doc/invoke.texi: Add missing -mcrtdll= cases: msvcr40*,
+	msvcrtd*, msvcr71*. Express wildcards with *. Document _UCRT.
+
 2024-07-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/115591

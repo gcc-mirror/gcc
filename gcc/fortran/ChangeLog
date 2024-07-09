@@ -1,3 +1,34 @@
+2024-07-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-05-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84006
+	PR fortran/100027
+	PR fortran/98534
+	* iresolve.cc (gfc_resolve_transfer): Emit a TODO error for
+	unlimited polymorphic mold.
+	* trans-expr.cc (gfc_resize_class_size_with_len): Use the fold
+	even if a block is not available in which to fix the result.
+	(trans_class_assignment): Enable correct assignment of
+	character expressions to unlimited polymorphic variables using
+	lhs _len field and rse string_length.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_storage_size): Extract
+	the class expression so that the unlimited polymorphic class
+	expression can be used in gfc_resize_class_size_with_len to
+	obtain the storage size for character payloads. Guard the use
+	of GFC_DECL_SAVED_DESCRIPTOR by testing for DECL_LANG_SPECIFIC
+	to prevent the ICE. Also, invert the order to use the class
+	expression extracted from the argument.
+	(gfc_conv_intrinsic_transfer): In same way as 'storage_size',
+	use the _len field to obtaining the correct length for arg 1.
+	Add a branch for the element size in bytes of class expressions
+	with provision to make use of the unlimited polymorphic _len
+	field. Again, the class references are explicitly identified.
+	'mold_expr' was already declared. Use it instead of 'arg'. Do
+	not fix 'dest_word_len' for deferred character sources because
+	reallocation on assign makes use of it before it is assigned.
+
 2024-07-07  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

@@ -1,3 +1,46 @@
+2024-07-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115723
+	* gcc.dg/vect/pr115723.c: New testcase.
+
+2024-07-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115694
+	* g++.dg/torture/pr115694.C: New testcase.
+
+2024-07-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-06-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115669
+	* gcc.dg/vect/pr115669.c: New testcase.
+
+2024-07-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115646
+	* gcc.dg/pr115646.c: New testcase.
+
+2024-07-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-05-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84006
+	PR fortran/100027
+	PR fortran/98534
+	* gfortran.dg/storage_size_7.f90: New test.
+	* gfortran.dg/transfer_class_4.f90: New test.
+
 2024-07-07  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
