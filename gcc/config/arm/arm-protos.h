@@ -266,19 +266,7 @@ extern const char *thumb1_output_casesi (rtx *);
 extern const char *thumb2_output_casesi (rtx *);
 #endif
 
-/* Defined in pe.c.  */
-extern int arm_dllexport_name_p (const char *);
-extern int arm_dllimport_name_p (const char *);
-
-#ifdef TREE_CODE
-extern void arm_pe_unique_section (tree, int);
-extern void arm_pe_encode_section_info (tree, rtx, int);
-extern int arm_dllexport_p (tree);
-extern int arm_dllimport_p (tree);
-extern void arm_mark_dllexport (tree);
-extern void arm_mark_dllimport (tree);
 extern bool arm_change_mode_p (tree);
-#endif
 
 extern tree arm_valid_target_attribute_tree (tree, struct gcc_options *,
 					     struct gcc_options *);

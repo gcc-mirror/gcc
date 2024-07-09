@@ -208,9 +208,7 @@ static int aapcs_select_return_coproc (const_tree, const_tree);
 static void arm_elf_asm_constructor (rtx, int) ATTRIBUTE_UNUSED;
 static void arm_elf_asm_destructor (rtx, int) ATTRIBUTE_UNUSED;
 #endif
-#ifndef ARM_PE
 static void arm_encode_section_info (tree, rtx, int);
-#endif
 
 static void arm_file_end (void);
 static void arm_file_start (void);
@@ -352,21 +350,7 @@ static const attribute_spec arm_gnu_attributes[] =
     NULL },
   { "naked",        0, 0, true,  false, false, false,
     arm_handle_fndecl_attribute, NULL },
-#ifdef ARM_PE
-  /* ARM/PE has three new attributes:
-     interfacearm - ?
-     dllexport - for exporting a function/variable that will live in a dll
-     dllimport - for importing a function/variable from a dll
-
-     Microsoft allows multiple declspecs in one __declspec, separating
-     them with spaces.  We do NOT support this.  Instead, use __declspec
-     multiple times.
-  */
-  { "dllimport",    0, 0, true,  false, false, false, NULL, NULL },
-  { "dllexport",    0, 0, true,  false, false, false, NULL, NULL },
-  { "interfacearm", 0, 0, true,  false, false, false,
-    arm_handle_fndecl_attribute, NULL },
-#elif TARGET_DLLIMPORT_DECL_ATTRIBUTES
+#if TARGET_DLLIMPORT_DECL_ATTRIBUTES
   { "dllimport",    0, 0, false, false, false, false, handle_dll_attribute,
     NULL },
   { "dllexport",    0, 0, false, false, false, false, handle_dll_attribute,
@@ -488,11 +472,7 @@ static const scoped_attribute_specs *const arm_attribute_table[] =
 #define TARGET_MEMORY_MOVE_COST arm_memory_move_cost
 
 #undef TARGET_ENCODE_SECTION_INFO
-#ifdef ARM_PE
-#define TARGET_ENCODE_SECTION_INFO  arm_pe_encode_section_info
-#else
 #define TARGET_ENCODE_SECTION_INFO  arm_encode_section_info
-#endif
 
 #undef  TARGET_STRIP_NAME_ENCODING
 #define TARGET_STRIP_NAME_ENCODING arm_strip_name_encoding
@@ -26821,11 +26801,7 @@ is_called_in_ARM_mode (tree func)
   if (TARGET_CALLEE_INTERWORKING && TREE_PUBLIC (func))
     return true;
 
-#ifdef ARM_PE
-  return lookup_attribute ("interfacearm", DECL_ATTRIBUTES (func)) != NULL_TREE;
-#else
   return false;
-#endif
 }
 
 /* Given the stack offsets and register mask in OFFSETS, decide how
@@ -28301,10 +28277,6 @@ thumb1_output_interwork (void)
 #define STUB_NAME ".real_start_of"
 
   fprintf (f, "\t.code\t16\n");
-#ifdef ARM_PE
-  if (arm_dllexport_name_p (name))
-    name = arm_strip_name_encoding (name);
-#endif
   asm_fprintf (f, "\t.globl %s%U%s\n", STUB_NAME, name);
   fprintf (f, "\t.thumb_func\n");
   asm_fprintf (f, "%s%U%s:\n", STUB_NAME, name);
@@ -28893,7 +28865,6 @@ arm_file_end (void)
     }
 }
 
-#ifndef ARM_PE
 /* Symbols in the text segment can be accessed without indirecting via the
    constant pool; it may take an extra binary operation, but this is still
    faster than indirecting via memory.  Don't do this when not optimizing,
@@ -28908,7 +28879,6 @@ arm_encode_section_info (tree decl, rtx rtl, int first)
 
   default_encode_section_info (decl, rtl, first);
 }
-#endif /* !ARM_PE */
 
 static void
 arm_internal_label (FILE *stream, const char *prefix, unsigned long labelno)
