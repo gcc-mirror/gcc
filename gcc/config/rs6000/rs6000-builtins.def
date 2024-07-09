@@ -1679,9 +1679,6 @@
   const signed int __builtin_vsx_xvcmpgtsp_p (signed int, vf, vf);
     XVCMPGTSP_P vector_gt_v4sf_p {pred}
 
-  const vf __builtin_vsx_xvcvdpsp (vd);
-    XVCVDPSP vsx_xvcvdpsp {}
-
   const vsll __builtin_vsx_xvcvdpsxds (vd);
     XVCVDPSXDS vsx_fix_truncv2dfv2di2 {}
 
@@ -1693,9 +1690,6 @@
 
   const vsll __builtin_vsx_xvcvdpuxds_scale (vd, const int);
     XVCVDPUXDS_SCALE vsx_xvcvdpuxds_scale {}
-
-  const vd __builtin_vsx_xvcvspdp (vf);
-    XVCVSPDP vsx_xvcvspdp {}
 
   const vsll __builtin_vsignede_v4sf (vf);
     VEC_VSIGNEDE_V4SF vsignede_v4sf {}
@@ -1718,9 +1712,6 @@
   const vf __builtin_vsx_xvcvsxdsp (vsll);
     XVCVSXDSP vsx_xvcvsxdsp {}
 
-  const vd __builtin_vsx_xvcvsxwdp (vsi);
-    XVCVSXWDP vsx_xvcvsxwdp {}
-
   const vf __builtin_vsx_xvcvsxwsp (vsi);
     XVCVSXWSP vsx_floatv4siv4sf2 {}
 
@@ -1729,9 +1720,6 @@
 
   const vd __builtin_vsx_xvcvuxddp_scale (vsll, const int<5>);
     XVCVUXDDP_SCALE vsx_xvcvuxddp_scale {}
-
-  const vd __builtin_vsx_xvcvuxddp_uns (vull);
-    XVCVUXDDP_UNS vsx_floatunsv2div2df2 {}
 
   const vf __builtin_vsx_xvcvuxdsp (vull);
     XVCVUXDSP vsx_xvcvuxdsp {}
