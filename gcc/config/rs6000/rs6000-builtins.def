@@ -1619,9 +1619,6 @@
   const vf __builtin_vsx_xvcmpeqsp (vf, vf);
     XVCMPEQSP vector_eqv4sf {}
 
-  const signed int __builtin_vsx_xvcmpeqsp_p (signed int, vf, vf);
-    XVCMPEQSP_P vector_eq_v4sf_p {pred}
-
   const vd __builtin_vsx_xvcmpgedp (vd, vd);
     XVCMPGEDP vector_gev2df {}
 
