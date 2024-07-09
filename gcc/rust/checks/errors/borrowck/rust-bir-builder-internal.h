@@ -307,7 +307,7 @@ protected: // Helpers to add BIR statements
 			location_t location)
   {
     auto mutability = ty->as<const TyTy::ReferenceType> ()->mutability ();
-    auto loan = ctx.place_db.add_loan ({mutability, place_id});
+    auto loan = ctx.place_db.add_loan ({mutability, place_id, location});
     push_tmp_assignment (new BorrowExpr (place_id, loan,
 					 ctx.place_db.get_next_free_region ()),
 			 ty, location);
@@ -600,7 +600,8 @@ protected:
   {
     // TODO: deduplicate with borrow_place
     auto loan = ctx.place_db.add_loan (
-      {ty->as<const TyTy::ReferenceType> ()->mutability (), place_id});
+      {ty->as<const TyTy::ReferenceType> ()->mutability (), place_id,
+       location});
     return_expr (new BorrowExpr (place_id, loan,
 				 ctx.place_db.get_next_free_region ()),
 		 ty, location);

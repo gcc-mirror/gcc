@@ -162,6 +162,7 @@ struct Loan
 {
   Mutability mutability;
   PlaceId place;
+  location_t location;
 };
 
 /** Allocated places and keeps track of paths. */
