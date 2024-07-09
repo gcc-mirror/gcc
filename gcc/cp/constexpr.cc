@@ -8157,10 +8157,13 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 		    || DECL_NAME (decl) == heap_vec_uninit_identifier))
 	      /* OK */;
 	    /* P2738 (C++26): a conversion from a prvalue P of type "pointer to
-	       cv void" to a pointer-to-object type T unless P points to an
-	       object whose type is similar to T.  */
+	       cv void" to a pointer-to-object type T unless P is a null
+	       pointer value or points to an object whose type is similar to
+	       T.  */
 	    else if (cxx_dialect > cxx23)
 	      {
+		if (integer_zerop (sop))
+		  return build_int_cst (type, 0);
 		r = cxx_fold_indirect_ref (ctx, loc, TREE_TYPE (type), sop);
 		if (r)
 		  {
@@ -8169,26 +8172,16 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 		  }
 		if (!ctx->quiet)
 		  {
-		    if (TREE_CODE (sop) == ADDR_EXPR)
-		      {
-			auto_diagnostic_group d;
-			error_at (loc, "cast from %qT is not allowed in a "
-				  "constant expression because "
-				  "pointed-to type %qT is not similar to %qT",
-				  TREE_TYPE (op), TREE_TYPE (TREE_TYPE (sop)),
-				  TREE_TYPE (type));
-			tree obj = build_fold_indirect_ref (sop);
-			inform (DECL_SOURCE_LOCATION (obj),
-				"pointed-to object declared here");
-		      }
-		    else
-		      {
-			gcc_assert (integer_zerop (sop));
-			error_at (loc, "cast from %qT is not allowed in a "
-				  "constant expression because "
-				  "%qE does not point to an object",
-				  TREE_TYPE (op), oldop);
-		      }
+		    gcc_assert (TREE_CODE (sop) == ADDR_EXPR);
+		    auto_diagnostic_group d;
+		    error_at (loc, "cast from %qT is not allowed in a "
+			      "constant expression because "
+			      "pointed-to type %qT is not similar to %qT",
+			      TREE_TYPE (op), TREE_TYPE (TREE_TYPE (sop)),
+			      TREE_TYPE (type));
+		    tree obj = build_fold_indirect_ref (sop);
+		    inform (DECL_SOURCE_LOCATION (obj),
+			    "pointed-to object declared here");
 		  }
 		*non_constant_p = true;
 		return t;
