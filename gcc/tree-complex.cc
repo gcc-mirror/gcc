@@ -1622,14 +1622,6 @@ expand_complex_comparison (gimple_stmt_iterator *gsi, tree ar, tree ai,
 
   switch (gimple_code (stmt))
     {
-    case GIMPLE_RETURN:
-      {
-	greturn *return_stmt = as_a <greturn *> (stmt);
-	type = TREE_TYPE (gimple_return_retval (return_stmt));
-	gimple_return_set_retval (return_stmt, fold_convert (type, cc));
-      }
-      break;
-
     case GIMPLE_ASSIGN:
       type = TREE_TYPE (gimple_assign_lhs (stmt));
       gimple_assign_set_rhs_from_tree (gsi, fold_convert (type, cc));
