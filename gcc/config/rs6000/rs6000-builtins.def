@@ -1580,16 +1580,16 @@
   const vsi __builtin_vsx_vsignedo_v2df (vd);
     VEC_VSIGNEDO_V2DF vsignedo_v2df {}
 
-  const vsll __builtin_vsx_vunsigned_v2df (vd);
-    VEC_VUNSIGNED_V2DF vsx_xvcvdpsxds {}
+  const vull __builtin_vsx_vunsigned_v2df (vd);
+    VEC_VUNSIGNED_V2DF vsx_xvcvdpuxds {}
 
-  const vsi __builtin_vsx_vunsigned_v4sf (vf);
-    VEC_VUNSIGNED_V4SF vsx_xvcvspsxws {}
+  const vui __builtin_vsx_vunsigned_v4sf (vf);
+    VEC_VUNSIGNED_V4SF vsx_xvcvspuxws {}
 
-  const vsi __builtin_vsx_vunsignede_v2df (vd);
+  const vui __builtin_vsx_vunsignede_v2df (vd);
     VEC_VUNSIGNEDE_V2DF vunsignede_v2df {}
 
-  const vsi __builtin_vsx_vunsignedo_v2df (vd);
+  const vui __builtin_vsx_vunsignedo_v2df (vd);
     VEC_VUNSIGNEDO_V2DF vunsignedo_v2df {}
 
   const vf __builtin_vsx_xscvdpsp (double);
