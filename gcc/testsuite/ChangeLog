@@ -1,3 +1,11 @@
+2024-07-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-02-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/97990
+	* g++.dg/torture/vector-struct-1.C: New test.
+
 2024-06-27  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:

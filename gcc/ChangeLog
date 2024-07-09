@@ -1,3 +1,12 @@
+2024-07-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/112732
+	* tree.c (build_opaque_vector_type): Reset TYPE_ALIAS_SET
+	of the newly built type.
+
 2024-07-03  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/115691
