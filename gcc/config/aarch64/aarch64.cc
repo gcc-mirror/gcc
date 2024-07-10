@@ -30296,7 +30296,7 @@ aarch64_valid_sysreg_name_p (const char *regname)
   if (sysreg == NULL)
     return aarch64_is_implem_def_reg (regname);
   if (sysreg->arch_reqs)
-    return (aarch64_isa_flags & sysreg->arch_reqs);
+    return bool (aarch64_isa_flags & sysreg->arch_reqs);
   return true;
 }
 
