@@ -259,6 +259,18 @@ typedef struct {
 
 static bool intrin_profiles_compatible_p (const intrin_binding_t *);
 
+/* Return true if GNAT_ENTITY is artificial, false otherwise.  */
+
+static bool
+is_artificial (Entity_Id gnat_entity)
+{
+  if (Comes_From_Source (gnat_entity))
+    return false;
+  if (Sloc (gnat_entity) == Standard_Location)
+    return false;
+  return true;
+}
+
 /* Given GNAT_ENTITY, a GNAT defining identifier node, which denotes some Ada
    entity, return the equivalent GCC tree for that entity (a ..._DECL node)
    and associate the ..._DECL node with the input GNAT defining identifier.
@@ -284,7 +296,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
   /* True if this is a type.  */
   const bool is_type = IN (kind, Type_Kind);
   /* True if this is an artificial entity.  */
-  const bool artificial_p = !Comes_From_Source (gnat_entity);
+  const bool artificial_p = is_artificial (gnat_entity);
   /* True if debug info is requested for this entity.  */
   const bool debug_info_p = Needs_Debug_Info (gnat_entity);
   /* True if this entity is to be considered as imported.  */
@@ -3006,7 +3018,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		 in order to decode the packed array type.  */
 	      tree gnu_tmp_decl
 		= create_type_decl (gnu_entity_name, gnu_type,
-				    !Comes_From_Source (Etype (gnat_entity))
+				    is_artificial (Etype (gnat_entity))
 				    && artificial_p, debug_info_p,
 				    gnat_entity);
 	      /* Save it as our equivalent in case the call below elaborates
