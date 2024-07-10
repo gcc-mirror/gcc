@@ -2334,8 +2334,10 @@ gfc_sym_type (gfc_symbol * sym, bool is_bind_c)
 	  || ((sym->attr.result || sym->attr.value)
 	      && sym->ns->proc_name
 	      && sym->ns->proc_name->attr.is_bind_c)
-	  || (sym->ts.deferred && (!sym->ts.u.cl
-				   || !sym->ts.u.cl->backend_decl))
+	  || (sym->ts.deferred
+	      && (!sym->ts.u.cl
+		  || !sym->ts.u.cl->backend_decl
+		  || sym->attr.save))
 	  || (sym->attr.dummy
 	      && sym->attr.value
 	      && gfc_length_one_character_type_p (&sym->ts))))

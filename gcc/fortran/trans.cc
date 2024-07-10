@@ -398,7 +398,9 @@ get_array_span (tree type, tree decl)
     return gfc_conv_descriptor_span_get (decl);
 
   /* Return the span for deferred character length array references.  */
-  if (type && TREE_CODE (type) == ARRAY_TYPE && TYPE_STRING_FLAG (type))
+  if (type
+      && (TREE_CODE (type) == ARRAY_TYPE || TREE_CODE (type) == INTEGER_TYPE)
+      && TYPE_STRING_FLAG (type))
     {
       if (TREE_CODE (decl) == PARM_DECL)
 	decl = build_fold_indirect_ref_loc (input_location, decl);
