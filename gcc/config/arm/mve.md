@@ -236,17 +236,17 @@
 ])
 
 ;;
-;; [vcvtq_to_f_s, vcvtq_to_f_u])
+;; [vcvtq_to_f_s, vcvtq_to_f_u]
 ;;
-(define_insn "mve_vcvtq_to_f_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_to_f_<supf><mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
 	(unspec:MVE_0 [(match_operand:<MVE_CNVT> 1 "s_register_operand" "w")]
 	 VCVTQ_TO_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vcvt.f%#<V_sz_elem>.<supf>%#<V_sz_elem>\t%q0, %q1"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vcvtq_to_f_<supf><mode>"))
+  "<mve_insn>.f%#<V_sz_elem>.<supf>%#<V_sz_elem>\t%q0, %q1"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_to_f_<supf><mode>"))
   (set_attr "type" "mve_move")
 ])
 
@@ -266,17 +266,17 @@
 ])
 
 ;;
-;; [vcvtq_from_f_s, vcvtq_from_f_u])
+;; [vcvtq_from_f_s, vcvtq_from_f_u]
 ;;
-(define_insn "mve_vcvtq_from_f_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_from_f_<supf><mode>"
   [
    (set (match_operand:MVE_5 0 "s_register_operand" "=w")
 	(unspec:MVE_5 [(match_operand:<MVE_CNVT> 1 "s_register_operand" "w")]
 	 VCVTQ_FROM_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vcvt.<supf>%#<V_sz_elem>.f%#<V_sz_elem>\t%q0, %q1"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vcvtq_from_f_<supf><mode>"))
+  "<mve_insn>.<supf>%#<V_sz_elem>.f%#<V_sz_elem>\t%q0, %q1"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_from_f_<supf><mode>"))
   (set_attr "type" "mve_move")
 ])
 
@@ -554,9 +554,9 @@
 ])
 
 ;;
-;; [vcvtq_n_to_f_s, vcvtq_n_to_f_u])
+;; [vcvtq_n_to_f_s, vcvtq_n_to_f_u]
 ;;
-(define_insn "mve_vcvtq_n_to_f_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_n_to_f_<supf><mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
 	(unspec:MVE_0 [(match_operand:<MVE_CNVT> 1 "s_register_operand" "w")
@@ -564,8 +564,8 @@
 	 VCVTQ_N_TO_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vcvt.f<V_sz_elem>.<supf><V_sz_elem>\t%q0, %q1, %2"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vcvtq_n_to_f_<supf><mode>"))
+  "<mve_insn>.f<V_sz_elem>.<supf><V_sz_elem>\t%q0, %q1, %2"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_n_to_f_<supf><mode>"))
   (set_attr "type" "mve_move")
 ])
 
@@ -652,9 +652,9 @@
 ])
 
 ;;
-;; [vcvtq_n_from_f_s, vcvtq_n_from_f_u])
+;; [vcvtq_n_from_f_s, vcvtq_n_from_f_u]
 ;;
-(define_insn "mve_vcvtq_n_from_f_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_n_from_f_<supf><mode>"
   [
    (set (match_operand:MVE_5 0 "s_register_operand" "=w")
 	(unspec:MVE_5 [(match_operand:<MVE_CNVT> 1 "s_register_operand" "w")
@@ -662,8 +662,8 @@
 	 VCVTQ_N_FROM_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vcvt.<supf><V_sz_elem>.f<V_sz_elem>\t%q0, %q1, %2"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vcvtq_n_from_f_<supf><mode>"))
+  "<mve_insn>.<supf><V_sz_elem>.f<V_sz_elem>\t%q0, %q1, %2"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_n_from_f_<supf><mode>"))
   (set_attr "type" "mve_move")
 ])
 
@@ -1645,9 +1645,9 @@
   (set_attr "length""8")])
 
 ;;
-;; [vcvtq_m_to_f_s, vcvtq_m_to_f_u])
+;; [vcvtq_m_to_f_s, vcvtq_m_to_f_u]
 ;;
-(define_insn "mve_vcvtq_m_to_f_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_m_to_f_<supf><mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
 	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
@@ -1656,8 +1656,8 @@
 	 VCVTQ_M_TO_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vcvtt.f%#<V_sz_elem>.<supf>%#<V_sz_elem>\t%q0, %q2"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vcvtq_to_f_<supf><mode>"))
+  "vpst\;<mve_insn>t.f%#<V_sz_elem>.<supf>%#<V_sz_elem>\t%q0, %q2"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_to_f_<supf><mode>"))
   (set_attr "type" "mve_move")
   (set_attr "length""8")])
 
@@ -2624,9 +2624,9 @@
    (set_attr "length""8")])
 
 ;;
-;; [vcvtq_m_n_from_f_s, vcvtq_m_n_from_f_u])
+;; [vcvtq_m_n_from_f_s, vcvtq_m_n_from_f_u]
 ;;
-(define_insn "mve_vcvtq_m_n_from_f_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_m_n_from_f_<supf><mode>"
   [
    (set (match_operand:MVE_5 0 "s_register_operand" "=w")
 	(unspec:MVE_5 [(match_operand:MVE_5 1 "s_register_operand" "0")
@@ -2636,8 +2636,8 @@
 	 VCVTQ_M_N_FROM_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vcvtt.<supf>%#<V_sz_elem>.f%#<V_sz_elem>\t%q0, %q2, %3"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vcvtq_n_from_f_<supf><mode>"))
+  "vpst\;<mve_insn>t.<supf>%#<V_sz_elem>.f%#<V_sz_elem>\t%q0, %q2, %3"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_n_from_f_<supf><mode>"))
   (set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -2659,9 +2659,9 @@
    (set_attr "length""8")])
 
 ;;
-;; [vcvtq_m_from_f_u, vcvtq_m_from_f_s])
+;; [vcvtq_m_from_f_u, vcvtq_m_from_f_s]
 ;;
-(define_insn "mve_vcvtq_m_from_f_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_m_from_f_<supf><mode>"
   [
    (set (match_operand:MVE_5 0 "s_register_operand" "=w")
 	(unspec:MVE_5 [(match_operand:MVE_5 1 "s_register_operand" "0")
@@ -2670,8 +2670,8 @@
 	 VCVTQ_M_FROM_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vcvtt.<supf>%#<V_sz_elem>.f%#<V_sz_elem>\t%q0, %q2"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vcvtq_from_f_<supf><mode>"))
+  "vpst\;<mve_insn>t.<supf>%#<V_sz_elem>.f%#<V_sz_elem>\t%q0, %q2"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_from_f_<supf><mode>"))
   (set_attr "type" "mve_move")
   (set_attr "length""8")])
 
@@ -2730,9 +2730,9 @@
   (set_attr "length" "8")])
 
 ;;
-;; [vcvtq_m_n_to_f_u, vcvtq_m_n_to_f_s])
+;; [vcvtq_m_n_to_f_u, vcvtq_m_n_to_f_s]
 ;;
-(define_insn "mve_vcvtq_m_n_to_f_<supf><mode>"
+(define_insn "@mve_<mve_insn>q_m_n_to_f_<supf><mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
 	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
@@ -2742,8 +2742,8 @@
 	 VCVTQ_M_N_TO_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vcvtt.f%#<V_sz_elem>.<supf>%#<V_sz_elem>\t%q0, %q2, %3"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vcvtq_n_to_f_<supf><mode>"))
+  "vpst\;<mve_insn>t.f%#<V_sz_elem>.<supf>%#<V_sz_elem>\t%q0, %q2, %3"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_n_to_f_<supf><mode>"))
   (set_attr "type" "mve_move")
    (set_attr "length""8")])
 
