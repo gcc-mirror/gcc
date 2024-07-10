@@ -1,3 +1,22 @@
+2024-07-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-07-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115807
+	* include/c_compatibility/stdatomic.h (_Atomic): Ensure it
+	refers to std::atomic in the global namespace.
+	* testsuite/29_atomics/headers/stdatomic.h/115807.cc: New test.
+
+2024-07-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115585
+	* src/c++11/assert_fail.cc (__glibcxx_assert_fail): Add
+	definition for non-verbose builds.
+
 2024-06-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

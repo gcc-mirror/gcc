@@ -1,3 +1,39 @@
+2024-07-09  Alfie Richards  <alfie.richards@arm.com>
+
+	Backported from master:
+	2024-07-04  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/114890
+	* config/aarch64/aarch64-simd.md: Remove bigendian operand swap.
+
+2024-07-09  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	Backported from master:
+	2024-07-05  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/115153
+	* config/arm/arm.cc (arm_legitimate_index_p): Move LDRD case before
+	NEON.
+	(thumb2_legitimate_index_p): Update comments.
+	(output_move_neon): Use DFmode for vldr/vstr and non-checking
+	adjust_address.
+
+2024-07-09  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features): Correct
+	AVX10 CPUID emulation to specify ecx value.
+
+2024-07-09  Pan Li  <pan2.li@intel.com>
+
+	Backported from master:
+	2024-07-03  Pan Li  <pan2.li@intel.com>
+
+	PR target/115763
+	* config/riscv/vector.md (*pred_broadcast<mode>): Split into
+	zvfh and zvfhmin part.
+	(*pred_broadcast<mode>_zvfh): New define_insn for zvfh part.
+	(*pred_broadcast<mode>_zvfhmin): Ditto but for zvfhmin.
+
 2024-07-08  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

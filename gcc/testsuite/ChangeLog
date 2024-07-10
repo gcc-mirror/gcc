@@ -1,3 +1,33 @@
+2024-07-09  Alfie Richards  <alfie.richards@arm.com>
+
+	Backported from master:
+	2024-07-04  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/114890
+	* gcc.target/aarch64/vector_intrinsics_asm.c: Remove xfail.
+
+2024-07-09  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	Backported from master:
+	2024-07-05  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/115153
+	* gcc.target/arm/pr115153.c: Add new test.
+	* lib/target-supports.exp: Add arm_arch_v7ve_neon target support.
+
+2024-07-09  Pan Li  <pan2.li@intel.com>
+
+	Backported from master:
+	2024-07-03  Pan Li  <pan2.li@intel.com>
+
+	PR target/115763
+	* gcc.target/riscv/rvv/base/scalar_move-5.c: Adjust asm check.
+	* gcc.target/riscv/rvv/base/scalar_move-6.c: Ditto.
+	* gcc.target/riscv/rvv/base/scalar_move-7.c: Ditto.
+	* gcc.target/riscv/rvv/base/scalar_move-8.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr115763-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr115763-2.c: New test.
+
 2024-07-08  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
