@@ -654,7 +654,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       _GLIBCXX20_CONSTEXPR
       _Bvector_base(const allocator_type& __a)
-      : _M_impl(__a) { }
+      : _M_impl(_Bit_alloc_type(__a)) { }
 
 #if __cplusplus >= 201103L
       _Bvector_base(_Bvector_base&&) = default;
