@@ -1597,6 +1597,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 #endif // __cpp_lib_is_nothrow_convertible
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++14-extensions" // for variable templates
+  template<typename _Tp, typename... _Args>
+    struct __is_nothrow_new_constructible_impl
+    : __bool_constant<
+	noexcept(::new(std::declval<void*>()) _Tp(std::declval<_Args>()...))
+      >
+    { };
+
+  template<typename _Tp, typename... _Args>
+    _GLIBCXX17_INLINE constexpr bool __is_nothrow_new_constructible
+      = __and_<is_constructible<_Tp, _Args...>,
+	       __is_nothrow_new_constructible_impl<_Tp, _Args...>>::value;
+#pragma GCC diagnostic pop
+
   // Const-volatile modifications.
 
   /// remove_const
