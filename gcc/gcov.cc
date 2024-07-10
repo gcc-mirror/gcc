@@ -1544,6 +1544,12 @@ process_all_functions (void)
 		}
 	    }
 
+	  /* Make sure to include the last line for this function even when it
+	     is not directly covered by a basic block, for example when } is on
+	     its own line.  */
+	  if (sources[fn->src].lines.size () <= fn->end_line)
+	    sources[fn->src].lines.resize (fn->end_line + 1);
+
 	  /* Allocate lines for group function, following start_line
 	     and end_line information of the function.  */
 	  if (fn->is_group)
