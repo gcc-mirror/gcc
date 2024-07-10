@@ -1512,6 +1512,7 @@ fix = {
 	.*
 	.*OBJC_REFINED_FOR_SWIFT.*
 	_EOSelect_;
+  bypass    = "#ifdef __BLOCKS__";
   c_fix     = format;
   c_fix_arg = "#if __BLOCKS__\n%0\n#endif";
   test_text = <<- _OBJC_RUNTIME_1
