@@ -2483,7 +2483,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	/* See the above description for the rationale.  */
 	tree gnu_tmp_decl
 	  = create_type_decl (create_concat_name (gnat_entity, "XUA"), tem,
-			      artificial_p, debug_info_p, gnat_entity);
+			      true, debug_info_p, gnat_entity);
 	TYPE_CONTEXT (tem) = gnu_fat_type;
 	TYPE_CONTEXT (TYPE_POINTER_TO (tem)) = gnu_fat_type;
 
