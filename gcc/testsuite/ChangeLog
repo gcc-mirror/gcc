@@ -1,3 +1,19 @@
+2024-07-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2024-07-03  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/115475
+	* gcc.target/aarch64/acle/bf16_sve_feature.c: New test.
+
+2024-07-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2024-07-03  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/115457
+	* gcc.target/aarch64/acle/bf16_feature.c: New test.
+
 2024-07-08  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	Backported from master:
