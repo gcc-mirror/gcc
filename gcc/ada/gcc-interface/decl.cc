@@ -2496,7 +2496,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    ? create_concat_name (gnat_name, "XUT")
 	    : gnu_entity_name;
 	obj = build_unc_object_type (gnu_template_type, tem, xut_name,
-				     debug_info_p);
+				     artificial_p, debug_info_p);
 
 	SET_TYPE_UNCONSTRAINED_ARRAY (obj, gnu_type);
 	TYPE_OBJECT_RECORD_TYPE (gnu_type) = obj;
