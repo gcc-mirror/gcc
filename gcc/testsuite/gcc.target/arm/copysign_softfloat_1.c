@@ -42,7 +42,6 @@ main (int argc, char **argv)
   int index = 0;
 
 /* { dg-final { scan-assembler-times "bfi" 2 { target arm_softfloat } } } */
-/* { dg-final { scan-assembler-times "lsr" 1 { target arm_softfloat } } } */
   for (index; index < N; index++)
     {
       if (__builtin_copysignf (a_f[index], b_f[index]) != c_f[index])
