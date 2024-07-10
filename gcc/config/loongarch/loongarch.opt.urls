@@ -72,6 +72,9 @@ UrlSuffix(gcc/LoongArch-Options.html#index-mpass-mrelax-to-as)
 mtls-dialect=
 UrlSuffix(gcc/LoongArch-Options.html#index-mtls-dialect-1)
 
+mannotate-tablejump
+UrlSuffix(gcc/LoongArch-Options.html#index-mannotate-tablejump)
+
 mfrecipe
 UrlSuffix(gcc/LoongArch-Options.html#index-mfrecipe)
 
