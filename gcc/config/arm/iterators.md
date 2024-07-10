@@ -444,6 +444,7 @@
 		     VANDQ_M_S VANDQ_M_U
 		     VBICQ_M_S VBICQ_M_U
 		     VEORQ_M_S VEORQ_M_U
+		     VORNQ_M_S VORNQ_M_U
 		     VORRQ_M_S VORRQ_M_U
 		     ])
 
@@ -594,6 +595,7 @@
 		     VANDQ_M_F
 		     VBICQ_M_F
 		     VEORQ_M_F
+		     VORNQ_M_F
 		     VORRQ_M_F
 		     ])
 
@@ -1094,6 +1096,7 @@
 		 (VMVNQ_N_S "vmvn") (VMVNQ_N_U "vmvn")
 		 (VNEGQ_M_F "vneg")
 		 (VNEGQ_M_S "vneg")
+		 (VORNQ_M_S "vorn") (VORNQ_M_U "vorn") (VORNQ_M_F "vorn")
 		 (VORRQ_M_N_S "vorr") (VORRQ_M_N_U "vorr")
 		 (VORRQ_M_S "vorr") (VORRQ_M_U "vorr") (VORRQ_M_F "vorr")
 		 (VORRQ_N_S "vorr") (VORRQ_N_U "vorr")

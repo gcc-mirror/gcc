@@ -994,9 +994,9 @@
 ])
 
 ;;
-;; [vornq_u, vornq_s])
+;; [vornq_u, vornq_s]
 ;;
-(define_insn "mve_vornq_s<mode>"
+(define_insn "@mve_vornq_s<mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
 	(ior:MVE_2 (not:MVE_2 (match_operand:MVE_2 2 "s_register_operand" "w"))
@@ -1008,7 +1008,7 @@
   (set_attr "type" "mve_move")
 ])
 
-(define_expand "mve_vornq_u<mode>"
+(define_expand "@mve_vornq_u<mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand")
 	(ior:MVE_2 (not:MVE_2 (match_operand:MVE_2 2 "s_register_operand"))
@@ -1402,9 +1402,9 @@
 ])
 
 ;;
-;; [vornq_f])
+;; [vornq_f]
 ;;
-(define_insn "mve_vornq_f<mode>"
+(define_insn "@mve_vornq_f<mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
 	(ior:MVE_0 (not:MVE_0 (match_operand:MVE_0 2 "s_register_operand" "w"))
@@ -2683,6 +2683,7 @@
 ;; [vandq_m_u, vandq_m_s]
 ;; [vbicq_m_u, vbicq_m_s]
 ;; [veorq_m_u, veorq_m_s]
+;; [vornq_m_u, vornq_m_s]
 ;; [vorrq_m_u, vorrq_m_s]
 ;;
 (define_insn "@mve_<mve_insn>q_m_<supf><mode>"
@@ -2806,24 +2807,6 @@
   "TARGET_HAVE_MVE"
   "vpst\;<mve_insn>t.<supf>%#<V_sz_elem>\t%q0, %q2, %q3"
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_int_<supf><mode>"))
-  (set_attr "type" "mve_move")
-   (set_attr "length""8")])
-
-;;
-;; [vornq_m_u, vornq_m_s])
-;;
-(define_insn "mve_vornq_m_<supf><mode>"
-  [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
-		       (match_operand:MVE_2 2 "s_register_operand" "w")
-		       (match_operand:MVE_2 3 "s_register_operand" "w")
-		       (match_operand:<MVE_VPRED> 4 "vpr_register_operand" "Up")]
-	 VORNQ_M))
-  ]
-  "TARGET_HAVE_MVE"
-  "vpst\;vornt\t%q0, %q2, %q3"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vornq_<supf><mode>"))
   (set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -3081,6 +3064,7 @@
 ;; [vandq_m_f]
 ;; [vbicq_m_f]
 ;; [veorq_m_f]
+;; [vornq_m_f]
 ;; [vorrq_m_f]
 ;;
 (define_insn "@mve_<mve_insn>q_m_f<mode>"
@@ -3157,24 +3141,6 @@
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "vpst\;<mve_insn>t.f%#<V_sz_elem>\t%q0, %q2, %q3, #<rot>"
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q<mve_rot>_f<mode>"))
-  (set_attr "type" "mve_move")
-   (set_attr "length""8")])
-
-;;
-;; [vornq_m_f])
-;;
-(define_insn "mve_vornq_m_f<mode>"
-  [
-   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
-	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
-		       (match_operand:MVE_0 2 "s_register_operand" "w")
-		       (match_operand:MVE_0 3 "s_register_operand" "w")
-		       (match_operand:<MVE_VPRED> 4 "vpr_register_operand" "Up")]
-	 VORNQ_M_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vornt\t%q0, %q2, %q3"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vornq_f<mode>"))
   (set_attr "type" "mve_move")
    (set_attr "length""8")])
 
