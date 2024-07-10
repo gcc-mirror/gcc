@@ -477,7 +477,7 @@
 	(eq_attr "arch" "any")
 
 	(and (eq_attr "arch" "rcpc8_4")
-	     (match_test "AARCH64_ISA_RCPC8_4"))
+	     (match_test "TARGET_RCPC2"))
 
 	(and (eq_attr "arch" "fp")
 	     (match_test "TARGET_FLOAT"))

@@ -518,7 +518,7 @@
 })
 
 (define_predicate "aarch64_rcpc_memory_operand"
-  (if_then_else (match_test "AARCH64_ISA_RCPC8_4")
+  (if_then_else (match_test "TARGET_RCPC2")
     (match_operand 0 "aarch64_9bit_offset_memory_operand")
     (match_operand 0 "aarch64_sync_memory_operand")))
 

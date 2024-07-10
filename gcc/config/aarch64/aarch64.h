@@ -68,18 +68,6 @@
 #define BYTES_BIG_ENDIAN (TARGET_BIG_END != 0)
 #define WORDS_BIG_ENDIAN (BYTES_BIG_ENDIAN)
 
-/* AdvSIMD is supported in the default configuration, unless disabled by
-   -mgeneral-regs-only or by the +nosimd extension.  The set of available
-   instructions is then subdivided into:
-
-   - the "base" set, available both in SME streaming mode and in
-     non-streaming mode
-
-   - the full set, available only in non-streaming mode.  */
-#define TARGET_BASE_SIMD (AARCH64_ISA_SIMD)
-#define TARGET_SIMD (AARCH64_ISA_SIMD && AARCH64_ISA_SM_OFF)
-#define TARGET_FLOAT (AARCH64_ISA_FP)
-
 #define UNITS_PER_WORD		8
 
 #define UNITS_PER_VREG		16
@@ -220,80 +208,35 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
    is not always set when its constituent features are present.
    Check (TARGET_AES && TARGET_SHA2) instead.  */
 
-#define AARCH64_ISA_SM_OFF         (aarch64_isa_flags & AARCH64_FL_SM_OFF)
-#define AARCH64_ISA_SM_ON          (aarch64_isa_flags & AARCH64_FL_SM_ON)
-#define AARCH64_ISA_ZA_ON          (aarch64_isa_flags & AARCH64_FL_ZA_ON)
+#define AARCH64_HAVE_ISA(X) (bool (aarch64_isa_flags & AARCH64_FL_##X))
+
 #define AARCH64_ISA_MODE           (aarch64_isa_mode) (aarch64_isa_flags & AARCH64_FL_ISA_MODES)
-#define AARCH64_ISA_V8A		   (aarch64_isa_flags & AARCH64_FL_V8A)
-#define AARCH64_ISA_V8_1A	   (aarch64_isa_flags & AARCH64_FL_V8_1A)
-#define AARCH64_ISA_CRC            (aarch64_isa_flags & AARCH64_FL_CRC)
-#define AARCH64_ISA_FP             (aarch64_isa_flags & AARCH64_FL_FP)
-#define AARCH64_ISA_SIMD           (aarch64_isa_flags & AARCH64_FL_SIMD)
-#define AARCH64_ISA_LSE		   (aarch64_isa_flags & AARCH64_FL_LSE)
-#define AARCH64_ISA_RDMA	   (aarch64_isa_flags & AARCH64_FL_RDMA)
-#define AARCH64_ISA_V8_2A	   (aarch64_isa_flags & AARCH64_FL_V8_2A)
-#define AARCH64_ISA_F16		   (aarch64_isa_flags & AARCH64_FL_F16)
-#define AARCH64_ISA_SVE            (aarch64_isa_flags & AARCH64_FL_SVE)
-#define AARCH64_ISA_SVE2	   (aarch64_isa_flags & AARCH64_FL_SVE2)
-#define AARCH64_ISA_SVE2_AES	   (aarch64_isa_flags & AARCH64_FL_SVE2_AES)
-#define AARCH64_ISA_SVE2_BITPERM  (aarch64_isa_flags & AARCH64_FL_SVE2_BITPERM)
-#define AARCH64_ISA_SVE2_SHA3	   (aarch64_isa_flags & AARCH64_FL_SVE2_SHA3)
-#define AARCH64_ISA_SVE2_SM4	   (aarch64_isa_flags & AARCH64_FL_SVE2_SM4)
-#define AARCH64_ISA_SME		   (aarch64_isa_flags & AARCH64_FL_SME)
-#define AARCH64_ISA_SME_I16I64	   (aarch64_isa_flags & AARCH64_FL_SME_I16I64)
-#define AARCH64_ISA_SME_F64F64	   (aarch64_isa_flags & AARCH64_FL_SME_F64F64)
-#define AARCH64_ISA_SME2	   (aarch64_isa_flags & AARCH64_FL_SME2)
-#define AARCH64_ISA_V8_3A	   (aarch64_isa_flags & AARCH64_FL_V8_3A)
-#define AARCH64_ISA_DOTPROD	   (aarch64_isa_flags & AARCH64_FL_DOTPROD)
-#define AARCH64_ISA_AES	           (aarch64_isa_flags & AARCH64_FL_AES)
-#define AARCH64_ISA_SHA2	   (aarch64_isa_flags & AARCH64_FL_SHA2)
-#define AARCH64_ISA_V8_4A	   (aarch64_isa_flags & AARCH64_FL_V8_4A)
-#define AARCH64_ISA_SM4	           (aarch64_isa_flags & AARCH64_FL_SM4)
-#define AARCH64_ISA_SHA3	   (aarch64_isa_flags & AARCH64_FL_SHA3)
-#define AARCH64_ISA_F16FML	   (aarch64_isa_flags & AARCH64_FL_F16FML)
-#define AARCH64_ISA_RCPC	   (aarch64_isa_flags & AARCH64_FL_RCPC)
-#define AARCH64_ISA_RCPC8_4	   ((AARCH64_ISA_RCPC && AARCH64_ISA_V8_4A) \
-				    || (aarch64_isa_flags & AARCH64_FL_RCPC3))
-#define AARCH64_ISA_RNG		   (aarch64_isa_flags & AARCH64_FL_RNG)
-#define AARCH64_ISA_V8_5A	   (aarch64_isa_flags & AARCH64_FL_V8_5A)
-#define AARCH64_ISA_TME		   (aarch64_isa_flags & AARCH64_FL_TME)
-#define AARCH64_ISA_MEMTAG	   (aarch64_isa_flags & AARCH64_FL_MEMTAG)
-#define AARCH64_ISA_V8_6A	   (aarch64_isa_flags & AARCH64_FL_V8_6A)
-#define AARCH64_ISA_I8MM	   (aarch64_isa_flags & AARCH64_FL_I8MM)
-#define AARCH64_ISA_F32MM	   (aarch64_isa_flags & AARCH64_FL_F32MM)
-#define AARCH64_ISA_F64MM	   (aarch64_isa_flags & AARCH64_FL_F64MM)
-#define AARCH64_ISA_BF16	   (aarch64_isa_flags & AARCH64_FL_BF16)
-#define AARCH64_ISA_SB		   (aarch64_isa_flags & AARCH64_FL_SB)
-#define AARCH64_ISA_RCPC3	   (aarch64_isa_flags & AARCH64_FL_RCPC3)
-#define AARCH64_ISA_V8R		   (aarch64_isa_flags & AARCH64_FL_V8R)
-#define AARCH64_ISA_PAUTH	   (aarch64_isa_flags & AARCH64_FL_PAUTH)
-#define AARCH64_ISA_V8_7A	   (aarch64_isa_flags & AARCH64_FL_V8_7A)
-#define AARCH64_ISA_V8_8A	   (aarch64_isa_flags & AARCH64_FL_V8_8A)
-#define AARCH64_ISA_V8_9A	   (aarch64_isa_flags & AARCH64_FL_V8_9A)
-#define AARCH64_ISA_V9A		   (aarch64_isa_flags & AARCH64_FL_V9A)
-#define AARCH64_ISA_V9_1A          (aarch64_isa_flags & AARCH64_FL_V9_1A)
-#define AARCH64_ISA_V9_2A          (aarch64_isa_flags & AARCH64_FL_V9_2A)
-#define AARCH64_ISA_V9_3A          (aarch64_isa_flags & AARCH64_FL_V9_3A)
-#define AARCH64_ISA_V9_4A	   (aarch64_isa_flags & AARCH64_FL_V9_4A)
-#define AARCH64_ISA_MOPS	   (aarch64_isa_flags & AARCH64_FL_MOPS)
-#define AARCH64_ISA_LS64	   (aarch64_isa_flags & AARCH64_FL_LS64)
-#define AARCH64_ISA_CSSC	   (aarch64_isa_flags & AARCH64_FL_CSSC)
-#define AARCH64_ISA_D128	   (aarch64_isa_flags & AARCH64_FL_D128)
-#define AARCH64_ISA_THE		   (aarch64_isa_flags & AARCH64_FL_THE)
-#define AARCH64_ISA_GCS		   (aarch64_isa_flags & AARCH64_FL_GCS)
 
 /* The current function is a normal non-streaming function.  */
-#define TARGET_NON_STREAMING (AARCH64_ISA_SM_OFF)
+#define TARGET_NON_STREAMING AARCH64_HAVE_ISA (SM_OFF)
 
 /* The current function has a streaming body.  */
-#define TARGET_STREAMING (AARCH64_ISA_SM_ON)
+#define TARGET_STREAMING AARCH64_HAVE_ISA (SM_ON)
 
 /* The current function has a streaming-compatible body.  */
 #define TARGET_STREAMING_COMPATIBLE \
   ((aarch64_isa_flags & AARCH64_FL_SM_STATE) == 0)
 
 /* PSTATE.ZA is enabled in the current function body.  */
-#define TARGET_ZA (AARCH64_ISA_ZA_ON)
+#define TARGET_ZA AARCH64_HAVE_ISA (ZA_ON)
+
+/* AdvSIMD is supported in the default configuration, unless disabled by
+   -mgeneral-regs-only or by the +nosimd extension.  The set of available
+   instructions is then subdivided into:
+
+   - the "base" set, available both in SME streaming mode and in
+     non-streaming mode
+
+   - the full set, available only in non-streaming mode.  */
+#define TARGET_BASE_SIMD AARCH64_HAVE_ISA (SIMD)
+#define TARGET_SIMD (TARGET_BASE_SIMD && TARGET_NON_STREAMING)
+#define TARGET_FLOAT AARCH64_HAVE_ISA (FP)
+
 /* AARCH64_FL options necessary for system register implementation.  */
 
 /* Define AARCH64_FL aliases for architectural features which are protected
@@ -328,123 +271,128 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
 #define AARCH64_FL_SPE_FDS	   AARCH64_FL_V8_9A
 #define AARCH64_FL_TCR2	   AARCH64_FL_V8_9A
 
+#define TARGET_V8R AARCH64_HAVE_ISA (V8R)
+#define TARGET_V9A AARCH64_HAVE_ISA (V9A)
+
+
 /* SHA2 is an optional extension to AdvSIMD.  */
-#define TARGET_SHA2 (AARCH64_ISA_SHA2)
+#define TARGET_SHA2 AARCH64_HAVE_ISA (SHA2)
 
 /* SHA3 is an optional extension to AdvSIMD.  */
-#define TARGET_SHA3 (AARCH64_ISA_SHA3)
+#define TARGET_SHA3 AARCH64_HAVE_ISA (SHA3)
 
 /* AES is an optional extension to AdvSIMD.  */
-#define TARGET_AES (AARCH64_ISA_AES)
+#define TARGET_AES AARCH64_HAVE_ISA (AES)
 
 /* SM is an optional extension to AdvSIMD.  */
-#define TARGET_SM4 (AARCH64_ISA_SM4)
-
-/* FP16FML is an optional extension to AdvSIMD.  */
-#define TARGET_F16FML (TARGET_SIMD && AARCH64_ISA_F16FML && TARGET_FP_F16INST)
+#define TARGET_SM4 AARCH64_HAVE_ISA (SM4)
 
 /* CRC instructions that can be enabled through +crc arch extension.  */
-#define TARGET_CRC32 (AARCH64_ISA_CRC)
+#define TARGET_CRC32 AARCH64_HAVE_ISA (CRC)
 
 /* Atomic instructions that can be enabled through the +lse extension.  */
-#define TARGET_LSE (AARCH64_ISA_LSE)
+#define TARGET_LSE AARCH64_HAVE_ISA (LSE)
 
 /* ARMv8.2-A FP16 support that can be enabled through the +fp16 extension.  */
-#define TARGET_FP_F16INST (AARCH64_ISA_F16)
-#define TARGET_SIMD_F16INST (TARGET_SIMD && AARCH64_ISA_F16)
+#define TARGET_FP_F16INST AARCH64_HAVE_ISA (F16)
+#define TARGET_SIMD_F16INST (TARGET_SIMD && TARGET_FP_F16INST)
+
+/* FP16FML is an optional extension to AdvSIMD.  */
+#define TARGET_F16FML (TARGET_SIMD_F16INST && AARCH64_HAVE_ISA (F16FML))
 
 /* Dot Product is an optional extension to AdvSIMD enabled through +dotprod.  */
-#define TARGET_DOTPROD (AARCH64_ISA_DOTPROD)
+#define TARGET_DOTPROD AARCH64_HAVE_ISA (DOTPROD)
 
 /* SVE instructions, enabled through +sve.  */
-#define TARGET_SVE (AARCH64_ISA_SVE)
+#define TARGET_SVE AARCH64_HAVE_ISA (SVE)
 
 /* SVE2 instructions, enabled through +sve2.  */
-#define TARGET_SVE2 (AARCH64_ISA_SVE2)
+#define TARGET_SVE2 AARCH64_HAVE_ISA (SVE2)
 
 /* SVE2 AES instructions, enabled through +sve2-aes.  */
-#define TARGET_SVE2_AES (AARCH64_ISA_SVE2_AES && TARGET_NON_STREAMING)
+#define TARGET_SVE2_AES (AARCH64_HAVE_ISA (SVE2_AES) && TARGET_NON_STREAMING)
 
 /* SVE2 BITPERM instructions, enabled through +sve2-bitperm.  */
-#define TARGET_SVE2_BITPERM (AARCH64_ISA_SVE2_BITPERM && TARGET_NON_STREAMING)
+#define TARGET_SVE2_BITPERM (AARCH64_HAVE_ISA (SVE2_BITPERM) \
+			     && TARGET_NON_STREAMING)
 
 /* SVE2 SHA3 instructions, enabled through +sve2-sha3.  */
-#define TARGET_SVE2_SHA3 (AARCH64_ISA_SVE2_SHA3 && TARGET_NON_STREAMING)
+#define TARGET_SVE2_SHA3 (AARCH64_HAVE_ISA (SVE2_SHA3) && TARGET_NON_STREAMING)
 
 /* SVE2 SM4 instructions, enabled through +sve2-sm4.  */
-#define TARGET_SVE2_SM4 (AARCH64_ISA_SVE2_SM4 && TARGET_NON_STREAMING)
+#define TARGET_SVE2_SM4 (AARCH64_HAVE_ISA (SVE2_SM4) && TARGET_NON_STREAMING)
 
 /* SME instructions, enabled through +sme.  Note that this does not
    imply anything about the state of PSTATE.SM.  */
-#define TARGET_SME (AARCH64_ISA_SME)
+#define TARGET_SME AARCH64_HAVE_ISA (SME)
 
 /* Same with streaming mode enabled.  */
 #define TARGET_STREAMING_SME (TARGET_STREAMING && TARGET_SME)
 
 /* The FEAT_SME_I16I64 extension to SME, enabled through +sme-i16i64.  */
-#define TARGET_SME_I16I64 (AARCH64_ISA_SME_I16I64)
+#define TARGET_SME_I16I64 AARCH64_HAVE_ISA (SME_I16I64)
 
 /* The FEAT_SME_F64F64 extension to SME, enabled through +sme-f64f64.  */
-#define TARGET_SME_F64F64 (AARCH64_ISA_SME_F64F64)
+#define TARGET_SME_F64F64 AARCH64_HAVE_ISA (SME_F64F64)
 
 /* SME2 instructions, enabled through +sme2.  */
-#define TARGET_SME2 (AARCH64_ISA_SME2)
+#define TARGET_SME2 AARCH64_HAVE_ISA (SME2)
 
 /* Same with streaming mode enabled.  */
 #define TARGET_STREAMING_SME2 (TARGET_STREAMING && TARGET_SME2)
 
 /* ARMv8.3-A features.  */
-#define TARGET_ARMV8_3	(AARCH64_ISA_V8_3A)
+#define TARGET_ARMV8_3	AARCH64_HAVE_ISA (V8_3A)
 
 /* Javascript conversion instruction from Armv8.3-a.  */
-#define TARGET_JSCVT	(TARGET_FLOAT && AARCH64_ISA_V8_3A)
+#define TARGET_JSCVT	(TARGET_FLOAT && TARGET_ARMV8_3)
 
 /* Armv8.3-a Complex number extension to AdvSIMD extensions.  */
 #define TARGET_COMPLEX (TARGET_SIMD && TARGET_ARMV8_3)
 
 /* Floating-point rounding instructions from Armv8.5-a.  */
-#define TARGET_FRINT (AARCH64_ISA_V8_5A && TARGET_FLOAT)
+#define TARGET_FRINT (AARCH64_HAVE_ISA (V8_5A) && TARGET_FLOAT)
 
 /* TME instructions are enabled.  */
-#define TARGET_TME (AARCH64_ISA_TME)
+#define TARGET_TME AARCH64_HAVE_ISA (TME)
 
 /* Random number instructions from Armv8.5-a.  */
-#define TARGET_RNG (AARCH64_ISA_RNG)
+#define TARGET_RNG AARCH64_HAVE_ISA (RNG)
 
 /* Memory Tagging instructions optional to Armv8.5 enabled through +memtag.  */
-#define TARGET_MEMTAG (AARCH64_ISA_MEMTAG)
+#define TARGET_MEMTAG AARCH64_HAVE_ISA (MEMTAG)
 
 /* I8MM instructions are enabled through +i8mm.  */
-#define TARGET_I8MM (AARCH64_ISA_I8MM)
-#define TARGET_SVE_I8MM (TARGET_SVE && AARCH64_ISA_I8MM)
+#define TARGET_I8MM AARCH64_HAVE_ISA (I8MM)
+#define TARGET_SVE_I8MM (TARGET_SVE && TARGET_I8MM)
 
 /* F32MM instructions are enabled through +f32mm.  */
-#define TARGET_SVE_F32MM (AARCH64_ISA_F32MM)
+#define TARGET_SVE_F32MM AARCH64_HAVE_ISA (F32MM)
 
 /* F64MM instructions are enabled through +f64mm.  */
-#define TARGET_SVE_F64MM (AARCH64_ISA_F64MM)
+#define TARGET_SVE_F64MM AARCH64_HAVE_ISA (F64MM)
 
 /* BF16 instructions are enabled through +bf16.  */
-#define TARGET_BF16_FP (AARCH64_ISA_BF16)
-#define TARGET_BF16_SIMD (AARCH64_ISA_BF16 && TARGET_SIMD)
-#define TARGET_SVE_BF16 (TARGET_SVE && AARCH64_ISA_BF16)
+#define TARGET_BF16_FP AARCH64_HAVE_ISA (BF16)
+#define TARGET_BF16_SIMD (TARGET_BF16_FP && TARGET_SIMD)
+#define TARGET_SVE_BF16 (TARGET_BF16_FP && TARGET_SVE)
 
 /* PAUTH instructions are enabled through +pauth.  */
-#define TARGET_PAUTH (AARCH64_ISA_PAUTH)
+#define TARGET_PAUTH AARCH64_HAVE_ISA (PAUTH)
 
 /* BTI instructions exist from Armv8.5-a onwards.  Their automatic use is
    enabled through -mbranch-protection by using NOP-space instructions,
    but this TARGET_ is used for defining BTI-related ACLE things.  */
-#define TARGET_BTI (AARCH64_ISA_V8_5A)
+#define TARGET_BTI AARCH64_HAVE_ISA (V8_5A)
 
 /* MOPS instructions are enabled through +mops.  */
-#define TARGET_MOPS (AARCH64_ISA_MOPS)
+#define TARGET_MOPS AARCH64_HAVE_ISA (MOPS)
 
 /* LS64 instructions are enabled through +ls64.  */
-#define TARGET_LS64 (AARCH64_ISA_LS64)
+#define TARGET_LS64 AARCH64_HAVE_ISA (LS64)
 
 /* CSSC instructions are enabled through +cssc.  */
-#define TARGET_CSSC (AARCH64_ISA_CSSC)
+#define TARGET_CSSC AARCH64_HAVE_ISA (CSSC)
 
 /* Make sure this is always defined so we don't have to check for ifdefs
    but rather use normal ifs.  */
@@ -456,17 +404,17 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
 #endif
 
 /* SB instruction is enabled through +sb.  */
-#define TARGET_SB (AARCH64_ISA_SB)
+#define TARGET_SB AARCH64_HAVE_ISA (SB)
 
 /* RCPC loads from Armv8.3-a.  */
-#define TARGET_RCPC (AARCH64_ISA_RCPC)
+#define TARGET_RCPC AARCH64_HAVE_ISA (RCPC)
 
 /* The RCPC2 extensions from Armv8.4-a that allow immediate offsets to LDAPR
    and sign-extending versions.*/
-#define TARGET_RCPC2 (AARCH64_ISA_RCPC8_4)
+#define TARGET_RCPC2 ((AARCH64_HAVE_ISA (V8_4A) && TARGET_RCPC) || TARGET_RCPC3)
 
 /* RCPC3 (Release Consistency) extensions, optional from Armv8.2-a.  */
-#define TARGET_RCPC3 (AARCH64_ISA_RCPC3)
+#define TARGET_RCPC3 AARCH64_HAVE_ISA (RCPC3)
 
 /* Apply the workaround for Cortex-A53 erratum 835769.  */
 #define TARGET_FIX_ERR_A53_835769	\
@@ -488,22 +436,22 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
   ? TARGET_FIX_ERR_A53_843419_DEFAULT : aarch64_fix_a53_err843419)
 
 /* ARMv8.1-A Adv.SIMD support.  */
-#define TARGET_SIMD_RDMA (TARGET_SIMD && AARCH64_ISA_RDMA)
+#define TARGET_SIMD_RDMA (TARGET_SIMD && AARCH64_HAVE_ISA (RDMA))
 
 /* Armv9.4-A features.  */
-#define TARGET_ARMV9_4 (AARCH64_ISA_V9_4A)
+#define TARGET_ARMV9_4 AARCH64_HAVE_ISA (V9_4A)
 
 /*  128-bit System Registers and Instructions from Armv9.4-a are enabled
     through +d128.  */
-#define TARGET_D128 (AARCH64_ISA_D128)
+#define TARGET_D128 AARCH64_HAVE_ISA (D128)
 
 /*  Armv8.9-A/9.4-A Translation Hardening Extension system registers are
     enabled through +the.  */
-#define TARGET_THE (AARCH64_ISA_THE)
+#define TARGET_THE AARCH64_HAVE_ISA (THE)
 
 /*  Armv9.4-A Guarded Control Stack extension system registers are
     enabled through +gcs.  */
-#define TARGET_GCS (AARCH64_ISA_GCS)
+#define TARGET_GCS AARCH64_HAVE_ISA (GCS)
 
 /* Prefer different predicate registers for the output of a predicated
    operation over re-using an existing input predicate.  */

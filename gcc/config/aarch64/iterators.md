@@ -30,7 +30,7 @@
 (define_mode_iterator GPI [SI DI])
 
 ;; Iterator for HI, SI, DI, some instructions can only work on these modes.
-(define_mode_iterator GPI_I16 [(HI "AARCH64_ISA_F16") SI DI])
+(define_mode_iterator GPI_I16 [(HI "TARGET_FP_F16INST") SI DI])
 
 ;; "Iterator" for just TI -- features like @pattern only work with iterators.
 (define_mode_iterator JUST_TI [TI])
@@ -55,7 +55,7 @@
 (define_mode_iterator GPF [SF DF])
 
 ;; Iterator for all scalar floating point modes (HF, SF, DF)
-(define_mode_iterator GPF_F16 [(HF "AARCH64_ISA_F16") SF DF])
+(define_mode_iterator GPF_F16 [(HF "TARGET_FP_F16INST") SF DF])
 
 ;; Iterator for all scalar floating point modes (HF, SF, DF)
 (define_mode_iterator GPF_HF [HF SF DF])
