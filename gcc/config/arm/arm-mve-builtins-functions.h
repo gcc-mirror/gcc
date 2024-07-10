@@ -468,6 +468,60 @@ public:
   }
 };
 
+/* Map the function directly to CODE (M) for vbic-like builtins. The difference
+   with unspec_based_mve_function_exact_insn is that this function has vbic
+   hardcoded for the PRED_none, MODE_none version, rather than using an
+   RTX.  */
+class unspec_based_mve_function_exact_insn_vbic : public unspec_based_mve_function_base
+{
+public:
+  CONSTEXPR unspec_based_mve_function_exact_insn_vbic (int unspec_for_n_sint,
+						       int unspec_for_n_uint,
+						       int unspec_for_m_sint,
+						       int unspec_for_m_uint,
+						       int unspec_for_m_fp,
+						       int unspec_for_m_n_sint,
+						       int unspec_for_m_n_uint)
+    : unspec_based_mve_function_base (UNKNOWN,
+				      UNKNOWN,
+				      UNKNOWN,
+				      -1, -1, -1, /* No non-predicated, no mode intrinsics.  */
+				      unspec_for_n_sint,
+				      unspec_for_n_uint,
+				      -1,
+				      unspec_for_m_sint,
+				      unspec_for_m_uint,
+				      unspec_for_m_fp,
+				      unspec_for_m_n_sint,
+				      unspec_for_m_n_uint,
+				      -1)
+  {}
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    machine_mode mode = e.vector_mode (0);
+    insn_code code;
+
+    /* No suffix, no predicate, use the right RTX code.  */
+    if (e.pred == PRED_none
+	&& e.mode_suffix_id == MODE_none)
+	  {
+	    if (e.type_suffix (0).integer_p)
+	      if (e.type_suffix (0).unsigned_p)
+		code = code_for_mve_vbicq_u (mode);
+	      else
+		code = code_for_mve_vbicq_s (mode);
+	    else
+	      code = code_for_mve_vbicq_f (mode);
+
+	    return e.use_exact_insn (code);
+	  }
+
+    return expand_unspec (e);
+  }
+};
+
 /* Map the comparison functions.  */
 class unspec_based_mve_function_exact_insn_vcmp : public unspec_based_mve_function_base
 {

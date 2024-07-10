@@ -776,7 +776,7 @@
 ;;
 ;; [vbicq_s, vbicq_u])
 ;;
-(define_insn "mve_vbicq_u<mode>"
+(define_insn "@mve_vbicq_u<mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
 	(and:MVE_2 (not:MVE_2 (match_operand:MVE_2 2 "s_register_operand" "w"))
@@ -788,7 +788,7 @@
   (set_attr "type" "mve_move")
 ])
 
-(define_expand "mve_vbicq_s<mode>"
+(define_expand "@mve_vbicq_s<mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand")
 	(and:MVE_2 (not:MVE_2 (match_operand:MVE_2 2 "s_register_operand"))
@@ -1182,7 +1182,7 @@
 ;;
 ;; [vbicq_f])
 ;;
-(define_insn "mve_vbicq_f<mode>"
+(define_insn "@mve_vbicq_f<mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
 	(and:MVE_0 (not:MVE_0 (match_operand:MVE_0 1 "s_register_operand" "w"))
