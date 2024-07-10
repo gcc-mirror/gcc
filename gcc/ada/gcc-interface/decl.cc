@@ -2393,6 +2393,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	/* Install all the fields into the template.  */
 	TYPE_NAME (gnu_template_type)
 	  = create_concat_name (gnat_entity, "XUB");
+	TYPE_NAMELESS (gnu_template_type)
+	  = gnat_encodings != DWARF_GNAT_ENCODINGS_ALL;
 	gnu_template_fields = NULL_TREE;
 	for (index = 0; index < ndim; index++)
 	  gnu_template_fields
