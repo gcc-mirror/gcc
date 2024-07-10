@@ -139,10 +139,15 @@ struct loop_size
      variable where induction variable starts at known constant.)  */
   int eliminated_by_peeling;
 
+  /* Number of instructions that cannot be further optimized in the
+     peeled loop, for example volatile accesses.  */
+  int not_eliminatable_after_peeling;
+
   /* Same statistics for last iteration of loop: it is smaller because
      instructions after exit are not executed.  */
   int last_iteration;
   int last_iteration_eliminated_by_peeling;
+  int last_iteration_not_eliminatable_after_peeling;
 
   /* If some IV computation will become constant.  */
   bool constant_iv;
@@ -267,8 +272,10 @@ tree_estimate_loop_size (class loop *loop, edge exit, edge edge_to_cancel,
 
   size->overall = 0;
   size->eliminated_by_peeling = 0;
+  size->not_eliminatable_after_peeling = 0;
   size->last_iteration = 0;
   size->last_iteration_eliminated_by_peeling = 0;
+  size->last_iteration_not_eliminatable_after_peeling = 0;
   size->num_pure_calls_on_hot_path = 0;
   size->num_non_pure_calls_on_hot_path = 0;
   size->non_call_stmts_on_hot_path = 0;
@@ -292,6 +299,7 @@ tree_estimate_loop_size (class loop *loop, edge exit, edge edge_to_cancel,
 	{
 	  gimple *stmt = gsi_stmt (gsi);
 	  int num = estimate_num_insns (stmt, &eni_size_weights);
+	  bool not_eliminatable_after_peeling = false;
 	  bool likely_eliminated = false;
 	  bool likely_eliminated_last = false;
 	  bool likely_eliminated_peeled = false;
@@ -304,7 +312,9 @@ tree_estimate_loop_size (class loop *loop, edge exit, edge edge_to_cancel,
 
 	  /* Look for reasons why we might optimize this stmt away. */
 
-	  if (!gimple_has_side_effects (stmt))
+	  if (gimple_has_side_effects (stmt))
+	    not_eliminatable_after_peeling = true;
+	  else
 	    {
 	      /* Exit conditional.  */
 	      if (exit && body[i] == exit->src
@@ -377,11 +387,15 @@ tree_estimate_loop_size (class loop *loop, edge exit, edge edge_to_cancel,
 	  size->overall += num;
 	  if (likely_eliminated || likely_eliminated_peeled)
 	    size->eliminated_by_peeling += num;
+	  if (not_eliminatable_after_peeling)
+	    size->not_eliminatable_after_peeling += num;
 	  if (!after_exit)
 	    {
 	      size->last_iteration += num;
 	      if (likely_eliminated || likely_eliminated_last)
 		size->last_iteration_eliminated_by_peeling += num;
+	      if (not_eliminatable_after_peeling)
+		size->last_iteration_not_eliminatable_after_peeling += num;
 	    }
 	  if ((size->overall * 3 / 2 - size->eliminated_by_peeling
 	      - size->last_iteration_eliminated_by_peeling) > upper_bound)
@@ -437,18 +451,24 @@ tree_estimate_loop_size (class loop *loop, edge exit, edge edge_to_cancel,
    It is (NUNROLL + 1) * size of loop body with taking into account
    the fact that in last copy everything after exit conditional
    is dead and that some instructions will be eliminated after
-   peeling.  */
+   peeling.  Set *EST_ELIMINATED to the number of stmts that could be
+   optimistically eliminated by followup transforms.  */
 static unsigned HOST_WIDE_INT
 estimated_unrolled_size (struct loop_size *size,
+			 unsigned HOST_WIDE_INT *est_eliminated,
 			 unsigned HOST_WIDE_INT nunroll)
 {
   HOST_WIDE_INT unr_insns = ((nunroll)
   			     * (HOST_WIDE_INT) (size->overall
 			     			- size->eliminated_by_peeling));
-  if (!nunroll)
-    unr_insns = 0;
+  HOST_WIDE_INT not_elim
+    = ((nunroll) * (HOST_WIDE_INT) size->not_eliminatable_after_peeling);
   unr_insns += size->last_iteration - size->last_iteration_eliminated_by_peeling;
+  not_elim += size->last_iteration_not_eliminatable_after_peeling;
 
+  /* Testcases rely on rounding up, so do not write as
+     (unr_insns - not_elim) / 3.  */
+  *est_eliminated = unr_insns - not_elim - (unr_insns - not_elim) * 2 / 3;
   return unr_insns;
 }
 
@@ -829,8 +849,9 @@ try_unroll_loop_completely (class loop *loop,
 	    }
 
 	  unsigned HOST_WIDE_INT ninsns = size.overall;
+	  unsigned HOST_WIDE_INT est_eliminated;
 	  unsigned HOST_WIDE_INT unr_insns
-	    = estimated_unrolled_size (&size, n_unroll);
+	    = estimated_unrolled_size (&size, &est_eliminated, n_unroll);
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "  Loop size: %d\n", (int) ninsns);
@@ -842,7 +863,7 @@ try_unroll_loop_completely (class loop *loop,
 	     cautious on guessing if the unrolling is going to be
 	     profitable.
 	     Move from estimated_unrolled_size to unroll small loops.  */
-	  if (unr_insns * 2 / 3
+	  if (unr_insns - est_eliminated
 	      /* If there is IV variable that will become constant, we
 		 save one instruction in the loop prologue we do not
 		 account otherwise.  */
@@ -919,7 +940,7 @@ try_unroll_loop_completely (class loop *loop,
 	     2) Big loop after completely unroll may not be vectorized
 	     by BB vectorizer.  */
 	  else if ((cunrolli && !loop->inner
-		    ? unr_insns : unr_insns * 2 / 3)
+		    ? unr_insns : unr_insns - est_eliminated)
 		   > (unsigned) param_max_completely_peeled_insns)
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))

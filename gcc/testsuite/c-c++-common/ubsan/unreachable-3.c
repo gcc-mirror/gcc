@@ -14,8 +14,9 @@ struct snic {
 void snic_log_q_error(struct snic *snic)
 {
     unsigned int i;
+#pragma GCC unroll 1
     for (i = 0; i < snic->wq_count; i++)
-        ioread32(&snic->wq[i]->error_status);
+      ioread32(&snic->wq[i]->error_status);
 }
 
 /* { dg-final { scan-tree-dump "__builtin___ubsan_handle_builtin_unreachable" "optimized" } } */

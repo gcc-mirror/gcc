@@ -31,6 +31,7 @@ foo(void)
 {
   __SIZE_TYPE__ i;
   __SIZE_TYPE__ base = 0x000a0000;
+#pragma GCC unroll 5
   for (i = 0; i < (sizeof (a0) / sizeof ((a0)[0])); i++) {
     *(volatile t0 *) (base + 44 + i * 4) = a0[i];
   }
