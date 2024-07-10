@@ -2019,6 +2019,8 @@ record_builtin_type (const char *name, tree type, bool artificial_p)
   tree type_decl = build_decl (input_location,
 			       TYPE_DECL, get_identifier (name), type);
   DECL_ARTIFICIAL (type_decl) = artificial_p;
+  DECL_NAMELESS (type_decl) = (artificial_p
+			       && gnat_encodings != DWARF_GNAT_ENCODINGS_ALL);
   TYPE_ARTIFICIAL (type) = artificial_p;
   gnat_pushdecl (type_decl, Empty);
 
@@ -2835,6 +2837,7 @@ create_type_stub_decl (tree name, tree type)
 {
   tree type_decl = build_decl (input_location, TYPE_DECL, name, type);
   DECL_ARTIFICIAL (type_decl) = 1;
+  DECL_NAMELESS (type_decl) = gnat_encodings != DWARF_GNAT_ENCODINGS_ALL;
   TYPE_ARTIFICIAL (type) = 1;
   return type_decl;
 }
