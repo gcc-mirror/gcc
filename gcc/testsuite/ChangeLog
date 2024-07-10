@@ -1,3 +1,114 @@
+2024-07-09  Martin Uecker  <uecker@tugraz.at>
+
+	PR testsuite/115545
+	* gcc.dg/pr115109.c: Adapt test.
+	* gcc.dg/c23-tag-enum-6.c: Adapt test.
+	* gcc.dg/c23-tag-enum-7.c: Adapt test.
+
+2024-07-09  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/114727
+	* gcc.dg/pr114727.c: New test.
+
+2024-07-09  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/115696
+	* gcc.dg/pr115696.c: New test.
+
+2024-07-09  Carl Love  <cel@linux.ibm.com>
+
+	* gcc.target/powerpc/vec_perm-runnable-i128.c: New test file.
+
+2024-07-09  Carl Love  <cel@linux.ibm.com>
+
+	* gcc.target/powerpc/vsx-builtin-3.c (__builtin_vsx_vperm_16qi_uns,
+	__builtin_vsx_vperm_1ti, __builtin_vsx_vperm_1ti_uns,
+	__builtin_vsx_vperm_2df, __builtin_vsx_vperm_2di,
+	__builtin_vsx_vperm_2di_uns, __builtin_vsx_vperm_4sf,
+	__builtin_vsx_vperm_4si, __builtin_vsx_vperm_4si_uns,
+	__builtin_vsx_vperm): Change call to built-in to the  overloaded
+	built-in vec_perm.
+
+2024-07-09  Carl Love  <cel@linux.ibm.com>
+
+	* gcc.target/powerpc/vsx-builtin-3.c (__builtin_vsx_xxsel_4si,
+	__builtin_vsx_xxsel_8hi, __builtin_vsx_xxsel_16qi,
+	__builtin_vsx_xxsel_4sf, __builtin_vsx_xxsel_2df,
+	__builtin_vsx_xxsel): Change built-in call to overloaded built-in
+	call vec_sel.
+
+2024-07-09  Carl Love  <cel@linux.ibm.com>
+
+	* gcc.target/powerpc/builtins-10-runnable.c: New runnable test
+	file.
+	* gcc.target/powerpc/builtins-10.c: New compile only test file.
+
+2024-07-09  Carl Love  <cel@linux.ibm.com>
+
+	* gcc.target/powerpc/builtins-3-runnable.c
+	(test_unsigned_int_result, test_ll_unsigned_int_result): Add
+	new argument.
+	(vec_signede, vec_signedo, vec_unsignede, vec_unsignedo): New
+	tests for the overloaded built-ins.
+
+2024-07-09  Carl Love  <cel@linux.ibm.com>
+
+	* gcc.target/powerpc/builtins-3-runnable.c: Add tests for
+	vec_unsignede and vec_unsignedo with negative arguments.
+
+2024-07-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sattrunc-1.c: New test.
+
+2024-07-09  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/interrupt-misaligned.c: Remove
+	"-fno-fat-lto-objects" from skip condition.
+	* gcc.target/riscv/pr93202.c: Likewise.
+
+2024-07-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/tile-11.c: Adjust expected diagnostics for c.
+	* c-c++-common/gomp/tile-12.c: Likewise.
+
+2024-07-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp26/constexpr-voidptr3.C: New test.
+	* g++.dg/cpp0x/constexpr-cast2.C: Adjust expected diagnostics for
+	C++26.
+	* g++.dg/cpp0x/constexpr-cast4.C: Likewise.
+
+2024-07-09  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr115796.c: New test.
+
+2024-07-09  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_arith.h: Add help
+	test macro.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-run-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-run-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-run-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-run-8.c: New test.
+
+2024-07-09  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_arith.h: Add help
+	test macro.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_data.h: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-run-4.c: New test.
+
 2024-07-08  Jeff Law  <jlaw@ventanamicro.com>
 
 	* gcc.target/aarch64/sve/pred_clobber_1.c: Update expected output.

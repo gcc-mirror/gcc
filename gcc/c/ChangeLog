@@ -1,3 +1,18 @@
+2024-07-09  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/114727
+	* c-typeck.cc (tagged_types_tu_compatible): Add test.
+
+2024-07-09  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/115696
+	* c-typeck.cc (comptypes_verify): Bail out for
+	identical, empty, and erroneous input types.
+
+2024-07-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_tile_sizes): Use c_parser_expr_list.
+
 2024-06-27  Martin Uecker  <uecker@tugraz.at>
 
 	* c-parser.cc (c_parser_direct_declarator_inner): Add

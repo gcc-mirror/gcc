@@ -1,3 +1,9 @@
+2024-07-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* constexpr.cc (cxx_eval_constant_expression): CWG2819 - Allow
+	cv void * null pointer value conversion to object types in constant
+	expressions.
+
 2024-07-07  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	* module.cc (trees_out::get_merge_kind): Use

@@ -1,3 +1,192 @@
+2024-07-09  Carl Love  <cel@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin.cc (altivec_expand_vec_init_builtin):
+	Remove the function.
+	(rs6000_expand_builtin): Remove the if bif_is_int check to call
+	the altivec_expand_vec_init_builtin function.
+	* config/rs6000/rs6000-builtins.def: Remove the attribute string
+	comment for init.
+	(__builtin_vec_init_v16qi,
+	__builtin_vec_init_v4sf, __builtin_vec_init_v4si,
+	__builtin_vec_init_v8hi, __builtin_vec_init_v1ti,
+	__builtin_vec_init_v2df, __builtin_vec_init_v2di,
+	__builtin_vec_set_v16qi, __builtin_vec_set_v4sf,
+	__builtin_vec_set_v4si, __builtin_vec_set_v8hi): Remove
+	built-in definitions.
+	* config/rs6000/rs6000-gen-builtins.cc: Remove comment for init
+	attribute string.
+	(struct attrinfo): Remove isinit entry.
+	(parse_bif_attrs): Remove the if statement to check for attribute
+	init.
+	(ifdef DEBUG): Remove print for init attribute string.
+	(write_decls): Remove print for define bif_init_bit and
+	define for bif_is_init.
+	(write_bif_static_init): Remove if bifp->attrs.isinit statement.
+
+2024-07-09  Carl Love  <cel@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def (__builtin_vsx_xvcmpeqsp_p):
+	Remove built-in definition.
+
+2024-07-09  Carl Love  <cel@linux.ibm.com>
+
+	* config/rs6000/rs6000-overload.def (vec_xxpermdi): Add new
+	overloaded built-in instances of vector signed and unsigned
+	int128.
+	* doc/extend.texi: Add documentation for built-in instances of
+	vector signed and unsigned int128.
+
+2024-07-09  Carl Love  <cel@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def (__builtin_vsx_xvnegdp,
+	__builtin_vsx_xvnegsp): Remove built-in definitions.
+
+2024-07-09  Carl Love  <cel@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def (__builtin_vsx_vperm_16qi_uns,
+	__builtin_vsx_vperm_1ti, __builtin_vsx_vperm_1ti_uns,
+	__builtin_vsx_vperm_2df, __builtin_vsx_vperm_2di,
+	__builtin_vsx_vperm_2di_uns, __builtin_vsx_vperm_4sf,
+	__builtin_vsx_vperm_4si, __builtin_vsx_vperm_4si_uns): Remove
+	built-in definitions and comments.
+
+2024-07-09  Carl Love  <cel@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def (__builtin_vsx_xxsel_16qi,
+	__builtin_vsx_xxsel_16qi_uns, __builtin_vsx_xxsel_2df,
+	__builtin_vsx_xxsel_2di,	__builtin_vsx_xxsel_2di_uns,
+	__builtin_vsx_xxsel_4sf, 	__builtin_vsx_xxsel_4si,
+	__builtin_vsx_xxsel_4si_uns, 	__builtin_vsx_xxsel_8hi,
+	__builtin_vsx_xxsel_8hi_uns): Remove 	built-in definitions.
+
+2024-07-09  Carl Love  <cel@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def (__builtin_vsx_xxsel_1ti,
+	__builtin_vsx_xxsel_1ti_uns): Remove built-in definitions.
+	* config/rs6000/rs6000-overload.def (vec_sel): Add new
+	overloaded vector signed, unsigned and bool 128-bit definitions.
+	* doc/extend.texi (vec_sel): Add documentation for new instances
+	with signed, unsigned and bool 129-bit bool arguments.
+
+2024-07-09  Carl Love  <cel@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def (__builtin_vsx_xxmrghw,
+	__builtin_vsx_xxmrghw_4si, __builtin_vsx_xxmrglw,
+	__builtin_vsx_xxmrglw_4si, __builtin_vsx_xxsel_16qi): Remove
+	built-in definition.
+	* config/rs6000/rs6000-builtin.cc (rs6000_gimple_fold_builtin):
+	remove case entries RS6000_BIF_XXMRGLW_4SI,
+	RS6000_BIF_XXMRGLW_4SF, RS6000_BIF_XXMRGHW_4SI,
+	RS6000_BIF_XXMRGHW_4SF.
+	* config/rs6000/vsx.md (vsx_xxmrghw_<mode>, vsx_xxmrglw_<mode>):
+	Remove unused define_expands.
+
+2024-07-09  Carl Love  <cel@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def (__builtin_vsx_xvcvspdp,
+	__builtin_vsx_xvcvdpsp, __builtin_vsx_xvcvsxwdp,
+	__builtin_vsx_xvcvuxddp_uns): Remove.
+
+2024-07-09  Carl Love  <cel@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def (__builtin_vsx_xvcvspsxds,
+	__builtin_vsx_xvcvspuxds): Rename to __builtin_vsignede_v4sf,
+	__builtin_vunsignede_v4sf respectively.
+	(XVCVSPSXDS, XVCVSPUXDS): Rename to VEC_VSIGNEDE_V4SF,
+	VEC_VUNSIGNEDE_V4SF respectively.
+	(__builtin_vsignedo_v4sf, __builtin_vunsignedo_v4sf): New
+	built-in definitions.
+	* config/rs6000/rs6000-overload.def (vec_signede, vec_signedo,
+	vec_unsignede, vec_unsignedo): Add new overloaded specifications.
+	* config/rs6000/vsx.md (vsignede_v4sf, vsignedo_v4sf,
+	vunsignede_v4sf, vunsignedo_v4sf): New define_expands.
+	* doc/extend.texi (vec_signedo, vec_signede, vec_unsignedo,
+	vec_unsignede): Add documentation for new overloaded built-ins to
+	convert vector float to vector {un,}signed long long.
+
+2024-07-09  Carl Love  <cel@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def (__builtin_vsx_vunsigned_v2df,
+	__builtin_vsx_vunsigned_v4sf, __builtin_vsx_vunsignede_v2df,
+	__builtin_vsx_vunsignedo_v2df): Change the result type to unsigned.
+
+2024-07-09  Carl Love  <cel@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def (__builtin_vsx_xvcvspsxws,
+	__builtin_vsx_xvcvdpuxds_uns, __builtin_vsx_xvcvspuxws,
+	__builtin_vsx_xvcvdpsxws, __builtin_vsx_xvcvdpuxws): Remove
+	built-in definitions.
+
+2024-07-09  Carl Love  <cel@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin.cc (RS6000_BIF_CMPLE_16QI,
+	RS6000_BIF_CMPLE_U16QI, RS6000_BIF_CMPLE_8HI,
+	RS6000_BIF_CMPLE_U8HI, RS6000_BIF_CMPLE_4SI, RS6000_BIF_CMPLE_U4SI,
+	RS6000_BIF_CMPLE_2DI, RS6000_BIF_CMPLE_U2DI, RS6000_BIF_CMPLE_1TI,
+	RS6000_BIF_CMPLE_U1TI): Remove case statements.
+	* config/rs6000/rs6000-builtins.def (__builtin_vsx_cmple_16qi,
+	__builtin_vsx_cmple_2di, __builtin_vsx_cmple_4si,
+	__builtin_vsx_cmple_8hi, __builtin_vsx_cmple_u16qi,
+	__builtin_vsx_cmple_u2di, __builtin_vsx_cmple_u4si,
+	__builtin_vsx_cmple_u8hi): Remove buit-in definitions.
+
+2024-07-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (@cmp<mode>_1): Use SWI mode iterator.
+	(ustruncdi<mode>2): New expander.
+	(ustruncsi<mode>2): Ditto.
+	(ustrunchiqi2): Ditto.
+
+2024-07-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-path.cc: Replace "const diagnostic_path *" with
+	"const diagnostic_path &" throughout, and "diagnostic_context *"
+	with "diagnostic context &".
+	* diagnostic.cc (diagnostic_context::show_any_path): Pass
+	reference in call to print_path.
+	* diagnostic.h (diagnostic_context::print_path): Convert param
+	to a reference.
+
+2024-07-09  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.cc (fp_consts_initited): Delete variable.
+	(value_fp0): Likewise.
+	(init_fp_table): Delete function.
+	(fp_const_from_val): Likewise.
+	(arm_const_double_rtx): Rework to avoid converting to REAL_VALUE_TYPE.
+	(arm_print_operand, case 'N'): Make use of this case an error.
+
+2024-07-09  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv-target-attr.cc (riscv_process_target_attr):
+	Fix comments and variable names.
+
+2024-07-09  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* common/config/riscv/riscv-common.cc (riscv_set_arch_by_subset_list):
+	Fix overlong line.
+	(riscv_parse_arch_string): Replace duplicated code by a call to
+	riscv_set_arch_by_subset_list.
+
+2024-07-09  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features): Correct
+	AVX10 CPUID emulation to specify ecx value.
+
+2024-07-09  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/115796
+	* config/i386/emmintrin.h (__float_u): Rename to ..
+	(__x86_float_u): .. this.
+	(_mm_load_sd): Ditto.
+	(_mm_store_sd): Ditto.
+	(_mm_loadh_pd): Ditto.
+	(_mm_loadl_pd): Ditto.
+	* config/i386/xmmintrin.h (__double_u): Rename to ..
+	(__x86_double_u): .. this.
+	(_mm_load_ss): Ditto.
+	(_mm_store_ss): Ditto.
+
 2024-07-08  Jeff Law  <jlaw@ventanamicro.com>
 
 	* Makefile.in (OBJS): Add ext-dce.o
