@@ -274,6 +274,7 @@ private:
   insn_info::order_node *need_order_node (insn_info *);
 
   void add_insn_after (insn_info *, insn_info *);
+  void replace_nondebug_insn (insn_info *, insn_info *);
   void append_insn (insn_info *);
   void remove_insn (insn_info *);
 

@@ -330,6 +330,9 @@ private:
     // Return the uid of the instruction that this node describes.
     int uid () const { return m_data32; }
 
+    // Change the uid of the instruction that this node describes.
+    void set_uid (int uid) { m_data32 = uid; }
+
     // The splay tree pointers.
     order_node *m_children[2];
     order_node *m_parent;
@@ -374,6 +377,7 @@ private:
   void set_bb (bb_info *bb) { m_bb = bb; }
 
   void add_note (insn_note *note);
+  void remove_note (insn_note *note);
 
   order_node *get_order_node () const;
   order_node *get_known_order_node () const;

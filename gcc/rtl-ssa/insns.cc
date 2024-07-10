@@ -70,6 +70,16 @@ insn_info::add_note (insn_note *note)
   *ptr = note;
 }
 
+// Remove NOTE from the instruction's notes.
+void
+insn_info::remove_note (insn_note *note)
+{
+  insn_note **ptr = &m_first_note;
+  while (*ptr != note)
+    ptr = &(*ptr)->m_next_note;
+  *ptr = note->m_next_note;
+}
+
 // Implement compare_with for the case in which this insn and OTHER
 // have the same program point.
 int
@@ -344,6 +354,38 @@ function_info::add_insn_after (insn_info *insn, insn_info *after)
       insn_info::order_node *insn_node = need_order_node (insn);
       insn_info::order_splay_tree::insert_child (after_node, 1, insn_node);
     }
+}
+
+// Replace non-debug instruction OLD_INSN with non-debug instruction NEW_INSN.
+// NEW_INSN is not currently linked.
+void
+function_info::replace_nondebug_insn (insn_info *old_insn, insn_info *new_insn)
+{
+  gcc_assert (!old_insn->is_debug_insn ()
+	      && !new_insn->is_debug_insn ()
+	      && !new_insn->has_insn_links ());
+
+  insn_info *prev = old_insn->prev_any_insn ();
+  insn_info *next_nondebug = old_insn->next_nondebug_insn ();
+
+  // We should never remove the entry or exit block's instructions.
+  gcc_checking_assert (prev && next_nondebug);
+
+  new_insn->copy_prev_from (old_insn);
+  new_insn->copy_next_from (old_insn);
+
+  prev->set_next_any_insn (new_insn);
+  next_nondebug->set_prev_sametype_insn (new_insn);
+
+  new_insn->set_point (old_insn->point ());
+  if (insn_info::order_node *order = old_insn->get_order_node ())
+    {
+      order->set_uid (new_insn->uid ());
+      old_insn->remove_note (order);
+      new_insn->add_note (order);
+    }
+
+  old_insn->clear_insn_links ();
 }
 
 // Remove INSN from the function's list of instructions.

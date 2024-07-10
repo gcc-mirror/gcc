@@ -874,14 +874,11 @@ function_info::change_insns (array_slice<insn_change *> changes)
 	    }
 	  else
 	    {
-	      // Remove the placeholder first so that we have a wider range of
-	      // program points when inserting INSN.
 	      insn_info *after = placeholder->prev_any_insn ();
 	      if (!insn->is_temporary ())
 		remove_insn (insn);
-	      remove_insn (placeholder);
+	      replace_nondebug_insn (placeholder, insn);
 	      insn->set_bb (after->bb ());
-	      add_insn_after (insn, after);
 	    }
 	}
     }
