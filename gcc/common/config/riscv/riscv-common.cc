@@ -82,6 +82,18 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"a", "zaamo"},
   {"a", "zalrsc"},
 
+  {"c", "zca"},
+  {"c", "zcf",
+   [] (const riscv_subset_list *subset_list) -> bool
+   {
+     return subset_list->xlen () == 32 && subset_list->lookup ("f");
+   }},
+  {"c", "zcd",
+   [] (const riscv_subset_list *subset_list) -> bool
+   {
+     return subset_list->lookup ("d");
+   }},
+
   {"zabha", "zaamo"},
 
   {"b", "zba"},
