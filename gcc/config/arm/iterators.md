@@ -964,6 +964,10 @@
 		 (VCMLAQ_M_F "vcmla") (VCMLAQ_ROT90_M_F "vcmla") (VCMLAQ_ROT180_M_F "vcmla") (VCMLAQ_ROT270_M_F "vcmla")
 		 (VCMULQ_M_F "vcmul") (VCMULQ_ROT90_M_F "vcmul") (VCMULQ_ROT180_M_F "vcmul") (VCMULQ_ROT270_M_F "vcmul")
 		 (VCREATEQ_S "vcreate") (VCREATEQ_U "vcreate") (VCREATEQ_F "vcreate")
+		 (VCVTBQ_F16_F32 "vcvtb") (VCVTTQ_F16_F32 "vcvtt")
+		 (VCVTBQ_F32_F16 "vcvtb") (VCVTTQ_F32_F16 "vcvtt")
+		 (VCVTBQ_M_F16_F32 "vcvtb") (VCVTTQ_M_F16_F32 "vcvtt")
+		 (VCVTBQ_M_F32_F16 "vcvtb") (VCVTTQ_M_F32_F16 "vcvtt")
 		 (VCVTQ_FROM_F_S "vcvt") (VCVTQ_FROM_F_U "vcvt")
 		 (VCVTQ_M_FROM_F_S "vcvt") (VCVTQ_M_FROM_F_U "vcvt")
 		 (VCVTQ_M_N_FROM_F_S "vcvt") (VCVTQ_M_N_FROM_F_U "vcvt")
@@ -2948,6 +2952,10 @@
 (define_int_iterator VSHLCQ_M [VSHLCQ_M_S VSHLCQ_M_U])
 (define_int_iterator VQSHLUQ_M_N [VQSHLUQ_M_N_S])
 (define_int_iterator VQSHLUQ_N [VQSHLUQ_N_S])
+(define_int_iterator VCVTxQ_F16_F32 [VCVTBQ_F16_F32 VCVTTQ_F16_F32])
+(define_int_iterator VCVTxQ_F32_F16 [VCVTBQ_F32_F16 VCVTTQ_F32_F16])
+(define_int_iterator VCVTxQ_M_F16_F32 [VCVTBQ_M_F16_F32 VCVTTQ_M_F16_F32])
+(define_int_iterator VCVTxQ_M_F32_F16 [VCVTBQ_M_F32_F16 VCVTTQ_M_F32_F16])
 (define_int_iterator DLSTP [DLSTP8 DLSTP16 DLSTP32
 				   DLSTP64])
 (define_int_iterator LETP [LETP8 LETP16 LETP32
