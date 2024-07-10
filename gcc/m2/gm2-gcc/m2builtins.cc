@@ -396,6 +396,7 @@ struct builtin_type_info
 struct GTY(()) builtin_macro_definition
 {
   const char *name;
+  const char *builtinname;
   tree function_node;
   tree return_node;
 };
@@ -911,6 +912,26 @@ target_support_exists (struct builtin_function_entry *fe)
     }
 }
 
+/* Return true if name matches the builtin name.  */
+
+static
+bool builtin_function_match (struct builtin_function_entry *fe,
+			     const char *name)
+{
+  return (strcmp (name, fe->name) == 0)
+    || (strcmp (name, fe->library_name) == 0);
+}
+
+/* Return true if name matches the builtin macro name.  */
+
+static
+bool builtin_macro_match (builtin_macro_definition bmd,
+			  const char *name)
+{
+  return (strcmp (bmd.name, name) == 0)
+    || (strcmp (bmd.builtinname, name) == 0);
+}
+
 
 /* BuiltinExists - returns TRUE if the builtin function, name, exists
    for this target architecture.  */
@@ -921,12 +942,11 @@ m2builtins_BuiltinExists (char *name)
   struct builtin_function_entry *fe;
 
   for (fe = &list_of_builtins[0]; fe->name != NULL; fe++)
-    if (strcmp (name, fe->name) == 0)
+    if (builtin_function_match (fe, name))
       return true;
-      // return target_support_exists (fe);
   int length = vec_safe_length (builtin_macros);
   for (int idx = 0; idx < length; idx++)
-    if (strcmp ((*builtin_macros)[idx].name, name) == 0)
+    if (builtin_macro_match ((*builtin_macros)[idx], name))
       return true;
   return false;
 }
@@ -939,7 +959,7 @@ lookup_builtin_macro (location_t location, char *name)
 {
   int length = vec_safe_length (builtin_macros);
   for (int idx = 0; idx < length; idx++)
-    if (strcmp ((*builtin_macros)[idx].name, name) == 0)
+    if (builtin_macro_match ((*builtin_macros)[idx], name))
       {
         tree functype = TREE_TYPE ((*builtin_macros)[idx].function_node);
         tree funcptr = build1 (ADDR_EXPR, build_pointer_type (functype),
@@ -965,7 +985,7 @@ lookup_builtin_function (location_t location, char *name)
   struct builtin_function_entry *fe;
 
   for (fe = &list_of_builtins[0]; fe->name != NULL; fe++)
-    if ((strcmp (name, fe->name) == 0) && target_support_exists (fe))
+    if (builtin_function_match (fe, name) && target_support_exists (fe))
       {
         tree functype = TREE_TYPE (fe->function_node);
         tree funcptr = build1 (ADDR_EXPR, build_pointer_type (functype),
@@ -1422,6 +1442,7 @@ define_builtin (enum built_in_function val, const char *name, tree prototype,
   set_call_expr_flags (decl, flags);
   set_builtin_decl (val, decl, true);
   bmd.name = name;
+  bmd.builtinname = libname;
   bmd.function_node = decl;
   bmd.return_node = TREE_TYPE (prototype);
   vec_safe_push (builtin_macros, bmd);
