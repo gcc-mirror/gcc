@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-march=sapphirerapids -O2" } */
-/* { dg-final { scan-assembler-times {vpunpcklqdq[ \t]+} 3 } } */
+/* { dg-final { scan-assembler-times {vpunpcklqdq[ \t]+} 3 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times {vpunpcklqdq[ \t]+} 2 { target ia32 } } } */
+/* { dg-final { scan-assembler-times {vmovhps[ \t]+} 1 { target ia32 } } } */
 /* { dg-final { scan-assembler-not {vpermi2[wb][ \t]+} } } */
 
 typedef _Float16 v8hf __attribute__((vector_size (16)));
