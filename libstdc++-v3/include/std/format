@@ -3851,6 +3851,12 @@ namespace __format
       : _M_args(__args), _M_out(std::move(__out)), _M_loc(__loc)
       { }
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4061. Should std::basic_format_context be
+      //       default-constructible/copyable/movable?
+      basic_format_context(const basic_format_context&) = delete;
+      basic_format_context& operator=(const basic_format_context&) = delete;
+
       template<typename _Out2, typename _CharT2, typename _Context2>
 	friend _Out2
 	__format::__do_vformat_to(_Out2, basic_string_view<_CharT2>,
@@ -3858,7 +3864,6 @@ namespace __format
 				  const locale*);
 
     public:
-      basic_format_context() = default;
       ~basic_format_context() = default;
 
       using iterator = _Out;
