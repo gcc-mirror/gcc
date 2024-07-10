@@ -487,8 +487,6 @@ stream_write_tree_ref (struct output_block *ob, tree t)
 	    gcc_checking_assert (tag == LTO_global_stream_ref);
 	  streamer_write_hwi (ob, -(int)(ix * 2 + id + 1));
 	}
-      if (streamer_debugging)
-	streamer_write_uhwi (ob, TREE_CODE (t));
     }
 }
 
@@ -1839,9 +1837,6 @@ lto_output_tree (struct output_block *ob, tree expr,
 	 will instantiate two different nodes for the same object.  */
       streamer_write_record_start (ob, LTO_tree_pickle_reference);
       streamer_write_uhwi (ob, ix);
-      if (streamer_debugging)
-	streamer_write_enum (ob->main_stream, LTO_tags, LTO_NUM_TAGS,
-			     lto_tree_code_to_tag (TREE_CODE (expr)));
       lto_stats.num_pickle_refs_output++;
     }
   else
@@ -1882,9 +1877,6 @@ lto_output_tree (struct output_block *ob, tree expr,
 	    }
 	  streamer_write_record_start (ob, LTO_tree_pickle_reference);
 	  streamer_write_uhwi (ob, ix);
-	  if (streamer_debugging)
-	    streamer_write_enum (ob->main_stream, LTO_tags, LTO_NUM_TAGS,
-				 lto_tree_code_to_tag (TREE_CODE (expr)));
 	}
       in_dfs_walk = false;
       lto_stats.num_pickle_refs_output++;
