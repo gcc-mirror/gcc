@@ -7194,6 +7194,7 @@ extern void qualified_name_lookup_error		(tree, tree, tree,
 						 location_t);
 
 /* in except.cc */
+extern void init_terminate_fn			(void);
 extern void init_exception_processing		(void);
 extern tree expand_start_catch_block		(tree);
 extern void expand_end_catch_block		(void);

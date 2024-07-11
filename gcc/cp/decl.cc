@@ -5172,6 +5172,9 @@ cxx_init_decl_processing (void)
   if (flag_exceptions)
     init_exception_processing ();
 
+  if (flag_contracts)
+    init_terminate_fn ();
+
   if (modules_p ())
     init_modules (parse_in);
 
