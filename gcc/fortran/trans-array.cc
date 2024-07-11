@@ -8662,7 +8662,7 @@ gfc_conv_array_parameter (gfc_se *se, gfc_expr *expr, bool g77,
   tree stmt;
   tree parent = DECL_CONTEXT (current_function_decl);
   tree ctree;
-  tree pack_attr;
+  tree pack_attr = NULL_TREE; /* Set when packing class arrays.  */
   bool full_array_var;
   bool this_array_result;
   bool contiguous;
