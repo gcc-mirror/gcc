@@ -1106,7 +1106,7 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 <para>The exclamation point to the left of the <code>stdc++.h.gch</code> listing means that the generated PCH file was used.</para>
 <para/>
 
-<para> Detailed information about creating precompiled header files can be found in the GCC <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc/Precompiled-Headers.html">documentation</link>.
+<para>Detailed information about creating precompiled header files can be found in the GCC <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/onlinedocs/gcc/Precompiled-Headers.html">documentation</link>.
 </para>
 
     </section>
@@ -1479,7 +1479,7 @@ details that are not intended for users to refer to directly, these include
 <code>std::__detail</code>, <code>std::__cxx11</code> and <code>std::_V2</code>.
 </para>
 
-<para> A complete list of implementation namespaces (including namespace contents) is available in the generated source <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/namespaces.html">documentation</link>.
+<para>A complete list of implementation namespaces (including namespace contents) is available in the generated source <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/namespaces.html">documentation</link>.
 </para>
 
 
@@ -1722,10 +1722,10 @@ namespace gtk
     </para>
     <para>
 A quick read of the relevant part of the GCC
-      manual, <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc/Invoking-G_002b_002b.html#Invoking-G_002b_002b">Compiling
+      manual, <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/onlinedocs/gcc/Invoking-G_002b_002b.html#Invoking-G_002b_002b">Compiling
       C++ Programs</link>, specifies linking against a C++
       library. More details from the
-      GCC <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/faq.html#rpath">FAQ</link>,
+      GCC <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/faq.html#rpath">FAQ</link>,
       which states <emphasis>GCC does not, by default, specify a
       location so that the dynamic linker can find dynamic libraries at
       runtime.</emphasis>
@@ -1942,7 +1942,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
 	 and <code>-march=native</code>, although specifics vary
 	 depending on the host environment. See
 	 <link linkend="manual.intro.using.flags">Command Options</link> and
-	 <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html">Machine
+	 <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html">Machine
 	 Dependent Options</link>.
        </para>
        </listitem>
