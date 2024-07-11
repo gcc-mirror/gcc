@@ -1,3 +1,18 @@
+2024-07-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2024-07-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/115836
+	* expmed.cc (emit_store_flag_1): Move calculation of
+	scode just before its only usage site.
+
+2024-07-10  Fei Gao  <gaofei@eswincomputing.com>
+
+	PR target/113715
+	* config/riscv/riscv.cc (riscv_zcmp_can_use_popretz): Removed.
+	(riscv_gen_multi_pop_insn): Remove generation of cm.popretz.
+
 2024-07-09  Alfie Richards  <alfie.richards@arm.com>
 
 	Backported from master:

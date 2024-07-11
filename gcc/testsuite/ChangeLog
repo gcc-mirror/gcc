@@ -1,3 +1,16 @@
+2024-07-10  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-07-10  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR target/105090
+	* gcc.target/arm/copysign_softfloat_1.c: Drop check for lsr
+
+2024-07-10  Fei Gao  <gaofei@eswincomputing.com>
+
+	* gcc.target/riscv/rv32e_zcmp.c: Adapt TC.
+	* gcc.target/riscv/rv32i_zcmp.c: Likewise.
+
 2024-07-09  Alfie Richards  <alfie.richards@arm.com>
 
 	Backported from master:
