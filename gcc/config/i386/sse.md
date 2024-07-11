@@ -15000,7 +15000,8 @@
   "TARGET_AVX512VL")
 
 (define_mode_iterator PMOV_SRC_MODE_3 [V4DI V2DI V8SI V4SI (V8HI "TARGET_AVX512BW")])
-(define_mode_iterator PMOV_SRC_MODE_3_AVX2 [V4DI V2DI V8SI V4SI V8HI])
+(define_mode_iterator PMOV_SRC_MODE_3_AVX2
+ [(V4DI "TARGET_AVX2") V2DI (V8SI "TARGET_AVX2") V4SI V8HI])
 (define_mode_attr pmov_dst_3_lower
   [(V4DI "v4qi") (V2DI "v2qi") (V8SI "v8qi") (V4SI "v4qi") (V8HI "v8qi")])
 (define_mode_attr pmov_dst_3
@@ -15014,7 +15015,7 @@
   [(set (match_operand:<pmov_dst_3> 0 "register_operand")
 	(truncate:<pmov_dst_3>
 	  (match_operand:PMOV_SRC_MODE_3_AVX2 1 "register_operand")))]
-  "TARGET_AVX2"
+  "TARGET_SSSE3"
 {
   if (TARGET_AVX512VL
       && (<MODE>mode != V8HImode || TARGET_AVX512BW))
@@ -15390,7 +15391,7 @@
 	  (match_dup 2)))]
   "operands[0] = adjust_address_nv (operands[0], V8QImode, 0);")
 
-(define_mode_iterator PMOV_SRC_MODE_4 [V4DI V2DI V4SI])
+(define_mode_iterator PMOV_SRC_MODE_4 [(V4DI "TARGET_AVX2") V2DI V4SI])
 (define_mode_attr pmov_dst_4
   [(V4DI "V4HI") (V2DI "V2HI") (V4SI "V4HI")])
 (define_mode_attr pmov_dst_4_lower
@@ -15404,7 +15405,7 @@
   [(set (match_operand:<pmov_dst_4> 0 "register_operand")
 	(truncate:<pmov_dst_4>
 	  (match_operand:PMOV_SRC_MODE_4 1 "register_operand")))]
-  "TARGET_AVX2"
+  "TARGET_SSSE3"
 {
   if (TARGET_AVX512VL)
     {
@@ -15659,7 +15660,7 @@
   [(set (match_operand:V2SI 0 "register_operand")
 	(truncate:V2SI
 	  (match_operand:V2DI 1 "register_operand")))]
-  "TARGET_AVX2"
+  "TARGET_SSE"
 {
   if (TARGET_AVX512VL)
     {
