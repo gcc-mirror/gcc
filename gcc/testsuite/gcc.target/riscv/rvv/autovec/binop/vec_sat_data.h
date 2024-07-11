@@ -253,4 +253,85 @@ uint64_t TEST_UNARY_DATA(uint64_t, sat_u_add_imm)[][2][N] =
   },
 };
 
+#define TEST_BINARY_DATA_NAME(T1, T2, NAME) test_bin_##T1##_##T2##_##NAME##_data
+#define TEST_BINARY_DATA_NAME_WRAP(T1, T2, NAME) \
+  TEST_BINARY_DATA_NAME(T1, T2, NAME)
+
+#define TEST_ZIP_STRUCT_NAME(T1, T2) test_##T1##_##T2##_zip_s
+#define TEST_ZIP_STRUCT_DECL(T1, T2) struct TEST_ZIP_STRUCT_NAME(T1, T2)
+#define TEST_ZIP_STRUCT(T1, T2) \
+  TEST_ZIP_STRUCT_DECL(T1, T2)  \
+    {                           \
+      T1 x[N];                  \
+      T2 b;                     \
+      T1 expect[N];             \
+    };
+
+TEST_ZIP_STRUCT (uint16_t, uint32_t)
+
+TEST_ZIP_STRUCT_DECL(uint16_t, uint32_t) \
+  TEST_BINARY_DATA_NAME(uint16_t, uint32_t, zip)[] =
+{
+  {
+    { /* x.  */
+      1, 1, 1, 1,
+      1, 1, 1, 1,
+      1, 1, 1, 1,
+      0, 0, 0, 0,
+    },
+    1, /* b.  */
+    { /* expect.  */
+      0, 0, 0, 0,
+      0, 0, 0, 0,
+      0, 0, 0, 0,
+      0, 0, 0, 0,
+    },
+  },
+  {
+    { /* x.  */
+      65535, 1, 2, 8,
+      65535, 1, 2, 8,
+      65535, 1, 2, 8,
+      65535, 1, 2, 8,
+    },
+    65536, /* b.  */
+    { /* expect.  */
+      0, 0, 0, 0,
+      0, 0, 0, 0,
+      0, 0, 0, 0,
+      0, 0, 0, 0,
+    },
+  },
+  {
+    { /* x.  */
+      65535, 16, 8, 1,
+      65535, 16, 8, 1,
+      65535, 16, 8, 1,
+      65535, 16, 8, 1,
+    },
+    65535, /* b.  */
+    { /* expect.  */
+      0, 0, 0, 0,
+      0, 0, 0, 0,
+      0, 0, 0, 0,
+      0, 0, 0, 0,
+    },
+  },
+  {
+    { /* x.  */
+      65535, 16, 8, 1,
+      65535, 16, 8, 1,
+      65535, 16, 8, 1,
+      65535, 16, 8, 1,
+    },
+    65500, /* b.  */
+    { /* expect.  */
+      35, 0, 0, 0,
+      35, 0, 0, 0,
+      35, 0, 0, 0,
+      35, 0, 0, 0,
+    },
+  },
+};
+
 #endif

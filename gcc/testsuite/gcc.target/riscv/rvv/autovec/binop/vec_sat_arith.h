@@ -322,6 +322,19 @@ vec_sat_u_sub_##T##_fmt_10 (T *out, T *op_1, T *op_2, unsigned limit) \
     }                                                                 \
 }
 
+#define DEF_VEC_SAT_U_SUB_ZIP(T1, T2)                             \
+void __attribute__((noinline))                                    \
+vec_sat_u_sub_##T1##_##T2##_fmt_zip (T1 *x, T2 b, unsigned limit) \
+{                                                                 \
+  T2 a;                                                           \
+  T1 *p = x;                                                      \
+  do {                                                            \
+    a = *--p;                                                     \
+    *p = (T1)(a >= b ? a - b : 0);                                \
+  } while (--limit);                                              \
+}
+#define DEF_VEC_SAT_U_SUB_ZIP_WRAP(T1, T2) DEF_VEC_SAT_U_SUB_ZIP(T1, T2)
+
 #define RUN_VEC_SAT_U_SUB_FMT_1(T, out, op_1, op_2, N) \
   vec_sat_u_sub_##T##_fmt_1(out, op_1, op_2, N)
 
@@ -351,6 +364,11 @@ vec_sat_u_sub_##T##_fmt_10 (T *out, T *op_1, T *op_2, unsigned limit) \
 
 #define RUN_VEC_SAT_U_SUB_FMT_10(T, out, op_1, op_2, N) \
   vec_sat_u_sub_##T##_fmt_10(out, op_1, op_2, N)
+
+#define RUN_VEC_SAT_U_SUB_FMT_ZIP(T1, T2, x, b, N) \
+  vec_sat_u_sub_##T1##_##T2##_fmt_zip(x, b, N)
+#define RUN_VEC_SAT_U_SUB_FMT_ZIP_WRAP(T1, T2, x, b, N) \
+  RUN_VEC_SAT_U_SUB_FMT_ZIP(T1, T2, x, b, N) \
 
 /******************************************************************************/
 /* Saturation Sub Truncated (Unsigned and Signed)                             */
