@@ -1,3 +1,10 @@
+2024-07-10  Marek Polacek  <polacek@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Remove flag_concepts_ts code.
+	* c-opts.cc (c_common_post_options): Likewise.
+	* c.opt: Remove -fconcepts-ts.
+	* c.opt.urls: Regenerate.
+
 2024-07-08  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-format.cc (format_check_results::format_check_results): New

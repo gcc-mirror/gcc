@@ -1,3 +1,113 @@
+2024-07-10  Pan Li  <pan2.li@intel.com>
+
+	* tree-vect-patterns.cc (vect_recog_sat_sub_pattern_transform):
+	Add new func impl to perform the truncation distribution.
+	(vect_recog_sat_sub_pattern): Perform above optimize before
+	generate .SAT_SUB call.
+
+2024-07-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (ustruncdi<mode>2): Swap compare operands.
+	(ustruncsi<mode>2): Ditto.
+	(ustrunchiqi2): Ditto.
+
+2024-07-10  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi: Mention that -fconcepts-ts was removed.
+
+2024-07-10  Edwin Lu  <ewlu@rivosinc.com>
+
+	* common/config/riscv/riscv-common.cc: Add imply rules for B extension
+	* config/riscv/arch-canonicalize: Ditto
+
+2024-07-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* internal-fn.cc (create_call_lhs_operand, assign_call_lhs): New
+	functions, split out from...
+	(expand_fn_using_insn): ...here.
+	(expand_load_lanes_optab_fn): Use them.
+	(expand_GOMP_SIMT_ENTER_ALLOC): Likewise.
+	(expand_GOMP_SIMT_LAST_LANE): Likewise.
+	(expand_GOMP_SIMT_ORDERED_PRED): Likewise.
+	(expand_GOMP_SIMT_VOTE_ANY): Likewise.
+	(expand_GOMP_SIMT_XCHG_BFLY): Likewise.
+	(expand_GOMP_SIMT_XCHG_IDX): Likewise.
+	(expand_partial_load_optab_fn): Likewise.
+	(expand_vec_cond_optab_fn): Likewise.
+	(expand_vec_cond_mask_optab_fn): Likewise.
+	(expand_RAWMEMCHR): Likewise.
+	(expand_gather_load_optab_fn): Likewise.
+	(expand_while_optab_fn): Likewise.
+	(expand_SPACESHIP): Likewise.
+
+2024-07-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* recog.cc (insn_propagation::apply_to_rvalue_1): Handle simple
+	cases of hardreg propagation in which the register is set and
+	used in different modes.
+
+2024-07-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/115785
+	* rtl-ssa/functions.h (function_info::replace_nondebug_insn): Declare.
+	* rtl-ssa/insns.h (insn_info::order_node::set_uid): New function.
+	(insn_info::remove_note): Declare.
+	* rtl-ssa/insns.cc (insn_info::remove_note): New function.
+	(function_info::replace_nondebug_insn): Likewise.
+	* rtl-ssa/changes.cc (function_info::change_insns): Use
+	replace_nondebug_insn instead of remove_insn + add_insn.
+
+2024-07-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/115836
+	* expmed.cc (emit_store_flag_1): Move calculation of
+	scode just before its only usage site.
+
+2024-07-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-protos.h (arm_dllexport_name_p): Remove prototype.
+	(arm_dllimport_name_p): Likewise.
+	(arm_pe_unique_section): Likewise.
+	(arm_pe_encode_section_info): Likewise.
+	(arm_dllexport_p): Likewise.
+	(arm_dllimport_p): Likewise.
+	(arm_mark_dllexport): Likewise.
+	(arm_mark_dllimport): Likewise.
+	(arm_change_mode_p): Likewise.
+	* config/arm/arm.cc (arm_gnu_attributes): Remove attributes for ARM_PE.
+	(TARGET_ENCODE_SECTION_INFO): Remove setting for ARM_PE.
+	(is_called_in_ARM_mode): Remove ARM_PE conditional code.
+	(thumb1_output_interwork): Remove obsolete ARM_PE code.
+	(arm_encode_section_info): Remove surrounding #ifndef.
+
+2024-07-10  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+
+	PR lto/115394
+	* lto-streamer.h: Remove streamer_debugging definition.
+	* lto-streamer-out.cc (stream_write_tree_ref): Remove use of streamer_debugging.
+	(lto_output_tree): Likewise.
+	* tree-streamer-in.cc (streamer_read_tree_bitfields): Likewise.
+	(streamer_get_pickled_tree): Likewise.
+	* tree-streamer-out.cc (pack_ts_base_value_fields): Likewise.
+
+2024-07-10  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add form 2 for .SAT_TRUNC.
+	* tree-ssa-math-opts.cc (math_opts_dom_walker::after_dom_children):
+	Add new case NOP_EXPR,  and try to match SAT_TRUNC.
+
+2024-07-10  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/115721
+	* tree-complex.cc (expand_complex_comparison): Remove
+	support for GIMPLE_RETURN.
+
+2024-07-10  Fei Gao  <gaofei@eswincomputing.com>
+
+	PR target/113715
+	* config/riscv/riscv.cc (riscv_zcmp_can_use_popretz): Removed.
+	(riscv_gen_multi_pop_insn): Remove generation of cm.popretz.
+
 2024-07-09  Carl Love  <cel@linux.ibm.com>
 
 	* config/rs6000/rs6000-builtin.cc (altivec_expand_vec_init_builtin):

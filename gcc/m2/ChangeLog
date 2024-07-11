@@ -1,3 +1,16 @@
+2024-07-10  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115823
+	* gm2-gcc/m2builtins.cc (struct builtin_macro_definition): New
+	field builtinname.
+	(builtin_function_match): New function.
+	(builtin_macro_match): Ditto.
+	(m2builtins_BuiltinExists): Use builtin_function_match and
+	builtin_macro_match.
+	(lookup_builtin_macro): Use builtin_macro_match.
+	(lookup_builtin_function): Use builtin_function_match.
+	(define_builtin): Assign builtinname field.
+
 2024-07-07  Gaius Mulley  <gaiusmod2@gmail.com>
 	    Stefan Schulze Frielinghaus   <stefansf@linux.ibm.com>
 	    Andrew Pinski   <quic_apinski@quicinc.com>

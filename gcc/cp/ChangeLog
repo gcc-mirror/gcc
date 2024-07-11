@@ -1,3 +1,60 @@
+2024-07-10  Marek Polacek  <polacek@redhat.com>
+
+	* constraint.cc (deduce_concept_introduction, get_deduced_wildcard,
+	get_introduction_prototype, introduce_type_template_parameter,
+	introduce_template_template_parameter,
+	introduce_nontype_template_parameter,
+	build_introduced_template_parameter, introduce_template_parameter,
+	introduce_template_parameter_pack, introduce_template_parameter,
+	introduce_template_parameters, process_introduction_parms,
+	check_introduction_list, finish_template_introduction): Remove.
+	(finish_shorthand_constraint): Remove a Concepts TS comment.
+	* cp-tree.h (check_auto_in_tmpl_args, finish_template_introduction):
+	Remove.
+	* decl.cc (function_requirements_equivalent_p): Remove pre-C++20 code.
+	(grokfndecl): Don't check flag_concepts_ts.
+	(grokvardecl): Don't check that concept have type bool.
+	* parser.cc (cp_parser_decl_specifier_seq): Don't check
+	flag_concepts_ts.
+	(cp_parser_introduction_list): Remove.
+	(cp_parser_template_id): Remove dead code.
+	(cp_parser_simple_type_specifier): Don't check flag_concepts_ts.
+	(cp_parser_placeholder_type_specifier): Require require auto or
+	decltype(auto) even pre-C++20.  Don't check flag_concepts_ts.
+	(cp_parser_type_id_1): Don't check flag_concepts_ts.
+	(cp_parser_template_type_arg): Likewise.
+	(cp_parser_requires_clause_opt): Remove flag_concepts_ts code.
+	(cp_parser_compound_requirement): Don't check flag_concepts_ts.
+	(cp_parser_template_introduction): Remove.
+	(cp_parser_template_declaration_after_export): Don't call
+	cp_parser_template_introduction.
+	* pt.cc (template_heads_equivalent_p): Remove pre-C++20 code.
+	(find_parameter_pack_data): Remove type_pack_expansion_p.
+	(find_parameter_packs_r): Remove flag_concepts_ts code.  Remove
+	type_pack_expansion_p code.
+	(uses_parameter_packs): Remove type_pack_expansion_p code.
+	(make_pack_expansion): Likewise.
+	(check_for_bare_parameter_packs): Likewise.
+	(fixed_parameter_pack_p): Likewise.
+	(tsubst_qualified_id): Remove dead code.
+	(extract_autos_r): Remove.
+	(extract_autos): Remove.
+	(do_auto_deduction): Remove flag_concepts_ts code.
+	(type_uses_auto): Likewise.
+	(check_auto_in_tmpl_args): Remove.
+
+2024-07-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115645
+	* init.cc (build_new): Don't do any deduction for arrays with
+	bounds if it's value-initialized.
+
+2024-07-10  Nina Ranns  <dinka.ranns@gmail.com>
+
+	PR c++/113968
+	* contracts.cc (grok_contract): Check for error_mark_node early
+	exit.
+
 2024-07-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* constexpr.cc (cxx_eval_constant_expression): CWG2819 - Allow

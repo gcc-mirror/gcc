@@ -1,3 +1,225 @@
+2024-07-10  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/concepts/auto3.C: Compile with -fconcepts.  Run in C++17 and
+	up.  Add dg-error.
+	* g++.dg/concepts/auto5.C: Likewise.
+	* g++.dg/concepts/auto7.C: Compile with -fconcepts.  Add dg-error.
+	* g++.dg/concepts/auto8a.C: Compile with -fconcepts.
+	* g++.dg/concepts/class-deduction1.C: Compile with -fconcepts.  Run in
+	C++17 and up.  Convert to C++20.
+	* g++.dg/concepts/class5.C: Likewise.
+	* g++.dg/concepts/class6.C: Likewise.
+	* g++.dg/concepts/debug1.C: Likewise.
+	* g++.dg/concepts/decl-diagnose.C: Compile with -fconcepts.  Run in
+	C++17 and up.  Add dg-error.
+	* g++.dg/concepts/deduction-constraint1.C: Compile with -fconcepts.
+	Run in C++17 and up.  Convert to C++20.
+	* g++.dg/concepts/diagnostic1.C: Likewise.
+	* g++.dg/concepts/dr1430.C: Likewise.
+	* g++.dg/concepts/equiv.C: Likewise.
+	* g++.dg/concepts/equiv2.C: Likewise.
+	* g++.dg/concepts/expression.C: Likewise.
+	* g++.dg/concepts/expression2.C: Likewise.
+	* g++.dg/concepts/expression3.C: Likewise.
+	* g++.dg/concepts/fn-concept2.C: Compile with -fconcepts.  Run in
+	C++17 and up.  Remove code.  Add dg-prune-output.
+	* g++.dg/concepts/fn-concept3.C: Compile with -fconcepts.  Run in
+	C++17 and up.  Convert to C++20.
+	* g++.dg/concepts/fn1.C: Likewise.
+	* g++.dg/concepts/fn10.C: Likewise.
+	* g++.dg/concepts/fn2.C: Likewise.
+	* g++.dg/concepts/fn3.C: Likewise.
+	* g++.dg/concepts/fn4.C: Likewise.
+	* g++.dg/concepts/fn5.C: Likewise.
+	* g++.dg/concepts/fn6.C: Likewise.
+	* g++.dg/concepts/fn7.C: Compile with -fconcepts.  Add dg-error.
+	* g++.dg/concepts/fn8.C: Compile with -fconcepts.  Run in C++17 and up.
+	Convert to C++20.
+	* g++.dg/concepts/fn9.C: Likewise.
+	* g++.dg/concepts/generic-fn-err.C: Likewise.
+	* g++.dg/concepts/generic-fn.C: Likewise.
+	* g++.dg/concepts/inherit-ctor1.C: Likewise.
+	* g++.dg/concepts/inherit-ctor3.C: Likewise.
+	* g++.dg/concepts/intro1.C: Likewise.
+	* g++.dg/concepts/locations1.C: Compile with -fconcepts.  Run in C++17
+	and up.  Add dg-prune-output.
+	* g++.dg/concepts/partial-concept-id1.C: Compile with -fconcepts.
+	Run in C++17 and up.  Convert to C++20.
+	* g++.dg/concepts/partial-concept-id2.C: Likewise.
+	* g++.dg/concepts/partial-spec5.C: Likewise.
+	* g++.dg/concepts/placeholder2.C: Likewise.
+	* g++.dg/concepts/placeholder3.C: Likewise.
+	* g++.dg/concepts/placeholder4.C: Likewise.
+	* g++.dg/concepts/placeholder5.C: Likewise.
+	* g++.dg/concepts/placeholder6.C: Likewise.
+	* g++.dg/concepts/pr65634.C: Likewise.
+	* g++.dg/concepts/pr65636.C: Likewise.
+	* g++.dg/concepts/pr65681.C: Likewise.
+	* g++.dg/concepts/pr65848.C: Likewise.
+	* g++.dg/concepts/pr67249.C: Likewise.
+	* g++.dg/concepts/pr67595.C: Likewise.
+	* g++.dg/concepts/pr68434.C: Likewise.
+	* g++.dg/concepts/pr71127.C: Likewise.
+	* g++.dg/concepts/pr71128.C: Compile with -fconcepts.  Run in C++17
+	and up.  Add dg-error.
+	* g++.dg/concepts/pr71131.C: Compile with -fconcepts.  Run in C++17
+	and up.  Convert to C++20.
+	* g++.dg/concepts/pr71385.C: Likewise.
+	* g++.dg/concepts/pr85065.C: Likewise.
+	* g++.dg/concepts/pr92804-2.C: Compile with -fconcepts.  Convert to
+	C++20.
+	* g++.dg/concepts/template-parm11.C: Compile with -fconcepts.  Run in
+	C++17 and up.  Convert to C++20.
+	* g++.dg/concepts/template-parm12.C: Likewise.
+	* g++.dg/concepts/template-parm2.C: Likewise.
+	* g++.dg/concepts/template-parm3.C: Likewise.
+	* g++.dg/concepts/template-parm4.C: Likewise.
+	* g++.dg/concepts/template-template-parm1.C: Likewise.
+	* g++.dg/concepts/var-concept1.C: Likewise.
+	* g++.dg/concepts/var-concept2.C: Likewise.
+	* g++.dg/concepts/var-concept3.C: Likewise.
+	* g++.dg/concepts/var-concept4.C: Likewise.
+	* g++.dg/concepts/var-concept5.C: Likewise.
+	* g++.dg/concepts/var-concept6.C: Likewise.
+	* g++.dg/concepts/var-concept7.C: Likewise.
+	* g++.dg/concepts/var-templ1.C: Run in C++17 and up.
+	* g++.dg/concepts/var-templ2.C: Compile with -fconcepts.  Run in C++17
+	and up.  Convert to C++20.
+	* g++.dg/concepts/var-templ3.C: Likewise.
+	* g++.dg/concepts/variadic1.C: Likewise.
+	* g++.dg/concepts/variadic2.C: Likewise.
+	* g++.dg/concepts/variadic3.C: Likewise.
+	* g++.dg/concepts/variadic4.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr65575.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr66091.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr67148.C: Compile with -fconcepts.  Convert
+	to C++20.
+	* g++.dg/cpp2a/concepts-pr67225-1.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr67225-2.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr67225-3.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr67225-4.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr67225-5.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr67319.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr67427.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr67654.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr67658.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr67684.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr67697.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr67719.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr67774.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr67825.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr67860.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr67862.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr67969.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr68093-2.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr68372.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr68812.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr69235.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr78752-2.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr78752.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr79759.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr80746.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr80773.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr82507.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr82740.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr84980.C: Compile with -fconcepts.  Run in
+	C++17 and up.  Convert to C++20.
+	* g++.dg/cpp2a/concepts-pr85265.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr85808.C: Compile with -fconcepts.  Convert
+	to C++20.
+	* g++.dg/cpp2a/concepts-pr86269.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr87441.C: Likewise.
+	* g++.dg/cpp2a/concepts-requires5.C: Compile with -fconcepts.
+	Adjust dg-error.  Add same_as.
+	* g++.dg/cpp2a/nontype-class50a.C: Compile with -fconcepts.
+	* g++.dg/concepts/auto1.C: Removed.
+	* g++.dg/concepts/auto4.C: Removed.
+	* g++.dg/concepts/auto6.C: Removed.
+	* g++.dg/concepts/fn-concept1.C: Removed.
+	* g++.dg/concepts/intro2.C: Removed.
+	* g++.dg/concepts/intro3.C: Removed.
+	* g++.dg/concepts/intro4.C: Removed.
+	* g++.dg/concepts/intro5.C: Removed.
+	* g++.dg/concepts/intro6.C: Removed.
+	* g++.dg/concepts/intro7.C: Removed.
+	* g++.dg/cpp2a/concepts-ts1.C: Removed.
+	* g++.dg/cpp2a/concepts-ts2.C: Removed.
+	* g++.dg/cpp2a/concepts-ts3.C: Removed.
+	* g++.dg/cpp2a/concepts-ts4.C: Removed.
+	* g++.dg/cpp2a/concepts-ts5.C: Removed.
+	* g++.dg/cpp2a/concepts-ts6.C: Removed.
+
+2024-07-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c/115642
+	* gcc.dg/noncompile/sizeof-1.c: New test.
+
+2024-07-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c/115549
+	* c-c++-common/attr-aligned-2.c: New test.
+
+2024-07-10  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR target/105090
+	* gcc.target/arm/copysign_softfloat_1.c: Drop check for lsr
+
+2024-07-10  Edwin Lu  <ewlu@rivosinc.com>
+
+	* g++.target/riscv/redundant-bitmap-1.C: Use gcb instead of
+	zba_zbb_zbs
+	* g++.target/riscv/redundant-bitmap-2.C: Ditto
+	* g++.target/riscv/redundant-bitmap-3.C: Ditto
+	* g++.target/riscv/redundant-bitmap-4.C: Ditto
+	* gcc.target/riscv/shift-add-1.c: Ditto
+	* gcc.target/riscv/shift-add-2.c: Ditto
+	* gcc.target/riscv/synthesis-1.c: Ditto
+	* gcc.target/riscv/synthesis-2.c: Ditto
+	* gcc.target/riscv/synthesis-3.c: Ditto
+	* gcc.target/riscv/synthesis-4.c: Ditto
+	* gcc.target/riscv/synthesis-5.c: Ditto
+	* gcc.target/riscv/synthesis-6.c: Ditto
+	* gcc.target/riscv/synthesis-7.c: Ditto
+	* gcc.target/riscv/synthesis-8.c: Ditto
+	* gcc.target/riscv/zba_zbs_and-1.c: Ditto
+	* gcc.target/riscv/zbs-zext-3.c: Ditto
+	* lib/target-supports.exp: Add b to riscv_get_arch
+
+2024-07-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115645
+	* g++.dg/expr/anew7.C: New test.
+
+2024-07-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/i386/pr105033.c: Expect vmovhps for the ia32 version
+	of foo.
+	* gcc.target/i386/vect-bfloat16-2b.c: Expect more vpinsrws.
+
+2024-07-10  Nina Ranns  <dinka.ranns@gmail.com>
+
+	PR c++/113968
+	* g++.dg/contracts/pr113968.C: New test.
+
+2024-07-10  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115823
+	* gm2/builtins/run/pass/testalloa.mod: New test.
+
+2024-07-10  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* gcc.target/aarch64/sqrt_div_float16.c: New test.
+
+2024-07-10  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.dg/vect/slp-gap-1.c: Support matching `{_1, { 0, 0, 0, 0 }}`
+	in addition to `{_1, 0}`.
+
+2024-07-10  Fei Gao  <gaofei@eswincomputing.com>
+
+	* gcc.target/riscv/rv32e_zcmp.c: Adapt TC.
+	* gcc.target/riscv/rv32i_zcmp.c: Likewise.
+
 2024-07-09  Martin Uecker  <uecker@tugraz.at>
 
 	PR testsuite/115545

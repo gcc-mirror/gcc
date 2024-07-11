@@ -1,3 +1,43 @@
+2024-07-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114387
+	* include/std/format (basic_format_context): Define copy
+	operations as deleted, as per LWG 4061.
+	* testsuite/std/format/context.cc: New test.
+
+2024-07-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++26/text_encoding.cc (__locale_encoding): Add to unnamed
+	namespace.
+	(std::locale::encoding): Optimize for "C" and "*" names.
+
+2024-07-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115854
+	* include/bits/stl_bvector.h (_Bvector_base): Convert allocator
+	to rebound type explicitly.
+	* testsuite/23_containers/vector/allocator/115854.cc: New test.
+	* testsuite/23_containers/vector/bool/allocator/115854.cc: New test.
+
+2024-07-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115799
+	* include/bits/ranges_util.h (__find_fn): Make conversion
+	from difference type ti size_t explicit.
+	* testsuite/25_algorithms/find/bytes.cc: Check ranges::find with
+	__gnu_test::test_contiguous_range.
+	* testsuite/std/ranges/range.cc: Adjust expected difference_type
+	for __gnu_test::test_contiguous_range.
+	* testsuite/util/testsuite_iterators.h (contiguous_iterator_wrapper):
+	Use __max_diff_type as difference type.
+	(test_range::sentinel, test_sized_range_sized_sent::sentinel):
+	Ensure that operator- returns difference_type.
+
+2024-07-10  Marek Polacek  <polacek@redhat.com>
+
+	* testsuite/std/ranges/access/101782.cc: Don't compile with
+	-fconcepts-ts.
+
 2024-07-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/115807

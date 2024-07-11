@@ -1,3 +1,15 @@
+2024-07-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c/115642
+	* c-typeck.cc (c_cast_expr): Return error_mark_node if build_c_cast
+	failed.
+
+2024-07-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c/115549
+	* c-decl.cc (c_decl_attributes): If lookup_last_decl returns
+	error_mark_node, use NULL_TREE as last_decl.
+
 2024-07-09  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/114727
