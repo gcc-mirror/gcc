@@ -230,7 +230,12 @@ validate_change_1 (rtx object, rtx *loc, rtx new_rtx, bool in_group,
       new_len = -1;
     }
 
-  if ((old == new_rtx || rtx_equal_p (old, new_rtx))
+  /* When a change is part of a group, callers expect to be able to change
+     INSN_CODE after making the change and have the code reset to its old
+     value by a later cancel_changes.  We therefore need to register group
+     changes even if they're no-ops.  */
+  if (!in_group
+      && (old == new_rtx || rtx_equal_p (old, new_rtx))
       && (new_len < 0 || XVECLEN (new_rtx, 0) == new_len))
     return true;
 
