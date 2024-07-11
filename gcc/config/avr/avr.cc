@@ -8843,6 +8843,36 @@ lshrsi3_out (rtx_insn *insn, rtx operands[], int *len)
 }
 
 
+/* Output subtraction of integer registers XOP[0] and XOP[2] and return ""
+
+      XOP[0] = XOP[0] - XOP[2]
+
+   where the mode of XOP[0] is in { HI, PSI, SI }, and the mode of
+   XOP[2] is in { QI, HI, PSI }.  When the mode of XOP[0] is larger
+   than the mode of XOP[2], then the latter is zero-extended on the fly.
+   The number of instructions will be the mode size of XOP[0].  */
+
+const char *
+avr_out_minus (rtx *xop)
+{
+  int n_bytes0 = GET_MODE_SIZE (GET_MODE (xop[0]));
+  int n_bytes2 = GET_MODE_SIZE (GET_MODE (xop[2]));
+
+  output_asm_insn ("sub %0,%2", xop);
+
+  for (int i = 1; i < n_bytes0; ++i)
+    {
+      rtx op[2];
+      op[0] = all_regs_rtx[i + REGNO (xop[0])];
+      op[1] = (i < n_bytes2) ? all_regs_rtx[i + REGNO (xop[2])] : zero_reg_rtx;
+
+      output_asm_insn ("sbc %0,%1", op);
+    }
+
+  return "";
+}
+
+
 /* Output addition of register XOP[0] and compile time constant XOP[2].
    INSN is a single_set insn or an insn pattern.
    CODE == PLUS:  perform addition by using ADD instructions or
@@ -12717,7 +12747,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	  *total = COSTS_N_INSNS (2);
 	  return true;
 	}
-      // *sub<mode>3_zero_extend1
+      // *sub<HISI:mode>3.zero_extend.<QIPSI:mode>
       if (REG_P (XEXP (x, 0))
 	  && GET_CODE (XEXP (x, 1)) == ZERO_EXTEND)
 	{

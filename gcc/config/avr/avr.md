@@ -2030,47 +2030,6 @@
   "sub %0,%2\;sbc %B0,%B2\;sbc %C0,%C2"
   [(set_attr "length" "3")])
 
-(define_insn_and_split "*subpsi3_zero_extend.qi_split"
-  [(set (match_operand:PSI 0 "register_operand"                           "=r")
-        (minus:PSI (match_operand:SI 1 "register_operand"                  "0")
-                   (zero_extend:PSI (match_operand:QI 2 "register_operand" "r"))))]
-  ""
-  "#"
-  "&& reload_completed"
-  [(parallel [(set (match_dup 0)
-                   (minus:PSI (match_dup 1)
-                              (zero_extend:PSI (match_dup 2))))
-              (clobber (reg:CC REG_CC))])])
-
-(define_insn "*subpsi3_zero_extend.qi"
-  [(set (match_operand:PSI 0 "register_operand"                           "=r")
-        (minus:PSI (match_operand:SI 1 "register_operand"                  "0")
-                   (zero_extend:PSI (match_operand:QI 2 "register_operand" "r"))))
-   (clobber (reg:CC REG_CC))]
-  "reload_completed"
-  "sub %A0,%2\;sbc %B0,__zero_reg__\;sbc %C0,__zero_reg__"
-  [(set_attr "length" "3")])
-
-(define_insn_and_split "*subpsi3_zero_extend.hi_split"
-  [(set (match_operand:PSI 0 "register_operand"                           "=r")
-        (minus:PSI (match_operand:PSI 1 "register_operand"                 "0")
-                   (zero_extend:PSI (match_operand:HI 2 "register_operand" "r"))))]
-  ""
-  "#"
-  "&& reload_completed"
-  [(parallel [(set (match_dup 0)
-                   (minus:PSI (match_dup 1)
-                              (zero_extend:PSI (match_dup 2))))
-              (clobber (reg:CC REG_CC))])])
-
-(define_insn "*subpsi3_zero_extend.hi"
-  [(set (match_operand:PSI 0 "register_operand"                           "=r")
-        (minus:PSI (match_operand:PSI 1 "register_operand"                 "0")
-                   (zero_extend:PSI (match_operand:HI 2 "register_operand" "r"))))
-   (clobber (reg:CC REG_CC))]
-  "reload_completed"
-  "sub %A0,%2\;sbc %B0,%B2\;sbc %C0,__zero_reg__"
-  [(set_attr "length" "3")])
 
 (define_insn_and_split "*subpsi3_sign_extend.hi_split"
   [(set (match_operand:PSI 0 "register_operand"                           "=r")
@@ -2154,26 +2113,6 @@
   }
   [(set_attr "adjust_len" "plus")])
 
-(define_insn_and_split "*subhi3_zero_extend1_split"
-  [(set (match_operand:HI 0 "register_operand"                          "=r")
-        (minus:HI (match_operand:HI 1 "register_operand"                 "0")
-                  (zero_extend:HI (match_operand:QI 2 "register_operand" "r"))))]
-  ""
-  "#"
-  "&& reload_completed"
-  [(parallel [(set (match_dup 0)
-                   (minus:HI (match_dup 1)
-                             (zero_extend:HI (match_dup 2))))
-             (clobber (reg:CC REG_CC))])])
-
-(define_insn "*subhi3_zero_extend1"
-  [(set (match_operand:HI 0 "register_operand"                          "=r")
-        (minus:HI (match_operand:HI 1 "register_operand"                 "0")
-                  (zero_extend:HI (match_operand:QI 2 "register_operand" "r"))))
-  (clobber (reg:CC REG_CC))]
-  "reload_completed"
-  "sub %A0,%2\;sbc %B0,__zero_reg__"
-  [(set_attr "length" "2")])
 
 (define_insn_and_split "*subhi3.sign_extend2_split"
   [(set (match_operand:HI 0 "register_operand"                          "=r")
@@ -2231,48 +2170,39 @@
   }
   [(set_attr "adjust_len" "plus")])
 
-(define_insn_and_split "*subsi3_zero_extend_split"
-  [(set (match_operand:SI 0 "register_operand"                          "=r")
-        (minus:SI (match_operand:SI 1 "register_operand"                 "0")
-                  (zero_extend:SI (match_operand:QI 2 "register_operand" "r"))))]
-  ""
+
+;; "*subhi3.zero_extend.qi_split"
+;; "*subpsi3.zero_extend.qi_split"  "*subpsi3.zero_extend.hi_split"
+;; "*subsi3.zero_extend.qi_split"   "*subsi3.zero_extend.hi_split"
+;; "*subsi3.zero_extend.psi_split"
+(define_insn_and_split "*sub<HISI:mode>3.zero_extend.<QIPSI:mode>_split"
+  [(set (match_operand:HISI 0 "register_operand"             "=r")
+        (minus:HISI (match_operand:HISI 1 "register_operand"  "0")
+                    (zero_extend:HISI (match_operand:QIPSI 2 "register_operand" "r"))))]
+  "GET_MODE_SIZE (<HISI:MODE>mode) > GET_MODE_SIZE (<QIPSI:MODE>mode)"
   "#"
   "&& reload_completed"
   [(parallel [(set (match_dup 0)
-                   (minus:SI (match_dup 1)
-                             (zero_extend:SI (match_dup 2))))
+                   (minus:HISI (match_dup 1)
+                               (zero_extend:HISI (match_dup 2))))
               (clobber (reg:CC REG_CC))])])
 
-(define_insn "*subsi3_zero_extend"
-  [(set (match_operand:SI 0 "register_operand"                          "=r")
-        (minus:SI (match_operand:SI 1 "register_operand"                 "0")
-                  (zero_extend:SI (match_operand:QI 2 "register_operand" "r"))))
+;; "*subhi3.zero_extend.qi"
+;; "*subpsi3.zero_extend.qi"  "*subpsi3.zero_extend.hi"
+;; "*subsi3.zero_extend.qi"   "*subsi3.zero_extend.hi"
+;; "*subsi3.zero_extend.psi"
+(define_insn "*sub<HISI:mode>3.zero_extend.<QIPSI:mode>"
+  [(set (match_operand:HISI 0 "register_operand"             "=r")
+        (minus:HISI (match_operand:HISI 1 "register_operand"  "0")
+                    (zero_extend:HISI (match_operand:QIPSI 2 "register_operand" "r"))))
    (clobber (reg:CC REG_CC))]
-  "reload_completed"
-  "sub %A0,%2\;sbc %B0,__zero_reg__\;sbc %C0,__zero_reg__\;sbc %D0,__zero_reg__"
-  [(set_attr "length" "4")
-   ])
+  "reload_completed
+   && GET_MODE_SIZE (<HISI:MODE>mode) > GET_MODE_SIZE (<QIPSI:MODE>mode)"
+  {
+    return avr_out_minus (operands);
+  }
+  [(set_attr "length" "<HISI:SIZE>")])
 
-(define_insn_and_split "*subsi3_zero_extend.hi_split"
-  [(set (match_operand:SI 0 "register_operand"                          "=r")
-        (minus:SI (match_operand:SI 1 "register_operand"                 "0")
-                  (zero_extend:SI (match_operand:HI 2 "register_operand" "r"))))]
-  ""
-  "#"
-  "&& reload_completed"
-  [(parallel [(set (match_dup 0)
-                   (minus:SI (match_dup 1)
-                             (zero_extend:SI (match_dup 2))))
-              (clobber (reg:CC REG_CC))])])
-
-(define_insn "*subsi3_zero_extend.hi"
-  [(set (match_operand:SI 0 "register_operand"                          "=r")
-        (minus:SI (match_operand:SI 1 "register_operand"                 "0")
-                  (zero_extend:SI (match_operand:HI 2 "register_operand" "r"))))
-   (clobber (reg:CC REG_CC))]
-  "reload_completed"
-  "sub %A0,%2\;sbc %B0,%B2\;sbc %C0,__zero_reg__\;sbc %D0,__zero_reg__"
-  [(set_attr "length" "4")])
 
 ;******************************************************************************
 ; mul
