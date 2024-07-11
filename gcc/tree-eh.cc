@@ -950,7 +950,7 @@ static inline geh_else *
 get_eh_else (gimple_seq finally)
 {
   gimple *x = gimple_seq_first_stmt (finally);
-  if (gimple_code (x) == GIMPLE_EH_ELSE)
+  if (x && gimple_code (x) == GIMPLE_EH_ELSE)
     {
       gcc_assert (gimple_seq_singleton_p (finally));
       return as_a <geh_else *> (x);
