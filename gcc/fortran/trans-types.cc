@@ -2661,7 +2661,7 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
   tree *chain = NULL;
   bool got_canonical = false;
   bool unlimited_entity = false;
-  gfc_component *c;
+  gfc_component *c, *last_c = nullptr;
   gfc_namespace *ns;
   tree tmp;
   bool coarray_flag, class_coarray_flag;
@@ -2961,10 +2961,14 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
 	 types.  */
       if (class_coarray_flag || !c->backend_decl)
 	c->backend_decl = field;
+      if (c->attr.caf_token && last_c)
+	last_c->caf_token = field;
 
       if (c->attr.pointer && (c->attr.dimension || c->attr.codimension)
 	  && !(c->ts.type == BT_DERIVED && strcmp (c->name, "_data") == 0))
 	GFC_DECL_PTR_ARRAY_P (c->backend_decl) = 1;
+
+      last_c = c;
     }
 
   /* Now lay out the derived type, including the fields.  */
