@@ -832,14 +832,14 @@ mingw_pe_file_end (void)
 static enum debug_info_levels saved_debug_info_level;
 
 void
-i386_pe_asm_lto_start (void)
+mingw_pe_asm_lto_start (void)
 {
   saved_debug_info_level = debug_info_level;
   debug_info_level = DINFO_LEVEL_NONE;
 }
 
 void
-i386_pe_asm_lto_end (void)
+mingw_pe_asm_lto_end (void)
 {
   debug_info_level = saved_debug_info_level;
 }

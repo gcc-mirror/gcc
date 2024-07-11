@@ -245,4 +245,10 @@ still needed for compilation.  */
 
 #define HAVE_64BIT_POINTERS 1
 
+/* Kludge because of missing PE-COFF support for early LTO debug.  */
+#undef  TARGET_ASM_LTO_START
+#define TARGET_ASM_LTO_START mingw_pe_asm_lto_start
+#undef  TARGET_ASM_LTO_END
+#define TARGET_ASM_LTO_END mingw_pe_asm_lto_end
+
 #endif

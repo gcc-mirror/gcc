@@ -23,6 +23,8 @@ http://www.gnu.org/licenses/.  */
 extern tree mingw_handle_selectany_attribute (tree *, tree, tree, int, bool *);
 
 extern void mingw_pe_asm_named_section (const char *, unsigned int, tree);
+extern void mingw_pe_asm_lto_start (void);
+extern void mingw_pe_asm_lto_end (void);
 extern void mingw_pe_declare_type (FILE *, const char *, bool, bool);
 extern void mingw_pe_encode_section_info (tree, rtx, int);
 extern void mingw_pe_file_end (void);

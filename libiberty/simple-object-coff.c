@@ -219,7 +219,9 @@ static const struct coff_magic_struct coff_magic[] =
   /* i386.  */
   { 0x14c, 0, F_EXEC | IMAGE_FILE_SYSTEM | IMAGE_FILE_DLL },
   /* x86_64.  */
-  { 0x8664, 0, F_EXEC | IMAGE_FILE_SYSTEM | IMAGE_FILE_DLL }
+  { 0x8664, 0, F_EXEC | IMAGE_FILE_SYSTEM | IMAGE_FILE_DLL },
+  /* AArch64.  */
+  { 0xaa64, 0, F_EXEC | IMAGE_FILE_SYSTEM | IMAGE_FILE_DLL }
 };
 
 /* See if we have a COFF file.  */
