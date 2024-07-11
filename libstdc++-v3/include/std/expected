@@ -1261,7 +1261,7 @@ namespace __expected
 	{ }
 
       union {
-	_Tp _M_val;
+	remove_cv_t<_Tp> _M_val;
 	_Er _M_unex;
       };
 

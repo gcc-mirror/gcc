@@ -591,7 +591,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	_Alloc& _M_alloc() noexcept { return _A_base::_S_get(*this); }
 
-	__gnu_cxx::__aligned_buffer<_Tp> _M_storage;
+	__gnu_cxx::__aligned_buffer<__remove_cv_t<_Tp>> _M_storage;
       };
 
     public:
@@ -633,7 +633,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       virtual void*
       _M_get_deleter(const std::type_info& __ti) noexcept override
       {
-	auto __ptr = const_cast<typename remove_cv<_Tp>::type*>(_M_ptr());
 	// Check for the fake type_info first, so we don't try to access it
 	// as a real type_info object. Otherwise, check if it's the real
 	// type_info for this class. With RTTI enabled we can check directly,
@@ -646,11 +645,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _Sp_make_shared_tag::_S_eq(__ti)
 #endif
 	   )
-	  return __ptr;
+	  return _M_ptr();
 	return nullptr;
       }
 
-      _Tp* _M_ptr() noexcept { return _M_impl._M_storage._M_ptr(); }
+      __remove_cv_t<_Tp>*
+      _M_ptr() noexcept { return _M_impl._M_storage._M_ptr(); }
 
       _Impl _M_impl;
     };
@@ -674,13 +674,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       [[no_unique_address]] _Alloc _M_alloc;
 
       union {
-	_Tp _M_obj;
+	remove_cv_t<_Tp> _M_obj;
 	char _M_unused;
       };
 
       friend class __shared_count<_Lp>; // To be able to call _M_ptr().
 
-      _Tp* _M_ptr() noexcept { return std::__addressof(_M_obj); }
+      auto _M_ptr() noexcept { return std::__addressof(_M_obj); }
 
     public:
       using __allocator_type = __alloc_rebind<_Alloc, _Sp_counted_ptr_inplace>;
@@ -962,7 +962,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__shared_count(_Tp*& __p, _Sp_alloc_shared_tag<_Alloc> __a,
 		       _Args&&... __args)
 	{
-	  typedef _Sp_counted_ptr_inplace<_Tp, _Alloc, _Lp> _Sp_cp_type;
+	  using _Tp2 = __remove_cv_t<_Tp>;
+	  using _Sp_cp_type = _Sp_counted_ptr_inplace<_Tp2, _Alloc, _Lp>;
 	  typename _Sp_cp_type::__allocator_type __a2(__a._M_a);
 	  auto __guard = std::__allocate_guarded(__a2);
 	  _Sp_cp_type* __mem = __guard.get();

@@ -96,7 +96,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     construct_at(_Tp* __location, _Args&&... __args)
     noexcept(noexcept(::new((void*)0) _Tp(std::declval<_Args>()...)))
     {
-      void* __loc = const_cast<remove_cv_t<_Tp>*>(__location);
+      void* __loc = __location;
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 3436. std::construct_at should support arrays
       if constexpr (is_array_v<_Tp>)
@@ -130,7 +130,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return;
 	}
 #endif
-      ::new((void*)__p) _Tp(std::forward<_Args>(__args)...);
+      ::new(static_cast<void*>(__p)) _Tp(std::forward<_Args>(__args)...);
     }
 #else
   template<typename _T1, typename _T2>
@@ -146,7 +146,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _T1>
     inline void
     _Construct_novalue(_T1* __p)
-    { ::new((void*)__p) _T1; }
+    { ::new(static_cast<void*>(__p)) _T1; }
 
   template<typename _ForwardIterator>
     _GLIBCXX20_CONSTEXPR void
