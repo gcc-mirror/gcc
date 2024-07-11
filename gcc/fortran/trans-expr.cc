@@ -7773,16 +7773,26 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		       && CLASS_DATA (fsym)->attr.codimension
 		       && !CLASS_DATA (fsym)->attr.allocatable)))
 	{
-	  tree caf_decl, caf_type;
+	  tree caf_decl, caf_type, caf_desc = NULL_TREE;
 	  tree offset, tmp2;
 
 	  caf_decl = gfc_get_tree_for_caf_expr (e);
 	  caf_type = TREE_TYPE (caf_decl);
+	  if (POINTER_TYPE_P (caf_type)
+	      && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (caf_type)))
+	    caf_desc = TREE_TYPE (caf_type);
+	  else if (GFC_DESCRIPTOR_TYPE_P (caf_type))
+	    caf_desc = caf_type;
 
-	  if (GFC_DESCRIPTOR_TYPE_P (caf_type)
-	      && (GFC_TYPE_ARRAY_AKIND (caf_type) == GFC_ARRAY_ALLOCATABLE
-		  || GFC_TYPE_ARRAY_AKIND (caf_type) == GFC_ARRAY_POINTER))
-	    tmp = gfc_conv_descriptor_token (caf_decl);
+	  if (caf_desc
+	      && (GFC_TYPE_ARRAY_AKIND (caf_desc) == GFC_ARRAY_ALLOCATABLE
+		  || GFC_TYPE_ARRAY_AKIND (caf_desc) == GFC_ARRAY_POINTER))
+	    {
+	      tmp = POINTER_TYPE_P (TREE_TYPE (caf_decl))
+		      ? build_fold_indirect_ref (caf_decl)
+		      : caf_decl;
+	      tmp = gfc_conv_descriptor_token (tmp);
+	    }
 	  else if (DECL_LANG_SPECIFIC (caf_decl)
 		   && GFC_DECL_TOKEN (caf_decl) != NULL_TREE)
 	    tmp = GFC_DECL_TOKEN (caf_decl);
@@ -7795,8 +7805,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 	  vec_safe_push (stringargs, tmp);
 
-	  if (GFC_DESCRIPTOR_TYPE_P (caf_type)
-	      && GFC_TYPE_ARRAY_AKIND (caf_type) == GFC_ARRAY_ALLOCATABLE)
+	  if (caf_desc
+	      && GFC_TYPE_ARRAY_AKIND (caf_desc) == GFC_ARRAY_ALLOCATABLE)
 	    offset = build_int_cst (gfc_array_index_type, 0);
 	  else if (DECL_LANG_SPECIFIC (caf_decl)
 		   && GFC_DECL_CAF_OFFSET (caf_decl) != NULL_TREE)
@@ -7806,8 +7816,13 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  else
 	    offset = build_int_cst (gfc_array_index_type, 0);
 
-	  if (GFC_DESCRIPTOR_TYPE_P (caf_type))
-	    tmp = gfc_conv_descriptor_data_get (caf_decl);
+	  if (caf_desc)
+	    {
+	      tmp = POINTER_TYPE_P (TREE_TYPE (caf_decl))
+		      ? build_fold_indirect_ref (caf_decl)
+		      : caf_decl;
+	      tmp = gfc_conv_descriptor_data_get (tmp);
+	    }
 	  else
 	    {
 	      gcc_assert (POINTER_TYPE_P (caf_type));

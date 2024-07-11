@@ -66,5 +66,7 @@
     if (lcobound(A, dim=1) /= 2) STOP 13
     if (ucobound(A, dim=1) /= 3) STOP 14
     if (lcobound(A, dim=2) /= 5) STOP 15
+
+    call sub4(A)  ! Check PR88624 is fixed.
   end subroutine sub5
   end
