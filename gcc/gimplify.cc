@@ -6728,18 +6728,56 @@ gimplify_variable_sized_compare (tree *expr_p)
 static enum gimplify_status
 gimplify_scalar_mode_aggregate_compare (tree *expr_p)
 {
-  location_t loc = EXPR_LOCATION (*expr_p);
+  const location_t loc = EXPR_LOCATION (*expr_p);
+  const enum tree_code code = TREE_CODE (*expr_p);
   tree op0 = TREE_OPERAND (*expr_p, 0);
   tree op1 = TREE_OPERAND (*expr_p, 1);
-
   tree type = TREE_TYPE (op0);
   tree scalar_type = lang_hooks.types.type_for_mode (TYPE_MODE (type), 1);
 
   op0 = fold_build1_loc (loc, VIEW_CONVERT_EXPR, scalar_type, op0);
   op1 = fold_build1_loc (loc, VIEW_CONVERT_EXPR, scalar_type, op1);
 
-  *expr_p
-    = fold_build2_loc (loc, TREE_CODE (*expr_p), TREE_TYPE (*expr_p), op0, op1);
+  /* We need to perform ordering comparisons in memory order like memcmp and,
+     therefore, may need to byte-swap operands for little-endian targets.  */
+  if (code != EQ_EXPR && code != NE_EXPR)
+    {
+      gcc_assert (BYTES_BIG_ENDIAN == WORDS_BIG_ENDIAN);
+      gcc_assert (TREE_CODE (scalar_type) == INTEGER_TYPE);
+      tree fndecl;
+
+      if (BYTES_BIG_ENDIAN)
+	fndecl = NULL_TREE;
+      else
+	switch (int_size_in_bytes (scalar_type))
+	  {
+	  case 1:
+	    fndecl = NULL_TREE;
+	    break;
+	  case 2:
+	    fndecl = builtin_decl_implicit (BUILT_IN_BSWAP16);
+	    break;
+	  case 4:
+	    fndecl = builtin_decl_implicit (BUILT_IN_BSWAP32);
+	    break;
+	  case 8:
+	    fndecl = builtin_decl_implicit (BUILT_IN_BSWAP64);
+	    break;
+	  case 16:
+	    fndecl = builtin_decl_implicit (BUILT_IN_BSWAP128);
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
+
+      if (fndecl)
+	{
+	  op0 = build_call_expr_loc (loc, fndecl, 1, op0);
+	  op1 = build_call_expr_loc (loc, fndecl, 1, op1);
+	}
+    }
+
+  *expr_p = fold_build2_loc (loc, code, TREE_TYPE (*expr_p), op0, op1);
 
   return GS_OK;
 }
@@ -18825,7 +18863,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		      else
 			goto expr_2;
 		    }
-		  else if (TYPE_MODE (type) != BLKmode)
+		  else if (SCALAR_INT_MODE_P (TYPE_MODE (type)))
 		    ret = gimplify_scalar_mode_aggregate_compare (expr_p);
 		  else
 		    ret = gimplify_variable_sized_compare (expr_p);
