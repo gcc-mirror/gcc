@@ -301,3 +301,7 @@ default value is 4.
 ; CPUCFG independently, so we use bit flags to specify them.
 TargetVariable
 HOST_WIDE_INT la_isa_evolution = 0
+
+mannotate-tablejump
+Target Mask(ANNOTATE_TABLEJUMP) Save
+Annotate table jump instruction (jr {reg}) to correlate it with the jump table.

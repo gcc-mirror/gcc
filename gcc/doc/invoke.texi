@@ -1071,7 +1071,7 @@ Objective-C and Objective-C++ Dialects}.
 -mcmodel=@var{code-model} -mrelax -mpass-mrelax-to-as
 -mrecip  -mrecip=@var{opt} -mfrecipe -mno-frecipe -mdiv32 -mno-div32
 -mlam-bh -mno-lam-bh -mlamcas -mno-lamcas -mld-seq-sa -mno-ld-seq-sa
--mtls-dialect=@var{opt}}
+-mtls-dialect=@var{opt} -mannotate-tablejump -mno-annotate-tablejump}
 
 @emph{M32R/D Options}
 @gccoptlist{-m32r2  -m32rx  -m32r
@@ -27511,6 +27511,17 @@ Whether a load-load barrier (@code{dbar 0x700}) is needed.  When build with
 @item -mtls-dialect=@var{opt}
 This option controls which tls dialect may be used for general dynamic and
 local dynamic TLS models.
+
+@opindex mannotate-tablejump
+@opindex mno-annotate-tablejump
+@item -mannotate-tablejump
+@itemx -mno-annotate-tablejump
+Create an annotation section @code{.discard.tablejump_annotate} to
+correlate the @code{jirl} instruction and the jump table when a jump
+table is used to optimize the @code{switch} statement.  Some external
+tools, for example @file{objtool} of the Linux kernel building system,
+need the annotation to analysis the control flow.  The default is
+@option{-mno-annotate-tablejump}.
 
 @table @samp
 @item trad
