@@ -5325,6 +5325,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   gfc_actual_arglist *actual;
   gfc_ss *arrayss;
   gfc_ss *maskss;
+  gfc_ss *backss;
   gfc_se arrayse;
   gfc_se maskse;
   gfc_expr *arrayexpr;
@@ -5390,6 +5391,11 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
     && maskexpr->symtree->n.sym->attr.dummy
     && maskexpr->symtree->n.sym->attr.optional;
   backexpr = actual->next->next->expr;
+  if (backexpr)
+    backss = gfc_get_scalar_ss (gfc_ss_terminator, backexpr);
+  else
+    backss = nullptr;
+
   nonempty = NULL;
   if (maskexpr && maskexpr->rank != 0)
     {
@@ -5448,6 +5454,9 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 
   if (maskss)
     gfc_add_ss_to_loop (&loop, maskss);
+
+  if (backss)
+    gfc_add_ss_to_loop (&loop, backss);
 
   gfc_add_ss_to_loop (&loop, arrayss);
 
@@ -5535,6 +5544,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   gfc_add_block_to_block (&block, &arrayse.pre);
 
   gfc_init_se (&backse, NULL);
+  backse.ss = backss;
   gfc_conv_expr_val (&backse, backexpr);
   gfc_add_block_to_block (&block, &backse.pre);
 
