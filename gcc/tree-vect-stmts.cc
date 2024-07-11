@@ -4716,7 +4716,12 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		      SIMD_CLONE_ARG_TYPE_MASK);
 
 	  tree masktype = bestn->simdclone->args[mask_i].vector_type;
-	  callee_nelements = TYPE_VECTOR_SUBPARTS (masktype);
+	  if (SCALAR_INT_MODE_P (bestn->simdclone->mask_mode))
+	    /* Guess the number of lanes represented by masktype.  */
+	    callee_nelements = exact_div (bestn->simdclone->simdlen,
+					  bestn->simdclone->nargs - nargs);
+	  else
+	    callee_nelements = TYPE_VECTOR_SUBPARTS (masktype);
 	  o = vector_unroll_factor (nunits, callee_nelements);
 	  for (m = j * o; m < (j + 1) * o; m++)
 	    {
