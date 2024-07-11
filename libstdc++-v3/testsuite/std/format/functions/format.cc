@@ -458,7 +458,7 @@ test_pointer()
   s = std::format("{:20} {:20p}", p, pc);
   VERIFY( s == (str_int + ' ' + str_int) );
 
-#if __cplusplus > 202302L || ! defined __STRICT_ANSI__
+#if __cpp_lib_format >= 202304L
   // P2510R3 Formatting pointers
   s = std::format("{:06} {:07P} {:08p}", (void*)0, (const void*)0, nullptr);
   VERIFY( s == "0x0000 0X00000 0x000000" );

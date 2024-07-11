@@ -1305,9 +1305,9 @@
 
 #if !defined(__cpp_lib_format)
 # if (__cplusplus >= 202002L) && _GLIBCXX_HOSTED
-#  define __glibcxx_format 202207L
+#  define __glibcxx_format 202304L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_format)
-#   define __cpp_lib_format 202207L
+#   define __cpp_lib_format 202304L
 #  endif
 # endif
 #endif /* !defined(__cpp_lib_format) && defined(__glibcxx_want_format) */

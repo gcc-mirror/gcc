@@ -266,8 +266,8 @@ test_pointer()
   VERIFY( ! is_std_format_spec_for<void*>("G") );
   VERIFY( ! is_std_format_spec_for<void*>("+p") );
 
-#if __cplusplus > 202302L || ! defined __STRICT_ANSI__
-  // As an extension, we support P2510R3 Formatting pointers
+#if __cpp_lib_format >= 202304L
+  // P2510R3 Formatting pointers
   VERIFY( is_std_format_spec_for<void*>("P") );
   VERIFY( is_std_format_spec_for<void*>("0p") );
   VERIFY( is_std_format_spec_for<void*>("0P") );

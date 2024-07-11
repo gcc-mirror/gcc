@@ -2342,13 +2342,7 @@ namespace __format
 
 // _GLIBCXX_RESOLVE_LIB_DEFECTS
 // P2510R3 Formatting pointers
-#if __glibcxx_format >= 202304L || ! defined __STRICT_ANSI__
-# define _GLIBCXX_P2518R3 1
-#else
-# define _GLIBCXX_P2518R3 0
-#endif
-
-#if _GLIBCXX_P2518R3
+#if __glibcxx_format >= 202304L
 	__first = __spec._M_parse_zero_fill(__first, __last);
 	if (__finished())
 	  return __first;
@@ -2360,11 +2354,9 @@ namespace __format
 	  {
 	    if (*__first == 'p')
 	      ++__first;
-#if _GLIBCXX_P2518R3
+#if __glibcxx_format >= 202304L
 	    else if (*__first == 'P')
 	    {
-	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	      // P2510R3 Formatting pointers
 	      __spec._M_type = __format::_Pres_P;
 	      ++__first;
 	    }
@@ -2388,7 +2380,7 @@ namespace __format
 	  int __n = __ptr - __buf;
 	  __buf[0] = '0';
 	  __buf[1] = 'x';
-#if _GLIBCXX_P2518R3
+#if __glibcxx_format >= 202304L
 	  if (_M_spec._M_type == __format::_Pres_P)
 	    {
 	      __buf[1] = 'X';
@@ -2413,7 +2405,7 @@ namespace __format
 	    }
 #endif
 
-#if _GLIBCXX_P2518R3
+#if __glibcxx_format >= 202304L
 	  if (_M_spec._M_zero_fill)
 	    {
 	      size_t __width = _M_spec._M_get_width(__fc);
