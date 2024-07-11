@@ -589,7 +589,7 @@ elf_nodebug (struct backtrace_state *state, uintptr_t pc,
       return bdata.ret;
     }
 
-  error_callback (data, "no debug info in ELF executable", -1);
+  error_callback (data, "no debug info in ELF executable (make sure to compile with -g)", -1);
   return 0;
 }
 
