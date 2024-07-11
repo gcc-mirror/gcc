@@ -830,6 +830,11 @@ bpf_print_register (FILE *file, rtx op, int code)
     }
 }
 
+/* Variable defined to implement 'M' operand modifier for the special cases
+   where the parentheses should not be printed surrounding a memory address
+   operand. */
+static bool no_parentheses_mem_operand;
+
 /* Print an instruction operand.  This function is called in the macro
    PRINT_OPERAND defined in bpf.h */
 
@@ -842,6 +847,7 @@ bpf_print_operand (FILE *file, rtx op, int code)
       bpf_print_register (file, op, code);
       break;
     case MEM:
+      no_parentheses_mem_operand = (code == 'M');
       output_address (GET_MODE (op), XEXP (op, 0));
       break;
     case CONST_DOUBLE:
@@ -886,6 +892,9 @@ bpf_print_operand (FILE *file, rtx op, int code)
     }
 }
 
+#define PAREN_OPEN  (asm_dialect == ASM_NORMAL ? "[" : no_parentheses_mem_operand ? "" : "(")
+#define PAREN_CLOSE (asm_dialect == ASM_NORMAL ? "]" : no_parentheses_mem_operand ? "" : ")")
+
 /* Print an operand which is an address.  This function should handle
    any legit address, as accepted by bpf_legitimate_address_p, and
    also addresses that are valid in CALL instructions.
@@ -899,9 +908,9 @@ bpf_print_operand_address (FILE *file, rtx addr)
   switch (GET_CODE (addr))
     {
     case REG:
-      fprintf (file, asm_dialect == ASM_NORMAL ? "[" : "(");
+      fprintf (file, "%s", PAREN_OPEN);
       bpf_print_register (file, addr, 0);
-      fprintf (file, asm_dialect == ASM_NORMAL ? "+0]" : "+0)");
+      fprintf (file, "+0%s", PAREN_CLOSE);
       break;
     case PLUS:
       {
@@ -918,14 +927,14 @@ bpf_print_operand_address (FILE *file, rtx addr)
 		|| (GET_CODE (op1) == UNSPEC
 		    && XINT (op1, 1) == UNSPEC_CORE_RELOC)))
 	  {
-            fprintf (file, asm_dialect == ASM_NORMAL ? "[" : "(");
+	    fprintf (file, "%s", PAREN_OPEN);
 	    bpf_print_register (file, op0, 0);
 	    fprintf (file, "+");
 	    if (GET_CODE (op1) == UNSPEC)
 	      output_addr_const (file, XVECEXP (op1, 0, 0));
 	    else
 	      output_addr_const (file, op1);
-            fprintf (file, asm_dialect == ASM_NORMAL ? "]" : ")");
+	    fprintf (file, "%s", PAREN_CLOSE);
 	  }
 	else
 	  fatal_insn ("invalid address in operand", addr);
@@ -942,6 +951,9 @@ bpf_print_operand_address (FILE *file, rtx addr)
       break;
     }
 }
+
+#undef PAREN_OPEN
+#undef PAREN_CLOSE
 
 /* Add a BPF builtin function with NAME, CODE and TYPE.  Return
    the function decl or NULL_TREE if the builtin was not added.  */

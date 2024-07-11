@@ -129,7 +129,7 @@
    (set (match_dup 1)
         (match_operand:AMO 2 "nonmemory_operand" "0"))]
   "bpf_has_v3_atomics"
-  "{axchg<msuffix>\t%1,%0|%w0 = xchg<pcaxsuffix>(%1, %w0)}")
+  "{axchg<msuffix>\t%1,%0|%w0 = xchg<pcaxsuffix>(%M1, %w0)}")
 
 ;; The eBPF atomic-compare-and-exchange instruction has the form
 ;;   acmp [%dst+offset], %src
@@ -182,4 +182,4 @@
           (match_operand:AMO 3 "register_operand")]   ;; desired
          UNSPEC_ACMP))]
   "bpf_has_v3_atomics"
-  "{acmp<msuffix>\t%1,%3|%w0 = cmpxchg<pcaxsuffix>(%1, %w0, %w3)}")
+  "{acmp<msuffix>\t%1,%3|%w0 = cmpxchg<pcaxsuffix>(%M1, %w0, %w3)}")
