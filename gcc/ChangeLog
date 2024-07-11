@@ -1,3 +1,12 @@
+2024-07-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2024-07-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/115836
+	* expmed.c (emit_store_flag_1): Move calculation of
+	scode just before its only usage site.
+
 2024-07-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	Backported from master:
