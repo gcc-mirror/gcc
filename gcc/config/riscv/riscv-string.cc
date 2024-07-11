@@ -140,9 +140,7 @@ static void
 emit_strcmp_scalar_compare_byte (rtx result, rtx data1, rtx data2,
 				 rtx final_label)
 {
-  rtx tmp = gen_reg_rtx (Xmode);
-  do_sub3 (tmp, data1, data2);
-  emit_insn (gen_movsi (result, gen_lowpart (SImode, tmp)));
+  do_sub3 (result, data1, data2);
   emit_jump_insn (gen_jump (final_label));
   emit_barrier (); /* No fall-through.  */
 }
@@ -310,8 +308,7 @@ emit_strcmp_scalar_result_calculation_nonul (rtx result, rtx data1, rtx data2)
   rtx tmp = gen_reg_rtx (Xmode);
   emit_insn (gen_slt_3 (LTU, Xmode, Xmode, tmp, data1, data2));
   do_neg2 (tmp, tmp);
-  do_ior3 (tmp, tmp, const1_rtx);
-  emit_insn (gen_movsi (result, gen_lowpart (SImode, tmp)));
+  do_ior3 (result, tmp, const1_rtx);
 }
 
 /* strcmp-result calculation.
@@ -367,9 +364,7 @@ emit_strcmp_scalar_result_calculation (rtx result, rtx data1, rtx data2,
   unsigned int shiftr = (xlen - 1) * BITS_PER_UNIT;
   do_lshr3 (data1, data1, GEN_INT (shiftr));
   do_lshr3 (data2, data2, GEN_INT (shiftr));
-  rtx tmp = gen_reg_rtx (Xmode);
-  do_sub3 (tmp, data1, data2);
-  emit_insn (gen_movsi (result, gen_lowpart (SImode, tmp)));
+  do_sub3 (result, data1, data2);
 }
 
 /* Expand str(n)cmp using Zbb/TheadBb instructions.
@@ -444,7 +439,7 @@ riscv_expand_strcmp_scalar (rtx result, rtx src1, rtx src2,
   /* All compared and everything was equal.  */
   if (ncompare)
     {
-      emit_insn (gen_rtx_SET (result, gen_rtx_CONST_INT (SImode, 0)));
+      emit_insn (gen_rtx_SET (result, CONST0_RTX (GET_MODE (result))));
       emit_jump_insn (gen_jump (final_label));
       emit_barrier (); /* No fall-through.  */
     }
@@ -1512,7 +1507,7 @@ expand_strcmp (rtx result, rtx src1, rtx src2, rtx nbytes,
   if (with_length)
     emit_label (done);
 
-  emit_insn (gen_movsi (result, gen_lowpart (SImode, sub)));
+  emit_move_insn (result, sub);
   return true;
 }
 

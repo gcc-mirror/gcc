@@ -4162,9 +4162,19 @@
   "riscv_inline_strncmp && !optimize_size
     && (TARGET_ZBB || TARGET_XTHEADBB || TARGET_VECTOR)"
 {
-  if (riscv_expand_strcmp (operands[0], operands[1], operands[2],
+  rtx temp = gen_reg_rtx (word_mode);
+  if (riscv_expand_strcmp (temp, operands[1], operands[2],
                            operands[3], operands[4]))
-    DONE;
+    {
+      if (TARGET_64BIT)
+	{
+	  temp = gen_lowpart (SImode, temp);
+	  SUBREG_PROMOTED_VAR_P (temp) = 1;
+	  SUBREG_PROMOTED_SET (temp, SRP_SIGNED);
+	}
+      emit_move_insn (operands[0], temp);
+      DONE;
+    }
   else
     FAIL;
 })
@@ -4183,9 +4193,19 @@
   "riscv_inline_strcmp && !optimize_size
     && (TARGET_ZBB || TARGET_XTHEADBB || TARGET_VECTOR)"
 {
-  if (riscv_expand_strcmp (operands[0], operands[1], operands[2],
+  rtx temp = gen_reg_rtx (word_mode);
+  if (riscv_expand_strcmp (temp, operands[1], operands[2],
                            NULL_RTX, operands[3]))
-    DONE;
+    {
+      if (TARGET_64BIT)
+	{
+	  temp = gen_lowpart (SImode, temp);
+	  SUBREG_PROMOTED_VAR_P (temp) = 1;
+	  SUBREG_PROMOTED_SET (temp, SRP_SIGNED);
+	}
+      emit_move_insn (operands[0], temp);
+      DONE;
+    }
   else
     FAIL;
 })
