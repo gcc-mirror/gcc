@@ -674,7 +674,6 @@ macho_add_symtab (struct backtrace_state *state, int descriptor,
 	      struct macho_syminfo_data *p;
 
 	      p = backtrace_atomic_load_pointer (pp);
-	      
 	      if (p == NULL)
 		break;
 

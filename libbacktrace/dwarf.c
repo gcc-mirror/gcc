@@ -1705,7 +1705,7 @@ add_ranges_from_ranges (
 	base = (uintptr_t) high;
       else
 	{
-	  if (!add_range (state, rdata, 
+	  if (!add_range (state, rdata,
 			  (uintptr_t) low + base + base_address,
 			  (uintptr_t) high + base + base_address,
 			  error_callback, data, vec))
@@ -1904,7 +1904,7 @@ add_ranges (struct backtrace_state *state,
 	    const struct dwarf_sections *dwarf_sections,
 	    uintptr_t base_address, int is_bigendian,
 	    struct unit *u, uintptr_t base, const struct pcrange *pcrange,
-	    int (*add_range) (struct backtrace_state *state, void *rdata, 
+	    int (*add_range) (struct backtrace_state *state, void *rdata,
 			      uintptr_t lowpc, uintptr_t highpc,
 			      backtrace_error_callback error_callback,
 			      void *data, void *vec),
