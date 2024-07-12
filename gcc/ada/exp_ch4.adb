@@ -10816,49 +10816,6 @@ package body Exp_Ch4 is
          Expr : Node_Id;
          Ityp : Entity_Id;
 
-         procedure Generate_Temporary;
-         --  Generate a temporary to facilitate in the C backend the code
-         --  generation of the unchecked conversion since the size of the
-         --  source type may differ from the size of the target type.
-
-         ------------------------
-         -- Generate_Temporary --
-         ------------------------
-
-         procedure Generate_Temporary is
-         begin
-            if Esize (Etype (Expr)) < Esize (Etype (Ityp)) then
-               declare
-                  Exp_Type : constant Entity_Id := Ityp;
-                  Def_Id   : constant Entity_Id :=
-                               Make_Temporary (Loc, 'R', Expr);
-                  E        : Node_Id;
-                  Res      : Node_Id;
-
-               begin
-                  Set_Is_Internal (Def_Id);
-                  Set_Etype (Def_Id, Exp_Type);
-                  Res := New_Occurrence_Of (Def_Id, Loc);
-
-                  E :=
-                    Make_Object_Declaration (Loc,
-                      Defining_Identifier => Def_Id,
-                      Object_Definition   => New_Occurrence_Of
-                                               (Exp_Type, Loc),
-                      Constant_Present    => True,
-                      Expression          => Relocate_Node (Expr));
-
-                  Set_Assignment_OK (E);
-                  Insert_Action (Expr, E);
-
-                  Set_Assignment_OK (Res, Assignment_OK (Expr));
-
-                  Rewrite (Expr, Res);
-                  Analyze_And_Resolve (Expr, Exp_Type);
-               end;
-            end if;
-         end Generate_Temporary;
-
       --  Start of processing for Discrete_Range_Check
 
       begin
