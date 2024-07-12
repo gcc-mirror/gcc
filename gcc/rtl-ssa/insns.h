@@ -339,32 +339,6 @@ private:
   };
   using order_splay_tree = default_rootless_splay_tree<order_node *>;
 
-  // prev_insn_or_last_debug_insn represents a choice between two things:
-  //
-  // (1) A pointer to the previous instruction in the list that has the
-  //     same is_debug_insn () value, or null if no such instruction exists.
-  //
-  // (2) A pointer to the end of a sublist of debug instructions.
-  //
-  // (2) is used if this instruction is a debug instruction and the
-  // previous instruction is not.  (1) is used otherwise.
-  //
-  // next_nondebug_or_debug_insn points to the next instruction but also
-  // records whether that next instruction is a debug instruction or a
-  // nondebug instruction.
-  //
-  // Thus the list is chained as follows:
-  //
-  //         ---->        ---->     ---->     ---->     ---->
-  // NONDEBUG     NONDEBUG     DEBUG     DEBUG     DEBUG     NONDEBUG ...
-  //         <----    ^     +--     <----     <----  ^    +--
-  //                  |     |                        |    |
-  //                  |     +------------------------+    |
-  //                  |                                   |
-  //                  +-----------------------------------+
-  using prev_insn_or_last_debug_insn = pointer_mux<insn_info>;
-  using next_nondebug_or_debug_insn = pointer_mux<insn_info>;
-
   insn_info (bb_info *bb, rtx_insn *rtl, int cost_or_uid);
 
   static void print_uid (pretty_printer *, int);
@@ -395,9 +369,33 @@ private:
   void clear_insn_links ();
   bool has_insn_links ();
 
+  // m_prev_sametye_or_last_debug_insn represents a choice between two things:
+  //
+  // (1) A pointer to the previous instruction in the list that has the
+  //     same is_debug_insn () value, or null if no such instruction exists.
+  //
+  // (2) A pointer to the end of a sublist of debug instructions.
+  //
+  // (2) is used if this instruction is a debug instruction and the
+  // previous instruction is not.  (1) is used otherwise.
+  //
+  // m_next_nondebug_or_debug_insn points to the next instruction but also
+  // records whether that next instruction is a debug instruction or a
+  // nondebug instruction.
+  //
+  // Thus the list is chained as follows:
+  //
+  //         ---->        ---->     ---->     ---->     ---->
+  // NONDEBUG     NONDEBUG     DEBUG     DEBUG     DEBUG     NONDEBUG ...
+  //         <----    ^     +--     <----     <----  ^    +--
+  //                  |     |                        |    |
+  //                  |     +------------------------+    |
+  //                  |                                   |
+  //                  +-----------------------------------+
+  pointer_mux<insn_info> m_prev_sametype_or_last_debug_insn;
+  pointer_mux<insn_info> m_next_nondebug_or_debug_insn;
+
   // The values returned by the accessors above.
-  prev_insn_or_last_debug_insn m_prev_insn_or_last_debug_insn;
-  next_nondebug_or_debug_insn m_next_nondebug_or_debug_insn;
   bb_info *m_bb;
   rtx_insn *m_rtl;
 
