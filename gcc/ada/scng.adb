@@ -1166,6 +1166,7 @@ package body Scng is
                      when '\' | '"' | '{' | '}'
                               => Code := Get_Char_Code (C);
                      when others =>
+                        Code := Get_Char_Code ('?');
                         Error_Msg_S ("illegal escaped character");
                   end case;
 
