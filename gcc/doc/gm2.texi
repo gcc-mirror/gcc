@@ -3014,9 +3014,9 @@ You can subscribe to the GNU Modula-2 mailing by sending an
 email to:
 @email{gm2-subscribe@@nongnu.org}
 or by
-@url{http://lists.nongnu.org/mailman/listinfo/gm2}.
+@url{https://lists.nongnu.org/mailman/listinfo/gm2}.
 The mailing list contents can be viewed
-@url{http://lists.gnu.org/archive/html/gm2}.
+@url{https://lists.gnu.org/archive/html/gm2}.
 
 @node Other languages, , Community, Using
 @section Other languages for GCC
