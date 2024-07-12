@@ -663,9 +663,7 @@ emit_memcmp_scalar_load_and_compare (rtx result, rtx src1, rtx src2,
       /* Fast-path for a single byte.  */
       if (cmp_bytes == 1)
 	{
-	  rtx tmp = gen_reg_rtx (Xmode);
-	  do_sub3 (tmp, data1, data2);
-	  emit_insn (gen_movsi (result, gen_lowpart (SImode, tmp)));
+	  do_sub3 (result, data1, data2);
 	  emit_jump_insn (gen_jump (final_label));
 	  emit_barrier (); /* No fall-through.  */
 	  return;
@@ -702,12 +700,11 @@ emit_memcmp_scalar_result_calculation (rtx result, rtx data1, rtx data2)
   /* Get bytes in big-endian order and compare as words.  */
   do_bswap2 (data1, data1);
   do_bswap2 (data2, data2);
+
   /* Synthesize (data1 >= data2) ? 1 : -1 in a branchless sequence.  */
-  rtx tmp = gen_reg_rtx (Xmode);
-  emit_insn (gen_slt_3 (LTU, Xmode, Xmode, tmp, data1, data2));
-  do_neg2 (tmp, tmp);
-  do_ior3 (tmp, tmp, const1_rtx);
-  emit_insn (gen_movsi (result, gen_lowpart (SImode, tmp)));
+  emit_insn (gen_slt_3 (LTU, Xmode, Xmode, result, data1, data2));
+  do_neg2 (result, result);
+  do_ior3 (result, result, const1_rtx);
 }
 
 /* Expand memcmp using scalar instructions (incl. Zbb).
@@ -773,7 +770,7 @@ riscv_expand_block_compare_scalar (rtx result, rtx src1, rtx src2, rtx nbytes)
 				       data1, data2,
 				       diff_label, final_label);
 
-  emit_insn (gen_rtx_SET (result, gen_rtx_CONST_INT (SImode, 0)));
+  emit_move_insn (result, CONST0_RTX (GET_MODE (result)));
   emit_jump_insn (gen_jump (final_label));
   emit_barrier (); /* No fall-through.  */
 

@@ -2675,9 +2675,19 @@
 				       operands[2], operands[3]))
     DONE;
 
-  if (riscv_expand_block_compare (operands[0], operands[1], operands[2],
+  rtx temp = gen_reg_rtx (word_mode);
+  if (riscv_expand_block_compare (temp, operands[1], operands[2],
                                   operands[3]))
-    DONE;
+    {
+      if (TARGET_64BIT)
+	{
+	  temp = gen_lowpart (SImode, temp);
+	  SUBREG_PROMOTED_VAR_P (temp) = 1;
+	  SUBREG_PROMOTED_SET (temp, SRP_SIGNED);
+	}
+      emit_move_insn (operands[0], temp);
+      DONE;
+    }
   else
     FAIL;
 })
