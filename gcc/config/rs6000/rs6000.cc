@@ -16149,7 +16149,7 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
    OP_FALSE are two VEC_COND_EXPR operands.  CC_OP0 and CC_OP1 are the two
    operands for the relation operation COND.  */
 
-int
+static int
 rs6000_emit_vector_cond_expr (rtx dest, rtx op_true, rtx op_false,
 			      rtx cond, rtx cc_op0, rtx cc_op1)
 {
