@@ -19405,8 +19405,10 @@ aarch64_process_one_target_attr (char *arg_str)
       return false;
     }
 
-  char *str_to_check = (char *) alloca (len + 1);
-  strcpy (str_to_check, arg_str);
+  auto_vec<char, 32> buffer;
+  buffer.safe_grow (len + 1);
+  char *str_to_check = buffer.address ();
+  memcpy (str_to_check, arg_str, len + 1);
 
   /* We have something like __attribute__ ((target ("+fp+nosimd"))).
      It is easier to detect and handle it explicitly here rather than going
@@ -19569,8 +19571,10 @@ aarch64_process_target_attr (tree args)
     }
 
   size_t len = strlen (TREE_STRING_POINTER (args));
-  char *str_to_check = (char *) alloca (len + 1);
-  strcpy (str_to_check, TREE_STRING_POINTER (args));
+  auto_vec<char, 32> buffer;
+  buffer.safe_grow (len + 1);
+  char *str_to_check = buffer.address ();
+  memcpy (str_to_check, TREE_STRING_POINTER (args), len + 1);
 
   if (len == 0)
     {
