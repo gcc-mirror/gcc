@@ -161,7 +161,7 @@
 ;; Otherwise do special processing depending on the attribute.
 
 (define_attr "adjust_len"
-  "out_bitop, plus, addto_sp, sext, extr, extr_not,
+  "out_bitop, plus, addto_sp, sext, extr, extr_not, plus_ext,
    tsthi, tstpsi, tstsi, compare, compare64, call,
    mov8, mov16, mov24, mov32, reload_in16, reload_in24, reload_in32,
    ufract, sfract, round,
@@ -1596,33 +1596,6 @@
   "add %A0,%2\;adc %B0,__zero_reg__"
   [(set_attr "length" "2")])
 
-(define_insn_and_split "*addhi3.sign_extend1_split"
-  [(set (match_operand:HI 0 "register_operand"                         "=r")
-        (plus:HI (sign_extend:HI (match_operand:QI 1 "register_operand" "r"))
-                 (match_operand:HI 2 "register_operand"                 "0")))]
-  ""
-  "#"
-  "&& reload_completed"
-  [(parallel [(set (match_dup 0)
-                   (plus:HI (sign_extend:HI (match_dup 1))
-                            (match_dup 2)))
-              (clobber (reg:CC REG_CC))])])
-
-
-(define_insn "*addhi3.sign_extend1"
-  [(set (match_operand:HI 0 "register_operand"                         "=r")
-        (plus:HI (sign_extend:HI (match_operand:QI 1 "register_operand" "r"))
-                 (match_operand:HI 2 "register_operand"                 "0")))
-   (clobber (reg:CC REG_CC))]
-  "reload_completed"
-  {
-    return reg_overlap_mentioned_p (operands[0], operands[1])
-      ? "mov __tmp_reg__,%1\;add %A0,%1\;adc %B0,__zero_reg__\;sbrc __tmp_reg__,7\;dec %B0"
-      : "add %A0,%1\;adc %B0,__zero_reg__\;sbrc %1,7\;dec %B0";
-  }
-  [(set (attr "length")
-        (symbol_ref ("4 + reg_overlap_mentioned_p (operands[0], operands[1])")))])
-
 (define_insn_and_split "*addhi3_zero_extend.const_split"
   [(set (match_operand:HI 0 "register_operand"                         "=d")
         (plus:HI (zero_extend:HI (match_operand:QI 1 "register_operand" "0"))
@@ -1878,110 +1851,88 @@
   [(set_attr "length" "4")
    (set_attr "adjust_len" "plus")])
 
-(define_insn_and_split "*addpsi3_zero_extend.qi_split"
-  [(set (match_operand:PSI 0 "register_operand"                          "=r")
-        (plus:PSI (zero_extend:PSI (match_operand:QI 1 "register_operand" "r"))
-                  (match_operand:PSI 2 "register_operand"                 "0")))]
-  ""
+
+;;                                  "*addhi3.sign_extend.qi_split"
+;; "*addpsi3.sign_extend.qi_split"  "*addpsi3.sign_extend.qi_split"
+;; "*addpsi3.sign_extend.hi_split"  "*addpsi3.sign_extend.hi_split"
+;; "*addsi3.sign_extend.qi_split"   "*addsi3.sign_extend.qi_split"
+;; "*addsi3.sign_extend.hi_split"   "*addsi3.sign_extend.hi_split"
+;; "*addsi3.sign_extend.psi_split"  "*addsi3.sign_extend.psi_split"
+;; The zero_extend:HI(QI) case is treated in an own insn as it can
+;; more than just "r,r,0".
+(define_insn_and_split "*add<HISI:mode>3.<code>.<QIPSI:mode>_split"
+  [(set (match_operand:HISI 0 "register_operand"                             "=r")
+        (plus:HISI (any_extend:HISI (match_operand:QIPSI 1 "register_operand" "r"))
+                   (match_operand:HISI 2 "register_operand"                   "0")))]
+  "<HISI:SIZE> > <QIPSI:SIZE>
+   && (<HISI:SIZE> > 2 || <CODE> == SIGN_EXTEND)"
   "#"
   "&& reload_completed"
   [(parallel [(set (match_dup 0)
-                   (plus:PSI (zero_extend:PSI (match_dup 1))
-                             (match_dup 2)))
+                   (plus:HISI (any_extend:HISI (match_dup 1))
+                              (match_dup 2)))
               (clobber (reg:CC REG_CC))])])
 
-(define_insn "*addpsi3_zero_extend.qi"
-  [(set (match_operand:PSI 0 "register_operand"                          "=r")
-        (plus:PSI (zero_extend:PSI (match_operand:QI 1 "register_operand" "r"))
-                  (match_operand:PSI 2 "register_operand"                 "0")))
+;;                            "*addhi3.sign_extend.qi"
+;; "*addpsi3.sign_extend.qi"  "*addpsi3.sign_extend.qi"
+;; "*addpsi3.sign_extend.hi"  "*addpsi3.sign_extend.hi"
+;; "*addsi3.sign_extend.qi"   "*addsi3.sign_extend.qi"
+;; "*addsi3.sign_extend.hi"   "*addsi3.sign_extend.hi"
+;; "*addsi3.sign_extend.psi"  "*addsi3.sign_extend.psi"
+(define_insn "*add<HISI:mode>3.<code>.<QIPSI:mode>"
+  [(set (match_operand:HISI 0 "register_operand"                             "=r")
+        (plus:HISI (any_extend:HISI (match_operand:QIPSI 1 "register_operand" "r"))
+                   (match_operand:HISI 2 "register_operand"                   "0")))
    (clobber (reg:CC REG_CC))]
-  "reload_completed"
-  "add %A0,%A1\;adc %B0,__zero_reg__\;adc %C0,__zero_reg__"
-  [(set_attr "length" "3")])
+  "reload_completed
+   && <HISI:SIZE> > <QIPSI:SIZE>
+   && (<HISI:SIZE> > 2 || <CODE> == SIGN_EXTEND)"
+  {
+    return avr_out_plus_ext (insn, operands, nullptr);
+  }
+  [(set (attr "length")
+        (symbol_ref "<HISI:SIZE> + 3 * (<CODE> == SIGN_EXTEND)"))
+   (set_attr "adjust_len" "plus_ext")])
 
-(define_insn_and_split "*addpsi3_zero_extend.hi_split"
-  [(set (match_operand:PSI 0 "register_operand"                          "=r")
-        (plus:PSI (zero_extend:PSI (match_operand:HI 1 "register_operand" "r"))
-                  (match_operand:PSI 2 "register_operand"                 "0")))]
-  ""
+
+;; "*subhi3.zero_extend.qi_split"   "*subhi3.sign_extend.qi_split"
+;; "*subpsi3.zero_extend.qi_split"  "*subpsi3.sign_extend.qi_split"
+;; "*subpsi3.zero_extend.hi_split"  "*subpsi3.sign_extend.hi_split"
+;; "*subsi3.zero_extend.qi_split"   "*subsi3.sign_extend.qi_split"
+;; "*subsi3.zero_extend.hi_split"   "*subsi3.sign_extend.hi_split"
+;; "*subsi3.zero_extend.psi_split"  "*subsi3.sign_extend.psi_split"
+(define_insn_and_split "*sub<HISI:mode>3.<code>.<QIPSI:mode>_split"
+  [(set (match_operand:HISI 0 "register_operand"                              "=r")
+        (minus:HISI (match_operand:HISI 1 "register_operand"                   "0")
+                    (any_extend:HISI (match_operand:QIPSI 2 "register_operand" "r"))))]
+  "<HISI:SIZE> > <QIPSI:SIZE>"
   "#"
   "&& reload_completed"
   [(parallel [(set (match_dup 0)
-                   (plus:PSI (zero_extend:PSI (match_dup 1))
-                             (match_dup 2)))
+                   (minus:HISI (match_dup 1)
+                               (any_extend:HISI (match_dup 2))))
               (clobber (reg:CC REG_CC))])])
 
-(define_insn "*addpsi3_zero_extend.hi"
-  [(set (match_operand:PSI 0 "register_operand"                          "=r")
-        (plus:PSI (zero_extend:PSI (match_operand:HI 1 "register_operand" "r"))
-                  (match_operand:PSI 2 "register_operand"                 "0")))
+;; "*subhi3.zero_extend.qi"   "*subhi3.sign_extend.qi"
+;; "*subpsi3.zero_extend.qi"  "*subpsi3.sign_extend.qi"
+;; "*subpsi3.zero_extend.hi"  "*subpsi3.sign_extend.hi"
+;; "*subsi3.zero_extend.qi"   "*subsi3.sign_extend.qi"
+;; "*subsi3.zero_extend.hi"   "*subsi3.sign_extend.hi"
+;; "*subsi3.zero_extend.psi"  "*subsi3.sign_extend.psi"
+(define_insn "*sub<HISI:mode>3.<code>.<QIPSI:mode>"
+  [(set (match_operand:HISI 0 "register_operand"                              "=r")
+        (minus:HISI (match_operand:HISI 1 "register_operand"                   "0")
+                    (any_extend:HISI (match_operand:QIPSI 2 "register_operand" "r"))))
    (clobber (reg:CC REG_CC))]
-  "reload_completed"
-  "add %A0,%A1\;adc %B0,%B1\;adc %C0,__zero_reg__"
-  [(set_attr "length" "3")])
+  "reload_completed
+   && <HISI:SIZE> > <QIPSI:SIZE>"
+  {
+    return avr_out_plus_ext (insn, operands, nullptr);
+  }
+  [(set (attr "length")
+        (symbol_ref "<HISI:SIZE> + 3 * (<CODE> == SIGN_EXTEND)"))
+   (set_attr "adjust_len" "plus_ext")])
 
-(define_insn_and_split "*addpsi3_sign_extend.hi_split"
-  [(set (match_operand:PSI 0 "register_operand"                          "=r")
-        (plus:PSI (sign_extend:PSI (match_operand:HI 1 "register_operand" "r"))
-                  (match_operand:PSI 2 "register_operand"                 "0")))]
-  ""
-  "#"
-  "&& reload_completed"
-  [(parallel [(set (match_dup 0)
-                   (plus:PSI (sign_extend:PSI (match_dup 1))
-                             (match_dup 2)))
-              (clobber (reg:CC REG_CC))])])
-
-(define_insn "*addpsi3_sign_extend.hi"
-  [(set (match_operand:PSI 0 "register_operand"                          "=r")
-        (plus:PSI (sign_extend:PSI (match_operand:HI 1 "register_operand" "r"))
-                  (match_operand:PSI 2 "register_operand"                 "0")))
-   (clobber (reg:CC REG_CC))]
-  "reload_completed"
-  "add %A0,%1\;adc %B0,%B1\;adc %C0,__zero_reg__\;sbrc %B1,7\;dec %C0"
-  [(set_attr "length" "5")])
-
-(define_insn_and_split "*addsi3_zero_extend_split"
-  [(set (match_operand:SI 0 "register_operand"                         "=r")
-        (plus:SI (zero_extend:SI (match_operand:QI 1 "register_operand" "r"))
-                 (match_operand:SI 2 "register_operand"                 "0")))]
-  ""
-  "#"
-  "&& reload_completed"
-  [(parallel [(set (match_dup 0)
-                   (plus:SI (zero_extend:SI (match_dup 1))
-                            (match_dup 2)))
-              (clobber (reg:CC REG_CC))])])
-
-(define_insn "*addsi3_zero_extend"
-  [(set (match_operand:SI 0 "register_operand"                         "=r")
-        (plus:SI (zero_extend:SI (match_operand:QI 1 "register_operand" "r"))
-                 (match_operand:SI 2 "register_operand"                 "0")))
-   (clobber (reg:CC REG_CC))]
-  "reload_completed"
-  "add %A0,%1\;adc %B0,__zero_reg__\;adc %C0,__zero_reg__\;adc %D0,__zero_reg__"
-  [(set_attr "length" "4")])
-
-(define_insn_and_split "*addsi3_zero_extend.hi_split"
-  [(set (match_operand:SI 0 "register_operand"                         "=r")
-        (plus:SI (zero_extend:SI (match_operand:HI 1 "register_operand" "r"))
-                 (match_operand:SI 2 "register_operand"                 "0")))]
-  ""
-  "#"
-  "&& reload_completed"
-  [(parallel [(set (match_dup 0)
-                   (plus:SI (zero_extend:SI (match_dup 1))
-                            (match_dup 2)))
-              (clobber (reg:CC REG_CC))])])
-
-(define_insn "*addsi3_zero_extend.hi"
-  [(set (match_operand:SI 0 "register_operand"                         "=r")
-        (plus:SI (zero_extend:SI (match_operand:HI 1 "register_operand" "r"))
-                 (match_operand:SI 2 "register_operand"                 "0")))
-   (clobber (reg:CC REG_CC))]
-  "reload_completed"
-  "add %A0,%1\;adc %B0,%B1\;adc %C0,__zero_reg__\;adc %D0,__zero_reg__"
-  [(set_attr "length" "4")])
 
 (define_insn_and_split "addpsi3"
   [(set (match_operand:PSI 0 "register_operand"         "=??r,d ,d,r")
@@ -2031,27 +1982,6 @@
   "sub %0,%2\;sbc %B0,%B2\;sbc %C0,%C2"
   [(set_attr "length" "3")])
 
-
-(define_insn_and_split "*subpsi3_sign_extend.hi_split"
-  [(set (match_operand:PSI 0 "register_operand"                           "=r")
-        (minus:PSI (match_operand:PSI 1 "register_operand"                 "0")
-                   (sign_extend:PSI (match_operand:HI 2 "register_operand" "r"))))]
-  ""
-  "#"
-  "&& reload_completed"
-  [(parallel [(set (match_dup 0)
-                   (minus:PSI (match_dup 1)
-                              (sign_extend:PSI (match_dup 2))))
-              (clobber (reg:CC REG_CC))])])
-
-(define_insn "*subpsi3_sign_extend.hi"
-  [(set (match_operand:PSI 0 "register_operand"                           "=r")
-        (minus:PSI (match_operand:PSI 1 "register_operand"                 "0")
-                   (sign_extend:PSI (match_operand:HI 2 "register_operand" "r"))))
-   (clobber (reg:CC REG_CC))]
-  "reload_completed"
-  "sub %A0,%A2\;sbc %B0,%B2\;sbc %C0,__zero_reg__\;sbrc %B2,7\;inc %C0"
-  [(set_attr "length" "5")])
 
 ;-----------------------------------------------------------------------------
 ; sub bytes
@@ -2115,33 +2045,6 @@
   [(set_attr "adjust_len" "plus")])
 
 
-(define_insn_and_split "*subhi3.sign_extend2_split"
-  [(set (match_operand:HI 0 "register_operand"                          "=r")
-        (minus:HI (match_operand:HI 1 "register_operand"                 "0")
-                  (sign_extend:HI (match_operand:QI 2 "register_operand" "r"))))]
-  ""
-  "#"
-  "&& reload_completed"
-  [(parallel [(set (match_dup 0)
-                   (minus:HI (match_dup 1)
-                             (sign_extend:HI (match_dup 2))))
-              (clobber (reg:CC REG_CC))])])
-
-
-(define_insn "*subhi3.sign_extend2"
-  [(set (match_operand:HI 0 "register_operand"                          "=r")
-        (minus:HI (match_operand:HI 1 "register_operand"                 "0")
-                  (sign_extend:HI (match_operand:QI 2 "register_operand" "r"))))
-   (clobber (reg:CC REG_CC))]
-  "reload_completed"
-  {
-    return reg_overlap_mentioned_p (operands[0], operands[2])
-      ? "mov __tmp_reg__,%2\;sub %A0,%2\;sbc %B0,__zero_reg__\;sbrc __tmp_reg__,7\;inc %B0"
-      : "sub %A0,%2\;sbc %B0,__zero_reg__\;sbrc %2,7\;inc %B0";
-  }
-  [(set (attr "length")
-        (symbol_ref ("4 + reg_overlap_mentioned_p (operands[0], operands[2])")))])
-
 ;; "subsi3"
 ;; "subsq3" "subusq3"
 ;; "subsa3" "subusa3"
@@ -2170,39 +2073,6 @@
     return avr_out_plus (insn, operands);
   }
   [(set_attr "adjust_len" "plus")])
-
-
-;; "*subhi3.zero_extend.qi_split"
-;; "*subpsi3.zero_extend.qi_split"  "*subpsi3.zero_extend.hi_split"
-;; "*subsi3.zero_extend.qi_split"   "*subsi3.zero_extend.hi_split"
-;; "*subsi3.zero_extend.psi_split"
-(define_insn_and_split "*sub<HISI:mode>3.zero_extend.<QIPSI:mode>_split"
-  [(set (match_operand:HISI 0 "register_operand"             "=r")
-        (minus:HISI (match_operand:HISI 1 "register_operand"  "0")
-                    (zero_extend:HISI (match_operand:QIPSI 2 "register_operand" "r"))))]
-  "GET_MODE_SIZE (<HISI:MODE>mode) > GET_MODE_SIZE (<QIPSI:MODE>mode)"
-  "#"
-  "&& reload_completed"
-  [(parallel [(set (match_dup 0)
-                   (minus:HISI (match_dup 1)
-                               (zero_extend:HISI (match_dup 2))))
-              (clobber (reg:CC REG_CC))])])
-
-;; "*subhi3.zero_extend.qi"
-;; "*subpsi3.zero_extend.qi"  "*subpsi3.zero_extend.hi"
-;; "*subsi3.zero_extend.qi"   "*subsi3.zero_extend.hi"
-;; "*subsi3.zero_extend.psi"
-(define_insn "*sub<HISI:mode>3.zero_extend.<QIPSI:mode>"
-  [(set (match_operand:HISI 0 "register_operand"             "=r")
-        (minus:HISI (match_operand:HISI 1 "register_operand"  "0")
-                    (zero_extend:HISI (match_operand:QIPSI 2 "register_operand" "r"))))
-   (clobber (reg:CC REG_CC))]
-  "reload_completed
-   && GET_MODE_SIZE (<HISI:MODE>mode) > GET_MODE_SIZE (<QIPSI:MODE>mode)"
-  {
-    return avr_out_minus (operands);
-  }
-  [(set_attr "length" "<HISI:SIZE>")])
 
 
 ;******************************************************************************

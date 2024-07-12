@@ -8843,30 +8843,90 @@ lshrsi3_out (rtx_insn *insn, rtx operands[], int *len)
 }
 
 
-/* Output subtraction of integer registers XOP[0] and XOP[2] and return ""
+/* Output addition of registers YOP[0] and YOP[1]
 
-      XOP[0] = XOP[0] - XOP[2]
+      YOP[0] += extend (YOP[1])
 
-   where the mode of XOP[0] is in { HI, PSI, SI }, and the mode of
-   XOP[2] is in { QI, HI, PSI }.  When the mode of XOP[0] is larger
-   than the mode of XOP[2], then the latter is zero-extended on the fly.
-   The number of instructions will be the mode size of XOP[0].  */
+   or subtraction of registers YOP[0] and YOP[2]
+
+      YOP[0] -= extend (YOP[2])
+
+   where the integer modes satisfy  SI >= YOP[0].mode > YOP[1/2].mode >= QI,
+   and the extension may be sign- or zero-extend.  Returns "".
+
+   If PLEN == NULL output the instructions.
+   If PLEN != NULL set *PLEN to the length of the sequence in words.  */
 
 const char *
-avr_out_minus (rtx *xop)
+avr_out_plus_ext (rtx_insn *insn, rtx *yop, int *plen)
 {
-  int n_bytes0 = GET_MODE_SIZE (GET_MODE (xop[0]));
-  int n_bytes2 = GET_MODE_SIZE (GET_MODE (xop[2]));
+  rtx regs[2];
 
-  output_asm_insn ("sub %0,%2", xop);
+  const rtx src = SET_SRC (single_set (insn));
+  const RTX_CODE add = GET_CODE (src);
+  gcc_assert (GET_CODE (src) == PLUS || GET_CODE (src) == MINUS);
+
+  // Use XOP[] in the remainder with XOP[0] = YOP[0] and XOP[1] = YOP[1/2].
+  rtx xop[2] = { yop[0], yop[add == PLUS ? 1 : 2] };
+  const rtx xreg = XEXP (src, add == PLUS ? 1 : 0);
+  const rtx xext = XEXP (src, add == PLUS ? 0 : 1);
+  const RTX_CODE ext = GET_CODE (xext);
+
+  gcc_assert (REG_P (xreg)
+	      && (ext == ZERO_EXTEND || ext == SIGN_EXTEND));
+
+  const int n_bytes0 = GET_MODE_SIZE (GET_MODE (xop[0]));
+  const int n_bytes1 = GET_MODE_SIZE (GET_MODE (xop[1]));
+  rtx msb1 = all_regs_rtx[n_bytes1 - 1 + REGNO (xop[1])];
+
+  const char *const s_ADD = add == PLUS ? "add %0,%1" : "sub %0,%1";
+  const char *const s_ADC = add == PLUS ? "adc %0,%1" : "sbc %0,%1";
+  const char *const s_DEC = add == PLUS
+    ? "adc %0,__zero_reg__"  CR_TAB  "sbrc %1,7"  CR_TAB  "dec %0"
+    : "sbc %0,__zero_reg__"  CR_TAB  "sbrc %1,7"  CR_TAB  "inc %0";
+
+  // A register that containts 8 copies of $1.msb.
+  rtx ext_reg = ext == ZERO_EXTEND ? zero_reg_rtx : NULL_RTX;
+
+  if (plen)
+    *plen = 0;
+
+  if (ext == SIGN_EXTEND
+      && (n_bytes0 > 1 + n_bytes1
+	  || reg_overlap_mentioned_p (msb1, xop[0])))
+    {
+      // Sign-extending more than one byte: Set tmp_reg to 0 or -1
+      // depending on $1.msb. Same for the pathological case where
+      // $0 and $1 overlap.
+
+      regs[0] = ext_reg = tmp_reg_rtx;
+      regs[1] = msb1;
+
+      avr_asm_len ("mov %0,%1"  CR_TAB
+		   "lsl %0"     CR_TAB
+		   "sbc %0,%0", regs, plen, 3);
+    }
+
+  // Adding the bytes of $1 is just plain additions / subtractions.
+  // Same for the extended bytes when we have ext_reg.
+
+  avr_asm_len (s_ADD, xop, plen, 1);
 
   for (int i = 1; i < n_bytes0; ++i)
     {
-      rtx op[2];
-      op[0] = all_regs_rtx[i + REGNO (xop[0])];
-      op[1] = (i < n_bytes2) ? all_regs_rtx[i + REGNO (xop[2])] : zero_reg_rtx;
+      regs[0] = all_regs_rtx[i + REGNO (xop[0])];
+      regs[1] = i < n_bytes1 ? all_regs_rtx[i + REGNO (xop[1])] : ext_reg;
 
-      output_asm_insn ("sbc %0,%1", op);
+      if (! regs[1])
+	{
+	  // Extending just 1 byte:  This is one instruction shorter
+	  // than sign-extending $1.msb to tmp_reg.
+
+	  regs[1] = msb1;
+	  avr_asm_len (s_DEC, regs, plen, 3);
+	}
+      else
+	avr_asm_len (s_ADC, regs, plen, 1);
     }
 
   return "";
@@ -11062,6 +11122,7 @@ avr_adjust_insn_length (rtx_insn *insn, int len)
     case ADJUST_LEN_INSV: avr_out_insv (insn, op, &len); break;
 
     case ADJUST_LEN_PLUS: avr_out_plus (insn, op, &len); break;
+    case ADJUST_LEN_PLUS_EXT: avr_out_plus_ext (insn, op, &len); break;
     case ADJUST_LEN_ADDTO_SP: avr_out_addto_sp (op, &len); break;
 
     case ADJUST_LEN_MOV8:  output_movqi (insn, op, &len); break;
@@ -12699,6 +12760,8 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	  return true;
 	}
 
+      // *add<PSISI:mode>3.zero_extend.<QIPSI:mode>
+      // *addhi3_zero_extend
       if (GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
 	  && REG_P (XEXP (x, 1)))
 	{
@@ -12709,6 +12772,16 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	  && GET_CODE (XEXP (x, 1)) == ZERO_EXTEND)
 	{
 	  *total = COSTS_N_INSNS (GET_MODE_SIZE (mode));
+	  return true;
+	}
+
+      // *add<HISI:mode>3.sign_extend.<QIPSI:mode>
+      if (GET_CODE (XEXP (x, 0)) == SIGN_EXTEND
+	  && REG_P (XEXP (x, 1)))
+	{
+	  int size2 = GET_MODE_SIZE (GET_MODE (XEXP (XEXP (x, 0), 0)));
+	  *total = COSTS_N_INSNS (2 + GET_MODE_SIZE (mode)
+				  + (GET_MODE_SIZE (mode) > 1 + size2));
 	  return true;
 	}
 
@@ -12806,11 +12879,13 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	  *total = COSTS_N_INSNS (GET_MODE_SIZE (mode));
 	  return true;
 	}
-      // *sub<mode>3.sign_extend2
+      // *sub<HISI:mode>3.sign_extend.<QIPSI:mode>
       if (REG_P (XEXP (x, 0))
 	  && GET_CODE (XEXP (x, 1)) == SIGN_EXTEND)
 	{
-	  *total = COSTS_N_INSNS (2 + GET_MODE_SIZE (mode));
+	  int size2 = GET_MODE_SIZE (GET_MODE (XEXP (XEXP (x, 1), 0)));
+	  *total = COSTS_N_INSNS (2 + GET_MODE_SIZE (mode)
+				  + (GET_MODE_SIZE (mode) > 1 + size2));
 	  return true;
 	}
 
