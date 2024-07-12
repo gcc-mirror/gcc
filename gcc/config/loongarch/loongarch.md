@@ -2406,6 +2406,7 @@
   [(set (match_operand:DF 0 "nonimmediate_operand" "=r,r,m")
 	(match_operand:DF 1 "move_operand" "rG,m,rG"))]
   "(TARGET_SOFT_FLOAT || TARGET_SINGLE_FLOAT)
+   && TARGET_64BIT
    && (register_operand (operands[0], DFmode)
        || reg_or_0_operand (operands[1], DFmode))"
   { return loongarch_output_move (operands[0], operands[1]); }

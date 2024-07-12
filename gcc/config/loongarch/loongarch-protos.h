@@ -85,10 +85,7 @@ extern bool loongarch_split_move_p (rtx, rtx);
 extern void loongarch_split_move (rtx, rtx);
 extern bool loongarch_addu16i_imm12_operand_p (HOST_WIDE_INT, machine_mode);
 extern void loongarch_split_plus_constant (rtx *, machine_mode);
-extern void loongarch_split_128bit_move (rtx, rtx);
-extern bool loongarch_split_128bit_move_p (rtx, rtx);
-extern void loongarch_split_256bit_move (rtx, rtx);
-extern bool loongarch_split_256bit_move_p (rtx, rtx);
+extern void loongarch_split_vector_move (rtx, rtx);
 extern const char *loongarch_output_move (rtx, rtx);
 #ifdef RTX_CODE
 extern void loongarch_expand_scc (rtx *);
