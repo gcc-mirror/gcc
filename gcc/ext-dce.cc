@@ -374,13 +374,13 @@ binop_implies_op2_fully_live (rtx_code code)
    exclusively pertain to the first operand.  */
 
 HOST_WIDE_INT
-carry_backpropagate (HOST_WIDE_INT mask, enum rtx_code code, rtx x)
+carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
 {
   if (mask == 0)
     return 0;
 
   enum machine_mode mode = GET_MODE_INNER (GET_MODE (x));
-  HOST_WIDE_INT mmask = GET_MODE_MASK (mode);
+  unsigned HOST_WIDE_INT mmask = GET_MODE_MASK (mode);
   switch (code)
     {
     case PLUS:
