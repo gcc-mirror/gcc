@@ -1,3 +1,22 @@
+2024-07-11  Ian Lance Taylor  <iant@golang.org>
+
+	* btest.c (test1, test3): Add optnone attribute.
+	* edtest.c (test1): Likewise.
+	* mtest.c (test1, test3): Likewise.
+	* configure.ac: Use -Wno-attributes and -Wno-unknown-attributes.
+	* configure: Regenerate.
+
+2024-07-11  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_nodebug): Suggest -g.
+	* macho.c (macho_nodebug): Suggest -g and dsymutil.
+	* pecoff.c (coff_nodebug): Suggest -g.
+
+2024-07-11  Ian Lance Taylor  <iant@golang.org>
+
+	* dwarf.c: Remove trailing whitespace.
+	* macho.c: Likewise.
+
 2024-06-16  Ian Lance Taylor  <iant@golang.org>
 
 	* elf.c (elf_fetch_bits_backward) Don't fail if no bits are

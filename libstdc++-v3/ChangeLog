@@ -1,3 +1,26 @@
+2024-07-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/29_atomics/atomic_ref/bool.cc: New test.
+
+2024-07-11  Damien Lebrun-Grandie  <dalg24@gmail.com>
+
+	* include/bits/atomic_base.h (__atomic_ref): Do not use integral
+	specialization for bool.
+
+2024-07-11  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/using.xml: Switch gcc.gnu.org links to https.
+	* doc/html/manual/using_concurrency.html: Regenerate.
+	* doc/html/manual/using_dynamic_or_shared.html: Ditto.
+	* doc/html/manual/using_headers.html: Ditto.
+	* doc/html/manual/using_namespaces.html: Ditto.
+
+2024-07-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108636
+	* testsuite/27_io/filesystem/path/108636.cc: Require normal
+	mode.
+
 2024-07-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/114387

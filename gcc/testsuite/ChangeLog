@@ -1,3 +1,67 @@
+2024-07-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_su64.c: New test.
+
+2024-07-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/115782
+	* gcc.dg/pr115782.c: New test.
+
+2024-07-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/array42.adb, gnat.dg/array42_pkg.ads: New test.
+
+2024-07-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/torture/sub-zerox.c: New test.
+
+2024-07-11  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/99241
+	* g++.dg/modules/pr99241_a.H: New test.
+	* g++.dg/modules/pr99241_b.H: New test.
+	* g++.dg/modules/pr99241_c.C: New test.
+
+2024-07-11  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_arith.h: Add test
+	helper macros.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_data.h: Add test
+	data for .SAT_SUB in zip benchmark.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_binary_vx.h: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub_zip-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub_zip.c: New test.
+
+2024-07-11  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/96992
+	* gfortran.dg/class_dummy_11.f90: New test.
+
+2024-07-11  Jørgen Kvalsvik  <j@lambda.is>
+
+	* lib/gcov.exp: Add filtering test function.
+	* g++.dg/gcov/gcov-19.C: New test.
+	* g++.dg/gcov/gcov-20.C: New test.
+	* g++.dg/gcov/gcov-21.C: New test.
+	* gcc.misc-tests/gcov-25.c: New test.
+	* gcc.misc-tests/gcov-26.c: New test.
+	* gcc.misc-tests/gcov-27.c: New test.
+	* gcc.misc-tests/gcov-28.c: New test.
+
+2024-07-11  Fei Gao  <gaofei@eswincomputing.com>
+
+	* gcc.target/riscv/attribute-15.c: adapt TC.
+	* gcc.target/riscv/attribute-16.c: likewise.
+	* gcc.target/riscv/attribute-17.c: likewise.
+	* gcc.target/riscv/attribute-18.c: likewise.
+	* gcc.target/riscv/pr110696.c: likewise.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-1-zcmp.c: likewise.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-2-zcmp.c: likewise.
+	* gcc.target/riscv/rvv/base/pr114352-1.c: likewise.
+	* gcc.target/riscv/rvv/base/pr114352-3.c: likewise.
+	* gcc.target/riscv/arch-39.c: New test.
+	* gcc.target/riscv/arch-40.c: New test.
+
 2024-07-10  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/concepts/auto3.C: Compile with -fconcepts.  Run in C++17 and

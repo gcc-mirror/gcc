@@ -1,3 +1,14 @@
+2024-07-11  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/96992
+	* Makefile.am: Add in_un-/pack_class.c to build.
+	* Makefile.in: Regenerated from Makefile.am.
+	* gfortran.map: Added new functions and bumped ABI.
+	* libgfortran.h (GFC_CLASS_T): Added for generating class
+	representation at runtime.
+	* runtime/in_pack_class.c: New file.
+	* runtime/in_unpack_class.c: New file.
+
 2024-06-06  Thomas Schwinge  <tschwinge@baylibre.com>
 	    Andrew Stubbs  <ams@gcc.gnu.org>
 

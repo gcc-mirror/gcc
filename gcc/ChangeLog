@@ -1,3 +1,81 @@
+2024-07-11  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv-string.cc
+	(emit_strcmp_scalar_compare_byte): Set RESULT directly rather
+	than using a new temporary.
+	(emit_strcmp_scalar_result_calculation_nonul): Likewise.
+	(emit_strcmp_scalar_result_calculation): Likewise.
+	(riscv_expand_strcmp_scalar): Use CONST0_RTX rather than
+	generating a new node.
+	(expand_strcmp): Copy directly from SUB to RESULT.
+	* config/riscv/riscv.md (cmpstrnsi, cmpstrsi): Pass an X
+	mode temporary to the expansion routines.  If necessary
+	extract low part of the word to store in final result location.
+
+2024-07-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* value-range.h (class int_range): Mark as final.
+	(class prange): Likewise.
+	(class frange): Likewise.
+
+2024-07-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/115611
+	* config/arm/mve.md (mve_vec_setv2di_internal): Fix printing of input
+	scalar register pair when lane = 1.
+
+2024-07-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/115782
+	* recog.cc (validate_change_1): Suppress early exit for no-op
+	changes that are part of a group.
+
+2024-07-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.cc (gimplify_scalar_mode_aggregate_compare): Add support
+	for ordering comparisons.
+	(gimplify_expr) <default>: Call gimplify_scalar_mode_aggregate_compare
+	only for integral scalar modes.
+
+2024-07-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-protos.h (avr_out_minus): New prototype.
+	* config/avr/avr.cc (avr_out_minus): New function.
+	* config/avr/avr.md (*sub<HISI:mode>3.zero_extend.<QIPSI:mode>)
+	(*sub<HISI:mode>3.zero_extend.<QIPSI:mode>_split): New insns.
+	(*subpsi3_zero_extend.qi_split): Remove isns_and_split.
+	(*subpsi3_zero_extend.hi_split): Remove insn_and_split.
+	(*subhi3_zero_extend1_split): Remove insn_and_split.
+	(*subsi3_zero_extend_split): Remove insn_and_split.
+	(*subsi3_zero_extend.hi_split): Remove insn_and_split.
+	(*subpsi3_zero_extend.qi): Remove insn.
+	(*subpsi3_zero_extend.hi): Remove insn.
+	(*subhi3_zero_extend1): Remove insn.
+	(*subsi3_zero_extend): Remove insn.
+	(*subsi3_zero_extend.hi): Remove insn.
+
+2024-07-11  Jørgen Kvalsvik  <j@lambda.is>
+
+	* doc/gcov.texi: Add --include, --exclude, --match-on-demangled
+	documentation.
+	* gcov.cc (struct fnfilter): New.
+	(print_usage): Add --include, --exclude, -M,
+	--match-on-demangled.
+	(process_args): Likewise.
+	(release_structures): Release filters.
+	(read_graph_file): Only add function_infos matching filters.
+	(output_lines): Likewise.
+
+2024-07-11  Jørgen Kvalsvik  <j@lambda.is>
+
+	* gcov.cc (process_all_functions): Ensure fn.end_line is
+	included source[fn].lines.
+
+2024-07-11  Fei Gao  <gaofei@eswincomputing.com>
+
+	* common/config/riscv/riscv-common.cc:
+	c implies zca, and conditionally zcf & zcd.
+
 2024-07-10  Pan Li  <pan2.li@intel.com>
 
 	* tree-vect-patterns.cc (vect_recog_sat_sub_pattern_transform):

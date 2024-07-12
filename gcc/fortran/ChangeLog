@@ -1,3 +1,43 @@
+2024-07-11  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* trans-array.cc (gfc_conv_array_parameter): Init variable to
+	NULL_TREE to fix bootstrap.
+
+2024-07-11  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/96992
+	* trans-array.cc (gfc_trans_array_bounds): Set a starting
+	stride, when descriptor expects a variable for the stride.
+	(gfc_trans_dummy_array_bias): Allow storage association for
+	dummy class arrays, when they are not elemental.
+	(gfc_conv_array_parameter): Add more general class support
+	and packing for classes, too.
+	* trans-array.h (gfc_conv_array_parameter): Add lbound shift
+	for class arrays.
+	* trans-decl.cc (gfc_build_builtin_function_decls): Add decls
+	for internal_un-/pack_class.
+	* trans-expr.cc (gfc_reset_vptr): Allow supplying a type-tree
+	to generate the vtab from.
+	(gfc_class_set_vptr): Allow supplying a class-tree to take the
+	vptr from.
+	(class_array_data_assign): Rename to gfc_class_array_data_assign
+	and make usable from other compile units.
+	(gfc_class_array_data_assign): Renamed from class_array_data_
+	assign.
+	(gfc_conv_derived_to_class): Remove assert to
+	allow converting derived to class type arrays with assumed
+	rank.  Reduce code base and use gfc_conv_array_parameter also
+	for classes.
+	(gfc_conv_class_to_class): Use gfc_class_data_assign.
+	(gfc_conv_procedure_call): Adapt to new signature of
+	gfc_conv_derived_to_class.
+	* trans-io.cc (transfer_expr): Same.
+	* trans-stmt.cc (trans_associate_var): Same.
+	* trans.h (gfc_conv_derived_to_class): Signature changed.
+	(gfc_class_array_data_assign): Made public.
+	(gfor_fndecl_in_pack_class): Added declaration.
+	(gfor_fndecl_in_unpack_class): Same.
+
 2024-07-08  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* trans-array.cc (gfc_trans_preloop_setup): Use a separate variable
