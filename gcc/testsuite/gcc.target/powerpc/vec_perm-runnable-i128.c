@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target  int128 } } */
 /* { dg-require-effective-target vmx_hw } */
 /* { dg-options "-maltivec -O2 " } */
 

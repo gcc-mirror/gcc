@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target int128 } } */
 /* { dg-options "-O2 -maltivec" } */
 /* { dg-require-effective-target powerpc_altivec } */
 /* { dg-final { scan-assembler-times "xxsel" 6 } } */
