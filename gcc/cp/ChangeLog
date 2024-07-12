@@ -1,3 +1,11 @@
+2024-07-11  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2024-07-11  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/99241
+	* decl.cc (duplicate_decls): Merge module entity information.
+
 2024-07-04  Tamar Christina  <tamar.christina@arm.com>
 
 	Backported from master:

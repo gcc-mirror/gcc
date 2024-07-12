@@ -1,3 +1,20 @@
+2024-07-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backported from master:
+	2024-07-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_su64.c: New test.
+
+2024-07-11  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2024-07-11  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/99241
+	* g++.dg/modules/pr99241_a.H: New test.
+	* g++.dg/modules/pr99241_b.H: New test.
+	* g++.dg/modules/pr99241_c.C: New test.
+
 2024-07-10  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	Backported from master:
