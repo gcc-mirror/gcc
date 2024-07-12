@@ -9,6 +9,7 @@ main ()
 
   for (i = 0; i < sizeof (DATA) / sizeof (DATA[0]); i++)
     {
+      d = DATA[i];
       RUN_BINARY_VX (&d.x[N], d.b, N);
 
       for (k = 0; k < N; k++)
