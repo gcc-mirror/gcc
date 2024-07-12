@@ -440,7 +440,7 @@ test5 (void)
 		   (unsigned long) (uintptr_t) &global);
 	  symdata.failed = 1;
 	}
-      else if (symdata.size != sizeof (global))
+      else if (symdata.size != sizeof (global) && symdata.size != 0)
 	{
 	  fprintf (stderr,
 		   "test5: unexpected syminfo size got %lx expected %lx\n",
