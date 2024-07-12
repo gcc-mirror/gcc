@@ -5869,7 +5869,8 @@ rs6000_machine_from_flags (void)
   HOST_WIDE_INT flags = rs6000_isa_flags;
 
   /* Disable the flags that should never influence the .machine selection.  */
-  flags &= ~(OPTION_MASK_PPC_GFXOPT | OPTION_MASK_PPC_GPOPT | OPTION_MASK_ISEL);
+  flags &= ~(OPTION_MASK_PPC_GFXOPT | OPTION_MASK_PPC_GPOPT | OPTION_MASK_ISEL
+	     | OPTION_MASK_ALTIVEC);
 
   if ((flags & (ISA_3_1_MASKS_SERVER & ~ISA_3_0_MASKS_SERVER)) != 0)
     return "power10";
@@ -5894,6 +5895,8 @@ void
 emit_asm_machine (void)
 {
   fprintf (asm_out_file, "\t.machine %s\n", rs6000_machine);
+  if (TARGET_ALTIVEC)
+    fprintf (asm_out_file, "\t.machine altivec\n");
 }
 #endif
 
