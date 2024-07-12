@@ -190,7 +190,6 @@ package Einfo.Utils is
    function Is_Dynamic_Scope (Id : E) return B;
    function Is_Elaboration_Target (Id : E) return B;
    function Is_External_State (Id : E) return B;
-   function Is_Finalizer (Id : E) return B with Inline;
    function Is_Full_Access (Id : E) return B with Inline;
    function Is_Null_State (Id : E) return B;
    function Is_Package_Or_Generic_Package (Id : E) return B with Inline;

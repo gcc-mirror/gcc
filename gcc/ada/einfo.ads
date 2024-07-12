@@ -2647,7 +2647,7 @@ package Einfo is
 --       the transient finalization mechanisms. The flag prevents the double
 --       finalization of the object.
 
---    Is_Finalizer (synthesized)
+--    Is_Finalizer
 --       Applies to all entities, true for procedures containing finalization
 --       code to process local or library level objects.
 

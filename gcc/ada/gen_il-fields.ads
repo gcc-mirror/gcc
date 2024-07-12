@@ -708,6 +708,7 @@ package Gen_IL.Fields is
       Is_Exception_Handler,
       Is_Exported,
       Is_Finalized_Transient,
+      Is_Finalizer,
       Is_First_Subtype,
       Is_Fixed_Lower_Bound_Array_Subtype,
       Is_Fixed_Lower_Bound_Index_Subtype,

@@ -146,6 +146,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Is_Entry_Formal, Flag),
         Sm (Is_Entry_Wrapper, Flag),
         Sm (Is_Exported, Flag),
+        Sm (Is_Finalizer, Flag),
         Sm (Is_First_Subtype, Flag),
         Sm (Is_Formal_Subprogram, Flag),
         Sm (Is_Frozen, Flag),

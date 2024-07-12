@@ -1979,6 +1979,7 @@ package body Exp_Ch7 is
             Fin_Id :=
               Make_Defining_Identifier (Loc,
                 Chars => New_External_Name (Name_uFinalizer));
+            Set_Is_Finalizer (Fin_Id);
 
             --  The visibility semantics of At_End handlers force a strange
             --  separation of spec and body for stack-related finalizers:

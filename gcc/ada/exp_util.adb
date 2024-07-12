@@ -14525,6 +14525,16 @@ package body Exp_Util is
       return Target;
    end Thunk_Target;
 
+   -----------------------
+   -- Try_Inline_Always --
+   -----------------------
+
+   function Try_Inline_Always (Subp : Entity_Id) return Boolean is
+     ((Is_Expression_Function (Subp) or else Is_Finalizer (Subp))
+       and then not Debug_Flag_Dot_8);
+   --  We want to inline expression functions and finalizers as much as
+   --  practical unless -gnatd.8.
+
    -------------------
    -- Type_Map_Hash --
    -------------------
