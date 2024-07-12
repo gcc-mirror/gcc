@@ -24,9 +24,9 @@ bar ()
   f = vec_genmasks_32 (6, 5);
 }
 
-/* a + f: { dg-final { scan-assembler-times "vone" 2 } } */
-/* b: { dg-final { scan-assembler-times "vgmf\t%v.*,0,0" 1 } } */
-/* c: { dg-final { scan-assembler-times "vgmf\t%v.*,31,31" 1 } } */
-/* d: { dg-final { scan-assembler-times "vgmf\t%v.*,5,5" 1 } } */
-/* e: { dg-final { scan-assembler-times "vgmf\t%v.*,31,0" 1 } } */
-/* b - e: { dg-final { scan-assembler-times "vgmf" 4 } } */
+/* a + f: { dg-final { scan-assembler-times {vone} 2 } } */
+/* b: { dg-final { scan-assembler-times {vgm\t%v.*,0,0,2} 1 } } */
+/* c: { dg-final { scan-assembler-times {vgm\t%v.*,31,31,2} 1 } } */
+/* d: { dg-final { scan-assembler-times {vgm\t%v.*,5,5,2} 1 } } */
+/* e: { dg-final { scan-assembler-times {vgm\t%v.*,31,0,2} 1 } } */
+/* b - e: { dg-final { scan-assembler-times {vgm\t%v[0-9]+,[0-9]+,[0-9]+,2} 4 } } */

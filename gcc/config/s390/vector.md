@@ -249,7 +249,7 @@
 ; vgmb, vgmh, vgmf, vgmg, vrepib, vrepih, vrepif, vrepig
 (define_insn "mov<mode><tf_vr>"
   [(set (match_operand:V_128 0 "nonimmediate_operand" "=v,v,R,  v,  v,  v,  v,  v,v,*d,*d,?o")
-	(match_operand:V_128 1 "general_operand"      " v,R,v,j00,jm1,jyy,jxx,jKK,d, v,dT,*d"))]
+	(match_operand:V_128 1 "general_operand"      " v,R,v,j00,jm1,jyy,jxx,jzz,d, v,dT,*d"))]
   ""
   "@
    vlr\t%v0,%v1
@@ -257,9 +257,9 @@
    vst\t%v1,%0%A0
    vzero\t%v0
    vone\t%v0
-   vgbm\t%v0,%t1
-   vgm<bhfgq>\t%v0,%s1,%e1
-   vrepi<bhfgq>\t%v0,%h1
+   vgbm\t%v0,%r1
+   vgm\t%v0,%q1
+   vrepi\t%v0,%p1
    vlvgp\t%v0,%1,%N1
    #
    #
@@ -352,8 +352,8 @@
 ; However, this would probably be slower.
 
 (define_insn "mov<mode>"
-  [(set (match_operand:V_8 0 "nonimmediate_operand" "=v,v,d,v,R,  v,  v,  v,  v,d,  Q,  S,  Q,  S,  d,  d,d,R,T")
-        (match_operand:V_8 1 "general_operand"      " v,d,v,R,v,j00,jm1,jyy,jxx,d,j00,j00,jm1,jm1,j00,jm1,T,d,d"))]
+  [(set (match_operand:V_8 0 "nonimmediate_operand" "=v,v,d,v,R,  v,  v,  v,  v,  v,d,  Q,  S,  Q,  S,  d,  d,d,R,T")
+        (match_operand:V_8 1 "general_operand"      " v,d,v,R,v,j00,jm1,jyy,jxx,jzz,d,j00,j00,jm1,jm1,j00,jm1,T,d,d"))]
   "TARGET_VX"
   "@
    vlr\t%v0,%v1
@@ -363,8 +363,9 @@
    vsteb\t%v1,%0,0
    vzero\t%v0
    vone\t%v0
-   vgbm\t%v0,%t1
-   vgm\t%v0,%s1,%e1
+   vgbm\t%v0,%r1
+   vgm\t%v0,%q1
+   vrepi\t%v0,%p1
    lr\t%0,%1
    mvi\t%0,0
    mviy\t%0,0
@@ -375,11 +376,11 @@
    llc\t%0,%1
    stc\t%1,%0
    stcy\t%1,%0"
-  [(set_attr "op_type"      "VRR,VRS,VRS,VRX,VRX,VRI,VRI,VRI,VRI,RR,SI,SIY,SI,SIY,RI,RI,RXY,RX,RXY")])
+  [(set_attr "op_type"      "VRR,VRS,VRS,VRX,VRX,VRI,VRI,VRI,VRI,VRI,RR,SI,SIY,SI,SIY,RI,RI,RXY,RX,RXY")])
 
 (define_insn "mov<mode>"
-  [(set (match_operand:V_16 0 "nonimmediate_operand" "=v,v,d,v,R,  v,  v,  v,  v,d,  Q,  Q,  d,  d,d,d,d,R,T,b")
-        (match_operand:V_16 1 "general_operand"      " v,d,v,R,v,j00,jm1,jyy,jxx,d,j00,jm1,j00,jm1,R,T,b,d,d,d"))]
+  [(set (match_operand:V_16 0 "nonimmediate_operand" "=v,v,d,v,R,  v,  v,  v,  v,  v,d,  Q,  Q,  d,  d,d,d,d,R,T,b")
+        (match_operand:V_16 1 "general_operand"      " v,d,v,R,v,j00,jm1,jyy,jxx,jzz,d,j00,jm1,j00,jm1,R,T,b,d,d,d"))]
   ""
   "@
    vlr\t%v0,%v1
@@ -389,8 +390,9 @@
    vsteh\t%v1,%0,0
    vzero\t%v0
    vone\t%v0
-   vgbm\t%v0,%t1
-   vgm\t%v0,%s1,%e1
+   vgbm\t%v0,%r1
+   vgm\t%v0,%q1
+   vrepi\t%v0,%p1
    lr\t%0,%1
    mvhhi\t%0,0
    mvhhi\t%0,-1
@@ -402,11 +404,11 @@
    sth\t%1,%0
    sthy\t%1,%0
    sthrl\t%1,%0"
-  [(set_attr "op_type"      "VRR,VRS,VRS,VRX,VRX,VRI,VRI,VRI,VRI,RR,SIL,SIL,RI,RI,RX,RXY,RIL,RX,RXY,RIL")])
+  [(set_attr "op_type"      "VRR,VRS,VRS,VRX,VRX,VRI,VRI,VRI,VRI,VRI,RR,SIL,SIL,RI,RI,RX,RXY,RIL,RX,RXY,RIL")])
 
 (define_insn "mov<mode>"
-  [(set (match_operand:V_32 0 "nonimmediate_operand" "=f,f,f,R,T,v,v,d,v,R,  f,  v,  v,  v,  v,  Q,  Q,  d,  d,d,d,d,d,R,T,b")
-	(match_operand:V_32 1 "general_operand"      " f,R,T,f,f,v,d,v,R,v,j00,j00,jm1,jyy,jxx,j00,jm1,j00,jm1,b,d,R,T,d,d,d"))]
+  [(set (match_operand:V_32 0 "nonimmediate_operand" "=f,f,f,R,T,v,v,d,v,R,  f,  v,  v,  v,  v,  v,  Q,  Q,  d,  d,d,d,d,d,R,T,b")
+	(match_operand:V_32 1 "general_operand"      " f,R,T,f,f,v,d,v,R,v,j00,j00,jm1,jyy,jxx,jzz,j00,jm1,j00,jm1,b,d,R,T,d,d,d"))]
   "TARGET_VX"
   "@
    ldr\t%v0,%v1
@@ -422,8 +424,9 @@
    lzer\t%v0
    vzero\t%v0
    vone\t%v0
-   vgbm\t%v0,%t1
-   vgm\t%v0,%s1,%e1
+   vgbm\t%v0,%r1
+   vgm\t%v0,%q1
+   vrepi\t%v0,%p1
    mvhi\t%0,0
    mvhi\t%0,-1
    lhi\t%0,0
@@ -435,14 +438,14 @@
    st\t%1,%0
    sty\t%1,%0
    strl\t%1,%0"
-  [(set_attr "op_type" "RR,RXE,RXY,RX,RXY,VRR,VRS,VRS,VRX,VRX,RRE,VRI,VRI,VRI,VRI,SIL,SIL,RI,RI,
+  [(set_attr "op_type" "RR,RXE,RXY,RX,RXY,VRR,VRS,VRS,VRX,VRX,RRE,VRI,VRI,VRI,VRI,VRI,SIL,SIL,RI,RI,
                         RIL,RR,RX,RXY,RX,RXY,RIL")])
 
 (define_insn "mov<mode>"
   [(set (match_operand:V_64 0 "nonimmediate_operand"
-         "=f,f,f,R,T,v,v,d,v,R,  f,  v,  v,  v,  v,  Q,  Q,  d,  d,f,d,d,d,d,T,b")
+         "=f,f,f,R,T,v,v,d,v,R,  f,  v,  v,  v,  v,  v,  Q,  Q,  d,  d,f,d,d,d,d,T,b")
         (match_operand:V_64 1 "general_operand"
-         " f,R,T,f,f,v,d,v,R,v,j00,j00,jm1,jyy,jxx,j00,jm1,j00,jm1,d,f,b,d,T,d,d"))]
+         " f,R,T,f,f,v,d,v,R,v,j00,j00,jm1,jyy,jxx,jzz,j00,jm1,j00,jm1,d,f,b,d,T,d,d"))]
   "TARGET_ZARCH"
   "@
    ldr\t%0,%1
@@ -458,8 +461,9 @@
    lzdr\t%0
    vzero\t%v0
    vone\t%v0
-   vgbm\t%v0,%t1
-   vgm\t%v0,%s1,%e1
+   vgbm\t%v0,%r1
+   vgm\t%v0,%q1
+   vrepi\t%v0,%p1
    mvghi\t%0,0
    mvghi\t%0,-1
    lghi\t%0,0
@@ -471,7 +475,7 @@
    lg\t%0,%1
    stg\t%1,%0
    stgrl\t%1,%0"
-  [(set_attr "op_type" "RRE,RX,RXY,RX,RXY,VRR,VRS,VRS,VRX,VRX,RRE,VRI,VRI,VRI,VRI,
+  [(set_attr "op_type" "RRE,RX,RXY,RX,RXY,VRR,VRS,VRS,VRX,VRX,RRE,VRI,VRI,VRI,VRI,VRI,
                         SIL,SIL,RI,RI,RRE,RRE,RIL,RR,RXY,RXY,RIL")])
 
 
