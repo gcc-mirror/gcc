@@ -194,7 +194,14 @@ TypeCheckExpr::visit (HIR::CallExpr &expr)
 	  HirId variant_id;
 	  bool ok = context->lookup_variant_definition (
 	    expr.get_fnexpr ()->get_mappings ().get_hirid (), &variant_id);
-	  rust_assert (ok);
+
+	  if (!ok)
+	    {
+	      rust_error_at (expr.get_locus (), ErrorCode::E0423,
+			     "expected function, tuple struct or tuple "
+			     "variant, found enum");
+	      return;
+	    }
 
 	  TyTy::VariantDef *lookup_variant = nullptr;
 	  ok = adt->lookup_variant_by_id (variant_id, &lookup_variant);
