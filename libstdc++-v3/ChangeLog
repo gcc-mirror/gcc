@@ -1,3 +1,15 @@
+2024-07-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-04-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105417
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* src/c++11/compatibility-ldbl-alt128.cc [_GLIBCXX_USE_DUAL_ABI]:
+	Define __gnu_ieee128::num_get<C>::_M_extract_int[abi:cxx11]<I>
+	symbols as aliases for corresponding symbols without abi-tag.
+
 2024-07-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
