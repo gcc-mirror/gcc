@@ -70,6 +70,8 @@ along with GCC; see the file COPYING3.  If not see
 /* This is enum SYM_ENUM_e in Microsoft's cvinfo.h.  */
 
 enum cv_sym_type {
+  S_END = 0x0006,
+  S_BLOCK32 = 0x1103,
   S_LDATA32 = 0x110c,
   S_GDATA32 = 0x110d,
   S_COMPILE3 = 0x113c,
@@ -986,6 +988,260 @@ end:
   free (s->data_symbol.name);
 }
 
+/* Write an S_LDATA32 symbol, representing a static variable within a function.
+   This symbol can also appear outside of a function block - see
+   write_data_symbol.  */
+
+static void
+write_local_s_ldata32 (dw_die_ref die, dw_loc_descr_ref loc_ref)
+{
+  unsigned int label_num = ++sym_label_num;
+  const char *name = get_AT_string (die, DW_AT_name);
+  uint32_t type;
+
+  /* This is struct datasym in binutils:
+
+      struct datasym
+      {
+	uint16_t size;
+	uint16_t kind;
+	uint32_t type;
+	uint32_t offset;
+	uint16_t section;
+	char name[];
+      } ATTRIBUTE_PACKED;
+  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	       "%L" SYMBOL_END_LABEL "%u - %L" SYMBOL_START_LABEL "%u\n",
+	       label_num, label_num);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_START_LABEL, label_num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, S_LDATA32);
+  putc ('\n', asm_out_file);
+
+  type = get_type_num (get_AT_ref (die, DW_AT_type), false, false);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, type);
+  putc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "\t.secrel32 ");
+  output_addr_const (asm_out_file, loc_ref->dw_loc_oprnd1.v.val_addr);
+  fputc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "\t.secidx ");
+  output_addr_const (asm_out_file, loc_ref->dw_loc_oprnd1.v.val_addr);
+  fputc ('\n', asm_out_file);
+
+  ASM_OUTPUT_ASCII (asm_out_file, name, strlen (name) + 1);
+
+  ASM_OUTPUT_ALIGN (asm_out_file, 2);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+}
+
+/* Write a symbol representing an unoptimized variable within a function, if
+   we're able to translate the DIE's DW_AT_location into its CodeView
+   equivalent.  */
+
+static void
+write_unoptimized_local_variable (dw_die_ref die)
+{
+  dw_attr_node *loc;
+  dw_loc_descr_ref loc_ref;
+
+  loc = get_AT (die, DW_AT_location);
+  if (!loc)
+    return;
+
+  if (loc->dw_attr_val.val_class != dw_val_class_loc)
+    return;
+
+  loc_ref = loc->dw_attr_val.v.val_loc;
+  if (!loc_ref)
+    return;
+
+  switch (loc_ref->dw_loc_opc)
+    {
+    case DW_OP_addr:
+      write_local_s_ldata32 (die, loc_ref);
+      break;
+
+    default:
+      break;
+    }
+}
+
+/* Translate a DW_TAG_lexical_block DIE into an S_BLOCK32 symbol, representing
+   a block within an unoptimized function.  Returns false if we're not able
+   to resolve the location, which will prevent the caller from issuing an
+   unneeded S_END.  */
+
+static bool
+write_s_block32 (dw_die_ref die)
+{
+  unsigned int label_num = ++sym_label_num;
+  dw_attr_node *loc_low, *loc_high;
+  const char *label_low, *label_high;
+  rtx rtx_low, rtx_high;
+
+  /* This is struct blocksym in binutils and BLOCKSYM32 in Microsoft's
+     cvinfo.h:
+
+    struct blocksym
+    {
+      uint16_t size;
+      uint16_t kind;
+      uint32_t parent;
+      uint32_t end;
+      uint32_t len;
+      uint32_t offset;
+      uint16_t section;
+      char name[];
+    } ATTRIBUTE_PACKED;
+  */
+
+  loc_low = get_AT (die, DW_AT_low_pc);
+  if (!loc_low)
+    return false;
+
+  if (loc_low->dw_attr_val.val_class != dw_val_class_lbl_id)
+    return false;
+
+  label_low = loc_low->dw_attr_val.v.val_lbl_id;
+  if (!label_low)
+    return false;
+
+  rtx_low = gen_rtx_SYMBOL_REF (Pmode, label_low);
+
+  loc_high = get_AT (die, DW_AT_high_pc);
+  if (!loc_high)
+    return false;
+
+  if (loc_high->dw_attr_val.val_class != dw_val_class_high_pc)
+    return false;
+
+  label_high = loc_high->dw_attr_val.v.val_lbl_id;
+  if (!label_high)
+    return false;
+
+  rtx_high = gen_rtx_SYMBOL_REF (Pmode, label_high);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	       "%L" SYMBOL_END_LABEL "%u - %L" SYMBOL_START_LABEL "%u\n",
+	       label_num, label_num);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_START_LABEL, label_num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, S_BLOCK32);
+  putc ('\n', asm_out_file);
+
+  /* The parent and end fields get filled in by the linker.  */
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  output_addr_const (asm_out_file, rtx_high);
+  fputs (" - ", asm_out_file);
+  output_addr_const (asm_out_file, rtx_low);
+  putc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "\t.secrel32 ");
+  output_addr_const (asm_out_file, rtx_low);
+  fputc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "\t.secidx ");
+  output_addr_const (asm_out_file, rtx_low);
+  fputc ('\n', asm_out_file);
+
+  ASM_OUTPUT_ASCII (asm_out_file, "", 1);
+
+  ASM_OUTPUT_ALIGN (asm_out_file, 2);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+
+  return true;
+}
+
+/* Write an S_END symbol, which is used to finish off a number of different
+   symbol types.  Here we use it to mark the S_BLOCK32 as finished.  */
+
+static void
+write_s_end (void)
+{
+  unsigned int label_num = ++sym_label_num;
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	       "%L" SYMBOL_END_LABEL "%u - %L" SYMBOL_START_LABEL "%u\n",
+	       label_num, label_num);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_START_LABEL, label_num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, S_END);
+  putc ('\n', asm_out_file);
+
+  ASM_OUTPUT_ALIGN (asm_out_file, 2);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+}
+
+/* Loop through the DIEs in an unoptimized function, writing out any variables
+   or blocks that we encounter.  */
+
+static void
+write_unoptimized_function_vars (dw_die_ref die)
+{
+  dw_die_ref first_child, c;
+
+  first_child = dw_get_die_child (die);
+
+  if (!first_child)
+    return;
+
+  c = first_child;
+  do
+  {
+    c = dw_get_die_sib (c);
+
+    switch (dw_get_die_tag (c))
+      {
+      case DW_TAG_variable:
+	write_unoptimized_local_variable (c);
+	break;
+
+      case DW_TAG_lexical_block:
+	{
+	  bool block_started = write_s_block32 (c);
+
+	  write_unoptimized_function_vars (c);
+
+	  if (block_started)
+	    write_s_end ();
+
+	  break;
+	}
+
+      default:
+	break;
+      }
+  }
+  while (c != first_child);
+}
+
 /* Write an S_GPROC32_ID symbol, representing a global function, or an
    S_LPROC32_ID symbol, for a static function.  */
 
@@ -1110,6 +1366,8 @@ write_function (codeview_symbol *s)
   ASM_OUTPUT_ALIGN (asm_out_file, 2);
 
   targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+
+  write_unoptimized_function_vars (s->function.die);
 
   /* Output the S_PROC_ID_END record.  */
 
