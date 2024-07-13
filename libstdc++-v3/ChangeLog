@@ -1,3 +1,23 @@
+2024-07-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113376
+	* include/pstl/pstl_config.h: Use #if instead of #ifdef to test
+	the _PSTL_USAGE_WARNINGS macro.
+
+2024-07-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115522
+	* include/std/array (to_array): Workaround the fact that
+	std::is_trivial is not sufficient to check that a type is
+	trivially default constructible and assignable.
+	* testsuite/23_containers/array/creation/115522.cc: New test.
+
 2024-07-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

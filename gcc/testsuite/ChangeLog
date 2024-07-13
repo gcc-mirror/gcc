@@ -1,3 +1,18 @@
+2024-07-12  YunQiang Su  <yunqiang@isrc.iscas.ac.cn>
+
+	Backported from master:
+	2024-07-12  YunQiang Su  <yunqiang@isrc.iscas.ac.cn>
+
+	* gcc.dg/vect/pr115840.c: New testcase.
+
+2024-07-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-05-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/103312
+	* gfortran.dg/pr103312.f90: New test.
+
 2024-07-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Backported from master:

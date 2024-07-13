@@ -1,3 +1,12 @@
+2024-07-12  YunQiang Su  <yunqiang@isrc.iscas.ac.cn>
+
+	Backported from master:
+	2024-07-12  YunQiang Su  <yunqiang@isrc.iscas.ac.cn>
+
+	PR target/115840
+	* config/riscv/riscv.cc(riscv_preferred_else_value): Mark
+	tmp_var as NO_WARNING.
+
 2024-07-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Backported from master:
