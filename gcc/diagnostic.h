@@ -466,6 +466,10 @@ public:
   }
   void set_show_cwe (bool val) { m_show_cwe = val;  }
   void set_show_rules (bool val) { m_show_rules = val; }
+  void set_show_highlight_colors (bool val)
+  {
+    pp_show_highlight_colors (printer) = val;
+  }
   void set_path_format (enum diagnostic_path_format val)
   {
     m_path_format = val;

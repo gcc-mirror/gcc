@@ -2992,6 +2992,10 @@ common_handle_option (struct gcc_options *opts,
       dc->set_escape_format ((enum diagnostics_escape_format)value);
       break;
 
+    case OPT_fdiagnostics_show_highlight_colors:
+      dc->set_show_highlight_colors (value);
+      break;
+
     case OPT_fdiagnostics_show_cwe:
       dc->set_show_cwe (value);
       break;
@@ -3822,6 +3826,7 @@ gen_command_line_string (cl_decoded_option *options,
       case OPT_grecord_gcc_switches:
       case OPT_frecord_gcc_switches:
       case OPT__output_pch:
+      case OPT_fdiagnostics_show_highlight_colors:
       case OPT_fdiagnostics_show_location_:
       case OPT_fdiagnostics_show_option:
       case OPT_fdiagnostics_show_caret:

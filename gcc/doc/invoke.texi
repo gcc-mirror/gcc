@@ -310,7 +310,8 @@ Objective-C and Objective-C++ Dialects}.
 -fno-diagnostics-show-event-links
 -fno-diagnostics-show-labels  -fno-diagnostics-show-line-numbers
 -fno-diagnostics-show-cwe
--fno-diagnostics-show-rule
+-fno-diagnostics-show-rules
+-fno-diagnostics-show-highlight-colors
 -fdiagnostics-minimum-margin-width=@var{width}
 -fdiagnostics-parseable-fixits  -fdiagnostics-generate-patch
 -fdiagnostics-show-template-tree  -fno-elide-type
@@ -5288,7 +5289,8 @@ The default @env{GCC_COLORS} is
 error=01;31:warning=01;35:note=01;36:range1=32:range2=34:locus=01:\
 quote=01:path=01;36:fixit-insert=32:fixit-delete=31:\
 diff-filename=01:diff-hunk=32:diff-delete=31:diff-insert=32:\
-type-diff=01;32:fnname=01;32:targs=35:valid=01;31:invalid=01;32
+type-diff=01;32:fnname=01;32:targs=35:valid=01;31:invalid=01;32\
+highlight-a=01;32:highlight-b=01;34
 @end smallexample
 @noindent
 where @samp{01;31} is bold red, @samp{01;35} is bold magenta,
@@ -5379,6 +5381,14 @@ SGR substring for highlighting valid elements within text art diagrams.
 @vindex invalid GCC_COLORS @r{capability}
 @item invalid=
 SGR substring for highlighting invalid elements within text art diagrams.
+
+@vindex highlight-a GCC_COLORS @r{capability}
+@vindex highlight-b GCC_COLORS @r{capability}
+@item highlight-a=
+@item highlight-b=
+SGR substrings for contrasting two different things within diagnostics,
+such as a pair of mismatching types.
+See @option{-fdiagnostics-show-highlight-colors}.
 @end table
 
 @opindex fdiagnostics-urls
@@ -5503,6 +5513,43 @@ as from a coding standard, or a specification.
 GCC itself does not do this for any of its diagnostics, but plugins may do so.
 By default, if this information is present, it will be printed with
 the diagnostic.  This option suppresses the printing of this metadata.
+
+@opindex fno-diagnostics-show-highlight-colors
+@opindex fdiagnostics-show-highlight-colors
+@item -fno-diagnostics-show-highlight-colors
+
+GCC can use color for emphasis and contrast when printing diagnostic
+messages and quoting the user's source.
+
+For example, in
+
+@smallexample
+demo.c: In function `test_bad_format_string_args':
+../../src/demo.c:25:18: warning: format `%i' expects argument of type `int', but argument 2 has type `const char *' [-Wformat=]
+   25 |   printf("hello %i", msg);
+      |                 ~^   ~~~
+      |                  |   |
+      |                  int const char *
+      |                 %s
+@end smallexample
+
+@itemize @bullet
+@item
+the @code{%i} and @code{int} in the message and the @code{int} in the
+quoted source are colored using @code{highlight-a} (bold green by default),
+and
+@item
+the @code{const char *} in the message and in the quoted source are both
+colored using @code{highlight-b} (bold blue by default).
+@end itemize
+
+The intent is to draw the reader's eyes to the relationships between the
+various aspects of the diagnostic message and the source, using color
+to group related elements and distinguish between mismatching ones.
+
+This additional colorization is enabled by default if color printing
+is enabled (as per @option{-fdiagnostics-color=}), but it can be separately
+disabled via @option{-fno-diagnostics-show-highlight-colors}.
 
 @opindex fno-diagnostics-show-line-numbers
 @opindex fdiagnostics-show-line-numbers

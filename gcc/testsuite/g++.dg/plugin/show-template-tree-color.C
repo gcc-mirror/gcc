@@ -15,16 +15,16 @@ void test ()
 {
   fn_1 (vector<double> ());
   /* { dg-begin-multiline-output "" }
-could not convert '[01m[Kvector<double>()[m[K' from '[01m[Kvector<[01;32m[Kdouble[m[K>[m[K' to '[01m[Kvector<[01;32m[Kint[m[K>[m[K'
+could not convert '[01m[Kvector<double>()[m[K' from '[01m[Kvector<[01;32m[Kdouble[m[K>[m[K' to '[01m[Kvector<[01;34m[Kint[m[K>[m[K'
   vector<
-    [[01;32m[Kdouble[m[K != [01;32m[Kint[m[K]>
+    [[01;32m[Kdouble[m[K != [01;34m[Kint[m[K]>
      { dg-end-multiline-output "" } */
 
   fn_2 (map<int, double>());
   /* { dg-begin-multiline-output "" }
-could not convert '[01m[Kmap<int, double>()[m[K' from '[01m[Kmap<[...],[01;32m[Kdouble[m[K>[m[K' to '[01m[Kmap<[...],[01;32m[Kint[m[K>[m[K'
+could not convert '[01m[Kmap<int, double>()[m[K' from '[01m[Kmap<[...],[01;32m[Kdouble[m[K>[m[K' to '[01m[Kmap<[...],[01;34m[Kint[m[K>[m[K'
   map<
     [...],
-    [[01;32m[Kdouble[m[K != [01;32m[Kint[m[K]>
+    [[01;32m[Kdouble[m[K != [01;34m[Kint[m[K]>
      { dg-end-multiline-output "" } */
 }

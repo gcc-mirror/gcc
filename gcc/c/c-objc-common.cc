@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "c-family/c-pretty-print.h"
 #include "tree-pretty-print.h"
+#include "tree-pretty-print-markup.h"
 #include "gimple-pretty-print.h"
 #include "langhooks.h"
 #include "c-objc-common.h"
@@ -222,13 +223,17 @@ get_aka_type (tree type)
 /* Print T to CPP.  */
 
 static void
-print_type (c_pretty_printer *cpp, tree t, bool *quoted)
+print_type (c_pretty_printer *cpp, tree t, bool *quoted,
+	    const char *highlight_color = nullptr)
 {
   if (t == error_mark_node)
     {
       pp_string (cpp, _("{erroneous}"));
       return;
     }
+
+  if (!pp_show_highlight_colors (cpp))
+    highlight_color = nullptr;
 
   gcc_assert (TYPE_P (t));
   struct obstack *ob = pp_buffer (cpp)->obstack;
@@ -249,6 +254,7 @@ print_type (c_pretty_printer *cpp, tree t, bool *quoted)
   tree aka_type = get_aka_type (t);
   if (aka_type != t)
     {
+      const bool show_color = pp_show_color (cpp);
       c_pretty_printer cpp2;
       /* Print the stripped version into a temporary printer.  */
       cpp2.type_id (aka_type);
@@ -264,20 +270,36 @@ print_type (c_pretty_printer *cpp, tree t, bool *quoted)
 
       /* They're not, print the stripped version now.  */
       if (*quoted)
-	pp_end_quote (cpp, pp_show_color (cpp));
+	pp_end_quote (cpp, show_color);
       pp_c_whitespace (cpp);
       pp_left_brace (cpp);
       pp_c_ws_string (cpp, _("aka"));
       pp_c_whitespace (cpp);
+      pp_string (cpp, colorize_stop (show_color));
       if (*quoted)
-	pp_begin_quote (cpp, pp_show_color (cpp));
+	pp_begin_quote (cpp, show_color);
+      if (highlight_color)
+	pp_string (cpp, colorize_start (show_color, highlight_color));
       cpp->type_id (aka_type);
       if (*quoted)
-	pp_end_quote (cpp, pp_show_color (cpp));
+	pp_end_quote (cpp, show_color);
       pp_right_brace (cpp);
       /* No further closing quotes are needed.  */
       *quoted = false;
     }
+}
+
+/* Implementation of pp_markup::element_quoted_type::print_type
+   for C/ObjC.  */
+
+void
+pp_markup::element_quoted_type::print_type (pp_markup::context &ctxt)
+{
+  c_pretty_printer *cpp = (c_pretty_printer *) ctxt.m_pp.clone ();
+  cpp->set_padding (pp_none);
+  ::print_type (cpp, m_type, &ctxt.m_quoted, m_highlight_color);
+  pp_string (&ctxt.m_pp, pp_formatted_text (cpp));
+  delete cpp;
 }
 
 /* Called during diagnostic message formatting process to print a

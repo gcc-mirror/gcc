@@ -518,7 +518,7 @@ struct event_range
     m_stack_depth (initial_event.get_stack_depth ()),
     m_start_idx (start_idx), m_end_idx (start_idx),
     m_path_label (ctxt, path, start_idx),
-    m_richloc (initial_event.get_location (), &m_path_label),
+    m_richloc (initial_event.get_location (), &m_path_label, nullptr),
     m_thread_id (initial_event.get_thread_id ()),
     m_per_thread_summary (t),
     m_show_event_links (show_event_links)

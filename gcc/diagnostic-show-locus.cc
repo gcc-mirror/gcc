@@ -88,12 +88,24 @@ class colorizer
 {
  public:
   colorizer (pretty_printer *pp,
+	     const rich_location &richloc,
 	     diagnostic_t diagnostic_kind);
   ~colorizer ();
 
   void set_range (int range_idx)
   {
-    /* Normally we emphasize the primary location, then alternate between
+    /* If we have a specific highlight color for the range, use it.  */
+    if (pp_show_highlight_colors (m_pp))
+      {
+	const location_range *const loc_range = m_richloc.get_range (range_idx);
+	if (loc_range->m_highlight_color)
+	  {
+	    set_named_color (loc_range->m_highlight_color);
+	    return;
+	  }
+      }
+
+    /* Otherwise, we emphasize the primary location, then alternate between
        two colors for the secondary locations.
        But if we're printing a run of events in a diagnostic path, that
        makes no sense, so print all of them with the same colorization.  */
@@ -106,6 +118,7 @@ class colorizer
   void set_normal_text () { set_state (STATE_NORMAL_TEXT); }
   void set_fixit_insert () { set_state (STATE_FIXIT_INSERT); }
   void set_fixit_delete () { set_state (STATE_FIXIT_DELETE); }
+  void set_named_color (const char *color);
 
  private:
   void set_state (int state);
@@ -117,8 +130,10 @@ class colorizer
   static const int STATE_NORMAL_TEXT = -1;
   static const int STATE_FIXIT_INSERT  = -2;
   static const int STATE_FIXIT_DELETE  = -3;
+  static const int STATE_NAMED_COLOR  = -4;
 
   pretty_printer *m_pp;
+  const rich_location &m_richloc;
   diagnostic_t m_diagnostic_kind;
   int m_current_state;
   const char *m_range1;
@@ -520,8 +535,10 @@ class layout
    different kinds of things we might need to print.  */
 
 colorizer::colorizer (pretty_printer *pp,
+		      const rich_location &richloc,
 		      diagnostic_t diagnostic_kind) :
   m_pp (pp),
+  m_richloc (richloc),
   m_diagnostic_kind (diagnostic_kind),
   m_current_state (STATE_NORMAL_TEXT)
 {
@@ -538,6 +555,17 @@ colorizer::colorizer (pretty_printer *pp,
 colorizer::~colorizer ()
 {
   finish_state (m_current_state);
+}
+
+/* Update state, changing to the specific named color and printing its
+   color codes.  */
+
+void
+colorizer::set_named_color (const char *color)
+{
+  finish_state (m_current_state);
+  m_current_state = STATE_NAMED_COLOR;
+  pp_string (m_pp, colorize_start (pp_show_color (m_pp), color));
 }
 
 /* Update state, printing color codes if necessary if there's a state
@@ -571,6 +599,10 @@ colorizer::begin_state (int state)
     case STATE_FIXIT_DELETE:
       pp_string (m_pp, m_fixit_delete);
       break;
+
+    case STATE_NAMED_COLOR:
+      /* Should be handled by colorizer::set_named_color.  */
+      gcc_unreachable ();
 
     case 0:
       /* Make range 0 be the same color as the "kind" text
@@ -1304,7 +1336,7 @@ layout::layout (const diagnostic_context &context,
   m_exploc (m_file_cache,
 	    richloc.get_expanded_location (0), m_policy,
 	    LOCATION_ASPECT_CARET),
-  m_colorizer (m_pp, diagnostic_kind),
+  m_colorizer (m_pp, richloc, diagnostic_kind),
   m_diagnostic_path_p (diagnostic_kind == DK_DIAGNOSTIC_PATH),
   m_layout_ranges (richloc.get_num_locations ()),
   m_fixit_hints (richloc.get_num_fixit_hints ()),
@@ -4012,7 +4044,7 @@ test_one_liner_labels ()
     text_range_label label0 ("0");
     text_range_label label1 ("1");
     text_range_label label2 ("2");
-    gcc_rich_location richloc (foo, &label0);
+    gcc_rich_location richloc (foo, &label0, nullptr);
     richloc.add_range (bar, SHOW_RANGE_WITHOUT_CARET, &label1);
     richloc.add_range (field, SHOW_RANGE_WITHOUT_CARET, &label2);
 
@@ -4042,7 +4074,7 @@ test_one_liner_labels ()
     text_range_label label0 ("label 0");
     text_range_label label1 ("label 1");
     text_range_label label2 ("label 2");
-    gcc_rich_location richloc (foo, &label0);
+    gcc_rich_location richloc (foo, &label0, nullptr);
     richloc.add_range (bar, SHOW_RANGE_WITHOUT_CARET, &label1);
     richloc.add_range (field, SHOW_RANGE_WITHOUT_CARET, &label2);
 
@@ -4063,7 +4095,7 @@ test_one_liner_labels ()
     text_range_label label0 ("aaaaa");
     text_range_label label1 ("bbbb");
     text_range_label label2 ("c");
-    gcc_rich_location richloc (foo, &label0);
+    gcc_rich_location richloc (foo, &label0, nullptr);
     richloc.add_range (bar, SHOW_RANGE_WITHOUT_CARET, &label1);
     richloc.add_range (field, SHOW_RANGE_WITHOUT_CARET, &label2);
 
@@ -4082,7 +4114,7 @@ test_one_liner_labels ()
     text_range_label label0 ("0");
     text_range_label label1 ("1");
     text_range_label label2 ("2");
-    gcc_rich_location richloc (field, &label0);
+    gcc_rich_location richloc (field, &label0, nullptr);
     richloc.add_range (bar, SHOW_RANGE_WITHOUT_CARET, &label1);
     richloc.add_range (foo, SHOW_RANGE_WITHOUT_CARET, &label2);
 
@@ -4101,7 +4133,7 @@ test_one_liner_labels ()
     text_range_label label0 ("label 0");
     text_range_label label1 ("label 1");
     text_range_label label2 ("label 2");
-    gcc_rich_location richloc (bar, &label0);
+    gcc_rich_location richloc (bar, &label0, nullptr);
     richloc.add_range (bar, SHOW_RANGE_WITHOUT_CARET, &label1);
     richloc.add_range (bar, SHOW_RANGE_WITHOUT_CARET, &label2);
 
@@ -4128,7 +4160,7 @@ test_one_liner_labels ()
     text_range_label label_0c ("label 0c");
     text_range_label label_1c ("label 1c");
     text_range_label label_2c ("label 2c");
-    gcc_rich_location richloc (field, &label_0a);
+    gcc_rich_location richloc (field, &label_0a, nullptr);
     richloc.add_range (bar, SHOW_RANGE_WITHOUT_CARET, &label_1a);
     richloc.add_range (foo, SHOW_RANGE_WITHOUT_CARET, &label_2a);
 
@@ -4161,7 +4193,7 @@ test_one_liner_labels ()
      handled gracefully.  */
   {
     text_range_label label (NULL);
-    gcc_rich_location richloc (bar, &label);
+    gcc_rich_location richloc (bar, &label, nullptr);
 
     test_diagnostic_context dc;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
@@ -4620,7 +4652,7 @@ test_one_liner_labels_utf8 ()
     text_range_label label2
       ("\xf0\x9f\x98\x82\xcf\x80\xf0\x9f\x98\x82\xf0\x9f\x98\x82\xcf\x80"
        "\xcf\x80");
-    gcc_rich_location richloc (foo, &label0);
+    gcc_rich_location richloc (foo, &label0, nullptr);
     richloc.add_range (bar, SHOW_RANGE_WITHOUT_CARET, &label1);
     richloc.add_range (field, SHOW_RANGE_WITHOUT_CARET, &label2);
 
@@ -4648,7 +4680,7 @@ test_one_liner_labels_utf8 ()
     text_range_label label0 ("label 0\xf0\x9f\x98\x82");
     text_range_label label1 ("label 1\xcf\x80");
     text_range_label label2 ("label 2\xcf\x80");
-    gcc_rich_location richloc (foo, &label0);
+    gcc_rich_location richloc (foo, &label0, nullptr);
     richloc.add_range (bar, SHOW_RANGE_WITHOUT_CARET, &label1);
     richloc.add_range (field, SHOW_RANGE_WITHOUT_CARET, &label2);
 
@@ -4674,7 +4706,7 @@ test_one_liner_labels_utf8 ()
     text_range_label label0 ("aaaaa\xf0\x9f\x98\x82\xcf\x80");
     text_range_label label1 ("bb\xf0\x9f\x98\x82\xf0\x9f\x98\x82");
     text_range_label label2 ("c");
-    gcc_rich_location richloc (foo, &label0);
+    gcc_rich_location richloc (foo, &label0, nullptr);
     richloc.add_range (bar, SHOW_RANGE_WITHOUT_CARET, &label1);
     richloc.add_range (field, SHOW_RANGE_WITHOUT_CARET, &label2);
 
@@ -4698,7 +4730,7 @@ test_one_liner_labels_utf8 ()
     text_range_label label0 ("label 0\xf0\x9f\x98\x82");
     text_range_label label1 ("label 1\xcf\x80");
     text_range_label label2 ("label 2\xcf\x80");
-    gcc_rich_location richloc (foo, &label0);
+    gcc_rich_location richloc (foo, &label0, nullptr);
     richloc.add_range (bar, SHOW_RANGE_WITHOUT_CARET, &label1);
     richloc.add_range (field, SHOW_RANGE_WITHOUT_CARET, &label2);
     richloc.set_escape_on_output (true);

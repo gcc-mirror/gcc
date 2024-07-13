@@ -443,6 +443,93 @@ argument %d of %qE must be a pointer type
 since the argument number does not refer to a numerical constant in the
 source code it should not be quoted.
 
+@subsection Use color consistently when highlighting mismatches
+
+As of GCC 15, the diagnostics subsystem has a concept of ``highlight
+colors''.  These should be used to consistently colorize both the text
+within diagnostic messages and underlined ranges of quoted source when
+highlighting mismatches, for all messages with a logically-related group
+of diagnostics.
+
+See @file{diagnostic-highlight-colors.h} for symbolic names for color
+codes, covering e.g.
+
+@itemize @bullet
+
+@item
+@code{highlight_colors::expected} versus @code{highlight_colors::actual}
+
+@item
+@code{highlight_colors::lhs} versus @code{highlight_colors::rhs}
+
+@end itemize
+
+For example, given:
+
+@smallexample
+error: invalid operands to binary + (have 'S' @{aka 'struct s'@} and 'T' @{aka 'struct t'@})
+   return callee_4a () + callee_4b ();
+          ~~~~~~~~~~~~ ^ ~~~~~~~~~~~~
+          |              |
+          |              T @{aka struct t@}
+          S @{aka struct s@}
+@end smallexample
+
+@itemize @bullet
+
+@item
+the text ``S @{aka struct s@}'' in the message and the left-hand label
+in the quoted source should be colorized as @code{highlight_colors::lhs}
+(which equates to the color name @code{highlight-a})
+
+@item
+the text ``T @{aka struct t@}'' in the message and the right-hand label
+in the quoted source should be colorized as @code{highlight_colors::rhs}
+(which equates to the color name @code{highlight-b})
+
+@end itemize
+
+Doing so ought to make it easier for the user to understand what the
+diagnostic is telling them.
+
+When issuing followup @code{note} diagnostics, all diagnostics within the
+group should use a consistent scheme to highlight the mismatching elements,
+so that color contrasts the differences.  For example, given:
+
+@smallexample
+warning: format ‘%i’ expects argument of type ‘int’, but argument 2 has type ‘const char *’ [-Wformat=]
+  279 |   printf("hello " INT_FMT " world", msg);
+      |          ^~~~~~~~                   ~~~
+      |                                     |
+      |                                     const char *
+note: format string is defined here
+  278 | #define INT_FMT "%i"
+      |                  ~^
+      |                   |
+      |                   int
+      |                  %s
+@end smallexample
+
+@itemize @bullet
+
+@item
+the text @code{%i} and @code{int} referring to the format string and the
+expected type due to it should be colorized as @code{highlight-a} both
+in the diagnostics message and in the range quoted in the @code{range}.
+
+@item
+the text @code{const char *} in the diagnostic message and in the quoted
+range should be colorized as @code{highlight-b}.
+
+@end itemize
+
+This can be implemented by using e.g.
+@code{highlight_colors::actual} and
+@code{highlight_colors::expected} when adding ranges to
+@code{rich_location} instances, and e.g. by using the @code{%e} format
+code for @code{pretty_printer} to use a @code{pp_element *}, and using
+appropriate member functions of pp_element to add colorization.
+
 @subsection Spelling and Terminology
 
 See the @uref{https://gcc.gnu.org/codingconventions.html#Spelling

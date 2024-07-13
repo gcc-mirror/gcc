@@ -162,6 +162,8 @@ class diagnostic_context;
 class pretty_printer;
 class diagnostic_event_id_t;
 typedef const char * (*diagnostic_input_charset_callback)(const char *);
+namespace pp_markup { class element; }
+typedef pp_markup::element pp_element;
 
 template<typename T> struct array_traits;
 

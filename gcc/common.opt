@@ -1507,6 +1507,10 @@ fdiagnostics-show-rules
 Common Var(flag_diagnostics_show_rules) Init(1)
 Print any rules associated with diagnostic messages.
 
+fdiagnostics-show-highlight-colors
+Common Var(flag_diagnostics_show_highlight_colors) Init(1)
+Use color within diagnostic messages to highlight pertinent information.
+
 fdiagnostics-path-format=
 Common Joined RejectNegative Var(flag_diagnostics_path_format) Enum(diagnostic_path_format) Init(DPF_INLINE_EVENTS)
 Specify how to print any control-flow path associated with a diagnostic.

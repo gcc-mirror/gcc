@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "tree-vector-builder.h"
 #include "vec-perm-indices.h"
+#include "tree-pretty-print-markup.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
@@ -2961,9 +2962,11 @@ binary_op_error (rich_location *richloc, enum tree_code code,
     default:
       gcc_unreachable ();
     }
+  pp_markup::element_quoted_type element_0 (type0, highlight_colors::lhs);
+  pp_markup::element_quoted_type element_1 (type1, highlight_colors::rhs);
   error_at (richloc,
-	    "invalid operands to binary %s (have %qT and %qT)",
-	    opname, type0, type1);
+	    "invalid operands to binary %s (have %e and %e)",
+	    opname, &element_0, &element_1);
 }
 
 /* Given an expression as a tree, return its original type.  Do this
@@ -6158,11 +6161,15 @@ attribute_fallthrough_p (tree attr)
 
    The arguments in ARGARRAY may not have been folded yet (e.g. for C++,
    to preserve location wrappers); checks that require folded arguments
-   should call fold_for_warn on them.  */
+   should call fold_for_warn on them.
+
+   Use the frontend-supplied COMP_TYPES when determining if
+   one type is a subclass of another.  */
 
 bool
 check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
-			  int nargs, tree *argarray, vec<location_t> *arglocs)
+			  int nargs, tree *argarray, vec<location_t> *arglocs,
+			  bool (*comp_types) (tree, tree))
 {
   bool warned_p = false;
 
@@ -6179,7 +6186,7 @@ check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
 
   if (warn_format || warn_suggest_attribute_format)
     check_function_format (fndecl ? fndecl : fntype, TYPE_ATTRIBUTES (fntype), nargs,
-			   argarray, arglocs);
+			   argarray, arglocs, comp_types);
 
   if (warn_format)
     check_function_sentinel (fntype, nargs, argarray);

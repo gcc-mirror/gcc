@@ -848,7 +848,8 @@ extern tree fname_decl (location_t, unsigned, tree);
 
 extern int check_user_alignment (const_tree, bool, bool);
 extern bool check_function_arguments (location_t loc, const_tree, const_tree,
-				      int, tree *, vec<location_t> *);
+				      int, tree *, vec<location_t> *,
+				      bool (*comp_types) (tree, tree));
 extern void check_function_arguments_recurse (void (*)
 					      (void *, tree,
 					       unsigned HOST_WIDE_INT),
@@ -858,7 +859,8 @@ extern void check_function_arguments_recurse (void (*)
 extern bool check_builtin_function_arguments (location_t, vec<location_t>,
 					      tree, tree, int, tree *);
 extern void check_function_format (const_tree, tree, int, tree *,
-				   vec<location_t> *);
+				   vec<location_t> *,
+				   bool (*comp_types) (tree, tree));
 extern bool attribute_fallthrough_p (tree);
 extern tree handle_format_attribute (tree *, tree, tree, int, bool *);
 extern tree handle_format_arg_attribute (tree *, tree, tree, int, bool *);

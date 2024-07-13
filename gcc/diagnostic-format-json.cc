@@ -401,6 +401,7 @@ diagnostic_output_format_init_json (diagnostic_context *context)
 
   /* Don't colorize the text.  */
   pp_show_color (context->printer) = false;
+  context->set_show_highlight_colors (false);
 }
 
 /* Populate CONTEXT in preparation for JSON output to stderr.  */

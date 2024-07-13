@@ -69,6 +69,9 @@ struct location_range
 
   /* If non-NULL, the label for this range.  */
   const range_label *m_label;
+
+  /* If non-null, the name of the color to use for this range.  */
+  const char *m_highlight_color;
 };
 
 /* A partially-embedded vec for use within rich_location for storing
@@ -378,7 +381,8 @@ class rich_location
 
   /* Constructing from a location.  */
   rich_location (line_maps *set, location_t loc,
-		 const range_label *label = NULL);
+		 const range_label *label = nullptr,
+		 const char *label_highlight_color = nullptr);
 
   /* Destructor.  */
   ~rich_location ();
@@ -393,15 +397,19 @@ class rich_location
   location_t get_loc () const { return get_loc (0); }
   location_t get_loc (unsigned int idx) const;
 
+  void set_highlight_color (const char *highlight_color);
+
   void
   add_range (location_t loc,
 	     enum range_display_kind range_display_kind
 	       = SHOW_RANGE_WITHOUT_CARET,
-	     const range_label *label = NULL);
+	     const range_label *label = nullptr,
+	     const char *highlight_color = nullptr);
 
   void
   set_range (unsigned int idx, location_t loc,
-	     enum range_display_kind range_display_kind);
+	     enum range_display_kind range_display_kind,
+	     const char *highlight_color = nullptr);
 
   unsigned int get_num_locations () const { return m_ranges.count (); }
 

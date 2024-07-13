@@ -79,6 +79,9 @@ class substring_loc
 class format_string_diagnostic_t
 {
  public:
+  static const char * const highlight_color_format_string;
+  static const char * const highlight_color_param;
+
   format_string_diagnostic_t (const substring_loc &fmt_loc,
 			      const range_label *fmt_label,
 			      location_t param_loc,

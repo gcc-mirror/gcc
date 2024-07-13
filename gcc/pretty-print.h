@@ -73,6 +73,10 @@ class quoting_info;
 class output_buffer;
 class urlifier;
 
+namespace pp_markup {
+  class context;
+} // namespace pp_markup
+
 /* The chunk_info data structure forms a stack of the results from the
    first phase of formatting (pp_format) which have not yet been
    output (pp_output_formatted_text).  A stack is necessary because
@@ -81,6 +85,7 @@ class urlifier;
 class chunk_info
 {
   friend class pretty_printer;
+  friend class pp_markup::context;
 
 public:
   const char * const *get_args () const { return m_args; }
@@ -245,6 +250,7 @@ inline bool & pp_translate_identifiers (pretty_printer *pp);
 inline bool & pp_show_color (pretty_printer *pp);
 inline printer_fn &pp_format_decoder (pretty_printer *pp);
 inline format_postprocessor *& pp_format_postprocessor (pretty_printer *pp);
+inline bool & pp_show_highlight_colors (pretty_printer *pp);
 
 class urlifier;
 
@@ -271,6 +277,7 @@ public:
   friend bool & pp_show_color (pretty_printer *pp);
   friend printer_fn &pp_format_decoder (pretty_printer *pp);
   friend format_postprocessor *& pp_format_postprocessor (pretty_printer *pp);
+  friend bool & pp_show_highlight_colors (pretty_printer *pp);
 
   /* Default construct a pretty printer with specified
      maximum line length cut off limit.  */
@@ -373,6 +380,10 @@ private:
   /* Nonzero means that text should be colorized.  */
   bool m_show_color;
 
+  /* True means that pertinent sections within the text should be
+     highlighted with color.  */
+  bool m_show_highlight_colors;
+
   /* Whether URLs should be emitted, and which terminator to use.  */
   diagnostic_url_format m_url_format;
 
@@ -439,6 +450,12 @@ inline format_postprocessor *&
 pp_format_postprocessor (pretty_printer *pp)
 {
   return pp->m_format_postprocessor;
+}
+
+inline bool &
+pp_show_highlight_colors (pretty_printer *pp)
+{
+  return pp->m_show_highlight_colors;
 }
 
 /* Maximum characters per line in automatic line wrapping mode.
@@ -582,6 +599,7 @@ extern void pp_indent (pretty_printer *);
 extern void pp_newline (pretty_printer *);
 extern void pp_character (pretty_printer *, int);
 extern void pp_string (pretty_printer *, const char *);
+extern void pp_string_n (pretty_printer *, const char *, size_t);
 extern void pp_unicode_character (pretty_printer *, unsigned);
 
 extern void pp_write_text_to_stream (pretty_printer *);

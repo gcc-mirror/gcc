@@ -6773,7 +6773,8 @@ extern location_t get_fndecl_argument_location  (tree, int);
 extern void complain_about_bad_argument	(location_t arg_loc,
 						 tree from_type, tree to_type,
 						 tree fndecl, int parmnum);
-extern void maybe_inform_about_fndecl_for_bogus_argument_init (tree, int);
+extern void maybe_inform_about_fndecl_for_bogus_argument_init (tree, int,
+							       const char * = nullptr);
 extern tree perform_dguide_overload_resolution	(tree, const vec<tree, va_gc> *,
 						 tsubst_flags_t);
 
@@ -8183,6 +8184,7 @@ extern bool comp_except_specs			(const_tree, const_tree, int);
 extern bool comptypes				(tree, tree, int);
 extern bool same_type_ignoring_top_level_qualifiers_p (tree, tree);
 extern bool similar_type_p			(tree, tree);
+extern bool cp_comp_parm_types			(tree, tree);
 extern bool next_common_initial_sequence	(tree &, tree &);
 extern bool layout_compatible_type_p		(tree, tree);
 extern bool compparms				(const_tree, const_tree);
@@ -9056,6 +9058,15 @@ name_independent_decl_p (tree decl)
 	  && !TREE_STATIC (decl)
 	  && !DECL_EXTERNAL (decl));
 }
+
+namespace highlight_colors {
+
+/* Color names for highlighting "%qH" vs "%qI" values,
+   and ranges corresponding to them.  */
+extern const char *const percent_h;
+extern const char *const percent_i;
+
+} // namespace highlight_colors
 
 #if CHECKING_P
 namespace selftest {

@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "cxx-pretty-print.h"
 #include "tree-pretty-print.h"
+#include "tree-pretty-print-markup.h"
 #include "gimple-pretty-print.h"
 #include "c-family/c-objc.h"
 #include "ubsan.h"
@@ -62,7 +63,8 @@ static const char *decl_to_string (tree, int, bool);
 static const char *fndecl_to_string (tree, int);
 static const char *op_to_string	(bool, enum tree_code);
 static const char *parm_to_string (int);
-static const char *type_to_string (tree, int, bool, bool *, bool);
+static const char *type_to_string (tree, int, bool, bool *, bool,
+				   const char * = nullptr);
 
 static void dump_alias_template_specialization (cxx_pretty_printer *, tree, int);
 static void dump_type (cxx_pretty_printer *, tree, int);
@@ -108,6 +110,11 @@ static void cp_print_error_function (diagnostic_context *,
 
 static bool cp_printer (pretty_printer *, text_info *, const char *,
 			int, bool, bool, bool, bool *, const char **);
+
+/* Color names for highlighting "%qH" vs "%qI" values,
+   and ranges corresponding to them.  */
+const char *const highlight_colors::percent_h = "highlight-a";
+const char *const highlight_colors::percent_i = "highlight-b";
 
 /* Struct for handling %H or %I, which require delaying printing the
    type until a postprocessing stage.  */
@@ -3405,12 +3412,12 @@ op_to_string (bool assop, enum tree_code p)
    pp_format, or is not needed due to QUOTE being NULL (for template arguments
    within %H and %I).
 
-   SHOW_COLOR is used to determine the colorization of any quotes that
-   are added.  */
+   SHOW_COLOR and HIGHLIGHT_COLOR are used to determine the colorization of
+   any quotes that are added.  */
 
 static const char *
 type_to_string (tree typ, int verbose, bool postprocessed, bool *quote,
-		bool show_color)
+		bool show_color, const char *highlight_color)
 {
   int flags = 0;
   if (verbose)
@@ -3421,7 +3428,11 @@ type_to_string (tree typ, int verbose, bool postprocessed, bool *quote,
   pp_show_color (cxx_pp) = show_color;
 
   if (postprocessed && quote && *quote)
-    pp_begin_quote (cxx_pp, show_color);
+    {
+      pp_begin_quote (cxx_pp, show_color);
+      if (show_color && highlight_color)
+	pp_string (cxx_pp, colorize_start (show_color, highlight_color));
+    }
 
   struct obstack *ob = pp_buffer (cxx_pp)->obstack;
   int type_start, type_len;
@@ -3447,6 +3458,8 @@ type_to_string (tree typ, int verbose, bool postprocessed, bool *quote,
       pp_cxx_whitespace (cxx_pp);
       if (quote && *quote)
 	pp_begin_quote (cxx_pp, show_color);
+      if (highlight_color)
+	pp_string (cxx_pp, colorize_start (show_color, highlight_color));
       /* And remember the start of the aka dump.  */
       aka_start = obstack_object_size (ob);
       dump_type (cxx_pp, aka, flags);
@@ -3476,6 +3489,8 @@ type_to_string (tree typ, int verbose, bool postprocessed, bool *quote,
 
   if (quote && *quote)
     {
+      if (show_color && highlight_color)
+	pp_string (cxx_pp, colorize_stop (show_color));
       pp_end_quote (cxx_pp, show_color);
       *quote = false;
     }
@@ -4100,13 +4115,17 @@ arg_to_string (tree arg, bool verbose)
    print_template_tree_comparison.
 
    Print a representation of ARG (an expression or type) to PP,
-   colorizing it as "type-diff" if PP->show_color.  */
+   colorizing it if PP->show_color, using HIGHLIGHT_COLOR,
+   or "type-diff" if the latter is NULL.  */
 
 static void
-print_nonequal_arg (pretty_printer *pp, tree arg, bool verbose)
+print_nonequal_arg (pretty_printer *pp, tree arg, bool verbose,
+		    const char *highlight_color)
 {
+  if (!highlight_color)
+    highlight_color = "type-diff";
   pp_printf (pp, "%r%s%R",
-	     "type-diff",
+	     highlight_color,
 	     (arg
 	      ? arg_to_string (arg, verbose)
 	      : G_("(no argument)")));
@@ -4158,7 +4177,9 @@ print_nonequal_arg (pretty_printer *pp, tree arg, bool verbose)
 
 static void
 print_template_differences (pretty_printer *pp, tree type_a, tree type_b,
-			    bool verbose, int indent)
+			    bool verbose, int indent,
+			    const char *highlight_color_a,
+			    const char *highlight_color_b)
 {
   if (indent)
     newline_and_indent (pp, indent);
@@ -4209,19 +4230,20 @@ print_template_differences (pretty_printer *pp, tree type_a, tree type_b,
 	{
 	  int new_indent = indent ? indent + 2 : 0;
 	  if (comparable_template_types_p (arg_a, arg_b))
-	    print_template_differences (pp, arg_a, arg_b, verbose, new_indent);
+	    print_template_differences (pp, arg_a, arg_b, verbose, new_indent,
+					highlight_color_a, highlight_color_b);
 	  else
 	    if (indent)
 	      {
 		newline_and_indent (pp, indent + 2);
 		pp_character (pp, '[');
-		print_nonequal_arg (pp, arg_a, verbose);
+		print_nonequal_arg (pp, arg_a, verbose, highlight_color_a);
 		pp_string (pp, " != ");
-		print_nonequal_arg (pp, arg_b, verbose);
+		print_nonequal_arg (pp, arg_b, verbose, highlight_color_b);
 		pp_character (pp, ']');
 	      }
 	    else
-	      print_nonequal_arg (pp, arg_a, verbose);
+	      print_nonequal_arg (pp, arg_a, verbose, highlight_color_a);
 	}
     }
   pp_printf (pp, ">");
@@ -4247,13 +4269,16 @@ print_template_differences (pretty_printer *pp, tree type_a, tree type_b,
 
 static const char *
 type_to_string_with_compare (tree type, tree peer, bool verbose,
-			     bool show_color)
+			     bool show_color,
+			     const char *this_highlight_color,
+			     const char *peer_highlight_color)
 {
   pretty_printer inner_pp;
   pretty_printer *pp = &inner_pp;
   pp_show_color (pp) = show_color;
 
-  print_template_differences (pp, type, peer, verbose, 0);
+  print_template_differences (pp, type, peer, verbose, 0,
+			      this_highlight_color, peer_highlight_color);
   return pp_ggc_formatted_text (pp);
 }
 
@@ -4291,9 +4316,13 @@ type_to_string_with_compare (tree type, tree peer, bool verbose,
 
 static void
 print_template_tree_comparison (pretty_printer *pp, tree type_a, tree type_b,
-				bool verbose, int indent)
+				bool verbose, int indent,
+				const char *highlight_color_a,
+				const char *highlight_color_b)
 {
-  print_template_differences (pp, type_a, type_b, verbose, indent);
+  print_template_differences (pp, type_a, type_b, verbose, indent,
+			      highlight_color_a,
+			      highlight_color_b);
 }
 
 /* Subroutine for use in a format_postprocessor::handle
@@ -4345,6 +4374,11 @@ cxx_format_postprocessor::handle (pretty_printer *pp)
      been present.  */
   if (m_type_a.m_tree || m_type_b.m_tree)
     {
+      const bool show_highlight_colors = pp_show_highlight_colors (pp);
+      const char *percent_h
+	= show_highlight_colors ? highlight_colors::percent_h : nullptr;
+      const char *percent_i
+	= show_highlight_colors ? highlight_colors::percent_i : nullptr;
       /* Avoid reentrancy issues by working with a copy of
 	 m_type_a and m_type_b, resetting them now.  */
       deferred_printed_type type_a = m_type_a;
@@ -4362,19 +4396,22 @@ cxx_format_postprocessor::handle (pretty_printer *pp)
 
       if (comparable_template_types_p (type_a.m_tree, type_b.m_tree))
 	{
-	  type_a_text
-	    = type_to_string_with_compare (type_a.m_tree, type_b.m_tree,
-					   type_a.m_verbose, show_color);
-	  type_b_text
-	    = type_to_string_with_compare (type_b.m_tree, type_a.m_tree,
-					   type_b.m_verbose, show_color);
+	  type_a_text = type_to_string_with_compare
+	    (type_a.m_tree, type_b.m_tree,
+	     type_a.m_verbose, show_color,
+	     percent_h, percent_i);
+	  type_b_text = type_to_string_with_compare
+	    (type_b.m_tree, type_a.m_tree,
+	     type_b.m_verbose, show_color,
+	     percent_i, percent_h);
 
 	  if (flag_diagnostics_show_template_tree)
 	    {
 	      pretty_printer inner_pp;
 	      pp_show_color (&inner_pp) = pp_show_color (pp);
 	      print_template_tree_comparison
-		(&inner_pp, type_a.m_tree, type_b.m_tree, type_a.m_verbose, 2);
+		(&inner_pp, type_a.m_tree, type_b.m_tree, type_a.m_verbose, 2,
+		 percent_h, percent_i);
 	      append_formatted_chunk (pp, pp_ggc_formatted_text (&inner_pp));
 	    }
 	}
@@ -4384,9 +4421,11 @@ cxx_format_postprocessor::handle (pretty_printer *pp)
 	     provided), they are printed normally, and no difference tree
 	     is printed.  */
 	  type_a_text = type_to_string (type_a.m_tree, type_a.m_verbose,
-					true, &type_a.m_quote, show_color);
+					true, &type_a.m_quote, show_color,
+					percent_h);
 	  type_b_text = type_to_string (type_b.m_tree, type_b.m_verbose,
-					true, &type_b.m_quote, show_color);
+					true, &type_b.m_quote, show_color,
+					percent_i);
 	}
 
       if (type_a.m_quote)
@@ -4438,6 +4477,19 @@ defer_phase_2_of_type_diff (deferred_printed_type *deferred,
   *deferred = deferred_printed_type (type, buffer_ptr, verbose, quote);
 }
 
+/* Implementation of pp_markup::element_quoted_type::print_type
+   for C++/ObjC++.  */
+
+void
+pp_markup::element_quoted_type::print_type (pp_markup::context &ctxt)
+{
+  const char *highlight_color
+    = pp_show_highlight_colors (&ctxt.m_pp) ? m_highlight_color : nullptr;
+  const char *result
+    = type_to_string (m_type, false, false, &ctxt.m_quoted,
+		      pp_show_color (&ctxt.m_pp), highlight_color);
+  pp_string (&ctxt.m_pp, result);
+}
 
 /* Called from output_format -- during diagnostic message processing --
    to handle C++ specific format specifier with the following meanings:
@@ -4748,7 +4800,8 @@ range_label_for_type_mismatch::get_text (unsigned /*range_idx*/) const
   if (m_other_type
       && comparable_template_types_p (m_labelled_type, m_other_type))
     result = type_to_string_with_compare (m_labelled_type, m_other_type,
-					  verbose, show_color);
+					  verbose, show_color,
+					  nullptr, nullptr);
   else
     result = type_to_string (m_labelled_type, verbose, true, NULL, show_color);
 

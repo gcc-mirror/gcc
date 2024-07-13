@@ -32,17 +32,29 @@ class gcc_rich_location : public rich_location
   /* Constructors.  */
 
   /* Constructing from a location.  */
-  explicit gcc_rich_location (location_t loc, const range_label *label = NULL)
-  : rich_location (line_table, loc, label)
+  explicit gcc_rich_location (location_t loc)
+    : rich_location (line_table, loc, nullptr, nullptr)
+  {
+  }
+
+  /* Constructing from a location with a label and a highlight color.  */
+  explicit gcc_rich_location (location_t loc,
+			      const range_label *label,
+			      const char *highlight_color)
+    : rich_location (line_table, loc, label, highlight_color)
   {
   }
 
   /* Methods for adding ranges via gcc entities.  */
   void
-  add_expr (tree expr, range_label *label);
+  add_expr (tree expr,
+	    range_label *label,
+	    const char *highlight_color);
 
   void
-  maybe_add_expr (tree t, range_label *label);
+  maybe_add_expr (tree t,
+		  range_label *label,
+		  const char *highlight_color);
 
   void add_fixit_misspelled_id (location_t misspelled_token_loc,
 				tree hint_id);

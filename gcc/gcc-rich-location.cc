@@ -42,22 +42,26 @@ along with GCC; see the file COPYING3.  If not see
    using LABEL if non-NULL. */
 
 void
-gcc_rich_location::add_expr (tree expr, range_label *label)
+gcc_rich_location::add_expr (tree expr,
+			     range_label *label,
+			     const char *highlight_color)
 {
   gcc_assert (expr);
 
   if (CAN_HAVE_RANGE_P (expr))
-    add_range (EXPR_LOCATION (expr), SHOW_RANGE_WITHOUT_CARET, label);
+    add_range (EXPR_LOCATION (expr), SHOW_RANGE_WITHOUT_CARET, label,
+	       highlight_color);
 }
 
 /* If T is an expression, add a range for it to the rich_location,
    using LABEL if non-NULL. */
 
 void
-gcc_rich_location::maybe_add_expr (tree t, range_label *label)
+gcc_rich_location::maybe_add_expr (tree t, range_label *label,
+				   const char *highlight_color)
 {
   if (EXPR_P (t))
-    add_expr (t, label);
+    add_expr (t, label, highlight_color);
 }
 
 /* Add a fixit hint suggesting replacing the range at MISSPELLED_TOKEN_LOC

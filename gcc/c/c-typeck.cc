@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "asan.h"
 #include "realmpfr.h"
+#include "tree-pretty-print-markup.h"
 
 /* Possible cases of implicit conversions.  Used to select diagnostic messages
    and control folding initializers in convert_for_assignment.  */
@@ -3482,6 +3483,14 @@ inform_declaration (tree decl)
     inform (DECL_SOURCE_LOCATION (decl), "declared here");
 }
 
+/* C implementation of callback for use when checking param types.  */
+
+static bool
+comp_parm_types (tree wanted_type, tree actual_type)
+{
+  return comptypes (wanted_type, actual_type);
+}
+
 /* Build a function call to function FUNCTION with parameters PARAMS.
    If FUNCTION is the result of resolving an overloaded target built-in,
    ORIG_FUNDECL is the original function decl, otherwise it is null.
@@ -3601,7 +3610,8 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
 
   /* Check that the arguments to the function are valid.  */
   bool warned_p = check_function_arguments (loc, fundecl, fntype,
-					    nargs, argarray, &arg_loc);
+					    nargs, argarray, &arg_loc,
+					    comp_parm_types);
 
   if (TYPE_QUALS (return_type) != TYPE_UNQUALIFIED
       && !VOID_TYPE_P (return_type))
@@ -7204,7 +7214,10 @@ get_fndecl_argument_location (tree fndecl, int argnum)
    to FUNDECL, for types EXPECTED_TYPE and ACTUAL_TYPE.
    Attempt to issue the note at the pertinent parameter of the decl;
    failing that issue it at the location of FUNDECL; failing that
-   issue it at PLOC.  */
+   issue it at PLOC.
+   Use highlight_colors::actual for the ACTUAL_TYPE
+   and highlight_colors::expected for EXPECTED_TYPE and the
+   parameter of FUNDECL*/
 
 static void
 inform_for_arg (tree fundecl, location_t ploc, int parmnum,
@@ -7216,9 +7229,13 @@ inform_for_arg (tree fundecl, location_t ploc, int parmnum,
   else
     loc = ploc;
 
-  inform (loc,
-	  "expected %qT but argument is of type %qT",
-	  expected_type, actual_type);
+  gcc_rich_location richloc (loc, nullptr, highlight_colors::expected);
+
+  pp_markup::element_expected_type elem_expected_type (expected_type);
+  pp_markup::element_actual_type elem_actual_type (actual_type);
+  inform (&richloc,
+	  "expected %e but argument is of type %e",
+	  &elem_expected_type, &elem_actual_type);
 }
 
 /* Issue a warning when an argument of ARGTYPE is passed to a built-in
@@ -8027,7 +8044,8 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		    {
 		      auto_diagnostic_group d;
 		      range_label_for_type_mismatch rhs_label (rhstype, type);
-		      gcc_rich_location richloc (expr_loc, &rhs_label);
+		      gcc_rich_location richloc (expr_loc, &rhs_label,
+						 highlight_colors::actual);
 		      if (pedwarn (&richloc, OPT_Wpointer_sign,
 				   "pointer targets in passing argument %d of "
 				   "%qE differ in signedness", parmnum, rname))
@@ -8088,7 +8106,8 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	      {
 		auto_diagnostic_group d;
 		range_label_for_type_mismatch rhs_label (rhstype, type);
-		gcc_rich_location richloc (expr_loc, &rhs_label);
+		gcc_rich_location richloc (expr_loc, &rhs_label,
+					   highlight_colors::actual);
 		if (permerror_opt (&richloc, OPT_Wincompatible_pointer_types,
 				   "passing argument %d of %qE from "
 				   "incompatible pointer type",
@@ -8168,7 +8187,8 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	    {
 	      auto_diagnostic_group d;
 	      range_label_for_type_mismatch rhs_label (rhstype, type);
-	      gcc_rich_location richloc (expr_loc, &rhs_label);
+	      gcc_rich_location richloc (expr_loc, &rhs_label,
+					 highlight_colors::actual);
 	      if (permerror_opt (&richloc, OPT_Wint_conversion,
 				 "passing argument %d of %qE makes pointer "
 				 "from integer without a cast", parmnum, rname))
@@ -8207,7 +8227,8 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  {
 	    auto_diagnostic_group d;
 	    range_label_for_type_mismatch rhs_label (rhstype, type);
-	    gcc_rich_location richloc (expr_loc, &rhs_label);
+	    gcc_rich_location richloc (expr_loc, &rhs_label,
+				       highlight_colors::actual);
 	    if (permerror_opt (&richloc, OPT_Wint_conversion,
 			       "passing argument %d of %qE makes integer from "
 			       "pointer without a cast", parmnum, rname))
@@ -8257,7 +8278,8 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
       {
 	auto_diagnostic_group d;
 	range_label_for_type_mismatch rhs_label (rhstype, type);
-	gcc_rich_location richloc (expr_loc, &rhs_label);
+	gcc_rich_location richloc (expr_loc, &rhs_label,
+				   highlight_colors::actual);
 	const char msg[] = G_("incompatible type for argument %d of %qE");
 	if (warnopt)
 	  warning_at (expr_loc, warnopt, msg, parmnum, rname);
@@ -13462,8 +13484,8 @@ build_binary_op (location_t location, enum tree_code code,
       maybe_range_label_for_tree_type_mismatch
 	label_for_op0 (orig_op0, orig_op1),
 	label_for_op1 (orig_op1, orig_op0);
-      richloc.maybe_add_expr (orig_op0, &label_for_op0);
-      richloc.maybe_add_expr (orig_op1, &label_for_op1);
+      richloc.maybe_add_expr (orig_op0, &label_for_op0, highlight_colors::lhs);
+      richloc.maybe_add_expr (orig_op1, &label_for_op1, highlight_colors::rhs);
       binary_op_error (&richloc, code, type0, type1);
       return error_mark_node;
     }

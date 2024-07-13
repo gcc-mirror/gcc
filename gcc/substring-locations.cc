@@ -27,6 +27,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "substring-locations.h"
 #include "gcc-rich-location.h"
+#include "diagnostic-highlight-colors.h"
+
+const char *const
+format_string_diagnostic_t::highlight_color_format_string
+  = highlight_colors::expected;
+
+const char *const
+format_string_diagnostic_t::highlight_color_param
+  = highlight_colors::actual;
 
 /* format_string_diagnostic_t's ctor, giving information for use by
    the emit_warning* member functions, as follows:
@@ -184,10 +193,12 @@ format_string_diagnostic_t::emit_warning_n_va (int opt,
     primary_label = m_fmt_label;
 
   auto_diagnostic_group d;
-  gcc_rich_location richloc (primary_loc, primary_label);
+  gcc_rich_location richloc (primary_loc, primary_label,
+			     highlight_color_format_string);
 
   if (m_param_loc != UNKNOWN_LOCATION)
-    richloc.add_range (m_param_loc, SHOW_RANGE_WITHOUT_CARET, m_param_label);
+    richloc.add_range (m_param_loc, SHOW_RANGE_WITHOUT_CARET, m_param_label,
+		       highlight_color_param);
 
   if (!err && m_corrected_substring && substring_within_range)
     richloc.add_fixit_replace (fmt_substring_range, m_corrected_substring);
@@ -220,8 +231,10 @@ format_string_diagnostic_t::emit_warning_n_va (int opt,
     if (warned)
       {
 	/* Use fmt_label in the note for case 2.  */
-	rich_location substring_richloc (line_table, fmt_substring_loc,
-					 m_fmt_label);
+	rich_location substring_richloc
+	  (line_table, fmt_substring_loc,
+	   m_fmt_label,
+	   highlight_color_format_string);
 	if (m_corrected_substring)
 	  substring_richloc.add_fixit_replace (fmt_substring_range,
 					       m_corrected_substring);

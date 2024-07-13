@@ -311,6 +311,7 @@ merge_and_complain (vec<cl_decoded_option> &decoded_options,
 	  /* Fallthru.  */
 	case OPT_fdiagnostics_show_caret:
 	case OPT_fdiagnostics_show_event_links:
+	case OPT_fdiagnostics_show_highlight_colors:
 	case OPT_fdiagnostics_show_labels:
 	case OPT_fdiagnostics_show_line_numbers:
 	case OPT_fdiagnostics_show_option:
@@ -728,6 +729,7 @@ append_compiler_options (obstack *argv_obstack, vec<cl_decoded_option> opts)
 	{
 	case OPT_fdiagnostics_show_caret:
 	case OPT_fdiagnostics_show_event_links:
+	case OPT_fdiagnostics_show_highlight_colors:
 	case OPT_fdiagnostics_show_labels:
 	case OPT_fdiagnostics_show_line_numbers:
 	case OPT_fdiagnostics_show_option:
@@ -788,6 +790,7 @@ append_diag_options (obstack *argv_obstack, vec<cl_decoded_option> opts)
 	case OPT_fdiagnostics_format_:
 	case OPT_fdiagnostics_show_caret:
 	case OPT_fdiagnostics_show_event_links:
+	case OPT_fdiagnostics_show_highlight_colors:
 	case OPT_fdiagnostics_show_labels:
 	case OPT_fdiagnostics_show_line_numbers:
 	case OPT_fdiagnostics_show_option:
@@ -1591,6 +1594,10 @@ run_gcc (unsigned argc, char *argv[])
 
 	case OPT_fdiagnostics_color_:
 	  diagnostic_color_init (global_dc, option->value);
+	  break;
+
+	case OPT_fdiagnostics_show_highlight_colors:
+	  global_dc->set_show_highlight_colors (option->value);
 	  break;
 
 	default:

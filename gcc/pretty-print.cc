@@ -24,9 +24,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "intl.h"
 #include "pretty-print.h"
+#include "pretty-print-markup.h"
 #include "pretty-print-urlifier.h"
 #include "diagnostic-color.h"
 #include "diagnostic-event-id.h"
+#include "diagnostic-highlight-colors.h"
 #include "selftest.h"
 
 #if HAVE_ICONV
@@ -1321,6 +1323,8 @@ chunk_info::on_end_quote (pretty_printer *pp,
    %Z: Requires two arguments - array of int, and len. Prints elements
    of the array.
 
+   %e: Consumes a pp_element * argument.
+
    Arguments can be used sequentially, or through %N$ resp. *N$
    notation Nth argument after the format string.  If %N$ / *N$
    notation is used, it must be used for all arguments, except %m, %%,
@@ -1761,6 +1765,17 @@ pretty_printer::format (text_info *text,
 	  begin_url (va_arg (*text->m_args_ptr, const char *));
 	  break;
 
+	case 'e':
+	  {
+	    pp_element *element
+	      = va_arg (*text->m_args_ptr, pp_element *);
+	    pp_markup::context ctxt (*this, *buffer, chunk,
+				     quote, /* by reference */
+				     urlifier);
+	    element->add_to_phase_2 (ctxt);
+	  }
+	  break;
+
 	default:
 	  {
 	    bool ok;
@@ -2101,6 +2116,7 @@ pretty_printer::pretty_printer (int maximum_length)
     m_need_newline (false),
     m_translate_identifiers (true),
     m_show_color (false),
+    m_show_highlight_colors (false),
     m_url_format (URL_FORMAT_NONE),
     m_skipping_null_url (false)
 {
@@ -2125,6 +2141,7 @@ pretty_printer::pretty_printer (const pretty_printer &other)
   m_need_newline (other.m_need_newline),
   m_translate_identifiers (other.m_translate_identifiers),
   m_show_color (other.m_show_color),
+  m_show_highlight_colors (other.m_show_highlight_colors),
   m_url_format (other.m_url_format),
   m_skipping_null_url (false)
 {
@@ -2258,6 +2275,15 @@ pp_string (pretty_printer *pp, const char *str)
 {
   gcc_checking_assert (str);
   pp_maybe_wrap_text (pp, str, str + strlen (str));
+}
+
+/* As per pp_string, but only append the first LEN of STR.  */
+
+void
+pp_string_n (pretty_printer *pp, const char *str, size_t len)
+{
+  gcc_checking_assert (str);
+  pp_maybe_wrap_text (pp, str, str + len);
 }
 
 /* Append code point C to the output area of PRETTY-PRINTER, encoding it
@@ -2710,6 +2736,55 @@ pretty_printer::end_url ()
     pp_string (this, get_end_url_string (this));
 }
 
+/* class pp_markup::context.  */
+
+void
+pp_markup::context::begin_quote ()
+{
+  gcc_assert (!m_quoted);
+  pp_begin_quote (&m_pp, pp_show_color (&m_pp));
+  m_buf.cur_chunk_array->on_begin_quote (m_buf, m_chunk_idx, m_urlifier);
+  m_quoted = true;
+}
+
+void
+pp_markup::context::end_quote ()
+{
+  /* Bail out if the quotes have already been ended, such as by
+     printing a type emitting "TYPEDEF' {aka `TYPE'}".  */
+  if (!m_quoted)
+    return;
+  m_buf.cur_chunk_array->on_end_quote (&m_pp, m_buf, m_chunk_idx, m_urlifier);
+  pp_end_quote (&m_pp, pp_show_color (&m_pp));
+  m_quoted = false;
+}
+
+void
+pp_markup::context::begin_highlight_color (const char *color_name)
+{
+  if (!pp_show_highlight_colors (&m_pp))
+    return;
+  pp_string (&m_pp, colorize_start (pp_show_color (&m_pp), color_name));
+}
+
+void
+pp_markup::context::end_highlight_color ()
+{
+  if (!pp_show_highlight_colors (&m_pp))
+    return;
+  const char *colorstr = colorize_stop (pp_show_color (&m_pp));
+  obstack_grow (&m_buf.chunk_obstack, colorstr, strlen (colorstr));
+}
+
+
+/* Color names for expressing "expected" vs "actual" values.  */
+const char *const highlight_colors::expected = "highlight-a";
+const char *const highlight_colors::actual   = "highlight-b";
+
+/* Color names for expressing "LHS" vs "RHS" values in a binary operation.  */
+const char *const highlight_colors::lhs = "highlight-a";
+const char *const highlight_colors::rhs = "highlight-b";
+
 #if CHECKING_P
 
 namespace selftest {
@@ -2801,6 +2876,22 @@ assert_pp_format_colored (const location &loc, const char *expected,
     assert_pp_format ((SELFTEST_LOCATION), (EXPECTED), (FMT), \
                       (ARG1), (ARG2), (ARG3));		      \
   SELFTEST_END_STMT
+
+class test_element : public pp_element
+{
+public:
+  test_element (const char *text) : m_text (text) {}
+
+  void add_to_phase_2 (pp_markup::context &ctxt) final override
+  {
+    ctxt.begin_quote ();
+    pp_string (&ctxt.m_pp, m_text);
+    ctxt.end_quote ();
+  }
+
+private:
+  const char *m_text;
+};
 
 /* Verify that pp_format works, for various format codes.  */
 
@@ -2913,6 +3004,15 @@ test_pp_format ()
 
   int v2[] = { 0 }; 
   ASSERT_PP_FORMAT_3 ("0 12345678", "%Z %x", v2, 1, 0x12345678);
+
+  /* Verify %e.  */
+  {
+    test_element foo ("foo");
+    test_element bar ("bar");
+    ASSERT_PP_FORMAT_2 ("before `foo' `bar' after",
+			"before %e %e after",
+			&foo, &bar);
+  }
 
   /* Verify that combinations work, along with unformatted text.  */
   assert_pp_format (SELFTEST_LOCATION,
@@ -3256,6 +3356,19 @@ test_urlification ()
     pp_printf_with_urlifier (&pp, &urlifier,
 			     "foo %<-f%2$st%1$sn%> bar",
 			     "io", "op");
+    ASSERT_STREQ
+      ("foo `\33]8;;http://example.com\33\\-foption\33]8;;\33\\' bar",
+       pp_formatted_text (&pp));
+  }
+
+  /* Example of %e.  */
+  {
+    pretty_printer pp;
+    pp.set_url_format (URL_FORMAT_ST);
+    test_element elem ("-foption");
+    pp_printf_with_urlifier (&pp, &urlifier,
+			     "foo %e bar",
+			     &elem);
     ASSERT_STREQ
       ("foo `\33]8;;http://example.com\33\\-foption\33]8;;\33\\' bar",
        pp_formatted_text (&pp));

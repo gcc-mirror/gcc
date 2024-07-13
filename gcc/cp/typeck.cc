@@ -4346,6 +4346,18 @@ cp_build_function_call_nary (tree function, tsubst_flags_t complain, ...)
   return ret;
 }
 
+/* C++ implementation of callback for use when checking param types.  */
+
+bool
+cp_comp_parm_types (tree wanted_type, tree actual_type)
+{
+  if (TREE_CODE (wanted_type) == POINTER_TYPE
+      && TREE_CODE (actual_type) == POINTER_TYPE)
+    return same_or_base_type_p (TREE_TYPE (wanted_type),
+				TREE_TYPE (actual_type));
+  return false;
+}
+
 /* Build a function call using a vector of arguments.
    If FUNCTION is the result of resolving an overloaded target built-in,
    ORIG_FNDECL is the original function decl, otherwise it is null.
@@ -4457,7 +4469,8 @@ cp_build_function_call_vec (tree function, vec<tree, va_gc> **params,
   /* Check for errors in format strings and inappropriately
      null parameters.  */
   bool warned_p = check_function_arguments (input_location, fndecl, fntype,
-					    nargs, argarray, NULL);
+					    nargs, argarray, NULL,
+					    cp_comp_parm_types);
 
   ret = build_cxx_call (function, nargs, argarray, complain, orig_fndecl);
 
@@ -10380,7 +10393,10 @@ convert_for_assignment (tree type, tree rhs,
 	      else
 		{
 		  range_label_for_type_mismatch label (rhstype, type);
-		  gcc_rich_location richloc (rhs_loc, has_loc ? &label : NULL);
+		  gcc_rich_location richloc
+		    (rhs_loc,
+		     has_loc ? &label : NULL,
+		     has_loc ? highlight_colors::percent_h : NULL);
 		  auto_diagnostic_group d;
 
 		  switch (errtype)

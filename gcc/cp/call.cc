@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "decl.h"
 #include "c-family/c-type-mismatch.h"
 #include "tristate.h"
+#include "tree-pretty-print-markup.h"
 
 /* The various kinds of conversion.  */
 
@@ -4760,7 +4761,8 @@ implicit_conversion_error (location_t loc, tree type, tree expr)
   else
     {
       range_label_for_type_mismatch label (TREE_TYPE (expr), type);
-      gcc_rich_location rich_loc (loc, &label);
+      gcc_rich_location rich_loc (loc, &label,
+				  highlight_colors::percent_h);
       error_at (&rich_loc, "could not convert %qE from %qH to %qI",
 		expr, TREE_TYPE (expr), type);
     }
@@ -5446,6 +5448,19 @@ build_op_call (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
   return result;
 }
 
+/* Subroutine for preparing format strings suitable for the error
+   function.  It concatenates a prefix (controlled by MATCH), ERRMSG,
+   and SUFFIX.  */
+
+static const char *
+concat_op_error_string (bool match, const char *errmsg, const char *suffix)
+{
+  return concat (match
+		 ? G_("ambiguous overload for ")
+		 : G_("no match for "),
+		 errmsg, suffix, nullptr);
+}
+
 /* Called by op_error to prepare format strings suitable for the error
    function.  It concatenates a prefix (controlled by MATCH), ERRMSG,
    and a suffix (controlled by NTYPES).  */
@@ -5453,19 +5468,24 @@ build_op_call (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
 static const char *
 op_error_string (const char *errmsg, int ntypes, bool match)
 {
-  const char *msg;
-
-  const char *msgp = concat (match ? G_("ambiguous overload for ")
-			           : G_("no match for "), errmsg, NULL);
-
+  const char *suffix;
   if (ntypes == 3)
-    msg = concat (msgp, G_(" (operand types are %qT, %qT, and %qT)"), NULL);
+    suffix = G_(" (operand types are %qT, %qT, and %qT)");
   else if (ntypes == 2)
-    msg = concat (msgp, G_(" (operand types are %qT and %qT)"), NULL);
+    suffix = G_(" (operand types are %qT and %qT)");
   else
-    msg = concat (msgp, G_(" (operand type is %qT)"), NULL);
+    suffix = G_(" (operand type is %qT)");
+  return concat_op_error_string (match, errmsg, suffix);
+}
 
-  return msg;
+/* Similar to op_error_string, but a special-case for binary ops that
+   use %e for the args, rather than %qT.  */
+
+static const char *
+binop_error_string (const char *errmsg, bool match)
+{
+  return concat_op_error_string (match, errmsg,
+				 G_(" (operand types are %e and %e)"));
 }
 
 static void
@@ -5536,9 +5556,13 @@ op_error (const op_location_t &loc,
 	if (flag_diagnostics_show_caret)
 	  {
 	    binary_op_rich_location richloc (loc, arg1, arg2, true);
+	    pp_markup::element_quoted_type element_0
+	      (TREE_TYPE (arg1), highlight_colors::lhs);
+	    pp_markup::element_quoted_type element_1
+	      (TREE_TYPE (arg2), highlight_colors::rhs);
 	    error_at (&richloc,
-		      op_error_string (G_("%<operator%s%>"), 2, match),
-		      opname, TREE_TYPE (arg1), TREE_TYPE (arg2));
+		      binop_error_string (G_("%<operator%s%>"), match),
+		      opname, &element_0, &element_1);
 	  }
 	else
 	  error_at (loc, op_error_string (G_("%<operator%s%> in %<%E %s %E%>"),
@@ -8370,11 +8394,16 @@ get_fndecl_argument_location (tree fndecl, int argnum)
    wrong).  */
 
 void
-maybe_inform_about_fndecl_for_bogus_argument_init (tree fn, int argnum)
+maybe_inform_about_fndecl_for_bogus_argument_init (tree fn, int argnum,
+						   const char *highlight_color)
 {
   if (fn)
-    inform (get_fndecl_argument_location (fn, argnum),
-	    "  initializing argument %P of %qD", argnum, fn);
+    {
+      gcc_rich_location richloc (get_fndecl_argument_location (fn, argnum));
+      richloc.set_highlight_color (highlight_color);
+      inform (&richloc,
+	      "  initializing argument %P of %qD", argnum, fn);
+    }
 }
 
 /* Maybe warn about C++20 Conversions to arrays of unknown bound.  C is
@@ -8523,7 +8552,7 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
       if (!complained && expr != error_mark_node)
 	{
 	  range_label_for_type_mismatch label (TREE_TYPE (expr), totype);
-	  gcc_rich_location richloc (loc, &label);
+	  gcc_rich_location richloc (loc, &label, highlight_colors::percent_h);
 	  complained = permerror (&richloc,
 				  "invalid conversion from %qH to %qI",
 				  TREE_TYPE (expr), totype);
@@ -8535,7 +8564,8 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
       else
 	expr = cp_convert (totype, expr, complain);
       if (complained == 1)
-	maybe_inform_about_fndecl_for_bogus_argument_init (fn, argnum);
+	maybe_inform_about_fndecl_for_bogus_argument_init
+	  (fn, argnum, highlight_colors::percent_i);
       return expr;
     }
 
@@ -10380,7 +10410,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	}
 
       warned_p = check_function_arguments (input_location, fn, TREE_TYPE (fn),
-					   nargs, fargs, NULL);
+					   nargs, fargs, NULL,
+					   cp_comp_parm_types);
     }
 
   if (DECL_INHERITED_CTOR (fn))
@@ -11460,12 +11491,14 @@ complain_about_bad_argument (location_t arg_loc,
       arg_loc = input_location;
       label = NULL;
     }
-  gcc_rich_location richloc (arg_loc, label);
+  gcc_rich_location richloc (arg_loc, label, highlight_colors::percent_h);
   error_at (&richloc,
 	    "cannot convert %qH to %qI",
 	    from_type, to_type);
-  maybe_inform_about_fndecl_for_bogus_argument_init (fndecl,
-						     parmnum);
+  maybe_inform_about_fndecl_for_bogus_argument_init
+    (fndecl,
+     parmnum,
+     highlight_colors::percent_i);
 }
 
 /* Subroutine of build_new_method_call_1, for where there are no viable
