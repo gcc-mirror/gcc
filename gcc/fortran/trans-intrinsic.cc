@@ -5738,6 +5738,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 
       gfc_init_se (&maskse, NULL);
       gfc_conv_expr_val (&maskse, maskexpr);
+      gfc_add_block_to_block (&se->pre, &maskse.pre);
       gfc_init_block (&block);
       gfc_add_block_to_block (&block, &loop.pre);
       gfc_add_block_to_block (&block, &loop.post);
