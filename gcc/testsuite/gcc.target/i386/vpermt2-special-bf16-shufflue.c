@@ -1,7 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mavx512bf16 -mavx512vl" } */
-/* { dg-final { scan-assembler-not "vpermi2b" } } */
-/* { dg-final { scan-assembler-times "vcvtne2ps2bf16" 3 } } */
+/* { dg-final { scan-assembler-times "vpermi2w" 3 } } */
 
 typedef __bf16 v8bf __attribute__((vector_size(16)));
 typedef __bf16 v16bf __attribute__((vector_size(32)));
