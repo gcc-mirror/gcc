@@ -359,8 +359,8 @@
    lr\t%0,%1
    mvi\t%0,0
    mviy\t%0,0
-   mvi\t%0,-1
-   mviy\t%0,-1
+   mvi\t%0,255
+   mviy\t%0,255
    lhi\t%0,0
    lhi\t%0,-1
    llc\t%0,%1
