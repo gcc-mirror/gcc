@@ -1,3 +1,26 @@
+2024-07-12  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_add): Don't use .gnu_debugdata if we are already
+	reading a debuginfo file.
+	* Makefile.am (m2test_*): New test targets.
+	(CHECK_PROGRAMS): Add m2test.
+	(MAKETESTS): Add m2test_minidebug2.
+	(%_minidebug2): New pattern.
+	(CLEANFILES): Remove minidebug2 files.
+	* Makefile.in: Regenerate.
+
+2024-07-12  Ian Lance Taylor  <iant@golang.org>
+
+	* btest.c (test5): Don't fail if symbol size is 0.
+	* mtest.c (test5): Likewise.
+
+2024-07-12  Ian Lance Taylor  <iant@golang.org>
+
+	* macho.c (MACH_O_N_EXT): Don't define.
+	(MACH_O_N_UNDF): Define.
+	(macho_defined_symbol): Don't discard N_EXT symbols.  Do
+	discard N_UNDF symbols.
+
 2024-07-11  Ian Lance Taylor  <iant@golang.org>
 
 	* btest.c (test1, test3): Add optnone attribute.

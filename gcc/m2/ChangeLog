@@ -1,3 +1,11 @@
+2024-07-12  FX Coudert  <fxcoudert@gmail.com>
+
+	* gm2-gcc/m2linemap.cc (INCLUDE_STRING): Define before
+	include of gcc-consolidation.h.
+	* gm2spec.cc (INCLUDE_STRING): Define before include of
+	system.h.
+	(INCLUDE_VECTOR): Ditto.
+
 2024-07-10  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/115823

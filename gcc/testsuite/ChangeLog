@@ -1,3 +1,105 @@
+2024-07-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/115785
+	* g++.dg/torture/pr115785.C: New test.
+
+2024-07-12  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/115798
+	* g++.dg/modules/using-26_a.C: New test.
+	* g++.dg/modules/using-26_b.C: New test.
+	* g++.dg/modules/using-26_c.C: New test.
+
+2024-07-12  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/using-19_a.C: New test.
+	* g++.dg/modules/using-19_b.C: New test.
+
+2024-07-12  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114683
+	* g++.dg/lookup/using29.C: Update errors.
+	* g++.dg/lookup/using53.C: Update errors, add XFAILs.
+	* g++.dg/modules/using-22_b.C: Remove xfails.
+	* g++.dg/warn/Wunused-var-18.C: Update error, add check.
+	* g++.dg/lookup/using68.C: New test.
+	* g++.dg/modules/using-24_a.C: New test.
+	* g++.dg/modules/using-24_b.C: New test.
+	* g++.dg/modules/using-25_a.C: New test.
+	* g++.dg/modules/using-25_b.C: New test.
+	* g++.dg/modules/using-enum-4_a.C: New test.
+	* g++.dg/modules/using-enum-4_b.C: New test.
+	* g++.dg/modules/using-enum-4_c.C: New test.
+
+2024-07-12  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/vector/vec-copysign.c: Change to non-extended
+	mnemonic.
+	* gcc.target/s390/vector/vec-genmask-1.c: Change to non-extended
+	mnemonic.
+	* gcc.target/s390/vector/vec-init-1.c: Change to non-extended
+	mnemonic.
+	* gcc.target/s390/vector/vec-vrepi-1.c: Change to non-extended
+	mnemonic.
+	* gcc.target/s390/zvector/autovec-double-quiet-uneq.c: Change to
+	non-extended mnemonic.
+	* gcc.target/s390/zvector/autovec-float-quiet-uneq.c: Change to
+	non-extended mnemonic.
+	* gcc.target/s390/zvector/vec-genmask-1.c: Change to
+	non-extended mnemonic.
+	* gcc.target/s390/zvector/vec-splat-1.c: Change to non-extended
+	mnemonic.
+	* gcc.target/s390/zvector/vec-splat-2.c: Change to non-extended
+	mnemonic.
+	* gcc.target/s390/vector/vgbm-double-1.c: New test.
+	* gcc.target/s390/vector/vgbm-float-1.c: New test.
+	* gcc.target/s390/vector/vgbm-int128-1.c: New test.
+	* gcc.target/s390/vector/vgbm-integer-1.c: New test.
+	* gcc.target/s390/vector/vgbm-longdouble-1.c: New test.
+	* gcc.target/s390/vector/vgm-df-1.c: New test.
+	* gcc.target/s390/vector/vgm-di-1.c: New test.
+	* gcc.target/s390/vector/vgm-hi-1.c: New test.
+	* gcc.target/s390/vector/vgm-int128-1.c: New test.
+	* gcc.target/s390/vector/vgm-longdouble-1.c: New test.
+	* gcc.target/s390/vector/vgm-qi-1.c: New test.
+	* gcc.target/s390/vector/vgm-sf-1.c: New test.
+	* gcc.target/s390/vector/vgm-si-1.c: New test.
+	* gcc.target/s390/vector/vgm-tf-1.c: New test.
+	* gcc.target/s390/vector/vgm-ti-1.c: New test.
+	* gcc.target/s390/vector/vrepi-df-1.c: New test.
+	* gcc.target/s390/vector/vrepi-di-1.c: New test.
+	* gcc.target/s390/vector/vrepi-hi-1.c: New test.
+	* gcc.target/s390/vector/vrepi-int128-1.c: New test.
+	* gcc.target/s390/vector/vrepi-qi-1.c: New test.
+	* gcc.target/s390/vector/vrepi-sf-1.c: New test.
+	* gcc.target/s390/vector/vrepi-si-1.c: New test.
+	* gcc.target/s390/vector/vrepi-tf-1.c: New test.
+	* gcc.target/s390/vector/vrepi-ti-1.c: New test.
+
+2024-07-12  YunQiang Su  <yunqiang@isrc.iscas.ac.cn>
+
+	* gcc.dg/vect/pr115840.c: New testcase.
+
+2024-07-12  Mikael Morin  <morin-mikael@orange.fr>
+
+	* gfortran.dg/maxloc_5.f90: New test.
+	* gfortran.dg/minloc_5.f90: New test.
+
+2024-07-12  xuli  <xuli1@eswincomputing.com>
+
+	PR target/115862
+	* gcc.target/riscv/rvv/base/pr115862.c: New file.
+
+2024-07-12  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/predef-sf-1.c: New.
+	* gcc.target/riscv/predef-sf-2.c: New.
+
+2024-07-12  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/115752
+	* gcc.target/loongarch/pr115752.c: New test.
+
 2024-07-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* gcc.target/arm/mve/intrinsics/vsetq_lane_su64.c: New test.

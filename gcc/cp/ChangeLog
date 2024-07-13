@@ -1,3 +1,44 @@
+2024-07-12  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* decl.cc (xref_tag): Move assertion into condition.
+	* name-lookup.cc (check_module_override): Check for conflicting
+	types and using-decls.
+
+2024-07-12  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114683
+	* cp-tree.h (class ovl_iterator): Move definitions of purview_p
+	and exporting_p to name-lookup.cc.
+	* module.cc (depset::hash::add_binding_entity): Strip
+	using-decls.  Remove workarounds.  Handle CONST_DECLs with
+	different purview/exported from their enum.
+	(enum ct_bind_flags): Remove unnecessary cbf_wrapped flag.
+	(module_state::write_cluster): Likewise.
+	(module_state::read_cluster): Build USING_DECL for non-function
+	usings.
+	(binding_cmp): Handle CONST_DECLs with different purview and/or
+	exported from their enum.
+	(set_instantiating_module): Support CONST_DECLs.
+	* name-lookup.cc (get_fixed_binding_slot): Strip USING_DECLs.
+	(name_lookup::process_binding): Strip USING_DECLs.
+	(name_lookup::process_module_binding): Remove workaround.
+	(update_binding): Strip USING_DECLs, remove incorrect check for
+	non-extern variables.
+	(ovl_iterator::purview_p): Support USING_DECLs.
+	(ovl_iterator::exporting_p): Support USING_DECLs.
+	(walk_module_binding): Handle stat hack type.
+	(do_nonmember_using_decl): Strip USING_DECLs when comparing;
+	build USING_DECLs for non-function usings in different scope
+	rather than binding directly.
+	(get_namespace_binding): Strip USING_DECLs.
+	(lookup_name): Strip USING_DECLs.
+	(lookup_elaborated_type): Strip USING_DECLs.
+	* decl.cc (poplevel): Still support -Wunused for using-decls.
+	(lookup_and_check_tag): Remove unnecessary strip_using_decl.
+	* parser.cc (cp_parser_template_name): Likewise.
+	(cp_parser_nonclass_name): Likewise.
+	(cp_parser_class_name): Likewise.
+
 2024-07-11  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/99241

@@ -1,3 +1,10 @@
+2024-07-12  Mikael Morin  <morin-mikael@orange.fr>
+
+	* trans-intrinsic.cc (gfc_conv_intrinsic_minmaxloc): Create a new
+	scalar scalarization chain element if BACK is present.  Add it to
+	the loop.  Set the scalarization chain before evaluating the
+	argument.
+
 2024-07-11  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* trans-array.cc (gfc_conv_array_parameter): Init variable to

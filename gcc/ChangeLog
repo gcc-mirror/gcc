@@ -1,3 +1,191 @@
+2024-07-12  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/gm2.texi (Community): Update lists.nongnu.org and
+	lists.gnu.org links.
+
+2024-07-12  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/115876
+	* ext-dce.cc (carry_backpropagate): Make mask and mmask unsigned.
+
+2024-07-12  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi: Remove @opindex and @itemx for -fconcepts-ts.
+
+2024-07-12  Daniel Bertalan  <dani@danielbertalan.dev>
+
+	* value-pointer-equiv.cc: Change NULL to nullptr.
+
+2024-07-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/115785
+	* rtl-ssa/insns.h (insn_info::prev_insn_or_last_debug_insn)
+	(insn_info::next_nondebug_or_debug_insn): Remove typedefs.
+	(insn_info::m_prev_insn_or_last_debug_insn): Rename to...
+	(insn_info::m_prev_sametype_or_last_debug_insn): ...this.
+	* rtl-ssa/internals.inl (insn_info::insn_info): Update after
+	above renaming.
+	(insn_info::copy_prev_from): Likewise.
+	(insn_info::set_prev_sametype_insn): Likewise.
+	(insn_info::set_last_debug_insn): Likewise.
+	(insn_info::clear_insn_links): Likewise.
+	(insn_info::has_insn_links): Likewise.
+	* rtl-ssa/member-fns.inl (insn_info::prev_nondebug_insn): Likewise.
+	(insn_info::prev_any_insn): Fix moves from non-debug to debug insns.
+
+2024-07-12  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv-string.cc (emit_memcmp_scalar_load_and_compare):
+	Set RESULT directly rather than using a temporary.
+	(emit_memcmp_scalar_result_calculation): Similarly.
+	(riscv_expand_block_compare_scalar): Use CONST0_RTX rather than
+	generating new RTL.
+	* config/riscv/riscv.md (cmpmemsi): Pass an X mode temporary to the
+	expansion routines.  If necessary extract low part of the word to store
+	in final result location.
+
+2024-07-12  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/2964.md: Remove extended mnemonics for vgm.
+	* config/s390/3906.md: Remove extended mnemonics for vgm.
+	* config/s390/3931.md: Remove extended mnemonics for vgm.
+	* config/s390/8561.md: Remove extended mnemonics for vgm.
+	* config/s390/constraints.md (jKK): Remove constraint.
+	(jzz): Add constraint.
+	* config/s390/s390-protos.h (s390_contiguous_bitmask_vector_p):
+	Add prototype.
+	(s390_constant_via_vgm_p): Add prototype.
+	(s390_constant_via_vrepi_p): Add prototype.
+	* config/s390/s390.cc (s390_contiguous_bitmask_vector_p): New
+	function.
+	(s390_constant_via_vgm_vrepi_helper): New function.
+	(s390_constant_via_vgm_p): New function.
+	(s390_constant_via_vgbm_p): For the sake of symmetry rename
+	s390_bytemask_vector_p into s390_constant_via_vgbm_p.
+	(s390_bytemask_vector_p): Deal with non-integer and partial
+	vectors.
+	(s390_constant_via_vrepi_p): New function.
+	(s390_legitimate_constant_p): Allow partial vectors.
+	(legitimate_reload_constant_p): Fix indentation.
+	(legitimate_reload_vector_constant_p): Restrict to constraints
+	j00, jm1, jxx, jyy, jzz only, i.e., allow partial vectors.
+	(s390_expand_vec_init): Also make use of vrepi if possible.
+	(print_operand): Add q,p,r for vgm,vrepi,vgbm, respectively.
+	Remove e,s,t for constant vectors.
+	* config/s390/s390.md (movti): Add variants utilizing
+	vgbm,vgm,vrepi.
+	* config/s390/vector.md (mov<mode><tf_vr>): Adapt variants
+	for vgbm,vgm,vrepi for the new scheme.
+	(mov<mode>): Adapt variants for vgbm,vgm for the new
+	scheme and add vrepi variant for modes V_8,V_16,V_32,V_64.
+
+2024-07-12  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/vector.md (mov<mode>): Fix output template for
+	movv1qi.
+
+2024-07-12  Roger Sayle  <roger@nextmovesoftware.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/i386-expand.cc (ix86_broadcast_from_constant):
+	Use CONST_VECTOR_P instead of comparison against GET_CODE.
+	(ix86_gen_bcst_mem): Likewise.
+	(ix86_ternlog_leaf_p): Likewise.
+	(ix86_ternlog_operand_p): ix86_ternlog_leaf_p is always true for
+	vector_all_ones_operand.
+	(ix86_expand_ternlog_bin_op): Use CONST_VECTOR_P instead of
+	equality comparison against GET_CODE.  Replace call to force_reg
+	with gen_reg_rtx and emit_move_insn (for VEC_DUPLICATE broadcast).
+	Check for !register_operand instead of memory_operand.
+	Support CONST_VECTORs by calling force_const_mem.
+	(ix86_expand_ternlog): Fix indentation whitespace.
+	Allow ix86_ternlog_leaf_p as ix86_expand_ternlog_andnot's second
+	operand. Use CONST_VECTOR_P instead of equality against GET_CODE.
+	Use gen_reg_rtx and emit_move_insn for ~a, ~b and ~c cases.
+
+2024-07-12  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390.md (*icjump_64): Allow raw CC comparisons,
+	i.e., any constant integer between 0 and 15 for CC comparisons.
+
+2024-07-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_process_one_target_attr)
+	(aarch64_process_target_attr): Avoid alloca.
+
+2024-07-12  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/115459
+	* config/alpha/alpha.cc (alpha_expand_block_move): Adjust
+	MEMs to match inferred alignment.
+
+2024-07-12  YunQiang Su  <yunqiang@isrc.iscas.ac.cn>
+
+	PR target/115840
+	* config/riscv/riscv.cc(riscv_preferred_else_value): Mark
+	tmp_var as NO_WARNING.
+
+2024-07-12  xuli  <xuli1@eswincomputing.com>
+
+	PR target/115862
+	* config/riscv/riscv.cc (riscv_slow_unaligned_access): Disable vector misalign.
+
+2024-07-12  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_implied_info): Add xsfvcp.
+	(riscv_ext_version_table): Add xsfvcp, xsfcease.
+	(riscv_ext_flag_table): Ditto.
+	* config/riscv/riscv.opt (riscv_sifive_subext): New.
+	(XSFVCP): New.
+	(XSFCEASE): New.
+
+2024-07-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/115659
+	* config/rs6000/rs6000-protos.h (rs6000_emit_vector_cond_expr): Remove.
+	* config/rs6000/rs6000.cc (rs6000_emit_vector_cond_expr): Add static
+	qualifier as it is only called by rs6000_emit_swsqrt now.
+	* config/rs6000/vector.md (vcond<VEC_F:mode><VEC_F:mode>): Remove.
+	(vcond<VEC_I:mode><VEC_I:mode>): Remove.
+	(vcondv4sfv4si): Likewise.
+	(vcondv4siv4sf): Likewise.
+	(vcondv2dfv2di): Likewise.
+	(vcondv2div2df): Likewise.
+	(vcondu<VEC_I:mode><VEC_I:mode>): Likewise.
+	(vconduv4sfv4si): Likewise.
+	(vconduv2dfv2di): Likewise.
+
+2024-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115867
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Properly
+	guess the number of mask elements for integer mode masks.
+
+2024-07-12  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/m68k/m68k.md (extendsidi2): Add missing early clobbers.
+
+2024-07-12  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc
+	(loongarch_split_move): Delete.
+	(loongarch_hard_regno_mode_ok_uncached): Likewise.
+	* config/loongarch/loongarch.md
+	(move_doubleword_fpr<mode>): Likewise.
+	(load_low<mode>): Likewise.
+	(load_high<mode>): Likewise.
+	(store_word<mode>): Likewise.
+	(movgr2frh<mode>): Likewise.
+	(movfrh2gr<mode>): Likewise.
+
+2024-07-12  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/115752
+	* config/loongarch/loongarch.cc
+	(loongarch_hard_regno_mode_ok_uncached): Replace
+	UNITS_PER_FPVALUE with UNITS_PER_HWFPVALUE.
+	* config/loongarch/loongarch.h (UNITS_PER_FPVALUE): Delete.
+
 2024-07-11  Jeff Law  <jlaw@ventanamicro.com>
 
 	* config/riscv/riscv-string.cc

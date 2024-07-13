@@ -1,3 +1,8 @@
+2024-07-12  Daniel Bertalan  <dani@danielbertalan.dev>
+
+	* metadata/rust-imports.cc (Import::try_package_in_directory):
+	Change NULL to nullptr.
+
 2024-06-25  Kewen Lin  <linkw@linux.ibm.com>
 
 	* rust-gcc.cc (float_type): Use TYPE_PRECISION of
