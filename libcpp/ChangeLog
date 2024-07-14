@@ -1,3 +1,19 @@
+2024-07-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/rich-location.h (location_range::m_highlight_color): New
+	field.
+	(rich_location::rich_location): Add optional label_highlight_color
+	param.
+	(rich_location::set_highlight_color): New decl.
+	(rich_location::add_range): Add optional label_highlight_color
+	param.
+	(rich_location::set_range): Likewise.
+	* line-map.cc (rich_location::rich_location): Add
+	"label_highlight_color" param and pass it to add_range.
+	(rich_location::set_highlight_color): New.
+	(rich_location::add_range): Add "label_highlight_color" param.
+	(rich_location::set_range): Add "highlight_color" param.
+
 2024-06-21  David Malcolm  <dmalcolm@redhat.com>
 
 	PR testsuite/109360

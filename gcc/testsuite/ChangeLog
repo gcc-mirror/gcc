@@ -1,3 +1,33 @@
+2024-07-13  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.dg/minmaxloc_17.f90: New test.
+
+2024-07-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/diagnostic/bad-binary-ops-highlight-colors.C: New test.
+	* g++.dg/diagnostic/bad-binary-ops-no-highlight-colors.C: New test.
+	* g++.dg/plugin/plugin.exp (plugin_test_list): Add
+	show-template-tree-color-no-highlight-colors.C to
+	show_template_tree_color_plugin.c.
+	* g++.dg/plugin/show-template-tree-color-labels.C: Update expected
+	output to reflect use of highlight-a and highlight-b to contrast
+	mismatches.
+	* g++.dg/plugin/show-template-tree-color-no-elide-type.C:
+	Likewise.
+	* g++.dg/plugin/show-template-tree-color-no-highlight-colors.C:
+	New test.
+	* g++.dg/plugin/show-template-tree-color.C: Update expected output
+	to reflect use of highlight-a and highlight-b to contrast
+	mismatches.
+	* g++.dg/warn/Wformat-gcc_diag-1.C: New test.
+	* g++.dg/warn/Wformat-gcc_diag-2.C: New test.
+	* g++.dg/warn/Wformat-gcc_diag-3.C: New test.
+	* gcc.dg/bad-binary-ops-highlight-colors.c: New test.
+	* gcc.dg/format/colors.c: New test.
+	* gcc.dg/plugin/diagnostic_plugin_show_trees.c (show_tree): Pass
+	nullptr for new param of gcc_rich_location::add_expr.
+	* gcc.dg/bad-binary-ops-no-highlight-colors.c: New file.
+
 2024-07-12  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/115785

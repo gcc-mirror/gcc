@@ -1,3 +1,15 @@
+2024-07-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* check-MAINTAINERS.py (sort_by_surname): Replace with...
+	(get_surname): ...this.
+	(has_tab, is_empty): Delete.
+	(check_group): Take a list of column positions as argument.
+	Check that lines conform to these column numbers.  Check that the
+	final column is an email in angle brackets.  Record surnames on
+	the fly.
+	(top level): Reject tabs.  Use paragraph counts to identify which
+	groups of lines should be checked.  Report missing sections.
+
 2024-06-05  Robin Dapp  <rdapp@ventanamicro.com>
 
 	* check_GNU_style_lib.py: Use raw strings for regexps.

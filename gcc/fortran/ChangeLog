@@ -1,3 +1,9 @@
+2024-07-13  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-intrinsic.cc (gfc_conv_intrinsic_minmaxloc): Add the
+	preliminary code generated for MASK to the preliminary code of
+	MINLOC/MAXLOC.
+
 2024-07-12  Mikael Morin  <morin-mikael@orange.fr>
 
 	* trans-intrinsic.cc (gfc_conv_intrinsic_minmaxloc): Create a new

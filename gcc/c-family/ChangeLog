@@ -1,3 +1,45 @@
+2024-07-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.cc: Include "tree-pretty-print-markup.h".
+	(binary_op_error): Use pp_markup::element_quoted_type and %e.
+	(check_function_arguments): Add "comp_types" param and pass it to
+	check_function_format.
+	* c-common.h (check_function_arguments): Add "comp_types" param.
+	(check_function_format): Likewise.
+	* c-format.cc: Include "tree-pretty-print-markup.h".
+	(local_pp_element_ptr_node): New.
+	(PP_FORMAT_CHAR_TABLE): Add entry for %e.
+	(struct format_check_context): Add "m_comp_types" field.
+	(check_function_format): Add "comp_types" param and pass it to
+	check_format_info.
+	(check_format_info): Likewise, passing it to format_ctx's ctor.
+	(check_format_arg): Extract m_comp_types from format_ctx and
+	pass it to check_format_info_main.
+	(check_format_info_main): Add "comp_types" param and pass it to
+	arg_parser's ctor.
+	(class argument_parser): Add "m_comp_types" field.
+	(argument_parser::check_argument_type): Pass m_comp_types to
+	check_format_types.
+	(handle_subclass_of_pp_element_p): New.
+	(check_format_types): Add "comp_types" param, and use it to
+	call handle_subclass_of_pp_element_p.
+	(class element_format_substring): New.
+	(class element_expected_type_with_indirection): New.
+	(format_type_warning): Use element_expected_type_with_indirection
+	to unify the if (wanted_type_name) branches, reducing from four
+	emit_warning calls to two.  Simplify these further using %e.
+	Doing so also gives suitable colorization of the text within the
+	diagnostics.
+	(init_dynamic_diag_info): Initialize local_pp_element_ptr_node.
+	(selftest::test_type_mismatch_range_labels): Add nullptr for new
+	param of gcc_rich_location label overload.
+	* c-format.h (T_PP_ELEMENT_PTR): New.
+	* c-type-mismatch.cc: Include "diagnostic-highlight-colors.h".
+	(binary_op_rich_location::binary_op_rich_location): Use
+	highlight_colors::lhs and highlight_colors::rhs for the ranges.
+	* c-type-mismatch.h (class binary_op_rich_location): Add comment
+	about highlight_colors.
+
 2024-07-10  Marek Polacek  <polacek@redhat.com>
 
 	* c-cppbuiltin.cc (c_cpp_builtins): Remove flag_concepts_ts code.

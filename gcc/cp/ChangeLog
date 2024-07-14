@@ -1,3 +1,49 @@
+2024-07-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* call.cc: Include "tree-pretty-print-markup.h".
+	(implicit_conversion_error): Use highlight_colors::percent_h for
+	the labelled range.
+	(op_error_string): Split out into...
+	(concat_op_error_string): ...this.
+	(binop_error_string): New.
+	(op_error): Use %e, binop_error_string, highlight_colors::lhs,
+	and highlight_colors::rhs.
+	(maybe_inform_about_fndecl_for_bogus_argument_init): Add
+	"highlight_color" param; use it for the richloc.
+	(convert_like_internal): Use highlight_colors::percent_h for the
+	labelled_range, and highlight_colors::percent_i for the call to
+	maybe_inform_about_fndecl_for_bogus_argument_init.
+	(build_over_call): Pass cp_comp_parm_types for new "comp_types"
+	param of check_function_arguments.
+	(complain_about_bad_argument): Use highlight_colors::percent_h for
+	the labelled_range, and highlight_colors::percent_i for the call
+	to maybe_inform_about_fndecl_for_bogus_argument_init.
+	* cp-tree.h (maybe_inform_about_fndecl_for_bogus_argument_init):
+	Add optional highlight_color param.
+	(cp_comp_parm_types): New decl.
+	(highlight_colors::const percent_h): New decl.
+	(highlight_colors::const percent_i): New decl.
+	* error.cc: Include "tree-pretty-print-markup.h".
+	(highlight_colors::const percent_h): New defn.
+	(highlight_colors::const percent_i): New defn.
+	(type_to_string): Add param "highlight_color" and use it.
+	(print_nonequal_arg): Likewise.
+	(print_template_differences): Add params "highlight_color_a" and
+	"highlight_color_b".
+	(type_to_string_with_compare): Add params "this_highlight_color"
+	and "peer_highlight_color".
+	(print_template_tree_comparison): Add params "highlight_color_a"
+	and "highlight_color_b".
+	(cxx_format_postprocessor::handle):
+	Use highlight_colors::percent_h and highlight_colors::percent_i.
+	(pp_markup::element_quoted_type::print_type): New.
+	(range_label_for_type_mismatch::get_text): Pass nullptr for new
+	params of type_to_string_with_compare.
+	* typeck.cc (cp_comp_parm_types): New.
+	(cp_build_function_call_vec): Pass it to check_function_arguments.
+	(convert_for_assignment): Use highlight_colors::percent_h for the
+	labelled_range.
+
 2024-07-12  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	* decl.cc (xref_tag): Move assertion into condition.

@@ -1,3 +1,9 @@
+2024-07-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* MAINTAINERS: Replace tabs with spaces.  Add a bugzilla account
+	name column to the Write After Approval section.  Line up the
+	email column and fix an entry that was missing the trailing ">".
+
 2024-07-11  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
 
 	* MAINTAINERS: Update my email address.

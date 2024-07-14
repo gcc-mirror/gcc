@@ -1,3 +1,135 @@
+2024-07-13  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (write_lf_modifier): Expand upon comment.
+
+2024-07-13  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (write_data_symbol): Add alignment directive.
+
+2024-07-13  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (enum cv_leaf_type): Add padding constants.
+	(write_cv_padding): Use names for padding constants.
+
+2024-07-13  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (S_LDATA32, S_GDATA32, S_COMPILE3): Undefine.
+	(enum cv_sym_type): Define.
+	(struct codeview_symbol): Use enum cv_sym_type.
+	(write_codeview_symbols): Add default to switch.
+
+2024-07-13  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (enum cv_leaf_type): Define.
+	(struct codeview_subtype): Use enum cv_leaf_type.
+	(struct codeview_custom_type): Use enum cv_leaf_type.
+	(write_lf_fieldlist): Add default to switch.
+	(write_custom_types): Add default to switch.
+	* dwarf2codeview.h (LF_MODIFIER, LF_POINTER): Undefine.
+	(LF_PROCEDURE, LF_ARGLIST, LF_FIELDLIST, LF_BITFIELD): Likewise.
+	(LF_INDEX, LF_ENUMERATE, LF_ARRAY, LF_CLASS): Likewise.
+	(LF_STRUCTURE, LF_UNION, LF_ENUM, LF_MEMBER, LF_CHAR): Likewise.
+	(LF_SHORT, LF_USHORT, LF_LONG, LF_ULONG, LF_QUADWORD): Likewise.
+	(LF_UQUADWORD): Likewise.
+
+2024-07-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* common.opt (fdiagnostics-show-highlight-colors): New option.
+	* common.opt.urls: Regenerate.
+	* coretypes.h (pp_markup::element): New forward decl.
+	(pp_element): New typedef.
+	* diagnostic-color.cc (gcc_color_defaults): Add "highlight-a"
+	and "highlight-b".
+	* diagnostic-format-json.cc (diagnostic_output_format_init_json):
+	Disable highlight colors.
+	* diagnostic-format-sarif.cc (diagnostic_output_format_init_sarif):
+	Likewise.
+	* diagnostic-highlight-colors.h: New file.
+	* diagnostic-path.cc (struct event_range): Pass nullptr for
+	highlight color of m_rich_loc.
+	* diagnostic-show-locus.cc (colorizer::set_range): Handle ranges
+	with m_highlight_color.
+	(colorizer::STATE_NAMED_COLOR): New.
+	(colorizer::m_richloc): New field.
+	(colorizer::colorizer): Add richloc param for initializing
+	m_richloc.
+	(colorizer::set_named_color): New.
+	(colorizer::begin_state): Add case STATE_NAMED_COLOR.
+	(layout::layout): Pass richloc to m_colorizer's ctor.
+	(selftest::test_one_liner_labels): Pass nullptr for new param of
+	gcc_rich_location ctor for labels.
+	(selftest::test_one_liner_labels_utf8): Likewise.
+	* diagnostic.h (diagnostic_context::set_show_highlight_colors):
+	New.
+	* doc/invoke.texi: Add option -fdiagnostics-show-highlight-colors
+	and highlight-a and highlight-b color caps.
+	* doc/ux.texi
+	(Use color consistently when highlighting mismatches): New
+	subsection.
+	* gcc-rich-location.cc (gcc_rich_location::add_expr): Add
+	"highlight_color" param.
+	(gcc_rich_location::maybe_add_expr): Likewise.
+	* gcc-rich-location.h (gcc_rich_location::gcc_rich_location):
+	Split out into a pair of ctors, where if a range_label is supplied
+	the caller must also supply a highlight color.
+	(gcc_rich_location::add_expr): Add "highlight_color" param.
+	(gcc_rich_location::maybe_add_expr): Likewise.
+	* gcc.cc (driver_handle_option): Handle
+	OPT_fdiagnostics_show_highlight_colors.
+	* lto-wrapper.cc (merge_and_complain): Likewise.
+	(append_compiler_options): Likewise.
+	(append_diag_options): Likewise.
+	(run_gcc): Likewise.
+	* opts-common.cc (decode_cmdline_options_to_array): Add comment
+	about -fno-diagnostics-show-highlight-colors.
+	* opts-global.cc (init_options_once): Preserve
+	pp_show_highlight_colors in case the global_dc's printer is
+	recreated.
+	* opts.cc (common_handle_option): Handle
+	OPT_fdiagnostics_show_highlight_colors.
+	(gen_command_line_string): Likewise.
+	* pretty-print-markup.h: New file.
+	* pretty-print.cc: Include "pretty-print-markup.h" and
+	"diagnostic-highlight-colors.h".
+	(pretty_printer::format): Handle %e.
+	(pretty_printer::pretty_printer): Handle new field
+	m_show_highlight_colors.
+	(pp_string_n): New.
+	(pp_markup::context::begin_quote): New.
+	(pp_markup::context::end_quote): New.
+	(pp_markup::context::begin_color): New.
+	(pp_markup::context::end_color): New.
+	(highlight_colors::expected): New.
+	(highlight_colors::actual): New.
+	(highlight_colors::lhs): New.
+	(highlight_colors::rhs): New.
+	(class selftest::test_element): New.
+	(selftest::test_pp_format): Add tests of %e.
+	(selftest::test_urlification): Likewise.
+	* pretty-print.h (pp_markup::context): New forward decl.
+	(class chunk_info): Add friend class pp_markup::context.
+	(class pretty_printer): Add friend pp_show_highlight_colors.
+	(pretty_printer::m_show_highlight_colors): New field.
+	(pp_show_highlight_colors): New inline function.
+	(pp_string_n): New decl.
+	* substring-locations.cc: Include "diagnostic-highlight-colors.h".
+	(format_string_diagnostic_t::highlight_color_format_string): New.
+	(format_string_diagnostic_t::highlight_color_param): New.
+	(format_string_diagnostic_t::emit_warning_n_va): Use highlight
+	colors.
+	* substring-locations.h
+	(format_string_diagnostic_t::highlight_color_format_string): New.
+	(format_string_diagnostic_t::highlight_color_param): New.
+	* toplev.cc (general_init): Initialize global_dc's
+	show_highlight_colors.
+	* tree-pretty-print-markup.h: New file.
+
+2024-07-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115868
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Correctly
+	compute the number of mask copies required for vect_record_loop_mask.
+
 2024-07-12  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/gm2.texi (Community): Update lists.nongnu.org and
