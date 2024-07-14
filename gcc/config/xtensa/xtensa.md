@@ -1215,9 +1215,8 @@
   xtensa_split_operand_pair (operands, SImode);
   if (reg_overlap_mentioned_p (operands[0], operands[3]))
     {
-      rtx tmp;
-      tmp = operands[0], operands[0] = operands[1], operands[1] = tmp;
-      tmp = operands[2], operands[2] = operands[3], operands[3] = tmp;
+      std::swap (operands[0], operands[1]);
+      std::swap (operands[2], operands[3]);
     }
 })
 
@@ -1562,9 +1561,8 @@
   xtensa_split_operand_pair (operands, SFmode);
   if (reg_overlap_mentioned_p (operands[0], operands[3]))
     {
-      rtx tmp;
-      tmp = operands[0], operands[0] = operands[1], operands[1] = tmp;
-      tmp = operands[2], operands[2] = operands[3], operands[3] = tmp;
+      std::swap (operands[0], operands[1]);
+      std::swap (operands[2], operands[3]);
     }
 })
 

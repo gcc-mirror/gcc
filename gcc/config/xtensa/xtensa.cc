@@ -794,11 +794,7 @@ gen_int_relational (enum rtx_code test_code, /* relational test (EQ, etc) */
 
     }
   else if (p_info->reverse_regs)
-    {
-      rtx temp = cmp0;
-      cmp0 = cmp1;
-      cmp1 = temp;
-    }
+    std::swap (cmp0, cmp1);
 
   return gen_rtx_fmt_ee (invert ? reverse_condition (p_info->test_code)
 				: p_info->test_code,
@@ -842,11 +838,7 @@ gen_float_relational (enum rtx_code test_code, /* relational test (EQ, etc) */
     }
 
   if (reverse_regs)
-    {
-      rtx temp = cmp0;
-      cmp0 = cmp1;
-      cmp1 = temp;
-    }
+    std::swap (cmp0, cmp1);
 
   brtmp = gen_rtx_REG (CCmode, FPCC_REGNUM);
   emit_insn (gen_fn (brtmp, cmp0, cmp1));
