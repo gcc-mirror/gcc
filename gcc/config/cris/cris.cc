@@ -2440,10 +2440,9 @@ cris_option_override_after_change ()
      special corner case.
 
      A more valid reason is that coremark with -march=v10 -O2 regresses
-     by XXXXX% (@r15-gXXXXXXXXXXXX vs. @r15-gXXXXXXXXXXXX and also at
-     r15-gXXXXXXXXXXXX with patches to handle the REG_POINTER and
-     rld-legit1 fallout vs. this additional change).  Disable
-     late-combine by default until that's fixed.  */
+     by 2.6% @r15-2005-g13757e50ff0b compared to late-combined disabled.
+
+     Disable late-combine by default until that's fixed.  */
   if (!OPTION_SET_P (flag_late_combine_instructions))
     flag_late_combine_instructions = 0;
 }
