@@ -91,6 +91,18 @@
 ;; the same template.
 (define_mode_iterator SHI [SI HI])
 
+;; This iterator and attribute allow signed/unsigned FP truncations to be
+;; generated from one template.
+(define_code_iterator any_fix [fix unsigned_fix])
+(define_code_attr m_fix [(fix "trunc") (unsigned_fix "utrunc")])
+(define_code_attr s_fix [(fix "") (unsigned_fix "uns")])
+
+;; This iterator and attribute allow signed/unsigned FP conversions to be
+;; generated from one template.
+(define_code_iterator any_float [float unsigned_float])
+(define_code_attr m_float [(float "float") (unsigned_float "ufloat")])
+(define_code_attr s_float [(float "") (unsigned_float "uns")])
+
 
 ;; Attributes.
 
@@ -1132,38 +1144,60 @@
 
 ;; Conversions.
 
-(define_insn "fix_truncsfsi2"
+(define_insn "fix<s_fix>_truncsfsi2"
   [(set (match_operand:SI 0 "register_operand" "=a")
-	(fix:SI (match_operand:SF 1 "register_operand" "f")))]
+	(any_fix:SI (match_operand:SF 1 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
-  "trunc.s\t%0, %1, 0"
+  "<m_fix>.s\t%0, %1, 0"
   [(set_attr "type"	"fconv")
    (set_attr "mode"	"SF")
    (set_attr "length"	"3")])
 
-(define_insn "fixuns_truncsfsi2"
+(define_insn "*fix<s_fix>_truncsfsi2_2x"
   [(set (match_operand:SI 0 "register_operand" "=a")
-	(unsigned_fix:SI (match_operand:SF 1 "register_operand" "f")))]
+	(any_fix:SI (plus:SF (match_operand:SF 1 "register_operand" "f")
+			     (match_dup 1))))]
   "TARGET_HARD_FLOAT"
-  "utrunc.s\t%0, %1, 0"
+  "<m_fix>.s\t%0, %1, 1"
   [(set_attr "type"	"fconv")
    (set_attr "mode"	"SF")
    (set_attr "length"	"3")])
 
-(define_insn "floatsisf2"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(float:SF (match_operand:SI 1 "register_operand" "a")))]
+(define_insn "*fix<s_fix>_truncsfsi2_scaled"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(any_fix:SI (mult:SF (match_operand:SF 1 "register_operand" "f")
+			     (match_operand:SF 2 "fix_scaling_operand" "F"))))]
   "TARGET_HARD_FLOAT"
-  "float.s\t%0, %1, 0"
+{
+  static char result[64];
+  sprintf (result, "<m_fix>.s\t%%0, %%1, %d",
+	   REAL_EXP (CONST_DOUBLE_REAL_VALUE (operands[2])) - 1);
+  return result;
+}
   [(set_attr "type"	"fconv")
    (set_attr "mode"	"SF")
    (set_attr "length"	"3")])
 
-(define_insn "floatunssisf2"
+(define_insn "float<s_float>sisf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
-	(unsigned_float:SF (match_operand:SI 1 "register_operand" "a")))]
+	(any_float:SF (match_operand:SI 1 "register_operand" "a")))]
   "TARGET_HARD_FLOAT"
-  "ufloat.s\t%0, %1, 0"
+  "<m_float>.s\t%0, %1, 0"
+  [(set_attr "type"	"fconv")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"3")])
+
+(define_insn "*float<s_float>sisf2_scaled"
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(mult:SF (any_float:SF (match_operand:SI 1 "register_operand" "a"))
+		 (match_operand:SF 2 "float_scaling_operand" "F")))]
+  "TARGET_HARD_FLOAT"
+{
+  static char result[64];
+  sprintf (result, "<m_float>.s\t%%0, %%1, %d",
+	   1 - REAL_EXP (CONST_DOUBLE_REAL_VALUE (operands[2])));
+  return result;
+}
   [(set_attr "type"	"fconv")
    (set_attr "mode"	"SF")
    (set_attr "length"	"3")])
