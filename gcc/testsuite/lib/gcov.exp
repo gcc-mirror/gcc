@@ -512,25 +512,29 @@ proc verify-filters { testname testcase file expected unexpected } {
 
     set seen [lsort -unique $seen]
 
-    set expected [lmap key $expected {
-	if { $key in $seen } continue
-	set key
-    }]
-    set unexpected [lmap key $unexpected {
-	if { $key ni $seen } continue
-	set key
-    }]
+    set ex {}
+    foreach key $expected {
+	if { $key ni $seen } {
+	    lappend ex $key
+	}
+    }
+    set unex {}
+    foreach key $unexpected {
+	if { $key in $seen } {
+	    lappend unex $key
+	}
+    }
 
-    foreach sym $expected {
+    foreach sym $ex {
 	fail "Did not see expected symbol '$sym'"
     }
 
-    foreach sym $unexpected {
+    foreach sym $unex {
 	fail "Found unexpected symbol '$sym'"
     }
 
     close $fd
-    return [expr [llength $expected] + [llength $unexpected]]
+    return [expr [llength $ex] + [llength $unex]]
 }
 
 proc gcov-pytest-format-line { args } {
