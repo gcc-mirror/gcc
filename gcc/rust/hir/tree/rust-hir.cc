@@ -1299,7 +1299,7 @@ AssignmentExpr::as_string () const
 }
 
 std::string
-CompoundAssignmentExpr::as_string () const
+CompoundAssignmentExpr::get_operator_str () const
 {
   std::string operator_str;
   operator_str.reserve (1);
@@ -1344,7 +1344,14 @@ CompoundAssignmentExpr::as_string () const
 
   operator_str += "=";
 
+  return operator_str;
+}
+
+std::string
+CompoundAssignmentExpr::as_string () const
+{
   std::string str ("CompoundAssignmentExpr: ");
+  std::string operator_str = get_operator_str ();
   if (main_or_left_expr == nullptr || right_expr == nullptr)
     {
       str += "error. this is probably a parsing failure.";
@@ -1574,7 +1581,7 @@ ErrorPropagationExpr::as_string () const
 }
 
 std::string
-ArithmeticOrLogicalExpr::as_string () const
+ArithmeticOrLogicalExpr::get_operator_str () const
 {
   std::string operator_str;
   operator_str.reserve (1);
@@ -1617,8 +1624,14 @@ ArithmeticOrLogicalExpr::as_string () const
       break;
     }
 
+  return operator_str;
+}
+
+std::string
+ArithmeticOrLogicalExpr::as_string () const
+{
   std::string str = main_or_left_expr->as_string () + " ";
-  str += operator_str + " ";
+  str += get_operator_str () + " ";
   str += right_expr->as_string ();
 
   return "( " + str + " (" + get_mappings ().as_string () + "))";

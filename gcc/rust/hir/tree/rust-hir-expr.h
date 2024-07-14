@@ -417,6 +417,8 @@ public:
   std::unique_ptr<Expr> &get_lhs () { return main_or_left_expr; }
   std::unique_ptr<Expr> &get_rhs () { return right_expr; }
 
+  std::string get_operator_str () const;
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -765,6 +767,8 @@ public:
 
   void visit_lhs (HIRFullVisitor &vis) { main_or_left_expr->accept_vis (vis); }
   void visit_rhs (HIRFullVisitor &vis) { right_expr->accept_vis (vis); }
+
+  std::string get_operator_str () const;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

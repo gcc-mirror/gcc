@@ -272,7 +272,8 @@ TypeCheckExpr::visit (HIR::CompoundAssignmentExpr &expr)
   if (!valid)
     {
       rust_error_at (expr.get_locus (),
-		     "cannot apply this operator to types %s and %s",
+		     "cannot apply operator %qs to types %s and %s",
+		     expr.get_operator_str ().c_str (),
 		     lhs->as_string ().c_str (), rhs->as_string ().c_str ());
       return;
     }
@@ -303,7 +304,8 @@ TypeCheckExpr::visit (HIR::ArithmeticOrLogicalExpr &expr)
   if (!valid)
     {
       rust_error_at (expr.get_locus (),
-		     "cannot apply this operator to types %s and %s",
+		     "cannot apply operator %qs to types %s and %s",
+		     expr.get_operator_str ().c_str (),
 		     lhs->as_string ().c_str (), rhs->as_string ().c_str ());
       return;
     }
