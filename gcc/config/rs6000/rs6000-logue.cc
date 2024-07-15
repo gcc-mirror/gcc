@@ -716,17 +716,11 @@ rs6000_stack_info (void)
   info->calls_p = (!crtl->is_leaf || cfun->machine->ra_needs_full_frame);
   info->rop_hash_size = 0;
 
-  if (TARGET_POWER8
-      && info->calls_p
-      && DEFAULT_ABI == ABI_ELFv2
-      && rs6000_rop_protect)
+  /* If we want ROP protection and this function makes a call, indicate
+     we need to create a stack slot to save the hashed return address in.  */
+  if (rs6000_rop_protect
+      && info->calls_p)
     info->rop_hash_size = 8;
-  else if (rs6000_rop_protect && DEFAULT_ABI != ABI_ELFv2)
-    {
-      /* We can't check this in rs6000_option_override_internal since
-	 DEFAULT_ABI isn't established yet.  */
-      error ("%qs requires the ELFv2 ABI", "-mrop-protect");
-    }
 
   /* Determine if we need to save the condition code registers.  */
   if (save_reg_p (CR2_REGNO)
@@ -3272,9 +3266,8 @@ rs6000_emit_prologue (void)
   /* NOTE: The hashst isn't needed if we're going to do a sibcall,
      but there's no way to know that here.  Harmless except for
      performance, of course.  */
-  if (TARGET_POWER8 && rs6000_rop_protect && info->rop_hash_size != 0)
+  if (info->rop_hash_size)
     {
-      gcc_assert (DEFAULT_ABI == ABI_ELFv2);
       rtx stack_ptr = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
       rtx addr = gen_rtx_PLUS (Pmode, stack_ptr,
 			       GEN_INT (info->rop_hash_save_offset));
@@ -5051,12 +5044,9 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
 
   /* The ROP hash check must occur after the stack pointer is restored
      (since the hash involves r1), and is not performed for a sibcall.  */
-  if (TARGET_POWER8
-      && rs6000_rop_protect
-      && info->rop_hash_size != 0
+  if (info->rop_hash_size
       && epilogue_type != EPILOGUE_TYPE_SIBCALL)
     {
-      gcc_assert (DEFAULT_ABI == ABI_ELFv2);
       rtx stack_ptr = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
       rtx addr = gen_rtx_PLUS (Pmode, stack_ptr,
 			       GEN_INT (info->rop_hash_save_offset));
