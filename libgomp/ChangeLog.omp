@@ -1,3 +1,13 @@
+2024-07-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from trunk:
+	2024-07-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/gcn/libgomp-gcn.h (GOMP_TEAM_NUM): Inject.
+	* config/gcn/target.c (GOMP_teams4): Handle.
+	* config/gcn/team.c (gomp_gcn_enter_kernel): Initialize.
+	* config/gcn/teams.c (omp_get_team_num): Adjust.
+
 2024-04-16  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	* gfortran.dg/gomp/atomic-21.f90: Update testcase for the removal of `;`.
