@@ -1,3 +1,18 @@
+2024-07-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	Backported from master:
+	2024-05-20  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/99798
+	* gfortran.dg/submodule_33.f08: New test.
+
+2024-07-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	Backported from master:
+	2024-07-13  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.dg/minmaxloc_17.f90: New test.
+
 2024-07-13  Lulu Cheng  <chenglulu@loongson.cn>
 
 	Backported from master:

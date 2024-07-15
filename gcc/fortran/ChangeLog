@@ -1,3 +1,24 @@
+2024-07-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	Backported from master:
+	2024-05-20  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/99798
+	* symbol.cc (gfc_release_symbol): Move the condition guarding
+	the handling cyclic references...
+	(cyclic_reference_break_needed): ... here as a new predicate.
+	Remove superfluous parts.  Add a condition preventing any premature
+	release with submodule symbols.
+
+2024-07-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	Backported from master:
+	2024-07-13  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-intrinsic.cc (gfc_conv_intrinsic_minmaxloc): Add the
+	preliminary code generated for MASK to the preliminary code of
+	MINLOC/MAXLOC.
+
 2024-07-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
