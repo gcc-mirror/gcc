@@ -373,7 +373,7 @@ binop_implies_op2_fully_live (rtx_code code)
    binop_implies_op2_fully_live (e.g. shifts), the computed mask may
    exclusively pertain to the first operand.  */
 
-HOST_WIDE_INT
+unsigned HOST_WIDE_INT
 carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
 {
   if (mask == 0)
@@ -393,7 +393,7 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
     case ASHIFT:
       if (CONSTANT_P (XEXP (x, 1))
 	  && known_lt (UINTVAL (XEXP (x, 1)), GET_MODE_BITSIZE (mode)))
-	return mask >> INTVAL (XEXP (x, 1));
+	return (HOST_WIDE_INT)mask >> INTVAL (XEXP (x, 1));
       return (2ULL << floor_log2 (mask)) - 1;
 
     /* We propagate for the shifted operand, but not the shift
