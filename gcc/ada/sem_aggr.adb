@@ -3818,7 +3818,7 @@ package body Sem_Aggr is
                       Defining_Identifier =>
                         Relocate_Node (Defining_Identifier (Comp)),
                       Name                => Copy,
-                      Reverse_Present     => False,
+                      Reverse_Present     => Reverse_Present (Comp),
                       Iterator_Filter     => Empty,
                       Subtype_Indication  => Empty);
                begin

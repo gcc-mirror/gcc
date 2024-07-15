@@ -7019,6 +7019,7 @@ package body Exp_Aggr is
                    Loop_Parameter_Specification =>
                      Make_Loop_Parameter_Specification (Loc,
                        Defining_Identifier => Loop_Id,
+                       Reverse_Present => Reverse_Present (Comp),
                        Discrete_Subtype_Definition => L_Range));
             end if;
          end if;

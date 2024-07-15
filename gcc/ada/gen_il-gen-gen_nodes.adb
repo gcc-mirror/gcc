@@ -1489,6 +1489,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Iterator_Specification, Node_Id, Default_Empty),
         Sy (Expression, Node_Id, Default_Empty),
         Sy (Discrete_Choices, List_Id),
+        Sy (Reverse_Present, Flag),
         Sy (Box_Present, Flag),
         Sm (Loop_Actions, List_Id)));
 

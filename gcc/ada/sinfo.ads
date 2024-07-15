@@ -4203,6 +4203,11 @@ package Sinfo is
 
       --  At most one of (Defining_Identifier, Iterator_Specification)
       --  is present at a time, in which case the other one is empty.
+      --  The Reverse_Present flag is present for cases where semantic analysis
+      --  later changes the association to have an N_Iterator_Specification
+      --  rather than a Defining_Identifier (due to the "discrete choice"
+      --  being resolved as an iterator name), and needs to set that flag on
+      --  the N_Iterator_Specification node.
 
       --  N_Iterated_Component_Association
       --  Sloc points to FOR
@@ -4210,6 +4215,7 @@ package Sinfo is
       --  Iterator_Specification
       --  Expression
       --  Discrete_Choices
+      --  Reverse_Present
       --  Loop_Actions
       --  Box_Present
 
