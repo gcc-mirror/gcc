@@ -556,7 +556,7 @@
    && REG_Z == REGNO (XEXP (operands[0], 0))
    && reload_completed"
   {
-    operands[0] = GEN_INT (GET_MODE_SIZE (<MODE>mode));
+    operands[0] = GEN_INT (<SIZE>);
     return "%~call __load_%0";
   }
   [(set_attr "length" "1,2")
@@ -679,7 +679,7 @@
   "avr_xload_libgcc_p (<MODE>mode)
    && reload_completed"
   {
-    rtx x_bytes = GEN_INT (GET_MODE_SIZE (<MODE>mode));
+    rtx x_bytes = GEN_INT (<SIZE>);
 
     output_asm_insn ("%~call __xload_%0", &x_bytes);
     return "";
@@ -1023,7 +1023,7 @@
     operands[2] = replace_equiv_address (operands[1],
                                          gen_rtx_POST_INC (Pmode, addr));
     operands[3] = addr;
-    operands[4] = gen_int_mode (-GET_MODE_SIZE (<MODE>mode), HImode);
+    operands[4] = gen_int_mode (-<SIZE>, HImode);
   })
 
 
@@ -4789,7 +4789,7 @@
   [(set (match_dup 2) (match_dup 3))
    (set (match_dup 4) (match_dup 5))]
   {
-    machine_mode mode_hi = 4 == GET_MODE_SIZE (<MODE>mode) ? HImode : QImode;
+    machine_mode mode_hi = <SIZE> == 4 ? HImode : QImode;
     bool lo_first = REGNO (operands[0]) < REGNO (operands[1]);
     rtx dst_lo = simplify_gen_subreg (HImode, operands[0], <MODE>mode, 0);
     rtx src_lo = simplify_gen_subreg (HImode, operands[1], <MODE>mode, 0);
@@ -4833,7 +4833,7 @@
    && reload_completed"
   [(const_int 1)]
   {
-    for (int i = 0; i < GET_MODE_SIZE (<MODE>mode); i++)
+    for (int i = 0; i < <SIZE>; i++)
       {
         rtx dst = simplify_gen_subreg (QImode, operands[0], <MODE>mode, i);
         rtx src = simplify_gen_subreg (QImode, operands[1], <MODE>mode, i);
@@ -4962,7 +4962,7 @@
           operands[3] = gen_rtx_SCRATCH (QImode);
       }
     else if (offset == 1
-             || offset == GET_MODE_BITSIZE (<MODE>mode) -1)
+             || offset == <MSB>)
       {
         // Support rotate left/right by 1.
 
@@ -5117,7 +5117,7 @@
    (clobber (match_scratch:<rotsmode> 3 "=<rotx>"))]
   "AVR_HAVE_MOVW
    && CONST_INT_P (operands[2])
-   && GET_MODE_SIZE (<MODE>mode) % 2 == 0
+   && <SIZE> % 2 == 0
    && 0 == INTVAL (operands[2]) % 16"
   "#"
   "&& reload_completed"
@@ -5141,7 +5141,7 @@
   "CONST_INT_P (operands[2])
    && (8 == INTVAL (operands[2]) % 16
        || ((!AVR_HAVE_MOVW
-            || GET_MODE_SIZE (<MODE>mode) % 2 != 0)
+            || <SIZE> % 2 != 0)
            && 0 == INTVAL (operands[2]) % 16))"
   "#"
   "&& reload_completed"
@@ -6658,7 +6658,7 @@
         (compare:CC (any_extend:HISI (match_operand:QIPSI 0 "register_operand" "r"))
                     (match_operand:HISI 1 "register_operand" "r")))]
   "reload_completed
-   && GET_MODE_SIZE (<HISI:MODE>mode) > GET_MODE_SIZE (<QIPSI:MODE>mode)"
+   && <HISI:SIZE> > <QIPSI:SIZE>"
   {
     return avr_out_cmp_ext (operands, <CODE>, nullptr);
   }
@@ -6671,7 +6671,7 @@
         (compare:CC (match_operand:HISI 0 "register_operand" "r")
                     (any_extend:HISI (match_operand:QIPSI 1 "register_operand" "r"))))]
   "reload_completed
-   && GET_MODE_SIZE (<HISI:MODE>mode) > GET_MODE_SIZE (<QIPSI:MODE>mode)"
+   && <HISI:SIZE> > <QIPSI:SIZE>"
   {
     return avr_out_cmp_ext (operands, <CODE>, nullptr);
   }
@@ -6914,7 +6914,7 @@
                       (label_ref (match_operand 3))
                       (pc)))]
   "optimize
-   && GET_MODE_SIZE (<HISI:MODE>mode) > GET_MODE_SIZE (<QIPSI:MODE>mode)"
+   && <HISI:SIZE> > <QIPSI:SIZE>"
   "#"
   "&& reload_completed"
   [; "*cmp<HISI:mode>.<code><QIPSI:mode>.0"
@@ -6945,7 +6945,7 @@
                       (label_ref (match_operand 3))
                       (pc)))]
   "optimize
-   && GET_MODE_SIZE (<HISI:MODE>mode) > GET_MODE_SIZE (<QIPSI:MODE>mode)"
+   && <HISI:SIZE> > <QIPSI:SIZE>"
   "#"
   "&& reload_completed"
   [; "*cmp<HISI:mode>.<code><QIPSI:mode>.0"
@@ -7095,7 +7095,7 @@
               (clobber (reg:CC REG_CC))])]
   {
     operands[0] = avr_to_int_mode (operands[0]);
-    operands[1] = GEN_INT (GET_MODE_BITSIZE (<MODE>mode) - 1);
+    operands[1] = GEN_INT (<MSB>);
   })
 
 ;; Convert sign tests to bit 15/23/31 tests that match the above insns.
@@ -7120,7 +7120,7 @@
               (clobber (reg:CC REG_CC))])]
   {
     operands[0] = avr_to_int_mode (operands[0]);
-    operands[1] = GEN_INT (GET_MODE_BITSIZE (<MODE>mode) - 1);
+    operands[1] = GEN_INT (<MSB>);
   })
 
 
@@ -9112,8 +9112,8 @@
                 (and:QI (ashift:QI (match_operand:QI 3 "register_operand"     "r")
                                    (match_operand:QI 4 "const_0_to_7_operand" "n"))
                         (match_operand:QI 5 "single_one_operand"              "n"))))]
-  "INTVAL(operands[4]) == exact_log2 (~INTVAL(operands[2]) & GET_MODE_MASK (QImode))
-   && INTVAL(operands[4]) == exact_log2 (INTVAL(operands[5]) & GET_MODE_MASK (QImode))"
+  "INTVAL (operands[4]) == exact_log2 (~INTVAL (operands[2]) & 0xff)
+   && INTVAL (operands[4]) == exact_log2 (INTVAL (operands[5]) & 0xff)"
   "bst %3,0\;bld %0,%4"
   [(set_attr "length" "2")])
 
@@ -9128,7 +9128,7 @@
                 (ashift:QI (and:QI (match_operand:QI 3 "register_operand"  "r")
                                    (const_int 1))
                            (match_operand:QI 4 "const_0_to_7_operand"      "n"))))]
-  "INTVAL(operands[4]) == exact_log2 (~INTVAL(operands[2]) & GET_MODE_MASK (QImode))"
+  "INTVAL (operands[4]) == exact_log2 (~INTVAL (operands[2]) & 0xff)"
   "bst %3,0\;bld %0,%4"
   [(set_attr "length" "2")])
 
@@ -9381,7 +9381,7 @@
          (ashift:HISI (zero_extend:HISI (match_operand:QI 1 "register_operand" "r"))
                       (match_operand:QI 2 "const_8_16_24_operand"              "n"))
          (match_operand:HISI 3 "register_operand"                              "0")))]
-  "INTVAL(operands[2]) < GET_MODE_BITSIZE (<MODE>mode)"
+  "INTVAL(operands[2]) <= <MSB>"
   "#"
   "&& reload_completed"
   [(set (match_dup 4)
