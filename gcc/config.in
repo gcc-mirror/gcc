@@ -1437,6 +1437,12 @@
 #endif
 
 
+/* Define if your assembler supports .base64. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GAS_BASE64
+#endif
+
+
 /* Define 0/1 if your assembler supports CFI directives. */
 #undef HAVE_GAS_CFI_DIRECTIVE
 

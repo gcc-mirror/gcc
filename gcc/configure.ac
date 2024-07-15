@@ -3054,6 +3054,11 @@ case "${target}" in
     ;;
 esac
 
+gcc_GAS_CHECK_FEATURE([.base64], gcc_cv_as_base64,,
+ [	.section .rodata
+ 	.base64 "Tm9uIHB1ZG9yIGVzdCBuaWwgc2NpcmUsIHB1ZG9yIG5pbCBkaXNjZXJlIHZlbGxlLgo="],,
+[AC_DEFINE(HAVE_GAS_BASE64, 1, [Define if your assembler supports .base64.])])
+
 # gnu_indirect_function type is an extension proposed at
 # http://groups.google/com/group/generic-abi/files. It allows dynamic runtime
 # selection of function implementation
