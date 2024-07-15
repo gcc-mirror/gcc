@@ -1,3 +1,10 @@
+2024-07-14  Alejandro Colomar  <alx@kernel.org>
+
+	PR c/115185
+	* gcc.dg/Wcxx-compat-14.c: Adapt the test to match the new text
+	of the warning, which doesn't say anything about C++ anymore.
+	* gcc.dg/Wunterminated-string-initialization.c: New test.
+
 2024-07-13  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* gfortran.dg/minmaxloc_17.f90: New test.

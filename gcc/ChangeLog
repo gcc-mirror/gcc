@@ -1,3 +1,27 @@
+2024-07-14  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_fp_absneg_operator):
+	Use E_?Fmode enumeration constants in switch statement.
+	(ix86_expand_copysign): Likewise.
+	(ix86_expand_xorsign): Likewise.
+
+2024-07-14  Alejandro Colomar  <alx@kernel.org>
+
+	PR c/115185
+	* doc/invoke.texi: Document the new
+	-Wunterminated-string-initialization.
+
+2024-07-14  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.cc (cris_option_override_after_change): Fix up
+	comment regarding disabling late_combine.
+
+2024-07-14  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.cc (cris_option_override_after_change): New
+	function.  Disable late-combine by default.
+	(cris_option_override): Call the new function.
+
 2024-07-13  Mark Harmstone  <mark@harmstone.com>
 
 	* dwarf2codeview.cc (write_lf_modifier): Expand upon comment.

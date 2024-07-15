@@ -1,3 +1,8 @@
+2024-07-14  Alejandro Colomar  <alx@kernel.org>
+
+	PR c/115185
+	* c.opt: Add -Wunterminated-string-initialization.
+
 2024-07-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-common.cc: Include "tree-pretty-print-markup.h".
