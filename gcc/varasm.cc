@@ -7805,6 +7805,8 @@ decl_binds_to_current_def_p (const_tree decl)
      for all other declaration types.  */
   if (DECL_WEAK (decl))
     return false;
+  if (DECL_COMDAT_GROUP (decl))
+    return false;
   if (DECL_COMMON (decl)
       && (DECL_INITIAL (decl) == NULL
 	  || (!in_lto_p && DECL_INITIAL (decl) == error_mark_node)))
