@@ -1149,10 +1149,14 @@ vect_set_loop_condition_partial_vectors_avx512 (class loop *loop,
 	      /* ???  But when the shift amount isn't constant this requires
 		 a round-trip to GRPs.  We could apply the bias to either
 		 side of the compare instead.  */
-	      tree shift = gimple_build (&preheader_seq, MULT_EXPR,
+	      tree shift = gimple_build (&preheader_seq, MINUS_EXPR,
 					 TREE_TYPE (niters_skip), niters_skip,
 					 build_int_cst (TREE_TYPE (niters_skip),
-							rgc.max_nscalars_per_iter));
+							bias));
+	      shift = gimple_build (&preheader_seq, MULT_EXPR,
+				    TREE_TYPE (niters_skip), shift,
+				    build_int_cst (TREE_TYPE (niters_skip),
+						   rgc.max_nscalars_per_iter));
 	      init_ctrl = gimple_build (&preheader_seq, LSHIFT_EXPR,
 					TREE_TYPE (init_ctrl),
 					init_ctrl, shift);
