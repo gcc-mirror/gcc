@@ -33,26 +33,37 @@ bool
 GOMP_teams4 (unsigned int num_teams_lower, unsigned int num_teams_upper,
 	     unsigned int thread_limit, bool first)
 {
+  int __lds *gomp_team_num = (int __lds *) GOMP_TEAM_NUM;
+  unsigned int num_workgroups = __builtin_gcn_dim_size (0);
   if (!first)
-    return false;
+    {
+      unsigned int team_num;
+      if (num_workgroups > gomp_num_teams_var)
+	return false;
+      team_num = *gomp_team_num;
+      if (team_num > gomp_num_teams_var - num_workgroups)
+	return false;
+      *gomp_team_num = team_num + num_workgroups;
+      return true;
+    }
   if (thread_limit)
     {
       struct gomp_task_icv *icv = gomp_icv (true);
       icv->thread_limit_var
 	= thread_limit > INT_MAX ? UINT_MAX : thread_limit;
     }
-  unsigned int num_workgroups, workgroup_id;
-  num_workgroups = __builtin_gcn_dim_size (0);
-  workgroup_id = __builtin_gcn_dim_pos (0);
-  /* FIXME: If num_teams_lower > num_workgroups, we want to loop
-     multiple times at least for some workgroups.  */
-  (void) num_teams_lower;
-  if (!num_teams_upper || num_teams_upper >= num_workgroups)
+  if (!num_teams_upper)
     num_teams_upper = ((GOMP_ADDITIONAL_ICVS.nteams > 0
 			&& num_workgroups > GOMP_ADDITIONAL_ICVS.nteams)
 		       ? GOMP_ADDITIONAL_ICVS.nteams : num_workgroups);
-  else if (workgroup_id >= num_teams_upper)
+  else if (num_workgroups < num_teams_lower)
+    num_teams_upper = num_teams_lower;
+  else if (num_workgroups < num_teams_upper)
+    num_teams_upper = num_workgroups;
+  unsigned int workgroup_id = __builtin_gcn_dim_pos (0);
+  if (workgroup_id >= num_teams_upper)
     return false;
+  *gomp_team_num = workgroup_id;
   gomp_num_teams_var = num_teams_upper - 1;
   return true;
 }
