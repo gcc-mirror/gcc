@@ -6642,8 +6642,6 @@ package body Exp_Aggr is
 
       Choice_Lo     : Node_Id := Empty;
       Choice_Hi     : Node_Id := Empty;
-      Int_Choice_Lo : Int;
-      Int_Choice_Hi : Int;
 
       Is_Indexed_Aggregate : Boolean := False;
 
@@ -6696,32 +6694,38 @@ package body Exp_Aggr is
          --------------------
 
          procedure Add_Range_Size is
-            Range_Int_Lo : Int;
-            Range_Int_Hi : Int;
+            function To_Int (Expr : N_Subexpr_Id) return Int;
+            --  Return the Int value corresponding to the bound Expr
+
+            ------------
+            -- To_Int --
+            ------------
+
+            function To_Int (Expr : N_Subexpr_Id) return Int is
+            begin
+               --  The bounds of the discrete range are integers or enumeration
+               --  literals
+               return UI_To_Int
+                 ((if Nkind (Expr) = N_Integer_Literal then
+                     Intval (Expr)
+                   else
+                     Enumeration_Pos (Expr)));
+            end To_Int;
+
+            --  Local variables
+
+            Range_Int_Lo : constant Int := To_Int (Lo);
+            Range_Int_Hi : constant Int := To_Int (Hi);
 
          begin
-            --  The bounds of the discrete range are integers or enumeration
-            --  literals
-
-            if Nkind (Lo) = N_Integer_Literal then
-               Range_Int_Lo := UI_To_Int (Intval (Lo));
-               Range_Int_Hi := UI_To_Int (Intval (Hi));
-
-            else
-               Range_Int_Lo := UI_To_Int (Enumeration_Pos (Lo));
-               Range_Int_Hi := UI_To_Int (Enumeration_Pos (Hi));
-            end if;
-
             Siz := Siz + Range_Int_Hi - Range_Int_Lo + 1;
 
-            if No (Choice_Lo) or else Range_Int_Lo < Int_Choice_Lo then
+            if No (Choice_Lo) or else Range_Int_Lo < To_Int (Choice_Lo) then
                Choice_Lo   := Lo;
-               Int_Choice_Lo := Range_Int_Lo;
             end if;
 
-            if No (Choice_Hi) or else Range_Int_Hi > Int_Choice_Hi then
+            if No (Choice_Hi) or else Range_Int_Hi > To_Int (Choice_Hi) then
                Choice_Hi   := Hi;
-               Int_Choice_Hi := Range_Int_Hi;
             end if;
          end Add_Range_Size;
 
