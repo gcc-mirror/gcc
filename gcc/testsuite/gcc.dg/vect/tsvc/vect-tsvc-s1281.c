@@ -4,6 +4,9 @@
 /* { dg-additional-options "--param vect-epilogues-nomask=0" } */
 /* { dg-require-effective-target vect_float } */
 
+/* This test requires +-Inf and NaN, so disable finite-math-only */
+/* { dg-additional-options "-fno-finite-math-only" } */
+
 #include "tsvc.h"
 
 real_t s1281(struct args_t * func_args)
