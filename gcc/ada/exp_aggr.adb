@@ -1259,7 +1259,8 @@ package body Exp_Aggr is
             if No (Expr) then
                return Lis;
 
-            elsif Nkind (Parent (Expr)) = N_Component_Association
+            elsif Nkind (Parent (Expr)) in N_Component_Association
+                                         | N_Iterated_Component_Association
               and then Present (Loop_Actions (Parent (Expr)))
             then
                Res := Loop_Actions (Parent (Expr));
@@ -1962,7 +1963,9 @@ package body Exp_Aggr is
 
                Bounds := Get_Index_Bounds (Choice);
 
-               if Low /= High then
+               if Low /= High
+                 and then No (Loop_Actions (Assoc))
+               then
                   Set_Loop_Actions (Assoc, New_List);
                end if;
 
@@ -2038,7 +2041,12 @@ package body Exp_Aggr is
 
                   if First or else not Empty_Range (Low, High) then
                      First := False;
-                     Set_Loop_Actions (Others_Assoc, New_List);
+                     if Present (Loop_Actions (Others_Assoc)) then
+                        pragma Assert
+                          (Is_Empty_List (Loop_Actions (Others_Assoc)));
+                     else
+                        Set_Loop_Actions (Others_Assoc, New_List);
+                     end if;
                      Expr := Get_Assoc_Expr (Others_Assoc);
                      Append_List (Gen_Loop (Low, High, Expr), To => New_Code);
                   end if;
