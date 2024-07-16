@@ -21498,7 +21498,10 @@ and the features that they enable by default:
 The value @samp{native} is available on native AArch64 GNU/Linux and
 causes the compiler to pick the architecture of the host system.  This
 option has no effect if the compiler is unable to recognize the
-architecture of the host system,
+architecture of the host system.  When @option{-march=native} is given and
+no other @option{-mcpu} or @option{-mtune} is given then GCC will pick
+the host CPU as the CPU to tune for as well as select the architecture features
+from.  That is, @option{-march=native} is treated as @option{-mcpu=native}.
 
 The permissible values for @var{feature} are listed in the sub-section
 on @ref{aarch64-feature-modifiers,,@option{-march} and @option{-mcpu}
