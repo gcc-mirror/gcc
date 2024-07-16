@@ -8,7 +8,7 @@
 # error "Feature test macro for std::format is missing in <format>"
 #elif __cpp_lib_format < 202110L
 # error "Feature test macro for std::format has wrong value in <format>"
-#elif __cplusplus > 202302L && __cpp_lib_format < 202306L
+#elif __cplusplus > 202302L && __cpp_lib_format < 202311L
 # error "Feature test macro for std::format has wrong value in <format>"
 #endif
 
@@ -24,7 +24,7 @@
 # error "Feature test macro for std::format is missing in <version>"
 #elif __cpp_lib_format < 202110L
 # error "Feature test macro for std::format has wrong value in <version>"
-#elif __cplusplus > 202302L && __cpp_lib_format < 202306L
+#elif __cplusplus > 202302L && __cpp_lib_format < 202311L
 # error "Feature test macro for std::format has wrong value in <version>"
 #endif
 

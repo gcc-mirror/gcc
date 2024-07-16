@@ -155,7 +155,7 @@ namespace __format
       = basic_format_string<wchar_t, type_identity_t<_Args>...>;
 #endif
 
-#if __cplusplus > 202302L
+#if __cpp_lib_format >= 202311L // >= C++26
   [[__gnu__::__always_inline__]]
   inline __format::_Runtime_format_string<char>
   runtime_format(string_view __fmt) noexcept
