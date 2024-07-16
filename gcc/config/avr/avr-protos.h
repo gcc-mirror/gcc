@@ -88,6 +88,7 @@ extern rtx avr_to_int_mode (rtx);
 extern void avr_expand_prologue (void);
 extern void avr_expand_epilogue (bool);
 extern bool avr_emit_cpymemhi (rtx*);
+extern void avr_emit_xior_with_shift (rtx_insn*, rtx*, int);
 extern int avr_epilogue_uses (int regno);
 extern bool avr_split_tiny_move (rtx_insn *insn, rtx *operands);
 

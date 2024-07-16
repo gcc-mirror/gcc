@@ -9754,6 +9754,58 @@ avr_out_bitop (rtx insn, rtx *xop, int *plen)
 }
 
 
+/* Emit code for
+
+       XOP[0] = XOP[0] <xior> (XOP[1] <shift> BITOFF)
+
+   where XOP[0] and XOP[1] are hard registers with integer mode,
+   <xior> is XOR or IOR, and <shift> is LSHIFTRT or ASHIFT with a
+   non-negative shift offset BITOFF.  This function emits the operation
+   in terms of byte-wise operations in QImode.  */
+
+void
+avr_emit_xior_with_shift (rtx_insn *insn, rtx *xop, int bitoff)
+{
+  rtx src = SET_SRC (single_set (insn));
+  RTX_CODE xior = GET_CODE (src);
+  gcc_assert (xior == XOR || xior == IOR);
+  gcc_assert (bitoff % 8 == 0);
+
+  // Work out the shift offset in bytes; negative for shift right.
+  RTX_CODE shift = GET_CODE (XEXP (src, 0));
+  int byteoff = 0?0
+    : shift == ASHIFT ? bitoff / 8
+    : shift == LSHIFTRT ? -bitoff / 8
+    // Not a shift but something like REG or ZERO_EXTEND:
+    // Use xop[1] as is, without shifting it.
+    : 0;
+
+  // Work out which hard REGNOs belong to the operands.
+  int size0 = GET_MODE_SIZE (GET_MODE (xop[0]));
+  int size1 = GET_MODE_SIZE (GET_MODE (xop[1]));
+  int regno0_lo = REGNO (xop[0]), regno0_hi = regno0_lo + size0 - 1;
+  int regno1_lo = REGNO (xop[1]), regno1_hi = regno1_lo + size1 - 1;
+  int regoff = regno0_lo - regno1_lo + byteoff;
+
+  // The order of insns matters in the rare case when xop[1] overlaps xop[0].
+  int beg = regoff > 0 ? regno1_hi : regno1_lo;
+  int end = regoff > 0 ? regno1_lo : regno1_hi;
+  int inc = regoff > 0 ? -1 : 1;
+
+  rtx (*gen)(rtx,rtx,rtx) = xior == XOR ? gen_xorqi3 : gen_iorqi3;
+
+  for (int i = beg; i != end + inc; i += inc)
+    {
+      if (IN_RANGE (i + regoff, regno0_lo, regno0_hi))
+	{
+	  rtx reg0 = all_regs_rtx[i + regoff];
+	  rtx reg1 = all_regs_rtx[i];
+	  emit_insn (gen (reg0, reg0, reg1));
+	}
+    }
+}
+
+
 /* Output sign extension from XOP[1] to XOP[0] and return "".
    If PLEN == NULL, print assembler instructions to perform the operation;
    otherwise, set *PLEN to the length of the instruction sequence (in words)

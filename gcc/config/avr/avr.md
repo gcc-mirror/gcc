@@ -313,6 +313,7 @@
 (define_code_iterator any_extract [sign_extract zero_extract])
 (define_code_iterator any_shiftrt [lshiftrt ashiftrt])
 (define_code_iterator any_shift   [lshiftrt ashiftrt ashift])
+(define_code_iterator any_lshift  [lshiftrt ashift]) ; logic shift
 
 (define_code_iterator piaop [plus ior and])
 (define_code_iterator bitop [xor ior and])
@@ -9350,46 +9351,69 @@
   })
 
 
+;; "*iorsi.ashift"    "*iorpsi.ashift"    "*iorhi.ashift"
+;; "*xorsi.ashift"    "*xorpsi.ashift"    "*xorhi.ashift"
+;; "*iorsi.lshiftrt"  "*iorpsi.lshiftrt"  "*iorhi.lshiftrt"
+;; "*xorsi.lshiftrt"  "*xorpsi.lshiftrt"  "*xorhi.lshiftrt"
+(define_insn_and_split "*<xior:code><mode>.<any_lshift:code>"
+  [(set (match_operand:HISI 0 "register_operand"                               "=r")
+        (xior:HISI (any_lshift:HISI (match_operand:HISI 1 "register_operand"    "r")
+                                    (match_operand:QI 3 "const_8_16_24_operand" "n"))
+                   (match_operand:HISI 2 "register_operand"                     "0")))]
+  "INTVAL (operands[3]) <= <MSB>"
+  "#"
+  "&& reload_completed"
+  [(scratch)]
+  {
+    avr_emit_xior_with_shift (curr_insn, operands, INTVAL (operands[3]));
+    DONE;
+  })
+
 ;; Some combine patterns that try to fix bad code when a value is composed
 ;; from byte parts like in PR27663.
 ;; The patterns give some release but the code still is not optimal,
 ;; in particular when subreg lowering (-fsplit-wide-types) is turned on.
 ;; That switch obfuscates things here and in many other places.
 
-;; "*iorhiqi.byte0"   "*iorpsiqi.byte0"   "*iorsiqi.byte0"
-;; "*xorhiqi.byte0"   "*xorpsiqi.byte0"   "*xorsiqi.byte0"
-(define_insn_and_split "*<code_stdname><mode>qi.byte0"
-  [(set (match_operand:HISI 0 "register_operand"                 "=r")
-        (xior:HISI
-         (zero_extend:HISI (match_operand:QI 1 "register_operand" "r"))
-         (match_operand:HISI 2 "register_operand"                 "0")))]
-  ""
-  "#"
-  "reload_completed"
-  [(set (match_dup 3)
-        (xior:QI (match_dup 3)
-                 (match_dup 1)))]
-  {
-    operands[3] = simplify_gen_subreg (QImode, operands[0], <MODE>mode, 0);
-  })
-
-;; "*iorhiqi.byte1-3"  "*iorpsiqi.byte1-3"  "*iorsiqi.byte1-3"
-;; "*xorhiqi.byte1-3"  "*xorpsiqi.byte1-3"  "*xorsiqi.byte1-3"
-(define_insn_and_split "*<code_stdname><mode>qi.byte1-3"
+;; "*iorsiqi.0"  "*iorpsiqi.0"  "*iorhiqi.0"
+;; "*iorsihi.0"  "*iorpsihi.0"  "*iorsipsi.0"
+;; "*xorsiqi.0"  "*xorpsiqi.0"  "*xorhiqi.0"
+;; "*xorsihi.0"  "*xorpsihi.0"  "*xorsipsi.0"
+(define_insn_and_split "*<code><HISI:mode><QIPSI:mode>.0"
   [(set (match_operand:HISI 0 "register_operand"                              "=r")
-        (xior:HISI
-         (ashift:HISI (zero_extend:HISI (match_operand:QI 1 "register_operand" "r"))
-                      (match_operand:QI 2 "const_8_16_24_operand"              "n"))
-         (match_operand:HISI 3 "register_operand"                              "0")))]
-  "INTVAL(operands[2]) <= <MSB>"
+        (xior:HISI (zero_extend:HISI (match_operand:QIPSI 1 "register_operand" "r"))
+                   (match_operand:HISI 2 "register_operand"                    "0")))]
+  "<HISI:SIZE> > <QIPSI:SIZE>"
   "#"
   "&& reload_completed"
-  [(set (match_dup 4)
-        (xior:QI (match_dup 4)
-                 (match_dup 1)))]
+  [(scratch)]
   {
-    int byteno = INTVAL(operands[2]) / BITS_PER_UNIT;
-    operands[4] = simplify_gen_subreg (QImode, operands[0], <MODE>mode, byteno);
+    avr_emit_xior_with_shift (curr_insn, operands, 0);
+    DONE;
+  })
+
+
+;; "*iorsiqi.ashift"  "*iorpsiqi.ashift"  "*iorhiqi.ashift"
+;; "*iorsihi.ashift"  "*iorpsihi.ashift"  "*iorsipsi.ashift"
+;; "*xorsiqi.ashift"  "*xorpsiqi.ashift"  "*xorhiqi.ashift"
+;; "*xorsihi.ashift"  "*xorpsihi.ashift"  "*xorsipsi.ashift"
+;; "*iorsiqi.lshiftrt"  "*iorpsiqi.lshiftrt"  "*iorhiqi.lshiftrt"
+;; "*iorsihi.lshiftrt"  "*iorpsihi.lshiftrt"  "*iorsipsi.lshiftrt"
+;; "*xorsiqi.lshiftrt"  "*xorpsiqi.lshiftrt"  "*xorhiqi.lshiftrt"
+;; "*xorsihi.lshiftrt"  "*xorpsihi.lshiftrt"  "*xorsipsi.lshiftrt"
+(define_insn_and_split "*<xior:code><HISI:mode><QIPSI:mode>.<any_lshift:code>"
+  [(set (match_operand:HISI 0 "register_operand"                                               "=r")
+        (xior:HISI (any_lshift:HISI (zero_extend:HISI (match_operand:QIPSI 1 "register_operand" "r"))
+                                    (match_operand:QI 3 "const_8_16_24_operand"                 "n"))
+                   (match_operand:HISI 2 "register_operand"                                     "0")))]
+  "<HISI:SIZE> > <QIPSI:SIZE>
+   && INTVAL (operands[3]) <= <HISI:MSB>"
+  "#"
+  "&& reload_completed"
+  [(scratch)]
+  {
+    avr_emit_xior_with_shift (curr_insn, operands, INTVAL (operands[3]));
+    DONE;
   })
 
 
