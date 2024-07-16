@@ -1,3 +1,15 @@
+2024-07-15  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-05-24  Harald Anlauf  <anlauf@gmx.de>
+		    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93635
+	* symbol.cc (conflict_std): Helper function for reporting attribute
+	conflicts depending on the Fortran standard version.
+	(conf_std): Helper macro for checking standard-dependent conflicts.
+	(gfc_check_conflict): Use it.
+
 2024-07-14  Mikael Morin  <mikael@gcc.gnu.org>
 
 	Backported from master:

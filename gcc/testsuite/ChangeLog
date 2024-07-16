@@ -1,3 +1,21 @@
+2024-07-15  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-05-24  Harald Anlauf  <anlauf@gmx.de>
+		    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93635
+	* gfortran.dg/c-interop/c1255-2.f90: Adjust pattern.
+	* gfortran.dg/pr87907.f90: Likewise.
+	* gfortran.dg/pr93635.f90: New test.
+
+2024-07-15  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-07-15  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr115872.c: New test.
+
 2024-07-14  Mikael Morin  <mikael@gcc.gnu.org>
 
 	Backported from master:

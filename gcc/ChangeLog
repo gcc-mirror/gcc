@@ -1,3 +1,12 @@
+2024-07-15  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-07-15  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/115872
+	* tree-ssa-ccp.cc (convert_atomic_bit_not): Remove use_stmt after use_nop_stmt is removed.
+	(optimize_atomic_bit_test_and): Ditto.
+
 2024-07-13  Lulu Cheng  <chenglulu@loongson.cn>
 
 	Backported from master:
