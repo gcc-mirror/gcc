@@ -473,7 +473,7 @@ struct std::formatter<X, char>
   std::format_context::iterator
   format(X, std::format_context& c) const
   {
-    std::visit_format_arg([this]<typename T>(T) {
+    std::visit_format_arg([this]<typename T>(T) { // { dg-warning "deprecated" "" { target c++26 } }
       if (is_integral_v<T> != this->integer)
 	throw std::format_error("invalid argument type");
     }, c.arg(1));

@@ -1171,7 +1171,7 @@ ftms = {
   // 202306 P2637R3 Member visit
   // 202311 P2918R2 Runtime format strings II
   values = {
-    v = 202305;
+    v = 202306;
     cxxmin = 26;
     hosted = yes;
   };

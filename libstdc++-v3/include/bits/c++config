@@ -90,6 +90,8 @@
 //   _GLIBCXX20_DEPRECATED_SUGGEST( string-literal )
 //   _GLIBCXX23_DEPRECATED
 //   _GLIBCXX23_DEPRECATED_SUGGEST( string-literal )
+//   _GLIBCXX26_DEPRECATED
+//   _GLIBCXX26_DEPRECATED_SUGGEST( string-literal )
 #ifndef _GLIBCXX_USE_DEPRECATED
 # define _GLIBCXX_USE_DEPRECATED 1
 #endif
@@ -141,6 +143,14 @@
 #else
 # define _GLIBCXX23_DEPRECATED
 # define _GLIBCXX23_DEPRECATED_SUGGEST(ALT)
+#endif
+
+#if defined(__DEPRECATED) && (__cplusplus >= 202400L)
+# define _GLIBCXX26_DEPRECATED [[__deprecated__]]
+# define _GLIBCXX26_DEPRECATED_SUGGEST(ALT) _GLIBCXX_DEPRECATED_SUGGEST(ALT)
+#else
+# define _GLIBCXX26_DEPRECATED
+# define _GLIBCXX26_DEPRECATED_SUGGEST(ALT)
 #endif
 
 // Macros for ABI tag attributes.

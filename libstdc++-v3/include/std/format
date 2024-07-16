@@ -3346,6 +3346,18 @@ namespace __format
       explicit operator bool() const noexcept
       { return _M_type != __format::_Arg_none; }
 
+#if __cpp_lib_format >= 202306L // >= C++26
+      template<typename _Visitor>
+	decltype(auto)
+	visit(this basic_format_arg __arg, _Visitor&& __vis)
+	{ return __arg._M_visit(std::forward<_Visitor>(__vis), __arg._M_type); }
+
+      template<typename _Res, typename _Visitor>
+	_Res
+	visit(this basic_format_arg __arg, _Visitor&& __vis)
+	{ return __arg._M_visit(std::forward<_Visitor>(__vis), __arg._M_type); }
+#endif
+
     private:
       template<typename _Ctx>
 	friend class basic_format_args;
@@ -3631,6 +3643,7 @@ namespace __format
     };
 
   template<typename _Visitor, typename _Context>
+    _GLIBCXX26_DEPRECATED_SUGGEST("std::basic_format_arg::visit")
     inline decltype(auto)
     visit_format_arg(_Visitor&& __vis, basic_format_arg<_Context> __arg)
     {
@@ -3666,6 +3679,8 @@ namespace __format
       }
   };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   template<typename _Context>
     inline size_t
     __int_from_arg(const basic_format_arg<_Context>& __arg)
@@ -4297,6 +4312,7 @@ namespace __format
       else
 	return std::move(__sink)._M_finish().out;
     }
+#pragma GCC diagnostic pop
 
 } // namespace __format
 /// @endcond
