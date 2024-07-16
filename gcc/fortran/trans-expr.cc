@@ -11499,17 +11499,23 @@ gfc_trans_zero_assign (gfc_expr * expr)
   type = TREE_TYPE (dest);
   if (POINTER_TYPE_P (type))
     type = TREE_TYPE (type);
-  if (!GFC_ARRAY_TYPE_P (type))
+  if (GFC_ARRAY_TYPE_P (type))
+    {
+      /* Determine the length of the array.  */
+      len = GFC_TYPE_ARRAY_SIZE (type);
+      if (!len || TREE_CODE (len) != INTEGER_CST)
+	return NULL_TREE;
+    }
+  else if (GFC_DESCRIPTOR_TYPE_P (type)
+	  && gfc_is_simply_contiguous (expr, false, false))
+    {
+      if (POINTER_TYPE_P (TREE_TYPE (dest)))
+	dest = build_fold_indirect_ref_loc (input_location, dest);
+      len = gfc_conv_descriptor_size (dest, GFC_TYPE_ARRAY_RANK (type));
+      dest = gfc_conv_descriptor_data_get (dest);
+    }
+  else
     return NULL_TREE;
-
-  /* Determine the length of the array.  */
-  len = GFC_TYPE_ARRAY_SIZE (type);
-  if (!len || TREE_CODE (len) != INTEGER_CST)
-    return NULL_TREE;
-
-  tmp = TYPE_SIZE_UNIT (gfc_get_element_type (type));
-  len = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type, len,
-			 fold_convert (gfc_array_index_type, tmp));
 
   /* If we are zeroing a local array avoid taking its address by emitting
      a = {} instead.  */
@@ -11517,6 +11523,11 @@ gfc_trans_zero_assign (gfc_expr * expr)
     return build2_loc (input_location, MODIFY_EXPR, void_type_node,
 		       dest, build_constructor (TREE_TYPE (dest),
 					      NULL));
+
+  /* Multiply len by element size.  */
+  tmp = TYPE_SIZE_UNIT (gfc_get_element_type (type));
+  len = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
+			 len, fold_convert (gfc_array_index_type, tmp));
 
   /* Convert arguments to the correct types.  */
   dest = fold_convert (pvoid_type_node, dest);
