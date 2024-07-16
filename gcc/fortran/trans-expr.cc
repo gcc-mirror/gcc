@@ -4424,12 +4424,15 @@ gfc_get_interface_mapping_charlen (gfc_interface_mapping * mapping,
 
 static tree
 gfc_get_interface_mapping_array (stmtblock_t * block, gfc_symbol * sym,
-				 gfc_packed packed, tree data)
+				 gfc_packed packed, tree data, tree len)
 {
   tree type;
   tree var;
 
-  type = gfc_typenode_for_spec (&sym->ts);
+  if (len != NULL_TREE && (TREE_CONSTANT (len) || VAR_P (len)))
+    type = gfc_get_character_type_len (sym->ts.kind, len);
+  else
+    type = gfc_typenode_for_spec (&sym->ts);
   type = gfc_get_nodesc_array_type (type, sym->as, packed,
 				    !sym->attr.target && !sym->attr.pointer
 				    && !sym->attr.proc_pointer);
@@ -4576,7 +4579,8 @@ gfc_add_interface_mapping (gfc_interface_mapping * mapping,
      convert it to a boundless character type.  */
   else if (!sym->attr.dimension && sym->ts.type == BT_CHARACTER)
     {
-      tmp = gfc_get_character_type_len (sym->ts.kind, NULL);
+      se->string_length = gfc_evaluate_now (se->string_length, &se->pre);
+      tmp = gfc_get_character_type_len (sym->ts.kind, se->string_length);
       tmp = build_pointer_type (tmp);
       if (sym->attr.pointer)
         value = build_fold_indirect_ref_loc (input_location,
@@ -4595,7 +4599,7 @@ gfc_add_interface_mapping (gfc_interface_mapping * mapping,
   /* For character(*), use the actual argument's descriptor.  */
   else if (sym->ts.type == BT_CHARACTER && !new_sym->ts.u.cl->length)
     value = build_fold_indirect_ref_loc (input_location,
-				     se->expr);
+					 se->expr);
 
   /* If the argument is an array descriptor, use it to determine
      information about the actual argument's shape.  */
@@ -4609,7 +4613,8 @@ gfc_add_interface_mapping (gfc_interface_mapping * mapping,
       /* Create the replacement variable.  */
       tmp = gfc_conv_descriptor_data_get (desc);
       value = gfc_get_interface_mapping_array (&se->pre, sym,
-					       PACKED_NO, tmp);
+					       PACKED_NO, tmp,
+					       se->string_length);
 
       /* Use DESC to work out the upper bounds, strides and offset.  */
       gfc_set_interface_mapping_bounds (&se->pre, TREE_TYPE (value), desc);
@@ -4617,7 +4622,8 @@ gfc_add_interface_mapping (gfc_interface_mapping * mapping,
   else
     /* Otherwise we have a packed array.  */
     value = gfc_get_interface_mapping_array (&se->pre, sym,
-					     PACKED_FULL, se->expr);
+					     PACKED_FULL, se->expr,
+					     se->string_length);
 
   new_sym->backend_decl = value;
 }
