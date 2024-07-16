@@ -31,6 +31,14 @@ extern int __gomp_team_num __attribute__((shared));
 extern volatile struct gomp_offload_icvs GOMP_ADDITIONAL_ICVS;
 volatile struct rev_offload *GOMP_REV_OFFLOAD_VAR;
 
+/* Implement OpenMP 'teams' construct.
+
+   Initialize upon FIRST call.  Return whether this invocation is active.
+   Depending on whether NUM_TEAMS_LOWER asks for more teams than are provided
+   in hardware, we may need to loop multiple times; in that case make sure to
+   update the team-level variable used by 'omp_get_team_num', as we then can't
+   just use '%ctaid.x'.  */
+
 bool
 GOMP_teams4 (unsigned int num_teams_lower, unsigned int num_teams_upper,
 	     unsigned int thread_limit, bool first)

@@ -3,6 +3,13 @@
 	Backported from trunk:
 	2024-07-19  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* config/gcn/target.c (GOMP_teams4): Document.
+	* config/nvptx/target.c (GOMP_teams4): Likewise.
+	* target.c (GOMP_teams4): Likewise.
+
+	Backported from trunk:
+	2024-07-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* config/gcn/libgomp-gcn.h (GOMP_TEAM_NUM): Inject.
 	* config/gcn/target.c (GOMP_teams4): Handle.
 	* config/gcn/team.c (gomp_gcn_enter_kernel): Initialize.
