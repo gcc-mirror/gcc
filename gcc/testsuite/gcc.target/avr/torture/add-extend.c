@@ -10,7 +10,7 @@ typedef __INT16_TYPE__ s16;
 typedef __int24 s24;
 typedef __INT32_TYPE__ s32;
 
-#define NI __attribute__((noinline,noclone,noipa))
+#define NI __attribute__((noipa))
 
 NI u32 addu_32_8  (u32 a, u8 b)  { return a + b; }
 NI u32 addu_32_16 (u32 a, u16 b) { return a + b; }

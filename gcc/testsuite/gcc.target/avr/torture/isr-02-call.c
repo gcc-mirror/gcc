@@ -5,7 +5,7 @@
 
 int volatile v;
 
-__attribute__((noinline,noclone,noipa))
+__attribute__((noipa))
 void inc_v (void)
 {
   v++;

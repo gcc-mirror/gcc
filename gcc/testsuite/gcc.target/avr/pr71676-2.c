@@ -2,7 +2,7 @@
 /* { dg-options "-dp -w -Os -fno-tree-switch-conversion" } */
 
 #define MK_FUN(NAME, TYP, V)                            \
-  unsigned char __attribute__((noinline,noclone,noipa)) \
+  unsigned char __attribute__((noipa))                  \
   select_## NAME (TYP x, unsigned char y)               \
   {                                                     \
     switch (x)                                          \
