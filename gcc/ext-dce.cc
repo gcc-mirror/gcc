@@ -632,10 +632,11 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj, bitmap live_tmp)
 		  else if (!CONSTANT_P (y))
 		    break;
 
-		  /* We might have (ashift (const_int 1) (reg...)) */
-		  /* XXX share this logic with code below.  */
+		  /* We might have (ashift (const_int 1) (reg...))
+		     By setting dst_mask we can continue iterating on the
+		     the next operand and it will be considered fully live.  */
 		  if (binop_implies_op2_fully_live (GET_CODE (src)))
-		    break;
+		    dst_mask = -1;
 
 		  /* If this was anything but a binary operand, break the inner
 		     loop.  This is conservatively correct as it will cause the
