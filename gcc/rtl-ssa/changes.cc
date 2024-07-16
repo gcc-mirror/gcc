@@ -944,6 +944,25 @@ add_clobber (insn_change &change, add_regno_clobber_fn add_regno_clobber,
   return true;
 }
 
+// See if PARALLEL pattern PAT clobbers any of the registers in ACCESSES.
+// Return one such access if so, otherwise return null.
+static access_info *
+find_clobbered_access (access_array accesses, rtx pat)
+{
+  rtx subpat;
+  for (int i = 0; i < XVECLEN (pat, 0); ++i)
+    if (GET_CODE (subpat = XVECEXP (pat, 0, i)) == CLOBBER)
+      {
+	rtx x = XEXP (subpat, 0);
+	if (REG_P (x))
+	  for (auto *access : accesses)
+	    if (access->regno () >= REGNO (x)
+		&& access->regno () < END_REGNO (x))
+	      return access;
+      }
+  return nullptr;
+}
+
 // Try to recognize the new form of the insn associated with CHANGE,
 // adding any clobbers that are necessary to make the instruction match
 // an .md pattern.  Return true on success.
@@ -1035,9 +1054,48 @@ recog_level2 (insn_change &change, add_regno_clobber_fn add_regno_clobber)
       pat = newpat;
     }
 
+  INSN_CODE (rtl) = icode;
+  if (recog_data.insn == rtl)
+    recog_data.insn = nullptr;
+
+  // See if the pattern contains any hard-coded clobbers of registers
+  // that are also inputs to the instruction.  The standard rtl semantics
+  // treat such clobbers as earlyclobbers, since there is no way of proving
+  // which clobbers conflict with the inputs and which don't.
+  //
+  // (Non-hard-coded clobbers are handled by constraint satisfaction instead.)
+  rtx subpat;
+  if (GET_CODE (pat) == PARALLEL)
+    for (int i = 0; i < XVECLEN (pat, 0); ++i)
+      if (GET_CODE (subpat = XVECEXP (pat, 0, i)) == CLOBBER
+	  && REG_P (XEXP (subpat, 0)))
+	{
+	  // Stub out all operands, so that we can tell which registers
+	  // are hard-coded.
+	  extract_insn (rtl);
+	  for (int j = 0; j < recog_data.n_operands; ++j)
+	    *recog_data.operand_loc[j] = pc_rtx;
+
+	  auto *use = find_clobbered_access (change.new_uses, pat);
+
+	  // Restore the operands.
+	  for (int j = 0; j < recog_data.n_operands; ++j)
+	    *recog_data.operand_loc[j] = recog_data.operand[j];
+
+	  if (use)
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "register %d is both clobbered"
+			   " and used as an input:\n", use->regno ());
+		  print_rtl_single (dump_file, pat);
+		}
+	      return false;
+	    }
+	}
+
   // check_asm_operands checks the constraints after RA, so we don't
   // need to do it again.
-  INSN_CODE (rtl) = icode;
   if (reload_completed && !asm_p)
     {
       extract_insn (rtl);
