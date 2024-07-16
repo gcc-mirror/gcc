@@ -294,6 +294,7 @@
    (V16SI "TARGET_AVX512F && TARGET_EVEX512") (V8SI "TARGET_AVX") V4SI
    (V8DI "TARGET_AVX512F && TARGET_EVEX512")  (V4DI "TARGET_AVX") V2DI
    (V32HF "TARGET_AVX512F && TARGET_EVEX512") (V16HF "TARGET_AVX") V8HF
+   (V32BF "TARGET_AVX512F && TARGET_EVEX512") (V16BF "TARGET_AVX") V8BF
    (V16SF "TARGET_AVX512F && TARGET_EVEX512") (V8SF "TARGET_AVX") V4SF
    (V8DF "TARGET_AVX512F && TARGET_EVEX512")  (V4DF "TARGET_AVX") (V2DF "TARGET_SSE2")])
 
@@ -430,8 +431,8 @@
    (V16SF "TARGET_EVEX512")
    (V8DF "TARGET_EVEX512")])
 
-(define_mode_iterator V4SF_V8HF
-  [V4SF V8HF])
+(define_mode_iterator V24F_128
+  [V4SF V8HF V8BF])
 
 (define_mode_iterator VI48_AVX512VL
   [(V16SI "TARGET_EVEX512") (V8SI "TARGET_AVX512VL") (V4SI "TARGET_AVX512VL")
@@ -11543,8 +11544,8 @@
    (set_attr "mode" "V4SF,SF,DI,DI")])
 
 (define_insn "*vec_concat<mode>"
-  [(set (match_operand:V4SF_V8HF 0 "register_operand"       "=x,v,x,v")
-	(vec_concat:V4SF_V8HF
+  [(set (match_operand:V24F_128 0 "register_operand"       "=x,v,x,v")
+	(vec_concat:V24F_128
 	  (match_operand:<ssehalfvecmode> 1 "register_operand"     " 0,v,0,v")
 	  (match_operand:<ssehalfvecmode> 2 "nonimmediate_operand" " x,v,m,m")))]
   "TARGET_SSE"
@@ -11559,8 +11560,8 @@
    (set_attr "mode" "V4SF,V4SF,V2SF,V2SF")])
 
 (define_insn "*vec_concat<mode>_0"
-  [(set (match_operand:V4SF_V8HF 0 "register_operand"       "=v")
-	(vec_concat:V4SF_V8HF
+  [(set (match_operand:V24F_128 0 "register_operand"       "=v")
+	(vec_concat:V24F_128
 	  (match_operand:<ssehalfvecmode> 1 "nonimmediate_operand" "vm")
 	  (match_operand:<ssehalfvecmode> 2 "const0_operand")))]
   "TARGET_SSE2"
@@ -28573,6 +28574,26 @@
    (set_attr "prefix" "evex")
    (set_attr "memory" "store")
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn_and_split "*<avx512>_store<mode>_mask_1"
+  [(set (match_operand:V 0 "memory_operand")
+	(unspec:V
+	  [(match_operand:V 1 "register_operand")
+	   (match_dup 0)
+	   (match_operand:<avx512fmaskmode> 2 "const0_or_m1_operand")]
+	  UNSPEC_MASKMOV))]
+  "TARGET_AVX512F && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  if (constm1_operand (operands[2], <MODE>mode))
+    emit_move_insn (operands[0], operands[1]);
+  else
+    emit_note (NOTE_INSN_DELETED);
+
+  DONE;
+})
 
 (define_expand "cbranch<mode>4"
   [(set (reg:CC FLAGS_REG)

@@ -825,6 +825,11 @@
   (and (match_code "const_int")
        (match_test "op == constm1_rtx")))
 
+;; Match 0 or -1.
+(define_predicate "const0_or_m1_operand"
+  (ior (match_operand 0 "const0_operand")
+       (match_operand 0 "constm1_operand")))
+
 ;; Match exactly eight.
 (define_predicate "const8_operand"
   (and (match_code "const_int")
