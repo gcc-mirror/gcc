@@ -1,3 +1,272 @@
+2024-07-16  Jeff Law  <jlaw@ventanamicro.com>
+
+	* ext-dce.cc (ext_dce_process_uses): Simplify control flow and fix
+	liveness computation for shift/rotate counts.
+
+2024-07-15  Jeff Law  <jlaw@ventanamicro.com>
+
+	* ext-dce.cc (carry_backpropagate): Make return type unsigned as well.
+	Cast to signed for right shift to preserve sign bit.
+
+2024-07-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	Revert:
+	2024-07-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv-target-attr.cc (riscv_target_attr_parser::parse_arch):
+	Replace new + std::unique_ptr by alloca().
+	(riscv_process_one_target_attr): Likewise.
+	(riscv_process_target_attr): Likewise.
+
+2024-07-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* common/config/riscv/riscv-common.cc (riscv_subset_list::add):
+	Allow adding enabled extension if m_allow_adding_dup is set.
+	* config/riscv/riscv-subset.h: Add m_allow_adding_dup and setter.
+	* config/riscv/riscv-target-attr.cc (riscv_target_attr_parser::parse_arch):
+	Allow adding enabled extensions.
+
+2024-07-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	PR target/115554
+	PR target/115562
+	* common/config/riscv/riscv-common.cc (struct riscv_func_target_info):
+	Remove.
+	(struct riscv_func_target_hasher): Likewise.
+	(riscv_func_decl_hash): Likewise.
+	(riscv_func_target_hasher::hash): Likewise.
+	(riscv_func_target_hasher::equal): Likewise.
+	(riscv_current_subset_list): Likewise.
+	(riscv_cmdline_subset_list): Remove obsolete space.
+	(riscv_func_target_table_lazy_init): Remove.
+	(riscv_func_target_get): Likewise.
+	(riscv_func_target_put): Likewise.
+	(riscv_func_target_remove_and_destory): Likewise.
+	(riscv_arch_str): Generate from cmdline_subset_list.
+	(riscv_set_arch_by_subset_list): Don't set current_subset_list.
+	(riscv_parse_arch_string): Remove current_subset_list.
+	* config/riscv/riscv-c.cc (riscv_cpu_cpp_builtins):
+	Get subset list via riscv_cmdline_subset_list().
+	* config/riscv/riscv-subset.h (riscv_current_subset_list):
+	Remove prototype.
+	(riscv_func_target_get): Likewise.
+	(riscv_func_target_put): Likewise.
+	(riscv_func_target_remove_and_destory): Likewise.
+	* config/riscv/riscv-target-attr.cc (riscv_target_attr_parser::parse_arch):
+	Build base arch string from existing target options, if any.
+	(riscv_target_attr_parser::update_settings): Store new arch
+	string in target options.
+	(riscv_process_one_target_attr): Whitespace fix.
+	(riscv_process_target_attr): Drop opts argument.
+	(riscv_option_valid_attribute_p): Properly save, change and restore
+	target options.
+	* config/riscv/riscv.cc (get_arch_str): New function.
+	(riscv_declare_function_name): Get arch string for option-arch
+	directive from function's target options.
+	* config/riscv/riscv.opt: Add riscv_arch_string variable to
+	march option.
+
+2024-07-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv-target-attr.cc (riscv_target_attr_parser::parse_arch):
+	Replace new + std::unique_ptr by alloca().
+	(riscv_process_one_target_attr): Likewise.
+	(riscv_process_target_attr): Likewise.
+
+2024-07-15  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/113719
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Move flag_omit_frame_pointer final overrider...
+	(ix86_recompute_optlev_based_flags): ... here.
+
+2024-07-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md: Simplify mode usage.
+	(GET_MODE_SIZE (<MODE>mode)): Use <SIZE> instead.
+	(GET_MODE_BITSIZE (<MODE>mode) - 1): Use <MSB> instead.
+	(GET_MODE_MASK (QImode)): Use 0xff instead.
+	* config/avr/avr-fixed.md: Same.
+
+2024-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac (HAVE_GAS_BASE64): New check.
+	* config/elfos.h (BASE64_ASM_OP): Define if HAVE_GAS_BASE64 is
+	defined.
+	* varasm.cc (assemble_string): Bump maximum from 2000 to 16384 if
+	BASE64_ASM_OP is defined.
+	(default_elf_asm_output_limited_string): Emit opening '"' together
+	with STRING_ASM_OP.
+	(default_elf_asm_output_ascii): Use BASE64_ASM_OP if defined and
+	beneficial.  Remove UB when last_null is NULL.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
+2024-07-15  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/115872
+	* tree-ssa-ccp.cc (convert_atomic_bit_not): Remove use_stmt after use_nop_stmt is removed.
+	(optimize_atomic_bit_test_and): Ditto.
+
+2024-07-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386.md (has_nf): New define_attr, add to all
+	nf related patterns.
+	* config/i386/i386-features.cc (apx_nf_convert): New function
+	to convert Non-NF insns to their NF counterparts.
+	(class pass_apx_nf_convert): New pass class.
+	(make_pass_apx_nf_convert): New.
+	* config/i386/i386-passes.def: Add pass_apx_nf_convert after
+	rtl_ifcvt.
+	* config/i386/i386-protos.h (make_pass_apx_nf_convert): Declare.
+
+2024-07-15  Monk Chiang  <monk.chiang@sifive.com>
+
+	* config/riscv/riscv.cc (riscv_print_operand): Add 'L' letter
+	to print zihintntl instructions string.
+	* config/riscv/riscv.md (prefetch): Add zihintntl instructions.
+
+2024-07-15  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* config/riscv/generic-vector-ooo.md: Add def_insn_reservation for vector BFloat16.
+	* config/riscv/riscv.md: Add new insn name for vector BFloat16.
+	* config/riscv/vector-iterators.md: Add some iterators for vector BFloat16.
+	* config/riscv/vector.md: Add some attribute for vector BFloat16.
+	* config/riscv/vector-bfloat16.md: New file. Add insn pattern vector BFloat16.
+
+2024-07-15  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc (class vfncvtbf16_f):
+	Add 'Zvfbfmin' intrinsic in bases.
+	(class vfwcvtbf16_f): Ditto.
+	(class vfwmaccbf16): Add 'Zvfbfwma' intrinsic in bases.
+	(BASE): Add BASE macro for 'Zvfbfmin' and 'Zvfbfwma'.
+	* config/riscv/riscv-vector-builtins-bases.h: Add declaration for 'Zvfbfmin' and 'Zvfbfwma'.
+	* config/riscv/riscv-vector-builtins-functions.def (REQUIRED_EXTENSIONS):
+	Add builtins def for 'Zvfbfmin' and 'Zvfbfwma'.
+	(vfncvtbf16_f): Ditto.
+	(vfncvtbf16_f_frm): Ditto.
+	(vfwcvtbf16_f): Ditto.
+	(vfwmaccbf16): Ditto.
+	(vfwmaccbf16_frm): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.cc (supports_vectype_p):
+	Add vector intrinsic build judgment for BFloat16.
+	(build_all): Ditto.
+	(BASE_NAME_MAX_LEN): Adjust max length.
+	* config/riscv/riscv-vector-builtins-types.def (DEF_RVV_F32_OPS):
+	Add new operand type for BFloat16.
+	(vfloat32mf2_t): Ditto.
+	(vfloat32m1_t): Ditto.
+	(vfloat32m2_t): Ditto.
+	(vfloat32m4_t): Ditto.
+	(vfloat32m8_t): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_F32_OPS): Ditto.
+	(validate_instance_type_required_extensions):
+	Add required_ext checking for 'Zvfbfmin' and 'Zvfbfwma'.
+	* config/riscv/riscv-vector-builtins.h (enum required_ext):
+	Add required_ext declaration for 'Zvfbfmin' and 'Zvfbfwma'.
+	(reqired_ext_to_isa_name): Ditto.
+	(required_extensions_specified): Ditto.
+	(struct function_group_info): Add match case for 'Zvfbfmin' and 'Zvfbfwma'.
+	* config/riscv/riscv.cc (riscv_validate_vector_type):
+	Add required_ext checking for 'Zvfbfmin' and 'Zvfbfwma'.
+
+2024-07-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/115889
+	* config/i386/predicates.md (vcvtne2ps2bf_parallel): Remove.
+	* config/i386/sse.md (hi_cvt_bf): Remove.
+	(HI_CVT_BF): Likewise.
+	(vpermt2_sepcial_bf16_shuffle_<mode>):Likewise.
+
+2024-07-15  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* config/riscv/genrvv-type-indexer.cc (bfloat16_type):
+	Generate bf16 vector_type and scalar_type in DEF_RVV_TYPE_INDEX.
+	(bfloat16_wide_type): Ditto.
+	(same_ratio_eew_bf16_type): Ditto.
+	(main): Ditto.
+	* config/riscv/riscv-modes.def (ADJUST_BYTESIZE):
+	Add vector type for BFloat16.
+	(RVV_WHOLE_MODES): Add vector type for BFloat16.
+	(RVV_FRACT_MODE): Ditto.
+	(RVV_NF4_MODES): Ditto.
+	(RVV_NF8_MODES): Ditto.
+	(RVV_NF2_MODES): Ditto.
+	* config/riscv/riscv-vector-builtins-types.def (vbfloat16mf4_t):
+	Add builtin vector type for BFloat16.
+	(vbfloat16mf2_t): Add builtin vector type for BFloat16.
+	(vbfloat16m1_t): Ditto.
+	(vbfloat16m2_t): Ditto.
+	(vbfloat16m4_t): Ditto.
+	(vbfloat16m8_t): Ditto.
+	(vbfloat16mf4x2_t): Ditto.
+	(vbfloat16mf4x3_t): Ditto.
+	(vbfloat16mf4x4_t): Ditto.
+	(vbfloat16mf4x5_t): Ditto.
+	(vbfloat16mf4x6_t): Ditto.
+	(vbfloat16mf4x7_t): Ditto.
+	(vbfloat16mf4x8_t): Ditto.
+	(vbfloat16mf2x2_t): Ditto.
+	(vbfloat16mf2x3_t): Ditto.
+	(vbfloat16mf2x4_t): Ditto.
+	(vbfloat16mf2x5_t): Ditto.
+	(vbfloat16mf2x6_t): Ditto.
+	(vbfloat16mf2x7_t): Ditto.
+	(vbfloat16mf2x8_t): Ditto.
+	(vbfloat16m1x2_t): Ditto.
+	(vbfloat16m1x3_t): Ditto.
+	(vbfloat16m1x4_t): Ditto.
+	(vbfloat16m1x5_t): Ditto.
+	(vbfloat16m1x6_t): Ditto.
+	(vbfloat16m1x7_t): Ditto.
+	(vbfloat16m1x8_t): Ditto.
+	(vbfloat16m2x2_t): Ditto.
+	(vbfloat16m2x3_t): Ditto.
+	(vbfloat16m2x4_t): Ditto.
+	(vbfloat16m4x2_t): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (check_required_extensions):
+	Add required_ext checking for BFloat16.
+	* config/riscv/riscv-vector-builtins.def (vbfloat16mf4_t):
+	Add vector_type for BFloat16 in builtins.def.
+	(vbfloat16mf4x2_t): Ditto.
+	(vbfloat16mf4x3_t): Ditto.
+	(vbfloat16mf4x4_t): Ditto.
+	(vbfloat16mf4x5_t): Ditto.
+	(vbfloat16mf4x6_t): Ditto.
+	(vbfloat16mf4x7_t): Ditto.
+	(vbfloat16mf4x8_t): Ditto.
+	(vbfloat16mf2_t): Ditto.
+	(vbfloat16mf2x2_t): Ditto.
+	(vbfloat16mf2x3_t): Ditto.
+	(vbfloat16mf2x4_t): Ditto.
+	(vbfloat16mf2x5_t): Ditto.
+	(vbfloat16mf2x6_t): Ditto.
+	(vbfloat16mf2x7_t): Ditto.
+	(vbfloat16mf2x8_t): Ditto.
+	(vbfloat16m1_t): Ditto.
+	(vbfloat16m1x2_t): Ditto.
+	(vbfloat16m1x3_t): Ditto.
+	(vbfloat16m1x4_t): Ditto.
+	(vbfloat16m1x5_t): Ditto.
+	(vbfloat16m1x6_t): Ditto.
+	(vbfloat16m1x7_t): Ditto.
+	(vbfloat16m1x8_t): Ditto.
+	(vbfloat16m2_t): Ditto.
+	(vbfloat16m2x2_t): Ditto.
+	(vbfloat16m2x3_t): Ditto.
+	(vbfloat16m2x4_t): Ditto.
+	(vbfloat16m4_t): Ditto.
+	(vbfloat16m4x2_t): Ditto.
+	(vbfloat16m8_t): Ditto.
+	(double_trunc_bfloat_scalar): Add scalar_type def for BFloat16.
+	(double_trunc_bfloat_vector): Add vector_type def for BFloat16.
+	* config/riscv/riscv-vector-builtins.h (RVV_REQUIRE_ELEN_BF_16):
+	Add required defination of BFloat16 ext.
+	* config/riscv/riscv-vector-switch.def (ENTRY):
+	Add vector_type information for BFloat16.
+	(TUPLE_ENTRY): Add tuple vector_type information for BFloat16.
+
 2024-07-14  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* config/i386/i386-expand.cc (ix86_expand_fp_absneg_operator):

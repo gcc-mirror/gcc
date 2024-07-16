@@ -1,3 +1,11 @@
+2024-07-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115897
+	* pt.cc (complex_alias_template_p): Return true for an alias
+	template with attributes.
+	(get_underlying_template): Don't look through an alias template
+	with attributes.
+
 2024-07-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* call.cc: Include "tree-pretty-print-markup.h".

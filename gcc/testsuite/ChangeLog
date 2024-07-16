@@ -1,3 +1,81 @@
+2024-07-15  Jeff Law  <jlaw@ventanamicro.com>
+
+	* g++.dg/torture/pr115916.C: New test.
+	Co-author: Andreas Schwab <schwab@linux-m68k.org>
+	Co-author: Sergei Trofimovich <slyfox at gentoo dot org>
+
+2024-07-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115897
+	* g++.dg/cpp0x/alias-decl-77.C: New test.
+
+2024-07-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/pr115554.c: Change expected fail to expected pass.
+	* gcc.target/riscv/target-attr-16.c: New test.
+
+2024-07-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	PR target/115554
+	PR target/115562
+	* gcc.target/riscv/target-attr-01.c: Add test for option-arch directive.
+	* gcc.target/riscv/target-attr-02.c: Likewise.
+	* gcc.target/riscv/target-attr-03.c: Likewise.
+	* gcc.target/riscv/target-attr-04.c: Likewise.
+	* gcc.target/riscv/target-attr-05.c: Fix formatting.
+	* gcc.target/riscv/target-attr-06.c: Likewise.
+	* gcc.target/riscv/target-attr-07.c: Likewise.
+	* gcc.target/riscv/pr115554.c: New test.
+	* gcc.target/riscv/pr115562.c: New test.
+	* gcc.target/riscv/target-attr-08.c: New test.
+	* gcc.target/riscv/target-attr-09.c: New test.
+	* gcc.target/riscv/target-attr-10.c: New test.
+	* gcc.target/riscv/target-attr-11.c: New test.
+	* gcc.target/riscv/target-attr-12.c: New test.
+	* gcc.target/riscv/target-attr-13.c: New test.
+	* gcc.target/riscv/target-attr-14.c: New test.
+	* gcc.target/riscv/target-attr-15.c: New test.
+
+2024-07-15  Edwin Lu  <ewlu@rivosinc.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_binary_vx.h:
+	initialize variable
+
+2024-07-15  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr115872.c: New test.
+
+2024-07-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/apx-nf-2.c: New test.
+
+2024-07-15  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR testsuite/115894
+	* gcc.target/arm/pr111235.c: Update expected output.
+
+2024-07-15  Monk Chiang  <monk.chiang@sifive.com>
+
+	* gcc.target/riscv/prefetch-zicbop.c: New test.
+	* gcc.target/riscv/prefetch-zihintntl.c: New test.
+
+2024-07-15  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR testsuite/115892
+	* gcc.target/aarch64/sve/acle/general/cpy_1.c: Update expected
+	output.
+
+2024-07-15  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/tree-ssa/loop-1.c: Remove target-specific test
+	and xfail to adjust for recent changes in register allocation.
+
+2024-07-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/115889
+	* gcc.target/i386/vpermt2-special-bf16-shufflue.c: Adjust output
+	scan.
+
 2024-07-14  Alejandro Colomar  <alx@kernel.org>
 
 	PR c/115185
