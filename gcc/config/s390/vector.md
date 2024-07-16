@@ -27,14 +27,9 @@
    V2SF V4SF V1DF V2DF V1TF V1TI TI])
 
 ; All modes directly supported by the hardware having full vector reg size
-; V_HW2 is for having two iterators expanding independently e.g. vcond.
-; It's similar to V_HW, but not fully identical: V1TI is not included, because
-; there are no 128-bit compares.
 (define_mode_iterator V_HW  [V16QI V8HI V4SI V2DI V1TI TI V2DF
 			     (V4SF "TARGET_VXE") (V1TF "TARGET_VXE")
 			     (TF "TARGET_VXE")])
-(define_mode_iterator V_HW2 [V16QI V8HI V4SI V2DI V2DF (V4SF "TARGET_VXE")
-			     (V1TF "TARGET_VXE") (TF "TARGET_VXE")])
 
 (define_mode_iterator VT_HW_HSDT [V8HI V4SI V4SF V2DI V2DF V1TI V1TF TI TF])
 (define_mode_iterator V_HW_HSD [V8HI V4SI (V4SF "TARGET_VXE") V2DI V2DF])
@@ -727,36 +722,6 @@
     default:
       return true;
     }
-})
-
-(define_expand "vcond<V_HW:mode><V_HW2:mode>"
-  [(set (match_operand:V_HW 0 "register_operand" "")
-	(if_then_else:V_HW
-	 (match_operator 3 "vcond_comparison_operator"
-			 [(match_operand:V_HW2 4 "register_operand" "")
-			  (match_operand:V_HW2 5 "nonmemory_operand" "")])
-	 (match_operand:V_HW 1 "nonmemory_operand" "")
-	 (match_operand:V_HW 2 "nonmemory_operand" "")))]
-  "TARGET_VX && GET_MODE_NUNITS (<V_HW:MODE>mode) == GET_MODE_NUNITS (<V_HW2:MODE>mode)"
-{
-  s390_expand_vcond (operands[0], operands[1], operands[2],
-		     GET_CODE (operands[3]), operands[4], operands[5]);
-  DONE;
-})
-
-(define_expand "vcondu<V_HW:mode><V_HW2:mode>"
-  [(set (match_operand:V_HW 0 "register_operand" "")
-	(if_then_else:V_HW
-	 (match_operator 3 "comparison_operator"
-			 [(match_operand:V_HW2 4 "register_operand" "")
-			  (match_operand:V_HW2 5 "nonmemory_operand" "")])
-	 (match_operand:V_HW 1 "nonmemory_operand" "")
-	 (match_operand:V_HW 2 "nonmemory_operand" "")))]
-  "TARGET_VX && GET_MODE_NUNITS (<V_HW:MODE>mode) == GET_MODE_NUNITS (<V_HW2:MODE>mode)"
-{
-  s390_expand_vcond (operands[0], operands[1], operands[2],
-		     GET_CODE (operands[3]), operands[4], operands[5]);
-  DONE;
 })
 
 (define_expand "vcond_mask_<mode><tointvec>"
