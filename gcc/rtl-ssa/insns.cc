@@ -393,7 +393,10 @@ void
 function_info::remove_insn (insn_info *insn)
 {
   if (insn_info::order_node *order = insn->get_order_node ())
-    insn_info::order_splay_tree::remove_node (order);
+    {
+      insn_info::order_splay_tree::remove_node (order);
+      insn->remove_note (order);
+    }
 
   if (auto *note = insn->find_note<insn_call_clobbers_note> ())
     {
