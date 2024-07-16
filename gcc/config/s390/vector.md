@@ -760,12 +760,12 @@
 })
 
 (define_expand "vcond_mask_<mode><tointvec>"
-  [(set (match_operand:V 0 "register_operand" "")
-	(if_then_else:V
+  [(set (match_operand:VT 0 "register_operand" "")
+	(if_then_else:VT
 	 (eq (match_operand:<TOINTVEC> 3 "register_operand" "")
 	     (match_dup 4))
-	 (match_operand:V 2 "register_operand" "")
-	 (match_operand:V 1 "register_operand" "")))]
+	 (match_operand:VT 2 "register_operand" "")
+	 (match_operand:VT 1 "register_operand" "")))]
   "TARGET_VX"
   "operands[4] = CONST0_RTX (<TOINTVEC>mode);")
 
