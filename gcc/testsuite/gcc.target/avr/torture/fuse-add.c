@@ -9,7 +9,7 @@ extern const uint64_t bb __asm ("real_bb");
 __attribute__((used)) const uint64_t real_aa = 0x1122334455667788;
 __attribute__((used)) const uint64_t real_bb = 0x0908070605040302;
 
-__attribute__((noinline,noclone))
+__attribute__((noinline,noclone,noipa))
 uint64_t add1 (const uint64_t *aa, const uint64_t *bb)
 {
   return *aa + *bb;
@@ -22,7 +22,7 @@ extern const __flash uint64_t fb __asm ("real_fb");
 __attribute__((used)) const __flash uint64_t real_fa = 0x1122334455667788;
 __attribute__((used)) const __flash uint64_t real_fb = 0x0908070605040302;
 
-__attribute__((noinline,noclone))
+__attribute__((noinline,noclone,noipa))
 uint64_t add2 (const __flash uint64_t *aa, const uint64_t *bb)
 {
   return *aa + *bb;

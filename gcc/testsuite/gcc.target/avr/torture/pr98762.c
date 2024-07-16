@@ -3,7 +3,7 @@
 
 long long acc = 0x1122334455667788;
 
-__attribute__((noinline,noclone))
+__attribute__((noinline,noclone,noipa))
 void addhi (short a)
 {
   acc += (long long) a << 32;

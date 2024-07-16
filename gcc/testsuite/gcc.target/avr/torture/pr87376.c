@@ -9,31 +9,31 @@ extern const uint64_t bb __asm ("real_bb");
 const __memx uint64_t real_aa = 0x1122334455667788;
 const uint64_t real_bb        = 0x0908070605040302;
 
-__attribute__((noinline,noclone))
+__attribute__((noinline,noclone,noipa))
 uint64_t add1 (void)
 {
   return aa + bb;
 }
 
-__attribute__((noinline,noclone))
+__attribute__((noinline,noclone,noipa))
 uint64_t add2 (void)
 {
   return bb + aa;
 }
 
-__attribute__((noinline,noclone))
+__attribute__((noinline,noclone,noipa))
 uint64_t sub1 (void)
 {
   return aa - bb;
 }
 
-__attribute__((noinline,noclone))
+__attribute__((noinline,noclone,noipa))
 uint64_t sub2 (void)
 {
   return bb - aa;
 }
 
-__attribute__((noinline,noclone))
+__attribute__((noinline,noclone,noipa))
 uint64_t neg1 (void)
 {
   return -aa;
