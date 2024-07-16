@@ -1082,6 +1082,14 @@ insn_propagation::apply_to_rvalue_1 (rtx *loc)
 	      || !REG_CAN_CHANGE_MODE_P (REGNO (x), GET_MODE (from),
 					 GET_MODE (x)))
 	    return false;
+	  /* If the reference is paradoxical and the replacement
+	     value contains registers, we would need to check that the
+	     simplification below does not increase REG_NREGS for those
+	     registers either.  It seems simpler to punt on nonconstant
+	     values instead.  */
+	  if (paradoxical_subreg_p (GET_MODE (x), GET_MODE (from))
+	      && !CONSTANT_P (to))
+	    return false;
 	  newval = simplify_subreg (GET_MODE (x), to, GET_MODE (from),
 				    subreg_lowpart_offset (GET_MODE (x),
 							   GET_MODE (from)));
