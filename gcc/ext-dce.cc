@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-iter.h"
 #include "df.h"
 #include "print-rtl.h"
+#include "dbgcnt.h"
 
 /* These should probably move into a C++ class.  */
 static vec<bitmap_head> livein;
@@ -310,6 +311,15 @@ ext_dce_try_optimize_insn (rtx_insn *insn, rtx set)
       dump_insn_slim (dump_file, insn);
       fprintf (dump_file, "Trying to simplify pattern:\n");
       print_rtl_single (dump_file, SET_SRC (set));
+    }
+
+  /* We decided to turn do the optimization but allow it to be rejected for
+     bisection purposes.  */
+  if (!dbg_cnt (::ext_dce))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Rejected due to debug counter.\n");
+      return;
     }
 
   new_pattern = simplify_gen_subreg (GET_MODE (src), inner,
@@ -881,8 +891,8 @@ static bool ext_dce_rd_confluence_n (edge) { return true; }
    are never read.  Turn such extensions into SUBREGs instead which
    can often be propagated away.  */
 
-static void
-ext_dce (void)
+void
+ext_dce_execute (void)
 {
   df_analyze ();
   ext_dce_init ();
@@ -929,7 +939,7 @@ public:
   virtual bool gate (function *) { return flag_ext_dce && optimize > 0; }
   virtual unsigned int execute (function *)
     {
-      ext_dce ();
+      ext_dce_execute ();
       return 0;
     }
 
