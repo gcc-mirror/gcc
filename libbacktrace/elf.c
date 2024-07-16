@@ -633,7 +633,7 @@ elf_symbol_search (const void *vkey, const void *ventry)
 
 static int
 elf_initialize_syminfo (struct backtrace_state *state,
-			uintptr_t base_address,
+			struct libbacktrace_base_address base_address,
 			const unsigned char *symtab_data, size_t symtab_size,
 			const unsigned char *strtab, size_t strtab_size,
 			backtrace_error_callback error_callback,
@@ -699,7 +699,8 @@ elf_initialize_syminfo (struct backtrace_state *state,
 	  = *(const b_elf_addr *) (opd->data + (sym->st_value - opd->addr));
       else
 	elf_symbols[j].address = sym->st_value;
-      elf_symbols[j].address += base_address;
+      elf_symbols[j].address =
+	libbacktrace_add_base (elf_symbols[j].address, base_address);
       elf_symbols[j].size = sym->st_size;
       ++j;
     }
@@ -6499,7 +6500,8 @@ backtrace_uncompress_lzma (struct backtrace_state *state,
 static int
 elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 	 const unsigned char *memory, size_t memory_size,
-	 uintptr_t base_address, struct elf_ppc64_opd_data *caller_opd,
+	 struct libbacktrace_base_address base_address,
+	 struct elf_ppc64_opd_data *caller_opd,
 	 backtrace_error_callback error_callback, void *data,
 	 fileline *fileline_fn, int *found_sym, int *found_dwarf,
 	 struct dwarf_data **fileline_entry, int exe, int debuginfo,
@@ -7349,6 +7351,7 @@ phdr_callback (struct dl_phdr_info *info, size_t size ATTRIBUTE_UNUSED,
   const char *filename;
   int descriptor;
   int does_not_exist;
+  struct libbacktrace_base_address base_address;
   fileline elf_fileline_fn;
   int found_dwarf;
 
@@ -7378,7 +7381,8 @@ phdr_callback (struct dl_phdr_info *info, size_t size ATTRIBUTE_UNUSED,
 	return 0;
     }
 
-  if (elf_add (pd->state, filename, descriptor, NULL, 0, info->dlpi_addr, NULL,
+  base_address.m = info->dlpi_addr;
+  if (elf_add (pd->state, filename, descriptor, NULL, 0, base_address, NULL,
 	       pd->error_callback, pd->data, &elf_fileline_fn, pd->found_sym,
 	       &found_dwarf, NULL, 0, 0, NULL, 0))
     {
@@ -7407,11 +7411,20 @@ backtrace_initialize (struct backtrace_state *state, const char *filename,
   fileline elf_fileline_fn = elf_nodebug;
   struct phdr_data pd;
 
-  ret = elf_add (state, filename, descriptor, NULL, 0, 0, NULL, error_callback,
-		 data, &elf_fileline_fn, &found_sym, &found_dwarf, NULL, 1, 0,
-		 NULL, 0);
-  if (!ret)
-    return 0;
+  /* When using fdpic we must use dl_iterate_phdr for all modules, including
+     the main executable, so that we can get the right base address
+     mapping.  */
+  if (!libbacktrace_using_fdpic ())
+    {
+      struct libbacktrace_base_address zero_base_address;
+
+      memset (&zero_base_address, 0, sizeof zero_base_address);
+      ret = elf_add (state, filename, descriptor, NULL, 0, zero_base_address,
+		     NULL, error_callback, data, &elf_fileline_fn, &found_sym,
+		     &found_dwarf, NULL, 1, 0, NULL, 0);
+      if (!ret)
+	return 0;
+    }
 
   pd.state = state;
   pd.error_callback = error_callback;
