@@ -802,6 +802,15 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
   gsi_replace_with_seq_vops (si_p, stmts);
 }
 
+/* Print a message in the dump file recording transformation of FROM to TO.  */
+
+static void
+dump_transformation (gcall *from, gcall *to)
+{
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, from, "simplified %T to %T\n",
+		     gimple_call_fn (from), gimple_call_fn (to));
+}
 
 /* Replace the call at *GSI with the gimple value VAL.  */
 
@@ -835,6 +844,7 @@ static void
 replace_call_with_call_and_fold (gimple_stmt_iterator *gsi, gimple *repl)
 {
   gimple *stmt = gsi_stmt (*gsi);
+  dump_transformation (as_a <gcall *> (stmt), as_a <gcall *> (repl));
   gimple_call_set_lhs (repl, gimple_call_lhs (stmt));
   gimple_set_location (repl, gimple_location (stmt));
   gimple_move_vops (repl, stmt);
@@ -3090,16 +3100,6 @@ gimple_fold_builtin_memory_chk (gimple_stmt_iterator *gsi,
   return true;
 }
 
-/* Print a message in the dump file recording transformation of FROM to TO.  */
-
-static void
-dump_transformation (gcall *from, gcall *to)
-{
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, from, "simplified %T to %T\n",
-		     gimple_call_fn (from), gimple_call_fn (to));
-}
-
 /* Fold a call to the __st[rp]cpy_chk builtin.
    DEST, SRC, and SIZE are the arguments to the call.
    IGNORE is true if return value can be ignored.  FCODE is the BUILT_IN_*
@@ -3189,7 +3189,6 @@ gimple_fold_builtin_stxcpy_chk (gimple_stmt_iterator *gsi,
     return false;
 
   gcall *repl = gimple_build_call (fn, 2, dest, src);
-  dump_transformation (stmt, repl);
   replace_call_with_call_and_fold (gsi, repl);
   return true;
 }
@@ -3235,7 +3234,6 @@ gimple_fold_builtin_stxncpy_chk (gimple_stmt_iterator *gsi,
     return false;
 
   gcall *repl = gimple_build_call (fn, 3, dest, src, len);
-  dump_transformation (stmt, repl);
   replace_call_with_call_and_fold (gsi, repl);
   return true;
 }
