@@ -4582,6 +4582,81 @@ gfc_simplify_len_trim (gfc_expr *e, gfc_expr *kind)
   if (k == -1)
     return &gfc_bad_expr;
 
+  /* If the expression is either an array element or section, an array
+     parameter must be built so that the reference can be applied. Constant
+     references should have already been simplified away. All other cases
+     can proceed to translation, where kind conversion will occur silently.  */
+  if (e->expr_type == EXPR_VARIABLE
+      && e->ts.type == BT_CHARACTER
+      && e->symtree->n.sym->attr.flavor == FL_PARAMETER
+      && e->ref && e->ref->type == REF_ARRAY
+      && e->ref->u.ar.type != AR_FULL
+      && e->symtree->n.sym->value)
+    {
+      char name[2*GFC_MAX_SYMBOL_LEN + 12];
+      gfc_namespace *ns = e->symtree->n.sym->ns;
+      gfc_symtree *st;
+      gfc_expr *expr;
+      gfc_expr *p;
+      gfc_constructor *c;
+      int cnt = 0;
+
+      sprintf (name, "_len_trim_%s_%s", e->symtree->n.sym->name,
+	       ns->proc_name->name);
+      st = gfc_find_symtree (ns->sym_root, name);
+      if (st)
+	goto already_built;
+
+      /* Recursively call this fcn to simplify the constructor elements.  */
+      expr = gfc_copy_expr (e->symtree->n.sym->value);
+      expr->ts.type = BT_INTEGER;
+      expr->ts.kind = k;
+      expr->ts.u.cl = NULL;
+      c = gfc_constructor_first (expr->value.constructor);
+      for (; c; c = gfc_constructor_next (c))
+	{
+	  if (c->iterator)
+	    continue;
+
+	  if (c->expr && c->expr->ts.type == BT_CHARACTER)
+	    {
+	      p = gfc_simplify_len_trim (c->expr, kind);
+	      if (p == NULL)
+		goto clean_up;
+	      gfc_replace_expr (c->expr, p);
+	      cnt++;
+	    }
+	}
+
+      if (cnt)
+	{
+	  /* Build a new parameter to take the result.  */
+	  st = gfc_new_symtree (&ns->sym_root, name);
+	  st->n.sym = gfc_new_symbol (st->name, ns);
+	  st->n.sym->value = expr;
+	  st->n.sym->ts = expr->ts;
+	  st->n.sym->attr.dimension = 1;
+	  st->n.sym->attr.save = SAVE_IMPLICIT;
+	  st->n.sym->attr.flavor = FL_PARAMETER;
+	  st->n.sym->as = gfc_copy_array_spec (e->symtree->n.sym->as);
+	  gfc_set_sym_referenced (st->n.sym);
+	  st->n.sym->refs++;
+	  gfc_commit_symbol (st->n.sym);
+
+already_built:
+	  /* Build a return expression.  */
+	  expr = gfc_copy_expr (e);
+	  expr->ts = st->n.sym->ts;
+	  expr->symtree = st;
+	  gfc_expression_rank (expr);
+	  return expr;
+	}
+
+clean_up:
+      gfc_free_expr (expr);
+      return NULL;
+    }
+
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
 
