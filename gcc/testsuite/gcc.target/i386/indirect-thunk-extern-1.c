@@ -18,4 +18,4 @@ male_indirect_jump (long offset)
 /* { dg-final { scan-assembler "jmp\[ \t\]*_?__x86_indirect_thunk_(r|e)ax" } } */
 /* { dg-final { scan-assembler-not {\t(lfence|pause)} } } */
 /* { dg-final { scan-assembler-not {jmp[ \t]*\.?LIND} } } */
-/* { dg-final { scan-assembler-not {call[ \t]*\.‚LIND} } } */
+/* { dg-final { scan-assembler-not {call[ \t]*\.?LIND} } } */
