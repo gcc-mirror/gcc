@@ -78,7 +78,7 @@ FROM SymbolTable IMPORT NulSym, ModeOfAddr,
                         IsParameterVar, PutProcTypeParam,
                         PutProcTypeVarParam, IsParameterUnbounded,
                         PutFunction, PutProcTypeParam,
-                        GetType,
+                        GetType, IsVar,
                         IsAModula2Type, GetDeclaredMod ;
 
 FROM M2Batch IMPORT MakeDefinitionSource,
@@ -190,6 +190,22 @@ PROCEDURE GetSkippedType (sym: CARDINAL) : CARDINAL ;
 BEGIN
    RETURN( SkipType(GetType(sym)) )
 END GetSkippedType ;
+
+
+(*
+   CheckNotVar - checks to see that the top of stack is not a variable.
+*)
+
+PROCEDURE CheckNotVar (tok: CARDINAL) ;
+VAR
+   const: CARDINAL ;
+BEGIN
+   const := OperandT (1) ;
+   IF (const # NulSym) AND IsVar (const)
+   THEN
+      MetaErrorT1 (tok, 'not expecting a variable {%Aad} as a term in a constant expression', const)
+   END
+END CheckNotVar ;
 
 
 (*

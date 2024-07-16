@@ -157,9 +157,14 @@ BEGIN
             END ;
             DISPOSE(b)
          END ;
-         WITH s^.tail^ DO
-            DEC(items) ;
-            RETURN( bucket[items] )
+         IF s^.tail = NIL
+         THEN
+            InternalError ('stack underflow')
+         ELSE
+            WITH s^.tail^ DO
+               DEC(items) ;
+               RETURN( bucket[items] )
+            END
          END
       END
    END
