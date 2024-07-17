@@ -15,8 +15,9 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 27.8.1.10 ofstream member functions
-// @require@ %-*.tst
+// C++98 27.8.1.10 ofstream member functions
+
+// { dg-additional-files "ofstream_members-1.tst" }
 // @diff@ %-*.tst %-*.txt
 
 // { dg-require-fileio "" }
