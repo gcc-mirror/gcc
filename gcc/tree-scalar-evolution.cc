@@ -3243,7 +3243,11 @@ simple_iv_with_niters (class loop *wrto_loop, class loop *use_loop,
   if (tree_does_not_contain_chrecs (ev))
     {
       iv->base = ev;
-      iv->step = build_int_cst (TREE_TYPE (ev), 0);
+      tree ev_type = TREE_TYPE (ev);
+      if (POINTER_TYPE_P (ev_type))
+	ev_type = sizetype;
+
+      iv->step = build_int_cst (ev_type, 0);
       iv->no_overflow = true;
       return true;
     }
