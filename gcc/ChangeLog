@@ -1,3 +1,192 @@
+2024-07-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115841
+	* tree-vect-loop.cc (vect_transform_cycle_phi): Correctly
+	place the partial vector reduction for the accumulator
+	re-use when the main loop cannot be skipped but the
+	epilogue can.
+
+2024-07-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115843
+	* tree-vect-loop-manip.cc
+	(vect_set_loop_condition_partial_vectors_avx512): Properly
+	bias the shift of the initial mask for alignment peeling.
+
+2024-07-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-06-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115701
+	* tree-ssanames.cc (maybe_duplicate_ssa_info_at_copy):
+	Only copy info from within the same BB.
+
+2024-07-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-06-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115701
+	* tree-ssanames.h (maybe_duplicate_ssa_info_at_copy): Declare.
+	* tree-ssanames.cc (maybe_duplicate_ssa_info_at_copy): New
+	function, split out from ...
+	* tree-ssa-copy.cc (fini_copy_prop): ... here.
+	* tree-ssa-sccvn.cc (eliminate_dom_walker::eliminate_stmt): ...
+	and here.
+
+2024-07-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115867
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Properly
+	guess the number of mask elements for integer mode masks.
+
+2024-07-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-16  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/x86-tune-costs.h (znver5_cost): Update unaligned
+	load and store cost from the aligned costs.
+
+2024-07-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115843
+	* config/i386/x86-tune-costs.h (znver4_cost): Update unaligned
+	load and store cost from the aligned costs.
+
+2024-07-16  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2024-07-12  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/115459
+	* config/alpha/alpha.cc (alpha_expand_block_move): Adjust
+	MEMs to match inferred alignment.
+
+2024-07-16  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	Backported from master:
+	2024-07-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* common/config/riscv/riscv-common.cc (riscv_subset_list::add):
+	Allow adding enabled extension if m_allow_adding_dup is set.
+	* config/riscv/riscv-subset.h: Add m_allow_adding_dup and setter.
+	* config/riscv/riscv-target-attr.cc (riscv_target_attr_parser::parse_arch):
+	Allow adding enabled extensions.
+
+2024-07-16  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	Backported from master:
+	2024-07-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	PR target/115554
+	PR target/115562
+	* common/config/riscv/riscv-common.cc (struct riscv_func_target_info):
+	Remove.
+	(struct riscv_func_target_hasher): Likewise.
+	(riscv_func_decl_hash): Likewise.
+	(riscv_func_target_hasher::hash): Likewise.
+	(riscv_func_target_hasher::equal): Likewise.
+	(riscv_current_subset_list): Likewise.
+	(riscv_cmdline_subset_list): Remove obsolete space.
+	(riscv_func_target_table_lazy_init): Remove.
+	(riscv_func_target_get): Likewise.
+	(riscv_func_target_put): Likewise.
+	(riscv_func_target_remove_and_destory): Likewise.
+	(riscv_arch_str): Generate from cmdline_subset_list.
+	(riscv_set_arch_by_subset_list): Don't set current_subset_list.
+	(riscv_parse_arch_string): Remove current_subset_list.
+	* config/riscv/riscv-c.cc (riscv_cpu_cpp_builtins):
+	Get subset list via riscv_cmdline_subset_list().
+	* config/riscv/riscv-subset.h (riscv_current_subset_list):
+	Remove prototype.
+	(riscv_func_target_get): Likewise.
+	(riscv_func_target_put): Likewise.
+	(riscv_func_target_remove_and_destory): Likewise.
+	* config/riscv/riscv-target-attr.cc (riscv_target_attr_parser::parse_arch):
+	Build base arch string from existing target options, if any.
+	(riscv_target_attr_parser::update_settings): Store new arch
+	string in target options.
+	(riscv_process_one_target_attr): Whitespace fix.
+	(riscv_process_target_attr): Drop opts argument.
+	(riscv_option_valid_attribute_p): Properly save, change and restore
+	target options.
+	* config/riscv/riscv.cc (get_arch_str): New function.
+	(riscv_declare_function_name): Get arch string for option-arch
+	directive from function's target options.
+	* config/riscv/riscv.opt: Add riscv_arch_string variable to
+	march option.
+
+2024-07-16  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	Backported from master:
+	2024-07-09  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv-target-attr.cc (riscv_process_target_attr):
+	Fix comments and variable names.
+
+2024-07-16  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	Backported from master:
+	2024-07-09  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* common/config/riscv/riscv-common.cc (riscv_set_arch_by_subset_list):
+	Fix overlong line.
+	(riscv_parse_arch_string): Replace duplicated code by a call to
+	riscv_set_arch_by_subset_list.
+
+2024-07-16  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2024-07-15  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/113719
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Move flag_omit_frame_pointer final overrider...
+	(ix86_recompute_optlev_based_flags): ... here.
+
+2024-07-16  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2024-07-03  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/113719
+	* config/i386/i386-options.cc
+	(ix86_override_options_after_change_1): Add opts and opts_set
+	parms, operate on them, after factoring out of...
+	(ix86_override_options_after_change): ... this.  Restore calls
+	of ix86_default_align and ix86_recompute_optlev_based_flags.
+	(ix86_option_override_internal): Call the factored-out bits.
+
+2024-07-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2024-07-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/i386/i386.cc (ix86_print_operand): Always generate
+	branch hint for conditional branches.
+	* config/i386/i386.h (TARGET_BRANCH_PREDICTION_HINTS): Split
+	into ..
+	(TARGET_BRANCH_PREDICTION_HINTS_TAKEN): .. this, and ..
+	(TARGET_BRANCH_PREDICTION_HINTS_NOT_TAKEN): .. this.
+	* config/i386/x86-tune.def (X86_TUNE_BRANCH_PREDICTION_HINTS):
+	Split into ..
+	(X86_TUNE_BRANCH_PREDICTION_HINTS_TAKEN): .. this, and ..
+	(X86_TUNE_BRANCH_PREDICTION_HINTS_NOT_TAKEN): .. this.
+
 2024-07-15  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:

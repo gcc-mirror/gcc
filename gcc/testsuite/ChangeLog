@@ -1,3 +1,69 @@
+2024-07-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115841
+	* gcc.dg/vect/pr115841.c: New testcase.
+
+2024-07-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115843
+	* gcc.dg/vect/pr115843.c: New testcase.
+
+2024-07-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-06-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115701
+	* gcc.dg/torture/pr115701.c: New testcase.
+
+2024-07-16  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	Backported from master:
+	2024-07-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/pr115554.c: Change expected fail to expected pass.
+	* gcc.target/riscv/target-attr-16.c: New test.
+
+2024-07-16  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	Backported from master:
+	2024-07-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	PR target/115554
+	PR target/115562
+	* gcc.target/riscv/target-attr-01.c: Add test for option-arch directive.
+	* gcc.target/riscv/target-attr-02.c: Likewise.
+	* gcc.target/riscv/target-attr-03.c: Likewise.
+	* gcc.target/riscv/target-attr-04.c: Likewise.
+	* gcc.target/riscv/target-attr-05.c: Fix formatting.
+	* gcc.target/riscv/target-attr-06.c: Likewise.
+	* gcc.target/riscv/target-attr-07.c: Likewise.
+	* gcc.target/riscv/pr115554.c: New test.
+	* gcc.target/riscv/pr115562.c: New test.
+	* gcc.target/riscv/target-attr-08.c: New test.
+	* gcc.target/riscv/target-attr-09.c: New test.
+	* gcc.target/riscv/target-attr-10.c: New test.
+	* gcc.target/riscv/target-attr-11.c: New test.
+	* gcc.target/riscv/target-attr-12.c: New test.
+	* gcc.target/riscv/target-attr-13.c: New test.
+	* gcc.target/riscv/target-attr-14.c: New test.
+	* gcc.target/riscv/target-attr-15.c: New test.
+
+2024-07-16  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	Backported from master:
+	2024-07-09  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/interrupt-misaligned.c: Remove
+	"-fno-fat-lto-objects" from skip condition.
+	* gcc.target/riscv/pr93202.c: Likewise.
+
 2024-07-15  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
