@@ -8543,7 +8543,7 @@ default_elf_asm_output_ascii (FILE *f, const char *s, unsigned int len)
 	    {
 	      if (t == p && t != s)
 		{
-		  if (cnt <= (t - s + 1 + 2) / 3 * 4
+		  if (cnt <= ((unsigned) (t - s) + 1 + 2) / 3 * 4
 		      && (!prev_base64 || (t - s) >= 16)
 		      && ((t - s) > 1 || cnt <= 2))
 		    {
@@ -8569,7 +8569,7 @@ default_elf_asm_output_ascii (FILE *f, const char *s, unsigned int len)
 		  break;
 		}
 	    }
-	  if (cnt > (t - s + 2) / 3 * 4 && (t - s) >= 3)
+	  if (cnt > ((unsigned) (t - s) + 2) / 3 * 4 && (t - s) >= 3)
 	    {
 	      if (bytes_in_chunk > 0)
 		{
