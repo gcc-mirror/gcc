@@ -1,6 +1,16 @@
 2025-02-18  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from trunk:
+	2024-09-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/104957
+	* gcc.target/nvptx/alias-1.c: Enhance assembler scanning.
+	* gcc.target/nvptx/alias-2.c: Likewise.
+	* gcc.target/nvptx/alias-3.c: Likewise.
+	* gcc.target/nvptx/alias-4.c: Likewise.
+	* gcc.target/nvptx/alias-to-alias-1.c: Likewise.
+
+	Backported from trunk:
 	2024-09-05  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR target/104957
