@@ -197,6 +197,7 @@ package Aspects is
       Aspect_Effective_Writes,              -- GNAT
       Aspect_Exclusive_Functions,
       Aspect_Export,
+      Aspect_Extended_Access,               -- GNAT
       Aspect_Extensions_Visible,            -- GNAT
       Aspect_Favor_Top_Level,               -- GNAT
       Aspect_First_Controlling_Parameter,   -- GNAT
@@ -293,6 +294,7 @@ package Aspects is
       Aspect_Effective_Reads            => True,
       Aspect_Effective_Writes           => True,
       Aspect_Exceptional_Cases          => True,
+      Aspect_Extended_Access            => True,
       Aspect_Extensions_Visible         => True,
       Aspect_External_Initialization    => True,
       Aspect_Favor_Top_Level            => True,
@@ -539,6 +541,7 @@ package Aspects is
       Aspect_Dynamic_Predicate            => False,
       Aspect_Exceptional_Cases            => False,
       Aspect_Exclusive_Functions          => False,
+      Aspect_Extended_Access              => True,
       Aspect_External_Initialization      => False,
       Aspect_External_Name                => False,
       Aspect_External_Tag                 => False,
@@ -714,6 +717,7 @@ package Aspects is
       Aspect_Exceptional_Cases            => Name_Exceptional_Cases,
       Aspect_Exclusive_Functions          => Name_Exclusive_Functions,
       Aspect_Export                       => Name_Export,
+      Aspect_Extended_Access              => Name_Extended_Access,
       Aspect_Extensions_Visible           => Name_Extensions_Visible,
       Aspect_External_Initialization      => Name_External_Initialization,
       Aspect_External_Name                => Name_External_Name,
@@ -1095,6 +1099,7 @@ package Aspects is
       Aspect_Atomic_Components            => Rep_Aspect,
       Aspect_Bit_Order                    => Rep_Aspect,
       Aspect_Component_Size               => Rep_Aspect,
+      Aspect_Extended_Access              => Rep_Aspect,
       Aspect_Full_Access_Only             => Rep_Aspect,
       Aspect_Machine_Radix                => Rep_Aspect,
       Aspect_Object_Size                  => Rep_Aspect,

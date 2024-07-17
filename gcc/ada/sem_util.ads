@@ -1460,6 +1460,11 @@ package Sem_Util is
    function Is_Container_Aggregate (Exp : Node_Id) return Boolean;
    --  Is the given expression a container aggregate?
 
+   function Is_Extended_Access_Type (Ent : Entity_Id) return Boolean;
+   --  Ent is any entity. Returns True if Ent is a type (or a subtype thereof)
+   --  for which the Extended_Access aspect has been specified, either
+   --  explicitly or by inheritance.
+
    function Is_Function_With_Side_Effects (Subp : Entity_Id) return Boolean;
    --  Return True if Subp is a function with side effects, ie. it has a
    --  (direct or inherited) pragma Side_Effects with static value True.
@@ -1768,7 +1773,8 @@ package Sem_Util is
    function Is_Actual_Parameter (N : Node_Id) return Boolean;
    --  Determines if N is an actual parameter in a subprogram or entry call
 
-   function Is_Aliased_View (Obj : Node_Id) return Boolean;
+   function Is_Aliased_View
+     (Obj : Node_Id; For_Extended : Boolean := False) return Boolean;
    --  Determine if Obj is an aliased view, i.e. the name of an object to which
    --  'Access or 'Unchecked_Access can apply. Note that this routine uses the
    --  rules of the language, it does not take into account the restriction
@@ -1776,6 +1782,9 @@ package Sem_Util is
    --  and Obj violates the restriction. The caller is responsible for calling
    --  Restrict.Check_No_Implicit_Aliasing if True is returned, but there is a
    --  requirement for obeying the restriction in the call context.
+   --  If For_Extended is True, then slightly different rules apply (as per
+   --  the definition of the Extended_Access aspect); for example, a slice
+   --  of an aliased array is considered to be aliased.
 
    function Is_Ancestor_Package
      (E1 : Entity_Id;

@@ -12356,6 +12356,27 @@ package body Sem_Util is
         and then not Is_Record_Aggregate;
    end Is_Container_Aggregate;
 
+   -----------------------------
+   -- Is_Extended_Access_Type --
+   -----------------------------
+
+   function Is_Extended_Access_Type (Ent : Entity_Id) return Boolean is
+      Btype : constant Entity_Id := Available_View (Base_Type (Ent));
+   begin
+      if Has_Aspect (Btype, Aspect_Extended_Access) then
+         declare
+            Aspect_Expr : constant Node_Id :=
+              Expression (Find_Aspect (Btype, Aspect_Extended_Access));
+         begin
+            return No (Aspect_Expr) or else Expr_Value (Aspect_Expr) /= 0;
+         end;
+      elsif Is_Derived_Type (Btype) then
+         return Is_Extended_Access_Type (Etype (Btype));
+      else
+         return False;
+      end if;
+   end Is_Extended_Access_Type;
+
    ---------------------------------
    -- Side_Effect_Free_Statements --
    ---------------------------------
@@ -15153,8 +15174,17 @@ package body Sem_Util is
    -- Is_Aliased_View --
    ---------------------
 
-   function Is_Aliased_View (Obj : Node_Id) return Boolean is
+   function Is_Aliased_View
+     (Obj : Node_Id; For_Extended : Boolean := False) return Boolean
+   is
       E : Entity_Id;
+
+      --  Ensure that For_Extended parameter is propagated in recursive
+      --  calls by hiding the version that has the wrong default.
+
+      function Is_Aliased_View
+        (Obj : Node_Id; For_SF : Boolean := For_Extended) return Boolean
+        renames Sem_Util.Is_Aliased_View;
 
    begin
       if Is_Entity_Name (Obj) then
@@ -15236,10 +15266,33 @@ package body Sem_Util is
       --  rewritten constructs that introduce artificial dereferences.
 
       elsif Nkind (Obj) = N_Explicit_Dereference then
+         --  If For_Extended is False then a dereference of an extended access
+         --  value is, by definition, not aliased.
+         --  This is to prevent covert illegal type conversion via either
+         --    Not_Extended_Type'(Extended_Ptr.all'Access)
+         --  or by passing Extended_Ptr.all as an actual parameter
+         --  corresponding to an explicitly aliased formal parameter
+         --  (which would allow the callee to evaluate Aliased_Param'Access).
+
+         if Is_Extended_Access_Type (Etype (Prefix (Obj)))
+           and then not For_Extended
+         then
+            return False;
+         end if;
+
          return not Is_Captured_Function_Call (Obj)
            and then not
              (Nkind (Parent (Obj)) = N_Object_Renaming_Declaration
                and then Is_Return_Object (Defining_Entity (Parent (Obj))));
+
+      elsif Nkind (Obj) = N_Slice then
+         --  A slice of a bit-packed array is not considered aliased even
+         --  for an extended access type because even extended access types
+         --  don't support bit pointers.
+
+         return For_Extended
+           and then Is_Aliased_View (Prefix (Obj))
+           and then not Is_Bit_Packed_Array (Etype (Obj));
 
       else
          return False;
@@ -15668,7 +15721,7 @@ package body Sem_Util is
                                    Expression (Item_2));
             end;
 
-         --  A confirming aspect for Implicit_Derenfence on a derived type
+         --  A confirming aspect for Implicit_Dereference on a derived type
          --  has already been checked in Analyze_Aspect_Implicit_Dereference,
          --  including the presence of renamed discriminants.
 

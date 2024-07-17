@@ -14428,6 +14428,37 @@ package body Sem_Res is
             return False;
          end if;
 
+         declare
+            Extended_Opnd : constant Boolean :=
+              Is_Extended_Access_Type (Opnd_Type);
+            Extended_Target : constant Boolean :=
+              Is_Extended_Access_Type (Target_Type);
+         begin
+            --  An extended access value may designate objects that are
+            --  impossible to reference using a non-extended type, so
+            --  prohibit conversions that would require being able to
+            --  do the impossible.
+
+            if Extended_Opnd then
+               if not Extended_Target then
+                  Conversion_Error_N
+                    ("cannot convert extended access value"
+                     & " to non-extended access type",
+                     Operand);
+                  return False;
+               end if;
+
+            --  Detect bad conversion on copy back for a view conversion
+
+            elsif Extended_Target and then Is_View_Conversion (N) then
+               Conversion_Error_N
+                 ("cannot convert non-extended value"
+                  & " to extended access type in view conversion",
+                  Operand);
+               return False;
+            end if;
+         end;
+
          --  Check the static accessibility rule of 4.6(17). Note that the
          --  check is not enforced when within an instance body, since the RM
          --  requires such cases to be caught at run time.
@@ -14476,6 +14507,7 @@ package body Sem_Res is
                      then
                         Conversion_Error_N
                           ("operand has deeper level than target", Operand);
+                        return False;
                      end if;
 
                   --  Implicit conversions aren't allowed for objects of an

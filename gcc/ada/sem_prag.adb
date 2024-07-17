@@ -90,7 +90,7 @@ with Stylesw;        use Stylesw;
 with Table;
 with Targparm;       use Targparm;
 with Tbuild;         use Tbuild;
-with Ttypes;
+with Ttypes;         use Ttypes;
 with Uintp;          use Uintp;
 with Uname;          use Uname;
 with Urealp;         use Urealp;
@@ -17459,6 +17459,77 @@ package body Sem_Prag is
                Error_Pragma ("incorrect name for pragma%, must be Aux_xxx");
             end if;
 
+         ---------------------
+         -- Extended_Access --
+         ---------------------
+
+         --  pragma Extended_Access (first_subtype_LOCAL_NAME);
+
+         when Pragma_Extended_Access => Extended_Access : declare
+            Assoc   : constant Node_Id := Arg1;
+            Typ     : Entity_Id;
+            Type_Id : Node_Id;
+
+         begin
+            Check_No_Identifiers;
+            Check_Arg_Count (1);
+            Check_Arg_Is_Local_Name (Arg1);
+            Type_Id := Get_Pragma_Arg (Assoc);
+
+            if not Is_Entity_Name (Type_Id)
+              or else not Is_Type (Entity (Type_Id))
+            then
+               Error_Pragma_Arg
+                 ("argument for pragma% must be type or subtype", Arg1);
+            end if;
+
+            Find_Type (Type_Id);
+            Typ := Entity (Type_Id);
+
+            if Typ = Any_Type
+              or else Rep_Item_Too_Early (Typ, N)
+            then
+               return;
+            else
+               Typ := Underlying_Type (Typ);
+            end if;
+
+            --  A pragma that applies to a Ghost entity becomes Ghost for the
+            --  purposes of legality checks and removal of ignored Ghost code.
+
+            Mark_Ghost_Pragma (N, Typ);
+
+            if Ekind (Typ) = E_Access_Subtype then
+               Error_Pragma
+                 ("pragma% not specifiable for subtype");
+            elsif Ekind (Typ) /= E_General_Access_Type then
+               Error_Pragma
+                 ("pragma% only specifiable for general access type");
+            elsif Is_Derived_Type (Typ) then
+               Error_Pragma
+                 ("pragma% not specifiable for derived type");
+            else
+               declare
+                  Designated : constant Entity_Id := Designated_Type (Typ);
+               begin
+                  if not (Is_Array_Type (Designated))
+                    or else Is_Constrained (Designated)
+                  then
+                     Error_Pragma
+                       ("pragma% only specifiable for access type" &
+                       " having unconstrained array designated subtype");
+                  end if;
+               end;
+            end if;
+
+            Check_First_Subtype (Arg1);
+            Check_Duplicate_Pragma (Typ);
+
+            if Rep_Item_Too_Late (Typ, N) then
+               return;
+            end if;
+         end Extended_Access;
+
          ------------------------
          -- Extensions_Allowed --
          ------------------------
@@ -32963,6 +33034,7 @@ package body Sem_Prag is
       Pragma_Export_Procedure               => -1,
       Pragma_Export_Valued_Procedure        => -1,
       Pragma_Extend_System                  => -1,
+      Pragma_Extended_Access                =>  0,
       Pragma_Extensions_Allowed             =>  0,
       Pragma_Extensions_Visible             =>  0,
       Pragma_External                       => -1,

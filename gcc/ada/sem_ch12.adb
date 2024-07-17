@@ -13974,6 +13974,22 @@ package body Sem_Ch12 is
               ("non null exclusion of actual and formal & do not match",
                  Actual, Gen_T);
          end if;
+
+         --  formal/actual extended access match required (regardless of
+         --  whether a formal extended access type is currently possible)
+
+         if Is_Extended_Access_Type (Act_T)
+           /= Is_Extended_Access_Type (A_Gen_T)
+         then
+            Error_Msg_N
+              ("actual type must" &
+               String'(if Is_Extended_Access_Type (A_Gen_T)
+                       then ""
+                       else " not") &
+               " be extended access type", Actual);
+
+            Abandon_Instantiation (Actual);
+         end if;
       end Validate_Access_Type_Instance;
 
       ----------------------------------

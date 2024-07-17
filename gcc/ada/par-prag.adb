@@ -1442,6 +1442,7 @@ begin
          | Pragma_Export_Procedure
          | Pragma_Export_Valued_Procedure
          | Pragma_Extend_System
+         | Pragma_Extended_Access
          | Pragma_Extensions_Visible
          | Pragma_External
          | Pragma_External_Name_Casing

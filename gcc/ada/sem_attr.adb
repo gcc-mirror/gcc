@@ -11922,6 +11922,12 @@ package body Sem_Attr is
                then
                   null;
 
+               --  Nominal subtype static matching requirement does not apply
+               --  for an extended access type.
+
+               elsif Is_Extended_Access_Type (Typ) then
+                  null;
+
                else
                   Error_Msg_F
                     ("object subtype must statically match "
@@ -12127,7 +12133,9 @@ package body Sem_Attr is
               and then not (Nkind (P) = N_Selected_Component
                              and then
                                Is_Overloadable (Entity (Selector_Name (P))))
-              and then not Is_Aliased_View (Original_Node (P))
+              and then not Is_Aliased_View
+                             (Original_Node (P),
+                              For_Extended => Is_Extended_Access_Type (Btyp))
               and then not In_Instance
               and then not In_Inlined_Body
               and then Comes_From_Source (N)
