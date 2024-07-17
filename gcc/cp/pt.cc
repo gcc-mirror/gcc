@@ -994,6 +994,7 @@ maybe_new_partial_specialization (tree& type)
       tree t = make_class_type (TREE_CODE (type));
       CLASSTYPE_DECLARED_CLASS (t) = CLASSTYPE_DECLARED_CLASS (type);
       SET_TYPE_TEMPLATE_INFO (t, build_template_info (tmpl, args));
+      TYPE_CONTEXT (t) = TYPE_CONTEXT (type);
 
       /* We only need a separate type node for storing the definition of this
 	 partial specialization; uses of S<T*> are unconstrained, so all are
