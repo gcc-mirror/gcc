@@ -10,8 +10,8 @@ void foo ()
   register int b __asm ("r30");
   register short c __asm ("r29");
   register char d __asm ("r28");
-  __asm__ __volatile__ ("mov %0, %%rax" : : "r" (a) : "rax");
-  __asm__ __volatile__ ("mov %0, %%eax" : : "r" (b) : "eax");
-  __asm__ __volatile__ ("mov %0, %%eax" : : "r" (c) : "eax");
-  __asm__ __volatile__ ("mov %0, %%eax" : : "r" (d) : "eax");
+  __asm__ __volatile__ ("movq %0, %%rax" : : "r" (a) : "rax");
+  __asm__ __volatile__ ("movl %0, %%eax" : : "r" (b) : "eax");
+  __asm__ __volatile__ ("movw %0, %%ax" : : "r" (c) : "ax");
+  __asm__ __volatile__ ("movb %0, %%al" : : "r" (d) : "al");
 }
