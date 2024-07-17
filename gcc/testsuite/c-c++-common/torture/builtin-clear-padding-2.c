@@ -1,4 +1,5 @@
 /* PR libstdc++/88101 */
+/* { dg-do run } */
 
 typedef int T __attribute__((aligned (16384)));
 struct S { char a; short b; long double c; T d; T e; long long f; };
