@@ -28,9 +28,9 @@ main (void)
    { dg-final { scan-assembler-times {(?n)^// BEGIN GLOBAL FUNCTION DEF: __f$} 1 } }
    { dg-final { scan-assembler-times {(?n)^\.visible \.func __f$} 1 } } */
 
-/* { dg-final { scan-assembler-times {(?n)^// BEGIN GLOBAL FUNCTION DECL: f$} 1 { xfail *-*-* } } }
+/* { dg-final { scan-assembler-times {(?n)^// BEGIN GLOBAL FUNCTION DECL: f$} 1 } }
    { dg-final { scan-assembler-times {(?n)^\.visible \.func f;$} 1 } }
-   { dg-final { scan-assembler-times {(?n)^// BEGIN GLOBAL FUNCTION DEF: f$} 1 { xfail *-*-* } } }
+   { dg-final { scan-assembler-times {(?n)^// BEGIN GLOBAL FUNCTION DEF: f$} 1 } }
    { dg-final { scan-assembler-times {(?n)^\.alias f,__f;$} 1 } } */
 
 /* { dg-final { scan-assembler-times {(?n)\tcall __f;$} 0 } }

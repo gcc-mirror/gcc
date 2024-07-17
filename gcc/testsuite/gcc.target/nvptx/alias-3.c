@@ -30,9 +30,9 @@ main (void)
    { dg-final { scan-assembler-times {(?n)^// BEGIN FUNCTION DEF: __f$} 1 } }
    { dg-final { scan-assembler-times {(?n)^\.func __f$} 1 } } */
 
-/* { dg-final { scan-assembler-times {(?n)^// BEGIN FUNCTION DECL: f$} 1 { xfail *-*-* } } }
+/* { dg-final { scan-assembler-times {(?n)^// BEGIN FUNCTION DECL: f$} 1 } }
    { dg-final { scan-assembler-times {(?n)^\.func f;$} 1 } }
-   { dg-final { scan-assembler-times {(?n)^// BEGIN FUNCTION DEF: f$} 1 { xfail *-*-* } } }
+   { dg-final { scan-assembler-times {(?n)^// BEGIN FUNCTION DEF: f$} 1 } }
    { dg-final { scan-assembler-times {(?n)^\.alias f,__f;$} 1 } } */
 
 /* { dg-final { scan-assembler-times {(?n)\tcall __f;$} 0 } }
