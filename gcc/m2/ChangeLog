@@ -1,3 +1,24 @@
+2024-07-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115957
+	* gm2-compiler/M2StackAddress.mod (PopAddress): Detect tail=NIL
+	and generate an internal error.
+	* gm2-compiler/PCBuild.bnf (InConstParameter): New variable.
+	(InConstBlock): New variable.
+	(ErrorString): Rewrite using MetaErrorStringT0.
+	(ErrorArrayAt): Rewrite using MetaErrorStringT0.
+	(WarnMissingToken): Use MetaErrorStringT0.
+	(CompilationUnit): Set seenError FALSE.
+	(init): Initialize InConstParameter and InConstBlock.
+	(ConstantDeclaration): Set InConstBlock.
+	(ConstSetOrQualidentOrFunction): Call CheckNotVar if not
+	InConstParameter and InConstBlock.
+	(ConstActualParameters): Set InConstParameter TRUE and restore
+	value at the end.
+	* gm2-compiler/PCSymBuild.def (CheckNotVar): New procedure.
+	Remove all unnecessary export qualified list.
+	* gm2-compiler/PCSymBuild.mod (CheckNotVar): New procedure.
+
 2024-07-12  FX Coudert  <fxcoudert@gmail.com>
 
 	* gm2-gcc/m2linemap.cc (INCLUDE_STRING): Define before

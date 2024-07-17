@@ -1,3 +1,175 @@
+2024-07-16  Nina Ranns  <dinka.ranns@gmail.com>
+
+	PR c++/110159
+	* g++.dg/contracts/pr110159.C: New test.
+
+2024-07-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/isr-test.h: Attribute ipa implies noinline and noclone.
+	* gcc.target/avr/pr114981-powif.c: Same.
+	* gcc.target/avr/pr114981-powil.c: Same.
+	* gcc.target/avr/pr71676-1.c: Same.
+	* gcc.target/avr/pr71676-2.c: Same.
+	* gcc.target/avr/pr71676-3.c: Same.
+	* gcc.target/avr/pr71676.c: Same.
+	* gcc.target/avr/torture/add-extend.c: Same.
+	* gcc.target/avr/torture/fix-types.h: Same.
+	* gcc.target/avr/torture/fuse-add.c: Same.
+	* gcc.target/avr/torture/get-mem.c: Same.
+	* gcc.target/avr/torture/insv-anyshift-hi.c: Same.
+	* gcc.target/avr/torture/insv-anyshift-si.c: Same.
+	* gcc.target/avr/torture/isr-02-call.c: Same.
+	* gcc.target/avr/torture/isr-03-fixed.c: Same.
+	* gcc.target/avr/torture/pr109650-1.c: Same.
+	* gcc.target/avr/torture/pr109650-2.c: Same.
+	* gcc.target/avr/torture/pr109907-1.c: Same.
+	* gcc.target/avr/torture/pr109907-2.c: Same.
+	* gcc.target/avr/torture/pr114132-2.c: Same.
+	* gcc.target/avr/torture/pr39633.c: Same.
+	* gcc.target/avr/torture/pr51782-1.c: Same.
+	* gcc.target/avr/torture/pr61055.c: Same.
+	* gcc.target/avr/torture/pr61443.c: Same.
+	* gcc.target/avr/torture/pr64331.c: Same.
+	* gcc.target/avr/torture/pr77326.c: Same.
+	* gcc.target/avr/torture/pr83729.c: Same.
+	* gcc.target/avr/torture/pr83801.c: Same.
+	* gcc.target/avr/torture/pr87376.c: Same.
+	* gcc.target/avr/torture/pr88236-pr115726.c: Same.
+	* gcc.target/avr/torture/pr92606.c: Same.
+	* gcc.target/avr/torture/pr98762.c: Same.
+	* gcc.target/avr/torture/sat-hr-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-k-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-llk-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-r-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-uhr-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-uk-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-ullk-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-ur-plus-minus.c: Same.
+	* gcc.target/avr/torture/set-mem.c: Same.
+	* gcc.target/avr/torture/sub-extend.c: Same.
+	* gcc.target/avr/torture/tiny-progmem.c: Same.
+
+2024-07-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/115434
+	PR c++/110871
+	PR c++/110872
+	* g++.dg/contracts/pr115434.C: New test.
+	* g++.dg/coroutines/pr110871.C: New test.
+	* g++.dg/coroutines/pr110872.C: New test.
+
+2024-07-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/isr-test.h: Add noipa function attribute
+	to noclone functions.
+	* gcc.target/avr/pr114981-powif.c: Same.
+	* gcc.target/avr/pr114981-powil.c: Same.
+	* gcc.target/avr/pr71676-1.c: Same.
+	* gcc.target/avr/pr71676-2.c: Same.
+	* gcc.target/avr/pr71676-3.c: Same.
+	* gcc.target/avr/pr71676.c: Same.
+	* gcc.target/avr/torture/fix-types.h: Same.
+	* gcc.target/avr/torture/fuse-add.c: Same.
+	* gcc.target/avr/torture/get-mem.c: Same.
+	* gcc.target/avr/torture/insv-anyshift-hi.c: Same.
+	* gcc.target/avr/torture/insv-anyshift-si.c: Same.
+	* gcc.target/avr/torture/isr-02-call.c: Same.
+	* gcc.target/avr/torture/isr-03-fixed.c: Same.
+	* gcc.target/avr/torture/pr109650-1.c: Same.
+	* gcc.target/avr/torture/pr109650-2.c: Same.
+	* gcc.target/avr/torture/pr109907-1.c: Same.
+	* gcc.target/avr/torture/pr109907-2.c: Same.
+	* gcc.target/avr/torture/pr114132-2.c: Same.
+	* gcc.target/avr/torture/pr39633.c: Same.
+	* gcc.target/avr/torture/pr51782-1.c: Same.
+	* gcc.target/avr/torture/pr61055.c: Same.
+	* gcc.target/avr/torture/pr61443.c: Same.
+	* gcc.target/avr/torture/pr64331.c: Same.
+	* gcc.target/avr/torture/pr77326.c: Same.
+	* gcc.target/avr/torture/pr83729.c: Same.
+	* gcc.target/avr/torture/pr83801.c: Same.
+	* gcc.target/avr/torture/pr87376.c: Same.
+	* gcc.target/avr/torture/pr88236-pr115726.c: Same.
+	* gcc.target/avr/torture/pr92606.c: Same.
+	* gcc.target/avr/torture/pr98762.c: Same.
+	* gcc.target/avr/torture/sat-hr-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-k-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-llk-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-r-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-uhr-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-uk-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-ullk-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-ur-plus-minus.c: Same.
+	* gcc.target/avr/torture/set-mem.c: Same.
+	* gcc.target/avr/torture/tiny-progmem.c: Same.
+
+2024-07-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84868
+	* gfortran.dg/pr84868.f90: New test.
+
+2024-07-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/115929
+	* gcc.dg/torture/pr115929-1.c: New test.
+
+2024-07-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/115901
+	* gcc.dg/torture/pr115901.c: New test.
+
+2024-07-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/115891
+	* gcc.target/i386/pr115891.c: New test.
+
+2024-07-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/torture/add-extend.c: New test.
+	* gcc.target/avr/torture/sub-extend.c: New test.
+
+2024-07-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115957
+	* gm2/errors/fail/badconst.mod: New test.
+	* gm2/pim/fail/tinyadr.mod: New test.
+
+2024-07-16  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+
+	* gfortran.dg/array_memset_3.f90: New test.
+
+2024-07-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115841
+	* gcc.dg/vect/pr115841.c: New testcase.
+
+2024-07-16  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* gcc.target/i386/indirect-thunk-extern-1.c: Replace character with
+	invalid encoding with `?`.
+
+2024-07-16  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/vector/vec-cmp-emu-1.c: New test.
+	* gcc.target/s390/vector/vec-cmp-emu-2.c: New test.
+	* gcc.target/s390/vector/vec-cmp-emu-3.c: New test.
+
+2024-07-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115843
+	* gcc.dg/vect/pr115843.c: New testcase.
+
+2024-07-16  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114661
+	* gcc.dg/pr114661.c: New test case.
+
+2024-07-16  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/107432
+	* gcc.target/i386/pr107432-10.c: New test.
+
 2024-07-15  Jeff Law  <jlaw@ventanamicro.com>
 
 	* g++.dg/torture/pr115916.C: New test.

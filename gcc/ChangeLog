@@ -1,3 +1,167 @@
+2024-07-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/115951
+	* range-op-ptr.cc (operator_equal::fold_range): Return a boolean
+	range with the requested type.
+	(operator_not_equal::fold_range): Likewise.
+	(operator_lt::fold_range): Likewise.
+	(operator_le::fold_range): Likewise.
+	(operator_gt::fold_range): Likewise.
+	(operator_ge::fold_range): Likewise.
+
+2024-07-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/115434
+	PR c++/110871
+	PR c++/110872
+	* gimplify.cc (struct gimplify_ctx): Add a flag to show we are
+	expending a handler.
+	(gimplify_expr): When we are expanding a handler, and the body
+	transforms might have re-written DECL_RESULT into a gimple var,
+	ensure that hander references to DECL_RESULT are also re-written
+	to refer to the gimple var.  When we are processing an EH_ELSE
+	expression, then add it if either of the cleanup slots is in
+	use.
+
+2024-07-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/115929
+	* rtl-ssa/insns.cc (function_info::remove_insn): Remove an
+	order_node from the instruction as well as from the splay tree.
+
+2024-07-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/115901
+	* recog.cc (insn_propagation::apply_to_rvalue_1): Restrict
+	paradoxical mode punning to cases where "to" is constant.
+
+2024-07-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/115891
+	* rtl-ssa/changes.cc (find_clobbered_access): New function.
+	(recog_level2): Use it to check for overlap between input
+	registers and hard-coded clobbers.  Conditionally reset
+	recog_data.insn after changing the insn code.
+
+2024-07-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_out_minus): Assimilate into...
+	(avr_out_plus_ext): ...this new function.
+	(avr_adjust_insn_length) [ADJUST_LEN_PLUS_EXT]: Handle case.
+	(avr_rtx_costs_1) [PLUS, MINUS]: Adjust RTX costs.
+	* config/avr/avr.md (adjust_len) <plus_ext>: Add new attribute value.
+	(*addpsi3_zero_extend.hi_split): Assimilate...
+	(*addpsi3_zero_extend.qi_split): Assimilate...
+	(*addsi3_zero_extend_split): Assimilate...
+	(*addsi3_zero_extend.hi_split): Assimilate...
+	(*addpsi3_sign_extend.hi_split): Assimilate...
+	(*addhi3.sign_extend1_split): Assimilate...
+	(*add<PSISI:mode>3.<code>.<QIPSI:mode>_split): ...into this
+	new insn-and-split.
+	(*addpsi3_zero_extend.hi): Assimilate...
+	(*addpsi3_zero_extend.qi): Assimilate...
+	(*addsi3_zero_extend): Assimilate...
+	(*addsi3_zero_extend.hi): Assimilate...
+	(*addpsi3_sign_extend.hi): Assimilate...
+	(*addhi3.sign_extend1): Assimilate...
+	(*add<PSISI:mode>3.<code>.<QIPSI:mode>): ...into this new insn.
+	(*subpsi3_sign_extend.hi_split): Assimilate...
+	(*subhi3.sign_extend2_split): Assimilate...
+	(*sub<HISI:mode>3.zero_extend.<QIPSI:mode>_split): Assimilate...
+	(*sub<HISI:mode>3.<code><QIPSI:mode>_split): ...into this new
+	insn-and-split.
+	(*subpsi3_sign_extend.hi): Assimilate...
+	(*subhi3.sign_extend2): Assimilate...
+	(*sub<HISI:mode>3.zero_extend.<QIPSI:mode>): Assimilate...
+	(*sub<HISI:mode>3.<code>.<QIPSI:mode>): ...into this new insn.
+	(*sub<HISI:mode>3.zero_extend.<QIPSI:mode>): Use avr_out_plus_ext
+	for asm out.
+	* config/avr/avr-protos.h (avr_out_minus): Remove.
+	(avr_out_plus_ext): New proto.
+
+2024-07-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115841
+	* tree-vect-loop.cc (vect_transform_cycle_phi): Correctly
+	place the partial vector reduction for the accumulator
+	re-use when the main loop cannot be skipped but the
+	epilogue can.
+
+2024-07-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-protos.h (avr_emit_xior_with_shift): New proto.
+	* config/avr/avr.cc (avr_emit_xior_with_shift): New function.
+	* config/avr/avr.md (any_lshift): New code iterator.
+	(*<xior:code><mode>.<any_lshift:code>): New insn-and-split.
+	(<code><HISI:mode><QIPSI:mode>.0): Replaces...
+	(*<code_stdname><mode>qi.byte0): ...this one.
+	(*<xior:code><HISI:mode><QIPSI:mode>.<any_lshift:code>): Replaces...
+	(*<code_stdname><mode>qi.byte1-3): ...this one.
+
+2024-07-16  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/3931.md (vlbr, vstbr): Remove.
+	* config/s390/s390.md (xdee): Add FPRX2 mapping.
+	* config/s390/vector.md (bhfgq): Add TF mapping.
+
+2024-07-16  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/x86-tune-costs.h (znver5_cost): Update unaligned
+	load and store cost from the aligned costs.
+
+2024-07-16  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/114189
+	* config/s390/vector.md (V_HW2): Remove.
+	(vcond<V_HW:mode><V_HW2:mode>): Remove.
+	(vcondu<V_HW:mode><V_HW2:mode>): Remove.
+
+2024-07-16  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/vector.md: Enable vcond_mask for 128-bit ops.
+
+2024-07-16  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/vector.md (V_HW): Enable V1TI unconditionally and
+	add TI.
+	(vec_cmpu<VIT_HW:mode><VIT_HW:mode>): Add 128-bit integer
+	variants.
+	(*vec_cmpeq<mode><mode>_nocc_emu): Emulate operation.
+	(*vec_cmpgt<mode><mode>_nocc_emu): Emulate operation.
+	(*vec_cmpgtu<mode><mode>_nocc_emu): Emulate operation.
+
+2024-07-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115843
+	* tree-vect-loop-manip.cc
+	(vect_set_loop_condition_partial_vectors_avx512): Properly
+	bias the shift of the initial mask for alignment peeling.
+
+2024-07-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115843
+	* config/i386/x86-tune-costs.h (znver4_cost): Update unaligned
+	load and store cost from the aligned costs.
+
+2024-07-16  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114661
+	* match.pd ((X*C1)|(X*C2) to X*(C1+C2)): Allow optional useless
+	type conversions around multiplications, such as those inserted
+	by this transformation.
+
+2024-07-16  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/107432
+	* config/i386/sse.md
+	(PMOV_SRC_MODE_3_AVX2): Add TARGET_AVX2 for V4DI and V8SI.
+	(PMOV_SRC_MODE_4): Add TARGET_AVX2 for V4DI.
+	(trunc<mode><pmov_dst_3_lower>2): Change constraint from TARGET_AVX2 to
+	TARGET_SSSE3.
+	(trunc<mode><pmov_dst_4_lower>2): Ditto.
+	(truncv2div2si2): Change constraint from TARGET_AVX2 to TARGET_SSE.
+
 2024-07-16  Jeff Law  <jlaw@ventanamicro.com>
 
 	* ext-dce.cc (ext_dce_process_uses): Simplify control flow and fix

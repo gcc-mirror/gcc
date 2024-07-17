@@ -1,3 +1,37 @@
+2024-07-16  Ian Lance Taylor  <iant@golang.org>
+
+	* internal.h: If FDPIC, #include <link.h> and/or <sys/link.h>.
+	(libbacktrace_using_fdpic): Define.
+	(struct libbacktrace_base_address): Define.
+	(libbacktrace_add_base): Define.
+	(backtrace_dwarf_add): Change base_address to struct
+	libbacktrace_base_address.
+	* dwarf.c (struct dwarf_data): Change base_address to struct
+	libbacktrace_base_address.
+	(add_ranges, find_address_ranges, build_ddress_map): Likewise.
+	(build_dwarf_data, build_dwarf_add): Likewise.
+	(add_low_high_range): Change base_address to struct
+	libbacktrace_base_address.  Use libbacktrace_add_base.
+	(add_ranges_from_ranges, add_ranges_from_rnglists): Likewise.
+	(add_line): Use libbacktrace_add_base.
+	* elf.c (elf_initialize_syminfo): Change base_address to struct
+	libbacktrace_base_address.  Use libbacktrace_add_base.
+	(elf_add): Change base_address to struct
+	libbacktrace_base_address.
+	(phdr_callback): Likewise.  Initialize base_address.m.
+	(backtrace_initialize): If using FDPIC, don't call elf_add with
+	main executable; always use dl_iterate_phdr.
+	* macho.c (macho_add_symtab): Change base_address to struct
+	libbacktrace_base_address.  Use libbacktrace_add_base.
+	(macho_syminfo): Change base_address to struct
+	libbacktrace_base_address.
+	(macho_add_fat, macho_add_dsym, macho_add): Likewise.
+	(backtrace_initialize): Likewise.  Initialize base_address.m.
+	* pecoff.c (coff_initialize_syminfo): Change base_address to
+	struct libbacktrace_base_address.  Use libbacktrace_add_base.
+	(coff_add): Change base_address to struct
+	libbacktrace_base_address.  Initialize base_address.m.
+
 2024-07-12  Ian Lance Taylor  <iant@golang.org>
 
 	* elf.c (elf_add): Don't use .gnu_debugdata if we are already

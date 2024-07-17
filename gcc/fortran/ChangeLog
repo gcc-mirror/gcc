@@ -1,3 +1,18 @@
+2024-07-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84868
+	* simplify.cc (gfc_simplify_len_trim): If the argument is an
+	element of a parameter array, simplify all the elements and
+	build a new parameter array to hold the result, after checking
+	that it doesn't already exist.
+	* trans-expr.cc (gfc_get_interface_mapping_array) if a string
+	length is available, use it for the typespec.
+	(gfc_add_interface_mapping): Supply the se string length.
+
+2024-07-16  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+
+	* trans-expr.cc (gfc_trans_zero_assign): Handle allocatable arrays.
+
 2024-07-13  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* trans-intrinsic.cc (gfc_conv_intrinsic_minmaxloc): Add the

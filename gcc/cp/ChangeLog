@@ -1,3 +1,40 @@
+2024-07-16  Nina Ranns  <dinka.ranns@gmail.com>
+
+	PR c++/110159
+	* cp-tree.h (init_terminate_fn): Declaration of a new function.
+	* decl.cc (cxx_init_decl_processing): If contracts are enabled,
+	call init_terminate_fn.
+	* except.cc (init_exception_processing): Function refactored to
+	call init_terminate_fn.
+	(init_terminate_fn): Added new function that initializes
+	terminate_fn if	it hasn't already been initialised.
+
+2024-07-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/115434
+	PR c++/110871
+	PR c++/110872
+	* constexpr.cc (cxx_eval_constant_expression): Handle EH_ELSE_EXPR.
+	* contracts.cc (finish_contract_attribute): Remove excess line.
+	(build_contract_condition_function): Post condition handlers are
+	void now.
+	(emit_postconditions_cleanup): Remove.
+	(emit_postconditions): New.
+	(add_pre_condition_fn_call): New.
+	(add_post_condition_fn_call): New.
+	(apply_preconditions): New.
+	(apply_postconditions): New.
+	(maybe_apply_function_contracts): New.
+	(apply_postcondition_to_return): Remove.
+	* contracts.h (apply_postcondition_to_return): Remove.
+	(maybe_apply_function_contracts): Add.
+	* coroutines.cc (coro_build_actor_or_destroy_function): Do not
+	copy contracts to coroutine helpers.
+	* decl.cc (finish_function): Handle wrapping a possibly
+	transformed function body in contract checks.
+	* typeck.cc (check_return_expr): Remove handling of post
+	conditions on return expressions.
+
 2024-07-15  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/115897
