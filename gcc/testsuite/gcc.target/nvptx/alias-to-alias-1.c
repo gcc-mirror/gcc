@@ -19,9 +19,21 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-assembler-times "\\.alias bar,foo;" 1 } } */
-/* { dg-final { scan-assembler-times "\\.visible \\.func foo;" 1 } } */
-/* { dg-final { scan-assembler-times "\\.visible \\.func bar;" 1 } } */
+/* { dg-final { scan-assembler-times {(?n)^// BEGIN GLOBAL FUNCTION DECL: foo$} 1 } }
+   { dg-final { scan-assembler-times {(?n)^\.visible \.func foo;$} 1 } }
+   { dg-final { scan-assembler-times {(?n)^// BEGIN GLOBAL FUNCTION DEF: foo$} 1 } }
+   { dg-final { scan-assembler-times {(?n)^\.visible \.func foo$} 1 } } */
 
-/* { dg-final { scan-assembler-times "\\.alias baz,bar;" 1 } } */
-/* { dg-final { scan-assembler-times "\\.visible \\.func baz;" 1 } } */
+/* { dg-final { scan-assembler-times {(?n)^// BEGIN GLOBAL FUNCTION DECL: bar$} 1 { xfail *-*-* } } }
+   { dg-final { scan-assembler-times {(?n)^\.visible \.func bar;$} 1 } }
+   { dg-final { scan-assembler-times {(?n)^// BEGIN GLOBAL FUNCTION DEF: bar$} 1 { xfail *-*-* } } }
+   { dg-final { scan-assembler-times {(?n)^\.alias bar,foo;$} 1 } } */
+
+/* { dg-final { scan-assembler-times {(?n)^// BEGIN GLOBAL FUNCTION DECL: baz$} 1 { xfail *-*-* } } }
+   { dg-final { scan-assembler-times {(?n)^\.visible \.func baz;$} 1 } }
+   { dg-final { scan-assembler-times {(?n)^// BEGIN GLOBAL FUNCTION DEF: baz$} 1 { xfail *-*-* } } }
+   { dg-final { scan-assembler-times {(?n)^\.alias baz,bar;$} 1 } } */
+
+/* { dg-final { scan-assembler-times {(?n)\tcall foo;$} 0 } }
+   { dg-final { scan-assembler-times {(?n)\tcall bar;$} 0 } }
+   { dg-final { scan-assembler-times {(?n)\tcall baz;$} 1 } } */

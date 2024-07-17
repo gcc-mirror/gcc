@@ -23,6 +23,15 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-assembler-times "\\.alias f,__f;" 1 } } */
-/* { dg-final { scan-assembler-times "\\.visible \\.func __f;" 1 } } */
-/* { dg-final { scan-assembler-times "\\.visible \\.func f;" 1 } } */
+/* { dg-final { scan-assembler-times {(?n)^// BEGIN GLOBAL FUNCTION DECL: __f$} 1 } }
+   { dg-final { scan-assembler-times {(?n)^\.visible \.func __f;$} 1 } }
+   { dg-final { scan-assembler-times {(?n)^// BEGIN GLOBAL FUNCTION DEF: __f$} 1 } }
+   { dg-final { scan-assembler-times {(?n)^\.visible \.func __f$} 1 } } */
+
+/* { dg-final { scan-assembler-times {(?n)^// BEGIN GLOBAL FUNCTION DECL: f$} 1 { xfail *-*-* } } }
+   { dg-final { scan-assembler-times {(?n)^\.visible \.func f;$} 1 } }
+   { dg-final { scan-assembler-times {(?n)^// BEGIN GLOBAL FUNCTION DEF: f$} 1 { xfail *-*-* } } }
+   { dg-final { scan-assembler-times {(?n)^\.alias f,__f;$} 1 } } */
+
+/* { dg-final { scan-assembler-times {(?n)\tcall __f;$} 0 } }
+   { dg-final { scan-assembler-times {(?n)\tcall f;$} 1 } } */
