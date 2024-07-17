@@ -4242,7 +4242,8 @@ clear_padding_flush (clear_padding_struct *buf, bool full)
 	  i -= wordsize;
 	  continue;
 	}
-      for (size_t j = i; j < i + wordsize && j < end; j++)
+      size_t endsize = end - i > wordsize ? wordsize : end - i;
+      for (size_t j = i; j < i + endsize; j++)
 	{
 	  if (buf->buf[j])
 	    {
@@ -4271,12 +4272,12 @@ clear_padding_flush (clear_padding_struct *buf, bool full)
       if (padding_bytes)
 	{
 	  if (nonzero_first == 0
-	      && nonzero_last == wordsize
+	      && nonzero_last == endsize
 	      && all_ones)
 	    {
 	      /* All bits are padding and we had some padding
 		 before too.  Just extend it.  */
-	      padding_bytes += wordsize;
+	      padding_bytes += endsize;
 	      continue;
 	    }
 	  if (all_ones && nonzero_first == 0)
@@ -4316,7 +4317,7 @@ clear_padding_flush (clear_padding_struct *buf, bool full)
       if (nonzero_first == wordsize)
 	/* All bits in a word are 0, there are no padding bits.  */
 	continue;
-      if (all_ones && nonzero_last == wordsize)
+      if (all_ones && nonzero_last == endsize)
 	{
 	  /* All bits between nonzero_first and end of word are padding
 	     bits, start counting padding_bytes.  */
@@ -4358,7 +4359,7 @@ clear_padding_flush (clear_padding_struct *buf, bool full)
 		  j = k;
 		}
 	    }
-	  if (nonzero_last == wordsize)
+	  if (nonzero_last == endsize)
 	    padding_bytes = nonzero_last - zero_last;
 	  continue;
 	}
@@ -4832,6 +4833,7 @@ clear_padding_type (clear_padding_struct *buf, tree type,
 	  buf->off = 0;
 	  buf->size = 0;
 	  clear_padding_emit_loop (buf, elttype, end, for_auto_init);
+	  off += sz;
 	  buf->base = base;
 	  buf->sz = prev_sz;
 	  buf->align = prev_align;
