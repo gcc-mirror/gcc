@@ -2772,7 +2772,8 @@ sort.lo: config.h backtrace.h internal.h
 stest.lo: config.h backtrace.h internal.h
 state.lo: config.h backtrace.h backtrace-supported.h internal.h
 unknown.lo: config.h backtrace.h internal.h
-xcoff.lo: config.h backtrace.h internal.h
+xcoff_32.lo: config.h backtrace.h internal.h
+xcoff_64.lo: config.h backtrace.h internal.h
 xztest.lo: config.h backtrace.h backtrace-supported.h internal.h testlib.h
 ztest.lo: config.h backtrace.h backtrace-supported.h internal.h testlib.h
 
