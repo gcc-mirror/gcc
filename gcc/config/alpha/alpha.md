@@ -3902,7 +3902,8 @@
   else
     return "ldq %0,%2(%1)\t\t!literal!%3";
 }
-  [(set_attr "type" "ldsym")])
+  [(set_attr "type" "ldsym")
+   (set_attr "cannot_copy" "true")])
 
 (define_split
   [(set (match_operand:DI 0 "register_operand")
@@ -3926,7 +3927,8 @@
     return "lda %0,%2(%1)\t\t!tlsgd";
   else
     return "lda %0,%2(%1)\t\t!tlsgd!%3";
-})
+}
+  [(set_attr "cannot_copy" "true")])
 
 (define_insn "movdi_er_tlsldm"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -3939,7 +3941,8 @@
     return "lda %0,%&(%1)\t\t!tlsldm";
   else
     return "lda %0,%&(%1)\t\t!tlsldm!%2";
-})
+}
+  [(set_attr "cannot_copy" "true")])
 
 (define_insn "*movdi_er_gotdtp"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -5908,6 +5911,7 @@
   "HAVE_AS_TLS"
   "ldq $27,%1($29)\t\t!literal!%2\;jsr $26,($27),%1\t\t!lituse_<tls>!%2\;ldah $29,0($26)\t\t!gpdisp!%*\;lda $29,0($29)\t\t!gpdisp!%*"
   [(set_attr "type" "jsr")
+   (set_attr "cannot_copy" "true")
    (set_attr "length" "16")])
 
 ;; We must use peep2 instead of a split because we need accurate life
