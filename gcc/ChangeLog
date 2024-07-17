@@ -1,3 +1,19 @@
+2024-07-16  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2024-07-12  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/vector.md (mov<mode>): Fix output template for
+	movv1qi.
+
+2024-07-16  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2024-07-12  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390.md (*icjump_64): Allow raw CC comparisons,
+	i.e., any constant integer between 0 and 15 for CC comparisons.
+
 2024-07-15  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:
