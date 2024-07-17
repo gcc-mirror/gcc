@@ -870,6 +870,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Wno-unknown-pragmas) LangUrlSuffix_D(gd
 Wunsuffixed-float-constants
 UrlSuffix(gcc/Warning-Options.html#index-Wno-unsuffixed-float-constants)
 
+Wunterminated-string-initialization
+UrlSuffix(gcc/Warning-Options.html#index-Wno-unterminated-string-initialization)
+
 Wunused
 UrlSuffix(gcc/Warning-Options.html#index-Wno-unused)
 
