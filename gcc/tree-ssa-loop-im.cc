@@ -2368,7 +2368,8 @@ struct seq_entry
 static void
 execute_sm_exit (class loop *loop, edge ex, vec<seq_entry> &seq,
 		 hash_map<im_mem_ref *, sm_aux *> &aux_map, sm_kind kind,
-		 edge &append_cond_position, edge &last_cond_fallthru)
+		 edge &append_cond_position, edge &last_cond_fallthru,
+		 bitmap clobbers_to_prune)
 {
   /* Sink the stores to exit from the loop.  */
   for (unsigned i = seq.length (); i > 0; --i)
@@ -2377,15 +2378,35 @@ execute_sm_exit (class loop *loop, edge ex, vec<seq_entry> &seq,
       if (seq[i-1].second == sm_other)
 	{
 	  gcc_assert (kind == sm_ord && seq[i-1].from != NULL_TREE);
-	  if (dump_file && (dump_flags & TDF_DETAILS))
+	  gassign *store;
+	  if (ref->mem.ref == error_mark_node)
 	    {
-	      fprintf (dump_file, "Re-issueing dependent store of ");
-	      print_generic_expr (dump_file, ref->mem.ref);
-	      fprintf (dump_file, " from loop %d on exit %d -> %d\n",
-		       loop->num, ex->src->index, ex->dest->index);
+	      tree lhs = gimple_assign_lhs (ref->accesses_in_loop[0].stmt);
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "Re-issueing dependent ");
+		  print_generic_expr (dump_file, unshare_expr (seq[i-1].from));
+		  fprintf (dump_file, " of ");
+		  print_generic_expr (dump_file, lhs);
+		  fprintf (dump_file, " from loop %d on exit %d -> %d\n",
+			   loop->num, ex->src->index, ex->dest->index);
+		}
+	      store = gimple_build_assign (unshare_expr (lhs),
+					   unshare_expr (seq[i-1].from));
+	      bitmap_set_bit (clobbers_to_prune, seq[i-1].first);
 	    }
-	  gassign *store = gimple_build_assign (unshare_expr (ref->mem.ref),
-						seq[i-1].from);
+	  else
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "Re-issueing dependent store of ");
+		  print_generic_expr (dump_file, ref->mem.ref);
+		  fprintf (dump_file, " from loop %d on exit %d -> %d\n",
+			   loop->num, ex->src->index, ex->dest->index);
+		}
+	      store = gimple_build_assign (unshare_expr (ref->mem.ref),
+					   seq[i-1].from);
+	    }
 	  gsi_insert_on_edge (ex, store);
 	}
       else
@@ -2426,6 +2447,12 @@ sm_seq_push_down (vec<seq_entry> &seq, unsigned ptr, unsigned *at)
 	break;
       /* We may not ignore self-dependences here.  */
       if (new_cand.first == against.first
+	  /* ???  We could actually handle clobbers here, but not easily
+	     with LIMs dependence analysis.  */
+	  || (memory_accesses.refs_list[new_cand.first]->mem.ref
+	      == error_mark_node)
+	  || (memory_accesses.refs_list[against.first]->mem.ref
+	      == error_mark_node)
 	  || !refs_independent_p (memory_accesses.refs_list[new_cand.first],
 				  memory_accesses.refs_list[against.first],
 				  false))
@@ -2656,13 +2683,17 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 	  return 1;
 	}
       lim_aux_data *data = get_lim_data (def);
-      gcc_assert (data);
+      im_mem_ref *ref = memory_accesses.refs_list[data->ref];
       if (data->ref == UNANALYZABLE_MEM_ID)
 	return -1;
       /* Stop at memory references which we can't move.  */
-      else if (memory_accesses.refs_list[data->ref]->mem.ref == error_mark_node
-	       || TREE_THIS_VOLATILE
-		    (memory_accesses.refs_list[data->ref]->mem.ref))
+      else if ((ref->mem.ref == error_mark_node
+		/* We can move end-of-storage/object down.  */
+		&& !gimple_clobber_p (ref->accesses_in_loop[0].stmt,
+				      CLOBBER_STORAGE_END)
+		&& !gimple_clobber_p (ref->accesses_in_loop[0].stmt,
+				      CLOBBER_OBJECT_END))
+	       || TREE_THIS_VOLATILE (ref->mem.ref))
 	{
 	  /* Mark refs_not_in_seq as unsupported.  */
 	  bitmap_ior_into (refs_not_supported, refs_not_in_seq);
@@ -2818,6 +2849,7 @@ hoist_memory_references (class loop *loop, bitmap mem_refs,
 
       /* Materialize ordered store sequences on exits.  */
       edge e;
+      auto_bitmap clobbers_to_prune;
       FOR_EACH_VEC_ELT (exits, i, e)
 	{
 	  edge append_cond_position = NULL;
@@ -2836,8 +2868,19 @@ hoist_memory_references (class loop *loop, bitmap mem_refs,
 					  append_cond_position,
 					  last_cond_fallthru));
 	  execute_sm_exit (loop, insert_e, seq, aux_map, sm_ord,
-			   append_cond_position, last_cond_fallthru);
+			   append_cond_position, last_cond_fallthru,
+			   clobbers_to_prune);
 	  gsi_commit_one_edge_insert (insert_e, NULL);
+	}
+
+      /* Remove clobbers inside the loop we re-materialized on exits.  */
+      EXECUTE_IF_SET_IN_BITMAP (clobbers_to_prune, 0, i, bi)
+	{
+	  gimple *stmt = memory_accesses.refs_list[i]->accesses_in_loop[0].stmt;
+	  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+	  unlink_stmt_vdef (stmt);
+	  release_defs (stmt);
+	  gsi_remove (&gsi, true);
 	}
 
       for (hash_map<im_mem_ref *, sm_aux *>::iterator iter = aux_map.begin ();
@@ -2990,6 +3033,7 @@ hoist_memory_references (class loop *loop, bitmap mem_refs,
     }
 
   /* Materialize ordered store sequences on exits.  */
+  auto_bitmap clobbers_to_prune;
   FOR_EACH_VEC_ELT (exits, i, e)
     {
       edge append_cond_position = NULL;
@@ -2998,15 +3042,27 @@ hoist_memory_references (class loop *loop, bitmap mem_refs,
 	{
 	  gcc_assert (sms[i].first == e);
 	  execute_sm_exit (loop, e, sms[i].second, aux_map, sm_ord,
-			   append_cond_position, last_cond_fallthru);
+			   append_cond_position, last_cond_fallthru,
+			   clobbers_to_prune);
 	  sms[i].second.release ();
 	}
       if (!unord_refs.is_empty ())
 	execute_sm_exit (loop, e, unord_refs, aux_map, sm_unord,
-			 append_cond_position, last_cond_fallthru);
+			 append_cond_position, last_cond_fallthru,
+			 clobbers_to_prune);
       /* Commit edge inserts here to preserve the order of stores
 	 when an exit exits multiple loops.  */
       gsi_commit_one_edge_insert (e, NULL);
+    }
+
+  /* Remove clobbers inside the loop we re-materialized on exits.  */
+  EXECUTE_IF_SET_IN_BITMAP (clobbers_to_prune, 0, i, bi)
+    {
+      gimple *stmt = memory_accesses.refs_list[i]->accesses_in_loop[0].stmt;
+      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+      unlink_stmt_vdef (stmt);
+      release_defs (stmt);
+      gsi_remove (&gsi, true);
     }
 
   for (hash_map<im_mem_ref *, sm_aux *>::iterator iter = aux_map.begin ();
