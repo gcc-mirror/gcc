@@ -9633,15 +9633,6 @@ build_common_tree_nodes (bool signed_char)
       if (!targetm.floatn_mode (n, extended).exists (&mode))
 	continue;
       int precision = GET_MODE_PRECISION (mode);
-      /* Work around the rs6000 KFmode having precision 113 not
-	 128.  */
-      const struct real_format *fmt = REAL_MODE_FORMAT (mode);
-      gcc_assert (fmt->b == 2 && fmt->emin + fmt->emax == 3);
-      int min_precision = fmt->p + ceil_log2 (fmt->emax - fmt->emin);
-      if (!extended)
-	gcc_assert (min_precision == n);
-      if (precision < min_precision)
-	precision = min_precision;
       FLOATN_NX_TYPE_NODE (i) = make_node (REAL_TYPE);
       TYPE_PRECISION (FLOATN_NX_TYPE_NODE (i)) = precision;
       layout_type (FLOATN_NX_TYPE_NODE (i));
