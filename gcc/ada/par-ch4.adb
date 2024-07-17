@@ -218,6 +218,8 @@ package body Ch4 is
       Arg_List  : List_Id := No_List; -- kill junk warning
       Attr_Name : Name_Id := No_Name; -- kill junk warning
 
+      Error_Loc : Source_Ptr;
+
    begin
       --  Case of not a name
 
@@ -889,13 +891,16 @@ package body Ch4 is
          ("positional parameter association " &
            "not allowed after named one");
 
+      Error_Loc := Token_Ptr;
+
       Expr_Node := P_Expression_If_OK;
 
       --  Leaving the '>' in an association is not unusual, so suggest
       --  a possible fix.
 
       if Nkind (Expr_Node) = N_Op_Eq then
-         Error_Msg_N ("\maybe `='>` was intended", Expr_Node);
+         Error_Msg_Sloc := Sloc (Expr_Node);
+         Error_Msg ("\maybe `='>` was intended #", Error_Loc);
       end if;
 
       --  We go back to scanning out expressions, so that we do not get
