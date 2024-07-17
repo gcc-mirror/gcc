@@ -17,15 +17,13 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 27.8.1.4 Overridden virtual functions
+// C++98 27.8.1.4 Overridden virtual functions
 
 // { dg-require-fileio "" }
+// { dg-additional-files "filebuf_virtuals-1.txt" }
 
 #include <fstream>
 #include <testsuite_hooks.h>
-
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %*.txt
 
 // NB: This test assumes that _M_buf_size == 40, and not the usual
 // buffer_size length of BUFSIZ (8192), so that overflow/underflow can be

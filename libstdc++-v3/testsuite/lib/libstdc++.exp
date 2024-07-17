@@ -648,6 +648,7 @@ proc v3_target_compile { source dest type options } {
 	global srcdir
 	v3-copy-file "$srcdir/data/$file" $file
     }
+    set v3_additional_files {}
 
     set comp_output [target_compile $source $dest $type $options]
     if { $type == "executable" && $file_to_delete != "" } {

@@ -16,11 +16,10 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-require-fileio "" }
+// { dg-additional-files "wistream_seeks-1.tst" }
 
-// 27.6.1.3 unformatted input functions
+// C++98 27.6.1.3 unformatted input functions
 // NB: ostream has a particular "seeks" category. Adopt this for istreams too.
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
 
 #include <istream>
 #include <sstream>

@@ -21,12 +21,11 @@
 // causes "in_avail" to return an incorrect value.
 // { dg-do run { xfail arm*-*-elf arm*-*-eabi } }
 
-// 27.6.1.3 unformatted input functions
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
+// C++98 27.6.1.3 unformatted input functions
 
 // { dg-require-fileio "" }
 // { dg-require-binary-io "" }
+// { dg-additional-files "istream_unformatted-1.tst" }
 
 #include <istream>
 #include <fstream>
