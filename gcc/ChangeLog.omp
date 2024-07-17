@@ -1,3 +1,14 @@
+2025-02-18  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from trunk:
+	2024-09-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/104957
+	* config/nvptx/nvptx.cc (write_fn_proto_1): Revert 2022-03-22
+	change; 'write_fn_marker' also for alias DECL.
+	(nvptx_asm_output_def_from_decls): 'write_fn_marker' for alias
+	DEF.
+
 2025-01-30  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:

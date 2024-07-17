@@ -1022,8 +1022,7 @@ static void
 write_fn_proto_1 (std::stringstream &s, bool is_defn,
 		  const char *name, const_tree decl, bool force_public)
 {
-  if (lookup_attribute ("alias", DECL_ATTRIBUTES (decl)) == NULL)
-    write_fn_marker (s, is_defn, TREE_PUBLIC (decl) || force_public, name);
+  write_fn_marker (s, is_defn, TREE_PUBLIC (decl) || force_public, name);
 
   /* PTX declaration.  */
   if (DECL_EXTERNAL (decl))
@@ -8051,6 +8050,9 @@ nvptx_asm_output_def_from_decls (FILE *stream, tree name, tree value)
   fputs (s.str ().c_str (), stream);
 
   tree id = DECL_ASSEMBLER_NAME (name);
+  std::stringstream s_def;
+  write_fn_marker (s_def, true, TREE_PUBLIC (name), IDENTIFIER_POINTER (id));
+  fputs (s_def.str ().c_str (), stream);
   NVPTX_ASM_OUTPUT_DEF (stream, IDENTIFIER_POINTER (id),
 			IDENTIFIER_POINTER (value));
 }
