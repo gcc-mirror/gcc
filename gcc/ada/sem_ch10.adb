@@ -1046,16 +1046,26 @@ package body Sem_Ch10 is
                      Set_Library_Unit (N, Lib_Unit);
                      Set_Parent_Spec (Unit (Lib_Unit), Cunit (Unum));
                      Make_Child_Decl_Unit (N);
-                     Semantics (Lib_Unit);
 
                      --  Now that a separate declaration exists, the body
                      --  of the child unit does not act as spec any longer.
 
                      Set_Acts_As_Spec (N, False);
                      Move_Aspects (From => Unit_Node, To => Unit (Lib_Unit));
+
+                     --  Ensure that the generated corresponding spec and
+                     --  original body share the same SPARK_Mode pragma or
+                     --  aspect. As a result, both have the same SPARK_Mode
+                     --  attributes, and the global SPARK_Mode value is
+                     --  correctly set for local subprograms.
+
+                     Copy_SPARK_Mode_Aspect (Unit (Lib_Unit), To => Unit_Node);
+
                      Set_Is_Child_Unit (Defining_Entity (Unit_Node));
                      Set_Debug_Info_Needed (Defining_Entity (Unit (Lib_Unit)));
                      Set_Comes_From_Source_Default (SCS);
+
+                     Semantics (Lib_Unit);
 
                      --  Restore Context_Items to the body
 
