@@ -1,3 +1,42 @@
+2024-07-16  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2024-07-12  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/vector.md (mov<mode>): Fix output template for
+	movv1qi.
+
+2024-07-16  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2024-07-12  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390.md (*icjump_64): Allow raw CC comparisons,
+	i.e., any constant integer between 0 and 15 for CC comparisons.
+
+2024-07-16  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2024-07-15  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/113719
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Move flag_omit_frame_pointer final overrider...
+	(ix86_recompute_optlev_based_flags): ... here.
+
+2024-07-16  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2024-07-03  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/113719
+	* config/i386/i386-options.cc
+	(ix86_override_options_after_change_1): Add opts and opts_set
+	parms, operate on them, after factoring out of...
+	(ix86_override_options_after_change): ... this.  Restore calls
+	of ix86_default_align and ix86_recompute_optlev_based_flags.
+	(ix86_option_override_internal): Call the factored-out bits.
+
 2024-07-15  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:
