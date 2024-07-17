@@ -183,7 +183,21 @@ get_real_kind_from_node (tree type)
 
   for (i = 0; gfc_real_kinds[i].kind != 0; i++)
     if (gfc_real_kinds[i].mode_precision == TYPE_PRECISION (type))
-      return gfc_real_kinds[i].kind;
+      {
+	/* On Power, we have three 128-bit scalar floating-point modes
+	   and all of their types have 128 bit type precision, so we
+	   should check underlying real format details further.  */
+#if defined(HAVE_TFmode) && defined(HAVE_IFmode) && defined(HAVE_KFmode)
+	if (gfc_real_kinds[i].kind == 16)
+	  {
+	    machine_mode mode = TYPE_MODE (type);
+	    const struct real_format *fmt = REAL_MODE_FORMAT (mode);
+	    if (fmt->p != gfc_real_kinds[i].digits)
+	      continue;
+	  }
+#endif
+	return gfc_real_kinds[i].kind;
+      }
 
   return -4;
 }
