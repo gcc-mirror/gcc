@@ -4724,7 +4724,10 @@ build_vec_init (tree base, tree maxindex, tree init,
 		    && TREE_CONSTANT (maxindex)
 		    && (init ? TREE_CODE (init) == CONSTRUCTOR
 			: (type_has_constexpr_default_constructor
-			   (inner_elt_type)))
+			   (inner_elt_type)
+			   /* Value-initialization of scalars is constexpr.  */
+			   || (explicit_value_init_p
+			       && SCALAR_TYPE_P (inner_elt_type))))
 		    && (literal_type_p (inner_elt_type)
 			|| TYPE_HAS_CONSTEXPR_CTOR (inner_elt_type)));
   vec<constructor_elt, va_gc> *const_vec = NULL;
