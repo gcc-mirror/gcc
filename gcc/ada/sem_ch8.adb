@@ -6323,7 +6323,9 @@ package body Sem_Ch8 is
                Nvis_Messages;
                goto Done;
 
-            elsif Is_Predefined_Unit (Current_Sem_Unit) then
+            elsif Is_Predefined_Unit (Current_Sem_Unit)
+              and then not Is_Predefined_Unit (Main_Unit)
+            then
                --  A use clause in the body of a system file creates conflict
                --  with some entity in a user scope, while rtsfind is active.
                --  Keep only the entity coming from another predefined unit.
