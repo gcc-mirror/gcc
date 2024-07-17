@@ -11476,13 +11476,13 @@ init_float128_ieee (machine_mode mode)
       set_conv_libfunc (trunc_optab, SFmode, mode, "__trunckfsf2");
       set_conv_libfunc (trunc_optab, DFmode, mode, "__trunckfdf2");
 
-      set_conv_libfunc (sext_optab, mode, IFmode, "__trunctfkf2");
+      set_conv_libfunc (trunc_optab, mode, IFmode, "__trunctfkf2");
       if (mode != TFmode && FLOAT128_IBM_P (TFmode))
-	set_conv_libfunc (sext_optab, mode, TFmode, "__trunctfkf2");
+	set_conv_libfunc (trunc_optab, mode, TFmode, "__trunctfkf2");
 
-      set_conv_libfunc (trunc_optab, IFmode, mode, "__extendkftf2");
+      set_conv_libfunc (sext_optab, IFmode, mode, "__extendkftf2");
       if (mode != TFmode && FLOAT128_IBM_P (TFmode))
-	set_conv_libfunc (trunc_optab, TFmode, mode, "__extendkftf2");
+	set_conv_libfunc (sext_optab, TFmode, mode, "__extendkftf2");
 
       set_conv_libfunc (sext_optab, mode, SDmode, "__dpd_extendsdkf");
       set_conv_libfunc (sext_optab, mode, DDmode, "__dpd_extendddkf");
@@ -15640,7 +15640,7 @@ rs6000_expand_float128_convert (rtx dest, rtx src, bool unsigned_p)
 	case E_IFmode:
 	case E_TFmode:
 	  if (FLOAT128_IBM_P (src_mode))
-	    cvt = sext_optab;
+	    cvt = trunc_optab;
 	  else
 	    do_move = true;
 	  break;
@@ -15702,7 +15702,7 @@ rs6000_expand_float128_convert (rtx dest, rtx src, bool unsigned_p)
 	case E_IFmode:
 	case E_TFmode:
 	  if (FLOAT128_IBM_P (dest_mode))
-	    cvt = trunc_optab;
+	    cvt = sext_optab;
 	  else
 	    do_move = true;
 	  break;
