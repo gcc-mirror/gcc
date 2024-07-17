@@ -11601,6 +11601,23 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
     }
 }
 
+bool
+caf_possible_reallocate (gfc_expr *e)
+{
+  symbol_attribute caf_attr;
+  gfc_ref *last_arr_ref = nullptr;
+
+  caf_attr = gfc_caf_attr (e);
+  if (!caf_attr.codimension || !caf_attr.allocatable || !caf_attr.dimension)
+    return false;
+
+  /* Only full array refs can indicate a needed reallocation.  */
+  for (gfc_ref *ref = e->ref; ref; ref = ref->next)
+    if (ref->type == REF_ARRAY && ref->u.ar.dimen)
+      last_arr_ref = ref;
+
+  return last_arr_ref && last_arr_ref->u.ar.type == AR_FULL;
+}
 
 /* Does everything to resolve an ordinary assignment.  Returns true
    if this is an interface assignment.  */
@@ -11845,6 +11862,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 
   bool caf_convert_to_send = flag_coarray == GFC_FCOARRAY_LIB
       && (lhs_coindexed
+	  || caf_possible_reallocate (lhs)
 	  || (code->expr2->expr_type == EXPR_FUNCTION
 	      && code->expr2->value.function.isym
 	      && code->expr2->value.function.isym->id == GFC_ISYM_CAF_GET

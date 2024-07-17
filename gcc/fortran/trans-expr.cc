@@ -12701,29 +12701,6 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 
       expr1->must_finalize = 0;
     }
-  else if (flag_coarray == GFC_FCOARRAY_LIB
-	   && lhs_caf_attr.codimension && rhs_caf_attr.codimension
-	   && ((lhs_caf_attr.allocatable && lhs_refs_comp)
-	       || (rhs_caf_attr.allocatable && rhs_refs_comp)))
-    {
-      /* Only detour to caf_send[get][_by_ref] () when the lhs or rhs is an
-	 allocatable component, because those need to be accessed via the
-	 caf-runtime.  No need to check for coindexes here, because resolve
-	 has rewritten those already.  */
-      gfc_code code;
-      gfc_actual_arglist a1, a2;
-      /* Clear the structures to prevent accessing garbage.  */
-      memset (&code, '\0', sizeof (gfc_code));
-      memset (&a1, '\0', sizeof (gfc_actual_arglist));
-      memset (&a2, '\0', sizeof (gfc_actual_arglist));
-      a1.expr = expr1;
-      a1.next = &a2;
-      a2.expr = expr2;
-      a2.next = NULL;
-      code.ext.actual = &a1;
-      code.resolved_isym = gfc_intrinsic_subroutine_by_id (GFC_ISYM_CAF_SEND);
-      tmp = gfc_conv_intrinsic_subroutine (&code);
-    }
   else if (!is_poly_assign && expr2->must_finalize
 	   && expr1->ts.type == BT_CLASS
 	   && expr2->ts.type == BT_CLASS)

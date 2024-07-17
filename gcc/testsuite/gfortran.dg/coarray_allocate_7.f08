@@ -23,7 +23,5 @@ program main
   if ( object%indices(1) /= 1 ) STOP 2
 end program
 
-! { dg-final { scan-tree-dump-times "_gfortran_caf_register \\(D.\[0-9\]+, 1, &\\(\\(struct mytype\\) \\*object\\).indices.token, &\\(\\(struct mytype\\) \\*object\\).indices, 0B, 0B, 0\\);" 1 "original" } }
-! { dg-final { scan-tree-dump-times "_gfortran_caf_register \\(D.\[0-9\]+, 8, &\\(\\(struct mytype\\) \\*object\\).indices.token, &\\(\\(struct mytype\\) \\*object\\).indices, 0B, 0B, 0\\);" 1 "original" } }
-! { dg-final { scan-tree-dump-times "_gfortran_caf_deregister \\(&\\(\\(struct mytype\\) \\*object\\).indices.token, 1, 0B, 0B, 0\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_caf_register \\(0, 7, \\(void \\*\\) &mytype\\.\[0-9\]+\\.indices\\.token, &mytype\\.\[0-9\]+\\.indices, 0B, 0B, 0\\);" 1 "original" } }
 
