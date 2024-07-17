@@ -175,6 +175,7 @@ class attr_desc
 public:
   char *name;			/* Name of attribute.  */
   const char *enum_name;	/* Enum name for DEFINE_ENUM_NAME.  */
+  const char *cxx_type;		/* The associated C++ type.  */
   class attr_desc *next;	/* Next attribute.  */
   struct attr_value *first_value; /* First value of this attribute.  */
   struct attr_value *default_val; /* Default value for this attribute.  */
@@ -3083,6 +3084,7 @@ gen_attr (md_rtx_info *info)
   if (GET_CODE (def) == DEFINE_ENUM_ATTR)
     {
       attr->enum_name = XSTR (def, 1);
+      attr->cxx_type = attr->enum_name;
       et = rtx_reader_ptr->lookup_enum_type (XSTR (def, 1));
       if (!et || !et->md_p)
 	error_at (info->loc, "No define_enum called `%s' defined",
@@ -3092,9 +3094,13 @@ gen_attr (md_rtx_info *info)
 	  add_attr_value (attr, ev->name);
     }
   else if (*XSTR (def, 1) == '\0')
-    attr->is_numeric = 1;
+    {
+      attr->is_numeric = 1;
+      attr->cxx_type = "int";
+    }
   else
     {
+      attr->cxx_type = concat ("attr_", attr->name, nullptr);
       name_ptr = XSTR (def, 1);
       while ((p = next_comma_elt (&name_ptr)) != NULL)
 	add_attr_value (attr, p);
@@ -4052,12 +4058,7 @@ write_attr_get (FILE *outf, class attr_desc *attr)
 
   /* Write out start of function, then all values with explicit `case' lines,
      then a `default', then the value with the most uses.  */
-  if (attr->enum_name)
-    fprintf (outf, "enum %s\n", attr->enum_name);
-  else if (!attr->is_numeric)
-    fprintf (outf, "enum attr_%s\n", attr->name);
-  else
-    fprintf (outf, "int\n");
+  fprintf (outf, "%s\n", attr->cxx_type);
 
   /* If the attribute name starts with a star, the remainder is the name of
      the subroutine to use, instead of `get_attr_...'.  */
@@ -4103,13 +4104,8 @@ write_attr_get (FILE *outf, class attr_desc *attr)
 	  cached_attrs[j] = name;
 	cached_attr = find_attr (&name, 0);
 	gcc_assert (cached_attr && cached_attr->is_const == 0);
-	if (cached_attr->enum_name)
-	  fprintf (outf, "  enum %s", cached_attr->enum_name);
-	else if (!cached_attr->is_numeric)
-	  fprintf (outf, "  enum attr_%s", cached_attr->name);
-	else
-	  fprintf (outf, "  int");
-	fprintf (outf, " cached_%s ATTRIBUTE_UNUSED;\n", name);
+	fprintf (outf, "  %s cached_%s ATTRIBUTE_UNUSED;\n",
+		 cached_attr->cxx_type, name);
 	j++;
       }
   cached_attr_count = j;
@@ -4395,14 +4391,7 @@ write_attr_value (FILE *outf, class attr_desc *attr, rtx value)
     case ATTR:
       {
 	class attr_desc *attr2 = find_attr (&XSTR (value, 0), 0);
-	if (attr->enum_name)
-	  fprintf (outf, "(enum %s)", attr->enum_name);
-	else if (!attr->is_numeric)
-	  fprintf (outf, "(enum attr_%s)", attr->name);
-	else if (!attr2->is_numeric)
-	  fprintf (outf, "(int)");
-
-	fprintf (outf, "get_attr_%s (%s)", attr2->name,
+	fprintf (outf, "(%s) get_attr_%s (%s)", attr->cxx_type, attr2->name,
 		 (attr2->is_const ? "" : "insn"));
       }
       break;
@@ -4672,7 +4661,8 @@ find_attr (const char **name_p, int create)
 
   attr = oballoc (class attr_desc);
   attr->name = DEF_ATTR_STRING (name);
-  attr->enum_name = 0;
+  attr->enum_name = nullptr;
+  attr->cxx_type = nullptr;
   attr->first_value = attr->default_val = NULL;
   attr->is_numeric = attr->is_const = attr->is_special = 0;
   attr->next = attrs[index];
@@ -4693,6 +4683,7 @@ make_internal_attr (const char *name, rtx value, int special)
   attr = find_attr (&name, 1);
   gcc_assert (!attr->default_val);
 
+  attr->cxx_type = "int";
   attr->is_numeric = 1;
   attr->is_const = 0;
   attr->is_special = (special & ATTR_SPECIAL) != 0;
