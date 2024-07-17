@@ -6090,9 +6090,13 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 		    (std::make_pair (gimple_assign_rhs1 (vec_stmt),
 				     STMT_VINFO_REDUC_IDX (cond_info) == 2));
 		}
-	      /* ???  We probably want to have REDUC_IDX on the SLP node?  */
-	      cond_node = SLP_TREE_CHILDREN
-			    (cond_node)[STMT_VINFO_REDUC_IDX (cond_info)];
+	      /* ???  We probably want to have REDUC_IDX on the SLP node?
+		 We have both three and four children COND_EXPR nodes
+		 dependent on whether the comparison is still embedded
+		 as GENERIC.  So work backwards.  */
+	      int slp_reduc_idx = (SLP_TREE_CHILDREN (cond_node).length () - 3
+				   + STMT_VINFO_REDUC_IDX (cond_info));
+	      cond_node = SLP_TREE_CHILDREN (cond_node)[slp_reduc_idx];
 	    }
 	}
       else
