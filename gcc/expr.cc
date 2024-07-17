@@ -338,6 +338,29 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
   enum rtx_code equiv_code = (unsignedp < 0 ? UNKNOWN
 			      : (unsignedp ? ZERO_EXTEND : SIGN_EXTEND));
 
+  auto acceptable_same_precision_modes
+    = [] (scalar_mode from_mode, scalar_mode to_mode) -> bool
+    {
+      if (DECIMAL_FLOAT_MODE_P (from_mode) != DECIMAL_FLOAT_MODE_P (to_mode))
+	return true;
+
+      /* arm_bfloat_half_format <-> ieee_half_format */
+      if ((REAL_MODE_FORMAT (from_mode) == &arm_bfloat_half_format
+	   && REAL_MODE_FORMAT (to_mode) == &ieee_half_format)
+	  || (REAL_MODE_FORMAT (to_mode) == &arm_bfloat_half_format
+	      && REAL_MODE_FORMAT (from_mode) == &ieee_half_format))
+	return true;
+
+      /* ibm_extended_format <-> ieee_quad_format */
+      if ((REAL_MODE_FORMAT (from_mode) == &ibm_extended_format
+	   && REAL_MODE_FORMAT (to_mode) == &ieee_quad_format)
+	  || (REAL_MODE_FORMAT (from_mode) == &ieee_quad_format
+	      && REAL_MODE_FORMAT (to_mode) == &ibm_extended_format))
+	return true;
+
+      return false;
+    };
+
   if (to_real)
     {
       rtx value;
@@ -346,18 +369,16 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
 
       gcc_assert ((GET_MODE_PRECISION (from_mode)
 		   != GET_MODE_PRECISION (to_mode))
-		  || (DECIMAL_FLOAT_MODE_P (from_mode)
-		      != DECIMAL_FLOAT_MODE_P (to_mode))
-		  || (REAL_MODE_FORMAT (from_mode) == &arm_bfloat_half_format
-		      && REAL_MODE_FORMAT (to_mode) == &ieee_half_format)
-		  || (REAL_MODE_FORMAT (to_mode) == &arm_bfloat_half_format
-		      && REAL_MODE_FORMAT (from_mode) == &ieee_half_format));
+		  || acceptable_same_precision_modes (from_mode, to_mode));
 
       if (GET_MODE_PRECISION (from_mode) == GET_MODE_PRECISION (to_mode))
 	{
-	  if (REAL_MODE_FORMAT (to_mode) == &arm_bfloat_half_format
-	      && REAL_MODE_FORMAT (from_mode) == &ieee_half_format)
-	    /* libgcc implements just __trunchfbf2, not __extendhfbf2.  */
+	  if ((REAL_MODE_FORMAT (to_mode) == &arm_bfloat_half_format
+	       && REAL_MODE_FORMAT (from_mode) == &ieee_half_format)
+	      || (REAL_MODE_FORMAT (to_mode) == &ieee_quad_format
+		  && REAL_MODE_FORMAT (from_mode) == &ibm_extended_format))
+	    /* libgcc implements just __trunchfbf2, not __extendhfbf2;
+	       and __trunctfkf2, not __extendtfkf2.  */
 	    tab = trunc_optab;
 	  else
 	    /* Conversion between decimal float and binary float, same
