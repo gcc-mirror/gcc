@@ -4,6 +4,12 @@
 	2024-09-05  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR target/104957
+	* g++.target/nvptx/alias-g++.dg_init_dtor2-1.C: Add.
+
+	Backported from trunk:
+	2024-09-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/104957
 	* gcc.target/nvptx/alias-1.c: Enhance assembler scanning.
 	* gcc.target/nvptx/alias-2.c: Likewise.
 	* gcc.target/nvptx/alias-3.c: Likewise.
