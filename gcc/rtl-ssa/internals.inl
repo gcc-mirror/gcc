@@ -380,6 +380,20 @@ inline clobber_group::clobber_group (clobber_info *clobber)
   clobber->m_group = this;
 }
 
+// Construct a new group of clobber_infos that spans [FIRST_CLOBBER,
+// LAST_CLOBBER].  Set the root of the splay tree to CLOBBER_TREE.
+inline clobber_group::clobber_group (clobber_info *first_clobber,
+				     clobber_info *last_clobber,
+				     clobber_info *clobber_tree)
+  : def_node (first_clobber),
+    m_last_clobber (last_clobber),
+    m_clobber_tree (clobber_tree)
+{
+  first_clobber->m_group = this;
+  last_clobber->m_group = this;
+  clobber_tree->m_group = this;
+}
+
 // Construct a node for the instruction with uid UID.
 inline insn_info::order_node::order_node (int uid)
   : insn_note (kind),

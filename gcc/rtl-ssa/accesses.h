@@ -937,7 +937,8 @@ public:
   void print (pretty_printer *pp) const;
 
 private:
-  clobber_group (clobber_info *clobber);
+  clobber_group (clobber_info *);
+  clobber_group (clobber_info *, clobber_info *, clobber_info *);
 
   // Set the values of first_clobber () and last_clobber ().
   void set_first_clobber (clobber_info *c) { m_clobber_or_set = c; }

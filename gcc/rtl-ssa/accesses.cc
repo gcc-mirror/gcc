@@ -792,11 +792,11 @@ function_info::merge_clobber_groups (clobber_info *clobber1,
 }
 
 // GROUP spans INSN, and INSN now sets the resource that GROUP clobbers.
-// Split GROUP around INSN and return the clobber that comes immediately
-// before INSN.
+// Split GROUP around INSN, to form two new groups, and return the clobber
+// that comes immediately before INSN.
 //
 // The resource that GROUP clobbers is known to have an associated
-// splay tree.
+// splay tree.  The caller must remove GROUP from the tree on return.
 clobber_info *
 function_info::split_clobber_group (clobber_group *group, insn_info *insn)
 {
@@ -827,27 +827,20 @@ function_info::split_clobber_group (clobber_group *group, insn_info *insn)
       prev = as_a<clobber_info *> (next->prev_def ());
     }
 
-  // Use GROUP to hold PREV and earlier clobbers.  Create a new group for
-  // NEXT onwards.
+  // Create a new group for each side of the split.  We need to invalidate
+  // the old group so that clobber_info::group can tell whether a lazy
+  // update is needed.
+  clobber_info *first_clobber = group->first_clobber ();
   clobber_info *last_clobber = group->last_clobber ();
-  clobber_group *group1 = group;
-  clobber_group *group2 = allocate<clobber_group> (next);
-
-  // Finish setting up GROUP1, making sure that the roots and extremities
-  // have a correct group pointer.  Leave the rest to be updated lazily.
-  group1->set_last_clobber (prev);
-  tree1->set_group (group1);
-  prev->set_group (group1);
-
-  // Finish setting up GROUP2, with the same approach as for GROUP1.
-  group2->set_first_clobber (next);
-  group2->set_last_clobber (last_clobber);
-  next->set_group (group2);
-  tree2->set_group (group2);
-  last_clobber->set_group (group2);
+  auto *group1 = allocate<clobber_group> (first_clobber, prev, tree1.root ());
+  auto *group2 = allocate<clobber_group> (next, last_clobber, tree2.root ());
 
   // Insert GROUP2 into the splay tree as an immediate successor of GROUP1.
-  def_splay_tree::insert_child (group1, 1, group2);
+  def_splay_tree::insert_child (group, 1, group2);
+  def_splay_tree::insert_child (group, 1, group1);
+
+  // Invalidate the old group.
+  group->set_last_clobber (nullptr);
 
   return prev;
 }
@@ -952,6 +945,8 @@ function_info::add_def (def_info *def)
 	    }
 	  prev = split_clobber_group (group, insn);
 	  next = prev->next_def ();
+	  tree.remove_root ();
+	  last->set_splay_root (tree.root ());
 	}
       // COMPARISON is < 0 if DEF comes before ROOT or > 0 if DEF comes
       // after ROOT.
