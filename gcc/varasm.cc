@@ -8538,6 +8538,7 @@ default_elf_asm_output_ascii (FILE *f, const char *s, unsigned int len)
       if (s >= last_base64)
 	{
 	  unsigned cnt = 0;
+	  unsigned char prev_c = ' ';
 	  const char *t;
 	  for (t = s; t < limit && (t - s) < (long) ELF_STRING_LIMIT - 1; t++)
 	    {
@@ -8560,7 +8561,13 @@ default_elf_asm_output_ascii (FILE *f, const char *s, unsigned int len)
 		  break;
 		case 1:
 		  if (c == 0)
-		    cnt += 2 + strlen (STRING_ASM_OP) + 1;
+		    {
+		      if (prev_c == 0
+			  && t + 1 < limit
+			  && (t + 1 - s) < (long) ELF_STRING_LIMIT - 1)
+			break;
+		      cnt += 2 + strlen (STRING_ASM_OP) + 1;
+		    }
 		  else
 		    cnt += 4;
 		  break;
@@ -8568,6 +8575,7 @@ default_elf_asm_output_ascii (FILE *f, const char *s, unsigned int len)
 		  cnt += 2;
 		  break;
 		}
+	      prev_c = c;
 	    }
 	  if (cnt > ((unsigned) (t - s) + 2) / 3 * 4 && (t - s) >= 3)
 	    {
@@ -8633,8 +8641,18 @@ default_elf_asm_output_ascii (FILE *f, const char *s, unsigned int len)
 	      bytes_in_chunk = 0;
 	    }
 
-	  default_elf_asm_output_limited_string (f, s);
-	  s = p;
+	  if (p == s && p + 1 < limit && p[1] == '\0')
+	    {
+	      for (p = s + 2; p < limit && *p == '\0'; p++)
+		continue;
+	      ASM_OUTPUT_SKIP (f, (unsigned HOST_WIDE_INT) (p - s));
+	      s = p - 1;
+	    }
+	  else
+	    {
+	      default_elf_asm_output_limited_string (f, s);
+	      s = p;
+	    }
 	}
       else
 	{
