@@ -1,6 +1,6 @@
 /* PR tree-optimization/111150 */
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-forwprop1" } */
+/* { dg-options "-O1 -fdump-tree-forwprop1 -Wno-psabi" } */
 
 typedef int v4si __attribute((__vector_size__(4 * sizeof(int))));
 
