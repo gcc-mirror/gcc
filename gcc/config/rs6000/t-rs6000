@@ -19,7 +19,6 @@
 # <http://www.gnu.org/licenses/>.
 
 TM_H += $(srcdir)/config/rs6000/rs6000-cpus.def
-TM_H += $(srcdir)/config/rs6000/rs6000-modes.h
 PASSES_EXTRA += $(srcdir)/config/rs6000/rs6000-passes.def
 EXTRA_GTYPE_DEPS += rs6000-builtins.h
 

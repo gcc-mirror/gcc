@@ -4103,7 +4103,7 @@ rs6000_option_override_internal (bool global_init_p)
      128 into the precision used for TFmode.  */
   int default_long_double_size = (RS6000_DEFAULT_LONG_DOUBLE_SIZE == 64
 				  ? 64
-				  : FLOAT_PRECISION_TFmode);
+				  : 128);
 
   /* Set long double size before the IEEE 128-bit tests.  */
   if (!OPTION_SET_P (rs6000_long_double_type_size))
@@ -4115,10 +4115,6 @@ rs6000_option_override_internal (bool global_init_p)
       else
 	rs6000_long_double_type_size = default_long_double_size;
     }
-  else if (rs6000_long_double_type_size == FLOAT_PRECISION_TFmode)
-    ; /* The option value can be seen when cl_target_option_restore is called.  */
-  else if (rs6000_long_double_type_size == 128)
-    rs6000_long_double_type_size = FLOAT_PRECISION_TFmode;
 
   /* Set -mabi=ieeelongdouble on some old targets.  In the future, power server
      systems will also set long double to be IEEE 128-bit.  AIX and Darwin
@@ -24400,8 +24396,7 @@ static machine_mode
 rs6000_c_mode_for_floating_type (enum tree_index ti)
 {
   if (ti == TI_LONG_DOUBLE_TYPE)
-    return rs6000_long_double_type_size == FLOAT_PRECISION_TFmode ? TFmode
-								  : DFmode;
+    return rs6000_long_double_type_size == 128 ? TFmode : DFmode;
   return default_mode_for_floating_type (ti);
 }
 
