@@ -1,4 +1,5 @@
 /* PR libstdc++/88101 */
+/* { dg-do run } */
 
 union V { char a; signed char b; unsigned char c; };
 struct T { char a; int b; union V c; };
