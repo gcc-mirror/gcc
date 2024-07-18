@@ -6862,13 +6862,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        tree itype = TREE_TYPE (@0);
        format_helper fmt (REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (@1))));
        const REAL_VALUE_TYPE *cst = TREE_REAL_CST_PTR (@1);
-       /* Be careful to preserve any potential exceptions due to
-	  NaNs.  qNaNs are ok in == or != context.
-	  TODO: relax under -fno-trapping-math or
-	  -fno-signaling-nans.  */
-       bool exception_p
-         = real_isnan (cst) && (cst->signalling
-				|| (cmp != EQ_EXPR && cmp != NE_EXPR));
+       /* Be careful to preserve any potential exceptions due to NaNs.
+	  qNaNs are ok in == or != context.  */
+       bool exception_p = real_isnan (cst)
+			  && flag_trapping_math
+			  && ((cmp != EQ_EXPR && cmp != NE_EXPR)
+			      || (cst->signalling
+				  && HONOR_SNANS (TREE_TYPE (@1))));
      }
      /* TODO: allow non-fitting itype and SNaNs when
 	-fno-trapping-math.  */
