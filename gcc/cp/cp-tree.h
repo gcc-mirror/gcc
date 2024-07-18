@@ -8581,7 +8581,7 @@ extern tree_pair finish_type_constraints	(tree, tree, tsubst_flags_t);
 extern tree build_constrained_parameter         (tree, tree, tree = NULL_TREE);
 extern void placeholder_extract_concept_and_args (tree, tree&, tree&);
 extern bool equivalent_placeholder_constraints  (tree, tree);
-extern hashval_t hash_placeholder_constraint	(tree);
+extern hashval_t iterative_hash_placeholder_constraint	(tree, hashval_t);
 extern bool deduce_constrained_parameter        (tree, tree&, tree&);
 extern tree resolve_constraint_check            (tree);
 extern tree check_function_concept              (tree);

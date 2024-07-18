@@ -1689,13 +1689,13 @@ equivalent_placeholder_constraints (tree c1, tree c2)
 /* Return a hash value for the placeholder ATOMIC_CONSTR C.  */
 
 hashval_t
-hash_placeholder_constraint (tree c)
+iterative_hash_placeholder_constraint (tree c, hashval_t val)
 {
   tree t, a;
   placeholder_extract_concept_and_args (c, t, a);
 
   /* Like hash_tmpl_and_args, but skip the first argument.  */
-  hashval_t val = iterative_hash_object (DECL_UID (t), 0);
+  val = iterative_hash_object (DECL_UID (t), val);
 
   for (int i = TREE_VEC_LENGTH (a)-1; i > 0; --i)
     val = iterative_hash_template_arg (TREE_VEC_ELT (a, i), val);

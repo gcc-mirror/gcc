@@ -4500,7 +4500,12 @@ struct ctp_hasher : ggc_ptr_hash<tree_node>
     val = iterative_hash_object (TEMPLATE_TYPE_LEVEL (t), val);
     val = iterative_hash_object (TEMPLATE_TYPE_IDX (t), val);
     if (TREE_CODE (t) == TEMPLATE_TYPE_PARM)
-      val = iterative_hash_template_arg (CLASS_PLACEHOLDER_TEMPLATE (t), val);
+      {
+	val
+	  = iterative_hash_template_arg (CLASS_PLACEHOLDER_TEMPLATE (t), val);
+	if (tree c = NON_ERROR (PLACEHOLDER_TYPE_CONSTRAINTS (t)))
+	  val = iterative_hash_placeholder_constraint (c, val);
+      }
     if (TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM)
       val = iterative_hash_template_arg (TYPE_TI_ARGS (t), val);
     --comparing_specializations;
@@ -29581,7 +29586,7 @@ auto_hash::hash (tree t)
   if (tree c = NON_ERROR (PLACEHOLDER_TYPE_CONSTRAINTS (t)))
     /* Matching constrained-type-specifiers denote the same template
        parameter, so hash the constraint.  */
-    return hash_placeholder_constraint (c);
+    return iterative_hash_placeholder_constraint (c, 0);
   else
     /* But unconstrained autos are all separate, so just hash the pointer.  */
     return iterative_hash_object (t, 0);
