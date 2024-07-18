@@ -4949,10 +4949,10 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 		    ("unchecked conversion implemented by copy??",
 		     gnat_actual);
 		  post_error
-		    ("\\?use pragma Universal_Aliasing on either type",
+		    ("\\??use pragma Universal_Aliasing on either type",
 		     gnat_actual);
 		  post_error
-		    ("\\?to enable RM 13.9(12) implementation permission",
+		    ("\\??to enable RM 13.9(12) implementation permission",
 		     gnat_actual);
 		}
 
@@ -4962,10 +4962,10 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 		    ("value conversion implemented by copy??",
 		     gnat_actual);
 		  post_error
-		    ("\\?use pair of types with same root type",
+		    ("\\??use pair of types with same root type",
 		     gnat_actual);
 		  post_error
-		    ("\\?to avoid new object in RM 4.6(58.5/5)",
+		    ("\\??to avoid new object in RM 4.6(58.5/5)",
 		     gnat_actual);
 		}
 	    }
@@ -10644,9 +10644,9 @@ validate_unchecked_conversion (Node_Id gnat_node)
 	{
 	  post_error_ne ("??possible aliasing problem for type&",
 			 gnat_node, Target_Type (gnat_node));
-	  post_error ("\\?use -fno-strict-aliasing switch for references",
+	  post_error ("\\??use -fno-strict-aliasing switch for references",
 		      gnat_node);
-	  post_error_ne ("\\?or use `pragma No_Strict_Aliasing (&);`",
+	  post_error_ne ("\\??or use `pragma No_Strict_Aliasing (&);`",
 			 gnat_node, Target_Type (gnat_node));
 	}
     }
@@ -10670,7 +10670,7 @@ validate_unchecked_conversion (Node_Id gnat_node)
 	{
 	  post_error_ne ("??possible aliasing problem for type&",
 			 gnat_node, Target_Type (gnat_node));
-	  post_error ("\\?use -fno-strict-aliasing switch for references",
+	  post_error ("\\??use -fno-strict-aliasing switch for references",
 		      gnat_node);
 	}
     }

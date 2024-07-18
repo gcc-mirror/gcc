@@ -1430,7 +1430,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 			post_error
 			  ("??too large object cannot be allocated statically",
 			   gnat_entity);
-			post_error ("\\?dynamic allocation will be used instead",
+			post_error ("\\??dynamic allocation will be used instead",
 				    gnat_entity);
 		      }
 
@@ -6565,7 +6565,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 			    ("??cannot import type-generic 'G'C'C builtin!",
 			     gnat_subprog);
 			  post_error
-			    ("\\?use a supported result type",
+			    ("\\??use a supported result type",
 			     gnat_subprog);
 			  gnu_builtin_decl = NULL_TREE;
 			}
@@ -6587,7 +6587,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 			    ("??cannot import type-generic 'G'C'C builtin!",
 			     gnat_subprog);
 			  post_error
-			    ("\\?use a supported second parameter type",
+			    ("\\??use a supported second parameter type",
 			     gnat_subprog);
 			  gnu_builtin_decl = NULL_TREE;
 			}
@@ -6608,7 +6608,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 			    ("??cannot import type-generic 'G'C'C builtin!",
 			     gnat_subprog);
 			  post_error
-			    ("\\?use a supported third parameter type",
+			    ("\\??use a supported third parameter type",
 			     gnat_subprog);
 			  gnu_builtin_decl = NULL_TREE;
 			}
