@@ -11582,6 +11582,7 @@ tsubst_friend_function (tree decl, tree args)
 	    ;
 	  else
 	    {
+	      tree old_template = most_general_template (old_decl);
 	      tree new_template = TI_TEMPLATE (new_friend_template_info);
 	      tree new_args = TI_ARGS (new_friend_template_info);
 
@@ -11619,7 +11620,7 @@ tsubst_friend_function (tree decl, tree args)
 		  /* Reassign any specializations already in the hash table
 		     to the new more general template, and add the
 		     additional template args.  */
-		  for (t = DECL_TEMPLATE_INSTANTIATIONS (old_decl);
+		  for (t = DECL_TEMPLATE_INSTANTIATIONS (old_template);
 		       t != NULL_TREE;
 		       t = TREE_CHAIN (t))
 		    {
@@ -11632,15 +11633,15 @@ tsubst_friend_function (tree decl, tree args)
 
 		      decl_specializations->remove_elt (&elt);
 
-		      DECL_TI_ARGS (spec)
-			= add_outermost_template_args (new_args,
-						       DECL_TI_ARGS (spec));
+		      tree& spec_args = DECL_TI_ARGS (spec);
+		      spec_args = add_outermost_template_args
+			(new_args, INNERMOST_TEMPLATE_ARGS (spec_args));
 
 		      register_specialization
-			(spec, new_template, DECL_TI_ARGS (spec), true, 0);
+			(spec, new_template, spec_args, true, 0);
 
 		    }
-		  DECL_TEMPLATE_INSTANTIATIONS (old_decl) = NULL_TREE;
+		  DECL_TEMPLATE_INSTANTIATIONS (old_template) = NULL_TREE;
 		}
 	    }
 
