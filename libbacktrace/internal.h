@@ -56,6 +56,11 @@ POSSIBILITY OF SUCH DAMAGE.  */
 # endif
 #endif
 
+#ifdef __has_attribute
+# if __has_attribute(fallthrough)
+#  define ATTRIBUTE_FALLTHROUGH __attribute__ ((fallthrough))
+# endif
+#endif
 #ifndef ATTRIBUTE_FALLTHROUGH
 # if (GCC_VERSION >= 7000)
 #  define ATTRIBUTE_FALLTHROUGH __attribute__ ((__fallthrough__))

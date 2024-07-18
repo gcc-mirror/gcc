@@ -4848,25 +4848,25 @@ elf_zstd_decompress (const unsigned char *pin, size_t sin,
 		  {
 		  case 8:
 		    *pout++ = *plit++;
-		    /* FALLTHROUGH */
+		    ATTRIBUTE_FALLTHROUGH;
 		  case 7:
 		    *pout++ = *plit++;
-		    /* FALLTHROUGH */
+		    ATTRIBUTE_FALLTHROUGH;
 		  case 6:
 		    *pout++ = *plit++;
-		    /* FALLTHROUGH */
+		    ATTRIBUTE_FALLTHROUGH;
 		  case 5:
 		    *pout++ = *plit++;
-		    /* FALLTHROUGH */
+		    ATTRIBUTE_FALLTHROUGH;
 		  case 4:
 		    *pout++ = *plit++;
-		    /* FALLTHROUGH */
+		    ATTRIBUTE_FALLTHROUGH;
 		  case 3:
 		    *pout++ = *plit++;
-		    /* FALLTHROUGH */
+		    ATTRIBUTE_FALLTHROUGH;
 		  case 2:
 		    *pout++ = *plit++;
-		    /* FALLTHROUGH */
+		    ATTRIBUTE_FALLTHROUGH;
 		  case 1:
 		    *pout++ = *plit++;
 		    break;
