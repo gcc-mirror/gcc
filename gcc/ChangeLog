@@ -1,3 +1,56 @@
+2024-07-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2024-07-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/115526
+	* config/alpha/alpha.md (movdi_er_high_g): Add cannot_copy attribute.
+	(movdi_er_tlsgd): Ditto.
+	(movdi_er_tlsldm): Ditto.
+	(call_value_osf_<tls>): Ditto.
+
+2024-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/115887
+	* gimple-lower-bitint.cc (gimple_lower_bitint): Use gsi_insert_on_edge
+	instead of gsi_insert_on_edge_immediate and set edge_insertions to
+	true.
+
+2024-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/115527
+	* gimple-fold.cc (clear_padding_flush): Introduce endsize
+	variable and use it instead of wordsize when comparing it against
+	nonzero_last.
+	(clear_padding_type): Increment off by sz.
+
+2024-07-17  Robin Dapp  <rdapp@ventanamicro.com>
+
+	Backported from master:
+	2024-06-11  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR tree-optimization/115382
+	* tree-vect-loop.cc (vectorize_fold_left_reduction): Use
+	prepare_vec_mask.
+	* tree-vect-stmts.cc (check_load_store_for_partial_vectors):
+	Remove static of prepare_vec_mask.
+	* tree-vectorizer.h (prepare_vec_mask): Export.
+
+2024-07-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115868
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Correctly
+	compute the number of mask copies required for vect_record_loop_mask.
+
 2024-07-16  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
