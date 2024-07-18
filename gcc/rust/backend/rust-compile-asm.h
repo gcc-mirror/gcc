@@ -40,6 +40,14 @@ public:
   // static tree Compile (HIR::Expr *expr, Context *ctx);
 
   // RELEVANT MEMBER FUNCTIONS
+
+  // The limit is 5 because it stands for the 5 things that the C version of
+  //  build_asm_expr accepts: string, output, input, clobber and label.
+  // The function signature is
+  //
+  // tree
+  // build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
+  //		tree clobbers, tree labels, bool simple, bool is_inline)
   static const int ASM_TREE_ARRAY_LENGTH = 5;
   static tree asm_build_expr (HIR::InlineAsm &);
   static tree asm_build_stmt (location_t,
@@ -50,8 +58,6 @@ public:
   static tree asm_construct_inputs (HIR::InlineAsm &);
   static tree asm_construct_clobber_tree (HIR::InlineAsm &);
   static tree asm_construct_label_tree (HIR::InlineAsm &);
-  static bool asm_is_simple (HIR::InlineAsm &);
-  static bool asm_is_inline (HIR::InlineAsm &);
 
   CompileAsm (Context *ctx);
 
