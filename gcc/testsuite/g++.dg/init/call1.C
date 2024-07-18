@@ -1,4 +1,5 @@
 // Bug c++/16115
+// { dg-do run }
 // { dg-options "-O2" }
 
 extern "C" void abort(); 

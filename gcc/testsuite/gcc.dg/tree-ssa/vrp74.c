@@ -1,3 +1,4 @@
+/* { dg-do run } */
 /* { dg-options "-O2" } */
 
 void abort (void);

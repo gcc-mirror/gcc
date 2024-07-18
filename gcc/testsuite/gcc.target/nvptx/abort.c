@@ -1,4 +1,4 @@
-/* { dg-do compile} */
+/* { dg-do compile } */
 /* Annotate no return functions with a trailing 'trap'.  */
 
 extern void abort ();
