@@ -1664,6 +1664,8 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 	      if (tclass == tcc_comparison
 		  || tclass == tcc_unary
 		  || tclass == tcc_binary
+		  || code == TRUTH_NOT_EXPR
+		  || code == ADDR_EXPR
 		  || code == VEC_PERM_EXPR
 		  || code == VEC_COND_EXPR)
 		warn_if_unused_value (e, loc);
