@@ -1,3 +1,7 @@
+2024-07-17  Mark Wielaard  <mark@klomp.org>
+
+	* c.opt.urls: Regenerate.
+
 2024-07-14  Alejandro Colomar  <alx@kernel.org>
 
 	PR c/115185

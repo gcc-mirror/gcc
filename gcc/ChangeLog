@@ -1,3 +1,252 @@
+2024-07-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/115929
+	* rtl-ssa/movement.h (canonicalize_move_range): Check for null prev
+	and next insns and create an invalid move range for them.
+
+2024-07-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/115928
+	* rtl-ssa/accesses.h (clobber_group): Add a new constructor that
+	takes the first, last and root clobbers.
+	* rtl-ssa/internals.inl (clobber_group::clobber_group): Define it.
+	* rtl-ssa/accesses.cc (function_info::split_clobber_group): Use it.
+	Allocate a new group for both sides and invalidate the previous group.
+	(function_info::add_def): After calling split_clobber_group,
+	remove the old group from the splay tree.
+
+2024-07-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genattrtab.cc (attr_desc::cxx_type): New field.
+	(write_attr_get, write_attr_value): Use it.
+	(gen_attr, find_attr, make_internal_attr): Initialize it,
+	dropping enum tags.
+
+2024-07-17  Eikansh Gupta  <quic_eikagupt@quicinc.com>
+
+	PR tree-optimization/111150
+	* match.pd (`(a ? x : y) eq/ne (b ? x : y)`): New pattern.
+	(`(a ? x : y) eq/ne (b ? y : x)`): New pattern.
+
+2024-07-17  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* dbgcnt.def (ext_dce): New debug counter.
+	* ext-dce.cc (ext_dce_try_optimize_insn): Reject the insn
+	if the debug counter says so.
+	(ext_dce): Rename to ...
+	(ext_dce_execute): This.
+	(pass_ext_dce::execute): Update for the name of ext_dce.
+
+2024-07-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/115526
+	* config/alpha/alpha.md (movdi_er_high_g): Add cannot_copy attribute.
+	(movdi_er_tlsgd): Ditto.
+	(movdi_er_tlsldm): Ditto.
+	(call_value_osf_<tls>): Ditto.
+
+2024-07-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/90616
+	* config/avr/predicates.md (const_0mod256_operand): New predicate.
+	* config/avr/constraints.md (Cp8): New constraint.
+	* config/avr/avr.md (*aligned_add_symbol): New insn.
+	* config/avr/avr.cc (avr_out_plus_symbol) [HImode]:
+	When op2 is a multiple of 256, there is no need to add / subtract
+	the lo8 part.
+	(avr_rtx_costs_1) [PLUS && HImode]: Return expected costs for
+	new insn *aligned_add_symbol as it applies.
+
+2024-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/115887
+	* gimple-lower-bitint.cc (gimple_lower_bitint): Use gsi_insert_on_edge
+	instead of gsi_insert_on_edge_immediate and set edge_insertions to
+	true.
+
+2024-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* varasm.cc (default_elf_asm_output_ascii): Use ASM_OUTPUT_SKIP instead
+	of 2 or more default_elf_asm_output_limited_string (f, "") calls and
+	adjust base64 heuristics correspondingly.
+
+2024-07-17  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/115936
+	* tree-scalar-evolution.cc (simple_iv_with_niters): Use sizetype for
+	pointers.
+
+2024-07-17  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/114440
+	* tree-vectorizer.h (struct _stmt_vec_info): Add a new field
+	reduc_result_pos.
+	* tree-vect-loop.cc (vect_transform_reduction): Generate lane-reducing
+	statements in an optimized order.
+
+2024-07-17  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/114440
+	* tree-vectorizer.h (vectorizable_lane_reducing): New function
+	declaration.
+	* tree-vect-stmts.cc (vect_analyze_stmt): Call new function
+	vectorizable_lane_reducing to analyze lane-reducing operation.
+	* tree-vect-loop.cc (vect_model_reduction_cost): Remove cost computation
+	code related to	emulated_mixed_dot_prod.
+	(vectorizable_lane_reducing): New function.
+	(vectorizable_reduction): Allow multiple lane-reducing operations in
+	loop reduction. Move some original lane-reducing related code to
+	vectorizable_lane_reducing.
+	(vect_transform_reduction): Adjust comments with updated example.
+
+2024-07-17  Feng Xue  <fxue@os.amperecomputing.com>
+
+	* tree-vect-loop.cc (vect_reduction_update_partial_vector_usage):
+	Calculate effective vector stmts number with generic
+	vect_get_num_copies.
+	(vect_transform_reduction): Insert copies for lane-reducing so as to
+	fix over-estimated vector stmts number.
+	(vect_transform_cycle_phi): Calculate vector PHI number only based on
+	output vectype.
+	* tree-vect-slp.cc (vect_slp_analyze_node_operations_1): Remove
+	adjustment on vector stmts number specific to slp reduction.
+
+2024-07-17  Feng Xue  <fxue@os.amperecomputing.com>
+
+	* tree-vectorizer.h (vect_get_num_copies): New overload function.
+	* tree-vect-slp.cc (vect_slp_analyze_node_operations_1): Calculate
+	number of vector stmts for slp node with vect_get_num_copies.
+	(vect_slp_analyze_node_operations): Calculate number of vector elements
+	for constant/external slp node with vect_get_num_copies.
+
+2024-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115959
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction):
+	Get at the REDUC_IDX child in a safer way for COND_EXPR
+	nodes.
+
+2024-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/115958
+	* varasm.cc (default_elf_asm_output_ascii): Cast t - s to unsigned
+	to avoid -Wsign-compare warnings.
+
+2024-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/115527
+	* gimple-fold.cc (clear_padding_flush): Introduce endsize
+	variable and use it instead of wordsize when comparing it against
+	nonzero_last.
+	(clear_padding_type): Increment off by sz.
+
+2024-07-17  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/rs6000.md (mov<mode>cc, *mov<mode>cc_p10,
+	*mov<mode>cc_invert_p10, *fpmask<mode>, *xxsel<mode>,
+	@ieee_128bit_vsx_abs<mode>2, *ieee_128bit_vsx_nabs<mode>2,
+	add<mode>3, sub<mode>3, mul<mode>3, div<mode>3, sqrt<mode>2,
+	copysign<mode>3, copysign<mode>3_hard, copysign<mode>3_soft,
+	@neg<mode>2_hw, @abs<mode>2_hw, *nabs<mode>2_hw, fma<mode>4_hw,
+	*fms<mode>4_hw, *nfma<mode>4_hw, *nfms<mode>4_hw,
+	extend<SFDF:mode><IEEE128:mode>2_hw, trunc<mode>df2_hw,
+	trunc<mode>sf2_hw, fix<uns>_<IEEE128:mode><SDI:mode>2_hw,
+	fix<uns>_trunc<IEEE128:mode><QHI:mode>2,
+	*fix<uns>_trunc<IEEE128:mode><QHSI:mode>2_mem,
+	float_<mode>di2_hw, float_<mode>si2_hw,
+	float<QHI:mode><IEEE128:mode>2, floatuns_<mode>di2_hw,
+	floatuns_<mode>si2_hw, floatuns<QHI:mode><IEEE128:mode>2,
+	floor<mode>2, ceil<mode>2, btrunc<mode>2, round<mode>2,
+	add<mode>3_odd, sub<mode>3_odd, mul<mode>3_odd, div<mode>3_odd,
+	sqrt<mode>2_odd, fma<mode>4_odd, *fms<mode>4_odd, *nfma<mode>4_odd,
+	*nfms<mode>4_odd, trunc<mode>df2_odd, *cmp<mode>_hw for IEEE128):
+	Remove guard FLOAT128_IEEE_P.
+	(@extenddf<mode>2_fprs, @extenddf<mode>2_vsx,
+	trunc<mode>df2_internal1, trunc<mode>df2_internal2,
+	fix_trunc_helper<mode>, neg<mode>2, *cmp<mode>_internal1,
+	*cmp<IBM128:mode>_internal2 for IBM128): Remove guard FLOAT128_IBM_P.
+
+2024-07-17  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (init_float128_ieee): Use trunc_optab rather
+	than sext_optab for converting FLOAT128_IBM_P mode to FLOAT128_IEEE_P
+	mode, and use sext_optab rather than trunc_optab for converting
+	FLOAT128_IEEE_P mode to FLOAT128_IBM_P mode.
+	(rs6000_expand_float128_convert): Likewise.
+
+2024-07-17  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/112993
+	* tree.cc (build_common_tree_nodes): Drop the workaround for rs6000
+	KFmode precision adjustment.
+
+2024-07-17  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/112993
+	* value-range.h (range_compatible_p): Remove the workaround on
+	different type precision between _Float128 and long double.
+
+2024-07-17  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/112993
+	* config/rs6000/rs6000-modes.def (IFmode, KFmode, TFmode): Define
+	with FLOAT_MODE instead of FRACTIONAL_FLOAT_MODE, don't use special
+	precisions any more.
+	(rs6000-modes.h): Remove include.
+	* config/rs6000/rs6000-modes.h: Remove.
+	* config/rs6000/rs6000.h (rs6000-modes.h): Remove include.
+	* config/rs6000/t-rs6000: Remove rs6000-modes.h include.
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Replace
+	all uses of FLOAT_PRECISION_TFmode with 128.
+	(rs6000_c_mode_for_floating_type): Likewise.
+	* config/rs6000/rs6000.md (define_expand extendiftf2): Remove.
+	(define_expand extendifkf2): Remove.
+	(define_expand extendtfkf2): Remove.
+	(define_expand trunckftf2): Remove.
+	(define_expand trunctfif2): Remove.
+	(define_expand extendtfif2): Add new assertion.
+	(define_expand expandkftf2): New.
+	(define_expand trunciftf2): Add new assertion.
+	(define_expand trunctfkf2): New.
+	(define_expand truncifkf2): Change with gcc_unreachable.
+	(define_expand expandkfif2): New.
+	(define_insn_and_split extendkftf2): Rename to  ...
+	(define_insn_and_split *extendkftf2): ... this.
+	(define_insn_and_split trunctfkf2): Rename to ...
+	(define_insn_and_split *extendtfkf2): ... this.
+
+2024-07-17  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/112993
+	* expr.cc (convert_mode_scalar): Allow same precision conversion
+	between scalar floating point modes if whose underlying format is
+	ibm_extended_format or ieee_quad_format, and refactor assertion
+	with new lambda function acceptable_same_precision_modes.  Use
+	trunc_optab rather than sext_optab for ibm128 to ieee128 conversion.
+	* optabs-libfuncs.cc (gen_trunc_conv_libfunc): Use trunc_optab rather
+	than sext_optab for ibm128 to ieee128 conversion.
+
+2024-07-17  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/114759
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Disallow
+	CPUs and ABIs that do no support the ROP protection insns.
+	* config/rs6000/rs6000-logue.cc (rs6000_stack_info): Remove now
+	unneeded tests.
+	(rs6000_emit_prologue): Likewise.
+	Remove unneeded gcc_assert.
+	(rs6000_emit_epilogue): Likewise.
+	* config/rs6000/rs6000.md: Likewise.
+
+2024-07-17  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/114759
+	* config/rs6000/rs6000-logue.cc (rs6000_stack_info): Use TARGET_POWER8.
+	(rs6000_emit_prologue): Likewise.
+	* config/rs6000/rs6000.md (hashchk): Likewise.
+	(hashst): Likewise.
+	Fix whitespace.
+
 2024-07-16  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/115951

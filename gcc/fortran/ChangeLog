@@ -1,3 +1,9 @@
+2024-07-17  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/112993
+	* trans-types.cc (get_real_kind_from_node): Consider the case where
+	more than one modes have the same precision.
+
 2024-07-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/84868

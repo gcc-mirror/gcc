@@ -1,3 +1,23 @@
+2024-07-18  Ian Lance Taylor  <iant@golang.org>
+
+	* README: Add notes about dl_iterate_phdr.
+
+2024-07-17  Ian Lance Taylor  <iant@golang.org>
+
+	* xcoff.c (struct xcoff_fileline_data): Change base_address field
+	to struct libbacktrace_base_address.
+	(xcoff_initialize_syminfo): Change base_address to struct
+	libbacktrace_base_address.  Use libbacktrace_add_base.
+	(xcoff_initialize_fileline): Likewise.
+	(xcoff_lookup_pc): Use libbacktrace_add_base.
+	(xcoff_add): Change base_address to struct
+	libbacktrace_base_address.
+	(xcoff_armem_add, xcoff_add_shared_libs): Likewise.
+	(backtrace_initialize): Likewise.
+	* Makefile.am (xcoff.lo): Remove unused target.
+	(xcoff_32.lo, xcoff_64.lo): New targets.
+	* Makefile.in: Regenerate.
+
 2024-07-16  Ian Lance Taylor  <iant@golang.org>
 
 	* internal.h: If FDPIC, #include <link.h> and/or <sys/link.h>.

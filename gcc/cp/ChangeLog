@@ -1,3 +1,21 @@
+2024-07-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115900
+	* constexpr.cc (cxx_eval_call_expression): Set new_obj to NULL_TREE
+	if cxx_fold_indirect_ref set empty_base to true.
+
+2024-07-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111890
+	* pt.cc (maybe_new_partial_specialization): Propagate TYPE_CONTEXT
+	to the newly created partial specialization.
+
+2024-07-17  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/99242
+	* name-lookup.cc (append_imported_binding_slot): Propagate dups
+	flags.
+
 2024-07-16  Nina Ranns  <dinka.ranns@gmail.com>
 
 	PR c++/110159
