@@ -22,6 +22,7 @@
 #include "polonius/rust-polonius.h"
 #include "rust-bir.h"
 #include "rust-hir-item.h"
+#include "text-range-label.h"
 
 namespace Rust {
 namespace BIR {
@@ -62,6 +63,18 @@ private:
   void report_move_errors ();
   void report_loan_errors ();
   void report_subset_errors ();
+
+  const BIR::Statement &get_statement (Polonius::Point point);
+  const BIR::Loan &get_loan (Polonius::Loan loan);
+
+  struct LabelLocationPair
+  {
+    text_range_label label;
+    location_t location;
+  };
+  static void
+  multi_label_error (const char *error_message, location_t error_location,
+		     std::vector<LabelLocationPair> location_label_pairs);
 };
 
 } // namespace BIR
