@@ -5543,6 +5543,18 @@ means of constraints requiring operands 1 and 0 to be the same location.
 @itemx @samp{and@var{m}3}, @samp{ior@var{m}3}, @samp{xor@var{m}3}
 Similar, for other arithmetic operations.
 
+@cindex @code{ustrunc@var{m}@var{n}2} instruction pattern
+@item @samp{ustrunc@var{m}@var{n}2}
+Truncate the operand 1, and storing the result in operand 0.  There will
+be saturation during the trunction.  The result will be saturated to the
+maximal value of operand 0 type if there is overflow when truncation.  The
+operand 1 must have mode @var{n},  and the operand 0 must have mode @var{m}.
+Both scalar and vector integer modes are allowed.
+
+@cindex @code{sstrunc@var{m}@var{n}2} instruction pattern
+@item @samp{sstrunc@var{m}@var{n}2}
+Similar but for signed.
+
 @cindex @code{andc@var{m}3} instruction pattern
 @item @samp{andc@var{m}3}
 Like @code{and@var{m}3}, but it uses bitwise-complement of operand 2
