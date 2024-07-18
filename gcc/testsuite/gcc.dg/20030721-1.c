@@ -1,5 +1,6 @@
-/* { dg-options "-O2" } */
 /* PR optimization/11536 */
+/* { dg-do run } */
+/* { dg-options "-O2" } */
 /* Origin: samal@kam.mff.cuni.cz <samal@kam.mff.cuni.cz> */
 /* Testcase by Andrew Pinski <pinskia@physics.uc.edu> */
 
