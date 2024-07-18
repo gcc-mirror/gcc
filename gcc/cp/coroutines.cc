@@ -3755,6 +3755,13 @@ rewrite_param_uses (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
       return cp_walk_tree (&t, rewrite_param_uses, d, NULL);
     }
 
+  if (unevaluated_p (TREE_CODE (*stmt)))
+    {
+      /* No odr-uses in unevaluated operands.  */
+      *do_subtree = 0;
+      return NULL_TREE;
+    }
+
   if (TREE_CODE (*stmt) != PARM_DECL)
     return NULL_TREE;
 
