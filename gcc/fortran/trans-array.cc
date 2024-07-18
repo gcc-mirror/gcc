@@ -2137,7 +2137,9 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock,
 	      p = gfc_constructor_next (p);
 	      n++;
 	    }
-	  if (n < 4)
+	  /* Constructor with few constant elements, or element size not
+	     known at compile time (e.g. deferred-length character).  */
+	  if (n < 4 || !INTEGER_CST_P (TYPE_SIZE_UNIT (type)))
 	    {
 	      /* Scalar values.  */
 	      gfc_init_se (&se, NULL);
