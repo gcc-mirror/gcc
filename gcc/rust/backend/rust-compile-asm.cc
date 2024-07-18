@@ -36,9 +36,9 @@ CompileAsm::asm_build_expr (HIR::InlineAsm &expr)
 					  asm_construct_clobber_tree (expr),
 					  asm_construct_label_tree (expr)});
 
-  ASM_BASIC_P (asm_expr) = CompileAsm::asm_is_simple (expr);
+  ASM_BASIC_P (asm_expr) = expr.is_simple_asm ();
   ASM_VOLATILE_P (asm_expr) = false;
-  ASM_INLINE_P (asm_expr) = CompileAsm::asm_is_inline (expr);
+  ASM_INLINE_P (asm_expr) = expr.is_inline_asm ();
   return asm_expr;
 }
 
@@ -120,18 +120,5 @@ CompileAsm::asm_construct_label_tree (HIR::InlineAsm &expr)
   return NULL_TREE;
 }
 
-bool
-CompileAsm::asm_is_simple (HIR::InlineAsm &expr)
-{
-  // TODO: Check back later to determine how an InlineAsm is simple.
-  return true;
-}
-
-bool
-CompileAsm::asm_is_inline (HIR::InlineAsm &expr)
-{
-  // TODO: Check back later to determine how an InlineAsm is inline.
-  return true;
-}
 } // namespace Compile
 } // namespace Rust

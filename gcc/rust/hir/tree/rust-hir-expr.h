@@ -25,7 +25,6 @@
 #include "rust-hir-path.h"
 #include "rust-operators.h"
 #include "rust-expr.h"
-#include "tree.h"
 namespace Rust {
 namespace HIR {
 
@@ -4147,6 +4146,17 @@ public:
 
   std::set<AST::InlineAsmOption> get_options () { return options; }
 
+  bool is_simple_asm ()
+  {
+    // TODO: Check back later to determine how an InlineAsm is simple.
+    return true;
+  }
+
+  bool is_inline_asm ()
+  {
+    // TODO: Check back later to determine how an InlineAsm is inline.
+    return true;
+  }
   InlineAsm (location_t locus, bool is_global_asm,
 	     std::vector<AST::InlineAsmTemplatePiece> template_,
 	     std::vector<AST::TupleTemplateStr> template_strs,
