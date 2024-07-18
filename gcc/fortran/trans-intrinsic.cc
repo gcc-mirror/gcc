@@ -8216,10 +8216,17 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
       else if (arg->rank > 0
 	       || (arg->rank == 0
 		   && arg->ref && arg->ref->type == REF_COMPONENT))
-	/* The scalarizer added an additional temp.  To get the class' vptr
-	   one has to look at the original backend_decl.  */
-	byte_size = gfc_class_vtab_size_get (
+	{
+	  /* The scalarizer added an additional temp.  To get the class' vptr
+	     one has to look at the original backend_decl.  */
+	  if (argse.class_container)
+	    byte_size = gfc_class_vtab_size_get (argse.class_container);
+	  else if (DECL_LANG_SPECIFIC (arg->symtree->n.sym->backend_decl))
+	    byte_size = gfc_class_vtab_size_get (
 	      GFC_DECL_SAVED_DESCRIPTOR (arg->symtree->n.sym->backend_decl));
+	  else
+	    gcc_unreachable ();
+	}
       else
 	gcc_unreachable ();
     }
