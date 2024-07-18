@@ -1,4 +1,4 @@
-// { dg-run }
+// { dg-do run }
 
 #pragma omp begin declare target indirect
 class C
