@@ -4164,6 +4164,35 @@ direct_internal_fn_optab (internal_fn fn)
   gcc_unreachable ();
 }
 
+/* Return true if TYPE's mode has the same format as TYPE, and if there is
+   a 1:1 correspondence between the values that the mode can store and the
+   values that the type can store.  */
+
+static bool
+type_strictly_matches_mode_p (const_tree type)
+{
+  if (VECTOR_TYPE_P (type))
+    return VECTOR_MODE_P (TYPE_MODE (type));
+
+  if (INTEGRAL_TYPE_P (type))
+    return type_has_mode_precision_p (type);
+
+  if (SCALAR_FLOAT_TYPE_P (type) || COMPLEX_FLOAT_TYPE_P (type))
+    return true;
+
+  return false;
+}
+
+/* Returns true if both types of TYPE_PAIR strictly match their modes,
+   else returns false.  */
+
+static bool
+type_pair_strictly_matches_mode_p (tree_pair type_pair)
+{
+  return type_strictly_matches_mode_p (type_pair.first)
+    && type_strictly_matches_mode_p (type_pair.second);
+}
+
 /* Return true if FN is supported for the types in TYPES when the
    optimization type is OPT_TYPE.  The types are those associated with
    the "type0" and "type1" fields of FN's direct_internal_fn_info
@@ -4173,6 +4202,9 @@ bool
 direct_internal_fn_supported_p (internal_fn fn, tree_pair types,
 				optimization_type opt_type)
 {
+  if (!type_pair_strictly_matches_mode_p (types))
+    return false;
+
   switch (fn)
     {
 #define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) \
