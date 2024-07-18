@@ -2450,7 +2450,7 @@ inline namespace v1
 	// XXX ???     ^^^^^^^
       {
 	// XXX ??? this->init(std::addressof(_M_sb));
-	this->set_rbduf(std::addressof(_M_sb));
+	this->set_rdbuf(std::addressof(_M_sb));
       }
 
       template<typename... _Args>

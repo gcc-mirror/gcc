@@ -4,7 +4,7 @@ template <bool> struct VI {};
 template <typename T>
 struct IP
 {
-  static const bool r = IP<T>::r;  // { dg-error "depth" }
+  static const bool r = IP<T*>::r;  // { dg-error "depth" }
 };
 template <typename T> struct V
 {

@@ -4536,7 +4536,7 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
   else
     t = NULL_TREE;
 
-  if ((!t || TREE_CODE (t) == TREE_LIST) && dependent_type_p (context))
+  if ((!t || TREE_CODE (t) == TREE_LIST) && dependentish_scope_p (context))
     return build_typename_type (context, name, fullname, tag_type);
 
   want_template = TREE_CODE (fullname) == TEMPLATE_ID_EXPR;

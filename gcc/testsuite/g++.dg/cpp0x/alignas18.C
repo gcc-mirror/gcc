@@ -3,6 +3,5 @@
 
 template <typename T> struct S {
   using U = S;
-  // FIXME: This is ill-formed; see PR90847.
-  void fn() alignas(U::X);
+  void fn() alignas(U::X); // { dg-error "not a member" }
 };

@@ -4714,7 +4714,8 @@ qualified_name_lookup_error (tree scope, tree name,
     ; /* We already complained.  */
   else if (TYPE_P (scope))
     {
-      if (!COMPLETE_TYPE_P (scope))
+      if (!COMPLETE_TYPE_P (scope)
+	  && !currently_open_class (scope))
 	error_at (location, "incomplete type %qT used in nested name specifier",
 		  scope);
       else if (TREE_CODE (decl) == TREE_LIST)

@@ -4353,7 +4353,7 @@ finish_id_expression_1 (tree id_expression,
 	  /* Name lookup failed.  */
 	  if (scope
 	      && (!TYPE_P (scope)
-		  || (!dependent_type_p (scope)
+		  || (!dependentish_scope_p (scope)
 		      && !(identifier_p (id_expression)
 			   && IDENTIFIER_CONV_OP_P (id_expression)
 			   && dependent_type_p (TREE_TYPE (id_expression))))))

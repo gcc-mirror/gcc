@@ -3542,7 +3542,7 @@ finish_class_member_access_expr (cp_expr object, tree name, bool template_p,
 	  afi.maybe_suggest_accessor (TYPE_READONLY (object_type));
 	  if (member == NULL_TREE)
 	    {
-	      if (dependent_type_p (object_type))
+	      if (dependentish_scope_p (object_type))
 		/* Try again at instantiation time.  */
 		goto dependent;
 	      if (complain & tf_error)

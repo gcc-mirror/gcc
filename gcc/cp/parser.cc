@@ -3888,7 +3888,8 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
       else if (TYPE_P (parser->scope))
 	{
 	  auto_diagnostic_group d;
-	  if (!COMPLETE_TYPE_P (parser->scope))
+	  if (!COMPLETE_TYPE_P (parser->scope)
+	      && !currently_open_class (parser->scope))
 	    cxx_incomplete_type_error (location_of (id), NULL_TREE,
 				       parser->scope);
 	  else if (cp_lexer_next_token_is (parser->lexer, CPP_LESS))
@@ -17514,7 +17515,10 @@ cp_parser_conversion_function_id (cp_parser* parser)
 
      In order to see that `I' is a type-name in the definition, we
      must be in the scope of `S'.  */
-  if (saved_scope)
+  if (saved_scope
+      /* In A<T>::operator I(), we don't want to enter A<T> if we're
+	 in an expression rather than declaration context.  */
+      && adjust_type_for_entering_scope (saved_scope) == saved_scope)
     pushed_scope = push_scope (saved_scope);
   /* Parse the conversion-type-id.  */
   type = cp_parser_conversion_type_id (parser);
@@ -32219,7 +32223,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
       /* If the scope is a dependent type and either we deferred lookup or
 	 we did lookup but didn't find the name, rememeber the name.  */
       if (decl == error_mark_node && TYPE_P (parser->scope)
-	  && dependent_type_p (parser->scope))
+	  && dependentish_scope_p (parser->scope))
 	{
 	  if (tag_type)
 	    {
