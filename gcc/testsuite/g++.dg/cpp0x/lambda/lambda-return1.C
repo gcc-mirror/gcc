@@ -1,4 +1,5 @@
 // PR c++/57437
+// { dg-do run } */
 // { dg-require-effective-target c++11 }
 
 struct A {

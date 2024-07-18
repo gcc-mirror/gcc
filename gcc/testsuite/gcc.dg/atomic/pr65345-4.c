@@ -1,4 +1,5 @@
 /* PR c/65345 */
+/* { dg-do run } */
 /* { dg-options "" } */
 
 #define CHECK(X) if (!(X)) __builtin_abort ()

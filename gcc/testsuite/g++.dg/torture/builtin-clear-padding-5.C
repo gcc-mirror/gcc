@@ -1,4 +1,5 @@
 // PR tree-optimization/102586
+// { dg-do run }
 // { dg-options "-Wno-inaccessible-base" }
 
 struct C0 {};

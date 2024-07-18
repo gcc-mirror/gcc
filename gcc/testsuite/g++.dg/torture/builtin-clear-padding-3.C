@@ -1,4 +1,5 @@
 /* PR libstdc++/88101 */
+/* { dg-do run } */
 
 struct D { int a; int : 24; int b : 8; };
 struct E {};

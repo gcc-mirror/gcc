@@ -1,5 +1,5 @@
 // PR c++/53288
-// { dg-do compile { target c++11 } }
+// { dg-do run { target c++11 } }
 
 struct B {
    B(int data) : _data(data) { }
