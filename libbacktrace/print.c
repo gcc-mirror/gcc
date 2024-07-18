@@ -77,7 +77,7 @@ static void print_syminfo_callback (void *data, uintptr_t pc,
     fprintf (pdata->f, "0x%lx ???\n\t%s+0x%lx:0\n",
 	     (unsigned long) pc,
 	     symname,
-	     pc - symval);
+	     (unsigned long) (pc - symval));
 }
 
 /* Print one level of a backtrace.  */
