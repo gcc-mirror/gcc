@@ -1946,6 +1946,10 @@ typedef struct gfc_symbol
   /* Set if this should be passed by value, but is not a VALUE argument
      according to the Fortran standard.  */
   unsigned pass_as_value:1;
+  /* Set if an allocatable array variable has been allocated in the current
+     scope. Used in the suppression of uninitialized warnings in reallocation
+     on assignment.  */
+  unsigned allocated_in_scope:1;
 
   /* Reference counter, used for memory management.
 
