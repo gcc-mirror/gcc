@@ -1,3 +1,14 @@
+2024-07-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2024-07-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/115526
+	* config/alpha/alpha.md (movdi_er_high_g): Add cannot_copy attribute.
+	(movdi_er_tlsgd): Ditto.
+	(movdi_er_tlsldm): Ditto.
+	(call_value_osf_<tls>): Ditto.
+
 2024-07-16  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	Backported from master:

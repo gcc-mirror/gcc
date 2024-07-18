@@ -1,3 +1,11 @@
+2024-07-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2024-07-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/115526
+	* gcc.target/alpha/pr115526.c: New test.
+
 2024-07-15  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:
