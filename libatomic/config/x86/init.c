@@ -41,11 +41,15 @@ __libat_feat1_init (void)
 	{
 	  /* Intel SDM guarantees that 16-byte VMOVDQA on 16-byte aligned
 	     address is atomic, and AMD is going to do something similar soon.
-	     We don't have a guarantee from vendors of other CPUs with AVX,
-	     like Zhaoxin and VIA.  */
+	     Zhaoxin also guarantees this.  We don't have a guarantee
+	     from vendors of other CPUs with AVX, like VIA.  */
+	  unsigned int family = (eax >> 8) & 0x0f;
 	  unsigned int ecx2;
 	  __cpuid (0, eax, ebx, ecx2, edx);
-	  if (ecx2 != signature_INTEL_ecx && ecx2 != signature_AMD_ecx)
+	  if (ecx2 != signature_INTEL_ecx
+	      && ecx2 != signature_AMD_ecx
+	      && !(ecx2 == signature_CENTAUR_ecx && family > 6)
+	      && ecx2 != signature_SHANGHAI_ecx)
 	    FEAT1_REGISTER &= ~bit_AVX;
 	}
 #endif
