@@ -220,7 +220,17 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
     = specified_bound.lookup_associated_item (item_seg_identifier.as_string ());
   if (item.is_error ())
     {
-      rust_error_at (item_seg->get_locus (), "unknown associated item");
+      std::string item_seg_ident_name, rich_msg;
+      item_seg_ident_name = qual_path_type.get_trait ()->as_string ();
+      rich_msg = "not found in `" + item_seg_ident_name + "`";
+
+      rich_location richloc (line_table, item_seg->get_locus ());
+      richloc.add_fixit_replace (rich_msg.c_str ());
+
+      rust_error_at (richloc, ErrorCode::E0576,
+		     "cannot find associated type %qs in trait %qs",
+		     item_seg_identifier.as_string ().c_str (),
+		     item_seg_ident_name.c_str ());
       return;
     }
 
