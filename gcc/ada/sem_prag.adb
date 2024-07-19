@@ -33719,7 +33719,7 @@ package body Sem_Prag is
             Error_Msg_N ("Check_Policy is a non-standard pragma??", N);
             Error_Msg_N
               ("\use Assertion_Policy and aspect names Pre/Post for "
-               & "Ada2012 conformance?", N);
+               & "Ada2012 conformance??", N);
          end if;
 
          return;

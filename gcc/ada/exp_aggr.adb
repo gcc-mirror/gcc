@@ -7276,9 +7276,9 @@ package body Exp_Aggr is
          Error_Msg_Warn := SPARK_Mode /= On;
          Error_Msg_N
            ("!empty aggregate returned by the empty function of a container"
-            & " aggregate<<<", Parent (N));
+            & " aggregate<<", Parent (N));
          Error_Msg_N
-           ("\this will result in infinite recursion??", Parent (N));
+           ("\this will result in infinite recursion<<", Parent (N));
       end if;
 
       ---------------------------

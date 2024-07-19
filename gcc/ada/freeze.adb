@@ -11100,7 +11100,7 @@ package body Freeze is
                   then
                      Error_Msg_NE
                        ("\packed array component& " &
-                        "will be initialized to zero??",
+                        "will be initialized to zero?o?",
                         Nam, Comp);
                      exit;
                   else
@@ -11112,7 +11112,7 @@ package body Freeze is
 
          Error_Msg_N
            ("\use pragma Import for & to " &
-            "suppress initialization (RM B.1(24))??",
+            "suppress initialization (RM B.1(24))?o?",
             Nam);
       end if;
    end Warn_Overlay;
