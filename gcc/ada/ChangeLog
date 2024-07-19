@@ -1,3 +1,7 @@
+2024-07-19  Release Manager
+
+	* GCC 11.5.0 released.
+
 2024-06-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc-interface/Makefile.in: Use DSYMUTIL_FOR_TARGET in
