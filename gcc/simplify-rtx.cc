@@ -7232,7 +7232,8 @@ native_encode_rtx (machine_mode mode, rtx x, vec<target_unit> &bytes,
 	      target_unit value = 0;
 	      for (unsigned int j = 0; j < BITS_PER_UNIT; j += elt_bits)
 		{
-		  value |= (INTVAL (CONST_VECTOR_ELT (x, elt)) & mask) << j;
+		  if (INTVAL (CONST_VECTOR_ELT (x, elt)))
+		    value |= mask << j;
 		  elt += 1;
 		}
 	      bytes.quick_push (value);

@@ -8100,16 +8100,17 @@ native_encode_vector_part (const_tree expr, unsigned char *ptr, int len,
       unsigned int elts_per_byte = BITS_PER_UNIT / elt_bits;
       unsigned int first_elt = off * elts_per_byte;
       unsigned int extract_elts = extract_bytes * elts_per_byte;
+      unsigned int elt_mask = (1 << elt_bits) - 1;
       for (unsigned int i = 0; i < extract_elts; ++i)
 	{
 	  tree elt = VECTOR_CST_ELT (expr, first_elt + i);
 	  if (TREE_CODE (elt) != INTEGER_CST)
 	    return 0;
 
-	  if (ptr && wi::extract_uhwi (wi::to_wide (elt), 0, 1))
+	  if (ptr && integer_nonzerop (elt))
 	    {
 	      unsigned int bit = i * elt_bits;
-	      ptr[bit / BITS_PER_UNIT] |= 1 << (bit % BITS_PER_UNIT);
+	      ptr[bit / BITS_PER_UNIT] |= elt_mask << (bit % BITS_PER_UNIT);
 	    }
 	}
       return extract_bytes;
