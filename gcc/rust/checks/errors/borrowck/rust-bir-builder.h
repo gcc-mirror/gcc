@@ -155,7 +155,10 @@ private:
 			       ctx.place_db[RETURN_VALUE_PLACE].tyty),
 			     body.get_end_locus ());
 	  }
-	ctx.get_current_bb ().statements.emplace_back (Statement::Kind::RETURN);
+	auto return_location = body.has_expr ()
+				 ? body.get_final_expr ()->get_locus ()
+				 : body.get_end_locus ();
+	push_return (return_location);
       }
   }
 };
