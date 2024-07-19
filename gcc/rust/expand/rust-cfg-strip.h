@@ -36,6 +36,8 @@ public:
   void go (AST::Crate &crate);
 
   void maybe_strip_struct_fields (std::vector<AST::StructField> &fields);
+  void maybe_strip_struct_expr_fields (
+    std::vector<std::unique_ptr<AST::StructExprField>> &fields);
   void maybe_strip_tuple_fields (std::vector<AST::TupleField> &fields);
   void maybe_strip_function_params (
     std::vector<std::unique_ptr<AST::Param>> &params);
