@@ -16,6 +16,8 @@ F (__fp16 a, __fp16 b, __fp16 c)
   return c;
 }
 
-/* { dg-final { scan-assembler-times {mov\tr[0-9]+, r[0-2]} 3 } }  */
-/* { dg-final { scan-assembler-times {mov\tr1, r[03]} 1 } }  */
-/* { dg-final { scan-assembler-times {mov\tr0, r[0-9]+} 2 } }  */
+/* The swap must include two moves out of r0/r1 and two moves in.  */
+/* { dg-final { scan-assembler-times {mov\tr[0-9]+, r[01]} 2 } }  */
+/* { dg-final { scan-assembler-times {mov\tr[01], r[0-9]+} 2 } }  */
+/* c should be spilled around the call.  */
+/* { dg-final { scan-assembler {str\tr2, ([^\n]*).*ldrh\tr0, \1} { target arm_little_endian } } } */
