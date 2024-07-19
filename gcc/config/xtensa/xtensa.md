@@ -2597,7 +2597,7 @@
 	 (match_operand 1 "" ""))]
   ""
 {
-  xtensa_expand_call (0, operands, false);
+  xtensa_expand_call (0, operands);
   DONE;
 })
 
@@ -2618,7 +2618,7 @@
 	      (match_operand 2 "" "")))]
   ""
 {
-  xtensa_expand_call (1, operands, false);
+  xtensa_expand_call (1, operands);
   DONE;
 })
 
@@ -2639,7 +2639,7 @@
 	 (match_operand 1 "" ""))]
   "!TARGET_WINDOWED_ABI"
 {
-  xtensa_expand_call (0, operands, true);
+  xtensa_expand_call (0, operands);
   DONE;
 })
 
@@ -2660,7 +2660,7 @@
 	      (match_operand 2 "" "")))]
   "!TARGET_WINDOWED_ABI"
 {
-  xtensa_expand_call (1, operands, true);
+  xtensa_expand_call (1, operands);
   DONE;
 })
 
@@ -2777,6 +2777,7 @@
   "!TARGET_WINDOWED_ABI"
 {
   xtensa_expand_epilogue ();
+  emit_use (gen_rtx_REG (SImode, A0_REG));
   DONE;
 })
 
