@@ -167,10 +167,10 @@ ExpandVisitor::expand_inner_items (
 
   for (auto it = items.begin (); it != items.end (); it++)
     {
-      auto &item = *it;
-      if (item->has_outer_attrs ())
+      Rust::AST::Item &item = **it;
+      if (item.has_outer_attrs ())
 	{
-	  auto &attrs = item->get_outer_attrs ();
+	  auto &attrs = item.get_outer_attrs ();
 
 	  for (auto attr_it = attrs.begin (); attr_it != attrs.end ();
 	       /* erase => No increment*/)
@@ -190,16 +190,17 @@ ExpandVisitor::expand_inner_items (
 		      if (maybe_builtin.has_value ())
 			{
 			  auto new_item
-			    = builtin_derive_item (*item, current,
+			    = builtin_derive_item (item, current,
 						   maybe_builtin.value ());
-			  // this inserts the derive *before* the item - is it a
-			  // problem?
+
 			  it = items.insert (it, std::move (new_item));
 			}
 		      else
 			{
+			  // Macro is not a builtin, so it must be a
+			  // user-defined derive macro.
 			  auto new_items
-			    = derive_item (*item, to_derive, expander);
+			    = derive_item (item, to_derive, expander);
 			  std::move (new_items.begin (), new_items.end (),
 				     std::inserter (items, it));
 			}
@@ -215,7 +216,7 @@ ExpandVisitor::expand_inner_items (
 		    {
 		      attr_it = attrs.erase (attr_it);
 		      auto new_items
-			= expand_item_attribute (*item, current.get_path (),
+			= expand_item_attribute (item, current.get_path (),
 						 expander);
 		      it = items.erase (it);
 		      std::move (new_items.begin (), new_items.end (),
