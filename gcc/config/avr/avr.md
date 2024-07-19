@@ -8163,6 +8163,144 @@
   [(set_attr "adjust_len" "insert_bits")])
 
 
+;; __builtin_avr_mask1
+
+(define_expand "gen_mask1"
+  [(parallel [(match_operand:QI 0 "register_operand")
+              (match_operand 1 "const_int_operand")
+              (match_operand:QI 2 "register_operand")])]
+  ""
+  {
+    switch (INTVAL (operands[1]) & 0xff)
+    {
+      case 0x01:
+        emit (gen_mask1_0x01_split (operands[0], operands[2]));
+        break;
+      case 0x80:
+        emit (gen_mask1_0x80_split (operands[0], operands[2]));
+        break;
+      case 0xfe:
+        emit (gen_mask1_0xfe_split (operands[0], operands[2]));
+        break;
+      case 0x7f:
+        // Sequences like below don't work for 0x7f because
+        // there is no ASL instruction.
+        emit (gen_mask1_0x80_split (operands[0], operands[2]));
+        emit (gen_one_cmplqi2 (operands[0], operands[0]));
+        break;
+      default:
+        gcc_unreachable();
+    }
+    DONE;
+  })
+
+(define_insn_and_split "mask1_0x01_split"
+  [(set (match_operand:QI 0 "register_operand"                  "=&d")
+        (ashift:QI (const_int 1)
+                   (and:QI (match_operand:QI 1 "register_operand" "r")
+                           (const_int 7))))]
+  ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (rotate:QI (const_int 1)
+                              (match_dup 1)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*mask1_0x01"
+  [(set (match_operand:QI 0 "register_operand"          "=&d")
+        (rotate:QI (const_int 1)
+                   (match_operand:QI 1 "register_operand" "r")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
+  {
+    return "ldi %0,1"  CR_TAB
+           "sbrc %1,1" CR_TAB
+           "ldi %0,4"  CR_TAB
+           "sbrc %1,0" CR_TAB
+           "lsl %0"    CR_TAB
+           "sbrc %1,2" CR_TAB
+           "swap %0";
+  }
+  [(set_attr "length" "7")])
+
+
+;; Use a representation as chosen by insn combine.
+(define_insn_and_split "mask1_0x80_split"
+  [(set (match_operand:QI 0 "register_operand"                               "=&d")
+        (subreg:QI (ashiftrt:HI (const_int 128)
+                                (and:QI (match_operand:QI 1 "register_operand" "r")
+                                        (const_int 7)))
+                   0))]
+  ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (rotatert:QI (const_int -128)
+                                (match_dup 1)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*mask1_0x80"
+  [(set (match_operand:QI 0 "register_operand"            "=&d")
+        (rotatert:QI (const_int -128)
+                     (match_operand:QI 1 "register_operand" "r")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
+  {
+    return "ldi %0,0x80"  CR_TAB
+           "sbrc %1,1"    CR_TAB
+           "ldi %0,0x20"  CR_TAB
+           "sbrc %1,0"    CR_TAB
+           "lsr %0"       CR_TAB
+           "sbrc %1,2"    CR_TAB
+           "swap %0";
+  }
+  [(set_attr "length" "7")])
+
+(define_insn_and_split ""
+  [(set (match_operand:QI 0 "register_operand"                          "=&d")
+        (not:QI (rotate:QI (const_int -2)
+                           (and:QI (match_operand:QI 1 "register_operand" "r")
+                                   (const_int 7)))))]
+  ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (rotate:QI (const_int 1)
+                              (match_dup 1)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn_and_split "mask1_0xfe_split"
+  [(set (match_operand:QI 0 "register_operand"                  "=&d")
+        (rotate:QI (const_int -2)
+                   (and:QI (match_operand:QI 1 "register_operand" "r")
+                           (const_int 7))))]
+  ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (rotate:QI (const_int -2)
+                              (match_dup 1)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*mask1_0xfe"
+  [(set (match_operand:QI 0 "register_operand"          "=&d")
+        (rotate:QI (const_int -2)
+                   (match_operand:QI 1 "register_operand" "r")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
+  {
+    return "ldi %0,0xfd"  CR_TAB
+           "sbrc %1,1"    CR_TAB
+           "ldi %0,0xf7"  CR_TAB
+           "sbrs %1,0"    CR_TAB
+           "asr %0"       CR_TAB
+           "sbrc %1,2"    CR_TAB
+           "swap %0";
+  }
+  [(set_attr "length" "7")])
+
+
 ;; __builtin_avr_flash_segment
 
 ;; Just a helper for the next "official" expander.

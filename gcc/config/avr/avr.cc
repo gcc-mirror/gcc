@@ -13135,6 +13135,16 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
       switch (mode)
 	{
 	case E_QImode:
+	  if (speed
+	      && XEXP (x, 0) == const1_rtx
+	      && GET_CODE (XEXP (x, 1)) == AND)
+	    {
+	      // "*mask1_0x01"
+	      // Leave the space costs alone as they are smaller than 7 here.
+	      *total = COSTS_N_INSNS (7);
+	      return true;
+	    }
+
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 4 : 17);
@@ -13308,6 +13318,15 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	  break;
 
 	case E_HImode:
+	  if (CONST_INT_P (XEXP (x, 0))
+	      && INTVAL (XEXP (x, 0)) == 128
+	      && GET_CODE (XEXP (x, 1)) == AND)
+	    {
+	      // "*mask1_0x80"
+	      *total = COSTS_N_INSNS (7);
+	      return true;
+	    }
+
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 5 : 41);
@@ -15796,6 +15815,11 @@ avr_init_builtins (void)
     = build_function_type_list (unsigned_intQI_type_node,
 				unsigned_intQI_type_node,
 				NULL_TREE);
+  tree uintQI_ftype_uintQI_uintQI
+    = build_function_type_list (unsigned_intQI_type_node,
+				unsigned_intQI_type_node,
+				unsigned_intQI_type_node,
+				NULL_TREE);
   tree uintHI_ftype_uintQI_uintQI
     = build_function_type_list (unsigned_intHI_type_node,
 				unsigned_intQI_type_node,
@@ -16080,6 +16104,22 @@ avr_expand_builtin (tree exp, rtx target, rtx /*subtarget*/,
 	return NULL_RTX;
       }
 
+    case AVR_BUILTIN_MASK1:
+      {
+	arg0 = CALL_EXPR_ARG (exp, 0);
+	op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+	int ival = CONST_INT_P (op0) ? 0xff & INTVAL (op0) : 0;
+
+	if (ival != 0x01 && ival != 0x7f && ival != 0x80 && ival != 0xfe)
+	  {
+	    error ("%s expects a compile time integer constant of 0x01, "
+		   "0x7f, 0x80 or 0xfe as first argument", bname);
+	    return target;
+	  }
+
+	break;
+      }
+
     case AVR_BUILTIN_INSERT_BITS:
       {
 	arg0 = CALL_EXPR_ARG (exp, 0);
@@ -16246,6 +16286,28 @@ avr_fold_builtin (tree fndecl, int /*n_args*/, tree *arg, bool /*ignore*/)
 		  == TYPE_PRECISION (TREE_TYPE (arg[0])));
 
       return build1 (VIEW_CONVERT_EXPR, val_type, arg[0]);
+
+    case AVR_BUILTIN_MASK1:
+      {
+	tree tmask = arg[0];
+	tree toffs = arg[1];
+
+	if (TREE_CODE (tmask) == INTEGER_CST
+	    && TREE_CODE (toffs) == INTEGER_CST)
+	  {
+	    switch (0xff & TREE_INT_CST_LOW (tmask))
+	      {
+	      case 0x01:
+	      case 0xfe:
+		return fold_build2 (LROTATE_EXPR, val_type, arg[0], toffs);
+
+	      case 0x80:
+	      case 0x7f:
+		return fold_build2 (RROTATE_EXPR, val_type, arg[0], toffs);
+	      }
+	  }
+	break;
+      } // AVR_BUILTIN_MASK1
 
     case AVR_BUILTIN_INSERT_BITS:
       {

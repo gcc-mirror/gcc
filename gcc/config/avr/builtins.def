@@ -52,6 +52,7 @@ DEF_BUILTIN (FMULSU, 2, intHI_ftype_intQI_uintQI,   fmulsu, NULL)
 
 DEF_BUILTIN (DELAY_CYCLES, -1, void_ftype_uintSI, nothing, NULL)
 DEF_BUILTIN (NOPS,         -1, void_ftype_uintSI, nothing, NULL)
+DEF_BUILTIN (MASK1,       2, uintQI_ftype_uintQI_uintQI, gen_mask1, NULL)
 DEF_BUILTIN (INSERT_BITS, 3, uintQI_ftype_uintSI_uintQI_uintQI, insert_bits, NULL)
 DEF_BUILTIN (FLASH_SEGMENT, 1, intQI_ftype_const_memx_ptr, flash_segment, NULL)
 
