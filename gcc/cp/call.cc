@@ -11820,7 +11820,7 @@ build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
 			 fn);
 	    }
 
-	  if (TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE
+	  if (DECL_OBJECT_MEMBER_FUNCTION_P (fn)
 	      && !DECL_CONSTRUCTOR_P (fn)
 	      && is_dummy_object (instance))
 	    {
