@@ -1,3 +1,11 @@
+2024-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/torture/builtin-clear-padding-3.c (main): Compare
+	s2.b.a against -1 rather than (char) -1.
+
 2024-07-17  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
