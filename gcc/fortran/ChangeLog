@@ -1,3 +1,61 @@
+2024-07-18  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/78466
+	PR fortran/80774
+	* array.cc (gfc_compare_array_spec): Take cotype into account.
+	* class.cc (gfc_build_class_symbol): Coarrays are also arrays.
+	* gfortran.h (IS_CLASS_COARRAY_OR_ARRAY): New macro to detect
+	regular and coarray class arrays.
+	* interface.cc (compare_components): Take codimension into
+	account.
+	* resolve.cc (resolve_symbol): Improve error message.
+	* simplify.cc (simplify_bound_dim): Remove duplicate.
+	* trans-array.cc (gfc_trans_array_cobounds): Coarrays are also
+	arrays.
+	(gfc_trans_array_bounds): Same.
+	(gfc_trans_dummy_array_bias): Same.
+	(get_coarray_as): Get the as having a non-zero codim.
+	(is_explicit_coarray): Detect explicit coarrays.
+	(gfc_conv_expr_descriptor): Create a new descriptor for explicit
+	coarrays.
+	* trans-decl.cc (gfc_build_qualified_array): Coarrays are also
+	arrays.
+	(gfc_build_dummy_array_decl): Same.
+	(gfc_get_symbol_decl): Same.
+	(gfc_trans_deferred_vars): Same.
+	* trans-expr.cc (class_scalar_coarray_to_class): Get the
+	descriptor from the correct location.
+	(gfc_conv_variable): Pick up the descriptor when needed.
+	* trans-types.cc (gfc_is_nodesc_array): Coarrays are also
+	arrays.
+	(gfc_get_nodesc_array_type): Indentation fix only.
+	(cobounds_match_decl): Match a tree's bounds to the expr's
+	bounds and return true, when they match.
+	(gfc_get_derived_type): Create a new type tree/descriptor, when
+	the cobounds of the existing declaration and expr to not
+	match.  This happends for class arrays in parameter list, when
+	there are different cobound declarations.
+
+2024-07-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/108889
+	* gfortran.h: Add bit field 'allocated_in_scope' to gfc_symbol.
+	* trans-array.cc (gfc_array_allocate): Set 'allocated_in_scope'
+	after allocation if not a component reference.
+	(gfc_alloc_allocatable_for_assignment): If 'allocated_in_scope'
+	not set, not a component ref and not allocated, set the array
+	bounds and offset to give zero length in all dimensions. Then
+	set allocated_in_scope.
+
+2024-07-18  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/82904
+	* trans-types.cc (gfc_sym_type): Use type `char*` for saved
+	deferred length char arrays.
+	* trans.cc (get_array_span): Get `.span` also for `char*` typed
+	arrays, i.e. for those that have INTEGER_TYPE instead of
+	ARRAY_TYPE.
+
 2024-07-17  Kewen Lin  <linkw@linux.ibm.com>
 
 	PR target/112993

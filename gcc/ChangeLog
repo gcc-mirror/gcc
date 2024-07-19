@@ -1,3 +1,128 @@
+2024-07-18  René Rebe  <rene@exactcode.de>
+	    Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/97367
+	* config/rs6000/rs6000.cc (rs6000_machine_from_flags): Do not consider
+	OPTION_MASK_ALTIVEC.
+	(emit_asm_machine): For Altivec compiles, emit a ".machine altivec".
+
+2024-07-18  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek   <jakub@redhat.com>
+
+	PR c++/115865
+	* tree-eh.cc (get_eh_else): Check that the result of
+	gimple_seq_first_stmt is non-null.
+
+2024-07-18  LIU Hao  <lh_mouse@126.com>
+
+	PR rtl-optimization/115049
+	* varasm.cc (decl_binds_to_current_def_p): Add a check for COMDAT
+	declarations too, like weak ones.
+
+2024-07-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/115641
+	* fold-const.cc (decode_field_reference): If the inner
+	reference isn't something we can take the address of, fail.
+
+2024-07-18  Pan Li  <pan2.li@intel.com>
+
+	* doc/md.texi: Add Standard-Names ustrunc and sstrunc.
+
+2024-07-18  Rubin Gerritsen  <rubin.gerritsen@gmail.com>
+
+	* gimple-fold.cc (dump_transformation): Moved definition.
+	(replace_call_with_call_and_fold): Calls dump_transformation.
+	(gimple_fold_builtin_stxcpy_chk): Removes call to
+	dump_transformation, now in replace_call_with_call_and_fold.
+	(gimple_fold_builtin_stxncpy_chk): Removes call to
+	dump_transformation, now in replace_call_with_call_and_fold.
+
+2024-07-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104515
+	* tree-ssa-loop-im.cc (execute_sm_exit): Add clobbers_to_prune
+	parameter and handle re-materializing of clobbers.
+	(sm_seq_valid_bb): end-of-storage/object clobbers are OK inside
+	an ordered sequence of stores.
+	(sm_seq_push_down): Refuse to push down clobbers.
+	(hoist_memory_references): Prune clobbers from the loop body
+	we re-materialized on an exit.
+
+2024-07-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* match.pd ((FTYPE) N CMP CST): Only worry about exceptions with
+	flag_trapping_math, and about signaling NaNs with HONOR_SNANS.
+
+2024-07-18  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* doc/invoke.texi (AArch64 Options): Document rewriting of
+	-march=native to -mcpu=native.
+
+2024-07-18  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/115843
+	* config/i386/predicates.md (const0_or_m1_operand): New
+	predicate.
+	* config/i386/sse.md (*<avx512>_store<mode>_mask_1): New
+	pre_reload define_insn_and_split.
+	(V): Add V32BF,V16BF,V8BF.
+	(V4SF_V8BF): Rename to ..
+	(V24F_128): .. this.
+	(*vec_concat<mode>): Adjust with V24F_128.
+	(*vec_concat<mode>_0): Ditto.
+
+2024-07-18  Andi Kleen  <ak@linux.intel.com>
+
+	PR c/83324
+	* calls.cc (initialize_argument_information): Mark messages
+	for translation.
+	(can_implement_as_sibling_call_p): Dito.
+	(expand_call): Dito.
+
+2024-07-18  Andi Kleen  <ak@linux.intel.com>
+
+	PR c/83324
+	* tree-tailcall.cc (maybe_error_musttail): New function.
+	(suitable_for_tail_opt_p): Report error reason.
+	(suitable_for_tail_call_opt_p): Report error reason.
+	(find_tail_calls): Accept basic blocks with abnormal edges.
+	Delay reporting of errors until the call is discovered.
+	Move top level suitability checks to here.
+	(tree_optimize_tail_calls_1): Remove top level checks.
+
+2024-07-18  Andi Kleen  <ak@linux.intel.com>
+
+	PR c/83324
+	* function.h (struct function): Add has_musttail.
+	* lto-streamer-in.cc (input_struct_function_base): Stream
+	has_musttail.
+	* lto-streamer-out.cc (output_struct_function_base): Dito.
+	* passes.def (pass_musttail): Add.
+	* tree-cfg.cc (notice_special_calls): Record has_musttail.
+	(clear_special_calls): Clear has_musttail.
+	* tree-pass.h (make_pass_musttail): Add.
+	* tree-tailcall.cc (find_tail_calls): Handle only_musttail
+	argument.
+	(tree_optimize_tail_calls_1): Pass on only_musttail.
+	(execute_tail_calls): Pass only_musttail as false.
+	(class pass_musttail): Add.
+	(make_pass_musttail): Add.
+
+2024-07-18  Andi Kleen  <ak@linux.intel.com>
+
+	PR target/115255
+	* function.cc (thread_prologue_and_epilogue_insns): Check
+	cfun->tail_call_marked for sibcalls too.
+	(rest_of_handle_thread_prologue_and_epilogue): Dito.
+
+2024-07-18  Andi Kleen  <ak@linux.intel.com>
+
+	PR c/83324
+	* calls.cc (maybe_complain_about_tail_call): Clear must tail
+	flag on error.
+	(expand_call): Give error messages for all musttail failures.
+
 2024-07-17  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/115929

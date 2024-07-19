@@ -1,3 +1,10 @@
+2024-07-18  Patrick Palka  <ppalka@redhat.com>
+
+	* include/experimental/socket
+	(basic_socket_iostream::basic_socket_iostream): Fix typo.
+	* include/tr2/dynamic_bitset
+	(__dynamic_bitset_base::_M_is_proper_subset_of): Likewise.
+
 2024-07-12  Alexandre Oliva  <oliva@adacore.com>
 
 	* testsuite/decimal/binary-arith.cc: Require dfprt.

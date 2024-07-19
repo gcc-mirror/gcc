@@ -1,5 +1,22 @@
 2024-07-18  Ian Lance Taylor  <iant@golang.org>
 
+	* internal.h: Use __has_attribute to check for fallthrough
+	attribute.
+	* elf.c (elf_zstd_decompress): Use ATTRIBUTE_FALLTHROUGH rather
+	than a FALLTHROUGH comment.
+
+2024-07-18  Ian Lance Taylor  <iant@golang.org>
+
+	* print.c (print_syminfo_callback): Add cast to avoid warning.
+
+2024-07-18  Ian Lance Taylor  <iant@golang.org>
+
+	* print.c (print_syminfo_callback): New static function.
+	(print_callback): Call backtrace_syminfo if there is no function
+	or file name.
+
+2024-07-18  Ian Lance Taylor  <iant@golang.org>
+
 	* README: Add notes about dl_iterate_phdr.
 
 2024-07-17  Ian Lance Taylor  <iant@golang.org>

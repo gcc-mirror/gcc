@@ -1,3 +1,47 @@
+2024-07-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/108769
+	PR c++/58074
+	PR c++/115522
+	PR c++/85723
+	* class.cc (type_has_non_deleted_trivial_default_ctor): Fix formatting.
+	* tree.cc (trivial_type_p): Instead of TYPE_HAS_TRIVIAL_DFLT, use
+	type_has_non_deleted_trivial_default_ctor.
+
+2024-07-18  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/115165
+	* module.cc (lazy_load_binding): Use 'timevar_cond*' APIs.
+	(lazy_load_pendings): Likewise.
+
+2024-07-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112288
+	* pt.cc (tsubst_friend_function): When adjusting existing
+	specializations after defining a previously declared template
+	friend, consider the most general template and correct
+	DECL_TI_ARGS adjustment.
+
+2024-07-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114104
+	* cvt.cc (convert_to_void): Call warn_if_unused_value for
+	TRUTH_NOT_EXPR and ADDR_EXPR as well.
+
+2024-07-18  Patrick Palka  <ppalka@redhat.com>
+
+	* decl.cc (make_typename_type): Restrict name lookup failure
+	punting to dependentish_scope_p instead of dependent_type_p.
+	* error.cc (qualified_name_lookup_error): Improve diagnostic
+	when the scope is the current instantiation.
+	* parser.cc (cp_parser_diagnose_invalid_type_name): Likewise.
+	(cp_parser_conversion_function_id): Don't call push_scope on
+	a template scope unless we're in a declaration context.
+	(cp_parser_lookup_name): Restrict name lookup failure
+	punting to dependentish_scope_p instead of depedent_type_p.
+	* semantics.cc (finish_id_expression_1): Likewise.
+	* typeck.cc (finish_class_member_access_expr): Likewise.
+
 2024-07-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/115900

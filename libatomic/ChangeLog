@@ -1,3 +1,15 @@
+2024-07-18  mayshao  <mayshao-oc@zhaoxin.com>
+
+	PR target/104688
+	* config/x86/init.c (__libat_feat1_init): Don't clear
+	bit_AVX on ZHAOXIN CPUs.
+
+2024-07-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/x86/init.c (__libat_feat1_init): Check the result of
+	__get_cpuid and process FEAT1_REGISTER only when __get_cpuid
+	returns success.  Use __cpuid instead of nested __get_cpuid.
+
 2024-06-25  Victor Do Nascimento  <victor.donascimento@arm.com>
 
 	* config/linux/aarch64/atomic_16.S (libat_load_16): Add LRCPC3

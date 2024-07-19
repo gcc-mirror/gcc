@@ -1,3 +1,157 @@
+2024-07-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/108769
+	PR c++/58074
+	PR c++/115522
+	PR c++/85723
+	* g++.dg/warn/Wclass-memaccess.C: Add dg-warning.
+	* g++.dg/ext/is_trivial1.C: New test.
+	* g++.dg/ext/is_trivial2.C: New test.
+	* g++.dg/ext/is_trivial3.C: New test.
+	* g++.dg/ext/is_trivial4.C: New test.
+	* g++.dg/ext/is_trivial5.C: New test.
+	* g++.dg/ext/is_trivial6.C: New test.
+
+2024-07-18  René Rebe  <rene@exactcode.de>
+	    Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/97367
+	* gcc.target/powerpc/pr97367.c: New test.
+
+2024-07-18  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-10-runnable.c: Add
+	target int128.
+	* gcc.target/powerpc/builtins-10.c: Add
+	target int128.
+	* gcc.target/powerpc/vec_perm-runnable-i128.c: Add
+	target int128.
+
+2024-07-18  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek   <jakub@redhat.com>
+
+	PR c++/115865
+	* g++.dg/asan/initlist2.C: New test.
+
+2024-07-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/115641
+	* gcc.dg/torture/pr115641.c: New testcase.
+
+2024-07-18  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/78466
+	PR fortran/80774
+	* gfortran.dg/coarray/poly_run_1.f90: Activate old test code.
+	* gfortran.dg/coarray/poly_run_2.f90: Activate test.  It was
+	stopping before and passing without an error.
+
+2024-07-18  Sam James  <sam@gentoo.org>
+
+	PR c++/53288
+	PR c++/57437
+	PR c/65345
+	PR libstdc++/88101
+	PR tree-optimization/96369
+	PR tree-optimization/102124
+	PR tree-optimization/108692
+	* c-c++-common/pr96369.c: Add dg-do run directive.
+	* gcc.dg/torture/pr102124.c: Ditto.
+	* gcc.dg/pr108692.c: Ditto.
+	* gcc.dg/atomic/pr65345-4.c: Ditto.
+	* g++.dg/cpp0x/lambda/lambda-return1.C: Ditto.
+	* g++.dg/init/lifetime4.C: Ditto.
+	* g++.dg/torture/builtin-clear-padding-1.C: Ditto.
+	* g++.dg/torture/builtin-clear-padding-2.C: Ditto.
+	* g++.dg/torture/builtin-clear-padding-3.C: Ditto.
+	* g++.dg/torture/builtin-clear-padding-4.C: Ditto.
+	* g++.dg/torture/builtin-clear-padding-5.C: Ditto.
+
+2024-07-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/108889
+	* gfortran.dg/pr108889.f90: New test.
+
+2024-07-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104515
+	* g++.dg/opt/pr104515.C: New testcase.
+
+2024-07-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* c-c++-common/pr57371-4.c: Update comment.
+	* c-c++-common/pr57371-5.c: Add missing testcases from pr57371-4.c
+	and update for -fno-signaling-nans -fno-trapping-math.
+
+2024-07-18  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/82904
+	* gfortran.dg/deferred_character_38.f90: New test.
+
+2024-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/torture/builtin-clear-padding-3.c (main): Compare
+	s2.b.a against -1 rather than (char) -1.
+
+2024-07-18  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/apx-egprs-names.c: Use ax for short and
+	al for char instead of eax.
+	* gcc.target/i386/avx512bw-kandnq-1.c: Do not run the test
+	under -m32 since kmovq with register is invalid. Use long
+	long to use 64 bit register instead of 32 bit register for
+	kmovq.
+	* gcc.target/i386/avx512bw-kandq-1.c: Ditto.
+	* gcc.target/i386/avx512bw-knotq-1.c: Ditto.
+	* gcc.target/i386/avx512bw-korq-1.c: Ditto.
+	* gcc.target/i386/avx512bw-kshiftlq-1.c: Ditto.
+	* gcc.target/i386/avx512bw-kshiftrq-1.c: Ditto.
+	* gcc.target/i386/avx512bw-kxnorq-1.c: Ditto.
+	* gcc.target/i386/avx512bw-kxorq-1.c: Ditto.
+
+2024-07-18  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr115843.c: New test.
+
+2024-07-18  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/115165
+	* g++.dg/modules/timevar-1_a.H: New test.
+	* g++.dg/modules/timevar-1_b.C: New test.
+
+2024-07-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112288
+	* g++.dg/template/friend80.C: New test.
+	* g++.dg/template/friend81.C: New test.
+	* g++.dg/template/friend81a.C: New test.
+
+2024-07-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114104
+	* g++.dg/warn/Wunused-20.C: New test.
+
+2024-07-18  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp0x/alignas18.C: Expect name lookup error for U::X.
+	* g++.dg/cpp0x/forw_enum13.C: Expect name lookup error for
+	D3::A and D4<T>::A.
+	* g++.dg/parse/access13.C: Declare A::E::V to avoid name lookup
+	failure and preserve intent of the test.
+	* g++.dg/parse/enum11.C: Expect extra errors, matching the
+	non-template case.
+	* g++.dg/template/crash123.C: Avoid name lookup failure to
+	preserve intent of the test.
+	* g++.dg/template/crash124.C: Likewise.
+	* g++.dg/template/crash7.C: Adjust expected diagnostics.
+	* g++.dg/template/dtor6.C: Declare A::~A() to avoid name lookup
+	failure and preserve intent of the test.
+	* g++.dg/template/error22.C: Adjust expected diagnostics.
+	* g++.dg/template/static30.C: Avoid name lookup failure to
+	preserve intent of the test.
+	* g++.old-deja/g++.other/decl5.C: Adjust expected diagnostics.
+	* g++.dg/template/non-dependent34.C: New test.
+
 2024-07-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/111150
