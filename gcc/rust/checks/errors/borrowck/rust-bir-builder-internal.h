@@ -303,6 +303,12 @@ protected: // Helpers to add BIR statements
 						   place);
   }
 
+  void push_return (location_t location)
+  {
+    ctx.get_current_bb ().statements.emplace_back (Statement::Kind::RETURN,
+						   INVALID_PLACE, location);
+  }
+
   PlaceId borrow_place (PlaceId place_id, TyTy::BaseType *ty,
 			location_t location)
   {

@@ -78,8 +78,8 @@ private:
   std::unique_ptr<AbstractExpr> expr;
   TyTy::BaseType *type;
   // stores location of the actual expression from source code
-  // currently only available when kind == Kind::ASSIGNMENT
-  // FIXME: Add location for Statements other than ASSIGNMENT
+  // currently only available when kind is ASSIGNMENT | RETURN
+  // FIXME: Add location for other statement kinds
   location_t location;
 
 public:
@@ -88,9 +88,8 @@ public:
   {}
 
   explicit Statement (Kind kind, PlaceId place = INVALID_PLACE,
-		      AbstractExpr *expr = nullptr,
 		      location_t location = UNKNOWN_LOCATION)
-    : kind (kind), place (place), expr (expr), location (location)
+    : kind (kind), place (place), location (location)
   {}
 
   explicit Statement (Kind kind, PlaceId place, TyTy::BaseType *type,

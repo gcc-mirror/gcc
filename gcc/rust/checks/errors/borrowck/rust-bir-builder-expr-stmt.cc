@@ -485,10 +485,10 @@ ExprStmtBuilder::visit (HIR::ReturnExpr &ret)
       push_assignment (RETURN_VALUE_PLACE,
 		       move_place (visit_expr (*ret.get_expr ()),
 				   ret.get_expr ()->get_locus ()),
-		       ret.get_locus ());
+		       ret.get_expr ()->get_locus ());
     }
   unwind_until (ROOT_SCOPE);
-  ctx.get_current_bb ().statements.emplace_back (Statement::Kind::RETURN);
+  push_return (ret.get_locus ());
   translated = INVALID_PLACE;
 }
 
