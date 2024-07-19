@@ -1,3 +1,13 @@
+2024-07-18  David Malcolm  <dmalcolm@redhat.com>
+
+	Backported from master:
+	2024-05-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/114899
+	* access-diagram.cc
+	(written_svalue_spatial_item::get_label_string): Bulletproof
+	against SSA_NAME_VAR being null.
+
 2024-05-07  Release Manager
 
 	* GCC 14.1.0 released.

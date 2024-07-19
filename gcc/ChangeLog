@@ -1,3 +1,51 @@
+2024-07-18  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-07-18  Marek Polacek  <polacek@redhat.com>
+		    Jakub Jelinek   <jakub@redhat.com>
+
+	PR c++/115865
+	* tree-eh.cc (get_eh_else): Check that the result of
+	gimple_seq_first_stmt is non-null.
+
+2024-07-18  LIU Hao  <lh_mouse@126.com>
+
+	Backported from master:
+	2024-07-18  LIU Hao  <lh_mouse@126.com>
+
+	PR rtl-optimization/115049
+	* varasm.cc (decl_binds_to_current_def_p): Add a check for COMDAT
+	declarations too, like weak ones.
+
+2024-07-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	Backported from master:
+	2024-06-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/115351
+	* config/i386/i386.cc (ix86_rtx_costs): Provide estimates for
+	the *concatditi3 and *insvti_highpart patterns, about two insns.
+
+2024-07-18  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2024-05-16  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/113787
+	* ipa-fnsummary.cc (points_to_local_or_readonly_memory_p): Do not
+	look into TARGET_MEM_REFS with constant opreand 0.
+
+2024-07-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	Backported from master:
+	2024-06-24  Roger Sayle  <roger@nextmovesoftware.com>
+		    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113673
+	* gimple-ssa-store-merging.cc (find_bswap_or_nop_load): Make static.
+	(find_bswap_or_nop_1): Avoid transformations (load merging) when
+	stmt_can_throw_internal indicates that a statement can trap.
+
 2024-07-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:

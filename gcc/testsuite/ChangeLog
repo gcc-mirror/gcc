@@ -1,3 +1,66 @@
+2024-07-18  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-07-18  Marek Polacek  <polacek@redhat.com>
+		    Jakub Jelinek   <jakub@redhat.com>
+
+	PR c++/115865
+	* g++.dg/asan/initlist2.C: New test.
+
+2024-07-18  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-06-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115476
+	* g++.dg/cpp1z/has-unique-obj-representations4.C: New test.
+
+2024-07-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	Backported from master:
+	2024-06-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/115351
+	* g++.target/i386/pr115351.C: New test case.
+
+2024-07-18  David Malcolm  <dmalcolm@redhat.com>
+
+	Backported from master:
+	2024-05-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/114899
+	* c-c++-common/analyzer/out-of-bounds-diagram-pr114899.c: New test.
+
+2024-07-18  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2024-05-16  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.c-torture/execute/pr113787.c: New test.
+
+2024-07-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	Backported from master:
+	2024-06-24  Roger Sayle  <roger@nextmovesoftware.com>
+		    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113673
+	* g++.dg/pr113673.C: New test case.
+
+2024-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/torture/builtin-clear-padding-3.c (main): Compare
+	s2.b.a against -1 rather than (char) -1.
+
+2024-07-18  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/115165
+	* g++.dg/modules/timevar-1_a.H: New test.
+	* g++.dg/modules/timevar-1_b.C: New test.
+
 2024-07-17  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
