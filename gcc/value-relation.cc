@@ -607,7 +607,11 @@ equiv_oracle::register_initial_def (tree ssa)
   if (SSA_NAME_IS_DEFAULT_DEF (ssa))
     return;
   basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (ssa));
-  gcc_checking_assert (bb && !find_equiv_dom (ssa, bb));
+
+  // If defining stmt is not in the IL, simply return.
+  if (!bb)
+    return;
+  gcc_checking_assert (!find_equiv_dom (ssa, bb));
 
   unsigned v = SSA_NAME_VERSION (ssa);
   bitmap_set_bit (m_equiv_set, v);
