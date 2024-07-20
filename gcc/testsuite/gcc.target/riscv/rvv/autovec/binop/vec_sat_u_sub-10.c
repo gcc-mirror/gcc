@@ -3,7 +3,7 @@
 /* { dg-skip-if "" { *-*-* } { "-flto" } } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
-#include "vec_sat_arith.h"
+#include "../vec_sat_arith.h"
 
 /*
 ** vec_sat_u_sub_uint16_t_fmt_3:
