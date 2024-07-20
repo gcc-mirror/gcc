@@ -546,6 +546,7 @@
 (define_code_attr optab [(ashift "ashl")
 			 (ashiftrt "ashr")
 			 (lshiftrt "lshr")
+			 (rotatert "rotr")
 			 (ior "ior")
 			 (xor "xor")
 			 (and "and")
@@ -623,6 +624,49 @@
 				 (40 "5")
 				 (48 "6")
 				 (56 "7")])
+
+;; Expand some 32-bit operations to si3_extend operations if TARGET_64BIT
+;; so the redundant sign extension can be removed if the output is used as
+;; an input of a bitwise operation.  Note plus, rotl, and div are handled
+;; separately.
+(define_code_iterator shift_w [any_shift rotatert])
+(define_code_iterator arith_w [minus mult])
+
+(define_expand "<optab><mode>3"
+  [(set (match_operand:GPR 0 "register_operand" "=r")
+	(shift_w:GPR (match_operand:GPR 1 "register_operand" "r")
+		     (match_operand:SI 2 "arith_operand" "rI")))]
+  ""
+{
+  if (TARGET_64BIT && <MODE>mode == SImode)
+    {
+      rtx t = gen_reg_rtx (DImode);
+      emit_insn (gen_<optab>si3_extend (t, operands[1], operands[2]));
+      t = gen_lowpart (SImode, t);
+      SUBREG_PROMOTED_VAR_P (t) = 1;
+      SUBREG_PROMOTED_SET (t, SRP_SIGNED);
+      emit_move_insn (operands[0], t);
+      DONE;
+    }
+})
+
+(define_expand "<optab><mode>3"
+  [(set (match_operand:GPR 0 "register_operand" "=r")
+	(arith_w:GPR (match_operand:GPR 1 "register_operand" "r")
+		     (match_operand:GPR 2 "register_operand" "r")))]
+  ""
+{
+  if (TARGET_64BIT && <MODE>mode == SImode)
+    {
+      rtx t = gen_reg_rtx (DImode);
+      emit_insn (gen_<optab>si3_extend (t, operands[1], operands[2]));
+      t = gen_lowpart (SImode, t);
+      SUBREG_PROMOTED_VAR_P (t) = 1;
+      SUBREG_PROMOTED_SET (t, SRP_SIGNED);
+      emit_move_insn (operands[0], t);
+      DONE;
+    }
+})
 
 ;;
 ;;  ....................
@@ -781,7 +825,7 @@
   [(set_attr "type" "fadd")
    (set_attr "mode" "<UNITMODE>")])
 
-(define_insn "sub<mode>3"
+(define_insn "*sub<mode>3"
   [(set (match_operand:GPR 0 "register_operand" "=r")
 	(minus:GPR (match_operand:GPR 1 "register_operand" "r")
 		   (match_operand:GPR 2 "register_operand" "r")))]
@@ -791,7 +835,7 @@
    (set_attr "mode" "<MODE>")])
 
 
-(define_insn "*subsi3_extended"
+(define_insn "subsi3_extend"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI
 	    (minus:SI (match_operand:SI 1 "reg_or_0_operand" "rJ")
@@ -818,7 +862,7 @@
   [(set_attr "type" "fmul")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "mul<mode>3"
+(define_insn "*mul<mode>3"
   [(set (match_operand:GPR 0 "register_operand" "=r")
 	(mult:GPR (match_operand:GPR 1 "register_operand" "r")
 		  (match_operand:GPR 2 "register_operand" "r")))]
@@ -827,7 +871,7 @@
   [(set_attr "type" "imul")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "*mulsi3_extended"
+(define_insn "mulsi3_extend"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI
 	    (mult:SI (match_operand:SI 1 "register_operand" "r")
@@ -1001,8 +1045,19 @@
 		     (match_operand:GPR 2 "register_operand")))]
   ""
 {
- if (GET_MODE (operands[0]) == SImode && TARGET_64BIT && !ISA_HAS_DIV32)
+ if (GET_MODE (operands[0]) == SImode && TARGET_64BIT)
   {
+    if (ISA_HAS_DIV32)
+      {
+        rtx t = gen_reg_rtx (DImode);
+        emit_insn (gen_<optab>si3_extended (t, operands[1], operands[2]));
+        t = gen_lowpart (SImode, t);
+        SUBREG_PROMOTED_VAR_P (t) = 1;
+        SUBREG_PROMOTED_SET (t, SRP_SIGNED);
+        emit_move_insn (operands[0], t);
+        DONE;
+      }
+
     rtx reg1 = gen_reg_rtx (DImode);
     rtx reg2 = gen_reg_rtx (DImode);
     rtx rd = gen_reg_rtx (DImode);
@@ -1038,7 +1093,7 @@
 
 (define_insn "<optab>si3_extended"
   [(set (match_operand:DI 0 "register_operand" "=r,&r,&r")
-	(sign_extend
+	(sign_extend:DI
 	  (any_div:SI (match_operand:SI 1 "register_operand" "r,r,0")
 		      (match_operand:SI 2 "register_operand" "r,r,r"))))]
   "TARGET_64BIT && ISA_HAS_DIV32"
@@ -2981,7 +3036,7 @@
 ;;
 ;;  ....................
 
-(define_insn "<optab><mode>3"
+(define_insn "*<optab><mode>3"
   [(set (match_operand:GPR 0 "register_operand" "=r")
 	(any_shift:GPR (match_operand:GPR 1 "register_operand" "r")
 		       (match_operand:SI 2 "arith_operand" "rI")))]
@@ -2996,7 +3051,7 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "*<optab>si3_extend"
+(define_insn "<optab>si3_extend"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI
 	   (any_shift:SI (match_operand:SI 1 "register_operand" "r")
@@ -3011,7 +3066,7 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")])
 
-(define_insn "rotr<mode>3"
+(define_insn "*rotr<mode>3"
   [(set (match_operand:GPR 0 "register_operand" "=r,r")
 	(rotatert:GPR (match_operand:GPR 1 "register_operand" "r,r")
 		      (match_operand:SI 2 "arith_operand" "r,I")))]
@@ -3040,6 +3095,19 @@
   ""
   {
     operands[3] = gen_reg_rtx (SImode);
+
+    if (TARGET_64BIT && <MODE>mode == SImode)
+      {
+	rtx t = gen_reg_rtx (DImode);
+
+	emit_insn (gen_negsi2 (operands[3], operands[2]));
+	emit_insn (gen_rotrsi3_extend (t, operands[1], operands[3]));
+	t = gen_lowpart (SImode, t);
+	SUBREG_PROMOTED_VAR_P (t) = 1;
+	SUBREG_PROMOTED_SET (t, SRP_SIGNED);
+	emit_move_insn (operands[0], t);
+	DONE;
+      }
   });
 
 ;; The following templates were added to generate "bstrpick.d + alsl.d"
@@ -4061,26 +4129,45 @@
 
 (define_insn "bytepick_w_<bytepick_imm>"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(ior:SI (lshiftrt (match_operand:SI 1 "register_operand" "r")
-			  (const_int <bytepick_w_lshiftrt_amount>))
-		(ashift (match_operand:SI 2 "register_operand" "r")
-			(const_int bytepick_w_ashift_amount))))]
+	(ior:SI (lshiftrt:SI (match_operand:SI 1 "register_operand" "r")
+			     (const_int <bytepick_w_lshiftrt_amount>))
+		(ashift:SI (match_operand:SI 2 "register_operand" "r")
+			   (const_int bytepick_w_ashift_amount))))]
   ""
   "bytepick.w\t%0,%1,%2,<bytepick_imm>"
   [(set_attr "mode" "SI")])
 
+(define_mode_attr bitsize [(QI "8") (HI "16")])
+(define_mode_attr bytepick_imm [(QI "3") (HI "2")])
+(define_mode_attr bytepick_w_ashift_amount [(QI "24") (HI "16")])
+
 (define_insn "bytepick_w_<bytepick_imm>_extend"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(sign_extend:DI
-	 (subreg:SI
-	  (ior:DI (subreg:DI (lshiftrt
-			      (match_operand:SI 1 "register_operand" "r")
-			      (const_int <bytepick_w_lshiftrt_amount>)) 0)
-		  (subreg:DI (ashift
-			      (match_operand:SI 2 "register_operand" "r")
-			      (const_int bytepick_w_ashift_amount)) 0)) 0)))]
+	(ior:DI
+	  (ashift:DI
+	    (sign_extend:DI
+	      (subreg:SHORT (match_operand:DI 1 "register_operand" "r") 0))
+	    (const_int <bytepick_w_ashift_amount>))
+	  (zero_extract:DI (match_operand:DI 2 "register_operand" "r")
+			   (const_int <bytepick_w_ashift_amount>)
+			   (const_int <bitsize>))))]
   "TARGET_64BIT"
-  "bytepick.w\t%0,%1,%2,<bytepick_imm>"
+  "bytepick.w\t%0,%2,%1,<bytepick_imm>"
+  [(set_attr "mode" "SI")])
+
+(define_insn "bytepick_w_1_extend"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(ior:DI
+	  (ashift:DI
+	    (sign_extract:DI (match_operand:DI 1 "register_operand" "r")
+                         (const_int 24)
+                         (const_int 0))
+        (const_int 8))
+	  (zero_extract:DI (match_operand:DI 2 "register_operand" "r")
+			   (const_int 8)
+			   (const_int 24))))]
+  "TARGET_64BIT"
+  "bytepick.w\t%0,%2,%1,1"
   [(set_attr "mode" "SI")])
 
 (define_insn "bytepick_d_<bytepick_imm>"
