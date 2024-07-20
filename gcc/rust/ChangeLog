@@ -1,3 +1,11 @@
+2024-07-19  Daniel Bertalan  <dani@danielbertalan.dev>
+
+	Backported from master:
+	2024-07-12  Daniel Bertalan  <dani@danielbertalan.dev>
+
+	* metadata/rust-imports.cc (Import::try_package_in_directory):
+	Change NULL to nullptr.
+
 2024-05-07  Release Manager
 
 	* GCC 14.1.0 released.

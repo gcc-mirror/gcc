@@ -1,3 +1,15 @@
+2024-07-19  Daniel Bertalan  <dani@danielbertalan.dev>
+
+	Backported from master:
+	2024-07-12  Daniel Bertalan  <dani@danielbertalan.dev>
+
+	* diagnostic-manager.cc (saved_diagnostic::saved_diagnostic):
+	Change NULL to nullptr.
+	(struct null_assignment_sm_context): Likewise.
+	* infinite-loop.cc: Likewise.
+	* infinite-recursion.cc: Likewise.
+	* varargs.cc (va_list_state_machine::on_leak): Likewise.
+
 2024-07-18  David Malcolm  <dmalcolm@redhat.com>
 
 	Backported from master:

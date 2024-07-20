@@ -1,3 +1,123 @@
+2024-07-19  René Rebe  <rene@exactcode.de>
+
+	Backported from master:
+	2024-07-18  René Rebe  <rene@exactcode.de>
+		    Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/97367
+	* config/rs6000/rs6000.cc (rs6000_machine_from_flags): Do not consider
+	OPTION_MASK_ALTIVEC.
+	(emit_asm_machine): For Altivec compiles, emit a ".machine altivec".
+
+2024-07-19  Daniel Bertalan  <dani@danielbertalan.dev>
+
+	Backported from master:
+	2024-07-12  Daniel Bertalan  <dani@danielbertalan.dev>
+
+	* value-pointer-equiv.cc: Change NULL to nullptr.
+
+2024-07-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	Backported from master:
+	2024-05-31  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/vector.md: Split vwadd.wx/vwsub.wx pattern and
+	add extended_scalar patterns.
+
+2024-07-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	Backported from master:
+	2024-05-31  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/115068
+	* config/riscv/vector.md:  Split vfw<insn>.wf pattern.
+
+2024-07-19  Fangrui Song  <maskray@gcc.gnu.org>
+
+	Backported from master:
+	2024-04-27  Fangrui Song  <maskray@gcc.gnu.org>
+
+	* config/riscv/elf.h (LINK_SPEC): Add -X.
+	* config/riscv/freebsd.h (LINK_SPEC): Add -X.
+	* config/riscv/linux.h (LINK_SPEC): Add -X.
+
+2024-07-19  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	Backported from master:
+	2024-04-29  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* common/config/riscv/riscv-common.cc: Move ziccamoa, ziccif,
+	zicclsm, and ziccrse into riscv_zi_subext.
+	* config/riscv/riscv.opt: Define MASK_ZIC64B for
+	riscv_ziccmo_subext.
+
+2024-07-19  Pan Li  <pan2.li@intel.com>
+
+	Backported from master:
+	2024-05-13  Pan Li  <pan2.li@intel.com>
+
+	PR target/114988
+	* config/riscv/riscv-vector-builtins.cc
+	(validate_instance_type_required_extensions): New func impl to
+	validate the intrinisc func type ops.
+	(expand_builtin): Validate instance type before expand.
+
+2024-07-19  Liao Shihua  <shihua@iscas.ac.cn>
+
+	Backported from master:
+	2024-05-27  Liao Shihua  <shihua@iscas.ac.cn>
+
+	* config/riscv/riscv.cc (riscv_rtx_costs): Add TARGET_ZMMUL.
+
+2024-07-19  Pan Li  <pan2.li@intel.com>
+
+	Backported from master:
+	2024-06-14  Pan Li  <pan2.li@intel.com>
+
+	PR target/115456
+	* config/riscv/vector-iterators.md: Leverage V_ZVFH instead of V
+	which contains the VF_ZVFHMIN for alignment.
+
+2024-07-19  Pan Li  <pan2.li@intel.com>
+
+	Backported from master:
+	2024-06-13  Pan Li  <pan2.li@intel.com>
+
+	PR target/115456
+	* config/riscv/autovec.md: Take ZVFH mode iterator instead of
+	the ZVFHMIN for the alignment.
+	* config/riscv/vector-iterators.md: Add 2 new iterator
+	V_VLS_ZVFH and VLS_ZVFH.
+
+2024-07-19  Artemiy Volkov  <Artemiy.Volkov@synopsys.com>
+
+	Backported from master:
+	2024-06-23  Artemiy Volkov  <Artemiy.Volkov@synopsys.com>
+
+	* config/riscv/riscv.cc (riscv_expand_conditional_move): Add a
+	CONST0_RTX check.
+
+2024-07-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	Backported from master:
+	2024-07-05  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md: Add TU policy.
+	* config/riscv/riscv-protos.h (enum insn_type): Define
+	SCALAR_MOVE_MERGED_OP_TU.
+
+2024-07-19  Fei Gao  <gaofei@eswincomputing.com>
+
+	Backported from master:
+	2024-07-08  Fei Gao  <gaofei@eswincomputing.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_subset_list::riscv_subset_list):
+	init m_subset_num to 0.
+	(riscv_subset_list::add): increase m_subset_num once a subset added.
+	(riscv_subset_list::finalize): call handle_implied_ext repeatly
+	until no change in m_subset_num.
+	* config/riscv/riscv-subset.h: add m_subset_num member.
+
 2024-07-18  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

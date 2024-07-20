@@ -1,3 +1,106 @@
+2024-07-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-05-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/113363
+	* gfortran.dg/pr113363.f90: New test.
+
+2024-07-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-06-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/59104
+	* gfortran.dg/dependent_decls_2.f90: New test.
+
+2024-07-19  René Rebe  <rene@exactcode.de>
+
+	Backported from master:
+	2024-07-18  René Rebe  <rene@exactcode.de>
+		    Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/97367
+	* gcc.target/powerpc/pr97367.c: New test.
+
+2024-07-19  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-07-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103115
+	* gfortran.dg/string_array_constructor_4.f90: New test.
+
+2024-07-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	Backported from master:
+	2024-05-31  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/base/pr115068.c: Add vwadd.wx/vwsub.wx
+	tests.
+	* gcc.target/riscv/rvv/base/pr115068-run.c: Include pr115068.c.
+	* gcc.target/riscv/rvv/base/vwaddsub-1.c: New test.
+
+2024-07-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	Backported from master:
+	2024-05-31  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/base/pr115068-run.c: New test.
+	* gcc.target/riscv/rvv/base/pr115068.c: New test.
+
+2024-07-19  Pan Li  <pan2.li@intel.com>
+
+	Backported from master:
+	2024-05-13  Pan Li  <pan2.li@intel.com>
+
+	PR target/114988
+	* gcc.target/riscv/rvv/base/pr114988-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr114988-2.c: New test.
+
+2024-07-19  Liao Shihua  <shihua@iscas.ac.cn>
+
+	Backported from master:
+	2024-05-27  Liao Shihua  <shihua@iscas.ac.cn>
+
+	* gcc.target/riscv/zmmul-3.c: New test.
+
+2024-07-19  Pan Li  <pan2.li@intel.com>
+
+	Backported from master:
+	2024-06-14  Pan Li  <pan2.li@intel.com>
+
+	PR target/115456
+	* gcc.target/riscv/rvv/base/pr115456-2.c: New test.
+	* gcc.target/riscv/rvv/base/pr115456-3.c: New test.
+
+2024-07-19  Pan Li  <pan2.li@intel.com>
+
+	Backported from master:
+	2024-06-13  Pan Li  <pan2.li@intel.com>
+
+	PR target/115456
+	* gcc.target/riscv/rvv/base/pr115456-1.c: New test.
+
+2024-07-19  Artemiy Volkov  <Artemiy.Volkov@synopsys.com>
+
+	Backported from master:
+	2024-06-23  Artemiy Volkov  <Artemiy.Volkov@synopsys.com>
+
+	* gcc.target/riscv/zicond-ice-5.c: New test.
+
+2024-07-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	Backported from master:
+	2024-07-05  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/115725
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-1.c: Adjust
+	test expectation.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-4.c: Ditto.
+
 2024-07-18  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
