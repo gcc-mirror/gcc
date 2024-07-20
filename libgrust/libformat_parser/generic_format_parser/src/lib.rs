@@ -78,6 +78,7 @@ enum InputStringKind {
 }
 
 /// The type of format string that we are parsing.
+#[repr(C)]
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum ParseMode {
     /// A normal format string as per `format_args!`.

@@ -258,10 +258,16 @@ struct FormatArgsHandle
   RustString rust_string;
 };
 
+typedef enum
+{
+  Format,
+  InlineAsm,
+} ParseMode;
+
 extern "C" {
 
 FormatArgsHandle
-collect_pieces (const char *input, bool append_newline);
+collect_pieces (const char *input, bool append_newline, ParseMode parse_mode);
 
 FormatArgsHandle
 clone_pieces (const FormatArgsHandle &);
@@ -274,7 +280,8 @@ void destroy_pieces (FormatArgsHandle);
 
 struct Pieces
 {
-  static Pieces collect (const std::string &to_parse, bool append_newline);
+  static Pieces collect (const std::string &to_parse, bool append_newline,
+			 ffi::ParseMode parse_mode);
   ~Pieces ();
 
   Pieces (const Pieces &other);
