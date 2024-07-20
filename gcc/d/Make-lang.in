@@ -55,7 +55,7 @@ CHECKING_DFLAGS = -frelease
 else
 CHECKING_DFLAGS =
 endif
-WARN_DFLAGS = -Wall -Wdeprecated $(NOCOMMON_FLAG)
+WARN_DFLAGS = -Wall -Wdeprecated
 
 # D front-end doesn't use exceptions, but it does require RTTI.
 NOEXCEPTION_DFLAGS = $(filter-out -fno-rtti, $(NOEXCEPTION_FLAGS))
