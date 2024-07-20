@@ -1,5 +1,5 @@
-#ifndef HAVE_DEFINED_VEC_SAT_BINARY
-#define HAVE_DEFINED_VEC_SAT_BINARY
+#ifndef HAVE_DEFINED_VEC_SAT_BINARY_VVV_RUN_H
+#define HAVE_DEFINED_VEC_SAT_BINARY_VVV_RUN_H
 
 /* To leverage this header files for run test, you need to:
    1. define T as the type, for example uint8_t,
