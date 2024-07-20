@@ -1,4 +1,4 @@
-/* { dg-do compile { target bitint } } */
+/* { dg-do compile { target bitint575 } } */
 /* { dg-options "-O2 -fnon-call-exceptions -fprofile-arcs -finstrument-functions -fno-tree-copy-prop" } */
 
 _BitInt(5) b5;
