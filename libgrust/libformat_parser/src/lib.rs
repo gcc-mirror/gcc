@@ -334,8 +334,9 @@ pub mod rust {
         style: Option<usize>,
         snippet: Option<String>,
         append_newline: bool,
+        parse_mode: ParseMode
     ) -> Vec<Piece<'_>> {
-        let parser = Parser::new(input, style, snippet, append_newline, ParseMode::Format);
+        let parser = Parser::new(input, style, snippet, append_newline, parse_mode);
 
         parser.into_iter().collect()
     }
@@ -360,10 +361,12 @@ pub struct RustString {
 #[repr(C)]
 pub struct FormatArgsHandle(PieceSlice, RustString);
 
+
 #[no_mangle]
 pub extern "C" fn collect_pieces(
     input: *const libc::c_char,
     append_newline: bool,
+    parse_mode : generic_format_parser::ParseMode 
 ) -> FormatArgsHandle {
     // FIXME: Add comment
     let str = unsafe { CStr::from_ptr(input) };
@@ -376,7 +379,7 @@ pub extern "C" fn collect_pieces(
     let s = unsafe { std::mem::transmute::<&'_ str, &'static str>(s) };
 
     // FIXME: No unwrap
-    let pieces: Vec<ffi::Piece<'_>> = rust::collect_pieces(s, None, None, append_newline)
+    let pieces: Vec<ffi::Piece<'_>> = rust::collect_pieces(s, None, None, append_newline, parse_mode)
         .into_iter()
         .map(Into::into)
         .collect();

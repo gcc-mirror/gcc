@@ -16,6 +16,7 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 #include "rust-ast-fragment.h"
+#include "rust-fmt.h"
 #include "rust-macro-builtins-helpers.h"
 #include "rust-expand-format-args.h"
 
@@ -162,7 +163,8 @@ MacroBuiltin::format_args_handler (location_t invoc_locus,
   if (append_newline)
     fmt_str += '\n';
 
-  auto pieces = Fmt::Pieces::collect (fmt_str, append_newline);
+  auto pieces = Fmt::Pieces::collect (fmt_str, append_newline,
+				      Fmt::ffi::ParseMode::Format);
 
   // TODO:
   // do the transformation into an AST::FormatArgs node

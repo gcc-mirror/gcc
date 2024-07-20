@@ -5,6 +5,7 @@ fn main() {
         std::env::args().nth(1).unwrap().as_str(),
         None,
         None,
-        false
+        false,
+        generic_format_parser::ParseMode::Format
     ));
 }

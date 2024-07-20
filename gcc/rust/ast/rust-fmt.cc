@@ -29,9 +29,11 @@ ffi::RustHamster::to_string () const
 }
 
 Pieces
-Pieces::collect (const std::string &to_parse, bool append_newline)
+Pieces::collect (const std::string &to_parse, bool append_newline,
+		 ffi::ParseMode parse_mode)
 {
-  auto handle = ffi::collect_pieces (to_parse.c_str (), append_newline);
+  auto handle
+    = ffi::collect_pieces (to_parse.c_str (), append_newline, parse_mode);
 
   // this performs multiple copies, can we avoid them maybe?
   // TODO: Instead of just creating a vec of, basically, `ffi::Piece`s, we
