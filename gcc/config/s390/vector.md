@@ -134,7 +134,7 @@
 			(V1TI "q") (TI "q")
 			(V1SF "f") (V2SF "f") (V4SF "f")
 			(V1DF "g") (V2DF "g")
-			(V1TF "q")])
+			(V1TF "q") (TF "q")])
 
 ; This is for vmalhw. It gets an 'w' attached to avoid confusion with
 ; multiply and add logical high vmalh.
