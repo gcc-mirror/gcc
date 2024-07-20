@@ -2293,6 +2293,45 @@ get_type_num_pointer_type (dw_die_ref type, bool in_struct)
   return ct->num;
 }
 
+/* Process a DW_TAG_reference_type DIE, add a new LF_POINTER type, and return
+   its number.  */
+
+static uint32_t
+get_type_num_reference_type (dw_die_ref type, bool in_struct)
+{
+  uint32_t base_type_num, byte_size;
+  dw_die_ref base_type;
+  codeview_custom_type *ct;
+
+  byte_size = get_AT_unsigned (type, DW_AT_byte_size);
+  if (byte_size != 4 && byte_size != 8)
+    return 0;
+
+  base_type = get_AT_ref (type, DW_AT_type);
+
+  base_type_num = get_type_num (base_type, in_struct, false);
+  if (base_type_num == 0)
+    return 0;
+
+  ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
+
+  ct->next = NULL;
+  ct->kind = LF_POINTER;
+  ct->lf_pointer.base_type = base_type_num;
+  ct->lf_pointer.attributes = CV_PTR_MODE_LVREF;
+
+  if (byte_size == 4)
+    ct->lf_pointer.attributes |= CV_PTR_NEAR32;
+  else
+    ct->lf_pointer.attributes |= CV_PTR_64;
+
+  ct->lf_pointer.attributes |= byte_size << 13;
+
+  add_custom_type (ct);
+
+  return ct->num;
+}
+
 /* Process a DW_TAG_const_type DIE, adding an LF_MODIFIER type and returning
    its number.  */
 
@@ -3024,6 +3063,7 @@ get_type_num_array_type (dw_die_ref type, bool in_struct)
 	case DW_TAG_class_type:
 	case DW_TAG_union_type:
 	case DW_TAG_pointer_type:
+	case DW_TAG_reference_type:
 	  size = get_AT_unsigned (t, DW_AT_byte_size);
 	  break;
 
@@ -3149,6 +3189,10 @@ get_type_num (dw_die_ref type, bool in_struct, bool no_fwd_ref)
 
     case DW_TAG_pointer_type:
       num = get_type_num_pointer_type (type, in_struct);
+      break;
+
+    case DW_TAG_reference_type:
+      num = get_type_num_reference_type (type, in_struct);
       break;
 
     case DW_TAG_const_type:
