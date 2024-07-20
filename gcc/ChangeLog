@@ -1,3 +1,12 @@
+2024-07-19  LIU Hao  <lh_mouse@126.com>
+
+	Backported from master:
+	2024-07-18  LIU Hao  <lh_mouse@126.com>
+
+	PR rtl-optimization/115049
+	* varasm.cc (decl_binds_to_current_def_p): Add a check for COMDAT
+	declarations too, like weak ones.
+
 2024-07-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
