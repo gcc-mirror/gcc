@@ -1,3 +1,52 @@
+2024-07-19  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/116003
+	* value-relation.cc (equiv_oracle::register_initial_def): Check
+	if SSA_NAME is in the IL before registering.
+
+2024-07-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* passes.def: Rewrite usage comment at the top.
+
+2024-07-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/115406
+	* fold-const.cc (native_encode_vector_part): For vector booleans,
+	check whether an element is nonzero and, if so, set all of the
+	correspending bits in the target image.
+	* simplify-rtx.cc (native_encode_rtx): Likewise.
+
+2024-07-19  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/builtins.def (MASK1): New DEF_BUILTIN.
+	* config/avr/avr.cc (avr_rtx_costs_1): Handle rtx costs for
+	expressions like __builtin_avr_mask1.
+	(avr_init_builtins) <uintQI_ftype_uintQI_uintQI>: New tree type.
+	(avr_expand_builtin) [AVR_BUILTIN_MASK1]: Diagnose unexpected forms.
+	(avr_fold_builtin) [AVR_BUILTIN_MASK1]: Handle case.
+	* config/avr/avr.md (gen_mask1): New expand helper.
+	(mask1_0x01_split, mask1_0x80_split, mask1_0xfe_split): New
+	insn-and-split.
+	(*mask1_0x01, *mask1_0x80, *mask1_0xfe): New insns.
+	* doc/extend.texi (AVR Built-in Functions) <__builtin_avr_mask1>:
+	Document new built-in function.
+
+2024-07-19  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* config/bpf/atomic.md (atomic_compare_and_swap,
+	atomic_exchange): Add operand modifier %M to the first
+	operand.
+	* config/bpf/bpf.cc (no_parentheses_mem_operand): Create
+	variable.
+	(bpf_print_operand): Set no_parentheses_mem_operand variable if
+	%M operand is used.
+	(bpf_print_operand_address): Conditionally output parentheses.
+
+2024-07-19  Pan Li  <pan2.li@intel.com>
+
+	PR target/115863
+	* match.pd: Add single_use check for .SAT_TRUNC form 2.
+
 2024-07-18  René Rebe  <rene@exactcode.de>
 	    Peter Bergner  <bergner@linux.ibm.com>
 

@@ -1,3 +1,7 @@
+2024-07-19  Richard Biener  <rguenther@suse.de>
+
+	* gcc-changelog/git_update_version.py: Remove gcc-11 branch.
+
 2024-07-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* check-MAINTAINERS.py (sort_by_surname): Replace with...

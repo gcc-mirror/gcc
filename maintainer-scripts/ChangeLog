@@ -1,3 +1,7 @@
+2024-07-19  Richard Biener  <rguenther@suse.de>
+
+	* crontab: Remove entry for gcc-11 branch.
+
 2024-07-07  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* update_web_docs_git (BUGURL): Switch to https.

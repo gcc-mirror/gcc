@@ -1,3 +1,25 @@
+2024-07-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115783
+	* call.cc (build_new_method_call): Generalize METHOD_TYPE
+	check to DECL_OBJECT_MEMBER_FUNCTION_P.
+
+2024-07-19  Seyed Sajad Kahani  <sska1377@gmail.com>
+
+	* constraint.cc (hash_placeholder_constraint): Rename to
+	iterative_hash_placeholder_constraint.
+	(iterative_hash_placeholder_constraint): Rename from
+	hash_placeholder_constraint and add the initial val argument.
+	* cp-tree.h (hash_placeholder_constraint): Rename to
+	iterative_hash_placeholder_constraint.
+	(iterative_hash_placeholder_constraint): Renamed from
+	hash_placeholder_constraint and add the initial val argument.
+	* pt.cc (struct ctp_hasher): Updated to use
+	iterative_hash_placeholder_constraint in the case of a valid placeholder
+	constraint.
+	(auto_hash::hash): Reflect the renaming of hash_placeholder_constraint to
+	iterative_hash_placeholder_constraint.
+
 2024-07-18  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/108769
