@@ -697,16 +697,13 @@ do
 done
 IFS="$ac_save_IFS"
 
-nocommon_flag=""
 if test x$ac_checking != x ; then
   AC_DEFINE(CHECKING_P, 1,
 [Define to 0/1 if you want more run-time sanity checks.  This one gets a grab
 bag of miscellaneous but relatively cheap checks.])
-  nocommon_flag=-fno-common
 else
   AC_DEFINE(CHECKING_P, 0)
 fi
-AC_SUBST(nocommon_flag)
 if test x$ac_extra_checking != x ; then
   AC_DEFINE(ENABLE_EXTRA_CHECKING, 1,
 [Define to 0/1 if you want extra run-time checking that might affect code
