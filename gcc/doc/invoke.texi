@@ -36937,9 +36937,6 @@ link         Options to pass to the linker
 lib          Libraries to include on the command line to the linker
 libgcc       Decides which GCC support library to pass to the linker
 linker       Sets the name of the linker
-predefines   Defines to be passed to the C preprocessor
-signed_char  Defines to pass to CPP to say whether @code{char} is signed
-             by default
 startfile    Object files to include at the start of the link
 @end smallexample
 
