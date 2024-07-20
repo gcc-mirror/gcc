@@ -114,6 +114,7 @@ struct GTY(()) machine_function
 };
 
 static void xtensa_option_override (void);
+static void xtensa_option_override_after_change (void);
 static enum internal_test map_test_to_internal_test (enum rtx_code);
 static rtx gen_int_relational (enum rtx_code, rtx, rtx);
 static rtx gen_float_relational (enum rtx_code, rtx, rtx);
@@ -302,6 +303,9 @@ static rtx xtensa_delegitimize_address (rtx);
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE xtensa_option_override
+
+#undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
+#define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE xtensa_option_override_after_change
 
 #undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
 #define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA xtensa_output_addr_const_extra
@@ -2986,6 +2990,15 @@ xtensa_option_override (void)
      can_create_pseudo_p, and so matching after RA will give an
      unsplittable instruction.  Disable late-combine by default until
      the define_insn_and_splits are fixed.  */
+  if (!OPTION_SET_P (flag_late_combine_instructions))
+    flag_late_combine_instructions = 0;
+
+  xtensa_option_override_after_change ();
+}
+
+static void
+xtensa_option_override_after_change (void)
+{
   if (!OPTION_SET_P (flag_late_combine_instructions))
     flag_late_combine_instructions = 0;
 }
