@@ -2803,15 +2803,14 @@ gfc_start_wrapped_block (gfc_wrapped_block* block, tree code)
 /* Add a new pair of initializers/clean-up code.  */
 
 void
-gfc_add_init_cleanup (gfc_wrapped_block* block, tree init, tree cleanup,
-		      bool back)
+gfc_add_init_cleanup (gfc_wrapped_block* block, tree init, tree cleanup)
 {
   gcc_assert (block);
 
   /* The new pair of init/cleanup should be "wrapped around" the existing
      block of code, thus the initialization is added to the front and the
      cleanup to the back.  */
-  add_expr_to_chain (&block->init, init, !back);
+  add_expr_to_chain (&block->init, init, true);
   add_expr_to_chain (&block->cleanup, cleanup, false);
 }
 

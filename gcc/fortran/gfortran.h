@@ -1887,6 +1887,10 @@ typedef struct gfc_symbol
      points to C and B's is NULL.  */
   struct gfc_common_head* common_head;
 
+  /* Make sure setup code for dummy arguments is generated in the correct
+     order.  */
+  int dummy_order;
+
   gfc_namelist *namelist, *namelist_tail;
 
   /* The tlink field is used in the front end to carry the module
@@ -1925,8 +1929,6 @@ typedef struct gfc_symbol
   unsigned forall_index:1;
   /* Set if the symbol is used in a function result specification .  */
   unsigned fn_result_spec:1;
-  /* Set if the symbol spec. depends on an old-style function result.  */
-  unsigned fn_result_dep:1;
   /* Used to avoid multiple resolutions of a single symbol.  */
   /* = 2 if this has already been resolved as an intrinsic,
        in gfc_resolve_intrinsic,

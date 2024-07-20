@@ -6871,7 +6871,6 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym,
   tree space;
   tree inittree;
   bool onstack;
-  bool back;
 
   gcc_assert (!(sym->attr.pointer || sym->attr.allocatable));
 
@@ -6882,12 +6881,6 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym,
   type = TREE_TYPE (decl);
   gcc_assert (GFC_ARRAY_TYPE_P (type));
   onstack = TREE_CODE (type) != POINTER_TYPE;
-
-  /* In the case of non-dummy symbols with dependencies on an old-fashioned
-     function result (ie. proc_name = proc_name->result), gfc_add_init_cleanup
-     must be called with the last, optional argument false so that the alloc-
-     ation occurs after the processing of the result.  */
-  back = sym->fn_result_dep;
 
   gfc_init_block (&init);
 
@@ -6916,8 +6909,7 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym,
 
   if (onstack)
     {
-      gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE,
-			    back);
+      gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE);
       return;
     }
 
@@ -7004,11 +6996,10 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym,
       addr = fold_build1_loc (gfc_get_location (&sym->declared_at),
 			      ADDR_EXPR, TREE_TYPE (decl), space);
       gfc_add_modify (&init, decl, addr);
-      gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE,
-			    back);
+      gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE);
       tmp = NULL_TREE;
     }
-  gfc_add_init_cleanup (block, inittree, tmp, back);
+  gfc_add_init_cleanup (block, inittree, tmp);
 }
 
 

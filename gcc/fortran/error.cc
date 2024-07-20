@@ -892,7 +892,7 @@ error_print (const char *type, const char *format0, va_list argp)
 #else
 	      m = INTTYPE_MAXIMUM (ptrdiff_t);
 #endif
-	      m = 2 * m + 1;
+	      m = 2 * m + 1;  
 	      error_uinteger (a & m);
 	    }
 	  else
