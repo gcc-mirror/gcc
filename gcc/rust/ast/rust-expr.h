@@ -4723,18 +4723,21 @@ struct AnonConst
 {
   NodeId id;
   std::unique_ptr<Expr> expr;
+  AnonConst (NodeId id, std::unique_ptr<Expr> expr)
+    : id (id), expr (std::move (expr))
+  {
+    rust_assert (this->expr != nullptr);
+  }
   AnonConst (const AnonConst &other)
   {
     id = other.id;
-    if (other.expr)
-      expr = other.expr->clone_expr ();
+    expr = other.expr->clone_expr ();
   }
 
   AnonConst operator= (const AnonConst &other)
   {
     id = other.id;
-    if (other.expr)
-      expr = other.expr->clone_expr ();
+    expr = other.expr->clone_expr ();
     return *this;
   }
 };
@@ -4787,7 +4790,7 @@ struct InlineAsmOperand
 	std::unique_ptr<Expr> expr)
       : reg (reg), expr (std::move (expr))
     {
-      rust_assert (expr != nullptr);
+      rust_assert (this->expr != nullptr);
     }
 
     In (const struct In &other)
@@ -4816,7 +4819,7 @@ struct InlineAsmOperand
 	 std::unique_ptr<Expr> expr)
       : reg (reg), late (late), expr (std::move (expr))
     {
-      rust_assert (expr != nullptr);
+      rust_assert (this->expr != nullptr);
     }
 
     Out (const struct Out &other)
@@ -4845,7 +4848,7 @@ struct InlineAsmOperand
 	   std::unique_ptr<Expr> expr)
       : reg (reg), late (late), expr (std::move (expr))
     {
-      rust_assert (expr != nullptr);
+      rust_assert (this->expr != nullptr);
     }
 
     InOut (const struct InOut &other)
@@ -4877,8 +4880,8 @@ struct InlineAsmOperand
       : reg (reg), late (late), in_expr (std::move (in_expr)),
 	out_expr (std::move (out_expr))
     {
-      rust_assert (in_expr != nullptr);
-      rust_assert (out_expr != nullptr);
+      rust_assert (this->in_expr != nullptr);
+      rust_assert (this->out_expr != nullptr);
     }
 
     SplitInOut (const struct SplitInOut &other)
@@ -4911,7 +4914,7 @@ struct InlineAsmOperand
 
     Sym (std::unique_ptr<Expr> expr) : expr (std::move (expr))
     {
-      rust_assert (expr != nullptr);
+      rust_assert (this->expr != nullptr);
     }
     Sym (const struct Sym &other)
     {
@@ -4933,7 +4936,7 @@ struct InlineAsmOperand
     Label (tl::optional<std::string> label_name, std::unique_ptr<Expr> expr)
       : expr (std::move (expr))
     {
-      rust_assert (expr != nullptr);
+      rust_assert (this->expr != nullptr);
       if (label_name.has_value ())
 	this->label_name = label_name.value ();
     }
