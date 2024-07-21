@@ -1,3 +1,11 @@
+2024-07-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	Revert:
+	2024-07-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/59104
+	* gfortran.dg/dependent_decls_2.f90: New test.
+
 2024-07-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:

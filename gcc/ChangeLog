@@ -1,3 +1,18 @@
+2024-07-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/3931.md (vlbr, vstbr, vrepi): Remove.
+	* config/s390/s390.md (xdee): Add FPRX2 mapping.
+	* config/s390/vector.md (bhfgq): Add TF mapping.
+
+2024-07-20  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	Backported from master:
+	2024-07-20  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* opt-suggestions.cc
+	(option_proposer::build_option_suggestions): Pull OPTB
+	definition out of the innermost loop.
+
 2024-07-19  René Rebe  <rene@exactcode.de>
 
 	Backported from master:

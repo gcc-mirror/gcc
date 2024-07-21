@@ -1,3 +1,35 @@
+2024-07-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	Revert:
+	2024-07-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/59104
+	* dependency.cc (dependency_fcn, gfc_function_dependency): New
+	functions to detect dependency in array bounds and character
+	lengths on old style function results.
+	* dependency.h : Add prototype for gfc_function_dependency.
+	* error.cc (error_print): Remove trailing space.
+	* gfortran.h : Remove dummy_order and add fn_result_spec.
+	* symbol.cc : Remove declaration of next_dummy_order..
+	(gfc_set_sym_referenced): remove setting of symbol dummy order.
+	* trans-array.cc (gfc_trans_auto_array_allocation): Detect
+	non-dummy symbols with function dependencies and put the
+	allocation at the end of the initialization code.
+	* trans-decl.cc : Include dependency.h.
+	(decl_order): New function that determines uses the location
+	field of the symbol 'declared_at' to determine the order of two
+	declarations.
+	(gfc_defer_symbol_init): Call gfc_function_dependency to put
+	dependent symbols in the right part of the tlink chain. Use
+	the location field of the symbol declared_at to determine the
+	order of declarations.
+	(gfc_trans_auto_character_variable): Put character length
+	initialization of dependent symbols at the end of the chain.
+	* trans.cc (gfc_add_init_cleanup): Add boolean argument with
+	default false that determines whther an expression is placed at
+	the back or the front of the initialization chain.
+	* trans.h : Update the prototype for gfc_add_init_cleanup.
+
 2024-07-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
