@@ -837,6 +837,9 @@ vn_reference_eq (const_vn_reference_t const vr1, const_vn_reference_t const vr2)
 		    TYPE_VECTOR_SUBPARTS (vr2->type)))
 	return false;
     }
+  else if (TYPE_MODE (vr1->type) != TYPE_MODE (vr2->type)
+	   && !mode_can_transfer_bits (TYPE_MODE (vr1->type)))
+    return false;
 
   i = 0;
   j = 0;
@@ -5814,13 +5817,7 @@ visit_reference_op_load (tree lhs, tree op, gimple *stmt)
   if (result
       && !useless_type_conversion_p (TREE_TYPE (result), TREE_TYPE (op)))
     {
-      /* Avoid the type punning in case the result mode has padding where
-	 the op we lookup has not.  */
-      if (TYPE_MODE (TREE_TYPE (result)) != BLKmode
-	  && maybe_lt (GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (result))),
-		       GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (op)))))
-	result = NULL_TREE;
-      else if (CONSTANT_CLASS_P (result))
+      if (CONSTANT_CLASS_P (result))
 	result = const_unop (VIEW_CONVERT_EXPR, TREE_TYPE (op), result);
       else
 	{
