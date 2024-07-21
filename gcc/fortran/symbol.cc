@@ -96,6 +96,9 @@ const mstring dtio_procs[] =
     minit ("_dtio_unformatted_write", DTIO_WUF),
 };
 
+/* This is to make sure the backend generates setup code in the correct
+   order.  */
+static int next_decl_order = 1;
 
 gfc_namespace *gfc_current_ns;
 gfc_namespace *gfc_global_ns_list;
@@ -940,6 +943,9 @@ gfc_set_sym_referenced (gfc_symbol *sym)
     return;
 
   sym->attr.referenced = 1;
+
+  /* Remember the declaration order.  */
+  sym->decl_order = next_decl_order++;
 }
 
 
