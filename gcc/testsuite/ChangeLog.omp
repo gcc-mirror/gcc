@@ -3,6 +3,13 @@
 	Backported from trunk:
 	2024-09-04  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	PR middle-end/60797
+	PR target/104957
+	* gcc.dg/pr60797.c: For nvptx, specify '-mno-alias'.
+
+	Backported from trunk:
+	2024-09-04  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	PR target/104957
 	* gcc.target/nvptx/alias-to-alias-1.c: New.
 
