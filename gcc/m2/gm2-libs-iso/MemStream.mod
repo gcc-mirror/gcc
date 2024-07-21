@@ -694,7 +694,10 @@ END handlefree ;
 
 PROCEDURE Close (VAR cid: ChanId) ;
 BEGIN
-   printf ("Close called\n");
+   IF Debugging
+   THEN
+      printf ("Close called\n")
+   END ;
    IF IsMem(cid)
    THEN
       UnMakeChan(did, cid) ;
