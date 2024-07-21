@@ -1,3 +1,20 @@
+2024-07-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-05-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/113363
+	* gfortran.dg/pr113363.f90: New test.
+
+2024-07-20  René Rebe  <rene@exactcode.de>
+
+	Backported from master:
+	2024-07-18  René Rebe  <rene@exactcode.de>
+		    Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/97367
+	* gcc.target/powerpc/pr97367.c: New test.
+
 2024-07-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:

@@ -1,3 +1,20 @@
+2024-07-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-05-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/113363
+	* trans-array.cc (gfc_array_init_size): Use the expr3 dtype so
+	that the correct element size is used.
+	* trans-expr.cc (gfc_conv_procedure_call): Remove restriction
+	that ss and ss->loop be present for the finalization of class
+	array function results.
+	(trans_class_assignment): Use free and malloc, rather than
+	realloc, for character expressions assigned to unlimited poly
+	entities.
+	* trans-stmt.cc (gfc_trans_allocate): Build a correct rhs for
+	the assignment of an unlimited polymorphic 'source'.
+
 2024-07-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
