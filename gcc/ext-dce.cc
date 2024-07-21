@@ -591,8 +591,10 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj, bitmap live_tmp)
 		 making things live.  Breaking from this loop will cause
 		 the iterator to work on sub-rtxs, so it is safe to break
 		 if we see something we don't know how to handle.  */
+	      unsigned HOST_WIDE_INT save_mask = dst_mask;
 	      for (;;)
 		{
+		  dst_mask = save_mask;
 		  /* Strip an outer paradoxical subreg.  The bits outside
 		     the inner mode are don't cares.  So we can just strip
 		     and process the inner object.  */
