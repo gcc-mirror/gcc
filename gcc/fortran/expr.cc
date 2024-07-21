@@ -350,6 +350,9 @@ gfc_copy_expr (gfc_expr *p)
 	  strncpy (q->boz.str, p->boz.str, p->boz.len);
 	  break;
 
+	case BT_UNSIGNED:
+	  gfc_internal_error ("Unsigned not yet implemented");
+
 	case BT_PROCEDURE:
         case BT_VOID:
            /* Should never be reached.  */

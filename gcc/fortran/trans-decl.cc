@@ -7060,6 +7060,10 @@ gfc_conv_cfi_to_gfc (stmtblock_t *init, stmtblock_t *finally,
 		  type = (sym->ts.u.derived->intmod_sym_id == ISOCBINDING_FUNPTR
 			? CFI_type_cfunptr : CFI_type_cptr);
 		  break;
+
+	      case BT_UNSIGNED:
+		gfc_internal_error ("Unsigned not yet implemented");
+
 		case BT_ASSUMED:
 		case BT_CLASS:
 		case BT_PROCEDURE:
