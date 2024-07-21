@@ -8408,7 +8408,7 @@
   gcc_assert (t_reg_operand (operands[1], VOIDmode));
   return "subc	%0,%0";
 }
-  "&& can_create_pseudo_p () && !t_reg_operand (operands[1], VOIDmode)"
+  "&& !t_reg_operand (operands[1], VOIDmode)"
   [(const_int 0)]
 {
   sh_treg_insns ti = sh_split_treg_set_expr (operands[1], curr_insn);
@@ -8420,6 +8420,14 @@
   DONE;
 }
   [(set_attr "type" "arith")])
+
+;; no-op T bit move which can result from other optimizations.
+(define_insn_and_split "*treg_noop_move"
+  [(set (reg:SI T_REG) (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& 1"
+  [(const_int 0)])
 
 ;; Invert the T bit.
 ;; On SH2A we can use the nott insn.  On anything else this must be done with
