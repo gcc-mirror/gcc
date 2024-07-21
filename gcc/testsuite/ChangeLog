@@ -1,3 +1,50 @@
+2024-07-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr116003.c: Require bitint575 target.
+
+2024-07-20  Andi Kleen  <ak@gcc.gnu.org>
+
+	Revert:
+	2024-07-20  Andi Kleen  <ak@linux.intel.com>
+
+	* lib/target-supports.exp:
+	(check_effective_target_struct_tail_call): New function.
+	* c-c++-common/musttail1.c: New test.
+	* c-c++-common/musttail12.c: New test.
+	* c-c++-common/musttail13.c: New test.
+	* c-c++-common/musttail2.c: New test.
+	* c-c++-common/musttail3.c: New test.
+	* c-c++-common/musttail4.c: New test.
+	* c-c++-common/musttail5.c: New test.
+	* c-c++-common/musttail7.c: New test.
+	* c-c++-common/musttail8.c: New test.
+	* g++.dg/musttail10.C: New test.
+	* g++.dg/musttail11.C: New test.
+	* g++.dg/musttail6.C: New test.
+	* g++.dg/musttail9.C: New test.
+
+2024-07-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr116003.c : Add target bitint.
+
+2024-07-20  Andi Kleen  <ak@linux.intel.com>
+
+	* lib/target-supports.exp:
+	(check_effective_target_struct_tail_call): New function.
+	* c-c++-common/musttail1.c: New test.
+	* c-c++-common/musttail12.c: New test.
+	* c-c++-common/musttail13.c: New test.
+	* c-c++-common/musttail2.c: New test.
+	* c-c++-common/musttail3.c: New test.
+	* c-c++-common/musttail4.c: New test.
+	* c-c++-common/musttail5.c: New test.
+	* c-c++-common/musttail7.c: New test.
+	* c-c++-common/musttail8.c: New test.
+	* g++.dg/musttail10.C: New test.
+	* g++.dg/musttail11.C: New test.
+	* g++.dg/musttail6.C: New test.
+	* g++.dg/musttail9.C: New test.
+
 2024-07-19  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/116003

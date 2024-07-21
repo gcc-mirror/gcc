@@ -1,3 +1,65 @@
+2024-07-20  Andi Kleen  <ak@gcc.gnu.org>
+
+	Revert:
+	2024-07-20  Andi Kleen  <ak@linux.intel.com>
+
+	PR c/83324
+	* doc/extend.texi: Document [[musttail]]
+
+2024-07-20  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (enum cv_sym_type): Add new values.
+	(struct codeview_symbol): Add function to union.
+	(struct codeview_custom_type): Add lf_func_id to union.
+	(write_function): New function.
+	(write_codeview_symbols): Call write_function.
+	(write_lf_func_id): New function.
+	(write_custom_types): Call write_lf_func_id.
+	(add_function): New function.
+	(codeview_debug_early_finish): Call add_function.
+
+2024-07-20  André Maroneze  <andre.maroneze@cea.fr>
+
+	* doc/invoke.texi (Spec Files): Remove documentation of obsolete
+	spec strings "predefines" and "signed_char".
+
+2024-07-20  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* opt-suggestions.cc
+	(option_proposer::build_option_suggestions): Pull OPTB
+	definition out of the innermost loop.
+
+2024-07-20  Andi Kleen  <ak@linux.intel.com>
+
+	PR c/83324
+	* doc/extend.texi: Document [[musttail]]
+
+2024-07-20  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch-protos.h
+	(loongarch_split_128bit_move): Delete.
+	(loongarch_split_128bit_move_p): Delete.
+	(loongarch_split_256bit_move): Delete.
+	(loongarch_split_256bit_move_p): Delete.
+	(loongarch_split_vector_move): Add a function declaration.
+	* config/loongarch/loongarch.cc
+	(loongarch_vector_costs::finish_cost): Adjust the code
+	formatting.
+	(loongarch_split_vector_move_p): Merge
+	loongarch_split_128bit_move_p and loongarch_split_256bit_move_p.
+	(loongarch_split_move_p): Merge code.
+	(loongarch_split_move): Likewise.
+	(loongarch_split_128bit_move_p): Delete.
+	(loongarch_split_256bit_move_p): Delete.
+	(loongarch_split_128bit_move): Delete.
+	(loongarch_split_vector_move): Merge loongarch_split_128bit_move
+	and loongarch_split_256bit_move.
+	(loongarch_split_256bit_move): Delete.
+	(loongarch_global_init): Remove the extra semicolon at the
+	end of the function.
+	* config/loongarch/loongarch.md (*movdf_softfloat):  Added a new
+	condition TARGET_64BIT.
+
 2024-07-19  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/116003
