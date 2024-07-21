@@ -842,7 +842,7 @@ gfc_allocate_lang_decl (tree decl)
 static bool
 decl_order (gfc_symbol *sym1, gfc_symbol *sym2)
 {
-  if (sym1->declared_at.lb->location > sym2->declared_at.lb->location)
+  if (sym1->decl_order > sym2->decl_order)
     return true;
   else
     return false;
