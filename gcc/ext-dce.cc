@@ -69,6 +69,7 @@ safe_for_live_propagation (rtx_code code)
   switch (GET_RTX_CLASS (code))
     {
       case RTX_OBJ:
+      case RTX_CONST_OBJ:
 	return true;
 
       case RTX_COMPARE:
