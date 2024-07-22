@@ -29,6 +29,8 @@
 // purpose. It is provided "as is" without express or implied
 // warranty.
 
+// { dg-additional-files "thirty_years_among_the_dead_preproc.txt" }
+
 /**
  * @file priority_queue_text_modify_timing_test.cpp
  * Contains test for finding text.

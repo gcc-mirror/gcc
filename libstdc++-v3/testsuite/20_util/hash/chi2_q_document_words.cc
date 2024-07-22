@@ -19,6 +19,8 @@
 // along with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-additional-files "thirty_years_among_the_dead_preproc.txt" }
+
 #include "chi2_quality.h"
 
 // Tests chi^2 for a set of words taken from a document written in English.
