@@ -1745,6 +1745,13 @@ rtl_ssa::pp_def_lookup (pretty_printer *pp, def_lookup dl)
   pp_def_mux (pp, dl.mux);
 }
 
+// Print TREE to PP.
+void
+rtl_ssa::pp_def_splay_tree (pretty_printer *pp, def_splay_tree tree)
+{
+  tree.print (pp, pp_def_node);
+}
+
 // Dump RESOURCE to FILE.
 void
 dump (FILE *file, resource_info resource)
@@ -1787,6 +1794,13 @@ dump (FILE *file, def_lookup result)
   dump_using (file, pp_def_lookup, result);
 }
 
+// Print TREE to FILE.
+void
+dump (FILE *file, def_splay_tree tree)
+{
+  dump_using (file, pp_def_splay_tree, tree);
+}
+
 // Debug interfaces to the dump routines above.
 void debug (const resource_info &x) { dump (stderr, x); }
 void debug (const access_info *x) { dump (stderr, x); }
@@ -1794,3 +1808,4 @@ void debug (const access_array &x) { dump (stderr, x); }
 void debug (const def_node *x) { dump (stderr, x); }
 void debug (const def_mux &x) { dump (stderr, x); }
 void debug (const def_lookup &x) { dump (stderr, x); }
+void debug (const def_splay_tree &x) { dump (stderr, x); }
