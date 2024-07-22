@@ -1,3 +1,8 @@
+2024-07-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/59104
+	* gfortran.dg/dependent_decls_3.f90: New test.
+
 2024-07-20  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc.dg/pr116003.c: Require bitint575 target.
