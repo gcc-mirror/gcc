@@ -29,6 +29,8 @@
 // purpose. It is provided "as is" without express or implied
 // warranty.
 
+// { dg-additional-files "thirty_years_among_the_dead_preproc.txt" }
+
 /**
  * @file multimap_text_insert_timing_test.cpp
  * Contains test for inserting text words.

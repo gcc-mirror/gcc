@@ -29,6 +29,8 @@
 // purpose. It is provided "as is" without express or implied
 // warranty.
 
+// { dg-additional-files "thirty_years_among_the_dead_preproc.txt" }
+
 /**
  * @file tree_text_lor_find_timing_test.cpp
  * Contains test for finding text with locality of reference.
