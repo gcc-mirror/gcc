@@ -1370,9 +1370,9 @@ unadjusted_ptr_and_unit_offset (tree op, tree *ret, poly_int64 *offset_ret)
     {
       if (TREE_CODE (op) == ADDR_EXPR)
 	{
-	  poly_int64 extra_offset = 0;
+	  poly_int64 extra_offset;
 	  tree base = get_addr_base_and_unit_offset (TREE_OPERAND (op, 0),
-						     &offset);
+						     &extra_offset);
 	  if (!base)
 	    {
 	      base = get_base_address (TREE_OPERAND (op, 0));
