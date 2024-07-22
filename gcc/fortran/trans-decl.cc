@@ -5950,7 +5950,7 @@ generate_coarray_sym_init (gfc_symbol *sym)
    coarrays.  */
 
 static void
-generate_coarray_init (gfc_namespace * ns __attribute((unused)))
+generate_coarray_init (gfc_namespace *ns)
 {
   tree fndecl, tmp, decl, save_fn_decl;
 

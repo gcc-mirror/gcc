@@ -6114,10 +6114,12 @@ resolve_variable (gfc_expr *e)
   /* If a symbol has been host_associated mark it.  This is used latter,
      to identify if aliasing is possible via host association.  */
   if (sym->attr.flavor == FL_VARIABLE
-	&& gfc_current_ns->parent
-	&& (gfc_current_ns->parent == sym->ns
-	      || (gfc_current_ns->parent->parent
-		    && gfc_current_ns->parent->parent == sym->ns)))
+      && (!sym->ns->code || sym->ns->code->op != EXEC_BLOCK
+	  || !sym->ns->code->ext.block.assoc)
+      && gfc_current_ns->parent
+      && (gfc_current_ns->parent == sym->ns
+	  || (gfc_current_ns->parent->parent
+	      && gfc_current_ns->parent->parent == sym->ns)))
     sym->attr.host_assoc = 1;
 
   if (gfc_current_ns->proc_name
