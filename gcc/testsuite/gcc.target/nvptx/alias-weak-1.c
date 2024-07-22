@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-add-options ptx_alias } */
+/* { dg-add-options nvptx_alias_ptx } */
 
 void __f ()
 {

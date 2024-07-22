@@ -13728,3 +13728,75 @@ proc check_effective_target_check_jsonschema { } {
         return 0;
     }
 }
+
+# Return 1 if nvptx code by default compiles for at least PTX ISA version
+# major.minor.
+
+proc check_nvptx_default_ptx_isa_version_at_least { major minor } {
+    set name nvptx_default_ptx_isa_version_at_least_${major}_${minor}
+
+    set supported_p \
+	[concat \
+	     "((__PTX_ISA_VERSION_MAJOR__ == $major" \
+	     "  && __PTX_ISA_VERSION_MINOR__ >= $minor)" \
+	     " || (__PTX_ISA_VERSION_MAJOR__ > $major))"]
+
+    set src \
+	[list \
+	     "#if $supported_p" \
+	     "#else" \
+	     "#error unsupported" \
+	     "#endif"]
+    set src [join $src "\n"]
+    
+    set res [check_no_compiler_messages $name assembly $src ""]
+
+    return $res
+}
+
+# Return 1 if nvptx code by default compiles for at least PTX ISA version 6.0.
+
+proc check_effective_target_nvptx_default_ptx_isa_version_at_least_6_0 { } {
+    return [check_nvptx_default_ptx_isa_version_at_least 6 0]
+}
+
+# Return 1 if nvptx code with PTX ISA version major.minor or higher can be run.
+
+proc check_nvptx_runtime_ptx_isa_version_at_least { major minor } {
+    set name nvptx_runtime_ptx_isa_version_${major}_${minor}
+
+    set default \
+	[check_nvptx_default_ptx_isa_version_at_least \
+	     ${major} ${minor}]
+
+    if { $default } {
+	set flag ""
+    } else {
+	set flag "-mptx=$major.$minor"
+    }
+
+    set res [check_runtime $name {
+	int main (void) { return 0; }
+    } $flag]
+
+    return $res
+}
+
+# Return 1 if the nvptx runtime environment supports the PTX ISA directive
+# '.alias'.
+
+proc check_effective_target_nvptx_runtime_alias_ptx { } {
+    return [check_nvptx_runtime_ptx_isa_version_at_least 6 3]
+}
+
+# Add options to enable nvptx using the PTX ISA directive '.alias'.
+
+proc add_options_for_nvptx_alias_ptx { flags } {
+    append flags " -malias"
+
+    if { ![check_nvptx_default_ptx_isa_version_at_least 6 3] } {
+	append flags " -mptx=6.3"
+    }
+
+    return $flags
+}

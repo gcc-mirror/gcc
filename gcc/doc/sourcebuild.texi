@@ -2424,6 +2424,17 @@ MSP430 target has the small memory model enabled (@code{-msmall}).
 MSP430 target has the large memory model enabled (@code{-mlarge}).
 @end table
 
+@subsubsection nvptx-specific attributes
+
+@table @code
+@item nvptx_default_ptx_isa_version_at_least_6_0
+nvptx code by default compiles for at least PTX ISA version 6.0.
+
+@item nvptx_runtime_alias_ptx
+The nvptx runtime environment supports the PTX ISA directive
+@code{.alias}.
+@end table
+
 @subsubsection PowerPC-specific attributes
 
 @table @code
@@ -3301,6 +3312,9 @@ compliance mode.
 @item mips16_attribute
 @code{mips16} function attributes.
 Only MIPS targets support this feature, and only then in certain modes.
+
+@item nvptx_alias_ptx
+Enable using the PTX ISA directive @code{.alias} on nvptx targets.
 
 @item riscv_a
 Add the 'A' extension to the -march string on RISC-V targets.
