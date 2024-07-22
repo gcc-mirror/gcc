@@ -20,6 +20,7 @@
 // 27.7.1.3 Overridden virtual functions
 
 // { dg-require-fileio "" }
+// { dg-additional-files "filebuf_virtuals-1.tst filebuf_members-1.tst" }
 
 #include <fstream>
 #include <testsuite_hooks.h>

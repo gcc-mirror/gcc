@@ -1,4 +1,5 @@
 // { dg-require-namedlocale "de_DE.ISO8859-15" }
+// { dg-additional-files "filebuf_virtuals-1.txt" }
 
 // 2003-05-13 Benjamin Kosnik  <bkoz@redhat.com>
 

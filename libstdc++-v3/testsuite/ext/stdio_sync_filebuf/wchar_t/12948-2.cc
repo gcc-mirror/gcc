@@ -20,6 +20,8 @@
 #include <ext/stdio_sync_filebuf.h>
 #include <testsuite_hooks.h>
 
+// { dg-additional-files "cin_unget-1.txt" }
+
 // libstdc++/12048
 void test03()
 {
