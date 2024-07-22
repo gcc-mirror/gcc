@@ -3122,37 +3122,6 @@ riscv_legitimize_poly_move (machine_mode mode, rtx dest, rtx tmp, rtx src)
     }
 }
 
-/* Adjust scalable frame of vector for prologue && epilogue. */
-
-static void
-riscv_v_adjust_scalable_frame (rtx target, poly_int64 offset, bool epilogue)
-{
-  rtx tmp = RISCV_PROLOGUE_TEMP (Pmode);
-  rtx adjust_size = RISCV_PROLOGUE_TEMP2 (Pmode);
-  rtx insn, dwarf, adjust_frame_rtx;
-
-  riscv_legitimize_poly_move (Pmode, adjust_size, tmp,
-			      gen_int_mode (offset, Pmode));
-
-  if (epilogue)
-    insn = gen_add3_insn (target, target, adjust_size);
-  else
-    insn = gen_sub3_insn (target, target, adjust_size);
-
-  insn = emit_insn (insn);
-
-  RTX_FRAME_RELATED_P (insn) = 1;
-
-  adjust_frame_rtx
-    = gen_rtx_SET (target,
-		   plus_constant (Pmode, target, epilogue ? offset : -offset));
-
-  dwarf = alloc_reg_note (REG_FRAME_RELATED_EXPR, copy_rtx (adjust_frame_rtx),
-			  NULL_RTX);
-
-  REG_NOTES (insn) = dwarf;
-}
-
 /* Take care below subreg const_poly_int move:
 
    1. (set (subreg:DI (reg:TI 237) 8)
@@ -7930,6 +7899,37 @@ static const code_for_push_pop_t code_for_push_pop[ZCMP_MAX_GRP_SLOTS][ZCMP_OP_N
      {code_for_gpr_multi_push_up_to_s11, code_for_gpr_multi_pop_up_to_s11,
       code_for_gpr_multi_popret_up_to_s11,
       code_for_gpr_multi_popretz_up_to_s11}};
+
+/* Adjust scalable frame of vector for prologue && epilogue. */
+
+static void
+riscv_v_adjust_scalable_frame (rtx target, poly_int64 offset, bool epilogue)
+{
+  rtx tmp = RISCV_PROLOGUE_TEMP (Pmode);
+  rtx adjust_size = RISCV_PROLOGUE_TEMP2 (Pmode);
+  rtx insn, dwarf, adjust_frame_rtx;
+
+  riscv_legitimize_poly_move (Pmode, adjust_size, tmp,
+			      gen_int_mode (offset, Pmode));
+
+  if (epilogue)
+    insn = gen_add3_insn (target, target, adjust_size);
+  else
+    insn = gen_sub3_insn (target, target, adjust_size);
+
+  insn = emit_insn (insn);
+
+  RTX_FRAME_RELATED_P (insn) = 1;
+
+  adjust_frame_rtx
+    = gen_rtx_SET (target,
+		   plus_constant (Pmode, target, epilogue ? offset : -offset));
+
+  dwarf = alloc_reg_note (REG_FRAME_RELATED_EXPR, copy_rtx (adjust_frame_rtx),
+			  NULL_RTX);
+
+  REG_NOTES (insn) = dwarf;
+}
 
 static rtx
 riscv_gen_multi_push_pop_insn (riscv_zcmp_op_t op, HOST_WIDE_INT adj_size,
