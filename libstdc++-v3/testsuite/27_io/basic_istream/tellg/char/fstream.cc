@@ -17,12 +17,16 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 27.6.1.3 unformatted input functions
+// C++98 27.6.1.3 unformatted input functions
 // NB: ostream has a particular "seeks" category. Adopt this for istreams too.
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
 
 // { dg-require-fileio "" }
+// { dg-additional-files "istream_seeks-1.tst" }
+// { dg-additional-files "istream_seeks-1.txt" }
+// { dg-additional-files "istream_seeks-2.tst" }
+// Do not create istream_seeks-2.txt, we want it to be created as empty.
+// { dg-final { file-io-diff "istream_seeks-1" } }
+// { dg-final { file-io-diff "istream_seeks-2" } }
 
 #include <istream>
 #include <sstream>

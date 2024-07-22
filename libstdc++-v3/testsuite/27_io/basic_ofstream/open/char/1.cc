@@ -17,10 +17,9 @@
 
 // C++98 27.8.1.10 ofstream member functions
 
-// { dg-additional-files "ofstream_members-1.tst" }
-// @diff@ %-*.tst %-*.txt
-
 // { dg-require-fileio "" }
+// { dg-additional-files "ofstream_members-1.tst" }
+// { dg-final { file-io-diff "ofstream_members-1" } }
 
 #include <ostream>
 #include <fstream>

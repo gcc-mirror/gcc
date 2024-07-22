@@ -16,11 +16,15 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-require-fileio "" }
+// { dg-additional-files "wistream_seeks-1.tst" }
+// { dg-additional-files "wistream_seeks-1.txt" }
+// { dg-additional-files "wistream_seeks-2.tst" }
+// Do not create wistream_seeks-2.txt, we want it to be created as empty.
+// { dg-final { file-io-diff "wistream_seeks-1" } }
+// { dg-final { file-io-diff "wistream_seeks-2" } }
 
-// 27.6.1.3 unformatted input functions
+// C++98 27.6.1.3 unformatted input functions
 // NB: ostream has a particular "seeks" category. Adopt this for istreams too.
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
 
 #include <istream>
 #include <sstream>
