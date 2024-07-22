@@ -327,6 +327,11 @@ package body Erroutc is
       Write_Location (E.Optr.Ptr);
       Write_Eol;
 
+      Write_Str
+        ("  Insertion_Sloc     = ");
+      Write_Location (E.Insertion_Sloc);
+      Write_Eol;
+
       w ("  Line               = ", Int (E.Line));
       w ("  Col                = ", Int (E.Col));
       w ("  Info               = ", E.Info);
