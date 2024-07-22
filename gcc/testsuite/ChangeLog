@@ -1,3 +1,11 @@
+2024-07-21  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-07-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103115
+	* gfortran.dg/string_array_constructor_4.f90: New test.
+
 2024-07-20  René Rebe  <rene@exactcode.de>
 
 	Backported from master:
