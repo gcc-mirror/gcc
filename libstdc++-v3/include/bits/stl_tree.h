@@ -66,12 +66,20 @@
 #include <bits/allocator.h>
 #include <bits/stl_function.h>
 #include <bits/cpp_type_traits.h>
+#include <bits/ptr_traits.h>
 #include <ext/alloc_traits.h>
 #if __cplusplus >= 201103L
 # include <ext/aligned_buffer.h>
 #endif
 #if __cplusplus > 201402L
 # include <bits/node_handle.h>
+#endif
+
+#if __cplusplus < 201103L
+# undef _GLIBCXX_USE_ALLOC_PTR_FOR_RB_TREE
+# define _GLIBCXX_USE_ALLOC_PTR_FOR_RB_TREE 0
+#elif ! defined _GLIBCXX_USE_ALLOC_PTR_FOR_RB_TREE
+# define _GLIBCXX_USE_ALLOC_PTR_FOR_RB_TREE 1
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -99,7 +107,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   struct _Rb_tree_node_base
   {
     typedef _Rb_tree_node_base* _Base_ptr;
-    typedef const _Rb_tree_node_base* _Const_Base_ptr;
 
     _Rb_tree_color	_M_color;
     _Base_ptr		_M_parent;
@@ -113,13 +120,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __x;
     }
 
-    static _Const_Base_ptr
-    _S_minimum(_Const_Base_ptr __x) _GLIBCXX_NOEXCEPT
-    {
-      while (__x->_M_left != 0) __x = __x->_M_left;
-      return __x;
-    }
-
     static _Base_ptr
     _S_maximum(_Base_ptr __x) _GLIBCXX_NOEXCEPT
     {
@@ -127,12 +127,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __x;
     }
 
-    static _Const_Base_ptr
-    _S_maximum(_Const_Base_ptr __x) _GLIBCXX_NOEXCEPT
-    {
-      while (__x->_M_right != 0) __x = __x->_M_right;
-      return __x;
-    }
+    // This is not const-correct, but it's only used in a const access path
+    // by std::_Rb_tree::_M_end() where the pointer is used to initialize a
+    // const_iterator and so constness is restored.
+    _Base_ptr
+    _M_base_ptr() const _GLIBCXX_NOEXCEPT
+    { return const_cast<_Rb_tree_node_base*>(this); }
   };
 
   // Helper type offering value initialization guarantee on the compare functor.
@@ -213,8 +213,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Val>
     struct _Rb_tree_node : public _Rb_tree_node_base
     {
-      typedef _Rb_tree_node<_Val>* _Link_type;
-
 #if __cplusplus < 201103L
       _Val _M_value_field;
 
@@ -236,19 +234,139 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_valptr() const
       { return _M_storage._M_ptr(); }
 #endif
+
+      _Rb_tree_node*
+      _M_node_ptr() _GLIBCXX_NOEXCEPT
+      { return this; }
     };
+
+#if _GLIBCXX_USE_ALLOC_PTR_FOR_RB_TREE
+namespace __rb_tree
+{
+  template<typename _VoidPtr>
+    struct _Node_base
+    {
+      using _Base_ptr = __ptr_rebind<_VoidPtr, _Node_base>;
+
+      _Rb_tree_color	_M_color;
+      _Base_ptr		_M_parent;
+      _Base_ptr		_M_left;
+      _Base_ptr		_M_right;
+
+      static _Base_ptr
+      _S_minimum(_Base_ptr __x) _GLIBCXX_NOEXCEPT
+      {
+	while (__x->_M_left) __x = __x->_M_left;
+	return __x;
+      }
+
+      static _Base_ptr
+      _S_maximum(_Base_ptr __x) _GLIBCXX_NOEXCEPT
+      {
+	while (__x->_M_right) __x = __x->_M_right;
+	return __x;
+      }
+
+      // This is not const-correct, but it's only used in a const access path
+      // by std::_Rb_tree::_M_end() where the pointer is used to initialize a
+      // const_iterator and so constness is restored.
+      _Base_ptr
+      _M_base_ptr() const noexcept
+      {
+	return pointer_traits<_Base_ptr>::pointer_to
+	  (*const_cast<_Node_base*>(this));
+      }
+    };
+
+  // Helper type to manage default initialization of node count and header.
+  template<typename _NodeBase>
+    struct _Header
+    {
+    private:
+      using _Base_ptr =  typename _NodeBase::_Base_ptr;
+
+    public:
+      _NodeBase		_M_header;
+      size_t		_M_node_count; // Keeps track of size of tree.
+
+      _Header() noexcept
+      {
+	_M_header._M_color = _S_red;
+	_M_reset();
+      }
+
+      _Header(_Header&& __x) noexcept
+      {
+	if (__x._M_header._M_parent)
+	  _M_move_data(__x);
+	else
+	  {
+	    _M_header._M_color = _S_red;
+	    _M_reset();
+	  }
+      }
+
+      void
+      _M_move_data(_Header& __from)
+      {
+	_M_header._M_color = __from._M_header._M_color;
+	_M_header._M_parent = __from._M_header._M_parent;
+	_M_header._M_left = __from._M_header._M_left;
+	_M_header._M_right = __from._M_header._M_right;
+	_M_header._M_parent->_M_parent = _M_header._M_base_ptr();
+	_M_node_count = __from._M_node_count;
+
+	__from._M_reset();
+      }
+
+      void
+      _M_reset()
+      {
+	_M_header._M_parent = nullptr;
+	_M_header._M_left = _M_header._M_right = _M_header._M_base_ptr();
+	_M_node_count = 0;
+      }
+    };
+
+  template<typename _ValPtr>
+    struct _Node : public __rb_tree::_Node_base<__ptr_rebind<_ValPtr, void>>
+    {
+      using value_type = typename pointer_traits<_ValPtr>::element_type;
+      using _Node_ptr = __ptr_rebind<_ValPtr, _Node>;
+
+      _Node() noexcept { }
+      ~_Node() { }
+      _Node(_Node&&) = delete;
+
+      union _Uninit_storage
+      {
+	_Uninit_storage() noexcept { }
+	~_Uninit_storage() { }
+
+	value_type _M_data;
+      };
+      _Uninit_storage _M_u;
+
+      value_type*
+      _M_valptr()
+      { return std::addressof(_M_u._M_data); }
+
+      value_type const*
+      _M_valptr() const
+      { return std::addressof(_M_u._M_data); }
+
+      _Node_ptr
+      _M_node_ptr() noexcept
+      { return pointer_traits<_Node_ptr>::pointer_to(*this); }
+    };
+} // namespace __rb_tree
+#endif // _GLIBCXX_USE_ALLOC_PTR_FOR_RB_TREE
 
   _GLIBCXX_PURE _Rb_tree_node_base*
   _Rb_tree_increment(_Rb_tree_node_base* __x) throw ();
 
-  _GLIBCXX_PURE const _Rb_tree_node_base*
-  _Rb_tree_increment(const _Rb_tree_node_base* __x) throw ();
-
   _GLIBCXX_PURE _Rb_tree_node_base*
   _Rb_tree_decrement(_Rb_tree_node_base* __x) throw ();
-
-  _GLIBCXX_PURE const _Rb_tree_node_base*
-  _Rb_tree_decrement(const _Rb_tree_node_base* __x) throw ();
 
   template<typename _Tp>
     struct _Rb_tree_iterator
@@ -260,9 +378,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef bidirectional_iterator_tag iterator_category;
       typedef ptrdiff_t			 difference_type;
 
-      typedef _Rb_tree_iterator<_Tp>		_Self;
       typedef _Rb_tree_node_base::_Base_ptr	_Base_ptr;
-      typedef _Rb_tree_node<_Tp>*		_Link_type;
+      typedef _Rb_tree_node<_Tp>*		_Node_ptr;
 
       _Rb_tree_iterator() _GLIBCXX_NOEXCEPT
       : _M_node() { }
@@ -273,49 +390,51 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       reference
       operator*() const _GLIBCXX_NOEXCEPT
-      { return *static_cast<_Link_type>(_M_node)->_M_valptr(); }
+      { return *static_cast<_Node_ptr>(_M_node)->_M_valptr(); }
 
       pointer
       operator->() const _GLIBCXX_NOEXCEPT
-      { return static_cast<_Link_type> (_M_node)->_M_valptr(); }
+      { return static_cast<_Node_ptr>(_M_node)->_M_valptr(); }
 
-      _Self&
+      _Rb_tree_iterator&
       operator++() _GLIBCXX_NOEXCEPT
       {
 	_M_node = _Rb_tree_increment(_M_node);
 	return *this;
       }
 
-      _Self
+      _Rb_tree_iterator
       operator++(int) _GLIBCXX_NOEXCEPT
       {
-	_Self __tmp = *this;
+	_Rb_tree_iterator __tmp = *this;
 	_M_node = _Rb_tree_increment(_M_node);
 	return __tmp;
       }
 
-      _Self&
+      _Rb_tree_iterator&
       operator--() _GLIBCXX_NOEXCEPT
       {
 	_M_node = _Rb_tree_decrement(_M_node);
 	return *this;
       }
 
-      _Self
+      _Rb_tree_iterator
       operator--(int) _GLIBCXX_NOEXCEPT
       {
-	_Self __tmp = *this;
+	_Rb_tree_iterator __tmp = *this;
 	_M_node = _Rb_tree_decrement(_M_node);
 	return __tmp;
       }
 
       friend bool
-      operator==(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
+      operator==(const _Rb_tree_iterator& __x,
+		 const _Rb_tree_iterator& __y) _GLIBCXX_NOEXCEPT
       { return __x._M_node == __y._M_node; }
 
 #if ! __cpp_lib_three_way_comparison
       friend bool
-      operator!=(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
+      operator!=(const _Rb_tree_iterator& __x,
+		 const _Rb_tree_iterator& __y) _GLIBCXX_NOEXCEPT
       { return __x._M_node != __y._M_node; }
 #endif
 
@@ -334,9 +453,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef bidirectional_iterator_tag iterator_category;
       typedef ptrdiff_t			 difference_type;
 
-      typedef _Rb_tree_const_iterator<_Tp>		_Self;
-      typedef _Rb_tree_node_base::_Const_Base_ptr	_Base_ptr;
-      typedef const _Rb_tree_node<_Tp>*			_Link_type;
+      typedef _Rb_tree_node_base::_Base_ptr	_Base_ptr;
+      typedef const _Rb_tree_node<_Tp>*		_Node_ptr;
 
       _Rb_tree_const_iterator() _GLIBCXX_NOEXCEPT
       : _M_node() { }
@@ -348,55 +466,53 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Rb_tree_const_iterator(const iterator& __it) _GLIBCXX_NOEXCEPT
       : _M_node(__it._M_node) { }
 
-      iterator
-      _M_const_cast() const _GLIBCXX_NOEXCEPT
-      { return iterator(const_cast<typename iterator::_Base_ptr>(_M_node)); }
-
       reference
       operator*() const _GLIBCXX_NOEXCEPT
-      { return *static_cast<_Link_type>(_M_node)->_M_valptr(); }
+      { return *static_cast<_Node_ptr>(_M_node)->_M_valptr(); }
 
       pointer
       operator->() const _GLIBCXX_NOEXCEPT
-      { return static_cast<_Link_type>(_M_node)->_M_valptr(); }
+      { return static_cast<_Node_ptr>(_M_node)->_M_valptr(); }
 
-      _Self&
+      _Rb_tree_const_iterator&
       operator++() _GLIBCXX_NOEXCEPT
       {
 	_M_node = _Rb_tree_increment(_M_node);
 	return *this;
       }
 
-      _Self
+      _Rb_tree_const_iterator
       operator++(int) _GLIBCXX_NOEXCEPT
       {
-	_Self __tmp = *this;
+	_Rb_tree_const_iterator __tmp = *this;
 	_M_node = _Rb_tree_increment(_M_node);
 	return __tmp;
       }
 
-      _Self&
+      _Rb_tree_const_iterator&
       operator--() _GLIBCXX_NOEXCEPT
       {
 	_M_node = _Rb_tree_decrement(_M_node);
 	return *this;
       }
 
-      _Self
+      _Rb_tree_const_iterator
       operator--(int) _GLIBCXX_NOEXCEPT
       {
-	_Self __tmp = *this;
+	_Rb_tree_const_iterator __tmp = *this;
 	_M_node = _Rb_tree_decrement(_M_node);
 	return __tmp;
       }
 
       friend bool
-      operator==(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
+      operator==(const _Rb_tree_const_iterator& __x,
+		 const _Rb_tree_const_iterator& __y) _GLIBCXX_NOEXCEPT
       { return __x._M_node == __y._M_node; }
 
 #if ! __cpp_lib_three_way_comparison
       friend bool
-      operator!=(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
+      operator!=(const _Rb_tree_const_iterator& __x,
+		 const _Rb_tree_const_iterator& __y) _GLIBCXX_NOEXCEPT
       { return __x._M_node != __y._M_node; }
 #endif
 
@@ -415,6 +531,485 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   _Rb_tree_rebalance_for_erase(_Rb_tree_node_base* const __z,
 			       _Rb_tree_node_base& __header) throw ();
 
+namespace __rb_tree
+{
+#if _GLIBCXX_USE_ALLOC_PTR_FOR_RB_TREE
+  template<bool _Const, typename _ValPtr>
+    struct _Iterator
+    {
+      template<typename _Tp>
+	using __maybe_const = __conditional_t<_Const, const _Tp, _Tp>;
+
+      using __ptr_traits =	pointer_traits<_ValPtr>;
+      using value_type =	typename __ptr_traits::element_type;
+      using reference =		__maybe_const<value_type>&;
+      using pointer =		__maybe_const<value_type>*;
+
+      using iterator_category =	bidirectional_iterator_tag;
+      using difference_type =	ptrdiff_t;
+
+      using _Node = __rb_tree::_Node<_ValPtr>;
+      using _Node_base = __rb_tree::_Node_base<__ptr_rebind<_ValPtr, void>>;
+      using _Base_ptr =	 typename _Node_base::_Base_ptr;
+
+      _Iterator() noexcept
+      : _M_node() { }
+
+      constexpr explicit
+      _Iterator(_Base_ptr __x) noexcept
+      : _M_node(__x) { }
+
+      _Iterator(const _Iterator&) = default;
+      _Iterator& operator=(const _Iterator&) = default;
+
+#ifdef __glibcxx_concepts
+      constexpr
+      _Iterator(const _Iterator<false, _ValPtr>& __it) requires _Const
+#else
+      template<bool _OtherConst,
+	       typename = __enable_if_t<_Const && !_OtherConst>>
+	constexpr
+	_Iterator(const _Iterator<_OtherConst, _ValPtr>& __it)
+#endif
+	: _M_node(__it._M_node) { }
+
+      [[__nodiscard__]]
+      reference
+      operator*() const noexcept
+      { return *static_cast<_Node&>(*_M_node)._M_valptr(); }
+
+      [[__nodiscard__]]
+      pointer
+      operator->() const noexcept
+      { return static_cast<_Node&>(*_M_node)._M_valptr(); }
+
+      _GLIBCXX14_CONSTEXPR _Iterator&
+      operator++() noexcept
+      {
+	if (_M_node->_M_right)
+	  {
+	    _M_node = _M_node->_M_right;
+	    while (_M_node->_M_left)
+	      _M_node = _M_node->_M_left;
+	  }
+	else
+	  {
+	    _Base_ptr __y = _M_node->_M_parent;
+	    while (_M_node == __y->_M_right)
+	      {
+		_M_node = __y;
+		__y = __y->_M_parent;
+	      }
+	    if (_M_node->_M_right != __y)
+	      _M_node = __y;
+	  }
+
+	return *this;
+      }
+
+      _GLIBCXX14_CONSTEXPR _Iterator
+      operator++(int) noexcept
+      {
+	_Iterator __tmp(this->_M_node);
+	++*this;
+	return __tmp;
+      }
+
+      _GLIBCXX14_CONSTEXPR _Iterator&
+      operator--() noexcept
+      {
+	if (_M_node->_M_color == _S_red
+	    && _M_node->_M_parent->_M_parent == _M_node)
+	  _M_node = _M_node->_M_right;
+	else if (_M_node->_M_left)
+	  {
+	    _Base_ptr __y = _M_node->_M_left;
+	    while (__y->_M_right)
+	      __y = __y->_M_right;
+	    _M_node = __y;
+	  }
+	else
+	  {
+	    _Base_ptr __y = _M_node->_M_parent;
+	    while (_M_node == __y->_M_left)
+	      {
+		_M_node = __y;
+		__y = __y->_M_parent;
+	      }
+	    _M_node = __y;
+	  }
+	return *this;
+      }
+
+      _GLIBCXX14_CONSTEXPR _Iterator
+      operator--(int) noexcept
+      {
+	_Iterator __tmp(this->_M_node);
+	--*this;
+	return __tmp;
+      }
+
+      [[__nodiscard__]]
+      friend bool
+      operator==(const _Iterator& __x, const _Iterator& __y) _GLIBCXX_NOEXCEPT
+      { return __x._M_node == __y._M_node; }
+
+#if ! __cpp_lib_three_way_comparison
+      [[__nodiscard__]]
+      friend bool
+      operator!=(const _Iterator& __x, const _Iterator& __y) _GLIBCXX_NOEXCEPT
+      { return __x._M_node != __y._M_node; }
+#endif
+
+      _Base_ptr _M_node;
+    };
+#endif // USE_ALLOC_PTR_FOR_RB_TREE
+
+  // Determine the node and iterator types used by std::_Rb_tree.
+  template<typename _Val, typename _Ptr>
+    struct _Node_traits;
+
+#if _GLIBCXX_USE_ALLOC_PTR_FOR_RB_TREE <= 9000
+  // Specialization for the simple case where the allocator's pointer type
+  // is the same type as value_type*.
+  // For ABI compatibility we can't change the types used for this case.
+  template<typename _Val>
+    struct _Node_traits<_Val, _Val*>
+    {
+      typedef _Rb_tree_node<_Val>		_Node;
+      typedef _Node*				_Node_ptr;
+      typedef _Rb_tree_node_base		_Node_base;
+      typedef _Node_base*			_Base_ptr;
+      typedef _Rb_tree_header			_Header_t;
+      typedef _Rb_tree_iterator<_Val>		_Iterator;
+      typedef _Rb_tree_const_iterator<_Val>	_Const_iterator;
+
+      __attribute__((__nonnull__))
+      static void
+      _S_insert_and_rebalance(const bool __insert_left,
+			      _Node_base* __x, _Node_base* __p,
+			      _Node_base& __header) _GLIBCXX_USE_NOEXCEPT
+      {
+	return _Rb_tree_insert_and_rebalance(__insert_left, __x, __p, __header);
+      }
+
+      __attribute__((__nonnull__,__returns_nonnull__))
+      static _Node_base*
+      _S_rebalance_for_erase(_Node_base* const __z,
+			     _Node_base& __header) _GLIBCXX_USE_NOEXCEPT
+      { return _Rb_tree_rebalance_for_erase(__z, __header); }
+    };
+#endif
+
+#if ! _GLIBCXX_USE_ALLOC_PTR_FOR_RB_TREE
+  // Always use the T* specialization.
+  template<typename _Val, typename _Ptr>
+    struct _Node_traits
+    : _Node_traits<_Val, _Val*>
+    { };
+#else
+  // Primary template used when the allocator uses fancy pointers.
+  template<typename _Val, typename _ValPtr>
+    struct _Node_traits
+    {
+      using _Node = __rb_tree::_Node<_ValPtr>;
+      using _Node_ptr = __ptr_rebind<_ValPtr, _Node>;
+      using _Node_base = __rb_tree::_Node_base<__ptr_rebind<_ValPtr, void>>;
+      using _Base_ptr = __ptr_rebind<_ValPtr, _Node_base>;
+      using _Header_t = __rb_tree::_Header<_Node_base>;
+      using _Iterator = __rb_tree::_Iterator<false, _ValPtr>;
+      using _Const_iterator = __rb_tree::_Iterator<true, _ValPtr>;
+
+      static void
+      _Rotate_left(_Base_ptr __x, _Base_ptr& __root)
+      {
+	const _Base_ptr __y = __x->_M_right;
+
+	__x->_M_right = __y->_M_left;
+	if (__y->_M_left)
+	  __y->_M_left->_M_parent = __x;
+	__y->_M_parent = __x->_M_parent;
+
+	if (__x == __root)
+	  __root = __y;
+	else if (__x == __x->_M_parent->_M_left)
+	  __x->_M_parent->_M_left = __y;
+	else
+	  __x->_M_parent->_M_right = __y;
+	__y->_M_left = __x;
+	__x->_M_parent = __y;
+      }
+
+      static void
+      _Rotate_right(_Base_ptr __x, _Base_ptr& __root)
+      {
+	const _Base_ptr __y = __x->_M_left;
+
+	__x->_M_left = __y->_M_right;
+	if (__y->_M_right)
+	  __y->_M_right->_M_parent = __x;
+	__y->_M_parent = __x->_M_parent;
+
+	if (__x == __root)
+	  __root = __y;
+	else if (__x == __x->_M_parent->_M_right)
+	  __x->_M_parent->_M_right = __y;
+	else
+	  __x->_M_parent->_M_left = __y;
+	__y->_M_right = __x;
+	__x->_M_parent = __y;
+      }
+
+      static void
+      _S_insert_and_rebalance(const bool __insert_left,
+			      _Base_ptr __x, _Base_ptr __p,
+			      _Node_base& __header)
+      {
+	_Base_ptr& __root = __header._M_parent;
+
+	// Initialize fields in new node to insert.
+	__x->_M_parent = __p;
+	__x->_M_left = __x->_M_right = nullptr;
+	__x->_M_color = _S_red;
+
+	// Insert.
+	// Make new node child of parent and maintain root, leftmost and
+	// rightmost nodes.
+	// N.B. First node is always inserted left.
+	if (__insert_left)
+	  {
+	    __p->_M_left = __x; // also makes leftmost = __x when __p == &__header
+
+	    if (std::__to_address(__p) == std::addressof(__header))
+	      {
+		__header._M_parent = __x;
+		__header._M_right = __x;
+	      }
+	    else if (__p == __header._M_left)
+	      __header._M_left = __x; // maintain leftmost pointing to min node
+	  }
+	else
+	  {
+	    __p->_M_right = __x;
+
+	    if (__p == __header._M_right)
+	      __header._M_right = __x; // maintain rightmost pointing to max node
+	  }
+	// Rebalance.
+	while (__x != __root
+	       && __x->_M_parent->_M_color == _S_red)
+	  {
+	    const _Base_ptr __xpp = __x->_M_parent->_M_parent;
+
+	    if (__x->_M_parent == __xpp->_M_left)
+	      {
+		const _Base_ptr __y = __xpp->_M_right;
+		if (__y && __y->_M_color == _S_red)
+		  {
+		    __x->_M_parent->_M_color = _S_black;
+		    __y->_M_color = _S_black;
+		    __xpp->_M_color = _S_red;
+		    __x = __xpp;
+		  }
+		else
+		  {
+		    if (__x == __x->_M_parent->_M_right)
+		      {
+			__x = __x->_M_parent;
+			_Rotate_left(__x, __root);
+		      }
+		    __x->_M_parent->_M_color = _S_black;
+		    __xpp->_M_color = _S_red;
+		    _Rotate_right(__xpp, __root);
+		  }
+	      }
+	    else
+	      {
+		const _Base_ptr __y = __xpp->_M_left;
+		if (__y && __y->_M_color == _S_red)
+		  {
+		    __x->_M_parent->_M_color = _S_black;
+		    __y->_M_color = _S_black;
+		    __xpp->_M_color = _S_red;
+		    __x = __xpp;
+		  }
+		else
+		  {
+		    if (__x == __x->_M_parent->_M_left)
+		      {
+			__x = __x->_M_parent;
+			_Rotate_right(__x, __root);
+		      }
+		    __x->_M_parent->_M_color = _S_black;
+		    __xpp->_M_color = _S_red;
+		    _Rotate_left(__xpp, __root);
+		  }
+	      }
+	  }
+	__root->_M_color = _S_black;
+      }
+
+      static _Base_ptr
+      _S_rebalance_for_erase(_Base_ptr __z, _Node_base& __header)
+      {
+	_Base_ptr& __root = __header._M_parent;
+	_Base_ptr& __leftmost = __header._M_left;
+	_Base_ptr& __rightmost = __header._M_right;
+	_Base_ptr __y = __z;
+	_Base_ptr __x{};
+	_Base_ptr __x_parent{};
+
+	if (!__y->_M_left)     // __z has at most one non-null child. y == z.
+	  __x = __y->_M_right;     // __x might be null.
+	else
+	  if (!__y->_M_right)  // __z has exactly one non-null child. y == z.
+	    __x = __y->_M_left;    // __x is not null.
+	  else
+	    {
+	      // __z has two non-null children.  Set __y to
+	      __y = __y->_M_right;   //   __z's successor.  __x might be null.
+	      while (__y->_M_left)
+		__y = __y->_M_left;
+	      __x = __y->_M_right;
+	    }
+	if (__y != __z)
+	  {
+	    // relink y in place of z.  y is z's successor
+	    __z->_M_left->_M_parent = __y;
+	    __y->_M_left = __z->_M_left;
+	    if (__y != __z->_M_right)
+	      {
+		__x_parent = __y->_M_parent;
+		if (__x)
+		  __x->_M_parent = __y->_M_parent;
+		__y->_M_parent->_M_left = __x;   // __y must be a child of _M_left
+		__y->_M_right = __z->_M_right;
+		__z->_M_right->_M_parent = __y;
+	      }
+	    else
+	      __x_parent = __y;
+	    if (__root == __z)
+	      __root = __y;
+	    else if (__z->_M_parent->_M_left == __z)
+	      __z->_M_parent->_M_left = __y;
+	    else
+	      __z->_M_parent->_M_right = __y;
+	    __y->_M_parent = __z->_M_parent;
+	    std::swap(__y->_M_color, __z->_M_color);
+	    __y = __z;
+	    // __y now points to node to be actually deleted
+	  }
+	else
+	  {                        // __y == __z
+	    __x_parent = __y->_M_parent;
+	    if (__x)
+	      __x->_M_parent = __y->_M_parent;
+	    if (__root == __z)
+	      __root = __x;
+	    else
+	      if (__z->_M_parent->_M_left == __z)
+		__z->_M_parent->_M_left = __x;
+	      else
+		__z->_M_parent->_M_right = __x;
+	    if (__leftmost == __z)
+	      {
+		if (!__z->_M_right)        // __z->_M_left must be null also
+		  __leftmost = __z->_M_parent;
+		// makes __leftmost == _M_header if __z == __root
+		else
+		  __leftmost = _Node_base::_S_minimum(__x);
+	      }
+	    if (__rightmost == __z)
+	      {
+		if (__z->_M_left == 0)         // __z->_M_right must be null also
+		  __rightmost = __z->_M_parent;
+		// makes __rightmost == _M_header if __z == __root
+		else                      // __x == __z->_M_left
+		  __rightmost = _Node_base::_S_maximum(__x);
+	      }
+	  }
+	if (__y->_M_color != _S_red)
+	  {
+	    while (__x != __root && (__x == 0 || __x->_M_color == _S_black))
+	      if (__x == __x_parent->_M_left)
+		{
+		  _Base_ptr __w = __x_parent->_M_right;
+		  if (__w->_M_color == _S_red)
+		    {
+		      __w->_M_color = _S_black;
+		      __x_parent->_M_color = _S_red;
+		      _Rotate_left(__x_parent, __root);
+		      __w = __x_parent->_M_right;
+		    }
+		  if ((!__w->_M_left || __w->_M_left->_M_color == _S_black) &&
+		      (!__w->_M_right || __w->_M_right->_M_color == _S_black))
+		    {
+		      __w->_M_color = _S_red;
+		      __x = __x_parent;
+		      __x_parent = __x_parent->_M_parent;
+		    }
+		  else
+		    {
+		      if (!__w->_M_right || __w->_M_right->_M_color == _S_black)
+			{
+			  __w->_M_left->_M_color = _S_black;
+			  __w->_M_color = _S_red;
+			  _Rotate_right(__w, __root);
+			  __w = __x_parent->_M_right;
+			}
+		      __w->_M_color = __x_parent->_M_color;
+		      __x_parent->_M_color = _S_black;
+		      if (__w->_M_right)
+			__w->_M_right->_M_color = _S_black;
+		      _Rotate_left(__x_parent, __root);
+		      break;
+		    }
+		}
+	      else
+		{
+		  // same as above, with _M_right <-> _M_left.
+		  _Base_ptr __w = __x_parent->_M_left;
+		  if (__w->_M_color == _S_red)
+		    {
+		      __w->_M_color = _S_black;
+		      __x_parent->_M_color = _S_red;
+		      _Rotate_right(__x_parent, __root);
+		      __w = __x_parent->_M_left;
+		    }
+		  if ((!__w->_M_right || __w->_M_right->_M_color == _S_black) &&
+		      (!__w->_M_left || __w->_M_left->_M_color == _S_black))
+		    {
+		      __w->_M_color = _S_red;
+		      __x = __x_parent;
+		      __x_parent = __x_parent->_M_parent;
+		    }
+		  else
+		    {
+		      if (!__w->_M_left || __w->_M_left->_M_color == _S_black)
+			{
+			  __w->_M_right->_M_color = _S_black;
+			  __w->_M_color = _S_red;
+			  _Rotate_left(__w, __root);
+			  __w = __x_parent->_M_left;
+			}
+		      __w->_M_color = __x_parent->_M_color;
+		      __x_parent->_M_color = _S_black;
+		      if (__w->_M_left)
+			__w->_M_left->_M_color = _S_black;
+		      _Rotate_right(__x_parent, __root);
+		      break;
+		    }
+		}
+	    if (__x)
+	      __x->_M_color = _S_black;
+	  }
+
+	return __y;
+      }
+    };
+#endif
+} // namespace __rb_tree
+
 #if __cplusplus > 201402L
   template<typename _Tree1, typename _Cmp2>
     struct _Rb_tree_merge_helper { };
@@ -425,15 +1020,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class _Rb_tree
     {
       typedef typename __gnu_cxx::__alloc_traits<_Alloc>::template
-	rebind<_Rb_tree_node<_Val> >::other _Node_allocator;
+	rebind<_Val>::other _Val_alloc_type;
 
-      typedef __gnu_cxx::__alloc_traits<_Node_allocator> _Alloc_traits;
+      typedef __gnu_cxx::__alloc_traits<_Val_alloc_type> _Val_alloc_traits;
+      typedef typename _Val_alloc_traits::pointer _ValPtr;
+      typedef __rb_tree::_Node_traits<_Val, _ValPtr> _Node_traits;
+
+      typedef typename _Node_traits::_Node_base		_Node_base;
+      typedef typename _Node_traits::_Node		_Node;
+
+      typedef typename __gnu_cxx::__alloc_traits<_Alloc>::template
+	rebind<_Node>::other _Node_allocator;
+
+      typedef __gnu_cxx::__alloc_traits<_Node_allocator> _Node_alloc_traits;
 
     protected:
-      typedef _Rb_tree_node_base* 		_Base_ptr;
-      typedef const _Rb_tree_node_base* 	_Const_Base_ptr;
-      typedef _Rb_tree_node<_Val>* 		_Link_type;
-      typedef const _Rb_tree_node<_Val>*	_Const_Link_type;
+      typedef typename _Node_traits::_Base_ptr	_Base_ptr;
+      typedef typename _Node_traits::_Node_ptr	_Node_ptr;
 
     private:
       // Functor recycling a pool of nodes and using allocation once the pool
@@ -445,13 +1048,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  if (_M_root)
 	    {
-	      _M_root->_M_parent = 0;
+	      _M_root->_M_parent = _Base_ptr();
 
 	      if (_M_nodes->_M_left)
 		_M_nodes = _M_nodes->_M_left;
 	    }
 	  else
-	    _M_nodes = 0;
+	    _M_nodes = _Base_ptr();
 	}
 
 #if __cplusplus >= 201103L
@@ -459,15 +1062,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
 	~_Reuse_or_alloc_node()
-	{ _M_t._M_erase(static_cast<_Link_type>(_M_root)); }
+	{
+	  if (_M_root)
+	    _M_t._M_erase(static_cast<_Node&>(*_M_root)._M_node_ptr());
+	}
 
 	template<typename _Arg>
-	  _Link_type
+	  _Node_ptr
 	  operator()(_GLIBCXX_FWDREF(_Arg) __arg)
 	  {
-	    _Link_type __node = static_cast<_Link_type>(_M_extract());
-	    if (__node)
+	    _Base_ptr __base = _M_extract();
+	    if (__base)
 	      {
+		_Node_ptr __node = static_cast<_Node&>(*__base)._M_node_ptr();
 		_M_t._M_destroy_node(__node);
 		_M_t._M_construct_node(__node, _GLIBCXX_FORWARD(_Arg, __arg));
 		return __node;
@@ -489,7 +1096,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    {
 	      if (_M_nodes->_M_right == __node)
 		{
-		  _M_nodes->_M_right = 0;
+		  _M_nodes->_M_right = _Base_ptr();
 
 		  if (_M_nodes->_M_left)
 		    {
@@ -503,10 +1110,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    }
 		}
 	      else // __node is on the left.
-		_M_nodes->_M_left = 0;
+		_M_nodes->_M_left = _Base_ptr();
 	    }
 	  else
-	    _M_root = 0;
+	    _M_root = _Base_ptr();
 
 	  return __node;
 	}
@@ -524,7 +1131,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _M_t(__t) { }
 
 	template<typename _Arg>
-	  _Link_type
+	  _Node_ptr
 	  operator()(_GLIBCXX_FWDREF(_Arg) __arg) const
 	  { return _M_t._M_create_node(_GLIBCXX_FORWARD(_Arg, __arg)); }
 
@@ -556,17 +1163,52 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return allocator_type(_M_get_Node_allocator()); }
 
     protected:
-      _Link_type
+      _Node_ptr
       _M_get_node()
-      { return _Alloc_traits::allocate(_M_get_Node_allocator(), 1); }
+      {
+#if __cplusplus < 201102L || _GLIBCXX_USE_ALLOC_PTR_FOR_RB_TREE
+	return _Node_alloc_traits::allocate(_M_get_Node_allocator(), 1);
+#else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+	using __alloc_pointer = typename _Node_alloc_traits::pointer;
+	if constexpr (is_same<_Node_ptr, __alloc_pointer>::value)
+	  return _Node_alloc_traits::allocate(_M_get_Node_allocator(), 1);
+	else
+	  {
+	    auto __ptr =
+	      _Node_alloc_traits::allocate(_M_get_Node_allocator(), 1);
+	    return std::__to_address(__ptr);
+	  }
+#pragma GCC diagnostic pop
+#endif
+      }
 
       void
-      _M_put_node(_Link_type __p) _GLIBCXX_NOEXCEPT
-      { _Alloc_traits::deallocate(_M_get_Node_allocator(), __p, 1); }
+      _M_put_node(_Node_ptr __p) _GLIBCXX_NOEXCEPT
+      {
+#if __cplusplus < 201102L || _GLIBCXX_USE_ALLOC_PTR_FOR_RB_TREE
+	_Node_alloc_traits::deallocate(_M_get_Node_allocator(), __p, 1);
+#else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+	using __alloc_pointer = typename _Node_alloc_traits::pointer;
+	if constexpr (is_same<_Node_ptr, __alloc_pointer>::value)
+	  _Node_alloc_traits::deallocate(_M_get_Node_allocator(), __p, 1);
+	else
+	  {
+	    // When not using the allocator's pointer type internally we must
+	    // convert __p to __alloc_pointer so it can be deallocated.
+	    auto __ap = pointer_traits<__alloc_pointer>::pointer_to(*__p);
+	    _Node_alloc_traits::deallocate(_M_get_Node_allocator(), __ap, 1);
+	  }
+#pragma GCC diagnostic pop
+#endif
+      }
 
 #if __cplusplus < 201103L
       void
-      _M_construct_node(_Link_type __node, const value_type& __x)
+      _M_construct_node(_Node_ptr __node, const value_type& __x)
       {
 	__try
 	  { get_allocator().construct(__node->_M_valptr(), __x); }
@@ -577,79 +1219,80 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
       }
 
-      _Link_type
+      _Node_ptr
       _M_create_node(const value_type& __x)
       {
-	_Link_type __tmp = _M_get_node();
+	_Node_ptr __tmp = _M_get_node();
 	_M_construct_node(__tmp, __x);
 	return __tmp;
       }
 #else
       template<typename... _Args>
 	void
-	_M_construct_node(_Link_type __node, _Args&&... __args)
+	_M_construct_node(_Node_ptr __node, _Args&&... __args)
 	{
 	  __try
 	    {
-	      ::new(__node) _Rb_tree_node<_Val>;
-	      _Alloc_traits::construct(_M_get_Node_allocator(),
-				       __node->_M_valptr(),
-				       std::forward<_Args>(__args)...);
+	      ::new(std::addressof(*__node)) _Node;
+	      _Node_alloc_traits::construct(_M_get_Node_allocator(),
+					    __node->_M_valptr(),
+					    std::forward<_Args>(__args)...);
 	    }
 	  __catch(...)
 	    {
-	      __node->~_Rb_tree_node<_Val>();
+	      __node->~_Node();
 	      _M_put_node(__node);
 	      __throw_exception_again;
 	    }
 	}
 
       template<typename... _Args>
-	_Link_type
+	_Node_ptr
 	_M_create_node(_Args&&... __args)
 	{
-	  _Link_type __tmp = _M_get_node();
+	  _Node_ptr __tmp = _M_get_node();
 	  _M_construct_node(__tmp, std::forward<_Args>(__args)...);
 	  return __tmp;
 	}
 #endif
 
       void
-      _M_destroy_node(_Link_type __p) _GLIBCXX_NOEXCEPT
+      _M_destroy_node(_Node_ptr __p) _GLIBCXX_NOEXCEPT
       {
 #if __cplusplus < 201103L
 	get_allocator().destroy(__p->_M_valptr());
 #else
-	_Alloc_traits::destroy(_M_get_Node_allocator(), __p->_M_valptr());
-	__p->~_Rb_tree_node<_Val>();
+	_Node_alloc_traits::destroy(_M_get_Node_allocator(), __p->_M_valptr());
+	__p->~_Node();
 #endif
       }
 
       void
-      _M_drop_node(_Link_type __p) _GLIBCXX_NOEXCEPT
+      _M_drop_node(_Node_ptr __p) _GLIBCXX_NOEXCEPT
       {
 	_M_destroy_node(__p);
 	_M_put_node(__p);
       }
 
       template<bool _MoveValue, typename _NodeGen>
-	_Link_type
-	_M_clone_node(_Link_type __x, _NodeGen& __node_gen)
+	_Node_ptr
+	_M_clone_node(_Node_ptr __x, _NodeGen& __node_gen)
 	{
 #if __cplusplus >= 201103L
 	  using _Vp = __conditional_t<_MoveValue,
 				      value_type&&,
 				      const value_type&>;
 #endif
-	  _Link_type __tmp
+	  _Node_ptr __tmp
 	    = __node_gen(_GLIBCXX_FORWARD(_Vp, *__x->_M_valptr()));
 	  __tmp->_M_color = __x->_M_color;
-	  __tmp->_M_left = 0;
-	  __tmp->_M_right = 0;
+	  __tmp->_M_left = __tmp->_M_right = _Base_ptr();
 	  return __tmp;
 	}
 
     protected:
+      typedef typename _Node_traits::_Header_t		_Header_t;
+
 #if _GLIBCXX_INLINE_VERSION
       template<typename _Key_compare>
 #else
@@ -660,7 +1303,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	struct _Rb_tree_impl
 	: public _Node_allocator
 	, public _Rb_tree_key_compare<_Key_compare>
-	, public _Rb_tree_header
+	, public _Header_t
 	{
 	  typedef _Rb_tree_key_compare<_Key_compare> _Base_key_compare;
 
@@ -672,9 +1315,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  { }
 
 	  _Rb_tree_impl(const _Rb_tree_impl& __x)
-	  : _Node_allocator(_Alloc_traits::_S_select_on_copy(__x))
+	  : _Node_allocator(_Node_alloc_traits::_S_select_on_copy(__x))
 	  , _Base_key_compare(__x._M_key_compare)
-	  , _Rb_tree_header()
+	  , _Header_t()
 	  { }
 
 #if __cplusplus < 201103L
@@ -694,7 +1337,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _Rb_tree_impl(_Rb_tree_impl&& __x, _Node_allocator&& __a)
 	  : _Node_allocator(std::move(__a)),
 	    _Base_key_compare(std::move(__x)),
-	    _Rb_tree_header(std::move(__x))
+	    _Header_t(std::move(__x))
 	  { }
 
 	  _Rb_tree_impl(const _Key_compare& __comp, _Node_allocator&& __a)
@@ -710,7 +1353,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_root() _GLIBCXX_NOEXCEPT
       { return this->_M_impl._M_header._M_parent; }
 
-      _Const_Base_ptr
+      _Base_ptr
       _M_root() const _GLIBCXX_NOEXCEPT
       { return this->_M_impl._M_header._M_parent; }
 
@@ -718,7 +1361,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_leftmost() _GLIBCXX_NOEXCEPT
       { return this->_M_impl._M_header._M_left; }
 
-      _Const_Base_ptr
+      _Base_ptr
       _M_leftmost() const _GLIBCXX_NOEXCEPT
       { return this->_M_impl._M_header._M_left; }
 
@@ -726,35 +1369,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_rightmost() _GLIBCXX_NOEXCEPT
       { return this->_M_impl._M_header._M_right; }
 
-      _Const_Base_ptr
+      _Base_ptr
       _M_rightmost() const _GLIBCXX_NOEXCEPT
       { return this->_M_impl._M_header._M_right; }
 
-      _Link_type
-      _M_mbegin() const _GLIBCXX_NOEXCEPT
-      { return static_cast<_Link_type>(this->_M_impl._M_header._M_parent); }
-
-      _Link_type
-      _M_begin() _GLIBCXX_NOEXCEPT
-      { return _M_mbegin(); }
-
-      _Const_Link_type
+      _Base_ptr
       _M_begin() const _GLIBCXX_NOEXCEPT
+      { return this->_M_impl._M_header._M_parent; }
+
+      _Node_ptr
+      _M_begin_node() const _GLIBCXX_NOEXCEPT
       {
-	return static_cast<_Const_Link_type>
-	  (this->_M_impl._M_header._M_parent);
+	_Base_ptr __begin = this->_M_impl._M_header._M_parent;
+	return __begin
+	  ? static_cast<_Node&>(*__begin)._M_node_ptr()
+	  : _Node_ptr();
       }
 
       _Base_ptr
-      _M_end() _GLIBCXX_NOEXCEPT
-      { return &this->_M_impl._M_header; }
-
-      _Const_Base_ptr
       _M_end() const _GLIBCXX_NOEXCEPT
-      { return &this->_M_impl._M_header; }
+      { return this->_M_impl._M_header._M_base_ptr(); }
 
       static const _Key&
-      _S_key(_Const_Link_type __x)
+      _S_key(const _Node& __node)
       {
 #if __cplusplus >= 201103L
 	// If we're asking for the key we're presumably using the comparison
@@ -772,48 +1409,44 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 # endif // C++17
 #endif // C++11
 
-	return _KeyOfValue()(*__x->_M_valptr());
+	return _KeyOfValue()(*__node._M_valptr());
       }
 
-      static _Link_type
-      _S_left(_Base_ptr __x) _GLIBCXX_NOEXCEPT
-      { return static_cast<_Link_type>(__x->_M_left); }
-
-      static _Const_Link_type
-      _S_left(_Const_Base_ptr __x) _GLIBCXX_NOEXCEPT
-      { return static_cast<_Const_Link_type>(__x->_M_left); }
-
-      static _Link_type
-      _S_right(_Base_ptr __x) _GLIBCXX_NOEXCEPT
-      { return static_cast<_Link_type>(__x->_M_right); }
-
-      static _Const_Link_type
-      _S_right(_Const_Base_ptr __x) _GLIBCXX_NOEXCEPT
-      { return static_cast<_Const_Link_type>(__x->_M_right); }
+      static const _Key&
+      _S_key(_Base_ptr __x)
+      { return _S_key(static_cast<const _Node&>(*__x)); }
 
       static const _Key&
-      _S_key(_Const_Base_ptr __x)
-      { return _S_key(static_cast<_Const_Link_type>(__x)); }
+      _S_key(_Node_ptr __x)
+      { return _S_key(*__x); }
 
       static _Base_ptr
-      _S_minimum(_Base_ptr __x) _GLIBCXX_NOEXCEPT
-      { return _Rb_tree_node_base::_S_minimum(__x); }
+      _S_left(_Base_ptr __x) _GLIBCXX_NOEXCEPT
+      { return __x->_M_left; }
 
-      static _Const_Base_ptr
-      _S_minimum(_Const_Base_ptr __x) _GLIBCXX_NOEXCEPT
-      { return _Rb_tree_node_base::_S_minimum(__x); }
+      static _Node_ptr
+      _S_left(_Node_ptr __x)
+      {
+	return __x->_M_left
+	  ? static_cast<_Node&>(*__x->_M_left)._M_node_ptr()
+	  : _Node_ptr();
+      }
 
       static _Base_ptr
-      _S_maximum(_Base_ptr __x) _GLIBCXX_NOEXCEPT
-      { return _Rb_tree_node_base::_S_maximum(__x); }
+      _S_right(_Base_ptr __x) _GLIBCXX_NOEXCEPT
+      { return __x->_M_right; }
 
-      static _Const_Base_ptr
-      _S_maximum(_Const_Base_ptr __x) _GLIBCXX_NOEXCEPT
-      { return _Rb_tree_node_base::_S_maximum(__x); }
+      static _Node_ptr
+      _S_right(_Node_ptr __x) _GLIBCXX_NOEXCEPT
+      {
+	return __x->_M_right
+	  ? static_cast<_Node&>(*__x->_M_right)._M_node_ptr()
+	  : _Node_ptr();
+      }
 
     public:
-      typedef _Rb_tree_iterator<value_type>       iterator;
-      typedef _Rb_tree_const_iterator<value_type> const_iterator;
+      typedef typename _Node_traits::_Iterator		iterator;
+      typedef typename _Node_traits::_Const_iterator	const_iterator;
 
       typedef std::reverse_iterator<iterator>       reverse_iterator;
       typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
@@ -846,7 +1479,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_insert_(_Base_ptr __x, _Base_ptr __y, _Arg&& __v, _NodeGen&);
 
       iterator
-      _M_insert_node(_Base_ptr __x, _Base_ptr __y, _Link_type __z);
+      _M_insert_node(_Base_ptr __x, _Base_ptr __y, _Node_ptr __z);
 
       template<typename _Arg>
 	iterator
@@ -857,10 +1490,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_insert_equal_lower(_Arg&& __x);
 
       iterator
-      _M_insert_lower_node(_Base_ptr __p, _Link_type __z);
+      _M_insert_lower_node(_Base_ptr __p, _Node_ptr __z);
 
       iterator
-      _M_insert_equal_lower_node(_Link_type __z);
+      _M_insert_equal_lower_node(_Node_ptr __z);
 #else
       template<typename _NodeGen>
 	iterator
@@ -879,22 +1512,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       enum { __as_lvalue, __as_rvalue };
 
       template<bool _MoveValues, typename _NodeGen>
-	_Link_type
-	_M_copy(_Link_type, _Base_ptr, _NodeGen&);
+	_Base_ptr
+	_M_copy(_Node_ptr, _Base_ptr, _NodeGen&);
 
       template<bool _MoveValues, typename _NodeGen>
-	_Link_type
+	_Base_ptr
 	_M_copy(const _Rb_tree& __x, _NodeGen& __gen)
 	{
-	  _Link_type __root =
-	    _M_copy<_MoveValues>(__x._M_mbegin(), _M_end(), __gen);
-	  _M_leftmost() = _S_minimum(__root);
-	  _M_rightmost() = _S_maximum(__root);
+	  _Base_ptr __root =
+	    _M_copy<_MoveValues>(__x._M_begin_node(), _M_end(), __gen);
+	  _M_leftmost() = _Node_base::_S_minimum(__root);
+	  _M_rightmost() = _Node_base::_S_maximum(__root);
 	  _M_impl._M_node_count = __x._M_impl._M_node_count;
 	  return __root;
 	}
 
-      _Link_type
+      _Base_ptr
       _M_copy(const _Rb_tree& __x)
       {
 	_Alloc_node __an(*this);
@@ -902,22 +1535,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       void
-      _M_erase(_Link_type __x);
+      _M_erase(_Node_ptr __x);
 
-      iterator
-      _M_lower_bound(_Link_type __x, _Base_ptr __y,
-		     const _Key& __k);
-
-      const_iterator
-      _M_lower_bound(_Const_Link_type __x, _Const_Base_ptr __y,
+      _Base_ptr
+      _M_lower_bound(_Base_ptr __x, _Base_ptr __y,
 		     const _Key& __k) const;
 
-      iterator
-      _M_upper_bound(_Link_type __x, _Base_ptr __y,
-		     const _Key& __k);
-
-      const_iterator
-      _M_upper_bound(_Const_Link_type __x, _Const_Base_ptr __y,
+      _Base_ptr
+      _M_upper_bound(_Base_ptr __x, _Base_ptr __y,
 		     const _Key& __k) const;
 
     public:
@@ -935,7 +1560,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Rb_tree(const _Rb_tree& __x)
       : _M_impl(__x._M_impl)
       {
-	if (__x._M_root() != 0)
+	if (__x._M_root())
 	  _M_root() = _M_copy(__x);
       }
 
@@ -947,7 +1572,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Rb_tree(const _Rb_tree& __x, const allocator_type& __a)
       : _M_impl(__x._M_impl._M_key_compare, _Node_allocator(__a))
       {
-	if (__x._M_root() != nullptr)
+	if (__x._M_root())
 	  _M_root() = _M_copy(__x);
       }
 
@@ -966,7 +1591,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Rb_tree(_Rb_tree&& __x, _Node_allocator&& __a, false_type)
       : _M_impl(__x._M_impl._M_key_compare, std::move(__a))
       {
-	if (__x._M_root() != nullptr)
+	if (__x._M_root())
 	  _M_move_data(__x, false_type{});
       }
 
@@ -974,14 +1599,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Rb_tree(_Rb_tree&& __x, _Node_allocator&& __a)
       noexcept( noexcept(
 	_Rb_tree(std::declval<_Rb_tree&&>(), std::declval<_Node_allocator&&>(),
-		 std::declval<typename _Alloc_traits::is_always_equal>())) )
+		 std::declval<typename _Node_alloc_traits::is_always_equal>())) )
       : _Rb_tree(std::move(__x), std::move(__a),
-		 typename _Alloc_traits::is_always_equal{})
+		 typename _Node_alloc_traits::is_always_equal{})
       { }
 #endif
 
       ~_Rb_tree() _GLIBCXX_NOEXCEPT
-      { _M_erase(_M_begin()); }
+      { _M_erase(_M_begin_node()); }
 
       _Rb_tree&
       operator=(const _Rb_tree& __x);
@@ -1001,11 +1626,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       iterator
       end() _GLIBCXX_NOEXCEPT
-      { return iterator(&this->_M_impl._M_header); }
+      { return iterator(_M_end()); }
 
       const_iterator
       end() const _GLIBCXX_NOEXCEPT
-      { return const_iterator(&this->_M_impl._M_header); }
+      { return const_iterator(_M_end()); }
 
       reverse_iterator
       rbegin() _GLIBCXX_NOEXCEPT
@@ -1033,7 +1658,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       size_type
       max_size() const _GLIBCXX_NOEXCEPT
-      { return _Alloc_traits::max_size(_M_get_Node_allocator()); }
+      { return _Node_alloc_traits::max_size(_M_get_Node_allocator()); }
 
       void
       swap(_Rb_tree& __t)
@@ -1194,7 +1819,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	const_iterator __result = __position;
 	++__result;
 	_M_erase_aux(__position);
-	return __result._M_const_cast();
+	return iterator(__result._M_node);
       }
 
       // LWG 2059.
@@ -1235,7 +1860,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       erase(const_iterator __first, const_iterator __last)
       {
 	_M_erase_aux(__first, __last);
-	return __last._M_const_cast();
+	return iterator(__last._M_node);
       }
 #else
       void
@@ -1250,7 +1875,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       clear() _GLIBCXX_NOEXCEPT
       {
-	_M_erase(_M_begin());
+	_M_erase(_M_begin_node());
 	_M_impl._M_reset();
       }
 
@@ -1266,19 +1891,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       iterator
       lower_bound(const key_type& __k)
-      { return _M_lower_bound(_M_begin(), _M_end(), __k); }
+      { return iterator(_M_lower_bound(_M_begin(), _M_end(), __k)); }
 
       const_iterator
       lower_bound(const key_type& __k) const
-      { return _M_lower_bound(_M_begin(), _M_end(), __k); }
+      {
+	return const_iterator
+	  (_M_lower_bound(_M_begin(), _M_end(), __k));
+      }
 
       iterator
       upper_bound(const key_type& __k)
-      { return _M_upper_bound(_M_begin(), _M_end(), __k); }
+      { return iterator(_M_upper_bound(_M_begin(), _M_end(), __k)); }
 
       const_iterator
       upper_bound(const key_type& __k) const
-      { return _M_upper_bound(_M_begin(), _M_end(), __k); }
+      {
+	return const_iterator
+	  (_M_upper_bound(_M_begin(), _M_end(), __k));
+      }
 
       pair<iterator, iterator>
       equal_range(const key_type& __k);
@@ -1293,7 +1924,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_find_tr(const _Kt& __k)
 	{
 	  const _Rb_tree* __const_this = this;
-	  return __const_this->_M_find_tr(__k)._M_const_cast();
+	  return iterator(__const_this->_M_find_tr(__k)._M_node);
 	}
 
       template<typename _Kt,
@@ -1301,7 +1932,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	const_iterator
 	_M_find_tr(const _Kt& __k) const
 	{
-	  auto __j = _M_lower_bound_tr(__k);
+	  const_iterator __j(_M_lower_bound_tr(__k));
 	  if (__j != end() && _M_impl._M_key_compare(__k, _S_key(__j._M_node)))
 	    __j = end();
 	  return __j;
@@ -1318,21 +1949,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Kt,
 	       typename _Req = __has_is_transparent_t<_Compare, _Kt>>
-	iterator
-	_M_lower_bound_tr(const _Kt& __k)
-	{
-	  const _Rb_tree* __const_this = this;
-	  return __const_this->_M_lower_bound_tr(__k)._M_const_cast();
-	}
-
-      template<typename _Kt,
-	       typename _Req = __has_is_transparent_t<_Compare, _Kt>>
-	const_iterator
+	_Base_ptr
 	_M_lower_bound_tr(const _Kt& __k) const
 	{
 	  auto __x = _M_begin();
 	  auto __y = _M_end();
-	  while (__x != 0)
+	  while (__x)
 	    if (!_M_impl._M_key_compare(_S_key(__x), __k))
 	      {
 		__y = __x;
@@ -1340,26 +1962,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      }
 	    else
 	      __x = _S_right(__x);
-	  return const_iterator(__y);
+	  return __y;
 	}
 
       template<typename _Kt,
 	       typename _Req = __has_is_transparent_t<_Compare, _Kt>>
-	iterator
-	_M_upper_bound_tr(const _Kt& __k)
-	{
-	  const _Rb_tree* __const_this = this;
-	  return __const_this->_M_upper_bound_tr(__k)._M_const_cast();
-	}
-
-      template<typename _Kt,
-	       typename _Req = __has_is_transparent_t<_Compare, _Kt>>
-	const_iterator
+	_Base_ptr
 	_M_upper_bound_tr(const _Kt& __k) const
 	{
 	  auto __x = _M_begin();
 	  auto __y = _M_end();
-	  while (__x != 0)
+	  while (__x)
 	    if (_M_impl._M_key_compare(__k, _S_key(__x)))
 	      {
 		__y = __x;
@@ -1367,7 +1980,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      }
 	    else
 	      __x = _S_right(__x);
-	  return const_iterator(__y);
+	  return __y;
 	}
 
       template<typename _Kt,
@@ -1377,7 +1990,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  const _Rb_tree* __const_this = this;
 	  auto __ret = __const_this->_M_equal_range_tr(__k);
-	  return { __ret.first._M_const_cast(), __ret.second._M_const_cast() };
+	  return
+	    { iterator(__ret.first._M_node), iterator(__ret.second._M_node) };
 	}
 
       template<typename _Kt,
@@ -1385,7 +1999,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	pair<const_iterator, const_iterator>
 	_M_equal_range_tr(const _Kt& __k) const
 	{
-	  auto __low = _M_lower_bound_tr(__k);
+	  const_iterator __low(_M_lower_bound_tr(__k));
 	  auto __high = __low;
 	  auto& __cmp = _M_impl._M_key_compare;
 	  while (__high != end() && !__cmp(__k, _S_key(__high._M_node)))
@@ -1401,7 +2015,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
       _Rb_tree&
       operator=(_Rb_tree&&)
-      noexcept(_Alloc_traits::_S_nothrow_move()
+      noexcept(_Node_alloc_traits::_S_nothrow_move()
 	       && is_nothrow_move_assignable<_Compare>::value);
 
       template<typename _Iterator>
@@ -1434,6 +2048,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
 #if __glibcxx_node_extract // >= C++17
+      static _Node_ptr
+      _S_adapt(typename _Node_alloc_traits::pointer __ptr)
+      {
+#if _GLIBCXX_USE_ALLOC_PTR_FOR_RB_TREE
+	return __ptr;
+#else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+	using __alloc_ptr = typename _Node_alloc_traits::pointer;
+	if constexpr (is_same<_Node_ptr, __alloc_ptr>::value)
+	  return __ptr;
+	else
+	  return std::__to_address(__ptr);
+#pragma GCC diagnostic pop
+#endif
+      }
+
     public:
       /// Re-insert an extracted node.
       insert_return_type
@@ -1450,7 +2081,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    if (__res.second)
 	      {
 		__ret.position
-		  = _M_insert_node(__res.first, __res.second, __nh._M_ptr);
+		  = _M_insert_node(__res.first, __res.second,
+				   _S_adapt(__nh._M_ptr));
 		__nh.release();
 		__ret.inserted = true;
 	      }
@@ -1476,9 +2108,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __glibcxx_assert(_M_get_Node_allocator() == *__nh._M_alloc);
 	    auto __res = _M_get_insert_equal_pos(__nh._M_key());
 	    if (__res.second)
-	      __ret = _M_insert_node(__res.first, __res.second, __nh._M_ptr);
+	      __ret = _M_insert_node(__res.first, __res.second,
+				     _S_adapt(__nh._M_ptr));
 	    else
-	      __ret = _M_insert_equal_lower_node(__nh._M_ptr);
+	      __ret = _M_insert_equal_lower_node(_S_adapt(__nh._M_ptr));
 	    __nh.release();
 	  }
 	return __ret;
@@ -1497,7 +2130,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    auto __res = _M_get_insert_hint_unique_pos(__hint, __nh._M_key());
 	    if (__res.second)
 	      {
-		__ret = _M_insert_node(__res.first, __res.second, __nh._M_ptr);
+		__ret = _M_insert_node(__res.first, __res.second,
+				       _S_adapt(__nh._M_ptr));
 		__nh.release();
 	      }
 	    else
@@ -1518,9 +2152,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __glibcxx_assert(_M_get_Node_allocator() == *__nh._M_alloc);
 	    auto __res = _M_get_insert_hint_equal_pos(__hint, __nh._M_key());
 	    if (__res.second)
-	      __ret = _M_insert_node(__res.first, __res.second, __nh._M_ptr);
+	      __ret = _M_insert_node(__res.first, __res.second,
+				     _S_adapt(__nh._M_ptr));
 	    else
-	      __ret = _M_insert_equal_lower_node(__nh._M_ptr);
+	      __ret = _M_insert_equal_lower_node(_S_adapt(__nh._M_ptr));
 	    __nh.release();
 	  }
 	return __ret;
@@ -1530,10 +2165,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       node_type
       extract(const_iterator __pos)
       {
-	auto __ptr = _Rb_tree_rebalance_for_erase(
-	    __pos._M_const_cast()._M_node, _M_impl._M_header);
+	auto __ptr = _Node_traits::_S_rebalance_for_erase
+	  (__pos._M_node, _M_impl._M_header);
 	--_M_impl._M_node_count;
-	return { static_cast<_Link_type>(__ptr), _M_get_Node_allocator() };
+	auto __node_ptr = static_cast<_Node&>(*__ptr)._M_node_ptr();
+#if _GLIBCXX_USE_ALLOC_PTR_FOR_RB_TREE
+	return { __node_ptr, _M_get_Node_allocator() };
+#else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+	using __alloc_ptr = typename _Node_alloc_traits::pointer;
+	if constexpr (is_same<_Node_ptr, __alloc_ptr>::value)
+	  return { __node_ptr, _M_get_Node_allocator() };
+	else
+	  {
+	    auto __ap = pointer_traits<__alloc_ptr>::pointer_to(*__node_ptr);
+	    return { __ap, _M_get_Node_allocator() };
+	  }
+#pragma GCC diagnostic pop
+#endif
       }
 
       /// Extract a node.
@@ -1567,11 +2217,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      if (__res.second)
 		{
 		  auto& __src_impl = _Merge_helper::_S_get_impl(__src);
-		  auto __ptr = _Rb_tree_rebalance_for_erase(
-		      __pos._M_node, __src_impl._M_header);
+		  auto __ptr = _Node_traits::_S_rebalance_for_erase
+		    (__pos._M_node, __src_impl._M_header);
 		  --__src_impl._M_node_count;
-		  _M_insert_node(__res.first, __res.second,
-				 static_cast<_Link_type>(__ptr));
+		  auto __node_ptr = static_cast<_Node&>(*__ptr)._M_node_ptr();
+		  _M_insert_node(__res.first, __res.second, __node_ptr);
 		}
 	    }
 	}
@@ -1589,11 +2239,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      if (__res.second)
 		{
 		  auto& __src_impl = _Merge_helper::_S_get_impl(__src);
-		  auto __ptr = _Rb_tree_rebalance_for_erase(
-		      __pos._M_node, __src_impl._M_header);
+		  auto __ptr = _Node_traits::_S_rebalance_for_erase
+		    (__pos._M_node, __src_impl._M_header);
 		  --__src_impl._M_node_count;
-		  _M_insert_node(__res.first, __res.second,
-				 static_cast<_Link_type>(__ptr));
+		  auto __node_ptr = static_cast<_Node&>(*__ptr)._M_node_ptr();
+		  _M_insert_node(__res.first, __res.second, __node_ptr);
 		}
 	    }
 	}
@@ -1666,7 +2316,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
 	_Rb_tree& _M_t;
-	_Link_type _M_node;
+	_Node_ptr _M_node;
       };
 #endif // C++11
     };
@@ -1704,7 +2354,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_move_assign(_Rb_tree& __x, true_type)
     {
       clear();
-      if (__x._M_root() != nullptr)
+      if (__x._M_root())
 	_M_move_data(__x, true_type());
       std::__alloc_on_move(_M_get_Node_allocator(),
 			   __x._M_get_Node_allocator());
@@ -1723,7 +2373,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // structure.
       _Reuse_or_alloc_node __roan(*this);
       _M_impl._M_reset();
-      if (__x._M_root() != nullptr)
+      if (__x._M_root())
 	{
 	  _M_root() = _M_copy<__as_rvalue>(__x, __roan);
 	  __x.clear();
@@ -1735,11 +2385,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>&
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     operator=(_Rb_tree&& __x)
-    noexcept(_Alloc_traits::_S_nothrow_move()
+    noexcept(_Node_alloc_traits::_S_nothrow_move()
 	     && is_nothrow_move_assignable<_Compare>::value)
     {
       _M_impl._M_key_compare = std::move(__x._M_impl._M_key_compare);
-      _M_move_assign(__x, __bool_constant<_Alloc_traits::_S_nothrow_move()>());
+      _M_move_assign(__x,
+		     __bool_constant<_Node_alloc_traits::_S_nothrow_move()>());
       return *this;
     }
 
@@ -1780,11 +2431,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  // Note that _Key may be a constant type.
 #if __cplusplus >= 201103L
-	  if (_Alloc_traits::_S_propagate_on_copy_assign())
+	  if (_Node_alloc_traits::_S_propagate_on_copy_assign())
 	    {
 	      auto& __this_alloc = this->_M_get_Node_allocator();
 	      auto& __that_alloc = __x._M_get_Node_allocator();
-	      if (!_Alloc_traits::_S_always_equal()
+	      if (!_Node_alloc_traits::_S_always_equal()
 		  && __this_alloc != __that_alloc)
 		{
 		  // Replacement allocator cannot free existing storage, we need
@@ -1798,7 +2449,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _Reuse_or_alloc_node __roan(*this);
 	  _M_impl._M_reset();
 	  _M_impl._M_key_compare = __x._M_impl._M_key_compare;
-	  if (__x._M_root() != 0)
+	  if (__x._M_root())
 	    _M_root() = _M_copy<__as_lvalue>(__x, __roan);
 	}
 
@@ -1822,14 +2473,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 		 _NodeGen& __node_gen)
       {
-	bool __insert_left = (__x != 0 || __p == _M_end()
+	bool __insert_left = (__x || __p == _M_end()
 			      || _M_impl._M_key_compare(_KeyOfValue()(__v),
 							_S_key(__p)));
 
-	_Link_type __z = __node_gen(_GLIBCXX_FORWARD(_Arg, __v));
+	_Base_ptr __z =
+	  __node_gen(_GLIBCXX_FORWARD(_Arg, __v))->_M_base_ptr();
 
-	_Rb_tree_insert_and_rebalance(__insert_left, __z, __p,
-				      this->_M_impl._M_header);
+	_Node_traits::_S_insert_and_rebalance
+	  (__insert_left, __z, __p, this->_M_impl._M_header);
 	++_M_impl._M_node_count;
 	return iterator(__z);
       }
@@ -1851,10 +2503,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			    || !_M_impl._M_key_compare(_S_key(__p),
 						       _KeyOfValue()(__v)));
 
-      _Link_type __z = _M_create_node(_GLIBCXX_FORWARD(_Arg, __v));
-
-      _Rb_tree_insert_and_rebalance(__insert_left, __z, __p,
-				    this->_M_impl._M_header);
+      _Base_ptr __z =
+	_M_create_node(_GLIBCXX_FORWARD(_Arg, __v))->_M_base_ptr();
+      _Node_traits::_S_insert_and_rebalance
+	(__insert_left, __z, __p, this->_M_impl._M_header);
       ++_M_impl._M_node_count;
       return iterator(__z);
     }
@@ -1872,9 +2524,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_insert_equal_lower(const _Val& __v)
 #endif
     {
-      _Link_type __x = _M_begin();
+      _Base_ptr __x = _M_begin();
       _Base_ptr __y = _M_end();
-      while (__x != 0)
+      while (__x)
 	{
 	  __y = __x;
 	  __x = !_M_impl._M_key_compare(_S_key(__x), _KeyOfValue()(__v)) ?
@@ -1886,25 +2538,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Key, typename _Val, typename _KoV,
 	   typename _Compare, typename _Alloc>
     template<bool _MoveValues, typename _NodeGen>
-      typename _Rb_tree<_Key, _Val, _KoV, _Compare, _Alloc>::_Link_type
+      typename _Rb_tree<_Key, _Val, _KoV, _Compare, _Alloc>::_Base_ptr
       _Rb_tree<_Key, _Val, _KoV, _Compare, _Alloc>::
-      _M_copy(_Link_type __x, _Base_ptr __p, _NodeGen& __node_gen)
+      _M_copy(_Node_ptr __x, _Base_ptr __p, _NodeGen& __node_gen)
       {
 	// Structural copy. __x and __p must be non-null.
-	_Link_type __top = _M_clone_node<_MoveValues>(__x, __node_gen);
+	_Node_ptr __top = _M_clone_node<_MoveValues>(__x, __node_gen);
+	_Base_ptr __top_base = __top->_M_base_ptr();
 	__top->_M_parent = __p;
 
 	__try
 	  {
 	    if (__x->_M_right)
 	      __top->_M_right =
-		_M_copy<_MoveValues>(_S_right(__x), __top, __node_gen);
-	    __p = __top;
+		_M_copy<_MoveValues>(_S_right(__x), __top_base, __node_gen);
+	    __p = __top_base;
 	    __x = _S_left(__x);
 
-	    while (__x != 0)
+	    while (__x)
 	      {
-		_Link_type __y = _M_clone_node<_MoveValues>(__x, __node_gen);
+		_Base_ptr __y =
+		  _M_clone_node<_MoveValues>(__x, __node_gen)->_M_base_ptr();
 		__p->_M_left = __y;
 		__y->_M_parent = __p;
 		if (__x->_M_right)
@@ -1919,20 +2573,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _M_erase(__top);
 	    __throw_exception_again;
 	  }
-	return __top;
+	return __top_base;
       }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
 	   typename _Compare, typename _Alloc>
     void
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
-    _M_erase(_Link_type __x)
+    _M_erase(_Node_ptr __x)
     {
       // Erase without rebalancing.
-      while (__x != 0)
+      while (__x)
 	{
 	  _M_erase(_S_right(__x));
-	  _Link_type __y = _S_left(__x);
+	  _Node_ptr __y = _S_left(__x);
 	  _M_drop_node(__x);
 	  __x = __y;
 	}
@@ -1941,65 +2595,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Key, typename _Val, typename _KeyOfValue,
 	   typename _Compare, typename _Alloc>
     typename _Rb_tree<_Key, _Val, _KeyOfValue,
-		      _Compare, _Alloc>::iterator
+		      _Compare, _Alloc>::_Base_ptr
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
-    _M_lower_bound(_Link_type __x, _Base_ptr __y,
-		   const _Key& __k)
+    _M_lower_bound(_Base_ptr __x, _Base_ptr __y,
+		   const _Key& __k) const
     {
-      while (__x != 0)
+      while (__x)
 	if (!_M_impl._M_key_compare(_S_key(__x), __k))
 	  __y = __x, __x = _S_left(__x);
 	else
 	  __x = _S_right(__x);
-      return iterator(__y);
+      return __y;
     }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
 	   typename _Compare, typename _Alloc>
     typename _Rb_tree<_Key, _Val, _KeyOfValue,
-		      _Compare, _Alloc>::const_iterator
+		      _Compare, _Alloc>::_Base_ptr
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
-    _M_lower_bound(_Const_Link_type __x, _Const_Base_ptr __y,
+    _M_upper_bound(_Base_ptr __x, _Base_ptr __y,
 		   const _Key& __k) const
     {
-      while (__x != 0)
-	if (!_M_impl._M_key_compare(_S_key(__x), __k))
-	  __y = __x, __x = _S_left(__x);
-	else
-	  __x = _S_right(__x);
-      return const_iterator(__y);
-    }
-
-  template<typename _Key, typename _Val, typename _KeyOfValue,
-	   typename _Compare, typename _Alloc>
-    typename _Rb_tree<_Key, _Val, _KeyOfValue,
-		      _Compare, _Alloc>::iterator
-    _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
-    _M_upper_bound(_Link_type __x, _Base_ptr __y,
-		   const _Key& __k)
-    {
-      while (__x != 0)
+      while (__x)
 	if (_M_impl._M_key_compare(__k, _S_key(__x)))
 	  __y = __x, __x = _S_left(__x);
 	else
 	  __x = _S_right(__x);
-      return iterator(__y);
-    }
-
-  template<typename _Key, typename _Val, typename _KeyOfValue,
-	   typename _Compare, typename _Alloc>
-    typename _Rb_tree<_Key, _Val, _KeyOfValue,
-		      _Compare, _Alloc>::const_iterator
-    _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
-    _M_upper_bound(_Const_Link_type __x, _Const_Base_ptr __y,
-		   const _Key& __k) const
-    {
-      while (__x != 0)
-	if (_M_impl._M_key_compare(__k, _S_key(__x)))
-	  __y = __x, __x = _S_left(__x);
-	else
-	  __x = _S_right(__x);
-      return const_iterator(__y);
+      return __y;
     }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
@@ -2011,9 +2633,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     equal_range(const _Key& __k)
     {
-      _Link_type __x = _M_begin();
+      _Base_ptr __x = _M_begin();
       _Base_ptr __y = _M_end();
-      while (__x != 0)
+      while (__x)
 	{
 	  if (_M_impl._M_key_compare(_S_key(__x), __k))
 	    __x = _S_right(__x);
@@ -2021,13 +2643,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __y = __x, __x = _S_left(__x);
 	  else
 	    {
-	      _Link_type __xu(__x);
+	      _Base_ptr __xu(__x);
 	      _Base_ptr __yu(__y);
 	      __y = __x, __x = _S_left(__x);
 	      __xu = _S_right(__xu);
-	      return pair<iterator,
-			  iterator>(_M_lower_bound(__x, __y, __k),
-				    _M_upper_bound(__xu, __yu, __k));
+	      return make_pair(iterator(_M_lower_bound(__x, __y, __k)),
+			       iterator(_M_upper_bound(__xu, __yu, __k)));
 	    }
 	}
       return pair<iterator, iterator>(iterator(__y),
@@ -2043,9 +2664,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     equal_range(const _Key& __k) const
     {
-      _Const_Link_type __x = _M_begin();
-      _Const_Base_ptr __y = _M_end();
-      while (__x != 0)
+      _Base_ptr __x = _M_begin();
+      _Base_ptr __y = _M_end();
+      while (__x)
 	{
 	  if (_M_impl._M_key_compare(_S_key(__x), __k))
 	    __x = _S_right(__x);
@@ -2053,13 +2674,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __y = __x, __x = _S_left(__x);
 	  else
 	    {
-	      _Const_Link_type __xu(__x);
-	      _Const_Base_ptr __yu(__y);
+	      _Base_ptr __xu(__x);
+	      _Base_ptr __yu(__y);
 	      __y = __x, __x = _S_left(__x);
 	      __xu = _S_right(__xu);
-	      return pair<const_iterator,
-			  const_iterator>(_M_lower_bound(__x, __y, __k),
-					  _M_upper_bound(__xu, __yu, __k));
+	      return make_pair(const_iterator(_M_lower_bound(__x, __y, __k)),
+			       const_iterator(_M_upper_bound(__xu, __yu, __k)));
 	    }
 	}
       return pair<const_iterator, const_iterator>(const_iterator(__y),
@@ -2073,12 +2693,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     swap(_Rb_tree& __t)
     _GLIBCXX_NOEXCEPT_IF(__is_nothrow_swappable<_Compare>::value)
     {
-      if (_M_root() == 0)
+      if (!_M_root())
 	{
-	  if (__t._M_root() != 0)
+	  if (__t._M_root())
 	    _M_impl._M_move_data(__t._M_impl);
 	}
-      else if (__t._M_root() == 0)
+      else if (!__t._M_root())
 	__t._M_impl._M_move_data(_M_impl);
       else
 	{
@@ -2095,8 +2715,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using std::swap;
       swap(this->_M_impl._M_key_compare, __t._M_impl._M_key_compare);
 
-      _Alloc_traits::_S_on_swap(_M_get_Node_allocator(),
-				__t._M_get_Node_allocator());
+      _Node_alloc_traits::_S_on_swap(_M_get_Node_allocator(),
+				     __t._M_get_Node_allocator());
     }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
@@ -2109,10 +2729,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_get_insert_unique_pos(const key_type& __k)
     {
       typedef pair<_Base_ptr, _Base_ptr> _Res;
-      _Link_type __x = _M_begin();
+      _Base_ptr __x = _M_begin();
       _Base_ptr __y = _M_end();
       bool __comp = true;
-      while (__x != 0)
+      while (__x)
 	{
 	  __y = __x;
 	  __comp = _M_impl._M_key_compare(__k, _S_key(__x));
@@ -2128,7 +2748,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       if (_M_impl._M_key_compare(_S_key(__j._M_node), __k))
 	return _Res(__x, __y);
-      return _Res(__j._M_node, 0);
+      return _Res(__j._M_node, _Base_ptr());
     }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
@@ -2141,9 +2761,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_get_insert_equal_pos(const key_type& __k)
     {
       typedef pair<_Base_ptr, _Base_ptr> _Res;
-      _Link_type __x = _M_begin();
+      _Base_ptr __x = _M_begin();
       _Base_ptr __y = _M_end();
-      while (__x != 0)
+      while (__x)
 	{
 	  __y = __x;
 	  __x = _M_impl._M_key_compare(__k, _S_key(__x)) ?
@@ -2211,44 +2831,43 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_get_insert_hint_unique_pos(const_iterator __position,
 				  const key_type& __k)
     {
-      iterator __pos = __position._M_const_cast();
       typedef pair<_Base_ptr, _Base_ptr> _Res;
 
       // end()
-      if (__pos._M_node == _M_end())
+      if (__position._M_node == _M_end())
 	{
 	  if (size() > 0
 	      && _M_impl._M_key_compare(_S_key(_M_rightmost()), __k))
-	    return _Res(0, _M_rightmost());
+	    return _Res(_Base_ptr(), _M_rightmost());
 	  else
 	    return _M_get_insert_unique_pos(__k);
 	}
-      else if (_M_impl._M_key_compare(__k, _S_key(__pos._M_node)))
+      else if (_M_impl._M_key_compare(__k, _S_key(__position._M_node)))
 	{
 	  // First, try before...
-	  iterator __before = __pos;
-	  if (__pos._M_node == _M_leftmost()) // begin()
+	  iterator __before(__position._M_node);
+	  if (__position._M_node == _M_leftmost()) // begin()
 	    return _Res(_M_leftmost(), _M_leftmost());
 	  else if (_M_impl._M_key_compare(_S_key((--__before)._M_node), __k))
 	    {
-	      if (_S_right(__before._M_node) == 0)
-		return _Res(0, __before._M_node);
+	      if (!_S_right(__before._M_node))
+		return _Res(_Base_ptr(), __before._M_node);
 	      else
-		return _Res(__pos._M_node, __pos._M_node);
+		return _Res(__position._M_node, __position._M_node);
 	    }
 	  else
 	    return _M_get_insert_unique_pos(__k);
 	}
-      else if (_M_impl._M_key_compare(_S_key(__pos._M_node), __k))
+      else if (_M_impl._M_key_compare(_S_key(__position._M_node), __k))
 	{
 	  // ... then try after.
-	  iterator __after = __pos;
-	  if (__pos._M_node == _M_rightmost())
-	    return _Res(0, _M_rightmost());
+	  iterator __after(__position._M_node);
+	  if (__position._M_node == _M_rightmost())
+	    return _Res(_Base_ptr(), _M_rightmost());
 	  else if (_M_impl._M_key_compare(__k, _S_key((++__after)._M_node)))
 	    {
-	      if (_S_right(__pos._M_node) == 0)
-		return _Res(0, __pos._M_node);
+	      if (!_S_right(__position._M_node))
+		return _Res(_Base_ptr(), __position._M_node);
 	      else
 		return _Res(__after._M_node, __after._M_node);
 	    }
@@ -2257,7 +2876,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       else
 	// Equivalent keys.
-	return _Res(__pos._M_node, 0);
+	return _Res(__position._M_node, _Base_ptr());
     }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
@@ -2296,30 +2915,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     _M_get_insert_hint_equal_pos(const_iterator __position, const key_type& __k)
     {
-      iterator __pos = __position._M_const_cast();
       typedef pair<_Base_ptr, _Base_ptr> _Res;
 
       // end()
-      if (__pos._M_node == _M_end())
+      if (__position._M_node == _M_end())
 	{
 	  if (size() > 0
 	      && !_M_impl._M_key_compare(__k, _S_key(_M_rightmost())))
-	    return _Res(0, _M_rightmost());
+	    return _Res(_Base_ptr(), _M_rightmost());
 	  else
 	    return _M_get_insert_equal_pos(__k);
 	}
-      else if (!_M_impl._M_key_compare(_S_key(__pos._M_node), __k))
+      else if (!_M_impl._M_key_compare(_S_key(__position._M_node), __k))
 	{
 	  // First, try before...
-	  iterator __before = __pos;
-	  if (__pos._M_node == _M_leftmost()) // begin()
+	  iterator __before(__position._M_node);
+	  if (__position._M_node == _M_leftmost()) // begin()
 	    return _Res(_M_leftmost(), _M_leftmost());
 	  else if (!_M_impl._M_key_compare(__k, _S_key((--__before)._M_node)))
 	    {
-	      if (_S_right(__before._M_node) == 0)
-		return _Res(0, __before._M_node);
+	      if (!_S_right(__before._M_node))
+		return _Res(_Base_ptr(), __before._M_node);
 	      else
-		return _Res(__pos._M_node, __pos._M_node);
+		return _Res(__position._M_node, __position._M_node);
 	    }
 	  else
 	    return _M_get_insert_equal_pos(__k);
@@ -2327,18 +2945,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       else
 	{
 	  // ... then try after.
-	  iterator __after = __pos;
-	  if (__pos._M_node == _M_rightmost())
-	    return _Res(0, _M_rightmost());
+	  iterator __after(__position._M_node);
+	  if (__position._M_node == _M_rightmost())
+	    return _Res(_Base_ptr(), _M_rightmost());
 	  else if (!_M_impl._M_key_compare(_S_key((++__after)._M_node), __k))
 	    {
-	      if (_S_right(__pos._M_node) == 0)
-		return _Res(0, __pos._M_node);
+	      if (!_S_right(__position._M_node))
+		return _Res(_Base_ptr(), __position._M_node);
 	      else
 		return _Res(__after._M_node, __after._M_node);
 	    }
 	  else
-	    return _Res(0, 0);
+	    return _Res(_Base_ptr(), _Base_ptr());
 	}
     }
 
@@ -2375,46 +2993,48 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _Compare, typename _Alloc>
     auto
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
-    _M_insert_node(_Base_ptr __x, _Base_ptr __p, _Link_type __z)
+    _M_insert_node(_Base_ptr __x, _Base_ptr __p, _Node_ptr __z)
     -> iterator
     {
-      bool __insert_left = (__x != 0 || __p == _M_end()
+      bool __insert_left = (__x || __p == _M_end()
 			    || _M_impl._M_key_compare(_S_key(__z),
 						      _S_key(__p)));
 
-      _Rb_tree_insert_and_rebalance(__insert_left, __z, __p,
-				    this->_M_impl._M_header);
+      _Base_ptr __base_z = __z->_M_base_ptr();
+      _Node_traits::_S_insert_and_rebalance
+	(__insert_left, __base_z, __p, this->_M_impl._M_header);
       ++_M_impl._M_node_count;
-      return iterator(__z);
+      return iterator(__base_z);
     }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
 	   typename _Compare, typename _Alloc>
     auto
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
-    _M_insert_lower_node(_Base_ptr __p, _Link_type __z)
+    _M_insert_lower_node(_Base_ptr __p, _Node_ptr __z)
     -> iterator
     {
       bool __insert_left = (__p == _M_end()
 			    || !_M_impl._M_key_compare(_S_key(__p),
 						       _S_key(__z)));
 
-      _Rb_tree_insert_and_rebalance(__insert_left, __z, __p,
-				    this->_M_impl._M_header);
+      _Base_ptr __base_z = __z->_M_base_ptr();
+      _Node_traits::_S_insert_and_rebalance
+	(__insert_left, __base_z, __p, this->_M_impl._M_header);
       ++_M_impl._M_node_count;
-      return iterator(__z);
+      return iterator(__base_z);
     }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
 	   typename _Compare, typename _Alloc>
     auto
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
-    _M_insert_equal_lower_node(_Link_type __z)
+    _M_insert_equal_lower_node(_Node_ptr __z)
     -> iterator
     {
-      _Link_type __x = _M_begin();
+      _Base_ptr __x = _M_begin();
       _Base_ptr __y = _M_end();
-      while (__x != 0)
+      while (__x)
 	{
 	  __y = __x;
 	  __x = !_M_impl._M_key_compare(_S_key(__x), _S_key(__z)) ?
@@ -2489,11 +3109,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     _M_erase_aux(const_iterator __position)
     {
-      _Link_type __y =
-	static_cast<_Link_type>(_Rb_tree_rebalance_for_erase
-				(const_cast<_Base_ptr>(__position._M_node),
-				 this->_M_impl._M_header));
-      _M_drop_node(__y);
+      _Base_ptr __y = _Node_traits::_S_rebalance_for_erase
+	(__position._M_node, this->_M_impl._M_header);
+      _M_drop_node(static_cast<_Node&>(*__y)._M_node_ptr());
       --_M_impl._M_node_count;
     }
 
@@ -2529,7 +3147,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     find(const _Key& __k)
     {
-      iterator __j = _M_lower_bound(_M_begin(), _M_end(), __k);
+      iterator __j(_M_lower_bound(_M_begin(), _M_end(), __k));
       return (__j == end()
 	      || _M_impl._M_key_compare(__k,
 					_S_key(__j._M_node))) ? end() : __j;
@@ -2542,7 +3160,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     find(const _Key& __k) const
     {
-      const_iterator __j = _M_lower_bound(_M_begin(), _M_end(), __k);
+      const_iterator __j(_M_lower_bound(_M_begin(), _M_end(), __k));
       return (__j == end()
 	      || _M_impl._M_key_compare(__k,
 					_S_key(__j._M_node))) ? end() : __j;
@@ -2576,9 +3194,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       unsigned int __len = _Rb_tree_black_count(_M_leftmost(), _M_root());
       for (const_iterator __it = begin(); __it != end(); ++__it)
 	{
-	  _Const_Link_type __x = static_cast<_Const_Link_type>(__it._M_node);
-	  _Const_Link_type __L = _S_left(__x);
-	  _Const_Link_type __R = _S_right(__x);
+	  _Base_ptr __x = __it._M_node;
+	  _Base_ptr __L = _S_left(__x);
+	  _Base_ptr __R = _S_right(__x);
 
 	  if (__x->_M_color == _S_red)
 	    if ((__L && __L->_M_color == _S_red)
@@ -2594,9 +3212,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return false;
 	}
 
-      if (_M_leftmost() != _Rb_tree_node_base::_S_minimum(_M_root()))
+      if (_M_leftmost() != _Node_base::_S_minimum(_M_root()))
 	return false;
-      if (_M_rightmost() != _Rb_tree_node_base::_S_maximum(_M_root()))
+      if (_M_rightmost() != _Node_base::_S_maximum(_M_root()))
 	return false;
       return true;
     }
