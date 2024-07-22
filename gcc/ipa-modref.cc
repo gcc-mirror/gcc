@@ -3004,6 +3004,9 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
 		     (past, ecf_flags,
 		      VOID_TYPE_P (TREE_TYPE
 			  (TREE_TYPE (current_function_decl))));
+	  /* Store merging can produce reads when combining together multiple
+	     bitfields.  See PR111613.  */
+	  past &= ~(EAF_NO_DIRECT_READ | EAF_NO_INDIRECT_READ);
 	  if (dump_file && (flags | past) != flags && !(flags & EAF_UNUSED))
 	    {
 	      fprintf (dump_file,
