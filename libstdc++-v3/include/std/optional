@@ -472,17 +472,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // The _M_get operations have _M_engaged as a precondition.
       constexpr _Tp&
       _M_get() noexcept
-      {
-	__glibcxx_assert(this->_M_is_engaged());
-	return static_cast<_Dp*>(this)->_M_payload._M_get();
-      }
+      { return static_cast<_Dp*>(this)->_M_payload._M_get(); }
 
       constexpr const _Tp&
       _M_get() const noexcept
-      {
-	__glibcxx_assert(this->_M_is_engaged());
-	return static_cast<const _Dp*>(this)->_M_payload._M_get();
-      }
+      { return static_cast<const _Dp*>(this)->_M_payload._M_get(); }
     };
 
   /**
@@ -958,27 +952,45 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Observers.
       constexpr const _Tp*
       operator->() const noexcept
-      { return std::__addressof(this->_M_get()); }
+      {
+	__glibcxx_assert(this->_M_is_engaged());
+	return std::__addressof(this->_M_get());
+      }
 
       constexpr _Tp*
       operator->() noexcept
-      { return std::__addressof(this->_M_get()); }
+      {
+	__glibcxx_assert(this->_M_is_engaged());
+	return std::__addressof(this->_M_get());
+      }
 
       constexpr const _Tp&
       operator*() const& noexcept
-      { return this->_M_get(); }
+      {
+	__glibcxx_assert(this->_M_is_engaged());
+	return this->_M_get();
+      }
 
       constexpr _Tp&
       operator*()& noexcept
-      { return this->_M_get(); }
+      {
+	__glibcxx_assert(this->_M_is_engaged());
+	return this->_M_get();
+      }
 
       constexpr _Tp&&
       operator*()&& noexcept
-      { return std::move(this->_M_get()); }
+      {
+	__glibcxx_assert(this->_M_is_engaged());
+	return std::move(this->_M_get());
+      }
 
       constexpr const _Tp&&
       operator*() const&& noexcept
-      { return std::move(this->_M_get()); }
+      {
+	__glibcxx_assert(this->_M_is_engaged());
+	return std::move(this->_M_get());
+      }
 
       constexpr explicit operator bool() const noexcept
       { return this->_M_is_engaged(); }
