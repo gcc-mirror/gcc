@@ -23,6 +23,7 @@
 #include <testsuite_hooks.h>
 
 // { dg-require-fileio "" }
+// { dg-additional-files "istream_unformatted-1.txt" }
 
 // In the occasion of libstdc++/25482
 void test01()
