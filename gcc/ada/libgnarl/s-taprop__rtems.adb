@@ -200,7 +200,7 @@ package body System.Task_Primitives.Operations is
      new Ada.Unchecked_Conversion (Task_Id, System.Address);
 
    function GNAT_pthread_condattr_setup
-     (attr : access pthread_condattr_t) return int;
+     (attr : access pthread_condattr_t) return Interfaces.C.int;
    pragma Import (C,
      GNAT_pthread_condattr_setup, "__gnat_pthread_condattr_setup");
 
@@ -304,7 +304,7 @@ package body System.Task_Primitives.Operations is
          Res :=
            mprotect
              (Stack_Base - (Stack_Base mod Page_Size) + Page_Size,
-              size_t (Page_Size),
+              Interfaces.C.size_t (Page_Size),
               prot => (if On then PROT_ON else PROT_OFF));
          pragma Assert (Res = 0);
       end if;

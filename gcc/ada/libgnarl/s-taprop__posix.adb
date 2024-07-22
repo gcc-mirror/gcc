@@ -209,7 +209,7 @@ package body System.Task_Primitives.Operations is
      new Ada.Unchecked_Conversion (Task_Id, System.Address);
 
    function GNAT_pthread_condattr_setup
-     (attr : access pthread_condattr_t) return int;
+     (attr : access pthread_condattr_t) return Interfaces.C.int;
    pragma Import (C,
      GNAT_pthread_condattr_setup, "__gnat_pthread_condattr_setup");
 
