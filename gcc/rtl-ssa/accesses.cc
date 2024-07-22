@@ -946,7 +946,8 @@ function_info::add_def (def_info *def)
 	  prev = split_clobber_group (group, insn);
 	  next = prev->next_def ();
 	  tree.remove_root ();
-	  last->set_splay_root (tree.root ());
+	  root = tree.root ();
+	  last->set_splay_root (root);
 	}
       // COMPARISON is < 0 if DEF comes before ROOT or > 0 if DEF comes
       // after ROOT.
