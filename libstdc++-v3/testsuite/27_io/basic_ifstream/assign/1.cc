@@ -17,8 +17,9 @@
 
 // { dg-do run { target c++11 } }
 // { dg-require-fileio "" }
+// { dg-additional-files "thirty_years_among_the_dead_preproc.txt" }
 
-// 27.9.1.8 Assign and swap [ifstream.assign]
+// C++11 27.9.1.8 Assign and swap [ifstream.assign]
 
 #include <fstream>
 #include <sstream>

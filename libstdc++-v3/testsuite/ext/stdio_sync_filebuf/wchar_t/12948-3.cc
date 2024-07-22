@@ -17,6 +17,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-additional-files "cin_unget-1.txt" }
+
 #include <ext/stdio_sync_filebuf.h>
 #include <testsuite_hooks.h>
 

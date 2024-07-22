@@ -19,6 +19,7 @@
 // { dg-do run { target c++17 } }
 // { dg-require-fileio "" }
 // { dg-require-filesystem-ts "" }
+// { dg-additional-files "ofstream_members-1.tst" }
 
 #include <fstream>
 #include <filesystem>

@@ -15,10 +15,11 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 30.9.3.1 basic_ifstream constructors [ifstream.cons]
+// C++17 30.9.3.1 basic_ifstream constructors [ifstream.cons]
 
 // { dg-do run { target *-*-mingw* } }
 // { dg-require-fileio "" }
+// { dg-additional-files "ifstream_members-1.tst" }
 
 #include <fstream>
 #include <testsuite_hooks.h>

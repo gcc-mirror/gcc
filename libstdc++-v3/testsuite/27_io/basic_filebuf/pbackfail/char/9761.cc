@@ -20,6 +20,7 @@
 // 27.8.1.4 Overridden virtual functions
 
 // { dg-require-fileio "" }
+// { dg-additional-files "filebuf_virtuals-1.txt" }
 
 #include <fstream>
 #include <testsuite_hooks.h>
