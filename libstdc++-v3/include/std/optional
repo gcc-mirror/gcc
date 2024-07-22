@@ -226,10 +226,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    { }
 #endif
 
+#if __cpp_concepts >= 202002L // Conditionally trivial special member functions
+	  ~_Storage() = default;
+
+	  // User-provided destructor is needed when _Up has non-trivial dtor.
+	  _GLIBCXX20_CONSTEXPR
+	  ~_Storage() requires (!is_trivially_destructible_v<_Up>)
+	  { }
+
+	  _Storage(const _Storage&) = default;
+	  _Storage(_Storage&&) = default;
+	  _Storage& operator=(const _Storage&) = default;
+	  _Storage& operator=(_Storage&&) = default;
+#endif
+
 	  _Empty_byte _M_empty;
 	  _Up _M_value;
 	};
 
+#if __cpp_concepts < 202002L
       template<typename _Up>
 	union _Storage<_Up, false>
 	{
@@ -259,9 +274,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // User-provided destructor is needed when _Up has non-trivial dtor.
 	  _GLIBCXX20_CONSTEXPR ~_Storage() { }
 
+	  _Storage(const _Storage&) = default;
+	  _Storage(_Storage&&) = default;
+	  _Storage& operator=(const _Storage&) = default;
+	  _Storage& operator=(_Storage&&) = default;
+
 	  _Empty_byte _M_empty;
 	  _Up _M_value;
 	};
+#endif
 
       _Storage<_Stored_type> _M_payload;
 
@@ -438,8 +459,128 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX20_CONSTEXPR ~_Optional_payload() { this->_M_reset(); }
     };
 
+  /**
+    * @brief Class template that provides copy/move constructors of optional.
+    *
+    * Such a separate base class template is necessary in order to
+    * conditionally make copy/move constructors trivial.
+    *
+    * When the contained value is trivially copy/move constructible,
+    * the copy/move constructors of _Optional_base will invoke the
+    * trivial copy/move constructor of _Optional_payload. Otherwise,
+    * they will invoke _Optional_payload(bool, const _Optional_payload&)
+    * or _Optional_payload(bool, _Optional_payload&&) to initialize
+    * the contained value, if copying/moving an engaged optional.
+    *
+    * Whether the other special members are trivial is determined by the
+    * _Optional_payload<_Tp> specialization used for the _M_payload member.
+    *
+    * @see optional, _Enable_special_members
+    */
+  template<typename _Tp,
+	   bool = is_trivially_copy_constructible_v<_Tp>,
+	   bool = is_trivially_move_constructible_v<_Tp>>
+    struct _Optional_base
+    {
+      // Constructors for disengaged optionals.
+      constexpr _Optional_base() = default;
+
+      // Constructors for engaged optionals.
+      template<typename... _Args,
+	       enable_if_t<is_constructible_v<_Tp, _Args...>, bool> = false>
+	constexpr explicit
+	_Optional_base(in_place_t, _Args&&... __args)
+	: _M_payload(in_place, std::forward<_Args>(__args)...)
+	{ }
+
+      template<typename _Up, typename... _Args,
+	       enable_if_t<is_constructible_v<_Tp,
+					      initializer_list<_Up>&,
+					      _Args...>, bool> = false>
+	constexpr explicit
+	_Optional_base(in_place_t,
+		       initializer_list<_Up> __il,
+		       _Args&&... __args)
+	: _M_payload(in_place, __il, std::forward<_Args>(__args)...)
+	{ }
+
+      // Copy and move constructors.
+      constexpr
+      _Optional_base(const _Optional_base& __other)
+      noexcept(is_nothrow_copy_constructible_v<_Tp>)
+      : _M_payload(__other._M_payload._M_engaged, __other._M_payload)
+      { }
+
+      constexpr
+      _Optional_base(_Optional_base&& __other)
+      noexcept(is_nothrow_move_constructible_v<_Tp>)
+      : _M_payload(__other._M_payload._M_engaged,
+		   std::move(__other._M_payload))
+      { }
+
+#if __cpp_concepts >= 202002L // Conditionally trivial special member functions
+      // Define these in the primary template if possible, so that we don't
+      // need to use partial specializations of this class template.
+      constexpr _Optional_base(const _Optional_base&)
+	requires is_trivially_copy_constructible_v<_Tp> = default;
+
+      constexpr _Optional_base(_Optional_base&&)
+	requires is_trivially_move_constructible_v<_Tp> = default;
+#endif
+
+      // Assignment operators.
+      _Optional_base& operator=(const _Optional_base&) = default;
+      _Optional_base& operator=(_Optional_base&&) = default;
+
+      _Optional_payload<_Tp> _M_payload;
+
+    protected:
+      // For the primary template, we define these functions here.
+      using _Stored_type = remove_const_t<_Tp>;
+
+      // The _M_construct operation has !_M_engaged as a precondition
+      // while _M_destruct has _M_engaged as a precondition.
+      template<typename... _Args>
+	constexpr void
+	_M_construct(_Args&&... __args)
+	noexcept(is_nothrow_constructible_v<_Stored_type, _Args...>)
+	{
+	  _M_payload._M_construct(std::forward<_Args>(__args)...);
+	}
+
+      constexpr void
+      _M_destruct() noexcept
+      { _M_payload._M_destroy(); }
+
+      // _M_reset is a 'safe' operation with no precondition.
+      constexpr void
+      _M_reset() noexcept
+      { _M_payload._M_reset(); }
+
+      constexpr bool _M_is_engaged() const noexcept
+      { return _M_payload._M_engaged; }
+
+      // The _M_get operations have _M_engaged as a precondition.
+      constexpr _Tp&
+      _M_get() noexcept
+      { return _M_payload._M_get(); }
+
+      constexpr const _Tp&
+      _M_get() const noexcept
+      { return _M_payload._M_get(); }
+    };
+
+#if __cpp_concepts < 202002L
+  // If P0848R3 "Conditionally Trivial Special Member Functions" is not
+  // supported (as determined from the __cpp_concepts macro value), the
+  // _Optional_base primary template only has non-trivial copy and move
+  // constructors. Use partial specializations of _Optional_base<T, C, M>
+  // that have a trivial copy and/or move constructor.
+
   // Common base class for _Optional_base<T> to avoid repeating these
-  // member functions in each specialization.
+  // member functions in each partial specialization.
+  // Only used if P0848R3 "Conditionally Trivial Special Member Functions"
+  // is not supported, as indicated by the __cpp_concepts value.
   template<typename _Tp, typename _Dp>
     class _Optional_base_impl
     {
@@ -479,74 +620,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return static_cast<const _Dp*>(this)->_M_payload._M_get(); }
     };
 
-  /**
-    * @brief Class template that provides copy/move constructors of optional.
-    *
-    * Such a separate base class template is necessary in order to
-    * conditionally make copy/move constructors trivial.
-    *
-    * When the contained value is trivially copy/move constructible,
-    * the copy/move constructors of _Optional_base will invoke the
-    * trivial copy/move constructor of _Optional_payload. Otherwise,
-    * they will invoke _Optional_payload(bool, const _Optional_payload&)
-    * or _Optional_payload(bool, _Optional_payload&&) to initialize
-    * the contained value, if copying/moving an engaged optional.
-    *
-    * Whether the other special members are trivial is determined by the
-    * _Optional_payload<_Tp> specialization used for the _M_payload member.
-    *
-    * @see optional, _Enable_special_members
-    */
-  template<typename _Tp,
-	   bool = is_trivially_copy_constructible_v<_Tp>,
-	   bool = is_trivially_move_constructible_v<_Tp>>
-    struct _Optional_base
-    : _Optional_base_impl<_Tp, _Optional_base<_Tp>>
-    {
-      // Constructors for disengaged optionals.
-      constexpr _Optional_base() = default;
-
-      // Constructors for engaged optionals.
-      template<typename... _Args,
-	       enable_if_t<is_constructible_v<_Tp, _Args...>, bool> = false>
-	constexpr explicit
-	_Optional_base(in_place_t, _Args&&... __args)
-	: _M_payload(in_place, std::forward<_Args>(__args)...)
-	{ }
-
-      template<typename _Up, typename... _Args,
-	       enable_if_t<is_constructible_v<_Tp,
-					      initializer_list<_Up>&,
-					      _Args...>, bool> = false>
-	constexpr explicit
-	_Optional_base(in_place_t,
-		       initializer_list<_Up> __il,
-		       _Args&&... __args)
-	: _M_payload(in_place, __il, std::forward<_Args>(__args)...)
-	{ }
-
-      // Copy and move constructors.
-      constexpr
-      _Optional_base(const _Optional_base& __other)
-      : _M_payload(__other._M_payload._M_engaged, __other._M_payload)
-      { }
-
-      constexpr
-      _Optional_base(_Optional_base&& __other)
-      noexcept(is_nothrow_move_constructible_v<_Tp>)
-      : _M_payload(__other._M_payload._M_engaged,
-		   std::move(__other._M_payload))
-      { }
-
-      // Assignment operators.
-      _Optional_base& operator=(const _Optional_base&) = default;
-      _Optional_base& operator=(_Optional_base&&) = default;
-
-      _Optional_payload<_Tp> _M_payload;
-    };
-
   template<typename _Tp>
-    struct _Optional_base<_Tp, false, true>
+    struct _Optional_base<_Tp, false, true> // trivial move ctor
     : _Optional_base_impl<_Tp, _Optional_base<_Tp>>
     {
       // Constructors for disengaged optionals.
@@ -586,7 +661,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _Tp>
-    struct _Optional_base<_Tp, true, false>
+    struct _Optional_base<_Tp, true, false> // trivial copy ctor
     : _Optional_base_impl<_Tp, _Optional_base<_Tp>>
     {
       // Constructors for disengaged optionals.
@@ -629,7 +704,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _Tp>
-    struct _Optional_base<_Tp, true, true>
+    struct _Optional_base<_Tp, true, true> // trivial copy and move ctors
     : _Optional_base_impl<_Tp, _Optional_base<_Tp>>
     {
       // Constructors for disengaged optionals.
@@ -664,6 +739,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _Optional_payload<_Tp> _M_payload;
     };
+#endif // __cpp_concepts
 
   template<typename _Tp>
   class optional;
