@@ -1502,6 +1502,14 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 	maybe_warn_nodiscard (expr, implicit);
       break;
 
+    case CO_AWAIT_EXPR:
+      {
+	auto awr = co_await_get_resume_call (expr);
+	if (awr && *awr)
+	  *awr = convert_to_void (*awr, implicit, complain);
+	break;
+      }
+
     default:;
     }
   expr = resolve_nondeduced_context (expr, complain);
