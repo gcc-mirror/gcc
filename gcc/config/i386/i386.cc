@@ -20212,7 +20212,7 @@ ix86_class_likely_spilled_p (reg_class_t rclass)
 }
 
 /* Return true if a set of DST by the expression SRC should be allowed.
-   This prevents complex sets of likely_spilled hard regs before reload.  */
+   This prevents complex sets of likely_spilled hard regs before split1.  */
 
 bool
 ix86_hardreg_mov_ok (rtx dst, rtx src)
@@ -20224,8 +20224,7 @@ ix86_hardreg_mov_ok (rtx dst, rtx src)
 	   ? standard_sse_constant_p (src, GET_MODE (dst))
 	   : x86_64_immediate_operand (src, GET_MODE (dst)))
       && ix86_class_likely_spilled_p (REGNO_REG_CLASS (REGNO (dst)))
-      && !reload_completed
-      && !lra_in_progress)
+      && ix86_pre_reload_split ())
     return false;
   return true;
 }
