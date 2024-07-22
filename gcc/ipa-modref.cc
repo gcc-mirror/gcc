@@ -2571,8 +2571,10 @@ modref_eaf_analysis::analyze_ssa_name (tree name, bool deferred)
 		    int call_flags = deref_flags
 			    (gimple_call_arg_flags (call, i), ignore_stores);
 		    if (!ignore_retval && !(call_flags & EAF_UNUSED)
-			&& !(call_flags & EAF_NOT_RETURNED_DIRECTLY)
-			&& !(call_flags & EAF_NOT_RETURNED_INDIRECTLY))
+			&& (call_flags & (EAF_NOT_RETURNED_DIRECTLY
+				       	  | EAF_NOT_RETURNED_INDIRECTLY))
+			    != (EAF_NOT_RETURNED_DIRECTLY
+				| EAF_NOT_RETURNED_INDIRECTLY))
 		      merge_call_lhs_flags (call, i, name, false, true);
 		    if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
 		      m_lattice[index].merge_direct_load ();
