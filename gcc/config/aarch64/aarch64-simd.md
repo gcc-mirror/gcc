@@ -322,21 +322,21 @@
   [(set_attr "length" "4")]
 )
 
-(define_insn "orn<mode>3<vczle><vczbe>"
+(define_insn "iorn<mode>3<vczle><vczbe>"
  [(set (match_operand:VDQ_I 0 "register_operand" "=w")
-       (ior:VDQ_I (not:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w"))
-		(match_operand:VDQ_I 2 "register_operand" "w")))]
+       (ior:VDQ_I (not:VDQ_I (match_operand:VDQ_I 2 "register_operand" "w"))
+		(match_operand:VDQ_I 1 "register_operand" "w")))]
  "TARGET_SIMD"
- "orn\t%0.<Vbtype>, %2.<Vbtype>, %1.<Vbtype>"
+ "orn\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>"
   [(set_attr "type" "neon_logic<q>")]
 )
 
-(define_insn "bic<mode>3<vczle><vczbe>"
+(define_insn "andn<mode>3<vczle><vczbe>"
  [(set (match_operand:VDQ_I 0 "register_operand" "=w")
-       (and:VDQ_I (not:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w"))
-		(match_operand:VDQ_I 2 "register_operand" "w")))]
+       (and:VDQ_I (not:VDQ_I (match_operand:VDQ_I 2 "register_operand" "w"))
+		(match_operand:VDQ_I 1 "register_operand" "w")))]
  "TARGET_SIMD"
- "bic\t%0.<Vbtype>, %2.<Vbtype>, %1.<Vbtype>"
+ "bic\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>"
   [(set_attr "type" "neon_logic<q>")]
 )
 
@@ -4064,7 +4064,7 @@
 					       tmp0, <V_INT_EQUIV>mode),
 			       lowpart_subreg (<MODE>mode,
 					       tmp1, <V_INT_EQUIV>mode)));
-	emit_insn (gen_orn<v_int_equiv>3 (operands[0], tmp2, operands[0]));
+	emit_insn (gen_iorn<v_int_equiv>3 (operands[0], operands[0], tmp2));
       }
       break;
 
@@ -4111,7 +4111,7 @@
       else if (code == UNEQ)
 	{
 	  emit_insn (gen_aarch64_cmeq<mode> (tmp, operands[2], operands[3]));
-	  emit_insn (gen_orn<v_int_equiv>3 (operands[0], operands[0], tmp));
+	  emit_insn (gen_iorn<v_int_equiv>3 (operands[0], tmp, operands[0]));
 	}
       break;
 
