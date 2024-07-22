@@ -1,3 +1,28 @@
+2024-07-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/115877
+	* ext-dce.cc (safe_for_live_propagation): Handle RTX_CONST_OBJ.
+
+2024-07-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/115877
+	* ext-dce.cc (ext_dce_process_uses): Restore the value of DST_MASK
+	for reach operand.
+
+2024-07-21  Sam James  <sam@gentoo.org>
+
+	* Makefile.in (NOCOMMON_FLAG): Delete.
+	(GCC_WARN_CFLAGS): Drop NOCOMMON_FLAG.
+	(GCC_WARN_CXXFLAGS): Drop NOCOMMON_FLAG.
+	* configure.ac: Ditto.
+	* configure: Regenerate.
+
+2024-07-21  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.md (mov_neg_si_t): Allow insn and split after
+	register allocation.
+	(*treg_noop_move): New insn.
+
 2024-07-20  Andi Kleen  <ak@gcc.gnu.org>
 
 	Revert:

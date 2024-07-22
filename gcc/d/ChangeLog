@@ -1,3 +1,7 @@
+2024-07-21  Sam James  <sam@gentoo.org>
+
+	* Make-lang.in (WARN_DFLAGS): Drop NOCOMMON_FLAG.
+
 2024-06-05  Kewen Lin  <linkw@linux.ibm.com>
 	    Iain Buclaw  <ibuclaw@gdcproject.org>
 

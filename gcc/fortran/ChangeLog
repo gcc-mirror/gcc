@@ -1,3 +1,13 @@
+2024-07-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/59104
+	* gfortran.h : Add decl_order to gfc_symbol.
+	* symbol.cc : Add static next_decl_order..
+	(gfc_set_sym_referenced): Set symbol decl_order.
+	* trans-decl.cc : Include dependency.h.
+	(decl_order): Replace symbol declared_at.lb->location with
+	decl_order.
+
 2024-07-19  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/103115
