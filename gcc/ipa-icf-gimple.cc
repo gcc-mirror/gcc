@@ -543,6 +543,10 @@ func_checker::compare_loops (basic_block bb1, basic_block bb2)
     return return_false_with_msg ("unroll");
   if (!compare_variable_decl (l1->simduid, l2->simduid))
     return return_false_with_msg ("simduid");
+  if ((l1->any_upper_bound != l2->any_upper_bound)
+      || (l1->any_upper_bound
+	  && (l1->nb_iterations_upper_bound != l2->nb_iterations_upper_bound)))
+    return return_false_with_msg ("nb_iterations_upper_bound");
 
   return true;
 }
