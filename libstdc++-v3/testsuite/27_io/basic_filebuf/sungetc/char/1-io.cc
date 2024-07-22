@@ -25,9 +25,6 @@
 #include <testsuite_hooks.h>
 #include <testsuite_io.h>
 
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %*.txt
-
 const char name_01[] = "tmp_sungetc_1io.tst"; // empty file, need to create
 
 void test01() 

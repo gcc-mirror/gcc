@@ -19,9 +19,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 27.4.2.4 ios_base static members
-// @require@ %-*.tst
-// @diff@ %-*.tst %-*.txt
+// C++98 27.4.2.4 ios_base static members
 
 #include <cstdio>
 #include <sstream>
