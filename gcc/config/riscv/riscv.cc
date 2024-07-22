@@ -7894,12 +7894,12 @@ riscv_adjust_multi_push_cfi_prologue (int saved_size)
 }
 
 static void
-riscv_emit_stack_tie (void)
+riscv_emit_stack_tie (rtx reg)
 {
   if (Pmode == SImode)
-    emit_insn (gen_stack_tiesi (stack_pointer_rtx, hard_frame_pointer_rtx));
+    emit_insn (gen_stack_tiesi (stack_pointer_rtx, reg));
   else
-    emit_insn (gen_stack_tiedi (stack_pointer_rtx, hard_frame_pointer_rtx));
+    emit_insn (gen_stack_tiedi (stack_pointer_rtx, reg));
 }
 
 /*zcmp multi push and pop code_for_push_pop function ptr array  */
@@ -8080,7 +8080,7 @@ riscv_expand_prologue (void)
 			    GEN_INT ((frame->hard_frame_pointer_offset - remaining_size).to_constant ()));
       RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
 
-      riscv_emit_stack_tie ();
+      riscv_emit_stack_tie (hard_frame_pointer_rtx);
     }
 
   /* Save the V registers.  */
@@ -8111,7 +8111,7 @@ riscv_expand_prologue (void)
 	     allocation is ordered WRT fp setup and subsequent writes
 	     into the frame.  */
 	  if (frame_pointer_needed)
-	    riscv_emit_stack_tie ();
+	    riscv_emit_stack_tie (hard_frame_pointer_rtx);
 	  return;
 	}
 
@@ -8150,7 +8150,7 @@ riscv_expand_prologue (void)
 	 allocation is ordered WRT fp setup and subsequent writes
 	 into the frame.  */
       if (frame_pointer_needed)
-	riscv_emit_stack_tie ();
+	riscv_emit_stack_tie (hard_frame_pointer_rtx);
     }
 }
 
@@ -8285,7 +8285,7 @@ riscv_expand_epilogue (int style)
   if (cfun->calls_alloca)
     {
       /* Emit a barrier to prevent loads from a deallocated stack.  */
-      riscv_emit_stack_tie ();
+      riscv_emit_stack_tie (hard_frame_pointer_rtx);
       need_barrier_p = false;
 
       poly_int64 adjust_offset = -frame->hard_frame_pointer_offset;
@@ -8379,7 +8379,7 @@ riscv_expand_epilogue (int style)
   if (known_gt (step1, 0))
     {
       /* Emit a barrier to prevent loads from a deallocated stack.  */
-      riscv_emit_stack_tie ();
+      riscv_emit_stack_tie (hard_frame_pointer_rtx);
       need_barrier_p = false;
 
       /* Restore the scalable frame which is assigned in prologue.  */
@@ -8479,7 +8479,7 @@ riscv_expand_epilogue (int style)
     frame->mask = mask; /* Undo the above fib.  */
 
   if (need_barrier_p)
-    riscv_emit_stack_tie ();
+    riscv_emit_stack_tie (hard_frame_pointer_rtx);
 
   /* Deallocate the final bit of the frame.  */
   if (step2.to_constant () > 0)

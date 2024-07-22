@@ -3969,7 +3969,7 @@
 	(unspec:BLK [(match_operand:X 0 "register_operand" "r")
 		     (match_operand:X 1 "register_operand" "r")]
 		    UNSPEC_TIE))]
-  ""
+  "!rtx_equal_p (operands[0], operands[1])"
   ""
   [(set_attr "type" "ghost")
    (set_attr "length" "0")]
