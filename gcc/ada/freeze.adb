@@ -586,6 +586,13 @@ package body Freeze is
          Next (Param_Spec);
       end loop;
 
+      --  Copy SPARK pragma from renaming declaration
+
+      Set_SPARK_Pragma
+        (Defining_Unit_Name (Spec), SPARK_Pragma (New_S));
+      Set_SPARK_Pragma_Inherited
+        (Defining_Unit_Name (Spec), SPARK_Pragma_Inherited (New_S));
+
       --  In GNATprove, prefer to generate an expression function whenever
       --  possible, to benefit from the more precise analysis in that case
       --  (as if an implicit postcondition had been generated).

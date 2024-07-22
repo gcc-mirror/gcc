@@ -333,6 +333,15 @@ package body Sem_Ch6 is
       New_Spec := Copy_Subprogram_Spec (Spec);
       Prev     := Current_Entity_In_Scope (Defining_Entity (Spec));
 
+      --  Copy SPARK pragma from expression function
+
+      Set_SPARK_Pragma
+        (Defining_Unit_Name (New_Spec),
+         SPARK_Pragma (Defining_Unit_Name (Spec)));
+      Set_SPARK_Pragma_Inherited
+        (Defining_Unit_Name (New_Spec),
+         SPARK_Pragma_Inherited (Defining_Unit_Name (Spec)));
+
       --  If there are previous overloadable entities with the same name,
       --  check whether any of them is completed by the expression function.
       --  In a generic context a formal subprogram has no completion.
