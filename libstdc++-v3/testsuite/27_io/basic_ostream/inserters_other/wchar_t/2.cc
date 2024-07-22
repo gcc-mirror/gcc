@@ -15,9 +15,9 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 27.6.2.5.4 basic_ostream character inserters
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
+// C++98 27.6.2.5.3 basic_ostream inserters
+
+// { dg-final { file-io-diff "wostream_inserter_other_in.txt" "wostream_inserter_other_out.txt" } }
 
 #include <ostream>
 #include <fstream>
@@ -53,6 +53,7 @@ test03(void)
   out.seekp(0, ios_base::end);
   i_read = in.tellg() - rs;
   i_wrote = out.tellp() - ws;
+  VERIFY( i_read == i_wrote );
   in.close();
   out.close();
 }

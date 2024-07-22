@@ -15,14 +15,14 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 27.8.1.3 filebuf member functions
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
+// C++98 27.8.1.3 filebuf member functions
 
 // various tests for filebuf::open() and filebuf::close() including
 // the non-portable functionality in the libstdc++-v3 IO library
 
 // { dg-require-fileio "" }
+// { dg-additional-files "filebuf_members-1.tst filebuf_members-1.txt" }
+// { dg-final { file-io-diff "filebuf_members-1" } }
 
 #include <fstream>
 #include <testsuite_hooks.h>

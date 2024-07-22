@@ -15,11 +15,13 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 27.6.2.5.4 basic_ostream character inserters
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
+// C++98 27.6.2.5.3 basic_ostream inserters
 
 // { dg-require-fileio "" }
+// { dg-additional-files "wostream_inserter_other-1.tst" }
+// { dg-additional-files "wostream_inserter_other-2.tst" }
+// { dg-final { file-io-diff "wostream_inserter_other-1" } }
+// { dg-final { file-io-diff "wostream_inserter_other-2" } }
 
 #include <ostream>
 #include <sstream>

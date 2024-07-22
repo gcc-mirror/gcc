@@ -1674,3 +1674,35 @@ if { [info exists env(GCC_RUNTEST_PARALLELIZE_DIR)] \
     }
 
 }
+
+# Compare output file written by test to expected result.
+# With two arguments the comparison is done via 'diff arg1 arg2'.
+# With one argument the comparison is done via 'diff arg1.tst arg1.txt'.
+proc file-io-diff { args } {
+    set nargs [llength $args]
+    if { $nargs < 1 } {
+	error "too few arguments to file-io-diff"
+    }
+    if { $nargs > 2 } {
+	error "too many arguments to file-io-diff"
+    }
+    if { $nargs == 1 } {
+	set file1 [lindex $args 0]
+	set file2 "${file1}.txt"
+	append file1 ".tst"
+    } else {
+	set file1 [lindex $args 0]
+	set file2 [lindex $args 1]
+    }
+
+    spawn -noecho diff -u $file1 $file2
+    expect {
+      -re ".+" {
+	set msg "files differ\n"
+	append msg $expect_out(0,string)
+	fail $msg
+	exp_continue
+      }
+    }
+    return
+}
