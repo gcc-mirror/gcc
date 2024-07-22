@@ -1,7 +1,7 @@
 /* { dg-do link } */
-/* { dg-do run { target runtime_ptx_alias } } */
+/* { dg-do run { target nvptx_runtime_alias_ptx } } */
 /* { dg-options "-save-temps" } */
-/* { dg-add-options ptx_alias } */
+/* { dg-add-options nvptx_alias_ptx } */
 
 int v;
 

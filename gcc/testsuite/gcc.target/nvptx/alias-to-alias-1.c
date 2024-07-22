@@ -1,7 +1,7 @@
 /* Alias to alias; 'libgomp.c-c++-common/pr96390.c'.  */
 
 /* { dg-do compile } */
-/* { dg-add-options ptx_alias } */
+/* { dg-add-options nvptx_alias_ptx } */
 
 int v;
 

@@ -1,6 +1,14 @@
 2024-12-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2024-09-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords): Document
+	'nvptx_default_ptx_isa_version_at_least_6_0',
+	'nvptx_runtime_alias_ptx'.
+	(Add Options): Document 'nvptx_alias_ptx'.
+
+	Backported from trunk:
 	2024-09-04  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* config/nvptx/gen-opt.sh: Use 'enum ptx_isa' instead of 'int'.
