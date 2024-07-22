@@ -4641,8 +4641,8 @@
 ;; - BIC
 ;; -------------------------------------------------------------------------
 
-;; Unpredicated BIC.
-(define_expand "@aarch64_bic<mode>"
+;; Unpredicated BIC; andn named pattern.
+(define_expand "andn<mode>3"
   [(set (match_operand:SVE_I 0 "register_operand")
 	(and:SVE_I
 	  (unspec:SVE_I

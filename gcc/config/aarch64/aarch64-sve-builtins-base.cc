@@ -271,7 +271,7 @@ public:
       }
 
     if (e.pred == PRED_x)
-      return e.use_unpred_insn (code_for_aarch64_bic (e.vector_mode (0)));
+      return e.use_unpred_insn (e.direct_optab_handler (andn_optab));
 
     return e.use_cond_insn (code_for_cond_bic (e.vector_mode (0)));
   }
