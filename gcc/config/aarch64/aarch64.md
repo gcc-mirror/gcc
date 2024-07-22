@@ -5069,18 +5069,18 @@
 
 ;; Binary logical operators negating one operand, i.e. (a & !b), (a | !b).
 
-(define_insn "*<NLOGICAL:optab>_one_cmpl<mode>3"
+(define_insn "<NLOGICAL:optab>n<mode>3"
   [(set (match_operand:GPI 0 "register_operand")
-	(NLOGICAL:GPI (not:GPI (match_operand:GPI 1 "register_operand"))
-		     (match_operand:GPI 2 "register_operand")))]
+	(NLOGICAL:GPI (not:GPI (match_operand:GPI 2 "register_operand"))
+		     (match_operand:GPI 1 "register_operand")))]
   ""
   {@ [ cons: =0 , 1 , 2 ; attrs: type , arch  ]
-     [ r        , r , r ; logic_reg   , *     ] <NLOGICAL:nlogical>\t%<w>0, %<w>2, %<w>1
-     [ w        , w , w ; neon_logic  , simd  ] <NLOGICAL:nlogical>\t%0.<Vbtype>, %2.<Vbtype>, %1.<Vbtype>
+     [ r        , r , r ; logic_reg   , *     ] <NLOGICAL:nlogical>\t%<w>0, %<w>1, %<w>2
+     [ w        , w , w ; neon_logic  , simd  ] <NLOGICAL:nlogical>\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>
   }
 )
 
-(define_insn "*<NLOGICAL:optab>_one_cmplsidi3_ze"
+(define_insn "*<NLOGICAL:optab>nsidi3_ze"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extend:DI
 	  (NLOGICAL:SI (not:SI (match_operand:SI 1 "register_operand" "r"))
