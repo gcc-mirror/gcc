@@ -4123,7 +4123,7 @@ operand_compare::hash_operand (const_tree t, inchash::hash &hstate,
 		hash_operand (TREE_OPERAND (t, 0), one, flags);
 		hash_operand (TREE_OPERAND (t, 1), two, flags);
 		hstate.add_commutative (one, two);
-		hash_operand (TREE_OPERAND (t, 2), two, flags);
+		hash_operand (TREE_OPERAND (t, 2), hstate, flags);
 		return;
 	      }
 
