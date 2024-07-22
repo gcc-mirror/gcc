@@ -118,12 +118,6 @@ void do_concat (void)
   d[0][0] = __builtin_vsx_concat_2df (x, y);
 }
 
-void do_set (void)
-{
-  d[0][0] = __builtin_vsx_set_2df (d[0][1], x, 0);
-  d[1][0] = __builtin_vsx_set_2df (d[1][1], y, 1);
-}
-
 extern double z[][4];
 
 int do_math (void)

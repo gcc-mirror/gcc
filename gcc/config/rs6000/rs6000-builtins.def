@@ -115,7 +115,6 @@
 ;
 ; Attributes are strings, and the allowed ones are listed below.
 ;
-;   set      Process as a vec_set function
 ;   extract  Process as a vec_extract function
 ;   nosoft   Not valid with -msoft-float
 ;   ldvec    Needs special handling for vec_ld semantics
@@ -1400,15 +1399,6 @@
 
   const vsll __builtin_vsx_mul_2di (vsll, vsll);
     MUL_V2DI vsx_mul_v2di {}
-
-  const vsq __builtin_vsx_set_1ti (vsq, signed __int128, const int<0,0>);
-    SET_1TI vsx_set_v1ti {set}
-
-  const vd __builtin_vsx_set_2df (vd, double, const int<0,1>);
-    SET_2DF vsx_set_v2df {set}
-
-  const vsll __builtin_vsx_set_2di (vsll, signed long long, const int<0,1>);
-    SET_2DI vsx_set_v2di {set}
 
   const vd __builtin_vsx_splat_2df (double);
     SPLAT_2DF vsx_splat_v2df {}
