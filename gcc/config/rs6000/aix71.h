@@ -79,6 +79,7 @@ do {									\
 #undef ASM_CPU_SPEC
 #define ASM_CPU_SPEC \
 "%{mcpu=native: %(asm_cpu_native); \
+  mcpu=power11: -mpwr11; \
   mcpu=power10: -mpwr10; \
   mcpu=power9: -mpwr9; \
   mcpu=power8: -mpwr8; \
