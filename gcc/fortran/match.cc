@@ -2131,6 +2131,13 @@ gfc_match_type_spec (gfc_typespec *ts)
       goto kind_selector;
     }
 
+  if (flag_unsigned && gfc_match ("unsigned") == MATCH_YES)
+    {
+      ts->type = BT_UNSIGNED;
+      ts->kind = gfc_default_integer_kind;
+      goto kind_selector;
+    }
+
   if (gfc_match ("double precision") == MATCH_YES)
     {
       ts->type = BT_REAL;

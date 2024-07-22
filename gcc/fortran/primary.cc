@@ -209,6 +209,24 @@ convert_integer (const char *buffer, int kind, int radix, locus *where)
 }
 
 
+/* Convert an unsigned string to an expression node.  XXX:
+   This needs a calculation modulo 2^n.  */
+static gfc_expr *
+convert_unsigned (const char *buffer, int kind, int radix, locus *where)
+{
+  gfc_expr *e;
+  mpz_t tmp;
+  mpz_init_set_ui (tmp, 1);
+  /* XXX  Change this later.  */
+  mpz_mul_2exp (tmp, tmp, kind * 8);
+  mpz_sub_ui (tmp, tmp, 1);
+  e = gfc_get_constant_expr (BT_UNSIGNED, kind, where);
+  mpz_set_str (e->value.integer, buffer, radix);
+  mpz_and (e->value.integer, e->value.integer, tmp);
+  mpz_clear (tmp);
+  return e;
+}
+
 /* Convert a real string to an expression node.  */
 
 static gfc_expr *
@@ -296,6 +314,61 @@ match_integer_constant (gfc_expr **result, int signflag)
   return MATCH_YES;
 }
 
+/* Match an unsigned constant (an integer with suffixed u).  No sign
+   is currently accepted, in accordance with 24-116.txt, but that
+   could be changed later.  This is very much like the integer
+   constant matching above, but with enough differences to put it into
+   its own function.  */
+
+static match
+match_unsigned_constant (gfc_expr **result)
+{
+  int length, kind, is_iso_c;
+  locus old_loc;
+  char *buffer;
+  gfc_expr *e;
+  match m;
+
+  old_loc = gfc_current_locus;
+  gfc_gobble_whitespace ();
+
+  length = match_digits (/* signflag = */ false, 10, NULL);
+  gfc_current_locus = old_loc;
+  if (length == -1)
+    return MATCH_NO;
+
+  buffer = (char *) alloca (length + 1);
+  memset (buffer, '\0', length + 1);
+
+  gfc_gobble_whitespace ();
+
+  match_digits (false, 10, buffer);
+  m = gfc_match_char ('u');
+  if (m == MATCH_NO)
+    return m;
+
+  kind = get_kind (&is_iso_c);
+  if (kind == -2)
+    kind = gfc_default_unsigned_kind;
+  if (kind == -1)
+    return MATCH_ERROR;
+
+  if (kind == 4 && flag_integer4_kind == 8)
+    kind = 8;
+
+  if (gfc_validate_kind (BT_UNSIGNED, kind, true) < 0)
+    {
+      gfc_error ("Unsigned kind %d at %C not available", kind);
+      return MATCH_ERROR;
+    }
+
+  e = convert_unsigned (buffer, kind, 10, &gfc_current_locus);
+  e->ts.is_c_interop = is_iso_c;
+
+  *result = e;
+  return MATCH_YES;
+
+}
 
 /* Match a Hollerith constant.  */
 
@@ -1548,6 +1621,13 @@ gfc_match_literal_constant (gfc_expr **result, int signflag)
   m = match_hollerith_constant (result);
   if (m != MATCH_NO)
     return m;
+
+  if (flag_unsigned)
+    {
+      m = match_unsigned_constant (result);
+      if (m != MATCH_NO)
+	return m;
+    }
 
   m = match_integer_constant (result, signflag);
   if (m != MATCH_NO)

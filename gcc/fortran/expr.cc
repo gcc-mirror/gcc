@@ -159,6 +159,7 @@ gfc_get_constant_expr (bt type, int kind, locus *where)
   switch (type)
     {
     case BT_INTEGER:
+    case BT_UNSIGNED:
       mpz_init (e->value.integer);
       break;
 

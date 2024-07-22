@@ -2732,6 +2732,25 @@ gfc_integer_info;
 
 extern gfc_integer_info gfc_integer_kinds[];
 
+/* Unsigned numbers, experimental.  */
+
+typedef struct
+{
+  mpz_t huge;
+
+  int kind, radix, digits, bit_size, range;
+
+  /* True if the C type of the given name maps to this precision.  Note that
+     more than one bit can be set.  We will use this later on.  */
+  unsigned int c_unsigned_char : 1;
+  unsigned int c_unsigned_short : 1;
+  unsigned int c_unsigned_int : 1;
+  unsigned int c_unsigned_long : 1;
+  unsigned int c_unsigned_long_long : 1;
+}
+gfc_unsigned_info;
+
+extern gfc_unsigned_info gfc_unsigned_kinds[];
 
 typedef struct
 {
@@ -3455,6 +3474,7 @@ tree gfc_get_union_type (gfc_symbol *);
 tree gfc_get_derived_type (gfc_symbol * derived, int codimen = 0);
 extern int gfc_index_integer_kind;
 extern int gfc_default_integer_kind;
+extern int gfc_default_unsigned_kind;
 extern int gfc_max_integer_kind;
 extern int gfc_default_real_kind;
 extern int gfc_default_double_kind;
