@@ -1,4 +1,4 @@
-/* { dg-skip-if "AArch64 does not support these bounds." { aarch64*-*-* } { "--param stack-clash-protection-*" } } */
+/* { dg-skip-if "RISC-V and AArch64 do not support these bounds." { riscv*-*-* aarch64*-*-* } { "--param stack-clash-protection-*" } } */
 /* { dg-skip-if "For 32-bit hosts such param is too much and even for 64-bit might require hundreds of GB of RAM" { *-*-* } { "--param min-nondebug-insn-uid=1073741824" } } */
 
 /*-------------------------------------------------------------*/

@@ -48,7 +48,7 @@ f7 (void)
 
 /* { dg-final { scan-rtl-dump-times "Stack clash inline probes" 2 "pro_and_epilogue" } } */
 /* { dg-final { scan-rtl-dump-times "Stack clash probe loop" 2 "pro_and_epilogue" } } */
-/* { dg-final { scan-rtl-dump-times "Stack clash residual allocation in prologue" 4 "pro_and_epilogue" } } */
+/* { dg-final { scan-rtl-dump-times "Stack clash residual allocation in prologue" 4 "pro_and_epilogue" { target { ! riscv*-*-* } } } } */
 /* { dg-final { scan-rtl-dump-times "Stack clash not noreturn" 4 "pro_and_epilogue" } } */
 
 /* { dg-final { scan-rtl-dump-times "Stack clash no frame pointer needed" 4 "pro_and_epilogue" { target { ! frame_pointer_for_non_leaf } } } } */

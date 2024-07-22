@@ -12735,7 +12735,7 @@ proc check_effective_target_supports_stack_clash_protection { } {
     if { [istarget x86_64-*-*] || [istarget i?86-*-*]
 	  || [istarget powerpc*-*-*] || [istarget rs6000*-*-*]
 	  || [istarget aarch64*-**] || [istarget s390*-*-*]
-	  || [istarget loongarch64*-**] } {
+	  || [istarget loongarch64*-**] || [istarget riscv64*-**] } {
 	return 1
     }
   return 0
@@ -12804,6 +12804,10 @@ proc check_effective_target_caller_implicit_probes { } {
   # consider the aarch64 as having a caller implicit probe at
   # *(sp + 1k).
   if { [istarget aarch64*-*-*] } {
+	return 1;
+  }
+
+  if { [istarget riscv64*-*-*] } {
 	return 1;
   }
 

@@ -7953,6 +7953,191 @@ get_multi_push_fpr_mask (unsigned max_fprs_push)
   return mask_fprs_push;
 }
 
+/* Allocate SIZE bytes of stack space using TEMP1 as a scratch register.
+   If SIZE is not large enough to require a probe this function will only
+   adjust the stack.
+
+   We emit barriers after each stack adjustment to prevent optimizations from
+   breaking the invariant that we never drop the stack more than a page.  This
+   invariant is needed to make it easier to correctly handle asynchronous
+   events, e.g. if we were to allow the stack to be dropped by more than a page
+   and then have multiple probes up and we take a signal somewhere in between
+   then the signal handler doesn't know the state of the stack and can make no
+   assumptions about which pages have been probed.  */
+
+static void
+riscv_allocate_and_probe_stack_space (rtx temp1, HOST_WIDE_INT size)
+{
+  HOST_WIDE_INT guard_size
+    = 1 << param_stack_clash_protection_guard_size;
+  HOST_WIDE_INT guard_used_by_caller = STACK_CLASH_CALLER_GUARD;
+  HOST_WIDE_INT byte_sp_alignment = STACK_BOUNDARY / BITS_PER_UNIT;
+  HOST_WIDE_INT min_probe_threshold = guard_size - guard_used_by_caller;
+  rtx insn;
+
+  /* We should always have a positive probe threshold.  */
+  gcc_assert (min_probe_threshold > 0);
+
+  /* If SIZE is not large enough to require probing, just adjust the stack and
+     exit.  */
+  if (known_lt (size, min_probe_threshold)
+      || !flag_stack_clash_protection)
+    {
+      if (flag_stack_clash_protection)
+	{
+	  if (known_eq (cfun->machine->frame.total_size, 0))
+	    dump_stack_clash_frame_info (NO_PROBE_NO_FRAME, false);
+	  else
+	    dump_stack_clash_frame_info (NO_PROBE_SMALL_FRAME, true);
+	}
+
+      if (SMALL_OPERAND (-size))
+	{
+	  insn = gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx, GEN_INT (-size));
+	  RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
+	}
+      else if (SUM_OF_TWO_S12_ALGN (-size))
+	{
+	  HOST_WIDE_INT one, two;
+	  riscv_split_sum_of_two_s12 (-size, &one, &two);
+	  insn = gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
+				GEN_INT (one));
+	  RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
+	  insn = gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
+				GEN_INT (two));
+	  RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
+	}
+      else
+	{
+	  temp1 = riscv_force_temporary (temp1, GEN_INT (-size));
+	  emit_insn (gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx, temp1));
+	  insn = plus_constant (Pmode, stack_pointer_rtx, -size);
+	  insn = gen_rtx_SET (stack_pointer_rtx, insn);
+	  riscv_set_frame_expr (insn);
+	}
+
+      /* We must have allocated the remainder of the stack frame.
+	 Emit a stack tie if we have a frame pointer so that the
+	 allocation is ordered WRT fp setup and subsequent writes
+	 into the frame.  */
+      if (frame_pointer_needed)
+	riscv_emit_stack_tie (hard_frame_pointer_rtx);
+
+      return;
+    }
+
+  gcc_assert (multiple_p (size, byte_sp_alignment));
+
+  if (dump_file)
+    fprintf (dump_file,
+	     "Stack clash prologue: " HOST_WIDE_INT_PRINT_DEC
+	     " bytes, probing will be required.\n", size);
+
+  /* Round size to the nearest multiple of guard_size, and calculate the
+     residual as the difference between the original size and the rounded
+     size.  */
+  HOST_WIDE_INT rounded_size = ROUND_DOWN (size, guard_size);
+  HOST_WIDE_INT residual = size - rounded_size;
+
+  /* We can handle a small number of allocations/probes inline.  Otherwise
+     punt to a loop.  */
+  if (rounded_size <= STACK_CLASH_MAX_UNROLL_PAGES * guard_size)
+    {
+      temp1 = riscv_force_temporary (temp1, gen_int_mode (guard_size, Pmode));
+      for (HOST_WIDE_INT i = 0; i < rounded_size; i += guard_size)
+	{
+	  emit_insn (gen_sub3_insn (stack_pointer_rtx, stack_pointer_rtx, temp1));
+	  insn = plus_constant (Pmode, stack_pointer_rtx, -guard_size);
+	  insn = gen_rtx_SET (stack_pointer_rtx, insn);
+	  riscv_set_frame_expr (insn);
+	  emit_stack_probe (plus_constant (Pmode, stack_pointer_rtx,
+					   guard_used_by_caller));
+	  emit_insn (gen_blockage ());
+	}
+      dump_stack_clash_frame_info (PROBE_INLINE, size != rounded_size);
+    }
+  else
+    {
+      /* Compute the ending address.  */
+      temp1 = riscv_force_temporary (temp1, gen_int_mode (rounded_size, Pmode));
+      insn = emit_insn (gen_sub3_insn (temp1, stack_pointer_rtx, temp1));
+
+      if (!frame_pointer_needed)
+	{
+	  /* We want the CFA independent of the stack pointer for the
+	     duration of the loop.  */
+	  add_reg_note (insn, REG_CFA_DEF_CFA,
+			plus_constant (Pmode, temp1, rounded_size));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+
+      /* Allocate and probe the stack.  */
+
+      rtx temp2 = gen_rtx_REG (Pmode, RISCV_PROLOGUE_TEMP2_REGNUM);
+      temp2 = riscv_force_temporary (temp2, gen_int_mode (guard_size, Pmode));
+
+      /* Loop.  */
+      rtx label = gen_label_rtx ();
+      emit_label (label);
+
+      emit_insn (gen_sub3_insn (stack_pointer_rtx, stack_pointer_rtx, temp2));
+      emit_stack_probe (plus_constant (Pmode, stack_pointer_rtx,
+			   guard_used_by_caller));
+      emit_insn (gen_blockage ());
+
+      /* Check if the stack pointer is at the ending address.  */
+      riscv_expand_conditional_branch (label, NE, stack_pointer_rtx, temp1);
+      JUMP_LABEL (get_last_insn ()) = label;
+
+      emit_insn (gen_blockage ());
+
+      /* Now reset the CFA register if needed.  */
+      if (!frame_pointer_needed)
+	{
+	  insn = get_last_insn ();
+	  add_reg_note (insn, REG_CFA_DEF_CFA,
+			plus_constant (Pmode, stack_pointer_rtx, rounded_size));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+
+      dump_stack_clash_frame_info (PROBE_LOOP, size != rounded_size);
+    }
+
+  /* Handle any residuals.  Residuals of at least MIN_PROBE_THRESHOLD have to
+     be probed.  This maintains the requirement that each page is probed at
+     least once.  For initial probing we probe only if the allocation is
+     more than GUARD_SIZE - buffer, and below the saved registers we probe
+     if the amount is larger than buffer.  GUARD_SIZE - buffer + buffer ==
+     GUARD_SIZE.  This works that for any allocation that is large enough to
+     trigger a probe here, we'll have at least one, and if they're not large
+     enough for this code to emit anything for them, The page would have been
+     probed by the saving of FP/LR either by this function or any callees.  If
+     we don't have any callees then we won't have more stack adjustments and so
+     are still safe.  */
+  if (residual)
+    {
+      gcc_assert (guard_used_by_caller + byte_sp_alignment <= size);
+
+      temp1 = riscv_force_temporary (temp1, gen_int_mode (residual, Pmode));
+      emit_insn (gen_sub3_insn (stack_pointer_rtx, stack_pointer_rtx, temp1));
+      insn = plus_constant (Pmode, stack_pointer_rtx, -residual);
+      insn = gen_rtx_SET (stack_pointer_rtx, insn);
+      riscv_set_frame_expr (insn);
+      if (residual >= min_probe_threshold)
+	{
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "Stack clash prologue residuals: "
+		     HOST_WIDE_INT_PRINT_DEC " bytes, probing will be required."
+		     "\n", residual);
+
+	  emit_stack_probe (plus_constant (Pmode, stack_pointer_rtx,
+					   guard_used_by_caller));
+	  emit_insn (gen_blockage ());
+	}
+    }
+}
+
 /* Expand the "prologue" pattern.  */
 
 void
@@ -8115,42 +8300,14 @@ riscv_expand_prologue (void)
 	  return;
 	}
 
-      if (SMALL_OPERAND (-constant_frame))
-	{
-	  insn = gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
-				GEN_INT (-constant_frame));
-	  RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
-	}
-      else if (SUM_OF_TWO_S12_ALGN (-constant_frame))
-	{
-	  HOST_WIDE_INT one, two;
-	  riscv_split_sum_of_two_s12 (-constant_frame, &one, &two);
-	  insn = gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
-				GEN_INT (one));
-	  RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
-	  insn = gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
-				GEN_INT (two));
-	  RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
-	}
+      riscv_allocate_and_probe_stack_space (RISCV_PROLOGUE_TEMP (Pmode), constant_frame);
+    }
+  else if (flag_stack_clash_protection)
+    {
+      if (known_eq (frame->total_size, 0))
+	dump_stack_clash_frame_info (NO_PROBE_NO_FRAME, false);
       else
-	{
-	  riscv_emit_move (RISCV_PROLOGUE_TEMP (Pmode), GEN_INT (-constant_frame));
-	  emit_insn (gen_add3_insn (stack_pointer_rtx,
-				    stack_pointer_rtx,
-				    RISCV_PROLOGUE_TEMP (Pmode)));
-
-	  /* Describe the effect of the previous instructions.  */
-	  insn = plus_constant (Pmode, stack_pointer_rtx, -constant_frame);
-	  insn = gen_rtx_SET (stack_pointer_rtx, insn);
-	  riscv_set_frame_expr (insn);
-	}
-
-      /* We must have allocated the remainder of the stack frame.
-	 Emit a stack tie if we have a frame pointer so that the
-	 allocation is ordered WRT fp setup and subsequent writes
-	 into the frame.  */
-      if (frame_pointer_needed)
-	riscv_emit_stack_tie (hard_frame_pointer_rtx);
+	dump_stack_clash_frame_info (NO_PROBE_SMALL_FRAME, true);
     }
 }
 
@@ -9913,6 +10070,23 @@ riscv_option_override (void)
 
       riscv_stack_protector_guard_offset = offs;
     }
+
+  int guard_size = param_stack_clash_protection_guard_size;
+
+  /* Enforce that interval is the same size as guard size so the mid-end does
+     the right thing.  */
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       param_stack_clash_protection_probe_interval,
+		       guard_size);
+
+  /* The maybe_set calls won't update the value if the user has explicitly set
+     one.  Which means we need to validate that probing interval and guard size
+     are equal.  */
+  int probe_interval
+    = param_stack_clash_protection_probe_interval;
+  if (guard_size != probe_interval)
+    error ("stack clash guard size %<%d%> must be equal to probing interval "
+	   "%<%d%>", guard_size, probe_interval);
 
   SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 		       param_sched_pressure_algorithm,

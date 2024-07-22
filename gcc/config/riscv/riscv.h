@@ -1258,4 +1258,12 @@ extern void riscv_remove_unneeded_save_restore_calls (void);
 /* Check TLS Descriptors mechanism is selected.  */
 #define TARGET_TLSDESC (riscv_tls_dialect == TLS_DESCRIPTORS)
 
+/* This value is the amount of bytes a caller is allowed to drop the stack
+   before probing has to be done for stack clash protection.  */
+#define STACK_CLASH_CALLER_GUARD 1024
+
+/* This value controls how many pages we manually unroll the loop for when
+   generating stack clash probes.  */
+#define STACK_CLASH_MAX_UNROLL_PAGES 4
+
 #endif /* ! GCC_RISCV_H */
