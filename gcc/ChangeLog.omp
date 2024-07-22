@@ -1,6 +1,19 @@
 2024-12-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2024-09-04  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/gen-opt.sh: Use 'enum ptx_isa' instead of 'int'.
+	* config/nvptx/nvptx-gen.opt: Regenerate.
+	* config/nvptx/nvptx.opt: Use 'enum ptx_version' instead of 'int'.
+	* config/nvptx/nvptx-opts.h (enum ptx_isa): Add 'PTX_ISA_unset'.
+	(enum ptx_version): Add 'PTX_VERSION_unset'.
+	* config/nvptx/nvptx-c.cc (nvptx_cpu_cpp_builtins): Adjust.
+	* config/nvptx/nvptx.cc (default_ptx_version_option)
+	(handle_ptx_version_option, nvptx_option_override)
+	(nvptx_file_start): Likewise.
+
+	Backported from trunk:
 	2024-09-03  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR lto/116535

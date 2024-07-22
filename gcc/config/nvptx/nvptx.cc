@@ -237,8 +237,7 @@ first_ptx_version_supporting_sm (enum ptx_isa sm)
 static enum ptx_version
 default_ptx_version_option (void)
 {
-  enum ptx_version first
-    = first_ptx_version_supporting_sm ((enum ptx_isa) ptx_isa_option);
+  enum ptx_version first = first_ptx_version_supporting_sm (ptx_isa_option);
 
   /* Pick a version that supports the sm.  */
   enum ptx_version res = first;
@@ -317,20 +316,21 @@ sm_version_to_string (enum ptx_isa sm)
 static void
 handle_ptx_version_option (void)
 {
-  if (!OPTION_SET_P (ptx_version_option)
-      || ptx_version_option == PTX_VERSION_default)
+  if (!OPTION_SET_P (ptx_version_option))
+    gcc_checking_assert (ptx_version_option == PTX_VERSION_default);
+
+  if (ptx_version_option == PTX_VERSION_default)
     {
       ptx_version_option = default_ptx_version_option ();
       return;
     }
 
-  enum ptx_version first
-    = first_ptx_version_supporting_sm ((enum ptx_isa) ptx_isa_option);
+  enum ptx_version first = first_ptx_version_supporting_sm (ptx_isa_option);
 
   if (ptx_version_option < first)
     error ("PTX version (%<-mptx%>) needs to be at least %s to support selected"
 	   " %<-misa%> (sm_%s)", ptx_version_to_string (first),
-	   sm_version_to_string ((enum ptx_isa)ptx_isa_option));
+	   sm_version_to_string (ptx_isa_option));
 }
 
 /* Implement TARGET_OPTION_OVERRIDE.  */
@@ -342,7 +342,9 @@ nvptx_option_override (void)
 
   /* Via nvptx 'OPTION_DEFAULT_SPECS', '-misa' always appears on the command
      line; but handle the case that the compiler is not run via the driver.  */
-  if (!OPTION_SET_P (ptx_isa_option))
+  gcc_checking_assert ((ptx_isa_option == PTX_ISA_unset)
+		       == (!OPTION_SET_P (ptx_isa_option)));
+  if (ptx_isa_option == PTX_ISA_unset)
     fatal_error (UNKNOWN_LOCATION, "%<-march=%> must be specified");
 
   handle_ptx_version_option ();
@@ -6214,13 +6216,11 @@ nvptx_file_start (void)
   fputs ("// BEGIN PREAMBLE\n", asm_out_file);
 
   fputs ("\t.version\t", asm_out_file);
-  fputs (ptx_version_to_string ((enum ptx_version)ptx_version_option),
-	 asm_out_file);
+  fputs (ptx_version_to_string (ptx_version_option), asm_out_file);
   fputs ("\n", asm_out_file);
 
   fputs ("\t.target\tsm_", asm_out_file);
-  fputs (sm_version_to_string ((enum ptx_isa)ptx_isa_option),
-	 asm_out_file);
+  fputs (sm_version_to_string (ptx_isa_option), asm_out_file);
   fputs ("\n", asm_out_file);
 
   fprintf (asm_out_file, "\t.address_size %d\n", GET_MODE_BITSIZE (Pmode));
