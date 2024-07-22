@@ -270,11 +270,18 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 	    = GET_MODE_MASK (GET_MODE_INNER (GET_MODE (x)));
 	  if (SUBREG_P (x))
 	    {
-	      /* If we have a SUBREG that is too wide, just continue the loop
-		 and let the iterator go down into SUBREG_REG.  */
+	      /* If we have a SUBREG destination that is too wide, just
+		 skip the destination rather than continuing this iterator.
+		 While continuing would be better, we'd need to strip the
+		 subreg and restart within the SET processing rather than
+		 the top of the loop which just complicates the flow even
+		 more.  */
 	      if (!is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (x)), &outer_mode)
 		  || GET_MODE_BITSIZE (outer_mode) > 64)
-		continue;
+		{
+		  iter.skip_subrtxes ();
+		  continue;
+		}
 
 	      /* We can safely strip a paradoxical subreg.  The inner mode will
 		 be narrower than the outer mode.  We'll clear fewer bits in
