@@ -23377,8 +23377,9 @@ aarch64_endian_lane_rtx (machine_mode mode, unsigned int n)
 bool
 aarch64_simd_mem_operand_p (rtx op)
 {
-  return MEM_P (op) && (GET_CODE (XEXP (op, 0)) == POST_INC
-			|| REG_P (XEXP (op, 0)));
+  return (MEM_P (op)
+	  && (GET_CODE (XEXP (op, 0)) == POST_INC || REG_P (XEXP (op, 0)))
+	  && memory_operand (op, VOIDmode));
 }
 
 /* Return true if OP is a valid MEM operand for an SVE LD1R instruction.  */
