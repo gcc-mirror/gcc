@@ -1,7 +1,7 @@
 /*  This file is distributed under the University of Illinois Open Source
     License. See license.txt for details.  */
 
-/* { dg-additional-options "--param vect-epilogues-nomask=0" } */
+/* { dg-additional-options "--param vect-epilogues-nomask=0 -Diterations=LEN_2D" } */
 /* { dg-require-effective-target vect_float } */
 
 #include "tsvc.h"

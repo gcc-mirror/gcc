@@ -1,3 +1,28 @@
+2025-04-02  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from trunk:
+	2024-08-07  Joern Rennecke  <joern.rennecke@riscy-ip.com>
+
+	* gcc.dg/vect/tsvc/tsvc.h (iterations): Allow to override,
+	default to 10.
+	(get_expected_result): Add values for iterations counts
+	10, 256 and 3200.
+	(run): Add code to output values for new iterations counts.
+	* gcc.dg/vect/tsvc/vect-tsvc-s1119.c (dg-additional-options):
+	Add -Diterations=LEN_2D .
+	* gcc.dg/vect/tsvc/vect-tsvc-s115.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s119.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s125.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s2102.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s2233.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s2275.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s231.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s235.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s176.c: (dg-additional-options):
+	Add -Diterations=3200 .
+	[!run_expensive_tests]: dg-additional-options "-DTRUNCATE_TEST" .
+	[TRUNCATE_TEST]: Set m to 32.
+
 2025-03-30  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
