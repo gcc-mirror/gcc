@@ -158,11 +158,6 @@ proc libstdc++_init { testfile } {
     global dg-do-what-default
     set dg-do-what-default run
 
-    # Copy all required data files.
-    # TODO: Use dg-additional-files in individual tests instead of doing this.
-    v3-copy-files [glob -nocomplain "$srcdir/data/*.tst"]
-    v3-copy-files [glob -nocomplain "$srcdir/data/*.txt"]
-
     set ld_library_path_tmp ""
 
     # Locate libgcc.a so we don't need to account for different values of
