@@ -7900,6 +7900,35 @@ static const code_for_push_pop_t code_for_push_pop[ZCMP_MAX_GRP_SLOTS][ZCMP_OP_N
       code_for_gpr_multi_popret_up_to_s11,
       code_for_gpr_multi_popretz_up_to_s11}};
 
+/*  Set a probe loop for stack clash protection.  */
+static void
+riscv_allocate_and_probe_stack_loop (rtx tmp, enum rtx_code code,
+				     rtx op0, rtx op1, bool vector,
+				     HOST_WIDE_INT offset)
+{
+  tmp = riscv_force_temporary (tmp, gen_int_mode (offset, Pmode));
+
+  /* Loop.  */
+  rtx label = gen_label_rtx ();
+  emit_label (label);
+
+  /* Allocate and probe stack.  */
+  emit_insn (gen_sub3_insn (stack_pointer_rtx, stack_pointer_rtx, tmp));
+  emit_stack_probe (plus_constant (Pmode, stack_pointer_rtx,
+		    STACK_CLASH_CALLER_GUARD));
+  emit_insn (gen_blockage ());
+
+  /* Adjust the remaining vector length.  */
+  if (vector)
+    emit_insn (gen_sub3_insn (op0, op0, tmp));
+
+  /* Branch if there's still more bytes to probe.  */
+  riscv_expand_conditional_branch (label, code, op0, op1);
+  JUMP_LABEL (get_last_insn ()) = label;
+
+  emit_insn (gen_blockage ());
+}
+
 /* Adjust scalable frame of vector for prologue && epilogue. */
 
 static void
@@ -7911,6 +7940,49 @@ riscv_v_adjust_scalable_frame (rtx target, poly_int64 offset, bool epilogue)
 
   riscv_legitimize_poly_move (Pmode, adjust_size, tmp,
 			      gen_int_mode (offset, Pmode));
+
+  /* If doing stack clash protection then we use a loop to allocate and probe
+     the stack.  */
+  if (flag_stack_clash_protection && !epilogue)
+    {
+      HOST_WIDE_INT min_probe_threshold
+	= (1 << param_stack_clash_protection_guard_size) - STACK_CLASH_CALLER_GUARD;
+
+      if (!frame_pointer_needed)
+	{
+	  /* This is done to provide unwinding information for the stack
+	     adjustments we're about to do, however to prevent the optimizers
+	     from removing the T3 move and leaving the CFA note (which would be
+	     very wrong) we tie the old and new stack pointer together.
+	     The tie will expand to nothing but the optimizers will not touch
+	     the instruction.  */
+	  insn = get_last_insn ();
+	  rtx stack_ptr_copy = gen_rtx_REG (Pmode, RISCV_STACK_CLASH_VECTOR_CFA_REGNUM);
+	  emit_move_insn (stack_ptr_copy, stack_pointer_rtx);
+	  riscv_emit_stack_tie (stack_ptr_copy);
+
+	  /* We want the CFA independent of the stack pointer for the
+	     duration of the loop.  */
+	  add_reg_note (insn, REG_CFA_DEF_CFA, stack_ptr_copy);
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+
+      riscv_allocate_and_probe_stack_loop (tmp, GE, adjust_size, tmp, true,
+					   min_probe_threshold);
+
+      /* Allocate the residual.  */
+      insn = emit_insn (gen_sub3_insn (target, target, adjust_size));
+
+      /* Now reset the CFA register if needed.  */
+      if (!frame_pointer_needed)
+	{
+	  add_reg_note (insn, REG_CFA_DEF_CFA,
+			plus_constant (Pmode, stack_pointer_rtx, -offset));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+
+      return;
+    }
 
   if (epilogue)
     insn = gen_add3_insn (target, target, adjust_size);
@@ -8059,8 +8131,9 @@ riscv_allocate_and_probe_stack_space (rtx temp1, HOST_WIDE_INT size)
   else
     {
       /* Compute the ending address.  */
-      temp1 = riscv_force_temporary (temp1, gen_int_mode (rounded_size, Pmode));
-      insn = emit_insn (gen_sub3_insn (temp1, stack_pointer_rtx, temp1));
+      rtx temp2 = gen_rtx_REG (Pmode, RISCV_PROLOGUE_TEMP2_REGNUM);
+      temp2 = riscv_force_temporary (temp2, gen_int_mode (rounded_size, Pmode));
+      insn = emit_insn (gen_sub3_insn (temp2, stack_pointer_rtx, temp2));
 
       if (!frame_pointer_needed)
 	{
@@ -8071,25 +8144,9 @@ riscv_allocate_and_probe_stack_space (rtx temp1, HOST_WIDE_INT size)
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
 
-      /* Allocate and probe the stack.  */
-
-      rtx temp2 = gen_rtx_REG (Pmode, RISCV_PROLOGUE_TEMP2_REGNUM);
-      temp2 = riscv_force_temporary (temp2, gen_int_mode (guard_size, Pmode));
-
-      /* Loop.  */
-      rtx label = gen_label_rtx ();
-      emit_label (label);
-
-      emit_insn (gen_sub3_insn (stack_pointer_rtx, stack_pointer_rtx, temp2));
-      emit_stack_probe (plus_constant (Pmode, stack_pointer_rtx,
-			   guard_used_by_caller));
-      emit_insn (gen_blockage ());
-
-      /* Check if the stack pointer is at the ending address.  */
-      riscv_expand_conditional_branch (label, NE, stack_pointer_rtx, temp1);
-      JUMP_LABEL (get_last_insn ()) = label;
-
-      emit_insn (gen_blockage ());
+      /* This allocates and probes the stack.  */
+      riscv_allocate_and_probe_stack_loop (temp1, NE, stack_pointer_rtx, temp2,
+					   false, guard_size);
 
       /* Now reset the CFA register if needed.  */
       if (!frame_pointer_needed)

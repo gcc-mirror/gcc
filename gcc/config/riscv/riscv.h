@@ -429,6 +429,11 @@ ASM_MISA_SPEC
 #define RISCV_PROLOGUE_TEMP2_REGNUM (GP_TEMP_FIRST + 1)
 #define RISCV_PROLOGUE_TEMP2(MODE) gen_rtx_REG (MODE, RISCV_PROLOGUE_TEMP2_REGNUM)
 
+/* Both prologue temp registers are used in the vector probe loop for when
+   stack-clash protection is enabled, so we need to copy SP to a new register
+   and set it as CFA during the loop, we are using T3 for that.  */
+#define RISCV_STACK_CLASH_VECTOR_CFA_REGNUM (GP_TEMP_FIRST + 23)
+
 #define RISCV_CALL_ADDRESS_TEMP_REGNUM (GP_TEMP_FIRST + 1)
 #define RISCV_CALL_ADDRESS_TEMP(MODE) \
   gen_rtx_REG (MODE, RISCV_CALL_ADDRESS_TEMP_REGNUM)
