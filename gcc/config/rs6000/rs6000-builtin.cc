@@ -2313,56 +2313,6 @@ altivec_expand_predicate_builtin (enum insn_code icode, tree exp, rtx target)
   return target;
 }
 
-/* Return the integer constant in ARG.  Constrain it to be in the range
-   of the subparts of VEC_TYPE; issue an error if not.  */
-
-static int
-get_element_number (tree vec_type, tree arg)
-{
-  unsigned HOST_WIDE_INT elt, max = TYPE_VECTOR_SUBPARTS (vec_type) - 1;
-
-  if (!tree_fits_uhwi_p (arg)
-      || (elt = tree_to_uhwi (arg), elt > max))
-    {
-      error ("selector must be an integer constant in the range [0, %wi]", max);
-      return 0;
-    }
-
-  return elt;
-}
-
-/* Expand vec_set builtin.  */
-static rtx
-altivec_expand_vec_set_builtin (tree exp)
-{
-  machine_mode tmode, mode1;
-  tree arg0, arg1, arg2;
-  int elt;
-  rtx op0, op1;
-
-  arg0 = CALL_EXPR_ARG (exp, 0);
-  arg1 = CALL_EXPR_ARG (exp, 1);
-  arg2 = CALL_EXPR_ARG (exp, 2);
-
-  tmode = TYPE_MODE (TREE_TYPE (arg0));
-  mode1 = TYPE_MODE (TREE_TYPE (TREE_TYPE (arg0)));
-  gcc_assert (VECTOR_MODE_P (tmode));
-
-  op0 = expand_expr (arg0, NULL_RTX, tmode, EXPAND_NORMAL);
-  op1 = expand_expr (arg1, NULL_RTX, mode1, EXPAND_NORMAL);
-  elt = get_element_number (TREE_TYPE (arg0), arg2);
-
-  if (GET_MODE (op1) != mode1 && GET_MODE (op1) != VOIDmode)
-    op1 = convert_modes (mode1, GET_MODE (op1), op1, true);
-
-  op0 = force_reg (tmode, op0);
-  op1 = force_reg (mode1, op1);
-
-  rs6000_expand_vector_set (op0, op1, GEN_INT (elt));
-
-  return op0;
-}
-
 /* Expand vec_ext builtin.  */
 static rtx
 altivec_expand_vec_ext_builtin (tree exp, rtx target)
@@ -3364,9 +3314,6 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
 
   if (bif_is_cpu (*bifaddr))
     return cpu_expand_builtin (fcode, exp, target);
-
-  if (bif_is_set (*bifaddr))
-    return altivec_expand_vec_set_builtin (exp);
 
   if (bif_is_extract (*bifaddr))
     return altivec_expand_vec_ext_builtin (exp, target);
