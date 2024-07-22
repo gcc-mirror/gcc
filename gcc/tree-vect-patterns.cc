@@ -51,8 +51,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-simd-clone.h"
 #include "predict.h"
 #include "tree-vector-builder.h"
+#include "tree-ssa-loop-ivopts.h"
 #include "vec-perm-indices.h"
 #include "gimple-range.h"
+#include "alias.h"
 
 
 /* TODO:  Note the vectorizer still builds COND_EXPRs with GENERIC compares
@@ -6526,6 +6528,162 @@ vect_recog_gather_scatter_pattern (vec_info *vinfo,
   return pattern_stmt;
 }
 
+/* Helper method of vect_recog_cond_store_pattern,  checks to see if COND_ARG
+   is points to a load statement that reads the same data as that of
+   STORE_VINFO.  */
+
+static bool
+vect_cond_store_pattern_same_ref (vec_info *vinfo,
+				  stmt_vec_info store_vinfo, tree cond_arg)
+{
+  stmt_vec_info load_stmt_vinfo = vinfo->lookup_def (cond_arg);
+  if (!load_stmt_vinfo
+      || !STMT_VINFO_DATA_REF (load_stmt_vinfo)
+      || DR_IS_WRITE (STMT_VINFO_DATA_REF (load_stmt_vinfo))
+      || !same_data_refs (STMT_VINFO_DATA_REF (store_vinfo),
+			  STMT_VINFO_DATA_REF (load_stmt_vinfo)))
+    return false;
+
+  return true;
+}
+
+/* Function vect_recog_cond_store_pattern
+
+   Try to find the following pattern:
+
+   x = *_3;
+   c = a CMP b;
+   y = c ? t_20 : x;
+   *_3 = y;
+
+   where the store of _3 happens on a conditional select on a value loaded
+   from the same location.  In such case we can elide the initial load if
+   MASK_STORE is supported and instead only conditionally write out the result.
+
+   The pattern produces for the above:
+
+   c = a CMP b;
+   .MASK_STORE (_3, c, t_20)
+
+   Input:
+
+   * STMT_VINFO: The stmt from which the pattern search begins.  In the
+   example, when this function is called with _3 then the search begins.
+
+   Output:
+
+   * TYPE_OUT: The type of the output  of this pattern.
+
+   * Return value: A new stmt that will be used to replace the sequence.  */
+
+static gimple *
+vect_recog_cond_store_pattern (vec_info *vinfo,
+			       stmt_vec_info stmt_vinfo, tree *type_out)
+{
+  loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
+  if (!loop_vinfo)
+    return NULL;
+
+  gimple *store_stmt = STMT_VINFO_STMT (stmt_vinfo);
+
+  /* Needs to be a gimple store where we have DR info for.  */
+  if (!STMT_VINFO_DATA_REF (stmt_vinfo)
+      || DR_IS_READ (STMT_VINFO_DATA_REF (stmt_vinfo))
+      || !gimple_store_p (store_stmt))
+    return NULL;
+
+  tree st_rhs = gimple_assign_rhs1 (store_stmt);
+
+  if (TREE_CODE (st_rhs) != SSA_NAME)
+    return NULL;
+
+  gassign *cond_stmt = dyn_cast<gassign *> (SSA_NAME_DEF_STMT (st_rhs));
+  if (!cond_stmt || gimple_assign_rhs_code (cond_stmt) != COND_EXPR)
+    return NULL;
+
+  /* Check if the else value matches the original loaded one.  */
+  bool invert = false;
+  tree cmp_ls = gimple_arg (cond_stmt, 0);
+  tree cond_arg1 = gimple_arg (cond_stmt, 1);
+  tree cond_arg2 = gimple_arg (cond_stmt, 2);
+
+  if (!vect_cond_store_pattern_same_ref (vinfo, stmt_vinfo, cond_arg2)
+      && !(invert = vect_cond_store_pattern_same_ref (vinfo, stmt_vinfo,
+						      cond_arg1)))
+    return NULL;
+
+  vect_pattern_detected ("vect_recog_cond_store_pattern", store_stmt);
+
+  tree scalar_type = TREE_TYPE (st_rhs);
+  if (VECTOR_TYPE_P (scalar_type))
+    return NULL;
+
+  tree vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
+  if (vectype == NULL_TREE)
+    return NULL;
+
+  machine_mode mask_mode;
+  machine_mode vecmode = TYPE_MODE (vectype);
+  if (targetm.vectorize.conditional_operation_is_expensive (IFN_MASK_STORE)
+      || !targetm.vectorize.get_mask_mode (vecmode).exists (&mask_mode)
+      || !can_vec_mask_load_store_p (vecmode, mask_mode, false))
+    return NULL;
+
+  tree base = DR_REF (STMT_VINFO_DATA_REF (stmt_vinfo));
+  if (may_be_nonaddressable_p (base))
+    return NULL;
+
+  /* We need to use the false parameter of the conditional select.  */
+  tree cond_store_arg = invert ? cond_arg2 : cond_arg1;
+  tree cond_load_arg = invert ? cond_arg1 : cond_arg2;
+  gimple *load_stmt = SSA_NAME_DEF_STMT (cond_load_arg);
+
+  /* This is a rough estimation to check that there aren't any aliasing stores
+     in between the load and store.  It's a bit strict, but for now it's good
+     enough.  */
+  if (gimple_vuse (load_stmt) != gimple_vuse (store_stmt))
+    return NULL;
+
+  /* If we have to invert the condition, i.e. use the true argument rather than
+     the false argument, we have to negate the mask.  */
+  if (invert)
+    {
+      tree var = vect_recog_temp_ssa_var (boolean_type_node, NULL);
+
+      /* Invert the mask using ^ 1.  */
+      tree itype = TREE_TYPE (cmp_ls);
+      gassign *conv = gimple_build_assign (var, BIT_XOR_EXPR, cmp_ls,
+					   build_int_cst (itype, 1));
+
+      tree mask_vec_type = get_mask_type_for_scalar_type (vinfo, itype);
+      append_pattern_def_seq (vinfo, stmt_vinfo, conv, mask_vec_type, itype);
+      cmp_ls= var;
+    }
+
+  if (TREE_CODE (base) != MEM_REF)
+   base = build_fold_addr_expr (base);
+
+  tree ptr = build_int_cst (reference_alias_ptr_type (base),
+			    get_object_alignment (base));
+
+  /* Convert the mask to the right form.  */
+  tree mask = vect_convert_mask_for_vectype (cmp_ls, vectype, stmt_vinfo,
+					     vinfo);
+
+  gcall *call
+    = gimple_build_call_internal (IFN_MASK_STORE, 4, base, ptr, mask,
+				  cond_store_arg);
+  gimple_set_location (call, gimple_location (store_stmt));
+
+  /* Copy across relevant vectorization info and associate DR with the
+     new pattern statement instead of the original statement.  */
+  stmt_vec_info pattern_stmt_info = loop_vinfo->add_stmt (call);
+  loop_vinfo->move_dr (pattern_stmt_info, stmt_vinfo);
+
+  *type_out = vectype;
+  return call;
+}
+
 /* Return true if TYPE is a non-boolean integer type.  These are the types
    that we want to consider for narrowing.  */
 
@@ -7191,6 +7349,7 @@ static vect_recog_func vect_vect_recog_func_ptrs[] = {
      of mask conversion that are needed for gather and scatter
      internal functions.  */
   { vect_recog_gather_scatter_pattern, "gather_scatter" },
+  { vect_recog_cond_store_pattern, "cond_store" },
   { vect_recog_mask_conversion_pattern, "mask_conversion" },
   { vect_recog_widen_plus_pattern, "widen_plus" },
   { vect_recog_widen_minus_pattern, "widen_minus" },

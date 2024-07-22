@@ -2033,6 +2033,18 @@ same size and number of elements as @var{mode}, if such a mode exists.",
  (machine_mode mode),
  default_get_mask_mode)
 
+/* Function to say whether a conditional operation is expensive when
+   compared to non-masked operations.  */
+DEFHOOK
+(conditional_operation_is_expensive,
+ "This hook returns true if masked operation @var{ifn} (really of\n\
+type @code{internal_fn}) should be considered more expensive to use than\n\
+implementing the same operation without masking.  GCC can then try to use\n\
+unconditional operations instead with extra selects.",
+ bool,
+ (unsigned ifn),
+ default_conditional_operation_is_expensive)
+
 /* Function to say whether a masked operation is expensive when the
    mask is all zeros.  */
 DEFHOOK
