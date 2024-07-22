@@ -3,8 +3,27 @@
 // { dg-require-gthreads "" }
 
 #include <thread>
-#include <sstream>
+
+#include <ostream>
 #include <format>
+
+void
+test_no_includes(std::ostream& out)
+{
+  std::thread::id i{};
+  // Check stream insertion works without including <sstream>:
+  out << i;
+#if __cpp_lib_formatters >= 202302
+  // PR libstdc++/115099 - compilation error: format thread::id
+  // Verify we can use std::thread::id with std::format without <sstream>:
+  (void) std::format("{}", i);
+#ifdef _GLIBCXX_USE_WCHAR_T
+  (void) std::format(L"{}", i);
+#endif
+#endif
+}
+
+#include <sstream>
 #include <testsuite_hooks.h>
 
 void

@@ -1,4 +1,5 @@
 /* PR libstdc++/88101 */
+/* { dg-do run } */
 
 union V { char a; signed char b; unsigned char c; };
 struct T { char a; int b; union V c; };
@@ -33,7 +34,7 @@ main ()
   foo (&s1, 0);
   foo (&s2, 0);
   __builtin_clear_padding (&s2);
-  if (s2.b.a != (char) -1)
+  if (s2.b.a != -1)
     __builtin_abort ();
   __builtin_clear_padding (&s2.b.a);
   __builtin_memset (&s2.b.a + 1, 0, sizeof (union U) - sizeof (s2.b.a));

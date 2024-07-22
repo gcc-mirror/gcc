@@ -690,15 +690,24 @@ DEF_TUNE (X86_TUNE_NOT_VECTORMODE, "not_vectormode", m_K6)
 DEF_TUNE (X86_TUNE_AVOID_VECTOR_DECODE, "avoid_vector_decode",
           m_K8)
 
+/* X86_TUNE_BRANCH_PREDICTION_HINTS_TAKEN, starting with the Redwood Cove
+   microarchitecture, if the predictor has no stored information about a branch,
+   the branch has the Intel® SSE2 branch taken hint
+   (i.e., instruction prefix 3EH), When the codec decodes the branch, it flips
+   the branch’s prediction from not-taken to taken. It then flushes the pipeline
+   in front of it and steers this pipeline to fetch the taken path of the
+   branch.  */
+DEF_TUNE (X86_TUNE_BRANCH_PREDICTION_HINTS_TAKEN, "branch_prediction_hints_taken", m_NONE)
+
 /*****************************************************************************/
 /* This never worked well before.                                            */
 /*****************************************************************************/
 
-/* X86_TUNE_BRANCH_PREDICTION_HINTS: Branch hints were put in P4 based
+/* X86_TUNE_BRANCH_PREDICTION_HINTS_NOT_TAKEN: Branch hints were put in P4 based
    on simulation result. But after P4 was made, no performance benefit
    was observed with branch hints.  It also increases the code size.
    As a result, icc never generates branch hints.  */
-DEF_TUNE (X86_TUNE_BRANCH_PREDICTION_HINTS, "branch_prediction_hints", m_NONE)
+DEF_TUNE (X86_TUNE_BRANCH_PREDICTION_HINTS_NOT_TAKEN, "branch_prediction_hints_not_taken", m_NONE)
 
 /* X86_TUNE_QIMODE_MATH: Enable use of 8bit arithmetic.  */
 DEF_TUNE (X86_TUNE_QIMODE_MATH, "qimode_math", m_ALL)

@@ -5890,6 +5890,9 @@ resolve_variable (gfc_expr *e)
       if (e->expr_type == EXPR_CONSTANT)
 	return true;
     }
+  else if (sym->attr.select_type_temporary
+	   && sym->ns->assoc_name_inferred)
+    gfc_fixup_inferred_type_refs (e);
 
   /* For variables that are used in an associate (target => object) where
      the object's basetype is array valued while the target is scalar,
@@ -6233,10 +6236,12 @@ gfc_fixup_inferred_type_refs (gfc_expr *e)
 	      free (new_ref);
 	    }
 	  else
-	  {
-	    e->ref = ref->next;
-	    free (ref);
-	  }
+	    {
+	      if (e->ref->u.ar.type == AR_UNKNOWN)
+		gfc_error ("Invalid array reference at %L", &e->where);
+	      e->ref = ref->next;
+	      free (ref);
+	    }
 	}
 
       /* It is possible for an inquiry reference to be mistaken for a
@@ -6317,6 +6322,8 @@ gfc_fixup_inferred_type_refs (gfc_expr *e)
 	  && e->ref->u.ar.type != AR_ELEMENT)
 	{
 	  ref = e->ref;
+	  if (ref->u.ar.type == AR_UNKNOWN)
+	    gfc_error ("Invalid array reference at %L", &e->where);
 	  e->ref = ref->next;
 	  free (ref);
 
@@ -6339,6 +6346,8 @@ gfc_fixup_inferred_type_refs (gfc_expr *e)
 	       && e->ref->next->u.ar.type != AR_ELEMENT)
 	{
 	  ref = e->ref->next;
+	  if (ref->u.ar.type == AR_UNKNOWN)
+	    gfc_error ("Invalid array reference at %L", &e->where);
 	  e->ref->next = e->ref->next->next;
 	  free (ref);
 	}

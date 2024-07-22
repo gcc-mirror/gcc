@@ -1140,6 +1140,12 @@ avr_option_override (void)
   if (targetm.addr_space.zero_address_valid (ADDR_SPACE_GENERIC))
     flag_delete_null_pointer_checks = 0;
 
+  /* PR ipa/92606: Inter-procedural analysis optimizes data across
+     address-spaces and PROGMEM.  As of v14, the PROGMEM part is
+     still not fixed (and there is still no target hook as proposed
+     in PR92932).  Just disable respective bogus optimization.  */
+  flag_ipa_icf_variables = 0;
+
   if (flag_pic == 1)
     warning (OPT_fpic, "%<-fpic%> is not supported");
   if (flag_pic == 2)
@@ -4680,7 +4686,13 @@ avr_out_xload (rtx_insn * /*insn*/, rtx *op, int *plen)
   xop[2] = lpm_addr_reg_rtx;
   xop[3] = AVR_HAVE_LPMX ? op[0] : lpm_reg_rtx;
 
-  avr_asm_len (AVR_HAVE_LPMX ? "lpm %3,%a2" : "lpm", xop, plen, -1);
+  if (plen)
+    *plen = 0;
+
+  if (reg_overlap_mentioned_p (xop[3], lpm_addr_reg_rtx))
+    avr_asm_len ("sbrs %1,7", xop, plen, 1);
+
+  avr_asm_len (AVR_HAVE_LPMX ? "lpm %3,%a2" : "lpm", xop, plen, 1);
 
   avr_asm_len ("sbrc %1,7" CR_TAB
 	       "ld %3,%a2", xop, plen, 2);
@@ -4826,13 +4838,30 @@ avr_out_movqi_r_mr_reg_disp_tiny (rtx_insn *insn, rtx op[], int *plen)
   rtx dest = op[0];
   rtx src = op[1];
   rtx x = XEXP (src, 0);
+  rtx base = XEXP (x, 0);
 
-  avr_asm_len (TINY_ADIW (%I1, %J1, %o1) CR_TAB
-	       "ld %0,%b1" , op, plen, -3);
+  if (plen)
+    *plen = 0;
 
-  if (!reg_overlap_mentioned_p (dest, XEXP (x, 0))
-      && !reg_unused_after (insn, XEXP (x, 0)))
-    avr_asm_len (TINY_SBIW (%I1, %J1, %o1), op, plen, 2);
+  if (!reg_overlap_mentioned_p (dest, base))
+    {
+      avr_asm_len (TINY_ADIW (%I1, %J1, %o1) CR_TAB
+		   "ld %0,%b1", op, plen, 3);
+      if (!reg_unused_after (insn, base))
+	avr_asm_len (TINY_SBIW (%I1, %J1, %o1), op, plen, 2);
+    }
+  else
+    {
+      // PR98762: The base register overlaps dest and is only partly clobbered.
+      rtx base2 = all_regs_rtx[1 ^ REGNO (dest)];
+
+      if (!reg_unused_after (insn, base2))
+	avr_asm_len ("mov __tmp_reg__,%0" , &base2, plen, 1);
+      avr_asm_len (TINY_ADIW (%I1, %J1, %o1) CR_TAB
+		   "ld %0,%b1", op, plen, 3);
+      if (!reg_unused_after (insn, base2))
+	avr_asm_len ("mov %0,__tmp_reg__" , &base2, plen, 1);
+    }
 
   return "";
 }

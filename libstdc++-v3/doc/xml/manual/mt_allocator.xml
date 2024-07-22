@@ -307,9 +307,9 @@ that uses it is fully constructed. For most (but not all) STL
 containers, this works, as an instance of the allocator is constructed
 as part of a container's constructor. However, this assumption is
 implementation-specific, and subject to change. For an example of a
-pool that frees memory, see the following
-    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/viewcvs/gcc/trunk/libstdc++-v3/testsuite/ext/mt_allocator/deallocate_local-6.cc?view=markup">
-    example.</link>
+pool that frees memory, see the
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/cgit/gcc/tree/libstdc++-v3/testsuite/ext/mt_allocator/deallocate_local-6.cc?h=releases%2Fgcc-14"><filename>ext/mt_allocator/deallocate_local-6.cc</filename></link>
+    example.
 </para>
 
 </section>

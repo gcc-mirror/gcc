@@ -1664,22 +1664,25 @@ resolve_vec_step (resolution *res, vec<tree, va_gc> *arglist, unsigned nargs)
    true.  If we don't match, return error_mark_node and leave
    UNSUPPORTED_BUILTIN alone.  */
 
-tree
-find_instance (bool *unsupported_builtin, ovlddata **instance,
+static tree
+find_instance (bool *unsupported_builtin, int *instance,
 	       rs6000_gen_builtins instance_code,
 	       rs6000_gen_builtins fcode,
 	       tree *types, tree *args, int nargs)
 {
-  while (*instance && (*instance)->bifid != instance_code)
-    *instance = (*instance)->next;
+  while (*instance != -1
+	 && rs6000_instance_info[*instance].bifid != instance_code)
+    *instance = rs6000_instance_info[*instance].next;
 
-  ovlddata *inst = *instance;
-  gcc_assert (inst != NULL);
+  int inst = *instance;
+  gcc_assert (inst != -1);
   /* It is possible for an instance to require a data type that isn't
-     defined on this target, in which case inst->fntype will be NULL.  */
-  if (!inst->fntype)
+     defined on this target, in which case rs6000_instance_info_fntype[inst]
+     will be NULL.  */
+  if (!rs6000_instance_info_fntype[inst])
     return error_mark_node;
-  tree fntype = rs6000_builtin_info[inst->bifid].fntype;
+  rs6000_gen_builtins bifid = rs6000_instance_info[inst].bifid;
+  tree fntype = rs6000_builtin_info_fntype[bifid];
   tree argtype = TYPE_ARG_TYPES (fntype);
   bool args_compatible = true;
 
@@ -1696,12 +1699,12 @@ find_instance (bool *unsupported_builtin, ovlddata **instance,
 
   if (args_compatible)
     {
-      if (rs6000_builtin_decl (inst->bifid, false) != error_mark_node
-	  && rs6000_builtin_is_supported (inst->bifid))
+      if (rs6000_builtin_decl (bifid, false) != error_mark_node
+	  && rs6000_builtin_is_supported (bifid))
 	{
-	  tree ret_type = TREE_TYPE (inst->fntype);
+	  tree ret_type = TREE_TYPE (rs6000_instance_info_fntype[inst]);
 	  return altivec_build_resolved_builtin (args, nargs, fntype, ret_type,
-						 inst->bifid, fcode);
+						 bifid, fcode);
 	}
       else
 	*unsupported_builtin = true;
@@ -1884,11 +1887,11 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
   bool unsupported_builtin = false;
   rs6000_gen_builtins instance_code;
   bool supported = false;
-  ovlddata *instance = rs6000_overload_info[adj_fcode].first_instance;
-  gcc_assert (instance != NULL);
+  int instance = rs6000_overload_info[adj_fcode].first_instance;
+  gcc_assert (instance != -1);
 
   /* Functions with no arguments can have only one overloaded instance.  */
-  gcc_assert (nargs > 0 || !instance->next);
+  gcc_assert (nargs > 0 || rs6000_instance_info[instance].next == -1);
 
   /* Standard overload processing involves determining whether an instance
      exists that is type-compatible with the overloaded function call.  In
@@ -1989,16 +1992,18 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       /* Standard overload processing.  Look for an instance with compatible
 	 parameter types.  If it is supported in the current context, resolve
 	 the overloaded call to that instance.  */
-      for (; instance != NULL; instance = instance->next)
+      for (; instance != -1; instance = rs6000_instance_info[instance].next)
 	{
+	  tree fntype = rs6000_instance_info_fntype[instance];
+	  rs6000_gen_builtins bifid = rs6000_instance_info[instance].bifid;
 	  /* It is possible for an instance to require a data type that isn't
-	     defined on this target, in which case instance->fntype will be
+	     defined on this target, in which case fntype will be
 	     NULL.  */
-	  if (!instance->fntype)
+	  if (!fntype)
 	    continue;
 
 	  bool mismatch = false;
-	  tree nextparm = TYPE_ARG_TYPES (instance->fntype);
+	  tree nextparm = TYPE_ARG_TYPES (fntype);
 
 	  for (unsigned int arg_i = 0;
 	       arg_i < nargs && nextparm != NULL;
@@ -2016,15 +2021,14 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	  if (mismatch)
 	    continue;
 
-	  supported = rs6000_builtin_is_supported (instance->bifid);
-	  if (rs6000_builtin_decl (instance->bifid, false) != error_mark_node
+	  supported = rs6000_builtin_is_supported (bifid);
+	  if (rs6000_builtin_decl (bifid, false) != error_mark_node
 	      && supported)
 	    {
-	      tree fntype = rs6000_builtin_info[instance->bifid].fntype;
-	      tree ret_type = TREE_TYPE (instance->fntype);
+	      tree ret_type = TREE_TYPE (fntype);
+	      fntype = rs6000_builtin_info_fntype[bifid];
 	      return altivec_build_resolved_builtin (args, nargs, fntype,
-						     ret_type, instance->bifid,
-						     fcode);
+						     ret_type, bifid, fcode);
 	    }
 	  else
 	    {
@@ -2041,12 +2045,12 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	{
 	  /* Indicate that the instantiation of the overloaded builtin
 	     name is not available with the target flags in effect.  */
-	  rs6000_gen_builtins fcode = (rs6000_gen_builtins) instance->bifid;
+	  rs6000_gen_builtins bifid = rs6000_instance_info[instance].bifid;
+	  rs6000_gen_builtins fcode = (rs6000_gen_builtins) bifid;
 	  rs6000_invalid_builtin (fcode);
 	  /* Provide clarity of the relationship between the overload
 	     and the instantiation.  */
-	  const char *internal_name
-	    = rs6000_builtin_info[instance->bifid].bifname;
+	  const char *internal_name = rs6000_builtin_info[bifid].bifname;
 	  rich_location richloc (line_table, input_location);
 	  inform (&richloc,
 		  "overloaded builtin %qs is implemented by builtin %qs",

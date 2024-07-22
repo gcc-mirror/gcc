@@ -5304,6 +5304,8 @@ LCF0:
 [	lw $4,%gp_rel(foo)($4)],,
       [AC_DEFINE(MIPS_EXPLICIT_RELOCS, MIPS_EXPLICIT_RELOCS_BASE,
 		 [Define if assembler supports %reloc.])])
+    else
+      gcc_cv_as_mips_explicit_relocs=yes
     fi
 
     if test x$gcc_cv_as_mips_explicit_relocs = xno; then \

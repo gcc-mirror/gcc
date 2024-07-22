@@ -2727,6 +2727,12 @@ vec<tree, va_heap, vl_embed> *post_load_decls;
 typedef hash_map<tree, auto_vec<tree>> keyed_map_t;
 static keyed_map_t *keyed_table;
 
+/* Instantiations of temploid friends imported from another module
+   need to be attached to the same module as the temploid.  This maps
+   these decls to the temploid they are instantiated them, as there is
+   no other easy way to get this information.  */
+static GTY((cache)) decl_tree_cache_map *imported_temploid_friends;
+
 /********************************************************************/
 /* Tree streaming.   The tree streaming is very specific to the tree
    structures themselves.  A tag indicates the kind of tree being
@@ -7820,6 +7826,12 @@ trees_out::decl_value (tree decl, depset *dep)
 		  && DECL_MODULE_ATTACH_P (not_tmpl))
 		is_attached = true;
 
+	      /* But don't consider imported temploid friends as attached,
+		 since importers will need to merge this decl even if it was
+		 attached to a different module.  */
+	      if (imported_temploid_friends->get (decl))
+		is_attached = false;
+
 	      bits.b (is_attached);
 	    }
 	  bits.b (dep && dep->has_defn ());
@@ -7995,6 +8007,15 @@ trees_out::decl_value (tree decl, depset *dep)
 	    dump (dumper::MERGE)
 	      && dump ("Written %d[%u] attached decl %N", tag, ix, attached);
 	}
+    }
+
+  if (TREE_CODE (inner) == FUNCTION_DECL
+      || TREE_CODE (inner) == TYPE_DECL)
+    {
+      /* Write imported temploid friends so that importers can reconstruct
+	 this information on stream-in.  */
+      tree* slot = imported_temploid_friends->get (decl);
+      tree_node (slot ? *slot : NULL_TREE);
     }
 
   bool is_typedef = false;
@@ -8302,6 +8323,12 @@ trees_in::decl_value ()
 	    set_overrun ();
 	}
     }
+
+  if (TREE_CODE (inner) == FUNCTION_DECL
+      || TREE_CODE (inner) == TYPE_DECL)
+    if (tree owner = tree_node ())
+      if (is_new)
+	imported_temploid_friends->put (decl, owner);
 
   /* Regular typedefs will have a NULL TREE_TYPE at this point.  */
   unsigned tdef_flags = 0;
@@ -12498,6 +12525,8 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 	  for (; friend_classes; friend_classes = TREE_CHAIN (friend_classes))
 	    {
 	      tree f = TREE_VALUE (friend_classes);
+	      if (TREE_CODE (f) == TEMPLATE_DECL)
+		f = TREE_TYPE (f);
 
 	      if (CLASS_TYPE_P (f))
 		{
@@ -13122,10 +13151,14 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
 	/* Ignore NTTP objects.  */
 	return false;
 
+      bool unscoped_enum_const_p = false;
       if (!(flags & WMB_Using) && CP_DECL_CONTEXT (decl) != data->ns)
 	{
 	  /* A using that lost its wrapper or an unscoped enum
 	     constant.  */
+	  /* FIXME: Ensure that unscoped enums are differentiated from
+	     'using enum' declarations when PR c++/114683 is fixed.  */
+	  unscoped_enum_const_p = (TREE_CODE (decl) == CONST_DECL);
 	  flags = WMB_Flags (flags | WMB_Using);
 	  if (DECL_MODULE_EXPORT_P (TREE_CODE (decl) == CONST_DECL
 				    ? TYPE_NAME (TREE_TYPE (decl))
@@ -13186,6 +13219,8 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
       if (flags & WMB_Using)
 	{
 	  decl = ovl_make (decl, NULL_TREE);
+	  if (!unscoped_enum_const_p)
+	    OVL_USING_P (decl) = true;
 	  if (flags & WMB_Export)
 	    OVL_EXPORT_P (decl) = true;
 	}
@@ -18939,6 +18974,12 @@ get_originating_module_decl (tree decl)
 	  && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
 	decl = TYPE_NAME (DECL_CHAIN (decl));
 
+      /* An imported temploid friend is attached to the same module the
+	 befriending class was.  */
+      if (imported_temploid_friends)
+	if (tree *slot = imported_temploid_friends->get (decl))
+	  decl = *slot;
+
       int use;
       if (tree ti = node_template_info (decl, use))
 	{
@@ -19001,11 +19042,15 @@ get_importing_module (tree decl, bool flexible)
   return module->mod;
 }
 
-/* Is it permissible to redeclare DECL.  */
+/* Is it permissible to redeclare OLDDECL with NEWDECL.
+
+   If NEWDECL is NULL, assumes that OLDDECL will be redeclared using
+   the current scope's module and attachment.  */
 
 bool
-module_may_redeclare (tree decl)
+module_may_redeclare (tree olddecl, tree newdecl)
 {
+  tree decl = olddecl;
   for (;;)
     {
       tree ctx = CP_DECL_CONTEXT (decl);
@@ -19019,58 +19064,94 @@ module_may_redeclare (tree decl)
       decl = TYPE_NAME (ctx);
     }
 
-  tree not_tmpl = STRIP_TEMPLATE (decl);
-
   int use_tpl = 0;
-  if (node_template_info (not_tmpl, use_tpl) && use_tpl)
+  if (node_template_info (STRIP_TEMPLATE (decl), use_tpl) && use_tpl)
     // Specializations of any kind can be redeclared anywhere.
     // FIXME: Should we be checking this in more places on the scope chain?
     return true;
 
-  if (!DECL_LANG_SPECIFIC (not_tmpl) || !DECL_MODULE_ATTACH_P (not_tmpl))
-    // Decl is attached to global module.  Current scope needs to be too.
-    return !module_attach_p ();
+  module_state *old_mod = (*modules)[0];
+  module_state *new_mod = old_mod;
 
-  module_state *me = (*modules)[0];
-  module_state *them = me;
-
-  if (DECL_LANG_SPECIFIC (not_tmpl) && DECL_MODULE_IMPORT_P (not_tmpl))
+  tree old_origin = get_originating_module_decl (decl);
+  tree old_inner = STRIP_TEMPLATE (old_origin);
+  bool olddecl_attached_p = (DECL_LANG_SPECIFIC (old_inner)
+			     && DECL_MODULE_ATTACH_P (old_inner));
+  if (DECL_LANG_SPECIFIC (old_inner) && DECL_MODULE_IMPORT_P (old_inner))
     {
-      /* We can be given the TEMPLATE_RESULT.  We want the
-	 TEMPLATE_DECL.  */
-      int use_tpl = -1;
-      if (tree ti = node_template_info (decl, use_tpl))
-	{
-	  tree tmpl = TI_TEMPLATE (ti);
-	  if (use_tpl == 2)
-	    {
-	      /* A partial specialization.  Find that specialization's
-		 template_decl.  */
-	      for (tree list = DECL_TEMPLATE_SPECIALIZATIONS (tmpl);
-		   list; list = TREE_CHAIN (list))
-		if (DECL_TEMPLATE_RESULT (TREE_VALUE (list)) == decl)
-		  {
-		    decl = TREE_VALUE (list);
-		    break;
-		}
-	    }
-	  else if (DECL_TEMPLATE_RESULT (tmpl) == decl)
-	    decl = tmpl;
-	}
-      unsigned index = import_entity_index (decl);
-      them = import_entity_module (index);
+      unsigned index = import_entity_index (old_origin);
+      old_mod = import_entity_module (index);
     }
 
-  // Decl is attached to named module.  Current scope needs to be
-  // attaching to the same module.
-  if (!module_attach_p ())
-    return false;
+  bool newdecl_attached_p = module_attach_p ();
+  if (newdecl)
+    {
+      tree new_origin = get_originating_module_decl (newdecl);
+      tree new_inner = STRIP_TEMPLATE (new_origin);
+      newdecl_attached_p = (DECL_LANG_SPECIFIC (new_inner)
+			    && DECL_MODULE_ATTACH_P (new_inner));
+      if (DECL_LANG_SPECIFIC (new_inner) && DECL_MODULE_IMPORT_P (new_inner))
+	{
+	  unsigned index = import_entity_index (new_origin);
+	  new_mod = import_entity_module (index);
+	}
+    }
 
-  // Both attached to named module.
-  if (me == them)
-    return true;
+  /* Module attachment needs to match.  */
+  if (olddecl_attached_p == newdecl_attached_p)
+    {
+      if (!olddecl_attached_p)
+	/* Both are GM entities, OK.  */
+	return true;
 
-  return me && get_primary (them) == get_primary (me);
+      if (new_mod == old_mod
+	  || (new_mod && get_primary (new_mod) == get_primary (old_mod)))
+	/* Both attached to same named module, OK.  */
+	return true;
+    }
+
+  /* Attached to different modules, error.  */
+  decl = newdecl ? newdecl : olddecl;
+  location_t loc = newdecl ? DECL_SOURCE_LOCATION (newdecl) : input_location;
+  if (DECL_IS_UNDECLARED_BUILTIN (olddecl))
+    error_at (loc, "declaration %qD conflicts with builtin", decl);
+  else if (DECL_LANG_SPECIFIC (old_inner) && DECL_MODULE_IMPORT_P (old_inner))
+    {
+      auto_diagnostic_group d;
+      if (newdecl_attached_p)
+	error_at (loc, "redeclaring %qD in module %qs conflicts with import",
+		  decl, new_mod->get_flatname ());
+      else
+	error_at (loc, "redeclaring %qD in global module conflicts with import",
+		  decl);
+
+      if (olddecl_attached_p)
+	inform (DECL_SOURCE_LOCATION (olddecl),
+		"import declared attached to module %qs",
+		old_mod->get_flatname ());
+      else
+	inform (DECL_SOURCE_LOCATION (olddecl),
+		"import declared in global module");
+    }
+  else
+    {
+      auto_diagnostic_group d;
+      if (newdecl_attached_p)
+	error_at (loc, "conflicting declaration of %qD in module %qs",
+		  decl, new_mod->get_flatname ());
+      else
+	error_at (loc, "conflicting declaration of %qD in global module",
+		  decl);
+
+      if (olddecl_attached_p)
+	inform (DECL_SOURCE_LOCATION (olddecl),
+		"previously declared in module %qs",
+		old_mod->get_flatname ());
+      else
+	inform (DECL_SOURCE_LOCATION (olddecl),
+		"previously declared in global module");
+    }
+  return false;
 }
 
 /* DECL is being created by this TU.  Record it came from here.  We
@@ -19205,6 +19286,46 @@ maybe_key_decl (tree ctx, tree decl)
       DECL_MODULE_KEYED_DECLS_P (ctx) = true;
     }
   vec.safe_push (decl);
+}
+
+/* DECL is an instantiated friend that should be attached to the same
+   module that ORIG is.  */
+
+void
+propagate_defining_module (tree decl, tree orig)
+{
+  if (!modules_p ())
+    return;
+
+  tree not_tmpl = STRIP_TEMPLATE (orig);
+  if (DECL_LANG_SPECIFIC (not_tmpl) && DECL_MODULE_ATTACH_P (not_tmpl))
+    {
+      tree inner = STRIP_TEMPLATE (decl);
+      retrofit_lang_decl (inner);
+      DECL_MODULE_ATTACH_P (inner) = true;
+    }
+
+  if (DECL_LANG_SPECIFIC (not_tmpl) && DECL_MODULE_IMPORT_P (not_tmpl))
+    {
+      bool exists = imported_temploid_friends->put (decl, orig);
+
+      /* We should only be called if lookup for an existing decl
+	 failed, in which case there shouldn't already be an entry
+	 in the map.  */
+      gcc_assert (!exists);
+    }
+}
+
+/* DECL is being freed, clear data we don't need anymore.  */
+
+void
+remove_defining_module (tree decl)
+{
+  if (!modules_p ())
+    return;
+
+  if (imported_temploid_friends)
+    imported_temploid_friends->remove (decl);
 }
 
 /* Create the flat name string.  It is simplest to have it handy.  */
@@ -19396,7 +19517,7 @@ lazy_load_binding (unsigned mod, tree ns, tree id, binding_slot *mslot)
 {
   int count = errorcount + warningcount;
 
-  timevar_start (TV_MODULE_IMPORT);
+  bool timer_running = timevar_cond_start (TV_MODULE_IMPORT);
 
   /* Make sure lazy loading from a template context behaves as if
      from a non-template context.  */
@@ -19426,7 +19547,7 @@ lazy_load_binding (unsigned mod, tree ns, tree id, binding_slot *mslot)
 
   function_depth--;
 
-  timevar_stop (TV_MODULE_IMPORT);
+  timevar_cond_stop (TV_MODULE_IMPORT, timer_running);
 
   if (!ok)
     fatal_error (input_location,
@@ -19465,7 +19586,7 @@ lazy_load_pendings (tree decl)
 
   int count = errorcount + warningcount;
 
-  timevar_start (TV_MODULE_IMPORT);
+  bool timer_running = timevar_cond_start (TV_MODULE_IMPORT);
   bool ok = !recursive_lazy ();
   if (ok)
     {
@@ -19499,7 +19620,7 @@ lazy_load_pendings (tree decl)
       function_depth--;
     }
 
-  timevar_stop (TV_MODULE_IMPORT);
+  timevar_cond_stop (TV_MODULE_IMPORT, timer_running);
 
   if (!ok)
     fatal_error (input_location, "failed to load pendings for %<%E%s%E%>",
@@ -20420,6 +20541,8 @@ init_modules (cpp_reader *reader)
       pending_table = new pending_map_t (EXPERIMENT (1, 400));
       entity_map = new entity_map_t (EXPERIMENT (1, 400));
       vec_safe_reserve (entity_ary, EXPERIMENT (1, 400));
+      imported_temploid_friends
+	= decl_tree_cache_map::create_ggc (EXPERIMENT (1, 400));
     }
 
 #if CHECKING_P

@@ -393,6 +393,9 @@ cp_compare_floating_point_conversion_ranks (tree t1, tree t2)
      has higher rank.  */
   if (cnt > 1 && mv2 == long_double_type_node)
     return -2;
+  /* And similarly if t2 is float, t2 has lower rank.  */
+  if (cnt > 1 && mv2 == float_type_node)
+    return 2;
   /* Otherwise, they have equal rank, but extended types
      (other than std::bfloat16_t) have higher subrank.
      std::bfloat16_t shouldn't have equal rank to any standard
@@ -2127,13 +2130,6 @@ cxx_sizeof_expr (location_t loc, tree e, tsubst_flags_t complain)
 
   location_t e_loc = cp_expr_loc_or_loc (e, loc);
   STRIP_ANY_LOCATION_WRAPPER (e);
-
-  /* To get the size of a static data member declared as an array of
-     unknown bound, we need to instantiate it.  */
-  if (VAR_P (e)
-      && VAR_HAD_UNKNOWN_BOUND (e)
-      && DECL_TEMPLATE_INSTANTIATION (e))
-    instantiate_decl (e, /*defer_ok*/true, /*expl_inst_mem*/false);
 
   if (TREE_CODE (e) == PARM_DECL
       && DECL_ARRAY_PARAMETER_P (e)

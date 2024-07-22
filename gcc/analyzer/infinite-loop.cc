@@ -225,7 +225,7 @@ public:
 			enode->get_function ()->decl,
 			enode->get_stack_depth ()),
 	enode,
-	NULL, NULL, NULL));
+	nullptr, nullptr, nullptr));
 
     logger *logger = emission_path->get_logger ();
 

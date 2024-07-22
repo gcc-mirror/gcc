@@ -75,6 +75,7 @@ aarch64_define_unconditional_macros (cpp_reader *pfile)
 
   builtin_define ("__ARM_STATE_ZA");
   builtin_define ("__ARM_STATE_ZT0");
+  builtin_define ("__ARM_NEON_SVE_BRIDGE");
 
   /* Define keyword attributes like __arm_streaming as macros that expand
      to the associated [[...]] attribute.  Use __extension__ in the attribute
@@ -251,6 +252,11 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 			"__ARM_FEATURE_BF16_VECTOR_ARITHMETIC", pfile);
   aarch64_def_or_undef (TARGET_BF16_FP,
 			"__ARM_FEATURE_BF16_SCALAR_ARITHMETIC", pfile);
+  aarch64_def_or_undef (TARGET_BF16_FP,
+			"__ARM_FEATURE_BF16", pfile);
+  aarch64_def_or_undef (TARGET_SVE_BF16,
+			"__ARM_FEATURE_SVE_BF16", pfile);
+
   aarch64_def_or_undef (TARGET_LS64,
 			"__ARM_FEATURE_LS64", pfile);
   aarch64_def_or_undef (AARCH64_ISA_RCPC, "__ARM_FEATURE_RCPC", pfile);

@@ -53,6 +53,10 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#if __glibcxx_formatters
+  template<typename, typename> class formatter;
+#endif
+
   /** @addtogroup threads
    *  @{
    */
@@ -117,13 +121,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<class _CharT, class _Traits>
 	friend basic_ostream<_CharT, _Traits>&
 	operator<<(basic_ostream<_CharT, _Traits>& __out, id __id);
+
+#if __glibcxx_formatters
+      friend formatter<id, char>;
+      friend formatter<id, wchar_t>;
+#endif
     };
 
   private:
     id				_M_id;
 
     // _GLIBCXX_RESOLVE_LIB_DEFECTS
-    // 2097.  packaged_task constructors should be constrained
+    // 2097. packaged_task constructors should be constrained
     // 3039. Unnecessary decay in thread and packaged_task
     template<typename _Tp>
       using __not_same = __not_<is_same<__remove_cvref_t<_Tp>, thread>>;

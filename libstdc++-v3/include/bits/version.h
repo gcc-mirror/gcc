@@ -1824,7 +1824,7 @@
 #undef __glibcxx_want_forward_like
 
 #if !defined(__cpp_lib_generator)
-# if (__cplusplus >= 202100L) && (__glibcxx_coroutine)
+# if (__cplusplus >= 202100L) && (__glibcxx_coroutine && __cpp_sized_deallocation)
 #  define __glibcxx_generator 202207L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_generator)
 #   define __cpp_lib_generator 202207L

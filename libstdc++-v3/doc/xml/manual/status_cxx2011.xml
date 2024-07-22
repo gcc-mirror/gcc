@@ -35,7 +35,7 @@ This status table is based on the table of contents of ISO/IEC 14882:2011.
 
 <para>
 This section describes the C++11 support in
-the GCC 14 release series, not in any particular release.
+the GCC 14 release series.
 </para>
 
 <!-- Status is Yes or No, Broken/Partial-->

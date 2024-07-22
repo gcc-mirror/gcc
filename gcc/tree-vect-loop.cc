@@ -4161,15 +4161,19 @@ pop:
 
       FOR_EACH_IMM_USE_STMT (op_use_stmt, imm_iter, op.ops[opi])
 	{
-	/* In case of a COND_OP (mask, op1, op2, op1) reduction we might have
-	   op1 twice (once as definition, once as else) in the same operation.
-	   Allow this.  */
+	  /* In case of a COND_OP (mask, op1, op2, op1) reduction we should
+	     have op1 twice (once as definition, once as else) in the same
+	     operation.  Enforce this.  */
 	  if (cond_fn_p && op_use_stmt == use_stmt)
 	    {
 	      gcall *call = as_a<gcall *> (use_stmt);
 	      unsigned else_pos
 		= internal_fn_else_index (internal_fn (op.code));
-
+	      if (gimple_call_arg (call, else_pos) != op.ops[opi])
+		{
+		  fail = true;
+		  break;
+		}
 	      for (unsigned int j = 0; j < gimple_call_num_args (call); ++j)
 		{
 		  if (j == else_pos)
@@ -7184,7 +7188,15 @@ vectorize_fold_left_reduction (loop_vec_info loop_vinfo,
       tree len = NULL_TREE;
       tree bias = NULL_TREE;
       if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
-	mask = vect_get_loop_mask (loop_vinfo, gsi, masks, vec_num, vectype_in, i);
+	{
+	  tree loop_mask = vect_get_loop_mask (loop_vinfo, gsi, masks,
+					       vec_num, vectype_in, i);
+	  if (is_cond_op)
+	    mask = prepare_vec_mask (loop_vinfo, TREE_TYPE (loop_mask),
+				     loop_mask, vec_opmask[i], gsi);
+	  else
+	    mask = loop_mask;
+	}
       else if (is_cond_op)
 	mask = vec_opmask[0];
       if (LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo))
@@ -8876,14 +8888,15 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
 	  /* And the reduction could be carried out using a different sign.  */
 	  if (!useless_type_conversion_p (vectype_out, TREE_TYPE (def)))
 	    def = gimple_convert (&stmts, vectype_out, def);
-	  if (loop_vinfo->main_loop_edge)
+	  edge e;
+	  if ((e = loop_vinfo->main_loop_edge)
+	      || (e = loop_vinfo->skip_this_loop_edge))
 	    {
 	      /* While we'd like to insert on the edge this will split
 		 blocks and disturb bookkeeping, we also will eventually
 		 need this on the skip edge.  Rely on sinking to
 		 fixup optimal placement and insert in the pred.  */
-	      gimple_stmt_iterator gsi
-		= gsi_last_bb (loop_vinfo->main_loop_edge->src);
+	      gimple_stmt_iterator gsi = gsi_last_bb (e->src);
 	      /* Insert before a cond that eventually skips the
 		 epilogue.  */
 	      if (!gsi_end_p (gsi) && stmt_ends_bb_p (gsi_stmt (gsi)))

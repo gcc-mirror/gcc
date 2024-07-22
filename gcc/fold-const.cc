@@ -15241,13 +15241,17 @@ tree_call_nonnegative_warnv_p (tree type, combined_fn fn, tree arg0, tree arg1,
     CASE_CFN_FFS:
     CASE_CFN_PARITY:
     CASE_CFN_POPCOUNT:
-    CASE_CFN_CLZ:
     CASE_CFN_CLRSB:
     case CFN_BUILT_IN_BSWAP16:
     case CFN_BUILT_IN_BSWAP32:
     case CFN_BUILT_IN_BSWAP64:
     case CFN_BUILT_IN_BSWAP128:
       /* Always true.  */
+      return true;
+
+    CASE_CFN_CLZ:
+      if (arg1)
+	return RECURSE (arg1);
       return true;
 
     CASE_CFN_SQRT:

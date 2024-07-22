@@ -1632,7 +1632,8 @@ protected:
     if (rep_tree)
       {
 	if (TREE_CODE (rep_tree) == SSA_NAME)
-	  rep_tree = SSA_NAME_VAR (rep_tree);
+	  if (tree var = SSA_NAME_VAR (rep_tree))
+	    rep_tree = var;
 	switch (TREE_CODE (rep_tree))
 	  {
 	  default:

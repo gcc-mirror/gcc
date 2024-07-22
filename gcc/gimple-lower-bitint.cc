@@ -4286,11 +4286,7 @@ bitint_large_huge::lower_addsub_overflow (tree obj, gimple *stmt)
 		  bool single_comparison
 		    = (startlimb + 2 >= fin || (startlimb & 1) != (i & 1));
 		  if (!single_comparison)
-		    {
-		      cmp_code = GE_EXPR;
-		      if (!check_zero && (start % limb_prec) == 0)
-			single_comparison = true;
-		    }
+		    cmp_code = GE_EXPR;
 		  else if ((startlimb & 1) == (i & 1))
 		    cmp_code = EQ_EXPR;
 		  else
@@ -6634,7 +6630,10 @@ gimple_lower_bitint (void)
 		    continue;
 		  if (gimple_code (use_stmt) == GIMPLE_PHI
 		      || is_gimple_call (use_stmt)
-		      || gimple_code (use_stmt) == GIMPLE_ASM)
+		      || gimple_code (use_stmt) == GIMPLE_ASM
+		      || (is_gimple_assign (use_stmt)
+			  && (gimple_assign_rhs_code (use_stmt)
+			      == COMPLEX_EXPR)))
 		    {
 		      optimizable_load = false;
 		      break;
@@ -6904,7 +6903,8 @@ gimple_lower_bitint (void)
 		    if (stmt_ends_bb_p (stmt))
 		      {
 			edge e = find_fallthru_edge (gsi_bb (gsi)->succs);
-			gsi_insert_on_edge_immediate (e, g);
+			gsi_insert_on_edge (e, g);
+			edge_insertions = true;
 		      }
 		    else
 		      gsi_insert_after (&gsi, g, GSI_SAME_STMT);

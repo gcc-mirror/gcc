@@ -14203,7 +14203,8 @@ ix86_print_operand (FILE *file, rtx x, int code)
 
 	    if (!optimize
 	        || optimize_function_for_size_p (cfun)
-		|| !TARGET_BRANCH_PREDICTION_HINTS)
+		|| (!TARGET_BRANCH_PREDICTION_HINTS_NOT_TAKEN
+		    && !TARGET_BRANCH_PREDICTION_HINTS_TAKEN))
 	      return;
 
 	    x = find_reg_note (current_output_insn, REG_BR_PROB, 0);
@@ -14212,25 +14213,13 @@ ix86_print_operand (FILE *file, rtx x, int code)
 		int pred_val = profile_probability::from_reg_br_prob_note
 				 (XINT (x, 0)).to_reg_br_prob_base ();
 
-		if (pred_val < REG_BR_PROB_BASE * 45 / 100
-		    || pred_val > REG_BR_PROB_BASE * 55 / 100)
-		  {
-		    bool taken = pred_val > REG_BR_PROB_BASE / 2;
-		    bool cputaken
-		      = final_forward_branch_p (current_output_insn) == 0;
-
-		    /* Emit hints only in the case default branch prediction
-		       heuristics would fail.  */
-		    if (taken != cputaken)
-		      {
-			/* We use 3e (DS) prefix for taken branches and
-			   2e (CS) prefix for not taken branches.  */
-			if (taken)
-			  fputs ("ds ; ", file);
-			else
-			  fputs ("cs ; ", file);
-		      }
-		  }
+		bool taken = pred_val > REG_BR_PROB_BASE / 2;
+		/* We use 3e (DS) prefix for taken branches and
+		   2e (CS) prefix for not taken branches.  */
+		if (taken && TARGET_BRANCH_PREDICTION_HINTS_TAKEN)
+		  fputs ("ds ; ", file);
+		else if (!taken && TARGET_BRANCH_PREDICTION_HINTS_NOT_TAKEN)
+		  fputs ("cs ; ", file);
 	      }
 	    return;
 	  }
@@ -21876,6 +21865,49 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	    }
 	  *total = ix86_vec_cost (mode, cost->sse_op);
 	}
+      else if (TARGET_64BIT
+	       && mode == TImode
+	       && GET_CODE (XEXP (x, 0)) == ASHIFT
+	       && GET_CODE (XEXP (XEXP (x, 0), 0)) == ZERO_EXTEND
+	       && GET_MODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == DImode
+	       && CONST_INT_P (XEXP (XEXP (x, 0), 1))
+	       && INTVAL (XEXP (XEXP (x, 0), 1)) == 64
+	       && GET_CODE (XEXP (x, 1)) == ZERO_EXTEND
+	       && GET_MODE (XEXP (XEXP (x, 1), 0)) == DImode)
+	{
+	  /* *concatditi3 is cheap.  */
+	  rtx op0 = XEXP (XEXP (XEXP (x, 0), 0), 0);
+	  rtx op1 = XEXP (XEXP (x, 1), 0);
+	  *total = (SUBREG_P (op0) && GET_MODE (SUBREG_REG (op0)) == DFmode)
+		   ? COSTS_N_INSNS (1)    /* movq.  */
+		   : set_src_cost (op0, DImode, speed);
+	  *total += (SUBREG_P (op1) && GET_MODE (SUBREG_REG (op1)) == DFmode)
+		    ? COSTS_N_INSNS (1)    /* movq.  */
+		    : set_src_cost (op1, DImode, speed);
+	  return true;
+	}
+      else if (TARGET_64BIT
+	       && mode == TImode
+	       && GET_CODE (XEXP (x, 0)) == AND
+	       && REG_P (XEXP (XEXP (x, 0), 0))
+	       && CONST_WIDE_INT_P (XEXP (XEXP (x, 0), 1))
+	       && CONST_WIDE_INT_NUNITS (XEXP (XEXP (x, 0), 1)) == 2
+	       && CONST_WIDE_INT_ELT (XEXP (XEXP (x, 0), 1), 0) == -1
+	       && CONST_WIDE_INT_ELT (XEXP (XEXP (x, 0), 1), 1) == 0
+	       && GET_CODE (XEXP (x, 1)) == ASHIFT
+	       && GET_CODE (XEXP (XEXP (x, 1), 0)) == ZERO_EXTEND
+	       && GET_MODE (XEXP (XEXP (XEXP (x, 1), 0), 0)) == DImode
+	       && CONST_INT_P (XEXP (XEXP (x, 1), 1))
+	       && INTVAL (XEXP (XEXP (x, 1), 1)) == 64)
+	{
+	  /* *insvti_highpart is cheap.  */
+	  rtx op = XEXP (XEXP (XEXP (x, 1), 0), 0);
+	  *total = COSTS_N_INSNS (1) + 1;
+	  *total += (SUBREG_P (op) && GET_MODE (SUBREG_REG (op)) == DFmode)
+		    ? COSTS_N_INSNS (1)    /* movq.  */
+		    : set_src_cost (op, DImode, speed);
+	  return true;
+	}
       else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
 	*total = cost->add * 2;
       else
@@ -23135,7 +23167,7 @@ ix86_avoid_jump_mispredicts (void)
 	  if (dump_file)
 	    fprintf (dump_file, "Padding insn %i by %i bytes!\n",
 		     INSN_UID (insn), padsize);
-          emit_insn_before (gen_pad (GEN_INT (padsize)), insn);
+	  emit_insn_before (gen_max_skip_align (GEN_INT (4), GEN_INT (padsize)), insn);
 	}
     }
 }
@@ -23408,6 +23440,150 @@ ix86_split_stlf_stall_load ()
     }
 }
 
+/* When a hot loop can be fit into one cacheline,
+   force align the loop without considering the max skip.  */
+static void
+ix86_align_loops ()
+{
+  basic_block bb;
+
+  /* Don't do this when we don't know cache line size.  */
+  if (ix86_cost->prefetch_block == 0)
+    return;
+
+  loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
+  profile_count count_threshold = cfun->cfg->count_max / param_align_threshold;
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      rtx_insn *label = BB_HEAD (bb);
+      bool has_fallthru = 0;
+      edge e;
+      edge_iterator ei;
+
+      if (!LABEL_P (label))
+	continue;
+
+      profile_count fallthru_count = profile_count::zero ();
+      profile_count branch_count = profile_count::zero ();
+
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	{
+	  if (e->flags & EDGE_FALLTHRU)
+	    has_fallthru = 1, fallthru_count += e->count ();
+	  else
+	    branch_count += e->count ();
+	}
+
+      if (!fallthru_count.initialized_p () || !branch_count.initialized_p ())
+	continue;
+
+      if (bb->loop_father
+	  && bb->loop_father->latch != EXIT_BLOCK_PTR_FOR_FN (cfun)
+	  && (has_fallthru
+	      ? (!(single_succ_p (bb)
+		   && single_succ (bb) == EXIT_BLOCK_PTR_FOR_FN (cfun))
+		 && optimize_bb_for_speed_p (bb)
+		 && branch_count + fallthru_count > count_threshold
+		 && (branch_count > fallthru_count * param_align_loop_iterations))
+	      /* In case there'no fallthru for the loop.
+		 Nops inserted won't be executed.  */
+	      : (branch_count > count_threshold
+		 || (bb->count > bb->prev_bb->count * 10
+		     && (bb->prev_bb->count
+			 <= ENTRY_BLOCK_PTR_FOR_FN (cfun)->count / 2)))))
+	{
+	  rtx_insn* insn, *end_insn;
+	  HOST_WIDE_INT size = 0;
+	  bool padding_p = true;
+	  basic_block tbb = bb;
+	  unsigned cond_branch_num = 0;
+	  bool detect_tight_loop_p = false;
+
+	  for (unsigned int i = 0; i != bb->loop_father->num_nodes;
+	       i++, tbb = tbb->next_bb)
+	    {
+	      /* Only handle continuous cfg layout. */
+	      if (bb->loop_father != tbb->loop_father)
+		{
+		  padding_p = false;
+		  break;
+		}
+
+	      FOR_BB_INSNS (tbb, insn)
+		{
+		  if (!NONDEBUG_INSN_P (insn))
+		    continue;
+		  size += ix86_min_insn_size (insn);
+
+		  /* We don't know size of inline asm.
+		     Don't align loop for call.  */
+		  if (asm_noperands (PATTERN (insn)) >= 0
+		      || CALL_P (insn))
+		    {
+		      size = -1;
+		      break;
+		    }
+		}
+
+	      if (size == -1 || size > ix86_cost->prefetch_block)
+		{
+		  padding_p = false;
+		  break;
+		}
+
+	      FOR_EACH_EDGE (e, ei, tbb->succs)
+		{
+		  /* It could be part of the loop.  */
+		  if (e->dest == bb)
+		    {
+		      detect_tight_loop_p = true;
+		      break;
+		    }
+		}
+
+	      if (detect_tight_loop_p)
+		break;
+
+	      end_insn = BB_END (tbb);
+	      if (JUMP_P (end_insn))
+		{
+		  /* For decoded icache:
+		     1. Up to two branches are allowed per Way.
+		     2. A non-conditional branch is the last micro-op in a Way.
+		  */
+		  if (onlyjump_p (end_insn)
+		      && (any_uncondjump_p (end_insn)
+			  || single_succ_p (tbb)))
+		    {
+		      padding_p = false;
+		      break;
+		    }
+		  else if (++cond_branch_num >= 2)
+		    {
+		      padding_p = false;
+		      break;
+		    }
+		}
+
+	    }
+
+	  if (padding_p && detect_tight_loop_p)
+	    {
+	      emit_insn_before (gen_max_skip_align (GEN_INT (ceil_log2 (size)),
+						    GEN_INT (0)), label);
+	      /* End of function.  */
+	      if (!tbb || tbb == EXIT_BLOCK_PTR_FOR_FN (cfun))
+		break;
+	      /* Skip bb which already fits into one cacheline.  */
+	      bb = tbb;
+	    }
+	}
+    }
+
+  loop_optimizer_finalize ();
+  free_dominance_info (CDI_DOMINATORS);
+}
+
 /* Implement machine specific optimizations.  We implement padding of returns
    for K8 CPUs and pass to avoid 4 jumps in the single 16 byte window.  */
 static void
@@ -23431,6 +23607,8 @@ ix86_reorg (void)
 #ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
       if (TARGET_FOUR_JUMP_LIMIT)
 	ix86_avoid_jump_mispredicts ();
+
+      ix86_align_loops ();
 #endif
     }
 }
@@ -25799,6 +25977,20 @@ ix86_bitint_type_info (int n, struct bitint_info *info)
   return true;
 }
 
+/* Returns modified FUNCTION_TYPE for cdtor callabi.  */
+tree
+ix86_cxx_adjust_cdtor_callabi_fntype (tree fntype)
+{
+  if (TARGET_64BIT
+      || TARGET_RTD
+      || ix86_function_type_abi (fntype) != MS_ABI)
+    return fntype;
+  /* For 32-bit MS ABI add thiscall attribute.  */
+  tree attribs = tree_cons (get_identifier ("thiscall"), NULL_TREE,
+			    TYPE_ATTRIBUTES (fntype));
+  return build_type_attribute_variant (fntype, attribs);
+}
+
 /* Implement PUSH_ROUNDING.  On 386, we have pushw instruction that
    decrements by exactly 2 no matter what the position was, there is no pushb.
 
@@ -26410,6 +26602,8 @@ static const scoped_attribute_specs *const ix86_attribute_table[] =
 #define TARGET_C_EXCESS_PRECISION ix86_get_excess_precision
 #undef TARGET_C_BITINT_TYPE_INFO
 #define TARGET_C_BITINT_TYPE_INFO ix86_bitint_type_info
+#undef TARGET_CXX_ADJUST_CDTOR_CALLABI_FNTYPE
+#define TARGET_CXX_ADJUST_CDTOR_CALLABI_FNTYPE ix86_cxx_adjust_cdtor_callabi_fntype
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
 #undef TARGET_PUSH_ARGUMENT

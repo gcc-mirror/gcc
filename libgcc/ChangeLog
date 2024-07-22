@@ -1,3 +1,47 @@
+2024-06-21  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	Backported from master:
+	2024-06-05  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/115342
+	* config/aarch64/cpuinfo.c (__init_cpu_features_constructor):
+	Use HWCAP where possible.  Use atomic write for initialization.
+	Fix FEAT_PREDRES comparison.
+	(__init_cpu_features_resolver): Use atomic load for correct
+	initialization.
+	(__init_cpu_features): Likewise.
+
+2024-06-12  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backported from master:
+	2024-06-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/115360
+	* config/arm/cmse_nonsecure_call.S: Add .type and .size directives.
+
+2024-06-10  Jan Beulich  <jbeulich@suse.com>
+
+	* config/aarch64/cpuinfo.c: Provide AT_HWCAP2.
+
+2024-05-18  Wolfgang Hospital  <Wolfgang.Hospital@arcor.de>
+
+	Backported from master:
+	2024-05-18  Wolfgang Hospital  <Wolfgang.Hospital@arcor.de>
+
+	PR target/115065
+	* config/avr/lib1funcs.S (__clzhi2): Tweak.
+
+2024-05-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-05-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/114981
+	* config/avr/t-avr (LIB2FUNCS_EXCLUDE): Add _powisf2.
+	(LIB1ASMFUNCS) [!avrtiny]: Add _powif.
+	* config/avr/lib1funcs.S (mov4): New .macro.
+	(L_powif, __powisf2) [!avrtiny]: New module and function.
+
 2024-05-07  Release Manager
 
 	* GCC 14.1.0 released.

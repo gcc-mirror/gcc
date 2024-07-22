@@ -1924,8 +1924,8 @@ struct processor_costs znver4_cost = {
 					   in 32bit, 64bit, 128bit, 256bit and 512bit */
   {8, 8, 8, 12, 12},			/* cost of storing SSE register
 					   in 32bit, 64bit, 128bit, 256bit and 512bit */
-  {6, 6, 6, 6, 6},			/* cost of unaligned loads.  */
-  {8, 8, 8, 8, 8},			/* cost of unaligned stores.  */
+  {6, 6, 10, 10, 12},			/* cost of unaligned loads.  */
+  {8, 8, 8, 12, 12},			/* cost of unaligned stores.  */
   2, 2, 2,				/* cost of moving XMM,YMM,ZMM
 					   register.  */
   6,					/* cost of moving SSE register to integer.  */
@@ -2060,8 +2060,8 @@ struct processor_costs znver5_cost = {
 					   in 32bit, 64bit, 128bit, 256bit and 512bit */
   {8, 8, 8, 12, 12},			/* cost of storing SSE register
 					   in 32bit, 64bit, 128bit, 256bit and 512bit */
-  {6, 6, 6, 6, 6},			/* cost of unaligned loads.  */
-  {8, 8, 8, 8, 8},			/* cost of unaligned stores.  */
+  {6, 6, 10, 10, 12},			/* cost of unaligned loads.  */
+  {8, 8, 8, 12, 12},			/* cost of unaligned stores.  */
   2, 2, 2,				/* cost of moving XMM,YMM,ZMM
 					   register.  */
   6,					/* cost of moving SSE register to integer.  */
@@ -3758,7 +3758,7 @@ struct processor_costs generic_cost = {
   generic_memset,
   COSTS_N_INSNS (4),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (2),			/* cond_not_taken_branch_cost.  */
-  "16:11:8",				/* Loop alignment.  */
+  "16",					/* Loop alignment.  */
   "16:11:8",				/* Jump alignment.  */
   "0:0:8",				/* Label alignment.  */
   "16",					/* Func alignment.  */

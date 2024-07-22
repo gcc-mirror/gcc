@@ -23,10 +23,8 @@ if $tracelevel then {
 
 # load support procs
 load_lib gm2-torture.exp
-load_lib timeout-dg.exp
 
 gm2_init_pim "${srcdir}/gm2/switches/whole-program/run/pass" -fm2-whole-program
-gm2_push_timeout 120
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
     # If we're only testing specific files and this isn't one of them, skip it.
@@ -35,5 +33,3 @@ foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
     }
     gm2-torture $testcase
 }
-
-gm2_pop_timeout

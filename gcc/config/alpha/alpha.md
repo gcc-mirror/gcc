@@ -725,7 +725,8 @@
 	(sign_extend:DI (match_operand:SI 2 "nonimmediate_operand")))
    (parallel [(set (match_dup 5)
 		   (sign_extend:DI
-		    (any_divmod:SI (match_dup 3) (match_dup 4))))
+		    (any_divmod:SI (truncate:SI (match_dup 3))
+				   (truncate:SI (match_dup 4)))))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "nonimmediate_operand")
@@ -751,9 +752,10 @@
 
 (define_insn_and_split "*divmodsi_internal_er"
   [(set (match_operand:DI 0 "register_operand" "=c")
-	(sign_extend:DI (match_operator:SI 3 "divmod_operator"
-			[(match_operand:DI 1 "register_operand" "a")
-			 (match_operand:DI 2 "register_operand" "b")])))
+	(sign_extend:DI
+	 (match_operator:SI 3 "divmod_operator"
+	  [(truncate:SI (match_operand:DI 1 "register_operand" "a"))
+	   (truncate:SI (match_operand:DI 2 "register_operand" "b"))])))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
   "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
@@ -795,8 +797,8 @@
 (define_insn "*divmodsi_internal_er_1"
   [(set (match_operand:DI 0 "register_operand" "=c")
 	(sign_extend:DI (match_operator:SI 3 "divmod_operator"
-                        [(match_operand:DI 1 "register_operand" "a")
-                         (match_operand:DI 2 "register_operand" "b")])))
+	 [(truncate:SI (match_operand:DI 1 "register_operand" "a"))
+	  (truncate:SI (match_operand:DI 2 "register_operand" "b"))])))
    (use (match_operand:DI 4 "register_operand" "c"))
    (use (match_operand 5 "const_int_operand"))
    (clobber (reg:DI 23))
@@ -808,9 +810,10 @@
 
 (define_insn "*divmodsi_internal"
   [(set (match_operand:DI 0 "register_operand" "=c")
-	(sign_extend:DI (match_operator:SI 3 "divmod_operator"
-			[(match_operand:DI 1 "register_operand" "a")
-			 (match_operand:DI 2 "register_operand" "b")])))
+	(sign_extend:DI
+	 (match_operator:SI 3 "divmod_operator"
+	  [(truncate:SI (match_operand:DI 1 "register_operand" "a"))
+	   (truncate:SI (match_operand:DI 2 "register_operand" "b"))])))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
   "TARGET_ABI_OSF"
@@ -3899,7 +3902,8 @@
   else
     return "ldq %0,%2(%1)\t\t!literal!%3";
 }
-  [(set_attr "type" "ldsym")])
+  [(set_attr "type" "ldsym")
+   (set_attr "cannot_copy" "true")])
 
 (define_split
   [(set (match_operand:DI 0 "register_operand")
@@ -3923,7 +3927,8 @@
     return "lda %0,%2(%1)\t\t!tlsgd";
   else
     return "lda %0,%2(%1)\t\t!tlsgd!%3";
-})
+}
+  [(set_attr "cannot_copy" "true")])
 
 (define_insn "movdi_er_tlsldm"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -3936,7 +3941,8 @@
     return "lda %0,%&(%1)\t\t!tlsldm";
   else
     return "lda %0,%&(%1)\t\t!tlsldm!%2";
-})
+}
+  [(set_attr "cannot_copy" "true")])
 
 (define_insn "*movdi_er_gotdtp"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -5905,6 +5911,7 @@
   "HAVE_AS_TLS"
   "ldq $27,%1($29)\t\t!literal!%2\;jsr $26,($27),%1\t\t!lituse_<tls>!%2\;ldah $29,0($26)\t\t!gpdisp!%*\;lda $29,0($29)\t\t!gpdisp!%*"
   [(set_attr "type" "jsr")
+   (set_attr "cannot_copy" "true")
    (set_attr "length" "16")])
 
 ;; We must use peep2 instead of a split because we need accurate life

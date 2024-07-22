@@ -21342,8 +21342,8 @@ performance of the code.  Permissible values for this option are:
 @samp{cortex-a78}, @samp{cortex-a78ae}, @samp{cortex-a78c},
 @samp{ares}, @samp{exynos-m1}, @samp{emag}, @samp{falkor},
 @samp{neoverse-512tvb}, @samp{neoverse-e1}, @samp{neoverse-n1},
-@samp{neoverse-n2}, @samp{neoverse-v1}, @samp{neoverse-v2}, @samp{qdf24xx},
-@samp{saphira}, @samp{phecda}, @samp{xgene1}, @samp{vulcan},
+@samp{neoverse-n2}, @samp{neoverse-v1}, @samp{neoverse-v2}, @samp{grace},
+@samp{qdf24xx}, @samp{saphira}, @samp{phecda}, @samp{xgene1}, @samp{vulcan},
 @samp{octeontx}, @samp{octeontx81},  @samp{octeontx83},
 @samp{octeontx2}, @samp{octeontx2t98}, @samp{octeontx2t96}
 @samp{octeontx2t93}, @samp{octeontx2f95}, @samp{octeontx2f95n},
@@ -34750,8 +34750,10 @@ instruction set support.
 
 @item lujiazui
 ZHAOXIN lujiazui CPU with x86-64, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1,
-SSE4.2, AVX, POPCNT, AES, PCLMUL, RDRND, XSAVE, XSAVEOPT, FSGSBASE, CX16,
-ABM, BMI, BMI2, F16C, FXSR, RDSEED instruction set support.
+SSE4.2, POPCNT, AES, PCLMUL, RDRND, XSAVE, XSAVEOPT, FSGSBASE, CX16,
+ABM, BMI, BMI2, FXSR, RDSEED instruction set support.  While the CPUs
+do support AVX and F16C, these aren't enabled by @code{-march=lujiazui}
+for performance reasons.
 
 @item yongfeng
 ZHAOXIN yongfeng CPU with x86-64, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1,
@@ -36341,13 +36343,14 @@ enabled by default on those targets.
 @opindex mcrtdll
 @item -mcrtdll=@var{library}
 Preprocess, compile or link with specified C RunTime DLL @var{library}.
-This option adjust predefined macros @code{__CRTDLL__}, @code{__MSVCRT__}
-and @code{__MSVCRT_VERSION__} for specified CRT @var{library}, choose
-start file for CRT @var{library} and link with CRT @var{library}.
+This option adjust predefined macros @code{__CRTDLL__}, @code{__MSVCRT__},
+@code{_UCRT} and @code{__MSVCRT_VERSION__} for specified CRT @var{library},
+choose start file for CRT @var{library} and link with CRT @var{library}.
 Recognized CRT library names for proprocessor are:
-@code{crtdll}, @code{msvcrt10}, @code{msvcrt20}, @code{msvcrt40},
-@code{msvcrt-os}, @code{msvcr70}, @code{msvcr80}, @code{msvcr90},
-@code{msvcr100}, @code{msvcr110}, @code{msvcr120} and @code{ucrt}.
+@code{crtdll*}, @code{msvcrt10*}, @code{msvcrt20*}, @code{msvcrt40*},
+@code{msvcr40*}, @code{msvcrtd*}, @code{msvcrt-os*},
+@code{msvcr70*}, @code{msvcr71*}, @code{msvcr80*}, @code{msvcr90*},
+@code{msvcr100*}, @code{msvcr110*}, @code{msvcr120*} and @code{ucrt*}.
 If this options is not specified then the default MinGW import library
 @code{msvcrt} is used for linking and no other adjustment for
 preprocessor is done. MinGW import library @code{msvcrt} is just a

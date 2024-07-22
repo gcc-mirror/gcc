@@ -460,7 +460,7 @@
 # unimplemented <mdspan>,default_accessor,1,no
 # unimplemented <mdspan>,mdspan,1,cxx23
 <memory>,pointer_traits,1,cxx11
-<memory>,to_address,1,cxx11
+<memory>,to_address,1,cxx20
 <memory>,align,1,cxx11
 <memory>,assume_aligned,1,cxx20
 <memory>,allocator_arg_t,1,cxx11

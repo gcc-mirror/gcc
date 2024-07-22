@@ -1639,19 +1639,24 @@ _ENDF __copysign
 
 
 #ifdef F7MOD_D_isinf_
+;;; +Inf  ->  +1
+;;; -Inf  ->  -1
 _DEFUN __isinf
     DALIAS isinf
     LALIAS isinfl
+    ;; Save sign for later
+    push    R25
     F7call  class_D
+    pop     TMP
+    ldi     R24,    0
+    ldi     R25,    0
     ;; Inf: T = Z = 1.
-    brtc 0f
+    brtc 0f                     ; ordinary number
+    brne 0f                     ; Nan
     ldi     R24,    1
-    breq 1f
-0:
-    clr     R24
-1:
-    clr     R25
-    ret
+    sbrc    TMP,    7
+    sbiw    R24,    2
+0:  ret
 _ENDF __isinf
 #endif /* F7MOD_D_isinf_ */
 
@@ -1876,5 +1881,17 @@ ENDF call_ddd
 #endif /* F7MOD_call_ddd_ */
 
 #include "f7-wraps.h"
+
+;;; Some additional, singular wraps that don't match any pattern.
+
+;; double __powidf2 (double, int)  ; __builtin_powi
+#ifdef F7MOD_D_powi_
+_DEFUN __powidf2
+    .global F7_NAME(powi)
+    ldi     ZH,     hi8(gs(F7_NAME(powi)))
+    ldi     ZL,     lo8(gs(F7_NAME(powi)))
+    F7jmp   call_ddx
+_ENDF __powidf2
+#endif /* F7MOD_D_powi_ */
 
 #endif /* !AVR_TINY */

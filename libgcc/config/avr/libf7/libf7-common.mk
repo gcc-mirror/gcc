@@ -22,7 +22,7 @@ F7_ASM_PARTS += addsub_mant_scaled store load
 F7_ASM_PARTS += to_integer to_unsigned clz normalize_with_carry normalize
 F7_ASM_PARTS += store_expo sqrt16 sqrt_approx div
 
-F7_ASM_PARTS += D_class D_fma
+F7_ASM_PARTS += D_class D_fma D_powi
 F7_ASM_PARTS += D_isnan D_isinf D_isfinite D_signbit D_copysign D_neg D_fabs
 
 F7_ASM_PARTS += call_dd call_ddd

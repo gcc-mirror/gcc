@@ -1,3 +1,304 @@
+2024-07-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113376
+	* include/pstl/pstl_config.h: Use #if instead of #ifdef to test
+	the _PSTL_USAGE_WARNINGS macro.
+
+2024-07-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115522
+	* include/std/array (to_array): Workaround the fact that
+	std::is_trivial is not sufficient to check that a type is
+	trivially default constructible and assignable.
+	* testsuite/23_containers/array/creation/115522.cc: New test.
+
+2024-07-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-07-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115807
+	* include/c_compatibility/stdatomic.h (_Atomic): Ensure it
+	refers to std::atomic in the global namespace.
+	* testsuite/29_atomics/headers/stdatomic.h/115807.cc: New test.
+
+2024-07-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115585
+	* src/c++11/assert_fail.cc (__glibcxx_assert_fail): Add
+	definition for non-verbose builds.
+
+2024-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115668
+	* include/bits/chrono_io.h (formatter<duration<R,P, C>::format):
+	Do not use chrono::abs.
+	* testsuite/20_util/duration/io.cc: Check formatting a duration
+	with unsigned rep.
+
+2024-06-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/faq.xml: Replace viewcvs links with cgit links.
+	* doc/xml/manual/allocator.xml: Likewise.
+	* doc/xml/manual/mt_allocator.xml: Likewise.
+	* doc/html/*: Regenerate.
+
+2024-06-27  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2024-06-27  Alexandre Oliva  <oliva@adacore.com>
+
+	PR libstdc++/115454
+	* testsuite/experimental/simd/pr115454_find_last_set.cc: Defer
+	to check_vect_support_and_set_flags's default dg-do action.
+
+2024-06-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx1998.xml: Remove confusing "not in
+	any particular release" text.
+	* doc/xml/manual/status_cxx2011.xml: Likewise.
+	* doc/xml/manual/status_cxx2014.xml: Likewise.
+	* doc/xml/manual/status_cxx2017.xml: Likewise.
+	* doc/xml/manual/status_cxx2020.xml: Likewise.
+	* doc/xml/manual/status_cxx2023.xml: Likewise.
+	* doc/xml/manual/status_cxxtr1.xml: Likewise.
+	* doc/xml/manual/status_cxxtr24733.xml: Likewise.
+	* doc/html/manual/status.html: Regenerate.
+
+2024-06-21  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2024-06-21  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/115575
+	* testsuite/experimental/simd/pr115454_find_last_set.cc: Require
+	avx512f_runtime. Don't memcpy fixed_size masks.
+
+2024-06-20  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2024-06-20  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/115454
+	* include/experimental/bits/simd_x86.h (_S_not_equal_to): Use
+	neq comparison instead of bitwise negation after eq.
+	(_S_find_last_set): Clear unused high bits before computing
+	bit_width.
+	* testsuite/experimental/simd/pr115454_find_last_set.cc: New
+	test.
+
+2024-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/new_opa.cc [!_GLIBCXX_HOSTED]: Fix declaration of
+	posix_memalign.
+
+2024-06-10  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2024-06-04  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/115308
+	* include/experimental/bits/simd.h (__int_for_sizeof): Remove
+	special cases for __clang__.
+	(_SimdWrapper): Change constructor overload set to allow
+	conversion from vector types with integral conversions via bit
+	reinterpretation.
+
+2024-06-10  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2024-05-29  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/115247
+	* include/experimental/bits/simd.h (__as_vector): Don't use
+	vector_size(8) on __i386__.
+	(__vec_shuffle): Never return MMX vectors, widen to 16 bytes
+	instead.
+	(concat): Fix padding calculation to pick up widening logic from
+	__as_vector.
+
+2024-06-10  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2024-05-13  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/114958
+	* include/experimental/bits/simd.h (__as_vector): Return scalar
+	simd as one-element vector. Return vector from single-vector
+	fixed_size simd.
+	(__vec_shuffle): New.
+	(__extract_part): Adjust return type signature.
+	(split): Use __extract_part for any split into non-fixed_size
+	simds.
+	(concat): If the return type stores a single vector, use
+	__vec_shuffle (which calls __builtin_shufflevector) to produce
+	the return value.
+	* include/experimental/bits/simd_builtin.h
+	(__shift_elements_right): Removed.
+	(__extract_part): Return single elements directly. Use
+	__vec_shuffle (which calls __builtin_shufflevector) to for all
+	non-trivial cases.
+	* include/experimental/bits/simd_fixed_size.h (__extract_part):
+	Return single elements directly.
+	* testsuite/experimental/simd/pr114958.cc: New test.
+
+2024-06-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115335
+	* include/std/span (span::at): Guard with feature test macro.
+
+2024-06-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backported from master:
+	2024-05-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/111641
+	* src/libbacktrace/Makefile.am (AM_CFLAGS): Add -funwind-tables.
+	* src/libbacktrace/Makefile.in: Regenerate.
+	* testsuite/19_diagnostics/stacktrace/current.cc (dg-options): Add
+	-funwind-tables.
+	* testsuite/19_diagnostics/stacktrace/entry.cc: Likewise.
+	* testsuite/19_diagnostics/stacktrace/hash.cc: Likewise.
+	* testsuite/19_diagnostics/stacktrace/output.cc: Likewise.
+	* testsuite/19_diagnostics/stacktrace/stacktrace.cc: Likewise.
+
+2024-06-03  François Dumont  <frs.dumont@gmail.com>
+
+	Backported from master:
+	2024-06-03  François Dumont  <frs.dumont@gmail.com>
+
+	PR libstdc++/109849
+	* include/bits/vector.tcc
+	(std::vector<>::_M_range_insert(iterator, _FwdIt, _FwdIt,
+	forward_iterator_tag))[__cplusplus < 201103L]: Add __builtin_unreachable
+	expression to tell the compiler that the allocated buffer is large enough to
+	receive current elements plus the elements of the range to insert.
+
+2024-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115269
+	* doc/xml/manual/using.xml: Replace link to gcc-4.3.2 docs.
+	Replace list of -std=... options with a single entry for -std.
+	* doc/html/manual/using.html: Regenerate.
+
+2024-05-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-05-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114940
+	* include/bits/version.def (generator): Depend on
+	__cpp_sized_deallocation.
+	* include/bits/version.h: Regenerate.
+	* include/std/stacktrace (_GLIBCXX_SIZED_DELETE): New macro.
+	(basic_stacktrace::_Impl::_M_deallocate): Use it.
+
+2024-05-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-05-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115099
+	* include/bits/std_thread.h: Declare formatter as friend of
+	thread::id.
+	* include/std/thread (operator<<): Convert non-void pointers to
+	void pointers for output.
+	(formatter): Add constraint that thread::native_handle_type is a
+	pointer or integer.
+	(formatter::format): Reimplement without basic_ostringstream.
+	* testsuite/30_threads/thread/id/output.cc: Check output
+	compiles before <sstream> has been included.
+
+2024-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115119
+	* include/bits/unicode.h (_Iterator::operator++(int)): Fix typo
+	in increment expression.
+	* testsuite/ext/unicode/grapheme_view.cc: Check post-increment
+	on view's iterator.
+
+2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115015
+	* src/c++23/print.cc (__open_terminal(streambuf*)) [!__cpp_rtti]:
+	Do not use dynamic_cast.
+
+2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115063
+	* include/std/stacktrace (basic_stacktrace::max_size): Fix typo
+	in reference to _M_alloc member.
+	* testsuite/19_diagnostics/stacktrace/stacktrace.cc: Check
+	max_size() compiles.
+
+2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-05-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114891
+	* include/std/generator: Check feature test macro before using
+	is_pointer_interconvertible_v.
+
+2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_abi.cc: Update latest versions to
+	new versions that should be used in future.
+
+2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unicode.h (_Unicode_view::_M_read_utf8): Ensure
+	count of characters consumed is correct when the end of the
+	input is reached unexpectedly.
+	* testsuite/ext/unicode/view.cc: Test incomplete UTF-8
+	sequences.
+
+2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114866
+	* include/bits/out_ptr.h [!_GLIBCXX_HOSTED]: Don't refer to
+	shared_ptr, __shared_ptr or __is_shred_ptr.
+	* testsuite/20_util/headers/memory/114866.cc: New test.
+
 2024-05-07  Release Manager
 
 	* GCC 14.1.0 released.

@@ -1,3 +1,345 @@
+2024-07-18  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-06-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115476
+	* semantics.cc (finish_trait_expr)
+	<case CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS>: Move below to call
+	check_trait_type with kind==2.
+
+2024-07-18  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/115165
+	* module.cc (lazy_load_binding): Use 'timevar_cond*' APIs.
+	(lazy_load_pendings): Likewise.
+
+2024-07-17  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-07-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111890
+	* pt.cc (maybe_new_partial_specialization): Propagate TYPE_CONTEXT
+	to the newly created partial specialization.
+
+2024-07-17  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-07-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115897
+	* pt.cc (complex_alias_template_p): Return true for an alias
+	template with attributes.
+	(get_underlying_template): Don't look through an alias template
+	with attributes.
+
+2024-07-17  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-06-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106760
+	* call.cc (add_candidates): Relax test for adding a candidate
+	to 'bad_cands' to also accept an uninstantiated template candidate
+	that has no missing conversions.
+
+2024-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-07-02  Jakub Jelinek  <jakub@redhat.com>
+		    Jason Merrill  <jason@redhat.com>
+
+	PR c++/115754
+	* constexpr.cc (cxx_eval_constant_expression) <case CONVERT_EXPR>:
+	For conversions to void, pass vc_discard to the recursive call
+	and otherwise for tcode other than VIEW_CONVERT_EXPR pass vc_prvalue.
+
+2024-07-17  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2024-07-17  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/99242
+	* name-lookup.cc (append_imported_binding_slot): Propagate dups
+	flags.
+
+2024-07-11  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2024-07-11  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/99241
+	* decl.cc (duplicate_decls): Merge module entity information.
+
+2024-07-04  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2024-07-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR c++/115623
+	* semantics.cc (finish_for_cond): Add check for C++ cond.
+
+2024-06-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-06-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115504
+	* semantics.cc (finish_decltype_type): Don't strip the reference
+	type (if any) of a capture proxy's captured variable.
+
+2024-06-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-06-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115198
+	* pt.cc (alias_ctad_tweaks): Update DECL_NAME of the transformed
+	guides.
+
+2024-06-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-06-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115358
+	* decl2.cc (mark_used): Call maybe_instantiate_decl for an array
+	variable with unknown bound.
+	* semantics.cc (finish_decltype_type): Remove now redundant
+	handling of array variables with unknown bound.
+	* typeck.cc (cxx_sizeof_expr): Likewise.
+
+2024-06-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	Backported from master:
+	2024-06-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/115587
+	* parser.cc (cp_parser_omp_loop_nest): Move initializations to
+	point of declaration.
+
+2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/111343
+	PR c++/115511
+	* typeck.cc (cp_compare_floating_point_conversion_ranks): If an
+	extended floating point type mv1 has same set of values as more
+	than one standard floating point type and mv2 is float, return 2.
+
+2024-06-17  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-06-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99678
+	* parser.cc (cp_parser_constraint_primary_expression): Diagnose
+	a bare unresolved unqualified-id.
+
+2024-06-17  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-06-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115239
+	* call.cc (tourney): Don't consider a non-strictly viable
+	candidate as the champ if there was ambiguity between two
+	strictly viable candidates.
+
+2024-06-17  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-06-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115283
+	* decl2.cc (min_vis_expr_r) <case TEMPLATE_DECL>: Ignore
+	concepts.
+
+2024-06-10  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-06-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115378
+	* lambda.cc (lambda_capture_field_type): Set
+	TEMPLATE_TYPE_PARAMETER_PACK on the auto type of an init-capture
+	pack expansion.
+	* pt.cc (find_parameter_packs_r) <case TEMPLATE_TYPE_PARM>:
+	Restrict TEMPLATE_TYPE_PARAMETER_PACK promotion with
+	flag_concepts_ts.
+
+2024-05-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115187
+	* init.cc (build_delete): Use get_target_expr instead of save_expr.
+	* tree.cc (stabilize_expr): Update comment.
+
+2024-05-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2024-05-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114868
+	* module.cc (depset::hash::add_binding_entity): Propagate
+	OVL_USING_P for using-declarations.
+
+2024-05-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/105320
+	PR c++/114275
+	* cp-tree.h (propagate_defining_module): Declare.
+	(remove_defining_module): Declare.
+	(lookup_imported_hidden_friend): Declare.
+	* decl.cc (duplicate_decls): Also check if hidden decls can be
+	redeclared in this module. Call remove_defining_module on
+	to-be-freed newdecl.
+	* module.cc (imported_temploid_friends): New.
+	(init_modules): Initialize it.
+	(trees_out::decl_value): Write it; don't consider imported
+	temploid friends as attached to a module.
+	(trees_in::decl_value): Read it for non-discarded decls.
+	(get_originating_module_decl): Follow the owning decl for an
+	imported temploid friend.
+	(propagate_defining_module): New.
+	(remove_defining_module): New.
+	* name-lookup.cc (get_mergeable_namespace_binding): New.
+	(lookup_imported_hidden_friend): New.
+	* pt.cc (tsubst_friend_function): Propagate defining module for
+	new friend functions.
+	(tsubst_friend_class): Lookup imported hidden friends.  Check
+	for valid module attachment of existing names.  Propagate
+	defining module for new classes.
+
+2024-05-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2024-04-30  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* cp-tree.h (module_may_redeclare): Add default parameter.
+	* decl.cc (duplicate_decls): Don't emit errors for failed
+	module_may_redeclare.
+	(xref_tag): Likewise.
+	(start_enum): Likewise.
+	* semantics.cc (begin_class_definition): Likewise.
+	* module.cc (module_may_redeclare): Clean up logic. Emit error
+	messages on failure.
+
+2024-05-22  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-05-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/114983
+	* pt.cc (tsubst_expr) <case SIZEOF_EXPR>: Use copy_warning.
+	* semantics.cc (finish_parenthesized_expr): Also suppress
+	-Wsizeof-array-div.
+
+2024-05-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-05-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107800
+	* cxxapi-data.csv <to_address>: Change dialect to cxx20.
+	* std-name-hint.gperf: Regenerate.
+	* std-name-hint.h: Regenerate.
+
+2024-05-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-05-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115139
+	* pt.cc (tsubst_expr) <case CONST_DECL>: Exit early if args
+	is empty.
+
+2024-05-20  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-05-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115114
+	* pt.cc (maybe_aggr_guide): Consider bases in the paren init case.
+
+2024-05-20  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-05-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114994
+	* tree.cc (lvalue_kind) <case MODOP_EXPR>: For a class
+	assignment, consider the result type.
+
+2024-05-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-05-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114974
+	PR c++/114901
+	PR c++/114903
+	* pt.cc (maybe_aggr_guide): Fix obtaining TYPE_FIELDS in
+	the paren init case.  Hoist out partial substitution logic
+	to apply to the paren init case as well.
+	(alias_ctad_tweaks): Substitute outer template arguments into
+	a guide's constraints.
+
+2024-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114968
+	* cp-tree.h (atexit_fn_ptr_type_node, cleanup_type): Adjust macro
+	comments.
+	(get_cxa_atexit_fn_ptr_type): Declare.
+	* decl.cc (get_atexit_fn_ptr_type): Adjust function comment, only
+	build type for atexit argument.
+	(get_cxa_atexit_fn_ptr_type): New function.
+	(get_atexit_node): Call get_cxa_atexit_fn_ptr_type rather than
+	get_atexit_fn_ptr_type when using __cxa_atexit.
+	(get_thread_atexit_node): Call get_cxa_atexit_fn_ptr_type
+	rather than get_atexit_fn_ptr_type.
+	(start_cleanup_fn): Add ob_parm argument, call
+	get_cxa_atexit_fn_ptr_type or get_atexit_fn_ptr_type depending
+	on it and create PARM_DECL also based on that argument.
+	(register_dtor_fn): Adjust start_cleanup_fn caller, use
+	get_cxa_atexit_fn_ptr_type rather than get_atexit_fn_ptr_type
+	for use_dtor casts.
+	* except.cc (build_throw): Use get_cxa_atexit_fn_ptr_type ().
+
+2024-05-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-05-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/89224
+	* constexpr.cc (cxx_eval_array_reference): Compare main variants
+	for the vector/array types instead of the types directly.
+
+2024-05-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2024-05-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114856
+	* call.cc (make_temporary_var_for_ref_to_temp): Set context for
+	temporaries with linkage.
+	* init.cc (create_temporary_var): Revert to only set context
+	when in a function decl.
+
+2024-05-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-04-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114889
+	* module.cc (trees_in::read_class_def): Look through
+	TEMPLATE_DECL when adding to CLASSTYPE_BEFRIENDING_CLASSES.
+
 2024-05-07  Release Manager
 
 	* GCC 14.1.0 released.

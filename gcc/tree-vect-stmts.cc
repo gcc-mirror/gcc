@@ -1643,7 +1643,7 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
    MASK_TYPE is the type of both masks.  If new statements are needed,
    insert them before GSI.  */
 
-static tree
+tree
 prepare_vec_mask (loop_vec_info loop_vinfo, tree mask_type, tree loop_mask,
 		  tree vec_mask, gimple_stmt_iterator *gsi)
 {
@@ -4317,9 +4317,14 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	    case SIMD_CLONE_ARG_TYPE_MASK:
 	      if (loop_vinfo
 		  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
-		vect_record_loop_mask (loop_vinfo,
-				       &LOOP_VINFO_MASKS (loop_vinfo),
-				       ncopies, vectype, op);
+		{
+		  unsigned nmasks
+		    = exact_div (ncopies * bestn->simdclone->simdlen,
+				 TYPE_VECTOR_SUBPARTS (vectype)).to_constant ();
+		  vect_record_loop_mask (loop_vinfo,
+					 &LOOP_VINFO_MASKS (loop_vinfo),
+					 nmasks, vectype, op);
+		}
 
 	      break;
 	    }
@@ -4716,7 +4721,12 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		      SIMD_CLONE_ARG_TYPE_MASK);
 
 	  tree masktype = bestn->simdclone->args[mask_i].vector_type;
-	  callee_nelements = TYPE_VECTOR_SUBPARTS (masktype);
+	  if (SCALAR_INT_MODE_P (bestn->simdclone->mask_mode))
+	    /* Guess the number of lanes represented by masktype.  */
+	    callee_nelements = exact_div (bestn->simdclone->simdlen,
+					  bestn->simdclone->nargs - nargs);
+	  else
+	    callee_nelements = TYPE_VECTOR_SUBPARTS (masktype);
 	  o = vector_unroll_factor (nunits, callee_nelements);
 	  for (m = j * o; m < (j + 1) * o; m++)
 	    {
@@ -5955,14 +5965,17 @@ vectorizable_assignment (vec_info *vinfo,
   if (!vectype_in)
     vectype_in = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op), slp_node);
 
-  /* We can handle NOP_EXPR conversions that do not change the number
-     of elements or the vector size.  */
-  if ((CONVERT_EXPR_CODE_P (code)
-       || code == VIEW_CONVERT_EXPR)
-      && (!vectype_in
-	  || maybe_ne (TYPE_VECTOR_SUBPARTS (vectype_in), nunits)
-	  || maybe_ne (GET_MODE_SIZE (TYPE_MODE (vectype)),
-		       GET_MODE_SIZE (TYPE_MODE (vectype_in)))))
+  /* We can handle VIEW_CONVERT conversions that do not change the number
+     of elements or the vector size or other conversions when the component
+     types are nop-convertible.  */
+  if (!vectype_in
+      || maybe_ne (TYPE_VECTOR_SUBPARTS (vectype_in), nunits)
+      || (code == VIEW_CONVERT_EXPR
+	  && maybe_ne (GET_MODE_SIZE (TYPE_MODE (vectype)),
+		       GET_MODE_SIZE (TYPE_MODE (vectype_in))))
+      || (CONVERT_EXPR_CODE_P (code)
+	  && !tree_nop_conversion_p (TREE_TYPE (vectype),
+				     TREE_TYPE (vectype_in))))
     return false;
 
   if (VECTOR_BOOLEAN_TYPE_P (vectype) != VECTOR_BOOLEAN_TYPE_P (vectype_in))

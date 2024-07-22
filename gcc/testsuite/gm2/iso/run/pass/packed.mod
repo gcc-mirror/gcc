@@ -38,7 +38,9 @@ PROCEDURE test ;
 VAR
    v: CARDINAL ;
 BEGIN
+   printf ("testing to see BITSET{0} = CARDINAL (1)...");
    Assert(CAST(CARDINAL, BITSET{0}) = VAL(CARDINAL, 1), __FILE__, __LINE__) ;
+   printf ("yes\n");
    v := MAX(CARDINAL)-1 ;
    WHILE v>0 DO
       Assert(CAST(CARDINAL, SHIFT(CAST(BITSET, v), -1)) = v DIV 2, __FILE__, __LINE__) ;

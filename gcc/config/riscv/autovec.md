@@ -1341,7 +1341,8 @@
     {
       rtx ops[] = {operands[0], operands[0], operands[1]};
       riscv_vector::emit_nonvlmax_insn (code_for_pred_broadcast (<MODE>mode),
-					riscv_vector::SCALAR_MOVE_MERGED_OP, ops, CONST1_RTX (Pmode));
+					riscv_vector::SCALAR_MOVE_MERGED_OP_TU,
+					ops, CONST1_RTX (Pmode));
     }
   else
     {
@@ -1383,7 +1384,7 @@
 (define_expand "vec_extract<mode><vel>"
   [(set (match_operand:<VEL>	  0 "register_operand")
      (vec_select:<VEL>
-       (match_operand:V_VLS	  1 "register_operand")
+       (match_operand:V_VLS_ZVFH  1 "register_operand")
        (parallel
 	 [(match_operand	  2 "nonmemory_operand")])))]
   "TARGET_VECTOR"

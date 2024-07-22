@@ -3820,6 +3820,12 @@ alpha_expand_block_move (rtx operands[])
           else if (a >= 16 && c % 2 == 0)
 	    src_align = 16;
 	}
+
+      if (MEM_P (orig_src) && MEM_ALIGN (orig_src) < src_align)
+	{
+	  orig_src = shallow_copy_rtx (orig_src);
+	  set_mem_align (orig_src, src_align);
+	}
     }
 
   tmp = XEXP (orig_dst, 0);
@@ -3840,6 +3846,12 @@ alpha_expand_block_move (rtx operands[])
 	    dst_align = 32;
           else if (a >= 16 && c % 2 == 0)
 	    dst_align = 16;
+	}
+
+      if (MEM_P (orig_dst) && MEM_ALIGN (orig_dst) < dst_align)
+	{
+	  orig_dst = shallow_copy_rtx (orig_dst);
+	  set_mem_align (orig_dst, dst_align);
 	}
     }
 

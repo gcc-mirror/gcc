@@ -83,10 +83,21 @@ test_breaks()
   VERIFY( iter == gv.end() );
 }
 
+constexpr void
+test_pr115119()
+{
+  // PR 115119 Typo in _Grapheme_cluster_view::_Iterator::operator++(int)
+  uc::_Grapheme_cluster_view gv(" "sv);
+  auto it = std::ranges::begin(gv);
+  it++;
+  VERIFY( it == std::ranges::end(gv) );
+}
+
 int main()
 {
   auto run_tests = []{
     test_breaks();
+    test_pr115119();
     return true;
   };
 

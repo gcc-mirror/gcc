@@ -1,6 +1,6 @@
-/* PR lto/114574
- * { dg-do compile }
- * { dg-options "-flto" } */
+/* PR lto/114574 */
+/* { dg-do compile { target lto } } */
+/* { dg-options "-flto" } */
 
 const struct S * x;
 struct S {};

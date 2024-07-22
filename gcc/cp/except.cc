@@ -645,11 +645,7 @@ build_throw (location_t loc, tree exp, tsubst_flags_t complain)
 
       /* The CLEANUP_TYPE is the internal type of a destructor.  */
       if (!cleanup_type)
-	{
-	  tree tmp = build_function_type_list (void_type_node,
-					       ptr_type_node, NULL_TREE);
-	  cleanup_type = build_pointer_type (tmp);
-	}
+	cleanup_type = get_cxa_atexit_fn_ptr_type ();
 
       if (!throw_fn)
 	{

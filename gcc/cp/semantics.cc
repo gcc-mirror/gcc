@@ -1502,7 +1502,7 @@ finish_for_cond (tree cond, tree for_stmt, bool ivdep, tree unroll,
 				  build_int_cst (integer_type_node,
 						 annot_expr_unroll_kind),
 				  unroll);
-  if (novector && cond != error_mark_node)
+  if (novector && cond && cond != error_mark_node)
     FOR_COND (for_stmt) = build3 (ANNOTATE_EXPR,
 				  TREE_TYPE (FOR_COND (for_stmt)),
 				  FOR_COND (for_stmt),
@@ -2307,6 +2307,8 @@ finish_parenthesized_expr (cp_expr expr)
       /* This inhibits warnings in maybe_warn_unparenthesized_assignment
 	 and c_common_truthvalue_conversion.  */
       suppress_warning (STRIP_REFERENCE_REF (*expr), OPT_Wparentheses);
+      /* And maybe_warn_sizeof_array_div.  */
+      suppress_warning (STRIP_REFERENCE_REF (*expr), OPT_Wsizeof_array_div);
     }
 
   if (TREE_CODE (expr) == OFFSET_REF
@@ -3778,11 +3780,7 @@ begin_class_definition (tree t)
   if (modules_p ())
     {
       if (!module_may_redeclare (TYPE_NAME (t)))
-	{
-	  error ("cannot declare %qD in a different module", TYPE_NAME (t));
-	  inform (DECL_SOURCE_LOCATION (TYPE_NAME (t)), "declared here");
-	  return error_mark_node;
-	}
+	return error_mark_node;
       set_instantiating_module (TYPE_NAME (t));
       set_defining_module (TYPE_NAME (t));
     }
@@ -12522,13 +12520,6 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
       return error_mark_node;
     }
 
-  /* To get the size of a static data member declared as an array of
-     unknown bound, we need to instantiate it.  */
-  if (VAR_P (expr)
-      && VAR_HAD_UNKNOWN_BOUND (expr)
-      && DECL_TEMPLATE_INSTANTIATION (expr))
-    instantiate_decl (expr, /*defer_ok*/true, /*expl_inst_mem*/false);
-
   if (id_expression_or_member_access_p)
     {
       /* If e is an id-expression or a class member access (5.2.5
@@ -12598,7 +12589,6 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 		{
 		  expr = DECL_CAPTURED_VARIABLE (expr);
 		  type = TREE_TYPE (expr);
-		  type = non_reference (type);
 		}
 	      else
 		{
@@ -13439,7 +13429,6 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
     case CPTK_HAS_NOTHROW_COPY:
     case CPTK_HAS_TRIVIAL_COPY:
     case CPTK_HAS_TRIVIAL_DESTRUCTOR:
-    case CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS:
       if (!check_trait_type (type1))
 	return error_mark_node;
       break;
@@ -13449,6 +13438,7 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_STD_LAYOUT:
     case CPTK_IS_TRIVIAL:
     case CPTK_IS_TRIVIALLY_COPYABLE:
+    case CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS:
       if (!check_trait_type (type1, /* kind = */ 2))
 	return error_mark_node;
       break;

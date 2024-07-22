@@ -440,6 +440,38 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
 	return mpz_sgn (e2->value.op.op2->value.integer);
     }
 
+
+  if (e1->expr_type == EXPR_COMPCALL)
+    {
+      /* This will have emerged from interface.cc(gfc_check_typebound_override)
+	 via gfc_check_result_characteristics. It is possible that other
+	 variants exist that are 'equal' but play it safe for now by setting
+	 the relationship as 'indeterminate'.  */
+      if (e2->expr_type == EXPR_FUNCTION && e2->ref)
+	{
+	  gfc_ref *ref = e2->ref;
+	  gfc_symbol *s = NULL;
+
+	  if (e1->value.compcall.tbp->u.specific)
+	    s = e1->value.compcall.tbp->u.specific->n.sym;
+
+	  /* Check if the proc ptr points to an interface declaration and the
+	     names are the same; ie. the overriden proc. of an abstract type.
+	     The checking of the arguments will already have been done.  */
+	  for (; ref && s; ref = ref->next)
+	    if (!ref->next && ref->type == REF_COMPONENT
+		&& ref->u.c.component->attr.proc_pointer
+		&& ref->u.c.component->ts.interface
+		&& ref->u.c.component->ts.interface->attr.if_source
+							== IFSRC_IFBODY
+		&& !strcmp (s->name, ref->u.c.component->name))
+	      return 0;
+	}
+
+      /* Assume as default that TKR checking is sufficient.  */
+     return -2;
+  }
+
   if (e1->expr_type != e2->expr_type)
     return -3;
 

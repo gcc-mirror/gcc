@@ -23135,7 +23135,7 @@ static tree c_parser_omp_unroll (location_t, c_parser *, bool *);
 static tree
 c_parser_omp_loop_nest (c_parser *parser, bool *if_p)
 {
-  tree decl, cond, incr, init;
+  tree decl = NULL_TREE, cond = NULL_TREE, incr = NULL_TREE, init = NULL_TREE;
   tree body = NULL_TREE;
   matching_parens parens;
   bool moreloops;
@@ -23324,7 +23324,6 @@ c_parser_omp_loop_nest (c_parser *parser, bool *if_p)
     }
 
   /* Parse the loop condition.  */
-  cond = NULL_TREE;
   if (c_parser_next_token_is_not (parser, CPP_SEMICOLON))
     {
       location_t cond_loc = c_parser_peek_token (parser)->location;
@@ -23357,7 +23356,6 @@ c_parser_omp_loop_nest (c_parser *parser, bool *if_p)
   c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
 
   /* Parse the increment expression.  */
-  incr = NULL_TREE;
   if (c_parser_next_token_is_not (parser, CPP_CLOSE_PAREN))
     {
       location_t incr_loc = c_parser_peek_token (parser)->location;

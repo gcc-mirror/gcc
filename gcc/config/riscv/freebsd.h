@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
   %{p:%nconsider using `-pg' instead of `-p' with gprof (1)}	\
   %{v:-V}							\
   %{assert*} %{R*} %{rpath*} %{defsym*}				\
+  -X								\
   %{mbig-endian:-EB}						\
   %{mlittle-endian:-EL}						\
   %{shared:-Bshareable %{h*} %{soname*}}			\

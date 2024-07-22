@@ -2050,6 +2050,9 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
   else if (is_a <loop_vec_info> (vinfo)
 	   /* ???  We don't handle !vect_internal_def defs below.  */
 	   && STMT_VINFO_DEF_TYPE (stmt_info) == vect_internal_def
+	   /* ???  Do not associate a reduction, this will wreck REDUC_IDX
+	      mapping as long as that exists on the stmt_info level.  */
+	   && STMT_VINFO_REDUC_IDX (stmt_info) == -1
 	   && is_gimple_assign (stmt_info->stmt)
 	   && (associative_tree_code (gimple_assign_rhs_code (stmt_info->stmt))
 	       || gimple_assign_rhs_code (stmt_info->stmt) == MINUS_EXPR)
@@ -9271,13 +9274,8 @@ vect_schedule_slp_node (vec_info *vinfo,
   gcc_assert (SLP_TREE_NUMBER_OF_VEC_STMTS (node) != 0);
   SLP_TREE_VEC_DEFS (node).create (SLP_TREE_NUMBER_OF_VEC_STMTS (node));
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "------>vectorizing SLP node starting from: %G",
-		     stmt_info->stmt);
-
-  if (STMT_VINFO_DATA_REF (stmt_info)
-      && SLP_TREE_CODE (node) != VEC_PERM_EXPR)
+  if (SLP_TREE_CODE (node) != VEC_PERM_EXPR
+      && STMT_VINFO_DATA_REF (stmt_info))
     {
       /* Vectorized loads go before the first scalar load to make it
 	 ready early, vectorized stores go before the last scalar
@@ -9289,10 +9287,10 @@ vect_schedule_slp_node (vec_info *vinfo,
 	last_stmt_info = vect_find_last_scalar_stmt_in_slp (node);
       si = gsi_for_stmt (last_stmt_info->stmt);
     }
-  else if ((STMT_VINFO_TYPE (stmt_info) == cycle_phi_info_type
-	    || STMT_VINFO_TYPE (stmt_info) == induc_vec_info_type
-	    || STMT_VINFO_TYPE (stmt_info) == phi_info_type)
-	   && SLP_TREE_CODE (node) != VEC_PERM_EXPR)
+  else if (SLP_TREE_CODE (node) != VEC_PERM_EXPR
+	   && (STMT_VINFO_TYPE (stmt_info) == cycle_phi_info_type
+	       || STMT_VINFO_TYPE (stmt_info) == induc_vec_info_type
+	       || STMT_VINFO_TYPE (stmt_info) == phi_info_type))
     {
       /* For PHI node vectorization we do not use the insertion iterator.  */
       si = gsi_none ();
@@ -9400,6 +9398,7 @@ vect_schedule_slp_node (vec_info *vinfo,
 	  si = gsi_after_labels (as_a <bb_vec_info> (vinfo)->bbs[0]);
 	}
       else if (is_a <bb_vec_info> (vinfo)
+	       && SLP_TREE_CODE (node) != VEC_PERM_EXPR
 	       && gimple_bb (last_stmt) != gimple_bb (stmt_info->stmt)
 	       && gimple_could_trap_p (stmt_info->stmt))
 	{
@@ -9426,6 +9425,9 @@ vect_schedule_slp_node (vec_info *vinfo,
   /* Handle purely internal nodes.  */
   if (SLP_TREE_CODE (node) == VEC_PERM_EXPR)
     {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "------>vectorizing SLP permutation node\n");
       /* ???  the transform kind is stored to STMT_VINFO_TYPE which might
 	 be shared with different SLP nodes (but usually it's the same
 	 operation apart from the case the stmt is only there for denoting
@@ -9444,7 +9446,13 @@ vect_schedule_slp_node (vec_info *vinfo,
 	  }
     }
   else
-    vect_transform_stmt (vinfo, stmt_info, &si, node, instance);
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "------>vectorizing SLP node starting from: %G",
+			 stmt_info->stmt);
+      vect_transform_stmt (vinfo, stmt_info, &si, node, instance);
+    }
 }
 
 /* Replace scalar calls from SLP node NODE with setting of their lhs to zero.

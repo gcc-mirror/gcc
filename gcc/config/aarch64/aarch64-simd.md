@@ -7363,8 +7363,6 @@
       nunits /= 2;
     rtx par_even = aarch64_gen_stepped_int_parallel (nunits, 0, 2);
     rtx par_odd = aarch64_gen_stepped_int_parallel (nunits, 1, 2);
-    if (BYTES_BIG_ENDIAN)
-      std::swap (operands[1], operands[2]);
     emit_insn (gen_aarch64_addp<mode>_insn (operands[0], operands[1],
 					    operands[2], par_even, par_odd));
     DONE;

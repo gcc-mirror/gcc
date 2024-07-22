@@ -4632,6 +4632,54 @@ gimple_fold_builtin (unsigned int code, gimple_stmt_iterator *gsi, gcall *stmt)
   return gimple_folder (rfn.instance, rfn.decl, gsi, stmt).fold ();
 }
 
+static bool
+validate_instance_type_required_extensions (const rvv_type_info type,
+					    tree exp)
+{
+  uint64_t exts = type.required_extensions;
+
+  if ((exts & RVV_REQUIRE_ELEN_FP_16) &&
+    !TARGET_VECTOR_ELEN_FP_16_P (riscv_vector_elen_flags))
+    {
+      error_at (EXPR_LOCATION (exp),
+		"built-in function %qE requires the "
+		"zvfhmin or zvfh ISA extension",
+		exp);
+      return false;
+    }
+
+  if ((exts & RVV_REQUIRE_ELEN_FP_32) &&
+    !TARGET_VECTOR_ELEN_FP_32_P (riscv_vector_elen_flags))
+    {
+      error_at (EXPR_LOCATION (exp),
+		"built-in function %qE requires the "
+		"zve32f, zve64f, zve64d or v ISA extension",
+		exp);
+      return false;
+    }
+
+  if ((exts & RVV_REQUIRE_ELEN_FP_64) &&
+    !TARGET_VECTOR_ELEN_FP_64_P (riscv_vector_elen_flags))
+    {
+      error_at (EXPR_LOCATION (exp),
+		"built-in function %qE requires the zve64d or v ISA extension",
+		exp);
+      return false;
+    }
+
+  if ((exts & RVV_REQUIRE_ELEN_64) &&
+    !TARGET_VECTOR_ELEN_64_P (riscv_vector_elen_flags))
+    {
+      error_at (EXPR_LOCATION (exp),
+		"built-in function %qE requires the "
+		"zve64x, zve64f, zve64d or v ISA extension",
+		exp);
+      return false;
+    }
+
+  return true;
+}
+
 /* Expand a call to the RVV function with subcode CODE.  EXP is the call
    expression and TARGET is the preferred location for the result.
    Return the value of the lhs.  */
@@ -4648,6 +4696,9 @@ expand_builtin (unsigned int code, tree exp, rtx target)
 		reqired_ext_to_isa_name (rfn.required));
       return target;
     }
+
+  if (!validate_instance_type_required_extensions (rfn.instance.type, exp))
+    return target;
 
   return function_expander (rfn.instance, rfn.decl, exp, target).expand ();
 }

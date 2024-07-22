@@ -1,3 +1,46 @@
+2024-07-03  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR pch/115312
+	* c-opts.cc (c_common_init): Call c_init_preprocess() before
+	c_finish_options() so that a parser is available to process any
+	includes specified on the command line.
+
+2024-06-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-06-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/115624
+	* c.opt (Wnrvo): Add Warning property.
+
+2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/115290
+	* c-warn.cc (do_warn_array_compare): Use %E rather than %D for
+	printing op0 and op1; if those operands aren't decls, also print
+	parens around them.
+
+2024-05-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114931
+	* c-common.cc (complete_array_type): Set TYPE_STRUCTURAL_EQUALITY_P
+	before probing with type_hash_canon.
+
+2024-05-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-05-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/89224
+	* c-common.cc (convert_vector_to_array_for_subscript): Call build_qualified_type
+	for the inner type.
+
 2024-05-07  Release Manager
 
 	* GCC 14.1.0 released.

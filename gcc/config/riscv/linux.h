@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #define LINK_SPEC "\
 -melf" XLEN_SPEC DEFAULT_ENDIAN_SPEC "riscv" LD_EMUL_SUFFIX " \
 %{mno-relax:--no-relax} \
+-X \
 %{mbig-endian:-EB} \
 %{mlittle-endian:-EL} \
 %{shared} \

@@ -6076,6 +6076,12 @@ package body Exp_Util is
 
       Utyp := Underlying_Type (Base_Type (Utyp));
 
+      --  Handle incomplete types
+
+      if No (Utyp) then
+         return Empty;
+      end if;
+
       --  Deal with untagged derivation of private views. If the parent is
       --  now known to be protected, the finalization routine is the one
       --  defined on the corresponding record of the ancestor (corresponding

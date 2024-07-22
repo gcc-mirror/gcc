@@ -7,7 +7,7 @@
 
     <para>
       The set of features available in the GNU C++ library is shaped by
-      several <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc-4.3.2/gcc/Invoking-GCC.html">GCC
+      several <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/onlinedocs/gcc-14.1.0/gcc/Invoking-GCC.html">GCC
       Command Options</link>. Options that impact libstdc++ are
       enumerated and detailed in the table below.
     </para>
@@ -37,35 +37,12 @@
 
   <tbody>
     <row>
-      <entry><literal>-std=c++98</literal> or <literal>-std=c++03</literal>
+      <entry><literal>-std</literal>
       </entry>
-      <entry>Use the 1998 ISO C++ standard plus amendments.</entry>
-    </row>
-
-    <row>
-      <entry><literal>-std=gnu++98</literal> or <literal>-std=gnu++03</literal>
+      <entry>
+	Select the C++ standard, and whether to use the base standard
+	or GNU dialect.
       </entry>
-      <entry>As directly above, with GNU extensions.</entry>
-    </row>
-
-    <row>
-      <entry><literal>-std=c++11</literal></entry>
-      <entry>Use the 2011 ISO C++ standard.</entry>
-    </row>
-
-    <row>
-      <entry><literal>-std=gnu++11</literal></entry>
-      <entry>As directly above, with GNU extensions.</entry>
-    </row>
-
-    <row>
-      <entry><literal>-std=c++14</literal></entry>
-      <entry>Use the 2014 ISO C++ standard.</entry>
-    </row>
-
-    <row>
-      <entry><literal>-std=gnu++14</literal></entry>
-      <entry>As directly above, with GNU extensions.</entry>
     </row>
 
     <row>

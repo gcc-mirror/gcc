@@ -5344,6 +5344,7 @@ loongarch_expand_conditional_move (rtx *operands)
   rtx op1_extend = op1;
 
   /* Record whether operands[2] and operands[3] modes are promoted to word_mode.  */
+  bool promote_op[2] = {false, false};
   bool promote_p = false;
   machine_mode mode = GET_MODE (operands[0]);
 
@@ -5351,9 +5352,15 @@ loongarch_expand_conditional_move (rtx *operands)
     loongarch_emit_float_compare (&code, &op0, &op1);
   else
     {
-      if ((REGNO (op0) == REGNO (operands[2])
-	   || (REGNO (op1) == REGNO (operands[3]) && (op1 != const0_rtx)))
-	  && (GET_MODE_SIZE (GET_MODE (op0)) < word_mode))
+      if (GET_MODE_SIZE (GET_MODE (op0)) < word_mode)
+	{
+	  promote_op[0] = (REG_P (op0) && REG_P (operands[2]) &&
+			   REGNO (op0) == REGNO (operands[2]));
+	  promote_op[1] = (REG_P (op1) && REG_P (operands[3]) &&
+			   REGNO (op1) == REGNO (operands[3]));
+	}
+
+      if (promote_op[0] || promote_op[1])
 	{
 	  mode = word_mode;
 	  promote_p = true;
@@ -5395,7 +5402,7 @@ loongarch_expand_conditional_move (rtx *operands)
 
       if (promote_p)
 	{
-	  if (REGNO (XEXP (operands[1], 0)) == REGNO (operands[2]))
+	  if (promote_op[0])
 	    op2 = op0_extend;
 	  else
 	    {
@@ -5403,7 +5410,7 @@ loongarch_expand_conditional_move (rtx *operands)
 	      op2 = force_reg (mode, op2);
 	    }
 
-	  if (REGNO (XEXP (operands[1], 1)) == REGNO (operands[3]))
+	  if (promote_op[1])
 	    op3 = op1_extend;
 	  else
 	    {
@@ -6698,7 +6705,7 @@ loongarch_hard_regno_mode_ok_uncached (unsigned int regno, machine_mode mode)
       if (mclass == MODE_FLOAT
 	  || mclass == MODE_COMPLEX_FLOAT
 	  || mclass == MODE_VECTOR_FLOAT)
-	return size <= UNITS_PER_FPVALUE;
+	return size <= UNITS_PER_HWFPVALUE;
 
       /* Allow integer modes that fit into a single register.  We need
 	 to put integers into FPRs when using instructions like CVT

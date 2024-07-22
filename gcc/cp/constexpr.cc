@@ -4433,7 +4433,8 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
   if (!lval
       && TREE_CODE (ary) == VIEW_CONVERT_EXPR
       && VECTOR_TYPE_P (TREE_TYPE (TREE_OPERAND (ary, 0)))
-      && TREE_TYPE (t) == TREE_TYPE (TREE_TYPE (TREE_OPERAND (ary, 0))))
+      && (TYPE_MAIN_VARIANT (TREE_TYPE (t))
+	  == TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (TREE_OPERAND (ary, 0))))))
     ary = TREE_OPERAND (ary, 0);
 
   tree oldidx = TREE_OPERAND (t, 1);
@@ -8112,7 +8113,10 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	tree oldop = TREE_OPERAND (t, 0);
 
 	tree op = cxx_eval_constant_expression (ctx, oldop,
-						lval,
+						VOID_TYPE_P (TREE_TYPE (t))
+						? vc_discard
+						: tcode == VIEW_CONVERT_EXPR
+						? lval : vc_prvalue,
 						non_constant_p, overflow_p);
 	if (*non_constant_p)
 	  return t;

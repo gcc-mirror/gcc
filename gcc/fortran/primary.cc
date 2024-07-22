@@ -2113,13 +2113,13 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 
   inferred_type = IS_INFERRED_TYPE (primary);
 
-  /* SELECT TYPE and SELECT RANK temporaries within an ASSOCIATE block, whose
-     selector has not been parsed, can generate errors with array and component
-     refs.. Use 'inferred_type' as a flag to suppress these errors.  */
+  /* SELECT TYPE temporaries within an ASSOCIATE block, whose selector has not
+     been parsed, can generate errors with array refs.. The SELECT TYPE
+     namespace is marked with 'assoc_name_inferred'. During resolution, this is
+     detected and gfc_fixup_inferred_type_refs is called.  */
   if (!inferred_type
-      && (gfc_peek_ascii_char () == '(' && !sym->attr.dimension)
-      && !sym->attr.codimension
       && sym->attr.select_type_temporary
+      && sym->ns->assoc_name_inferred
       && !sym->attr.select_rank_temporary)
     inferred_type = true;
 

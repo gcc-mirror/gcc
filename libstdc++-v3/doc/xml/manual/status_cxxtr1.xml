@@ -23,7 +23,7 @@ In this implementation the header names are prefixed by
 
 <para>
 This page describes the TR1 support in
-the GCC 14 release series, not in any particular release.
+the GCC 14 release series.
 </para>
 
 <!-- Status is Yes or No, Broken/Partial-->

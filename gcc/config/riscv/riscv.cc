@@ -681,6 +681,15 @@ riscv_min_arithmetic_precision (void)
   return 32;
 }
 
+/* Get the arch string from an options object.  */
+
+template <class T>
+static const char *
+get_arch_str (const T *opts)
+{
+  return opts->x_riscv_arch_string;
+}
+
 template <class T>
 static const char *
 get_tune_str (const T *opts)
@@ -1397,7 +1406,9 @@ riscv_valid_lo_sum_p (enum riscv_symbol_type sym_type, machine_mode mode,
       align = (SYMBOL_REF_DECL (x)
 	       ? DECL_ALIGN (SYMBOL_REF_DECL (x))
 	       : 1);
-      size = (SYMBOL_REF_DECL (x) && DECL_SIZE (SYMBOL_REF_DECL (x))
+      size = (SYMBOL_REF_DECL (x)
+	      && DECL_SIZE (SYMBOL_REF_DECL (x))
+	      && tree_fits_uhwi_p (DECL_SIZE (SYMBOL_REF_DECL (x)))
 	      ? tree_to_uhwi (DECL_SIZE (SYMBOL_REF_DECL (x)))
 	      : 2*BITS_PER_WORD);
     }
@@ -3587,7 +3598,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
     case MULT:
       if (float_mode_p)
 	*total = tune_param->fp_mul[mode == DFmode];
-      else if (!TARGET_MUL)
+      else if (!(TARGET_MUL || TARGET_ZMMUL))
 	/* Estimate the cost of a library call.  */
 	*total = COSTS_N_INSNS (speed ? 32 : 6);
       else if (GET_MODE_SIZE (mode).to_constant () > UNITS_PER_WORD)
@@ -4728,8 +4739,9 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
       /* reg, reg  */
       else if (REG_P (cons) && REG_P (alt))
 	{
-	  if ((code == EQ && rtx_equal_p (cons, op0))
+	  if (((code == EQ && rtx_equal_p (cons, op0))
 	       || (code == NE && rtx_equal_p (alt, op0)))
+	      && op1 == CONST0_RTX (mode))
 	    {
 	      rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
 	      alt = force_reg (mode, alt);
@@ -7759,52 +7771,6 @@ riscv_adjust_libcall_cfi_epilogue ()
   return dwarf;
 }
 
-/* return true if popretz pattern can be matched.
-   set (reg 10 a0) (const_int 0)
-   use (reg 10 a0)
-   NOTE_INSN_EPILOGUE_BEG  */
-static rtx_insn *
-riscv_zcmp_can_use_popretz (void)
-{
-  rtx_insn *insn = NULL, *use = NULL, *clear = NULL;
-
-  /* sequence stack for NOTE_INSN_EPILOGUE_BEG*/
-  struct sequence_stack *outer_seq = get_current_sequence ()->next;
-  if (!outer_seq)
-    return NULL;
-  insn = outer_seq->first;
-  if (!insn || !NOTE_P (insn) || NOTE_KIND (insn) != NOTE_INSN_EPILOGUE_BEG)
-    return NULL;
-
-  /* sequence stack for the insn before NOTE_INSN_EPILOGUE_BEG*/
-  outer_seq = outer_seq->next;
-  if (outer_seq)
-    insn = outer_seq->last;
-
-  /* skip notes  */
-  while (insn && NOTE_P (insn))
-    {
-      insn = PREV_INSN (insn);
-    }
-  use = insn;
-
-  /* match use (reg 10 a0)  */
-  if (use == NULL || !INSN_P (use) || GET_CODE (PATTERN (use)) != USE
-      || !REG_P (XEXP (PATTERN (use), 0))
-      || REGNO (XEXP (PATTERN (use), 0)) != A0_REGNUM)
-    return NULL;
-
-  /* match set (reg 10 a0) (const_int 0 [0])  */
-  clear = PREV_INSN (use);
-  if (clear != NULL && INSN_P (clear) && GET_CODE (PATTERN (clear)) == SET
-      && REG_P (SET_DEST (PATTERN (clear)))
-      && REGNO (SET_DEST (PATTERN (clear))) == A0_REGNUM
-      && SET_SRC (PATTERN (clear)) == const0_rtx)
-    return clear;
-
-  return NULL;
-}
-
 static void
 riscv_gen_multi_pop_insn (bool use_multi_pop_normal, unsigned mask,
 			  unsigned multipop_size)
@@ -7815,13 +7781,6 @@ riscv_gen_multi_pop_insn (bool use_multi_pop_normal, unsigned mask,
   if (!use_multi_pop_normal)
     insn = emit_insn (
       riscv_gen_multi_push_pop_insn (POP_IDX, multipop_size, regs_count));
-  else if (rtx_insn *clear_a0_insn = riscv_zcmp_can_use_popretz ())
-    {
-      delete_insn (NEXT_INSN (clear_a0_insn));
-      delete_insn (clear_a0_insn);
-      insn = emit_jump_insn (
-	riscv_gen_multi_push_pop_insn (POPRETZ_IDX, multipop_size, regs_count));
-    }
   else
     insn = emit_jump_insn (
       riscv_gen_multi_push_pop_insn (POPRET_IDX, multipop_size, regs_count));
@@ -9013,17 +8972,16 @@ riscv_declare_function_name (FILE *stream, const char *name, tree fndecl)
     {
       fprintf (stream, "\t.option push\n");
 
-      std::string *target_name = riscv_func_target_get (fndecl);
-      std::string isa = target_name != NULL
-	? *target_name
-	: riscv_cmdline_subset_list ()->to_string (true);
-      fprintf (stream, "\t.option arch, %s\n", isa.c_str ());
-      riscv_func_target_remove_and_destory (fndecl);
-
       struct cl_target_option *local_cl_target =
 	TREE_TARGET_OPTION (DECL_FUNCTION_SPECIFIC_TARGET (fndecl));
       struct cl_target_option *global_cl_target =
 	TREE_TARGET_OPTION (target_option_default_node);
+
+      const char *local_arch_str = get_arch_str (local_cl_target);
+      const char *arch_str = local_arch_str != NULL
+	? local_arch_str
+	: riscv_arch_str (true).c_str ();
+      fprintf (stream, "\t.option arch, %s\n", arch_str);
       const char *local_tune_str = get_tune_str (local_cl_target);
       const char *global_tune_str = get_tune_str (global_cl_target);
       if (strcmp (local_tune_str, global_tune_str) != 0)
@@ -10992,7 +10950,11 @@ riscv_preferred_else_value (unsigned ifn, tree vectype, unsigned int nops,
 			    tree *ops)
 {
   if (riscv_v_ext_mode_p (TYPE_MODE (vectype)))
-    return get_or_create_ssa_default_def (cfun, create_tmp_var (vectype));
+    {
+      tree tmp_var = create_tmp_var (vectype);
+      TREE_NO_WARNING (tmp_var) = 1;
+      return get_or_create_ssa_default_def (cfun, tmp_var);
+    }
 
   return default_preferred_else_value (ifn, vectype, nops, ops);
 }

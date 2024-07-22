@@ -6871,27 +6871,10 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 
       /* If this now constitutes a copy duplicate points-to
 	 and range info appropriately.  This is especially
-	 important for inserted code.  See tree-ssa-copy.cc
-	 for similar code.  */
+	 important for inserted code.  */
       if (sprime
 	  && TREE_CODE (sprime) == SSA_NAME)
-	{
-	  basic_block sprime_b = gimple_bb (SSA_NAME_DEF_STMT (sprime));
-	  if (POINTER_TYPE_P (TREE_TYPE (lhs))
-	      && SSA_NAME_PTR_INFO (lhs)
-	      && ! SSA_NAME_PTR_INFO (sprime))
-	    {
-	      duplicate_ssa_name_ptr_info (sprime,
-					   SSA_NAME_PTR_INFO (lhs));
-	      if (b != sprime_b)
-		reset_flow_sensitive_info (sprime);
-	    }
-	  else if (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
-		   && SSA_NAME_RANGE_INFO (lhs)
-		   && ! SSA_NAME_RANGE_INFO (sprime)
-		   && b == sprime_b)
-	    duplicate_ssa_name_range_info (sprime, lhs);
-	}
+	maybe_duplicate_ssa_info_at_copy (lhs, sprime);
 
       /* Inhibit the use of an inserted PHI on a loop header when
 	 the address of the memory reference is a simple induction

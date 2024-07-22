@@ -23963,6 +23963,13 @@ ix86_expand_vecop_qihi2 (enum rtx_code code, rtx dest, rtx op1, rtx op2)
   bool op2vec = GET_MODE_CLASS (GET_MODE (op2)) == MODE_VECTOR_INT;
   bool uns_p = code != ASHIFTRT;
 
+  /* Without VPMOVWB (provided by AVX512BW ISA), the expansion uses the
+     generic permutation to merge the data back into the right place.  This
+     permutation results in VPERMQ, which is slow, so better fall back to
+     ix86_expand_vecop_qihi.  */
+  if (!TARGET_AVX512BW)
+    return false;
+
   if ((qimode == V16QImode && !TARGET_AVX2)
       || (qimode == V32QImode && (!TARGET_AVX512BW || !TARGET_EVEX512))
       /* There are no V64HImode instructions.  */

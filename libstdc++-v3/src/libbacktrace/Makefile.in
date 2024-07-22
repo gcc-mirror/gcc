@@ -473,7 +473,7 @@ libstdc___libbacktrace_la_CPPFLAGS = \
 C_WARN_FLAGS = $(WARN_FLAGS) -Wstrict-prototypes -Wmissing-prototypes -Wold-style-definition -Wno-unused-but-set-variable
 CXX_WARN_FLAGS = $(WARN_FLAGS) -Wno-unused-parameter
 AM_CFLAGS = $(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
-	$(C_WARN_FLAGS) $(EXTRA_CFLAGS)
+	$(C_WARN_FLAGS) -funwind-tables $(EXTRA_CFLAGS)
 AM_CXXFLAGS = $(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
 	$(CXX_WARN_FLAGS) -fno-rtti -fno-exceptions $(EXTRA_CXXFLAGS)
 obj_prefix = std_stacktrace

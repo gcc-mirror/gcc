@@ -318,6 +318,8 @@ gfc_resize_class_size_with_len (stmtblock_t * block, tree class_expr, tree size)
 	  size = gfc_evaluate_now (size, block);
 	  tmp = gfc_evaluate_now (fold_convert (type , tmp), block);
 	}
+      else
+	tmp = fold_convert (type , tmp);
       tmp2 = fold_build2_loc (input_location, MULT_EXPR,
 			      type, size, tmp);
       tmp = fold_build2_loc (input_location, GT_EXPR,
@@ -1523,7 +1525,6 @@ gfc_copy_class_to_class (tree from, tree to, tree nelems, bool unlimited)
       stmtblock_t body;
       stmtblock_t ifbody;
       gfc_loopinfo loop;
-      tree orig_nelems = nelems; /* Needed for bounds check.  */
 
       gfc_init_block (&body);
       tmp = fold_build2_loc (input_location, MINUS_EXPR,
@@ -1555,27 +1556,32 @@ gfc_copy_class_to_class (tree from, tree to, tree nelems, bool unlimited)
       /* Add bounds check.  */
       if ((gfc_option.rtcheck & GFC_RTCHECK_BOUNDS) > 0 && is_from_desc)
 	{
-	  char *msg;
 	  const char *name = "<<unknown>>";
-	  tree from_len;
+	  int dim, rank;
 
 	  if (DECL_P (to))
-	    name = (const char *)(DECL_NAME (to)->identifier.id.str);
+	    name = IDENTIFIER_POINTER (DECL_NAME (to));
 
-	  from_len = gfc_conv_descriptor_size (from_data, 1);
-	  from_len = fold_convert (TREE_TYPE (orig_nelems), from_len);
-	  tmp = fold_build2_loc (input_location, NE_EXPR,
-				  logical_type_node, from_len, orig_nelems);
-	  msg = xasprintf ("Array bound mismatch for dimension %d "
-			   "of array '%s' (%%ld/%%ld)",
-			   1, name);
+	  rank = GFC_TYPE_ARRAY_RANK (TREE_TYPE (from_data));
+	  for (dim = 1; dim <= rank; dim++)
+	    {
+	      tree from_len, to_len, cond;
+	      char *msg;
 
-	  gfc_trans_runtime_check (true, false, tmp, &body,
-				   &gfc_current_locus, msg,
-			     fold_convert (long_integer_type_node, orig_nelems),
-			       fold_convert (long_integer_type_node, from_len));
-
-	  free (msg);
+	      from_len = gfc_conv_descriptor_size (from_data, dim);
+	      from_len = fold_convert (long_integer_type_node, from_len);
+	      to_len = gfc_conv_descriptor_size (to_data, dim);
+	      to_len = fold_convert (long_integer_type_node, to_len);
+	      msg = xasprintf ("Array bound mismatch for dimension %d "
+			       "of array '%s' (%%ld/%%ld)",
+			       dim, name);
+	      cond = fold_build2_loc (input_location, NE_EXPR,
+				      logical_type_node, from_len, to_len);
+	      gfc_trans_runtime_check (true, false, cond, &body,
+				       &gfc_current_locus, msg,
+				       to_len, from_len);
+	      free (msg);
+	    }
 	}
 
       tmp = build_call_vec (fcn_type, fcn, args);
@@ -8248,8 +8254,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	 call the finalization function of the temporary. Note that the
 	 nullification of allocatable components needed by the result
 	 is done in gfc_trans_assignment_1.  */
-      if (expr && ((gfc_is_class_array_function (expr)
-		    && se->ss && se->ss->loop)
+      if (expr && (gfc_is_class_array_function (expr)
 		   || gfc_is_alloc_class_scalar_function (expr))
 	  && se->expr && GFC_CLASS_TYPE_P (TREE_TYPE (se->expr))
 	  && expr->must_finalize)
@@ -12000,6 +12005,28 @@ trans_class_assignment (stmtblock_t *block, gfc_expr *lhs, gfc_expr *rhs,
 	old_vptr = build_int_cst (TREE_TYPE (vptr), 0);
 
       size = gfc_vptr_size_get (rhs_vptr);
+
+      /* Take into account _len of unlimited polymorphic entities.
+	 TODO: handle class(*) allocatable function results on rhs.  */
+      if (UNLIMITED_POLY (rhs))
+	{
+	  tree len;
+	  if (rhs->expr_type == EXPR_VARIABLE)
+	    len = trans_get_upoly_len (block, rhs);
+	  else
+	    len = gfc_class_len_get (tmp);
+	  len = fold_build2_loc (input_location, MAX_EXPR, size_type_node,
+				 fold_convert (size_type_node, len),
+				 size_one_node);
+	  size = fold_build2_loc (input_location, MULT_EXPR, TREE_TYPE (size),
+				  size, fold_convert (TREE_TYPE (size), len));
+	}
+      else if (rhs->ts.type == BT_CHARACTER && rse->string_length)
+	size = fold_build2_loc (input_location, MULT_EXPR,
+				gfc_charlen_type_node, size,
+				rse->string_length);
+
+
       tmp = lse->expr;
       class_han = GFC_CLASS_TYPE_P (TREE_TYPE (tmp))
 	  ? gfc_class_data_get (tmp) : tmp;
@@ -12013,18 +12040,25 @@ trans_class_assignment (stmtblock_t *block, gfc_expr *lhs, gfc_expr *rhs,
 
       /* Reallocate if dynamic types are different. */
       gfc_init_block (&re_alloc);
-      tmp = fold_convert (pvoid_type_node, class_han);
-      re = build_call_expr_loc (input_location,
-				builtin_decl_explicit (BUILT_IN_REALLOC), 2,
-				tmp, size);
-      re = fold_build2_loc (input_location, MODIFY_EXPR, TREE_TYPE (tmp), tmp,
-			    re);
-      tmp = fold_build2_loc (input_location, NE_EXPR,
-			     logical_type_node, rhs_vptr, old_vptr);
-      re = fold_build3_loc (input_location, COND_EXPR, void_type_node,
-			    tmp, re, build_empty_stmt (input_location));
-      gfc_add_expr_to_block (&re_alloc, re);
-
+      if (UNLIMITED_POLY (lhs) && rhs->ts.type == BT_CHARACTER)
+	{
+	  gfc_add_expr_to_block (&re_alloc, gfc_call_free (class_han));
+	  gfc_allocate_using_malloc (&re_alloc, class_han, size, NULL_TREE);
+	}
+      else
+	{
+	  tmp = fold_convert (pvoid_type_node, class_han);
+	  re = build_call_expr_loc (input_location,
+				    builtin_decl_explicit (BUILT_IN_REALLOC),
+				    2, tmp, size);
+	  re = fold_build2_loc (input_location, MODIFY_EXPR, TREE_TYPE (tmp),
+				tmp, re);
+	  tmp = fold_build2_loc (input_location, NE_EXPR,
+				 logical_type_node, rhs_vptr, old_vptr);
+	  re = fold_build3_loc (input_location, COND_EXPR, void_type_node,
+				tmp, re, build_empty_stmt (input_location));
+	  gfc_add_expr_to_block (&re_alloc, re);
+	}
       tree realloc_expr = lhs->ts.type == BT_CLASS ?
 					  gfc_finish_block (&re_alloc) :
 					  build_empty_stmt (input_location);

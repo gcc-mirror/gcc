@@ -5617,11 +5617,9 @@ emit_store_flag_1 (rtx target, enum rtx_code code, rtx op0, rtx op1,
   enum insn_code icode;
   machine_mode compare_mode;
   enum mode_class mclass;
-  enum rtx_code scode;
 
   if (unsignedp)
     code = unsigned_condition (code);
-  scode = swap_condition (code);
 
   /* If one operand is constant, make it the second one.  Only do this
      if the other operand is not constant as well.  */
@@ -5736,6 +5734,8 @@ emit_store_flag_1 (rtx target, enum rtx_code code, rtx op0, rtx op1,
 
 	  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	    {
+	      enum rtx_code scode = swap_condition (code);
+
 	      tem = emit_cstore (target, icode, scode, mode, compare_mode,
 				 unsignedp, op1, op0, normalizep, target_mode);
 	      if (tem)
