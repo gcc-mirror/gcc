@@ -51,10 +51,8 @@ nvptx_cpu_cpp_builtins (void)
   cpp_define (parse_in, ptx_sm);
 
   {
-    unsigned major
-      = ptx_version_to_number ((ptx_version)ptx_version_option, true);
-    unsigned minor
-      = ptx_version_to_number ((ptx_version)ptx_version_option, false);
+    unsigned major = ptx_version_to_number (ptx_version_option, true);
+    unsigned minor = ptx_version_to_number (ptx_version_option, false);
     cpp_define_formatted (parse_in, "__PTX_ISA_VERSION_MAJOR__=%u", major);
     cpp_define_formatted (parse_in, "__PTX_ISA_VERSION_MINOR__=%u", minor);
   }

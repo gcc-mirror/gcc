@@ -17,6 +17,9 @@
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
 
+HeaderInclude
+config/nvptx/nvptx-opts.h
+
 ; It's not clear whether this was ever build/tested/used, so this is no longer
 ; exposed to the user.
 ;m32
@@ -53,7 +56,7 @@ Target Mask(GOMP)
 Generate code for OpenMP offloading: enables -msoft-stack and -muniform-simt.
 
 misa=
-Target RejectNegative ToLower Joined Enum(ptx_isa) Var(ptx_isa_option)
+Target RejectNegative ToLower Joined Enum(ptx_isa) Var(ptx_isa_option) Init(PTX_ISA_unset)
 Specify the PTX ISA target architecture to use.
 
 march=
@@ -118,7 +121,7 @@ march-map=sm_90a
 Target RejectNegative Alias(misa=,sm_80)
 
 Enum
-Name(ptx_version) Type(int)
+Name(ptx_version) Type(enum ptx_version)
 Known PTX ISA versions (for use with the -mptx= option):
 
 EnumValue
@@ -137,7 +140,7 @@ EnumValue
 Enum(ptx_version) String(_) Value(PTX_VERSION_default)
 
 mptx=
-Target RejectNegative ToLower Joined Enum(ptx_version) Var(ptx_version_option)
+Target RejectNegative ToLower Joined Enum(ptx_version) Var(ptx_version_option) Init(PTX_VERSION_unset)
 Specify the PTX ISA version to use.
 
 minit-regs=
