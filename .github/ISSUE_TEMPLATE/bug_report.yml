@@ -1,0 +1,64 @@
+name: Bug Report
+description: Create a bug report
+body:
+  - type: markdown
+    attributes:
+      value: Thank you for filing a bug report! 🐛
+  - type: textarea
+    id: problem
+    attributes:
+      label: Summary
+      description: >
+        Please provide a short summary of the bug, along with any information
+        you feel relevant to replicate the bug.
+    validations:
+      required: true
+  - type: textarea
+    id: reproducer
+    attributes:
+      label: Reproducer
+      description: Please provide the code and steps to reproduce the bug
+      value: |
+        I tried this code:
+
+        ```rust
+        <code>
+        ```
+  - type: checkboxes
+    id: nightly-features
+    attributes:
+      label: Does the code make use of any (1.49) nightly feature ?
+      options:
+      - label: Nightly
+  - type: input
+    id: godbolt
+    attributes:
+      label: Godbolt link
+      description: Optional link to godbolt snippet
+      placeholder: |
+        https://godbolt.org/z/vnK433Wox
+  - type: textarea
+    id: obtained
+    attributes:
+      label: Actual behavior
+      description: Please describe the actual behavior
+      value: |
+        The current behavior is...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: Please describe the expected behavior
+      value: |
+        I expected to see...
+  - type: input
+    id: version
+    attributes:
+      label: GCC Version
+      description: "GCC version (`gcc --version`) or commit SHA"
+      placeholder: |
+        commit-hash: c4fecaf3c4fec4f3caf3c4fec4f3cafec4fecaf3
+    validations:
+      required: true
