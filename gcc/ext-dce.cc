@@ -48,6 +48,57 @@ static bool modify;
    bit 16..31
    bit 32..BITS_PER_WORD-1  */
 
+/* For the given REG, return the number of bit groups implied by the
+   size of the REG's mode, up to a maximum of 4 (number of bit groups
+   tracked by this pass).
+
+   For partial integer and variable sized modes also return 4.  This
+   could possibly be refined for something like PSI mode, but it
+   does not seem worth the effort.  */
+
+static int
+group_limit (const_rtx reg)
+{
+  machine_mode mode = GET_MODE (reg);
+
+  if (!GET_MODE_BITSIZE (mode).is_constant ())
+    return 4;
+
+  int size = GET_MODE_SIZE (mode).to_constant ();
+
+  size = exact_log2 (size);
+
+  if (size < 0)
+    return 4;
+
+  size++;
+  return (size > 4 ? 4 : size);
+}
+
+/* Make all bit groups live for REGNO in bitmap BMAP.  For hard regs,
+   we assume all groups are live.  For a pseudo we consider the size
+   of the pseudo to avoid creating unnecessarily live chunks of data.  */
+
+static void
+make_reg_live (bitmap bmap, int regno)
+{
+  int limit;
+
+  /* For pseudos we can use the mode to limit how many bit groups
+     are marked as live since a pseudo only has one mode.  Hard
+     registers have to be handled more conservatively.  */
+  if (regno > FIRST_PSEUDO_REGISTER)
+    {
+      rtx reg = regno_reg_rtx[regno];
+      limit = group_limit (reg);
+    }
+  else
+    limit = 4;
+
+  for (int i = 0; i < limit; i++)
+    bitmap_set_bit (bmap, regno * 4 + i);
+}
+
 /* Note this pass could be used to narrow memory loads too.  It's
    not clear if that's profitable or not in general.  */
 
@@ -196,7 +247,8 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 
 	      /* Transfer all the LIVENOW bits for X into LIVE_TMP.  */
 	      HOST_WIDE_INT rn = REGNO (SUBREG_REG (x));
-	      for (HOST_WIDE_INT i = 4 * rn; i < 4 * rn + 4; i++)
+	      int limit = group_limit (SUBREG_REG (x));
+	      for (HOST_WIDE_INT i = 4 * rn; i < 4 * rn + limit; i++)
 		if (bitmap_bit_p (livenow, i))
 		  bitmap_set_bit (live_tmp, i);
 
@@ -260,7 +312,8 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 	      /* Transfer the appropriate bits from LIVENOW into
 		 LIVE_TMP.  */
 	      HOST_WIDE_INT rn = REGNO (x);
-	      for (HOST_WIDE_INT i = 4 * rn; i < 4 * rn + 4; i++)
+	      int limit = group_limit (x);
+	      for (HOST_WIDE_INT i = 4 * rn; i < 4 * rn + limit; i++)
 		if (bitmap_bit_p (livenow, i))
 		  bitmap_set_bit (live_tmp, i);
 
@@ -692,7 +745,7 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj, bitmap live_tmp)
       /* If we have a register reference that is not otherwise handled,
 	 just assume all the chunks are live.  */
       else if (REG_P (x))
-	bitmap_set_range (livenow, REGNO (x) * 4, 4);
+	bitmap_set_range (livenow, REGNO (x) * 4, group_limit (x));
     }
 }
 
@@ -819,10 +872,7 @@ ext_dce_init (void)
   unsigned i;
   bitmap_iterator bi;
   EXECUTE_IF_SET_IN_BITMAP (refs, 0, i, bi)
-    {
-      for (int j = 0; j < 4; j++)
-	bitmap_set_bit (&livein[EXIT_BLOCK], i * 4 + j);
-    }
+    make_reg_live (&livein[EXIT_BLOCK], i);
 
   livenow = BITMAP_ALLOC (NULL);
   all_blocks = BITMAP_ALLOC (NULL);
