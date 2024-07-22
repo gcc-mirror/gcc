@@ -1609,6 +1609,14 @@ default_get_mask_mode (machine_mode mode)
 /* By default consider masked stores to be expensive.  */
 
 bool
+default_conditional_operation_is_expensive (unsigned ifn)
+{
+  return ifn == IFN_MASK_STORE;
+}
+
+/* By default consider masked stores to be expensive.  */
+
+bool
 default_empty_mask_is_expensive (unsigned ifn)
 {
   return ifn == IFN_MASK_STORE;

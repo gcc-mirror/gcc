@@ -6449,6 +6449,13 @@ The default implementation returns a @code{MODE_VECTOR_INT} with the
 same size and number of elements as @var{mode}, if such a mode exists.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_VECTORIZE_CONDITIONAL_OPERATION_IS_EXPENSIVE (unsigned @var{ifn})
+This hook returns true if masked operation @var{ifn} (really of
+type @code{internal_fn}) should be considered more expensive to use than
+implementing the same operation without masking.  GCC can then try to use
+unconditional operations instead with extra selects.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_VECTORIZE_EMPTY_MASK_IS_EXPENSIVE (unsigned @var{ifn})
 This hook returns true if masked internal function @var{ifn} (really of
 type @code{internal_fn}) should be considered expensive when the mask is
