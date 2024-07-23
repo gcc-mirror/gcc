@@ -12560,6 +12560,11 @@ With @option{-O}, the compiler tries to reduce code size and execution
 time, without performing any optimizations that take a great deal of
 compilation time.
 
+@option{-O} is the recommended optimization level for large machine-generated
+code as a sensible balance between time taken to compile and memory use:
+higher optimization levels perform optimizations with greater algorithmic
+complexity than at @option{-O}.
+
 @c Note that in addition to the default_options_table list in opts.cc,
 @c several optimization flags default to true but control optimization
 @c passes that are explicitly disabled at -O0.
