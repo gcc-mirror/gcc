@@ -67,12 +67,32 @@
 
 (define_mode_iterator ANYI_DOUBLE_TRUNC [HI SI (DI "TARGET_64BIT")])
 
+(define_mode_iterator ANYI_QUAD_TRUNC [SI (DI "TARGET_64BIT")])
+
+(define_mode_iterator ANYI_OCT_TRUNC [(DI "TARGET_64BIT")])
+
 (define_mode_attr ANYI_DOUBLE_TRUNCATED [
   (HI "QI") (SI "HI") (DI "SI")
 ])
 
+(define_mode_attr ANYI_QUAD_TRUNCATED [
+  (SI "QI") (DI "HI")
+])
+
+(define_mode_attr ANYI_OCT_TRUNCATED [
+  (DI "QI")
+])
+
 (define_mode_attr anyi_double_truncated [
   (HI "qi") (SI "hi") (DI "si")
+])
+
+(define_mode_attr anyi_quad_truncated [
+  (SI "qi") (DI "hi")
+])
+
+(define_mode_attr anyi_oct_truncated [
+  (DI "qi")
 ])
 
 ;; Iterator for hardware-supported floating-point modes.
