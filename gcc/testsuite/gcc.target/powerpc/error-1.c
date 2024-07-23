@@ -3,7 +3,7 @@
 /* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O -mvsx -mno-altivec" } */
 
-/* { dg-warning "'-mvsx' and '-mno-altivec' are incompatible" "" { target *-*-* } 0 } */
+/* { dg-error "'-mvsx' and '-mno-altivec' are incompatible" "" { target *-*-* } 0 } */
 
 double
 foo (double *x, double *y)
@@ -16,4 +16,3 @@ foo (double *x, double *y)
   return z[0] * z[1];
 }
 
-/* { dg-final { scan-assembler-not "xsadddp" } } */

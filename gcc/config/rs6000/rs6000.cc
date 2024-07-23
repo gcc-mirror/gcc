@@ -3830,32 +3830,37 @@ rs6000_option_override_internal (bool global_init_p)
   /* Add some warnings for VSX.  */
   if (TARGET_VSX)
     {
-      const char *msg = NULL;
+      bool explicit_vsx_p = rs6000_isa_flags_explicit & OPTION_MASK_VSX;
       if (!TARGET_HARD_FLOAT)
 	{
-	  if (rs6000_isa_flags_explicit & OPTION_MASK_VSX)
-	    msg = N_("%<-mvsx%> requires hardware floating point");
-	  else
+	  if (explicit_vsx_p)
 	    {
-	      rs6000_isa_flags &= ~ OPTION_MASK_VSX;
-	      rs6000_isa_flags_explicit |= OPTION_MASK_VSX;
+	      if (rs6000_isa_flags_explicit & OPTION_MASK_SOFT_FLOAT)
+		error ("%<-mvsx%> and %<-msoft-float%> are incompatible");
+	      else
+		warning (0, N_("%<-mvsx%> requires hardware floating-point"));
 	    }
+	  rs6000_isa_flags &= ~OPTION_MASK_VSX;
+	  rs6000_isa_flags_explicit |= OPTION_MASK_VSX;
 	}
       else if (TARGET_AVOID_XFORM > 0)
-	msg = N_("%<-mvsx%> needs indexed addressing");
-      else if (!TARGET_ALTIVEC && (rs6000_isa_flags_explicit
-				   & OPTION_MASK_ALTIVEC))
-        {
-	  if (rs6000_isa_flags_explicit & OPTION_MASK_VSX)
-	    msg = N_("%<-mvsx%> and %<-mno-altivec%> are incompatible");
-	  else
-	    msg = N_("%<-mno-altivec%> disables vsx");
-        }
-
-      if (msg)
 	{
-	  warning (0, msg);
-	  rs6000_isa_flags &= ~ OPTION_MASK_VSX;
+	  if (explicit_vsx_p && OPTION_SET_P (TARGET_AVOID_XFORM))
+	    error ("%<-mvsx%> and %<-mavoid-indexed-addresses%>"
+		   " are incompatible");
+	  else
+	    warning (0, N_("%<-mvsx%> needs indexed addressing"));
+	  rs6000_isa_flags &= ~OPTION_MASK_VSX;
+	  rs6000_isa_flags_explicit |= OPTION_MASK_VSX;
+	}
+      else if (!TARGET_ALTIVEC
+	       && (rs6000_isa_flags_explicit & OPTION_MASK_ALTIVEC))
+	{
+	  if (explicit_vsx_p)
+	    error ("%<-mvsx%> and %<-mno-altivec%> are incompatible");
+	  else
+	    warning (0, N_("%<-mno-altivec%> disables vsx"));
+	  rs6000_isa_flags &= ~OPTION_MASK_VSX;
 	  rs6000_isa_flags_explicit |= OPTION_MASK_VSX;
 	}
     }
