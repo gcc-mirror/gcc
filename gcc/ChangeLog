@@ -1,3 +1,134 @@
+2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/109985
+	* ipa-modref.cc (modref_summary::useful_p): Fix handling of ECF_NOVOPS.
+	(modref_access_analysis::process_fnspec): Likevise.
+	(modref_access_analysis::analyze_call): Likevise.
+	(propagate_unknown_call): Likevise.
+	(modref_propagate_in_scc): Likevise.
+	(modref_propagate_flags_in_scc): Likewise.
+	(ipa_merge_modref_summary_after_inlining): Likewise.
+
+2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/111613
+	* ipa-modref.cc (analyze_parms): Do not preserve EAF_NO_DIRECT_READ and
+	EAF_NO_INDIRECT_READ from past flags.
+
+2024-07-22  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config.gcc (powerpc*-*-*): Add support for power11.
+	* config/rs6000/aix71.h (ASM_CPU_SPEC): Add support for -mcpu=power11.
+	* config/rs6000/aix72.h (ASM_CPU_SPEC): Likewise.
+	* config/rs6000/aix73.h (ASM_CPU_SPEC): Likewise.
+	* config/rs6000/driver-rs6000.cc (asm_names): Likewise.
+	* config/rs6000/ppc-auxv.h (PPC_PLATFORM_POWER11): New define.
+	* config/rs6000/rs6000-builtin.cc (cpu_is_info): Add power11.
+	* config/rs6000/rs6000-c.cc (rs6000_target_modify_macros): Define
+	_ARCH_PWR11 if -mcpu=power11.
+	* config/rs6000/rs6000-cpus.def (POWER11_MASKS_SERVER): New define.
+	(POWERPC_MASKS): Add power11.
+	(power11 cpu): Add power11 definition.
+	* config/rs6000/rs6000-opts.h (PROCESSOR_POWER11): Add power11 processor.
+	* config/rs6000/rs6000-string.cc (expand_compare_loop): Likewise.
+	* config/rs6000/rs6000-tables.opt: Regenerate.
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Add power11
+	support.
+	(rs6000_machine_from_flags): Likewise.
+	(rs6000_reassociation_width): Likewise.
+	(rs6000_adjust_cost): Likewise.
+	(rs6000_issue_rate): Likewise.
+	(rs6000_sched_reorder): Likewise.
+	(rs6000_sched_reorder2): Likewise.
+	(rs6000_register_move_cost): Likewise.
+	(rs6000_opt_masks): Likewise.
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Likewise.
+	* config/rs6000/rs6000.md (cpu attribute): Add power11.
+	* config/rs6000/rs6000.opt (-mpower11): Add internal power11 flag.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document -mcpu=power11.
+	* config/rs6000/power10.md (all reservations): Add power11 support.
+
+2024-07-22  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/115877
+	* ext-dce.cc (ext_dce_process_sets): More correctly handle SUBREG
+	destinations.
+
+2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/115033
+	* ipa-modref.cc (modref_eaf_analysis::analyze_ssa_name): Fix checking of
+	EAF flags when analysing values dereferenced as function parameters.
+
+2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/114207
+	* ipa-prop.cc (unadjusted_ptr_and_unit_offset): Fix accounting of offsets in ADDR_EXPR.
+
+2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/115277
+	* ipa-icf-gimple.cc (func_checker::compare_loops): compare loop
+	bounds.
+
+2024-07-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/116009
+	* rtl-ssa/accesses.cc (function_info::add_def): Set the root
+	local variable after removing the old clobber group.
+
+2024-07-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl-ssa/accesses.h (rtl_ssa::pp_def_splay_tree): Declare.
+	(dump, debug): Add overloads for def_splay_tree.
+	* rtl-ssa/accesses.cc (rtl_ssa::pp_def_splay_tree): New function.
+	(dump, debug): Add overloads for def_splay_tree.
+
+2024-07-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/115969
+	* config/aarch64/aarch64.cc (aarch64_simd_mem_operand_p): Require
+	the operand to be a legitimate memory_operand.
+
+2024-07-22  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/115877
+	* ext-dce.cc (group_limit): New function.
+	(mark_reg_live): Likewise.
+	(ext_dce_process_sets): Use new functions.
+	(ext_dce_process_uses): Likewise.
+	(ext_dce_init): Likewise.
+
+2024-07-22  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.cc (operand_compare::hash_operand): Fix hash
+	of WIDEN_*_EXPR.
+
+2024-07-22  Richard Biener  <rguenther@suse.de>
+
+	* inchash.h (inchash::end): Make const.
+	(inchash::merge): Take const reference hash argument.
+	(inchash::add_commutative): Likewise.
+
+2024-07-22  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/115531
+	* config/aarch64/aarch64.cc
+	(aarch64_conditional_operation_is_expensive): New.
+	(TARGET_VECTORIZE_CONDITIONAL_OPERATION_IS_EXPENSIVE): New.
+
+2024-07-22  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/115531
+	* tree-vect-patterns.cc (vect_cond_store_pattern_same_ref): New.
+	(vect_recog_cond_store_pattern): New.
+	(vect_vect_recog_func_ptrs): Use it.
+	* target.def (conditional_operation_is_expensive): New.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in: Document it.
+	* targhooks.cc (default_conditional_operation_is_expensive): New.
+	* targhooks.h (default_conditional_operation_is_expensive): New.
+
 2024-07-21  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR rtl-optimization/115877

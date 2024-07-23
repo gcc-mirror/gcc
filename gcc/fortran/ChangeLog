@@ -1,3 +1,10 @@
+2024-07-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/88624
+	* trans-expr.cc (gfc_conv_procedure_call): Treat
+	pointers/references (e.g. from parameters) correctly by derefing
+	them.
+
 2024-07-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/59104
