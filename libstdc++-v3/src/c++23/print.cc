@@ -67,7 +67,7 @@ namespace
   // This returns intptr_t that is either a Windows HANDLE
   // or 1 + a POSIX file descriptor. A zero return indicates failure.
   void*
-  __open_terminal(FILE* f)
+  __open_terminal([[maybe_unused]] FILE* f)
   {
 #ifndef _GLIBCXX_USE_STDIO_PURE
     if (f)
@@ -85,7 +85,7 @@ namespace
   }
 
   void*
-  __open_terminal(std::streambuf* sb)
+  __open_terminal([[maybe_unused]] std::streambuf* sb)
   {
 #if ! defined _GLIBCXX_USE_STDIO_PURE && defined __cpp_rtti
     using namespace __gnu_cxx;
