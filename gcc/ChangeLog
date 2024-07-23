@@ -1,3 +1,111 @@
+2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backported from master:
+	2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/111613
+	* ipa-modref.cc (analyze_parms): Do not preserve EAF_NO_DIRECT_READ and
+	EAF_NO_INDIRECT_READ from past flags.
+
+2024-07-22  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2024-07-17  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/114759
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Disallow
+	CPUs and ABIs that do no support the ROP protection insns.
+	* config/rs6000/rs6000-logue.cc (rs6000_stack_info): Remove now
+	unneeded tests.
+	(rs6000_emit_prologue): Likewise.
+	Remove unneeded gcc_assert.
+	(rs6000_emit_epilogue): Likewise.
+	* config/rs6000/rs6000.md: Likewise.
+
+2024-07-22  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2024-07-17  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/114759
+	* config/rs6000/rs6000-logue.cc (rs6000_stack_info): Use TARGET_POWER8.
+	(rs6000_emit_prologue): Likewise.
+	* config/rs6000/rs6000.md (hashchk): Likewise.
+	(hashst): Likewise.
+	Fix whitespace.
+
+2024-07-22  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2024-06-17  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/115389
+	* config/rs6000/rs6000-logue.cc (rs6000_stack_info): Compute
+	rop_hash_save_offset for non-Altivec compiles.
+
+2024-07-22  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2024-06-08  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-logue.cc (rs6000_stack_info): Update comment.
+
+2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backported from master:
+	2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/115033
+	* ipa-modref.cc (modref_eaf_analysis::analyze_ssa_name): Fix checking of
+	EAF flags when analysing values dereferenced as function parameters.
+
+2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backported from master:
+	2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/114207
+	* ipa-prop.cc (unadjusted_ptr_and_unit_offset): Fix accounting of offsets in ADDR_EXPR.
+
+2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backported from master:
+	2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/115277
+	* ipa-icf-gimple.cc (func_checker::compare_loops): compare loop
+	bounds.
+
+2024-07-22  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2024-05-14  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/113291
+	* ipa-inline.cc (enum can_inline_edge_by_limits_flags): New enum.
+	(can_inline_edge_by_limits_p): Take flags instead of multiple bools; add flag
+	for forcing inlinie limits.
+	(can_early_inline_edge_p): Update.
+	(want_inline_self_recursive_call_p): Update; use FORCE_LIMITS mode.
+	(check_callers): Update.
+	(update_caller_keys): Update.
+	(update_callee_keys): Update.
+	(recursive_inlining): Update.
+	(add_new_edges_to_heap): Update.
+	(speculation_useful_p): Update.
+	(inline_small_functions): Clear DECL_DISREGARD_INLINE_LIMITS on self recursion.
+	(flatten_function): Update.
+	(inline_to_all_callers_1): Update.
+
+2024-07-22  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	Backported from master:
+	2024-06-29  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	PR rtl-optimization/115565
+	* cse.cc (record_jump_cond): Use INT_MIN rather than -1 for
+	`comparison_qty' if !REG_P.
+
 2024-07-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	* config/s390/3931.md (vlbr, vstbr, vrepi): Remove.

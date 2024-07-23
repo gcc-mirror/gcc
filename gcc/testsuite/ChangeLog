@@ -1,3 +1,69 @@
+2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backported from master:
+	2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/111613
+	* gcc.c-torture/pr111613.c: New test.
+
+2024-07-22  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2024-07-19  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/114759
+	PR target/115988
+	* gcc.target/powerpc/pr114759-3.c: Catch unsupported ABI errors.
+
+2024-07-22  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2024-07-17  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/114759
+	* gcc.target/powerpc/pr114759-3.c: New test.
+
+2024-07-22  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2024-07-17  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/114759
+	* gcc.target/powerpc/pr114759-2.c: New test.
+	* lib/target-supports.exp (rop_ok): Use
+	check_effective_target_has_arch_pwr8.
+
+2024-07-22  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2024-06-17  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/115389
+	* gcc.target/powerpc/pr115389.c: New test.
+
+2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backported from master:
+	2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/115033
+	* gcc.c-torture/execute/pr115033.c: New test.
+
+2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backported from master:
+	2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/114207
+	* gcc.c-torture/execute/pr114207.c: New test.
+
+2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backported from master:
+	2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.c-torture/compile/pr115277.c: New test.
+
 2024-07-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	Revert:
