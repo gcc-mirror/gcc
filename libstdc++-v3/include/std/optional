@@ -1601,10 +1601,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __lhs && *__lhs == __rhs; }
 
   template<typename _Tp, typename _Up>
-    _REQUIRES_NOT_OPTIONAL(_Up)
+    _REQUIRES_NOT_OPTIONAL(_Tp)
     constexpr auto
-    operator==(const _Up& __lhs, const optional<_Tp>& __rhs)
-    -> __optional_eq_t<_Up, _Tp>
+    operator== [[nodiscard]] (const _Tp& __lhs, const optional<_Up>& __rhs)
+    -> __optional_eq_t<_Tp, _Up>
     { return __rhs && __lhs == *__rhs; }
 
   template<typename _Tp, typename _Up>
@@ -1615,10 +1615,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return !__lhs || *__lhs != __rhs; }
 
   template<typename _Tp, typename _Up>
-    _REQUIRES_NOT_OPTIONAL(_Up)
+    _REQUIRES_NOT_OPTIONAL(_Tp)
     constexpr auto
-    operator!= [[nodiscard]] (const _Up& __lhs, const optional<_Tp>& __rhs)
-    -> __optional_ne_t<_Up, _Tp>
+    operator!= [[nodiscard]] (const _Tp& __lhs, const optional<_Up>& __rhs)
+    -> __optional_ne_t<_Tp, _Up>
     { return !__rhs || __lhs != *__rhs; }
 
   template<typename _Tp, typename _Up>
@@ -1629,10 +1629,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return !__lhs || *__lhs < __rhs; }
 
   template<typename _Tp, typename _Up>
-    _REQUIRES_NOT_OPTIONAL(_Up)
+    _REQUIRES_NOT_OPTIONAL(_Tp)
     constexpr auto
-    operator< [[nodiscard]] (const _Up& __lhs, const optional<_Tp>& __rhs)
-    -> __optional_lt_t<_Up, _Tp>
+    operator< [[nodiscard]] (const _Tp& __lhs, const optional<_Up>& __rhs)
+    -> __optional_lt_t<_Tp, _Up>
     { return __rhs && __lhs < *__rhs; }
 
   template<typename _Tp, typename _Up>
@@ -1643,10 +1643,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __lhs && *__lhs > __rhs; }
 
   template<typename _Tp, typename _Up>
-    _REQUIRES_NOT_OPTIONAL(_Up)
+    _REQUIRES_NOT_OPTIONAL(_Tp)
     constexpr auto
-    operator> [[nodiscard]] (const _Up& __lhs, const optional<_Tp>& __rhs)
-    -> __optional_gt_t<_Up, _Tp>
+    operator> [[nodiscard]] (const _Tp& __lhs, const optional<_Up>& __rhs)
+    -> __optional_gt_t<_Tp, _Up>
     { return !__rhs || __lhs > *__rhs; }
 
   template<typename _Tp, typename _Up>
@@ -1657,10 +1657,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return !__lhs || *__lhs <= __rhs; }
 
   template<typename _Tp, typename _Up>
-    _REQUIRES_NOT_OPTIONAL(_Up)
+    _REQUIRES_NOT_OPTIONAL(_Tp)
     constexpr auto
-    operator<= [[nodiscard]] (const _Up& __lhs, const optional<_Tp>& __rhs)
-    -> __optional_le_t<_Up, _Tp>
+    operator<= [[nodiscard]] (const _Tp& __lhs, const optional<_Up>& __rhs)
+    -> __optional_le_t<_Tp, _Up>
     { return __rhs && __lhs <= *__rhs; }
 
   template<typename _Tp, typename _Up>
@@ -1671,10 +1671,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __lhs && *__lhs >= __rhs; }
 
   template<typename _Tp, typename _Up>
-    _REQUIRES_NOT_OPTIONAL(_Up)
+    _REQUIRES_NOT_OPTIONAL(_Tp)
     constexpr auto
-    operator>= [[nodiscard]] (const _Up& __lhs, const optional<_Tp>& __rhs)
-    -> __optional_ge_t<_Up, _Tp>
+    operator>= [[nodiscard]] (const _Tp& __lhs, const optional<_Up>& __rhs)
+    -> __optional_ge_t<_Tp, _Up>
     { return !__rhs || __lhs >= *__rhs; }
 
 #ifdef __cpp_lib_three_way_comparison
