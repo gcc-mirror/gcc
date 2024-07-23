@@ -1,3 +1,16 @@
+2024-07-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.def (UNARY_LEFT_FOLD_EXPR): Use FOLD_EXPR_MODIFY_P instead
+	of FOLD_EXPR_MOD_P or FOLDEXPR_MOD_P in the comment.  Comment
+	formatting fixes.
+	(ATOMIC_CONSTEXPR): Use CONSTR_INFO instead of ATOMIC_CONSTR_INFO
+	and ATOMIC_CONSTR_MAP instead of ATOMIC_CONSTR_PARMS in the comment.
+	Comment formatting fixes.
+	(CONJ_CONSTR): Remove comment about third operand.  Use CONSTR_INFO
+	instead of CONJ_CONSTR_INFO and DISJ_CONSTR_INFO.
+	(CHECK_CONSTR): Use CHECK_CONSTR_ARGS instead of
+	CHECK_CONSTR_ARGUMENTS.
+
 2024-07-20  Andi Kleen  <ak@gcc.gnu.org>
 
 	Revert:
