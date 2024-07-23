@@ -1,3 +1,12 @@
+2024-07-22  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	Backported from master:
+	2024-06-29  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	PR rtl-optimization/115565
+	* cse.cc (record_jump_cond): Use INT_MIN rather than -1 for
+	`comparison_qty' if !REG_P.
+
 2024-07-20  Siddhesh Poyarekar  <siddhesh@gotplt.org>
 
 	Backported from master:
