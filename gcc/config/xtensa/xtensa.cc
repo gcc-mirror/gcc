@@ -4723,6 +4723,7 @@ xtensa_insn_cost (rtx_insn *insn, bool speed)
 	    case TYPE_ARITH:
 	    case TYPE_MULTI:
 	    case TYPE_NOP:
+	    case TYPE_FARITH:
 	    case TYPE_FSTORE:
 	      return COSTS_N_INSNS (n);
 
