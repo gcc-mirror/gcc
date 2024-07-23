@@ -1453,8 +1453,8 @@
 })
 
 (define_insn "movsf_internal"
-  [(set (match_operand:SF 0 "nonimmed_operand" "=f,f,U,D,D,R,a,f,a,a,W,a,a,U")
-	(match_operand:SF 1 "move_operand" "f,U,f,d,R,d,r,r,f,Y,iF,T,U,r"))]
+  [(set (match_operand:SF 0 "nonimmed_operand" "=f,f,^U,D,a,D,R,a,f,a,a,W,a,U")
+	(match_operand:SF 1 "move_operand" "f,^U,f,d,T,R,d,r,r,f,Y,iF,U,r"))]
   "((register_operand (operands[0], SFmode)
      || register_operand (operands[1], SFmode))
     && !(FP_REG_P (xt_true_regnum (operands[0]))
@@ -1464,6 +1464,7 @@
    %v1lsi\t%0, %1
    %v0ssi\t%1, %0
    mov.n\t%0, %1
+   %v1l32r\t%0, %1
    %v1l32i.n\t%0, %1
    %v0s32i.n\t%1, %0
    mov\t%0, %1
@@ -1471,12 +1472,11 @@
    rfr\t%0, %1
    movi\t%0, %y1
    const16\t%0, %t1\;const16\t%0, %b1
-   %v1l32r\t%0, %1
    %v1l32i\t%0, %1
    %v0s32i\t%1, %0"
-  [(set_attr "type"	"farith,fload,fstore,move,load,store,move,farith,farith,move,move,load,load,store")
+  [(set_attr "type"	"farith,fload,fstore,move,load,load,store,move,farith,farith,move,move,load,store")
    (set_attr "mode"	"SF")
-   (set_attr "length"	"3,3,3,2,2,2,3,3,3,3,6,3,3,3")])
+   (set_attr "length"	"3,3,3,2,3,2,2,3,3,3,3,6,3,3")])
 
 (define_insn "*lsiu"
   [(set (match_operand:SF 0 "register_operand" "=f")
