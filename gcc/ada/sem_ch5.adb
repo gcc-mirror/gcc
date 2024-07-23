@@ -3800,8 +3800,9 @@ package body Sem_Ch5 is
          procedure Wrap_Loop_Statement (Manage_Sec_Stack : Boolean) is
             Loc : constant Source_Ptr := Sloc (N);
 
-            Blk    : Node_Id;
-            Blk_Id : Entity_Id;
+            Blk     : Node_Id;
+            Blk_Id  : Entity_Id;
+            Loop_Id : constant Entity_Id := Entity (Identifier (N));
 
          begin
             Blk :=
@@ -3816,6 +3817,12 @@ package body Sem_Ch5 is
 
             Rewrite (N, Blk);
             Analyze (N);
+
+            --  Transfer the loop entity from its old scope to the new block
+            --  scope.
+
+            Remove_Entity (Loop_Id);
+            Append_Entity (Loop_Id, Blk_Id);
          end Wrap_Loop_Statement;
 
          --  Local variables
