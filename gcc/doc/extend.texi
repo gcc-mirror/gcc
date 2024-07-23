@@ -9995,8 +9995,8 @@ If the compiler cannot generate a @code{musttail} tail call it will report
 an error. On some targets tail calls may never be supported.
 Tail calls cannot reference locals in memory, which may affect
 builds without optimization when passing small structures, or passing
-or returning large structures. Enabling -O1 or -O2 can improve
-the success of tail calls.
+or returning large structures.  Enabling @option{-O1} or @option{-O2} can
+improve the success of tail calls.
 @end table
 
 @node Attribute Syntax
