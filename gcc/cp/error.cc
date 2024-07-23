@@ -3095,7 +3095,6 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       break;
 
     case ATOMIC_CONSTR:
-    case CHECK_CONSTR:
     case CONJ_CONSTR:
     case DISJ_CONSTR:
       {

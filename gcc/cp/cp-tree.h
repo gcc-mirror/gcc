@@ -1723,14 +1723,6 @@ check_constraint_info (tree t)
 #define ATOMIC_CONSTR_EXPR(NODE) \
   CONSTR_EXPR (ATOMIC_CONSTR_CHECK (NODE))
 
-/* The concept of a concept check. */
-#define CHECK_CONSTR_CONCEPT(NODE) \
-  TREE_OPERAND (TREE_CHECK (NODE, CHECK_CONSTR), 0)
-
-/* The template arguments of a concept check. */
-#define CHECK_CONSTR_ARGS(NODE) \
-  TREE_OPERAND (TREE_CHECK (NODE, CHECK_CONSTR), 1)
-
 /* Whether a PARM_DECL represents a local parameter in a
    requires-expression.  */
 #define CONSTRAINT_VAR_P(NODE) \
