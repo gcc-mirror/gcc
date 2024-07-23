@@ -39,7 +39,11 @@ along with GCC; see the file COPYING3.  If not see
 
    The pattern may be NULL if the optab exists only for the libcalls
    that we plan to attach to it, and there are no named patterns in
-   the md files.  */
+   the md files.
+   WARNING: do not have a pattern name have a `c` right before a possible scalar mode,
+   csi, cdi are valid modes (complex si/di) and the match is based on which pattern is done
+   first. For an example `andc$a3` and `and$a3` with `andcsi3` will match which one comes first
+   here.  */
 
 /* The extension libcalls are used for float extension.  */
 OPTAB_CL(sext_optab, "extend$b$a2", SIGN_EXTEND, "extend", gen_extend_conv_libfunc)
@@ -545,5 +549,5 @@ OPTAB_D (vec_shl_insert_optab, "vec_shl_insert_$a")
 OPTAB_D (len_load_optab, "len_load_$a")
 OPTAB_D (len_store_optab, "len_store_$a")
 OPTAB_D (select_vl_optab, "select_vl$a")
-OPTAB_D (andc_optab, "andc$a3")
-OPTAB_D (iorc_optab, "iorc$a3")
+OPTAB_D (andn_optab, "andn$a3")
+OPTAB_D (iorn_optab, "iorn$a3")
