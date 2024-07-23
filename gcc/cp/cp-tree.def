@@ -538,14 +538,6 @@ DEFTREECODE (ATOMIC_CONSTR, "atomic_constr", tcc_expression, 1)
 DEFTREECODE (CONJ_CONSTR, "conj_constr", tcc_expression, 2)
 DEFTREECODE (DISJ_CONSTR, "disj_constr", tcc_expression, 2)
 
-/* A check constraint represents the checking of a concept
-   C. It has two operands: the template defining the concept
-   and a sequence of template arguments.
-
-   CHECK_CONSTR_CONCEPT has the concept definition
-   CHECK_CONSTR_ARGS are the template arguments.   */
-DEFTREECODE (CHECK_CONSTR, "check_constr", tcc_expression, 2)
-
 /* The co_await expression is used to support coroutines.
 
   Op 0 is the cast expresssion (potentially modified by the
