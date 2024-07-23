@@ -768,6 +768,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    is_assignable<_Tp&, const optional<_Up>&&>,
 	    is_assignable<_Tp&, optional<_Up>&&>>;
 
+#if __cpp_concepts && __cpp_conditional_explicit && __glibcxx_remove_cvref
+# define _GLIBCXX_USE_CONSTRAINTS_FOR_OPTIONAL 1
+#endif
+
   /**
     * @brief Class template for optional values.
     */
@@ -794,17 +798,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using _Base = _Optional_base<_Tp>;
 
       // SFINAE helpers
-      template<typename _Up>
-	using __not_self = __not_<is_same<optional, __remove_cvref_t<_Up>>>;
-      template<typename _Up>
-	using __not_tag = __not_<is_same<in_place_t, __remove_cvref_t<_Up>>>;
-      template<typename... _Cond>
-	using _Requires = enable_if_t<__and_v<_Cond...>, bool>;
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 3836. std::expected<bool, E1> conversion constructor
       // expected(const expected<U, G>&) should take precedence over
       // expected(U&&) with operator bool
+#ifdef _GLIBCXX_USE_CONSTRAINTS_FOR_OPTIONAL
+      template<typename _From, typename = remove_cv_t<_Tp>>
+	static constexpr bool __not_constructing_bool_from_optional
+	  = true;
+
+      // If T is cv bool, remove_cvref_t<U> is not a specialization of optional
+      // i.e. do not initialize a bool from optional<U>::operator bool().
+      template<typename _From>
+	static constexpr bool
+	__not_constructing_bool_from_optional<_From, bool>
+	  = !__is_optional_v<remove_cvref_t<_From>>;
+
+      // If T is not cv bool, converts-from-any-cvref<T, optional<U>> is false.
+      // The constructor that converts from optional<U> is disabled if the
+      // contained value can be initialized from optional<U>, so that the
+      // optional(U&&) constructor can be used instead.
+      template<typename _From, typename = remove_cv_t<_Tp>>
+	static constexpr bool __construct_from_contained_value
+	  = !__converts_from_optional<_Tp, _From>::value;
+
+      // However, optional<U> can always be converted to bool, so don't apply
+      // this constraint when T is cv bool.
+      template<typename _From>
+	static constexpr bool __construct_from_contained_value<_From, bool>
+	  = true;
+#else
       template<typename _From, typename = remove_cv_t<_Tp>>
 	struct __not_constructing_bool_from_optional
 	: true_type
@@ -825,6 +849,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: true_type
 	{ };
 
+      template<typename _Up>
+	using __not_self = __not_<is_same<optional, __remove_cvref_t<_Up>>>;
+      template<typename _Up>
+	using __not_tag = __not_<is_same<in_place_t, __remove_cvref_t<_Up>>>;
+      template<typename _Up>
+	using __is_bool = is_same<remove_cv_t<_Up>, bool>;
+      template<typename... _Cond>
+	using _Requires = enable_if_t<__and_v<_Cond...>, bool>;
+#endif
+
     public:
       using value_type = _Tp;
 
@@ -833,6 +867,58 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr optional(nullopt_t) noexcept { }
 
       // Converting constructors for engaged optionals.
+#ifdef _GLIBCXX_USE_CONSTRAINTS_FOR_OPTIONAL
+      template<typename _Up = _Tp>
+	requires (!is_same_v<optional, remove_cvref_t<_Up>>)
+	  && (!is_same_v<in_place_t, remove_cvref_t<_Up>>)
+	  && is_constructible_v<_Tp, _Up>
+	  && __not_constructing_bool_from_optional<_Up>
+	constexpr explicit(!is_convertible_v<_Up, _Tp>)
+	optional(_Up&& __t)
+	noexcept(is_nothrow_constructible_v<_Tp, _Up>)
+	: _Base(std::in_place, std::forward<_Up>(__t)) { }
+
+      template<typename _Up>
+	requires (!is_same_v<optional, remove_cvref_t<_Up>>)
+	  && is_constructible_v<_Tp, const _Up&>
+	  && __construct_from_contained_value<_Up>
+	constexpr explicit(!is_convertible_v<const _Up&, _Tp>)
+	optional(const optional<_Up>& __t)
+	noexcept(is_nothrow_constructible_v<_Tp, const _Up&>)
+	{
+	  if (__t)
+	    emplace(__t._M_get());
+	}
+
+      template<typename _Up>
+	requires (!is_same_v<optional, remove_cvref_t<_Up>>)
+	  && is_constructible_v<_Tp, _Up>
+	  && __construct_from_contained_value<_Up>
+	constexpr explicit(!is_convertible_v<_Up, _Tp>)
+	optional(optional<_Up>&& __t)
+	noexcept(is_nothrow_constructible_v<_Tp, _Up>)
+	{
+	  if (__t)
+	    emplace(std::move(__t._M_get()));
+	}
+
+      template<typename... _Args>
+	requires is_constructible_v<_Tp, _Args...>
+	explicit constexpr
+	optional(in_place_t, _Args&&... __args)
+	noexcept(is_nothrow_constructible_v<_Tp, _Args...>)
+	: _Base(std::in_place, std::forward<_Args>(__args)...)
+	{ }
+
+      template<typename _Up, typename... _Args>
+	requires is_constructible_v<_Tp, initializer_list<_Up>&, _Args...>
+	explicit constexpr
+	optional(in_place_t, initializer_list<_Up> __il, _Args&&... __args)
+	noexcept(is_nothrow_constructible_v<_Tp, initializer_list<_Up>&,
+					    _Args...>)
+	: _Base(std::in_place, __il, std::forward<_Args>(__args)...)
+	{ }
+#else
       template<typename _Up = _Tp,
 	       _Requires<__not_self<_Up>, __not_tag<_Up>,
 			 is_constructible<_Tp, _Up>,
@@ -921,6 +1007,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	noexcept(is_nothrow_constructible_v<_Tp, initializer_list<_Up>&,
 					    _Args...>)
 	: _Base(std::in_place, __il, std::forward<_Args>(__args)...) { }
+#endif
 
       // Assignment operators.
       _GLIBCXX20_CONSTEXPR optional&
@@ -931,13 +1018,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       template<typename _Up = _Tp>
-	_GLIBCXX20_CONSTEXPR
+#ifdef _GLIBCXX_USE_CONSTRAINTS_FOR_OPTIONAL
+	requires (!is_same_v<optional, remove_cvref_t<_Up>>)
+	  && (!(is_scalar_v<_Tp> && is_same_v<_Tp, decay_t<_Up>>))
+	  && is_constructible_v<_Tp, _Up>
+	  && is_assignable_v<_Tp&, _Up>
+	constexpr optional&
+#else
 	enable_if_t<__and_v<__not_self<_Up>,
 			    __not_<__and_<is_scalar<_Tp>,
 					  is_same<_Tp, decay_t<_Up>>>>,
 			    is_constructible<_Tp, _Up>,
 			    is_assignable<_Tp&, _Up>>,
 		    optional&>
+#endif
 	operator=(_Up&& __u)
 	noexcept(__and_v<is_nothrow_constructible<_Tp, _Up>,
 			 is_nothrow_assignable<_Tp&, _Up>>)
@@ -951,13 +1045,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Up>
-	_GLIBCXX20_CONSTEXPR
+#ifdef _GLIBCXX_USE_CONSTRAINTS_FOR_OPTIONAL
+	requires (!is_same_v<optional, remove_cvref_t<_Up>>)
+	  && is_constructible_v<_Tp, const _Up&>
+	  && is_assignable_v<_Tp&, const _Up&>
+	  && (!__converts_from_optional<_Tp, _Up>::value)
+	  && (!__assigns_from_optional<_Tp, _Up>::value)
+	constexpr optional&
+#else
 	enable_if_t<__and_v<__not_<is_same<_Tp, _Up>>,
 			    is_constructible<_Tp, const _Up&>,
 			    is_assignable<_Tp&, const _Up&>,
 			    __not_<__converts_from_optional<_Tp, _Up>>,
 			    __not_<__assigns_from_optional<_Tp, _Up>>>,
 		    optional&>
+#endif
 	operator=(const optional<_Up>& __u)
 	noexcept(__and_v<is_nothrow_constructible<_Tp, const _Up&>,
 			 is_nothrow_assignable<_Tp&, const _Up&>>)
@@ -977,13 +1079,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Up>
-	_GLIBCXX20_CONSTEXPR
+#ifdef _GLIBCXX_USE_CONSTRAINTS_FOR_OPTIONAL
+	requires (!is_same_v<optional, remove_cvref_t<_Up>>)
+	  && is_constructible_v<_Tp, _Up>
+	  && is_assignable_v<_Tp&, _Up>
+	  && (!__converts_from_optional<_Tp, _Up>::value)
+	  && (!__assigns_from_optional<_Tp, _Up>::value)
+	constexpr optional&
+#else
 	enable_if_t<__and_v<__not_<is_same<_Tp, _Up>>,
 			    is_constructible<_Tp, _Up>,
 			    is_assignable<_Tp&, _Up>,
 			    __not_<__converts_from_optional<_Tp, _Up>>,
 			    __not_<__assigns_from_optional<_Tp, _Up>>>,
 		    optional&>
+#endif
 	operator=(optional<_Up>&& __u)
 	noexcept(__and_v<is_nothrow_constructible<_Tp, _Up>,
 			 is_nothrow_assignable<_Tp&, _Up>>)
@@ -1653,6 +1763,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cpp_deduction_guides >= 201606
   template <typename _Tp> optional(_Tp) -> optional<_Tp>;
 #endif
+
+#undef _GLIBCXX_USE_CONSTRAINTS_FOR_OPTIONAL
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
