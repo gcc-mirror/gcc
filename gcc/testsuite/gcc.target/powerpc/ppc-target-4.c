@@ -18,7 +18,7 @@
 #error "__VSX__ should not be defined."
 #endif
 
-#pragma GCC target("vsx")
+#pragma GCC target("altivec,vsx")
 #include <altivec.h>
 #pragma GCC reset_options
 
