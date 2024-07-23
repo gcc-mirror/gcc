@@ -7820,7 +7820,24 @@ package body Freeze is
          --  type itself, and we treat Default_Component_Value similarly for
          --  the sake of uniformity).
 
-         if Is_First_Subtype (E) and then Has_Default_Aspect (E) then
+         --  But for an inherited Default_Value aspect specification, the type
+         --  of the aspect remains the parent type. RM 3.3.1(11.1), a dynamic
+         --  semantics rule, says "The implicit initial value for a scalar
+         --  subtype that has the Default_Value aspect specified is the value
+         --  of that aspect converted to the nominal subtype". For an inherited
+         --  Default_Value aspect specification, no conversion is evaluated at
+         --  the point of the derived type declaration.
+
+         if Is_First_Subtype (E)
+           and then Has_Default_Aspect (E)
+           and then
+             (not Is_Scalar_Type (E)
+                or else
+              not Is_Derived_Type (E)
+                or else
+              Default_Aspect_Value (E)
+                /= Default_Aspect_Value (Etype (Base_Type (E))))
+         then
             declare
                Nam : Name_Id;
                Exp : Node_Id;
