@@ -17,9 +17,14 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. *)
 
 MODULE array1 ;
 
+PROCEDURE init ;
 VAR
    a: ARRAY [FALSE..TRUE] OF CARDINAL ;
    i, j: CARDINAL ;
 BEGIN
    a[i=j] := j
+END init ;
+
+BEGIN
+   init
 END array1.
