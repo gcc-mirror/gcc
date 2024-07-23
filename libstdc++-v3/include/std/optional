@@ -749,16 +749,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     inline constexpr bool __is_optional_v<optional<_Tp>> = true;
 
+  template<typename _Tp, typename _Wp>
+    using __converts_from_any_cvref = __or_<
+	is_constructible<_Tp, _Wp&>,       is_convertible<_Wp&, _Tp>,
+	is_constructible<_Tp, _Wp>,        is_convertible<_Wp, _Tp>,
+	is_constructible<_Tp, const _Wp&>, is_convertible<const _Wp&, _Tp>,
+	is_constructible<_Tp, const _Wp>,  is_convertible<const _Wp, _Tp>
+      >;
+
   template<typename _Tp, typename _Up>
-    using __converts_from_optional =
-      __or_<is_constructible<_Tp, const optional<_Up>&>,
-	    is_constructible<_Tp, optional<_Up>&>,
-	    is_constructible<_Tp, const optional<_Up>&&>,
-	    is_constructible<_Tp, optional<_Up>&&>,
-	    is_convertible<const optional<_Up>&, _Tp>,
-	    is_convertible<optional<_Up>&, _Tp>,
-	    is_convertible<const optional<_Up>&&, _Tp>,
-	    is_convertible<optional<_Up>&&, _Tp>>;
+    using __converts_from_optional
+      = __converts_from_any_cvref<_Tp, optional<_Up>>;
 
   template<typename _Tp, typename _Up>
     using __assigns_from_optional =
@@ -800,6 +801,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename... _Cond>
 	using _Requires = enable_if_t<__and_v<_Cond...>, bool>;
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3836. std::expected<bool, E1> conversion constructor
+      // expected(const expected<U, G>&) should take precedence over
+      // expected(U&&) with operator bool
+      template<typename _From, typename = remove_cv_t<_Tp>>
+	struct __not_constructing_bool_from_optional
+	: true_type
+	{ };
+
+      template<typename _From>
+	struct __not_constructing_bool_from_optional<_From, bool>
+	: bool_constant<!__is_optional_v<__remove_cvref_t<_From>>>
+	{ };
+
+      template<typename _From, typename = remove_cv_t<_Tp>>
+	struct __construct_from_contained_value
+	: __not_<__converts_from_optional<_Tp, _From>>
+	{ };
+
+      template<typename _From>
+	struct __construct_from_contained_value<_From, bool>
+	: true_type
+	{ };
+
     public:
       using value_type = _Tp;
 
@@ -811,7 +836,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Up = _Tp,
 	       _Requires<__not_self<_Up>, __not_tag<_Up>,
 			 is_constructible<_Tp, _Up>,
-			 is_convertible<_Up, _Tp>> = true>
+			 is_convertible<_Up, _Tp>,
+			 __not_constructing_bool_from_optional<_Up>> = true>
 	constexpr
 	optional(_Up&& __t)
 	noexcept(is_nothrow_constructible_v<_Tp, _Up>)
@@ -820,7 +846,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Up = _Tp,
 	       _Requires<__not_self<_Up>, __not_tag<_Up>,
 			 is_constructible<_Tp, _Up>,
-			 __not_<is_convertible<_Up, _Tp>>> = false>
+			 __not_<is_convertible<_Up, _Tp>>,
+			 __not_constructing_bool_from_optional<_Up>> = false>
 	explicit constexpr
 	optional(_Up&& __t)
 	noexcept(is_nothrow_constructible_v<_Tp, _Up>)
@@ -830,7 +857,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       _Requires<__not_<is_same<_Tp, _Up>>,
 			 is_constructible<_Tp, const _Up&>,
 			 is_convertible<const _Up&, _Tp>,
-			 __not_<__converts_from_optional<_Tp, _Up>>> = true>
+			 __construct_from_contained_value<_Up>> = true>
 	constexpr
 	optional(const optional<_Up>& __t)
 	noexcept(is_nothrow_constructible_v<_Tp, const _Up&>)
@@ -843,7 +870,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       _Requires<__not_<is_same<_Tp, _Up>>,
 			 is_constructible<_Tp, const _Up&>,
 			 __not_<is_convertible<const _Up&, _Tp>>,
-			 __not_<__converts_from_optional<_Tp, _Up>>> = false>
+			 __construct_from_contained_value<_Up>> = false>
 	explicit constexpr
 	optional(const optional<_Up>& __t)
 	noexcept(is_nothrow_constructible_v<_Tp, const _Up&>)
@@ -856,7 +883,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       _Requires<__not_<is_same<_Tp, _Up>>,
 			 is_constructible<_Tp, _Up>,
 			 is_convertible<_Up, _Tp>,
-			 __not_<__converts_from_optional<_Tp, _Up>>> = true>
+			 __construct_from_contained_value<_Up>> = true>
 	constexpr
 	optional(optional<_Up>&& __t)
 	noexcept(is_nothrow_constructible_v<_Tp, _Up>)
@@ -869,7 +896,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       _Requires<__not_<is_same<_Tp, _Up>>,
 			 is_constructible<_Tp, _Up>,
 			 __not_<is_convertible<_Up, _Tp>>,
-			 __not_<__converts_from_optional<_Tp, _Up>>> = false>
+			 __construct_from_contained_value<_Up>> = false>
 	explicit constexpr
 	optional(optional<_Up>&& __t)
 	noexcept(is_nothrow_constructible_v<_Tp, _Up>)
@@ -894,7 +921,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	noexcept(is_nothrow_constructible_v<_Tp, initializer_list<_Up>&,
 					    _Args...>)
 	: _Base(std::in_place, __il, std::forward<_Args>(__args)...) { }
-
 
       // Assignment operators.
       _GLIBCXX20_CONSTEXPR optional&
