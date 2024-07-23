@@ -245,12 +245,24 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 		  continue;
 		}
 
-	      /* Transfer all the LIVENOW bits for X into LIVE_TMP.  */
+	      /* LIVE_TMP contains the set groups that are live-out and set in
+		 this insn.  It is used to narrow the groups live-in for the
+		 inputs of this insn.
+
+		 The simple thing to do is mark all the groups as live, but
+		 that will significantly inhibit optimization.
+
+		 We also need to be careful in the case where we have an in-out
+		 operand.  If we're not careful we'd clear LIVE_TMP
+		 incorrectly.  */
 	      HOST_WIDE_INT rn = REGNO (SUBREG_REG (x));
 	      int limit = group_limit (SUBREG_REG (x));
 	      for (HOST_WIDE_INT i = 4 * rn; i < 4 * rn + limit; i++)
 		if (bitmap_bit_p (livenow, i))
 		  bitmap_set_bit (live_tmp, i);
+
+	      if (bitmap_empty_p (live_tmp))
+		make_reg_live (live_tmp, rn);
 
 	      /* The mode of the SUBREG tells us how many bits we can
 		 clear.  */
@@ -316,13 +328,24 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 	  /* Now handle the actual object that was changed.  */
 	  if (REG_P (x))
 	    {
-	      /* Transfer the appropriate bits from LIVENOW into
-		 LIVE_TMP.  */
+	      /* LIVE_TMP contains the set groups that are live-out and set in
+		 this insn.  It is used to narrow the groups live-in for the
+		 inputs of this insn.
+
+		 The simple thing to do is mark all the groups as live, but
+		 that will significantly inhibit optimization.
+
+		 We also need to be careful in the case where we have an in-out
+		 operand.  If we're not careful we'd clear LIVE_TMP
+		 incorrectly.  */
 	      HOST_WIDE_INT rn = REGNO (x);
 	      int limit = group_limit (x);
 	      for (HOST_WIDE_INT i = 4 * rn; i < 4 * rn + limit; i++)
 		if (bitmap_bit_p (livenow, i))
 		  bitmap_set_bit (live_tmp, i);
+
+	      if (bitmap_empty_p (live_tmp))
+		make_reg_live (live_tmp, rn);
 
 	      /* Now clear the bits known written by this instruction.
 		 Note that BIT need not be a power of two, consider a
@@ -935,8 +958,6 @@ ext_dce_rd_transfer_n (int bb_index)
      the generic dataflow code that something changed.  */
   if (!bitmap_equal_p (&livein[bb_index], livenow))
     {
-      gcc_assert (!bitmap_intersect_compl_p (&livein[bb_index], livenow));
-
       bitmap_copy (&livein[bb_index], livenow);
       return true;
     }
