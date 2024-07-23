@@ -35,7 +35,6 @@
 #include <compare>
 #include <bits/stl_iterator_base_funcs.h>
 #include <bits/stl_iterator.h>
-#include <bits/stl_algobase.h> // __memcpy
 #include <bits/ranges_base.h> // ranges::begin, ranges::range etc.
 #include <bits/invoke.h>      // __invoke
 #include <bits/cpp_type_traits.h> // __is_byte
