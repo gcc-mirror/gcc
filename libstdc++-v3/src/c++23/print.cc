@@ -75,7 +75,7 @@ namespace
 #ifdef _WIN32
 	if (int fd = ::_fileno(f); fd >= 0)
 	  return check_for_console((void*)_get_osfhandle(fd));
-#elifdef _GLIBCXX_HAVE_UNISTD_H
+#elif defined _GLIBCXX_HAVE_UNISTD_H && ! defined __AVR__
 	if (int fd = (::fileno)(f); fd >= 0 && ::isatty(fd))
 	  return f;
 #endif
@@ -100,7 +100,7 @@ namespace
 #ifdef _WIN32
     if (auto fb = dynamic_cast<filebuf*>(sb))
       return check_for_console(fb->native_handle());
-#elifdef _GLIBCXX_HAVE_UNISTD_H
+#elif defined _GLIBCXX_HAVE_UNISTD_H && ! defined __AVR__
     if (auto fb = dynamic_cast<filebuf*>(sb))
       if (int fd = fb->native_handle(); fd >= 0 && ::isatty(fd))
 	return ::fdopen(::dup(fd), "w"); // Caller must call fclose.
