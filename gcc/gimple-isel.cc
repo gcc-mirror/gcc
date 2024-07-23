@@ -286,28 +286,28 @@ gimple_expand_vec_cond_expr (struct function *fun, gimple_stmt_iterator *gsi,
 		}
 	      bool op1_zerop = integer_zerop (op1);
 	      bool op2_minus_onep = integer_minus_onep (op2);
-	      /* Try to fold r = c ? 0 : z to r = .BIT_ANDC (z, c).  */
+	      /* Try to fold r = c ? 0 : z to r = .BIT_ANDN (z, c).  */
 	      if (op1_zerop
-		  && (direct_internal_fn_supported_p (IFN_BIT_ANDC, vtype,
+		  && (direct_internal_fn_supported_p (IFN_BIT_ANDN, vtype,
 						      OPTIMIZE_FOR_BOTH)))
 		{
 		  tree conv_op = build1 (VIEW_CONVERT_EXPR, vtype, op0);
 		  tree new_op = make_ssa_name (vtype);
 		  gassign *new_stmt = gimple_build_assign (new_op, conv_op);
 		  gsi_insert_seq_before (gsi, new_stmt, GSI_SAME_STMT);
-		  return gimple_build_call_internal (IFN_BIT_ANDC, 2, op2,
+		  return gimple_build_call_internal (IFN_BIT_ANDN, 2, op2,
 						     new_op);
 		}
-	      /* Try to fold r = c ? z : -1 to r = .BIT_IORC (z, c).  */
+	      /* Try to fold r = c ? z : -1 to r = .BIT_IORN (z, c).  */
 	      else if (op2_minus_onep
-		       && (direct_internal_fn_supported_p (IFN_BIT_IORC, vtype,
+		       && (direct_internal_fn_supported_p (IFN_BIT_IORN, vtype,
 							   OPTIMIZE_FOR_BOTH)))
 		{
 		  tree conv_op = build1 (VIEW_CONVERT_EXPR, vtype, op0);
 		  tree new_op = make_ssa_name (vtype);
 		  gassign *new_stmt = gimple_build_assign (new_op, conv_op);
 		  gsi_insert_seq_before (gsi, new_stmt, GSI_SAME_STMT);
-		  return gimple_build_call_internal (IFN_BIT_IORC, 2, op1,
+		  return gimple_build_call_internal (IFN_BIT_IORN, 2, op1,
 						     new_op);
 		}
 	    }

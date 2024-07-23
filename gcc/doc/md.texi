@@ -5555,13 +5555,13 @@ Both scalar and vector integer modes are allowed.
 @item @samp{sstrunc@var{m}@var{n}2}
 Similar but for signed.
 
-@cindex @code{andc@var{m}3} instruction pattern
-@item @samp{andc@var{m}3}
+@cindex @code{andn@var{m}3} instruction pattern
+@item @samp{andn@var{m}3}
 Like @code{and@var{m}3}, but it uses bitwise-complement of operand 2
 rather than operand 2 itself.
 
-@cindex @code{iorc@var{m}3} instruction pattern
-@item @samp{iorc@var{m}3}
+@cindex @code{iorn@var{m}3} instruction pattern
+@item @samp{iorn@var{m}3}
 Like @code{ior@var{m}3}, but it uses bitwise-complement of operand 2
 rather than operand 2 itself.
 
