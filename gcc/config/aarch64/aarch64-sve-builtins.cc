@@ -3592,7 +3592,7 @@ gimple_folder::load_store_cookie (tree type)
 }
 
 /* Fold the call to a call to INSTANCE, with the same arguments.  */
-gimple *
+gcall *
 gimple_folder::redirect_call (const function_instance &instance)
 {
   registered_function *rfn

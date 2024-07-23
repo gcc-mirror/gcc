@@ -349,7 +349,7 @@ public:
 		instance.base_name = "svlsr";
 		instance.base = functions::svlsr;
 	      }
-	    gcall *call = as_a <gcall *> (f.redirect_call (instance));
+	    gcall *call = f.redirect_call (instance);
 	    gimple_call_set_arg (call, 2, amount);
 	    return call;
 	  }
@@ -379,7 +379,7 @@ public:
 	    function_instance instance ("svlsl", functions::svlsl,
 					shapes::binary_uint_opt_n, MODE_n,
 					f.type_suffix_ids, GROUP_none, f.pred);
-	    gcall *call = as_a <gcall *> (f.redirect_call (instance));
+	    gcall *call = f.redirect_call (instance);
 	    gimple_call_set_arg (call, 2, amount);
 	    return call;
 	  }
@@ -392,7 +392,7 @@ public:
 	    function_instance instance ("svrshr", functions::svrshr,
 					shapes::shift_right_imm, MODE_n,
 					f.type_suffix_ids, GROUP_none, f.pred);
-	    gcall *call = as_a <gcall *> (f.redirect_call (instance));
+	    gcall *call = f.redirect_call (instance);
 	    gimple_call_set_arg (call, 2, amount);
 	    return call;
 	  }

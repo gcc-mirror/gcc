@@ -629,7 +629,7 @@ public:
   tree fold_contiguous_base (gimple_seq &, tree);
   tree load_store_cookie (tree);
 
-  gimple *redirect_call (const function_instance &);
+  gcall *redirect_call (const function_instance &);
   gimple *redirect_pred_x ();
 
   gimple *fold_to_cstu (poly_uint64);
