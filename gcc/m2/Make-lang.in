@@ -808,6 +808,7 @@ GM2-COMP-BOOT-DEFS = \
    M2Size.def \
    M2StackAddress.def \
    M2StackWord.def \
+   M2StateCheck.def \
    M2Students.def \
    M2Swig.def \
    M2SymInit.def \
@@ -882,6 +883,7 @@ GM2-COMP-BOOT-MODS = \
    M2Size.mod \
    M2StackAddress.mod \
    M2StackWord.mod \
+   M2StateCheck.mod \
    M2Students.mod \
    M2Swig.mod \
    M2SymInit.mod \
@@ -1090,6 +1092,7 @@ GM2-COMP-DEFS = \
    M2Size.def \
    M2StackAddress.def \
    M2StackWord.def \
+   M2StateCheck.def \
    M2Students.def \
    M2Swig.def \
    M2SymInit.def \
@@ -1161,6 +1164,7 @@ GM2-COMP-MODS = \
    M2Size.mod \
    M2StackAddress.mod \
    M2StackWord.mod \
+   M2StateCheck.mod \
    M2Students.mod \
    M2Swig.mod \
    M2SymInit.mod \

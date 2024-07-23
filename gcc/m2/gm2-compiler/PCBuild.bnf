@@ -61,7 +61,8 @@ FROM M2Reserved IMPORT tokToTok, toktype,
                        OrTok, TimesTok, DivTok, DivideTok, ModTok, RemTok,
                        AndTok, AmbersandTok, PeriodPeriodTok, ByTok ;
 
-FROM M2Quads IMPORT Top, PushT, PopT, PushTF, PopTF, PopNothing, OperandT, PushTFA,
+FROM M2Quads IMPORT Top, PushT, PopT, PushTF, PopTF, PopNothing, OperandT, OperandTok,
+                    PushTFA,
                     PushTFn, PopTFn, PushTFtok, PopTtok, PopTFtok, PushTtok, PushTFntok,
                     PushT, PushTF, IsAutoPushOn, PushAutoOff, PushAutoOn, PopAuto,
                     BuildTypeForConstructor, BuildConstructor, BuildConstructorEnd,
@@ -120,6 +121,11 @@ FROM SymbolTable IMPORT MakeGnuAsm, PutGnuAsmVolatile, PutGnuAsm, PutGnuAsmInput
 
 FROM M2Batch IMPORT IsModuleKnown ;
 
+FROM M2StateCheck IMPORT StateCheck,
+                         InitState, PushState, PopState, InclConst, ExclConst,
+                         InclConstructor, ExclConstructor,
+                         InclConstFunc, CheckQualident ;
+
 IMPORT M2Error ;
 
 
@@ -128,9 +134,8 @@ CONST
    Pass1     = FALSE ;
 
 VAR
-   InConstParameter,
-   InConstBlock,
-   seenError       : BOOLEAN ;
+   BlockState: StateCheck ;
+   seenError : BOOLEAN ;
 
 
 PROCEDURE ErrorString (s: String) ;
@@ -407,8 +412,7 @@ END Real ;
 
 % module PCBuild end
 BEGIN
-   InConstParameter := FALSE ;
-   InConstBlock := FALSE
+   BlockState := InitState ()
 END PCBuild.
 % rules
 error       'ErrorArray' 'ErrorString'
@@ -597,7 +601,7 @@ Qualident :=                                                               % VAR
            =:
 
 ConstantDeclaration :=                                                     % VAR top: CARDINAL ; %
-                                                                           % InConstBlock := TRUE %
+                                                                           % InclConst (BlockState) %
                                                                            % top := Top() %
                                                                            % PushAutoOn %
                        ( Ident "="                                         % StartDesConst %
@@ -607,7 +611,7 @@ ConstantDeclaration :=                                                     % VAR
                                                                            % EndDesConst %
                                                                            % PopAuto %
                                                                            % Assert(top=Top()) %
-                                                                           % InConstBlock := FALSE %
+                                                                           % ExclConst (BlockState) %
                      =:
 
 ConstExpression :=                                                         % VAR top: CARDINAL ; %
@@ -697,11 +701,14 @@ ComponentValue := ComponentElement [ 'BY' ConstExpression ] =:
 ArraySetRecordValue := ComponentValue { ','                                % NextConstructorField %
                                             ComponentValue } =:
 
-Constructor := '{'                                                         % PushConstructorCastType %
+Constructor := '{'                                                         % InclConstructor (BlockState) %
+                                                                           % CheckQualident (OperandTok (1), BlockState, OperandT (1)) %
+                                                                           % PushConstructorCastType %
                                                                            % PushInConstructor %
                                                                            % BuildConstructor (GetTokenNo ()-1) %
                   [ ArraySetRecordValue ]                                  % PopConstructor %
                '}'                                                         % PopInConstructor %
+                                                                           % ExclConstructor (BlockState) %
                    =:
 
 ConstructorOrConstActualParameters := Constructor | ConstActualParameters  % PushConstFunctionType %
@@ -714,23 +721,21 @@ ConstSetOrQualidentOrFunction :=                                           % Pus
                                                                            % VAR tokpos: CARDINAL ; %
                                                                            % tokpos := GetTokenNo () %
                                  (
-                                   PushQualident                           % IF (NOT InConstParameter) AND InConstBlock
-                                                                             THEN
-                                                                                CheckNotVar (tokpos)
-                                                                             END %
-                                   ( ConstructorOrConstActualParameters |  % PushConstType %
+                                   PushQualident
+                                   ( ConstructorOrConstActualParameters |  % CheckQualident (OperandTok (1), BlockState, OperandT (1)) %
+                                                                           % PushConstType %
                                                                            % PopNothing %
                                                                           )
                                    |                                       % BuildTypeForConstructor (tokpos) %
                                      Constructor )                         % PopAuto %
                                =:
 
-ConstActualParameters :=                                                   % VAR oldConstParameter: BOOLEAN ; %
-                                                                           % oldConstParameter := InConstParameter %
-                                                                           % InConstParameter := TRUE %
+ConstActualParameters :=                                                   % PushState (BlockState) %
+                                                                           % InclConstFunc (BlockState) %
+                                                                           % CheckQualident (OperandTok (1), BlockState, OperandT (1)) %
                                                                            % PushT(0) %
                          "(" [ ConstExpList ] ")"
-                                                                           % InConstParameter := oldConstParameter %
+                                                                           % PopState (BlockState) %
                          =:
 
 ConstExpList :=                                                            % VAR n: CARDINAL ; %
@@ -1023,9 +1028,9 @@ ConstructorOrSimpleDes := Constructor |                                    % Pop
                                           SimpleDes [ ActualParameters ]
                         =:
 
-SetOrDesignatorOrFunction :=                                              % PushAutoOff %
-                                                                          % VAR tokpos: CARDINAL ; %
+SetOrDesignatorOrFunction :=                                              % VAR tokpos: CARDINAL ; %
                                                                           % tokpos := GetTokenNo () %
+                                                                          % PushAutoOff %
                              (
                                PushQualident
                                ( ConstructorOrSimpleDes |                 % PopNothing %
