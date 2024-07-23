@@ -24669,8 +24669,11 @@ rs6000_inner_target_options (tree args, bool attr_p)
 			  {
 			    if (mask == OPTION_MASK_VSX)
 			      {
-				mask |= OPTION_MASK_ALTIVEC;
-				TARGET_AVOID_XFORM = 0;
+				if (!(rs6000_isa_flags_explicit
+				      & OPTION_MASK_ALTIVEC))
+				  mask |= OPTION_MASK_ALTIVEC;
+				if (!OPTION_SET_P (TARGET_AVOID_XFORM))
+				  TARGET_AVOID_XFORM = 0;
 			      }
 			  }
 
