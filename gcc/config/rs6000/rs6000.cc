@@ -14706,7 +14706,12 @@ print_operand_address (FILE *file, rtx x)
 	fprintf (file, "@%s(%s)", SMALL_DATA_RELOC,
 		 reg_names[SMALL_DATA_REG]);
       else
-	gcc_assert (!TARGET_TOC);
+	{
+	  /* Do not support getting address directly from TOC, emit error.
+	     No more work is needed for !TARGET_TOC. */
+	  if (TARGET_TOC)
+	    output_operand_lossage ("%%a requires an address of memory");
+	}
     }
   else if (GET_CODE (x) == PLUS && REG_P (XEXP (x, 0))
 	   && REG_P (XEXP (x, 1)))
