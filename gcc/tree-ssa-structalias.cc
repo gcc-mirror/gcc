@@ -1908,6 +1908,18 @@ topo_visit (constraint_graph_t graph, vec<unsigned> &topo_order,
 	  topo_visit (graph, topo_order, visited, k);
       }
 
+  /* Also consider copy with offset complex constraints as implicit edges.  */
+  for (auto c : graph->complex[n])
+    {
+      /* Constraints are ordered so that SCALAR = SCALAR appear first.  */
+      if (c->lhs.type != SCALAR || c->rhs.type != SCALAR)
+	break;
+      gcc_checking_assert (c->rhs.var == n);
+      unsigned k = find (c->lhs.var);
+      if (!bitmap_bit_p (visited, k))
+	topo_visit (graph, topo_order, visited, k);
+    }
+
   topo_order.quick_push (n);
 }
 
