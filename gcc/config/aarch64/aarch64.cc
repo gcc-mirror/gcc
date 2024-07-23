@@ -27348,6 +27348,25 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
       && reg_referenced_p (SET_DEST (prev_set), PATTERN (curr)))
     return true;
 
+  /* FUSE CMP and CSEL.  */
+  if (aarch64_fusion_enabled_p (AARCH64_FUSE_CMP_CSEL)
+      && prev_set && curr_set
+      && GET_CODE (SET_SRC (prev_set)) == COMPARE
+      && GET_CODE (SET_SRC (curr_set)) == IF_THEN_ELSE
+      && REG_P (XEXP (SET_SRC (curr_set), 1))
+      && REG_P (XEXP (SET_SRC (curr_set), 2))
+      && reg_referenced_p (SET_DEST (prev_set), PATTERN (curr)))
+    return true;
+
+  /* Fuse CMP and CSET.  */
+  if (aarch64_fusion_enabled_p (AARCH64_FUSE_CMP_CSET)
+      && prev_set && curr_set
+      && GET_CODE (SET_SRC (prev_set)) == COMPARE
+      && GET_RTX_CLASS (GET_CODE (SET_SRC (curr_set))) == RTX_COMPARE
+      && REG_P (SET_DEST (curr_set))
+      && reg_referenced_p (SET_DEST (prev_set), PATTERN (curr)))
+    return true;
+
   /* Fuse flag-setting ALU instructions and conditional branch.  */
   if (aarch64_fusion_enabled_p (AARCH64_FUSE_ALU_BRANCH)
       && any_condjump_p (curr))
