@@ -6,6 +6,6 @@ fn main() {
         None,
         None,
         false,
-        generic_format_parser::ParseMode::Format
+        libformat_parser::ffi::ParseMode::Format,
     ));
 }

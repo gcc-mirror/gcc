@@ -258,11 +258,11 @@ struct FormatArgsHandle
   RustString rust_string;
 };
 
-typedef enum
+enum ParseMode
 {
-  Format,
+  Format = 0,
   InlineAsm,
-} ParseMode;
+};
 
 extern "C" {
 

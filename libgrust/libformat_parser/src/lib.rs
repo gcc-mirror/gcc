@@ -24,7 +24,7 @@ where
 // FIXME: Make an ffi module in a separate file
 // FIXME: Remember to leak the boxed type somehow
 // FIXME: How to encode the Option type? As a pointer? Option<T> -> Option<&T> -> *const T could work maybe?
-mod ffi {
+pub mod ffi {
     use super::IntoFFI;
 
     // FIXME: We need to ensure we deal with memory properly - whether it's owned by the C++ side or the Rust side
@@ -79,14 +79,14 @@ mod ffi {
 
     // TODO: Not needed for now?
     // /// The type of format string that we are parsing.
-    // #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-    // #[repr(C)]
-    // pub enum ParseMode {
-    //     /// A normal format string as per `format_args!`.
-    //     Format,
-    //     /// An inline assembly template string for `asm!`.
-    //     InlineAsm,
-    // }
+    #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+    #[repr(C)]
+    pub enum ParseMode {
+        /// A normal format string as per `format_args!`.
+        Format = 0,
+        /// An inline assembly template string for `asm!`.
+        InlineAsm,
+    }
 
     /// A piece is a portion of the format string which represents the next part
     /// to emit. These are emitted as a stream by the `Parser` class.
@@ -327,17 +327,20 @@ mod ffi {
 
 // FIXME: Rename?
 pub mod rust {
-    use generic_format_parser::{ParseMode, Parser, Piece};
-
+    use crate::ffi::ParseMode;
+    use generic_format_parser::{Parser, Piece};
     pub fn collect_pieces(
         input: &str,
         style: Option<usize>,
         snippet: Option<String>,
         append_newline: bool,
-        parse_mode: ParseMode
+        parse_mode: ParseMode,
     ) -> Vec<Piece<'_>> {
-        let parser = Parser::new(input, style, snippet, append_newline, parse_mode);
-
+        let converted_parse_mode = match parse_mode {
+            ParseMode::Format => generic_format_parser::ParseMode::Format,
+            ParseMode::InlineAsm => generic_format_parser::ParseMode::InlineAsm,
+        };
+        let parser = Parser::new(input, style, snippet, append_newline, converted_parse_mode);
         parser.into_iter().collect()
     }
 }
@@ -361,12 +364,11 @@ pub struct RustString {
 #[repr(C)]
 pub struct FormatArgsHandle(PieceSlice, RustString);
 
-
 #[no_mangle]
 pub extern "C" fn collect_pieces(
     input: *const libc::c_char,
     append_newline: bool,
-    parse_mode : generic_format_parser::ParseMode 
+    parse_mode: crate::ffi::ParseMode,
 ) -> FormatArgsHandle {
     // FIXME: Add comment
     let str = unsafe { CStr::from_ptr(input) };
@@ -379,10 +381,11 @@ pub extern "C" fn collect_pieces(
     let s = unsafe { std::mem::transmute::<&'_ str, &'static str>(s) };
 
     // FIXME: No unwrap
-    let pieces: Vec<ffi::Piece<'_>> = rust::collect_pieces(s, None, None, append_newline, parse_mode)
-        .into_iter()
-        .map(Into::into)
-        .collect();
+    let pieces: Vec<ffi::Piece<'_>> =
+        rust::collect_pieces(s, None, None, append_newline, parse_mode)
+            .into_iter()
+            .map(Into::into)
+            .collect();
 
     let piece_slice = PieceSlice {
         len: pieces.len(),
