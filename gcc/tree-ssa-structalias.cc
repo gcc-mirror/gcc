@@ -902,7 +902,7 @@ constraint_less (const constraint_t &a, const constraint_t &b)
 /* Return true if two constraints A and B are equal.  */
 
 static bool
-constraint_equal (struct constraint a, struct constraint b)
+constraint_equal (const constraint &a, const constraint &b)
 {
   return constraint_expr_equal (a.lhs, b.lhs)
     && constraint_expr_equal (a.rhs, b.rhs);
@@ -913,7 +913,7 @@ constraint_equal (struct constraint a, struct constraint b)
 
 static constraint_t
 constraint_vec_find (vec<constraint_t> vec,
-		     struct constraint lookfor)
+		     constraint &lookfor)
 {
   unsigned int place;
   constraint_t found;
@@ -2806,10 +2806,8 @@ solve_graph (constraint_graph_t graph)
 	     better visitation order in the next iteration.  */
 	  while (bitmap_clear_bit (changed, i))
 	    {
-	      unsigned int j;
-	      constraint_t c;
 	      bitmap solution;
-	      vec<constraint_t> complex = graph->complex[i];
+	      vec<constraint_t> &complex = graph->complex[i];
 	      varinfo_t vi = get_varinfo (i);
 	      bool solution_empty;
 
@@ -2845,22 +2843,72 @@ solve_graph (constraint_graph_t graph)
 	      solution_empty = bitmap_empty_p (solution);
 
 	      /* Process the complex constraints */
+	      hash_set<constraint_t> *cvisited = nullptr;
+	      if (flag_checking)
+		cvisited = new hash_set<constraint_t>;
 	      bitmap expanded_pts = NULL;
-	      FOR_EACH_VEC_ELT (complex, j, c)
+	      for (unsigned j = 0; j < complex.length (); ++j)
 		{
-		  /* XXX: This is going to unsort the constraints in
-		     some cases, which will occasionally add duplicate
-		     constraints during unification.  This does not
-		     affect correctness.  */
-		  c->lhs.var = find (c->lhs.var);
-		  c->rhs.var = find (c->rhs.var);
+		  constraint_t c = complex[j];
+		  /* At unification time only the directly involved nodes
+		     will get their complex constraints updated.  Update
+		     our complex constraints now but keep the constraint
+		     vector sorted and clear of duplicates.  Also make
+		     sure to evaluate each prevailing constraint only once.  */
+		  unsigned int new_lhs = find (c->lhs.var);
+		  unsigned int new_rhs = find (c->rhs.var);
+		  if (c->lhs.var != new_lhs || c->rhs.var != new_rhs)
+		    {
+		      constraint tem = *c;
+		      tem.lhs.var = new_lhs;
+		      tem.rhs.var = new_rhs;
+		      unsigned int place
+			= complex.lower_bound (&tem, constraint_less);
+		      c->lhs.var = new_lhs;
+		      c->rhs.var = new_rhs;
+		      if (place != j)
+			{
+			  complex.ordered_remove (j);
+			  if (j < place)
+			    --place;
+			  if (place < complex.length ())
+			    {
+			      if (constraint_equal (*complex[place], *c))
+				{
+				  j--;
+				  continue;
+				}
+			      else
+				complex.safe_insert (place, c);
+			    }
+			  else
+			    complex.quick_push (c);
+			  if (place > j)
+			    {
+			      j--;
+			      continue;
+			    }
+			}
+		    }
 
 		  /* The only complex constraint that can change our
 		     solution to non-empty, given an empty solution,
 		     is a constraint where the lhs side is receiving
 		     some set from elsewhere.  */
+		  if (cvisited && cvisited->add (c))
+		    gcc_unreachable ();
 		  if (!solution_empty || c->lhs.type != DEREF)
 		    do_complex_constraint (graph, c, pts, &expanded_pts);
+		}
+	      if (cvisited)
+		{
+		  /* When checking, verify the order of constraints is
+		     maintained and each constraint is evaluated exactly
+		     once.  */
+		  for (unsigned j = 1; j < complex.length (); ++j)
+		    gcc_assert (constraint_less (complex[j-1], complex[j]));
+		  gcc_assert (cvisited->elements () == complex.length ());
+		  delete cvisited;
 		}
 	      BITMAP_FREE (expanded_pts);
 
@@ -2870,6 +2918,7 @@ solve_graph (constraint_graph_t graph)
 		{
 		  bitmap_iterator bi;
 		  unsigned eff_escaped_id = find (escaped_id);
+		  unsigned j;
 
 		  /* Propagate solution to all successors.  */
 		  unsigned to_remove = ~0U;
