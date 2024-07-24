@@ -334,6 +334,10 @@ environment to your ``good'' shell prior to running
 @command{zsh} is not a fully compliant POSIX shell and will not
 work when configuring GCC@.
 
+@item GNU flex
+
+Necessary to build the lexical analysis module.
+
 @item A POSIX or SVR4 awk
 
 Necessary for creating some of the generated source files for GCC@.
