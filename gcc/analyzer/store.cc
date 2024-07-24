@@ -1444,8 +1444,8 @@ binding_cluster::to_json () const
 {
   json::object *cluster_obj = new json::object ();
 
-  cluster_obj->set ("escaped", new json::literal (m_escaped));
-  cluster_obj->set ("touched", new json::literal (m_touched));
+  cluster_obj->set_bool ("escaped", m_escaped);
+  cluster_obj->set_bool ("touched", m_touched);
   cluster_obj->set ("map", m_map.to_json ());
 
   return cluster_obj;
@@ -2705,7 +2705,7 @@ store::to_json () const
       store_obj->set (parent_reg_desc.get (), clusters_in_parent_reg_obj);
     }
 
-  store_obj->set ("called_unknown_fn", new json::literal (m_called_unknown_fn));
+  store_obj->set_bool ("called_unknown_fn", m_called_unknown_fn);
 
   return store_obj;
 }

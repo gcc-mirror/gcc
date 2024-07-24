@@ -1449,10 +1449,9 @@ exploded_node::to_json (const extrinsic_state &ext_state) const
 
   enode_obj->set ("point", get_point ().to_json ());
   enode_obj->set ("state", get_state ().to_json (ext_state));
-  enode_obj->set ("status", new json::string (status_to_str (m_status)));
-  enode_obj->set ("idx", new json::integer_number (m_index));
-  enode_obj->set ("processed_stmts",
-		  new json::integer_number (m_num_processed_stmts));
+  enode_obj->set_string ("status", status_to_str (m_status));
+  enode_obj->set_integer ("idx", m_index);
+  enode_obj->set_integer ("processed_stmts", m_num_processed_stmts);
 
   return enode_obj;
 }
@@ -2298,8 +2297,8 @@ json::object *
 exploded_edge::to_json () const
 {
   json::object *eedge_obj = new json::object ();
-  eedge_obj->set ("src_idx", new json::integer_number (m_src->m_index));
-  eedge_obj->set ("dst_idx", new json::integer_number (m_dest->m_index));
+  eedge_obj->set_integer ("src_idx", m_src->m_index);
+  eedge_obj->set_integer ("dst_idx", m_dest->m_index);
   if (m_sedge)
     eedge_obj->set ("sedge", m_sedge->to_json ());
   if (m_custom_info)
@@ -2307,7 +2306,7 @@ exploded_edge::to_json () const
       pretty_printer pp;
       pp_format_decoder (&pp) = default_tree_printer;
       m_custom_info->print (&pp);
-      eedge_obj->set ("custom", new json::string (pp_formatted_text (&pp)));
+      eedge_obj->set_string ("custom", pp_formatted_text (&pp));
     }
   return eedge_obj;
 }
