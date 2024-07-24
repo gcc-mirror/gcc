@@ -78,6 +78,20 @@ expect_json_object_with_object_property (const location &loc,
 					   (PROPERTY_NAME))
 
 /* Assert that VALUE is a non-null json::object that has property
+   PROPERTY_NAME, and that the property value is a non-null JSON array.
+   Return the value of the property as a json::array.
+   Use LOC for any failures.  */
+
+const json::array *
+expect_json_object_with_array_property (const location &loc,
+					const json::value *value,
+					const char *property_name);
+#define EXPECT_JSON_OBJECT_WITH_ARRAY_PROPERTY(JSON_VALUE, PROPERTY_NAME) \
+  expect_json_object_with_array_property ((SELFTEST_LOCATION),		\
+					  (JSON_VALUE),		\
+					  (PROPERTY_NAME))
+
+/* Assert that VALUE is a non-null json::object that has property
    PROPERTY_NAME, and that the value of that property is a non-null
    JSON string equalling EXPECTED_VALUE.
    Use LOC for any failures.  */

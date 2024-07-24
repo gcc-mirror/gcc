@@ -29,4 +29,12 @@ int main() {
 
      { dg-final { scan-sarif-file {"rendered": } } }
 
+   Verify that we have an "annotations" property for the
+   labelled ranges (3.28.6).
+     { dg-final { scan-sarif-file {"annotations": } } }
+   and that the annotations capture the labels as messages,
+   using "." in place of awkard characters:
+     { dg-final { scan-sarif-file {"message": ."text": "end of bidirectional context"} } }
+     { dg-final { scan-sarif-file {"message": ."text": "U.202E .RIGHT-TO-LEFT OVERRIDE."} } }
+     { dg-final { scan-sarif-file {"message": ."text": "U.2066 .LEFT-TO-RIGHT ISOLATE."} } }
 */

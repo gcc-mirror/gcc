@@ -97,6 +97,22 @@ expect_json_object_with_object_property (const location &loc,
 }
 
 /* Assert that VALUE is a non-null json::object that has property
+   PROPERTY_NAME, and that the property value is a non-null JSON array.
+   Return the value of the property as a json::array.
+   Use LOC for any failures.  */
+
+const json::array *
+expect_json_object_with_array_property (const location &loc,
+					const json::value *value,
+					const char *property_name)
+{
+  const json::value *property_value
+    = expect_json_object_with_property (loc, value, property_name);
+  ASSERT_EQ_AT (loc, property_value->get_kind (), json::JSON_ARRAY);
+  return static_cast<const json::array *> (property_value);
+}
+
+/* Assert that VALUE is a non-null json::object that has property
    PROPERTY_NAME, and that the value of that property is a non-null
    JSON string equalling EXPECTED_VALUE.
    Use LOC for any failures.  */
