@@ -593,7 +593,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_GLIBCXX20_CONSTEXPR
 	_Bvector_impl() _GLIBCXX_NOEXCEPT_IF(
 	  is_nothrow_default_constructible<_Bit_alloc_type>::value)
-#if __cpp_concepts
+#if __cpp_concepts && __glibcxx_type_trait_variable_templates
 	requires is_default_constructible_v<_Bit_alloc_type>
 #endif
 	: _Bit_alloc_type()
