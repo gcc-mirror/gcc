@@ -30,6 +30,19 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace selftest {
 
+/* Assert that VALUE is a non-null json::string
+   equalling EXPECTED_VALUE.
+   Use LOC for any failures.  */
+
+void
+assert_json_string_eq (const location &loc,
+		       const json::value *value,
+		       const char *expected_value);
+#define ASSERT_JSON_STRING_EQ(JSON_VALUE, EXPECTED_VALUE) \
+  assert_json_string_eq ((SELFTEST_LOCATION),			\
+			 (JSON_VALUE),				\
+			 (EXPECTED_VALUE))
+
 /* Assert that VALUE is a non-null json::object,
    returning it as such, failing at LOC if this isn't the case.  */
 
@@ -90,6 +103,20 @@ expect_json_object_with_array_property (const location &loc,
   expect_json_object_with_array_property ((SELFTEST_LOCATION),		\
 					  (JSON_VALUE),		\
 					  (PROPERTY_NAME))
+
+/* Assert that VALUE is a non-null json::object that has property
+   PROPERTY_NAME, and that the property value is a non-null JSON string.
+   Return the value of the property as a json::string.
+   Use LOC for any failures.  */
+
+const json::string *
+expect_json_object_with_string_property (const location &loc,
+					 const json::value *value,
+					 const char *property_name);
+#define EXPECT_JSON_OBJECT_WITH_STRING_PROPERTY(JSON_VALUE, PROPERTY_NAME) \
+  expect_json_object_with_string_property ((SELFTEST_LOCATION),		\
+					   (JSON_VALUE),		\
+					   (PROPERTY_NAME))
 
 /* Assert that VALUE is a non-null json::object that has property
    PROPERTY_NAME, and that the value of that property is a non-null

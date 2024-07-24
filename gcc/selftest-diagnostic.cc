@@ -60,6 +60,20 @@ test_diagnostic_context::start_span_cb (diagnostic_context *context,
   default_diagnostic_start_span_fn (context, exploc);
 }
 
+bool
+test_diagnostic_context::report (diagnostic_t kind,
+				 rich_location &richloc,
+				 const diagnostic_metadata *metadata,
+				 int option,
+				 const char * fmt, ...)
+{
+  va_list ap;
+  va_start (ap, fmt);
+  bool result = diagnostic_impl (&richloc, metadata, option, fmt, &ap, kind);
+  va_end (ap);
+  return result;
+}
+
 } // namespace selftest
 
 #endif /* #if CHECKING_P */

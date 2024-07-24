@@ -380,6 +380,7 @@ public:
 		     const diagnostic_diagram &diagram);
   void end_group ();
 
+  std::unique_ptr<sarif_log> flush_to_object ();
   void flush_to_file (FILE *outf);
 
   std::unique_ptr<json::array>
@@ -861,6 +862,20 @@ sarif_builder::end_group ()
 }
 
 /* Create a top-level object, and add it to all the results
+   (and other entities) we've seen so far, moving ownership
+   to the object.  */
+
+std::unique_ptr<sarif_log>
+sarif_builder::flush_to_object ()
+{
+  m_invocation_obj->prepare_to_flush (m_context);
+  std::unique_ptr<sarif_log> top
+    = make_top_level_object (std::move (m_invocation_obj),
+			     std::move (m_results_array));
+  return top;
+}
+
+/* Create a top-level object, and add it to all the results
    (and other entities) we've seen so far.
 
    Flush it all to OUTF.  */
@@ -868,12 +883,8 @@ sarif_builder::end_group ()
 void
 sarif_builder::flush_to_file (FILE *outf)
 {
-  m_invocation_obj->prepare_to_flush (m_context);
-  std::unique_ptr<sarif_log> top
-    = make_top_level_object (std::move (m_invocation_obj),
-			     std::move (m_results_array));
+  std::unique_ptr<sarif_log> top = flush_to_object ();
   top->dump (outf, m_formatted);
-  m_invocation_obj = nullptr;
   fprintf (outf, "\n");
 }
 
@@ -2434,6 +2445,54 @@ diagnostic_output_format_init_sarif_stream (diagnostic_context &context,
 
 namespace selftest {
 
+/* A subclass of sarif_output_format for writing selftests.
+   The JSON output is cached internally, rather than written
+   out to a file.  */
+
+class test_sarif_diagnostic_context : public test_diagnostic_context
+{
+public:
+  test_sarif_diagnostic_context ()
+  {
+    diagnostic_output_format_init_sarif (*this);
+
+    m_format = new buffered_output_format (*this,
+					   "MAIN_INPUT_FILENAME",
+					   true);
+    set_output_format (m_format); // give ownership;
+  }
+
+  std::unique_ptr<sarif_log> flush_to_object ()
+  {
+    return m_format->flush_to_object ();
+  }
+
+private:
+  class buffered_output_format : public sarif_output_format
+  {
+  public:
+    buffered_output_format (diagnostic_context &context,
+			    const char *main_input_filename_,
+			    bool formatted)
+      : sarif_output_format (context, main_input_filename_, formatted)
+    {
+    }
+    bool machine_readable_stderr_p () const final override
+    {
+      return false;
+    }
+    std::unique_ptr<sarif_log> flush_to_object ()
+    {
+      return m_builder.flush_to_object ();
+    }
+  };
+
+  buffered_output_format *m_format; // borrowed
+};
+
+/* Test making a sarif_location for a complex rich_location
+   with labels and escape-on-output.  */
+
 static void
 test_make_location_object (const line_table_case &case_)
 {
@@ -2550,12 +2609,128 @@ test_make_location_object (const line_table_case &case_)
   }
 }
 
+/* Test of reporting a diagnostic to a diagnostic_context and
+   examining the generated sarif_log.
+   Verify various basic properties. */
+
+static void
+test_simple_log ()
+{
+  test_sarif_diagnostic_context dc;
+
+  rich_location richloc (line_table, UNKNOWN_LOCATION);
+  dc.report (DK_ERROR, richloc, nullptr, 0, "this is a test: %i", 42);
+
+  auto log_ptr = dc.flush_to_object ();
+
+  // 3.13 sarifLog:
+  auto log = log_ptr.get ();
+  ASSERT_JSON_STRING_PROPERTY_EQ (log, "$schema", SARIF_SCHEMA); // 3.13.3
+  ASSERT_JSON_STRING_PROPERTY_EQ (log, "version", SARIF_VERSION); // 3.13.2
+
+  auto runs = EXPECT_JSON_OBJECT_WITH_ARRAY_PROPERTY (log, "runs"); // 3.13.4
+  ASSERT_EQ (runs->size (), 1);
+
+  // 3.14 "run" object:
+  auto run = (*runs)[0];
+
+  {
+    // 3.14.6:
+    auto tool = EXPECT_JSON_OBJECT_WITH_OBJECT_PROPERTY (run, "tool");
+
+    EXPECT_JSON_OBJECT_WITH_OBJECT_PROPERTY (tool, "driver"); // 3.18.2
+  }
+
+  {
+    // 3.14.11
+    auto invocations
+      = EXPECT_JSON_OBJECT_WITH_ARRAY_PROPERTY (run, "invocations");
+    ASSERT_EQ (invocations->size (), 1);
+
+    {
+      // 3.20 "invocation" object:
+      auto invocation = (*invocations)[0];
+
+      // 3.20.3 arguments property
+
+      // 3.20.7 startTimeUtc property
+      EXPECT_JSON_OBJECT_WITH_STRING_PROPERTY (invocation, "startTimeUtc");
+
+      // 3.20.8 endTimeUtc property
+      EXPECT_JSON_OBJECT_WITH_STRING_PROPERTY (invocation, "endTimeUtc");
+
+      // 3.20.19 workingDirectory property
+      {
+	auto wd_obj
+	  = EXPECT_JSON_OBJECT_WITH_OBJECT_PROPERTY (invocation,
+						     "workingDirectory");
+	EXPECT_JSON_OBJECT_WITH_STRING_PROPERTY (wd_obj, "uri");
+      }
+
+      // 3.20.21 toolExecutionNotifications property
+      auto notifications
+	= EXPECT_JSON_OBJECT_WITH_ARRAY_PROPERTY
+	    (invocation, "toolExecutionNotifications");
+      ASSERT_EQ (notifications->size (), 0);
+    }
+  }
+
+  {
+    // 3.14.15:
+    auto artifacts = EXPECT_JSON_OBJECT_WITH_ARRAY_PROPERTY (run, "artifacts");
+    ASSERT_EQ (artifacts->size (), 1);
+
+    {
+      // 3.24 "artifact" object:
+      auto artifact = (*artifacts)[0];
+
+      // 3.24.2:
+      auto location
+	= EXPECT_JSON_OBJECT_WITH_OBJECT_PROPERTY (artifact, "location");
+      ASSERT_JSON_STRING_PROPERTY_EQ (location, "uri", "MAIN_INPUT_FILENAME");
+
+      // 3.24.6:
+      auto roles = EXPECT_JSON_OBJECT_WITH_ARRAY_PROPERTY (artifact, "roles");
+      ASSERT_EQ (roles->size (), 1);
+      {
+	auto role = (*roles)[0];
+	ASSERT_JSON_STRING_EQ (role, "analysisTarget");
+      }
+    }
+  }
+
+  {
+    // 3.14.23:
+    auto results = EXPECT_JSON_OBJECT_WITH_ARRAY_PROPERTY (run, "results");
+    ASSERT_EQ (results->size (), 1);
+
+    {
+      // 3.27 "result" object:
+      auto result = (*results)[0];
+      ASSERT_JSON_STRING_PROPERTY_EQ (result, "ruleId", "error");
+      ASSERT_JSON_STRING_PROPERTY_EQ (result, "level", "error"); // 3.27.10
+
+      {
+	// 3.27.11:
+	auto message
+	  = EXPECT_JSON_OBJECT_WITH_OBJECT_PROPERTY (result, "message");
+	ASSERT_JSON_STRING_PROPERTY_EQ (message, "text",
+					"this is a test: 42");
+      }
+
+      // 3.27.12:
+      EXPECT_JSON_OBJECT_WITH_ARRAY_PROPERTY (result, "locations");
+    }
+  }
+}
+
 /* Run all of the selftests within this file.  */
 
 void
 diagnostic_format_sarif_cc_tests ()
 {
   for_each_line_table_case (test_make_location_object);
+  test_simple_log ();
 }
 
 } // namespace selftest
