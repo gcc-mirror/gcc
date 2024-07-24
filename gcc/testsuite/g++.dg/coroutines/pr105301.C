@@ -29,7 +29,10 @@ struct suspend_always {
 
 namespace std {
 template <class PromiseType = void>
-struct coroutine_handle {};
+struct coroutine_handle {
+  static coroutine_handle from_address(void*);
+  void* address();
+};
 }
 
 struct bad_promise_6 {

@@ -5,8 +5,15 @@ template <typename _Result, typename> struct coroutine_traits {
   using promise_type = _Result::promise_type;
 };
 template <typename = void> struct coroutine_handle;
-template <> struct coroutine_handle<> { public: };
-template <typename> struct coroutine_handle : coroutine_handle<> {};
+template <> struct coroutine_handle<> {
+public:
+  static coroutine_handle from_address(void*);
+  void* address();
+};
+template <typename> struct coroutine_handle : coroutine_handle<> {
+  static coroutine_handle from_address(void*);
+  void* address();
+};
 struct suspend_always {
   bool await_ready();
   void await_suspend(coroutine_handle<>);

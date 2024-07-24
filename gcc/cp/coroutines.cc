@@ -91,6 +91,7 @@ struct GTY((for_user)) coroutine_info
 			 one that will eventually be allocated in the coroutine
 			 frame.  */
   tree promise_proxy; /* Likewise, a proxy promise instance.  */
+  tree from_address;  /* handle_type from_address function.  */
   tree return_void;   /* The expression for p.return_void() if it exists.  */
   location_t first_coro_keyword; /* The location of the keyword that made this
 				    function into a coroutine.  */
@@ -203,7 +204,6 @@ static GTY(()) tree coro_final_suspend_identifier;
 static GTY(()) tree coro_return_void_identifier;
 static GTY(()) tree coro_return_value_identifier;
 static GTY(()) tree coro_yield_value_identifier;
-static GTY(()) tree coro_resume_identifier;
 static GTY(()) tree coro_address_identifier;
 static GTY(()) tree coro_from_address_identifier;
 static GTY(()) tree coro_get_return_object_identifier;
@@ -243,7 +243,6 @@ coro_init_identifiers ()
   coro_return_void_identifier = get_identifier ("return_void");
   coro_return_value_identifier = get_identifier ("return_value");
   coro_yield_value_identifier = get_identifier ("yield_value");
-  coro_resume_identifier = get_identifier ("resume");
   coro_address_identifier = get_identifier ("address");
   coro_from_address_identifier = get_identifier ("from_address");
   coro_get_return_object_identifier = get_identifier ("get_return_object");
@@ -271,6 +270,7 @@ coro_init_identifiers ()
 static GTY(()) tree coro_traits_templ;
 static GTY(()) tree coro_handle_templ;
 static GTY(()) tree void_coro_handle_type;
+static GTY(()) tree void_coro_handle_address;
 
 /* ================= Parse, Semantics and Type checking ================= */
 
@@ -389,7 +389,97 @@ find_coro_handle_template_decl (location_t kw)
     return handle_decl;
 }
 
-/* Instantiate the handle template for a given promise type.  */
+/* Get and validate HANDLE_TYPE::address.  The resulting function, if any, will
+   be a non-overloaded member function that takes no arguments and returns
+   void*.  If that is not the case, signals an error and returns NULL_TREE.  */
+
+static tree
+get_handle_type_address (location_t kw, tree handle_type)
+{
+  tree addr_getter = lookup_member (handle_type, coro_address_identifier, 1,
+				    0, tf_warning_or_error);
+  if (!addr_getter || addr_getter == error_mark_node)
+    {
+      qualified_name_lookup_error (handle_type, coro_address_identifier,
+				   error_mark_node, kw);
+      return NULL_TREE;
+    }
+
+  if (!BASELINK_P (addr_getter)
+      || TREE_CODE (TREE_TYPE (addr_getter)) != METHOD_TYPE)
+    {
+      error_at (kw, "%qE must be a non-overloaded method", addr_getter);
+      return NULL_TREE;
+    }
+
+  tree fn_t = TREE_TYPE (addr_getter);
+  tree arg = TYPE_ARG_TYPES (fn_t);
+
+  /* Skip the 'this' pointer.  */
+  arg = TREE_CHAIN (arg);
+
+  /* Check that from_addr has the argument list ().  */
+  if (arg != void_list_node)
+    {
+      error_at (kw, "%qE must take no arguments", addr_getter);
+      return NULL_TREE;
+    }
+
+  tree ret_t = TREE_TYPE (fn_t);
+  if (!same_type_p (ret_t, ptr_type_node))
+    {
+      error_at (kw, "%qE must return %qT, not %qT",
+		addr_getter, ptr_type_node, ret_t);
+      return NULL_TREE;
+    }
+
+  return addr_getter;
+}
+
+/* Get and validate HANDLE_TYPE::from_address.  The resulting function, if
+   any, will be a non-overloaded static function that takes a single void* and
+   returns HANDLE_TYPE.  If that is not the case, signals an error and returns
+   NULL_TREE.  */
+
+static tree
+get_handle_type_from_address (location_t kw, tree handle_type)
+{
+  tree from_addr = lookup_member (handle_type, coro_from_address_identifier, 1,
+				  0, tf_warning_or_error);
+  if (!from_addr || from_addr == error_mark_node)
+    {
+      qualified_name_lookup_error (handle_type, coro_from_address_identifier,
+				   error_mark_node, kw);
+      return NULL_TREE;
+    }
+  if (!BASELINK_P (from_addr)
+      || TREE_CODE (TREE_TYPE (from_addr)) != FUNCTION_TYPE)
+    {
+      error_at (kw, "%qE must be a non-overloaded static function", from_addr);
+      return NULL_TREE;
+    }
+
+  tree fn_t = TREE_TYPE (from_addr);
+  tree arg = TYPE_ARG_TYPES (fn_t);
+  /* Check that from_addr has the argument list (void*).  */
+  if (!arg
+      || !same_type_p (TREE_VALUE (arg), ptr_type_node)
+      || TREE_CHAIN (arg) != void_list_node)
+    {
+      error_at (kw, "%qE must take a single %qT", from_addr, ptr_type_node);
+      return NULL_TREE;
+    }
+
+  tree ret_t = TREE_TYPE (fn_t);
+  if (!same_type_p (ret_t, handle_type))
+    {
+      error_at (kw, "%qE must return %qT, not %qT",
+		from_addr, handle_type, ret_t);
+      return NULL_TREE;
+    }
+
+  return from_addr;
+}
 
 static tree
 instantiate_coro_handle_for_promise_type (location_t kw, tree promise_type)
@@ -453,9 +543,14 @@ ensure_coro_initialized (location_t loc)
 	return false;
 
       /*  We can also instantiate the void coroutine_handle<>  */
-      void_coro_handle_type =
-	instantiate_coro_handle_for_promise_type (loc, NULL_TREE);
+      void_coro_handle_type
+	= instantiate_coro_handle_for_promise_type (loc, void_type_node);
       if (void_coro_handle_type == NULL_TREE)
+	return false;
+
+      void_coro_handle_address
+	= get_handle_type_address (loc, void_coro_handle_type);
+      if (!void_coro_handle_address)
 	return false;
 
       /* A table to hold the state, per coroutine decl.  */
@@ -552,13 +647,17 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
 	}
 
       /* Try to find the handle type for the promise.  */
-      tree handle_type =
-	instantiate_coro_handle_for_promise_type (loc, coro_info->promise_type);
+      tree handle_type
+	= instantiate_coro_handle_for_promise_type (loc, coro_info->promise_type);
       if (handle_type == NULL_TREE)
+	return false;
+      tree from_address = get_handle_type_from_address (loc, handle_type);
+      if (from_address == NULL_TREE)
 	return false;
 
       /* Complete this, we're going to use it.  */
       coro_info->handle_type = complete_type_or_else (handle_type, fndecl);
+      coro_info->from_address = from_address;
 
       /* Diagnostic would be emitted by complete_type_or_else.  */
       if (!coro_info->handle_type)
@@ -657,6 +756,15 @@ get_coroutine_promise_proxy (tree decl)
 {
   if (coroutine_info *info = get_coroutine_info (decl))
     return info->promise_proxy;
+
+  return NULL_TREE;
+}
+
+static tree
+get_coroutine_from_address (tree decl)
+{
+  if (coroutine_info *info = get_coroutine_info (decl))
+    return info->from_address;
 
   return NULL_TREE;
 }
@@ -1975,12 +2083,11 @@ struct suspend_point_info
   tree await_field_id;
 };
 
-static hash_map<tree, suspend_point_info> *suspend_points;
-
 struct await_xform_data
 {
   tree actor_fn;   /* Decl for context.  */
   tree actor_frame;
+  hash_map<tree, suspend_point_info> *suspend_points;
 };
 
 /* When we built the await expressions, we didn't know the coro frame
@@ -1990,7 +2097,7 @@ struct await_xform_data
 static tree
 transform_await_expr (tree await_expr, await_xform_data *xform)
 {
-  suspend_point_info *si = suspend_points->get (await_expr);
+  suspend_point_info *si = xform->suspend_points->get (await_expr);
   location_t loc = EXPR_LOCATION (await_expr);
   if (!si)
     {
@@ -2214,12 +2321,12 @@ coro_get_frame_dtor (tree coro_fp, tree orig, tree frame_size,
 static void
 build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 		tree orig, hash_map<tree, local_var_info> *local_var_uses,
+		hash_map<tree, suspend_point_info> *suspend_points,
 		vec<tree, va_gc> *param_dtor_list,
 		tree resume_idx_var, unsigned body_count, tree frame_size)
 {
   verify_stmt_tree (fnbody);
   /* Some things we inherit from the original function.  */
-  tree handle_type = get_coroutine_handle_type (orig);
   tree promise_type = get_coroutine_promise_type (orig);
   tree promise_proxy = get_coroutine_promise_proxy (orig);
 
@@ -2379,8 +2486,9 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   tree ash = build_class_member_access_expr (actor_frame, ash_m, NULL_TREE,
 					     false, tf_warning_or_error);
   /* So construct the self-handle from the frame address.  */
-  tree hfa_m = lookup_member (handle_type, coro_from_address_identifier, 1,
-			      0, tf_warning_or_error);
+  tree hfa_m = get_coroutine_from_address (orig);
+  /* Should have been set earlier by coro_promise_type_found_p.  */
+  gcc_assert (hfa_m);
 
   r = build1 (CONVERT_EXPR, build_pointer_type (void_type_node), actor_fp);
   vec<tree, va_gc> *args = make_tree_vector_single (r);
@@ -2394,7 +2502,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   /* Now we know the real promise, and enough about the frame layout to
      decide where to put things.  */
 
-  await_xform_data xform = {actor, actor_frame};
+  await_xform_data xform = {actor, actor_frame, suspend_points};
 
   /* Transform the await expressions in the function body.  Only do each
      await tree once!  */
@@ -2475,12 +2583,14 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   r = build_stmt (loc, LABEL_EXPR, continue_label);
   add_stmt (r);
 
+  /* Should have been set earlier by the coro_initialized code.  */
+  gcc_assert (void_coro_handle_address);
+
   /* We want to force a tail-call even for O0/1, so this expands the resume
      call into its underlying implementation.  */
-  tree addr = lookup_member (void_coro_handle_type, coro_address_identifier,
-			       1, 0, tf_warning_or_error);
-  addr = build_new_method_call (continuation, addr, NULL, NULL_TREE,
-				  LOOKUP_NORMAL, NULL, tf_warning_or_error);
+  tree addr = build_new_method_call (continuation, void_coro_handle_address,
+				     NULL, NULL_TREE, LOOKUP_NORMAL, NULL,
+				     tf_warning_or_error);
   tree resume = build_call_expr_loc
     (loc, builtin_decl_explicit (BUILT_IN_CORO_RESUME), 1, addr);
 
@@ -2629,7 +2739,8 @@ build_init_or_final_await (location_t loc, bool is_final)
    function.  */
 
 static bool
-register_await_info (tree await_expr, tree aw_type, tree aw_nam)
+register_await_info (tree await_expr, tree aw_type, tree aw_nam,
+		     hash_map<tree, suspend_point_info> *suspend_points)
 {
   bool seen;
   suspend_point_info &s
@@ -2650,21 +2761,26 @@ register_await_info (tree await_expr, tree aw_type, tree aw_nam)
 struct susp_frame_data
 {
   /* Function-wide.  */
-  tree *field_list; /* The current coroutine frame field list.  */
-  tree handle_type; /* The self-handle type for this coroutine.  */
-  tree fs_label;    /* The destination for co_returns.  */
+  tree fs_label;		/* The destination for co_returns.  */
+  hash_map<tree, suspend_point_info> *suspend_points; /* Not owned.  */
   vec<tree, va_gc> *block_stack; /* Track block scopes.  */
   vec<tree, va_gc> *bind_stack;  /* Track current bind expr.  */
-  unsigned await_number;	 /* Which await in the function.  */
-  unsigned cond_number;		 /* Which replaced condition in the fn.  */
+  unsigned await_number = 0;	 /* Which await in the function.  */
+  unsigned cond_number = 0;		 /* Which replaced condition in the fn.  */
+
   /* Temporary values for one statement or expression being analyzed.  */
-  hash_set<tree> captured_temps; /* The suspend captured these temps.  */
-  vec<tree, va_gc> *to_replace;  /* The VAR decls to replace.  */
-  hash_set<tree> *truth_aoif_to_expand; /* The set of TRUTH exprs to expand.  */
-  unsigned saw_awaits;		 /* Count of awaits in this statement  */
-  bool captures_temporary;	 /* This expr captures temps by ref.  */
-  bool needs_truth_if_exp;	 /* We must expand a truth_if expression.  */
-  bool has_awaiter_init;	 /* We must handle initializing an awaiter.  */
+  hash_set<tree> *truth_aoif_to_expand = nullptr; /* The set of TRUTH exprs to expand.  */
+  unsigned saw_awaits = 0;		 /* Count of awaits in this statement  */
+  bool captures_temporary = false;	 /* This expr captures temps by ref.  */
+  bool needs_truth_if_exp = false;	 /* We must expand a truth_if expression.  */
+  bool has_awaiter_init = false;	 /* We must handle initializing an awaiter.  */
+
+  susp_frame_data (tree _final_susp, hash_map<tree, suspend_point_info> *_spt)
+    : fs_label (_final_susp), suspend_points (_spt)
+  {
+    block_stack = make_tree_vector ();
+    bind_stack = make_tree_vector ();
+  }
 };
 
 /* If this is an await expression, then count it (both uniquely within the
@@ -2695,7 +2811,7 @@ register_awaits (tree *stmt, int *, void *d)
 
   tree aw_field_type = TREE_TYPE (aw);
   tree aw_field_nam = NULL_TREE;
-  register_await_info (aw_expr, aw_field_type, aw_field_nam);
+  register_await_info (aw_expr, aw_field_type, aw_field_nam, data->suspend_points);
 
   /* Rewrite target expressions on the await_suspend () to remove extraneous
      cleanups for the awaitables, which are now promoted to frame vars and
@@ -3420,7 +3536,7 @@ replace_continue (tree *stmt, int *do_subtree, void *d)
   tree expr = *stmt;
   if (TREE_CODE (expr) == CLEANUP_POINT_EXPR)
     expr = TREE_OPERAND (expr, 0);
-  if (CONVERT_EXPR_P (expr) && VOID_TYPE_P (expr))
+  if (CONVERT_EXPR_P (expr) && VOID_TYPE_P (TREE_TYPE (expr)))
     expr = TREE_OPERAND (expr, 0);
   STRIP_NOPS (expr);
   if (!STATEMENT_CLASS_P (expr))
@@ -3970,10 +4086,14 @@ struct local_vars_frame_data
 {
   tree *field_list;
   hash_map<tree, local_var_info> *local_var_uses;
-  unsigned int nest_depth, bind_indx;
-  location_t loc;
-  bool saw_capture;
-  bool local_var_seen;
+  unsigned int nest_depth = 0;
+  unsigned int bind_indx = 0;
+  location_t loc = UNKNOWN_LOCATION;
+  bool saw_capture = false;
+  bool local_var_seen = false;
+
+  local_vars_frame_data (tree *_fl, hash_map<tree, local_var_info> *_lvu)
+    : field_list (_fl), local_var_uses (_lvu) {}
 };
 
 /* A tree-walk callback that processes one bind expression noting local
@@ -4527,7 +4647,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
      1. Types we already know.  */
 
   tree fn_return_type = TREE_TYPE (TREE_TYPE (orig));
-  tree handle_type = get_coroutine_handle_type (orig);
   tree promise_type = get_coroutine_promise_type (orig);
 
   /* 2. Types we need to define or look up.  */
@@ -4559,30 +4678,26 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   /* Build our dummy coro frame layout.  */
   coro_frame_type = begin_class_definition (coro_frame_type);
 
-  /* The fields for the coro frame.  */
-  tree field_list = NULL_TREE;
 
   /* We need to know, and inspect, each suspend point in the function
      in several places.  It's convenient to place this map out of line
      since it's used from tree walk callbacks.  */
-  suspend_points = new hash_map<tree, suspend_point_info>;
 
+  hash_map<tree, suspend_point_info> suspend_points;
   /* Now insert the data for any body await points, at this time we also need
      to promote any temporaries that are captured by reference (to regular
      vars) they will get added to the coro frame along with other locals.  */
-  susp_frame_data body_aw_points
-    = {&field_list, handle_type, fs_label, NULL, NULL, 0, 0,
-       hash_set<tree> (), NULL, NULL, 0, false, false, false};
-  body_aw_points.block_stack = make_tree_vector ();
-  body_aw_points.bind_stack = make_tree_vector ();
-  body_aw_points.to_replace = make_tree_vector ();
+  susp_frame_data body_aw_points (fs_label, &suspend_points);
   cp_walk_tree (&fnbody, await_statement_walker, &body_aw_points, NULL);
 
   /* 4. Now make space for local vars, this is conservative again, and we
-     would expect to delete unused entries later.  */
+     would expect to delete unused entries later.  Compose the frame entries
+     list.  */
+
+  /* The fields for the coro frame.  */
+  tree field_list = NULL_TREE;
   hash_map<tree, local_var_info> local_var_uses;
-  local_vars_frame_data local_vars_data
-    = {&field_list, &local_var_uses, 0, 0, fn_start, false, false};
+  local_vars_frame_data local_vars_data (&field_list, &local_var_uses);
   cp_walk_tree (&fnbody, register_local_var_uses, &local_vars_data, NULL);
 
   /* Tie off the struct for now, so that we can build offsets to the
@@ -5264,7 +5379,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   /* Build the actor...  */
   build_actor_fn (fn_start, coro_frame_type, actor, fnbody, orig,
-		  &local_var_uses, param_dtor_list,
+		  &local_var_uses, &suspend_points, param_dtor_list,
 		  resume_idx_var, body_aw_points.await_number, frame_size);
 
   /* Destroyer ... */
@@ -5281,8 +5396,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   *resumer = actor;
   *destroyer = destroy;
 
-  delete suspend_points;
-  suspend_points = NULL;
   return true;
 }
 

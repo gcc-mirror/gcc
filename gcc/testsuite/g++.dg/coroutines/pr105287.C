@@ -4,6 +4,8 @@ namespace std {
 template <typename _Result> struct coroutine_traits : _Result {};
 template <typename = void> struct coroutine_handle {
   operator coroutine_handle<>();
+  static coroutine_handle from_address(void*);
+  void* address();
 };
 }
 struct coro1 {
