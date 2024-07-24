@@ -286,6 +286,13 @@ array::append (value *v)
   m_elements.safe_push (v);
 }
 
+void
+array::append_string (const char *utf8_value)
+{
+  gcc_assert (utf8_value);
+  append (new json::string (utf8_value));
+}
+
 /* class json::float_number, a subclass of json::value, wrapping a double.  */
 
 /* Implementation of json::value::print for json::float_number.  */
@@ -432,7 +439,7 @@ test_writing_arrays ()
   arr.append (new json::string ("foo"));
   ASSERT_PRINT_EQ (arr, true, "[\"foo\"]");
 
-  arr.append (new json::string ("bar"));
+  arr.append_string ("bar");
   ASSERT_PRINT_EQ (arr, true,
 		   "[\"foo\",\n"
 		   " \"bar\"]");

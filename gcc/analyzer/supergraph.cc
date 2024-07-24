@@ -747,7 +747,7 @@ supernode::to_json () const
 	pretty_printer pp;
 	pp_format_decoder (&pp) = default_tree_printer;
 	pp_gimple_stmt_1 (&pp, stmt, 0, (dump_flags_t)0);
-	phi_arr->append (new json::string (pp_formatted_text (&pp)));
+	phi_arr->append_string (pp_formatted_text (&pp));
       }
     snode_obj->set ("phis", phi_arr);
   }
@@ -762,7 +762,7 @@ supernode::to_json () const
 	pretty_printer pp;
 	pp_format_decoder (&pp) = default_tree_printer;
 	pp_gimple_stmt_1 (&pp, stmt, 0, (dump_flags_t)0);
-	stmt_arr->append (new json::string (pp_formatted_text (&pp)));
+	stmt_arr->append_string (pp_formatted_text (&pp));
       }
     snode_obj->set ("stmts", stmt_arr);
   }
