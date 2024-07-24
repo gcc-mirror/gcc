@@ -3433,7 +3433,7 @@ replace_continue (tree *stmt, int *do_subtree, void *d)
   tree expr = *stmt;
   if (TREE_CODE (expr) == CLEANUP_POINT_EXPR)
     expr = TREE_OPERAND (expr, 0);
-  if (CONVERT_EXPR_P (expr) && VOID_TYPE_P (expr))
+  if (CONVERT_EXPR_P (expr) && VOID_TYPE_P (TREE_TYPE (expr)))
     expr = TREE_OPERAND (expr, 0);
   STRIP_NOPS (expr);
   if (!STATEMENT_CLASS_P (expr))
