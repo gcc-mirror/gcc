@@ -9257,6 +9257,11 @@ riscv_override_options_internal (struct gcc_options *opts)
   else if (!TARGET_MUL_OPTS_P (opts) && TARGET_DIV_OPTS_P (opts))
     error ("%<-mdiv%> requires %<-march%> to subsume the %<M%> extension");
 
+  /* We might use a multiplication to calculate the scalable vector length at
+     runtime.  Therefore, require the M extension.  */
+  if (TARGET_VECTOR && !TARGET_MUL)
+    sorry ("GCC's current %<V%> implementation requires the %<M%> extension");
+
   /* Likewise floating-point division and square root.  */
   if ((TARGET_HARD_FLOAT_OPTS_P (opts) || TARGET_ZFINX_OPTS_P (opts))
       && ((target_flags_explicit & MASK_FDIV) == 0))

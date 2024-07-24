@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fno-tree-ch --param=max-completely-peel-times=0 -march=rv64iv -mabi=lp64d -fcompare-debug" } */
+/* { dg-options "-O -fno-tree-ch --param=max-completely-peel-times=0 -march=rv64imv -mabi=lp64d -fcompare-debug" } */
 
 
 void
