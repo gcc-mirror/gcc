@@ -94,8 +94,8 @@ private:
 
 /* Generate a JSON object for LOC.  */
 
-json::value *
-json_from_expanded_location (diagnostic_context *context, location_t loc)
+static json::value *
+json_from_expanded_location (diagnostic_context &context, location_t loc)
 {
   expanded_location exploc = expand_location (loc);
   json::object *result = new json::object ();
@@ -103,7 +103,7 @@ json_from_expanded_location (diagnostic_context *context, location_t loc)
     result->set_string ("file", exploc.file);
   result->set_integer ("line", exploc.line);
 
-  const enum diagnostics_column_unit orig_unit = context->m_column_unit;
+  const enum diagnostics_column_unit orig_unit = context.m_column_unit;
   struct
   {
     const char *name;
@@ -115,22 +115,22 @@ json_from_expanded_location (diagnostic_context *context, location_t loc)
   int the_column = INT_MIN;
   for (int i = 0; i != ARRAY_SIZE (column_fields); ++i)
     {
-      context->m_column_unit = column_fields[i].unit;
-      const int col = context->converted_column (exploc);
+      context.m_column_unit = column_fields[i].unit;
+      const int col = context.converted_column (exploc);
       result->set_integer (column_fields[i].name, col);
       if (column_fields[i].unit == orig_unit)
 	the_column = col;
     }
   gcc_assert (the_column != INT_MIN);
   result->set_integer ("column", the_column);
-  context->m_column_unit = orig_unit;
+  context.m_column_unit = orig_unit;
   return result;
 }
 
 /* Generate a JSON object for LOC_RANGE.  */
 
 static json::object *
-json_from_location_range (diagnostic_context *context,
+json_from_location_range (diagnostic_context &context,
 			  const location_range *loc_range, unsigned range_idx)
 {
   location_t caret_loc = get_pure_location (loc_range->m_loc);
@@ -163,7 +163,7 @@ json_from_location_range (diagnostic_context *context,
 /* Generate a JSON object for HINT.  */
 
 static json::object *
-json_from_fixit_hint (diagnostic_context *context, const fixit_hint *hint)
+json_from_fixit_hint (diagnostic_context &context, const fixit_hint *hint)
 {
   json::object *fixit_obj = new json::object ();
 
@@ -192,7 +192,7 @@ json_from_metadata (const diagnostic_metadata *metadata)
 /* Make a JSON value for PATH.  */
 
 static json::value *
-make_json_for_path (diagnostic_context *context,
+make_json_for_path (diagnostic_context &context,
 		    const diagnostic_path *path)
 {
   json::array *path_array = new json::array ();
@@ -288,7 +288,7 @@ json_output_format::on_end_diagnostic (const diagnostic_info &diagnostic,
     {
       const location_range *loc_range = richloc->get_range (i);
       json::object *loc_obj
-	= json_from_location_range (&m_context, loc_range, i);
+	= json_from_location_range (m_context, loc_range, i);
       if (loc_obj)
 	loc_array->append (loc_obj);
     }
@@ -300,7 +300,7 @@ json_output_format::on_end_diagnostic (const diagnostic_info &diagnostic,
       for (unsigned int i = 0; i < richloc->get_num_fixit_hints (); i++)
 	{
 	  const fixit_hint *hint = richloc->get_fixit_hint (i);
-	  json::object *fixit_obj = json_from_fixit_hint (&m_context, hint);
+	  json::object *fixit_obj = json_from_fixit_hint (m_context, hint);
 	  fixit_array->append (fixit_obj);
 	}
     }
@@ -319,7 +319,7 @@ json_output_format::on_end_diagnostic (const diagnostic_info &diagnostic,
   const diagnostic_path *path = richloc->get_path ();
   if (path)
     {
-      json::value *path_value = make_json_for_path (&m_context, path);
+      json::value *path_value = make_json_for_path (m_context, path);
       diag_obj->set ("path", path_value);
     }
 
@@ -387,46 +387,46 @@ private:
    to a file).  */
 
 static void
-diagnostic_output_format_init_json (diagnostic_context *context)
+diagnostic_output_format_init_json (diagnostic_context &context)
 {
   /* Suppress normal textual path output.  */
-  context->set_path_format (DPF_NONE);
+  context.set_path_format (DPF_NONE);
 
   /* The metadata is handled in JSON format, rather than as text.  */
-  context->set_show_cwe (false);
-  context->set_show_rules (false);
+  context.set_show_cwe (false);
+  context.set_show_rules (false);
 
   /* The option is handled in JSON format, rather than as text.  */
-  context->set_show_option_requested (false);
+  context.set_show_option_requested (false);
 
   /* Don't colorize the text.  */
-  pp_show_color (context->printer) = false;
-  context->set_show_highlight_colors (false);
+  pp_show_color (context.printer) = false;
+  context.set_show_highlight_colors (false);
 }
 
 /* Populate CONTEXT in preparation for JSON output to stderr.  */
 
 void
-diagnostic_output_format_init_json_stderr (diagnostic_context *context,
+diagnostic_output_format_init_json_stderr (diagnostic_context &context,
 					   bool formatted)
 {
   diagnostic_output_format_init_json (context);
-  context->set_output_format (new json_stderr_output_format (*context,
-							     formatted));
+  context.set_output_format (new json_stderr_output_format (context,
+							    formatted));
 }
 
 /* Populate CONTEXT in preparation for JSON output to a file named
    BASE_FILE_NAME.gcc.json.  */
 
 void
-diagnostic_output_format_init_json_file (diagnostic_context *context,
+diagnostic_output_format_init_json_file (diagnostic_context &context,
 					 bool formatted,
 					 const char *base_file_name)
 {
   diagnostic_output_format_init_json (context);
-  context->set_output_format (new json_file_output_format (*context,
-							   formatted,
-							   base_file_name));
+  context.set_output_format (new json_file_output_format (context,
+							  formatted,
+							  base_file_name));
 }
 
 #if CHECKING_P
@@ -440,7 +440,7 @@ static void
 test_unknown_location ()
 {
   test_diagnostic_context dc;
-  delete json_from_expanded_location (&dc, UNKNOWN_LOCATION);
+  delete json_from_expanded_location (dc, UNKNOWN_LOCATION);
 }
 
 /* Verify that we gracefully handle attempts to serialize bad
@@ -459,7 +459,7 @@ test_bad_endpoints ()
   loc_range.m_label = NULL;
 
   test_diagnostic_context dc;
-  json::object *obj = json_from_location_range (&dc, &loc_range, 0);
+  json::object *obj = json_from_location_range (dc, &loc_range, 0);
   /* We should have a "caret" value, but no "start" or "finish" values.  */
   ASSERT_TRUE (obj != NULL);
   ASSERT_TRUE (obj->get ("caret") != NULL);

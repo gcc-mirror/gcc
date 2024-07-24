@@ -1800,7 +1800,7 @@ diagnostic_text_output_format::on_diagram (const diagnostic_diagram &diagram)
    file-based output formats.  */
 
 void
-diagnostic_output_format_init (diagnostic_context *context,
+diagnostic_output_format_init (diagnostic_context &context,
 			       const char *main_input_filename_,
 			       const char *base_file_name,
 			       enum diagnostics_output_format format,
