@@ -181,9 +181,11 @@ safe_for_live_propagation (rtx_code code)
    within an object) are set by INSN, the more aggressive the
    optimization phase during use handling will be.  */
 
-static void
+static bool
 ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 {
+  bool skipped_dest = false;
+
   subrtx_iterator::array_type array;
   FOR_EACH_SUBRTX (iter, array, obj, NONCONST)
     {
@@ -210,6 +212,7 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 	      /* Skip the subrtxs of this destination.  There is
 		 little value in iterating into the subobjects, so
 		 just skip them for a bit of efficiency.  */
+	      skipped_dest = true;
 	      iter.skip_subrtxes ();
 	      continue;
 	    }
@@ -241,6 +244,7 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 		  /* Skip the subrtxs of the STRICT_LOW_PART.  We can't
 		     process them because it'll set objects as no longer
 		     live when they are in fact still live.  */
+		  skipped_dest = true;
 		  iter.skip_subrtxes ();
 		  continue;
 		}
@@ -291,6 +295,7 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 	      if (!is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (x)), &outer_mode)
 		  || GET_MODE_BITSIZE (outer_mode) > 64)
 		{
+		  skipped_dest = true;
 		  iter.skip_subrtxes ();
 		  continue;
 		}
@@ -318,6 +323,7 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 		 remain the same.  Thus we can not continue here, we must
 		 either figure out what part of the destination is modified
 		 or skip the sub-rtxs.  */
+	      skipped_dest = true;
 	      iter.skip_subrtxes ();
 	      continue;
 	    }
@@ -370,9 +376,11 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
       else if (GET_CODE (x) == COND_EXEC)
 	{
 	  /* This isn't ideal, but may not be so bad in practice.  */
+	  skipped_dest = true;
 	  iter.skip_subrtxes ();
 	}
     }
+  return skipped_dest;
 }
 
 /* INSN has a sign/zero extended source inside SET that we will
@@ -566,7 +574,8 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
    eliminated in CHANGED_PSEUDOS.  */
 
 static void
-ext_dce_process_uses (rtx_insn *insn, rtx obj, bitmap live_tmp)
+ext_dce_process_uses (rtx_insn *insn, rtx obj,
+		      bitmap live_tmp, bool skipped_dest)
 {
   subrtx_var_iterator::array_type array_var;
   FOR_EACH_SUBRTX_VAR (iter, array_var, obj, NONCONST)
@@ -640,6 +649,11 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj, bitmap live_tmp)
 		  dst_mask |= mask_array[i];
 	      dst_mask >>= bit;
 
+	      /* If we ignored a destination during set processing, then
+		 consider all the bits live.  */
+	      if (skipped_dest)
+		dst_mask = -1;
+
 	      /* ??? Could also handle ZERO_EXTRACT / SIGN_EXTRACT
 		 of the source specially to improve optimization.  */
 	      if (code == SIGN_EXTEND || code == ZERO_EXTEND)
@@ -650,7 +664,7 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj, bitmap live_tmp)
 
 		  /* DST_MASK could be zero if we had something in the SET
 		     that we couldn't handle.  */
-		  if (modify && dst_mask && (dst_mask & ~src_mask) == 0)
+		  if (modify && !skipped_dest && (dst_mask & ~src_mask) == 0)
 		    ext_dce_try_optimize_insn (insn, x);
 
 		  dst_mask &= src_mask;
@@ -678,6 +692,10 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj, bitmap live_tmp)
 	      unsigned HOST_WIDE_INT save_mask = dst_mask;
 	      for (;;)
 		{
+		  /* In general we want to restore DST_MASK before each loop
+		     iteration.  The exception is when the opcode implies that
+		     the other operand is fully live.  That's handled by
+		     changing SAVE_MASK below.  */
 		  dst_mask = save_mask;
 		  /* Strip an outer paradoxical subreg.  The bits outside
 		     the inner mode are don't cares.  So we can just strip
@@ -730,9 +748,13 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj, bitmap live_tmp)
 
 		  /* We might have (ashift (const_int 1) (reg...))
 		     By setting dst_mask we can continue iterating on the
-		     the next operand and it will be considered fully live.  */
+		     the next operand and it will be considered fully live.
+
+		     Note that since we restore DST_MASK from SAVE_MASK at the
+		     top of the loop, we have to change SAVE_MASK to get the
+		     semantics we want.  */
 		  if (binop_implies_op2_fully_live (GET_CODE (src)))
-		    dst_mask = -1;
+		    save_mask = -1;
 
 		  /* If this was anything but a binary operand, break the inner
 		     loop.  This is conservatively correct as it will cause the
@@ -802,14 +824,16 @@ ext_dce_process_bb (basic_block bb)
       bitmap live_tmp = BITMAP_ALLOC (NULL);
 
       /* First process any sets/clobbers in INSN.  */
-      ext_dce_process_sets (insn, PATTERN (insn), live_tmp);
+      bool skipped_dest = ext_dce_process_sets (insn, PATTERN (insn), live_tmp);
 
       /* CALL_INSNs need processing their fusage data.  */
       if (CALL_P (insn))
-	ext_dce_process_sets (insn, CALL_INSN_FUNCTION_USAGE (insn), live_tmp);
+	skipped_dest |= ext_dce_process_sets (insn,
+					      CALL_INSN_FUNCTION_USAGE (insn),
+					      live_tmp);
 
       /* And now uses, optimizing away SIGN/ZERO extensions as we go.  */
-      ext_dce_process_uses (insn, PATTERN (insn), live_tmp);
+      ext_dce_process_uses (insn, PATTERN (insn), live_tmp, skipped_dest);
 
       /* A nonlocal goto implicitly uses the frame pointer.  */
       if (JUMP_P (insn) && find_reg_note (insn, REG_NON_LOCAL_GOTO, NULL_RTX))
@@ -832,7 +856,7 @@ ext_dce_process_bb (basic_block bb)
 	      if (global_regs[i])
 		bitmap_set_range (livenow, i * 4, 4);
 
-	  ext_dce_process_uses (insn, CALL_INSN_FUNCTION_USAGE (insn), live_tmp);
+	  ext_dce_process_uses (insn, CALL_INSN_FUNCTION_USAGE (insn), live_tmp, false);
 	}
 
       BITMAP_FREE (live_tmp);
