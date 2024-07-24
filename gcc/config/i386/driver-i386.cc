@@ -893,7 +893,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	    if (has_feature (isa_names_table[i].feature))
 	      {
 		if (codegen_x86_64
-		    || isa_names_table[i].feature != FEATURE_UINTR)
+		    || (isa_names_table[i].feature != FEATURE_UINTR
+			&& isa_names_table[i].feature != FEATURE_APX_F))
 		  options = concat (options, " ",
 				    isa_names_table[i].option, NULL);
 	      }
