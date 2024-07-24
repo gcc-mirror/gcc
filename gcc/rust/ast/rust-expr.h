@@ -4964,8 +4964,9 @@ struct InlineAsmOperand
 
   InlineAsmOperand () {}
   InlineAsmOperand (const InlineAsmOperand &other)
-    : in (other.in), out (other.out), in_out (other.in_out),
-      split_in_out (other.split_in_out), cnst (other.cnst), sym (other.sym)
+    : register_type (other.register_type), in (other.in), out (other.out),
+      in_out (other.in_out), split_in_out (other.split_in_out),
+      cnst (other.cnst), sym (other.sym)
   {}
 
   void set_in (const tl::optional<struct In> &reg)

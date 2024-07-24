@@ -31,7 +31,7 @@ fn main() {
         asm!(
             "add {0}, {0}",
             in(reg) _num1,
-            out(reg) _,
+            //out(reg) _,
         );
     }
 }
