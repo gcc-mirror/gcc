@@ -170,6 +170,9 @@ class array : public value
     append (v.release ());
   }
 
+  size_t size () const { return m_elements.length (); }
+  value *operator[] (size_t i) const { return m_elements[i]; }
+
  private:
   auto_vec<value *> m_elements;
 };

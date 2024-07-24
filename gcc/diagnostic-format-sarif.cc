@@ -345,6 +345,7 @@ public:
    - CWE metadata
    - diagnostic groups (see limitations below)
    - logical locations (e.g. cfun)
+   - labelled ranges (as annotations)
 
    Known limitations:
    - GCC supports one-deep nesting of diagnostics (via auto_diagnostic_group),
@@ -361,7 +362,6 @@ public:
      ("artifact.hashes" property (SARIF v2.1.0 section 3.24.11).
    - doesn't capture the "analysisTarget" property
      (SARIF v2.1.0 section 3.27.13).
-   - doesn't capture labelled ranges
    - doesn't capture -Werror cleanly
    - doesn't capture inlining information (can SARIF handle this?)
    - doesn't capture macro expansion information (can SARIF handle this?).  */
@@ -1209,6 +1209,38 @@ sarif_builder::make_location_object (const rich_location &rich_loc,
 
   /* "logicalLocations" property (SARIF v2.1.0 section 3.28.4).  */
   set_any_logical_locs_arr (*location_obj, logical_loc);
+
+  /* "annotations" property (SARIF v2.1.0 section 3.28.6).  */
+  {
+    /* Create annotations for any labelled ranges.  */
+    std::unique_ptr<json::array> annotations_arr = nullptr;
+    for (unsigned int i = 0; i < rich_loc.get_num_locations (); i++)
+      {
+	const location_range *range = rich_loc.get_range (i);
+	if (const range_label *label = range->m_label)
+	  {
+	    label_text text = label->get_text (i);
+	    if (text.get ())
+	      {
+		location_t range_loc = rich_loc.get_loc (i);
+		auto region
+		  = maybe_make_region_object (range_loc,
+					      rich_loc.get_column_override ());
+		if (region)
+		  {
+		    if (!annotations_arr)
+		      annotations_arr = ::make_unique<json::array> ();
+		    region->set<sarif_message>
+		      ("message", make_message_object (text.get ()));
+		    annotations_arr->append<sarif_region> (std::move (region));
+		  }
+	      }
+	  }
+      }
+    if (annotations_arr)
+      location_obj->set<json::array> ("annotations",
+				      std::move (annotations_arr));
+  }
 
   /* A flag for hinting that the diagnostic involves issues at the
      level of character encodings (such as homoglyphs, or misleading
@@ -2416,6 +2448,9 @@ test_make_location_object (const line_table_case &case_)
 
   sarif_builder builder (dc, "MAIN_INPUT_FILENAME", true);
 
+  /* These "columns" are byte offsets, whereas later on the columns
+     in the generated SARIF use sarif_builder::get_sarif_column and
+     thus respect tabs, encoding.  */
   const location_t foo
     = make_location (linemap_position_for_column (line_table, 1),
 		     linemap_position_for_column (line_table, 1),
@@ -2478,6 +2513,39 @@ test_make_location_object (const line_table_case &case_)
 	   "  | |               |            |\n"
 	   "  | label0          label1       label2\n");
       }
+    }
+  }
+  auto annotations
+    = EXPECT_JSON_OBJECT_WITH_ARRAY_PROPERTY (location_obj.get (),
+					      "annotations");
+  ASSERT_EQ (annotations->size (), 3);
+  {
+    {
+      auto a0 = (*annotations)[0];
+      ASSERT_JSON_INT_PROPERTY_EQ (a0, "startLine", 1);
+      ASSERT_JSON_INT_PROPERTY_EQ (a0, "startColumn", 1);
+      ASSERT_JSON_INT_PROPERTY_EQ (a0, "endColumn", 7);
+      auto message
+	= EXPECT_JSON_OBJECT_WITH_OBJECT_PROPERTY (a0, "message");
+      ASSERT_JSON_STRING_PROPERTY_EQ (message, "text", "label0");
+    }
+    {
+      auto a1 = (*annotations)[1];
+      ASSERT_JSON_INT_PROPERTY_EQ (a1, "startLine", 1);
+      ASSERT_JSON_INT_PROPERTY_EQ (a1, "startColumn", 10);
+      ASSERT_JSON_INT_PROPERTY_EQ (a1, "endColumn", 15);
+      auto message
+	= EXPECT_JSON_OBJECT_WITH_OBJECT_PROPERTY (a1, "message");
+      ASSERT_JSON_STRING_PROPERTY_EQ (message, "text", "label1");
+    }
+    {
+      auto a2 = (*annotations)[2];
+      ASSERT_JSON_INT_PROPERTY_EQ (a2, "startLine", 1);
+      ASSERT_JSON_INT_PROPERTY_EQ (a2, "startColumn", 16);
+      ASSERT_JSON_INT_PROPERTY_EQ (a2, "endColumn", 25);
+      auto message
+	= EXPECT_JSON_OBJECT_WITH_OBJECT_PROPERTY (a2, "message");
+      ASSERT_JSON_STRING_PROPERTY_EQ (message, "text", "label2");
     }
   }
 }
