@@ -2431,7 +2431,8 @@ finish_list_read (st_parameter_dt *dtp)
       /* Set the next_char and push_char worker functions.  */
       set_workers (dtp);
 
-      if (likely (dtp->u.p.child_saved_iostat == LIBERROR_OK))
+      if (likely (dtp->u.p.child_saved_iostat == LIBERROR_OK)
+	      && ((dtp->common.flags & IOPARM_DT_HAS_UDTIO) == 0))
 	{
 	  c = next_char (dtp);
 	  if (c == EOF)
