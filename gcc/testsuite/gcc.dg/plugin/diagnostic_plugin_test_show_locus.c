@@ -61,6 +61,7 @@
 #include "context.h"
 #include "print-tree.h"
 #include "gcc-rich-location.h"
+#include "text-range-label.h"
 
 int plugin_is_GPL_compatible;
 

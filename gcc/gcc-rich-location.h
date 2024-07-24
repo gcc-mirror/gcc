@@ -121,21 +121,4 @@ class gcc_rich_location : public rich_location
 				   location_t indent);
 };
 
-/* Concrete subclass of libcpp's range_label.
-   Simple implementation using a string literal.  */
-
-class text_range_label : public range_label
-{
- public:
-  text_range_label (const char *text) : m_text (text) {}
-
-  label_text get_text (unsigned /*range_idx*/) const final override
-  {
-    return label_text::borrow (m_text);
-  }
-
- private:
-  const char *m_text;
-};
-
 #endif /* GCC_RICH_LOCATION_H */

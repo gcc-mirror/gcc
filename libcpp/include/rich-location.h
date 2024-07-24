@@ -91,6 +91,7 @@ class semi_embedded_vec
  public:
   semi_embedded_vec ();
   ~semi_embedded_vec ();
+  semi_embedded_vec (const semi_embedded_vec &other);
 
   unsigned int count () const { return m_num; }
   T& operator[] (int idx);
@@ -113,6 +114,21 @@ template <typename T, int NUM_EMBEDDED>
 semi_embedded_vec<T, NUM_EMBEDDED>::semi_embedded_vec ()
 : m_num (0), m_alloc (0), m_extra (NULL)
 {
+}
+
+/* Copy constructor for semi_embedded_vec.  */
+
+template <typename T, int NUM_EMBEDDED>
+semi_embedded_vec<T, NUM_EMBEDDED>::semi_embedded_vec (const semi_embedded_vec &other)
+: m_num (0),
+  m_alloc (other.m_alloc),
+  m_extra (nullptr)
+{
+  if (other.m_extra)
+    m_extra = XNEWVEC (T, m_alloc);
+
+  for (int i = 0; i < other.m_num; i++)
+    push (other[i]);
 }
 
 /* semi_embedded_vec's dtor.  Release any dynamically-allocated memory.  */
@@ -387,11 +403,10 @@ class rich_location
   /* Destructor.  */
   ~rich_location ();
 
-  /* The class manages the memory pointed to by the elements of
-     the M_FIXIT_HINTS vector and is not meant to be copied or
-     assigned.  */
-  rich_location (const rich_location &) = delete;
-  void operator= (const rich_location &) = delete;
+  rich_location (const rich_location &);
+  rich_location (rich_location &&) = delete;
+  rich_location &operator= (const rich_location &) = delete;
+  rich_location &operator= (rich_location &&) = delete;
 
   /* Accessors.  */
   location_t get_loc () const { return get_loc (0); }
@@ -547,6 +562,8 @@ protected:
 
   mutable expanded_location m_expanded_location;
 
+  /* The class manages the memory pointed to by the elements of
+     the m_fixit_hints vector.  */
   static const int MAX_STATIC_FIXIT_HINTS = 2;
   semi_embedded_vec <fixit_hint *, MAX_STATIC_FIXIT_HINTS> m_fixit_hints;
 
@@ -605,7 +622,11 @@ class fixit_hint
   fixit_hint (location_t start,
 	      location_t next_loc,
 	      const char *new_content);
+  fixit_hint (const fixit_hint &other);
+  fixit_hint (fixit_hint &&other) = delete;
   ~fixit_hint () { free (m_bytes); }
+  fixit_hint &operator= (const fixit_hint &) = delete;
+  fixit_hint &operator= (fixit_hint &&) = delete;
 
   bool affects_line_p (const line_maps *set,
 		       const char *file,

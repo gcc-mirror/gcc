@@ -2175,6 +2175,26 @@ rich_location::rich_location (line_maps *set, location_t loc,
   add_range (loc, SHOW_RANGE_WITH_CARET, label, label_highlight_color);
 }
 
+/* Copy ctor for rich_location.
+   Take a deep copy of the fixit hints, which are owneed;
+   everything else is borrowed.  */
+
+rich_location::rich_location (const rich_location &other)
+: m_line_table (other.m_line_table),
+  m_ranges (other.m_ranges),
+  m_column_override (other.m_column_override),
+  m_have_expanded_location (other.m_have_expanded_location),
+  m_seen_impossible_fixit (other.m_seen_impossible_fixit),
+  m_fixits_cannot_be_auto_applied (other.m_fixits_cannot_be_auto_applied),
+  m_escape_on_output (other.m_escape_on_output),
+  m_expanded_location (other.m_expanded_location),
+  m_fixit_hints (),
+  m_path (other.m_path)
+{
+  for (unsigned i = 0; i < other.m_fixit_hints.count (); i++)
+    m_fixit_hints.push (new fixit_hint (*other.m_fixit_hints[i]));
+}
+
 /* The destructor for class rich_location.  */
 
 rich_location::~rich_location ()
@@ -2592,6 +2612,14 @@ fixit_hint::fixit_hint (location_t start,
   m_next_loc (next_loc),
   m_bytes (xstrdup (new_content)),
   m_len (strlen (new_content))
+{
+}
+
+fixit_hint::fixit_hint (const fixit_hint &other)
+: m_start (other.m_start),
+  m_next_loc (other.m_next_loc),
+  m_bytes (xstrdup (other.m_bytes)),
+  m_len (other.m_len)
 {
 }
 

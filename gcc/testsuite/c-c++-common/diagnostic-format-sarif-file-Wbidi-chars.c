@@ -20,4 +20,13 @@ int main() {
 
      { dg-final { scan-sarif-file {"text": "unpaired UTF-8 bidirectional control characters detected"} } }
      { dg-final { scan-sarif-file {"text": "unpaired UTF-8 bidirectional control characters detected"} } }
+
+   Verify that the expected property bag property is present.
+     { dg-final { scan-sarif-file {"gcc/escapeNonAscii": true} } }
+
+   Verify that the snippets have a "rendered" property.
+   We check the contents of the property via a selftest.
+
+     { dg-final { scan-sarif-file {"rendered": } } }
+
 */
