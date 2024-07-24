@@ -5136,6 +5136,44 @@ ISR (ADC_vect, ISR_NOBLOCK) // Uses the "interrupt" attribute.
 When both @code{signal} and @code{interrupt} are specified for the same
 function, then @code{signal} is silently ignored.
 
+@cindex @code{signal(@var{num})} function attribute, AVR
+@cindex @code{interrupt(@var{num})} function attribute, AVR
+@item signal(@var{num})
+@itemx interrupt(@var{num})
+
+Similar to the @code{signal} resp. @code{interrupt} attribute without
+argument, but the IRQ number is supplied as an argument @var{num} to
+the attribute, rather than providing the ISR name itself as the function name:
+
+@example
+__attribute__((signal(1)))
+void my_handler (void)
+@{
+   // Code for __vector_1
+@}
+
+#include <avr/io.h>
+
+__attribute__((__signal__(PCINT0_vect_num, PCINT1_vect_num)))
+static void my_pcint0_1_handler (void)
+@{
+   // Code for PCINT0 and PCINT1 (__vector_3 and __vector_4
+   // on ATmega328).
+@}
+@end example
+
+Notice that the handler function needs not to be externally visible.
+
+@cindex @code{noblock} function attribute, AVR
+@item noblock
+
+This attribute can be used together with the @code{signal} attribute
+to indicate that an interrupt service routine should start with a @code{SEI}
+instruction to globally re-enable interrupts. Using attributes @code{signal}
+and @code{noblock} together has the same effect like using the @code{interrupt}
+attribute.  Using the @code{noblock} attribute without @code{signal} has no
+effect.
+
 @cindex @code{naked} function attribute, AVR
 @item naked
 This attribute allows the compiler to construct the

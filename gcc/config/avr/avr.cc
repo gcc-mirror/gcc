@@ -1356,6 +1356,33 @@ avr_lookup_function_attribute1 (const_tree func, const char *name)
   return NULL_TREE != lookup_attribute (name, TYPE_ATTRIBUTES (func));
 }
 
+
+/* Call WORKER on all NAME attributes of function FUNC.  */
+
+static void
+avr_foreach_function_attribute (tree func, const char *name,
+				void (*worker) (tree, tree, void *),
+				void *cookie)
+{
+  tree attrs = NULL_TREE;
+
+  if (TREE_CODE (func) == FUNCTION_DECL)
+    attrs = DECL_ATTRIBUTES (func);
+  else if (FUNC_OR_METHOD_TYPE_P (func))
+    attrs = TYPE_ATTRIBUTES (TREE_TYPE (func));
+
+  while (attrs)
+    {
+      attrs = lookup_attribute (name, attrs);
+      if (attrs)
+	{
+	  worker (func, attrs, cookie);
+	  attrs = TREE_CHAIN (attrs);
+	}
+    }
+}
+
+
 /* Return nonzero if FUNC is a naked function.  */
 
 static bool
@@ -1364,22 +1391,56 @@ avr_naked_function_p (tree func)
   return avr_lookup_function_attribute1 (func, "naked");
 }
 
-/* Return nonzero if FUNC is an interrupt function as specified
-   by the "interrupt" attribute.  */
+/* Return nonzero if FUNC is a noblock function.  */
 
 static bool
-avr_interrupt_function_p (tree func)
+avr_noblock_function_p (tree func)
 {
-  return avr_lookup_function_attribute1 (func, "interrupt");
+  return avr_lookup_function_attribute1 (func, "noblock");
 }
 
-/* Return nonzero if FUNC is a signal function as specified
-   by the "signal" attribute.  */
+/* Return 1 if FUNC is a function that has a "ATTR_NAME" attribute
+   (and perhaps also "ATTR_NAME(num)" attributes.  Return -1 if FUNC has
+   "ATTR_NAME(num)" attribute(s) but no "ATTR_NAME" attribute.
+   When no form of ATTR_NAME is present, return 0.  */
 
-static bool
-avr_signal_function_p (tree func)
+static int
+avr_interrupt_signal_function (tree func, const char *attr_name)
 {
-  return avr_lookup_function_attribute1 (func, "signal");
+  int res = 0;
+
+  avr_foreach_function_attribute (func, attr_name,
+    [] (tree, tree attr, void *cookie)
+    {
+      int *pcook = (int *) cookie;
+
+      *pcook = TREE_VALUE (attr)
+	? *pcook ? *pcook : -1
+	: 1;
+    }, &res);
+
+  return res;
+}
+
+
+/* Return 1 if FUNC is an interrupt function that has an "interrupt" attribute
+   (and perhaps also "interrupt(num)" attributes.  Return -1 if FUNC has
+   "interrupt(num)" attribute(s) but no "interrupt" attribute.  */
+
+static int
+avr_interrupt_function (tree func)
+{
+  return avr_interrupt_signal_function (func, "interrupt");
+}
+
+/* Return 1 if FUNC is a signal function that has a "signal" attribute
+   (and perhaps also "signal(num)" attributes.  Return -1 if FUNC has
+   "signal(num)" attribute(s) but no "signal" attribute.  */
+
+static int
+avr_signal_function (tree func)
+{
+  return avr_interrupt_signal_function (func, "signal");
 }
 
 /* Return nonzero if FUNC is an OS_task function.  */
@@ -1437,8 +1498,9 @@ avr_set_current_function (tree decl)
   location_t loc = DECL_SOURCE_LOCATION (decl);
 
   cfun->machine->is_naked = avr_naked_function_p (decl);
-  cfun->machine->is_signal = avr_signal_function_p (decl);
-  cfun->machine->is_interrupt = avr_interrupt_function_p (decl);
+  cfun->machine->is_signal = avr_signal_function (decl);
+  cfun->machine->is_interrupt = avr_interrupt_function (decl);
+  cfun->machine->is_noblock = avr_noblock_function_p (decl);
   cfun->machine->is_OS_task = avr_OS_task_function_p (decl);
   cfun->machine->is_OS_main = avr_OS_main_function_p (decl);
   cfun->machine->is_no_gccisr = avr_no_gccisr_function_p (decl);
@@ -1475,26 +1537,33 @@ avr_set_current_function (tree decl)
       /* Interrupt handlers must be  void __vector (void)  functions.  */
 
       if (args && TREE_CODE (TREE_VALUE (args)) != VOID_TYPE)
-	error_at (loc, "%qs function cannot have arguments", isr);
+	{
+	  error_at (loc, "%qs function cannot have arguments", isr);
+	  if (TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
+	    inform (loc, "method %qs has an inplicit %<this%> argument", name);
+	}
 
       if (TREE_CODE (ret) != VOID_TYPE)
 	error_at (loc, "%qs function cannot return a value", isr);
 
 #if defined WITH_AVRLIBC
-      /* Silently ignore 'signal' if 'interrupt' is present.  AVR-LibC startet
-	 using this when it switched from SIGNAL and INTERRUPT to ISR.  */
-
-      if (cfun->machine->is_interrupt)
-	cfun->machine->is_signal = 0;
-
       /* If the function has the 'signal' or 'interrupt' attribute, ensure
 	 that the name of the function is "__vector_NN" so as to catch
-	 when the user misspells the vector name.  */
+	 when the user misspells the vector name.  This check is only
+	 required when the "interrupt" resp. "signal" attribute does not
+	 have an IRQ-number argument.  */
 
-      if (!startswith (name, "__vector"))
+      if (!startswith (name, "__vector")
+	  && (cfun->machine->is_interrupt == 1
+	      || cfun->machine->is_signal == 1))
 	warning_at (loc, OPT_Wmisspelled_isr, "%qs appears to be a misspelled "
 		    "%qs handler, missing %<__vector%> prefix", name, isr);
 #endif // AVR-LibC naming conventions
+    }
+  else if (cfun->machine->is_noblock)
+    {
+      warning (OPT_Wattributes, "%qs attribute ignored on non-ISR function",
+	       "noblock");
     }
 
 #if defined WITH_AVRLIBC
@@ -2793,11 +2862,14 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
 	     Always move through unspec, see PR50063.
 	     For meaning of irq_state see movhi_sp_r insn.  */
 
-	  if (cfun->machine->is_interrupt)
+	  if (cfun->machine->is_interrupt
+	      || (cfun->machine->is_signal
+		  && cfun->machine->is_noblock))
 	    irq_state = 1;
 
 	  if (TARGET_NO_INTERRUPTS
-	      || cfun->machine->is_signal
+	      || (cfun->machine->is_signal
+		  && ! cfun->machine->is_noblock)
 	      || cfun->machine->is_OS_main)
 	    irq_state = 0;
 
@@ -2892,7 +2964,8 @@ avr_expand_prologue (void)
     {
       int treg = AVR_TMP_REGNO;
       /* Enable interrupts.  */
-      if (cfun->machine->is_interrupt)
+      if (cfun->machine->is_interrupt
+	  || cfun->machine->is_noblock)
 	emit_insn (gen_enable_interrupt ());
 
       if (cfun->machine->gasisr.maybe)
@@ -2976,6 +3049,68 @@ avr_expand_prologue (void)
 }
 
 
+/* Turn TVAL into an integer that represents an ISR number.  When no such
+   conversion is possible, then return 0.  Unfortunately, we don't know
+   how many IRQs the device actually has.  */
+
+static int
+avr_isr_number (tree tval)
+{
+  return (TREE_CODE (tval) == INTEGER_CST
+	  && tree_fits_shwi_p (tval)
+	  && tree_to_shwi (tval) > 0)
+    ? (int) tree_to_shwi (tval)
+    : 0;
+}
+
+
+struct avr_fun_cookie
+{
+  FILE *file;
+  const char *name;
+};
+
+/* A helper for `avr_declare_function_name' below.  When the function has
+   attributes like signal(N) or interrupt(N), then define __vector_N as
+   a global alias for the function name.  */
+
+static void
+avr_asm_isr_alias (tree /*func*/, tree attr, void *pv)
+{
+  avr_fun_cookie *cookie = (avr_fun_cookie *) pv;
+
+  for (tree v = TREE_VALUE (attr); v; v = TREE_CHAIN (v))
+    {
+      int ival = avr_isr_number (TREE_VALUE (v));
+
+      if (ival)
+	{
+	  fprintf (cookie->file, ".global __vector_%d\n", ival);
+	  fprintf (cookie->file, "__vector_%d = ", ival);
+	  assemble_name (cookie->file, cookie->name);
+	  fprintf (cookie->file, "\n");
+	}
+    }
+}
+
+
+/* Worker for `ASM_DECLARE_FUNCTION_NAME'.  */
+
+void
+avr_declare_function_name (FILE *file, const char *name, tree decl)
+{
+  // Default action from elfos.h.
+  ASM_OUTPUT_TYPE_DIRECTIVE (file, name, "function");
+  ASM_DECLARE_RESULT (file, DECL_RESULT (decl));
+  ASM_OUTPUT_FUNCTION_LABEL (file, name, decl);
+
+  avr_fun_cookie fc = { file, name };
+
+  avr_foreach_function_attribute (decl, "signal", avr_asm_isr_alias, &fc);
+  avr_foreach_function_attribute (decl, "interrupt", avr_asm_isr_alias, &fc);
+}
+
+
 /* Implement `TARGET_ASM_FUNCTION_END_PROLOGUE'.  */
 /* Output summary at end of function prologue.  */
 
@@ -2988,7 +3123,9 @@ avr_asm_function_end_prologue (FILE *file)
     }
   else
     {
-      if (cfun->machine->is_interrupt)
+      if (cfun->machine->is_interrupt
+	  || (cfun->machine->is_signal
+	      && cfun->machine->is_noblock))
 	{
 	  fputs ("/* prologue: Interrupt */\n", file);
 	}
@@ -4366,8 +4503,8 @@ avr_xload_libgcc_p (machine_mode mode)
 static rtx
 avr_find_unused_d_reg (rtx_insn *insn, rtx exclude)
 {
-  bool isr_p = (avr_interrupt_function_p (current_function_decl)
-		|| avr_signal_function_p (current_function_decl));
+  bool isr_p = (avr_interrupt_function (current_function_decl)
+		|| avr_signal_function (current_function_decl));
 
   for (int regno = REG_16; regno < REG_32; regno++)
     {
@@ -11385,6 +11522,7 @@ avr_class_likely_spilled_p (reg_class_t c)
 		After function prologue interrupts remain disabled.
    interrupt -	Make a function to be hardware interrupt. Before function
 		prologue interrupts are enabled by means of SEI.
+   noblock   -	The function is an ISR that starts with a SEI instruction.
    naked     -	Don't generate function prologue/epilogue and RET
 		instruction.  */
 
@@ -11583,9 +11721,11 @@ TARGET_GNU_ATTRIBUTES (avr_attribute_table,
        affects_type_identity, handler, exclude } */
   { "progmem",   0, 0, false, false, false, false,
     avr_handle_progmem_attribute, NULL },
-  { "signal",    0, 0, true,  false, false, false,
+  { "signal", 0, -1, true,  false, false, false,
     avr_handle_fndecl_attribute, NULL },
-  { "interrupt", 0, 0, true,  false, false, false,
+  { "interrupt", 0, -1, true,  false, false, false,
+    avr_handle_fndecl_attribute, NULL },
+  { "noblock", 0, 0, true,  false, false, false,
     avr_handle_fndecl_attribute, NULL },
   { "no_gccisr", 0, 0, true,  false, false, false,
     avr_handle_fndecl_attribute, NULL },
@@ -11815,6 +11955,33 @@ avr_pgm_check_var_decl (tree node)
 }
 
 
+/* Helper for `avr_insert_attributes'.  Print an error when there are invalid
+   attributes named NAME, where NAME is in { "signal", "interrupt" }.  */
+
+static void
+avr_handle_isr_attribute (tree, tree *attrs, const char *name)
+{
+  bool seen = false;
+
+  for (tree list = lookup_attribute (name, *attrs); list;
+       list = lookup_attribute (name, TREE_CHAIN (list)))
+    {
+      seen = true;
+      for (tree v = TREE_VALUE (list); v; v = TREE_CHAIN (v))
+	{
+	  if (! avr_isr_number (TREE_VALUE (v)))
+	    error ("attribute %qs expects a constant positive integer"
+		   " argument", name);
+	}
+    }
+
+  if (seen
+      && ! lookup_attribute ("used", *attrs))
+    {
+      *attrs = tree_cons (get_identifier ("used"), NULL, *attrs);
+    }
+}
+
 /* Implement `TARGET_INSERT_ATTRIBUTES'.  */
 
 static void
@@ -11846,6 +12013,9 @@ avr_insert_attributes (tree node, tree *attributes)
       *attributes = tree_cons (get_identifier ("OS_task"),
 			       NULL, *attributes);
     }
+
+  avr_handle_isr_attribute (node, attributes, "signal");
+  avr_handle_isr_attribute (node, attributes, "interrupt");
 
   /* Add the section attribute if the variable is in progmem.  */
 

@@ -24569,6 +24569,13 @@ and defined to@tie{}0, otherwise.
 The compiler is configured to be used together with AVR-Libc.
 See the @option{--with-avrlibc} configure option.
 
+@item __HAVE_SIGNAL_N__
+The compiler supports the @code{signal(@var{num})} and
+@code{interrupt(@var{num})}
+@ref{AVR Function Attributes,,function attributes}
+with an argument @var{num} that specifies the number of the
+interrupt service routine.
+
 @item __HAVE_DOUBLE_MULTILIB__
 Defined if @option{-mdouble=} acts as a multilib option.
 

@@ -31,3 +31,7 @@
 /* Be conservative in crtstuff.c.  */
 #undef INIT_SECTION_ASM_OP
 #undef FINI_SECTION_ASM_OP
+
+#undef ASM_DECLARE_FUNCTION_NAME
+#define ASM_DECLARE_FUNCTION_NAME(STREAM, NAME, DECL) \
+	avr_declare_function_name (STREAM, NAME, DECL)

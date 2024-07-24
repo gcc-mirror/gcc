@@ -391,6 +391,10 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
   cpp_define (pfile, "__WITH_AVRLIBC__");
 #endif /* WITH_AVRLIBC */
 
+  // We support __attribute__((signal/interrupt (n1, n2, ...)[, noblock]))
+  cpp_define (pfile, "__HAVE_SIGNAL_N__");
+
+
   // From configure --with-libf7={|libgcc|math|math-symbols|yes|no}
 
 #ifdef WITH_LIBF7_LIBGCC
