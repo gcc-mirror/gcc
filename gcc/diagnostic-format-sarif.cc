@@ -37,9 +37,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "ordered-hash-map.h"
 #include "sbitmap.h"
 #include "make-unique.h"
+#include "selftest.h"
+#include "selftest-diagnostic.h"
+#include "selftest-diagnostic-show-locus.h"
+#include "selftest-json.h"
+#include "text-range-label.h"
 
 /* Forward decls.  */
 class sarif_builder;
+class content_renderer;
+  class escape_nonascii_renderer;
 
 /* Subclasses of sarif_object.
    Keep these in order of their descriptions in the specification.  */
@@ -284,6 +291,20 @@ public:
 			  sarif_builder &builder);
 };
 
+/* Abstract base class for use when making an  "artifactContent"
+   object (SARIF v2.1.0 section 3.3): generate a value for the
+   3.3.4 "rendered" property.
+   Can return nullptr, for "no property".  */
+
+class content_renderer
+{
+public:
+  virtual ~content_renderer () {}
+
+  virtual std::unique_ptr<sarif_multiformat_message_string>
+  render (const sarif_builder &builder) const = 0;
+};
+
 /* A class for managing SARIF output (for -fdiagnostics-format=sarif-stderr
    and -fdiagnostics-format=sarif-file).
 
@@ -312,7 +333,6 @@ public:
      property (SARIF v2.1.0 section 3.14.11), as invocation objects
      (SARIF v2.1.0 section 3.20), but we'd want to capture the arguments to
      toplev::main, and the response files.
-   - doesn't capture escape_on_output_p
    - doesn't capture secondary locations within a rich_location
      (perhaps we should use the "relatedLocations" property: SARIF v2.1.0
      section 3.27.22)
@@ -379,7 +399,8 @@ private:
   std::unique_ptr<sarif_physical_location>
   maybe_make_physical_location_object (location_t loc,
 				       enum diagnostic_artifact_role role,
-				       int column_override);
+				       int column_override,
+				       const content_renderer *snippet_renderer);
   std::unique_ptr<sarif_artifact_location>
   make_artifact_location_object (location_t loc);
   std::unique_ptr<sarif_artifact_location>
@@ -390,7 +411,8 @@ private:
   maybe_make_region_object (location_t loc,
 			    int column_override) const;
   std::unique_ptr<sarif_region>
-  maybe_make_region_object_for_context (location_t loc) const;
+  maybe_make_region_object_for_context (location_t loc,
+					const content_renderer *snippet_renderer) const;
   std::unique_ptr<sarif_region>
   make_region_object_for_hint (const fixit_hint &hint) const;
   std::unique_ptr<sarif_multiformat_message_string>
@@ -402,9 +424,9 @@ private:
   make_run_object (std::unique_ptr<sarif_invocation> invocation_obj,
 		   std::unique_ptr<json::array> results);
   std::unique_ptr<sarif_tool>
-  make_tool_object () const;
+  make_tool_object ();
   std::unique_ptr<sarif_tool_component>
-  make_driver_tool_component_object () const;
+  make_driver_tool_component_object ();
   std::unique_ptr<json::array> maybe_make_taxonomies_array () const;
   std::unique_ptr<sarif_tool_component>
   maybe_make_cwe_taxonomy_object () const;
@@ -430,7 +452,8 @@ private:
   std::unique_ptr<sarif_artifact_content>
   maybe_make_artifact_content_object (const char *filename,
 				      int start_line,
-				      int end_line) const;
+				      int end_line,
+				      const content_renderer *r) const;
   std::unique_ptr<sarif_fix>
   make_fix_object (const rich_location &rich_loc);
   std::unique_ptr<sarif_artifact_change>
@@ -460,7 +483,7 @@ private:
 
   bool m_seen_any_relative_paths;
   hash_set <free_string_hash> m_rule_id_set;
-  json::array *m_rules_arr;
+  std::unique_ptr<json::array> m_rules_arr;
 
   /* The set of all CWE IDs we've seen, if any.  */
   hash_set <int_hash <int, 0, 1> > m_cwe_id_set;
@@ -1086,20 +1109,73 @@ sarif_builder::make_location_object (const rich_location &rich_loc,
 				     const logical_location *logical_loc,
 				     enum diagnostic_artifact_role role)
 {
+  class escape_nonascii_renderer : public content_renderer
+  {
+  public:
+    escape_nonascii_renderer (const rich_location &richloc,
+			      enum diagnostics_escape_format escape_format)
+    : m_richloc (richloc),
+      m_escape_format (escape_format)
+    {}
+
+    std::unique_ptr<sarif_multiformat_message_string>
+    render (const sarif_builder &builder) const final override
+    {
+      diagnostic_context dc;
+      diagnostic_initialize (&dc, 0);
+      dc.m_source_printing.enabled = true;
+      dc.m_source_printing.colorize_source_p = false;
+      dc.m_source_printing.show_labels_p = true;
+      dc.m_source_printing.show_line_numbers_p = true;
+
+      rich_location my_rich_loc (m_richloc);
+      my_rich_loc.set_escape_on_output (true);
+
+      dc.set_escape_format (m_escape_format);
+      diagnostic_show_locus (&dc, &my_rich_loc, DK_ERROR);
+
+      std::unique_ptr<sarif_multiformat_message_string> result
+	= builder.make_multiformat_message_string
+	    (pp_formatted_text (dc.printer));
+
+      diagnostic_finish (&dc);
+
+      return result;
+    }
+  private:
+    const rich_location &m_richloc;
+    enum diagnostics_escape_format m_escape_format;
+  } the_renderer (rich_loc,
+		  m_context.get_escape_format ());
+
   auto location_obj = ::make_unique<sarif_location> ();
 
   /* Get primary loc from RICH_LOC.  */
   location_t loc = rich_loc.get_loc ();
 
   /* "physicalLocation" property (SARIF v2.1.0 section 3.28.3).  */
+  const content_renderer *snippet_renderer
+    = rich_loc.escape_on_output_p () ? &the_renderer : nullptr;
   if (auto phs_loc_obj
 	= maybe_make_physical_location_object (loc, role,
-					       rich_loc.get_column_override ()))
+					       rich_loc.get_column_override (),
+					       snippet_renderer))
     location_obj->set<sarif_physical_location> ("physicalLocation",
 						std::move (phs_loc_obj));
 
   /* "logicalLocations" property (SARIF v2.1.0 section 3.28.4).  */
   set_any_logical_locs_arr (*location_obj, logical_loc);
+
+  /* A flag for hinting that the diagnostic involves issues at the
+     level of character encodings (such as homoglyphs, or misleading
+     bidirectional control codes), and thus that it will be helpful
+     to the user if we show some representation of
+     how the characters in the pertinent source lines are encoded.  */
+  if (rich_loc.escape_on_output_p ())
+    {
+      sarif_property_bag &bag = location_obj->get_or_create_properties ();
+      bag.set_bool ("gcc/escapeNonAscii", rich_loc.escape_on_output_p ());
+    }
 
   return location_obj;
 }
@@ -1115,7 +1191,8 @@ sarif_builder::make_location_object (const diagnostic_event &event,
 
   /* "physicalLocation" property (SARIF v2.1.0 section 3.28.3).  */
   location_t loc = event.get_location ();
-  if (auto phs_loc_obj = maybe_make_physical_location_object (loc, role, 0))
+  if (auto phs_loc_obj
+	= maybe_make_physical_location_object (loc, role, 0, nullptr))
     location_obj->set<sarif_physical_location> ("physicalLocation",
 						std::move (phs_loc_obj));
 
@@ -1144,7 +1221,8 @@ std::unique_ptr<sarif_physical_location>
 sarif_builder::
 maybe_make_physical_location_object (location_t loc,
 				     enum diagnostic_artifact_role role,
-				     int column_override)
+				     int column_override,
+				     const content_renderer *snippet_renderer)
 {
   if (loc <= BUILTINS_LOCATION || LOCATION_FILE (loc) == nullptr)
     return nullptr;
@@ -1161,7 +1239,8 @@ maybe_make_physical_location_object (location_t loc,
     phys_loc_obj->set<sarif_region> ("region", std::move (region_obj));
 
   /* "contextRegion" property (SARIF v2.1.0 section 3.29.5).  */
-  if (auto context_region_obj = maybe_make_region_object_for_context (loc))
+  if (auto context_region_obj
+	= maybe_make_region_object_for_context (loc, snippet_renderer))
     phys_loc_obj->set<sarif_region> ("contextRegion",
 				     std::move (context_region_obj));
 
@@ -1339,7 +1418,10 @@ sarif_builder::maybe_make_region_object (location_t loc,
    the pertinent source.  */
 
 std::unique_ptr<sarif_region>
-sarif_builder::maybe_make_region_object_for_context (location_t loc) const
+sarif_builder::
+maybe_make_region_object_for_context (location_t loc,
+				      const content_renderer *snippet_renderer)
+  const
 {
   location_t caret_loc = get_pure_location (loc);
 
@@ -1373,7 +1455,8 @@ sarif_builder::maybe_make_region_object_for_context (location_t loc) const
   if (auto artifact_content_obj
 	= maybe_make_artifact_content_object (exploc_start.file,
 					      exploc_start.line,
-					      exploc_finish.line))
+					      exploc_finish.line,
+					      snippet_renderer))
     region_obj->set<sarif_artifact_content> ("snippet",
 					     std::move (artifact_content_obj));
 
@@ -1716,7 +1799,7 @@ make_run_object (std::unique_ptr<sarif_invocation> invocation_obj,
 /* Make a "tool" object (SARIF v2.1.0 section 3.18).  */
 
 std::unique_ptr<sarif_tool>
-sarif_builder::make_tool_object () const
+sarif_builder::make_tool_object ()
 {
   auto tool_obj = ::make_unique<sarif_tool> ();
 
@@ -1777,7 +1860,7 @@ sarif_builder::make_tool_object () const
    calls the "driver" (see SARIF v2.1.0 section 3.18.1).  */
 
 std::unique_ptr<sarif_tool_component>
-sarif_builder::make_driver_tool_component_object () const
+sarif_builder::make_driver_tool_component_object ()
 {
   auto driver_obj = ::make_unique<sarif_tool_component> ();
 
@@ -1809,7 +1892,7 @@ sarif_builder::make_driver_tool_component_object () const
       }
 
   /* "rules" property (SARIF v2.1.0 section 3.19.23).  */
-  driver_obj->set ("rules", m_rules_arr);
+  driver_obj->set<json::array> ("rules", std::move (m_rules_arr));
 
   return driver_obj;
 }
@@ -1971,12 +2054,16 @@ sarif_builder::get_source_lines (const char *filename,
 }
 
 /* Make an "artifactContent" object (SARIF v2.1.0 section 3.3) for the given
-   run of lines within FILENAME (including the endpoints).  */
+   run of lines within FILENAME (including the endpoints).
+   If R is non-NULL, use it to potentially set the "rendered"
+   property (3.3.4).  */
 
 std::unique_ptr<sarif_artifact_content>
-sarif_builder::maybe_make_artifact_content_object (const char *filename,
-						   int start_line,
-						   int end_line) const
+sarif_builder::
+maybe_make_artifact_content_object (const char *filename,
+				    int start_line,
+				    int end_line,
+				    const content_renderer *r) const
 {
   char *text_utf8 = get_source_lines (filename, start_line, end_line);
 
@@ -1993,6 +2080,12 @@ sarif_builder::maybe_make_artifact_content_object (const char *filename,
   auto artifact_content_obj = ::make_unique<sarif_artifact_content> ();
   artifact_content_obj->set_string ("text", text_utf8);
   free (text_utf8);
+
+  /* 3.3.4 "rendered" property.  */
+  if (r)
+    if (std::unique_ptr<sarif_multiformat_message_string> rendered
+	  = r->render (*this))
+      artifact_content_obj->set ("rendered", std::move (rendered));
 
   return artifact_content_obj;
 }
@@ -2260,3 +2353,99 @@ diagnostic_output_format_init_sarif_stream (diagnostic_context &context,
 				     formatted,
 				     stream));
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+static void
+test_make_location_object (const line_table_case &case_)
+{
+  diagnostic_show_locus_fixture_one_liner_utf8 f (case_);
+  location_t line_end = linemap_position_for_column (line_table, 31);
+
+  /* Don't attempt to run the tests if column data might be unavailable.  */
+  if (line_end > LINE_MAP_MAX_LOCATION_WITH_COLS)
+    return;
+
+  test_diagnostic_context dc;
+
+  sarif_builder builder (dc, "MAIN_INPUT_FILENAME", true);
+
+  const location_t foo
+    = make_location (linemap_position_for_column (line_table, 1),
+		     linemap_position_for_column (line_table, 1),
+		     linemap_position_for_column (line_table, 8));
+  const location_t bar
+    = make_location (linemap_position_for_column (line_table, 12),
+		     linemap_position_for_column (line_table, 12),
+		     linemap_position_for_column (line_table, 17));
+  const location_t field
+    = make_location (linemap_position_for_column (line_table, 19),
+		     linemap_position_for_column (line_table, 19),
+		     linemap_position_for_column (line_table, 30));
+
+  text_range_label label0 ("label0");
+  text_range_label label1 ("label1");
+  text_range_label label2 ("label2");
+
+  rich_location richloc (line_table, foo, &label0, nullptr);
+  richloc.add_range (bar, SHOW_RANGE_WITHOUT_CARET, &label1);
+  richloc.add_range (field, SHOW_RANGE_WITHOUT_CARET, &label2);
+  richloc.set_escape_on_output (true);
+
+  std::unique_ptr<sarif_location> location_obj
+    = builder.make_location_object
+    (richloc, nullptr, diagnostic_artifact_role::analysis_target);
+  ASSERT_NE (location_obj, nullptr);
+
+  auto physical_location
+    = EXPECT_JSON_OBJECT_WITH_OBJECT_PROPERTY (location_obj.get (),
+					       "physicalLocation");
+  {
+    auto region
+      = EXPECT_JSON_OBJECT_WITH_OBJECT_PROPERTY (physical_location, "region");
+    ASSERT_JSON_INT_PROPERTY_EQ (region, "startLine", 1);
+    ASSERT_JSON_INT_PROPERTY_EQ (region, "startColumn", 1);
+    ASSERT_JSON_INT_PROPERTY_EQ (region, "endColumn", 7);
+  }
+  {
+    auto context_region
+      = EXPECT_JSON_OBJECT_WITH_OBJECT_PROPERTY (physical_location,
+						 "contextRegion");
+    ASSERT_JSON_INT_PROPERTY_EQ (context_region, "startLine", 1);
+
+    {
+      auto snippet
+	= EXPECT_JSON_OBJECT_WITH_OBJECT_PROPERTY (context_region, "snippet");
+
+      /* We expect the snippet's "text" to be a copy of the content.  */
+      ASSERT_JSON_STRING_PROPERTY_EQ (snippet, "text",  f.m_content);
+
+      /* We expect the snippet to have a "rendered" whose "text" has a
+	 pure ASCII escaped copy of the line (with labels, etc).  */
+      {
+	auto rendered
+	  = EXPECT_JSON_OBJECT_WITH_OBJECT_PROPERTY (snippet, "rendered");
+	ASSERT_JSON_STRING_PROPERTY_EQ
+	  (rendered, "text",
+	   "1 | <U+1F602>_foo = <U+03C0>_bar.<U+1F602>_field<U+03C0>;\n"
+	   "  | ^~~~~~~~~~~~~   ~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~\n"
+	   "  | |               |            |\n"
+	   "  | label0          label1       label2\n");
+      }
+    }
+  }
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+diagnostic_format_sarif_cc_tests ()
+{
+  for_each_line_table_case (test_make_location_object);
+}
+
+} // namespace selftest
+
+#endif /* CHECKING_P */
