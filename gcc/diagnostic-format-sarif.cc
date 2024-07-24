@@ -1134,8 +1134,12 @@ sarif_builder::make_locations_arr (const diagnostic_info &diagnostic,
   if (auto client_data_hooks = m_context.get_client_data_hooks ())
     logical_loc = client_data_hooks->get_current_logical_location ();
 
-  locations_arr->append<sarif_location>
-    (make_location_object (*diagnostic.richloc, logical_loc, role));
+  auto location_obj
+    = make_location_object (*diagnostic.richloc, logical_loc, role);
+  /* Don't add entirely empty location objects to the array.  */
+  if (!location_obj->is_empty ())
+    locations_arr->append<sarif_location> (std::move (location_obj));
+
   return locations_arr;
 }
 
@@ -2452,12 +2456,12 @@ namespace selftest {
 class test_sarif_diagnostic_context : public test_diagnostic_context
 {
 public:
-  test_sarif_diagnostic_context ()
+  test_sarif_diagnostic_context (const char *main_input_filename)
   {
     diagnostic_output_format_init_sarif (*this);
 
     m_format = new buffered_output_format (*this,
-					   "MAIN_INPUT_FILENAME",
+					   main_input_filename,
 					   true);
     set_output_format (m_format); // give ownership;
   }
@@ -2609,14 +2613,14 @@ test_make_location_object (const line_table_case &case_)
   }
 }
 
-/* Test of reporting a diagnostic to a diagnostic_context and
-   examining the generated sarif_log.
+/* Test of reporting a diagnostic at UNKNOWN_LOCATION to a
+   diagnostic_context and examining the generated sarif_log.
    Verify various basic properties. */
 
 static void
 test_simple_log ()
 {
-  test_sarif_diagnostic_context dc;
+  test_sarif_diagnostic_context dc ("MAIN_INPUT_FILENAME");
 
   rich_location richloc (line_table, UNKNOWN_LOCATION);
   dc.report (DK_ERROR, richloc, nullptr, 0, "this is a test: %i", 42);
@@ -2719,7 +2723,109 @@ test_simple_log ()
       }
 
       // 3.27.12:
-      EXPECT_JSON_OBJECT_WITH_ARRAY_PROPERTY (result, "locations");
+      auto locations
+	= EXPECT_JSON_OBJECT_WITH_ARRAY_PROPERTY (result, "locations");
+      ASSERT_EQ (locations->size (), 0);
+    }
+  }
+}
+
+/* As above, but with a "real" location_t.  */
+
+static void
+test_simple_log_2 (const line_table_case &case_)
+{
+  auto_fix_quotes fix_quotes;
+
+  const char *const content
+    /* 000000000111111
+       123456789012345.  */
+    = "unsinged int i;\n";
+  diagnostic_show_locus_fixture f (case_, content);
+  location_t line_end = linemap_position_for_column (line_table, 31);
+
+  /* Don't attempt to run the tests if column data might be unavailable.  */
+  if (line_end > LINE_MAP_MAX_LOCATION_WITH_COLS)
+    return;
+
+  test_sarif_diagnostic_context dc (f.get_filename ());
+
+  const location_t typo_loc
+    = make_location (linemap_position_for_column (line_table, 1),
+		     linemap_position_for_column (line_table, 1),
+		     linemap_position_for_column (line_table, 8));
+
+  rich_location richloc (line_table, typo_loc);
+  dc.report (DK_ERROR, richloc, nullptr, 0,
+	     "did you misspell %qs again?",
+	     "unsigned");
+
+  auto log_ptr = dc.flush_to_object ();
+
+  // 3.13 sarifLog:
+  auto log = log_ptr.get ();
+
+  auto runs = EXPECT_JSON_OBJECT_WITH_ARRAY_PROPERTY (log, "runs"); // 3.13.4
+  ASSERT_EQ (runs->size (), 1);
+
+  // 3.14 "run" object:
+  auto run = (*runs)[0];
+
+  {
+    // 3.14.23:
+    auto results = EXPECT_JSON_OBJECT_WITH_ARRAY_PROPERTY (run, "results");
+    ASSERT_EQ (results->size (), 1);
+
+    {
+      // 3.27 "result" object:
+      auto result = (*results)[0];
+      ASSERT_JSON_STRING_PROPERTY_EQ (result, "ruleId", "error");
+      ASSERT_JSON_STRING_PROPERTY_EQ (result, "level", "error"); // 3.27.10
+
+      {
+	// 3.27.11:
+	auto message
+	  = EXPECT_JSON_OBJECT_WITH_OBJECT_PROPERTY (result, "message");
+	ASSERT_JSON_STRING_PROPERTY_EQ (message, "text",
+					"did you misspell `unsigned' again?");
+      }
+
+      // 3.27.12:
+      auto locations
+	= EXPECT_JSON_OBJECT_WITH_ARRAY_PROPERTY (result, "locations");
+      ASSERT_EQ (locations->size (), 1);
+
+      {
+	// 3.28 "location" object:
+	auto location = (*locations)[0];
+
+	auto physical_location
+	  = EXPECT_JSON_OBJECT_WITH_OBJECT_PROPERTY (location,
+						     "physicalLocation");
+	{
+	  auto region
+	    = EXPECT_JSON_OBJECT_WITH_OBJECT_PROPERTY (physical_location,
+						       "region");
+	  ASSERT_JSON_INT_PROPERTY_EQ (region, "startLine", 1);
+	  ASSERT_JSON_INT_PROPERTY_EQ (region, "startColumn", 1);
+	  ASSERT_JSON_INT_PROPERTY_EQ (region, "endColumn", 9);
+	}
+	{
+	  auto context_region
+	    = EXPECT_JSON_OBJECT_WITH_OBJECT_PROPERTY (physical_location,
+						       "contextRegion");
+	  ASSERT_JSON_INT_PROPERTY_EQ (context_region, "startLine", 1);
+
+	  {
+	    auto snippet
+	      = EXPECT_JSON_OBJECT_WITH_OBJECT_PROPERTY (context_region,
+							 "snippet");
+
+	    /* We expect the snippet's "text" to be a copy of the content.  */
+	    ASSERT_JSON_STRING_PROPERTY_EQ (snippet, "text",  f.m_content);
+	  }
+	}
+      }
     }
   }
 }
@@ -2731,6 +2837,7 @@ diagnostic_format_sarif_cc_tests ()
 {
   for_each_line_table_case (test_make_location_object);
   test_simple_log ();
+  for_each_line_table_case (test_simple_log_2);
 }
 
 } // namespace selftest
