@@ -1,8 +1,11 @@
-! { dg-do compile }
+! { dg-do run }
 ! { dg-options "-funsigned" }
-! A first, very simple program, that should compile.
+! Test basic assignment, arithmetic and a condition.
 program memain
-  unsigned :: u
-  u = 1U
-  u = 2u
+  unsigned :: u, v
+  u = 1u
+  v = 42u
+  if (u + v /= 43u) then
+     stop 1
+  end if
 end program memain

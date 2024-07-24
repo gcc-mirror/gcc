@@ -4232,11 +4232,36 @@ resolve_operator (gfc_expr *e)
 		gfc_op2string (e->value.op.op), gfc_typename (e));
       goto bad_op;
 
+    case INTRINSIC_POWER:
+
+      if (flag_unsigned)
+	{
+	  if (op1->ts.type == BT_UNSIGNED || op2->ts.type == BT_UNSIGNED)
+	    {
+	      snprintf (msg, sizeof(msg),
+			_("Exponentiation not valid at %%L for %s and %s"),
+			gfc_typename (op1), gfc_typename (op2));
+	      goto bad_op;
+	    }
+	}
+      gcc_fallthrough();
+
     case INTRINSIC_PLUS:
     case INTRINSIC_MINUS:
     case INTRINSIC_TIMES:
     case INTRINSIC_DIVIDE:
-    case INTRINSIC_POWER:
+
+      /* UNSIGNED cannot appear in a mixed expression without explicit
+	     conversion.  */
+      if (flag_unsigned &&  gfc_invalid_unsigned_ops (op1, op2))
+	{
+	  snprintf (msg, sizeof(msg),
+		    _("Operands of binary numeric operator %%<%s%%> at %%L are %s/%s"),
+		    gfc_op2string (e->value.op.op), gfc_typename (op1),
+		    gfc_typename (op2));
+	  goto bad_op;
+	}
+
       if (gfc_numeric_ts (&op1->ts) && gfc_numeric_ts (&op2->ts))
 	{
 	  /* Do not perform conversions if operands are not conformable as

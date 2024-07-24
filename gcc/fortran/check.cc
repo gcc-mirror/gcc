@@ -7637,3 +7637,12 @@ gfc_check_storage_size (gfc_expr *a, gfc_expr *kind)
 
   return true;
 }
+
+/* Check two operands that either both or none of them can
+   be UNSIGNED.  */
+
+bool
+gfc_invalid_unsigned_ops (gfc_expr * op1, gfc_expr * op2)
+{
+  return (op1->ts.type == BT_UNSIGNED) + (op2->ts.type == BT_UNSIGNED) == 1;
+}

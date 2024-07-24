@@ -4021,6 +4021,7 @@ bool gfc_boz2real (gfc_expr *, int);
 bool gfc_invalid_boz (const char *, locus *);
 bool gfc_invalid_null_arg (gfc_expr *);
 
+bool gfc_invalid_unsigned_ops (gfc_expr *, gfc_expr *);
 
 /* class.cc */
 void gfc_fix_class_refs (gfc_expr *e);
@@ -4103,6 +4104,7 @@ void gfc_convert_mpz_to_signed (mpz_t, int);
 gfc_expr *gfc_simplify_ieee_functions (gfc_expr *);
 bool gfc_is_constant_array_expr (gfc_expr *);
 bool gfc_is_size_zero_array (gfc_expr *);
+void gfc_convert_mpz_to_unsigned (mpz_t, int);
 
 /* trans-array.cc  */
 

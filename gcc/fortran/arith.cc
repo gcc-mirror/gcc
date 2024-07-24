@@ -1719,12 +1719,23 @@ eval_intrinsic (gfc_intrinsic_op op,
 
     gcc_fallthrough ();
     /* Numeric binary  */
+    case INTRINSIC_POWER:
+      if (flag_unsigned)
+	{
+	  if (op1->ts.type == BT_UNSIGNED || op2->ts.type == BT_UNSIGNED)
+	    goto runtime;
+	}
+
+      gcc_fallthrough();
+
     case INTRINSIC_PLUS:
     case INTRINSIC_MINUS:
     case INTRINSIC_TIMES:
     case INTRINSIC_DIVIDE:
-    case INTRINSIC_POWER:
       if (!gfc_numeric_ts (&op1->ts) || !gfc_numeric_ts (&op2->ts))
+	goto runtime;
+
+      if (flag_unsigned && gfc_invalid_unsigned_ops (op1, op2))
 	goto runtime;
 
       /* Do not perform conversions if operands are not conformable as

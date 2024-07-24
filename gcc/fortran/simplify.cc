@@ -147,8 +147,8 @@ get_kind (bt type, gfc_expr *k, const char *name, int default_kind)
    The conversion is a no-op unless x is negative; otherwise, it can
    be accomplished by masking out the high bits.  */
 
-static void
-convert_mpz_to_unsigned (mpz_t x, int bitsize)
+void
+gfc_convert_mpz_to_unsigned (mpz_t x, int bitsize)
 {
   mpz_t mask;
 
@@ -1693,11 +1693,11 @@ compare_bitwise (gfc_expr *i, gfc_expr *j)
 
   mpz_init_set (x, i->value.integer);
   k = gfc_validate_kind (i->ts.type, i->ts.kind, false);
-  convert_mpz_to_unsigned (x, gfc_integer_kinds[k].bit_size);
+  gfc_convert_mpz_to_unsigned (x, gfc_integer_kinds[k].bit_size);
 
   mpz_init_set (y, j->value.integer);
   k = gfc_validate_kind (j->ts.type, j->ts.kind, false);
-  convert_mpz_to_unsigned (y, gfc_integer_kinds[k].bit_size);
+  gfc_convert_mpz_to_unsigned (y, gfc_integer_kinds[k].bit_size);
 
   res = mpz_cmp (x, y);
   mpz_clear (x);
@@ -3403,7 +3403,7 @@ gfc_simplify_ibclr (gfc_expr *x, gfc_expr *y)
       result->representation.string = NULL;
     }
 
-  convert_mpz_to_unsigned (result->value.integer,
+  gfc_convert_mpz_to_unsigned (result->value.integer,
 			   gfc_integer_kinds[k].bit_size);
 
   mpz_clrbit (result->value.integer, pos);
@@ -3446,7 +3446,7 @@ gfc_simplify_ibits (gfc_expr *x, gfc_expr *y, gfc_expr *z)
     }
 
   result = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
-  convert_mpz_to_unsigned (result->value.integer,
+  gfc_convert_mpz_to_unsigned (result->value.integer,
 			   gfc_integer_kinds[k].bit_size);
 
   bits = XCNEWVEC (int, bitsize);
@@ -3501,7 +3501,7 @@ gfc_simplify_ibset (gfc_expr *x, gfc_expr *y)
       result->representation.string = NULL;
     }
 
-  convert_mpz_to_unsigned (result->value.integer,
+  gfc_convert_mpz_to_unsigned (result->value.integer,
 			   gfc_integer_kinds[k].bit_size);
 
   mpz_setbit (result->value.integer, pos);
@@ -4000,7 +4000,7 @@ gfc_simplify_ishftc (gfc_expr *e, gfc_expr *s, gfc_expr *sz)
   if (shift == 0)
     return result;
 
-  convert_mpz_to_unsigned (result->value.integer, isize);
+  gfc_convert_mpz_to_unsigned (result->value.integer, isize);
 
   bits = XCNEWVEC (int, ssize);
 
@@ -6648,7 +6648,7 @@ gfc_simplify_popcnt (gfc_expr *e)
 
   /* Convert argument to unsigned, then count the '1' bits.  */
   mpz_init_set (x, e->value.integer);
-  convert_mpz_to_unsigned (x, gfc_integer_kinds[k].bit_size);
+  gfc_convert_mpz_to_unsigned (x, gfc_integer_kinds[k].bit_size);
   res = mpz_popcount (x);
   mpz_clear (x);
 

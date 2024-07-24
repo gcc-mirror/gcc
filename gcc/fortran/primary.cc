@@ -210,20 +210,27 @@ convert_integer (const char *buffer, int kind, int radix, locus *where)
 
 
 /* Convert an unsigned string to an expression node.  XXX:
-   This needs a calculation modulo 2^n.  */
+   This needs a calculation modulo 2^n.  TODO: Implement restriction
+   that no unary minus is permitted.  */
 static gfc_expr *
 convert_unsigned (const char *buffer, int kind, int radix, locus *where)
 {
   gfc_expr *e;
-  mpz_t tmp;
-  mpz_init_set_ui (tmp, 1);
-  /* XXX  Change this later.  */
-  mpz_mul_2exp (tmp, tmp, kind * 8);
-  mpz_sub_ui (tmp, tmp, 1);
+  const char *t;
+  int k;
+
   e = gfc_get_constant_expr (BT_UNSIGNED, kind, where);
-  mpz_set_str (e->value.integer, buffer, radix);
-  mpz_and (e->value.integer, e->value.integer, tmp);
-  mpz_clear (tmp);
+  /* A leading plus is allowed, but not by mpz_set_str.  */
+  if (buffer[0] == '+')
+    t = buffer + 1;
+  else
+    t = buffer;
+
+  mpz_set_str (e->value.integer, t, radix);
+
+  k = gfc_validate_kind (BT_UNSIGNED, kind, false);
+  gfc_convert_mpz_to_unsigned (e->value.integer, gfc_unsigned_kinds[k].bit_size);
+
   return e;
 }
 
@@ -333,9 +340,15 @@ match_unsigned_constant (gfc_expr **result)
   gfc_gobble_whitespace ();
 
   length = match_digits (/* signflag = */ false, 10, NULL);
-  gfc_current_locus = old_loc;
+
   if (length == -1)
-    return MATCH_NO;
+    goto fail;
+
+  m = gfc_match_char ('u');
+  if (m == MATCH_NO)
+    goto fail;
+
+  gfc_current_locus = old_loc;
 
   buffer = (char *) alloca (length + 1);
   memset (buffer, '\0', length + 1);
@@ -343,9 +356,10 @@ match_unsigned_constant (gfc_expr **result)
   gfc_gobble_whitespace ();
 
   match_digits (false, 10, buffer);
+
   m = gfc_match_char ('u');
   if (m == MATCH_NO)
-    return m;
+    goto fail;
 
   kind = get_kind (&is_iso_c);
   if (kind == -2)
@@ -368,6 +382,9 @@ match_unsigned_constant (gfc_expr **result)
   *result = e;
   return MATCH_YES;
 
+ fail:
+  gfc_current_locus = old_loc;
+  return MATCH_NO;
 }
 
 /* Match a Hollerith constant.  */
@@ -4419,4 +4436,3 @@ gfc_match_equiv_variable (gfc_expr **result)
 {
   return match_variable (result, 1, 0);
 }
-

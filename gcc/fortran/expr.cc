@@ -903,7 +903,8 @@ gfc_kind_max (gfc_expr *e1, gfc_expr *e2)
 static bool
 numeric_type (bt type)
 {
-  return type == BT_COMPLEX || type == BT_REAL || type == BT_INTEGER;
+  return type == BT_COMPLEX || type == BT_REAL || type == BT_INTEGER
+    || type == BT_UNSIGNED;
 }
 
 
