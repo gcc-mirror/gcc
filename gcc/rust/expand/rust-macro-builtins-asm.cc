@@ -227,20 +227,28 @@ parse_reg_operand (InlineAsmContext inline_asm_ctx)
   // Loop over and execute the parsing functions, if the parser successfullly
   // parses or if the parser fails to parse while it has committed to a token,
   // we propogate the result.
+  tl::expected<InlineAsmContext, InlineAsmParseError> parsing_operand (
+    inline_asm_ctx);
   for (auto &parse_func : parse_funcs)
     {
-      auto parsing_operand
-	= tl::expected<InlineAsmContext, InlineAsmParseError> (inline_asm_ctx);
-      parsing_operand.map (parse_func);
+      auto result = parsing_operand.and_then (parse_func);
 
       // Per rust's asm.rs's structure
       // After we've parse successfully, we break out and do a local validation
       // of named, positional & explicit register operands
 
-      if (parsing_operand.has_value ())
-	break;
-      if (parsing_operand.error () == COMMITTED)
-	return parsing_operand;
+      if (result.has_value ())
+	{
+	  //
+	  inline_asm_ctx = *result;
+	  break;
+	}
+      else if (result.error () == COMMITTED
+	       && parse_func != parse_reg_operand_unexpected)
+	return result;
+      else if (result.error () == COMMITTED
+	       && parse_func == parse_reg_operand_unexpected)
+	return inline_asm_ctx;
     }
 
   auto &inline_asm = inline_asm_ctx.inline_asm;
@@ -303,7 +311,7 @@ parse_reg_operand_in (InlineAsmContext inline_asm_ctx)
 	  return tl::unexpected<InlineAsmParseError> (COMMITTED);
 	}
 
-      auto expr = parse_format_string (inline_asm_ctx);
+      auto expr = parser.parse_expr ();
 
       // TODO: When we've succesfully parse an expr, remember to clone_expr()
       // instead of nullptr
@@ -323,14 +331,19 @@ parse_reg_operand_out (InlineAsmContext inline_asm_ctx)
   if (!inline_asm_ctx.is_global_asm () && check_identifier (parser, "out"))
     {
       auto reg = parse_reg (inline_asm_ctx);
+      std::unique_ptr<AST::Expr> expr = parser.parse_expr ();
 
-      auto expr = parse_format_string (inline_asm_ctx);
+      rust_assert (expr != nullptr);
+
+      /*auto expr_ptr =
+	 std::make_unique<AST::Expr>(AST::LiteralExpr(Literal))*/
 
       // TODO: When we've succesfully parse an expr, remember to clone_expr()
       // instead of nullptr
-      //      struct AST::InlineAsmOperand::Out out (reg, false, nullptr);
-      //      reg_operand.set_out (out);
-      //      inline_asm_ctx.inline_asm.operands.push_back (reg_operand);
+      struct AST::InlineAsmOperand::Out out (reg, false, std::move (expr));
+
+      reg_operand.set_out (out);
+      inline_asm_ctx.inline_asm.operands.push_back (reg_operand);
 
       return inline_asm_ctx;
     }
@@ -378,7 +391,10 @@ parse_reg_operand_inout (InlineAsmContext inline_asm_ctx)
       // TODO: Is error propogation our top priority, the ? in rust's asm.rs is
       // doing a lot of work.
       // TODO: Not sure how to use parse_expr
-      auto expr = parse_format_string (inline_asm_ctx);
+      auto exist_ident1 = check_identifier (parser, "");
+      if (!exist_ident1)
+	rust_unreachable ();
+      // auto expr = parse_format_string (inline_asm_ctx);
 
       std::unique_ptr<AST::Expr> out_expr;
 
@@ -386,9 +402,10 @@ parse_reg_operand_inout (InlineAsmContext inline_asm_ctx)
 	{
 	  if (!parser.skip_token (UNDERSCORE))
 	    {
-	      auto result = parse_format_string (inline_asm_ctx);
+	      auto exist_ident2 = check_identifier (parser, "");
+	      // auto result = parse_format_string (inline_asm_ctx);
 
-	      if (!result.has_value ())
+	      if (!exist_ident2)
 		rust_unreachable ();
 	      // out_expr = parser.parse_expr();
 	    }
@@ -457,9 +474,9 @@ parse_reg_operand_unexpected (InlineAsmContext inline_asm_ctx)
   // TODO: It is  weird that we can't seem to match any identifier,
   // something must be wrong. consult compiler code in asm.rs or rust online
   // compiler.
-  rust_unreachable ();
+  // rust_unreachable ();
 
-  rust_error_at (token->get_locus (), "ERROR RIGHT HERE");
+  // rust_error_at (token->get_locus (), "ERROR RIGHT HERE");
   return tl::unexpected<InlineAsmParseError> (COMMITTED);
 }
 
@@ -678,7 +695,9 @@ parse_asm_arg (InlineAsmContext inline_asm_ctx)
       if (check_identifier (parser, "clobber_abi"))
 	{
 	  auto expected = parse_clobber_abi (inline_asm_ctx);
-	  if (expected || expected.error () == COMMITTED)
+	  if (expected.has_value ())
+	    continue;
+	  else if (expected.error () == COMMITTED)
 	    return expected;
 
 	  // The error type is definitely non-committed (we have checked above),
@@ -688,7 +707,9 @@ parse_asm_arg (InlineAsmContext inline_asm_ctx)
       if (check_identifier (parser, "options"))
 	{
 	  auto expected = parse_options (inline_asm_ctx);
-	  if (expected || expected.error () == COMMITTED)
+	  if (expected.has_value ())
+	    continue;
+	  else if (expected.error () == COMMITTED)
 	    return expected;
 
 	  // The error type is definitely non-committed (we have checked above),
@@ -699,7 +720,9 @@ parse_asm_arg (InlineAsmContext inline_asm_ctx)
       // only other logical choice is reg_operand
 
       auto expected = parse_reg_operand (inline_asm_ctx);
-      if (expected || expected.error () == COMMITTED)
+      if (expected.has_value ())
+	continue;
+      else if (expected.error () == COMMITTED)
 	return expected;
 
       // Since parse_reg_operand is the last thing we've considered,

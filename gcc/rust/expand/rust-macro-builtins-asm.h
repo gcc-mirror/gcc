@@ -65,6 +65,14 @@ public:
   // {
 
   // }
+  InlineAsmContext &operator= (const InlineAsmContext &inline_asm_ctx)
+  {
+    allow_templates = inline_asm_ctx.allow_templates;
+    is_explicit = inline_asm_ctx.is_explicit;
+    consumed_comma_without_formatted_string = false;
+    last_token_id = inline_asm_ctx.last_token_id;
+    return *this;
+  }
 
   bool is_global_asm () { return inline_asm.is_global_asm; }
 
