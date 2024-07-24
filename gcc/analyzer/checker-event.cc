@@ -161,8 +161,9 @@ maybe_add_sarif_properties (sarif_object &thread_flow_loc_obj) const
   if (m_original_fndecl != m_effective_fndecl)
     {
       tree_logical_location logical_loc (m_original_fndecl);
-      props.set (PROPERTY_PREFIX "original_fndecl",
-		 make_sarif_logical_location_object (logical_loc));
+      props.set<sarif_logical_location>
+	(PROPERTY_PREFIX "original_fndecl",
+	 make_sarif_logical_location_object (logical_loc));
     }
   if (m_original_depth != m_effective_depth)
     props.set_integer (PROPERTY_PREFIX "original_depth", m_original_depth);

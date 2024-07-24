@@ -51,7 +51,7 @@ class sarif_logical_location : public sarif_object
 {
 };
 
-extern sarif_logical_location *
+extern std::unique_ptr<sarif_logical_location>
 make_sarif_logical_location_object (const logical_location &logical_loc);
 
 #endif /* ! GCC_DIAGNOSTIC_FORMAT_SARIF_H */
