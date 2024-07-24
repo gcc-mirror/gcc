@@ -762,6 +762,17 @@ likely_value (gimple *stmt)
 	continue;
       if (is_gimple_min_invariant (op))
 	has_constant_operand = true;
+      else if (TREE_CODE (op) == CONSTRUCTOR)
+	{
+	  unsigned j;
+	  tree val;
+	  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (op), j, val)
+	    if (CONSTANT_CLASS_P (val))
+	      {
+		has_constant_operand = true;
+		break;
+	      }
+	}
     }
 
   if (has_constant_operand)
