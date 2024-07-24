@@ -19,11 +19,13 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "json.h"
 #include "pretty-print.h"
 #include "math.h"
+#include "make-unique.h"
 #include "selftest.h"
 
 using namespace json;
@@ -499,27 +501,30 @@ test_writing_literals ()
   ASSERT_PRINT_EQ (literal (false), true, "false");
 }
 
-/* Verify that nested values are formatted correctly when written.  */
+/* Verify that nested values are formatted correctly when written.
+
+   Also, make use of array::append(std::unique_ptr<value>) and
+   object::set (const char *key, std::unique_ptr<value> v).*/
 
 static void
 test_formatting ()
 {
   object obj;
   object *child = new object;
-  object *grandchild = new object;
+  std::unique_ptr<object> grandchild = ::make_unique<object> ();
 
   obj.set_string ("str", "bar");
   obj.set ("child", child);
   obj.set_integer ("int", 42);
 
-  child->set ("grandchild", grandchild);
-  child->set_integer ("int", 1776);
-
   array *arr = new array;
   for (int i = 0; i < 3; i++)
-    arr->append (new integer_number (i));
+    arr->append (::make_unique<integer_number> (i));
   grandchild->set ("arr", arr);
   grandchild->set_integer ("int", 1066);
+
+  child->set ("grandchild", std::move (grandchild));
+  child->set_integer ("int", 1776);
 
   /* This test relies on json::object writing out key/value pairs
      in key-insertion order.  */
