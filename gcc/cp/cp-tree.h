@@ -440,7 +440,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       COMPOUND_REQ_NOEXCEPT_P (in COMPOUND_REQ)
       WILDCARD_PACK_P (in WILDCARD_DECL)
       BLOCK_OUTER_CURLY_BRACE_P (in BLOCK)
-      FOLD_EXPR_MODOP_P (*_FOLD_EXPR)
+      FOLD_EXPR_MODIFY_P (*_FOLD_EXPR)
       IF_STMT_CONSTEXPR_P (IF_STMT)
       DECL_NAMESPACE_INLINE_P (in NAMESPACE_DECL)
       SWITCH_STMT_ALL_CASES_P (in SWITCH_STMT)
@@ -778,14 +778,14 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
     && DECL_NAME (NODE) != NULL_TREE			\
     && MAIN_NAME_P (DECL_NAME (NODE)))
 
-/* Nonzero iff NODE is a declaration for `int main', or we are hosted. */
+/* Nonzero iff NODE is a declaration for `int main', or we are hosted.  */
 #define DECL_MAIN_FREESTANDING_P(NODE)				\
   (DECL_MAIN_ANY_P(NODE)					\
    && (flag_hosted						\
        || TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (NODE)))	\
 	  == integer_type_node))
 
-/* Nonzero iff NODE is a declaration for `main', and we are hosted. */
+/* Nonzero iff NODE is a declaration for `main', and we are hosted.  */
 #define DECL_MAIN_P(NODE) (DECL_MAIN_ANY_P(NODE) && flag_hosted)
 
 /* Lookup walker marking.  */
@@ -1121,7 +1121,7 @@ enum cp_id_kind
 };
 
 
-/* The various kinds of C++0x warnings we encounter. */
+/* The various kinds of C++0x warnings we encounter.  */
 
 enum cpp0x_warn_str
 {
@@ -1157,7 +1157,7 @@ enum cpp0x_warn_str
   CPP0X_REF_QUALIFIER
 };
 
-/* The various kinds of operation used by composite_pointer_type. */
+/* The various kinds of operation used by composite_pointer_type.  */
 
 enum composite_pointer_operation
 {
@@ -1169,14 +1169,15 @@ enum composite_pointer_operation
   CPO_CONDITIONAL_EXPR
 };
 
-/* Possible cases of expression list used by build_x_compound_expr_from_list. */
+/* Possible cases of expression list used by
+   build_x_compound_expr_from_list.  */
 enum expr_list_kind {
   ELK_INIT,		/* initializer */
   ELK_MEM_INIT,		/* member initializer */
   ELK_FUNC_CAST		/* functional cast */
 };
 
-/* Possible cases of implicit bad rhs conversions. */
+/* Possible cases of implicit bad rhs conversions.  */
 enum impl_conv_rhs {
   ICR_DEFAULT_ARGUMENT, /* default argument */
   ICR_CONVERTING,       /* converting */
@@ -1186,7 +1187,7 @@ enum impl_conv_rhs {
   ICR_ASSIGN            /* assignment */
 };
 
-/* Possible cases of implicit or explicit bad conversions to void. */
+/* Possible cases of implicit or explicit bad conversions to void.  */
 enum impl_conv_void {
   ICV_CAST,            /* (explicit) conversion to void */
   ICV_SECOND_OF_COND,  /* second operand of conditional expression */
@@ -1576,7 +1577,7 @@ struct GTY (()) tree_lambda_expr
 /* The representation of a deferred access check.  */
 
 struct GTY(()) deferred_access_check {
-  /* The base class in which the declaration is referenced. */
+  /* The base class in which the declaration is referenced.  */
   tree binfo;
   /* The declaration whose access must be checked.  */
   tree decl;
@@ -1704,7 +1705,7 @@ check_constraint_info (tree t)
 #define CONSTR_CONTEXT(NODE) \
   TREE_VALUE (CONSTR_INFO (NODE))
 
-/* The parameter mapping for an atomic constraint. */
+/* The parameter mapping for an atomic constraint.  */
 #define ATOMIC_CONSTR_MAP(NODE) \
   TREE_OPERAND (TREE_CHECK (NODE, ATOMIC_CONSTR), 0)
 
@@ -1719,7 +1720,7 @@ check_constraint_info (tree t)
 #define ATOMIC_CONSTR_EXPR_FROM_CONCEPT_P(NODE) \
   TREE_LANG_FLAG_1 (ATOMIC_CONSTR_CHECK (NODE))
 
-/* The expression of an atomic constraint. */
+/* The expression of an atomic constraint.  */
 #define ATOMIC_CONSTR_EXPR(NODE) \
   CONSTR_EXPR (ATOMIC_CONSTR_CHECK (NODE))
 
@@ -3624,7 +3625,7 @@ struct GTY(()) lang_decl {
 #define DECL_IMPLICIT_TEMPLATE_PARM_P(NODE) \
   DECL_VIRTUAL_P (DECL_TEMPLATE_PARM_CHECK (NODE))
 
-/* 1 iff FUNCTION_TYPE or METHOD_TYPE has a ref-qualifier (either & or &&). */
+/* 1 iff FUNCTION_TYPE or METHOD_TYPE has a ref-qualifier (either & or &&).  */
 #define FUNCTION_REF_QUALIFIED(NODE) \
   TREE_LANG_FLAG_4 (FUNC_OR_METHOD_CHECK (NODE))
 
@@ -3676,7 +3677,7 @@ struct GTY(()) lang_decl {
    parameters in the list have declarators enclosed in ().  */
 #define PARENTHESIZED_LIST_P(NODE) TREE_LANG_FLAG_0 (TREE_LIST_CHECK (NODE))
 
-/* Non zero if this is a using decl for a dependent scope. */
+/* Non zero if this is a using decl for a dependent scope.  */
 #define DECL_DEPENDENT_P(NODE) DECL_LANG_FLAG_0 (USING_DECL_CHECK (NODE))
 
 /* The scope named in a using decl.  */
@@ -4100,11 +4101,11 @@ struct GTY(()) lang_decl {
    || TREE_CODE (NODE) == BINARY_LEFT_FOLD_EXPR		\
    || TREE_CODE (NODE) == BINARY_RIGHT_FOLD_EXPR)
 
-/* True when NODE is a fold over a compound assignment operator. */
+/* True when NODE is a fold over a compound assignment operator.  */
 #define FOLD_EXPR_MODIFY_P(NODE) \
   TREE_LANG_FLAG_0 (FOLD_EXPR_CHECK (NODE))
 
-/* An INTEGER_CST containing the tree code of the folded operator. */
+/* An INTEGER_CST containing the tree code of the folded operator.  */
 #define FOLD_EXPR_OP_RAW(NODE) \
   TREE_OPERAND (FOLD_EXPR_CHECK (NODE), 0)
 
@@ -4112,12 +4113,12 @@ struct GTY(()) lang_decl {
 #define FOLD_EXPR_OP(NODE) \
   ((enum tree_code) TREE_INT_CST_LOW (FOLD_EXPR_OP_RAW (NODE)))
 
-/* The expression containing an unexpanded parameter pack. */
+/* The expression containing an unexpanded parameter pack.  */
 #define FOLD_EXPR_PACK(NODE) \
   TREE_OPERAND (FOLD_EXPR_CHECK (NODE), 1)
 
 /* In a binary fold expression, the argument with no unexpanded
-   parameter packs. */
+   parameter packs.  */
 #define FOLD_EXPR_INIT(NODE) \
   TREE_OPERAND (BINARY_FOLD_EXPR_CHECK (NODE), 2)
 
@@ -5010,7 +5011,7 @@ get_vec_init_expr (tree t)
 
 /* True if TYPE is an unnamed structured type with a typedef for
    linkage purposes.  In that case TYPE_NAME and TYPE_STUB_DECL of the
-   MAIN-VARIANT are different. */
+   MAIN-VARIANT are different.  */
 #define TYPE_WAS_UNNAMED(NODE)				\
   (TYPE_NAME (TYPE_MAIN_VARIANT (NODE))			\
    != TYPE_STUB_DECL (TYPE_MAIN_VARIANT (NODE)))
@@ -5788,7 +5789,7 @@ extern bool comparing_override_contracts;
 extern int cp_unevaluated_operand;
 
 /* RAII class used to inhibit the evaluation of operands during parsing
-   and template instantiation. Evaluation warnings are also inhibited. */
+   and template instantiation.  Evaluation warnings are also inhibited.  */
 
 class cp_unevaluated
 {
@@ -6259,7 +6260,7 @@ enum ovl_op_code {
   OVL_OP_MAX
 };
 
-/* Make sure it fits in lang_decl_fn::ovl_op_code. */
+/* Make sure it fits in lang_decl_fn::ovl_op_code.  */
 STATIC_ASSERT (OVL_OP_MAX < (1 << 6));
 
 struct GTY(()) ovl_op_info_t {
@@ -6533,7 +6534,7 @@ struct cp_declarator {
       tree exception_specification;
       /* The late-specified return type, if any.  */
       tree late_return_type;
-      /* The trailing requires-clause, if any. */
+      /* The trailing requires-clause, if any.  */
       tree requires_clause;
       location_t parens_loc;
     } function;
@@ -8849,7 +8850,7 @@ null_node_p (const_tree expr)
   return expr == null_node;
 }
 
-/* True iff T is a variable template declaration. */
+/* True iff T is a variable template declaration.  */
 inline bool
 variable_template_p (tree t)
 {
@@ -8910,7 +8911,7 @@ concept_definition_p (tree t)
   if (TREE_CODE (t) == OVERLOAD)
     t = OVL_FIRST (t);
 
-  /* See through templates. */
+  /* See through templates.  */
   if (TREE_CODE (t) == TEMPLATE_DECL)
     t = DECL_TEMPLATE_RESULT (t);
 
