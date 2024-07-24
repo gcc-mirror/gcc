@@ -226,10 +226,12 @@ parse_reg_operand (InlineAsmContext inline_asm_ctx)
   // Loop over and execute the parsing functions, if the parser successfullly
   // parses or if the parser fails to parse while it has committed to a token,
   // we propogate the result.
+  int count = 0;
   tl::expected<InlineAsmContext, InlineAsmParseError> parsing_operand (
     inline_asm_ctx);
   for (auto &parse_func : parse_funcs)
     {
+      count++;
       auto result = parsing_operand.and_then (parse_func);
 
       // Per rust's asm.rs's structure
@@ -238,8 +240,7 @@ parse_reg_operand (InlineAsmContext inline_asm_ctx)
 
       if (result.has_value ())
 	{
-	  //
-	  inline_asm_ctx = *result;
+	  inline_asm_ctx = result.value ();
 	  break;
 	}
       else if (result.error () == COMMITTED)
@@ -687,7 +688,9 @@ parse_asm_arg (InlineAsmContext inline_asm_ctx)
 	{
 	  auto expected = parse_clobber_abi (inline_asm_ctx);
 	  if (expected.has_value ())
-	    continue;
+	    {
+	      continue;
+	    }
 	  else if (expected.error () == COMMITTED)
 	    return expected;
 
@@ -699,7 +702,9 @@ parse_asm_arg (InlineAsmContext inline_asm_ctx)
 	{
 	  auto expected = parse_options (inline_asm_ctx);
 	  if (expected.has_value ())
-	    continue;
+	    {
+	      continue;
+	    }
 	  else if (expected.error () == COMMITTED)
 	    return expected;
 
@@ -712,9 +717,13 @@ parse_asm_arg (InlineAsmContext inline_asm_ctx)
 
       auto expected = parse_reg_operand (inline_asm_ctx);
       if (expected.has_value ())
-	continue;
+	{
+	  continue;
+	}
       else if (expected.error () == COMMITTED)
-	return expected;
+	{
+	  return expected;
+	}
 
       // Since parse_reg_operand is the last thing we've considered,
       // The non-committed parse error type means that we have exhausted our
