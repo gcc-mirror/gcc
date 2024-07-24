@@ -1708,20 +1708,6 @@ coro_build_artificial_var (location_t loc, const char *name, tree type,
 				    type, ctx, init);
 }
 
-/* Helpers for label creation:
-   1. Create a named label in the specified context.  */
-
-static tree
-create_anon_label_with_ctx (location_t loc, tree ctx)
-{
-  tree lab = build_decl (loc, LABEL_DECL, NULL_TREE, void_type_node);
-
-  DECL_CONTEXT (lab) = ctx;
-  DECL_ARTIFICIAL (lab) = true;
-  DECL_IGNORED_P (lab) = true;
-  TREE_USED (lab) = true;
-  return lab;
-}
 
 /*  2. Create a named label in the specified context.  */
 
@@ -1935,22 +1921,16 @@ expand_one_await_expression (tree *stmt, tree *await_expr, void *d)
 				    data->coro_fp);
   r = cp_build_init_expr (cond, r);
   finish_switch_cond (r, sw);
-  r = build_case_label (integer_zero_node, NULL_TREE,
-			create_anon_label_with_ctx (loc, actor));
-  add_stmt (r); /* case 0: */
+  finish_case_label (loc, integer_zero_node, NULL_TREE); /*  case 0: */
   /* Implement the suspend, a scope exit without clean ups.  */
   r = build_call_expr_internal_loc (loc, IFN_CO_SUSPN, void_type_node, 1,
 				    is_cont ? cont : susp);
   r = coro_build_cvt_void_expr_stmt (r, loc);
   add_stmt (r); /*   goto ret;  */
-  r = build_case_label (integer_one_node, NULL_TREE,
-			create_anon_label_with_ctx (loc, actor));
-  add_stmt (r); /* case 1:  */
+  finish_case_label (loc, integer_one_node, NULL_TREE); /*  case 1:  */
   r = build1_loc (loc, GOTO_EXPR, void_type_node, resume_label);
   add_stmt (r); /*  goto resume;  */
-  r = build_case_label (NULL_TREE, NULL_TREE,
-			create_anon_label_with_ctx (loc, actor));
-  add_stmt (r); /* default:;  */
+  finish_case_label (loc, NULL_TREE, NULL_TREE); /* default:;  */
   r = build1_loc (loc, GOTO_EXPR, void_type_node, destroy_label);
   add_stmt (r); /* goto destroy;  */
 
@@ -2291,9 +2271,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 
   tree destroy_dispatcher = begin_switch_stmt ();
   finish_switch_cond (rat, destroy_dispatcher);
-  tree ddeflab = build_case_label (NULL_TREE, NULL_TREE,
-				   create_anon_label_with_ctx (loc, actor));
-  add_stmt (ddeflab);
+  tree ddeflab = finish_case_label (loc, NULL_TREE, NULL_TREE);
   tree b = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   b = coro_build_cvt_void_expr_stmt (b, loc);
   add_stmt (b);
@@ -2304,18 +2282,15 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
      frame itself.  */
   tree del_promise_label
     = create_named_label_with_ctx (loc, "coro.delete.promise", actor);
-  b = build_case_label (build_int_cst (short_unsigned_type_node, 1), NULL_TREE,
-			create_anon_label_with_ctx (loc, actor));
-  add_stmt (b);
+  finish_case_label (loc, build_int_cst (short_unsigned_type_node, 1),
+		     NULL_TREE);
   add_stmt (build_stmt (loc, GOTO_EXPR, del_promise_label));
 
   short unsigned lab_num = 3;
   for (unsigned destr_pt = 0; destr_pt < body_count; destr_pt++)
     {
       tree l_num = build_int_cst (short_unsigned_type_node, lab_num);
-      b = build_case_label (l_num, NULL_TREE,
-			    create_anon_label_with_ctx (loc, actor));
-      add_stmt (b);
+      finish_case_label (loc, l_num, NULL_TREE);
       b = build_call_expr_internal_loc (loc, IFN_CO_ACTOR, void_type_node, 1,
 					l_num);
       b = coro_build_cvt_void_expr_stmt (b, loc);
@@ -2333,15 +2308,12 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 
   tree dispatcher = begin_switch_stmt ();
   finish_switch_cond (rat, dispatcher);
-  b = build_case_label (build_int_cst (short_unsigned_type_node, 0), NULL_TREE,
-			create_anon_label_with_ctx (loc, actor));
-  add_stmt (b);
+  finish_case_label (loc, build_int_cst (short_unsigned_type_node, 0),
+		     NULL_TREE);
   b = build1 (GOTO_EXPR, void_type_node, actor_begin_label);
   add_stmt (b);
 
-  tree rdeflab = build_case_label (NULL_TREE, NULL_TREE,
-				   create_anon_label_with_ctx (loc, actor));
-  add_stmt (rdeflab);
+  tree rdeflab = finish_case_label (loc, NULL_TREE, NULL_TREE);
   b = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   b = coro_build_cvt_void_expr_stmt (b, loc);
   add_stmt (b);
@@ -2353,9 +2325,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   for (unsigned resu_pt = 0; resu_pt < body_count; resu_pt++)
     {
       tree l_num = build_int_cst (short_unsigned_type_node, lab_num);
-      b = build_case_label (l_num, NULL_TREE,
-			    create_anon_label_with_ctx (loc, actor));
-      add_stmt (b);
+      finish_case_label (loc, l_num, NULL_TREE);
       b = build_call_expr_internal_loc (loc, IFN_CO_ACTOR, void_type_node, 1,
 					l_num);
       b = coro_build_cvt_void_expr_stmt (b, loc);
