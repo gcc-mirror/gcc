@@ -435,7 +435,7 @@ sarif_artifact::populate_roles ()
     if (bitmap_bit_p (m_roles, i))
       {
 	enum diagnostic_artifact_role role = (enum diagnostic_artifact_role)i;
-	roles_arr->append (new json::string (get_artifact_role_string (role)));
+	roles_arr->append_string (get_artifact_role_string (role));
       }
   set ("roles", roles_arr);
 }
@@ -1394,13 +1394,13 @@ sarif_builder::maybe_make_kinds_array (diagnostic_event::meaning m) const
   json::array *kinds_arr = new json::array ();
   if (const char *verb_str
 	= diagnostic_event::meaning::maybe_get_verb_str (m.m_verb))
-    kinds_arr->append (new json::string (verb_str));
+    kinds_arr->append_string (verb_str);
   if (const char *noun_str
 	= diagnostic_event::meaning::maybe_get_noun_str (m.m_noun))
-    kinds_arr->append (new json::string (noun_str));
+    kinds_arr->append_string (noun_str);
   if (const char *property_str
 	= diagnostic_event::meaning::maybe_get_property_str (m.m_property))
-    kinds_arr->append (new json::string (property_str));
+    kinds_arr->append_string (property_str);
   return kinds_arr;
 }
 

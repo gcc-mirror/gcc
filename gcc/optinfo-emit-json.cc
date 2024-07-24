@@ -259,7 +259,7 @@ optrecord_json_writer::pass_to_json (opt_pass *pass)
 	 optgroup->name != NULL; optgroup++)
       if (optgroup->value != OPTGROUP_ALL
 	  && (pass->optinfo_flags & optgroup->value))
-	optgroups->append (new json::string (optgroup->name));
+	optgroups->append_string (optgroup->name);
   }
   obj->set_integer ("num", pass->static_pass_number);
   return obj;
@@ -347,7 +347,7 @@ optrecord_json_writer::optinfo_to_json (const optinfo *optinfo)
 	  gcc_unreachable ();
 	case OPTINFO_ITEM_KIND_TEXT:
 	  {
-	    message->append (new json::string (item->get_text ()));
+	    message->append_string (item->get_text ());
 	  }
 	  break;
 	case OPTINFO_ITEM_KIND_TREE:

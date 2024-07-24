@@ -130,6 +130,7 @@ class array : public value
   void print (pretty_printer *pp, bool formatted) const final override;
 
   void append (value *v);
+  void append_string (const char *utf8_value);
 
  private:
   auto_vec<value *> m_elements;
