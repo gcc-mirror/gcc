@@ -32,6 +32,7 @@
          { dg-final { scan-sarif-file "\"informationUri\": \"" } }
 
      { dg-final { scan-sarif-file "\"invocations\": \\\[" } }
+       { dg-final { scan-sarif-file {"workingDirectory": } } }
        { dg-final { scan-sarif-file "\"toolExecutionNotifications\": \\\[\\\]" } }
        { dg-final { scan-sarif-file "\"executionSuccessful\": true" } }
 

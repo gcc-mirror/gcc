@@ -125,7 +125,7 @@ class sarif_tool_component : public sarif_object {};
 class sarif_invocation : public sarif_object
 {
 public:
-  sarif_invocation ();
+  sarif_invocation (sarif_builder &builder);
 
   void add_notification_for_ice (diagnostic_context &context,
 				 const diagnostic_info &diagnostic,
@@ -378,6 +378,9 @@ public:
   std::unique_ptr<sarif_artifact_content>
   maybe_make_artifact_content_object (const char *filename) const;
 
+  std::unique_ptr<sarif_artifact_location>
+  make_artifact_location_object (const char *filename);
+
 private:
   std::unique_ptr<sarif_result>
   make_result_object (diagnostic_context &context,
@@ -403,8 +406,6 @@ private:
 				       const content_renderer *snippet_renderer);
   std::unique_ptr<sarif_artifact_location>
   make_artifact_location_object (location_t loc);
-  std::unique_ptr<sarif_artifact_location>
-  make_artifact_location_object (const char *filename);
   std::unique_ptr<sarif_artifact_location>
   make_artifact_location_object_for_pwd () const;
   std::unique_ptr<sarif_region>
@@ -512,10 +513,14 @@ sarif_object::get_or_create_properties ()
 
 /* class sarif_invocation : public sarif_object.  */
 
-sarif_invocation::sarif_invocation ()
+sarif_invocation::sarif_invocation (sarif_builder &builder)
 : m_notifications_arr (::make_unique<json::array> ()),
   m_success (true)
 {
+  // "workingDirectory" property (SARIF v2.1.0 section 3.20.19)
+  if (const char *pwd = getpwd ())
+    set<sarif_artifact_location> ("workingDirectory",
+				  builder.make_artifact_location_object (pwd));
 }
 
 /* Handle an internal compiler error DIAGNOSTIC occurring on CONTEXT.
@@ -747,7 +752,7 @@ sarif_builder::sarif_builder (diagnostic_context &context,
 			      const char *main_input_filename_,
 			      bool formatted)
 : m_context (context),
-  m_invocation_obj (::make_unique<sarif_invocation> ()),
+  m_invocation_obj (::make_unique<sarif_invocation> (*this)),
   m_results_array (new json::array ()),
   m_cur_group_result (nullptr),
   m_seen_any_relative_paths (false),
