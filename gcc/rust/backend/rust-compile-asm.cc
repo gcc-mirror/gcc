@@ -96,6 +96,13 @@ tree
 CompileAsm::asm_construct_outputs (HIR::InlineAsm &expr)
 {
   // TODO: Do i need to do this?
+  int count = 0;
+
+  for (auto &output : expr.get_operands ())
+    {
+      if (output.register_type == AST::InlineAsmOperand::RegisterType::Out)
+	count++;
+    }
   return NULL_TREE;
 }
 
