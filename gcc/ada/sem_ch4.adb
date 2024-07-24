@@ -1995,6 +1995,7 @@ package body Sem_Ch4 is
               (Root_Type (LT) = Standard_String
                  or else Scope (LT) /= Standard_Standard)
               and then Etype (R) = Any_String
+              and then not Is_Component_Left_Opnd (N)
             then
                Add_One_Interp (N, Op_Id, LT);
 
@@ -2002,6 +2003,7 @@ package body Sem_Ch4 is
               (Root_Type (RT) = Standard_String
                  or else Scope (RT) /= Standard_Standard)
               and then Etype (L) = Any_String
+              and then not Is_Component_Right_Opnd (N)
             then
                Add_One_Interp (N, Op_Id, RT);
 
