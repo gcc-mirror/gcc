@@ -36,18 +36,87 @@ along with GCC; see the file COPYING3.  If not see
 #include "ordered-hash-map.h"
 #include "sbitmap.h"
 
+/* Forward decls.  */
 class sarif_builder;
 
-/* Subclass of json::object for SARIF invocation objects
+/* Subclasses of sarif_object.
+   Keep these in order of their descriptions in the specification.  */
+class sarif_artifact_content; // 3.3
+class sarif_artifact_location; // 3.4
+class sarif_message; // 3.11
+class sarif_multiformat_message_string; // 3.12
+class sarif_log; // 3.13
+class sarif_run; // 3.14
+class sarif_tool; // 3.18
+class sarif_tool_component; // 3.19
+class sarif_invocation; // 3.20
+class sarif_artifact; // 3.24
+class sarif_result; // 3.27
+class sarif_location; // 3.28
+class sarif_physical_location; // 3.29
+class sarif_region; // 3.30
+class sarif_logical_location; // 3.33
+class sarif_code_flow; // 3.36
+class sarif_thread_flow; // 3.37
+class sarif_thread_flow_location; // 3.38
+class sarif_reporting_descriptor; // 3.49
+class sarif_reporting_descriptor_reference; // 3.53
+class sarif_tool_component_reference; // 3.54
+class sarif_fix; // 3.55
+class sarif_artifact_change; // 3.56
+class sarif_replacement; // 3.57
+class sarif_ice_notification; // 3.58
+
+/* Declarations of subclasses of sarif_object.
+   Keep these in order of their descriptions in the specification.  */
+
+/* Subclass of sarif_object for SARIF "artifactContent" objects
+   (SARIF v2.1.0 section 3.3).  */
+
+class sarif_artifact_content : public sarif_object {};
+
+/* Subclass of sarif_object for SARIF "artifactLocation" objects
+   (SARIF v2.1.0 section 3.4).  */
+
+class sarif_artifact_location : public sarif_object {};
+
+/* Subclass of sarif_object for SARIF "message" objects
+   (SARIF v2.1.0 section 3.11).  */
+
+class sarif_message : public sarif_object {};
+
+/* Subclass of sarif_object for SARIF "multiformatMessageString" objects
+   (SARIF v2.1.0 section 3.12).  */
+
+class sarif_multiformat_message_string : public sarif_object {};
+
+/* Subclass of sarif_object for SARIF "log" objects
+   (SARIF v2.1.0 section 3.13).  */
+
+class sarif_log : public sarif_object {};
+
+/* Subclass of sarif_object for SARIF "run" objects
+   (SARIF v2.1.0 section 3.14).  */
+
+class sarif_run : public sarif_object {};
+
+/* Subclass of sarif_object for SARIF "tool" objects
+   (SARIF v2.1.0 section 3.18).  */
+
+class sarif_tool : public sarif_object {};
+
+/* Subclass of sarif_object for SARIF "toolComponent" objects
+   (SARIF v2.1.0 section 3.19).  */
+
+class sarif_tool_component : public sarif_object {};
+
+/* Subclass of sarif_object for SARIF "invocation" objects
    (SARIF v2.1.0 section 3.20).  */
 
 class sarif_invocation : public sarif_object
 {
 public:
-  sarif_invocation ()
-  : m_notifications_arr (new json::array ()),
-    m_success (true)
-  {}
+  sarif_invocation ();
 
   void add_notification_for_ice (diagnostic_context *context,
 				 const diagnostic_info &diagnostic,
@@ -104,7 +173,7 @@ private:
   bool m_embed_contents;
 };
 
-/* Subclass of sarif_object for SARIF result objects
+/* Subclass of sarif_object for SARIF "result" objects
    (SARIF v2.1.0 section 3.27).  */
 
 class sarif_result : public sarif_object
@@ -122,12 +191,82 @@ public:
 		   sarif_builder *builder);
 
 private:
-  void add_related_location (json::object *location_obj);
+  void
+  add_related_location (sarif_location *location_obj);
 
   json::array *m_related_locations_arr;
 };
 
-/* Subclass of sarif_object for SARIF notification objects
+/* Subclass of sarif_object for SARIF "location" objects
+   (SARIF v2.1.0 section 3.28).  */
+
+class sarif_location : public sarif_object {};
+
+/* Subclass of sarif_object for SARIF "physicalLocation" objects
+   (SARIF v2.1.0 section 3.29).  */
+
+class sarif_physical_location : public sarif_object {};
+
+/* Subclass of sarif_object for SARIF "region" objects
+   (SARIF v2.1.0 section 3.30).  */
+
+class sarif_region : public sarif_object {};
+
+/* Subclass of sarif_object for SARIF "codeFlow" objects
+   (SARIF v2.1.0 section 3.36).  */
+
+class sarif_code_flow : public sarif_object {};
+
+/* Subclass of sarif_object for SARIF "threadFlow" objects
+   (SARIF v2.1.0 section 3.37).  */
+
+class sarif_thread_flow : public sarif_object
+{
+public:
+  sarif_thread_flow (const diagnostic_thread &thread);
+
+  void add_location (sarif_thread_flow_location *thread_flow_loc_obj);
+
+private:
+  json::array *m_locations_arr;
+};
+
+/* Subclass of sarif_object for SARIF "threadFlowLocation" objects
+   (SARIF v2.1.0 section 3.38).  */
+
+class sarif_thread_flow_location : public sarif_object {};
+
+/* Subclass of sarif_object for SARIF "reportingDescriptor" objects
+   (SARIF v2.1.0 section 3.49).  */
+
+class sarif_reporting_descriptor : public sarif_object {};
+
+/* Subclass of sarif_object for SARIF "reportingDescriptorReference" objects
+   (SARIF v2.1.0 section 3.53).  */
+
+class sarif_reporting_descriptor_reference : public sarif_object {};
+
+/* Subclass of sarif_object for SARIF "toolComponentReference" objects
+   (SARIF v2.1.0 section 3.54).  */
+
+class sarif_tool_component_reference : public sarif_object {};
+
+/* Subclass of sarif_object for SARIF "fix" objects
+   (SARIF v2.1.0 section 3.55).  */
+
+class sarif_fix : public sarif_object {};
+
+/* Subclass of sarif_object for SARIF "artifactChange" objects
+   (SARIF v2.1.0 section 3.56).  */
+
+class sarif_artifact_change : public sarif_object {};
+
+/* Subclass of sarif_object for SARIF "replacement" objects
+   (SARIF v2.1.0 section 3.57).  */
+
+class sarif_replacement : public sarif_object {};
+
+/* Subclass of sarif_object for SARIF "notification" objects
    (SARIF v2.1.0 section 3.58).
 
    This subclass is specifically for notifying when an
@@ -139,23 +278,6 @@ public:
   sarif_ice_notification (diagnostic_context *context,
 			  const diagnostic_info &diagnostic,
 			  sarif_builder *builder);
-};
-
-/* Subclass of sarif_object for SARIF threadFlow objects
-   (SARIF v2.1.0 section 3.37) for PATH.  */
-
-class sarif_thread_flow : public sarif_object
-{
-public:
-  sarif_thread_flow (const diagnostic_thread &thread);
-
-  void add_location (json::object *thread_flow_loc_obj)
-  {
-    m_locations_arr->append (thread_flow_loc_obj);
-  }
-
-private:
-  json::array *m_locations_arr;
 };
 
 /* A class for managing SARIF output (for -fdiagnostics-format=sarif-stderr
@@ -219,70 +341,99 @@ public:
 
   json::array *make_locations_arr (const diagnostic_info &diagnostic,
 				   enum diagnostic_artifact_role role);
-  json::object *make_location_object (const rich_location &rich_loc,
-				      const logical_location *logical_loc,
-				      enum diagnostic_artifact_role role);
-  json::object *make_message_object (const char *msg) const;
-  json::object *
+  sarif_location *
+  make_location_object (const rich_location &rich_loc,
+			const logical_location *logical_loc,
+			enum diagnostic_artifact_role role);
+  sarif_message *
+  make_message_object (const char *msg) const;
+  sarif_message *
   make_message_object_for_diagram (diagnostic_context *context,
 				   const diagnostic_diagram &diagram);
-  json::object *maybe_make_artifact_content_object (const char *filename) const;
+  sarif_artifact_content *
+  maybe_make_artifact_content_object (const char *filename) const;
 
 private:
-  sarif_result *make_result_object (diagnostic_context *context,
-				    const diagnostic_info &diagnostic,
-				    diagnostic_t orig_diag_kind);
-  void set_any_logical_locs_arr (json::object *location_obj,
-				 const logical_location *logical_loc);
-  json::object *make_location_object (const diagnostic_event &event,
-				      enum diagnostic_artifact_role role);
-  json::object *make_code_flow_object (const diagnostic_path &path);
-  json::object *
+  sarif_result *
+  make_result_object (diagnostic_context *context,
+		      const diagnostic_info &diagnostic,
+		      diagnostic_t orig_diag_kind);
+  void
+  set_any_logical_locs_arr (sarif_location *location_obj,
+			    const logical_location *logical_loc);
+  sarif_location *
+  make_location_object (const diagnostic_event &event,
+			enum diagnostic_artifact_role role);
+  sarif_code_flow *
+  make_code_flow_object (const diagnostic_path &path);
+  sarif_thread_flow_location *
   make_thread_flow_location_object (const diagnostic_event &event,
 				    int path_event_idx);
-  json::array *maybe_make_kinds_array (diagnostic_event::meaning m) const;
-  json::object *
+  json::array *
+  maybe_make_kinds_array (diagnostic_event::meaning m) const;
+  sarif_physical_location *
   maybe_make_physical_location_object (location_t loc,
 				       enum diagnostic_artifact_role role,
 				       int column_override);
-  json::object *make_artifact_location_object (location_t loc);
-  json::object *make_artifact_location_object (const char *filename);
-  json::object *make_artifact_location_object_for_pwd () const;
-  json::object *maybe_make_region_object (location_t loc,
-					  int column_override) const;
-  json::object *maybe_make_region_object_for_context (location_t loc) const;
-  json::object *make_region_object_for_hint (const fixit_hint &hint) const;
-  json::object *make_multiformat_message_string (const char *msg) const;
-  json::object *make_top_level_object (sarif_invocation *invocation_obj,
-				       json::array *results);
-  json::object *make_run_object (sarif_invocation *invocation_obj,
-				 json::array *results);
-  json::object *make_tool_object () const;
-  json::object *make_driver_tool_component_object () const;
+  sarif_artifact_location *
+  make_artifact_location_object (location_t loc);
+  sarif_artifact_location *
+  make_artifact_location_object (const char *filename);
+  sarif_artifact_location *
+  make_artifact_location_object_for_pwd () const;
+  sarif_region *
+  maybe_make_region_object (location_t loc,
+			    int column_override) const;
+  sarif_region *
+  maybe_make_region_object_for_context (location_t loc) const;
+  sarif_region *
+  make_region_object_for_hint (const fixit_hint &hint) const;
+  sarif_multiformat_message_string *
+  make_multiformat_message_string (const char *msg) const;
+  sarif_log *
+  make_top_level_object (sarif_invocation *invocation_obj,
+			 json::array *results);
+  sarif_run *
+  make_run_object (sarif_invocation *invocation_obj,
+		   json::array *results);
+  sarif_tool *
+  make_tool_object () const;
+  sarif_tool_component *
+  make_driver_tool_component_object () const;
   json::array *maybe_make_taxonomies_array () const;
-  json::object *maybe_make_cwe_taxonomy_object () const;
-  json::object *make_tool_component_reference_object_for_cwe () const;
-  json::object *
+  sarif_tool_component *
+  maybe_make_cwe_taxonomy_object () const;
+  sarif_tool_component_reference *
+  make_tool_component_reference_object_for_cwe () const;
+  sarif_reporting_descriptor *
   make_reporting_descriptor_object_for_warning (diagnostic_context *context,
 						const diagnostic_info &diagnostic,
 						diagnostic_t orig_diag_kind,
 						const char *option_text);
-  json::object *make_reporting_descriptor_object_for_cwe_id (int cwe_id) const;
-  json::object *
+  sarif_reporting_descriptor *
+  make_reporting_descriptor_object_for_cwe_id (int cwe_id) const;
+  sarif_reporting_descriptor_reference *
   make_reporting_descriptor_reference_object_for_cwe_id (int cwe_id);
-  sarif_artifact &get_or_create_artifact (const char *filename,
-					  enum diagnostic_artifact_role role,
-					  bool embed_contents);
-  char *get_source_lines (const char *filename,
-			  int start_line,
-			  int end_line) const;
-  json::object *maybe_make_artifact_content_object (const char *filename,
-						    int start_line,
-						    int end_line) const;
-  json::object *make_fix_object (const rich_location &rich_loc);
-  json::object *make_artifact_change_object (const rich_location &richloc);
-  json::object *make_replacement_object (const fixit_hint &hint) const;
-  json::object *make_artifact_content_object (const char *text) const;
+  sarif_artifact &
+  get_or_create_artifact (const char *filename,
+			  enum diagnostic_artifact_role role,
+			  bool embed_contents);
+  char *
+  get_source_lines (const char *filename,
+		    int start_line,
+		    int end_line) const;
+  sarif_artifact_content *
+  maybe_make_artifact_content_object (const char *filename,
+				      int start_line,
+				      int end_line) const;
+  sarif_fix *
+  make_fix_object (const rich_location &rich_loc);
+  sarif_artifact_change *
+  make_artifact_change_object (const rich_location &richloc);
+  sarif_replacement *
+  make_replacement_object (const fixit_hint &hint) const;
+  sarif_artifact_content *
+  make_artifact_content_object (const char *text) const;
   int get_sarif_column (expanded_location exploc) const;
 
   diagnostic_context *m_context;
@@ -329,6 +480,12 @@ sarif_object::get_or_create_properties ()
 }
 
 /* class sarif_invocation : public sarif_object.  */
+
+sarif_invocation::sarif_invocation ()
+: m_notifications_arr (new json::array ()),
+  m_success (true)
+{
+}
 
 /* Handle an internal compiler error DIAGNOSTIC occurring on CONTEXT.
    Add an object representing the ICE to the notifications array.  */
@@ -394,7 +551,7 @@ sarif_artifact::add_role (enum diagnostic_artifact_role role,
 void
 sarif_artifact::populate_contents (sarif_builder &builder)
 {
-  if (json::object *artifact_content_obj
+  if (sarif_artifact_content *artifact_content_obj
 	= builder.maybe_make_artifact_content_object (m_filename))
     set ("contents", artifact_content_obj);
 }
@@ -420,7 +577,7 @@ get_artifact_role_string (enum diagnostic_artifact_role role)
     }
 }
 
-/* Populate the "roles" property of this json::object with a new
+/* Populate the "roles" property of this sarif_artifact with a new
    json::array for the artifact.roles property (SARIF v2.1.0 section 3.24.6)
    containing strings such as "analysisTarget", "resultFile"
    and/or "tracedFile".  */
@@ -457,10 +614,10 @@ sarif_result::on_nested_diagnostic (diagnostic_context *context,
   /* We don't yet generate meaningful logical locations for notes;
      sometimes these will related to current_function_decl, but
      often they won't.  */
-  json::object *location_obj
+  sarif_location *location_obj
     = builder->make_location_object (*diagnostic.richloc, NULL,
 				     diagnostic_artifact_role::result_file);
-  json::object *message_obj
+  sarif_message *message_obj
     = builder->make_message_object (pp_formatted_text (context->printer));
   pp_clear_output_area (context->printer);
   location_obj->set ("message", message_obj);
@@ -479,8 +636,8 @@ sarif_result::on_diagram (diagnostic_context *context,
 			  const diagnostic_diagram &diagram,
 			  sarif_builder *builder)
 {
-  json::object *location_obj = new json::object ();
-  json::object *message_obj
+  sarif_location *location_obj = new sarif_location ();
+  sarif_message *message_obj
     = builder->make_message_object_for_diagram (context, diagram);
   location_obj->set ("message", message_obj);
 
@@ -491,7 +648,7 @@ sarif_result::on_diagram (diagnostic_context *context,
    creating it if it doesn't yet exist.  */
 
 void
-sarif_result::add_related_location (json::object *location_obj)
+sarif_result::add_related_location (sarif_location *location_obj)
 {
   if (!m_related_locations_arr)
     {
@@ -517,7 +674,7 @@ sarif_ice_notification::sarif_ice_notification (diagnostic_context *context,
   set ("locations", locations_arr);
 
   /* "message" property (SARIF v2.1.0 section 3.85.5).  */
-  json::object *message_obj
+  sarif_message *message_obj
     = builder->make_message_object (pp_formatted_text (context->printer));
   pp_clear_output_area (context->printer);
   set ("message", message_obj);
@@ -537,6 +694,13 @@ sarif_thread_flow::sarif_thread_flow (const diagnostic_thread &thread)
   /* "locations" property (SARIF v2.1.0 section 3.37.6).  */
   m_locations_arr = new json::array ();
   set ("locations", m_locations_arr);
+}
+
+void
+sarif_thread_flow::
+add_location (sarif_thread_flow_location *thread_flow_loc_obj)
+{
+  m_locations_arr->append (thread_flow_loc_obj);
 }
 
 /* class sarif_builder.  */
@@ -625,7 +789,7 @@ void
 sarif_builder::flush_to_file (FILE *outf)
 {
   m_invocation_obj->prepare_to_flush (m_context);
-  json::object *top = make_top_level_object (m_invocation_obj, m_results_array);
+  sarif_log *top = make_top_level_object (m_invocation_obj, m_results_array);
   top->dump (outf, m_formatted);
   m_invocation_obj = NULL;
   m_results_array = NULL;
@@ -673,7 +837,7 @@ make_rule_id_for_diagnostic_kind (diagnostic_t diag_kind)
   return rstrip;
 }
 
-/* Make a result object (SARIF v2.1.0 section 3.27) for DIAGNOSTIC.  */
+/* Make a "result" object (SARIF v2.1.0 section 3.27) for DIAGNOSTIC.  */
 
 sarif_result *
 sarif_builder::make_result_object (diagnostic_context *context,
@@ -699,7 +863,7 @@ sarif_builder::make_result_object (diagnostic_context *context,
 	  /* Add to set, taking ownership.  */
 	  m_rule_id_set.add (option_text);
 
-	  json::object *reporting_desc_obj
+	  sarif_reporting_descriptor *reporting_desc_obj
 	    = make_reporting_descriptor_object_for_warning (context,
 							    diagnostic,
 							    orig_diag_kind,
@@ -724,7 +888,7 @@ sarif_builder::make_result_object (diagnostic_context *context,
       if (int cwe_id = diagnostic.metadata->get_cwe ())
 	{
 	  json::array *taxa_arr = new json::array ();
-	  json::object *cwe_id_obj
+	  sarif_reporting_descriptor_reference *cwe_id_obj
 	    = make_reporting_descriptor_reference_object_for_cwe_id (cwe_id);
 	  taxa_arr->append (cwe_id_obj);
 	  result_obj->set ("taxa", taxa_arr);
@@ -738,7 +902,7 @@ sarif_builder::make_result_object (diagnostic_context *context,
     result_obj->set_string ("level", sarif_level);
 
   /* "message" property (SARIF v2.1.0 section 3.27.11).  */
-  json::object *message_obj
+  sarif_message *message_obj
     = make_message_object (pp_formatted_text (context->printer));
   pp_clear_output_area (context->printer);
   result_obj->set ("message", message_obj);
@@ -753,7 +917,7 @@ sarif_builder::make_result_object (diagnostic_context *context,
   if (const diagnostic_path *path = diagnostic.richloc->get_path ())
     {
       json::array *code_flows_arr = new json::array ();
-      json::object *code_flow_obj = make_code_flow_object (*path);
+      sarif_code_flow *code_flow_obj = make_code_flow_object (*path);
       code_flows_arr->append (code_flow_obj);
       result_obj->set ("codeFlows", code_flows_arr);
     }
@@ -767,7 +931,7 @@ sarif_builder::make_result_object (diagnostic_context *context,
   if (richloc->get_num_fixit_hints ())
     {
       json::array *fix_arr = new json::array ();
-      json::object *fix_obj = make_fix_object (*richloc);
+      sarif_fix *fix_obj = make_fix_object (*richloc);
       fix_arr->append (fix_obj);
       result_obj->set ("fixes", fix_arr);
     }
@@ -775,17 +939,18 @@ sarif_builder::make_result_object (diagnostic_context *context,
   return result_obj;
 }
 
-/* Make a reportingDescriptor object (SARIF v2.1.0 section 3.49)
+/* Make a "reportingDescriptor" object (SARIF v2.1.0 section 3.49)
    for a GCC warning.  */
 
-json::object *
+sarif_reporting_descriptor *
 sarif_builder::
 make_reporting_descriptor_object_for_warning (diagnostic_context *context,
 					      const diagnostic_info &diagnostic,
 					      diagnostic_t /*orig_diag_kind*/,
 					      const char *option_text)
 {
-  json::object *reporting_desc = new json::object ();
+  sarif_reporting_descriptor *reporting_desc
+    = new sarif_reporting_descriptor ();
 
   /* "id" property (SARIF v2.1.0 section 3.49.3).  */
   reporting_desc->set_string ("id", option_text);
@@ -803,13 +968,14 @@ make_reporting_descriptor_object_for_warning (diagnostic_context *context,
   return reporting_desc;
 }
 
-/* Make a reportingDescriptor object (SARIF v2.1.0 section 3.49)
+/* Make a "reportingDescriptor" object (SARIF v2.1.0 section 3.49)
    for CWE_ID, for use within the CWE taxa array.  */
 
-json::object *
+sarif_reporting_descriptor *
 sarif_builder::make_reporting_descriptor_object_for_cwe_id (int cwe_id) const
 {
-  json::object *reporting_desc = new json::object ();
+  sarif_reporting_descriptor *reporting_desc
+    = new sarif_reporting_descriptor ();
 
   /* "id" property (SARIF v2.1.0 section 3.49.3).  */
   {
@@ -828,15 +994,16 @@ sarif_builder::make_reporting_descriptor_object_for_cwe_id (int cwe_id) const
   return reporting_desc;
 }
 
-/* Make a reportingDescriptorReference object (SARIF v2.1.0 section 3.52)
+/* Make a "reportingDescriptorReference" object (SARIF v2.1.0 section 3.52)
    referencing CWE_ID, for use within a result object.
    Also, add CWE_ID to m_cwe_id_set.  */
 
-json::object *
+sarif_reporting_descriptor_reference *
 sarif_builder::
 make_reporting_descriptor_reference_object_for_cwe_id (int cwe_id)
 {
-  json::object *desc_ref_obj = new json::object ();
+  sarif_reporting_descriptor_reference *desc_ref_obj
+    = new sarif_reporting_descriptor_reference ();
 
   /* "id" property (SARIF v2.1.0 section 3.52.4).  */
   {
@@ -846,7 +1013,8 @@ make_reporting_descriptor_reference_object_for_cwe_id (int cwe_id)
   }
 
   /* "toolComponent" property (SARIF v2.1.0 section 3.52.7).  */
-  json::object *comp_ref_obj = make_tool_component_reference_object_for_cwe ();
+  sarif_tool_component_reference *comp_ref_obj
+    = make_tool_component_reference_object_for_cwe ();
   desc_ref_obj->set ("toolComponent", comp_ref_obj);
 
   /* Add CWE_ID to our set.  */
@@ -856,14 +1024,15 @@ make_reporting_descriptor_reference_object_for_cwe_id (int cwe_id)
   return desc_ref_obj;
 }
 
-/* Make a toolComponentReference object (SARIF v2.1.0 section 3.54) that
+/* Make a "toolComponentReference" object (SARIF v2.1.0 section 3.54) that
    references the CWE taxonomy.  */
 
-json::object *
+sarif_tool_component_reference *
 sarif_builder::
 make_tool_component_reference_object_for_cwe () const
 {
-  json::object *comp_ref_obj = new json::object ();
+  sarif_tool_component_reference *comp_ref_obj
+    = new sarif_tool_component_reference ();
 
   /* "name" property  (SARIF v2.1.0 section 3.54.3).  */
   comp_ref_obj->set_string ("name", "cwe");
@@ -884,7 +1053,7 @@ sarif_builder::make_locations_arr (const diagnostic_info &diagnostic,
   if (auto client_data_hooks = m_context->get_client_data_hooks ())
     logical_loc = client_data_hooks->get_current_logical_location ();
 
-  json::object *location_obj
+  sarif_location *location_obj
     = make_location_object (*diagnostic.richloc, logical_loc, role);
   locations_arr->append (location_obj);
   return locations_arr;
@@ -895,32 +1064,33 @@ sarif_builder::make_locations_arr (const diagnostic_info &diagnostic,
 
 void
 sarif_builder::
-set_any_logical_locs_arr (json::object *location_obj,
+set_any_logical_locs_arr (sarif_location *location_obj,
 			  const logical_location *logical_loc)
 {
   if (!logical_loc)
     return;
-  json::object *logical_loc_obj = make_sarif_logical_location_object (*logical_loc);
+  sarif_logical_location *logical_loc_obj
+    = make_sarif_logical_location_object (*logical_loc);
   json::array *location_locs_arr = new json::array ();
   location_locs_arr->append (logical_loc_obj);
   location_obj->set ("logicalLocations", location_locs_arr);
 }
 
-/* Make a location object (SARIF v2.1.0 section 3.28) for RICH_LOC
+/* Make a "location" object (SARIF v2.1.0 section 3.28) for RICH_LOC
    and LOGICAL_LOC.  */
 
-json::object *
+sarif_location *
 sarif_builder::make_location_object (const rich_location &rich_loc,
 				     const logical_location *logical_loc,
 				     enum diagnostic_artifact_role role)
 {
-  json::object *location_obj = new json::object ();
+  sarif_location *location_obj = new sarif_location ();
 
   /* Get primary loc from RICH_LOC.  */
   location_t loc = rich_loc.get_loc ();
 
   /* "physicalLocation" property (SARIF v2.1.0 section 3.28.3).  */
-  if (json::object *phs_loc_obj
+  if (sarif_physical_location *phs_loc_obj
 	= maybe_make_physical_location_object (loc, role,
 					       rich_loc.get_column_override ()))
     location_obj->set ("physicalLocation", phs_loc_obj);
@@ -931,18 +1101,18 @@ sarif_builder::make_location_object (const rich_location &rich_loc,
   return location_obj;
 }
 
-/* Make a location object (SARIF v2.1.0 section 3.28) for EVENT
+/* Make a "location" object (SARIF v2.1.0 section 3.28) for EVENT
    within a diagnostic_path.  */
 
-json::object *
+sarif_location *
 sarif_builder::make_location_object (const diagnostic_event &event,
 				     enum diagnostic_artifact_role role)
 {
-  json::object *location_obj = new json::object ();
+  sarif_location *location_obj = new sarif_location ();
 
   /* "physicalLocation" property (SARIF v2.1.0 section 3.28.3).  */
   location_t loc = event.get_location ();
-  if (json::object *phs_loc_obj
+  if (sarif_physical_location *phs_loc_obj
 	= maybe_make_physical_location_object (loc, role, 0))
     location_obj->set ("physicalLocation", phs_loc_obj);
 
@@ -952,13 +1122,13 @@ sarif_builder::make_location_object (const diagnostic_event &event,
 
   /* "message" property (SARIF v2.1.0 section 3.28.5).  */
   label_text ev_desc = event.get_desc (false);
-  json::object *message_obj = make_message_object (ev_desc.get ());
+  sarif_message *message_obj = make_message_object (ev_desc.get ());
   location_obj->set ("message", message_obj);
 
   return location_obj;
 }
 
-/* Make a physicalLocation object (SARIF v2.1.0 section 3.29) for LOC.
+/* Make a "physicalLocation" object (SARIF v2.1.0 section 3.29) for LOC.
 
    If COLUMN_OVERRIDE is non-zero, then use it as the column number
    if LOC has no column information.
@@ -967,7 +1137,7 @@ sarif_builder::make_location_object (const diagnostic_event &event,
    and flagging that we will attempt to embed the contents of the artifact
    when writing it out.  */
 
-json::object *
+sarif_physical_location *
 sarif_builder::
 maybe_make_physical_location_object (location_t loc,
 				     enum diagnostic_artifact_role role,
@@ -976,20 +1146,21 @@ maybe_make_physical_location_object (location_t loc,
   if (loc <= BUILTINS_LOCATION || LOCATION_FILE (loc) == NULL)
     return NULL;
 
-  json::object *phys_loc_obj = new json::object ();
+  sarif_physical_location *phys_loc_obj = new sarif_physical_location ();
 
   /* "artifactLocation" property (SARIF v2.1.0 section 3.29.3).  */
-  json::object *artifact_loc_obj = make_artifact_location_object (loc);
+  sarif_artifact_location *artifact_loc_obj
+    = make_artifact_location_object (loc);
   phys_loc_obj->set ("artifactLocation", artifact_loc_obj);
   get_or_create_artifact (LOCATION_FILE (loc), role, true);
 
   /* "region" property (SARIF v2.1.0 section 3.29.4).  */
-  if (json::object *region_obj = maybe_make_region_object (loc,
+  if (sarif_region *region_obj = maybe_make_region_object (loc,
 							   column_override))
     phys_loc_obj->set ("region", region_obj);
 
   /* "contextRegion" property (SARIF v2.1.0 section 3.29.5).  */
-  if (json::object *context_region_obj
+  if (sarif_region *context_region_obj
 	= maybe_make_region_object_for_context (loc))
     phys_loc_obj->set ("contextRegion", context_region_obj);
 
@@ -1000,10 +1171,10 @@ maybe_make_physical_location_object (location_t loc,
   return phys_loc_obj;
 }
 
-/* Make an artifactLocation object (SARIF v2.1.0 section 3.4) for LOC,
+/* Make an "artifactLocation" object (SARIF v2.1.0 section 3.4) for LOC,
    or return NULL.  */
 
-json::object *
+sarif_artifact_location *
 sarif_builder::make_artifact_location_object (location_t loc)
 {
   return make_artifact_location_object (LOCATION_FILE (loc));
@@ -1014,13 +1185,13 @@ sarif_builder::make_artifact_location_object (location_t loc)
 
 #define PWD_PROPERTY_NAME ("PWD")
 
-/* Make an artifactLocation object (SARIF v2.1.0 section 3.4) for FILENAME,
+/* Make an "artifactLocation" object (SARIF v2.1.0 section 3.4) for FILENAME,
    or return NULL.  */
 
-json::object *
+sarif_artifact_location *
 sarif_builder::make_artifact_location_object (const char *filename)
 {
-  json::object *artifact_loc_obj = new json::object ();
+  sarif_artifact_location *artifact_loc_obj = new sarif_artifact_location ();
 
   /* "uri" property (SARIF v2.1.0 section 3.4.3).  */
   artifact_loc_obj->set_string ("uri", filename);
@@ -1059,14 +1230,14 @@ make_pwd_uri_str ()
     }
 }
 
-/* Make an artifactLocation object (SARIF v2.1.0 section 3.4) for the pwd,
+/* Make an "artifactLocation" object (SARIF v2.1.0 section 3.4) for the pwd,
    for use in the "run.originalUriBaseIds" property (SARIF v2.1.0
    section 3.14.14) when we have any relative paths.  */
 
-json::object *
+sarif_artifact_location *
 sarif_builder::make_artifact_location_object_for_pwd () const
 {
-  json::object *artifact_loc_obj = new json::object ();
+  sarif_artifact_location *artifact_loc_obj = new sarif_artifact_location ();
 
   /* "uri" property (SARIF v2.1.0 section 3.4.3).  */
   if (char *pwd = make_pwd_uri_str ())
@@ -1090,13 +1261,13 @@ sarif_builder::get_sarif_column (expanded_location exploc) const
 					  exploc, policy);
 }
 
-/* Make a region object (SARIF v2.1.0 section 3.30) for LOC,
+/* Make a "region" object (SARIF v2.1.0 section 3.30) for LOC,
    or return NULL.
 
    If COLUMN_OVERRIDE is non-zero, then use it as the column number
    if LOC has no column information.  */
 
-json::object *
+sarif_region *
 sarif_builder::maybe_make_region_object (location_t loc,
 					 int column_override) const
 {
@@ -1117,7 +1288,7 @@ sarif_builder::maybe_make_region_object (location_t loc,
   if (exploc_finish.file !=exploc_caret.file)
     return NULL;
 
-  json::object *region_obj = new json::object ();
+  sarif_region *region_obj = new sarif_region ();
 
   /* "startLine" property (SARIF v2.1.0 section 3.30.5) */
   if (exploc_start.line > 0)
@@ -1158,15 +1329,15 @@ sarif_builder::maybe_make_region_object (location_t loc,
   return region_obj;
 }
 
-/* Make a region object (SARIF v2.1.0 section 3.30) for the "contextRegion"
-   property (SARIF v2.1.0 section 3.29.5) of a physicalLocation.
+/* Make a "region" object (SARIF v2.1.0 section 3.30) for the "contextRegion"
+   property (SARIF v2.1.0 section 3.29.5) of a "physicalLocation".
 
    This is similar to maybe_make_region_object, but ignores column numbers,
    covering the line(s) as a whole, and including a "snippet" property
    embedding those source lines, making it easier for consumers to show
    the pertinent source.  */
 
-json::object *
+sarif_region *
 sarif_builder::maybe_make_region_object_for_context (location_t loc) const
 {
   location_t caret_loc = get_pure_location (loc);
@@ -1186,7 +1357,7 @@ sarif_builder::maybe_make_region_object_for_context (location_t loc) const
   if (exploc_finish.file !=exploc_caret.file)
     return NULL;
 
-  json::object *region_obj = new json::object ();
+  sarif_region *region_obj = new sarif_region ();
 
   /* "startLine" property (SARIF v2.1.0 section 3.30.5) */
   if (exploc_start.line > 0)
@@ -1198,19 +1369,19 @@ sarif_builder::maybe_make_region_object_for_context (location_t loc) const
     region_obj->set_integer ("endLine", exploc_finish.line);
 
   /* "snippet" property (SARIF v2.1.0 section 3.30.13).  */
-  if (json::object *artifact_content_obj
-	 = maybe_make_artifact_content_object (exploc_start.file,
-					       exploc_start.line,
-					       exploc_finish.line))
+  if (sarif_artifact_content *artifact_content_obj
+	= maybe_make_artifact_content_object (exploc_start.file,
+					      exploc_start.line,
+					      exploc_finish.line))
     region_obj->set ("snippet", artifact_content_obj);
 
   return region_obj;
 }
 
-/* Make a region object (SARIF v2.1.0 section 3.30) for the deletion region
+/* Make a "region" object (SARIF v2.1.0 section 3.30) for the deletion region
    of HINT (as per SARIF v2.1.0 section 3.57.3).  */
 
-json::object *
+sarif_region *
 sarif_builder::make_region_object_for_hint (const fixit_hint &hint) const
 {
   location_t start_loc = hint.get_start_loc ();
@@ -1219,7 +1390,7 @@ sarif_builder::make_region_object_for_hint (const fixit_hint &hint) const
   expanded_location exploc_start = expand_location (start_loc);
   expanded_location exploc_next = expand_location (next_loc);
 
-  json::object *region_obj = new json::object ();
+  sarif_region *region_obj = new sarif_region ();
 
   /* "startLine" property (SARIF v2.1.0 section 3.30.5) */
   region_obj->set_integer ("startLine", exploc_start.line);
@@ -1273,13 +1444,13 @@ maybe_get_sarif_kind (enum logical_location_kind kind)
     }
 }
 
-/* Make a logicalLocation object (SARIF v2.1.0 section 3.33) for LOGICAL_LOC,
+/* Make a "logicalLocation" object (SARIF v2.1.0 section 3.33) for LOGICAL_LOC,
    or return NULL.  */
 
-json::object *
+sarif_logical_location *
 make_sarif_logical_location_object (const logical_location &logical_loc)
 {
-  json::object *logical_loc_obj = new json::object ();
+  sarif_logical_location *logical_loc_obj = new sarif_logical_location ();
 
   /* "name" property (SARIF v2.1.0 section 3.33.4).  */
   if (const char *short_name = logical_loc.get_short_name ())
@@ -1301,12 +1472,12 @@ make_sarif_logical_location_object (const logical_location &logical_loc)
   return logical_loc_obj;
 }
 
-/* Make a codeFlow object (SARIF v2.1.0 section 3.36) for PATH.  */
+/* Make a "codeFlow" object (SARIF v2.1.0 section 3.36) for PATH.  */
 
-json::object *
+sarif_code_flow *
 sarif_builder::make_code_flow_object (const diagnostic_path &path)
 {
-  json::object *code_flow_obj = new json::object ();
+  sarif_code_flow *code_flow_obj = new sarif_code_flow ();
 
   /* "threadFlows" property (SARIF v2.1.0 section 3.36.3).  */
   json::array *thread_flows_arr = new json::array ();
@@ -1332,7 +1503,7 @@ sarif_builder::make_code_flow_object (const diagnostic_path &path)
 	}
 
       /* Add event to thread's threadFlow object.  */
-      json::object *thread_flow_loc_obj
+      sarif_thread_flow_location *thread_flow_loc_obj
 	= make_thread_flow_location_object (event, i);
       thread_flow_obj->add_location (thread_flow_loc_obj);
     }
@@ -1341,20 +1512,21 @@ sarif_builder::make_code_flow_object (const diagnostic_path &path)
   return code_flow_obj;
 }
 
-/* Make a threadFlowLocation object (SARIF v2.1.0 section 3.38) for EVENT.  */
+/* Make a "threadFlowLocation" object (SARIF v2.1.0 section 3.38) for EVENT.  */
 
-json::object *
+sarif_thread_flow_location *
 sarif_builder::make_thread_flow_location_object (const diagnostic_event &ev,
 						 int path_event_idx)
 {
-  sarif_object *thread_flow_loc_obj = new sarif_object ();
+  sarif_thread_flow_location *thread_flow_loc_obj
+    = new sarif_thread_flow_location ();
 
   /* Give diagnostic_event subclasses a chance to add custom properties
      via a property bag.  */
   ev.maybe_add_sarif_properties (*thread_flow_loc_obj);
 
   /* "location" property (SARIF v2.1.0 section 3.38.3).  */
-  json::object *location_obj
+  sarif_location *location_obj
     = make_location_object (ev, diagnostic_artifact_role::traced_file);
   thread_flow_loc_obj->set ("location", location_obj);
 
@@ -1379,7 +1551,7 @@ sarif_builder::make_thread_flow_location_object (const diagnostic_event &ev,
 }
 
 /* If M has any known meaning, make a json array suitable for the "kinds"
-   property of a threadFlowLocation object (SARIF v2.1.0 section 3.38.8).
+   property of a "threadFlowLocation" object (SARIF v2.1.0 section 3.38.8).
 
    Otherwise, return NULL.  */
 
@@ -1404,12 +1576,12 @@ sarif_builder::maybe_make_kinds_array (diagnostic_event::meaning m) const
   return kinds_arr;
 }
 
-/* Make a message object (SARIF v2.1.0 section 3.11) for MSG.  */
+/* Make a "message" object (SARIF v2.1.0 section 3.11) for MSG.  */
 
-json::object *
+sarif_message *
 sarif_builder::make_message_object (const char *msg) const
 {
-  json::object *message_obj = new json::object ();
+  sarif_message *message_obj = new sarif_message ();
 
   /* "text" property (SARIF v2.1.0 section 3.11.8).  */
   message_obj->set_string ("text", msg);
@@ -1417,15 +1589,15 @@ sarif_builder::make_message_object (const char *msg) const
   return message_obj;
 }
 
-/* Make a message object (SARIF v2.1.0 section 3.11) for DIAGRAM.
+/* Make a "message" object (SARIF v2.1.0 section 3.11) for DIAGRAM.
    We emit the diagram as a code block within the Markdown part
    of the message.  */
 
-json::object *
+sarif_message *
 sarif_builder::make_message_object_for_diagram (diagnostic_context *context,
 						const diagnostic_diagram &diagram)
 {
-  json::object *message_obj = new json::object ();
+  sarif_message *message_obj = new sarif_message ();
 
   /* "text" property (SARIF v2.1.0 section 3.11.8).  */
   message_obj->set_string ("text", diagram.get_alt_text ());
@@ -1447,13 +1619,14 @@ sarif_builder::make_message_object_for_diagram (diagnostic_context *context,
   return message_obj;
 }
 
-/* Make a multiformatMessageString object (SARIF v2.1.0 section 3.12)
+/* Make a "multiformatMessageString object" (SARIF v2.1.0 section 3.12)
    for MSG.  */
 
-json::object *
+sarif_multiformat_message_string *
 sarif_builder::make_multiformat_message_string (const char *msg) const
 {
-  json::object *message_obj = new json::object ();
+  sarif_multiformat_message_string *message_obj
+    = new sarif_multiformat_message_string ();
 
   /* "text" property (SARIF v2.1.0 section 3.12.3).  */
   message_obj->set_string ("text", msg);
@@ -1464,14 +1637,14 @@ sarif_builder::make_multiformat_message_string (const char *msg) const
 #define SARIF_SCHEMA "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json"
 #define SARIF_VERSION "2.1.0"
 
-/* Make a top-level sarifLog object (SARIF v2.1.0 section 3.13).
+/* Make a top-level "sarifLog" object (SARIF v2.1.0 section 3.13).
    Take ownership of INVOCATION_OBJ and RESULTS.  */
 
-json::object *
+sarif_log *
 sarif_builder::make_top_level_object (sarif_invocation *invocation_obj,
 				      json::array *results)
 {
-  json::object *log_obj = new json::object ();
+  sarif_log *log_obj = new sarif_log ();
 
   /* "$schema" property (SARIF v2.1.0 section 3.13.3) .  */
   log_obj->set_string ("$schema", SARIF_SCHEMA);
@@ -1481,24 +1654,24 @@ sarif_builder::make_top_level_object (sarif_invocation *invocation_obj,
 
   /* "runs" property (SARIF v2.1.0 section 3.13.4).  */
   json::array *run_arr = new json::array ();
-  json::object *run_obj = make_run_object (invocation_obj, results);
+  sarif_run *run_obj = make_run_object (invocation_obj, results);
   run_arr->append (run_obj);
   log_obj->set ("runs", run_arr);
 
   return log_obj;
 }
 
-/* Make a run object (SARIF v2.1.0 section 3.14).
+/* Make a "run" object (SARIF v2.1.0 section 3.14).
    Take ownership of INVOCATION_OBJ and RESULTS.  */
 
-json::object *
+sarif_run *
 sarif_builder::make_run_object (sarif_invocation *invocation_obj,
 				json::array *results)
 {
-  json::object *run_obj = new json::object ();
+  sarif_run *run_obj = new sarif_run ();
 
   /* "tool" property (SARIF v2.1.0 section 3.14.6).  */
-  json::object *tool_obj = make_tool_object ();
+  sarif_tool *tool_obj = make_tool_object ();
   run_obj->set ("tool", tool_obj);
 
   /* "taxonomies" property (SARIF v2.1.0 section 3.14.8).  */
@@ -1517,7 +1690,8 @@ sarif_builder::make_run_object (sarif_invocation *invocation_obj,
     {
       json::object *orig_uri_base_ids = new json::object ();
       run_obj->set ("originalUriBaseIds", orig_uri_base_ids);
-      json::object *pwd_art_loc_obj = make_artifact_location_object_for_pwd ();
+      sarif_artifact_location *pwd_art_loc_obj
+	= make_artifact_location_object_for_pwd ();
       orig_uri_base_ids->set (PWD_PROPERTY_NAME, pwd_art_loc_obj);
     }
 
@@ -1539,15 +1713,15 @@ sarif_builder::make_run_object (sarif_invocation *invocation_obj,
   return run_obj;
 }
 
-/* Make a tool object (SARIF v2.1.0 section 3.18).  */
+/* Make a "tool" object (SARIF v2.1.0 section 3.18).  */
 
-json::object *
+sarif_tool *
 sarif_builder::make_tool_object () const
 {
-  json::object *tool_obj = new json::object ();
+  sarif_tool *tool_obj = new sarif_tool ();
 
   /* "driver" property (SARIF v2.1.0 section 3.18.2).  */
-  json::object *driver_obj = make_driver_tool_component_object ();
+  sarif_tool_component *driver_obj = make_driver_tool_component_object ();
   tool_obj->set ("driver", driver_obj);
 
   /* Report plugins via the "extensions" property
@@ -1561,9 +1735,9 @@ sarif_builder::make_tool_object () const
 	public:
 	  void on_plugin (const diagnostic_client_plugin_info &p) final override
 	  {
-	    /* Create a toolComponent object (SARIF v2.1.0 section 3.19)
+	    /* Create a "toolComponent" object (SARIF v2.1.0 section 3.19)
 	       for the plugin.  */
-	    json::object *plugin_obj = new json::object ();
+	    sarif_tool_component *plugin_obj = new sarif_tool_component ();
 	    m_plugin_objs.safe_push (plugin_obj);
 
 	    /* "name" property (SARIF v2.1.0 section 3.19.8).  */
@@ -1578,7 +1752,7 @@ sarif_builder::make_tool_object () const
 	    if (const char *version = p.get_version ())
 	      plugin_obj->set_string ("version", version);
 	  }
-	  auto_vec <json::object *> m_plugin_objs;
+	  auto_vec <sarif_tool_component *> m_plugin_objs;
 	};
 	my_plugin_visitor v;
 	vinfo->for_each_plugin (v);
@@ -1597,13 +1771,13 @@ sarif_builder::make_tool_object () const
   return tool_obj;
 }
 
-/* Make a toolComponent object (SARIF v2.1.0 section 3.19) for what SARIF
+/* Make a "toolComponent" object (SARIF v2.1.0 section 3.19) for what SARIF
    calls the "driver" (see SARIF v2.1.0 section 3.18.1).  */
 
-json::object *
+sarif_tool_component *
 sarif_builder::make_driver_tool_component_object () const
 {
-  json::object *driver_obj = new json::object ();
+  sarif_tool_component *driver_obj = new sarif_tool_component ();
 
   if (auto client_data_hooks = m_context->get_client_data_hooks ())
     if (const client_version_info *vinfo
@@ -1639,15 +1813,15 @@ sarif_builder::make_driver_tool_component_object () const
 }
 
 /* If we've seen any CWE IDs, make an array for the "taxonomies" property
-   (SARIF v2.1.0 section 3.14.8) of a run object, containting a singl
-   toolComponent (3.19) as per 3.19.3, representing the CWE.
+   (SARIF v2.1.0 section 3.14.8) of a run object, containing a single
+   "toolComponent" (3.19) as per 3.19.3, representing the CWE.
 
    Otherwise return NULL.  */
 
 json::array *
 sarif_builder::maybe_make_taxonomies_array () const
 {
-  json::object *cwe_obj = maybe_make_cwe_taxonomy_object ();
+  sarif_tool_component *cwe_obj = maybe_make_cwe_taxonomy_object ();
   if (!cwe_obj)
     return NULL;
 
@@ -1657,19 +1831,19 @@ sarif_builder::maybe_make_taxonomies_array () const
   return taxonomies_arr;
 }
 
-/* If we've seen any CWE IDs, make a toolComponent object
+/* If we've seen any CWE IDs, make a "toolComponent" object
    (SARIF v2.1.0 section 3.19) representing the CWE taxonomy, as per 3.19.3.
    Populate the "taxa" property with all of the CWE IDs in m_cwe_id_set.
 
    Otherwise return NULL.  */
 
-json::object *
+sarif_tool_component *
 sarif_builder::maybe_make_cwe_taxonomy_object () const
 {
   if (m_cwe_id_set.is_empty ())
     return NULL;
 
-  json::object *taxonomy_obj = new json::object ();
+  sarif_tool_component *taxonomy_obj = new sarif_tool_component ();
 
   /* "name" property (SARIF v2.1.0 section 3.19.8).  */
   taxonomy_obj->set_string ("name", "CWE");
@@ -1681,7 +1855,7 @@ sarif_builder::maybe_make_cwe_taxonomy_object () const
   taxonomy_obj->set_string ("organization", "MITRE");
 
   /* "shortDescription" property (SARIF v2.1.0 section 3.19.19).  */
-  json::object *short_desc
+  sarif_multiformat_message_string *short_desc
     = make_multiformat_message_string ("The MITRE"
 				       " Common Weakness Enumeration");
   taxonomy_obj->set ("shortDescription", short_desc);
@@ -1690,7 +1864,7 @@ sarif_builder::maybe_make_cwe_taxonomy_object () const
   json::array *taxa_arr = new json::array ();
   for (auto cwe_id : m_cwe_id_set)
     {
-      json::object *cwe_taxon
+      sarif_reporting_descriptor *cwe_taxon
 	= make_reporting_descriptor_object_for_cwe_id (cwe_id);
       taxa_arr->append (cwe_taxon);
     }
@@ -1699,7 +1873,7 @@ sarif_builder::maybe_make_cwe_taxonomy_object () const
   return taxonomy_obj;
 }
 
-/* Ensure that we have an artifact object (SARIF v2.1.0 section 3.24)
+/* Ensure that we have an "artifact" object (SARIF v2.1.0 section 3.24)
    for FILENAME, adding it to m_filename_to_artifact_map if not already
    found, and adding ROLE to it.
    If EMBED_CONTENTS is true, then flag that we will attempt to embed the
@@ -1721,7 +1895,8 @@ sarif_builder::get_or_create_artifact (const char *filename,
   m_filename_to_artifact_map.put (filename, artifact_obj);
 
   /* "location" property (SARIF v2.1.0 section 3.24.2).  */
-  json::object *artifact_loc_obj = make_artifact_location_object (filename);
+  sarif_artifact_location *artifact_loc_obj
+    = make_artifact_location_object (filename);
   artifact_obj->set ("location", artifact_loc_obj);
 
   /* "sourceLanguage" property (SARIF v2.1.0 section 3.24.10).  */
@@ -1747,10 +1922,10 @@ sarif_builder::get_or_create_artifact (const char *filename,
   return *artifact_obj;
 }
 
-/* Make an artifactContent object (SARIF v2.1.0 section 3.3) for the
+/* Make an "artifactContent" object (SARIF v2.1.0 section 3.3) for the
    full contents of FILENAME.  */
 
-json::object *
+sarif_artifact_content *
 sarif_builder::maybe_make_artifact_content_object (const char *filename) const
 {
   /* Let input.cc handle any charset conversion.  */
@@ -1763,7 +1938,7 @@ sarif_builder::maybe_make_artifact_content_object (const char *filename) const
   if (!cpp_valid_utf8_p(utf8_content.get_buffer (), utf8_content.length ()))
     return NULL;
 
-  json::object *artifact_content_obj = new json::object ();
+  sarif_artifact_content *artifact_content_obj = new sarif_artifact_content ();
   artifact_content_obj->set ("text",
 			     new json::string (utf8_content.get_buffer (),
 					       utf8_content.length ()));
@@ -1796,10 +1971,10 @@ sarif_builder::get_source_lines (const char *filename,
   return xstrdup (result.address ());
 }
 
-/* Make an artifactContent object (SARIF v2.1.0 section 3.3) for the given
+/* Make an "artifactContent" object (SARIF v2.1.0 section 3.3) for the given
    run of lines within FILENAME (including the endpoints).  */
 
-json::object *
+sarif_artifact_content *
 sarif_builder::maybe_make_artifact_content_object (const char *filename,
 						   int start_line,
 						   int end_line) const
@@ -1816,39 +1991,40 @@ sarif_builder::maybe_make_artifact_content_object (const char *filename,
       return NULL;
     }
 
-  json::object *artifact_content_obj = new json::object ();
+  sarif_artifact_content *artifact_content_obj = new sarif_artifact_content ();
   artifact_content_obj->set_string ("text", text_utf8);
   free (text_utf8);
 
   return artifact_content_obj;
 }
 
-/* Make a fix object (SARIF v2.1.0 section 3.55) for RICHLOC.  */
+/* Make a "fix" object (SARIF v2.1.0 section 3.55) for RICHLOC.  */
 
-json::object *
+sarif_fix *
 sarif_builder::make_fix_object (const rich_location &richloc)
 {
-  json::object *fix_obj = new json::object ();
+  sarif_fix *fix_obj = new sarif_fix ();
 
   /* "artifactChanges" property (SARIF v2.1.0 section 3.55.3).  */
   /* We assume that all fix-it hints in RICHLOC affect the same file.  */
   json::array *artifact_change_arr = new json::array ();
-  json::object *artifact_change_obj = make_artifact_change_object (richloc);
+  sarif_artifact_change *artifact_change_obj
+    = make_artifact_change_object (richloc);
   artifact_change_arr->append (artifact_change_obj);
   fix_obj->set ("artifactChanges", artifact_change_arr);
 
   return fix_obj;
 }
 
-/* Make an artifactChange object (SARIF v2.1.0 section 3.56) for RICHLOC.  */
+/* Make an "artifactChange" object (SARIF v2.1.0 section 3.56) for RICHLOC.  */
 
-json::object *
+sarif_artifact_change *
 sarif_builder::make_artifact_change_object (const rich_location &richloc)
 {
-  json::object *artifact_change_obj = new json::object ();
+  sarif_artifact_change *artifact_change_obj = new sarif_artifact_change ();
 
   /* "artifactLocation" property (SARIF v2.1.0 section 3.56.2).  */
-  json::object *artifact_location_obj
+  sarif_artifact_location *artifact_location_obj
     = make_artifact_location_object (richloc.get_loc ());
   artifact_change_obj->set ("artifactLocation", artifact_location_obj);
 
@@ -1857,7 +2033,7 @@ sarif_builder::make_artifact_change_object (const rich_location &richloc)
   for (unsigned int i = 0; i < richloc.get_num_fixit_hints (); i++)
     {
       const fixit_hint *hint = richloc.get_fixit_hint (i);
-      json::object *replacement_obj = make_replacement_object (*hint);
+      sarif_replacement *replacement_obj = make_replacement_object (*hint);
       replacement_arr->append (replacement_obj);
     }
   artifact_change_obj->set ("replacements", replacement_arr);
@@ -1865,30 +2041,31 @@ sarif_builder::make_artifact_change_object (const rich_location &richloc)
   return artifact_change_obj;
 }
 
-/* Make a replacement object (SARIF v2.1.0 section 3.57) for HINT.  */
+/* Make a "replacement" object (SARIF v2.1.0 section 3.57) for HINT.  */
 
-json::object *
+sarif_replacement *
 sarif_builder::make_replacement_object (const fixit_hint &hint) const
 {
-  json::object *replacement_obj = new json::object ();
+  sarif_replacement *replacement_obj = new sarif_replacement ();
 
   /* "deletedRegion" property (SARIF v2.1.0 section 3.57.3).  */
-  json::object *region_obj = make_region_object_for_hint (hint);
+  sarif_region *region_obj = make_region_object_for_hint (hint);
   replacement_obj->set ("deletedRegion", region_obj);
 
   /* "insertedContent" property (SARIF v2.1.0 section 3.57.4).  */
-  json::object *content_obj = make_artifact_content_object (hint.get_string ());
+  sarif_artifact_content *content_obj
+    = make_artifact_content_object (hint.get_string ());
   replacement_obj->set ("insertedContent", content_obj);
 
   return replacement_obj;
 }
 
-/* Make an artifactContent object (SARIF v2.1.0 section 3.3) for TEXT.  */
+/* Make an "artifactContent" object (SARIF v2.1.0 section 3.3) for TEXT.  */
 
-json::object *
+sarif_artifact_content *
 sarif_builder::make_artifact_content_object (const char *text) const
 {
-  json::object *content_obj = new json::object ();
+  sarif_artifact_content *content_obj = new sarif_artifact_content ();
 
   /* "text" property (SARIF v2.1.0 section 3.3.2).  */
   content_obj->set_string ("text", text);
