@@ -479,7 +479,7 @@ bounded_range::set_json_attr (json::object *obj, const char *name, tree value)
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_printf (&pp, "%E", value);
-  obj->set (name, new json::string (pp_formatted_text (&pp)));
+  obj->set_string (name, pp_formatted_text (&pp));
 }
 
 
@@ -1140,7 +1140,7 @@ equiv_class::to_json () const
       pretty_printer pp;
       pp_format_decoder (&pp) = default_tree_printer;
       pp_printf (&pp, "%qE", m_constant);
-      ec_obj->set ("constant", new json::string (pp_formatted_text (&pp)));
+      ec_obj->set_string ("constant", pp_formatted_text (&pp));
     }
 
   return ec_obj;
@@ -1397,9 +1397,9 @@ constraint::to_json () const
 {
   json::object *con_obj = new json::object ();
 
-  con_obj->set ("lhs", new json::integer_number (m_lhs.as_int ()));
-  con_obj->set ("op", new json::string (constraint_op_code (m_op)));
-  con_obj->set ("rhs", new json::integer_number (m_rhs.as_int ()));
+  con_obj->set_integer ("lhs", m_lhs.as_int ());
+  con_obj->set_string ("op", constraint_op_code (m_op));
+  con_obj->set_integer ("rhs", m_rhs.as_int ());
 
   return con_obj;
 }
@@ -1485,7 +1485,7 @@ bounded_ranges_constraint::to_json () const
 {
   json::object *con_obj = new json::object ();
 
-  con_obj->set ("ec", new json::integer_number (m_ec_id.as_int ()));
+  con_obj->set_integer ("ec", m_ec_id.as_int ());
   con_obj->set ("ranges", m_ranges->to_json ());
 
   return con_obj;

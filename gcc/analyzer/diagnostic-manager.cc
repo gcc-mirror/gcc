@@ -746,17 +746,17 @@ saved_diagnostic::to_json () const
   json::object *sd_obj = new json::object ();
 
   if (m_sm)
-    sd_obj->set ("sm", new json::string (m_sm->get_name ()));
-  sd_obj->set ("enode", new json::integer_number (m_enode->m_index));
-  sd_obj->set ("snode", new json::integer_number (m_snode->m_index));
+    sd_obj->set_string ("sm", m_sm->get_name ());
+  sd_obj->set_integer ("enode", m_enode->m_index);
+  sd_obj->set_integer ("snode", m_snode->m_index);
   if (m_sval)
     sd_obj->set ("sval", m_sval->to_json ());
   if (m_state)
     sd_obj->set ("state", m_state->to_json ());
   if (m_best_epath)
-    sd_obj->set ("path_length", new json::integer_number (get_epath_length ()));
-  sd_obj->set ("pending_diagnostic", new json::string (m_d->get_kind ()));
-  sd_obj->set ("idx", new json::integer_number (m_idx));
+    sd_obj->set_integer ("path_length", get_epath_length ());
+  sd_obj->set_string ("pending_diagnostic", m_d->get_kind ());
+  sd_obj->set_integer ("idx", m_idx);
 
   /* We're not yet JSONifying the following fields:
      const gimple *m_stmt;
@@ -1038,7 +1038,7 @@ saved_diagnostic::maybe_add_sarif_properties (sarif_object &result_obj) const
   if (m_state)
     props.set (PROPERTY_PREFIX "state", m_state->to_json ());
   if (m_best_epath)
-  props.set (PROPERTY_PREFIX "idx", new json::integer_number (m_idx));
+  props.set_integer (PROPERTY_PREFIX "idx", m_idx);
 #undef PROPERTY_PREFIX
 
   /* Potentially add pending_diagnostic-specific properties.  */

@@ -1223,7 +1223,7 @@ program_state::to_json (const extrinsic_state &ext_state) const
     state_obj->set ("checkers", checkers_obj);
   }
 
-  state_obj->set ("valid", new json::literal (m_valid));
+  state_obj->set_bool ("valid", m_valid);
 
   return state_obj;
 }

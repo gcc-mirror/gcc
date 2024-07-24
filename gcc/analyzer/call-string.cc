@@ -111,12 +111,9 @@ call_string::to_json () const
   for (const call_string::element_t &e : m_elements)
     {
       json::object *e_obj = new json::object ();
-      e_obj->set ("src_snode_idx",
-		  new json::integer_number (e.m_callee->m_index));
-      e_obj->set ("dst_snode_idx",
-		  new json::integer_number (e.m_caller->m_index));
-      e_obj->set ("funcname",
-		  new json::string (function_name (e.m_caller->m_fun)));
+      e_obj->set_integer ("src_snode_idx", e.m_callee->m_index);
+      e_obj->set_integer ("dst_snode_idx", e.m_caller->m_index);
+      e_obj->set_string ("funcname", function_name (e.m_caller->m_fun));
       arr->append (e_obj);
     }
 
