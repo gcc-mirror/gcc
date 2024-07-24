@@ -1,3 +1,16 @@
+2024-07-23  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115843
+	* config/i386/x86-tune-costs.h (znver4_cost): Update unaligned
+	load and store cost from the aligned costs.
+
+2024-07-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386.md (prefetchi): Change to %a.
+
 2024-07-22  Maciej W. Rozycki  <macro@orcam.me.uk>
 
 	Backported from master:
