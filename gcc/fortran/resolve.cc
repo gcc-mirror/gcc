@@ -9750,6 +9750,9 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 	     correct this now.  */
 	  gfc_typespec *ts = &target->ts;
 	  gfc_ref *ref;
+	  /* Internal_ref is true, when this is ref'ing only _data and co-ref.
+	   */
+	  bool internal_ref = true;
 
 	  for (ref = target->ref; ref != NULL; ref = ref->next)
 	    {
@@ -9757,26 +9760,41 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 		{
 		case REF_COMPONENT:
 		  ts = &ref->u.c.component->ts;
+		  internal_ref
+		    = target->ref == ref && ref->next
+		      && strncmp ("_data", ref->u.c.component->name, 5) == 0;
 		  break;
 		case REF_ARRAY:
 		  if (ts->type == BT_CLASS)
 		    ts = &ts->u.derived->components->ts;
+		  if (internal_ref && ref->u.ar.codimen > 0)
+		    for (int i = ref->u.ar.dimen;
+			 internal_ref
+			 && i < ref->u.ar.dimen + ref->u.ar.codimen;
+			 ++i)
+		      internal_ref
+			= ref->u.ar.dimen_type[i] == DIMEN_THIS_IMAGE;
 		  break;
 		default:
 		  break;
 		}
 	    }
-	  /* Create a scalar instance of the current class type.  Because the
-	     rank of a class array goes into its name, the type has to be
-	     rebuilt.  The alternative of (re-)setting just the attributes
-	     and as in the current type, destroys the type also in other
-	     places.  */
-	  as = NULL;
-	  sym->ts = *ts;
-	  sym->ts.type = BT_CLASS;
-	  attr = CLASS_DATA (sym) ? CLASS_DATA (sym)->attr : sym->attr;
-	  gfc_change_class (&sym->ts, &attr, as, 0, 0);
-	  sym->as = NULL;
+	  /* Only rewrite the type of this symbol, when the refs are not the
+	     internal ones for class and co-array this-image.  */
+	  if (!internal_ref)
+	    {
+	      /* Create a scalar instance of the current class type.  Because
+		 the rank of a class array goes into its name, the type has to
+		 be rebuilt.  The alternative of (re-)setting just the
+		 attributes and as in the current type, destroys the type also
+		 in other places.  */
+	      as = NULL;
+	      sym->ts = *ts;
+	      sym->ts.type = BT_CLASS;
+	      attr = CLASS_DATA (sym) ? CLASS_DATA (sym)->attr : sym->attr;
+	      gfc_change_class (&sym->ts, &attr, as, 0, 0);
+	      sym->as = NULL;
+	    }
 	}
     }
 

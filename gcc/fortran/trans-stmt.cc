@@ -1754,7 +1754,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 		  && e->ts.type == BT_CLASS
 		  && (gfc_is_class_scalar_expr (e)
 		      || gfc_is_class_array_ref (e, NULL));
-  same_class = e->ts.type == BT_CLASS && sym->ts.type == BT_CLASS
+  same_class = class_target && sym->ts.type == BT_CLASS
 	       && strcmp (sym->ts.u.derived->name, e->ts.u.derived->name) == 0;
 
   unlimited = UNLIMITED_POLY (e);

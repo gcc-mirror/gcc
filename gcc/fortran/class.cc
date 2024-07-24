@@ -379,27 +379,33 @@ gfc_is_class_scalar_expr (gfc_expr *e)
     return false;
 
   /* Is this a class object?  */
-  if (e->symtree
-	&& e->symtree->n.sym->ts.type == BT_CLASS
-	&& CLASS_DATA (e->symtree->n.sym)
-	&& !CLASS_DATA (e->symtree->n.sym)->attr.dimension
-	&& (e->ref == NULL
-	    || (e->ref->type == REF_COMPONENT
-		&& strcmp (e->ref->u.c.component->name, "_data") == 0
-		&& e->ref->next == NULL)))
+  if (e->symtree && e->symtree->n.sym->ts.type == BT_CLASS
+      && CLASS_DATA (e->symtree->n.sym)
+      && !CLASS_DATA (e->symtree->n.sym)->attr.dimension
+      && (e->ref == NULL
+	  || (e->ref->type == REF_COMPONENT
+	      && strcmp (e->ref->u.c.component->name, "_data") == 0
+	      && (e->ref->next == NULL
+		  || (e->ref->next->type == REF_ARRAY
+		      && e->ref->next->u.ar.codimen > 0
+		      && e->ref->next->u.ar.dimen == 0
+		      && e->ref->next->next == NULL)))))
     return true;
 
   /* Or is the final reference BT_CLASS or _data?  */
   for (ref = e->ref; ref; ref = ref->next)
     {
-      if (ref->type == REF_COMPONENT
-	    && ref->u.c.component->ts.type == BT_CLASS
-	    && CLASS_DATA (ref->u.c.component)
-	    && !CLASS_DATA (ref->u.c.component)->attr.dimension
-	    && (ref->next == NULL
-		|| (ref->next->type == REF_COMPONENT
-		    && strcmp (ref->next->u.c.component->name, "_data") == 0
-		    && ref->next->next == NULL)))
+      if (ref->type == REF_COMPONENT && ref->u.c.component->ts.type == BT_CLASS
+	  && CLASS_DATA (ref->u.c.component)
+	  && !CLASS_DATA (ref->u.c.component)->attr.dimension
+	  && (ref->next == NULL
+	      || (ref->next->type == REF_COMPONENT
+		  && strcmp (ref->next->u.c.component->name, "_data") == 0
+		  && (ref->next->next == NULL
+		      || (ref->next->next->type == REF_ARRAY
+			  && ref->next->next->u.ar.codimen > 0
+			  && ref->next->next->u.ar.dimen == 0
+			  && ref->next->next->next == NULL)))))
 	return true;
     }
 

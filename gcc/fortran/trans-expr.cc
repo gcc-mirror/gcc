@@ -2437,7 +2437,8 @@ gfc_get_caf_token_offset (gfc_se *se, tree *token, tree *offset, tree caf_decl,
     {
       gcc_assert (GFC_TYPE_ARRAY_AKIND (TREE_TYPE (caf_decl))
 		    == GFC_ARRAY_ALLOCATABLE
-		  || expr->symtree->n.sym->attr.select_type_temporary);
+		  || expr->symtree->n.sym->attr.select_type_temporary
+		  || expr->symtree->n.sym->assoc);
       *token = gfc_conv_descriptor_token (caf_decl);
     }
   else if (DECL_LANG_SPECIFIC (caf_decl)
@@ -3256,6 +3257,13 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
       else
         se->string_length = sym->ts.u.cl->backend_decl;
       gcc_assert (se->string_length);
+
+      /* For coarray strings return the pointer to the data and not the
+	 descriptor.  */
+      if (sym->attr.codimension && sym->attr.associate_var
+	  && !se->descriptor_only
+	  && TREE_CODE (TREE_TYPE (se->expr)) != ARRAY_TYPE)
+	se->expr = gfc_conv_descriptor_data_get (se->expr);
     }
 
   /* Some expressions leak through that haven't been fixed up.  */
@@ -10536,10 +10544,25 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
       gfc_add_modify (&block, lse.expr,
 		      fold_convert (TREE_TYPE (lse.expr), rse.expr));
 
-      /* Also set the tokens for pointer components in derived typed
-	 coarrays.  */
       if (flag_coarray == GFC_FCOARRAY_LIB)
-	trans_caf_token_assign (&lse, &rse, expr1, expr2);
+	{
+	  if (expr1->ref)
+	    /* Also set the tokens for pointer components in derived typed
+	       coarrays.  */
+	    trans_caf_token_assign (&lse, &rse, expr1, expr2);
+	  else if (gfc_caf_attr (expr1).codimension)
+	    {
+	      tree lhs_caf_decl, rhs_caf_decl, lhs_tok, rhs_tok;
+
+	      lhs_caf_decl = gfc_get_tree_for_caf_expr (expr1);
+	      rhs_caf_decl = gfc_get_tree_for_caf_expr (expr2);
+	      gfc_get_caf_token_offset (&lse, &lhs_tok, nullptr, lhs_caf_decl,
+					NULL_TREE, expr1);
+	      gfc_get_caf_token_offset (&rse, &rhs_tok, nullptr, rhs_caf_decl,
+					NULL_TREE, expr2);
+	      gfc_add_modify (&block, lhs_tok, rhs_tok);
+	    }
+	}
 
       gfc_add_block_to_block (&block, &rse.post);
       gfc_add_block_to_block (&block, &lse.post);
@@ -10981,8 +11004,9 @@ gfc_conv_string_parameter (gfc_se * se)
       the assignment from the temporary to the lhs.  */
 
 tree
-gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, gfc_typespec ts,
-			 bool deep_copy, bool dealloc, bool in_coarray)
+gfc_trans_scalar_assign (gfc_se *lse, gfc_se *rse, gfc_typespec ts,
+			 bool deep_copy, bool dealloc, bool in_coarray,
+			 bool assoc_assign)
 {
   stmtblock_t block;
   tree tmp;
@@ -11103,6 +11127,21 @@ gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, gfc_typespec ts,
       gfc_add_block_to_block (&block, &lse->pre);
       gfc_add_block_to_block (&block, &rse->pre);
 
+      if (in_coarray)
+	{
+	  if (flag_coarray == GFC_FCOARRAY_LIB && assoc_assign)
+	    {
+	      gfc_add_modify (&block, gfc_conv_descriptor_token (lse->expr),
+			      TYPE_LANG_SPECIFIC (
+				TREE_TYPE (TREE_TYPE (rse->expr)))
+				->caf_token);
+	    }
+	  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (lse->expr)))
+	    lse->expr = gfc_conv_array_data (lse->expr);
+	  if (flag_coarray == GFC_FCOARRAY_SINGLE && assoc_assign
+	      && !POINTER_TYPE_P (TREE_TYPE (rse->expr)))
+	    rse->expr = gfc_build_addr_expr (NULL_TREE, rse->expr);
+	}
       gfc_add_modify (&block, lse->expr,
 		      fold_convert (TREE_TYPE (lse->expr), rse->expr));
     }
@@ -12290,6 +12329,15 @@ trans_class_assignment (stmtblock_t *block, gfc_expr *lhs, gfc_expr *rhs,
     }
 }
 
+bool
+is_assoc_assign (gfc_expr *lhs, gfc_expr *rhs)
+{
+  if (lhs->expr_type != EXPR_VARIABLE || rhs->expr_type != EXPR_VARIABLE)
+    return false;
+
+  return lhs->symtree->n.sym->assoc
+	 && lhs->symtree->n.sym->assoc->target == rhs;
+}
 
 /* Subroutine of gfc_trans_assignment that actually scalarizes the
    assignment.  EXPR1 is the destination/LHS and EXPR2 is the source/RHS.
@@ -12323,6 +12371,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
   symbol_attribute lhs_caf_attr, rhs_caf_attr, lhs_attr;
   bool is_poly_assign;
   bool realloc_flag;
+  bool assoc_assign = false;
 
   /* Assignment of the form lhs = rhs.  */
   gfc_start_block (&block);
@@ -12377,6 +12426,8 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 		       || gfc_is_class_array_ref (expr2, NULL)
 		       || gfc_is_class_scalar_expr (expr2))
 		   && lhs_attr.flavor != FL_PROCEDURE;
+
+  assoc_assign = is_assoc_assign (expr1, expr2);
 
   realloc_flag = flag_realloc_lhs
 		 && gfc_is_reallocatable_lhs (expr1)
@@ -12471,11 +12522,13 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
   l_is_temp = (lss != gfc_ss_terminator && loop.temp_ss != NULL);
 
   /* Translate the expression.  */
-  rse.want_coarray = flag_coarray == GFC_FCOARRAY_LIB && init_flag
-      && lhs_caf_attr.codimension;
+  rse.want_coarray = flag_coarray == GFC_FCOARRAY_LIB
+		     && (init_flag || assoc_assign) && lhs_caf_attr.codimension;
+  rse.want_pointer = rse.want_coarray && !init_flag && !lhs_caf_attr.dimension;
   gfc_conv_expr (&rse, expr2);
 
-  /* Deal with the case of a scalar class function assigned to a derived type.  */
+  /* Deal with the case of a scalar class function assigned to a derived type.
+   */
   if (gfc_is_alloc_class_scalar_function (expr2)
       && expr1->ts.type == BT_DERIVED)
     {
@@ -12713,15 +12766,19 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
   else
     gfc_add_block_to_block (&body, &rse.pre);
 
+  if (flag_coarray != GFC_FCOARRAY_NONE && expr1->ts.type == BT_CHARACTER
+      && assoc_assign)
+    tmp = gfc_trans_pointer_assignment (expr1, expr2);
+
   /* If nothing else works, do it the old fashioned way!  */
   if (tmp == NULL_TREE)
-    tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
-				   gfc_expr_is_variable (expr2)
-				   || scalar_to_array
+    tmp
+      = gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
+				 gfc_expr_is_variable (expr2) || scalar_to_array
 				   || expr2->expr_type == EXPR_ARRAY,
-				   !(l_is_temp || init_flag) && dealloc,
-				   expr1->symtree->n.sym->attr.codimension);
-
+				 !(l_is_temp || init_flag) && dealloc,
+				 expr1->symtree->n.sym->attr.codimension,
+				 assoc_assign);
 
   /* Add the lse pre block to the body  */
   gfc_add_block_to_block (&body, &lse.pre);
