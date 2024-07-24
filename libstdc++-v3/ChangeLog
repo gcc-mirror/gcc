@@ -1,3 +1,20 @@
+2024-07-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-07-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++23/print.cc (__open_terminal): Use [[maybe_unused]] on
+	parameter.
+
+2024-07-23  Detlef Vollmann  <dv@vollmann.ch>
+
+	Backported from master:
+	2024-07-23  Detlef Vollmann  <dv@vollmann.ch>
+
+	PR libstdc++/115482
+	* src/c++23/print.cc (__open_terminal) [__AVR__]: Do not use
+	isatty.
+
 2024-07-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

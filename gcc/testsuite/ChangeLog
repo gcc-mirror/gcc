@@ -1,3 +1,50 @@
+2024-07-23  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-07-23  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR testsuite/115826
+	* gcc.dg/vect/tsvc/vect-tsvc-s1281.c: Use -fno-finite-math-only.
+
+2024-07-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-07-23  Jakub Jelinek  <jakub@redhat.com>
+		    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116034
+	* gcc.dg/pr116034.c: New test.
+
+2024-07-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/prefetchi-1.c: Check (%rip).
+
+2024-07-23  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2024-07-23  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/106069
+	* g++.target/powerpc/pr106069.C: Reorder dg directives.
+
+2024-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104981
+	PR c++/115550
+	* g++.dg/coroutines/pr104981-preview-this.C: New test.
+	* g++.dg/coroutines/pr115550-preview-this.C: New test.
+
+2024-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-07-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115783
+	* g++.dg/cpp23/explicit-obj-diagnostics11.C: New test.
+
 2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
 
 	Backported from master:

@@ -1,3 +1,17 @@
+2024-07-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-07-23  Jakub Jelinek  <jakub@redhat.com>
+		    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116034
+	* tree-ssa.cc (maybe_rewrite_mem_ref_base): Only use IMAGPART_EXPR
+	if MEM_REF offset is equal to element type size.
+
+2024-07-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386.md (prefetchi): Change to %a.
+
 2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
 
 	Backported from master:
