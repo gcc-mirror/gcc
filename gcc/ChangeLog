@@ -1,3 +1,114 @@
+2024-07-23  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (get_type_num_reference_type): Handle rvalue refs.
+	(get_type_num_array_type): Add DW_TAG_rvalue_reference_type to switch.
+	(get_type_num): Handle DW_TAG_rvalue_reference_type DIEs.
+	* dwarf2codeview.h (CV_PTR_MODE_RVREF): Define.
+
+2024-07-23  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (get_type_num_reference_type): New function.
+	(get_type_num_array_type): Add DW_TAG_reference_type to switch.
+	(get_type_num): Handle DW_TAG_reference_type DIEs.
+	* dwarf2codeview.h (CV_PTR_MODE_LVREF): Define.
+
+2024-07-23  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/bitmanip.md: Fix splitter.
+
+2024-07-23  Marek Polacek  <polacek@redhat.com>
+
+	* doc/extend.texi: Add missing @option.
+
+2024-07-23  Andi Kleen  <ak@linux.intel.com>
+
+	PR c/83324
+	* doc/extend.texi: Document [[musttail]]
+
+2024-07-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	* doc/install.texi (amdgcn-x-amdhsa): Suggest newer git version
+	for newlib.
+
+2024-07-23  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/96866
+	* config/rs6000/rs6000.cc (print_operand_address): Emit message for
+	unsupported operand.
+
+2024-07-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116002
+	* tree-ssa-structalias.cc (topo_visit): Also consider
+	SCALAR = SCALAR complex constraints as edges.
+
+2024-07-23  Jakub Jelinek  <jakub@redhat.com>
+	    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116034
+	* tree-ssa.cc (maybe_rewrite_mem_ref_base): Only use IMAGPART_EXPR
+	if MEM_REF offset is equal to element type size.
+
+2024-07-23  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/116002
+	* cselib.cc (cselib_hash_rtx): Use inchash to get proper mixing.
+	Consistently avoid a zero return value when hashing successfully.
+	Consistently treat a zero hash value from recursing as fatal.
+	Use hashval_t where appropriate.
+	(cselib_hash_plus_const_int): Likewise.
+	(new_cselib_val): Use hashval_t.
+	(cselib_lookup_1): Likewise.
+
+2024-07-23  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.cc (ix86_hardreg_mov_ok): Relax mov subreg
+	to hard register after split1.
+
+2024-07-23  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/115713
+	* config/rs6000/rs6000.cc (rs6000_inner_target_options): Update option
+	set information for rs6000_opt_vars.
+
+2024-07-23  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/115713
+	* config/rs6000/rs6000.cc (rs6000_inner_target_options): Avoid to
+	enable altivec or disable avoid-indexed-addresses automatically
+	when they get specified explicitly.
+
+2024-07-23  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/115713
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Emit error
+	messages when explicit VSX encounters explicit soft-float, no-altivec
+	or avoid-indexed-addresses.
+
+2024-07-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386.md (prefetchi): Change to %a.
+
+2024-07-23  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/115877
+	* ext-dce.cc (ext_dce_process_sets): Reasonably handle input/output
+	operands.
+	(ext_dce_rd_transfer_n): Drop bogus assertion.
+
+2024-07-23  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/iterators.md (ANYI_DOUBLE_TRUNC): Add new iterator
+	for int double truncation.
+	(ANYI_DOUBLE_TRUNCATED): Add new attr for int double truncation.
+	(anyi_double_truncated): Ditto but for lowercase.
+	* config/riscv/riscv-protos.h (riscv_expand_ustrunc): Add new
+	func decl for expanding ustrunc
+	* config/riscv/riscv.cc (riscv_expand_ustrunc): Add new func
+	impl to expand ustrunc.
+	* config/riscv/riscv.md (ustrunc<mode><anyi_double_truncated>2): Impl
+	the new pattern ustrunc<m><n>2 for int.
+
 2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/109985

@@ -1,3 +1,48 @@
+2024-07-23  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/116048
+	* Make-lang.in (GM2-COMP-BOOT-DEFS): Add M2StateCheck.def.
+	(GM2-COMP-BOOT-MODS): Add M2StateCheck.mod.
+	(GM2-COMP-DEFS): Add M2StateCheck.def.
+	(GM2-COMP-MODS): Add M2StateCheck.mod.
+	* gm2-compiler/M2Quads.mod (StartBuildWith): Generate
+	unrecoverable error is the qualident type is NulSym.
+	Replace MetaError1 with MetaErrorT1 and position the error
+	to the qualident.
+	* gm2-compiler/P3Build.bnf (M2StateCheck): Import procedures.
+	(seenError): New variable.
+	(WasNoError): Remove variable.
+	(BlockState): New variable.
+	(ErrorString): Rewrite using seenError.
+	(CompilationUnit): Ditto.
+	(QualidentCheck): New rule.
+	(ConstantDeclaration): Bookend with InclConst and ExclConst.
+	(Constructor): Add InclConstructor, ExclConstructor and call
+	CheckQualident.
+	(ConstActualParameters): Call PushState, PopState, InclConstFunc
+	and CheckQualident.
+	(TypeDeclaration): Bookend with InclType and ExclType.
+	(SimpleType): Call QualidentCheck.
+	(CaseTag): Ditto.
+	(OptReturnType): Ditto.
+	(VariableDeclaration): Bookend with InclVar and ExclVar.
+	(Designator): Call QualidentCheck.
+	(Formal;Type): Ditto.
+	* gm2-compiler/PCBuild.bnf (M2StateCheck): Import procedures.
+	(ConstantDeclaration): Rewrite using InclConst and ExclConst.
+	(Constructor): Bookend with InclConstructor and ExclConstructor.
+	Call CheckQualident.
+	(ConstructorOrConstActualParameters): Rewrite and cal
+	l CheckQualident.
+	(ConstActualParameters): Bookend with PushState PopState.
+	Call InclConstFunc and CheckQualident.
+	* gm2-gcc/init.cc (_M2_M2StateCheck_init): New declaration.
+	(_M2_P3Build_init): New declaration.
+	(init_PerCompilationInit): Call _M2_M2StateCheck_init and
+	_M2_P3Build_init.
+	* gm2-compiler/M2StateCheck.def: New file.
+	* gm2-compiler/M2StateCheck.mod: New file.
+
 2024-07-16  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/115957

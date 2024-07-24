@@ -1,3 +1,16 @@
+2024-07-23  Andi Kleen  <ak@linux.intel.com>
+
+	PR c/83324
+	* c-parser.cc (struct attr_state): Define with musttail_p.
+	(c_parser_statement_after_labels): Handle [[musttail]].
+	(c_parser_std_attribute): Dito.
+	(c_parser_handle_musttail): Dito.
+	(c_parser_compound_statement_nostart): Dito.
+	(c_parser_all_labels): Dito.
+	(c_parser_statement): Dito.
+	* c-tree.h (c_finish_return): Add musttail_p flag.
+	* c-typeck.cc (c_finish_return): Handle musttail_p flag.
+
 2024-07-20  Andi Kleen  <ak@gcc.gnu.org>
 
 	Revert:
