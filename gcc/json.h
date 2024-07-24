@@ -83,6 +83,7 @@ class value
   virtual void print (pretty_printer *pp, bool formatted) const = 0;
 
   void dump (FILE *, bool formatted) const;
+  void DEBUG_FUNCTION dump () const;
 };
 
 /* Subclass of value for objects: a collection of key/value pairs

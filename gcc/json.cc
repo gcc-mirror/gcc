@@ -90,6 +90,16 @@ value::dump (FILE *outf, bool formatted) const
   pp_flush (&pp);
 }
 
+/* A convenience function for debugging.
+   Dump to stderr with formatting, and a trailing newline. */
+
+void
+value::dump () const
+{
+  dump (stderr, true);
+  fprintf (stderr, "\n");
+}
+
 /* class json::object, a subclass of json::value, representing
    an ordered collection of key/value pairs.  */
 
