@@ -119,6 +119,26 @@ class sarif_tool : public sarif_object {};
 
 class sarif_tool_component : public sarif_object {};
 
+/* Make a JSON string for the current date and time.
+   See SARIF v2.1.0 section 3.9 "Date/time properties".
+   Given that we don't run at the very beginning/end of the
+   process, it doesn't make sense to be more accurate than
+   the current second.  */
+
+static std::unique_ptr<json::string>
+make_date_time_string_for_current_time ()
+{
+  time_t t = time (nullptr);
+  struct tm *tm = gmtime (&t);
+  char buf[256];
+  snprintf (buf, sizeof (buf) - 1,
+	    ("%04i-%02i-%02iT"
+	     "%02i:%02i:%02iZ"),
+	    tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
+	    tm->tm_hour, tm->tm_min, tm->tm_sec);
+  return ::make_unique<json::string> (buf);
+}
+
 /* Subclass of sarif_object for SARIF "invocation" objects
    (SARIF v2.1.0 section 3.20).  */
 
@@ -530,6 +550,10 @@ sarif_invocation::sarif_invocation (sarif_builder &builder,
   if (const char *pwd = getpwd ())
     set<sarif_artifact_location> ("workingDirectory",
 				  builder.make_artifact_location_object (pwd));
+
+  // "startTimeUtc" property (SARIF v2.1.0 section 3.20.7)
+  set<json::string> ("startTimeUtc",
+		     make_date_time_string_for_current_time ());
 }
 
 /* Handle an internal compiler error DIAGNOSTIC occurring on CONTEXT.
@@ -559,6 +583,10 @@ sarif_invocation::prepare_to_flush (diagnostic_context &context)
      this object (SARIF v2.1.0 section 3.8) e.g. for recording time vars.  */
   if (auto client_data_hooks = context.get_client_data_hooks ())
     client_data_hooks->add_sarif_invocation_properties (*this);
+
+  // "endTimeUtc" property (SARIF v2.1.0 section 3.20.8);
+  set<json::string> ("endTimeUtc",
+		     make_date_time_string_for_current_time ());
 }
 
 /* class sarif_artifact : public sarif_object.  */
