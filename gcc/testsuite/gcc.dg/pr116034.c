@@ -2,12 +2,13 @@
 /* { dg-do run } */
 /* { dg-options "-O1 -fno-strict-aliasing" } */
 
-int g;
+unsigned short int g;
 
 static inline int
 foo (_Complex unsigned short c)
 {
-  __builtin_memmove (&g, 1 + (char *) &c, 2);
+  if (__SIZEOF_SHORT__ == 2)
+    __builtin_memmove (&g, 1 + (char *) &c, 2);
   return g;
 }
 
