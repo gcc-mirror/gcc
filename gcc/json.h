@@ -21,6 +21,15 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_JSON_H
 #define GCC_JSON_H
 
+/* This header uses std::unique_ptr, but <memory> can't be directly
+   included due to issues with macros.  Hence <memory> must be included
+   from system.h by defining INCLUDE_MEMORY in any source file using
+   json.h.  */
+
+#ifndef INCLUDE_MEMORY
+# error "You must define INCLUDE_MEMORY before including system.h to use make-unique.h"
+#endif
+
 /* Implementation of JSON, a lightweight data-interchange format.
 
    See http://www.json.org/
@@ -101,6 +110,21 @@ class object : public value
   void print (pretty_printer *pp, bool formatted) const final override;
 
   void set (const char *key, value *v);
+
+  /* Set the property KEY of this object, requiring V
+     to be of a specific json::value subclass.
+
+     This can be used to enforce type-checking, making it easier
+     to comply with a schema, e.g.
+       obj->set<some_subclass> ("property_name", value)
+     leading to a compile-time error if VALUE is not of the
+     appropriate subclass.  */
+  template <typename JsonType>
+  void set (const char *key, std::unique_ptr<JsonType> v)
+  {
+    set (key, v.release ());
+  }
+
   value *get (const char *key) const;
 
   void set_string (const char *key, const char *utf8_value);
@@ -131,6 +155,20 @@ class array : public value
 
   void append (value *v);
   void append_string (const char *utf8_value);
+
+  /* Append V to this array, requiring V
+     to be a specific json::value subclass.
+
+     This can be used to enforce type-checking, making it easier
+     to comply with a schema, e.g.
+       arr->append<some_subclass> (value)
+     leading to a compile-time error if VALUE is not of the
+     appropriate subclass.  */
+  template <typename JsonType>
+  void append (std::unique_ptr<JsonType> v)
+  {
+    append (v.release ());
+  }
 
  private:
   auto_vec<value *> m_elements;
