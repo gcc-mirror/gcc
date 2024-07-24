@@ -33,6 +33,20 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace selftest {
 
+/* Assert that VALUE is a non-null json::string
+   equalling EXPECTED_VALUE.
+   Use LOC for any failures.  */
+
+void
+assert_json_string_eq (const location &loc,
+		       const json::value *value,
+		       const char *expected_value)
+{
+  ASSERT_EQ_AT (loc, value->get_kind (), json::JSON_STRING);
+  const json::string *str = static_cast<const json::string *> (value);
+  ASSERT_STREQ_AT (loc, expected_value, str->get_string ());
+}
+
 /* Assert that VALUE is a non-null json::object,
    returning it as such, failing at LOC if this isn't the case.  */
 
@@ -113,6 +127,22 @@ expect_json_object_with_array_property (const location &loc,
 }
 
 /* Assert that VALUE is a non-null json::object that has property
+   PROPERTY_NAME, and that the property value is a non-null JSON string.
+   Return the value of the property as a json::string.
+   Use LOC for any failures.  */
+
+const json::string *
+expect_json_object_with_string_property (const location &loc,
+					 const json::value *value,
+					 const char *property_name)
+{
+  const json::value *property_value
+    = expect_json_object_with_property (loc, value, property_name);
+  ASSERT_EQ_AT (loc, property_value->get_kind (), json::JSON_STRING);
+  return static_cast<const json::string *> (property_value);
+}
+
+/* Assert that VALUE is a non-null json::object that has property
    PROPERTY_NAME, and that the value of that property is a non-null
    JSON string equalling EXPECTED_VALUE.
    Use LOC for any failures.  */
@@ -125,9 +155,7 @@ assert_json_string_property_eq (const location &loc,
 {
   const json::value *property_value
     = expect_json_object_with_property (loc, value, property_name);
-  ASSERT_EQ_AT (loc, property_value->get_kind (), json::JSON_STRING);
-  const json::string *str = static_cast<const json::string *> (property_value);
-  ASSERT_STREQ_AT (loc, expected_value, str->get_string ());
+  assert_json_string_eq (loc, property_value, expected_value);
 }
 
 } // namespace selftest

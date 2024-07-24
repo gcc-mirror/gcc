@@ -109,6 +109,8 @@ class object : public value
   enum kind get_kind () const final override { return JSON_OBJECT; }
   void print (pretty_printer *pp, bool formatted) const final override;
 
+  bool is_empty () const { return m_map.is_empty (); }
+
   void set (const char *key, value *v);
 
   /* Set the property KEY of this object, requiring V
