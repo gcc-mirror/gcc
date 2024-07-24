@@ -173,12 +173,11 @@ package Errout is
    --      obtained from the Sloc field of the given node or nodes. If no Sloc
    --      is available (happens e.g. for nodes in package Standard), then the
    --      default case (see Scans spec) is used. The nodes to be used are
-   --      stored in Error_Msg_Node_1, Error_Msg_Node_2. No insertion occurs
-   --      for the Empty node, and the Error node results in the insertion of
-   --      the characters <error>. In addition, if the special global variable
-   --      Error_Msg_Qual_Level is non-zero, then the reference will include
-   --      up to the given number of levels of qualification, using the scope
-   --      chain.
+   --      stored in Error_Msg_Node_1, Error_Msg_Node_2, which must not be
+   --      Empty. The Error node results in the insertion of "<error>". In
+   --      addition, if the special global variable Error_Msg_Qual_Level is
+   --      non-zero, then the reference will include up to the given number of
+   --      levels of qualification, using the scope chain.
    --
    --      Note: the special names _xxx (xxx = Pre/Post/Invariant) are changed
    --      to insert the string xxx'Class into the message.

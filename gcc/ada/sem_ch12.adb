@@ -26,6 +26,7 @@
 with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Contracts;      use Contracts;
+with Debug;          use Debug;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
@@ -830,7 +831,7 @@ package body Sem_Ch12 is
    --  formal derived types, to determine whether the parent type is another
    --  formal derived type in the same generic unit.
    --  Note that the call site appends the result of this function onto
-   --  the same list.
+   --  the same list it is passing to Actual_Decls.
 
    function Instantiate_Formal_Subprogram
      (Formal          : Node_Id;
@@ -1167,9 +1168,26 @@ package body Sem_Ch12 is
       end record;
 
       type Actual_Origin_Enum is
-        (None, From_Explicit_Actual, From_Default, From_Others_Box);
+        (None, From_Explicit_Actual, From_Default, From_Inference,
+         From_Others_Box);
       --  Indication of where the Actual came from -- explicitly in the
-      --  instantiation, or defaulted.
+      --  instantiation, inferred from some other type, or defaulted.
+
+      type Inference_Reason is
+      --  Reason an actual type corresponding to a formal type was (or could
+      --  be) inferred from the actual type corresponding to another formal
+      --  type.
+        (Designated_Type, -- designated type from formal access
+         Index_Type, -- index type from formal array
+         Component_Type, -- component type from formal array
+         Discriminant_Type); -- discriminant type from formal discriminated
+
+      function Image (Reason : Inference_Reason) return String is
+        (case Reason is
+           when Designated_Type => "designated type",
+           when Index_Type => "index type",
+           when Component_Type => "component type",
+           when Discriminant_Type => "discriminant type");
 
       type Assoc_Index is new Pos;
       subtype Assoc_Count is Assoc_Index'Base range 0 .. Assoc_Index'Last;
@@ -1196,7 +1214,22 @@ package body Sem_Ch12 is
 
          Actual_Origin : Actual_Origin_Enum;
          --  Reason why Actual was set; where it came from
-      end record;
+
+         Info_Inferred_Actual : Opt_Type_Kind_Id;
+         --  An inferred actual is always a type entity, not a box, and not
+         --  something like T'Base. This is used only for messages and
+         --  assertions. It contains the type that was, or could have been,
+         --  inferred.
+
+         Inferred_From : Assoc_Index;
+         --  Index of a later Assoc_Rec in the same Gen_Assocs_Rec from which
+         --  this one was inferred, or could be inferred.
+         --  Valid only if Info_Inferred_Actual is present.
+
+         Reason : Inference_Reason;
+         --  Reason the type was inferred, or could have been inferred.
+         --  Valid only if Info_Inferred_Actual is present.
+      end record; -- Assoc_Rec
 
       type Assoc_Array is array (Assoc_Index range <>) of Assoc_Rec;
       --  One element for each formal and (if legal) for each corresponding
@@ -1206,9 +1239,13 @@ package body Sem_Ch12 is
          --  Representation of formal/actual matching. Num_Assocs
          --  is the number of formals and (if legal) the number
          --  of actuals.
+         Gen_Unit : Entity_Id;
+         --  the generic unit being instantiated
          Others_Present : Boolean;
          --  True if "others => <>" (only for formal packages)
          Assocs : Assoc_Array (1 .. Num_Assocs);
+         --  One for each formal/actual pair; defaulted and inferred actuals
+         --  are included.
       end record;
 
       function Match_Assocs
@@ -1219,6 +1256,11 @@ package body Sem_Ch12 is
       --  Return a Gen_Assocs_Rec with formals, explicit actuals, and default
       --  actuals filled in. Check legality rules related to formal/actual
       --  matching.
+
+      procedure Note_Potential_Inference
+        (I_Node : Node_Id; Gen_Assocs : Gen_Assocs_Rec);
+      --  If -gnatd_I, print "info:" messages about type inference that could
+      --  have been done.
 
    end Associations;
 
@@ -1297,6 +1339,52 @@ package body Sem_Ch12 is
       --  selector name matches the formal name, then there is a match,
       --  and we set Assoc.Actual. We also set the Selector_Name to denote
       --  the matched formal, and set Found to True.
+
+      procedure Inference_Msg
+        (Gen_Unit : Entity_Id;
+         Inferred_To, Inferred_From : Assoc_Rec;
+         Was_Inferred : Boolean);
+      --  If Was_Inferred is True, this prints out an "info:" message
+      --  showing the inference.
+      --  If Was_Inferred is False, the message says that it could have
+      --  been inferred.
+
+      function Find_Assoc
+        (Gen_Assocs : Gen_Assocs_Rec; F : Entity_Id) return Assoc_Index;
+      --  Return the index of F in Gen_Assocs.Assocs, which must be
+      --  present.
+
+      procedure Maybe_Infer_One
+        (Gen_Assocs : in out Gen_Assocs_Rec;
+         FF, AA : N_Entity_Id; Inferred_From : Assoc_Index;
+         Reason : Inference_Reason);
+      --  If it makes sense to infer that formal FF is associated with
+      --  actual AA, then do so.
+
+      procedure Infer_From_Access
+        (Gen_Assocs : in out Gen_Assocs_Rec;
+         Index : Assoc_Index;
+         F : Node_Id;
+         A_Full : Entity_Id);
+      --  Try to infer the designated type
+
+      procedure Infer_From_Array
+        (Gen_Assocs : in out Gen_Assocs_Rec;
+         Index : Assoc_Index;
+         F : Node_Id;
+         A_Full : Entity_Id);
+      --  Try to infer the index and component types
+
+      procedure Infer_From_Discriminated
+        (Gen_Assocs : in out Gen_Assocs_Rec;
+         Index : Assoc_Index;
+         F : Node_Id;
+         A_Full : Entity_Id);
+      --  Try to infer the types of discriminants
+
+      procedure Infer_Actuals (Gen_Assocs : in out Gen_Assocs_Rec);
+      --  Called by Match_Assocs after processing explicit and defaulted
+      --  parameters to infer any that are still missing.
 
       -----------------
       -- Formal_Iter --
@@ -1380,6 +1468,8 @@ package body Sem_Ch12 is
                      Action (F, Index);
                      Index := Index + 1;
 
+                     --  Skip full type of derived type
+
                      if Nkind (F) = N_Full_Type_Declaration
                        and then Nkind (Type_Definition (F)) =
                          N_Derived_Type_Definition
@@ -1388,7 +1478,7 @@ package body Sem_Ch12 is
                        and then Chars (Defining_Identifier (F)) =
                          Chars (Defining_Identifier (Next (F)))
                      then
-                        Next (F); -- Skip full type of derived type
+                        Next (F);
                      end if;
                   end if;
 
@@ -1399,22 +1489,28 @@ package body Sem_Ch12 is
                        (not Is_Internal_Name (Chars (Defining_Entity (F))));
                      Action (F, Index);
                      Index := Index + 1;
+
                   elsif Nkind (Original_Node (F)) in N_Full_Type_Declaration
                   then
                      null;
                   else
                      --  subtype of a formal object
+
                      pragma Assert
                        (Nkind (Next (F)) = N_Formal_Object_Declaration);
                   end if;
+
                when N_Pragma =>
                   null;
+
                when N_Formal_Package_Declaration =>
                   --  If there were no errors, this would have been transformed
-                  --  into N_Package_Declaration.
+                  --  into an N_Package_Declaration.
+
                   Check_Error_Detected;
                   pragma Assert (Error_Posted (F));
                   Abandon_Instantiation (Instantiation_Node);
+
                when others =>
                   raise Program_Error;
             end case;
@@ -1509,6 +1605,7 @@ package body Sem_Ch12 is
                   end if;
 
                when N_Formal_Package_Declaration => null;
+
                when others => raise Program_Error;
             end case;
             pragma Assert
@@ -1640,12 +1737,16 @@ package body Sem_Ch12 is
 
          return Result : Gen_Assocs_Rec (Num_Assocs => Num_Formals (Formals))
          do
+            Result.Gen_Unit := Gen_Unit;
             Result.Others_Present := False;
 
             --  Loop through the unanalyzed formals:
 
             declare
                procedure Set_Formal (F : Node_Id; Index : Assoc_Index);
+               --  Initialize one Assoc_Rec so the formal is set.
+               --  Use a dummy assoc for use clauses.
+
                procedure Set_Formal (F : Node_Id; Index : Assoc_Index) is
                   Assoc : Assoc_Rec renames Result.Assocs (Index);
                begin
@@ -1655,14 +1756,20 @@ package body Sem_Ch12 is
                         An_Formal => Empty,
                         Explicit_Assoc => Empty,
                         Actual => (Kind => None_Use_Clause),
-                        Actual_Origin => None);
+                        Actual_Origin => None,
+                        Info_Inferred_Actual => Empty,
+                        Inferred_From => <>,
+                        Reason => <>);
                   else
                      Assoc :=
                        (Un_Formal => F,
                         An_Formal => Empty,
                         Explicit_Assoc => Empty,
                         Actual => <>,
-                        Actual_Origin => None);
+                        Actual_Origin => None,
+                        Info_Inferred_Actual => Empty,
+                        Inferred_From => <>,
+                        Reason => <>);
                   end if;
                end Set_Formal;
                procedure Iter is new Formal_Iter (Set_Formal);
@@ -1812,6 +1919,7 @@ package body Sem_Ch12 is
             --  if there is "others => <>", set the actual to "F => <>".
             --  Otherwise, if the formal has a default, set the actual to
             --  "F => default". Otherwise leave it Empty.
+            --  (If Empty, it could be inferred, or it could be an error).
 
             for Index in Result.Assocs'Range loop
                declare
@@ -1832,6 +1940,10 @@ package body Sem_Ch12 is
                end;
             end loop;
 
+            if Nkind (I_Node) /= N_Formal_Package_Declaration then
+               Infer_Actuals (Gen_Assocs => Result);
+            end if;
+
             --  Check for missing actuals
 
             for Index in Result.Assocs'Range loop
@@ -1849,6 +1961,331 @@ package body Sem_Ch12 is
             end loop;
          end return;
       end Match_Assocs;
+
+      -------------------
+      -- Inference_Msg --
+      -------------------
+
+      procedure Inference_Msg
+        (Gen_Unit : Entity_Id;
+         Inferred_To, Inferred_From : Assoc_Rec;
+         Was_Inferred : Boolean)
+      is
+         pragma Assert (Debug_Flag_Underscore_II); -- This is only for -gnatd_I
+
+         Was : constant String := (if Was_Inferred then "" else "could have ");
+
+         --  "if True" below to leave out some verbosity for now:
+         Inst : constant String :=
+           (if True then ""
+            else " gen: " & Get_Name_String (Chars (Gen_Unit)));
+         Decl : constant String := (if True then "" else " declared # ");
+
+         R : constant String := " (" & Image (Inferred_To.Reason) & ")";
+
+         Mess : constant String :=
+           "info: " & Was & "inferred `% ='> &`" & Decl & Inst & R;
+         Mess_2 : constant String :=
+           "info: `% ='> ...`";
+      begin
+         Error_Msg_Name_1 := Chars (Defining_Entity (Inferred_To.An_Formal));
+         Error_Msg_Sloc := Sloc (Inferred_To.Info_Inferred_Actual);
+         if not In_Instance then
+            if Debug_Flag_Underscore_II then
+               Error_Msg_NE
+                 (Mess, Inferred_From.Actual.Name_Exp,
+                  Inferred_To.Info_Inferred_Actual);
+               Error_Msg_Name_1 :=
+                 Chars (Defining_Identifier (Inferred_From.An_Formal));
+               Error_Msg_N (Mess_2, Inferred_From.Actual.Name_Exp);
+            end if;
+         end if;
+      end Inference_Msg;
+
+      ------------------------------
+      -- Note_Potential_Inference --
+      ------------------------------
+
+      procedure Note_Potential_Inference
+        (I_Node : Node_Id; Gen_Assocs : Gen_Assocs_Rec)
+      is
+      begin
+         if not Debug_Flag_Underscore_II or else Serious_Errors_Detected > 0
+         then
+            return;
+         end if;
+
+         for Index in Gen_Assocs.Assocs'Range loop
+            declare
+               Assoc : Assoc_Rec renames Gen_Assocs.Assocs (Index);
+            begin
+               if Assoc.Actual_Origin = From_Explicit_Actual
+                 and then Present (Assoc.Info_Inferred_Actual)
+                 and then In_Extended_Main_Source_Unit (I_Node)
+                 and then not In_Internal_Unit (I_Node)
+               then
+                  Inference_Msg
+                    (Gen_Assocs.Gen_Unit,
+                     Inferred_To => Assoc,
+                     Inferred_From => Gen_Assocs.Assocs (Assoc.Inferred_From),
+                     Was_Inferred => False);
+               end if;
+            end;
+         end loop;
+      end Note_Potential_Inference;
+
+      --------------
+      -- Find_Assoc --
+      --------------
+
+      function Find_Assoc
+        (Gen_Assocs : Gen_Assocs_Rec; F : Entity_Id) return Assoc_Index
+      is
+      begin
+         for Index in Gen_Assocs.Assocs'Range loop
+            if Defining_Entity (Gen_Assocs.Assocs (Index).An_Formal) = F then
+               return Index;
+            end if;
+         end loop;
+
+         raise Program_Error; -- it must be present
+      end Find_Assoc;
+
+      ---------------------
+      -- Maybe_Infer_One --
+      ---------------------
+
+      procedure Maybe_Infer_One
+        (Gen_Assocs : in out Gen_Assocs_Rec;
+         FF, AA : N_Entity_Id; Inferred_From : Assoc_Index;
+         Reason : Inference_Reason)
+      is
+      begin
+         if not (Is_Generic_Type (FF)
+                 and then Scope (FF) = Gen_Assocs.Gen_Unit)
+         then
+            return; -- no inference if not a formal type of this generic
+         end if;
+
+         if Is_Internal_Name (Chars (FF)) or else Is_Itype (AA) then
+            return; -- no inference if internally generated
+         end if;
+
+         declare
+            Index : constant Assoc_Index := Find_Assoc (Gen_Assocs, FF);
+            Assoc : Assoc_Rec renames Gen_Assocs.Assocs (Index);
+            pragma Assert (Defining_Entity (Assoc.An_Formal) = FF);
+
+            From_Actual : constant Node_Id :=
+              Gen_Assocs.Assocs (Inferred_From).Actual.Name_Exp;
+
+         begin
+            Assoc.Info_Inferred_Actual := AA;
+            Assoc.Inferred_From := Inferred_From;
+            Assoc.Reason := Reason;
+
+            if Assoc.Actual.Kind = None then
+               Assoc.Actual :=
+                 (Name_Exp, New_Occurrence_Of (AA, Sloc (From_Actual)));
+               Assoc.Actual_Origin := From_Inference;
+
+               Error_Msg_GNAT_Extension
+                 ("type inference of generic parameters",
+                  Sloc (From_Actual));
+
+               if Debug_Flag_Underscore_II then
+                  Inference_Msg
+                    (Gen_Assocs.Gen_Unit,
+                     Inferred_To => Assoc,
+                     Inferred_From => Gen_Assocs.Assocs (Assoc.Inferred_From),
+                     Was_Inferred => True);
+               end if;
+            end if;
+         end;
+      end Maybe_Infer_One;
+
+      -------------------
+      -- Infer_Actuals --
+      -------------------
+
+      procedure Infer_From_Access
+        (Gen_Assocs : in out Gen_Assocs_Rec;
+         Index : Assoc_Index;
+         F : Node_Id;
+         A_Full : Entity_Id)
+      is
+      begin
+         if Ekind (A_Full) in Access_Kind then
+            declare
+               FF : constant Entity_Id :=
+                 Designated_Type (Defining_Entity (F));
+               AA : constant Entity_Id := Designated_Type (A_Full);
+            begin
+               Maybe_Infer_One
+                 (Gen_Assocs,
+                 FF,
+                 AA,
+                 Inferred_From => Index,
+                 Reason => Designated_Type);
+            end;
+         end if;
+      end Infer_From_Access;
+
+      procedure Infer_From_Array
+        (Gen_Assocs : in out Gen_Assocs_Rec;
+         Index : Assoc_Index;
+         F : Node_Id;
+         A_Full : Entity_Id)
+      is
+      begin
+         if Ekind (A_Full) in Array_Kind then
+            declare
+               F_Index_Type : Opt_N_Is_Index_Id :=
+                 First_Index (Defining_Entity (F));
+               A_Index_Type : Opt_N_Is_Index_Id :=
+                 First_Index (A_Full);
+            begin
+               while Present (F_Index_Type) and then Present (A_Index_Type)
+               loop
+                  Maybe_Infer_One
+                    (Gen_Assocs,
+                     Etype (F_Index_Type),
+                     Etype (A_Index_Type),
+                     Inferred_From => Index,
+                     Reason => Index_Type);
+
+                  Next_Index (F_Index_Type);
+                  Next_Index (A_Index_Type);
+               end loop;
+            end;
+
+            declare
+               F_Comp_Type : constant Type_Kind_Id :=
+                 Component_Type (Defining_Entity (F));
+               A_Comp_Type : constant Type_Kind_Id :=
+                 Component_Type (A_Full);
+            begin
+               Maybe_Infer_One
+                 (Gen_Assocs,
+                  F_Comp_Type,
+                  A_Comp_Type,
+                  Inferred_From => Index,
+                  Reason => Component_Type);
+            end;
+         end if;
+      end Infer_From_Array;
+
+      procedure Infer_From_Discriminated
+        (Gen_Assocs : in out Gen_Assocs_Rec;
+         Index : Assoc_Index;
+         F : Node_Id;
+         A_Full : Entity_Id)
+      is
+      begin
+         if Has_Discriminants (Defining_Entity (F))
+            and then Present (A_Full)
+            and then Has_Discriminants (A_Full)
+            and then Number_Discriminants (A_Full) =
+              Number_Discriminants (Defining_Entity (F))
+         then
+            declare
+               F_Discrim : Node_Id := First_Discriminant (Defining_Entity (F));
+               A_Discrim : Node_Id := First_Discriminant (A_Full);
+            begin
+               while Present (F_Discrim) loop
+                  Maybe_Infer_One
+                    (Gen_Assocs,
+                     Etype (F_Discrim),
+                     Etype (A_Discrim),
+                     Inferred_From => Index,
+                     Reason => Discriminant_Type);
+
+                  Next_Discriminant (F_Discrim);
+                  Next_Discriminant (A_Discrim);
+               end loop;
+               pragma Assert (No (A_Discrim)); -- same number as F_Discrim
+            end;
+         end if;
+      end Infer_From_Discriminated;
+
+      procedure Infer_Actuals (Gen_Assocs : in out Gen_Assocs_Rec) is
+         --  Note that we can infer FROM defaults, but we cannot infer TO a
+         --  parameter that has a default. We can also infer from inferred
+         --  types.
+
+         --  We don't need to check that multiple inferences get the same
+         --  answer; the second one will get a type mismatch or nonstatically
+         --  matching error.
+
+         --  This code needs to be robust, in the sense of tolerating illegal
+         --  code, because we have not yet checked all legality rules. For
+         --  example, if a formal type F has a discriminant whose type is
+         --  another formal type, then we want to infer the type of the
+         --  discriminant from the actual for F. That actual must have
+         --  discriminants, but we have not checked that rule yet, so we
+         --  need to tolerate an actual for F that has no discriminants.
+
+      begin
+         --  For each parameter, check whether we can infer FROM that one TO
+         --  other ones.
+
+         --  Process the parameters in reverse order, because the inferred type
+         --  always comes before the parameter it is inferred from. This
+         --  ensures that we can do the inference in one pass, including in
+         --  cases where an inferred type leads to another inferred type.
+         --  For example, an array type that allows us to infer the component
+         --  type, which is an access type that allows us to infer the
+         --  designated type. The reverse loop implies that we will see the
+         --  array type, then the access type, then the designated type.
+
+         for Index in reverse Gen_Assocs.Assocs'Range loop -- NB: "reverse"
+            if Gen_Assocs.Assocs (Index).Actual.Kind = Name_Exp then
+               declare
+                  F : constant Node_Id := Gen_Assocs.Assocs (Index).An_Formal;
+                  A_E : constant Node_Id :=
+                    Gen_Assocs.Assocs (Index).Actual.Name_Exp;
+                  A_Full : Entity_Id := Empty;
+               begin
+                  if Nkind (A_E) in N_Has_Entity then
+                     A_Full := Entity (A_E);
+
+                     if Present (A_Full)
+                       and then Ekind (A_Full) in Incomplete_Kind
+                       and then Present (Full_View (A_Full))
+                     then
+                        A_Full := Full_View (A_Full);
+                     end if;
+                  end if;
+
+                  if Nkind (F) = N_Formal_Type_Declaration
+                    and then Present (A_Full)
+                  then
+                     case Ekind (Defining_Entity (F)) is
+                        when E_Access_Type | E_General_Access_Type =>
+                           Infer_From_Access (Gen_Assocs, Index, F, A_Full);
+
+                        when E_Access_Subtype
+                          | E_Access_Attribute_Type
+                          | E_Allocator_Type
+                          | E_Anonymous_Access_Type =>
+                           raise Program_Error;
+
+                        when E_Array_Type | E_Array_Subtype =>
+                           Infer_From_Array (Gen_Assocs, Index, F, A_Full);
+
+                        when E_String_Literal_Subtype =>
+                           raise Program_Error;
+
+                        when others =>
+                           null;
+                     end case;
+
+                     Infer_From_Discriminated (Gen_Assocs, Index, F, A_Full);
+                  end if;
+               end;
+            end if;
+         end loop;
+      end Infer_Actuals;
 
    end Associations;
 
@@ -1902,8 +2339,7 @@ package body Sem_Ch12 is
               and then Error_Posted (Assoc.An_Formal)
             then
                --  Restrict this to N_Formal_Package_Declaration,
-               --  because otherwise many test diffs (and maybe
-               --  many missing errors).
+               --  because otherwise we miss errors.
                Abandon_Instantiation (Instantiation_Node);
             end if;
 
@@ -1957,6 +2393,8 @@ package body Sem_Ch12 is
          end;
       end if;
 
+      Note_Potential_Inference (I_Node, Gen_Assocs);
+
       Check_Fixed_Point_Warning (Gen_Assocs, Result_Renamings);
 
       return Result_Renamings;
@@ -2007,6 +2445,8 @@ package body Sem_Ch12 is
    --  Start of processing for Analyze_One_Association
 
    begin
+      pragma Assert (Assoc.Actual_Origin /= None);
+
       if Assoc.Actual_Origin = From_Explicit_Actual
         and then Assoc.Actual.Kind = Name_Exp
       then
@@ -2066,11 +2506,28 @@ package body Sem_Ch12 is
                Process_Box_Actual (Assoc.Un_Formal);
 
             elsif No (Match) then
+               --  No explicit actual; try default
+
                if Present (Default_Subtype_Mark (Assoc.Un_Formal)) then
                   Match := New_Copy (Default_Subtype_Mark (Assoc.Un_Formal));
                   Append_List
                    (Instantiate_Type
                       (Assoc.Un_Formal, Match, Assoc.An_Formal,
+                       Result_Renamings),
+                    Result_Renamings);
+                  Append_Elmt (Entity (Match), Actuals_To_Freeze);
+
+               --  No explicit actual and no default; must be inference
+
+               else
+                  pragma Assert (Assoc.Actual_Origin = From_Inference);
+
+                  Match := Assoc.Actual.Name_Exp;
+                  Append_List
+                    (Instantiate_Type
+                      (Assoc.Un_Formal,
+                       Match,
+                       Assoc.An_Formal,
                        Result_Renamings),
                     Result_Renamings);
                   Append_Elmt (Entity (Match), Actuals_To_Freeze);
@@ -16627,11 +17084,10 @@ package body Sem_Ch12 is
                --  Note that we are creating an N_Generic_Association with
                --  neither Explicit_Generic_Actual_Parameter nor Box_Present.
 
-               elsif Present (Next (Act2)) and True then
+               elsif Present (Next (Act2)) then
                   Ndec :=
                     Make_Generic_Association (Loc,
-                      Selector_Name                     =>
-                        New_Occurrence_Of (Subp, Loc),
+                      Selector_Name => New_Occurrence_Of (Subp, Loc),
                       Explicit_Generic_Actual_Parameter => Empty);
 
                   Append (Ndec, Assoc1);

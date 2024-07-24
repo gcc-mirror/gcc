@@ -173,7 +173,7 @@ package body Debug is
    --  d_F  Encode full invocation paths in ALI files
    --  d_G
    --  d_H
-   --  d_I
+   --  d_I  Note generic formal type inference
    --  d_J
    --  d_K  (Reserved) Enable reporting a warning on known-problem issues
    --  d_L  Output trace information on elaboration checking
@@ -1028,6 +1028,9 @@ package body Debug is
    --  d_F  The compiler encodes the full path from an invocation construct to
    --       an external target, offering additional information to GNATBIND for
    --       purposes of error diagnostics.
+
+   --  d_I  Generic formal type inference: print a "note:" message for each
+   --       actual type that is inferred, or could be inferred.
 
    --  d_K  (Reserved) Enable reporting a warning on known-problem issues of
    --       previous releases. No action performed in the wavefront.

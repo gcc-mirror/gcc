@@ -3866,18 +3866,13 @@ package body Errout is
    ----------------------------
 
    procedure Set_Msg_Insertion_Node is
+      pragma Assert (Present (Error_Msg_Node_1));
       K : Node_Kind;
 
    begin
-      Suppress_Message :=
-        Error_Msg_Node_1 = Error
-          or else Error_Msg_Node_1 = Any_Type;
+      Suppress_Message := Error_Msg_Node_1 in Error | Any_Type;
 
-      if Error_Msg_Node_1 = Empty then
-         Set_Msg_Blank_Conditional;
-         Set_Msg_Str ("<empty>");
-
-      elsif Error_Msg_Node_1 = Error then
+      if Error_Msg_Node_1 = Error then
          Set_Msg_Blank;
          Set_Msg_Str ("<error>");
 
@@ -3898,15 +3893,11 @@ package body Errout is
 
          K := Nkind (Error_Msg_Node_1);
 
-         --  If we have operator case, skip quotes since name of operator
-         --  itself will supply the required quotations. An operator can be an
-         --  applied use in an expression or an explicit operator symbol, or an
-         --  identifier whose name indicates it is an operator.
+         --  Skip quotes in the operator case, because the operator will supply
+         --  the required quotes.
 
-         if K in N_Op
-           or else K = N_Operator_Symbol
-           or else K = N_Defining_Operator_Symbol
-           or else ((K = N_Identifier or else K = N_Defining_Identifier)
+         if K in N_Op | N_Operator_Symbol | N_Defining_Operator_Symbol
+           or else (K in N_Identifier | N_Defining_Identifier
                       and then Is_Operator_Name (Chars (Error_Msg_Node_1)))
          then
             Set_Msg_Node (Error_Msg_Node_1);
