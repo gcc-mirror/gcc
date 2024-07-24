@@ -1,3 +1,117 @@
+2024-07-23  Andi Kleen  <ak@linux.intel.com>
+
+	* lib/target-supports.exp:
+	(check_effective_target_struct_tail_call): New function.
+	* c-c++-common/musttail1.c: New test.
+	* c-c++-common/musttail12.c: New test.
+	* c-c++-common/musttail13.c: New test.
+	* c-c++-common/musttail2.c: New test.
+	* c-c++-common/musttail3.c: New test.
+	* c-c++-common/musttail4.c: New test.
+	* c-c++-common/musttail5.c: New test.
+	* c-c++-common/musttail7.c: New test.
+	* c-c++-common/musttail8.c: New test.
+	* g++.dg/musttail10.C: New test.
+	* g++.dg/musttail11.C: New test.
+	* g++.dg/musttail6.C: New test.
+	* g++.dg/musttail9.C: New test.
+
+2024-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115656
+	* g++.dg/cpp2a/concepts-ttp7.C: New test.
+
+2024-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115296
+	* g++.dg/cpp2a/class-deduction-alias23.C: New test.
+
+2024-07-23  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/116048
+	* gm2/errors/fail/errors-fail.exp: Remove -Wstudents
+	and add -Wuninit-variable-checking=all.
+	Replace gm2_init_pim with gm2_init_iso.
+	* gm2/errors/fail/testfio.mod: Modify test code to
+	provoke an error in the first basic block.
+	* gm2/errors/fail/testparam.mod: Ditto.
+	* gm2/errors/fail/array1.mod: Ditto.
+	* gm2/errors/fail/badtype.mod: New test.
+	* gm2/errors/fail/badvar.mod: New test.
+
+2024-07-23  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/103953
+	* g++.dg/coroutines/torture/pr103953.C: New test.
+
+2024-07-23  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/96866
+	* gcc.target/powerpc/pr96866-1.c: New test.
+	* gcc.target/powerpc/pr96866-2.c: New test.
+
+2024-07-23  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR testsuite/115826
+	* gcc.dg/vect/tsvc/vect-tsvc-s1281.c: Use -fno-finite-math-only.
+
+2024-07-23  Jakub Jelinek  <jakub@redhat.com>
+	    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116034
+	* gcc.dg/pr116034.c: New test.
+
+2024-07-23  liuhongt  <hongtao.liu@intel.com>
+
+	* g++.target/i386/pr115982.C: New test.
+
+2024-07-23  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/115713
+	* gcc.target/powerpc/pr115713-2.c: New test.
+
+2024-07-23  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/115713
+	* gcc.target/powerpc/pr115713-1.c: New test.
+	* gcc.target/powerpc/ppc-target-4.c: Adjust by specifying altivec
+	in target attribute.
+
+2024-07-23  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/115713
+	* gcc.target/powerpc/warn-1.c: Move to ...
+	* gcc.target/powerpc/error-1.c: ... here.  Adjust dg-warning with
+	dg-error and remove ineffective scan.
+
+2024-07-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/prefetchi-1.c: Check (%rip).
+
+2024-07-23  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/106069
+	* g++.target/powerpc/pr106069.C: Reorder dg directives.
+
+2024-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104981
+	PR c++/115550
+	* g++.dg/coroutines/pr104981-preview-this.C: New test.
+	* g++.dg/coroutines/pr115550-preview-this.C: New test.
+
+2024-07-23  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macro.
+	* gcc.target/riscv/sat_arith_data.h: New test.
+	* gcc.target/riscv/sat_u_trunc-1.c: New test.
+	* gcc.target/riscv/sat_u_trunc-2.c: New test.
+	* gcc.target/riscv/sat_u_trunc-3.c: New test.
+	* gcc.target/riscv/sat_u_trunc-run-1.c: New test.
+	* gcc.target/riscv/sat_u_trunc-run-2.c: New test.
+	* gcc.target/riscv/sat_u_trunc-run-3.c: New test.
+	* gcc.target/riscv/scalar_sat_unary.h: New test.
+
 2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/111613

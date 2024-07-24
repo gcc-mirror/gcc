@@ -1,3 +1,48 @@
+2024-07-23  Andi Kleen  <ak@linux.intel.com>
+
+	PR c/83324
+	* cp-tree.h (AGGR_INIT_EXPR_MUST_TAIL): Add.
+	* parser.cc (cp_parser_statement): Handle musttail.
+	(cp_parser_jump_statement): Dito.
+	* pt.cc (tsubst_expr): Copy CALL_EXPR_MUST_TAIL_CALL.
+	* semantics.cc (simplify_aggr_init_expr): Handle musttail.
+
+2024-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115656
+	* constraint.cc (weakly_subsumes): Pass in_decl=tmpl to
+	get_normalized_constraints_from_info.  Rename to ...
+	(ttp_subsumes): ... this.
+	* cp-tree.h (weakly_subsumes): Rename to ...
+	(ttp_subsumes): ... this.
+	* pt.cc (is_compatible_template_arg): Adjust after renaming.
+
+2024-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115296
+	* pt.cc (alias_ctad_tweaks): Use complain=tf_none instead of
+	tf_warning_or_error.
+
+2024-07-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.def (CHECK_CONSTR): Remove.
+	* cp-tree.h (CHECK_CONSTR_CONCEPT, CHECK_CONSTR_ARGS): Remove.
+	* cp-objcp-common.cc (cp_common_init_ts): Don't handle CHECK_CONSTR.
+	* tree.cc (cp_tree_equal): Likewise.
+	* error.cc (dump_expr): Likewise.
+	* cxx-pretty-print.cc (cxx_pretty_printer::expression): Likewise.
+	(pp_cxx_check_constraint): Remove.
+	(pp_cxx_constraint): Don't handle CHECK_CONSTR.
+
+2024-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104981
+	PR c++/115550
+	* coroutines.cc (morph_fn_to_coro): Remove unneeded calls
+	to convert_to_reference and convert_from_reference when
+	passing *this.  Use cp_build_fold_indirect_ref instead
+	of directly building INDIRECT_REF.
+
 2024-07-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-tree.def (UNARY_LEFT_FOLD_EXPR): Use FOLD_EXPR_MODIFY_P instead

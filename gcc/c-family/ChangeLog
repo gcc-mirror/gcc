@@ -1,3 +1,8 @@
+2024-07-23  Andi Kleen  <ak@linux.intel.com>
+
+	* c-attribs.cc (set_musttail_on_return): New function.
+	* c-common.h (set_musttail_on_return): Declare new function.
+
 2024-07-20  Andi Kleen  <ak@gcc.gnu.org>
 
 	Revert:
