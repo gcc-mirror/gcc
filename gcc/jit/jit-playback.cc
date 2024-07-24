@@ -2568,7 +2568,11 @@ compile ()
   if (get_logger ())
     for (unsigned i = 0; i < fake_args.length (); i++)
       get_logger ()->log ("argv[%i]: %s", i, fake_args[i]);
-  toplev.main (fake_args.length (),
+
+  /* Add a trailing null to argvec; this is not counted in argc.  */
+  fake_args.safe_push (nullptr);
+  toplev.main (/* The trailing null is not counted in argv.  */
+	       fake_args.length () - 1,
 	       const_cast <char **> (fake_args.address ()));
   exit_scope ("toplev::main");
 

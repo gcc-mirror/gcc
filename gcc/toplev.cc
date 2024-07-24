@@ -93,6 +93,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-param-manipulation.h"
 #include "dbgcnt.h"
 #include "gcc-urlifier.h"
+#include "unique-argv.h"
 
 #include "selftest.h"
 
@@ -100,7 +101,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <isl/version.h>
 #endif
 
-static void general_init (const char *, bool);
+static void general_init (const char *, bool, unique_argv original_argv);
 static void backend_init (void);
 static int lang_dependent_init (const char *);
 static void init_asm_output (const char *);
@@ -1000,7 +1001,7 @@ internal_error_function (diagnostic_context *, const char *, va_list *)
    options are parsed.  Signal handlers, internationalization etc.
    ARGV0 is main's argv[0].  */
 static void
-general_init (const char *argv0, bool init_signals)
+general_init (const char *argv0, bool init_signals, unique_argv original_argv)
 {
   const char *p;
 
@@ -1027,6 +1028,8 @@ general_init (const char *argv0, bool init_signals)
   /* Set a default printer.  Language specific initializations will
      override it later.  */
   tree_diagnostics_defaults (global_dc);
+
+  global_dc->set_original_argv (std::move (original_argv));
 
   global_dc->m_source_printing.enabled
     = global_options_init.x_flag_diagnostics_show_caret;
@@ -2241,10 +2244,14 @@ toplev::main (int argc, char **argv)
      Increase stack size limits if possible.  */
   stack_limit_increase (64 * 1024 * 1024);
 
+  /* Stash a copy of the original argv before expansion
+     for use by SARIF output.  */
+  unique_argv original_argv (dupargv (argv));
+
   expandargv (&argc, &argv);
 
   /* Initialization of GCC's environment, and diagnostics.  */
-  general_init (argv[0], m_init_signals);
+  general_init (argv[0], m_init_signals, std::move (original_argv));
 
   /* One-off initialization of options that does not need to be
      repeated when options are added for particular functions.  */
