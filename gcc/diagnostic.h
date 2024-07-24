@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DIAGNOSTIC_H
 #define GCC_DIAGNOSTIC_H
 
+#include "unique-argv.h"
 #include "rich-location.h"
 #include "pretty-print.h"
 #include "diagnostic-core.h"
@@ -390,6 +391,12 @@ public:
   void urls_init (int value);
 
   void finish ();
+
+  void set_original_argv (unique_argv original_argv);
+  const char * const *get_original_argv ()
+  {
+    return const_cast<const char * const *> (m_original_argv);
+  }
 
   void set_set_locations_callback (set_locations_callback_t cb)
   {
@@ -813,6 +820,9 @@ private:
     text_art::theme *m_theme;
 
   } m_diagrams;
+
+  /* Owned by the context.  */
+  char **m_original_argv;
 };
 
 inline void

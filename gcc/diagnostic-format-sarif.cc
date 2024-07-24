@@ -125,7 +125,8 @@ class sarif_tool_component : public sarif_object {};
 class sarif_invocation : public sarif_object
 {
 public:
-  sarif_invocation (sarif_builder &builder);
+  sarif_invocation (sarif_builder &builder,
+		    const char * const *original_argv);
 
   void add_notification_for_ice (diagnostic_context &context,
 				 const diagnostic_info &diagnostic,
@@ -329,10 +330,8 @@ public:
    - GCC supports one-deep nesting of diagnostics (via auto_diagnostic_group),
      but we only capture location and message information from such nested
      diagnostics (e.g. we ignore fix-it hints on them)
-   - doesn't yet capture command-line arguments: would be run.invocations
-     property (SARIF v2.1.0 section 3.14.11), as invocation objects
-     (SARIF v2.1.0 section 3.20), but we'd want to capture the arguments to
-     toplev::main, and the response files.
+   - although we capture command-line arguments (section 3.20.2), we don't
+     yet capture response files.
    - doesn't capture secondary locations within a rich_location
      (perhaps we should use the "relatedLocations" property: SARIF v2.1.0
      section 3.27.22)
@@ -513,10 +512,20 @@ sarif_object::get_or_create_properties ()
 
 /* class sarif_invocation : public sarif_object.  */
 
-sarif_invocation::sarif_invocation (sarif_builder &builder)
+sarif_invocation::sarif_invocation (sarif_builder &builder,
+				    const char * const *original_argv)
 : m_notifications_arr (::make_unique<json::array> ()),
   m_success (true)
 {
+  // "arguments" property (SARIF v2.1.0 section 3.20.2)
+  if (original_argv)
+    {
+      auto arguments_arr = ::make_unique<json::array> ();
+      for (size_t i = 0; original_argv[i]; ++i)
+	arguments_arr->append_string (original_argv[i]);
+      set<json::array> ("arguments", std::move (arguments_arr));
+    }
+
   // "workingDirectory" property (SARIF v2.1.0 section 3.20.19)
   if (const char *pwd = getpwd ())
     set<sarif_artifact_location> ("workingDirectory",
@@ -752,7 +761,9 @@ sarif_builder::sarif_builder (diagnostic_context &context,
 			      const char *main_input_filename_,
 			      bool formatted)
 : m_context (context),
-  m_invocation_obj (::make_unique<sarif_invocation> (*this)),
+  m_invocation_obj
+    (::make_unique<sarif_invocation> (*this,
+				      context.get_original_argv ())),
   m_results_array (new json::array ()),
   m_cur_group_result (nullptr),
   m_seen_any_relative_paths (false),
