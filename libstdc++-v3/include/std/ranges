@@ -1032,7 +1032,7 @@ namespace views::__adaptor
 	    return _Adaptor{}(std::forward<_Range>(__r),
 			      std::forward<decltype(__args)>(__args)...);
 	  };
-	  return std::apply(__forwarder, std::forward<_Self>(__self)._M_args);
+	  return std::apply(__forwarder, __like_t<_Self, _Partial>(__self)._M_args);
 	}
 #else
       template<typename _Range>
@@ -1081,7 +1081,10 @@ namespace views::__adaptor
 	requires __adaptor_invocable<_Adaptor, _Range, __like_t<_Self, _Arg>>
 	constexpr auto
 	operator()(this _Self&& __self, _Range&& __r)
-	{ return _Adaptor{}(std::forward<_Range>(__r), std::forward<_Self>(__self)._M_arg); }
+	{
+	  return _Adaptor{}(std::forward<_Range>(__r),
+			    __like_t<_Self, _Partial>(__self)._M_arg);
+	}
 #else
       template<typename _Range>
 	requires __adaptor_invocable<_Adaptor, _Range, const _Arg&>
@@ -1184,8 +1187,8 @@ namespace views::__adaptor
 	constexpr auto
 	operator()(this _Self&& __self, _Range&& __r)
 	{
-	  return (std::forward<_Self>(__self)._M_rhs
-		  (std::forward<_Self>(__self)._M_lhs
+	  return (__like_t<_Self, _Pipe>(__self)._M_rhs
+		  (__like_t<_Self, _Pipe>(__self)._M_lhs
 		   (std::forward<_Range>(__r))));
 	}
 #else

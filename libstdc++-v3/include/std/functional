@@ -944,7 +944,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	noexcept(is_nothrow_invocable_v<__like_t<_Self, _Fd>,
 					__like_t<_Self, _BoundArgs>..., _CallArgs...>)
 	{
-	  return _S_call(std::forward<_Self>(__self), _BoundIndices(),
+	  return _S_call(__like_t<_Self, _Bind_front>(__self), _BoundIndices(),
 			 std::forward<_CallArgs>(__call_args)...);
 	}
 #else
@@ -1072,7 +1072,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	noexcept(is_nothrow_invocable_v<__like_t<_Self, _Fd>,
 					_CallArgs..., __like_t<_Self, _BoundArgs>...>)
 	{
-	  return _S_call(std::forward<_Self>(__self), _BoundIndices(),
+	  return _S_call(__like_t<_Self, _Bind_back>(__self), _BoundIndices(),
 			 std::forward<_CallArgs>(__call_args)...);
 	}
 
