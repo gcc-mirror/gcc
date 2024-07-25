@@ -632,7 +632,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
       && may_be_aliased (result_decl)
       && ref_maybe_used_by_stmt_p (call, result_decl, false))
     {
-      maybe_error_musttail (call, _("tail call must be same type"));
+      maybe_error_musttail (call, _("return value used after call"));
       return;
     }
 
