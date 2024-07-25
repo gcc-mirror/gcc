@@ -91,6 +91,7 @@ struct GTY((for_user)) coroutine_info
 			 one that will eventually be allocated in the coroutine
 			 frame.  */
   tree promise_proxy; /* Likewise, a proxy promise instance.  */
+  tree from_address;  /* handle_type from_address function.  */
   tree return_void;   /* The expression for p.return_void() if it exists.  */
   location_t first_coro_keyword; /* The location of the keyword that made this
 				    function into a coroutine.  */
@@ -203,7 +204,6 @@ static GTY(()) tree coro_final_suspend_identifier;
 static GTY(()) tree coro_return_void_identifier;
 static GTY(()) tree coro_return_value_identifier;
 static GTY(()) tree coro_yield_value_identifier;
-static GTY(()) tree coro_resume_identifier;
 static GTY(()) tree coro_address_identifier;
 static GTY(()) tree coro_from_address_identifier;
 static GTY(()) tree coro_get_return_object_identifier;
@@ -243,7 +243,6 @@ coro_init_identifiers ()
   coro_return_void_identifier = get_identifier ("return_void");
   coro_return_value_identifier = get_identifier ("return_value");
   coro_yield_value_identifier = get_identifier ("yield_value");
-  coro_resume_identifier = get_identifier ("resume");
   coro_address_identifier = get_identifier ("address");
   coro_from_address_identifier = get_identifier ("from_address");
   coro_get_return_object_identifier = get_identifier ("get_return_object");
@@ -271,6 +270,7 @@ coro_init_identifiers ()
 static GTY(()) tree coro_traits_templ;
 static GTY(()) tree coro_handle_templ;
 static GTY(()) tree void_coro_handle_type;
+static GTY(()) tree void_coro_handle_address;
 
 /* ================= Parse, Semantics and Type checking ================= */
 
@@ -389,7 +389,97 @@ find_coro_handle_template_decl (location_t kw)
     return handle_decl;
 }
 
-/* Instantiate the handle template for a given promise type.  */
+/* Get and validate HANDLE_TYPE::address.  The resulting function, if any, will
+   be a non-overloaded member function that takes no arguments and returns
+   void*.  If that is not the case, signals an error and returns NULL_TREE.  */
+
+static tree
+get_handle_type_address (location_t kw, tree handle_type)
+{
+  tree addr_getter = lookup_member (handle_type, coro_address_identifier, 1,
+				    0, tf_warning_or_error);
+  if (!addr_getter || addr_getter == error_mark_node)
+    {
+      qualified_name_lookup_error (handle_type, coro_address_identifier,
+				   error_mark_node, kw);
+      return NULL_TREE;
+    }
+
+  if (!BASELINK_P (addr_getter)
+      || TREE_CODE (TREE_TYPE (addr_getter)) != METHOD_TYPE)
+    {
+      error_at (kw, "%qE must be a non-overloaded method", addr_getter);
+      return NULL_TREE;
+    }
+
+  tree fn_t = TREE_TYPE (addr_getter);
+  tree arg = TYPE_ARG_TYPES (fn_t);
+
+  /* Skip the 'this' pointer.  */
+  arg = TREE_CHAIN (arg);
+
+  /* Check that from_addr has the argument list ().  */
+  if (arg != void_list_node)
+    {
+      error_at (kw, "%qE must take no arguments", addr_getter);
+      return NULL_TREE;
+    }
+
+  tree ret_t = TREE_TYPE (fn_t);
+  if (!same_type_p (ret_t, ptr_type_node))
+    {
+      error_at (kw, "%qE must return %qT, not %qT",
+		addr_getter, ptr_type_node, ret_t);
+      return NULL_TREE;
+    }
+
+  return addr_getter;
+}
+
+/* Get and validate HANDLE_TYPE::from_address.  The resulting function, if
+   any, will be a non-overloaded static function that takes a single void* and
+   returns HANDLE_TYPE.  If that is not the case, signals an error and returns
+   NULL_TREE.  */
+
+static tree
+get_handle_type_from_address (location_t kw, tree handle_type)
+{
+  tree from_addr = lookup_member (handle_type, coro_from_address_identifier, 1,
+				  0, tf_warning_or_error);
+  if (!from_addr || from_addr == error_mark_node)
+    {
+      qualified_name_lookup_error (handle_type, coro_from_address_identifier,
+				   error_mark_node, kw);
+      return NULL_TREE;
+    }
+  if (!BASELINK_P (from_addr)
+      || TREE_CODE (TREE_TYPE (from_addr)) != FUNCTION_TYPE)
+    {
+      error_at (kw, "%qE must be a non-overloaded static function", from_addr);
+      return NULL_TREE;
+    }
+
+  tree fn_t = TREE_TYPE (from_addr);
+  tree arg = TYPE_ARG_TYPES (fn_t);
+  /* Check that from_addr has the argument list (void*).  */
+  if (!arg
+      || !same_type_p (TREE_VALUE (arg), ptr_type_node)
+      || TREE_CHAIN (arg) != void_list_node)
+    {
+      error_at (kw, "%qE must take a single %qT", from_addr, ptr_type_node);
+      return NULL_TREE;
+    }
+
+  tree ret_t = TREE_TYPE (fn_t);
+  if (!same_type_p (ret_t, handle_type))
+    {
+      error_at (kw, "%qE must return %qT, not %qT",
+		from_addr, handle_type, ret_t);
+      return NULL_TREE;
+    }
+
+  return from_addr;
+}
 
 static tree
 instantiate_coro_handle_for_promise_type (location_t kw, tree promise_type)
@@ -453,9 +543,14 @@ ensure_coro_initialized (location_t loc)
 	return false;
 
       /*  We can also instantiate the void coroutine_handle<>  */
-      void_coro_handle_type =
-	instantiate_coro_handle_for_promise_type (loc, NULL_TREE);
+      void_coro_handle_type
+	= instantiate_coro_handle_for_promise_type (loc, void_type_node);
       if (void_coro_handle_type == NULL_TREE)
+	return false;
+
+      void_coro_handle_address
+	= get_handle_type_address (loc, void_coro_handle_type);
+      if (!void_coro_handle_address)
 	return false;
 
       /* A table to hold the state, per coroutine decl.  */
@@ -552,13 +647,17 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
 	}
 
       /* Try to find the handle type for the promise.  */
-      tree handle_type =
-	instantiate_coro_handle_for_promise_type (loc, coro_info->promise_type);
+      tree handle_type
+	= instantiate_coro_handle_for_promise_type (loc, coro_info->promise_type);
       if (handle_type == NULL_TREE)
+	return false;
+      tree from_address = get_handle_type_from_address (loc, handle_type);
+      if (from_address == NULL_TREE)
 	return false;
 
       /* Complete this, we're going to use it.  */
       coro_info->handle_type = complete_type_or_else (handle_type, fndecl);
+      coro_info->from_address = from_address;
 
       /* Diagnostic would be emitted by complete_type_or_else.  */
       if (!coro_info->handle_type)
@@ -670,6 +769,15 @@ get_coroutine_promise_proxy (tree decl)
 {
   if (coroutine_info *info = get_coroutine_info (decl))
     return info->promise_proxy;
+
+  return NULL_TREE;
+}
+
+static tree
+get_coroutine_from_address (tree decl)
+{
+  if (coroutine_info *info = get_coroutine_info (decl))
+    return info->from_address;
 
   return NULL_TREE;
 }
@@ -2232,7 +2340,6 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 {
   verify_stmt_tree (fnbody);
   /* Some things we inherit from the original function.  */
-  tree handle_type = get_coroutine_handle_type (orig);
   tree promise_type = get_coroutine_promise_type (orig);
   tree promise_proxy = get_coroutine_promise_proxy (orig);
 
@@ -2392,8 +2499,9 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   tree ash = build_class_member_access_expr (actor_frame, ash_m, NULL_TREE,
 					     false, tf_warning_or_error);
   /* So construct the self-handle from the frame address.  */
-  tree hfa_m = lookup_member (handle_type, coro_from_address_identifier, 1,
-			      0, tf_warning_or_error);
+  tree hfa_m = get_coroutine_from_address (orig);
+  /* Should have been set earlier by coro_promise_type_found_p.  */
+  gcc_assert (hfa_m);
 
   r = build1 (CONVERT_EXPR, build_pointer_type (void_type_node), actor_fp);
   vec<tree, va_gc> *args = make_tree_vector_single (r);
@@ -2488,12 +2596,14 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   r = build_stmt (loc, LABEL_EXPR, continue_label);
   add_stmt (r);
 
+  /* Should have been set earlier by the coro_initialized code.  */
+  gcc_assert (void_coro_handle_address);
+
   /* We want to force a tail-call even for O0/1, so this expands the resume
      call into its underlying implementation.  */
-  tree addr = lookup_member (void_coro_handle_type, coro_address_identifier,
-			       1, 0, tf_warning_or_error);
-  addr = build_new_method_call (continuation, addr, NULL, NULL_TREE,
-				  LOOKUP_NORMAL, NULL, tf_warning_or_error);
+  tree addr = build_new_method_call (continuation, void_coro_handle_address,
+				     NULL, NULL_TREE, LOOKUP_NORMAL, NULL,
+				     tf_warning_or_error);
   tree resume = build_call_expr_loc
     (loc, builtin_decl_explicit (BUILT_IN_CORO_RESUME), 1, addr);
 

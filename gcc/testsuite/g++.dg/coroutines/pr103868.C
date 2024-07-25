@@ -79,6 +79,8 @@ namespace std {
 template <typename...> struct coroutine_traits;
 template <typename = void> struct coroutine_handle {
   operator coroutine_handle<>();
+  static coroutine_handle from_address(void*);
+  void* address();
 };
 struct suspend_always {
   bool await_ready();

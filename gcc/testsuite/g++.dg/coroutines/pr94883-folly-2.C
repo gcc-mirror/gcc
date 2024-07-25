@@ -2,8 +2,14 @@
 namespace std {
 template <typename a, typename...> struct coroutine_traits : a {};
 template <typename = void> struct coroutine_handle;
-template <> struct coroutine_handle<> {};
-template <typename> struct coroutine_handle : coroutine_handle<> {};
+template <> struct coroutine_handle<> {
+  static coroutine_handle from_address(void*);
+  void* address();
+};
+template <typename> struct coroutine_handle : coroutine_handle<> {
+  static coroutine_handle from_address(void*);
+  void* address();
+};
 struct b {
   bool await_ready();
   void await_suspend(coroutine_handle<>);
