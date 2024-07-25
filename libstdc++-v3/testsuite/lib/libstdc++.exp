@@ -639,7 +639,8 @@ proc v3_target_compile { source dest type options } {
     lappend options "timeout=[timeout_value]"
 
     global v3_additional_files
-    foreach file [split $v3_additional_files " "] {
+    # There will be an empty file at the begining of the list so trim it off.
+    foreach file [split [string trim $v3_additional_files] " "] {
 	global srcdir
 	v3-copy-file "$srcdir/data/$file" $file
     }
