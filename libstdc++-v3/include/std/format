@@ -3667,8 +3667,6 @@ namespace __format
 	{ return {_Format_arg::template _S_to_enum<_Args>()...}; }
 
     public:
-      basic_format_args() noexcept = default;
-
       template<typename... _Args>
 	basic_format_args(const _Store<_Args...>& __store) noexcept;
 
