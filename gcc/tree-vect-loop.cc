@@ -5652,7 +5652,7 @@ get_initial_defs_for_reduction (loop_vec_info loop_vinfo,
 	      init = gimple_build_vector_from_val (&ctor_seq, vector_type,
 						   neutral_op);
 	      int k = nunits;
-	      while (k > 0 && elts[k - 1] == neutral_op)
+	      while (k > 0 && operand_equal_p (elts[k - 1], neutral_op))
 		k -= 1;
 	      while (k > 0)
 		{
