@@ -47,6 +47,7 @@ struct Function
   std::vector<BasicBlock> basic_blocks;
   FreeRegions universal_regions;
   std::vector<std::pair<FreeRegion, FreeRegion>> universal_region_bounds;
+  std::unordered_map<Polonius::Origin, HIR::LifetimeParam *> region_hir_map;
   location_t location;
 };
 
