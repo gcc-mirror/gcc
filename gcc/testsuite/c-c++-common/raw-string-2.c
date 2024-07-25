@@ -1,7 +1,6 @@
-// { dg-do run }
+// { dg-do run { target { c || c++11 } } }
 // { dg-require-effective-target wchar }
 // { dg-options "-std=gnu99 -Wno-c++-compat -trigraphs" { target c } }
-// { dg-options "-std=c++0x" { target c++ } }
 
 #ifndef __cplusplus
 #include <wchar.h>

@@ -1,7 +1,7 @@
 /* PR preprocessor/57824 */
-/* { dg-do compile } */
+// { dg-do compile { target { c || c++11 } } }
 /* { dg-options "-std=gnu99 -fdump-tree-optimized-lineno -save-temps" { target c } } */
-/* { dg-options "-std=c++11 -fdump-tree-optimized-lineno -save-temps" { target c++ } } */
+/* { dg-options "-fdump-tree-optimized-lineno -save-temps" { target c++ } } */
 
 const char x[] = R"(
 abc

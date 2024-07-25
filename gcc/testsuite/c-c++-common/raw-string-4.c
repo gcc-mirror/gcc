@@ -1,7 +1,6 @@
 // R is not applicable for character literals.
-// { dg-do compile }
+// { dg-do compile { target { c || c++11 } } }
 // { dg-options "-std=gnu99" { target c } }
-// { dg-options "-std=c++0x" { target c++ } }
 
 const int	i0	= R'a';	// { dg-error "was not declared|undeclared" "undeclared" }
 		// { dg-error "expected ',' or ';'" "expected" { target c } .-1 }
