@@ -667,6 +667,12 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 		  if (modify && !skipped_dest && (dst_mask & ~src_mask) == 0)
 		    ext_dce_try_optimize_insn (insn, x);
 
+		  /* Stripping the extension here just seems wrong on multiple
+		     levels.  It's source side handling, so it seems like it
+		     belongs in the loop below.  Stripping here also makes it
+		     harder than necessary to properly handle live bit groups
+		     for (ANY_EXTEND (SUBREG)) where the SUBREG has
+		     SUBREG_PROMOTED state.  */
 		  dst_mask &= src_mask;
 		  src = XEXP (src, 0);
 		  code = GET_CODE (src);
@@ -674,8 +680,8 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 
 	      /* Optimization is done at this point.  We just want to make
 		 sure everything that should get marked as live is marked
-		 from here onward.  */
-
+		 from here onward.  Shouldn't the backpropagate step happen
+		 before optimization?  */
 	      dst_mask = carry_backpropagate (dst_mask, code, src);
 
 	      /* We will handle the other operand of a binary operator
@@ -688,7 +694,11 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 	      /* We're inside a SET and want to process the source operands
 		 making things live.  Breaking from this loop will cause
 		 the iterator to work on sub-rtxs, so it is safe to break
-		 if we see something we don't know how to handle.  */
+		 if we see something we don't know how to handle.
+
+		 This code is just hokey as it really just handles trivial
+		 unary and binary cases.  Otherwise the loop exits and we
+		 continue iterating on sub-rtxs, but outside the set context.  */
 	      unsigned HOST_WIDE_INT save_mask = dst_mask;
 	      for (;;)
 		{
@@ -704,10 +714,26 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 		    y = XEXP (y, 0);
 		  else if (SUBREG_P (y) && SUBREG_BYTE (y).is_constant ())
 		    {
-		      /* For anything but (subreg (reg)), break the inner loop
-			 and process normally (conservatively).  */
-		      if (!REG_P (SUBREG_REG (y)))
+		      /* We really want to know the outer code here, ie do we
+			 have (ANY_EXTEND (SUBREG ...)) as we need to know if
+			 the extension matches the SUBREG_PROMOTED state.  In
+			 that case optimizers can turn the extension into a
+			 simple copy.  Which means that bits outside the
+			 SUBREG's mode are actually live.
+
+			 We don't want to mark those bits live unnecessarily
+			 as that inhibits extension elimination in important
+			 cases such as those in Coremark.  So we need that
+			 outer code.  */
+		      if (!REG_P (SUBREG_REG (y))
+			  || (SUBREG_PROMOTED_VAR_P (y)
+			      && ((GET_CODE (SET_SRC (x)) == SIGN_EXTEND
+				   && SUBREG_PROMOTED_SIGNED_P (y))
+				  || (GET_CODE (SET_SRC (x)) == ZERO_EXTEND
+				      && SUBREG_PROMOTED_UNSIGNED_P (y)))))
 			break;
+
+		      /* The SUBREG's mode determine the live width.  */
 		      bit = subreg_lsb (y).to_constant ();
 		      if (dst_mask)
 			{
@@ -784,6 +810,11 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 	{
 	  HOST_WIDE_INT size = GET_MODE_BITSIZE (GET_MODE (x)).to_constant ();
 	  HOST_WIDE_INT rn = 4 * REGNO (SUBREG_REG (x));
+
+	  /* If this is a promoted subreg, then more of it may be live than
+	     is otherwise obvious.  */
+	  if (SUBREG_PROMOTED_VAR_P (x))
+	    size = GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (x))).to_constant ();
 
 	  bitmap_set_bit (livenow, rn);
 	  if (size > 8)
