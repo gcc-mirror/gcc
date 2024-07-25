@@ -1,3 +1,46 @@
+2024-07-24  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2024-07-17  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/114759
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Disallow
+	CPUs and ABIs that do no support the ROP protection insns.
+	* config/rs6000/rs6000-logue.cc (rs6000_stack_info): Remove now
+	unneeded tests.
+	(rs6000_emit_prologue): Likewise.
+	Remove unneeded gcc_assert.
+	(rs6000_emit_epilogue): Likewise.
+	* config/rs6000/rs6000.md: Likewise.
+
+2024-07-24  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2024-07-17  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/114759
+	* config/rs6000/rs6000-logue.cc (rs6000_stack_info): Use TARGET_POWER8.
+	(rs6000_emit_prologue): Likewise.
+	* config/rs6000/rs6000.md (hashchk): Likewise.
+	(hashst): Likewise.
+	Fix whitespace.
+
+2024-07-24  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2024-06-17  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/115389
+	* config/rs6000/rs6000-logue.cc (rs6000_stack_info): Compute
+	rop_hash_save_offset for non-Altivec compiles.
+
+2024-07-24  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2024-06-08  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-logue.cc (rs6000_stack_info): Update comment.
+
 2024-07-23  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
