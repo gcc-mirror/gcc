@@ -3,6 +3,10 @@
 #include <format>
 #include <testsuite_hooks.h>
 
+// LWG 4106. basic_format_args should not be default-constructible
+static_assert( ! std::is_default_constructible_v<std::format_args> );
+static_assert( ! std::is_default_constructible_v<std::wformat_args> );
+
 template<typename Ctx, typename T>
 bool equals(std::basic_format_arg<Ctx> fmt_arg, T expected) {
   return std::visit_format_arg([=](auto arg_val) {
