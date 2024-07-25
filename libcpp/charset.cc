@@ -1808,7 +1808,12 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
       result = 1;
     }
   else if (identifier_pos && result == 0x24 
-	   && CPP_OPTION (pfile, dollars_in_ident))
+	   && CPP_OPTION (pfile, dollars_in_ident)
+	   /* In C++26 when dollars are allowed in identifiers,
+	      we should still reject \u0024 as $ is part of the basic
+	      character set.  */
+	   && !(CPP_OPTION (pfile, cplusplus)
+		&& CPP_OPTION (pfile, lang) > CLK_CXX23))
     {
       if (CPP_OPTION (pfile, warn_dollars) && !pfile->state.skipping)
 	{

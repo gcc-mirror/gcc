@@ -1,8 +1,8 @@
 // PR preprocessor/57620
-// { dg-do run }
+// { dg-do run { target { c || c++11 } } }
 // { dg-require-effective-target wchar }
 // { dg-options "-std=gnu99 -Wno-c++-compat -Wtrigraphs" { target c } }
-// { dg-options "-std=gnu++11 -Wtrigraphs" { target c++ } }
+// { dg-options "-Wtrigraphs" { target c++ } }
 
 #ifndef __cplusplus
 #include <wchar.h>
