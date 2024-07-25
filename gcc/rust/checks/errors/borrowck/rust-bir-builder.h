@@ -50,6 +50,8 @@ public:
       handle_param (param);
 
     handle_body (*function.get_definition ());
+    auto region_hir_map
+      = map_region_to_hir (function.get_generic_params (), ctx.fn_free_regions);
 
     return Function{
       std::move (ctx.place_db),
@@ -57,6 +59,7 @@ public:
       std::move (ctx.basic_blocks),
       std::move (ctx.fn_free_regions),
       std::move (universal_region_bounds),
+      std::move (region_hir_map),
       function.get_locus (),
     };
   }
@@ -160,6 +163,26 @@ private:
 				 : body.get_end_locus ();
 	push_return (return_location);
       }
+  }
+
+  // Maps named lifetime parameters to their respective HIR node
+  const std::unordered_map<Polonius::Origin, HIR::LifetimeParam *>
+  map_region_to_hir (
+    const std::vector<std::unique_ptr<HIR::GenericParam>> &generic_params,
+    const FreeRegions &regions)
+  {
+    std::unordered_map<Polonius::Origin, HIR::LifetimeParam *> result;
+    size_t region_index = 0;
+    for (auto &generic_param : generic_params)
+      {
+	if (generic_param->get_kind ()
+	    == HIR::GenericParam::GenericKind::LIFETIME)
+	  {
+	    result[regions[region_index++]]
+	      = static_cast<HIR::LifetimeParam *> (generic_param.get ());
+	  }
+      }
+    return result;
   }
 };
 
