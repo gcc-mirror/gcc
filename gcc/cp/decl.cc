@@ -17882,8 +17882,11 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 	doing_friend = true;
     }
 
-  /* Adjust for #pragma target/optimize.  */
-  decl_attributes (&decl1, NULL_TREE, 0);
+  /* Adjust for #pragma target/optimize if this is an artificial function that
+     (probably) didn't go through grokfndecl.  We particularly don't want this
+     for deferred instantiations, which should match their template.  */
+  if (DECL_ARTIFICIAL (decl1))
+    decl_attributes (&decl1, NULL_TREE, 0);
 
   if (DECL_DECLARED_INLINE_P (decl1)
       && lookup_attribute ("noinline", attrs))
