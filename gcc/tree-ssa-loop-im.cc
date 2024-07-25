@@ -2880,6 +2880,7 @@ hoist_memory_references (class loop *loop, bitmap mem_refs,
 	  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
 	  unlink_stmt_vdef (stmt);
 	  release_defs (stmt);
+	  gimple_set_vdef (stmt, NULL_TREE);
 	  gsi_remove (&gsi, true);
 	}
 
@@ -3062,6 +3063,7 @@ hoist_memory_references (class loop *loop, bitmap mem_refs,
       gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
       unlink_stmt_vdef (stmt);
       release_defs (stmt);
+      gimple_set_vdef (stmt, NULL_TREE);
       gsi_remove (&gsi, true);
     }
 
