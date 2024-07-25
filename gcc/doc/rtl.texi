@@ -4405,6 +4405,7 @@ A pass that wants to use the RTL SSA form should start with the following:
 @smallexample
 #define INCLUDE_ALGORITHM
 #define INCLUDE_FUNCTIONAL
+#define INCLUDE_ARRAY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
