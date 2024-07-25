@@ -754,6 +754,7 @@ namespace __expected
       constexpr const _Tp&
       value() const &
       {
+	static_assert( is_copy_constructible_v<_Er> );
 	if (_M_has_value) [[likely]]
 	  return _M_val;
 	_GLIBCXX_THROW_OR_ABORT(bad_expected_access<_Er>(_M_unex));
@@ -762,6 +763,7 @@ namespace __expected
       constexpr _Tp&
       value() &
       {
+	static_assert( is_copy_constructible_v<_Er> );
 	if (_M_has_value) [[likely]]
 	  return _M_val;
 	const auto& __unex = _M_unex;
@@ -771,6 +773,8 @@ namespace __expected
       constexpr const _Tp&&
       value() const &&
       {
+	static_assert( is_copy_constructible_v<_Er> );
+	static_assert( is_constructible_v<_Er, const _Er&&> );
 	if (_M_has_value) [[likely]]
 	  return std::move(_M_val);
 	_GLIBCXX_THROW_OR_ABORT(bad_expected_access<_Er>(std::move(_M_unex)));
@@ -779,6 +783,8 @@ namespace __expected
       constexpr _Tp&&
       value() &&
       {
+	static_assert( is_copy_constructible_v<_Er> );
+	static_assert( is_constructible_v<_Er, _Er&&> );
 	if (_M_has_value) [[likely]]
 	  return std::move(_M_val);
 	_GLIBCXX_THROW_OR_ABORT(bad_expected_access<_Er>(std::move(_M_unex)));
@@ -1510,6 +1516,7 @@ namespace __expected
       constexpr void
       value() const&
       {
+	static_assert( is_copy_constructible_v<_Er> );
 	if (_M_has_value) [[likely]]
 	  return;
 	_GLIBCXX_THROW_OR_ABORT(bad_expected_access<_Er>(_M_unex));
@@ -1518,6 +1525,7 @@ namespace __expected
       constexpr void
       value() &&
       {
+	static_assert( is_copy_constructible_v<_Er> );
 	if (_M_has_value) [[likely]]
 	  return;
 	_GLIBCXX_THROW_OR_ABORT(bad_expected_access<_Er>(std::move(_M_unex)));
