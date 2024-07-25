@@ -1,3 +1,18 @@
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/rich-location.h
+	(semi_embedded_vec::semi_embedded_vec): Add copy ctor.
+	(rich_location::rich_location): Remove "= delete" from decl of
+	copy ctor.  Add deleted decl of move ctor.
+	(rich_location::operator=): Remove "= delete" from decl of
+	copy assignment.  Add deleted decl of move assignment.
+	(fixit_hint::fixit_hint): Add copy ctor decl.  Add deleted decl of
+	move.
+	(fixit_hint::operator=): Add copy assignment decl.  Add deleted
+	decl of move assignment.
+	* line-map.cc (rich_location::rich_location): New copy ctor.
+	(fixit_hint::fixit_hint): New copy ctor.
+
 2024-07-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/rich-location.h (location_range::m_highlight_color): New

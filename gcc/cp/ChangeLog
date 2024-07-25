@@ -1,3 +1,97 @@
+2024-07-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/116071
+	* parser.cc (cp_parser_simple_type_specifier): Call
+	cp_parser_simulate_error if nothing worked.
+
+2024-07-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* constraint.cc (subst_info::quiet, subst_info::noisy): Formatting
+	fixes.
+	(known_non_bool_p): Comment formatting fixes.
+	(unpack_concept_check): Likewise.
+	(resolve_function_concept_overload): Likewise.
+	(resolve_function_concept_check): Likewise.
+	(resolve_concept_check): Likewise.
+	(deduce_constrained_parameter): Likewise.
+	(finish_type_constraints): Likewise.
+	(get_returned_expression): Likewise.
+	(get_variable_initializer): Likewise.
+	(norm_info::update_context, norm_info::ctx_params): Formatting
+	fixes.
+	(norm_info::context): Comment formatting fixes.
+	(normalize_logical_operation): Likewise.  Formatting fix.
+	(normalize_concept_check): Comment formatting fixes.
+	(normalize_atom): Likewise.
+	(normalize_expression): Likewise.
+	(get_normalized_constraints_from_info): Likewise.
+	(get_normalized_constraints_from_decl): Likewise.  Formatting
+	fixes.
+	(atomic_constraints_identical_p): Comment formatting fixes.
+	(constraints_equivalent_p): Formatting fixes.
+	(inchash::add_constraint): Likewise.
+	(associate_classtype_constraints): Comment formatting fixes.
+	(get_constraints): Likewise.
+	(set_constraints): Likewise.
+	(build_concept_check_arguments): Likewise.
+	(build_function_check): Likewise.
+	(build_concept_check): Likewise.
+	(finish_shorthand_constraint): Likewise.
+	(get_shorthand_constraints): Likewise.
+	(check_constraint_variables): Likewise.
+	(tsubst_constraint_variables): Likewise.
+	(tsubst_requires_expr): Likewise.
+	(get_mapped_args): Likewise.  Formatting fixes.
+	(satisfy_atom): Comment formatting fixes.
+	(satisfy_constraint_r): Comment wording and formatting fixes.
+	(satisfy_normalized_constraints): Comment formatting fixes.
+	(satisfy_declaration_constraints): Likewise.
+	(evaluate_concept_check): Likewise.
+	(finish_requires_expr): Likewise.
+	(finish_compound_requirement): Likewise.
+	(check_function_concept): Likewise.
+	(equivalently_constrained): Likewise.
+	(more_constrained): Likewise.
+	(diagnose_atomic_constraint): Likewise.
+	* cp-tree.h (TREE_LANG_FLAG_0): Fix a comment error,
+	FOLD_EXPR_MODIFY_P instead of FOLD_EXPR_MODOP_P.
+	(DECL_MAIN_FREESTANDING_P, DECL_MAIN_P): Comment formatting fixes.
+	(enum cpp0x_warn_str): Likewise.
+	(enum composite_pointer_operation): Likewise.
+	(enum expr_list_kind): Likewise.
+	(enum impl_conv_rhs): Likewise.
+	(enum impl_conv_void): Likewise.
+	(struct deferred_access_check): Likewise.
+	(ATOMIC_CONSTR_EXPR): Likewise.
+	(FUNCTION_REF_QUALIFIED): Likewise.
+	(DECL_DEPENDENT_P): Likewise.
+	(FOLD_EXPR_MODIFY_P): Likewise.
+	(FOLD_EXPR_OP_RAW): Likewise.
+	(FOLD_EXPR_PACK): Likewise.
+	(FOLD_EXPR_INIT): Likewise.
+	(TYPE_WAS_UNNAMED): Likewise.
+	(class cp_unevaluated): Likewise.
+	(struct ovl_op_info_t assertion): Likewise.
+	(cp_declarator::function::requires_clause): Likewise.
+	(variable_template_p): Likewise.
+	(concept_definition_p): Likewise.
+	* logic.cc (clause::clause): Likewise.
+	(clause::replace): Likewise.
+	(clause::insert): Likewise.  Formatting fixes.
+	(struct formula): Comment formatting fixes.
+	(formula::branch): Likewise.
+	(debug): Formatting fixes.
+	(dnf_size_r): Comment formatting fixes.
+	(cnf_size_r): Likewise.
+	(dnf_size): Likewise.
+	(cnf_size): Likewise.
+	(branch_clause): Likewise.
+	(decompose_term): Likewise.  Formatting fixes.
+	(struct subsumption_entry): Comment formatting fixes.
+	(subsumption_cache): Likewise.
+	(save_subsumption): Likewise.  Formatting fixes.
+	(subsumes_constraints_nonnull): Formatting fixes.
+
 2024-07-23  Andi Kleen  <ak@linux.intel.com>
 
 	PR c/83324

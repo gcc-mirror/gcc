@@ -1,3 +1,7 @@
+2024-07-24  Matthew Malcomson  <mmalcomson@nvidia.com>
+
+	* MAINTAINERS: Update my email address.
+
 2024-07-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* MAINTAINERS: Replace tabs with spaces.  Add a bugzilla account

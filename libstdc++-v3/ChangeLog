@@ -1,3 +1,264 @@
+2024-07-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116070
+	* include/std/istream: Check feature test macro before using
+	is_class_v and is_same_v.
+	* include/std/ostream: Likewise.
+
+2024-07-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116070
+	* include/bits/stl_bvector.h: Check feature test macro before
+	using is_default_constructible_v.
+
+2024-07-24  Michael Levine  <mlevine55@bloomberg.net>
+
+	* include/bits/ranges_algobase.h: Remove duplicate include of
+	<bits/stl_algobase.h>.
+
+2024-07-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/12048
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/12948-1.cc: Move to...
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/12048-1.cc: ...here.
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/12948-2.cc: Move to...
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/12048-2.cc: ...here.
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/12948-3.cc: Move to...
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/12048-3.cc: ...here.
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/12948-4.cc: Move to...
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/12048-4.cc: ...here.
+
+2024-07-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Do not copy all
+	data files into test directory.
+
+2024-07-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/hash/chi2_q_document_words.cc: Use
+	dg-additional-files for input text.
+	* testsuite/performance/ext/pb_ds/all_text_find.cc: Likewise.
+	* testsuite/performance/ext/pb_ds/multimap_text_find.hpp:
+	Likewise.
+	* testsuite/performance/ext/pb_ds/multimap_text_insert.hpp:
+	Likewise.
+	* testsuite/performance/ext/pb_ds/multimap_text_insert_mem.hpp:
+	Likewise.
+	* testsuite/performance/ext/pb_ds/priority_queue_text_join.cc:
+	Likewise.
+	* testsuite/performance/ext/pb_ds/priority_queue_text_modify.hpp: Likewise.
+	* testsuite/performance/ext/pb_ds/priority_queue_text_pop_mem.cc: Likewise.
+	* testsuite/performance/ext/pb_ds/priority_queue_text_push.cc:
+	Likewise.
+	* testsuite/performance/ext/pb_ds/priority_queue_text_push_pop.cc: Likewise.
+	* testsuite/performance/ext/pb_ds/tree_text_insert.cc: Likewise.
+	* testsuite/performance/ext/pb_ds/tree_text_lor_find.cc:
+	Likewise.
+
+2024-07-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/25_algorithms/advance/istreambuf_iterators/char/2.cc:
+	Use dg-additional-files.
+	* testsuite/25_algorithms/advance/istreambuf_iterators/wchar_t/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/copy/streambuf_iterators/char/4.cc:
+	Likewise.
+	* testsuite/25_algorithms/copy/streambuf_iterators/wchar_t/4.cc:
+	Likewise.
+	* testsuite/25_algorithms/copy_n/istreambuf_iterator/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/copy_n/istreambuf_iterator/deque.cc:
+	Likewise.
+	* testsuite/25_algorithms/find/istreambuf_iterators/char/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/find/istreambuf_iterators/wchar_t/2.cc:
+	Likewise.
+
+2024-07-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/basic_filebuf/close/char/1.cc: Remove
+	@require@ and @diff@. Use dg-final file-io-diff action.
+	* testsuite/27_io/basic_istream/extractors_other/char/2.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/2.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/get/char/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/get/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/char/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/peek/char/6414.cc: Likewise.
+	* testsuite/27_io/basic_istream/peek/wchar_t/6414.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/char/fstream.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/wchar_t/fstream.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/tellg/char/fstream.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/wchar_t/fstream.cc:
+	Likewise.
+	* testsuite/27_io/basic_ofstream/open/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/ios_base/sync_with_stdio/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/2.cc:
+	Likewise. Check file positions.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/2.cc:
+	Likewise.
+	* testsuite/lib/libstdc++.exp (file-io-diff): New proc.
+
+2024-07-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/basic_filebuf/imbue/char/2.cc: Use
+	dg-additional-files.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/open/char/path.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/pbackfail/char/9761.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/3-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/3-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/char/3-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/char/3-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/setbuf/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetn/char/3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/10096.cc: Likewise.
+	* testsuite/27_io/basic_fstream/cons/char/path.cc: Likewise.
+	* testsuite/27_io/basic_fstream/open/char/path.cc: Likewise.
+	* testsuite/27_io/basic_ifstream/assign/1.cc: Likewise.
+	* testsuite/27_io/basic_ifstream/cons/move.cc: Likewise.
+	* testsuite/27_io/basic_ifstream/cons/char/path.cc: Likewise.
+	* testsuite/27_io/basic_ifstream/open/char/path.cc: Likewise.
+	* testsuite/27_io/basic_ifstream/open/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/objects/char/10.cc: Likewise.
+	* testsuite/27_io/objects/char/12048-1.cc: Likewise.
+	* testsuite/27_io/objects/char/12048-2.cc: Likewise.
+	* testsuite/27_io/objects/char/12048-3.cc: Likewise.
+	* testsuite/27_io/objects/char/12048-4.cc: Likewise.
+	* testsuite/27_io/objects/char/12048-5.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-1.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-2.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-3.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-4.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-5.cc: Likewise.
+	* testsuite/ext/stdio_sync_filebuf/char/12048-1.cc: Likewise.
+	* testsuite/ext/stdio_sync_filebuf/char/12048-2.cc: Likewise.
+	* testsuite/ext/stdio_sync_filebuf/char/12048-3.cc: Likewise.
+	* testsuite/ext/stdio_sync_filebuf/char/12048-4.cc: Likewise.
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/12948-1.cc: Likewise.
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/12948-2.cc: Likewise.
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/12948-3.cc: Likewise.
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/12948-4.cc: Likewise.
+
+2024-07-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/basic_filebuf/close/char/2.cc: Remove
+	@require@ and @diff@ markup. Use dg-additional-files. Remove
+	unused variable.
+	* testsuite/27_io/basic_filebuf/close/char/3.cc: Remove
+	@require@ and @diff@ markup. Use dg-additional-files.
+	* testsuite/27_io/basic_filebuf/close/char/4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/char/5.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/in_avail/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/is_open/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/open/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/open/char/2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sbumpc/char/1-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sbumpc/char/1-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sbumpc/char/2-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sbumpc/char/2-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/1-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/1-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/2-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/2-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/char/1-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/char/1-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/char/2-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/char/2-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetc/char/1-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetc/char/1-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetc/char/2-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetc/char/2-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetn/char/1-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetn/char/1-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetn/char/2-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetn/char/2-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/snextc/char/1-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/snextc/char/1-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/snextc/char/1-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/snextc/char/2-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/snextc/char/2-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/1-in.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/2-in.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/sputc/char/1-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputc/char/2-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputc/char/2-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputn/char/1-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputn/char/1-io.cc: Likewise.
+	Remove unused variable.
+	* testsuite/27_io/basic_filebuf/sputn/char/2-in.cc: Remove
+	@require@ and @diff@ markup. Use dg-additional-files.
+	* testsuite/27_io/basic_filebuf/sungetc/char/1-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sungetc/char/2-in.cc: Likewise.
+	* testsuite/27_io/basic_ifstream/cons/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ifstream/open/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ifstream/rdbuf/char/2832.cc: Likewise.
+	* testsuite/27_io/basic_istream/readsome/char/6746-2.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/readsome/wchar_t/6746-2.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/seekg/char/sstream.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/wchar_t/sstream.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/tellg/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/char/sstream.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/wchar_t/sstream.cc:
+	Likewise.
+	* testsuite/27_io/basic_ofstream/open/char/1.cc: Likewise.
+	* testsuite/lib/dg-options.exp (dg-additional-files): Append to
+	v3_additional_files instead of replacing.
+	* testsuite/lib/libstdc++.exp (v3_target_compile): Reset
+	v3_additional_files after copying files.
+
+2024-07-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/basic_filebuf/close/char/4879.cc: Remove
+	@require@ and @diff@ comments.
+	* testsuite/27_io/basic_filebuf/close/char/9964.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/open/char/3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/open/char/9507.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sbumpc/char/1-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sbumpc/char/2-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetc/char/1-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetc/char/2-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetn/char/1-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetn/char/2-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/snextc/char/2-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/1-io.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/1-out.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/2-io.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/2-out.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/sputc/char/1-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputc/char/2-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputn/char/1-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputn/char/2-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sungetc/char/1-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sungetc/char/1-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sungetc/char/2-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sungetc/char/2-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputc/char/1-io.cc: Likewise.
+	Remove unused variable.
+	* testsuite/27_io/basic_filebuf/sputn/char/2-io.cc: Likewise.
+	* testsuite/27_io/basic_ofstream/cons/char/1.cc: Remove
+	@require@ and @diff@ comments. Remove unused variables.
+	* testsuite/27_io/basic_ofstream/rdbuf/char/2832.cc: Remove
+	* testsuite/27_io/ios_base/sync_with_stdio/2.cc: Likewise.
+
 2024-07-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++23/print.cc (__open_terminal): Use [[maybe_unused]] on

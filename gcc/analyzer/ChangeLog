@@ -1,3 +1,34 @@
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-event.cc (maybe_add_sarif_properties): Update setting
+	of "original_fndecl" to use typesafe unique_ptr variant of
+	json::object::set.
+
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* call-string.cc (call_string::to_json): Avoid naked "new".
+	* constraint-manager.cc (bounded_range::set_json_attr): Likewise.
+	(equiv_class::to_json): Likewise.
+	(constraint::to_json): Likewise.
+	(bounded_ranges_constraint::to_json): Likewise.
+	* diagnostic-manager.cc (saved_diagnostic::to_json): Likewise.
+	(saved_diagnostic::maybe_add_sarif_properties): Likewise.
+	* engine.cc (exploded_node::to_json): Likewise.
+	(exploded_edge::to_json): Likewise.
+	* program-point.cc (program_point::to_json): Likewise.
+	* program-state.cc (program_state::to_json): Likewise.
+	* sm.cc (state_machine::to_json): Likewise.
+	* store.cc (binding_cluster::to_json): Likewise.
+	(store::to_json): Likewise.
+	* supergraph.cc (supernode::to_json): Likewise.
+	(superedge::to_json): Likewise.
+
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* supergraph.cc (supernode::to_json): Avoid naked "new" by using
+	json::array::append_string.
+	(supernode::to_json): Likewise.
+
 2024-07-12  Daniel Bertalan  <dani@danielbertalan.dev>
 
 	* diagnostic-manager.cc (saved_diagnostic::saved_diagnostic):
