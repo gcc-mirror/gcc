@@ -1,7 +1,7 @@
 /* PR rtl-optimization/105314 */
 /* { dg-do compile } */
 /* { dg-require-effective-target rv32 } */
-/* { dg-skip-if "" { *-*-* } { "-O0" "-Og" "-Os" "-Oz" "-flto" } } */
+/* { dg-skip-if "" { *-*-* } { "-march=*zicond*" "-O0" "-Og" "-Os" "-Oz" "-flto" } } */
 /* { dg-options "-fdump-rtl-ce1" } */
 
 long __RTL (startwith ("ce1"))
