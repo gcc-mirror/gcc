@@ -14903,7 +14903,7 @@ vect_get_vector_types_for_stmt (vec_info *vinfo, stmt_vec_info stmt_info,
 	 vector size per vectorization).  */
       scalar_type = vect_get_smallest_scalar_type (stmt_info,
 						   TREE_TYPE (vectype));
-      if (scalar_type != TREE_TYPE (vectype))
+      if (!types_compatible_p (scalar_type, TREE_TYPE (vectype)))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
