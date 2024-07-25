@@ -6271,6 +6271,18 @@ push_template_decl (tree decl, bool is_friend)
 	}
     }
 
+  if (is_typedef_decl (decl)
+      && (dependent_opaque_alias_p (TREE_TYPE (decl))
+	  || dependent_alias_template_spec_p (TREE_TYPE (decl), nt_opaque)))
+    {
+      /* Manually mark such aliases as dependent so that dependent_type_p_r
+	 doesn't have to handle them.  */
+      TYPE_DEPENDENT_P_VALID (TREE_TYPE (decl)) = true;
+      TYPE_DEPENDENT_P (TREE_TYPE (decl)) = true;
+      /* The identity of such aliases is hairy; see structural_comptypes.  */
+      SET_TYPE_STRUCTURAL_EQUALITY (TREE_TYPE (decl));
+    }
+
   if (flag_implicit_templates
       && !is_friend
       && TREE_PUBLIC (decl)
@@ -6530,7 +6542,7 @@ alias_template_specialization_p (const_tree t,
       if (tree tinfo = TYPE_ALIAS_TEMPLATE_INFO (t))
 	if (PRIMARY_TEMPLATE_P (TI_TEMPLATE (tinfo)))
 	  return CONST_CAST_TREE (t);
-      if (transparent_typedefs)
+      if (transparent_typedefs && !dependent_opaque_alias_p (t))
 	return alias_template_specialization_p (DECL_ORIGINAL_TYPE
 						(TYPE_NAME (t)),
 						transparent_typedefs);
@@ -6635,8 +6647,7 @@ complex_alias_template_p (const_tree tmpl, tree *seen_out)
     return true;
 
   /* An alias with dependent type attributes is complex.  */
-  if (any_dependent_type_attributes_p (DECL_ATTRIBUTES
-				       (DECL_TEMPLATE_RESULT (tmpl))))
+  if (dependent_opaque_alias_p (TREE_TYPE (tmpl)))
     return true;
 
   if (!complex_alias_tmpl_info)
@@ -6687,7 +6698,10 @@ complex_alias_template_p (const_tree tmpl, tree *seen_out)
 /* If T is a specialization of a complex alias template with a dependent
    argument for an unused template parameter, return it; otherwise return
    NULL_TREE.  If T is a typedef to such a specialization, return the
-   specialization.  */
+   specialization.  This predicate is usually checked alongside
+   dependent_opaque_alias_p.  Whereas dependent_opaque_alias_p checks
+   type equivalence of an alias vs its expansion, this predicate more
+   broadly checks SFINAE equivalence.  */
 
 tree
 dependent_alias_template_spec_p (const_tree t, bool transparent_typedefs)
@@ -6723,13 +6737,26 @@ dependent_alias_template_spec_p (const_tree t, bool transparent_typedefs)
 	}
     }
 
-  if (transparent_typedefs)
+  if (transparent_typedefs && !dependent_opaque_alias_p (t))
     {
       tree utype = DECL_ORIGINAL_TYPE (TYPE_NAME (t));
       return dependent_alias_template_spec_p (utype, transparent_typedefs);
     }
 
   return NULL_TREE;
+}
+
+/* Return true if substituting into T would yield a different type than
+   substituting into its expansion.  This predicate is usually checked
+   alongside dependent_alias_template_spec_p.  */
+
+bool
+dependent_opaque_alias_p (const_tree t)
+{
+  return (TYPE_P (t)
+	  && typedef_variant_p (t)
+	  && any_dependent_type_attributes_p (DECL_ATTRIBUTES
+					      (TYPE_NAME (t))));
 }
 
 /* Return the number of innermost template parameters in TMPL.  */
@@ -6792,8 +6819,7 @@ get_underlying_template (tree tmpl)
 	break;
 
       /* If TMPL adds dependent type attributes, it isn't equivalent.  */
-      if (any_dependent_type_attributes_p (DECL_ATTRIBUTES
-					   (DECL_TEMPLATE_RESULT (tmpl))))
+      if (dependent_opaque_alias_p (TREE_TYPE (tmpl)))
 	break;
 
       /* Alias is equivalent.  Strip it and repeat.  */
@@ -22278,6 +22304,7 @@ instantiate_alias_template (tree tmpl, tree args, tsubst_flags_t complain)
 
   if (tree d = dependent_alias_template_spec_p (TREE_TYPE (r), nt_opaque))
     {
+      /* Note this is also done at parse time from push_template_decl.  */
       /* An alias template specialization can be dependent
 	 even if its underlying type is not.  */
       TYPE_DEPENDENT_P (d) = true;
@@ -27906,11 +27933,6 @@ dependent_type_p_r (tree type)
   if (TREE_CODE (type) == TYPENAME_TYPE)
     return true;
 
-  /* An alias template specialization can be dependent even if the
-     resulting type is not.  */
-  if (dependent_alias_template_spec_p (type, nt_transparent))
-    return true;
-
   /* -- a cv-qualified type where the cv-unqualified type is
 	dependent.
      No code is necessary for this bullet; the code below handles
@@ -29018,7 +29040,8 @@ any_template_arguments_need_structural_equality_p (tree args)
 		return true;
 	      else if (TYPE_P (arg)
 		       && TYPE_STRUCTURAL_EQUALITY_P (arg)
-		       && dependent_alias_template_spec_p (arg, nt_transparent))
+		       && (dependent_alias_template_spec_p (arg, nt_opaque)
+			   || dependent_opaque_alias_p (arg)))
 		/* Require structural equality for specializations written
 		   in terms of a dependent alias template specialization.  */
 		return true;
@@ -30418,9 +30441,9 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 	     A with the same template arguments.  */
 	  ret = TREE_TYPE (TREE_TYPE (fprime));
 	  if (ctad_kind == alias
-	      && (!same_type_p (atype, ret)
-		  /* FIXME this should mean they don't compare as equivalent. */
-		  || dependent_alias_template_spec_p (atype, nt_opaque)))
+	      /* Use template_args_equal instead of same_type_p to get the
+		 comparing_dependent_aliases behavior.  */
+	      && !template_args_equal (atype, ret))
 	    {
 	      tree same = finish_trait_expr (loc, CPTK_IS_DEDUCIBLE, tmpl, ret);
 	      ci = append_constraint (ci, same);
