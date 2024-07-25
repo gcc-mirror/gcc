@@ -37,6 +37,7 @@
 #define __DISABLE_PREFETCHI__
 #endif /* __PREFETCHI__ */
 
+#ifdef __OPTIMIZE__
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _m_prefetchit0 (void* __P)
@@ -50,6 +51,14 @@ _m_prefetchit1 (void* __P)
 {
   __builtin_ia32_prefetchi (__P, 2);
 }
+#else
+#define _m_prefetchit0(P)	\
+  __builtin_ia32_prefetchi(P, 3);
+
+#define _m_prefetchit1(P)	\
+  __builtin_ia32_prefetchi(P, 2);
+
+#endif
 
 #ifdef __DISABLE_PREFETCHI__
 #undef __DISABLE_PREFETCHI__
