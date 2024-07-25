@@ -395,6 +395,40 @@ gimple_expand_vec_cond_expr (struct function *fun, gimple_stmt_iterator *gsi,
 				     5, op0a, op0b, op1, op2, tcode_tree);
 }
 
+/* Duplicate COND_EXPR condition defs of STMT located in BB when they are
+   comparisons so RTL expansion with the help of TER
+   can perform better if conversion.  */
+static void
+duplicate_comparison (gassign *stmt, basic_block bb)
+{
+  imm_use_iterator imm_iter;
+  use_operand_p use_p;
+  auto_vec<gassign *, 4> cond_exprs;
+  unsigned cnt = 0;
+  tree lhs = gimple_assign_lhs (stmt);
+  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
+    {
+      if (is_gimple_debug (USE_STMT (use_p)))
+	continue;
+      cnt++;
+      if (gimple_bb (USE_STMT (use_p)) == bb
+	  && is_gimple_assign (USE_STMT (use_p))
+	  && gimple_assign_rhs1_ptr (USE_STMT (use_p)) == use_p->use
+	  && gimple_assign_rhs_code (USE_STMT (use_p)) == COND_EXPR)
+	cond_exprs.safe_push (as_a <gassign *> (USE_STMT (use_p)));
+      }
+  for (unsigned i = cond_exprs.length () == cnt ? 1 : 0;
+       i < cond_exprs.length (); ++i)
+    {
+      gassign *copy = as_a <gassign *> (gimple_copy (stmt));
+      tree new_def = duplicate_ssa_name (lhs, copy);
+      gimple_assign_set_lhs (copy, new_def);
+      auto gsi2 = gsi_for_stmt (cond_exprs[i]);
+      gsi_insert_before (&gsi2, copy, GSI_SAME_STMT);
+      gimple_assign_set_rhs1 (cond_exprs[i], new_def);
+      update_stmt (cond_exprs[i]);
+    }
+}
 
 
 namespace {
@@ -469,37 +503,7 @@ pass_gimple_isel::execute (struct function *fun)
 	  tree lhs = gimple_assign_lhs (stmt);
 	  if (TREE_CODE_CLASS (code) == tcc_comparison
 	      && !has_single_use (lhs))
-	    {
-	      /* Duplicate COND_EXPR condition defs when they are
-		 comparisons so RTL expansion with the help of TER
-		 can perform better if conversion.  */
-	      imm_use_iterator imm_iter;
-	      use_operand_p use_p;
-	      auto_vec<gassign *, 4> cond_exprs;
-	      unsigned cnt = 0;
-	      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
-		{
-		  if (is_gimple_debug (USE_STMT (use_p)))
-		    continue;
-		  cnt++;
-		  if (gimple_bb (USE_STMT (use_p)) == bb
-		      && is_gimple_assign (USE_STMT (use_p))
-		      && gimple_assign_rhs1_ptr (USE_STMT (use_p)) == use_p->use
-		      && gimple_assign_rhs_code (USE_STMT (use_p)) == COND_EXPR)
-		    cond_exprs.safe_push (as_a <gassign *> (USE_STMT (use_p)));
-		}
-	      for (unsigned i = cond_exprs.length () == cnt ? 1 : 0;
-		   i < cond_exprs.length (); ++i)
-		{
-		  gassign *copy = as_a <gassign *> (gimple_copy (stmt));
-		  tree new_def = duplicate_ssa_name (lhs, copy);
-		  gimple_assign_set_lhs (copy, new_def);
-		  auto gsi2 = gsi_for_stmt (cond_exprs[i]);
-		  gsi_insert_before (&gsi2, copy, GSI_SAME_STMT);
-		  gimple_assign_set_rhs1 (cond_exprs[i], new_def);
-		  update_stmt (cond_exprs[i]);
-		}
-	    }
+	    duplicate_comparison (stmt, bb);
 	}
     }
 
