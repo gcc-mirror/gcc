@@ -3933,7 +3933,14 @@ fold_builtin_source_location (const_tree t)
 	      const char *name = "";
 
 	      if (current_function_decl)
-		name = cxx_printable_name (current_function_decl, 2);
+		{
+		  /* If this is a coroutine, we should get the name of the user
+		     function rather than the actor we generate.  */
+		  if (tree ramp = DECL_RAMP_FN (current_function_decl))
+		    name = cxx_printable_name (ramp, 2);
+		  else
+		    name = cxx_printable_name (current_function_decl, 2);
+		}
 
 	      val = build_string_literal (name);
 	    }
