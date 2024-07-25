@@ -1751,13 +1751,6 @@ vect_build_slp_tree (vec_info *vinfo,
       return NULL;
     }
 
-  /* Seed the bst_map with a stub node to be filled by vect_build_slp_tree_2
-     so we can pick up backedge destinations during discovery.  */
-  slp_tree res = new _slp_tree;
-  SLP_TREE_DEF_TYPE (res) = vect_internal_def;
-  SLP_TREE_SCALAR_STMTS (res) = stmts;
-  bst_map->put (stmts.copy (), res);
-
   /* Single-lane SLP doesn't have the chance of run-away, do not account
      it to the limit.  */
   if (stmts.length () > 1)
@@ -1767,17 +1760,18 @@ vect_build_slp_tree (vec_info *vinfo,
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "SLP discovery limit exceeded\n");
-	  /* Mark the node invalid so we can detect those when still in use
-	     as backedge destinations.  */
-	  SLP_TREE_SCALAR_STMTS (res) = vNULL;
-	  SLP_TREE_DEF_TYPE (res) = vect_uninitialized_def;
-	  res->failed = XNEWVEC (bool, group_size);
-	  memset (res->failed, 0, sizeof (bool) * group_size);
 	  memset (matches, 0, sizeof (bool) * group_size);
 	  return NULL;
 	}
       --*limit;
     }
+
+  /* Seed the bst_map with a stub node to be filled by vect_build_slp_tree_2
+     so we can pick up backedge destinations during discovery.  */
+  slp_tree res = new _slp_tree;
+  SLP_TREE_DEF_TYPE (res) = vect_internal_def;
+  SLP_TREE_SCALAR_STMTS (res) = stmts;
+  bst_map->put (stmts.copy (), res);
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -3363,6 +3357,10 @@ vect_build_slp_instance (vec_info *vinfo,
 			 /* ???  We need stmt_info for group splitting.  */
 			 stmt_vec_info stmt_info_)
 {
+  /* If there's no budget left bail out early.  */
+  if (*limit == 0)
+    return false;
+
   if (kind == slp_inst_kind_ctor)
     {
       if (dump_enabled_p ())
@@ -3520,7 +3518,7 @@ vect_build_slp_instance (vec_info *vinfo,
 
   stmt_vec_info stmt_info = stmt_info_;
   /* Try to break the group up into pieces.  */
-  if (kind == slp_inst_kind_store)
+  if (*limit > 0 && kind == slp_inst_kind_store)
     {
       /* ???  We could delay all the actual splitting of store-groups
 	 until after SLP discovery of the original group completed.
