@@ -1,3 +1,5 @@
+// A version of alias-decl-79.C where defining-type-id of B and C
+// are not dependent and instead their vector_size attribute is.
 // PR c++/115897
 // { dg-do compile { target c++11 } }
 
@@ -11,9 +13,10 @@ constexpr bool is_same_v = __is_same(T, U);
 
 template<class T> struct A;
 
-template<class T>
+template<int N>
 void f() {
-  using B [[gnu::vector_size(16)]] = T;
+  using T = float;
+  using B [[gnu::vector_size(N * sizeof(float))]] = T;
   static_assert(!is_same<T, B>::value, "");
   static_assert(!is_same<A<T>, A<B>>::value, "");
 #if __cpp_variable_templates
@@ -22,9 +25,10 @@ void f() {
 #endif
 };
 
-template<class T>
+template<int N>
 void g() {
-  using C [[gnu::vector_size(16)]] = T*;
+  using T = float*;
+  using C [[gnu::vector_size(N * sizeof(float*))]] = T;
   static_assert(!is_same<T*, C>::value, "");
   static_assert(!is_same<A<T*>, A<C>>::value, "");
 #if __cpp_variable_templates
@@ -33,5 +37,5 @@ void g() {
 #endif
 };
 
-template void f<float>();
-template void g<float>();
+template void f<4>();
+template void g<4>();

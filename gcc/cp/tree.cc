@@ -1613,12 +1613,13 @@ strip_typedefs (tree t, bool *remove_attributes /* = NULL */,
 	  && !user_facing_original_type_p (t))
 	return t;
 
+      if (dependent_opaque_alias_p (t))
+	return t;
+
       if (alias_template_specialization_p (t, nt_opaque))
 	{
 	  if (dependent_alias_template_spec_p (t, nt_opaque)
-	      && (!(flags & STF_STRIP_DEPENDENT)
-		  || any_dependent_type_attributes_p (DECL_ATTRIBUTES
-						      (TYPE_NAME (t)))))
+	      && !(flags & STF_STRIP_DEPENDENT))
 	    /* DR 1558: However, if the template-id is dependent, subsequent
 	       template argument substitution still applies to the template-id.  */
 	    return t;

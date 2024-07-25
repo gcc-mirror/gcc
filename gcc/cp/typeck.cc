@@ -1658,8 +1658,17 @@ structural_comptypes (tree t1, tree t2, int strict)
     return false;
 
  check_alias:
-  if (comparing_dependent_aliases)
+  if (comparing_dependent_aliases
+      && (typedef_variant_p (t1) || typedef_variant_p (t2)))
     {
+      tree dep1 = dependent_opaque_alias_p (t1) ? t1 : NULL_TREE;
+      tree dep2 = dependent_opaque_alias_p (t2) ? t2 : NULL_TREE;
+      if ((dep1 || dep2)
+	  && (!(dep1 && dep2)
+	      || !comp_type_attributes (DECL_ATTRIBUTES (TYPE_NAME (dep1)),
+					DECL_ATTRIBUTES (TYPE_NAME (dep2)))))
+	return false;
+
       /* Don't treat an alias template specialization with dependent
 	 arguments as equivalent to its underlying type when used as a
 	 template argument; we need them to be distinct so that we
@@ -1667,8 +1676,8 @@ structural_comptypes (tree t1, tree t2, int strict)
 	 time.  And aliases can't be equivalent without being ==, so
 	 we don't need to look any deeper.  */
       ++processing_template_decl;
-      tree dep1 = dependent_alias_template_spec_p (t1, nt_transparent);
-      tree dep2 = dependent_alias_template_spec_p (t2, nt_transparent);
+      dep1 = dependent_alias_template_spec_p (t1, nt_transparent);
+      dep2 = dependent_alias_template_spec_p (t2, nt_transparent);
       --processing_template_decl;
       if ((dep1 || dep2) && dep1 != dep2)
 	return false;
