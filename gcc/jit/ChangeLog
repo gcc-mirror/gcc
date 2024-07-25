@@ -1,3 +1,8 @@
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.cc (jit::playback_context::compile) Add a trailing
+	null to argvec.
+
 2024-07-05  Antoni Boucher  <bouanto@zoho.com>
 
 	* jit-common.h: Add array_type class.

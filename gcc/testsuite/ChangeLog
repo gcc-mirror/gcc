@@ -1,3 +1,94 @@
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/diagnostic-format-sarif-file-Wbidi-chars.c: Verify
+	that we have an "annotations" property for the labelled
+	ranges (§3.28.6).
+
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/diagnostic-format-sarif-file-1.c: Verify that we have
+	"startTimeUtc" and "endTimeUtc" properties of the correct form.
+
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/diagnostic-format-sarif-file-1.c: Verify that we
+	have an "arguments" property (§3.20.2).
+
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/diagnostic-format-sarif-file-1.c: Verify that we have
+	a "workingDirectory" property.
+
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/diagnostic-format-sarif-file-Wbidi-chars.c: Verify
+	that we have a property bag with property "gcc/escapeNonAscii": true.
+	Verify that we have a "rendered" property for a snippet.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c: Include
+	"text-range-label.h".
+
+2024-07-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/116071
+	* g++.dg/parse/pr116071.C: New test.
+
+2024-07-24  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/116037
+	* gcc.dg/torture/pr116037.c: New test
+
+2024-07-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/116034
+	PR testsuite/116061
+	* gcc.dg/pr116034.c (g): Change type from int to unsigned short.
+	(foo): Guard memmove call on __SIZEOF_SHORT__ == 2.
+
+2024-07-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109997
+	* g++.dg/ext/is_assignable1.C: New test.
+
+2024-07-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116057
+	* gcc.dg/torture/pr116057.c: New testcase.
+
+2024-07-24  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Revert:
+	2024-07-24  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* gcc.target/aarch64/cmp_csel_fuse.c: New test.
+	* gcc.target/aarch64/cmp_cset_fuse.c: Likewise.
+
+2024-07-24  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* gcc.target/aarch64/cmp_csel_fuse.c: New test.
+	* gcc.target/aarch64/cmp_cset_fuse.c: Likewise.
+
+2024-07-24  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	PR target/116035
+	* gcc.target/riscv/pr116035-1.c: New test.
+	* gcc.target/riscv/pr116035-2.c: New test.
+
+2024-07-24  Lingling Kong  <lingling.kong@intel.com>
+
+	PR target/115978
+	* gcc.target/i386/pr115978-1.c: New test.
+	* gcc.target/i386/pr115978-2.c: Ditto.
+
+2024-07-24  Pan Li  <pan2.li@intel.com>
+
+	PR target/115961
+	* g++.dg/torture/pr115961-run-1.C: New test.
+
+2024-07-24  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/115877
+	* gcc.dg/torture/pr115877.c: New test.
+
 2024-07-23  Andi Kleen  <ak@linux.intel.com>
 
 	* lib/target-supports.exp:

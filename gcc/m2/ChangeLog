@@ -1,3 +1,8 @@
+2024-07-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2StateCheck.mod (GenerateError): Add
+	symbol name to the error message.
+
 2024-07-23  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/116048

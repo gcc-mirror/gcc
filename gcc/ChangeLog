@@ -1,3 +1,551 @@
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-sarif.cc (sarif_builder::make_locations_arr):
+	Don't add entirely empty location objects, such as for
+	UNKNOWN_LOCATION.
+	(test_sarif_diagnostic_context::test_sarif_diagnostic_context):
+	Add param "main_input_filename".
+	(selftest::test_simple_log): Provide above param.  Verify that
+	"locations" is empty.
+	(selftest::test_simple_log_2): New.
+	(selftest::diagnostic_format_sarif_cc_tests): Call it.
+
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-sarif.cc (sarif_builder::flush_to_object):
+	New, using code moved from...
+	(sarif_builder::end_group): ...here.
+	(class selftest::test_sarif_diagnostic_context): New.
+	(selftest::test_simple_log): New.
+	(selftest::diagnostic_format_sarif_cc_tests): Call it.
+	* json.h (json::object::is_empty): New.
+	* selftest-diagnostic.cc (test_diagnostic_context::report): New.
+	* selftest-diagnostic.h (test_diagnostic_context::report): New
+	decl.
+	* selftest-json.cc (selftest::assert_json_string_eq): New.
+	(selftest::expect_json_object_with_string_property): New.
+	(selftest::assert_json_string_property_eq): New.
+	* selftest-json.h (selftest::assert_json_string_eq): New decl.
+	(ASSERT_JSON_STRING_EQ): New macro.
+	(selftest::expect_json_object_with_string_property): New decl.
+	(EXPECT_JSON_OBJECT_WITH_STRING_PROPERTY): New macro.
+
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-sarif.cc
+	(sarif_builder::make_location_object): Add "annotations" property if
+	there are any labelled ranges (§3.28.6).
+	(selftest::test_make_location_object): Verify annotations are added
+	to location_obj.
+	* json.h (json::array::size): New.
+	(json::array::operator[]): New.
+	* selftest-json.cc
+	(selftest::expect_json_object_with_array_property): New.
+	* selftest-json.h
+	(selftest::expect_json_object_with_array_property): New decl.
+	(EXPECT_JSON_OBJECT_WITH_ARRAY_PROPERTY): New macro.
+
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-sarif.cc
+	(make_date_time_string_for_current_time): New.
+	(sarif_invocation::sarif_invocation): Set "startTimeUtc"
+	property (§3.20.7).
+	(sarif_invocation::prepare_to_flush): Set "endTimeUtc"
+	property (§3.20.8).
+
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-sarif.cc (sarif_invocation::sarif_invocation):
+	Add "original_argv" param and use it to populate "arguments"
+	property (§3.20.2).
+	(sarif_builder::sarif_builder): Pass argv to m_invocation_obj's
+	ctor.
+	* diagnostic.cc (diagnostic_context::initialize): Initialize
+	m_original_argv.
+	(diagnostic_context::finish): Clean up m_original_argv.
+	(diagnostic_context::set_original_argv): New.
+	* diagnostic.h: Include "unique-argv.h".
+	(diagnostic_context::set_original_argv): New decl.
+	(diagnostic_context::get_original_argv): New decl.
+	(diagnostic_context::m_original_argv): New field.
+	* toplev.cc: Include "unique-argv.h".
+	(general_init): Add "original_argv" param and move it to global_dc.
+	(toplev::main): Stash a copy of the original argv before expansion,
+	and pass it to general_init for use by SARIF output.
+	* unique-argv.h: New file.
+
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-sarif.cc
+	(sarif_builder::make_artifact_location_object): Make public.
+	(sarif_invocation::sarif_invocation): Add param "builder".
+	Use it to potentially populate the "workingDirectory" property
+	with the result of pwd (§3.20.19).
+	(sarif_builder::sarif_builder): Pass *this to m_invocation_obj's
+	ctor.
+
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* text-range-label.h: New file, taking class text_range_label from
+	gcc-rich-location.h.
+
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Add selftest-json.o.
+	* diagnostic-format-sarif.cc: Include "selftest.h",
+	"selftest-diagnostic.h", "selftest-diagnostic-show-locus.h",
+	"selftest-json.h", and "text-range-label.h".
+	(class content_renderer): New.
+	(sarif_builder::m_rules_arr): Convert to std::unique_ptr.
+	(sarif_builder::make_location_object): Add class
+	escape_nonascii_renderer.  If rich_loc.escape_on_output_p (),
+	pass a nonnull escape_nonascii_renderer to
+	maybe_make_physical_location_object as its snippet_renderer, and
+	add a property bag property "gcc/escapeNonAscii" to the SARIF
+	location object.  For other overloads of make_location_object,
+	pass nullptr for the snippet_renderer.
+	(sarif_builder::maybe_make_region_object_for_context): Add
+	"snippet_renderer" param and pass it to
+	maybe_make_artifact_content_object.
+	(sarif_builder::make_tool_object): Drop "const".
+	(sarif_builder::make_driver_tool_component_object): Likewise.
+	Use typesafe unique_ptr variant of object::set for setting "rules"
+	property on driver_obj.
+	(sarif_builder::maybe_make_artifact_content_object): Add param "r"
+	and use it to potentially set the "rendered" property (§3.3.4).
+	(selftest::test_make_location_object): New.
+	(selftest::diagnostic_format_sarif_cc_tests): New.
+	* diagnostic-show-locus.cc: Include "text-range-label.h" and
+	"selftest-diagnostic-show-locus.h".
+	(selftests::diagnostic_show_locus_fixture::diagnostic_show_locus_fixture):
+	New.
+	(selftests::test_layout_x_offset_display_utf8): Use
+	diagnostic_show_locus_fixture to simplify and consolidate setup
+	code.
+	(selftests::test_diagnostic_show_locus_one_liner): Likewise.
+	(selftests::test_one_liner_colorized_utf8): Likewise.
+	(selftests::test_diagnostic_show_locus_one_liner_utf8): Likewise.
+	* gcc-rich-location.h (class text_range_label): Move to new file
+	text-range-label.h.
+	* selftest-diagnostic-show-locus.h: New file, based on material in
+	diagnostic-show-locus.cc.
+	* selftest-json.cc: New file.
+	* selftest-json.h: New file.
+	* selftest-run-tests.cc (selftest::run_tests): Call
+	selftest::diagnostic_format_sarif_cc_tests.
+	* selftest.h (selftest::diagnostic_format_sarif_cc_tests): New decl.
+
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-json.cc: Include "make-unique.h".
+	(json_output_format::m_toplevel_array): Convert to
+	std::unique_ptr.
+	(json_output_format::json_output_format): Update accordingly.
+	(json_output_format::~json_output_format): Remove manual
+	"delete" of field.
+	(json_from_expanded_location): Convert return type to
+	std::unique_ptr.
+	(json_from_location_range): Likewise.  Use nullptr rather than
+	NULL.
+	(json_from_fixit_hint): Convert return type to std::unique_ptr.
+	(json_from_metadata): Likewise.
+	(make_json_for_path): Likewise.
+	(json_output_format::on_end_diagnostic): Use std::unique_ptr
+	throughout.
+	(json_file_output_format::~json_file_output_format): Use nullptr.
+	(selftest::test_unknown_location): Update to use std::unique_ptr.
+	(selftest::test_bad_endpoints): Likewise.  Replace NULL with
+	nullptr.
+
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-sarif.cc: Include "make-unique.h".  Convert
+	raw pointers to std::unique_ptr throughout to indicate ownership,
+	adding comments in the few places where pointers are borrowed.
+	Use typesafe unique_ptr variants of json::object::set and
+	json::array::append throughout to make types of properties more
+	explicit, whilst using "auto" to reduce typing.
+	Use "nullptr" rather than "NULL" throughout.
+	* diagnostic-format-sarif.h (make_sarif_logical_location_object):
+	Use std::unique_ptr for return type.
+
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-json.cc: Define INCLUDE_MEMORY.
+	* diagnostic-format-sarif.cc: Likewise.
+	* dumpfile.cc: Likewise.
+	* gcov.cc: Likewise.
+	* json.cc: Likewise.  Include "make-unique.h".
+	(selftest::test_formatting): Exercise overloads of
+	array::append and object::set that use unique_ptr.
+	* json.h: Require INCLUDE_MEMORY to have been defined.
+	(json::object::set): Add a template to add a family of overloads
+	taking a std::unique_ptr<JsonType>
+	(json::array::append): Likewise.
+	* optinfo-emit-json.cc: Define INCLUDE_MEMORY.
+	* optinfo.cc: Likewise.
+	* timevar.cc: Likewise.
+	* toplev.cc: Likewise.
+	* tree-diagnostic-client-data-hooks.cc: Likewise.
+
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-json.cc (json_from_expanded_location): Make
+	"static". Pass param "context" by reference, as it cannot be null.
+	(json_from_location_range): Likewise for param "context".
+	(json_from_fixit_hint): Likewise.
+	(make_json_for_path): Likewise.
+	(json_output_format::on_end_diagnostic): Update for above changes.
+	(diagnostic_output_format_init_json::diagnostic_output_format_init_json):
+	Pass param "context" by reference, as it cannot be null.
+	(diagnostic_output_format_init_json_stderr): Likewise.
+	(diagnostic_output_format_init_json_file): Likewise.
+	(selftest::test_unknown_location): Update for above changes.
+	(selftest::test_bad_endpoints): Likewise.
+	* diagnostic-format-sarif.cc (sarif_builder::m_context): Convert
+	from pointer to reference.
+	(sarif_invocation::add_notification_for_ice): Convert both params
+	from pointers to references.
+	(sarif_invocation::prepare_to_flush): Likewise for "context".
+	(sarif_result::on_nested_diagnostic): Likewise for "context" and
+	"builder".
+	(sarif_result::on_diagram): Likewise.
+	(sarif_ice_notification::sarif_ice_notification): Likewise.
+	(sarif_builder::sarif_builder): Likewise for "context".
+	(sarif_builder::end_diagnostic): Likewise.
+	(sarif_builder::emit_diagram): Likewise.
+	(sarif_builder::make_result_object): Likewise.
+	(make_reporting_descriptor_object_for_warning): Likewise.
+	(sarif_builder::make_locations_arr): Update for change to m_context.
+	(sarif_builder::get_sarif_column): Likewise.
+	(sarif_builder::make_message_object_for_diagram): Convert "context"
+	from pointer to reference.
+	(sarif_builder::make_tool_object): Likewise for "m_context".
+	(sarif_builder::make_driver_tool_component_object): Likewise.
+	(sarif_builder::get_or_create_artifact): Likewise.
+	(sarif_builder::maybe_make_artifact_content_object): Likewise.
+	(sarif_builder::get_source_lines): Likewise.
+	(sarif_output_format::on_end_diagnostic): Update for above changes.
+	(sarif_output_format::on_diagram): Likewise.
+	(sarif_output_format::sarif_output_format): Likewise.
+	(diagnostic_output_format_init_sarif): Convert param "context"
+	from pointer to reference.
+	(diagnostic_output_format_init_sarif_stderr): Likewise.
+	(diagnostic_output_format_init_sarif_file): Likewise.
+	(diagnostic_output_format_init_sarif_stream): Likewise.
+	* diagnostic.cc (diagnostic_output_format_init): Likewise.
+	* diagnostic.h (diagnostic_output_format_init): Likewise.
+	(diagnostic_output_format_init_json_stderr): Likewise.
+	(diagnostic_output_format_init_json_file): Likewise.
+	(diagnostic_output_format_init_sarif_stderr): Likewise.
+	(diagnostic_output_format_init_sarif_file): Likewise.
+	(diagnostic_output_format_init_sarif_stream): Likewise.
+	(json_from_expanded_location): Delete decl.
+	* gcc.cc (driver_handle_option): Update for change to
+	diagnostic_output_format_init.
+	* opts.cc (common_handle_option): Likewise.
+
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-sarif.cc: Introduce subclasses of sarif_object
+	for all aspects of the spec that we're using.  Replace almost all
+	usage of json::object with uses of these subclasses, the only
+	remaining use of json::object being for originalUriBaseIds, as per
+	SARIF 2.1.0 §3.14.14.  This stronger typing makes it considerably
+	easier to maintain validity against the schema.
+	* diagnostic-format-sarif.h (class sarif_logical_location): New.
+	(make_sarif_logical_location_object): Convert return type from
+	json::object * to sarif_logical_location *.
+
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcov.cc (output_intermediate_json_line): Use
+	json::object::set_integer to avoid naked "new".
+
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-sarif.cc (sarif_artifact::populate_roles):
+	Avoid naked "new" by using json::array::append_string.
+	(sarif_builder::maybe_make_kinds_array): Likewise.
+	* json.cc (json::array::append_string): New.
+	(selftest::test_writing_arrays): Use it.
+	* json.h (json::array::append_string): New decl.
+	* optinfo-emit-json.cc (optrecord_json_writer::pass_to_json):
+	Avoid naked "new" by using json::array::append_string.
+	(optrecord_json_writer::optinfo_to_json): Likewise.
+
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* json.cc (value::dump): New overload, taking no params.
+	* json.h (value::dump): New decl.
+
+2024-07-24  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/116037
+	* ext-dce.cc (ext_dce_process_sets): Note if we ever skip a dest
+	and return that info explicitly.
+	(ext_dce_process_uses): If a set was skipped, then consider all bits
+	in every input as live.  Do not try to optimize away an extension if
+	we skipped processing a destination in the same insn.  Restore code
+	to make shift/rotate count fully live.
+	(ext_dce_process_bb): Handle API changes for ext_dce_process_sets.
+
+2024-07-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc
+	(aarch64_set_asm_isa_flags): Store a second uint64_t value.
+	* config/aarch64/aarch64-opts.h
+	(aarch64_feature_flags): Switch typedef to bbitmap<2>.
+	* config/aarch64/aarch64.cc
+	(aarch64_set_current_function): Extract isa mode from val[0].
+	* config/aarch64/aarch64.h
+	(aarch64_get_asm_isa_flags): Load a second uint64_t value.
+	(aarch64_get_isa_flags): Ditto.
+	(aarch64_asm_isa_flags): Ditto.
+	(aarch64_isa_flags): Ditto.
+	(HANDLE): Use bbitmap<2>::from_index to initialise flags.
+	(AARCH64_FL_ISA_MODES): Do arithmetic on integer type.
+	(AARCH64_ISA_MODE): Extract value from bbitmap<2> array.
+	* config/aarch64/aarch64.opt
+	(aarch64_asm_isa_flags_1): New variable.
+	(aarch64_isa_flags_1): Ditto.
+
+2024-07-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* bbitmap.h: New file.
+
+2024-07-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-feature-deps.h
+	(get_flags_off): Construct aarch64_feature_flags (0) explicitly.
+
+2024-07-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-c.cc
+	(aarch64_define_unconditional_macros): Use TARGET_V8R macro.
+	(aarch64_update_cpp_builtins): Use TARGET_* macros.
+	* config/aarch64/aarch64.h (AARCH64_HAVE_ISA): New macro.
+	(AARCH64_ISA_SM_OFF, AARCH64_ISA_SM_ON, AARCH64_ISA_ZA_ON)
+	(AARCH64_ISA_V8A, AARCH64_ISA_V8_1A, AARCH64_ISA_CRC)
+	(AARCH64_ISA_FP, AARCH64_ISA_SIMD, AARCH64_ISA_LSE)
+	(AARCH64_ISA_RDMA, AARCH64_ISA_V8_2A, AARCH64_ISA_F16)
+	(AARCH64_ISA_SVE, AARCH64_ISA_SVE2, AARCH64_ISA_SVE2_AES)
+	(AARCH64_ISA_SVE2_BITPERM, AARCH64_ISA_SVE2_SHA3)
+	(AARCH64_ISA_SVE2_SM4, AARCH64_ISA_SME, AARCH64_ISA_SME_I16I64)
+	(AARCH64_ISA_SME_F64F64, AARCH64_ISA_SME2, AARCH64_ISA_V8_3A)
+	(AARCH64_ISA_DOTPROD, AARCH64_ISA_AES, AARCH64_ISA_SHA2)
+	(AARCH64_ISA_V8_4A, AARCH64_ISA_SM4, AARCH64_ISA_SHA3)
+	(AARCH64_ISA_F16FML, AARCH64_ISA_RCPC, AARCH64_ISA_RCPC8_4)
+	(AARCH64_ISA_RNG, AARCH64_ISA_V8_5A, AARCH64_ISA_TME)
+	(AARCH64_ISA_MEMTAG, AARCH64_ISA_V8_6A, AARCH64_ISA_I8MM)
+	(AARCH64_ISA_F32MM, AARCH64_ISA_F64MM, AARCH64_ISA_BF16)
+	(AARCH64_ISA_SB, AARCH64_ISA_RCPC3, AARCH64_ISA_V8R)
+	(AARCH64_ISA_PAUTH, AARCH64_ISA_V8_7A, AARCH64_ISA_V8_8A)
+	(AARCH64_ISA_V8_9A, AARCH64_ISA_V9A, AARCH64_ISA_V9_1A)
+	(AARCH64_ISA_V9_2A, AARCH64_ISA_V9_3A, AARCH64_ISA_V9_4A)
+	(AARCH64_ISA_MOPS, AARCH64_ISA_LS64, AARCH64_ISA_CSSC)
+	(AARCH64_ISA_D128, AARCH64_ISA_THE, AARCH64_ISA_GCS): Remove.
+	(TARGET_BASE_SIMD, TARGET_SIMD, TARGET_FLOAT)
+	(TARGET_NON_STREAMING, TARGET_STREAMING, TARGET_ZA, TARGET_SHA2)
+	(TARGET_SHA3, TARGET_AES, TARGET_SM4, TARGET_F16FML)
+	(TARGET_CRC32, TARGET_LSE, TARGET_FP_F16INST)
+	(TARGET_SIMD_F16INST, TARGET_DOTPROD, TARGET_SVE, TARGET_SVE2)
+	(TARGET_SVE2_AES, TARGET_SVE2_BITPERM, TARGET_SVE2_SHA3)
+	(TARGET_SVE2_SM4, TARGET_SME, TARGET_SME_I16I64)
+	(TARGET_SME_F64F64, TARGET_SME2, TARGET_ARMV8_3, TARGET_JSCVT)
+	(TARGET_FRINT, TARGET_TME, TARGET_RNG, TARGET_MEMTAG)
+	(TARGET_I8MM, TARGET_SVE_I8MM, TARGET_SVE_F32MM)
+	(TARGET_SVE_F64MM, TARGET_BF16_FP, TARGET_BF16_SIMD)
+	(TARGET_SVE_BF16, TARGET_PAUTH, TARGET_BTI, TARGET_MOPS)
+	(TARGET_LS64, TARGET_CSSC, TARGET_SB, TARGET_RCPC, TARGET_RCPC2)
+	(TARGET_RCPC3, TARGET_SIMD_RDMA, TARGET_ARMV9_4, TARGET_D128)
+	(TARGET_THE, TARGET_GCS): Redefine using AARCH64_HAVE_ISA.
+	(TARGET_V8R, TARGET_V9A): New.
+	* config/aarch64/aarch64.md (arch_enabled): Use TARGET_RCPC2.
+	* config/aarch64/iterators.md (GPI_I16): Use TARGET_FP_F16INST.
+	(GPF_F16): Ditto.
+	* config/aarch64/predicates.md
+	(aarch64_rcpc_memory_operand): Use TARGET_RCPC2.
+
+2024-07-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64.cc
+	(aarch64_valid_sysreg_name_p): Add bool cast.
+
+2024-07-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc
+	(aarch64_set_asm_isa_flags): Reorder, and add suffix to names.
+	* config/aarch64/aarch64.h
+	(aarch64_get_asm_isa_flags): Add "_0" suffix.
+	(aarch64_get_isa_flags): Ditto.
+	(aarch64_asm_isa_flags): Redefine using renamed uint64_t value.
+	(aarch64_isa_flags): Ditto.
+	* config/aarch64/aarch64.opt:
+	(aarch64_asm_isa_flags): Rename to...
+	(aarch64_asm_isa_flags_0): ...this, and change to uint64_t.
+	(aarch64_isa_flags): Rename to...
+	(aarch64_isa_flags_0): ...this, and change to uint64_t.
+
+2024-07-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc
+	(aarch64_handle_option): Use new macro.
+	* config/aarch64/aarch64.cc
+	(aarch64_override_options_internal): Ditto.
+	(aarch64_option_print): Ditto.
+	(aarch64_set_current_function): Ditto.
+	(aarch64_can_inline_p): Ditto.
+	(aarch64_declare_function_name): Ditto.
+	(aarch64_start_file): Ditto.
+	* config/aarch64/aarch64.h (aarch64_get_asm_isa_flags): New
+	(aarch64_get_isa_flags): New.
+	(aarch64_asm_isa_flags): Use new macro.
+	(aarch64_isa_flags): Ditto.
+
+2024-07-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-opts.h: Add aarch64_isa_mode typedef.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_gen_callee_cookie): Use aarch64_isa_mode parameter.
+	(aarch64_sme_vq_immediate): Ditto.
+	* config/aarch64/aarch64.cc
+	(aarch64_fntype_pstate_sm): Use aarch64_isa_mode values.
+	(aarch64_fntype_pstate_za): Ditto.
+	(aarch64_fndecl_pstate_sm): Ditto.
+	(aarch64_fndecl_pstate_za): Ditto.
+	(aarch64_fndecl_isa_mode): Ditto.
+	(aarch64_cfun_incoming_pstate_sm): Ditto.
+	(aarch64_cfun_enables_pstate_sm): Ditto.
+	(aarch64_call_switches_pstate_sm): Ditto.
+	(aarch64_gen_callee_cookie): Ditto.
+	(aarch64_callee_isa_mode): Ditto.
+	(aarch64_insn_callee_abi): Ditto.
+	(aarch64_sme_vq_immediate): Ditto.
+	(aarch64_add_offset_temporaries): Ditto.
+	(aarch64_add_offset): Ditto.
+	(aarch64_add_sp): Ditto.
+	(aarch64_sub_sp): Ditto.
+	(aarch64_guard_switch_pstate_sm): Ditto.
+	(aarch64_switch_pstate_sm): Ditto.
+	(aarch64_init_cumulative_args): Ditto.
+	(aarch64_allocate_and_probe_stack_space): Ditto.
+	(aarch64_expand_prologue): Ditto.
+	(aarch64_expand_epilogue): Ditto.
+	(aarch64_start_call_args): Ditto.
+	(aarch64_expand_call): Ditto.
+	(aarch64_end_call_args): Ditto.
+	(aarch64_set_current_function): Ditto, with added conversions.
+	(aarch64_handle_attr_arch): Avoid macro with changed type.
+	(aarch64_handle_attr_cpu): Ditto.
+	(aarch64_handle_attr_isa_flags): Ditto.
+	(aarch64_switch_pstate_sm_for_landing_pad):
+	Use arch64_isa_mode values.
+	(aarch64_switch_pstate_sm_for_jump): Ditto.
+	(pass_switch_pstate_sm::gate): Ditto.
+	* config/aarch64/aarch64.h
+	(AARCH64_ISA_MODE_{SM_ON|SM_OFF|ZA_ON}): New macros.
+	(AARCH64_FL_SM_STATE): Mark as possibly unused.
+	(AARCH64_ISA_MODE_SM_STATE): New aarch64_isa_mode mask.
+	(AARCH64_DEFAULT_ISA_MODE): New aarch64_isa_mode value.
+	(AARCH64_FL_DEFAULT_ISA_MODE): Define using above value.
+	(AARCH64_ISA_MODE): Change type to aarch64_isa_mode.
+	(arm_pcs): Use aarch64_isa_mode value.
+
+2024-07-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64.cc
+	(aarch64_override_options): Remove temporary variable.
+
+2024-07-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64.h (DEF_AARCH64_ISA_MODE): Move to...
+	* config/aarch64/aarch64-opts.h (DEF_AARCH64_ISA_MODE): ...here.
+
+2024-07-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64.cc
+	(aarch64_tune_flags): Remove unused global variable.
+	(aarch64_override_options_internal): Remove dead assignment.
+
+2024-07-24  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* config/rs6000/rs6000-builtins.def: s/iorc/iorn/. s/andc/andn/
+	for the code.
+	* config/rs6000/rs6000-string.cc (expand_cmp_vec_sequence): Update
+	to iorn.
+	* config/rs6000/rs6000.md (andc<mode>3): Rename to ...
+	(andn<mode>3): This.
+	(iorc<mode>3): Rename to ...
+	(iorn<mode>3): This.
+	* doc/md.texi: Update documentation for the rename.
+	* internal-fn.def (BIT_ANDC): Rename to ...
+	(BIT_ANDN): This.
+	(BIT_IORC): Rename to ...
+	(BIT_IORN): This.
+	* optabs.def (andc_optab): Rename to ...
+	(andn_optab): This.
+	(iorc_optab): Rename to ...
+	(iorn_optab): This.
+	* gimple-isel.cc (gimple_expand_vec_cond_expr): Update for the
+	renamed internal functions, ANDC/IORC to ANDN/IORN.
+
+2024-07-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* doc/install.texi (GM2-prerequisite): Add GNU flex.
+
+2024-07-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116057
+	* tree-ssa-ccp.cc (likely_value): Also walk CTORs in stmt
+	operands to look for constants.
+
+2024-07-24  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Revert:
+	2024-07-24  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* config/aarch64/aarch64.cc (aarch_macro_fusion_pair_p): Implement
+	fusion logic.
+	* config/aarch64/aarch64-fusion-pairs.def (cmp+csel): New entry.
+	(cmp+cset): Likewise.
+	* config/aarch64/tuning_models/neoversev2.h: Enable logic in
+	field fusible_ops.
+
+2024-07-24  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* config/aarch64/aarch64.cc (aarch_macro_fusion_pair_p): Implement
+	fusion logic.
+	* config/aarch64/aarch64-fusion-pairs.def (cmp+csel): New entry.
+	(cmp+cset): Likewise.
+	* config/aarch64/tuning_models/neoversev2.h: Enable logic in
+	field fusible_ops.
+
+2024-07-24  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	PR target/116035
+	* config/riscv/bitmanip.md: Disable zero_extendsidi2_bitmanip
+	for XTheadMemIdx.
+
+2024-07-24  Lingling Kong  <lingling.kong@intel.com>
+
+	PR target/115978
+	* config/i386/driver-i386.cc (host_detect_local_cpu):  Enable
+	APX_F only for 64-bit codegen.
+	* config/i386/i386-options.cc (DEF_PTA):  Skip PTA_APX_F if
+	not in 64-bit mode.
+
+2024-07-24  Pan Li  <pan2.li@intel.com>
+
+	PR target/115961
+	* internal-fn.cc (type_strictly_matches_mode_p): Add new func
+	impl to check type strictly matches mode or not.
+	(type_pair_strictly_matches_mode_p): Ditto but for tree type
+	pair.
+	(direct_internal_fn_supported_p): Add above check for the tree
+	type pair.
+
 2024-07-23  Mark Harmstone  <mark@harmstone.com>
 
 	* dwarf2codeview.cc (get_type_num_reference_type): Handle rvalue refs.
