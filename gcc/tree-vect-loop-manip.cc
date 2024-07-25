@@ -3271,7 +3271,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   bool skip_vector = (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
 		      ? maybe_lt (LOOP_VINFO_INT_NITERS (loop_vinfo),
 				  bound_prolog + bound_epilog)
-		      : (!LOOP_REQUIRES_VERSIONING (loop_vinfo)
+		      : (!LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo)
 			 || vect_epilogues));
 
   /* Epilog loop must be executed if the number of iterations for epilog
