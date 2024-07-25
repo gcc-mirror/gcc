@@ -1,3 +1,12 @@
+2024-07-24  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	Backported from master:
+	2024-07-24  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	PR target/116035
+	* config/riscv/bitmanip.md: Disable zero_extendsidi2_bitmanip
+	for XTheadMemIdx.
+
 2024-07-23  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

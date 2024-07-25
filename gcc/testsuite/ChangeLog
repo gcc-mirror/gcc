@@ -1,3 +1,22 @@
+2024-07-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-07-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/116034
+	PR testsuite/116061
+	* gcc.dg/pr116034.c (g): Change type from int to unsigned short.
+	(foo): Guard memmove call on __SIZEOF_SHORT__ == 2.
+
+2024-07-24  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	Backported from master:
+	2024-07-24  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	PR target/116035
+	* gcc.target/riscv/pr116035-1.c: New test.
+	* gcc.target/riscv/pr116035-2.c: New test.
+
 2024-07-23  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	Backported from master:
