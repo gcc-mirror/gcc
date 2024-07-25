@@ -468,7 +468,7 @@ namespace __expected
 			      std::move(__x)._M_unex);
 	}
 
-      template<typename _Up = _Tp>
+      template<typename _Up = remove_cv_t<_Tp>>
 	requires (!is_same_v<remove_cvref_t<_Up>, expected>)
 	  && (!is_same_v<remove_cvref_t<_Up>, in_place_t>)
 	  && is_constructible_v<_Tp, _Up>
@@ -582,7 +582,7 @@ namespace __expected
 	return *this;
       }
 
-      template<typename _Up = _Tp>
+      template<typename _Up = remove_cv_t<_Tp>>
 	requires (!is_same_v<expected, remove_cvref_t<_Up>>)
 	      && (!__expected::__is_unexpected<remove_cvref_t<_Up>>)
 	      && is_constructible_v<_Tp, _Up> && is_assignable_v<_Tp&, _Up>
@@ -818,7 +818,7 @@ namespace __expected
 	return std::move(_M_unex);
       }
 
-      template<typename _Up>
+      template<typename _Up = remove_cv_t<_Tp>>
 	constexpr _Tp
 	value_or(_Up&& __v) const &
 	noexcept(__and_v<is_nothrow_copy_constructible<_Tp>,
@@ -832,7 +832,7 @@ namespace __expected
 	  return static_cast<_Tp>(std::forward<_Up>(__v));
 	}
 
-      template<typename _Up>
+      template<typename _Up = remove_cv_t<_Tp>>
 	constexpr _Tp
 	value_or(_Up&& __v) &&
 	noexcept(__and_v<is_nothrow_move_constructible<_Tp>,

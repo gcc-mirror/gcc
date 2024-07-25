@@ -868,7 +868,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Converting constructors for engaged optionals.
 #ifdef _GLIBCXX_USE_CONSTRAINTS_FOR_OPTIONAL
-      template<typename _Up = _Tp>
+      template<typename _Up = remove_cv_t<_Tp>>
 	requires (!is_same_v<optional, remove_cvref_t<_Up>>)
 	  && (!is_same_v<in_place_t, remove_cvref_t<_Up>>)
 	  && is_constructible_v<_Tp, _Up>
@@ -919,7 +919,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _Base(std::in_place, __il, std::forward<_Args>(__args)...)
 	{ }
 #else
-      template<typename _Up = _Tp,
+      template<typename _Up = remove_cv_t<_Tp>,
 	       _Requires<__not_self<_Up>, __not_tag<_Up>,
 			 is_constructible<_Tp, _Up>,
 			 is_convertible<_Up, _Tp>,
@@ -929,7 +929,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	noexcept(is_nothrow_constructible_v<_Tp, _Up>)
 	: _Base(std::in_place, std::forward<_Up>(__t)) { }
 
-      template<typename _Up = _Tp,
+      template<typename _Up = remove_cv_t<_Tp>,
 	       _Requires<__not_self<_Up>, __not_tag<_Up>,
 			 is_constructible<_Tp, _Up>,
 			 __not_<is_convertible<_Up, _Tp>>,
@@ -1017,7 +1017,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
-      template<typename _Up = _Tp>
+      template<typename _Up = remove_cv_t<_Tp>>
 #ifdef _GLIBCXX_USE_CONSTRAINTS_FOR_OPTIONAL
 	requires (!is_same_v<optional, remove_cvref_t<_Up>>)
 	  && (!(is_scalar_v<_Tp> && is_same_v<_Tp, decay_t<_Up>>))
@@ -1242,7 +1242,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__throw_bad_optional_access();
       }
 
-      template<typename _Up>
+      template<typename _Up = remove_cv_t<_Tp>>
 	constexpr _Tp
 	value_or(_Up&& __u) const&
 	{
@@ -1255,7 +1255,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return static_cast<_Tp>(std::forward<_Up>(__u));
 	}
 
-      template<typename _Up>
+      template<typename _Up = remove_cv_t<_Tp>>
 	constexpr _Tp
 	value_or(_Up&& __u) &&
 	{
