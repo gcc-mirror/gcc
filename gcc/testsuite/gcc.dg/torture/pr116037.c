@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-require-effective-target int32 } */
+/* { dg-require-effective-target int128 } */
 /* { dg-additional-options "-Wno-psabi" } */
 
 typedef __attribute__((__vector_size__ (64))) unsigned char VC;
