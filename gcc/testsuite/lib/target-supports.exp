@@ -12741,7 +12741,15 @@ proc check_effective_target_tail_call { } {
     return [check_no_messages_and_pattern tail_call ",SIBCALL" rtl-expand {
 	__attribute__((__noipa__)) void foo (void) { }
 	__attribute__((__noipa__)) void bar (void) { foo(); }
-    } {-O2 -fdump-rtl-expand-all}] ;# The "SIBCALL" note requires a detailed dump.
+    } {-fdump-rtl-expand-all}] ;# The "SIBCALL" note requires a detailed dump.
+}
+
+# Return 1 if the target can perform tail-calls for externals
+proc check_effective_target_external_tail_call { } {
+    return [check_no_messages_and_pattern tail_call ",SIBCALL" rtl-expand {
+	extern __attribute__((__noipa__)) void foo (void);
+	__attribute__((__noipa__)) void bar (void) { foo(); }
+    } {-fdump-rtl-expand-all}] ;# The "SIBCALL" note requires a detailed dump.
 }
 
 # Return 1 if the target can perform tail-call optimizations for structures
@@ -12751,9 +12759,9 @@ proc check_effective_target_struct_tail_call { } {
     return [check_no_messages_and_pattern tail_call ",SIBCALL" rtl-expand {
 	// C++
 	struct foo { int a, b; };
-	__attribute__((__noipa__)) struct foo foo (void) { return {}; }
+	extern __attribute__((__noipa__)) struct foo foo (void);
 	__attribute__((__noipa__)) struct foo bar (void) { return foo(); }
-    } {-O2 -fdump-rtl-expand-all}] ;# The "SIBCALL" note requires a detailed dump.
+    } {-fdump-rtl-expand-all}] ;# The "SIBCALL" note requires a detailed dump.
 }
 
 # Return 1 if the target's calling sequence or its ABI
