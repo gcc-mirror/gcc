@@ -22,7 +22,6 @@ test_ostream()
   ss << gt;
   VERIFY( ss.str() == "2000-01-01 00:00:13" );
 
-  gps_time<duration<float>> gtf = gt;
   ss.str("");
   ss.clear();
   ss << (gps_time<duration<long double>>(gt) + 20ms);

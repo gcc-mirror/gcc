@@ -156,6 +156,7 @@ namespace __detail
 namespace __detail
 {
   // An unspecified type returned by `chrono::local_time_format`.
+  // This is called `local-time-format-t` in the standard.
   template<typename _Duration>
     struct __local_time_fmt
     {
@@ -163,8 +164,6 @@ namespace __detail
       const string* _M_abbrev;
       const seconds* _M_offset_sec;
     };
-
-  struct __local_fmt_t;
 }
 /// @endcond
 
@@ -695,13 +694,34 @@ namespace __format
 	  using ::std::chrono::__detail::__utc_leap_second;
 	  using ::std::chrono::__detail::__local_time_fmt;
 
+	  basic_ostringstream<_CharT> __os;
+	  __os.imbue(_M_locale(__fc));
+
 	  if constexpr (__is_specialization_of<_Tp, __local_time_fmt>)
-	    return _M_format_to_ostream(__t._M_time, __fc, false);
+	    {
+	      // Format as "{:L%F %T}"
+	      auto __days = chrono::floor<chrono::days>(__t._M_time);
+	      __os << chrono::year_month_day(__days) << ' '
+		   << chrono::hh_mm_ss(__t._M_time - __days);
+
+	      // For __local_time_fmt the __is_neg flags says whether to
+	      // append " %Z" to the result.
+	      if (__is_neg)
+		{
+		  if (!__t._M_abbrev) [[unlikely]]
+		    __format::__no_timezone_available();
+		  else if constexpr (is_same_v<_CharT, char>)
+		    __os << ' ' << *__t._M_abbrev;
+		  else
+		    {
+		      __os << L' ';
+		      for (char __c : *__t._M_abbrev)
+			__os << __c;
+		    }
+		}
+	    }
 	  else
 	    {
-	      basic_ostringstream<_CharT> __os;
-	      __os.imbue(_M_locale(__fc));
-
 	      if constexpr (__is_specialization_of<_Tp, __utc_leap_second>)
 		__os << __t._M_date << ' ' << __t._M_time;
 	      else if constexpr (chrono::__is_time_point_v<_Tp>)
@@ -727,11 +747,11 @@ namespace __format
 		      __os << _S_plus_minus[1];
 		  __os << __t;
 		}
-
-	      auto __str = std::move(__os).str();
-	      return __format::__write_padded_as_spec(__str, __str.size(),
-						      __fc, _M_spec);
 	    }
+
+	  auto __str = std::move(__os).str();
+	  return __format::__write_padded_as_spec(__str, __str.size(),
+						  __fc, _M_spec);
 	}
 
       static constexpr const _CharT* _S_chars
@@ -2008,6 +2028,8 @@ namespace __format
 	       _FormatContext& __fc) const
 	{
 	  // Convert to __local_time_fmt with abbrev "TAI" and offset 0s.
+	  // We use __local_time_fmt and not sys_time (as the standard implies)
+	  // because %Z for sys_time would print "UTC" and we want "TAI" here.
 
 	  // Offset is 1970y/January/1 - 1958y/January/1
 	  constexpr chrono::days __tai_offset = chrono::days(4383);
@@ -2038,6 +2060,8 @@ namespace __format
 	       _FormatContext& __fc) const
 	{
 	  // Convert to __local_time_fmt with abbrev "GPS" and offset 0s.
+	  // We use __local_time_fmt and not sys_time (as the standard implies)
+	  // because %Z for sys_time would print "UTC" and we want "GPS" here.
 
 	  // Offset is 1980y/January/Sunday[1] - 1970y/January/1
 	  constexpr chrono::days __gps_offset = chrono::days(3657);
@@ -2104,7 +2128,7 @@ namespace __format
 	typename _FormatContext::iterator
 	format(const chrono::__detail::__local_time_fmt<_Duration>& __t,
 	       _FormatContext& __ctx) const
-	{ return _M_f._M_format(__t, __ctx); }
+	{ return _M_f._M_format(__t, __ctx, /* use %Z for {} */ true); }
 
     private:
       __format::__formatter_chrono<_CharT> _M_f;

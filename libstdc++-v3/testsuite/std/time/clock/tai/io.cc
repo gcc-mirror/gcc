@@ -16,6 +16,9 @@ test_ostream()
 
   auto s = format("{0:%F %T %Z} == {1:%F %T %Z}", st, tt);
   VERIFY( s == "2000-01-01 00:00:00 UTC == 2000-01-01 00:00:32 TAI" );
+
+  s = std::format("{:=>21}", tt);
+  VERIFY( s == "==2000-01-01 00:00:32" );
 }
 
 void
