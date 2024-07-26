@@ -1,3 +1,124 @@
+2024-07-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115403
+	PR c++/109753
+	* g++.dg/ext/pragma-target1.C: New test.
+
+2024-07-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115897
+	* g++.dg/cpp0x/alias-decl-79.C: Remove xfails.
+	* g++.dg/cpp0x/alias-decl-79a.C: New test.
+
+2024-07-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115897
+	* g++.dg/cpp0x/alias-decl-78.C: New test.
+	* g++.dg/cpp0x/alias-decl-79.C: New test.
+	* g++.dg/cpp0x/alias-decl-pr92206-1a.C: New test.
+
+2024-07-25  Carl Love  <cel@linux.ibm.com>
+
+	* gcc.target/powerpc/vsx-builtin-3.c: Remove test cases for the
+	__builtin_vsx_set_2df built-in.
+
+2024-07-25  Carl Love  <cel@linux.ibm.com>
+
+	* gcc.target/powerpc/vsx-builtin-3.c (do_cmp): Replace
+	__builtin_vsx_xvcmp{eq,gt,ge}{sp,dp} by vec_cmp{eq,gt,ge}
+	respectively and add explicit casts to vector {float,double}.
+	Add more testing code assigning result to vector boolean types.
+
+2024-07-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110343
+	* c-c++-common/raw-string-1.c: Use { c || c++11 } effective target,
+	remove c++ specific dg-options.
+	* c-c++-common/raw-string-2.c: Likewise.
+	* c-c++-common/raw-string-4.c: Likewise.
+	* c-c++-common/raw-string-5.c: Likewise.  Expect some diagnostics
+	only for non-c++26, for c++26 expect different.
+	* c-c++-common/raw-string-6.c: Use { c || c++11 } effective target,
+	remove c++ specific dg-options.
+	* c-c++-common/raw-string-11.c: Likewise.
+	* c-c++-common/raw-string-13.c: Likewise.
+	* c-c++-common/raw-string-14.c: Likewise.
+	* c-c++-common/raw-string-15.c: Use { c || c++11 } effective target,
+	change c++ specific dg-options to just -Wtrigraphs.
+	* c-c++-common/raw-string-16.c: Likewise.
+	* c-c++-common/raw-string-17.c: Use { c || c++11 } effective target,
+	remove c++ specific dg-options.
+	* c-c++-common/raw-string-18.c: Use { c || c++11 } effective target,
+	remove -std=c++11 from c++ specific dg-options.
+	* c-c++-common/raw-string-19.c: Likewise.
+	* g++.dg/cpp26/raw-string1.C: New test.
+	* g++.dg/cpp26/raw-string2.C: New test.
+
+2024-07-25  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/116039
+	* gcc.dg/torture/pr116039.c: New test.
+
+2024-07-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105361
+	* gfortran.dg/pr105361.f90: New test.
+
+2024-07-25  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	PR target/116033
+	* gcc.target/riscv/pr116033.c: New test.
+
+2024-07-25  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/110171
+	* g++.dg/coroutines/pr110171-1.C: New test.
+	* g++.dg/coroutines/pr110171.C: New test.
+
+2024-07-25  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/111728
+	* g++.dg/coroutines/pr111728.C: New test.
+
+2024-07-25  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.dg/torture/pr116037.c: Fix target selector.
+
+2024-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116079
+	* gcc.dg/torture/pr116079.c: New testcase.
+
+2024-07-25  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/arch-31.c: Add m to arch string and expect it.
+	* gcc.target/riscv/arch-32.c: Ditto.
+	* gcc.target/riscv/arch-37.c: Ditto.
+	* gcc.target/riscv/arch-38.c: Ditto.
+	* gcc.target/riscv/predef-14.c: Ditto.
+	* gcc.target/riscv/predef-15.c: Ditto.
+	* gcc.target/riscv/predef-16.c: Ditto.
+	* gcc.target/riscv/predef-26.c: Ditto.
+	* gcc.target/riscv/predef-27.c: Ditto.
+	* gcc.target/riscv/predef-32.c: Ditto.
+	* gcc.target/riscv/predef-33.c: Ditto.
+	* gcc.target/riscv/predef-36.c: Ditto.
+	* gcc.target/riscv/predef-37.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/pr111486.c: Add m to arch string.
+	* gcc.target/riscv/compare-debug-1.c: Ditto.
+	* gcc.target/riscv/compare-debug-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr116036.c: New test.
+
+2024-07-25  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/poly_licm-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/poly_licm-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/poly_licm-3.c: New test.
+
+2024-07-25  Lingling Kong  <lingling.kong@intel.com>
+
+	* gcc.target/i386/pr115749.c: New test.
+
 2024-07-24  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-c++-common/diagnostic-format-sarif-file-Wbidi-chars.c: Verify

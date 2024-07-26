@@ -1,3 +1,10 @@
+2024-07-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105361
+	* io/list_read.c (finish_list_read): Add a condition check for
+	a user defined derived type IO operation to avoid calling the
+	EOF error.
+
 2024-07-11  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/96992

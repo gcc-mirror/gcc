@@ -1,3 +1,142 @@
+2024-07-25  Carl Love  <cel@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin.cc (get_element_number,
+	altivec_expand_vec_set_builtin): Remove functions.
+	(rs6000_expand_builtin): Remove the if statement to call
+	altivec_expand_vec_set_builtin.
+	* config/rs6000/rs6000-builtins.def (__builtin_vsx_set_1ti,
+	__builtin_vsx_set_2df, __builtin_vsx_set_2di): Remove the
+	built-in definitions.
+	* config/rs6000/rs6000-gen-builtins.cc (struct attrinfo):
+	Remove the isset variable from the structure.
+	(parse_bif_attrs): Remove the uses of the isset variable.
+
+2024-07-25  Carl Love  <cel@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def (__builtin_vec_set_v1ti,
+	__builtin_vec_set_v2df, __builtin_vec_set_v2di): Remove built-in
+	definitions.
+	* config/rs6000/rs6000-c.cc (resolve_vec_insert): Remove the
+	handling for constant vec_insert position with
+	VECTOR_UNIT_VSX_P V1TImode, V2DFmode and V2DImode modes.
+
+2024-07-25  Carl Love  <cel@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def (__builtin_vsx_xvcmpeqsp,
+	__builtin_vsx_xvcmpgesp, __builtin_vsx_xvcmpgtsp): Remove
+	definitions.
+
+2024-07-25  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/116039
+	* ext-dce.cc (ext_dce_process_uses): Add some comments about concerns
+	with current code.  Mark additional bit groups as live when we have
+	an extension of a suitably promoted subreg.
+
+2024-07-25  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	PR target/116033
+	* config/riscv/thead.cc (th_memidx_classify_address_modify):
+	Fix mode test.
+
+2024-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116083
+	* tree-vect-slp.cc (vect_build_slp_tree): Do not allocate
+	a discovery fail node when we reached the discovery limit.
+	(vect_build_slp_instance): Terminate early when the
+	discovery limit is reached.
+
+2024-07-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/rtl.texi: Document the need to define INCLUDE_ARRAY before
+	including rtl-ssa.h.
+	* rtl-ssa.h: Likewise (in comment).
+	* config/aarch64/aarch64-cc-fusion.cc: Add INCLUDE_ARRAY.
+	* config/aarch64/aarch64-early-ra.cc: Likewise.
+	* config/riscv/riscv-avlprop.cc: Likewise.
+	* config/riscv/riscv-vsetvl.cc: Likewise.
+	* fwprop.cc: Likewise.
+	* late-combine.cc: Likewise.
+	* pair-fusion.cc: Likewise.
+	* rtl-ssa/accesses.cc: Likewise.
+	* rtl-ssa/blocks.cc: Likewise.
+	* rtl-ssa/changes.cc: Likewise.
+	* rtl-ssa/functions.cc: Likewise.
+	* rtl-ssa/insns.cc: Likewise.
+	* rtl-ssa/movement.cc: Likewise.
+
+2024-07-25  Sam James  <sam@gentoo.org>
+
+	PR middle-end/114855
+	* doc/invoke.texi (Optimize options): Mention machine-generated
+	code for -O1.
+
+2024-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116081
+	* tree-vect-loop.cc (get_initial_defs_for_reduction):
+	Use operand_equal_p for comparing the element with the
+	neutral op.
+
+2024-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116079
+	* tree-ssa-loop-im.cc (hoist_memory_references): Clear
+	VDEF of elided clobbers.
+
+2024-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116081
+	* tree-vect-stmts.cc (vect_get_vector_types_for_stmt):
+	Properly compare types.
+
+2024-07-25  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/116036
+	* config/riscv/riscv.cc (riscv_override_options_internal): Error
+	with TARGET_VECTOR && !TARGET_MUL.
+
+2024-07-25  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_legitimize_move): Fix poly_int dest generation.
+
+2024-07-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/116044
+	* rtl-ssa/functions.h (function_info::split_clobber_group): Return
+	an array of two clobber_groups.
+	* rtl-ssa/accesses.cc (function_info::split_clobber_group): Return
+	the new clobber groups.  Don't modify the splay tree here.
+	(function_info::add_def): Update call accordingly.  Generalize
+	the splay tree insertion code so that the new definition can be
+	inserted as a child of any existing node, not just the root.
+	Fix the insertion used after calling split_clobber_group.
+
+2024-07-25  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* config/aarch64/aarch64-sve-builtins.cc
+	(gimple_folder::redirect_call): Update return type.
+	* config/aarch64/aarch64-sve-builtins.h: Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc (svqshl_impl::fold):
+	Remove cast to gcall.
+	(svrshl_impl::fold): Likewise.
+
+2024-07-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.cc (constraint_equal): Take const
+	reference to constraints.
+	(constraint_vec_find): Similar.
+	(solve_graph): Keep constraint vector sorted and verify
+	sorting with checking.
+
+2024-07-25  Lingling Kong  <lingling.kong@intel.com>
+
+	PR target/115749
+	* config/i386/x86-tune-costs.h (struct processor_costs):
+	Adjust rtx_cost of imulq and imulw for COST_N_INSNS (4)
+	to COST_N_INSNS (3).
+
 2024-07-24  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-format-sarif.cc (sarif_builder::make_locations_arr):
