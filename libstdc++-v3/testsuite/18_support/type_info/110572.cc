@@ -1,7 +1,7 @@
 // { dg-options "-static-libstdc++" }
+// { dg-do link }
 // { dg-require-static-libstdcxx }
 // { dg-require-cpp-feature-test __cpp_rtti }
-// { dg-do link }
 
 #include <typeinfo>
 
