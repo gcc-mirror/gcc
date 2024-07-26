@@ -574,6 +574,19 @@ proc search_for { file pattern } {
     return 0
 }
 
+# get_matching_lines -- return a list of matching lines in file
+proc get_matching_lines { file pattern } {
+    set lines {}
+    set fd [open $file r]
+    while { [gets $fd cur_line]>=0 } {
+	if [string match "*$pattern*" $cur_line] then {
+	    lappend lines $cur_line
+	}
+    }
+    close $fd
+    return $lines
+}
+
 # Modified dg-runtest that can cycle through a list of optimization options
 # as c-torture does.
 proc gcc-dg-runtest { testcases flags default-extra-flags } {
