@@ -126,7 +126,7 @@ namespace __detail
 
       const unsigned __len = __to_chars_len(__val, __base);
 
-      if (__builtin_expect((__last - __first) < __len, 0))
+      if (__builtin_expect(size_t(__last - __first) < __len, 0))
 	{
 	  __res.ptr = __last;
 	  __res.ec = errc::value_too_large;
@@ -166,7 +166,7 @@ namespace __detail
 
       const unsigned __len = (__to_chars_len_2(__val) + 3) / 4;
 
-      if (__builtin_expect((__last - __first) < __len, 0))
+      if (__builtin_expect(size_t(__last - __first) < __len, 0))
 	{
 	  __res.ptr = __last;
 	  __res.ec = errc::value_too_large;
@@ -212,7 +212,7 @@ namespace __detail
 
       const unsigned __len = __to_chars_len(__val, 10);
 
-      if (__builtin_expect((__last - __first) < __len, 0))
+      if (__builtin_expect(size_t(__last - __first) < __len, 0))
 	{
 	  __res.ptr = __last;
 	  __res.ec = errc::value_too_large;
@@ -246,7 +246,7 @@ namespace __detail
       else
 	__len = (__to_chars_len_2(__val) + 2) / 3;
 
-      if (__builtin_expect((__last - __first) < __len, 0))
+      if (__builtin_expect(size_t(__last - __first) < __len, 0))
 	{
 	  __res.ptr = __last;
 	  __res.ec = errc::value_too_large;
@@ -288,7 +288,7 @@ namespace __detail
 
       const unsigned __len = __to_chars_len_2(__val);
 
-      if (__builtin_expect((__last - __first) < __len, 0))
+      if (__builtin_expect(size_t(__last - __first) < __len, 0))
 	{
 	  __res.ptr = __last;
 	  __res.ec = errc::value_too_large;
@@ -323,7 +323,7 @@ namespace __detail
       using _Up = __detail::__unsigned_least_t<_Tp>;
       _Up __unsigned_val = __value;
 
-      if (__first == __last) [[__unlikely__]]
+      if (__first >= __last) [[__unlikely__]]
 	return { __last, errc::value_too_large };
 
       if (__value == 0)
