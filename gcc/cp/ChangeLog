@@ -1,3 +1,59 @@
+2024-07-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115403
+	PR c++/109753
+	* decl.cc (start_preparsed_function): Only call decl_attributes for
+	artificial functions.
+
+2024-07-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115897
+	* cp-tree.h (dependent_opaque_alias_p): Declare.
+	* pt.cc (push_template_decl): Manually mark a dependent opaque
+	alias or dependent alias template specialization as dependent,
+	and use structural equality for them.
+	(dependent_opaque_alias_p): Define.
+	(alias_template_specialization_p): Don't look through an
+	opaque alias.
+	(complex_alias_template_p): Use dependent_opaque_alias_p instead of
+	any_dependent_template_arguments_p directly.
+	(dependent_alias_template_spec_p): Don't look through an
+	opaque alias.
+	(get_underlying_template): Use dependent_opaque_alias_p instead of
+	any_dependent_template_arguments_p.
+	(instantiate_alias_template): Mention same logic in
+	push_template_decl.
+	(dependent_type_p_r): Remove dependent_alias_template_spec_p check.
+	(any_template_arguments_need_structural_equality_p): Return true
+	for a dependent opaque alias.
+	(alias_ctad_tweaks): Use template_args_equal instead of same_type_p
+	followed by dependent_alias_template_spec_p.
+	* tree.cc (strip_typedefs): Don't strip an opaque alias.
+	* typeck.cc (structural_comptypes): Compare declaration attributes
+	for an opaque alias.
+
+2024-07-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115897
+	* tree.cc (strip_typedefs): Move up the typedef recursion case.
+	Never strip a dependent alias template-id that has dependent
+	attributes.
+
+2024-07-25  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/110171
+	* coroutines.cc (co_await_get_resume_call): New function.
+	Returns the await_resume expression of a given co_await.
+	* cp-tree.h (co_await_get_resume_call): New function.
+	* cvt.cc (convert_to_void): Handle CO_AWAIT_EXPRs and call
+	maybe_warn_nodiscard on their resume exprs.
+
+2024-07-25  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/111728
+	* coroutines.cc (rewrite_param_uses): Skip unevaluated
+	subexpressions.
+
 2024-07-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/116071

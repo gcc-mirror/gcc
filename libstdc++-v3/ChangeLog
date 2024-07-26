@@ -1,3 +1,103 @@
+2024-07-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/expected (expected::value): Add assertions for LWG
+	3843 requirements.
+	(expected<cv void, E>::value): Add assertions for LWG 3940
+	requirements.
+
+2024-07-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (basic_format_args): Remove default
+	constructor, as per LWG 4106.
+	* testsuite/std/format/arguments/args.cc: Check it isn't default
+	constructible.
+
+2024-07-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/utility.h (_Swallow_assign): Make assignment
+	constexpr for C++11 as well, and add noexcept.
+	* include/std/tuple (_Swallow_assign, ignore): Move to
+	bits/utility.h.
+	* testsuite/20_util/headers/utility/ignore.cc: New test.
+
+2024-07-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/optional: Reorder parameters in comparison
+	operators as per LWG 2945.
+
+2024-07-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/116038
+	* include/std/functional (_Bind_front::operator()): Use __like_t
+	instead of std::forward when forwarding __self.
+	(_Bind_back::operator()): Likewise.
+	* include/std/ranges (_Partial::operator()): Likewise.
+	(_Pipe::operator()): Likewise.
+	* testsuite/20_util/function_objects/bind_back/116038.cc: New test.
+	* testsuite/20_util/function_objects/bind_front/116038.cc: New test.
+	* testsuite/std/ranges/adaptors/116038.cc: New test.
+
+2024-07-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/expected (bad_expected_access<void>): Add noexcept
+	to special member functions, as per LWG 4031.
+	* testsuite/20_util/expected/bad.cc: Check for nothrow copy and
+	move members.
+
+2024-07-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/optional (optional): Use C++20 features to
+	simplify overload sets for constructors and assignment
+	operators.
+
+2024-07-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/optional (optional): Constrain constructors to
+	prevent problematic bool conversions, as per LWG 3836.
+	* testsuite/20_util/optional/cons/lwg3836.cc: New test.
+
+2024-07-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/expected (expected): Constrain constructors to
+	prevent problematic bool conversions, as per LWG 3836.
+	* testsuite/20_util/expected/lwg3836.cc: New test.
+
+2024-07-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/optional (_Optional_payload_base::_Storage)
+	[C++20]: Define constrained non-trivial destructor.
+	(_Optional_payload_base::_Storage<U, false>) [C++20]: Do not
+	define partial specialization when primary template has
+	constrained destructor.
+	(_Optional_base) [C++20]: Define constrained trivial copy and
+	move cons and move constructors. Define payload accessors here
+	instead of inheriting them from _Optional_base_impl.
+	(_Optional_base_impl, _Optional_base<T, false, true>)
+	(_Optional_base<T, true, false>, _Optional_base<T, true, true>)
+	[C++20]: Do not define.
+
+2024-07-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/optional (optional): Add using-declaraction for
+	_Base::_M_get and declare optional<U> as friend.
+	(optional(const optional<U>&)): Use
+	_M_get instead of operator*.
+	(optional(optional<U>&&)): Likewise.
+	(operator=(const optional<U>&)): Likewise.
+	(operator=(optional<U>&&)): Likewise.
+	(and_then, tansform): Likewise.
+
+2024-07-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/optional (_Optional_base_impl::_M_get()): Move
+	assertions to ...
+	(optional::operator->, optional::operator*): ... here.
+
+2024-07-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* testsuite/lib/libstdc++.exp (v3_target_compile): Call
+	string trim on v3_target_compile before calling split.
+
 2024-07-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/116070

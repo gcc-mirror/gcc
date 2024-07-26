@@ -1,3 +1,10 @@
+2024-07-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110343
+	* lex.cc: C++26 P2558R2 - Add @, $, and ` to the basic character set.
+	(lex_raw_string): For C++26 allow $@` characters in prefix.
+	* charset.cc (_cpp_valid_ucn): For C++26 reject \u0024 in identifiers.
+
 2024-07-24  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/rich-location.h
