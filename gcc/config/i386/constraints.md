@@ -254,6 +254,12 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (ival, 0, 7)")))
 
+(define_constraint "Wc"
+  "Integer constant -1 or 1."
+  (and (match_code "const_int")
+       (ior (match_test "op == constm1_rtx")
+	    (match_test "op == const1_rtx"))))
+
 (define_constraint "Ww"
   "Integer constant in the range 0 @dots{} 15, for 16-bit shifts."
   (and (match_code "const_int")
