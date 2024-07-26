@@ -9694,7 +9694,7 @@ riscv_override_options_internal (struct gcc_options *opts)
   /* We might use a multiplication to calculate the scalable vector length at
      runtime.  Therefore, require the M extension.  */
   if (TARGET_VECTOR && !TARGET_MUL)
-    sorry ("GCC's current %<V%> implementation requires the %<M%> extension");
+    sorry ("Currently the %<V%> implementation requires the %<M%> extension");
 
   /* Likewise floating-point division and square root.  */
   if ((TARGET_HARD_FLOAT_OPTS_P (opts) || TARGET_ZFINX_OPTS_P (opts))
