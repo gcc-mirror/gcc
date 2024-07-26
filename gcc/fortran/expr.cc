@@ -700,7 +700,6 @@ gfc_extract_int (gfc_expr *expr, int *result, int report_error)
   return false;
 }
 
-
 /* Same as gfc_extract_int, but use a HWI.  */
 
 bool

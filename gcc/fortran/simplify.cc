@@ -7404,6 +7404,29 @@ gfc_simplify_selected_int_kind (gfc_expr *e)
   return gfc_get_int_expr (gfc_default_integer_kind, &e->where, kind);
 }
 
+/* Same as above, but with unsigneds.  */
+
+gfc_expr *
+gfc_simplify_selected_unsigned_kind (gfc_expr *e)
+{
+  int i, kind, range;
+
+  if (e->expr_type != EXPR_CONSTANT || gfc_extract_int (e, &range))
+    return NULL;
+
+  kind = INT_MAX;
+
+  for (i = 0; gfc_unsigned_kinds[i].kind != 0; i++)
+    if (gfc_unsigned_kinds[i].range >= range
+	&& gfc_unsigned_kinds[i].kind < kind)
+      kind = gfc_unsigned_kinds[i].kind;
+
+  if (kind == INT_MAX)
+    kind = -1;
+
+  return gfc_get_int_expr (gfc_default_integer_kind, &e->where, kind);
+}
+
 
 gfc_expr *
 gfc_simplify_selected_logical_kind (gfc_expr *e)

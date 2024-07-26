@@ -5012,7 +5012,6 @@ gfc_check_selected_int_kind (gfc_expr *r)
   return true;
 }
 
-
 bool
 gfc_check_selected_real_kind (gfc_expr *p, gfc_expr *r, gfc_expr *radix)
 {

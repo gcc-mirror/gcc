@@ -2952,6 +2952,16 @@ add_functions (void)
 
   make_generic ("selected_int_kind", GFC_ISYM_SI_KIND, GFC_STD_F95);
 
+  if (flag_unsigned)
+    {
+
+      add_sym_1 ("selected_unsigned_kind", GFC_ISYM_SU_KIND, CLASS_TRANSFORMATIONAL, ACTUAL_NO,
+		 BT_INTEGER, di, GFC_STD_GNU, gfc_check_selected_int_kind,
+		 gfc_simplify_selected_unsigned_kind, NULL, r, BT_INTEGER, di, REQUIRED);
+
+      make_generic ("selected_unsigned_kind", GFC_ISYM_SU_KIND, GFC_STD_GNU);
+    }
+
   add_sym_1 ("selected_logical_kind", GFC_ISYM_SL_KIND, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_INTEGER, di,
 	     GFC_STD_F2023, /* it has the same requirements */ gfc_check_selected_int_kind,
 	     gfc_simplify_selected_logical_kind, NULL, r, BT_INTEGER, di, REQUIRED);

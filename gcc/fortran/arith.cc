@@ -160,6 +160,7 @@ void
 gfc_arith_init_1 (void)
 {
   gfc_integer_info *int_info;
+  gfc_unsigned_info *uint_info;
   gfc_real_info *real_info;
   mpfr_t a, b;
   int i;
@@ -200,6 +201,28 @@ gfc_arith_init_1 (void)
       mpfr_log10 (a, a, GFC_RND_MODE);
       mpfr_trunc (a, a);
       int_info->range = (int) mpfr_get_si (a, GFC_RND_MODE);
+    }
+
+  /* Similar, for UNSIGNED.  */
+  if (flag_unsigned)
+    {
+      for (uint_info = gfc_unsigned_kinds; uint_info->kind != 0; uint_info++)
+	{
+	  /* Huge.  */
+	  mpz_init (uint_info->huge);
+	  mpz_set_ui (uint_info->huge, uint_info->radix);
+	  mpz_pow_ui (uint_info->huge, uint_info->huge, uint_info->digits);
+
+	  /* UNSIGNED is radix 2.  */
+	  gcc_assert (uint_info->radix == 2);
+
+	  /* Range.  */
+	  mpfr_set_z (a, uint_info->huge, GFC_RND_MODE);
+	  mpfr_log10 (a, a, GFC_RND_MODE);
+	  mpfr_trunc (a,a);
+	  uint_info->range = (int) mpfr_get_si (a, GFC_RND_MODE);
+	}
+
     }
 
   mpfr_clear (a);
