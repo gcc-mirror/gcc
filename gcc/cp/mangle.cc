@@ -1300,7 +1300,8 @@ write_prefix (const tree node)
 
   MANGLE_TRACE_TREE ("prefix", node);
 
-  if (TREE_CODE (node) == DECLTYPE_TYPE)
+  if (TREE_CODE (node) == DECLTYPE_TYPE
+      || TREE_CODE (node) == TRAIT_TYPE)
     {
       write_type (node);
       return;
