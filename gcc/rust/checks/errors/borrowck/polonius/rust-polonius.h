@@ -45,7 +45,7 @@ struct FullPoint
   static uint32_t extract_bb (Point point) { return point >> 16; }
   static uint32_t extract_stmt (Point point)
   {
-    return (point & ~(1 << 16)) >> 1;
+    return (point >> 1) & ((1 << 15) - 1);
   }
   static bool extract_mid (Point point) { return point & 1; }
 
