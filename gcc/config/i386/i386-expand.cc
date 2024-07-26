@@ -14198,7 +14198,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	  op0 = convert_memory_address (Pmode, op0);
 	  op0 = copy_addr_to_reg (op0);
 	}
-      op0 = gen_rtx_MEM (XImode, op0);
+      op0 = gen_rtx_MEM (BLKmode, op0);
       if (fcode == IX86_BUILTIN_LDTILECFG)
 	icode = CODE_FOR_ldtilecfg;
       else
