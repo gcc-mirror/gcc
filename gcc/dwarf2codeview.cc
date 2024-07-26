@@ -2858,8 +2858,11 @@ get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
       ct2 = ct->next;
       ct->next = NULL;
 
-      if (ct->lf_fieldlist.last_subtype->kind == LF_INDEX)
-	ct->lf_fieldlist.last_subtype->lf_index.type_num = last_type;
+      if (ct->lf_fieldlist.last_subtype
+	  && ct->lf_fieldlist.last_subtype->kind == LF_INDEX)
+	{
+	  ct->lf_fieldlist.last_subtype->lf_index.type_num = last_type;
+	}
 
       add_custom_type (ct);
       last_type = ct->num;
