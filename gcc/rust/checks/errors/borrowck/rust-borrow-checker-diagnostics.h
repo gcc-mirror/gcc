@@ -66,6 +66,7 @@ private:
 
   const BIR::Statement &get_statement (Polonius::Point point);
   const BIR::Loan &get_loan (Polonius::Loan loan);
+  const HIR::LifetimeParam *get_lifetime_param (Polonius::Origin origin);
 
   struct LabelLocationPair
   {
