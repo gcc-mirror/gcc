@@ -42,7 +42,7 @@ jobs:
                   g++-multilib \
                   dejagnu;
           # install Rust directly using rustup
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly;
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=1.72.0;
 
     - name: Configure
       run: |
@@ -123,7 +123,7 @@ jobs:
                   g++-multilib \
                   dejagnu;
           # install Rust directly using rustup
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly;
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=1.72.0;
 
     - name: Configure
       run: |
@@ -206,7 +206,7 @@ jobs:
                   g++-4.8-multilib \
                   dejagnu;
           # install Rust directly using rustup
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly;
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=1.72.0;
 
     - name: Configure
       run: |
@@ -265,7 +265,7 @@ jobs:
       run: |
           brew install dejagnu mpfr libmpc gmp;
           # install Rust directly using rustup
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly;
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=1.72.0;
 
     - name: Configure
       run: |
