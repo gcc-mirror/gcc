@@ -8,4 +8,4 @@ void init() {
       a[i_0][i_1] = 1;
 }
 
-/* { dg-excess-errors "sorry, unimplemented: GCC's current 'V' implementation requires the 'M' extension" } */
+/* { dg-excess-errors "sorry, unimplemented: Currently the 'V' implementation requires the 'M' extension" } */
