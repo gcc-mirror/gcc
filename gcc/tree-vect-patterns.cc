@@ -6624,7 +6624,8 @@ vect_recog_cond_store_pattern (vec_info *vinfo,
 
   machine_mode mask_mode;
   machine_mode vecmode = TYPE_MODE (vectype);
-  if (targetm.vectorize.conditional_operation_is_expensive (IFN_MASK_STORE)
+  if (!VECTOR_MODE_P (vecmode)
+      || targetm.vectorize.conditional_operation_is_expensive (IFN_MASK_STORE)
       || !targetm.vectorize.get_mask_mode (vecmode).exists (&mask_mode)
       || !can_vec_mask_load_store_p (vecmode, mask_mode, false))
     return NULL;
