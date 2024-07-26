@@ -399,34 +399,46 @@ gimple_expand_vec_cond_expr (struct function *fun, gimple_stmt_iterator *gsi,
    comparisons so RTL expansion with the help of TER
    can perform better if conversion.  */
 static void
-duplicate_comparison (gassign *stmt, basic_block bb)
+maybe_duplicate_comparison (gassign *stmt, basic_block bb)
 {
   imm_use_iterator imm_iter;
   use_operand_p use_p;
   auto_vec<gassign *, 4> cond_exprs;
-  unsigned cnt = 0;
   tree lhs = gimple_assign_lhs (stmt);
+  unsigned cnt = 0;
+
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
     {
       if (is_gimple_debug (USE_STMT (use_p)))
 	continue;
       cnt++;
+      /* Add the use statement if it was a cond_expr.  */
       if (gimple_bb (USE_STMT (use_p)) == bb
 	  && is_gimple_assign (USE_STMT (use_p))
-	  && gimple_assign_rhs1_ptr (USE_STMT (use_p)) == use_p->use
-	  && gimple_assign_rhs_code (USE_STMT (use_p)) == COND_EXPR)
+	  && gimple_assign_rhs_code (USE_STMT (use_p)) == COND_EXPR
+	  && gimple_assign_rhs1_ptr (USE_STMT (use_p)) == use_p->use)
 	cond_exprs.safe_push (as_a <gassign *> (USE_STMT (use_p)));
-      }
-  for (unsigned i = cond_exprs.length () == cnt ? 1 : 0;
-       i < cond_exprs.length (); ++i)
+    }
+
+  /* If the comparison has 0 or 1 uses, no reason to do anything. */
+  if (cnt <= 1)
+    return;
+
+  /* If we only use the expression inside cond_exprs in that BB, we don't
+     need to duplicate for one of them so pop the top. */
+  if (cond_exprs.length () == cnt)
+    cond_exprs.pop();
+
+  while (!cond_exprs.is_empty())
     {
+      auto old_top = cond_exprs.pop();
       gassign *copy = as_a <gassign *> (gimple_copy (stmt));
       tree new_def = duplicate_ssa_name (lhs, copy);
       gimple_assign_set_lhs (copy, new_def);
-      auto gsi2 = gsi_for_stmt (cond_exprs[i]);
+      auto gsi2 = gsi_for_stmt (old_top);
       gsi_insert_before (&gsi2, copy, GSI_SAME_STMT);
-      gimple_assign_set_rhs1 (cond_exprs[i], new_def);
-      update_stmt (cond_exprs[i]);
+      gimple_assign_set_rhs1 (old_top, new_def);
+      update_stmt (old_top);
     }
 }
 
@@ -500,10 +512,8 @@ pass_gimple_isel::execute (struct function *fun)
 	    continue;
 
 	  tree_code code = gimple_assign_rhs_code (stmt);
-	  tree lhs = gimple_assign_lhs (stmt);
-	  if (TREE_CODE_CLASS (code) == tcc_comparison
-	      && !has_single_use (lhs))
-	    duplicate_comparison (stmt, bb);
+	  if (TREE_CODE_CLASS (code) == tcc_comparison)
+	    maybe_duplicate_comparison (stmt, bb);
 	}
     }
 
