@@ -21,6 +21,7 @@
 #include "rust-macro-builtins-asm.h"
 #include "rust-ast-fragment.h"
 #include "rust-ast.h"
+#include "rust-fmt.h"
 #include "rust-stmt.h"
 
 namespace Rust {
@@ -240,7 +241,7 @@ parse_reg_operand (InlineAsmContext inline_asm_ctx)
 
       if (result.has_value ())
 	{
-	  inline_asm_ctx = result.value ();
+	  inline_asm_ctx = *result;
 	  break;
 	}
       else if (result.error () == COMMITTED)
@@ -741,6 +742,31 @@ parse_asm_arg (InlineAsmContext inline_asm_ctx)
   return tl::expected<InlineAsmContext, InlineAsmParseError> (inline_asm_ctx);
 }
 
+tl::expected<InlineAsmContext, InlineAsmParseError>
+expand_inline_asm (InlineAsmContext &inline_asm_ctx)
+{
+  auto &inline_asm = inline_asm_ctx.inline_asm;
+
+  auto str_vec = inline_asm.get_template_strs ();
+  for (auto &template_str : str_vec)
+    {
+      std::cout << template_str.symbol << std::endl;
+
+      auto pieces = Fmt::Pieces::collect (template_str.symbol, false,
+					  Fmt::ffi::ParseMode::Format)
+		      .get_pieces ();
+
+      for (size_t i = 0; i < pieces.size (); i++)
+	{
+	  auto piece = pieces[i];
+	  if (piece.tag == Fmt::ffi::Piece::Tag::String)
+	    std::cout << "       " << i << ": " << piece.string._0.to_string ()
+		      << std::endl;
+	}
+    }
+
+  return inline_asm_ctx;
+}
 tl::optional<AST::Fragment>
 parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
 	   AST::InvocKind semicolon, AST::AsmKind is_global_asm)
@@ -770,7 +796,10 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
   // here Per Arthur's advice we would actually do the validation in a different
   // stage. and visit on the InlineAsm AST instead of it's context.
   auto is_valid = (bool) resulting_context;
-
+  if (is_valid)
+    {
+      expand_inline_asm (resulting_context.value ());
+    }
   if (is_valid)
     {
       auto node = inline_asm_ctx.inline_asm.clone_expr_without_block ();
