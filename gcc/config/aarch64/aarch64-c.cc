@@ -193,15 +193,19 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
   aarch64_def_or_undef (TARGET_SIMD_RDMA, "__ARM_FEATURE_QRDMX", pfile);
   aarch64_def_or_undef (TARGET_SVE, "__ARM_FEATURE_SVE", pfile);
   cpp_undef (pfile, "__ARM_FEATURE_SVE_BITS");
+  cpp_undef (pfile, "__ARM_FEATURE_SVE_VECTOR_OPERATORS");
   if (TARGET_SVE)
     {
       int bits;
+      int ops = 1;
       if (!BITS_PER_SVE_VECTOR.is_constant (&bits))
-	bits = 0;
+	{
+	  bits = 0;
+	  ops = 2;
+	}
       builtin_define_with_int_value ("__ARM_FEATURE_SVE_BITS", bits);
+      builtin_define_with_int_value ("__ARM_FEATURE_SVE_VECTOR_OPERATORS", ops);
     }
-  aarch64_def_or_undef (TARGET_SVE, "__ARM_FEATURE_SVE_VECTOR_OPERATORS",
-			pfile);
   aarch64_def_or_undef (TARGET_SVE_I8MM,
 			"__ARM_FEATURE_SVE_MATMUL_INT8", pfile);
   aarch64_def_or_undef (TARGET_SVE_F32MM,
