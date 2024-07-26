@@ -61,12 +61,38 @@ BorrowCheckerDiagnostics::report_loan_errors ()
 void
 BorrowCheckerDiagnostics::report_subset_errors ()
 {
-  if (!subset_errors.empty ())
+  // remove duplicates in subset_errors
+  //
+  // Polonius may output subset errors for same 2 origins at multiple points
+  // so to avoid duplicating the errors, we can remove the elements in subset
+  // errors with same origin pair
+  std::vector<std::pair<size_t, std::pair<size_t, size_t>>>
+    deduplicated_subset_errors;
+
+  for (auto pair : subset_errors)
     {
-      rust_error_at (hir_function->get_locus (),
-		     "Found subset errors in function %s. Some lifetime "
-		     "constraints need to be added.",
-		     hir_function->get_function_name ().as_string ().c_str ());
+      auto it = std::find_if (
+	deduplicated_subset_errors.begin (), deduplicated_subset_errors.end (),
+	[&pair] (std::pair<size_t, std::pair<size_t, size_t>> element) {
+	  return element.second == pair.second;
+	});
+      if (it == deduplicated_subset_errors.end ())
+	{
+	  deduplicated_subset_errors.push_back (pair);
+	}
+    }
+  for (const auto &error : deduplicated_subset_errors)
+    {
+      auto first_lifetime_location
+	= get_lifetime_param (error.second.first)->get_locus ();
+      auto second_lifetime_location
+	= get_lifetime_param (error.second.second)->get_locus ();
+      multi_label_error (
+	"subset error, some lifetime constraints need to be added",
+	bir_function.location,
+	{{"lifetime defined here", first_lifetime_location},
+	 {"lifetime defined here", second_lifetime_location},
+	 {"subset error occurs in this function", bir_function.location}});
     }
 }
 
@@ -86,6 +112,13 @@ const BIR::Loan &
 BorrowCheckerDiagnostics::get_loan (Polonius::Loan loan)
 {
   return bir_function.place_db.get_loans ()[loan];
+}
+
+const HIR::LifetimeParam *
+BorrowCheckerDiagnostics::get_lifetime_param (Polonius::Origin origin)
+
+{
+  return bir_function.region_hir_map.at (origin);
 }
 
 void
