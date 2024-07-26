@@ -64,6 +64,7 @@ package Sem_Prag is
       Pragma_Export                       => True,
       Pragma_Extensions_Visible           => True,
       Pragma_Favor_Top_Level              => True,
+      Pragma_First_Controlling_Parameter  => True,
       Pragma_Ghost                        => True,
       Pragma_Global                       => True,
       Pragma_GNAT_Annotate                => True,

@@ -17756,6 +17756,91 @@ package body Sem_Prag is
             end if;
          end Finalize_Storage;
 
+         ----------------------------------------
+         -- Pragma_First_Controlling_Parameter --
+         ----------------------------------------
+
+         when Pragma_First_Controlling_Parameter => First_Ctrl_Param : declare
+            Arg : Node_Id;
+            E   : Entity_Id := Empty;
+
+         begin
+            if not Core_Extensions_Allowed then
+               return;
+            end if;
+
+            GNAT_Pragma;
+            Check_Arg_Count (1);
+
+            Arg := Get_Pragma_Arg (Arg1);
+
+            if Nkind (Arg) = N_Identifier then
+               Analyze (Arg);
+               E := Entity (Arg);
+            end if;
+
+            if No (E)
+              or else not Is_Type (E)
+              or else not (Is_Tagged_Type (E)
+                             or else Is_Concurrent_Type (E))
+            then
+               Error_Pragma
+                 ("pragma% must specify tagged type or concurrent type");
+            end if;
+
+            --  Check use of the pragma on private types
+
+            if Has_Private_Declaration (E) then
+               declare
+                  Prev_Id : constant Entity_Id :=
+                              Incomplete_Or_Partial_View (E);
+               begin
+                  if Is_Tagged_Type (Prev_Id) then
+                     if Has_First_Controlling_Parameter_Aspect (Prev_Id) then
+                        Error_Pragma
+                          ("pragma already specified in private declaration");
+                     else
+                        Error_Msg_N
+                          ("hidden 'First_'Controlling_'Parameter tagged type"
+                           & " not allowed", N);
+                     end if;
+
+                  --  No action needed if the partial view is not tagged. For
+                  --  example:
+
+                  --     package Example is
+                  --        type Private_Type is private;
+                  --     private
+                  --        type Private_Type is new ... with null record
+                  --          with First_Controlling_Parameter;      -- Legal
+                  --     end;
+
+                  else
+                     null;
+                  end if;
+               end;
+            end if;
+
+            --  The corresponding record type of concurrent types will not be
+            --  a tagged type when it does not implement some interface type.
+
+            if Is_Concurrent_Type (E)
+              and then Present (Parent (E))
+              and then No (Interface_List (Parent (E)))
+            then
+               if Warn_On_Non_Dispatching_Primitives then
+                  Error_Msg_N
+                    ("?_j?'First_'Controlling_'Parameter has no effect", N);
+                  Error_Msg_NE
+                    ("?_j?because & does not implement interface types",
+                     N, E);
+               end if;
+
+            else
+               Set_Has_First_Controlling_Parameter_Aspect (E);
+            end if;
+         end First_Ctrl_Param;
+
          -----------
          -- Ghost --
          -----------
@@ -32790,6 +32875,7 @@ package body Sem_Prag is
       Pragma_Fast_Math                      =>  0,
       Pragma_Favor_Top_Level                =>  0,
       Pragma_Finalize_Storage_Only          =>  0,
+      Pragma_First_Controlling_Parameter    =>  0,
       Pragma_Ghost                          =>  0,
       Pragma_Global                         => -1,
       Pragma_GNAT_Annotate                  => 93,

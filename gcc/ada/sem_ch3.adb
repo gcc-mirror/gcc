@@ -3510,6 +3510,46 @@ package body Sem_Ch3 is
       then
          Check_Restriction (No_Local_Tagged_Types, T);
       end if;
+
+      --  Derived tagged types inherit aspect First_Controlling_Parameter
+      --  from their parent type and also from implemented interface types.
+      --  We implicitly perform inheritance here and will check for the
+      --  explicit confirming pragma or aspect in the sources when this type
+      --  is frozen (required for pragmas since they are placed at any place
+      --  after the type declaration; otherwise, when the pragma is used after
+      --  some non-first-controlling-parameter primitive, the reported errors
+      --  and warning would differ when the pragma is used).
+
+      if Is_Tagged_Type (T)
+        and then Is_Derived_Type (T)
+        and then not Has_First_Controlling_Parameter_Aspect (T)
+      then
+         pragma Assert (Etype (T) /= T);
+
+         if Has_First_Controlling_Parameter_Aspect (Etype (T)) then
+            Set_Has_First_Controlling_Parameter_Aspect (T);
+
+         elsif Present (Interfaces (T))
+           and then not Is_Empty_Elmt_List (Interfaces (T))
+         then
+            declare
+               Elmt  : Elmt_Id := First_Elmt (Interfaces (T));
+               Iface : Entity_Id;
+
+            begin
+               while Present (Elmt) loop
+                  Iface := Node (Elmt);
+
+                  if Has_First_Controlling_Parameter_Aspect (Iface) then
+                     Set_Has_First_Controlling_Parameter_Aspect (T);
+                     exit;
+                  end if;
+
+                  Next_Elmt (Elmt);
+               end loop;
+            end;
+         end if;
+      end if;
    end Analyze_Full_Type_Declaration;
 
    ----------------------------------
@@ -21868,6 +21908,14 @@ package body Sem_Ch3 is
                   & "allowed", N);
             end if;
          end;
+      end if;
+
+      --  Propagate First_Controlling_Parameter aspect to the full type
+
+      if Is_Tagged_Type (Priv_T)
+        and then Has_First_Controlling_Parameter_Aspect (Priv_T)
+      then
+         Set_Has_First_Controlling_Parameter_Aspect (Full_T);
       end if;
 
       --  Propagate predicates to full type, and predicate function if already

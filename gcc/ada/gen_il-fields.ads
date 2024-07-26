@@ -575,6 +575,7 @@ package Gen_IL.Fields is
       Has_Enumeration_Rep_Clause,
       Has_Exit,
       Has_Expanded_Contract,
+      Has_First_Controlling_Parameter_Aspect,
       Has_Forward_Instantiation,
       Has_Fully_Qualified_Name,
       Has_Ghost_Predicate_Aspect,

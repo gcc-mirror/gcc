@@ -14952,6 +14952,18 @@ package body Sem_Ch12 is
          then
             Error_Msg_NE
               ("actual for & must be a tagged type", Actual, Gen_T);
+
+         --  For generic formal tagged types with the First_Controlling_Param
+         --  aspect, ensure that the actual type also has this aspect.
+
+         elsif Is_Tagged_Type (Act_T)
+           and then Is_Tagged_Type (A_Gen_T)
+           and then not Has_First_Controlling_Parameter_Aspect (Act_T)
+           and then Has_First_Controlling_Parameter_Aspect (A_Gen_T)
+         then
+            Error_Msg_NE
+              ("actual for & must be a 'First_'Controlling_'Parameter tagged "
+               & "type", Actual, Gen_T);
          end if;
 
          Validate_Discriminated_Formal_Type;

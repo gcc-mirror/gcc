@@ -1651,6 +1651,11 @@ package Einfo is
 --       that this does not imply a representation with holes, since the rep
 --       clause may merely confirm the default 0..N representation.
 
+--    Has_First_Controlling_Parameter_Aspect
+--       Defined in tagged types, concurrent types and concurrent record types.
+--       Set to indicate that the type has a First_Controlling_Parameter of
+--       True (whether by an aspect_specification, a pragma, or inheritance).
+
 --    Has_Exit
 --       Defined in loop entities. Set if the loop contains an exit statement.
 
@@ -5973,6 +5978,7 @@ package Einfo is
    --    First_Entity
    --    Corresponding_Record_Type
    --    Entry_Bodies_Array
+   --    Has_First_Controlling_Parameter_Aspect
    --    Last_Entity
    --    Discriminant_Constraint
    --    Scope_Depth_Value
@@ -6014,6 +6020,7 @@ package Einfo is
    --    Component_Alignment                  (special)  (base type only)
    --    C_Pass_By_Copy                       (base type only)
    --    Has_Dispatch_Table                   (base tagged type only)
+   --    Has_First_Controlling_Parameter_Aspect
    --    Has_Pragma_Pack                      (impl base type only)
    --    Has_Private_Ancestor
    --    Has_Private_Extension
@@ -6049,6 +6056,7 @@ package Einfo is
    --    Underlying_Record_View $$$           (base type only)
    --    Predicated_Parent                    (subtype only)
    --    Has_Completion
+   --    Has_First_Controlling_Parameter_Aspect
    --    Has_Private_Ancestor
    --    Has_Private_Extension
    --    Has_Record_Rep_Clause                (base type only)
@@ -6144,6 +6152,7 @@ package Einfo is
    --    Corresponding_Record_Type
    --    Last_Entity
    --    Discriminant_Constraint
+   --    Has_First_Controlling_Parameter_Aspect
    --    Scope_Depth_Value
    --    Stored_Constraint
    --    Task_Body_Procedure

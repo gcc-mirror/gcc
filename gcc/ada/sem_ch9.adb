@@ -3648,6 +3648,14 @@ package body Sem_Ch9 is
 
                Freeze_Before (N, Etype (Iface));
 
+               --  Implicit inheritance of attribute
+
+               if not Has_First_Controlling_Parameter_Aspect (T)
+                 and then Has_First_Controlling_Parameter_Aspect (Iface_Typ)
+               then
+                  Set_Has_First_Controlling_Parameter_Aspect (T);
+               end if;
+
                if Nkind (N) = N_Protected_Type_Declaration then
 
                   --  Ada 2005 (AI-345): Protected types can only implement

@@ -1344,6 +1344,9 @@ package body Exp_Ch9 is
       Rec_Ent  : constant Entity_Id :=
                    Make_Defining_Identifier
                      (Loc, New_External_Name (Chars (Ctyp), 'V'));
+      Alist    : List_Id;
+      Asp_Copy : Node_Id;
+      Aspect   : Node_Id;
       Disc     : Entity_Id;
       Dlist    : List_Id;
       New_Disc : Entity_Id;
@@ -1394,6 +1397,37 @@ package body Exp_Ch9 is
          Dlist := No_List;
       end if;
 
+      --  Propagate the aspect First_Controlling_Parameter to the corresponding
+      --  record to reuse the tagged types machinery. This is not needed if
+      --  the concurrent type does not implement interface types, as the
+      --  corresponding record will not be a tagged type in such case.
+
+      Alist := No_List;
+
+      if Present (Parent (Ctyp))
+        and then Present (Interface_List (Parent (Ctyp)))
+        and then Present (Aspect_Specifications (N))
+      then
+         Aspect := First (Aspect_Specifications (N));
+         while Present (Aspect) loop
+            if Chars (Identifier (Aspect))
+              = Name_First_Controlling_Parameter
+            then
+               Alist    := New_List;
+               Asp_Copy := New_Copy_Tree (Aspect);
+
+               --  Force its analysis in the corresponding record to add
+               --  the pragma.
+
+               Set_Analyzed (Asp_Copy, False);
+               Append_To (Alist, Asp_Copy);
+               exit;
+            end if;
+
+            Next (Aspect);
+         end loop;
+      end if;
+
       --  Now we can construct the record type declaration. Note that this
       --  record is "limited tagged". It is "limited" to reflect the underlying
       --  limitedness of the task or protected object that it represents, and
@@ -1405,6 +1439,7 @@ package body Exp_Ch9 is
       return
         Make_Full_Type_Declaration (Loc,
           Defining_Identifier => Rec_Ent,
+          Aspect_Specifications => Alist,
           Discriminant_Specifications => Dlist,
           Type_Definition =>
             Make_Record_Definition (Loc,
@@ -9257,6 +9292,25 @@ package body Exp_Ch9 is
 
       Analyze (Rec_Decl, Suppress => All_Checks);
 
+      --  Analyze aspects of the corresponding record type. They may have been
+      --  propagated to it and its analysis is required to add the pragma (see
+      --  propagation of aspect First_Controlling_Parameter in the subprogram
+      --  Build_Corresponding_Record).
+
+      if Has_Aspects (Rec_Decl) then
+         Analyze_Aspect_Specifications (Rec_Decl, Rec_Id);
+
+      --  Handle aspects that may have been implicitly inherited and must be
+      --  explicitly propagated to the corresponding record type. This applies
+      --  specifically when the First_Controlling_Parameter aspect has been
+      --  implicitly inherited from an implemented interface.
+
+      elsif Present (Interface_List (Parent (Prot_Typ)))
+        and then Has_First_Controlling_Parameter_Aspect (Prot_Typ)
+      then
+         Set_Has_First_Controlling_Parameter_Aspect (Rec_Id);
+      end if;
+
       --  Ada 2005 (AI-345): Construct the primitive entry wrappers before
       --  the corresponding record is frozen. If any wrappers are generated,
       --  Current_Node is updated accordingly.
@@ -12161,6 +12215,25 @@ package body Exp_Ch9 is
       --  declarations before the next entity is analyzed.
 
       Analyze (Rec_Decl);
+
+      --  Analyze aspects of the corresponding record type. They may have been
+      --  propagated to it and its analysis is required to add the pragma (see
+      --  propagation of aspect First_Controlling_Parameter in the subprogram
+      --  Build_Corresponding_Record).
+
+      if Has_Aspects (Rec_Decl) then
+         Analyze_Aspect_Specifications (Rec_Decl, Rec_Ent);
+
+      --  Handle aspects that may have been implicitly inherited and must be
+      --  explicitly propagated to the corresponding record type. This applies
+      --  specifically when the First_Controlling_Parameter aspect has been
+      --  implicitly inherited from an implemented interface.
+
+      elsif Present (Interface_List (Parent (Tasktyp)))
+        and then Has_First_Controlling_Parameter_Aspect (Tasktyp)
+      then
+         Set_Has_First_Controlling_Parameter_Aspect (Rec_Ent);
+      end if;
 
       --  Create the declaration of the task body procedure
 

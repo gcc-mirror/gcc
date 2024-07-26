@@ -279,6 +279,8 @@ package body Gen_IL.Internals is
             return "DT_Position";
          when Forwards_OK =>
             return "Forwards_OK";
+         when Has_First_Controlling_Parameter_Aspect =>
+            return "Has_First_Controlling_Parameter_Aspect";
          when Has_Inherited_DIC =>
             return "Has_Inherited_DIC";
          when Has_Own_DIC =>

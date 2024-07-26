@@ -75,6 +75,7 @@ package Warnsw is
          Warn_On_Late_Primitives,
          Warn_On_Modified_Unread,
          Warn_On_No_Value_Assigned,
+         Warn_On_Non_Dispatching_Primitives,
          Warn_On_Non_Local_Exception,
          No_Warn_On_Non_Local_Exception,
          Warn_On_Object_Renames_Function,
@@ -159,6 +160,7 @@ package Warnsw is
       Warn_On_Ineffective_Predicate_Test |
       Warn_On_Late_Primitives |
       Warn_On_Modified_Unread |
+      Warn_On_Non_Dispatching_Primitives |
       Warn_On_Non_Local_Exception |
       No_Warn_On_Non_Local_Exception |
       Warn_On_Object_Renames_Function |
@@ -356,6 +358,11 @@ package Warnsw is
    --  variable that is at least partially uninitialized. Set to false to
    --  suppress such warnings. The default is that such warnings are enabled.
    --  Modified by use of -gnatwv/V.
+
+   Warn_On_Non_Dispatching_Primitives : Boolean renames F (X.Warn_On_Non_Dispatching_Primitives);
+   --  Set to True to generate warnings for non dispatching primitives of tagged
+   --  types that have aspect/pragma First_Controlling_Parameter set to True.
+   --  This is turned on by -gnatw_j and turned off by -gnatw_J
 
    Warn_On_Non_Local_Exception : Boolean renames F (X.Warn_On_Non_Local_Exception);
    --  Set to True to generate warnings for non-local exception raises and also

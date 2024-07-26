@@ -1442,6 +1442,7 @@ begin
          | Pragma_Fast_Math
          | Pragma_Favor_Top_Level
          | Pragma_Finalize_Storage_Only
+         | Pragma_First_Controlling_Parameter
          | Pragma_Ghost
          | Pragma_Global
          | Pragma_GNAT_Annotate

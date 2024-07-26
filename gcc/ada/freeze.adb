@@ -5066,6 +5066,11 @@ package body Freeze is
          --  variants referenceed by the Variant_Part VP are frozen. This is
          --  a recursive routine to deal with nested variants.
 
+         procedure Warn_If_Implicitly_Inherited_Aspects (Tag_Typ : Entity_Id);
+         --  Report a warning for Tag_Typ when it implicitly inherits the
+         --  First_Controlling_Parameter aspect but does not explicitly
+         --  specify it.
+
          -----------------
          -- Check_Itype --
          -----------------
@@ -5143,6 +5148,193 @@ package body Freeze is
                Next_Non_Pragma (Variant);
             end loop;
          end Freeze_Choices_In_Variant_Part;
+
+         ------------------------------------------
+         -- Warn_If_Implicitly_Inherited_Aspects --
+         ------------------------------------------
+
+         procedure Warn_If_Implicitly_Inherited_Aspects (Tag_Typ : Entity_Id)
+         is
+            function Has_First_Ctrl_Param_Aspect return Boolean;
+            --  Determines if Tag_Typ explicitly has the aspect/pragma
+            --  First_Controlling_Parameter.
+
+            ---------------------------------
+            -- Has_First_Ctrl_Param_Aspect --
+            ---------------------------------
+
+            function Has_First_Ctrl_Param_Aspect return Boolean is
+               Decl_Nod   : constant Node_Id := Parent (Tag_Typ);
+               Asp_Nod    : Node_Id;
+               Nod        : Node_Id;
+               Pragma_Arg : Node_Id;
+               Pragma_Ent : Entity_Id;
+
+            begin
+               pragma Assert (Nkind (Decl_Nod) = N_Full_Type_Declaration);
+
+               if Present (Aspect_Specifications (Decl_Nod)) then
+                  Asp_Nod := First (Aspect_Specifications (Decl_Nod));
+                  while Present (Asp_Nod) loop
+                     if Chars (Identifier (Asp_Nod))
+                       = Name_First_Controlling_Parameter
+                     then
+                        return True;
+                     end if;
+
+                     Next (Asp_Nod);
+                  end loop;
+               end if;
+
+               --  Search for the occurrence of the pragma
+
+               Nod := Next (Decl_Nod);
+               while Present (Nod) loop
+                  if Nkind (Nod) = N_Pragma
+                    and then Chars (Pragma_Identifier (Nod))
+                               = Name_First_Controlling_Parameter
+                    and then Present (Pragma_Argument_Associations (Nod))
+                  then
+                     Pragma_Arg :=
+                       Expression (First (Pragma_Argument_Associations (Nod)));
+
+                     if Nkind (Pragma_Arg) = N_Identifier
+                       and then Present (Entity (Pragma_Arg))
+                     then
+                        Pragma_Ent := Entity (Pragma_Arg);
+
+                        if Pragma_Ent = Tag_Typ
+                          or else
+                            (Is_Concurrent_Type (Pragma_Ent)
+                               and then
+                                 Corresponding_Record_Type (Pragma_Ent)
+                                   = Tag_Typ)
+                        then
+                           return True;
+                        end if;
+                     end if;
+                  end if;
+
+                  Next (Nod);
+               end loop;
+
+               return False;
+            end Has_First_Ctrl_Param_Aspect;
+
+            --  Local Variables
+
+            Has_Aspect_First_Ctrl_Param : constant Boolean :=
+                                            Has_First_Ctrl_Param_Aspect;
+
+         --  Start of processing for Warn_Implicitly_Inherited_Aspects
+
+         begin
+            --  Handle cases where reporting the warning is not needed
+
+            if not Warn_On_Non_Dispatching_Primitives then
+               return;
+
+            --  No check needed when this is the full view of a private type
+            --  declaration since the pragma/aspect must be placed and checked
+            --  in the partial view, and it is implicitly propagated to the
+            --  full view.
+
+            elsif Has_Private_Declaration (Tag_Typ)
+              and then Is_Tagged_Type (Incomplete_Or_Partial_View (Tag_Typ))
+            then
+               return;
+
+            --  Similar case but applied to concurrent types
+
+            elsif Is_Concurrent_Record_Type (Tag_Typ)
+              and then Has_Private_Declaration
+                         (Corresponding_Concurrent_Type (Tag_Typ))
+              and then Is_Tagged_Type
+                         (Incomplete_Or_Partial_View
+                           (Corresponding_Concurrent_Type (Tag_Typ)))
+            then
+               return;
+            end if;
+
+            if Etype (Tag_Typ) /= Tag_Typ
+              and then Has_First_Controlling_Parameter_Aspect (Etype (Tag_Typ))
+            then
+               --  The attribute was implicitly inherited
+               pragma Assert
+                 (Has_First_Controlling_Parameter_Aspect (Tag_Typ));
+
+               --  No warning needed when the current tagged type is not
+               --  an interface type since by definition the aspect is
+               --  implicitly propagated from its parent type; the warning
+               --  is reported on interface types since it may not be so
+               --  clear when some implemented interface types have the
+               --  aspect and other interface types don't have it. For
+               --  interface types, we don't report the warning when the
+               --  interface type is an extension of a single interface
+               --  type (for similarity with the behavior with regular
+               --  tagged types).
+
+               if not Has_Aspect_First_Ctrl_Param
+                 and then Is_Interface (Tag_Typ)
+                 and then not Is_Empty_Elmt_List (Interfaces (Tag_Typ))
+               then
+                  Error_Msg_N
+                    ("?_j?implicitly inherits aspect 'First_'Controlling_'"
+                     & "Parameter!", Tag_Typ);
+                  Error_Msg_NE
+                    ("\?_j?from & and must be confirmed explicitly!",
+                     Tag_Typ, Etype (Tag_Typ));
+               end if;
+
+            elsif Present (Interfaces (Tag_Typ))
+              and then not Is_Empty_Elmt_List (Interfaces (Tag_Typ))
+            then
+               --  To maintain consistency with the behavior when the aspect
+               --  is implicitly inherited from its parent type, we do not
+               --  report a warning for concurrent record types that implement
+               --  a single interface type. By definition, the aspect is
+               --  propagated from that interface type as if it were the parent
+               --  type. For example:
+
+               --     type Iface is interface with First_Controlling_Parameter;
+               --     task type T is new Iface with ...
+
+               if Is_Concurrent_Record_Type (Tag_Typ)
+                 and then No (Next_Elmt (First_Elmt (Interfaces (Tag_Typ))))
+               then
+                  null;
+
+               else
+                  declare
+                     Elmt  : Elmt_Id := First_Elmt (Interfaces (Tag_Typ));
+                     Iface : Entity_Id;
+
+                  begin
+                     while Present (Elmt) loop
+                        Iface := Node (Elmt);
+                        pragma Assert (Present (Iface));
+
+                        if Has_First_Controlling_Parameter_Aspect (Iface)
+                          and then not Has_Aspect_First_Ctrl_Param
+                        then
+                           pragma Assert
+                             (Has_First_Controlling_Parameter_Aspect
+                               (Tag_Typ));
+                           Error_Msg_N
+                             ("?_j?implicitly inherits aspect 'First_'"
+                              & "Controlling_'Parameter", Tag_Typ);
+                           Error_Msg_NE
+                             ("\?_j?from & and must be confirmed explicitly!",
+                              Tag_Typ, Iface);
+                           exit;
+                        end if;
+
+                        Next_Elmt (Elmt);
+                     end loop;
+                  end;
+               end if;
+            end if;
+         end Warn_If_Implicitly_Inherited_Aspects;
 
       --  Start of processing for Freeze_Record_Type
 
@@ -5918,6 +6110,13 @@ package body Freeze is
                   Next_Elmt (Elmt);
                end loop;
             end;
+         end if;
+
+         --  For tagged types, warn on an implicitly inherited aspect/pragma
+         --  First_Controlling_Parameter that is not explicitly set.
+
+         if Is_Tagged_Type (Rec) then
+            Warn_If_Implicitly_Inherited_Aspects (Rec);
          end if;
       end Freeze_Record_Type;
 
@@ -10275,6 +10474,86 @@ package body Freeze is
         and then not Error_Posted (Parent (E))
       then
          Check_Overriding_Indicator (E, Empty, Is_Primitive (E));
+      end if;
+
+      --  Check illegal subprograms of tagged types and interface types that
+      --  have aspect/pragma First_Controlling_Parameter.
+
+      if Comes_From_Source (E)
+        and then Is_Abstract_Subprogram (E)
+      then
+         if Is_Dispatching_Operation (E) then
+            if Ekind (E) = E_Function
+              and then Is_Interface (Etype (E))
+              and then not Is_Class_Wide_Type (Etype (E))
+              and then Has_First_Controlling_Parameter_Aspect
+                         (Find_Dispatching_Type (E))
+            then
+               Error_Msg_NE
+                 ("'First_'Controlling_'Parameter disallows returning a "
+                  & "non-class-wide interface type",
+                  E, Etype (E));
+            end if;
+
+         else
+            --  The type of the formals cannot be an interface type
+
+            if Present (First_Formal (E)) then
+               declare
+                  Formal     : Entity_Id := First_Formal (E);
+                  Has_Aspect : Boolean := False;
+
+               begin
+                  --  Check if some formal has the aspect
+
+                  while Present (Formal) loop
+                     if Is_Tagged_Type (Etype (Formal))
+                       and then
+                         Has_First_Controlling_Parameter_Aspect
+                           (Etype (Formal))
+                     then
+                        Has_Aspect := True;
+                     end if;
+
+                     Next_Formal (Formal);
+                  end loop;
+
+                  --  If the aspect is present then report the error
+
+                  if Has_Aspect then
+                     Formal := First_Formal (E);
+
+                     while Present (Formal) loop
+                        if Is_Interface (Etype (Formal))
+                          and then not Is_Class_Wide_Type (Etype (Formal))
+                        then
+                           Error_Msg_NE
+                             ("not a dispatching primitive of interface type&",
+                              E, Etype (Formal));
+                           Error_Msg_N
+                             ("\disallowed by 'First_'Controlling_'Parameter "
+                              & "aspect", E);
+                        end if;
+
+                        Next_Formal (Formal);
+                     end loop;
+                  end if;
+               end;
+            end if;
+
+            if Ekind (E) = E_Function
+              and then Is_Interface (Etype (E))
+              and then not Is_Class_Wide_Type (Etype (E))
+              and then Has_First_Controlling_Parameter_Aspect (Etype (E))
+            then
+               Error_Msg_NE
+                 ("not a dispatching primitive of interface type&",
+                  E, Etype (E));
+               Error_Msg_N
+                 ("\disallowed by 'First_'Controlling_'Parameter "
+                  & "aspect", E);
+            end if;
+         end if;
       end if;
    end Freeze_Subprogram;
 
