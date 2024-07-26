@@ -16,8 +16,6 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#![feature(extern_types)]
-
 mod gccrs_ffi;
 
 use gccrs_ffi::FFIVector;
