@@ -407,6 +407,11 @@ maybe_duplicate_comparison (gassign *stmt, basic_block bb)
   tree lhs = gimple_assign_lhs (stmt);
   unsigned cnt = 0;
 
+  /* This is should not be used for -O0 nor it is not useful
+     when ter is turned off. */
+  if (!optimize || !flag_tree_ter)
+    return;
+
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
     {
       if (is_gimple_debug (USE_STMT (use_p)))
