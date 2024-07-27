@@ -1,9 +1,14 @@
-// { dg-output "104\r*\n33\r*\n1\r*\n" }
+// { dg-output "1\r*\n1\r*\n1\r*\n" }
+
 #![feature(rustc_attrs)]
 
 #[rustc_builtin_macro]
 macro_rules! include_bytes {
     () => {{}};
+}
+
+macro_rules! my_file {
+    () => {"include.txt"};
 }
 
 extern "C" {
@@ -17,32 +22,30 @@ fn print_int(value: i32) {
     }
 }
 
-fn main() -> i32 {
-    let bytes = include_bytes!("include.txt");
-
-    print_int(bytes[0] as i32);
-    print_int(bytes[14] as i32);
-
+fn check_bytes(bytes: &[u8; 16]) {
     let the_bytes = b"hello, include!\n";
 
-    let x = bytes[0] == the_bytes[0]
-        && bytes[1] == the_bytes[1]
-        && bytes[2] == the_bytes[2]
-        && bytes[3] == the_bytes[3]
-        && bytes[4] == the_bytes[4]
-        && bytes[5] == the_bytes[5]
-        && bytes[6] == the_bytes[6]
-        && bytes[7] == the_bytes[7]
-        && bytes[8] == the_bytes[8]
-        && bytes[9] == the_bytes[9]
-        && bytes[10] == the_bytes[10]
-        && bytes[11] == the_bytes[11]
-        && bytes[12] == the_bytes[12]
-        && bytes[13] == the_bytes[13]
-        && bytes[14] == the_bytes[14]
-        && bytes[15] == the_bytes[15];
+    let x = true;
+    let mut i = 0;
+
+    // X is true iff bytes == the_bytes
+    while i < 16 {
+        x = x && (bytes[i] == the_bytes[i]);
+        i += 1;
+    }
 
     print_int(x as i32);
+}
+
+fn main() -> i32 {
+    let bytes1: &'static [u8; 16] = include_bytes!("include.txt");
+    check_bytes(bytes1);
+
+    let bytes2: &'static [u8; 16] = include_bytes!(my_file!());
+    check_bytes(bytes2);
+
+    let bytes3 = include_bytes!(my_file!(),);
+    check_bytes(bytes3);
 
     0
 }

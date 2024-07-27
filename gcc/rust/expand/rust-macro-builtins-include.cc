@@ -40,7 +40,12 @@ MacroBuiltin::include_bytes_handler (location_t invoc_locus,
   if (lit_expr == nullptr)
     return AST::Fragment::create_error ();
 
-  rust_assert (lit_expr->is_literal ());
+  if (!lit_expr->is_literal ())
+    {
+      auto token_tree = invoc.get_delim_tok_tree ();
+      return AST::Fragment ({AST::SingleASTNode (std::move (lit_expr))},
+			    token_tree.to_token_stream ());
+    }
 
   std::string target_filename
     = source_relative_path (lit_expr->as_string (), invoc_locus);
@@ -188,16 +193,36 @@ MacroBuiltin::include_handler (location_t invoc_locus,
 			       AST::MacroInvocData &invoc,
 			       AST::InvocKind semicolon)
 {
+  bool is_semicoloned = semicolon == AST::InvocKind::Semicoloned;
   /* Get target filename from the macro invocation, which is treated as a path
      relative to the include!-ing file (currently being compiled).  */
-  auto lit_expr
+  std::unique_ptr<AST::Expr> lit_expr
     = parse_single_string_literal (BuiltinMacro::Include,
 				   invoc.get_delim_tok_tree (), invoc_locus,
-				   invoc.get_expander ());
+				   invoc.get_expander (), is_semicoloned);
   if (lit_expr == nullptr)
     return AST::Fragment::create_error ();
 
-  rust_assert (lit_expr->is_literal ());
+  if (!lit_expr->is_literal ())
+    {
+      // We have to expand an inner macro eagerly
+      auto token_tree = invoc.get_delim_tok_tree ();
+
+      // parse_single_string_literal returned an AST::MacroInvocation, which
+      // can either be an AST::Item or AST::Expr. Depending on the context the
+      // original macro was invoked in, we will set AST::Item or AST::Expr
+      // appropriately.
+      if (is_semicoloned)
+	{
+	  std::unique_ptr<AST::Item> lit_item = std::unique_ptr<AST::Item> (
+	    static_cast<AST::MacroInvocation *> (lit_expr.release ()));
+	  return AST::Fragment ({AST::SingleASTNode (std::move (lit_item))},
+				token_tree.to_token_stream ());
+	}
+      else
+	return AST::Fragment ({AST::SingleASTNode (std::move (lit_expr))},
+			      token_tree.to_token_stream ());
+    }
 
   std::string filename
     = source_relative_path (lit_expr->as_string (), invoc_locus);
@@ -218,8 +243,14 @@ MacroBuiltin::include_handler (location_t invoc_locus,
 
   Lexer lex (target_filename, std::move (target_file), linemap);
   Parser<Lexer> parser (lex);
+  std::unique_ptr<AST::Expr> parsed_expr = nullptr;
+  std::vector<std::unique_ptr<AST::Item>> parsed_items{};
 
-  auto parsed_items = parser.parse_items ();
+  if (is_semicoloned)
+    parsed_items = parser.parse_items ();
+  else
+    parsed_expr = parser.parse_expr ();
+
   bool has_error = !parser.get_errors ().empty ();
 
   for (const auto &error : parser.get_errors ())
@@ -233,17 +264,22 @@ MacroBuiltin::include_handler (location_t invoc_locus,
     }
 
   std::vector<AST::SingleASTNode> nodes{};
-  for (auto &item : parsed_items)
+  if (is_semicoloned)
+    for (auto &item : parsed_items)
+      {
+	AST::SingleASTNode node (std::move (item));
+	nodes.push_back (node);
+      }
+  else
     {
-      AST::SingleASTNode node (std::move (item));
+      AST::SingleASTNode node (std::move (parsed_expr));
       nodes.push_back (node);
     }
-
   // FIXME: This returns an empty vector of tokens and works fine, but is that
   // the expected behavior? `include` macros are a bit harder to reason about
   // since they include tokens. Furthermore, our lexer has no easy way to return
   // a slice of tokens like the MacroInvocLexer. So it gets even harder to
-  // extrac tokens from here. For now, let's keep it that way and see if it
+  // extract tokens from here. For now, let's keep it that way and see if it
   // eventually breaks, but I don't expect it to cause many issues since the
   // list of tokens is only used when a macro invocation mixes eager
   // macro invocations and already expanded tokens. Think

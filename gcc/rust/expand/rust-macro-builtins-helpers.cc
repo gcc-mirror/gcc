@@ -174,7 +174,8 @@ try_expand_many_expr (Parser<MacroInvocLexer> &parser,
 std::unique_ptr<AST::Expr>
 parse_single_string_literal (BuiltinMacro kind,
 			     AST::DelimTokenTree &invoc_token_tree,
-			     location_t invoc_locus, MacroExpander *expander)
+			     location_t invoc_locus, MacroExpander *expander,
+			     bool is_semicoloned)
 {
   MacroInvocLexer lex (invoc_token_tree.to_token_stream ());
   Parser<MacroInvocLexer> parser (lex);
@@ -221,7 +222,7 @@ parse_single_string_literal (BuiltinMacro kind,
 	    AST::MacroInvocData (AST::SimplePath ({AST::SimplePathSegment (
 				   path_str, invoc_locus)}),
 				 std::move (invoc_token_tree)),
-	    {}, invoc_locus, std::move (pending_invocations));
+	    {}, invoc_locus, std::move (pending_invocations), is_semicoloned);
 	}
       else
 	{
