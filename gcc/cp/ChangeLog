@@ -1,3 +1,15 @@
+2024-07-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/116052
+	* mangle.cc (write_prefix): Handle TRAIT_EXPR.
+
+2024-07-26  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/115757
+	* module.cc (trees_out::core_vals): Write warning specs for
+	DECLs and EXPRs.
+	(trees_in::core_vals): Read warning specs.
+
 2024-07-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/115403

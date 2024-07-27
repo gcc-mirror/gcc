@@ -1,3 +1,83 @@
+2024-07-26  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116085
+	* gcc.target/riscv/pr116085.c: New test.
+
+2024-07-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/116052
+	* g++.dg/ext/decay1.C: New test.
+
+2024-07-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp/ucn-1.C (main): Expect error on c\u0024c identifier also
+	for C++26.
+
+2024-07-26  Sam James  <sam@gentoo.org>
+
+	PR target/7559
+	PR c++/9704
+	PR c++/16115
+	PR c++/19317
+	PR rtl-optimization/11536
+	PR target/20322
+	PR tree-optimization/31966
+	PR rtl-optimization/41033
+	PR tree-optimization/67947
+	* g++.dg/cpp1z/byte1.C: Add dg-do run directive.
+	* g++.dg/init/call1.C: Ditto.
+	* g++.dg/init/copy5.C: Ditto.
+	* g++.dg/opt/nrv9.C: Ditto.
+	* gcc.dg/20021006-1.c: Ditto.
+	* gcc.dg/20030721-1.c: Ditto.
+	* gcc.dg/20050307-1.c: Ditto.
+	* gcc.dg/pr41033.c: Ditto.
+	* gcc.dg/torture/pr67947.c: Ditto.
+	* gcc.dg/tree-ssa/pr31966.c: Ditto.
+	* gcc.dg/tree-ssa/tailcall-3.c: Ditto.
+	* gcc.dg/tree-ssa/vrp74.c: Ditto.
+	* gcc.target/nvptx/abort.c: Fix whitespace in dg directive.
+
+2024-07-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* g++.target/aarch64/vect_cmp-1.C: New test.
+
+2024-07-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/116065
+	* gcc.target/aarch64/sve/target_optimization-1.c: New test.
+
+2024-07-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116101
+	* gcc.dg/tree-ssa/dup_compare_cond-1.c: New test.
+	* gcc.dg/tree-ssa/dup_compare_cond-2.c: New test.
+	* gcc.dg/tree-ssa/dup_compare_cond-3.c: New test.
+
+2024-07-26  Andi Kleen  <ak@gcc.gnu.org>
+
+	PR testsuite/116080
+	* g++.dg/musttail10.C: Use external tail call target check.
+	* g++.dg/musttail6.C: Dito.
+	* lib/target-supports.exp: Add external_tail_call. Disable
+	optimization for tail call checks.
+
+2024-07-26  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/base/pr116036.c: Adjust expected error
+	string.
+
+2024-07-26  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/116074
+	* g++.target/aarch64/pr116074.C: New test.
+
+2024-07-26  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/115757
+	* g++.dg/modules/warn-spec-1_a.C: New test.
+	* g++.dg/modules/warn-spec-1_b.C: New test.
+
 2024-07-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/115403
