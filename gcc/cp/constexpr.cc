@@ -3974,10 +3974,13 @@ cxx_eval_conditional_expression (const constexpr_ctx *ctx, tree t,
   if (TREE_CODE (t) == IF_STMT && !val)
     val = void_node;
 
-  /* P2564: a subexpression of a manifestly constant-evaluated expression
-     or conversion is an immediate function context.  */
+  /* P2564: If we aren't in immediate function context (including a manifestly
+     constant-evaluated expression), check any uses of immediate functions in
+     the arm we're discarding.  But don't do this inside a call; we already
+     checked when parsing the function.  */
   if (ctx->manifestly_const_eval != mce_true
       && !in_immediate_context ()
+      && !ctx->call
       && cp_fold_immediate (&TREE_OPERAND (t, zero_p ? 1 : 2),
 			    ctx->manifestly_const_eval))
     {
