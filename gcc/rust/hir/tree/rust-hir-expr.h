@@ -3843,28 +3843,259 @@ class InlineAsmRegClass
   std::string placeholder;
 };
 
-struct InlineAsmRegOrRegClass
+struct AnonConst
 {
-  enum Type
+  NodeId id;
+  std::unique_ptr<Expr> expr;
+  AnonConst (NodeId id, std::unique_ptr<Expr> expr)
+    : id (id), expr (std::move (expr))
   {
-    Reg,      // links to struct Register
-    RegClass, // links to struct RegisterClass
-  };
-
-  struct Register
+    rust_assert (this->expr != nullptr);
+  }
+  AnonConst (const AnonConst &other)
   {
-    InlineAsmReg Reg;
-  };
+    id = other.id;
+    expr = other.expr->clone_expr ();
+  }
 
-  struct RegisterClass
+  AnonConst operator= (const AnonConst &other)
   {
-    InlineAsmRegClass RegClass;
-  };
-
-  Identifier name;
-  location_t locus;
+    id = other.id;
+    expr = other.expr->clone_expr ();
+    return *this;
+  }
 };
+;
 
+class InlineAsmOperand
+{
+public:
+  struct In
+  {
+    tl::optional<struct AST::InlineAsmRegOrRegClass> reg;
+    std::unique_ptr<Expr> expr;
+
+    In (const tl::optional<struct AST::InlineAsmRegOrRegClass> &reg,
+	std::unique_ptr<Expr> expr)
+      : reg (reg), expr (std::move (expr))
+    {
+      rust_assert (this->expr != nullptr);
+    }
+
+    In (const struct In &other)
+    {
+      reg = other.reg;
+
+      expr = other.expr->clone_expr ();
+    }
+
+    In operator= (const struct In &other)
+    {
+      reg = other.reg;
+      expr = other.expr->clone_expr ();
+
+      return *this;
+    }
+  };
+
+  struct Out
+  {
+    tl::optional<struct AST::InlineAsmRegOrRegClass> reg;
+    bool late;
+    std::unique_ptr<Expr> expr; // can be null
+
+    Out (tl::optional<struct AST::InlineAsmRegOrRegClass> &reg, bool late,
+	 std::unique_ptr<Expr> expr)
+      : reg (reg), late (late), expr (std::move (expr))
+    {
+      rust_assert (this->expr != nullptr);
+    }
+
+    Out (const struct Out &other)
+    {
+      reg = other.reg;
+      late = other.late;
+      expr = other.expr->clone_expr ();
+    }
+
+    Out operator= (const struct Out &other)
+    {
+      reg = other.reg;
+      late = other.late;
+      expr = other.expr->clone_expr ();
+      return *this;
+    }
+  };
+
+  struct InOut
+  {
+    tl::optional<struct AST::InlineAsmRegOrRegClass> reg;
+    bool late;
+    std::unique_ptr<Expr> expr; // this can't be null
+
+    InOut (tl::optional<struct AST::InlineAsmRegOrRegClass> &reg, bool late,
+	   std::unique_ptr<Expr> expr)
+      : reg (reg), late (late), expr (std::move (expr))
+    {
+      rust_assert (this->expr != nullptr);
+    }
+
+    InOut (const struct InOut &other)
+    {
+      reg = other.reg;
+      late = other.late;
+      expr = other.expr->clone_expr ();
+    }
+
+    InOut operator= (const struct InOut &other)
+    {
+      reg = other.reg;
+      late = other.late;
+      expr = other.expr->clone_expr ();
+
+      return *this;
+    }
+  };
+
+  struct SplitInOut
+  {
+    tl::optional<struct AST::InlineAsmRegOrRegClass> reg;
+    bool late;
+    std::unique_ptr<Expr> in_expr;
+    std::unique_ptr<Expr> out_expr; // could be null
+
+    SplitInOut (tl::optional<struct AST::InlineAsmRegOrRegClass> &reg,
+		bool late, std::unique_ptr<Expr> in_expr,
+		std::unique_ptr<Expr> out_expr)
+      : reg (reg), late (late), in_expr (std::move (in_expr)),
+	out_expr (std::move (out_expr))
+    {
+      rust_assert (this->in_expr != nullptr);
+      rust_assert (this->out_expr != nullptr);
+    }
+
+    SplitInOut (const struct SplitInOut &other)
+    {
+      reg = other.reg;
+      late = other.late;
+      in_expr = other.in_expr->clone_expr ();
+      out_expr = other.out_expr->clone_expr ();
+    }
+
+    SplitInOut operator= (const struct SplitInOut &other)
+    {
+      reg = other.reg;
+      late = other.late;
+      in_expr = other.in_expr->clone_expr ();
+      out_expr = other.out_expr->clone_expr ();
+
+      return *this;
+    }
+  };
+
+  struct Const
+  {
+    AnonConst anon_const;
+  };
+
+  struct Sym
+  {
+    std::unique_ptr<Expr> expr;
+
+    Sym (std::unique_ptr<Expr> expr) : expr (std::move (expr))
+    {
+      rust_assert (this->expr != nullptr);
+    }
+    Sym (const struct Sym &other)
+    {
+      expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
+    }
+
+    Sym operator= (const struct Sym &other)
+    {
+      expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
+      return *this;
+    }
+  };
+
+  struct Label
+  {
+    std::string label_name;
+    std::unique_ptr<Expr> expr;
+
+    Label (tl::optional<std::string> label_name, std::unique_ptr<Expr> expr)
+      : expr (std::move (expr))
+    {
+      rust_assert (this->expr != nullptr);
+      if (label_name.has_value ())
+	this->label_name = label_name.value ();
+    }
+    Label (const struct Label &other)
+    {
+      expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
+    }
+
+    Label operator= (const struct Label &other)
+    {
+      expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
+      return *this;
+    }
+  };
+
+private:
+  using RegisterType = AST::InlineAsmOperand::RegisterType;
+  AST::InlineAsmOperand::RegisterType register_type;
+
+  tl::optional<struct In> in;
+  tl::optional<struct Out> out;
+  tl::optional<struct InOut> in_out;
+  tl::optional<struct SplitInOut> split_in_out;
+  tl::optional<struct Const> cnst;
+  tl::optional<struct Sym> sym;
+  tl::optional<struct Label> label;
+  location_t locus;
+
+public:
+  InlineAsmOperand (const InlineAsmOperand &other)
+    : register_type (other.register_type), in (other.in), out (other.out),
+      in_out (other.in_out), split_in_out (other.split_in_out),
+      cnst (other.cnst), sym (other.sym)
+  {}
+
+  InlineAsmOperand (const struct In &reg)
+    : register_type (RegisterType::In), in (reg)
+  {}
+
+  InlineAsmOperand (const struct Out &reg)
+    : register_type (RegisterType::Out), out (reg)
+  {}
+  InlineAsmOperand (const struct InOut &reg)
+    : register_type (RegisterType::InOut), in_out (reg)
+  {}
+  InlineAsmOperand (const struct SplitInOut &reg)
+    : register_type (RegisterType::SplitInOut), split_in_out (reg)
+  {}
+  InlineAsmOperand (const struct Const &reg)
+    : register_type (RegisterType::Const), cnst (reg)
+  {}
+  InlineAsmOperand (const struct Sym &reg)
+    : register_type (RegisterType::Sym), sym (reg)
+  {}
+  InlineAsmOperand (const struct Label &reg)
+    : register_type (RegisterType::Label), label (reg)
+  {}
+
+  RegisterType get_register_type () const { return register_type; }
+
+  // Potentially unsafe without get_register_type() check
+  struct In get_in () const { return in.value (); }
+  struct Out get_out () const { return out.value (); }
+  struct InOut get_in_out () const { return in_out.value (); }
+  struct SplitInOut get_split_in_out () const { return split_in_out.value (); }
+  struct Const get_const () const { return cnst.value (); }
+  struct Sym get_sym () const { return sym.value (); }
+  struct Label get_label () const { return label.value (); }
+};
 // Inline Assembly Node
 class InlineAsm : public ExprWithoutBlock
 {
@@ -3876,7 +4107,7 @@ public:
 
   std::vector<AST::InlineAsmTemplatePiece> template_;
   std::vector<AST::TupleTemplateStr> template_strs;
-  std::vector<AST::InlineAsmOperand> operands;
+  std::vector<HIR::InlineAsmOperand> operands;
   std::vector<AST::TupleClobber> clobber_abi;
   std::set<AST::InlineAsmOption> options;
 
@@ -3909,7 +4140,7 @@ public:
     return template_strs;
   }
 
-  std::vector<AST::InlineAsmOperand> get_operands () { return operands; }
+  std::vector<HIR::InlineAsmOperand> get_operands () { return operands; }
 
   std::vector<AST::TupleClobber> get_clobber_abi () { return clobber_abi; }
 
@@ -3918,7 +4149,7 @@ public:
   InlineAsm (location_t locus, bool is_global_asm,
 	     std::vector<AST::InlineAsmTemplatePiece> template_,
 	     std::vector<AST::TupleTemplateStr> template_strs,
-	     std::vector<AST::InlineAsmOperand> operands,
+	     std::vector<HIR::InlineAsmOperand> operands,
 	     std::vector<AST::TupleClobber> clobber_abi,
 	     std::set<AST::InlineAsmOption> options,
 	     Analysis::NodeMapping mappings,
