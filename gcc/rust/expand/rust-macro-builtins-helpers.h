@@ -74,7 +74,8 @@ try_expand_many_expr (Parser<MacroInvocLexer> &parser,
 std::unique_ptr<AST::Expr>
 parse_single_string_literal (BuiltinMacro kind,
 			     AST::DelimTokenTree &invoc_token_tree,
-			     location_t invoc_locus, MacroExpander *expander);
+			     location_t invoc_locus, MacroExpander *expander,
+			     bool is_semicoloned = false);
 
 // Treat PATH as a path relative to the source file currently being
 // compiled, and return the absolute path for it.

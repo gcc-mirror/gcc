@@ -250,7 +250,12 @@ MacroExpander::expand_invoc (AST::MacroInvocation &invoc,
     }
 
   if (invoc.get_kind () == AST::MacroInvocation::InvocKind::Builtin)
-    expand_eager_invocations (invoc);
+    {
+      // Eager expansions are always expressions
+      push_context (ContextType::EXPR);
+      expand_eager_invocations (invoc);
+      pop_context ();
+    }
 
   AST::MacroInvocData &invoc_data = invoc.get_invoc_data ();
 

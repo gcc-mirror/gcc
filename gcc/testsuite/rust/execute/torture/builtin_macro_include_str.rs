@@ -1,9 +1,13 @@
-// { dg-output "hello, include!\r*\n" }
+// { dg-output "hello, include!\r*\nhello, include!\r*\nhello, include!\r*\n" }
 #![feature(rustc_attrs)]
 
 #[rustc_builtin_macro]
 macro_rules! include_str {
     () => {{}};
+}
+
+macro_rules! my_file {
+    () => {"include.txt"};
 }
 
 extern "C" {
@@ -22,7 +26,10 @@ fn print(s: &str) {
 fn main() -> i32 {
     // include_str! (and include_bytes!) allow for an optional trailing comma.
     let my_str = include_str!("include.txt",);
-
+    print(my_str);
+    let my_str = include_str!(my_file!());
+    print(my_str);
+    let my_str = include_str!(my_file!(),);
     print(my_str);
 
     0
