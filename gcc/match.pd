@@ -9102,6 +9102,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* CTZ simplifications.  */
 (for ctz (CTZ)
+ /* ctz (-X) => ctz (X).  ctz (abs (X)) => ctz (X).  */
+ (for op (negate abs)
+  (simplify
+   (ctz (nop_convert?@0 (op @1)))
+    (with { tree t = TREE_TYPE (@0); }
+     (ctz (convert:t @1)))))
  (for op (ge gt le lt)
       cmp (eq eq ne ne)
   (simplify
