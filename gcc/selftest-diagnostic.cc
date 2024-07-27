@@ -69,7 +69,9 @@ test_diagnostic_context::report (diagnostic_t kind,
 {
   va_list ap;
   va_start (ap, fmt);
+  begin_group ();
   bool result = diagnostic_impl (&richloc, metadata, option, fmt, &ap, kind);
+  end_group ();
   va_end (ap);
   return result;
 }

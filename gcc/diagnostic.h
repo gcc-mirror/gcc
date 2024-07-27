@@ -1012,7 +1012,10 @@ inline bool
 diagnostic_report_diagnostic (diagnostic_context *context,
 			      diagnostic_info *diagnostic)
 {
-  return context->report_diagnostic (diagnostic);
+  context->begin_group ();
+  bool warned = context->report_diagnostic (diagnostic);
+  context->end_group ();
+  return warned;
 }
 
 #ifdef ATTRIBUTE_GCC_DIAG
