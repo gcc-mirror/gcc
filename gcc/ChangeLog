@@ -1,3 +1,104 @@
+2024-07-26  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116085
+	* config/riscv/bitmanip.md (minmax extension avoidance splitter):
+	Rewrite as a simpler define_split.  Adjust the opcode appropriately.
+	Avoid emitting sign extension if it's clearly not needed.
+	* config/riscv/iterators.md (minmax_optab): Rename to uminmax_optab
+	and map everything to unsigned variants.
+
+2024-07-26  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* gimple-ssa-sprintf.cc (format_string): Fix type in range check
+	for UNLIKELY for wide chars.
+
+2024-07-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc (svbic_impl::expand): Update
+	to use andn optab instead of using code_for_aarch64_bic.
+	* config/aarch64/aarch64-sve.md (@aarch64_bic<mode>): Rename to ...
+	(andn<mode>3): This.
+
+2024-07-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* config/aarch64/aarch64.md (*<NLOGICAL:optab>_one_cmpl<mode>3): Rename to ...
+	(<NLOGICAL:optab>n<mode>3): This.
+	(*<NLOGICAL:optab>_one_cmplsidi3_ze): Rename to ...
+	(*<NLOGICAL:optab>nsidi3_ze): This.
+
+2024-07-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* config/aarch64/aarch64-simd.md
+	(bic<mode>3<vczle><vczbe>): Rename to ...
+	(andn<mode>3<vczle><vczbe>): This. Also swap operands.
+	(orn<mode>3<vczle><vczbe>): Rename to ...
+	(iorn<mode>3<vczle><vczbe>): This. Also swap operands.
+	(vec_cmp<mode><v_int_equiv>): Update orn call to iorn
+	and swap the last two arguments.
+
+2024-07-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/116065
+	* config/aarch64/aarch64.opt (mearly-ra=): Mark as Optimization rather
+	than Save.
+
+2024-07-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116101
+	* gimple-isel.cc (maybe_duplicate_comparison): Don't
+	do anything for -O0 or -fno-tree-ter.
+
+2024-07-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gimple-isel.cc (duplicate_comparison): Rename to ...
+	(maybe_duplicate_comparison): This. Add check for use here
+	rather than in its caller.
+	(pass_gimple_isel::execute): Don't check how many uses the
+	comparison had and call maybe_duplicate_comparison instead of
+	duplicate_comparison.
+
+2024-07-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gimple-isel.cc (pass_gimple_isel::execute): Factor out
+	duplicate comparisons out to ...
+	(duplicate_comparison): New function.
+
+2024-07-26  Andi Kleen  <ak@gcc.gnu.org>
+
+	PR c++/116019
+	* tree-tailcall.cc (find_tail_calls): Change tail call
+	error message.
+
+2024-07-26  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_override_options_internal):
+	Reword error string without apostrophe.
+
+2024-07-26  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/116074
+	* tree-vect-patterns.cc (vect_recog_cond_store_pattern): Check vector mode.
+
+2024-07-26  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_builtin): Change
+	from XImode to BLKmode.
+	* config/i386/i386.md (ldtilecfg): Change XI to BLK.
+	(sttilecfg): Ditto.
+
+2024-07-26  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/115757
+	* tree.h (put_warning_spec_at): Declare new function.
+	(has_warning_spec): Likewise.
+	(get_warning_spec): Likewise.
+	(put_warning_spec): Likewise.
+	* diagnostic-spec.h (nowarn_spec_t::from_bits): New function.
+	* diagnostic-spec.cc (put_warning_spec_at): New function.
+	* warning-control.cc (has_warning_spec): New function.
+	(get_warning_spec): New function.
+	(put_warning_spec): New function.
+
 2024-07-25  Carl Love  <cel@linux.ibm.com>
 
 	* config/rs6000/rs6000-builtin.cc (get_element_number,
