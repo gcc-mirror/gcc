@@ -742,26 +742,42 @@ parse_asm_arg (InlineAsmContext inline_asm_ctx)
   return tl::expected<InlineAsmContext, InlineAsmParseError> (inline_asm_ctx);
 }
 
+std::string
+strip_double_quotes (const std::string &str)
+{
+  // Helper function strips the beginning and ending double quotes from a
+  // string.
+  std::string result = str;
+
+  rust_assert (result.size () >= 3);
+  result.erase (0, 1);
+  result.erase (result.size () - 1, 1);
+  return result;
+}
+
 tl::expected<InlineAsmContext, InlineAsmParseError>
-expand_inline_asm (InlineAsmContext &inline_asm_ctx)
+expand_inline_asm_strings (InlineAsmContext &inline_asm_ctx)
 {
   auto &inline_asm = inline_asm_ctx.inline_asm;
 
   auto str_vec = inline_asm.get_template_strs ();
   for (auto &template_str : str_vec)
     {
-      std::cout << template_str.symbol << std::endl;
+      /*std::cout << template_str.symbol << std::endl;*/
 
       auto pieces = Fmt::Pieces::collect (template_str.symbol, false,
-					  Fmt::ffi::ParseMode::Format)
-		      .get_pieces ();
+					  Fmt::ffi::ParseMode::InlineAsm);
+      auto pieces_vec = pieces.get_pieces ();
 
-      for (size_t i = 0; i < pieces.size (); i++)
+      for (size_t i = 0; i < pieces_vec.size (); i++)
 	{
-	  auto piece = pieces[i];
+	  auto piece = pieces_vec[i];
 	  if (piece.tag == Fmt::ffi::Piece::Tag::String)
-	    std::cout << "       " << i << ": " << piece.string._0.to_string ()
-		      << std::endl;
+	    {
+	    }
+	  /*std::cout << "       " << i << ": " << piece.string._0.to_string
+	   * ()*/
+	  /*   << std::endl;*/
 	}
     }
 
@@ -798,7 +814,7 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
   auto is_valid = (bool) resulting_context;
   if (is_valid)
     {
-      expand_inline_asm (resulting_context.value ());
+      expand_inline_asm_strings (*resulting_context);
     }
   if (is_valid)
     {
@@ -846,7 +862,8 @@ parse_format_strings (InlineAsmContext inline_asm_ctx)
   else
     {
       auto template_str
-	= AST::TupleTemplateStr (token->get_locus (), fm_string.value ());
+	= AST::TupleTemplateStr (token->get_locus (),
+				 strip_double_quotes (fm_string.value ()));
       inline_asm.template_strs.push_back (template_str);
     }
 
@@ -872,7 +889,8 @@ parse_format_strings (InlineAsmContext inline_asm_ctx)
       else
 	{
 	  auto template_str
-	    = AST::TupleTemplateStr (token->get_locus (), fm_string.value ());
+	    = AST::TupleTemplateStr (token->get_locus (),
+				     strip_double_quotes (fm_string.value ()));
 	  inline_asm.template_strs.push_back (template_str);
 	}
     }

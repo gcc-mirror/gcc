@@ -8,6 +8,9 @@
 #include "system.h"
 namespace Rust {
 
+std::string
+strip_double_quotes (const std::string &str);
+
 enum InlineAsmParseError
 {
   // Enum for InlineAsmParseError
@@ -83,6 +86,12 @@ public:
     this->allow_templates = allow_templates;
   }
 };
+
+tl::expected<InlineAsmContext, InlineAsmParseError>
+expand_inline_asm_strings (InlineAsmContext &inline_asm_ctx);
+
+tl::expected<InlineAsmContext, InlineAsmParseError>
+expand_inline_asm_string (InlineAsmContext &inline_asm_ctx);
 
 // Expected calls
 WARN_UNUSED_RESULT

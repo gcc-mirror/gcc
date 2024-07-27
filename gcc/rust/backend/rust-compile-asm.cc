@@ -1,21 +1,7 @@
 #include "rust-compile-asm.h"
-
 #include "rust-system.h"
 namespace Rust {
 namespace Compile {
-
-std::string
-strip_double_quotes (const std::string &str)
-{
-  // Helper function strips the beginning and ending double quotes from a
-  // string.
-  std::string result = str;
-
-  rust_assert (result.size () >= 3);
-  result.erase (0, 1);
-  result.erase (result.size () - 1, 1);
-  return result;
-}
 
 CompileAsm::CompileAsm (Context *ctx)
   : HIRCompileBase (ctx), translated (error_mark_node)
@@ -86,7 +72,7 @@ CompileAsm::asm_construct_string_tree (HIR::InlineAsm &expr)
   // debugging and reading)
   std::stringstream ss;
   for (const auto &template_str : expr.template_strs)
-    ss << strip_double_quotes (template_str.symbol) << "\n\t";
+    ss << template_str.symbol << "\n\t";
 
   std::string result = ss.str ();
   return build_string (result.size () + 1, result.c_str ());

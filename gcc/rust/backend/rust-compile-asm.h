@@ -26,9 +26,6 @@
 namespace Rust {
 namespace Compile {
 
-std::string
-strip_double_quotes (const std::string &);
-
 class CompileAsm : private HIRCompileBase, protected HIR::HIRExpressionVisitor
 {
 private:
