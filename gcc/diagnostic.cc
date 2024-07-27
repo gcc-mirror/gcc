@@ -346,6 +346,14 @@ initialize_input_context (diagnostic_input_charset_callback ccb,
 void
 diagnostic_context::finish ()
 {
+  /* We might be handling a fatal error.
+     Close any active diagnostic groups, which may trigger flushing
+     the output format.  */
+  while (m_diagnostic_groups.m_nesting_depth > 0)
+    end_group ();
+
+  /* Clean ups.  */
+
   delete m_output_format;
   m_output_format= nullptr;
 
@@ -1395,6 +1403,11 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
   diagnostic_t orig_diag_kind = diagnostic->kind;
 
   gcc_assert (m_output_format);
+
+  /* Every call to report_diagnostic should be within a
+     begin_group/end_group pair so that output formats can reliably
+     flush diagnostics with on_end_group when the topmost group is ended.  */
+  gcc_assert (m_diagnostic_groups.m_nesting_depth > 0);
 
   /* Give preference to being able to inhibit warnings, before they
      get reclassified to something else.  */

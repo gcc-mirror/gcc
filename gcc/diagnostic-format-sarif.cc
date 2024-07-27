@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 
 
 #include "config.h"
+#define INCLUDE_LIST
+#define INCLUDE_MAP
 #define INCLUDE_MEMORY
 #define INCLUDE_VECTOR
 #include "system.h"
@@ -60,11 +62,13 @@ class sarif_tool; // 3.18
 class sarif_tool_component; // 3.19
 class sarif_invocation; // 3.20
 class sarif_artifact; // 3.24
+class sarif_location_manager; // not in the spec
 class sarif_result; // 3.27
 class sarif_location; // 3.28
 class sarif_physical_location; // 3.29
 class sarif_region; // 3.30
 class sarif_logical_location; // 3.33
+class sarif_location_relationship; // 3.34
 class sarif_code_flow; // 3.36
 class sarif_thread_flow; // 3.37
 class sarif_thread_flow_location; // 3.38
@@ -75,6 +79,17 @@ class sarif_fix; // 3.55
 class sarif_artifact_change; // 3.56
 class sarif_replacement; // 3.57
 class sarif_ice_notification; // 3.58
+
+// Valid values for locationRelationship's "kinds" property (3.34.3)
+
+enum class location_relationship_kind
+{
+  includes,
+  is_included_by,
+  relevant,
+
+  NUM_KINDS
+};
 
 /* Declarations of subclasses of sarif_object.
    Keep these in order of their descriptions in the specification.  */
@@ -166,6 +181,11 @@ enum class diagnostic_artifact_role
   analysis_target, /* "analysisTarget".  */
   debug_output_file, /* "debugOutputFile".  */
   result_file, /* "resultFile".  */
+
+  /* "scannedFile" added in 2.2;
+     see https://github.com/oasis-tcs/sarif-spec/issues/459 */
+  scanned_file,
+
   traced_file, /* "tracedFile".  */
 
   NUM_ROLES
@@ -203,10 +223,160 @@ private:
   bool m_embed_contents;
 };
 
-/* Subclass of sarif_object for SARIF "result" objects
-   (SARIF v2.1.0 section 3.27).  */
+/* A class for sarif_objects that own a "namespace" of numeric IDs for
+   managing location objects within them.  Currently (SARIF v2.1.0)
+   this is just for sarif_result (section 3.28.2), but it will likely
+   eventually also be for notification objects; see
+   https://github.com/oasis-tcs/sarif-spec/issues/540
 
-class sarif_result : public sarif_object
+   Consider locations with chains of include information e.g.
+
+   > include-chain-1.c:
+   >   #include "include-chain-1.h"
+
+   include-chain-1.h:
+     | // First set of decls, which will be referenced in notes
+     | #include "include-chain-1-1.h"
+     |
+     | // Second set of decls, which will trigger the errors
+     | #include "include-chain-1-2.h"
+
+   include-chain-1-1.h:
+     | int p;
+     | int q;
+
+   include-chain-1-1.h:
+     | char p;
+     | char q;
+
+   GCC's textual output emits:
+     |   In file included from PATH/include-chain-1.h:5,
+     |                    from PATH/include-chain-1.c:30:
+     |   PATH/include-chain-1-2.h:1:6: error: conflicting types for 'p'; have 'char'
+     |       1 | char p;
+     |         |      ^
+     |   In file included from PATH/include-chain-1.h:2:
+     |   PATH/include-chain-1-1.h:1:5: note: previous declaration of 'p' with type 'int'
+     |       1 | int p;
+     |         |     ^
+     |   PATH/include-chain-1-2.h:2:6: error: conflicting types for 'q'; have 'char'
+     |       2 | char q;
+     |         |      ^
+     |   PATH/include-chain-1-1.h:2:5: note: previous declaration of 'q' with type 'int'
+     |       2 | int q;
+     |         |     ^
+
+   Whenever a SARIF location is added for a location_t that
+   was #included from somewhere, we queue up the creation of a SARIF
+   location for the location of the #include.  The worklist of queued
+   locations is flushed when the result is finished, which lazily creates
+   any additional related locations for the include chain, and the
+   relationships between the locations.  Doing so can lead to further
+   include locations being processed.  The worklist approach allows us
+   to lazily explore the relevant part of the directed graph of location_t
+   values implicit in our line_maps structure, replicating it as a directed
+   graph of SARIF locations within the SARIF result object, like this:
+
+   [0]: error in include-chain-1-2.h ("conflicting types for 'p'; have 'char'")
+   [1]: #include "include-chain-1-2.h" in include-chain-1.h
+   [2]: note in include-chain-1-2.h ("previous declaration of 'p' with type 'int'")
+   [3]: #include "include-chain-1-1.h" in include-chain-1.h
+   [4]: #include "include-chain-1.h" in include-chain-1.c
+
+   where we want to capture this "includes" graph in SARIF form:
+   . +-----------------------------------+ +----------------------------------+
+   . |"id": 0                            | |"id": 2                           |
+   . | error: "conflicting types for 'p';| | note: previous declaration of 'p'|
+   . |  have 'char'"|                    | | with type 'int'")                |
+   . | in include-chain-1-2.h            | | in include-chain-1-1.h           |
+   . +-----------------------------------+ +----------------------------------+
+   .                   |                                      |
+   .                   | included-by                          | included-by
+   .                   V                                      V
+   .  +--------------------------------+    +--------------------------------+
+   .  |"id": 1                         |    |"id": 3                         |
+   .  | #include "include-chain-1-2.h" |    | #include "include-chain-1-1.h" |
+   .  | in include-chain-1.h           |    | in include-chain-1.h           |
+   .  +--------------------------------+    +--------------------------------+
+   .                         |                      |
+   .                         | included-by          | included-by
+   .                         V                      V
+   .                  +------------------------------------+
+   .                  |"id": 4                             |
+   .                  | The  #include "include-chain-1.h"  |
+   .                  | in include-chain-1.c               |
+   .                  +------------------------------------+
+ */
+
+class sarif_location_manager : public sarif_object
+{
+public:
+  /* A worklist of pending actions needed to fully process this object.
+
+     This lets us lazily walk our data structures to build the
+     directed graph of locations, whilst keeping "notes" at the top
+     of the "relatedLocations" array, and avoiding the need for
+     recursion.  */
+  struct worklist_item
+  {
+    enum class kind
+    {
+     /* Process a #include relationship where m_location_obj
+	was #included-d at m_where.  */
+     included_from
+    };
+
+    worklist_item (sarif_location &location_obj,
+		   enum kind kind,
+		   location_t where)
+      : m_location_obj (location_obj),
+	m_kind (kind),
+	m_where (where)
+    {
+    }
+
+    sarif_location &m_location_obj;
+    enum kind m_kind;
+    location_t m_where;
+  };
+
+  sarif_location_manager ()
+  : m_next_location_id (0)
+  {
+  }
+
+  unsigned allocate_location_id ()
+  {
+    return m_next_location_id++;
+  }
+
+  virtual void
+  add_related_location (std::unique_ptr<sarif_location> location_obj) = 0;
+
+  void
+  add_relationship_to_worklist (sarif_location &location_obj,
+				enum worklist_item::kind kind,
+				location_t where);
+
+  void
+  process_worklist (sarif_builder &builder);
+
+  void
+  process_worklist_item (sarif_builder &builder,
+			 const worklist_item &item);
+private:
+  unsigned m_next_location_id;
+
+  std::list<worklist_item> m_worklist;
+  std::map<location_t, sarif_location *> m_included_from_locations;
+};
+
+/* Subclass of sarif_object for SARIF "result" objects
+   (SARIF v2.1.0 section 3.27).
+   Each SARIF result object has its own "namespace" of numeric IDs for
+   managing location objects (SARIF v2.1.0 section 3.28.2). */
+
+class sarif_result : public sarif_location_manager
 {
 public:
   sarif_result () : m_related_locations_arr (nullptr) {}
@@ -220,17 +390,39 @@ public:
 		   const diagnostic_diagram &diagram,
 		   sarif_builder &builder);
 
-private:
   void
-  add_related_location (std::unique_ptr<sarif_location> location_obj);
+  add_related_location (std::unique_ptr<sarif_location> location_obj)
+    final override;
 
+private:
   json::array *m_related_locations_arr; // borrowed
 };
 
 /* Subclass of sarif_object for SARIF "location" objects
-   (SARIF v2.1.0 section 3.28).  */
+   (SARIF v2.1.0 section 3.28).
+   A location object can have an "id" which must be unique within
+   the enclosing result, if any (see SARIF v2.1.0 section 3.28.2).  */
 
-class sarif_location : public sarif_object {};
+class sarif_location : public sarif_object
+{
+public:
+  long lazily_add_id (sarif_location_manager &loc_mgr);
+  long get_id () const;
+
+  void lazily_add_relationship (sarif_location &target,
+				enum location_relationship_kind kind,
+				sarif_location_manager &loc_mgr);
+
+private:
+  sarif_location_relationship &
+  lazily_add_relationship_object (sarif_location &target,
+				  sarif_location_manager &loc_mgr);
+
+  json::array &lazily_add_relationships_array ();
+
+  std::map<sarif_location *,
+	   sarif_location_relationship *> m_relationships_map;
+};
 
 /* Subclass of sarif_object for SARIF "physicalLocation" objects
    (SARIF v2.1.0 section 3.29).  */
@@ -241,6 +433,23 @@ class sarif_physical_location : public sarif_object {};
    (SARIF v2.1.0 section 3.30).  */
 
 class sarif_region : public sarif_object {};
+
+/* Subclass of sarif_object for SARIF "locationRelationship" objects
+   (SARIF v2.1.0 section 3.34).  */
+
+class sarif_location_relationship : public sarif_object
+{
+public:
+  sarif_location_relationship (sarif_location &target,
+			       sarif_location_manager &loc_mgr);
+
+  long get_target_id () const;
+
+  void lazily_add_kind (enum location_relationship_kind kind);
+
+private:
+  auto_sbitmap m_kinds;
+};
 
 /* Subclass of sarif_object for SARIF "codeFlow" objects
    (SARIF v2.1.0 section 3.36).  */
@@ -304,12 +513,16 @@ class sarif_replacement : public sarif_object {};
    This subclass is specifically for notifying when an
    internal compiler error occurs.  */
 
-class sarif_ice_notification : public sarif_object
+class sarif_ice_notification : public sarif_location_manager
 {
 public:
   sarif_ice_notification (diagnostic_context &context,
 			  const diagnostic_info &diagnostic,
 			  sarif_builder &builder);
+
+  void
+  add_related_location (std::unique_ptr<sarif_location> location_obj)
+    final override;
 };
 
 /* Abstract base class for use when making an  "artifactContent"
@@ -370,6 +583,7 @@ class sarif_builder
 {
 public:
   sarif_builder (diagnostic_context &context,
+		 const line_maps *line_maps,
 		 const char *main_input_filename_,
 		 bool formatted);
 
@@ -380,15 +594,26 @@ public:
 		     const diagnostic_diagram &diagram);
   void end_group ();
 
+  std::unique_ptr<sarif_result> take_current_result ()
+  {
+    return std::move (m_cur_group_result);
+  }
+
   std::unique_ptr<sarif_log> flush_to_object ();
   void flush_to_file (FILE *outf);
 
   std::unique_ptr<json::array>
-  make_locations_arr (const diagnostic_info &diagnostic,
+  make_locations_arr (sarif_location_manager &loc_mgr,
+		      const diagnostic_info &diagnostic,
 		      enum diagnostic_artifact_role role);
   std::unique_ptr<sarif_location>
-  make_location_object (const rich_location &rich_loc,
+  make_location_object (sarif_location_manager &loc_mgr,
+			const rich_location &rich_loc,
 			const logical_location *logical_loc,
+			enum diagnostic_artifact_role role);
+  std::unique_ptr<sarif_location>
+  make_location_object (sarif_location_manager &loc_mgr,
+			location_t where,
 			enum diagnostic_artifact_role role);
   std::unique_ptr<sarif_message>
   make_message_object (const char *msg) const;
@@ -407,15 +632,22 @@ private:
 		      const diagnostic_info &diagnostic,
 		      diagnostic_t orig_diag_kind);
   void
+  add_any_include_chain (sarif_location_manager &loc_mgr,
+			 sarif_location &location_obj,
+			 location_t where);
+  void
   set_any_logical_locs_arr (sarif_location &location_obj,
 			    const logical_location *logical_loc);
   std::unique_ptr<sarif_location>
-  make_location_object (const diagnostic_event &event,
+  make_location_object (sarif_location_manager &loc_mgr,
+			const diagnostic_event &event,
 			enum diagnostic_artifact_role role);
   std::unique_ptr<sarif_code_flow>
-  make_code_flow_object (const diagnostic_path &path);
+  make_code_flow_object (sarif_result &result,
+			 const diagnostic_path &path);
   std::unique_ptr<sarif_thread_flow_location>
-  make_thread_flow_location_object (const diagnostic_event &event,
+  make_thread_flow_location_object (sarif_result &result,
+				    const diagnostic_event &event,
 				    int path_event_idx);
   std::unique_ptr<json::array>
   maybe_make_kinds_array (diagnostic_event::meaning m) const;
@@ -486,6 +718,7 @@ private:
   int get_sarif_column (expanded_location exploc) const;
 
   diagnostic_context &m_context;
+  const line_maps *m_line_maps;
 
   /* The JSON object for the invocation object.  */
   std::unique_ptr<sarif_invocation> m_invocation_obj;
@@ -495,7 +728,7 @@ private:
 
   /* The JSON object for the result object (if any) in the current
      diagnostic group.  */
-  sarif_result *m_cur_group_result; // borrowed
+  std::unique_ptr<sarif_result> m_cur_group_result;
 
   /* Ideally we'd use std::unique_ptr<sarif_artifact> here, but I had
      trouble getting this to work when building with GCC 4.8.  */
@@ -600,6 +833,15 @@ void
 sarif_artifact::add_role (enum diagnostic_artifact_role role,
 			  bool embed_contents)
 {
+  /* TODO(SARIF 2.2): "scannedFile" is to be added as a role in SARIF 2.2;
+     see https://github.com/oasis-tcs/sarif-spec/issues/459
+
+     For now, skip them.
+     Ultimately, we probably shouldn't bother embedding the contents
+     of such artifacts, just the snippets.  */
+  if (role == diagnostic_artifact_role::scanned_file)
+    return;
+
   if (embed_contents)
     m_embed_contents = true;
 
@@ -645,6 +887,8 @@ get_artifact_role_string (enum diagnostic_artifact_role role)
       return "debugOutputFile";
     case diagnostic_artifact_role::result_file:
       return "resultFile";
+    case diagnostic_artifact_role::scanned_file:
+      return "scannedFile";
     case diagnostic_artifact_role::traced_file:
       return "tracedFile";
     }
@@ -670,7 +914,83 @@ sarif_artifact::populate_roles ()
   set<json::array> ("roles", std::move (roles_arr));
 }
 
-/* class sarif_result : public sarif_object.  */
+/* class sarif_location_manager : public sarif_object.  */
+
+void
+sarif_location_manager::
+add_relationship_to_worklist (sarif_location &location_obj,
+			      enum worklist_item::kind kind,
+			      location_t where)
+{
+  m_worklist.push_back (worklist_item (location_obj,
+				       kind,
+				       where));
+}
+
+/* Process all items in this result's worklist.
+   Doing so may temporarily add new items to the end
+   of the worklist.
+   Handling any item should be "lazy", and thus we should
+   eventually drain the queue and terminate.  */
+
+void
+sarif_location_manager::process_worklist (sarif_builder &builder)
+{
+  while (!m_worklist.empty ())
+    {
+      const worklist_item &item = m_worklist.front ();
+      process_worklist_item (builder, item);
+      m_worklist.pop_front ();
+    }
+}
+
+/* Process one item in this result's worklist, potentially
+   adding new items to the end of the worklist.  */
+
+void
+sarif_location_manager::process_worklist_item (sarif_builder &builder,
+					       const worklist_item &item)
+{
+  switch (item.m_kind)
+    {
+    default:
+      gcc_unreachable ();
+    case worklist_item::kind::included_from:
+      {
+	sarif_location &included_loc_obj = item.m_location_obj;
+	sarif_location *includer_loc_obj = nullptr;
+	auto iter = m_included_from_locations.find (item.m_where);
+	if (iter != m_included_from_locations.end ())
+	  includer_loc_obj = iter->second;
+	else
+	  {
+	    std::unique_ptr<sarif_location> new_loc_obj
+	      = builder.make_location_object
+		  (*this,
+		   item.m_where,
+		   diagnostic_artifact_role::scanned_file);
+	    includer_loc_obj = new_loc_obj.get ();
+	    add_related_location (std::move (new_loc_obj));
+	    auto kv
+	      = std::pair<location_t, sarif_location *> (item.m_where,
+							 includer_loc_obj);
+	    m_included_from_locations.insert (kv);
+	  }
+
+	includer_loc_obj->lazily_add_relationship
+	  (included_loc_obj,
+	   location_relationship_kind::includes,
+	   *this);
+	included_loc_obj.lazily_add_relationship
+	  (*includer_loc_obj,
+	   location_relationship_kind::is_included_by,
+	   *this);
+      }
+      break;
+    }
+}
+
+/* class sarif_result : public sarif_location_manager.  */
 
 /* Handle secondary diagnostics that occur within a diagnostic group.
    The closest SARIF seems to have to nested diagnostics is the
@@ -688,7 +1008,7 @@ sarif_result::on_nested_diagnostic (diagnostic_context &context,
      sometimes these will related to current_function_decl, but
      often they won't.  */
   auto location_obj
-    = builder.make_location_object (*diagnostic.richloc, nullptr,
+    = builder.make_location_object (*this, *diagnostic.richloc, nullptr,
 				    diagnostic_artifact_role::result_file);
   auto message_obj
     = builder.make_message_object (pp_formatted_text (context.printer));
@@ -717,7 +1037,10 @@ sarif_result::on_diagram (diagnostic_context &context,
   add_related_location (std::move (location_obj));
 }
 
-/* Add LOCATION_OBJ to this result's "relatedLocations" array,
+/* Implementation of sarif_location_manager::add_related_location vfunc
+   for result objects.
+
+   Add LOCATION_OBJ to this result's "relatedLocations" array,
    creating it if it doesn't yet exist.  */
 
 void
@@ -734,18 +1057,140 @@ add_related_location (std::unique_ptr<sarif_location> location_obj)
   m_related_locations_arr->append (std::move (location_obj));
 }
 
-/* class sarif_ice_notification : public sarif_object.  */
+/* class sarif_location : public sarif_object.  */
+
+/* Ensure this location has an "id" and return it.
+   Use LOC_MGR if an id needs to be allocated.
+
+   See the "id" property (3.28.2).
+
+   We use this to only assign ids to locations that are
+   referenced by another sarif object; others have no "id".   */
+
+long
+sarif_location::lazily_add_id (sarif_location_manager &loc_mgr)
+{
+  long id = get_id ();
+  if (id != -1)
+    return id;
+  id = loc_mgr.allocate_location_id ();
+  set_integer ("id", id);
+  gcc_assert (id != -1);
+  return id;
+}
+
+/* Get the id of this location, or -1 if it doesn't have one.  */
+
+long
+sarif_location::get_id () const
+{
+  json::value *id = get ("id");
+  if (!id)
+    return -1;
+  gcc_assert (id->get_kind () == json::JSON_INTEGER);
+  return static_cast <json::integer_number *> (id)->get ();
+}
+
+// 3.34.3 kinds property
+static const char *
+get_string_for_location_relationship_kind (enum location_relationship_kind kind)
+{
+  switch (kind)
+    {
+    default:
+      gcc_unreachable ();
+    case location_relationship_kind::includes:
+      return "includes";
+    case location_relationship_kind::is_included_by:
+      return "isIncludedBy";
+    case location_relationship_kind::relevant:
+      return "relevant";
+    }
+}
+
+/* Lazily populate this location's "relationships" property (3.28.7)
+   with the relationship of KIND to TARGET, creating objects
+   as necessary.
+   Use LOC_MGR for any locations that need "id" values.  */
+
+void
+sarif_location::lazily_add_relationship (sarif_location &target,
+					 enum location_relationship_kind kind,
+					 sarif_location_manager &loc_mgr)
+{
+  sarif_location_relationship &relationship_obj
+    = lazily_add_relationship_object (target, loc_mgr);
+
+  relationship_obj.lazily_add_kind (kind);
+}
+
+/* Lazily populate this location's "relationships" property (3.28.7)
+   with a location_relationship to TARGET, creating objects
+   as necessary.
+   Use LOC_MGR for any locations that need "id" values.  */
+
+sarif_location_relationship &
+sarif_location::lazily_add_relationship_object (sarif_location &target,
+						sarif_location_manager &loc_mgr)
+{
+  /* See if THIS already has a locationRelationship referencing TARGET.  */
+  auto iter = m_relationships_map.find (&target);
+  if (iter != m_relationships_map.end ())
+    {
+      /* We already have a locationRelationship from THIS to TARGET.  */
+      sarif_location_relationship *relationship = iter->second;
+      gcc_assert (relationship->get_target_id() == target.get_id ());
+      return *relationship;
+    }
+
+  // Ensure that THIS has a "relationships" property (3.28.7).
+  json::array &relationships_arr = lazily_add_relationships_array ();
+
+  /* No existing locationRelationship from THIS to TARGET; make one,
+     record it, and add it to the "relationships" array.  */
+  auto relationship_obj
+    = ::make_unique<sarif_location_relationship> (target, loc_mgr);
+  sarif_location_relationship *relationship = relationship_obj.get ();
+  auto kv
+    = std::pair<sarif_location *,
+		sarif_location_relationship *> (&target, relationship);
+  m_relationships_map.insert (kv);
+
+  relationships_arr.append (std::move (relationship_obj));
+
+  return *relationship;
+}
+
+/* Ensure this location has a "relationships" array (3.28.7).  */
+
+json::array &
+sarif_location::lazily_add_relationships_array ()
+{
+  const char *const property_name = "relationships";
+  if (json::value *relationships = get (property_name))
+    {
+      gcc_assert (relationships->get_kind () == json::JSON_ARRAY);
+      return *static_cast <json::array *> (relationships);
+    }
+  json::array *relationships_arr = new json::array ();
+  set (property_name, relationships_arr);
+  return *relationships_arr;
+}
+
+/* class sarif_ice_notification : public sarif_location_manager.  */
 
 /* sarif_ice_notification's ctor.
    DIAGNOSTIC is an internal compiler error.  */
 
-sarif_ice_notification::sarif_ice_notification (diagnostic_context &context,
-						const diagnostic_info &diagnostic,
-						sarif_builder &builder)
+sarif_ice_notification::
+sarif_ice_notification (diagnostic_context &context,
+			const diagnostic_info &diagnostic,
+			sarif_builder &builder)
 {
   /* "locations" property (SARIF v2.1.0 section 3.58.4).  */
   auto locations_arr
-    = builder.make_locations_arr (diagnostic,
+    = builder.make_locations_arr (*this,
+				  diagnostic,
 				  diagnostic_artifact_role::result_file);
   set<json::array> ("locations", std::move (locations_arr));
 
@@ -757,6 +1202,60 @@ sarif_ice_notification::sarif_ice_notification (diagnostic_context &context,
 
   /* "level" property (SARIF v2.1.0 section 3.58.6).  */
   set_string ("level", "error");
+}
+
+/* Implementation of sarif_location_manager::add_related_location vfunc
+   for notifications.  */
+
+void
+sarif_ice_notification::
+add_related_location (std::unique_ptr<sarif_location> location_obj)
+{
+  /* TODO(SARIF 2.2): see https://github.com/oasis-tcs/sarif-spec/issues/540
+     For now, discard all related locations within a notification.  */
+  location_obj = nullptr;
+}
+
+/* class sarif_location_relationship : public sarif_object.  */
+
+sarif_location_relationship::
+sarif_location_relationship (sarif_location &target,
+			     sarif_location_manager &loc_mgr)
+: m_kinds ((unsigned)location_relationship_kind::NUM_KINDS)
+{
+  bitmap_clear (m_kinds);
+  set_integer ("target", target.lazily_add_id (loc_mgr));
+}
+
+long
+sarif_location_relationship::get_target_id () const
+{
+  json::value *id = get ("id");
+  gcc_assert (id);
+  return static_cast <json::integer_number *> (id)->get ();
+}
+
+void
+sarif_location_relationship::
+lazily_add_kind (enum location_relationship_kind kind)
+{
+  if (bitmap_bit_p (m_kinds, (int)kind))
+    return; // already have this kind
+  bitmap_set_bit (m_kinds, (int)kind);
+
+  // 3.34.3 kinds property
+  json::array *kinds_arr = nullptr;
+  if (json::value *kinds_val = get ("kinds"))
+    {
+      gcc_assert (kinds_val->get_kind () == json::JSON_ARRAY);
+    }
+  else
+    {
+      kinds_arr = new json::array ();
+      set ("kinds", kinds_arr);
+    }
+  const char *kind_str = get_string_for_location_relationship_kind (kind);
+  kinds_arr->append_string (kind_str);
 }
 
 /* class sarif_thread_flow : public sarif_object.  */
@@ -787,9 +1286,11 @@ add_location (std::unique_ptr<sarif_thread_flow_location> thread_flow_loc_obj)
 /* sarif_builder's ctor.  */
 
 sarif_builder::sarif_builder (diagnostic_context &context,
+			      const line_maps *line_maps,
 			      const char *main_input_filename_,
 			      bool formatted)
 : m_context (context),
+  m_line_maps (line_maps),
   m_invocation_obj
     (::make_unique<sarif_invocation> (*this,
 				      context.get_original_argv ())),
@@ -834,10 +1335,8 @@ sarif_builder::end_diagnostic (diagnostic_context &context,
   else
     {
       /* Top-level diagnostic.  */
-      std::unique_ptr<sarif_result> result_obj
+      m_cur_group_result
 	= make_result_object (context, diagnostic, orig_diag_kind);
-      m_cur_group_result = result_obj.get (); // borrowed
-      m_results_array->append<sarif_result> (std::move (result_obj));
     }
 }
 
@@ -858,7 +1357,11 @@ sarif_builder::emit_diagram (diagnostic_context &context,
 void
 sarif_builder::end_group ()
 {
-  m_cur_group_result = nullptr;
+  if (m_cur_group_result)
+    {
+      m_cur_group_result->process_worklist (*this);
+      m_results_array->append<sarif_result> (std::move (m_cur_group_result));
+    }
 }
 
 /* Create a top-level object, and add it to all the results
@@ -999,13 +1502,17 @@ sarif_builder::make_result_object (diagnostic_context &context,
   /* "locations" property (SARIF v2.1.0 section 3.27.12).  */
   result_obj->set<json::array>
     ("locations",
-     make_locations_arr (diagnostic, diagnostic_artifact_role::result_file));
+     make_locations_arr (*result_obj.get (),
+			 diagnostic,
+			 diagnostic_artifact_role::result_file));
 
   /* "codeFlows" property (SARIF v2.1.0 section 3.27.18).  */
   if (const diagnostic_path *path = diagnostic.richloc->get_path ())
     {
       auto code_flows_arr = ::make_unique<json::array> ();
-      code_flows_arr->append<sarif_code_flow> (make_code_flow_object (*path));
+      code_flows_arr->append<sarif_code_flow>
+	(make_code_flow_object (*result_obj.get (),
+				*path));
       result_obj->set<json::array> ("codeFlows", std::move (code_flows_arr));
     }
 
@@ -1123,10 +1630,12 @@ make_tool_component_reference_object_for_cwe () const
 
 /* Make an array suitable for use as the "locations" property of:
    - a "result" object (SARIF v2.1.0 section 3.27.12), or
-   - a "notification" object (SARIF v2.1.0 section 3.58.4).  */
+   - a "notification" object (SARIF v2.1.0 section 3.58.4).
+   Use LOC_MGR for any locations that need "id" values.  */
 
 std::unique_ptr<json::array>
-sarif_builder::make_locations_arr (const diagnostic_info &diagnostic,
+sarif_builder::make_locations_arr (sarif_location_manager &loc_mgr,
+				   const diagnostic_info &diagnostic,
 				   enum diagnostic_artifact_role role)
 {
   auto locations_arr = ::make_unique<json::array> ();
@@ -1135,7 +1644,7 @@ sarif_builder::make_locations_arr (const diagnostic_info &diagnostic,
     logical_loc = client_data_hooks->get_current_logical_location ();
 
   auto location_obj
-    = make_location_object (*diagnostic.richloc, logical_loc, role);
+    = make_location_object (loc_mgr, *diagnostic.richloc, logical_loc, role);
   /* Don't add entirely empty location objects to the array.  */
   if (!location_obj->is_empty ())
     locations_arr->append<sarif_location> (std::move (location_obj));
@@ -1161,10 +1670,13 @@ set_any_logical_locs_arr (sarif_location &location_obj,
 }
 
 /* Make a "location" object (SARIF v2.1.0 section 3.28) for RICH_LOC
-   and LOGICAL_LOC.  */
+   and LOGICAL_LOC.
+   Use LOC_MGR for any locations that need "id" values, and for
+   any worklist items.  */
 
 std::unique_ptr<sarif_location>
-sarif_builder::make_location_object (const rich_location &rich_loc,
+sarif_builder::make_location_object (sarif_location_manager &loc_mgr,
+				     const rich_location &rich_loc,
 				     const logical_location *logical_loc,
 				     enum diagnostic_artifact_role role)
 {
@@ -1257,6 +1769,8 @@ sarif_builder::make_location_object (const rich_location &rich_loc,
 				      std::move (annotations_arr));
   }
 
+  add_any_include_chain (loc_mgr, *location_obj.get (), loc);
+
   /* A flag for hinting that the diagnostic involves issues at the
      level of character encodings (such as homoglyphs, or misleading
      bidirectional control codes), and thus that it will be helpful
@@ -1271,11 +1785,66 @@ sarif_builder::make_location_object (const rich_location &rich_loc,
   return location_obj;
 }
 
+/* If WHERE was #included from somewhere, add a worklist item
+   to LOC_MGR to lazily add a location for the #include location,
+   and relationships between it and the LOCATION_OBJ.
+   Compare with diagnostic_context::report_current_module, but rather
+   than iterating the current chain, we add the next edge and iterate
+   in the worklist, so that edges are only added once.  */
+
+void
+sarif_builder::add_any_include_chain (sarif_location_manager &loc_mgr,
+				      sarif_location &location_obj,
+				      location_t where)
+{
+  if (where <= BUILTINS_LOCATION)
+    return;
+
+  const line_map_ordinary *map = nullptr;
+  linemap_resolve_location (m_line_maps, where,
+			    LRK_MACRO_DEFINITION_LOCATION,
+			    &map);
+
+  if (!map)
+    return;
+
+  location_t include_loc = linemap_included_from (map);
+  map = linemap_included_from_linemap (m_line_maps, map);
+  if (!map)
+    return;
+  loc_mgr.add_relationship_to_worklist
+    (location_obj,
+     sarif_result::worklist_item::kind::included_from,
+     include_loc);
+}
+
+/* Make a "location" object (SARIF v2.1.0 section 3.28) for WHERE
+   within an include chain.  */
+
+std::unique_ptr<sarif_location>
+sarif_builder::make_location_object (sarif_location_manager &loc_mgr,
+				     location_t loc,
+				     enum diagnostic_artifact_role role)
+{
+  auto location_obj = ::make_unique<sarif_location> ();
+
+  /* "physicalLocation" property (SARIF v2.1.0 section 3.28.3).  */
+  if (auto phs_loc_obj
+      = maybe_make_physical_location_object (loc, role, 0, nullptr))
+    location_obj->set<sarif_physical_location> ("physicalLocation",
+						std::move (phs_loc_obj));
+
+  add_any_include_chain (loc_mgr, *location_obj.get (), loc);
+
+  return location_obj;
+}
+
 /* Make a "location" object (SARIF v2.1.0 section 3.28) for EVENT
    within a diagnostic_path.  */
 
 std::unique_ptr<sarif_location>
-sarif_builder::make_location_object (const diagnostic_event &event,
+sarif_builder::make_location_object (sarif_location_manager &loc_mgr,
+				     const diagnostic_event &event,
 				     enum diagnostic_artifact_role role)
 {
   auto location_obj = ::make_unique<sarif_location> ();
@@ -1295,6 +1864,8 @@ sarif_builder::make_location_object (const diagnostic_event &event,
   label_text ev_desc = event.get_desc (false);
   location_obj->set<sarif_message> ("message",
 				    make_message_object (ev_desc.get ()));
+
+  add_any_include_chain (loc_mgr, *location_obj.get (), loc);
 
   return location_obj;
 }
@@ -1651,7 +2222,8 @@ make_sarif_logical_location_object (const logical_location &logical_loc)
 /* Make a "codeFlow" object (SARIF v2.1.0 section 3.36) for PATH.  */
 
 std::unique_ptr<sarif_code_flow>
-sarif_builder::make_code_flow_object (const diagnostic_path &path)
+sarif_builder::make_code_flow_object (sarif_result &result,
+				      const diagnostic_path &path)
 {
   auto code_flow_obj = ::make_unique <sarif_code_flow> ();
 
@@ -1680,7 +2252,7 @@ sarif_builder::make_code_flow_object (const diagnostic_path &path)
 
       /* Add event to thread's threadFlow object.  */
       std::unique_ptr<sarif_thread_flow_location> thread_flow_loc_obj
-	= make_thread_flow_location_object (event, i);
+	= make_thread_flow_location_object (result, event, i);
       thread_flow_obj->add_location (std::move (thread_flow_loc_obj));
     }
   code_flow_obj->set<json::array> ("threadFlows", std::move (thread_flows_arr));
@@ -1691,7 +2263,8 @@ sarif_builder::make_code_flow_object (const diagnostic_path &path)
 /* Make a "threadFlowLocation" object (SARIF v2.1.0 section 3.38) for EVENT.  */
 
 std::unique_ptr<sarif_thread_flow_location>
-sarif_builder::make_thread_flow_location_object (const diagnostic_event &ev,
+sarif_builder::make_thread_flow_location_object (sarif_result &result,
+						 const diagnostic_event &ev,
 						 int path_event_idx)
 {
   auto thread_flow_loc_obj = ::make_unique<sarif_thread_flow_location> ();
@@ -1703,7 +2276,7 @@ sarif_builder::make_thread_flow_location_object (const diagnostic_event &ev,
   /* "location" property (SARIF v2.1.0 section 3.38.3).  */
   thread_flow_loc_obj->set<sarif_location>
     ("location",
-     make_location_object (ev, diagnostic_artifact_role::traced_file));
+     make_location_object (result, ev, diagnostic_artifact_role::traced_file));
 
   /* "kinds" property (SARIF v2.1.0 section 3.38.8).  */
   diagnostic_event::meaning m = ev.get_meaning ();
@@ -2078,6 +2651,7 @@ sarif_builder::get_or_create_artifact (const char *filename,
       gcc_unreachable ();
     case diagnostic_artifact_role::analysis_target:
     case diagnostic_artifact_role::result_file:
+    case diagnostic_artifact_role::scanned_file:
     case diagnostic_artifact_role::traced_file:
       /* Assume that these are in the source language.  */
       if (auto client_data_hooks = m_context.get_client_data_hooks ())
@@ -2277,6 +2851,16 @@ sarif_ice_handler (diagnostic_context *context)
 class sarif_output_format : public diagnostic_output_format
 {
 public:
+  ~sarif_output_format ()
+  {
+    /* Any sarifResult objects should have been handled by now.
+       If not, then something's gone wrong with diagnostic
+       groupings.  */
+    std::unique_ptr<sarif_result> pending_result
+      = m_builder.take_current_result ();
+    gcc_assert (!pending_result);
+  }
+
   void on_begin_group () final override
   {
     /* No-op,  */
@@ -2303,10 +2887,11 @@ public:
 
 protected:
   sarif_output_format (diagnostic_context &context,
+		       const line_maps *line_maps,
 		       const char *main_input_filename_,
 		       bool formatted)
   : diagnostic_output_format (context),
-    m_builder (context, main_input_filename_, formatted)
+    m_builder (context, line_maps, main_input_filename_, formatted)
   {}
 
   sarif_builder m_builder;
@@ -2316,10 +2901,11 @@ class sarif_stream_output_format : public sarif_output_format
 {
 public:
   sarif_stream_output_format (diagnostic_context &context,
+			      const line_maps *line_maps,
 			      const char *main_input_filename_,
 			      bool formatted,
 			      FILE *stream)
-  : sarif_output_format (context, main_input_filename_, formatted),
+  : sarif_output_format (context, line_maps, main_input_filename_, formatted),
     m_stream (stream)
   {
   }
@@ -2339,10 +2925,11 @@ class sarif_file_output_format : public sarif_output_format
 {
 public:
   sarif_file_output_format (diagnostic_context &context,
+			    const line_maps *line_maps,
 			    const char *main_input_filename_,
 			    bool formatted,
 			    const char *base_file_name)
-  : sarif_output_format (context, main_input_filename_, formatted),
+  : sarif_output_format (context, line_maps, main_input_filename_, formatted),
     m_base_file_name (xstrdup (base_file_name))
   {
   }
@@ -2407,6 +2994,7 @@ diagnostic_output_format_init_sarif_stderr (diagnostic_context &context,
   diagnostic_output_format_init_sarif (context);
   context.set_output_format
     (new sarif_stream_output_format (context,
+				     line_table,
 				     main_input_filename_,
 				     formatted,
 				     stderr));
@@ -2424,6 +3012,7 @@ diagnostic_output_format_init_sarif_file (diagnostic_context &context,
   diagnostic_output_format_init_sarif (context);
   context.set_output_format
     (new sarif_file_output_format (context,
+				   line_table,
 				   main_input_filename_,
 				   formatted,
 				   base_file_name));
@@ -2440,6 +3029,7 @@ diagnostic_output_format_init_sarif_stream (diagnostic_context &context,
   diagnostic_output_format_init_sarif (context);
   context.set_output_format
     (new sarif_stream_output_format (context,
+				     line_table,
 				     main_input_filename_,
 				     formatted,
 				     stream));
@@ -2461,6 +3051,7 @@ public:
     diagnostic_output_format_init_sarif (*this);
 
     m_format = new buffered_output_format (*this,
+					   line_table,
 					   main_input_filename,
 					   true);
     set_output_format (m_format); // give ownership;
@@ -2476,9 +3067,10 @@ private:
   {
   public:
     buffered_output_format (diagnostic_context &context,
+			    const line_maps *line_maps,
 			    const char *main_input_filename_,
 			    bool formatted)
-      : sarif_output_format (context, main_input_filename_, formatted)
+    : sarif_output_format (context, line_maps, main_input_filename_, formatted)
     {
     }
     bool machine_readable_stderr_p () const final override
@@ -2509,7 +3101,7 @@ test_make_location_object (const line_table_case &case_)
 
   test_diagnostic_context dc;
 
-  sarif_builder builder (dc, "MAIN_INPUT_FILENAME", true);
+  sarif_builder builder (dc, line_table, "MAIN_INPUT_FILENAME", true);
 
   /* These "columns" are byte offsets, whereas later on the columns
      in the generated SARIF use sarif_builder::get_sarif_column and
@@ -2536,9 +3128,11 @@ test_make_location_object (const line_table_case &case_)
   richloc.add_range (field, SHOW_RANGE_WITHOUT_CARET, &label2);
   richloc.set_escape_on_output (true);
 
+  sarif_result result;
+
   std::unique_ptr<sarif_location> location_obj
     = builder.make_location_object
-    (richloc, nullptr, diagnostic_artifact_role::analysis_target);
+    (result, richloc, nullptr, diagnostic_artifact_role::analysis_target);
   ASSERT_NE (location_obj, nullptr);
 
   auto physical_location
