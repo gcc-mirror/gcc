@@ -829,6 +829,92 @@ ASTLoweringExpr::visit (AST::ClosureExprInnerTyped &expr)
 			    expr.get_locus ());
 }
 
+HIR::InlineAsmOperand
+from_operand (const AST::InlineAsmOperand &operand)
+{
+  using RegisterType = AST::InlineAsmOperand::RegisterType;
+  using Operand = HIR::InlineAsmOperand;
+  auto type = operand.get_register_type ();
+
+  /*In,*/
+  /*Out,*/
+  /*InOut,*/
+  /*SplitInOut,*/
+  /*Const,*/
+  /*Sym,*/
+  /*Label,*/
+  if (type == RegisterType::In)
+    {
+      auto in_value = operand.get_in ();
+
+      struct Operand::In in (in_value.reg,
+			     std::unique_ptr<Expr> (ASTLoweringExpr::translate (
+			       *in_value.expr.get ())));
+      return in;
+    }
+  else if (type == RegisterType::Out)
+    {
+      auto out_value = operand.get_out ();
+      struct Operand::Out out (out_value.reg, out_value.late,
+			       std::unique_ptr<Expr> (
+				 ASTLoweringExpr::translate (
+				   *out_value.expr.get ())));
+      return out;
+    }
+  else if (type == RegisterType::InOut)
+    {
+      auto inout_value = operand.get_in_out ();
+      struct Operand::InOut inout (inout_value.reg, inout_value.late,
+				   std::unique_ptr<Expr> (
+				     ASTLoweringExpr::translate (
+				       *inout_value.expr.get ())));
+      return inout;
+    }
+  else if (type == RegisterType::SplitInOut)
+    {
+      auto split_in_out_value = operand.get_split_in_out ();
+      struct Operand::SplitInOut split_in_out (
+	split_in_out_value.reg, split_in_out_value.late,
+	std::unique_ptr<Expr> (
+	  ASTLoweringExpr::translate (*split_in_out_value.in_expr.get ())),
+	std::unique_ptr<Expr> (
+	  ASTLoweringExpr::translate (*split_in_out_value.out_expr.get ())));
+      return split_in_out;
+    }
+  else if (type == RegisterType::Const)
+    {
+      auto const_value = operand.get_const ();
+      struct HIR::AnonConst anon_const (
+	const_value.anon_const.id,
+	std::unique_ptr<Expr> (
+	  ASTLoweringExpr::translate (*const_value.anon_const.expr.get ())));
+      struct Operand::Const cnst
+      {
+	anon_const
+      };
+      return cnst;
+    }
+  else if (type == RegisterType::Sym)
+    {
+      auto sym_value = operand.get_sym ();
+      struct Operand::Sym sym (std::unique_ptr<Expr> (
+	ASTLoweringExpr::translate (*sym_value.expr.get ())));
+      return sym;
+    }
+  else if (type == RegisterType::Label)
+    {
+      auto label_value = operand.get_label ();
+      struct Operand::Label label (label_value.label_name,
+				   std::unique_ptr<Expr> (
+				     ASTLoweringExpr::translate (
+				       *label_value.expr.get ())));
+      return label;
+    }
+  else
+    {
+      rust_unreachable ();
+    }
+}
 void
 ASTLoweringExpr::visit (AST::InlineAsm &expr)
 {
@@ -837,10 +923,22 @@ ASTLoweringExpr::visit (AST::InlineAsm &expr)
 				 mappings.get_next_hir_id (crate_num),
 				 mappings.get_next_localdef_id (crate_num));
 
+  std::vector<HIR::InlineAsmOperand> hir_operands;
+  std::vector<AST::InlineAsmOperand> ast_operands = expr.get_operands ();
+  /*int ast_operands_size = ast_operands.size ();*/
+  for (auto &operand : ast_operands)
+    {
+      hir_operands.push_back (from_operand (operand));
+    }
+  /*int hir_operands_size = hir_operands.size ();*/
+
+  /*rust_debug ("{bdbt} : There are %d ast operands prelowering and %d hir "*/
+  /*     "operands after lowering\n",*/
+  /*     ast_operands_size, hir_operands_size);*/
   translated
     = new HIR::InlineAsm (expr.get_locus (), expr.is_global_asm,
 			  expr.get_template_ (), expr.get_template_strs (),
-			  expr.get_operands (), expr.get_clobber_abi (),
+			  hir_operands, expr.get_clobber_abi (),
 			  expr.get_options (), mapping);
 }
 void
