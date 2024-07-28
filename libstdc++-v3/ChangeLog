@@ -1,3 +1,23 @@
+2024-07-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/charconv (__to_chars_16, __to_chars_10)
+	(__to_chars_8, __to_chars_2, __to_chars): Cast ptrdiff_t to
+	size_t for comparison.
+	(__to_chars_i): Check for first >= last instead of first == last
+	for initial sanity check.
+
+2024-07-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_function.h: Add comment about LWG 3617 being
+	supported.
+
+2024-07-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algobase.h (__find_if): Remove overloads for
+	dispatching on iterator_category. Do not unroll loop manually.
+	* include/bits/stl_algo.h (__find_if_not): Remove
+	iterator_category argument from __find_if call.
+
 2024-07-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/expected (expected::value): Add assertions for LWG
