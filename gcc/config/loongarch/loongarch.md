@@ -20,11 +20,6 @@
 ;; <http://www.gnu.org/licenses/>.
 
 (define_c_enum "unspec" [
-  ;; Integer operations that are too cumbersome to describe directly.
-  UNSPEC_REVB_2H
-  UNSPEC_REVB_4H
-  UNSPEC_REVH_D
-
   ;; Floating-point moves.
   UNSPEC_LOAD_LOW
   UNSPEC_LOAD_HIGH
@@ -3151,6 +3146,24 @@
 
 ;; Reverse the order of bytes of operand 1 and store the result in operand 0.
 
+(define_insn "revb_2h"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(rotatert:SI (bswap:SI (match_operand:SI 1 "register_operand" "r"))
+		     (const_int 16)))]
+  ""
+  "revb.2h\t%0,%1"
+  [(set_attr "type" "shift")])
+
+(define_insn "revb_2h_extend"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI
+	  (rotatert:SI
+	    (bswap:SI (match_operand:SI 1 "register_operand" "r"))
+	    (const_int 16))))]
+  "TARGET_64BIT"
+  "revb.2h\t%0,%1"
+  [(set_attr "type" "shift")])
+
 (define_insn "bswaphi2"
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(bswap:HI (match_operand:HI 1 "register_operand" "r")))]
@@ -3158,48 +3171,42 @@
   "revb.2h\t%0,%1"
   [(set_attr "type" "shift")])
 
-(define_insn_and_split "bswapsi2"
+(define_insn "revb_2w"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(rotatert:DI (bswap:DI (match_operand:DI 1 "register_operand" "r"))
+		     (const_int 32)))]
+  "TARGET_64BIT"
+  "revb.2w\t%0,%1"
+  [(set_attr "type" "shift")])
+
+(define_insn "*bswapsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(bswap:SI (match_operand:SI 1 "register_operand" "r")))]
+  "TARGET_64BIT"
+  "revb.2w\t%0,%1"
+  [(set_attr "type" "shift")])
+
+(define_expand "bswapsi2"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(bswap:SI (match_operand:SI 1 "register_operand" "r")))]
   ""
-  "#"
-  ""
-  [(set (match_dup 0) (unspec:SI [(match_dup 1)] UNSPEC_REVB_2H))
-   (set (match_dup 0) (rotatert:SI (match_dup 0) (const_int 16)))]
-  ""
-  [(set_attr "insn_count" "2")])
+{
+  if (!TARGET_64BIT)
+    {
+      rtx t = gen_reg_rtx (SImode);
+      emit_insn (gen_revb_2h (t, operands[1]));
+      emit_insn (gen_rotrsi3 (operands[0], t, GEN_INT (16)));
+      DONE;
+    }
+})
 
-(define_insn_and_split "bswapdi2"
+(define_insn "bswapdi2"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(bswap:DI (match_operand:DI 1 "register_operand" "r")))]
   "TARGET_64BIT"
-  "#"
-  ""
-  [(set (match_dup 0) (unspec:DI [(match_dup 1)] UNSPEC_REVB_4H))
-   (set (match_dup 0) (unspec:DI [(match_dup 0)] UNSPEC_REVH_D))]
-  ""
-  [(set_attr "insn_count" "2")])
-
-(define_insn "revb_2h"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(unspec:SI [(match_operand:SI 1 "register_operand" "r")] UNSPEC_REVB_2H))]
-  ""
-  "revb.2h\t%0,%1"
+  "revb.d\t%0,%1"
   [(set_attr "type" "shift")])
 
-(define_insn "revb_4h"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(unspec:DI [(match_operand:DI 1 "register_operand" "r")] UNSPEC_REVB_4H))]
-  "TARGET_64BIT"
-  "revb.4h\t%0,%1"
-  [(set_attr "type" "shift")])
-
-(define_insn "revh_d"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(unspec:DI [(match_operand:DI 1 "register_operand" "r")] UNSPEC_REVH_D))]
-  "TARGET_64BIT"
-  "revh.d\t%0,%1"
-  [(set_attr "type" "shift")])
 
 ;;
 ;;  ....................
