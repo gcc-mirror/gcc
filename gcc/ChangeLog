@@ -1,3 +1,97 @@
+2024-07-27  Roger Sayle  <roger@nextmovesoftware.com>
+	    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* match.pd (ctz (-X) => ctz (X)): New simplification.
+	(ctz (abs (X)) => ctz (X)): Likewise.
+
+2024-07-27  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add case 9 and case 10 for .SAT_SUB when one
+	of the op is IMM.
+
+2024-07-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR middle-end/107941
+	* diagnostic-format-sarif.cc: Define INCLUDE_LIST and INCLUDE_MAP.
+	(enum class location_relationship_kind): New.
+	(diagnostic_artifact_role::scanned_file): New value.
+	(class sarif_location_manager): New.
+	(class sarif_result): Derive from sarif_location_manager rather
+	than directly from sarif_object.
+	(sarif_result::add_related_location): Convert to vfunc
+	implementation.
+	(sarif_location::m_relationships_map): New field.
+	(class sarif_location_relationship): New.
+	(class sarif_ice_notification): Derive from sarif_location_manager
+	rather than directly from sarif_object.
+	(sarif_builder::take_current_result): New.
+	(sarif_builder::m_line_maps): New field.
+	(sarif_builder::m_cur_group_result): Convert to std::unique_ptr.
+	(sarif_artifact::add_role): Skip scanned_file.
+	(get_artifact_role_string): Handle scanned_file.
+	(sarif_location_manager::add_relationship_to_worklist): New.
+	(sarif_location_manager::process_worklist): New.
+	(sarif_location_manager::process_worklist_item): New.
+	(sarif_result::on_nested_diagnostic): Pass *this to
+	make_location_object.
+	(sarif_location::lazily_add_id): New.
+	(sarif_location::get_id): New.
+	(get_string_for_location_relationship_kind): New.
+	(sarif_location::lazily_add_relationship): New.
+	(sarif_location::lazily_add_relationship_object): New.
+	(sarif_location::lazily_add_relationships_array): New.
+	(sarif_ice_notification::sarif_ice_notification): Fix overlong line.
+	Pass *this to make_locations_arr.
+	(sarif_ice_notification::add_related_location): New.
+	(sarif_location_relationship::sarif_location_relationship): New.
+	(sarif_location_relationship::get_target_id): New.
+	(sarif_location_relationship::lazily_add_kind): New.
+	(sarif_builder::sarif_builder): Add "line_maps" param and use it
+	to initialize m_line_maps.
+	(sarif_builder::end_diagnostic): Update for m_cur_group_result
+	becoming a std::unique_ptr.  Don't append to m_results_array yet.
+	(sarif_builder::end_group): Append m_cur_group_result to
+	m_results_array here, rather than in end_diagnostic.
+	(sarif_builder::make_result_object): Pass result_obj to
+	make_locations_arr and to make_code_flow_object.
+	(sarif_builder::make_locations_arr): Add "loc_mgr" param and pass
+	it to make_location_object.
+	(sarif_builder::make_location_object): For two overloads, add
+	"loc_mgr" param and call add_any_include_chain on the location.
+	(sarif_builder::add_any_include_chain): New.
+	(sarif_builder::make_location_object): New overload.
+	(sarif_builder::make_code_flow_object): Add "result" param and
+	pass it to make_thread_flow_location_object.
+	(sarif_builder::make_thread_flow_location_object): Add "result"
+	param and pass it to make_location_object.
+	(sarif_builder::get_or_create_artifact): Handle scanned_file.
+	(sarif_output_format::~sarif_output_format): Assert that there
+	isn't a pending result.
+	(sarif_output_format::sarif_output_format): Add "line_maps" param
+	and pass it to m_builder's ctor.
+	(sarif_stream_output_format::sarif_stream_output_format): Add
+	"line_maps" param and pass it to base class ctor.
+	(sarif_file_output_format::sarif_file_output_format): Likewise.
+	(diagnostic_output_format_init_sarif_stderr): Pass "line_table"
+	global to format.
+	(diagnostic_output_format_init_sarif_file): Likewise.
+	(diagnostic_output_format_init_sarif_stream): Likewise.
+	(test_sarif_diagnostic_context::test_sarif_diagnostic_context):
+	Likewise.
+	(buffered_output_format::buffered_output_format): Likewise.
+	(selftest::test_make_location_object): Likewise.
+	(selftest::test_make_location_object): Create a sarif_result for
+	use when calling make_location_object.
+	* diagnostic.cc (diagnostic_context::finish): End any active
+	diagnostic groups.
+	(diagnostic_context::report_diagnostic): Assert that we're within
+	a diagnostic group.
+	* diagnostic.h (diagnostic_report_diagnostic): Add
+	begin_group/end_group pair around call to
+	diagnostic_context::report_diagnostic.
+	* selftest-diagnostic.cc (test_diagnostic_context::report): Add
+	begin_group/end_group pair around diagnostic_impl call.
+
 2024-07-26  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/116085

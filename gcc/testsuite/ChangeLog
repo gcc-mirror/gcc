@@ -1,3 +1,43 @@
+2024-07-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115986
+	* g++.dg/cpp2a/consteval-prop21.C: New test.
+
+2024-07-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115561
+	* g++.dg/cpp2a/concepts-lambda21.C: New test.
+
+2024-07-27  Jason Merrill  <jason@redhat.com>
+
+	* lib/gcc-dg.exp (get_matching_lines): New.
+	* lib/g++-dg.exp: Improve std_list selection.
+
+2024-07-27  Roger Sayle  <roger@nextmovesoftware.com>
+	    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.dg/fold-ctz-1.c: New test case.
+	* gcc.dg/fold-ctz-2.c: Likewise.
+
+2024-07-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR middle-end/107941
+	* gcc.dg/sarif-output/include-chain-1-1.h: New test.
+	* gcc.dg/sarif-output/include-chain-1-2.h: New test.
+	* gcc.dg/sarif-output/include-chain-1.c: New test.
+	* gcc.dg/sarif-output/include-chain-1.h: New test.
+	* gcc.dg/sarif-output/include-chain-2.c: New test.
+	* gcc.dg/sarif-output/include-chain-2.h: New test.
+	* gcc.dg/sarif-output/sarif-output.exp: New file.
+	* gcc.dg/sarif-output/sarif.py: New test, adapted from
+	g++.dg/gcov/gcov.py.
+	* gcc.dg/sarif-output/test-include-chain-1.py: New test.
+	* gcc.dg/sarif-output/test-include-chain-2.py: New test.
+	* lib/scansarif.exp (sarif-pytest-format-line): New, taken
+	from lib/gcov.exp.
+	(run-sarif-pytest): New, adapted from run-gcov-pytest in
+	lib/gcov.exp.
+
 2024-07-26  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/116085
