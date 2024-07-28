@@ -722,6 +722,65 @@ convert_integer (st_parameter_dt *dtp, int length, int negative)
   return 1;
 }
 
+/* Same as above, but for unsigneds, where we do not need overflow checks,
+ except on the repeat count.  */
+
+static int
+convert_unsigned (st_parameter_dt *dtp, int length, int negative)
+{
+  char c, *buffer, message[IOMSG_LEN];
+  GFC_UINTEGER_LARGEST v, value;
+  GFC_UINTEGER_8 max;
+  int m;
+
+  buffer = dtp->u.p.saved_string;
+  max = length == -1 ? 0 : MAX_REPEAT;
+
+  for (;;)
+    {
+      c = *buffer++;
+      if (c == '\0')
+	break;
+      c -= '0';
+      v += c;
+      if (length == -1 && v > max)
+	goto overflow;
+    }
+
+  m = 0;
+
+  if (length == -1)
+    {
+      if (negative)
+	value = -v;
+      else
+	value = v;
+
+      value = value & us_max (length);
+      set_unsigned (dtp->u.p.value, value, length);
+    }
+  else
+    {
+      dtp->u.p.repeat_count = v;
+
+      if (dtp->u.p.repeat_count == 0)
+	{
+	  snprintf (message, IOMSG_LEN, "Zero repeat count in item %d of list input",
+		   dtp->u.p.item_count);
+
+	  generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
+	  m = 1;
+	}
+    }
+  free_saved (dtp);
+  return m;
+
+ overflow:
+  snprintf (message, IOMSG_LEN, "Repeat count overflow in item %d of list input",
+	    dtp->u.p.item_count);
+
+  return 1;
+}
 
 /* Parse a repeat count for logical and complex values which cannot
    begin with a digit.  Returns nonzero if we are done, zero if we
@@ -990,7 +1049,7 @@ read_logical (st_parameter_dt *dtp, int length)
    used for repeat counts.  */
 
 static void
-read_integer (st_parameter_dt *dtp, int length)
+read_integer (st_parameter_dt *dtp, int length, bt type)
 {
   char message[IOMSG_LEN];
   int c, negative;
@@ -1055,8 +1114,16 @@ read_integer (st_parameter_dt *dtp, int length)
     }
 
  repeat:
-  if (convert_integer (dtp, -1, 0))
-    return;
+  if (type == BT_INTEGER)
+    {
+      if (convert_integer (dtp, -1, 0))
+	return;
+    }
+  else
+    {
+      if (convert_unsigned (dtp, -1, 0))
+      return;
+    }
 
   /* Get the real integer.  */
 
@@ -1127,8 +1194,13 @@ read_integer (st_parameter_dt *dtp, int length)
   else if (c != '\n')
     eat_line (dtp);
 
-  snprintf (message, IOMSG_LEN, "Bad integer for item %d in list input",
+  if (type == BT_INTEGER)
+    snprintf (message, IOMSG_LEN, "Bad integer for item %d in list input",
 	      dtp->u.p.item_count);
+  else
+    snprintf (message, IOMSG_LEN, "Bad unsigned for item %d in list input",
+	      dtp->u.p.item_count);
+
   free_line (dtp);
   generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
 
@@ -1139,16 +1211,15 @@ read_integer (st_parameter_dt *dtp, int length)
   eat_separator (dtp);
 
   push_char (dtp, '\0');
-  if (convert_integer (dtp, length, negative))
+  if (convert_integer (dtp, length, negative)) /* XXX */
     {
        free_saved (dtp);
        return;
     }
 
   free_saved (dtp);
-  dtp->u.p.saved_type = BT_INTEGER;
+  dtp->u.p.saved_type = type;
 }
-
 
 /* Read a character variable.  */
 
@@ -2224,7 +2295,8 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
   switch (type)
     {
     case BT_INTEGER:
-      read_integer (dtp, kind);
+    case BT_UNSIGNED:
+      read_integer (dtp, kind, type);
       break;
     case BT_LOGICAL:
       read_logical (dtp, kind);
@@ -2318,6 +2390,7 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
       break;
 
     case BT_INTEGER:
+    case BT_UNSIGNED:
     case BT_LOGICAL:
       memcpy (p, dtp->u.p.value, size);
       break;
@@ -3029,7 +3102,8 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info *nl, index_type offset,
           switch (nl->type)
 	  {
 	  case BT_INTEGER:
-	    read_integer (dtp, len);
+	  case BT_UNSIGNED:
+	    read_integer (dtp, len, nl->type);
             break;
 
 	  case BT_LOGICAL:

@@ -148,7 +148,7 @@ get_kind (bt type, gfc_expr *k, const char *name, int default_kind)
    be accomplished by masking out the high bits.  */
 
 void
-gfc_convert_mpz_to_unsigned (mpz_t x, int bitsize)
+gfc_convert_mpz_to_unsigned (mpz_t x, int bitsize, bool check)
 {
   mpz_t mask;
 
@@ -171,7 +171,7 @@ gfc_convert_mpz_to_unsigned (mpz_t x, int bitsize)
     {
       /* Confirm that no bits above the signed range are set if we
 	 are doing range checking.  */
-      if (flag_range_check != 0)
+      if (check && flag_range_check != 0)
 	gcc_assert (mpz_scan1 (x, bitsize-1) == ULONG_MAX);
     }
 }

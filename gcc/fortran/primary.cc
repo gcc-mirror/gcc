@@ -229,7 +229,8 @@ convert_unsigned (const char *buffer, int kind, int radix, locus *where)
   mpz_set_str (e->value.integer, t, radix);
 
   k = gfc_validate_kind (BT_UNSIGNED, kind, false);
-  gfc_convert_mpz_to_unsigned (e->value.integer, gfc_unsigned_kinds[k].bit_size);
+  gfc_convert_mpz_to_unsigned (e->value.integer, gfc_unsigned_kinds[k].bit_size,
+			       false);
 
   return e;
 }

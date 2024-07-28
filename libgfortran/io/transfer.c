@@ -56,6 +56,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
       transfer_complex
       transfer_real128
       transfer_complex128
+      transfer_unsigned
 
     and for WRITE
 
@@ -67,6 +68,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
       transfer_complex_write
       transfer_real128_write
       transfer_complex128_write
+      transfer_unsigned_write
 
     These subroutines do not return status. The *128 functions
     are in the file transfer128.c.
@@ -81,6 +83,12 @@ export_proto(transfer_integer);
 
 extern void transfer_integer_write (st_parameter_dt *, void *, int);
 export_proto(transfer_integer_write);
+
+extern void transfer_unsigned (st_parameter_dt *, void *, int);
+export_proto(transfer_unsigned);
+
+extern void transfer_unsigned_write (st_parameter_dt *, void *, int);
+export_proto(transfer_unsigned_write);
 
 extern void transfer_real (st_parameter_dt *, void *, int);
 export_proto(transfer_real);
@@ -2606,6 +2614,18 @@ void
 transfer_integer_write (st_parameter_dt *dtp, void *p, int kind)
 {
   transfer_integer (dtp, p, kind);
+}
+
+void
+transfer_unsigned (st_parameter_dt *dtp, void *p, int kind)
+{
+    wrap_scalar_transfer (dtp, BT_UNSIGNED, p, kind, kind, 1);
+}
+
+void
+transfer_unsigned_write (st_parameter_dt *dtp, void *p, int kind)
+{
+  transfer_unsigned (dtp, p, kind);
 }
 
 void

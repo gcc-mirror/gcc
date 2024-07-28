@@ -677,7 +677,6 @@ enum gfc_isym_id
   GFC_ISYM_STOPPED_IMAGES,
   GFC_ISYM_STORAGE_SIZE,
   GFC_ISYM_STRIDE,
-  GFC_ISYM_SU_KIND,
   GFC_ISYM_SUM,
   GFC_ISYM_SYMLINK,
   GFC_ISYM_SYMLNK,
@@ -706,7 +705,12 @@ enum gfc_isym_id
   GFC_ISYM_Y0,
   GFC_ISYM_Y1,
   GFC_ISYM_YN,
-  GFC_ISYM_YN2
+  GFC_ISYM_YN2,
+
+  /* Add this at the end, so maybe the module format
+     remains compatible.  */
+  GFC_ISYM_SU_KIND
+
 };
 
 enum init_local_logical
@@ -4108,7 +4112,7 @@ void gfc_convert_mpz_to_signed (mpz_t, int);
 gfc_expr *gfc_simplify_ieee_functions (gfc_expr *);
 bool gfc_is_constant_array_expr (gfc_expr *);
 bool gfc_is_size_zero_array (gfc_expr *);
-void gfc_convert_mpz_to_unsigned (mpz_t, int);
+void gfc_convert_mpz_to_unsigned (mpz_t, int, bool check = true);
 
 /* trans-array.cc  */
 

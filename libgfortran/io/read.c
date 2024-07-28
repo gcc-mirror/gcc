@@ -92,6 +92,62 @@ set_integer (void *dest, GFC_INTEGER_LARGEST value, int length)
     }
 }
 
+/* set_integer()-- All of the integer assignments come here to
+   actually place the value into memory.  */
+
+void
+set_unsigned (void *dest, GFC_UINTEGER_LARGEST value, int length)
+{
+  NOTE ("set_integer: %lld %p", (long long int) value, dest);
+  switch (length)
+    {
+#ifdef HAVE_GFC_UINTEGER_16
+#ifdef HAVE_GFC_REAL_17
+    case 17:
+      {
+	GFC_UINTEGER_16 tmp = value;
+	memcpy (dest, (void *) &tmp, 16);
+      }
+      break;
+#endif
+/* length=10 comes about for kind=10 real/complex BOZ, cf. PR41711. */
+    case 10:
+    case 16:
+      {
+	GFC_UINTEGER_16 tmp = value;
+	memcpy (dest, (void *) &tmp, length);
+      }
+      break;
+#endif
+    case 8:
+      {
+	GFC_UINTEGER_8 tmp = value;
+	memcpy (dest, (void *) &tmp, length);
+      }
+      break;
+    case 4:
+      {
+	GFC_UINTEGER_4 tmp = value;
+	memcpy (dest, (void *) &tmp, length);
+      }
+      break;
+    case 2:
+      {
+	GFC_UINTEGER_2 tmp = value;
+	memcpy (dest, (void *) &tmp, length);
+      }
+      break;
+    case 1:
+      {
+	GFC_UINTEGER_1 tmp = value;
+	memcpy (dest, (void *) &tmp, length);
+      }
+      break;
+    default:
+      internal_error (NULL, "Bad integer kind");
+    }
+}
+
 
 /* Max signed value of size give by length argument.  */
 
@@ -132,6 +188,28 @@ si_max (int length)
     }
 }
 
+GFC_UINTEGER_LARGEST
+us_max (int length)
+{
+  switch (length)
+    {
+#ifdef HAVE_GFC_UINTEGER_16
+    case 17:
+    case 16:
+      return GFC_UINTEGER_16_HUGE;
+#endif
+    case 8:
+      return GFC_UINTEGER_8_HUGE;
+    case 4:
+      return GFC_UINTEGER_4_HUGE;
+    case 2:
+      return GFC_UINTEGER_2_HUGE;
+    case 1:
+      return GFC_UINTEGER_1_HUGE;
+    default:
+      internal_error (NULL, "Bad unsigned kind");
+    }
+}
 
 /* convert_real()-- Convert a character representation of a floating
    point number to the machine number.  Returns nonzero if there is an

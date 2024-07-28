@@ -38,6 +38,7 @@ for k in $possible_integer_kinds; do
     echo "typedef GFC_INTEGER_${k} GFC_LOGICAL_${k};"
     echo "#define HAVE_GFC_LOGICAL_${k}"
     echo "#define HAVE_GFC_INTEGER_${k}"
+    echo "#define HAVE_GFC_UINTEGER_${k}"
     echo ""
   fi
   rm -f tmp$$.*

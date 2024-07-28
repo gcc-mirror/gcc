@@ -861,8 +861,14 @@ internal_proto (transfer_array_inner);
 extern void set_integer (void *, GFC_INTEGER_LARGEST, int);
 internal_proto(set_integer);
 
+extern void set_unsigned (void *, GFC_UINTEGER_LARGEST, int);
+internal_proto(set_unsigned);
+
 extern GFC_UINTEGER_LARGEST si_max (int);
 internal_proto(si_max);
+
+extern GFC_UINTEGER_LARGEST us_max (int);
+internal_proto(us_max);
 
 extern int convert_real (st_parameter_dt *, void *, const char *, int);
 internal_proto(convert_real);
