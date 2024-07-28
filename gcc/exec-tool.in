@@ -81,6 +81,14 @@ case "$invoked" in
     ;;
 esac
 
+if test -z "$original"
+then
+  echo "$0: \$original is unset" >&2
+  echo "This probably means there is no '$invoked' for the target." >&2
+  echo "For a cross-compiler, you probably need to install Binutils first." >&2
+  exit 1
+fi
+
 case "$original" in
   ../*)
     # compute absolute path of the location of this script
