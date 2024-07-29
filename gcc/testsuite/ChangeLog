@@ -1,3 +1,45 @@
+2024-07-28  Sam James  <sam@gentoo.org>
+
+	* gcc.target/riscv/rvv/base/cmpmem-2.c: Fix dg-add-options order.
+
+2024-07-28  Sam James  <sam@gentoo.org>
+
+	PR middle-end/25521
+	PR debug/93122
+	* gcc.dg/pr25521.c: Fix dg-do directive order.
+	* gcc.dg/vect/vect-simd-clone-19.c: Likewise.
+	* gcc.target/arm/stack-protector-7.c: Likewise.
+	* gcc.target/arm/stack-protector-8.c: Likewise.
+	* gcc.target/powerpc/pr93122.c: Likewise.
+
+2024-07-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115583
+	* g++.dg/cpp23/consteval-if13.C: New test.
+
+2024-07-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/116056
+	* gcc.target/avr/torture/signal_n-1.c: New test.
+	* gcc.target/avr/torture/signal_n-2.c: New test.
+	* gcc.target/avr/torture/signal_n-3.c: New test.
+	* gcc.target/avr/torture/signal_n-4.cpp: New test.
+
+2024-07-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115823
+	* gm2/builtins/run/pass/testisnormal.mod: Change to an
+	implementation module.
+	* gm2/builtins/run/pass/testisnormal.def: New test.
+	* gm2/builtins/run/pass/testsinl.def: New test.
+	* gm2/builtins/run/pass/testsinl.mod: New test.
+
+2024-07-28  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR testsuite/92550
+	* gcc.dg/ipa/ipa-sra-8.c: Change get_a argument	type to SSS.
+	* gcc.dg/ipa/ipa-sra-9.c: Likewise.
+
 2024-07-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/115986

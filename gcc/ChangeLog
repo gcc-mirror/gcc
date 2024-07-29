@@ -1,3 +1,36 @@
+2024-07-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* exec-tool.in: Exit with an error if $original is empty.
+
+2024-07-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/116056
+	* config/avr/avr.h (machine_function) <is_noblock>: New field.
+	* config/avr/avr-c.cc (avr_cpu_cpp_builtins) <__HAVE_SIGNAL_N__>: New
+	built-in macro.
+	* config/avr/avr.cc (avr_declare_function_name): New function.
+	(avr_attribute_table) <noblock>: New function attribute>.
+	<signal, interrupt>: Allow any number of args.
+	(avr_insert_attributes): Check validity of "signal" and "interrupt"
+	arguments.
+	(avr_foreach_function_attribute, avr_interrupt_signal_function)
+	(avr_isr_number, avr_asm_isr_alias, avr_handle_isr_attribute)
+	(avr_noblock_function_p): New static functions.
+	(avr_interrupt_function): New from avr_interrupt_function_p.
+	Adjust callers.
+	(avr_signal_function): New from avr_signal_function_p.
+	Adjust callers.
+	(avr_set_current_function): Only diagnose non-__vector ISR names
+	when "signal" or "interrupt" attribute has no args. Set
+	cfun->machine->is_noblock.  Warn about "noblock" in non-ISR functions.
+	(struct avr_fun_cookie): New.
+	(avr_expand_prologue, avr_asm_function_end_prologue): Handle "noblock".
+	* config/avr/elf.h (ASM_DECLARE_FUNCTION_NAME): New define.
+	* config/avr/avr-protos.h (avr_declare_function_name): New proto.
+	* doc/extend.texi (AVR Function Attributes): Document
+	signal(num) and interrupt(num).
+	* doc/invoke.texi (AVR Built-in Macros) <__HAVE_SIGNAL_N__>: Document.
+
 2024-07-27  Roger Sayle  <roger@nextmovesoftware.com>
 	    Andrew Pinski  <quic_apinski@quicinc.com>
 

@@ -1,3 +1,7 @@
+2024-07-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* .b4-config: New file.
+
 2024-07-26  Sam James  <sam@gentoo.org>
 
 	* MAINTAINERS: Add myself.

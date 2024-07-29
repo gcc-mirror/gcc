@@ -1,3 +1,8 @@
+2024-07-28  Sam James  <sam@gentoo.org>
+
+	PR libstdc++/110572
+	* testsuite/18_support/type_info/110572.cc: Fix dg-do directive order.
+
 2024-07-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/charconv (__to_chars_16, __to_chars_10)
