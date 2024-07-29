@@ -1540,7 +1540,7 @@ avr_set_current_function (tree decl)
 	{
 	  error_at (loc, "%qs function cannot have arguments", isr);
 	  if (TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
-	    inform (loc, "method %qs has an inplicit %<this%> argument", name);
+	    inform (loc, "method %qs has an implicit %<this%> argument", name);
 	}
 
       if (TREE_CODE (ret) != VOID_TYPE)
