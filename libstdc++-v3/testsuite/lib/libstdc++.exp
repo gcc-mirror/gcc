@@ -1671,6 +1671,8 @@ if { [info exists env(GCC_RUNTEST_PARALLELIZE_DIR)] \
 
 }
 
+# Utility functions, invoked via dg-final.
+
 # Compare output file written by test to expected result.
 # With two arguments the comparison is done via 'diff arg1 arg2'.
 # With one argument the comparison is done via 'diff arg1.tst arg1.txt'.
@@ -1682,6 +1684,10 @@ proc file-io-diff { args } {
     if { $nargs > 2 } {
 	error "too many arguments to file-io-diff"
     }
+
+    set testcase [testname-for-summary]
+    set description "$testcase file-io-diff $args"
+
     if { $nargs == 1 } {
 	set file1 [lindex $args 0]
 	set file2 "${file1}.txt"
@@ -1691,14 +1697,11 @@ proc file-io-diff { args } {
 	set file2 [lindex $args 1]
     }
 
-    spawn -noecho diff -u $file1 $file2
-    expect {
-      -re ".+" {
-	set msg "files differ\n"
-	append msg $expect_out(0,string)
-	fail $msg
-	exp_continue
-      }
+    if { [catch { exec diff -u $file1 $file2 } msg] } {
+	fail $description
+	verbose -log "'diff':\n$msg"
+    } else {
+	pass $description
     }
     return
 }
