@@ -20,3 +20,4 @@ v4si f2_(v4si a, v4si b, v4si c, v4si d) {
 
 /* For each testcase, should produce only one VEC_COND_EXPR for X^Y. */
 /* { dg-final { scan-tree-dump-times " VEC_COND_EXPR " 2 "forwprop1" } } */
+/* { dg-final { scan-tree-dump-times " == " 4 "forwprop1" } } */

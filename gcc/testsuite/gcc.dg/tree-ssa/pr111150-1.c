@@ -69,4 +69,13 @@ _Bool f4_(int a, int b, int c, int d, int e, int f) {
 
 /* Should generate one bit_xor_expr for each testcase. */
 /* { dg-final { scan-tree-dump-not "cond_expr, "  "forwprop1" } } */
+/* 2 IOR, one each for f1 and f2.
+   2 AND, one each for f3 and f4. */
+/* { dg-final { scan-tree-dump-times "bit_ior_expr, " 2  "forwprop1" } } */
+/* { dg-final { scan-tree-dump-times "bit_and_expr, " 2  "forwprop1" } } */
 /* { dg-final { scan-tree-dump-times "bit_xor_expr, " 4 "forwprop1" } } */
+/* 8 eq comparisons from each of `a == b`/`c == d`.
+   2 more to check that `e == f`
+   2 ne comparisons to check that `e != f`.   */
+/* { dg-final { scan-tree-dump-times "<ne_expr, " 2 "forwprop1" } } */
+/* { dg-final { scan-tree-dump-times "<eq_expr, " 10 "forwprop1" } } */
