@@ -2840,7 +2840,7 @@ _mm512_fpclass_ps_mask (__m512 __A, const int __imm)
 
 #define _mm_reduce_round_sd(A, B, C, R)				       \
   ((__m128d) __builtin_ia32_reducesd_mask_round ((__v2df)(__m128d)(A), \
-    (__v2df)(__m128d)(B), (int)(C), (__v2df) _mm_avx512_setzero_pd (), \
+    (__v2df)(__m128d)(B), (int)(C), (__v2df) _mm_setzero_pd (),	       \
     (__mmask8)(-1), (int)(R)))
 
 #define _mm_mask_reduce_round_sd(W, U, A, B, C, R)		       \
@@ -2869,7 +2869,7 @@ _mm512_fpclass_ps_mask (__m512 __A, const int __imm)
 
 #define _mm_reduce_round_ss(A, B, C, R)				       \
   ((__m128) __builtin_ia32_reducess_mask_round ((__v4sf)(__m128)(A),   \
-    (__v4sf)(__m128)(B), (int)(C), (__v4sf) _mm_avx512_setzero_ps (),  \
+    (__v4sf)(__m128)(B), (int)(C), (__v4sf) _mm_setzero_ps (),	       \
     (__mmask8)(-1), (int)(R)))
 
 #define _mm_mask_reduce_round_ss(W, U, A, B, C, R)		       \
