@@ -3363,6 +3363,19 @@ a pointer to int.",
  bool, (ao_ref *ref),
  default_ref_may_alias_errno)
 
+DEFHOOK
+(mode_can_transfer_bits,
+ "Define this to return false if the mode @var{mode} cannot be used\n\
+for memory copying of @code{GET_MODE_SIZE (mode)} units.  This might be\n\
+because a register class allowed for @var{mode} has registers that do\n\
+not transparently transfer every bit pattern or because the load or\n\
+store patterns available for @var{mode} have this issue.\n\
+\n\
+The default is to assume modes with the same precision as size are fine\n\
+to be used.",
+ bool, (machine_mode mode),
+ NULL)
+
 /* Support for named address spaces.  */
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_ADDR_SPACE_"
