@@ -493,7 +493,7 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
     /* We propagate for the shifted operand, but not the shift
        count.  The count is handled specially.  */
     case ASHIFT:
-      if (CONSTANT_P (XEXP (x, 1))
+      if (CONST_INT_P (XEXP (x, 1))
 	  && known_lt (UINTVAL (XEXP (x, 1)), GET_MODE_BITSIZE (mode)))
 	return (HOST_WIDE_INT)mask >> INTVAL (XEXP (x, 1));
       return (2ULL << floor_log2 (mask)) - 1;
