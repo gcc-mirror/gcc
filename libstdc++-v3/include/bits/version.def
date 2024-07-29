@@ -1808,6 +1808,15 @@ ftms = {
 };
 
 ftms = {
+  name = is_virtual_base_of;
+  values = {
+    v = 202406;
+    cxxmin = 26;
+    extra_cond = "__has_builtin(__builtin_is_virtual_base_of)";
+  };
+};
+
+ftms = {
   name = ranges_concat;
   values = {
     v = 202403;

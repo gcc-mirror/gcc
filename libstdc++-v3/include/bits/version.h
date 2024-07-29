@@ -2000,6 +2000,16 @@
 #endif /* !defined(__cpp_lib_fstream_native_handle) && defined(__glibcxx_want_fstream_native_handle) */
 #undef __glibcxx_want_fstream_native_handle
 
+#if !defined(__cpp_lib_is_virtual_base_of)
+# if (__cplusplus >  202302L) && (__has_builtin(__builtin_is_virtual_base_of))
+#  define __glibcxx_is_virtual_base_of 202406L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_is_virtual_base_of)
+#   define __cpp_lib_is_virtual_base_of 202406L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_is_virtual_base_of) && defined(__glibcxx_want_is_virtual_base_of) */
+#undef __glibcxx_want_is_virtual_base_of
+
 #if !defined(__cpp_lib_ranges_concat)
 # if (__cplusplus >  202302L)
 #  define __glibcxx_ranges_concat 202403L
