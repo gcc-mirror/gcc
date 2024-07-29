@@ -5408,7 +5408,7 @@
 	 (const_int 0)))]
   ""
   "tst\\t%<w>0, <short_mask>"
-  [(set_attr "type" "alus_imm")]
+  [(set_attr "type" "logics_imm")]
 )
 
 (define_insn "*ands<GPI:mode>_compare0"
