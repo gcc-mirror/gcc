@@ -16,7 +16,7 @@ version of the manual is in the files gcc/doc/gcc.info*.
 
 See http://gcc.gnu.org/bugs/ for how to report bugs usefully.
 
-Copyright years on GCC source files may be listed using range
+Copyright years on GCC source files may be listed using a range
 notation, e.g., 1987-2012, indicating that every year in the range,
-inclusive, is a copyrightable year that could otherwise be listed
+inclusive is a copyrightable year that could otherwise be listed
 individually.
