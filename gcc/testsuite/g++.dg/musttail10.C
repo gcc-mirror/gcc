@@ -8,7 +8,7 @@ double g() { [[gnu::musttail]] return f<int>(); } /* { dg-error "cannot tail-cal
 
 template <class T>
 __attribute__((noinline, noclone, noipa))
-T g1() { [[gnu::musttail]] return f<T>(); } /* { dg-error "target is not able" "" { target { external_tail_call } } } */
+T g1() { [[gnu::musttail]] return f<T>(); } /* { dg-error "target is not able" "" { target powerpc*-*-* } } */
 
 template <class T>
 __attribute__((noinline, noclone, noipa))
