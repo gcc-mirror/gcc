@@ -3688,11 +3688,34 @@ package body Exp_Attr is
 
          --  Local variables
 
-         Size : Entity_Id;
+         P_Loc : constant Source_Ptr := Sloc (Pref);
+         Size  : Entity_Id;
 
       --  Start of processing for Finalization_Size
 
       begin
+         --  If the prefix is an interface type, generate code to obtain its
+         --  address and displace it to reference the base of the object.
+
+         if Is_Interface (Ptyp) then
+            --  Generate:
+            --    Ptyp!(tag_ptr!($base_address (ptr.all'address)).all)
+
+            Rewrite (Pref,
+              Unchecked_Convert_To (Ptyp,
+                Make_Explicit_Dereference (P_Loc,
+                  Unchecked_Convert_To (RTE (RE_Tag_Ptr),
+                    Make_Function_Call (P_Loc,
+                      Name => New_Occurrence_Of
+                                (RTE (RE_Base_Address), P_Loc),
+                      Parameter_Associations =>
+                        New_List (
+                          Make_Attribute_Reference (P_Loc,
+                            Prefix => Duplicate_Subexpr (Pref),
+                            Attribute_Name => Name_Address)))))));
+            Analyze_And_Resolve (Pref, Ptyp);
+         end if;
+
          --  If the prefix is the dereference of an access value subject to
          --  pragma No_Heap_Finalization, then no header has been added.
 
