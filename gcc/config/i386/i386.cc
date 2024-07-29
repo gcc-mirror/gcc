@@ -26105,6 +26105,25 @@ ix86_have_ccmp ()
   return (bool) TARGET_APX_CCMP;
 }
 
+/* Implement TARGET_MODE_CAN_TRANSFER_BITS.  */
+static bool
+ix86_mode_can_transfer_bits (machine_mode mode)
+{
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT
+      || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
+    switch (GET_MODE_INNER (mode))
+      {
+      case SFmode:
+      case DFmode:
+	/* These suffer from normalization upon load when not using SSE.  */
+	return !(ix86_fpmath & FPMATH_387);
+      default:
+	return true;
+      }
+
+  return true;
+}
+
 /* Target-specific selftests.  */
 
 #if CHECKING_P
@@ -26950,6 +26969,9 @@ ix86_libgcc_floating_mode_supported_p
 
 #undef TARGET_HAVE_CCMP
 #define TARGET_HAVE_CCMP ix86_have_ccmp
+
+#undef TARGET_MODE_CAN_TRANSFER_BITS
+#define TARGET_MODE_CAN_TRANSFER_BITS ix86_mode_can_transfer_bits
 
 static bool
 ix86_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)
