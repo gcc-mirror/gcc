@@ -66,6 +66,10 @@ test_format()
   ws = std::format(L"{:+^34}", zoned_time<microseconds>(zone, t));
   VERIFY( ws == L"++2022-12-19 12:26:25.708000 EST++" );
 #endif
+
+  // LWG 4124. Cannot format zoned_time with resolution coarser than seconds
+  s = std::format("{}", zoned_time<minutes>(zone, time_point_cast<minutes>(t)));
+  VERIFY( s == "2022-12-19 12:26:00 EST" );
 }
 
 int main()

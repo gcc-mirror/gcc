@@ -164,6 +164,12 @@ namespace __detail
       const string* _M_abbrev;
       const seconds* _M_offset_sec;
     };
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 4124. Cannot format zoned_time with resolution coarser than seconds
+  template<typename _Duration>
+    using __local_time_fmt_for
+      = __local_time_fmt<common_type_t<_Duration, seconds>>;
 }
 /// @endcond
 
@@ -2137,15 +2143,15 @@ namespace __format
 #if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
   template<typename _Duration, typename _TimeZonePtr, typename _CharT>
     struct formatter<chrono::zoned_time<_Duration, _TimeZonePtr>, _CharT>
-    : formatter<chrono::__detail::__local_time_fmt<_Duration>, _CharT>
+    : formatter<chrono::__detail::__local_time_fmt_for<_Duration>, _CharT>
     {
       template<typename _FormatContext>
 	typename _FormatContext::iterator
 	format(const chrono::zoned_time<_Duration, _TimeZonePtr>& __tp,
 	       _FormatContext& __ctx) const
 	{
-	  using chrono::__detail::__local_time_fmt;
-	  using _Base = formatter<__local_time_fmt<_Duration>, _CharT>;
+	  using _Ltf = chrono::__detail::__local_time_fmt_for<_Duration>;
+	  using _Base = formatter<_Ltf, _CharT>;
 	  const chrono::sys_info __info = __tp.get_info();
 	  const auto __lf = chrono::local_time_format(__tp.get_local_time(),
 						      &__info.abbrev,
