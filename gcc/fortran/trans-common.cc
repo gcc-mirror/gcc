@@ -98,6 +98,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "cgraph.h"
+#include "context.h"
+#include "omp-offload.h"
 #include "gfortran.h"
 #include "trans.h"
 #include "stringpool.h"
@@ -496,6 +499,24 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
 	DECL_ATTRIBUTES (decl)
 	  = tree_cons (get_identifier ("omp declare target"),
 		       omp_clauses, DECL_ATTRIBUTES (decl));
+
+      if (com->omp_declare_target_link || com->omp_declare_target)
+	{
+	  /* Add to offload_vars; get_create does so for omp_declare_target,
+	     omp_declare_target_link requires manual work.  */
+	  gcc_assert (symtab_node::get (decl) == 0);
+	  symtab_node *node = symtab_node::get_create (decl);
+	  if (node != NULL && com->omp_declare_target_link)
+	    {
+	      node->offloadable = 1;
+	      if (ENABLE_OFFLOADING)
+		{
+		  g->have_offload = true;
+		  if (is_a <varpool_node *> (node))
+		    vec_safe_push (offload_vars, decl);
+		}
+	    }
+	}
 
       /* Place the back end declaration for this common block in
          GLOBAL_BINDING_LEVEL.  */
