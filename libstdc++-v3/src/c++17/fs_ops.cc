@@ -822,6 +822,34 @@ fs::equivalent(const path& p1, const path& p2)
   return result;
 }
 
+#if _GLIBCXX_FILESYSTEM_IS_WINDOWS
+namespace
+{
+  // An RAII type that opens a handle for an existing file.
+  struct auto_win_file_handle
+  {
+    explicit
+    auto_win_file_handle(const fs::path& p_)
+    : handle(CreateFileW(p_.c_str(), 0,
+			 FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+			 0, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0))
+    { }
+
+    ~auto_win_file_handle()
+    { if (*this) CloseHandle(handle); }
+
+    explicit operator bool() const
+    { return handle != INVALID_HANDLE_VALUE; }
+
+    bool get_info()
+    { return GetFileInformationByHandle(handle, &info); }
+
+    HANDLE handle;
+    BY_HANDLE_FILE_INFORMATION info;
+  };
+}
+#endif
+
 bool
 fs::equivalent(const path& p1, const path& p2, error_code& ec) noexcept
 {
@@ -858,27 +886,8 @@ fs::equivalent(const path& p1, const path& p2, error_code& ec) noexcept
       if (st1.st_mode != st2.st_mode || st1.st_dev != st2.st_dev)
 	return false;
 
-      struct auto_handle {
-	explicit auto_handle(const path& p_)
-	: handle(CreateFileW(p_.c_str(), 0,
-	      FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
-	      0, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0))
-	{ }
-
-	~auto_handle()
-	{ if (*this) CloseHandle(handle); }
-
-	explicit operator bool() const
-	{ return handle != INVALID_HANDLE_VALUE; }
-
-	bool get_info()
-	{ return GetFileInformationByHandle(handle, &info); }
-
-	HANDLE handle;
-	BY_HANDLE_FILE_INFORMATION info;
-      };
-      auto_handle h1(p1);
-      auto_handle h2(p2);
+      auto_win_file_handle h1(p1);
+      auto_win_file_handle h2(p2);
       if (!h1 || !h2)
 	{
 	  if (!h1 && !h2)
@@ -982,7 +991,13 @@ fs::hard_link_count(const path& p)
 std::uintmax_t
 fs::hard_link_count(const path& p, error_code& ec) noexcept
 {
-#ifdef _GLIBCXX_HAVE_SYS_STAT_H
+#if _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  auto_win_file_handle h(p);
+  if (h && h.get_info())
+    return static_cast<uintmax_t>(h.info.nNumberOfLinks);
+  ec = __last_system_error();
+  return static_cast<uintmax_t>(-1);
+#elif defined _GLIBCXX_HAVE_SYS_STAT_H
   return do_stat(p, ec, std::mem_fn(&stat_type::st_nlink),
 		 static_cast<uintmax_t>(-1));
 #else
