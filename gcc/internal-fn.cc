@@ -4171,6 +4171,16 @@ direct_internal_fn_optab (internal_fn fn)
 static bool
 type_strictly_matches_mode_p (const_tree type)
 {
+  /* The masked vector operations have both vector data operands and vector
+     boolean operands.  The vector data operands are expected to have a vector
+     mode,  but the vector boolean operands can be an integer mode rather than
+     a vector mode,  depending on how TARGET_VECTORIZE_GET_MASK_MODE is
+     defined.  PR116103.  */
+  if (VECTOR_BOOLEAN_TYPE_P (type)
+      && SCALAR_INT_MODE_P (TYPE_MODE (type))
+      && TYPE_PRECISION (TREE_TYPE (type)) == 1)
+    return true;
+
   if (VECTOR_TYPE_P (type))
     return VECTOR_MODE_P (TYPE_MODE (type));
 
