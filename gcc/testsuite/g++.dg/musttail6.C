@@ -1,6 +1,6 @@
-/* { dg-do compile { target { struct_tail_call } } } */
+/* { dg-do compile { target { struct_musttail } } } */
+/* { dg-require-effective-target external_musttail } */
 /* A lot of architectures will not build this due to PR115606 and PR115607 */
-/* { dg-skip-if "powerpc does not support sibcall to templates" { powerpc*-*-* } } */
 /* { dg-options "-std=gnu++11" } */
 /* { dg-additional-options "-fdelayed-branch" { target sparc*-*-* } } */
 

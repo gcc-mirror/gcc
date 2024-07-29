@@ -12808,16 +12808,34 @@ proc check_effective_target_tail_call { } {
     } {-O2 -fdump-rtl-expand-all}] ;# The "SIBCALL" note requires a detailed dump.
 }
 
-# Return 1 if the target can perform tail-call optimizations for structures
+# Return 1 if the target can perform musttail optimizations of the
+# most trivial type. This is separate from tail_call because musttail
+# is supported at -O0.
+proc check_effective_target_musttail { } {
+    return [check_no_messages_and_pattern musttail ",SIBCALL" rtl-expand {
+	__attribute__((__noipa__)) void foo (void) { }
+	__attribute__((__noipa__)) void bar (void) { [[gnu::musttail]] return foo(); }
+    } {-fdump-rtl-expand-all}] ;# The "SIBCALL" note requires a detailed dump.
+}
+
+# Return 1 if the target can perform musttail for externals
+proc check_effective_target_external_musttail { } {
+    return [check_no_messages_and_pattern external_musttail ",SIBCALL" rtl-expand {
+	extern __attribute__((__noipa__)) void foo (void);
+	__attribute__((__noipa__)) void bar (void) { [[gnu::musttail]] return foo(); }
+    } {-fdump-rtl-expand-all}] ;# The "SIBCALL" note requires a detailed dump.
+}
+
+# Return 1 if the target can perform musttail optimizations for structures
 # checking with C++ because the C++ compiler has less tail call ability
 # due to PR115606 on some targets
-proc check_effective_target_struct_tail_call { } {
-    return [check_no_messages_and_pattern tail_call ",SIBCALL" rtl-expand {
+proc check_effective_target_struct_musttail { } {
+    return [check_no_messages_and_pattern struct_musttail ",SIBCALL" rtl-expand {
 	// C++
 	struct foo { int a, b; };
-	__attribute__((__noipa__)) struct foo foo (void) { return {}; }
-	__attribute__((__noipa__)) struct foo bar (void) { return foo(); }
-    } {-O2 -fdump-rtl-expand-all}] ;# The "SIBCALL" note requires a detailed dump.
+	extern __attribute__((__noipa__)) struct foo foo (void);
+	__attribute__((__noipa__)) struct foo bar (void) { [[gnu::musttail]] return foo(); }
+    } {-fdump-rtl-expand-all}] ;# The "SIBCALL" note requires a detailed dump.
 }
 
 # Return 1 if the target's calling sequence or its ABI
