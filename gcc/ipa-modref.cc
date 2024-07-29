@@ -3297,7 +3297,8 @@ analyze_function (bool ipa)
 		    fprintf (dump_file, "  Flags for param %i improved:",
 			     (int)i);
 		  else
-		    gcc_unreachable ();
+		    fprintf (dump_file, "  Flags for param %i changed:",
+			     (int)i);
 		  dump_eaf_flags (dump_file, old_flags, false);
 		  fprintf (dump_file, " -> ");
 		  dump_eaf_flags (dump_file, new_flags, true);
@@ -3313,7 +3314,7 @@ analyze_function (bool ipa)
 		  || (summary->retslot_flags & EAF_UNUSED))
 		fprintf (dump_file, "  Flags for retslot improved:");
 	      else
-		gcc_unreachable ();
+		fprintf (dump_file, "  Flags for retslot changed:");
 	      dump_eaf_flags (dump_file, past_retslot_flags, false);
 	      fprintf (dump_file, " -> ");
 	      dump_eaf_flags (dump_file, summary->retslot_flags, true);
@@ -3328,7 +3329,7 @@ analyze_function (bool ipa)
 		  || (summary->static_chain_flags & EAF_UNUSED))
 		fprintf (dump_file, "  Flags for static chain improved:");
 	      else
-		gcc_unreachable ();
+		fprintf (dump_file, "  Flags for static chain changed:");
 	      dump_eaf_flags (dump_file, past_static_chain_flags, false);
 	      fprintf (dump_file, " -> ");
 	      dump_eaf_flags (dump_file, summary->static_chain_flags, true);
