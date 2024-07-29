@@ -2530,6 +2530,9 @@ Test target architecture has support for the zaamo extension.
 @item riscv_zabha
 Test target architecture has support for the zabha extension.
 
+@item riscv_zacas
+Test target architecture has support for the zacas extension.
+
 @item riscv_zalrsc
 Test target architecture has support for the zalrsc extension.
 
@@ -3298,6 +3301,9 @@ Add the zaamo extension to the -march string on RISC-V targets.
 @item riscv_zabha
 Add the zabha extension to the -march string on RISC-V targets.
 
+@item riscv_zacas
+Add the zacas extension to the -march string on RISC-V targets.
+
 @item riscv_zalrsc
 Add the zalrsc extension to the -march string on RISC-V targets.
 
@@ -3343,6 +3349,10 @@ extension is present downgrade it to zalrsc.
 
 @item riscv_zabha
 Remove the zabha extension and implied zaamo extension from the -march string
+on RISC-V.
+
+@item riscv_zacas
+Remove the zacas extension and implied zaamo extension from the -march string
 on RISC-V.
 
 @item riscv_zalrsc

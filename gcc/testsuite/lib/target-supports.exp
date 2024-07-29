@@ -1922,6 +1922,17 @@ proc check_effective_target_riscv_zabha { } {
     }]
 }
 
+# Return 1 if the target arch supports the atomic CAS extension, 0 otherwise.
+# Cache the result.
+
+proc check_effective_target_riscv_zacas { } {
+    return [check_no_compiler_messages riscv_ext_zacas assembly {
+       #ifndef __riscv_zacas
+       #error "Not __riscv_zacas"
+       #endif
+    }]
+}
+
 # Return 1 if the target arch supports the double precision floating point
 # extension, 0 otherwise.  Cache the result.
 
@@ -2140,7 +2151,7 @@ proc check_effective_target_riscv_v_misalign_ok { } {
 proc riscv_get_arch { } {
     set gcc_march ""
     # ??? do we neeed to add more extensions to the list below?
-    foreach ext { i m a f d q c b v zicsr zifencei zfh zba zbb zbc zbs zvbb zvfh ztso zaamo zalrsc zabha } {
+    foreach ext { i m a f d q c b v zicsr zifencei zfh zba zbb zbc zbs zvbb zvfh ztso zaamo zalrsc zabha zacas } {
 	if { [check_no_compiler_messages  riscv_ext_$ext assembly [string map [list DEF __riscv_$ext] {
 		#ifndef DEF
 		#error "Not DEF"
@@ -2308,6 +2319,9 @@ proc remove_options_for_riscv_zaamo { flags } {
     # If zabha is set then zaamo will be implied. We need to remove zabha
     # as well.
     set modified_flags [remove_options_for_riscv_z_ext zabha $modified_flags]
+    # If zacas is set then zaamo will be implied. We need to remove zacas
+    # as well.
+    set modified_flags [remove_options_for_riscv_z_ext zacas $modified_flags]
     # If 'a' is set then zaamo will be implied. We need to downgrade instances
     # of 'a' to 'zalrsc'
     set no_a_flags [remove_options_for_riscv_a_only $modified_flags]
@@ -2341,6 +2355,15 @@ proc add_options_for_riscv_zabha { flags } {
 proc remove_options_for_riscv_zabha { flags } {
     set modified_flags [remove_options_for_riscv_zaamo $flags]
     return [remove_options_for_riscv_z_ext zabha $modified_flags]
+}
+
+proc add_options_for_riscv_zacas { flags } {
+    return [add_options_for_riscv_z_ext zacas $flags]
+}
+
+proc remove_options_for_riscv_zacas { flags } {
+    set modified_flags [remove_options_for_riscv_zaamo $flags]
+    return [remove_options_for_riscv_z_ext zacas $modified_flags]
 }
 
 proc add_options_for_riscv_zfh { flags } {
