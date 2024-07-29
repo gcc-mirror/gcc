@@ -1820,8 +1820,11 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		if (k->aux && k->aux->link_key)
 		  {
 		    /* Set link pointer on target to the device address of the
-		       mapped object.  */
-		    void *tgt_addr = (void *) (tgt->tgt_start + k->tgt_offset);
+		       mapped object.  Also deal with offsets due to
+		       array-section mapping.  */
+		    void *tgt_addr = (void *) (tgt->tgt_start + k->tgt_offset
+					       - (k->host_start
+						  - k->aux->link_key->host_start));
 		    /* We intentionally do not use coalescing here, as it's not
 		       data allocated by the current call to this function.  */
 		    gomp_copy_host2dev (devicep, aq, (void *) n->tgt_offset,
