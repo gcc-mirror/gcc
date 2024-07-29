@@ -2419,9 +2419,9 @@ package body Sem_Ch12 is
       --  but there is "others => <>". Add a copy of the declaration of the
       --  generic formal to the Result_Renamings.
 
-      ---------------------
+      ------------------------
       -- Process_Box_Actual --
-      ---------------------
+      ------------------------
 
       procedure Process_Box_Actual (Formal : Node_Id) is
          pragma Assert (Assoc.Actual.Kind = Box_Actual);
@@ -2535,6 +2535,19 @@ package body Sem_Ch12 is
 
             else
                Analyze (Match);
+
+               --  Rewrite mutably tagged types to be their class-wide
+               --  equivalent type.
+
+               if Ekind (Etype (Match)) /= E_Void
+                 and then Is_Mutably_Tagged_Type (Etype (Match))
+               then
+                  Rewrite (Match, New_Occurrence_Of
+                    (Class_Wide_Equivalent_Type
+                      (Etype (Match)), Sloc (Match)));
+                  Analyze (Match);
+               end if;
+
                Append_List
                  (Instantiate_Type
                     (Assoc.Un_Formal, Match, Assoc.An_Formal,
@@ -14928,6 +14941,7 @@ package body Sem_Ch12 is
 
          elsif not Is_Definite_Subtype (Act_T)
             and then Is_Definite_Subtype (A_Gen_T)
+            and then No (Class_Wide_Equivalent_Type (Act_T))
             and then Ada_Version >= Ada_95
          then
             Error_Msg_NE
@@ -14956,6 +14970,13 @@ package body Sem_Ch12 is
       end if;
 
       Act_T := Entity (Actual);
+
+      --  Obtain the class-wide equivalent type and use it for the
+      --  instantiation instead of a mutably tagged type.
+
+      if Present (Class_Wide_Equivalent_Type (Act_T)) then
+         Act_T := Class_Wide_Equivalent_Type (Act_T);
+      end if;
 
       --  Ada 2005 (AI-216): An Unchecked_Union subtype shall only be passed
       --  as a generic actual parameter if the corresponding formal type

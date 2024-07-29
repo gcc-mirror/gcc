@@ -2682,6 +2682,13 @@ package body Sem_Attr is
                E1);
          end if;
 
+         --  Generate a conversion from a class-wide equivalent type (if
+         --  present) to the relevant actual type E2.
+
+         if Is_Mutably_Tagged_CW_Equivalent_Type (Etype (E2)) then
+            Make_Mutably_Tagged_Conversion (E2);
+         end if;
+
          --  Check that the second argument is of the right type
 
          Analyze (E2);

@@ -32,6 +32,7 @@ with Einfo.Utils;    use Einfo.Utils;
 with Exp_Tss;        use Exp_Tss;
 with Exp_Util;       use Exp_Util;
 with Lib;            use Lib;
+with Mutably_Tagged; use Mutably_Tagged;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Nmake;          use Nmake;
@@ -402,9 +403,9 @@ package body Exp_Put_Image is
       end;
    end Build_Elementary_Put_Image_Call;
 
-   -------------------------------------
+   ---------------------------------
    -- Build_String_Put_Image_Call --
-   -------------------------------------
+   ---------------------------------
 
    function Build_String_Put_Image_Call (N : Node_Id) return Node_Id is
       Loc     : constant Source_Ptr := Sloc (N);
@@ -485,9 +486,9 @@ package body Exp_Put_Image is
             Relocate_Node (Sink)));
    end Build_Protected_Put_Image_Call;
 
-   ------------------------------------
+   -------------------------------
    -- Build_Task_Put_Image_Call --
-   ------------------------------------
+   -------------------------------
 
    --  For "Task_Type'Put_Image (S, Task_Object)", build:
    --
@@ -650,12 +651,14 @@ package body Exp_Put_Image is
          return Result;
       end Make_Component_List_Attributes;
 
-      --------------------------------
+      ---------------------------
       -- Append_Component_Attr --
-      --------------------------------
+      ---------------------------
 
       procedure Append_Component_Attr (Clist : List_Id; C : Entity_Id) is
-         Component_Typ : constant Entity_Id := Put_Image_Base_Type (Etype (C));
+         Component_Typ : constant Entity_Id :=
+           Put_Image_Base_Type
+             (Get_Corresponding_Mutably_Tagged_Type_If_Present (Etype (C)));
       begin
          if Ekind (C) /= E_Void then
             Append_To (Clist,
@@ -936,9 +939,9 @@ package body Exp_Put_Image is
       Build_Put_Image_Proc (Loc, Btyp, Decl, Pnam, Stms);
    end Build_Record_Put_Image_Procedure;
 
-   -------------------------------
+   -----------------------------
    -- Build_Put_Image_Profile --
-   -------------------------------
+   -----------------------------
 
    function Build_Put_Image_Profile
      (Loc : Source_Ptr; Typ : Entity_Id) return List_Id
@@ -983,9 +986,9 @@ package body Exp_Put_Image is
               Statements => Stms));
    end Build_Put_Image_Proc;
 
-   ------------------------------------
+   ----------------------------------
    -- Build_Unknown_Put_Image_Call --
-   ------------------------------------
+   ----------------------------------
 
    function Build_Unknown_Put_Image_Call (N : Node_Id) return Node_Id is
       Loc    : constant Source_Ptr := Sloc (N);
