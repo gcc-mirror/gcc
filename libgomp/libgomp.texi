@@ -1208,11 +1208,11 @@ They have C linkage and do not throw exceptions.
 
 @menu
 * omp_get_proc_bind::           Whether threads may be moved between CPUs
-@c * omp_get_num_places:: <fixme>
-@c * omp_get_place_num_procs:: <fixme>
-@c * omp_get_place_proc_ids:: <fixme>
-@c * omp_get_place_num:: <fixme>
-@c * omp_get_partition_num_places:: <fixme>
+@c * omp_get_num_places::       Get the number of places available
+@c * omp_get_place_num_procs::  Get the number of processes associated with a place
+@c * omp_get_place_proc_ids::   Get number of processes associated with a place
+@c * omp_get_place_num::        Get place number of the associated task
+@c * omp_get_partition_num_places:: Get number of places of innermost task
 @c * omp_get_partition_place_nums:: <fixme>
 @c * omp_set_affinity_format:: <fixme>
 @c * omp_get_affinity_format:: <fixme>
@@ -1627,8 +1627,12 @@ Returns the number of processors online on that device.
 @subsection @code{omp_set_default_device} -- Set the default device for target regions
 @table @asis
 @item @emph{Description}:
-Set the default device for target regions without device clause.  The argument
-shall be a nonnegative device number.
+Get the value of the @emph{default-device-var} ICV, which is used
+for target regions without a device clause.  The argument
+shall be a nonnegative device number, @code{omp_initial_device},
+or @code{omp_invalid_device}.
+
+The effect of running this routine in a @code{target} region is unspecified.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
@@ -1654,7 +1658,15 @@ shall be a nonnegative device number.
 @subsection @code{omp_get_default_device} -- Get the default device for target regions
 @table @asis
 @item @emph{Description}:
-Get the default device for target regions without device clause.
+Get the value of the @emph{default-device-var} ICV, which is used
+for target regions without a device clause. The value is either a
+nonnegative device number, @code{omp_initial_device} or
+@code{omp_invalid_device}. Note that for the host, the ICV can have two values
+and, hence, this routine might return either the value of the named constant
+@code{omp_initial_device} or the value returned by the
+@code{omp_get_initial_device} routine.
+
+The effect of running this routine in a @code{target} region is unspecified.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
@@ -1667,7 +1679,8 @@ Get the default device for target regions without device clause.
 @end multitable
 
 @item @emph{See also}:
-@ref{OMP_DEFAULT_DEVICE}, @ref{omp_set_default_device}
+@ref{OMP_DEFAULT_DEVICE}, @ref{omp_set_default_device},
+@ref{omp_get_initial_device}
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.30.
@@ -1680,6 +1693,8 @@ Get the default device for target regions without device clause.
 @table @asis
 @item @emph{Description}:
 Returns the number of target devices.
+
+The effect of running this routine in a @code{target} region is unspecified.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
@@ -1702,9 +1717,9 @@ Returns the number of target devices.
 @table @asis
 @item @emph{Description}:
 This function returns a device number that represents the device that the
-current thread is executing on. For OpenMP 5.0, this must be equal to the
-value returned by the @code{omp_get_initial_device} function when called
-from the host.
+current thread is executing on. When called on the host, it returns
+the same value as returned by the @code{omp_get_initial_device} function
+as required since OpenMP 5.0.
 
 @item @emph{C/C++}
 @multitable @columnfractions .20 .80
@@ -1754,8 +1769,10 @@ their language-specific counterparts.
 @table @asis
 @item @emph{Description}:
 This function returns a device number that represents the host device.
-For OpenMP 5.1, this must be equal to the value returned by the
+Since OpenMP 5.1, this is equal to the value returned by the
 @code{omp_get_num_devices} function.
+
+The effect of running this routine in a @code{target} region is unspecified.
 
 @item @emph{C/C++}
 @multitable @columnfractions .20 .80
@@ -2362,8 +2379,9 @@ The routines have C linkage and do not throw exceptions.
 @menu
 * omp_init_lock::            Initialize simple lock
 * omp_init_nest_lock::       Initialize nested lock
-@c * omp_init_lock_with_hint:: <fixme>
-@c * omp_init_nest_lock_with_hint:: <fixme>
+@c PR libgomp/109452
+@c * omp_init_lock_with_hint:: Initialize simple lock with sync hint
+@c * omp_init_nest_lock_with_hint:: Initialize nested lock with sync hint
 * omp_destroy_lock::         Destroy simple lock
 * omp_destroy_nest_lock::    Destroy nested lock
 * omp_set_lock::             Wait for and set simple lock
