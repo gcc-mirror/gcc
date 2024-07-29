@@ -4825,6 +4825,18 @@ rs6000_option_override_internal (bool global_init_p)
 	}
     }
 
+  /* We only support ROP protection on certain targets.  */
+  if (rs6000_rop_protect)
+    {
+      /* Disallow CPU targets we don't support.  */
+      if (!TARGET_POWER8)
+	error ("%<-mrop-protect%> requires %<-mcpu=power8%> or later");
+
+      /* Disallow ABI targets we don't support.  */
+      if (DEFAULT_ABI != ABI_ELFv2)
+	error ("%<-mrop-protect%> requires the ELFv2 ABI");
+    }
+
   /* Initialize all of the registers.  */
   rs6000_init_hard_regno_mode_ok (global_init_p);
 

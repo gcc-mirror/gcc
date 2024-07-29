@@ -572,11 +572,11 @@ _mm_mask_fpclass_sd_mask (__mmask8 __U, __m128d __A, const int __imm)
   ((__mmask8) __builtin_ia32_fpclasssd_mask ((__v2df) (__m128d) (X),	\
 					     (int) (C), (__mmask8) (-1))) \
 
-#define _mm_mask_fpclass_ss_mask(X, C, U)				\
+#define _mm_mask_fpclass_ss_mask(U, X, C)				\
   ((__mmask8) __builtin_ia32_fpclassss_mask ((__v4sf) (__m128) (X),	\
 					     (int) (C), (__mmask8) (U)))
 
-#define _mm_mask_fpclass_sd_mask(X, C, U)				\
+#define _mm_mask_fpclass_sd_mask(U, X, C)				\
   ((__mmask8) __builtin_ia32_fpclasssd_mask ((__v2df) (__m128d) (X),	\
 					     (int) (C), (__mmask8) (U)))
 #define _mm_reduce_sd(A, B, C)						\
@@ -594,8 +594,9 @@ _mm_mask_fpclass_sd_mask (__mmask8 __U, __m128d __A, const int __imm)
     (__mmask8)(U)))
 
 #define _mm_reduce_round_sd(A, B, C, R)				       \
-  ((__m128d) __builtin_ia32_reducesd_round ((__v2df)(__m128d)(A),      \
-    (__v2df)(__m128d)(B), (int)(C), (__mmask8)(U), (int)(R)))
+  ((__m128d) __builtin_ia32_reducesd_mask_round ((__v2df)(__m128d)(A), \
+    (__v2df)(__m128d)(B), (int)(C), (__v2df) _mm_avx512_setzero_pd (), \
+    (__mmask8)(-1), (int)(R)))
 
 #define _mm_mask_reduce_round_sd(W, U, A, B, C, R)		       \
   ((__m128d) __builtin_ia32_reducesd_mask_round ((__v2df)(__m128d)(A), \
@@ -622,8 +623,9 @@ _mm_mask_fpclass_sd_mask (__mmask8 __U, __m128d __A, const int __imm)
     (__mmask8)(U)))
 
 #define _mm_reduce_round_ss(A, B, C, R)				       \
-  ((__m128) __builtin_ia32_reducess_round ((__v4sf)(__m128)(A),	       \
-    (__v4sf)(__m128)(B), (int)(C), (__mmask8)(U), (int)(R)))
+  ((__m128) __builtin_ia32_reducess_mask_round ((__v4sf)(__m128)(A),   \
+    (__v4sf)(__m128)(B), (int)(C), (__v4sf) _mm_avx512_setzero_ps (),  \
+    (__mmask8)(-1), (int)(R)))
 
 #define _mm_mask_reduce_round_ss(W, U, A, B, C, R)		       \
   ((__m128) __builtin_ia32_reducess_mask_round ((__v4sf)(__m128)(A),   \
@@ -631,7 +633,7 @@ _mm_mask_fpclass_sd_mask (__mmask8 __U, __m128d __A, const int __imm)
     (__mmask8)(U), (int)(R)))
 
 #define _mm_maskz_reduce_round_ss(U, A, B, C, R)		       \
-  ((__m128) __builtin_ia32_reducesd_mask_round ((__v4sf)(__m128)(A),   \
+  ((__m128) __builtin_ia32_reducess_mask_round ((__v4sf)(__m128)(A),   \
     (__v4sf)(__m128)(B), (int)(C), (__v4sf) _mm_avx512_setzero_ps (),	       \
     (__mmask8)(U), (int)(R)))
 

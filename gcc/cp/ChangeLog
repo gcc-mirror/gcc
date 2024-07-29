@@ -1,3 +1,24 @@
+2024-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104981
+	PR c++/115550
+	* coroutines.cc (morph_fn_to_coro): Remove unneeded calls
+	to convert_to_reference and convert_from_reference when
+	passing *this.  Use cp_build_fold_indirect_ref instead
+	of directly building INDIRECT_REF.
+
+2024-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-07-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115783
+	* call.cc (build_new_method_call): Generalize METHOD_TYPE
+	check to DECL_OBJECT_MEMBER_FUNCTION_P.
+
 2024-07-18  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

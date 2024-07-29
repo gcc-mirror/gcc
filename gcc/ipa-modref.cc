@@ -2571,8 +2571,10 @@ modref_eaf_analysis::analyze_ssa_name (tree name, bool deferred)
 		    int call_flags = deref_flags
 			    (gimple_call_arg_flags (call, i), ignore_stores);
 		    if (!ignore_retval && !(call_flags & EAF_UNUSED)
-			&& !(call_flags & EAF_NOT_RETURNED_DIRECTLY)
-			&& !(call_flags & EAF_NOT_RETURNED_INDIRECTLY))
+			&& (call_flags & (EAF_NOT_RETURNED_DIRECTLY
+				       	  | EAF_NOT_RETURNED_INDIRECTLY))
+			    != (EAF_NOT_RETURNED_DIRECTLY
+				| EAF_NOT_RETURNED_INDIRECTLY))
 		      merge_call_lhs_flags (call, i, name, false, true);
 		    if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
 		      m_lattice[index].merge_direct_load ();
@@ -3002,6 +3004,9 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
 		     (past, ecf_flags,
 		      VOID_TYPE_P (TREE_TYPE
 			  (TREE_TYPE (current_function_decl))));
+	  /* Store merging can produce reads when combining together multiple
+	     bitfields.  See PR111613.  */
+	  past &= ~(EAF_NO_DIRECT_READ | EAF_NO_INDIRECT_READ);
 	  if (dump_file && (flags | past) != flags && !(flags & EAF_UNUSED))
 	    {
 	      fprintf (dump_file,
@@ -3286,7 +3291,8 @@ analyze_function (bool ipa)
 		    fprintf (dump_file, "  Flags for param %i improved:",
 			     (int)i);
 		  else
-		    gcc_unreachable ();
+		    fprintf (dump_file, "  Flags for param %i changed:",
+			     (int)i);
 		  dump_eaf_flags (dump_file, old_flags, false);
 		  fprintf (dump_file, " -> ");
 		  dump_eaf_flags (dump_file, new_flags, true);
@@ -3302,7 +3308,7 @@ analyze_function (bool ipa)
 		  || (summary->retslot_flags & EAF_UNUSED))
 		fprintf (dump_file, "  Flags for retslot improved:");
 	      else
-		gcc_unreachable ();
+		fprintf (dump_file, "  Flags for retslot changed:");
 	      dump_eaf_flags (dump_file, past_retslot_flags, false);
 	      fprintf (dump_file, " -> ");
 	      dump_eaf_flags (dump_file, summary->retslot_flags, true);
@@ -3317,7 +3323,7 @@ analyze_function (bool ipa)
 		  || (summary->static_chain_flags & EAF_UNUSED))
 		fprintf (dump_file, "  Flags for static chain improved:");
 	      else
-		gcc_unreachable ();
+		fprintf (dump_file, "  Flags for static chain changed:");
 	      dump_eaf_flags (dump_file, past_static_chain_flags, false);
 	      fprintf (dump_file, " -> ");
 	      dump_eaf_flags (dump_file, summary->static_chain_flags, true);
