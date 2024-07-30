@@ -1,6 +1,6 @@
 /* { dg-require-effective-target lto } */
-/* { dg-additional-sources "crossmodule-indir-call-topn-1a.c" } */
 /* { dg-require-profiling "-fprofile-generate" } */
+/* { dg-additional-sources "crossmodule-indir-call-topn-1a.c" } */
 /* { dg-options "-O2 -flto -DDOJOB=1 -fdump-ipa-profile_estimate" } */
 
 #ifdef FOR_AUTOFDO_TESTING
