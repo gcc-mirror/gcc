@@ -1,3 +1,10 @@
+2024-07-30  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2024-07-30  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.dg/compiler-directive_2.f: Update dg-error.
+
 2024-05-28  Tobias Burnus  <tburnus@baylibre.com>
 
 	* c-c++-common/gomp/lastprivate-conditional-1.c: Remove
