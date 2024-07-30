@@ -609,30 +609,69 @@ th_memidx_classify_address_index (struct riscv_address_info *info, rtx x,
   if (GET_CODE (x) != PLUS)
     return false;
 
-  rtx reg = XEXP (x, 0);
+  rtx op0 = XEXP (x, 0);
+  rtx op1 = XEXP (x, 1);
   enum riscv_address_type type;
-  rtx offset = XEXP (x, 1);
   int shift;
+  rtx reg = op0;
+  rtx offset = op1;
 
   if (!riscv_valid_base_register_p (reg, mode, strict_p))
-    return false;
+    {
+      reg = op1;
+      offset = op0;
+      if (!riscv_valid_base_register_p (reg, mode, strict_p))
+	return false;
+    }
 
   /* (reg:X) */
-  if (REG_P (offset)
+  if ((REG_P (offset) || SUBREG_P (offset))
       && GET_MODE (offset) == Xmode)
     {
       type = ADDRESS_REG_REG;
       shift = 0;
       offset = offset;
     }
-  /* (zero_extend:DI (reg:SI)) */
-  else if (GET_CODE (offset) == ZERO_EXTEND
+  /* (any_extend:DI (reg:SI)) */
+  else if (TARGET_64BIT
+	   && (GET_CODE (offset) == SIGN_EXTEND
+	       || GET_CODE (offset) == ZERO_EXTEND)
 	   && GET_MODE (offset) == DImode
 	   && GET_MODE (XEXP (offset, 0)) == SImode)
     {
-      type = ADDRESS_REG_UREG;
+      type = (GET_CODE (offset) == SIGN_EXTEND)
+	     ? ADDRESS_REG_REG : ADDRESS_REG_UREG;
       shift = 0;
       offset = XEXP (offset, 0);
+    }
+  /* (mult:X (reg:X) (const_int scale)) */
+  else if (GET_CODE (offset) == MULT
+	   && GET_MODE (offset) == Xmode
+	   && REG_P (XEXP (offset, 0))
+	   && GET_MODE (XEXP (offset, 0)) == Xmode
+	   && CONST_INT_P (XEXP (offset, 1))
+	   && pow2p_hwi (INTVAL (XEXP (offset, 1)))
+	   && IN_RANGE (exact_log2 (INTVAL (XEXP (offset, 1))), 1, 3))
+    {
+      type = ADDRESS_REG_REG;
+      shift = exact_log2 (INTVAL (XEXP (offset, 1)));
+      offset = XEXP (offset, 0);
+    }
+  /* (mult:DI (any_extend:DI (reg:SI)) (const_int scale)) */
+  else if (TARGET_64BIT
+	   && GET_CODE (offset) == MULT
+	   && GET_MODE (offset) == DImode
+	   && (GET_CODE (XEXP (offset, 0)) == SIGN_EXTEND
+	       || GET_CODE (XEXP (offset, 0)) == ZERO_EXTEND)
+	   && GET_MODE (XEXP (offset, 0)) == DImode
+	   && REG_P (XEXP (XEXP (offset, 0), 0))
+	   && GET_MODE (XEXP (XEXP (offset, 0), 0)) == SImode
+	   && CONST_INT_P (XEXP (offset, 1)))
+    {
+      type = (GET_CODE (XEXP (offset, 0)) == SIGN_EXTEND)
+	     ? ADDRESS_REG_REG : ADDRESS_REG_UREG;
+      shift = exact_log2 (INTVAL (XEXP (x, 1)));
+      offset = XEXP (XEXP (x, 0), 0);
     }
   /* (ashift:X (reg:X) (const_int shift)) */
   else if (GET_CODE (offset) == ASHIFT
@@ -646,23 +685,46 @@ th_memidx_classify_address_index (struct riscv_address_info *info, rtx x,
       shift = INTVAL (XEXP (offset, 1));
       offset = XEXP (offset, 0);
     }
-  /* (ashift:DI (zero_extend:DI (reg:SI)) (const_int shift)) */
-  else if (GET_CODE (offset) == ASHIFT
+  /* (ashift:DI (any_extend:DI (reg:SI)) (const_int shift)) */
+  else if (TARGET_64BIT
+	   && GET_CODE (offset) == ASHIFT
 	   && GET_MODE (offset) == DImode
-	   && GET_CODE (XEXP (offset, 0)) == ZERO_EXTEND
+	   && (GET_CODE (XEXP (offset, 0)) == SIGN_EXTEND
+	       || GET_CODE (XEXP (offset, 0)) == ZERO_EXTEND)
 	   && GET_MODE (XEXP (offset, 0)) == DImode
 	   && GET_MODE (XEXP (XEXP (offset, 0), 0)) == SImode
 	   && CONST_INT_P (XEXP (offset, 1))
 	   && IN_RANGE(INTVAL (XEXP (offset, 1)), 0, 3))
     {
-      type = ADDRESS_REG_UREG;
+      type = (GET_CODE (XEXP (offset, 0)) == SIGN_EXTEND)
+	     ? ADDRESS_REG_REG : ADDRESS_REG_UREG;
       shift = INTVAL (XEXP (offset, 1));
+      offset = XEXP (XEXP (offset, 0), 0);
+    }
+  /* (and:X (mult:X (reg:X) (const_int scale)) (const_int mask)) */
+  else if (TARGET_64BIT
+	   && GET_CODE (offset) == AND
+	   && GET_MODE (offset) == DImode
+	   && GET_CODE (XEXP (offset, 0)) == MULT
+	   && GET_MODE (XEXP (offset, 0)) == DImode
+	   && REG_P (XEXP (XEXP (offset, 0), 0))
+	   && GET_MODE (XEXP (XEXP (offset, 0), 0)) == DImode
+	   && CONST_INT_P (XEXP (XEXP (offset, 0), 1))
+	   && pow2p_hwi (INTVAL (XEXP (XEXP (offset, 0), 1)))
+	   && IN_RANGE (exact_log2 (INTVAL (XEXP (XEXP (offset, 0), 1))), 1, 3)
+	   && CONST_INT_P (XEXP (offset, 1))
+	   && INTVAL (XEXP (offset, 1))
+	      >> exact_log2 (INTVAL (XEXP (XEXP (offset, 0), 1))) == 0xffffffff)
+    {
+      type = ADDRESS_REG_UREG;
+      shift = exact_log2 (INTVAL (XEXP (XEXP (offset, 0), 1)));
       offset = XEXP (XEXP (offset, 0), 0);
     }
   else
     return false;
 
-  if (!strict_p && GET_CODE (offset) == SUBREG)
+  if (!strict_p && SUBREG_P (offset)
+      && GET_MODE (SUBREG_REG (offset)) == SImode)
     offset = SUBREG_REG (offset);
 
   if (!REG_P (offset)
@@ -774,7 +836,7 @@ th_fmemidx_output_index (rtx dest, rtx src, machine_mode mode, bool load)
   rtx x = th_get_move_mem_addr (dest, src, load);
 
   /* Validate x.  */
-  if (!th_memidx_classify_address_index (&info, x, mode, false))
+  if (!th_memidx_classify_address_index (&info, x, mode, reload_completed))
     return NULL;
 
   int index = exact_log2 (GET_MODE_SIZE (mode).to_constant ()) - 2;
