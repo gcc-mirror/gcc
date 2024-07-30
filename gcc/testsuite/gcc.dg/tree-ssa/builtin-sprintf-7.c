@@ -1,6 +1,6 @@
 /* PR tree-optimization/77671 - missing -Wformat-overflow warning
    on sprintf overflow with "%s"
-   { dg-compile }
+   { dg-do compile }
    { dg-options "-O2 -Wformat -Wno-format-zero-length -fdump-tree-optimized" } */
 
 void sink (char*);

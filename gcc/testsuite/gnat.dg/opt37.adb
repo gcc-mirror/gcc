@@ -1,4 +1,4 @@
--- { dg-compile }
+-- { dg-do compile }
 -- { dg-options "-O2 -gnato -fdump-tree-optimized" }
 
 package body Opt37 is

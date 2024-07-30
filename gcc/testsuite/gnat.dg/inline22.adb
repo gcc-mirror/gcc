@@ -1,4 +1,4 @@
--- { dg-compile }
+-- { dg-do compile }
 
 procedure Inline22 (L, U : Integer) is
 

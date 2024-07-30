@@ -1,4 +1,4 @@
-/* { dg-compile } */
+/* { dg-do compile } */
 /* { dg-options "-O3 -mzarch -march=z14" } */
 /* { dg-require-effective-target s390_vxe } */
 /* { dg-final { scan-assembler-times {\tvpdi\t} 5 } } */

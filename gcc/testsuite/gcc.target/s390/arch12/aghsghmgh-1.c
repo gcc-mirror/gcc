@@ -1,4 +1,4 @@
-/* { dg-compile } */
+/* { dg-do compile } */
 
 long long
 agh (long long a, short int *p)

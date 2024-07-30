@@ -5,7 +5,7 @@
    be transformed into calls to other functions (such as memcpy)
    are preserved.
 
-   { dg-compile }
+   { dg-do compile }
    { dg-options "-O2 -Wformat -Wno-format-truncation -Wno-format-zero-length -fdump-tree-optimized" } */
 
 void sink (char*, ...);

@@ -1,4 +1,4 @@
-/* { dg-compile } */
+/* { dg-do compile } */
 
 /* Check if the instruction are being used also for compares.  */
 

@@ -1,5 +1,5 @@
 /* Make sure s390_check_qrst_address () correctly handles UNSPEC rtxs.  */
-/* { dg-compile } */
+/* { dg-do compile } */
 /* { dg-options "-march=z196 -O2 -fPIC" } */
 
 int a, b, g, h;

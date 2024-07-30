@@ -1,4 +1,4 @@
-/* { dg-compile } */
+/* { dg-do compile } */
 
 typedef unsigned int __attribute__((vector_size(16))) v4si;
 typedef float __attribute__((vector_size(16))) v4sf;
