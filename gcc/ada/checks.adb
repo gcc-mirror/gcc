@@ -6799,60 +6799,18 @@ package body Checks is
 
          if Is_Scalar_Type (Typ) then
             declare
-               P : Node_Id;
-               N : Node_Id;
-               E : Entity_Id;
-               F : Entity_Id;
-               A : Node_Id;
-               L : List_Id;
+               Formal : Entity_Id;
+               Call   : Node_Id;
 
             begin
-               --  Find actual argument (which may be a parameter association)
-               --  and the parent of the actual argument (the call statement)
+               Find_Actual (Expr, Formal, Call);
 
-               N := Expr;
-               P := Parent (Expr);
-
-               if Nkind (P) = N_Parameter_Association then
-                  N := P;
-                  P := Parent (N);
-               end if;
-
-               --  If this is an indirect or dispatching call, get signature
-               --  from the subprogram type.
-
-               if Nkind (P) in N_Entry_Call_Statement
-                             | N_Function_Call
-                             | N_Procedure_Call_Statement
+               if Present (Formal)
+                 and then
+                   (Ekind (Formal) = E_Out_Parameter
+                      or else Mechanism (Formal) = By_Reference)
                then
-                  E := Get_Called_Entity (P);
-                  L := Parameter_Associations (P);
-
-                  --  Only need to worry if there are indeed actuals, and if
-                  --  this could be a subprogram call, otherwise we cannot get
-                  --  a match (either we are not an argument, or the mode of
-                  --  the formal is not OUT). This test also filters out the
-                  --  generic case.
-
-                  if Is_Non_Empty_List (L) and then Is_Subprogram (E) then
-
-                     --  This is the loop through parameters, looking for an
-                     --  OUT parameter for which we are the argument.
-
-                     F := First_Formal (E);
-                     A := First_Actual (P);
-                     while Present (F) loop
-                        if A = N
-                          and then (Ekind (F) = E_Out_Parameter
-                                     or else Mechanism (F) = By_Reference)
-                        then
-                           return;
-                        end if;
-
-                        Next_Formal (F);
-                        Next_Actual (A);
-                     end loop;
-                  end if;
+                  return;
                end if;
             end;
          end if;
