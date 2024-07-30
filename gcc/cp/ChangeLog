@@ -1,3 +1,38 @@
+2024-07-29  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-07-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115900
+	* constexpr.cc (cxx_eval_call_expression): Set new_obj to NULL_TREE
+	if cxx_fold_indirect_ref set empty_base to true.
+
+2024-07-29  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-07-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115583
+	* constexpr.cc (cxx_eval_conditional_expression): Don't
+	cp_fold_immediate for if consteval.
+
+2024-07-29  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-07-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115986
+	* cp-gimplify.cc (remember_escalating_expr): Skip function
+	templates.
+
+2024-07-29  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-07-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115561
+	* semantics.cc (finish_call_expr): Check cp_unevaluated_operand.
+
 2024-07-23  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

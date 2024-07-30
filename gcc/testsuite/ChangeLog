@@ -1,3 +1,62 @@
+2024-07-29  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-07-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115900
+	* g++.dg/cpp2a/constexpr-init23.C: New test.
+
+2024-07-29  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116057
+	* gcc.dg/torture/pr116057.c: New testcase.
+
+2024-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/115986
+	* g++.dg/cpp2a/consteval-prop21.C (operator "" _c): Use
+	unsigned long long rather than __uint128_t for return type if int128
+	is unsupported.
+
+2024-07-29  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-07-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115583
+	* g++.dg/cpp23/consteval-if13.C: New test.
+
+2024-07-29  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-07-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115986
+	* g++.dg/cpp2a/consteval-prop21.C: New test.
+
+2024-07-29  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-07-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115561
+	* g++.dg/cpp2a/concepts-lambda21.C: New test.
+
+2024-07-29  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx512bw-vpalignr-1b.c: New test.
+	* gcc.target/i386/avx512dq-vfpclasssd-1b.c: Ditto.
+	* gcc.target/i386/avx512dq-vfpclassss-1b.c: Ditto.
+	* gcc.target/i386/avx512dq-vreducesd-1b.c: Ditto.
+	* gcc.target/i386/avx512dq-vreducess-1b.c: Ditto.
+	* gcc.target/i386/avx512vl-valignq-1b.c: Ditto.
+
 2024-07-24  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

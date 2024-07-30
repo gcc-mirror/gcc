@@ -1,3 +1,31 @@
+2024-07-29  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116057
+	* tree-ssa-ccp.cc (likely_value): Also walk CTORs in stmt
+	operands to look for constants.
+
+2024-07-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/116055
+	* ipa-modref.cc (analyze_function): Do not ICE when flags regress.
+
+2024-07-29  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/avx512dqintrin.h
+	(_mm_mask_fpclass_ss_mask): Correct operand order.
+	(_mm_mask_fpclass_sd_mask): Ditto.
+	(_mm256_maskz_reduce_round_ss): Use __builtin_ia32_reducess_mask_round
+	instead of __builtin_ia32_reducesd_mask_round.
+	(_mm_reduce_round_sd): Use -1 as mask since it is non-mask.
+	(_mm_reduce_round_ss): Ditto.
+	* config/i386/avx512vlbwintrin.h
+	(_mm256_mask_alignr_epi8): Correct operand usage.
+	(_mm_mask_alignr_epi8): Ditto.
+	* config/i386/avx512vlintrin.h (_mm_mask_alignr_epi64): Ditto.
+
 2024-07-24  Christoph Müllner  <christoph.muellner@vrull.eu>
 
 	Backported from master:
