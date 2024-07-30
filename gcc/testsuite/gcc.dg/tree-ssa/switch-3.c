@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-tree-switchlower1" } */
+/* { dg-options "-O2 -fdump-tree-switchlower1 -fdisable-tree-switchconv" } */
 
 int cipher_to_alg(int cipher)        
 {                                    

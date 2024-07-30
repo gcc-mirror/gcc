@@ -743,6 +743,19 @@ public:
   /* Collection information about SWTCH statement.  */
   void collect (gswitch *swtch);
 
+  /* Check that the 'exponential index transform' can be applied.
+
+     See the comment at the function definition for more details.  */
+  bool is_exp_index_transform_viable (gswitch *swtch);
+
+  /* Perform the 'exponential index transform'.
+
+     The exponential index transform shrinks the range of case numbers which
+     helps switch conversion convert switches it otherwise could not.
+
+     See the comment at the function definition for more details.  */
+  void exp_index_transform (gswitch *swtch);
+
   /* Checks whether the range given by individual case statements of the switch
      switch statement isn't too big and whether the number of branches actually
      satisfies the size of the new array.  */
@@ -900,6 +913,11 @@ public:
 
   /* True if CFG has been changed.  */
   bool m_cfg_altered;
+
+  /* True if exponential index transform has been applied.  See the comment at
+     the definition of exp_index_transform for details about the
+     transformation.  */
+  bool m_exp_index_transform_applied;
 };
 
 void
