@@ -427,7 +427,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
 
 /* The RCPC2 extensions from Armv8.4-a that allow immediate offsets to LDAPR
    and sign-extending versions.*/
-#define TARGET_RCPC2 ((AARCH64_HAVE_ISA (V8_4A) && TARGET_RCPC) || TARGET_RCPC3)
+#define TARGET_RCPC2 AARCH64_HAVE_ISA (RCPC2)
 
 /* RCPC3 (Release Consistency) extensions, optional from Armv8.2-a.  */
 #define TARGET_RCPC3 AARCH64_HAVE_ISA (RCPC3)

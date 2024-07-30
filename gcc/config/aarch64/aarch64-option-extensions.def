@@ -159,7 +159,9 @@ AARCH64_OPT_FMV_EXTENSION("fcma", FCMA, (SIMD), (), (), "fcma")
 
 AARCH64_OPT_FMV_EXTENSION("rcpc", RCPC, (), (), (), "lrcpc")
 
-AARCH64_OPT_FMV_EXTENSION("rcpc3", RCPC3, (RCPC), (), (), "lrcpc3")
+AARCH64_OPT_FMV_EXTENSION("rcpc2", RCPC2, (RCPC), (), (), "ilrcpc")
+
+AARCH64_OPT_FMV_EXTENSION("rcpc3", RCPC3, (RCPC2), (), (), "lrcpc3")
 
 AARCH64_OPT_FMV_EXTENSION("frintts", FRINTTS, (FP), (), (), "frint")
 
