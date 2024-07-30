@@ -5,6 +5,6 @@
 ! Check for calling convention consitency
 ! in procedure-pointer assignments.
 !
-      subroutine test() ! { dg-error "fastcall and stdcall attributes are not compatible" }
+      subroutine test() ! { dg-error "stdcall and fastcall attributes are not compatible" }
 cGCC$ attributes stdcall, fastcall::test
       end subroutine test
