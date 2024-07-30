@@ -25,6 +25,7 @@
 #include "rust-ast.h"
 #include "rust-diagnostics.h"
 #include "rust-system.h"
+#include "tree/rust-hir-expr.h"
 
 namespace Rust {
 namespace HIR {
@@ -830,10 +831,85 @@ ASTLoweringExpr::visit (AST::ClosureExprInnerTyped &expr)
 }
 
 HIR::InlineAsmOperand
+translate_operand_in (const AST::InlineAsmOperand &operand)
+{
+  auto in_value = operand.get_in ();
+
+  struct HIR::InlineAsmOperand::In in (
+    in_value.reg,
+    std::unique_ptr<Expr> (ASTLoweringExpr::translate (*in_value.expr.get ())));
+  return in;
+}
+
+HIR::InlineAsmOperand
+translate_operand_out (const AST::InlineAsmOperand &operand)
+{
+  auto out_value = operand.get_out ();
+  struct HIR::InlineAsmOperand::Out out (out_value.reg, out_value.late,
+					 std::unique_ptr<Expr> (
+					   ASTLoweringExpr::translate (
+					     *out_value.expr.get ())));
+  return out;
+}
+HIR::InlineAsmOperand
+translate_operand_inout (const AST::InlineAsmOperand &operand)
+{
+  auto inout_value = operand.get_in_out ();
+  struct HIR::InlineAsmOperand::InOut inout (inout_value.reg, inout_value.late,
+					     std::unique_ptr<Expr> (
+					       ASTLoweringExpr::translate (
+						 *inout_value.expr.get ())));
+  return inout;
+}
+HIR::InlineAsmOperand
+translate_operand_split_in_out (const AST::InlineAsmOperand &operand)
+{
+  auto split_in_out_value = operand.get_split_in_out ();
+  struct HIR::InlineAsmOperand::SplitInOut split_in_out (
+    split_in_out_value.reg, split_in_out_value.late,
+    std::unique_ptr<Expr> (
+      ASTLoweringExpr::translate (*split_in_out_value.in_expr.get ())),
+    std::unique_ptr<Expr> (
+      ASTLoweringExpr::translate (*split_in_out_value.out_expr.get ())));
+  return split_in_out;
+}
+HIR::InlineAsmOperand
+translate_operand_const (const AST::InlineAsmOperand &operand)
+{
+  auto const_value = operand.get_const ();
+  struct HIR::AnonConst anon_const (const_value.anon_const.id,
+				    std::unique_ptr<Expr> (
+				      ASTLoweringExpr::translate (
+					*const_value.anon_const.expr.get ())));
+  struct HIR::InlineAsmOperand::Const cnst
+  {
+    anon_const
+  };
+  return cnst;
+}
+
+HIR::InlineAsmOperand
+translate_operand_sym (const AST::InlineAsmOperand &operand)
+{
+  auto sym_value = operand.get_sym ();
+  struct HIR::InlineAsmOperand::Sym sym (std::unique_ptr<Expr> (
+    ASTLoweringExpr::translate (*sym_value.expr.get ())));
+  return sym;
+}
+HIR::InlineAsmOperand
+translate_operand_label (const AST::InlineAsmOperand &operand)
+{
+  auto label_value = operand.get_label ();
+  struct HIR::InlineAsmOperand::Label label (label_value.label_name,
+					     std::unique_ptr<Expr> (
+					       ASTLoweringExpr::translate (
+						 *label_value.expr.get ())));
+  return label;
+}
+HIR::InlineAsmOperand
 from_operand (const AST::InlineAsmOperand &operand)
 {
   using RegisterType = AST::InlineAsmOperand::RegisterType;
-  using Operand = HIR::InlineAsmOperand;
   auto type = operand.get_register_type ();
 
   /*In,*/
@@ -843,75 +919,23 @@ from_operand (const AST::InlineAsmOperand &operand)
   /*Const,*/
   /*Sym,*/
   /*Label,*/
-  if (type == RegisterType::In)
+  switch (type)
     {
-      auto in_value = operand.get_in ();
-
-      struct Operand::In in (in_value.reg,
-			     std::unique_ptr<Expr> (ASTLoweringExpr::translate (
-			       *in_value.expr.get ())));
-      return in;
-    }
-  else if (type == RegisterType::Out)
-    {
-      auto out_value = operand.get_out ();
-      struct Operand::Out out (out_value.reg, out_value.late,
-			       std::unique_ptr<Expr> (
-				 ASTLoweringExpr::translate (
-				   *out_value.expr.get ())));
-      return out;
-    }
-  else if (type == RegisterType::InOut)
-    {
-      auto inout_value = operand.get_in_out ();
-      struct Operand::InOut inout (inout_value.reg, inout_value.late,
-				   std::unique_ptr<Expr> (
-				     ASTLoweringExpr::translate (
-				       *inout_value.expr.get ())));
-      return inout;
-    }
-  else if (type == RegisterType::SplitInOut)
-    {
-      auto split_in_out_value = operand.get_split_in_out ();
-      struct Operand::SplitInOut split_in_out (
-	split_in_out_value.reg, split_in_out_value.late,
-	std::unique_ptr<Expr> (
-	  ASTLoweringExpr::translate (*split_in_out_value.in_expr.get ())),
-	std::unique_ptr<Expr> (
-	  ASTLoweringExpr::translate (*split_in_out_value.out_expr.get ())));
-      return split_in_out;
-    }
-  else if (type == RegisterType::Const)
-    {
-      auto const_value = operand.get_const ();
-      struct HIR::AnonConst anon_const (
-	const_value.anon_const.id,
-	std::unique_ptr<Expr> (
-	  ASTLoweringExpr::translate (*const_value.anon_const.expr.get ())));
-      struct Operand::Const cnst
-      {
-	anon_const
-      };
-      return cnst;
-    }
-  else if (type == RegisterType::Sym)
-    {
-      auto sym_value = operand.get_sym ();
-      struct Operand::Sym sym (std::unique_ptr<Expr> (
-	ASTLoweringExpr::translate (*sym_value.expr.get ())));
-      return sym;
-    }
-  else if (type == RegisterType::Label)
-    {
-      auto label_value = operand.get_label ();
-      struct Operand::Label label (label_value.label_name,
-				   std::unique_ptr<Expr> (
-				     ASTLoweringExpr::translate (
-				       *label_value.expr.get ())));
-      return label;
-    }
-  else
-    {
+    case RegisterType::In:
+      return translate_operand_in (operand);
+    case RegisterType::Out:
+      return translate_operand_out (operand);
+    case RegisterType::InOut:
+      return translate_operand_inout (operand);
+    case RegisterType::SplitInOut:
+      return translate_operand_split_in_out (operand);
+    case RegisterType::Const:
+      return translate_operand_const (operand);
+    case RegisterType::Sym:
+      return translate_operand_sym (operand);
+    case RegisterType::Label:
+      return translate_operand_label (operand);
+    default:
       rust_unreachable ();
     }
 }
@@ -924,7 +948,7 @@ ASTLoweringExpr::visit (AST::InlineAsm &expr)
 				 mappings.get_next_localdef_id (crate_num));
 
   std::vector<HIR::InlineAsmOperand> hir_operands;
-  std::vector<AST::InlineAsmOperand> ast_operands = expr.get_operands ();
+  const std::vector<AST::InlineAsmOperand> &ast_operands = expr.get_operands ();
   /*int ast_operands_size = ast_operands.size ();*/
   for (auto &operand : ast_operands)
     {
