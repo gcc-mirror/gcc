@@ -8932,7 +8932,8 @@ package body Exp_Ch7 is
               Defining_Unit_Name => Local_Proc),
               Declarations       => Declarations (Decl),
           Handled_Statement_Sequence =>
-            Handled_Statement_Sequence (Decl));
+            Handled_Statement_Sequence (Decl),
+          At_End_Proc                => New_Copy_Tree (At_End_Proc (Decl)));
 
       --  Handlers in the block may contain nested subprograms that require
       --  unnesting.
