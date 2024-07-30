@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -msse4" } */
-/* { dg-require-effective-target sse4} */
+/* { dg-require-effective-target sse4 } */
 
 typedef unsigned short u16;
 typedef unsigned int   u32;

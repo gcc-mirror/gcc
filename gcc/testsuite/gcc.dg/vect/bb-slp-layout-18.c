@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target vect_float} */
+/* { dg-require-effective-target vect_float } */
 /* { dg-additional-options "-w -Wno-psabi -ffast-math" } */
 
 typedef float v4sf __attribute__((vector_size(sizeof(float)*4)));
