@@ -1,6 +1,6 @@
 /* testing the correct usage of flexible array members in unions 
    and alone in structures.  */
-/* { dg-do run} */
+/* { dg-do run } */
 /* { dg-options "-Wpedantic" } */
 
 union with_fam_1 {
