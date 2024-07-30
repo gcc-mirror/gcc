@@ -1988,12 +1988,11 @@ struct suspend_point_info
   tree await_field_id;
 };
 
-static hash_map<tree, suspend_point_info> *suspend_points;
-
 struct await_xform_data
 {
   tree actor_fn;   /* Decl for context.  */
   tree actor_frame;
+  hash_map<tree, suspend_point_info> *suspend_points;
 };
 
 /* When we built the await expressions, we didn't know the coro frame
@@ -2003,7 +2002,7 @@ struct await_xform_data
 static tree
 transform_await_expr (tree await_expr, await_xform_data *xform)
 {
-  suspend_point_info *si = suspend_points->get (await_expr);
+  suspend_point_info *si = xform->suspend_points->get (await_expr);
   location_t loc = EXPR_LOCATION (await_expr);
   if (!si)
     {
@@ -2227,6 +2226,7 @@ coro_get_frame_dtor (tree coro_fp, tree orig, tree frame_size,
 static void
 build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 		tree orig, hash_map<tree, local_var_info> *local_var_uses,
+		hash_map<tree, suspend_point_info> *suspend_points,
 		vec<tree, va_gc> *param_dtor_list,
 		tree resume_idx_var, unsigned body_count, tree frame_size)
 {
@@ -2407,7 +2407,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   /* Now we know the real promise, and enough about the frame layout to
      decide where to put things.  */
 
-  await_xform_data xform = {actor, actor_frame};
+  await_xform_data xform = {actor, actor_frame, suspend_points};
 
   /* Transform the await expressions in the function body.  Only do each
      await tree once!  */
@@ -2642,7 +2642,8 @@ build_init_or_final_await (location_t loc, bool is_final)
    function.  */
 
 static bool
-register_await_info (tree await_expr, tree aw_type, tree aw_nam)
+register_await_info (tree await_expr, tree aw_type, tree aw_nam,
+		     hash_map<tree, suspend_point_info> *suspend_points)
 {
   bool seen;
   suspend_point_info &s
@@ -2663,21 +2664,26 @@ register_await_info (tree await_expr, tree aw_type, tree aw_nam)
 struct susp_frame_data
 {
   /* Function-wide.  */
-  tree *field_list; /* The current coroutine frame field list.  */
-  tree handle_type; /* The self-handle type for this coroutine.  */
-  tree fs_label;    /* The destination for co_returns.  */
+  tree fs_label;		/* The destination for co_returns.  */
+  hash_map<tree, suspend_point_info> *suspend_points; /* Not owned.  */
   vec<tree, va_gc> *block_stack; /* Track block scopes.  */
   vec<tree, va_gc> *bind_stack;  /* Track current bind expr.  */
-  unsigned await_number;	 /* Which await in the function.  */
-  unsigned cond_number;		 /* Which replaced condition in the fn.  */
+  unsigned await_number = 0;	 /* Which await in the function.  */
+  unsigned cond_number = 0;		 /* Which replaced condition in the fn.  */
+
   /* Temporary values for one statement or expression being analyzed.  */
-  hash_set<tree> captured_temps; /* The suspend captured these temps.  */
-  vec<tree, va_gc> *to_replace;  /* The VAR decls to replace.  */
-  hash_set<tree> *truth_aoif_to_expand; /* The set of TRUTH exprs to expand.  */
-  unsigned saw_awaits;		 /* Count of awaits in this statement  */
-  bool captures_temporary;	 /* This expr captures temps by ref.  */
-  bool needs_truth_if_exp;	 /* We must expand a truth_if expression.  */
-  bool has_awaiter_init;	 /* We must handle initializing an awaiter.  */
+  hash_set<tree> *truth_aoif_to_expand = nullptr; /* The set of TRUTH exprs to expand.  */
+  unsigned saw_awaits = 0;		 /* Count of awaits in this statement  */
+  bool captures_temporary = false;	 /* This expr captures temps by ref.  */
+  bool needs_truth_if_exp = false;	 /* We must expand a truth_if expression.  */
+  bool has_awaiter_init = false;	 /* We must handle initializing an awaiter.  */
+
+  susp_frame_data (tree _final_susp, hash_map<tree, suspend_point_info> *_spt)
+    : fs_label (_final_susp), suspend_points (_spt)
+  {
+    block_stack = make_tree_vector ();
+    bind_stack = make_tree_vector ();
+  }
 };
 
 /* If this is an await expression, then count it (both uniquely within the
@@ -2708,7 +2714,7 @@ register_awaits (tree *stmt, int *, void *d)
 
   tree aw_field_type = TREE_TYPE (aw);
   tree aw_field_nam = NULL_TREE;
-  register_await_info (aw_expr, aw_field_type, aw_field_nam);
+  register_await_info (aw_expr, aw_field_type, aw_field_nam, data->suspend_points);
 
   /* Rewrite target expressions on the await_suspend () to remove extraneous
      cleanups for the awaitables, which are now promoted to frame vars and
@@ -4540,7 +4546,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
      1. Types we already know.  */
 
   tree fn_return_type = TREE_TYPE (TREE_TYPE (orig));
-  tree handle_type = get_coroutine_handle_type (orig);
   tree promise_type = get_coroutine_promise_type (orig);
 
   /* 2. Types we need to define or look up.  */
@@ -4578,17 +4583,12 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   /* We need to know, and inspect, each suspend point in the function
      in several places.  It's convenient to place this map out of line
      since it's used from tree walk callbacks.  */
-  suspend_points = new hash_map<tree, suspend_point_info>;
 
+  hash_map<tree, suspend_point_info> suspend_points;
   /* Now insert the data for any body await points, at this time we also need
      to promote any temporaries that are captured by reference (to regular
      vars) they will get added to the coro frame along with other locals.  */
-  susp_frame_data body_aw_points
-    = {&field_list, handle_type, fs_label, NULL, NULL, 0, 0,
-       hash_set<tree> (), NULL, NULL, 0, false, false, false};
-  body_aw_points.block_stack = make_tree_vector ();
-  body_aw_points.bind_stack = make_tree_vector ();
-  body_aw_points.to_replace = make_tree_vector ();
+  susp_frame_data body_aw_points (fs_label, &suspend_points);
   cp_walk_tree (&fnbody, await_statement_walker, &body_aw_points, NULL);
 
   /* 4. Now make space for local vars, this is conservative again, and we
@@ -5273,7 +5273,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   /* Build the actor...  */
   build_actor_fn (fn_start, coro_frame_type, actor, fnbody, orig,
-		  &local_var_uses, param_dtor_list,
+		  &local_var_uses, &suspend_points, param_dtor_list,
 		  resume_idx_var, body_aw_points.await_number, frame_size);
 
   /* Destroyer ... */
@@ -5290,8 +5290,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   *resumer = actor;
   *destroyer = destroy;
 
-  delete suspend_points;
-  suspend_points = NULL;
   return true;
 }
 
