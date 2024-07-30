@@ -290,71 +290,6 @@ static const char repl_chars[4][16] __attribute__((aligned(16))) = {
     '?', '?', '?', '?', '?', '?', '?', '?' },
 };
 
-/* A version of the fast scanner using MMX vectorized byte compare insns.
-
-   This uses the PMOVMSKB instruction which was introduced with "MMX2",
-   which was packaged into SSE1; it is also present in the AMD MMX
-   extension.  Mark the function as using "sse" so that we emit a real
-   "emms" instruction, rather than the 3dNOW "femms" instruction.  */
-
-static const uchar *
-#ifndef __SSE__
-__attribute__((__target__("sse")))
-#endif
-search_line_mmx (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
-{
-  typedef char v8qi __attribute__ ((__vector_size__ (8)));
-  typedef int __m64 __attribute__ ((__vector_size__ (8), __may_alias__));
-
-  const v8qi repl_nl = *(const v8qi *)repl_chars[0];
-  const v8qi repl_cr = *(const v8qi *)repl_chars[1];
-  const v8qi repl_bs = *(const v8qi *)repl_chars[2];
-  const v8qi repl_qm = *(const v8qi *)repl_chars[3];
-
-  unsigned int misalign, found, mask;
-  const v8qi *p;
-  v8qi data, t, c;
-
-  /* Align the source pointer.  While MMX doesn't generate unaligned data
-     faults, this allows us to safely scan to the end of the buffer without
-     reading beyond the end of the last page.  */
-  misalign = (uintptr_t)s & 7;
-  p = (const v8qi *)((uintptr_t)s & -8);
-  data = *p;
-
-  /* Create a mask for the bytes that are valid within the first
-     16-byte block.  The Idea here is that the AND with the mask
-     within the loop is "free", since we need some AND or TEST
-     insn in order to set the flags for the branch anyway.  */
-  mask = -1u << misalign;
-
-  /* Main loop processing 8 bytes at a time.  */
-  goto start;
-  do
-    {
-      data = *++p;
-      mask = -1;
-
-    start:
-      t = __builtin_ia32_pcmpeqb(data, repl_nl);
-      c = __builtin_ia32_pcmpeqb(data, repl_cr);
-      t = (v8qi) __builtin_ia32_por ((__m64)t, (__m64)c);
-      c = __builtin_ia32_pcmpeqb(data, repl_bs);
-      t = (v8qi) __builtin_ia32_por ((__m64)t, (__m64)c);
-      c = __builtin_ia32_pcmpeqb(data, repl_qm);
-      t = (v8qi) __builtin_ia32_por ((__m64)t, (__m64)c);
-      found = __builtin_ia32_pmovmskb (t);
-      found &= mask;
-    }
-  while (!found);
-
-  __builtin_ia32_emms ();
-
-  /* FOUND contains 1 in bits for which we matched a relevant
-     character.  Conversion to the byte index is trivial.  */
-  found = __builtin_ctz(found);
-  return (const uchar *)p + found;
-}
 
 /* A version of the fast scanner using SSE2 vectorized byte compare insns.  */
 
@@ -509,8 +444,6 @@ init_vectorized_lexer (void)
   minimum = 3;
 #elif defined(__SSE2__)
   minimum = 2;
-#elif defined(__SSE__)
-  minimum = 1;
 #endif
 
   if (minimum == 3)
@@ -521,14 +454,6 @@ init_vectorized_lexer (void)
         impl = search_line_sse42;
       else if (minimum == 2 || (edx & bit_SSE2))
 	impl = search_line_sse2;
-      else if (minimum == 1 || (edx & bit_SSE))
-	impl = search_line_mmx;
-    }
-  else if (__get_cpuid (0x80000001, &dummy, &dummy, &dummy, &edx))
-    {
-      if (minimum == 1
-	  || (edx & (bit_MMXEXT | bit_CMOV)) == (bit_MMXEXT | bit_CMOV))
-	impl = search_line_mmx;
     }
 
   search_line_fast = impl;
