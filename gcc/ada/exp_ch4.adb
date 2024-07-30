@@ -443,8 +443,11 @@ package body Exp_Ch4 is
    begin
       if Present (Eq) then
          if Is_Abstract_Subprogram (Eq) then
-            return Make_Raise_Program_Error (Loc,
-               Reason =>  PE_Explicit_Raise);
+            return Result : constant Node_Id :=
+              Make_Raise_Program_Error (Loc, Reason =>  PE_Explicit_Raise)
+            do
+               Set_Etype (Result, Etype (Eq));
+            end return;
 
          else
             return
