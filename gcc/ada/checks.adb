@@ -6840,7 +6840,7 @@ package body Checks is
                      --  OUT parameter for which we are the argument.
 
                      F := First_Formal (E);
-                     A := First (L);
+                     A := First_Actual (P);
                      while Present (F) loop
                         if A = N
                           and then (Ekind (F) = E_Out_Parameter
@@ -6850,7 +6850,7 @@ package body Checks is
                         end if;
 
                         Next_Formal (F);
-                        Next (A);
+                        Next_Actual (A);
                      end loop;
                   end if;
                end if;

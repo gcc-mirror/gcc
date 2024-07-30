@@ -15918,10 +15918,8 @@ package body Sem_Util is
                elsif Nkind (Parent (Par)) = N_Object_Renaming_Declaration then
                   return False;
 
-               elsif Nkind (Parent (Par)) in
-                       N_Function_Call            |
-                       N_Procedure_Call_Statement |
-                       N_Entry_Call_Statement
+               elsif Nkind (Parent (Par)) in N_Entry_Call_Statement
+                                           | N_Subprogram_Call
                then
                   --  Check that the element is not part of an actual for an
                   --  in-out parameter.
@@ -15932,14 +15930,14 @@ package body Sem_Util is
 
                   begin
                      F := First_Formal (Entity (Name (Parent (Par))));
-                     A := First (Parameter_Associations (Parent (Par)));
+                     A := First_Actual (Parent (Par));
                      while Present (F) loop
                         if A = Par and then Ekind (F) /= E_In_Parameter then
                            return False;
                         end if;
 
                         Next_Formal (F);
-                        Next (A);
+                        Next_Actual (A);
                      end loop;
                   end;
 

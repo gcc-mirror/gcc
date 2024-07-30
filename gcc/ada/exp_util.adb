@@ -13070,14 +13070,14 @@ package body Exp_Util is
       begin
          --  Examine the list of actual and formal parameters in parallel
 
-         A := First (Parameter_Associations (Call));
+         A := First_Actual (Call);
          F := First_Formal (Entity (Name (Call)));
          while Present (A) and then Present (F) loop
             if A = Actual then
                return Etype (F);
             end if;
 
-            Next (A);
+            Next_Actual (A);
             Next_Formal (F);
          end loop;
 

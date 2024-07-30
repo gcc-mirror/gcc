@@ -3879,7 +3879,7 @@ package body Exp_Ch6 is
                Formal : Entity_Id;
 
             begin
-               Actual := First (Parameter_Associations (Call_Node));
+               Actual := First_Actual (Call_Node);
                Formal := First_Formal (Subp);
                while Present (Actual)
                  and then Present (Formal)
@@ -3891,7 +3891,7 @@ package body Exp_Ch6 is
                      return True;
                   end if;
 
-                  Next (Actual);
+                  Next_Actual (Actual);
                   Next_Formal (Formal);
                end loop;
             end;
