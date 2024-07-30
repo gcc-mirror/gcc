@@ -9373,6 +9373,11 @@ riscv_option_override (void)
 	error ("rv64e requires lp64e ABI");
     }
 
+  /* ILP32E does not support the 'd' extension.  */
+  if (riscv_abi == ABI_ILP32E && UNITS_PER_FP_REG > 4)
+    error ("ILP32E ABI does not support the %qc extension",
+	   UNITS_PER_FP_REG > 8 ? 'Q' : 'D');
+
   /* Zfinx require abi ilp32, ilp32e, lp64 or lp64e.  */
   if (TARGET_ZFINX
       && riscv_abi != ABI_ILP32 && riscv_abi != ABI_LP64
