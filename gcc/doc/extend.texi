@@ -5147,22 +5147,38 @@ the attribute, rather than providing the ISR name itself as the function name:
 
 @example
 __attribute__((signal(1)))
-void my_handler (void)
+static void my_handler (void)
 @{
    // Code for __vector_1
-@}
-
-#include <avr/io.h>
-
-__attribute__((__signal__(PCINT0_vect_num, PCINT1_vect_num)))
-static void my_pcint0_1_handler (void)
-@{
-   // Code for PCINT0 and PCINT1 (__vector_3 and __vector_4
-   // on ATmega328).
 @}
 @end example
 
 Notice that the handler function needs not to be externally visible.
+The recommended way to use these attributes is by means of the
+@code{ISR_N} macro provided by @code{avr/interrupt.h} from
+@w{@uref{https://www.nongnu.org/avr-libc/user-manual/group__avr__interrupts.html,,AVR-LibC}}:
+
+@example
+#include <avr/interrupt.h>
+
+ISR_N (PCINT0_vect_num)
+static void my_pcint0_handler (void)
+@{
+   // Code
+@}
+
+ISR_N (ADC_vect_num, ISR_NOBLOCK)
+static void my_adc_handler (void)
+@{
+    // Code
+@}
+@end example
+
+@code{ISR_N} can be specified more than once, in which case several
+interrupt vectors are pointing to the same handler function.  This
+is similar to the @code{ISR_ALIASOF} macro provided by AVR-LibC, but
+without the overhead introduced by @code{ISR_ALIASOF}.
+
 
 @cindex @code{noblock} function attribute, AVR
 @item noblock
