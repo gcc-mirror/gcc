@@ -851,7 +851,7 @@ namespace
 #endif
 
 #ifdef _GLIBCXX_HAVE_SYS_STAT_H
-#ifdef NEED_DO_COPY_FILE // Only define this once, not in cow-ops.o too
+#ifdef NEED_DO_COPY_FILE // Only define this once, not in cow-fs_ops.o too
 bool
 fs::equiv_files([[maybe_unused]] const char_type* p1, const stat_type& st1,
 		[[maybe_unused]] const char_type* p2, const stat_type& st2,
