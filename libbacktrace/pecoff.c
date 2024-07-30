@@ -83,10 +83,10 @@ struct dll_notification_data
 #define LDR_DLL_NOTIFICATION_REASON_LOADED 1
 
 typedef LONG NTSTATUS;
-typedef VOID CALLBACK (*LDR_DLL_NOTIFICATION)(ULONG,
+typedef VOID (CALLBACK *LDR_DLL_NOTIFICATION)(ULONG,
 					      struct dll_notification_data*,
 					      PVOID);
-typedef NTSTATUS NTAPI (*LDR_REGISTER_FUNCTION)(ULONG,
+typedef NTSTATUS (NTAPI *LDR_REGISTER_FUNCTION)(ULONG,
 						LDR_DLL_NOTIFICATION, PVOID,
 						PVOID*);
 #endif
