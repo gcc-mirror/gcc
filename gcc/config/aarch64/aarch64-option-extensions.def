@@ -103,6 +103,8 @@ AARCH64_OPT_FMV_EXTENSION("rng", RNG, (), (), (), "rng")
 
 AARCH64_OPT_FMV_EXTENSION("flagm", FLAGM, (), (), (), "flagm")
 
+AARCH64_OPT_FMV_EXTENSION("flagm2", FLAGM2, (FLAGM), (), (), "flagm2")
+
 AARCH64_OPT_FMV_EXTENSION("lse", LSE, (), (), (), "atomics")
 
 AARCH64_OPT_FMV_EXTENSION("fp", FP, (), (), (), "fp")
