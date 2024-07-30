@@ -1,4 +1,3 @@
-// { dg_do run }
 // { dg-do run { target c++11 } }
 // { dg-timeout-factor 2 }
 
