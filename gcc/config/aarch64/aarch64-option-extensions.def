@@ -225,6 +225,8 @@ AARCH64_OPT_EXTENSION("pauth", PAUTH, (), (), (), "paca pacg")
 
 AARCH64_OPT_EXTENSION("ls64", LS64, (), (), (), "")
 
+AARCH64_OPT_FMV_EXTENSION("wfxt", WFXT, (), (), (), "wfxt")
+
 AARCH64_OPT_EXTENSION("sme-f64f64", SME_F64F64, (SME), (), (), "smef64f64")
 
 AARCH64_FMV_FEATURE("sme-f64f64", SME_F64, (SME_F64F64))
