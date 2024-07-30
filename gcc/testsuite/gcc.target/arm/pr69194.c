@@ -1,5 +1,5 @@
 /* PR target/69194 */
-/* { dg-do-compile } */
+/* { dg-do compile } */
 /* { dg-require-effective-target arm_neon_ok } */
 /* { dg-options "-O2" } */
 /* { dg-add-options arm_neon } */
