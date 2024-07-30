@@ -85,6 +85,7 @@ struct GTY((for_user)) coroutine_info
   tree actor_decl;    /* The synthesized actor function.  */
   tree destroy_decl;  /* The synthesized destroy function.  */
   tree promise_type;  /* The cached promise type for this function.  */
+  tree traits_type;   /* The cached traits type for this function.  */
   tree handle_type;   /* The cached coroutine handle for this function.  */
   tree self_h_proxy;  /* A handle instance that is used as the proxy for the
 			 one that will eventually be allocated in the coroutine
@@ -429,11 +430,12 @@ find_promise_type (tree traits_class)
   return promise_type;
 }
 
-static bool
-coro_promise_type_found_p (tree fndecl, location_t loc)
-{
-  gcc_assert (fndecl != NULL_TREE);
+/* Perform initialization of the coroutine processor state, if not done
+   before.  */
 
+static bool
+ensure_coro_initialized (location_t loc)
+{
   if (!coro_initialized)
     {
       /* Trees we only need to create once.
@@ -466,6 +468,30 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
 
       coro_initialized = true;
     }
+  return true;
+}
+
+/* Try to get the coroutine traits class.  */
+static tree
+coro_get_traits_class (tree fndecl, location_t loc)
+{
+  gcc_assert (fndecl != NULL_TREE);
+  gcc_assert (coro_initialized);
+
+  coroutine_info *coro_info = get_or_insert_coroutine_info (fndecl);
+  auto& traits_type = coro_info->traits_type;
+  if (!traits_type)
+    traits_type = instantiate_coro_traits (fndecl, loc);
+  return traits_type;
+}
+
+static bool
+coro_promise_type_found_p (tree fndecl, location_t loc)
+{
+  gcc_assert (fndecl != NULL_TREE);
+
+  if (!ensure_coro_initialized (loc))
+    return false;
 
   /* Save the coroutine data on the side to avoid the overhead on every
      function decl tree.  */
@@ -480,7 +506,7 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
       /* Get the coroutine traits template class instance for the function
 	 signature we have - coroutine_traits <R, ...>  */
 
-      tree templ_class = instantiate_coro_traits (fndecl, loc);
+      tree templ_class = coro_get_traits_class (fndecl, loc);
 
       /* Find the promise type for that.  */
       coro_info->promise_type = find_promise_type (templ_class);
@@ -901,6 +927,19 @@ coro_diagnose_throwing_final_aw_expr (tree expr)
   return coro_diagnose_throwing_fn (fn);
 }
 
+/* Build a co_await suitable for later expansion.  */
+
+tree
+build_template_co_await_expr (location_t kw, tree type, tree expr, tree kind)
+{
+  tree aw_expr = build5_loc (kw, CO_AWAIT_EXPR, type, expr,
+			     NULL_TREE, NULL_TREE, NULL_TREE,
+			     kind);
+  TREE_SIDE_EFFECTS (aw_expr) = true;
+  return aw_expr;
+}
+
+
 /*  This performs [expr.await] bullet 3.3 and validates the interface obtained.
     It is also used to build the initial and final suspend points.
 
@@ -909,11 +948,24 @@ coro_diagnose_throwing_final_aw_expr (tree expr)
     A, the original yield/await expr, is found at source location LOC.
 
     We will be constructing a CO_AWAIT_EXPR for a suspend point of one of
-    the four suspend_point_kind kinds.  This is indicated by SUSPEND_KIND.  */
+    the four suspend_point_kind kinds.  This is indicated by SUSPEND_KIND.
+
+    In the case that we're processing a template declaration, we can't save
+    actual awaiter expressions as the frame type will differ between
+    instantiations, but we can generate them to type-check them and compute the
+    resulting expression type.  In those cases, we will return a
+    template-appropriate CO_AWAIT_EXPR and throw away the rest of the results.
+    Such an expression requires the original co_await operand unaltered.  Pass
+    it as ORIG_OPERAND.  If it is the same as 'a', you can pass NULL_TREE (the
+    default) to use 'a' as the value.  */
 
 static tree
-build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
+build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind,
+		tree orig_operand = NULL_TREE)
 {
+  if (orig_operand == NULL_TREE)
+    orig_operand = a;
+
   /* Try and overload of operator co_await, .... */
   tree o;
   if (MAYBE_CLASS_TYPE_P (TREE_TYPE (a)))
@@ -1118,11 +1170,13 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
   if (REFERENCE_REF_P (e_proxy))
     e_proxy = TREE_OPERAND (e_proxy, 0);
 
+  tree awrs_type = TREE_TYPE (TREE_TYPE (awrs_func));
+  tree suspend_kind_cst = build_int_cst (integer_type_node,
+					 (int) suspend_kind);
   tree await_expr = build5_loc (loc, CO_AWAIT_EXPR,
-				TREE_TYPE (TREE_TYPE (awrs_func)),
+				awrs_type,
 				a, e_proxy, o, awaiter_calls,
-				build_int_cst (integer_type_node,
-					       (int) suspend_kind));
+				suspend_kind_cst);
   TREE_SIDE_EFFECTS (await_expr) = true;
   if (te)
     {
@@ -1131,7 +1185,23 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
       await_expr = te;
     }
   SET_EXPR_LOCATION (await_expr, loc);
-  return convert_from_reference (await_expr);
+
+  if (processing_template_decl)
+    return build_template_co_await_expr (loc, awrs_type, orig_operand,
+					 suspend_kind_cst);
+ return convert_from_reference (await_expr);
+}
+
+/* Returns true iff EXPR or the TRAITS_CLASS, which should be a
+   coroutine_traits instance, are dependent.  In those cases, we can't decide
+   what the types of our co_{await,yield,return} expressions are, so we defer
+   expansion entirely.  */
+
+static bool
+coro_dependent_p (tree expr, tree traits_class)
+{
+  return type_dependent_expression_p (expr)
+    || dependent_type_p (traits_class);
 }
 
 tree
@@ -1153,20 +1223,24 @@ finish_co_await_expr (location_t kw, tree expr)
      extraneous warnings during substitution.  */
   suppress_warning (current_function_decl, OPT_Wreturn_type);
 
-  /* Defer expansion when we are processing a template.
-     FIXME: If the coroutine function's type is not dependent, and the operand
-     is not dependent, we should determine the type of the co_await expression
-     using the DEPENDENT_EXPR wrapper machinery.  That allows us to determine
-     the subexpression type, but leave its operand unchanged and then
-     instantiate it later.  */
-  if (processing_template_decl)
-    {
-      tree aw_expr = build5_loc (kw, CO_AWAIT_EXPR, unknown_type_node, expr,
-				 NULL_TREE, NULL_TREE, NULL_TREE,
-				 integer_zero_node);
-      TREE_SIDE_EFFECTS (aw_expr) = true;
-      return aw_expr;
-    }
+  /* Prepare for coroutine transformations.  */
+  if (!ensure_coro_initialized (kw))
+    return error_mark_node;
+
+  /* Get our traits class.  */
+  tree traits_class = coro_get_traits_class (current_function_decl, kw);
+
+  /* Defer expansion when we are processing a template, unless the traits type
+     and expression would not be dependent.  In the case that the types are
+     not dependent but we are processing a template declaration, we will do
+     most of the computation but throw away the results (except for the
+     await_resume type).  Otherwise, if our co_await is type-dependent
+     (i.e. the promise type or operand type is dependent), we can't do much,
+     and just return early with a NULL_TREE type (indicating that we cannot
+     compute the type yet).  */
+  if (coro_dependent_p (expr, traits_class))
+    return build_template_co_await_expr (kw, NULL_TREE, expr,
+					 integer_zero_node);
 
   /* We must be able to look up the "await_transform" method in the scope of
      the promise type, and obtain its return type.  */
@@ -1203,7 +1277,7 @@ finish_co_await_expr (location_t kw, tree expr)
     }
 
   /* Now we want to build co_await a.  */
-  return build_co_await (kw, a, CO_AWAIT_SUSPEND_POINT);
+  return build_co_await (kw, a, CO_AWAIT_SUSPEND_POINT, expr);
 }
 
 /* Take the EXPR given and attempt to build:
@@ -1230,10 +1304,22 @@ finish_co_yield_expr (location_t kw, tree expr)
      extraneous warnings during substitution.  */
   suppress_warning (current_function_decl, OPT_Wreturn_type);
 
-  /* Defer expansion when we are processing a template; see FIXME in the
-     co_await code.  */
-  if (processing_template_decl)
-    return build2_loc (kw, CO_YIELD_EXPR, unknown_type_node, expr, NULL_TREE);
+  /* Prepare for coroutine transformations.  */
+  if (!ensure_coro_initialized (kw))
+    return error_mark_node;
+
+  /* Get our traits class.  */
+  tree traits_class = coro_get_traits_class (current_function_decl, kw);
+
+  /* Defer expansion when we are processing a template; see note in
+     finish_co_await_expr.  Also note that a yield is equivalent to
+
+       co_await p.yield_value(EXPR)
+
+      If either p or EXPR are type-dependent, then the whole expression is
+      certainly type-dependent, and we can't proceed.  */
+  if (coro_dependent_p (expr, traits_class))
+    return build2_loc (kw, CO_YIELD_EXPR, NULL_TREE, expr, NULL_TREE);
 
   if (!coro_promise_type_found_p (current_function_decl, kw))
     /* We must be able to look up the "yield_value" method in the scope of
@@ -1310,13 +1396,20 @@ finish_co_return_stmt (location_t kw, tree expr)
      extraneous warnings during substitution.  */
   suppress_warning (current_function_decl, OPT_Wreturn_type);
 
+  /* Prepare for coroutine transformations.  */
+  if (!ensure_coro_initialized (kw))
+    return error_mark_node;
+
+  /* Get our traits class.  */
+  tree traits_class = coro_get_traits_class (current_function_decl, kw);
+
   if (processing_template_decl
       && check_for_bare_parameter_packs (expr))
     return error_mark_node;
 
-  /* Defer expansion when we are processing a template; see FIXME in the
-     co_await code.  */
-  if (processing_template_decl)
+  /* Defer expansion when we must and are processing a template; see note in
+     finish_co_await_expr.  */
+  if (coro_dependent_p (expr, traits_class))
     {
       /* co_return expressions are always void type, regardless of the
 	 expression type.  */
