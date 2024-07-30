@@ -299,7 +299,6 @@ namespace __gnu_posix
   {
     bool skip, update, overwrite;
   };
-
 #endif // _GLIBCXX_HAVE_SYS_STAT_H
 
 } // namespace filesystem
@@ -322,6 +321,12 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
 	   uintmax_t& capacity, uintmax_t& free, uintmax_t& available,
 	   std::error_code&);
 
+
+  // Test whether two files are the same file.
+  bool
+  equiv_files(const char_type*, const stat_type&,
+	      const char_type*, const stat_type&,
+	      error_code&);
 
   inline file_type
   make_file_type(const stat_type& st) noexcept
@@ -431,8 +436,7 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
 	    return false;
 	  }
 
-	if (to_st->st_dev == from_st->st_dev
-	    && to_st->st_ino == from_st->st_ino)
+	if (equiv_files(from, *from_st, to, *to_st, ec))
 	  {
 	    ec = std::make_error_code(std::errc::file_exists);
 	    return false;
