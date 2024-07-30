@@ -1,3 +1,84 @@
+2024-07-30  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/predicates.md
+	(fix_scaling_operand, float_scaling_operand): New predicates.
+	* config/xtensa/xtensa.md
+	(any_fix/m_fix/s_fix, any_float/m_float/s_float):
+	New code iterators and their attributes.
+	(fix<s_fix>_truncsfsi2): Change from "fix_truncsfsi2".
+	(*fix<s_fix>_truncsfsi2_2x, *fix<s_fix>_truncsfsi2_scaled):
+	New insn definitions.
+	(float<s_float>sisf2): Change from "floatsisf2".
+	(*float<s_float>sisf2_scaled): New insn definition.
+
+2024-07-30  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc
+	(gen_int_relational, gen_float_relational): Replace tempvar-based
+	value-swapping codes with std::swap.
+	* config/xtensa/xtensa.md (movdi_internal, movdf_internal):
+	Ditto.
+
+2024-07-29  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116104
+	* ext-dce.cc (carry_backpropagate): Fix test guarding UINTVAL
+	extraction of shift count.
+
+2024-07-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/invoke.texi (Diagnostic Message Formatting Options):
+	Replace hyphen with a new sentence. Replace "the former" with
+	the actual value.
+
+2024-07-29  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.cc (xtensa_option_override_after_change):
+	New function.
+	(TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE): Define as
+	xtensa_option_override_after_change.
+	(xtensa_option_override): Call
+	xtensa_option_override_after_change.
+
+2024-07-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_set_current_function): Fix typo in
+	error message.
+
+2024-07-29  Carl Love  <cel@linux.ibm.com>
+
+	* config/rs6000/vector.md: Add comment for the VEC_IC
+	define_mode_iterator.
+
+2024-07-29  Pan Li  <pan2.li@intel.com>
+
+	* tree-ssa-math-opts.cc (math_opts_dom_walker::after_dom_children):
+	Try .SAT_SUB for PLUS_EXPR case.
+
+2024-07-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/116055
+	* ipa-modref.cc (analyze_function): Do not ICE when flags regress.
+
+2024-07-29  Feng Xue  <fxue@os.amperecomputing.com>
+
+	* tree-vect-patterns.cc (vect_recog_bitfield_ref_pattern): Only call
+	single_imm_use if statement is not generated from pattern recognition.
+
+2024-07-29  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/avx512dqintrin.h
+	(_mm_mask_fpclass_ss_mask): Correct operand order.
+	(_mm_mask_fpclass_sd_mask): Ditto.
+	(_mm256_maskz_reduce_round_ss): Use __builtin_ia32_reducess_mask_round
+	instead of __builtin_ia32_reducesd_mask_round.
+	(_mm_reduce_round_sd): Use -1 as mask since it is non-mask.
+	(_mm_reduce_round_ss): Ditto.
+	* config/i386/avx512vlbwintrin.h
+	(_mm256_mask_alignr_epi8): Correct operand usage.
+	(_mm_mask_alignr_epi8): Ditto.
+	* config/i386/avx512vlintrin.h (_mm_mask_alignr_epi64): Ditto.
+
 2024-07-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* exec-tool.in: Exit with an error if $original is empty.

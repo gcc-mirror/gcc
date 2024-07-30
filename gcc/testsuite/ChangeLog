@@ -1,3 +1,47 @@
+2024-07-29  Sam James  <sam@gentoo.org>
+
+	PR ipa/111613
+	* gcc.c-torture/pr111613.c: Rename to..
+	* gcc.c-torture/execute/pr111613.c: ...this.
+
+2024-07-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88313
+	* g++.dg/cpp2a/lambda-targ6.C: New test.
+
+2024-07-29  Andi Kleen  <ak@gcc.gnu.org>
+
+	Revert:
+	2024-07-26  Andi Kleen  <ak@gcc.gnu.org>
+
+	PR testsuite/116080
+	* g++.dg/musttail10.C: Use external tail call target check.
+	* g++.dg/musttail6.C: Dito.
+	* lib/target-supports.exp: Add external_tail_call. Disable
+	optimization for tail call checks.
+
+2024-07-29  Sam James  <sam@gentoo.org>
+
+	PR middle-end/115277
+	* gcc.c-torture/compile/pr115277.c: Rename to...
+	* gcc.c-torture/execute/pr115277.c: ...this.
+
+2024-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/115986
+	* g++.dg/cpp2a/consteval-prop21.C (operator "" _c): Use
+	unsigned long long rather than __uint128_t for return type if int128
+	is unsupported.
+
+2024-07-29  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx512bw-vpalignr-1b.c: New test.
+	* gcc.target/i386/avx512dq-vfpclasssd-1b.c: Ditto.
+	* gcc.target/i386/avx512dq-vfpclassss-1b.c: Ditto.
+	* gcc.target/i386/avx512dq-vreducesd-1b.c: Ditto.
+	* gcc.target/i386/avx512dq-vreducess-1b.c: Ditto.
+	* gcc.target/i386/avx512vl-valignq-1b.c: Ditto.
+
 2024-07-28  Sam James  <sam@gentoo.org>
 
 	* gcc.target/riscv/rvv/base/cmpmem-2.c: Fix dg-add-options order.

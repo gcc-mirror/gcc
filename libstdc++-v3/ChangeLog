@@ -1,3 +1,7 @@
+2024-07-29  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/lib/libstdc++.exp (file-io-diff): Polish.
+
 2024-07-28  Sam James  <sam@gentoo.org>
 
 	PR libstdc++/110572

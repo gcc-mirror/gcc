@@ -1,3 +1,21 @@
+2024-07-29  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP Runtime Library Routines): Add missing
+	title to some commented still undocumented items.
+	(Device Information Routines): Update.
+
+2024-07-29  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/115559
+	* testsuite/libgomp.fortran/declare-target-link.f90: New test.
+
+2024-07-29  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/116107
+	* target.c (gomp_map_vars_internal): Honor array mapping offsets
+	with declare-target 'link' variables.
+	* testsuite/libgomp.c-c++-common/target-link-2.c: New test.
+
 2024-07-19  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* config/gcn/target.c (GOMP_teams4): Document.

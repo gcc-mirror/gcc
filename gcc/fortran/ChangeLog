@@ -1,3 +1,15 @@
+2024-07-29  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/115559
+	* trans-common.cc (build_common_decl): Add 'omp declare target' and
+	'omp declare target link' variables to offload_vars.
+	* trans-decl.cc (add_attributes_to_decl): Likewise; update args and
+	call decl_attributes.
+	(get_proc_pointer_decl, gfc_get_extern_function_decl,
+	build_function_decl): Update calls.
+	(gfc_get_symbol_decl): Likewise; move after 'DECL_STATIC (t)=1'
+	to avoid errors with symtab_node::get_create.
+
 2024-07-22  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/88624
