@@ -1,4 +1,4 @@
-/* { dg-do compile} */
+/* { dg-do compile } */
 /* { dg-options "-O2 -fira-region=all -fnon-call-exceptions" } */
 extern long double getme (void);
 extern void useme (long double);

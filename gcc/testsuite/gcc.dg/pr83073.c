@@ -1,4 +1,4 @@
-/* { dg-do compile} */
+/* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-evrp-details -fno-tree-fre -fno-tree-ccp -fno-tree-forwprop" } */
 
 int f(int x)

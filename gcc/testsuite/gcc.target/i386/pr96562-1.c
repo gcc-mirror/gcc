@@ -1,4 +1,4 @@
-/* { dg-do compile} */
+/* { dg-do compile } */
 /* { dg-options "-msse4.1 -O2" } */
 /* { dg-final { scan-assembler-not "pinsr" } } */
 

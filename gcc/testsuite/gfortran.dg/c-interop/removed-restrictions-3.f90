@@ -1,4 +1,4 @@
-! { dg-do compile}
+! { dg-do compile }
 !
 ! TS 29113
 ! 8.1 Removed restrictions on ISO_C_BINDING module procedures

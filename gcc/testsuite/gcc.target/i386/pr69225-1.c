@@ -1,4 +1,4 @@
-/* { dg-do compile} */
+/* { dg-do compile } */
 /* { dg-options "-msse2 -mfpmath=sse" } */
 
 #include <float.h>
