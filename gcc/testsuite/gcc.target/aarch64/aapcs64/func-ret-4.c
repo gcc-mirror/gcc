@@ -5,9 +5,9 @@
    are treated as general composite types.  */
 
 /* { dg-do run { target aarch64*-*-* } } */
+/* { dg-require-effective-target aarch64_big_endian } */
 /* { dg-additional-options "-mbranch-protection=none" } */
 /* { dg-additional-sources "abitest.S" } */
-/* { dg-require-effective-target aarch64_big_endian } */
 
 #ifndef IN_FRAMEWORK
 #define TESTFILE "func-ret-4.c"

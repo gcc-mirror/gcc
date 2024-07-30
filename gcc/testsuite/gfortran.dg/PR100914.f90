@@ -1,7 +1,7 @@
 ! Fails on x86 targets where sizeof(long double) == 16.
 ! { dg-do run }
-! { dg-additional-sources PR100914.c }
 ! { dg-require-effective-target fortran_real_c_float128 }
+! { dg-additional-sources PR100914.c }
 ! { dg-additional-options "-Wno-pedantic" }
 !
 ! Test the fix for PR100914

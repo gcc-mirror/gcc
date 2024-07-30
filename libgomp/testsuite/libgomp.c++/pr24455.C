@@ -1,6 +1,6 @@
 // { dg-do run }
-// { dg-additional-sources pr24455-1.C }
 // { dg-require-effective-target tls_runtime }
+// { dg-additional-sources pr24455-1.C }
 // { dg-options "-fno-extern-tls-init" }
 
 extern "C" void abort (void);
