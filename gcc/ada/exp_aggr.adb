@@ -7126,9 +7126,9 @@ package body Exp_Aggr is
 
       --  Determine whether this is an indexed aggregate (see RM 4.3.5(25/5))
 
-      Is_Indexed_Aggregate
-        := Sem_Aggr.Is_Indexed_Aggregate
-             (N, Add_Unnamed_Subp, New_Indexed_Subp);
+      Is_Indexed_Aggregate :=
+        Sem_Aggr.Is_Indexed_Aggregate
+          (N, Add_Unnamed_Subp, New_Indexed_Subp);
 
       --  The constructor for bounded containers is a function with
       --  a parameter that sets the size of the container. If the
@@ -7140,8 +7140,8 @@ package body Exp_Aggr is
       declare
          Count_Type         : Entity_Id := Standard_Natural;
          Default            : Node_Id   := Empty;
-         Empty_First_Formal : constant Entity_Id
-                                := First_Formal (Entity (Empty_Subp));
+         Empty_First_Formal : constant Entity_Id :=
+           First_Formal (Entity (Empty_Subp));
          Param_List         : List_Id;
 
       begin
@@ -7636,8 +7636,8 @@ package body Exp_Aggr is
 
                declare
                   --  recursively get name for prefix
-                  LHS_Prefix : constant Node_Id
-                    := Make_Delta_Choice_LHS (Prefix (Choice), Deep_Choice);
+                  LHS_Prefix : constant Node_Id :=
+                    Make_Delta_Choice_LHS (Prefix (Choice), Deep_Choice);
                begin
                   if Nkind (Choice) = N_Indexed_Component then
                      return Make_Indexed_Component (Sloc (Choice),

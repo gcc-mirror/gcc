@@ -13153,10 +13153,10 @@ package body Sem_Ch3 is
         and then Present (Underlying_Full_View (Full_Base))
       then
          declare
-            Underlying_Full_Base : constant Entity_Id
-                                           := Underlying_Full_View (Full_Base);
-            Underlying_Full : constant Entity_Id
-                       := Make_Defining_Identifier (Sloc (Priv), Chars (Priv));
+            Underlying_Full_Base : constant Entity_Id :=
+              Underlying_Full_View (Full_Base);
+            Underlying_Full : constant Entity_Id :=
+              Make_Defining_Identifier (Sloc (Priv), Chars (Priv));
          begin
             Set_Is_Itype (Underlying_Full);
             Set_Associated_Node_For_Itype (Underlying_Full, Related_Nod);

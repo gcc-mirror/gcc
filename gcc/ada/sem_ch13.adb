@@ -13980,8 +13980,8 @@ package body Sem_Ch13 is
         (E   : Entity_Id;
          Nam : Name_Id) return Node_Id
       is
-         Rep : constant Node_Id
-                 := Get_Rep_Item (E, Nam, Check_Parents => True);
+         Rep : constant Node_Id :=
+           Get_Rep_Item (E, Nam, Check_Parents => True);
       begin
          if Present (Rep)
            and then not Has_Rep_Item (E, Nam, Check_Parents => False)
@@ -13997,8 +13997,8 @@ package body Sem_Ch13 is
          Nam1 : Name_Id;
          Nam2 : Name_Id) return Node_Id
       is
-         Rep : constant Node_Id
-                 := Get_Rep_Item (E, Nam1, Nam2, Check_Parents => True);
+         Rep : constant Node_Id :=
+           Get_Rep_Item (E, Nam1, Nam2, Check_Parents => True);
       begin
          if Present (Rep)
            and then not Has_Rep_Item (E, Nam1, Nam2, Check_Parents => False)
@@ -16413,8 +16413,8 @@ package body Sem_Ch13 is
       end if;
 
       declare
-         Set : constant Local_Restriction_Set
-           := Parse_Aspect_Local_Restrictions (Parent (N));
+         Set : constant Local_Restriction_Set :=
+           Parse_Aspect_Local_Restrictions (Parent (N));
          pragma Unreferenced (Set);
       begin
          null;

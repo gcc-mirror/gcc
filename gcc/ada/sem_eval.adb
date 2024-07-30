@@ -6185,10 +6185,12 @@ package body Sem_Eval is
 
          if Is_Discrete_Type (T1) and then Is_Discrete_Type (T2) then
             declare
-               Interval_List1 : constant Interval_Lists.Discrete_Interval_List
-                 := Interval_Lists.Type_Intervals (T1);
-               Interval_List2 : constant Interval_Lists.Discrete_Interval_List
-                 := Interval_Lists.Type_Intervals (T2);
+               Interval_List1 :
+                 constant Interval_Lists.Discrete_Interval_List :=
+                 Interval_Lists.Type_Intervals (T1);
+               Interval_List2 :
+                 constant Interval_Lists.Discrete_Interval_List :=
+                 Interval_Lists.Type_Intervals (T2);
             begin
                return Interval_Lists.Is_Subset (Interval_List1, Interval_List2)
                  and then not (Has_Predicates (T1)

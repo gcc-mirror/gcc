@@ -1187,8 +1187,8 @@ package body Rtsfind is
             else
                Save_Private_Visibility;
                declare
-                  Saved_Instance_Context : constant Instance_Context.Context
-                    := Instance_Context.Save_And_Reset;
+                  Saved_Instance_Context : constant Instance_Context.Context :=
+                    Instance_Context.Save_And_Reset;
                begin
                   Semantics (Cunit (U.Unum));
                   Instance_Context.Restore (Saved_Instance_Context);

@@ -8700,12 +8700,12 @@ package body Exp_Util is
                     and then Nkind (Selector_Name (Param)) = N_Identifier
                   then
                      declare
-                        Actual : constant Node_Id
-                          := Explicit_Actual_Parameter (Param);
-                        Formal : constant Node_Id
-                          := Selector_Name (Param);
-                        Name   : constant String
-                          := Get_Name_String (Chars (Formal));
+                        Actual : constant Node_Id :=
+                          Explicit_Actual_Parameter (Param);
+                        Formal : constant Node_Id :=
+                          Selector_Name (Param);
+                        Name   : constant String :=
+                          Get_Name_String (Chars (Formal));
 
                      begin
                         --  A nonnull BIPaccess has been found
@@ -10335,8 +10335,8 @@ package body Exp_Util is
       pragma Assert (Has_Invariants (Typ));
       Proc_Id  : constant Entity_Id := Invariant_Procedure (Typ);
       pragma Assert (Present (Proc_Id));
-      Inv_Typ  : constant Entity_Id
-                   := Base_Type (Etype (First_Formal (Proc_Id)));
+      Inv_Typ  : constant Entity_Id :=
+        Base_Type (Etype (First_Formal (Proc_Id)));
 
       Arg : Node_Id;
 
@@ -11580,8 +11580,8 @@ package body Exp_Util is
 
       if All_Extensions_Allowed then
          declare
-            Rep : constant Node_Id
-              := Get_Rep_Item (Typ, Name_Finalizable, Check_Parents => True);
+            Rep : constant Node_Id :=
+              Get_Rep_Item (Typ, Name_Finalizable, Check_Parents => True);
 
             Assoc : Node_Id;
 
@@ -12724,11 +12724,11 @@ package body Exp_Util is
                   --  was called).
 
                   if Is_Array_Type (Exp_Type) then
-                     Scope_Suppress.Suppress (Length_Check)
-                       := Svg_Suppress.Suppress (Length_Check);
+                     Scope_Suppress.Suppress (Length_Check) :=
+                       Svg_Suppress.Suppress (Length_Check);
                   else
-                     Scope_Suppress.Suppress (Discriminant_Check)
-                       := Svg_Suppress.Suppress (Discriminant_Check);
+                     Scope_Suppress.Suppress (Discriminant_Check) :=
+                       Svg_Suppress.Suppress (Discriminant_Check);
                   end if;
 
                   E := Make_Qualified_Expression (Loc,

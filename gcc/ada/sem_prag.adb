@@ -13489,16 +13489,16 @@ package body Sem_Prag is
 
                   when N_Op_Concat =>
                      declare
-                        L_Type : constant Entity_Id
-                          := Preferred_String_Type (Left_Opnd (Expr));
-                        R_Type : constant Entity_Id
-                          := Preferred_String_Type (Right_Opnd (Expr));
+                        L_Type : constant Entity_Id :=
+                          Preferred_String_Type (Left_Opnd (Expr));
+                        R_Type : constant Entity_Id :=
+                          Preferred_String_Type (Right_Opnd (Expr));
 
-                        Type_Table : constant array (1 .. 4) of Entity_Id
-                          := (Empty,
-                              Standard_Wide_Wide_String,
-                              Standard_Wide_String,
-                              Standard_String);
+                        Type_Table : constant array (1 .. 4) of Entity_Id :=
+                          (Empty,
+                           Standard_Wide_Wide_String,
+                           Standard_Wide_String,
+                           Standard_String);
                      begin
                         for Idx in Type_Table'Range loop
                            if L_Type = Type_Table (Idx) or

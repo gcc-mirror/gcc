@@ -1061,8 +1061,8 @@ package body Exp_Dbug is
       if Ancestor_Typ /= Typ then
          declare
             Len      : constant Natural := Name_Len;
-            Save_Str : constant String (1 .. Name_Len)
-                         := Name_Buffer (1 .. Name_Len);
+            Save_Str : constant String (1 .. Name_Len) :=
+              Name_Buffer (1 .. Name_Len);
          begin
             Get_External_Name (Ancestor_Typ);
 

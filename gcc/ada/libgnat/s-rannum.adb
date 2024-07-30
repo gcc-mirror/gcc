@@ -108,8 +108,8 @@ is
    Lower_Mask : constant := 2**31 - 1;
    Upper_Mask : constant := 2**31;
 
-   Matrix_A   : constant array (State_Val range 0 .. 1) of State_Val
-     := [0, 16#9908b0df#];
+   Matrix_A   : constant array (State_Val range 0 .. 1) of State_Val :=
+     [0, 16#9908b0df#];
    --  The twist transformation is represented by a matrix of the form
    --
    --               [  0    I(31) ]
@@ -280,11 +280,11 @@ is
                    2#01000# => 0, 2#01001# => 1, 2#01010# => 0, 2#01011# => 2,
                    2#01100# => 0, 2#01101# => 1, 2#01110# => 0, 2#01111# => 4];
 
-            Pow_Tab : constant array (Bit_Count range 0 .. 3) of Real
-              := [0 => 2.0**(0 - T'Machine_Mantissa),
-                  1 => 2.0**(-1 - T'Machine_Mantissa),
-                  2 => 2.0**(-2 - T'Machine_Mantissa),
-                  3 => 2.0**(-3 - T'Machine_Mantissa)];
+            Pow_Tab : constant array (Bit_Count range 0 .. 3) of Real :=
+              [0 => 2.0**(0 - T'Machine_Mantissa),
+               1 => 2.0**(-1 - T'Machine_Mantissa),
+               2 => 2.0**(-2 - T'Machine_Mantissa),
+               3 => 2.0**(-3 - T'Machine_Mantissa)];
 
             Extra_Bits : constant Natural :=
                          (Unsigned'Size - T'Machine_Mantissa + 1);

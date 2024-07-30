@@ -7736,15 +7736,15 @@ package body Sem_Ch12 is
      (Instance      : Entity_Id;
       Is_Formal_Box : Boolean)
    is
-      Gen_Id : constant Entity_Id
-        := (if Is_Generic_Unit (Instance) then
-              Instance
-            elsif Is_Wrapper_Package (Instance) then
-              Generic_Parent
-                (Specification
-                  (Unit_Declaration_Node (Related_Instance (Instance))))
-            else
-              Generic_Parent (Package_Specification (Instance)));
+      Gen_Id : constant Entity_Id :=
+        (if Is_Generic_Unit (Instance) then
+           Instance
+         elsif Is_Wrapper_Package (Instance) then
+           Generic_Parent
+             (Specification
+               (Unit_Declaration_Node (Related_Instance (Instance))))
+         else
+           Generic_Parent (Package_Specification (Instance)));
       --  The generic unit
 
       Parent_Scope : constant Entity_Id := Scope (Gen_Id);

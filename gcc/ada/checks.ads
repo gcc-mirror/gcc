@@ -49,8 +49,8 @@ package Checks is
       record
          Elements : Bit_Vector (1 .. Dimensions);
       end record;
-   Empty_Dimension_Set : constant Dimension_Set
-     := (Dimensions => 0, Elements => (others => <>));
+   Empty_Dimension_Set : constant Dimension_Set :=
+     (Dimensions => 0, Elements => (others => <>));
 
    procedure Initialize;
    --  Called for each new main source program, to initialize internal

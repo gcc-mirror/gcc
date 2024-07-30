@@ -12533,8 +12533,8 @@ package body Sem_Ch6 is
 
                            if Chars (E) = Name_Op_Eq then
                               declare
-                                 Typ : constant Entity_Id
-                                         := Etype (First_Entity (E));
+                                 Typ : constant Entity_Id :=
+                                   Etype (First_Entity (E));
                                  H   : Entity_Id := Homonym (E);
 
                               begin

@@ -2969,9 +2969,9 @@ package body Exp_Ch5 is
       then
          Tagged_Case : declare
             L                   : List_Id := No_List;
-            Expand_Ctrl_Actions : constant Boolean
-                                    := not No_Ctrl_Actions (N)
-                                         and then not No_Finalize_Actions (N);
+            Expand_Ctrl_Actions : constant Boolean :=
+              not No_Ctrl_Actions (N)
+                and then not No_Finalize_Actions (N);
 
          begin
             --  In the controlled case, we ensure that function calls are
@@ -3791,8 +3791,8 @@ package body Exp_Ch5 is
                      pragma Assert (No (Expressions (Pattern)));
 
                      declare
-                        Component_Assoc : Node_Id
-                          := First (Component_Associations (Pattern));
+                        Component_Assoc : Node_Id :=
+                          First (Component_Associations (Pattern));
                         Choice : Node_Id;
 
                         function Subobject return Node_Id is

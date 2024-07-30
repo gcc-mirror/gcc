@@ -2799,9 +2799,9 @@ package body Exp_Ch4 is
 
                if Is_Constrained (Opnd_Typ) then
                   declare
-                     Low_Bound : constant Node_Id
-                       := Type_Low_Bound
-                            (Underlying_Type (Etype (First_Index (Opnd_Typ))));
+                     Low_Bound : constant Node_Id :=
+                       Type_Low_Bound
+                         (Underlying_Type (Etype (First_Index (Opnd_Typ))));
 
                   begin
                      if Compile_Time_Known_Value (Low_Bound) then
@@ -3013,11 +3013,11 @@ package body Exp_Ch4 is
                else
                   declare
                      Known_Bound : constant Node_Id := Get_Known_Bound (J + 1);
-                     Comparison  : constant Compare_Result
-                                     := Compile_Time_Compare
-                                          (Opnd_Low_Bound (J),
-                                           Known_Bound,
-                                           Assume_Valid => True);
+                     Comparison  : constant Compare_Result :=
+                       Compile_Time_Compare
+                         (Opnd_Low_Bound (J),
+                          Known_Bound,
+                          Assume_Valid => True);
 
                   begin
                      if Comparison = EQ then

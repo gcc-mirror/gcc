@@ -1550,8 +1550,8 @@ package body Sem_Case is
             return Result;
          end Component_Bounds_Info;
 
-         Component_Bounds : constant Composite_Range_Info
-           := Component_Bounds_Info;
+         Component_Bounds : constant Composite_Range_Info :=
+           Component_Bounds_Info;
 
          package Case_Bindings is
 
@@ -2517,8 +2517,8 @@ package body Sem_Case is
 
                use Uint_Sets;
 
-               Result : constant Representative_Values_Array
-                 := (others => Uint_Sets.Create (Initial_Size => 32));
+               Result : constant Representative_Values_Array :=
+                 (others => Uint_Sets.Create (Initial_Size => 32));
 
                procedure Insert_Representative (Value : Uint; P : Part_Id);
                --  Insert the given Value into the representative values set
@@ -2563,8 +2563,8 @@ package body Sem_Case is
                return Result;
             end Representative_Values_Init;
 
-            Representative_Values : constant Representative_Values_Array
-              := Representative_Values_Init;
+            Representative_Values : constant Representative_Values_Array :=
+              Representative_Values_Init;
             --  We want to avoid looking at every point in the Cartesian
             --  product of all component values. Instead we select, for each
             --  component, a set of representative values and then look only
@@ -2664,8 +2664,8 @@ package body Sem_Case is
                   return Equal;
                else
                   declare
-                     Intersection : constant Value_Index_Set
-                       := Indexed (S1) and Indexed (S2);
+                     Intersection : constant Value_Index_Set :=
+                       Indexed (S1) and Indexed (S2);
                   begin
                      if (for all Flag of Intersection => not Flag) then
                         return Disjoint;

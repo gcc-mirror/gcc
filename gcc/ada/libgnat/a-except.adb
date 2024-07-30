@@ -1768,8 +1768,8 @@ package body Ada.Exceptions is
          Exception_Propagation.Propagate_Exception (X);
       else
          declare
-            Excep : constant EOA
-              := Exception_Propagation.Allocate_Occurrence;
+            Excep : constant EOA :=
+              Exception_Propagation.Allocate_Occurrence;
             Saved_MO : constant System.Address := Excep.Machine_Occurrence;
          begin
             Save_Occurrence (Excep.all, X);

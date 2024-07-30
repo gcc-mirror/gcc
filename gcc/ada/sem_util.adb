@@ -9805,8 +9805,8 @@ package body Sem_Util is
                      end if;
                   end;
                else
-                  UI_Discrim_Value
-                    := Expr_Value (Type_Low_Bound (Discrim_Value_Subtype));
+                  UI_Discrim_Value :=
+                    Expr_Value (Type_Low_Bound (Discrim_Value_Subtype));
                end if;
          end case;
 
@@ -9860,14 +9860,14 @@ package body Sem_Util is
       if Present (Variant) then
          if Discrim_Value_Status = Static_Subtype then
             declare
-               Discrim_Value_Subtype_Intervals
-                 : constant Interval_Lists.Discrete_Interval_List
-                 := Interval_Lists.Type_Intervals (Discrim_Value_Subtype);
+               Discrim_Value_Subtype_Intervals :
+                 constant Interval_Lists.Discrete_Interval_List :=
+                 Interval_Lists.Type_Intervals (Discrim_Value_Subtype);
 
-               Variant_Intervals
-                 : constant Interval_Lists.Discrete_Interval_List
-                 := Interval_Lists.Choice_List_Intervals
-                     (Discrete_Choices => Discrete_Choices (Variant));
+               Variant_Intervals :
+                 constant Interval_Lists.Discrete_Interval_List :=
+                 Interval_Lists.Choice_List_Intervals
+                   (Discrete_Choices => Discrete_Choices (Variant));
             begin
                if not Interval_Lists.Is_Subset
                         (Subset => Discrim_Value_Subtype_Intervals,
@@ -11616,8 +11616,8 @@ package body Sem_Util is
             declare
                Constit_Elmt : Elmt_Id;
                Constit_Id   : Entity_Id;
-               Constits     : constant Elist_Id
-                 := Part_Of_Constituents (Item_Id);
+               Constits     : constant Elist_Id :=
+                 Part_Of_Constituents (Item_Id);
             begin
                if Present (Constits) then
                   Constit_Elmt := First_Elmt (Constits);
@@ -18620,8 +18620,8 @@ package body Sem_Util is
    function Is_Null_Extension_Of
      (Descendant, Ancestor : Entity_Id) return Boolean
    is
-      Ancestor_Type : constant Entity_Id
-        := Underlying_Type (Base_Type (Ancestor));
+      Ancestor_Type : constant Entity_Id :=
+        Underlying_Type (Base_Type (Ancestor));
       Descendant_Type : Entity_Id := Underlying_Type (Base_Type (Descendant));
    begin
       pragma Assert (not Is_Class_Wide_Type (Descendant));
@@ -29899,8 +29899,8 @@ package body Sem_Util is
          Comp := First (Component_Associations (N));
          while Present (Comp) loop
             declare
-               Choice_Intervals : constant Discrete_Interval_List
-                 := Choice_List_Intervals (Choices (Comp));
+               Choice_Intervals : constant Discrete_Interval_List :=
+                 Choice_List_Intervals (Choices (Comp));
             begin
                for J in Choice_Intervals'Range loop
                   Num_I := Num_I + 1;
@@ -29914,8 +29914,8 @@ package body Sem_Util is
          --  Normalize the lists sorting and merging the intervals
 
          declare
-            Aggr_Intervals : Discrete_Interval_List (1 .. Num_I)
-                               := Intervals (1 .. Num_I);
+            Aggr_Intervals : Discrete_Interval_List (1 .. Num_I) :=
+              Intervals (1 .. Num_I);
          begin
             Normalize_Interval_List (Aggr_Intervals, Num_I);
             Check_Consistency (Aggr_Intervals (1 .. Num_I));
@@ -29993,8 +29993,8 @@ package body Sem_Util is
          while Present (Choice) loop
             if Nkind (Choice) = N_Others_Choice then
                declare
-                  Others_Choice : Node_Id
-                    := First (Others_Discrete_Choices (Choice));
+                  Others_Choice : Node_Id :=
+                    First (Others_Discrete_Choices (Choice));
                begin
                   while Present (Others_Choice) loop
                      Count := Count + 1;
@@ -30029,8 +30029,8 @@ package body Sem_Util is
 
             when N_Subtype_Indication =>
                declare
-                  Range_Exp : constant Node_Id
-                    := Range_Expression (Constraint (Choice));
+                  Range_Exp : constant Node_Id :=
+                    Range_Expression (Constraint (Choice));
                begin
                   return (Low  => Expr_Value (Low_Bound (Range_Exp)),
                           High => Expr_Value (High_Bound (Range_Exp)));
@@ -30177,8 +30177,8 @@ package body Sem_Util is
             Not_Null : Pos range List'Range;
             --  Index of the most recently examined non-null interval
 
-            Null_Interval : constant Discrete_Interval
-              := (Low => Uint_1, High => Uint_0); -- any null range ok here
+            Null_Interval : constant Discrete_Interval :=
+              (Low => Uint_1, High => Uint_0); -- any null range ok here
          begin
             if List'Length = 0 or else Is_Null (List'First) then
                Null_Interval_Count := List'Length;
@@ -30972,9 +30972,9 @@ package body Sem_Util is
             -------------------------------------------
 
             procedure Declare_Indirect_Temp_Via_Allocation is
-               Access_Type_Id : constant Entity_Id
-                 := Make_Temporary
-                      (Loc, Indirect_Temp_Access_Type_Char, Attr_Prefix);
+               Access_Type_Id : constant Entity_Id :=
+                 Make_Temporary
+                   (Loc, Indirect_Temp_Access_Type_Char, Attr_Prefix);
 
                Temp_Decl : constant Node_Id :=
                  Make_Object_Declaration (Loc,
@@ -31020,14 +31020,14 @@ package body Sem_Util is
                   return New_Occurrence_Of (Typ, Loc);
                end Designated_Subtype_Mark;
 
-               Access_Type_Def : constant Node_Id
-                 := Make_Access_To_Object_Definition
-                      (Loc, Subtype_Indication => Designated_Subtype_Mark);
+               Access_Type_Def : constant Node_Id :=
+                 Make_Access_To_Object_Definition
+                   (Loc, Subtype_Indication => Designated_Subtype_Mark);
 
-               Access_Type_Decl : constant Node_Id
-                 := Make_Full_Type_Declaration
-                      (Loc, Access_Type_Id,
-                       Type_Definition => Access_Type_Def);
+               Access_Type_Decl : constant Node_Id :=
+                 Make_Full_Type_Declaration
+                   (Loc, Access_Type_Id,
+                    Type_Definition => Access_Type_Def);
             begin
                Mutate_Ekind (Temp_Id, E_Variable);
                Set_Etype (Temp_Id, Access_Type_Id);
