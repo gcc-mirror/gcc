@@ -6816,17 +6816,6 @@ package body Checks is
          end if;
       end if;
 
-      --  If this is a boolean expression, only its elementary operands need
-      --  checking: if they are valid, a boolean or short-circuit operation
-      --  with them will be valid as well.
-
-      if Base_Type (Typ) = Standard_Boolean
-        and then
-         (Nkind (Expr) in N_Op or else Nkind (Expr) in N_Short_Circuit)
-      then
-         return;
-      end if;
-
       --  If we fall through, a validity check is required
 
       Insert_Valid_Check (Expr, Related_Id, Is_Low_Bound, Is_High_Bound);
@@ -6947,9 +6936,10 @@ package body Checks is
          return True;
 
       --  The result of a membership test is always valid, since it is true or
-      --  false, there are no other possibilities.
+      --  false, there are no other possibilities; same for short-circuit
+      --  operators.
 
-      elsif Nkind (Expr) in N_Membership_Test then
+      elsif Nkind (Expr) in N_Membership_Test | N_Short_Circuit then
          return True;
 
       --  For all other cases, we do not know the expression is valid
