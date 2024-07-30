@@ -7846,11 +7846,11 @@
   [(set_attr "type" "f_cvtf2i")]
 )
 
-;; Pointer authentication patterns are always provided.  In architecture
-;; revisions prior to ARMv8.3-A these HINT instructions operate as NOPs.
+;; Pointer authentication patterns are always provided.  On targets that
+;; don't implement FEAT_PAuth these HINT instructions operate as NOPs.
 ;; This lets the user write portable software which authenticates pointers
-;; when run on something which implements ARMv8.3-A, and which runs
-;; correctly, but does not authenticate pointers, where ARMv8.3-A is not
+;; when run on something which implements FEAT_PAuth, and which runs
+;; correctly, but does not authenticate pointers, where FEAT_PAuth is not
 ;; implemented.
 
 ;; Signing/Authenticating R30 using SP as the salt.

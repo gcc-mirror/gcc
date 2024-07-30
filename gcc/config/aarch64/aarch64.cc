@@ -10283,12 +10283,12 @@ aarch64_expand_epilogue (rtx_call_insn *sibcall)
 	1) Sibcalls don't return in a normal way, so if we're about to call one
 	   we must authenticate.
 
-	2) The RETAA instruction is not available before ARMv8.3-A, so if we are
-	   generating code for !TARGET_ARMV8_3 we can't use it and must
+	2) The RETAA instruction is not available without FEAT_PAuth, so if we
+	   are generating code for !TARGET_PAUTH we can't use it and must
 	   explicitly authenticate.
     */
   if (aarch64_return_address_signing_enabled ()
-      && (sibcall || !TARGET_ARMV8_3))
+      && (sibcall || !TARGET_PAUTH))
     {
       switch (aarch64_ra_sign_key)
 	{
