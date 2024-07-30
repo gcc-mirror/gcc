@@ -1,5 +1,6 @@
 #include "rust-compile-asm.h"
 #include "rust-system.h"
+#include "rust-compile-expr.h"
 namespace Rust {
 namespace Compile {
 
@@ -82,14 +83,20 @@ tree
 CompileAsm::asm_construct_outputs (HIR::InlineAsm &expr)
 {
   // TODO: Do i need to do this?
-  int count = 0;
 
+  tree head = NULL_TREE;
   for (auto &output : expr.get_operands ())
     {
-      if (output.register_type == AST::InlineAsmOperand::RegisterType::Out)
-	count++;
+      if (output.get_register_type ()
+	  == AST::InlineAsmOperand::RegisterType::Out)
+	{
+	  auto out = output.get_out ();
+	  tree out_tree = CompileExpr::Compile (out.expr.get (), this->ctx);
+	  Backend::debug (out_tree);
+	  /*head = chainon (head, out_tree);*/
+	}
     }
-  return NULL_TREE;
+  return head;
 }
 
 tree

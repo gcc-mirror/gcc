@@ -46,15 +46,15 @@ public:
   // build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
   //		tree clobbers, tree labels, bool simple, bool is_inline)
   static const int ASM_TREE_ARRAY_LENGTH = 5;
-  static tree asm_build_expr (HIR::InlineAsm &);
-  static tree asm_build_stmt (location_t,
-			      const std::array<tree, ASM_TREE_ARRAY_LENGTH> &);
+  tree asm_build_expr (HIR::InlineAsm &);
+  tree asm_build_stmt (location_t,
+		       const std::array<tree, ASM_TREE_ARRAY_LENGTH> &);
 
-  static tree asm_construct_string_tree (HIR::InlineAsm &);
-  static tree asm_construct_outputs (HIR::InlineAsm &);
-  static tree asm_construct_inputs (HIR::InlineAsm &);
-  static tree asm_construct_clobber_tree (HIR::InlineAsm &);
-  static tree asm_construct_label_tree (HIR::InlineAsm &);
+  tree asm_construct_string_tree (HIR::InlineAsm &);
+  tree asm_construct_outputs (HIR::InlineAsm &);
+  tree asm_construct_inputs (HIR::InlineAsm &);
+  tree asm_construct_clobber_tree (HIR::InlineAsm &);
+  tree asm_construct_label_tree (HIR::InlineAsm &);
 
   CompileAsm (Context *ctx);
 
