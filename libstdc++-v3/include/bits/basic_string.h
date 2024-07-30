@@ -3754,6 +3754,54 @@ _GLIBCXX_END_NAMESPACE_CXX11
     { return std::move(__lhs.append(1, __rhs)); }
 #endif
 
+#if __glibcxx_string_view >= 202403L
+  // const string & + string_view
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    [[nodiscard]]
+    constexpr basic_string<_CharT, _Traits, _Alloc>
+    operator+(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
+	       type_identity_t<basic_string_view<_CharT, _Traits>> __rhs)
+    {
+      using _Str = basic_string<_CharT, _Traits, _Alloc>;
+      return std::__str_concat<_Str>(__lhs.data(), __lhs.size(),
+				      __rhs.data(), __rhs.size(),
+				      __lhs.get_allocator());
+    }
+
+  // string && + string_view
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    [[nodiscard]]
+    constexpr basic_string<_CharT, _Traits, _Alloc>
+    operator+(basic_string<_CharT, _Traits, _Alloc>&& __lhs,
+	       type_identity_t<basic_string_view<_CharT, _Traits>> __rhs)
+    {
+      return std::move(__lhs.append(__rhs));
+    }
+
+  // string_view + const string &
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    [[nodiscard]]
+    constexpr basic_string<_CharT, _Traits, _Alloc>
+    operator+(type_identity_t<basic_string_view<_CharT, _Traits>> __lhs,
+	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
+    {
+      using _Str = basic_string<_CharT, _Traits, _Alloc>;
+      return std::__str_concat<_Str>(__lhs.data(), __lhs.size(),
+				      __rhs.data(), __rhs.size(),
+				      __rhs.get_allocator());
+    }
+
+  // string_view + string &&
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    [[nodiscard]]
+    constexpr basic_string<_CharT, _Traits, _Alloc>
+    operator+(type_identity_t<basic_string_view<_CharT, _Traits>> __lhs,
+	       basic_string<_CharT, _Traits, _Alloc>&& __rhs)
+    {
+      return std::move(__rhs.insert(0, __lhs));
+    }
+#endif
+
   // operator ==
   /**
    *  @brief  Test equivalence of two strings.

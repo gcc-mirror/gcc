@@ -699,6 +699,11 @@ ftms = {
 ftms = {
   name = string_view;
   values = {
+    v = 202403;
+    cxxmin = 26;
+    hosted = yes;
+  };
+  values = {
     v = 201803;
     cxxmin = 17;
     hosted = yes;
