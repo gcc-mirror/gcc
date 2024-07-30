@@ -130,7 +130,7 @@ __jcvt (double __a)
 #pragma GCC pop_options
 
 #pragma GCC push_options
-#pragma GCC target ("arch=armv8.5-a")
+#pragma GCC target ("+nothing+frintts")
 __extension__ extern __inline float
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __rint32zf (float __a)

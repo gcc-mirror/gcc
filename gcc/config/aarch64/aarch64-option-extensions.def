@@ -159,6 +159,8 @@ AARCH64_OPT_FMV_EXTENSION("rcpc", RCPC, (), (), (), "lrcpc")
 
 AARCH64_OPT_FMV_EXTENSION("rcpc3", RCPC3, (RCPC), (), (), "lrcpc3")
 
+AARCH64_OPT_FMV_EXTENSION("frintts", FRINTTS, (FP), (), (), "frint")
+
 AARCH64_OPT_FMV_EXTENSION("i8mm", I8MM, (SIMD), (), (), "i8mm")
 
 /* An explicit +bf16 implies +simd, but +bf16+nosimd still enables scalar BF16

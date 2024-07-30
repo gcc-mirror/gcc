@@ -367,7 +367,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
 #define TARGET_COMPLEX AARCH64_HAVE_ISA (FCMA)
 
 /* Floating-point rounding instructions from Armv8.5-a.  */
-#define TARGET_FRINT (AARCH64_HAVE_ISA (V8_5A) && TARGET_FLOAT)
+#define TARGET_FRINT AARCH64_HAVE_ISA (FRINTTS)
 
 /* TME instructions are enabled.  */
 #define TARGET_TME AARCH64_HAVE_ISA (TME)
