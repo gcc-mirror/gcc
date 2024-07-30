@@ -1,5 +1,5 @@
 // PR c++/102071
-// { dg-do run { target c++17 } }
+// { dg-do run  { target { { c++17 } && { ! default_packed } } } }
 // { dg-additional-options -faligned-new=2 }
 // { dg-xfail-run-if "AIX operator new" { powerpc-ibm-aix* } }
 

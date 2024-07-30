@@ -1,5 +1,5 @@
 // PR c++/103681
-// { dg-do compile { target c++11 } }
+// { dg-do compile { target { { c++11 } && { ! default_packed } } } }
 // { dg-additional-options "-fabi-version=0 -Wabi=16" }
 
 struct A {

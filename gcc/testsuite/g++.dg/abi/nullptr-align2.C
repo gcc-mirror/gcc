@@ -16,5 +16,5 @@ struct B
 struct C
 {
   char c;
-  decltype(nullptr) n;		// { dg-warning "alignment" }
+  decltype(nullptr) n;		// { dg-warning "alignment" "" { target { ! default_packed } } }
 };

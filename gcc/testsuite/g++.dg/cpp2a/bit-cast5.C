@@ -21,7 +21,7 @@ f2 ()
 {
   A a;
   a.a = 1; a.b = 2; a.c = 3; a.e = 4; a.f = 5;
-  C b = __builtin_bit_cast (C, a);	// { dg-error "'__builtin_bit_cast' accessing uninitialized byte at offset 3" }
+  C b = __builtin_bit_cast (C, a);	// { dg-error "'__builtin_bit_cast' accessing uninitialized byte at offset 3" "" { target { ! default_packed } } }
   return false;
 }
 
@@ -48,7 +48,7 @@ f5 ()
 {
   D a;
   a.b = 1;
-  E b = __builtin_bit_cast (E, a);	// { dg-error "'__builtin_bit_cast' accessing uninitialized byte at offset 3" }
+  E b = __builtin_bit_cast (E, a);	// { dg-error "'__builtin_bit_cast' accessing uninitialized byte at offset 3" "" { target { ! default_packed } } }
   return false;
 }
 
@@ -57,7 +57,7 @@ f6 ()
 {
   D a;
   a.c = 1;
-  E b = __builtin_bit_cast (E, a);	// { dg-error "'__builtin_bit_cast' accessing uninitialized byte at offset 2" }
+  E b = __builtin_bit_cast (E, a);	// { dg-error "'__builtin_bit_cast' accessing uninitialized byte at offset 2" "" { target { ! default_packed } } }
   return false;
 }
 
