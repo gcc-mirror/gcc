@@ -4768,8 +4768,9 @@ struct InlineAsmRegOrRegClass
   location_t locus;
 };
 
-struct InlineAsmOperand
+class InlineAsmOperand
 {
+public:
   enum RegisterType
   {
     In,
@@ -4952,8 +4953,45 @@ struct InlineAsmOperand
     }
   };
 
+  InlineAsmOperand (const InlineAsmOperand &other)
+    : register_type (other.register_type), in (other.in), out (other.out),
+      in_out (other.in_out), split_in_out (other.split_in_out),
+      cnst (other.cnst), sym (other.sym)
+  {}
+
+  InlineAsmOperand (const struct In &reg) : register_type (In), in (reg) {}
+  InlineAsmOperand (const struct Out &reg) : register_type (Out), out (reg) {}
+  InlineAsmOperand (const struct InOut &reg)
+    : register_type (InOut), in_out (reg)
+  {}
+  InlineAsmOperand (const struct SplitInOut &reg)
+    : register_type (SplitInOut), split_in_out (reg)
+  {}
+  InlineAsmOperand (const struct Const &reg) : register_type (Const), cnst (reg)
+  {}
+  InlineAsmOperand (const struct Sym &reg) : register_type (Sym), sym (reg) {}
+  InlineAsmOperand (const struct Label &reg)
+    : register_type (Label), label (reg)
+  {}
+
+  location_t get_locus () const { return locus; }
+  RegisterType get_register_type () const { return register_type; }
+
+  // Potentially fail immediately if you don't use get_register_type() to
+  // inspect the RegisterType first before calling the following functions Check
+  // first
+  struct In get_in () const { return in.value (); }
+  struct Out get_out () const { return out.value (); }
+  struct InOut get_in_out () const { return in_out.value (); }
+  struct SplitInOut get_split_in_out () const { return split_in_out.value (); }
+  struct Const get_const () const { return cnst.value (); }
+  struct Sym get_sym () const { return sym.value (); }
+  struct Label get_label () const { return label.value (); }
+
+private:
   RegisterType register_type;
 
+  location_t locus;
   tl::optional<struct In> in;
   tl::optional<struct Out> out;
   tl::optional<struct InOut> in_out;
@@ -4961,66 +4999,6 @@ struct InlineAsmOperand
   tl::optional<struct Const> cnst;
   tl::optional<struct Sym> sym;
   tl::optional<struct Label> label;
-
-  InlineAsmOperand () {}
-  InlineAsmOperand (const InlineAsmOperand &other)
-    : register_type (other.register_type), in (other.in), out (other.out),
-      in_out (other.in_out), split_in_out (other.split_in_out),
-      cnst (other.cnst), sym (other.sym)
-  {}
-
-  void set_in (const tl::optional<struct In> &reg)
-  {
-    this->register_type = In;
-
-    if (reg.has_value ())
-      this->in = reg.value ();
-  }
-
-  void set_out (const tl::optional<struct Out> &reg)
-  {
-    this->register_type = Out;
-
-    if (reg.has_value ())
-      this->out = reg.value ();
-  }
-
-  void set_in_out (const tl::optional<struct InOut> &reg)
-  {
-    this->register_type = InOut;
-    if (reg.has_value ())
-      this->in_out = reg.value ();
-  }
-
-  void set_split_in_out (const tl::optional<struct SplitInOut> &reg)
-  {
-    this->register_type = SplitInOut;
-    if (reg.has_value ())
-      this->split_in_out = reg.value ();
-  }
-
-  void set_cnst (const tl::optional<struct Const> &reg)
-  {
-    this->register_type = Const;
-    if (reg.has_value ())
-      this->cnst = reg.value ();
-  }
-
-  void set_sym (const tl::optional<struct Sym> &reg)
-  {
-    this->register_type = Sym;
-    if (reg.has_value ())
-      this->sym = reg.value ();
-  }
-
-  void set_label (const tl::optional<struct Label> &reg)
-  {
-    this->register_type = Label;
-    if (reg.has_value ())
-      this->label = reg.value ();
-  }
-
-  location_t locus;
 };
 
 struct InlineAsmPlaceHolder
