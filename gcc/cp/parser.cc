@@ -23352,7 +23352,7 @@ cp_parser_using_directive (cp_parser* parser)
   cp_warn_deprecated_use_scopes (namespace_decl);
   /* And any specified GNU attributes.  */
   if (cp_next_tokens_can_be_gnu_attribute_p (parser))
-    attribs = chainon (attribs, cp_parser_gnu_attributes_opt (parser));
+    attribs = attr_chainon (attribs, cp_parser_gnu_attributes_opt (parser));
 
   /* Update the symbol table.  */
   finish_using_directive (namespace_decl, attribs);
@@ -24780,8 +24780,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  if (flag_contracts_nonattr)
 		    {
 		      tree cca_attrs = cp_parser_contract_specifier_seq (parser);
-		      if (cca_attrs && cca_attrs!=error_mark_node)
-			attrs = chainon(attrs, cca_attrs);
+		      attrs = attr_chainon(attrs, cca_attrs);
 		    }
 
 		  location_t parens_loc = make_location (parens_start,

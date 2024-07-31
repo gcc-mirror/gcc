@@ -238,10 +238,6 @@ enum contract_matching_context
 #define CONTRACT_LEVEL(NODE)		\
   (TREE_VALUE (CONTRACT_MODE (NODE)))
 
-/* The identifier denoting the role of the contract */
-#define CONTRACT_ROLE(NODE)		\
-  (TREE_PURPOSE (CONTRACT_MODE (NODE)))
-
 /* The parsed condition of the contract.  */
 #define CONTRACT_CONDITION(NODE) \
   (TREE_OPERAND (CONTRACT_CHECK (NODE), 1))
