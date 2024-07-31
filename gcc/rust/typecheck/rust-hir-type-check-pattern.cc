@@ -222,10 +222,6 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
       return;
     }
 
-  // check the elements
-  // error[E0027]: pattern does not mention fields `x`, `y`
-  // error[E0026]: variant `Foo::D` does not have a field named `b`
-
   std::vector<std::string> named_fields;
   auto &struct_pattern_elems = pattern.get_struct_pattern_elems ();
   for (auto &field : struct_pattern_elems.get_struct_pattern_fields ())
@@ -279,31 +275,67 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
 	}
     }
 
-  if (named_fields.size () != variant->num_fields ())
+  // check the elements
+  if (adt->is_union ())
     {
-      std::map<std::string, bool> missing_names;
+      auto &struct_pattern_elems = pattern.get_struct_pattern_elems ();
+      if (struct_pattern_elems.get_struct_pattern_fields ().size () != 1)
+	rust_error_at (pattern.get_locus (),
+		       "union patterns should have exactly one field");
 
-      // populate with all fields
-      for (auto &field : variant->get_fields ())
-	missing_names[field->get_name ()] = true;
-
-      // then eliminate with named_fields
-      for (auto &named : named_fields)
-	missing_names.erase (named);
-
-      // then get the list of missing names
-      size_t i = 0;
-      std::string missing_fields_str;
-      for (auto it = missing_names.begin (); it != missing_names.end (); it++)
+      else
 	{
-	  bool has_next = (i + 1) < missing_names.size ();
-	  missing_fields_str += it->first + (has_next ? ", " : "");
-	  i++;
+	  switch (struct_pattern_elems.get_struct_pattern_fields ()
+		    .at (0)
+		    ->get_item_type ())
+	    {
+	    case HIR::StructPatternField::ItemType::IDENT:
+	    case HIR::StructPatternField::ItemType::IDENT_PAT:
+	      break;
+	      default: {
+		auto first_elem
+		  = struct_pattern_elems.get_struct_pattern_fields ()
+		      .at (0)
+		      ->as_string ();
+		rust_error_at (pattern.get_locus (),
+			       "%qs cannot be used in union patterns",
+			       first_elem.c_str ());
+	      }
+	    }
 	}
+    }
+  else
+    {
+      // Expects enum struct or struct struct.
+      // error[E0027]: pattern does not mention fields `x`, `y`
+      // error[E0026]: variant `Foo::D` does not have a field named `b`
+      if (named_fields.size () != variant->num_fields ())
+	{
+	  std::map<std::string, bool> missing_names;
 
-      rust_error_at (pattern.get_locus (), ErrorCode::E0027,
-		     "pattern does not mention fields %s",
-		     missing_fields_str.c_str ());
+	  // populate with all fields
+	  for (auto &field : variant->get_fields ())
+	    missing_names[field->get_name ()] = true;
+
+	  // then eliminate with named_fields
+	  for (auto &named : named_fields)
+	    missing_names.erase (named);
+
+	  // then get the list of missing names
+	  size_t i = 0;
+	  std::string missing_fields_str;
+	  for (auto it = missing_names.begin (); it != missing_names.end ();
+	       it++)
+	    {
+	      bool has_next = (i + 1) < missing_names.size ();
+	      missing_fields_str += it->first + (has_next ? ", " : "");
+	      i++;
+	    }
+
+	  rust_error_at (pattern.get_locus (), ErrorCode::E0027,
+			 "pattern does not mention fields %s",
+			 missing_fields_str.c_str ());
+	}
     }
 }
 
