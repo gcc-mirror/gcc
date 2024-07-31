@@ -99,6 +99,8 @@ int unopt_unsigned_long(unsigned long bit_position)
     }
 }
 
+#ifdef __x86_64__
+
 int unopt_long_long(long long bit_position)
 {
     switch (bit_position)
@@ -145,4 +147,7 @@ int unopt_unsigned_long_long(unsigned long long bit_position)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "Applying exponential index transform" 6 "switchconv" } } */
+#endif
+
+/* { dg-final { scan-tree-dump-times "Applying exponential index transform" 4 "switchconv" { target ia32 } } } */
+/* { dg-final { scan-tree-dump-times "Applying exponential index transform" 6 "switchconv" { target { ! ia32 } } } } */
