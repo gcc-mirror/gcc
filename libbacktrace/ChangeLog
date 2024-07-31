@@ -1,3 +1,9 @@
+2024-07-30  Ian Lance Taylor  <iant@golang.org>
+
+	* pecoff.c (LDR_DLL_NOTIFICATION): Put function modifier
+	inside parentheses.
+	(LDR_REGISTER_FUNCTION): Likewise.
+
 2024-07-18  Ian Lance Taylor  <iant@golang.org>
 
 	* internal.h: Use __has_attribute to check for fallthrough

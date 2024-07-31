@@ -1,3 +1,211 @@
+2024-07-30  Sam James  <sam@gentoo.org>
+
+	PR target/68015
+	PR c++/83979
+	* c-c++-common/goacc/loop-shape.c: Fix 'dg-compile' typo.
+	* g++.dg/pr83979.C: Likewise.
+	* g++.target/aarch64/sve/acle/general-c++/attributes_2.C: Likewise.
+	* gcc.dg/tree-ssa/builtin-sprintf-7.c: Likewise.
+	* gcc.dg/tree-ssa/builtin-sprintf-8.c: Likewise.
+	* gcc.target/riscv/amo/zabha-rvwmo-all-amo-ops-char.c: Likewise.
+	* gcc.target/riscv/amo/zabha-rvwmo-all-amo-ops-short.c: Likewise.
+	* gcc.target/s390/20181024-1.c: Likewise.
+	* gcc.target/s390/addr-constraints-1.c: Likewise.
+	* gcc.target/s390/arch12/aghsghmgh-1.c: Likewise.
+	* gcc.target/s390/arch12/mul-1.c: Likewise.
+	* gcc.target/s390/arch13/bitops-1.c: Likewise.
+	* gcc.target/s390/arch13/bitops-2.c: Likewise.
+	* gcc.target/s390/arch13/fp-signedint-convert-1.c: Likewise.
+	* gcc.target/s390/arch13/fp-unsignedint-convert-1.c: Likewise.
+	* gcc.target/s390/arch13/popcount-1.c: Likewise.
+	* gcc.target/s390/pr68015.c: Likewise.
+	* gcc.target/s390/vector/fp-signedint-convert-1.c: Likewise.
+	* gcc.target/s390/vector/fp-unsignedint-convert-1.c: Likewise.
+	* gcc.target/s390/vector/reverse-elements-1.c: Likewise.
+	* gcc.target/s390/vector/reverse-elements-2.c: Likewise.
+	* gcc.target/s390/vector/reverse-elements-3.c: Likewise.
+	* gcc.target/s390/vector/reverse-elements-4.c: Likewise.
+	* gcc.target/s390/vector/reverse-elements-5.c: Likewise.
+	* gcc.target/s390/vector/reverse-elements-6.c: Likewise.
+	* gcc.target/s390/vector/reverse-elements-7.c: Likewise.
+	* gnat.dg/alignment15.adb: Likewise.
+	* gnat.dg/debug4.adb: Likewise.
+	* gnat.dg/inline21.adb: Likewise.
+	* gnat.dg/inline22.adb: Likewise.
+	* gnat.dg/opt37.adb: Likewise.
+	* gnat.dg/warn13.adb: Likewise.
+
+2024-07-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/51492
+	* gcc.target/i386/pr51492.c: New test.
+
+2024-07-30  Sam James  <sam@gentoo.org>
+
+	PR middle-end/54400
+	PR target/98161
+	* gcc.dg/vect/bb-slp-layout-18.c: Fix whitespace in dg directive.
+	* gcc.dg/vect/bb-slp-pr54400.c: Likewise.
+	* gcc.target/i386/pr98161.c: Likewise.
+
+2024-07-30  Filip Kastl  <fkastl@suse.cz>
+
+	* gcc.dg/tree-ssa/switch-3.c: Disable switch conversion.
+	* gcc.target/i386/switch-exp-transform-1.c: New test.
+	* gcc.target/i386/switch-exp-transform-2.c: New test.
+	* gcc.target/i386/switch-exp-transform-3.c: New test.
+
+2024-07-30  Sam James  <sam@gentoo.org>
+
+	* gcc.target/aarch64/simd/vmmla.c: Fix whitespace in dg directive.
+
+2024-07-30  Sam James  <sam@gentoo.org>
+
+	PR preprocessor/90581
+	* c-c++-common/cpp/fmax-include-depth.c: Fix whitespace in dg directive.
+
+2024-07-30  Sam James  <sam@gentoo.org>
+
+	PR rtl-optimization/48633
+	PR tree-optimization/83072
+	PR tree-optimization/83073
+	PR tree-optimization/96542
+	PR tree-optimization/96707
+	PR tree-optimization/97567
+	PR target/69225
+	PR target/89929
+	PR target/96562
+	* g++.dg/pr48633.C: Fix whitespace in dg directive.
+	* g++.dg/pr96707.C: Likewise.
+	* g++.target/i386/mv28.C: Likewise.
+	* gcc.dg/Warray-bounds-flex-arrays-1.c: Likewise.
+	* gcc.dg/pr83072-2.c: Likewise.
+	* gcc.dg/pr83073.c: Likewise.
+	* gcc.dg/pr96542.c: Likewise.
+	* gcc.dg/pr97567-2.c: Likewise.
+	* gcc.target/i386/avx512fp16-11a.c: Likewise.
+	* gcc.target/i386/avx512fp16-13.c: Likewise.
+	* gcc.target/i386/avx512fp16-14.c: Likewise.
+	* gcc.target/i386/avx512fp16-conjugation-1.c: Likewise.
+	* gcc.target/i386/avx512fp16-neg-1a.c: Likewise.
+	* gcc.target/i386/avx512fp16-set1-pch-1a.c: Likewise.
+	* gcc.target/i386/avx512fp16vl-conjugation-1.c: Likewise.
+	* gcc.target/i386/avx512fp16vl-neg-1a.c: Likewise.
+	* gcc.target/i386/avx512fp16vl-set1-pch-1a.c: Likewise.
+	* gcc.target/i386/avx512vlfp16-11a.c: Likewise.
+	* gcc.target/i386/pr69225-1.c: Likewise.
+	* gcc.target/i386/pr69225-2.c: Likewise.
+	* gcc.target/i386/pr69225-3.c: Likewise.
+	* gcc.target/i386/pr69225-4.c: Likewise.
+	* gcc.target/i386/pr69225-5.c: Likewise.
+	* gcc.target/i386/pr69225-6.c: Likewise.
+	* gcc.target/i386/pr69225-7.c: Likewise.
+	* gcc.target/i386/pr96562-1.c: Likewise.
+	* gcc.target/riscv/rv32e_stack.c: Likewise.
+	* gfortran.dg/c-interop/removed-restrictions-3.f90: Likewise.
+	* gnat.dg/renaming1.adb: Likewise.
+
+2024-07-30  Gianluca Guida  <gianluca@rivosinc.com>
+	    Patrick O'Neill  <patrick@rivosinc.com>
+
+	* lib/target-supports.exp: Add zacas testsuite infra support.
+	* gcc.target/riscv/amo/zalrsc-rvwmo-compare-exchange-int-acquire-release.c:
+	Remove zacas to continue to test the lr/sc pairs.
+	* gcc.target/riscv/amo/zalrsc-rvwmo-compare-exchange-int-acquire.c: Ditto.
+	* gcc.target/riscv/amo/zalrsc-rvwmo-compare-exchange-int-consume.c: Ditto.
+	* gcc.target/riscv/amo/zalrsc-rvwmo-compare-exchange-int-relaxed.c: Ditto.
+	* gcc.target/riscv/amo/zalrsc-rvwmo-compare-exchange-int-release.c: Ditto.
+	* gcc.target/riscv/amo/zalrsc-rvwmo-compare-exchange-int-seq-cst-relaxed.c: Ditto.
+	* gcc.target/riscv/amo/zalrsc-rvwmo-compare-exchange-int-seq-cst.c: Ditto.
+	* gcc.target/riscv/amo/zalrsc-ztso-compare-exchange-int-acquire-release.c: Ditto.
+	* gcc.target/riscv/amo/zalrsc-ztso-compare-exchange-int-acquire.c: Ditto.
+	* gcc.target/riscv/amo/zalrsc-ztso-compare-exchange-int-consume.c: Ditto.
+	* gcc.target/riscv/amo/zalrsc-ztso-compare-exchange-int-relaxed.c: Ditto.
+	* gcc.target/riscv/amo/zalrsc-ztso-compare-exchange-int-release.c: Ditto.
+	* gcc.target/riscv/amo/zalrsc-ztso-compare-exchange-int-seq-cst-relaxed.c: Ditto.
+	* gcc.target/riscv/amo/zalrsc-ztso-compare-exchange-int-seq-cst.c: Ditto.
+	* gcc.target/riscv/amo/zabha-zacas-preferred-over-zalrsc.c: New test.
+	* gcc.target/riscv/amo/zacas-char-requires-zabha.c: New test.
+	* gcc.target/riscv/amo/zacas-char-requires-zacas.c: New test.
+	* gcc.target/riscv/amo/zacas-preferred-over-zalrsc.c: New test.
+	* gcc.target/riscv/amo/zacas-rvwmo-compare-exchange-char-acq-rel.c: New test.
+	* gcc.target/riscv/amo/zacas-rvwmo-compare-exchange-char-acquire.c: New test.
+	* gcc.target/riscv/amo/zacas-rvwmo-compare-exchange-char-relaxed.c: New test.
+	* gcc.target/riscv/amo/zacas-rvwmo-compare-exchange-char-release.c: New test.
+	* gcc.target/riscv/amo/zacas-rvwmo-compare-exchange-char-seq-cst.c: New test.
+	* gcc.target/riscv/amo/zacas-rvwmo-compare-exchange-compatability-mapping-no-fence.c:
+	New test.
+	* gcc.target/riscv/amo/zacas-rvwmo-compare-exchange-compatability-mapping.cc: New test.
+	* gcc.target/riscv/amo/zacas-rvwmo-compare-exchange-int-acq-rel.c: New test.
+	* gcc.target/riscv/amo/zacas-rvwmo-compare-exchange-int-acquire.c: New test.
+	* gcc.target/riscv/amo/zacas-rvwmo-compare-exchange-int-relaxed.c: New test.
+	* gcc.target/riscv/amo/zacas-rvwmo-compare-exchange-int-release.c: New test.
+	* gcc.target/riscv/amo/zacas-rvwmo-compare-exchange-int-seq-cst.c: New test.
+	* gcc.target/riscv/amo/zacas-rvwmo-compare-exchange-short-acq-rel.c: New test.
+	* gcc.target/riscv/amo/zacas-rvwmo-compare-exchange-short-acquire.c: New test.
+	* gcc.target/riscv/amo/zacas-rvwmo-compare-exchange-short-relaxed.c: New test.
+	* gcc.target/riscv/amo/zacas-rvwmo-compare-exchange-short-release.c: New test.
+	* gcc.target/riscv/amo/zacas-rvwmo-compare-exchange-short-seq-cst.c: New test.
+	* gcc.target/riscv/amo/zacas-ztso-compare-exchange-char-seq-cst.c: New test.
+	* gcc.target/riscv/amo/zacas-ztso-compare-exchange-char.c: New test.
+	* gcc.target/riscv/amo/zacas-ztso-compare-exchange-compatability-mapping-no-fence.c:
+	New test.
+	* gcc.target/riscv/amo/zacas-ztso-compare-exchange-compatability-mapping.cc: New test.
+	* gcc.target/riscv/amo/zacas-ztso-compare-exchange-int-seq-cst.c: New test.
+	* gcc.target/riscv/amo/zacas-ztso-compare-exchange-int.c: New test.
+	* gcc.target/riscv/amo/zacas-ztso-compare-exchange-short-seq-cst.c: New test.
+	* gcc.target/riscv/amo/zacas-ztso-compare-exchange-short.c: New test.
+
+2024-07-30  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/115906
+	* g++.dg/coroutines/pr115906-yield.C: New test.
+	* g++.dg/coroutines/pr115906.C: New test.
+	* g++.dg/coroutines/co-await-syntax-02-outside-fn.C: Don't rely
+	on default arguments.
+	* g++.dg/coroutines/co-yield-syntax-01-outside-fn.C: Ditto.
+
+2024-07-30  Arsen Arsenovic  <arsen@aarsen.me>
+
+	PR c++/115906
+	* g++.dg/coroutines/coro-function-decl.C: New test.
+
+2024-07-30  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* gcc.target/aarch64/sve/div_const_run.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/div_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/div_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/div_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/div_u64.c: Likewise.
+
+2024-07-30  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/110855
+	* g++.dg/coroutines/pr110855.C: New test.
+
+2024-07-30  Sam James  <sam@gentoo.org>
+
+	PR c/53548
+	PR target/101529
+	PR tree-optimization/102359
+	* c-c++-common/fam-in-union-alone-in-struct-1.c: Fix whitespace in dg directive.
+	* c-c++-common/fam-in-union-alone-in-struct-2.c: Likewise.
+	* c-c++-common/torture/builtin-shufflevector-2.c: Likewise.
+	* g++.dg/pr102359_2.C: Likewise.
+	* g++.target/i386/mvc1.C: Likewise.
+
+2024-07-30  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.dg/compiler-directive_2.f: Update dg-error.
+
+2024-07-30  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr116043.c: New test.
+
+2024-07-30  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/prefetchi-1b.c: New test.
+
 2024-07-29  Sam James  <sam@gentoo.org>
 
 	PR ipa/111613

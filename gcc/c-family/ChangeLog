@@ -1,3 +1,7 @@
+2024-07-30  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* c-format.cc (gcc_gfc_char_table): Add formats for tree objects.
+
 2024-07-23  Andi Kleen  <ak@linux.intel.com>
 
 	* c-attribs.cc (set_musttail_on_return): New function.

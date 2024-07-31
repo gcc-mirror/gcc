@@ -1,3 +1,105 @@
+2024-07-30  Edwin Lu  <ewlu@rivosinc.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_subset_list::to_string):
+	Skip b in march string
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Add B assembler check
+
+2024-07-30  Filip Kastl  <fkastl@suse.cz>
+
+	* tree-switch-conversion.cc (can_log2): New static function to
+	check if gen_log2 can be used on current target.
+	(gen_log2): New static function to generate efficient GIMPLE
+	code for taking an exact base 2 log.
+	(gen_pow2p): New static function to generate efficient GIMPLE
+	code for checking if a value is a power of 2.
+	(switch_conversion::switch_conversion): Track if the
+	transformation happened.
+	(switch_conversion::is_exp_index_transform_viable): New function
+	to decide whether the transformation should be applied.
+	(switch_conversion::exp_index_transform): New function to
+	execute the transformation.
+	(switch_conversion::gen_inbound_check): Don't remove the default
+	BB if the transformation happened.
+	(switch_conversion::expand): Execute the transform if it is
+	viable.  Skip the "sufficiently small case range" test if the
+	transformation is going to be executed.
+	* tree-switch-conversion.h: Add is_exp_index_transform_viable
+	and exp_index_transform.
+
+2024-07-30  Gianluca Guida  <gianluca@rivosinc.com>
+	    Patrick O'Neill  <patrick@rivosinc.com>
+
+	* common/config/riscv/riscv-common.cc: Add zacas extension.
+	* config/riscv/arch-canonicalize: Make zacas imply zaamo.
+	* config/riscv/riscv.opt: Add zacas.
+	* config/riscv/sync.md (zacas_atomic_cas_value<mode>): New pattern.
+	(atomic_compare_and_swap<mode>): Use new pattern for compare-and-swap ops.
+	(zalrsc_atomic_cas_value_strong<mode>): Rename atomic_cas_value_strong.
+	* doc/sourcebuild.texi: Add Zacas documentation.
+
+2024-07-30  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_subset_list::to_string): Remove zabha configure check
+	handling and clarify zaamo/zalrsc comment.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Remove zabha configure check.
+
+2024-07-30  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc (svdiv_impl::fold):
+	Implement strength reduction.
+
+2024-07-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/extend.texi (AVR Function Attributes): Propose to use
+	attribute signal(n) via AVR-LibC's ISR_N from avr/interrupt.h
+
+2024-07-30  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv.cc (riscv_expand_ussub): Promote to Xmode
+	instead of Pmode.
+
+2024-07-30  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_insn_cost):
+	Add a case statement for TYPE_FARITH.
+
+2024-07-30  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (movsf_internal):
+	Reorder alternative that corresponds to L32R machine instruction,
+	and prefix alternatives that correspond to LSI/SSI instructions
+	with the constraint character '^' so that they are disparaged by
+	reload/LRA.
+
+2024-07-30  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa-protos.h (xtensa_expand_call):
+	Remove the third argument.
+	* config/xtensa/xtensa.cc (xtensa_expand_call):
+	Remove the third argument and the code that uses it.
+	* config/xtensa/xtensa.md (call, call_value, sibcall, sibcall_value):
+	Remove each Boolean constant specified in the third argument of
+	xtensa_expand_call.
+	(sibcall_epilogue): Add emitting '(use A0_REG)' after calling
+	xtensa_expand_epilogue.
+
+2024-07-30  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/116043
+	* config/i386/constraints.md (Bk): Refine to
+	define_special_memory_constraint.
+
+2024-07-30  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/prfchiintrin.h
+	(_m_prefetchit0): Add macro for non-optimized option.
+	(_m_prefetchit1): Ditto.
+
 2024-07-30  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	* config/xtensa/predicates.md
