@@ -1472,12 +1472,6 @@
   const vf __builtin_vsx_uns_floato_v2di (vsll);
     UNS_FLOATO_V2DI unsfloatov2di {}
 
-  const vss __builtin_vsx_vperm_8hi (vss, vss, vuc);
-    VPERM_8HI_X altivec_vperm_v8hi {}
-
-  const vus __builtin_vsx_vperm_8hi_uns (vus, vus, vuc);
-    VPERM_8HI_UNS_X altivec_vperm_v8hi_uns {}
-
   const vsll __builtin_vsx_vsigned_v2df (vd);
     VEC_VSIGNED_V2DF vsx_xvcvdpsxds {}
 
