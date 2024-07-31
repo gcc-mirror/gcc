@@ -348,6 +348,60 @@ ResolveExpr::visit (AST::BlockExpr &expr)
 }
 
 void
+translate_operand (AST::InlineAsm &expr, const CanonicalPath &prefix,
+		   const CanonicalPath &canonical_prefix)
+{
+  const auto &operands = expr.get_operands ();
+  using RegisterType = AST::InlineAsmOperand::RegisterType;
+  for (auto &operand : operands)
+    {
+      switch (operand.get_register_type ())
+	{
+	  case RegisterType::In: {
+	    auto in = operand.get_in ();
+	    ResolveExpr::go (*in.expr, prefix, canonical_prefix);
+	    break;
+	  }
+	  case RegisterType::Out: {
+	    auto out = operand.get_out ();
+	    ResolveExpr::go (*out.expr, prefix, canonical_prefix);
+	    break;
+	  }
+	  case RegisterType::InOut: {
+	    auto in_out = operand.get_in_out ();
+	    ResolveExpr::go (*in_out.expr, prefix, canonical_prefix);
+	    break;
+	  }
+	  case RegisterType::SplitInOut: {
+	    auto split_in_out = operand.get_split_in_out ();
+	    ResolveExpr::go (*split_in_out.in_expr, prefix, canonical_prefix);
+	    ResolveExpr::go (*split_in_out.out_expr, prefix, canonical_prefix);
+	    break;
+	  }
+	  case RegisterType::Const: {
+	    auto anon_const = operand.get_const ().anon_const;
+	    ResolveExpr::go (*anon_const.expr, prefix, canonical_prefix);
+	    break;
+	  }
+	  case RegisterType::Sym: {
+	    auto sym = operand.get_sym ();
+	    ResolveExpr::go (*sym.expr, prefix, canonical_prefix);
+	    break;
+	  }
+	  case RegisterType::Label: {
+	    auto label = operand.get_label ();
+	    ResolveExpr::go (*label.expr, prefix, canonical_prefix);
+	    break;
+	  }
+	}
+    }
+}
+void
+ResolveExpr::visit (AST::InlineAsm &expr)
+{
+  translate_operand (expr, prefix, canonical_prefix);
+}
+void
 ResolveExpr::visit (AST::UnsafeBlockExpr &expr)
 {
   expr.get_block_expr ().accept_vis (*this);
@@ -478,12 +532,13 @@ ResolveExpr::visit (AST::BreakExpr &expr)
       auto &break_expr = expr.get_break_expr ();
       if (break_expr.get_ast_kind () == AST::Kind::IDENTIFIER)
 	{
-	  /* This is a break with an expression, and the expression is just a
-	     single identifier.  See if the identifier is either "rust" or
-	     "gcc", in which case we have "break rust" or "break gcc", and so
-	     may need to emit our funny error.  We cannot yet emit the error
-	     here though, because the identifier may still be in scope, and
-	     ICE'ing on valid programs would not be very funny.  */
+	  /* This is a break with an expression, and the expression is
+	     just a single identifier.  See if the identifier is either
+	     "rust" or "gcc", in which case we have "break rust" or "break
+	     gcc", and so may need to emit our funny error.  We cannot yet
+	     emit the error here though, because the identifier may still
+	     be in scope, and ICE'ing on valid programs would not be very
+	     funny.  */
 	  std::string ident
 	    = static_cast<AST::IdentifierExpr &> (break_expr).as_string ();
 	  if (ident == "rust" || ident == "gcc")
