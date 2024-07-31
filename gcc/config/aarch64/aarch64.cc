@@ -2018,6 +2018,7 @@ aarch64_hard_regno_nregs (unsigned regno, machine_mode mode)
     case PR_HI_REGS:
       return mode == VNx32BImode ? 2 : 1;
 
+    case MOVEABLE_SYSREGS:
     case FFR_REGS:
     case PR_AND_FFR_REGS:
     case FAKE_REGS:
@@ -2044,6 +2045,9 @@ aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
   if (regno == VG_REGNUM)
     /* This must have the same size as _Unwind_Word.  */
     return mode == DImode;
+
+  if (regno == FPM_REGNUM)
+    return mode == QImode || mode == HImode || mode == SImode || mode == DImode;
 
   unsigned int vec_flags = aarch64_classify_vector_mode (mode);
   if (vec_flags == VEC_SVE_PRED)
@@ -12680,6 +12684,9 @@ aarch64_regno_regclass (unsigned regno)
   if (PR_REGNUM_P (regno))
     return PR_LO_REGNUM_P (regno) ? PR_LO_REGS : PR_HI_REGS;
 
+  if (regno == FPM_REGNUM)
+    return MOVEABLE_SYSREGS;
+
   if (regno == FFR_REGNUM || regno == FFRT_REGNUM)
     return FFR_REGS;
 
@@ -13068,6 +13075,7 @@ aarch64_class_max_nregs (reg_class_t regclass, machine_mode mode)
     case PR_HI_REGS:
       return mode == VNx32BImode ? 2 : 1;
 
+    case MOVEABLE_SYSREGS:
     case STACK_REG:
     case FFR_REGS:
     case PR_AND_FFR_REGS:

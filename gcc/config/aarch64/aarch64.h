@@ -523,6 +523,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
     1, 1, 1, 1,			/* SFP, AP, CC, VG */	\
     0, 0, 0, 0,   0, 0, 0, 0,   /* P0 - P7 */           \
     0, 0, 0, 0,   0, 0, 0, 0,   /* P8 - P15 */          \
+    1,				/* FPMR */		\
     1, 1,			/* FFR and FFRT */	\
     1, 1, 1, 1, 1, 1, 1, 1	/* Fake registers */	\
   }
@@ -547,6 +548,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
     1, 1, 1, 0,			/* SFP, AP, CC, VG */	\
     1, 1, 1, 1,   1, 1, 1, 1,	/* P0 - P7 */		\
     1, 1, 1, 1,   1, 1, 1, 1,	/* P8 - P15 */		\
+    1,				/* FPMR */		\
     1, 1,			/* FFR and FFRT */	\
     0, 0, 0, 0, 0, 0, 0, 0	/* Fake registers */	\
   }
@@ -564,6 +566,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
     "sfp", "ap",  "cc",  "vg",					\
     "p0",  "p1",  "p2",  "p3",  "p4",  "p5",  "p6",  "p7",	\
     "p8",  "p9",  "p10", "p11", "p12", "p13", "p14", "p15",	\
+    "fpmr",							\
     "ffr", "ffrt",						\
     "lowering", "tpidr2_block", "sme_state", "tpidr2_setup",	\
     "za_free", "za_saved", "za", "zt0"				\
@@ -775,6 +778,7 @@ enum reg_class
   PR_REGS,
   FFR_REGS,
   PR_AND_FFR_REGS,
+  MOVEABLE_SYSREGS,
   FAKE_REGS,
   ALL_REGS,
   LIM_REG_CLASSES		/* Last */
@@ -801,6 +805,7 @@ enum reg_class
   "PR_REGS",					\
   "FFR_REGS",					\
   "PR_AND_FFR_REGS",				\
+  "MOVEABLE_SYSREGS",				\
   "FAKE_REGS",					\
   "ALL_REGS"					\
 }
@@ -822,10 +827,11 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000ff0 },	/* PR_LO_REGS */	\
   { 0x00000000, 0x00000000, 0x000ff000 },	/* PR_HI_REGS */	\
   { 0x00000000, 0x00000000, 0x000ffff0 },	/* PR_REGS */		\
-  { 0x00000000, 0x00000000, 0x00300000 },	/* FFR_REGS */		\
-  { 0x00000000, 0x00000000, 0x003ffff0 },	/* PR_AND_FFR_REGS */	\
-  { 0x00000000, 0x00000000, 0x3fc00000 },	/* FAKE_REGS */		\
-  { 0xffffffff, 0xffffffff, 0x000fffff }	/* ALL_REGS */		\
+  { 0x00000000, 0x00000000, 0x00600000 },	/* FFR_REGS */		\
+  { 0x00000000, 0x00000000, 0x006ffff0 },	/* PR_AND_FFR_REGS */	\
+  { 0x00000000, 0x00000000, 0x00100000 },	/* MOVEABLE_SYSREGS */	\
+  { 0x00000000, 0x00000000, 0x7f800000 },	/* FAKE_REGS */		\
+  { 0xffffffff, 0xffffffff, 0x001fffff }	/* ALL_REGS */		\
 }
 
 #define REGNO_REG_CLASS(REGNO)	aarch64_regno_regclass (REGNO)

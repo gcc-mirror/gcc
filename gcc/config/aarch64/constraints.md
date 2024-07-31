@@ -77,6 +77,9 @@
 (define_register_constraint "Uph" "PR_HI_REGS"
   "SVE predicate registers p8 - p15.")
 
+(define_register_constraint "Umv" "MOVEABLE_SYSREGS"
+  "@internal System Registers suitable for moving rather than requiring an unspec msr")
+
 (define_constraint "c"
  "@internal The condition code register."
   (match_operand 0 "cc_register"))
