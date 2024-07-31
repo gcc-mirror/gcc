@@ -1,3 +1,9 @@
+2024-07-30  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/prfchiintrin.h
+	(_m_prefetchit0): Add macro for non-optimized option.
+	(_m_prefetchit1): Ditto.
+
 2024-07-29  Haochen Jiang  <haochen.jiang@intel.com>
 
 	* config/i386/avx512dqintrin.h (_mm_reduce_round_sd): Use

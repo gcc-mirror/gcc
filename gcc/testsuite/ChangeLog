@@ -1,3 +1,7 @@
+2024-07-30  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/prefetchi-1b.c: New test.
+
 2024-07-29  Haochen Jiang  <haochen.jiang@intel.com>
 
 	* gcc.target/i386/avx512bw-vpalignr-1b.c: New test.
