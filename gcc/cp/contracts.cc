@@ -1290,6 +1290,12 @@ match_deferred_contracts (tree decl)
       location_t new_loc = CONTRACT_SOURCE_LOCATION (new_contracts);
       tree old_contracts = DECL_CONTRACTS (decl);
       location_t old_loc = CONTRACT_SOURCE_LOCATION (old_contracts);
+      /* todo : this is suspicious : with P2900 we have a TREE_PURPOSE set despite the fact we
+       * no longer inherit the contracts from the base. Where is TREE_PURPOSE being
+       * set ? It looks like it's set for declarations of friend functions.
+       * This means the diagnostic may claim override even in case of
+       * re declarations.
+       */
       tree base = TREE_PURPOSE (pending);
       match_contract_conditions (new_loc, new_contracts,
 				 old_loc, old_contracts,
@@ -2322,6 +2328,16 @@ duplicate_contracts (tree newdecl, tree olddecl)
       /* We are adding contracts to a declaration.  */
       if (new_contracts)
 	{
+	  if (flag_contracts_nonattr)
+	    {
+	      /* In P2900, the virtual functions do not inherit the contracts.
+	       * Also, if a function has contracts, they must appear on the
+	       * first declaration */
+	      error_at (new_loc,
+			"declaration adds contracts to %q#D",
+			olddecl);
+	      return;
+	    }
 	  /* We can't add to a previously defined function.  */
 	  if (DECL_INITIAL (olddecl))
 	    {
@@ -2330,25 +2346,26 @@ duplicate_contracts (tree newdecl, tree olddecl)
 	      inform (DECL_SOURCE_LOCATION (olddecl), "original definition here");
 	      return;
 	    }
-
-	  /* We can't add to an unguarded virtual function declaration.  */
-	  if (DECL_VIRTUAL_P (olddecl) && new_contracts)
+	  else
 	    {
-	      auto_diagnostic_group d;
-	      error_at (new_loc, "cannot add contracts to a virtual function");
-	      inform (DECL_SOURCE_LOCATION (olddecl), "original declaration here");
-	      return;
-	    }
+	      /* We can't add to an unguarded virtual function declaration.  */
+	      if (DECL_VIRTUAL_P (olddecl) && new_contracts)
+		{
+		  auto_diagnostic_group d;
+		  error_at (new_loc, "cannot add contracts to a virtual function");
+		  inform (DECL_SOURCE_LOCATION (olddecl), "original declaration here");
+		  return;
+		}
 
-	  /* Depending on the "first declaration" rule, we may not be able
-	     to add contracts to a function after the fact.  */
-	  if (flag_contract_strict_declarations)
-	    {
-	      warning_at (new_loc,
-			  OPT_fcontract_strict_declarations_,
-			  "declaration adds contracts to %q#D",
-			  olddecl);
-	      return;
+	      /* Depending on the "first declaration" rule, we may not be able
+		 to add contracts to a function after the fact.  */
+	      if (flag_contract_strict_declarations)
+		{
+		  warning_at (new_loc,
+			    OPT_fcontract_strict_declarations_,
+			    "declaration adds contracts to %q#D",
+			    olddecl);
+		}
 	    }
 
 	  /* Copy the contracts from NEWDECL to OLDDECL. We shouldn't need to

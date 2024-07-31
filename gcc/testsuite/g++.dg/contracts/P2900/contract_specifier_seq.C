@@ -46,7 +46,67 @@ struct E : D {
 };
 
 
+namespace other{
 
+  static_assert (__cpp_contracts >= 201906);
+
+
+  auto f(int x) -> int pre(x >= 0);
+
+  auto f(int x) pre(x >= 0) -> int pre(x >= 0); // { dg-error "expected initializer before" }
+
+  auto f(int x) pre(x >= 0) -> int; // { dg-error "expected initializer before" }
+
+  struct X
+  {
+    virtual void f(int x) pre(x >= 0);
+  };
+
+  struct Y : X
+  {
+    void f(int x) override pre(x >= 0);
+  };
+
+  struct Y2 : X
+  {
+    void f(int x) pre(x >= 0) override; // { dg-error "expected .;. at end of member declaration|does not name a type" }
+  };
+
+  struct Y3 : X
+  {
+    void f(int x) pre(x >= 0) override pre(x >= 0); // { dg-error "expected .;. at end of member declaration|does not name a type" }
+  };
+
+  struct X2
+  {
+    virtual void f(int x) pre(x >= 0);
+  };
+
+  struct X3
+  {
+    virtual void f(int x) final pre(x >= 0);
+  };
+
+  struct X4
+  {
+    virtual void f(int x) pre(x >= 0) final; // { dg-error "expected .;. at end of member declaration|does not name a type" }
+  };
+
+  struct X5
+  {
+    virtual void f(int x) pre(x >= 0) final pre(x >= 0); // { dg-error "expected .;. at end of member declaration|does not name a type" }
+  };
+
+  template <class T>
+  void g(int x) requires(true) pre(x >= 0);
+
+  template <class T>
+  void g2(int x) pre(x >= 0) requires(true); // { dg-error "expected initializer" }
+
+  template <class T>
+  void g3(int x) pre(x >= 0) requires(true) pre(x >= 0); // { dg-error "expected initializer" }
+
+}
 
 int main()
 {
