@@ -917,13 +917,14 @@ namespace __format
 
 	  chrono::year __y = _S_year(__t);
 
-	  if (__mod) [[unlikely]]
-	    {
-	      struct tm __tm{};
-	      __tm.tm_year = (int)__y - 1900;
-	      return _M_locale_fmt(std::move(__out), _M_locale(__ctx), __tm,
-				   __conv, __mod);
-	    }
+	  if (__mod && _M_spec._M_localized) [[unlikely]]
+	    if (auto __loc = __ctx.locale(); __loc != locale::classic())
+	      {
+		struct tm __tm{};
+		__tm.tm_year = (int)__y - 1900;
+		return _M_locale_fmt(std::move(__out), __loc, __tm,
+				     __conv, __mod);
+	      }
 
 	  basic_string<_CharT> __s;
 	  int __yi = (int)__y;
@@ -985,13 +986,14 @@ namespace __format
 	  chrono::day __d = _S_day(__t);
 	  unsigned __i = (unsigned)__d;
 
-	  if (__mod) [[unlikely]]
-	    {
-	      struct tm __tm{};
-	      __tm.tm_mday = __i;
-	      return _M_locale_fmt(std::move(__out), _M_locale(__ctx), __tm,
-				   (char)__conv, 'O');
-	    }
+	  if (__mod && _M_spec._M_localized) [[unlikely]]
+	    if (auto __loc = __ctx.locale(); __loc != locale::classic())
+	      {
+		struct tm __tm{};
+		__tm.tm_mday = __i;
+		return _M_locale_fmt(std::move(__out), __loc, __tm,
+				     (char)__conv, 'O');
+	      }
 
 	  auto __sv = _S_two_digits(__i);
 	  _CharT __buf[2];
@@ -1051,13 +1053,14 @@ namespace __format
 	  const auto __hms = _S_hms(__t);
 	  int __i = __hms.hours().count();
 
-	  if (__mod) [[unlikely]]
-	    {
-	      struct tm __tm{};
-	      __tm.tm_hour = __i;
-	      return _M_locale_fmt(std::move(__out), _M_locale(__ctx), __tm,
-				   (char)__conv, 'O');
-	    }
+	  if (__mod && _M_spec._M_localized) [[unlikely]]
+	    if (auto __loc = __ctx.locale(); __loc != locale::classic())
+	      {
+		struct tm __tm{};
+		__tm.tm_hour = __i;
+		return _M_locale_fmt(std::move(__out), __loc, __tm,
+				     (char)__conv, 'O');
+	      }
 
 	  if (__conv == _CharT('I'))
 	    {
@@ -1109,13 +1112,14 @@ namespace __format
 	  auto __m = _S_month(__t);
 	  auto __i = (unsigned)__m;
 
-	  if (__mod) [[unlikely]] // %Om
-	    {
-	      struct tm __tm{};
-	      __tm.tm_mon = __i - 1;
-	      return _M_locale_fmt(std::move(__out), _M_locale(__ctx), __tm,
-				   'm', 'O');
-	    }
+	  if (__mod && _M_spec._M_localized) [[unlikely]] // %Om
+	    if (auto __loc = __ctx.locale(); __loc != locale::classic())
+	      {
+		struct tm __tm{};
+		__tm.tm_mon = __i - 1;
+		return _M_locale_fmt(std::move(__out), __loc, __tm,
+				     'm', 'O');
+	      }
 
 	  return __format::__write(std::move(__out), _S_two_digits(__i));
 	}
@@ -1131,13 +1135,14 @@ namespace __format
 	  auto __m = _S_hms(__t).minutes();
 	  auto __i = __m.count();
 
-	  if (__mod) [[unlikely]] // %OM
-	    {
-	      struct tm __tm{};
-	      __tm.tm_min = __i;
-	      return _M_locale_fmt(std::move(__out), _M_locale(__ctx), __tm,
-				   'M', 'O');
-	    }
+	  if (__mod && _M_spec._M_localized) [[unlikely]] // %OM
+	    if (auto __loc = __ctx.locale(); __loc != locale::classic())
+	      {
+		struct tm __tm{};
+		__tm.tm_min = __i;
+		return _M_locale_fmt(std::move(__out), __loc, __tm,
+				     'M', 'O');
+	      }
 
 	  return __format::__write(std::move(__out), _S_two_digits(__i));
 	}
@@ -1226,22 +1231,30 @@ namespace __format
 	  // %S  Seconds as a decimal number.
 	  // %OS The locale's alternative representation.
 	  auto __hms = _S_hms(__t);
+	  auto __s = __hms.seconds();
 
 	  if (__mod) [[unlikely]] // %OS
 	    {
-	      struct tm __tm{};
-	      __tm.tm_sec = (int)__hms.seconds().count();
-	      return _M_locale_fmt(std::move(__out), _M_locale(__ctx), __tm,
-				   'S', 'O');
+	      if (_M_spec._M_localized)
+		if (auto __loc = __ctx.locale(); __loc != locale::classic())
+		  {
+		    struct tm __tm{};
+		    __tm.tm_sec = (int)__s.count();
+		    return _M_locale_fmt(std::move(__out), __loc, __tm,
+					 'S', 'O');
+		  }
+
+	      // %OS formats don't include subseconds, so just format that:
+	      return __format::__write(std::move(__out),
+				       _S_two_digits(__s.count()));
 	    }
 
 	  if constexpr (__hms.fractional_width == 0)
 	    __out = __format::__write(std::move(__out),
-				      _S_two_digits(__hms.seconds().count()));
+				      _S_two_digits(__s.count()));
 	  else
 	    {
 	      locale __loc = _M_locale(__ctx);
-	      auto __s = __hms.seconds();
 	      auto __ss = __hms.subseconds();
 	      using rep = typename decltype(__ss)::rep;
 	      if constexpr (is_floating_point_v<rep>)
@@ -1291,13 +1304,14 @@ namespace __format
 
 	  chrono::weekday __wd = _S_weekday(__t);
 
-	  if (__mod) [[unlikely]]
-	    {
-	      struct tm __tm{};
-	      __tm.tm_wday = __wd.c_encoding();
-	      return _M_locale_fmt(std::move(__out), _M_locale(__ctx), __tm,
-				   (char)__conv, 'O');
-	    }
+	  if (__mod && _M_spec._M_localized) [[unlikely]]
+	    if (auto __loc = __ctx.locale(); __loc != locale::classic())
+	      {
+		struct tm __tm{};
+		__tm.tm_wday = __wd.c_encoding();
+		return _M_locale_fmt(std::move(__out), __loc, __tm,
+				     (char)__conv, 'O');
+	      }
 
 	  unsigned __wdi = __conv == 'u' ? __wd.iso_encoding()
 					 : __wd.c_encoding();
@@ -1320,17 +1334,18 @@ namespace __format
 	  auto __d = _S_days(__t);
 	  using _TDays = decltype(__d); // Either sys_days or local_days.
 
-	  if (__mod) [[unlikely]]
-	    {
-	      const year_month_day __ymd(__d);
-	      const year __y = __ymd.year();
-	      struct tm __tm{};
-	      __tm.tm_year = (int)__y - 1900;
-	      __tm.tm_yday = (__d - _TDays(__y/January/1)).count();
-	      __tm.tm_wday = weekday(__d).c_encoding();
-	      return _M_locale_fmt(std::move(__out), _M_locale(__ctx), __tm,
-				   (char)__conv, 'O');
-	    }
+	  if (__mod && _M_spec._M_localized) [[unlikely]]
+	    if (auto __loc = __ctx.locale(); __loc != locale::classic())
+	      {
+		const year_month_day __ymd(__d);
+		const year __y = __ymd.year();
+		struct tm __tm{};
+		__tm.tm_year = (int)__y - 1900;
+		__tm.tm_yday = (__d - _TDays(__y/January/1)).count();
+		__tm.tm_wday = weekday(__d).c_encoding();
+		return _M_locale_fmt(std::move(__out), __loc, __tm,
+				     (char)__conv, 'O');
+	      }
 
 	  _TDays __first; // First day of week 1.
 	  if (__conv == 'V') // W01 begins on Monday before first Thursday.
