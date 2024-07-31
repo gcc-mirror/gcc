@@ -18303,7 +18303,7 @@ start_function (cp_decl_specifier_seq *declspecs,
 /* Returns true iff an EH_SPEC_BLOCK should be created in the body of
    FN.  */
 
-static bool
+bool
 use_eh_spec_block (tree fn)
 {
   return (flag_exceptions && flag_enforce_eh_specs

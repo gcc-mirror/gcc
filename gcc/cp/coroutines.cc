@@ -4547,6 +4547,43 @@ coro_rewrite_function_body (location_t fn_start, tree fnbody, tree orig,
   return update_body;
 }
 
+/* Extract the body of the function we are going to outline, leaving
+   to original function decl ready to build the ramp.  */
+
+static tree
+split_coroutine_body_from_ramp (tree fndecl)
+{
+  tree body;
+  /* Once we've tied off the original user-authored body in fn_body.
+     Start the replacement synthesized ramp body.  */
+
+  if (use_eh_spec_block (fndecl))
+    {
+      body = pop_stmt_list (TREE_OPERAND (current_eh_spec_block, 0));
+      TREE_OPERAND (current_eh_spec_block, 0) = push_stmt_list ();
+    }
+  else
+    {
+      body = pop_stmt_list (DECL_SAVED_TREE (fndecl));
+      DECL_SAVED_TREE (fndecl) = push_stmt_list ();
+    }
+
+  /* We can't validly get here with an empty statement list, since there's no
+     way for the FE to decide it's a coroutine in the absence of any code.  */
+  gcc_checking_assert (body != NULL_TREE);
+
+  /* If we have an empty or erroneous function body, do not try to transform it
+     since that would potentially wrap errors.  */
+  tree body_start = expr_first (body);
+  if (body_start == NULL_TREE || body_start == error_mark_node)
+    {
+      /* Restore the original state.  */
+      add_stmt (body);
+      return NULL_TREE;
+    }
+  return body;
+}
+
 /* Here we:
    a) Check that the function and promise type are valid for a
       coroutine.
@@ -4593,57 +4630,22 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       /* Discard the body, we can't process it further.  */
       pop_stmt_list (DECL_SAVED_TREE (orig));
       DECL_SAVED_TREE (orig) = push_stmt_list ();
+      /* Match the expected nesting when an eh block is in use.  */
+      if (use_eh_spec_block (orig))
+	current_eh_spec_block = begin_eh_spec_block ();
       return false;
     }
-
-  /* We can't validly get here with an empty statement list, since there's no
-     way for the FE to decide it's a coroutine in the absence of any code.  */
-  tree fnbody = pop_stmt_list (DECL_SAVED_TREE (orig));
-  gcc_checking_assert (fnbody != NULL_TREE);
 
   /* We don't have the locus of the opening brace - it's filled in later (and
      there doesn't really seem to be any easy way to get at it).
      The closing brace is assumed to be input_location.  */
   location_t fn_start = DECL_SOURCE_LOCATION (orig);
-  gcc_rich_location fn_start_loc (fn_start);
 
-  /* Initial processing of the function-body.
-     If we have no expressions or just an error then punt.  */
-  tree body_start = expr_first (fnbody);
-  if (body_start == NULL_TREE || body_start == error_mark_node)
-    {
-      DECL_SAVED_TREE (orig) = push_stmt_list ();
-      append_to_statement_list (fnbody, &DECL_SAVED_TREE (orig));
-      /* Suppress warnings about the missing return value.  */
-      suppress_warning (orig, OPT_Wreturn_type);
-      return false;
-    }
-
-  /* So, we've tied off the original user-authored body in fn_body.
-
-     Start the replacement synthesized ramp body as newbody.
-     If we encounter a fatal error we might return a now-empty body.
-
-     Note, the returned ramp body is not 'popped', to be compatible with
-     the way that decl.cc handles regular functions, the scope pop is done
-     in the caller.  */
-
-  tree newbody = push_stmt_list ();
-  DECL_SAVED_TREE (orig) = newbody;
-
-  /* If our original body is noexcept, then that's what we apply to our
-     generated ramp, transfer any MUST_NOT_THOW_EXPR to that.  */
-  bool is_noexcept = TREE_CODE (body_start) == MUST_NOT_THROW_EXPR;
-  if (is_noexcept)
-    {
-      /* The function body we will continue with is the single operand to
-	 the must-not-throw.  */
-      fnbody = TREE_OPERAND (body_start, 0);
-      /* Transfer the must-not-throw to the ramp body.  */
-      add_stmt (body_start);
-      /* Re-start the ramp as must-not-throw.  */
-      TREE_OPERAND (body_start, 0) = push_stmt_list ();
-    }
+  /* FIXME: This has the hidden side-effect of preparing the current function
+     to be the ramp.  */
+  tree fnbody = split_coroutine_body_from_ramp (orig);
+  if (!fnbody)
+    return false;
 
   /* If the original function has a return value with a non-trivial DTOR
      and the body contains a var with a DTOR that might throw, the decl is
@@ -5169,7 +5171,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   if (get_ro == error_mark_node)
     {
       BIND_EXPR_BODY (ramp_bind) = pop_stmt_list (ramp_body);
-      DECL_SAVED_TREE (orig) = newbody;
       /* Suppress warnings about the missing return value.  */
       suppress_warning (orig, OPT_Wreturn_type);
       return false;
@@ -5396,7 +5397,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   pop_deferring_access_checks ();
 
-  DECL_SAVED_TREE (orig) = newbody;
   /* Link our new functions into the list.  */
   TREE_CHAIN (destroy) = TREE_CHAIN (orig);
   TREE_CHAIN (actor) = destroy;
