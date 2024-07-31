@@ -14288,8 +14288,18 @@ do_warn_dangling_reference (tree expr, bool arg_p)
 	    /* Recurse to see if the argument is a temporary.  It could also
 	       be another call taking a temporary and returning it and
 	       initializing this reference parameter.  */
-	    if (do_warn_dangling_reference (arg, /*arg_p=*/true))
-	      return expr;
+	    if ((arg = do_warn_dangling_reference (arg, /*arg_p=*/true)))
+	      {
+		/* If we know the temporary could not bind to the return type,
+		   don't warn.  This is for scalars only because for classes
+		   we can't be sure we are not returning its sub-object.  */
+		if (SCALAR_TYPE_P (TREE_TYPE (arg))
+		    && TYPE_REF_P (rettype)
+		    && !reference_related_p (TREE_TYPE (arg),
+					     TREE_TYPE (rettype)))
+		  continue;
+		return expr;
+	      }
 	  /* Don't warn about member functions like:
 	      std::any a(...);
 	      S& s = a.emplace<S>({0}, 0);
