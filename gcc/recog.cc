@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "tree-pass.h"
 #include "function-abi.h"
+#include "rtl-iter.h"
 
 #ifndef STACK_POP_CODE
 #if STACK_GROWS_DOWNWARD
@@ -1082,6 +1083,7 @@ insn_propagation::apply_to_rvalue_1 (rtx *loc)
 	      || !REG_CAN_CHANGE_MODE_P (REGNO (x), GET_MODE (from),
 					 GET_MODE (x)))
 	    return false;
+
 	  /* If the reference is paradoxical and the replacement
 	     value contains registers, we would need to check that the
 	     simplification below does not increase REG_NREGS for those
@@ -1090,11 +1092,30 @@ insn_propagation::apply_to_rvalue_1 (rtx *loc)
 	  if (paradoxical_subreg_p (GET_MODE (x), GET_MODE (from))
 	      && !CONSTANT_P (to))
 	    return false;
+
 	  newval = simplify_subreg (GET_MODE (x), to, GET_MODE (from),
 				    subreg_lowpart_offset (GET_MODE (x),
 							   GET_MODE (from)));
 	  if (!newval)
 	    return false;
+
+	  /* Check that the simplification didn't just push an explicit
+	     subreg down into subexpressions.  In particular, for a register
+	     R that has a fixed mode, such as the stack pointer, a subreg of:
+
+	       (plus:M (reg:M R) (const_int C))
+
+	     would be:
+
+	       (plus:N (subreg:N (reg:M R) ...) (const_int C'))
+
+	     But targets can legitimately assume that subregs of hard registers
+	     will not be created after RA (except in special circumstances,
+	     such as strict_low_part).  */
+	  subrtx_iterator::array_type array;
+	  FOR_EACH_SUBRTX (iter, array, newval, NONCONST)
+	    if (GET_CODE (*iter) == SUBREG)
+	      return false;
 	}
 
       if (should_unshare)
