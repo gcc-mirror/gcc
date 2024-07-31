@@ -501,7 +501,7 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
     /* We propagate for the shifted operand, but not the shift
        count.  The count is handled specially.  */
     case LSHIFTRT:
-      if (CONSTANT_P (XEXP (x, 1))
+      if (CONST_INT_P (XEXP (x, 1))
 	  && known_lt (UINTVAL (XEXP (x, 1)), GET_MODE_BITSIZE (mode)))
 	return mmask & (mask << INTVAL (XEXP (x, 1)));
       return mmask;
@@ -509,7 +509,7 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
     /* We propagate for the shifted operand, but not the shift
        count.  The count is handled specially.  */
     case ASHIFTRT:
-      if (CONSTANT_P (XEXP (x, 1))
+      if (CONST_INT_P (XEXP (x, 1))
 	  && known_lt (UINTVAL (XEXP (x, 1)), GET_MODE_BITSIZE (mode)))
 	{
 	  HOST_WIDE_INT sign = 0;
@@ -526,7 +526,7 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
 	return 0;
       if (XEXP (x, 1) == const1_rtx)
 	return mmask;
-      if (CONSTANT_P (XEXP (x, 1)))
+      if (CONST_INT_P (XEXP (x, 1)))
 	{
 	  if (pow2p_hwi (INTVAL (XEXP (x, 1))))
 	    return mmask & (mask << (GET_MODE_BITSIZE (mode).to_constant ()
@@ -549,7 +549,7 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
        count.  The count is handled specially.  */
     case SS_ASHIFT:
     case US_ASHIFT:
-      if (CONSTANT_P (XEXP (x, 1))
+      if (CONST_INT_P (XEXP (x, 1))
 	  && UINTVAL (XEXP (x, 1)) < GET_MODE_BITSIZE (mode).to_constant ())
 	{
 	  return ((mmask & ~((unsigned HOST_WIDE_INT)mmask
