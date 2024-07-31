@@ -83,18 +83,44 @@ private:
   location_t location;
 
 public:
-  Statement (PlaceId lhs, AbstractExpr *rhs, location_t location)
-    : kind (Kind::ASSIGNMENT), place (lhs), expr (rhs), location (location)
-  {}
+  static Statement make_assignment (PlaceId place, AbstractExpr *rhs,
+				    location_t location)
+  {
+    return Statement (Kind::ASSIGNMENT, place, rhs, nullptr, location);
+  }
+  static Statement make_switch (PlaceId place)
+  {
+    return Statement (Kind::SWITCH, place);
+  }
+  static Statement make_return (location_t location)
+  {
+    return Statement (Kind::RETURN, INVALID_PLACE, nullptr, nullptr, location);
+  }
+  static Statement make_goto () { return Statement (Kind::GOTO); }
+  static Statement make_storage_dead (PlaceId place)
+  {
+    return Statement (Kind::STORAGE_DEAD, place);
+  }
+  static Statement make_storage_live (PlaceId place)
+  {
+    return Statement (Kind::STORAGE_LIVE, place);
+  }
+  static Statement make_user_type_ascription (PlaceId place,
+					      TyTy::BaseType *type)
+  {
+    return Statement (Kind::USER_TYPE_ASCRIPTION, place, nullptr, type);
+  }
+  static Statement make_fake_read (PlaceId place)
+  {
+    return Statement (Kind::FAKE_READ, place);
+  }
 
-  explicit Statement (Kind kind, PlaceId place = INVALID_PLACE,
-		      location_t location = UNKNOWN_LOCATION)
-    : kind (kind), place (place), location (location)
-  {}
-
-  explicit Statement (Kind kind, PlaceId place, TyTy::BaseType *type,
-		      location_t location = UNKNOWN_LOCATION)
-    : kind (kind), place (place), type (type), location (location)
+private:
+  // compelete constructor, used by make_* functions
+  Statement (Kind kind, PlaceId place = INVALID_PLACE,
+	     AbstractExpr *rhs = nullptr, TyTy::BaseType *type = nullptr,
+	     location_t location = UNKNOWN_LOCATION)
+    : kind (kind), place (place), expr (rhs), type (type), location (location)
   {}
 
 public:
