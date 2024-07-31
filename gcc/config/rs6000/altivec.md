@@ -119,7 +119,6 @@
    UNSPEC_STVLXL
    UNSPEC_STVRX
    UNSPEC_STVRXL
-   UNSPEC_VADU
    UNSPEC_VSLV
    UNSPEC_VSRV
    UNSPEC_VMULWHUB
@@ -4323,19 +4322,15 @@
   [(set_attr "type" "vecsimple")])
 
 ;; Vector absolute difference unsigned
-(define_expand "vadu<mode>3"
-  [(set (match_operand:VI 0 "register_operand")
-        (unspec:VI [(match_operand:VI 1 "register_operand")
-		    (match_operand:VI 2 "register_operand")]
-         UNSPEC_VADU))]
-  "TARGET_P9_VECTOR")
-
-;; Vector absolute difference unsigned
-(define_insn "p9_vadu<mode>3"
+(define_insn "uabd<mode>3"
   [(set (match_operand:VI 0 "register_operand" "=v")
-        (unspec:VI [(match_operand:VI 1 "register_operand" "v")
-		    (match_operand:VI 2 "register_operand" "v")]
-         UNSPEC_VADU))]
+	(minus:VI
+	  (umax:VI
+	    (match_operand:VI 1 "register_operand" "v")
+	    (match_operand:VI 2 "register_operand" "v"))
+	  (umin:VI
+	    (match_dup 1)
+	    (match_dup 2))))]
   "TARGET_P9_VECTOR"
   "vabsdu<wd> %0,%1,%2"
   [(set_attr "type" "vecsimple")])
@@ -4500,7 +4495,7 @@
   rtx zero = gen_reg_rtx (V4SImode);
   rtx psum = gen_reg_rtx (V4SImode);
 
-  emit_insn (gen_p9_vaduv16qi3 (absd, operands[1], operands[2]));
+  emit_insn (gen_uabdv16qi3 (absd, operands[1], operands[2]));
   emit_insn (gen_altivec_vspltisw (zero, const0_rtx));
   emit_insn (gen_altivec_vsum4ubs (psum, absd, zero));
   emit_insn (gen_addv4si3 (operands[0], psum, operands[3]));
@@ -4521,7 +4516,7 @@
   rtx zero = gen_reg_rtx (V4SImode);
   rtx psum = gen_reg_rtx (V4SImode);
 
-  emit_insn (gen_p9_vaduv8hi3 (absd, operands[1], operands[2]));
+  emit_insn (gen_uabdv8hi3 (absd, operands[1], operands[2]));
   emit_insn (gen_altivec_vspltisw (zero, const0_rtx));
   emit_insn (gen_altivec_vsum4shs (psum, absd, zero));
   emit_insn (gen_addv4si3 (operands[0], psum, operands[3]));

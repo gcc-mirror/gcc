@@ -2345,13 +2345,13 @@
     VFIRSTMISMATCHOREOSINDEX_V4SI first_mismatch_or_eos_index_v4si {}
 
   const vsc __builtin_altivec_vadub (vsc, vsc);
-    VADUB vaduv16qi3 {}
+    VADUB uabdv16qi3 {}
 
   const vss __builtin_altivec_vaduh (vss, vss);
-    VADUH vaduv8hi3 {}
+    VADUH uabdv8hi3 {}
 
   const vsi __builtin_altivec_vaduw (vsi, vsi);
-    VADUW vaduv4si3 {}
+    VADUW uabdv4si3 {}
 
   const vsll __builtin_altivec_vbpermd (vsll, vsc);
     VBPERMD altivec_vbpermd {}
