@@ -3989,10 +3989,14 @@ struct local_vars_frame_data
 {
   tree *field_list;
   hash_map<tree, local_var_info> *local_var_uses;
-  unsigned int nest_depth, bind_indx;
-  location_t loc;
-  bool saw_capture;
-  bool local_var_seen;
+  unsigned int nest_depth = 0;
+  unsigned int bind_indx = 0;
+  location_t loc = UNKNOWN_LOCATION;
+  bool saw_capture = false;
+  bool local_var_seen = false;
+
+  local_vars_frame_data (tree *_fl, hash_map<tree, local_var_info> *_lvu)
+    : field_list (_fl), local_var_uses (_lvu) {}
 };
 
 /* A tree-walk callback that processes one bind expression noting local
@@ -4577,8 +4581,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   /* Build our dummy coro frame layout.  */
   coro_frame_type = begin_class_definition (coro_frame_type);
 
-  /* The fields for the coro frame.  */
-  tree field_list = NULL_TREE;
 
   /* We need to know, and inspect, each suspend point in the function
      in several places.  It's convenient to place this map out of line
@@ -4592,10 +4594,13 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   cp_walk_tree (&fnbody, await_statement_walker, &body_aw_points, NULL);
 
   /* 4. Now make space for local vars, this is conservative again, and we
-     would expect to delete unused entries later.  */
+     would expect to delete unused entries later.  Compose the frame entries
+     list.  */
+
+  /* The fields for the coro frame.  */
+  tree field_list = NULL_TREE;
   hash_map<tree, local_var_info> local_var_uses;
-  local_vars_frame_data local_vars_data
-    = {&field_list, &local_var_uses, 0, 0, fn_start, false, false};
+  local_vars_frame_data local_vars_data (&field_list, &local_var_uses);
   cp_walk_tree (&fnbody, register_local_var_uses, &local_vars_data, NULL);
 
   /* Tie off the struct for now, so that we can build offsets to the
