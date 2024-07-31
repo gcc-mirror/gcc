@@ -21849,6 +21849,8 @@ Enable support for Armv9.4-a Guarded Control Stack extension.
 Enable support for Armv8.9-a/9.4-a translation hardening extension.
 @item rcpc3
 Enable the RCpc3 (Release Consistency) extension.
+@item fp8
+Enable the fp8 (8-bit floating point) extension.
 
 @end table
 

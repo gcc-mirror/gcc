@@ -463,6 +463,9 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
 				 && (aarch64_tune_params.extra_tuning_flags \
 				     & AARCH64_EXTRA_TUNE_AVOID_PRED_RMW))
 
+/* fp8 instructions are enabled through +fp8.  */
+#define TARGET_FP8 AARCH64_HAVE_ISA (FP8)
+
 /* Standard register usage.  */
 
 /* 31 64-bit general purpose registers R0-R30:
