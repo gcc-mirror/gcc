@@ -105,9 +105,24 @@ impl From<gccrs_ffi::FactsView> for AllFacts<GccrsFacts> {
 
 fn print_point(point: GccrsAtom) {
     let val: usize = point.into();
+    // Point is a 32 bit unsigned integer
+    // 16               15              1
+    // xxxxxxxxxxxxxxxx xxxxxxxxxxxxxxx x
+    // ^~~~~~~~~~~~~~~~ ^~~~~~~~~~~~~~~ ^
+    // |                |               |
+    // basic_block      |               start/mid
+    //                  statement
+    // the left most 16 bits store the basic block number
+    // the right most bit, represents the start/mid status
+    // the remaining 15 bits between these two represent the statement
     let mid = val % 2 == 1;
     let bb = val >> 16;
-    let stmt = (val >> 1) & ((1 << 15) - 1);
+    // firstly we can get rid of right most bit by performing left shift once
+    let hide_left_most_bit = val >> 1;
+    // now we only need the 15 bits on the right
+    // we can mask the remaining bits by performing bitwise AND with fifteen
+    // 1's which in hexadecimal is 0x7FFF
+    let stmt = hide_left_most_bit & 0x7FFF;
     eprint!("{}(bb{}[{}])", if mid { "Mid" } else { "Start" }, bb, stmt);
 }
 
