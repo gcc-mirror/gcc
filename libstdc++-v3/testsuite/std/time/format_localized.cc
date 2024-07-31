@@ -75,7 +75,7 @@ test_en()
 
   for (auto l : {ISO_8859(1,en_US), ISO_8859(15,en_US), "en_US.UTF-8", "C"})
     {
-      std::locale loc(ISO_8859(1,en_US));
+      std::locale loc(l);
       auto s = std::format(loc, "{:L%b %B %a %A}", sys_days(2024y/July/30));
       VERIFY( s == "Jul July Tue Tuesday" );
     }

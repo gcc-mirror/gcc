@@ -49,6 +49,15 @@ namespace __format
 #if defined _GLIBCXX_USE_NL_LANGINFO_L && __CHAR_BIT__ == 8
 namespace
 {
+#ifndef _GLIBCXX_HAS_GTHREADS
+// Dummy mutex
+struct mutex
+{
+  void lock() const { }
+  void unlock() const { }
+};
+#endif
+
 // A non-standard locale::facet that caches the locale's std::text_encoding
 // and an iconv descriptor for converting from that encoding to UTF-8.
 struct __encoding : locale::facet
@@ -59,7 +68,7 @@ struct __encoding : locale::facet
   __encoding(const text_encoding& enc, size_t refs = 0)
   : facet(refs), _M_enc(enc)
   {
-#if defined _GLIBCXX_HAVE_ICONV
+#ifdef _GLIBCXX_HAVE_ICONV
     using enum text_encoding::id;
     switch (_M_enc.mib())
       {
@@ -74,14 +83,14 @@ struct __encoding : locale::facet
 
   ~__encoding()
   {
-#if defined _GLIBCXX_HAVE_ICONV
+#ifdef _GLIBCXX_HAVE_ICONV
     if (_M_cd != (::iconv_t)-1)
       ::iconv_close(_M_cd);
 #endif
   }
 
   text_encoding _M_enc;
-#if defined _GLIBCXX_HAVE_ICONV
+#ifdef _GLIBCXX_HAVE_ICONV
   ::iconv_t _M_cd = (::iconv_t)-1;
   mutable mutex mx;
 #endif
@@ -93,7 +102,7 @@ struct __encoding : locale::facet
     if (input.empty()) [[unlikely]]
       return codecvt_base::noconv;
 
-#if defined _GLIBCXX_HAVE_ICONV
+#ifdef _GLIBCXX_HAVE_ICONV
     if (_M_cd == (::iconv_t)-1)
       return codecvt_base::error;
 
