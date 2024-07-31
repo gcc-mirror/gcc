@@ -9823,6 +9823,13 @@ riscv_option_override (void)
     error ("ILP32E ABI does not support the %qc extension",
 	   UNITS_PER_FP_REG > 8 ? 'Q' : 'D');
 
+  if (riscv_abi == ABI_LP64E)
+    {
+      if (warning (OPT_Wdeprecated, "LP64E ABI is marked for deprecation in GCC"))
+	inform (UNKNOWN_LOCATION, "If you need LP64E please notify the GCC "
+		"project via https://gcc.gnu.org/PR116152");
+    }
+
   /* Zfinx require abi ilp32, ilp32e, lp64 or lp64e.  */
   if (TARGET_ZFINX
       && riscv_abi != ABI_ILP32 && riscv_abi != ABI_LP64
