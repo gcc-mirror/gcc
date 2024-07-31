@@ -1032,7 +1032,7 @@ proc check_v3_target_namedlocale { args } {
 	puts $f "    strcpy(result, name);"
 	puts $f "#if defined __FreeBSD__ || defined __DragonFly__ || defined __NetBSD__"
 	puts $f "    /* fall-through */"
-	puts $f "#else"
+	puts $f "#elif defined __GLIBC__"
 	puts $f "    if (strstr(result, \"ISO8859-15\")) {"
 	puts $f "        strcat(result, \"@euro\");"
 	puts $f "    }"
