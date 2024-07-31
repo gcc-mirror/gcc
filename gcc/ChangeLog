@@ -1,3 +1,11 @@
+2024-07-30  Lingling Kong  <lingling.kong@intel.com>
+
+	PR target/115978
+	* config/i386/driver-i386.cc (host_detect_local_cpu):  Enable
+	APX_F only for 64-bit codegen.
+	* config/i386/i386-options.cc (DEF_PTA):  Skip PTA_APX_F if
+	not in 64-bit mode.
+
 2024-07-29  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
