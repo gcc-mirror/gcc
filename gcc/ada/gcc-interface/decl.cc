@@ -2401,7 +2401,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    = chainon (gnu_template_fields, gnu_temp_fields[index]);
 	finish_record_type (gnu_template_type, gnu_template_fields, 0,
 			    debug_info_p);
-	TYPE_CONTEXT (gnu_template_type) = current_function_decl;
+	TYPE_CONTEXT (gnu_template_type) = gnu_fat_type;
 
 	/* If Component_Size is not already specified, annotate it with the
 	   size of the component.  */
