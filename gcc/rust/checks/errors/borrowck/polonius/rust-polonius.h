@@ -35,7 +35,7 @@ struct FullPoint
   bool mid;
 
   /** Expands a compressed `Point` into its components.
-   * See `Point` docs for encoding details.
+   * See `Point` docs for encoding details in ./rust-polonius-ffi.h
    */
   explicit FullPoint (Point point)
     : bb (extract_bb (point)), stmt (extract_stmt (point)),
@@ -45,7 +45,24 @@ struct FullPoint
   static uint32_t extract_bb (Point point) { return point >> 16; }
   static uint32_t extract_stmt (Point point)
   {
-    return (point >> 1) & ((1 << 15) - 1);
+    // Point is a 32 bit unsigned integer
+    // 16               15              1
+    // xxxxxxxxxxxxxxxx xxxxxxxxxxxxxxx x
+    // ^~~~~~~~~~~~~~~~ ^~~~~~~~~~~~~~~ ^
+    // |                |               |
+    // basic_block      |               start/mid
+    //                  statement
+    // the left most 16 bits store the basic block number
+    // the right most bit, represents the start/mid status
+    // the remaining 15 bits between these two represent the statement number
+    // which we need to extract in this fucntion
+    //
+    // firstly we can get rid of right most bit by performing left shift once
+    auto hide_left_most_bit = point >> 1;
+    // now we only need the 15 bits on the right
+    // we can mask the remaining bits by performing bitwise AND with fifteen
+    // 1's which in hexadecimal is 0x7FFF
+    return hide_left_most_bit & 0x7FFF;
   }
   static bool extract_mid (Point point) { return point & 1; }
 
