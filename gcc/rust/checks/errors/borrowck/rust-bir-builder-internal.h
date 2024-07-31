@@ -239,7 +239,8 @@ protected:
 protected: // Helpers to add BIR statements
   void push_assignment (PlaceId lhs, AbstractExpr *rhs, location_t location)
   {
-    ctx.get_current_bb ().statements.emplace_back (lhs, rhs, location);
+    ctx.get_current_bb ().statements.push_back (
+      Statement::make_assignment (lhs, rhs, location));
     translated = lhs;
   }
 
@@ -266,47 +267,46 @@ protected: // Helpers to add BIR statements
 		    std::initializer_list<BasicBlockId> destinations = {})
   {
     auto copy = move_place (switch_val, location);
-    ctx.get_current_bb ().statements.emplace_back (Statement::Kind::SWITCH,
-						   copy);
+    ctx.get_current_bb ().statements.push_back (Statement::make_switch (copy));
     ctx.get_current_bb ().successors.insert (
       ctx.get_current_bb ().successors.end (), destinations);
   }
 
   void push_goto (BasicBlockId bb)
   {
-    ctx.get_current_bb ().statements.emplace_back (Statement::Kind::GOTO);
+    ctx.get_current_bb ().statements.push_back (Statement::make_goto ());
     if (bb != INVALID_BB) // INVALID_BB means the goto will be resolved later.
       ctx.get_current_bb ().successors.push_back (bb);
   }
 
   void push_storage_live (PlaceId place)
   {
-    ctx.get_current_bb ().statements.emplace_back (
-      Statement::Kind::STORAGE_LIVE, place);
+    ctx.get_current_bb ().statements.push_back (
+      Statement::make_storage_live (place));
   }
 
   void push_storage_dead (PlaceId place)
   {
-    ctx.get_current_bb ().statements.emplace_back (
-      Statement::Kind::STORAGE_DEAD, place);
+    ctx.get_current_bb ().statements.push_back (
+      Statement::make_storage_dead (place));
   }
 
   void push_user_type_ascription (PlaceId place, TyTy::BaseType *ty)
   {
-    ctx.get_current_bb ().statements.emplace_back (
-      Statement::Kind::USER_TYPE_ASCRIPTION, place, ty);
+    ctx.get_current_bb ().statements.push_back (
+      Statement::make_user_type_ascription (place, ty));
   }
 
   void push_fake_read (PlaceId place)
   {
-    ctx.get_current_bb ().statements.emplace_back (Statement::Kind::FAKE_READ,
-						   place);
+    ctx.get_current_bb ().statements.push_back (
+      Statement::make_fake_read (place));
   }
 
   void push_return (location_t location)
   {
-    ctx.get_current_bb ().statements.emplace_back (Statement::Kind::RETURN,
-						   INVALID_PLACE, location);
+    ctx.get_current_bb ().statements.push_back (
+      Statement::make_return (location));
   }
 
   PlaceId borrow_place (PlaceId place_id, TyTy::BaseType *ty,
