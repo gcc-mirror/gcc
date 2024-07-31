@@ -4014,6 +4014,7 @@
   "TARGET_VECTOR"
   "vwadd<any_extend:u>.wx\t%0,%3,%z4%p1"
   [(set_attr "type" "viwalu")
+   (set_attr "mode_idx" "3")
    (set_attr "mode" "<V_DOUBLE_TRUNC>")])
 
 (define_insn "@pred_single_widen_sub<any_extend:su><mode>_extended_scalar"
@@ -4036,6 +4037,7 @@
   "TARGET_VECTOR"
   "vwsub<any_extend:u>.wx\t%0,%3,%z4%p1"
   [(set_attr "type" "viwalu")
+   (set_attr "mode_idx" "3")
    (set_attr "mode" "<V_DOUBLE_TRUNC>")])
 
 (define_insn "@pred_widen_mulsu<mode>"
