@@ -30,6 +30,7 @@
 #pragma GCC push_options
 #pragma GCC target ("+nothing+simd")
 
+#include <arm_private_fp8.h>
 #pragma GCC aarch64 "arm_neon.h"
 
 #include <stdint.h>
