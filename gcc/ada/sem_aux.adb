@@ -1118,6 +1118,17 @@ package body Sem_Aux is
 
       elsif Is_Private_Type (Btype) then
 
+      --  If Ent occurs in the completion of a limited private type, then
+      --  look for the word "limited" in the full view.
+
+         if Nkind (Parent (Ent)) = N_Full_Type_Declaration
+           and then Nkind (Type_Definition (Parent (Ent))) =
+                      N_Record_Definition
+           and then Limited_Present (Type_Definition (Parent (Ent)))
+         then
+            return True;
+         end if;
+
          --  AI05-0063: A type derived from a limited private formal type is
          --  not immutably limited in a generic body.
 

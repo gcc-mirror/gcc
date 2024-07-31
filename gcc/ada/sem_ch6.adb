@@ -6456,6 +6456,20 @@ package body Sem_Ch6 is
                      New_Discr_Id);
                   return;
                end if;
+
+               if NewD
+                 and then Ada_Version >= Ada_2005
+                 and then Nkind (Discriminant_Type (New_Discr)) =
+                            N_Access_Definition
+                 and then not Is_Immutably_Limited_Type
+                                (Defining_Identifier (N))
+               then
+                  Error_Msg_N
+                    ("(Ada 2005) default value for access discriminant "
+                     & "requires immutably limited type",
+                     Expression (New_Discr));
+                  return;
+               end if;
             end if;
          end;
 
