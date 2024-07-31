@@ -27,7 +27,7 @@ program main
   type(foo) :: a, b
   real :: c, d
   open(10, access="stream") 
-  write(10) "1 2" ! // NEW_LINE('A')
+  write(10) "1 2" // NEW_LINE('A')
   close(10)
   open(10)
   read(10,*) c, d
