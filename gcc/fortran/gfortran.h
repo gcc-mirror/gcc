@@ -227,7 +227,8 @@ enum gfc_intrinsic_op
 enum arith
 { ARITH_OK = 1, ARITH_OVERFLOW, ARITH_UNDERFLOW, ARITH_NAN,
   ARITH_DIV0, ARITH_INCOMMENSURATE, ARITH_ASYMMETRIC, ARITH_PROHIBIT,
-  ARITH_WRONGCONCAT, ARITH_INVALID_TYPE, ARITH_NOT_REDUCED
+  ARITH_WRONGCONCAT, ARITH_INVALID_TYPE, ARITH_NOT_REDUCED,
+  ARITH_UNSIGNED_TRUNCATED, ARITH_UNSIGNED_NEGATIVE
 };
 
 /* Statements.  */
@@ -2744,7 +2745,7 @@ extern gfc_integer_info gfc_integer_kinds[];
 
 typedef struct
 {
-  mpz_t huge;
+  mpz_t huge, int_min;
 
   int kind, radix, digits, bit_size, range;
 
@@ -3470,7 +3471,9 @@ void gfc_errors_to_warnings (bool);
 void gfc_arith_init_1 (void);
 void gfc_arith_done_1 (void);
 arith gfc_check_integer_range (mpz_t p, int kind);
+arith gfc_check_unsigned_range (mpz_t p, int kind);
 bool gfc_check_character_range (gfc_char_t, int);
+const char *gfc_arith_error (arith);
 
 extern bool gfc_seen_div0;
 
@@ -4112,7 +4115,7 @@ void gfc_convert_mpz_to_signed (mpz_t, int);
 gfc_expr *gfc_simplify_ieee_functions (gfc_expr *);
 bool gfc_is_constant_array_expr (gfc_expr *);
 bool gfc_is_size_zero_array (gfc_expr *);
-void gfc_convert_mpz_to_unsigned (mpz_t, int, bool check = true);
+void gfc_convert_mpz_to_unsigned (mpz_t, int, bool sign = true);
 
 /* trans-array.cc  */
 

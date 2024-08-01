@@ -86,7 +86,7 @@ gfc_set_model (mpfr_t x)
 /* Given an arithmetic error code, return a pointer to a string that
    explains the error.  */
 
-static const char *
+const char *
 gfc_arith_error (arith code)
 {
   const char *p;
@@ -121,7 +121,12 @@ gfc_arith_error (arith code)
     case ARITH_INVALID_TYPE:
       p = G_("Invalid type in arithmetic operation at %L");
       break;
-
+    case ARITH_UNSIGNED_TRUNCATED:
+      p = G_("Unsigned constant truncated at %L");
+      break;
+    case ARITH_UNSIGNED_NEGATIVE:
+      p = G_("Truncated negative unsigned constant at %L");
+      break;
     default:
       gfc_internal_error ("gfc_arith_error(): Bad error code");
     }
@@ -208,13 +213,21 @@ gfc_arith_init_1 (void)
     {
       for (uint_info = gfc_unsigned_kinds; uint_info->kind != 0; uint_info++)
 	{
-	  /* Huge.  */
-	  mpz_init (uint_info->huge);
-	  mpz_set_ui (uint_info->huge, uint_info->radix);
-	  mpz_pow_ui (uint_info->huge, uint_info->huge, uint_info->digits);
-
 	  /* UNSIGNED is radix 2.  */
 	  gcc_assert (uint_info->radix == 2);
+	  /* Huge.  */
+	  mpz_init (uint_info->huge);
+	  mpz_set_ui (uint_info->huge, 2);
+	  mpz_pow_ui (uint_info->huge, uint_info->huge, uint_info->digits);
+	  mpz_sub_ui (uint_info->huge, uint_info->huge, 1);
+
+	  /* int_min - the smallest number we can reasonably convert from.  */
+
+	  mpz_init (uint_info->int_min);
+	  mpz_set_ui (uint_info->int_min, 2);
+	  mpz_pow_ui (uint_info->int_min, uint_info->int_min,
+		      uint_info->digits - 1);
+	  mpz_neg (uint_info->int_min, uint_info->int_min);
 
 	  /* Range.  */
 	  mpfr_set_z (a, uint_info->huge, GFC_RND_MODE);
@@ -367,6 +380,24 @@ gfc_check_integer_range (mpz_t p, int kind)
   return result;
 }
 
+/* Same as above.  */
+arith
+gfc_check_unsigned_range (mpz_t p, int kind)
+{
+  arith result;
+  int i;
+
+  i = gfc_validate_kind (BT_UNSIGNED, kind, false);
+  result = ARITH_OK;
+
+  if (mpz_cmp (p, gfc_unsigned_kinds[i].int_min) < 0)
+    result = ARITH_UNSIGNED_TRUNCATED;
+
+  if (mpz_cmp (p, gfc_unsigned_kinds[i].huge) > 0)
+    result = ARITH_UNSIGNED_TRUNCATED;
+
+  return result;
+}
 
 /* Given a real and a kind, make sure that the real lies within the
    range of the kind.  Returns ARITH_OK, ARITH_OVERFLOW or
@@ -564,6 +595,10 @@ gfc_range_check (gfc_expr *e)
       rc = gfc_check_integer_range (e->value.integer, e->ts.kind);
       break;
 
+    case BT_UNSIGNED:
+      rc = gfc_check_unsigned_range (e->value.integer, e->ts.kind);
+      break;
+
     case BT_REAL:
       rc = gfc_check_real_range (e->value.real, e->ts.kind);
       if (rc == ARITH_UNDERFLOW)
@@ -653,6 +688,7 @@ gfc_arith_uminus (gfc_expr *op1, gfc_expr **resultp)
 {
   gfc_expr *result;
   arith rc;
+  int k;
 
   result = gfc_get_constant_expr (op1->ts.type, op1->ts.kind, &op1->where);
 
@@ -660,6 +696,22 @@ gfc_arith_uminus (gfc_expr *op1, gfc_expr **resultp)
     {
     case BT_INTEGER:
       mpz_neg (result->value.integer, op1->value.integer);
+      break;
+
+    case BT_UNSIGNED:
+      {
+	arith neg_rc;
+	mpz_neg (result->value.integer, op1->value.integer);
+	k = gfc_validate_kind (BT_UNSIGNED, op1->ts.kind, false);
+	neg_rc = gfc_range_check (result);
+	if (neg_rc != ARITH_OK)
+	  gfc_warning (0, gfc_arith_error (neg_rc), &result->where);
+
+	mpz_and (result->value.integer, result->value.integer,
+		 gfc_unsigned_kinds[k].huge);
+	if (pedantic)
+	  rc = neg_rc;
+      }
       break;
 
     case BT_REAL:

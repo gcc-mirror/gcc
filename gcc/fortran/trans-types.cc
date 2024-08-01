@@ -1038,18 +1038,6 @@ gfc_init_types (void)
       PUSH_TYPE (name_buf, type);
     }
 
-  if (flag_unsigned)
-    {
-      for (index = 0; gfc_unsigned_kinds[index].kind != 0;++index)
-	{
-	  type = gfc_build_unsigned_type (&gfc_unsigned_kinds[index]);
-	  gfc_unsigned_types[index] = type;
-	  snprintf (name_buf, sizeof(name_buf), "unsigned(kind=%d",
-		    gfc_integer_kinds[index].kind);
-	  PUSH_TYPE (name_buf, type);
-	}
-    }
-
   for (index = 0; gfc_logical_kinds[index].kind != 0; ++index)
     {
       type = gfc_build_logical_type (&gfc_logical_kinds[index]);
@@ -1091,6 +1079,40 @@ gfc_init_types (void)
       gfc_pcharacter_types[index] = build_pointer_type (type);
     }
   gfc_character1_type_node = gfc_character_types[0];
+
+  /* The middle end only recognizes a single unsigned type.  For
+     compatibility of existing test cases, let's just use the
+     character type.  The reader of tree dumps is expected to be able
+     to deal with this.  */
+
+  if (flag_unsigned)
+    {
+      for (index = 0; gfc_unsigned_kinds[index].kind != 0;++index)
+	{
+	  int index_char = -1;
+	  for (int i=0; gfc_character_kinds[i].kind != 0; i++)
+	    {
+	      if (gfc_character_kinds[i].bit_size ==
+		  gfc_unsigned_kinds[index].bit_size)
+		{
+		  index_char = i;
+		  break;
+		}
+	    }
+	  if (index_char > 0)
+	    {
+	      gfc_unsigned_types[index] = gfc_character_types[index_char];
+	    }
+	  else
+	    {
+	      type = gfc_build_unsigned_type (&gfc_unsigned_kinds[index]);
+	      gfc_unsigned_types[index] = type;
+	      snprintf (name_buf, sizeof(name_buf), "unsigned(kind=%d)",
+			gfc_integer_kinds[index].kind);
+	      PUSH_TYPE (name_buf, type);
+	    }
+	}
+    }
 
   PUSH_TYPE ("byte", unsigned_char_type_node);
   PUSH_TYPE ("void", void_type_node);
@@ -1153,8 +1175,8 @@ gfc_get_int_type (int kind)
 tree
 gfc_get_unsigned_type (int kind)
 {
-  int index = gfc_validate_kind (BT_INTEGER, kind, true);
-  return index < 0 ? 0 : gfc_integer_types[index];
+  int index = gfc_validate_kind (BT_UNSIGNED, kind, true);
+  return index < 0 ? 0 : gfc_unsigned_types[index];
 }
 
 tree

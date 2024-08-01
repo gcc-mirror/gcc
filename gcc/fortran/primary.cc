@@ -218,6 +218,7 @@ convert_unsigned (const char *buffer, int kind, int radix, locus *where)
   gfc_expr *e;
   const char *t;
   int k;
+  arith rc;
 
   e = gfc_get_constant_expr (BT_UNSIGNED, kind, where);
   /* A leading plus is allowed, but not by mpz_set_str.  */
@@ -229,6 +230,12 @@ convert_unsigned (const char *buffer, int kind, int radix, locus *where)
   mpz_set_str (e->value.integer, t, radix);
 
   k = gfc_validate_kind (BT_UNSIGNED, kind, false);
+
+  /* XXX Maybe move this somewhere else.  */
+  rc = gfc_range_check (e);
+  if (rc != ARITH_OK)
+    gfc_warning (0, gfc_arith_error (rc), &e->where);
+
   gfc_convert_mpz_to_unsigned (e->value.integer, gfc_unsigned_kinds[k].bit_size,
 			       false);
 
