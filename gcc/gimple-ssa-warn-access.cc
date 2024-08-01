@@ -1765,7 +1765,23 @@ new_delete_mismatch_p (tree new_decl, tree delete_decl)
   void *np = NULL, *dp = NULL;
   demangle_component *ndc = cplus_demangle_v3_components (new_str, 0, &np);
   demangle_component *ddc = cplus_demangle_v3_components (del_str, 0, &dp);
-  bool mismatch = ndc && ddc && new_delete_mismatch_p (*ndc, *ddc);
+
+  /* Sometimes, notably quite often with coroutines, 'operator new' is
+     templated.  However, template arguments can't change whether a given
+     new/delete is a singleton or array one, nor what it is a member of, so
+     the template arguments can be safely ignored for the purposes of checking
+     for mismatches.   */
+
+  auto strip_dc_template = [] (demangle_component* dc)
+  {
+    if (dc->type == DEMANGLE_COMPONENT_TEMPLATE)
+      dc = dc->u.s_binary.left;
+    return dc;
+  };
+
+  bool mismatch = (ndc && ddc
+		   && new_delete_mismatch_p (*strip_dc_template (ndc),
+					     *strip_dc_template (ddc)));
   free (np);
   free (dp);
   return mismatch;
