@@ -1701,13 +1701,13 @@
   [(set_attr "type" "logical")
    (set_attr "mode" "SI")])
 
-(define_insn "<optab>n<mode>"
+(define_insn "<optab>n<mode>3"
   [(set (match_operand:X 0 "register_operand" "=r")
 	(neg_bitwise:X
-	    (not:X (match_operand:X 1 "register_operand" "r"))
-	    (match_operand:X 2 "register_operand" "r")))]
+	    (not:X (match_operand:X 2 "register_operand" "r"))
+	    (match_operand:X 1 "register_operand" "r")))]
   ""
-  "<insn>n\t%0,%2,%1"
+  "<insn>n\t%0,%1,%2"
   [(set_attr "type" "logical")
    (set_attr "mode" "<MODE>")])
 

@@ -2344,12 +2344,12 @@
 }
   [(set_attr "mode" "V4SF")])
 
-(define_insn "vandn<mode>3"
+(define_insn "andn<mode>3"
   [(set (match_operand:LSX 0 "register_operand" "=f")
-	(and:LSX (not:LSX (match_operand:LSX 1 "register_operand" "f"))
-		 (match_operand:LSX 2 "register_operand" "f")))]
+	(and:LSX (not:LSX (match_operand:LSX 2 "register_operand" "f"))
+		 (match_operand:LSX 1 "register_operand" "f")))]
   "ISA_HAS_LSX"
-  "vandn.v\t%w0,%w1,%w2"
+  "vandn.v\t%w0,%w2,%w1"
   [(set_attr "type" "simd_logic")
    (set_attr "mode" "<MODE>")])
 
@@ -3028,7 +3028,7 @@
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "vorn<mode>3"
+(define_insn "iorn<mode>3"
   [(set (match_operand:ILSX 0 "register_operand" "=f")
 	(ior:ILSX (not:ILSX (match_operand:ILSX 2 "register_operand" "f"))
 		  (match_operand:ILSX 1 "register_operand" "f")))]

@@ -458,8 +458,8 @@ AVAIL_ALL (lasx_frecipe, ISA_HAS_LASX && ISA_HAS_FRECIPE)
 #define CODE_FOR_lsx_vabsd_du CODE_FOR_lsx_vabsd_u_du
 #define CODE_FOR_lsx_vftint_wu_s CODE_FOR_lsx_vftint_u_wu_s
 #define CODE_FOR_lsx_vftint_lu_d CODE_FOR_lsx_vftint_u_lu_d
-#define CODE_FOR_lsx_vandn_v CODE_FOR_vandnv16qi3
-#define CODE_FOR_lsx_vorn_v CODE_FOR_vornv16qi3
+#define CODE_FOR_lsx_vandn_v CODE_FOR_andnv16qi3
+#define CODE_FOR_lsx_vorn_v CODE_FOR_iornv16qi3
 #define CODE_FOR_lsx_vneg_b CODE_FOR_vnegv16qi2
 #define CODE_FOR_lsx_vneg_h CODE_FOR_vnegv8hi2
 #define CODE_FOR_lsx_vneg_w CODE_FOR_vnegv4si2
@@ -692,8 +692,8 @@ AVAIL_ALL (lasx_frecipe, ISA_HAS_LASX && ISA_HAS_FRECIPE)
 #define CODE_FOR_lasx_xvrepli_w CODE_FOR_lasx_xvrepliv8si
 #define CODE_FOR_lasx_xvrepli_d CODE_FOR_lasx_xvrepliv4di
 
-#define CODE_FOR_lasx_xvandn_v CODE_FOR_xvandnv32qi3
-#define CODE_FOR_lasx_xvorn_v CODE_FOR_xvornv32qi3
+#define CODE_FOR_lasx_xvandn_v CODE_FOR_andnv32qi3
+#define CODE_FOR_lasx_xvorn_v CODE_FOR_iornv32qi3
 #define CODE_FOR_lasx_xvneg_b CODE_FOR_negv32qi2
 #define CODE_FOR_lasx_xvneg_h CODE_FOR_negv16hi2
 #define CODE_FOR_lasx_xvneg_w CODE_FOR_negv8si2
@@ -2858,6 +2858,7 @@ loongarch_expand_builtin_insn (enum insn_code icode, unsigned int nops,
     case CODE_FOR_lsx_vpickod_b:
     case CODE_FOR_lsx_vpickod_h:
     case CODE_FOR_lsx_vpickod_w:
+    case CODE_FOR_lsx_vandn_v:
     case CODE_FOR_lasx_xvilvh_b:
     case CODE_FOR_lasx_xvilvh_h:
     case CODE_FOR_lasx_xvilvh_w:
@@ -2878,6 +2879,7 @@ loongarch_expand_builtin_insn (enum insn_code icode, unsigned int nops,
     case CODE_FOR_lasx_xvpickod_b:
     case CODE_FOR_lasx_xvpickod_h:
     case CODE_FOR_lasx_xvpickod_w:
+    case CODE_FOR_lasx_xvandn_v:
       /* Swap the operands 1 and 2 for interleave operations.  Built-ins follow
 	 convention of ISA, which have op1 as higher component and op2 as lower
 	 component.  However, the VEC_PERM op in tree and vec_concat in RTL

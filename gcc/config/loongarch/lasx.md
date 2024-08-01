@@ -2716,12 +2716,12 @@
    (set_attr "mode" "V4DI")])
 
 ;; Extend loongson-sx to loongson-asx.
-(define_insn "xvandn<mode>3"
+(define_insn "andn<mode>3"
   [(set (match_operand:LASX 0 "register_operand" "=f")
-	(and:LASX (not:LASX (match_operand:LASX 1 "register_operand" "f"))
-			    (match_operand:LASX 2 "register_operand" "f")))]
+	(and:LASX (not:LASX (match_operand:LASX 2 "register_operand" "f"))
+			    (match_operand:LASX 1 "register_operand" "f")))]
   "ISA_HAS_LASX"
-  "xvandn.v\t%u0,%u1,%u2"
+  "xvandn.v\t%u0,%u2,%u1"
   [(set_attr "type" "simd_logic")
    (set_attr "mode" "<MODE>")])
 
@@ -4637,7 +4637,7 @@
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "xvorn<mode>3"
+(define_insn "iorn<mode>3"
   [(set (match_operand:ILASX 0 "register_operand" "=f")
 	(ior:ILASX (not:ILASX (match_operand:ILASX 2 "register_operand" "f"))
 		   (match_operand:ILASX 1 "register_operand" "f")))]
