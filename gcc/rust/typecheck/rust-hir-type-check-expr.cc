@@ -623,9 +623,10 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
 	      && (((TyTy::InferType *) loop_context_type)->get_infer_kind ()
 		  != TyTy::InferType::GENERAL));
 
-      infered = loop_context_type_infered ? loop_context_type
-					  : TyTy::TupleType::get_unit_type (
-					    expr.get_mappings ().get_hirid ());
+      infered = loop_context_type_infered
+		  ? loop_context_type
+		  : TyTy::TupleType::get_unit_type (
+		      expr.get_mappings ().get_hirid ());
     }
   else
     {
@@ -776,8 +777,62 @@ TypeCheckExpr::visit (HIR::RangeToExpr &expr)
 }
 
 void
+typecheck_inline_asm_operand (HIR::InlineAsm &expr)
+{
+  const auto &operands = expr.get_operands ();
+  using RegisterType = AST::InlineAsmOperand::RegisterType;
+  for (auto &operand : operands)
+    {
+      switch (operand.get_register_type ())
+	{
+	  case RegisterType::In: {
+	    auto in = operand.get_in ();
+	    TypeCheckExpr::Resolve (in.expr.get ());
+	    break;
+	  }
+	  case RegisterType::Out: {
+	    auto out = operand.get_out ();
+	    TypeCheckExpr::Resolve (out.expr.get ());
+	    break;
+	  }
+	  case RegisterType::InOut: {
+	    auto in_out = operand.get_in_out ();
+	    TypeCheckExpr::Resolve (in_out.expr.get ());
+	    break;
+	  }
+	  case RegisterType::SplitInOut: {
+	    auto split_in_out = operand.get_split_in_out ();
+	    TypeCheckExpr::Resolve (split_in_out.in_expr.get ());
+	    TypeCheckExpr::Resolve (split_in_out.out_expr.get ());
+	    break;
+	  }
+	  case RegisterType::Const: {
+	    auto anon_const = operand.get_const ().anon_const;
+	    TypeCheckExpr::Resolve (anon_const.expr.get ());
+	    break;
+	  }
+	  case RegisterType::Sym: {
+	    auto sym = operand.get_sym ();
+	    TypeCheckExpr::Resolve (sym.expr.get ());
+	    break;
+	  }
+	  case RegisterType::Label: {
+	    auto label = operand.get_label ();
+	    TypeCheckExpr::Resolve (label.expr.get ());
+	    break;
+	  }
+	}
+    }
+}
+void
 TypeCheckExpr::visit (HIR::InlineAsm &expr)
-{}
+{
+  typecheck_inline_asm_operand (expr);
+
+  // TODO: Hoise out if we have noreturn as an option
+  // to return a never type
+  infered = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
+}
 
 void
 TypeCheckExpr::visit (HIR::RangeFullExpr &expr)
@@ -1570,7 +1625,7 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
   TyTy::TyVar result_type
     = expr.has_return_type ()
 	? TyTy::TyVar (
-	  TypeCheckType::Resolve (expr.get_return_type ().get ())->get_ref ())
+	    TypeCheckType::Resolve (expr.get_return_type ().get ())->get_ref ())
 	: TyTy::TyVar::get_implicit_infer_var (expr.get_locus ());
 
   // resolve the block
