@@ -26975,7 +26975,7 @@ vbcaxq_s64 (int64x2_t __a, int64x2_t __b, int64x2_t __c)
 /* AdvSIMD Complex numbers intrinsics.  */
 
 #pragma GCC push_options
-#pragma GCC target ("arch=armv8.3-a")
+#pragma GCC target ("+nothing+fcma")
 
 #pragma GCC push_options
 #pragma GCC target ("+fp16")

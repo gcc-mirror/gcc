@@ -1,6 +1,6 @@
 processor	: 0
 BogoMIPS	: 100.00
-Features	: asimd sve fp fphp asimdhp
+Features	: asimd sve fp fphp asimdhp fcma
 CPU implementer	: 0x41
 CPU architecture: 8
 CPU variant	: 0x0

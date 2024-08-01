@@ -151,6 +151,8 @@ AARCH64_OPT_EXTENSION("fp16fml", F16FML, (), (F16), (), "asimdfhm")
 
 AARCH64_FMV_FEATURE("fp16fml", FP16FML, (F16FML))
 
+AARCH64_OPT_FMV_EXTENSION("fcma", FCMA, (SIMD), (), (), "fcma")
+
 AARCH64_OPT_FMV_EXTENSION("rcpc", RCPC, (), (), (), "lrcpc")
 
 AARCH64_OPT_FMV_EXTENSION("rcpc3", RCPC3, (RCPC), (), (), "lrcpc3")
@@ -163,7 +165,7 @@ AARCH64_OPT_FMV_EXTENSION("bf16", BF16, (FP), (SIMD), (), "bf16")
 
 AARCH64_FMV_FEATURE("rpres", RPRES, ())
 
-AARCH64_OPT_FMV_EXTENSION("sve", SVE, (SIMD, F16), (), (), "sve")
+AARCH64_OPT_FMV_EXTENSION("sve", SVE, (SIMD, F16, FCMA), (), (), "sve")
 
 /* This specifically does not imply +sve.  */
 AARCH64_OPT_EXTENSION("sve-b16b16", SVE_B16B16, (), (), (), "sveb16b16")
