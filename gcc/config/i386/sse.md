@@ -19692,47 +19692,47 @@
 (define_insn "*<extract_type>_vinsert<shuffletype><extract_suf>_0"
   [(set (match_operand:AVX512_VEC 0 "register_operand" "=v,x,Yv")
 	(vec_merge:AVX512_VEC
-	  (match_operand:AVX512_VEC 1 "reg_or_0_operand" "v,C,C")
 	  (vec_duplicate:AVX512_VEC
-		(match_operand:<ssequartermode> 2 "nonimmediate_operand" "vm,xm,vm"))
+	    (match_operand:<ssequartermode> 1 "nonimmediate_operand" "vm,xm,vm"))
+	  (match_operand:AVX512_VEC 2 "reg_or_0_operand" "v,C,C")
 	  (match_operand:SI 3 "const_int_operand")))]
   "TARGET_AVX512F
    && (INTVAL (operands[3])
-       == (GET_MODE_UNIT_SIZE (<MODE>mode) == 4 ? 0xFFF0 : 0xFC))"
+       == (GET_MODE_UNIT_SIZE (<MODE>mode) == 4 ? 0xF : 0x3))"
 {
   if (which_alternative == 0)
-    return "vinsert<shuffletype><extract_suf>\t{$0, %2, %1, %0|%0, %1, %2, 0}";
+    return "vinsert<shuffletype><extract_suf>\t{$0, %1, %2, %0|%0, %2, %1, 0}";
   bool egpr_used = (TARGET_APX_EGPR
-		    && x86_extended_rex2reg_mentioned_p (operands[2]));
-  const char *align_templ = egpr_used ? "vmovaps\t{%2, %x0|%x0, %2}"
-				      : "vmovdqa\t{%2, %x0|%x0, %2}";
-  const char *unalign_templ = egpr_used ? "vmovups\t{%2, %x0|%x0, %2}"
-					: "vmovdqu\t{%2, %x0|%x0, %2}";
+		    && x86_extended_rex2reg_mentioned_p (operands[1]));
+  const char *align_templ = egpr_used ? "vmovaps\t{%1, %x0|%x0, %1}"
+				      : "vmovdqa\t{%1, %x0|%x0, %1}";
+  const char *unalign_templ = egpr_used ? "vmovups\t{%1, %x0|%x0, %1}"
+					: "vmovdqu\t{%1, %x0|%x0, %1}";
   switch (<MODE>mode)
     {
     case E_V8DFmode:
-      if (misaligned_operand (operands[2], <ssequartermode>mode))
-	return "vmovupd\t{%2, %x0|%x0, %2}";
+      if (misaligned_operand (operands[1], <ssequartermode>mode))
+	return "vmovupd\t{%1, %x0|%x0, %1}";
       else
-	return "vmovapd\t{%2, %x0|%x0, %2}";
+	return "vmovapd\t{%1, %x0|%x0, %1}";
     case E_V16SFmode:
-      if (misaligned_operand (operands[2], <ssequartermode>mode))
-	return "vmovups\t{%2, %x0|%x0, %2}";
+      if (misaligned_operand (operands[1], <ssequartermode>mode))
+	return "vmovups\t{%1, %x0|%x0, %1}";
       else
-	return "vmovaps\t{%2, %x0|%x0, %2}";
+	return "vmovaps\t{%1, %x0|%x0, %1}";
     case E_V8DImode:
-      if (misaligned_operand (operands[2], <ssequartermode>mode))
-	return which_alternative == 2 ? "vmovdqu64\t{%2, %x0|%x0, %2}"
+      if (misaligned_operand (operands[1], <ssequartermode>mode))
+	return which_alternative == 2 ? "vmovdqu64\t{%1, %x0|%x0, %1}"
 				      : unalign_templ;
       else
-	return which_alternative == 2 ? "vmovdqa64\t{%2, %x0|%x0, %2}"
+	return which_alternative == 2 ? "vmovdqa64\t{%1, %x0|%x0, %1}"
 				      : align_templ;
     case E_V16SImode:
-      if (misaligned_operand (operands[2], <ssequartermode>mode))
-	return which_alternative == 2 ? "vmovdqu32\t{%2, %x0|%x0, %2}"
+      if (misaligned_operand (operands[1], <ssequartermode>mode))
+	return which_alternative == 2 ? "vmovdqu32\t{%1, %x0|%x0, %1}"
 				      : unalign_templ;
       else
-	return which_alternative == 2 ? "vmovdqa32\t{%2, %x0|%x0, %2}"
+	return which_alternative == 2 ? "vmovdqa32\t{%1, %x0|%x0, %1}"
 				      : align_templ;
     default:
       gcc_unreachable ();
