@@ -3508,6 +3508,15 @@
 	(popcount:VDQHSD (match_operand:VDQHSD 1 "register_operand")))]
   "TARGET_SIMD"
   {
+    if (TARGET_SVE)
+      {
+	rtx p = aarch64_ptrue_reg (<VPRED>mode);
+	emit_insn (gen_aarch64_pred_popcount<mode> (operands[0],
+						    p,
+						    operands[1]));
+	DONE;
+      }
+
     /* Generate a byte popcount.  */
     machine_mode mode = <bitsize> == 64 ? V8QImode : V16QImode;
     rtx tmp = gen_reg_rtx (mode);

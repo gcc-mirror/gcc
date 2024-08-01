@@ -559,6 +559,9 @@
 ;; element modes
 (define_mode_iterator SVE_I_SIMD_DI [SVE_I V2DI])
 
+;; All SVE and Advanced SIMD integer vector modes.
+(define_mode_iterator SVE_VDQ_I [SVE_I VDQ_I])
+
 ;; SVE integer vector modes whose elements are 16 bits or wider.
 (define_mode_iterator SVE_HSDI [VNx8HI VNx4HI VNx2HI
 				VNx4SI VNx2SI
@@ -2278,6 +2281,8 @@
 			 (VNx32BF "VNx8BI")
 			 (VNx16SI "VNx4BI") (VNx16SF "VNx4BI")
 			 (VNx8DI "VNx2BI") (VNx8DF "VNx2BI")
+			 (V8QI "VNx8BI") (V16QI "VNx16BI")
+			 (V4HI "VNx4BI") (V8HI "VNx8BI") (V2SI "VNx2BI")
 			 (V4SI "VNx4BI") (V2DI "VNx2BI")])
 
 ;; ...and again in lower case.

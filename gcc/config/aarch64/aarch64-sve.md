@@ -3104,16 +3104,16 @@
 
 ;; Integer unary arithmetic predicated with a PTRUE.
 (define_insn "@aarch64_pred_<optab><mode>"
-  [(set (match_operand:SVE_I 0 "register_operand")
-	(unspec:SVE_I
+  [(set (match_operand:SVE_VDQ_I 0 "register_operand")
+	(unspec:SVE_VDQ_I
 	  [(match_operand:<VPRED> 1 "register_operand")
-	   (SVE_INT_UNARY:SVE_I
-	     (match_operand:SVE_I 2 "register_operand"))]
+	   (SVE_INT_UNARY:SVE_VDQ_I
+	     (match_operand:SVE_VDQ_I 2 "register_operand"))]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE"
   {@ [ cons: =0 , 1   , 2 ; attrs: movprfx ]
-     [ w        , Upl , 0 ; *              ] <sve_int_op>\t%0.<Vetype>, %1/m, %2.<Vetype>
-     [ ?&w      , Upl , w ; yes            ] movprfx\t%0, %2\;<sve_int_op>\t%0.<Vetype>, %1/m, %2.<Vetype>
+     [ w        , Upl , 0 ; *              ] <sve_int_op>\t%Z0.<Vetype>, %1/m, %Z2.<Vetype>
+     [ ?&w      , Upl , w ; yes            ] movprfx\t%Z0, %Z2\;<sve_int_op>\t%Z0.<Vetype>, %1/m, %Z2.<Vetype>
   }
 )
 
@@ -3167,6 +3167,7 @@
      [ ?&w      , Upl , w , w  ; yes            ] movprfx\t%0, %3\;<sve_int_op>\t%0.<Vetype>, %1/m, %2.<Vetype>
   }
 )
+
 
 ;; -------------------------------------------------------------------------
 ;; ---- [INT] General unary arithmetic corresponding to unspecs
