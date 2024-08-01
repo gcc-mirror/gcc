@@ -290,17 +290,17 @@ private:
    . |  have 'char'"|                    | | with type 'int'")                |
    . | in include-chain-1-2.h            | | in include-chain-1-1.h           |
    . +-----------------------------------+ +----------------------------------+
-   .                   |                                      |
-   .                   | included-by                          | included-by
-   .                   V                                      V
+   .            ^         |                            ^         |
+   .   includes |         | included-by       includes |         | included-by
+   .            |         V                            |         V
    .  +--------------------------------+    +--------------------------------+
    .  |"id": 1                         |    |"id": 3                         |
    .  | #include "include-chain-1-2.h" |    | #include "include-chain-1-1.h" |
    .  | in include-chain-1.h           |    | in include-chain-1.h           |
    .  +--------------------------------+    +--------------------------------+
-   .                         |                      |
-   .                         | included-by          | included-by
-   .                         V                      V
+   .                   ^     |                       ^    |
+   .          includes |     | included-by  includes |    | included-by
+   .                   |     V                       |    V
    .                  +------------------------------------+
    .                  |"id": 4                             |
    .                  | The  #include "include-chain-1.h"  |
