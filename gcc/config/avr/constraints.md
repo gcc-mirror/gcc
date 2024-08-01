@@ -313,6 +313,13 @@
   (and (match_code "const_fixed")
        (match_test "IN_RANGE (INTVAL (avr_to_int_mode (op)), -63, 63)")))
 
+;; Similar to "M", but for CONST_FIXED.
+
+(define_constraint "YMM"
+  "Fixed-point constant in the range 0 @dots{} 0xff when viewed as CONST_INT."
+  (and (match_code "const_fixed")
+       (match_test "IN_RANGE (INTVAL (avr_to_int_mode (op)), 0, 0xff)")))
+
 (define_constraint "Yil"
   "Memory in the lower half of the I/O space."
   (and (match_code "mem")

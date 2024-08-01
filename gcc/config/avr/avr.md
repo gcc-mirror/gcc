@@ -6568,9 +6568,9 @@
 ;; "cmpha3" "cmpuha3"
 (define_insn "cmp<mode>3"
   [(set (reg:CC REG_CC)
-        (compare:CC (match_operand:ALL2 0 "register_operand"  "!w  ,r  ,r,d ,r  ,d,r")
-                    (match_operand:ALL2 1 "nonmemory_operand"  "Y00,Y00,r,s ,s  ,M,n Ynn")))
-   (clobber (match_scratch:QI 2                               "=X  ,X  ,X,&d,&d ,X,&d"))]
+        (compare:CC (match_operand:ALL2 0 "register_operand"  "!w  ,r  ,r,d ,r ,d    ,r")
+                    (match_operand:ALL2 1 "nonmemory_operand"  "Y00,Y00,r,s ,s ,M YMM,n Ynn")))
+   (clobber (match_scratch:QI 2                               "=X  ,X  ,X,&d,&d,X    ,&d"))]
   "reload_completed"
   {
     switch (which_alternative)
@@ -6635,9 +6635,9 @@
 ;; "*cmpsa" "*cmpusa"
 (define_insn "*cmp<mode>"
   [(set (reg:CC REG_CC)
-        (compare:CC (match_operand:ALL4 0 "register_operand"  "r  ,r ,d,r ,r")
-                    (match_operand:ALL4 1 "nonmemory_operand" "Y00,r ,M,M ,n Ynn")))
-   (clobber (match_scratch:QI 2                              "=X  ,X ,X,&d,&d"))]
+        (compare:CC (match_operand:ALL4 0 "register_operand"  "r  ,r ,d    ,r")
+                    (match_operand:ALL4 1 "nonmemory_operand" "Y00,r ,M YMM,n Ynn")))
+   (clobber (match_scratch:QI 2                              "=X  ,X ,X    ,&d"))]
   "reload_completed"
   {
     if (0 == which_alternative)
@@ -6647,8 +6647,8 @@
 
     return avr_out_compare (insn, operands, NULL);
   }
-  [(set_attr "length" "4,4,4,5,8")
-   (set_attr "adjust_len" "tstsi,*,compare,compare,compare")])
+  [(set_attr "length" "4,4,4,8")
+   (set_attr "adjust_len" "tstsi,*,compare,compare")])
 
 
 ;; A helper for avr_pass_ifelse::avr_rest_of_handle_ifelse().
@@ -6727,11 +6727,11 @@
   [(set (pc)
         (if_then_else
          (match_operator 0 "ordered_comparison_operator"
-           [(match_operand:ALL4 1 "register_operand"  "r  ,r,d,r ,r")
-            (match_operand:ALL4 2 "nonmemory_operand" "Y00,r,M,M ,n Ynn")])
+           [(match_operand:ALL4 1 "register_operand"  "r  ,r,d     ,r")
+            (match_operand:ALL4 2 "nonmemory_operand" "Y00,r,M YMM ,n Ynn")])
          (label_ref (match_operand 3))
          (pc)))
-   (clobber (match_scratch:QI 4                      "=X  ,X,X,&d,&d"))]
+   (clobber (match_scratch:QI 4                      "=X  ,X,X     ,&d"))]
    ""
    "#"
    "reload_completed"
@@ -6772,11 +6772,11 @@
   [(set (pc)
         (if_then_else
          (match_operator 0 "ordered_comparison_operator"
-           [(match_operand:ALL2 1 "register_operand" "!w  ,r  ,r,d ,r ,d,r")
-            (match_operand:ALL2 2 "nonmemory_operand" "Y00,Y00,r,s ,s ,M,n Ynn")])
+           [(match_operand:ALL2 1 "register_operand" "!w  ,r  ,r,d ,r ,d    ,r")
+            (match_operand:ALL2 2 "nonmemory_operand" "Y00,Y00,r,s ,s ,M YMM,n Ynn")])
          (label_ref (match_operand 3))
          (pc)))
-   (clobber (match_scratch:QI 4                      "=X  ,X  ,X,&d,&d,X,&d"))]
+   (clobber (match_scratch:QI 4                      "=X  ,X  ,X,&d,&d,X    ,&d"))]
    ""
    "#"
    "reload_completed"
