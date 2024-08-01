@@ -58,7 +58,7 @@ static const advsimd_vec_cost generic_armv9_a_advsimd_vector_cost =
   2, /* ld2_st2_permute_cost */
   2, /* ld3_st3_permute_cost  */
   3, /* ld4_st4_permute_cost  */
-  3, /* permute_cost  */
+  2, /* permute_cost  */
   4, /* reduc_i8_cost  */
   4, /* reduc_i16_cost  */
   2, /* reduc_i32_cost  */
@@ -87,28 +87,28 @@ static const sve_vec_cost generic_armv9_a_sve_vector_cost =
   {
     2, /* int_stmt_cost  */
     2, /* fp_stmt_cost  */
-    3, /* ld2_st2_permute_cost  */
-    4, /* ld3_st3_permute_cost  */
-    4, /* ld4_st4_permute_cost  */
-    3, /* permute_cost  */
+    2, /* ld2_st2_permute_cost  */
+    3, /* ld3_st3_permute_cost  */
+    3, /* ld4_st4_permute_cost  */
+    2, /* permute_cost  */
     /* Theoretically, a reduction involving 15 scalar ADDs could
        complete in ~5 cycles and would have a cost of 15.  [SU]ADDV
-       completes in 11 cycles, so give it a cost of 15 + 6.  */
-    21, /* reduc_i8_cost  */
-    /* Likewise for 7 scalar ADDs (~3 cycles) vs. 9: 7 + 6.  */
-    13, /* reduc_i16_cost  */
-    /* Likewise for 3 scalar ADDs (~2 cycles) vs. 8: 3 + 6.  */
-    9, /* reduc_i32_cost  */
-    /* Likewise for 1 scalar ADD (~1 cycles) vs. 2: 1 + 1.  */
-    2, /* reduc_i64_cost  */
+       completes in 9 cycles, so give it a cost of 15 + 4.  */
+    19, /* reduc_i8_cost  */
+    /* Likewise for 7 scalar ADDs (~3 cycles) vs. 8: 7 + 5.  */
+    12, /* reduc_i16_cost  */
+    /* Likewise for 3 scalar ADDs (~2 cycles) vs. 6: 3 + 4.  */
+    7, /* reduc_i32_cost  */
+    /* Likewise for 1 scalar ADDs (~1 cycles) vs. 4: 1 + 3.  */
+    4, /* reduc_i64_cost  */
     /* Theoretically, a reduction involving 7 scalar FADDs could
-       complete in ~8 cycles and would have a cost of 14.  FADDV
-       completes in 6 cycles, so give it a cost of 14 - 2.  */
-    12, /* reduc_f16_cost  */
-    /* Likewise for 3 scalar FADDs (~4 cycles) vs. 4: 6 - 0.  */
-    6, /* reduc_f32_cost  */
-    /* Likewise for 1 scalar FADD (~2 cycles) vs. 2: 2 - 0.  */
-    2, /* reduc_f64_cost  */
+       complete in ~8 cycles and would have a cost of  14.  FADDV
+       completes in 8 cycles, so give it a cost of 14 + 0.  */
+    14, /* reduc_f16_cost  */
+    /* Likewise for 3 scalar FADDs (~4 cycles) vs. 6: 6 + 2.  */
+    8, /* reduc_f32_cost  */
+    /* Likewise for 1 scalar FADD (~2 cycles) vs. 4: 2 + 2.  */
+    4, /* reduc_f64_cost  */
     2, /* store_elt_extra_cost  */
     /* This value is just inherited from the Cortex-A57 table.  */
     8, /* vec_to_scalar_cost  */
@@ -128,7 +128,7 @@ static const sve_vec_cost generic_armv9_a_sve_vector_cost =
   /* A strided Advanced SIMD x64 load would take two parallel FP loads
      (8 cycles) plus an insertion (2 cycles).  Assume a 64-bit SVE gather
      is 1 cycle more.  The Advanced SIMD version is costed as 2 scalar loads
-     (cost 8) and a vec_construct (cost 2).  Add a full vector operation
+     (cost 8) and a vec_construct (cost 4).  Add a full vector operation
      (cost 2) to that, to avoid the difference being lost in rounding.
 
      There is no easy comparison between a strided Advanced SIMD x32 load
@@ -166,14 +166,14 @@ static const aarch64_sve_vec_issue_info generic_armv9_a_sve_issue_info =
 {
   {
     {
-      3, /* loads_per_cycle  */
+      3, /* loads_stores_per_cycle  */
       2, /* stores_per_cycle  */
       2, /* general_ops_per_cycle  */
       0, /* fp_simd_load_general_ops  */
       1 /* fp_simd_store_general_ops  */
     },
     2, /* ld2_st2_general_ops  */
-    3, /* ld3_st3_general_ops  */
+    2, /* ld3_st3_general_ops  */
     3 /* ld4_st4_general_ops  */
   },
   2, /* pred_ops_per_cycle  */
@@ -191,7 +191,7 @@ static const aarch64_vec_issue_info generic_armv9_a_vec_issue_info =
   &generic_armv9_a_sve_issue_info
 };
 
-/* Neoverse N2 costs for vector insn classes.  */
+/* Generic_armv9_a costs for vector insn classes.  */
 static const struct cpu_vector_cost generic_armv9_a_vector_cost =
 {
   1, /* scalar_int_stmt_cost  */
@@ -228,7 +228,7 @@ static const struct tune_params generic_armv9_a_tunings =
   "32:16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
-  1,	/* fma_reassoc_width.  */
+  2,	/* fma_reassoc_width.  */
   2,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
