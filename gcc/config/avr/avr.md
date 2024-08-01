@@ -6742,7 +6742,23 @@
          (if_then_else (match_op_dup 0
                          [(reg:CC REG_CC) (const_int 0)])
                        (label_ref (match_dup 3))
-                       (pc)))])
+                       (pc)))]
+   {
+     // Unsigned >= 65536 and < 65536 can be performed by testing the
+     // high word against 0.
+     if ((GET_CODE (operands[0]) == LTU
+          || GET_CODE (operands[0]) == GEU)
+         && const_operand (operands[2], <MODE>mode)
+         && INTVAL (avr_to_int_mode (operands[2])) == 65536)
+       {
+         // "cmphi3" of the high word against 0.
+         operands[0] = copy_rtx (operands[0]);
+         PUT_CODE (operands[0], GET_CODE (operands[0]) == GEU ? NE : EQ);
+         operands[1] = simplify_gen_subreg (HImode, operands[1], <MODE>mode, 2);
+         operands[2] = const0_rtx;
+         operands[4] = gen_rtx_SCRATCH (QImode);
+       }
+   })
 
 ;; "cbranchpsi4_insn"
 (define_insn_and_split "cbranchpsi4_insn"
@@ -6787,7 +6803,23 @@
          (if_then_else (match_op_dup 0
                          [(reg:CC REG_CC) (const_int 0)])
                        (label_ref (match_dup 3))
-                       (pc)))])
+                       (pc)))]
+   {
+     // Unsigned >= 256 and < 256 can be performed by testing the
+     // high byte against 0.
+     if ((GET_CODE (operands[0]) == LTU
+          || GET_CODE (operands[0]) == GEU)
+         && const_operand (operands[2], <MODE>mode)
+         && INTVAL (avr_to_int_mode (operands[2])) == 256)
+       {
+         rtx_code code = GET_CODE (operands[0]) == GEU ? NE : EQ;
+         rtx hi8 = simplify_gen_subreg (QImode, operands[1], <MODE>mode, 1);
+         rtx cmp = gen_rtx_fmt_ee (code, VOIDmode, cc_reg_rtx, const0_rtx);
+         emit (gen_cmpqi3 (hi8, const0_rtx));
+         emit (gen_branch (operands[3], cmp));
+         DONE;
+       }
+   })
 
 ;; Combiner pattern to compare sign- or zero-extended register against
 ;; a wider register, like comparing uint8_t against uint16_t.
