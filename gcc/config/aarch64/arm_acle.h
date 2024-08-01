@@ -119,7 +119,7 @@ __revl (unsigned long __value)
 }
 
 #pragma GCC push_options
-#pragma GCC target ("arch=armv8.3-a")
+#pragma GCC target ("+nothing+jscvt")
 __extension__ extern __inline int32_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __jcvt (double __a)

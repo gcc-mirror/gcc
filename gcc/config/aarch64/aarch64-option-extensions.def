@@ -151,6 +151,8 @@ AARCH64_OPT_EXTENSION("fp16fml", F16FML, (), (F16), (), "asimdfhm")
 
 AARCH64_FMV_FEATURE("fp16fml", FP16FML, (F16FML))
 
+AARCH64_OPT_FMV_EXTENSION("jscvt", JSCVT, (FP), (), (), "jscvt")
+
 AARCH64_OPT_FMV_EXTENSION("fcma", FCMA, (SIMD), (), (), "fcma")
 
 AARCH64_OPT_FMV_EXTENSION("rcpc", RCPC, (), (), (), "lrcpc")

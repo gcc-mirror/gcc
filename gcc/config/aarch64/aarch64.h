@@ -361,7 +361,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
 #define TARGET_ARMV8_3	AARCH64_HAVE_ISA (V8_3A)
 
 /* Javascript conversion instruction from Armv8.3-a.  */
-#define TARGET_JSCVT	(TARGET_FLOAT && TARGET_ARMV8_3)
+#define TARGET_JSCVT	AARCH64_HAVE_ISA (JSCVT)
 
 /* Armv8.3-a Complex number extension to AdvSIMD extensions.  */
 #define TARGET_COMPLEX AARCH64_HAVE_ISA (FCMA)
