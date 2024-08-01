@@ -1,5 +1,7 @@
 ! { dg-additional-options "-Wall" }
+
 ! PR fortran/115559
+! PR middle-end/115637
 
 module m
    integer :: A
@@ -73,24 +75,19 @@ contains
     !$omp target map(from:res)
       res = run_device1()
     !$omp end target
-    print *, res
-    ! FIXME: arr2 not link mapped -> PR115637
-    ! if (res /= -11436) stop 5
-    if (res /= -11546) stop 5 ! FIXME
+    ! print *, res
+    if (res /= -11436) stop 5
   end
   integer function run_device1()
     !$omp declare target
     integer :: i
     run_device1 = -99
-    ! FIXME: arr2 not link mapped -> PR115637
-    !   arr2 = [11,22,33,44]
+    arr2 = [11,22,33,44]
     if (any (arr(10:50) /= [(i, i=10,50)])) then
       run_device1 = arr(11)
       return
     end if
-    ! FIXME: -> PR115637
-    ! run_device1 = sum(arr(10:13) + arr2)
-    run_device1 = sum(arr(10:13) ) ! FIXME
+    run_device1 = sum(arr(10:13) + arr2)
     do i = 10, 50
       arr(i) = 3 - 10 * arr(i)
     end do

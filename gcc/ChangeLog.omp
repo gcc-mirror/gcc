@@ -1,3 +1,15 @@
+2024-08-01  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2024-08-01  Tobias Burnus  <tburnus@baylibre.com>
+		    Richard Biener  <rguenther@suse.de
+
+	PR middle-end/115637
+	* gimplify.cc (gimplify_body): Fix macro name in the comment.
+	* omp-offload.cc (find_link_var_op): Rename to ...
+	(process_link_var_op): ... this. Replace value expr.
+	(pass_omp_target_link::execute): Update walk_gimple_stmt call.
+
 2024-07-03  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* doc/tm.texi.in (TARGET_VECTORIZE_PREFER_GATHER_SCATTER): Remove
