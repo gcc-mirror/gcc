@@ -392,6 +392,7 @@ static const struct aarch64_flag_desc aarch64_tuning_flags[] =
 #include "tuning_models/cortexa57.h"
 #include "tuning_models/cortexa72.h"
 #include "tuning_models/cortexa73.h"
+#include "tuning_models/cortexx925.h"
 #include "tuning_models/exynosm1.h"
 #include "tuning_models/thunderxt88.h"
 #include "tuning_models/thunderx.h"
