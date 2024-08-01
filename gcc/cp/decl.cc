@@ -8649,15 +8649,25 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	      && TREE_TYPE (init) == ridpointers[(int)RID_DELETE]))
 	{
 	  /* FIXME check this is 1st decl.  */
-	  DECL_DELETED_FN (decl) = 1;
-	  DECL_DECLARED_INLINE_P (decl) = 1;
-	  DECL_INITIAL (decl)
-	    = TREE_CODE (init) == STRING_CST ? init : error_mark_node;
-	  FOR_EACH_CLONE (clone, decl)
+	  if (UNLIKELY (DECL_MAIN_P (decl)))
 	    {
-	      DECL_DELETED_FN (clone) = 1;
-	      DECL_DECLARED_INLINE_P (clone) = 1;
-	      DECL_INITIAL (clone) = DECL_INITIAL (decl);
+	      /* [basic.start.main]/3: A program that defines main as deleted
+		 is ill-formed.  */
+	      error ("%<::main%> cannot be deleted");
+	      DECL_INITIAL (decl) = NULL_TREE;
+	    }
+	  else
+	    {
+	      DECL_DELETED_FN (decl) = 1;
+	      DECL_DECLARED_INLINE_P (decl) = 1;
+	      DECL_INITIAL (decl)
+		= TREE_CODE (init) == STRING_CST ? init : error_mark_node;
+	      FOR_EACH_CLONE (clone, decl)
+		{
+		  DECL_DELETED_FN (clone) = 1;
+		  DECL_DECLARED_INLINE_P (clone) = 1;
+		  DECL_INITIAL (clone) = DECL_INITIAL (decl);
+		}
 	    }
 	  init = NULL_TREE;
 	}
