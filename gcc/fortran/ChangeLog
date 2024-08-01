@@ -1,3 +1,7 @@
+2024-08-01  Release Manager
+
+	* GCC 14.2.0 released.
+
 2024-07-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	Revert:

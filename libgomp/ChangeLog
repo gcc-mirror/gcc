@@ -1,13 +1,6 @@
------- libgomp/ChangeLog ------ 
-2024-07-29  Tobias Burnus  <tburnus@baylibre.com>
+2024-08-01  Release Manager
 
-	Backported from master:
-	2024-07-29  Tobias Burnus  <tburnus@baylibre.com>
-
-	PR middle-end/116107
-	* target.c (gomp_map_vars_internal): Honor array mapping offsets
-	with declare-target 'link' variables.
-	* testsuite/libgomp.c-c++-common/target-link-2.c: New test.
+	* GCC 14.2.0 released.
 
 2024-05-07  Jakub Jelinek  <jakub@redhat.com>
 

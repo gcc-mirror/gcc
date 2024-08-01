@@ -53,6 +53,10 @@ static GTY(()) hash_set<tree> *deferred_escalating_exprs;
 static void
 remember_escalating_expr (tree t)
 {
+  if (uses_template_parms (t))
+    /* Templates don't escalate, and cp_fold_immediate can get confused by
+       other template trees in the function body (c++/115986).  */
+    return;
   if (!deferred_escalating_exprs)
     deferred_escalating_exprs = hash_set<tree>::create_ggc (37);
   deferred_escalating_exprs->add (t);
