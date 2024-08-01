@@ -3962,7 +3962,7 @@ that has a pointer data member and a trivial destructor.
 The warning can be disabled by using the @code{gnu::no_dangling} attribute
 (@pxref{C++ Attributes}).
 
-This warning is enabled by @option{-Wall}.
+This warning is enabled by @option{-Wextra}.
 
 @opindex Wdelete-non-virtual-dtor
 @opindex Wno-delete-non-virtual-dtor
@@ -6481,6 +6481,7 @@ name is still supported, but the newer name is more descriptive.)
 -Wcalloc-transposed-args
 -Wcast-function-type
 -Wclobbered
+-Wdangling-reference @r{(C++ only)}
 -Wdeprecated-copy @r{(C++ and Objective-C++ only)}
 -Wempty-body
 -Wenum-conversion @r{(only for C/ObjC)}
