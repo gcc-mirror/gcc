@@ -1981,6 +1981,22 @@ struct unary_widen_acc_def : public overloaded_base<0>
 };
 SHAPE (unary_widen_acc)
 
+/* mve_pred16_t foo_t0(uint32_t)
+
+   Example: vctp16q.
+   mve_pred16_t [__arm_]vctp16q(uint32_t a)
+   mve_pred16_t [__arm_]vctp16q_m(uint32_t a, mve_pred16_t p)  */
+struct vctp_def : public nonoverloaded_base
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    build_all (b, "p,su32", group, MODE_none, preserve_user_namespace);
+  }
+};
+SHAPE (vctp)
+
 /* <T0>_t foo_t0[_t1](<T1>_t)
    <T0>_t foo_t0_n[_t1](<T1>_t, const int)
 

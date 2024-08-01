@@ -192,6 +192,50 @@ public:
   }
 };
 
+  /* Implements vctp8q, vctp16q, vctp32q and vctp64q intrinsics.  */
+class vctpq_impl : public function_base
+{
+public:
+  CONSTEXPR vctpq_impl (machine_mode mode)
+    : m_mode (mode)
+  {}
+
+  /* Mode this intrinsic operates on.  */
+  machine_mode m_mode;
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    insn_code code;
+    rtx target;
+
+    if (e.mode_suffix_id != MODE_none)
+      gcc_unreachable ();
+
+    switch (e.pred)
+      {
+      case PRED_none:
+	/* No predicate, no suffix.  */
+	code = code_for_mve_vctpq (m_mode, m_mode);
+	target = e.use_exact_insn (code);
+	break;
+
+      case PRED_m:
+	/* No suffix, "m" predicate.  */
+	code = code_for_mve_vctpq_m (m_mode, m_mode);
+	target = e.use_cond_insn (code, 0);
+	break;
+
+      default:
+	gcc_unreachable ();
+      }
+
+    rtx HItarget = gen_reg_rtx (HImode);
+    emit_move_insn (HItarget, gen_lowpart (HImode, target));
+    return HItarget;
+  }
+};
+
   /* Implements vcvtq intrinsics.  */
 class vcvtq_impl : public function_base
 {
@@ -559,6 +603,10 @@ FUNCTION (vcmpltq, unspec_based_mve_function_exact_insn_vcmp, (LT, UNKNOWN, LT, 
 FUNCTION (vcmpcsq, unspec_based_mve_function_exact_insn_vcmp, (UNKNOWN, GEU, UNKNOWN, UNKNOWN, VCMPCSQ_M_U, UNKNOWN, UNKNOWN, VCMPCSQ_M_N_U, UNKNOWN))
 FUNCTION (vcmphiq, unspec_based_mve_function_exact_insn_vcmp, (UNKNOWN, GTU, UNKNOWN, UNKNOWN, VCMPHIQ_M_U, UNKNOWN, UNKNOWN, VCMPHIQ_M_N_U, UNKNOWN))
 FUNCTION_WITHOUT_M_N (vcreateq, VCREATEQ)
+FUNCTION (vctp8q, vctpq_impl, (V16BImode))
+FUNCTION (vctp16q, vctpq_impl, (V8BImode))
+FUNCTION (vctp32q, vctpq_impl, (V4BImode))
+FUNCTION (vctp64q, vctpq_impl, (V2QImode))
 FUNCTION_WITHOUT_N_NO_F (vcvtaq, VCVTAQ)
 FUNCTION (vcvtbq, vcvtxq_impl, (VCVTBQ_F16_F32, VCVTBQ_M_F16_F32, VCVTBQ_F32_F16, VCVTBQ_M_F32_F16))
 FUNCTION (vcvtq, vcvtq_impl,)

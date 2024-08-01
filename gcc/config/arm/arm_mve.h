@@ -140,15 +140,7 @@
 #define vst4q_u32( __addr, __value) __arm_vst4q_u32( __addr, __value)
 #define vst4q_f16( __addr, __value) __arm_vst4q_f16( __addr, __value)
 #define vst4q_f32( __addr, __value) __arm_vst4q_f32( __addr, __value)
-#define vctp16q(__a) __arm_vctp16q(__a)
-#define vctp32q(__a) __arm_vctp32q(__a)
-#define vctp64q(__a) __arm_vctp64q(__a)
-#define vctp8q(__a) __arm_vctp8q(__a)
 #define vpnot(__a) __arm_vpnot(__a)
-#define vctp8q_m(__a, __p) __arm_vctp8q_m(__a, __p)
-#define vctp64q_m(__a, __p) __arm_vctp64q_m(__a, __p)
-#define vctp32q_m(__a, __p) __arm_vctp32q_m(__a, __p)
-#define vctp16q_m(__a, __p) __arm_vctp16q_m(__a, __p)
 #define vshlcq_s8(__a,  __b,  __imm) __arm_vshlcq_s8(__a,  __b,  __imm)
 #define vshlcq_u8(__a,  __b,  __imm) __arm_vshlcq_u8(__a,  __b,  __imm)
 #define vshlcq_s16(__a,  __b,  __imm) __arm_vshlcq_s16(__a,  __b,  __imm)
@@ -605,65 +597,9 @@ __arm_vst4q_u32 (uint32_t * __addr, uint32x4x4_t __value)
 
 __extension__ extern __inline mve_pred16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vctp16q (uint32_t __a)
-{
-  return __builtin_mve_vctp16qv8bi (__a);
-}
-
-__extension__ extern __inline mve_pred16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vctp32q (uint32_t __a)
-{
-  return __builtin_mve_vctp32qv4bi (__a);
-}
-
-__extension__ extern __inline mve_pred16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vctp64q (uint32_t __a)
-{
-  return __builtin_mve_vctp64qv2qi (__a);
-}
-
-__extension__ extern __inline mve_pred16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vctp8q (uint32_t __a)
-{
-  return __builtin_mve_vctp8qv16bi (__a);
-}
-
-__extension__ extern __inline mve_pred16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vpnot (mve_pred16_t __a)
 {
   return __builtin_mve_vpnotv16bi (__a);
-}
-
-__extension__ extern __inline mve_pred16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vctp8q_m (uint32_t __a, mve_pred16_t __p)
-{
-  return __builtin_mve_vctp8q_mv16bi (__a, __p);
-}
-
-__extension__ extern __inline mve_pred16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vctp64q_m (uint32_t __a, mve_pred16_t __p)
-{
-  return __builtin_mve_vctp64q_mv2qi (__a, __p);
-}
-
-__extension__ extern __inline mve_pred16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vctp32q_m (uint32_t __a, mve_pred16_t __p)
-{
-  return __builtin_mve_vctp32q_mv4bi (__a, __p);
-}
-
-__extension__ extern __inline mve_pred16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vctp16q_m (uint32_t __a, mve_pred16_t __p)
-{
-  return __builtin_mve_vctp16q_mv8bi (__a, __p);
 }
 
 __extension__ extern __inline int8x16_t

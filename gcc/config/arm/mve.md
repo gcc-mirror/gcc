@@ -455,7 +455,7 @@
 ;;
 ;; [vctp8q vctp16q vctp32q vctp64q])
 ;;
-(define_insn "mve_vctp<MVE_vctp>q<MVE_vpred>"
+(define_insn "@mve_vctp<MVE_vctp>q<MVE_vpred>"
   [
    (set (match_operand:MVE_7 0 "vpr_register_operand" "=Up")
 	(unspec:MVE_7 [(match_operand:SI 1 "s_register_operand" "r")]
@@ -1245,7 +1245,7 @@
 ;;
 ;; [vctp8q_m vctp16q_m vctp32q_m vctp64q_m])
 ;;
-(define_insn "mve_vctp<MVE_vctp>q_m<MVE_vpred>"
+(define_insn "@mve_vctp<MVE_vctp>q_m<MVE_vpred>"
   [
    (set (match_operand:MVE_7 0 "vpr_register_operand" "=Up")
 	(unspec:MVE_7 [(match_operand:SI 1 "s_register_operand" "r")

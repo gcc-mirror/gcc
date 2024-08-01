@@ -750,6 +750,10 @@ function_instance::has_inactive_argument () const
       || base == functions::vcmpltq
       || base == functions::vcmpcsq
       || base == functions::vcmphiq
+      || base == functions::vctp16q
+      || base == functions::vctp32q
+      || base == functions::vctp64q
+      || base == functions::vctp8q
       || (base == functions::vcvtbq && type_suffix (0).element_bits == 16)
       || (base == functions::vcvttq && type_suffix (0).element_bits == 16)
       || base == functions::vfmaq
