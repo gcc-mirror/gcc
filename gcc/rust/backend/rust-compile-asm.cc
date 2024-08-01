@@ -26,6 +26,7 @@ CompileAsm::asm_build_expr (HIR::InlineAsm &expr)
   ASM_BASIC_P (asm_expr) = expr.is_simple_asm ();
   ASM_VOLATILE_P (asm_expr) = false;
   ASM_INLINE_P (asm_expr) = expr.is_inline_asm ();
+  /*Backend::debug (asm_expr);*/
   return asm_expr;
 }
 
@@ -91,8 +92,17 @@ CompileAsm::asm_construct_outputs (HIR::InlineAsm &expr)
 	  == AST::InlineAsmOperand::RegisterType::Out)
 	{
 	  auto out = output.get_out ();
+
 	  tree out_tree = CompileExpr::Compile (out.expr.get (), this->ctx);
-	  Backend::debug (out_tree);
+	  // expects a tree list
+	  // TODO: This assumes that the output is a register
+	  std::string expr_name = "=r";
+	  auto name = build_string (expr_name.size () + 1, expr_name.c_str ());
+	  head
+	    = chainon (head, build_tree_list (build_tree_list (NULL_TREE, name),
+					      out_tree));
+
+	  /*Backend::debug (head);*/
 	  /*head = chainon (head, out_tree);*/
 	}
     }
