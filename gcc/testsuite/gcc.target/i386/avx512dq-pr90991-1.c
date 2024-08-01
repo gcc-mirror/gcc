@@ -7,6 +7,9 @@
 /* { dg-final { scan-assembler-times "vmovups\[ \t]\+\\(\[^\n\r]*\\), %xmm0" 1 } } */
 /* { dg-final { scan-assembler-times "vmovupd\[ \t]\+\\(\[^\n\r]*\\), %xmm0" 1 } } */
 /* { dg-final { scan-assembler-times "vmovdqu\[ \t]\+\\(\[^\n\r]*\\), %xmm0" 1 } } */
+/* { dg-final { scan-assembler-not "vmovaps\[ \t]\+%xmm0, %xmm0" } } */
+/* { dg-final { scan-assembler-not "vmovapd\[ \t]\+%xmm0, %xmm0" } } */
+/* { dg-final { scan-assembler-not "vmovdqa\[ \t]\+%xmm0, %xmm0" } } */
 
 #include <x86intrin.h>
 
