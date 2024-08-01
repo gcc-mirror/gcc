@@ -1115,13 +1115,16 @@ extern void diagnostic_output_format_init_json_file (diagnostic_context &context
 						     bool formatted,
 						     const char *base_file_name);
 extern void diagnostic_output_format_init_sarif_stderr (diagnostic_context &context,
+							const line_maps *line_maps,
 							const char *main_input_filename_,
 							bool formatted);
 extern void diagnostic_output_format_init_sarif_file (diagnostic_context &context,
+						      const line_maps *line_maps,
 						      const char *main_input_filename_,
 						      bool formatted,
 						      const char *base_file_name);
 extern void diagnostic_output_format_init_sarif_stream (diagnostic_context &context,
+							const line_maps *line_maps,
 							const char *main_input_filename_,
 							bool formatted,
 							FILE *stream);

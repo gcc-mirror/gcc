@@ -1302,6 +1302,8 @@ sarif_builder::sarif_builder (diagnostic_context &context,
   m_tabstop (context.m_tabstop),
   m_formatted (formatted)
 {
+  gcc_assert (m_line_maps);
+
   /* Mark MAIN_INPUT_FILENAME_ as the artifact that the tool was
      instructed to scan.
      Only quote the contents if it gets referenced by physical locations,
@@ -2988,13 +2990,15 @@ diagnostic_output_format_init_sarif (diagnostic_context &context)
 
 void
 diagnostic_output_format_init_sarif_stderr (diagnostic_context &context,
+					    const line_maps *line_maps,
 					    const char *main_input_filename_,
 					    bool formatted)
 {
+  gcc_assert (line_maps);
   diagnostic_output_format_init_sarif (context);
   context.set_output_format
     (new sarif_stream_output_format (context,
-				     line_table,
+				     line_maps,
 				     main_input_filename_,
 				     formatted,
 				     stderr));
@@ -3005,14 +3009,16 @@ diagnostic_output_format_init_sarif_stderr (diagnostic_context &context,
 
 void
 diagnostic_output_format_init_sarif_file (diagnostic_context &context,
+					  const line_maps *line_maps,
 					  const char *main_input_filename_,
 					  bool formatted,
 					  const char *base_file_name)
 {
+  gcc_assert (line_maps);
   diagnostic_output_format_init_sarif (context);
   context.set_output_format
     (new sarif_file_output_format (context,
-				   line_table,
+				   line_maps,
 				   main_input_filename_,
 				   formatted,
 				   base_file_name));
@@ -3022,14 +3028,16 @@ diagnostic_output_format_init_sarif_file (diagnostic_context &context,
 
 void
 diagnostic_output_format_init_sarif_stream (diagnostic_context &context,
+					    const line_maps *line_maps,
 					    const char *main_input_filename_,
 					    bool formatted,
 					    FILE *stream)
 {
+  gcc_assert (line_maps);
   diagnostic_output_format_init_sarif (context);
   context.set_output_format
     (new sarif_stream_output_format (context,
-				     line_table,
+				     line_maps,
 				     main_input_filename_,
 				     formatted,
 				     stream));
