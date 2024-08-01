@@ -972,6 +972,7 @@ maybe_convert_cond (tree cond)
      result in a TARGET_EXPR, pick it up from there.  */
   if (DECL_DECOMPOSITION_P (cond)
       && DECL_DECOMP_IS_BASE (cond)
+      && DECL_DECOMP_BASE (cond)
       && TREE_CODE (DECL_DECOMP_BASE (cond)) == TARGET_EXPR)
     cond = TARGET_EXPR_SLOT (DECL_DECOMP_BASE (cond));
 
@@ -1714,6 +1715,7 @@ finish_switch_cond (tree cond, tree switch_stmt)
 	 conversion result in a TARGET_EXPR, pick it up from there.  */
       if (DECL_DECOMPOSITION_P (cond)
 	  && DECL_DECOMP_IS_BASE (cond)
+	  && DECL_DECOMP_BASE (cond)
 	  && TREE_CODE (DECL_DECOMP_BASE (cond)) == TARGET_EXPR)
 	cond = TARGET_EXPR_SLOT (DECL_DECOMP_BASE (cond));
       cond = build_expr_type_conversion (WANT_INT | WANT_ENUM, cond, true);
