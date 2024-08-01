@@ -2723,7 +2723,7 @@ min_vis_expr_r (tree *tp, int */*walk_subtrees*/, void *data)
       break;
 
     case TEMPLATE_DECL:
-      if (DECL_ALIAS_TEMPLATE_P (t) || standard_concept_p (t))
+      if (DECL_ALIAS_TEMPLATE_P (t) || concept_definition_p (t))
 	/* FIXME: We don't maintain TREE_PUBLIC / DECL_VISIBILITY for
 	   alias templates so we can't trust it here (PR107906).  Ditto
 	   for concepts.  */
@@ -5687,7 +5687,6 @@ maybe_instantiate_decl (tree decl)
   if (VAR_OR_FUNCTION_DECL_P (decl)
       && DECL_LANG_SPECIFIC (decl)
       && DECL_TEMPLATE_INFO (decl)
-      && !DECL_DECLARED_CONCEPT_P (decl)
       && !uses_template_parms (DECL_TI_ARGS (decl)))
     {
       /* Instantiating a function will result in garbage collection.  We
@@ -6084,7 +6083,6 @@ mark_used (tree decl, tsubst_flags_t complain /* = tf_warning_or_error */)
     }
   else if (VAR_OR_FUNCTION_DECL_P (decl)
 	   && DECL_TEMPLATE_INFO (decl)
-           && !DECL_DECLARED_CONCEPT_P (decl)
 	   && (!DECL_EXPLICIT_INSTANTIATION (decl)
 	       || always_instantiate_p (decl)))
     /* If this is a function or variable that is an instance of some

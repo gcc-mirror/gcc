@@ -3,7 +3,7 @@
 // { dg-prune-output "concept definition syntax is" }
 
 template<typename T>
-  concept auto C1() { return 0; } // { dg-error "16:concept .concept auto C1\\(\\). declared with a deduced return type" }
+  concept auto C1() { return 0; } // { dg-error "16:function concepts are no longer supported" }
 
 template<typename T>
-  concept int C2() { return 0; } // { dg-error "15:concept .concept int C2\\(\\). with non-.bool. return type .int." }
+  concept int C2() { return 0; } // { dg-error "15:function concepts are no longer supported" }

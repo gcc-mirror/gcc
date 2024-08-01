@@ -167,19 +167,6 @@ check_constraint_atom (cp_expr expr)
       return false;
     }
 
-  /* Check that we're using function concepts correctly.  */
-  if (concept_check_p (expr))
-    {
-      tree id = unpack_concept_check (expr);
-      tree tmpl = TREE_OPERAND (id, 0);
-      if (OVL_P (tmpl) && TREE_CODE (expr) == TEMPLATE_ID_EXPR)
-        {
-	  error_at (EXPR_LOC_OR_LOC (expr, input_location),
-		    "function concept must be called");
-	  return false;
-	}
-    }
-
   return true;
 }
 
@@ -245,32 +232,13 @@ combine_constraint_expressions (tree lhs, tree rhs)
   return finish_constraint_and_expr (UNKNOWN_LOCATION, lhs, rhs);
 }
 
-/* Extract the template-id from a concept check.  For standard and variable
-   checks, this is simply T.  For function concept checks, this is the
-   called function.  */
-
-tree
-unpack_concept_check (tree t)
-{
-  gcc_assert (concept_check_p (t));
-
-  if (TREE_CODE (t) == CALL_EXPR)
-    t = CALL_EXPR_FN (t);
-
-  gcc_assert (TREE_CODE (t) == TEMPLATE_ID_EXPR);
-  return t;
-}
-
 /* Extract the TEMPLATE_DECL from a concept check.  */
 
 tree
 get_concept_check_template (tree t)
 {
-  tree id = unpack_concept_check (t);
-  tree tmpl = TREE_OPERAND (id, 0);
-  if (OVL_P (tmpl))
-    tmpl = OVL_FIRST (tmpl);
-  return tmpl;
+  gcc_assert (concept_check_p (t));
+  return TREE_OPERAND (t, 0);
 }
 
 /*---------------------------------------------------------------------------
@@ -285,101 +253,6 @@ get_concept_check_template (tree t)
    matched declaration, and whose purpose contains the coerced template
    arguments that can be substituted into the call.  */
 
-/* Given an overload set OVL, try to find a unique definition that can be
-   instantiated by the template arguments ARGS.
-
-   This function is not called for arbitrary call expressions.  In particular,
-   the call expression must be written with explicit template arguments
-   and no function arguments.  For example:
-
-        f<T, U>()
-
-   If a single match is found, this returns a TREE_LIST whose VALUE
-   is the constraint function (not the template), and its PURPOSE is
-   the complete set of arguments substituted into the parameter list.  */
-
-static tree
-resolve_function_concept_overload (tree ovl, tree args)
-{
-  int nerrs = 0;
-  tree cands = NULL_TREE;
-  for (lkp_iterator iter (ovl); iter; ++iter)
-    {
-      tree tmpl = *iter;
-      if (TREE_CODE (tmpl) != TEMPLATE_DECL)
-        continue;
-
-      /* Don't try to deduce checks for non-concepts.  We often end up trying
-         to resolve constraints in functional casts as part of a
-	 postfix-expression.  We can save time and headaches by not
-         instantiating those declarations.
-
-         NOTE: This masks a potential error, caused by instantiating
-	 non-deduced contexts using placeholder arguments.  */
-      tree fn = DECL_TEMPLATE_RESULT (tmpl);
-      if (DECL_ARGUMENTS (fn))
-        continue;
-      if (!DECL_DECLARED_CONCEPT_P (fn))
-        continue;
-
-      /* Remember the candidate if we can deduce a substitution.  */
-      ++processing_template_decl;
-      tree parms = TREE_VALUE (DECL_TEMPLATE_PARMS (tmpl));
-      if (tree subst = coerce_template_parms (parms, args, tmpl, tf_none))
-        {
-          if (subst == error_mark_node)
-            ++nerrs;
-          else
-	    cands = tree_cons (subst, fn, cands);
-        }
-      --processing_template_decl;
-    }
-
-  if (!cands)
-    /* We either had no candidates or failed deductions.  */
-    return nerrs ? error_mark_node : NULL_TREE;
-  else if (TREE_CHAIN (cands))
-    /* There are multiple candidates.  */
-    return error_mark_node;
-
-  return cands;
-}
-
-/* Determine if the call expression CALL is a constraint check, and
-   return the concept declaration and arguments being checked.  If CALL
-   does not denote a constraint check, return NULL.  */
-
-tree
-resolve_function_concept_check (tree call)
-{
-  gcc_assert (TREE_CODE (call) == CALL_EXPR);
-
-  /* A constraint check must be only a template-id expression.
-     If it's a call to a base-link, its function(s) should be a
-     template-id expression.  If this is not a template-id, then
-     it cannot be a concept-check.  */
-  tree target = CALL_EXPR_FN (call);
-  if (BASELINK_P (target))
-    target = BASELINK_FUNCTIONS (target);
-  if (TREE_CODE (target) != TEMPLATE_ID_EXPR)
-    return NULL_TREE;
-
-  /* Get the overload set and template arguments and try to
-     resolve the target.  */
-  tree ovl = TREE_OPERAND (target, 0);
-
-  /* This is a function call of a variable concept... ill-formed.  */
-  if (TREE_CODE (ovl) == TEMPLATE_DECL)
-    {
-      error_at (location_of (call),
-		"function call of variable concept %qE", call);
-      return error_mark_node;
-    }
-
-  tree args = TREE_OPERAND (target, 1);
-  return resolve_function_concept_overload (ovl, args);
-}
-
 /* Returns a pair containing the checked concept and its associated
    prototype parameter.  The result is a TREE_LIST whose TREE_VALUE
    is the concept (non-template) and whose TREE_PURPOSE contains
@@ -390,20 +263,8 @@ tree
 resolve_concept_check (tree check)
 {
   gcc_assert (concept_check_p (check));
-  tree id = unpack_concept_check (check);
-  tree tmpl = TREE_OPERAND (id, 0);
-
-  /* If this is an overloaded function concept, perform overload
-     resolution (this only happens when deducing prototype parameters
-     and template introductions).  */
-  if (TREE_CODE (tmpl) == OVERLOAD)
-    {
-      if (OVL_CHAIN (tmpl))
-	return resolve_function_concept_check (check);
-      tmpl = OVL_FIRST (tmpl);
-    }
-
-  tree args = TREE_OPERAND (id, 1);
+  tree tmpl = TREE_OPERAND (check, 0);
+  tree args = TREE_OPERAND (check, 1);
   tree parms = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (tmpl));
   ++processing_template_decl;
   tree result = coerce_template_parms (parms, args, tmpl, tf_none);
@@ -466,55 +327,13 @@ finish_type_constraints (tree spec, tree args, tsubst_flags_t complain)
                        Expansion of concept definitions
 ---------------------------------------------------------------------------*/
 
-/* Returns the expression of a function concept.  */
-
-static tree
-get_returned_expression (tree fn)
-{
-  /* Extract the body of the function minus the return expression.  */
-  tree body = DECL_SAVED_TREE (fn);
-  if (!body)
-    return error_mark_node;
-  if (TREE_CODE (body) == BIND_EXPR)
-    body = BIND_EXPR_BODY (body);
-  if (TREE_CODE (body) != RETURN_EXPR)
-    return error_mark_node;
-
-  return TREE_OPERAND (body, 0);
-}
-
-/* Returns the initializer of a variable concept.  */
-
-static tree
-get_variable_initializer (tree var)
-{
-  tree init = DECL_INITIAL (var);
-  if (!init)
-    return error_mark_node;
-  if (BRACE_ENCLOSED_INITIALIZER_P (init)
-      && CONSTRUCTOR_NELTS (init) == 1)
-    init = CONSTRUCTOR_ELT (init, 0)->value;
-  return init;
-}
-
-/* Returns the definition of a variable or function concept.  */
+/* Returns the definition of a concept.  */
 
 static tree
 get_concept_definition (tree decl)
 {
-  if (TREE_CODE (decl) == OVERLOAD)
-    decl = OVL_FIRST (decl);
-
-  if (TREE_CODE (decl) == TEMPLATE_DECL)
-    decl = DECL_TEMPLATE_RESULT (decl);
-
-  if (TREE_CODE (decl) == CONCEPT_DECL)
-    return DECL_INITIAL (decl);
-  if (VAR_P (decl))
-    return get_variable_initializer (decl);
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    return get_returned_expression (decl);
-  gcc_unreachable ();
+  gcc_assert (TREE_CODE (decl) == CONCEPT_DECL);
+  return DECL_INITIAL (decl);
 }
 
 /*---------------------------------------------------------------------------
@@ -729,19 +548,9 @@ static GTY((deletable)) hash_table<norm_hasher> *norm_cache;
 static tree
 normalize_concept_check (tree check, tree args, norm_info info)
 {
-  tree id = unpack_concept_check (check);
-  tree tmpl = TREE_OPERAND (id, 0);
-  tree targs = TREE_OPERAND (id, 1);
-
-  /* A function concept is wrapped in an overload.  */
-  if (TREE_CODE (tmpl) == OVERLOAD)
-    {
-      /* TODO: Can we diagnose this error during parsing?  */
-      if (TREE_CODE (check) == TEMPLATE_ID_EXPR)
-	error_at (EXPR_LOC_OR_LOC (check, input_location),
-		  "function concept must be called");
-      tmpl = OVL_FIRST (tmpl);
-    }
+  gcc_assert (concept_check_p (check));
+  tree tmpl = TREE_OPERAND (check, 0);
+  tree targs = TREE_OPERAND (check, 1);
 
   /* Substitute through the arguments of the concept check.  */
   if (args)
@@ -789,11 +598,7 @@ normalize_concept_check (tree check, tree args, norm_info info)
 
 static GTY((deletable)) hash_table<atom_hasher> *atom_cache;
 
-/* The normal form of an atom depends on the expression.  The normal
-   form of a function call to a function concept is a check constraint
-   for that concept.  The normal form of a reference to a variable
-   concept is a check constraint for that concept.  Otherwise, the
-   constraint is a predicate constraint.  */
+/* The normal form of an atom is an atomic constraint.  */
 
 static tree
 normalize_atom (tree t, tree args, norm_info info)
@@ -1378,77 +1183,13 @@ build_concept_check_arguments (tree arg, tree rest)
   return args;
 }
 
-/* Builds an id-expression of the form `C<Args...>()` where C is a function
-   concept.  */
-
-static tree
-build_function_check (tree tmpl, tree args, tsubst_flags_t /*complain*/)
-{
-  if (TREE_CODE (tmpl) == TEMPLATE_DECL)
-    {
-      /* If we just got a template, wrap it in an overload so it looks like any
-	 other template-id.  */
-      tmpl = ovl_make (tmpl);
-      TREE_TYPE (tmpl) = boolean_type_node;
-    }
-
-  /* Perform function concept resolution now so we always have a single
-     function of the overload set (even if we started with only one; the
-     resolution function converts template arguments).  Note that we still
-     wrap this in an overload set so we don't upset other parts of the
-     compiler that expect template-ids referring to function concepts
-     to have an overload set.  */
-  tree info = resolve_function_concept_overload (tmpl, args);
-  if (info == error_mark_node)
-    return error_mark_node;
-  if (!info)
-    {
-      error ("no matching concepts for %qE", tmpl);
-      return error_mark_node;
-    }
-  args = TREE_PURPOSE (info);
-  tmpl = DECL_TI_TEMPLATE (TREE_VALUE (info));
-
-  /* Rebuild the singleton overload set; mark the type bool.  */
-  tmpl = ovl_make (tmpl, NULL_TREE);
-  TREE_TYPE (tmpl) = boolean_type_node;
-
-  /* Build the id-expression around the overload set.  */
-  tree id = build2 (TEMPLATE_ID_EXPR, boolean_type_node, tmpl, args);
-
-  /* Finally, build the call expression around the overload.  */
-  ++processing_template_decl;
-  vec<tree, va_gc> *fargs = make_tree_vector ();
-  tree call = build_min_nt_call_vec (id, fargs);
-  TREE_TYPE (call) = boolean_type_node;
-  release_tree_vector (fargs);
-  --processing_template_decl;
-
-  return call;
-}
-
-/* Builds an id-expression of the form `C<Args...>` where C is a variable
-   concept.  */
-
-static tree
-build_variable_check (tree tmpl, tree args, tsubst_flags_t complain)
-{
-  gcc_assert (variable_concept_p (tmpl));
-  gcc_assert (TREE_CODE (tmpl) == TEMPLATE_DECL);
-  tree parms = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (tmpl));
-  args = coerce_template_parms (parms, args, tmpl, complain);
-  if (args == error_mark_node)
-    return error_mark_node;
-  return build2 (TEMPLATE_ID_EXPR, boolean_type_node, tmpl, args);
-}
-
 /* Builds an id-expression of the form `C<Args...>` where C is a standard
    concept.  */
 
 static tree
 build_standard_check (tree tmpl, tree args, tsubst_flags_t complain)
 {
-  gcc_assert (standard_concept_p (tmpl));
+  gcc_assert (concept_definition_p (tmpl));
   gcc_assert (TREE_CODE (tmpl) == TEMPLATE_DECL);
   if (TREE_DEPRECATED (DECL_TEMPLATE_RESULT (tmpl)))
     warn_deprecated_use (DECL_TEMPLATE_RESULT (tmpl), NULL_TREE);
@@ -1475,12 +1216,8 @@ build_concept_check (tree decl, tree arg, tree rest, tsubst_flags_t complain)
 {
   tree args = build_concept_check_arguments (arg, rest);
 
-  if (standard_concept_p (decl))
+  if (concept_definition_p (decl))
     return build_standard_check (decl, args, complain);
-  if (variable_concept_p (decl))
-    return build_variable_check (decl, args, complain);
-  if (function_concept_p (decl))
-    return build_function_check (decl, args, complain);
 
   return error_mark_node;
 }
@@ -1490,10 +1227,7 @@ build_concept_check (tree decl, tree arg, tree rest, tsubst_flags_t complain)
 static tree
 build_concept_id (tree decl, tree args)
 {
-  tree check = build_concept_check (decl, args, tf_warning_or_error);
-  if (check == error_mark_node)
-    return error_mark_node;
-  return unpack_concept_check (check);
+  return build_concept_check (decl, args, tf_warning_or_error);
 }
 
 /* Build a template-id that can participate in a concept check, preserving
@@ -1521,9 +1255,7 @@ build_type_constraint (tree decl, tree args, tsubst_flags_t complain)
   ++processing_template_decl;
   tree check = build_concept_check (decl, wildcard, args, complain);
   --processing_template_decl;
-  if (check == error_mark_node)
-    return error_mark_node;
-  return unpack_concept_check (check);
+  return check;
 }
 
 /* Returns a TYPE_DECL that contains sufficient information to
@@ -1621,10 +1353,7 @@ placeholder_extract_concept_and_args (tree t, tree &tmpl, tree &args)
 {
   if (concept_check_p (t))
     {
-      t = unpack_concept_check (t);
       tmpl = TREE_OPERAND (t, 0);
-      if (TREE_CODE (tmpl) == OVERLOAD)
-        tmpl = OVL_FIRST (tmpl);
       args = TREE_OPERAND (t, 1);
       return;
     }
@@ -2938,9 +2667,8 @@ satisfy_nondeclaration_constraints (tree t, tree args, sat_info info)
   if (concept_check_p (t))
     {
       gcc_assert (!args);
-      tree id = unpack_concept_check (t);
-      args = TREE_OPERAND (id, 1);
-      tree tmpl = get_concept_check_template (id);
+      args = TREE_OPERAND (t, 1);
+      tree tmpl = get_concept_check_template (t);
       norm = normalize_concept_definition (tmpl, info.noisy ());
     }
   else if (TREE_CODE (t) == NESTED_REQ)
@@ -3255,41 +2983,6 @@ finish_nested_requirement (location_t loc, tree expr)
   return r;
 }
 
-/* Check that FN satisfies the structural requirements of a
-   function concept definition.  */
-tree
-check_function_concept (tree fn)
-{
-  /* Check that the function is comprised of only a return statement.  */
-  tree body = DECL_SAVED_TREE (fn);
-  if (TREE_CODE (body) == BIND_EXPR)
-    body = BIND_EXPR_BODY (body);
-
-  /* Sometimes a function call results in the creation of clean up
-     points.  Allow these to be preserved in the body of the
-     constraint, as we might actually need them for some constexpr
-     evaluations.  */
-  if (TREE_CODE (body) == CLEANUP_POINT_EXPR)
-    body = TREE_OPERAND (body, 0);
-
-  /* Check that the definition is written correctly.  */
-  if (TREE_CODE (body) != RETURN_EXPR)
-    {
-      location_t loc = DECL_SOURCE_LOCATION (fn);
-      if (TREE_CODE (body) == STATEMENT_LIST && !STATEMENT_LIST_HEAD (body))
-	{
-	  if (seen_error ())
-	    /* The definition was probably erroneous, not empty.  */;
-	  else
-	    error_at (loc, "definition of concept %qD is empty", fn);
-	}
-      else
-        error_at (loc, "definition of concept %qD has multiple statements", fn);
-    }
-
-  return NULL_TREE;
-}
-
 /*---------------------------------------------------------------------------
                         Equivalence of constraints
 ---------------------------------------------------------------------------*/
@@ -3403,10 +3096,7 @@ get_constraint_error_location (tree t)
   /* Otherwise, give the location as the defining concept.  */
   else if (concept_check_p (src))
     {
-      tree id = unpack_concept_check (src);
-      tree tmpl = TREE_OPERAND (id, 0);
-      if (OVL_P (tmpl))
-	tmpl = OVL_FIRST (tmpl);
+      tree tmpl = TREE_OPERAND (src, 0);
       return DECL_SOURCE_LOCATION (tmpl);
     }
 

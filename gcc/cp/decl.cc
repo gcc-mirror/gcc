@@ -1467,36 +1467,6 @@ validate_constexpr_redeclaration (tree old_decl, tree new_decl)
   return true;
 }
 
-// If OLDDECL and NEWDECL are concept declarations with the same type
-// (i.e., and template parameters), but different requirements,
-// emit diagnostics and return true. Otherwise, return false.
-static inline bool
-check_concept_refinement (tree olddecl, tree newdecl)
-{
-  if (!DECL_DECLARED_CONCEPT_P (olddecl) || !DECL_DECLARED_CONCEPT_P (newdecl))
-    return false;
-
-  tree d1 = DECL_TEMPLATE_RESULT (olddecl);
-  tree d2 = DECL_TEMPLATE_RESULT (newdecl);
-  if (TREE_CODE (d1) != TREE_CODE (d2))
-    return false;
-
-  tree t1 = TREE_TYPE (d1);
-  tree t2 = TREE_TYPE (d2);
-  if (TREE_CODE (d1) == FUNCTION_DECL)
-    {
-      if (compparms (TYPE_ARG_TYPES (t1), TYPE_ARG_TYPES (t2))
-          && comp_template_parms (DECL_TEMPLATE_PARMS (olddecl),
-                                  DECL_TEMPLATE_PARMS (newdecl))
-          && !equivalently_constrained (olddecl, newdecl))
-        {
-          error ("cannot specialize concept %q#D", olddecl);
-          return true;
-        }
-    }
-  return false;
-}
-
 /* DECL is a redeclaration of a function or function template.  If
    it does have default arguments issue a diagnostic.  Note: this
    function is used to enforce the requirements in C++11 8.3.6 about
@@ -1990,8 +1960,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 		return error_mark_node;
 	      return NULL_TREE;
 	    }
-          else if (check_concept_refinement (olddecl, newdecl))
-	    return error_mark_node;
 	  return NULL_TREE;
 	}
       if (TREE_CODE (newdecl) == FUNCTION_DECL)
@@ -8224,16 +8192,6 @@ value_dependent_init_p (tree init)
   return false;
 }
 
-// Returns true if a DECL is VAR_DECL with the concept specifier.
-static inline bool
-is_concept_var (tree decl)
-{
-  return (VAR_P (decl)
-	  // Not all variables have DECL_LANG_SPECIFIC.
-          && DECL_LANG_SPECIFIC (decl)
-          && DECL_DECLARED_CONCEPT_P (decl));
-}
-
 /* A helper function to be called via walk_tree.  If any label exists
    under *TP, it is (going to be) forced.  Set has_forced_label_in_static.  */
 
@@ -8751,11 +8709,6 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 
       if (!VAR_P (decl) || type_dependent_p)
 	/* We can't do anything if the decl has dependent type.  */;
-      else if (!init && is_concept_var (decl))
-	{
-	  error ("variable concept has no initializer");
-	  init = boolean_true_node;
-	}
       else if (init
 	       && (init_const_expr_p || DECL_DECLARED_CONSTEXPR_P (decl))
 	       && !TYPE_REF_P (type)
@@ -10547,26 +10500,6 @@ check_static_quals (tree decl, cp_cv_quals quals)
 	   decl);
 }
 
-// Check that FN takes no arguments and returns bool.
-static void
-check_concept_fn (tree fn)
-{
-  // A constraint is nullary.
-  if (DECL_ARGUMENTS (fn))
-    error_at (DECL_SOURCE_LOCATION (fn),
-	      "concept %q#D declared with function parameters", fn);
-
-  // The declared return type of the concept shall be bool, and
-  // it shall not be deduced from it definition.
-  tree type = TREE_TYPE (TREE_TYPE (fn));
-  if (is_auto (type))
-    error_at (DECL_SOURCE_LOCATION (fn),
-	      "concept %q#D declared with a deduced return type", fn);
-  else if (type != boolean_type_node)
-    error_at (DECL_SOURCE_LOCATION (fn),
-	      "concept %q#D with non-%<bool%> return type %qT", fn, type);
-}
-
 /* Helper function.  Replace the temporary this parameter injected
    during cp_finish_omp_declare_simd with the real this parameter.  */
 
@@ -10637,10 +10570,9 @@ grokfndecl (tree ctype,
   /* Was the concept specifier present?  */
   bool concept_p = inlinep & 4;
 
-  /* Concept declarations must have a corresponding definition.  */
-  if (concept_p && !funcdef_flag)
+  if (concept_p)
     {
-      error_at (location, "concept %qD has no definition", declarator);
+      error_at (location, "function concepts are no longer supported");
       return NULL_TREE;
     }
 
@@ -10667,11 +10599,6 @@ grokfndecl (tree ctype,
 	    tmpl_reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
 	}
       tree ci = build_constraints (tmpl_reqs, decl_reqs);
-      if (concept_p && ci)
-        {
-          error_at (location, "a function concept cannot be constrained");
-          ci = NULL_TREE;
-        }
       /* C++20 CA378: Remove non-templated constrained functions.  */
       /* [temp.friend]/9 A non-template friend declaration with a
 	 requires-clause shall be a definition. A friend function template with
@@ -10903,14 +10830,6 @@ grokfndecl (tree ctype,
       SET_DECL_IMMEDIATE_FUNCTION_P (decl);
     }
 
-  // If the concept declaration specifier was found, check
-  // that the declaration satisfies the necessary requirements.
-  if (concept_p)
-    {
-      DECL_DECLARED_CONCEPT_P (decl) = true;
-      check_concept_fn (decl);
-    }
-
   DECL_EXTERNAL (decl) = 1;
   if (TREE_CODE (type) == FUNCTION_TYPE)
     {
@@ -11072,8 +10991,7 @@ grokfndecl (tree ctype,
   decl = check_explicit_specialization (orig_declarator, decl,
 					template_count,
 					2 * funcdef_flag +
-					4 * (friendp != 0) +
-	                                8 * concept_p,
+					4 * (friendp != 0),
 					*attrlist);
   if (decl == error_mark_node)
     return NULL_TREE;
@@ -11365,29 +11283,19 @@ grokvardecl (tree type,
 		  "C language linkage");
     }
 
-  /* Check that the variable can be safely declared as a concept.
-     Note that this also forbids explicit specializations.  */
+  /* Check if a variable is being declared as a concept.  */
   if (conceptp)
     {
       if (!processing_template_decl)
-        {
-          error_at (declspecs->locations[ds_concept],
-		    "a non-template variable cannot be %<concept%>");
-          return NULL_TREE;
-        }
+	error_at (declspecs->locations[ds_concept],
+		  "a non-template variable cannot be %<concept%>");
       else if (!at_namespace_scope_p ())
-	{
-	  error_at (declspecs->locations[ds_concept],
-		    "concept must be defined at namespace scope");
-	  return NULL_TREE;
-	}
+	error_at (declspecs->locations[ds_concept],
+		  "concept must be defined at namespace scope");
       else
-        DECL_DECLARED_CONCEPT_P (decl) = true;
-      if (TEMPLATE_PARMS_CONSTRAINTS (current_template_parms))
-        {
-          error_at (location, "a variable concept cannot be constrained");
-          TEMPLATE_PARMS_CONSTRAINTS (current_template_parms) = NULL_TREE;
-        }
+	error_at (declspecs->locations[ds_concept],
+		  "variable concepts are no longer supported");
+      return NULL_TREE;
     }
   else if (flag_concepts
 	   && current_template_depth > template_class_depth (scope))
@@ -11399,7 +11307,7 @@ grokvardecl (tree type,
   // Handle explicit specializations and instantiations of variable templates.
   if (orig_declarator)
     decl = check_explicit_specialization (orig_declarator, decl,
-					  template_count, conceptp * 8);
+					  template_count, 0);
 
   return decl != error_mark_node ? decl : NULL_TREE;
 }
@@ -18807,10 +18715,6 @@ finish_function (bool inline_p)
       DECL_SAVED_TREE (fndecl) = NULL_TREE;
       goto cleanup;
     }
-
-  // If this is a concept, check that the definition is reasonable.
-  if (DECL_DECLARED_CONCEPT_P (fndecl))
-    check_function_concept (fndecl);
 
   if (flag_openmp)
     if (tree attr = lookup_attribute ("omp declare variant base",
