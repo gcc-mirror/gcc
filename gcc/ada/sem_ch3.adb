@@ -741,6 +741,11 @@ package body Sem_Ch3 is
    --  Check that an entity in a list of progenitors is an interface,
    --  emit error otherwise.
 
+   procedure Warn_On_Inherently_Limited_Type (E : Entity_Id);
+   --  Emit a warning if a record type that does not have a limited keyword in
+   --  its definition has any components that are limited (which implicitly
+   --  make the type limited).
+
    -----------------------
    -- Access_Definition --
    -----------------------
@@ -22924,6 +22929,8 @@ package body Sem_Ch3 is
          Derive_Progenitor_Subprograms (T, T);
       end if;
 
+      Warn_On_Inherently_Limited_Type (T);
+
       Check_Function_Writable_Actuals (N);
    end Record_Type_Declaration;
 
@@ -23395,5 +23402,32 @@ package body Sem_Ch3 is
       Set_RM_Size            (T, UI_From_Int (Minimum_Size (T)));
       Set_Is_Constrained     (T);
    end Signed_Integer_Type_Declaration;
+
+   -------------------------------------
+   -- Warn_On_Inherently_Limited_Type --
+   -------------------------------------
+
+   procedure Warn_On_Inherently_Limited_Type (E : Entity_Id) is
+      C : Entity_Id;
+   begin
+      if Warnsw.Warn_On_Inherently_Limited_Type
+        and then not Is_Limited_Record (E)
+      then
+         C := First_Component (Base_Type (E));
+         while Present (C) loop
+            if Is_Inherently_Limited_Type (Etype (C)) then
+               Error_Msg_Node_2 := E;
+               Error_Msg_NE
+                 ("?_l?limited component & makes & limited", E, C);
+               Error_Msg_N
+                 ("\\?_l?consider annotating the record type "
+                  & "with a LIMITED keyword", E);
+               exit;
+            end if;
+
+            Next_Component (C);
+         end loop;
+      end if;
+   end Warn_On_Inherently_Limited_Type;
 
 end Sem_Ch3;

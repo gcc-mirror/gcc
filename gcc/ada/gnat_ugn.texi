@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Jul 29, 2024
+GNAT User's Guide for Native Platforms , Aug 19, 2024
 
 AdaCore
 
@@ -11669,6 +11669,31 @@ Pre’Class, and Post’Class aspects. Also list inherited subtype predicates.
 `Suppress listing of inherited aspects as info messages.'
 
 This switch suppresses listing of inherited aspects.
+@end table
+
+@geindex -gnatw_l (gcc)
+
+
+@table @asis
+
+@item @code{-gnatw_l}
+
+`Activate warnings on inheritely limited types.'
+
+This switch causes the compiler trigger warnings on record types that do not
+have a limited keyword but contain a component that is a limited type.
+@end table
+
+@geindex -gnatw_L (gcc)
+
+
+@table @asis
+
+@item @code{-gnatw_L}
+
+`Suppress warnings on inheritely limited types.'
+
+This switch suppresses warnings on inheritely limited types.
 @end table
 
 @geindex -gnatwm (gcc)

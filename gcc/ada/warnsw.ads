@@ -72,6 +72,7 @@ package Warnsw is
          Warn_On_Hiding,
          Warn_On_Ignored_Equality,
          Warn_On_Ineffective_Predicate_Test,
+         Warn_On_Inherently_Limited_Type,
          Warn_On_Late_Primitives,
          Warn_On_Modified_Unread,
          Warn_On_No_Value_Assigned,
@@ -158,6 +159,7 @@ package Warnsw is
       Warn_On_Hiding |
       Warn_On_Ignored_Equality |
       Warn_On_Ineffective_Predicate_Test |
+      Warn_On_Inherently_Limited_Type |
       Warn_On_Late_Primitives |
       Warn_On_Modified_Unread |
       Warn_On_Non_Dispatching_Primitives |
@@ -341,6 +343,11 @@ package Warnsw is
    --  Set to True to generate warnings if a static predicate is testing for
    --  values that do not belong to the parent subtype. Modified by use of
    --  -gnatw_s/S.
+
+   Warn_On_Inherently_Limited_Type : Boolean renames F (X.Warn_On_Inherently_Limited_Type);
+   --  Set to True to generate warnings if a record type does not have a
+   --  limited keyword, but is inherently limited. Modified by use of
+   --  -gnatw_l/L.
 
    Warn_On_Late_Primitives : Boolean renames F (X.Warn_On_Late_Primitives);
    --  Warn when tagged type public primitives are defined after its private

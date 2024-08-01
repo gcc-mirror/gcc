@@ -3430,6 +3430,23 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   This switch suppresses listing of inherited aspects.
 
 
+.. index:: -gnatw_l  (gcc)
+
+:switch:`-gnatw_l`
+  *Activate warnings on inheritely limited types.*
+
+  This switch causes the compiler trigger warnings on record types that do not
+  have a limited keyword but contain a component that is a limited type.
+
+
+.. index:: -gnatw_L  (gcc)
+
+:switch:`-gnatw_L`
+  *Suppress warnings on inheritely limited types.*
+
+  This switch suppresses warnings on inheritely limited types.
+
+
 .. index:: -gnatwm  (gcc)
 
 :switch:`-gnatwm`
