@@ -1,3 +1,137 @@
+2024-07-31  François Dumont  <frs.dumont@gmail.com>
+
+	* testsuite/23_containers/map/operators/1_neg.cc (test01): Add test variable
+	declaration.
+	* testsuite/23_containers/set/operators/1_neg.cc (test01): Likewise.
+
+2024-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/format.cc [!_GLIBCXX_HAS_GTHREADS] (mutex): Define
+	dummy mutex type.
+	* testsuite/std/time/format_localized.cc: Use loop variable
+	instead of creating the same locale on every iteration.
+
+2024-07-31  Sam James  <sam@gentoo.org>
+
+	* testsuite/28_regex/traits/char/translate.cc: Drop bogus 'dg_do run'.
+
+2024-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/system_error.cc (strerror_string): Handle
+	non-conforming NULL return from strerror.
+
+2024-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (check_v3_target_namedlocale):
+	Only append "@euro" to ".ISO8859-15" locales for Glibc.
+
+2024-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/version.def (format): Update value for C++26.
+	* include/bits/version.h: Regenerate.
+	* include/std/format (runtime_format, wruntime_format): Check
+	__cpp_lib_format instead of __cplusplus.
+	* testsuite/std/format/functions/format.cc: Update expected
+	value of macro for C++26 mode.
+
+2024-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110356
+	* include/bits/c++config (_GLIBCXX26_DEPRECATED): Define.
+	(_GLIBCXX26_DEPRECATED_SUGGEST): Define.
+	* include/bits/version.def (format): Update for C++26.
+	* include/bits/version.h: Regenerate.
+	* include/std/format (basic_format_arg::visit): New member
+	functions.
+	(visit_format_arg): Add deprecated attribute.
+	* testsuite/std/format/arguments/args.cc: Expect deprecated
+	warnings. Check member visit.
+	* testsuite/std/format/functions/format.cc: Update expected
+	value for __cpp_lib_format macro.
+	* testsuite/std/format/parse_ctx.cc: Add dg-warning for
+	deprecation.
+
+2024-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110356
+	* include/bits/version.def (variant): Update for C++26.
+	* include/bits/version.h: Regenerate.
+	* include/std/variant (variant::visit): New member functions.
+	* testsuite/20_util/variant/visit.cc: Check second alternative.
+	* testsuite/20_util/variant/visit_member.cc: New test.
+
+2024-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115776
+	* include/bits/version.def (format): Update for C++26.
+	* include/bits/version.h: Regenerate.
+	* include/std/format (basic_format_parse_context): Remove
+	default argument from constructor and split into two
+	constructors. Make the constructor taking size_t private for
+	C++26 and later.
+	(basic_format_parse_context::check_dynamic_spec): New member
+	function template.
+	(basic_format_parse_context::check_dynamic_spec_integral): New
+	member function.
+	(basic_format_parse_context::check_dynamic_spec_string):
+	Likewise.
+	(__format::_Spec::_S_parse_width_or_precision): Use
+	check_dynamic_spec_integral.
+	(__format::__to_arg_t_enum): New helper function.
+	(basic_format_arg):  Declare __to_arg_t_enum as friend.
+	(__format::_Scanner): Define and use a derived parse context
+	type.
+	(__format::_Checking_scanner): Make arg types available to parse
+	context.
+	* testsuite/std/format/functions/format.cc: Check for new values
+	of __cpp_lib_format macro.
+	* testsuite/std/format/parse_ctx.cc: Check all members of
+	basic_format_parse_context.
+	* testsuite/std/format/parse_ctx_neg.cc: New test.
+	* testsuite/std/format/string.cc: Add more checks for dynamic
+	width and precision args.
+
+2024-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/version.def (format): Update value for P2510R3.
+	* include/bits/version.h: Regenerate.
+	* include/std/format (_GLIBCXX_P2518R3): Remove misspelled macro
+	and check __glibcxx_format instead.
+	* testsuite/std/format/functions/format.cc: Check value of the
+	__cpp_lib_format macro for formatting pointers support.
+	* testsuite/std/format/parse_ctx.cc: Likewise.
+
+2024-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109162
+	* acinclude.m4 (libtool_VERSION): Update to 6:34:0.
+	* config/abi/pre/gnu.ver: Disambiguate old patters. Add new
+	GLIBCXX_3.4.34 symbol version and new exports.
+	* configure: Regenerate.
+	* include/bits/chrono_io.h (_ChronoSpec::_M_locale_specific):
+	Add new accessor functions to use a reserved bit in _Spec.
+	(__formatter_chrono::_M_parse): Use _M_locale_specific(true)
+	when chrono-specs contains locale-dependent conversion
+	specifiers.
+	(__formatter_chrono::_M_format): Open iconv descriptor if
+	conversion to UTF-8 will be needed.
+	(__formatter_chrono::_M_write): New function to write a
+	localized string with possible character conversion.
+	(__formatter_chrono::_M_a_A, __formatter_chrono::_M_b_B)
+	(__formatter_chrono::_M_p, __formatter_chrono::_M_r)
+	(__formatter_chrono::_M_x, __formatter_chrono::_M_X)
+	(__formatter_chrono::_M_locale_fmt): Use _M_write.
+	* include/bits/version.def (format): Update value.
+	* include/bits/version.h: Regenerate.
+	* include/std/format (_GLIBCXX_P2518R3): Check feature test
+	macro instead of __cplusplus.
+	(basic_format_context): Declare __formatter_chrono as friend.
+	* src/c++20/Makefile.am: Add new file.
+	* src/c++20/Makefile.in: Regenerate.
+	* src/c++20/format.cc: New file.
+	* testsuite/std/time/format_localized.cc: New test.
+	* testsuite/util/testsuite_abi.cc: Add new symbol version.
+
 2024-07-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/chrono_io.h (__local_time_fmt_for): New alias

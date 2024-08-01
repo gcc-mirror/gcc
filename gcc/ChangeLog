@@ -1,3 +1,182 @@
+2024-07-31  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/116134
+	* match.pd (`(a ? x : y) eq/ne (b ? x : y)`): Check that
+	a and b types match.
+	(`(a ? x : y) eq/ne (b ? y : x)`): Likewise.
+
+2024-07-31  Jeff Law  <jlaw@ventanamicro.com>
+
+	* ext-dce.cc (carry_backpropagate): Change more guards of [U]INTVAL to
+	test CONST_INT_P rather than CONSTANT_P, fixing rtl-checking failures.
+
+2024-07-31  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* common/config/pru/pru-common.cc
+	(TARGET_OPTION_OPTIMIZATION_TABLE): New definition.
+	* config/pru/pru.cc (TARGET_MIN_ANCHOR_OFFSET): Set minimal
+	anchor offset.
+	(TARGET_MAX_ANCHOR_OFFSET): Set maximum anchor offset.
+
+2024-07-31  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/116136
+	* simplify-rtx.cc (simplify_context::simplify_subreg): Check
+	that we're working with the lowpart offset rather than byte 0.
+
+2024-07-31  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* config.gcc (extra_headers): Install arm_private_fp8.h.
+	* config/aarch64/arm_neon.h: Include arm_private_fp8.h.
+	* config/aarch64/arm_sve.h: Likewise.
+	* config/aarch64/arm_private_fp8.h: New file
+	(fpm_t): New type representing fpmr values.
+	(enum __ARM_FPM_FORMAT): New enum representing valid fp8 formats.
+	(enum __ARM_FPM_OVERFLOW): New enum representing how some fp8
+	calculations work.
+	(__arm_fpm_init): New.
+	(__arm_set_fpm_src1_format): Likewise.
+	(__arm_set_fpm_src2_format): Likewise.
+	(__arm_set_fpm_dst_format): Likewise.
+	(__arm_set_fpm_overflow_cvt): Likewise.
+	(__arm_set_fpm_overflow_mul): Likewise.
+	(__arm_set_fpm_lscale): Likewise.
+	(__arm_set_fpm_lscale2): Likewise.
+	(__arm_set_fpm_nscale): Likewise.
+
+2024-07-31  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_hard_regno_nregs): Add
+	support for MOVEABLE_SYSREGS class.
+	(aarch64_hard_regno_mode_ok): Allow reads and writes to fpmr.
+	(aarch64_regno_regclass): Support MOVEABLE_SYSREGS class.
+	(aarch64_class_max_nregs): Likewise.
+	* config/aarch64/aarch64.h (FIXED_REGISTERS): add fpmr.
+	(CALL_REALLY_USED_REGISTERS): Likewise.
+	(REGISTER_NAMES): Likewise.
+	(enum reg_class): Add MOVEABLE_SYSREGS class.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Update class bitmaps to deal with fpmr,
+	the new MOVEABLE_REGS class and renumbering of registers.
+	* config/aarch64/aarch64.md: (FPM_REGNUM): added new register
+	number, reusing old value.
+	(FFR_REGNUM): Renumber.
+	(FFRT_REGNUM): Likewise.
+	(LOWERING_REGNUM): Likewise.
+	(TPIDR2_BLOCK_REGNUM): Likewise.
+	(SME_STATE_REGNUM): Likewise.
+	(TPIDR2_SETUP_REGNUM): Likewise.
+	(ZA_FREE_REGNUM): Likewise.
+	(ZA_SAVED_REGNUM): Likewise.
+	(ZA_REGNUM): Likewise.
+	(ZT0_REGNUM): Likewise.
+	(*mov<mode>_aarch64): Add support for moveable sysregs.
+	(*movsi_aarch64): Likewise.
+	(*movdi_aarch64): Likewise.
+	* config/aarch64/constraints.md (MOVEABLE_SYSREGS): New constraint.
+
+2024-07-31  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def (fp8): New.
+	* config/aarch64/aarch64.h (TARGET_FP8): Likewise.
+	* doc/invoke.texi (AArch64 Options): Document new -march flags
+	and extensions.
+
+2024-07-31  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (UNSPEC_REVB_2H, UNSPEC_REVB_4H,
+	UNSPEC_REVH_D): Remove UNSPECs.
+	(revb_4h, revh_d): Remove define_insn.
+	(revb_2h): Define as (rotatert:SI (bswap:SI x) 16) instead of
+	an UNSPEC.
+	(revb_2h_extend, revb_2w, *bswapsi2, bswapdi2): New define_insn.
+	(bswapsi2): Change to define_expand.  Only expand to revb.2h +
+	rotri.w if !TARGET_64BIT.
+	(bswapdi2): Change to define_insn of which the output is just a
+	revb.d instruction.
+
+2024-07-31  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/predicates.md (ins_zero_bitmask_operand):
+	Cover more cases that bstrins can benefit.
+	(high_bitmask_operand): Remove.
+	* config/loongarch/constraints.md (Yy): Remove.
+	* config/loongarch/loongarch.md (and<mode>3_align): Remove.
+
+2024-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101478
+	* gimplify.cc (gimplify_addr_expr): Check we still have an
+	ADDR_EXPR before calling recompute_tree_invariant_for_addr_expr.
+
+2024-07-31  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/116065
+	* config/i386/i386.opt (munroll-only-small-loops): Mark as
+	Optimization instead of Save.
+
+2024-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/115881
+	* recog.cc: Include rtl-iter.h.
+	(insn_propagation::apply_to_rvalue_1): Check that the result
+	of simplify_subreg does not include nested subregs.
+
+2024-07-31  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/105359
+	* config/rs6000/rs6000.md (@extenddf<FLOAT128:mode>2): Don't check
+	TARGET_LONG_DOUBLE_128 for FLOAT128_IEEE_P modes.
+	(extendsf<FLOAT128:mode>2): Likewise.
+	(trunc<FLOAT128:mode>df2): Likewise.
+	(trunc<FLOAT128:mode>sf2): Likewise.
+	(floatsi<FLOAT128:mode>2): Likewise.
+	(fix_trunc<FLOAT128:mode>si2): Likewise.
+
+2024-07-31  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/altivec.md (p9_vadu<mode>3): Rename to ...
+	(uabd<mode>3): ... this.  Update RTL pattern with umin and umax rather
+	than UNSPEC_VADU.
+	(vadu<mode>3): Remove.
+	(UNSPEC_VADU): Remove.
+	(usadv16qi): Replace gen_p9_vaduv16qi3 with gen_uabdv16qi3.
+	(usadv8hi): Replace gen_p9_vaduv8hi3 with gen_uabdv8hi3.
+	* config/rs6000/rs6000-builtins.def (__builtin_altivec_vadub): Replace
+	expander with uabdv16qi3.
+	(__builtin_altivec_vaduh): Adjust expander with uabdv8hi3.
+	(__builtin_altivec_vaduw): Adjust expander with uabdv4si3.
+
+2024-07-31  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (optab): Add (rotatert "rotr").
+	(<optab:any_shift><mode>3, <optab:any_div><mode>3,
+	sub<mode>3, rotr<mode>3, mul<mode>3): Add a "*" to the insn name
+	so we can redefine the names with define_expand.
+	(*<optab:any_shift>si3_extend): Remove "*" so we can use them
+	in expanders.
+	(*subsi3_extended, *mulsi3_extended): Likewise, also remove the
+	trailing "ed" for consistency.
+	(*<optab:any_div>si3_extended): Add mode for sign_extend to
+	prevent an ICE using it in expanders.
+	(shift_w, arith_w): New define_code_iterator.
+	(<optab:any_w><mode>3): New define_expand.  Expand with
+	<optab:any_w>si3_extend for SImode if TARGET_64BIT.
+	(<optab:arith_w><mode>3): Likewise.
+	(mul<mode>3): Expand to mulsi3_extended for SImode if
+	TARGET_64BIT and ISA_HAS_DIV32.
+	(<optab:any_div><mode>3): Expand to <optab:any_div>si3_extended
+	for SImode if TARGET_64BIT.
+	(rotl<mode>3): Expand to rotrsi3_extend for SImode if
+	TARGET_64BIT.
+	(bytepick_w_<bytepick_imm>): Add mode for lshiftrt and ashift.
+	(bitsize, bytepick_imm, bytepick_w_ashift_amount): New
+	define_mode_attr.
+	(bytepick_w_<bytepick_imm>_extend): Adjust for the RTL change
+	caused by 32-bit shift expanding.  Now bytepick_imm only covers
+	2 and 3, separate one remaining case to ...
+	(bytepick_w_1_extend): ... here, new define_insn.
+
 2024-07-30  Edwin Lu  <ewlu@rivosinc.com>
 
 	* common/config/riscv/riscv-common.cc (riscv_subset_list::to_string):

@@ -1,3 +1,12 @@
+2024-07-31  Sam James  <sam@gentoo.org>
+
+	* testsuite/libgomp.c++/pr24455.C: Fix dg-require-effective-target directive order.
+	* testsuite/libgomp.c/pr24455.c: Likewise.
+
+2024-07-31  Sam James  <sam@gentoo.org>
+
+	* testsuite/libgomp.c++/declare-target-indirect-1.C: Fix 'dg-run' typo.
+
 2024-07-29  Tobias Burnus  <tburnus@baylibre.com>
 
 	* libgomp.texi (OpenMP Runtime Library Routines): Add missing

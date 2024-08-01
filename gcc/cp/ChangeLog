@@ -1,3 +1,9 @@
+2024-07-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115645
+	* init.cc (build_vec_init): When initializing a scalar type, try to
+	create a constant initializer.
+
 2024-07-30  Arsen Arsenović  <arsen@aarsen.me>
 
 	PR c++/115906

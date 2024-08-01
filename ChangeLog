@@ -1,3 +1,8 @@
+2024-07-31  Arsen Arsenović  <arsen@aarsen.me>
+
+	* .dir-locals.el: Change c-mode to a list of C, C++ and ObjC
+	modes that Emacs currently provides.
+
 2024-07-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* .b4-config: New file.

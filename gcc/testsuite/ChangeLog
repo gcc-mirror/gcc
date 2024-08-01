@@ -1,3 +1,116 @@
+2024-07-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105361
+	* gfortran.dg/pr105361.f90: Add newline character to test
+	input to provide more compliant test.
+
+2024-07-31  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/116134
+	* gcc.dg/torture/pr116134-1.c: New test.
+
+2024-07-31  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.target/pru/section-anchors-1.c: New test.
+	* gcc.target/pru/section-anchors-2.c: New test.
+
+2024-07-31  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR testsuite/116154
+	* gcc.dg/torture/pr67947.c: Use volatile variable instead of
+	argc.
+
+2024-07-31  Sam James  <sam@gentoo.org>
+
+	* gcc.dg/tree-prof/crossmodule-indir-call-topn-1.c: Fix dg-require-profiling
+	directive order.
+	* gcc.dg/tree-prof/crossmodule-indir-call-topn-2.c: Likewise.
+
+2024-07-31  Sam James  <sam@gentoo.org>
+
+	* gcc.target/aarch64/aapcs64/func-ret-3.c: Fix dg-require-effective-target directive order.
+	* gcc.target/aarch64/aapcs64/func-ret-4.c: Likewise.
+	* gfortran.dg/PR100914.f90: Likewise.
+
+2024-07-31  Sam James  <sam@gentoo.org>
+
+	PR target/106828
+	* g++.target/loongarch/pr106828.C: Fix 'dg-do compile' typo.
+
+2024-07-31  Sam James  <sam@gentoo.org>
+
+	PR target/69194
+	PR c++/92024
+	PR c++/110057
+	* c-c++-common/Wshadow-1.c: Fix 'dg-do compile' typo.
+	* g++.dg/tree-ssa/devirt-array-destructor-1.C: Likewise.
+	* g++.dg/tree-ssa/devirt-array-destructor-2.C: Likewise.
+	* gcc.target/arm/pr69194.c: Likewise.
+
+2024-07-31  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* gcc.target/aarch64/acle/fp8-helpers-neon.c: New test of fpmr helper
+	functions.
+	* gcc.target/aarch64/acle/fp8-helpers-sve.c: New test of fpmr helper
+	functions presence.
+	* gcc.target/aarch64/acle/fp8-helpers-sme.c: New test of fpmr helper
+	functions presence.
+
+2024-07-31  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* gcc.target/aarch64/acle/fp8.c: New tests.
+
+2024-07-31  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* gcc.target/aarch64/acle/fp8.c: New test.
+
+2024-07-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115645
+	* g++.dg/cpp2a/constexpr-new23.C: New test.
+
+2024-07-31  Filip Kastl  <fkastl@suse.cz>
+
+	* gcc.target/i386/switch-exp-transform-3.c: Set the long long
+	int test to only execute with 64bit targets.
+
+2024-07-31  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/revb.c: New test.
+
+2024-07-31  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/bstrins-4.c: New test.
+
+2024-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101478
+	* gcc.dg/pr101478.c: New testcase.
+
+2024-07-31  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/116065
+	* gcc.target/i386/pr116065.c: New test.
+
+2024-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/115881
+	* gcc.c-torture/compile/pr115881.c: New test.
+
+2024-07-31  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/105359
+	* gcc.target/powerpc/pr79004.c: Remove xfails.
+
+2024-07-31  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/powerpc/abd-vectorize-1.c: New test.
+	* gcc.target/powerpc/abd-vectorize-2.c: New test.
+
+2024-07-31  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/bitwise_extend.c: New test.
+
 2024-07-30  Sam James  <sam@gentoo.org>
 
 	PR target/68015
