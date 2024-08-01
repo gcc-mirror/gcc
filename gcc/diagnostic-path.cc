@@ -860,7 +860,8 @@ public:
     if (const logical_location *logical_loc = range->m_logical_loc)
       {
 	label_text name (logical_loc->get_name_for_path_output ());
-	pp_printf (pp, "%qs: ", name.get ());
+	if (name.get ())
+	  pp_printf (pp, "%qs: ", name.get ());
       }
     if (range->m_start_idx == range->m_end_idx)
       pp_printf (pp, "event %i",
