@@ -14,6 +14,9 @@ def sarif_from_env():
 def get_location_artifact_uri(location):
     return location['physicalLocation']['artifactLocation']['uri']
 
+def get_location_physical_region(location):
+    return location['physicalLocation']['region']
+
 def get_location_snippet_text(location):
     return location['physicalLocation']['contextRegion']['snippet']['text']
 

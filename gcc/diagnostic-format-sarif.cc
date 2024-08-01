@@ -323,7 +323,11 @@ public:
     {
      /* Process a #include relationship where m_location_obj
 	was #included-d at m_where.  */
-     included_from
+     included_from,
+
+     /* Process a location_t that was added as a secondary location
+	to a rich_location without a label.  */
+     unlabelled_secondary_location
     };
 
     worklist_item (sarif_location &location_obj,
@@ -369,6 +373,7 @@ private:
 
   std::list<worklist_item> m_worklist;
   std::map<location_t, sarif_location *> m_included_from_locations;
+  std::map<location_t, sarif_location *> m_unlabelled_secondary_locations;
 };
 
 /* Subclass of sarif_object for SARIF "result" objects
@@ -559,6 +564,7 @@ public:
    - diagnostic groups (see limitations below)
    - logical locations (e.g. cfun)
    - labelled ranges (as annotations)
+   - secondary ranges without labels (as related locations)
 
    Known limitations:
    - GCC supports one-deep nesting of diagnostics (via auto_diagnostic_group),
@@ -566,9 +572,6 @@ public:
      diagnostics (e.g. we ignore fix-it hints on them)
    - although we capture command-line arguments (section 3.20.2), we don't
      yet capture response files.
-   - doesn't capture secondary locations within a rich_location
-     (perhaps we should use the "relatedLocations" property: SARIF v2.1.0
-     section 3.27.22)
    - doesn't capture "artifact.encoding" property
      (SARIF v2.1.0 section 3.24.9).
    - doesn't capture hashes of the source files
@@ -984,6 +987,34 @@ sarif_location_manager::process_worklist_item (sarif_builder &builder,
 	included_loc_obj.lazily_add_relationship
 	  (*includer_loc_obj,
 	   location_relationship_kind::is_included_by,
+	   *this);
+      }
+      break;
+    case worklist_item::kind::unlabelled_secondary_location:
+      {
+	sarif_location &primary_loc_obj = item.m_location_obj;
+	sarif_location *secondary_loc_obj = nullptr;
+	auto iter = m_unlabelled_secondary_locations.find (item.m_where);
+	if (iter != m_unlabelled_secondary_locations.end ())
+	  secondary_loc_obj = iter->second;
+	else
+	  {
+	    std::unique_ptr<sarif_location> new_loc_obj
+	      = builder.make_location_object
+		  (*this,
+		   item.m_where,
+		   diagnostic_artifact_role::scanned_file);
+	    secondary_loc_obj = new_loc_obj.get ();
+	    add_related_location (std::move (new_loc_obj));
+	    auto kv
+	      = std::pair<location_t, sarif_location *> (item.m_where,
+							 secondary_loc_obj);
+	    m_unlabelled_secondary_locations.insert (kv);
+	  }
+	gcc_assert (secondary_loc_obj);
+	primary_loc_obj.lazily_add_relationship
+	  (*secondary_loc_obj,
+	   location_relationship_kind::relevant,
 	   *this);
       }
       break;
@@ -1739,18 +1770,19 @@ sarif_builder::make_location_object (sarif_location_manager &loc_mgr,
   /* "logicalLocations" property (SARIF v2.1.0 section 3.28.4).  */
   set_any_logical_locs_arr (*location_obj, logical_loc);
 
-  /* "annotations" property (SARIF v2.1.0 section 3.28.6).  */
+  /* Handle labelled ranges and/or secondary locations.  */
   {
-    /* Create annotations for any labelled ranges.  */
     std::unique_ptr<json::array> annotations_arr = nullptr;
     for (unsigned int i = 0; i < rich_loc.get_num_locations (); i++)
       {
 	const location_range *range = rich_loc.get_range (i);
+	bool handled = false;
 	if (const range_label *label = range->m_label)
 	  {
 	    label_text text = label->get_text (i);
 	    if (text.get ())
 	      {
+		/* Create annotations for any labelled ranges.  */
 		location_t range_loc = rich_loc.get_loc (i);
 		auto region
 		  = maybe_make_region_object (range_loc,
@@ -1762,11 +1794,21 @@ sarif_builder::make_location_object (sarif_location_manager &loc_mgr,
 		    region->set<sarif_message>
 		      ("message", make_message_object (text.get ()));
 		    annotations_arr->append<sarif_region> (std::move (region));
+		    handled = true;
 		  }
 	      }
 	  }
+
+	/* Add related locations for any secondary locations in RICH_LOC
+	   that don't have labels (and thus aren't added to "annotations"). */
+	if (i > 0 && !handled)
+	  loc_mgr.add_relationship_to_worklist
+	    (*location_obj.get (),
+	     sarif_location_manager::worklist_item::kind::unlabelled_secondary_location,
+	     range->m_loc);
       }
     if (annotations_arr)
+      /* "annotations" property (SARIF v2.1.0 section 3.28.6).  */
       location_obj->set<json::array> ("annotations",
 				      std::move (annotations_arr));
   }
