@@ -32,6 +32,6 @@ void test01()
   std::set<unsigned int>::iterator itr(setByIndex.begin());
 
   // NB: it's not setByIndex!!
-  bool __attribute__((unused)) test = itr != setByName.end(); // { dg-error "no" }
-  test &= itr == setByName.end(); // { dg-error "no" }
+  itr != setByName.end(); // { dg-error "no match" }
+  itr == setByName.end(); // { dg-error "no match" }
 }

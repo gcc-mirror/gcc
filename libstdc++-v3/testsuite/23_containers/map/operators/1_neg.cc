@@ -35,6 +35,6 @@ void test01()
   std::map<unsigned, int>::iterator itr(mapByIndex.begin());
 
   // NB: notice, it's not mapByIndex!!
-  bool __attribute__((unused)) test = itr != mapByName.end(); // { dg-error "no" }
-  test &= itr == mapByName.end(); // { dg-error "no" }
+  itr != mapByName.end(); // { dg-error "no match" }
+  itr == mapByName.end(); // { dg-error "no match" }
 }
