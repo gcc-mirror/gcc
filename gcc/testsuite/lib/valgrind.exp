@@ -1,0 +1,58 @@
+# Copyright (C) 2014-2024 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Look for lines of the form:
+#   definitely lost: 11,316 bytes in 235 blocks
+#   indirectly lost: 352 bytes in 4 blocks
+# Report zero bytes lost as a a PASS.
+# Use LEAK_REPORT_FUNCTION to report non-zero bytes lost (either fail or xfail)
+
+proc report_leak {kind name logfile line leak_report_function} {
+    set match [regexp "$kind lost: .*" $line result]
+    if $match {
+	verbose "Saw \"$result\" within \"$line\"" 4
+	# Extract bytes and blocks.
+	# These can contain commas as well as numerals,
+	# but we only care about whether we have zero.
+	regexp "$kind lost: (.+) bytes in (.+) blocks" \
+	    $result -> bytes blocks
+	verbose "bytes: '$bytes'" 4
+	verbose "blocks: '$blocks'" 4
+	if { $bytes == 0 } {
+	    pass "$name: $logfile: $result"
+	} else {
+	    $leak_report_function "$name: $logfile: $result"
+	}
+    }
+}
+
+proc parse_valgrind_logfile {name logfile leak_report_function} {
+    verbose "parse_valgrind_logfile: $logfile" 2
+    if [catch {set f [open $logfile]}] {
+	fail "$name: unable to read $logfile"
+	return
+    }
+
+    while { [gets $f line] >= 0 } {
+	# Strip off the PID prefix e.g. ==7675==
+	set line [regsub "==\[0-9\]*== " $line ""]
+	verbose $line 2
+
+	report_leak "definitely" $name $logfile $line $leak_report_function
+	report_leak "indirectly" $name $logfile $line $leak_report_function
+    }
+    close $f
+}
