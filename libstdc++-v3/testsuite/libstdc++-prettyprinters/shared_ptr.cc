@@ -20,6 +20,7 @@
 
 #include <memory>
 #include <iostream>
+#include <cstdint>
 
 template<class T>
 void
