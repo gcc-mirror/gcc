@@ -1,3 +1,14 @@
+2024-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/115981
+	* config/i386/sse.md
+	(*<extract_type>_vinsert<shuffletype><extract_suf>_0): Swap the
+	first two VEC_MERGE operands, renumber match_operands and test
+	for 0xF or 0x3 rather than 0xFFF0 or 0xFC immediate.
+
 2024-08-01  Release Manager
 
 	* GCC 14.2.0 released.

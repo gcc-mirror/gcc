@@ -1,3 +1,142 @@
+2024-08-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-05-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_classes.h (locale::combine)
+	(locale::name, locale::operator==, locale::operator!=)
+	(locale::operator(), locale::classic): Add nodiscard
+	attribute.
+	* include/bits/locale_classes.tcc (has_facet, use_facet):
+	Likewise.
+	* testsuite/22_locale/locale/cons/12438.cc: Add dg-warning for
+	nodiscard diagnostic.
+	* testsuite/22_locale/locale/cons/2.cc: Cast use_facet
+	expression to void, to suppress diagnostic.
+	* testsuite/22_locale/locale/cons/unicode.cc: Likewise.
+	* testsuite/22_locale/locale/operations/2.cc: Add dg-warning.
+
+2024-08-01  Deev Patel  <dkp10000@gmail.com>
+
+	Backported from master:
+	2024-06-08  Deev Patel  <dkp10000@gmail.com>
+		    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_base.h (__atomic_impl::__clear_padding):
+	Add missing constexpr specifier.
+	* testsuite/29_atomics/atomic_float/constinit.cc: New test.
+
+2024-08-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_allocator.h (tracker_allocator):
+	Initialize base class in copy constructor.
+
+2024-08-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115399
+	* include/tr2/dynamic_bitset (operator>>=): Remove redundant
+	call to _M_do_sanitize.
+	* include/tr2/dynamic_bitset.tcc (_M_do_left_shift): Zero out
+	low bits in words that should no longer be populated.
+	(_M_do_right_shift): Likewise for high bits.
+	* testsuite/tr2/dynamic_bitset/pr115399.cc: New test.
+
+2024-08-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-07-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (basic_format_args): Remove default
+	constructor, as per LWG 4106.
+	* testsuite/std/format/arguments/args.cc: Check it isn't default
+	constructible.
+
+2024-08-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-07-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114387
+	* include/std/format (basic_format_context): Define copy
+	operations as deleted, as per LWG 4061.
+	* testsuite/std/format/context.cc: New test.
+
+2024-08-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/any (any_cast(any*), any_cast(const any*)): Add
+	static assertion to reject void types, as per LWG 3305.
+	* testsuite/20_util/any/misc/lwg3305.cc: New test.
+
+2024-08-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/algorithm: Define __glibcxx_want_ranges.
+	* testsuite/25_algorithms/headers/algorithm/synopsis.cc: Check
+	feature test macro in C++20 mode.
+
+2024-08-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-07-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115854
+	* include/bits/stl_bvector.h (_Bvector_base): Convert allocator
+	to rebound type explicitly.
+	* testsuite/23_containers/vector/allocator/115854.cc: New test.
+	* testsuite/23_containers/vector/bool/allocator/115854.cc: New test.
+
+2024-08-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_base.h (const_iterator_t): Change
+	preprocessor condition to use __glibcxx_ranges_as_const.
+	(const_sentinel_t, range_const_reference_t): Likewise.
+	(__access::__possibly_const_range, cbegin, cend, crbegin)
+	(crend, cdata): Likewise.
+	* include/bits/stl_iterator.h (iter_const_reference_t)
+	(basic_const_iterator, const_iterator, const_sentinel)
+	(make_const_iterator): Likewise.
+
+2024-08-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-07-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (_Variant_storage::_M_reset): Use
+	__unlikely__ form of attribute instead of unlikely.
+
+2024-08-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-07-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116070
+	* include/std/istream: Check feature test macro before using
+	is_class_v and is_same_v.
+	* include/std/ostream: Likewise.
+
+2024-08-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-07-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116070
+	* include/bits/stl_bvector.h: Check feature test macro before
+	using is_default_constructible_v.
+
 2024-08-01  Release Manager
 
 	* GCC 14.2.0 released.

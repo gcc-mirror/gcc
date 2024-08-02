@@ -1,3 +1,13 @@
+2024-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/115981
+	* gcc.target/i386/avx512dq-pr90991-1.c: Add tests for no separate
+	zero extension instructions.
+	* gcc.target/i386/avx512dq-pr90991-2.c: Likewise.
+
 2024-08-01  Release Manager
 
 	* GCC 14.2.0 released.
