@@ -2104,6 +2104,7 @@ _GLIBCXX_END_NAMESPACE_ALGO
     inline _Iterator
     __find_if(_Iterator __first, _Iterator __last, _Predicate __pred)
     {
+#pragma GCC unroll 4
       while (__first != __last && !__pred(__first))
 	++__first;
       return __first;
