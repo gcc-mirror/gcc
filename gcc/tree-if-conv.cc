@@ -124,6 +124,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vectorizer.h"
 #include "tree-eh.h"
 #include "cgraph.h"
+#include "print-tree.h"
 
 /* For lang_hooks.types.type_for_mode.  */
 #include "langhooks.h"
@@ -1082,11 +1083,35 @@ if_convertible_gimple_assign_stmt_p (gimple *stmt,
   return true;
 }
 
+/* Return true when SW switch statement is equivalent to cond, that
+   all non default labels point to the same label.
+
+   Fallthrough is not checked for and could even happen
+   with cond (using goto), so is handled.
+
+   This is intended for switches created by the if-switch-conversion
+   pass, but can handle some programmer supplied cases too. */
+
+static bool
+if_convertible_switch_p (gswitch *sw)
+{
+  if (gimple_switch_num_labels (sw) <= 1)
+    return false;
+  tree label = CASE_LABEL (gimple_switch_label (sw, 1));
+  for (unsigned i = 1; i < gimple_switch_num_labels (sw); i++)
+    {
+      if (CASE_LABEL (gimple_switch_label (sw, i)) != label)
+	return false;
+    }
+  return true;
+}
+
 /* Return true when STMT is if-convertible.
 
    A statement is if-convertible if:
    - it is an if-convertible GIMPLE_ASSIGN,
    - it is a GIMPLE_LABEL or a GIMPLE_COND,
+   - it is a switch equivalent to COND
    - it is builtins call,
    - it is a call to a function with a SIMD clone.  */
 
@@ -1099,6 +1124,9 @@ if_convertible_stmt_p (gimple *stmt, vec<data_reference_p> refs)
     case GIMPLE_DEBUG:
     case GIMPLE_COND:
       return true;
+
+    case GIMPLE_SWITCH:
+      return if_convertible_switch_p (as_a <gswitch *> (stmt));
 
     case GIMPLE_ASSIGN:
       return if_convertible_gimple_assign_stmt_p (stmt, refs);
@@ -1327,6 +1355,7 @@ get_loop_body_in_if_conv_order (const class loop *loop)
 	  case GIMPLE_CALL:
 	  case GIMPLE_DEBUG:
 	  case GIMPLE_COND:
+	  case GIMPLE_SWITCH:
 	    gimple_set_uid (gsi_stmt (gsi), 0);
 	    break;
 	  default:
@@ -1423,6 +1452,58 @@ predicate_bbs (loop_p loop)
 	  add_to_dst_predicate_list (loop, false_edge,
 				     unshare_expr (cond), c2);
 
+	  cond = NULL_TREE;
+	}
+
+      /* Assumes the limited COND like switches checked for earlier.  */
+      else if (gswitch *sw = safe_dyn_cast <gswitch *> (*gsi_last_bb (bb)))
+	{
+	  location_t loc = gimple_location (*gsi_last_bb (bb));
+
+	  tree default_label = CASE_LABEL (gimple_switch_default_label (sw));
+	  tree cond_label = CASE_LABEL (gimple_switch_label (sw, 1));
+
+	  edge false_edge = find_edge (bb, label_to_block (cfun, default_label));
+	  edge true_edge = find_edge (bb, label_to_block (cfun, cond_label));
+
+	  /* Create chain of switch tests for each case.  */
+	  tree switch_cond = NULL_TREE;
+	  tree index = gimple_switch_index (sw);
+	  for (unsigned i = 1; i < gimple_switch_num_labels (sw); i++)
+	    {
+	      tree label = gimple_switch_label (sw, i);
+	      tree case_cond;
+	      if (CASE_HIGH (label))
+		{
+		  tree low = build2_loc (loc, GE_EXPR,
+					 boolean_type_node,
+					 index, CASE_LOW (label));
+		  tree high = build2_loc (loc, LE_EXPR,
+					  boolean_type_node,
+					  index, CASE_HIGH (label));
+		  case_cond = build2_loc (loc, TRUTH_AND_EXPR,
+					  boolean_type_node,
+					  low, high);
+		}
+	      else
+		case_cond = build2_loc (loc, EQ_EXPR,
+					boolean_type_node,
+					index,
+					CASE_LOW (gimple_switch_label (sw, i)));
+	      if (i > 1)
+		switch_cond = build2_loc (loc, TRUTH_OR_EXPR,
+					  boolean_type_node,
+					  case_cond, switch_cond);
+	      else
+		switch_cond = case_cond;
+	    }
+
+	  add_to_dst_predicate_list (loop, true_edge, unshare_expr (cond),
+				     unshare_expr (switch_cond));
+	  switch_cond = build1_loc (loc, TRUTH_NOT_EXPR, boolean_type_node,
+				    unshare_expr (switch_cond));
+	  add_to_dst_predicate_list (loop, false_edge,
+				     unshare_expr (cond), switch_cond);
 	  cond = NULL_TREE;
 	}
 
@@ -2852,9 +2933,9 @@ predicate_statements (loop_p loop)
     }
 }
 
-/* Remove all GIMPLE_CONDs and GIMPLE_LABELs of all the basic blocks
-   other than the exit and latch of the LOOP.  Also resets the
-   GIMPLE_DEBUG information.  */
+/* Remove all GIMPLE_CONDs and GIMPLE_LABELs and GIMPLE_SWITCH of all
+   the basic blocks other than the exit and latch of the LOOP.  Also
+   resets the GIMPLE_DEBUG information.  */
 
 static void
 remove_conditions_and_labels (loop_p loop)
@@ -2875,6 +2956,7 @@ remove_conditions_and_labels (loop_p loop)
 	  {
 	  case GIMPLE_COND:
 	  case GIMPLE_LABEL:
+	  case GIMPLE_SWITCH:
 	    gsi_remove (&gsi, true);
 	    break;
 
@@ -3265,7 +3347,8 @@ ifcvt_split_critical_edges (class loop *loop, bool aggressive_if_conv)
 	continue;
 
       /* Skip basic blocks not ending with conditional branch.  */
-      if (!safe_is_a <gcond *> (*gsi_last_bb (bb)))
+      if (!safe_is_a <gcond *> (*gsi_last_bb (bb))
+	  && !safe_is_a <gswitch *> (*gsi_last_bb (bb)))
 	continue;
 
       FOR_EACH_EDGE (e, ei, bb->succs)
@@ -3330,7 +3413,7 @@ ifcvt_local_dce (class loop *loop)
 	  continue;
 	}
       code = gimple_code (stmt);
-      if (code == GIMPLE_COND || code == GIMPLE_CALL)
+      if (code == GIMPLE_COND || code == GIMPLE_CALL || code == GIMPLE_SWITCH)
 	{
 	  gimple_set_plf (stmt, GF_PLF_2, true);
 	  worklist.safe_push (stmt);
