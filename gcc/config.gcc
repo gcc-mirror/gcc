@@ -4711,7 +4711,7 @@ case "${target}" in
 		;;
 
 	riscv*-*-*)
-		supported_defaults="abi arch tune riscv_attribute isa_spec tls"
+		supported_defaults="abi arch tune riscv_attribute isa_spec tls cmodel"
 
 		case "${target}" in
 		riscv-* | riscv32*) xlen=32 ;;
@@ -4867,6 +4867,25 @@ case "${target}" in
 				exit 1
 			esac
 		fi
+
+		# Handle --with-cmodel.
+		# Make sure --with-cmodel is valid.  If it was not specified,
+		# use medlow as the default value.
+		case "${with_cmodel}" in
+		"" | medlow)
+			tm_defines="${tm_defines} TARGET_DEFAULT_CMODEL=CM_MEDLOW"
+			;;
+		medany)
+			tm_defines="${tm_defines} TARGET_DEFAULT_CMODEL=CM_MEDANY"
+			;;
+		large)
+			tm_defines="${tm_defines} TARGET_DEFAULT_CMODEL=CM_LARGE"
+			;;
+		*)
+			echo "invalid option for --with-cmodel: '${with_cmodel}', available values are 'medlow' 'medany' 'large'" 1>&2
+			exit 1
+			;;
+		esac
 		;;
 
 	mips*-*-*)
@@ -6046,7 +6065,7 @@ case ${target} in
 esac
 
 t=
-all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu nan fp_32 odd_spreg_32 divide llsc mips-plt synci tls lxc1-sxc1 madd4 isa_spec compact-branches msa"
+all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu nan fp_32 odd_spreg_32 divide llsc mips-plt synci tls lxc1-sxc1 madd4 isa_spec compact-branches msa cmodel"
 for option in $all_defaults
 do
 	eval "val=\$with_"`echo $option | sed s/-/_/g`

@@ -31104,8 +31104,10 @@ element-misaligned vector memory access.
 @item -mcmodel=medlow
 Generate code for the medium-low code model. The program and its statically
 defined symbols must lie within a single 2 GiB address range and must lie
-between absolute addresses @minus{}2 GiB and +2 GiB. Programs can be
-statically or dynamically linked. This is the default code model.
+between absolute addresses @minus{}2 GiB and +2 GiB. Programs can be statically
+or dynamically linked. This is the default code model unless GCC has been
+configured with @option{--with-cmodel=} specifying a different default code
+model.
 
 @opindex mcmodel=medany
 @item -mcmodel=medany

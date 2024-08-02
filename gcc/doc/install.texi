@@ -1537,6 +1537,10 @@ Use big endian by default.  Provide a multilib for little endian.
 Use little endian by default.  Provide a multilib for big endian.
 @end table
 
+@item --with-cmodel=@var{cmodel}
+Specify what code model to use by default.
+Currently only implemented for riscv*-*-*.
+
 @item --enable-threads
 Specify that the target
 supports threads.  This affects the Objective-C compiler and runtime
