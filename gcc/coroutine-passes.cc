@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "tree-pass.h"
 #include "ssa.h"
+#include "calls.h"
 #include "cgraph.h"
 #include "pretty-print.h"
 #include "diagnostic-core.h"
@@ -305,6 +306,15 @@ execute_early_expand_coro_ifns (void)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
       {
 	gimple *stmt = gsi_stmt (gsi);
+
+	/* Tell the user about 'alloca', we don't support it yet.  */
+	if (gimple_alloca_call_p (stmt))
+	  {
+	    sorry_at (gimple_location (stmt),
+		      "%<alloca%> is not yet supported in coroutines");
+	    gsi_next (&gsi);
+	    continue;
+	  }
 
 	if (!is_gimple_call (stmt) || !gimple_call_internal_p (stmt))
 	  {
