@@ -5509,16 +5509,15 @@ get_reassociation_width (vec<operand_entry *> *ops, int mult_num, tree lhs,
      , it is latency(MULT)*2 + latency(ADD)*2.  Assuming latency(MULT) >=
      latency(ADD), the first variant is preferred.
 
-     Find out if we can get a smaller width considering FMA.  */
-  if (width > 1 && mult_num && param_fully_pipelined_fma)
-    {
-      /* When param_fully_pipelined_fma is set, assume FMUL and FMA use the
-	 same units that can also do FADD.  For other scenarios, such as when
-	 FMUL and FADD are using separated units, the following code may not
-	 appy.  */
-      int width_mult = targetm.sched.reassociation_width (MULT_EXPR, mode);
-      gcc_checking_assert (width_mult <= width);
+     Find out if we can get a smaller width considering FMA.
+     Assume FMUL and FMA use the same units that can also do FADD.
+     For other scenarios, such as when FMUL and FADD are using separated units,
+     the following code may not apply.  */
 
+  int width_mult = targetm.sched.reassociation_width (MULT_EXPR, mode);
+  if (width > 1 && mult_num && param_fully_pipelined_fma
+      && width_mult <= width)
+    {
       /* Latency of MULT_EXPRs.  */
       int lat_mul
 	= get_mult_latency_consider_fma (ops_num, mult_num, width_mult);
