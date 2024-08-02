@@ -1307,9 +1307,8 @@ gfc_add_save (symbol_attribute *attr, save_state s, const char *name,
 
   if (s == SAVE_EXPLICIT && gfc_pure (NULL))
     {
-      gfc_error
-	("SAVE attribute at %L cannot be specified in a PURE procedure",
-	 where);
+      gfc_error ("SAVE attribute at %L cannot be specified in a PURE "
+		 "procedure", where);
       return false;
     }
 
@@ -1319,10 +1318,15 @@ gfc_add_save (symbol_attribute *attr, save_state s, const char *name,
   if (s == SAVE_EXPLICIT && attr->save == SAVE_EXPLICIT
       && (flag_automatic || pedantic))
     {
-	if (!gfc_notify_std (GFC_STD_LEGACY,
-			     "Duplicate SAVE attribute specified at %L",
-			     where))
+      if (!where)
+	{
+	  gfc_error ("Duplicate SAVE attribute specified near %C");
 	  return false;
+	}
+
+      if (!gfc_notify_std (GFC_STD_LEGACY, "Duplicate SAVE attribute "
+			   "specified at %L", where))
+	return false;
     }
 
   attr->save = s;
