@@ -623,10 +623,9 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
 	      && (((TyTy::InferType *) loop_context_type)->get_infer_kind ()
 		  != TyTy::InferType::GENERAL));
 
-      infered = loop_context_type_infered
-		  ? loop_context_type
-		  : TyTy::TupleType::get_unit_type (
-		      expr.get_mappings ().get_hirid ());
+      infered = loop_context_type_infered ? loop_context_type
+					  : TyTy::TupleType::get_unit_type (
+					    expr.get_mappings ().get_hirid ());
     }
   else
     {
@@ -829,9 +828,14 @@ TypeCheckExpr::visit (HIR::InlineAsm &expr)
 {
   typecheck_inline_asm_operand (expr);
 
-  // TODO: Hoise out if we have noreturn as an option
+  // NOTE: Hoise out if we have noreturn as an option
   // to return a never type
-  infered = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
+  // TODO : new keyword for memory seems sooooo shaky
+  if (expr.options.count (AST::InlineAsmOption::NORETURN) == 1)
+    infered = new TyTy::NeverType (expr.get_mappings ().get_hirid ());
+  else
+    infered
+      = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
 }
 
 void
@@ -1625,7 +1629,7 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
   TyTy::TyVar result_type
     = expr.has_return_type ()
 	? TyTy::TyVar (
-	    TypeCheckType::Resolve (expr.get_return_type ().get ())->get_ref ())
+	  TypeCheckType::Resolve (expr.get_return_type ().get ())->get_ref ())
 	: TyTy::TyVar::get_implicit_infer_var (expr.get_locus ());
 
   // resolve the block
