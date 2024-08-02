@@ -463,14 +463,15 @@
  "TARGET_APX_EGPR && !TARGET_AVX ? GENERAL_GPR16 : GENERAL_REGS")
 
 (define_memory_constraint "je"
-  "@internal Memory operand for APX NDD ADD."
-  (match_operand 0 "apx_ndd_add_memory_operand"))
+  "@internal Memory operand for APX EVEX-encoded ADD (i.e. APX NDD/NF)."
+  (match_operand 0 "apx_evex_add_memory_operand"))
 
 (define_memory_constraint "jM"
-  "@internal Memory operand, with APX NDD check."
-  (match_operand 0 "apx_ndd_memory_operand"))
+  "@internal Memory operand, with APX EVEX-encoded (i.e. APX NDD/NF) check."
+  (match_operand 0 "apx_evex_memory_operand"))
 
 (define_memory_constraint "jO"
-  "@internal Offsettable memory operand, with APX NDD check."
-  (and (match_operand 0 "apx_ndd_memory_operand")
+  "@internal Offsettable memory operand, with APX EVEX-encoded
+   (i.e. APX NDD/NF) check."
+  (and (match_operand 0 "apx_evex_memory_operand")
 	   (match_test "offsettable_nonstrict_memref_p (op)")))
