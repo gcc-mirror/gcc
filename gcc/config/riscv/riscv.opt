@@ -407,6 +407,13 @@ Mask(ZICBOP) Var(riscv_zicmo_subext)
 Mask(ZIC64B) Var(riscv_zicmo_subext)
 
 TargetVariable
+int riscv_mop_subext
+
+Mask(ZIMOP) Var(riscv_mop_subext)
+
+Mask(ZCMOP) Var(riscv_mop_subext)
+
+TargetVariable
 int riscv_zf_subext
 
 Mask(ZFBFMIN)  Var(riscv_zf_subext)
