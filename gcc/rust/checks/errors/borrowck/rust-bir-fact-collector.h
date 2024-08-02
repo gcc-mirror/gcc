@@ -334,7 +334,7 @@ protected: // Main collection entry points (for different categories).
 		expr.get_rhs () - 1, current_bb, current_stmt);
 
     issue_read_move (expr.get_rhs ());
-    push_subset (lhs, expr.get_rhs ());
+    push_place_subset (lhs, expr.get_rhs ());
   }
 
   void visit (const CallExpr &expr) override
@@ -662,7 +662,7 @@ protected: // Subset helpers.
       }
   }
 
-  void push_subset (PlaceId lhs, PlaceId rhs)
+  void push_place_subset (PlaceId lhs, PlaceId rhs)
   {
     auto &lhs_place = place_db[lhs];
     auto &rhs_place = place_db[rhs];
