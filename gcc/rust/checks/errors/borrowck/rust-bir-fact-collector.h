@@ -621,14 +621,16 @@ protected: // Generic BIR operations.
 protected: // Subset helpers.
   void push_subset (FreeRegion lhs, FreeRegion rhs)
   {
-    rust_debug ("\t\tpush_subset: '?%lu: '?%lu", lhs, rhs);
+    rust_debug ("\t\tpush_subset: '?%lu: '?%lu", (unsigned long) lhs,
+		(unsigned long) rhs);
 
     facts.subset_base.emplace_back (lhs, rhs, get_current_point_mid ());
   }
 
   void push_subset_all (FreeRegion lhs, FreeRegion rhs)
   {
-    rust_debug ("\t\tpush_subset_all: '?%lu: '?%lu", lhs, rhs);
+    rust_debug ("\t\tpush_subset_all: '?%lu: '?%lu", (unsigned long) lhs,
+		(unsigned long) rhs);
 
     for (auto point : cfg_points_all)
       facts.subset_base.emplace_back (lhs, rhs, point);
