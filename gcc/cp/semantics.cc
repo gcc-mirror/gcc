@@ -951,6 +951,86 @@ maybe_warn_unparenthesized_assignment (tree t, bool nested_p,
     }
 }
 
+/* Helper class for saving/restoring ANNOTATE_EXPRs.  For a tree node t, users
+   can construct one of these like so:
+
+     annotate_saver s (&t);
+
+   and t will be updated to have any annotations removed.  The user can then
+   transform t, and later restore the ANNOTATE_EXPRs with:
+
+     t = s.restore (t).
+
+   The intent is to ensure that any ANNOTATE_EXPRs remain the outermost
+   expressions following any operations on t.  */
+
+class annotate_saver {
+  /* The chain of saved annotations, if there were any.  Otherwise null.  */
+  tree m_annotations;
+
+  /* If M_ANNOTATIONS is non-null, then M_INNER points to TREE_OPERAND (A, 0)
+     for the innermost annotation A.  */
+  tree *m_inner;
+
+public:
+  annotate_saver (tree *);
+  tree restore (tree);
+};
+
+/* If *COND is an ANNOTATE_EXPR, walk through the chain of annotations, and set
+   *COND equal to the first non-ANNOTATE_EXPR (saving a pointer to the
+   original chain of annotations for later use in restore).  */
+
+annotate_saver::annotate_saver (tree *cond) : m_annotations (nullptr)
+{
+  tree *t = cond;
+  while (TREE_CODE (*t) == ANNOTATE_EXPR)
+    t = &TREE_OPERAND (*t, 0);
+
+  if (t != cond)
+    {
+      m_annotations = *cond;
+      *cond = *t;
+      m_inner = t;
+    }
+}
+
+/* If we didn't strip any annotations on construction, return NEW_INNER
+   unmodified.  Otherwise, wrap the saved annotations around NEW_INNER (updating
+   the types and flags of the annotations if needed) and return the resulting
+   expression.  */
+
+tree
+annotate_saver::restore (tree new_inner)
+{
+  if (!m_annotations)
+    return new_inner;
+
+  /* If the type of the inner expression changed, we need to update the types
+     of all the ANNOTATE_EXPRs.  We may need to update the flags too, but we
+     assume they only change if the type of the inner expression changes.
+     The flag update logic assumes that the other operands to the
+     ANNOTATE_EXPRs are always INTEGER_CSTs.  */
+  if (TREE_TYPE (new_inner) != TREE_TYPE (*m_inner))
+    {
+      const bool new_readonly
+	= TREE_READONLY (new_inner) || CONSTANT_CLASS_P (new_inner);
+
+      for (tree c = m_annotations; c != *m_inner; c = TREE_OPERAND (c, 0))
+	{
+	  gcc_checking_assert (TREE_CODE (c) == ANNOTATE_EXPR
+			       && TREE_CODE (TREE_OPERAND (c, 1)) == INTEGER_CST
+			       && TREE_CODE (TREE_OPERAND (c, 2)) == INTEGER_CST);
+	  TREE_TYPE (c) = TREE_TYPE (new_inner);
+	  TREE_SIDE_EFFECTS (c) = TREE_SIDE_EFFECTS (new_inner);
+	  TREE_READONLY (c) = new_readonly;
+	}
+    }
+
+  *m_inner = new_inner;
+  return m_annotations;
+}
+
 /* COND is the condition-expression for an if, while, etc.,
    statement.  Convert it to a boolean value, if appropriate.
    In addition, verify sequence points if -Wsequence-point is enabled.  */
@@ -965,6 +1045,9 @@ maybe_convert_cond (tree cond)
   /* Wait until we instantiate templates before doing conversion.  */
   if (type_dependent_expression_p (cond))
     return cond;
+
+  /* Strip any ANNOTATE_EXPRs from COND.  */
+  annotate_saver annotations (&cond);
 
   /* For structured binding used in condition, the conversion needs to be
      evaluated before the individual variables are initialized in the
@@ -984,7 +1067,10 @@ maybe_convert_cond (tree cond)
 
   /* Do the conversion.  */
   cond = convert_from_reference (cond);
-  return condition_conversion (cond);
+  cond = condition_conversion (cond);
+
+  /* Restore any ANNOTATE_EXPRs around COND.  */
+  return annotations.restore (cond);
 }
 
 /* Finish an expression-statement, whose EXPRESSION is as indicated.  */
