@@ -3152,10 +3152,16 @@ may_trap_p_1 (const_rtx x, unsigned flags)
 	  && MEM_VOLATILE_P (x)
 	  && XEXP (x, 0) == stack_pointer_rtx)
 	return true;
-      if (/* MEM_NOTRAP_P only relates to the actual position of the memory
-	     reference; moving it out of context such as when moving code
-	     when optimizing, might cause its address to become invalid.  */
-	  code_changed
+      if (/* MEM_READONLY_P means that the memory is both statically
+	     allocated and readonly, so MEM_NOTRAP_P should remain true
+	     even if the memory reference is moved.  This is certainly
+	     true for the important case of force_const_mem.
+
+	     Otherwise, MEM_NOTRAP_P only relates to the actual position
+	     of the memory reference; moving it out of context such as
+	     when moving code when optimizing, might cause its address
+	     to become invalid.  */
+	  (code_changed && !MEM_READONLY_P (x))
 	  || !MEM_NOTRAP_P (x))
 	{
 	  poly_int64 size = MEM_SIZE_KNOWN_P (x) ? MEM_SIZE (x) : -1;
