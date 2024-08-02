@@ -1045,7 +1045,7 @@ private
 
    type Depth is range 1 .. Max_Depth;
 
-   type Level is record
+   type Level is limited record
       Name_Last : Natural := 0;
       Dir       : GNAT.Directory_Operations.Dir_Type;
    end record;
@@ -1087,7 +1087,7 @@ private
       --  separators in the pattern.
    end record;
 
-   type Opt_Parser_Data (Arg_Count : Natural) is record
+   type Opt_Parser_Data (Arg_Count : Natural) is limited record
       Arguments : GNAT.OS_Lib.Argument_List_Access;
       --  null if reading from the command line
 

@@ -339,7 +339,7 @@ package System.Soft_Links is
    --  specific data. This type is used to store the necessary data into the
    --  Task_Control_Block or into a global variable in the non tasking case.
 
-   type TSD is record
+   type TSD is limited record
       Pri_Stack_Info : aliased Stack_Checking.Stack_Info;
       --  Information on stack (Base/Limit/Size) used by System.Stack_Checking.
       --  If this TSD does not belong to the environment task, the Size field

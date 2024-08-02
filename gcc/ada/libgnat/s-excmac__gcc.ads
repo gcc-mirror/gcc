@@ -142,7 +142,7 @@ package System.Exceptions.Machine is
    --  A GNAT exception object to be dealt with by the personality routine
    --  called by the GCC unwinding runtime.
 
-   type GNAT_GCC_Exception is record
+   type GNAT_GCC_Exception is limited record
       Header : Unwind_Exception;
       --  ABI Exception header first
 
