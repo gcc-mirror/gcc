@@ -11855,6 +11855,7 @@ complain_about_no_candidates_for_method_call (tree instance,
   print_z_candidates (location_of (name), candidates);
 }
 
+
 /* Build a call to "INSTANCE.FN (ARGS)".  If FN_P is non-NULL, it will
    be set, upon return, to the function called.  ARGS may be NULL.
    This may change ARGS.  */

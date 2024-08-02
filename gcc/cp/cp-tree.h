@@ -8973,6 +8973,9 @@ extern tree grok_contract			(tree, tree, tree, cp_expr, location_t);
 extern tree finish_contract_condition		(cp_expr);
 extern tree constify_contract_access            (tree);
 extern tree view_as_const                       (tree);
+extern tree maybe_contract_wrap_new_method_call		(tree, tree,
+						 vec<tree, va_gc> **, tree,
+						 int, tree *, tsubst_flags_t);
 
 /* Return the first contract in ATTRS, or NULL_TREE if there are none.  */
 
