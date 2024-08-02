@@ -91,7 +91,8 @@ private:
 	  ctx.fn_free_regions[bound.second.get_index ()]);
 
 	auto last_bound = universal_region_bounds.back ();
-	rust_debug ("\t\t %ld: %ld", last_bound.first, last_bound.second);
+	rust_debug ("\t\t %lu: %lu", (unsigned long) last_bound.first,
+		    (unsigned long) last_bound.second);
       }
 
     // TODO: handle type_region constraints
