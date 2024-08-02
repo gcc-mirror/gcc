@@ -1,5 +1,7 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* { dg-options "-O2 -fdump-tree-ivopts-details" } */
+/* { dg-add-options arm_v8_1m_mve } */
 
 void f2 (void);
 
