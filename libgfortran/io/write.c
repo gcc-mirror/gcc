@@ -1367,6 +1367,11 @@ write_i (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
   write_decimal (dtp, f, p, len);
 }
 
+void
+write_iu (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
+{
+  write_decimal_unsigned (dtp, f, p, len);
+}
 
 void
 write_b (st_parameter_dt *dtp, const fnode *f, const char *source, int len)

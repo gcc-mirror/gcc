@@ -1418,6 +1418,9 @@ type_name (bt type)
     case BT_INTEGER:
       p = "INTEGER";
       break;
+    case BT_UNSIGNED:
+      p = "UNSIGNED";
+      break;
     case BT_LOGICAL:
       p = "LOGICAL";
       break;
@@ -1493,6 +1496,31 @@ require_type (st_parameter_dt *dtp, bt expected, bt actual, const fnode *f)
   return 1;
 }
 
+/* Check that the actual matches one of two expected types; issue an error
+   if that is not the case.  */
+
+
+static int
+require_one_of_two_types (st_parameter_dt *dtp, bt expected1, bt expected2,
+			  bt actual, const fnode *f)
+{
+  char buffer[BUFLEN];
+
+  if (actual == expected1)
+    return 0;
+
+  if (actual == expected2)
+    return 0;
+
+  snprintf (buffer, BUFLEN,
+	    "Expected %s or %s for item %d in formatted transfer, got %s",
+	    type_name (expected1), type_name (expected2),
+	    dtp->u.p.item_count - 1, type_name (actual));
+
+  format_error (dtp, f, buffer);
+  return 1;
+
+}
 
 /* Check that the dtio procedure required for formatted IO is present.  */
 
@@ -1635,9 +1663,12 @@ formatted_transfer_scalar_read (st_parameter_dt *dtp, bt type, void *p, int kind
 	case FMT_I:
 	  if (n == 0)
 	    goto need_read_data;
-	  if (require_type (dtp, BT_INTEGER, type, f))
+	  if (require_one_of_two_types (dtp, BT_INTEGER, BT_UNSIGNED, type, f))
 	    return;
-	  read_decimal (dtp, f, p, kind);
+	  if (type == BT_INTEGER)
+	    read_decimal (dtp, f, p, kind);
+	  else
+	    read_decimal_unsigned (dtp, f, p, kind);
 	  break;
 
 	case FMT_B:
@@ -2131,9 +2162,12 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	case FMT_I:
 	  if (n == 0)
 	    goto need_data;
-	  if (require_type (dtp, BT_INTEGER, type, f))
+	  if (require_one_of_two_types (dtp, BT_INTEGER, BT_UNSIGNED, type, f))
 	    return;
-	  write_i (dtp, f, p, kind);
+	  if (type == BT_INTEGER)
+	    write_i (dtp, f, p, kind);
+	  else
+	    write_iu (dtp, f, p, kind);
 	  break;
 
 	case FMT_B:
