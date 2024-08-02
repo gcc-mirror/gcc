@@ -58,7 +58,10 @@
       return "<load>\t%0,%1";
   }
   [(set_attr "type" "multi")
-   (set (attr "length") (const_int 12))])
+   (set (attr "length")
+	(symbol_ref "(is_mm_seq_cst (memmodel_from_int (INTVAL (operands[2]))) ? 8
+		      : 4)"))])
+
 
 (define_insn "atomic_store_ztso<mode>"
   [(set (match_operand:ANYI 0 "memory_operand" "=A")
@@ -78,4 +81,6 @@
       return "<store>\t%z1,%0";
   }
   [(set_attr "type" "multi")
-   (set (attr "length") (const_int 8))])
+   (set (attr "length")
+	(symbol_ref "(is_mm_seq_cst (memmodel_from_int (INTVAL (operands[2]))) ? 8
+		      : 4)"))])

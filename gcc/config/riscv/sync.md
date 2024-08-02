@@ -199,7 +199,7 @@
 	   "bnez\t%4, 1b";
   }
   [(set_attr "type" "atomic")
-   (set (attr "length") (const_int 20))])
+   (set (attr "length") (const_int 16))])
 
 (define_insn "subword_atomic_fetch_strong_<atomic_optab>"
   [(set (match_operand:SI 0 "register_operand" "=&r")		   ;; old value at mem
@@ -416,7 +416,7 @@
 	   "mv\t%0, %4";
   }
   [(set_attr "type" "atomic")
-   (set (attr "length") (const_int 20))])
+   (set (attr "length") (const_int 16))])
 
 (define_expand "atomic_exchange<mode>"
   [(match_operand:SHORT 0 "register_operand") ;; old value at mem
@@ -560,7 +560,8 @@
   }
   [(set_attr "type" "atomic")
    (set (attr "length")
-        (symbol_ref "is_mm_seq_cst(memmodel_from_int(INTVAL (operands[5]))) ? 8 : 4"))])
+	(symbol_ref "(is_mm_seq_cst (memmodel_from_int (INTVAL (operands[5]))) ? 8
+		      : 4)"))])
 
 (define_expand "atomic_compare_and_swap<mode>"
   [(match_operand:SI 0 "register_operand" "")   ;; bool output
@@ -646,7 +647,8 @@
   }
   [(set_attr "type" "atomic")
    (set (attr "length")
-        (symbol_ref "is_mm_seq_cst(memmodel_from_int(INTVAL (operands[5]))) ? 8 : 4"))])
+	(symbol_ref "(is_mm_seq_cst (memmodel_from_int (INTVAL (operands[5]))) ? 8
+		      : 4)"))])
 
 (define_expand "atomic_compare_and_swap<mode>"
   [(match_operand:SI 0 "register_operand")    ;; bool output

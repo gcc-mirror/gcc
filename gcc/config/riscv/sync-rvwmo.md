@@ -68,7 +68,10 @@
       return "<load>\t%0,%1";
   }
   [(set_attr "type" "multi")
-   (set (attr "length") (const_int 12))])
+   (set (attr "length")
+	(symbol_ref "(is_mm_seq_cst (memmodel_from_int (INTVAL (operands[2]))) ? 12
+		      : is_mm_acquire (memmodel_from_int (INTVAL (operands[2]))) ? 8
+		      : 4)"))])
 
 ;; Implement atomic stores with conservative fences.
 ;; This allows us to be compatible with the ISA manual Table A.6 and Table A.7.
@@ -94,4 +97,7 @@
       return "<store>\t%z1,%0";
   }
   [(set_attr "type" "multi")
-   (set (attr "length") (const_int 12))])
+   (set (attr "length")
+	(symbol_ref "(is_mm_seq_cst (memmodel_from_int (INTVAL (operands[2]))) ? 12
+		      : is_mm_release (memmodel_from_int (INTVAL (operands[2]))) ? 8
+		      : 4)"))])
