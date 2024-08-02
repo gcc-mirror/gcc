@@ -36,11 +36,11 @@ foo ()
 class S
 {
   [[foo::bar]] friend int bar (S &);	// { dg-warning "attribute ignored" }
-					// { dsg-message "an attribute that appertains to a friend declaration that is not a definition is ignored" "" { target *-*-* } .-1 }
+					// { dg-message "an attribute that appertains to a friend declaration that is not a definition is ignored" "" { target *-*-* } .-1 }
   [[bar::foo, foo::bar, baz::qux]] friend int baz (S &); // { dg-warning "attribute ignored" }
-					// { dsg-message "an attribute that appertains to a friend declaration that is not a definition is ignored" "" { target *-*-* } .-1 }
+					// { dg-message "an attribute that appertains to a friend declaration that is not a definition is ignored" "" { target *-*-* } .-1 }
   [[bar::foo, bar::bar, baz::qux]] friend int qux (S &); // { dg-warning "attribute ignored" }
-					// { dsg-message "an attribute that appertains to a friend declaration that is not a definition is ignored" "" { target *-*-* } .-1 }
+					// { dg-message "an attribute that appertains to a friend declaration that is not a definition is ignored" "" { target *-*-* } .-1 }
 public:
   int s;
 };
