@@ -5209,6 +5209,50 @@ gfc_conv_intrinsic_dot_product (gfc_se * se, gfc_expr * expr)
 }
 
 
+/* Tells whether the expression E is a reference to an optional variable whose
+   presence is not known at compile time.  Those are variable references without
+   subreference; if there is a subreference, we can assume the variable is
+   present.  We have to special case full arrays, which we represent with a fake
+   "full" reference, and class descriptors for which a reference to data is not
+   really a subreference.  */
+
+bool
+maybe_absent_optional_variable (gfc_expr *e)
+{
+  if (!(e && e->expr_type == EXPR_VARIABLE))
+    return false;
+
+  gfc_symbol *sym = e->symtree->n.sym;
+  if (!sym->attr.optional)
+    return false;
+
+  gfc_ref *ref = e->ref;
+  if (ref == nullptr)
+    return true;
+
+  if (ref->type == REF_ARRAY
+      && ref->u.ar.type == AR_FULL
+      && ref->next == nullptr)
+    return true;
+
+  if (!(sym->ts.type == BT_CLASS
+	&& ref->type == REF_COMPONENT
+	&& ref->u.c.component == CLASS_DATA (sym)))
+    return false;
+
+  gfc_ref *next_ref = ref->next;
+  if (next_ref == nullptr)
+    return true;
+
+  if (next_ref->type == REF_ARRAY
+      && next_ref->u.ar.type == AR_FULL
+      && next_ref->next == nullptr)
+    return true;
+
+  return false;
+}
+
+
 /* Remove unneeded kind= argument from actual argument list when the
    result conversion is dealt with in a different place.  */
 
@@ -5321,11 +5365,11 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   tree nonempty;
   tree lab1, lab2;
   tree b_if, b_else;
+  tree back;
   gfc_loopinfo loop;
   gfc_actual_arglist *actual;
   gfc_ss *arrayss;
   gfc_ss *maskss;
-  gfc_ss *backss;
   gfc_se arrayse;
   gfc_se maskse;
   gfc_expr *arrayexpr;
@@ -5391,10 +5435,29 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
     && maskexpr->symtree->n.sym->attr.dummy
     && maskexpr->symtree->n.sym->attr.optional;
   backexpr = actual->next->next->expr;
-  if (backexpr)
-    backss = gfc_get_scalar_ss (gfc_ss_terminator, backexpr);
+
+  gfc_init_se (&backse, NULL);
+  if (backexpr == nullptr)
+    back = logical_false_node;
+  else if (maybe_absent_optional_variable (backexpr))
+    {
+      /* This should have been checked already by
+	 maybe_absent_optional_variable.  */
+      gcc_checking_assert (backexpr->expr_type == EXPR_VARIABLE);
+
+      gfc_conv_expr (&backse, backexpr);
+      tree present = gfc_conv_expr_present (backexpr->symtree->n.sym, false);
+      back = fold_build2_loc (input_location, TRUTH_ANDIF_EXPR,
+			      logical_type_node, present, backse.expr);
+    }
   else
-    backss = nullptr;
+    {
+      gfc_conv_expr (&backse, backexpr);
+      back = backse.expr;
+    }
+  gfc_add_block_to_block (&se->pre, &backse.pre);
+  back = gfc_evaluate_now_loc (input_location, back, &se->pre);
+  gfc_add_block_to_block (&se->pre, &backse.post);
 
   nonempty = NULL;
   if (maskexpr && maskexpr->rank != 0)
@@ -5454,9 +5517,6 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 
   if (maskss)
     gfc_add_ss_to_loop (&loop, maskss);
-
-  if (backss)
-    gfc_add_ss_to_loop (&loop, backss);
 
   gfc_add_ss_to_loop (&loop, arrayss);
 
@@ -5543,11 +5603,6 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   gfc_conv_expr_val (&arrayse, arrayexpr);
   gfc_add_block_to_block (&block, &arrayse.pre);
 
-  gfc_init_se (&backse, NULL);
-  backse.ss = backss;
-  gfc_conv_expr_val (&backse, backexpr);
-  gfc_add_block_to_block (&block, &backse.pre);
-
   /* We do the following if this is a more extreme value.  */
   gfc_start_block (&ifblock);
 
@@ -5608,7 +5663,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 	  elsebody2 = gfc_finish_block (&elseblock);
 
 	  tmp = fold_build3_loc (input_location, COND_EXPR, logical_type_node,
-				 backse.expr, ifbody2, elsebody2);
+				 back, ifbody2, elsebody2);
 
 	  gfc_add_expr_to_block (&block, tmp);
 	}
@@ -5707,7 +5762,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 	elsebody2 = gfc_finish_block (&elseblock);
 
 	tmp = fold_build3_loc (input_location, COND_EXPR, logical_type_node,
-			       backse.expr, ifbody2, elsebody2);
+			       back, ifbody2, elsebody2);
       }
 
       gfc_add_expr_to_block (&block, tmp);
