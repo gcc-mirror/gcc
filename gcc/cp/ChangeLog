@@ -1,3 +1,38 @@
+2024-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116113
+	* semantics.cc (maybe_convert_cond): Check DECL_DECOMP_BASE
+	is non-NULL before dereferencing it.
+	(finish_switch_cond): Likewise.
+
+2024-08-01  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/112341
+	* coroutines.cc (struct coroutine_info): Also cache the
+	traits type.
+	(ensure_coro_initialized): New function.  Makes sure we have
+	initialized the coroutine state successfully, or informs the
+	caller should it fail to do so.  Extracted from
+	coro_promise_type_found_p.
+	(coro_get_traits_class): New function.  Gets the (cached)
+	coroutine traits type for a given coroutine.  Extracted from
+	coro_promise_type_found_p and refactored to cache the result.
+	(coro_promise_type_found_p): Use the two functions above.
+	(build_template_co_await_expr): New function.  Builds a
+	CO_AWAIT_EXPR representing a CO_AWAIT_EXPR in a template
+	declaration.
+	(build_co_await): Use the above if processing_template_decl, and
+	give it a proper type.
+	(coro_dependent_p): New function.  Returns true iff its
+	argument is a type-dependent expression OR the current functions
+	traits class is type dependent.
+	(finish_co_await_expr): Defer expansion only in the case
+	coro_dependent_p returns true.
+	(finish_co_yield_expr): Ditto.
+	(finish_co_return_stmt): Ditto.
+	* pt.cc (type_dependent_expression_p): Do not treat
+	CO_AWAIT/CO_YIELD specially.
+
 2024-07-31  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/115645

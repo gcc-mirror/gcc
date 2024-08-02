@@ -1,3 +1,1156 @@
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-default-resolver.cc (DefaultResolver::visit): Visit
+	inherent impl type.
+
+2024-08-01  Jakub Dupak  <dev@jakubdupak.com>
+
+	* checks/errors/borrowck/ffi-polonius/src/gccrs_ffi.rs: Bump copyright.
+	* checks/errors/borrowck/ffi-polonius/src/lib.rs: Bump copyright.
+	* checks/errors/borrowck/polonius/rust-polonius-ffi.h: Bump copyright.
+	* checks/errors/borrowck/polonius/rust-polonius.h: Bump copyright.
+	* checks/errors/borrowck/rust-bir-dump.cc: Bump copyright.
+	* checks/errors/borrowck/rust-bir-fact-collector.h: Bump copyright.
+	* checks/errors/borrowck/rust-bir-free-region.h: Bump copyright.
+
+2024-08-01  Jakub Dupak  <dev@jakubdupak.com>
+
+	* checks/errors/borrowck/rust-bir-dump.cc (renumber_places):
+	Remove unecessary braces.
+	(Dump::go): Remove unecessary braces.
+	(Dump::visit): Remove unecessary braces.
+	(Dump::visit_scope): Remove unecessary braces.
+	* checks/errors/borrowck/rust-bir-fact-collector.h (class FactCollector):
+	Remove unecessary braces.
+	(points): Remove unecessary braces.
+	* checks/errors/borrowck/rust-bir-free-region.h: Remove unecessary braces.
+	* checks/errors/borrowck/rust-bir-place.h: Remove unecessary braces.
+	* checks/errors/borrowck/rust-borrow-checker.cc (BorrowChecker::go):
+	Remove unecessary braces.
+	* checks/errors/borrowck/rust-function-collector.h: Remove unecessary braces.
+
+2024-08-01  Jakub Dupak  <dev@jakubdupak.com>
+
+	* checks/errors/borrowck/rust-bir-fact-collector.h: New file.
+	* checks/errors/borrowck/rust-borrow-checker.cc (BorrowChecker::go):
+	Enable fact collection.
+
+2024-08-01  Jakub Dupak  <dev@jakubdupak.com>
+
+	* checks/errors/borrowck/rust-bir-place.h (struct Lifetime):
+	Extended regions and loans.
+	(struct Loan): Representation of loan (result of borrowing)
+	* checks/errors/borrowck/rust-bir-builder-expr-stmt.cc (ExprStmtBuilder::visit):
+	Fix let stmt handling.
+	* checks/errors/borrowck/rust-bir-builder-pattern.h: improved
+	pattern translation
+	* checks/errors/borrowck/rust-bir-builder-internal.h: region binding
+	* checks/errors/borrowck/rust-bir-builder-expr-stmt.h (class ExprStmtBuilder):
+	Region support.
+	(class RenumberCtx): Region support.
+	* checks/errors/borrowck/rust-bir-builder.h (class Builder): Region support.
+	* checks/errors/borrowck/rust-bir-dump.cc (get_lifetime_name): Region support.
+	(renumber_places): Region support.
+	(Dump::go): Region support.
+	(Dump::visit): Region support.
+	(Dump::visit_lifetime): Region support.
+	(Dump::visit_scope): Region support.
+	* checks/errors/borrowck/rust-bir.h (class AbstractExpr): Region support.
+	(struct Function): Region support.
+	(class BorrowExpr): Region support.
+	(class CallExpr): Region support.
+
+2024-08-01  Jakub Dupak  <dev@jakubdupak.com>
+
+	* typecheck/rust-tyty-variance-analysis-private.h (class FieldVisitorCtx):
+	Region extraction.
+	* typecheck/rust-tyty-variance-analysis.cc (query_field_regions): Region extraction.
+	(FieldVisitorCtx::collect_regions): Region extraction.
+	(FieldVisitorCtx::add_constraints_from_ty): Region extraction.
+	(FieldVisitorCtx::add_constraints_from_region): Region
+	extraction.
+	(FieldVisitorCtx::add_constrints_from_param): Region extraction.
+	* typecheck/rust-tyty-variance-analysis.h (query_field_regions):
+	Region extraction.
+
+2024-08-01  Jakub Dupak  <dev@jakubdupak.com>
+
+	* checks/errors/borrowck/rust-bir-free-region.h: New file.
+
+2024-08-01  Jakub Dupak  <dev@jakubdupak.com>
+
+	* checks/errors/borrowck/ffi-polonius/Cargo.toml: New file.
+	* checks/errors/borrowck/ffi-polonius/src/gccrs_ffi.rs: New file.
+	* checks/errors/borrowck/ffi-polonius/src/gccrs_ffi_generated.rs: New file.
+	* checks/errors/borrowck/ffi-polonius/src/lib.rs: New file.
+	* checks/errors/borrowck/polonius/rust-polonius-ffi.h: New file.
+	* checks/errors/borrowck/polonius/rust-polonius.h: New file.
+
+2024-08-01  Jakub Dupak  <dev@jakubdupak.com>
+
+	* checks/errors/borrowck/rust-bir-dump.cc (Dump::visit): const
+	visitor
+	* checks/errors/borrowck/rust-bir-dump.h: const visitor
+	* checks/errors/borrowck/rust-bir-visitor.h: const visitor
+	* checks/errors/borrowck/rust-bir.h: const getter
+
+2024-08-01  Jakub Dupak  <dev@jakubdupak.com>
+
+	* checks/errors/borrowck/rust-bir-builder-expr-stmt.cc (ExprStmtBuilder::visit): Emit moves.
+	* checks/errors/borrowck/rust-bir-builder-internal.h: Emit moves.
+	* checks/errors/borrowck/rust-bir-builder-lazyboolexpr.h: Emit moves.
+	* checks/errors/borrowck/rust-bir-dump.cc (Dump::visit_move_place): Emit moves.
+	(Dump::visit): Emit moves.
+	* checks/errors/borrowck/rust-bir-place.h (struct Place): Emit moves.
+	* checks/errors/borrowck/rust-bir-visitor.h: Emit moves.
+	* checks/errors/borrowck/rust-bir.h (enum class): Emit moves.
+	(class AbstractExpr): Emit moves.
+	(BasicBlock::is_terminated): Emit moves.
+
+2024-08-01  Jakub Dupak  <dev@jakubdupak.com>
+
+	* checks/errors/borrowck/rust-bir-builder-expr-stmt.cc (ExprStmtBuilder::setup_loop):
+	Loop handling.
+	(ExprStmtBuilder::visit): Handle scopes.
+	* checks/errors/borrowck/rust-bir-builder-internal.h (struct BuilderContext):
+	Handle scopes.
+	* checks/errors/borrowck/rust-bir-dump.cc (Dump::go): Dump scopes.
+	(Dump::visit): Add scopes dump.
+	(Dump::indent): Add indentation logic.
+	(Dump::visit_scope): Dump scope.
+	* checks/errors/borrowck/rust-bir-dump.h: Dump methods.
+	* checks/errors/borrowck/rust-bir-place.h (std::numeric_limits::max): Scope constants.
+	(struct Scope): Scope representation.
+	(class PlaceDB): Scope tracking.
+
+2024-08-01  Jakub Dupak  <dev@jakubdupak.com>
+
+	* checks/errors/borrowck/rust-bir-place.h:
+	Create place tree traverse API.
+
+2024-08-01  Jakub Dupak  <dev@jakubdupak.com>
+
+	* checks/errors/borrowck/rust-bir-builder-expr-stmt.cc (ExprStmtBuilder::visit):
+	Use callable API
+
+2024-08-01  Jakub Dupak  <dev@jakubdupak.com>
+
+	* checks/errors/borrowck/bir-design-notes.md (nodes): Rename node to statement.
+	(Nodes): Rename node to statement.
+	* checks/errors/borrowck/rust-bir-builder-expr-stmt.cc (ExprStmtBuilder::visit):
+	Rename node to statement.
+	* checks/errors/borrowck/rust-bir-builder-internal.h: Rename node to statement.
+	* checks/errors/borrowck/rust-bir-builder.h: Rename node to statement.
+	* checks/errors/borrowck/rust-bir-dump.cc (Dump::go): Rename node to statement.
+	(Dump::visit): Rename node to statement.
+	* checks/errors/borrowck/rust-bir-dump.h (class Dump): Rename node to statement.
+	* checks/errors/borrowck/rust-bir-visitor.h (class Node): Rename node to statement.
+	(class Statement): Rename node to statement.
+	* checks/errors/borrowck/rust-bir.h (class Node): Rename node to statement.
+	(class Statement): Rename node to statement.
+	(class AbstractExpr): Rename node to statement.
+	(struct Function): Rename node to statement.
+	(struct BasicBlock): Rename node to statement.
+
+2024-08-01  Jakub Dupak  <dev@jakubdupak.com>
+
+	* checks/errors/borrowck/rust-bir-dump.cc: Use rust-system.h
+	* checks/errors/borrowck/rust-bir-dump.h (RUST_BIR_DUMP_H): Use rust-system.h
+	* checks/errors/borrowck/rust-bir-place.h (RUST_BIR_PLACE_H): Use rust-system.h
+	* checks/errors/borrowck/rust-function-collector.h: Use rust-system.h
+	* rust-system.h: Use rust-system.h
+	* typecheck/rust-hir-type-check.h: Use rust-system.h
+	* typecheck/rust-tyty-subst.cc: Use rust-system.h
+	* typecheck/rust-tyty-subst.h: Use rust-system.h
+	* typecheck/rust-tyty.h: Use rust-system.h
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* typecheck/rust-unify.cc (UnifyRules::go): Always unify to `ltype` if
+	we are matching against a `Never` in `rtype`.
+	(UnifyRules::expect_never): Always unify to the expected type.
+
+2024-08-01  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* lex/rust-lex.cc
+	(Lexer::parse_raw_string):
+	Bring handling of edge cases to par with parse_raw_byte_string.
+
+2024-08-01  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* parse/rust-parse-impl.h
+	(Parser::parse_vis_item):
+	Call parse_function instead of parse_async_item when finding
+	UNSAFE or EXTERN_KW during lookahead.
+
+2024-08-01  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* util/rust-attribute-values.h
+	(Attributes::UNSTABLE): New.
+	* util/rust-attributes.cc
+	(__definitions): Add Attributes::UNSTABLE.
+
+2024-08-01  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* util/rust-attribute-values.h
+	(Attributes::RUSTC_DEPRECATED): New.
+	* util/rust-attributes.cc
+	(__definitions): Add Attributes::RUSTC_DEPRECATED.
+
+2024-08-01  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* lex/rust-lex.cc
+	(Lexer::parse_raw_byte_string):
+	Bring handling of edge cases to par with parse_byte_string.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-forever-stack.h: Change dfs function prototype and
+	declare dfs return type structure.
+	* resolve/rust-forever-stack.hxx: Adapt dfs function to the new return
+	type.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* backend/rust-compile-resolve-path.cc: Attempt to resolve names
+	also using new name resolution context.
+	* backend/rust-compile-resolve-path.h: Add new declaration.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-toplevel-name-resolver-2.0.cc (TopLevel::handle_use_glob):
+	Change function prototype to use a reference instead.
+	(TopLevel::handle_use_dec): Likewise.
+	(TopLevel::handle_rebind): Add name resolution on rebind use
+	declarations.
+	(flatten_rebind): Change prototype to accept a pair of path/alias.
+	(flatten_list): Adapt call to flatten_rebind.
+	(flatten): Adapt call to flatten_rebind.
+	(flatten_glob): Remove unused part.
+	(TopLevel::visit): Add rebind resolution.
+	* resolve/rust-toplevel-name-resolver-2.0.h: Adapt function prototypes.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit): Add mapping
+	implementation.
+	* resolve/rust-late-name-resolver-2.0.h: Add function visitor prototype
+	override.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-toplevel-name-resolver-2.0.cc (TopLevel::handle_use_dec):
+	Replace the string format %<%s%> with the proper %qs format.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* typecheck/rust-hir-type-check-path.cc (TypeCheckExpr::resolve_root_path):
+	Only get immutable name resolution context when name resolution 2.0 is
+	used.
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::resolve_root_path):
+	Likewise.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* util/rust-canonical-path.h: Also assign crate number.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-toplevel-name-resolver-2.0.cc (TopLevel::visit): Add
+	Self generic parameter injection and a warning.
+	* resolve/rust-toplevel-name-resolver-2.0.h: Add function prototype.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* backend/rust-compile-item.cc (CompileItem::visit): Check the resolver
+	flag and use the new one when required.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-default-resolver.cc (DefaultResolver::visit): Remove
+	empty visit function.
+	* resolve/rust-default-resolver.h: Remove function prototype.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-default-resolver.cc (DefaultResolver::visit): Remove
+	visitor implementation and scoping.
+	* resolve/rust-default-resolver.h: Remove function prototype.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-toplevel-name-resolver-2.0.cc (TopLevel::visit): Add
+	constant identifiers to the resolver.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::visit): Change
+	search location for struct types.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-toplevel-name-resolver-2.0.cc (GlobbingVisitor::visit):
+	Change enum type namespace.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-toplevel-name-resolver-2.0.cc (GlobbingVisitor::visit):
+	Add tuple struct type to the resolver's context.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-toplevel-name-resolver-2.0.cc (GlobbingVisitor::visit):
+	Add the struct constructor when the struct is a unit.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit): Change the
+	namespace for values from "label" to "values".
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-default-resolver.cc (DefaultResolver::visit): Remove
+	function implementation.
+	* resolve/rust-default-resolver.h: Remove function prototype.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-default-resolver.cc (DefaultResolver::visit): Visit
+	constant item's types.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-default-resolver.cc (DefaultResolver::visit): Visit
+	function return type.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* typecheck/rust-hir-type-check-path.cc (TypeCheckExpr::resolve_root_path):
+	Change error message to match old resolver and test case.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-toplevel-name-resolver-2.0.cc (TopLevel::visit): Add
+	the struct constructor to the value namespace.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-early-name-resolver-2.0.cc (Early::visit): Adapt
+	resolved type to the new API.
+	(Early::visit_attributes): Retrieve the node id from the definition.
+	* resolve/rust-forever-stack.h: Change the return type of getter
+	functions. Those functions now return a definition type instead of a
+	node id.
+	* resolve/rust-forever-stack.hxx: Change member function implementation
+	in the forever stack to accomodate it's API changes.
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit): Use internal
+	node id. Emit an error when resolving multiple ambiguous values.
+	* resolve/rust-rib.cc (Rib::Definition::Definition): Add a default
+	constructor.
+	(Rib::Definition::is_ambiguous): Add a new function to determine
+	whether a function definition is ambiguous or not.
+	(Rib::Definition::to_string): Add a member function to convert a given
+	definition to a string.
+	(Rib::insert): Add new rules for value insertion in a rib. Insertion
+	order does not impact the result anymore: inserting a shadowable value
+	after a non shadowable one does not trigger an error anymore. All
+	shadowable values inserted in a rib are kepts until being replaced by a
+	non shadowable one.
+	(Rib::get): Return a definition instead of a node id.
+	* resolve/rust-rib.h: Update function prototypes.
+	* resolve/rust-toplevel-name-resolver-2.0.cc (TopLevel::handle_use_glob):
+	Update return value container to match the new function's prototype.
+	(TopLevel::handle_use_dec): Likewise.
+	(flatten_glob): Likewise.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-forever-stack.h: Add a new function prototype to insert
+	a shadowable definition.
+	* resolve/rust-forever-stack.hxx: Add the new insert_shadowable
+	function to insert shadowable definition into the forever stack.
+	* resolve/rust-name-resolution-context.cc (NameResolutionContext::insert_shadowable):
+	Likewise with the name resolution context.
+	* resolve/rust-name-resolution-context.h: Add name resolution context
+	insert_shadowable member function prototype.
+	* resolve/rust-toplevel-name-resolver-2.0.cc (GlobbingVisitor::visit):
+	Insert shadowable definition into the forever stack for glob use
+	declaration.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit): Add a check
+	for missing item.
+	* resolve/rust-toplevel-name-resolver-2.0.cc (GlobbingVisitor::go):
+	Add a new function in the visitor to dispatch the visitor to items in
+	the given module.
+	(TopLevel::handle_use_glob): Change call to visitor to use the pointer.
+	* resolve/rust-toplevel-name-resolver-2.0.h: Add prototype for new
+	member function.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* checks/lints/rust-lint-marklive.cc (MarkLive::find_ref_node_id):
+	Add code path for the resolver 2.0
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit): Remove failing
+	label context resolve call.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-toplevel-name-resolver-2.0.cc (GlobbingVisitor::visit):
+	Insert names into their namespace.
+	(TopLevel::visit): Insert ast module.
+	(TopLevel::handle_use_dec): Resolve use declaration.
+	(TopLevel::handle_use_glob): Use globbing visitor.
+	(flatten_list): Use globbing path vector.
+	(flatten_glob): Likewise.
+	(flatten): Likewise.
+	(prefix_subpaths): Add a function to prefix subpath.
+	* resolve/rust-toplevel-name-resolver-2.0.h (class GlobbingVisitor):
+	Add globbing visitor.
+	* util/rust-hir-map.cc (Mappings::insert_ast_module): Add function to
+	insert module in module hashmap.
+	(Mappings::lookup_ast_module): Add function to retrieve ast module.
+	* util/rust-hir-map.h: Add module map and getter/setter prototypes.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-toplevel-name-resolver-2.0.cc (TopLevel::visit): Module
+	should be added to the type namespace in order to be retrieved later.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* resolve/rust-late-name-resolver-2.0.cc (Late::setup_builtin_types):
+	Setup bool as builtin type.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-toplevel-name-resolver-2.0.cc (insert_macros): Add
+	constraint over the ast node id.
+	(TopLevel::visit): Likewise.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-toplevel-name-resolver-2.0.cc (TopLevel::visit): Change
+	error message.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-toplevel-name-resolver-2.0.cc (TopLevel::handle_use_dec):
+	Use the new dict to track down already resolved use declarations.
+	* resolve/rust-toplevel-name-resolver-2.0.h: Add new dict to store
+	previous use declarations.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-toplevel-name-resolver-2.0.cc (TopLevel::insert_or_error_out):
+	Add new constraint to duplicate errors.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* resolve/rust-forever-stack.hxx: Start using Rib::Definition for
+	shadowable information.
+	* resolve/rust-late-name-resolver-2.0.cc (next_node_id): New.
+	(next_hir_id): New.
+	(Late::setup_builtin_types): Improve builtin type setup.
+	* resolve/rust-rib.cc (Rib::Definition::Definition): New constructor.
+	(Rib::Definition::Shadowable): Likewise.
+	(Rib::Definition::NonShadowable): Likewise.
+	(Rib::Rib): Fix general constructor.
+	(Rib::insert): Use Definition class.
+	(Rib::get): Likewise.
+	* resolve/rust-rib.h: New Definition class, new prototypes.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* resolve/rust-name-resolution-context.cc (NameResolutionContext::map_usage):
+	Use newtype pattern.
+	(NameResolutionContext::lookup): Likewise.
+	* resolve/rust-name-resolution-context.h (class Usage): New class.
+	(class Definition): Likewise.
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit): Create instances
+	of Usage and Definition.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* backend/rust-compile-base.cc: Use new ImmutableNrCtx.
+	* backend/rust-compile-context.h: Likewise.
+	* backend/rust-compile-expr.cc: Likewise.
+	* backend/rust-compile-item.cc: Likewise.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::visit): Start
+	fetching name resolution information in the typechecker.
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::resolve_root_path):
+	Likewise.
+	* typecheck/rust-hir-type-check-path.cc: Use nr 2.0.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* resolve/rust-name-resolution-context.cc (NameResolutionContext::lookup):
+	Add lookup function.
+	* resolve/rust-name-resolution-context.h: Include mappings and optional.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust-session-manager.cc (Session::compile_crate): Create an immutable
+	view of the name resolution context.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust-session-manager.cc: Add files for dumping name resolution, call
+	name resolution dump function.
+	(Session::dump_name_resolution): New.
+	* rust-session-manager.h: New declaration.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust-session-manager.cc (Session::compile_crate): Create name resolution
+	context for Session::expansion and subsequent name resolution passes.
+	(Session::expansion): Take name resolution context as a parameter
+	instead.
+	* rust-session-manager.h (Session::expansion): Fix declaration.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* Make-lang.in: Compile it.
+	* resolve/rust-immutable-name-resolution-context.cc: New file.
+	* resolve/rust-immutable-name-resolution-context.h: New file.
+
+2024-08-01  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* lex/rust-lex.cc (is_identifier_start): Placate clang-format.
+
+2024-08-01  jjasmine  <tanghocle456@gmail.com>
+
+	* Make-lang.in: add new .o builds for new .cc files
+	* expand/rust-cfg-strip.h (RUST_CFG_STRIP_H): Add include guards
+	for rust-cfg-strip
+	* expand/rust-macro-builtins.cc (make_macro_path_str): moved to new respective files
+	(make_token): moved to new respective files
+	(make_string): moved to new respective files
+	(macro_end_token): moved to new respective files
+	(try_extract_string_literal_from_fragment): moved to new respective files
+	(try_expand_many_expr): moved to new respective files
+	(parse_single_string_literal): moved to new respective files
+	(source_relative_path): moved to new respective files
+	(load_file_bytes): moved to new respective files
+	(MacroBuiltin::assert_handler): moved to new respective files
+	(MacroBuiltin::file_handler): moved to new respective files
+	(MacroBuiltin::column_handler): moved to new respective files
+	(MacroBuiltin::include_bytes_handler): moved to new respective files
+	(MacroBuiltin::include_str_handler): moved to new respective files
+	(MacroBuiltin::compile_error_handler): moved to new respective files
+	(MacroBuiltin::concat_handler): moved to new respective files
+	(MacroBuiltin::env_handler): moved to new respective files
+	(MacroBuiltin::cfg_handler): moved to new respective files
+	(MacroBuiltin::include_handler): moved to new respective files
+	(MacroBuiltin::line_handler): moved to new respective files
+	(MacroBuiltin::stringify_handler): moved to new respective files
+	(struct FormatArgsInput): moved to new respective files
+	(struct FormatArgsParseError): moved to new respective files
+	(format_args_parse_arguments): moved to new respective files
+	(MacroBuiltin::format_args_handler): moved to new respective files
+	* expand/rust-macro-builtins.h (builtin_macro_from_string):
+	merge tl::optional from master
+	* expand/rust-macro-builtins-asm.cc: New file.
+	* expand/rust-macro-builtins-format-args.cc: New file.
+	* expand/rust-macro-builtins-helpers.cc: New file.
+	* expand/rust-macro-builtins-helpers.h: New file.
+	* expand/rust-macro-builtins-include.cc: New file.
+	* expand/rust-macro-builtins-location.cc: New file.
+	* expand/rust-macro-builtins-log-debug.cc: New file.
+	* expand/rust-macro-builtins-test-bench.cc: New file.
+	* expand/rust-macro-builtins-trait.cc: New file.
+	* expand/rust-macro-builtins-utility.cc: New file.
+
+2024-08-01  Guillaume Gomez  <guillaume1.gomez@gmail.com>
+
+	* expand/rust-derive.cc (DeriveVisitor::derive): Fix typo
+
+2024-08-01  jjasmine  <tanghocle456@gmail.com>
+
+	* hir/rust-ast-lower-extern.h: Add translate_visiblity
+	* hir/tree/rust-hir-item.h: Fix constructor of ExternalTypeItem
+
+2024-08-01  Jakub Dupak  <dev@jakubdupak.com>
+
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::visit):
+	Collect variance info from types.
+
+2024-08-01  Jakub Dupak  <dev@jakubdupak.com>
+
+	* Make-lang.in: Add new .cc file.
+	* rust-session-manager.cc (Session::compile_crate): Run
+	analysis.
+	* typecheck/rust-tyty-variance-analysis-private.h: New file.
+	* typecheck/rust-tyty-variance-analysis.cc: New file.
+	* typecheck/rust-tyty-variance-analysis.h: New file.
+	* typecheck/rust-typecheck-context.cc
+	(TypeCheckContext::get_variance_analysis_ctx):
+	Variance analysis context.
+	* typecheck/rust-hir-type-check.h (TypeCheckItem::visit):
+	Variance analysis context.
+
+2024-08-01  Jakub Dupak  <dev@jakubdupak.com>
+
+	* typecheck/rust-tyty-subst.cc (SubstitutionRef::get_arg_at):
+	Add unified API.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* expand/rust-macro-builtins.cc (struct FormatArgsInput): Store the format_str
+	as a string instead of an AST::Expr.
+	(format_args_parse_arguments): Transform format_expr into a format string
+	properly - add note for handling eager macro invocations later on.
+	(MacroBuiltin::format_args_handler): Parse the correct input, append
+	newline to format_str if necessary.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast-builder.h: Rename AST::AstBuilder -> AST::Builder
+	* ast/rust-ast-builder.cc: Likewise.
+	* expand/rust-derive.cc: Use new AST::Builder name.
+	* expand/rust-derive.h: Likewise.
+	* ast/rust-builtin-ast-nodes.h: Add required getters.
+	* expand/rust-expand-format-args.cc (format_arg): New.
+	(get_trait_name): New.
+	(expand_format_args): Properly expand basic format_args!() invocations.
+	* expand/rust-expand-format-args.h (expand_format_args): Fix signature.
+	* expand/rust-macro-builtins.cc (MacroBuiltin::format_args_handler):
+	Call into expand_format_args().
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-fmt.cc (ffi::RustHamster::to_string): New.
+	(Pieces::collect): Adapt to use new handle API.
+	(Pieces::~Pieces): Likewise.
+	(Pieces::Pieces): Likewise.
+	(Pieces::operator=): Likewise.
+	* ast/rust-fmt.h (struct RustString): Add members.
+	(struct FormatArgsHandle): New.
+	(clone_pieces): Adapt for new FFI API.
+	(destroy_pieces): Likewise.
+	(struct Pieces): Store new FormatArgsHandle type.
+	* expand/rust-expand-format-args.cc (expand_format_args): Use proper
+	namespace.
+	* resolve/rust-ast-resolve-base.cc (ResolverBase::visit): FormatArgs
+	nodes are already resolved, so do nothing.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* Make-lang.in: Add new object.
+	* hir/rust-ast-lower-expr.cc (ASTLoweringExpr::visit): Remove calls to
+	FormatArgsLowering.
+	* expand/rust-expand-format-args.cc: New file.
+	* expand/rust-expand-format-args.h: New file.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-macro.h: Use proper node id instead of the one in the base
+	Expr class - which is uninitialized.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast-collector.cc (TokenCollector::visit): Remove reference
+	to unique pointer and replace it with a direct reference to the wrapped
+	data.
+	* ast/rust-ast.cc (VariadicParam::as_string): Likewise.
+	(BlockExpr::normalize_tail_expr): Likewise.
+	* ast/rust-expr.h: Likewise and add pointer getter in order to allow
+	pointer reseat.
+	* ast/rust-item.h: Likewise and add pointer getter for reseat.
+	* ast/rust-path.h: Likewise.
+	* ast/rust-pattern.h: Likewise.
+	* ast/rust-stmt.h: Likewise.
+	* ast/rust-type.h: Likewise.
+	* expand/rust-cfg-strip.cc (CfgStrip::maybe_strip_struct_fields):
+	Remove references to unique pointers and replace it with direct
+	references to the wrapped object.
+	(CfgStrip::maybe_strip_tuple_fields): Likewise.
+	(CfgStrip::maybe_strip_generic_args): Likewise.
+	(CfgStrip::maybe_strip_qualified_path_type): Likewise.
+	(CfgStrip::visit): Likewise.
+	* expand/rust-expand-visitor.cc (ExpandVisitor::maybe_expand_expr):
+	Likewise.
+	(ExpandVisitor::maybe_expand_type): Likewise.
+	(ExpandVisitor::visit): Likewise.
+	* expand/rust-expand-visitor.h: Likewise.
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::lower_binding):
+	Likewise.
+	(ASTLoweringBase::lower_generic_args): Likewise.
+	(ASTLoweringBase::lower_self): Likewise.
+	(ASTLoweringBase::lower_type_no_bounds): Likewise.
+	(ASTLoweringBase::lower_bound): Likewise.
+	(ASTLoweringBase::lower_range_pattern_bound): Likewise.
+	* hir/rust-ast-lower-base.h: Likewise.
+	* hir/rust-ast-lower-block.h: Likewise.
+	* hir/rust-ast-lower-enumitem.h: Likewise.
+	* hir/rust-ast-lower-expr.cc (ASTLoweringExpr::translate): Likewise.
+	(ASTLoweringExpr::visit): Likewise.
+	* hir/rust-ast-lower-expr.h: Likewise.
+	* hir/rust-ast-lower-extern.h: Likewise.
+	* hir/rust-ast-lower-implitem.cc (ASTLowerImplItem::translate):
+	Likewise.
+	(ASTLowerImplItem::visit): Likewise.
+	(ASTLowerTraitItem::translate): Likewise.
+	(ASTLowerTraitItem::visit): Likewise.
+	* hir/rust-ast-lower-implitem.h: Likewise.
+	* hir/rust-ast-lower-item.cc (ASTLoweringItem::translate): Likewise.
+	(ASTLoweringItem::visit): Likewise.
+	* hir/rust-ast-lower-item.h: Likewise.
+	* hir/rust-ast-lower-pattern.cc (ASTLoweringPattern::translate):
+	Likewise.
+	(ASTLoweringPattern::visit): Likewise.
+	* hir/rust-ast-lower-pattern.h: Likewise.
+	* hir/rust-ast-lower-stmt.cc (ASTLoweringStmt::visit): Likewise.
+	* hir/rust-ast-lower-struct-field-expr.h: Likewise.
+	* hir/rust-ast-lower-type.cc (ASTLowerTypePath::visit): Likewise.
+	(ASTLowerQualifiedPathInType::visit): Likewise.
+	(ASTLoweringType::translate): Likewise.
+	(ASTLoweringType::visit): Likewise.
+	(ASTLowerGenericParam::translate): Likewise.
+	(ASTLowerGenericParam::visit): Likewise.
+	(ASTLoweringTypeBounds::translate): Likewise.
+	(ASTLoweringTypeBounds::visit): Likewise.
+	(ASTLowerWhereClauseItem::visit): Likewise.
+	* hir/rust-ast-lower-type.h: Likewise.
+	* hir/rust-ast-lower.cc (ASTLowering::go): Likewise.
+	(ASTLoweringBlock::visit): Likewise.
+	(ASTLoweringIfBlock::visit): Likewise.
+	(ASTLoweringIfLetBlock::visit): Likewise.
+	(ASTLowerStructExprField::visit): Likewise.
+	(ASTLoweringExprWithBlock::visit): Likewise.
+	(ASTLoweringBase::lower_qual_path_type): Likewise.
+	(ASTLoweringBase::lower_closure_param): Likewise.
+	* resolve/rust-ast-resolve-base.cc (ResolverBase::resolve_visibility):
+	Likewise.
+	* resolve/rust-ast-resolve-expr.cc (ResolveExpr::go): Likewise.
+	(ResolveExpr::visit): Likewise.
+	(ResolveExpr::resolve_closure_param): Likewise.
+	* resolve/rust-ast-resolve-expr.h: Likewise.
+	* resolve/rust-ast-resolve-implitem.h: Likewise.
+	* resolve/rust-ast-resolve-item.cc (ResolveTraitItems::visit):
+	Likewise.
+	(ResolveItem::go): Likewise.
+	(ResolveItem::visit): Likewise.
+	(ResolveItem::resolve_impl_item): Likewise.
+	(ResolveItem::resolve_extern_item): Likewise.
+	(ResolveImplItems::go): Likewise.
+	(ResolveExternItem::go): Likewise.
+	(ResolveExternItem::visit): Likewise.
+	* resolve/rust-ast-resolve-item.h: Likewise.
+	* resolve/rust-ast-resolve-path.cc (ResolvePath::go): Likewise.
+	(ResolvePath::resolve_path): Likewise.
+	* resolve/rust-ast-resolve-path.h: Likewise.
+	* resolve/rust-ast-resolve-pattern.cc (PatternDeclaration::go):
+	Likewise.
+	(PatternDeclaration::visit): Likewise.
+	(resolve_range_pattern_bound): Likewise.
+	* resolve/rust-ast-resolve-pattern.h: Likewise.
+	* resolve/rust-ast-resolve-stmt.cc (ResolveStmt::visit): Likewise.
+	* resolve/rust-ast-resolve-stmt.h: Likewise.
+	* resolve/rust-ast-resolve-struct-expr-field.cc (ResolveStructExprField::go):
+	Likewise.
+	(ResolveStructExprField::visit): Likewise.
+	* resolve/rust-ast-resolve-struct-expr-field.h: Likewise.
+	* resolve/rust-ast-resolve-toplevel.h: Likewise.
+	* resolve/rust-ast-resolve-type.cc (ResolveType::visit): Likewise.
+	(ResolveRelativeTypePath::go): Likewise.
+	(ResolveRelativeQualTypePath::resolve_qual_seg): Likewise.
+	(ResolveTypeToCanonicalPath::go): Likewise.
+	(ResolveTypeToCanonicalPath::visit): Likewise.
+	(ResolveGenericArgs::resolve_disambiguated_generic): Likewise.
+	(ResolveGenericArgs::go): Likewise.
+	* resolve/rust-ast-resolve-type.h: Likewise.
+	* resolve/rust-ast-resolve.cc (NameResolution::go): Likewise.
+	* resolve/rust-default-resolver.cc (DefaultResolver::visit): Likewise.
+	* resolve/rust-early-name-resolver.cc (EarlyNameResolver::resolve_qualified_path_type):
+	Likewise.
+	(EarlyNameResolver::visit): Likewise.
+	* resolve/rust-toplevel-name-resolver-2.0.cc (TopLevel::visit):
+	Likewise.
+	* checks/errors/rust-ast-validation.cc: Likewise.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-item.h: Change getter function prototype to return a
+	reference directly instead of a reference to the wrapper type.
+	* checks/errors/rust-ast-validation.cc (ASTValidation::visit): Fix
+	the code to accept references instead.
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::lower_self): Change
+	function implementation to return a reference.
+	* hir/rust-ast-lower-base.h: Accept a reference instead of a unique
+	pointer reference.
+	* resolve/rust-ast-resolve-item.cc (ResolveItem::visit): Adapt the code
+	to a reference instead of a unique pointer.
+
+2024-08-01  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* backend/rust-tree.cc (c_common_type_for_mode): Placate clang-format.
+
+2024-08-01  0xn4utilus  <gyanendrabanjare8@gmail.com>
+
+	* ast/rust-ast-collector.cc (TokenCollector::visit):
+	Remove dead code.
+	* ast/rust-ast-collector.h: Likewise.
+	* ast/rust-ast-full-decls.h (class ExternalFunctionItem):
+	Likewise.
+	* ast/rust-ast-visitor.cc (DefaultASTVisitor::visit):
+	Likewise.
+	* ast/rust-ast-visitor.h: Likewise.
+	* ast/rust-ast.cc (ExternalFunctionItem::as_string): Likewise.
+	(ExternalFunctionItem::accept_vis): Likewise.
+	* checks/errors/rust-ast-validation.cc (ASTValidation::visit):
+	Likewise.
+	* checks/errors/rust-ast-validation.h: Likewise.
+	* checks/errors/rust-feature-gate.h: Likewise.
+	* expand/rust-cfg-strip.cc (CfgStrip::visit):
+	Likewise.
+	* expand/rust-cfg-strip.h: Likewise.
+	* expand/rust-derive.h: Likewise.
+	* expand/rust-expand-visitor.cc (ExpandVisitor::visit):
+	Likewise.
+	* expand/rust-expand-visitor.h: Likewise.
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::visit):
+	Likewise.
+	* hir/rust-ast-lower-base.h: Likewise.
+	* metadata/rust-export-metadata.cc (ExportContext::emit_function):
+	Likewise.
+	* parse/rust-parse-impl.h: Likewise.
+	* parse/rust-parse.h: Likewise.
+	* resolve/rust-ast-resolve-base.cc (ResolverBase::visit):
+	Likewise.
+	* resolve/rust-ast-resolve-base.h: Likewise.
+	* resolve/rust-default-resolver.cc (DefaultResolver::visit):
+	Likewise.
+	* resolve/rust-default-resolver.h: Likewise.
+	* util/rust-attributes.cc (AttributeChecker::visit): Likewise.
+	* util/rust-attributes.h: Likewise.
+
+2024-08-01  0xn4utilus  <gyanendrabanjare8@gmail.com>
+
+	* checks/errors/rust-feature-gate.cc (FeatureGate::visit):
+	Check if function is_external or not.
+	* hir/rust-ast-lower-extern.h: Use AST::Function
+	instead of AST::ExternalFunctionItem.
+	* parse/rust-parse-impl.h (Parser::parse_external_item):
+	Likewise.
+	(Parser::parse_pattern): Fix clang format.
+	* resolve/rust-ast-resolve-implitem.h: Likewise.
+	* resolve/rust-ast-resolve-item.cc (ResolveExternItem::visit):
+	Likewise.
+	* resolve/rust-ast-resolve-item.h: Likewise.
+	* resolve/rust-default-resolver.cc (DefaultResolver::visit):
+	Check if param has_pattern before using get_pattern.
+
+2024-08-01  0xn4utilus  <gyanendrabanjare8@gmail.com>
+
+	* checks/errors/rust-ast-validation.cc (ASTValidation::visit):
+	Add external function validation support. Add ErrorCode::E0130.
+	* parse/rust-parse-impl.h (Parser::parse_function): Parse
+	external functions from `parse_function`.
+	(Parser::parse_external_item): Clang format.
+	(Parser::parse_pattern): Clang format.
+	* parse/rust-parse.h: Add default parameter
+	`is_external` in `parse_function`.
+
+2024-08-01  0xn4utilus  <gyanendrabanjare8@gmail.com>
+
+	* ast/rust-ast.h: Add Kind Enum to
+	Pattern.
+	* ast/rust-macro.h: Add get_pattern_kind().
+	* ast/rust-path.h: Likewise.
+	* ast/rust-pattern.h: Likewise.
+
+2024-08-01  0xn4utilus  <gyanendrabanjare8@gmail.com>
+
+	* ast/rust-ast.cc (Function::Function): Add `is_external_function` field.
+	(Function::operator=): Likewise.
+	* ast/rust-ast.h: New constructor for ExternalItem.
+	* ast/rust-item.h (class Function): Add `is_external_function`
+	field. Update `get_node_id`.
+	* ast/rust-macro.h: Update copy constructor.
+
+2024-08-01  Sourabh Jaiswal  <sourabhrj31@gmail.com>
+
+	* expand/rust-expand-visitor.cc
+	(ExpandVisitor::expand_inner_items): Adjust to use has_value ()
+	(ExpandVisitor::expand_inner_stmts): Likewise
+	* expand/rust-macro-builtins.cc (builtin_macro_from_string): Likewise
+	(make_macro_path_str): Likewise
+	* util/rust-hir-map.cc (Mappings::insert_macro_def): Likewise
+	* util/rust-lang-item.cc (LangItem::Parse): Adjust to return tl::optional
+	(LangItem::toString) Likewise
+	* util/rust-token-converter.cc (handle_suffix): Adjust to use value.or ()
+	(from_literal) Likewise
+	* util/bi-map.h (BiMap::lookup): Adjust to use tl::optional for
+	lookups
+
+2024-08-01  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* ast/rust-pattern.h
+	(class TupleStructPattern): Assert that items != nullptr.
+	(class TuplePattern): Likewise.
+	(TupleStructPattern::has_items): Remove.
+	(TuplePattern::has_tuple_pattern_items): Likewise.
+	* parse/rust-parse-impl.h
+	(Parser::parse_ident_leading_pattern):
+	Prevent construction of TupleStructPattern with
+	(items == nullptr).
+	(Parser::parse_pattern_no_alt): Likewise.
+	* ast/rust-ast-collector.cc
+	(TokenCollector::visit): Remove usage of
+	TupleStructPattern::has_items.
+	* ast/rust-ast-visitor.cc
+	(DefaultASTVisitor::visit): Likewise.
+	* resolve/rust-early-name-resolver.cc
+	(EarlyNameResolver::visit): Likewise.
+
+2024-08-01  jjasmine  <tanghocle456@gmail.com>
+
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit): Add error emitting
+
+2024-08-01  jjasmine  <tanghocle456@gmail.com>
+
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit): Add error emitting
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* expand/rust-macro-builtins.cc (MacroBuiltin::format_args_handler): Add
+	documentation regarding future tasks.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* Make-lang.in: Compile the new source file.
+	* ast/rust-ast-collector.cc (TokenCollector::visit): Error out when
+	visiting FormatArgs nodes.
+	* resolve/rust-ast-resolve-base.cc (ResolverBase::visit): Likewise.
+	* hir/rust-ast-lower-expr.cc (ASTLoweringExpr::visit): Likewise.
+	* ast/rust-ast.cc (FormatArgs::get_locus): New.
+	* ast/rust-builtin-ast-nodes.h: Improve FormatArgs API.
+	* ast/rust-fmt.cc (Pieces::~Pieces): Cleanup.
+	(Pieces::Pieces): Likewise.
+	* ast/rust-fmt.h (struct Pieces): Add pieces_vector member.
+	* hir/rust-ast-lower-format-args.cc: New file.
+	* hir/rust-ast-lower-format-args.h: New file.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast.cc: Make FormatArgs inherit from AST::Expr
+	* ast/rust-builtin-ast-nodes.h: Improve FormatArg* nodes and helpers.
+	* ast/rust-fmt.cc (Pieces::collect): Fix interface to match FFI function.
+	* ast/rust-fmt.h (collect_pieces): Likewise.
+	(struct Pieces): Add append_newline parameter.
+	* expand/rust-macro-builtins.cc: Add proper parsing of format_args
+	input.
+	* hir/rust-ast-lower-base.cc: Include diagnostics header.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* parse/rust-parse.h: New method.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* expand/rust-macro-builtins.cc (format_args_maker): New function.
+	(try_expand_many_expr): Add comment about reworking function.
+	(MacroBuiltin::format_args_handler): Add newline parameter.
+	* expand/rust-macro-builtins.h: Likewise.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-builtin-ast-nodes.h: New file.
+	* ast/rust-ast-full-decls.h (class FormatArgs): Declare new class.
+	* ast/rust-ast-collector.cc: Handle FormatArgs nodes properly.
+	* ast/rust-ast-collector.h: Likewise.
+	* ast/rust-ast-full.h: Likewise.
+	* ast/rust-ast-visitor.cc: Likewise.
+	* ast/rust-ast-visitor.h: Likewise.
+	* ast/rust-ast.cc: Likewise.
+	* ast/rust-ast.h: Likewise.
+	* expand/rust-derive.h: Likewise.
+	* hir/rust-ast-lower-base.cc: Likewise.
+	* hir/rust-ast-lower-base.h: Likewise.
+	* hir/rust-ast-lower-expr.cc: Likewise.
+	* hir/rust-ast-lower-expr.h: Likewise.
+	* resolve/rust-ast-resolve-base.cc: Likewise.
+	* resolve/rust-ast-resolve-base.h: Likewise.
+
+2024-08-01  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* resolve/rust-default-resolver.cc
+	(DefaultResolver::visit): Visit inner AST nodes of ClosureExprInner,
+	ClosureExprInnerTyped, IfExpr, IfExprConseqElse, MatchExpr,
+	PathInExpression, EnumItemTuple, EnumItemStruct, and
+	EnumItemDiscriminant.
+	* ast/rust-item.h
+	(EnumItemDiscriminant::has_expr): New function.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* hir/rust-ast-lower-extern.h: Lower to HIR::ExternalTypeItem nodes.
+	* hir/tree/rust-hir-item.h (class ExternalTypeItem): Create private
+	visibility by default as extern types have no visibility - add a comment
+	about the correctness of this.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* hir/tree/rust-hir-item.h (class ExternalTypeItem): New class.
+	* hir/tree/rust-hir.cc (ExternalTypeItem::as_string): Likewise.
+	* backend/rust-compile-extern.h: Add base for handling HIR::ExternalTypeItem
+	node.
+	* checks/errors/borrowck/rust-bir-builder-struct.h: Likewise.
+	* checks/errors/borrowck/rust-function-collector.h: Likewise.
+	* checks/errors/rust-const-checker.cc (ConstChecker::visit): Likewise.
+	* checks/errors/rust-const-checker.h: Likewise.
+	* checks/errors/rust-unsafe-checker.cc (UnsafeChecker::visit): Likewise.
+	* checks/errors/rust-unsafe-checker.h: Likewise.
+	* hir/rust-ast-lower-extern.h: Likewise.
+	* hir/rust-hir-dump.cc (Dump::visit): Likewise.
+	* hir/rust-hir-dump.h: Likewise.
+	* hir/tree/rust-hir-full-decls.h (class ExternalTypeItem): Likewise.
+	* hir/tree/rust-hir-visitor.h: Likewise.
+	(ExternalTypeItem::accept_vis): Likewise.
+	* typecheck/rust-hir-type-check-implitem.cc (TypeCheckTopLevelExternItem::visit): Likewise.
+	* typecheck/rust-hir-type-check-implitem.h: Likewise.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* resolve/rust-ast-resolve-implitem.h: Declare external types as new
+	types.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* util/rust-lang-item.h (class RustLangItem): Renamed to...
+	(class LangItem): ...this. Rename ItemType enum to Kind
+	* util/rust-lang-item.cc: Rename methods to use new class name.
+	* backend/rust-compile-expr.cc (CompileExpr::visit): Use new lang-item API.
+	(CompileExpr::resolve_operator_overload): Likewise.
+	* backend/rust-compile-expr.h: Likewise.
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::handle_lang_item_attribute): Likewise.
+	* typecheck/rust-autoderef.cc (Adjuster::try_deref_type): Likewise.
+	(AutoderefCycle::cycle): Likewise.
+	* typecheck/rust-autoderef.h: Likewise.
+	* typecheck/rust-hir-type-bounds.h: Likewise.
+	* typecheck/rust-hir-type-check-base.cc (TypeCheckBase::get_marker_predicate): Likewise.
+	* typecheck/rust-hir-type-check-base.h: Likewise.
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): Likewise.
+	* typecheck/rust-hir-type-check-expr.h: Likewise.
+	* typecheck/rust-hir-type-check-type.cc (TypeResolveGenericParam::visit): Likewise.
+	* typecheck/rust-tyty-bounds.cc (TypeBoundsProbe::assemble_sized_builtin): Likewise.
+	(TypeBoundsProbe::assemble_builtin_candidate): Likewise.
+	(TypeCheckBase::get_predicate_from_bound): Likewise.
+	* typecheck/rust-tyty.cc (ClosureType::setup_fn_once_output): Likewise.
+	* util/rust-hir-map.cc (Mappings::get_lang_item): Likewise.
+	(Mappings::lookup_trait_item_lang_item): Likewise.
+	* util/rust-hir-map.h: Likewise.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* Make-lang.in: Compile new rust-lang-item.o.
+	* util/rust-lang-item.h: Split into header and source.
+	* util/rust-lang-item.cc: Cleanup parsing of lang items by using a hashmap
+	and returning optional values, cleanup handling of exhaustive lang item
+	lookups.
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::handle_lang_item_attribute): Use
+	new optional API.
+
+2024-08-01  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins.cc: Change BuiltinMacro in
+	builtin_macro_from_string to tl::optional<>
+	* expand/rust-macro-builtins.h (enum class): Change BuiltinMacro
+	in builtin_macro_from_string to tl::optional<>
+	* resolve/rust-early-name-resolver.cc (EarlyNameResolver::visit):
+	Resolved wrong type dependency of builtin_macro_from_string
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-fmt.cc (Pieces::collect): Fix signature to take ownership
+	of the given string.
+	* ast/rust-fmt.h (struct Pieces): Store parsed string in the struct.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* expand/rust-macro-builtins.cc (MacroBuiltin::format_args_handler):
+	Transform entire invocation token stream into string for the parser.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* expand/rust-macro-builtins.cc (MacroBuiltin::format_args_handler):
+	Construct string to parser properly.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-fmt.cc (Pieces::~Pieces): Call libformat_parser's release
+	function in destructor.
+	* ast/rust-fmt.h (struct PieceSlice): Add capacity.
+	(destroy_pieces): New.
+	(struct Pieces): Add destructor.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-fmt.cc (Pieces::collect): Use new Pieces API.
+	* ast/rust-fmt.h: Update interface with new FFI bindings.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-fmt.h: Add remaining FFI types.
+
+2024-08-01  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* Make-lang.in (LIBFORMAT_PARSER): Point to 'libformat_parser'
+	build in libgrust.
+	(%.toml:, $(LIBFORMAT_PARSER):): Remove.
+
+2024-08-01  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* Make-lang.in (LIBFORMAT_PARSER): Point to the GCC build
+	directory.
+	* ($(LIBFORMAT_PARSER)): Build in the GCC build directory.
+
+2024-08-01  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* Make-lang.in (LIBFORMAT_PARSER): Point to the actual build artifact.
+	($(LIBFORMAT_PARSER)): Don't cache it.
+
+2024-08-01  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* Make-lang.in (LIBPROC_MACRO_INTERNAL): New.
+	(RUST_LIBDEPS, crab1$(exeext), rust/libformat_parser.a): Use it.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* Make-lang.in: Compile libformat_parser.
+	* ast/rust-fmt.cc: New FFI definitions.
+	* ast/rust-fmt.h: Likewise.
+	* expand/rust-macro-builtins.cc (MacroBuiltin::format_args_handler): Call
+	into libformat_parser.
+	* expand/rust-macro-builtins.h: Define format_args!() handler proper.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* Make-lang.in: Compile rust-fmt object
+	* ast/rust-fmt.cc: New file.
+	* ast/rust-fmt.h: New file.
+
+2024-08-01  Marc Poulhiès  <dkm@kataplop.net>
+
+	* rust-lang.cc (grs_langhook_type_for_mode): simplify code for
+	xImode. Add missing long_double_type_node.
+
+2024-08-01  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* hir/rust-ast-lower-pattern.cc
+	(ASTLoweringPattern::visit):
+	Reset is_let_top_level while visiting GroupedPattern.
+
+2024-08-01  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* backend/rust-compile-base.cc (HIRCompileBase::compile_function):
+	For 'main', initialize 'main_identifier_node'.
+
 2024-07-12  Daniel Bertalan  <dani@danielbertalan.dev>
 
 	* metadata/rust-imports.cc (Import::try_package_in_directory):

@@ -1,3 +1,10 @@
+2024-08-01  Tobias Burnus  <tburnus@baylibre.com>
+	    Richard Biener  <rguenther@suse.de
+
+	PR middle-end/115637
+	* testsuite/libgomp.fortran/declare-target-link.f90: Uncomment
+	now working code.
+
 2024-07-31  Sam James  <sam@gentoo.org>
 
 	* testsuite/libgomp.c++/pr24455.C: Fix dg-require-effective-target directive order.

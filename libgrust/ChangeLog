@@ -1,3 +1,347 @@
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* libformat_parser/src/lib.rs: Use new Handle struct and expose it.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* libformat_parser/src/lib.rs: Switch interface to use more parser
+	parameters.
+	* libformat_parser/src/bin.rs: Use new interface.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* libformat_parser/generic_format_parser/src/lib.rs: Add IsSomeAnd<T>
+	trait, impl it for Option<T>.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* libformat_parser/generic_format_parser/src/lib.rs: Remove
+	unused deprecated attribute and unused import.
+	* libformat_parser/src/lib.rs: Remove unused import.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* libformat_parser/src/lib.rs: Add debug prompt.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* libformat_parser/src/lib.rs: Leak Boxes properly for C++ to
+	see them, add memory release function.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* libformat_parser/src/lib.rs: Add IntoFFI trait.
+	* libformat_parser/libformat-parser.h: Removed.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* libformat_parser/cbindgen.toml: New file.
+	* libformat_parser/libformat-parser.h: New file.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* libformat_parser/generic_format_parser/src/lib.rs: Add generic
+	library.
+	* libformat_parser/src/lib.rs: Add base for FFI interface.
+
+2024-08-01  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* libformat_parser/Makefile.am: New.
+	* Makefile.am [!TARGET_LIBRARY] (SUBDIRS): Add 'libformat_parser'.
+	* configure.ac: Handle it.
+	(TARGET_LIBRARY): New 'AM_CONDITIONAL'.
+	* libformat_parser/Makefile.in: Generate.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* libformat_parser/.cargo/config: New file.
+	* libformat_parser/vendor.NOTES: New file.
+	* libformat_parser/vendor/libc/.cargo-checksum.json: New file.
+	* libformat_parser/vendor/libc/CONTRIBUTING.md: New file.
+	* libformat_parser/vendor/libc/Cargo.toml: New file.
+	* libformat_parser/vendor/libc/LICENSE-APACHE: New file.
+	* libformat_parser/vendor/libc/LICENSE-MIT: New file.
+	* libformat_parser/vendor/libc/README.md: New file.
+	* libformat_parser/vendor/libc/build.rs: New file.
+	* libformat_parser/vendor/libc/rustfmt.toml: New file.
+	* libformat_parser/vendor/libc/src/fixed_width_ints.rs: New file.
+	* libformat_parser/vendor/libc/src/fuchsia/aarch64.rs: New file.
+	* libformat_parser/vendor/libc/src/fuchsia/align.rs: New file.
+	* libformat_parser/vendor/libc/src/fuchsia/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/fuchsia/no_align.rs: New file.
+	* libformat_parser/vendor/libc/src/fuchsia/riscv64.rs: New file.
+	* libformat_parser/vendor/libc/src/fuchsia/x86_64.rs: New file.
+	* libformat_parser/vendor/libc/src/hermit/aarch64.rs: New file.
+	* libformat_parser/vendor/libc/src/hermit/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/hermit/x86_64.rs: New file.
+	* libformat_parser/vendor/libc/src/lib.rs: New file.
+	* libformat_parser/vendor/libc/src/macros.rs: New file.
+	* libformat_parser/vendor/libc/src/psp.rs: New file.
+	* libformat_parser/vendor/libc/src/sgx.rs: New file.
+	* libformat_parser/vendor/libc/src/solid/aarch64.rs: New file.
+	* libformat_parser/vendor/libc/src/solid/arm.rs: New file.
+	* libformat_parser/vendor/libc/src/solid/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/switch.rs: New file.
+	* libformat_parser/vendor/libc/src/teeos/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/aix/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/aix/powerpc64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/apple/b32/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/apple/b32/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/apple/b64/aarch64/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/apple/b64/aarch64/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/apple/b64/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/apple/b64/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/apple/b64/x86_64/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/apple/b64/x86_64/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/apple/long_array.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/apple/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/dragonfly/errno.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/dragonfly/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/freebsd/aarch64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/freebsd/arm.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/freebsd/freebsd11/b64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/freebsd/freebsd11/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/freebsd/freebsd12/b64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/freebsd/freebsd12/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/freebsd/freebsd12/x86_64.rs:
+	New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/freebsd/freebsd13/b64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/freebsd/freebsd13/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/freebsd/freebsd13/x86_64.rs:
+	New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/freebsd/freebsd14/b64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/freebsd/freebsd14/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/freebsd/freebsd14/x86_64.rs:
+	New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/freebsd/freebsd15/b64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/freebsd/freebsd15/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/freebsd/freebsd15/x86_64.rs:
+	New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/freebsd/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/freebsd/powerpc.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/freebsd/powerpc64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/freebsd/riscv64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/freebsd/x86.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/freebsd/x86_64/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/freebsd/x86_64/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/freebsdlike/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/netbsdlike/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/netbsdlike/netbsd/aarch64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/netbsdlike/netbsd/arm.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/netbsdlike/netbsd/mips.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/netbsdlike/netbsd/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/netbsdlike/netbsd/powerpc.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/netbsdlike/netbsd/riscv64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/netbsdlike/netbsd/sparc64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/netbsdlike/netbsd/x86.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/netbsdlike/netbsd/x86_64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/netbsdlike/openbsd/aarch64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/netbsdlike/openbsd/arm.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/netbsdlike/openbsd/mips64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/netbsdlike/openbsd/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/netbsdlike/openbsd/powerpc.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/netbsdlike/openbsd/powerpc64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/netbsdlike/openbsd/riscv64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/netbsdlike/openbsd/sparc64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/netbsdlike/openbsd/x86.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/bsd/netbsdlike/openbsd/x86_64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/haiku/b32.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/haiku/b64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/haiku/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/haiku/native.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/haiku/x86_64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/hurd/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/hurd/b32.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/hurd/b64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/hurd/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/hurd/no_align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/android/b32/arm.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/android/b32/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/android/b32/x86/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/android/b32/x86/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/android/b64/aarch64/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/android/b64/aarch64/int128.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/android/b64/aarch64/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/android/b64/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/android/b64/riscv64/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/android/b64/riscv64/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/android/b64/x86_64/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/android/b64/x86_64/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/android/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/emscripten/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/emscripten/lfs64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/emscripten/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/emscripten/no_align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/arch/generic/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/arch/mips/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/arch/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/arch/powerpc/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/arch/sparc/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b32/arm/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b32/arm/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b32/csky/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b32/csky/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b32/m68k/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b32/m68k/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b32/mips/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b32/mips/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b32/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b32/powerpc.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b32/riscv32/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b32/riscv32/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b32/sparc/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b32/sparc/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b32/x86/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b32/x86/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b64/aarch64/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b64/aarch64/fallback.rs:
+	New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b64/aarch64/ilp32.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b64/aarch64/int128.rs:
+	New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b64/aarch64/lp64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b64/aarch64/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b64/loongarch64/align.rs:
+	New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b64/loongarch64/mod.rs:
+	New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b64/mips64/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b64/mips64/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b64/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b64/powerpc64/align.rs:
+	New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b64/powerpc64/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b64/riscv64/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b64/riscv64/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b64/s390x.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b64/sparc64/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b64/sparc64/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b64/x86_64/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b64/x86_64/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b64/x86_64/not_x32.rs:
+	New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/b64/x86_64/x32.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/gnu/no_align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/musl/b32/arm/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/musl/b32/arm/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/musl/b32/hexagon.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/musl/b32/mips/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/musl/b32/mips/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/musl/b32/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/musl/b32/powerpc.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/musl/b32/riscv32/align.rs:
+	New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/musl/b32/riscv32/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/musl/b32/x86/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/musl/b32/x86/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/musl/b64/aarch64/align.rs:
+	New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/musl/b64/aarch64/int128.rs:
+	New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/musl/b64/aarch64/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/musl/b64/mips64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/musl/b64/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/musl/b64/powerpc64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/musl/b64/riscv64/align.rs:
+	New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/musl/b64/riscv64/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/musl/b64/s390x.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/musl/b64/x86_64/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/musl/b64/x86_64/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/musl/lfs64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/musl/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/no_align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/non_exhaustive.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/uclibc/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/uclibc/arm/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/uclibc/arm/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/uclibc/arm/no_align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/uclibc/mips/mips32/align.rs:
+	New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/uclibc/mips/mips32/mod.rs:
+	New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/uclibc/mips/mips32/no_align.rs:
+	New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/uclibc/mips/mips64/align.rs:
+	New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/uclibc/mips/mips64/mod.rs:
+	New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/uclibc/mips/mips64/no_align.rs:
+	New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/uclibc/mips/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/uclibc/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/uclibc/no_align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/uclibc/x86_64/l4re.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/uclibc/x86_64/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/linux/uclibc/x86_64/other.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/linux_like/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/newlib/aarch64/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/newlib/align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/newlib/arm/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/newlib/espidf/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/newlib/generic.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/newlib/horizon/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/newlib/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/newlib/no_align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/newlib/powerpc/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/newlib/vita/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/no_align.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/nto/aarch64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/nto/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/nto/neutrino.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/nto/x86_64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/redox/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/solarish/compat.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/solarish/illumos.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/solarish/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/solarish/solaris.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/solarish/x86.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/solarish/x86_64.rs: New file.
+	* libformat_parser/vendor/libc/src/unix/solarish/x86_common.rs: New file.
+	* libformat_parser/vendor/libc/src/vxworks/aarch64.rs: New file.
+	* libformat_parser/vendor/libc/src/vxworks/arm.rs: New file.
+	* libformat_parser/vendor/libc/src/vxworks/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/vxworks/powerpc.rs: New file.
+	* libformat_parser/vendor/libc/src/vxworks/powerpc64.rs: New file.
+	* libformat_parser/vendor/libc/src/vxworks/x86.rs: New file.
+	* libformat_parser/vendor/libc/src/vxworks/x86_64.rs: New file.
+	* libformat_parser/vendor/libc/src/wasi.rs: New file.
+	* libformat_parser/vendor/libc/src/windows/gnu/align.rs: New file.
+	* libformat_parser/vendor/libc/src/windows/gnu/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/windows/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/windows/msvc/mod.rs: New file.
+	* libformat_parser/vendor/libc/src/xous.rs: New file.
+	* libformat_parser/vendor/libc/tests/const_fn.rs: New file.
+	* libformat_parser/vendor/unicode-xid/.cargo-checksum.json: New file.
+	* libformat_parser/vendor/unicode-xid/COPYRIGHT: New file.
+	* libformat_parser/vendor/unicode-xid/Cargo.toml: New file.
+	* libformat_parser/vendor/unicode-xid/LICENSE-APACHE: New file.
+	* libformat_parser/vendor/unicode-xid/LICENSE-MIT: New file.
+	* libformat_parser/vendor/unicode-xid/README.md: New file.
+	* libformat_parser/vendor/unicode-xid/benches/xid.rs: New file.
+	* libformat_parser/vendor/unicode-xid/src/lib.rs: New file.
+	* libformat_parser/vendor/unicode-xid/src/tables.rs: New file.
+	* libformat_parser/vendor/unicode-xid/src/tests.rs: New file.
+	* libformat_parser/vendor/unicode-xid/tests/exhaustive_tests.rs: New file.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* libformat_parser/Cargo.lock: New file.
+	* libformat_parser/Cargo.toml: New file.
+	* libformat_parser/generic_format_parser/Cargo.toml: New file.
+	* libformat_parser/generic_format_parser/src/lib.rs: New file.
+	* libformat_parser/src/bin.rs: New file.
+	* libformat_parser/src/lib.rs: New file.
+
 2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
 
 	* libproc_macro_internal/proc_macro.h (enum ProcmacroTag): Add

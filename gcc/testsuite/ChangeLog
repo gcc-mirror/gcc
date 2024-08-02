@@ -1,3 +1,174 @@
+2024-08-01  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/pr116149.c: New test.
+
+2024-08-01  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/arch-41.c: New test.
+	* gcc.target/riscv/pr116111.c: New test.
+
+2024-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116113
+	* g++.dg/cpp26/decomp11.C: New test.
+
+2024-08-01  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116120
+	* g++.dg/tree-ssa/pr111150.C: Add extra checks on the test.
+	* gcc.dg/tree-ssa/pr111150-1.c: Likewise.
+	* gcc.dg/tree-ssa/pr111150.c: Likewise.
+	* g++.dg/torture/pr116120-1.C: New test.
+	* g++.dg/torture/pr116120-2.C: New test.
+
+2024-08-01  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR testsuite/116155
+	* g++.dg/abi/nsdmi-aggr1a.C: Disable test for effective
+	default_packed targets.
+	* g++.dg/abi/nullptr-align2.C: Ignore warning for default_packed
+	targets.
+	* g++.dg/cpp1z/aligned-new9.C: Disable test for effective
+	default_packed targets.
+	* g++.dg/cpp2a/bit-cast5.C: Ignore dg-error for default_packed
+	targets.
+	* g++.dg/pr53037-1.C: Match any default packing value.
+	* g++.dg/warn/Wpadded-1.C: Ignore warning for default_packed
+	targets.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/name_resolution25.rs: New test.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/match-never-ltype.rs: New test.
+	* rust/compile/match-never-rtype.rs: New test.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/raw-byte-string-loc.rs: Use dg-error instead of
+	dg-excess-error.
+	* rust/compile/raw-string-loc.rs: Likewise.
+
+2024-08-01  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/raw-string-loc.rs: New test.
+
+2024-08-01  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/func-const-unsafe.rs: New test.
+
+2024-08-01  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/unstable-fn.rs: New test.
+
+2024-08-01  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/deprecated-fn.rs: New test.
+
+2024-08-01  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/raw-byte-string-loc.rs: New test.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/name_resolution23.rs: New test.
+	* rust/compile/name_resolution24.rs: New test.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/name_resolution13.rs: Add new module and remove compile
+	step.
+	* rust/compile/name_resolution14.rs: New test.
+	* rust/compile/name_resolution15.rs: New test.
+	* rust/compile/name_resolution16.rs: New test.
+	* rust/compile/name_resolution17.rs: New test.
+	* rust/compile/name_resolution18.rs: New test.
+	* rust/compile/name_resolution19.rs: New test.
+	* rust/compile/name_resolution20.rs: New test.
+	* rust/compile/name_resolution21.rs: New test.
+
+2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/name_resolution22.rs: New test.
+
+2024-08-01  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/112341
+	* g++.dg/coroutines/pr112341-2.C: New test.
+	* g++.dg/coroutines/pr112341-3.C: New test.
+	* g++.dg/coroutines/torture/co-yield-03-tmpl-nondependent.C: New
+	test.
+	* g++.dg/coroutines/pr112341.C: New test.
+
+2024-08-01  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr116096.c: New test.
+
+2024-08-01  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/format_args_basic_expansion.rs: New test.
+
+2024-08-01  0xn4utilus  <gyanendrabanjare8@gmail.com>
+
+	* rust/compile/extern_func_with_body.rs: New test.
+
+2024-08-01  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/pattern-struct.rs: Fix test.
+
+2024-08-01  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/bad_stmt_enums.rs: Adjust redefinition error.
+	* rust/compile/bad_toplevel_enums.rs: Likewise.
+	* rust/compile/redef_error1.rs: Likewise.
+	* rust/compile/redef_error3.rs: Likewise.
+	* rust/compile/redef_error4.rs: Likewise.
+	* rust/compile/redef_error6.rs: Likewise.
+
+2024-08-01  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/let_alt.rs: Check for false positive.
+
+2024-08-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114659
+	* gcc.target/i386/pr114659.c: New testcase.
+
+2024-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/115981
+	* gcc.target/i386/avx512dq-pr90991-1.c: Add tests for no separate
+	zero extension instructions.
+	* gcc.target/i386/avx512dq-pr90991-2.c: Likewise.
+
+2024-08-01  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* gcc.target/riscv/pr105314-rtl.c: Skip zicond.
+	* gcc.target/riscv/pr105314-rtl32.c: Ditto.
+	* gcc.target/riscv/pr105314.c: Ditto.
+
+2024-08-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/jit.exp: Add load_lib valgrind.exp.
+	(proc report_leak): Move to valgrind.exp, and add argument
+	leak_report_function rather than hardcoding xfail.
+	(parse_valgrind_logfile): Likewise.
+	(fixed_host_execute): Pass xfail to parse_valgrind_logfile.
+	* lib/valgrind.exp: New file, based on the above.
+
+2024-08-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/sarif-output/sarif.py: Drop unused import of gzip.
+
+2024-08-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/sarif-output/missing-semicolon.c: New test.
+	* gcc.dg/sarif-output/sarif.py (get_location_physical_region): New.
+	(get_location_snippet_text): New.
+	* gcc.dg/sarif-output/test-missing-semicolon.py: New test.
+
 2024-07-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/105361

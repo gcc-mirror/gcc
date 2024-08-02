@@ -1,3 +1,301 @@
+2024-08-01  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-strunb.adb (Realloc_For_Chunk): Fix computation of new
+	size.
+
+2024-08-01  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-strbou.ads (To_String): Add a postcondition to state
+	the value of bounds of the returned string, which helps with proof
+	of callers.
+	* libgnat/a-strfix.adb (Delete): Fix implementation to produce
+	correct result in all cases. For example, returned string should
+	always have a lower bound of 1, which was not respected in one
+	case. This was not detected by proof, since this code was dead
+	according to the too strict precondition.
+	* libgnat/a-strfix.ads (Delete): State the correct precondition
+	from standard which allows a value of Through beyond the last
+	valid index, and also restricts values of From from below. Update
+	the Contract_Cases accordingly to allow new values of parameters.
+
+2024-08-01  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Don't check for duplicate
+	SPARK_Mode pragmas in configuration files.
+
+2024-08-01  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_attr.adb (Resolve_Attribute, Attribute_*Access): Resolve
+	overloaded prefixes that denote objects of reference types,
+	determining whether to use the prefix object directly, or expand
+	it as an explicit dereference.
+
+2024-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sinfo.ads (N_Block_Statement): Move At_End_Proc to the end of
+	slot list and alphabetize flag list.
+	(N_Subprogram_Body): Add At_End_Proc.
+	(N_Package_Body): Move At_End_Proc to the end of slot list.
+	(N_Subprogram_Body_Stub): Remove At_End_Proc.
+
+2024-08-01  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch5.adb (Analyze_Loop_Parameter_Specification):
+	Unconditionally set the type of loop parameter.
+
+2024-08-01  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* backend_utils.adb (Scan_Common_Back_End_Switch): Remove blank
+	line.
+	* errout.adb (Output_JSON_Message): Likewise.
+	* erroutc.adb (Set_Msg_Char): Likewise.
+	* exp_aggr.adb (Two_Dim_Packed_Array_Handled): Likewise.
+	* exp_pakd.adb (Expand_Packed_Address_Reference): Likewise.
+	(Expand_Packed_Bit_Reference): Likewise.
+	(Expand_Packed_Boolean_Operator): Likewise.
+	(Expand_Packed_Element_Reference): Likewise.
+	(Expand_Packed_Eq): Likewise.
+	(Expand_Packed_Not): Likewise.
+	* exp_prag.adb (Build_Dim3_Declaration): Likewise.
+	* exp_strm.adb (Build_Elementary_Input_Call): Likewise.
+	* freeze.adb (Find_Aspect_No_Parts): Likewise.
+	(Get_Aspect_No_Parts_Value): Likewise.
+	* gen_il-gen.adb (Compile): Likewise.
+	* gnat1drv.adb (Adjust_Global_Switches): Likewise.
+	* gnat_cuda.adb (Expand_CUDA_Package): Likewise.
+	* gnatchop.adb (Read_File): Likewise.
+	* gnatls.adb (Get_Runtime_Path): Likewise.
+	* make.adb (Binding_Phase): Likewise.
+	* par-ch11.adb (P_Exception_Choice): Likewise.
+	* par-ch5.adb (P_Loop_Parameter_Specification): Likewise.
+	* par-ch6.adb (Is_Extended): Likewise.
+	* sem_attr.adb (Check_Dereference): Likewise.
+	* sem_ch12.adb (Build_Subprogram_Decl_Wrapper): Likewise.
+	* sem_ch3.adb (Build_Itype_Reference): Likewise.
+	* sem_prag.adb (Validate_Compile_Time_Warning_Errors): Likewise.
+	* sem_res.adb (Resolve_Declare_Expression): Likewise.
+	* sem_util.adb (Build_Default_Subtype): Likewise.
+	* sprint.adb (Sprint_Paren_Comma_List): Likewise.
+
+2024-08-01  Javier Miranda  <miranda@adacore.com>
+
+	* par-ch2.adb (P_Interpolated_String_Literal): remove support of
+	multi-line string literals.
+	* doc/gnat_rm/gnat_language_extensions.rst: Update documentation.
+	* gnat_rm.texi: Regenerate.
+
+2024-08-01  Viljar Indus  <indus@adacore.com>
+
+	* sem_warn.adb (Output_Obsolescent_Entity_Warnings): use the ?j?
+	in warning messages.
+
+2024-08-01  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): Fix test for
+	expanded quantified expression context.
+	(Is_Expanded_Quantified_Expr): New function.
+
+2024-08-01  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Add_Predicate): Remove the premature "return;".
+	Ghost code needs to be processed by later code in this procedure
+	even when ignored; otherwise the second pass of name resolution
+	fails much later. However, protect Set_SCO_Pragma_Enabled and
+	Add_Condition with "if not Is_Ignored_Ghost_Pragma"; these parts
+	should not happen if the ghost code is Ignored.
+	* libgnat/interfac__2020.ads (Unsigned_8): Minor reformatting.
+	* libgnat/interfac.ads (IEEE_Extended_Float): Minor comment
+	improvement.
+
+2024-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (No_Return): Change description and adjust
+	accordingly.
+	* gen_il-gen-gen_entities.adb (Entity_Kind): Remove No_Return.
+	(Subprogram_Kind): Add No_Return.
+	(Generic_Subprogram_Kind): Likewise.
+	* sem_ch6.adb (Analyze_Return_Statement): Adjust No_Return test.
+
+2024-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/gnat_language_extensions.rst (Generalized
+	Finalization): Update status.
+	* einfo.ads (Has_Relaxed_Finalization): Add more details.
+	* exp_ch4.adb (Process_Transients_In_Expression): Invoke
+	Make_Finalize_Call_For_Node instead of building the call.
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Do not set up an
+	exception handler around the assignment for a controlled type with
+	relaxed finalization semantics. Streamline the code implementing
+	the protection against aborts and do not use an At_End handler for
+	a controlled type with relaxed finalization semantics.
+	* exp_ch7.ads (Make_Finalize_Call_For_Node): New function.
+	* exp_ch7.adb (Finalize_Address_For_Node): New function renaming.
+	(Set_Finalize_Address_For_Node): New procedure renaming.
+	(Attach_Object_To_Master_Node): Also attach the Finalize_Address
+	primitive to the Master_Node statically.
+	(Build_Finalizer): Add Has_Strict_Ctrl_Objs local variable. Insert
+	back the body of the finalizer at the end of the statement list in
+	the non-package case and restore the associated support code to
+	that effect. When all the controlled objects have the relaxed
+	finalization semantics, do not create a Finalization_Master and
+	finalize the objects directly instead.
+	(Processing_Actions): Add Strict parameter and use it to set the
+	Has_Strict_Ctrl_Objs variable.
+	(Process_Declarations): Make main loop more robust and adjust
+	calls to Processing_Actions.
+	(Make_Finalize_Address_Body): Mark the primitive as inlined if the
+	type has relaxed finalization semantics.
+	(Make_Finalize_Call_For_Node): New function.
+	* sem_ch6.adb (Check_Statement_Sequence): Skip subprogram bodies.
+	* libgnat/s-finpri.ads (Finalize_Object): Add Finalize_Address
+	parameter.
+	(Master_Node): Remove superfluous qualification.
+	* libgnat/s-finpri.adb (Attach_Object_To_Node): Likewise.
+	(Finalize_Master): Adjust calls to Finalize_Object.
+	(Finalize_Object): Add Finalize_Address parameter and assert that
+	it is equal to the component of the node. Use the Object_Address
+	component as guard.
+	(Suppress_Object_Finalize_At_End): Clear Object_Address component.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2024-08-01  Arnaud Charlet  <charlet@adacore.com>
+
+	* bindgen.adb (Gen_Main): Put back support for -G
+	* bindusg.adb (Display): Put back line for -G
+	* opt.ads (CCG_Mode): Update doc
+	* switch-b.adb (Scan_Binder_Switches): Put back support for -G
+
+2024-08-01  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* exp_pakd.adb (Expand_Bit_Packed_Element_Set): Disable expansion
+	in CodePeerMode.
+	(Expand_Packed_Address_Reference): Likewise.
+	(Expand_Packed_Bit_Reference): Likewise.
+	(Expand_Packed_Boolean_Operator): Likewise.
+	(Expand_Packed_Element_Reference): Likewise.
+	(Expand_Packed_Eq): Likewise.
+	(Expand_Packed_Not): Likewise.
+
+2024-08-01  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (Check_Aspect_Too_Late): Move routine to top-level.
+	(Resolve_Aspect_Expressions): Check aspects Default_Value and
+	Default_Component_Value before resolving their expressions.
+
+2024-08-01  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (Check_Aspect_Too_Late): Prevent freezing during
+	preanalysis.
+
+2024-08-01  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (Resolve_Aspect_Expression): Don't set
+	Must_Not_Freeze before preanalyzing spec expressions.
+
+2024-08-01  Steve Baird  <baird@adacore.com>
+
+	* sem_disp.adb (Check_Dispatching_Operation): When calling
+	Error_Msg_NE to generate a "missing overriding indicator" message,
+	generate a warning message instead of an error message (and update
+	comment to describe this new behavior).
+
+2024-08-01  Javier Miranda  <miranda@adacore.com>
+
+	* sem_aggr.adb (Collect_Aggr_Bounds): Adjust previous patch to
+	store the bounds of inner null aggregates in the itype; required
+	generate the runtime check of ARM 4.3.3(30).
+
+2024-08-01  Arnaud Charlet  <charlet@adacore.com>
+
+	* osint-c.ads, osint-c.adb (Create_C_File, Close_C_File,
+	Delete_C_File): Put back, needed by LLVM based CCG.
+	* exp_unst.adb (Unnest_Subprogram): Complete previous change by
+	removing now dead code and corresponding ??? comment.
+
+2024-08-01  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch3.adb (Build_Record_Init_Proc.Build_Assignment): Do the
+	component adjustment in the case of initialization by a container
+	aggregate.
+
+2024-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Convert_To_Assignments): Set Expansion_Delayed on
+	intermediate conditional expressions for BIP aggregate returns
+	too.
+	* exp_ch4.adb (Expand_N_Case_Expression): Also deal with delayed
+	expansion in the return case.
+	(Expand_N_If_Expression): Likewise.
+
+2024-08-01  Steve Baird  <baird@adacore.com>
+
+	* sem_ch4.adb (Is_Effectively_Visible_Opertor): Return True if
+	Checking_Potentially_Static_Expression is True. The accompanying
+	comment says True is returned "if there is a reason it is ok for
+	Is_Visible_Operator to return False"; if
+	Checking_Potentially_Static_Expression is true, that is such a
+	reason.
+
+2024-08-01  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Stop
+	ignoring Component_Size attribute in CodePeer_Mode.
+
+2024-08-01  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch5.adb (Prepare_Param_Spec_Loop): Fix criterion for
+	wrapping loop statements into blocks.
+
+2024-08-01  Arnaud Charlet  <charlet@adacore.com>
+
+	* bindgen.adb, bindusg.adb, debug.adb, einfo.ads,
+	exp_aggr.adb, exp_attr.adb, exp_ch11.adb, exp_ch3.adb,
+	exp_ch4.adb, exp_ch6.adb, exp_ch7.adb, exp_ch8.adb, exp_dbug.adb,
+	exp_dbug.ads, exp_intr.adb, exp_unst.adb, exp_util.adb,
+	exp_util.ads, freeze.adb, gen_il-fields.ads,
+	gen_il-gen-gen_entities.adb, gnat1drv.adb, inline.adb, opt.ads,
+	osint-c.adb, osint-c.ads, sem_attr.adb, sem_ch12.adb, sem_ch3.adb,
+	sem_ch4.adb, sem_ch6.adb, sem_elab.adb, sem_res.adb, sinfo.ads,
+	snames.ads-tmpl, switch-b.adb, switch-c.adb: Major
+	clean up to remove C code generation for bodies.
+
+2024-08-01  Ronan Desplanques  <desplanques@adacore.com>
+
+	* exp_aggr.adb (Flatten): Do not reject empty aggregates. Adjust
+	criterion for emitting warning about ineffective others clause.
+	* sem_aggr.adb (Array_Aggr_Subtype): Fix typo. Add handling of
+	aggregates that were converted to positional form.
+	(Resolve_Aggregate): Tweak criterion for transforming into a
+	string literal.
+	(Resolve_Array_Aggregate): Tweak criterion for reusing existing
+	bounds of aggregate.
+	(Retrieve_Aggregate_Bounds): New procedure.
+	* sem_util.adb (Has_Static_Empty_Array_Bounds): New function.
+	* sem_util.ads (Has_Static_Empty_Array_Bounds): Likewise.
+
+2024-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.ads (Build_Finalizer): Remove Top_Decls parameter.
+	* exp_ch7.adb (Build_Finalizer): Likewise. Rename Counter_Val into
+	Count, replace Has_Ctrl_Objs local variable by expression
+	function, remove Spec_Decls local variable and do not reset
+	Finalizer_Decls.
+	(Expand_Cleanup_Actions): Adjust call to Build_Finalizer.
+	(Expand_N_Package_Body): Likewise.
+	(Expand_N_Package_Declaration): Likewise.
+	* inline.adb (Cleanup_Scopes): Likewise.
+
+2024-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb (Make_Address_For_Finalize): Generate a direct call
+	to the "+" operator of System.Storage_Elements.
+	(Make_Finalize_Address_Stmts): Likewise.
+	* rtsfind.ads (RE_Id): Remove RE_Add_Offset_To_Address.
+	(RE_Unit_Table): Remove entry for RE_Add_Offset_To_Address.
+	* libgnat/s-finpri.ads (Add_Offset_To_Address): Delete.
+	* libgnat/s-finpri.adb (Add_Offset_To_Address): Likewise.
+
 2024-07-07  Maciej W. Rozycki  <macro@orcam.me.uk>
 
 	* gcc-interface/Make-lang.in (ada.all.cross): Move recipe to...

@@ -1,3 +1,56 @@
+2024-08-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/utility.h (__is_in_place_type): Remove.
+	* include/std/variant (__is_in_place_tag): Remove.
+
+2024-08-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/align.h (align, assume_aligned): Use
+	__UINTPTR_TYPE__ instead of uintptr_t. Do not include
+	<stdint.h>.
+	* include/bits/atomic_base.h (__atomic_ref): Likewise.
+	* include/bits/atomic_wait.h (__waiter_pool_base::_S_for):
+	Likewise.
+	* include/std/atomic: Include <cstdint>.
+
+2024-08-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_base.h (__atomic_impl::compare_exchange_weak):
+	Remove unused parameter.
+	(__atomic_impl::compare_exchange_strong): Likewise.
+
+2024-08-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113807
+	* include/std/bitset (bitset::_M_is_equal()): Use memcmp to
+	optimize operator==.
+
+2024-08-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/random/discrete_distribution/operators/values.cc:
+	Use ARGS to limit number of iterations for simulators.
+
+2024-08-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113841
+	* include/bits/basic_string.h (basic_string::basic_string()):
+	Constrain so that it's only present if the allocator is default
+	constructible.
+	* include/bits/cow_string.h (basic_string::basic_string()):
+	Likewise.
+	* testsuite/21_strings/basic_string/cons/113841.cc: New test.
+
+2024-08-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99942
+	* include/bits/cow_string.h (data()): Change to noexcept(false).
+
+2024-08-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/map/operators/1_neg.cc (test01): Remove test variable
+	and use 'no match' dg-error patter.
+	* testsuite/23_containers/set/operators/1_neg.cc (test01): Likewise.
+
 2024-07-31  François Dumont  <frs.dumont@gmail.com>
 
 	* testsuite/23_containers/map/operators/1_neg.cc (test01): Add test variable

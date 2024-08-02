@@ -1,3 +1,175 @@
+2024-08-01  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/116149
+	* config/riscv/vector.md: Fix mode_idx attribute of scalar
+	widen add/sub variants.
+
+2024-08-01  Patrick O'Neill  <patrick@rivosinc.com>
+
+	PR target/116111
+	* config/riscv/riscv.cc (riscv_option_override): Add error.
+
+2024-08-01  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-cores.def (cortex-x925): New.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* config/aarch64/tuning_models/cortexx925.h: New file.
+	* config/aarch64/aarch64.cc: Use it.
+	* doc/invoke.texi: Document it.
+
+2024-08-01  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/tuning_models/neoversen2.h: Update costs.
+
+2024-08-01  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/tuning_models/generic_armv9_a.h: Update costs.
+
+2024-08-01  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-cores.def (neoverse-n3, cortex-a725): New.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* config/aarch64/tuning_models/neoversen3.h: New file.
+	* config/aarch64/aarch64.cc: Use it.
+	* doc/invoke.texi: Document it.
+
+2024-08-01  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-cores.def (neoverse-v3ae): New.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* config/aarch64/tuning_models/neoversev3ae.h: New file.
+	* config/aarch64/aarch64.cc: Use it.
+	* doc/invoke.texi: Document it.
+
+2024-08-01  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-cores.def (cortex-x4): Update.
+	(neoverse-v3): New.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* config/aarch64/tuning_models/neoversev3.h: New file.
+	* config/aarch64/aarch64.cc: Use it.
+	* doc/invoke.texi: Document it.
+
+2024-08-01  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-cores.def (cortex-x3): Use Neoverse-V2 costs.
+	* config/aarch64/tuning_models/neoversev2.h: Update costs.
+
+2024-08-01  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116120
+	* match.pd (`(a ? x : y) eq/ne (b ? x : y)`): Add test for `x != y`
+	in result.
+	(`(a ? x : y) eq/ne (b ? y : x)`): Add test for `x == y` in result.
+
+2024-08-01  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/116096
+	* config/i386/constraints.md (Wc): New constraint for integer
+	1 or -1.
+	* config/i386/i386.md (ashl<mode>3_doubleword): Refine
+	constraint with Wc.
+
+2024-08-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114659
+	* tree-ssa-sccvn.cc (visit_reference_op_load): Do not
+	prevent punning from modes with padding here, but ...
+	(vn_reference_eq): ... ensure this here, also honoring
+	types with modes that cannot act as bit container.
+
+2024-08-01  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386.cc (TARGET_MODE_CAN_TRANSFER_BITS): Define.
+	(ix86_mode_can_transfer_bits): New function.
+
+2024-08-01  Richard Biener  <rguenther@suse.de>
+
+	* target.def (mode_can_transfer_bits): New target hook.
+	* target.h (mode_can_transfer_bits): New function wrapping the
+	hook and providing default behavior.
+	* doc/tm.texi.in: Update.
+	* doc/tm.texi: Re-generate.
+
+2024-08-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (cbranch<mode>4_insn): Split to a test of the
+	high part against 0 if possible.
+
+2024-08-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/constraints.md (YMM): New constraint.
+	* config/avr/avr.md (cmp<mode>3, *cmp<mode>3)
+	(cbranch<mode>4_insn): Allow YMM where M is allowed.
+
+2024-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/115981
+	* config/i386/sse.md
+	(*<extract_type>_vinsert<shuffletype><extract_suf>_0): Swap the
+	first two VEC_MERGE operands, renumber match_operands and test
+	for 0xF or 0x3 rather than 0xFFF0 or 0xFC immediate.
+
+2024-08-01  Tobias Burnus  <tburnus@baylibre.com>
+	    Richard Biener  <rguenther@suse.de
+
+	PR middle-end/115637
+	* gimplify.cc (gimplify_body): Fix macro name in the comment.
+	* omp-offload.cc (find_link_var_op): Rename to ...
+	(process_link_var_op): ... this. Replace value expr.
+	(pass_omp_target_link::execute): Update walk_gimple_stmt call.
+
+2024-08-01  Lingling Kong  <lingling.kong@intel.com>
+	    Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/113744
+	* config/i386/i386.md (*add<mode>_4): Remove ndd support.
+	(*adddi_4): Ditto.
+
+2024-08-01  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (get_type_num_struct): Fix NULL pointer dereference.
+
+2024-08-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-path.cc
+	(thread_event_printer::print_swimlane_for_event_range): Gracefully
+	handle logical_location::get_name_for_path_output returning null.
+
+2024-08-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-sarif.cc
+	(sarif_location_manager::worklist_item::unlabelled_secondary_location):
+	New enum value.
+	(sarif_location_manager::m_unlabelled_secondary_locations): New
+	field.
+	(sarif_location_manager::process_worklist_item): Handle unlabelled
+	secondary locations.
+	(sarif_builder::make_location_object): Generalize code to handle
+	ranges within a rich_location so as well as using annotations for
+	those with labels, we now add related locations for those without
+	labels.
+
+2024-08-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-sarif.cc (sarif_builder::sarif_builder): Assert
+	that m_line_maps is nonnull.
+	(diagnostic_output_format_init_sarif_stderr): Add "line_maps"
+	param and pass to format ctor.
+	(diagnostic_output_format_init_sarif_file): Likewise.
+	(diagnostic_output_format_init_sarif_stream): Likewise.
+	* diagnostic.cc (diagnostic_output_format_init): Pass "line_table"
+	as line_maps param to the above.
+	* diagnostic.h (diagnostic_output_format_init_sarif_stderr): Add
+	"line_maps" param.
+	(diagnostic_output_format_init_sarif_file): Likewise.
+	(diagnostic_output_format_init_sarif_stream): Likewise.
+
+2024-08-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-sarif.cc: Tweak ASCII art in comment
+	to show edges for both directions in the digraph.
+
 2024-07-31  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR middle-end/116134
