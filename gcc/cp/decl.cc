@@ -6100,7 +6100,7 @@ start_decl (const cp_declarator *declarator,
 	    permerror (declarator->id_loc,
 		       "declaration of %q#D outside of class is not definition",
 		       decl);
-	  else if (flag_contract_strict_declarations)
+	  else if (!flag_contracts_nonattr && flag_contract_strict_declarations)
 	    warning_at (declarator->id_loc, OPT_fcontract_strict_declarations_,
 			"declaration of %q#D outside of class is not definition",
 			decl);
@@ -13344,9 +13344,8 @@ grokdeclarator (const cp_declarator *declarator,
 
       /* Check that contracts aren't misapplied.  */
       if (tree contract_attr = find_contract (declarator->std_attributes))
-	if (!flag_contracts_nonattr
-	    && (declarator->kind != cdk_function
-		|| innermost_code != cdk_function))
+	if (declarator->kind != cdk_function
+	    || innermost_code != cdk_function)
 	  diagnose_misapplied_contracts (contract_attr);
 
       /* We don't want to warn in parameter context because we don't
