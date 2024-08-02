@@ -2410,4 +2410,25 @@ inherit_base_contracts (tree overrider, tree basefn)
   set_decl_contracts (overrider, contract_attrs);
 }
 
+tree
+maybe_contract_wrap_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
+		       tree conversion_path, int flags,
+		       tree *fn_p, tsubst_flags_t complain)
+{
+  if (fns)
+    {
+      tree c_fns = BASELINK_FUNCTIONS (fns);
+      if (TREE_CODE (c_fns) != TEMPLATE_ID_EXPR)
+	{
+	  tree fn = OVL_FIRST (c_fns);
+	  if (!(flags & LOOKUP_NONVIRTUAL) && (DECL_VIRTUAL_P (fn)))
+	    if (has_active_preconditions (fn))
+		debug_tree( DECL_CONTRACTS (fn));
+	}
+    }
+
+  return  build_new_method_call(instance, fns, args, conversion_path, flags, fn_p, complain);
+}
+
+
 #include "gt-cp-contracts.h"
