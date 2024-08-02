@@ -986,6 +986,18 @@ store_integral_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
 	    = backwards ^ reverse
 	      ? MAX ((int) bitsize - (i + 1) * BITS_PER_WORD, 0)
 	      : i * BITS_PER_WORD;
+
+	  /* No further action is needed if the target is a register and if
+	     this field lies completely outside that register.  */
+	  if (REG_P (op0) && known_ge (bitnum + bit_offset,
+				       GET_MODE_BITSIZE (GET_MODE (op0))))
+	    {
+	      if (backwards ^ reverse)
+		continue;
+	      /* For forward operation we are finished.  */
+	      return true;
+	    }
+
 	  /* Starting word number in the value.  */
 	  const unsigned int wordnum
 	    = backwards
