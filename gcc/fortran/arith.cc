@@ -2258,7 +2258,8 @@ wprecision_int_real (mpz_t n, mpfr_t r)
   return ret;
 }
 
-/* Convert integers to integers.  */
+/* Convert integers to integers; we can reuse this for also converting
+   unsigneds.  */
 
 gfc_expr *
 gfc_int2int (gfc_expr *src, int kind)
@@ -2266,7 +2267,7 @@ gfc_int2int (gfc_expr *src, int kind)
   gfc_expr *result;
   arith rc;
 
-  if (src->ts.type != BT_INTEGER)
+  if (src->ts.type != BT_INTEGER && src->ts.type != BT_UNSIGNED)
     return NULL;
 
   result = gfc_get_constant_expr (BT_INTEGER, kind, &src->where);
@@ -2375,6 +2376,111 @@ gfc_int2complex (gfc_expr *src, int kind)
   return result;
 }
 
+/* Convert unsigned to unsigned, or integer to unsigned.  */
+
+gfc_expr *
+gfc_uint2uint (gfc_expr *src, int kind)
+{
+  gfc_expr *result;
+  arith rc;
+  int k;
+
+  if (src->ts.type != BT_UNSIGNED && src->ts.type != BT_INTEGER)
+    return NULL;
+
+  result = gfc_get_constant_expr (BT_UNSIGNED, kind, &src->where);
+  mpz_set (result->value.integer, src->value.integer);
+
+  rc = gfc_range_check (result);
+  if (rc != ARITH_OK)
+    gfc_warning (0, gfc_arith_error (rc), &result->where);
+
+  k = gfc_validate_kind (BT_UNSIGNED, kind, false);
+  mpz_and (result->value.integer, result->value.integer,
+	   gfc_unsigned_kinds[k].huge);
+
+  return result;
+}
+
+gfc_expr *
+gfc_int2uint (gfc_expr *src, int kind)
+{
+  return gfc_uint2uint (src, kind);
+}
+
+gfc_expr *
+gfc_uint2int (gfc_expr *src, int kind)
+{
+  return gfc_int2int (src, kind);
+}
+
+/* Convert UNSIGNED to reals.  */
+
+gfc_expr *
+gfc_uint2real (gfc_expr *src, int kind)
+{
+  gfc_expr *result;
+  arith rc;
+
+  if (src->ts.type != BT_UNSIGNED)
+    return NULL;
+
+  result = gfc_get_constant_expr (BT_REAL, kind, &src->where);
+
+  mpfr_set_z (result->value.real, src->value.integer, GFC_RND_MODE);
+
+  if ((rc = gfc_check_real_range (result->value.real, kind)) != ARITH_OK)
+    {
+      arith_error (rc, &src->ts, &result->ts, &src->where);
+      gfc_free_expr (result);
+      return NULL;
+    }
+
+  if (warn_conversion
+      && wprecision_int_real (src->value.integer, result->value.real))
+    gfc_warning (OPT_Wconversion, "Change of value in conversion "
+		 "from %qs to %qs at %L",
+		 gfc_typename (&src->ts),
+		 gfc_typename (&result->ts),
+		 &src->where);
+
+  return result;
+}
+
+/* Convert default integer to default complex.  */
+
+gfc_expr *
+gfc_uint2complex (gfc_expr *src, int kind)
+{
+  gfc_expr *result;
+  arith rc;
+
+  if (src->ts.type != BT_UNSIGNED)
+    return NULL;
+
+  result = gfc_get_constant_expr (BT_COMPLEX, kind, &src->where);
+
+  mpc_set_z (result->value.complex, src->value.integer, GFC_MPC_RND_MODE);
+
+  if ((rc = gfc_check_real_range (mpc_realref (result->value.complex), kind))
+      != ARITH_OK)
+    {
+      arith_error (rc, &src->ts, &result->ts, &src->where);
+      gfc_free_expr (result);
+      return NULL;
+    }
+
+  if (warn_conversion
+      && wprecision_int_real (src->value.integer,
+			      mpc_realref (result->value.complex)))
+      gfc_warning_now (OPT_Wconversion, "Change of value in conversion "
+		       "from %qs to %qs at %L",
+		       gfc_typename (&src->ts),
+		       gfc_typename (&result->ts),
+		       &src->where);
+
+  return result;
+}
 
 /* Convert default real to default integer.  */
 

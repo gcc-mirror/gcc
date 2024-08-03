@@ -11549,6 +11549,13 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
       return false;
     }
 
+  if (flag_unsigned && gfc_invalid_unsigned_ops (lhs, rhs))
+    {
+      gfc_error (_("Cannot assign %s to %s at %L"), gfc_typename (rhs),
+		   gfc_typename (lhs), &rhs->where);
+      return false;
+    }
+
   /* Handle the case of a BOZ literal on the RHS.  */
   if (rhs->ts.type == BT_BOZ)
     {

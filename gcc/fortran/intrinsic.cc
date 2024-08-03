@@ -95,6 +95,12 @@ gfc_type_letter (bt type, bool logical_equals_int)
       c = 'h';
       break;
 
+      /* 'u' would be the logical choice, but it is used for
+	 "unknown", see below.  */
+    case BT_UNSIGNED:
+      c = 'm';
+      break;
+
     default:
       c = 'u';
       break;
@@ -4053,6 +4059,15 @@ add_conversions (void)
 		  BT_INTEGER, gfc_integer_kinds[i].kind, GFC_STD_F77);
       }
 
+  if (flag_unsigned)
+    {
+      for (i = 0; gfc_unsigned_kinds[i].kind != 0; i++)
+	for (j = 0; gfc_unsigned_kinds[j].kind != 0; j++)
+	  if (i != j)
+	    add_conv (BT_UNSIGNED, gfc_unsigned_kinds[i].kind,
+		      BT_UNSIGNED, gfc_unsigned_kinds[j].kind, GFC_STD_GNU);
+    }
+
   if ((gfc_option.allow_std & GFC_STD_LEGACY) != 0)
     {
       /* Hollerith-Integer conversions.  */
@@ -5326,7 +5341,8 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag,
       else if (from_ts.type == ts->type
 	       || (from_ts.type == BT_INTEGER && ts->type == BT_REAL)
 	       || (from_ts.type == BT_INTEGER && ts->type == BT_COMPLEX)
-	       || (from_ts.type == BT_REAL && ts->type == BT_COMPLEX))
+	       || (from_ts.type == BT_REAL && ts->type == BT_COMPLEX)
+	       || (from_ts.type == BT_UNSIGNED && ts->type == BT_UNSIGNED))
 	{
 	  /* Larger kinds can hold values of smaller kinds without problems.
 	     Hence, only warn if target kind is smaller than the source

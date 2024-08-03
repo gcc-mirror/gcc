@@ -863,7 +863,7 @@ void
 read_decimal_unsigned (st_parameter_dt *dtp, const fnode *f, char *dest,
 		       int length)
 {
-  GFC_UINTEGER_LARGEST value, v;
+  GFC_UINTEGER_LARGEST value;
   size_t w;
   int negative;
   char c, *p;

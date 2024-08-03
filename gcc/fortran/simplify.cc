@@ -1798,6 +1798,7 @@ simplify_cmplx (const char *name, gfc_expr *x, gfc_expr *y, int kind)
   switch (x->ts.type)
     {
       case BT_INTEGER:
+      case BT_UNSIGNED:
 	mpc_set_z (result->value.complex, x->value.integer, GFC_MPC_RND_MODE);
 	break;
 
@@ -1819,6 +1820,7 @@ simplify_cmplx (const char *name, gfc_expr *x, gfc_expr *y, int kind)
   switch (y->ts.type)
     {
       case BT_INTEGER:
+      case BT_UNSIGNED:
 	mpfr_set_z (mpc_imagref (result->value.complex),
 		    y->value.integer, GFC_RND_MODE);
 	break;
@@ -8816,6 +8818,9 @@ gfc_convert_constant (gfc_expr *e, bt type, int kind)
 	case BT_INTEGER:
 	  f = gfc_int2int;
 	  break;
+	case BT_UNSIGNED:
+	  f = gfc_int2uint;
+	  break;
 	case BT_REAL:
 	  f = gfc_int2real;
 	  break;
@@ -8824,6 +8829,26 @@ gfc_convert_constant (gfc_expr *e, bt type, int kind)
 	  break;
 	case BT_LOGICAL:
 	  f = gfc_int2log;
+	  break;
+	default:
+	  goto oops;
+	}
+      break;
+
+    case BT_UNSIGNED:
+      switch (type)
+	{
+	case BT_INTEGER:
+	  f = gfc_uint2int;
+	  break;
+	case BT_UNSIGNED:
+	  f = gfc_uint2uint;
+	  break;
+	case BT_REAL:
+	  f = gfc_uint2real;
+	  break;
+	case BT_COMPLEX:
+	  f = gfc_uint2complex;
 	  break;
 	default:
 	  goto oops;
