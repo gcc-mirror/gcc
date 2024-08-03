@@ -44,6 +44,31 @@ void
 TypeCheckPattern::visit (HIR::PathInExpression &pattern)
 {
   infered = TypeCheckExpr::Resolve (&pattern);
+
+  /*
+   * We are compiling a PathInExpression, which can't be a Struct or Tuple
+   * pattern. We should check that the declaration we are referencing IS NOT a
+   * struct pattern or tuple with values.
+   */
+
+  rust_assert (infered->get_kind () == TyTy::TypeKind::ADT);
+  TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (infered);
+
+  HirId variant_id = UNKNOWN_HIRID;
+  bool ok
+    = context->lookup_variant_definition (pattern.get_mappings ().get_hirid (),
+					  &variant_id);
+  rust_assert (ok);
+
+  TyTy::VariantDef *variant = nullptr;
+  ok = adt->lookup_variant_by_id (variant_id, &variant);
+
+  TyTy::VariantDef::VariantType vty = variant->get_variant_type ();
+
+  if (vty != TyTy::VariantDef::VariantType::NUM)
+    rust_error_at (
+      pattern.get_final_segment ().get_locus (), ErrorCode::E0532,
+      "expected unit struct, unit variant or constant, found tuple variant");
 }
 
 void
