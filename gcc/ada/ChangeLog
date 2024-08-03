@@ -1,3 +1,291 @@
+2024-08-02  Yannick Moy  <moy@adacore.com>
+
+	* aspects.adb (Find_Aspect): Take into account the case of a node
+	of kind N_Defining_Program_Unit_Name.
+	* sem_ch10.adb (Analyze_Compilation_Unit): Copy the SPARK aspect
+	from the spec to the body. Delay semantic analysis after that
+	point to ensure that SPARK_Mode is properly analyzed.
+
+2024-08-02  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb (Add_Loop_Actions): Actions are now attached to
+	iterated component association just like they are attached to
+	ordinary component association.
+	(Build_Array_Aggr_Code): If resolution of the array aggregate
+	generated some actions, e.g. for run-time checks, then we must
+	keep them; same for the Other_Clause.
+	* sem_aggr.adb (Resolve_Iterated_Component_Association): Unset
+	references to iterator variable in loop actions (which might come
+	from run-time check), just these references are unset in the
+	expression itself.
+
+2024-08-02  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.adb (Insert_Actions): Remove null ELSE branch.
+
+2024-08-02  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb (Add_Loop_Actions): Change manipulation of list
+	to avoid unnecessary calls to Parent and Loop_Actions.
+
+2024-08-02  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.adb (Insert_Actions): Move negation in front of
+	complex conjunctions.
+
+2024-08-02  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb (Gen_Assign): Fix layout.
+	* sem_aggr.adb (Empty_Range): Reuse Choice_List.
+
+2024-08-02  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_aggr.adb
+	(Expand_Container_Aggregate.Expand_Iterated_Component): Set the
+	Reverse_Present flag when creating the loop's iteration_scheme.
+	* gen_il-gen-gen_nodes.adb: Add flag Reverse_Present to
+	N_Iterated_Component_Association nodes.
+	* par-ch3.adb (P_Constraint_Op): Remove testing for and ignoring
+	of Tok_In following a constraint. It's allowed for "in" to follow
+	a constraint of loop_parameter_subtype_indication of an
+	iterator_specification, so it shouldn't be ignored.
+	* par-ch4.adb (P_Iterated_Component_Association): Account for
+	"reverse" following the "in" in an iterated_component_association,
+	and set the Reverse_Present flag on the
+	N_Iterated_Component_Association node. Add handling for a ":"
+	following the identifier in an iterator_specification of an
+	iterated_element_association, sharing the code with the "of" case
+	(which backs up to the identifier at the beginning of the
+	iterator_specification). Fix incorrect trailing comment following
+	the call to Scan.
+	(Build_Iterated_Element_Association): Set the Reverse_Present flag
+	on an N_Loop_Parameter_Specification node of an
+	N_Iterated_Element_Association.
+	* par-ch5.adb (P_Iterator_Specification): Remove error-recovery
+	and error code that reports "subtype indication is only legal on
+	an element iterator", as that error can no longer be emitted (and
+	was formerly only reported on one fixedbugs test).
+	* sem_aggr.adb
+	(Resolve_Container_Aggregate.Resolve_Iterated_Association): When
+	creating an N_Iterator_Specification for an
+	N_Iterated_Component_Association, set the Reverse_Present flag of
+	the N_Iterated_Specification from the flag on the latter.
+	* sinfo.ads: Add comments for the Reverse_Present flag, which is
+	now allowed on nodes of kind N_Iterated_Component_Association.
+
+2024-08-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Analyze_Subprogram_Instantiation): Propagate the
+	No_Raise flag like the No_Return flag.
+
+2024-08-02  Ronan Desplanques  <desplanques@adacore.com>
+
+	* exp_aggr.adb (Expand_Container_Aggregate): Remove variables.
+	(To_Int): New function.
+	(Add_Range_Size): Use newly introduced function.
+
+2024-08-02  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-strunb.adb (Sum, Saturated_Sum, Saturated_Mul): Adapt
+	function signatures to more precise types that allow proof.
+	(function "&"): Conditionally assign a slice to avoid possible
+	overflow which only occurs when the assignment is a noop (because
+	the slice is empty in that case).
+	(Append): Same.
+	(function "*"): Retype K to avoid a possible overflow. Add early
+	return on null length for proof.
+	(Delete): Fix implementation to return the correct result in all
+	cases allowed by the Ada standard.
+	(Insert): Same. Also avoid possible overflows.
+	(Length): Rewrite as expression function for proof.
+	(Overwrite): Avoid possible overflows.
+	(Slice): Same.
+	(To_String): Rewrite as expression function for proof.
+	* libgnat/a-strunb.ads: Extend Assertion_Policy to new contracts
+	used. Add complete functional contracts to all subprograms of the
+	public API except Count.
+	* libgnat/a-strunb__shared.adb (Sum): Adapt function signature to
+	more precise types that allow proof.
+	(function "&"): Conditionally assign a slice to avoid possible
+	overflow.
+	(function "*"): Retype K to avoid a possible overflow.
+	(Delete): Fix implementation to return the correct result in all
+	cases allowed by the Ada standard.
+	(Insert): Avoid possible overflows.
+	(Overwrite): Avoid possible overflows.
+	(Replace_Slice): Same.
+	(Slice): Same.
+	(To_String): Rewrite as expression function for proof.
+	* libgnat/a-strunb__shared.ads: Extend Assertion_Policy to new
+	contracts used. Add complete functional contracts to all
+	subprograms of the public API except Count. Mark public part of
+	spec as in SPARK.
+
+2024-08-02  Ronan Desplanques  <desplanques@adacore.com>
+
+	* scng.adb (Slit): Initialize object in uncommon path.
+
+2024-08-02  Richard Kenner  <kenner@adacore.com>
+
+	* exp_ch4.adb (Generate_Temporary): Remove unused procedure.
+
+2024-08-02  Richard Kenner  <kenner@adacore.com>
+
+	* einfo-utils.ads (Is_Finalizer): Delete.
+	* einfo-utils.adb (Is_Finalizer): Delete.
+	* einfo.ads: Adjust comment.
+	* gen_il-fields.ads, gen_il-gen-gen_entities.adb: Add Is_Finalizer
+	flag.
+	* exp_ch3.adb (Build_Init_Procedure): Set it.
+	* exp_ch7.adb (Create_Finalizer): Likewise.
+	* exp_util.adb (Try_Inline_Always): New function.
+	* exp_util.ads (Try_Inline_Always): New function.
+	* sem_elab.adb (Is_Finalizer_Proc): Replace with Is_Finalizer.
+
+2024-08-02  Tonu Naks  <naks@adacore.com>
+
+	* libgnat/a-calend.adb: Modify unix time handling.
+
+2024-08-02  Tonu Naks  <naks@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Add examples.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2024-08-02  Javier Miranda  <miranda@adacore.com>
+
+	* gen_il-fields.ads (Is_Interpolated_String_Literal): New field.
+	* gen_il-gen-gen_nodes.adb (Is_Interpolated_String_Literal): The
+	new field is a flag handled by the parser (syntax flag).
+	* par-ch2.adb (P_Interpolated_String_Literal): Decorate the new
+	flag.
+	* sem_ch2.adb (Analyze_Interpolated_String_Literal): Improve code
+	detecting and reporting ambiguous function calls.
+	* sem_res.adb (Resolve_Interpolated_String_Literal): Restrict
+	resolution imposed by the context type to string literals that
+	have the new flag.
+	* sinfo.ads (Is_Interpolated_String_Literal): New field defined in
+	string literals. Fix documentation of the syntax rule of
+	interpolated string literal.
+
+2024-08-02  Steve Baird  <baird@adacore.com>
+
+	* sem_ch5.adb (Analyze_Assignment): Delete code that was
+	incorrectly implementing a preference rule.
+
+2024-08-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb (Relaxed Finalization): New paragraph in head
+	comment.
+	* sem_ch13.adb (Validate_Finalizable_Aspect): Give an error
+	message if strict finalization is required but not supported by
+	the runtime.
+
+2024-08-02  Viljar Indus  <indus@adacore.com>
+
+	* sem_util.adb (Set_Referenced_Modified): Set referenced as LHS
+	for the prefixes of array slices.
+
+2024-08-02  Steve Baird  <baird@adacore.com>
+
+	* sem_ch8.adb (Find_Type): If Is_Current_Instance returns True for
+	N (and Comes_From_Source (N) is also True) then flag an error.
+	Call Is_Current_Instance (twice) instead of duplicating (twice)
+	N_Access_Definition-related code in Is_Current_Instance.
+	* sem_util.adb (Is_Current_Instance): Implement
+	access-type-related clauses of the RM 8.6 current instance rule.
+	For pragmas Predicate and Predicate_Failure, distinguish between
+	the first and subsequent pragma arguments.
+
+2024-08-02  Steve Baird  <baird@adacore.com>
+
+	* sem_res.adb (Valid_Conversion): Test In_Instance instead of
+	In_Instance_Body.
+
+2024-08-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* aspects.ads (Aspect_Id): Add Aspect_No_Raise identifier.
+	(Implementation_Defined_Aspect): Add True for Aspect_No_Raise.
+	(Is_Representation_Aspect): Add False for Aspect_No_Raise.
+	(Aspect_Names): Add Name_No_Raise for Aspect_No_Raise.
+	(Aspect_Delay): Add Always_Delay for Aspect_No_Raise.
+	* checks.ads (Raise_Checks_Suppressed): New function.
+	(Apply_Raise_Check): New procedure.
+	* checks.adb (Apply_Raise_Check): New procedure.
+	(Raise_Checks_Suppressed): New function.
+	* doc/gnat_rm/gnat_language_extensions.rst (Generalized
+	Finalization): Update.
+	* doc/gnat_rm/implementation_defined_aspects.rst (No_Raise): New.
+	* doc/gnat_rm/implementation_defined_characteristics.rst (Check
+	names): Document Raise_Check and alphabetize others.
+	* doc/gnat_rm/implementation_defined_pragmas.rst (No_Raise): New.
+	* einfo.ads (No_Raise): New flag defined in subprograms and
+	generic subprograms.
+	* exp_ch6.adb (Expand_N_Subprogram_Body): Call Apply_Raise_Check
+	at the end of the processing.
+	* exp_ch11.adb (Get_RT_Exception_Name): Add alternative for
+	PE_Raise_Check_Failed to case statement.
+	* gen_il-fields.ads (Opt_Field_Enum): Add No_Raise identifier.
+	* gen_il-gen-gen_entities.adb (Subprogram_Kind): Add No_Raise as
+	semantical flag.
+	(Generic_Subprogram_Kind): Likewise.
+	* par-prag.adb (Prag): Add alternative for Pragma_No_Raise to case
+	statement.
+	* sem_ch13.adb (Validate_Finalizable_Aspect): Set No_Raise on the
+	Adjust and Finalize primitives if Relaxed_Finalization is set.
+	* sem_prag.adb (Analyze_Pragma): Add alternative for
+	Pragma_No_Raise to case statement.
+	(Sig_Flag): Add 0 for Pragma_No_Raise.
+	* snames.ads-tmpl (Remaining pragma names): Add Name_No_Raise.
+	(Names of recognized checks): Add Name_Raise_Check.
+	(Pragma_Id): Add Pragma_No_Raise identifier.
+	* types.ads (Raise_Check): New named number.
+	(All_Checks): Adjust.
+	(RT_Exception_Code): Add PE_Raise_Check_Failed identifier.
+	(Rkind): Add PE_Reason for PE_Raise_Check_Failed and alphabetize.
+	* types.h (RT_Exception_Code): Add PE_Raise_Check_Failed as 38.
+	(LAST_REASON_CODE): Adjust.
+	* libgnat/a-except.adb (Rcheck_PE_Raise_Check): New procedure with
+	pragmas Export, No_Return and Machine_Attributes.
+	(Rmsg_38): New string constant.
+	* gnat_rm.texi: Regenerate.
+
+2024-08-02  Johannes Kliemann  <kliemann@adacore.com>
+
+	* doc/gnat_rm/standard_library_routines.rst: Add note to section
+	of Ada.Numerics.Discrete_Random and Ada.Numerics.Float_Random.
+	* doc/gnat_rm/the_gnat_library.rst: Add note to section about
+	GNAT.Random_Numbers.
+	* libgnat/a-nudira.ads: Add note about cryptographic properties.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2024-08-02  Ronan Desplanques  <desplanques@adacore.com>
+
+	* doc/gnat_rm/gnat_language_extensions.rst: Fix layout of section.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2024-08-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.ads (Is_Conversion_Or_Reference_To_Formal): New
+	function declaration.
+	* exp_util.adb (Is_Conversion_Or_Reference_To_Formal): New
+	function body.
+	* exp_ch6.adb (Expand_Simple_Function_Return): Call the predicate
+	Is_Conversion_Or_Reference_To_Formal in order to decide whether a
+	tag check or reassignment is needed.
+	* freeze.adb (Should_Freeze_Type): Move declaration and body to
+	the appropriate places. Also return True for tagged results
+	subject to the expansion done in Expand_Simple_Function_Return
+	that is guarded by the predicate
+	Is_Conversion_Or_Reference_To_Formal.
+
+2024-08-02  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch5.adb (Analyze_Loop_Statement): Fix loop pattern detection
+	code. Fix typo.
+
 2024-08-01  Yannick Moy  <moy@adacore.com>
 
 	* libgnat/a-strunb.adb (Realloc_For_Chunk): Fix computation of new

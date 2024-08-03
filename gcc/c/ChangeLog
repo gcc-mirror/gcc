@@ -1,3 +1,8 @@
+2024-08-02  Martin Uecker  <uecker@tugraz.at>
+
+	* c-decl.cc (grokdeclarator, finish_struct): Set and
+	propagate TYPE_TYPELESS_STORAGE.
+
 2024-07-23  Andi Kleen  <ak@linux.intel.com>
 
 	PR c/83324

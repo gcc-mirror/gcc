@@ -1,3 +1,77 @@
+2024-08-02  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi: Document that -Wdangling-reference is
+	enabled by -Wextra.
+
+2024-08-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/116058
+	* genemit.cc (struct clobber_pat): Change pattern to be rtvec.
+	Add code field.
+	(gen_insn): Look through an explicit parallel if there was one.
+	Update store to new clobber_pat.
+	(output_add_clobbers): Update call to gen_exp for the changed
+	clobber_pat.
+
+2024-08-02  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/sync-rvwmo.md: Add conditional length attributes.
+	* config/riscv/sync-ztso.md: Ditto.
+	* config/riscv/sync.md: Fix incorrect insn length attributes and
+	reformat existing conditional checks.
+
+2024-08-02  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* config/aarch64/aarch64.cc (aarch_macro_fusion_pair_p): Implement
+	fusion logic.
+	* config/aarch64/aarch64-fusion-pairs.def (cmp+csel): New entry.
+	(cmp+cset): Likewise.
+	* config/aarch64/tuning_models/neoversev2.h: Enable logic in
+	field fusible_ops.
+
+2024-08-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/116145
+	* rtlanal.cc (may_trap_p_1): Trust MEM_NOTRAP_P even for code
+	movement if MEM_READONLY_P is also true.
+
+2024-08-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116156
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Don't add
+	uses if the statement was a debug statement.
+
+2024-08-02  Lingling Kong  <lingling.kong@intel.com>
+
+	* config/i386/constraints.md: Fixed the comment/naming for je/jM/jO.
+	* config/i386/predicates.md (apx_ndd_memory_operand): Renamed and
+	fixed the comment.
+	(apx_evex_memory_operand): New name.
+	(apx_ndd_add_memory_operand): Ditto.
+	(apx_evex_add_memory_operand): Ditto.
+
+2024-08-02  Lingling Kong  <lingling.kong@intel.com>
+
+	* config/i386/i386.md (nf_mem_constraint): Fixed the constraint
+	for the define_subst_attr.
+	(nf_mem_constraint): Added new define_subst_attr.
+	(*add<mode>_1<nf_name>): Fixed the constraint.
+
+2024-08-02  Yang Yujie  <yangyujie@loongson.cn>
+
+	* config/loongarch/genopts/gen-evolution.awk: Do not use
+	"length()" to compute the size of an array.
+
+2024-08-02  Pengxuan Zheng  <quic_pzheng@quicinc.com>
+
+	PR target/113860
+	* config/aarch64/aarch64-simd.md (popcount<mode>2): Add TARGET_SVE
+	support.
+	* config/aarch64/aarch64-sve.md (@aarch64_pred_<optab><mode>): Use new
+	iterator SVE_VDQ_I.
+	* config/aarch64/iterators.md (SVE_VDQ_I): New mode iterator.
+	(VPRED): Add V8QI, V16QI, V4HI, V8HI and V2SI.
+
 2024-08-01  Robin Dapp  <rdapp@ventanamicro.com>
 
 	PR target/116149

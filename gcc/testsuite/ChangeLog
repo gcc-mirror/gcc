@@ -1,3 +1,77 @@
+2024-08-03  Steve Kargl  <kargls@comcast.net>
+
+	PR fortran/104626
+	* gfortran.dg/pr104626.f90: New test.
+
+2024-08-02  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/105475
+	* g++.dg/coroutines/pr103868.C: Add std::coroutine_handle
+	members we check for now.
+	* g++.dg/coroutines/pr105287.C: Ditto.
+	* g++.dg/coroutines/pr105301.C: Ditto.
+	* g++.dg/coroutines/pr94528.C: Ditto.
+	* g++.dg/coroutines/pr94879-folly-1.C: Ditto.
+	* g++.dg/coroutines/pr94883-folly-2.C: Ditto.
+	* g++.dg/coroutines/pr98118.C: Ditto.
+	* g++.dg/coroutines/pr105475.C: New test.
+	* g++.dg/coroutines/pr105475-1.C: New test.
+	* g++.dg/coroutines/pr105475-2.C: New test.
+	* g++.dg/coroutines/pr105475-3.C: New test.
+	* g++.dg/coroutines/pr105475-4.C: New test.
+	* g++.dg/coroutines/pr105475-5.C: New test.
+	* g++.dg/coroutines/pr105475-6.C: New test.
+	* g++.dg/coroutines/pr105475-broken-spec.C: New test.
+	* g++.dg/coroutines/pr105475-broken-spec-2.C: New test.
+
+2024-08-02  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.dg/maxloc_6.f90: New test.
+	* gfortran.dg/minloc_7.f90: New test.
+
+2024-08-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/mve/ivopts-3.c: Add require target and options.
+
+2024-08-02  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* gcc.target/aarch64/fuse_cmp_csel.c: New test.
+	* gcc.target/aarch64/fuse_cmp_cset.c: Likewise.
+
+2024-08-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/116145
+	* gcc.target/aarch64/sve/acle/general/pr116145.c: New test.
+
+2024-08-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116169
+	* g++.dg/DRs/dr882.C: New test.
+
+2024-08-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116156
+	* c-c++-common/torture/pr116156-1.c: New test.
+
+2024-08-02  Martin Uecker  <uecker@tugraz.at>
+
+	* gcc.dg/c2y-byte-alias-1.c: New test.
+	* gcc.dg/c2y-byte-alias-2.c: New test.
+	* gcc.dg/c2y-byte-alias-3.c: New test.
+
+2024-08-02  Pengxuan Zheng  <quic_pzheng@quicinc.com>
+
+	PR target/113860
+	* gcc.target/aarch64/popcnt-sve.c: New test.
+
+2024-08-02  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/116148
+	* c-c++-common/fam-in-union-alone-in-struct-2.c: Define macros
+	WITH_FAM_2_V_B[03] and WITH_FAM_3_V_A[07] as endianness, update the
+	checking with these macros and initialize with_fam_3_v.b[1] with
+	0x5f6f7f8f instead of 0x5f6f7f7f.
+
 2024-08-01  Robin Dapp  <rdapp@ventanamicro.com>
 
 	* gcc.target/riscv/rvv/autovec/pr116149.c: New test.

@@ -1,3 +1,17 @@
+2024-08-03  Steve Kargl  <kargls@comcast.net>
+
+	PR fortran/104626
+	* symbol.cc (gfc_add_save): Add checks for SAVE attribute
+	conflicts and duplicate SAVE attribute.
+
+2024-08-02  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-intrinsic.cc (maybe_absent_optional_variable): New function.
+	(gfc_conv_intrinsic_minmaxloc): Remove BACK from scalarization and
+	evaluate it before.  Add a check that BACK is not null if the
+	expression is an optional dummy.  Save the resulting expression to a
+	variable.  Use the variable in the generated inline code.
+
 2024-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans-types.cc (gfc_get_array_descr_info): Don't test if

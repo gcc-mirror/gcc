@@ -1,3 +1,47 @@
+2024-08-02  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/105475
+	* coroutines.cc (struct coroutine_info): Add from_address.
+	Carries the from_address member we looked up earlier.
+	(coro_resume_identifier): Remove.  Unused.
+	(coro_init_identifiers): Do not initialize the above.
+	(void_coro_handle_address): New variable.  Contains the baselink
+	for the std::coroutine_handle<void>::address() instance method.
+	(get_handle_type_address): New function.  Looks up and validates
+	handle_type::address in a given handle_type.
+	(get_handle_type_from_address): New function.  Looks up and
+	validates handle_type::from_address in a given handle_type.
+	(coro_promise_type_found_p): Remove reliance on
+	coroutine_handle<> defaulting the promise type to void.  Store
+	get_handle_type_* results where appropriate.
+	(get_coroutine_from_address): New helper.  Gets the
+	handle_type::from_address BASELINK from a coroutine_info.
+	(build_actor_fn): Use the get_coroutine_from_address helper and
+	void_coro_handle_address.
+
+2024-08-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116169
+	* decl.cc (cp_finish_decl): Disallow deleting ::main.
+
+2024-08-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (struct local_vars_frame_data): Add a
+	CTOR.
+	(morph_fn_to_coro): Use CTOR for local_vars_frame_data
+	instead of brace init.
+
+2024-08-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (struct susp_frame_data): Remove unused members,
+	provide a CTOR.
+	(morph_fn_to_coro): Use susp_frame_data CTOR, and make the suspend
+	state hash map local to the morph function.
+
+2024-08-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (replace_continue): Look up expression type.
+
 2024-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/116113

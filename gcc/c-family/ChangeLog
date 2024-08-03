@@ -1,3 +1,7 @@
+2024-08-02  Marek Polacek  <polacek@redhat.com>
+
+	* c.opt (Wdangling-reference): Move from -Wall to -Wextra.
+
 2024-07-30  Paul-Antoine Arras  <parras@baylibre.com>
 
 	* c-format.cc (gcc_gfc_char_table): Add formats for tree objects.
