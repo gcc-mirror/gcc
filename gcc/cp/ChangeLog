@@ -1,3 +1,63 @@
+2024-08-02  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-07-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88313
+	* parser.cc (cp_parser_lambda_declarator_opt): Pass
+	lambda_p=true to cp_parser_parameter_declaration_clause.
+	(cp_parser_direct_declarator): Pass lambda_p=false to
+	to cp_parser_parameter_declaration_clause.
+	(cp_parser_parameter_declaration_clause): Add bool lambda_p
+	parameter.  Consider lambda_p instead of current_class_type
+	when setting parser->auto_is_implicit_function_template_parm_p.
+	Don't consider processing_template_parmlist.
+	(cp_parser_requirement_parameter_list): Pass lambda_p=false
+	to cp_parser_parameter_declaration_clause.
+
+2024-08-02  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-07-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115897
+	* tree.cc (strip_typedefs): Move up the typedef recursion case.
+	Never strip a dependent alias template-id that has dependent
+	attributes.
+
+2024-08-02  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115656
+	* constraint.cc (weakly_subsumes): Pass in_decl=tmpl to
+	get_normalized_constraints_from_info.  Rename to ...
+	(ttp_subsumes): ... this.
+	* cp-tree.h (weakly_subsumes): Rename to ...
+	(ttp_subsumes): ... this.
+	* pt.cc (is_compatible_template_arg): Adjust after renaming.
+
+2024-08-02  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115296
+	* pt.cc (alias_ctad_tweaks): Use complain=tf_none instead of
+	tf_warning_or_error.
+
+2024-08-02  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-07-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/112288
+	* pt.cc (tsubst_friend_function): When adjusting existing
+	specializations after defining a previously declared template
+	friend, consider the most general template and correct
+	DECL_TI_ARGS adjustment.
+
 2024-08-01  Release Manager
 
 	* GCC 14.2.0 released.

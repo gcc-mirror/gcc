@@ -1,3 +1,18 @@
+2024-08-02  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-07-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/116038
+	* include/std/functional (_Bind_front::operator()): Use __like_t
+	instead of std::forward when forwarding __self.
+	(_Bind_back::operator()): Likewise.
+	* include/std/ranges (_Partial::operator()): Likewise.
+	(_Pipe::operator()): Likewise.
+	* testsuite/20_util/function_objects/bind_back/116038.cc: New test.
+	* testsuite/20_util/function_objects/bind_front/116038.cc: New test.
+	* testsuite/std/ranges/adaptors/116038.cc: New test.
+
 2024-08-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
