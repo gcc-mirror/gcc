@@ -991,8 +991,11 @@ fn find_width_map_from_snippet(
     // If we only trimmed it off the input, `format!("\n")` would cause a mismatch as here we they actually match up.
     // Alternatively, we could just count the trailing newlines and only trim one from the input if they don't match up.
     let input_no_nl = input.trim_end_matches('\n');
-    let Some(unescaped) = unescape_string(snippet) else {
-        return InputStringKind::NotALiteral;
+    let unescaped = match unescape_string(snippet) {
+        Some(unescaped) => unescaped,
+        _ => {
+            return InputStringKind::NotALiteral;
+        }
     };
 
     let unescaped_no_nl = unescaped.trim_end_matches('\n');
