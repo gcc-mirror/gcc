@@ -11907,6 +11907,50 @@ riscv_expand_usadd (rtx dest, rtx x, rtx y)
   emit_move_insn (dest, gen_lowpart (mode, xmode_dest));
 }
 
+/* Generate a REG rtx of Xmode from the given rtx and mode.
+   The rtx x can be REG (QI/HI/SI/DI) or const_int.
+   The machine_mode mode is the original mode from define pattern.
+
+   If rtx is REG,  the gen_lowpart of Xmode will be returned.
+
+   If rtx is const_int,  a new REG rtx will be created to hold the value of
+   const_int and then returned.
+
+   According to the gccint doc, the constants generated for modes with fewer
+   bits than in HOST_WIDE_INT must be sign extended to full width.  Thus there
+   will be two cases here,  take QImode as example.
+
+   For .SAT_SUB (127, y) in QImode, we have (const_int 127) and one simple
+   mov from const_int to the new REG rtx is good enough here.
+
+   For .SAT_SUB (254, y) in QImode, we have (const_int -2) after define_expand.
+   Aka 0xfffffffffffffffe in Xmode of RV64 but we actually need 0xfe in Xmode
+   of RV64.  So we need to cleanup the highest 56 bits of the new REG rtx moved
+   from the (const_int -2).
+
+   Then the underlying expanding can perform the code generation based on
+   the REG rtx of Xmode,  instead of taking care of these in expand func.  */
+
+static rtx
+riscv_gen_unsigned_xmode_reg (rtx x, machine_mode mode)
+{
+  if (!CONST_INT_P (x))
+    return gen_lowpart (Xmode, x);
+
+  rtx xmode_x = gen_reg_rtx (Xmode);
+
+  if (mode == Xmode)
+    emit_move_insn (xmode_x, x);
+  else
+    {
+      rtx reg_x = gen_reg_rtx (mode);
+      emit_move_insn (reg_x, x);
+      riscv_emit_unary (ZERO_EXTEND, xmode_x, reg_x);
+    }
+
+  return xmode_x;
+}
+
 /* Implements the unsigned saturation sub standard name usadd for int mode.
 
    z = SAT_SUB(x, y).
@@ -11920,7 +11964,7 @@ void
 riscv_expand_ussub (rtx dest, rtx x, rtx y)
 {
   machine_mode mode = GET_MODE (dest);
-  rtx xmode_x = gen_lowpart (Xmode, x);
+  rtx xmode_x = riscv_gen_unsigned_xmode_reg (x, mode);
   rtx xmode_y = gen_lowpart (Xmode, y);
   rtx xmode_lt = gen_reg_rtx (Xmode);
   rtx xmode_minus = gen_reg_rtx (Xmode);

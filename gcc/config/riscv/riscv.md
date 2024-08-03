@@ -4369,7 +4369,7 @@
 
 (define_expand "ussub<mode>3"
   [(match_operand:ANYI 0 "register_operand")
-   (match_operand:ANYI 1 "register_operand")
+   (match_operand:ANYI 1 "reg_or_int_operand")
    (match_operand:ANYI 2 "register_operand")]
   ""
   {
