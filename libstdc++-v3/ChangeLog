@@ -1,3 +1,13 @@
+2024-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/version.def (chrono): Add cxx11abi = yes.
+	* include/bits/version.h: Regenerate.
+	* testsuite/std/time/syn_c++20.cc: Adjust expected value for
+	the feature test macro.
+
 2024-08-02  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
