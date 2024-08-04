@@ -2356,6 +2356,10 @@ gfc_simplify_digits (gfc_expr *x)
 	digits = gfc_integer_kinds[i].digits;
 	break;
 
+      case BT_UNSIGNED:
+	digits = gfc_unsigned_kinds[i].digits;
+	break;
+
       case BT_REAL:
       case BT_COMPLEX:
 	digits = gfc_real_kinds[i].digits;
@@ -3265,7 +3269,11 @@ gfc_simplify_huge (gfc_expr *e)
 	mpz_set (result->value.integer, gfc_integer_kinds[i].huge);
 	break;
 
-      case BT_REAL:
+      case BT_UNSIGNED:
+	mpz_set (result->value.integer, gfc_unsigned_kinds[i].huge);
+	break;
+
+    case BT_REAL:
 	mpfr_set (result->value.real, gfc_real_kinds[i].huge, GFC_RND_MODE);
 	break;
 
@@ -3369,11 +3377,13 @@ gfc_expr *
 gfc_simplify_iand (gfc_expr *x, gfc_expr *y)
 {
   gfc_expr *result;
+  bt type;
 
   if (x->expr_type != EXPR_CONSTANT || y->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  result = gfc_get_constant_expr (BT_INTEGER, x->ts.kind, &x->where);
+  type = x->ts.type == BT_UNSIGNED ? BT_UNSIGNED : BT_INTEGER;
+  result = gfc_get_constant_expr (type, x->ts.kind, &x->where);
   mpz_and (result->value.integer, x->value.integer, y->value.integer);
 
   return range_check (result, "IAND");
@@ -3547,11 +3557,13 @@ gfc_expr *
 gfc_simplify_ieor (gfc_expr *x, gfc_expr *y)
 {
   gfc_expr *result;
+  bt type;
 
   if (x->expr_type != EXPR_CONSTANT || y->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  result = gfc_get_constant_expr (BT_INTEGER, x->ts.kind, &x->where);
+  type = x->ts.type == BT_UNSIGNED ? BT_UNSIGNED : BT_INTEGER;
+  result = gfc_get_constant_expr (type, x->ts.kind, &x->where);
   mpz_xor (result->value.integer, x->value.integer, y->value.integer);
 
   return range_check (result, "IEOR");
@@ -3774,11 +3786,13 @@ gfc_expr *
 gfc_simplify_ior (gfc_expr *x, gfc_expr *y)
 {
   gfc_expr *result;
+  bt type;
 
   if (x->expr_type != EXPR_CONSTANT || y->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  result = gfc_get_constant_expr (BT_INTEGER, x->ts.kind, &x->where);
+  type = x->ts.type == BT_UNSIGNED ? BT_UNSIGNED : BT_INTEGER;
+  result = gfc_get_constant_expr (type, x->ts.kind, &x->where);
   mpz_ior (result->value.integer, x->value.integer, y->value.integer);
 
   return range_check (result, "IOR");

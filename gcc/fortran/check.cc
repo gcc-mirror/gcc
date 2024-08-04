@@ -524,6 +524,20 @@ type_check (gfc_expr *e, int n, bt type)
   return false;
 }
 
+/* Check the type of an expression which can be one of two.  */
+
+static bool
+type_check2 (gfc_expr *e, int n, bt type1, bt type2)
+{
+  if (e->ts.type == type1 || e->ts.type == type2)
+    return true;
+
+  gfc_error ("%qs argument of %qs intrinsic at %L must be %s or %s",
+	     gfc_current_intrinsic_arg[n]->name, gfc_current_intrinsic,
+	     &e->where, gfc_basic_typename (type1), gfc_basic_typename (type2));
+
+  return false;
+}
 
 /* Check that the expression is a numeric type.  */
 
@@ -568,6 +582,23 @@ int_or_real_check (gfc_expr *e, int n)
     {
       gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER "
 		 "or REAL", gfc_current_intrinsic_arg[n]->name,
+		 gfc_current_intrinsic, &e->where);
+      return false;
+    }
+
+  return true;
+}
+
+/* Check that an expression is integer or real... or unsigned.  */
+
+static bool
+int_or_real_or_unsigned_check (gfc_expr *e, int n)
+{
+  if (e->ts.type != BT_INTEGER && e->ts.type != BT_REAL
+      && e->ts.type != BT_UNSIGNED)
+    {
+      gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER, "
+		 "REAL or UNSIGNED", gfc_current_intrinsic_arg[n]->name,
 		 gfc_current_intrinsic, &e->where);
       return false;
     }
@@ -2669,7 +2700,13 @@ gfc_check_dble (gfc_expr *x)
 bool
 gfc_check_digits (gfc_expr *x)
 {
-  if (!int_or_real_check (x, 0))
+
+  if (flag_unsigned)
+    {
+      if (!int_or_real_or_unsigned_check (x, 0))
+	return false;
+    }
+  else if (!int_or_real_check (x, 0))
     return false;
 
   return true;
@@ -3049,7 +3086,12 @@ gfc_check_fnum (gfc_expr *unit)
 bool
 gfc_check_huge (gfc_expr *x)
 {
-  if (!int_or_real_check (x, 0))
+  if (flag_unsigned)
+    {
+      if (!int_or_real_or_unsigned_check (x, 0))
+	return false;
+    }
+  else if (!int_or_real_check (x, 0))
     return false;
 
   return true;
@@ -3079,6 +3121,21 @@ gfc_check_i (gfc_expr *i)
   return true;
 }
 
+/* Check that the single argument is an integer or an UNSIGNED.  */
+
+bool
+gfc_check_iu (gfc_expr *i)
+{
+  if (flag_unsigned)
+    {
+      if (!type_check2 (i, 0, BT_INTEGER, BT_UNSIGNED))
+	return false;
+    }
+  else if (!type_check (i, 0, BT_INTEGER))
+    return false;
+
+  return true;
+}
 
 bool
 gfc_check_iand_ieor_ior (gfc_expr *i, gfc_expr *j)
@@ -3097,11 +3154,36 @@ gfc_check_iand_ieor_ior (gfc_expr *i, gfc_expr *j)
       && !gfc_boz2int (j, i->ts.kind))
     return false;
 
-  if (!type_check (i, 0, BT_INTEGER))
+  /* If i is BOZ and j is UNSIGNED, convert i to type of j.  */
+  if (i->ts.type == BT_BOZ && j->ts.type == BT_UNSIGNED
+      && !gfc_boz2uint (i, j->ts.kind))
     return false;
 
-  if (!type_check (j, 1, BT_INTEGER))
+  /* If j is BOZ and i is UNSIGNED, convert j to type of i.  */
+  if (j->ts.type == BT_BOZ && i->ts.type == BT_UNSIGNED
+      && !gfc_boz2uint (j, i->ts.kind))
     return false;
+
+  if (flag_unsigned)
+    {
+      if (gfc_invalid_unsigned_ops (i,j))
+	return false;
+
+      if (!type_check2 (i, 0, BT_INTEGER, BT_UNSIGNED))
+	return false;
+
+      if (!type_check2 (j, 1, BT_INTEGER, BT_UNSIGNED))
+	return false;
+    }
+  else
+    {
+
+      if (!type_check (i, 0, BT_INTEGER))
+	return false;
+
+      if (!type_check (j, 1, BT_INTEGER))
+	return false;
+    }
 
   if (i->ts.kind != j->ts.kind)
     {

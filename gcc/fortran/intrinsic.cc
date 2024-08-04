@@ -2747,7 +2747,7 @@ add_functions (void)
   make_generic ("nint", GFC_ISYM_NINT, GFC_STD_F77);
 
   add_sym_1 ("not", GFC_ISYM_NOT, CLASS_ELEMENTAL, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F95,
-	     gfc_check_i, gfc_simplify_not, gfc_resolve_not,
+	     gfc_check_iu, gfc_simplify_not, gfc_resolve_not,
 	     i, BT_INTEGER, di, REQUIRED);
 
   if (flag_dec_intrinsic_ints)

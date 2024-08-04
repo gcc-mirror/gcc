@@ -4458,6 +4458,15 @@ resolve_operator (gfc_expr *e)
 	      goto bad_op;
 	    }
 
+	  if (flag_unsigned  && gfc_invalid_unsigned_ops (op1, op2))
+	    {
+	      dual_locus_error = true;
+	      snprintf (msg, sizeof (msg),
+			_("Inconsistent types for operator at %%L and %%L: "
+			  "%s and %s"), gfc_typename (op1), gfc_typename (op2));
+	      goto bad_op;
+	    }
+
 	  gfc_type_convert_binary (e, 1);
 
 	  e->ts.type = BT_LOGICAL;

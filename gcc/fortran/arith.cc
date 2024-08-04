@@ -58,7 +58,16 @@ gfc_mpfr_to_mpz (mpz_t z, mpfr_t x, locus *where)
     mpz_tdiv_q_2exp (z, z, -e);
 }
 
+/* Reduce an unsigned number to within its range.  */
 
+void
+gfc_reduce_unsigned (gfc_expr *e)
+{
+  int k;
+  gcc_checking_assert (e->expr_type == EXPR_CONSTANT && e->ts.type == BT_UNSIGNED);
+  k = gfc_validate_kind (BT_UNSIGNED, e->ts.kind, false);
+  mpz_and (e->value.integer, e->value.integer, gfc_unsigned_kinds[k].huge);
+}
 /* Set the model number precision by the requested KIND.  */
 
 void
@@ -688,7 +697,6 @@ gfc_arith_uminus (gfc_expr *op1, gfc_expr **resultp)
 {
   gfc_expr *result;
   arith rc;
-  int k;
 
   result = gfc_get_constant_expr (op1->ts.type, op1->ts.kind, &op1->where);
 
@@ -702,13 +710,11 @@ gfc_arith_uminus (gfc_expr *op1, gfc_expr **resultp)
       {
 	arith neg_rc;
 	mpz_neg (result->value.integer, op1->value.integer);
-	k = gfc_validate_kind (BT_UNSIGNED, op1->ts.kind, false);
 	neg_rc = gfc_range_check (result);
 	if (neg_rc != ARITH_OK)
 	  gfc_warning (0, gfc_arith_error (neg_rc), &result->where);
 
-	mpz_and (result->value.integer, result->value.integer,
-		 gfc_unsigned_kinds[k].huge);
+	gfc_reduce_unsigned (result);
 	if (pedantic)
 	  rc = neg_rc;
       }
@@ -749,6 +755,11 @@ gfc_arith_plus (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
       mpz_add (result->value.integer, op1->value.integer, op2->value.integer);
       break;
 
+    case BT_UNSIGNED:
+      mpz_add (result->value.integer, op1->value.integer, op2->value.integer);
+      gfc_reduce_unsigned (result);
+      break;
+
     case BT_REAL:
       mpfr_add (result->value.real, op1->value.real, op2->value.real,
 	       GFC_RND_MODE);
@@ -783,6 +794,7 @@ gfc_arith_minus (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
   switch (op1->ts.type)
     {
     case BT_INTEGER:
+    case BT_UNSIGNED:
       mpz_sub (result->value.integer, op1->value.integer, op2->value.integer);
       break;
 
@@ -823,6 +835,11 @@ gfc_arith_times (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
       mpz_mul (result->value.integer, op1->value.integer, op2->value.integer);
       break;
 
+    case BT_UNSIGNED:
+      mpz_mul (result->value.integer, op1->value.integer, op2->value.integer);
+      gfc_reduce_unsigned (result);
+      break;
+
     case BT_REAL:
       mpfr_mul (result->value.real, op1->value.real, op2->value.real,
 	       GFC_RND_MODE);
@@ -860,6 +877,7 @@ gfc_arith_divide (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
   switch (op1->ts.type)
     {
     case BT_INTEGER:
+    case BT_UNSIGNED:
       if (mpz_sgn (op2->value.integer) == 0)
 	{
 	  rc = ARITH_DIV0;
@@ -2384,7 +2402,6 @@ gfc_uint2uint (gfc_expr *src, int kind)
 {
   gfc_expr *result;
   arith rc;
-  int k;
 
   if (src->ts.type != BT_UNSIGNED && src->ts.type != BT_INTEGER)
     return NULL;
@@ -2396,10 +2413,7 @@ gfc_uint2uint (gfc_expr *src, int kind)
   if (rc != ARITH_OK)
     gfc_warning (0, gfc_arith_error (rc), &result->where);
 
-  k = gfc_validate_kind (BT_UNSIGNED, kind, false);
-  mpz_and (result->value.integer, result->value.integer,
-	   gfc_unsigned_kinds[k].huge);
-
+  gfc_reduce_unsigned (result);
   return result;
 }
 
@@ -2540,7 +2554,6 @@ gfc_real2uint (gfc_expr *src, int kind)
   gfc_expr *result;
   arith rc;
   bool did_warn = false;
-  int k;
 
   if (src->ts.type != BT_REAL)
     return NULL;
@@ -2555,9 +2568,7 @@ gfc_real2uint (gfc_expr *src, int kind)
       return NULL;
     }
 
-  k = gfc_validate_kind (BT_UNSIGNED, kind, false);
-  mpz_and (result->value.integer, result->value.integer,
-	   gfc_unsigned_kinds[k].huge);
+  gfc_reduce_unsigned (result);
 
   /* If there was a fractional part, warn about this.  */
 
@@ -2774,7 +2785,6 @@ gfc_complex2uint (gfc_expr *src, int kind)
   gfc_expr *result;
   arith rc;
   bool did_warn = false;
-  int k;
 
   if (src->ts.type != BT_COMPLEX)
     return NULL;
@@ -2791,9 +2801,7 @@ gfc_complex2uint (gfc_expr *src, int kind)
       return NULL;
     }
 
-  k = gfc_validate_kind (BT_UNSIGNED, kind, false);
-  mpz_and (result->value.integer, result->value.integer,
-	   gfc_unsigned_kinds[k].huge);
+  gfc_reduce_unsigned (result);
 
   if (warn_conversion || warn_conversion_extra)
     {
