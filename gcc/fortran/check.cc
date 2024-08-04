@@ -483,6 +483,9 @@ gfc_boz2uint (gfc_expr *x, int kind)
       mpz_and (x->value.integer, x->value.integer, gfc_unsigned_kinds[k].huge);
     }
 
+  x->ts.type = BT_UNSIGNED;
+  x->ts.kind = kind;
+
   /* Clear boz info.  */
   x->boz.rdx = 0;
   x->boz.len = 0;

@@ -16,4 +16,6 @@ program main
   if (uint(r) /= 5u) error stop 5
   c = (6.2,-1.2)
   if (uint(c) /= 6u) error stop 6
+
+  if (uint(z'ff') /= 255u) error stop 7
 end program main

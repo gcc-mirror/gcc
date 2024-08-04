@@ -297,6 +297,7 @@ gfc_copy_expr (gfc_expr *p)
       switch (q->ts.type)
 	{
 	case BT_INTEGER:
+	case BT_UNSIGNED:
 	  mpz_init_set (q->value.integer, p->value.integer);
 	  break;
 
@@ -350,9 +351,6 @@ gfc_copy_expr (gfc_expr *p)
 	  q->boz.str = XCNEWVEC (char, q->boz.len + 1);
 	  strncpy (q->boz.str, p->boz.str, p->boz.len);
 	  break;
-
-	case BT_UNSIGNED:
-	  gfc_internal_error ("Unsigned not yet implemented");
 
 	case BT_PROCEDURE:
         case BT_VOID:

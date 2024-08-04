@@ -3752,7 +3752,7 @@ gfc_simplify_uint (gfc_expr *e, gfc_expr *k)
   /* Convert BOZ to integer, and return without range checking.  */
   if (e->ts.type == BT_BOZ)
     {
-      if (!gfc_boz2int (e, kind))
+      if (!gfc_boz2uint (e, kind))
 	return NULL;
       result = gfc_copy_expr (e);
       return result;
