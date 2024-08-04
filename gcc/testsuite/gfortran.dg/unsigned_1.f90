@@ -10,7 +10,7 @@ program memain
   u = 1u
   v = 42u
   if (u + v /= 43u) then
-     stop 1
+     error stop 1
   end if
-  if (u1 /= 1 .or. u2 /= 2 .or. u4 /= 4 .or. u8 /= 8) stop 2
+  if (u1 /= 1 .or. u2 /= 2 .or. u4 /= 4 .or. u8 /= 8) error stop 2
 end program memain

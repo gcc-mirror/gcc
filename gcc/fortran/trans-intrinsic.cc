@@ -10853,6 +10853,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
     case GFC_ISYM_INT2:
     case GFC_ISYM_INT8:
     case GFC_ISYM_LONG:
+    case GFC_ISYM_UINT:
       gfc_conv_intrinsic_int (se, expr, RND_TRUNC);
       break;
 

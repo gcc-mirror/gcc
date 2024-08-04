@@ -9,7 +9,7 @@ program main
   write (10,'(I4)') -1
   rewind 10
   read (10,'(I4)') u
-  if (u /= 1u) stop 1
+  if (u /= 1u) error stop 1
   read (10,'(I4)') u
-  if (u /= 4294967295u) stop 2
+  if (u /= 4294967295u) error stop 2
 end program main

@@ -710,8 +710,8 @@ enum gfc_isym_id
 
   /* Add this at the end, so maybe the module format
      remains compatible.  */
-  GFC_ISYM_SU_KIND
-
+  GFC_ISYM_SU_KIND,
+  GFC_ISYM_UINT,
 };
 
 enum init_local_logical
@@ -4028,6 +4028,7 @@ bool gfc_check_same_strlen (const gfc_expr*, const gfc_expr*, const char*);
 bool gfc_calculate_transfer_sizes (gfc_expr*, gfc_expr*, gfc_expr*,
 				      size_t*, size_t*, size_t*);
 bool gfc_boz2int (gfc_expr *, int);
+bool gfc_boz2uint (gfc_expr *, int);
 bool gfc_boz2real (gfc_expr *, int);
 bool gfc_invalid_boz (const char *, locus *);
 bool gfc_invalid_null_arg (gfc_expr *);

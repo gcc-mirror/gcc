@@ -1206,6 +1206,7 @@ gfc_compare_expr (gfc_expr *op1, gfc_expr *op2, gfc_intrinsic_op op)
   switch (op1->ts.type)
     {
     case BT_INTEGER:
+    case BT_UNSIGNED:
       rc = mpz_cmp (op1->value.integer, op2->value.integer);
       break;
 
@@ -1795,7 +1796,7 @@ eval_intrinsic (gfc_intrinsic_op op,
     gcc_fallthrough ();
     /* Numeric binary  */
     case INTRINSIC_POWER:
-      if (flag_unsigned)
+      if (flag_unsigned && op == INTRINSIC_POWER)
 	{
 	  if (op1->ts.type == BT_UNSIGNED || op2->ts.type == BT_UNSIGNED)
 	    goto runtime;
@@ -2531,6 +2532,58 @@ gfc_real2int (gfc_expr *src, int kind)
   return result;
 }
 
+/* Convert real to unsigned.  */
+
+gfc_expr *
+gfc_real2uint (gfc_expr *src, int kind)
+{
+  gfc_expr *result;
+  arith rc;
+  bool did_warn = false;
+  int k;
+
+  if (src->ts.type != BT_REAL)
+    return NULL;
+
+  result = gfc_get_constant_expr (BT_UNSIGNED, kind, &src->where);
+
+  gfc_mpfr_to_mpz (result->value.integer, src->value.real, &src->where);
+  if ((rc = gfc_check_unsigned_range (result->value.integer, kind)) != ARITH_OK)
+    {
+      arith_error (rc, &src->ts, &result->ts, &src->where);
+      gfc_free_expr (result);
+      return NULL;
+    }
+
+  k = gfc_validate_kind (BT_UNSIGNED, kind, false);
+  mpz_and (result->value.integer, result->value.integer,
+	   gfc_unsigned_kinds[k].huge);
+
+  /* If there was a fractional part, warn about this.  */
+
+  if (warn_conversion)
+    {
+      mpfr_t f;
+      mpfr_init (f);
+      mpfr_frac (f, src->value.real, GFC_RND_MODE);
+      if (mpfr_cmp_si (f, 0) != 0)
+	{
+	  gfc_warning_now (OPT_Wconversion, "Change of value in conversion "
+			   "from %qs to %qs at %L", gfc_typename (&src->ts),
+			   gfc_typename (&result->ts), &src->where);
+	  did_warn = true;
+	}
+      mpfr_clear (f);
+    }
+  if (!did_warn && warn_conversion_extra)
+    {
+      gfc_warning_now (OPT_Wconversion_extra, "Conversion from %qs to %qs "
+		       "at %L", gfc_typename (&src->ts),
+		       gfc_typename (&result->ts), &src->where);
+    }
+
+  return result;
+}
 
 /* Convert real to real.  */
 
@@ -2672,6 +2725,75 @@ gfc_complex2int (gfc_expr *src, int kind)
       gfc_free_expr (result);
       return NULL;
     }
+
+  if (warn_conversion || warn_conversion_extra)
+    {
+      int w = warn_conversion ? OPT_Wconversion : OPT_Wconversion_extra;
+
+      /* See if we discarded an imaginary part.  */
+      if (mpfr_cmp_si (mpc_imagref (src->value.complex), 0) != 0)
+	{
+	  gfc_warning_now (w, "Non-zero imaginary part discarded "
+			   "in conversion from %qs to %qs at %L",
+			   gfc_typename(&src->ts), gfc_typename (&result->ts),
+			   &src->where);
+	  did_warn = true;
+	}
+
+      else {
+	mpfr_t f;
+
+	mpfr_init (f);
+	mpfr_frac (f, src->value.real, GFC_RND_MODE);
+	if (mpfr_cmp_si (f, 0) != 0)
+	  {
+	    gfc_warning_now (w, "Change of value in conversion from "
+			     "%qs to %qs at %L", gfc_typename (&src->ts),
+			     gfc_typename (&result->ts), &src->where);
+	    did_warn = true;
+	  }
+	mpfr_clear (f);
+      }
+
+      if (!did_warn && warn_conversion_extra)
+	{
+	  gfc_warning_now (OPT_Wconversion_extra, "Conversion from %qs to %qs "
+			   "at %L", gfc_typename (&src->ts),
+			   gfc_typename (&result->ts), &src->where);
+	}
+    }
+
+  return result;
+}
+
+/* Convert complex to integer.  */
+
+gfc_expr *
+gfc_complex2uint (gfc_expr *src, int kind)
+{
+  gfc_expr *result;
+  arith rc;
+  bool did_warn = false;
+  int k;
+
+  if (src->ts.type != BT_COMPLEX)
+    return NULL;
+
+  result = gfc_get_constant_expr (BT_UNSIGNED, kind, &src->where);
+
+  gfc_mpfr_to_mpz (result->value.integer, mpc_realref (src->value.complex),
+		   &src->where);
+
+  if ((rc = gfc_check_unsigned_range (result->value.integer, kind)) != ARITH_OK)
+    {
+      arith_error (rc, &src->ts, &result->ts, &src->where);
+      gfc_free_expr (result);
+      return NULL;
+    }
+
+  k = gfc_validate_kind (BT_UNSIGNED, kind, false);
+  mpz_and (result->value.integer, result->value.integer,
+	   gfc_unsigned_kinds[k].huge);
 
   if (warn_conversion || warn_conversion_extra)
     {
@@ -2887,6 +3009,22 @@ gfc_log2int (gfc_expr *src, int kind)
   return result;
 }
 
+/* Convert logical to unsigned.  */
+
+gfc_expr *
+gfc_log2uint (gfc_expr *src, int kind)
+{
+  gfc_expr *result;
+
+  if (src->ts.type != BT_LOGICAL)
+    return NULL;
+
+  result = gfc_get_constant_expr (BT_UNSIGNED, kind, &src->where);
+  mpz_set_si (result->value.integer, src->value.logical);
+
+  return result;
+}
+
 
 /* Convert integer to logical.  */
 
@@ -2896,6 +3034,22 @@ gfc_int2log (gfc_expr *src, int kind)
   gfc_expr *result;
 
   if (src->ts.type != BT_INTEGER)
+    return NULL;
+
+  result = gfc_get_constant_expr (BT_LOGICAL, kind, &src->where);
+  result->value.logical = (mpz_cmp_si (src->value.integer, 0) != 0);
+
+  return result;
+}
+
+/* Convert unsigned to logical.  */
+
+gfc_expr *
+gfc_uint2log (gfc_expr *src, int kind)
+{
+  gfc_expr *result;
+
+  if (src->ts.type != BT_UNSIGNED)
     return NULL;
 
   result = gfc_get_constant_expr (BT_LOGICAL, kind, &src->where);

@@ -1345,6 +1345,18 @@ gfc_resolve_int (gfc_expr *f, gfc_expr *a, gfc_expr *kind)
 		      gfc_type_abi_kind (&a->ts));
 }
 
+void
+gfc_resolve_uint (gfc_expr *f, gfc_expr *a, gfc_expr *kind)
+{
+  f->ts.type = BT_UNSIGNED;
+  f->ts.kind = (kind == NULL)
+	     ? gfc_default_integer_kind : mpz_get_si (kind->value.integer);
+  f->value.function.name
+    = gfc_get_string ("__uint_%d_%c%d", f->ts.kind,
+		      gfc_type_letter (a->ts.type),
+		      gfc_type_abi_kind (&a->ts));
+}
+
 
 void
 gfc_resolve_int2 (gfc_expr *f, gfc_expr *a)

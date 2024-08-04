@@ -465,7 +465,31 @@ gfc_boz2int (gfc_expr *x, int kind)
   return true;
 }
 
+/* Same as above for UNSIGNED, but much simpler because
+   of wraparound.  */
+bool
+gfc_boz2uint (gfc_expr *x, int kind)
+{
+  int k;
+  if (!is_boz_constant(x))
+    return false;
 
+  mpz_init (x->value.integer);
+  mpz_set_str (x->value.integer, x->boz.str, x->boz.rdx);
+  k = gfc_validate_kind (BT_UNSIGNED, kind, false);
+  if (mpz_cmp (x->value.integer, gfc_unsigned_kinds[k].huge) > 0)
+    {
+      gfc_warning (0, _("BOZ contstant truncated at %L"), &x->where);
+      mpz_and (x->value.integer, x->value.integer, gfc_unsigned_kinds[k].huge);
+    }
+
+  /* Clear boz info.  */
+  x->boz.rdx = 0;
+  x->boz.len = 0;
+  free (x->boz.str);
+
+  return true;
+}
 /* Make sure an expression is a scalar.  */
 
 static bool
@@ -3240,6 +3264,29 @@ gfc_check_int (gfc_expr *x, gfc_expr *kind)
   return true;
 }
 
+bool
+gfc_check_uint (gfc_expr *x, gfc_expr *kind)
+{
+
+  if (!flag_unsigned)
+    {
+      gfc_error ("UINT intrinsic only valid with %<-funsigned%> at %L",
+		 &x->where);
+      return false;
+    }
+
+  /* BOZ is dealt within simplify_uint*.  */
+  if (x->ts.type == BT_BOZ)
+    return true;
+
+  if (!numeric_check (x, 0))
+    return false;
+
+  if (!kind_check (kind, 1, BT_INTEGER))
+    return false;
+
+  return true;
+}
 
 bool
 gfc_check_intconv (gfc_expr *x)

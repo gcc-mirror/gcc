@@ -42,7 +42,7 @@ program main
   rewind 10
   do i=1,n_int
      read (10,*) vi
-     if (vi /= ires(i)) stop 1
+     if (vi /= ires(i)) error stop 1
   end do
 
   rewind 10
@@ -69,7 +69,7 @@ program main
   rewind 10
   do i=1,n_int
      read (10,*) vi
-     if (vi /= ires(i)) stop 2
+     if (vi /= ires(i)) error stop 2
   end do
 
   rewind 10
@@ -85,7 +85,7 @@ program main
   rewind 10
   do i=1, n_real
      read (10, *) vr
-     if (vr /= rres(i)) stop 3
+     if (vr /= rres(i)) error stop 3
   end do
 
   rewind 10
@@ -101,7 +101,7 @@ program main
   rewind 10
   do i=1, n_real
      read (10, *) vr
-     if (vr /= rres(i)) stop 4
+     if (vr /= rres(i)) error stop 4
   end do
 
   rewind 10
@@ -117,7 +117,7 @@ program main
   rewind 10
   do i=1,n_real
      read (10, *) vc
-     if (real(vc) /= rres(i)) stop 5
-     if (aimag(vc) /= rres(i)) stop 6
+     if (real(vc) /= rres(i)) error stop 5
+     if (aimag(vc) /= rres(i)) error stop 6
   end do
 end program main

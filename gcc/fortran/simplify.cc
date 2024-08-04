@@ -3629,7 +3629,6 @@ done:
   return range_check (result, "INDEX");
 }
 
-
 static gfc_expr *
 simplify_intconv (gfc_expr *e, int kind, const char *name)
 {
@@ -3738,6 +3737,36 @@ gfc_simplify_idint (gfc_expr *e)
   gfc_free_expr (rtrunc);
 
   return range_check (result, "IDINT");
+}
+
+gfc_expr *
+gfc_simplify_uint (gfc_expr *e, gfc_expr *k)
+{
+  gfc_expr *result = NULL;
+  int kind;
+
+  kind = get_kind (BT_INTEGER, k, "INT", gfc_default_integer_kind);
+  if (kind == -1)
+    return &gfc_bad_expr;
+
+  /* Convert BOZ to integer, and return without range checking.  */
+  if (e->ts.type == BT_BOZ)
+    {
+      if (!gfc_boz2int (e, kind))
+	return NULL;
+      result = gfc_copy_expr (e);
+      return result;
+    }
+
+  if (e->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = gfc_convert_constant (e, BT_UNSIGNED, kind);
+
+  if (result == &gfc_bad_expr)
+    return &gfc_bad_expr;
+
+  return range_check (result, "UINT");
 }
 
 
@@ -8850,6 +8879,9 @@ gfc_convert_constant (gfc_expr *e, bt type, int kind)
 	case BT_COMPLEX:
 	  f = gfc_uint2complex;
 	  break;
+	case BT_LOGICAL:
+	  f = gfc_uint2log;
+	  break;
 	default:
 	  goto oops;
 	}
@@ -8860,6 +8892,9 @@ gfc_convert_constant (gfc_expr *e, bt type, int kind)
 	{
 	case BT_INTEGER:
 	  f = gfc_real2int;
+	  break;
+	case BT_UNSIGNED:
+	  f = gfc_real2uint;
 	  break;
 	case BT_REAL:
 	  f = gfc_real2real;
@@ -8877,6 +8912,9 @@ gfc_convert_constant (gfc_expr *e, bt type, int kind)
 	{
 	case BT_INTEGER:
 	  f = gfc_complex2int;
+	  break;
+	case BT_UNSIGNED:
+	  f = gfc_complex2uint;
 	  break;
 	case BT_REAL:
 	  f = gfc_complex2real;
@@ -8896,6 +8934,9 @@ gfc_convert_constant (gfc_expr *e, bt type, int kind)
 	case BT_INTEGER:
 	  f = gfc_log2int;
 	  break;
+	case BT_UNSIGNED:
+	  f = gfc_log2uint;
+	  break;
 	case BT_LOGICAL:
 	  f = gfc_log2log;
 	  break;
@@ -8910,6 +8951,11 @@ gfc_convert_constant (gfc_expr *e, bt type, int kind)
 	case BT_INTEGER:
 	  f = gfc_hollerith2int;
 	  break;
+
+	  /* Hollerith is for legacy code, we do not currently support
+	     converting this to UNSIGNED.  */
+	case BT_UNSIGNED:
+	  goto oops;
 
 	case BT_REAL:
 	  f = gfc_hollerith2real;
@@ -8938,6 +8984,9 @@ gfc_convert_constant (gfc_expr *e, bt type, int kind)
 	case BT_INTEGER:
 	  f = gfc_character2int;
 	  break;
+
+	case BT_UNSIGNED:
+	  goto oops;
 
 	case BT_REAL:
 	  f = gfc_character2real;

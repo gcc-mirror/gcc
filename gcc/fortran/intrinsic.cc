@@ -2262,6 +2262,12 @@ add_functions (void)
 
   make_generic ("long", GFC_ISYM_LONG, GFC_STD_GNU);
 
+  add_sym_2 ("uint", GFC_ISYM_UINT, CLASS_ELEMENTAL, ACTUAL_NO, BT_UNSIGNED, di, GFC_STD_GNU,
+	     gfc_check_uint, gfc_simplify_uint, gfc_resolve_uint,
+	     a, BT_REAL, dr, REQUIRED, kind, BT_INTEGER, di, OPTIONAL);
+
+  make_generic ("uint", GFC_ISYM_UINT, GFC_STD_GNU);
+
   add_sym_2 ("ior", GFC_ISYM_IOR, CLASS_ELEMENTAL, ACTUAL_NO, BT_INTEGER, di,
 	     GFC_STD_F95,
 	     gfc_check_iand_ieor_ior, gfc_simplify_ior, gfc_resolve_ior,
