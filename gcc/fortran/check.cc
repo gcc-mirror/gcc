@@ -2015,11 +2015,36 @@ gfc_check_bge_bgt_ble_blt (gfc_expr *i, gfc_expr *j)
       && !gfc_boz2int (j, i->ts.kind))
     return false;
 
-  if (!type_check (i, 0, BT_INTEGER))
-    return false;
+  if (flag_unsigned)
+    {
+      /* If i is BOZ and j is UNSIGNED, convert i to type of j.  */
+      if (i->ts.type == BT_BOZ && j->ts.type == BT_UNSIGNED
+	  && !gfc_boz2uint (i, j->ts.kind))
+	return false;
 
-  if (!type_check (j, 1, BT_INTEGER))
-    return false;
+      /* If j is BOZ and i is UNSIGNED, convert j to type of i.  */
+      if (j->ts.type == BT_BOZ && i->ts.type == BT_UNSIGNED
+	  && !gfc_boz2uint (j, i->ts.kind))
+	return false;
+
+      if (gfc_invalid_unsigned_ops (i,j))
+	return false;
+
+      if (!type_check2 (i, 0, BT_INTEGER, BT_UNSIGNED))
+	return false;
+
+      if (!type_check2 (j, 1, BT_INTEGER, BT_UNSIGNED))
+	return false;
+
+    }
+  else
+    {
+      if (!type_check (i, 0, BT_INTEGER))
+	return false;
+
+      if (!type_check (j, 1, BT_INTEGER))
+	return false;
+    }
 
   return true;
 }
@@ -2028,8 +2053,16 @@ gfc_check_bge_bgt_ble_blt (gfc_expr *i, gfc_expr *j)
 bool
 gfc_check_bitfcn (gfc_expr *i, gfc_expr *pos)
 {
-  if (!type_check (i, 0, BT_INTEGER))
-    return false;
+  if (flag_unsigned)
+    {
+      if (!type_check2 (i, 0, BT_INTEGER, BT_UNSIGNED))
+	return false;
+    }
+  else
+    {
+      if (!type_check (i, 0, BT_INTEGER))
+	return false;
+    }
 
   if (!type_check (pos, 1, BT_INTEGER))
     return false;
@@ -3154,18 +3187,18 @@ gfc_check_iand_ieor_ior (gfc_expr *i, gfc_expr *j)
       && !gfc_boz2int (j, i->ts.kind))
     return false;
 
-  /* If i is BOZ and j is UNSIGNED, convert i to type of j.  */
-  if (i->ts.type == BT_BOZ && j->ts.type == BT_UNSIGNED
-      && !gfc_boz2uint (i, j->ts.kind))
-    return false;
-
-  /* If j is BOZ and i is UNSIGNED, convert j to type of i.  */
-  if (j->ts.type == BT_BOZ && i->ts.type == BT_UNSIGNED
-      && !gfc_boz2uint (j, i->ts.kind))
-    return false;
-
   if (flag_unsigned)
     {
+      /* If i is BOZ and j is UNSIGNED, convert i to type of j.  */
+      if (i->ts.type == BT_BOZ && j->ts.type == BT_UNSIGNED
+	  && !gfc_boz2uint (i, j->ts.kind))
+	return false;
+
+      /* If j is BOZ and i is UNSIGNED, convert j to type of i.  */
+      if (j->ts.type == BT_BOZ && i->ts.type == BT_UNSIGNED
+	  && !gfc_boz2uint (j, i->ts.kind))
+	return false;
+
       if (gfc_invalid_unsigned_ops (i,j))
 	return false;
 
@@ -3177,7 +3210,6 @@ gfc_check_iand_ieor_ior (gfc_expr *i, gfc_expr *j)
     }
   else
     {
-
       if (!type_check (i, 0, BT_INTEGER))
 	return false;
 

@@ -1658,8 +1658,14 @@ gfc_expr *
 gfc_simplify_bit_size (gfc_expr *e)
 {
   int i = gfc_validate_kind (e->ts.type, e->ts.kind, false);
-  return gfc_get_int_expr (e->ts.kind, &e->where,
-			   gfc_integer_kinds[i].bit_size);
+  int bit_size;
+
+  if (flag_unsigned && e->ts.type == BT_UNSIGNED)
+    bit_size = gfc_unsigned_kinds[i].bit_size;
+  else
+    bit_size = gfc_integer_kinds[i].bit_size;
+
+  return gfc_get_int_expr (e->ts.kind, &e->where, bit_size);
 }
 
 
@@ -1709,46 +1715,73 @@ compare_bitwise (gfc_expr *i, gfc_expr *j)
 gfc_expr *
 gfc_simplify_bge (gfc_expr *i, gfc_expr *j)
 {
+  bool result;
+
   if (i->expr_type != EXPR_CONSTANT || j->expr_type != EXPR_CONSTANT)
     return NULL;
 
+  if (flag_unsigned && i->ts.type == BT_UNSIGNED)
+    result = mpz_cmp (i->value.integer, j->value.integer) >= 0;
+  else
+    result = compare_bitwise (i, j) >= 0;
+
   return gfc_get_logical_expr (gfc_default_logical_kind, &i->where,
-			       compare_bitwise (i, j) >= 0);
+			       result);
 }
 
 
 gfc_expr *
 gfc_simplify_bgt (gfc_expr *i, gfc_expr *j)
 {
+  bool result;
+
   if (i->expr_type != EXPR_CONSTANT || j->expr_type != EXPR_CONSTANT)
     return NULL;
 
+  if (flag_unsigned && i->ts.type == BT_UNSIGNED)
+    result = mpz_cmp (i->value.integer, j->value.integer) > 0;
+  else
+    result = compare_bitwise (i, j) > 0;
+
   return gfc_get_logical_expr (gfc_default_logical_kind, &i->where,
-			       compare_bitwise (i, j) > 0);
+			       result);
 }
 
 
 gfc_expr *
 gfc_simplify_ble (gfc_expr *i, gfc_expr *j)
 {
+  bool result;
+
   if (i->expr_type != EXPR_CONSTANT || j->expr_type != EXPR_CONSTANT)
     return NULL;
 
+  if (flag_unsigned && i->ts.type == BT_UNSIGNED)
+    result = mpz_cmp (i->value.integer, j->value.integer) <= 0;
+  else
+    result = compare_bitwise (i, j) <= 0;
+
   return gfc_get_logical_expr (gfc_default_logical_kind, &i->where,
-			       compare_bitwise (i, j) <= 0);
+			       result);
 }
 
 
 gfc_expr *
 gfc_simplify_blt (gfc_expr *i, gfc_expr *j)
 {
+  bool result;
+
   if (i->expr_type != EXPR_CONSTANT || j->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  return gfc_get_logical_expr (gfc_default_logical_kind, &i->where,
-			       compare_bitwise (i, j) < 0);
-}
+  if (flag_unsigned && i->ts.type == BT_UNSIGNED)
+    result = mpz_cmp (i->value.integer, j->value.integer) < 0;
+  else
+    result = compare_bitwise (i, j) < 0;
 
+  return gfc_get_logical_expr (gfc_default_logical_kind, &i->where,
+			       result);
+}
 
 gfc_expr *
 gfc_simplify_ceiling (gfc_expr *e, gfc_expr *k)

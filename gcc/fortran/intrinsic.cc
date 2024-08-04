@@ -1661,7 +1661,7 @@ add_functions (void)
   make_generic ("bgt", GFC_ISYM_BGT, GFC_STD_F2008);
 
   add_sym_1 ("bit_size", GFC_ISYM_BIT_SIZE, CLASS_INQUIRY, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F95,
-	     gfc_check_i, gfc_simplify_bit_size, NULL,
+	     gfc_check_iu, gfc_simplify_bit_size, NULL,
 	     i, BT_INTEGER, di, REQUIRED);
 
   make_generic ("bit_size", GFC_ISYM_BIT_SIZE, GFC_STD_F95);
