@@ -63,7 +63,10 @@ NameResolution::go (AST::Crate &crate)
 {
   // lookup current crate name
   CrateNum cnum = mappings.get_current_crate ();
-  const auto &crate_name = mappings.get_crate_name (cnum).value ();
+
+  // Clones the crate name instead of references due to gcc's possibly
+  // dangling references warnings
+  const auto crate_name = mappings.get_crate_name (cnum).value ();
 
   // setup the ribs
   NodeId scope_node_id = crate.get_node_id ();
