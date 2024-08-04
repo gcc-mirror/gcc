@@ -2344,23 +2344,26 @@ get_type_num_const_type (dw_die_ref type, bool in_struct)
   bool is_volatile = false;
 
   base_type = get_AT_ref (type, DW_AT_type);
-  if (!base_type)
-    return 0;
 
   /* Handle case when this is a const volatile type - we only need one
      LF_MODIFIER for this.  */
-  if (dw_get_die_tag (base_type) == DW_TAG_volatile_type)
+  if (base_type && dw_get_die_tag (base_type) == DW_TAG_volatile_type)
     {
       is_volatile = true;
 
       base_type = get_AT_ref (base_type, DW_AT_type);
-      if (!base_type)
-	return 0;
     }
 
-  base_type_num = get_type_num (base_type, in_struct, false);
-  if (base_type_num == 0)
-    return 0;
+  if (!base_type)
+    {
+      base_type_num = T_VOID;
+    }
+  else
+    {
+      base_type_num = get_type_num (base_type, in_struct, false);
+      if (base_type_num == 0)
+	return 0;
+    }
 
   ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
 
@@ -2383,13 +2386,22 @@ get_type_num_const_type (dw_die_ref type, bool in_struct)
 static uint32_t
 get_type_num_volatile_type (dw_die_ref type, bool in_struct)
 {
+  dw_die_ref base_type;
   uint32_t base_type_num;
   codeview_custom_type *ct;
 
-  base_type_num = get_type_num (get_AT_ref (type, DW_AT_type), in_struct,
-				false);
-  if (base_type_num == 0)
-    return 0;
+  base_type = get_AT_ref (type, DW_AT_type);
+
+  if (base_type)
+    {
+      base_type_num = get_type_num (base_type, in_struct, false);
+      if (base_type_num == 0)
+	return 0;
+    }
+  else
+    {
+      base_type_num = T_VOID;
+    }
 
   ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
 
