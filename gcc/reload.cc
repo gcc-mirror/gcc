@@ -2211,7 +2211,11 @@ operands_match_p (rtx x, rtx y)
       if (code == SUBREG)
 	{
 	  i = REGNO (SUBREG_REG (x));
-	  if (i >= FIRST_PSEUDO_REGISTER)
+	  if (i >= FIRST_PSEUDO_REGISTER
+	      || simplify_subreg_regno (REGNO (SUBREG_REG (x)),
+					 GET_MODE (SUBREG_REG (x)),
+					 SUBREG_BYTE (x),
+					 GET_MODE (x)) == -1)
 	    goto slow;
 	  i += subreg_regno_offset (REGNO (SUBREG_REG (x)),
 				    GET_MODE (SUBREG_REG (x)),
@@ -2224,7 +2228,11 @@ operands_match_p (rtx x, rtx y)
       if (GET_CODE (y) == SUBREG)
 	{
 	  j = REGNO (SUBREG_REG (y));
-	  if (j >= FIRST_PSEUDO_REGISTER)
+	  if (j >= FIRST_PSEUDO_REGISTER
+	      || simplify_subreg_regno (REGNO (SUBREG_REG (y)),
+					 GET_MODE (SUBREG_REG (y)),
+					 SUBREG_BYTE (y),
+					 GET_MODE (y)) == -1)
 	    goto slow;
 	  j += subreg_regno_offset (REGNO (SUBREG_REG (y)),
 				    GET_MODE (SUBREG_REG (y)),
