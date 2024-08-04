@@ -51,6 +51,9 @@
 #include "expr.h"
 #include "langhooks.h"
 #include "builtins.h"
+#include "tree-pass.h"
+#include "context.h"
+#include "pass_manager.h"
 #include "rtl-iter.h"
 
 /* This file should be included last.  */
@@ -153,7 +156,6 @@ static const char *out_movsi_mr_r (rtx_insn *, rtx[], int *);
 static int get_sequence_length (rtx_insn *insns);
 static int sequent_regs_live (void);
 static const char *ptrreg_to_str (int);
-static const char *cond_string (enum rtx_code);
 static int avr_num_arg_regs (machine_mode, const_tree);
 static int avr_operand_rtx_cost (rtx, machine_mode, enum rtx_code,
 				 int, bool);
@@ -192,7 +194,11 @@ rtx zero_reg_rtx;
 
 /* Condition Code register RTX (reg:CC REG_CC) */
 extern GTY(()) rtx cc_reg_rtx;
+extern GTY(()) rtx ccn_reg_rtx;
+extern GTY(()) rtx cczn_reg_rtx;
 rtx cc_reg_rtx;
+rtx ccn_reg_rtx;
+rtx cczn_reg_rtx;
 
 /* RTXs for all general purpose registers as QImode */
 extern GTY(()) rtx all_regs_rtx[REG_32];
@@ -453,6 +459,18 @@ avr_option_override (void)
   init_machine_status = avr_init_machine_status;
 
   avr_log_set_avr_log();
+
+  /* As long as peep2_rescan is not implemented, see
+     http://gcc.gnu.org/ml/gcc-patches/2011-10/msg02819.html
+     we add a second peephole2 run to get best results.  */
+  {
+    opt_pass *extra_peephole2
+      = g->get_passes ()->get_pass_peephole2 ()->clone ();
+    struct register_pass_info peep2_2_info
+      = { extra_peephole2, "peephole2", 1, PASS_POS_INSERT_AFTER };
+
+    register_pass (&peep2_2_info);
+  }
 }
 
 /* Function to set up the backend function structure.  */
@@ -477,7 +495,9 @@ avr_init_expanders (void)
   tmp_reg_rtx  = all_regs_rtx[AVR_TMP_REGNO];
   zero_reg_rtx = all_regs_rtx[AVR_ZERO_REGNO];
 
-  cc_reg_rtx  = gen_rtx_REG (CCmode, REG_CC);
+  cc_reg_rtx = gen_rtx_REG (CCmode, REG_CC);
+  ccn_reg_rtx = gen_rtx_REG (CCNmode, REG_CC);
+  cczn_reg_rtx = gen_rtx_REG (CCZNmode, REG_CC);
 
   lpm_addr_reg_rtx = gen_rtx_REG (HImode, REG_Z);
 
@@ -2355,14 +2375,13 @@ ptrreg_to_str (int regno)
   return NULL;
 }
 
-/* Return the condition name as a string.
-   Used in conditional jump constructing  */
+
+/* Return the condition name as a string to be used in a BR** instruction.
+   Used in conditional jump constructing.  */
 
 static const char *
-cond_string (enum rtx_code code)
+avr_cond_string (rtx_code code, bool cc_overflow_unusable)
 {
-  bool cc_overflow_unusable = false;
-
   switch (code)
     {
     case NE:
@@ -2370,15 +2389,9 @@ cond_string (enum rtx_code code)
     case EQ:
       return "eq";
     case GE:
-      if (cc_overflow_unusable)
-	return "pl";
-      else
-	return "ge";
+      return cc_overflow_unusable ? "pl" : "ge";
     case LT:
-      if (cc_overflow_unusable)
-	return "mi";
-      else
-	return "lt";
+      return cc_overflow_unusable ? "mi" : "lt";
     case GEU:
       return "sh";
     case LTU:
@@ -2407,6 +2420,7 @@ avr_address_tiny_pm_p (rtx x)
 
   return false;
 }
+
 
 /* Implement `TARGET_PRINT_OPERAND_ADDRESS'.  */
 /* Output ADDR to FILE as address.  */
@@ -2691,10 +2705,11 @@ avr_print_operand (FILE *file, rtx x, int code)
     }
   else if (GET_CODE (x) == CONST_STRING)
     fputs (XSTR (x, 0), file);
-  else if (code == 'j')
-    fputs (cond_string (GET_CODE (x)), file);
-  else if (code == 'k')
-    fputs (cond_string (reverse_condition (GET_CODE (x))), file);
+  else if (code == 'j' || code == 'L')
+    fputs (avr_cond_string (GET_CODE (x), code == 'L'), file);
+  else if (code == 'k' || code == 'K')
+    fputs (avr_cond_string (reverse_condition (GET_CODE (x)), code == 'K'),
+	   file);
   else
     avr_print_operand_address (file, VOIDmode, x);
 }
@@ -2717,6 +2732,7 @@ avr_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 
   return size <= MOVE_MAX_PIECES;
 }
+
 
 /* Choose mode for jump insn:
    1 - relative jump in range -63 <= x <= 62 ;
@@ -2744,16 +2760,21 @@ avr_jump_mode (rtx x, rtx_insn *insn, int extra)
   return 2;
 }
 
-/* Return an AVR condition jump commands.
-   X is a comparison RTX.
-   LEN is a number returned by avr_jump_mode function.
-   If REVERSE nonzero then condition code in X must be reversed.  */
+
+/* Return the asm code for conditional branch INSN, where XOP[0] is the jump
+   target label and XOP[1] is a comparison operator of REG_CC against 0.  */
 
 const char *
-ret_cond_branch (rtx x, int len, int reverse)
+avr_cond_branch (rtx_insn *insn, rtx *xop)
 {
-  RTX_CODE cond = reverse ? reverse_condition (GET_CODE (x)) : GET_CODE (x);
-  bool cc_overflow_unusable = false;
+  machine_mode ccmode = GET_MODE (XEXP (xop[1], 0));
+  rtx_code cond = GET_CODE (xop[1]);
+  bool cc_overflow_unusable = ccmode != CCmode;
+  int len = avr_jump_mode (xop[0], insn);
+
+  if (ccmode == CCNmode)
+    // The N flag can only do < 0 and >= 0.
+    gcc_assert (cond == GE || cond == LT);
 
   switch (cond)
     {
@@ -2815,33 +2836,20 @@ ret_cond_branch (rtx x, int len, int reverse)
 	       "brsh .+4" CR_TAB
 	       "jmp %0"));
     default:
-      if (reverse)
+      switch (len)
 	{
-	  switch (len)
-	    {
-	    case 1:
-	      return "br%k1 %0";
-	    case 2:
-	      return ("br%j1 .+2" CR_TAB
-		      "rjmp %0");
-	    default:
-	      return ("br%j1 .+4" CR_TAB
-		      "jmp %0");
-	    }
-	}
-      else
-	{
-	  switch (len)
-	    {
-	    case 1:
-	      return "br%j1 %0";
-	    case 2:
-	      return ("br%k1 .+2" CR_TAB
-		      "rjmp %0");
-	    default:
-	      return ("br%k1 .+4" CR_TAB
-		      "jmp %0");
-	    }
+	case 1:
+	  return cc_overflow_unusable
+	    ? "br%L1 %0"
+	    : "br%j1 %0";
+	case 2:
+	  return cc_overflow_unusable
+	    ? "br%K1 .+2" CR_TAB "rjmp %0"
+	    : "br%k1 .+2" CR_TAB "rjmp %0";
+	default:
+	  return cc_overflow_unusable
+	    ? "br%K1 .+4" CR_TAB "jmp %0"
+	    : "br%k1 .+4" CR_TAB "jmp %0";
 	}
     }
   return "";
@@ -5517,7 +5525,8 @@ avr_canonicalize_comparison (int *icode, rtx *op0, rtx *op1, bool op0_fixed)
     }
 }
 
-/* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return SFmode or DFmode
+
+/* Implement `TARGET_C_MODE_FOR_FLOATING_TYPE'.  Return SFmode or DFmode
    for TI_{LONG_,}DOUBLE_TYPE which is for {long,} double type, go with
    the default one for the others.  */
 
@@ -7406,6 +7415,34 @@ lshrsi3_out (rtx_insn *insn, rtx operands[], int *len)
 }
 
 
+/* When INSN is a PARALLEL with two SETs, a SET of REG_CC and a SET of a
+   GPR, then return the second SET and set *CCMODE to the first SET's mode.
+   Otherwise, return single_set and set *CCMODE to VOIDmode.  */
+
+static rtx
+avr_cc_set (rtx_insn *insn, machine_mode *ccmode)
+{
+  // single_set() not only depends on the anatomy of an insn but also
+  // on REG_UNUSED notes, thus we have to analyze by hand so that the
+  // result only depends on the pattern.
+
+  rtx pat = PATTERN (insn);
+
+  if (GET_CODE (pat) == PARALLEL
+      && XVECLEN (pat, 0) == 2
+      && GET_CODE (XVECEXP (pat, 0, 0)) == SET
+      && GET_CODE (XVECEXP (pat, 0, 1)) == SET)
+    {
+      rtx ccset = XVECEXP (pat, 0, 0);
+      *ccmode = GET_MODE (SET_DEST (ccset));
+      return XVECEXP (pat, 0, 1);
+    }
+
+  *ccmode = VOIDmode;
+  return single_set (insn);
+}
+
+
 /* Output addition of registers YOP[0] and YOP[1]
 
       YOP[0] += extend (YOP[1])
@@ -7414,8 +7451,11 @@ lshrsi3_out (rtx_insn *insn, rtx operands[], int *len)
 
       YOP[0] -= extend (YOP[2])
 
-   where the integer modes satisfy  SI >= YOP[0].mode > YOP[1/2].mode >= QI,
-   and the extension may be sign- or zero-extend.  Returns "".
+   where the integer modes satisfy  SI >= YOP[0].mode >= YOP[1/2].mode >= QI,
+   and the extension may be sign-extend, zero-extend or reg (no extend).
+   INSN is either a single_set or a true parallel insn.  In the latter case,
+   INSN has two SETs: A SET of REG_CC and a SET like in the single_set case.
+   Returns "".
 
    If PLEN == NULL output the instructions.
    If PLEN != NULL set *PLEN to the length of the sequence in words.  */
@@ -7424,8 +7464,13 @@ const char *
 avr_out_plus_ext (rtx_insn *insn, rtx *yop, int *plen)
 {
   rtx regs[2];
+  machine_mode ccmode;
 
-  const rtx src = SET_SRC (single_set (insn));
+  /* Ouch! Whether or not an insn is a single_set does not only depend
+     on the anatomy of the pattern, but also on REG_UNUSED notes.
+     Hence we have to dig by hand... */
+
+  const rtx src = SET_SRC (avr_cc_set (insn, &ccmode));
   const RTX_CODE add = GET_CODE (src);
   gcc_assert (GET_CODE (src) == PLUS || GET_CODE (src) == MINUS);
 
@@ -7436,7 +7481,7 @@ avr_out_plus_ext (rtx_insn *insn, rtx *yop, int *plen)
   const RTX_CODE ext = GET_CODE (xext);
 
   gcc_assert (REG_P (xreg)
-	      && (ext == ZERO_EXTEND || ext == SIGN_EXTEND));
+	      && (ext == ZERO_EXTEND || ext == SIGN_EXTEND || ext == REG));
 
   const int n_bytes0 = GET_MODE_SIZE (GET_MODE (xop[0]));
   const int n_bytes1 = GET_MODE_SIZE (GET_MODE (xop[1]));
@@ -7456,7 +7501,9 @@ avr_out_plus_ext (rtx_insn *insn, rtx *yop, int *plen)
 
   if (ext == SIGN_EXTEND
       && (n_bytes0 > 1 + n_bytes1
-	  || reg_overlap_mentioned_p (msb1, xop[0])))
+	  || reg_overlap_mentioned_p (msb1, xop[0])
+	  // The insn also wants to set SREG.N and SREG.Z.
+	  || ccmode == CCZNmode))
     {
       // Sign-extending more than one byte: Set tmp_reg to 0 or -1
       // depending on $1.msb. Same for the pathological case where
@@ -8114,10 +8161,51 @@ avr_out_plus (rtx insn, rtx *xop, int *plen, bool out_label)
 }
 
 
+/* Output an addition with a compile-time constant that sets SREG.N:
+
+      XOP[0] += XOP[1]
+
+   where XOP[0] is a HI, PSI or SI register, and XOP[1] is a register or a
+   compile-time constant.  XOP[2] is SCRATCH or a QI clobber reg.  Return "".
+
+   If PLEN == NULL output the instructions.
+   If PLEN != NULL set *PLEN to the length of the sequence in words.  */
+
+const char *
+avr_out_plus_set_N (rtx *xop, int *plen)
+{
+  gcc_assert (xop[1] != const0_rtx);
+
+  // The output function for vanilla additions, avr_out_plus_1, can be
+  // used because it always issues an operation on the MSB (except when
+  // the addend is zero).
+
+  rtx op[] = { xop[0], xop[0], xop[1], xop[2] };
+
+  if (REG_P (xop[1]))
+    {
+      avr_out_plus_1 (NULL_RTX, op, plen, PLUS, UNKNOWN, 0, false);
+    }
+  else
+    {
+      int len_plus, len_minus;
+
+      avr_out_plus_1 (NULL_RTX, op, &len_plus,  PLUS,  UNKNOWN, 0, false);
+      avr_out_plus_1 (NULL_RTX, op, &len_minus, MINUS, UNKNOWN, 0, false);
+
+      avr_out_plus_1 (NULL_RTX, op, plen, len_minus < len_plus ? MINUS : PLUS,
+		      UNKNOWN, 0, false);
+    }
+
+  return "";
+}
+
+
 /* Output an instruction sequence for addition of REG in XOP[0] and CONST_INT
    in XOP[1] in such a way that SREG.Z and SREG.N are set according to the
-   result.  XOP[2] might be a d-regs clobber register.  If XOP[2] is SCRATCH,
-   then the addition can be performed without a clobber reg.  Return "".
+   result.  The mode is HI, PSI or SI.  XOP[2] might be a d-regs clobber
+   register.  If XOP[2] is SCRATCH, then the addition can be performed
+   without a clobber reg.  Return "".
 
    If PLEN == NULL, then output the instructions.
    If PLEN != NULL, then set *PLEN to the length of the sequence in words. */
@@ -8136,15 +8224,6 @@ avr_out_plus_set_ZN (rtx *xop, int *plen)
 
   // Number of bytes to operate on.
   int n_bytes = GET_MODE_SIZE (mode);
-
-  if (n_bytes == 1)
-    {
-      if (INTVAL (xval) == 1)
-	return avr_asm_len ("inc %0", xop, plen, 1);
-
-      if (INTVAL (xval) == -1)
-	return avr_asm_len ("dec %0", xop, plen, 1);
-    }
 
   if (n_bytes == 2
       && avr_adiw_reg_p (xreg)
@@ -8227,6 +8306,136 @@ avr_out_plus_set_ZN (rtx *xop, int *plen)
     } // Loop bytes.
 
   return "";
+}
+
+
+/* A helper worker for `op8_ZN_operator'.  Allow
+
+     OP0 <code> OP1
+
+  QImode operations that set SREG.N and SREG.Z in a usable way.
+  these are:
+
+  * OP0 is a QImode register, and
+  * OP1 is a QImode register or CONST_INT, and
+
+  the allowed operations is one of:
+
+  * SHIFTs with a const_int offset in { 1, 2, 3 }.
+  * MINUS and XOR with a register operand
+  * IOR and AND with a register operand, or d-reg + const_int
+  * PLUS with a register operand, or d-reg + const_int,
+    or a const_int in { -2, -1, 1, 2 }.  */
+
+bool
+avr_op8_ZN_operator (rtx op)
+{
+  const rtx_code code = GET_CODE (op);
+  rtx op0 = XEXP (op, 0);
+  rtx op1 = XEXP (op, 1);
+
+  if (! register_operand (op0, QImode)
+      || ! (register_operand (op1, QImode)
+	    || const_int_operand (op1, QImode)))
+    return false;
+
+  const bool reg1_p = REG_P (op1);
+  const bool ld_reg0_p = test_hard_reg_class (LD_REGS, op0);
+
+  switch (code)
+    {
+    default:
+      break;
+
+    case ASHIFT:
+    case ASHIFTRT:
+    case LSHIFTRT:
+      return const_1_to_3_operand (op1, QImode);
+
+    case MINUS:
+    case XOR:
+      return reg1_p;
+
+    case IOR:
+    case AND:
+      return reg1_p || ld_reg0_p;
+
+    case PLUS:
+      return reg1_p || ld_reg0_p || abs1_abs2_operand (op1, QImode);
+    }
+
+  return false;
+}
+
+
+/* Output a QImode instruction sequence for
+
+      XOP[0] = XOP[0]  <CODE>  XOP[2]
+
+   where XOP[0] is a register, and the possible operands and CODEs
+   are according to  `avr_op8_ZN_operator'  from above.  Return "".
+
+   If PLEN == NULL, then output the instructions.
+   If PLEN != NULL, then set *PLEN to the length of the sequence in words.  */
+
+const char *
+avr_out_op8_set_ZN (rtx_code code, rtx *xop, int *plen)
+{
+  const bool reg2_p = REG_P (xop[2]);
+  const int ival = CONST_INT_P (xop[2]) ? (int) INTVAL (xop[2]) : 0;
+
+  gcc_assert (op8_ZN_operator (gen_rtx_fmt_ee (code, QImode, xop[0], xop[2]),
+			       QImode));
+  if (plen)
+    *plen = 0;
+
+  const char *tpl = nullptr;
+  int times = 1;
+
+  if (code == ASHIFT)
+    tpl = "lsl %0", times = ival;
+  else if (code == LSHIFTRT)
+    tpl = "lsr %0", times = ival;
+  else if (code == ASHIFTRT)
+    tpl = "asr %0", times = ival;
+  else if (code == MINUS)
+    tpl = "sub %0,%2";
+  else if (code == XOR)
+    tpl = "eor %0,%2";
+  else if (code == AND)
+    tpl = reg2_p ? "and %0,%2" : "andi %0,lo8(%2)";
+  else if (code == IOR)
+    tpl = reg2_p ? "or %0,%2" : "ori %0,lo8(%2)";
+  else if (code == PLUS)
+    {
+      if (ival
+	  && ! test_hard_reg_class (LD_REGS, xop[0]))
+	{
+	  tpl = ival > 0 ? "inc %0" : "dec %0";
+	  times = std::abs (ival);
+	}
+      else
+	tpl = reg2_p ? "add %0,%2" : "subi %0,lo8(%n2)";
+    }
+  else
+    gcc_unreachable();
+
+  for (int i = 0; i < times; ++i)
+    avr_asm_len (tpl, xop, plen, 1);
+
+  return "";
+}
+
+
+/* Used in the "length" attribute of insn "*op8.for.cczn.<code>".  */
+
+int
+avr_len_op8_set_ZN (rtx_code code, rtx *xop)
+{
+  int len;
+  (void) avr_out_op8_set_ZN (code, xop, &len);
+
+  return len;
 }
 
 
@@ -9734,6 +9943,7 @@ avr_adjust_insn_length (rtx_insn *insn, int len)
 
     case ADJUST_LEN_INSERT_BITS: avr_out_insert_bits (op, &len); break;
     case ADJUST_LEN_ADD_SET_ZN: avr_out_plus_set_ZN (op, &len); break;
+    case ADJUST_LEN_ADD_SET_N:  avr_out_plus_set_N (op, &len); break;
 
     case ADJUST_LEN_INSV_NOTBIT: avr_out_insert_notbit (insn, op, &len); break;
 
@@ -9952,7 +10162,7 @@ avr_assemble_integer (rtx x, unsigned int size, int aligned_p)
 static unsigned char
 avr_class_max_nregs (reg_class_t rclass, machine_mode mode)
 {
-  if (rclass == CC_REG && mode == CCmode)
+  if (rclass == CC_REG && GET_MODE_CLASS (mode) == MODE_CC)
     return 1;
 
   return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
@@ -12566,7 +12776,7 @@ jump_over_one_insn_p (rtx_insn *insn, rtx dest)
 static unsigned int
 avr_hard_regno_nregs (unsigned int regno, machine_mode mode)
 {
-  if (regno == REG_CC && mode == CCmode)
+  if (regno == REG_CC && GET_MODE_CLASS (mode) == MODE_CC)
     return 1;
 
   return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
@@ -12581,7 +12791,7 @@ static bool
 avr_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   if (regno == REG_CC)
-    return mode == CCmode;
+    return GET_MODE_CLASS (mode) == MODE_CC;
 
   /* NOTE: 8-bit values must not be disallowed for R28 or R29.
 	Disallowing QI et al. in these regs might lead to code like

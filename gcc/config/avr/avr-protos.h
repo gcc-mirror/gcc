@@ -55,7 +55,7 @@ extern const char *avr_out_tsthi (rtx_insn *, rtx*, int*);
 extern const char *avr_out_tstpsi (rtx_insn *, rtx*, int*);
 extern const char *avr_out_compare (rtx_insn *, rtx*, int*);
 extern const char *avr_out_compare64 (rtx_insn *, rtx*, int*);
-extern const char *ret_cond_branch (rtx x, int len, int reverse);
+extern const char *avr_cond_branch (rtx_insn *, rtx *);
 extern const char *avr_out_movpsi (rtx_insn *, rtx*, int*);
 extern const char *avr_out_sign_extend (rtx_insn *, rtx*, int*);
 extern const char *avr_out_insert_notbit (rtx_insn *, rtx*, int*);
@@ -63,6 +63,10 @@ extern const char *avr_out_insv (rtx_insn *, rtx*, int*);
 extern const char *avr_out_extr (rtx_insn *, rtx*, int*);
 extern const char *avr_out_extr_not (rtx_insn *, rtx*, int*);
 extern const char *avr_out_plus_set_ZN (rtx*, int*);
+extern const char *avr_out_plus_set_N (rtx*, int*);
+extern const char *avr_out_op8_set_ZN (rtx_code, rtx*, int*);
+extern int avr_len_op8_set_ZN (rtx_code, rtx*);
+extern bool avr_op8_ZN_operator (rtx);
 extern const char *avr_out_cmp_ext (rtx*, enum rtx_code, int*);
 
 extern const char *ashlqi3_out (rtx_insn *insn, rtx operands[], int *len);
@@ -152,6 +156,8 @@ extern rtx zero_reg_rtx;
 extern rtx all_regs_rtx[32];
 extern rtx rampz_rtx;
 extern rtx cc_reg_rtx;
+extern rtx ccn_reg_rtx;
+extern rtx cczn_reg_rtx;
 
 #endif /* RTX_CODE */
 

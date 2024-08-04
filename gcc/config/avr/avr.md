@@ -171,7 +171,7 @@
    ashlsi, ashrsi, lshrsi,
    ashlpsi, ashrpsi, lshrpsi,
    insert_bits, insv_notbit, insv,
-   add_set_ZN, cmp_uext, cmp_sext,
+   add_set_ZN, add_set_N, cmp_uext, cmp_sext,
    no"
   (const_string "no"))
 
@@ -261,6 +261,7 @@
 (define_mode_iterator QIDI  [QI HI PSI SI DI])
 (define_mode_iterator QIPSI [QI HI PSI])
 (define_mode_iterator HISI  [HI PSI SI])
+(define_mode_iterator HI_SI [HI SI])
 
 ;; Ordered integral and fixed-point modes of specific sizes.
 (define_mode_iterator ALL1 [QI QQ UQQ])
@@ -276,6 +277,10 @@
 (define_mode_iterator ALLs4 [SI SQ SA])
 (define_mode_iterator ALLs234 [HI SI PSI
                                HQ HA SQ SA])
+
+(define_mode_iterator ALLCC [CC CCN CCZN])
+
+(define_mode_attr CCname [(CC "") (CCN "_N") (CCZN "_ZN")])
 
 ;; All supported move-modes
 (define_mode_iterator MOVMODE [QI QQ UQQ
@@ -320,6 +325,9 @@
 (define_code_iterator xior [xor ior])
 (define_code_iterator eqne [eq ne])
 (define_code_iterator gelt [ge lt])
+(define_code_iterator eqnegtle [eq ne gt le])
+(define_code_iterator cmp_signed [eq ne ge lt gt le])
+(define_code_iterator op8_ZN [plus minus and ior xor ashift ashiftrt lshiftrt])
 
 (define_code_iterator ss_addsub [ss_plus ss_minus])
 (define_code_iterator us_addsub [us_plus us_minus])
@@ -6889,6 +6897,469 @@
   })
 
 
+;; Try optimize decrement-and-branch.  When we have an addition followed
+;; by a comparison of the result against zero, we can output the addition
+;; in such a way that SREG.N and SREG.Z are set according to the result.
+;; The comparisons are split2 from their cbranch insns and before
+;; peephole2 patterns like for swapped_tst and sbrx_branch have been applied.
+
+;; We do NOT use cmpelim / SELECT_CC_MODE because it has many shortcomings
+;; and is by no means equipollent to the removed cc0 framework -- at least
+;; with regard to the avr backend:  Whether or not the result of a comparison
+;; can be obtained as a byproduct of an operation might depend on the
+;; availability of a scratch register:  There are cases where we need a
+;; scratch register to optimize away a comparison, and where the operation
+;; without a comparison does not require a scratch.  With the peep2 approach
+;; below, we can get a scratch from the peep2 framework without increasing
+;; the register pressure, whereas cmpelim doesn't offer such a feature.
+;;    When no scratch is available, then we just don't perform the optimizaton,
+;; i.e. the comparison against 0 won't be optimized away, which is preferred
+;; over increasing the register pressure -- in many cases without reason --
+;; which might result in additional spills.
+;;    What we definitely do not want is to pop a scratch without need, and
+;; in some arithmetic insn we won't know whether it might also be considered
+;; for CCmode generation, at least not prior to register allocation:
+;; CCmode only comes into existence after register allocation.
+;;    cmpelim has more shortcomings, for example some comparisons may not
+;; be available, and it does not handle several of the forms supported below,
+;; just to mention two.  A solution for the former would be to return VOIDmode
+;; in SELECT_CC_MODE, but cmpelim doesn't handle that.  Anyway, it's pointless
+;; to speculate about how other shortcomings could be fixed when the scratch
+;; problem is unsoved in cmpelim.
+;;    Apart from that, compare-elim.cc lists some demands that are not
+;; compatible with this bachend.  For example, it assumes that when an insn
+;; can set the condition code, it is always of the form compare:CCM, i.e.
+;; all comparisons are supported.  This is not the case for AVR, see the
+;; peep2 conditions below.  There is no way (at least not a documented one)
+;; to express that in SELECT_CC_MODE.
+;;    Apart from that passes running before register allocation (and thus
+;; before split2) have #ifdef SELECT_CC_MODE, and nowhere there is an
+;; explanation on how to handle that.
+;;    Skipping cmpelim is accomplished by not defining TARGET_FLAGS_REGNUM.
+
+;; Note: reload1.cc::do_output_reload() does not support output reloads
+;; for JUMP_INSNs, hence letting combine doing decrement-and-branch might
+;; run into an ICE.  Doing reloads by hand is too painful, hence, stick with
+;; RTL peepholes for now.
+
+(define_expand "gen_add_for_<code>_<mode>"
+  [;; "*add.for.cczn.<mode>"
+   (parallel [(set (reg:CCZN REG_CC)
+                   (compare:CCZN (plus:HISI (match_operand:HISI 0 "register_operand")
+                                            (match_operand:HISI 1 "const_int_operand"))
+                                 (const_int 0)))
+              (set (match_dup 0)
+                   (plus:HISI (match_dup 0)
+                              (match_dup 1)))
+              (clobber (match_operand:QI 3))])
+   ;; "branch_ZN"
+   (set (pc)
+        (if_then_else (eqnegtle (reg:CCZN REG_CC)
+                                (const_int 0))
+                      (label_ref (match_dup 2))
+                      (pc)))])
+
+(define_expand "gen_add_for_<code>_<mode>"
+  [;; "*add.for.ccn.<mode>"
+   (parallel [(set (reg:CCN REG_CC)
+                   (compare:CCN (plus:HISI (match_operand:HISI 0 "register_operand")
+                                           (match_operand:HISI 1 "nonmemory_operand"))
+                                (const_int 0)))
+              (set (match_dup 0)
+                   (plus:HISI (match_dup 0)
+                              (match_dup 1)))
+              (clobber (match_operand:QI 3))])
+   ;; "branch_N"
+   (set (pc)
+        (if_then_else (gelt (reg:CCN REG_CC)
+                            (const_int 0))
+                      (label_ref (match_dup 2))
+                      (pc)))])
+
+
+;; 1/3: Additions without a scratch register.
+(define_peephole2
+  [(parallel [(set (match_operand:HISI 0 "register_operand")
+                   (plus:HISI (match_dup 0)
+                              (match_operand:HISI 1 "nonmemory_operand")))
+              (clobber (reg:CC REG_CC))])
+   (parallel [(set (reg:CC REG_CC)
+                   (compare:CC (match_dup 0)
+                               (match_operand:HISI 3 "const0_operand")))
+              (clobber (scratch:QI))])
+   (set (pc)
+        (if_then_else (cmp_signed (reg:CC REG_CC)
+                                  (const_int 0))
+                      (label_ref (match_operand 2))
+                      (pc)))]
+  "// Multi-byte reg-reg additions only set the N flag.
+   (<CODE> == GE || <CODE> == LT || ! REG_P (operands[1]))
+   // Needs a const or a d-reg.
+   && (REG_P (operands[1]) || d_register_operand (operands[0], <MODE>mode))
+   && peep2_regno_dead_p (3, REG_CC)"
+  [(scratch)]
+  {
+    emit (gen_gen_add_for_<code>_<mode> (operands[0], operands[1], operands[2],
+                                         gen_rtx_SCRATCH (QImode)));
+    DONE;
+  })
+
+;; 2/3: Additions with a scratch register from the insn.
+(define_peephole2
+  [(parallel [(set (match_operand:HISI 0 "register_operand")
+                   (plus:HISI (match_dup 0)
+                              (match_operand:HISI 1 "nonmemory_operand")))
+              (clobber (match_operand:QI 3 "scratch_or_d_register_operand"))
+              (clobber (reg:CC REG_CC))])
+   (parallel [(set (reg:CC REG_CC)
+                   (compare:CC (match_dup 0)
+                               (match_operand:HISI 4 "const0_operand")))
+              (clobber (scratch:QI))])
+   (set (pc)
+        (if_then_else (cmp_signed (reg:CC REG_CC)
+                                  (const_int 0))
+                      (label_ref (match_operand 2))
+                      (pc)))]
+  "// Multi-byte reg-reg additions only set the N flag.
+   (<CODE> == GE || <CODE> == LT || ! REG_P (operands[1]))
+   && peep2_regno_dead_p (3, REG_CC)"
+  [(scratch)]
+  {
+    rtx scratch = operands[3];
+
+    // We need either a d-register or a scratch register
+    // when $1 is not a register.
+    if (! REG_P (operands[1])
+        && ! REG_P (scratch)
+        && ! d_register_operand (operands[0], <MODE>mode))
+      FAIL;
+
+    emit (gen_gen_add_for_<code>_<mode> (operands[0], operands[1], operands[2],
+                                         scratch));
+    DONE;
+  })
+
+;; 3/3: Additions with a scratch register from peephole2.
+(define_peephole2
+  [(match_scratch:QI 3 "d")
+   (parallel [(set (match_operand:HISI 0 "register_operand")
+                   (plus:HISI (match_dup 0)
+                              (match_operand:HISI 1 "const_int_operand")))
+              (clobber (reg:CC REG_CC))])
+   (parallel [(set (reg:CC REG_CC)
+                   (compare:CC (match_dup 0)
+                               (match_operand:HISI 4 "const0_operand")))
+              (clobber (scratch:QI))])
+   (set (pc)
+        (if_then_else (cmp_signed (reg:CC REG_CC)
+                                  (const_int 0))
+                      (label_ref (match_operand 2))
+                      (pc)))]
+  "peep2_regno_dead_p (3, REG_CC)"
+  [(scratch)]
+  {
+    emit (gen_gen_add_for_<code>_<mode> (operands[0], operands[1], operands[2],
+                                         operands[3]));
+    DONE;
+  })
+
+;; Result of the above three peepholes is an addition that also
+;; performs a signed comparison (of the result) against zero.
+;; FIXME: Using (match_dup 0) instead of operands[3/4] makes rnregs
+;; barf in regrename.cc::merge_overlapping_regs().  For now, use the
+;; fix from PR50788: Constrain as "0".
+
+;; "*add.for.cczn.hi"  "*add.for.cczn.psi"  "*add.for.cczn.si"
+(define_insn "*add.for.cczn.<mode>"
+  [(set (reg:CCZN REG_CC)
+        (compare:CCZN
+         (plus:HISI (match_operand:HISI 3 "register_operand"  "0 ,0")
+                    (match_operand:HISI 1 "const_int_operand" "n ,n"))
+         (const_int 0)))
+   (set (match_operand:HISI 0 "register_operand"             "=d ,r")
+        (plus:HISI (match_operand:HISI 4 "register_operand"   "0 ,0")
+                   (match_operand:HISI 5 "const_int_operand"  "1 ,1")))
+   (clobber (match_scratch:QI 2                              "=X ,&d"))]
+  "reload_completed"
+  {
+    return avr_out_plus_set_ZN (operands, nullptr);
+  }
+  [(set (attr "length")
+        (symbol_ref "<SIZE> * (1 + REG_P (operands[2]))"))
+   (set_attr "adjust_len" "add_set_ZN")])
+
+;; "*add.for.ccn.hi"  "*add.for.ccn.psi"  "*add.for.ccn.si"
+(define_insn "*add.for.ccn.<mode>"
+  [(set (reg:CCN REG_CC)
+        (compare:CCN
+         (plus:HISI (match_operand:HISI 3 "register_operand"  "0 ,0 ,0")
+                    (match_operand:HISI 1 "nonmemory_operand" "n ,n ,r"))
+         (const_int 0)))
+   (set (match_operand:HISI 0 "register_operand"             "=d ,r ,r")
+        (plus:HISI (match_operand:HISI 4 "register_operand"   "0 ,0 ,0")
+                   (match_operand:HISI 5 "nonmemory_operand"  "1 ,1 ,1")))
+   (clobber (match_scratch:QI 2                              "=X ,&d,X"))]
+  "reload_completed"
+  {
+    return avr_out_plus_set_N (operands, nullptr);
+  }
+  [(set (attr "length")
+        (symbol_ref "<SIZE> * (1 + REG_P (operands[2]))"))
+   (set_attr "adjust_len" "add_set_N")])
+
+
+;; 1/3: Subtractions with REG subtrahend set Z and N in a meaningful way.
+;; The QI and PSI cases are handled below because they don't have a scratch:QI.
+(define_peephole2
+  [(parallel [(set (match_operand:HI_SI 0 "register_operand")
+                   (minus:HI_SI (match_dup 0)
+                                (match_operand:HI_SI 1 "register_operand")))
+              (clobber (scratch:QI))
+              (clobber (reg:CC REG_CC))])
+   (parallel [(set (reg:CC REG_CC)
+                   (compare:CC (match_dup 0)
+                               (match_operand:HI_SI 3 "const0_operand")))
+              (clobber (scratch:QI))])
+   (set (pc)
+        (if_then_else (cmp_signed (reg:CC REG_CC)
+                                  (const_int 0))
+                      (label_ref (match_operand 2))
+                      (pc)))]
+  "peep2_regno_dead_p (3, REG_CC)"
+  [;; "*sub.for.cczn.<mode>"
+   (parallel [(set (reg:CCZN REG_CC)
+                   (compare:CCZN (minus:HI_SI (match_dup 0)
+                                              (match_dup 1))
+                                 (const_int 0)))
+              (set (match_dup 0)
+                   (minus:HI_SI (match_dup 0)
+                                (match_dup 1)))])
+   ;; "branch_ZN"
+   (set (pc)
+        (if_then_else (cmp_signed (reg:CCZN REG_CC)
+                                  (const_int 0))
+                      (label_ref (match_dup 2))
+                      (pc)))])
+
+;; 2/3: Subtractions with a PSImode REG: no scratch:QI.
+(define_peephole2
+  [(parallel [(set (match_operand:PSI 0 "register_operand")
+                   (minus:PSI (match_dup 0)
+                              (match_operand:PSI 1 "register_operand")))
+              (clobber (reg:CC REG_CC))])
+   (parallel [(set (reg:CC REG_CC)
+                   (compare:CC (match_dup 0)
+                               (match_operand:PSI 3 "const0_operand")))
+              (clobber (scratch:QI))])
+   (set (pc)
+        (if_then_else (cmp_signed (reg:CC REG_CC)
+                                  (const_int 0))
+                      (label_ref (match_operand 2))
+                      (pc)))]
+  "peep2_regno_dead_p (3, REG_CC)"
+  [;; "*sub.for.cczn.psi"
+   (parallel [(set (reg:CCZN REG_CC)
+                   (compare:CCZN (minus:PSI (match_dup 0)
+                                            (match_dup 1))
+                                 (const_int 0)))
+              (set (match_dup 0)
+                   (minus:PSI (match_dup 0)
+                              (match_dup 1)))])
+   ;; "branch_ZN"
+   (set (pc)
+        (if_then_else (cmp_signed (reg:CCZN REG_CC)
+                                  (const_int 0))
+                      (label_ref (match_dup 2))
+                      (pc)))])
+
+;; 3/3: Subtractions that extend the subtrahend.
+(define_peephole2
+  [(parallel [(set (match_operand:HISI 0 "register_operand")
+                   (minus:HISI (match_dup 0)
+                               (any_extend:HISI (match_operand:QIPSI 1 "register_operand"))))
+              (clobber (reg:CC REG_CC))])
+   (parallel [(set (reg:CC REG_CC)
+                   (compare:CC (match_dup 0)
+                               (match_operand:HISI 3 "const0_operand")))
+              (clobber (scratch:QI))])
+   (set (pc)
+        (if_then_else (cmp_signed (reg:CC REG_CC)
+                                  (const_int 0))
+                      (label_ref (match_operand 2))
+                      (pc)))]
+  "<HISI:SIZE> > <QIPSI:SIZE>
+   && peep2_regno_dead_p (3, REG_CC)"
+  [;; "*sub-extend<QIPSI:mode>.for.cczn.<HISI:mode>"
+   (parallel [(set (reg:CCZN REG_CC)
+                   (compare:CCZN (minus:HISI (match_dup 0)
+                                             (any_extend:HISI (match_dup 1)))
+                                 (const_int 0)))
+              (set (match_dup 0)
+                   (minus:HISI (match_dup 0)
+                               (any_extend:HISI (match_dup 1))))])
+   ;; "branch_ZN"
+   (set (pc)
+        (if_then_else (cmp_signed (reg:CCZN REG_CC)
+                                  (const_int 0))
+                      (label_ref (match_dup 2))
+                      (pc)))])
+
+;; "*sub.for.cczn.hi"
+;; "*sub.for.cczn.psi"
+;; "*sub.for.cczn.si"
+(define_insn "*sub.for.cczn.<mode>"
+  [(set (reg:CCZN REG_CC)
+        (compare:CCZN (minus:HISI (match_operand:HISI 3 "register_operand" "1")
+                                  (match_operand:HISI 4 "register_operand" "2"))
+                      (const_int 0)))
+   (set (match_operand:HISI 0 "register_operand"             "=r")
+        (minus:HISI (match_operand:HISI 1 "register_operand"  "0")
+                    (match_operand:HISI 2 "register_operand"  "r")))]
+  "reload_completed"
+  {
+    return avr_out_plus_ext (insn, operands, nullptr);
+  }
+  [(set_attr "length" "<SIZE>")])
+
+
+(define_insn "*sub-extend<QIPSI:mode>.for.cczn.<HISI:mode>"
+  [(set (reg:CCZN REG_CC)
+        (compare:CCZN (minus:HISI (match_operand:HISI 3 "register_operand"     "0")
+                                  (any_extend:HISI
+                                   (match_operand:QIPSI 4 "register_operand"   "2")))
+                      (const_int 0)))
+   (set (match_operand:HISI 0 "register_operand"                              "=r")
+        (minus:HISI (match_operand:HISI 1 "register_operand"                   "0")
+                    (any_extend:HISI (match_operand:QIPSI 2 "register_operand" "r"))))]
+  "reload_completed
+   && <HISI:SIZE> > <QIPSI:SIZE>"
+  {
+    return avr_out_plus_ext (insn, operands, nullptr);
+  }
+  [(set (attr "length")
+        (symbol_ref "<HISI:SIZE> + 3 * (<CODE> == SIGN_EXTEND)"))])
+
+
+;; Operations other that PLUS can set the condition code in
+;; a meaningful way, too.
+
+;; 1/1 Left shift sets the N bit.
+(define_peephole2
+  [(parallel [(set (match_operand:HISI 0 "register_operand")
+                   (ashift:HISI (match_dup 0)
+                                (const_int 1)))
+              (clobber (match_operand:QI 3 "scratch_operand"))
+              (clobber (reg:CC REG_CC))])
+   (parallel [(set (reg:CC REG_CC)
+                   (compare:CC (match_dup 0)
+                               (const_int 0)))
+              (clobber (scratch:QI))])
+   (set (pc)
+        (if_then_else (gelt (reg:CC REG_CC)
+                            (const_int 0))
+                      (label_ref (match_operand 2))
+                      (pc)))]
+  "peep2_regno_dead_p (3, REG_CC)"
+  [;; "*ashift.for.ccn.<mode>"
+   (parallel [(set (reg:CCN REG_CC)
+                   (compare:CCN (ashift:HISI (match_dup 0)
+                                             (const_int 1))
+                                (const_int 0)))
+              (set (match_dup 0)
+                   (ashift:HISI (match_dup 0)
+                                (const_int 1)))])
+   ;; "branch_N"
+   (set (pc)
+        (if_then_else (gelt (reg:CCN REG_CC)
+                            (const_int 0))
+                      (label_ref (match_operand 2))
+                      (pc)))])
+
+(define_insn "*ashift.for.ccn.<mode>"
+  [(set (reg:CCN REG_CC)
+        (compare:CCN (ashift:HISI (match_operand:HISI 2 "register_operand" "0")
+                                  (const_int 1))
+                     (const_int 0)))
+   (set (match_operand:HISI 0 "register_operand"             "=r")
+        (ashift:HISI (match_operand:HISI 1 "register_operand" "0")
+                     (const_int 1)))]
+  "reload_completed"
+  {
+    output_asm_insn ("lsl %A0", operands);
+    output_asm_insn ("rol %B0", operands);
+    if (<SIZE> >= 3) output_asm_insn ("rol %C0", operands);
+    if (<SIZE> >= 4) output_asm_insn ("rol %D0", operands);
+    return "";
+  }
+  [(set_attr "length" "<SIZE>")])
+
+
+;; 1/1 QImode operations that set Z and N in a meaningful way.
+(define_peephole2
+  [(parallel [(set (match_operand:QI 0 "register_operand")
+                   (match_operator:QI 2 "op8_ZN_operator" [(match_dup 0)
+                                                           (match_operand:QI 1)]))
+              (clobber (reg:CC REG_CC))])
+   (set (reg:CC REG_CC)
+        (compare:CC (match_dup 0)
+                    (match_operand:QI 4 "const0_operand")))
+   (set (pc)
+        (if_then_else (cmp_signed (reg:CC REG_CC)
+                                  (const_int 0))
+                      (label_ref (match_operand 3))
+                      (pc)))]
+  "peep2_regno_dead_p (3, REG_CC)"
+  [;; "*op8.for.cczn.<code>"
+   (parallel [(set (reg:CCZN REG_CC)
+                   (compare:CCZN (match_op_dup 2 [(match_dup 0)
+                                                  (match_dup 1)])
+                                 (const_int 0)))
+              (set (match_dup 0)
+                   (match_op_dup 2 [(match_dup 0)
+                                    (match_dup 1)]))])
+   ;; "branch_ZN"
+   (set (pc)
+        (if_then_else (cmp_signed (reg:CCZN REG_CC)
+                                  (const_int 0))
+                      (label_ref (match_operand 3))
+                      (pc)))])
+
+;; Constraints and predicate for the insn below.  This is what op8_ZN_operator
+;; allows.  Constraints are written in such a way that all cases have two
+;; alternatives (shifts, XOR and MINUS have effectively just one alternative).
+;; Note again that due to nregs, match_dup's won't work.
+(define_code_attr c0_op8
+  [(xor "r,r") (minus "r,r") (ashift "r,r") (ashiftrt "r,r") (lshiftrt "r,r")
+   (and "d,r") (ior "d,r") (plus "d,r")])
+
+(define_code_attr c2_op8
+  [(xor "r,r") (minus "r,r") (and "n,r") (ior "n,r") (plus "n,r P N K Cm2")
+   (ashift "P K,C03") (ashiftrt "P K,C03") (lshiftrt "P K,C03")])
+
+(define_code_attr p2_op8
+  [(ashift "const_1_to_3")  (ashiftrt "const_1_to_3")  (lshiftrt "const_1_to_3")
+   (xor "register")  (minus "register")
+   (plus "nonmemory")  (and "nonmemory")  (ior "nonmemory")])
+
+;; Result of the peephole2 above:  An 8-bit operation that sets Z and N.
+;; The allowed operations are:  PLUS, MINUS, AND, IOR, XOR and SHIFTs
+;; with operands according to op8_ZN_operator.
+(define_insn "*op8.for.cczn.<code>"
+  [(set (reg:CCZN REG_CC)
+        (compare:CCZN (op8_ZN:QI (match_operand:QI 3 "register_operand" "0,0")
+                                 (match_operand:QI 4 "<p2_op8>_operand" "2,2"))
+                      (const_int 0)))
+   (set (match_operand:QI 0 "register_operand"           "=<c0_op8>")
+        (op8_ZN:QI (match_operand:QI 1 "register_operand" "0,0")
+                   (match_operand:QI 2 "<p2_op8>_operand" "<c2_op8>")))]
+  "reload_completed"
+  {
+    return avr_out_op8_set_ZN (<CODE>, operands, nullptr);
+  }
+  [(set (attr "length")
+        (symbol_ref "avr_len_op8_set_ZN (<CODE>, operands)"))])
+
+
 ;; Test a single bit in a QI/HI/SImode register.
 ;; Combine will create zero-extract patterns for single-bit tests.
 ;; Permit any mode in source pattern by using VOIDmode.
@@ -7050,32 +7521,25 @@
 ;;  Compare with 0 (test) jumps
 ;; ************************************************************************
 
-(define_insn "branch"
+;; "branch"
+;; "branch_N"
+;; "branch_ZN"
+(define_insn "branch<CCname>"
   [(set (pc)
-        (if_then_else (match_operator 1 "simple_comparison_operator"
-                        [(reg:CC REG_CC)
+        (if_then_else (match_operator 1 "ordered_comparison_operator"
+                        [(reg:ALLCC REG_CC)
                          (const_int 0)])
                       (label_ref (match_operand 0))
                       (pc)))]
   "reload_completed"
   {
-    return ret_cond_branch (operands[1], avr_jump_mode (operands[0], insn), 0);
+    return avr_cond_branch (insn, operands);
   }
-  [(set_attr "type" "branch")])
-
-
-(define_insn "difficult_branch"
-  [(set (pc)
-        (if_then_else (match_operator 1 "difficult_comparison_operator"
-                        [(reg:CC REG_CC)
-                         (const_int 0)])
-                      (label_ref (match_operand 0 "" ""))
-                      (pc)))]
-  "reload_completed"
-  {
-    return ret_cond_branch (operands[1], avr_jump_mode (operands[0], insn), 0);
-  }
-  [(set_attr "type" "branch1")])
+  [(set (attr "type")
+        (if_then_else
+         (match_test "simple_comparison_operator (operands[1], VOIDmode)")
+         (const_string "branch")
+         (const_string "branch1")))])
 
 
 ;; **************************************************************************
@@ -9553,173 +10017,6 @@
   [(parallel [(set (match_dup 0)
                    (match_dup 1))
               (clobber (reg:CC REG_CC))])])
-
-
-;; Try optimize decrement-and-branch.  When we have an addition followed
-;; by a comparison of the result against zero, we can output the addition
-;; in such a way that SREG.N and SREG.Z are set according to the result.
-
-;; { -1, +1 } for QImode, otherwise the empty set.
-(define_mode_attr p1m1 [(QI "N P")
-                        (HI "Yxx") (PSI "Yxx") (SI "Yxx")])
-
-;; FIXME: reload1.cc::do_output_reload() does not support output reloads
-;; for JUMP_INSNs, hence letting combine doing decrement-and-branch like
-;; the following might run into ICE.  Doing reloads by hand is too painful...
-;
-; (define_insn_and_split "*add.for.eqne.<mode>.cbranch"
-;   [(set (pc)
-;         (if_then_else (eqne (match_operand:QISI 1 "register_operand"  "0")
-;                             (match_operand:QISI 2 "const_int_operand" "n"))
-;                       (label_ref (match_operand 4))
-;                       (pc)))
-;    (set (match_operand:QISI 0 "register_operand" "=r")
-;         (plus:QISI (match_dup 1)
-;                    (match_operand:QISI 3 "const_int_operand" "n")))]
-;   ;; No clobber for now as combine might not have one handy.
-;   ;; We pop a scatch in split1.
-;   "!reload_completed
-;    && const0_rtx == simplify_binary_operation (PLUS, <MODE>mode,
-;                                                operands[2], operands[3])"
-;   { gcc_unreachable(); }
-;   "&& 1"
-;   [(parallel [(set (pc)
-;                    (if_then_else (eqne (match_dup 1)
-;                                        (match_dup 2))
-;                                  (label_ref (match_dup 4))
-;                                  (pc)))
-;               (set (match_dup 0)
-;                    (plus:QISI (match_dup 1)
-;                               (match_dup 3)))
-;               (clobber (scratch:QI))])])
-;
-;; ...Hence, stick with RTL peepholes for now.  Unfortunately, there is no
-;; canonical form, and if reload shuffles registers around, we might miss
-;; opportunities to match a decrement-and-branch.
-;; doloop_end doesn't reload either, so doloop_end also won't work.
-
-(define_expand "gen_add_for_<code>_<mode>"
-  ; "*add.for.eqne.<mode>"
-  [(parallel [(set (reg:CC REG_CC)
-                   (compare:CC (plus:QISI (match_operand:QISI 0 "register_operand")
-                                          (match_operand:QISI 1 "const_int_operand"))
-                               (const_int 0)))
-              (set (match_dup 0)
-                   (plus:QISI (match_dup 0)
-                              (match_dup 1)))
-              (clobber (match_operand:QI 3))])
-   ; "branch"
-   (set (pc)
-        (if_then_else (eqne (reg:CC REG_CC)
-                            (const_int 0))
-                      (label_ref (match_dup 2))
-                      (pc)))])
-
-
-;; 1/3: A version without clobber: d-reg or 8-bit adds +/-1.
-(define_peephole2
-  [(parallel [(set (match_operand:QISI 0 "register_operand")
-                   (plus:QISI (match_dup 0)
-                              (match_operand:QISI 1 "const_int_operand")))
-              (clobber (reg:CC REG_CC))])
-   (set (reg:CC REG_CC)
-        (compare:CC (match_dup 0)
-                    (const_int 0)))
-   (set (pc)
-        (if_then_else (eqne (reg:CC REG_CC)
-                            (const_int 0))
-                      (label_ref (match_operand 2))
-                      (pc)))]
-  "peep2_regno_dead_p (3, REG_CC)
-   && (d_register_operand (operands[0], <MODE>mode)
-       || (<MODE>mode == QImode
-           && (INTVAL (operands[1]) == 1
-               || INTVAL (operands[1]) == -1)))"
-  [(scratch)]
-  {
-    emit (gen_gen_add_for_<code>_<mode> (operands[0], operands[1], operands[2],
-          gen_rtx_SCRATCH (QImode)));
-    DONE;
-  })
-
-;; 2/3: A version with clobber from the insn.
-(define_peephole2
-  [(parallel [(set (match_operand:QISI 0 "register_operand")
-                   (plus:QISI (match_dup 0)
-                              (match_operand:QISI 1 "const_int_operand")))
-              (clobber (match_operand:QI 3 "scratch_or_d_register_operand"))
-              (clobber (reg:CC REG_CC))])
-   (parallel [(set (reg:CC REG_CC)
-                   (compare:CC (match_dup 0)
-                               (const_int 0)))
-              (clobber (match_operand:QI 4 "scratch_or_d_register_operand"))])
-   (set (pc)
-        (if_then_else (eqne (reg:CC REG_CC)
-                            (const_int 0))
-                      (label_ref (match_operand 2))
-                      (pc)))]
-  "peep2_regno_dead_p (3, REG_CC)"
-  [(scratch)]
-  {
-    rtx scratch = REG_P (operands[3]) ? operands[3] : operands[4];
-
-    // We need either a d-register or a scratch register to clobber.
-    if (! REG_P (scratch)
-        && ! d_register_operand (operands[0], <MODE>mode)
-        && ! (QImode == <MODE>mode
-              && (INTVAL (operands[1]) == 1
-                  || INTVAL (operands[1]) == -1)))
-      {
-        FAIL;
-      }
-    emit (gen_gen_add_for_<code>_<mode> (operands[0], operands[1], operands[2],
-          scratch));
-    DONE;
-  })
-
-;; 3/3 A version with a clobber from peephole2.
-(define_peephole2
-  [(match_scratch:QI 3 "d")
-   (parallel [(set (match_operand:QISI 0 "register_operand")
-                   (plus:QISI (match_dup 0)
-                              (match_operand:QISI 1 "const_int_operand")))
-              (clobber (reg:CC REG_CC))])
-   (set (reg:CC REG_CC)
-        (compare:CC (match_dup 0)
-                    (const_int 0)))
-   (set (pc)
-        (if_then_else (eqne (reg:CC REG_CC)
-                            (const_int 0))
-                      (label_ref (match_operand 2))
-                      (pc)))]
-  "peep2_regno_dead_p (3, REG_CC)"
-  [(scratch)]
-  {
-    emit (gen_gen_add_for_<code>_<mode> (operands[0], operands[1], operands[2],
-          operands[3]));
-    DONE;
-  })
-
-;; Result of the above three peepholes is an addition that also
-;; performs an EQ or NE comparison (of the result) against zero.
-;; FIXME: Using (match_dup 0) instead of operands[3/4] makes rnregs
-;; barf in regrename.cc::merge_overlapping_regs().  For now, use the
-;; fix from PR50788: Constrain as "0".
-(define_insn "*add.for.eqne.<mode>"
-  [(set (reg:CC REG_CC)
-        (compare:CC
-         (plus:QISI (match_operand:QISI 3 "register_operand"  "0,0     ,0")
-                    (match_operand:QISI 1 "const_int_operand" "n,<p1m1>,n"))
-         (const_int 0)))
-   (set (match_operand:QISI 0 "register_operand"             "=d,*r    ,r")
-        (plus:QISI (match_operand:QISI 4 "register_operand"   "0,0     ,0")
-                   (match_dup 1)))
-   (clobber (match_scratch:QI 2                              "=X,X     ,&d"))]
-  "reload_completed"
-  {
-    return avr_out_plus_set_ZN (operands, nullptr);
-  }
-  [(set_attr "adjust_len" "add_set_ZN")])
 
 
 ;; Swapping both comparison and branch condition.  This can turn difficult
