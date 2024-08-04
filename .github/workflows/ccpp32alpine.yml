@@ -1,0 +1,129 @@
+name: GCC Rust build and test (Alpine 32-bit)
+
+on:
+  push:
+    branches:
+      - trying
+      - staging
+  pull_request:
+    branches: [ master ]
+  merge_group:
+
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+
+jobs:
+  build-alpine-32bit-and-check-alpine-32bit:
+
+    env:
+      # Force locale, in particular for reproducible results re '.github/bors_log_expected_warnings' (see below).
+      LC_ALL: C.UTF-8
+
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup Alpine Linux (32-bit)
+      uses: jirutka/setup-alpine@v1
+      with:
+        arch: x86
+        packages: >
+          automake
+          autoconf
+          libtool
+          bison
+          flex
+          gmp-dev
+          mpfr-dev
+          mpc1-dev
+          build-base
+          dejagnu
+          curl
+          gcompat
+          libc6-compat
+          libc-dev
+          libc++-dev
+          cargo
+
+    # - name: Install gcc dependency    
+    #   run: |
+    #     sudo apt install gcc-multilib g++-multilib libc6-dev-i386
+    # - name: Install Rust
+    #   run: |
+    #     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=1.72.0 
+    #   shell: alpine.sh {0}
+
+    - name: Install dependencies with gcc
+      run: |
+         ./contrib/download_prerequisites
+      shell: alpine.sh {0}
+
+    - name: Configure
+      run: |
+           mkdir -p gccrs-build;
+           cd gccrs-build;
+           ../configure \
+               --host=i586-alpine-linux-musl --build=i586-alpine-linux-musl --target=i586-alpine-linux-musl \
+               --enable-languages=rust \
+               --disable-bootstrap \
+               --disable-multilib # Try to disable multilib on alpine https://github.com/conan-io/conan/issues/14307#issuecomment-1652433132
+      shell: alpine.sh {0}
+
+    - name: Build
+      run: |
+           cd gccrs-build; \
+           # Add cargo to our path quickly
+           # . "$HOME/.cargo/env";
+           make -Otarget -j $(nproc) 2>&1 | tee log
+      shell: alpine.sh {0}     
+
+    - name: Produce warning logs
+      run: |
+           cd gccrs-build
+           < log grep 'warning: ' | sort > log_warnings
+           cat log_warnings
+      shell: alpine.sh {0}
+    - name: Archive warnings logs
+      uses: actions/upload-artifact@v3
+      with:
+        name: warnings 
+        path: |
+          gccrs-build/log_warnings
+    - name: Check for new warnings
+      run: |
+           cd gccrs-build
+           < log grep 'warning: ' | sort > log_warnings
+           if diff -U0 ../.github/alpine_32bit_log_warnings log_warnings; then
+               :
+           else
+               echo 'See <https://github.com/Rust-GCC/gccrs/pull/1026>.'
+               exit 1
+           fi >&2
+      shell: alpine.sh {0}
+
+    - name: Run Tests
+      run: |
+           cd gccrs-build; \
+           make check-rust RUNTESTFLAGS="--target_board=unix\{-m32}"
+      shell: alpine.sh {0}
+
+    - name: Archive check-rust results
+      uses: actions/upload-artifact@v3
+      with:
+        name: check-rust-logs
+        path: |
+          gccrs-build/gcc/testsuite/rust/
+
+    - name: Check regressions
+      run: |
+           cd gccrs-build; \
+           if grep -e "unexpected" -e "unresolved" -e "ERROR:" gcc/testsuite/rust/rust.sum;\
+           then \
+              echo "::error title=Regression test failed::some tests are not correct"; \
+              perl -n ../.github/emit_test_errors.pl < gcc/testsuite/rust/rust.sum; \
+              exit 1; \
+            else \
+              exit 0; \
+            fi
+      shell: alpine.sh {0}
+
