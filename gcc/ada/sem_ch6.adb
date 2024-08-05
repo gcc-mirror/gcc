@@ -6432,6 +6432,25 @@ package body Sem_Ch6 is
             OldD : constant Boolean :=
                      Present (Expression (Parent (Old_Discr)));
 
+            function Has_Tagged_Limited_Partial_View
+              (Typ : Entity_Id) return Boolean;
+            --  Returns True iff Typ has a tagged limited partial view.
+
+            -------------------------------------
+            -- Has_Tagged_Limited_Partial_View --
+            -------------------------------------
+
+            function Has_Tagged_Limited_Partial_View
+              (Typ : Entity_Id) return Boolean
+            is
+               Priv : constant Entity_Id := Incomplete_Or_Partial_View (Typ);
+            begin
+               return Present (Priv)
+                 and then not Is_Incomplete_Type (Priv)
+                 and then Is_Tagged_Type (Priv)
+                 and then Limited_Present (Parent (Priv));
+            end Has_Tagged_Limited_Partial_View;
+
          begin
             if NewD or OldD then
 
@@ -6462,6 +6481,13 @@ package body Sem_Ch6 is
                  and then Nkind (Discriminant_Type (New_Discr)) =
                             N_Access_Definition
                  and then not Is_Immutably_Limited_Type
+                                (Defining_Identifier (N))
+
+                 --  Check for a case that would be awkward to handle in
+                 --  Is_Immutably_Limited_Type (because sem_aux can't
+                 --  "with" sem_util).
+
+                 and then not Has_Tagged_Limited_Partial_View
                                 (Defining_Identifier (N))
                then
                   Error_Msg_N

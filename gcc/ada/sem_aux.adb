@@ -1118,12 +1118,12 @@ package body Sem_Aux is
 
       elsif Is_Private_Type (Btype) then
 
-      --  If Ent occurs in the completion of a limited private type, then
-      --  look for the word "limited" in the full view.
+         --  If Ent occurs in the completion of a private type, then
+         --  look for the word "limited" in the full view.
 
          if Nkind (Parent (Ent)) = N_Full_Type_Declaration
-           and then Nkind (Type_Definition (Parent (Ent))) =
-                      N_Record_Definition
+           and then Nkind (Type_Definition (Parent (Ent))) in
+                      N_Record_Definition | N_Derived_Type_Definition
            and then Limited_Present (Type_Definition (Parent (Ent)))
          then
             return True;
