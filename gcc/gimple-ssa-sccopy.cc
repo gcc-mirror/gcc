@@ -92,10 +92,11 @@ along with GCC; see the file COPYING3.  If not see
      Braun, Buchwald, Hack, Leissa, Mallon, Zwinkau, 2013, LNCS vol. 7791,
      Section 3.2.  */
 
+namespace {
+
 /* Bitmap tracking statements which were propagated to be removed at the end of
    the pass.  */
 
-namespace {
 static bitmap dead_stmts;
 
 /* State of vertex during SCC discovery.
