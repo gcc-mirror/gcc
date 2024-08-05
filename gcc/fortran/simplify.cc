@@ -2493,13 +2493,23 @@ simplify_dshift (gfc_expr *arg1, gfc_expr *arg2, gfc_expr *shiftarg,
 {
   gfc_expr *result;
   int i, k, size, shift;
+  bt type = BT_INTEGER;
 
   if (arg1->expr_type != EXPR_CONSTANT || arg2->expr_type != EXPR_CONSTANT
       || shiftarg->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  k = gfc_validate_kind (BT_INTEGER, arg1->ts.kind, false);
-  size = gfc_integer_kinds[k].bit_size;
+  if (flag_unsigned && arg1->ts.type == BT_UNSIGNED)
+    {
+      k = gfc_validate_kind (BT_UNSIGNED, arg1->ts.kind, false);
+      size = gfc_unsigned_kinds[k].bit_size;
+      type = BT_UNSIGNED;
+    }
+  else
+    {
+      k = gfc_validate_kind (BT_INTEGER, arg1->ts.kind, false);
+      size = gfc_integer_kinds[k].bit_size;
+    }
 
   gfc_extract_int (shiftarg, &shift);
 
@@ -2507,7 +2517,7 @@ simplify_dshift (gfc_expr *arg1, gfc_expr *arg2, gfc_expr *shiftarg,
   if (right)
     shift = size - shift;
 
-  result = gfc_get_constant_expr (BT_INTEGER, arg1->ts.kind, &arg1->where);
+  result = gfc_get_constant_expr (type, arg1->ts.kind, &arg1->where);
   mpz_set_ui (result->value.integer, 0);
 
   for (i = 0; i < shift; i++)
@@ -2518,8 +2528,11 @@ simplify_dshift (gfc_expr *arg1, gfc_expr *arg2, gfc_expr *shiftarg,
     if (mpz_tstbit (arg1->value.integer, i))
       mpz_setbit (result->value.integer, shift + i);
 
-  /* Convert to a signed value.  */
-  gfc_convert_mpz_to_signed (result->value.integer, size);
+  /* Convert to a signed value if needed.  */
+  if (type == BT_INTEGER)
+    gfc_convert_mpz_to_signed (result->value.integer, size);
+  else
+    gfc_reduce_unsigned (result);
 
   return result;
 }
@@ -3448,13 +3461,18 @@ gfc_simplify_ibclr (gfc_expr *x, gfc_expr *y)
       result->representation.string = NULL;
     }
 
-  gfc_convert_mpz_to_unsigned (result->value.integer,
-			   gfc_integer_kinds[k].bit_size);
+  if (x->ts.type == BT_INTEGER)
+    {
+      gfc_convert_mpz_to_unsigned (result->value.integer,
+				   gfc_integer_kinds[k].bit_size);
 
-  mpz_clrbit (result->value.integer, pos);
+      mpz_clrbit (result->value.integer, pos);
 
-  gfc_convert_mpz_to_signed (result->value.integer,
-			 gfc_integer_kinds[k].bit_size);
+      gfc_convert_mpz_to_signed (result->value.integer,
+				 gfc_integer_kinds[k].bit_size);
+    }
+  else
+    mpz_clrbit (result->value.integer, pos);
 
   return result;
 }
@@ -3479,9 +3497,13 @@ gfc_simplify_ibits (gfc_expr *x, gfc_expr *y, gfc_expr *z)
   gfc_extract_int (y, &pos);
   gfc_extract_int (z, &len);
 
-  k = gfc_validate_kind (BT_INTEGER, x->ts.kind, false);
+  k = gfc_validate_kind (x->ts.type, x->ts.kind, false);
 
-  bitsize = gfc_integer_kinds[k].bit_size;
+  if (x->ts.type == BT_INTEGER)
+    bitsize = gfc_integer_kinds[k].bit_size;
+  else
+    bitsize = gfc_unsigned_kinds[k].bit_size;
+    
 
   if (pos + len > bitsize)
     {
@@ -3491,8 +3513,10 @@ gfc_simplify_ibits (gfc_expr *x, gfc_expr *y, gfc_expr *z)
     }
 
   result = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
-  gfc_convert_mpz_to_unsigned (result->value.integer,
-			   gfc_integer_kinds[k].bit_size);
+
+  if (x->ts.type == BT_INTEGER)
+    gfc_convert_mpz_to_unsigned (result->value.integer,
+				 gfc_integer_kinds[k].bit_size);
 
   bits = XCNEWVEC (int, bitsize);
 
@@ -3514,8 +3538,9 @@ gfc_simplify_ibits (gfc_expr *x, gfc_expr *y, gfc_expr *z)
 
   free (bits);
 
-  gfc_convert_mpz_to_signed (result->value.integer,
-			 gfc_integer_kinds[k].bit_size);
+  if (x->ts.type == BT_INTEGER)
+    gfc_convert_mpz_to_signed (result->value.integer,
+			       gfc_integer_kinds[k].bit_size);
 
   return result;
 }
@@ -3546,13 +3571,18 @@ gfc_simplify_ibset (gfc_expr *x, gfc_expr *y)
       result->representation.string = NULL;
     }
 
-  gfc_convert_mpz_to_unsigned (result->value.integer,
-			   gfc_integer_kinds[k].bit_size);
+  if (x->ts.type == BT_INTEGER)
+    {
+      gfc_convert_mpz_to_unsigned (result->value.integer,
+				   gfc_integer_kinds[k].bit_size);
 
-  mpz_setbit (result->value.integer, pos);
+      mpz_setbit (result->value.integer, pos);
 
-  gfc_convert_mpz_to_signed (result->value.integer,
-			 gfc_integer_kinds[k].bit_size);
+      gfc_convert_mpz_to_signed (result->value.integer,
+				 gfc_integer_kinds[k].bit_size);
+    }
+  else
+    mpz_setbit (result->value.integer, pos);
 
   return result;
 }

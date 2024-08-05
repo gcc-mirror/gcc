@@ -913,14 +913,20 @@ static bool
 less_than_bitsizekind (const char *arg, gfc_expr *expr, int k)
 {
   int i, val;
+  int bit_size;
 
   if (expr->expr_type != EXPR_CONSTANT)
     return true;
 
-  i = gfc_validate_kind (BT_INTEGER, k, false);
+  i = gfc_validate_kind (expr->ts.type, k, false);
   gfc_extract_int (expr, &val);
 
-  if (val > gfc_integer_kinds[i].bit_size)
+  if (expr->ts.type == BT_INTEGER)
+    bit_size = gfc_integer_kinds[i].bit_size;
+  else
+    bit_size = gfc_unsigned_kinds[i].bit_size;
+
+  if (val > bit_size)
     {
       gfc_error ("%qs at %L must be less than or equal to the BIT_SIZE of "
 		 "INTEGER(KIND=%d)", arg, &expr->where, k);
@@ -939,14 +945,21 @@ less_than_bitsize2 (const char *arg1, gfc_expr *expr1, const char *arg2,
 	       gfc_expr *expr2, const char *arg3, gfc_expr *expr3)
 {
   int i2, i3;
+  int k, bit_size;
 
   if (expr2->expr_type == EXPR_CONSTANT && expr3->expr_type == EXPR_CONSTANT)
     {
       gfc_extract_int (expr2, &i2);
       gfc_extract_int (expr3, &i3);
       i2 += i3;
-      i3 = gfc_validate_kind (BT_INTEGER, expr1->ts.kind, false);
-      if (i2 > gfc_integer_kinds[i3].bit_size)
+      k = gfc_validate_kind (expr1->ts.type, expr1->ts.kind, false);
+
+      if (expr1->ts.type == BT_INTEGER)
+	bit_size = gfc_integer_kinds[k].bit_size;
+      else
+	bit_size = gfc_unsigned_kinds[k].bit_size;
+
+      if (i2 > bit_size)
 	{
 	  gfc_error ("%<%s + %s%> at %L must be less than or equal "
 		     "to BIT_SIZE(%qs)",
@@ -2822,33 +2835,54 @@ gfc_check_dshift (gfc_expr *i, gfc_expr *j, gfc_expr *shift)
   if (!boz_args_check (i, j))
     return false;
 
-  /* If i is BOZ and j is integer, convert i to type of j.  If j is not
-     an integer, clear the BOZ; otherwise, check that i is an integer.  */
   if (i->ts.type == BT_BOZ)
     {
-      if (j->ts.type != BT_INTEGER)
-        reset_boz (i);
-      else if (!gfc_boz2int (i, j->ts.kind))
-	return false;
-    }
-  else if (!type_check (i, 0, BT_INTEGER))
-    {
-      if (j->ts.type == BT_BOZ)
-	reset_boz (j);
-      return false;
+      if (j->ts.type == BT_INTEGER)
+	{
+	  if (!gfc_boz2int (i, j->ts.kind))
+	    return false;
+	}
+      else if (flag_unsigned && j->ts.type == BT_UNSIGNED)
+	{
+	  if (!gfc_boz2uint (i, j->ts.kind))
+	    return false;
+	}
+      else
+	reset_boz (i);
     }
 
-  /* If j is BOZ and i is integer, convert j to type of i.  If i is not
-     an integer, clear the BOZ; otherwise, check that i is an integer.  */
   if (j->ts.type == BT_BOZ)
     {
-      if (i->ts.type != BT_INTEGER)
-        reset_boz (j);
-      else if (!gfc_boz2int (j, i->ts.kind))
+      if (i->ts.type == BT_INTEGER)
+	{
+	  if (!gfc_boz2int (j, i->ts.kind))
+	    return false;
+	}
+      else if (flag_unsigned && i->ts.type == BT_UNSIGNED)
+	{
+	  if (!gfc_boz2uint (j, i->ts.kind))
+	    return false;
+	}
+      else
+	reset_boz (j);
+    }
+
+  if (flag_unsigned)
+    {
+      if (!type_check2 (i, 0, BT_INTEGER, BT_UNSIGNED))
+	return false;
+
+      if (!type_check2 (j, 1, BT_INTEGER, BT_UNSIGNED))
 	return false;
     }
-  else if (!type_check (j, 1, BT_INTEGER))
-    return false;
+  else
+    {
+      if (!type_check (i, 0, BT_INTEGER))
+	return false;
+
+      if (!type_check (j, 1, BT_INTEGER))
+	return false;
+    }
 
   if (!same_type_check (i, 0, j, 1))
     return false;
@@ -3231,8 +3265,16 @@ gfc_check_iand_ieor_ior (gfc_expr *i, gfc_expr *j)
 bool
 gfc_check_ibits (gfc_expr *i, gfc_expr *pos, gfc_expr *len)
 {
-  if (!type_check (i, 0, BT_INTEGER))
-    return false;
+  if (flag_unsigned)
+    {
+      if (!type_check2 (i, 0, BT_INTEGER, BT_UNSIGNED))
+	return false;
+    }
+  else
+    {
+      if (!type_check (i, 0, BT_INTEGER))
+	return false;
+    }
 
   if (!type_check (pos, 1, BT_INTEGER))
     return false;

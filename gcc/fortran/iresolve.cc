@@ -895,11 +895,13 @@ void
 gfc_resolve_dshift (gfc_expr *f, gfc_expr *i, gfc_expr *j ATTRIBUTE_UNUSED,
 		    gfc_expr *shift ATTRIBUTE_UNUSED)
 {
+  char c = i->ts.type == BT_INTEGER ? 'i' : 'u';
+
   f->ts = i->ts;
   if (f->value.function.isym->id == GFC_ISYM_DSHIFTL)
-    f->value.function.name = gfc_get_string ("dshiftl_i%d", f->ts.kind);
+    f->value.function.name = gfc_get_string ("dshiftl_%c%d", c, f->ts.kind);
   else if (f->value.function.isym->id == GFC_ISYM_DSHIFTR)
-    f->value.function.name = gfc_get_string ("dshiftr_i%d", f->ts.kind);
+    f->value.function.name = gfc_get_string ("dshiftr_%c%d", c, f->ts.kind);
   else
     gcc_unreachable ();
 }
@@ -1182,6 +1184,7 @@ gfc_resolve_iand (gfc_expr *f, gfc_expr *i, gfc_expr *j)
   /* If the kind of i and j are different, then g77 cross-promoted the
      kinds to the largest value.  The Fortran 95 standard requires the
      kinds to match.  */
+
   if (i->ts.kind != j->ts.kind)
     {
       if (i->ts.kind == gfc_kind_max (i, j))
@@ -1191,7 +1194,8 @@ gfc_resolve_iand (gfc_expr *f, gfc_expr *i, gfc_expr *j)
     }
 
   f->ts = i->ts;
-  f->value.function.name = gfc_get_string ("__iand_%d", i->ts.kind);
+  const char *name = i->ts.kind == BT_UNSIGNED ? "__iand_u_%d" : "__iand_%d";
+  f->value.function.name = gfc_get_string (name, i->ts.kind);
 }
 
 
@@ -1206,7 +1210,8 @@ void
 gfc_resolve_ibclr (gfc_expr *f, gfc_expr *i, gfc_expr *pos ATTRIBUTE_UNUSED)
 {
   f->ts = i->ts;
-  f->value.function.name = gfc_get_string ("__ibclr_%d", i->ts.kind);
+  const char *name = i->ts.kind == BT_UNSIGNED ? "__ibclr_u_%d" : "__ibclr_%d";
+  f->value.function.name = gfc_get_string (name, i->ts.kind);
 }
 
 
@@ -1215,7 +1220,8 @@ gfc_resolve_ibits (gfc_expr *f, gfc_expr *i, gfc_expr *pos ATTRIBUTE_UNUSED,
 		   gfc_expr *len ATTRIBUTE_UNUSED)
 {
   f->ts = i->ts;
-  f->value.function.name = gfc_get_string ("__ibits_%d", i->ts.kind);
+  const char *name = i->ts.kind == BT_UNSIGNED ? "__ibits_u_%d" : "__ibits_%d";
+  f->value.function.name = gfc_get_string (name, i->ts.kind);
 }
 
 
@@ -1223,7 +1229,8 @@ void
 gfc_resolve_ibset (gfc_expr *f, gfc_expr *i, gfc_expr *pos ATTRIBUTE_UNUSED)
 {
   f->ts = i->ts;
-  f->value.function.name = gfc_get_string ("__ibset_%d", i->ts.kind);
+  const char *name = i->ts.kind == BT_UNSIGNED ? "__ibset_u_%d" : "__ibset_%d";
+  f->value.function.name = gfc_get_string (name, i->ts.kind);
 }
 
 
@@ -1273,6 +1280,7 @@ gfc_resolve_ieor (gfc_expr *f, gfc_expr *i, gfc_expr *j)
   /* If the kind of i and j are different, then g77 cross-promoted the
      kinds to the largest value.  The Fortran 95 standard requires the
      kinds to match.  */
+
   if (i->ts.kind != j->ts.kind)
     {
       if (i->ts.kind == gfc_kind_max (i, j))
@@ -1281,8 +1289,9 @@ gfc_resolve_ieor (gfc_expr *f, gfc_expr *i, gfc_expr *j)
 	gfc_convert_type (i, &j->ts, 2);
     }
 
+  const char *name = i->ts.kind == BT_UNSIGNED ? "__ieor_u_%d" : "__ieor_%d";
   f->ts = i->ts;
-  f->value.function.name = gfc_get_string ("__ieor_%d", i->ts.kind);
+  f->value.function.name = gfc_get_string (name, i->ts.kind);
 }
 
 
@@ -1292,6 +1301,7 @@ gfc_resolve_ior (gfc_expr *f, gfc_expr *i, gfc_expr *j)
   /* If the kind of i and j are different, then g77 cross-promoted the
      kinds to the largest value.  The Fortran 95 standard requires the
      kinds to match.  */
+
   if (i->ts.kind != j->ts.kind)
     {
       if (i->ts.kind == gfc_kind_max (i, j))
@@ -1300,8 +1310,9 @@ gfc_resolve_ior (gfc_expr *f, gfc_expr *i, gfc_expr *j)
 	gfc_convert_type (i, &j->ts, 2);
     }
 
+  const char *name = i->ts.kind == BT_UNSIGNED ? "__ior_u_%d" : "__ior_%d";
   f->ts = i->ts;
-  f->value.function.name = gfc_get_string ("__ior_%d", i->ts.kind);
+  f->value.function.name = gfc_get_string (name, i->ts.kind);
 }
 
 
@@ -2225,7 +2236,8 @@ void
 gfc_resolve_not (gfc_expr *f, gfc_expr *i)
 {
   f->ts = i->ts;
-  f->value.function.name = gfc_get_string ("__not_%d", i->ts.kind);
+  const char *name = i->ts.kind == BT_UNSIGNED ? "__not_u_%d" : "__not_%d";
+  f->value.function.name = gfc_get_string (name, i->ts.kind);
 }
 
 

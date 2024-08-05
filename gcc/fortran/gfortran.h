@@ -3474,7 +3474,7 @@ arith gfc_check_integer_range (mpz_t p, int kind);
 arith gfc_check_unsigned_range (mpz_t p, int kind);
 bool gfc_check_character_range (gfc_char_t, int);
 const char *gfc_arith_error (arith);
-void gfc_reduce_unigned (gfc_expr *e);
+void gfc_reduce_unsigned (gfc_expr *e);
 
 extern bool gfc_seen_div0;
 
