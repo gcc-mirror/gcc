@@ -1591,12 +1591,18 @@ They have C linkage and do not throw exceptions.
 @menu
 * omp_get_num_procs::           Number of processors online
 @c * omp_get_max_progress_width:: <fixme>/TR11
+@c * omp_get_device_from_uid::  <fixme>/TR13
+@c * omp_get_uid_from_device::  <fixme>/TR13
 * omp_set_default_device::      Set the default device for target regions
 * omp_get_default_device::      Get the default device for target regions
 * omp_get_num_devices::         Number of target devices
 * omp_get_device_num::          Get device that current thread is running on
 * omp_is_initial_device::       Whether executing on the host device
 * omp_get_initial_device::      Device number of host device
+@c * omp_get_device_num_teams::  <fixme>/TR13
+@c * omp_set_device_num_teams::  <fixme>/TR13
+@c * omp_get_device_teams_thread_limit::  <fixme>/TR13
+@c * omp_set_device_teams_thread_limit::  <fixme>/TR13
 @end menu
 
 
@@ -2813,8 +2819,27 @@ Routines to manage and allocate memory on the current device.
 They have C linkage and do not throw exceptions.
 
 @menu
+@c * omp_get_devices_memspace:: <fixme>/TR13
+@c * omp_get_device_memspace:: <fixme>/TR13
+@c * omp_get_devices_and_host_memspace:: <fixme>/TR13
+@c * omp_get_device_and_host_memspace:: <fixme>/TR13
+@c * omp_get_devices_all_memspace:: <fixme>/TR13
+@c * omp_get_memspace_num_resources:: <fixme>/TR11
+@c * omp_get_memspace_pagesize:: <fixme>/TR13
+@c * omp_get_submemspace:: <fixme>/TR11
+@c * omp_init_mempartitioner:: <fixme>/TR13
+@c * omp_destroy_mempartitioner:: <fixme>/TR13
+@c * omp_init_mempartition:: <fixme>/TR13
+@c * omp_destroy_mempartition:: <fixme>/TR13
+@c * omp_mempartition_set_part:: <fixme>/TR13
+@c * omp_mempartition_get_user_data:: <fixme>/TR13
 * omp_init_allocator:: Create an allocator
 * omp_destroy_allocator:: Destroy an allocator
+@c * omp_get_devices_allocator:: <fixme>/TR13
+@c * omp_get_device_allocator:: <fixme>/TR13
+@c * omp_get_devices_and_host_allocator:: <fixme>/TR13
+@c * omp_get_device_and_host_allocator:: <fixme>/TR13
+@c * omp_get_devices_all_allocator:: <fixme>/TR13
 * omp_set_default_allocator:: Set the default allocator
 * omp_get_default_allocator:: Get the default allocator
 * omp_alloc:: Memory allocation with an allocator
@@ -2823,8 +2848,6 @@ They have C linkage and do not throw exceptions.
 * omp_calloc:: Allocate nullified memory with an allocator
 * omp_aligned_calloc:: Allocate nullified aligned memory with an allocator
 * omp_realloc:: Reallocate memory allocated with OpenMP routines
-@c * omp_get_memspace_num_resources:: <fixme>/TR11
-@c * omp_get_submemspace:: <fixme>/TR11
 @end menu
 
 
