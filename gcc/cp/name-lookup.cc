@@ -51,8 +51,8 @@ enum binding_slots
 {
  BINDING_SLOT_CURRENT,	/* Slot for current TU.  */
  BINDING_SLOT_GLOBAL,	/* Slot for merged global module. */
- BINDING_SLOT_PARTITION, /* Slot for merged partition entities
-			    (optional).  */
+ BINDING_SLOT_PARTITION, /* Slot for merged partition entities or
+			    imported friends.  */
 
  /* Number of always-allocated slots.  */
  BINDING_SLOTS_FIXED = BINDING_SLOT_GLOBAL + 1
@@ -248,9 +248,10 @@ get_fixed_binding_slot (tree *slot, tree name, unsigned ix, int create)
       if (!create)
 	return NULL;
 
-      /* The partition slot is only needed when we're a named
-	 module.  */
-      bool partition_slot = named_module_p ();
+      /* The partition slot is always needed, in case we have imported
+	 temploid friends with attachment different from the module we
+	 imported them from.  */
+      bool partition_slot = true;
       unsigned want = ((BINDING_SLOTS_FIXED + partition_slot + (create < 0)
 			+ BINDING_VECTOR_SLOTS_PER_CLUSTER - 1)
 		       / BINDING_VECTOR_SLOTS_PER_CLUSTER);
@@ -937,7 +938,6 @@ name_lookup::search_namespace_only (tree scope)
 		   stat_hack, then everything was exported.  */
 		tree type = NULL_TREE;
 
-
 		/* If STAT_HACK_P is false, everything is visible, and
 		   there's no duplication possibilities.  */
 		if (STAT_HACK_P (bind))
@@ -947,9 +947,9 @@ name_lookup::search_namespace_only (tree scope)
 			/* Do we need to engage deduplication?  */
 			int dup = 0;
 			if (MODULE_BINDING_GLOBAL_P (bind))
-			  dup = 1;
-			else if (MODULE_BINDING_PARTITION_P (bind))
-			  dup = 2;
+			  dup |= 1;
+			if (MODULE_BINDING_PARTITION_P (bind))
+			  dup |= 2;
 			if (unsigned hit = dup_detect & dup)
 			  {
 			    if ((hit & 1 && BINDING_VECTOR_GLOBAL_DUPS_P (val))
@@ -1275,9 +1275,9 @@ name_lookup::adl_namespace_fns (tree scope, bitmap imports)
 			/* Do we need to engage deduplication?  */
 			int dup = 0;
 			if (MODULE_BINDING_GLOBAL_P (bind))
-			  dup = 1;
-			else if (MODULE_BINDING_PARTITION_P (bind))
-			  dup = 2;
+			  dup |= 1;
+			if (MODULE_BINDING_PARTITION_P (bind))
+			  dup |= 2;
 			if (unsigned hit = dup_detect & dup)
 			  if ((hit & 1 && BINDING_VECTOR_GLOBAL_DUPS_P (val))
 			      || (hit & 2
@@ -3758,6 +3758,9 @@ check_module_override (tree decl, tree mvec, bool hiding,
   binding_cluster *cluster = BINDING_VECTOR_CLUSTER_BASE (mvec);
   unsigned ix = BINDING_VECTOR_NUM_CLUSTERS (mvec);
 
+  tree nontmpl = STRIP_TEMPLATE (decl);
+  bool attached = DECL_LANG_SPECIFIC (nontmpl) && DECL_MODULE_ATTACH_P (nontmpl);
+
   if (BINDING_VECTOR_SLOTS_PER_CLUSTER == BINDING_SLOTS_FIXED)
     {
       cluster++;
@@ -3819,7 +3822,7 @@ check_module_override (tree decl, tree mvec, bool hiding,
     {
       /* Look in the appropriate mergeable decl slot.  */
       tree mergeable = NULL_TREE;
-      if (named_module_p ())
+      if (attached)
 	mergeable = BINDING_VECTOR_CLUSTER (mvec, BINDING_SLOT_PARTITION
 					   / BINDING_VECTOR_SLOTS_PER_CLUSTER)
 	  .slots[BINDING_SLOT_PARTITION % BINDING_VECTOR_SLOTS_PER_CLUSTER];
@@ -3839,15 +3842,13 @@ check_module_override (tree decl, tree mvec, bool hiding,
  matched:
   if (match != error_mark_node)
     {
-      if (named_module_p ())
+      if (attached)
 	BINDING_VECTOR_PARTITION_DUPS_P (mvec) = true;
       else
 	BINDING_VECTOR_GLOBAL_DUPS_P (mvec) = true;
     }
 
   return match;
-
-  
 }
 
 /* Record DECL as belonging to the current lexical scope.  Check for
@@ -4300,7 +4301,9 @@ walk_module_binding (tree binding, bitmap partitions,
 	  cluster++;
 	}
 
-      bool maybe_dups = BINDING_VECTOR_PARTITION_DUPS_P (binding);
+      /* There could be duplicate module or GMF entries.  */
+      bool maybe_dups = (BINDING_VECTOR_PARTITION_DUPS_P (binding)
+			 || BINDING_VECTOR_GLOBAL_DUPS_P (binding));
 
       for (; ix--; cluster++)
 	for (unsigned jx = 0; jx != BINDING_VECTOR_SLOTS_PER_CLUSTER; jx++)
@@ -4394,14 +4397,14 @@ import_module_binding  (tree ns, tree name, unsigned mod, unsigned snum)
 }
 
 /* An import of MODULE is binding NS::NAME.  There should be no
-   existing binding for >= MODULE.  MOD_GLOB indicates whether MODULE
-   is a header_unit (-1) or part of the current module (+1).  VALUE
-   and TYPE are the value and type bindings. VISIBLE are the value
-   bindings being exported.  */
+   existing binding for >= MODULE.  GLOBAL_P indicates whether the
+   bindings include global module entities.  PARTITION_P is true if
+   it is part of the current module. VALUE and TYPE are the value
+   and type bindings. VISIBLE are the value bindings being exported.  */
 
 bool
-set_module_binding (tree ns, tree name, unsigned mod, int mod_glob,
-		    tree value, tree type, tree visible)
+set_module_binding (tree ns, tree name, unsigned mod, bool global_p,
+		    bool partition_p, tree value, tree type, tree visible)
 {
   if (!value)
     /* Bogus BMIs could give rise to nothing to bind.  */
@@ -4419,19 +4422,19 @@ set_module_binding (tree ns, tree name, unsigned mod, int mod_glob,
     return false;
 
   tree bind = value;
-  if (type || visible != bind || mod_glob)
+  if (type || visible != bind || partition_p || global_p)
     {
       bind = stat_hack (bind, type);
       STAT_VISIBLE (bind) = visible;
-      if ((mod_glob > 0 && TREE_PUBLIC (ns))
+      if ((partition_p && TREE_PUBLIC (ns))
 	  || (type && DECL_MODULE_EXPORT_P (type)))
 	STAT_TYPE_VISIBLE_P (bind) = true;
     }
 
-  /* Note if this is this-module or global binding.  */
-  if (mod_glob > 0)
+  /* Note if this is this-module and/or global binding.  */
+  if (partition_p)
     MODULE_BINDING_PARTITION_P (bind) = true;
-  else if (mod_glob < 0)
+  if (global_p)
     MODULE_BINDING_GLOBAL_P (bind) = true;
 
   *mslot = bind;
@@ -4540,10 +4543,8 @@ lookup_imported_hidden_friend (tree friend_tmpl)
       || !DECL_MODULE_IMPORT_P (inner))
     return NULL_TREE;
 
-  /* Imported temploid friends are not considered as attached to this
-     module for merging purposes.  */
-  tree bind = get_mergeable_namespace_binding (current_namespace,
-					       DECL_NAME (inner), false);
+  tree bind = get_mergeable_namespace_binding
+    (current_namespace, DECL_NAME (inner), DECL_MODULE_ATTACH_P (inner));
   if (!bind)
     return NULL_TREE;
 

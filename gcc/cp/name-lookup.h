@@ -484,7 +484,7 @@ extern tree lookup_class_binding (tree ctx, tree name);
 extern bool import_module_binding (tree ctx, tree name, unsigned mod,
 				   unsigned snum);
 extern bool set_module_binding (tree ctx, tree name, unsigned mod,
-				int mod_glob_flag,
+				bool global_p, bool partition_p,
 				tree value, tree type, tree visible);
 extern void add_module_namespace_decl (tree ns, tree decl);
 

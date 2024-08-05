@@ -1,8 +1,8 @@
 // { dg-additional-options "-fmodules-ts" }
 
 // 'import X' does not correctly notice that S has already been declared.
-struct S {};  // { dg-message "previously declared" "" { xfail *-*-* } }
-template <typename> struct T {};  // { dg-message "previously declared" }
+struct S {};  // { dg-message "previous declaration" "" { xfail *-*-* } }
+template <typename> struct T {};  // { dg-message "previous declaration" }
 void f() {}  // { dg-message "previously declared" }
 template <typename T> void g() {}  // { dg-message "previously declared" }
 

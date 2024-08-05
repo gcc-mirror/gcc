@@ -2958,7 +2958,8 @@ private:
 public:
   tree decl_container ();
   tree key_mergeable (int tag, merge_kind, tree decl, tree inner, tree type,
-		      tree container, bool is_attached);
+		      tree container, bool is_attached,
+		      bool is_imported_temploid_friend);
   unsigned binfo_mergeable (tree *);
 
 private:
@@ -7806,6 +7807,7 @@ trees_out::decl_value (tree decl, depset *dep)
 		       || !TYPE_PTRMEMFUNC_P (TREE_TYPE (decl)));
 
   merge_kind mk = get_merge_kind (decl, dep);
+  bool is_imported_temploid_friend = imported_temploid_friends->get (decl);
 
   if (CHECKING_P)
     {
@@ -7841,13 +7843,11 @@ trees_out::decl_value (tree decl, depset *dep)
 		  && DECL_MODULE_ATTACH_P (not_tmpl))
 		is_attached = true;
 
-	      /* But don't consider imported temploid friends as attached,
-		 since importers will need to merge this decl even if it was
-		 attached to a different module.  */
-	      if (imported_temploid_friends->get (decl))
-		is_attached = false;
-
 	      bits.b (is_attached);
+
+	      /* Also tell the importer whether this is an imported temploid
+		 friend, which has implications for merging.  */
+	      bits.b (is_imported_temploid_friend);
 	    }
 	  bits.b (dep && dep->has_defn ());
 	}
@@ -8024,13 +8024,12 @@ trees_out::decl_value (tree decl, depset *dep)
 	}
     }
 
-  if (TREE_CODE (inner) == FUNCTION_DECL
-      || TREE_CODE (inner) == TYPE_DECL)
+  if (is_imported_temploid_friend)
     {
       /* Write imported temploid friends so that importers can reconstruct
 	 this information on stream-in.  */
       tree* slot = imported_temploid_friends->get (decl);
-      tree_node (slot ? *slot : NULL_TREE);
+      tree_node (*slot);
     }
 
   bool is_typedef = false;
@@ -8109,6 +8108,7 @@ trees_in::decl_value ()
 {
   int tag = 0;
   bool is_attached = false;
+  bool is_imported_temploid_friend = false;
   bool has_defn = false;
   unsigned mk_u = u ();
   if (mk_u >= MK_hwm || !merge_kind_name[mk_u])
@@ -8129,7 +8129,10 @@ trees_in::decl_value ()
 	{
 	  bits_in bits = stream_bits ();
 	  if (!(mk & MK_template_mask) && !state->is_header ())
-	    is_attached = bits.b ();
+	    {
+	      is_attached = bits.b ();
+	      is_imported_temploid_friend = bits.b ();
+	    }
 
 	  has_defn = bits.b ();
 	}
@@ -8234,7 +8237,7 @@ trees_in::decl_value ()
     parm_tag = fn_parms_init (inner);
 
   tree existing = key_mergeable (tag, mk, decl, inner, type, container,
-				 is_attached);
+				 is_attached, is_imported_temploid_friend);
   tree existing_inner = existing;
   if (existing)
     {
@@ -8339,8 +8342,7 @@ trees_in::decl_value ()
 	}
     }
 
-  if (TREE_CODE (inner) == FUNCTION_DECL
-      || TREE_CODE (inner) == TYPE_DECL)
+  if (is_imported_temploid_friend)
     if (tree owner = tree_node ())
       if (is_new)
 	imported_temploid_friends->put (decl, owner);
@@ -11177,7 +11179,8 @@ check_mergeable_decl (merge_kind mk, tree decl, tree ovl, merge_key const &key)
 
 tree
 trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
-			 tree type, tree container, bool is_attached)
+			 tree type, tree container, bool is_attached,
+			 bool is_imported_temploid_friend)
 {
   const char *kind = "new";
   tree existing = NULL_TREE;
@@ -11319,6 +11322,7 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 
 	  case NAMESPACE_DECL:
 	    if (is_attached
+		&& !is_imported_temploid_friend
 		&& !(state->is_module () || state->is_partition ()))
 	      kind = "unique";
 	    else
@@ -11350,6 +11354,7 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	    break;
 
 	  case TYPE_DECL:
+	    gcc_checking_assert (!is_imported_temploid_friend);
 	    if (is_attached && !(state->is_module () || state->is_partition ())
 		/* Implicit member functions can come from
 		   anywhere.  */
@@ -15356,6 +15361,7 @@ module_state::read_cluster (unsigned snum)
 	    tree visible = NULL_TREE;
 	    tree type = NULL_TREE;
 	    bool dedup = false;
+	    bool global_p = false;
 
 	    /* We rely on the bindings being in the reverse order of
 	       the resulting overload set.  */
@@ -15372,6 +15378,16 @@ module_state::read_cluster (unsigned snum)
 		tree decl = sec.tree_node ();
 		if (sec.get_overrun ())
 		  break;
+
+		if (!global_p)
+		  {
+		    /* Check if the decl could require GM merging.  */
+		    tree orig = get_originating_module_decl (decl);
+		    tree inner = STRIP_TEMPLATE (orig);
+		    if (!DECL_LANG_SPECIFIC (inner)
+			|| !DECL_MODULE_ATTACH_P (inner))
+		      global_p = true;
+		  }
 
 		if (decls && TREE_CODE (decl) == TYPE_DECL)
 		  {
@@ -15459,10 +15475,8 @@ module_state::read_cluster (unsigned snum)
 	      break; /* Bail.  */
 
 	    dump () && dump ("Binding of %P", ns, name);
-	    if (!set_module_binding (ns, name, mod,
-				     is_header () ? -1
-				     : is_module () || is_partition () ? 1
-				     : 0,
+	    if (!set_module_binding (ns, name, mod, global_p,
+				     is_module () || is_partition (),
 				     decls, type, visible))
 	      sec.set_overrun ();
 	  }
