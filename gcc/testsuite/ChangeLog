@@ -1,3 +1,8 @@
+2024-08-04  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/116199
+	* gcc.dg/torture/pr116199.c: New test.
+
 2024-08-03  Steve Kargl  <kargls@comcast.net>
 
 	PR fortran/104626

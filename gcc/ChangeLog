@@ -1,3 +1,9 @@
+2024-08-04  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/116199
+	* reload.cc (operands_match_p): Verify subreg is expressable before
+	trying to simplify and match it to another operand.
+
 2024-08-02  Marek Polacek  <polacek@redhat.com>
 
 	* doc/invoke.texi: Document that -Wdangling-reference is
