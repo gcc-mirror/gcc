@@ -97,10 +97,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 14.1.0\n"
+"Project-Id-Version: gcc 14.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2024-07-25 16:23+0000\n"
-"PO-Revision-Date: 2024-05-09 14:43+0200\n"
+"PO-Revision-Date: 2024-08-03 07:39+0200\n"
 "Last-Translator: Frédéric Marchal <fmarchal@perso.be>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -37329,16 +37329,14 @@ msgid "comparison between two arrays"
 msgstr "comparaison entre deux tableaux"
 
 #: c-family/c-warn.cc:3832
-#, fuzzy, gcc-internal-format
-#| msgid "use unary %<+%> which decays operands to pointers or %<&%D[0] %s &%D[0]%> to compare the addresses"
+#, gcc-internal-format
 msgid "use unary %<+%> which decays operands to pointers or %<&%s%E%s[0] %s &%s%E%s[0]%> to compare the addresses"
-msgstr "utiliser le %<+%> unaire qui dégrade les opérandes vers des pointeurs ou %<&%D[0] %s &%D[0]%> pour comparer les adresses"
+msgstr "utiliser le %<+%> unaire qui dégrade les opérandes vers des pointeurs ou %<&%s%E%s[0] %s &%s%E%s[0]%> pour comparer les adresses"
 
 #: c-family/c-warn.cc:3839
-#, fuzzy, gcc-internal-format
-#| msgid "use %<&%D[0] %s &%D[0]%> to compare the addresses"
+#, gcc-internal-format
 msgid "use %<&%s%E%s[0] %s &%s%E%s[0]%> to compare the addresses"
-msgstr "utilisez %<&%D[0] %s &%D[0]%> pour comparer les adresses"
+msgstr "utilisez %<&%s%E%s[0] %s &%s%E%s[0]%> pour comparer les adresses"
 
 #: c-family/c-warn.cc:3901
 #, gcc-internal-format
@@ -43357,28 +43355,24 @@ msgid "capture by copy of RVV type %qT"
 msgstr "capture par copie du type RVV %qT"
 
 #: config/riscv/riscv-vector-builtins.cc:4645
-#, fuzzy, gcc-internal-format
-#| msgid "built-in function %qE requires the %qs ISA extension"
+#, gcc-internal-format
 msgid "built-in function %qE requires the zvfhmin or zvfh ISA extension"
-msgstr "la fonction interne %qE requiert l'extension ISA %qs"
+msgstr "la fonction interne %qE requiert l'extension ISA zvfhmin ou zvfh"
 
 #: config/riscv/riscv-vector-builtins.cc:4655
-#, fuzzy, gcc-internal-format
-#| msgid "%s %qT requires the zve32f, zve64f, zve64d or v ISA extension"
+#, gcc-internal-format
 msgid "built-in function %qE requires the zve32f, zve64f, zve64d or v ISA extension"
-msgstr "%s %qT requiert l'extension ISA zve32f, zve64f, zve64d ou v"
+msgstr "la fonction interne %qE requiert l'extension ISA zve32f, zve64f, zve64d ou v"
 
 #: config/riscv/riscv-vector-builtins.cc:4665
-#, fuzzy, gcc-internal-format
-#| msgid "built-in function %qE requires the %qs ISA extension"
+#, gcc-internal-format
 msgid "built-in function %qE requires the zve64d or v ISA extension"
-msgstr "la fonction interne %qE requiert l'extension ISA %qs"
+msgstr "la fonction interne %qE requiert l'extension ISA zve64d ou v"
 
 #: config/riscv/riscv-vector-builtins.cc:4674
-#, fuzzy, gcc-internal-format
-#| msgid "%s %qT requires the zve64x, zve64f, zve64d or v ISA extension"
+#, gcc-internal-format
 msgid "built-in function %qE requires the zve64x, zve64f, zve64d or v ISA extension"
-msgstr "%s %qT requiert l'extension ISA zve64x, zve64f, zve64d ou v"
+msgstr "la fonction interne %qE requiert l'extension ISA zve64x, zve64f, zve64d ou v"
 
 #: config/riscv/riscv-vector-builtins.cc:4694
 #, gcc-internal-format
@@ -44004,13 +43998,12 @@ msgstr "option inconnue pour %<%s=%s%>"
 #: config/rs6000/rs6000.cc:4833
 #, gcc-internal-format
 msgid "%<-mrop-protect%> requires %<-mcpu=power8%> or later"
-msgstr ""
+msgstr "%<-mrop-protect%> requiert %<-mcpu=power8%> ou ultérieur"
 
 #: config/rs6000/rs6000.cc:4837
-#, fuzzy, gcc-internal-format
-#| msgid "%qs requires the ELFv2 ABI"
+#, gcc-internal-format
 msgid "%<-mrop-protect%> requires the ELFv2 ABI"
-msgstr "%qs exige l'ABI ELFv2"
+msgstr "%<-mrop-protect%> exige l'ABI ELFv2"
 
 #: config/rs6000/rs6000.cc:4855
 #, gcc-internal-format
@@ -59409,54 +59402,46 @@ msgid "declaration %qD conflicts with builtin"
 msgstr "la déclaration %qD est en conflit avec la fonction interne"
 
 #: cp/module.cc:19122
-#, fuzzy, gcc-internal-format
-#| msgid "declaration %qD conflicts with import"
+#, gcc-internal-format
 msgid "redeclaring %qD in module %qs conflicts with import"
-msgstr "la déclaration %qD est en conflit avec l'import"
+msgstr "la redéclaration %qD dans le module %qs est en conflit avec l'import"
 
 #: cp/module.cc:19125
-#, fuzzy, gcc-internal-format
-#| msgid "declaration %qD conflicts with import"
+#, gcc-internal-format
 msgid "redeclaring %qD in global module conflicts with import"
-msgstr "la déclaration %qD est en conflit avec l'import"
+msgstr "la redéclaration %qD dans le module global est en conflit avec l'import"
 
 #: cp/module.cc:19130
-#, fuzzy, gcc-internal-format
-#| msgid "import declared %q#D here"
+#, gcc-internal-format
 msgid "import declared attached to module %qs"
-msgstr "l'import a déclaré %q#D ici"
+msgstr "l'import est déclaré comme étant attaché au module %qs"
 
 #: cp/module.cc:19134
-#, fuzzy, gcc-internal-format
-#| msgid "import-declaration must be at global scope"
+#, gcc-internal-format
 msgid "import declared in global module"
-msgstr "la déclaration d'import doit être dans la portée globale"
+msgstr "l'import est déclaré dans le module global"
 
 #: cp/module.cc:19140
-#, fuzzy, gcc-internal-format
-#| msgid "conflicting declaration of template %q#D"
+#, gcc-internal-format
 msgid "conflicting declaration of %qD in module %qs"
-msgstr "déclaration conflictuelle du patron %q#D"
+msgstr "déclaration conflictuelle de %qD dans le module %qs"
 
 #: cp/module.cc:19143
-#, fuzzy, gcc-internal-format
-#| msgid "conflicting declaration of %q#D with %qL linkage"
+#, gcc-internal-format
 msgid "conflicting declaration of %qD in global module"
-msgstr "déclaration conflictuelle de %q#D avec la classe de liaison %qL"
+msgstr "déclaration conflictuelle de %qD dans le module global"
 
 # la phrase fait référence à une variable ou une fonction (cf les deux messages ci-dessus) d'où le féminin
 #: cp/module.cc:19148
-#, fuzzy, gcc-internal-format
-#| msgid "previously declared as %s"
+#, gcc-internal-format
 msgid "previously declared in module %qs"
-msgstr "précédemment déclarée comme %s"
+msgstr "précédemment déclarée dans le module %qs"
 
 # la phrase fait référence à une variable ou une fonction (cf les deux messages ci-dessus) d'où le féminin
 #: cp/module.cc:19152
-#, fuzzy, gcc-internal-format
-#| msgid "previously declared as %s"
+#, gcc-internal-format
 msgid "previously declared in global module"
-msgstr "précédemment déclarée comme %s"
+msgstr "précédemment déclaré dans le module global"
 
 # le %qs est un nom de région non traduit tel que « parallel », « task », « teams ».
 #: cp/module.cc:19404
@@ -73289,7 +73274,7 @@ msgstr "check_charlen_present(): longueur non définie"
 #: fortran/iresolve.cc:3029
 #, gcc-internal-format, gfc-internal-format
 msgid "TODO: unlimited polymorphic MOLD in TRANSFER intrinsic at %L"
-msgstr ""
+msgstr "TODO: MOLD polymorphique illimité dans l'intrinsèque TRANSFER à %L"
 
 #: fortran/match.cc:118
 #, gcc-internal-format
@@ -78642,10 +78627,9 @@ msgid "Using variable %qs at %L is deprecated"
 msgstr "L'utilisation de la variable %qs à %L est obsolète"
 
 #: fortran/resolve.cc:6239 fortran/resolve.cc:6324 fortran/resolve.cc:6348
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Bad array reference at %L"
+#, gcc-internal-format, gfc-internal-format
 msgid "Invalid array reference at %L"
-msgstr "Mauvaise référence à un tableau à %L"
+msgstr "Référence invalide à un tableau à %L"
 
 #: fortran/resolve.cc:6433
 #, gcc-internal-format
