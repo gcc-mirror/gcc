@@ -2411,23 +2411,24 @@ inherit_base_contracts (tree overrider, tree basefn)
 }
 
 tree
-maybe_contract_wrap_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
-		       tree conversion_path, int flags,
-		       tree *fn_p, tsubst_flags_t complain)
+maybe_contract_wrap_new_method_call (tree fndecl, tree call)
 {
-  if (fns)
-    {
-      tree c_fns = BASELINK_FUNCTIONS (fns);
-      if (TREE_CODE (c_fns) != TEMPLATE_ID_EXPR)
-	{
-	  tree fn = OVL_FIRST (c_fns);
-	  if (!(flags & LOOKUP_NONVIRTUAL) && (DECL_VIRTUAL_P (fn)))
-	    if (has_active_preconditions (fn))
-		debug_tree( DECL_CONTRACTS (fn));
-	}
-    }
+  if (fndecl == error_mark_node) return fndecl;
 
-  return  build_new_method_call(instance, fns, args, conversion_path, flags, fn_p, complain);
+  if (!handle_contracts_p (fndecl))
+      /* We did nothing and the original function body statement list will be
+         popped by our caller.  */
+      return call;
+
+  bool do_pre = has_active_preconditions (fndecl);
+  bool do_post = has_active_postconditions (fndecl);
+
+  /* We should not have reached here with nothing to do... */
+  gcc_checking_assert (do_pre || do_post);
+
+  debug_tree(DECL_CONTRACTS (fndecl));
+
+  return  call;
 }
 
 

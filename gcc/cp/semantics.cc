@@ -3377,7 +3377,7 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
       if (BASELINK_P (member))
 	{
 	  tree object = TREE_OPERAND (fn, 0);
-	  return maybe_contract_wrap_new_method_call (object, member,
+	  return build_new_method_call (object, member,
 					args, NULL_TREE,
                                         (disallow_virtual
                                          ? LOOKUP_NORMAL | LOOKUP_NONVIRTUAL
