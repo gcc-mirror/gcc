@@ -773,6 +773,11 @@ package Exp_Util is
    --  Return True if N is a type conversion, or a dereference thereof, or a
    --  reference to a formal parameter.
 
+   function Is_Expanded_Class_Wide_Interface_Object_Decl
+      (N : Node_Id) return Boolean;
+   --  Determine if N is the expanded code for a class-wide interface type
+   --  object declaration.
+
    function Is_Finalizable_Transient
      (Decl : Node_Id;
       N    : Node_Id) return Boolean;

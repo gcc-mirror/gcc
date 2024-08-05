@@ -15223,6 +15223,10 @@ package body Sem_Util is
       then
          return Is_Aliased_View (Expression (Obj));
 
+      elsif Is_Expanded_Class_Wide_Interface_Object_Decl (Parent (Obj)) then
+         return Is_Aliased
+                  (Defining_Identifier (Original_Node (Parent (Obj))));
+
       --  The dereference of an access-to-object value denotes an aliased view,
       --  but this routine uses the rules of the language so we need to exclude
       --  rewritten constructs that introduce artificial dereferences.

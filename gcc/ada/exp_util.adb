@@ -8574,6 +8574,21 @@ package body Exp_Util is
                   and then Is_Formal (Entity (N)));
    end Is_Conversion_Or_Reference_To_Formal;
 
+   --------------------------------------------------
+   -- Is_Expanded_Class_Wide_Interface_Object_Decl --
+   --------------------------------------------------
+
+   function Is_Expanded_Class_Wide_Interface_Object_Decl
+      (N : Node_Id) return Boolean is
+   begin
+      return not Comes_From_Source (N)
+        and then Nkind (Original_Node (N)) = N_Object_Declaration
+        and then Nkind (N) = N_Object_Renaming_Declaration
+        and then Is_Class_Wide_Type (Etype (Defining_Identifier (N)))
+        and then Is_Interface (Etype (Defining_Identifier (N)))
+        and then Nkind (Name (N)) = N_Explicit_Dereference;
+   end Is_Expanded_Class_Wide_Interface_Object_Decl;
+
    ------------------------------
    -- Is_Finalizable_Transient --
    ------------------------------

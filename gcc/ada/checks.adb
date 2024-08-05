@@ -1549,7 +1549,7 @@ package body Checks is
       then
          if (Etype (N) = Typ
               or else (Do_Access and then Designated_Type (Typ) = S_Typ))
-           and then not Is_Aliased_View (Lhs)
+           and then (No (Lhs) or else not Is_Aliased_View (Lhs))
          then
             return;
          end if;
