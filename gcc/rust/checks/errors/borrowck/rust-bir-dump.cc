@@ -53,16 +53,20 @@ renumber_places (const Function &func, std::vector<PlaceId> &place_map)
 {
   // Renumbering places to avoid gaps in the place id space.
   // This is needed to match MIR's shape.
-  size_t next_out_id = 0;
+  PlaceId next_out_id = INVALID_PLACE;
 
-  for (size_t in_id = FIRST_VARIABLE_PLACE; in_id < func.place_db.size ();
-       ++in_id)
+  for (PlaceId in_id = FIRST_VARIABLE_PLACE;
+       in_id.value < func.place_db.size (); ++in_id.value)
     {
       const Place &place = func.place_db[in_id];
       if (place.kind == Place::VARIABLE || place.kind == Place::TEMPORARY)
-	place_map[in_id] = next_out_id++;
+	{
+	  place_map[in_id.value] = next_out_id;
+	  ++next_out_id.value;
+	}
+
       else
-	place_map[in_id] = INVALID_PLACE;
+	place_map[in_id.value] = INVALID_PLACE;
     }
 }
 
@@ -110,7 +114,10 @@ Dump::go (bool enable_simplify_cfg)
   // To avoid mutation of the BIR, we use indirection through bb_fold_map.
   std::iota (bb_fold_map.begin (), bb_fold_map.end (), 0);
 
-  std::iota (place_map.begin (), place_map.end (), 0);
+  for (size_t i = 0; i < place_map.size (); ++i)
+    {
+      place_map[i] = {i};
+    }
 
   if (enable_simplify_cfg)
     simplify_cfg (func, bb_fold_map);
@@ -119,7 +126,7 @@ Dump::go (bool enable_simplify_cfg)
 
   stream << "fn " << name << "(";
   print_comma_separated (stream, func.arguments, [this] (PlaceId place_id) {
-    stream << "_" << place_map[place_id] << ": "
+    stream << "_" << place_map[place_id.value].value << ": "
 	   << get_tyty_name (func.place_db[place_id].tyty);
   });
   stream << ") -> " << get_tyty_name (func.place_db[RETURN_VALUE_PLACE].tyty);
@@ -228,7 +235,7 @@ Dump::visit_place (PlaceId place_id)
     {
     case Place::TEMPORARY:
     case Place::VARIABLE:
-      stream << "_" << place_map[place_id];
+      stream << "_" << place_map[place_id.value].value;
       break;
     case Place::DEREF:
       stream << "(";
@@ -365,7 +372,7 @@ Dump::visit_scope (ScopeId id, size_t depth)
   for (auto &local : scope.locals)
     {
       indent (depth + 1) << "let _";
-      stream << place_map[local] << ": "
+      stream << place_map[local.value].value << ": "
 	     << get_tyty_name (func.place_db[local].tyty);
       stream << ";\t";
 
