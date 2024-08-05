@@ -358,7 +358,7 @@ enum insn_flags : unsigned int
   /* Means using VUNDEF for merge operand.  */
   USE_VUNDEF_MERGE_P = 1 << 5,
 
-  /* flags for tail policy and mask plicy operands.  */
+  /* flags for tail policy and mask policy operands.  */
   /* Means the tail policy is TAIL_UNDISTURBED.  */
   TU_POLICY_P = 1 << 6,
   /* Means the tail policy is default (return by get_prefer_tail_policy).  */
@@ -493,7 +493,7 @@ enum insn_type : unsigned int
   CPOP_OP = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P | UNARY_OP_P
 	    | VTYPE_MODE_FROM_OP1_P,
 
-  /* For mask instrunctions, no tail and mask policy operands.  */
+  /* For mask instructions, no tail and mask policy operands.  */
   UNARY_MASK_OP = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P | HAS_MERGE_P
 		  | USE_VUNDEF_MERGE_P | UNARY_OP_P,
   BINARY_MASK_OP = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P | HAS_MERGE_P

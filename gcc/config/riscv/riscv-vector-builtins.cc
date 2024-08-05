@@ -107,7 +107,7 @@ public:
      by the user when calling. */
   hashval_t overloaded_hash (const vec<tree, va_gc> &);
 
-  /* The reqired extension for the register function.  */
+  /* The required extension for the register function.  */
   enum required_ext required;
 };
 
@@ -3216,7 +3216,7 @@ register_builtin_types_on_null ()
 #include "riscv-vector-builtins.def"
 }
 
-/* Register vector type TYPE under its risv_vector.h name.  */
+/* Register vector type TYPE under its riscv_vector.h name.  */
 static void
 register_vector_type (vector_type_index type)
 {
@@ -3772,7 +3772,7 @@ function_builder::add_function (const function_instance &instance,
   unsigned int code = vec_safe_length (registered_functions);
   code = (code << RISCV_BUILTIN_SHIFT) + RISCV_BUILTIN_VECTOR;
 
-  /* We need to be able to generate placeholders to enusre that we have a
+  /* We need to be able to generate placeholders to ensure that we have a
      consistent numbering scheme for function codes between the C and C++
      frontends, so that everything ties up in LTO.
 
@@ -4803,7 +4803,7 @@ resolve_overloaded_builtin (location_t loc, unsigned int code, tree fndecl,
   if (!rfun || !rfun->overloaded_p)
     return NULL_TREE;
 
-  /* According to the rvv intrinisc doc, we have no such overloaded function
+  /* According to the rvv intrinsic doc, we have no such overloaded function
      with empty args.  Unfortunately, we register the empty args function as
      overloaded for avoiding conflict.  Thus, there will actual one register
      function after return NULL_TREE back to the middle-end, and finally result

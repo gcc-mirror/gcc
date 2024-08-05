@@ -27,7 +27,7 @@
   UNSPEC_UNIT_STRIDED
   UNSPEC_STRIDED
 
-  ;; It's used to specify ordered/unorderd operation.
+  ;; It's used to specify ordered/unordered operation.
   UNSPEC_ORDERED
   UNSPEC_UNORDERED
 

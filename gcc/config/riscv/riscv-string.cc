@@ -1096,7 +1096,7 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in)
 	/* If a single scalar load / store pair can do the job, leave it
 	   to the scalar code to do that.  */
 	/* ??? If fast unaligned access is supported, the scalar code could
-	   use suitably sized scalars irrespective of alignemnt.  If that
+	   use suitably sized scalars irrespective of alignment.  If that
 	   gets fixed, we have to adjust the test here.  */
 
 	if (pow2p_hwi (length) && length <= potential_ew)
@@ -1146,7 +1146,7 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in)
 	      if (riscv_vector::get_vector_mode (elem_mode,
 						 nunits).exists (&vmode))
 		break;
-	      /* Since we don't have a mode that exactlty matches the transfer
+	      /* Since we don't have a mode that exactly matches the transfer
 		 size, we'll need to use pred_store, which is not available
 		 for all vector modes, but only iE_RVV_M* modes, hence trying
 		 to find a vector mode for a merely rounded-up size is
@@ -1165,7 +1165,7 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in)
 	    }
 
 	  /* The RVVM8?I modes are notionally 8 * BYTES_PER_RISCV_VECTOR bytes
-	     wide.  BYTES_PER_RISCV_VECTOR can't be eavenly divided by
+	     wide.  BYTES_PER_RISCV_VECTOR can't be evenly divided by
 	     the sizes of larger element types; the LMUL factor of 8 can at
 	     the moment be divided by the SEW, with SEW of up to 8 bytes,
 	     but there are reserved encodings so there might be larger

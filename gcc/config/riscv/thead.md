@@ -891,7 +891,7 @@
 ;; XTheadFMemIdx
 ;; Note, that we might get GP registers in FP-mode (reg:DF a2)
 ;; which cannot be handled by the XTheadFMemIdx instructions.
-;; This might even happend after register allocation.
+;; This might even happen after register allocation.
 ;; We could implement splitters that undo the combiner results
 ;; if "after_reload && !HARDFP_REG_P (operands[0])", but this
 ;; raises even more questions (e.g. split into what?).

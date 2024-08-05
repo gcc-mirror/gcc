@@ -39,7 +39,7 @@ ADJUST_FLOAT_FORMAT (BF, &arm_bfloat_half_format);
   |BI   |RVVM1BI |RVVMF2BI |RVVMF4BI |RVVMF8BI |RVVMF16BI |RVVMF32BI |RVVMF64BI |  */
 
 /* For RVV modes, each boolean value occupies 1-bit.
-   4th argument is specify the minmial possible size of the vector mode,
+   4th argument specifies the minimal possible size of the vector mode,
    and will adjust to the right size by ADJUST_BYTESIZE.  */
 VECTOR_BOOL_MODE (RVVM1BI, 64, BI, 8);
 VECTOR_BOOL_MODE (RVVMF2BI, 32, BI, 4);
@@ -424,7 +424,7 @@ VLS_MODES (1024); /* V1024QI  V512HI  V256SI V128DI  V512HF  V256SF V128DF */
 VLS_MODES (2048); /* V2048QI V1024HI  V512SI V256DI V1024HF  V512SF V256DF */
 VLS_MODES (4096); /* V4096QI V2048HI V1024SI V512DI V2048HF V1024SF V512DF */
 
-/* TODO: According to RISC-V 'V' ISA spec, the maximun vector length can
+/* TODO: According to RISC-V 'V' ISA spec, the maximum vector length can
    be 65536 for a single vector register which means the vector mode in
    GCC can be maximum = 65536 * 8 bits (LMUL=8).
    However, 'GET_MODE_SIZE' is using poly_uint16/unsigned short which will

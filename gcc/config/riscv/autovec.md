@@ -794,7 +794,7 @@
 })
 
 ;; -------------------------------------------------------------------------
-;; Truncation to a mode whose inner mode size is an eigth of mode's.
+;; Truncation to a mode whose inner mode size is an eighth of mode's.
 ;; We emulate this with three consecutive vncvts.
 ;; -------------------------------------------------------------------------
 (define_expand "trunc<mode><v_oct_trunc>2"

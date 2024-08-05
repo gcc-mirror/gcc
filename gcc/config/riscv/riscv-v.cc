@@ -56,7 +56,7 @@ using namespace riscv_vector;
 
 namespace riscv_vector {
 
-/* Return true if NUNTIS <=31 so that we can use immediate AVL in vsetivli.  */
+/* Return true if NUNITS <=31 so that we can use immediate AVL in vsetivli.  */
 bool
 imm_avl_p (machine_mode mode)
 {
@@ -533,8 +533,8 @@ rvv_builder::is_repeating_sequence ()
    for merging b we need mask 010101....
 
    Foreach element in the npattern, we need to build a mask in scalar register.
-   Mostely we need 3 instructions (aka COST = 3), which is consist of 2 scalar
-   instruction and 1 scalar move to v0 register.  Finally we need vector merge
+   Mostly we need 3 instructions (aka COST = 3), which consists of 2 scalar
+   instructions and 1 scalar move to v0 register.  Finally we need vector merge
    to merge them.
 
    lui		a5, #imm
@@ -731,7 +731,7 @@ rvv_builder::single_step_npatterns_p () const
      CONST VECTOR: {-4, 4,-3, 5,-2, 6,-1, 7, ...}
      VID         : { 0, 1, 2, 3, 4, 5, 6, 7, ... }
      DIFF(MINUS) : {-4, 3,-5,-2,-6, 1,-7, 0, ... }
-     The diff sequence {-4, 3} is not repated in the npattern and
+     The diff sequence {-4, 3} is not repeated in the npattern and
      return FALSE for case 2.  */
 bool
 rvv_builder::npatterns_vid_diff_repeated_p () const
@@ -925,7 +925,7 @@ calculate_ratio (unsigned int sew, enum vlmul_type vlmul)
 }
 
 /* SCALABLE means that the vector-length is agnostic (run-time invariant and
-   compile-time unknown). ZVL meands that the vector-length is specific
+   compile-time unknown). ZVL means that the vector-length is specific
    (compile-time known by march like zvl*b). Both SCALABLE and ZVL are doing
    auto-vectorization using VLMAX vsetvl configuration.  */
 static bool
@@ -1237,7 +1237,7 @@ expand_const_vector (rtx target, rtx src)
 	The elements within NPATTERNS are not necessary regular.  */
       if (builder.can_duplicate_repeating_sequence_p ())
 	{
-	  /* We handle the case that we can find a vector containter to hold
+	  /* We handle the case that we can find a vector container to hold
 	     element bitsize = NPATTERNS * ele_bitsize.
 
 	       NPATTERNS = 8, element width = 8
@@ -1251,7 +1251,7 @@ expand_const_vector (rtx target, rtx src)
 	}
       else
 	{
-	  /* We handle the case that we can't find a vector containter to hold
+	  /* We handle the case that we can't find a vector container to hold
 	     element bitsize = NPATTERNS * ele_bitsize.
 
 	       NPATTERNS = 8, element width = 16
@@ -3099,7 +3099,7 @@ shuffle_merge_patterns (struct expand_vec_perm_d *d)
 
   if (indices_fit_selector_p)
     {
-      /* MASK = SELECTOR < NUNTIS ? 1 : 0.  */
+      /* MASK = SELECTOR < NUNITS ? 1 : 0.  */
       rtx sel = vec_perm_indices_to_rtx (sel_mode, d->perm);
       rtx x = gen_int_mode (vec_len, GET_MODE_INNER (sel_mode));
       insn_code icode = code_for_pred_cmp_scalar (sel_mode);
@@ -3258,7 +3258,7 @@ shuffle_compress_patterns (struct expand_vec_perm_d *d)
 
   int vlen = vec_len.to_constant ();
 
-  /* It's not worthwhile the compress pattern has elemenets < 4
+  /* It's not worthwhile the compress pattern has elements < 4
      and we can't modulo indices for compress pattern.  */
   if (known_ge (d->perm[vlen - 1], vlen * 2) || vlen < 4)
     return false;
@@ -3269,7 +3269,7 @@ shuffle_compress_patterns (struct expand_vec_perm_d *d)
 
   /* Compress point is the point that all elements value with index i >=
      compress point of the selector are all consecutive series increasing and
-     each selector value >= NUNTIS. In this case, we could compress all elements
+     each selector value >= NUNITS. In this case, we could compress all elements
      of i < compress point into the op1.  */
   int compress_point = -1;
   for (int i = 0; i < vlen; i++)
@@ -3322,7 +3322,7 @@ shuffle_compress_patterns (struct expand_vec_perm_d *d)
      TODO: This cost is not accurate, we can adjust it by tune info.  */
   int general_cost = 9;
 
-  /* If we can use compress approach, the code squence will be:
+  /* If we can use compress approach, the code sequence will be:
 	MASK LOAD    mask
 	COMPRESS     op1, op0, mask
      If it needs slide up, it will be:
@@ -3778,7 +3778,7 @@ expand_select_vl (rtx *ops)
 	 of using vsetvli.
 
 	 E.g. _255 = .SELECT_VL (3, POLY_INT_CST [4, 4]);
-	 We move 3 into _255 intead of using explicit vsetvl.  */
+	 We move 3 into _255 instead of using explicit vsetvl.  */
       emit_move_insn (ops[0], ops[1]);
       return;
     }

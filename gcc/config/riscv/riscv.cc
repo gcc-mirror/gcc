@@ -1167,7 +1167,7 @@ riscv_build_integer (struct riscv_integer_op *codes, HOST_WIDE_INT value,
     }
 
   /* With pack we can generate a 64 bit constant with the same high
-     and low 32 bits triviall.  */
+     and low 32 bits trivially.  */
   if (cost > 3 && TARGET_64BIT && TARGET_ZBKB)
     {
       unsigned HOST_WIDE_INT loval = value & 0xffffffff;
@@ -1183,7 +1183,7 @@ riscv_build_integer (struct riscv_integer_op *codes, HOST_WIDE_INT value,
 
       /* An arbitrary 64 bit constant can be synthesized in 5 instructions
 	 using zbkb.  We may do better than that if the upper or lower half
-	 can be synthsized with a single LUI, ADDI or BSET.  Regardless the
+	 can be synthesized with a single LUI, ADDI or BSET.  Regardless the
 	 basic steps are the same.  */
       if (cost > 3 && can_create_pseudo_p ())
 	{
@@ -5514,7 +5514,7 @@ riscv_init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype, rtx, tree, int)
 static bool
 riscv_vector_type_p (const_tree type)
 {
-  /* Currently, only builtin scalabler vector type is allowed, in the future,
+  /* Currently, only builtin scalable vector type is allowed, in the future,
      more vector types may be allowed, such as GNU vector type, etc.  */
   return riscv_vector::builtin_type_p (type);
 }

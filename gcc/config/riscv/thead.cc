@@ -140,7 +140,7 @@ th_mempair_output_move (rtx operands[4], bool load_p,
   return "";
 }
 
-/* Analyse if a pair of loads/stores MEM1 and MEM2 with given MODE
+/* Analyze if a pair of loads/stores MEM1 and MEM2 with given MODE
    are consecutive so they can be merged into a mempair instruction.
    RESERVED will be set to true, if a reversal of the accesses is
    required (false otherwise). Returns true if the accesses can be
