@@ -865,4 +865,12 @@ class DotFn(gdb.Command):
 
 DotFn()
 
+# Try and invoke the user-defined command "on-gcc-hooks-load".  Doing
+# this allows users to customize the GCC extensions once they've been
+# loaded by defining the hook in their .gdbinit.
+try:
+    gdb.execute('on-gcc-hooks-load')
+except gdb.error:
+    pass
+
 print('Successfully loaded GDB hooks for GCC')
