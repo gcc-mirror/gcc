@@ -330,10 +330,11 @@ package body Checks is
 
    function Is_Signed_Integer_Arithmetic_Op (N : Node_Id) return Boolean;
    --  Returns True if node N is for an arithmetic operation with signed
-   --  integer operands. This includes unary and binary operators, and also
-   --  if and case expression nodes where the dependent expressions are of
-   --  a signed integer type. These are the kinds of nodes for which special
-   --  handling applies in MINIMIZED or ELIMINATED overflow checking mode.
+   --  integer operands. This includes unary and binary operators (including
+   --  comparison operators), and also if and case expression nodes which
+   --  yield a value of a signed integer type.
+   --  These are the kinds of nodes for which special handling applies in
+   --  MINIMIZED or ELIMINATED overflow checking mode.
 
    function Range_Or_Validity_Checks_Suppressed
      (Expr : Node_Id) return Boolean;
@@ -8336,6 +8337,9 @@ package body Checks is
             | N_Op_Subtract
          =>
             return Is_Signed_Integer_Type (Etype (N));
+
+         when N_Op_Compare =>
+            return Is_Signed_Integer_Type (Etype (Left_Opnd (N)));
 
          when N_Case_Expression
             | N_If_Expression
