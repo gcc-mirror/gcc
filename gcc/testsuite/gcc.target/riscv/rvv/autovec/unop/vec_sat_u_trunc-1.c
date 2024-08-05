@@ -16,4 +16,4 @@
 */
 DEF_VEC_SAT_U_TRUNC_FMT_1 (uint8_t, uint16_t)
 
-/* { dg-final { scan-rtl-dump-times ".SAT_TRUNC " 2 "expand" } } */
+/* { dg-final { scan-rtl-dump-times ".SAT_TRUNC " 4 "expand" } } */
