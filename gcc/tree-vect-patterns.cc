@@ -434,7 +434,9 @@ vect_look_through_possible_promotion (vec_info *vinfo, tree op,
 	     sign of the previous promotion.  */
 	  if (!res
 	      || TYPE_PRECISION (unprom->type) == orig_precision
-	      || TYPE_SIGN (unprom->type) == TYPE_SIGN (op_type))
+	      || TYPE_SIGN (unprom->type) == TYPE_SIGN (op_type)
+	      || (TYPE_UNSIGNED (op_type)
+		  && TYPE_PRECISION (op_type) < TYPE_PRECISION (unprom->type)))
 	    {
 	      unprom->set_op (op, dt, caster);
 	      min_precision = TYPE_PRECISION (op_type);
