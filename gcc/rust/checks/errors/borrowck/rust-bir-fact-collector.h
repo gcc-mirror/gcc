@@ -88,8 +88,9 @@ public:
 protected: // Constructor and destructor.
   explicit FactCollector (Function &func)
     : place_db (func.place_db), basic_blocks (func.basic_blocks),
-      first_local (func.arguments.empty () ? FIRST_VARIABLE_PLACE
-					   : *func.arguments.rbegin () + 1),
+      first_local (func.arguments.empty ()
+		     ? FIRST_VARIABLE_PLACE
+		     : PlaceId{func.arguments.rbegin ()->value + 1}),
       location (func.location), tyctx (*Resolver::TypeCheckContext::get ()),
       next_fresh_region (place_db.peek_next_free_region ())
   {}
@@ -118,7 +119,8 @@ protected: // Main collection entry points (for different categories).
 
   void visit_places (const std::vector<PlaceId> &args)
   {
-    for (PlaceId place_id = 0; place_id < place_db.size (); ++place_id)
+    for (PlaceId place_id = INVALID_PLACE; place_id.value < place_db.size ();
+	 ++place_id.value)
       {
 	auto &place = place_db[place_id];
 
@@ -126,24 +128,28 @@ protected: // Main collection entry points (for different categories).
 	  {
 	  case Place::VARIABLE:
 	  case Place::TEMPORARY:
-	    facts.path_is_var.emplace_back (place_id, place_id);
+	    facts.path_is_var.emplace_back (place_id.value, place_id.value);
 	    for (auto &region : place.regions)
-	      facts.use_of_var_derefs_origin.emplace_back (place_id, region);
+	      facts.use_of_var_derefs_origin.emplace_back (place_id.value,
+							   region);
 
 	    // TODO: drop_of_var_derefs_origin
 	    break;
 	  case Place::FIELD:
 	    sanizite_field (place_id);
-	    facts.child_path.emplace_back (place_id, place.path.parent);
+	    facts.child_path.emplace_back (place_id.value,
+					   place.path.parent.value);
 	    break;
 	  case Place::INDEX:
 	    push_subset_all (place.tyty, place.regions,
 			     place_db[place.path.parent].regions);
-	    facts.child_path.emplace_back (place_id, place.path.parent);
+	    facts.child_path.emplace_back (place_id.value,
+					   place.path.parent.value);
 	    break;
 	  case Place::DEREF:
 	    sanitize_deref (place_id);
-	    facts.child_path.emplace_back (place_id, place.path.parent);
+	    facts.child_path.emplace_back (place_id.value,
+					   place.path.parent.value);
 	    break;
 	  case Place::CONSTANT:
 	  case Place::INVALID:
@@ -151,15 +157,17 @@ protected: // Main collection entry points (for different categories).
 	  }
       }
 
-    for (PlaceId arg = FIRST_VARIABLE_PLACE + 1; arg < first_local; ++arg)
+    for (PlaceId arg = PlaceId{FIRST_VARIABLE_PLACE.value + 1};
+	 arg < first_local; ++arg.value)
       facts.path_assigned_at_base.emplace_back (
-	arg, get_point (0, 0, PointPosition::START));
+	arg.value, get_point (0, 0, PointPosition::START));
 
-    for (PlaceId place = first_local; place < place_db.size (); ++place)
+    for (PlaceId place = first_local; place.value < place_db.size ();
+	 ++place.value)
       {
 	if (place_db[place].is_var ())
 	  facts.path_moved_at_base.emplace_back (
-	    place, get_point (0, 0, PointPosition::START));
+	    place.value, get_point (0, 0, PointPosition::START));
       }
   }
 
@@ -242,9 +250,9 @@ protected: // Main collection entry points (for different categories).
 	  break;
 	}
 	case Statement::Kind::STORAGE_DEAD: {
-	  facts.path_moved_at_base.emplace_back (stmt.get_place (),
+	  facts.path_moved_at_base.emplace_back (stmt.get_place ().value,
 						 get_current_point_mid ());
-	  facts.var_defined_at.emplace_back (stmt.get_place (),
+	  facts.var_defined_at.emplace_back (stmt.get_place ().value,
 					     get_current_point_mid ());
 	  break;
 	}
@@ -293,7 +301,8 @@ protected: // Main collection entry points (for different categories).
 
   void visit (const BorrowExpr &expr) override
   {
-    rust_debug ("\t_%u = BorrowExpr(_%u)", lhs - 1, expr.get_place () - 1);
+    rust_debug ("\t_%u = BorrowExpr(_%u)", lhs.value - 1,
+		expr.get_place ().value - 1);
 
     auto loan = place_db.get_loans ()[expr.get_loan ()];
 
@@ -330,8 +339,8 @@ protected: // Main collection entry points (for different categories).
 
   void visit (const Assignment &expr) override
   {
-    rust_debug ("\t_%u = Assignment(_%u) at %u:%u", lhs - 1,
-		expr.get_rhs () - 1, current_bb, current_stmt);
+    rust_debug ("\t_%u = Assignment(_%u) at %u:%u", lhs.value - 1,
+		expr.get_rhs ().value - 1, current_bb, current_stmt);
 
     issue_read_move (expr.get_rhs ());
     push_place_subset (lhs, expr.get_rhs ());
@@ -339,7 +348,8 @@ protected: // Main collection entry points (for different categories).
 
   void visit (const CallExpr &expr) override
   {
-    rust_debug ("\t_%u = CallExpr(_%u)", lhs - 1, expr.get_callable () - 1);
+    rust_debug ("\t_%u = CallExpr(_%u)", lhs.value - 1,
+		expr.get_callable ().value - 1);
 
     auto &return_place = place_db[lhs];
     auto &callable_place = place_db[expr.get_callable ()];
@@ -434,14 +444,14 @@ protected: // Generic BIR operations.
       return;
 
     if (place_id != RETURN_VALUE_PLACE)
-      facts.path_accessed_at_base.emplace_back (place_id,
+      facts.path_accessed_at_base.emplace_back (place_id.value,
 						get_current_point_mid ());
 
     if (place.is_var ())
-      facts.var_used_at.emplace_back (place_id, get_current_point_mid ());
+      facts.var_used_at.emplace_back (place_id.value, get_current_point_mid ());
     else if (place.is_path ())
       {
-	facts.var_used_at.emplace_back (place_db.get_var (place_id),
+	facts.var_used_at.emplace_back (place_db.get_var (place_id).value,
 					get_current_point_mid ());
       }
   }
@@ -468,11 +478,12 @@ protected: // Generic BIR operations.
     rust_assert (place.is_lvalue () || place.is_rvalue ());
 
     if (place.is_var ())
-      facts.var_defined_at.emplace_back (place_id, get_current_point_mid ());
+      facts.var_defined_at.emplace_back (place_id.value,
+					 get_current_point_mid ());
 
     if (!is_init)
       {
-	facts.path_assigned_at_base.emplace_back (place_id,
+	facts.path_assigned_at_base.emplace_back (place_id.value,
 						  get_current_point_mid ());
 	check_write_for_conflict (place_id);
 	kill_borrows_for_place (place_id);
@@ -485,8 +496,8 @@ protected: // Generic BIR operations.
       return;
 
     facts.path_moved_at_base.emplace_back (
-      place_id, initial ? get_point (0, 0, PointPosition::START)
-			: get_current_point_mid ());
+      place_id.value, initial ? get_point (0, 0, PointPosition::START)
+			      : get_current_point_mid ());
 
     check_move_behind_reference (place_id);
 

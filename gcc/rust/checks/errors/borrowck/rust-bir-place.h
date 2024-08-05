@@ -32,10 +32,20 @@ namespace Rust {
 namespace BIR {
 
 /** A unique identifier for a place in the BIR. */
-using PlaceId = uint32_t;
+struct PlaceId
+{
+  uint32_t value;
+  // some overloads for comparision
+  bool operator== (const PlaceId &rhs) const { return value == rhs.value; }
+  bool operator!= (const PlaceId &rhs) const { return !(operator== (rhs)); }
+  bool operator< (const PlaceId &rhs) const { return value < rhs.value; }
+  bool operator> (const PlaceId &rhs) const { return value > rhs.value; }
+  bool operator<= (const PlaceId &rhs) const { return !(operator> (rhs)); }
+  bool operator>= (const PlaceId &rhs) const { return !(operator< (rhs)); }
+};
 
-static constexpr PlaceId INVALID_PLACE = 0;
-static constexpr PlaceId RETURN_VALUE_PLACE = 1;
+static constexpr PlaceId INVALID_PLACE = {0};
+static constexpr PlaceId RETURN_VALUE_PLACE = {1};
 static constexpr PlaceId FIRST_VARIABLE_PLACE = RETURN_VALUE_PLACE;
 
 using Variance = TyTy::VarianceAnalysis::Variance;
@@ -188,8 +198,8 @@ public:
     scopes.emplace_back (); // Root scope.
   }
 
-  Place &operator[] (PlaceId id) { return places.at (id); }
-  const Place &operator[] (PlaceId id) const { return places.at (id); }
+  Place &operator[] (PlaceId id) { return places.at (id.value); }
+  const Place &operator[] (PlaceId id) const { return places.at (id.value); }
 
   decltype (places)::const_iterator begin () const { return places.begin (); }
   decltype (places)::const_iterator end () const { return places.end (); }
@@ -228,15 +238,15 @@ public:
     return current_scope;
   }
 
-  PlaceId add_place (Place &&place, PlaceId last_sibling = 0)
+  PlaceId add_place (Place &&place, PlaceId last_sibling = INVALID_PLACE)
   {
     places.emplace_back (std::forward<Place &&> (place));
-    PlaceId new_place = places.size () - 1;
-    Place &new_place_ref = places[new_place]; // Intentional shadowing.
-    if (last_sibling == 0)
-      places[new_place_ref.path.parent].path.first_child = new_place;
+    PlaceId new_place = {places.size () - 1};
+    Place &new_place_ref = places[new_place.value]; // Intentional shadowing.
+    if (last_sibling == INVALID_PLACE)
+      places[new_place_ref.path.parent.value].path.first_child = new_place;
     else
-      places[last_sibling].path.next_sibling = new_place;
+      places[last_sibling.value].path.next_sibling = new_place;
 
     if (new_place_ref.kind == Place::VARIABLE
 	|| new_place_ref.kind == Place::TEMPORARY)
@@ -256,36 +266,39 @@ public:
 
   PlaceId add_variable (NodeId id, TyTy::BaseType *tyty)
   {
-    return add_place ({Place::VARIABLE, id, {}, is_type_copy (tyty), tyty}, 0);
+    return add_place ({Place::VARIABLE, id, {}, is_type_copy (tyty), tyty},
+		      INVALID_PLACE);
   }
 
   WARN_UNUSED_RESULT PlaceId lookup_or_add_path (Place::Kind kind,
 						 TyTy::BaseType *tyty,
 						 PlaceId parent, size_t id = 0)
   {
-    PlaceId current = 0;
-    if (parent < places.size ())
+    PlaceId current = INVALID_PLACE;
+    if (parent.value < places.size ())
       {
-	current = places[parent].path.first_child;
-	while (current != 0)
+	current = places[parent.value].path.first_child;
+	while (current != INVALID_PLACE)
 	  {
-	    if (places[current].kind == kind
-		&& places[current].variable_or_field_index == id)
+	    if (places[current.value].kind == kind
+		&& places[current.value].variable_or_field_index == id)
 	      {
-		rust_assert (places[current].tyty->is_equal (*tyty));
+		rust_assert (places[current.value].tyty->is_equal (*tyty));
 		return current;
 	      }
-	    current = places[current].path.next_sibling;
+	    current = places[current.value].path.next_sibling;
 	  }
       }
-    return add_place ({kind, (uint32_t) id, Place::Path{parent, 0, 0},
+    return add_place ({kind, (uint32_t) id,
+		       Place::Path{parent, INVALID_PLACE, INVALID_PLACE},
 		       is_type_copy (tyty), tyty},
 		      current);
   }
 
   PlaceId add_temporary (TyTy::BaseType *tyty)
   {
-    return add_place ({Place::TEMPORARY, 0, {}, is_type_copy (tyty), tyty}, 0);
+    return add_place ({Place::TEMPORARY, 0, {}, is_type_copy (tyty), tyty},
+		      INVALID_PLACE);
   }
 
   PlaceId get_constant (TyTy::BaseType *tyty)
@@ -300,12 +313,12 @@ public:
   {
     PlaceId current = FIRST_VARIABLE_PLACE;
 
-    while (current != places.size ())
+    while (current.value != places.size ())
       {
-	if (places[current].kind == Place::VARIABLE
-	    && places[current].variable_or_field_index == id)
+	if (places[current.value].kind == Place::VARIABLE
+	    && places[current.value].variable_or_field_index == id)
 	  return current;
-	current++;
+	++current.value;
       }
     return INVALID_PLACE;
   }
@@ -315,23 +328,24 @@ public:
     LoanId id = loans.size ();
     loans.push_back (std::forward<Loan &&> (loan));
     PlaceId borrowed_place = loans.rbegin ()->place;
-    places[loans.rbegin ()->place].borrowed_by.push_back (id);
-    if (places[borrowed_place].kind == Place::DEREF)
+    places[loans.rbegin ()->place.value].borrowed_by.push_back (id);
+    if (places[borrowed_place.value].kind == Place::DEREF)
       {
-	places[places[borrowed_place].path.parent].borrowed_by.push_back (id);
+	places[places[borrowed_place.value].path.parent.value]
+	  .borrowed_by.push_back (id);
       }
     return id;
   }
 
   PlaceId get_var (PlaceId id) const
   {
-    if (places[id].is_var ())
+    if (places[id.value].is_var ())
       return id;
-    rust_assert (places[id].is_path ());
+    rust_assert (places[id.value].is_path ());
     PlaceId current = id;
-    while (!places[current].is_var ())
+    while (!places[current.value].is_var ())
       {
-	current = places[current].path.parent;
+	current = places[current.value].path.parent;
       }
     return current;
   }
@@ -348,18 +362,18 @@ public:
       return lookup;
 
     add_place ({Place::VARIABLE, id, {}, is_type_copy (tyty), tyty});
-    return places.size () - 1;
+    return {places.size () - 1};
   };
 
   template <typename FN> void for_each_path_from_root (PlaceId var, FN fn) const
   {
     PlaceId current = var;
-    current = places[current].path.first_child;
+    current = places[current.value].path.first_child;
     while (current != INVALID_PLACE)
       {
 	fn (current);
 	for_each_path_from_root (current, fn);
-	current = places[current].path.next_sibling;
+	current = places[current.value].path.next_sibling;
       }
   }
 
@@ -370,7 +384,7 @@ public:
     while (current != INVALID_PLACE)
       {
 	fn (current);
-	current = places[current].path.parent;
+	current = places[current.value].path.parent;
       }
   }
 
