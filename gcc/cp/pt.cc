@@ -23073,6 +23073,8 @@ deducible_expression (tree expr)
   /* Strip implicit conversions and implicit INDIRECT_REFs.  */
   while (CONVERT_EXPR_P (expr)
 	 || TREE_CODE (expr) == VIEW_CONVERT_EXPR
+	 || (TREE_CODE (expr) == IMPLICIT_CONV_EXPR
+	     && IMPLICIT_CONV_EXPR_FORCED (expr))
 	 || REFERENCE_REF_P (expr))
     expr = TREE_OPERAND (expr, 0);
   return (TREE_CODE (expr) == TEMPLATE_PARM_INDEX);
@@ -24602,7 +24604,9 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
      signedness is the only information lost, and I think that will be
      okay.  VIEW_CONVERT_EXPR can appear with class NTTP, thanks to
      finish_id_expression_1, and are also OK.  */
-  while (CONVERT_EXPR_P (parm) || TREE_CODE (parm) == VIEW_CONVERT_EXPR)
+  while (CONVERT_EXPR_P (parm) || TREE_CODE (parm) == VIEW_CONVERT_EXPR
+	 || (TREE_CODE (parm) == IMPLICIT_CONV_EXPR
+	     && IMPLICIT_CONV_EXPR_FORCED (parm)))
     parm = TREE_OPERAND (parm, 0);
 
   if (arg == error_mark_node)
