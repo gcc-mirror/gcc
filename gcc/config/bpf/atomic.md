@@ -22,50 +22,21 @@
 
 ;;; Plain atomic modify operations.
 
-;; Non-fetching atomic add predates all other BPF atomic insns.
-;; Use xadd{w,dw} for compatibility with older GAS without support
-;; for v3 atomics.  Newer GAS supports "aadd[32]" in line with the
-;; other atomic operations.
-(define_insn "atomic_add<AMO:mode>"
-  [(set (match_operand:AMO 0 "memory_operand" "+m")
-        (unspec_volatile:AMO
-         [(plus:AMO (match_dup 0)
-                    (match_operand:AMO 1 "register_operand" "r"))
-          (match_operand:SI 2 "const_int_operand")] ;; Memory model.
-         UNSPEC_AADD))]
-  ""
-  "{xadd<mop>\t%0,%1|lock *(<smop> *)%w0 += %w1}"
-  [(set_attr "type" "atomic")])
-
-(define_insn "atomic_and<AMO:mode>"
-  [(set (match_operand:AMO 0 "memory_operand" "+m")
-        (unspec_volatile:AMO
-         [(and:AMO (match_dup 0)
-                   (match_operand:AMO 1 "register_operand" "r"))
-          (match_operand:SI 2 "const_int_operand")] ;; Memory model.
-         UNSPEC_AAND))]
-  "bpf_has_v3_atomics"
-  "{aand<msuffix>\t%0,%1|lock *(<smop> *)%w0 &= %w1}")
-
-(define_insn "atomic_or<AMO:mode>"
-  [(set (match_operand:AMO 0 "memory_operand" "+m")
-        (unspec_volatile:AMO
-         [(ior:AMO (match_dup 0)
-                   (match_operand:AMO 1 "register_operand" "r"))
-          (match_operand:SI 2 "const_int_operand")] ;; Memory model.
-         UNSPEC_AOR))]
-  "bpf_has_v3_atomics"
-  "{aor<msuffix>\t%0,%1|lock *(<smop> *)%w0 %|= %w1}")
-
-(define_insn "atomic_xor<AMO:mode>"
-  [(set (match_operand:AMO 0 "memory_operand" "+m")
-        (unspec_volatile:AMO
-         [(xor:AMO (match_dup 0)
-                   (match_operand:AMO 1 "register_operand" "r"))
-          (match_operand:SI 2 "const_int_operand")] ;; Memory model.
-         UNSPEC_AXOR))]
-  "bpf_has_v3_atomics"
-  "{axor<msuffix>\t%0,%1|lock *(<smop> *)%w0 ^= %w1}")
+;; The BPF instruction set provides non-fetching atomic instructions
+;; that could be used to implement the corresponding named insns:
+;;
+;;  atomic_add -> aadd (aka xadd)
+;;  atomic_and -> aand 
+;;  atomic_or  -> aor
+;;  atomic_xor -> axor
+;;
+;; However, we are not including insns for these here because the
+;; non-fetching BPF atomic instruction imply different memory ordering
+;; semantics than the fetching BPF atomic instruction used to
+;; implement the atomic_fetch_* insns below (afadd, afand, afor,
+;; afxor) and they cannot be used interchangeably, as it is expected
+;; by GCC when it uses a non-fetching variant as an optimization of a
+;; fetching operation where the returned value is not used.
 
 ;;; Feching (read-modify-store) versions of atomic operations.
 
