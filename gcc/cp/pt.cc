@@ -23031,8 +23031,7 @@ deducible_expression (tree expr)
   /* Strip implicit conversions and implicit INDIRECT_REFs.  */
   while (CONVERT_EXPR_P (expr)
 	 || TREE_CODE (expr) == VIEW_CONVERT_EXPR
-	 || (TREE_CODE (expr) == IMPLICIT_CONV_EXPR
-	     && IMPLICIT_CONV_EXPR_FORCED (expr))
+	 || TREE_CODE (expr) == IMPLICIT_CONV_EXPR
 	 || REFERENCE_REF_P (expr))
     expr = TREE_OPERAND (expr, 0);
   return (TREE_CODE (expr) == TEMPLATE_PARM_INDEX);
@@ -24563,8 +24562,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
      okay.  VIEW_CONVERT_EXPR can appear with class NTTP, thanks to
      finish_id_expression_1, and are also OK.  */
   while (CONVERT_EXPR_P (parm) || TREE_CODE (parm) == VIEW_CONVERT_EXPR
-	 || (TREE_CODE (parm) == IMPLICIT_CONV_EXPR
-	     && IMPLICIT_CONV_EXPR_FORCED (parm)))
+	 || TREE_CODE (parm) == IMPLICIT_CONV_EXPR)
     parm = TREE_OPERAND (parm, 0);
 
   if (arg == error_mark_node)
@@ -24577,6 +24575,12 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 
   if (parm == any_targ_node || arg == any_targ_node)
     return unify_success (explain_p);
+
+  /* Stripping IMPLICIT_CONV_EXPR above can produce this mismatch
+     (g++.dg/abi/mangle57.C).  */
+  if (TREE_CODE (parm) == FUNCTION_DECL
+      && TREE_CODE (arg) == ADDR_EXPR)
+    arg = TREE_OPERAND (arg, 0);
 
   /* If PARM uses template parameters, then we can't bail out here,
      even if ARG == PARM, since we won't record unifications for the
