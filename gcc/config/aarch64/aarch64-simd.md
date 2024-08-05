@@ -1352,12 +1352,14 @@
 )
 
 (define_insn "aarch64_simd_imm_shl<mode><vczle><vczbe>"
- [(set (match_operand:VDQ_I 0 "register_operand" "=w")
-       (ashift:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w")
-		   (match_operand:VDQ_I  2 "aarch64_simd_lshift_imm" "Dl")))]
+ [(set (match_operand:VDQ_I 0 "register_operand")
+       (ashift:VDQ_I (match_operand:VDQ_I 1 "register_operand")
+		   (match_operand:VDQ_I  2 "aarch64_simd_lshift_imm")))]
  "TARGET_SIMD"
-  "shl\t%0.<Vtype>, %1.<Vtype>, %2"
-  [(set_attr "type" "neon_shift_imm<q>")]
+  {@ [ cons: =0, 1,  2   ; attrs: type       ]
+     [ w       , w,  vs1 ; neon_add<q>       ] add\t%0.<Vtype>, %1.<Vtype>, %1.<Vtype>
+     [ w       , w,  Dl  ; neon_shift_imm<q> ] shl\t%0.<Vtype>, %1.<Vtype>, %2
+  }
 )
 
 (define_insn "aarch64_simd_reg_sshl<mode><vczle><vczbe>"

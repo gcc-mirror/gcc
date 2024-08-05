@@ -667,6 +667,12 @@
    SMAX and SMIN operations."
  (match_operand 0 "aarch64_sve_vsm_immediate"))
 
+(define_constraint "vs1"
+  "@internal
+ A constraint that matches a vector of immediate one."
+ (and (match_code "const,const_vector")
+      (match_test "op == CONST1_RTX (GET_MODE (op))")))
+
 (define_constraint "vsA"
   "@internal
    A constraint that matches an immediate operand valid for SVE FADD
