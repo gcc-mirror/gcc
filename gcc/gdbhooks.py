@@ -783,6 +783,18 @@ class DumpFn(gdb.Command):
 
 DumpFn()
 
+class GCCDotCmd(gdb.Parameter):
+    """
+    This parameter controls the command used to render dot files within
+    GCC's dot-fn command.  It will be invoked as gcc-dot-cmd <dot-file>.
+    """
+    def __init__(self):
+        super(GCCDotCmd, self).__init__('gcc-dot-cmd',
+                gdb.COMMAND_NONE, gdb.PARAM_STRING)
+        self.value = "dot -Tx11"
+
+gcc_dot_cmd = GCCDotCmd()
+
 class DotFn(gdb.Command):
     """
     A custom command to show a gimple/rtl function control flow graph.
@@ -848,7 +860,8 @@ class DotFn(gdb.Command):
             return
 
         # Show graph in temp file
-        os.system("( dot -Tx11 \"%s\"; rm \"%s\" ) &" % (filename, filename))
+        dot_cmd = gcc_dot_cmd.value
+        os.system("( %s \"%s\"; rm \"%s\" ) &" % (dot_cmd, filename, filename))
 
 DotFn()
 
