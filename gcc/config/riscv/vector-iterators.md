@@ -783,7 +783,7 @@
 ;;
 ;; In gather/scatter expand, we need to sign/zero extend the index mode into vector
 ;; Pmode, so we need to check whether vector Pmode is available.
-;; E.g. when index mode = RVVM8QImde and Pmode = SImode, if it is not zero_extend or
+;; E.g. when index mode = RVVM8QImode and Pmode = SImode, if it is not zero_extend or
 ;; scalar != 1, such gather/scatter is not allowed since we don't have RVVM32SImode.
 (define_mode_iterator RATIO64 [
   (RVVMF8QI "TARGET_MIN_VLEN > 32")

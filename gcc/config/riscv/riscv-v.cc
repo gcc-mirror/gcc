@@ -1552,8 +1552,8 @@ legitimize_move (rtx dest, rtx *srcp)
     {
       if (GET_MODE_NUNITS (mode).to_constant () <= 31)
 	{
-	  /* For NUNITS <= 31 VLS modes, we don't need extrac
-	     scalar regisers so we apply the naive (set (op0) (op1)) pattern. */
+	  /* For NUNITS <= 31 VLS modes, we don't need extract
+	     scalar registers so we apply the naive (set (op0) (op1)) pattern. */
 	  if (can_create_pseudo_p ())
 	    {
 	      /* Need to force register if mem <- !reg.  */
@@ -2900,7 +2900,7 @@ expand_vec_cmp_float (rtx target, rtx_code code, rtx op0, rtx op1,
     }
 
   /* We use one_cmpl<mode>2 to make Combine PASS to combine mask instructions
-     into: vmand.mm/vmnor.mm/vmnand.mm/vmnor.mm/vmxnor.mm.  */
+     into: vmand.mm/vmnor.mm/vmnand.mm/vmxnor.mm.  */
   emit_insn (gen_rtx_SET (target, gen_rtx_NOT (mask_mode, eq0)));
   return false;
 }

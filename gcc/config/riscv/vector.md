@@ -1520,7 +1520,7 @@
 ;; ---- 6. Configuration-Setting Instructions
 ;; -----------------------------------------------------------------
 ;; Includes:
-;; - 6.1 vsetvli/vsetivl/vsetvl instructions
+;; - 6.1 vsetvli/vsetivli/vsetvl instructions
 ;; -----------------------------------------------------------------
 
 ;; we don't define vsetvli as unspec_volatile which has side effects.

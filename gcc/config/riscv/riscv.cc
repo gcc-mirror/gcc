@@ -9835,7 +9835,7 @@ riscv_init_machine_status (void)
   return ggc_cleared_alloc<machine_function> ();
 }
 
-/* Return the VLEN value associated with -march and -mwrvv-vector-bits.
+/* Return the VLEN value associated with -march and -mrvv-vector-bits.
    TODO: So far we only support length-agnostic value. */
 static poly_uint16
 riscv_convert_vector_chunks (struct gcc_options *opts)

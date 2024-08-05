@@ -2765,7 +2765,7 @@ static CONSTEXPR const rvv_op_info all_v_scalar_ptr_index_ops
      scalar_ptr_index_args /* Args */};
 
 /* A static operand information for vector_type func (vector_type).
-   Some ins just supports SEW=32, such as crypto vectol Zvkg extension.
+   Some insns just supports SEW=32, such as the crypto vector Zvkg extension.
  * function registration.  */
 static CONSTEXPR const rvv_arg_type_info vs_lmul_x2_args[]
   = {rvv_arg_type_info (RVV_BASE_vlmul_ext_x2),
@@ -2838,7 +2838,7 @@ static CONSTEXPR const rvv_op_info u_vvs_crypto_sew32_lmul_x16_ops
      vs_lmul_x16_args /* Args */};
 
 /* A static operand information for vector_type func (vector_type).
-   Some ins just supports SEW=64, such as crypto vectol Zvbc extension
+   Some insns just supports SEW=64, such as the crypto vector Zvbc extension
    vclmul.vv, vclmul.vx.
  * function registration.  */
 static CONSTEXPR const rvv_op_info u_vvv_crypto_sew64_ops
