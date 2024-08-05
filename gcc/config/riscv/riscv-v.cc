@@ -4599,7 +4599,7 @@ emit_vec_narrow_cvt_x_f (rtx op_dest, rtx op_src, insn_type type,
 }
 
 static void
-emit_vec_widden_cvt_x_f (rtx op_dest, rtx op_src, insn_type type,
+emit_vec_widen_cvt_x_f (rtx op_dest, rtx op_src, insn_type type,
 			 machine_mode vec_mode)
 {
   rtx ops[] = {op_dest, op_src};
@@ -4609,7 +4609,7 @@ emit_vec_widden_cvt_x_f (rtx op_dest, rtx op_src, insn_type type,
 }
 
 static void
-emit_vec_widden_cvt_f_f (rtx op_dest, rtx op_src, insn_type type,
+emit_vec_widen_cvt_f_f (rtx op_dest, rtx op_src, insn_type type,
 			 machine_mode vec_mode)
 {
   rtx ops[] = {op_dest, op_src};
@@ -4835,7 +4835,7 @@ emit_vec_rounding_to_integer (rtx op_0, rtx op_1, insn_type type,
   else if (maybe_eq (vec_fp_size, vec_int_size * 2)) /* DF => SI.  */
     emit_vec_narrow_cvt_x_f (op_0, op_1, type, vec_fp_mode);
   else if (maybe_eq (vec_fp_size * 2, vec_int_size)) /* SF => DI, HF => SI.  */
-    emit_vec_widden_cvt_x_f (op_0, op_1, type, vec_int_mode);
+    emit_vec_widen_cvt_x_f (op_0, op_1, type, vec_int_mode);
   else if (maybe_eq (vec_fp_size * 4, vec_int_size)) /* HF => DI.  */
     {
       gcc_assert (vec_bridge_mode != E_VOIDmode);
@@ -4843,9 +4843,9 @@ emit_vec_rounding_to_integer (rtx op_0, rtx op_1, insn_type type,
       rtx op_sf = gen_reg_rtx (vec_bridge_mode);
 
       /* Step-1: HF => SF, no rounding here.  */
-      emit_vec_widden_cvt_f_f (op_sf, op_1, UNARY_OP, vec_bridge_mode);
+      emit_vec_widen_cvt_f_f (op_sf, op_1, UNARY_OP, vec_bridge_mode);
       /* Step-2: SF => DI.  */
-      emit_vec_widden_cvt_x_f (op_0, op_sf, type, vec_int_mode);
+      emit_vec_widen_cvt_x_f (op_0, op_sf, type, vec_int_mode);
     }
   else
     gcc_unreachable ();

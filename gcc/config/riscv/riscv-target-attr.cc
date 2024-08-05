@@ -290,7 +290,7 @@ riscv_process_one_target_attr (char *arg_str,
    NULL-terminated string STR.  */
 
 static unsigned int
-num_occurences_in_str (char c, char *str)
+num_occurrences_in_str (char c, char *str)
 {
   unsigned int res = 0;
   while (*str != '\0')
@@ -347,7 +347,7 @@ riscv_process_target_attr (tree args, location_t loc)
 
   /* Used to catch empty spaces between semi-colons i.e.
      attribute ((target ("attr1;;attr2"))).  */
-  unsigned int num_semicolons = num_occurences_in_str (';', str_to_check);
+  unsigned int num_semicolons = num_occurrences_in_str (';', str_to_check);
 
   /* Handle multiple target attributes separated by ';'.  */
   char *token = strtok_r (str_to_check, ";", &str_to_check);

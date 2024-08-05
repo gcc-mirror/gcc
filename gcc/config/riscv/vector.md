@@ -1793,7 +1793,7 @@
 ;; constraint alternative 2 match vse.v.
 ;; constraint alternative 3 match vmv.v.v.
 
-;; If operand 3 is a const_vector, then it is left to pred_braordcast patterns.
+;; If operand 3 is a const_vector, then it is left to pred_broadcast patterns.
 (define_expand "@pred_mov<mode>"
   [(set (match_operand:V_VLS 0 "nonimmediate_operand")
     (if_then_else:V_VLS
@@ -1971,9 +1971,9 @@
 	/* vl */operands[5],
 	<MODE>mode,
 	riscv_vector::simm5_p (operands[3]),
-	[] (rtx *operands, rtx boardcast_scalar) {
+	[] (rtx *operands, rtx broadcast_scalar) {
 	  emit_insn (gen_pred_merge<mode> (operands[0], operands[1],
-	       operands[2], boardcast_scalar, operands[4], operands[5],
+	       operands[2], broadcast_scalar, operands[4], operands[5],
 	       operands[6], operands[7]));
         },
 	(riscv_vector::avl_type) INTVAL (operands[7])))
@@ -2756,9 +2756,9 @@
 	/* vl */operands[5],
 	<MODE>mode,
 	riscv_vector::has_vi_variant_p (<CODE>, operands[4]),
-	[] (rtx *operands, rtx boardcast_scalar) {
+	[] (rtx *operands, rtx broadcast_scalar) {
 	  emit_insn (gen_pred_<optab><mode> (operands[0], operands[1],
-	       operands[2], operands[3], boardcast_scalar, operands[5],
+	       operands[2], operands[3], broadcast_scalar, operands[5],
 	       operands[6], operands[7], operands[8]));
         },
 	(riscv_vector::avl_type) INTVAL (operands[8])))
@@ -2832,9 +2832,9 @@
 	/* vl */operands[5],
 	<MODE>mode,
 	riscv_vector::has_vi_variant_p (<CODE>, operands[4]),
-	[] (rtx *operands, rtx boardcast_scalar) {
+	[] (rtx *operands, rtx broadcast_scalar) {
 	  emit_insn (gen_pred_<optab><mode> (operands[0], operands[1],
-	       operands[2], operands[3], boardcast_scalar, operands[5],
+	       operands[2], operands[3], broadcast_scalar, operands[5],
 	       operands[6], operands[7], operands[8]));
         },
 	(riscv_vector::avl_type) INTVAL (operands[8])))
@@ -2908,9 +2908,9 @@
 	/* vl */operands[5],
 	<MODE>mode,
 	riscv_vector::neg_simm5_p (operands[4]),
-	[] (rtx *operands, rtx boardcast_scalar) {
+	[] (rtx *operands, rtx broadcast_scalar) {
 	  emit_insn (gen_pred_sub<mode> (operands[0], operands[1],
-	       operands[2], boardcast_scalar, operands[3], operands[5],
+	       operands[2], broadcast_scalar, operands[3], operands[5],
 	       operands[6], operands[7], operands[8]));
         },
 	(riscv_vector::avl_type) INTVAL (operands[8])))
@@ -3026,9 +3026,9 @@
 	/* vl */operands[5],
 	<MODE>mode,
 	false,
-	[] (rtx *operands, rtx boardcast_scalar) {
+	[] (rtx *operands, rtx broadcast_scalar) {
 	  emit_insn (gen_pred_mulh<v_su><mode> (operands[0], operands[1],
-	       operands[2], operands[3], boardcast_scalar, operands[5],
+	       operands[2], operands[3], broadcast_scalar, operands[5],
 	       operands[6], operands[7], operands[8]));
         },
 	(riscv_vector::avl_type) INTVAL (operands[8])))
@@ -3201,9 +3201,9 @@
 	/* vl */operands[5],
 	<MODE>mode,
 	riscv_vector::simm5_p (operands[3]),
-	[] (rtx *operands, rtx boardcast_scalar) {
+	[] (rtx *operands, rtx broadcast_scalar) {
 	  emit_insn (gen_pred_adc<mode> (operands[0], operands[1],
-	       operands[2], boardcast_scalar, operands[4], operands[5],
+	       operands[2], broadcast_scalar, operands[4], operands[5],
 	       operands[6], operands[7]));
         },
 	(riscv_vector::avl_type) INTVAL (operands[7])))
@@ -3285,9 +3285,9 @@
 	/* vl */operands[5],
 	<MODE>mode,
 	false,
-	[] (rtx *operands, rtx boardcast_scalar) {
+	[] (rtx *operands, rtx broadcast_scalar) {
 	  emit_insn (gen_pred_sbc<mode> (operands[0], operands[1],
-	       operands[2], boardcast_scalar, operands[4], operands[5],
+	       operands[2], broadcast_scalar, operands[4], operands[5],
 	       operands[6], operands[7]));
         },
 	(riscv_vector::avl_type) INTVAL (operands[7])))
@@ -3448,9 +3448,9 @@
 	/* vl */operands[4],
 	<MODE>mode,
 	riscv_vector::simm5_p (operands[2]),
-	[] (rtx *operands, rtx boardcast_scalar) {
+	[] (rtx *operands, rtx broadcast_scalar) {
 	  emit_insn (gen_pred_madc<mode> (operands[0], operands[1],
-	       boardcast_scalar, operands[3], operands[4], operands[5]));
+	       broadcast_scalar, operands[3], operands[4], operands[5]));
         },
 	(riscv_vector::avl_type) INTVAL (operands[5])))
     DONE;
@@ -3520,9 +3520,9 @@
 	/* vl */operands[4],
 	<MODE>mode,
 	false,
-	[] (rtx *operands, rtx boardcast_scalar) {
+	[] (rtx *operands, rtx broadcast_scalar) {
 	  emit_insn (gen_pred_msbc<mode> (operands[0], operands[1],
-	       boardcast_scalar, operands[3], operands[4], operands[5]));
+	       broadcast_scalar, operands[3], operands[4], operands[5]));
         },
 	(riscv_vector::avl_type) INTVAL (operands[5])))
     DONE;
@@ -3669,9 +3669,9 @@
 	/* vl */operands[3],
 	<MODE>mode,
 	riscv_vector::simm5_p (operands[2]),
-	[] (rtx *operands, rtx boardcast_scalar) {
+	[] (rtx *operands, rtx broadcast_scalar) {
 	  emit_insn (gen_pred_madc<mode>_overflow (operands[0], operands[1],
-	       boardcast_scalar, operands[3], operands[4]));
+	       broadcast_scalar, operands[3], operands[4]));
         },
 	(riscv_vector::avl_type) INTVAL (operands[4])))
     DONE;
@@ -3738,9 +3738,9 @@
 	/* vl */operands[3],
 	<MODE>mode,
 	false,
-	[] (rtx *operands, rtx boardcast_scalar) {
+	[] (rtx *operands, rtx broadcast_scalar) {
 	  emit_insn (gen_pred_msbc<mode>_overflow (operands[0], operands[1],
-	       boardcast_scalar, operands[3], operands[4]));
+	       broadcast_scalar, operands[3], operands[4]));
         },
 	(riscv_vector::avl_type) INTVAL (operands[4])))
     DONE;
@@ -4300,9 +4300,9 @@
 	/* vl */operands[5],
 	<MODE>mode,
 	riscv_vector::has_vi_variant_p (<CODE>, operands[4]),
-	[] (rtx *operands, rtx boardcast_scalar) {
+	[] (rtx *operands, rtx broadcast_scalar) {
 	  emit_insn (gen_pred_<optab><mode> (operands[0], operands[1],
-	       operands[2], operands[3], boardcast_scalar, operands[5],
+	       operands[2], operands[3], broadcast_scalar, operands[5],
 	       operands[6], operands[7], operands[8]));
         },
 	(riscv_vector::avl_type) INTVAL (operands[8])))
@@ -4376,9 +4376,9 @@
 	/* vl */operands[5],
 	<MODE>mode,
 	riscv_vector::has_vi_variant_p (<CODE>, operands[4]),
-	[] (rtx *operands, rtx boardcast_scalar) {
+	[] (rtx *operands, rtx broadcast_scalar) {
 	  emit_insn (gen_pred_<optab><mode> (operands[0], operands[1],
-	       operands[2], operands[3], boardcast_scalar, operands[5],
+	       operands[2], operands[3], broadcast_scalar, operands[5],
 	       operands[6], operands[7], operands[8]));
         },
 	(riscv_vector::avl_type) INTVAL (operands[8])))
@@ -4522,9 +4522,9 @@
 	/* vl */operands[5],
 	<MODE>mode,
 	false,
-	[] (rtx *operands, rtx boardcast_scalar) {
+	[] (rtx *operands, rtx broadcast_scalar) {
 	  emit_insn (gen_pred_<sat_op><mode> (operands[0], operands[1],
-	       operands[2], operands[3], boardcast_scalar, operands[5],
+	       operands[2], operands[3], broadcast_scalar, operands[5],
 	       operands[6], operands[7], operands[8], operands[9]));
         },
 	(riscv_vector::avl_type) INTVAL (operands[8])))
@@ -4907,15 +4907,15 @@
 	<MODE>mode,
 	riscv_vector::has_vi_variant_p (code, operands[5]),
 	code == LT || code == LTU ?
-	  [] (rtx *operands, rtx boardcast_scalar) {
+	  [] (rtx *operands, rtx broadcast_scalar) {
 	    emit_insn (gen_pred_ltge<mode> (operands[0], operands[1],
-	    	operands[2], operands[3], operands[4], boardcast_scalar,
+		operands[2], operands[3], operands[4], broadcast_scalar,
 	  	operands[6], operands[7], operands[8]));
           }
 	:
-	  [] (rtx *operands, rtx boardcast_scalar) {
+	  [] (rtx *operands, rtx broadcast_scalar) {
 	    emit_insn (gen_pred_cmp<mode> (operands[0], operands[1],
-	    	operands[2], operands[3], operands[4], boardcast_scalar,
+		operands[2], operands[3], operands[4], broadcast_scalar,
 	  	operands[6], operands[7], operands[8]));
           },
 	(riscv_vector::avl_type) INTVAL (operands[8])))
@@ -5407,9 +5407,9 @@
 	/* vl */operands[6],
 	<MODE>mode,
 	false,
-	[] (rtx *operands, rtx boardcast_scalar) {
+	[] (rtx *operands, rtx broadcast_scalar) {
 	  emit_insn (gen_pred_mul_plus<mode> (operands[0], operands[1],
-	       boardcast_scalar, operands[3], operands[4], operands[5],
+	       broadcast_scalar, operands[3], operands[4], operands[5],
 	       operands[6], operands[7], operands[8], operands[9]));
         },
 	(riscv_vector::avl_type) INTVAL (operands[9])))
@@ -5705,9 +5705,9 @@
 	/* vl */operands[6],
 	<MODE>mode,
 	false,
-	[] (rtx *operands, rtx boardcast_scalar) {
+	[] (rtx *operands, rtx broadcast_scalar) {
 	  emit_insn (gen_pred_minus_mul<mode> (operands[0], operands[1],
-	       boardcast_scalar, operands[3], operands[4], operands[5],
+	       broadcast_scalar, operands[3], operands[4], operands[5],
 	       operands[6], operands[7], operands[8], operands[9]));
         },
 	(riscv_vector::avl_type) INTVAL (operands[9])))

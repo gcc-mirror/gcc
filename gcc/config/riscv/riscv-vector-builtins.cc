@@ -4765,7 +4765,7 @@ expand_builtin (unsigned int code, tree exp, rtx target)
       error_at (EXPR_LOCATION (exp),
 		"built-in function %qE requires the %qs ISA extension",
 		exp,
-		reqired_ext_to_isa_name (rfn.required));
+		required_ext_to_isa_name (rfn.required));
       return target;
     }
 

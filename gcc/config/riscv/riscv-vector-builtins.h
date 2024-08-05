@@ -130,7 +130,7 @@ enum required_ext
   /* Please update below to isa_name func when add or remove enum type(s).  */
 };
 
-static inline const char * reqired_ext_to_isa_name (enum required_ext required)
+static inline const char * required_ext_to_isa_name (enum required_ext required)
 {
   switch (required)
   {
@@ -155,7 +155,7 @@ static inline const char * reqired_ext_to_isa_name (enum required_ext required)
     case ZVKSH_EXT:
       return "zvksh";
     case XTHEADVECTOR_EXT:
-      return "xthreadvector";
+      return "xtheadvector";
     case ZVFBFMIN_EXT:
       return "zvfbfmin";
     case ZVFBFWMA_EXT:
