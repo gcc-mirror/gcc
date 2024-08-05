@@ -5241,6 +5241,7 @@ build_new_function_call (tree fn, vec<tree, va_gc> **args,
   else
     {
       result = build_over_call (cand, LOOKUP_NORMAL, complain);
+      result = maybe_contract_wrap_new_method_call(cand->fn, result);
     }
 
   if (flag_coroutines
@@ -5375,6 +5376,8 @@ build_operator_new_call (tree fnname, vec<tree, va_gc> **args,
 
    /* Build the CALL_EXPR.  */
    tree ret = build_over_call (cand, LOOKUP_NORMAL, complain);
+
+   ret = maybe_contract_wrap_new_method_call(cand->fn, ret);
 
    /* Set this flag for all callers of this function.  In addition to
       new-expressions, this is called for allocating coroutine state; treat
@@ -5547,6 +5550,9 @@ build_op_call (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
 	     which is operator() turns out to be a static member function,
 	     `a' is none-the-less evaluated.  */
 	  result = keep_unused_object_arg (result, obj, cand->fn);
+
+	  result = maybe_contract_wrap_new_method_call(cand->fn, result);
+
 	}
       else
 	{
@@ -7455,6 +7461,7 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
 				"arguments");
 		}
 	      result = build_over_call (cand, LOOKUP_NORMAL, ocomplain);
+	      result = maybe_contract_wrap_new_method_call(cand->fn, result);
 	    }
 
 	  if (trivial_fn_p (cand->fn) || DECL_IMMEDIATE_FUNCTION_P (cand->fn))
@@ -7817,6 +7824,7 @@ build_op_subscript (const op_location_t &loc, tree obj,
 	     which is operator[] turns out to be a static member function,
 	     `a' is none-the-less evaluated.  */
 	  result = keep_unused_object_arg (result, obj, cand->fn);
+	  result = maybe_contract_wrap_new_method_call(cand->fn, result);
 	}
       else
 	gcc_unreachable ();
@@ -8859,7 +8867,7 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	    if (convs->check_narrowing && expr != error_mark_node)
 	      TARGET_EXPR_LIST_INIT_P (expr) = true;
 	  }
-
+	expr = maybe_contract_wrap_new_method_call(cand->fn, expr);
 	return expr;
       }
     case ck_identity:
@@ -12212,6 +12220,8 @@ build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
 		   "operator delete(~X(f()))" (rather than generating
 		   "t = f(), ~X(t), operator delete (t)").  */
 		call = build_nop (void_type_node, call);
+
+	      call = maybe_contract_wrap_new_method_call(cand->fn, call);
 	    }
 	}
     }
