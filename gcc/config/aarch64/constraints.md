@@ -556,7 +556,7 @@
   "@internal
  A constraint that matches a vector of immediate minus one."
  (and (match_code "const,const_vector")
-      (match_test "op == CONST1_RTX (GET_MODE (op))")))
+      (match_test "op == CONSTM1_RTX (GET_MODE (op))")))
 
 (define_constraint "Dd"
   "@internal
