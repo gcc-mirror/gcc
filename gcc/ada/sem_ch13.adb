@@ -4524,9 +4524,6 @@ package body Sem_Ch13 is
                         if (No (Expr) or else Entity (Expr) = Standard_True)
                           and then not Core_Extensions_Allowed
                         then
-                           Error_Msg_GNAT_Extension
-                             ("'First_'Controlling_'Parameter", Sloc (Aspect),
-                              Is_Core_Extension => True);
                            goto Continue;
                         end if;
 
