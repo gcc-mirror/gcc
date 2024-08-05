@@ -173,6 +173,9 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
 
   gcc_assert (nelts == NULL_TREE || TREE_CODE (nelts) == INTEGER_CST);
 
+  /* An initializer is unqualified.  */
+  type = cv_unqualified (type);
+
   if (type == error_mark_node)
     ;
   else if (static_storage_p && zero_init_p (type))

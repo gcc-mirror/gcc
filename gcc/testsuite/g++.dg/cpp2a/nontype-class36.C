@@ -59,7 +59,7 @@ typedef X<B{ nullptr, nullptr, mpi }>         XB00p;
 typedef X<B{ MemPtr{ }, MemPtr{ }, mpi }>     XB00p;
 typedef X<B{ mp0, MemPtr{ }, mpi }>           XB00p;
 typedef X<B{ mpn, mpn, mpi }>                 XB00p;
-typedef X<B{ mpn, mp_, mpi }>                 XB00p;  // { dg-bogus "conflicting declaration" "pr94568" { xfail *-*-* } }
+typedef X<B{ mpn, mp_, mpi }>                 XB00p;  // { dg-bogus "conflicting declaration" "pr94568" }
 
 static const constexpr MemFuncPtr mfp0 = { 0 };
 static const constexpr MemFuncPtr mfpn = { nullptr };
