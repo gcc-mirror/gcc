@@ -54,8 +54,6 @@ GCCRS_D_OBJS = \
    rust/rustspec.o \
    $(END)
 
-LIBS += -ldl -lpthread
-
 gccrs$(exeext): $(GCCRS_D_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	  $(GCCRS_D_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a \
@@ -237,7 +235,7 @@ RUST_LIBDEPS = $(LIBDEPS) $(LIBPROC_MACRO_INTERNAL)
 crab1$(exeext): $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(RUST_LIBDEPS) $(rust.prev)
 	@$(call LINK_PROGRESS,$(INDEX.rust),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-	      $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(LIBS) $(LIBPROC_MACRO_INTERNAL) $(LIBFORMAT_PARSER) $(BACKENDLIBS)
+	      $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(LIBS) $(CRAB1_LIBS) $(LIBPROC_MACRO_INTERNAL) $(LIBFORMAT_PARSER) $(BACKENDLIBS)
 	@$(call LINK_PROGRESS,$(INDEX.rust),end)
 
 # Build hooks.
