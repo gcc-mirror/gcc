@@ -2,13 +2,6 @@
 
 __attribute__ ((noipa))
 int
-gfx803 (void)
-{
-  return 0x803;
-}
-
-__attribute__ ((noipa))
-int
 gfx900 (void)
 {
   return 0x900;
@@ -70,11 +63,6 @@ gfx1103 (void)
   return 0x1103;
 }
 
-#ifdef USE_FIJI_FOR_GFX803
-#pragma omp declare variant(gfx803) match(device = {isa("fiji")})
-#else
-#pragma omp declare variant(gfx803) match(device = {isa("gfx803")})
-#endif
 #pragma omp declare variant(gfx900) match(device = {isa("gfx900")})
 #pragma omp declare variant(gfx906) match(device = {isa("gfx906")})
 #pragma omp declare variant(gfx908) match(device = {isa("gfx908")})

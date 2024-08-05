@@ -133,8 +133,7 @@ gcn_option_override (void)
   if (!flag_pic)
     flag_pic = flag_pie;
 
-  gcn_isa = (gcn_arch == PROCESSOR_FIJI ? ISA_GCN3
-      : gcn_arch == PROCESSOR_VEGA10 ? ISA_GCN5
+  gcn_isa = (gcn_arch == PROCESSOR_VEGA10 ? ISA_GCN5
       : gcn_arch == PROCESSOR_VEGA20 ? ISA_GCN5
       : gcn_arch == PROCESSOR_GFX908 ? ISA_CDNA1
       : gcn_arch == PROCESSOR_GFX90a ? ISA_CDNA2
@@ -164,17 +163,15 @@ gcn_option_override (void)
 	acc_lds_size = 32768;
     }
 
-  /* gfx803 "Fiji", gfx1030 and gfx1100 do not support XNACK.  */
-  if (gcn_arch == PROCESSOR_FIJI
-      || gcn_arch == PROCESSOR_GFX1030
+  /* gfx1030 and gfx1100 do not support XNACK.  */
+  if (gcn_arch == PROCESSOR_GFX1030
       || gcn_arch == PROCESSOR_GFX1036
       || gcn_arch == PROCESSOR_GFX1100
       || gcn_arch == PROCESSOR_GFX1103)
     {
       if (flag_xnack == HSACO_ATTR_ON)
 	error ("%<-mxnack=on%> is incompatible with %<-march=%s%>",
-	       (gcn_arch == PROCESSOR_FIJI ? "fiji"
-		: gcn_arch == PROCESSOR_GFX1030 ? "gfx1030"
+	       (gcn_arch == PROCESSOR_GFX1030 ? "gfx1030"
 		: gcn_arch == PROCESSOR_GFX1036 ? "gfx1036"
 		: gcn_arch == PROCESSOR_GFX1100 ? "gfx1100"
 		: gcn_arch == PROCESSOR_GFX1103 ? "gfx1103"
@@ -190,7 +187,6 @@ gcn_option_override (void)
   if (flag_xnack == HSACO_ATTR_DEFAULT)
     switch (gcn_arch)
       {
-      case PROCESSOR_FIJI:
       case PROCESSOR_VEGA10:
       case PROCESSOR_VEGA20:
       case PROCESSOR_GFX908:
@@ -3050,8 +3046,6 @@ gcn_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
     case omp_device_arch:
       return strcmp (name, "amdgcn") == 0 || strcmp (name, "gcn") == 0;
     case omp_device_isa:
-      if (strcmp (name, "fiji") == 0 || strcmp (name, "gfx803") == 0)
-	return gcn_arch == PROCESSOR_FIJI;
       if (strcmp (name, "gfx900") == 0)
 	return gcn_arch == PROCESSOR_VEGA10;
       if (strcmp (name, "gfx906") == 0)
@@ -6587,11 +6581,6 @@ output_file_start (void)
   const char *cpu;
   switch (gcn_arch)
     {
-    case PROCESSOR_FIJI:
-      cpu = "gfx803";
-      xnack = "";
-      sram_ecc = "";
-      break;
     case PROCESSOR_VEGA10:
       cpu = "gfx900";
       sram_ecc = "";

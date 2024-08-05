@@ -34,12 +34,7 @@
 	builtin_define ("__RDNA3__");                                          \
       else                                                                     \
 	gcc_unreachable ();                                                    \
-      if (TARGET_FIJI)                                                         \
-	{                                                                      \
-	  builtin_define ("__fiji__");                                         \
-	  builtin_define ("__gfx803__");                                       \
-	}                                                                      \
-      else if (TARGET_VEGA10)                                                  \
+      if (TARGET_VEGA10)                                                       \
 	builtin_define ("__gfx900__");                                         \
       else if (TARGET_VEGA20)                                                  \
 	builtin_define ("__gfx906__");                                         \

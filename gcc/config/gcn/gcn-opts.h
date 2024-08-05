@@ -20,7 +20,6 @@
 /* Which processor to generate code or schedule for.  */
 enum processor_type
 {
-  PROCESSOR_FIJI,    // gfx803
   PROCESSOR_VEGA10,  // gfx900
   PROCESSOR_VEGA20,  // gfx906
   PROCESSOR_GFX908,
@@ -32,7 +31,6 @@ enum processor_type
   PROCESSOR_GFX1103
 };
 
-#define TARGET_FIJI (gcn_arch == PROCESSOR_FIJI)
 #define TARGET_VEGA10 (gcn_arch == PROCESSOR_VEGA10)
 #define TARGET_VEGA20 (gcn_arch == PROCESSOR_VEGA20)
 #define TARGET_GFX908 (gcn_arch == PROCESSOR_GFX908)

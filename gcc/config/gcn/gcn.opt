@@ -26,9 +26,6 @@ Name(gpu_type) Type(enum processor_type)
 GCN GPU type to use:
 
 EnumValue
-Enum(gpu_type) String(fiji) Value(PROCESSOR_FIJI)
-
-EnumValue
 Enum(gpu_type) String(gfx900) Value(PROCESSOR_VEGA10)
 
 EnumValue
@@ -56,11 +53,11 @@ EnumValue
 Enum(gpu_type) String(gfx1103) Value(PROCESSOR_GFX1103)
 
 march=
-Target RejectNegative Negative(march=) Joined ToLower Enum(gpu_type) Var(gcn_arch) Init(PROCESSOR_FIJI)
+Target RejectNegative Negative(march=) Joined ToLower Enum(gpu_type) Var(gcn_arch) Init(PROCESSOR_VEGA10)
 Specify the name of the target GPU.
 
 mtune=
-Target RejectNegative Negative(mtune=) Joined ToLower Enum(gpu_type) Var(gcn_tune) Init(PROCESSOR_FIJI)
+Target RejectNegative Negative(mtune=) Joined ToLower Enum(gpu_type) Var(gcn_tune) Init(PROCESSOR_VEGA10)
 Specify the name of the target GPU.
 
 m32

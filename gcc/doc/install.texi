@@ -1276,7 +1276,7 @@ default set of libraries is selected based on the value of
 @option{--target}.
 
 @item amdgcn*-*-*
-@var{list} is a comma separated list of ISA names (allowed values: @code{fiji},
+@var{list} is a comma separated list of ISA names (allowed values:
 @code{gfx900}, @code{gfx906}, @code{gfx908}, @code{gfx90a}, @code{gfx90c}, 
 @code{gfx1030}, @code{gfx1036}, @code{gfx1100}, @code{gfx1103}).
 It ought not include the name of the default
@@ -3964,12 +3964,6 @@ To run the binaries, install the HSA Runtime from the
 @uref{https://rocm.docs.amd.com/,,ROCm Platform}, and use
 @file{libexec/gcc/amdhsa-amdhsa/@var{version}/gcn-run} to launch them
 on the GPU.
-
-To enable support for GCN3 Fiji devices (gfx803), GCC has to be configured with
-@option{--with-arch=@code{fiji}} or
-@option{--with-multilib-list=@code{fiji},...}.  Note that support for Fiji
-devices has been removed in ROCm 4.0 and support in LLVM was deprecated and has
-been removed in LLVM 18.
 
 @html
 <hr />
