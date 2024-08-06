@@ -1,3 +1,19 @@
+2024-08-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-07-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/108889
+	* gfortran.dg/pr108889.f90: New test.
+
+2024-08-05  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	Backported from master:
+	2024-07-25  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	PR target/116033
+	* gcc.target/riscv/pr116033.c: New test.
+
 2024-08-02  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR tree-optimization/116156
