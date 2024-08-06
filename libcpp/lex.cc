@@ -225,10 +225,7 @@ acc_char_index (word_type cmp ATTRIBUTE_UNUSED,
    and branches without increasing the number of arithmetic operations.
    It's almost certainly going to be a win with 64-bit word size.  */
 
-static const uchar * search_line_acc_char (const uchar *, const uchar *)
-  ATTRIBUTE_UNUSED;
-
-static const uchar *
+static inline const uchar *
 search_line_acc_char (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
 {
   const word_type repl_nl = acc_char_replicate ('\n');
@@ -293,7 +290,7 @@ static const char repl_chars[4][16] __attribute__((aligned(16))) = {
 
 /* A version of the fast scanner using SSE2 vectorized byte compare insns.  */
 
-static const uchar *
+static inline const uchar *
 #ifndef __SSE2__
 __attribute__((__target__("sse2")))
 #endif
@@ -344,120 +341,83 @@ search_line_sse2 (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
   return (const uchar *)p + found;
 }
 
-#ifdef HAVE_SSE4
-/* A version of the fast scanner using SSE 4.2 vectorized string insns.  */
+#ifdef HAVE_SSSE3
+/* A version of the fast scanner using SSSE3 shuffle (PSHUFB) insns.  */
 
-static const uchar *
-#ifndef __SSE4_2__
-__attribute__((__target__("sse4.2")))
+static inline const uchar *
+#ifndef __SSSE3__
+__attribute__((__target__("ssse3")))
 #endif
-search_line_sse42 (const uchar *s, const uchar *end)
+search_line_ssse3 (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
 {
   typedef char v16qi __attribute__ ((__vector_size__ (16)));
-  static const v16qi search = { '\n', '\r', '?', '\\' };
+  typedef v16qi v16qi_u __attribute__ ((__aligned__ (1)));
+  /* Helper vector for pshufb-based matching:
+     each character C we're searching for is at position (C % 16).  */
+  v16qi lut = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, '\n', 0, '\\', '\r', 0, '?' };
+  static_assert ('\n' == 10 && '\r' == 13 && '\\' == 92 && '?' == 63);
 
-  uintptr_t si = (uintptr_t)s;
-  uintptr_t index;
-
-  /* Check for unaligned input.  */
-  if (si & 15)
+  v16qi d1, d2, t1, t2;
+  /* Unaligned loads.  Reading beyond the final newline is safe,
+     since files.cc:read_file_guts pads the allocation.  */
+  d1 = *(const v16qi_u *)s;
+  d2 = *(const v16qi_u *)(s + 16);
+  unsigned m1, m2, found;
+  /* Process two 16-byte chunks per iteration.  */
+  do
     {
-      v16qi sv;
-
-      if (__builtin_expect (end - s < 16, 0)
-	  && __builtin_expect ((si & 0xfff) > 0xff0, 0))
-	{
-	  /* There are less than 16 bytes left in the buffer, and less
-	     than 16 bytes left on the page.  Reading 16 bytes at this
-	     point might generate a spurious page fault.  Defer to the
-	     SSE2 implementation, which already handles alignment.  */
-	  return search_line_sse2 (s, end);
-	}
-
-      /* ??? The builtin doesn't understand that the PCMPESTRI read from
-	 memory need not be aligned.  */
-      sv = __builtin_ia32_loaddqu ((const char *) s);
-      index = __builtin_ia32_pcmpestri128 (search, 4, sv, 16, 0);
-
-      if (__builtin_expect (index < 16, 0))
-	goto found;
-
-      /* Advance the pointer to an aligned address.  We will re-scan a
-	 few bytes, but we no longer need care for reading past the
-	 end of a page, since we're guaranteed a match.  */
-      s = (const uchar *)((si + 15) & -16);
+      t1 = __builtin_ia32_pshufb128 (lut, d1);
+      t2 = __builtin_ia32_pshufb128 (lut, d2);
+      m1 = __builtin_ia32_pmovmskb128 (t1 == d1);
+      m2 = __builtin_ia32_pmovmskb128 (t2 == d2);
+      s += 32;
+      d1 = *(const v16qi_u *)s;
+      d2 = *(const v16qi_u *)(s + 16);
+      found = m1 + (m2 << 16);
     }
-
-  /* Main loop, processing 16 bytes at a time.  */
-#ifdef __GCC_ASM_FLAG_OUTPUTS__
-  while (1)
-    {
-      char f;
-
-      /* By using inline assembly instead of the builtin,
-	 we can use the result, as well as the flags set.  */
-      __asm ("%vpcmpestri\t$0, %2, %3"
-	     : "=c"(index), "=@ccc"(f)
-	     : "m"(*s), "x"(search), "a"(4), "d"(16));
-      if (f)
-	break;
-      
-      s += 16;
-    }
-#else
-  s -= 16;
-  /* By doing the whole loop in inline assembly,
-     we can make proper use of the flags set.  */
-  __asm (      ".balign 16\n"
-	"0:	add $16, %1\n"
-	"	%vpcmpestri\t$0, (%1), %2\n"
-	"	jnc 0b"
-	: "=&c"(index), "+r"(s)
-	: "x"(search), "a"(4), "d"(16));
-#endif
-
- found:
-  return s + index;
+  while (!found);
+  /* Prefer to compute 's - 32' here, not spend an extra instruction
+     to make a copy of the previous value of 's' in the loop.  */
+  __asm__ ("" : "+r"(s));
+  return s - 32 + __builtin_ctz (found);
 }
 
 #else
-/* Work around out-dated assemblers without sse4 support.  */
-#define search_line_sse42 search_line_sse2
+/* Work around out-dated assemblers without SSSE3 support.  */
+#define search_line_ssse3 search_line_sse2
 #endif
 
+#ifdef __SSSE3__
+/* No need for CPU probing, just use the best available variant.  */
+#define search_line_fast search_line_ssse3
+#else
 /* Check the CPU capabilities.  */
 
 #include "../gcc/config/i386/cpuid.h"
 
 typedef const uchar * (*search_line_fast_type) (const uchar *, const uchar *);
-static search_line_fast_type search_line_fast;
+static search_line_fast_type search_line_fast
+#if defined(__SSE2__)
+ = search_line_sse2;
+#else
+ = search_line_acc_char;
+#endif
 
 #define HAVE_init_vectorized_lexer 1
 static inline void
 init_vectorized_lexer (void)
 {
-  unsigned dummy, ecx = 0, edx = 0;
-  search_line_fast_type impl = search_line_acc_char;
-  int minimum = 0;
+  unsigned ax, bx, cx, dx;
 
-#if defined(__SSE4_2__)
-  minimum = 3;
-#elif defined(__SSE2__)
-  minimum = 2;
-#endif
+  if (!__get_cpuid (1, &ax, &bx, &cx, &dx))
+    return;
 
-  if (minimum == 3)
-    impl = search_line_sse42;
-  else if (__get_cpuid (1, &dummy, &dummy, &ecx, &edx) || minimum == 2)
-    {
-      if (minimum == 3 || (ecx & bit_SSE4_2))
-        impl = search_line_sse42;
-      else if (minimum == 2 || (edx & bit_SSE2))
-	impl = search_line_sse2;
-    }
-
-  search_line_fast = impl;
+  if (cx & bit_SSSE3)
+    search_line_fast = search_line_ssse3;
+  else if (dx & bit_SSE2)
+    search_line_fast = search_line_sse2;
 }
+#endif
 
 #elif (GCC_VERSION >= 4005) && defined(_ARCH_PWR8) && defined(__ALTIVEC__)
 
