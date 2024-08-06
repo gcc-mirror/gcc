@@ -2131,13 +2131,9 @@ general_scalar_to_vector_candidate_p (rtx_insn *insn, enum machine_mode mode)
 
   switch (GET_CODE (src))
     {
-    case ASHIFTRT:
-      if (mode == DImode && !TARGET_AVX512VL)
-	return false;
-      /* FALLTHRU */
-
     case ASHIFT:
     case LSHIFTRT:
+    case ASHIFTRT:
     case ROTATE:
     case ROTATERT:
       if (!CONST_INT_P (XEXP (src, 1))

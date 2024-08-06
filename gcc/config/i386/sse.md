@@ -26655,156 +26655,21 @@
 {
   if (!TARGET_AVX512VL)
     {
-      if (TARGET_SSE4_2
-	  && CONST_INT_P (operands[2])
-	  && UINTVAL (operands[2]) >= 63)
-	{
-	  rtx zero = force_reg (V2DImode, CONST0_RTX (V2DImode));
-	  emit_insn (gen_sse4_2_gtv2di3 (operands[0], zero, operands[1]));
-	  DONE;
-	}
-      if (operands[2] == const0_rtx)
-	{
-	  emit_move_insn (operands[0], operands[1]);
-	  DONE;
-	}
-      if (CONST_INT_P (operands[2])
-	  && (!TARGET_XOP || UINTVAL (operands[2]) >= 63))
-	{
-	  vec_perm_builder sel (4, 4, 1);
-	  sel.quick_grow (4);
-	  rtx arg0, arg1;
-	  rtx op1 = lowpart_subreg (V4SImode,
-				    force_reg (V2DImode, operands[1]),
-				    V2DImode);
-	  rtx target = gen_reg_rtx (V4SImode);
-	  if (UINTVAL (operands[2]) >= 63)
-	    {
-	      arg0 = arg1 = gen_reg_rtx (V4SImode);
-	      emit_insn (gen_ashrv4si3 (arg0, op1, GEN_INT (31)));
-	      sel[0] = 1;
-	      sel[1] = 1;
-	      sel[2] = 3;
-	      sel[3] = 3;
-	    }
-	  else if (INTVAL (operands[2]) > 32)
-	    {
-	      arg0 = gen_reg_rtx (V4SImode);
-	      arg1 = gen_reg_rtx (V4SImode);
-	      emit_insn (gen_ashrv4si3 (arg1, op1, GEN_INT (31)));
-	      emit_insn (gen_ashrv4si3 (arg0, op1,
-					GEN_INT (INTVAL (operands[2]) - 32)));
-	      sel[0] = 1;
-	      sel[1] = 5;
-	      sel[2] = 3;
-	      sel[3] = 7;
-	    }
-	  else if (INTVAL (operands[2]) == 32)
-	    {
-	      arg0 = op1;
-	      arg1 = gen_reg_rtx (V4SImode);
-	      emit_insn (gen_ashrv4si3 (arg1, op1, GEN_INT (31)));
-	      sel[0] = 1;
-	      sel[1] = 5;
-	      sel[2] = 3;
-	      sel[3] = 7;
-	    }
-	  else
-	    {
-	      arg0 = gen_reg_rtx (V2DImode);
-	      arg1 = gen_reg_rtx (V4SImode);
-	      emit_insn (gen_lshrv2di3 (arg0, operands[1], operands[2]));
-	      emit_insn (gen_ashrv4si3 (arg1, op1, operands[2]));
-	      arg0 = lowpart_subreg (V4SImode, arg0, V2DImode);
-	      sel[0] = 0;
-	      sel[1] = 5;
-	      sel[2] = 2;
-	      sel[3] = 7;
-	    }
-	  vec_perm_indices indices (sel, arg0 != arg1 ? 2 : 1, 4);
-	  bool ok = targetm.vectorize.vec_perm_const (V4SImode, V4SImode,
-						      target, arg0, arg1,
-						      indices);
-	  gcc_assert (ok);
-	  emit_move_insn (operands[0],
-			  lowpart_subreg (V2DImode, target, V4SImode));
-	  DONE;
-	}
-      if (!TARGET_XOP)
-	{
-	  rtx zero = force_reg (V2DImode, CONST0_RTX (V2DImode));
-	  rtx zero_or_all_ones;
-	  if (TARGET_SSE4_2)
-	    {
-	      zero_or_all_ones = gen_reg_rtx (V2DImode);
-	      emit_insn (gen_sse4_2_gtv2di3 (zero_or_all_ones, zero,
-					     operands[1]));
-	    }
-	  else
-	    {
-	      rtx temp = gen_reg_rtx (V4SImode);
-	      emit_insn (gen_ashrv4si3 (temp,
-					lowpart_subreg (V4SImode,
-							force_reg (V2DImode,
-								   operands[1]),
-							V2DImode),
-					GEN_INT (31)));
-	      zero_or_all_ones = gen_reg_rtx (V4SImode);
-	      emit_insn (gen_sse2_pshufd_1 (zero_or_all_ones, temp,
-					    const1_rtx, const1_rtx,
-					    GEN_INT (3), GEN_INT (3)));
-	      zero_or_all_ones = lowpart_subreg (V2DImode, zero_or_all_ones,
-						 V4SImode);
-	    }
-	  rtx lshr_res = gen_reg_rtx (V2DImode);
-	  emit_insn (gen_lshrv2di3 (lshr_res, operands[1], operands[2]));
-	  rtx ashl_res = gen_reg_rtx (V2DImode);
-	  rtx amount;
-	  if (TARGET_64BIT)
-	    {
-	      amount = gen_reg_rtx (DImode);
-	      emit_insn (gen_subdi3 (amount, force_reg (DImode, GEN_INT (64)),
-				     operands[2]));
-	    }
-	  else
-	    {
-	      rtx temp = gen_reg_rtx (SImode);
-	      emit_insn (gen_subsi3 (temp, force_reg (SImode, GEN_INT (64)),
-				     lowpart_subreg (SImode, operands[2],
-						     DImode)));
-	      amount = gen_reg_rtx (V4SImode);
-	      emit_insn (gen_vec_setv4si_0 (amount, CONST0_RTX (V4SImode),
-					    temp));
-	    }
-	  amount = lowpart_subreg (DImode, amount, GET_MODE (amount));
-	  emit_insn (gen_ashlv2di3 (ashl_res, zero_or_all_ones, amount));
-	  emit_insn (gen_iorv2di3 (operands[0], lshr_res, ashl_res));
-	  DONE;
-	}
-
-      rtx reg = gen_reg_rtx (V2DImode);
-      rtx par;
-      bool negate = false;
-      int i;
-
-      if (CONST_INT_P (operands[2]))
-	operands[2] = GEN_INT (-INTVAL (operands[2]));
-      else
-	negate = true;
-
-      par = gen_rtx_PARALLEL (V2DImode, rtvec_alloc (2));
-      for (i = 0; i < 2; i++)
-	XVECEXP (par, 0, i) = operands[2];
-
-      emit_insn (gen_vec_initv2didi (reg, par));
-
-      if (negate)
-	emit_insn (gen_negv2di2 (reg, reg));
-
-      emit_insn (gen_xop_shav2di3 (operands[0], operands[1], reg));
+      ix86_expand_v2di_ashiftrt (operands);
       DONE;
     }
 })
+
+(define_insn_and_split "*ashrv2di3"
+  [(set (match_operand:V2DI 0 "register_operand")
+	(ashiftrt:V2DI
+	  (match_operand:V2DI 1 "register_operand")
+	  (match_operand:DI 2 "nonmemory_operand")))]
+  "TARGET_SSE2 && !TARGET_AVX512VL && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  "ix86_expand_v2di_ashiftrt (operands); DONE;")
 
 ;; XOP FRCZ support
 (define_insn "xop_frcz<mode>2"
