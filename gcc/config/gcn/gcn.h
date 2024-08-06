@@ -20,9 +20,7 @@
   do                                                                           \
     {                                                                          \
       builtin_define ("__AMDGCN__");                                           \
-      if (TARGET_GCN3)                                                         \
-	builtin_define ("__GCN3__");                                           \
-      else if (TARGET_GCN5)                                                    \
+      if (TARGET_GCN5)                                                    \
 	builtin_define ("__GCN5__");                                           \
       else if (TARGET_CDNA1)                                                   \
 	builtin_define ("__CDNA1__");                                          \

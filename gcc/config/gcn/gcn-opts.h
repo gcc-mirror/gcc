@@ -44,7 +44,6 @@ enum processor_type
 /* Set in gcn_option_override.  */
 extern enum gcn_isa {
   ISA_UNKNOWN,
-  ISA_GCN3,
   ISA_GCN5,
   ISA_RDNA2,
   ISA_RDNA3,
@@ -52,8 +51,6 @@ extern enum gcn_isa {
   ISA_CDNA2
 } gcn_isa;
 
-#define TARGET_GCN3 (gcn_isa == ISA_GCN3)
-#define TARGET_GCN3_PLUS (gcn_isa >= ISA_GCN3)
 #define TARGET_GCN5 (gcn_isa == ISA_GCN5)
 #define TARGET_GCN5_PLUS (gcn_isa >= ISA_GCN5)
 #define TARGET_CDNA1 (gcn_isa == ISA_CDNA1)
@@ -65,7 +62,6 @@ extern enum gcn_isa {
 #define TARGET_RDNA3 (gcn_isa == ISA_RDNA3)
 
 
-#define TARGET_M0_LDS_LIMIT (TARGET_GCN3)
 #define TARGET_PACKED_WORK_ITEMS (TARGET_CDNA2_PLUS || TARGET_RDNA3)
 
 #define TARGET_XNACK (flag_xnack != HSACO_ATTR_OFF)
@@ -92,8 +88,6 @@ enum hsaco_attr_type
 #define TARGET_11BIT_GLOBAL_OFFSET TARGET_RDNA2_PLUS
 /* The work item details are all encoded into v0.  */
 //#define TARGET_PACKED_WORK_ITEMS TARGET_PACKED_WORK_ITEMS
-/* m0 must be initialized in order to use LDS.  */
-//#define TARGET_M0_LDS_LIMIT TARGET_M0_LDS_LIMIT
 /* CDNA2 load/store costs are reduced.
  * TODO: what does this mean?  */
 #define TARGET_CDNA2_MEM_COSTS TARGET_CDNA2_PLUS

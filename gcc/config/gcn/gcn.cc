@@ -68,7 +68,7 @@ static bool ext_gcn_constants_init = 0;
 
 /* Holds the ISA variant, derived from the command line parameters.  */
 
-enum gcn_isa gcn_isa = ISA_GCN3;	/* Default to GCN3.  */
+enum gcn_isa gcn_isa = ISA_GCN5;	/* Default to GCN5.  */
 
 /* Reserve this much space for LDS (for propagating variables from
    worker-single mode to worker-partitioned mode), per workgroup.  Global
@@ -3556,17 +3556,6 @@ gcn_expand_prologue ()
   /* Ensure that the scheduler doesn't do anything unexpected.  */
   emit_insn (gen_blockage ());
 
-  if (TARGET_M0_LDS_LIMIT)
-  {
-    /* m0 is initialized for the usual LDS DS and FLAT memory case.
-       The low-part is the address of the topmost addressable byte, which is
-       size-1.  The high-part is an offset and should be zero.  */
-    emit_move_insn (gen_rtx_REG (SImode, M0_REG),
-	gen_int_mode (LDS_SIZE, SImode));
-
-    emit_insn (gen_prologue_use (gen_rtx_REG (SImode, M0_REG)));
-  }
-
   if (cfun && cfun->machine && !cfun->machine->normal_function && flag_openmp)
     {
       /* OpenMP kernels have an implicit call to gomp_gcn_enter_kernel.  */
@@ -5591,8 +5580,7 @@ gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
 		    || unspec == UNSPEC_UMAX_DPP_SHR);
   bool use_plus_carry = unspec == UNSPEC_PLUS_DPP_SHR
 			&& GET_MODE_CLASS (mode) == MODE_VECTOR_INT
-			/* FIXME: why GCN3?  */
-			&& (TARGET_GCN3 || scalar_mode == DImode);
+			&& scalar_mode == DImode;
 
   if (use_plus_carry)
     unspec = UNSPEC_PLUS_CARRY_DPP_SHR;

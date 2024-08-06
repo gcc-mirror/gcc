@@ -1156,10 +1156,9 @@
 	   (mem:BLK (scratch))]
 	  UNSPEC_GATHER))]
   "(AS_FLAT_P (INTVAL (operands[3]))
-    && ((TARGET_GCN3 && INTVAL(operands[2]) == 0)
-	|| ((unsigned HOST_WIDE_INT)INTVAL(operands[2]) < 0x1000)))
-    || (AS_GLOBAL_P (INTVAL (operands[3]))
-	&& (((unsigned HOST_WIDE_INT)INTVAL(operands[2]) + 0x1000) < 0x2000))"
+    && ((unsigned HOST_WIDE_INT)INTVAL(operands[2]) < 0x1000))
+   || (AS_GLOBAL_P (INTVAL (operands[3]))
+       && (((unsigned HOST_WIDE_INT)INTVAL(operands[2]) + 0x1000) < 0x2000))"
   {
     addr_space_t as = INTVAL (operands[3]);
     const char *glc = INTVAL (operands[4]) ? " glc" : "";
@@ -4297,10 +4296,7 @@
 	   (match_operand:V_1REG 2 "register_operand" "v")
 	   (match_operand:SI 3 "const_int_operand"        "n")]
 	  REDUC_UNSPEC))]
-  ; GCN3 requires a carry out, GCN5 not
-  "!(TARGET_GCN3 && SCALAR_INT_MODE_P (<SCALAR_MODE>mode)
-     && <reduc_unspec> == UNSPEC_PLUS_DPP_SHR)
-   && TARGET_DPP_FULL"
+  "TARGET_DPP_FULL"
   {
     return gcn_expand_dpp_shr_insn (<MODE>mode, "<reduc_insn>",
 				    <reduc_unspec>, INTVAL (operands[3]));
