@@ -11535,8 +11535,16 @@ package body Sem_Ch6 is
                         --  operation. That's illegal in the tagged case
                         --  (but not if the private type is untagged).
 
+                        --  Do not report this error when the tagged type has
+                        --  the First_Controlling_Parameter aspect, unless the
+                        --  function has a controlling result (which is only
+                        --  possible if the function overrides an inherited
+                        --  primitive).
+
                         if T = Base_Type (Etype (S))
-                          and then Has_Controlling_Result (S)
+                          and then
+                            (not Has_First_Controlling_Parameter_Aspect (T)
+                               or else Has_Controlling_Result (S))
                         then
                            Error_Msg_N
                              ("private function with controlling result must"
@@ -11550,7 +11558,9 @@ package body Sem_Ch6 is
 
                         elsif Ekind (Etype (S)) = E_Anonymous_Access_Type
                           and then T = Base_Type (Designated_Type (Etype (S)))
-                          and then Has_Controlling_Result (S)
+                          and then
+                            (not Has_First_Controlling_Parameter_Aspect (T)
+                               or else Has_Controlling_Result (S))
                           and then Ada_Version >= Ada_2012
                         then
                            Error_Msg_N
