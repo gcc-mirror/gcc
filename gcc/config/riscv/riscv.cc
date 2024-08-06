@@ -9826,8 +9826,8 @@ riscv_option_override (void)
   if (riscv_abi == ABI_LP64E)
     {
       if (warning (OPT_Wdeprecated, "LP64E ABI is marked for deprecation in GCC"))
-	inform (UNKNOWN_LOCATION, "If you need LP64E please notify the GCC "
-		"project via https://gcc.gnu.org/PR116152");
+	inform (UNKNOWN_LOCATION, "if you need LP64E please notify the GCC "
+		"project via %{PR116152%}", "https://gcc.gnu.org/PR116152");
     }
 
   /* Zfinx require abi ilp32, ilp32e, lp64 or lp64e.  */
