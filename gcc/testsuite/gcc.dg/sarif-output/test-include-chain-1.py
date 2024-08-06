@@ -13,6 +13,17 @@ def test_basics(sarif):
     version = sarif['version']
     assert version == "2.1.0"
 
+def test_execution_unsuccessful(sarif):
+    runs = sarif['runs']
+    run = runs[0]
+
+    invocations = run['invocations']
+    assert len(invocations) == 1
+    invocation = invocations[0]
+
+    # We expect the errors to make executionSuccessful be false
+    assert invocation['executionSuccessful'] == False
+
 def test_location_relationships(sarif):
     runs = sarif['runs']
     run = runs[0]

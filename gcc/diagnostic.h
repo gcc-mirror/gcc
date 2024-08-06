@@ -392,6 +392,8 @@ public:
 
   void finish ();
 
+  bool execution_failed_p () const;
+
   void set_original_argv (unique_argv original_argv);
   const char * const *get_original_argv ()
   {

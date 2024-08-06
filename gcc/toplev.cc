@@ -2355,7 +2355,7 @@ toplev::main (int argc, char **argv)
 
   after_memory_report = true;
 
-  if (seen_error () || werrorcount)
+  if (global_dc->execution_failed_p ())
     return (FATAL_EXIT_CODE);
 
   return (SUCCESS_EXIT_CODE);

@@ -811,6 +811,8 @@ void
 sarif_invocation::prepare_to_flush (diagnostic_context &context)
 {
   /* "executionSuccessful" property (SARIF v2.1.0 section 3.20.14).  */
+  if (context.execution_failed_p ())
+    m_success = false;
   set_bool ("executionSuccessful", m_success);
 
   /* "toolExecutionNotifications" property (SARIF v2.1.0 section 3.20.21).  */

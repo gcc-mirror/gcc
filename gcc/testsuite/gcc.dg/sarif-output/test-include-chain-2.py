@@ -31,6 +31,17 @@ def test_basics(sarif):
     version = sarif['version']
     assert version == "2.1.0"
 
+def test_execution_successful(sarif):
+    runs = sarif['runs']
+    run = runs[0]
+
+    invocations = run['invocations']
+    assert len(invocations) == 1
+    invocation = invocations[0]
+
+    # We expect a mere 'warning' to allow executionSuccessful be true
+    assert invocation['executionSuccessful'] == True
+
 def test_result(sarif):
     runs = sarif['runs']
     run = runs[0]

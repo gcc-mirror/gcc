@@ -399,6 +399,19 @@ diagnostic_context::finish ()
   m_original_argv = nullptr;
 }
 
+/* Return true if sufficiently severe diagnostics have been seen that
+   we ought to exit with a non-zero exit code.  */
+
+bool
+diagnostic_context::execution_failed_p () const
+{
+  /* Equivalent to (seen_error () || werrorcount), but on
+     this context, rather than global_dc.  */
+  return (m_diagnostic_count [DK_ERROR]
+	  || m_diagnostic_count [DK_SORRY]
+	  || m_diagnostic_count [DK_WERROR]);
+}
+
 void
 diagnostic_context::set_output_format (diagnostic_output_format *output_format)
 {
