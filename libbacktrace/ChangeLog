@@ -1,3 +1,10 @@
+2024-08-05  Ian Lance Taylor  <iant@golang.org>
+
+	* configure.ac (ACX_PROG_CC_WARNING_OPTS): Add -Wpointer-arith.
+	* pecoff.c (coff_add): Cast void pointers.
+	* xcoff.c (xcoff_add): Likewise.
+	* configure: Regenerate.
+
 2024-07-30  Ian Lance Taylor  <iant@golang.org>
 
 	* pecoff.c (LDR_DLL_NOTIFICATION): Put function modifier

@@ -1,3 +1,7 @@
+2024-08-05  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* MAINTAINERS: Add myself.
+
 2024-07-31  Arsen Arsenović  <arsen@aarsen.me>
 
 	* .dir-locals.el: Change c-mode to a list of C, C++ and ObjC

@@ -1,3 +1,8 @@
+2024-08-05  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP Runtime Library Routines): Add TR13 routines
+	to @menu (commented out).
+
 2024-08-01  Tobias Burnus  <tburnus@baylibre.com>
 	    Richard Biener  <rguenther@suse.de
 

@@ -1,3 +1,62 @@
+2024-08-05  Patrick O'Neill  <patrick@rivosinc.com>
+
+	PR target/116152
+	* config/riscv/riscv.cc (riscv_option_override): Add deprecation
+	warning.
+
+2024-08-05  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (get_type_num_const_type): Handle missing
+	DW_AT_type attribute.
+	(get_type_num_volatile_type): Likewise.
+
+2024-08-05  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/atomic.md ("atomic_add<AMO:mode>"): Remove insn.
+	("atomic_and<AMO:mode>"): Likewise
+	("atomic_or<AMO:mode>"): Likewise.
+	("atomic_xor<AMO:mode>"): Likewise.
+
+2024-08-05  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* config/aarch64/aarch64.md (*and<mode>_compare0): Change attribute.
+
+2024-08-05  Filip Kastl  <fkastl@suse.cz>
+
+	* gimple-ssa-sccopy.cc: Move a misplaced comment.
+
+2024-08-05  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/116139
+	* tree-ssa-reassoc.cc (get_reassociation_width): Move width_mult
+	<= width comparison to if condition rather than assert.
+
+2024-08-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Revert:
+	2024-08-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/116145
+	* rtlanal.cc (may_trap_p_1): Trust MEM_NOTRAP_P even for code
+	movement if MEM_READONLY_P is also true.
+
+2024-08-05  Alex Coplan  <alex.coplan@arm.com>
+
+	* gdbhooks.py: Add attempted call to "on-gcc-hooks-load" once
+	we've finished loading the hooks.
+
+2024-08-05  Alex Coplan  <alex.coplan@arm.com>
+
+	* gdbhooks.py (GCCDotCmd): New.
+	(gcc_dot_cmd): New. Use it ...
+	(DotFn.invoke): ... here.
+
+2024-08-05  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR rtl-optimization/116179
+	* ira.cc (split_live_ranges_for_shrink_wrap): For the uses loop,
+	only look at non-debug insns.
+
 2024-08-04  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR rtl-optimization/116199

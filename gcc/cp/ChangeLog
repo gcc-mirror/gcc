@@ -1,3 +1,16 @@
+2024-08-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (split_coroutine_body_from_ramp): New.
+	(morph_fn_to_coro): Use split_coroutine_body_from_ramp().
+	* cp-tree.h (use_eh_spec_block): New.
+	* decl.cc (use_eh_spec_block): Make non-static.
+
+2024-08-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115987
+	* call.cc (do_warn_dangling_reference): Don't consider a
+	temporary with a scalar type that cannot bind to the return type.
+
 2024-08-02  Arsen Arsenović  <arsen@aarsen.me>
 
 	PR c++/105475

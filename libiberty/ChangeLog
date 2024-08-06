@@ -1,3 +1,7 @@
+2024-08-05  Andrew Burgess  <aburgess@redhat.com>
+
+	* argv.c (only_whitespace): Delete.
+
 2024-07-16  Andrew Burgess  <aburgess@redhat.com>
 
 	* argv.c (buildargv): Treat input of only whitespace as an empty

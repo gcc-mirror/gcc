@@ -1,3 +1,12 @@
+2024-08-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* Make-lang.in (RUST_LIBDEPS): Inline into all users.
+
+2024-08-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* Make-lang.in (LIBS): Don't override.
+	(crab1$(exeext):): Use 'CRAB1_LIBS'.
+
 2024-08-01  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
 
 	* resolve/rust-default-resolver.cc (DefaultResolver::visit): Visit
