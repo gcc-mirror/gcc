@@ -42,6 +42,7 @@
 #  include <iosfwd>
 #endif
 
+#include <stdint.h> // uintptr_t
 #include <bits/stl_iterator_base_types.h>
 #include <ext/cast.h>
 #include <ext/type_traits.h>
