@@ -286,7 +286,7 @@
 
 ; Disable alternatives that only apply to specific ISA variants.
 
-(define_attr "gcn_version" "gcn3,gcn5,cdna2" (const_string "gcn3"))
+(define_attr "cdna" "any,cdna2" (const_string "any"))
 (define_attr "rdna" "any,no,yes" (const_string "any"))
 
 (define_attr "xnack" "na,off,on" (const_string "na"))
@@ -298,10 +298,7 @@
 	 (and (eq_attr "rdna" "yes")
 	      (eq (symbol_ref "TARGET_RDNA2_PLUS") (const_int 0)))
 	   (const_int 0)
-	 (and (eq_attr "gcn_version" "gcn5")
-	      (eq (symbol_ref "TARGET_GCN5_PLUS") (const_int 0)))
-	   (const_int 0)
-	 (and (eq_attr "gcn_version" "cdna2")
+	 (and (eq_attr "cdna" "cdna2")
 	      (eq (symbol_ref "TARGET_CDNA2_PLUS") (const_int 0)))
 	   (const_int 0)
 	 (and (eq_attr "xnack" "off")
@@ -568,7 +565,7 @@
   [(set (match_operand:SISF 0 "nonimmediate_operand")
 	(match_operand:SISF 1 "gcn_load_operand"))]
   ""
-  {@ [cons: =0, 1; attrs: type, exec, length, gcn_version, xnack]
+  {@ [cons: =0, 1; attrs: type, exec, length, cdna, xnack]
    [SD  ,SSA ;sop1 ,*   ,4 ,*    ,*  ] s_mov_b32\t%0, %1
    [SD  ,J   ;sopk ,*   ,4 ,*    ,*  ] s_movk_i32\t%0, %1
    [SD  ,B   ;sop1 ,*   ,8 ,*    ,*  ] s_mov_b32\t%0, %1
@@ -609,7 +606,7 @@
   [(set (match_operand:QIHI 0 "nonimmediate_operand")
 	(match_operand:QIHI 1 "gcn_load_operand"))]
   "gcn_valid_move_p (<MODE>mode, operands[0], operands[1])"
-  {@ [cons: =0, 1; attrs: type, exec, length, gcn_version, xnack]
+  {@ [cons: =0, 1; attrs: type, exec, length, cdna, xnack]
   [SD  ,SSA ;sop1 ,*   ,4 ,*    ,*  ] s_mov_b32\t%0, %1
   [SD  ,J   ;sopk ,*   ,4 ,*    ,*  ] s_movk_i32\t%0, %1
   [SD  ,B   ;sop1 ,*   ,8 ,*    ,*  ] s_mov_b32\t%0, %1
@@ -642,7 +639,7 @@
   [(set (match_operand:DIDF 0 "nonimmediate_operand")
 	(match_operand:DIDF 1 "general_operand"))]
   "GET_CODE(operands[1]) != SYMBOL_REF"
-  {@ [cons: =0, 1; attrs: type, length, gcn_version, xnack]
+  {@ [cons: =0, 1; attrs: type, length, cdna, xnack]
   [SD  ,SSA ;sop1 ,4 ,*    ,*  ] s_mov_b64\t%0, %1
   [SD  ,C   ;sop1 ,8 ,*    ,*  ] ^
   [SD  ,DB  ;mult ,* ,*    ,*  ] #
@@ -707,7 +704,7 @@
   [(set (match_operand:TI 0 "nonimmediate_operand")
 	(match_operand:TI 1 "general_operand"  ))]
   ""
-  {@ [cons: =0, 1; attrs: type, delayeduse, length, gcn_version, xnack]
+  {@ [cons: =0, 1; attrs: type, delayeduse, length, cdna, xnack]
   [SD ,SSB;mult ,*  ,* ,*    ,*  ] #
   [RS ,Sm ;smem ,*  ,12,*    ,*  ] s_store_dwordx4\t%1, %A0
   [Sm ,RS ;smem ,yes,12,*    ,off] s_load_dwordx4\t%0, %A1\;s_waitcnt\tlgkmcnt(0)
@@ -1137,7 +1134,7 @@
    s_add_i32\t%0, %1, %2
    s_addk_i32\t%0, %2
    s_add_i32\t%0, %1, %2
-   v_add%^_u32\t%0, vcc, %2, %1"
+   v_add_co_u32\t%0, vcc, %2, %1"
   [(set_attr "type" "sop2,sopk,sop2,vop2")
    (set_attr "length" "4,4,8,8")])
 
@@ -1217,7 +1214,7 @@
   ""
   "@
    s_add_u32\t%0, %1, %2
-   v_add%^_u32\t%0, vcc, %2, %1"
+   v_add_co_u32\t%0, vcc, %2, %1"
   [(set_attr "type" "sop2,vop2")
    (set_attr "length" "8,8")])
 
@@ -1232,7 +1229,7 @@
   "INTVAL (operands[2]) == -INTVAL (operands[3])"
   "@
    s_add_u32\t%0, %1, %2
-   v_add%^_u32\t%0, vcc, %2, %1"
+   v_add_co_u32\t%0, vcc, %2, %1"
   [(set_attr "type" "sop2,vop2")
    (set_attr "length" "4")])
 
@@ -1254,7 +1251,7 @@
   ""
   "@
    s_addc_u32\t%0, %1, %2
-   {v_addc%^_u32|v_add_co_ci_u32}\t%0, vcc, %2, %1, vcc"
+   {v_addc_co_u32|v_add_co_ci_u32}\t%0, vcc, %2, %1, vcc"
   [(set_attr "type" "sop2,vop2")
    (set_attr "length" "8,4")])
 
@@ -1270,7 +1267,7 @@
   ""
   "@
    s_addc_u32\t%0, %1, 0
-   {v_addc%^_u32|v_add_co_ci_u32}\t%0, vcc, 0, %1, vcc"
+   {v_addc_co_u32|v_add_co_ci_u32}\t%0, vcc, 0, %1, vcc"
   [(set_attr "type" "sop2,vop2")
    (set_attr "length" "4")])
 
@@ -1299,8 +1296,8 @@
 	rtx new_operands[4] = { operands[0], operands[1], operands[2],
 				gen_rtx_REG (DImode, CC_SAVE_REG) };
 
-	output_asm_insn ("v_add%^_u32\t%L0, %3, %L2, %L1", new_operands);
-	output_asm_insn ("{v_addc%^_u32|v_add_co_ci_u32}\t%H0, %3, %H2, %H1, %3",
+	output_asm_insn ("v_add_co_u32\t%L0, %3, %L2, %L1", new_operands);
+	output_asm_insn ("{v_addc_co_u32|v_add_co_ci_u32}\t%H0, %3, %H2, %H1, %3",
 			 new_operands);
       }
     else
@@ -1332,8 +1329,8 @@
   "@
    s_sub_i32\t%0, %1, %2
    s_sub_i32\t%0, %1, %2
-   v_subrev%^_u32\t%0, vcc, %2, %1
-   v_sub%^_u32\t%0, vcc, %1, %2"
+   v_subrev_co_u32\t%0, vcc, %2, %1
+   v_sub_co_u32\t%0, vcc, %1, %2"
   [(set_attr "type" "sop2,sop2,vop2,vop2")
    (set_attr "length" "4,8,8,8")])
 
@@ -1462,11 +1459,6 @@
 	    (const_int 32))))]
   ""
 {
-  if (can_create_pseudo_p ()
-      && !TARGET_MULTIPLY_IMMEDIATE
-      && !gcn_inline_immediate_operand (operands[2], SImode))
-    operands[2] = force_reg (SImode, operands[2]);
-
   if (REG_P (operands[2]))
     emit_insn (gen_<su>mulsi3_highpart_reg (operands[0], operands[1],
 					    operands[2]));
@@ -1492,8 +1484,7 @@
   s_mul_hi<sgnsuffix>0\t%0, %1, %2
   v_mul_hi<sgnsuffix>0\t%0, %2, %1"
   [(set_attr "type" "sop2,vop3a")
-   (set_attr "length" "4,8")
-   (set_attr "gcn_version" "gcn5,*")])
+   (set_attr "length" "4,8")])
 
 (define_insn "<su>mulsi3_highpart_imm"
   [(set (match_operand:SI 0 "register_operand"	              "=Sg,Sg,v")
@@ -1504,15 +1495,13 @@
 		(match_operand:SI 1 "register_operand"         "Sg,Sg,v"))
 	      (match_operand:DI 2 "gcn_32bit_immediate_operand" "A, B,A"))
 	    (const_int 32))))]
-  "TARGET_MULTIPLY_IMMEDIATE
-   || gcn_inline_immediate_operand (operands[2], SImode)"
+  ""
   "@
   s_mul_hi<sgnsuffix>0\t%0, %1, %2
   s_mul_hi<sgnsuffix>0\t%0, %1, %2
   v_mul_hi<sgnsuffix>0\t%0, %2, %1"
   [(set_attr "type" "sop2,sop2,vop3a")
-   (set_attr "length" "4,8,8")
-   (set_attr "gcn_version" "gcn5,gcn5,*")])
+   (set_attr "length" "4,8,8")])
 
 (define_expand "<su>mulsidi3"
   [(set (match_operand:DI 0 "register_operand" "")
@@ -1522,11 +1511,6 @@
 		   (match_operand:SI 2 "nonmemory_operand" ""))))]
   ""
 {
-  if (can_create_pseudo_p ()
-      && !TARGET_MULTIPLY_IMMEDIATE
-      && !gcn_inline_immediate_operand (operands[2], SImode))
-    operands[2] = force_reg (SImode, operands[2]);
-
   if (REG_P (operands[2]))
     emit_insn (gen_<su>mulsidi3_reg (operands[0], operands[1], operands[2]));
   else
@@ -1551,8 +1535,7 @@
     emit_insn (gen_mulsi3 (dstlo, operands[1], operands[2]));
     emit_insn (gen_<su>mulsi3_highpart (dsthi, operands[1], operands[2]));
     DONE;
-  }
-  [(set_attr "gcn_version" "gcn5,*")])
+  })
 
 (define_insn_and_split "<su>mulsidi3_imm"
   [(set (match_operand:DI 0 "register_operand"                "=&Sg,&Sg,&v")
@@ -1560,8 +1543,7 @@
 		   (match_operand:SI 1 "register_operand"       "Sg, Sg, v"))
 		 (match_operand:DI 2 "gcn_32bit_immediate_operand"
 								 "A,  B, A")))]
-  "TARGET_MULTIPLY_IMMEDIATE
-   || gcn_inline_immediate_operand (operands[2], SImode)"
+  ""
   "#"
   "&& reload_completed"
   [(const_int 0)]
@@ -1571,8 +1553,7 @@
     emit_insn (gen_mulsi3 (dstlo, operands[1], operands[2]));
     emit_insn (gen_<su>mulsi3_highpart (dsthi, operands[1], operands[2]));
     DONE;
-  }
-  [(set_attr "gcn_version" "gcn5,gcn5,*")])
+  })
 
 (define_insn_and_split "muldi3"
   [(set (match_operand:DI 0 "register_operand"         "=&Sg,&Sg, &v,&v")
@@ -1606,8 +1587,7 @@
     add = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (3, add, clob1, clob2));
     emit_insn (add);
     DONE;
-  }
-  [(set_attr "gcn_version" "gcn5,gcn5,*,*")])
+  })
 
 (define_insn "<u>mulhisi3"
   [(set (match_operand:SI 0 "register_operand"			"=v")
@@ -1994,8 +1974,7 @@
    flat_atomic_<bare_mnemonic><X>\t%0, %1, %2 glc\;s_waitcnt\t0
    global_atomic_<bare_mnemonic><X>\t%0, %A1, %2%O1 glc\;s_waitcnt\tvmcnt(0)"
   [(set_attr "type" "smem,flat,flat")
-   (set_attr "length" "12")
-   (set_attr "gcn_version" "gcn5,*,gcn5")])
+   (set_attr "length" "12")])
 
 ; FIXME: These patterns are disabled because the instructions don't
 ; seem to work as advertised.  Specifically, OMP "team distribute"
@@ -2016,8 +1995,7 @@
    flat_atomic_<bare_mnemonic><X>\t%0, %1\;s_waitcnt\t0
    global_atomic_<bare_mnemonic><X>\t%A0, %1%O0\;s_waitcnt\tvmcnt(0)"
   [(set_attr "type" "smem,flat,flat")
-   (set_attr "length" "12")
-   (set_attr "gcn_version" "gcn5,*,gcn5")])
+   (set_attr "length" "12")])
 
 (define_mode_attr x2 [(SI "DI") (DI "TI")])
 (define_mode_attr size [(SI "4") (DI "8")])
@@ -2064,7 +2042,6 @@
    global_atomic_cmpswap<X>\t%0, %A1, %2%O1 glc\;s_waitcnt\tvmcnt(0)"
   [(set_attr "type" "smem,flat,flat")
    (set_attr "length" "12")
-   (set_attr "gcn_version" "gcn5,*,gcn5")
    (set_attr "delayeduse" "*,yes,yes")])
 
 (define_insn "sync_compare_and_swap<mode>_lds_insn"
@@ -2174,7 +2151,6 @@
   }
   [(set_attr "type" "smem,flat,flat")
    (set_attr "length" "28")
-   (set_attr "gcn_version" "gcn5,*,gcn5")
    (set_attr "rdna" "no,*,*")])
 
 (define_insn "atomic_store<mode>"
@@ -2249,7 +2225,6 @@
   }
   [(set_attr "type" "smem,flat,flat")
    (set_attr "length" "28")
-   (set_attr "gcn_version" "gcn5,*,gcn5")
    (set_attr "rdna" "no,*,*")])
 
 (define_insn "atomic_exchange<mode>"
@@ -2362,7 +2337,6 @@
   }
   [(set_attr "type" "smem,flat,flat")
    (set_attr "length" "28")
-   (set_attr "gcn_version" "gcn5,*,gcn5")
    (set_attr "rdna" "no,*,*")])
 
 ;; }}}

@@ -574,8 +574,7 @@ enum gcn_address_spaces
   c_register_addr_space ("__global", ADDR_SPACE_GLOBAL);             \
 } while (0);
 
-#define STACK_ADDR_SPACE \
-  (TARGET_GCN5_PLUS ? ADDR_SPACE_GLOBAL : ADDR_SPACE_FLAT)
+#define STACK_ADDR_SPACE ADDR_SPACE_GLOBAL
 #define DEFAULT_ADDR_SPACE \
   ((cfun && cfun->machine && !cfun->machine->use_flat_addressing) \
    ? ADDR_SPACE_GLOBAL : ADDR_SPACE_FLAT)

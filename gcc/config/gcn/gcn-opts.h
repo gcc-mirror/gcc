@@ -52,7 +52,6 @@ extern enum gcn_isa {
 } gcn_isa;
 
 #define TARGET_GCN5 (gcn_isa == ISA_GCN5)
-#define TARGET_GCN5_PLUS (gcn_isa >= ISA_GCN5)
 #define TARGET_CDNA1 (gcn_isa == ISA_CDNA1)
 #define TARGET_CDNA1_PLUS (gcn_isa >= ISA_CDNA1)
 #define TARGET_CDNA2 (gcn_isa == ISA_CDNA2)
@@ -74,16 +73,12 @@ enum hsaco_attr_type
   HSACO_ATTR_DEFAULT
 };
 
-/* There are global address instructions.  */
-#define TARGET_GLOBAL_ADDRSPACE TARGET_GCN5_PLUS
 /* Device has an AVGPR register file.  */
 #define TARGET_AVGPRS TARGET_CDNA1_PLUS
 /* There are load/store instructions for AVGPRS.  */
 #define TARGET_AVGPR_MEMOPS TARGET_CDNA2_PLUS
 /* AVGPRS may have their own register file, or be combined with VGPRS.  */
 #define TARGET_AVGPR_COMBINED TARGET_CDNA2_PLUS
-/* flat_load/store allows offsets.  */
-#define TARGET_FLAT_OFFSETS TARGET_GCN5_PLUS
 /* global_load/store has reduced offset.  */
 #define TARGET_11BIT_GLOBAL_OFFSET TARGET_RDNA2_PLUS
 /* The work item details are all encoded into v0.  */
@@ -106,10 +101,6 @@ enum hsaco_attr_type
    : 4)
 /* This mostly affects the metadata.  */
 #define TARGET_ARCHITECTED_FLAT_SCRATCH TARGET_RDNA3
-/* Assembler uses s_add_co not just s_add.  */
-#define TARGET_EXPLICIT_CARRY TARGET_GCN5_PLUS
-/* mulsi3 permits immediate.  */
-#define TARGET_MULTIPLY_IMMEDIATE TARGET_GCN5_PLUS
 /* Device has Sub-DWord Addressing instrucions.  */
 #define TARGET_SDWA (!TARGET_RDNA3)
 /* Different devices uses different cache control instructions.  */

@@ -1528,8 +1528,7 @@ gcn_flat_address_p (rtx x, machine_mode mode)
   if (!vec_mode && gcn_vec_address_register_p (x, DImode, false))
     return true;
 
-  if (TARGET_FLAT_OFFSETS
-      && GET_CODE (x) == PLUS
+  if (GET_CODE (x) == PLUS
       && gcn_vec_address_register_p (XEXP (x, 0), DImode, false)
       && CONST_INT_P (XEXP (x, 1)))
     return true;
@@ -1640,10 +1639,6 @@ static bool
 gcn_addr_space_legitimate_address_p (machine_mode mode, rtx x, bool strict,
 				     addr_space_t as, code_helper = ERROR_MARK)
 {
-  /* All vector instructions need to work on addresses in registers.  */
-  if (!TARGET_FLAT_OFFSETS && (vgpr_vector_mode_p (mode) && !REG_P (x)))
-    return false;
-
   if (AS_SCALAR_FLAT_P (as))
     {
       if (mode == QImode || mode == HImode)
@@ -1689,15 +1684,13 @@ gcn_addr_space_legitimate_address_p (machine_mode mode, rtx x, bool strict,
     return gcn_address_register_p (x, SImode, strict);
   else if (AS_FLAT_P (as) || AS_FLAT_SCRATCH_P (as))
     {
-      if (!TARGET_FLAT_OFFSETS || GET_CODE (x) == REG)
+      if (GET_CODE (x) == REG)
        return ((GET_MODE_CLASS (mode) == MODE_VECTOR_INT
 		|| GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
 	       ? gcn_address_register_p (x, DImode, strict)
 	       : gcn_vec_address_register_p (x, DImode, strict));
       else
 	{
-	  gcc_assert (TARGET_FLAT_OFFSETS);
-
 	  if (GET_CODE (x) == PLUS)
 	    {
 	      rtx x1 = XEXP (x, 1);
@@ -1721,8 +1714,6 @@ gcn_addr_space_legitimate_address_p (machine_mode mode, rtx x, bool strict,
     }
   else if (AS_GLOBAL_P (as))
     {
-      gcc_assert (TARGET_FLAT_OFFSETS);
-
       if (GET_CODE (x) == REG)
        return (gcn_address_register_p (x, DImode, strict)
 	       || (!VECTOR_MODE_P (mode)
@@ -2199,7 +2190,7 @@ gcn_addr_space_legitimize_address (rtx x, rtx old, machine_mode mode,
     case ADDR_SPACE_FLAT:
     case ADDR_SPACE_FLAT_SCRATCH:
     case ADDR_SPACE_GLOBAL:
-      return !TARGET_FLAT_OFFSETS ? force_reg (DImode, x) : x;
+      return x;
     case ADDR_SPACE_LDS:
     case ADDR_SPACE_GDS:
       /* FIXME: LDS support offsets, handle them!.  */
@@ -2236,13 +2227,6 @@ gcn_expand_scalar_to_vector_address (machine_mode mode, rtx exec, rtx mem,
   gcc_assert (MEM_P (mem));
   rtx mem_base = XEXP (mem, 0);
   rtx mem_index = NULL_RTX;
-
-  if (!TARGET_FLAT_OFFSETS)
-    {
-      /* gcn_addr_space_legitimize_address should have put the address in a
-         register.  If not, it is too late to do anything about it.  */
-      gcc_assert (REG_P (mem_base));
-    }
 
   if (GET_CODE (mem_base) == PLUS)
     {
@@ -7047,15 +7031,10 @@ print_operand_address (FILE *file, rtx mem)
       if (GET_CODE (addr) == REG)
 	print_reg (file, addr);
       else
-	{
-	  gcc_assert (TARGET_FLAT_OFFSETS);
-	  print_reg (file, XEXP (addr, 0));
-	}
+	print_reg (file, XEXP (addr, 0));
     }
   else if (AS_GLOBAL_P (as))
     {
-      gcc_assert (TARGET_GLOBAL_ADDRSPACE);
-
       rtx base = addr;
       rtx vgpr_offset = NULL_RTX;
 
@@ -7167,7 +7146,6 @@ print_operand_address (FILE *file, rtx mem)
    E - print conditional code for v_cmp (eq_u64/ne_u64...)
    A - print address in formatting suitable for given address space.
    O - print offset:n for data share operations.
-   ^ - print "_co" suffix for GCN5 mnemonics
    g - print "glc", if appropriate for given MEM
    L - print low-part of a multi-reg value
    H - print second part of a multi-reg value (high-part of 2-reg value)
@@ -7416,8 +7394,6 @@ print_operand (FILE *file, rtx x, int code)
 	rtx x0 = XEXP (x, 0);
 	if (AS_GLOBAL_P (MEM_ADDR_SPACE (x)))
 	  {
-	    gcc_assert (TARGET_GLOBAL_ADDRSPACE);
-
 	    fprintf (file, ", ");
 
 	    rtx base = x0;
@@ -7785,10 +7761,6 @@ print_operand (FILE *file, rtx x, int code)
 	}
       else
 	output_addr_const (file, x);
-      return;
-    case '^':
-      if (TARGET_EXPLICIT_CARRY)
-	fputs ("_co", file);
       return;
     case 'g':
       gcc_assert (xcode == MEM);
