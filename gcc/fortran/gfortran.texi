@@ -2742,9 +2742,8 @@ used as index variables in @code{DO} loops or as array indices.
 Unsigned numbers have a trailing @code{u} as suffix, optionally followed
 by a @code{KIND} number separated by an underscore.
 
-Input and output can be done using the @code{I} and (to be
-implemented) @code{X}, @code{O} and @code{Z} descriptors, plus
-unformatted I/O.
+Input and output can be done using the @code{I}, @code{B}, @code{O}
+and @code{Z} descriptors, plus unformatted I/O.
 
 Here is a small, somewhat contrived example of their use:
 @smallexample
