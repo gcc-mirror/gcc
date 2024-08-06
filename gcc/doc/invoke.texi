@@ -21877,6 +21877,8 @@ Enable support for Armv8.9-a/9.4-a translation hardening extension.
 Enable the RCpc3 (Release Consistency) extension.
 @item fp8
 Enable the fp8 (8-bit floating point) extension.
+@item faminmax
+Enable the Floating Point Absolute Maximum/Minimum extension.
 
 @end table
 

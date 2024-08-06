@@ -1057,6 +1057,8 @@
     UNSPEC_BFCVTN2     ; Used in aarch64-simd.md.
     UNSPEC_BFCVT       ; Used in aarch64-simd.md.
     UNSPEC_FCVTXN	; Used in aarch64-simd.md.
+    UNSPEC_FAMAX       ; Used in aarch64-simd.md.
+    UNSPEC_FAMIN       ; Used in aarch64-simd.md.
 
     ;; All used in aarch64-sve2.md
     UNSPEC_FCVTN
@@ -4463,3 +4465,10 @@
    (UNSPECV_SET_FPCR "fpcr")])
 
 (define_int_attr bits_etype [(8 "b") (16 "h") (32 "s") (64 "d")])
+
+;; Iterators and attributes for faminmax
+
+(define_int_iterator FAMINMAX_UNS [UNSPEC_FAMAX UNSPEC_FAMIN])
+
+(define_int_attr faminmax_uns_op
+  [(UNSPEC_FAMAX "famax") (UNSPEC_FAMIN "famin")])

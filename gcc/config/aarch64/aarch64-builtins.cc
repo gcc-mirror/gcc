@@ -757,6 +757,18 @@ typedef struct
 #define VAR1(T, N, MAP, FLAG, A) \
   AARCH64_SIMD_BUILTIN_##T##_##N##A,
 
+#undef ENTRY
+#define ENTRY(N, S, M, U, F) \
+  AARCH64_##N,
+
+#undef ENTRY_VHSDF
+#define ENTRY_VHSDF(NAME, SIGNATURE, UNSPEC, EXTENSIONS) \
+  AARCH64_##NAME##_f16, \
+  AARCH64_##NAME##q_f16, \
+  AARCH64_##NAME##_f32, \
+  AARCH64_##NAME##q_f32, \
+  AARCH64_##NAME##q_f64,
+
 enum aarch64_builtins
 {
   AARCH64_BUILTIN_MIN,
@@ -829,6 +841,10 @@ enum aarch64_builtins
   AARCH64_RBIT,
   AARCH64_RBITL,
   AARCH64_RBITLL,
+  /* Pragma builtins.  */
+  AARCH64_PRAGMA_BUILTIN_START,
+#include "aarch64-simd-pragma-builtins.def"
+  AARCH64_PRAGMA_BUILTIN_END,
   /* System register builtins.  */
   AARCH64_RSR,
   AARCH64_RSRP,
@@ -947,6 +963,7 @@ const char *aarch64_scalar_builtin_types[] = {
 
 extern GTY(()) aarch64_simd_type_info aarch64_simd_types[];
 
+#undef ENTRY
 #define ENTRY(E, M, Q, G)  \
   {E, "__" #E, #G "__" #E, NULL_TREE, NULL_TREE, E_##M##mode, qualifier_##Q},
 struct aarch64_simd_type_info aarch64_simd_types [] = {
@@ -1547,6 +1564,78 @@ aarch64_init_simd_builtin_functions (bool called_from_pragma)
     }
 }
 
+enum class aarch64_builtin_signatures
+{
+  binary,
+};
+
+#undef ENTRY
+#define ENTRY(N, S, M, U, F) \
+  {#N, aarch64_builtin_signatures::S, E_##M##mode, U, F},
+
+#undef ENTRY_VHSDF
+#define ENTRY_VHSDF(NAME, SIGNATURE, UNSPEC, EXTENSIONS) \
+  ENTRY (NAME##_f16, SIGNATURE, V4HF, UNSPEC, EXTENSIONS) \
+  ENTRY (NAME##q_f16, SIGNATURE, V8HF, UNSPEC, EXTENSIONS) \
+  ENTRY (NAME##_f32, SIGNATURE, V2SF, UNSPEC, EXTENSIONS) \
+  ENTRY (NAME##q_f32, SIGNATURE, V4SF, UNSPEC, EXTENSIONS) \
+  ENTRY (NAME##q_f64, SIGNATURE, V2DF, UNSPEC, EXTENSIONS)
+
+/* Initialize pragma builtins.  */
+
+struct aarch64_pragma_builtins_data
+{
+  const char *name;
+  aarch64_builtin_signatures signature;
+  machine_mode mode;
+  int unspec;
+  aarch64_feature_flags required_extensions;
+};
+
+static aarch64_pragma_builtins_data aarch64_pragma_builtins[] = {
+#include "aarch64-simd-pragma-builtins.def"
+};
+
+static tree
+aarch64_fntype (const aarch64_pragma_builtins_data &builtin_data)
+{
+  auto type = aarch64_simd_builtin_type (builtin_data.mode, qualifier_none);
+  switch (builtin_data.signature)
+    {
+    case aarch64_builtin_signatures::binary:
+      return build_function_type_list (type, type, type, NULL_TREE);
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static void
+aarch64_init_pragma_builtins ()
+{
+  for (size_t i = 0; i < ARRAY_SIZE (aarch64_pragma_builtins); ++i)
+    {
+      auto data = aarch64_pragma_builtins[i];
+      auto fntype = aarch64_fntype (data);
+      auto code = AARCH64_PRAGMA_BUILTIN_START + i + 1;
+      aarch64_builtin_decls[code]
+	= aarch64_general_simulate_builtin (data.name, fntype, code);
+    }
+}
+
+/* If the builtin function with code CODE has an entry in
+   aarch64_pragma_builtins, return its entry, otherwise return null.  */
+
+static const aarch64_pragma_builtins_data*
+aarch64_get_pragma_builtin (int code)
+{
+  if (!(code > AARCH64_PRAGMA_BUILTIN_START
+	&& code < AARCH64_PRAGMA_BUILTIN_END))
+    return NULL;
+
+  auto idx = code - (AARCH64_PRAGMA_BUILTIN_START + 1);
+  return &aarch64_pragma_builtins[idx];
+}
+
 /* Register the tuple type that contains NUM_VECTORS of the AdvSIMD type
    indexed by TYPE_INDEX.  */
 static void
@@ -1640,6 +1729,7 @@ handle_arm_neon_h (void)
 
   aarch64_init_simd_builtin_functions (true);
   aarch64_init_simd_intrinsics ();
+  aarch64_init_pragma_builtins ();
 }
 
 static void
@@ -2325,6 +2415,12 @@ aarch64_general_check_builtin_call (location_t location, vec<location_t>,
       && code <= AARCH64_MEMTAG_BUILTIN_END)
     return aarch64_check_required_extensions (location, decl,
 					      AARCH64_FL_MEMTAG);
+
+  if (auto builtin_data = aarch64_get_pragma_builtin (code))
+    {
+      auto flags = builtin_data->required_extensions;
+      return aarch64_check_required_extensions (location, decl, flags);
+    }
 
   return true;
 }
@@ -3189,6 +3285,25 @@ aarch64_expand_builtin_data_intrinsic (unsigned int fcode, tree exp, rtx target)
   return ops[0].value;
 }
 
+static rtx
+aarch64_expand_pragma_builtin (tree exp, rtx target,
+			       const aarch64_pragma_builtins_data *builtin_data)
+{
+  expand_operand ops[3];
+  auto mode = builtin_data->mode;
+  auto op1 = expand_normal (CALL_EXPR_ARG (exp, 0));
+  auto op2 = expand_normal (CALL_EXPR_ARG (exp, 1));
+  create_output_operand (&ops[0], target, mode);
+  create_input_operand (&ops[1], op1, mode);
+  create_input_operand (&ops[2], op2, mode);
+
+  auto unspec = builtin_data->unspec;
+  auto icode = code_for_aarch64 (unspec, mode);
+  expand_insn (icode, 3, ops);
+
+  return target;
+}
+
 /* Expand an expression EXP as fpsr or fpcr setter (depending on
    UNSPEC) using MODE.  */
 static void
@@ -3368,6 +3483,9 @@ aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target,
   if (fcode >= AARCH64_REV16
       && fcode <= AARCH64_RBITLL)
     return aarch64_expand_builtin_data_intrinsic (fcode, exp, target);
+
+  if (auto builtin_data = aarch64_get_pragma_builtin (fcode))
+    return aarch64_expand_pragma_builtin (exp, target, builtin_data);
 
   gcc_unreachable ();
 }
@@ -4021,6 +4139,7 @@ aarch64_resolve_overloaded_builtin_general (location_t loc, tree function,
 #undef CF3
 #undef CF4
 #undef CF10
+#undef ENTRY_VHSDF
 #undef VAR1
 #undef VAR2
 #undef VAR3
