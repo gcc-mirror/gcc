@@ -1192,6 +1192,7 @@ extensions.
 @menu
 * Extensions implemented in GNU Fortran::
 * Extensions not implemented in GNU Fortran::
+* Experimental features for Fortran 202Y::
 @end menu
 
 
@@ -2701,7 +2702,73 @@ descriptor occurred, use @code{INQUIRE} to get the file position,
 count the characters up to the next @code{NEW_LINE} and then start
 reading from the position marked previously.
 
+@node Experimental features for Fortran 202Y
+@section Experimental features for Fortran 202Y
+@cindex Fortran 202Y
 
+GNU Fortran supports some experimental features which have been
+proposed and accepted by the J3 standards committee.  These
+exist to give users a chance to try them out, and to provide
+a reference implementation.
+
+As these features have not been finalized, there is a chance that the
+version in the upcoming standard will differ from what GNU Fortran
+currently implements.  Stability of these implementations is therefore
+not guaranteed.
+
+@menu
+* Unsigned integers::
+@end menu
+
+@node Unsigned integers
+@subsection Unsigned integers
+@cindex Unsigned integers
+GNU Fortran supports unsigned integers according to
+@uref{https://j3-fortran.org/doc/year/24/24-116.txt, J3/24-116}.  The
+data type is called @code{UNSIGNED}.  For an unsigned type with $n$ bits,
+it implements integer arithmetic modulo @code{2**n}, comparable to the
+@code{unsigned} data type in C.
+
+The data type has @code{KIND} numbers comparable to other Fortran data
+types, which can be selected via the @code{SELECTED_UNSIGNED_KIND}
+function.
+
+Mixed arithmetic, comparisoins and assignment between @code{UNSIGNED}
+and other types are only possible via explicit conversion.  Conversion
+from @code{UNSIGNED} to other types is done via type conversion
+functions like @code{INT} or @code{REAL}. Unsigned variables cannot be
+used as index variables in @code{DO} loops or as array indices.
+
+Unsigned numbers have a trailing @code{u} as suffix, optionally followed
+by a @code{KIND} number separated by an underscore.
+
+Input and output can be done using the @code{I} and (to be
+implemented) @code{X}, @code{O} and @code{Z} descriptors, plus
+unformatted I/O.
+
+Here is a small, somewhat contrived example of their use:
+@smallexample
+program main
+  unsigned(kind=8) :: v
+  v = huge(v) - 32u_8
+  print *,v
+end program main
+@end smallexample
+which will output the number 18446744073709551583.
+
+Generally, unsigned integers are only permitted as data in intrinsics,
+not, for example, for counting bits.
+As of now, the following intrinsics take unsigned arguments:
+@itemize @bullet
+@item @code{BLT}, @code{BLE}, @code{BGE} and @code{BGT}. These intrinsics
+      are actually redundante because comparison operators could be used
+      directly.
+@item @code{IAND}, @code{IOR}, @code{IEOR} and @code{NOT}
+@item @code{BIT_SIZE}, @code{DIGITS} and @code{HUGE}
+@item @code{DSHIFTL} and @code{DSHIFTR}
+@item @code{IBCLR}, @code{IBITS} and @code{IBITS}
+@end itemize
+This list will grow in the near future.
 @c ---------------------------------------------------------------------
 @c ---------------------------------------------------------------------
 @c Mixed-Language Programming

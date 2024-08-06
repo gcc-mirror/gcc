@@ -129,7 +129,7 @@ by type.  Explanations are in the following sections.
 -fmodule-private -ffixed-form -fno-range-check -fopenacc -fopenmp
 -fopenmp-allocators -fopenmp-simd -freal-4-real-10 -freal-4-real-16
 -freal-4-real-8 -freal-8-real-10 -freal-8-real-16 -freal-8-real-4
--std=@var{std} -ftest-forall-temp
+-std=@var{std} -ftest-forall-temp -funsigned
 }
 
 @item Preprocessing Options
@@ -611,6 +611,9 @@ earlier gfortran versions and should not be used any more.
 @item -ftest-forall-temp
 Enhance test coverage by forcing most forall assignments to use temporary.
 
+@opindex @code{funsigned}
+@item -funsigned
+Allow the experimental unsigned extension.
 @end table
 
 @node Preprocessing Options
