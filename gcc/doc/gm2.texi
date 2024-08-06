@@ -2970,10 +2970,9 @@ $ @samp{directory to the sources}/contrib/test_summary
 @node Limitations, Objectives, Regression tests, Using
 @section Limitations
 
-Logitech compatibility library is incomplete.  The principle modules
-for this platform exist however for a comprehensive list of completed
-modules please check the documentation
-@url{gm2.html}.
+The Logitech compatibility library is incomplete.  The primary
+modules for this platform exist, though for a comprehensive list
+of completed modules please check the documentation.
 
 @node Objectives, FAQ, Limitations, Using
 @section Objectives
