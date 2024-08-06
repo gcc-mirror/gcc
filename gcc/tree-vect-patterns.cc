@@ -4697,11 +4697,12 @@ vect_recog_sat_trunc_pattern (vec_info *vinfo, stmt_vec_info stmt_vinfo,
 
   tree ops[1];
   tree lhs = gimple_assign_lhs (last_stmt);
+  tree otype = TREE_TYPE (lhs);
 
-  if (gimple_unsigned_integer_sat_trunc (lhs, ops, NULL))
+  if (gimple_unsigned_integer_sat_trunc (lhs, ops, NULL)
+      && type_has_mode_precision_p (otype))
     {
       tree itype = TREE_TYPE (ops[0]);
-      tree otype = TREE_TYPE (lhs);
       tree v_itype = get_vectype_for_scalar_type (vinfo, itype);
       tree v_otype = get_vectype_for_scalar_type (vinfo, otype);
       internal_fn fn = IFN_SAT_TRUNC;
