@@ -1074,8 +1074,6 @@ check_noexcept_r (tree *tp, int *walk_subtrees, void *)
 
          We could use TREE_NOTHROW (t) for !TREE_PUBLIC fns, though... */
       tree fn = cp_get_callee (t);
-      if (concept_check_p (fn))
-	return NULL_TREE;
       tree type = TREE_TYPE (fn);
       gcc_assert (INDIRECT_TYPE_P (type));
       type = TREE_TYPE (type);

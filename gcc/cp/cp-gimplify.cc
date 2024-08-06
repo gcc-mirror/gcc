@@ -2092,15 +2092,6 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       break;
 
     case CALL_EXPR:
-      /* Evaluate function concept checks instead of treating them as
-	 normal functions.  */
-      if (concept_check_p (stmt))
-	{
-	  *stmt_p = evaluate_concept_check (stmt);
-	  * walk_subtrees = 0;
-	  break;
-	}
-
       if (!wtd->no_sanitize_p
 	  && sanitize_flags_p ((SANITIZE_NULL
 				| SANITIZE_ALIGNMENT | SANITIZE_VPTR)))

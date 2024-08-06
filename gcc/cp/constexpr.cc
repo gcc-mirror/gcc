@@ -2797,10 +2797,6 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 			  value_cat lval,
 			  bool *non_constant_p, bool *overflow_p)
 {
-  /* Handle concept checks separately.  */
-  if (concept_check_p (t))
-    return evaluate_concept_check (t);
-
   location_t loc = cp_expr_loc_or_input_loc (t);
   tree fun = get_function_named_in_call (t);
   constexpr_call new_call
@@ -8774,16 +8770,12 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 	       || TREE_CODE (t) == AGGR_INIT_EXPR
 	       || TREE_CODE (t) == TARGET_EXPR))
     {
-      /* For non-concept checks, determine if it is consteval.  */
-      if (!concept_check_p (t))
-	{
-	  tree x = t;
-	  if (TREE_CODE (x) == TARGET_EXPR)
-	    x = TARGET_EXPR_INITIAL (x);
-	  tree fndecl = cp_get_callee_fndecl_nofold (x);
-	  if (fndecl && DECL_IMMEDIATE_FUNCTION_P (fndecl))
-	    is_consteval = true;
-	}
+      tree x = t;
+      if (TREE_CODE (x) == TARGET_EXPR)
+	x = TARGET_EXPR_INITIAL (x);
+      tree fndecl = cp_get_callee_fndecl_nofold (x);
+      if (fndecl && DECL_IMMEDIATE_FUNCTION_P (fndecl))
+	is_consteval = true;
     }
   if (AGGREGATE_TYPE_P (type) || VECTOR_TYPE_P (type))
     {
