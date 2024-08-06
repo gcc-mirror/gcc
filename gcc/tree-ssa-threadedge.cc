@@ -786,12 +786,16 @@ propagate_threaded_block_debug_into (basic_block dest, basic_block src)
 bool
 jump_threader::thread_around_empty_blocks (vec<jump_thread_edge *> *path,
 					   edge taken_edge,
-					   bitmap visited)
+					   bitmap visited, unsigned &limit)
 {
   basic_block bb = taken_edge->dest;
   gimple_stmt_iterator gsi;
   gimple *stmt;
   tree cond;
+
+  if (limit == 0)
+    return false;
+  --limit;
 
   /* The key property of these blocks is that they need not be duplicated
      when threading.  Thus they cannot have visible side effects such
@@ -830,7 +834,8 @@ jump_threader::thread_around_empty_blocks (vec<jump_thread_edge *> *path,
 	      m_registry->push_edge (path, taken_edge, EDGE_NO_COPY_SRC_BLOCK);
 	      m_state->append_path (taken_edge->dest);
 	      bitmap_set_bit (visited, taken_edge->dest->index);
-	      return thread_around_empty_blocks (path, taken_edge, visited);
+	      return thread_around_empty_blocks (path, taken_edge, visited,
+						 limit);
 	    }
 	}
 
@@ -872,7 +877,7 @@ jump_threader::thread_around_empty_blocks (vec<jump_thread_edge *> *path,
       m_registry->push_edge (path, taken_edge, EDGE_NO_COPY_SRC_BLOCK);
       m_state->append_path (taken_edge->dest);
 
-      thread_around_empty_blocks (path, taken_edge, visited);
+      thread_around_empty_blocks (path, taken_edge, visited, limit);
       return true;
     }
 
@@ -899,8 +904,13 @@ jump_threader::thread_around_empty_blocks (vec<jump_thread_edge *> *path,
 
 int
 jump_threader::thread_through_normal_block (vec<jump_thread_edge *> *path,
-					    edge e, bitmap visited)
+					    edge e, bitmap visited,
+					    unsigned &limit)
 {
+  if (limit == 0)
+    return 0;
+  limit--;
+
   m_state->register_equivs_edge (e);
 
   /* PHIs create temporary equivalences.
@@ -989,7 +999,7 @@ jump_threader::thread_through_normal_block (vec<jump_thread_edge *> *path,
  	     visited.  This may be overly conservative.  */
 	  bitmap_set_bit (visited, dest->index);
 	  bitmap_set_bit (visited, e->dest->index);
-	  thread_around_empty_blocks (path, taken_edge, visited);
+	  thread_around_empty_blocks (path, taken_edge, visited, limit);
 	  return 1;
 	}
     }
@@ -1075,9 +1085,12 @@ jump_threader::thread_across_edge (edge e)
   bitmap_set_bit (visited, e->src->index);
   bitmap_set_bit (visited, e->dest->index);
 
+  /* Limit search space.  */
+  unsigned limit = param_max_jump_thread_paths;
+
   int threaded = 0;
   if ((e->flags & EDGE_DFS_BACK) == 0)
-    threaded = thread_through_normal_block (path, e, visited);
+    threaded = thread_through_normal_block (path, e, visited, limit);
 
   if (threaded > 0)
     {
@@ -1148,11 +1161,12 @@ jump_threader::thread_across_edge (edge e)
 	m_registry->push_edge (path, e, EDGE_START_JUMP_THREAD);
 	m_registry->push_edge (path, taken_edge, EDGE_COPY_SRC_JOINER_BLOCK);
 
-	found = thread_around_empty_blocks (path, taken_edge, visited);
+	found = thread_around_empty_blocks (path, taken_edge, visited, limit);
 
 	if (!found)
 	  found = thread_through_normal_block (path,
-					       path->last ()->e, visited) > 0;
+					       path->last ()->e, visited,
+					       limit) > 0;
 
 	/* If we were able to thread through a successor of E->dest, then
 	   record the jump threading opportunity.  */
