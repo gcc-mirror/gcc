@@ -136,6 +136,8 @@ static const sve_vec_cost generic_armv9_a_sve_vector_cost =
      operation more than a 64-bit gather.  */
   14, /* gather_load_x32_cost  */
   12, /* gather_load_x64_cost  */
+  42, /* gather_load_x32_init_cost  */
+  24, /* gather_load_x64_init_cost  */
   3 /* scatter_store_elt_cost  */
 };
 

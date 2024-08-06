@@ -16231,6 +16231,10 @@ private:
      supported by Advanced SIMD and SVE2.  */
   bool m_has_avg = false;
 
+  /* Additional initialization costs for using gather or scatter operation in
+     the current loop.  */
+  unsigned int m_sve_gather_scatter_init_cost = 0;
+
   /* True if the vector body contains a store to a decl and if the
      function is known to have a vld1 from the same decl.
 
@@ -17295,6 +17299,23 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	stmt_cost = aarch64_detect_vector_stmt_subtype (m_vinfo, kind,
 							stmt_info, vectype,
 							where, stmt_cost);
+
+      /* Check if we've seen an SVE gather/scatter operation and which size.  */
+      if (kind == scalar_load
+	  && aarch64_sve_mode_p (TYPE_MODE (vectype))
+	  && STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_GATHER_SCATTER)
+	{
+	  const sve_vec_cost *sve_costs = aarch64_tune_params.vec_costs->sve;
+	  if (sve_costs)
+	    {
+	      if (GET_MODE_UNIT_BITSIZE (TYPE_MODE (vectype)) == 64)
+		m_sve_gather_scatter_init_cost
+		  += sve_costs->gather_load_x64_init_cost;
+	      else
+		m_sve_gather_scatter_init_cost
+		  += sve_costs->gather_load_x32_init_cost;
+	    }
+	}
     }
 
   /* Do any SVE-specific adjustments to the cost.  */
@@ -17680,6 +17701,11 @@ aarch64_vector_costs::finish_cost (const vector_costs *uncast_scalar_costs)
       m_costs[vect_body] = adjust_body_cost (loop_vinfo, scalar_costs,
 					     m_costs[vect_body]);
       m_suggested_unroll_factor = determine_suggested_unroll_factor ();
+
+      /* For gather and scatters there's an additional overhead for the first
+	 iteration.  For low count loops they're not beneficial so model the
+	 overhead as loop prologue costs.  */
+      m_costs[vect_prologue] += m_sve_gather_scatter_init_cost;
     }
 
   /* Apply the heuristic described above m_stp_sequence_cost.  Prefer

@@ -126,6 +126,8 @@ static const sve_vec_cost neoversev1_sve_vector_cost =
   8, /* fadda_f64_cost  */
   32, /* gather_load_x32_cost  */
   16, /* gather_load_x64_cost  */
+  96, /* gather_load_x32_init_cost  */
+  32, /* gather_load_x64_init_cost  */
   3 /* scatter_store_elt_cost  */
 };
 
