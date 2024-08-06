@@ -1,3 +1,11 @@
+2024-08-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-07-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/108889
+	* gfortran.dg/pr108889.f90: New test.
+
 2024-07-29  Haochen Jiang  <haochen.jiang@intel.com>
 
 	* gcc.target/i386/avx512bw-vpalignr-1b.c: New test.
