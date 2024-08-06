@@ -19,7 +19,7 @@
 
 ;; Return 1 for anything except PARALLEL.
 (define_predicate "any_operand"
-  (match_code "const_int,const_double,const_wide_int,const,symbol_ref,label_ref,subreg,reg,mem"))
+  (match_code "const_int,const_double,const_wide_int,const_vector,const,symbol_ref,label_ref,subreg,reg,mem"))
 
 ;; Return 1 for any PARALLEL.
 (define_predicate "any_parallel_operand"
