@@ -243,6 +243,15 @@
   (and (match_code "mem")
        (match_test "th_memidx_legitimate_index_p (op, true)")))
 
+(define_memory_constraint "th_m_noi"
+  "@internal
+   A MEM with does not match XTheadMemIdx operands."
+  (and (match_code "mem")
+       (and (match_test "!th_memidx_legitimate_modify_p (op, true)")
+	    (and (match_test "!th_memidx_legitimate_modify_p (op, false)")
+		 (and (match_test "!th_memidx_legitimate_index_p (op, false)")
+		      (match_test "!th_memidx_legitimate_index_p (op, true)"))))))
+
 ;; CORE-V Constraints
 (define_constraint "CV_alu_pow2"
   "@internal
