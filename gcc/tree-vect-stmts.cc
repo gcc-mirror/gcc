@@ -14179,7 +14179,6 @@ supportable_widening_operation (vec_info *vinfo,
 	 are properly set up for the caller.  If we fail, we'll continue with
 	 a VEC_WIDEN_MULT_LO/HI_EXPR check.  */
       if (vect_loop
-	  && STMT_VINFO_RELEVANT (stmt_info) == vect_used_by_reduction
 	  && !nested_in_vect_loop_p (vect_loop, stmt_info)
 	  && supportable_widening_operation (vinfo, VEC_WIDEN_MULT_EVEN_EXPR,
 					     stmt_info, vectype_out,
@@ -14192,7 +14191,7 @@ supportable_widening_operation (vec_info *vinfo,
              same operation.  One such an example is s += a * b, where elements
              in a and b cannot be reordered.  Here we check if the vector defined
              by STMT is only directly used in the reduction statement.  */
-	  tree lhs = gimple_assign_lhs (stmt_info->stmt);
+	  tree lhs = gimple_assign_lhs (vect_orig_stmt (stmt_info)->stmt);
 	  stmt_vec_info use_stmt_info = loop_info->lookup_single_use (lhs);
 	  if (use_stmt_info
 	      && STMT_VINFO_DEF_TYPE (use_stmt_info) == vect_reduction_def)
