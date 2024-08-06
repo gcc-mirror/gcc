@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-O3" "-Og" "-Os" "-Oz"} } */
-/* { dg-options "-march=rv32gc_xtheadfmemidx_xtheadfmv_xtheadmemidx -mabi=ilp32d -mcmodel=medany -O2" } */
+/* { dg-skip-if "" { *-*-* } { "-flto" "-O0" "-O1" "-Og" "-Os" "-Oz" } } */
+/* { dg-options "-march=rv32gc_zfa_xtheadfmemidx_xtheadmemidx -mabi=ilp32d -mcmodel=medany" } */
 
 typedef union {
   double v;
@@ -36,3 +36,4 @@ double foo (int i, int j)
 }
 
 /* { dg-final { scan-assembler-times {\mth\.flrd\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mfmvp\.d\.x\M} 3 } } */
