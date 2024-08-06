@@ -267,6 +267,89 @@ or propagate an exception).
 For the syntax and semantics of this aspect, see the SPARK 2014 Reference
 Manual, section 6.1.10.
 
+Aspect Extended_Access
+======================
+
+This nonoverridable boolean-valued type-related representation aspect can be
+specified as part of a full_type_declaration for a general access type
+designating an unconstrained array subtype.
+
+The absence of an Extended_Access aspect specification for such a
+full_type_declaration is equivalent to an explicit
+"Extended_Access => False" specification. This implies
+that the aspect is never unspecified for an eligible access type.
+An access type for which this aspect is True is said to be an extended access
+type; this includes the case of a type derived from an extended access type.
+Similarly, a value of such a type is said to be an extended access value.
+
+The representation of an extended access value is different than that of
+other access values. This representation makes it possible to designate
+objects that cannot be designated using the usual "thin" or "fat" access
+representations for an access type designating an unconstrained array
+subtype (notably slices and array objects imported from other languages).
+
+In particular, two rules are modified in determining the legality of an Access
+or Unchecked_Access attribute reference if the expected access type is
+an extended access type:
+
+* A slice of an aliased array object of a non-bitpacked type (more precisely,
+  of an array type having independently addressable components) is considered
+  to be aliased (and the accessibility level of a slice of an array object is
+  defined to be that of the array object); this also applies to renamings
+  of such slices, slices of such renamings, etc.
+
+* The requirement that the nominal subtype of the prefix shall statically
+  match the designated subtype of the access type need not be met.
+
+The Size aspect (and other aspects including Stream_Size, Object_Size,
+and Alignment) of an extended access type may depend on the properties of the
+designated type. Further details of this dependence are not documented.
+
+An extended access value is not convertible to a non-extended access type,
+although conversions in the opposite direction are allowed. We don't want
+to allow
+
+.. code-block:: ada
+
+   type Big_Ref is access all String with Extended_Access;
+   type Small_Ref is access all String;
+   Obj : aliased String := "abcde";
+   Big_Ptr : Big_Ref := Obj (2 .. 4)'Access; -- OK
+   Small_Ptr : Small_Ref := Small_Ref (Big_Ptr); -- ERROR: illegal conversion
+
+because there is no way to represent the result of such a conversion.
+
+A dereference of an extended access value (or a reference to a renaming
+thereof) shall not occur in any of the following contexts:
+
+* as an operative constituent of the prefix of an Access or
+  Unchecked_Access attribute reference whose expected type is not extended; or
+
+* as an operative constituent of an actual parameter in a call where
+  the corresponding formal parameter is explicitly aliased.
+
+For the same reasons that explicit conversions from an extended access type to a
+non-extended access type are forbidden, we also need to disallow getting the
+same effect via a Extended_Ptr.all'Access reference; this includes the case
+of passing Extended_Ptr.all as an actual parameter in a call where the
+corresponding formal parameter is explicitly aliased (because the callee
+could evaluate Formal_Parameter'Access). This goal is accomplished by
+adjusting the definition of the term "aliased". A dereference of an extended
+value occurring in one of these contexts is defined to denote
+a nonaliased view. This has the desired effect because these contexts require
+an aliased view. Continuing the preceding example, this rule disallows
+
+.. code-block:: ada
+
+   Sneaky_1 : Small_Ptr := Big_Ptr.all'Access; -- ERROR: illegal 'Access prefix
+
+   function Make (Str : aliased in out String) return Small_Ptr
+     is (Str'Access); -- OK
+
+   Sneaky_2 : Small_Ptr := Make (Str => Big_Ptr.all); -- ERROR: bad parameter
+
+for the same reason given above in the case of an explicit type conversion.
+
 Aspect Extensions_Visible
 =========================
 .. index:: Extensions_Visible
