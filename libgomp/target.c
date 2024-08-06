@@ -2362,15 +2362,14 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
 				num_ind_funcs
 				  ? (uint64_t *) host_ind_func_table : NULL);
 
-  if (num_target_entries != num_funcs + num_vars
-      /* "+1" due to the additional ICV struct.  */
-      && num_target_entries != num_funcs + num_vars + 1)
+  /* The "+1" is due to the additional ICV struct.  */
+  if (num_target_entries != num_funcs + num_vars + 1)
     {
       gomp_mutex_unlock (&devicep->lock);
       if (is_register_lock)
 	gomp_mutex_unlock (&register_lock);
       gomp_fatal ("Cannot map target functions or variables"
-		  " (expected %u, have %u)", num_funcs + num_vars,
+		  " (expected %u + %u + 1, have %u)", num_funcs, num_vars,
 		  num_target_entries);
     }
 
@@ -2454,48 +2453,41 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
       array++;
     }
 
-  /* Last entry is for a ICVs variable.
-     Tolerate case where plugin does not return those entries.  */
-  if (num_funcs + num_vars < num_target_entries)
+  /* Last entry is for the ICV struct variable; if absent, start = end = 0.  */
+  struct addr_pair *icv_var = &target_table[num_funcs + num_vars];
+  if (icv_var->start != 0)
     {
-      struct addr_pair *var = &target_table[num_funcs + num_vars];
-
-      /* Start address will be non-zero for the ICVs variable if
-	 the variable was found in this image.  */
-      if (var->start != 0)
+      /* The index of the devicep within devices[] is regarded as its
+	 'device number', which is different from the per-device type
+	 devicep->target_id.  */
+      int dev_num = (int) (devicep - &devices[0]);
+      struct gomp_offload_icvs *icvs = get_gomp_offload_icvs (dev_num);
+      size_t var_size = icv_var->end - icv_var->start;
+      if (var_size != sizeof (struct gomp_offload_icvs))
 	{
-	  /* The index of the devicep within devices[] is regarded as its
-	     'device number', which is different from the per-device type
-	     devicep->target_id.  */
-	  int dev_num = (int) (devicep - &devices[0]);
-	  struct gomp_offload_icvs *icvs = get_gomp_offload_icvs (dev_num);
-	  size_t var_size = var->end - var->start;
-	  if (var_size != sizeof (struct gomp_offload_icvs))
-	    {
-	      gomp_mutex_unlock (&devicep->lock);
-	      if (is_register_lock)
-		gomp_mutex_unlock (&register_lock);
-	      gomp_fatal ("offload plugin managed 'icv struct' not of expected "
-			  "format");
-	    }
-	  /* Copy the ICVs variable to place on device memory, hereby
-	     actually designating its device number into effect.  */
-	  gomp_copy_host2dev (devicep, NULL, (void *) var->start, icvs,
-			      var_size, false, NULL);
-	  splay_tree_key k = &array->key;
-	  k->host_start = (uintptr_t) icvs;
-	  k->host_end =
-	    k->host_start + (size_mask & sizeof (struct gomp_offload_icvs));
-	  k->tgt = tgt;
-	  k->tgt_offset = var->start;
-	  k->refcount = REFCOUNT_INFINITY;
-	  k->dynamic_refcount = 0;
-	  k->aux = NULL;
-	  array->left = NULL;
-	  array->right = NULL;
-	  splay_tree_insert (&devicep->mem_map, array);
-	  array++;
+	  gomp_mutex_unlock (&devicep->lock);
+	  if (is_register_lock)
+	    gomp_mutex_unlock (&register_lock);
+	  gomp_fatal ("offload plugin managed 'icv struct' not of expected "
+		      "format");
 	}
+      /* Copy the ICVs variable to place on device memory, hereby
+	     actually designating its device number into effect.  */
+      gomp_copy_host2dev (devicep, NULL, (void *) icv_var->start, icvs,
+			  var_size, false, NULL);
+      splay_tree_key k = &array->key;
+      k->host_start = (uintptr_t) icvs;
+      k->host_end =
+      k->host_start + (size_mask & sizeof (struct gomp_offload_icvs));
+      k->tgt = tgt;
+      k->tgt_offset = icv_var->start;
+      k->refcount = REFCOUNT_INFINITY;
+      k->dynamic_refcount = 0;
+      k->aux = NULL;
+      array->left = NULL;
+      array->right = NULL;
+      splay_tree_insert (&devicep->mem_map, array);
+      array++;
     }
 
   free (target_table);
