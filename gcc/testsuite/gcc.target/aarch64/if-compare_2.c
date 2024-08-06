@@ -8,6 +8,7 @@
 
 typedef int v4si __attribute__ ((vector_size (16)));
 
+
 /*
 **foo1:
 **	cmgt	v0.4s, v1.4s, v0.4s
@@ -29,11 +30,13 @@ v4si foo2 (v4si a, v4si b, v4si c, v4si d) {
 }
 
 
+/* The bsl could be bit or bif depending on register
+   allocator inside the loop. */
 /**
 **bar1:
 **...
 **	cmge	v[0-9]+.4s, v[0-9]+.4s, v[0-9]+.4s
-**	bsl	v[0-9]+.16b, v[0-9]+.16b, v[0-9]+.16b
+**	(bsl|bit|bif)	v[0-9]+.16b, v[0-9]+.16b, v[0-9]+.16b
 **	and	v[0-9]+.16b, v[0-9]+.16b, v[0-9]+.16b
 **...
 */
@@ -44,11 +47,13 @@ void bar1 (int * restrict a, int * restrict b, int * restrict c,
     res[i] = ((a[i] < b[i]) & c[i]) | ((a[i] >= b[i]) & d[i]);
 }
 
+/* The bsl could be bit or bif depending on register
+   allocator inside the loop. */
 /**
 **bar2:
 **...
 **	cmge	v[0-9]+.4s, v[0-9]+.4s, v[0-9]+.4s
-**	bsl	v[0-9]+.16b, v[0-9]+.16b, v[0-9]+.16b
+**	(bsl|bit|bif)	v[0-9]+.16b, v[0-9]+.16b, v[0-9]+.16b
 **...
 */
 void bar2 (int * restrict a, int * restrict b, int * restrict c,
