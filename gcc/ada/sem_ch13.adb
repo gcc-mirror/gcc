@@ -1982,6 +1982,11 @@ package body Sem_Ch13 is
                   Error_Msg_N
                     ("aspect must apply to a type with discriminants", Expr);
 
+               elsif not Is_First_Subtype (E) then
+                  Error_Msg_N
+                    ("aspect not specifiable in a subtype declaration",
+                     Aspect);
+
                elsif not Is_Entity_Name (Expr) then
                   Error_Msg_N
                     ("aspect must name a discriminant of current type", Expr);
