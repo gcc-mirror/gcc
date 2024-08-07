@@ -12,6 +12,12 @@
 #include "operator.h"
 #include "go-linemap.h"
 
+#if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4)
+# define GO_ATTRIBUTE_UNUSED __attribute__ ((__unused__))
+#else
+# define GO_ATTRIBUTE_UNUSED
+#endif
+
 struct Unicode_range;
 
 // The keywords.  These must be in sorted order, other than
@@ -561,7 +567,7 @@ class Lex
   gather_embed(const char*, const char*);
 
   // The input file name.
-  const char* input_file_name_ ATTRIBUTE_UNUSED;
+  const char* input_file_name_ GO_ATTRIBUTE_UNUSED;
   // The input file.
   FILE* input_file_;
   // The object used to keep track of file names and line numbers.
