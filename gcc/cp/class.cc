@@ -1431,6 +1431,7 @@ add_method (tree type, tree method, bool via_using)
 		continue;
 	    }
 
+	  auto_diagnostic_group d;
 	  error_at (DECL_SOURCE_LOCATION (method),
 		    "%q#D conflicts with version inherited from %qT",
 		    method, basef);
@@ -1453,6 +1454,7 @@ add_method (tree type, tree method, bool via_using)
 	}
       else
 	{
+	  auto_diagnostic_group d;
 	  error_at (DECL_SOURCE_LOCATION (method),
 		    "%q#D cannot be overloaded with %q#D", method, fn);
 	  inform (DECL_SOURCE_LOCATION (fn),
@@ -1604,6 +1606,7 @@ handle_using_decl (tree using_decl, tree t)
     ;
   else if (is_overloaded_fn (old_value))
     {
+      auto_diagnostic_group d;
       error_at (DECL_SOURCE_LOCATION (using_decl), "%qD invalid in %q#T "
 		"because of local method %q#D with same name",
 		using_decl, t, old_value);
@@ -1613,6 +1616,7 @@ handle_using_decl (tree using_decl, tree t)
     }
   else if (!DECL_ARTIFICIAL (old_value))
     {
+      auto_diagnostic_group d;
       error_at (DECL_SOURCE_LOCATION (using_decl), "%qD invalid in %q#T "
 		"because of local member %q#D with same name",
 		using_decl, t, old_value);
@@ -2547,6 +2551,7 @@ maybe_warn_about_overly_private_class (tree t)
 
       if (!nonprivate_ctor)
 	{
+	  auto_diagnostic_group d;
 	  bool w = warning (OPT_Wctor_dtor_privacy,
 			    "%q#T only defines private constructors and has "
 			    "no friends", t);
@@ -3815,6 +3820,7 @@ check_field_decl (tree field,
       if (TREE_CODE (t) == UNION_TYPE && cxx_dialect < cxx11)
 	{
 	  static bool warned;
+	  auto_diagnostic_group d;
 	  int oldcount = errorcount;
 	  if (TYPE_NEEDS_CONSTRUCTING (type))
 	    error ("member %q+#D with constructor not allowed in union",
@@ -4131,6 +4137,7 @@ check_field_decls (tree t, tree *access_decls,
 	  if (default_init_member
 	      && TREE_CODE (t) == UNION_TYPE)
 	    {
+	      auto_diagnostic_group d;
 	      error ("multiple fields in union %qT initialized", t);
 	      inform (DECL_SOURCE_LOCATION (default_init_member),
 		      "initialized member %q+D declared here",
@@ -4209,6 +4216,7 @@ check_field_decls (tree t, tree *access_decls,
       && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
       && !(TYPE_HAS_COPY_CTOR (t) && TYPE_HAS_COPY_ASSIGN (t)))
     {
+      auto_diagnostic_group d;
       if (warning (OPT_Weffc__, "%q#T has pointer data members", t))
 	{
 	  if (! TYPE_HAS_COPY_CTOR (t))
@@ -8913,6 +8921,7 @@ resolve_address_of_overloaded_function (tree target_type,
       /* There were *no* matches.  */
       if (complain & tf_error)
 	{
+	  auto_diagnostic_group d;
 	  error ("no matches converting function %qD to type %q#T",
 		 OVL_NAME (overload), target_type);
 
@@ -8940,6 +8949,7 @@ resolve_address_of_overloaded_function (tree target_type,
 	{
 	  if (complain & tf_error)
 	    {
+	      auto_diagnostic_group d;
 	      error ("converting overloaded function %qD to type %q#T is ambiguous",
 		     OVL_NAME (overload), target_type);
 
@@ -9397,6 +9407,8 @@ note_name_declared_in_class (tree name, tree decl)
       else
 	/* Make it an error.  */
 	global_dc->m_pedantic_errors = 1;
+
+      auto_diagnostic_group d;
       if (pedwarn (location_of (decl), OPT_Wchanges_meaning,
 		   "declaration of %q#D changes meaning of %qD",
 		   decl, OVL_NAME (decl)))

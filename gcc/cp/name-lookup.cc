@@ -2893,6 +2893,7 @@ supplement_binding (cxx_binding *binding, tree decl)
 void
 diagnose_name_conflict (tree decl, tree bval)
 {
+  auto_diagnostic_group d;
   if (TREE_CODE (decl) == TREE_CODE (bval)
       && TREE_CODE (decl) != NAMESPACE_DECL
       && !DECL_DECLARES_FUNCTION_P (decl)
@@ -6213,6 +6214,7 @@ lookup_using_decl (tree scope, name_lookup &lookup)
 	   /* We can (independently) have ambiguous implicit typedefs.  */
 	   || (lookup.type && TREE_CODE (lookup.type) == TREE_LIST))
     {
+      auto_diagnostic_group d;
       error ("reference to %qD is ambiguous", lookup.name);
       print_candidates (TREE_CODE (lookup.value) == TREE_LIST
 			? lookup.value : lookup.type);
@@ -6344,6 +6346,7 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
   if (TREE_CODE (old) == TREE_LIST)
     {
     ambiguous:
+      auto_diagnostic_group d;
       DECL_CONTEXT (decl) = FROB_CONTEXT (scope);
       error ("reference to %qD is ambiguous", decl);
       print_candidates (old);
@@ -6443,6 +6446,7 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
     {
       if (hidden_p)
 	{
+	  auto_diagnostic_group d;
 	  pedwarn (DECL_SOURCE_LOCATION (decl), 0,
 		   "%qD has not been declared within %qD", decl, scope);
 	  inform (DECL_SOURCE_LOCATION (found),
@@ -8927,6 +8931,7 @@ finish_using_directive (tree target, tree attribs)
 	if (current_binding_level->kind == sk_namespace
 	    && is_attribute_p ("strong", name))
 	  {
+	    auto_diagnostic_group d;
 	    if (warning (0, "%<strong%> using directive no longer supported")
 		&& CP_DECL_CONTEXT (target) == current_namespace)
 	      inform (DECL_SOURCE_LOCATION (target),
@@ -9246,6 +9251,7 @@ push_namespace (tree name, bool make_inline)
 
       if (make_inline && !DECL_NAMESPACE_INLINE_P (ns))
 	{
+	  auto_diagnostic_group d;
 	  error_at (input_location,
 		    "inline namespace must be specified at initial definition");
 	  inform (DECL_SOURCE_LOCATION (ns), "%qD defined here", ns);
@@ -9296,6 +9302,7 @@ add_imported_namespace (tree ctx, tree name, location_t loc, unsigned import,
     }
   else if (DECL_NAMESPACE_INLINE_P (decl) != inline_p)
     {
+      auto_diagnostic_group d;
       error_at (loc, "%s namespace %qD conflicts with reachable definition",
 		inline_p ? "inline" : "non-inline", decl);
       inform (DECL_SOURCE_LOCATION (decl), "reachable %s definition here",

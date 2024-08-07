@@ -736,6 +736,7 @@ build_throw (location_t loc, tree exp, tsubst_flags_t complain)
 	    exp = moved;
 
 	  /* Call the copy constructor.  */
+	  auto_diagnostic_group d;
 	  releasing_vec exp_vec (make_tree_vector_single (exp));
 	  exp = build_special_member_call (object, complete_ctor_identifier,
 					   &exp_vec, TREE_TYPE (object), flags,

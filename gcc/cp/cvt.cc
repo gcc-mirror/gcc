@@ -1933,6 +1933,7 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
 		{
 		  if (complain)
 		    {
+		      auto_diagnostic_group d;
 		      error ("ambiguous default type conversion from %qT",
 			     basetype);
 		      inform (input_location,

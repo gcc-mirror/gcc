@@ -911,6 +911,7 @@ check_classfn (tree ctype, tree function, tree template_parms)
 	  if (DECL_CONV_FN_P (function))
 	    fns = get_class_binding (ctype, conv_op_identifier);
 
+	  auto_diagnostic_group d;
 	  error_at (DECL_SOURCE_LOCATION (function),
 		    "no declaration matches %q#D", function);
 	  if (fns)
@@ -5120,6 +5121,7 @@ record_mangling (tree decl, bool need_warning)
     *slot = decl;
   else if (need_warning)
     {
+      auto_diagnostic_group d;
       error_at (DECL_SOURCE_LOCATION (decl),
 		"mangling of %q#D as %qE conflicts with a previous mangle",
 		decl, id);
@@ -6078,6 +6080,7 @@ mark_used (tree decl, tsubst_flags_t complain /* = tf_warning_or_error */)
 	    sorry ("converting lambda that uses %<...%> to function pointer");
 	  else if (complain & tf_error)
 	    {
+	      auto_diagnostic_group d;
 	      if (DECL_INITIAL (decl)
 		  && TREE_CODE (DECL_INITIAL (decl)) == STRING_CST)
 		{

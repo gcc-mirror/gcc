@@ -305,6 +305,7 @@ find_coro_traits_template_decl (location_t kw)
     {
       if (!traits_error_emitted)
 	{
+	  auto_diagnostic_group d;
 	  gcc_rich_location richloc (kw);
 	  error_at (&richloc, "coroutines require a traits template; cannot"
 		    " find %<%E::%E%>", std_node, coro_traits_identifier);
@@ -632,6 +633,7 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
 					tf_none);
       if (has_ret_void && has_ret_val)
 	{
+	  auto_diagnostic_group d;
 	  location_t ploc = DECL_SOURCE_LOCATION (fndecl);
 	  if (!coro_info->coro_co_return_error_emitted)
 	    error_at (ploc, "the coroutine promise type %qT declares both"
@@ -1025,6 +1027,7 @@ coro_diagnose_throwing_fn (tree fndecl)
 {
   if (!TYPE_NOTHROW_P (TREE_TYPE (fndecl)))
     {
+      auto_diagnostic_group d;
       location_t f_loc = cp_expr_loc_or_loc (fndecl,
 					     DECL_SOURCE_LOCATION (fndecl));
       error_at (f_loc, "the expression %qE is required to be non-throwing",

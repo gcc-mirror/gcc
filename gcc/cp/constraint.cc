@@ -1005,6 +1005,7 @@ associate_classtype_constraints (tree type)
 	    }
           if (!equivalent_constraints (ci, orig_ci))
             {
+	      auto_diagnostic_group d;
 	      error ("%qT does not match original declaration", type);
 	      tree tmpl = CLASSTYPE_TI_TEMPLATE (type);
 	      location_t loc = DECL_SOURCE_LOCATION (tmpl);
@@ -3183,9 +3184,9 @@ diagnose_trait_expr (tree expr, tree args)
       break;
     case CPTK_IS_CONSTRUCTIBLE:
       if (!t2)
-    inform (loc, "  %qT is not default constructible", t1);
+	inform (loc, "  %qT is not default constructible", t1);
       else
-    inform (loc, "  %qT is not constructible from %qE", t1, t2);
+	inform (loc, "  %qT is not constructible from %qE", t1, t2);
       break;
     case CPTK_IS_CONVERTIBLE:
       inform (loc, "  %qT is not convertible from %qE", t2, t1);
@@ -3204,9 +3205,9 @@ diagnose_trait_expr (tree expr, tree args)
       break;
     case CPTK_IS_INVOCABLE:
       if (!t2)
-    inform (loc, "  %qT is not invocable", t1);
+	inform (loc, "  %qT is not invocable", t1);
       else
-    inform (loc, "  %qT is not invocable by %qE", t1, t2);
+	inform (loc, "  %qT is not invocable by %qE", t1, t2);
       break;
     case CPTK_IS_LAYOUT_COMPATIBLE:
       inform (loc, "  %qT is not layout compatible with %qT", t1, t2);
@@ -3233,14 +3234,14 @@ diagnose_trait_expr (tree expr, tree args)
 	inform (loc, "  %qT is not nothrow constructible from %qE", t1, t2);
       break;
     case CPTK_IS_NOTHROW_CONVERTIBLE:
-	  inform (loc, "  %qT is not nothrow convertible from %qE", t2, t1);
+      inform (loc, "  %qT is not nothrow convertible from %qE", t2, t1);
       break;
     case CPTK_IS_NOTHROW_INVOCABLE:
-	if (!t2)
-	  inform (loc, "  %qT is not nothrow invocable", t1);
-	else
-	  inform (loc, "  %qT is not nothrow invocable by %qE", t1, t2);
-	break;
+      if (!t2)
+	inform (loc, "  %qT is not nothrow invocable", t1);
+      else
+	inform (loc, "  %qT is not nothrow invocable by %qE", t1, t2);
+      break;
     case CPTK_IS_OBJECT:
       inform (loc, "  %qT is not an object type", t1);
       break;

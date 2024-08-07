@@ -1124,6 +1124,7 @@ maybe_process_partial_specialization (tree type)
 	  if (current_namespace
 	      != decl_namespace_context (tmpl))
 	    {
+	      auto_diagnostic_group d;
 	      if (permerror (input_location,
 			     "specialization of %qD in different namespace",
 			     type))
@@ -2471,6 +2472,7 @@ determine_specialization (tree template_id,
 
   if (templates == NULL_TREE && candidates == NULL_TREE)
     {
+      auto_diagnostic_group d;
       error ("template-id %qD for %q+D does not match any template "
 	     "declaration", template_id, decl);
       if (header_mismatch)
@@ -2485,6 +2487,7 @@ determine_specialization (tree template_id,
 	   || (candidates && TREE_CHAIN (candidates))
 	   || (templates && candidates))
     {
+      auto_diagnostic_group d;
       error ("ambiguous template specialization %qD for %q+D",
 	     template_id, decl);
       candidates = chainon (candidates, templates);
@@ -4311,6 +4314,7 @@ check_for_bare_parameter_packs (tree t, location_t loc /* = UNKNOWN_LOCATION */)
 
   if (parameter_packs)
     {
+      auto_diagnostic_group d;
       error_at (loc, "parameter packs not expanded with %<...%>:");
       while (parameter_packs)
         {
@@ -4455,6 +4459,7 @@ check_template_shadow (tree decl)
   if (DECL_SELF_REFERENCE_P (decl))
     return false;
 
+  auto_diagnostic_group d;
   if (DECL_TEMPLATE_PARM_P (decl))
     error ("declaration of template parameter %q+D shadows "
 	   "template parameter", decl);
@@ -5141,7 +5146,6 @@ process_partial_specialization (tree decl)
   int nargs = TREE_VEC_LENGTH (inner_args);
   int ntparms;
   int  i;
-  bool did_error_intro = false;
   struct template_parm_data tpd;
   struct template_parm_data tpd2;
 
@@ -5195,24 +5199,29 @@ process_partial_specialization (tree decl)
 			      NULL,
 			      /*include_nondeduced_p=*/false);
     }
-  for (i = 0; i < ntparms; ++i)
-    if (tpd.parms[i] == 0)
-      {
-	/* One of the template parms was not used in a deduced context in the
-	   specialization.  */
-	if (!did_error_intro)
-	  {
-	    error ("template parameters not deducible in "
-		   "partial specialization:");
-	    did_error_intro = true;
-	  }
 
-	inform (input_location, "        %qD",
-		TREE_VALUE (TREE_VEC_ELT (inner_parms, i)));
-      }
+  {
+    auto_diagnostic_group d;
+    bool did_error_intro = false;
+    for (i = 0; i < ntparms; ++i)
+      if (tpd.parms[i] == 0)
+	{
+	  /* One of the template parms was not used in a deduced context in the
+	     specialization.  */
+	  if (!did_error_intro)
+	    {
+	      error ("template parameters not deducible in "
+		     "partial specialization:");
+	      did_error_intro = true;
+	    }
 
-  if (did_error_intro)
-    return error_mark_node;
+	  inform (input_location, "        %qD",
+		  TREE_VALUE (TREE_VEC_ELT (inner_parms, i)));
+	}
+
+    if (did_error_intro)
+      return error_mark_node;
+  }
 
   /* [temp.class.spec]
 
@@ -5224,6 +5233,7 @@ process_partial_specialization (tree decl)
       && (!flag_concepts
 	  || !strictly_subsumes (current_template_constraints (), maintmpl)))
     {
+      auto_diagnostic_group d;
       if (!flag_concepts)
         error ("partial specialization %q+D does not specialize "
 	       "any template arguments; to define the primary template, "
@@ -5241,6 +5251,7 @@ process_partial_specialization (tree decl)
      parameters.  */
   if (nargs < DECL_NTPARMS (maintmpl))
     {
+      auto_diagnostic_group d;
       error ("partial specialization is not more specialized than the "
 	     "primary template because it replaces multiple parameters "
 	     "with a pack expansion");
@@ -5251,6 +5262,7 @@ process_partial_specialization (tree decl)
 
   else if (nargs > DECL_NTPARMS (maintmpl))
     {
+      auto_diagnostic_group d;
       error ("too many arguments for partial specialization %qT", type);
       inform (DECL_SOURCE_LOCATION (maintmpl), "primary template here");
       /* Avoid crash below.  */
@@ -6141,6 +6153,7 @@ push_template_decl (tree decl, bool is_friend)
 	  (TI_ARGS (tinfo),
 	   TI_ARGS (get_template_info (DECL_TEMPLATE_RESULT (tmpl)))))
 	{
+	  auto_diagnostic_group d;
 	  error ("template arguments to %qD do not match original "
 		 "template %qD", decl, DECL_TEMPLATE_RESULT (tmpl));
 	  if (!uses_template_parms (TI_ARGS (tinfo)))
@@ -6346,6 +6359,7 @@ redeclare_class_template (tree type, tree parms, tree cons)
 
   if (TREE_VEC_LENGTH (parms) != TREE_VEC_LENGTH (tmpl_parms))
     {
+      auto_diagnostic_group d;
       error_n (input_location, TREE_VEC_LENGTH (parms),
                "redeclared with %d template parameter",
                "redeclared with %d template parameters",
@@ -6862,6 +6876,7 @@ convert_nontype_argument_function (tree type, tree expr,
     {
       if (complain & tf_error)
 	{
+	  auto_diagnostic_group d;
 	  location_t loc = cp_expr_loc_or_input_loc (expr);
 	  error_at (loc, "%qE is not a valid template argument for type %qT",
 		    expr, type);
@@ -6932,6 +6947,7 @@ check_valid_ptrmem_cst_expr (tree type, tree expr,
     return true;
   if (complain & tf_error)
     {
+      auto_diagnostic_group d;
       location_t loc = cp_expr_loc_or_input_loc (orig_expr);
       error_at (loc, "%qE is not a valid template argument for type %qT",
 		orig_expr, type);
@@ -7805,6 +7821,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	{
 	  if (complain & tf_error)
 	    {
+	      auto_diagnostic_group d;
 	      error ("%qE is not a valid template argument for type %qT "
 		     "because it is a pointer", expr, type);
 	      inform (input_location, "try using %qE instead",
@@ -8660,6 +8677,7 @@ convert_template_argument (tree parm,
 	{
 	  if (complain & tf_error)
 	    {
+	      auto_diagnostic_group d;
 	      error ("type/value mismatch at argument %d in template "
 		     "parameter list for %qD",
 		     i + 1, in_decl);
@@ -8694,6 +8712,7 @@ convert_template_argument (tree parm,
     {
       if (in_decl && (complain & tf_error))
 	{
+	  auto_diagnostic_group d;
 	  error ("type/value mismatch at argument %d in template "
 		 "parameter list for %qD",
 		 i + 1, in_decl);
@@ -8744,6 +8763,7 @@ convert_template_argument (tree parm,
 		{
 		  if (in_decl && (complain & tf_error))
 		    {
+		      auto_diagnostic_group d;
 		      error ("type/value mismatch at argument %d in "
 			     "template parameter list for %qD",
 			     i + 1, in_decl);
@@ -8762,6 +8782,7 @@ convert_template_argument (tree parm,
                   {
 		    if (in_decl && (complain & tf_error))
                       {
+			auto_diagnostic_group d;
                         error ("constraint mismatch at argument %d in "
                                "template parameter list for %qD",
                                i + 1, in_decl);
@@ -9144,6 +9165,7 @@ coerce_template_parms (tree parms,
     bad_nargs:
       if (complain & tf_error)
 	{
+	  auto_diagnostic_group d;
           if (variadic_p || default_p)
             {
               nparms -= variadic_p + default_p;
@@ -9179,6 +9201,7 @@ coerce_template_parms (tree parms,
 	      if (PACK_EXPANSION_P (arg)
 		  && !template_parameter_pack_p (parm))
 		{
+		  auto_diagnostic_group d;
 		  if (DECL_ALIAS_TEMPLATE_P (in_decl))
 		    error_at (location_of (arg),
 			      "pack expansion argument for non-pack parameter "
@@ -17370,6 +17393,7 @@ tsubst_qualified_id (tree qualified_id, tree args,
 	{
 	  if (complain & tf_error)
 	    {
+	      auto_diagnostic_group d;
 	      error ("dependent-name %qE is parsed as a non-type, but "
 		     "instantiation yields a type", qualified_id);
 	      inform (input_location, "say %<typename %E%> if a type is meant", qualified_id);
@@ -20962,6 +20986,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 		if (unq != function)
 		  {
+		    auto_diagnostic_group d;
 		    char const *const msg
 		      = G_("%qD was not declared in this scope, "
 			   "and no declarations were found by "
@@ -26399,6 +26424,7 @@ most_specialized_partial_spec (tree target, tsubst_flags_t complain,
       char *spaces = NULL;
       if (!(complain & tf_error))
 	return error_mark_node;
+      auto_diagnostic_group d;
       if (TYPE_P (target))
 	error ("ambiguous template instantiation for %q#T", target);
       else
@@ -30865,6 +30891,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init, tree outer_targs,
 	{
 	  /* Be permissive with equivalent alias templates.  */
 	  tree u = get_underlying_template (tmpl);
+	  auto_diagnostic_group d;
 	  diagnostic_t dk = (u == tmpl) ? DK_ERROR : DK_PEDWARN;
 	  bool complained
 	    = emit_diagnostic (dk, input_location, 0,
@@ -31021,6 +31048,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init, tree outer_targs,
     {
       if (complain & tf_warning_or_error)
 	{
+	  auto_diagnostic_group d;
 	  error ("class template argument deduction failed:");
 	  perform_dguide_overload_resolution (cands, args, complain);
 	  if (elided)
@@ -31038,6 +31066,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init, tree outer_targs,
 	  if (complain & tf_warning_or_error)
 	    {
 	      // TODO: Pass down location from cp_finish_decl.
+	      auto_diagnostic_group d;
 	      error ("class template argument deduction for %qT failed: "
 		     "explicit deduction guide selected in "
 		     "copy-list-initialization", type);
@@ -31053,6 +31082,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init, tree outer_targs,
      guides, this deduction might not be what the user intended.  */
   if (fndecl != error_mark_node && !any_dguides_p && (complain & tf_warning))
     {
+      auto_diagnostic_group d;
       if ((!DECL_IN_SYSTEM_HEADER (fndecl)
 	   || global_dc->m_warn_system_headers)
 	  && warning (OPT_Wctad_maybe_unsupported,
@@ -31180,6 +31210,7 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 	{
           if (complain & tf_warning_or_error)
             {
+	      auto_diagnostic_group d;
 	      if (permerror (loc, "direct-list-initialization of "
 			     "%<auto%> requires exactly one element"))
 		inform (loc,

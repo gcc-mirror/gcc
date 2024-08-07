@@ -662,6 +662,7 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
     {
       if (complain & tf_error)
 	{
+	  auto_diagnostic_group d;
 	  error ("default member initializer for %qD required before the end "
 		 "of its enclosing class", member);
 	  inform (location_of (init), "defined here");
@@ -2736,6 +2737,7 @@ diagnose_uninitialized_cst_or_ref_member_1 (tree type, tree origin,
 	  ++ error_count;
 	  if (complain)
 	    {
+	      auto_diagnostic_group d;
 	      if (DECL_CONTEXT (field) == origin)
 		{
 		  if (using_new)
@@ -2764,6 +2766,7 @@ diagnose_uninitialized_cst_or_ref_member_1 (tree type, tree origin,
 	  ++ error_count;
 	  if (complain)
 	    {
+	      auto_diagnostic_group d;
 	      if (DECL_CONTEXT (field) == origin)
 		{
 		  if (using_new)
@@ -2890,6 +2893,8 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
   bool warned = false;
   if (nelts)
     nelts = fold_for_warn (nelts);
+
+  auto_diagnostic_group d;
   if (nelts)
     if (CONSTANT_CLASS_P (nelts))
       warned = warning_at (loc, OPT_Wplacement_new_,
@@ -3408,6 +3413,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	{
 	  if (complain & tf_error)
 	    {
+	      auto_diagnostic_group d;
 	      error ("request for member %qD is ambiguous", fnname);
 	      print_candidates (fns);
 	    }
@@ -4125,6 +4131,7 @@ build_vec_delete_1 (location_t loc, tree base, tree maxindex, tree type,
 	{
 	  if (complain & tf_error)
 	    {
+	      auto_diagnostic_group d;
 	      int saved_errorcount = errorcount;
 	      if (permerror_opt (loc, OPT_Wdelete_incomplete,
 				 "operator %<delete []%> used on "
@@ -5209,6 +5216,7 @@ build_delete (location_t loc, tree otype, tree addr,
 		{
 		  if (complain & tf_error)
 		    {
+		      auto_diagnostic_group d;
 		      int saved_errorcount = errorcount;
 		      if (permerror_opt (loc, OPT_Wdelete_incomplete,
 					 "operator %<delete%> used on "

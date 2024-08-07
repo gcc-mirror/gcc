@@ -11627,6 +11627,7 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 	{
 	  // FIXME:QOI Might be template specialization from a module,
 	  // not necessarily global module
+	  auto_diagnostic_group d;
 	  error_at (DECL_SOURCE_LOCATION (decl),
 		    "conflicting global module declaration %#qD", decl);
 	  inform (DECL_SOURCE_LOCATION (existing),
@@ -12682,6 +12683,7 @@ trees_in::read_enum_def (tree defn, tree maybe_template)
 
       if (known || values)
 	{
+	  auto_diagnostic_group d;
 	  error_at (DECL_SOURCE_LOCATION (maybe_dup),
 		    "definition of %qD does not match", maybe_dup);
 	  inform (DECL_SOURCE_LOCATION (defn),
@@ -14497,6 +14499,7 @@ module_state::check_not_purview (location_t from)
   if (imp == this)
     {
       /* Cannot import the current module.  */
+      auto_diagnostic_group d;
       error_at (from, "cannot import module in its own purview");
       inform (loc, "module %qs declared here", get_flatname ());
       return false;
@@ -17859,6 +17862,7 @@ module_state::deferred_macro (cpp_reader *reader, location_t loc,
     {
       /* If LOC is the first loc, this is the end of file check, which
 	 is a warning.  */
+      auto_diagnostic_group d;
       if (loc == MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (line_table, 0)))
 	warning_at (loc, OPT_Winvalid_imported_macros,
 		    "inconsistent imported macro definition %qE",
@@ -18133,6 +18137,7 @@ module_state::read_config (module_state_config &config)
 
       /* Reject when either is non-experimental or when experimental
 	 major versions differ.  */
+      auto_diagnostic_group d;
       bool reject_p = ((!IS_EXPERIMENTAL (my_ver)
 			|| !IS_EXPERIMENTAL (their_ver)
 			|| MODULE_MAJOR (my_ver) != MODULE_MAJOR (their_ver))
@@ -18945,6 +18950,7 @@ module_state::check_read (bool outermost, bool ok)
 
   if (int e = from ()->get_error ())
     {
+      auto_diagnostic_group d;
       error_at (loc, "failed to read compiled module: %s",
 		from ()->get_error (filename));
       note_cmi_name ();
@@ -19878,6 +19884,7 @@ declare_module (module_state *module, location_t from_loc, bool exporting_p,
   module_state *current = (*modules)[0];
   if (module_purview_p () || module->loadedness > ML_CONFIG)
     {
+      auto_diagnostic_group d;
       error_at (from_loc, module_purview_p ()
 		? G_("module already declared")
 		: G_("module already imported"));
@@ -20535,6 +20542,7 @@ init_modules (cpp_reader *reader)
 	  || (cpp_opts->deps.style != DEPS_NONE
 	      && !cpp_opts->deps.need_preprocessor_output))
 	{
+	  auto_diagnostic_group d;
 	  warning (0, flag_dump_macros == 'M'
 		   ? G_("macro debug output may be incomplete with modules")
 		   : G_("module dependencies require preprocessing"));

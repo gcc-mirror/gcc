@@ -4797,12 +4797,14 @@ qualified_name_lookup_error (tree scope, tree name,
 		  scope);
       else if (TREE_CODE (decl) == TREE_LIST)
 	{
+	  auto_diagnostic_group d;
 	  error_at (location, "reference to %<%T::%D%> is ambiguous",
 		    scope, name);
 	  print_candidates (decl);
 	}
       else
 	{
+	  auto_diagnostic_group d;
 	  name_hint hint;
 	  if (SCOPED_ENUM_P (scope) && TREE_CODE (name) == IDENTIFIER_NODE)
 	    hint = suggest_alternative_in_scoped_enum (name, scope);

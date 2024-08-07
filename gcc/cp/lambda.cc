@@ -562,6 +562,7 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
   else if (!dependent_type_p (type)
 	   && variably_modified_type_p (type, NULL_TREE))
     {
+      auto_diagnostic_group d;
       sorry ("capture of variably-modified type %qT that is not an N3639 array "
 	     "of runtime bound", type);
       if (TREE_CODE (type) == ARRAY_TYPE
@@ -600,6 +601,7 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
 	  type = complete_type (type);
 	  if (!COMPLETE_TYPE_P (type))
 	    {
+	      auto_diagnostic_group d;
 	      error ("capture by copy of incomplete type %qT", type);
 	      cxx_incomplete_type_inform (type);
 	      return error_mark_node;
@@ -757,6 +759,7 @@ add_default_capture (tree lambda_stack, tree id, tree initializer)
 	  && this_capture_p
 	  && LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda) == CPLD_COPY)
 	{
+	  auto_diagnostic_group d;
 	  if (warning_at (LAMBDA_EXPR_LOCATION (lambda), OPT_Wdeprecated,
 			  "implicit capture of %qE via %<[=]%> is deprecated "
 			  "in C++20", this_identifier))

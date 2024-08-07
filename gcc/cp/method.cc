@@ -1787,6 +1787,7 @@ synthesize_method (tree fndecl)
   int error_count = errorcount;
   int warning_count = warningcount + werrorcount;
   special_function_kind sfk = special_function_p (fndecl);
+  auto_diagnostic_group d;
 
   /* Reset the source location, we might have been previously
      deferred, and thus have saved where we were first needed.  */
@@ -3558,6 +3559,7 @@ defaulted_late_check (tree fn)
 		    TREE_TYPE (TREE_TYPE (implicit_fn)))
       || !compare_fn_params (fn, implicit_fn))
     {
+      auto_diagnostic_group d;
       error ("defaulted declaration %q+D does not match the "
 	     "expected signature", fn);
       inform (DECL_SOURCE_LOCATION (fn),
@@ -3593,6 +3595,7 @@ defaulted_late_check (tree fn)
     {
       if (!CLASSTYPE_TEMPLATE_INSTANTIATION (ctx))
 	{
+	  auto_diagnostic_group d;
 	  error ("explicitly defaulted function %q+D cannot be declared "
 		 "%qs because the implicit declaration is not %qs:", fn,
 		 DECL_IMMEDIATE_FUNCTION_P (fn) ? "consteval" : "constexpr",

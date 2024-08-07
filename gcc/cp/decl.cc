@@ -1457,6 +1457,7 @@ validate_constexpr_redeclaration (tree old_decl, tree new_decl)
       if (DECL_IMMEDIATE_FUNCTION_P (old_decl)
 	  || DECL_IMMEDIATE_FUNCTION_P (new_decl))
 	kind = "consteval";
+      auto_diagnostic_group d;
       error_at (DECL_SOURCE_LOCATION (new_decl),
 		"redeclaration %qD differs in %qs "
 		"from previous declaration", new_decl,
@@ -1567,6 +1568,7 @@ duplicate_function_template_decls (tree newdecl, tree olddecl)
       if (template_heads_equivalent_p (newdecl, olddecl)
 	  && function_requirements_equivalent_p (newres, oldres))
 	{
+	  auto_diagnostic_group d;
 	  error ("ambiguating new declaration %q+#D", newdecl);
 	  inform (DECL_SOURCE_LOCATION (olddecl),
 		  "old declaration %q#D", olddecl);
@@ -1902,6 +1904,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	    return NULL_TREE;
 
 	  /* There can only be one!  */
+	  auto_diagnostic_group d;
 	  if (TREE_CODE (newdecl) == TEMPLATE_DECL
 	      && check_raw_literal_operator (olddecl))
 	    error_at (newdecl_loc,
@@ -1924,6 +1927,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	/* One is an implicit typedef, that's ok.  */
 	return NULL_TREE;
 
+      auto_diagnostic_group d;
       error ("%q#D redeclared as different kind of entity", newdecl);
       inform (olddecl_loc, "previous declaration %q#D", olddecl);
 
@@ -1947,6 +1951,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	  if (TREE_CODE (oldres) == TYPE_DECL
 	      || TREE_CODE (newres) == TYPE_DECL)
 	    {
+	      auto_diagnostic_group d;
 	      error_at (newdecl_loc,
 			"conflicting declaration of template %q#D", newdecl);
 	      inform (olddecl_loc,
@@ -1967,6 +1972,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	{
 	  if (DECL_EXTERN_C_P (newdecl) && DECL_EXTERN_C_P (olddecl))
 	    {
+	      auto_diagnostic_group d;
 	      error_at (newdecl_loc,
 			"conflicting declaration of C function %q#D",
 			newdecl);
@@ -1988,6 +1994,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
                    // And the same constraints.
                    && equivalently_constrained (newdecl, olddecl))
 	    {
+	      auto_diagnostic_group d;
 	      error_at (newdecl_loc,
 			"ambiguating new declaration of %q#D", newdecl);
 	      inform (olddecl_loc,
@@ -1999,6 +2006,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	}
       else
 	{
+	  auto_diagnostic_group d;
 	  error_at (newdecl_loc, "conflicting declaration %q#D", newdecl);
 	  inform (olddecl_loc,
 		  "previous declaration as %q#D", olddecl);
@@ -2010,6 +2018,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
     {
       /* OMP UDRs are never duplicates. */
       gcc_assert (DECL_OMP_DECLARE_REDUCTION_P (olddecl));
+      auto_diagnostic_group d;
       error_at (newdecl_loc,
 		"redeclaration of %<pragma omp declare reduction%>");
       inform (olddecl_loc,
@@ -2311,10 +2320,13 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
     {
       if (merge_attr)
 	{
-	  if (diagnose_mismatched_attributes (olddecl, newdecl))
-	    inform (olddecl_loc, DECL_INITIAL (olddecl)
-		    ? G_("previous definition of %qD here")
-		    : G_("previous declaration of %qD here"), olddecl);
+	  {
+	    auto_diagnostic_group d;
+	    if (diagnose_mismatched_attributes (olddecl, newdecl))
+	      inform (olddecl_loc, DECL_INITIAL (olddecl)
+		      ? G_("previous definition of %qD here")
+		      : G_("previous declaration of %qD here"), olddecl);
+	  }
 
 	  /* [dcl.attr.noreturn]: The first declaration of a function shall
 	     specify the noreturn attribute if any declaration of that function
@@ -2327,6 +2339,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	      && cxx11_attribute_p (a)
 	      && get_attribute_namespace (a) == NULL_TREE)
 	    {
+	      auto_diagnostic_group d;
 	      error_at (newdecl_loc, "function %qD declared %<[[noreturn]]%> "
 			"but its first declaration was not", newdecl);
 	      inform (olddecl_loc, "previous declaration of %qD", olddecl);
@@ -3597,6 +3610,7 @@ lookup_label_1 (tree id, bool making_local_p)
 
       if (old->binding_level == current_binding_level)
 	{
+	  auto_diagnostic_group d;
 	  error ("local label %qE conflicts with existing label", id);
 	  inform (DECL_SOURCE_LOCATION (old->label_decl), "previous label");
 	  return NULL;
@@ -3712,6 +3726,7 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 		       bool exited_omp, const location_t *locus,
 		       vec<tree,va_gc> *computed)
 {
+  auto_diagnostic_group d;
   cp_binding_level *b;
   bool complained = false;
   int identified = 0;
@@ -3858,6 +3873,7 @@ check_switch_goto (cp_binding_level* level)
 void
 check_goto_1 (named_label_entry *ent, bool computed)
 {
+  auto_diagnostic_group d;
   tree decl = ent->label_decl;
 
   /* If the label hasn't been defined yet, defer checking.  */
@@ -4531,6 +4547,7 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
     {
       if (complain & tf_error)
 	{
+	  auto_diagnostic_group d;
 	  error ("lookup of %qT in %qT is ambiguous", name, context);
 	  print_candidates (t);
 	}
@@ -4626,6 +4643,7 @@ make_unbound_class_template (tree context, tree name, tree parm_list,
 	{
 	  if (complain & tf_error)
 	    {
+	      auto_diagnostic_group d;
 	      error ("template parameters do not match template %qD", tmpl);
 	      inform (DECL_SOURCE_LOCATION (tmpl),
 		      "%qD declared here", tmpl);
@@ -5764,6 +5782,7 @@ check_tag_decl (cp_decl_specifier_seq *declspecs,
 	       No attribute-specifier-seq shall appertain to an explicit
 	       instantiation.  */
 	{
+	  auto_diagnostic_group d;
 	  if (warning_at (loc, OPT_Wattributes,
 			  "attribute ignored in explicit instantiation %q#T",
 			  declared_type))
@@ -5999,6 +6018,7 @@ start_decl (const cp_declarator *declarator,
 	    /* OK, specialization was already checked.  */;
 	  else if (variable_template_p (field) && !this_tmpl)
 	    {
+	      auto_diagnostic_group d;
 	      error_at (DECL_SOURCE_LOCATION (decl),
 			"non-member-template declaration of %qD", decl);
 	      inform (DECL_SOURCE_LOCATION (field), "does not match "
@@ -6661,6 +6681,7 @@ maybe_commonize_var (tree decl)
 		msg = G_("sorry: semantics of inline function "
 			 "static data %q#D are wrong (you%'ll wind "
 			 "up with multiple copies)");
+	      auto_diagnostic_group d;
 	      if (warning_at (DECL_SOURCE_LOCATION (decl), 0,
 			      msg, decl))
 		inform (DECL_SOURCE_LOCATION (decl),
@@ -6698,6 +6719,7 @@ check_for_uninitialized_const_var (tree decl, bool constexpr_context_p,
       if (!field)
 	return true;
 
+      auto_diagnostic_group d;
       bool show_notes = true;
 
       if (!constexpr_context_p || cxx_dialect >= cxx20)
@@ -7062,6 +7084,7 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 		{
 		  if (field && TREE_CODE (field) == TREE_LIST)
 		    {
+		      auto_diagnostic_group g;
 		      error ("request for member %qD is ambiguous",
 			     d->cur->index);
 		      print_candidates (field);
@@ -7884,6 +7907,7 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
     {
       static int explained = 0;
 
+      auto_diagnostic_group d;
       if (cxx_dialect < cxx11)
 	error ("initializer invalid for static member with constructor");
       else if (cxx_dialect < cxx17)
@@ -8560,6 +8584,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  && !type_uses_auto (type)
 	  && !COMPLETE_TYPE_P (complete_type (type)))
 	{
+	  auto_diagnostic_group d;
 	  error_at (location_of (decl),
 		    "deduced type %qT for %qD is incomplete", type, decl);
 	  cxx_incomplete_type_inform (type);
@@ -9059,6 +9084,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       complete_type (TREE_TYPE (decl));
       if (!omp_mappable_type (TREE_TYPE (decl)))
 	{
+	  auto_diagnostic_group d;
 	  error ("%q+D in declare target directive does not have mappable"
 		 " type", decl);
 	  if (TREE_TYPE (decl) != error_mark_node
@@ -9114,6 +9140,7 @@ find_decomp_class_base (location_t loc, tree type, tree ret)
       return type;
     else if (ANON_AGGR_TYPE_P (TREE_TYPE (field)))
       {
+	auto_diagnostic_group d;
 	if (TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE)
 	  error_at (loc, "cannot decompose class type %qT because it has an "
 			 "anonymous struct member", type);
@@ -9125,6 +9152,7 @@ find_decomp_class_base (location_t loc, tree type, tree ret)
       }
     else if (!accessible_p (type, field, true))
       {
+	auto_diagnostic_group d;
 	error_at (loc, "cannot decompose inaccessible member %qD of %qT",
 		  field, type);
 	inform (DECL_SOURCE_LOCATION (field),
@@ -9425,6 +9453,7 @@ cp_finish_decomp (tree decl, cp_decomp *decomp)
       if (count != eltscnt)
 	{
        cnt_mismatch:
+	  auto_diagnostic_group d;
 	  if (count > eltscnt)
 	    error_n (loc, count,
 		     "%u name provided for structured binding",
@@ -9505,6 +9534,7 @@ cp_finish_decomp (tree decl, cp_decomp *decomp)
 	}
       if (!tree_fits_uhwi_p (tsize))
 	{
+	  auto_diagnostic_group d;
 	  error_n (loc, count,
 		   "%u name provided for structured binding",
 		   "%u names provided for structured binding", count);
@@ -10096,6 +10126,7 @@ expand_static_init (tree decl, tree init)
   if (CP_DECL_THREAD_LOCAL_P (decl) && DECL_GNU_TLS_P (decl)
       && !DECL_FUNCTION_SCOPE_P (decl))
     {
+      auto_diagnostic_group d;
       location_t dloc = DECL_SOURCE_LOCATION (decl);
       if (init)
 	error_at (dloc, "non-local variable %qD declared %<__thread%> "
@@ -10870,6 +10901,7 @@ grokfndecl (tree ctype,
       if (in_namespace == NULL_TREE
 	  && CP_DECL_CONTEXT (decl) != CP_TYPE_CONTEXT (type))
 	{
+	  auto_diagnostic_group d;
 	  error_at (location, "deduction guide %qD must be declared in the "
 			      "same scope as %qT", decl, type);
 	  inform (location_of (type), "  declared here");
@@ -10878,6 +10910,7 @@ grokfndecl (tree ctype,
       if (DECL_CLASS_SCOPE_P (decl)
 	  && current_access_specifier != declared_access (TYPE_NAME (type)))
 	{
+	  auto_diagnostic_group d;
 	  error_at (location, "deduction guide %qD must have the same access "
 			      "as %qT", decl, type);
 	  inform (location_of (type), "  declared here");
@@ -10897,6 +10930,7 @@ grokfndecl (tree ctype,
       /* [over.literal]/6: Literal operators shall not have C linkage. */
       if (DECL_LANGUAGE (decl) == lang_c)
 	{
+	  auto_diagnostic_group d;
 	  error_at (location, "literal operator with C linkage");
 	  maybe_show_extern_c_location ();
 	  return NULL_TREE;
@@ -11063,6 +11097,7 @@ grokfndecl (tree ctype,
 	    }
 	  else if (DECL_DEFAULTED_FN (old_decl))
 	    {
+	      auto_diagnostic_group d;
 	      error ("definition of explicitly-defaulted %q+D", decl);
 	      inform (DECL_SOURCE_LOCATION (old_decl),
 		      "%q#D explicitly defaulted here", old_decl);
@@ -13219,6 +13254,7 @@ grokdeclarator (const cp_declarator *declarator,
       && !diagnose_misapplied_contracts (declspecs->std_attributes))
     {
       location_t attr_loc = declspecs->locations[ds_std_attribute];
+      auto_diagnostic_group d;
       if (any_nonignored_attribute_p (declspecs->std_attributes)
 	  && warning_at (attr_loc, OPT_Wattributes, "attribute ignored"))
 	inform (attr_loc, "an attribute that appertains to a type-specifier "
@@ -13290,6 +13326,7 @@ grokdeclarator (const cp_declarator *declarator,
 	       && (MAYBE_CLASS_TYPE_P (type)
 		   || TREE_CODE (type) == ENUMERAL_TYPE)))
 	{
+	  auto_diagnostic_group d;
 	  if (warning_at (declarator->parenthesized, OPT_Wparentheses,
 			  "unnecessary parentheses in declaration of %qs",
 			  name))
@@ -13450,6 +13487,7 @@ grokdeclarator (const cp_declarator *declarator,
 		      /* OK for C++11 lambdas.  */;
 		    else if (cxx_dialect < cxx14)
 		      {
+			auto_diagnostic_group d;
 			error_at (typespec_loc, "%qs function uses "
 				  "%<auto%> type specifier without "
 				  "trailing return type", name);
@@ -13501,6 +13539,7 @@ grokdeclarator (const cp_declarator *declarator,
 		      }
 		    else if (!late_return_type)
 		      {
+			auto_diagnostic_group d;
 			error_at (declarator->id_loc, "deduction guide "
 				  "for %qT must have trailing return "
 				  "type", TREE_TYPE (tmpl));
@@ -14737,6 +14776,7 @@ grokdeclarator (const cp_declarator *declarator,
 		tree tmpl = TREE_OPERAND (unqualified_id, 0);
 		if (variable_template_p (tmpl))
 		  {
+		    auto_diagnostic_group d;
 		    error_at (id_loc, "specialization of variable template "
 			      "%qD declared as function", tmpl);
 		    inform (DECL_SOURCE_LOCATION (tmpl),
@@ -14803,6 +14843,7 @@ grokdeclarator (const cp_declarator *declarator,
 	      {
 		if (unqualified_id)
 		  {
+		    auto_diagnostic_group d;
 		    error_at (id_loc, "field %qD has incomplete type %qT",
 			      unqualified_id, type);
 		    cxx_incomplete_type_inform (strip_array_types (type));
@@ -14848,6 +14889,7 @@ grokdeclarator (const cp_declarator *declarator,
 		&& !all_attributes_are_contracts_p (*attrlist))
 	      {
 		*attrlist = NULL_TREE;
+		auto_diagnostic_group d;
 		if (warning_at (id_loc, OPT_Wattributes, "attribute ignored"))
 		  inform (id_loc, "an attribute that appertains to a friend "
 			  "declaration that is not a definition is ignored");
@@ -16359,6 +16401,7 @@ check_elaborated_type_specifier (enum tag_types tag_code,
 	   && !DECL_SELF_REFERENCE_P (decl)
 	   && tag_code != typename_type)
     {
+      auto_diagnostic_group d;
       if (alias_template_specialization_p (type, nt_opaque))
 	error ("using alias template specialization %qT after %qs",
 	       type, tag_name (tag_code));
@@ -16373,6 +16416,7 @@ check_elaborated_type_specifier (enum tag_types tag_code,
 	   && tag_code != enum_type
 	   && tag_code != typename_type)
     {
+      auto_diagnostic_group d;
       error ("%qT referred to as %qs", type, tag_name (tag_code));
       inform (location_of (type), "%qT has a previous declaration here", type);
       return error_mark_node;
@@ -16380,6 +16424,7 @@ check_elaborated_type_specifier (enum tag_types tag_code,
   else if (TREE_CODE (type) != ENUMERAL_TYPE
 	   && tag_code == enum_type)
     {
+      auto_diagnostic_group d;
       error ("%qT referred to as enum", type);
       inform (location_of (type), "%qT has a previous declaration here", type);
       return error_mark_node;
@@ -16437,6 +16482,7 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
 
   if (TREE_CODE (decl) == TREE_LIST)
     {
+      auto_diagnostic_group d;
       error ("reference to %qD is ambiguous", name);
       print_candidates (decl);
       return error_mark_node;
@@ -16446,6 +16492,7 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
       && !template_header_p
       && how == TAG_how::CURRENT_ONLY)
     {
+      auto_diagnostic_group d;
       error ("class template %qD redeclared as non-template", name);
       inform (location_of (decl), "previous declaration here");
       CLASSTYPE_ERRONEOUS (TREE_TYPE (decl)) = true;
@@ -16496,6 +16543,7 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
       && (!CLASSTYPE_TEMPLATE_INFO (t)
 	  || (!PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (t)))))
     {
+      auto_diagnostic_group d;
       error ("%qT is not a template", t);
       inform (location_of (t), "previous declaration here");
       if (TYPE_CLASS_SCOPE_P (t)
@@ -16632,6 +16680,7 @@ xref_tag (enum tag_types tag_code, tree name,
 	       && CLASS_TYPE_P (t)
 	       && CLASSTYPE_IS_TEMPLATE (t))
 	{
+	  auto_diagnostic_group d;
 	  error ("redeclaration of %qT as a non-template", t);
 	  inform (location_of (t), "previous declaration %qD", t);
 	  return error_mark_node;
@@ -17623,6 +17672,7 @@ cxx_simulate_enum_decl (location_t loc, const char *name,
 			      NULL_TREE, false, NULL);
   if (!OPAQUE_ENUM_P (enumtype))
     {
+      auto_diagnostic_group d;
       error_at (loc, "multiple definition of %q#T", enumtype);
       inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (enumtype)),
 	      "previous definition here");
@@ -18679,6 +18729,7 @@ finish_function (bool inline_p)
       else if (!current_function_returns_value
 	       && !current_function_returns_null)
 	{
+	  auto_diagnostic_group d;
 	  error ("no return statements in function returning %qT",
 		 DECL_SAVED_AUTO_RETURN_TYPE (fndecl));
 	  inform (input_location, "only plain %<auto%> return type can be "

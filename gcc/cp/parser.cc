@@ -3504,6 +3504,7 @@ cp_parser_check_for_definition_in_return_type (cp_declarator *declarator,
   if (declarator
       && declarator->kind == cdk_function)
     {
+      auto_diagnostic_group d;
       error_at (type_location,
 		"new types may not be defined in a return type");
       inform (type_location,
@@ -5086,24 +5087,27 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
 	}
     }
 
-  bool complained
-    = emit_diagnostic (kind, input_location, opt,
-		       "unable to find numeric literal operator %qD", name);
+  {
+    auto_diagnostic_group d;
+    bool complained
+      = emit_diagnostic (kind, input_location, opt,
+			 "unable to find numeric literal operator %qD", name);
 
-  if (!complained)
-    /* Don't inform either.  */;
-  else if (i14)
-    {
-      inform (token->location, "add %<using namespace std::complex_literals%> "
-	      "(from %<<complex>%>) to enable the C++14 user-defined literal "
-	      "suffixes");
-      if (ext)
-	inform (token->location, "or use %<j%> instead of %<i%> for the "
-		"GNU built-in suffix");
-    }
-  else if (!ext)
-    inform (token->location, "use %<-fext-numeric-literals%> "
-	    "to enable more built-in suffixes");
+    if (!complained)
+      /* Don't inform either.  */;
+    else if (i14)
+      {
+	inform (token->location, "add %<using namespace std::complex_literals%> "
+		"(from %<<complex>%>) to enable the C++14 user-defined literal "
+		"suffixes");
+	if (ext)
+	  inform (token->location, "or use %<j%> instead of %<i%> for the "
+		  "GNU built-in suffix");
+      }
+    else if (!ext)
+      inform (token->location, "use %<-fext-numeric-literals%> "
+	      "to enable more built-in suffixes");
+  }
 
   if (kind == DK_ERROR)
     value = error_mark_node;
@@ -7159,6 +7163,7 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	      if (TREE_CODE (tid) == TEMPLATE_ID_EXPR
 		  && TREE_CODE (TREE_OPERAND (tid, 0)) != IDENTIFIER_NODE)
 		{
+		  auto_diagnostic_group d;
 		  tree tmpl = NULL_TREE;
 		  if (is_overloaded_fn (tid))
 		    {
@@ -9641,10 +9646,13 @@ cp_parser_new_expression (cp_parser* parser)
 	 message for this case.  */
       if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_SQUARE))
 	{
-	  error_at (token->location,
-		    "array bound forbidden after parenthesized type-id");
-	  inform (token->location,
-		  "try removing the parentheses around the type-id");
+	  {
+	    auto_diagnostic_group d;
+	    error_at (token->location,
+		      "array bound forbidden after parenthesized type-id");
+	    inform (token->location,
+		    "try removing the parentheses around the type-id");
+	  }
 	  cp_parser_direct_new_declarator (parser);
 	}
     }
@@ -10450,6 +10458,7 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
           && token->type == CPP_RSHIFT
           && !parser->greater_than_is_operator_p)
         {
+	  auto_diagnostic_group d;
           if (warning_at (token->location, OPT_Wc__11_compat,
 			  "%<>>%> operator is treated"
 			  " as two right angle brackets in C++11"))
@@ -11724,6 +11733,7 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	  else if (!VAR_P (capture_init_expr)
 		   && TREE_CODE (capture_init_expr) != PARM_DECL)
 	    {
+	      auto_diagnostic_group d;
 	      error_at (capture_token->location,
 			"capture of non-variable %qE",
 			capture_init_expr);
@@ -11735,6 +11745,7 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	  if (VAR_P (capture_init_expr)
 	      && decl_storage_duration (capture_init_expr) != dk_auto)
 	    {
+	      auto_diagnostic_group d;
 	      if (pedwarn (capture_token->location, 0, "capture of variable "
 			   "%qD with non-automatic storage duration",
 			   capture_init_expr))
@@ -15238,6 +15249,7 @@ cp_parser_module_declaration (cp_parser *parser, module_parse mp_state,
     }
   else if (scope != global_namespace)
     {
+      auto_diagnostic_group d;
       error_at (token->location, "module-declaration must be at global scope");
       inform (DECL_SOURCE_LOCATION (scope), "scope opened here");
       goto skip_eol;
@@ -15315,19 +15327,22 @@ cp_parser_import_declaration (cp_parser *parser, module_parse mp_state,
 
   if (mp_state == MP_PURVIEW || mp_state == MP_PRIVATE)
     {
+      auto_diagnostic_group d;
       error_at (token->location, "post-module-declaration"
 		" imports must be contiguous");
-    note_lexer:
       inform (token->location, "perhaps insert a line break after"
 	      " %<import%>, or other disambiguation, to prevent this"
 	      " being considered a module control-line");
-    skip_eol:
       cp_parser_skip_to_pragma_eol (parser, token);
     }
   else if (current_scope () != global_namespace)
     {
+      auto_diagnostic_group d;
       error_at (token->location, "import-declaration must be at global scope");
-      goto note_lexer;
+      inform (token->location, "perhaps insert a line break after"
+	      " %<import%>, or other disambiguation, to prevent this"
+	      " being considered a module control-line");
+      cp_parser_skip_to_pragma_eol (parser, token);
     }
   else
     {
@@ -15355,7 +15370,10 @@ cp_parser_import_declaration (cp_parser *parser, module_parse mp_state,
       tree attrs = cp_parser_attributes_opt (parser);
 
       if (!mod || !cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
-	goto skip_eol;
+	{
+	  cp_parser_skip_to_pragma_eol (parser, token);
+	  return;
+	}
       cp_parser_require_pragma_eol (parser, token);
 
       if (mp_state == MP_PURVIEW_IMPORTS || mp_state == MP_PRIVATE_IMPORTS)
@@ -15648,6 +15666,7 @@ cp_parser_declaration (cp_parser* parser, tree prefix_attrs)
 	  if (!c_dialect_objc ())
 	    {
 	      location_t where = get_finish (t2->location);
+	      auto_diagnostic_group d;
 	      warning_at (token1->location, OPT_Wattributes, "attributes are"
 			  " not permitted in this position");
 	      where = linemap_position_for_loc_and_offset (line_table,
@@ -16899,6 +16918,7 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 
       if (decl_specs->std_attributes)
 	{
+	  auto_diagnostic_group d;
 	  error_at (decl_specs->locations[ds_std_attribute],
 		    "standard attributes in middle of decl-specifiers");
 	  inform (decl_specs->locations[ds_std_attribute],
@@ -19148,6 +19168,7 @@ cp_parser_template_id (cp_parser *parser,
 	}
       /* Otherwise, emit an error about the invalid digraph, but continue
 	 parsing because we got our argument list.  */
+      auto_diagnostic_group d;
       if (permerror (next_token->location,
 		     "%<<::%> cannot begin a template-argument list"))
 	{
@@ -19187,6 +19208,7 @@ cp_parser_template_id (cp_parser *parser,
 	      /* C++20 says that "function-name < a;" is now ill-formed.  */
 	      if (cp_parser_error_occurred (parser))
 		{
+		  auto_diagnostic_group d;
 		  error_at (token->location, "invalid template-argument-list");
 		  inform (token->location, "function name as the left hand "
 			  "operand of %<<%> is ill-formed in C++20; wrap the "
@@ -19432,10 +19454,13 @@ cp_parser_template_name (cp_parser* parser,
 	  cp_token_position start = 0;
 
 	  /* Explain what went wrong.  */
-	  error_at (token->location, "non-template %qD used as template",
-		    identifier);
-	  inform (token->location, "use %<%T::template %D%> to indicate that it is a template",
-		  parser->scope, identifier);
+	  {
+	    auto_diagnostic_group d;
+	    error_at (token->location, "non-template %qD used as template",
+		      identifier);
+	    inform (token->location, "use %<%T::template %D%> to indicate "
+		    "that it is a template", parser->scope, identifier);
+	  }
 	  /* If parsing tentatively, find the location of the "<" token.  */
 	  if (cp_parser_simulate_error (parser))
 	    start = cp_lexer_token_position (parser->lexer, true);
@@ -20103,6 +20128,7 @@ cp_parser_explicit_specialization (cp_parser* parser)
   bool need_lang_pop = current_lang_name == lang_name_c;
   if (need_lang_pop)
     {
+      auto_diagnostic_group d;
       error_at (token->location, "template specialization with C linkage");
       maybe_show_extern_c_location ();
 
@@ -20935,6 +20961,7 @@ cp_parser_placeholder_type_specifier (cp_parser *parser, location_t loc,
     {
       if (!tentative)
 	{
+	  auto_diagnostic_group d;
 	  error_at (loc, "%qE does not constrain a type", DECL_NAME (con));
 	  inform (DECL_SOURCE_LOCATION (con), "concept defined here");
 	}
@@ -21548,6 +21575,7 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 		 "attributes ignored on template instantiation");
       else if (is_friend && cxx11_attribute_p (attributes))
 	{
+	  auto_diagnostic_group d;
 	  if (warning (OPT_Wattributes, "attribute ignored"))
 	    inform (input_location, "an attribute that appertains to a friend "
 		    "declaration that is not a definition is ignored");
@@ -21900,6 +21928,7 @@ cp_parser_enum_specifier (cp_parser* parser)
 	}
       else
 	{
+	  auto_diagnostic_group d;
 	  error_at (type_start_token->location,
 		    "multiple definition of %q#T", type);
 	  inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type)),
@@ -22947,6 +22976,7 @@ cp_parser_asm_definition (cp_parser* parser)
 	  case RID_VOLATILE:
 	    if (volatile_loc)
 	      {
+		auto_diagnostic_group d;
 		error_at (loc, "duplicate %<asm%> qualifier %qT",
 			  token->u.value);
 		inform (volatile_loc, "first seen here");
@@ -22964,6 +22994,7 @@ cp_parser_asm_definition (cp_parser* parser)
 	  case RID_INLINE:
 	    if (inline_loc)
 	      {
+		auto_diagnostic_group d;
 		error_at (loc, "duplicate %<asm%> qualifier %qT",
 			  token->u.value);
 		inform (inline_loc, "first seen here");
@@ -22978,6 +23009,7 @@ cp_parser_asm_definition (cp_parser* parser)
 	  case RID_GOTO:
 	    if (goto_loc)
 	      {
+		auto_diagnostic_group d;
 		error_at (loc, "duplicate %<asm%> qualifier %qT",
 			  token->u.value);
 		inform (goto_loc, "first seen here");
@@ -23791,12 +23823,13 @@ cp_parser_init_declarator (cp_parser* parser,
      attributes -- but ignores them.  Made a permerror in GCC 8.  */
   if (cp_parser_allow_gnu_extensions_p (parser)
       && initialization_kind == CPP_OPEN_PAREN
-      && cp_parser_attributes_opt (parser)
-      && permerror (input_location,
-		    "attributes after parenthesized initializer ignored"))
+      && cp_parser_attributes_opt (parser))
     {
       static bool hint;
-      if (flag_permissive && !hint)
+      auto_diagnostic_group d;
+      if (permerror (input_location,
+		     "attributes after parenthesized initializer ignored")
+	  && flag_permissive && !hint)
 	{
 	  hint = true;
 	  inform (input_location,
@@ -24496,6 +24529,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		    else if (qualifying_scope
 			     && CLASSTYPE_USE_TEMPLATE (name_type))
 		      {
+			auto_diagnostic_group d;
 			error_at (declarator_id_start_token->location,
 				  "invalid use of constructor as a template");
 			inform (declarator_id_start_token->location,
@@ -27890,6 +27924,7 @@ cp_parser_class_head (cp_parser* parser,
   if (type != error_mark_node
       && (COMPLETE_TYPE_P (type) || TYPE_BEING_DEFINED (type)))
     {
+      auto_diagnostic_group d;
       error_at (type_start_token->location, "redefinition of %q#T",
 		type);
       inform (location_of (type), "previous definition of %q#T",
@@ -28344,6 +28379,7 @@ cp_parser_member_declaration (cp_parser* parser)
 		      && cxx11_attribute_p (decl_specifiers.attributes))
 		    {
 		      decl_specifiers.attributes = NULL_TREE;
+		      auto_diagnostic_group d;
 		      if (warning_at (decl_spec_token_start->location,
 				      OPT_Wattributes, "attribute ignored"))
 			inform (decl_spec_token_start->location, "an attribute "
@@ -32448,6 +32484,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	 cp_parser_error, so we incorporate its actions directly.  */
       if (!cp_parser_simulate_error (parser))
 	{
+	  auto_diagnostic_group d;
 	  error_at (name_location, "reference to %qD is ambiguous",
 		    name);
 	  print_candidates (decl);
@@ -33259,6 +33296,7 @@ cp_parser_explicit_template_declaration (cp_parser* parser, bool member_p)
      A template ... shall not have C linkage.  */
   if (current_lang_name == lang_name_c)
     {
+      auto_diagnostic_group d;
       error_at (location, "template with C linkage");
       maybe_show_extern_c_location ();
       /* Give it C++ linkage to avoid confusing other parts of the
@@ -35235,6 +35273,7 @@ cp_parser_check_class_key (cp_parser *parser, location_t key_loc,
   bool seen_as_union = TREE_CODE (type) == UNION_TYPE;
   if (seen_as_union != (class_key == union_type))
     {
+      auto_diagnostic_group d;
       if (permerror (input_location, "%qs tag used in naming %q#T",
 		     class_key == union_type ? "union"
 		     : class_key == record_type ? "struct" : "class",

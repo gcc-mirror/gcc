@@ -2383,6 +2383,7 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope,
     {
       if (complain & tf_error)
 	{
+	  auto_diagnostic_group d;
 	  if (current_function_decl
 	      && DECL_STATIC_FUNCTION_P (current_function_decl))
 	    error ("invalid use of member %qD in static member function", decl);
@@ -4248,6 +4249,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
     {
       if (complain & tf_error)
 	{
+	  auto_diagnostic_group d;
 	  error ("%qD is not captured", decl);
 	  tree closure = LAMBDA_EXPR_CLOSURE (lambda_expr);
 	  if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr) == CPLD_NONE)
@@ -4268,6 +4270,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
     {
       if (complain & tf_error)
 	{
+	  auto_diagnostic_group d;
 	  error (VAR_P (decl)
 		 ? G_("use of local variable with automatic storage from "
 		      "containing function")
@@ -4503,6 +4506,7 @@ finish_id_expression_1 (tree id_expression,
       if (TREE_CODE (decl) == TREE_LIST)
 	{
 	  /* Ambiguous reference to base members.  */
+	  auto_diagnostic_group d;
 	  error ("request for member %qD is ambiguous in "
 		 "multiple inheritance lattice", id_expression);
 	  print_candidates (decl);
@@ -4909,6 +4913,7 @@ finish_offsetof (tree object_ptr, tree expr, location_t loc)
 
       if (DECL_P (expr))
 	{
+	  auto_diagnostic_group d;
 	  error ("cannot apply %<offsetof%> to member function %qD", expr);
 	  inform (DECL_SOURCE_LOCATION (expr), "declared here");
 	}
@@ -6321,6 +6326,7 @@ omp_reduction_lookup (location_t loc, tree id, tree type, tree *baselinkp,
 	return ret;
       if (!ambiguous.is_empty ())
 	{
+	  auto_diagnostic_group d;
 	  const char *str = _("candidates are:");
 	  unsigned int idx;
 	  tree udr;
@@ -8393,6 +8399,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			&& !type_dependent_expression_p (t)
 			&& !omp_mappable_type (TREE_TYPE (t)))
 		      {
+			auto_diagnostic_group d;
 			error_at (OMP_CLAUSE_LOCATION (c),
 				  "array section does not have mappable type "
 				  "in %qs clause",
@@ -8615,6 +8622,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 					    ? TREE_TYPE (TREE_TYPE (t))
 					    : TREE_TYPE (t)))
 	      {
+		auto_diagnostic_group d;
 		error_at (OMP_CLAUSE_LOCATION (c),
 			  "%qD does not have a mappable type in %qs clause", t,
 			  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
@@ -8782,6 +8790,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  else if (!omp_mappable_type (TREE_TYPE (t)))
 	    {
+	      auto_diagnostic_group d;
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qD does not have a mappable type in %qs clause", t,
 			cname);

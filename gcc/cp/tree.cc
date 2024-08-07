@@ -5223,6 +5223,7 @@ check_abi_tag_redeclaration (const_tree decl, const_tree old, const_tree new_)
   if (new_ && TREE_CODE (TREE_VALUE (new_)) == TREE_LIST)
     new_ = TREE_VALUE (new_);
   bool err = false;
+  auto_diagnostic_group d;
   for (const_tree t = new_; t; t = TREE_CHAIN (t))
     {
       tree str = TREE_VALUE (t);
@@ -5276,6 +5277,7 @@ check_abi_tag_args (tree args, tree name)
 	    {
 	      if (!ISALPHA (c) && c != '_')
 		{
+		  auto_diagnostic_group d;
 		  error ("arguments to the %qE attribute must contain valid "
 			 "identifiers", name);
 		  inform (input_location, "%<%c%> is not a valid first "
@@ -5289,6 +5291,7 @@ check_abi_tag_args (tree args, tree name)
 	    {
 	      if (!ISALNUM (c) && c != '_')
 		{
+		  auto_diagnostic_group d;
 		  error ("arguments to the %qE attribute must contain valid "
 			 "identifiers", name);
 		  inform (input_location, "%<%c%> is not a valid character "

@@ -302,6 +302,7 @@ cxx_incomplete_type_diagnostic (location_t loc, const_tree value,
   if (TREE_CODE (type) == ERROR_MARK)
     return false;
 
+  auto_diagnostic_group d;
   if (value)
     {
       STRIP_ANY_LOCATION_WRAPPER (value);

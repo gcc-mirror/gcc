@@ -1227,6 +1227,7 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
 	{
 	  if (complain & tf_error)
 	    {
+	      auto_diagnostic_group d;
 	      error ("request for member %qD is ambiguous", name);
 	      print_candidates (lfi.ambiguous);
 	    }
