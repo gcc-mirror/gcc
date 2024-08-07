@@ -82,13 +82,13 @@ simplify_cfg (Function &func, std::vector<BasicBlockId> &bb_fold_map)
     {
       stabilized = true;
       // BB0 cannot be folded as it is an entry block.
-      for (size_t i = 1; i < func.basic_blocks.size (); ++i)
+      for (BasicBlockId i = {1}; i.value < func.basic_blocks.size (); ++i.value)
 	{
-	  const BasicBlock &bb = func.basic_blocks[bb_fold_map[i]];
+	  const BasicBlock &bb = func.basic_blocks[bb_fold_map[i.value].value];
 	  if (bb.statements.empty () && bb.is_goto_terminated ())
 	    {
 	      auto dst = bb.successors.at (0);
-	      if (bb_fold_map[dst] != dst)
+	      if (bb_fold_map[dst.value] != dst)
 		{
 		  rust_error_at (
 		    UNKNOWN_LOCATION,
@@ -97,11 +97,15 @@ simplify_cfg (Function &func, std::vector<BasicBlockId> &bb_fold_map)
 		  rust_inform (UNKNOWN_LOCATION,
 			       "Continuing with an unfolded CFG.");
 		  // Reverting the fold map to the original state.
-		  std::iota (bb_fold_map.begin (), bb_fold_map.end (), 0);
+		  for (BasicBlockId i = ENTRY_BASIC_BLOCK;
+		       i.value < bb_fold_map.size (); ++i.value)
+		    {
+		      bb_fold_map[i.value] = i;
+		    }
 		  stabilized = true;
 		  break;
 		}
-	      bb_fold_map[i] = dst;
+	      bb_fold_map[i.value] = dst;
 	      stabilized = false;
 	    }
 	}
@@ -112,8 +116,11 @@ void
 Dump::go (bool enable_simplify_cfg)
 {
   // To avoid mutation of the BIR, we use indirection through bb_fold_map.
-  std::iota (bb_fold_map.begin (), bb_fold_map.end (), 0);
-
+  for (BasicBlockId i = ENTRY_BASIC_BLOCK; i.value < bb_fold_map.size ();
+       ++i.value)
+    {
+      bb_fold_map[i.value] = i;
+    }
   for (size_t i = 0; i < place_map.size (); ++i)
     {
       place_map[i] = {i};
@@ -136,21 +143,22 @@ Dump::go (bool enable_simplify_cfg)
   visit_scope (ROOT_SCOPE);
 
   // Print BBs.
-  for (statement_bb = 0; statement_bb < func.basic_blocks.size ();
-       ++statement_bb)
+  for (statement_bb = ENTRY_BASIC_BLOCK;
+       statement_bb.value < func.basic_blocks.size (); ++statement_bb.value)
     {
-      if (bb_fold_map[statement_bb] != statement_bb)
+      if (bb_fold_map[statement_bb.value] != statement_bb)
 	continue; // This BB was folded.
 
-      if (func.basic_blocks[statement_bb].statements.empty ()
-	  && func.basic_blocks[statement_bb].successors.empty ())
+      if (func.basic_blocks[statement_bb.value].statements.empty ()
+	  && func.basic_blocks[statement_bb.value].successors.empty ())
 	continue;
 
       bb_terminated = false;
 
-      BasicBlock &bb = func.basic_blocks[statement_bb];
+      BasicBlock &bb = func.basic_blocks[statement_bb.value];
       stream << "\n";
-      stream << indentation << "bb" << bb_fold_map[statement_bb] << ": {\n";
+      stream << indentation << "bb" << bb_fold_map[statement_bb.value].value
+	     << ": {\n";
       size_t i = 0;
       for (auto &stmt : bb.statements)
 	{
@@ -160,7 +168,8 @@ Dump::go (bool enable_simplify_cfg)
 	}
       if (!bb_terminated)
 	stream << indentation << indentation << "goto -> bb"
-	       << bb_fold_map[bb.successors.at (0)] << ";\t\t" << i++ << "\n";
+	       << bb_fold_map[bb.successors.at (0).value].value << ";\t\t"
+	       << i++ << "\n";
 
       stream << indentation << "}\n";
     }
@@ -183,9 +192,10 @@ Dump::visit (const Statement &stmt)
       stream << "switchInt(";
       visit_move_place (stmt.get_place ());
       stream << ") -> [";
-      print_comma_separated (stream, func.basic_blocks[statement_bb].successors,
+      print_comma_separated (stream,
+			     func.basic_blocks[statement_bb.value].successors,
 			     [this] (BasicBlockId succ) {
-			       stream << "bb" << bb_fold_map[succ];
+			       stream << "bb" << bb_fold_map[succ.value].value;
 			     });
       stream << "]";
       bb_terminated = true;
@@ -195,8 +205,11 @@ Dump::visit (const Statement &stmt)
       bb_terminated = true;
       break;
     case Statement::Kind::GOTO:
-      stream << "goto -> bb"
-	     << bb_fold_map[func.basic_blocks[statement_bb].successors.at (0)];
+      stream
+	<< "goto -> bb"
+	<< bb_fold_map
+	     [func.basic_blocks[statement_bb.value].successors.at (0).value]
+	       .value;
       bb_terminated = true;
       break;
     case Statement::Kind::STORAGE_DEAD:
@@ -316,9 +329,10 @@ Dump::visit (const CallExpr &expr)
 			   visit_move_place (place_id);
 			 });
   stream << ") -> [";
-  print_comma_separated (stream, func.basic_blocks[statement_bb].successors,
+  print_comma_separated (stream,
+			 func.basic_blocks[statement_bb.value].successors,
 			 [this] (BasicBlockId succ) {
-			   stream << "bb" << bb_fold_map[succ];
+			   stream << "bb" << bb_fold_map[succ.value].value;
 			 });
   stream << "]";
   bb_terminated = true;

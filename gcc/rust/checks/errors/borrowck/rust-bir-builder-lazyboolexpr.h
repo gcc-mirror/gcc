@@ -37,7 +37,8 @@ class LazyBooleanExprBuilder : public AbstractExprBuilder
 public:
   explicit LazyBooleanExprBuilder (BuilderContext &ctx,
 				   PlaceId expr_return_place = INVALID_PLACE)
-    : AbstractExprBuilder (ctx, expr_return_place), short_circuit_bb (0)
+    : AbstractExprBuilder (ctx, expr_return_place),
+      short_circuit_bb (ENTRY_BASIC_BLOCK)
   {}
 
   PlaceId build (HIR::LazyBooleanExpr &expr)

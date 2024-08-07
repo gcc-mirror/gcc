@@ -131,10 +131,24 @@ public:
 };
 
 /** Unique identifier for a basic block in the BIR. */
-using BasicBlockId = uint32_t;
+struct BasicBlockId
+{
+  uint32_t value;
+  // some overloads for comparision
+  bool operator== (const BasicBlockId &rhs) const { return value == rhs.value; }
+  bool operator!= (const BasicBlockId &rhs) const
+  {
+    return !(operator== (rhs));
+  }
+  bool operator< (const BasicBlockId &rhs) const { return value < rhs.value; }
+  bool operator> (const BasicBlockId &rhs) const { return value > rhs.value; }
+  bool operator<= (const BasicBlockId &rhs) const { return !(operator> (rhs)); }
+  bool operator>= (const BasicBlockId &rhs) const { return !(operator< (rhs)); }
+};
 
 static constexpr BasicBlockId INVALID_BB
-  = std::numeric_limits<BasicBlockId>::max ();
+  = {std::numeric_limits<uint32_t>::max ()};
+static constexpr BasicBlockId ENTRY_BASIC_BLOCK = {0};
 
 struct BasicBlock
 {
