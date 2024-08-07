@@ -2766,6 +2766,8 @@ As of now, the following intrinsics take unsigned arguments:
 @item @code{BIT_SIZE}, @code{DIGITS} and @code{HUGE}
 @item @code{DSHIFTL} and @code{DSHIFTR}
 @item @code{IBCLR}, @code{IBITS} and @code{IBITS}
+@item @code{MIN} and @code{MAX}
+@item @code{ISHFT} and @code{ISHFTC}
 @end itemize
 This list will grow in the near future.
 @c ---------------------------------------------------------------------

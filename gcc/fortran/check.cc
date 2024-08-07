@@ -3472,8 +3472,18 @@ gfc_check_intconv (gfc_expr *x)
 bool
 gfc_check_ishft (gfc_expr *i, gfc_expr *shift)
 {
-  if (!type_check (i, 0, BT_INTEGER)
-      || !type_check (shift, 1, BT_INTEGER))
+  if (flag_unsigned)
+    {
+      if (!type_check2 (i, 0, BT_INTEGER, BT_UNSIGNED))
+	return false;
+    }
+  else
+    {
+      if (!type_check (i, 0, BT_INTEGER))
+	return false;
+    }
+
+  if (!type_check (shift, 1, BT_INTEGER))
     return false;
 
   if (!less_than_bitsize1 ("I", i, NULL, shift, true))
@@ -3486,9 +3496,16 @@ gfc_check_ishft (gfc_expr *i, gfc_expr *shift)
 bool
 gfc_check_ishftc (gfc_expr *i, gfc_expr *shift, gfc_expr *size)
 {
-  if (!type_check (i, 0, BT_INTEGER)
-      || !type_check (shift, 1, BT_INTEGER))
-    return false;
+  if (flag_unsigned)
+    {
+      if (!type_check2 (i, 0, BT_INTEGER, BT_UNSIGNED))
+	return false;
+    }
+  else
+    {
+      if (!type_check (i, 0, BT_INTEGER))
+	return false;
+    }
 
   if (size != NULL)
     {
@@ -3962,11 +3979,29 @@ gfc_check_min_max (gfc_actual_arglist *arg)
 			   gfc_current_intrinsic, &x->where))
 	return false;
     }
-  else if (x->ts.type != BT_INTEGER && x->ts.type != BT_REAL)
+  else
     {
-      gfc_error ("%<a1%> argument of %qs intrinsic at %L must be INTEGER, "
-		 "REAL or CHARACTER", gfc_current_intrinsic, &x->where);
-      return false;
+      if (flag_unsigned)
+	{
+	  if (x->ts.type != BT_INTEGER && x->ts.type != BT_REAL
+	      && x->ts.type != BT_UNSIGNED)
+	    {
+	      gfc_error ("%<a1%> argument of %qs intrinsic at %L must be "
+			 "INTEGER, REAL, CHARACTER or UNSIGNED",
+			 gfc_current_intrinsic, &x->where);
+	      return false;
+	    }
+	}
+      else
+	{
+	  if (x->ts.type != BT_INTEGER && x->ts.type != BT_REAL)
+	    {
+	      gfc_error ("%<a1%> argument of %qs intrinsic at %L must be "
+			 "INTEGER, REAL or CHARACTER",
+			 gfc_current_intrinsic, &x->where);
+	      return false;
+	    }
+	}
     }
 
   return check_rest (x->ts.type, x->ts.kind, arg);

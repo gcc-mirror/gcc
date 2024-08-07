@@ -3931,8 +3931,11 @@ simplify_shift (gfc_expr *e, gfc_expr *s, const char *name,
 
   gfc_extract_int (s, &shift);
 
-  k = gfc_validate_kind (BT_INTEGER, e->ts.kind, false);
-  bitsize = gfc_integer_kinds[k].bit_size;
+  k = gfc_validate_kind (e->ts.type, e->ts.kind, false);
+  if (e->ts.type == BT_INTEGER)
+    bitsize = gfc_integer_kinds[k].bit_size;
+  else
+    bitsize = gfc_unsigned_kinds[k].bit_size;
 
   result = gfc_get_constant_expr (e->ts.type, e->ts.kind, &e->where);
 
@@ -4008,7 +4011,11 @@ simplify_shift (gfc_expr *e, gfc_expr *s, const char *name,
 	}
     }
 
-  gfc_convert_mpz_to_signed (result->value.integer, bitsize);
+  if (result->ts.type == BT_INTEGER)
+    gfc_convert_mpz_to_signed (result->value.integer, bitsize);
+  else
+    gfc_reduce_unsigned(result);
+
   free (bits);
 
   return result;
@@ -4108,7 +4115,8 @@ gfc_simplify_ishftc (gfc_expr *e, gfc_expr *s, gfc_expr *sz)
   if (shift == 0)
     return result;
 
-  gfc_convert_mpz_to_unsigned (result->value.integer, isize);
+  if (result->ts.type == BT_INTEGER)
+    gfc_convert_mpz_to_unsigned (result->value.integer, isize);
 
   bits = XCNEWVEC (int, ssize);
 
@@ -4154,7 +4162,8 @@ gfc_simplify_ishftc (gfc_expr *e, gfc_expr *s, gfc_expr *sz)
 	}
     }
 
-  gfc_convert_mpz_to_signed (result->value.integer, isize);
+  if (result->ts.type == BT_INTEGER)
+    gfc_convert_mpz_to_signed (result->value.integer, isize);
 
   free (bits);
   return result;
@@ -5243,6 +5252,7 @@ min_max_choose (gfc_expr *arg, gfc_expr *extremum, int sign, bool back_val)
   switch (arg->ts.type)
     {
       case BT_INTEGER:
+      case BT_UNSIGNED:
 	if (extremum->ts.kind < arg->ts.kind)
 	  extremum->ts.kind = arg->ts.kind;
 	ret = mpz_cmp (arg->value.integer,
