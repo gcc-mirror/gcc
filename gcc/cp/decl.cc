@@ -11225,6 +11225,8 @@ grokvardecl (tree type,
 				|| ! constp
 				|| volatilep
 				|| inlinep
+				|| in_template_context
+				|| processing_specialization
 				|| module_attach_p ()));
       TREE_STATIC (decl) = ! DECL_EXTERNAL (decl);
     }
