@@ -1687,11 +1687,19 @@ generate_results (const char *file_name)
       memset (&coverage, 0, sizeof (coverage));
       coverage.name = fn->get_name ();
       add_line_counts (flag_function_summary ? &coverage : NULL, fn);
-      if (flag_function_summary)
-	{
-	  function_summary (&coverage);
-	  fnotice (stdout, "\n");
-	}
+
+      if (!flag_function_summary)
+	continue;
+
+      for (const block_info& block : fn->blocks)
+	for (arc_info *arc = block.succ; arc; arc = arc->succ_next)
+	  add_branch_counts (&coverage, arc);
+
+      for (const block_info& block : fn->blocks)
+	add_condition_counts (&coverage, &block);
+
+      function_summary (&coverage);
+      fnotice (stdout, "\n");
     }
 
   name_map needle;
@@ -2764,6 +2772,36 @@ function_summary (const coverage_info *coverage)
 {
   fnotice (stdout, "%s '%s'\n", "Function", coverage->name);
   executed_summary (coverage->lines, coverage->lines_executed);
+
+  if (coverage->branches)
+    {
+      fnotice (stdout, "Branches executed:%s of %d\n",
+	       format_gcov (coverage->branches_executed, coverage->branches, 2),
+	       coverage->branches);
+      fnotice (stdout, "Taken at least once:%s of %d\n",
+	       format_gcov (coverage->branches_taken, coverage->branches, 2),
+			    coverage->branches);
+    }
+  else
+    fnotice (stdout, "No branches\n");
+
+  if (coverage->calls)
+    fnotice (stdout, "Calls executed:%s of %d\n",
+	     format_gcov (coverage->calls_executed, coverage->calls, 2),
+	     coverage->calls);
+  else
+    fnotice (stdout, "No calls\n");
+
+  if (flag_conditions)
+    {
+      if (coverage->conditions)
+	fnotice (stdout, "Condition outcomes covered:%s of %d\n",
+		 format_gcov (coverage->conditions_covered,
+			      coverage->conditions, 2),
+		 coverage->conditions);
+      else
+	fnotice (stdout, "No conditions\n");
+    }
 }
 
 /* Output summary info for a file.  */
