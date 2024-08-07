@@ -215,7 +215,7 @@ protected:
 	  }
 	else if (region.is_static ())
 	  {
-	    free_regions.push_back (0);
+	    free_regions.push_back (STATIC_FREE_REGION);
 	  }
 	else if (region.is_anonymous ())
 	  {
@@ -314,9 +314,10 @@ protected: // Helpers to add BIR statements
   {
     auto mutability = ty->as<const TyTy::ReferenceType> ()->mutability ();
     auto loan = ctx.place_db.add_loan ({mutability, place_id, location});
-    push_tmp_assignment (new BorrowExpr (place_id, loan,
-					 ctx.place_db.get_next_free_region ()),
-			 ty, location);
+    push_tmp_assignment (
+      new BorrowExpr (place_id, loan,
+		      ctx.place_db.get_next_free_region ().value),
+      ty, location);
     return translated;
   }
 
@@ -609,7 +610,7 @@ protected:
       {ty->as<const TyTy::ReferenceType> ()->mutability (), place_id,
        location});
     return_expr (new BorrowExpr (place_id, loan,
-				 ctx.place_db.get_next_free_region ()),
+				 ctx.place_db.get_next_free_region ().value),
 		 ty, location);
     return translated;
   }

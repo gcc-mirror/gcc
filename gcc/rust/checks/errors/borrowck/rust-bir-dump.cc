@@ -380,7 +380,7 @@ Dump::visit_scope (ScopeId id, size_t depth)
       print_comma_separated (stream,
 			     func.place_db[local].regions.get_regions (),
 			     [this] (FreeRegion region_id) {
-			       stream << "'?" << region_id;
+			       stream << "'?" << region_id.value;
 			     });
       stream << "]\n";
     }

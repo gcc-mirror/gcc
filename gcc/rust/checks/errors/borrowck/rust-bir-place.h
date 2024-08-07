@@ -187,7 +187,7 @@ private:
 
   std::vector<Loan> loans;
 
-  Polonius::Origin next_free_region = 1;
+  FreeRegion next_free_region = {1};
 
 public:
   PlaceDB ()
@@ -216,7 +216,11 @@ public:
 
   const Scope &get_scope (ScopeId id) const { return scopes[id]; }
 
-  FreeRegion get_next_free_region () { return next_free_region++; }
+  FreeRegion get_next_free_region ()
+  {
+    ++next_free_region.value;
+    return {next_free_region.value - 1};
+  }
 
   FreeRegion peek_next_free_region () const { return next_free_region; }
 
@@ -256,8 +260,8 @@ public:
 		       ->get_variance_analysis_ctx ()
 		       .query_type_variances (new_place_ref.tyty);
     std::vector<Polonius::Origin> regions;
-    for (size_t i = 0; i < variances.size (); i++)
-      regions.push_back (next_free_region++);
+    for (size_t i = 0; i < variances.size (); ++i)
+      regions.push_back (next_free_region.value++);
 
     new_place_ref.regions.set_from (std::move (regions));
 
@@ -352,7 +356,7 @@ public:
 
   void set_next_free_region (Polonius::Origin next_free_region)
   {
-    this->next_free_region = next_free_region;
+    this->next_free_region.value = next_free_region;
   }
 
   PlaceId lookup_or_add_variable (NodeId id, TyTy::BaseType *tyty)
