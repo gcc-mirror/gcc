@@ -1,3 +1,18 @@
+2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from trunk:
+	2024-08-07  Julian Brown  <julian@codesourcery.com>
+		    Tobias Burnus  <tobias@baylibre.com>
+
+	* gfortran.h (gfc_option_t): Add disable_omp_is_initial_device.
+	* lang.opt (fbuiltin-): Add.
+	* options.cc (gfc_handle_option): Handle
+	-fno-builtin-omp_is_initial_device.
+	* f95-lang.cc (gfc_init_builtin_functions): Handle
+	DEF_GOMP_BUILTIN_COMPILER.
+	* trans-decl.cc (gfc_get_extern_function_decl): Add code to use
+	DEF_GOMP_BUILTIN_COMPILER for 'omp_is_initial_device'.
+
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
 	* trans-openmp.cc (gfc_omp_deep_mapping_map): Add new argument for

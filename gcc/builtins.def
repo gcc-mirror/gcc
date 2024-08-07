@@ -224,6 +224,10 @@ along with GCC; see the file COPYING3.  If not see
 	       (flag_openacc \
 		|| flag_openmp \
 		|| flag_tree_parallelize_loops > 1))
+#undef DEF_GOMP_BUILTIN_COMPILER
+#define DEF_GOMP_BUILTIN_COMPILER(ENUM, NAME, TYPE, ATTRS) \
+  DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,    \
+               flag_openmp, true, true, ATTRS, false, flag_openmp)
 
 /* Builtin used by the implementation of GNU TM.  These
    functions are mapped to the actual implementation of the STM library. */
