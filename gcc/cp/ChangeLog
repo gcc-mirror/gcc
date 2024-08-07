@@ -1,3 +1,23 @@
+2024-08-06  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-08-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/116223
+	PR c++/112632
+	* pt.cc (deducible_expression): Also look through
+	IMPLICIT_CONV_EXPR_FORCED.
+	(unify): Likewise.
+
+2024-08-06  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-07-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/116071
+	* parser.cc (cp_parser_simple_type_specifier): Call
+	cp_parser_simulate_error if nothing worked.
+
 2024-08-02  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

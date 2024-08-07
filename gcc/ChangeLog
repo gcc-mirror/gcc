@@ -1,3 +1,28 @@
+2024-08-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/113384
+	* config/pa/pa.cc (hppa_legitimize_address): Add check to
+	ensure constant is an integral multiple of shift the value.
+
+2024-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/116224
+	* wide-int.cc (wi::mul_internal): If prec isn't multiple of
+	HOST_BITS_PER_WIDE_INT, for need_overflow checking only look at
+	the least significant prec bits starting with r[half_blocks_needed].
+
+2024-08-06  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-08-06  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/116189
+	* config/sh/sh.cc (sh_recog_treg_set_expr): Don't call make_insn_raw,
+	make the insn with a fake uid.
+
 2024-08-05  Christoph Müllner  <christoph.muellner@vrull.eu>
 
 	Backported from master:

@@ -1,3 +1,36 @@
+2024-08-06  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-08-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/116223
+	PR c++/112632
+	* g++.dg/cpp1z/nontype-auto25.C: New test.
+
+2024-08-06  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-07-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/116071
+	* g++.dg/parse/pr116071.C: New test.
+
+2024-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/116224
+	* gcc.dg/torture/bitint-72.c: New test.
+
+2024-08-06  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-08-06  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/116189
+	* c-c++-common/torture/pr116189-1.c: New test.
+
 2024-08-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
