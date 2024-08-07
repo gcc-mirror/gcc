@@ -4234,6 +4234,11 @@ proc check_effective_target_vect_int { } {
 	}}]
 }
 
+# Return 1 if the target supports vector integer division, 0 otherwise.
+proc check_effective_target_vect_int_div { } {
+    return [check_effective_target_aarch64_sve]
+}
+
 # Return 1 if the target supports vectorization of early breaks,
 # 0 otherwise.
 #

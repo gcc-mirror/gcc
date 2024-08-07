@@ -5264,6 +5264,71 @@ vect_recog_divmod_pattern (vec_info *vinfo,
   return pattern_stmt;
 }
 
+/* Detects pattern with a modulo operation (S1) where both arguments
+   are variables of integral type.
+   The statement is replaced by division, multiplication, and subtraction.
+   The last statement (S4) is returned.
+
+   Example:
+   S1 c_t = a_t % b_t;
+
+   is replaced by
+   S2 x_t = a_t / b_t;
+   S3 y_t = x_t * b_t;
+   S4 z_t = a_t - y_t;  */
+
+static gimple *
+vect_recog_mod_var_pattern (vec_info *vinfo,
+			    stmt_vec_info stmt_vinfo, tree *type_out)
+{
+  gimple *last_stmt = STMT_VINFO_STMT (stmt_vinfo);
+  tree oprnd0, oprnd1, vectype, itype;
+  gimple *pattern_stmt, *def_stmt;
+  enum tree_code rhs_code;
+
+  if (!is_gimple_assign (last_stmt))
+    return NULL;
+
+  rhs_code = gimple_assign_rhs_code (last_stmt);
+  if (rhs_code != TRUNC_MOD_EXPR)
+    return NULL;
+
+  oprnd0 = gimple_assign_rhs1 (last_stmt);
+  oprnd1 = gimple_assign_rhs2 (last_stmt);
+  itype = TREE_TYPE (oprnd0);
+  if (TREE_CODE (oprnd0) != SSA_NAME
+      || TREE_CODE (oprnd1) != SSA_NAME
+      || TREE_CODE (itype) != INTEGER_TYPE)
+    return NULL;
+
+  vectype = get_vectype_for_scalar_type (vinfo, itype);
+
+  if (!vectype
+      || target_has_vecop_for_code (TRUNC_MOD_EXPR, vectype)
+      || !target_has_vecop_for_code (TRUNC_DIV_EXPR, vectype)
+      || !target_has_vecop_for_code (MULT_EXPR, vectype)
+      || !target_has_vecop_for_code (MINUS_EXPR, vectype))
+    return NULL;
+
+  tree q, tmp, r;
+  q = vect_recog_temp_ssa_var (itype, NULL);
+  def_stmt = gimple_build_assign (q, TRUNC_DIV_EXPR, oprnd0, oprnd1);
+  append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt, vectype);
+
+  tmp = vect_recog_temp_ssa_var (itype, NULL);
+  def_stmt = gimple_build_assign (tmp, MULT_EXPR, q, oprnd1);
+  append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt, vectype);
+
+  r = vect_recog_temp_ssa_var (itype, NULL);
+  pattern_stmt = gimple_build_assign (r, MINUS_EXPR, oprnd0, tmp);
+
+  /* Pattern detected.  */
+  *type_out = vectype;
+  vect_pattern_detected ("vect_recog_mod_var_pattern", last_stmt);
+
+  return pattern_stmt;
+}
+
 /* Function vect_recog_mixed_size_cond_pattern
 
    Try to find the following pattern:
@@ -7343,6 +7408,7 @@ static vect_recog_func vect_vect_recog_func_ptrs[] = {
   { vect_recog_rotate_pattern, "rotate" },
   { vect_recog_vector_vector_shift_pattern, "vector_vector_shift" },
   { vect_recog_divmod_pattern, "divmod" },
+  { vect_recog_mod_var_pattern, "modvar" },
   { vect_recog_mult_pattern, "mult" },
   { vect_recog_sat_add_pattern, "sat_add" },
   { vect_recog_sat_sub_pattern, "sat_sub" },
