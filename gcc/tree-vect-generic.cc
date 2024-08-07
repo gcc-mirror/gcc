@@ -2190,10 +2190,15 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi,
 	}
     }
 
+  /* Plain moves do not need lowering.  */
+  if (code == SSA_NAME
+      || code == VIEW_CONVERT_EXPR
+      || code == PAREN_EXPR)
+    return;
+
   if (CONVERT_EXPR_CODE_P (code)
       || code == FLOAT_EXPR
-      || code == FIX_TRUNC_EXPR
-      || code == VIEW_CONVERT_EXPR)
+      || code == FIX_TRUNC_EXPR)
     return;
 
   /* The signedness is determined from input argument.  */
