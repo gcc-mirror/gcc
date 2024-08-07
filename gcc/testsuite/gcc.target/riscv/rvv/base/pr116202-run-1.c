@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O3 -march=rv64gcv_zvl256b -fdump-rtl-expand-details" } */
+/* { dg-options "-O3 -march=rv64gcv_zvl256b -mabi=lp64d -fdump-rtl-expand-details" } */
 
 int b[24];
 _Bool c[24];
