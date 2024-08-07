@@ -1,3 +1,107 @@
+2024-08-06  Marek Polacek  <polacek@redhat.com>
+
+	* constexpr.cc (cxx_eval_call_expression): Remove concept_check_p check.
+	(cxx_eval_outermost_constant_expr): Likewise.
+	* cp-gimplify.cc (cp_genericize_r) <case CALL_EXPR>: Likewise.
+	* except.cc (check_noexcept_r): Likewise.
+
+2024-08-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/116223
+	* pt.cc (deducible_expression): Strip all IMPLICIT_CONV_EXPR.
+	(unify): Likewise.  Handle resulting function/addr mismatch.
+
+2024-08-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/116223
+	PR c++/112632
+	* pt.cc (deducible_expression): Also look through
+	IMPLICIT_CONV_EXPR_FORCED.
+	(unify): Likewise.
+
+2024-08-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94568
+	* init.cc (build_zero_init_1): Call cv_unqualified.
+
+2024-08-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96780
+	* cp-gimplify.cc (cp_fold) <case CALL_EXPR>: Fold calls
+	to std::forward_like as well.
+
+2024-08-06  Marek Polacek  <polacek@redhat.com>
+
+	* constexpr.cc (cxx_eval_constant_expression): Don't call
+	unpack_concept_check.  Add a concept_check_p assert.  Remove
+	function_concept_p code.
+	* constraint.cc (check_constraint_atom): Remove function concepts code.
+	(unpack_concept_check): Remove.
+	(get_concept_check_template): Remove Concepts TS code.
+	(resolve_function_concept_overload): Remove.
+	(resolve_function_concept_check): Remove.
+	(resolve_concept_check): Remove Concepts TS code.
+	(get_returned_expression): Remove.
+	(get_variable_initializer): Remove.
+	(get_concept_definition): Remove Concepts TS code.
+	(normalize_concept_check): Likewise.
+	(build_function_check): Remove.
+	(build_variable_check): Remove.
+	(build_standard_check): Use concept_definition_p instead of
+	standard_concept_p.
+	(build_concept_check): Remove variable_concept_p/function_concept_p
+	code.
+	(build_concept_id): Simplify.
+	(build_type_constraint): Likewise.
+	(placeholder_extract_concept_and_args): Likewise.
+	(satisfy_nondeclaration_constraints): Likewise.
+	(check_function_concept): Remove.
+	(get_constraint_error_location): Remove Concepts TS code.
+	* cp-tree.h (DECL_DECLARED_CONCEPT_P): Remove.
+	(check_function_concept): Remove.
+	(unpack_concept_check): Remove.
+	(standard_concept_p): Remove.
+	(variable_concept_p): Remove.
+	(function_concept_p): Remove.
+	(concept_definition_p): Simplify.
+	(concept_check_p): Don't check for CALL_EXPR.
+	* decl.cc (check_concept_refinement): Remove.
+	(duplicate_decls): Remove check_concept_refinement code.
+	(is_concept_var): Remove.
+	(cp_finish_decl): Remove is_concept_var.
+	(check_concept_fn): Remove.
+	(grokfndecl): Give an error about function concepts not being supported
+	anymore.  Remove unused code.
+	(grokvardecl): Give an error about variable concepts not being
+	supported anymore.
+	(finish_function): Remove DECL_DECLARED_CONCEPT_P code.
+	* decl2.cc (min_vis_expr_r): Use concept_definition_p instead of
+	standard_concept_p.
+	(maybe_instantiate_decl): Remove DECL_DECLARED_CONCEPT_P check.
+	(mark_used): Likewise.
+	* error.cc (dump_simple_decl): Use concept_definition_p instead of
+	standard_concept_p.
+	(dump_function_decl): Remove DECL_DECLARED_CONCEPT_P code.
+	(print_concept_check_info): Don't call unpack_concept_check.  Simplify.
+	* mangle.cc (write_type_constraint): Likewise.
+	* parser.cc (cp_parser_nested_name_specifier_opt): Remove
+	function_concept_p code.  Only check concept_definition_p, not
+	variable_concept_p/standard_concept_p.
+	(add_debug_begin_stmt): Remove DECL_DECLARED_CONCEPT_P code.
+	(cp_parser_template_declaration_after_parameters): Remove a stale
+	comment.
+	* pt.cc (check_explicit_specialization): Remove
+	DECL_DECLARED_CONCEPT_P code.
+	(process_partial_specialization): Remove variable_concept_p code.
+	(lookup_template_variable): Likewise.
+	(tsubst_expr) <case CALL_EXPR>: Remove Concepts TS code and simplify.
+	(do_decl_instantiation): Remove DECL_DECLARED_CONCEPT_P code.
+	(instantiate_decl): Likewise.
+	(placeholder_type_constraint_dependent_p): Don't call
+	unpack_concept_check.  Add a concept_check_p assert.
+	(convert_generic_types_to_packs): Likewise.
+	* semantics.cc (finish_call_expr): Remove Concepts TS code and simplify.
+
 2024-08-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc (split_coroutine_body_from_ramp): New.

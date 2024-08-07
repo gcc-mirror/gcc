@@ -1,3 +1,94 @@
+2024-08-06  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/116207
+	* gcc.target/aarch64/simd/vmmla.c: Add -save-temps to the
+	options.
+
+2024-08-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116177
+	* gcc.dg/sarif-output/include-chain-2.c: Remove pruning of
+	"exit status is 1", as we expect this to exit with 0.
+	* gcc.dg/sarif-output/no-diagnostics.c: New test.
+	* gcc.dg/sarif-output/test-include-chain-1.py
+	(test_execution_unsuccessful): Add.
+	* gcc.dg/sarif-output/test-include-chain-2.py
+	(test_execution_successful): Add.
+	* gcc.dg/sarif-output/test-missing-semicolon.py
+	(test_execution_unsuccessful): Add.
+	* gcc.dg/sarif-output/test-no-diagnostics.py: New test.
+	* gcc.dg/sarif-output/test-werror.py: New test.
+	* gcc.dg/sarif-output/werror.c: New test.
+
+2024-08-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/116223
+	PR c++/112632
+	* g++.dg/cpp1z/nontype-auto25.C: New test.
+
+2024-08-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94568
+	* g++.dg/cpp2a/nontype-class36.C: Remove xfail.
+	* g++.dg/cpp2a/nontype-class37.C: Remove xfail.
+	* g++.dg/cpp1z/nontype-auto26.C: New test.
+
+2024-08-06  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/sse2-stv-2.c: New test case.
+
+2024-08-06  Patrick O'Neill  <patrick@rivosinc.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/riscv/predef-9.c: Update testcase.
+
+2024-08-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96780
+	* g++.dg/opt/pr96780.C: Also test std::forward_like folding.
+
+2024-08-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116241
+	* g++.dg/vect/pr116241.cc: New testcase.
+
+2024-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/116037
+	PR testsuite/116245
+	* gcc.dg/torture/pr116037.c (foo): Fix up for big end middle endian.
+
+2024-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/116224
+	* gcc.dg/torture/bitint-72.c: New test.
+
+2024-08-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/111821
+	* gcc.dg/torture/pr111821.c: New testcase.
+
+2024-08-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/102689
+	* gfortran.dg/class_transformational_1.f90: New test for class-
+	valued reshape.
+	* gfortran.dg/class_transformational_2.f90: New test for other
+	class_valued transformational intrinsics.
+
+2024-08-06  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/116189
+	* c-c++-common/torture/pr116189-1.c: New test.
+
+2024-08-06  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/concepts/decl-diagnose.C: Adjust dg-error.
+	* g++.dg/concepts/fn-concept2.C: Likewise.
+	* g++.dg/concepts/pr71128.C: Likewise.
+	* g++.dg/concepts/var-concept6.C: Likewise.
+	* g++.dg/cpp2a/concepts.C: Likewise.
+
 2024-08-05  Patrick O'Neill  <patrick@rivosinc.com>
 
 	* gcc.target/riscv/predef-9.c: Add check for warning.

@@ -1,3 +1,76 @@
+2024-08-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch4.adb (Analyze_Concatenation_Rest): Do not add a wrong
+	interpretation of the concatenation, using the type of the operand
+	already recognized as of the element type.
+
+2024-08-06  Bob Duff  <duff@adacore.com>
+
+	* sem_ch12.adb: Implement type inference for generic parameters.
+	(Maybe_Infer_One): Forbid inference of anonymous subtypes and
+	types.
+	(Inference_Reason): Fix comment.
+	* debug.adb: Document -gnatd_I switch.
+	* errout.ads: Document that Empty is not allowed for "&".
+	* errout.adb (Set_Msg_Insertion_Node): Minor: Do not allow
+	Error_Msg_Node_1 = Empty for "&". Use "in" instead of multiple
+	"=". Improve comment.
+
+2024-08-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch5.adb (Analyze_Loop_Statement.Wrap_Loop_Statement): Remove
+	the loop Entity_Id from its old scope and insert it in the new
+	block scope that wraps it.
+
+2024-08-06  Javier Miranda  <miranda@adacore.com>
+
+	* freeze.adb (Freeze_Entity): For scalar derived types that
+	inherit the aspect Default_Value, do not analyze and resolve the
+	inherited aspect, as the type of the aspect remains the parent
+	type.
+
+2024-08-06  Viljar Indus  <indus@adacore.com>
+
+	* libgnarl/s-interr__hwint.adb: Use fully qualified names to avoid
+	ambiguity.
+	* libgnarl/s-taprop__qnx.adb: Likewise.
+
+2024-08-06  Javier Miranda  <miranda@adacore.com>
+
+	* repinfo.adb (List_Record_Info): Handle private record types.
+
+2024-08-06  Viljar Indus  <indus@adacore.com>
+
+	* libgnarl/s-taprop__mingw.adb: Use fully qualified names
+	to avoid ambiguity.
+	* libgnarl/s-taprop__posix.adb: Likewise.
+	* libgnarl/s-taprop__qnx.adb: Likewise.
+	* libgnarl/s-taprop__rtems.adb: Likewise.
+
+2024-08-06  Yannick Moy  <moy@adacore.com>
+
+	* freeze.adb (Build_Renamed_Body): Propagate SPARK_Pragma to body
+	build from renaming, so that locally relevant value is taken into
+	account.
+	* sem_ch6.adb (Analyze_Expression_Function): Propagate
+	SPARK_Pragma to body built from expression function, so that
+	locally relevant value is taken into account.
+
+2024-08-06  Bob Duff  <duff@adacore.com>
+
+	* sem_ch8.adb (Find_Direct_Name): Disable the special-purpose code
+	when we are actually compiling the run-time library itself.
+	* libgnarl/a-exetim__posix.adb: Fix newly-found use-clause
+	conflicts.
+	* libgnat/a-direct.adb: Likewise.
+	* libgnat/a-nbnbin.adb: Likewise.
+	* libgnat/a-timoio__128.adb: Likewise.
+	* libgnat/a-timoio.adb: Likewise.
+	* libgnat/a-wtmoio__128.adb: Likewise.
+	* libgnat/a-wtmoio.adb: Likewise.
+	* libgnat/a-ztmoio__128.adb: Likewise.
+	* libgnat/a-ztmoio.adb: Likewise.
+
 2024-08-02  Yannick Moy  <moy@adacore.com>
 
 	* aspects.adb (Find_Aspect): Take into account the case of a node

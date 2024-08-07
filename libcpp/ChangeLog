@@ -1,3 +1,8 @@
+2024-08-06  Andi Kleen  <ak@gcc.gnu.org>
+
+	* lex.cc (search_line_mmx): Remove function.
+	(init_vectorized_lexer): Remove search_line_mmx.
+
 2024-07-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/110343

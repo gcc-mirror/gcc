@@ -1,3 +1,181 @@
+2024-08-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116177
+	* diagnostic-format-sarif.cc (sarif_invocation::prepare_to_flush):
+	If the diagnostics would lead to us exiting with a failure code,
+	then emit "executionSuccessful": False (SARIF v2.1.0 section
+	§3.20.14).
+	* diagnostic.cc (diagnostic_context::execution_failed_p): New.
+	* diagnostic.h (diagnostic_context::execution_failed_p): New decl.
+	* toplev.cc (toplev::main): Use it for determining returned value.
+
+2024-08-06  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-protos.h (struct sve_vec_cost): Add
+	gather_load_x32_init_cost and gather_load_x64_init_cost.
+	* config/aarch64/aarch64.cc (aarch64_vector_costs): Add
+	m_sve_gather_scatter_init_cost.
+	(aarch64_vector_costs::add_stmt_cost): Use them.
+	(aarch64_vector_costs::finish_cost): Likewise.
+	* config/aarch64/tuning_models/a64fx.h: Update.
+	* config/aarch64/tuning_models/cortexx925.h: Update.
+	* config/aarch64/tuning_models/generic.h: Update.
+	* config/aarch64/tuning_models/generic_armv8_a.h: Update.
+	* config/aarch64/tuning_models/generic_armv9_a.h: Update.
+	* config/aarch64/tuning_models/neoverse512tvb.h: Update.
+	* config/aarch64/tuning_models/neoversen2.h: Update.
+	* config/aarch64/tuning_models/neoversen3.h: Update.
+	* config/aarch64/tuning_models/neoversev1.h: Update.
+	* config/aarch64/tuning_models/neoversev2.h: Update.
+	* config/aarch64/tuning_models/neoversev3.h: Update.
+	* config/aarch64/tuning_models/neoversev3ae.h: Update.
+
+2024-08-06  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/gm2.texi (Limitations): Rephrase. Remove invalid link.
+
+2024-08-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/113384
+	* config/pa/pa.cc (hppa_legitimize_address): Add check to
+	ensure constant is an integral multiple of shift the value.
+
+2024-08-06  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/riscv-target-attr.cc (num_occurences_in_str): Rename...
+	(num_occurrences_in_str): here.
+	(riscv_process_target_attr): Update num_occurences_in_str callsite.
+	* config/riscv/riscv-v.cc (emit_vec_widden_cvt_x_f): widden -> widen.
+	(emit_vec_widen_cvt_x_f): Ditto.
+	(emit_vec_widden_cvt_f_f): Ditto.
+	(emit_vec_widen_cvt_f_f): Ditto.
+	(emit_vec_rounding_to_integer): Update *widden* callsites.
+	* config/riscv/riscv-vector-builtins.cc (expand_builtin): Update
+	required_ext_to_isa_name callsite and fix xtheadvector typo.
+	* config/riscv/riscv-vector-builtins.h (reqired_ext_to_isa_name): Rename...
+	(required_ext_to_isa_name): here.
+	* config/riscv/riscv_th_vector.h: Fix endif label.
+	* config/riscv/vector-crypto.md: boardcast_scalar -> broadcast_scalar.
+	* config/riscv/vector.md: Ditto.
+
+2024-08-06  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/arch-canonicalize: Fix typos in comments.
+	* config/riscv/autovec.md: Ditto.
+	* config/riscv/riscv-avlprop.cc (avl_can_be_propagated_p): Ditto.
+	(pass_avlprop::get_vlmax_ta_preferred_avl): Ditto.
+	* config/riscv/riscv-modes.def (ADJUST_FLOAT_FORMAT): Ditto.
+	(VLS_MODES): Ditto.
+	* config/riscv/riscv-opts.h (TARGET_ZICOND_LIKE): Ditto.
+	(enum rvv_vector_bits_enum): Ditto.
+	* config/riscv/riscv-protos.h (enum insn_flags): Ditto.
+	(enum insn_type): Ditto.
+	* config/riscv/riscv-sr.cc (riscv_sr_match_epilogue): Ditto.
+	* config/riscv/riscv-string.cc (expand_block_move): Ditto.
+	* config/riscv/riscv-v.cc (rvv_builder::is_repeating_sequence): Ditto.
+	(rvv_builder::single_step_npatterns_p): Ditto.
+	(calculate_ratio): Ditto.
+	(expand_const_vector): Ditto.
+	(shuffle_merge_patterns): Ditto.
+	(shuffle_compress_patterns): Ditto.
+	(expand_select_vl): Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (REQUIRED_EXTENSIONS): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.h: Ditto.
+	* config/riscv/riscv-vector-builtins.cc (function_builder::add_function): Ditto.
+	(resolve_overloaded_builtin): Ditto.
+	* config/riscv/riscv-vector-builtins.def (vbool1_t): Ditto.
+	(vuint8m8_t): Ditto.
+	(vuint16m8_t): Ditto.
+	(vfloat16m8_t): Ditto.
+	(unsigned_vector): Ditto.
+	* config/riscv/riscv-vector-builtins.h (enum required_ext): Ditto.
+	* config/riscv/riscv-vector-costs.cc (get_store_value): Ditto.
+	(costs::analyze_loop_vinfo): Ditto.
+	(costs::add_stmt_cost): Ditto.
+	* config/riscv/riscv.cc (riscv_build_integer): Ditto.
+	(riscv_vector_type_p): Ditto.
+	* config/riscv/thead.cc (th_mempair_output_move): Ditto.
+	* config/riscv/thead.md: Ditto.
+	* config/riscv/vector-iterators.md: Ditto.
+	* config/riscv/vector.md: Ditto.
+	* config/riscv/zc.md: Ditto.
+
+2024-08-06  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_v2di_ashiftrt): New
+	function refactored from define_expand ashrv2di3.
+	* config/i386/i386-features.cc (general_scalar_to_vector_candidate_p)
+	<case ASHIFTRT>: Handle like other shifts and rotates.
+	* config/i386/i386-protos.h (ix86_expand_v2di_ashiftrt): Prototype.
+	* config/i386/sse.md (ashrv2di3): Call ix86_expand_v2di_ashiftrt.
+	(*ashrv2di3): New define_insn_and_split to enable creation by stv2
+	pass, and splitting during split1 reusing ix86_expand_v2di_ashiftrt.
+
+2024-08-06  Patrick O'Neill  <patrick@rivosinc.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116152
+	* config/riscv/riscv.cc (riscv_option_override): Fix url
+	formatting.
+
+2024-08-06  Filip Kastl  <fkastl@suse.cz>
+
+	* gimple-ssa-sccopy.cc (class scc_copy_prop): New class.
+	(replace_scc_by_value): Put into...
+	(scc_copy_prop::replace_scc_by_value): ...scc_copy_prop.
+	(sccopy_visit_op): Put into...
+	(scc_copy_prop::visit_op): ...scc_copy_prop.
+	(sccopy_propagate): Put into...
+	(scc_copy_prop::propagate): ...scc_copy_prop.
+	(init_sccopy): Replace by...
+	(scc_copy_prop::scc_copy_prop): ...the construtor.
+	(finalize_sccopy): Replace by...
+	(scc_copy_prop::~scc_copy_prop): ...the destructor.
+	(pass_sccopy::execute): Use scc_copy_prop.
+
+2024-08-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116241
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction): Handle
+	non-COND_EXPR nodes in SLP reduction chain following.
+
+2024-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/116224
+	* wide-int.cc (wi::mul_internal): If prec isn't multiple of
+	HOST_BITS_PER_WIDE_INT, for need_overflow checking only look at
+	the least significant prec bits starting with r[half_blocks_needed].
+
+2024-08-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/111821
+	* expmed.cc (store_integral_bit_field): Terminate the
+	word-wise copy loop when we get out of the destination
+	and do a forward copy.  Skip the word if it would be
+	outside of the destination in case of a backward copy.
+
+2024-08-06  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/predicates.md (any_operand): Add const_vector.
+
+2024-08-06  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/115228
+	* tree-vect-data-refs.cc (vect_get_smallest_scalar_type): Add
+	missed opcodes that involve widening operation.
+
+2024-08-06  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/115707
+	* tree-vect-patterns.cc (vect_look_through_possible_promotion): Allow
+	unsigned-to-signed promotion.
+
+2024-08-06  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/116189
+	* config/sh/sh.cc (sh_recog_treg_set_expr): Don't call make_insn_raw,
+	make the insn with a fake uid.
+
 2024-08-05  Patrick O'Neill  <patrick@rivosinc.com>
 
 	PR target/116152
