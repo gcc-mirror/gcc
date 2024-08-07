@@ -2492,6 +2492,16 @@ gcn_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
 static void
 gcn_conditional_register_usage (void)
 {
+  /* Some architectures have a register allocation granularity that does not
+     permit use of the full register count.  */
+  int vgpr_block_size = (TARGET_RDNA3 ? 12
+			 : TARGET_RDNA2_PLUS || TARGET_CDNA2_PLUS ? 8
+			 : 4);
+  for (int i = 256 - (256 % vgpr_block_size);
+       i < 256;
+       i++)
+    fixed_regs[VGPR_REGNO (i)] = call_used_regs[VGPR_REGNO (i)] = 1;
+
   if (!cfun || !cfun->machine)
     return;
 
