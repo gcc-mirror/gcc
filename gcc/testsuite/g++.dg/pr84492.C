@@ -3,7 +3,7 @@
 
 template<int> int foo()
 {
-  return ({ foo; }); // { dg-error "insufficient context" }
+  return ({ foo; }); // { dg-warning "insufficient context" }
 }
 
 int bar()
@@ -35,6 +35,6 @@ class C
   }
   bool g(int)
   {
-    return ({ g; }); // { dg-error "insufficient context" }
+    return ({ g; }); // { dg-warning "insufficient context" }
   }
 };

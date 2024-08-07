@@ -12289,6 +12289,24 @@ perform_instantiation_time_access_checks (tree tmpl, tree targs)
       }
 }
 
+/* If the template T that we're about to instantiate contained errors at
+   parse time that we downgraded into warnings or suppressed, diagnose the
+   error now to render the TU ill-formed (if the TU has not already been
+   deemed ill-formed by an earlier error).  */
+
+static void
+maybe_diagnose_erroneous_template (tree t)
+{
+  if (erroneous_templates && !(seen_error) ())
+    if (location_t *error_loc = erroneous_templates->get (t))
+      {
+	auto_diagnostic_group d;
+	location_t decl_loc = location_of (t);
+	error_at (decl_loc, "instantiating erroneous template");
+	inform (*error_loc, "first error appeared here");
+      }
+}
+
 tree
 instantiate_class_template (tree type)
 {
@@ -12357,6 +12375,8 @@ instantiate_class_template (tree type)
   /* If we've recursively instantiated too many templates, stop.  */
   if (! push_tinst_level (type))
     return type;
+
+  maybe_diagnose_erroneous_template (templ);
 
   int saved_unevaluated_operand = cp_unevaluated_operand;
   int saved_inhibit_evaluation_warnings = c_inhibit_evaluation_warnings;
@@ -27250,6 +27270,8 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
 	  args = TI_ARGS (partial_ti);
 	}
     }
+
+  maybe_diagnose_erroneous_template (td);
 
   code_pattern = DECL_TEMPLATE_RESULT (td);
 

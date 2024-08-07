@@ -1420,6 +1420,10 @@ Wtautological-compare
 C ObjC C++ ObjC++ Var(warn_tautological_compare) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn if a comparison always evaluates to true or false.
 
+Wtemplate-body
+C++ ObjC++ Var(warn_template_body) Warning Init(1)
+Diagnose errors when parsing a template.
+
 Wtemplate-id-cdtor
 C++ ObjC++ Var(warn_template_id_cdtor) Warning
 Warn about simple-template-id in a constructor or destructor.

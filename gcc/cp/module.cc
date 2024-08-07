@@ -20768,7 +20768,10 @@ finish_module_processing (cpp_reader *reader)
 
       cookie = new module_processing_cookie (cmi_name, tmp_name, fd, e);
 
-      if (errorcount)
+      if (errorcount
+	  /* Don't write the module if it contains an erroneous template.  */
+	  || (erroneous_templates
+	      && !erroneous_templates->is_empty ()))
 	warning_at (state->loc, 0, "not writing module %qs due to errors",
 		    state->get_flatname ());
       else if (cookie->out.begin ())

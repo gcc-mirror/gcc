@@ -701,6 +701,10 @@ public:
   /* Client hook to report an internal error.  */
   void (*m_internal_error) (diagnostic_context *, const char *, va_list *);
 
+  /* Client hook to adjust properties of the given diagnostic that we're
+     about to issue, such as its kind.  */
+  void (*m_adjust_diagnostic_info)(diagnostic_context *, diagnostic_info *);
+
 private:
   /* Client-supplied callbacks for working with options.  */
   struct {

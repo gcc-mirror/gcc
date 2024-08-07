@@ -7185,6 +7185,13 @@ extern location_t location_of                   (tree);
 extern void qualified_name_lookup_error		(tree, tree, tree,
 						 location_t);
 
+using erroneous_templates_t
+  = hash_map<tree, location_t, simple_hashmap_traits<tree_decl_hash, location_t>>;
+extern erroneous_templates_t *erroneous_templates;
+
+extern bool cp_seen_error ();
+#define seen_error() cp_seen_error ()
+
 /* in except.cc */
 extern void init_terminate_fn			(void);
 extern void init_exception_processing		(void);

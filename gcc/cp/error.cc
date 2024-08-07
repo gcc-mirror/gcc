@@ -165,6 +165,72 @@ class cxx_format_postprocessor : public format_postprocessor
   deferred_printed_type m_type_b;
 };
 
+/* Return the in-scope template that's currently being parsed, or
+   NULL_TREE otherwise.  */
+
+static tree
+get_current_template ()
+{
+  if (scope_chain && in_template_context && !current_instantiation ())
+    if (tree ti = get_template_info (current_scope ()))
+      return TI_TEMPLATE (ti);
+
+  return NULL_TREE;
+}
+
+/* A map from TEMPLATE_DECLs that we've determined to be erroneous
+   at parse time to the location of the first error within.  */
+
+erroneous_templates_t *erroneous_templates;
+
+/* Callback function diagnostic_context::m_adjust_diagnostic_info.
+
+   Errors issued when parsing a template are automatically treated like
+   permerrors associated with the -Wtemplate-body flag and can be
+   downgraded into warnings accordingly, in which case we'll still
+   issue an error if we later need to instantiate the template.  */
+
+static void
+cp_adjust_diagnostic_info (diagnostic_context *context,
+			   diagnostic_info *diagnostic)
+{
+  if (diagnostic->kind == DK_ERROR)
+    if (tree tmpl = get_current_template ())
+      {
+	diagnostic->option_index = OPT_Wtemplate_body;
+
+	if (context->m_permissive)
+	  diagnostic->kind = DK_WARNING;
+
+	bool existed;
+	location_t &error_loc
+	  = hash_map_safe_get_or_insert<false> (erroneous_templates,
+						tmpl, &existed);
+	if (!existed)
+	  /* Remember that this template had a parse-time error so
+	     that we'll ensure a hard error has been issued upon
+	     its instantiation.  */
+	  error_loc = diagnostic->richloc->get_loc ();
+      }
+}
+
+/* A generalization of seen_error which also returns true if we've
+   permissively downgraded an error to a warning inside a template.  */
+
+bool
+cp_seen_error ()
+{
+  if ((seen_error) ())
+    return true;
+
+  if (erroneous_templates)
+    if (tree tmpl = get_current_template ())
+      if (erroneous_templates->get (tmpl))
+	return true;
+
+  return false;
+}
+
 /* CONTEXT->printer is a basic pretty printer that was constructed
    presumably by diagnostic_initialize(), called early in the
    compiler's initialization process (in general_init) Before the FE
@@ -187,6 +253,7 @@ cxx_initialize_diagnostics (diagnostic_context *context)
   diagnostic_starter (context) = cp_diagnostic_starter;
   /* diagnostic_finalizer is already c_diagnostic_finalizer.  */
   diagnostic_format_decoder (context) = cp_printer;
+  context->m_adjust_diagnostic_info = cp_adjust_diagnostic_info;
   pp_format_postprocessor (pp) = new cxx_format_postprocessor ();
 }
 
