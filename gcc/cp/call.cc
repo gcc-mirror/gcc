@@ -10365,6 +10365,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	  a = decay_conversion (a, complain);
 	}
       else if (DECL_CONSTRUCTOR_P (fn)
+	       && vec_safe_length (args) == 1
 	       && same_type_ignoring_top_level_qualifiers_p (DECL_CONTEXT (fn),
 							     TREE_TYPE (a)))
 	{
