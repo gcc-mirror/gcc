@@ -45,7 +45,8 @@ ExprStmtBuilder::setup_loop (HIR::BaseLoopExpr &expr)
 
   BasicBlockId break_bb = new_bb ();
   // We are still outside the loop block;
-  ScopeId continue_scope = ctx.place_db.get_current_scope_id () + 1;
+  ScopeId continue_scope
+    = ctx.place_db.get_current_scope_id ().next_scope_id ();
   ctx.loop_and_label_stack.emplace_back (true, label, label_var, break_bb,
 					 continue_bb, continue_scope);
 
@@ -414,7 +415,7 @@ ExprStmtBuilder::visit (HIR::ContinueExpr &cont)
   LoopAndLabelCtx info = cont.has_label () ? get_label_ctx (cont.get_label ())
 					   : get_unnamed_loop_ctx ();
   start_new_consecutive_bb ();
-  unwind_until (info.continue_bb);
+  unwind_until (info.continue_scope);
   push_goto (info.continue_bb);
   // No code allowed after continue. Handled in BlockExpr.
 }
