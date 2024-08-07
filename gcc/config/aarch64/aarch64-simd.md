@@ -9920,3 +9920,12 @@
   "TARGET_FAMINMAX"
   "<faminmax_uns_op>\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
 )
+
+(define_insn "*aarch64_faminmax_fused"
+  [(set (match_operand:VHSDF 0 "register_operand" "=w")
+	(FMAXMIN:VHSDF
+	  (abs:VHSDF (match_operand:VHSDF 1 "register_operand" "w"))
+	  (abs:VHSDF (match_operand:VHSDF 2 "register_operand" "w"))))]
+  "TARGET_FAMINMAX"
+  "<faminmax_op>\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
+)

@@ -4472,3 +4472,6 @@
 
 (define_int_attr faminmax_uns_op
   [(UNSPEC_FAMAX "famax") (UNSPEC_FAMIN "famin")])
+
+(define_code_attr faminmax_op
+  [(smax "famax") (smin "famin")])
