@@ -305,7 +305,7 @@ protected: // Main collection entry points (for different categories).
     rust_debug ("\t_%u = BorrowExpr(_%u)", lhs.value - 1,
 		expr.get_place ().value - 1);
 
-    auto loan = place_db.get_loans ()[expr.get_loan ()];
+    auto loan = place_db.get_loan (expr.get_loan_id ());
 
     auto &base_place = place_db[expr.get_place ()];
     auto &ref_place = place_db[lhs];
@@ -324,14 +324,14 @@ protected: // Main collection entry points (for different categories).
 		   ->is_mutable ())
 	      rust_error_at (location,
 			     "Cannot reborrow immutable borrow as mutable");
-	    issue_loan (expr.get_origin (), expr.get_loan ());
+	    issue_loan (expr.get_origin (), expr.get_loan_id ());
 	  }
 
 	push_subset (main_loan_place.regions[0], {expr.get_origin ()});
       }
     else
       {
-	issue_loan (expr.get_origin (), expr.get_loan ());
+	issue_loan (expr.get_origin (), expr.get_loan_id ());
       }
 
     auto loan_regions = base_place.regions.prepend ({expr.get_origin ()});
@@ -511,24 +511,25 @@ protected: // Generic BIR operations.
 
   void issue_loan (Polonius::Origin origin, LoanId loan_id)
   {
-    facts.loan_issued_at.emplace_back (origin, loan_id,
+    facts.loan_issued_at.emplace_back (origin, loan_id.value,
 				       get_current_point_mid ());
 
-    check_for_borrow_conficts (place_db.get_loans ()[loan_id].place, loan_id,
-			       place_db.get_loans ()[loan_id].mutability);
+    check_for_borrow_conficts (place_db.get_loan (loan_id).place, loan_id,
+			       place_db.get_loan (loan_id).mutability);
   }
 
   void issue_locals_dealloc ()
   {
-    for (LoanId loan_id = 0; loan_id < place_db.get_loans ().size (); ++loan_id)
+    for (LoanId loan_id = {0}; loan_id.value < place_db.get_loans ().size ();
+	 ++loan_id.value)
       {
-	auto &loan = place_db.get_loans ()[loan_id];
+	auto &loan = place_db.get_loan (loan_id);
 	auto loaned_var_id = place_db.get_var (loan.place);
 	if (place_db[loaned_var_id].tyty->is<TyTy::ReferenceType> ())
 	  continue;
 	if (loaned_var_id >= first_local)
 	  facts.loan_invalidated_at.emplace_back (get_current_point_start (),
-						  loan_id);
+						  loan_id.value);
       }
   }
 
@@ -546,20 +547,20 @@ protected: // Generic BIR operations.
     place_db.for_each_path_segment (place_id, [&] (PlaceId id) {
       for (auto loan : place_db[id].borrowed_by)
 	{
-	  if (place_db.get_loans ()[loan].mutability == Mutability::Mut)
+	  if (place_db.get_loan (loan).mutability == Mutability::Mut)
 	    {
 	      facts.loan_invalidated_at.emplace_back (
-		get_current_point_start (), loan);
+		get_current_point_start (), loan.value);
 	    }
 	}
     });
     place_db.for_each_path_from_root (place_id, [&] (PlaceId id) {
       for (auto loan : place_db[id].borrowed_by)
 	{
-	  if (place_db.get_loans ()[loan].mutability == Mutability::Mut)
+	  if (place_db.get_loan (loan).mutability == Mutability::Mut)
 	    {
 	      facts.loan_invalidated_at.emplace_back (
-		get_current_point_start (), loan);
+		get_current_point_start (), loan.value);
 	    }
 	}
     });
@@ -570,12 +571,12 @@ protected: // Generic BIR operations.
     place_db.for_each_path_segment (place_id, [&] (PlaceId id) {
       for (auto loan : place_db[id].borrowed_by)
 	facts.loan_invalidated_at.emplace_back (get_current_point_start (),
-						loan);
+						loan.value);
     });
     place_db.for_each_path_from_root (place_id, [&] (PlaceId id) {
       for (auto loan : place_db[id].borrowed_by)
 	facts.loan_invalidated_at.emplace_back (get_current_point_start (),
-						loan);
+						loan.value);
     });
   }
 
@@ -586,12 +587,11 @@ protected: // Generic BIR operations.
       for (auto other_loan : place_db[id].borrowed_by)
 	{
 	  if (mutability == Mutability::Imm
-	      && place_db.get_loans ()[other_loan].mutability
-		   == Mutability::Imm)
+	      && place_db.get_loan (other_loan).mutability == Mutability::Imm)
 	    continue;
 	  else
 	    facts.loan_invalidated_at.emplace_back (get_current_point_start (),
-						    other_loan);
+						    other_loan.value);
 	}
     });
 
@@ -599,12 +599,11 @@ protected: // Generic BIR operations.
       for (auto other_loan : place_db[id].borrowed_by)
 	{
 	  if (mutability == Mutability::Imm
-	      && place_db.get_loans ()[other_loan].mutability
-		   == Mutability::Imm)
+	      && place_db.get_loan (other_loan).mutability == Mutability::Imm)
 	    continue;
 	  else
 	    facts.loan_invalidated_at.emplace_back (get_current_point_start (),
-						    other_loan);
+						    other_loan.value);
 	}
     });
   }
@@ -626,7 +625,8 @@ protected: // Generic BIR operations.
       {
 	// TODO: this is more complicated, see
 	// compiler/rustc_borrowck/src/constraint_generation.rs:176
-	facts.loan_killed_at.emplace_back (loan, get_current_point_mid ());
+	facts.loan_killed_at.emplace_back (loan.value,
+					   get_current_point_mid ());
       }
   }
 

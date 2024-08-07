@@ -279,7 +279,7 @@ Dump::visit (const BorrowExpr &expr)
 {
   stream << "&"
 	 << "'?" << expr.get_origin () << " ";
-  if (func.place_db.get_loans ()[expr.get_loan ()].mutability
+  if (func.place_db.get_loan (expr.get_loan_id ()).mutability
       == Mutability::Mut)
     stream << "mut ";
   visit_place (expr.get_place ());

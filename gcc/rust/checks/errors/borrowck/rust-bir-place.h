@@ -49,7 +49,19 @@ static constexpr PlaceId RETURN_VALUE_PLACE = {1};
 static constexpr PlaceId FIRST_VARIABLE_PLACE = RETURN_VALUE_PLACE;
 
 using Variance = TyTy::VarianceAnalysis::Variance;
-using LoanId = uint32_t;
+
+/** A unique identifier for a loan in the BIR. */
+struct LoanId
+{
+  uint32_t value;
+  // some overloads for comparision
+  bool operator== (const LoanId &rhs) const { return value == rhs.value; }
+  bool operator!= (const LoanId &rhs) const { return !(operator== (rhs)); }
+  bool operator< (const LoanId &rhs) const { return value < rhs.value; }
+  bool operator> (const LoanId &rhs) const { return value > rhs.value; }
+  bool operator<= (const LoanId &rhs) const { return !(operator> (rhs)); }
+  bool operator>= (const LoanId &rhs) const { return !(operator< (rhs)); }
+};
 
 /**
  * Representation of lvalues and constants in BIR.
@@ -207,6 +219,10 @@ public:
   size_t size () const { return places.size (); }
 
   const std::vector<Loan> &get_loans () const { return loans; }
+  const Loan &get_loan (LoanId loan_id) const
+  {
+    return loans.at (loan_id.value);
+  }
 
   ScopeId get_current_scope_id () const { return current_scope; }
 
@@ -332,7 +348,7 @@ public:
 
   LoanId add_loan (Loan &&loan)
   {
-    LoanId id = loans.size ();
+    LoanId id = {loans.size ()};
     loans.push_back (std::forward<Loan &&> (loan));
     PlaceId borrowed_place = loans.rbegin ()->place;
     places[loans.rbegin ()->place.value].borrowed_by.push_back (id);
