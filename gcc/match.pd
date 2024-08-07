@@ -3787,6 +3787,36 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (if (types_match (type, TREE_TYPE (@0)))
      (bit_xor @0 { build_one_cst (type); } ))))))
 
+/* ((a ^ b) & c) cmp d || a != b --> (0 cmp d || a != b). */
+(for cmp (simple_comparison)
+  (simplify
+    (bit_ior
+      (cmp:c
+	(bit_and:c
+	  (bit_xor:c @0 @1)
+	  tree_expr_nonzero_p@2)
+	@3)
+      (ne:c@4 @0 @1))
+    (bit_ior
+      (cmp
+	{ build_zero_cst (TREE_TYPE (@0)); }
+	@3)
+      @4)))
+
+/* (a ^ b) cmp c || a != b --> (0 cmp c || a != b). */
+(for cmp (simple_comparison)
+  (simplify
+    (bit_ior
+      (cmp:c
+	(bit_xor:c @0 @1)
+	@2)
+      (ne:c@3 @0 @1))
+    (bit_ior
+      (cmp
+	{ build_zero_cst (TREE_TYPE (@0)); }
+	@2)
+      @3)))
+
 /* We can't reassociate at all for saturating types.  */
 (if (!TYPE_SATURATING (type))
 
