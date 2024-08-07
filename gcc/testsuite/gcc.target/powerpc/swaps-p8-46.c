@@ -1,5 +1,5 @@
 /* { dg-do run { target le } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-require-effective-target p8vector_hw } */
 /* { dg-options "-mdejagnu-cpu=power8 -mvsx -O2 " } */
 
 typedef __attribute__ ((__aligned__ (8))) unsigned long long __m64;
