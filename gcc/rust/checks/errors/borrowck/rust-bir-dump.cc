@@ -133,7 +133,7 @@ Dump::go (bool enable_simplify_cfg)
   stream << " {\n";
 
   // Print locals declaration.
-  visit_scope (0);
+  visit_scope (ROOT_SCOPE);
 
   // Print BBs.
   for (statement_bb = 0; statement_bb < func.basic_blocks.size ();
@@ -366,8 +366,8 @@ Dump::visit_scope (ScopeId id, size_t depth)
   if (scope.locals.empty () && scope.children.empty ())
     return;
 
-  if (id > 1)
-    indent (depth) << "scope " << id - 1 << " {\n";
+  if (id.value > 1)
+    indent (depth) << "scope " << id.value - 1 << " {\n";
 
   for (auto &local : scope.locals)
     {
@@ -385,9 +385,9 @@ Dump::visit_scope (ScopeId id, size_t depth)
       stream << "]\n";
     }
   for (auto &child : scope.children)
-    visit_scope (child, (id >= 1) ? depth + 1 : depth);
+    visit_scope (child, (id.value >= 1) ? depth + 1 : depth);
 
-  if (id > 1)
+  if (id.value > 1)
     indent (depth) << "}\n";
 }
 
