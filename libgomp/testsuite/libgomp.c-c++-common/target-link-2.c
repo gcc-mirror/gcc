@@ -54,6 +54,9 @@ int main()
       for (int i = 0; i < 10; i++)
 	if (res[i] != (4 + i)*10)
 	  __builtin_abort ();
+
+      for (int i = 0; i < 15; i++) /* Reset. */
+	arr[i] /= 10;
     }
   return 0;
 }
