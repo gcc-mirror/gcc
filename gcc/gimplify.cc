@@ -5598,7 +5598,7 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
 	    DECL_INITIAL (object) = ctor;
 	    TREE_STATIC (object) = 1;
-	    if (!DECL_NAME (object))
+	    if (!DECL_NAME (object) || DECL_NAMELESS (object))
 	      DECL_NAME (object) = create_tmp_var_name ("C");
 	    walk_tree (&DECL_INITIAL (object), force_labels_r, NULL, NULL);
 
