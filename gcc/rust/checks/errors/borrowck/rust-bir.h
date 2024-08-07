@@ -33,8 +33,6 @@ struct BasicBlock;
 class Statement;
 class AbstractExpr;
 
-using LoanId = uint32_t;
-
 /**
  * Top-level entity of the Borrow-checker IR (BIR).
  * It represents a single function (method, closure, etc.), which is the
@@ -225,7 +223,7 @@ public:
       loan (loan_id), origin (lifetime)
   {}
   WARN_UNUSED_RESULT PlaceId get_place () const { return place; }
-  WARN_UNUSED_RESULT LoanId get_loan () const { return loan; }
+  WARN_UNUSED_RESULT LoanId get_loan_id () const { return loan; }
   WARN_UNUSED_RESULT Polonius::Origin get_origin () const { return origin; }
 };
 
