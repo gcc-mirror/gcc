@@ -28,6 +28,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "data-streamer.h"
 
+/* For offloading -- While streaming-out, host NUM_POLY_INT_COEFFS is
+   stored at beginning of mode_table.  While streaming-in, the value is read
+   in host_num_poly_int_coeffs.  */
+
+#ifdef ACCEL_COMPILER
+unsigned host_num_poly_int_coeffs = 0;
+#endif
+
 /* Pack WORK into BP in a variant of uleb format.  */
 
 void

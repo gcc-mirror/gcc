@@ -3192,6 +3192,9 @@ lto_write_mode_table (void)
   ob = create_output_block (LTO_section_mode_table);
   bitpack_d bp = bitpack_create (ob->main_stream);
 
+  if (lto_stream_offload_p)
+    bp_pack_value (&bp, NUM_POLY_INT_COEFFS, MAX_NUM_POLY_INT_COEFFS_BITS);
+
   /* Ensure that for GET_MODE_INNER (m) != m we have
      also the inner mode marked.  */
   for (int i = 0; i < (int) MAX_MACHINE_MODE; i++)

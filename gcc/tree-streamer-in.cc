@@ -671,8 +671,37 @@ static void
 lto_input_ts_poly_tree_pointers (class lto_input_block *ib,
 				 class data_in *data_in, tree expr)
 {
-  for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
-    POLY_INT_CST_COEFF (expr, i) = stream_read_tree_ref (ib, data_in);
+#ifdef ACCEL_COMPILER
+  /* Ensure that we have streamed-in host_num_poly_int_coeffs.  */
+  const unsigned num_poly_int_coeffs = host_num_poly_int_coeffs;
+  gcc_assert (num_poly_int_coeffs > 0);
+#else
+  const unsigned num_poly_int_coeffs = NUM_POLY_INT_COEFFS;
+#endif
+
+  unsigned i;
+  if (num_poly_int_coeffs <= NUM_POLY_INT_COEFFS)
+    {
+      for (i = 0; i < num_poly_int_coeffs; i++)
+	POLY_INT_CST_COEFF (expr, i) = stream_read_tree_ref (ib, data_in);
+
+      tree coeff_type = TREE_TYPE (POLY_INT_CST_COEFF (expr, 0));
+      for (; i < NUM_POLY_INT_COEFFS; i++)
+	POLY_INT_CST_COEFF (expr, i) = build_zero_cst (coeff_type);
+    }
+  else
+    {
+      for (i = 0; i < NUM_POLY_INT_COEFFS; i++)
+	POLY_INT_CST_COEFF (expr, i) = stream_read_tree_ref (ib, data_in);
+      for (; i < num_poly_int_coeffs; i++)
+	{
+	  tree val = stream_read_tree_ref (ib, data_in);
+	  if (!integer_zerop (val))
+	    fatal_error (input_location,
+			 "degree of %<poly_int%> exceeds "
+			 "%<NUM_POLY_INT_COEFFS%>");
+	}
+    }
 }
 
 

@@ -2013,6 +2013,11 @@ lto_input_mode_table (struct lto_file_decl_data *file_data)
 				header->string_size, vNULL);
   bitpack_d bp = streamer_read_bitpack (&ib);
 
+#ifdef ACCEL_COMPILER
+  host_num_poly_int_coeffs
+    = bp_unpack_value (&bp, MAX_NUM_POLY_INT_COEFFS_BITS);
+#endif
+
   unsigned mode_bits = bp_unpack_value (&bp, 5);
   unsigned char *table = ggc_cleared_vec_alloc<unsigned char> (1 << mode_bits);
 
