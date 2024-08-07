@@ -2887,11 +2887,9 @@ proc check_p8vector_hw_available { } {
 	    check_runtime_nocache p8vector_hw_available {
 		int main()
 		{
-		#ifdef __MACH__
-		  asm volatile ("xxlorc vs0,vs0,vs0");
-		#else
-		  asm volatile ("xxlorc 0,0,0");
-		#endif
+		  vector long long v1 = {0x1, 0x2};
+		  vector long long v2;
+		  asm ("xxlorc %0,%1,%1" : "=wa" (v2) : "wa" (v1));
 		  return 0;
 		}
 	    } $options
@@ -3188,11 +3186,9 @@ proc check_vsx_hw_available { } {
 	    check_runtime_nocache vsx_hw_available {
 		int main()
 		{
-		#ifdef __MACH__
-		  asm volatile ("xxlor vs0,vs0,vs0");
-		#else
-		  asm volatile ("xxlor 0,0,0");
-		#endif
+		  vector int v1 = {0, 0, 0, 0};
+		  vector int v2;
+		  asm ("xxlor %0,%1,%1" : "=wa" (v2) : "wa" (v1));
 		  return 0;
 		}
 	    } $options
@@ -3221,11 +3217,9 @@ proc check_vmx_hw_available { } {
 	    check_runtime_nocache vmx_hw_available {
 		int main()
 		{
-		#ifdef __MACH__
-		  asm volatile ("vor v0,v0,v0");
-		#else
-		  asm volatile ("vor 0,0,0");
-		#endif
+		  vector int v1 = {0, 0, 0, 0};
+		  vector int v2;
+		  asm ("vor %0,%1,%1" : "=v" (v2) : "v" (v1));
 		  return 0;
 		}
 	    } $options

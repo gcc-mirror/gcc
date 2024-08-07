@@ -1,5 +1,6 @@
 /* { dg-do run { target { powerpc64*-*-* && p8vector_hw } } } */
 /* { dg-options "-mfloat128 -mvsx" } */
+/* { dg-additional-options "-mdejagnu-cpu=power8" { target { ! has_arch_pwr8 } } } */
 
 void abort ();
 
