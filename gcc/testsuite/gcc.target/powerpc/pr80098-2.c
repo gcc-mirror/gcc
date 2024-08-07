@@ -1,5 +1,4 @@
 /* { dg-do compile { target { powerpc64*-*-* } } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power8 -mno-vsx -mcrypto" } */
 
 int i;

@@ -1,6 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-* && ilp32 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O2 -msoft-float -mdejagnu-cpu=power7" } */
 
 /* PR 47151: libgcc fails to build when using --with-cpu=power7 due to a missed
