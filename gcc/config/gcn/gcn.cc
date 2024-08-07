@@ -2493,6 +2493,13 @@ gcn_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
 static void
 gcn_conditional_register_usage (void)
 {
+  /* Some architectures have a register allocation granularity that does not
+     permit use of the full register count.  */
+  for (int i = 256 - (256 % TARGET_VGPR_GRANULARITY);
+       i < 256;
+       i++)
+    fixed_regs[VGPR_REGNO (i)] = call_used_regs[VGPR_REGNO (i)] = 1;
+
   if (!cfun || !cfun->machine)
     return;
 
