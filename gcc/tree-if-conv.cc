@@ -1133,15 +1133,6 @@ if_convertible_stmt_p (gimple *stmt, vec<data_reference_p> refs)
 
     case GIMPLE_CALL:
       {
-	/* There are some IFN_s that are used to replace builtins but have the
-	   same semantics.  Even if MASK_CALL cannot handle them vectorable_call
-	   will insert the proper selection, so do not block conversion.  */
-	int flags = gimple_call_flags (stmt);
-	if ((flags & ECF_CONST)
-	    && !(flags & ECF_LOOPING_CONST_OR_PURE)
-	    && gimple_call_combined_fn (stmt) != CFN_LAST)
-	  return true;
-
 	tree fndecl = gimple_call_fndecl (stmt);
 	if (fndecl)
 	  {
@@ -1159,6 +1150,15 @@ if_convertible_stmt_p (gimple *stmt, vec<data_reference_p> refs)
 		    return true;
 		  }
 	  }
+
+	/* There are some IFN_s that are used to replace builtins but have the
+	   same semantics.  Even if MASK_CALL cannot handle them vectorable_call
+	   will insert the proper selection, so do not block conversion.  */
+	int flags = gimple_call_flags (stmt);
+	if ((flags & ECF_CONST)
+	    && !(flags & ECF_LOOPING_CONST_OR_PURE)
+	    && gimple_call_combined_fn (stmt) != CFN_LAST)
+	  return true;
 
 	return false;
       }
