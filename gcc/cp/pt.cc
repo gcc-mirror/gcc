@@ -12381,7 +12381,7 @@ instantiate_class_template (tree type)
   if (! push_tinst_level (type))
     return type;
 
-  maybe_diagnose_erroneous_template (templ);
+  maybe_diagnose_erroneous_template (t ? TI_TEMPLATE (t) : templ);
 
   int saved_unevaluated_operand = cp_unevaluated_operand;
   int saved_inhibit_evaluation_warnings = c_inhibit_evaluation_warnings;

@@ -173,7 +173,11 @@ get_current_template ()
 {
   if (scope_chain && in_template_context && !current_instantiation ())
     if (tree ti = get_template_info (current_scope ()))
-      return TI_TEMPLATE (ti);
+      {
+	if (PRIMARY_TEMPLATE_P (TI_TEMPLATE (ti)) && TI_PARTIAL_INFO (ti))
+	  ti = TI_PARTIAL_INFO (ti);
+	return TI_TEMPLATE (ti);
+      }
 
   return NULL_TREE;
 }
