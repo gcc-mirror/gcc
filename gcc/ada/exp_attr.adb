@@ -6006,6 +6006,7 @@ package body Exp_Attr is
       when Attribute_Put_Image => Put_Image : declare
          use Exp_Put_Image;
          U_Type : constant Entity_Id := Underlying_Type (Entity (Pref));
+         C_Type : Entity_Id;
          Pname  : Entity_Id;
          Decl   : Node_Id;
 
@@ -6031,6 +6032,21 @@ package body Exp_Attr is
          end if;
 
          if No (Pname) then
+            if Is_String_Type (U_Type) then
+               declare
+                  R : constant Entity_Id := Root_Type (U_Type);
+
+               begin
+                  if Is_Private_Type (R) then
+                     C_Type := Component_Type (Full_View (R));
+                  else
+                     C_Type := Component_Type (R);
+                  end if;
+
+                  C_Type := Root_Type (Underlying_Type (C_Type));
+               end;
+            end if;
+
             --  If Put_Image is disabled, call the "unknown" version
 
             if not Put_Image_Enabled (U_Type) then
@@ -6046,7 +6062,17 @@ package body Exp_Attr is
                Analyze (N);
                return;
 
-            elsif Is_Standard_String_Type (U_Type) then
+            --  String type objects, including custom string types, and
+            --  excluding C arrays.
+
+            elsif Is_String_Type (U_Type)
+              and then C_Type in Standard_Character
+                               | Standard_Wide_Character
+                               | Standard_Wide_Wide_Character
+              and then (not RTU_Loaded (Interfaces_C)
+                          or else Enclosing_Lib_Unit_Entity (U_Type)
+                                    /= RTU_Entity (Interfaces_C))
+            then
                Rewrite (N, Build_String_Put_Image_Call (N));
                Analyze (N);
                return;

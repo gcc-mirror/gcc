@@ -417,14 +417,48 @@ package body Exp_Put_Image is
       Lib_RE  : RE_Id;
       use Stand;
    begin
+      pragma Assert (Is_String_Type (U_Type));
+      pragma Assert (not RTU_Loaded (Interfaces_C)
+        or else Enclosing_Lib_Unit_Entity (U_Type)
+                  /= RTU_Entity (Interfaces_C));
+
       if R = Standard_String then
          Lib_RE := RE_Put_Image_String;
       elsif R = Standard_Wide_String then
          Lib_RE := RE_Put_Image_Wide_String;
       elsif R = Standard_Wide_Wide_String then
          Lib_RE := RE_Put_Image_Wide_Wide_String;
+
       else
-         raise Program_Error;
+         --  Handle custom string types. For example:
+
+         --     type T is array (1 .. 10) of Character;
+         --     Obj : T := (others => 'A');
+         --     ...
+         --     Put (Obj'Image);
+
+         declare
+            C_Type : Entity_Id;
+
+         begin
+            if Is_Private_Type (R) then
+               C_Type := Component_Type (Full_View (R));
+            else
+               C_Type := Component_Type (R);
+            end if;
+
+            C_Type := Root_Type (Underlying_Type (C_Type));
+
+            if C_Type = Standard_Character then
+               Lib_RE := RE_Put_Image_String;
+            elsif C_Type = Standard_Wide_Character then
+               Lib_RE := RE_Put_Image_Wide_String;
+            elsif C_Type = Standard_Wide_Wide_Character then
+               Lib_RE := RE_Put_Image_Wide_Wide_String;
+            else
+               raise Program_Error;
+            end if;
+         end;
       end if;
 
       --  Convert parameter to the required type (i.e. the type of the
