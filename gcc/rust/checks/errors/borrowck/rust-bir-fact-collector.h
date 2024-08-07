@@ -47,7 +47,7 @@ class FactCollector : public Visitor
   Resolver::TypeCheckContext &tyctx;
 
   // Collector state.
-  BasicBlockId current_bb = 0;
+  BasicBlockId current_bb = ENTRY_BASIC_BLOCK;
   uint32_t current_stmt = 0;
   PlaceId lhs = INVALID_PLACE;
 
@@ -161,14 +161,15 @@ protected: // Main collection entry points (for different categories).
     for (PlaceId arg = PlaceId{FIRST_VARIABLE_PLACE.value + 1};
 	 arg < first_local; ++arg.value)
       facts.path_assigned_at_base.emplace_back (
-	arg.value, get_point (0, 0, PointPosition::START));
+	arg.value, get_point (ENTRY_BASIC_BLOCK, 0, PointPosition::START));
 
     for (PlaceId place = first_local; place.value < place_db.size ();
 	 ++place.value)
       {
 	if (place_db[place].is_var ())
 	  facts.path_moved_at_base.emplace_back (
-	    place.value, get_point (0, 0, PointPosition::START));
+	    place.value,
+	    get_point (ENTRY_BASIC_BLOCK, 0, PointPosition::START));
       }
   }
 
@@ -208,9 +209,10 @@ protected: // Main collection entry points (for different categories).
   {
     rust_debug ("visit_statemensts");
 
-    for (current_bb = 0; current_bb < basic_blocks.size (); ++current_bb)
+    for (current_bb = ENTRY_BASIC_BLOCK;
+	 current_bb.value < basic_blocks.size (); ++current_bb.value)
       {
-	auto &bb = basic_blocks[current_bb];
+	auto &bb = basic_blocks[current_bb.value];
 	for (current_stmt = 0; current_stmt < bb.statements.size ();
 	     ++current_stmt)
 	  {
@@ -222,7 +224,7 @@ protected: // Main collection entry points (for different categories).
 	    visit (bb.statements[current_stmt]);
 	  }
       }
-    current_bb = 0;
+    current_bb = ENTRY_BASIC_BLOCK;
     current_stmt = 0;
   }
 
@@ -341,7 +343,7 @@ protected: // Main collection entry points (for different categories).
   void visit (const Assignment &expr) override
   {
     rust_debug ("\t_%u = Assignment(_%u) at %u:%u", lhs.value - 1,
-		expr.get_rhs ().value - 1, current_bb, current_stmt);
+		expr.get_rhs ().value - 1, current_bb.value, current_stmt);
 
     issue_read_move (expr.get_rhs ());
     push_place_subset (lhs, expr.get_rhs ());
@@ -391,14 +393,14 @@ protected: // Main collection entry points (for different categories).
 protected: // Statement visitor helpers
   WARN_UNUSED_RESULT const BasicBlock &get_current_bb () const
   {
-    return basic_blocks[current_bb];
+    return basic_blocks[current_bb.value];
   }
 
   WARN_UNUSED_RESULT static Polonius::Point
   get_point (BasicBlockId bb, uint32_t stmt, PointPosition pos)
   {
     Polonius::Point point = 0;
-    point |= (bb << 16);
+    point |= (bb.value << 16);
     point |= (stmt << 1);
     point |= (static_cast<uint8_t> (pos) & 1);
     return point;
@@ -496,9 +498,11 @@ protected: // Generic BIR operations.
     if (!place_db[place_id].should_be_moved ())
       return;
 
-    facts.path_moved_at_base.emplace_back (
-      place_id.value, initial ? get_point (0, 0, PointPosition::START)
-			      : get_current_point_mid ());
+    facts.path_moved_at_base.emplace_back (place_id.value,
+					   initial
+					     ? get_point (ENTRY_BASIC_BLOCK, 0,
+							  PointPosition::START)
+					     : get_current_point_mid ());
 
     check_move_behind_reference (place_id);
 
