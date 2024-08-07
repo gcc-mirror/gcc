@@ -963,6 +963,9 @@
   const vss __builtin_altivec_vsldoi_8hi (vss, vss, const int<4>);
     VSLDOI_8HI altivec_vsldoi_v8hi {}
 
+  const vsq __builtin_altivec_vsldoi_v1ti (vsq, vsq, const int<4>);
+    VSLDOI_1TI altivec_vsldoi_v1ti {}
+
   const vss __builtin_altivec_vslh (vss, vus);
     VSLH vashlv8hi3 {}
 
@@ -1798,6 +1801,9 @@
 
   const vsll __builtin_vsx_xxsldwi_2di (vsll, vsll, const int<2>);
     XXSLDWI_2DI vsx_xxsldwi_v2di {}
+
+  const vsq __builtin_vsx_xxsldwi_v1ti (vsq, vsq, const int<2>);
+    XXSLDWI_1TI vsx_xxsldwi_v1ti {}
 
   const vf __builtin_vsx_xxsldwi_4sf (vf, vf, const int<2>);
     XXSLDWI_4SF vsx_xxsldwi_v4sf {}
@@ -3267,6 +3273,9 @@
   const vss __builtin_altivec_vsldb_v8hi (vss, vss, const int<3>);
     VSLDB_V8HI vsldb_v8hi {}
 
+  const vsq __builtin_altivec_vsldb_v1ti (vsq, vsq, const int<3>);
+    VSLDB_V1TI vsldb_v1ti {}
+
   const vsq __builtin_altivec_vslq (vsq, vuq);
     VSLQ vashlv1ti3 {}
 
@@ -3284,6 +3293,9 @@
 
   const vss __builtin_altivec_vsrdb_v8hi (vss, vss, const int<3>);
     VSRDB_V8HI vsrdb_v8hi {}
+
+  const vsq __builtin_altivec_vsrdb_v1ti (vsq, vsq, const int<3>);
+    VSRDB_V1TI vsrdb_v1ti {}
 
   const vsq __builtin_altivec_vsrq (vsq, vuq);
     VSRQ vlshrv1ti3 {}

@@ -3399,6 +3399,10 @@
     VSLDOI_4SF
   vd __builtin_vec_sld (vd, vd, const int);
     VSLDOI_2DF
+  vsq __builtin_vec_sld (vsq, vsq, const int);
+    VSLDOI_1TI  VSLDOI_VSQ
+  vuq __builtin_vec_sld (vuq, vuq, const int);
+    VSLDOI_1TI  VSLDOI_VUQ
 
 [VEC_SLDB, vec_sldb, __builtin_vec_sldb]
   vsc __builtin_vec_sldb (vsc, vsc, const int);
@@ -3417,6 +3421,10 @@
     VSLDB_V2DI  VSLDB_VSLL
   vull __builtin_vec_sldb (vull, vull, const int);
     VSLDB_V2DI  VSLDB_VULL
+  vsq __builtin_vec_sldb (vsq, vsq, const int);
+    VSLDB_V1TI  VSLDB_VSQ
+  vuq __builtin_vec_sldb (vuq, vuq, const int);
+    VSLDB_V1TI  VSLDB_VUQ
 
 [VEC_SLDW, vec_sldw, __builtin_vec_sldw]
   vsc __builtin_vec_sldw (vsc, vsc, const int);
@@ -3439,6 +3447,10 @@
     XXSLDWI_4SF  XXSLDWI_VF
   vd __builtin_vec_sldw (vd, vd, const int);
     XXSLDWI_2DF  XXSLDWI_VD
+  vsq __builtin_vec_sldw (vsq, vsq, const int);
+    XXSLDWI_1TI  XXSLDWI_VSQ
+  vuq __builtin_vec_sldw (vuq, vuq, const int);
+    XXSLDWI_1TI  XXSLDWI_VUQ
 
 [VEC_SLL, vec_sll, __builtin_vec_sll]
   vsc __builtin_vec_sll (vsc, vuc);
@@ -3459,6 +3471,10 @@
     VSL  VSL_VSLL
   vull __builtin_vec_sll (vull, vuc);
     VSL  VSL_VULL
+  vsq __builtin_vec_sll (vsq, vuc);
+    VSL  VSL_VSQ
+  vuq __builtin_vec_sll (vuq, vuc);
+    VSL  VSL_VUQ
 ; The following variants are deprecated.
   vsc __builtin_vec_sll (vsc, vus);
     VSL  VSL_VSC_VUS
@@ -3554,6 +3570,14 @@
     VSLO  VSLO_VFS
   vf __builtin_vec_slo (vf, vuc);
     VSLO  VSLO_VFU
+  vsq __builtin_vec_slo (vsq, vsc);
+    VSLO  VSLDO_VSQS
+  vsq __builtin_vec_slo (vsq, vuc);
+    VSLO  VSLDO_VSQU
+  vuq __builtin_vec_slo (vuq, vsc);
+    VSLO  VSLDO_VUQS
+  vuq __builtin_vec_slo (vuq, vuc);
+    VSLO  VSLDO_VUQU
 
 [VEC_SLV, vec_slv, __builtin_vec_vslv]
   vuc __builtin_vec_vslv (vuc, vuc);
@@ -3699,6 +3723,10 @@
     VSRDB_V2DI  VSRDB_VSLL
   vull __builtin_vec_srdb (vull, vull, const int);
     VSRDB_V2DI  VSRDB_VULL
+  vsq __builtin_vec_srdb (vsq, vsq, const int);
+    VSRDB_V1TI  VSRDB_VSQ
+  vuq __builtin_vec_srdb (vuq, vuq, const int);
+    VSRDB_V1TI  VSRDB_VUQ
 
 [VEC_SRL, vec_srl, __builtin_vec_srl]
   vsc __builtin_vec_srl (vsc, vuc);
@@ -3719,6 +3747,10 @@
     VSR  VSR_VSLL
   vull __builtin_vec_srl (vull, vuc);
     VSR  VSR_VULL
+  vsq __builtin_vec_srl (vsq, vuc);
+    VSR  VSR_VSQ
+  vuq __builtin_vec_srl (vuq, vuc);
+    VSR  VSR_VUQ
 ; The following variants are deprecated.
   vsc __builtin_vec_srl (vsc, vus);
     VSR  VSR_VSC_VUS
@@ -3808,6 +3840,14 @@
     VSRO  VSRO_VFS
   vf __builtin_vec_sro (vf, vuc);
     VSRO  VSRO_VFU
+  vsq __builtin_vec_sro (vsq, vsc);
+    VSRO  VSRDO_VSQS
+  vsq __builtin_vec_sro (vsq, vuc);
+    VSRO  VSRDO_VSQU
+  vuq __builtin_vec_sro (vuq, vsc);
+    VSRO  VSRDO_VUQS
+  vuq __builtin_vec_sro (vuq, vuc);
+    VSRO  VSRDO_VUQU
 
 [VEC_SRV, vec_srv, __builtin_vec_vsrv]
   vuc __builtin_vec_vsrv (vuc, vuc);

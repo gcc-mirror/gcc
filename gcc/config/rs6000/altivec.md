@@ -877,9 +877,9 @@
 (define_int_iterator VSHIFT_DBL_LR [UNSPEC_SLDB UNSPEC_SRDB])
 
 (define_insn "vs<SLDB_lr>db_<mode>"
- [(set (match_operand:VI2 0 "register_operand" "=v")
-  (unspec:VI2 [(match_operand:VI2 1 "register_operand" "v")
-	       (match_operand:VI2 2 "register_operand" "v")
+ [(set (match_operand:VEC_IC 0 "register_operand" "=v")
+  (unspec:VEC_IC [(match_operand:VEC_IC 1 "register_operand" "v")
+	       (match_operand:VEC_IC 2 "register_operand" "v")
 	       (match_operand:QI 3 "const_0_to_12_operand" "n")]
 	      VSHIFT_DBL_LR))]
   "TARGET_POWER10"

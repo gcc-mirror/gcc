@@ -23596,6 +23596,10 @@ const unsigned int);
 vector signed long long, const unsigned int);
 @exdent vector unsigned long long vec_sldb (vector unsigned long long,
 vector unsigned long long, const unsigned int);
+@exdent vector signed __int128 vec_sldb (vector signed __int128,
+vector signed __int128, const unsigned int);
+@exdent vector unsigned __int128 vec_sldb (vector unsigned __int128,
+vector unsigned __int128, const unsigned int);
 @end smallexample
 
 Shift the combined input vectors left by the amount specified by the low-order
@@ -23623,6 +23627,10 @@ const unsigned int);
 vector signed long long, const unsigned int);
 @exdent vector unsigned long long vec_srdb (vector unsigned long long,
 vector unsigned long long, const unsigned int);
+@exdent vector signed __int128 vec_srdb (vector signed __int128,
+vector signed __int128, const unsigned int);
+@exdent vector unsigned __int128 vec_srdb (vector unsigned __int128,
+vector unsigned __int128, const unsigned int);
 @end smallexample
 
 Shift the combined input vectors right by the amount specified by the low-order
@@ -24117,6 +24125,41 @@ int vec_any_le (vector signed __int128, vector signed __int128);
 int vec_any_le (vector unsigned __int128, vector unsigned __int128);
 @end smallexample
 
+
+The following instances are extension of the existing overloaded built-ins
+@code{vec_sld}, @code{vec_sldw}, @code{vec_slo}, @code{vec_sro}, @code{vec_srl}
+that are documented in the PVIPR.
+
+@smallexample
+@exdent vector signed __int128 vec_sld (vector signed __int128,
+vector signed __int128, const unsigned int);
+@exdent vector unsigned __int128 vec_sld (vector unsigned __int128,
+vector unsigned __int128, const unsigned int);
+@exdent vector signed __int128 vec_sldw (vector signed __int128,
+vector signed __int128, const unsigned int);
+@exdent vector unsigned __int128 vec_sldw (vector unsigned __int,
+vector unsigned __int128, const unsigned int);
+@exdent vector signed __int128 vec_slo (vector signed __int128,
+vector signed char);
+@exdent vector signed __int128 vec_slo (vector signed __int128,
+vector unsigned char);
+@exdent vector unsigned __int128 vec_slo (vector unsigned __int128,
+vector signed char);
+@exdent vector unsigned __int128 vec_slo (vector unsigned __int128,
+vector unsigned char);
+@exdent vector signed __int128 vec_sro (vector signed __int128,
+vector signed char);
+@exdent vector signed __int128 vec_sro (vector signed __int128,
+vector unsigned char);
+@exdent vector unsigned __int128 vec_sro (vector unsigned __int128,
+vector signed char);
+@exdent vector unsigned __int128 vec_sro (vector unsigned __int128,
+vector unsigned char);
+@exdent vector signed __int128 vec_srl (vector signed __int128,
+vector unsigned char);
+@exdent vector unsigned __int128 vec_srl (vector unsigned __int128,
+vector unsigned char);
+@end smallexample
 
 @node PowerPC Hardware Transactional Memory Built-in Functions
 @subsection PowerPC Hardware Transactional Memory Built-in Functions
