@@ -12687,9 +12687,9 @@ trees_in::read_enum_def (tree defn, tree maybe_template)
 	  if (known_decl && new_decl)
 	    {
 	      inform (DECL_SOURCE_LOCATION (new_decl),
-		      "... this enumerator %qD", new_decl);
+		      "enumerator %qD does not match ...", new_decl);
 	      inform (DECL_SOURCE_LOCATION (known_decl),
-		      "enumerator %qD does not match ...", known_decl);
+		      "... this enumerator %qD", known_decl);
 	    }
 	  else if (known_decl || new_decl)
 	    {
