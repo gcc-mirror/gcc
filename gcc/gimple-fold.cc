@@ -4043,6 +4043,23 @@ gimple_fold_builtin_strlen (gimple_stmt_iterator *gsi)
   return false;
 }
 
+static bool
+gimple_fold_builtin_omp_is_initial_device (gimple_stmt_iterator *gsi)
+{
+#if ACCEL_COMPILER
+  replace_call_with_value (gsi, integer_zero_node);
+  return true;
+#else
+  if (!ENABLE_OFFLOADING || symtab->state == EXPANSION)
+    {
+      replace_call_with_value (gsi, integer_one_node);
+      return true;
+    }
+#endif
+  return false;
+}
+
+
 /* Fold a call to __builtin_acc_on_device.  */
 
 static bool
@@ -5220,6 +5237,9 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case BUILT_IN_ACC_ON_DEVICE:
       return gimple_fold_builtin_acc_on_device (gsi,
 						gimple_call_arg (stmt, 0));
+    case BUILT_IN_OMP_IS_INITIAL_DEVICE:
+      return gimple_fold_builtin_omp_is_initial_device (gsi);
+
     case BUILT_IN_REALLOC:
       return gimple_fold_builtin_realloc (gsi);
 

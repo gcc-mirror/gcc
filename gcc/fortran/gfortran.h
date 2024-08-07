@@ -3161,6 +3161,7 @@ typedef struct
   int flag_init_logical;
   int flag_init_character;
   char flag_init_character_value;
+  int disable_omp_is_initial_device;
 
   int fpe;
   int fpe_summary;
