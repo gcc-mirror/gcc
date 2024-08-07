@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-type-check-pattern.h"
+#include "rust-hir-pattern.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-type-util.h"
 
@@ -228,6 +229,7 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
 
 	    // setup the type on this pattern type
 	    context->insert_type (pattern->get_mappings (), fty);
+	    TypeCheckPattern::Resolve (pattern.get (), fty);
 	  }
       }
       break;

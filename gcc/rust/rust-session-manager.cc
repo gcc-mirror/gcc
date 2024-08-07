@@ -18,6 +18,7 @@
 
 #include "rust-session-manager.h"
 #include "rust-diagnostics.h"
+#include "rust-hir-pattern-analysis.h"
 #include "rust-immutable-name-resolution-context.h"
 #include "rust-unsafe-checker.h"
 #include "rust-lex.h"
@@ -667,6 +668,11 @@ Session::compile_crate (const char *filename)
   Resolver::TypeResolution::Resolve (hir);
 
   Resolver::TypeCheckContext::get ()->get_variance_analysis_ctx ().solve ();
+
+  if (saw_errors ())
+    return;
+
+  Analysis::PatternChecker ().go (hir);
 
   if (saw_errors ())
     return;
