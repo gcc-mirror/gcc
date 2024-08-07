@@ -21,7 +21,7 @@ union BitfieldStructUnion {
         BitfieldStructUnion(uint32_t value_low, uint32_t value_high) : value_low(value_low), value_high(value_high) {}
 };
 
-volatile uint32_t *WRITE = (volatile unsigned*)0x42;
+volatile uint32_t *WRITE = (volatile uint32_t *)0x42;
 
 void buggy() {
         for (int i = 0; i < runs; i++) {
