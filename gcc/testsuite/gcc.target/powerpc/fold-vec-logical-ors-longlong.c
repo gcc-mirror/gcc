@@ -4,7 +4,7 @@
 /* { dg-do compile } */
 /* { dg-options "-mvsx -O2" } */
 /* { dg-additional-options "-mdejagnu-cpu=power8" { target { ! has_arch_pwr8 } } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 #include <altivec.h>
 
@@ -154,7 +154,7 @@ test6_nor (vector unsigned long long x, vector unsigned long long y)
 
 // The number of xxlor instructions generated varies between 6 and 24 for
 // older systems (power6,power7), as well as for 32-bit versus 64-bit targets.
-// For simplicity, this test now only targets "powerpc_vsx_ok" environments
+// For simplicity, this test now only targets "powerpc_vsx" environments
 // where the answer is expected to be 6.
 
 /* { dg-final { scan-assembler-times {\mxxlor\M} 6 } } */

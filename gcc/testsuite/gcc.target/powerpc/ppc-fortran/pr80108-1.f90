@@ -1,7 +1,7 @@
 ! Originally contributed by Tobias Burnas.
 ! { dg-do compile { target { powerpc*-*-* } } }
-! { dg-require-effective-target powerpc_vsx_ok }
-! { dg-options "-mdejagnu-cpu=405 -mpower9-minmax -mfloat128" }
+! { dg-require-effective-target powerpc_vsx }
+! { dg-options "-mdejagnu-cpu=405 -mpower9-minmax" }
 ! { dg-excess-errors "expect error due to conflicting target options" }
 ! Since the error message is not associated with a particular line
 ! number, we cannot use the dg-error directive and cannot specify a
