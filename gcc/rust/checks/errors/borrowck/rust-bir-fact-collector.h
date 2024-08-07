@@ -107,14 +107,15 @@ protected: // Main collection entry points (for different categories).
 
     for (auto &region : universal_regions)
       {
-	facts.universal_region.emplace_back (region);
-	facts.placeholder.emplace_back (region, next_loan++);
-	facts.known_placeholder_subset.emplace_back (0, region);
+	facts.universal_region.emplace_back (region.value);
+	facts.placeholder.emplace_back (region.value, next_loan++);
+	facts.known_placeholder_subset.emplace_back (0, region.value);
       }
 
     // Copy already collected subset facts, that are universally valid.
     for (auto &bound : universal_region_bounds)
-      facts.known_placeholder_subset.emplace_back (bound.first, bound.second);
+      facts.known_placeholder_subset.emplace_back (bound.first.value,
+						   bound.second.value);
   }
 
   void visit_places (const std::vector<PlaceId> &args)
@@ -131,7 +132,7 @@ protected: // Main collection entry points (for different categories).
 	    facts.path_is_var.emplace_back (place_id.value, place_id.value);
 	    for (auto &region : place.regions)
 	      facts.use_of_var_derefs_origin.emplace_back (place_id.value,
-							   region);
+							   region.value);
 
 	    // TODO: drop_of_var_derefs_origin
 	    break;
@@ -178,10 +179,11 @@ protected: // Main collection entry points (for different categories).
 
     rust_debug ("\tSanitize deref of %s", base.tyty->as_string ().c_str ());
 
-    std::vector<Polonius::Origin> regions;
+    std::vector<FreeRegion> regions;
     regions.insert (regions.end (), base.regions.begin () + 1,
 		    base.regions.end ());
-    FreeRegions r (std::move (regions));
+    FreeRegions r;
+    r.set_from (std::move (regions));
     push_subset_all (place.tyty, r, place.regions);
   }
   void sanizite_field (PlaceId place_id)
@@ -199,7 +201,8 @@ protected: // Main collection entry points (for different categories).
 	       .query_field_regions (base.tyty->as<TyTy::ADTType> (), 0,
 				     place.variable_or_field_index,
 				     base.regions); // FIXME
-    FreeRegions f (std::move (r));
+    FreeRegions f;
+    f.set_from (std::move (r));
     push_subset_all (place.tyty, f, place.regions);
   }
 
@@ -326,14 +329,14 @@ protected: // Main collection entry points (for different categories).
 	    issue_loan (expr.get_origin (), expr.get_loan ());
 	  }
 
-	push_subset (main_loan_place.regions[0], expr.get_origin ());
+	push_subset (main_loan_place.regions[0], {expr.get_origin ()});
       }
     else
       {
 	issue_loan (expr.get_origin (), expr.get_loan ());
       }
 
-    auto loan_regions = base_place.regions.prepend (expr.get_origin ());
+    auto loan_regions = base_place.regions.prepend ({expr.get_origin ()});
     push_subset (ref_place.tyty, loan_regions, ref_place.regions);
   }
 
@@ -632,19 +635,20 @@ protected: // Generic BIR operations.
 protected: // Subset helpers.
   void push_subset (FreeRegion lhs, FreeRegion rhs)
   {
-    rust_debug ("\t\tpush_subset: '?%lu: '?%lu", (unsigned long) lhs,
-		(unsigned long) rhs);
+    rust_debug ("\t\tpush_subset: '?%lu: '?%lu", (unsigned long) lhs.value,
+		(unsigned long) rhs.value);
 
-    facts.subset_base.emplace_back (lhs, rhs, get_current_point_mid ());
+    facts.subset_base.emplace_back (lhs.value, rhs.value,
+				    get_current_point_mid ());
   }
 
   void push_subset_all (FreeRegion lhs, FreeRegion rhs)
   {
-    rust_debug ("\t\tpush_subset_all: '?%lu: '?%lu", (unsigned long) lhs,
-		(unsigned long) rhs);
+    rust_debug ("\t\tpush_subset_all: '?%lu: '?%lu", (unsigned long) lhs.value,
+		(unsigned long) rhs.value);
 
     for (auto point : cfg_points_all)
-      facts.subset_base.emplace_back (lhs, rhs, point);
+      facts.subset_base.emplace_back (lhs.value, rhs.value, point);
   }
 
   void push_subset (Variance variance, FreeRegion lhs, FreeRegion rhs)

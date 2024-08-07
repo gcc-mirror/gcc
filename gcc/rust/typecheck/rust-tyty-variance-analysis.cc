@@ -570,7 +570,7 @@ FieldVisitorCtx::add_constraints_from_region (const Region &region,
 {
   if (region.is_early_bound ())
     {
-      regions.push_back (parent_regions[region.get_index ()]);
+      regions.push_back (parent_regions[region.get_index ()].value);
     }
   else if (region.is_late_bound ())
     {
@@ -585,7 +585,7 @@ FieldVisitorCtx::add_constrints_from_param (ParamType &param, Variance variance)
   for (size_t i = type_param_ranges[param_i];
        i < type_param_ranges[param_i + 1]; i++)
     {
-      regions.push_back (parent_regions[i]);
+      regions.push_back (parent_regions[i].value);
     }
 }
 

@@ -24,7 +24,19 @@
 
 namespace Rust {
 
-using FreeRegion = size_t;
+struct FreeRegion
+{
+  size_t value;
+  // some overloads for comparision
+  bool operator== (const FreeRegion &rhs) const { return value == rhs.value; }
+  bool operator!= (const FreeRegion &rhs) const { return !(operator== (rhs)); }
+  bool operator< (const FreeRegion &rhs) const { return value < rhs.value; }
+  bool operator> (const FreeRegion &rhs) const { return value > rhs.value; }
+  bool operator<= (const FreeRegion &rhs) const { return !(operator> (rhs)); }
+  bool operator>= (const FreeRegion &rhs) const { return !(operator< (rhs)); }
+};
+
+static constexpr FreeRegion STATIC_FREE_REGION = {0};
 
 class FreeRegions
 {
@@ -46,6 +58,14 @@ public:
 	this->regions.push_back ({region});
       }
   }
+  void set_from (std::vector<FreeRegion> &&regions)
+  {
+    this->regions.clear ();
+    for (auto &region : regions)
+      {
+	this->regions.push_back (region);
+      }
+  }
 
   WARN_UNUSED_RESULT FreeRegions prepend (FreeRegion region) const
   {
@@ -55,13 +75,14 @@ public:
   }
 
   FreeRegions (std::vector<FreeRegion> &&regions) : regions (regions) {}
+  FreeRegions () {}
 
   WARN_UNUSED_RESULT std::string to_string () const
   {
     std::stringstream result;
     for (auto &region : regions)
       {
-	result << region;
+	result << region.value;
 	result << ", ";
       }
     // Remove the last ", " from the string.
@@ -83,7 +104,8 @@ public:
 
   WARN_UNUSED_RESULT FreeRegion get_next_free_region () const
   {
-    return next_free_region++;
+    ++next_free_region.value;
+    return {next_free_region.value - 1};
   }
 
   FreeRegions bind_regions (std::vector<TyTy::Region> regions,
@@ -95,7 +117,7 @@ public:
 	if (region.is_early_bound ())
 	  free_regions.push_back (parent_free_regions[region.get_index ()]);
 	else if (region.is_static ())
-	  free_regions.push_back (0);
+	  free_regions.push_back (STATIC_FREE_REGION);
 	else if (region.is_anonymous ())
 	  free_regions.push_back (get_next_free_region ());
 	else if (region.is_named ())
