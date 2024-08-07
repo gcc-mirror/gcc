@@ -1753,6 +1753,7 @@ package body System.Dwarf_Lines is
       Success      : Boolean;
       Done         : Boolean;
       S            : Object_Symbol;
+      Closest_S    : Object_Symbol := Null_Symbol;
 
    begin
       --  Initialize result
@@ -1801,13 +1802,36 @@ package body System.Dwarf_Lines is
       else
          S := First_Symbol (C.Obj.all);
          while S /= Null_Symbol loop
-            if Spans (S, Addr_Int) then
+            if Format (C.Obj.all) = PECOFF
+              or else Format (C.Obj.all) = PECOFF_PLUS
+            then
+               --  Don't use the size of symbols from PECOFF files; it's
+               --  just a guess and can be unreliable. Instead, iterate
+               --  over the entire symbol table and use the symbol with the
+               --  highest address lower than Addr_Int.
+
+               if Closest_S = Null_Symbol
+                 or else (Closest_S.Value < S.Value
+                   and then S.Value <= Addr_Int)
+               then
+                  Closest_S := S;
+               end if;
+
+            elsif Spans (S, Addr_Int) then
                Subprg_Name := Object_Reader.Name (C.Obj.all, S);
                exit;
             end if;
 
             S := Next_Symbol (C.Obj.all, S);
          end loop;
+
+         if (Format (C.Obj.all) = PECOFF
+             or else Format (C.Obj.all) = PECOFF_PLUS)
+           and then Closest_S /= Null_Symbol
+         then
+            S := Closest_S;     --  for consistency with non-PECOFF
+            Subprg_Name := Object_Reader.Name (C.Obj.all, S);
+         end if;
 
          --  Search address in aranges table
 
