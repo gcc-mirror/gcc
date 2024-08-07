@@ -1,6 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power9 -mno-vsx" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 #include <altivec.h>
 

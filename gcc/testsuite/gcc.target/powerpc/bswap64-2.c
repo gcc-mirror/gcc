@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-options "-O2 -mpopcntd" } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-require-effective-target has_arch_pwr7 } */
 /* { dg-final { scan-assembler "ldbrx" } } */
 /* { dg-final { scan-assembler "stdbrx" } } */
 
