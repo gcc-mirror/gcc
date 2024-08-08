@@ -26,7 +26,7 @@ CompileAsm::asm_build_expr (HIR::InlineAsm &expr)
   ASM_BASIC_P (asm_expr) = expr.is_simple_asm ();
   ASM_VOLATILE_P (asm_expr) = false;
   ASM_INLINE_P (asm_expr) = expr.is_inline_asm ();
-  /*Backend::debug (asm_expr);*/
+  Backend::debug (asm_expr);
   return asm_expr;
 }
 
@@ -74,10 +74,10 @@ CompileAsm::asm_construct_string_tree (HIR::InlineAsm &expr)
   // debugging and reading)
   std::stringstream ss;
   for (const auto &template_str : expr.template_strs)
-    ss << template_str.symbol << "\n\t";
+    ss << template_str.symbol << "\n";
 
   std::string result = ss.str ();
-  return build_string (result.size () + 1, result.c_str ());
+  return Backend::string_constant_expression (result);
 }
 
 tree
