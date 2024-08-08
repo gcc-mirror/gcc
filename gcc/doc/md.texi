@@ -5014,8 +5014,10 @@ This pattern is not allowed to @code{FAIL}.
 @item @samp{vec_mask_load_lanes@var{m}@var{n}}
 Like @samp{vec_load_lanes@var{m}@var{n}}, but takes an additional
 mask operand (operand 2) that specifies which elements of the destination
-vectors should be loaded.  Other elements of the destination
-vectors are set to zero.  The operation is equivalent to:
+vectors should be loaded.  Other elements of the destination vectors are
+taken from operand 3, which is an else operand similar to the one in
+@code{maskload}.
+The operation is equivalent to:
 
 @smallexample
 int c = GET_MODE_SIZE (@var{m}) / GET_MODE_SIZE (@var{n});
@@ -5025,7 +5027,7 @@ for (j = 0; j < GET_MODE_NUNITS (@var{n}); j++)
       operand0[i][j] = operand1[j * c + i];
   else
     for (i = 0; i < c; i++)
-      operand0[i][j] = 0;
+      operand0[i][j] = operand3[j];
 @end smallexample
 
 This pattern is not allowed to @code{FAIL}.
@@ -5033,16 +5035,20 @@ This pattern is not allowed to @code{FAIL}.
 @cindex @code{vec_mask_len_load_lanes@var{m}@var{n}} instruction pattern
 @item @samp{vec_mask_len_load_lanes@var{m}@var{n}}
 Like @samp{vec_load_lanes@var{m}@var{n}}, but takes an additional
-mask operand (operand 2), length operand (operand 3) as well as bias operand (operand 4)
-that specifies which elements of the destination vectors should be loaded.
-Other elements of the destination vectors are undefined.  The operation is equivalent to:
+mask operand (operand 2), length operand (operand 4) as well as bias operand
+(operand 5) that specifies which elements of the destination vectors should be
+loaded.  Other elements of the destination vectors are taken from operand 3,
+which is an else operand similar to the one in @code{maskload}.
+The operation is equivalent to:
 
 @smallexample
 int c = GET_MODE_SIZE (@var{m}) / GET_MODE_SIZE (@var{n});
-for (j = 0; j < operand3 + operand4; j++)
-  if (operand2[j])
-    for (i = 0; i < c; i++)
+for (j = 0; j < operand4 + operand5; j++)
+  for (i = 0; i < c; i++)
+    if (operand2[j])
       operand0[i][j] = operand1[j * c + i];
+    else
+      operand0[i][j] = operand3[j];
 @end smallexample
 
 This pattern is not allowed to @code{FAIL}.
@@ -5122,18 +5128,25 @@ address width.
 @cindex @code{mask_gather_load@var{m}@var{n}} instruction pattern
 @item @samp{mask_gather_load@var{m}@var{n}}
 Like @samp{gather_load@var{m}@var{n}}, but takes an extra mask operand as
-operand 5.  Bit @var{i} of the mask is set if element @var{i}
+operand 5.
+Other elements of the destination vectors are taken from operand 6,
+which is an else operand similar to the one in @code{maskload}.
+Bit @var{i} of the mask is set if element @var{i}
 of the result should be loaded from memory and clear if element @var{i}
-of the result should be set to zero.
+of the result should be set to operand 6.
 
 @cindex @code{mask_len_gather_load@var{m}@var{n}} instruction pattern
 @item @samp{mask_len_gather_load@var{m}@var{n}}
-Like @samp{gather_load@var{m}@var{n}}, but takes an extra mask operand (operand 5),
-a len operand (operand 6) as well as a bias operand (operand 7).  Similar to mask_len_load,
-the instruction loads at most (operand 6 + operand 7) elements from memory.
+Like @samp{gather_load@var{m}@var{n}}, but takes an extra mask operand
+(operand 5) and an else operand (operand 6) as well as a len operand
+(operand 7) and a bias operand (operand 8).
+
+Similar to mask_len_load the instruction loads at
+most (operand 7 + operand 8) elements from memory.
 Bit @var{i} of the mask is set if element @var{i} of the result should
-be loaded from memory and clear if element @var{i} of the result should be undefined.
-Mask elements @var{i} with @var{i} > (operand 6 + operand 7) are ignored.
+be loaded from memory and clear if element @var{i} of the result should
+be set to element @var{i} of operand 6.
+Mask elements @var{i} with @var{i} > (operand 7 + operand 8) are ignored.
 
 @cindex @code{mask_len_strided_load@var{m}} instruction pattern
 @item @samp{mask_len_strided_load@var{m}}
@@ -5392,8 +5405,13 @@ Operands 4 and 5 have a target-dependent scalar integer mode.
 @cindex @code{maskload@var{m}@var{n}} instruction pattern
 @item @samp{maskload@var{m}@var{n}}
 Perform a masked load of vector from memory operand 1 of mode @var{m}
-into register operand 0.  Mask is provided in register operand 2 of
-mode @var{n}.
+into register operand 0.  The mask is provided in register operand 2 of
+mode @var{n}.  Operand 3 (the ``else value'') is of mode @var{m} and
+specifies which value is loaded when the mask is unset.
+The predicate of operand 3 must only accept the else values that the target
+actually supports.  Currently three values are attempted, zero, -1, and
+undefined.  GCC handles an else value of zero more efficiently than -1 or
+undefined.
 
 This pattern is not allowed to @code{FAIL}.
 
@@ -5459,15 +5477,16 @@ Operands 0 and 1 have mode @var{m}, which must be a vector mode.  Operand 3
 has whichever integer mode the target prefers.  A mask is specified in
 operand 2 which must be of type @var{n}.  The mask has lower precedence than
 the length and is itself subject to length masking,
-i.e. only mask indices < (operand 3 + operand 4) are used.
+i.e. only mask indices < (operand 4 + operand 5) are used.
+Operand 3 is an else operand similar to the one in @code{maskload}.
 Operand 4 conceptually has mode @code{QI}.
 
-Operand 2 can be a variable or a constant amount.  Operand 4 specifies a
+Operand 4 can be a variable or a constant amount.  Operand 5 specifies a
 constant bias: it is either a constant 0 or a constant -1.  The predicate on
-operand 4 must only accept the bias values that the target actually supports.
+operand 5 must only accept the bias values that the target actually supports.
 GCC handles a bias of 0 more efficiently than a bias of -1.
 
-If (operand 2 + operand 4) exceeds the number of elements in mode
+If (operand 4 + operand 5) exceeds the number of elements in mode
 @var{m}, the behavior is undefined.
 
 If the target prefers the length to be measured in bytes
