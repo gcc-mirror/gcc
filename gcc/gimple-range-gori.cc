@@ -567,6 +567,13 @@ gori_compute::gori_compute (gori_map &map, int not_executable_flag,
   m_bool_one = range_true ();
   if (dump_file && (param_ranger_debug & RANGER_DEBUG_GORI))
     tracer.enable_trace ();
+
+  // Reduce maximum recompute depth based on the size of the CFG to avoid
+  // excessive compuations in large CFGs.
+  m_recompute_depth = (int) param_ranger_recompute_depth
+		      - (int) last_basic_block_for_fn (cfun) / 4096;
+  if (m_recompute_depth < 1)
+    m_recompute_depth = 1;
 }
 
 gori_compute::~gori_compute ()
@@ -1327,10 +1334,7 @@ gori_compute::may_recompute_p (tree name, basic_block bb, int depth)
     {
       // -1 indicates a default param, convert it to the real default.
       if (depth == -1)
-	{
-	  depth = (int)param_ranger_recompute_depth;
-	  gcc_checking_assert (depth >= 1);
-	}
+	depth = m_recompute_depth;
 
       bool res = m_map.is_export_p (dep1, bb);
       if (res || depth <= 1)
