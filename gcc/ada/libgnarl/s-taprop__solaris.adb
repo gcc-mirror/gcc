@@ -1968,7 +1968,7 @@ package body System.Task_Primitives.Operations is
       then
          declare
             CPU_Set : aliased psetid_t;
-            Result  : int;
+            Result  : Interfaces.C.int;
 
          begin
             Result := pset_create (CPU_Set'Access);
