@@ -2555,9 +2555,17 @@ predicate_load_or_store (gimple_stmt_iterator *gsi, gassign *stmt, tree mask)
 		   ref);
   if (TREE_CODE (lhs) == SSA_NAME)
     {
+      /* Get a zero else value.  This might not be what a target actually uses
+	 but we cannot be sure about which vector mode the vectorizer will
+	 choose.  Therefore, leave the decision whether we need to force the
+	 inactive elements to zero to the vectorizer.  */
+      tree els = vect_get_mask_load_else (MASK_LOAD_ELSE_ZERO,
+					  TREE_TYPE (lhs));
+
       new_stmt
-	= gimple_build_call_internal (IFN_MASK_LOAD, 3, addr,
-				      ptr, mask);
+	= gimple_build_call_internal (IFN_MASK_LOAD, 4, addr,
+				      ptr, mask, els);
+
       gimple_call_set_lhs (new_stmt, lhs);
       gimple_set_vuse (new_stmt, gimple_vuse (stmt));
     }
