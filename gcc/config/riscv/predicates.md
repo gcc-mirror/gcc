@@ -528,6 +528,9 @@
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "scratch_operand")))
 
+(define_predicate "maskload_else_operand"
+  (match_operand 0 "scratch_operand"))
+
 (define_predicate "vector_arith_operand"
   (ior (match_operand 0 "register_operand")
        (and (match_code "const_vector")

@@ -3793,12 +3793,23 @@ expand_select_vl (rtx *ops)
   emit_insn (gen_no_side_effects_vsetvl_rtx (rvv_mode, ops[0], ops[1]));
 }
 
+/* Return RVV_VUNDEF if the ELSE value is scratch rtx.  */
+static rtx
+get_else_operand (rtx op)
+{
+  return GET_CODE (op) == SCRATCH ? RVV_VUNDEF (GET_MODE (op)) : op;
+}
+
 /* Expand MASK_LEN_{LOAD,STORE}.  */
 void
 expand_load_store (rtx *ops, bool is_load)
 {
-  rtx mask = ops[2];
-  rtx len = ops[3];
+  int idx = 2;
+  rtx mask = ops[idx++];
+  /* A masked load has a merge/else operand.  */
+  if (is_load)
+    get_else_operand (ops[idx++]);
+  rtx len = ops[idx];
   machine_mode mode = GET_MODE (ops[0]);
 
   if (is_vlmax_len_p (mode, len))
@@ -3841,7 +3852,9 @@ expand_strided_load (machine_mode mode, rtx *ops)
   rtx base = ops[1];
   rtx stride = ops[2];
   rtx mask = ops[3];
-  rtx len = ops[4];
+  int idx = 4;
+  get_else_operand (ops[idx++]);
+  rtx len = ops[idx];
   poly_int64 len_val;
 
   insn_code icode = code_for_pred_strided_load (mode);
@@ -3941,13 +3954,6 @@ expand_cond_len_op (unsigned icode, insn_flags op_type, rtx *ops, rtx len)
     emit_vlmax_insn (icode, insn_flags, ops);
   else
     emit_nonvlmax_insn (icode, insn_flags, ops, len);
-}
-
-/* Return RVV_VUNDEF if the ELSE value is scratch rtx.  */
-static rtx
-get_else_operand (rtx op)
-{
-  return GET_CODE (op) == SCRATCH ? RVV_VUNDEF (GET_MODE (op)) : op;
 }
 
 /* Expand unary ops COND_LEN_*.  */
@@ -4070,6 +4076,8 @@ expand_gather_scatter (rtx *ops, bool is_load)
   int shift;
   rtx mask = ops[5];
   rtx len = ops[6];
+  if (is_load)
+    len = ops[7];
   if (is_load)
     {
       vec_reg = ops[0];
@@ -4292,6 +4300,8 @@ expand_lanes_load_store (rtx *ops, bool is_load)
 {
   rtx mask = ops[2];
   rtx len = ops[3];
+  if (is_load)
+    len = ops[4];
   rtx addr = is_load ? XEXP (ops[1], 0) : XEXP (ops[0], 0);
   rtx reg = is_load ? ops[0] : ops[1];
   machine_mode mode = GET_MODE (ops[0]);
