@@ -3989,7 +3989,8 @@
 (define_expand "maskload<mode>di"
   [(match_operand:V_MOV 0 "register_operand")
    (match_operand:V_MOV 1 "memory_operand")
-   (match_operand 2 "")]
+   (match_operand 2 "")
+   (match_operand:V_MOV 3 "maskload_else_operand")]
   ""
   {
     rtx exec = force_reg (DImode, operands[2]);
@@ -3998,11 +3999,8 @@
     rtx as = gen_rtx_CONST_INT (VOIDmode, MEM_ADDR_SPACE (operands[1]));
     rtx v = gen_rtx_CONST_INT (VOIDmode, MEM_VOLATILE_P (operands[1]));
 
-    /* Masked lanes are required to hold zero.  */
-    emit_move_insn (operands[0], gcn_vec_constant (<MODE>mode, 0));
-
     emit_insn (gen_gather<mode>_expr_exec (operands[0], addr, as, v,
-					   operands[0], exec));
+					   gcn_gen_undef (<MODE>mode), exec));
     DONE;
   })
 
@@ -4027,7 +4025,8 @@
    (match_operand:<VnSI> 2 "register_operand")
    (match_operand 3 "immediate_operand")
    (match_operand:SI 4 "gcn_alu_operand")
-   (match_operand:DI 5 "")]
+   (match_operand:DI 5 "")
+   (match_operand:V_MOV 6 "maskload_else_operand")]
   ""
   {
     rtx exec = force_reg (DImode, operands[5]);
@@ -4036,18 +4035,18 @@
 					  operands[2], operands[4],
 					  INTVAL (operands[3]), exec);
 
-    /* Masked lanes are required to hold zero.  */
-    emit_move_insn (operands[0], gcn_vec_constant (<MODE>mode, 0));
-
     if (GET_MODE (addr) == <VnDI>mode)
       emit_insn (gen_gather<mode>_insn_1offset_exec (operands[0], addr,
 						     const0_rtx, const0_rtx,
-						     const0_rtx, operands[0],
-						     exec));
+						     gcn_gen_undef
+							(<MODE>mode),
+						     operands[0], exec));
     else
       emit_insn (gen_gather<mode>_insn_2offsets_exec (operands[0], operands[1],
 						      addr, const0_rtx,
-						      const0_rtx, const0_rtx,
+						      const0_rtx,
+						      gcn_gen_undef
+							(<MODE>mode),
 						      operands[0], exec));
     DONE;
   })

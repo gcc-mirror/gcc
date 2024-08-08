@@ -228,3 +228,5 @@
   return gcn_stepped_zero_int_parallel_p (op, 1);
 })
 
+(define_predicate "maskload_else_operand"
+  (match_operand 0 "scratch_operand"))
