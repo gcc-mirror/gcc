@@ -58,5 +58,18 @@ namespace std
   { l->~T (); }
 }
 
-inline void *operator new (std::size_t, void *p) noexcept
+#if __cpp_constexpr >= 202406L
+constexpr
+#else
+inline
+#endif
+void *operator new (std::size_t, void *p) noexcept
+{ return p; }
+
+#if __cpp_constexpr >= 202406L
+constexpr
+#else
+inline
+#endif
+void *operator new[] (std::size_t, void *p) noexcept
 { return p; }

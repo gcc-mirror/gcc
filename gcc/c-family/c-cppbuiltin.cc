@@ -1091,7 +1091,7 @@ c_cpp_builtins (cpp_reader *pfile)
       if (cxx_dialect > cxx23)
 	{
 	  /* Set feature test macros for C++26.  */
-	  cpp_define (pfile, "__cpp_constexpr=202306L");
+	  cpp_define (pfile, "__cpp_constexpr=202406L");
 	  cpp_define (pfile, "__cpp_static_assert=202306L");
 	  cpp_define (pfile, "__cpp_placeholder_variables=202306L");
 	  cpp_define (pfile, "__cpp_structured_bindings=202403L");

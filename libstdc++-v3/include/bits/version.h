@@ -2033,4 +2033,14 @@
 #endif /* !defined(__cpp_lib_ranges_concat) && defined(__glibcxx_want_ranges_concat) */
 #undef __glibcxx_want_ranges_concat
 
+#if !defined(__cpp_lib_constexpr_new)
+# if (__cplusplus >  202302L) && (__cpp_constexpr >= 202406L)
+#  define __glibcxx_constexpr_new 202406L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_constexpr_new)
+#   define __cpp_lib_constexpr_new 202406L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_constexpr_new) && defined(__glibcxx_want_constexpr_new) */
+#undef __glibcxx_want_constexpr_new
+
 #undef __glibcxx_want_all

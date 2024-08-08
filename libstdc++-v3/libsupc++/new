@@ -43,6 +43,7 @@
 #define __glibcxx_want_launder
 #define __glibcxx_want_hardware_interference_size
 #define __glibcxx_want_destroying_delete
+#define __glibcxx_want_constexpr_new
 #include <bits/version.h>
 
 #pragma GCC visibility push(default)
@@ -175,11 +176,21 @@ void operator delete[](void*, std::size_t, std::align_val_t)
 #endif // __cpp_sized_deallocation
 #endif // __cpp_aligned_new
 
+#if __cpp_lib_constexpr_new >= 202406L
+# define _GLIBCXX_PLACEMENT_CONSTEXPR constexpr
+#else
+# define _GLIBCXX_PLACEMENT_CONSTEXPR inline
+#endif
+
 // Default placement versions of operator new.
-_GLIBCXX_NODISCARD inline void* operator new(std::size_t, void* __p) _GLIBCXX_USE_NOEXCEPT
+_GLIBCXX_NODISCARD _GLIBCXX_PLACEMENT_CONSTEXPR
+void* operator new(std::size_t, void* __p) _GLIBCXX_USE_NOEXCEPT
 { return __p; }
-_GLIBCXX_NODISCARD inline void* operator new[](std::size_t, void* __p) _GLIBCXX_USE_NOEXCEPT
+_GLIBCXX_NODISCARD _GLIBCXX_PLACEMENT_CONSTEXPR
+void* operator new[](std::size_t, void* __p) _GLIBCXX_USE_NOEXCEPT
 { return __p; }
+
+#undef _GLIBCXX_PLACEMENT_CONSTEXPR
 
 // Default placement versions of operator delete.
 inline void operator delete  (void*, void*) _GLIBCXX_USE_NOEXCEPT { }
