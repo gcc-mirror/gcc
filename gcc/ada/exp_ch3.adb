@@ -7658,11 +7658,9 @@ package body Exp_Ch3 is
            and then Is_Library_Level_Entity (Def_Id)
          then
             declare
-               Prag : Node_Id;
+               Prag : constant Node_Id :=
+                 Make_Linker_Section_Pragma (Def_Id, Loc, ".persistent.bss");
             begin
-               Prag :=
-                 Make_Linker_Section_Pragma
-                   (Def_Id, Sloc (N), ".persistent.bss");
                Insert_After (N, Prag);
                Analyze (Prag);
             end;
@@ -8349,10 +8347,8 @@ package body Exp_Ch3 is
          --  An Ada 2012 stand-alone object of an anonymous access type
 
          declare
-            Loc : constant Source_Ptr := Sloc (N);
-
             Level : constant Entity_Id :=
-                      Make_Defining_Identifier (Sloc (N),
+                      Make_Defining_Identifier (Loc,
                         Chars =>
                           New_External_Name (Chars (Def_Id), Suffix => "L"));
 
