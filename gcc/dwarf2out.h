@@ -235,6 +235,43 @@ struct GTY(()) dw_discr_value {
 
 struct addr_table_entry;
 
+typedef unsigned int var_loc_view;
+
+/* Location lists are ranges + location descriptions for that range,
+   so you can track variables that are in different places over
+   their entire life.  */
+typedef struct GTY(()) dw_loc_list_struct {
+  dw_loc_list_ref dw_loc_next;
+  const char *begin; /* Label and addr_entry for start of range */
+  addr_table_entry *begin_entry;
+  const char *end;  /* Label for end of range */
+  addr_table_entry *end_entry;
+  char *ll_symbol; /* Label for beginning of location list.
+		      Only on head of list.  */
+  char *vl_symbol; /* Label for beginning of view list.  Ditto.  */
+  const char *section; /* Section this loclist is relative to */
+  dw_loc_descr_ref expr;
+  var_loc_view vbegin, vend;
+  hashval_t hash;
+  /* True if all addresses in this and subsequent lists are known to be
+     resolved.  */
+  bool resolved_addr;
+  /* True if this list has been replaced by dw_loc_next.  */
+  bool replaced;
+  /* True if it has been emitted into .debug_loc* / .debug_loclists*
+     section.  */
+  unsigned char emitted : 1;
+  /* True if hash field is index rather than hash value.  */
+  unsigned char num_assigned : 1;
+  /* True if .debug_loclists.dwo offset has been emitted for it already.  */
+  unsigned char offset_emitted : 1;
+  /* True if note_variable_value_in_expr has been called on it.  */
+  unsigned char noted_variable_value : 1;
+  /* True if the range should be emitted even if begin and end
+     are the same.  */
+  bool force;
+} dw_loc_list_node;
+
 /* The dw_val_node describes an attribute's value, as it is
    represented internally.  */
 

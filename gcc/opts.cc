@@ -1408,7 +1408,7 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
   /* We know which debug output will be used so we can set flag_var_tracking
      and flag_var_tracking_uninit if the user has not specified them.  */
   if (opts->x_debug_info_level < DINFO_LEVEL_NORMAL
-      || !dwarf_debuginfo_p (opts)
+      || (!dwarf_debuginfo_p (opts) && !codeview_debuginfo_p ())
       /* We have not yet initialized debug hooks so match that to check
 	 whether we're only doing DWARF2_LINENO_DEBUGGING_INFO.  */
 #ifndef DWARF2_DEBUGGING_INFO

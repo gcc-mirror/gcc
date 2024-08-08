@@ -77,6 +77,8 @@ enum cv_sym_type {
   S_GDATA32 = 0x110d,
   S_REGREL32 = 0x1111,
   S_COMPILE3 = 0x113c,
+  S_LOCAL = 0x113e,
+  S_DEFRANGE_REGISTER = 0x1141,
   S_LPROC32_ID = 0x1146,
   S_GPROC32_ID = 0x1147,
   S_PROC_ID_END = 0x114f
@@ -1946,6 +1948,56 @@ end:
   free (s->data_symbol.name);
 }
 
+/* Write an S_LOCAL symbol, representing an optimized variable.  This is then
+   followed by various S_DEFRANGE_* symbols, which describe how to find the
+   value of a variable and the range for which this is valid.  */
+
+static void
+write_s_local (dw_die_ref die)
+{
+  unsigned int label_num = ++sym_label_num;
+  const char *name = get_AT_string (die, DW_AT_name);
+  uint32_t type;
+
+  /* This is struct LOCALSYM in Microsoft's cvinfo.h:
+
+    struct LOCALSYM {
+      uint16_t reclen;
+      uint16_t rectyp;
+      uint32_t typind;
+      uint16_t flags;
+      char name[];
+    };
+  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	      "%L" SYMBOL_END_LABEL "%u - %L" SYMBOL_START_LABEL "%u\n",
+	      label_num, label_num);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_START_LABEL, label_num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, S_LOCAL);
+  putc ('\n', asm_out_file);
+
+  type = get_type_num (get_AT_ref (die, DW_AT_type), false, false);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, type);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  ASM_OUTPUT_ASCII (asm_out_file, name, strlen (name) + 1);
+
+  ASM_OUTPUT_ALIGN (asm_out_file, 2);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+}
+
 /* Write an S_LDATA32 symbol, representing a static variable within a function.
    This symbol can also appear outside of a function block - see
    write_data_symbol.  */
@@ -2278,6 +2330,194 @@ write_fbreg_variable (dw_die_ref die, dw_loc_descr_ref loc_ref,
   targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
 }
 
+/* Write an S_DEFRANGE_REGISTER symbol, which describes a range for which an
+   S_LOCAL variable is held in a certain register.  */
+
+static void
+write_defrange_register (dw_loc_descr_ref expr, rtx range_start, rtx range_end)
+{
+  unsigned int label_num = ++sym_label_num;
+  uint16_t regno;
+
+  /* This is defrange_register in binutils and DEFRANGESYMREGISTER in
+     Microsoft's cvinfo.h:
+
+      struct lvar_addr_range
+      {
+	uint32_t offset;
+	uint16_t section;
+	uint16_t length;
+      } ATTRIBUTE_PACKED;
+
+      struct lvar_addr_gap {
+	uint16_t offset;
+	uint16_t length;
+      } ATTRIBUTE_PACKED;
+
+      struct defrange_register
+      {
+	uint16_t size;
+	uint16_t kind;
+	uint16_t reg;
+	uint16_t attributes;
+	struct lvar_addr_range range;
+	struct lvar_addr_gap gaps[];
+      } ATTRIBUTE_PACKED;
+  */
+
+  if (expr->dw_loc_opc == DW_OP_regx)
+    regno = dwarf_reg_to_cv (expr->dw_loc_oprnd1.v.val_int);
+  else
+    regno = dwarf_reg_to_cv (expr->dw_loc_opc - DW_OP_reg0);
+
+  if (regno == 0)
+    return;
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	      "%L" SYMBOL_END_LABEL "%u - %L" SYMBOL_START_LABEL "%u\n",
+	      label_num, label_num);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_START_LABEL, label_num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, S_DEFRANGE_REGISTER);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, regno);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "\t.secrel32 ");
+  output_addr_const (asm_out_file, range_start);
+  fputc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "\t.secidx ");
+  output_addr_const (asm_out_file, range_start);
+  fputc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  output_addr_const (asm_out_file, range_end);
+  fputs (" - ", asm_out_file);
+  output_addr_const (asm_out_file, range_start);
+  putc ('\n', asm_out_file);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+}
+
+/* Try to write an S_DEFRANGE_* symbol for the given DWARF location.  */
+
+static void
+write_optimized_local_variable_loc (dw_loc_descr_ref expr, rtx range_start,
+				    rtx range_end)
+{
+  if (expr->dw_loc_next)
+    return;
+
+  if (!range_start)
+    return;
+
+  if (!range_end)
+    return;
+
+  switch (expr->dw_loc_opc)
+    {
+    case DW_OP_reg0:
+    case DW_OP_reg1:
+    case DW_OP_reg2:
+    case DW_OP_reg3:
+    case DW_OP_reg4:
+    case DW_OP_reg5:
+    case DW_OP_reg6:
+    case DW_OP_reg7:
+    case DW_OP_reg8:
+    case DW_OP_reg9:
+    case DW_OP_reg10:
+    case DW_OP_reg11:
+    case DW_OP_reg12:
+    case DW_OP_reg13:
+    case DW_OP_reg14:
+    case DW_OP_reg15:
+    case DW_OP_reg16:
+    case DW_OP_reg17:
+    case DW_OP_reg18:
+    case DW_OP_reg19:
+    case DW_OP_reg20:
+    case DW_OP_reg21:
+    case DW_OP_reg22:
+    case DW_OP_reg23:
+    case DW_OP_reg24:
+    case DW_OP_reg25:
+    case DW_OP_reg26:
+    case DW_OP_reg27:
+    case DW_OP_reg28:
+    case DW_OP_reg29:
+    case DW_OP_reg30:
+    case DW_OP_reg31:
+    case DW_OP_regx:
+      write_defrange_register (expr, range_start, range_end);
+      break;
+
+    default:
+      break;
+    }
+}
+
+/* Write an optimized local variable, given by an S_LOCAL symbol followed by
+   any number of S_DEFRANGE_* symbols.  We can't mix and match optimized and
+   unoptimized variables in the same function, so even if it stays in the same
+   place for the whole block we need to write an S_LOCAL.  */
+
+static void
+write_optimized_local_variable (dw_die_ref die, rtx block_start, rtx block_end)
+{
+  dw_attr_node *loc;
+  dw_loc_list_ref loc_list;
+
+  loc = get_AT (die, DW_AT_location);
+  if (!loc)
+    return;
+
+  switch (loc->dw_attr_val.val_class)
+    {
+    case dw_val_class_loc_list:
+      loc_list = loc->dw_attr_val.v.val_loc_list;
+
+      write_s_local (die);
+
+      while (loc_list)
+	{
+	  rtx range_start = NULL, range_end = NULL;
+
+	  if (loc_list->begin)
+	    range_start = gen_rtx_SYMBOL_REF (Pmode, loc_list->begin);
+
+	  if (loc_list->end)
+	    range_end = gen_rtx_SYMBOL_REF (Pmode, loc_list->end);
+
+	  write_optimized_local_variable_loc (loc_list->expr, range_start,
+					      range_end);
+
+	  loc_list = loc_list->dw_loc_next;
+	}
+      break;
+
+    case dw_val_class_loc:
+      write_s_local (die);
+
+      write_optimized_local_variable_loc (loc->dw_attr_val.v.val_loc,
+					  block_start, block_end);
+      break;
+
+    default:
+      break;
+    }
+}
+
 /* Write a symbol representing an unoptimized variable within a function, if
    we're able to translate the DIE's DW_AT_location into its CodeView
    equivalent.  */
@@ -2517,6 +2757,77 @@ write_unoptimized_function_vars (dw_die_ref die, dw_loc_descr_ref fbloc)
   while (c != first_child);
 }
 
+/* Write the variables in an optimized function or block.  There's no S_BLOCK32s
+   here, with the range determining the lifetime of a variable.  Unfortunately
+   for us CodeView is much less expressive than DWARF when it comes to variable
+   locations, so some degree of "optimized out"s is inevitable.  */
+
+static void
+write_optimized_function_vars (dw_die_ref die,  rtx block_start, rtx block_end)
+{
+  dw_die_ref first_child, c;
+
+  first_child = dw_get_die_child (die);
+
+  if (!first_child)
+    return;
+
+  c = first_child;
+  do
+  {
+    c = dw_get_die_sib (c);
+
+    switch (dw_get_die_tag (c))
+      {
+      case DW_TAG_formal_parameter:
+      case DW_TAG_variable:
+	write_optimized_local_variable (c, block_start, block_end);
+	break;
+
+      case DW_TAG_lexical_block:
+	{
+	  dw_attr_node *loc_low, *loc_high;
+	  const char *label_low, *label_high;
+	  rtx rtx_low, rtx_high;
+
+	  loc_low = get_AT (die, DW_AT_low_pc);
+	  if (!loc_low)
+	    break;
+
+	  if (loc_low->dw_attr_val.val_class != dw_val_class_lbl_id)
+	    break;
+
+	  label_low = loc_low->dw_attr_val.v.val_lbl_id;
+	  if (!label_low)
+	    break;
+
+	  rtx_low = gen_rtx_SYMBOL_REF (Pmode, label_low);
+
+	  loc_high = get_AT (die, DW_AT_high_pc);
+	  if (!loc_high)
+	    break;
+
+	  if (loc_high->dw_attr_val.val_class != dw_val_class_high_pc)
+	    break;
+
+	  label_high = loc_high->dw_attr_val.v.val_lbl_id;
+	  if (!label_high)
+	    break;
+
+	  rtx_high = gen_rtx_SYMBOL_REF (Pmode, label_high);
+
+	  write_optimized_function_vars (c, rtx_low, rtx_high);
+
+	  break;
+	}
+
+      default:
+	break;
+      }
+  }
+  while (c != first_child);
+}
+
 /* Write an S_GPROC32_ID symbol, representing a global function, or an
    S_LPROC32_ID symbol, for a static function.  */
 
@@ -2648,7 +2959,10 @@ write_function (codeview_symbol *s)
   if (frame_base && frame_base->dw_attr_val.val_class == dw_val_class_loc)
     fbloc = frame_base->dw_attr_val.v.val_loc;
 
-  write_unoptimized_function_vars (s->function.die, fbloc);
+  if (flag_var_tracking)
+    write_optimized_function_vars (s->function.die, rtx_low, rtx_high);
+  else
+    write_unoptimized_function_vars (s->function.die, fbloc);
 
   /* Output the S_PROC_ID_END record.  */
 
