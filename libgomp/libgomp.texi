@@ -1819,6 +1819,10 @@ This function returns @code{true} if currently running on the host device,
 @code{false} otherwise.  Here, @code{true} and @code{false} represent
 their language-specific counterparts.
 
+Note that in GCC this value is already folded to a constant in the compiler;
+compile with @option{-fno-builtin-omp_is_initial_device} if a run-time function
+is desired.
+
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
 @item @emph{Prototype}: @tab @code{int omp_is_initial_device(void);}

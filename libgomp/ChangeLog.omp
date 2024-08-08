@@ -3,6 +3,12 @@
 	Backported from trunk:
 	2024-08-08  Tobias Burnus  <tburnus@baylibre.com>
 
+	* libgomp.texi (omp_is_initial_device): Mention
+	-fno-builtin-omp_is_initial_device and folding by default.
+
+	Backported from trunk:
+	2024-08-08  Tobias Burnus  <tburnus@baylibre.com>
+
 	* testsuite/libgomp.c++/static-aggr-constructor-destructor-1.C: Split
 	scan-tree-dump into with and without target offload_target_any.
 	* testsuite/libgomp.c++/static-aggr-constructor-destructor-2.C:
