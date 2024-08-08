@@ -2447,9 +2447,11 @@ extern bool vect_slp_analyze_instance_alignment (vec_info *, slp_instance);
 extern opt_result vect_analyze_data_ref_accesses (vec_info *, vec<int> *);
 extern opt_result vect_prune_runtime_alias_test_list (loop_vec_info);
 extern bool vect_gather_scatter_fn_p (vec_info *, bool, bool, tree, tree,
-				      tree, int, internal_fn *, tree *);
+				      tree, int, internal_fn *, tree *,
+				      vec<int> * = nullptr);
 extern bool vect_check_gather_scatter (stmt_vec_info, loop_vec_info,
-				       gather_scatter_info *);
+				       gather_scatter_info *,
+				       vec<int> * = nullptr);
 extern opt_result vect_find_stmt_data_reference (loop_p, gimple *,
 						 vec<data_reference_p> *,
 						 vec<int> *, int);
@@ -2467,7 +2469,8 @@ extern tree vect_create_destination_var (tree, tree);
 extern bool vect_grouped_store_supported (tree, unsigned HOST_WIDE_INT);
 extern internal_fn vect_store_lanes_supported (tree, unsigned HOST_WIDE_INT, bool);
 extern bool vect_grouped_load_supported (tree, bool, unsigned HOST_WIDE_INT);
-extern internal_fn vect_load_lanes_supported (tree, unsigned HOST_WIDE_INT, bool);
+extern internal_fn vect_load_lanes_supported (tree, unsigned HOST_WIDE_INT,
+					      bool, vec<int> * = nullptr);
 extern void vect_permute_store_chain (vec_info *, vec<tree> &,
 				      unsigned int, stmt_vec_info,
 				      gimple_stmt_iterator *, vec<tree> *);
@@ -2613,6 +2616,7 @@ extern int vect_slp_child_index_for_operand (const gimple *, int op, bool);
 
 extern tree prepare_vec_mask (loop_vec_info, tree, tree, tree,
 			      gimple_stmt_iterator *);
+extern tree vect_get_mask_load_else (int, tree);
 
 /* In tree-vect-patterns.cc.  */
 extern void

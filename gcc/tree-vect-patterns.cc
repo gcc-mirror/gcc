@@ -6021,12 +6021,20 @@ vect_recog_gather_scatter_pattern (vec_info *vinfo,
   /* Build the new pattern statement.  */
   tree scale = size_int (gs_info.scale);
   gcall *pattern_stmt;
+
   if (DR_IS_READ (dr))
     {
       tree zero = build_zero_cst (gs_info.element_type);
       if (mask != NULL)
-	pattern_stmt = gimple_build_call_internal (gs_info.ifn, 5, base,
-						   offset, scale, zero, mask);
+	{
+	  int elsval = MASK_LOAD_ELSE_ZERO;
+
+	  tree vec_els
+	    = vect_get_mask_load_else (elsval, TREE_TYPE (gs_vectype));
+	  pattern_stmt = gimple_build_call_internal (gs_info.ifn, 6, base,
+						     offset, scale, zero, mask,
+						     vec_els);
+	}
       else
 	pattern_stmt = gimple_build_call_internal (gs_info.ifn, 4, base,
 						   offset, scale, zero);

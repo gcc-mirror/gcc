@@ -511,15 +511,15 @@ static const int cond_expr_maps[3][5] = {
 static const int no_arg_map[] = { 0 };
 static const int arg0_map[] = { 1, 0 };
 static const int arg1_map[] = { 1, 1 };
-static const int arg2_map[] = { 1, 2 };
+static const int arg2_arg3_map[] = { 2, 2, 3 };
 static const int arg1_arg3_map[] = { 2, 1, 3 };
-static const int arg1_arg4_map[] = { 2, 1, 4 };
+static const int arg1_arg4_arg5_map[] = { 3, 1, 4, 5 };
 static const int arg1_arg3_arg4_map[] = { 3, 1, 3, 4 };
 static const int arg3_arg2_map[] = { 2, 3, 2 };
 static const int op1_op0_map[] = { 2, 1, 0 };
 static const int off_map[] = { 1, -3 };
 static const int off_op0_map[] = { 2, -3, 0 };
-static const int off_arg2_map[] = { 2, -3, 2 };
+static const int off_arg2_arg3_map[] = { 3, -3, 2, 3 };
 static const int off_arg3_arg2_map[] = { 3, -3, 3, 2 };
 static const int mask_call_maps[6][7] = {
   { 1, 1, },
@@ -566,14 +566,14 @@ vect_get_operand_map (const gimple *stmt, bool gather_scatter_p = false,
 	switch (gimple_call_internal_fn (call))
 	  {
 	  case IFN_MASK_LOAD:
-	    return gather_scatter_p ? off_arg2_map : arg2_map;
+	    return gather_scatter_p ? off_arg2_arg3_map : arg2_arg3_map;
 
 	  case IFN_GATHER_LOAD:
 	    return arg1_map;
 
 	  case IFN_MASK_GATHER_LOAD:
 	  case IFN_MASK_LEN_GATHER_LOAD:
-	    return arg1_arg4_map;
+	    return arg1_arg4_arg5_map;
 
 	  case IFN_SCATTER_STORE:
 	    return arg1_arg3_map;
@@ -8000,6 +8000,18 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
 	  tree vector_type = SLP_TREE_VECTYPE (child);
 	  if (!vector_type)
 	    {
+	      /* Masked loads can have an undefined (default SSA definition)
+		 else operand.  We do not need to cost it.  */
+	      vec<tree> ops = SLP_TREE_SCALAR_OPS (child);
+	      if ((STMT_VINFO_TYPE (SLP_TREE_REPRESENTATIVE (node))
+		   == load_vec_info_type)
+		  && ((ops.length ()
+		       && TREE_CODE (ops[0]) == SSA_NAME
+		       && SSA_NAME_IS_DEFAULT_DEF (ops[0])
+		       && VAR_P (SSA_NAME_VAR (ops[0])))
+		      || SLP_TREE_DEF_TYPE (child) == vect_constant_def))
+		continue;
+
 	      /* For shifts with a scalar argument we don't need
 		 to cost or code-generate anything.
 		 ???  Represent this more explicitely.  */

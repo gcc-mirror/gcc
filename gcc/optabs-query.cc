@@ -29,6 +29,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "recog.h"
 #include "vec-perm-indices.h"
+#include "internal-fn.h"
+#include "memmodel.h"
+#include "optabs.h"
 
 struct target_optabs default_target_optabs;
 struct target_optabs *this_fn_optabs = &default_target_optabs;
@@ -672,34 +675,57 @@ lshift_cheap_p (bool speed_p)
    that mode, given that the second mode is always an integer vector.
    If MODE is VOIDmode, return true if OP supports any vector mode.  */
 
-static bool
-supports_vec_convert_optab_p (optab op, machine_mode mode)
+static enum insn_code
+supported_vec_convert_optab (optab op, machine_mode mode)
 {
   int start = mode == VOIDmode ? 0 : mode;
   int end = mode == VOIDmode ? MAX_MACHINE_MODE - 1 : mode;
+  enum insn_code icode = CODE_FOR_nothing;
   for (int i = start; i <= end; ++i)
     if (VECTOR_MODE_P ((machine_mode) i))
       for (int j = MIN_MODE_VECTOR_INT; j < MAX_MODE_VECTOR_INT; ++j)
-	if (convert_optab_handler (op, (machine_mode) i,
-				   (machine_mode) j) != CODE_FOR_nothing)
-	  return true;
+	{
+	  if ((icode
+	       = convert_optab_handler (op, (machine_mode) i,
+					(machine_mode) j)) != CODE_FOR_nothing)
+	    return icode;
+	}
 
-  return false;
+  return icode;
 }
 
 /* If MODE is not VOIDmode, return true if vec_gather_load is available for
    that mode.  If MODE is VOIDmode, return true if gather_load is available
-   for at least one vector mode.  */
+   for at least one vector mode.
+   In that case, and if ELSVALS is nonzero, store the supported else values
+   into the vector it points to.  */
 
 bool
-supports_vec_gather_load_p (machine_mode mode)
+supports_vec_gather_load_p (machine_mode mode, vec<int> *elsvals)
 {
-  if (!this_fn_optabs->supports_vec_gather_load[mode])
-    this_fn_optabs->supports_vec_gather_load[mode]
-      = (supports_vec_convert_optab_p (gather_load_optab, mode)
-	 || supports_vec_convert_optab_p (mask_gather_load_optab, mode)
-	 || supports_vec_convert_optab_p (mask_len_gather_load_optab, mode)
-	 ? 1 : -1);
+  enum insn_code icode = CODE_FOR_nothing;
+  if (!this_fn_optabs->supports_vec_gather_load[mode] || elsvals)
+    {
+      /* Try the masked variants first.  In case we later decide that we
+	 need a mask after all (thus requiring an else operand) we need
+	 to query it below and we cannot do that when using the
+	 non-masked optab.  */
+      icode = supported_vec_convert_optab (mask_gather_load_optab, mode);
+      if (icode == CODE_FOR_nothing)
+	icode = supported_vec_convert_optab (mask_len_gather_load_optab, mode);
+      if (icode == CODE_FOR_nothing)
+	icode = supported_vec_convert_optab (gather_load_optab, mode);
+      this_fn_optabs->supports_vec_gather_load[mode]
+	= (icode != CODE_FOR_nothing) ? 1 : -1;
+    }
+
+  /* For gather the optab's operand indices do not match the IFN's because
+     the latter does not have the extension operand (operand 3).  It is
+     implicitly added during expansion so we use the IFN's else index + 1.
+     */
+  if (elsvals && icode != CODE_FOR_nothing)
+    get_supported_else_vals
+      (icode, internal_fn_else_index (IFN_MASK_GATHER_LOAD) + 1, *elsvals);
 
   return this_fn_optabs->supports_vec_gather_load[mode] > 0;
 }
@@ -711,12 +737,18 @@ supports_vec_gather_load_p (machine_mode mode)
 bool
 supports_vec_scatter_store_p (machine_mode mode)
 {
+  enum insn_code icode;
   if (!this_fn_optabs->supports_vec_scatter_store[mode])
-    this_fn_optabs->supports_vec_scatter_store[mode]
-      = (supports_vec_convert_optab_p (scatter_store_optab, mode)
-	 || supports_vec_convert_optab_p (mask_scatter_store_optab, mode)
-	 || supports_vec_convert_optab_p (mask_len_scatter_store_optab, mode)
-	 ? 1 : -1);
+    {
+      icode = supported_vec_convert_optab (scatter_store_optab, mode);
+      if (icode == CODE_FOR_nothing)
+	icode = supported_vec_convert_optab (mask_scatter_store_optab, mode);
+      if (icode == CODE_FOR_nothing)
+	icode = supported_vec_convert_optab (mask_len_scatter_store_optab,
+					      mode);
+      this_fn_optabs->supports_vec_scatter_store[mode]
+	= (icode != CODE_FOR_nothing) ? 1 : -1;
+    }
 
   return this_fn_optabs->supports_vec_scatter_store[mode] > 0;
 }

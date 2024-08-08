@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "attribs.h"
 #include "optabs-libfuncs.h"
+#include "tree-dfa.h"
 
 /* For lang_hooks.types.type_for_mode.  */
 #include "langhooks.h"
@@ -157,27 +158,44 @@ create_vector_array (tree elem_type, unsigned HOST_WIDE_INT nelems)
 /* ARRAY is an array of vectors created by create_vector_array.
    Return an SSA_NAME for the vector in index N.  The reference
    is part of the vectorization of STMT_INFO and the vector is associated
-   with scalar destination SCALAR_DEST.  */
+   with scalar destination SCALAR_DEST.
+   If we need to ensure that inactive elements are set to zero,
+   NEED_ZEROING is true, MASK contains the loop mask to be used.  */
 
 static tree
 read_vector_array (vec_info *vinfo,
 		   stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
-		   tree scalar_dest, tree array, unsigned HOST_WIDE_INT n)
+		   tree scalar_dest, tree array, unsigned HOST_WIDE_INT n,
+		   bool need_zeroing, tree mask)
 {
-  tree vect_type, vect, vect_name, array_ref;
+  tree vect_type, vect, vect_name, tmp, tmp_name, array_ref;
   gimple *new_stmt;
 
   gcc_assert (TREE_CODE (TREE_TYPE (array)) == ARRAY_TYPE);
   vect_type = TREE_TYPE (TREE_TYPE (array));
+  tmp = vect_create_destination_var (scalar_dest, vect_type);
   vect = vect_create_destination_var (scalar_dest, vect_type);
   array_ref = build4 (ARRAY_REF, vect_type, array,
 		      build_int_cst (size_type_node, n),
 		      NULL_TREE, NULL_TREE);
 
-  new_stmt = gimple_build_assign (vect, array_ref);
-  vect_name = make_ssa_name (vect, new_stmt);
-  gimple_assign_set_lhs (new_stmt, vect_name);
+  new_stmt = gimple_build_assign (tmp, array_ref);
+  tmp_name = make_ssa_name (vect, new_stmt);
+  gimple_assign_set_lhs (new_stmt, tmp_name);
   vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+
+  if (need_zeroing)
+    {
+      tree vec_els = vect_get_mask_load_else (MASK_LOAD_ELSE_ZERO,
+					      vect_type);
+      vect_name = make_ssa_name (vect, new_stmt);
+      new_stmt
+	= gimple_build_assign (vect_name, VEC_COND_EXPR,
+			       mask, tmp_name, vec_els);
+      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+    }
+  else
+    vect_name = tmp_name;
 
   return vect_name;
 }
@@ -468,6 +486,10 @@ exist_non_indexing_operands_for_use_p (tree use, stmt_vec_info stmt_info)
 	  int mask_index = internal_fn_mask_index (ifn);
 	  if (mask_index >= 0
 	      && use == gimple_call_arg (call, mask_index))
+	    return true;
+	  int els_index = internal_fn_else_index (ifn);
+	  if (els_index >= 0
+	      && use == gimple_call_arg (call, els_index))
 	    return true;
 	  int stored_value_index = internal_fn_stored_value_index (ifn);
 	  if (stored_value_index >= 0
@@ -1280,7 +1302,17 @@ vect_get_vec_defs_for_operand (vec_info *vinfo, stmt_vec_info stmt_vinfo,
 	vector_type = get_vectype_for_scalar_type (loop_vinfo, TREE_TYPE (op));
 
       gcc_assert (vector_type);
-      tree vop = vect_init_vector (vinfo, stmt_vinfo, op, vector_type, NULL);
+      /* A masked load can have a default SSA definition as else operand.
+	 We should "vectorize" this instead of creating a duplicate from the
+	 scalar default.  */
+      tree vop;
+      if (TREE_CODE (op) == SSA_NAME
+	  && SSA_NAME_IS_DEFAULT_DEF (op)
+	  && VAR_P (SSA_NAME_VAR (op)))
+	vop = get_or_create_ssa_default_def (cfun,
+					     create_tmp_var (vector_type));
+      else
+	vop = vect_init_vector (vinfo, stmt_vinfo, op, vector_type, NULL);
       while (ncopies--)
 	vec_oprnds->quick_push (vop);
     }
@@ -1492,7 +1524,10 @@ static tree permute_vec_elements (vec_info *, tree, tree, tree, stmt_vec_info,
 
    Clear LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P if a loop using partial
    vectors is not supported, otherwise record the required rgroup control
-   types.  */
+   types.
+
+   If partial vectors can be used and ELSVALS is nonzero the supported
+   else values will be added to the vector ELSVALS points to.  */
 
 static void
 check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
@@ -1502,7 +1537,8 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
 				      vect_memory_access_type
 				      memory_access_type,
 				      gather_scatter_info *gs_info,
-				      tree scalar_mask)
+				      tree scalar_mask,
+				      vec<int> *elsvals = nullptr)
 {
   /* Invariant loads need no special support.  */
   if (memory_access_type == VMAT_INVARIANT)
@@ -1518,7 +1554,8 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
       if (slp_node)
 	nvectors /= group_size;
       internal_fn ifn
-	= (is_load ? vect_load_lanes_supported (vectype, group_size, true)
+	= (is_load ? vect_load_lanes_supported (vectype, group_size, true,
+						elsvals)
 		   : vect_store_lanes_supported (vectype, group_size, true));
       if (ifn == IFN_MASK_LEN_LOAD_LANES || ifn == IFN_MASK_LEN_STORE_LANES)
 	vect_record_loop_len (loop_vinfo, lens, nvectors, vectype, 1);
@@ -1548,12 +1585,14 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
       if (internal_gather_scatter_fn_supported_p (len_ifn, vectype,
 						  gs_info->memory_type,
 						  gs_info->offset_vectype,
-						  gs_info->scale))
+						  gs_info->scale,
+						  elsvals))
 	vect_record_loop_len (loop_vinfo, lens, nvectors, vectype, 1);
       else if (internal_gather_scatter_fn_supported_p (ifn, vectype,
 						       gs_info->memory_type,
 						       gs_info->offset_vectype,
-						       gs_info->scale))
+						       gs_info->scale,
+						       elsvals))
 	vect_record_loop_mask (loop_vinfo, masks, nvectors, vectype,
 			       scalar_mask);
       else
@@ -1607,7 +1646,8 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
   machine_mode mask_mode;
   machine_mode vmode;
   bool using_partial_vectors_p = false;
-  if (get_len_load_store_mode (vecmode, is_load).exists (&vmode))
+  if (get_len_load_store_mode
+      (vecmode, is_load, nullptr, elsvals).exists (&vmode))
     {
       nvectors = group_memory_nvectors (group_size * vf, nunits);
       unsigned factor = (vecmode == vmode) ? 1 : GET_MODE_UNIT_SIZE (vecmode);
@@ -1615,7 +1655,8 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
       using_partial_vectors_p = true;
     }
   else if (targetm.vectorize.get_mask_mode (vecmode).exists (&mask_mode)
-	   && can_vec_mask_load_store_p (vecmode, mask_mode, is_load))
+	   && can_vec_mask_load_store_p (vecmode, mask_mode, is_load, NULL,
+					 elsvals))
     {
       nvectors = group_memory_nvectors (group_size * vf, nunits);
       vect_record_loop_mask (loop_vinfo, masks, nvectors, vectype, scalar_mask);
@@ -1672,12 +1713,16 @@ prepare_vec_mask (loop_vec_info loop_vinfo, tree mask_type, tree loop_mask,
    without loss of precision, where X is STMT_INFO's DR_STEP.
 
    Return true if this is possible, describing the gather load or scatter
-   store in GS_INFO.  MASKED_P is true if the load or store is conditional.  */
+   store in GS_INFO.  MASKED_P is true if the load or store is conditional.
+
+   If we can use gather/scatter and ELSVALS is nonzero the supported
+   else values will be stored in the vector ELSVALS points to.  */
 
 static bool
 vect_truncate_gather_scatter_offset (stmt_vec_info stmt_info,
 				     loop_vec_info loop_vinfo, bool masked_p,
-				     gather_scatter_info *gs_info)
+				     gather_scatter_info *gs_info,
+				     vec<int> *elsvals)
 {
   dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info);
   data_reference *dr = dr_info->dr;
@@ -1734,7 +1779,8 @@ vect_truncate_gather_scatter_offset (stmt_vec_info stmt_info,
       tree memory_type = TREE_TYPE (DR_REF (dr));
       if (!vect_gather_scatter_fn_p (loop_vinfo, DR_IS_READ (dr), masked_p,
 				     vectype, memory_type, offset_type, scale,
-				     &gs_info->ifn, &gs_info->offset_vectype)
+				     &gs_info->ifn, &gs_info->offset_vectype,
+				     elsvals)
 	  || gs_info->ifn == IFN_LAST)
 	continue;
 
@@ -1762,17 +1808,21 @@ vect_truncate_gather_scatter_offset (stmt_vec_info stmt_info,
    vectorize STMT_INFO, which is a grouped or strided load or store.
    MASKED_P is true if load or store is conditional.  When returning
    true, fill in GS_INFO with the information required to perform the
-   operation.  */
+   operation.
+
+   If we can use gather/scatter and ELSVALS is nonzero the supported
+   else values will be stored in the vector ELSVALS points to.  */
 
 static bool
 vect_use_strided_gather_scatters_p (stmt_vec_info stmt_info,
 				    loop_vec_info loop_vinfo, bool masked_p,
-				    gather_scatter_info *gs_info)
+				    gather_scatter_info *gs_info,
+				    vec<int> *elsvals)
 {
-  if (!vect_check_gather_scatter (stmt_info, loop_vinfo, gs_info)
+  if (!vect_check_gather_scatter (stmt_info, loop_vinfo, gs_info, elsvals)
       || gs_info->ifn == IFN_LAST)
     return vect_truncate_gather_scatter_offset (stmt_info, loop_vinfo,
-						masked_p, gs_info);
+						masked_p, gs_info, elsvals);
 
   tree old_offset_type = TREE_TYPE (gs_info->offset);
   tree new_offset_type = TREE_TYPE (gs_info->offset_vectype);
@@ -1974,7 +2024,11 @@ vector_vector_composition_type (tree vtype, poly_uint64 nelts, tree *ptype)
    For stores, the statements in the group are all consecutive
    and there is no gap at the end.  For loads, the statements in the
    group might not be consecutive; there can be gaps between statements
-   as well as at the end.  */
+   as well as at the end.
+
+   If we can use gather/scatter and ELSVALS is nonzero the supported
+   else values will be stored in the vector ELSVALS points to.
+*/
 
 static bool
 get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
@@ -1985,7 +2039,8 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 			   dr_alignment_support *alignment_support_scheme,
 			   int *misalignment,
 			   gather_scatter_info *gs_info,
-			   internal_fn *lanes_ifn)
+			   internal_fn *lanes_ifn,
+			   vec<int> *elsvals)
 {
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   class loop *loop = loop_vinfo ? LOOP_VINFO_LOOP (loop_vinfo) : NULL;
@@ -2074,7 +2129,8 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	  else if (slp_node->ldst_lanes
 		   && (*lanes_ifn
 			 = (vls_type == VLS_LOAD
-			    ? vect_load_lanes_supported (vectype, group_size, masked_p)
+			    ? vect_load_lanes_supported (vectype, group_size,
+							 masked_p, elsvals)
 			    : vect_store_lanes_supported (vectype, group_size,
 							  masked_p))) != IFN_LAST)
 	    *memory_access_type = VMAT_LOAD_STORE_LANES;
@@ -2282,7 +2338,8 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	      /* Otherwise try using LOAD/STORE_LANES.  */
 	      *lanes_ifn
 		= vls_type == VLS_LOAD
-		    ? vect_load_lanes_supported (vectype, group_size, masked_p)
+		    ? vect_load_lanes_supported (vectype, group_size, masked_p,
+						 elsvals)
 		    : vect_store_lanes_supported (vectype, group_size,
 						  masked_p);
 	      if (*lanes_ifn != IFN_LAST)
@@ -2318,7 +2375,7 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
       && (!slp_node || SLP_TREE_LANES (slp_node) == 1)
       && loop_vinfo
       && vect_use_strided_gather_scatters_p (stmt_info, loop_vinfo,
-					     masked_p, gs_info))
+					     masked_p, gs_info, elsvals))
     *memory_access_type = VMAT_GATHER_SCATTER;
 
   if (*memory_access_type == VMAT_GATHER_SCATTER
@@ -2380,7 +2437,10 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
    SLP says whether we're performing SLP rather than loop vectorization.
    MASKED_P is true if the statement is conditional on a vectorized mask.
    VECTYPE is the vector type that the vectorized statements will use.
-   NCOPIES is the number of vector statements that will be needed.  */
+   NCOPIES is the number of vector statements that will be needed.
+
+   If ELSVALS is nonzero the supported else values will be stored in the
+   vector ELSVALS points to.  */
 
 static bool
 get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
@@ -2392,7 +2452,8 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 		     dr_alignment_support *alignment_support_scheme,
 		     int *misalignment,
 		     gather_scatter_info *gs_info,
-		     internal_fn *lanes_ifn)
+		     internal_fn *lanes_ifn,
+		     vec<int> *elsvals = nullptr)
 {
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
@@ -2401,7 +2462,8 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
   if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
     {
       *memory_access_type = VMAT_GATHER_SCATTER;
-      if (!vect_check_gather_scatter (stmt_info, loop_vinfo, gs_info))
+      if (!vect_check_gather_scatter (stmt_info, loop_vinfo, gs_info,
+				      elsvals))
 	gcc_unreachable ();
       /* When using internal functions, we rely on pattern recognition
 	 to convert the type of the offset to the type that the target
@@ -2455,7 +2517,8 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 				      masked_p,
 				      vls_type, memory_access_type, poffset,
 				      alignment_support_scheme,
-				      misalignment, gs_info, lanes_ifn))
+				      misalignment, gs_info, lanes_ifn,
+				      elsvals))
 	return false;
     }
   else if (STMT_VINFO_STRIDED_P (stmt_info))
@@ -2463,7 +2526,7 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
       gcc_assert (!slp_node);
       if (loop_vinfo
 	  && vect_use_strided_gather_scatters_p (stmt_info, loop_vinfo,
-						 masked_p, gs_info))
+						 masked_p, gs_info, elsvals))
 	*memory_access_type = VMAT_GATHER_SCATTER;
       else
 	*memory_access_type = VMAT_ELEMENTWISE;
@@ -2730,6 +2793,30 @@ vect_build_zero_merge_argument (vec_info *vinfo,
     gcc_unreachable ();
   merge = build_vector_from_val (vectype, merge);
   return vect_init_vector (vinfo, stmt_info, merge, vectype, NULL);
+}
+
+/* Return the corresponding else value for an else value constant
+   ELSVAL with type TYPE.  */
+
+tree
+vect_get_mask_load_else (int elsval, tree type)
+{
+  tree els;
+  if (elsval == MASK_LOAD_ELSE_UNDEFINED)
+    {
+      tree tmp = create_tmp_var (type);
+      /* No need to warn about anything.  */
+      TREE_NO_WARNING (tmp) = 1;
+      els = get_or_create_ssa_default_def (cfun, tmp);
+    }
+  else if (elsval == MASK_LOAD_ELSE_M1)
+    els = build_minus_one_cst (type);
+  else if (elsval == MASK_LOAD_ELSE_ZERO)
+    els = build_zero_cst (type);
+  else
+    gcc_unreachable ();
+
+  return els;
 }
 
 /* Build a gather load call while vectorizing STMT_INFO.  Insert new
@@ -10031,6 +10118,7 @@ vectorizable_load (vec_info *vinfo,
   gather_scatter_info gs_info;
   tree ref_type;
   enum vect_def_type mask_dt = vect_unknown_def_type;
+  enum vect_def_type els_dt = vect_unknown_def_type;
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
@@ -10043,8 +10131,12 @@ vectorizable_load (vec_info *vinfo,
     return false;
 
   tree mask = NULL_TREE, mask_vectype = NULL_TREE;
+  tree els = NULL_TREE; tree els_vectype = NULL_TREE;
+
   int mask_index = -1;
+  int els_index = -1;
   slp_tree slp_op = NULL;
+  slp_tree els_op = NULL;
   if (gassign *assign = dyn_cast <gassign *> (stmt_info->stmt))
     {
       scalar_dest = gimple_assign_lhs (assign);
@@ -10083,6 +10175,15 @@ vectorizable_load (vec_info *vinfo,
       if (mask_index >= 0
 	  && !vect_check_scalar_mask (vinfo, stmt_info, slp_node, mask_index,
 				      &mask, &slp_op, &mask_dt, &mask_vectype))
+	return false;
+
+      els_index = internal_fn_else_index (ifn);
+      if (els_index >= 0 && slp_node)
+	els_index = vect_slp_child_index_for_operand
+	  (call, els_index, STMT_VINFO_GATHER_SCATTER_P (stmt_info));
+      if (els_index >= 0
+	  && !vect_is_simple_use (vinfo, stmt_info, slp_node, els_index,
+				  &els, &els_op, &els_dt, &els_vectype))
 	return false;
     }
 
@@ -10186,11 +10287,22 @@ vectorizable_load (vec_info *vinfo,
   int misalignment;
   poly_int64 poffset;
   internal_fn lanes_ifn;
+  auto_vec<int> elsvals;
+  int maskload_elsval = 0;
+  bool need_zeroing = false;
   if (!get_load_store_type (vinfo, stmt_info, vectype, slp_node, mask, VLS_LOAD,
 			    ncopies, &memory_access_type, &poffset,
 			    &alignment_support_scheme, &misalignment, &gs_info,
-			    &lanes_ifn))
+			    &lanes_ifn, &elsvals))
     return false;
+
+
+  /* We might need to explicitly zero inactive elements if there are
+     padding bits in the type that might leak otherwise.
+     Refer to PR115336.  */
+  tree scalar_type = TREE_TYPE (scalar_dest);
+  bool type_mode_padding_p
+    = TYPE_PRECISION (scalar_type) < GET_MODE_PRECISION (GET_MODE_INNER (mode));
 
   /* ???  The following checks should really be part of
      get_group_load_store_type.  */
@@ -10255,7 +10367,8 @@ vectorizable_load (vec_info *vinfo,
 	  machine_mode vec_mode = TYPE_MODE (vectype);
 	  if (!VECTOR_MODE_P (vec_mode)
 	      || !can_vec_mask_load_store_p (vec_mode,
-					     TYPE_MODE (mask_vectype), true))
+					     TYPE_MODE (mask_vectype),
+					     true, NULL, &elsvals))
 	    return false;
 	}
       else if (memory_access_type != VMAT_LOAD_STORE_LANES
@@ -10310,7 +10423,7 @@ vectorizable_load (vec_info *vinfo,
 	check_load_store_for_partial_vectors (loop_vinfo, vectype, slp_node,
 					      VLS_LOAD, group_size,
 					      memory_access_type, &gs_info,
-					      mask);
+					      mask, &elsvals);
 
       if (dump_enabled_p ()
 	  && memory_access_type != VMAT_ELEMENTWISE
@@ -10324,6 +10437,36 @@ vectorizable_load (vec_info *vinfo,
 
       STMT_VINFO_TYPE (stmt_info) = load_vec_info_type;
     }
+  else
+    {
+      /* Here just get the else values.  */
+      if (loop_vinfo
+	  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
+	check_load_store_for_partial_vectors (loop_vinfo, vectype, slp_node,
+					      VLS_LOAD, group_size,
+					      memory_access_type, &gs_info,
+					      mask, &elsvals);
+    }
+
+  /* If the type needs padding we must zero inactive elements.
+     Check if we can do that with a VEC_COND_EXPR and store the
+     elsval we choose in MASKLOAD_ELSVAL.  */
+  if (elsvals.length ()
+      && type_mode_padding_p
+      && !elsvals.contains (MASK_LOAD_ELSE_ZERO)
+      && !expand_vec_cond_expr_p (vectype, truth_type_for (vectype)))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "cannot zero inactive elements.\n");
+      return false;
+    }
+
+  /* For now just use the first available else value.
+     get_supported_else_vals tries MASK_LOAD_ELSE_ZERO first so we will
+     select it here if it is supported.  */
+  if (elsvals.length ())
+    maskload_elsval = *elsvals.begin ();
 
   if (!slp)
     gcc_assert (memory_access_type
@@ -10994,6 +11137,7 @@ vectorizable_load (vec_info *vinfo,
     }
 
   tree vec_mask = NULL_TREE;
+  tree vec_els = NULL_TREE;
   if (memory_access_type == VMAT_LOAD_STORE_LANES)
     {
       gcc_assert (alignment_support_scheme == dr_aligned
@@ -11084,6 +11228,14 @@ vectorizable_load (vec_info *vinfo,
 		}
 	    }
 
+	  if (final_mask)
+	    {
+	      vec_els = vect_get_mask_load_else (maskload_elsval, vectype);
+	      if (type_mode_padding_p
+		  && maskload_elsval != MASK_LOAD_ELSE_ZERO)
+		need_zeroing = true;
+	    }
+
 	  gcall *call;
 	  if (final_len && final_mask)
 	    {
@@ -11092,9 +11244,10 @@ vectorizable_load (vec_info *vinfo,
 						    VEC_MASK, LEN, BIAS).  */
 	      unsigned int align = TYPE_ALIGN (TREE_TYPE (vectype));
 	      tree alias_ptr = build_int_cst (ref_type, align);
-	      call = gimple_build_call_internal (IFN_MASK_LEN_LOAD_LANES, 5,
+	      call = gimple_build_call_internal (IFN_MASK_LEN_LOAD_LANES, 6,
 						 dataref_ptr, alias_ptr,
-						 final_mask, final_len, bias);
+						 final_mask, vec_els,
+						 final_len, bias);
 	    }
 	  else if (final_mask)
 	    {
@@ -11103,9 +11256,9 @@ vectorizable_load (vec_info *vinfo,
 						VEC_MASK).  */
 	      unsigned int align = TYPE_ALIGN (TREE_TYPE (vectype));
 	      tree alias_ptr = build_int_cst (ref_type, align);
-	      call = gimple_build_call_internal (IFN_MASK_LOAD_LANES, 3,
+	      call = gimple_build_call_internal (IFN_MASK_LOAD_LANES, 4,
 						 dataref_ptr, alias_ptr,
-						 final_mask);
+						 final_mask, vec_els);
 	    }
 	  else
 	    {
@@ -11124,7 +11277,8 @@ vectorizable_load (vec_info *vinfo,
 	  for (unsigned i = 0; i < group_size; i++)
 	    {
 	      new_temp = read_vector_array (vinfo, stmt_info, gsi, scalar_dest,
-					    vec_array, i);
+					    vec_array, i, need_zeroing,
+					    final_mask);
 	      if (slp)
 		slp_node->push_vec_def (new_temp);
 	      else
@@ -11254,25 +11408,36 @@ vectorizable_load (vec_info *vinfo,
 			}
 		    }
 
+		  if (final_mask)
+		    {
+		      vec_els = vect_get_mask_load_else
+			(maskload_elsval, vectype);
+		      if (type_mode_padding_p
+			  && maskload_elsval != MASK_LOAD_ELSE_ZERO)
+			need_zeroing = true;
+		    }
+
 		  gcall *call;
 		  if (final_len && final_mask)
 		    {
 		      if (VECTOR_TYPE_P (TREE_TYPE (vec_offset)))
 			call = gimple_build_call_internal (
-			  IFN_MASK_LEN_GATHER_LOAD, 7, dataref_ptr, vec_offset,
-			  scale, zero, final_mask, final_len, bias);
+			  IFN_MASK_LEN_GATHER_LOAD, 8, dataref_ptr, vec_offset,
+			  scale, zero, final_mask, vec_els, final_len, bias);
 		      else
 			/* Non-vector offset indicates that prefer to take
 			   MASK_LEN_STRIDED_LOAD instead of the
 			   MASK_LEN_GATHER_LOAD with direct stride arg.  */
 			call = gimple_build_call_internal (
-			  IFN_MASK_LEN_STRIDED_LOAD, 6, dataref_ptr, vec_offset,
-			  zero, final_mask, final_len, bias);
+			  IFN_MASK_LEN_STRIDED_LOAD, 7, dataref_ptr, vec_offset,
+			  zero, final_mask, vec_els, final_len, bias);
 		    }
 		  else if (final_mask)
-		    call = gimple_build_call_internal (IFN_MASK_GATHER_LOAD, 5,
-						       dataref_ptr, vec_offset,
-						       scale, zero, final_mask);
+		    call = gimple_build_call_internal (IFN_MASK_GATHER_LOAD,
+						       6, dataref_ptr,
+						       vec_offset, scale,
+						       zero, final_mask,
+						       vec_els);
 		  else
 		    call = gimple_build_call_internal (IFN_GATHER_LOAD, 4,
 						       dataref_ptr, vec_offset,
@@ -11483,9 +11648,27 @@ vectorizable_load (vec_info *vinfo,
 		  vect_copy_ref_info (data_ref, DR_REF (first_dr_info->dr));
 		  new_stmt = gimple_build_assign (vec_dest, data_ref);
 		}
-	      new_temp = make_ssa_name (vec_dest, new_stmt);
+	      new_temp = need_zeroing
+		? make_ssa_name (vectype)
+		: make_ssa_name (vec_dest, new_stmt);
 	      gimple_set_lhs (new_stmt, new_temp);
 	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+
+	      /* If we need to explicitly zero inactive elements emit a
+		 VEC_COND_EXPR that does so.  */
+	      if (need_zeroing)
+		{
+		  vec_els = vect_get_mask_load_else (MASK_LOAD_ELSE_ZERO,
+						     vectype);
+
+		  tree new_temp2 = make_ssa_name (vec_dest, new_stmt);
+		  new_stmt
+		    = gimple_build_assign (new_temp2, VEC_COND_EXPR,
+					   final_mask, new_temp, vec_els);
+		  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt,
+					       gsi);
+		  new_temp = new_temp2;
+		}
 
 	      /* Store vector loads in the corresponding SLP_NODE.  */
 	      if (slp)
@@ -11586,6 +11769,7 @@ vectorizable_load (vec_info *vinfo,
 	  tree final_mask = NULL_TREE;
 	  tree final_len = NULL_TREE;
 	  tree bias = NULL_TREE;
+
 	  if (!costing_p)
 	    {
 	      if (mask)
@@ -11678,15 +11862,24 @@ vectorizable_load (vec_info *vinfo,
 		    bias = build_int_cst (intQI_type_node, biasval);
 		  }
 
+		tree vec_els;
+
 		if (final_len)
 		  {
 		    tree ptr = build_int_cst (ref_type, align * BITS_PER_UNIT);
 		    gcall *call;
 		    if (partial_ifn == IFN_MASK_LEN_LOAD)
-		      call = gimple_build_call_internal (IFN_MASK_LEN_LOAD, 5,
-							 dataref_ptr, ptr,
-							 final_mask, final_len,
-							 bias);
+		      {
+			vec_els = vect_get_mask_load_else
+			  (maskload_elsval, vectype);
+			if (type_mode_padding_p
+			    && maskload_elsval != MASK_LOAD_ELSE_ZERO)
+			  need_zeroing = true;
+			call = gimple_build_call_internal (IFN_MASK_LEN_LOAD,
+							   6, dataref_ptr, ptr,
+							   final_mask, vec_els,
+							   final_len, bias);
+		      }
 		    else
 		      call = gimple_build_call_internal (IFN_LEN_LOAD, 4,
 							 dataref_ptr, ptr,
@@ -11713,9 +11906,15 @@ vectorizable_load (vec_info *vinfo,
 		else if (final_mask)
 		  {
 		    tree ptr = build_int_cst (ref_type, align * BITS_PER_UNIT);
-		    gcall *call = gimple_build_call_internal (IFN_MASK_LOAD, 3,
+		    vec_els = vect_get_mask_load_else
+		      (maskload_elsval, vectype);
+		    if (type_mode_padding_p
+			&& maskload_elsval != MASK_LOAD_ELSE_ZERO)
+		      need_zeroing = true;
+		    gcall *call = gimple_build_call_internal (IFN_MASK_LOAD, 4,
 							      dataref_ptr, ptr,
-							      final_mask);
+							      final_mask,
+							      vec_els);
 		    gimple_call_set_nothrow (call, true);
 		    new_stmt = call;
 		    data_ref = NULL_TREE;
@@ -11996,9 +12195,28 @@ vectorizable_load (vec_info *vinfo,
 		  vect_copy_ref_info (data_ref, DR_REF (first_dr_info->dr));
 		  new_stmt = gimple_build_assign (vec_dest, data_ref);
 		}
-	      new_temp = make_ssa_name (vec_dest, new_stmt);
+
+	      new_temp = need_zeroing
+		? make_ssa_name (vectype)
+		: make_ssa_name (vec_dest, new_stmt);
 	      gimple_set_lhs (new_stmt, new_temp);
 	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+
+	      /* If we need to explicitly zero inactive elements emit a
+		 VEC_COND_EXPR that does so.  */
+	      if (need_zeroing)
+		{
+		  vec_els = vect_get_mask_load_else (MASK_LOAD_ELSE_ZERO,
+						     vectype);
+
+		  tree new_temp2 = make_ssa_name (vec_dest, new_stmt);
+		  new_stmt
+		    = gimple_build_assign (new_temp2, VEC_COND_EXPR,
+					   final_mask, new_temp, vec_els);
+		  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt,
+					       gsi);
+		  new_temp = new_temp2;
+		}
 	    }
 
 	  /* 3. Handle explicit realignment if necessary/supported.

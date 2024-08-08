@@ -168,7 +168,8 @@ bool can_compare_and_swap_p (machine_mode, bool);
 bool can_atomic_exchange_p (machine_mode, bool);
 bool can_atomic_load_p (machine_mode);
 bool lshift_cheap_p (bool);
-bool supports_vec_gather_load_p (machine_mode = E_VOIDmode);
+bool supports_vec_gather_load_p (machine_mode = E_VOIDmode,
+				 vec<int> * = nullptr);
 bool supports_vec_scatter_store_p (machine_mode = E_VOIDmode);
 bool can_vec_extract (machine_mode, machine_mode);
 
