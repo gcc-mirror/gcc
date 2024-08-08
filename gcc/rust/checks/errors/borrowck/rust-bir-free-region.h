@@ -50,22 +50,6 @@ public:
   FreeRegion &operator[] (size_t i) { return regions.at (i); }
   const FreeRegion &operator[] (size_t i) const { return regions.at (i); }
   const std::vector<FreeRegion> &get_regions () const { return regions; }
-  void set_from (std::vector<Rust::Polonius::Origin> &&regions)
-  {
-    this->regions.clear ();
-    for (auto &region : regions)
-      {
-	this->regions.push_back ({region});
-      }
-  }
-  void set_from (std::vector<FreeRegion> &&regions)
-  {
-    this->regions.clear ();
-    for (auto &region : regions)
-      {
-	this->regions.push_back (region);
-      }
-  }
 
   WARN_UNUSED_RESULT FreeRegions prepend (FreeRegion region) const
   {
@@ -74,8 +58,10 @@ public:
     return FreeRegions (std::move (new_regions));
   }
 
-  FreeRegions (std::vector<FreeRegion> &&regions) : regions (regions) {}
+  void push_back (FreeRegion region) { regions.push_back (region); }
+
   FreeRegions () {}
+  FreeRegions (std::vector<FreeRegion> &&regions) : regions (regions) {}
 
   WARN_UNUSED_RESULT std::string to_string () const
   {
@@ -111,7 +97,7 @@ public:
   FreeRegions bind_regions (std::vector<TyTy::Region> regions,
 			    FreeRegions parent_free_regions)
   {
-    std::vector<FreeRegion> free_regions;
+    FreeRegions free_regions;
     for (auto &region : regions)
       {
 	if (region.is_early_bound ())
@@ -128,9 +114,7 @@ public:
 	    rust_unreachable ();
 	  }
       }
-    // This is necesarry because of clash of current gcc and gcc4.8.
-    FreeRegions free_regions_final{std::move (free_regions)};
-    return free_regions_final;
+    return free_regions;
   }
 };
 

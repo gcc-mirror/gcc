@@ -206,7 +206,7 @@ protected:
   FreeRegions bind_regions (std::vector<TyTy::Region> regions,
 			    FreeRegions parent_free_regions)
   {
-    std::vector<FreeRegion> free_regions;
+    FreeRegions free_regions;
     for (auto &region : regions)
       {
 	if (region.is_early_bound ())
@@ -231,9 +231,7 @@ protected:
 	    rust_unreachable ();
 	  }
       }
-    // This is necesarry because of clash of current gcc and gcc4.8.
-    FreeRegions free_regions_final{std::move (free_regions)};
-    return free_regions_final;
+    return free_regions;
   }
 
 protected: // Helpers to add BIR statements

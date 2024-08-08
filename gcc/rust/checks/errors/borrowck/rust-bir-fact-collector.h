@@ -65,11 +65,11 @@ class FactCollector : public Visitor
 
   FreeRegions make_fresh_regions (size_t size)
   {
-    std::vector<FreeRegion> free_regions;
+    FreeRegions free_regions;
     for (size_t i = 0; i < size; i++)
       free_regions.push_back (region_binder.get_next_free_region ());
 
-    return FreeRegions (std::move (free_regions));
+    return free_regions;
   }
 
 public:
@@ -179,12 +179,12 @@ protected: // Main collection entry points (for different categories).
 
     rust_debug ("\tSanitize deref of %s", base.tyty->as_string ().c_str ());
 
-    std::vector<FreeRegion> regions;
-    regions.insert (regions.end (), base.regions.begin () + 1,
-		    base.regions.end ());
-    FreeRegions r;
-    r.set_from (std::move (regions));
-    push_subset_all (place.tyty, r, place.regions);
+    FreeRegions regions;
+    for (auto it = base.regions.begin () + 1; it != base.regions.end (); ++it)
+      {
+	regions.push_back (*it);
+      }
+    push_subset_all (place.tyty, regions, place.regions);
   }
   void sanizite_field (PlaceId place_id)
   {
@@ -201,9 +201,7 @@ protected: // Main collection entry points (for different categories).
 	       .query_field_regions (base.tyty->as<TyTy::ADTType> (), 0,
 				     place.variable_or_field_index,
 				     base.regions); // FIXME
-    FreeRegions f;
-    f.set_from (std::move (r));
-    push_subset_all (place.tyty, f, place.regions);
+    push_subset_all (place.tyty, r, place.regions);
   }
 
   void visit_statemensts ()
