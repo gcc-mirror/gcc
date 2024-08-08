@@ -26113,8 +26113,8 @@ ix86_mode_can_transfer_bits (machine_mode mode)
       || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
     switch (GET_MODE_INNER (mode))
       {
-      case SFmode:
-      case DFmode:
+      case E_SFmode:
+      case E_DFmode:
 	/* These suffer from normalization upon load when not using SSE.  */
 	return !(ix86_fpmath & FPMATH_387);
       default:
