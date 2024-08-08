@@ -1,3 +1,212 @@
+2024-08-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116064
+	* g++.dg/template/permissive-error2.C: New test.
+
+2024-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109126
+	* g++.dg/DRs/dr2387.C: New test.
+	* g++.dg/DRs/dr2387-aux.cc: New file.
+
+2024-08-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/116258
+	PR middle-end/116259
+	* gcc.target/aarch64/pr116258.c: New test.
+	* gcc.target/aarch64/sve/pr116259-1.c: New test.
+
+2024-08-07  Carl Love  <cel@linux.ibm.com>
+
+	* gcc.target/powerpc/vec-shift-double-runnable-int128.c: New test
+	file.
+
+2024-08-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116258
+	* gcc.target/i386/pr116258.c: New testcase.
+
+2024-08-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* g++.dg/other/sse2-pr85572-1.C: Update expected output after
+	my recent patch for ashrv2di3.  Now with one less instruction.
+
+2024-08-07  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/111592
+	* g++.dg/cpp0x/variadic186.C: New test.
+
+2024-08-07  Xi Ruoyao  <xry111@xry111.site>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116142
+	* gcc.target/i386/pr116142.c: New test.
+
+2024-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116175
+	* g++.dg/ext/attr-format4.C: New test.
+
+2024-08-07  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/powerpc/pr78056-1.c: Check for powerpc_altivec rather than
+	powerpc_vsx.
+	* gcc.target/powerpc/pr78056-3.c: Likewise.
+	* gcc.target/powerpc/pr78056-5.c: Drop powerpc_vsx_ok check.
+	* gcc.target/powerpc/pr78056-7.c: Check for powerpc_fprs rather than
+	dfp_hw.
+	* gcc.target/powerpc/pr78056-2.c: Remove.
+	* gcc.target/powerpc/pr78056-4.c: Remove.
+	* gcc.target/powerpc/pr78056-6.c: Remove.
+
+2024-08-07  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/powerpc/swaps-p8-46.c: Check for p8vector_hw rather than
+	powerpc_vsx_ok.
+	* gcc.target/powerpc/ppc64-abi-2.c: Check for vmx_hw rather than
+	powerpc_altivec_ok.
+	* gcc.target/powerpc/pr96139-c.c: Likewise.
+
+2024-08-07  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/114842
+	* gcc.target/powerpc/error-1.c: Replace powerpc_vsx_ok check with
+	powerpc_vsx.
+	* gcc.target/powerpc/warn-2.c: Likewise.
+	* gcc.target/powerpc/fold-vec-logical-ors-longlong.c: Likewise.
+	* gcc.target/powerpc/ppc-fortran/pr80108-1.f90: Replace powerpc_vsx_ok
+	check with powerpc_vsx and remove useless -mfloat128.
+	* gcc.target/powerpc/pragma_power8.c: Replace powerpc_vsx_ok check with
+	powerpc_vsx.
+
+2024-08-07  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/114842
+	* gcc.target/powerpc/bswap64-2.c: Replace powerpc_vsx_ok check with
+	has_arch_pwr7.
+	* gcc.target/powerpc/ppc-fpconv-2.c: Replace powerpc_vsx_ok check with
+	powerpc_fprs.
+	* gcc.target/powerpc/ppc-fpconv-6.c: Likewise.
+	* gcc.target/powerpc/ppc-pow.c: Likewise.
+	* gcc.target/powerpc/ppc-target-1.c: Likewise.
+	* gcc.target/powerpc/ppc-target-2.c: Likewise.
+	* gcc.target/powerpc/ppc-target-3.c: Likewise.
+	* gcc.target/powerpc/ppc-target-4.c: Likewise.
+	* gcc.target/powerpc/ppc-fpconv-4.c: Check for powerpc_fprs.
+	* gcc.target/powerpc/fold-vec-select-char.c: Replace powerpc_vsx_ok
+	with powerpc_altivec check and move it after dg-options line.
+	* gcc.target/powerpc/fold-vec-select-float.c: Likewise.
+	* gcc.target/powerpc/fold-vec-select-int.c: Likewise.
+	* gcc.target/powerpc/fold-vec-select-short.c: Likewise.
+	* gcc.target/powerpc/p9-novsx.c: Likewise.
+	* gcc.target/powerpc/p9-options-1.c: Likewise.
+
+2024-08-07  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/114842
+	* gcc.target/powerpc/amo2.c: Remove powerpc_vsx_ok effective target
+	check as p9vector_hw already covers it.
+	* gcc.target/powerpc/p9-sign_extend-runnable.c: Likewise.
+	* gcc.target/powerpc/clone2.c: Remove powerpc_vsx_ok effective target
+	check as ppc_cpu_supports_hw already covers it.
+	* gcc.target/powerpc/pr47251.c: Remove powerpc_vsx_ok effective target
+	check as it doesn't need VSX.
+	* gcc.target/powerpc/pr60137.c: Likewise.
+	* gcc.target/powerpc/pr80098-1.c: Likewise.
+	* gcc.target/powerpc/pr80098-2.c: Likewise.
+	* gcc.target/powerpc/pr80098-3.c: Likewise.
+	* gcc.target/powerpc/sd-pwr6.c: Likewise.
+	* gcc.target/powerpc/pr57744.c: Remove powerpc_vsx_ok effective target
+	check and option -mvsx as it doesn't need VSX.
+	* gcc.target/powerpc/pr69548.c: Remove powerpc_vsx_ok effective target
+	check as it doesn't need VSX, remove lp64 and use int128 instead.
+	* gcc.target/powerpc/vec-cmpne-long.c: Remove powerpc_vsx_ok effective
+	target check as p8vector_hw already covers it.
+	* gcc.target/powerpc/darwin-save-world-1.c: Remove powerpc_altivec_ok
+	effective target check as vmx_hw already covers it.
+
+2024-08-07  Kewen Lin  <linkw@linux.ibm.com>
+
+	* lib/target-supports.exp (check_vsx_hw_available): Modify C source
+	code used for testing with type vector long long and constraint wa
+	which require VSX feature.
+	(check_p8vector_hw_available): Likewise.
+	(check_vmx_hw_available): Modify C source code used for testing with
+	type vector int and constraint v which require Altivec feature.
+	* gcc.target/powerpc/divkc3-1.c: Specify -mdejagnu-cpu=power8 for
+	!has_arch_pwr8 to ensure power8 support.
+	* gcc.target/powerpc/mulkc3-1.c: Likewise.
+	* gcc.target/powerpc/pr96264.c: Likewise.
+
+2024-08-07  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.dg/Wstringop-overflow-47.c: Remove xfail target.
+
+2024-08-07  Joern Rennecke  <joern.rennecke@riscy-ip.com>
+
+	* g++.dg/vect/pr115278.cc: Make cast's type agree with
+	assignment destination WRITE.
+
+2024-08-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/115231
+	* g++.dg/modules/dguide-1_a.C: New test.
+	* g++.dg/modules/dguide-1_b.C: New test.
+	* g++.dg/modules/dguide-2_a.C: New test.
+	* g++.dg/modules/dguide-2_b.C: New test.
+	* g++.dg/modules/dguide-3_a.C: New test.
+	* g++.dg/modules/dguide-3_b.C: New test.
+	* g++.dg/modules/dguide-3_c.C: New test.
+	* g++.dg/modules/dguide-3_d.C: New test.
+
+2024-08-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/template/explicit-instantiation9.C: New test.
+
+2024-08-07  Joern Rennecke  <joern.rennecke@riscy-ip.com>
+
+	* gcc.dg/vect/tsvc/tsvc.h (iterations): Allow to override,
+	default to 10.
+	(get_expected_result): Add values for iterations counts
+	10, 256 and 3200.
+	(run): Add code to output values for new iterations counts.
+	* gcc.dg/vect/tsvc/vect-tsvc-s1119.c (dg-additional-options):
+	Add -Diterations=LEN_2D .
+	* gcc.dg/vect/tsvc/vect-tsvc-s115.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s119.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s125.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s2102.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s2233.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s2275.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s231.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s235.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s176.c: (dg-additional-options):
+	Add -Diterations=3200 .
+	[!run_expensive_tests]: dg-additional-options "-DTRUNCATE_TEST" .
+	[TRUNCATE_TEST]: Set m to 32.
+
+2024-08-07  Pan Li  <pan2.li@intel.com>
+
+	PR target/116202
+	* gcc.target/riscv/rvv/base/pr116202-run-1.c: New test.
+
+2024-08-07  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-1.c: Adjust
+	asm check times from 2 to 4.
+
+2024-08-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116064
+	* g++.dg/ext/typedef-init.C: Downgrade error inside template
+	to warning due to -fpermissive.
+	* g++.dg/pr84492.C: Likewise.
+	* g++.old-deja/g++.pt/crash51.C: Remove unneeded dg-options.
+	* g++.dg/template/permissive-error1.C: New test.
+	* g++.dg/template/permissive-error1a.C: New test.
+	* g++.dg/template/permissive-error1b.C: New test.
+	* g++.dg/template/permissive-error1c.C: New test.
+
 2024-08-06  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR testsuite/116207

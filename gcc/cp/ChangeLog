@@ -1,3 +1,95 @@
+2024-08-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116064
+	* error.cc (get_current_template): If the current scope is
+	a partial specialization, return it instead of the primary
+	template.
+	* pt.cc (instantiate_class_template): Pass the partial
+	specialization if any to maybe_diagnose_erroneous_template
+	instead of the primary template.
+
+2024-08-07  Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tobias@baylibre.com>
+
+	* decl2.cc (tree-inline.h): Include.
+	(static_init_fini_fns): Bump to four entries. Update comment.
+	(start_objects, start_partial_init_fini_fn): Add 'omp_target'
+	parameter. Support "declare target" decls. Update forward declaration.
+	(emit_partial_init_fini_fn): Add 'host_fn' parameter. Return tree for
+	the created function. Support "declare target".
+	(OMP_SSDF_IDENTIFIER): New macro.
+	(partition_vars_for_init_fini): Support partitioning "declare target"
+	variables also.
+	(generate_ctor_or_dtor_function): Add 'omp_target' parameter. Support
+	"declare target" decls.
+	(c_parse_final_cleanups): Support constructors/destructors on OpenMP
+	offload targets.
+
+2024-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109126
+	* decl.cc (grokvardecl): Implement CWG 2387 - Linkage of
+	const-qualified variable template.  Set TREE_PUBLIC on variable
+	templates with const qualified types unless static is present.
+
+2024-08-07  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/111592
+	* call.cc (build_over_call): Only error out if there's a single
+	parameter of type A in a call to A::A(...).
+
+2024-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116175
+	* pt.cc (apply_late_template_attributes): For function/method types
+	call cp_build_type_attribute_variant on the non-dependent attributes.
+	(rebuild_function_or_method_type): Add ARGS argument.  Use
+	apply_late_template_attributes rather than
+	cp_build_type_attribute_variant.
+	(maybe_rebuild_function_decl_type): Add ARGS argument, pass it to
+	rebuild_function_or_method_type.
+	(tsubst_function_decl): Adjust caller.
+	(tsubst_function_type): Adjust rebuild_function_or_method_type caller.
+
+2024-08-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/115231
+	* error.cc (dump_function_decl): Add a space before '->' when
+	printing deduction guides.
+	* module.cc (depset::hash::add_binding_entity): Don't create
+	bindings for guides here, only mark dependencies.
+	(depset::hash::add_deduction_guides): New.
+	(depset::hash::find_dependencies): Add deduction guide
+	dependencies for a class template.
+	(module_state::write_cluster): Always consider deduction guides
+	as exported.
+	* pt.cc (deduction_guides_for): Use 'lkp_iterator' instead of
+	'ovl_iterator'.
+
+2024-08-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* parser.cc (cp_parser_class_head): Clarify error message for
+	explicit instantiations.
+
+2024-08-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116064
+	* cp-tree.h (erroneous_templates_t): Declare.
+	(erroneous_templates): Declare.
+	(cp_seen_error): Declare.
+	(seen_error): #define to cp_seen_error.
+	* error.cc (get_current_template): Define.
+	(relaxed_template_errors): Define.
+	(cp_adjust_diagnostic_info): Define.
+	(cp_seen_error): Define.
+	(cxx_initialize_diagnostics): Set
+	diagnostic_context::m_adjust_diagnostic_info.
+	* module.cc (finish_module_processing): Don't write the
+	module if it contains an erroneous template.
+	* pt.cc (maybe_diagnose_erroneous_template): Define.
+	(instantiate_class_template): Call it.
+	(instantiate_decl): Likewise.
+
 2024-08-06  Marek Polacek  <polacek@redhat.com>
 
 	* constexpr.cc (cxx_eval_call_expression): Remove concept_check_p check.

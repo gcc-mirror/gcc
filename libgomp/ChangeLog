@@ -1,3 +1,20 @@
+2024-08-07  Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tobias@baylibre.com>
+
+	* testsuite/libgomp.c++/static-aggr-constructor-destructor-1.C: New test.
+	* testsuite/libgomp.c++/static-aggr-constructor-destructor-2.C: New test.
+	* testsuite/libgomp.c++/static-aggr-constructor-destructor-3.C: New test.
+	* testsuite/libgomp.c-c++-common/target-is-initial-host.c: New test.
+	* testsuite/libgomp.c-c++-common/target-is-initial-host-2.c: New test.
+	* testsuite/libgomp.fortran/target-is-initial-host.f: New test.
+	* testsuite/libgomp.fortran/target-is-initial-host.f90: New test.
+	* testsuite/libgomp.fortran/target-is-initial-host-2.f90: New test.
+
+2024-08-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/target-link-2.c: Reset variable
+	value to handle multi-device tests.
+
 2024-08-06  Tobias Burnus  <tburnus@baylibre.com>
 
 	* target.c (gomp_load_image_to_device): Extend fatal-error message;

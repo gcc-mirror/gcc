@@ -1,3 +1,109 @@
+2024-08-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/116237
+	* config/darwin.h (SUBTARGET_DRIVER_SELF_SPECS): Add a spec for
+	weak_framework.
+	* config/darwin.opt: Handle weak_framework driver option.
+
+2024-08-07  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+
+	PR ipa/96265
+	PR ipa/111937
+	* data-streamer-in.cc (streamer_read_poly_uint64): Remove code for
+	streaming, and call poly_int_read_common instead.
+	(streamer_read_poly_int64): Likewise.
+	* data-streamer.cc (host_num_poly_int_coeffs): Conditionally define
+	new variable if ACCEL_COMPILER is defined.
+	* data-streamer.h (host_num_poly_int_coeffs): Declare.
+	(poly_int_read_common): New function template.
+	(bp_unpack_poly_value): Remove code for streaming and call
+	poly_int_read_common instead.
+	* lto-streamer-in.cc (lto_input_mode_table): Stream-in host
+	NUM_POLY_INT_COEFFS into host_num_poly_int_coeffs if ACCEL_COMPILER
+	is defined.
+	* lto-streamer-out.cc (lto_write_mode_table): Stream out
+	NUM_POLY_INT_COEFFS if offloading is enabled.
+	* poly-int.h (MAX_NUM_POLY_INT_COEFFS_BITS): New macro.
+	* tree-streamer-in.cc (lto_input_ts_poly_tree_pointers): Adjust
+	streaming-in of poly_int.
+
+2024-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116219
+	* gimple-expr.cc (remove_suffix): Formatting fixes.
+	(create_tmp_var_name): Don't call clean_symbol_name.
+	* gimplify.cc (gimplify_init_constructor): When promoting automatic
+	DECL_NAMELESS vars to static, don't preserve their DECL_NAME.
+
+2024-08-07  Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tobias@baylibre.com>
+
+	* builtins.def (DEF_GOMP_BUILTIN_COMPILER): Define
+	DEF_GOMP_BUILTIN_COMPILER to handle the non-prefix version.
+	* gimple-fold.cc (gimple_fold_builtin_omp_is_initial_device): New.
+	(gimple_fold_builtin): Call it.
+	* omp-builtins.def (BUILT_IN_OMP_IS_INITIAL_DEVICE): Define.
+	* tree.cc (get_file_function_name): Support names for on-target
+	constructor/destructor functions.
+
+2024-08-07  Carl Love  <cel@linux.ibm.com>
+
+	* config/rs6000/altivec.md (vs<SLDB_lr>db_<mode>): Change
+	define_insn iterator to VEC_IC.
+	* config/rs6000/rs6000-builtins.def (__builtin_altivec_vsldoi_v1ti,
+	__builtin_vsx_xxsldwi_v1ti, __builtin_altivec_vsldb_v1ti,
+	__builtin_altivec_vsrdb_v1ti): New builtin definitions.
+	* config/rs6000/rs6000-overload.def (vec_sld, vec_sldb, vec_sldw,
+	vec_sll, vec_slo, vec_srdb, vec_srl, vec_sro): New overloaded
+	definitions.
+	* doc/extend.texi (vec_sld, vec_sldb, vec_sldw, vec_sll, vec_slo,
+	vec_srdb, vec_srl, vec_sro): Add documentation for new overloaded
+	built-ins.
+
+2024-08-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116258
+	* tree-vect-generic.cc (expand_vector_operations_1): Do not
+	lower PAREN_EXPR.
+
+2024-08-07  Xi Ruoyao  <xry111@xry111.site>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116142
+	* tree-vect-stmts.cc (supportable_widening_operation): Remove an
+	redundant and incorrect vect_reduction_def check, and fix the
+	operand of another vect_reduction_def check.
+
+2024-08-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116166
+	* tree-ssa-threadedge.h (jump_threader::thread_around_empty_blocks):
+	Add limit parameter.
+	(jump_threader::thread_through_normal_block): Likewise.
+	* tree-ssa-threadedge.cc (jump_threader::thread_around_empty_blocks):
+	Honor and decrement limit parameter.
+	(jump_threader::thread_through_normal_block): Likewise.
+	(jump_threader::thread_across_edge): Initialize limit from
+	param_max_jump_thread_paths and pass it down to workers.
+
+2024-08-07  Pan Li  <pan2.li@intel.com>
+
+	PR target/116202
+	* tree-vect-patterns.cc (vect_recog_sat_trunc_pattern): Add the
+	type_has_mode_precision_p check for the lhs type.
+
+2024-08-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116064
+	* diagnostic.cc (diagnostic_context::initialize): Set
+	m_adjust_diagnostic_info.
+	(diagnostic_context::report_diagnostic): Call
+	m_adjust_diagnostic_info.
+	* diagnostic.h (diagnostic_context::m_adjust_diagnostic_info):
+	New data member.
+	* doc/invoke.texi (-Wno-template-body): Document.
+	(-fpermissive): Mention -Wtemplate-body.
+
 2024-08-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116177
