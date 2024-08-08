@@ -17052,7 +17052,7 @@ __builtin_avr_insert_bits (0x01234567, bits, 0);
 @defbuiltin{uint8_t __builtin_avr_mask1 (uint8_t @var{mask}, uint8_t @var{offs})}
 Rotate the 8-bit constant value @var{mask} by an offset of @var{offs},
 where @var{mask} is in @{ 0x01, 0xfe, 0x7f, 0x80 @}.
-This built-in can be use as an alternative to 8-bit expressions like
+This built-in can be used as an alternative to 8-bit expressions like
 @code{1 << offs} when their computation consumes too much
 time, and @var{offs} is known to be in the range 0@dots{}7.
 @example
