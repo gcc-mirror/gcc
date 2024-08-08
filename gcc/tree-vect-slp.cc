@@ -7102,7 +7102,17 @@ next_lane:
       vect_cost_for_stmt kind;
       if (STMT_VINFO_DATA_REF (orig_stmt_info))
 	{
-	  if (DR_IS_READ (STMT_VINFO_DATA_REF (orig_stmt_info)))
+	  data_reference_p dr = STMT_VINFO_DATA_REF (orig_stmt_info);
+	  tree base = get_base_address (DR_REF (dr));
+	  /* When the scalar access is to a non-global not address-taken
+	     decl that is not BLKmode assume we can access it with a single
+	     non-load/store instruction.  */
+	  if (DECL_P (base)
+	      && !is_global_var (base)
+	      && !TREE_ADDRESSABLE (base)
+	      && DECL_MODE (base) != BLKmode)
+	    kind = scalar_stmt;
+	  else if (DR_IS_READ (STMT_VINFO_DATA_REF (orig_stmt_info)))
 	    kind = scalar_load;
 	  else
 	    kind = scalar_store;
