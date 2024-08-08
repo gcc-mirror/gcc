@@ -2052,6 +2052,10 @@ avr_pass_fuse_add::Mem_Insn::Mem_Insn (rtx_insn *insn)
   else
     return;
 
+  if (avr_mem_memx_p (mem)
+      || avr_load_libgcc_p (mem))
+    return;
+
   addr = XEXP (mem, 0);
   addr_code = GET_CODE (addr);
 
