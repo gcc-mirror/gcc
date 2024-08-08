@@ -4621,7 +4621,7 @@ avr_out_lpm_no_lpmx (rtx_insn *insn, rtx *xop, int *plen)
 	    avr_asm_len ("mov %0,r0", &reg, plen, 1);
 	}
 
-      if (! _reg_unused_after (insn, xop[2], false))
+      if (! reg_unused_after (insn, xop[2]))
 	avr_asm_len ("adiw %2,1", xop, plen, 1);
 
       break; /* POST_INC */
@@ -11318,6 +11318,25 @@ avr_adjust_insn_length (rtx_insn *insn, int len)
   return len;
 }
 
+
+/* Return true when INSN has a REG_UNUSED note for hard reg REG.
+   rtlanal.cc::find_reg_note() uses == to compare XEXP (link, 0)
+   therefore use a custom function.  */
+
+static bool
+avr_insn_has_reg_unused_note_p (rtx_insn *insn, rtx reg)
+{
+  for (rtx link = REG_NOTES (insn); link; link = XEXP (link, 1))
+    if (REG_NOTE_KIND (link) == REG_UNUSED
+	&& REG_P (XEXP (link, 0))
+	&& REGNO (reg) >= REGNO (XEXP (link, 0))
+	&& END_REGNO (reg) <= END_REGNO (XEXP (link, 0)))
+      return true;
+
+  return false;
+}
+
+
 /* Return nonzero if register REG dead after INSN.  */
 
 int
@@ -11344,6 +11363,17 @@ _reg_unused_after (rtx_insn *insn, rtx reg, bool look_at_insn)
       if (set && !MEM_P (SET_DEST (set))
 	  && reg_overlap_mentioned_p (reg, SET_DEST (set)))
 	return 1;
+
+      /* This case occurs when fuse-add introduced a POST_INC addressing,
+	 but the address register is unused after.  */
+      if (set)
+	{
+	  rtx mem = MEM_P (SET_SRC (set)) ? SET_SRC (set) : SET_DEST (set);
+	  if (MEM_P (mem)
+	      && reg_overlap_mentioned_p (reg, XEXP (mem, 0))
+	      && avr_insn_has_reg_unused_note_p (insn, reg))
+	    return 1;
+	}
     }
 
   while ((insn = NEXT_INSN (insn)))
