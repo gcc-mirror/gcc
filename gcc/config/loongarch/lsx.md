@@ -186,9 +186,6 @@
 ;; All vector modes with 128 bits.
 (define_mode_iterator LSX      [V2DF V4SF V2DI V4SI V8HI V16QI])
 
-;; Same as LSX.  Used by vcond to iterate two modes.
-(define_mode_iterator LSX_2    [V2DF V4SF V2DI V4SI V8HI V16QI])
-
 ;; Only used for vilvh and splitting insert_d and copy_{u,s}.d.
 (define_mode_iterator LSX_D    [V2DI V2DF])
 
@@ -530,34 +527,6 @@
   "ISA_HAS_LSX"
 {
   loongarch_expand_vec_cmp (operands);
-  DONE;
-})
-
-(define_expand "vcondu<LSX:mode><ILSX:mode>"
-  [(match_operand:LSX 0 "register_operand")
-   (match_operand:LSX 1 "reg_or_m1_operand")
-   (match_operand:LSX 2 "reg_or_0_operand")
-   (match_operator 3 ""
-     [(match_operand:ILSX 4 "register_operand")
-      (match_operand:ILSX 5 "register_operand")])]
-  "ISA_HAS_LSX
-   && (GET_MODE_NUNITS (<LSX:MODE>mode) == GET_MODE_NUNITS (<ILSX:MODE>mode))"
-{
-  loongarch_expand_vec_cond_expr (<LSX:MODE>mode, <LSX:VIMODE>mode, operands);
-  DONE;
-})
-
-(define_expand "vcond<LSX:mode><LSX_2:mode>"
-  [(match_operand:LSX 0 "register_operand")
-   (match_operand:LSX 1 "reg_or_m1_operand")
-   (match_operand:LSX 2 "reg_or_0_operand")
-   (match_operator 3 ""
-     [(match_operand:LSX_2 4 "register_operand")
-      (match_operand:LSX_2 5 "register_operand")])]
-  "ISA_HAS_LSX
-   && (GET_MODE_NUNITS (<LSX:MODE>mode) == GET_MODE_NUNITS (<LSX_2:MODE>mode))"
-{
-  loongarch_expand_vec_cond_expr (<LSX:MODE>mode, <LSX:VIMODE>mode, operands);
   DONE;
 })
 
