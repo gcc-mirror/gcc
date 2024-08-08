@@ -190,7 +190,7 @@ proc schedule-cleanups { opts } {
     # Handle ltrans files around -flto
     if [regexp -- {(^|\s+)-flto(\s+|$)} $opts] {
 	verbose "Cleanup -flto seen" 4
-	set ltrans "{ltrans\[0-9\]*.,}"
+	set ltrans "{ltrans\[0-9\]*{.ltrans,}.,}"
     } else {
 	set ltrans ""
     }
@@ -206,7 +206,7 @@ proc schedule-cleanups { opts } {
 	    if {$basename_ext != ""} {
 		regsub -- {^.*\.} $basename_ext {} basename_ext
 	    }
-	    lappend tfiles "$stem.{$basename_ext,exe}"
+	    lappend tfiles "$stem{.$basename_ext,.exe,}"
 	    unset basename_ext
 	} else {
 	    lappend tfiles $basename
