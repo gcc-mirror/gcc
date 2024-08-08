@@ -15361,7 +15361,7 @@ module_state::read_cluster (unsigned snum)
 	    tree visible = NULL_TREE;
 	    tree type = NULL_TREE;
 	    bool dedup = false;
-	    bool global_p = false;
+	    bool global_p = is_header ();
 
 	    /* We rely on the bindings being in the reverse order of
 	       the resulting overload set.  */
