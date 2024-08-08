@@ -677,6 +677,43 @@
   DONE;
 })
 
+(define_insn "simd_h<optab>w_<mode>_<su>"
+  [(set (match_operand:<WVEC_HALF> 0 "register_operand" "=f")
+	(addsub:<WVEC_HALF>
+	  (any_extend:<WVEC_HALF>
+	    (vec_select:<VEC_HALF>
+	      (match_operand:IVEC 1 "register_operand" "f")
+	      (match_operand:IVEC 3 "vect_par_cnst_even_or_odd_half")))
+	  (any_extend:<WVEC_HALF>
+	    (vec_select:<VEC_HALF>
+	      (match_operand:IVEC 2 "register_operand" "f")
+	      (match_operand:IVEC 4 "vect_par_cnst_even_or_odd_half")))))]
+  "!rtx_equal_p (operands[3], operands[4])"
+{
+  if (!INTVAL (XVECEXP (operands[3], 0, 0)))
+    std::swap (operands[1], operands[2]);
+  return "<x>vh<optab>w.<simdfmt_w><u>.<simdfmt><u>\t%<wu>0,%<wu>1,%<wu>2";
+}
+  [(set_attr "type" "simd_int_arith")
+   (set_attr "mode" "<WVEC_HALF>")])
+
+(define_expand "<simd_isa>_<x>vh<optab>w_<simdfmt_w><u>_<simdfmt><u>"
+  [(match_operand:<WVEC_HALF> 0 "register_operand" "=f")
+   (match_operand:IVEC	      1 "register_operand" " f")
+   (match_operand:IVEC	      2 "register_operand" " f")
+   (any_extend (const_int 0))
+   (addsub (const_int 0) (const_int 0))]
+  ""
+{
+  int nelts = GET_MODE_NUNITS (<WVEC_HALF>mode);
+  rtx op3 = loongarch_gen_stepped_int_parallel (nelts, 1, 2);
+  rtx op4 = loongarch_gen_stepped_int_parallel (nelts, 0, 2);
+  rtx insn = gen_simd_h<optab>w_<mode>_<su> (operands[0], operands[1],
+					     operands[2], op3, op4);
+  emit_insn (insn);
+  DONE;
+})
+
 ; For "historical" reason we need a punned version of q_d variants.
 (define_mode_iterator DIVEC [(V2DI "ISA_HAS_LSX") (V4DI "ISA_HAS_LASX")])
 
@@ -707,6 +744,21 @@
   rtx t = gen_reg_rtx (<WVEC_HALF>mode);
   emit_insn (gen_<simd_isa>_<x>v<optab>w<ev_od>_q_du_d (t, operands[1],
 							operands[2]));
+  emit_move_insn (operands[0], gen_lowpart (<MODE>mode, t));
+  DONE;
+})
+
+(define_expand "<simd_isa>_h<optab>w_q<u>_d<u>_punned"
+  [(match_operand:DIVEC 0 "register_operand" "=f")
+   (match_operand:DIVEC 1 "register_operand" "f")
+   (match_operand:DIVEC 2 "register_operand" "f")
+   (any_extend (const_int 0))
+   (addsub (const_int 0) (const_int 0))]
+  ""
+{
+  rtx t = gen_reg_rtx (<WVEC_HALF>mode);
+  emit_insn (gen_<simd_isa>_<x>vh<optab>w_q<u>_d<u> (t, operands[1],
+						     operands[2]));
   emit_move_insn (operands[0], gen_lowpart (<MODE>mode, t));
   DONE;
 })
