@@ -306,14 +306,15 @@
     operands[4] = gen_reg_rtx (<MODE>mode);
   });
 
-;; <x>vrotri.{b/h/w/d}
+;; <x>v{rotr/sll/sra/srl}i.{b/h/w/d}
 
-(define_insn "rotr<mode>3"
+(define_insn "<optab><mode>3"
   [(set (match_operand:IVEC 0 "register_operand" "=f")
-	(rotatert:IVEC (match_operand:IVEC 1 "register_operand" "f")
-		       (match_operand:SI 2 "const_<bitimm>_operand")))]
-  ""
-  "<x>vrotri.<simdfmt>\t%<wu>0,%<wu>1,%2";
+	(shift_w:IVEC
+	  (match_operand:IVEC 1 "register_operand" "f")
+	  (match_operand:SI 2 "const_<bitimm>_operand")))]
+  "ISA_HAS_LSX"
+  "<x>v<insn>i.<simdfmt>\t%<wu>0,%<wu>1,%2"
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "<MODE>")])
 
