@@ -2312,6 +2312,7 @@ fixup_type_variants (tree type)
       TYPE_PRECISION (variant) = TYPE_PRECISION (type);
       TYPE_MODE_RAW (variant) = TYPE_MODE_RAW (type);
       TYPE_EMPTY_P (variant) = TYPE_EMPTY_P (type);
+      TREE_ADDRESSABLE (variant) = TREE_ADDRESSABLE (type);
     }
 }
 
@@ -2378,8 +2379,17 @@ fixup_attribute_variants (tree t)
 static void
 finish_struct_bits (tree t)
 {
-  /* Fix up variants (if any).  */
-  fixup_type_variants (t);
+  /* If this type has a copy constructor or a destructor, force its
+     mode to be BLKmode, and force its TREE_ADDRESSABLE bit to be
+     nonzero.  This will cause it to be passed by invisible reference
+     and prevent it from being returned in a register.  */
+  if (type_has_nontrivial_copy_init (t)
+      || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
+    {
+      SET_DECL_MODE (TYPE_MAIN_DECL (t), BLKmode);
+      SET_TYPE_MODE (t, BLKmode);
+      TREE_ADDRESSABLE (t) = 1;
+    }
 
   if (BINFO_N_BASE_BINFOS (TYPE_BINFO (t)) && TYPE_POLYMORPHIC_P (t))
     /* For a class w/o baseclasses, 'finish_struct' has set
@@ -2392,21 +2402,8 @@ finish_struct_bits (tree t)
        looking in the vtables).  */
     get_pure_virtuals (t);
 
-  /* If this type has a copy constructor or a destructor, force its
-     mode to be BLKmode, and force its TREE_ADDRESSABLE bit to be
-     nonzero.  This will cause it to be passed by invisible reference
-     and prevent it from being returned in a register.  */
-  if (type_has_nontrivial_copy_init (t)
-      || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
-    {
-      tree variants;
-      SET_DECL_MODE (TYPE_MAIN_DECL (t), BLKmode);
-      for (variants = t; variants; variants = TYPE_NEXT_VARIANT (variants))
-	{
-	  SET_TYPE_MODE (variants, BLKmode);
-	  TREE_ADDRESSABLE (variants) = 1;
-	}
-    }
+  /* Fix up variants (if any).  */
+  fixup_type_variants (t);
 }
 
 /* Issue warnings about T having private constructors, but no friends,
