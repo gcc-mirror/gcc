@@ -17059,22 +17059,24 @@ start_enum (tree name, tree enumtype, tree underlying_type,
 	  enumtype = cxx_make_type (ENUMERAL_TYPE);
 	  enumtype = pushtag (name, enumtype);
 
-	  /* std::byte aliases anything.  */
-	  if (enumtype != error_mark_node
-	      && TYPE_CONTEXT (enumtype) == std_node
-	      && !strcmp ("byte", TYPE_NAME_STRING (enumtype)))
-	    TYPE_ALIAS_SET (enumtype) = 0;
+	  if (enumtype != error_mark_node)
+	    {
+	      /* The enum is considered opaque until the opening '{' of the
+		 enumerator list.  */
+	      SET_OPAQUE_ENUM_P (enumtype, true);
+	      ENUM_FIXED_UNDERLYING_TYPE_P (enumtype) = !! underlying_type;
+
+	      /* std::byte aliases anything.  */
+	      if (TYPE_CONTEXT (enumtype) == std_node
+		  && !strcmp ("byte", TYPE_NAME_STRING (enumtype)))
+		TYPE_ALIAS_SET (enumtype) = 0;
+	    }
 	}
       else
 	  enumtype = xref_tag (enum_type, name);
 
       if (enumtype == error_mark_node)
 	return error_mark_node;
-
-      /* The enum is considered opaque until the opening '{' of the
-	 enumerator list.  */
-      SET_OPAQUE_ENUM_P (enumtype, true);
-      ENUM_FIXED_UNDERLYING_TYPE_P (enumtype) = !! underlying_type;
     }
 
   SET_SCOPED_ENUM_P (enumtype, scoped_enum_p);
