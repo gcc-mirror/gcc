@@ -2629,6 +2629,15 @@
   [(set_attr "type" "neon_fp_neg_<stype><q>")]
 )
 
+(define_insn "aarch64_fnegv2di2<vczle><vczbe>"
+ [(set (match_operand:V2DI 0 "register_operand" "=w")
+       (unspec:V2DI [(match_operand:V2DI 1 "register_operand" "w")]
+		      UNSPEC_FNEG))]
+ "TARGET_SIMD"
+ "fneg\\t%0.2d, %1.2d"
+  [(set_attr "type" "neon_fp_neg_d")]
+)
+
 (define_insn "abs<mode>2<vczle><vczbe>"
  [(set (match_operand:VHSDF 0 "register_operand" "=w")
        (abs:VHSDF (match_operand:VHSDF 1 "register_operand" "w")))]

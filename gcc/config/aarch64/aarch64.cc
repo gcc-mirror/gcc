@@ -11808,8 +11808,8 @@ aarch64_maybe_generate_simd_constant (rtx target, rtx val, machine_mode mode)
       /* Use the same base type as aarch64_gen_shareable_zero.  */
       rtx zero = CONST0_RTX (V4SImode);
       emit_move_insn (lowpart_subreg (V4SImode, target, mode), zero);
-      rtx neg = lowpart_subreg (V2DFmode, target, mode);
-      emit_insn (gen_negv2df2 (neg, copy_rtx (neg)));
+      rtx neg = lowpart_subreg (V2DImode, target, mode);
+      emit_insn (gen_aarch64_fnegv2di2 (neg, copy_rtx (neg)));
       return true;
     }
 
