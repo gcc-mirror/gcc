@@ -5221,7 +5221,7 @@ gfc_simplify_merge_bits (gfc_expr *i, gfc_expr *j, gfc_expr *mask_expr)
       || mask_expr->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  result = gfc_get_constant_expr (BT_INTEGER, i->ts.kind, &i->where);
+  result = gfc_get_constant_expr (i->ts.type, i->ts.kind, &i->where);
 
   /* Convert all argument to unsigned.  */
   mpz_init_set (arg1, i->value.integer);

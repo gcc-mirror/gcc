@@ -2000,7 +2000,9 @@ gfc_resolve_merge_bits (gfc_expr *f, gfc_expr *i,
 			gfc_expr *mask ATTRIBUTE_UNUSED)
 {
   f->ts = i->ts;
-  f->value.function.name = gfc_get_string ("__merge_bits_i%d", i->ts.kind);
+  const char *name = i->ts.kind == BT_UNSIGNED ? "__merge_bits_u%d" :
+    "__merge_bits_i%d";
+  f->value.function.name = gfc_get_string (name, i->ts.kind);
 }
 
 

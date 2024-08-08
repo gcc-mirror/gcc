@@ -4443,20 +4443,54 @@ gfc_check_merge_bits (gfc_expr *i, gfc_expr *j, gfc_expr *mask)
       && !gfc_boz2int (j, i->ts.kind))
     return false;
 
-  if (!type_check (i, 0, BT_INTEGER))
-    return false;
+  if (flag_unsigned)
+    {
+      /* If i is BOZ and j is unsigned, convert i to type of j.  */
+      if (i->ts.type == BT_BOZ && j->ts.type == BT_UNSIGNED
+	  && !gfc_boz2uint (i, j->ts.kind))
+	return false;
 
-  if (!type_check (j, 1, BT_INTEGER))
-    return false;
+      /* If j is BOZ and i is unsigned, convert j to type of i.  */
+      if (j->ts.type == BT_BOZ && i->ts.type == BT_UNSIGNED
+	  && !gfc_boz2int (j, i->ts.kind))
+	return false;
+
+      if (!type_check2 (i, 0, BT_INTEGER, BT_UNSIGNED))
+	return false;
+
+      if (!type_check2 (j, 1, BT_INTEGER, BT_UNSIGNED))
+	return false;
+    }
+  else
+    {
+      if (!type_check (i, 0, BT_INTEGER))
+	return false;
+
+      if (!type_check (j, 1, BT_INTEGER))
+	return false;
+    }
 
   if (!same_type_check (i, 0, j, 1))
     return false;
 
-  if (mask->ts.type == BT_BOZ && !gfc_boz2int(mask, i->ts.kind))
-    return false;
+  if (mask->ts.type == BT_BOZ)
+    {
+      if (i->ts.type == BT_INTEGER && !gfc_boz2int (mask, i->ts.kind))
+	return false;
+      if (i->ts.type == BT_UNSIGNED && !gfc_boz2uint (mask, i->ts.kind))
+	return false;
+    }
 
-  if (!type_check (mask, 2, BT_INTEGER))
-    return false;
+  if (flag_unsigned)
+    {
+      if (!type_check2 (mask, 2, BT_INTEGER, BT_UNSIGNED))
+	return false;
+    }
+  else
+    {
+      if (!type_check (mask, 2, BT_INTEGER))
+	return false;
+    }
 
   if (!same_type_check (i, 0, mask, 2))
     return false;
