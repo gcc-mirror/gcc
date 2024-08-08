@@ -5478,6 +5478,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   gfc_actual_arglist *back_arg;
   gfc_ss *arrayss = nullptr;
   gfc_ss *maskss = nullptr;
+  gfc_ss *orig_ss = nullptr;
   gfc_se arrayse;
   gfc_se maskse;
   gfc_se nested_se;
@@ -5712,6 +5713,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   if (nested_loop)
     {
       ploop = enter_nested_loop (&nested_se);
+      orig_ss = nested_se.ss;
       ploop->temp_dim = 1;
     }
   else
@@ -5786,9 +5788,8 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
     }
   else
     {
-      gcc_assert (!nested_loop);
-      for (int i = 0; i < loop.dimen; i++)
-	gfc_add_modify (&loop.pre, pos[i], gfc_index_zero_node);
+      for (int i = 0; i < ploop->dimen; i++)
+	gfc_add_modify (&ploop->pre, pos[i], gfc_index_zero_node);
       lab1 = gfc_build_label_decl (NULL_TREE);
       TREE_USED (lab1) = 1;
       lab2 = gfc_build_label_decl (NULL_TREE);
@@ -5819,10 +5820,10 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   /* If we have a mask, only check this element if the mask is set.  */
   if (maskexpr && maskexpr->rank > 0)
     {
-      gcc_assert (!nested_loop);
-      gfc_init_se (&maskse, NULL);
-      gfc_copy_loopinfo_to_se (&maskse, &loop);
-      maskse.ss = maskss;
+      gfc_init_se (&maskse, base_se);
+      gfc_copy_loopinfo_to_se (&maskse, ploop);
+      if (!nested_loop)
+	maskse.ss = maskss;
       gfc_conv_expr_val (&maskse, maskexpr);
       gfc_add_block_to_block (&body, &maskse.pre);
 
@@ -5850,13 +5851,11 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
       stmtblock_t ifblock2;
       tree ifbody2;
 
-      gcc_assert (!nested_loop);
-
       gfc_start_block (&ifblock2);
-      for (int i = 0; i < loop.dimen; i++)
+      for (int i = 0; i < ploop->dimen; i++)
 	{
 	  tmp = fold_build2_loc (input_location, PLUS_EXPR, TREE_TYPE (pos[i]),
-				 loop.loopvar[i], offset[i]);
+				 ploop->loopvar[i], offset[i]);
 	  gfc_add_modify (&ifblock2, pos[i], tmp);
 	}
       ifbody2 = gfc_finish_block (&ifblock2);
@@ -5940,17 +5939,24 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 
   if (lab1)
     {
-      gcc_assert (!nested_loop);
+      for (int i = 0; i < ploop->dimen; i++)
+	ploop->from[i] = fold_build3_loc (input_location, COND_EXPR,
+					  TREE_TYPE (ploop->from[i]),
+					  second_loop_entry, idx[i],
+					  ploop->from[i]);
 
-      for (int i = 0; i < loop.dimen; i++)
-	loop.from[i] = fold_build3_loc (input_location, COND_EXPR,
-					TREE_TYPE (loop.from[i]),
-					second_loop_entry, idx[i],
-					loop.from[i]);
+      gfc_trans_scalarized_loop_boundary (ploop, &body);
 
-      gfc_trans_scalarized_loop_boundary (&loop, &body);
+      if (nested_loop)
+	{
+	  /* The first loop already advanced the parent se'ss chain, so clear
+	     the parent now to avoid doing it a second time, making the chain
+	     out of sync.  */
+	  nested_se.parent = nullptr;
+	  nested_se.ss = orig_ss;
+	}
 
-      stmtblock_t * const outer_block = &loop.code[loop.dimen - 1];
+      stmtblock_t * const outer_block = &ploop->code[ploop->dimen - 1];
 
       if (HONOR_NANS (DECL_MODE (limit)))
 	{
@@ -5959,7 +5965,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 	      stmtblock_t init_block;
 	      gfc_init_block (&init_block);
 
-	      for (int i = 0; i < loop.dimen; i++)
+	      for (int i = 0; i < ploop->dimen; i++)
 		gfc_add_modify (&init_block, pos[i], gfc_index_one_node);
 
 	      tree ifbody = gfc_finish_block (&init_block);
@@ -5975,9 +5981,10 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
       /* If we have a mask, only check this element if the mask is set.  */
       if (maskexpr && maskexpr->rank > 0)
 	{
-	  gfc_init_se (&maskse, NULL);
-	  gfc_copy_loopinfo_to_se (&maskse, &loop);
-	  maskse.ss = maskss;
+	  gfc_init_se (&maskse, base_se);
+	  gfc_copy_loopinfo_to_se (&maskse, ploop);
+	  if (!nested_loop)
+	    maskse.ss = maskss;
 	  gfc_conv_expr_val (&maskse, maskexpr);
 	  gfc_add_block_to_block (&body, &maskse.pre);
 
@@ -5987,9 +5994,10 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 	gfc_init_block (&block);
 
       /* Compare with the current limit.  */
-      gfc_init_se (&arrayse, NULL);
-      gfc_copy_loopinfo_to_se (&arrayse, &loop);
-      arrayse.ss = arrayss;
+      gfc_init_se (&arrayse, base_se);
+      gfc_copy_loopinfo_to_se (&arrayse, ploop);
+      if (!nested_loop)
+	arrayse.ss = arrayss;
       gfc_conv_expr_val (&arrayse, arrayexpr);
       gfc_add_block_to_block (&block, &arrayse.pre);
 
@@ -5999,10 +6007,10 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
       /* Assign the value to the limit...  */
       gfc_add_modify (&ifblock, limit, arrayse.expr);
 
-      for (int i = 0; i < loop.dimen; i++)
+      for (int i = 0; i < ploop->dimen; i++)
 	{
 	  tmp = fold_build2_loc (input_location, PLUS_EXPR, TREE_TYPE (pos[i]),
-				 loop.loopvar[i], offset[i]);
+				 ploop->loopvar[i], offset[i]);
 	  gfc_add_modify (&ifblock, pos[i], tmp);
 	}
 
@@ -6061,7 +6069,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   gfc_trans_scalarizing_loops (ploop, &body);
 
   if (lab2)
-    gfc_add_expr_to_block (&loop.pre, build1_v (LABEL_EXPR, lab2));
+    gfc_add_expr_to_block (&ploop->pre, build1_v (LABEL_EXPR, lab2));
 
   /* For a scalar mask, enclose the loop in an if statement.  */
   if (maskexpr && maskexpr->rank == 0)
@@ -11871,6 +11879,18 @@ walk_inline_intrinsic_minmaxloc (gfc_ss *ss, gfc_expr *expr ATTRIBUTE_UNUSED)
 
   gfc_ss *tmp_ss = gfc_ss_terminator;
 
+  bool scalar_mask = false;
+  if (mask)
+    {
+      gfc_ss *mask_ss = gfc_walk_subexpr (tmp_ss, mask);
+      if (mask_ss == tmp_ss)
+	scalar_mask = true;
+      else if (maybe_absent_optional_variable (mask))
+	mask_ss->info->can_be_null_ref = true;
+
+      tmp_ss = mask_ss;
+    }
+
   gfc_ss *array_ss = gfc_walk_subexpr (tmp_ss, array);
   gcc_assert (array_ss != tmp_ss);
 
@@ -11882,7 +11902,7 @@ walk_inline_intrinsic_minmaxloc (gfc_ss *ss, gfc_expr *expr ATTRIBUTE_UNUSED)
   gfc_ss *tail = nest_loop_dimension (tmp_ss, dim_val - 1);
   tail->next = ss;
 
-  if (mask)
+  if (scalar_mask)
     {
       tmp_ss = gfc_get_scalar_ss (tmp_ss, mask);
       /* MASK can be a forwarded optional argument, so make the necessary setup
@@ -12032,11 +12052,9 @@ gfc_inline_intrinsic_function_p (gfc_expr *expr)
 
 	gfc_actual_arglist *array_arg = expr->value.function.actual;
 	gfc_actual_arglist *dim_arg = array_arg->next;
-	gfc_actual_arglist *mask_arg = dim_arg->next;
 
 	gfc_expr *array = array_arg->expr;
 	gfc_expr *dim = dim_arg->expr;
-	gfc_expr *mask = mask_arg->expr;
 
 	if (!(array->ts.type == BT_INTEGER
 	      || array->ts.type == BT_REAL))
@@ -12045,19 +12063,11 @@ gfc_inline_intrinsic_function_p (gfc_expr *expr)
 	if (array->rank == 1)
 	  return true;
 
-	if (dim == nullptr)
-	  return true;
-
-	if (dim->expr_type != EXPR_CONSTANT)
+	if (dim != nullptr
+	    && dim->expr_type != EXPR_CONSTANT)
 	  return false;
 
-	if (array->ts.type != BT_INTEGER)
-	  return false;
-
-	if (mask == nullptr || mask->rank == 0)
-	  return true;
-
-	return false;
+	return true;
       }
 
     default:
