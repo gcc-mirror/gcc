@@ -169,7 +169,7 @@ See also @ref{OpenMP Implementation Status}.
 * OpenMP 5.0:: Feature completion status to 5.0 specification
 * OpenMP 5.1:: Feature completion status to 5.1 specification
 * OpenMP 5.2:: Feature completion status to 5.2 specification
-* OpenMP Technical Report 12:: Feature completion status to second 6.0 preview
+* OpenMP Technical Report 13:: Feature completion status to third 6.0 preview
 @end menu
 
 The @code{_OPENMP} preprocessor macro and Fortran's @code{openmp_version}
@@ -391,7 +391,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item @code{destroy} clause with destroy-var argument on @code{depobj}
       @tab Y @tab
 @item Deprecation of no-argument @code{destroy} clause on @code{depobj}
-      @tab N @tab
+      @tab N/A @tab undeprecated in OpenMP 6
 @item @code{linear} clause syntax changes and @code{step} modifier @tab Y @tab
 @item Deprecation of minus operator for reductions @tab N @tab
 @item Deprecation of separating @code{map} modifiers without comma @tab N @tab
@@ -448,20 +448,24 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @end multitable
 
 
-@node OpenMP Technical Report 12
-@section OpenMP Technical Report 12
+@node OpenMP Technical Report 13
+@section OpenMP Technical Report 13
 
-Technical Report (TR) 12 is the second preview for OpenMP 6.0.
+Technical Report (TR) 13 is the third preview for OpenMP 6.0.
 
 @unnumberedsubsec New features listed in Appendix B of the OpenMP specification
 @multitable @columnfractions .60 .10 .25
-@item Features deprecated in versions 5.2, 5.1 and 5.0 were removed
+@item Features deprecated in versions 5.0, 5.1 and 5.2 were removed
       @tab N/A @tab Backward compatibility
 @item Full support for C23 was added @tab P @tab
 @item Full support for C++23 was added @tab P @tab
+@item Full support for Fortran 2023 was added @tab P @tab
 @item @code{_ALL} suffix to the device-scope environment variables
       @tab P @tab Host device number wrongly accepted
 @item @code{num_threads} now accepts a list @tab N @tab
+@item Abstract names added for @code{OMP_NUM_THREADS},
+      @code{OMP_THREAD_LIMIT} and @code{OMP_TEAMS_THREAD_LIMIT}
+      @tab N @tab
 @item Supporting increments with abstract names in @code{OMP_PLACES} @tab N @tab
 @item Extension of @code{OMP_DEFAULT_DEVICE} and new
       @code{OMP_AVAILABLE_DEVICES} environment vars @tab N @tab
@@ -470,28 +474,51 @@ Technical Report (TR) 12 is the second preview for OpenMP 6.0.
       @tab Y @tab
 @item The OpenMP directive syntax was extended to include C 23 attribute
       specifiers @tab Y @tab
+@item Support for pure directives in Fortran's @code{do concurrent} @tab N @tab
 @item All inarguable clauses take now an optional Boolean argument @tab N @tab
 @item For Fortran, @emph{locator list} can be also function reference with
       data pointer result @tab N @tab
 @item Concept of @emph{assumed-size arrays} in C and C++
       @tab N @tab
 @item @emph{directive-name-modifier} accepted in all clauses @tab N @tab
+@item Argument-free version of @code{depobj} including added @code{init} clause
+      @tab N @tab
+@item Undeprecate omitting the argument to the @code{depend} clause of
+      the argument version of the @code{depend} construct @tab Y @tab
 @item For Fortran, atomic with BLOCK construct and, for C/C++, with
       unlimited curly braces supported @tab N @tab
+@item For Fortran, atomic with pointer comparison @tab N @tab
+@item For Fortran, atomic with enum and enumeration types @tab N @tab
 @item For Fortran, atomic compare with storing the comparison result
       @tab N @tab
 @item New @code{looprange} clause @tab N @tab
-@item Ref-count change for @code{use_device_ptr}/@code{use_device_addr}
+@item For Fortran, handling polymorphic types in data-sharing-attribute
+      clauses @tab P @tab @code{private} not supported
+@item For Fortran, rejecting polymorphic types in data-mapping clauses
+      @tab N @tab not diagnosed (and mostly unsupported)
+@item New @code{taskgraph} construct including @emph{saved} modifier and
+      @code{replayable} clause @tab N @tab
+@item @code{default} clause on the @code{target} directive @tab N @tab
+@item Ref-count change for @code{use_device_ptr} and @code{use_device_addr}
       @tab N @tab
 @item Support for inductions @tab N @tab
+@item Deprecation of the combiner expression in the @code{declare_reduction}
+      argument @tab N @tab
 @item Implicit reduction identifiers of C++ classes
       @tab N @tab
+@item New @code{init_complete} clause to the @code{scan} directive
+      @tab N @tab
+@item @code{ref} modifier to the @code{map} clause @tab N @tab
 @item Change of the @emph{map-type} property from @emph{ultimate} to
       @emph{default} @tab N @tab
 @item @code{self} modifier to @code{map} and @code{self} as
       @code{defaultmap} argument @tab N @tab
 @item Mapping of @emph{assumed-size arrays} in C, C++ and Fortran
       @tab N @tab
+@item @code{delete} as delete-modifier not as map type @tab N @tab
+@item @code{release} map-type modifier in @code{declare_mapper} @tab N @tab
+@item For Fortran, the @code{automap} modifier to the @code{enter} clause
+      of @code{declare_target} @tab N @tab
 @item @code{groupprivate} directive @tab N @tab
 @item @code{local} clause to @code{declare target} directive @tab N @tab
 @item @code{part_size} allocator trait @tab N @tab
@@ -499,54 +526,111 @@ Technical Report (TR) 12 is the second preview for OpenMP 6.0.
       allocator traits
       @tab N @tab
 @item @code{access} allocator trait changes @tab N @tab
-@item Extension of @code{interop} operation of @code{append_args}, allowing all
-      modifiers of the @code{init} clause
+@item New @code{partitioner} value to @code{partition} allocator trait
       @tab N @tab
+@item Semicolon-separated list to @code{uses_allocators} @tab N @tab
+@item New @code{uid} trait for target devices and for
+      @code{OMP_AVAILABLE_DEVICES} and @code{OMP_DEFAULT_DEVICE} @tab N @tab
+@item Extension of @code{interop} operation of @code{append_args}, allowing
+      all modifiers of the @code{init} clause @tab N @tab
+@item For @code{adjust_args}, new @code{need_device_addr} clause and
+      handling variadic arguments @tab N @tab
 @item @code{interop} clause to @code{dispatch} @tab N @tab
+@item Scope requirement changes for @code{declare_target} @tab N @tab
 @item @code{message} and @code{severity} clauses to @code{parallel} directive
       @tab N @tab
-@item @code{self} clause to @code{requires} directive @tab N @tab
+@item @code{self_maps} clause to @code{requires} directive @tab N @tab
 @item @code{no_openmp_constructs} assumptions clause @tab N @tab
-@item @code{reverse} loop-transformation construct @tab N @tab
-@item @code{interchange} loop-transformation construct @tab N @tab
-@item @code{fuse} loop-transformation construct @tab N @tab
+@item Restriction for @code{ordered} regarding loop-transforming directives
+      @tab N @tab
 @item @code{apply} code to loop-transforming constructs @tab N @tab
-@item @code{omp_curr_progress_width} identifier @tab N @tab
-@item @code{safesync} clause to the @code{parallel} construct @tab N @tab
-@item @code{omp_get_max_progress_width} runtime routine @tab N @tab
+@item Non-constant values in the @code{sizes} clause @tab N @tab
+@item @code{fuse} loop-transformation construct @tab N @tab
+@item @code{interchange} loop-transformation construct @tab N @tab
+@item @code{reverse} loop-transformation construct @tab N @tab
+@item @code{split} loop-transformation construct @tab N @tab
+@item @code{stipe} loop-transformation construct @tab N @tab
+@item @code{tile} permitting association of grid and inter-tile loops @tab N @tab
 @item @code{strict} modifier keyword to @code{num_threads} @tab N @tab
+@item @code{safesync} clause to the @code{parallel} construct @tab N @tab
+@item @code{omp_curr_progress_width} identifier @tab N @tab
+@item @code{omp_get_max_progress_width} runtime routine @tab N @tab
+@item Lifted restrictions on @code{order(concurrent)} and, hence, the
+      @code{loop} construct @tab N @tab
 @item @code{atomic} permitted in a construct with @code{order(concurrent)}
       @tab N @tab
-@item @code{workdistribute} directive for Fortran @tab N
-      @tab Renamed just after TR12; added in TR12 as @code{coexecute}
+@item @code{workdistribute} directive for Fortran @tab N @tab
 @item Fortran DO CONCURRENT as associated loop in a @code{loop} construct
       @tab N @tab
 @item @code{threadset} clause in task-generating constructs @tab N @tab
+@item New @code{priority} clause to @code{target}, @code{target_enter_data},
+      @code{target_data}, @code{ŧarget_exit_data} and @code{target_update}
+      @tab N @tab
+@item New @code{device_type} clause to the @code{target} directive.
+      @tab N @tab
+@item @code{target_data} as composite construct @tab N @tab
 @item @code{nowait} clause with reverse-offload @code{target} directives
       @tab N @tab
+@item Extended @emph{prefer-type} modifier to  @code{init} clause @tab N @tab
 @item Boolean argument to @code{nowait} and @code{nogroup} may be non constant
       @tab N @tab
 @item @code{memscope} clause to @code{atomic} and @code{flush} @tab N @tab
+@item New @code{transparent} clause for multi-generational task-dependence graphs
+      @tab N @tab
+@item Added rule for compound-directive names, permitting many more combinations
+      @tab N @tab
 @item @code{omp_is_free_agent} and @code{omp_ancestor_is_free_agent} routines
       @tab N @tab
+@item @code{omp_get_device_from_uid} and @code{omp_get_uid_from_device} routines
+      @tab N @tab
+@item @code{omp_get_device_num_teams}, @code{omp_set_device_num_teams},
+      @code{omp_get_device_teams_thread_limit}, and
+      @code{omp_set_device_teams_thread_limit} routines @tab N @tab
 @item @code{omp_target_memset} and @code{omp_target_memset_rect_async} routines
       @tab N @tab
+@item Fortran version of the interop runtime routines @tab N @tab
 @item Routines for obtaining memory spaces/allocators for shared/device memory
       @tab N @tab
 @item @code{omp_get_memspace_num_resources} routine @tab N @tab
 @item @code{omp_get_submemspace} routine @tab N @tab
+@item @code{omp_get_memspace_pagesize} routine @tab N @tab
+@item @code{omp_init_mempartitioner}, @code{omp_destroy_mempartitioner},
+      @code{omp_init_mempartition}, @code{omp_destroy_mempartition},
+      @code{omp_mempartition_set_part}, @code{omp_mempartition_get_user_data}
+      routines @tab N @tab
+@item Deprecation of the @code{target_data_op}, @code{target},
+      @code{target_map} and @code{target_submit} callbacks and as values that
+      @code{set_callback} must return @tab N @tab
 @item @code{ompt_target_data_transfer} and @code{ompt_target_data_transfer_async}
       values in @code{ompt_target_data_op_t} enum @tab N @tab
+@item The values @code{ompt_target_data_transfer_to_device},
+      @code{ompt_target_data_transfer_from_device},
+      @code{ompt_target_data_transfer_to_device_async} and
+      @code{ompt_target_data_transfer_from_device_async} of the @code{target_data_op}
+      OMPT type were deprecated @tab N @tab
 @item @code{ompt_get_buffer_limits} OMPT routine @tab N @tab
+
+@c From the deprecation list, unless listed above.
+
+@item Deprecation of omitting the optional white space to separate adjacent
+      keywords in the directive-name in Fortran @tab N @tab
+@item Deprecation of the Fortran include file @code{omp_lib.h}
+      @tab N @tab
 @end multitable
 
-@unnumberedsubsec Other new TR 12 features
+@unnumberedsubsec Other new TR 13 features
 @multitable @columnfractions .60 .10 .25
+@item Multi-word directives now use underscore by default @tab N @tab
 @item Canonical loop nest enclosed in (multiple) curly braces (C/C++) or BLOCK constructs (Fortran)
       @tab N @tab
 @item Relaxed Fortran restrictions to the @code{aligned} clause @tab N @tab
 @item Mapping lambda captures @tab N @tab
 @item New @code{omp_pause_stop_tool} constant for omp_pause_resource @tab N @tab
+@item Multi-word directive names are now permitted with underscore @tab N @tab
+@item In Fortran (fixed + free), space between directive names is mandatory
+      @tab N @tab
+@item @code{map(release: ...)} on @code{target} and @code{target_data} (map-type
+      decay changes) @tab N @tab post-TR13 item
 @end multitable
 
 
