@@ -21183,6 +21183,29 @@ convert_cfa_to_fb_loc_list (HOST_WIDE_INT offset)
   list = NULL;
 
   memset (&next_cfa, 0, sizeof (next_cfa));
+
+#ifdef CODEVIEW_DEBUGGING_INFO
+  /* We can write simplified frame base information for CodeView, as we're
+     not using it for rewinding.  */
+  if (codeview_debuginfo_p ())
+    {
+      int dwreg = DEBUGGER_REGNO (cfun->machine->fs.cfa_reg->u.reg.regno);
+
+      next_cfa.reg.set_by_dwreg (dwreg);
+      next_cfa.offset = cfun->machine->fs.fp_valid
+	? cfun->machine->fs.fp_offset : cfun->machine->fs.sp_offset;
+
+      *list_tail = new_loc_list (build_cfa_loc (&next_cfa, offset),
+				 fde->dw_fde_begin, 0,
+				 fde->dw_fde_second_begin
+				 ? fde->dw_fde_second_end : fde->dw_fde_end, 0,
+				 section);
+      maybe_gen_llsym (list);
+
+      return list;
+    }
+#endif
+
   next_cfa.reg.set_by_dwreg (INVALID_REGNUM);
   remember = next_cfa;
 

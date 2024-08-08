@@ -75,6 +75,7 @@ enum cv_sym_type {
   S_REGISTER = 0x1106,
   S_LDATA32 = 0x110c,
   S_GDATA32 = 0x110d,
+  S_REGREL32 = 0x1111,
   S_COMPILE3 = 0x113c,
   S_LPROC32_ID = 0x1146,
   S_GPROC32_ID = 0x1147,
@@ -2195,12 +2196,94 @@ write_s_register (dw_die_ref die, dw_loc_descr_ref loc_ref)
   targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
 }
 
+/* Write an S_REGREL32 symbol in order to represent an unoptimized stack
+   variable.  The memory address is given by a register value plus an offset,
+   so we need to parse the function's DW_AT_frame_base attribute for this.  */
+
+static void
+write_fbreg_variable (dw_die_ref die, dw_loc_descr_ref loc_ref,
+		      dw_loc_descr_ref fbloc)
+{
+  unsigned int label_num = ++sym_label_num;
+  const char *name = get_AT_string (die, DW_AT_name);
+  uint32_t type;
+  uint16_t regno;
+  int offset;
+
+  /* This is struct regrel in binutils and REGREL32 in Microsoft's cvinfo.h:
+
+    struct regrel
+    {
+      uint16_t size;
+      uint16_t kind;
+      uint32_t offset;
+      uint32_t type;
+      uint16_t reg;
+      char name[];
+    } ATTRIBUTE_PACKED;
+  */
+
+  if (!fbloc)
+    return;
+
+  if (fbloc->dw_loc_opc >= DW_OP_breg0 && fbloc->dw_loc_opc <= DW_OP_breg31)
+    {
+      regno = dwarf_reg_to_cv (fbloc->dw_loc_opc - DW_OP_breg0);
+      offset = fbloc->dw_loc_oprnd1.v.val_int;
+    }
+  else if (fbloc->dw_loc_opc == DW_OP_bregx)
+    {
+      regno = dwarf_reg_to_cv (fbloc->dw_loc_oprnd1.v.val_int);
+      offset = fbloc->dw_loc_oprnd2.v.val_int;
+    }
+  else
+    {
+      return;
+    }
+
+  if (loc_ref->dw_loc_oprnd1.val_class != dw_val_class_unsigned_const)
+    return;
+
+  offset += loc_ref->dw_loc_oprnd1.v.val_int;
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	       "%L" SYMBOL_END_LABEL "%u - %L" SYMBOL_START_LABEL "%u\n",
+	       label_num, label_num);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_START_LABEL, label_num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, S_REGREL32);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, offset);
+  putc ('\n', asm_out_file);
+
+  type = get_type_num (get_AT_ref (die, DW_AT_type), false, false);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, type);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, regno);
+  putc ('\n', asm_out_file);
+
+  ASM_OUTPUT_ASCII (asm_out_file, name, strlen (name) + 1);
+
+  ASM_OUTPUT_ALIGN (asm_out_file, 2);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+}
+
 /* Write a symbol representing an unoptimized variable within a function, if
    we're able to translate the DIE's DW_AT_location into its CodeView
    equivalent.  */
 
 static void
-write_unoptimized_local_variable (dw_die_ref die)
+write_unoptimized_local_variable (dw_die_ref die, dw_loc_descr_ref fbloc)
 {
   dw_attr_node *loc;
   dw_loc_descr_ref loc_ref;
@@ -2256,6 +2339,10 @@ write_unoptimized_local_variable (dw_die_ref die)
     case DW_OP_reg31:
     case DW_OP_regx:
       write_s_register (die, loc_ref);
+      break;
+
+    case DW_OP_fbreg:
+      write_fbreg_variable (die, loc_ref, fbloc);
       break;
 
     default:
@@ -2390,7 +2477,7 @@ write_s_end (void)
    or blocks that we encounter.  */
 
 static void
-write_unoptimized_function_vars (dw_die_ref die)
+write_unoptimized_function_vars (dw_die_ref die, dw_loc_descr_ref fbloc)
 {
   dw_die_ref first_child, c;
 
@@ -2408,14 +2495,14 @@ write_unoptimized_function_vars (dw_die_ref die)
       {
       case DW_TAG_formal_parameter:
       case DW_TAG_variable:
-	write_unoptimized_local_variable (c);
+	write_unoptimized_local_variable (c, fbloc);
 	break;
 
       case DW_TAG_lexical_block:
 	{
 	  bool block_started = write_s_block32 (c);
 
-	  write_unoptimized_function_vars (c);
+	  write_unoptimized_function_vars (c, fbloc);
 
 	  if (block_started)
 	    write_s_end ();
@@ -2437,9 +2524,10 @@ static void
 write_function (codeview_symbol *s)
 {
   unsigned int label_num = ++sym_label_num;
-  dw_attr_node *loc_low, *loc_high;
+  dw_attr_node *loc_low, *loc_high, *frame_base;
   const char *label_low, *label_high;
   rtx rtx_low, rtx_high;
+  dw_loc_descr_ref fbloc = NULL;
 
   /* This is struct procsym in binutils and PROCSYM32 in Microsoft's cvinfo.h:
 
@@ -2555,7 +2643,12 @@ write_function (codeview_symbol *s)
 
   targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
 
-  write_unoptimized_function_vars (s->function.die);
+  frame_base = get_AT (s->function.die, DW_AT_frame_base);
+
+  if (frame_base && frame_base->dw_attr_val.val_class == dw_val_class_loc)
+    fbloc = frame_base->dw_attr_val.v.val_loc;
+
+  write_unoptimized_function_vars (s->function.die, fbloc);
 
   /* Output the S_PROC_ID_END record.  */
 
