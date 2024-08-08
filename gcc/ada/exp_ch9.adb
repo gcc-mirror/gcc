@@ -489,7 +489,8 @@ package body Exp_Ch9 is
    --    <actualN> := P.<formalN>;
 
    procedure Reset_Scopes_To (Bod : Node_Id; E : Entity_Id);
-   --  Reset the scope of declarations and blocks at the top level of Bod to
+   --  Reset the scope of declarations and blocks at the top level of Bod and
+   --  of nested object declarations with scope pointing to the entry entity to
    --  be E. Bod is either a block or a subprogram body. Used after expanding
    --  various kinds of entry bodies into their corresponding constructs. This
    --  is needed during unnesting to determine whether a body generated for an
@@ -14868,12 +14869,34 @@ package body Exp_Ch9 is
             Set_Scope (Entity (Identifier (N)), E);
             return Skip;
 
+         --  Reset scope for object declaration which scope is the task entry.
+         --
+         --  Also look inside the declaration (in particular in the expression
+         --  if present) because we may have expanded to something like:
+
+         --  O1 : Typ := do
+         --    TMP1 : OTyp := ...;
+         --    ...
+         --    in TMP1;
+
+         --  And the scope for TMP1 is Scope (O1). We need to look inside the
+         --  declaration to also reset such scope.
+
+         elsif Nkind (N) = N_Object_Declaration then
+            if Present (Scope (Defining_Entity (N)))
+              and then Ekind (Scope (Defining_Entity (N)))
+                in E_Entry | E_Entry_Family
+            then
+               Set_Scope (Defining_Entity (N), E);
+            end if;
+
          --  Ditto for a package declaration or a full type declaration, etc.
 
          elsif (Nkind (N) = N_Package_Declaration
                  and then N /= Specification (N))
            or else Nkind (N) in N_Declaration
            or else Nkind (N) in N_Renaming_Declaration
+           or else Nkind (N) in N_Implicit_Label_Declaration
          then
             Set_Scope (Defining_Entity (N), E);
             return Skip;
