@@ -10,5 +10,5 @@
   return (x + h(t));
 }
 
-/* { dg-final { scan-assembler-times "shufps" 1 } } */
+/* { dg-final { scan-assembler-times "shufps|permilps" 1 } } */
 /* { dg-final { scan-assembler-not "unpck" } } */
