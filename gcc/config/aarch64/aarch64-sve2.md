@@ -264,7 +264,8 @@
   [(set (match_operand:SVE_FULLx24 0 "aligned_register_operand" "=Uw<vector_count>")
 	(unspec:SVE_FULLx24
 	  [(match_operand:VNx16BI 2 "register_operand" "Uph")
-	   (match_operand:SVE_FULLx24 1 "memory_operand" "m")]
+	   (match_operand:SVE_FULLx24 1 "memory_operand" "m")
+	   (match_operand:SVE_FULLx24 3 "aarch64_maskload_else_operand")]
 	  LD1_COUNT))]
   "TARGET_SVE2p1_OR_SME2"
   "<optab><Vesize>\t%0, %K2/z, %1"

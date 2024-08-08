@@ -696,7 +696,7 @@ public:
   rtx use_pred_x_insn (insn_code);
   rtx use_cond_insn (insn_code, unsigned int = DEFAULT_MERGE_ARGNO);
   rtx use_vcond_mask_insn (insn_code, unsigned int = DEFAULT_MERGE_ARGNO);
-  rtx use_contiguous_load_insn (insn_code);
+  rtx use_contiguous_load_insn (insn_code, bool = false);
   rtx use_contiguous_prefetch_insn (insn_code);
   rtx use_contiguous_store_insn (insn_code);
 
