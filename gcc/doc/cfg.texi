@@ -83,13 +83,13 @@ lexicographical order, except @code{ENTRY_BLOCK} and @code{EXIT_BLOCK}.
 The macro @code{FOR_ALL_BB} also visits all basic blocks in
 lexicographical order, including @code{ENTRY_BLOCK} and @code{EXIT_BLOCK}.
 
-@findex post_order_compute, inverted_post_order_compute, walk_dominator_tree
+@findex post_order_compute, inverted_post_order_compute, dom_walker::walk
 The functions @code{post_order_compute} and @code{inverted_post_order_compute}
 can be used to compute topological orders of the CFG.  The orders are
 stored as vectors of basic block indices.  The @code{BASIC_BLOCK} array
 can be used to iterate each basic block by index.
 Dominator traversals are also possible using
-@code{walk_dominator_tree}.  Given two basic blocks A and B, block A
+@code{dom_walker::walk}.  Given two basic blocks A and B, block A
 dominates block B if A is @emph{always} executed before B@.
 
 Each @code{basic_block} also contains pointers to the first
