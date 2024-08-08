@@ -33,10 +33,9 @@ public:
 
   /** Get regions mentioned in a type. */
   std::vector<Region> query_type_regions (BaseType *type);
-  std::vector<size_t> query_field_regions (const ADTType *parent,
-					   size_t variant_index,
-					   size_t field_index,
-					   const FreeRegions &parent_regions);
+  FreeRegions query_field_regions (const ADTType *parent, size_t variant_index,
+				   size_t field_index,
+				   const FreeRegions &parent_regions);
 
 private:
   std::unique_ptr<GenericTyPerCrateCtx> private_ctx;

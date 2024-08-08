@@ -259,11 +259,14 @@ public:
     auto variances = Resolver::TypeCheckContext::get ()
 		       ->get_variance_analysis_ctx ()
 		       .query_type_variances (new_place_ref.tyty);
-    std::vector<Polonius::Origin> regions;
+    FreeRegions regions;
     for (size_t i = 0; i < variances.size (); ++i)
-      regions.push_back (next_free_region.value++);
+      {
+	regions.push_back (next_free_region);
+	++next_free_region.value;
+      }
 
-    new_place_ref.regions.set_from (std::move (regions));
+    new_place_ref.regions = regions;
 
     return new_place;
   }

@@ -68,15 +68,15 @@ private:
   /** Instantiate `num_lifetime_params` free regions. */
   void handle_lifetime_params (size_t num_lifetime_params)
   {
-    std::vector<FreeRegion> function_free_regions;
+    FreeRegions regions;
     for (size_t i = 0; i < num_lifetime_params; i++)
       {
-	function_free_regions.push_back (ctx.place_db.get_next_free_region ());
+	regions.push_back (ctx.place_db.get_next_free_region ());
       }
 
     rust_debug ("\tctx.fn_free_region={%s}",
 		ctx.fn_free_regions.to_string ().c_str ());
-    ctx.fn_free_regions.set_from (std::move (function_free_regions));
+    ctx.fn_free_regions = regions;
   }
 
   void handle_lifetime_param_constraints (
