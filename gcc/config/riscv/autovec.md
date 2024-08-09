@@ -1073,29 +1073,19 @@
 [(set_attr "type" "vialu")])
 
 ;; -------------------------------------------------------------------------------
-;; - [INT] ABS expansion to vmslt and vneg.
+;; - [INT] ABS expansion to vneg and vmax.
 ;; -------------------------------------------------------------------------------
 
-(define_insn_and_split "abs<mode>2"
+(define_expand "abs<mode>2"
   [(set (match_operand:V_VLSI 0 "register_operand")
-     (abs:V_VLSI
-       (match_operand:V_VLSI 1 "register_operand")))]
-  "TARGET_VECTOR && can_create_pseudo_p ()"
-  "#"
-  "&& 1"
-  [(const_int 0)]
+    (smax:V_VLSI
+     (match_dup 0)
+     (neg:V_VLSI
+       (match_operand:V_VLSI 1 "register_operand"))))]
+  "TARGET_VECTOR"
 {
-  rtx zero = gen_const_vec_duplicate (<MODE>mode, GEN_INT (0));
-  machine_mode mask_mode = riscv_vector::get_mask_mode (<MODE>mode);
-  rtx mask = gen_reg_rtx (mask_mode);
-  riscv_vector::expand_vec_cmp (mask, LT, operands[1], zero);
-
-  rtx ops[] = {operands[0], mask, operands[1], operands[1]};
-  riscv_vector::emit_vlmax_insn (code_for_pred (NEG, <MODE>mode),
-                                  riscv_vector::UNARY_OP_TAMU, ops);
   DONE;
-}
-[(set_attr "type" "vector")])
+})
 
 ;; -------------------------------------------------------------------------------
 ;; ---- [FP] Unary operations
