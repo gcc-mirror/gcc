@@ -152,9 +152,6 @@ static machine_mode curr_operand_mode[MAX_RECOG_OPERANDS];
    (e.g. constant) and whose subreg is given operand of the current
    insn.  VOIDmode in all other cases.  */
 static machine_mode original_subreg_reg_mode[MAX_RECOG_OPERANDS];
-/* The nearest call insn for an insn on which split transformation
-   will be done. The call insn is in the same EBB as the insn.  */
-static rtx_insn *latest_call_insn;
 
 
 
@@ -6289,25 +6286,10 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
 			 after_p ? restore : NULL,
 			 call_save_p
 			 ?  "Add reg<-save" : "Add reg<-split");
-  if (call_save_p && latest_call_insn != NULL)
-    /* PR116028: If original_regno is a pseudo that has been assigned a
-       call-save hard register, then emit the spill insn before the call
-       insn 'latest_call_insn' instead of adjacent to 'insn'. If 'insn'
-       and 'latest_call_insn' belong to the same EBB but to two separate
-       BBs, and if 'insn' is present in the entry BB, then generating the
-       spill insn in the entry BB can prevent shrink wrap from happening.
-       This is because the spill insn references the stack pointer and
-       hence the prolog gets generated in the entry BB itself. It is
-       also more efficient to generate the spill before
-       'latest_call_insn' as the spill now occurs only in the path
-       containing the call.  */
-    lra_process_new_insns (PREV_INSN (latest_call_insn), NULL, save,
-			   "Add save<-reg");
-  else
-    lra_process_new_insns (insn, before_p ? save : NULL,
-			   before_p ? NULL : save,
-			   call_save_p
-			   ?  "Add save<-reg" : "Add split<-reg");
+  lra_process_new_insns (insn, before_p ? save : NULL,
+			 before_p ? NULL : save,
+			 call_save_p
+			 ?  "Add save<-reg" : "Add split<-reg");
   if (nregs > 1 || original_regno < FIRST_PSEUDO_REGISTER)
     /* If we are trying to split multi-register.  We should check
        conflicts on the next assignment sub-pass.  IRA can allocate on
@@ -6791,7 +6773,6 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
   last_processed_bb = NULL;
   CLEAR_HARD_REG_SET (potential_reload_hard_regs);
   live_hard_regs = eliminable_regset | lra_no_alloc_regs;
-  latest_call_insn = NULL;
   /* We don't process new insns generated in the loop.	*/
   for (curr_insn = tail; curr_insn != PREV_INSN (head); curr_insn = prev_insn)
     {
@@ -7004,7 +6985,6 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 	      last_call_for_abi[callee_abi.id ()] = calls_num;
 	      full_and_partial_call_clobbers
 		|= callee_abi.full_and_partial_reg_clobbers ();
-	      latest_call_insn = curr_insn;
 	      if ((cheap = find_reg_note (curr_insn,
 					  REG_RETURNED, NULL_RTX)) != NULL_RTX
 		  && ((cheap = XEXP (cheap, 0)), true)
