@@ -1797,6 +1797,7 @@ synthesize_method (tree fndecl)
      it now.  */
   push_deferring_access_checks (dk_no_deferred);
 
+  cp_evaluated ev;
   if (! context)
     push_to_top_level ();
   else if (nested)
