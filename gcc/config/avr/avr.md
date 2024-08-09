@@ -536,7 +536,7 @@
 ;; "load_sf_libgcc"
 (define_insn_and_split "load_<mode>_libgcc"
   [(set (reg:MOVMODE 22)
-        (match_operand:MOVMODE 0 "memory_operand" "m,m"))]
+        (match_operand:MOVMODE 0 "memory_operand" "m"))]
   "avr_load_libgcc_p (operands[0])
    && REG_P (XEXP (operands[0], 0))
    && REG_Z == REGNO (XEXP (operands[0], 0))"
@@ -544,24 +544,18 @@
   "&& reload_completed"
   [(parallel [(set (reg:MOVMODE 22)
                    (match_dup 0))
-              (clobber (reg:CC REG_CC))])]
-  ""
-  [(set_attr "isa" "rjmp,jmp")])
+              (clobber (reg:CC REG_CC))])])
 
 (define_insn "*load_<mode>_libgcc"
   [(set (reg:MOVMODE 22)
-        (match_operand:MOVMODE 0 "memory_operand" "m,m"))
+        (match_operand:MOVMODE 0 "memory_operand" "m"))
    (clobber (reg:CC REG_CC))]
   "avr_load_libgcc_p (operands[0])
    && REG_P (XEXP (operands[0], 0))
    && REG_Z == REGNO (XEXP (operands[0], 0))
    && reload_completed"
-  {
-    operands[0] = GEN_INT (<SIZE>);
-    return "%~call __load_%0";
-  }
-  [(set_attr "length" "1,2")
-   (set_attr "isa" "rjmp,jmp")])
+  "%~call __load_<SIZE>"
+  [(set_attr "type" "xcall")])
 
 
 ;; "xload8qi_A"
@@ -657,7 +651,6 @@
 ;; "xload_si_libgcc" "xload_sq_libgcc" "xload_usq_libgcc" "xload_sa_libgcc" "xload_usa_libgcc"
 ;; "xload_sf_libgcc"
 ;; "xload_psi_libgcc"
-
 (define_insn_and_split "xload_<mode>_libgcc"
   [(set (reg:MOVMODE 22)
         (mem:MOVMODE (lo_sum:PSI (reg:QI 21)
@@ -668,8 +661,8 @@
   "#"
   "&& reload_completed"
   [(parallel [(set (reg:MOVMODE 22)
-              (mem:MOVMODE (lo_sum:PSI (reg:QI 21)
-                                       (reg:HI REG_Z))))
+                   (mem:MOVMODE (lo_sum:PSI (reg:QI 21)
+                                            (reg:HI REG_Z))))
               (clobber (reg:CC REG_CC))])])
 
 (define_insn "*xload_<mode>_libgcc"
@@ -679,12 +672,7 @@
    (clobber (reg:CC REG_CC))]
   "avr_xload_libgcc_p (<MODE>mode)
    && reload_completed"
-  {
-    rtx x_bytes = GEN_INT (<SIZE>);
-
-    output_asm_insn ("%~call __xload_%0", &x_bytes);
-    return "";
-  }
+  "%~call __xload_<SIZE>"
   [(set_attr "type" "xcall")])
 
 
@@ -2278,7 +2266,7 @@
   [(set (match_operand:PSI 0 "register_operand"                         "=r")
         (plus:PSI (lshiftrt:PSI (match_operand:PSI 1 "register_operand"  "r")
                                 (const_int 23))
-                 (match_operand:PSI 2 "register_operand"                 "0")))]
+                  (match_operand:PSI 2 "register_operand"                "0")))]
   ""
   "#"
   "&& reload_completed"
