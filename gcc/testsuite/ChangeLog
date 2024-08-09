@@ -1,3 +1,11 @@
+2024-08-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-08-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/116295
+	* gcc.target/avr/torture/pr116295.c: New test.
+
 2024-08-06  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:
