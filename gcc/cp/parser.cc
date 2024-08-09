@@ -13221,7 +13221,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	  statement = cp_parser_transaction_cancel (parser);
 	  break;
 	case RID_CONTASSERT:
-	  if (flag_contracts_nonattr &&flag_contracts)
+	  if (flag_contracts_nonattr && flag_contracts)
 	    {
 	      tree cont_assert = token->u.value;
 
