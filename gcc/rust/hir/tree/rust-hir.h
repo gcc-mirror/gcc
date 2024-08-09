@@ -220,6 +220,8 @@ public:
     Module,
   };
 
+  static std::string item_kind_string (ItemKind kind);
+
   virtual ItemKind get_item_kind () const = 0;
 
   // Unique pointer custom clone function

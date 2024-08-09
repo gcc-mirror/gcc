@@ -43,32 +43,100 @@ TypeCheckPattern::Resolve (HIR::Pattern *pattern, TyTy::BaseType *parent)
 void
 TypeCheckPattern::visit (HIR::PathInExpression &pattern)
 {
-  infered = TypeCheckExpr::Resolve (&pattern);
+  // Pattern must be enum variants, sturcts, constants, or associated constansts
+  TyTy::BaseType *pattern_ty = TypeCheckExpr::Resolve (&pattern);
 
-  /*
-   * We are compiling a PathInExpression, which can't be a Struct or Tuple
-   * pattern. We should check that the declaration we are referencing IS NOT a
-   * struct pattern or tuple with values.
-   */
+  NodeId ref_node_id = UNKNOWN_NODEID;
+  bool maybe_item = false;
+  maybe_item
+    |= resolver->lookup_resolved_name (pattern.get_mappings ().get_nodeid (),
+				       &ref_node_id);
+  maybe_item
+    |= resolver->lookup_resolved_type (pattern.get_mappings ().get_nodeid (),
+				       &ref_node_id);
+  bool path_is_const_item = false;
 
-  rust_assert (infered->get_kind () == TyTy::TypeKind::ADT);
-  TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (infered);
+  if (maybe_item)
+    {
+      tl::optional<HirId> definition_id
+	= mappings.lookup_node_to_hir (ref_node_id);
+      rust_assert (definition_id.has_value ());
+      HirId def_id = definition_id.value ();
 
-  HirId variant_id = UNKNOWN_HIRID;
-  bool ok
-    = context->lookup_variant_definition (pattern.get_mappings ().get_hirid (),
-					  &variant_id);
-  rust_assert (ok);
+      tl::optional<HIR::Item *> hir_item = mappings.lookup_hir_item (def_id);
+      // If the path refrerences an item, it must be constants or structs.
+      if (hir_item.has_value ())
+	{
+	  HIR::Item *item = hir_item.value ();
+	  if (item->get_item_kind () == HIR::Item::ItemKind::Constant)
+	    {
+	      path_is_const_item = true;
+	    }
+	  else if (item->get_item_kind () != HIR::Item::ItemKind::Struct)
+	    {
+	      HIR::Item *item = hir_item.value ();
+	      std::string item_kind
+		= HIR::Item::item_kind_string (item->get_item_kind ());
 
-  TyTy::VariantDef *variant = nullptr;
-  ok = adt->lookup_variant_by_id (variant_id, &variant);
+	      std::string path_buf;
+	      for (size_t i = 0; i < pattern.get_segments ().size (); i++)
+		{
+		  HIR::PathExprSegment &seg = pattern.get_segments ().at (i);
+		  path_buf += seg.as_string ();
+		  if (i != pattern.get_segments ().size () - 1)
+		    path_buf += "::";
+		}
 
-  TyTy::VariantDef::VariantType vty = variant->get_variant_type ();
+	      rich_location rich_locus (
+		line_table, pattern.get_final_segment ().get_locus ());
+	      rich_locus.add_fixit_replace (
+		"not a unit struct, unit variant or constatnt");
+	      rust_error_at (rich_locus, ErrorCode::E0532,
+			     "expected unit struct, unit variant or constant, "
+			     "found %s %<%s%>",
+			     item_kind.c_str (), path_buf.c_str ());
+	      return;
+	    }
+	}
+    }
 
-  if (vty != TyTy::VariantDef::VariantType::NUM)
-    rust_error_at (
-      pattern.get_final_segment ().get_locus (), ErrorCode::E0532,
-      "expected unit struct, unit variant or constant, found tuple variant");
+  // If the path is a constructor, it must be a unit struct or unit variants.
+  if (!path_is_const_item && pattern_ty->get_kind () == TyTy::TypeKind::ADT)
+    {
+      TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (pattern_ty);
+      rust_assert (adt->get_variants ().size () > 0);
+
+      TyTy::VariantDef *variant = adt->get_variants ().at (0);
+      if (adt->is_enum ())
+	{
+	  HirId variant_id = UNKNOWN_HIRID;
+	  bool ok = context->lookup_variant_definition (
+	    pattern.get_mappings ().get_hirid (), &variant_id);
+	  rust_assert (ok);
+
+	  ok = adt->lookup_variant_by_id (variant_id, &variant);
+	  rust_assert (ok);
+	}
+
+      if (variant->get_variant_type () != TyTy::VariantDef::VariantType::NUM)
+	{
+	  std::string variant_type = TyTy::VariantDef::variant_type_string (
+	    variant->get_variant_type ());
+
+	  rich_location rich_locus (line_table,
+				    pattern.get_final_segment ().get_locus ());
+	  rich_locus.add_fixit_replace (
+	    "not a unit struct, unit variant or constatnt");
+	  rust_error_at (rich_locus, ErrorCode::E0532,
+			 "expected unit struct, unit variant or constant, "
+			 "found %s variant %<%s::%s%>",
+			 variant_type.c_str (), adt->get_name ().c_str (),
+			 variant->get_identifier ().c_str ());
+	  return;
+	}
+
+      infered = pattern_ty;
+    }
 }
 
 void
@@ -100,8 +168,8 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
       rust_assert (ok);
     }
 
-  // error[E0532]: expected tuple struct or tuple variant, found struct variant
-  // `Foo::D`, E0532 by rustc 1.49.0 , E0164 by rustc 1.71.0
+  // error[E0532]: expected tuple struct or tuple variant, found struct
+  // variant `Foo::D`, E0532 by rustc 1.49.0 , E0164 by rustc 1.71.0
   if (variant->get_variant_type () != TyTy::VariantDef::VariantType::TUPLE)
     {
       std::string variant_type
@@ -203,8 +271,8 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
       rust_assert (ok);
     }
 
-  // error[E0532]: expected tuple struct or tuple variant, found struct variant
-  // `Foo::D`
+  // error[E0532]: expected tuple struct or tuple variant, found struct
+  // variant `Foo::D`
   if (variant->get_variant_type () != TyTy::VariantDef::VariantType::STRUCT)
     {
       std::string variant_type

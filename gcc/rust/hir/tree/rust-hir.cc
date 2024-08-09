@@ -213,6 +213,44 @@ Module::as_string () const
 }
 
 std::string
+Item::item_kind_string (Item::ItemKind kind)
+{
+  switch (kind)
+    {
+    case Item::ItemKind::Static:
+      return "static";
+    case Item::ItemKind::Constant:
+      return "constant";
+    case Item::ItemKind::TypeAlias:
+      return "type alias";
+    case Item::ItemKind::Function:
+      return "function";
+    case Item::ItemKind::UseDeclaration:
+      return "use declaration";
+    case Item::ItemKind::ExternBlock:
+      return "extern block";
+    case Item::ItemKind::ExternCrate:
+      return "extern crate";
+    case Item::ItemKind::Struct:
+      return "struct";
+    case Item::ItemKind::Union:
+      return "union";
+    case Item::ItemKind::Enum:
+      return "enum";
+    case Item::ItemKind::EnumItem:
+      return "enum item";
+    case Item::ItemKind::Trait:
+      return "trait";
+    case Item::ItemKind::Impl:
+      return "impl";
+    case Item::ItemKind::Module:
+      return "module";
+    default:
+      rust_unreachable ();
+    }
+}
+
+std::string
 StaticItem::as_string () const
 {
   std::string str = VisItem::as_string ();
