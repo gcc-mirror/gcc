@@ -837,6 +837,9 @@ UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-templates)
 Wtautological-compare
 UrlSuffix(gcc/Warning-Options.html#index-Wno-tautological-compare)
 
+Wtemplate-body
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-template-body)
+
 Wtemplate-id-cdtor
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-template-id-cdtor)
 
