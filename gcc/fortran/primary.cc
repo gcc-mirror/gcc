@@ -3895,9 +3895,15 @@ gfc_match_rvalue (gfc_expr **result)
 
       if (sym->ts.type == BT_CLASS && sym->attr.class_ok
 	  && CLASS_DATA (sym)->as)
-	e->rank = CLASS_DATA (sym)->as->rank;
+	{
+	  e->rank = CLASS_DATA (sym)->as->rank;
+	  e->corank = CLASS_DATA (sym)->as->corank;
+	}
       else if (sym->as != NULL)
-	e->rank = sym->as->rank;
+	{
+	  e->rank = sym->as->rank;
+	  e->corank = sym->as->corank;
+	}
 
       if (!sym->attr.function
 	  && !gfc_add_function (&sym->attr, sym->name, NULL))

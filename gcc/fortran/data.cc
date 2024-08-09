@@ -327,6 +327,7 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
 	      /* Setup the expression to hold the constructor.  */
 	      expr->expr_type = EXPR_ARRAY;
 	      expr->rank = ref->u.ar.as->rank;
+	      expr->corank = ref->u.ar.as->corank;
 	    }
 
 	  if (ref->u.ar.type == AR_ELEMENT)

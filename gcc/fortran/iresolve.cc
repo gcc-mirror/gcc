@@ -152,13 +152,21 @@ resolve_bound (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *kind,
 
   if (dim == NULL)
     {
-      f->rank = 1;
       if (array->rank != -1)
 	{
-	  f->shape = gfc_get_shape (1);
-	  mpz_init_set_ui (f->shape[0], coarray ? gfc_get_corank (array)
-						: array->rank);
+	  /* Assume f->rank gives the size of the shape, because there is no
+	     other way to determine the size.  */
+	  if (!f->shape || f->rank != 1)
+	    {
+	      if (f->shape)
+		gfc_free_shape (&f->shape, f->rank);
+	      f->shape = gfc_get_shape (1);
+	    }
+	  mpz_init_set_ui (f->shape[0], coarray ? array->corank : array->rank);
 	}
+      /* Applying bound to a coarray always results in a regular array.  */
+      f->rank = 1;
+      f->corank = 0;
     }
 
   f->value.function.name = gfc_get_string ("%s", name);
@@ -748,6 +756,7 @@ gfc_resolve_cshift (gfc_expr *f, gfc_expr *array, gfc_expr *shift,
 
   f->ts = array->ts;
   f->rank = array->rank;
+  f->corank = array->corank;
   f->shape = gfc_copy_shape (array->shape, array->rank);
 
   if (shift->rank > 0)
@@ -916,6 +925,7 @@ gfc_resolve_eoshift (gfc_expr *f, gfc_expr *array, gfc_expr *shift,
 
   f->ts = array->ts;
   f->rank = array->rank;
+  f->corank = array->corank;
   f->shape = gfc_copy_shape (array->shape, array->rank);
 
   n = 0;
@@ -1554,6 +1564,7 @@ gfc_resolve_logical (gfc_expr *f, gfc_expr *a, gfc_expr *kind)
   f->ts.kind = (kind == NULL)
 	     ? gfc_default_logical_kind : mpz_get_si (kind->value.integer);
   f->rank = a->rank;
+  f->corank = a->corank;
 
   f->value.function.name
     = gfc_get_string ("__logical_%d_%c%d", f->ts.kind,
@@ -1584,6 +1595,7 @@ gfc_resolve_matmul (gfc_expr *f, gfc_expr *a, gfc_expr *b)
     }
 
   f->rank = (a->rank == 2 && b->rank == 2) ? 2 : 1;
+  f->corank = a->corank;
 
   if (a->rank == 2 && b->rank == 2)
     {

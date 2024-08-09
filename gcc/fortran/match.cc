@@ -6328,7 +6328,7 @@ copy_ts_from_selector_to_associate (gfc_expr *associate, gfc_expr *selector,
 {
   gfc_ref *ref;
   gfc_symbol *assoc_sym;
-  int rank = 0;
+  int rank = 0, corank = 0;
 
   assoc_sym = associate->symtree->n.sym;
 
@@ -6346,6 +6346,7 @@ copy_ts_from_selector_to_associate (gfc_expr *associate, gfc_expr *selector,
     {
       assoc_sym->attr.dimension = 1;
       assoc_sym->as = gfc_copy_array_spec (CLASS_DATA (selector)->as);
+      corank = assoc_sym->as->corank;
       goto build_class_sym;
     }
   else if (selector->ts.type == BT_CLASS
@@ -6372,13 +6373,20 @@ copy_ts_from_selector_to_associate (gfc_expr *associate, gfc_expr *selector,
 	}
 
       if (!ref || ref->u.ar.type == AR_FULL)
-	selector->rank = CLASS_DATA (selector)->as->rank;
+	{
+	  selector->rank = CLASS_DATA (selector)->as->rank;
+	  selector->corank = CLASS_DATA (selector)->as->corank;
+	}
       else if (ref->u.ar.type == AR_SECTION)
-	selector->rank = ref->u.ar.dimen;
+	{
+	  selector->rank = ref->u.ar.dimen;
+	  selector->corank = ref->u.ar.codimen;
+	}
       else
 	selector->rank = 0;
 
       rank = selector->rank;
+      corank = selector->corank;
     }
 
   if (rank)
@@ -6400,12 +6408,20 @@ copy_ts_from_selector_to_associate (gfc_expr *associate, gfc_expr *selector,
 	  assoc_sym->as->rank = rank;
 	  assoc_sym->as->type = AS_DEFERRED;
 	}
-      else
-	assoc_sym->as = NULL;
     }
-  else
-    assoc_sym->as = NULL;
 
+  if (corank != 0 && rank == 0)
+    {
+      if (!assoc_sym->as)
+	assoc_sym->as = gfc_get_array_spec ();
+      assoc_sym->as->corank = corank;
+      assoc_sym->attr.codimension = 1;
+    }
+  else if (corank == 0 && rank == 0 && assoc_sym->as)
+    {
+      free (assoc_sym->as);
+      assoc_sym->as = NULL;
+    }
 build_class_sym:
   /* Deal with the very specific case of a SELECT_TYPE selector being an
      associate_name whose type has been identified by component references.

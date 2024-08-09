@@ -264,10 +264,12 @@ void
 gfc_add_class_array_ref (gfc_expr *e)
 {
   int rank = CLASS_DATA (e)->as->rank;
+  int corank = CLASS_DATA (e)->as->corank;
   gfc_array_spec *as = CLASS_DATA (e)->as;
   gfc_ref *ref = NULL;
   gfc_add_data_component (e);
   e->rank = rank;
+  e->corank = corank;
   for (ref = e->ref; ref; ref = ref->next)
     if (!ref->next)
       break;
@@ -1061,6 +1063,7 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
       ref->next->u.ar.as = comp->ts.type == BT_CLASS ? CLASS_DATA (comp)->as
 							: comp->as;
       e->rank = ref->next->u.ar.as->rank;
+      e->corank = ref->next->u.ar.as->corank;
       ref->next->u.ar.type = e->rank ? AR_FULL : AR_ELEMENT;
     }
 

@@ -515,6 +515,7 @@ callback_reduction (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
       new_expr->ts = fn->ts;
       new_expr->expr_type = EXPR_OP;
       new_expr->rank = fn->rank;
+      new_expr->corank = fn->corank;
       new_expr->where = fn->where;
       new_expr->value.op.op = op;
       new_expr->value.op.op1 = res;
@@ -791,6 +792,7 @@ create_var (gfc_expr * e, const char *vname)
     {
       symbol->as = gfc_get_array_spec ();
       symbol->as->rank = e->rank;
+      symbol->as->corank = e->corank;
 
       if (e->shape == NULL)
 	{
@@ -853,6 +855,7 @@ create_var (gfc_expr * e, const char *vname)
   result->ts = symbol->ts;
   result->ts.deferred = deferred;
   result->rank = e->rank;
+  result->corank = e->corank;
   result->shape = gfc_copy_shape (e->shape, e->rank);
   result->symtree = symtree;
   result->where = e->where;
@@ -1839,6 +1842,7 @@ combine_array_constructor (gfc_expr *e)
       new_expr->ts = e->ts;
       new_expr->expr_type = EXPR_OP;
       new_expr->rank = c->expr->rank;
+      new_expr->corank = c->expr->corank;
       new_expr->where = c->expr->where;
       new_expr->value.op.op = e->value.op.op;
 
@@ -2283,6 +2287,7 @@ optimize_minmaxloc (gfc_expr **e)
   *e = gfc_get_array_expr (fn->ts.type, fn->ts.kind, &fn->where);
   (*e)->shape = fn->shape;
   fn->rank = 0;
+  fn->corank = 0;
   fn->shape = NULL;
   gfc_constructor_append_expr (&(*e)->value.constructor, fn, &fn->where);
 

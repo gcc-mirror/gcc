@@ -165,6 +165,7 @@ gfc_get_intrinsic_function_symbol (gfc_expr *expr)
       sym->as = gfc_get_array_spec ();
       sym->as->type = AS_ASSUMED_SHAPE;
       sym->as->rank = expr->rank;
+      sym->as->corank = expr->corank;
     }
   return sym;
 }
@@ -5382,6 +5383,7 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag,
   new_expr->where = old_where;
   new_expr->ts = *ts;
   new_expr->rank = rank;
+  new_expr->corank = expr->corank;
   new_expr->shape = gfc_copy_shape (shape, rank);
 
   gfc_get_ha_sym_tree (sym->name, &new_expr->symtree);
@@ -5457,6 +5459,7 @@ gfc_convert_chartype (gfc_expr *expr, gfc_typespec *ts)
   new_expr->where = old_where;
   new_expr->ts = *ts;
   new_expr->rank = rank;
+  new_expr->corank = expr->corank;
   new_expr->shape = gfc_copy_shape (shape, rank);
 
   gfc_get_ha_sym_tree (sym->name, &new_expr->symtree);

@@ -912,6 +912,7 @@ match_clist_expr (gfc_expr **result, gfc_typespec *ts, gfc_array_spec *as)
 
       /* Set the rank/shape to match the LHS as auto-reshape is implied. */
       expr->rank = as->rank;
+      expr->corank = as->corank;
       expr->shape = gfc_get_shape (as->rank);
       for (int i = 0; i < as->rank; ++i)
 	spec_dimen_size (as, i, &expr->shape[i]);
@@ -2277,6 +2278,7 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	      mpz_clear (size);
 	    }
 	  init->rank = sym->as->rank;
+	  init->corank = sym->as->corank;
 	}
 
       sym->value = init;

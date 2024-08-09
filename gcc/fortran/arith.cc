@@ -1393,6 +1393,7 @@ reduce_unary (arith (*eval) (gfc_expr *, gfc_expr **), gfc_expr *op,
 	}
       r->shape = gfc_copy_shape (op->shape, op->rank);
       r->rank = op->rank;
+      r->corank = op->corank;
       r->value.constructor = head;
       *result = r;
     }
@@ -1456,6 +1457,7 @@ reduce_binary_ac (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
 	  r->shape = gfc_get_shape (op1->rank);
 	}
       r->rank = op1->rank;
+      r->corank = op1->corank;
       r->value.constructor = head;
       *result = r;
     }
@@ -1519,6 +1521,7 @@ reduce_binary_ca (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
 	  r->shape = gfc_get_shape (op2->rank);
 	}
       r->rank = op2->rank;
+      r->corank = op2->corank;
       r->value.constructor = head;
       *result = r;
     }
@@ -1585,6 +1588,7 @@ reduce_binary_aa (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
 	}
       r->shape = gfc_copy_shape (op1->shape, op1->rank);
       r->rank = op1->rank;
+      r->corank = op1->corank;
       r->value.constructor = head;
       *result = r;
     }

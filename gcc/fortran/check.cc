@@ -1075,8 +1075,6 @@ dim_check (gfc_expr *dim, int n, bool optional)
 static bool
 dim_corank_check (gfc_expr *dim, gfc_expr *array)
 {
-  int corank;
-
   gcc_assert (array->expr_type == EXPR_VARIABLE);
 
   if (dim->expr_type != EXPR_CONSTANT)
@@ -1085,10 +1083,8 @@ dim_corank_check (gfc_expr *dim, gfc_expr *array)
   if (array->ts.type == BT_CLASS)
     return true;
 
-  corank = gfc_get_corank (array);
-
   if (mpz_cmp_ui (dim->value.integer, 1) < 0
-      || mpz_cmp_ui (dim->value.integer, corank) > 0)
+      || mpz_cmp_ui (dim->value.integer, array->corank) > 0)
     {
       gfc_error ("%<dim%> argument of %qs intrinsic at %L is not a valid "
 		 "codimension index", gfc_current_intrinsic, &dim->where);
@@ -4269,11 +4265,11 @@ gfc_check_move_alloc (gfc_expr *from, gfc_expr *to)
     }
 
   /* IR F08/0040; cf. 12-006A.  */
-  if (gfc_get_corank (to) != gfc_get_corank (from))
+  if (to->corank != from->corank)
     {
       gfc_error ("The FROM and TO arguments of the MOVE_ALLOC intrinsic at %L "
-		 "must have the same corank %d/%d", &to->where,
-		 gfc_get_corank (from), gfc_get_corank (to));
+		 "must have the same corank %d/%d",
+		 &to->where, from->corank, to->corank);
       return false;
     }
 
@@ -5996,13 +5992,11 @@ gfc_check_image_index (gfc_expr *coarray, gfc_expr *sub)
 
   if (gfc_array_size (sub, &nelems))
     {
-      int corank = gfc_get_corank (coarray);
-
-      if (mpz_cmp_ui (nelems, corank) != 0)
+      if (mpz_cmp_ui (nelems, coarray->corank) != 0)
 	{
 	  gfc_error ("The number of array elements of the SUB argument to "
 		     "IMAGE_INDEX at %L shall be %d (corank) not %d",
-		     &sub->where, corank, (int) mpz_get_si (nelems));
+		     &sub->where, coarray->corank, (int) mpz_get_si (nelems));
 	  mpz_clear (nelems);
 	  return false;
 	}

@@ -147,7 +147,9 @@ tree
 gfc_get_ultimate_alloc_ptr_comps_caf_token (gfc_se *outerse, gfc_expr *expr)
 {
   gfc_symbol *sym = expr->symtree->n.sym;
-  bool is_coarray = sym->attr.codimension;
+  bool is_coarray = sym->ts.type == BT_CLASS
+		      ? CLASS_DATA (sym)->attr.codimension
+		      : sym->attr.codimension;
   gfc_expr *caf_expr = gfc_copy_expr (expr);
   gfc_ref *ref = caf_expr->ref, *last_caf_ref = NULL;
 
@@ -173,6 +175,9 @@ gfc_get_ultimate_alloc_ptr_comps_caf_token (gfc_se *outerse, gfc_expr *expr)
   gfc_free_ref_list (last_caf_ref->next);
   last_caf_ref->next = NULL;
   caf_expr->rank = comp_ref ? 0 : last_caf_ref->u.c.component->as->rank;
+  caf_expr->corank = last_caf_ref->u.c.component->as
+		       ? last_caf_ref->u.c.component->as->corank
+		       : expr->corank;
   se.want_pointer = comp_ref;
   gfc_conv_expr (&se, caf_expr);
   gfc_add_block_to_block (&outerse->pre, &se.pre);

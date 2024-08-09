@@ -203,6 +203,12 @@ gfc_match_array_ref (gfc_array_ref *ar, gfc_array_spec *as, int init,
     {
       ar->type = AR_FULL;
       ar->dimen = 0;
+      if (corank != 0)
+	{
+	  for (int i = 0; i < GFC_MAX_DIMENSIONS; ++i)
+	    ar->dimen_type[i] = DIMEN_THIS_IMAGE;
+	  ar->codimen = corank;
+	}
       return MATCH_YES;
     }
 
@@ -238,7 +244,15 @@ coarray:
   if (!matched_bracket && gfc_match_char ('[') != MATCH_YES)
     {
       if (ar->dimen > 0)
-	return MATCH_YES;
+	{
+	  if (corank != 0)
+	    {
+	      for (int i = ar->dimen; i < GFC_MAX_DIMENSIONS; ++i)
+		ar->dimen_type[i] = DIMEN_THIS_IMAGE;
+	      ar->codimen = corank;
+	    }
+	  return MATCH_YES;
+	}
       else
 	return MATCH_ERROR;
     }

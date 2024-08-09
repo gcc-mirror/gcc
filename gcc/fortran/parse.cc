@@ -5164,7 +5164,7 @@ parse_associate (void)
     {
       gfc_symbol *sym, *tsym;
       gfc_expr *target;
-      int rank;
+      int rank, corank;
 
       if (gfc_get_sym_tree (a->name, NULL, &a->st, false))
 	gcc_unreachable ();
@@ -5225,11 +5225,17 @@ parse_associate (void)
 	  if (sym->ts.type == BT_CLASS)
 	    {
 	      if (CLASS_DATA (sym)->as)
-		target->rank = CLASS_DATA (sym)->as->rank;
+		{
+		  target->rank = CLASS_DATA (sym)->as->rank;
+		  target->corank = CLASS_DATA (sym)->as->corank;
+		}
 	      sym->attr.class_ok = 1;
 	    }
 	  else
-	    target->rank = tsym->result->as ? tsym->result->as->rank : 0;
+	    {
+	      target->rank = tsym->result->as ? tsym->result->as->rank : 0;
+	      target->corank = tsym->result->as ? tsym->result->as->corank : 0;
+	    }
 	}
 
       /* Check if the target expression is array valued. This cannot be done
@@ -5261,18 +5267,19 @@ parse_associate (void)
 	}
 
       rank = target->rank;
+      corank = target->corank;
       /* Fixup cases where the ranks are mismatched.  */
       if (sym->ts.type == BT_CLASS && CLASS_DATA (sym))
 	{
-	  if ((!CLASS_DATA (sym)->as && rank != 0)
-	       || (CLASS_DATA (sym)->as
-		   && CLASS_DATA (sym)->as->rank != rank))
+	  if ((!CLASS_DATA (sym)->as && (rank != 0 || corank != 0))
+	      || (CLASS_DATA (sym)->as
+		  && (CLASS_DATA (sym)->as->rank != rank
+		      || CLASS_DATA (sym)->as->corank != corank)))
 	    {
 	      /* Don't just (re-)set the attr and as in the sym.ts,
 	      because this modifies the target's attr and as.  Copy the
 	      data and do a build_class_symbol.  */
 	      symbol_attribute attr = CLASS_DATA (target)->attr;
-	      int corank = gfc_get_corank (target);
 	      gfc_typespec type;
 
 	      if (rank || corank)
@@ -5290,6 +5297,7 @@ parse_associate (void)
 		  attr.dimension = attr.codimension = 0;
 		}
 	      attr.class_ok = 0;
+	      attr.associate_var = 1;
 	      type = CLASS_DATA (sym)->ts;
 	      if (!gfc_build_class_symbol (&type, &attr, &as))
 		gcc_unreachable ();
@@ -5300,17 +5308,22 @@ parse_associate (void)
 	  else
 	    sym->attr.class_ok = 1;
 	}
-      else if ((!sym->as && rank != 0)
-	       || (sym->as && sym->as->rank != rank))
+      else if ((!sym->as && (rank != 0 || corank != 0))
+	       || (sym->as
+		   && (sym->as->rank != rank || sym->as->corank != corank)))
 	{
 	  as = gfc_get_array_spec ();
 	  as->type = AS_DEFERRED;
 	  as->rank = rank;
-	  as->corank = gfc_get_corank (target);
+	  as->corank = corank;
 	  sym->as = as;
-	  sym->attr.dimension = 1;
-	  if (as->corank)
-	    sym->attr.codimension = 1;
+	  if (rank)
+	    sym->attr.dimension = 1;
+	  if (corank)
+	    {
+	      as->cotype = AS_ASSUMED_SHAPE;
+	      sym->attr.codimension = 1;
+	    }
 	}
     }
 
