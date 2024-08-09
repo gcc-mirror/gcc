@@ -1,3 +1,9 @@
+2024-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/115744
+	* c-cppbuiltin.cc (c_cpp_builtins): Change __cpp_constexpr
+	from 202306L to 202406L for C++26.
+
 2024-08-07  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/116064

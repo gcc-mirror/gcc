@@ -1,3 +1,65 @@
+2024-08-08  Steve Baird  <baird@adacore.com>
+
+	* sem_ch6.adb (Check_Discriminant_Conformance): Perform check for
+	illegal access discriminant default values when the completion of
+	a limited private type is analyzed.
+	* sem_aux.adb (Is_Immutably_Limited): If passed the
+	not-yet-analyzed entity for the full view of a record type, test
+	the Limited_Present flag
+	(which is set by the parser).
+
+2024-08-08  Steve Baird  <baird@adacore.com>
+
+	* exp_ch4.adb (Build_Eq_Call): In the abstract callee case, copy
+	the Etype of the callee onto the Make_Raise_Program_Error result.
+
+2024-08-08  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch7.adb (Unnest_Block): Copy the At_End_Proc from the block
+	statement to the newly created subprogram body.
+
+2024-08-08  Justin Squirek  <squirek@adacore.com>
+
+	* exp_put_image.adb (Append_Component_Attr): Obtain the mutably
+	tagged type for the component type.
+	* mutably_tagged.adb (Make_Mutably_Tagged_Conversion): Add more
+	cases to avoid conversion generation.
+	* sem_attr.adb (Check_Put_Image_Attribute): Add mutably tagged
+	type conversion.
+	* sem_ch12.adb (Analyze_One_Association): Add rewrite for formal
+	type declarations which are mutably tagged type to their
+	equivalent type.
+	(Instantiate_Type): Add condition to obtain class wide equivalent
+	types.
+	(Validate_Private_Type_Instance): Add check for class wide
+	equivalent types which are considered "definite".
+	* sem_util.adb (Is_Variable): Add condition to handle selected
+	components of view conversions. Add missing check for selected
+	components.
+	(Is_View_Conversion): Add condition to handle class wide
+	equivalent types.
+
+2024-08-08  Justin Squirek  <squirek@adacore.com>
+
+	* stylesw.adb (Set_Style_Check_Options): Disable max nesting level
+	when unspecified
+
+2024-08-08  Javier Miranda  <miranda@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference) <Finalization_Size>:
+	If the prefix is an interface type, generate code to obtain its
+	address and displace it to reference the base of the object.
+
+2024-08-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* libgnarl/s-taprop__posix.adb (Stack_Guard): Use Interfaces.C.size_t
+	for the type of Page_Size.
+
+2024-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* libgnarl/s-taprop__solaris.adb (Set_Task_Affinity): Fully
+	quality int.
+
 2024-08-06  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch4.adb (Analyze_Concatenation_Rest): Do not add a wrong

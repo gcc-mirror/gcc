@@ -1,3 +1,110 @@
+2024-08-08  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/116229
+	* config/aarch64/aarch64-simd.md (aarch64_fnegv2di2<vczle><vczbe>): New.
+	* config/aarch64/aarch64.cc (aarch64_maybe_generate_simd_constant):
+	Update call to gen_aarch64_fnegv2di2.
+	* config/aarch64/iterators.md: New UNSPEC_FNEG.
+
+2024-08-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (Mem_Insn::Mem_Insn): Don't consider MEMs
+	that are avr_mem_memx_p or avr_load_libgcc_p.
+
+2024-08-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/extend.texi (AVR Built-in Functions) <mask1>: Fix a typo.
+
+2024-08-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_insn_has_reg_unused_note_p): New function.
+	(_reg_unused_after): Use it to recognize more cases.
+	(avr_out_lpm_no_lpmx) [POST_INC]: Use reg_unused_after.
+
+2024-08-08  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.cc (gcn_conditional_register_usage): Fix registers
+	remaining after maximum allocation using TARGET_VGPR_GRANULARITY.
+
+2024-08-08  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/constraints.md (th_m_noi): New constraint.
+	* config/riscv/riscv.md: Adjust movdf_hardfloat_rv32 for
+	XTheadMemIdx.
+
+2024-08-08  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	PR target/116131
+	* config/riscv/thead.cc (th_memidx_classify_address_index):
+	Recognize all possible XTheadMemIdx memory operand structures.
+	(th_fmemidx_output_index): Do strict classification.
+	* config/riscv/thead.md (*th_memidx_operand): Remove.
+	(TARGET_XTHEADMEMIDX): Likewise.
+	(TARGET_HARD_FLOAT && TARGET_XTHEADFMEMIDX): Likewise.
+	(!TARGET_64BIT && TARGET_XTHEADMEMIDX): Likewise.
+	(*th_memidx_I_a): Likewise.
+	(*th_memidx_I_b): Likewise.
+	(*th_memidx_I_c): Likewise.
+	(*th_memidx_US_a): Likewise.
+	(*th_memidx_US_b): Likewise.
+	(*th_memidx_US_c): Likewise.
+	(*th_memidx_UZ_a): Likewise.
+	(*th_memidx_UZ_b): Likewise.
+	(*th_memidx_UZ_c): Likewise.
+	(*th_fmemidx_movsf_hardfloat): Likewise.
+	(*th_fmemidx_movdf_hardfloat_rv64): Likewise.
+	(*th_fmemidx_I_a): Likewise.
+	(*th_fmemidx_I_c): Likewise.
+	(*th_fmemidx_US_a): Likewise.
+	(*th_fmemidx_US_c): Likewise.
+	(*th_fmemidx_UZ_a): Likewise.
+	(*th_fmemidx_UZ_c): Likewise.
+
+2024-08-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-vect-patterns.cc (NUM_PATTERNS): Delete.
+	(vect_pattern_recog_1): Constify and change
+	recog_func to a reference.
+	(vect_pattern_recog): Use range-based loop over
+	vect_vect_recog_func_ptrs.
+
+2024-08-08  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv.h (RISCV_DWARF_VLENB): Delete.
+
+2024-08-08  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.cc (gcn_trampoline_init): Re-enable trampolines.
+
+2024-08-08  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116240
+	* config/riscv/riscv.cc (riscv_rtx_costs): Ensure object is a
+	comparison before looking at its arguments.
+
+2024-08-08  Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	PR tree-optimization/98138
+	* tree-vect-slp.cc: Avoid duplicates in two_operators nodes.
+
+2024-08-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.cc (ix86_mode_can_transfer_bits): Use E_?Fmode
+	enumeration constants in switch statement.
+
+2024-08-08  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR rtl-optimization/116028
+	* lra-constraints.cc (split_reg): Spill register before call
+	insn.
+	(latest_call_insn): New variable.
+	(inherit_in_ebb): Track the latest call insn.
+
+2024-08-08  Jiawei  <jiawei@iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc: New extension.
+	* config/riscv/riscv.opt: New mask.
+
 2024-08-07  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/116237

@@ -1,3 +1,50 @@
+2024-08-08  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/115062
+	* class.cc (fixup_type_variants): Propagate TREE_ADDRESSABLE.
+	(finish_struct_bits): Cleanup now that TREE_ADDRESSABLE is
+	propagated by fixup_type_variants.
+
+2024-08-08  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* module.cc (module_state::read_cluster): Assume header module
+	declarations will require GM merging.
+
+2024-08-08  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/115801
+	* pt.cc (tsubst_friend_class): Return the type immediately when
+	no tsubsting or name lookup is required.
+
+2024-08-08  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114950
+	* module.cc (trees_out::decl_value): Stream bit indicating
+	imported temploid friends early.
+	(trees_in::decl_value): Use this bit with key_mergeable.
+	(trees_in::key_mergeable): Allow merging attached declarations
+	if they're imported temploid friends (which must be namespace
+	scope).
+	(module_state::read_cluster): Check for GM entities that may
+	require merging even when importing from partitions.
+	* name-lookup.cc (enum binding_slots): Adjust comment.
+	(get_fixed_binding_slot): Always create partition slot.
+	(name_lookup::search_namespace_only): Support binding vectors
+	with both partition and GM entities to dedup.
+	(walk_module_binding): Likewise.
+	(name_lookup::adl_namespace_fns): Likewise.
+	(set_module_binding): Likewise.
+	(check_module_override): Use attachment of the decl when
+	checking overrides rather than named_module_p.
+	(lookup_imported_hidden_friend): Use partition slot for finding
+	mergeable template bindings.
+	* name-lookup.h (set_module_binding): Split mod_glob_flag
+	parameter into separate global_p and partition_p params.
+
+2024-08-08  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* module.cc (trees_in::read_enum_def): Clarify error.
+
 2024-08-07  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/116064

@@ -1,3 +1,103 @@
+2024-08-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/116041
+	* gcc.target/aarch64/if-compare_2.c: Support bit and bif for
+	both bar1 and bar2; add comment on why too.
+
+2024-08-08  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/116229
+	* gcc.target/aarch64/pr116229.c: New test.
+
+2024-08-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/torture/pr116295.c: New test.
+
+2024-08-08  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadfmemidx-xtheadfmv-medany.c: Adjust.
+	* gcc.target/riscv/xtheadfmemidx-zfa-medany.c: Likewise.
+
+2024-08-08  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	PR target/116131
+	* gcc.target/riscv/pr116131.c: New test.
+
+2024-08-08  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadfmemidx-medany.c: Move to...
+	* gcc.target/riscv/xtheadfmemidx-xtheadfmv-medany.c: ...here.
+	* gcc.target/riscv/xtheadfmemidx-zfa-medany.c: New test.
+
+2024-08-08  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116240
+	* gcc.target/riscv/pr116240.c: New test.
+
+2024-08-08  Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	PR tree-optimization/98138
+	* gcc.target/aarch64/vect-slp-two-operator.c: New test.
+
+2024-08-08  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/115062
+	* g++.dg/modules/pr115062_a.H: New test.
+	* g++.dg/modules/pr115062_b.H: New test.
+	* g++.dg/modules/pr115062_c.C: New test.
+
+2024-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/115744
+	* g++.dg/cpp2a/construct_at.h (operator new, operator new[]):
+	Use constexpr instead of inline if __cpp_constexpr >= 202406L.
+	* g++.dg/cpp26/constexpr-new1.C: New test.
+	* g++.dg/cpp26/constexpr-new2.C: New test.
+	* g++.dg/cpp26/constexpr-new3.C: New test.
+	* g++.dg/cpp26/feat-cxx26.C (__cpp_constexpr): Adjust expected
+	value.
+
+2024-08-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116258
+	* gcc.target/i386/pr116258.c: Also allow vpermilps.
+
+2024-08-08  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR rtl-optimization/116028
+	* gcc.dg/ira-shrinkwrap-prep-1.c: Remove xfail for powerpc.
+	* gcc.dg/pr10474.c: Remove xfail for powerpc.
+
+2024-08-08  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/arch-42.c: New test.
+	* gcc.target/riscv/arch-43.c: New test.
+
+2024-08-08  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/115801
+	* g++.dg/modules/tpl-friend-16_a.C: New test.
+	* g++.dg/modules/tpl-friend-16_b.C: New test.
+	* g++.dg/template/friend82.C: New test.
+
+2024-08-08  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114950
+	* g++.dg/modules/tpl-friend-13_e.C: Adjust error message.
+	* g++.dg/modules/ambig-2_a.C: New test.
+	* g++.dg/modules/ambig-2_b.C: New test.
+	* g++.dg/modules/part-9_a.C: New test.
+	* g++.dg/modules/part-9_b.C: New test.
+	* g++.dg/modules/part-9_c.C: New test.
+	* g++.dg/modules/tpl-friend-15.h: New test.
+	* g++.dg/modules/tpl-friend-15_a.C: New test.
+	* g++.dg/modules/tpl-friend-15_b.C: New test.
+	* g++.dg/modules/tpl-friend-15_c.C: New test.
+
+2024-08-08  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/enum-bad-1_b.C: Update error message.
+
 2024-08-07  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/116064

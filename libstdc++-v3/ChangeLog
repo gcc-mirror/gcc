@@ -1,3 +1,14 @@
+2024-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/115744
+	* libsupc++/new (__glibcxx_want_constexpr_new): Define before
+	including bits/version.h.
+	(_GLIBCXX_PLACEMENT_CONSTEXPR): Define.
+	(operator new, operator new[]): Use it for placement new instead
+	of inline.
+	* include/bits/version.def (constexpr_new): New FTM.
+	* include/bits/version.h: Regenerate.
+
 2024-08-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/116247

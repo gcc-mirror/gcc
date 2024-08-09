@@ -1,3 +1,20 @@
+2024-08-08  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP Technical Report 13): Renamed from
+	'OpenMP Technical Report 12'; updated for TR13 changes.
+
+2024-08-08  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (omp_is_initial_device): Mention
+	-fno-builtin-omp_is_initial_device and folding by default.
+
+2024-08-08  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.c++/static-aggr-constructor-destructor-1.C: Split
+	scan-tree-dump into with and without target offload_target_any.
+	* testsuite/libgomp.c++/static-aggr-constructor-destructor-2.C:
+	Likewise.
+
 2024-08-07  Julian Brown  <julian@codesourcery.com>
 	    Tobias Burnus  <tobias@baylibre.com>
 
