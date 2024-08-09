@@ -1,6 +1,12 @@
 2024-12-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2024-08-09  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.cc (gcn_asm_trampoline_template): Add .align.
+	* config/gcn/gcn.h (TRAMPOLINE_SIZE): Increase to 40.
+
+	Backported from trunk:
 	2024-12-09  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* config.gcc [nvptx-*]: Switch default from '-march=sm_30' to
