@@ -9468,8 +9468,11 @@ convert_for_arg_passing (tree type, tree val, tsubst_flags_t complain)
   if (complain & tf_warning)
     warn_for_address_of_packed_member (type, val);
 
-  /* gimplify_arg elides TARGET_EXPRs that initialize a function argument.  */
-  if (SIMPLE_TARGET_EXPR_P (val))
+  /* gimplify_arg elides TARGET_EXPRs that initialize a function argument,
+     unless the initializer is a CONSTRUCTOR.  In that case, we fail to
+     elide the copy anyway.  See that function for more information.  */
+  if (SIMPLE_TARGET_EXPR_P (val)
+      && TREE_CODE (TARGET_EXPR_INITIAL (val)) != CONSTRUCTOR)
     set_target_expr_eliding (val);
 
   return val;
