@@ -6833,7 +6833,7 @@ package body Checks is
    ----------------------
 
    function Expr_Known_Valid (Expr : Node_Id) return Boolean is
-      Typ : constant Entity_Id := Etype (Expr);
+      Typ : constant Entity_Id := Validated_View (Etype (Expr));
 
    begin
       --  Non-scalar types are always considered valid, since they never give

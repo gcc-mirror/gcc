@@ -10248,7 +10248,8 @@ package body Exp_Ch3 is
          if Nkind (Expr) = N_Unchecked_Type_Conversion
            and then Is_Scalar_Type (Under_Typ)
          then
-            Set_No_Truncation (Expr);
+            Set_Kill_Range_Check (Expr);
+            Set_No_Truncation    (Expr);
          end if;
 
          return Expr;
