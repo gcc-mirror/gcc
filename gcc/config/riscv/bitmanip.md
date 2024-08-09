@@ -643,7 +643,10 @@
     (set (match_dup 3) (and:DI (not:DI (match_dup 1)) (match_dup 3)))
     (set (match_dup 0) (zero_extend:DI
 			 (ashift:SI (const_int 1) (match_dup 4))))]
-  { operands[4] = gen_lowpart (QImode, operands[3]); }
+{
+  operands[4] = gen_lowpart (QImode, operands[3]);
+  operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
+}
   [(set_attr "type" "bitmanip")])
 
 (define_insn_and_split ""
@@ -662,7 +665,7 @@
    (set (match_dup 0) (zero_extend:DI (ashift:SI
 				     (const_int 1)
 				     (subreg:QI (match_dup 0) 0))))]
-  { }
+  { operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f); }
   [(set_attr "type" "bitmanip")])
 
 ;; Similarly two patterns for IOR/XOR generating bset/binv to
@@ -687,7 +690,10 @@
    [(set (match_dup 4) (match_dup 2))
     (set (match_dup 4) (and:DI (not:DI (match_dup 1)) (match_dup 4)))
     (set (match_dup 0) (any_or:DI (ashift:DI (const_int 1) (match_dup 5)) (match_dup 3)))]
-  { operands[5] = gen_lowpart (QImode, operands[4]); }
+{
+  operands[5] = gen_lowpart (QImode, operands[4]);
+  operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
+}
   [(set_attr "type" "bitmanip")])
 
 (define_insn_and_split ""
@@ -708,7 +714,7 @@
   "&& reload_completed"
    [(set (match_dup 4) (and:DI (match_dup 1) (match_dup 2)))
     (set (match_dup 0) (any_or:DI (ashift:DI (const_int 1) (subreg:QI (match_dup 4) 0)) (match_dup 3)))]
-  { }
+  { operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f); }
   [(set_attr "type" "bitmanip")])
 
 ;; Similarly two patterns for AND generating bclr to
@@ -734,7 +740,10 @@
    [(set (match_dup 4) (match_dup 2))
     (set (match_dup 4) (and:DI (not:DI (match_dup 1)) (match_dup 4)))
     (set (match_dup 0) (and:DI (rotate:DI (const_int -2) (match_dup 5)) (match_dup 3)))]
-  { operands[5] = gen_lowpart (QImode, operands[4]); }
+{
+  operands[5] = gen_lowpart (QImode, operands[4]);
+  operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
+}
   [(set_attr "type" "bitmanip")])
 
 
@@ -757,7 +766,10 @@
   "&& reload_completed"
    [(set (match_dup 4) (and:DI (match_dup 1) (match_dup 2)))
     (set (match_dup 0) (and:DI (rotate:DI (const_int -2) (match_dup 5)) (match_dup 3)))]
-  { operands[5] = gen_lowpart (QImode, operands[4]); }
+{
+  operands[5] = gen_lowpart (QImode, operands[4]);
+  operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
+}
   [(set_attr "type" "bitmanip")])
 
 (define_insn "*bset<mode>_1_mask"
