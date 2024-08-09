@@ -1465,6 +1465,7 @@ TypeCheckExpr::visit (HIR::MatchExpr &expr)
   TyTy::BaseType *scrutinee_tyty
     = TypeCheckExpr::Resolve (expr.get_scrutinee_expr ().get ());
 
+  bool saw_error = false;
   std::vector<TyTy::BaseType *> kase_block_tys;
   for (auto &kase : expr.get_match_cases ())
     {
@@ -1475,7 +1476,10 @@ TypeCheckExpr::visit (HIR::MatchExpr &expr)
 	  TyTy::BaseType *kase_arm_ty
 	    = TypeCheckPattern::Resolve (pattern.get (), scrutinee_tyty);
 	  if (kase_arm_ty->get_kind () == TyTy ::TypeKind::ERROR)
-	    return;
+	    {
+	      saw_error = true;
+	      continue;
+	    }
 
 	  TyTy::BaseType *checked_kase = unify_site (
 	    expr.get_mappings ().get_hirid (),
@@ -1484,7 +1488,10 @@ TypeCheckExpr::visit (HIR::MatchExpr &expr)
 	    TyTy::TyWithLocation (kase_arm_ty, pattern->get_locus ()),
 	    expr.get_locus ());
 	  if (checked_kase->get_kind () == TyTy::TypeKind::ERROR)
-	    return;
+	    {
+	      saw_error = true;
+	      continue;
+	    }
 	}
 
       // check the kase type
@@ -1492,6 +1499,8 @@ TypeCheckExpr::visit (HIR::MatchExpr &expr)
 	= TypeCheckExpr::Resolve (kase.get_expr ().get ());
       kase_block_tys.push_back (kase_block_ty);
     }
+  if (saw_error)
+    return;
 
   if (kase_block_tys.size () == 0)
     {
