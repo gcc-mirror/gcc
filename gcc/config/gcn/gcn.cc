@@ -3794,6 +3794,7 @@ gcn_asm_trampoline_template (FILE *f)
   asm_fprintf (f, "\ts_mov_b32\ts%i, 0xffff\n", CC_SAVE_REG);
   asm_fprintf (f, "\ts_mov_b32\ts%i, 0xffff\n", CC_SAVE_REG + 1);
   asm_fprintf (f, "\ts_setpc_b64\ts[%i:%i]\n", CC_SAVE_REG, CC_SAVE_REG + 1);
+  asm_fprintf (f, "\t.align 8\n");
 }
 
 /* Implement TARGET_TRAMPOLINE_INIT.

@@ -831,7 +831,7 @@ enum gcn_builtin_codes
 #define PROFILE_BEFORE_PROLOGUE 0
 
 /* Trampolines */
-#define TRAMPOLINE_SIZE 36
+#define TRAMPOLINE_SIZE 40  /* 36 + 4 padding for alignment.  */
 #define TRAMPOLINE_ALIGNMENT 64
 
 /* MD Optimization.
