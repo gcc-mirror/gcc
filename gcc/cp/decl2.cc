@@ -5583,6 +5583,9 @@ c_parse_final_cleanups (void)
 	   importer.  */
 	continue;
 
+      if (flag_contracts_nonattr && flag_contracts)
+	emit_contract_wrapper_func();
+
       /* Write out virtual tables as required.  Writing out the
 	 virtual table for a template class may cause the
 	 instantiation of members of that class.  If we write out
