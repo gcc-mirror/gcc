@@ -714,6 +714,77 @@
   DONE;
 })
 
+(define_insn "simd_maddw_evod_<mode>_<su>"
+  [(set (match_operand:<WVEC_HALF> 0 "register_operand" "=f")
+	(plus:<WVEC_HALF>
+	  (mult:<WVEC_HALF>
+	    (any_extend:<WVEC_HALF>
+	      (vec_select:<VEC_HALF>
+		(match_operand:IVEC 2 "register_operand" "f")
+		(match_operand:IVEC 4 "vect_par_cnst_even_or_odd_half")))
+	    (any_extend:<WVEC>
+	      (vec_select:<VEC_HALF>
+		(match_operand:IVEC 3 "register_operand" "f")
+		(match_dup 4))))
+	  (match_operand:<WVEC_HALF> 1 "register_operand" "0")))]
+  ""
+  "<x>vmaddw%O4.<simdfmt_w>.<simdfmt><u>\t%<wu>0,%<wu>2,%<wu>3"
+  [(set_attr "type" "simd_int_arith")
+   (set_attr "mode" "<WVEC_HALF>")])
+
+(define_expand "<simd_isa>_<x>vmaddw<ev_od>_<simdfmt_w>_<simdfmt><u>"
+  [(match_operand:<WVEC_HALF> 0 "register_operand" "=f")
+   (match_operand:<WVEC_HALF> 1 "register_operand" " 0")
+   (match_operand:IVEC	      2 "register_operand" " f")
+   (match_operand:IVEC	      3 "register_operand" " f")
+   (any_extend (const_int 0))
+   (const_int zero_one)]
+  ""
+{
+  int nelts = GET_MODE_NUNITS (<WVEC_HALF>mode);
+  rtx op4 = loongarch_gen_stepped_int_parallel (nelts, <zero_one>, 2);
+  rtx insn = gen_simd_maddw_evod_<mode>_<su> (operands[0], operands[1],
+					      operands[2], operands[3],
+					      op4);
+  emit_insn (insn);
+  DONE;
+})
+
+(define_insn "simd_maddw_evod_<mode>_hetero"
+  [(set (match_operand:<WVEC_HALF> 0 "register_operand" "=f")
+	(plus:<WVEC_HALF>
+	  (mult:<WVEC_HALF>
+	    (zero_extend:<WVEC_HALF>
+	      (vec_select:<VEC_HALF>
+		(match_operand:IVEC 2 "register_operand" "f")
+		(match_operand:IVEC 4 "vect_par_cnst_even_or_odd_half")))
+	    (sign_extend:<WVEC_HALF>
+	      (vec_select:<VEC_HALF>
+		(match_operand:IVEC 3 "register_operand" "f")
+		(match_dup 4))))
+	  (match_operand:<WVEC_HALF> 1 "register_operand" "0")))]
+  ""
+  "<x>vmaddw%O4.<simdfmt_w>.<simdfmt>u.<simdfmt>\t%<wu>0,%<wu>2,%<wu>3"
+  [(set_attr "type" "simd_int_arith")
+   (set_attr "mode" "<WVEC_HALF>")])
+
+(define_expand "<simd_isa>_<x>vmaddw<ev_od>_<simdfmt_w>_<simdfmt>u_<simdfmt>"
+  [(match_operand:<WVEC_HALF> 0 "register_operand" "=f")
+   (match_operand:<WVEC_HALF> 1 "register_operand" " 0")
+   (match_operand:IVEC	      2 "register_operand" " f")
+   (match_operand:IVEC	      3 "register_operand" " f")
+   (const_int zero_one)]
+  ""
+{
+  int nelts = GET_MODE_NUNITS (<WVEC_HALF>mode);
+  rtx op4 = loongarch_gen_stepped_int_parallel (nelts, <zero_one>, 2);
+  rtx insn = gen_simd_maddw_evod_<mode>_hetero (operands[0], operands[1],
+						operands[2], operands[3],
+						op4);
+  emit_insn (insn);
+  DONE;
+})
+
 ; For "historical" reason we need a punned version of q_d variants.
 (define_mode_iterator DIVEC [(V2DI "ISA_HAS_LSX") (V4DI "ISA_HAS_LASX")])
 
@@ -759,6 +830,39 @@
   rtx t = gen_reg_rtx (<WVEC_HALF>mode);
   emit_insn (gen_<simd_isa>_<x>vh<optab>w_q<u>_d<u> (t, operands[1],
 						     operands[2]));
+  emit_move_insn (operands[0], gen_lowpart (<MODE>mode, t));
+  DONE;
+})
+
+(define_expand "<simd_isa>_maddw<ev_od>_q_d<u>_punned"
+  [(match_operand:DIVEC 0 "register_operand" "=f")
+   (match_operand:DIVEC 1 "register_operand" " 0")
+   (match_operand:DIVEC 2 "register_operand" " f")
+   (match_operand:DIVEC 3 "register_operand" " f")
+   (const_int zero_one)
+   (any_extend (const_int 0))]
+  ""
+{
+  rtx t = gen_reg_rtx (<WVEC_HALF>mode);
+  rtx op1 = gen_lowpart (<WVEC_HALF>mode, operands[1]);
+  emit_insn (gen_<simd_isa>_<x>vmaddw<ev_od>_q_d<u> (t, op1, operands[2],
+						     operands[3]));
+  emit_move_insn (operands[0], gen_lowpart (<MODE>mode, t));
+  DONE;
+})
+
+(define_expand "<simd_isa>_maddw<ev_od>_q_du_d_punned"
+  [(match_operand:DIVEC 0 "register_operand" "=f")
+   (match_operand:DIVEC 1 "register_operand" " 0")
+   (match_operand:DIVEC 2 "register_operand" " f")
+   (match_operand:DIVEC 3 "register_operand" " f")
+   (const_int zero_one)]
+  ""
+{
+  rtx t = gen_reg_rtx (<WVEC_HALF>mode);
+  rtx op1 = gen_lowpart (<WVEC_HALF>mode, operands[1]);
+  emit_insn (gen_<simd_isa>_<x>vmaddw<ev_od>_q_du_d (t, op1, operands[2],
+						     operands[3]));
   emit_move_insn (operands[0], gen_lowpart (<MODE>mode, t));
   DONE;
 })

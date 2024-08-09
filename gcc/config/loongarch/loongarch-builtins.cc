@@ -542,6 +542,13 @@ AVAIL_ALL (lasx_frecipe, ISA_HAS_LASX && ISA_HAS_FRECIPE)
 #define CODE_FOR_lsx_vhsubw_q_d		CODE_FOR_lsx_hsubw_q_d_punned
 #define CODE_FOR_lsx_vhsubw_qu_du	CODE_FOR_lsx_hsubw_qu_du_punned
 
+#define CODE_FOR_lsx_vmaddwev_q_d	CODE_FOR_lsx_maddwev_q_d_punned
+#define CODE_FOR_lsx_vmaddwev_q_du	CODE_FOR_lsx_maddwev_q_du_punned
+#define CODE_FOR_lsx_vmaddwev_q_du_d	CODE_FOR_lsx_maddwev_q_du_d_punned
+#define CODE_FOR_lsx_vmaddwod_q_d	CODE_FOR_lsx_maddwod_q_d_punned
+#define CODE_FOR_lsx_vmaddwod_q_du	CODE_FOR_lsx_maddwod_q_du_punned
+#define CODE_FOR_lsx_vmaddwod_q_du_d	CODE_FOR_lsx_maddwod_q_du_d_punned
+
 /* LoongArch ASX define CODE_FOR_lasx_mxxx */
 #define CODE_FOR_lasx_xvsadd_b CODE_FOR_ssaddv32qi3
 #define CODE_FOR_lasx_xvsadd_h CODE_FOR_ssaddv16hi3
@@ -850,6 +857,13 @@ AVAIL_ALL (lasx_frecipe, ISA_HAS_LASX && ISA_HAS_FRECIPE)
 #define CODE_FOR_lasx_xvhaddw_qu_du	CODE_FOR_lasx_haddw_qu_du_punned
 #define CODE_FOR_lasx_xvhsubw_q_d	CODE_FOR_lasx_hsubw_q_d_punned
 #define CODE_FOR_lasx_xvhsubw_qu_du	CODE_FOR_lasx_hsubw_qu_du_punned
+
+#define CODE_FOR_lasx_xvmaddwev_q_d	CODE_FOR_lasx_maddwev_q_d_punned
+#define CODE_FOR_lasx_xvmaddwev_q_du	CODE_FOR_lasx_maddwev_q_du_punned
+#define CODE_FOR_lasx_xvmaddwev_q_du_d	CODE_FOR_lasx_maddwev_q_du_d_punned
+#define CODE_FOR_lasx_xvmaddwod_q_d	CODE_FOR_lasx_maddwod_q_d_punned
+#define CODE_FOR_lasx_xvmaddwod_q_du	CODE_FOR_lasx_maddwod_q_du_punned
+#define CODE_FOR_lasx_xvmaddwod_q_du_d	CODE_FOR_lasx_maddwod_q_du_d_punned
 
 static const struct loongarch_builtin_description loongarch_builtins[] = {
 #define LARCH_MOVFCSR2GR 0
