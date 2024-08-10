@@ -1,3 +1,13 @@
+2024-08-09  Patrick Palka  <ppalka@redhat.com>
+
+	* c.opt.urls: Regenerate.
+
+2024-08-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.cc (c_pp_lookup_pragma): Use ARRAY_SIZE in
+	n_omp_pragmas_simd initializer.
+	(init_pragmas): Likewise.
+
 2024-08-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/115744

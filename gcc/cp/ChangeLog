@@ -1,3 +1,9 @@
+2024-08-09  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/115806
+	* decl.cc (start_enum): Only set OPAQUE_ENUM_P and
+	ENUM_FIXED_UNDERLYING_TYPE_P when pushing a new tag.
+
 2024-08-08  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/115062

@@ -1,3 +1,8 @@
+2024-08-09  Will Hawkins  <hawkinsw@obs.cr>
+
+	* btf.h (BTF_TYPE_INFO): Protect against user providing invalid
+	kind.
+
 2024-07-02  David Faust  <david.faust@oracle.com>
 
 	* btf.h (BTF_VOID_TYPEID, BTF_INIT_TYPEID): Move defines here,

@@ -1,3 +1,89 @@
+2024-08-09  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116283
+	* gcc.target/riscv/pr116283.c: New test
+
+2024-08-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Revert:
+	2024-08-09  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR rtl-optimization/116028
+	* gcc.dg/ira-shrinkwrap-prep-1.c: Remove xfail for powerpc.
+	* gcc.dg/pr10474.c: Remove xfail for powerpc.
+
+2024-08-09  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/115806
+	* g++.dg/parse/enum15.C: New test.
+
+2024-08-09  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	* gcc.target/riscv/stack-check-14.c: New test.
+	* gcc.target/riscv/stack-check-15.c: New test.
+	* gcc.target/riscv/stack-check-alloca-1.c: New test.
+	* gcc.target/riscv/stack-check-alloca-2.c: New test.
+	* gcc.target/riscv/stack-check-alloca-3.c: New test.
+	* gcc.target/riscv/stack-check-alloca-4.c: New test.
+	* gcc.target/riscv/stack-check-alloca-5.c: New test.
+	* gcc.target/riscv/stack-check-alloca-6.c: New test.
+	* gcc.target/riscv/stack-check-alloca-7.c: New test.
+	* gcc.target/riscv/stack-check-alloca-8.c: New test.
+	* gcc.target/riscv/stack-check-alloca-9.c: New test.
+	* gcc.target/riscv/stack-check-alloca-10.c: New test.
+	* gcc.target/riscv/stack-check-alloca.h: New.
+
+2024-08-09  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	* gcc.target/riscv/stack-check-cfa-3.c: New test.
+	* gcc.target/riscv/stack-check-prologue-16.c: New test.
+	* gcc.target/riscv/struct_vect_24.c: New test.
+
+2024-08-09  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	* gcc.dg/params/blocksort-part.c: Skip riscv for
+	stack-clash protection intervals.
+	* gcc.dg/pr82788.c: Skip riscv.
+	* gcc.dg/stack-check-6.c: Skip residual check for riscv.
+	* gcc.dg/stack-check-6a.c: Skip riscv.
+	* gcc.target/riscv/stack-check-12.c: New test.
+	* gcc.target/riscv/stack-check-13.c: New test.
+	* gcc.target/riscv/stack-check-cfa-1.c: New test.
+	* gcc.target/riscv/stack-check-cfa-2.c: New test.
+	* gcc.target/riscv/stack-check-prologue-1.c: New test.
+	* gcc.target/riscv/stack-check-prologue-10.c: New test.
+	* gcc.target/riscv/stack-check-prologue-11.c: New test.
+	* gcc.target/riscv/stack-check-prologue-12.c: New test.
+	* gcc.target/riscv/stack-check-prologue-13.c: New test.
+	* gcc.target/riscv/stack-check-prologue-14.c: New test.
+	* gcc.target/riscv/stack-check-prologue-15.c: New test.
+	* gcc.target/riscv/stack-check-prologue-2.c: New test.
+	* gcc.target/riscv/stack-check-prologue-3.c: New test.
+	* gcc.target/riscv/stack-check-prologue-4.c: New test.
+	* gcc.target/riscv/stack-check-prologue-5.c: New test.
+	* gcc.target/riscv/stack-check-prologue-6.c: New test.
+	* gcc.target/riscv/stack-check-prologue-7.c: New test.
+	* gcc.target/riscv/stack-check-prologue-8.c: New test.
+	* gcc.target/riscv/stack-check-prologue-9.c: New test.
+	* gcc.target/riscv/stack-check-prologue.h: New file.
+	* lib/target-supports.exp
+	(check_effective_target_supports_stack_clash_protection):
+	Add riscv.
+	(check_effective_target_caller_implicit_probes): Likewise.
+
+2024-08-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116289
+	PR c++/113063
+	* g++.dg/cpp2a/spaceship-synth16a.C: New test.
+
+2024-08-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116287
+	* gcc.target/i386/bmi-pr116287.c: New test.
+	* gcc.target/i386/bmi2-pr116287.c: New test.
+	* gcc.target/i386/tbm-pr116287.c: New test.
+
 2024-08-08  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR testsuite/116041

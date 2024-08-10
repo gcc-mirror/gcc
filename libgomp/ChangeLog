@@ -1,3 +1,18 @@
+2024-08-09  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/static-aggr-constructor-destructor-1.C:
+	Fix effective-target keyword.
+	* testsuite/libgomp.c++/static-aggr-constructor-destructor-2.C:
+	Likewise.
+	* testsuite/libgomp.c-c++-common/target-is-initial-host-2.c:
+	Likewise.
+	* testsuite/libgomp.c-c++-common/target-is-initial-host.c:
+	Likewise.
+	* testsuite/libgomp.fortran/target-is-initial-host-2.f90:
+	Likewise.
+	* testsuite/libgomp.fortran/target-is-initial-host.f: Likewise.
+	* testsuite/libgomp.fortran/target-is-initial-host.f90: Likewise.
+
 2024-08-08  Tobias Burnus  <tburnus@baylibre.com>
 
 	* libgomp.texi (OpenMP Technical Report 13): Renamed from

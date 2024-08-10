@@ -1,3 +1,101 @@
+2024-08-09  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116283
+	* config/riscv/bitmanip.md (Zbs combiner patterns/splitters): Mask the
+	bit position in the split code appropriately.
+
+2024-08-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Revert:
+	2024-08-08  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR rtl-optimization/116028
+	* lra-constraints.cc (split_reg): Spill register before call
+	insn.
+	(latest_call_insn): New variable.
+	(inherit_in_ebb): Track the latest call insn.
+
+2024-08-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/114855
+	* gimple-range-gori.cc (gori_compute::gori_compute): Adjust
+	ranger_recompute_depth limit based on the number of BBs.
+	(gori_compute::may_recompute_p): Use previosuly calculated value.
+	* gimple-range-gori.h (gori_compute::m_recompute_depth): New.
+
+2024-08-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/114855
+	* gimple-range-cache.cc (ranger_cache::fill_block_cache): Do not
+	process equivalencies if the number of blocks is too high.
+
+2024-08-09  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_compute_frame_info): Update
+	outgoing args size.
+	(riscv_stack_clash_protection_alloca_probe_range): New.
+	(TARGET_STACK_CLASH_PROTECTION_ALLOCA_PROBE_RANGE): New.
+	* config/riscv/riscv.h
+	(STACK_CLASH_MIN_BYTES_OUTGOING_ARGS): New.
+	(STACK_DYNAMIC_OFFSET): New.
+
+2024-08-09  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	* config/riscv/riscv.cc
+	(riscv_allocate_and_probe_stack_loop): New function.
+	(riscv_v_adjust_scalable_frame): Add stack-clash protection
+	support.
+	(riscv_allocate_and_probe_stack_space): Move the probe loop
+	implementation to riscv_allocate_and_probe_stack_loop.
+	* config/riscv/riscv.h: Define RISCV_STACK_CLASH_VECTOR_CFA_REGNUM.
+
+2024-08-09  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	* config/riscv/riscv.cc
+	(riscv_option_override): Enforce that interval is the same size as
+	guard size.
+	(riscv_allocate_and_probe_stack_space): New function.
+	(riscv_expand_prologue): Call riscv_allocate_and_probe_stack_space
+	to the final allocation of the stack and add stack-clash dump
+	information.
+	* config/riscv/riscv.h: Define STACK_CLASH_CALLER_GUARD and
+	STACK_CLASH_MAX_UNROLL_PAGES.
+
+2024-08-09  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_v_adjust_scalable_frame): Move
+	closer to riscv_expand_prologue.
+
+2024-08-09  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_emit_stack_tie): Pass the
+	register to be tied to the stack pointer as argument.
+	* config/riscv/riscv.md (stack_tie<mode>): Don't match equal
+	operands.
+
+2024-08-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116287
+	* config/i386/i386.cc (ix86_fold_builtin) <case IX86_BUILTIN_BEXTR32>:
+	When folding into zero without checking whether first argument is
+	constant, use omit_one_operand.
+	(ix86_fold_builtin) <case IX86_BUILTIN_BZHI32>: Likewise.
+
+2024-08-09  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.cc (gcn_asm_trampoline_template): Add .align.
+	* config/gcn/gcn.h (TRAMPOLINE_SIZE): Increase to 40.
+
+2024-08-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (*load_<mode>_libgcc, *xload_<mode>_libgcc):
+	Tidy up code.
+
+2024-08-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/constraints.md (Dm): Match CONSTM1_RTX rather
+	CONST1_RTX.
+
 2024-08-08  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/116229
