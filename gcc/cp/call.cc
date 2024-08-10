@@ -13226,10 +13226,35 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
   else if (cand2->rewritten ())
     return 1;
 
-  /* F1 is generated from a deduction-guide (13.3.1.8) and F2 is not */
   if (deduction_guide_p (cand1->fn))
     {
       gcc_assert (deduction_guide_p (cand2->fn));
+
+      /* F1 and F2 are generated from class template argument deduction for a
+	 class D, and F2 is generated from inheriting constructors from a base
+	 class of D while F1 is not, and for each explicit function argument,
+	 the corresponding parameters of F1 and F2 are either both ellipses or
+	 have the same type.  */
+      bool inherited1 = inherited_guide_p (cand1->fn);
+      bool inherited2 = inherited_guide_p (cand2->fn);
+      if (int diff = inherited2 - inherited1)
+	{
+	  for (i = 0; i < len; ++i)
+	    {
+	      conversion *t1 = cand1->convs[i + off1];
+	      conversion *t2 = cand2->convs[i + off2];
+	      /* ??? It seems the ellipses part of this tiebreaker isn't
+		 needed since a mismatch should have broken the tie earlier
+		 during ICS comparison.  */
+	      gcc_checking_assert (t1->ellipsis_p == t2->ellipsis_p);
+	      if (!same_type_p (t1->type, t2->type))
+		break;
+	    }
+	  if (i == len)
+	    return diff;
+	}
+
+      /* F1 is generated from a deduction-guide (13.3.1.8) and F2 is not */
       /* We distinguish between candidates from an explicit deduction guide and
 	 candidates built from a constructor based on DECL_ARTIFICIAL.  */
       int art1 = DECL_ARTIFICIAL (cand1->fn);

@@ -2981,9 +2981,10 @@ struct GTY(()) lang_decl_fn {
      this pointer and result pointer adjusting thunks are
      chained here.  This pointer thunks to return pointer thunks
      will be chained on the return pointer thunk.
-     For a DECL_CONSTUCTOR_P FUNCTION_DECL, this is the base from
-     whence we inherit.  Otherwise, it is the class in which a
-     (namespace-scope) friend is defined (if any).   */
+     For a DECL_CONSTRUCTOR_P or deduction_guide_p FUNCTION_DECL,
+     this is the base from whence we inherit.
+     Otherwise, it is the class in which a (namespace-scope) friend
+     is defined (if any).  */
   tree context;
 
   union lang_decl_u5
@@ -7651,6 +7652,7 @@ extern bool deduction_guide_p			(const_tree);
 extern bool copy_guide_p			(const_tree);
 extern bool template_guide_p			(const_tree);
 extern bool builtin_guide_p			(const_tree);
+extern bool inherited_guide_p			(const_tree);
 extern void store_explicit_specifier		(tree, tree);
 extern tree lookup_explicit_specifier		(tree);
 extern tree lookup_imported_hidden_friend	(tree);
