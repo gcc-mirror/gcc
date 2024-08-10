@@ -77,7 +77,7 @@ TEST (void)
   int i;
   int fail = 0;
 
-  for (i = 0; i < sizeof (vals) / sizeof (vals); i += 8)
+  for (i = 0; i < sizeof (vals) / sizeof (vals[0]); i += 8)
     {
       p1[0] = vals[i+0];
       p1[1] = vals[i+1];
