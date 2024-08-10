@@ -1,3 +1,14 @@
+2024-08-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-08-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116287
+	* config/i386/i386.cc (ix86_fold_builtin) <case IX86_BUILTIN_BEXTR32>:
+	When folding into zero without checking whether first argument is
+	constant, use omit_one_operand.
+	(ix86_fold_builtin) <case IX86_BUILTIN_BZHI32>: Likewise.
+
 2024-08-08  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:

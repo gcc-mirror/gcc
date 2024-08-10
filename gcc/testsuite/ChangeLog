@@ -1,3 +1,13 @@
+2024-08-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-08-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116287
+	* gcc.target/i386/bmi-pr116287.c: New test.
+	* gcc.target/i386/bmi2-pr116287.c: New test.
+	* gcc.target/i386/tbm-pr116287.c: New test.
+
 2024-08-08  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
