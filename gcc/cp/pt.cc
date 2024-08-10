@@ -11772,8 +11772,7 @@ tsubst_friend_class (tree friend_tmpl, tree args)
 	   compatible with the attachment of the friend template.  */
 	module_may_redeclare (tmpl, friend_tmpl);
 
-      if (TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (friend_tmpl))
-	  > TMPL_ARGS_DEPTH (args))
+      if (DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (friend_tmpl))
 	{
 	  tree parms = tsubst_template_parms (DECL_TEMPLATE_PARMS (friend_tmpl),
 					      args, tf_warning_or_error);
@@ -11815,6 +11814,7 @@ tsubst_friend_class (tree friend_tmpl, tree args)
 	  CLASSTYPE_USE_TEMPLATE (TREE_TYPE (tmpl)) = 0;
 	  CLASSTYPE_TI_ARGS (TREE_TYPE (tmpl))
 	    = INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (TREE_TYPE (tmpl)));
+	  DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (tmpl) = false;
 
 	  /* Substitute into and set the constraints on the new declaration.  */
 	  if (tree ci = get_constraints (friend_tmpl))
@@ -15043,8 +15043,6 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
 
   if (PRIMARY_TEMPLATE_P (t))
     DECL_PRIMARY_TEMPLATE (r) = r;
-
-  DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (r) = false;
 
   if (!lambda_fntype && !class_p)
     {
