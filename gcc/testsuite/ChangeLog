@@ -1,3 +1,10 @@
+2024-08-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113063
+	PR c++/116289
+	* g++.dg/cpp2a/spaceship-synth16.C: New test.
+	* g++.dg/cpp2a/spaceship-synth16a.C: New test.
+
 2024-08-06  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	Backported from master:
