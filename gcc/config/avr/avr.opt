@@ -18,6 +18,10 @@
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
 
+mlra
+Target Var(avr_lra_p) UInteger Init(0) Optimization
+Usa LRA for reload instead of the old reload framework.  This option is experimental, and it may be removed in future versions of the compiler.
+
 mcall-prologues
 Target Mask(CALL_PROLOGUES) Optimization
 Optimization. Use subroutines for function prologues and epilogues.

@@ -14180,7 +14180,9 @@ avr_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	address registers is extreme stress test for reload.  */
 
   if (GET_MODE_SIZE (mode) >= 4
-      && regno >= REG_X)
+      && regno >= REG_X
+      // This problem only concerned the old reload.
+      && ! avr_lra_p)
     return false;
 
   /* All modes larger than 8 bits should start in an even register.  */
@@ -16682,6 +16684,15 @@ avr_float_lib_compare_returns_bool (machine_mode mode, enum rtx_code)
   return false;
 }
 
+
+/* Implement `TARGET_LRA_P'.  */
+
+static bool
+avr_use_lra_p ()
+{
+  return avr_lra_p;
+}
+
 
 
 /* Initialize the GCC target structure.  */
@@ -16824,7 +16835,7 @@ avr_float_lib_compare_returns_bool (machine_mode mode, enum rtx_code)
 #define TARGET_CONVERT_TO_TYPE avr_convert_to_type
 
 #undef TARGET_LRA_P
-#define TARGET_LRA_P hook_bool_void_false
+#define TARGET_LRA_P avr_use_lra_p
 
 #undef  TARGET_ADDR_SPACE_SUBSET_P
 #define TARGET_ADDR_SPACE_SUBSET_P avr_addr_space_subset_p
