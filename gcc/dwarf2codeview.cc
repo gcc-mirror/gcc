@@ -71,6 +71,7 @@ along with GCC; see the file COPYING3.  If not see
 
 enum cv_sym_type {
   S_END = 0x0006,
+  S_FRAMEPROC = 0x1012,
   S_BLOCK32 = 0x1103,
   S_REGISTER = 0x1106,
   S_LDATA32 = 0x110c,
@@ -2822,6 +2823,74 @@ write_s_end (void)
   targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
 }
 
+/* Write the S_FRAMEPROC symbol, which is supposed to give information about
+   the function frame.  It doesn't seem to be really used in modern versions of
+   MSVC, which is why we zero-out everything here.  You still need to write it
+   though, otherwise windbg won't necessarily show all the local variables.  */
+
+static void
+write_s_frameproc (void)
+{
+  unsigned int label_num = ++sym_label_num;
+
+  /* This is struct FRAMEPROCSYM in Microsoft's cvinfo.h:
+
+      struct frameprocsym
+      {
+	uint16_t size;
+	uint16_t kind;
+	uint32_t frame_size;
+	uint32_t padding_size;
+	uint32_t padding_offset;
+	uint32_t saved_registers_size;
+	uint32_t exception_handler_offset;
+	uint16_t exception_handler_section;
+	uint32_t flags;
+      } ATTRIBUTE_PACKED;
+   */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	       "%L" SYMBOL_END_LABEL "%u - %L" SYMBOL_START_LABEL "%u\n",
+	       label_num, label_num);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_START_LABEL, label_num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, S_FRAMEPROC);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+}
+
 /* Loop through the DIEs in an unoptimized function, writing out any variables
    or blocks that we encounter.  */
 
@@ -3070,9 +3139,16 @@ write_function (codeview_symbol *s)
     fbloc = frame_base->dw_attr_val.v.val_loc;
 
   if (flag_var_tracking)
-    write_optimized_function_vars (s->function.die, fbloc, rtx_low, rtx_high);
+    {
+      write_optimized_function_vars (s->function.die, fbloc, rtx_low,
+				     rtx_high);
+      write_s_frameproc ();
+    }
   else
-    write_unoptimized_function_vars (s->function.die, fbloc);
+    {
+      write_s_frameproc ();
+      write_unoptimized_function_vars (s->function.die, fbloc);
+    }
 
   /* Output the S_PROC_ID_END record.  */
 
