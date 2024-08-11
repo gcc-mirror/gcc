@@ -131,7 +131,7 @@ gfc_type_abi_kind (bt type, int kind)
 gfc_symbol *
 gfc_get_intrinsic_sub_symbol (const char *name)
 {
-  gfc_symbol *sym;
+  gfc_symbol *sym = NULL;
 
   gfc_get_symbol (name, gfc_intrinsic_namespace, &sym);
   sym->attr.always_explicit = 1;

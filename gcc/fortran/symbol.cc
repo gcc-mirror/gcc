@@ -3599,7 +3599,7 @@ int
 gfc_get_ha_symbol (const char *name, gfc_symbol **result)
 {
   int i;
-  gfc_symtree *st;
+  gfc_symtree *st = NULL;
 
   i = gfc_get_ha_sym_tree (name, &st);
 
