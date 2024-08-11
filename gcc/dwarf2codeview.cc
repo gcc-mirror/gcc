@@ -79,6 +79,7 @@ enum cv_sym_type {
   S_COMPILE3 = 0x113c,
   S_LOCAL = 0x113e,
   S_DEFRANGE_REGISTER = 0x1141,
+  S_DEFRANGE_REGISTER_REL = 0x1145,
   S_LPROC32_ID = 0x1146,
   S_GPROC32_ID = 0x1147,
   S_PROC_ID_END = 0x114f
@@ -2409,10 +2410,113 @@ write_defrange_register (dw_loc_descr_ref expr, rtx range_start, rtx range_end)
   targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
 }
 
+/* Write an S_DEFRANGE_REGISTER_REL symbol, which describes a range for which
+   an S_LOCAL variable is held in memory given by the value of a certain
+   register plus an offset.  */
+
+static void
+write_defrange_register_rel (dw_loc_descr_ref expr, dw_loc_descr_ref fbloc,
+			     rtx range_start, rtx range_end)
+{
+  unsigned int label_num = ++sym_label_num;
+  uint16_t regno;
+  int offset;
+
+  /* This is defrange_register_rel in binutils and DEFRANGESYMREGISTERREL in
+     Microsoft's cvinfo.h:
+
+      struct lvar_addr_range
+      {
+	uint32_t offset;
+	uint16_t section;
+	uint16_t length;
+      } ATTRIBUTE_PACKED;
+
+      struct lvar_addr_gap {
+	uint16_t offset;
+	uint16_t length;
+      } ATTRIBUTE_PACKED;
+
+      struct defrange_register_rel
+      {
+	uint16_t size;
+	uint16_t kind;
+	uint16_t reg;
+	uint16_t offset_parent;
+	uint32_t offset_register;
+	struct lvar_addr_range range;
+	struct lvar_addr_gap gaps[];
+      } ATTRIBUTE_PACKED;
+    */
+
+  if (!fbloc)
+    return;
+
+  if (fbloc->dw_loc_opc >= DW_OP_breg0 && fbloc->dw_loc_opc <= DW_OP_breg31)
+    {
+      regno = dwarf_reg_to_cv (fbloc->dw_loc_opc - DW_OP_breg0);
+      offset = fbloc->dw_loc_oprnd1.v.val_int;
+    }
+  else if (fbloc->dw_loc_opc == DW_OP_bregx)
+    {
+      regno = dwarf_reg_to_cv (fbloc->dw_loc_oprnd1.v.val_int);
+      offset = fbloc->dw_loc_oprnd2.v.val_int;
+    }
+  else
+    {
+      return;
+    }
+
+  if (expr->dw_loc_oprnd1.val_class != dw_val_class_unsigned_const)
+    return;
+
+  offset += expr->dw_loc_oprnd1.v.val_int;
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	      "%L" SYMBOL_END_LABEL "%u - %L" SYMBOL_START_LABEL "%u\n",
+	      label_num, label_num);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_START_LABEL, label_num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, S_DEFRANGE_REGISTER_REL);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, regno);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, offset);
+  putc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "\t.secrel32 ");
+  output_addr_const (asm_out_file, range_start);
+  fputc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "\t.secidx ");
+  output_addr_const (asm_out_file, range_start);
+  fputc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  output_addr_const (asm_out_file, range_end);
+  fputs (" - ", asm_out_file);
+  output_addr_const (asm_out_file, range_start);
+  putc ('\n', asm_out_file);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+}
+
 /* Try to write an S_DEFRANGE_* symbol for the given DWARF location.  */
 
 static void
-write_optimized_local_variable_loc (dw_loc_descr_ref expr, rtx range_start,
+write_optimized_local_variable_loc (dw_loc_descr_ref expr,
+				    dw_loc_descr_ref fbloc, rtx range_start,
 				    rtx range_end)
 {
   if (expr->dw_loc_next)
@@ -2462,6 +2566,10 @@ write_optimized_local_variable_loc (dw_loc_descr_ref expr, rtx range_start,
       write_defrange_register (expr, range_start, range_end);
       break;
 
+    case DW_OP_fbreg:
+      write_defrange_register_rel (expr, fbloc, range_start, range_end);
+      break;
+
     default:
       break;
     }
@@ -2473,7 +2581,8 @@ write_optimized_local_variable_loc (dw_loc_descr_ref expr, rtx range_start,
    place for the whole block we need to write an S_LOCAL.  */
 
 static void
-write_optimized_local_variable (dw_die_ref die, rtx block_start, rtx block_end)
+write_optimized_local_variable (dw_die_ref die, dw_loc_descr_ref fbloc,
+				rtx block_start, rtx block_end)
 {
   dw_attr_node *loc;
   dw_loc_list_ref loc_list;
@@ -2499,8 +2608,8 @@ write_optimized_local_variable (dw_die_ref die, rtx block_start, rtx block_end)
 	  if (loc_list->end)
 	    range_end = gen_rtx_SYMBOL_REF (Pmode, loc_list->end);
 
-	  write_optimized_local_variable_loc (loc_list->expr, range_start,
-					      range_end);
+	  write_optimized_local_variable_loc (loc_list->expr, fbloc,
+					      range_start, range_end);
 
 	  loc_list = loc_list->dw_loc_next;
 	}
@@ -2509,7 +2618,7 @@ write_optimized_local_variable (dw_die_ref die, rtx block_start, rtx block_end)
     case dw_val_class_loc:
       write_s_local (die);
 
-      write_optimized_local_variable_loc (loc->dw_attr_val.v.val_loc,
+      write_optimized_local_variable_loc (loc->dw_attr_val.v.val_loc, fbloc,
 					  block_start, block_end);
       break;
 
@@ -2763,7 +2872,8 @@ write_unoptimized_function_vars (dw_die_ref die, dw_loc_descr_ref fbloc)
    locations, so some degree of "optimized out"s is inevitable.  */
 
 static void
-write_optimized_function_vars (dw_die_ref die,  rtx block_start, rtx block_end)
+write_optimized_function_vars (dw_die_ref die, dw_loc_descr_ref fbloc,
+			       rtx block_start, rtx block_end)
 {
   dw_die_ref first_child, c;
 
@@ -2781,7 +2891,7 @@ write_optimized_function_vars (dw_die_ref die,  rtx block_start, rtx block_end)
       {
       case DW_TAG_formal_parameter:
       case DW_TAG_variable:
-	write_optimized_local_variable (c, block_start, block_end);
+	write_optimized_local_variable (c, fbloc, block_start, block_end);
 	break;
 
       case DW_TAG_lexical_block:
@@ -2816,7 +2926,7 @@ write_optimized_function_vars (dw_die_ref die,  rtx block_start, rtx block_end)
 
 	  rtx_high = gen_rtx_SYMBOL_REF (Pmode, label_high);
 
-	  write_optimized_function_vars (c, rtx_low, rtx_high);
+	  write_optimized_function_vars (c, fbloc, rtx_low, rtx_high);
 
 	  break;
 	}
@@ -2960,7 +3070,7 @@ write_function (codeview_symbol *s)
     fbloc = frame_base->dw_attr_val.v.val_loc;
 
   if (flag_var_tracking)
-    write_optimized_function_vars (s->function.die, rtx_low, rtx_high);
+    write_optimized_function_vars (s->function.die, fbloc, rtx_low, rtx_high);
   else
     write_unoptimized_function_vars (s->function.die, fbloc);
 
