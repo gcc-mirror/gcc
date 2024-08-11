@@ -330,6 +330,13 @@ avr_adiw_reg_p (rtx reg)
 }
 
 
+static bool
+ra_in_progress ()
+{
+  return avr_lra_p ? lra_in_progress : reload_in_progress;
+}
+
+
 namespace {
 
 static const pass_data avr_pass_data_recompute_notes =
@@ -3560,8 +3567,8 @@ avr_legitimate_address_p (machine_mode mode, rtx x, bool strict)
   if (avr_log.legitimate_address_p)
     {
       avr_edump ("\n%?: ret=%d, mode=%m strict=%d "
-		 "reload_completed=%d reload_in_progress=%d %s:",
-		 ok, mode, strict, reload_completed, reload_in_progress,
+		 "reload_completed=%d ra_in_progress=%d %s:",
+		 ok, mode, strict, reload_completed, ra_in_progress (),
 		 reg_renumber ? "(reg_renumber)" : "");
 
       if (GET_CODE (x) == PLUS
@@ -13973,8 +13980,8 @@ extra_constraint_Q (rtx x)
 	    || xx == arg_pointer_rtx);
 
       if (avr_log.constraints)
-	avr_edump ("\n%?=%d reload_completed=%d reload_in_progress=%d\n %r\n",
-		   ok, reload_completed, reload_in_progress, x);
+	avr_edump ("\n%?=%d reload_completed=%d ra_in_progress=%d\n %r\n",
+		   ok, reload_completed, ra_in_progress (), x);
     }
 
   return ok;
@@ -15038,8 +15045,8 @@ avr_addr_space_legitimate_address_p (machine_mode mode, rtx x, bool strict,
   if (avr_log.legitimate_address_p)
     {
       avr_edump ("\n%?: ret=%b, mode=%m strict=%d "
-		 "reload_completed=%d reload_in_progress=%d %s:",
-		 ok, mode, strict, reload_completed, reload_in_progress,
+		 "reload_completed=%d ra_in_progress=%d %s:",
+		 ok, mode, strict, reload_completed, ra_in_progress (),
 		 reg_renumber ? "(reg_renumber)" : "");
 
       if (GET_CODE (x) == PLUS
