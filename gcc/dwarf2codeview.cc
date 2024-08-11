@@ -3007,6 +3007,62 @@ write_optimized_function_vars (dw_die_ref die, dw_loc_descr_ref fbloc,
   while (c != first_child);
 }
 
+/* There's no way to mark the range of a static local variable in an optimized
+   function: there's no S_DEFRANGE_* symbol for this, and you can't have
+   S_BLOCK32 symbols.  So instead we have to loop through after the S_FRAMEPROC
+   has been written, and write the S_LDATA32s at the end.  */
+
+static void
+write_optimized_static_local_vars (dw_die_ref die)
+{
+  dw_die_ref first_child, c;
+
+  first_child = dw_get_die_child (die);
+
+  if (!first_child)
+    return;
+
+  c = first_child;
+  do
+  {
+    c = dw_get_die_sib (c);
+
+    switch (dw_get_die_tag (c))
+      {
+      case DW_TAG_variable:
+	{
+	  dw_attr_node *loc;
+	  dw_loc_descr_ref loc_ref;
+
+	  loc = get_AT (c, DW_AT_location);
+	  if (!loc)
+	    break;
+
+	  if (loc->dw_attr_val.val_class != dw_val_class_loc)
+	    break;
+
+	  loc_ref = loc->dw_attr_val.v.val_loc;
+	  if (!loc_ref)
+	    break;
+
+	  if (loc_ref->dw_loc_opc != DW_OP_addr)
+	    break;
+
+	  write_local_s_ldata32 (c, loc_ref);
+	  break;
+	}
+
+      case DW_TAG_lexical_block:
+	write_optimized_static_local_vars (c);
+	break;
+
+      default:
+	break;
+      }
+  }
+  while (c != first_child);
+}
+
 /* Write an S_GPROC32_ID symbol, representing a global function, or an
    S_LPROC32_ID symbol, for a static function.  */
 
@@ -3143,6 +3199,7 @@ write_function (codeview_symbol *s)
       write_optimized_function_vars (s->function.die, fbloc, rtx_low,
 				     rtx_high);
       write_s_frameproc ();
+      write_optimized_static_local_vars (s->function.die);
     }
   else
     {
