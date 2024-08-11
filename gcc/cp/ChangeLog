@@ -1,3 +1,43 @@
+2024-08-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116276
+	* call.cc (joust): Implement P2582R1 inherited vs non-inherited
+	guide tiebreaker.
+	* cp-tree.h (lang_decl_fn::context): Document usage in
+	deduction_guide_p FUNCTION_DECLs.
+	(inherited_guide_p): Declare.
+	* pt.cc (inherited_guide_p): Define.
+	(set_inherited_guide_context): Define.
+	(alias_ctad_tweaks): Use set_inherited_guide_context.
+	(inherited_ctad_tweaks): Recognize some inherited constructors
+	whose scope is a TYPENAME_TYPE.
+	(ctor_deduction_guides_for): For C++23 inherited CTAD, iterate
+	over TYPE_FIELDS instead of CLASSTYPE_CONSTRUCTORS to recognize
+	all inherited constructors.
+
+2024-08-10  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (tsubst_friend_class): Simplify depth comparison test
+	in the redeclaration code path to
+	DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P.  Clear the flag after
+	partial instantiation here ...
+	(tsubst_template_decl): ... instead of here.
+
+2024-08-10  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h (get_identifier_kind): Define.
+	(IDENTIFIER_KEYWORD_P): Redefine in terms of get_identifier_kind.
+	(IDENTIFIER_CDTOR_P): Likewise.
+	(IDENTIFIER_CTOR_P): Likewise.
+	(IDENTIFIER_DTOR_P): Likewise.
+	(IDENTIFIER_ANY_OP_P): Likewise.
+	(IDENTIFIER_OVL_OP_P): Likewise.
+	(IDENTIFIER_ASSIGN_OP_P): Likewise.
+	(IDENTIFIER_CONV_OP_P): Likewise.
+	(IDENTIFIER_TRAIT_P): Likewise.
+	* parser.cc (cp_lexer_peek_trait): Mark IDENTIFIER_TRAIT_P
+	check UNLIKELY.
+
 2024-08-09  Simon Martin  <simon@nasilyan.com>
 
 	PR c++/115806

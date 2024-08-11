@@ -1,3 +1,15 @@
+2024-08-10  Andi Kleen  <ak@gcc.gnu.org>
+
+	* doc/cfg.texi: Fix references to dom_walker.
+
+2024-08-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/113934
+	* config/avr/avr.opt (-mlra): New target option.
+	* config/avr/avr.cc (avr_use_lra_p): New function.
+	(TARGET_LRA_P): Use it.
+	(avr_hard_regno_mode_ok) [lra]: Don't disallow 4-byte modes for X.
+
 2024-08-09  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/116283
