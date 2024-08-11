@@ -19,7 +19,7 @@
 ; <http://www.gnu.org/licenses/>.
 
 mlra
-Target Var(avr_lra_p) UInteger Init(0) Optimization
+Target Var(avr_lra_p) UInteger Init(0) Optimization Undocumented
 Usa LRA for reload instead of the old reload framework.  This option is experimental, and it may be removed in future versions of the compiler.
 
 mcall-prologues
