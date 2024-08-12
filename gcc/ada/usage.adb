@@ -527,6 +527,9 @@ begin
                                                   "primitives");
    Write_Line ("        .J*  turn off warnings for late dispatching " &
                                                   "primitives");
+   Write_Line ("        _j   turn on warnings for First_Controlling_" &
+                                                  "Parameter aspect");
+
    Write_Line ("        k+   turn on warnings on constant variable");
    Write_Line ("        K*   turn off warnings on constant variable");
    Write_Line ("        .k   turn on warnings for standard redefinition");

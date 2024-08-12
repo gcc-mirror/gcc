@@ -269,6 +269,88 @@ The Ada 202x ``Static`` aspect can be specified on Intrinsic imported functions
 and the compiler will evaluate some of these intrinsics statically, in
 particular the ``Shift_Left`` and ``Shift_Right`` intrinsics.
 
+First Controlling Parameter
+---------------------------
+
+A new pragma/aspect, ``First_Controlling_Parameter``, is introduced for tagged
+types, altering the semantics of primitive/controlling parameters. When a
+tagged type is marked with this aspect, only subprograms where the first
+parameter is of that type will be considered dispatching primitives. This
+pragma/aspect applies to the entire hierarchy, starting from the specified
+type, without affecting inherited primitives.
+
+Here is an example of this feature:
+
+.. code-block:: ada
+
+    package Example is
+       type Root is tagged private;
+
+       procedure P (V : Integer; V2 : Root);
+       -- Primitive
+
+       type Child is tagged private
+         with First_Controlling_Parameter;
+
+    private
+       type Root is tagged null record;
+       type Child is new Root with null record;
+
+       overriding
+       procedure P (V : Integer; V2 : Child);
+       -- Primitive
+
+       procedure P2 (V : Integer; V2 : Child);
+       -- NOT Primitive
+
+       function F return Child; -- NOT Primitive
+
+       function F2 (V : Child) return Child;
+       -- Primitive, but only controlling on the first parameter
+    end;
+
+Note that ``function F2 (V : Child) return Child;`` differs from ``F2 (V : Child)
+return Child'Class;`` in that the return type is a specific, definite type. This
+is also distinct from the legacy semantics, where further derivations with
+added fields would require overriding the function.
+
+The option ``-gnatw_j``, that you can pass to the compiler directly, enables
+warnings related to this new language feature. For instance, compiling the
+example above without this switch produces no warnings, but compiling it with
+``-gnatw_j`` generates the following warning on the declaration of procedure P2:
+
+.. code-block:: ada
+
+    warning: not a dispatching primitive of tagged type "Child"
+    warning: disallowed by First_Controlling_Parameter on "Child"
+
+For generic formal tagged types, you can specify whether the type has the
+First_Controlling_Parameter aspect enabled:
+
+.. code-block:: ada
+
+    generic
+       type T is tagged private with First_Controlling_Parameter;
+    package T is
+        type U is new T with null record;
+        function Foo return U; -- Not a primitive
+    end T;
+
+For tagged partial views, the value of the aspect must be consistent between
+the partial and full views:
+
+.. code-block:: ada
+
+    package R is
+       type T is tagged private;
+    ...
+    private
+       type T is tagged null record with First_Controlling_Parameter; -- ILLEGAL
+    end R;
+
+Link to the original RFC:
+https://github.com/AdaCore/ada-spark-rfcs/blob/master/considered/rfc-oop-first-controlling.rst
+
 .. _Experimental_Language_Extensions:
 
 Experimental Language Extensions
