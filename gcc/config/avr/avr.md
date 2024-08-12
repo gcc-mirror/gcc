@@ -1355,6 +1355,8 @@
                                     gen_int_mode (INTVAL (operands[1]), mode));
     rtx addr0 = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
     operands[0] = gen_rtx_MEM (BLKmode, addr0);
+    // Alignment is unused; just set it to 0.
+    operands[3] = const0_rtx;
   })
 
 
