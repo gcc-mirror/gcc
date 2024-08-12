@@ -3,6 +3,9 @@
 /* { dg-options "-O2" } */
 /* { dg-additional-options "-mtune=atom -fno-omit-frame-pointer -fno-strict-aliasing" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 /* { dg-skip-if "Too much RAM needed" { "avr-*-*" } } */
+/* About 50 KB code, 33 KB stack, too big for byte-addressed
+   von Neumann targets with 16 bit addresses.  */
+/* { dg-require-effective-target size20plus } */
 
 extern void abort (void);
 
