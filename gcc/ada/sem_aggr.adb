@@ -2542,6 +2542,66 @@ package body Sem_Aggr is
          null;
 
       elsif Present (Component_Associations (N)) then
+         Assoc := First (Component_Associations (N));
+
+         --  Loop over associations to identify any iterated associations that
+         --  need to be converted from the form with a Defining_Identifer and
+         --  Discrete_Choices list to the form with an Iterator_Specification.
+
+         if Nkind (Assoc) = N_Iterated_Component_Association then
+            while Present (Assoc) loop
+               if Nkind (Assoc) = N_Iterated_Component_Association
+                 and then No (Iterator_Specification (Assoc))
+               then
+                  declare
+                     Choice : constant Node_Id :=
+                       First (Discrete_Choices (Assoc));
+                     Copy   : Node_Id;
+                  begin
+
+                     --  A copy of Choice is made before it's analyzed,
+                     --  to preserve prefixed calls in their original form,
+                     --  because otherwise the analysis of Choice can transform
+                     --  such calls to normal form, and the later analysis of
+                     --  the iterator_specification created below may trigger
+                     --  an error on the call (in the case where the function
+                     --  is not directly visible).
+
+                     Copy := Copy_Separate_Tree (Choice);
+
+                     --  This is an association with a Defining_Identifier and
+                     --  Discrete_Choice_List, but if the latter has a single
+                     --  choice denoting an object (including a function call)
+                     --  of an iterator type, then it's a stand-in for an
+                     --  Iterator_Specification, and so we transform the
+                     --  association accordingly.
+
+                     if No (Next (Choice)) then
+                        Analyze (Choice);
+
+                        if Is_Object_Reference (Choice)
+                          and then Is_Iterator (Etype (Choice))
+                        then
+                           Set_Iterator_Specification
+                             (Assoc,
+                              Make_Iterator_Specification (Sloc (N),
+                                Defining_Identifier =>
+                                  Relocate_Node (Defining_Identifier (Assoc)),
+                                Name                => Copy,
+                                Reverse_Present     => Reverse_Present (Assoc),
+                                Iterator_Filter     => Empty,
+                                Subtype_Indication  => Empty));
+
+                           Set_Defining_Identifier (Assoc, Empty);
+                           Set_Discrete_Choices (Assoc, No_List);
+                        end if;
+                     end if;
+                  end;
+               end if;
+
+               Next (Assoc);
+            end loop;
+         end if;
 
          --  Verify that all or none of the component associations
          --  include an iterator specification.
@@ -3814,7 +3874,7 @@ package body Sem_Aggr is
             then
                null;
 
-            elsif Nkind (Choice) = N_Function_Call then
+            elsif Is_Object_Reference (Choice) then
                declare
                   I_Spec : constant Node_Id :=
                     Make_Iterator_Specification (Sloc (N),
