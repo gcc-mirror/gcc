@@ -1228,6 +1228,10 @@ sjlj_emit_function_enter (rtx_code_label *dispatch_label)
 	else if (NOTE_INSN_BASIC_BLOCK_P (fn_begin))
 	  fn_begin_outside_block = false;
       }
+    /* assign_params can indirectly call emit_block_move_via_loop, e.g.
+       for g++.dg/torture/pr85627.C for 16-bit targets.  */
+    else if (JUMP_P (fn_begin))
+      fn_begin_outside_block = true;
 
 #ifdef DONT_USE_BUILTIN_SETJMP
   if (dispatch_label)
