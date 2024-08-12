@@ -2448,7 +2448,7 @@ get_type_num_enumeration_type (dw_die_ref type, bool in_struct)
   dw_die_ref first_child;
   codeview_custom_type *ct;
   uint16_t count = 0;
-  uint32_t last_type;
+  uint32_t last_type = 0;
 
   if (get_AT_flag (type, DW_AT_declaration))
     return add_enum_forward_def (type);
@@ -2726,7 +2726,7 @@ get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
   dw_die_ref first_child;
   codeview_custom_type *ct;
   uint16_t num_members = 0;
-  uint32_t last_type;
+  uint32_t last_type = 0;
   const char *name;
 
   if ((in_struct && get_AT_string (type, DW_AT_name))
