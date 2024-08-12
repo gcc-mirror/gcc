@@ -12,5 +12,5 @@ fn test_move_fixed() {
 
     let a = 1; // a is now primitive and can be copied
     let b = a;
-    let c = b;
+    let c = a;
 }
