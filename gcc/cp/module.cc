@@ -11585,8 +11585,6 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 
 	  if (!same_type_p (TREE_VALUE (d_args), TREE_VALUE (e_args)))
 	    goto mismatch;
-
-	  // FIXME: Check default values
 	}
 
       /* If EXISTING has an undeduced or uninstantiated exception
@@ -11725,7 +11723,60 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
   if (!DECL_EXTERNAL (d_inner))
     DECL_EXTERNAL (e_inner) = false;
 
-  // FIXME: Check default tmpl and fn parms here
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
+    {
+      /* Merge default template arguments.  */
+      tree d_parms = DECL_INNERMOST_TEMPLATE_PARMS (decl);
+      tree e_parms = DECL_INNERMOST_TEMPLATE_PARMS (existing);
+      gcc_checking_assert (TREE_VEC_LENGTH (d_parms)
+			   == TREE_VEC_LENGTH (e_parms));
+      for (int i = 0; i < TREE_VEC_LENGTH (d_parms); ++i)
+	{
+	  tree d_default = TREE_PURPOSE (TREE_VEC_ELT (d_parms, i));
+	  tree& e_default = TREE_PURPOSE (TREE_VEC_ELT (e_parms, i));
+	  if (e_default == NULL_TREE)
+	    e_default = d_default;
+	  else if (d_default != NULL_TREE
+		   && !cp_tree_equal (d_default, e_default))
+	    {
+	      auto_diagnostic_group d;
+	      tree d_parm = TREE_VALUE (TREE_VEC_ELT (d_parms, i));
+	      tree e_parm = TREE_VALUE (TREE_VEC_ELT (e_parms, i));
+	      error_at (DECL_SOURCE_LOCATION (d_parm),
+			"conflicting default argument for %#qD", d_parm);
+	      inform (DECL_SOURCE_LOCATION (e_parm),
+		      "existing default declared here");
+	      return false;
+	    }
+	}
+    }
+
+  if (TREE_CODE (d_inner) == FUNCTION_DECL)
+    {
+      /* Merge default function arguments.  */
+      tree d_parm = FUNCTION_FIRST_USER_PARMTYPE (d_inner);
+      tree e_parm = FUNCTION_FIRST_USER_PARMTYPE (e_inner);
+      int i = 0;
+      for (; d_parm && d_parm != void_list_node;
+	   d_parm = TREE_CHAIN (d_parm), e_parm = TREE_CHAIN (e_parm), ++i)
+	{
+	  tree d_default = TREE_PURPOSE (d_parm);
+	  tree& e_default = TREE_PURPOSE (e_parm);
+	  if (e_default == NULL_TREE)
+	    e_default = d_default;
+	  else if (d_default != NULL_TREE
+		   && !cp_tree_equal (d_default, e_default))
+	    {
+	      auto_diagnostic_group d;
+	      error_at (get_fndecl_argument_location (d_inner, i),
+			"conflicting default argument for parameter %P of %#qD",
+			i, decl);
+	      inform (get_fndecl_argument_location (e_inner, i),
+		      "existing default declared here");
+	      return false;
+	    }
+	}
+    }
 
   return true;
 }
