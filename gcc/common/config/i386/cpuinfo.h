@@ -1006,6 +1006,9 @@ get_available_features (struct __processor_model *cpu_model,
       if (ebx & bit_AVX10_256)
 	switch (version)
 	  {
+	  case 2:
+	    set_feature (FEATURE_AVX10_2_256);
+	    /* Fall through.  */
 	  case 1:
 	    set_feature (FEATURE_AVX10_1_256);
 	    break;
@@ -1016,6 +1019,9 @@ get_available_features (struct __processor_model *cpu_model,
       if (ebx & bit_AVX10_512)
 	switch (version)
 	  {
+	  case 2:
+	    set_feature (FEATURE_AVX10_2_512);
+	    /* Fall through.  */
 	  case 1:
 	    set_feature (FEATURE_AVX10_1_512);
 	    break;

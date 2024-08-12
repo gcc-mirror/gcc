@@ -7466,6 +7466,21 @@ Enable/disable the generation of the AVX10.1 instructions.
 @itemx no-avx10.1-512
 Enable/disable the generation of the AVX10.1 512 bit instructions.
 
+@cindex @code{target("avx10.2")} function attribute, x86
+@item avx10.2
+@itemx no-avx10.2
+Enable/disable the generation of the AVX10.2 instructions.
+
+@cindex @code{target("avx10.2-256")} function attribute, x86
+@item avx10.2-256
+@itemx no-avx10.2-256
+Enable/disbale the generation of the AVX10.2 instructions.
+
+@cindex @code{target("avx10.2-512")} function attribute, x86
+@item avx10.2-512
+@itemx no-avx10.2-512
+Enable/disable the generation of the AVX10.2 512 bit instructions.
+
 @cindex @code{target("cld")} function attribute, x86
 @item cld
 @itemx no-cld

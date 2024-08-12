@@ -2584,6 +2584,15 @@ Target supports the execution of @code{avx10.1} instructions.
 @item avx10.1-512
 Target supports the execution of @code{avx10.1-512} instructions.
 
+@item avx10.2
+Target supports the execution of @code{avx10.2} instructions.
+
+@item avx10.2-256
+Target supports the execution of @code{avx10.2} instructions.
+
+@item avx10.2-512
+Target supports the execution of @code{avx10.2-512} instructions.
+
 @item avx2
 Target supports compiling @code{avx2} instructions.
 
