@@ -1,5 +1,6 @@
 // PR c++/21802
 // { dg-do run }
+// { dg-require-effective-target size20plus }
 #include <cassert>
 
 struct X;

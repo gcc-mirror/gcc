@@ -1,3 +1,5 @@
+/* { dg-skip-if "memory tight" { ! size20plus } { "*" } { "-Os" } } */
+
 void abort (void);
 void exit (int);
 

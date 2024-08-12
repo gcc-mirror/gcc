@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-skip-if "memory tight" { ! size20plus } { "-O0" } } */
 
 #if __SIZEOF_INT__ < 4
 #define Xint __INT32_TYPE__
