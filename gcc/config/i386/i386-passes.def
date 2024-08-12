@@ -31,5 +31,8 @@ along with GCC; see the file COPYING3.  If not see
   INSERT_PASS_BEFORE (pass_cse2, 1, pass_stv, true /* timode_p */);
 
   INSERT_PASS_BEFORE (pass_shorten_branches, 1, pass_insert_endbr_and_patchable_area);
+  /* pass_align_tight_loops must be after pass_insert_endbr_and_patchable_area.
+     PR116174.  */
+  INSERT_PASS_BEFORE (pass_shorten_branches, 1, pass_align_tight_loops);
 
   INSERT_PASS_AFTER (pass_combine, 1, pass_remove_partial_avx_dependency);
