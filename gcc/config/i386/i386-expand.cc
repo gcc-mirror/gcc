@@ -751,7 +751,7 @@ ix86_expand_vector_move (machine_mode mode, rtx operands[])
       && SUBREG_P (op1)
       && GET_MODE (SUBREG_REG (op1)) == TImode
       && TARGET_64BIT && TARGET_SSE
-      && can_create_pseudo_p ())
+      && ix86_pre_reload_split ())
     {
       rtx tmp = gen_reg_rtx (V2DImode);
       rtx lo = gen_reg_rtx (DImode);

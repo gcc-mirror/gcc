@@ -20292,6 +20292,18 @@ inline_secondary_memory_needed (machine_mode mode, reg_class_t class1,
       if (!(INTEGER_CLASS_P (class1) || INTEGER_CLASS_P (class2)))
 	return true;
 
+      /* If the target says that inter-unit moves are more expensive
+	 than moving through memory, then don't generate them.  */
+      if ((SSE_CLASS_P (class1) && !TARGET_INTER_UNIT_MOVES_FROM_VEC)
+	  || (SSE_CLASS_P (class2) && !TARGET_INTER_UNIT_MOVES_TO_VEC))
+	return true;
+
+      /* With SSE4.1, *mov{ti,di}_internal supports moves between
+	 SSE_REGS and GENERAL_REGS using pinsr{q,d} or pextr{q,d}.  */
+      if (TARGET_SSE4_1
+	  && (TARGET_64BIT ? mode == TImode : mode == DImode))
+	return false;
+
       int msize = GET_MODE_SIZE (mode);
 
       /* Between SSE and general, we have moves no larger than word size.  */
@@ -20303,12 +20315,6 @@ inline_secondary_memory_needed (machine_mode mode, reg_class_t class1,
       int minsize = GET_MODE_SIZE (TARGET_SSE2 ? HImode : SImode);
 
       if (msize < minsize)
-	return true;
-
-      /* If the target says that inter-unit moves are more expensive
-	 than moving through memory, then don't generate them.  */
-      if ((SSE_CLASS_P (class1) && !TARGET_INTER_UNIT_MOVES_FROM_VEC)
-	  || (SSE_CLASS_P (class2) && !TARGET_INTER_UNIT_MOVES_TO_VEC))
 	return true;
     }
 
