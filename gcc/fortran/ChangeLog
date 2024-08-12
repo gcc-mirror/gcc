@@ -1,3 +1,9 @@
+2024-08-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/116221
+	* intrinsic.cc (gfc_get_intrinsic_sub_symbol): Initialize variable.
+	* symbol.cc (gfc_get_ha_symbol): Likewise.
+
 2024-08-07  Julian Brown  <julian@codesourcery.com>
 	    Tobias Burnus  <tobias@baylibre.com>
 

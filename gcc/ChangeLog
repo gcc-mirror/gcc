@@ -1,3 +1,13 @@
+2024-08-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.opt (mlra): Set Undocumented flag.
+
+2024-08-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (ra_in_progress): New static function.
+	(avr_legitimate_address_p, avr_addr_space_legitimate_address_p)
+	(extra_constraint_Q): Use it with -mlog=.
+
 2024-08-10  Andi Kleen  <ak@gcc.gnu.org>
 
 	* doc/cfg.texi: Fix references to dom_walker.
