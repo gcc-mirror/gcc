@@ -340,13 +340,28 @@ rooted_splay_tree<Accessors>::insert (node_type new_node, Comparator compare)
   if (comparison == 0)
     return false;
 
-  // Insert NEW_NODE before M_ROOT if COMPARISON < 0 and after M_ROOT
-  // otherwise.
-  set_child (new_node, comparison < 0, m_root);
-  set_child (new_node, comparison > 0, get_child (m_root, comparison > 0));
-  set_child (m_root, comparison > 0, nullptr);
-  m_root = new_node;
+  insert_relative (comparison, new_node);
   return true;
+}
+
+// See the comment above the declaration.
+template<typename Accessors>
+inline void
+rooted_splay_tree<Accessors>::insert_relative (int comparison,
+					       node_type new_node)
+{
+  gcc_checking_assert (!get_child (new_node, 0)
+		       && !get_child (new_node, 1)
+		       && (!m_root || comparison != 0));
+  if (m_root)
+    {
+      // Insert NEW_NODE before M_ROOT if COMPARISON < 0 and after M_ROOT
+      // otherwise.
+      set_child (new_node, comparison < 0, m_root);
+      set_child (new_node, comparison > 0, get_child (m_root, comparison > 0));
+      set_child (m_root, comparison > 0, node_type ());
+    }
+  m_root = new_node;
 }
 
 // See the comment above the declaration.
@@ -396,6 +411,35 @@ rooted_splay_tree<Accessors>::remove_root ()
   // Clear the links from NODE.  Its parent is already node_type ().
   set_child (node, 0, node_type ());
   set_child (node, 1, node_type ());
+}
+
+// See the comment above the declaration.
+template<typename Accessors>
+inline bool
+rooted_splay_tree<Accessors>::remove_root_and_splay_next ()
+{
+  node_type node = m_root;
+  node_type right = get_child (node, 1);
+  if (right)
+    {
+      // Bring the minimum right-hand node to the root.
+      if (get_child (right, 0))
+	{
+	  right = parent::template splay_limit<0> (right);
+	  gcc_checking_assert (!get_child (right, 0));
+	}
+      set_child (right, 0, get_child (node, 0));
+      m_root = right;
+    }
+  else
+    m_root = get_child (node, 0);
+  if (m_root)
+    set_parent (m_root, node_type ());
+
+  // Clear the links from NODE.  Its parent is already node_type ().
+  set_child (node, 0, node_type ());
+  set_child (node, 1, node_type ());
+  return right;
 }
 
 // See the comment above the declaration.
@@ -728,6 +772,19 @@ rooted_splay_tree<Accessors>::lookup (LeftPredicate want_something_smaller,
   set_parent (node, node_type ());
   m_root = node;
   return result;
+}
+
+// See the comment above the declaration.
+template<typename Accessors>
+template<typename LeftPredicate, typename RightPredicate>
+int
+rooted_splay_tree<Accessors>::lookup_le (LeftPredicate want_something_smaller,
+					 RightPredicate want_something_bigger)
+{
+  int comparison = lookup (want_something_smaller, want_something_bigger);
+  if (comparison < 0 && splay_prev_node ())
+    comparison = 1;
+  return comparison;
 }
 
 // See the comment above the declaration.
