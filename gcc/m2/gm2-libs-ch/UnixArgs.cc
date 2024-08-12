@@ -86,6 +86,6 @@ _M2_UnixArgs_dep (void)
 extern "C" void __attribute__((__constructor__))
 _M2_UnixArgs_ctor (void)
 {
-  M2RTS_RegisterModule ("UnixArgs", LIBNAME, _M2_UnixArgs_init, _M2_UnixArgs_finish,
-			_M2_UnixArgs_dep);
+  M2RTS_RegisterModule_Cstr ("UnixArgs", LIBNAME, _M2_UnixArgs_init,
+			     _M2_UnixArgs_finish, _M2_UnixArgs_dep);
 }

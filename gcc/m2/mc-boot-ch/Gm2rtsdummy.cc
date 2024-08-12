@@ -31,32 +31,17 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 typedef void (*proc_con) (int, char **, char **);
 typedef void (*proc_dep) (void);
 
-#if 0
-/* Used if -fscaffold-dynamic were selected.  */
-extern "C" void M2RTS_RequestDependant (const char *modulename, const char *libname,
-					const char *dependancy, const char *deplib);
-#endif
-
-extern "C" void m2pim_M2RTS_RegisterModule (const char *modulename, const char *libname,
+extern "C" void m2pim_M2RTS_RegisterModule (void *modulename, void *libname,
 					    proc_con init, proc_con fini, proc_dep dependencies);
 
 /* Fixup references, the code will not be used though, as it is only used if
    -fscaffold-dynamic is selected (and mc uses -fscaffold-static).  */
 
 extern "C"
-void M2RTS_RegisterModule (const char *modulename, const char *libname,
+void M2RTS_RegisterModule (char *modulename, char *libname,
 			   proc_con init, proc_con fini, proc_dep dependencies)
 {
-  m2pim_M2RTS_RegisterModule (modulename, libname, init, fini, dependencies);
+  m2pim_M2RTS_RegisterModule (reinterpret_cast <void *> (modulename),
+			      reinterpret_cast <void *> (libname),
+			      init, fini, dependencies);
 }
-
-#if 0
-extern "C" void _M2_M2RTS_init (void);
-
-extern "C" void M2RTS_ConstructModules (const char *,
-					int argc, char *argv[], char *envp[]);
-extern "C" void M2RTS_Terminate (void);
-extern "C" void M2RTS_DeconstructModules (void);
-
-extern "C" void M2RTS_Halt (const char *, int, const char *, const char *) __attribute__ ((noreturn));
-#endif

@@ -20,6 +20,8 @@ You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
 #include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
@@ -31,15 +33,14 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #      define FALSE (1==0)
 #   endif
 
-#include <stddef.h>
 #   include "GStorage.h"
 #if defined(__cplusplus)
 #   undef NULL
 #   define NULL 0
 #endif
-#define _SymbolKey_H
 #define _SymbolKey_C
 
+#include "GSymbolKey.h"
 #   include "GStorage.h"
 #   include "GStrIO.h"
 #   include "GNumberIO.h"
@@ -54,19 +55,13 @@ typedef struct SymbolKey_PerformOperation_p SymbolKey_PerformOperation;
 
 typedef struct SymbolKey_Node_r SymbolKey_Node;
 
-typedef SymbolKey_Node *SymbolKey_SymbolTree;
-
-typedef bool (*SymbolKey_IsSymbol_t) (unsigned int);
-struct SymbolKey_IsSymbol_p { SymbolKey_IsSymbol_t proc; };
-
-typedef void (*SymbolKey_PerformOperation_t) (unsigned int);
-struct SymbolKey_PerformOperation_p { SymbolKey_PerformOperation_t proc; };
+typedef SymbolKey_Node *SymbolKey_SymbolTree__opaque;
 
 struct SymbolKey_Node_r {
                           NameKey_Name KeyName;
                           unsigned int KeySym;
-                          SymbolKey_SymbolTree Left;
-                          SymbolKey_SymbolTree Right;
+                          SymbolKey_SymbolTree__opaque Left;
+                          SymbolKey_SymbolTree__opaque Right;
                         };
 
 extern "C" void SymbolKey_InitTree (SymbolKey_SymbolTree *t);
@@ -142,7 +137,7 @@ extern "C" void SymbolKey_ForeachNodeConditionDo (SymbolKey_SymbolTree t, Symbol
                           if an entry is found, parent is set to the node above child.
 */
 
-static void FindNodeParentInTree (SymbolKey_SymbolTree t, NameKey_Name n, SymbolKey_SymbolTree *child, SymbolKey_SymbolTree *parent);
+static void FindNodeParentInTree (SymbolKey_SymbolTree__opaque t, NameKey_Name n, SymbolKey_SymbolTree__opaque *child, SymbolKey_SymbolTree__opaque *parent);
 
 /*
    SearchForAny - performs the search required for DoesTreeContainAny.
@@ -150,7 +145,7 @@ static void FindNodeParentInTree (SymbolKey_SymbolTree t, NameKey_Name n, Symbol
                   therefore we must skip over it.
 */
 
-static bool SearchForAny (SymbolKey_SymbolTree t, SymbolKey_IsSymbol P);
+static bool SearchForAny (SymbolKey_SymbolTree__opaque t, SymbolKey_IsSymbol P);
 
 /*
    SearchAndDo - searches all the nodes in SymbolTree, t, and
@@ -158,19 +153,19 @@ static bool SearchForAny (SymbolKey_SymbolTree t, SymbolKey_IsSymbol P);
                  It traverse the tree in order.
 */
 
-static void SearchAndDo (SymbolKey_SymbolTree t, SymbolKey_PerformOperation P);
+static void SearchAndDo (SymbolKey_SymbolTree__opaque t, SymbolKey_PerformOperation P);
 
 /*
    CountNodes - wrapper for NoOfNodes.
 */
 
-static unsigned int CountNodes (SymbolKey_SymbolTree t, SymbolKey_IsSymbol condition, unsigned int count);
+static unsigned int CountNodes (SymbolKey_SymbolTree__opaque t, SymbolKey_IsSymbol condition, unsigned int count);
 
 /*
    SearchConditional - wrapper for ForeachNodeConditionDo.
 */
 
-static void SearchConditional (SymbolKey_SymbolTree t, SymbolKey_IsSymbol condition, SymbolKey_PerformOperation P);
+static void SearchConditional (SymbolKey_SymbolTree__opaque t, SymbolKey_IsSymbol condition, SymbolKey_PerformOperation P);
 
 
 /*
@@ -178,7 +173,7 @@ static void SearchConditional (SymbolKey_SymbolTree t, SymbolKey_IsSymbol condit
                           if an entry is found, parent is set to the node above child.
 */
 
-static void FindNodeParentInTree (SymbolKey_SymbolTree t, NameKey_Name n, SymbolKey_SymbolTree *child, SymbolKey_SymbolTree *parent)
+static void FindNodeParentInTree (SymbolKey_SymbolTree__opaque t, NameKey_Name n, SymbolKey_SymbolTree__opaque *child, SymbolKey_SymbolTree__opaque *parent)
 {
   /* remember to skip the sentinal value and assign parent and child  */
   (*parent) = t;
@@ -213,7 +208,7 @@ static void FindNodeParentInTree (SymbolKey_SymbolTree t, NameKey_Name n, Symbol
                   therefore we must skip over it.
 */
 
-static bool SearchForAny (SymbolKey_SymbolTree t, SymbolKey_IsSymbol P)
+static bool SearchForAny (SymbolKey_SymbolTree__opaque t, SymbolKey_IsSymbol P)
 {
   if (t == NULL)
     {
@@ -234,7 +229,7 @@ static bool SearchForAny (SymbolKey_SymbolTree t, SymbolKey_IsSymbol P)
                  It traverse the tree in order.
 */
 
-static void SearchAndDo (SymbolKey_SymbolTree t, SymbolKey_PerformOperation P)
+static void SearchAndDo (SymbolKey_SymbolTree__opaque t, SymbolKey_PerformOperation P)
 {
   if (t != NULL)
     {
@@ -249,7 +244,7 @@ static void SearchAndDo (SymbolKey_SymbolTree t, SymbolKey_PerformOperation P)
    CountNodes - wrapper for NoOfNodes.
 */
 
-static unsigned int CountNodes (SymbolKey_SymbolTree t, SymbolKey_IsSymbol condition, unsigned int count)
+static unsigned int CountNodes (SymbolKey_SymbolTree__opaque t, SymbolKey_IsSymbol condition, unsigned int count)
 {
   if (t != NULL)
     {
@@ -270,7 +265,7 @@ static unsigned int CountNodes (SymbolKey_SymbolTree t, SymbolKey_IsSymbol condi
    SearchConditional - wrapper for ForeachNodeConditionDo.
 */
 
-static void SearchConditional (SymbolKey_SymbolTree t, SymbolKey_IsSymbol condition, SymbolKey_PerformOperation P)
+static void SearchConditional (SymbolKey_SymbolTree__opaque t, SymbolKey_IsSymbol condition, SymbolKey_PerformOperation P)
 {
   if (t != NULL)
     {
@@ -286,8 +281,8 @@ static void SearchConditional (SymbolKey_SymbolTree t, SymbolKey_IsSymbol condit
 extern "C" void SymbolKey_InitTree (SymbolKey_SymbolTree *t)
 {
   Storage_ALLOCATE ((void **) &(*t), sizeof (SymbolKey_Node));  /* The value entity  */
-  (*t)->Left = NULL;
-  (*t)->Right = NULL;
+  static_cast<SymbolKey_SymbolTree__opaque> ((*t))->Left = static_cast<SymbolKey_SymbolTree__opaque> (NULL);
+  static_cast<SymbolKey_SymbolTree__opaque> ((*t))->Right = static_cast<SymbolKey_SymbolTree__opaque> (NULL);
 }
 
 extern "C" void SymbolKey_KillTree (SymbolKey_SymbolTree *t)
@@ -322,10 +317,10 @@ END Kill ;
   */
   if ((*t) != NULL)
     {
-      SymbolKey_KillTree (&(*t)->Left);
-      SymbolKey_KillTree (&(*t)->Right);
+      SymbolKey_KillTree (reinterpret_cast<SymbolKey_SymbolTree *> (&static_cast<SymbolKey_SymbolTree__opaque> ((*t))->Left));
+      SymbolKey_KillTree (reinterpret_cast<SymbolKey_SymbolTree *> (&static_cast<SymbolKey_SymbolTree__opaque> ((*t))->Right));
       Storage_DEALLOCATE ((void **) &(*t), sizeof (SymbolKey_Node));
-      (*t) = NULL;
+      (*t) = static_cast<SymbolKey_SymbolTree> (NULL);
     }
 }
 
@@ -336,10 +331,10 @@ END Kill ;
 
 extern "C" unsigned int SymbolKey_GetSymKey (SymbolKey_SymbolTree t, NameKey_Name NameKey)
 {
-  SymbolKey_SymbolTree father;
-  SymbolKey_SymbolTree child;
+  SymbolKey_SymbolTree__opaque father;
+  SymbolKey_SymbolTree__opaque child;
 
-  FindNodeParentInTree (t, NameKey, &child, &father);
+  FindNodeParentInTree (static_cast<SymbolKey_SymbolTree__opaque> (t), NameKey, &child, &father);
   if (child == NULL)
     {
       return static_cast<unsigned int> (SymbolKey_NulKey);
@@ -359,10 +354,10 @@ extern "C" unsigned int SymbolKey_GetSymKey (SymbolKey_SymbolTree t, NameKey_Nam
 
 extern "C" void SymbolKey_PutSymKey (SymbolKey_SymbolTree t, NameKey_Name NameKey, unsigned int SymKey)
 {
-  SymbolKey_SymbolTree father;
-  SymbolKey_SymbolTree child;
+  SymbolKey_SymbolTree__opaque father;
+  SymbolKey_SymbolTree__opaque child;
 
-  FindNodeParentInTree (t, NameKey, &child, &father);
+  FindNodeParentInTree (static_cast<SymbolKey_SymbolTree__opaque> (t), NameKey, &child, &father);
   if (child == NULL)
     {
       /* no child found, now is NameKey less than father or greater?  */
@@ -386,8 +381,8 @@ extern "C" void SymbolKey_PutSymKey (SymbolKey_SymbolTree t, NameKey_Name NameKe
               father->Right = child;
             }
         }
-      child->Right = NULL;
-      child->Left = NULL;
+      child->Right = static_cast<SymbolKey_SymbolTree__opaque> (NULL);
+      child->Left = static_cast<SymbolKey_SymbolTree__opaque> (NULL);
       child->KeySym = SymKey;
       child->KeyName = NameKey;
     }
@@ -407,11 +402,11 @@ extern "C" void SymbolKey_PutSymKey (SymbolKey_SymbolTree t, NameKey_Name NameKe
 
 extern "C" void SymbolKey_DelSymKey (SymbolKey_SymbolTree t, NameKey_Name NameKey)
 {
-  SymbolKey_SymbolTree i;
-  SymbolKey_SymbolTree child;
-  SymbolKey_SymbolTree father;
+  SymbolKey_SymbolTree__opaque i;
+  SymbolKey_SymbolTree__opaque child;
+  SymbolKey_SymbolTree__opaque father;
 
-  FindNodeParentInTree (t, NameKey, &child, &father);  /* find father and child of the node  */
+  FindNodeParentInTree (static_cast<SymbolKey_SymbolTree__opaque> (t), NameKey, &child, &father);  /* find father and child of the node  */
   if ((child != NULL) && (child->KeyName == NameKey))
     {
       /* Have found the node to be deleted  */
@@ -471,7 +466,7 @@ extern "C" void SymbolKey_DelSymKey (SymbolKey_SymbolTree t, NameKey_Name NameKe
 
 extern "C" bool SymbolKey_IsEmptyTree (SymbolKey_SymbolTree t)
 {
-  return t->Left == NULL;
+  return static_cast<SymbolKey_SymbolTree__opaque> (t)->Left == NULL;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -487,7 +482,7 @@ extern "C" bool SymbolKey_IsEmptyTree (SymbolKey_SymbolTree t)
 
 extern "C" bool SymbolKey_DoesTreeContainAny (SymbolKey_SymbolTree t, SymbolKey_IsSymbol P)
 {
-  return SearchForAny (t->Left, P);
+  return SearchForAny (static_cast<SymbolKey_SymbolTree__opaque> (t)->Left, P);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -502,7 +497,7 @@ extern "C" bool SymbolKey_DoesTreeContainAny (SymbolKey_SymbolTree t, SymbolKey_
 
 extern "C" void SymbolKey_ForeachNodeDo (SymbolKey_SymbolTree t, SymbolKey_PerformOperation P)
 {
-  SearchAndDo (t->Left, P);
+  SearchAndDo (static_cast<SymbolKey_SymbolTree__opaque> (t)->Left, P);
 }
 
 
@@ -512,10 +507,10 @@ extern "C" void SymbolKey_ForeachNodeDo (SymbolKey_SymbolTree t, SymbolKey_Perfo
 
 extern "C" bool SymbolKey_ContainsSymKey (SymbolKey_SymbolTree t, NameKey_Name NameKey)
 {
-  SymbolKey_SymbolTree father;
-  SymbolKey_SymbolTree child;
+  SymbolKey_SymbolTree__opaque father;
+  SymbolKey_SymbolTree__opaque child;
 
-  FindNodeParentInTree (t, NameKey, &child, &father);
+  FindNodeParentInTree (static_cast<SymbolKey_SymbolTree__opaque> (t), NameKey, &child, &father);
   return child != NULL;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -528,7 +523,7 @@ extern "C" bool SymbolKey_ContainsSymKey (SymbolKey_SymbolTree t, NameKey_Name N
 
 extern "C" unsigned int SymbolKey_NoOfNodes (SymbolKey_SymbolTree t, SymbolKey_IsSymbol condition)
 {
-  return CountNodes (t->Left, condition, 0);
+  return CountNodes (static_cast<SymbolKey_SymbolTree__opaque> (t)->Left, condition, 0);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -543,15 +538,15 @@ extern "C" void SymbolKey_ForeachNodeConditionDo (SymbolKey_SymbolTree t, Symbol
 {
   if (t != NULL)
     {
-      Assertion_Assert (t->Right == NULL);
-      SearchConditional (t->Left, condition, P);
+      Assertion_Assert (static_cast<SymbolKey_SymbolTree__opaque> (t)->Right == NULL);
+      SearchConditional (static_cast<SymbolKey_SymbolTree__opaque> (t)->Left, condition, P);
     }
 }
 
-extern "C" void _M2_SymbolKey_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_SymbolKey_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_SymbolKey_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_SymbolKey_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

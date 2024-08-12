@@ -6453,7 +6453,7 @@ static decl_node__opaque putFieldRecord (decl_node__opaque r, nameKey_Name tag, 
   n->recordfieldF.tag = false;
   n->recordfieldF.scope = static_cast<decl_node__opaque> (NULL);
   initCname (&n->recordfieldF.cname);
-  /* 
+  /*
    IF r^.kind=record
    THEN
       doRecordM2 (doP, r)
@@ -6866,7 +6866,7 @@ static decl_node__opaque makeIntrinsicProc (decl_nodeT k, unsigned int noArgs, d
 {
   decl_node__opaque f;
 
-  /* 
+  /*
    makeIntrisicProc - create an intrinsic node.
   */
   f = newNode (k);
@@ -10084,7 +10084,7 @@ static void doString (mcPretty_pretty p, decl_node__opaque n)
   s = DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (decl_getSymName (static_cast<decl_node> (n))));
   outTextS (p, s);
   s = DynamicStrings_KillString (s);
-  /* 
+  /*
    IF DynamicStrings.Index (s, '"', 0)=-1
    THEN
       outText (p, '"') ;
@@ -10244,7 +10244,7 @@ static void doStringC (mcPretty_pretty p, decl_node__opaque n)
   DynamicStrings_String s;
 
   mcDebug_assert (isString (n));
-  /* 
+  /*
    s := InitStringCharStar (keyToCharStar (getSymName (n))) ;
    IF DynamicStrings.Length (s)>3
    THEN
@@ -10792,7 +10792,7 @@ static void doParamTypeEmit (mcPretty_pretty p, decl_node__opaque paramnode, dec
       doTypeNameC (p, paramtype);
       doOpaqueModifier (p, paramnode);
     }
-  /* 
+  /*
       IF nodeUsesOpaque (paramnode) AND (NOT getNodeOpaqueVoidStar (paramnode))
       THEN
          outText (p, '__opaque')
@@ -13326,7 +13326,7 @@ static void doExternCP (mcPretty_pretty p)
 
 static void doProcedureCommentText (mcPretty_pretty p, DynamicStrings_String s)
 {
-  /* remove 
+  /* remove
    from the start of the comment.  */
   while (((DynamicStrings_Length (s)) > 0) && ((DynamicStrings_char (s, 0)) == ASCII_lf))
     {
@@ -13392,7 +13392,7 @@ static void doProcedureHeadingC (decl_node__opaque n, bool prototype)
     }
   q = static_cast<decl_node__opaque> (NULL);
   doTypeC (doP, n->procedureF.returnType, &q);
-  /* 
+  /*
    IF NOT isExported (n)
    THEN
       doTypeNameModifier (doP, n^.procedureF.returnType)
@@ -14063,7 +14063,7 @@ static void includeDefVarProcedure (decl_node__opaque n)
       defModule = static_cast<decl_node__opaque> (decl_lookupDef (decl_getSymName (static_cast<decl_node> (n))));
       if (defModule != NULL)
         {
-          /* 
+          /*
          includeVar (defModule^.defF.decls) ;
          simplifyTypes (defModule^.defF.decls) ;
   */
@@ -25814,7 +25814,7 @@ extern "C" decl_node decl_makeComponentRef (decl_node rec, decl_node field)
   decl_node__opaque n;
   decl_node__opaque a;
 
-  /* 
+  /*
    n := getLastOp (rec) ;
    IF (n#NIL) AND (isDeref (n) OR isPointerRef (n)) AND
       (skipType (getType (rec)) = skipType (getType (n)))
@@ -26194,8 +26194,6 @@ extern "C" decl_node decl_makeConstExp (void)
 
 extern "C" decl_node decl_getNextConstExp (void)
 {
-  decl_node__opaque n;
-
   mcDebug_assert (((decl_isDef (static_cast<decl_node> (currentModule))) || (decl_isImp (static_cast<decl_node> (currentModule)))) || (decl_isModule (static_cast<decl_node> (currentModule))));
   if (decl_isDef (static_cast<decl_node> (currentModule)))
     {
@@ -26206,12 +26204,12 @@ extern "C" decl_node decl_getNextConstExp (void)
       /* avoid dangling else.  */
       return static_cast<decl_node> (getNextFixup (&currentModule->impF.constFixup));
     }
-  else if (decl_isModule (static_cast<decl_node> (currentModule)))
+  else
     {
       /* avoid dangling else.  */
+      mcDebug_assert (decl_isModule (static_cast<decl_node> (currentModule)));
       return static_cast<decl_node> (getNextFixup (&currentModule->moduleF.constFixup));
     }
-  return static_cast<decl_node> (n);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }

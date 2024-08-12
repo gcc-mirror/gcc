@@ -3678,6 +3678,7 @@ VAR
 BEGIN
    t := code ;
    k := StrLen(code^.codetext)+1 ;
+   j := StrLen(str) ;
    WHILE t#NIL DO
       REPEAT
          WHILE (k>0) AND IsWhite(t^.codetext[k-1]) DO

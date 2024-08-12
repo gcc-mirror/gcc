@@ -3545,8 +3545,6 @@ END setConstExpComplete ;
 *)
 
 PROCEDURE getNextConstExp () : node ;
-VAR
-   n: node ;
 BEGIN
    assert (isDef (currentModule) OR isImp (currentModule) OR isModule (currentModule)) ;
    WITH currentModule^ DO
@@ -3556,12 +3554,11 @@ BEGIN
       ELSIF isImp (currentModule)
       THEN
          RETURN getNextFixup (impF.constFixup)
-      ELSIF isModule (currentModule)
-      THEN
+      ELSE
+         assert (isModule (currentModule))
          RETURN getNextFixup (moduleF.constFixup)
       END
-   END ;
-   RETURN n
+   END
 END getNextConstExp ;
 
 

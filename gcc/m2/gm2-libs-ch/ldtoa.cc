@@ -52,17 +52,17 @@ extern bool dtoa_calcsign (char *p, int str_size);
    (ndigits may be negative).  */
 
 long double
-ldtoa_strtold (const char *s, bool *error)
+ldtoa_strtold (void *s, bool *error)
 {
   char *endp;
   long double d;
 
   errno = 0;
 #if defined(HAVE_STRTOLD)
-  d = strtold (s, &endp);
+  d = strtold (reinterpret_cast <char *> (s), &endp);
 #else
   /* fall back to using strtod.  */
-  d = (long double)strtod (s, &endp);
+  d = (long double)strtod (reinterpret_cast <char *> (s), &endp);
 #endif
   if (endp != NULL && (*endp == '\0'))
     *error = (errno != 0);
@@ -123,8 +123,8 @@ _M2_ldtoa_dep (void)
 extern "C" void __attribute__((__constructor__))
 _M2_ldtoa_ctor (void)
 {
-  M2RTS_RegisterModule ("ldtoa", LIBNAME, _M2_ldtoa_init, _M2_ldtoa_finish,
-			_M2_ldtoa_dep);
+  M2RTS_RegisterModule_Cstr ("ldtoa", LIBNAME, _M2_ldtoa_init,
+			     _M2_ldtoa_finish, _M2_ldtoa_dep);
 }
 
 #else
