@@ -34,11 +34,42 @@ BorrowCheckerDiagnostics::report_errors ()
 void
 BorrowCheckerDiagnostics::report_move_errors ()
 {
-  if (!move_errors.empty ())
+  for (const auto &pair : move_errors)
     {
-      rust_error_at (hir_function->get_locus (),
-		     "Found move errors in function %s",
-		     hir_function->get_function_name ().as_string ().c_str ());
+      auto error_location = get_statement (pair.first).get_location ();
+
+      // in future, we can use the assigned at location to hint the
+      // user to implement copy trait for the type
+      /*
+      for (auto it : facts.path_assigned_at_base)
+	{
+	  if (pair.second[0] == it.first)
+	    {
+	      auto point_assigned_at = it.second;
+	      auto assigned_at_location
+		= get_statement (point_assigned_at).get_location ();
+	    }
+	}
+	*/
+
+      std::vector<LabelLocationPair> labels{
+	{"moved value used here", error_location}};
+      // add labels to all the moves for the given path
+      for (auto it : facts.path_moved_at_base)
+	{
+	  if (pair.second[0] == it.first)
+	    {
+	      auto point_moved_at = it.second;
+	      // don't label the move location where the error occured
+	      if (pair.first != point_moved_at)
+		{
+		  auto move_at_location
+		    = get_statement (point_moved_at).get_location ();
+		  labels.push_back ({"value moved here", move_at_location});
+		}
+	    }
+	}
+      multi_label_error ("use of moved value", error_location, labels);
     }
 }
 
