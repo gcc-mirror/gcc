@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Jul 29, 2024
+GNAT Reference Manual , Aug 26, 2024
 
 AdaCore
 
@@ -895,7 +895,6 @@ GNAT language extensions
 Curated Extensions
 
 * Local Declarations Without Block:: 
-* Conditional when constructs:: 
 * Fixed lower bounds for array types and subtypes:: 
 * Prefixed-view notation for calls to primitive subprograms of untagged types:: 
 * Expression defaults for generic formal functions:: 
@@ -905,6 +904,7 @@ Curated Extensions
 
 Experimental Language Extensions
 
+* Conditional when constructs:: 
 * Storage Model:: 
 * Attribute Super:: 
 * Simpler accessibility model:: 
@@ -28939,7 +28939,6 @@ for use in playground experiments.
 
 @menu
 * Local Declarations Without Block:: 
-* Conditional when constructs:: 
 * Fixed lower bounds for array types and subtypes:: 
 * Prefixed-view notation for calls to primitive subprograms of untagged types:: 
 * Expression defaults for generic formal functions:: 
@@ -28949,7 +28948,7 @@ for use in playground experiments.
 
 @end menu
 
-@node Local Declarations Without Block,Conditional when constructs,,Curated Extensions
+@node Local Declarations Without Block,Fixed lower bounds for array types and subtypes,,Curated Extensions
 @anchor{gnat_rm/gnat_language_extensions local-declarations-without-block}@anchor{445}
 @subsection Local Declarations Without Block
 
@@ -28973,80 +28972,8 @@ end if;
 Link to the original RFC:
 @indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-local-vars-without-block.md}
 
-@node Conditional when constructs,Fixed lower bounds for array types and subtypes,Local Declarations Without Block,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions conditional-when-constructs}@anchor{446}
-@subsection Conditional when constructs
-
-
-This feature extends the use of @code{when} as a way to condition a control-flow
-related statement, to all control-flow related statements.
-
-To do a conditional return in a procedure the following syntax should be used:
-
-@example
-procedure P (Condition : Boolean) is
-begin
-   return when Condition;
-end;
-@end example
-
-This will return from the procedure if @code{Condition} is true.
-
-When being used in a function the conditional part comes after the return value:
-
-@example
-function Is_Null (I : Integer) return Boolean is
-begin
-   return True when I = 0;
-   return False;
-end;
-@end example
-
-In a similar way to the @code{exit when} a @code{goto ... when} can be employed:
-
-@example
-procedure Low_Level_Optimized is
-   Flags : Bitmapping;
-begin
-   Do_1 (Flags);
-   goto Cleanup when Flags (1);
-
-   Do_2 (Flags);
-   goto Cleanup when Flags (32);
-
-   --  ...
-
-<<Cleanup>>
-   --  ...
-end;
-@end example
-
-@c code-block
-
-To use a conditional raise construct:
-
-@example
-procedure Foo is
-begin
-   raise Error when Imported_C_Func /= 0;
-end;
-@end example
-
-An exception message can also be added:
-
-@example
-procedure Foo is
-begin
-   raise Error with "Unix Error"
-     when Imported_C_Func /= 0;
-end;
-@end example
-
-Link to the original RFC:
-@indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-conditional-when-constructs.rst}
-
-@node Fixed lower bounds for array types and subtypes,Prefixed-view notation for calls to primitive subprograms of untagged types,Conditional when constructs,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions fixed-lower-bounds-for-array-types-and-subtypes}@anchor{447}
+@node Fixed lower bounds for array types and subtypes,Prefixed-view notation for calls to primitive subprograms of untagged types,Local Declarations Without Block,Curated Extensions
+@anchor{gnat_rm/gnat_language_extensions fixed-lower-bounds-for-array-types-and-subtypes}@anchor{446}
 @subsection Fixed lower bounds for array types and subtypes
 
 
@@ -29100,7 +29027,7 @@ Link to the original RFC:
 @indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-fixed-lower-bound.rst}
 
 @node Prefixed-view notation for calls to primitive subprograms of untagged types,Expression defaults for generic formal functions,Fixed lower bounds for array types and subtypes,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions prefixed-view-notation-for-calls-to-primitive-subprograms-of-untagged-types}@anchor{448}
+@anchor{gnat_rm/gnat_language_extensions prefixed-view-notation-for-calls-to-primitive-subprograms-of-untagged-types}@anchor{447}
 @subsection Prefixed-view notation for calls to primitive subprograms of untagged types
 
 
@@ -29153,7 +29080,7 @@ Link to the original RFC:
 @indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-prefixed-untagged.rst}
 
 @node Expression defaults for generic formal functions,String interpolation,Prefixed-view notation for calls to primitive subprograms of untagged types,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions expression-defaults-for-generic-formal-functions}@anchor{449}
+@anchor{gnat_rm/gnat_language_extensions expression-defaults-for-generic-formal-functions}@anchor{448}
 @subsection Expression defaults for generic formal functions
 
 
@@ -29182,7 +29109,7 @@ Link to the original RFC:
 @indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-expression-functions-as-default-for-generic-formal-function-parameters.rst}
 
 @node String interpolation,Constrained attribute for generic objects,Expression defaults for generic formal functions,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions string-interpolation}@anchor{44a}
+@anchor{gnat_rm/gnat_language_extensions string-interpolation}@anchor{449}
 @subsection String interpolation
 
 
@@ -29336,7 +29263,7 @@ Link to the original RFC:
 @indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-string-interpolation.md}
 
 @node Constrained attribute for generic objects,Static aspect on intrinsic functions,String interpolation,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions constrained-attribute-for-generic-objects}@anchor{44b}
+@anchor{gnat_rm/gnat_language_extensions constrained-attribute-for-generic-objects}@anchor{44a}
 @subsection Constrained attribute for generic objects
 
 
@@ -29344,7 +29271,7 @@ The @code{Constrained} attribute is permitted for objects of generic types. The
 result indicates whether the corresponding actual is constrained.
 
 @node Static aspect on intrinsic functions,,Constrained attribute for generic objects,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions static-aspect-on-intrinsic-functions}@anchor{44c}
+@anchor{gnat_rm/gnat_language_extensions static-aspect-on-intrinsic-functions}@anchor{44b}
 @subsection @code{Static} aspect on intrinsic functions
 
 
@@ -29353,11 +29280,12 @@ and the compiler will evaluate some of these intrinsics statically, in
 particular the @code{Shift_Left} and @code{Shift_Right} intrinsics.
 
 @node Experimental Language Extensions,,Curated Extensions,GNAT language extensions
-@anchor{gnat_rm/gnat_language_extensions experimental-language-extensions}@anchor{6a}@anchor{gnat_rm/gnat_language_extensions id2}@anchor{44d}
+@anchor{gnat_rm/gnat_language_extensions experimental-language-extensions}@anchor{6a}@anchor{gnat_rm/gnat_language_extensions id2}@anchor{44c}
 @section Experimental Language Extensions
 
 
 @menu
+* Conditional when constructs:: 
 * Storage Model:: 
 * Attribute Super:: 
 * Simpler accessibility model:: 
@@ -29367,7 +29295,79 @@ particular the @code{Shift_Left} and @code{Shift_Right} intrinsics.
 
 @end menu
 
-@node Storage Model,Attribute Super,,Experimental Language Extensions
+@node Conditional when constructs,Storage Model,,Experimental Language Extensions
+@anchor{gnat_rm/gnat_language_extensions conditional-when-constructs}@anchor{44d}
+@subsection Conditional when constructs
+
+
+This feature extends the use of @code{when} as a way to condition a control-flow
+related statement, to all control-flow related statements.
+
+To do a conditional return in a procedure the following syntax should be used:
+
+@example
+procedure P (Condition : Boolean) is
+begin
+   return when Condition;
+end;
+@end example
+
+This will return from the procedure if @code{Condition} is true.
+
+When being used in a function the conditional part comes after the return value:
+
+@example
+function Is_Null (I : Integer) return Boolean is
+begin
+   return True when I = 0;
+   return False;
+end;
+@end example
+
+In a similar way to the @code{exit when} a @code{goto ... when} can be employed:
+
+@example
+procedure Low_Level_Optimized is
+   Flags : Bitmapping;
+begin
+   Do_1 (Flags);
+   goto Cleanup when Flags (1);
+
+   Do_2 (Flags);
+   goto Cleanup when Flags (32);
+
+   --  ...
+
+<<Cleanup>>
+   --  ...
+end;
+@end example
+
+@c code-block
+
+To use a conditional raise construct:
+
+@example
+procedure Foo is
+begin
+   raise Error when Imported_C_Func /= 0;
+end;
+@end example
+
+An exception message can also be added:
+
+@example
+procedure Foo is
+begin
+   raise Error with "Unix Error"
+     when Imported_C_Func /= 0;
+end;
+@end example
+
+Link to the original RFC:
+@indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-conditional-when-constructs.rst}
+
+@node Storage Model,Attribute Super,Conditional when constructs,Experimental Language Extensions
 @anchor{gnat_rm/gnat_language_extensions storage-model}@anchor{44e}
 @subsection Storage Model
 

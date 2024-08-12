@@ -68,77 +68,6 @@ For example:
 Link to the original RFC:
 https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-local-vars-without-block.md
 
-Conditional when constructs
----------------------------
-
-This feature extends the use of ``when`` as a way to condition a control-flow
-related statement, to all control-flow related statements.
-
-To do a conditional return in a procedure the following syntax should be used:
-
-.. code-block:: ada
-
-   procedure P (Condition : Boolean) is
-   begin
-      return when Condition;
-   end;
-
-This will return from the procedure if ``Condition`` is true.
-
-When being used in a function the conditional part comes after the return value:
-
-.. code-block:: ada
-
-   function Is_Null (I : Integer) return Boolean is
-   begin
-      return True when I = 0;
-      return False;
-   end;
-
-In a similar way to the ``exit when`` a ``goto ... when`` can be employed:
-
-.. code-block:: ada
-
-   procedure Low_Level_Optimized is
-      Flags : Bitmapping;
-   begin
-      Do_1 (Flags);
-      goto Cleanup when Flags (1);
-
-      Do_2 (Flags);
-      goto Cleanup when Flags (32);
-
-      --  ...
-
-   <<Cleanup>>
-      --  ...
-   end;
-
-.. code-block
-
-To use a conditional raise construct:
-
-.. code-block:: ada
-
-   procedure Foo is
-   begin
-      raise Error when Imported_C_Func /= 0;
-   end;
-
-An exception message can also be added:
-
-.. code-block:: ada
-
-   procedure Foo is
-   begin
-      raise Error with "Unix Error"
-        when Imported_C_Func /= 0;
-   end;
-
-
-Link to the original RFC:
-https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-conditional-when-constructs.rst
-
 Fixed lower bounds for array types and subtypes
 -----------------------------------------------
 
@@ -344,6 +273,76 @@ particular the ``Shift_Left`` and ``Shift_Right`` intrinsics.
 
 Experimental Language Extensions
 ================================
+
+Conditional when constructs
+---------------------------
+
+This feature extends the use of ``when`` as a way to condition a control-flow
+related statement, to all control-flow related statements.
+
+To do a conditional return in a procedure the following syntax should be used:
+
+.. code-block:: ada
+
+   procedure P (Condition : Boolean) is
+   begin
+      return when Condition;
+   end;
+
+This will return from the procedure if ``Condition`` is true.
+
+When being used in a function the conditional part comes after the return value:
+
+.. code-block:: ada
+
+   function Is_Null (I : Integer) return Boolean is
+   begin
+      return True when I = 0;
+      return False;
+   end;
+
+In a similar way to the ``exit when`` a ``goto ... when`` can be employed:
+
+.. code-block:: ada
+
+   procedure Low_Level_Optimized is
+      Flags : Bitmapping;
+   begin
+      Do_1 (Flags);
+      goto Cleanup when Flags (1);
+
+      Do_2 (Flags);
+      goto Cleanup when Flags (32);
+
+      --  ...
+
+   <<Cleanup>>
+      --  ...
+   end;
+
+.. code-block
+
+To use a conditional raise construct:
+
+.. code-block:: ada
+
+   procedure Foo is
+   begin
+      raise Error when Imported_C_Func /= 0;
+   end;
+
+An exception message can also be added:
+
+.. code-block:: ada
+
+   procedure Foo is
+   begin
+      raise Error with "Unix Error"
+        when Imported_C_Func /= 0;
+   end;
+
+Link to the original RFC:
+https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-conditional-when-constructs.rst
 
 Storage Model
 -------------
