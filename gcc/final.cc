@@ -3123,7 +3123,17 @@ alter_subreg (rtx *xp, bool final_p)
 	  unsigned int regno;
 	  poly_int64 offset;
 
-	  regno = subreg_regno (x);
+	  /* A paradoxical should always be REGNO (y) + 0.  Using subreg_regno
+	     for something like (subreg:DI (reg:SI N) 0) on a WORDS_BIG_ENDIAN
+	     target will return N-1 which is catastrophic for N == 0 and just
+	     wrong for other cases.
+
+	     Fixing subreg_regno would be a better option, except that reload
+	     depends on its current behavior.  */
+	  if (paradoxical_subreg_p (x))
+	    regno = REGNO (y);
+	  else
+	    regno = subreg_regno (x);
 	  if (subreg_lowpart_p (x))
 	    offset = byte_lowpart_offset (GET_MODE (x), GET_MODE (y));
 	  else

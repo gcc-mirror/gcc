@@ -4313,7 +4313,16 @@ lowpart_subreg_regno (unsigned int regno, machine_mode xmode,
   return simplify_subreg_regno (regno, xmode, offset, ymode);
 }
 
-/* Return the final regno that a subreg expression refers to.  */
+/* Return the final regno that a subreg expression refers to.
+
+   Callers such as reload_inner_reg_of_subreg rely on this returning
+   the simplified hard reg, even if that result is not a valid regno for
+   the given mode.  That triggers reloading the inner part of the
+   subreg.
+
+   That inherently means other uses of this routine probably need
+   to be audited for their behavior when requested subreg can't
+   be expressed as a hard register after apply the offset.  */
 unsigned int
 subreg_regno (const_rtx x)
 {
