@@ -17956,8 +17956,8 @@ package body Sem_Ch3 is
                   --  to the backend since we don't know the true size of
                   --  anything at this point.
 
-                  Insert_After_And_Analyze (N,
-                    Make_CW_Size_Compile_Check (T, Root_Class_Typ));
+                  Append_Freeze_Actions (T,
+                    New_List (Make_CW_Size_Compile_Check (T, Root_Class_Typ)));
                end if;
             end if;
          end;
