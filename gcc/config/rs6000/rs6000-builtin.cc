@@ -2493,6 +2493,7 @@ static const struct
   const char *cpu;
   unsigned int cpuid;
 } cpu_is_info[] = {
+  { "power11",	   PPC_PLATFORM_POWER11 },
   { "power10",	   PPC_PLATFORM_POWER10 },
   { "power9",	   PPC_PLATFORM_POWER9 },
   { "power8",	   PPC_PLATFORM_POWER8 },
