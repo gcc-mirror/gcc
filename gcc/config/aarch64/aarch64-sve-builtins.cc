@@ -1094,27 +1094,19 @@ report_missing_extension (location_t location, tree fndecl,
   reported_missing_extension_p = true;
 }
 
-/* Check whether the registers required by SVE function fndecl are available.
-   Report an error against LOCATION and return false if not.  */
-static bool
-check_required_registers (location_t location, tree fndecl)
+/* Report an error against LOCATION that the user has tried to use
+   function FNDECL when non-general registers are disabled.  */
+static void
+report_missing_registers (location_t location, tree fndecl)
 {
   /* Avoid reporting a slew of messages for a single oversight.  */
   if (reported_missing_registers_p)
-    return false;
+    return;
 
-  if (TARGET_GENERAL_REGS_ONLY)
-    {
-      /* SVE registers are not usable when -mgeneral-regs-only option
-	 is specified.  */
-      error_at (location,
-		"ACLE function %qD is incompatible with the use of %qs",
-		fndecl, "-mgeneral-regs-only");
-      reported_missing_registers_p = true;
-      return false;
-    }
-
-  return true;
+  error_at (location,
+	    "ACLE function %qD is incompatible with the use of %qs",
+	    fndecl, "-mgeneral-regs-only");
+  reported_missing_registers_p = true;
 }
 
 /* Check whether all the AARCH64_FL_* values in REQUIRED_EXTENSIONS are
@@ -1124,9 +1116,19 @@ static bool
 check_required_extensions (location_t location, tree fndecl,
 			   aarch64_feature_flags required_extensions)
 {
+  if ((required_extensions & ~aarch64_isa_flags) == 0)
+    return true;
+
   auto missing_extensions = required_extensions & ~aarch64_asm_isa_flags;
+
   if (missing_extensions == 0)
-    return check_required_registers (location, fndecl);
+    {
+      /* All required extensions are enabled in aarch64_asm_isa_flags, so the
+	 error must be the use of general-regs-only.  */
+      report_missing_registers (location, fndecl);
+      return false;
+    }
+
 
   if (missing_extensions & AARCH64_FL_SM_OFF)
     {
