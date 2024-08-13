@@ -2339,6 +2339,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (INTEGRAL_TYPE_P (type))
   (bit_and @0 @1)))
 
+/* Fold `(a ? b : 0) | (a ? 0 : c)` into (a ? b : c).
+    Handle also ^ and + in replacement of `|`. */
+(for cnd (cond vec_cond)
+ (for op (bit_ior bit_xor plus)
+  (simplify
+   (op:c
+    (cnd:s @0 @00 integer_zerop)
+    (cnd:s @0 integer_zerop @01))
+   (cnd @0 @00 @01))))
+
 (for cmp (tcc_comparison)
      icmp (inverted_tcc_comparison)
  /* Fold (((a < b) & c) | ((a >= b) & d)) into (a < b ? c : d) & 1.  */
