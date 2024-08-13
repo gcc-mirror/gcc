@@ -376,7 +376,15 @@ dnl # rather than hardcoding that information.
       frexpl hypotl ldexpl log10l logl modfl powl sinhl sinl sqrtl
       tanhl tanl])
 
-    AC_DEFINE(HAVE_ICONV)
+    # Support for iconv in newlib is configurable.
+    AC_TRY_COMPILE([#include <newlib.h>], [
+      #ifndef _ICONV_ENABLED
+      #error
+      #endif], [ac_newlib_iconv_enabled=yes], [ac_newlib_iconv_enabled=no])
+    if test "$ac_newlib_iconv_enabled" = yes; then
+      AC_DEFINE(HAVE_ICONV)
+    fi
+
     AC_DEFINE(HAVE_MEMALIGN)
 
     case "${target}" in
