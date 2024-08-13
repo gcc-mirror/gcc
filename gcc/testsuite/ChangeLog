@@ -1,3 +1,10 @@
+2024-08-12  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-07-30  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr116043.c: New test.
+
 2024-08-09  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/113063
