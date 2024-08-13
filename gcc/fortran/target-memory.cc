@@ -158,6 +158,8 @@ gfc_target_expr_size (gfc_expr *e, size_t *size)
 	asz = mpz_get_ui (tmp);
       else
 	return false;
+
+      mpz_clear (tmp);
     }
   else
     asz = 1;

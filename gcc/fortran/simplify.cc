@@ -7778,9 +7778,13 @@ gfc_simplify_sizeof (gfc_expr *x)
 	  || x->ts.u.cl->length->expr_type != EXPR_CONSTANT))
     return NULL;
 
-  if (x->rank && x->expr_type != EXPR_ARRAY
-      && !gfc_array_size (x, &array_size))
-    return NULL;
+  if (x->rank && x->expr_type != EXPR_ARRAY)
+    {
+      if (!gfc_array_size (x, &array_size))
+	return NULL;
+
+      mpz_clear (array_size);
+    }
 
   result = gfc_get_constant_expr (BT_INTEGER, gfc_index_integer_kind,
 				  &x->where);
