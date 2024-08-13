@@ -4742,7 +4742,9 @@ curr_insn_transform (bool check_only_p)
 	    }
 	  *loc = new_reg;
 	  if (type != OP_IN
-	      && find_reg_note (curr_insn, REG_UNUSED, old) == NULL_RTX)
+	      && find_reg_note (curr_insn, REG_UNUSED, old) == NULL_RTX
+	      /* OLD can be an equivalent constant here.  */
+	      && !CONSTANT_P (old))
 	    {
 	      start_sequence ();
 	      lra_emit_move (type == OP_INOUT ? copy_rtx (old) : old, new_reg);
