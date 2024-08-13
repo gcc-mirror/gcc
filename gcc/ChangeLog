@@ -1,3 +1,152 @@
+2024-08-12  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/114759
+	* config/rs6000/rs6000.cc (rs6000_override_options_after_change): Move
+	the disabling of shrink-wrapping from here....
+	* config/rs6000/rs6000-logue.cc (rs6000_emit_prologue): ...to here.
+
+2024-08-12  Jeff Law  <jlaw@ventanamicro.com>
+
+	* rtlanal.cc (subreg_regno): Update comment.
+	* final.cc (alter_subrg): Always use REGNO (SUBREG_REG ()) to get
+	the base regsiter for paradoxical subregs.
+
+2024-08-12  Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	* ifcvt.cc (need_cmov_or_rewire): Renamed init_noce_multiple_sets_info.
+	(init_noce_multiple_sets_info): Initialize noce_multiple_sets_info.
+	(noce_convert_multiple_sets_1): Use noce_multiple_sets_info and handle
+	rewiring of multiple registers.
+	(noce_convert_multiple_sets): Updated to use noce_multiple_sets_info.
+	* ifcvt.h (struct noce_multiple_sets_info): Introduce new struct
+	noce_multiple_sets_info to store info for noce_convert_multiple_sets.
+
+2024-08-12  Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	* ifcvt.cc (try_emit_cmove_seq): Modify comments.
+	(noce_convert_multiple_sets_1): Modify comments.
+	(bb_ok_for_noce_convert_multiple_sets): Allow more operations.
+
+2024-08-12  Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	* ifcvt.cc (check_for_cc_cmp_clobbers): Use modified_in_p instead.
+	(noce_convert_multiple_sets_1): Don't use seq2 if it clobbers cc_cmp.
+	Punt if seq clobbers cond. Refactor the code that sets read_comparison.
+
+2024-08-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/85624
+	* config/avr/avr.md (setmemhi): Set alignment to 0.
+
+2024-08-12  Joern Rennecke  <joern.rennecke@riscy-ip.com>
+
+	* except.cc (sjlj_emit_function_enter):
+	Set fn_begin_outside_block again if encountering a jump instruction.
+
+2024-08-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR other/30920
+	* splay-tree-utils.h (rooted_splay_tree::insert_relative)
+	(rooted_splay_tree::lookup_le): New functions.
+	(rooted_splay_tree::remove_root_and_splay_next): Likewise.
+	* splay-tree-utils.tcc (rooted_splay_tree::insert_relative): New
+	function, extracted from...
+	(rooted_splay_tree::insert): ...here.
+	(rooted_splay_tree::lookup_le): New function.
+	(rooted_splay_tree::remove_root_and_splay_next): Likewise.
+	* tree-ssa-sccvn.cc (pd_range::m_children): New member variable.
+	(vn_walk_cb_data::vn_walk_cb_data): Initialize first_range.
+	(vn_walk_cb_data::known_ranges): Use a default_splay_tree.
+	(vn_walk_cb_data::~vn_walk_cb_data): Remove freeing of known_ranges.
+	(pd_range_compare, pd_range_alloc, pd_range_dealloc): Delete.
+	(vn_walk_cb_data::push_partial_def): Rewrite splay tree operations
+	to use splay-tree-utils.h.
+	* rtl-ssa/accesses.cc (function_info::add_use): Use insert_relative.
+
+2024-08-12  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_simd_imm_shl<mode><vczle><vczbe>): Rewrite to new
+	syntax.  Add =w,w,vs1 alternative.
+	* config/aarch64/constraints.md (vs1): New constraint.
+
+2024-08-12  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features): Handle
+	avx10.2.
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_AVX10_2_256_SET): New.
+	(OPTION_MASK_ISA2_AVX10_2_512_SET): Ditto.
+	(OPTION_MASK_ISA2_AVX10_1_256_UNSET):
+	Add OPTION_MASK_ISA2_AVX10_2_256_UNSET.
+	(OPTION_MASK_ISA2_AVX10_1_512_UNSET):
+	Add OPTION_MASK_ISA2_AVX10_2_512_UNSET.
+	(OPTION_MASK_ISA2_AVX10_2_256_UNSET): New.
+	(OPTION_MASK_ISA2_AVX10_2_512_UNSET): Ditto.
+	(ix86_handle_option): Handle avx10.2-256 and avx10.2-512.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	Add FEATURE_AVX10_2_256 and FEATURE_AVX10_2_512.
+	* common/config/i386/i386-isas.h: Add ISA_NAMES_TABLE_ENTRY for
+	avx10.2-256 and avx10.2-512.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Define
+	__AVX10_2_256__ and __AVX10_2_512__.
+	* config/i386/i386-isa.def (AVX10_2): Add DEF_PTA(AVX10_2_256)
+	and DEF_PTA(AVX10_2_512).
+	* config/i386/i386-options.cc (isa2_opts): Add -mavx10.2-256 and
+	-mavx10.2-512.
+	(ix86_valid_target_attribute_inner_p): Handle avx10.2-256 and
+	avx10.2-512.
+	* config/i386/i386.opt: Add option -mavx10.2, -mavx10.2-256 and
+	-mavx10.2-512.
+	* config/i386/i386.opt.urls: Regenerated.
+	* doc/extend.texi: Document avx10.2, avx10.2-256 and avx10.2-512.
+	* doc/invoke.texi: Document -mavx10.2, -mavx10.2-256 and
+	-mavx10.2-512.
+	* doc/sourcebuild.texi: Document target avx10.2, avx10.2-256,
+	avx10.2-512.
+
+2024-08-12  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/116275
+	* config/i386/i386.md (*extendv2di2_highpart_stv_noavx512vl): New
+	define_insn_and_split to handle the STV conversion of the DImode
+	pattern *extendsi2_doubleword_highpart.
+
+2024-08-12  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.md (insn): Added rotatert rotr pairs.
+	* config/loongarch/simd.md (rotr<mode>3): Remove to ...
+	(<optab><mode>3): This.
+
+2024-08-12  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/114189
+	* config/loongarch/lasx.md (vcondu<LASX:mode><ILASX:mode>): Delete.
+	(vcond<LASX:mode><LASX_2:mode>): Likewise.
+	* config/loongarch/lsx.md (vcondu<LSX:mode><ILSX:mode>): Likewise.
+	(vcond<LSX:mode><LSX_2:mode>): Likewise.
+
+2024-08-12  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/lasx.md (xvandn<mode>3): Rename to ...
+	(andn<mode>3): This.
+	(xvorn<mode>3): Rename to ...
+	(iorn<mode>3): This.
+	* config/loongarch/loongarch-builtins.cc
+	(CODE_FOR_lsx_vandn_v): Defined as the modified name.
+	(CODE_FOR_lsx_vorn_v): Likewise.
+	(CODE_FOR_lasx_xvandn_v): Likewise.
+	(CODE_FOR_lasx_xvorn_v): Likewise.
+	(loongarch_expand_builtin_insn): When the builtin function to be
+	called is __builtin_lasx_xvandn or __builtin_lsx_vandn, swap the
+	two operands.
+	* config/loongarch/loongarch.md (<optab>n<mode>): Rename to ...
+	(<optab>n<mode>3): This.
+	* config/loongarch/lsx.md (vandn<mode>3): Rename to ...
+	(andn<mode>3): This.
+	(vorn<mode>3): Rename to ...
+	(iorn<mode>3): This.
+
 2024-08-11  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.opt (mlra): Set Undocumented flag.

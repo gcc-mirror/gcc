@@ -1,3 +1,14 @@
+2024-08-12  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* checks/errors/borrowck/rust-bir-builder.h: Cast size_t values to unsigned
+	long before printing.
+	* checks/errors/borrowck/rust-bir-fact-collector.h: Likewise.
+
+2024-08-12  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* checks/errors/borrowck/rust-bir-fact-collector.h (points): Rename
+	`push_subset(PlaceId, PlaceId)` to `push_subset_place(PlaceId, PlaceId)`
+
 2024-08-05  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* Make-lang.in (RUST_LIBDEPS): Inline into all users.

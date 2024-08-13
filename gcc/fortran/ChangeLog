@@ -1,3 +1,11 @@
+2024-08-12  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/85510
+	* resolve.cc (resolve_variable): Mark the variable as host
+	associated only, when it is not in an associate block.
+	* trans-decl.cc (generate_coarray_init): Remove incorrect unused
+	flag on parameter.
+
 2024-08-11  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/116221

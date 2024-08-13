@@ -1,3 +1,79 @@
+2024-08-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/116181
+	* gm2-compiler/ppg.mod (FindStr): Initialize j.
+	* gm2-libs-ch/UnixArgs.cc (_M2_UnixArgs_ctor): Replace
+	M2RTS_RegisterModule with M2RTS_RegisterModule_Cstr.
+	* gm2-libs-ch/dtoa.cc (_M2_dtoa_ctor): Ditto.
+	* gm2-libs-ch/ldtoa.cc (ldtoa_strtold): Cast parameter s
+	for strtod.
+	(_M2_ldtoa_ctor): Replace M2RTS_RegisterModule with
+	M2RTS_RegisterModule_Cstr.
+	* gm2-libs-ch/m2rts.h (M2RTS_RegisterModule_Cstr): New
+	define.
+	(M2RTS_RegisterModule): Remove const.
+	* mc-boot-ch/GSelective.c (Selective_FdIsSet): Return bool
+	rather than int.
+	* mc-boot-ch/Gldtoa.cc (ldtoa_strtold): Change const char to
+	void.
+	Cast s before passing as a parameter to strtod.
+	* mc-boot-ch/Glibc.c (tracedb_open): Replace const char with const
+	void.
+	(libc_perror): Replace char with const char.
+	(libc_printf): Replace char with void.
+	(libc_snprintf): Replace char with void.
+	Add const_cast for parameter to index.
+	Add reinterpret_cast for parameter to vsnprintf.
+	(libc_open): Replace first paramter type char with void.
+	Add vararg for the third parameter.
+	* mc-boot-ch/Gm2rtsdummy.cc (M2RTS_RequestDependant): Remove #if 0 code.
+	(m2pim_M2RTS_RegisterModule): Change const char parameters to void
+	(M2RTS_RegisterModule): Ditto.
+	(_M2_M2RTS_init): Remove #if 0 code.
+	(M2RTS_ConstructModules): Ditto.
+	(M2RTS_Terminate): Ditto.
+	(M2RTS_DeconstructModules): Ditto.
+	(M2RTS_Halt): Ditto.
+	* mc-boot-ch/Gtermios.cc (SetFlag): Return bool.
+	* mc-boot-ch/m2rts.h (M2RTS_RegisterModule_Cstr): New define.
+	(M2RTS_RegisterModule): Change const char parameters to void.
+	* mc-boot/Gdecl.cc: Regenerate.
+	* mc/decl.mod (getNextConstExp): Reimplement.
+	* pge-boot/GDynamicStrings.cc: Regenerate.
+	* pge-boot/GDynamicStrings.h: Ditto.
+	* pge-boot/GM2RTS.h (M2RTS_RegisterModule_Cstr): New function.
+	(M2RTS_RegisterModule): Reformat.
+	* pge-boot/GSymbolKey.cc: Regenerate.
+	* pge-boot/GSysExceptions.cc (_M2_SysExceptions_init): Add correct parameters.
+	(_M2_SysExceptions_fini): Ditto.
+	* pge-boot/GUnixArgs.cc (_M2_UnixArgs_ctor::_M2_UnixArgs_ctor):
+	Replace call to M2RTS_RegisterModule with M2RTS_RegisterModuleCstr.
+	* pge-boot/Gerrno.cc (_M2_errno_init): Add correct parameters.
+	(_M2_errno_fini): Ditto.
+	* pge-boot/Gldtoa.cc (ldtoa_strtold): Replace const char with
+	void.
+	Use reinterpret_cast when passing s to strtod.
+	Replace true with TRUE.
+	* pge-boot/Gldtoa.h (ldtoa_strtold): Tidy up.
+	* pge-boot/Glibc.cc (libc_read): Use size_t as the return type.
+	(libc_write): Ditto.
+	(libc_strlen): Ditto.
+	(libc_perror): Replace char with const char.
+	(libc_printf): Replace char to const char.
+	Cast parameter to index using const_cast.
+	(libc_snprintf): Replace char with void.
+	Cast parameter to index using const_cast.
+	(libc_malloc): Replace parameter type with size_t.
+	(libc_memcpy): Replace third parameter type with size_t.
+	(libc_open): Use varargs.
+	* pge-boot/Glibc.h (libc_perror): Add _string_high parameter.
+	* pge-boot/Gpge.cc: Regenerate.
+	* pge-boot/Gtermios.cc (SetFlag): Replace return type with bool.
+	(_M2_termios_init): Add correct parameters.
+	(_M2_termios_fini): Ditto.
+	* pge-boot/m2rts.h (M2RTS_RegisterModule_Cstr): New define.
+	(M2RTS_RegisterModule): Replace const char with void.
+
 2024-08-10  Wilken Gottwalt  <wilken.gottwalt@posteo.net>
 
 	* gm2-libs-iso/MemStream.mod: Guard debug output.

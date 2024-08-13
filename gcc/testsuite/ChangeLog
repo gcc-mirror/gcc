@@ -1,3 +1,84 @@
+2024-08-12  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/114759
+	* gcc.target/powerpc/pr114759-1.c: New test.
+
+2024-08-12  Edwin Lu  <ewlu@rivosinc.com>
+
+	* gcc.target/riscv/rvv/base/pr116202-run-1.c: Add mabi arg
+
+2024-08-12  Jeff Law  <jlaw@ventanamicro.com>
+
+	* g++.target/m68k/m68k.exp: New test driver.
+	* g++.target/m68k/pr116244.C: New test.
+
+2024-08-12  Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	* gcc.target/aarch64/ifcvt_multiple_sets_rewire.c: New test.
+
+2024-08-12  Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	* gcc.target/aarch64/ifcvt_multiple_sets_arithm.c: New test.
+
+2024-08-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/85624
+	* gcc.target/avr/torture/pr85624.c: New test.
+
+2024-08-12  Joern Rennecke  <joern.rennecke@riscy-ip.com>
+
+	* gcc.c-torture/execute/20021120-1.c: Skip if not size20plus or -Os.
+	* gcc.dg/fixed-point/convert-float-4.c: Require size20plus.
+	* gcc.dg/torture/pr112282.c: Skip if -O0 unless size20plus.
+	* g++.dg/lookup/pr21802.C: Require size20plus.
+
+2024-08-12  Joern Rennecke  <joern.rennecke@riscy-ip.com>
+
+	* gcc.dg/pr107523.c: Make sure variables can fit numbers.
+	* gcc.dg/pr47893.c: Add dg-require-effective-target size20plus clause.
+	* c-c++-common/torture/builtin-clear-padding-2.c:
+	dg-require-effective-target size20plus.
+	* gcc.dg/pr115646.c: dg-require-effective-target int32plus.
+	* c-c++-common/analyzer/coreutils-sum-pr108666.c:
+	For c++, expect a warning about exceeding maximum object size
+	if not size20plus.
+	* gcc.dg/torture/inline-mem-cpy-1.c:
+	Like the included file, dg-require-effective-target ptr32plus.
+	* gcc.dg/torture/inline-mem-cmp-1.c: Likewise.
+
+2024-08-12  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/advsimd_shl_add.c: New test.
+
+2024-08-12  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/85510
+	* gfortran.dg/coarray/pr85510.f90: New test.
+
+2024-08-12  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* g++.dg/other/i386-2.C: Ditto.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/sse-12.c: Ditto.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+
+2024-08-12  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/116275
+	* g++.target/i386/pr116275.C: New test case.
+
+2024-08-12  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* g++.target/loongarch/vect-ashr-lshr.C: New test.
+
+2024-08-12  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/lasx-andn-iorn.c: New test.
+	* gcc.target/loongarch/lsx-andn-iorn.c: New test.
+
 2024-08-10  Xi Ruoyao  <xry111@xry111.site>
 
 	PR testsuite/70150
