@@ -1,3 +1,12 @@
+2024-08-12  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-07-30  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/116043
+	* config/i386/constraints.md (Bk): Refine to
+	define_special_memory_constraint.
+
 2024-08-06  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/113384
