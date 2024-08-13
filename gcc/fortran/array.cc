@@ -2127,6 +2127,19 @@ resolve_array_list (gfc_constructor_base base)
 		     "polymorphic [F2008: C4106]", &c->expr->where);
 	  t = false;
 	}
+
+      /* F2018:C7114 The declared type of an ac-value shall not be abstract.  */
+      if (c->expr->ts.type == BT_CLASS
+	  && c->expr->ts.u.derived
+	  && c->expr->ts.u.derived->attr.abstract
+	  && CLASS_DATA (c->expr))
+	{
+	  gfc_error ("Array constructor value %qs at %L is of the ABSTRACT "
+		     "type %qs", c->expr->symtree->name, &c->expr->where,
+		     CLASS_DATA (c->expr)->ts.u.derived->name);
+	  t = false;
+	}
+
     }
 
   return t;
