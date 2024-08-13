@@ -2331,7 +2331,20 @@ package body Accessibility is
          return Scope_Depth (Standard_Standard);
       end if;
 
-      return Scope_Depth (Enclosing_Dynamic_Scope (Btyp));
+      --  It is possible that the current scope is an aliased subprogram -
+      --  this can happen when an abstract primitive from a root type is not
+      --  not visible.
+
+      if Is_Subprogram (Enclosing_Dynamic_Scope (Btyp))
+        and then Present (Alias (Enclosing_Dynamic_Scope (Btyp)))
+      then
+         return Scope_Depth (Ultimate_Alias (Enclosing_Dynamic_Scope (Btyp)));
+
+      --  Otherwise, simply use the enclosing dynamic scope
+
+      else
+         return Scope_Depth (Enclosing_Dynamic_Scope (Btyp));
+      end if;
    end Type_Access_Level;
 
 end Accessibility;
