@@ -1932,6 +1932,7 @@ gfc_match_associate (void)
 	  gfc_matching_procptr_assignment = 1;
 	  if (gfc_match (" %e", &newAssoc->target) != MATCH_YES)
 	    {
+	      gfc_matching_procptr_assignment = 0;
 	      gfc_error ("Invalid association target at %C");
 	      goto assocListError;
 	    }
