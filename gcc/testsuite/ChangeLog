@@ -1,3 +1,9 @@
+2024-08-13  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/power11-1.c: New test.
+	* gcc.target/powerpc/power11-2.c: Likewise.
+	* gcc.target/powerpc/power11-3.c: Likewise.
+
 2024-08-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
