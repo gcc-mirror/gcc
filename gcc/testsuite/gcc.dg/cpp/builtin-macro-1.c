@@ -5,7 +5,7 @@
    the function-like macro expansion it's part of.
 
    { dg-do run }
-   { do-options -no-integrated-cpp }  */
+   { dg-options -no-integrated-cpp }  */
 
 #include <assert.h>
 

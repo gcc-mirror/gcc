@@ -1,6 +1,6 @@
 /* Verify the lower and upper bounds of floating directives with
    precision whose range crosses zero.
-  { do-do compile }
+  { dg-do compile }
   { dg-options "-O2 -Wall -fdump-tree-optimized" } */
 
 static const double x = 1.23456789;
@@ -72,6 +72,6 @@ int test_g (int p)
   return n;
 }
 
-/* { dg-final { scan-tree-dump-times "snprintf" 4 "optimized"} }
-   { dg-final { scan-tree-dump-not "failure_range" "optimized"} }
-   { dg-final { scan-tree-dump-times "verify_" 8 "optimized"} } */
+/* { dg-final { scan-tree-dump-times "snprintf" 4 "optimized" } }
+   { dg-final { scan-tree-dump-not "failure_range" "optimized" } }
+   { dg-final { scan-tree-dump-times "verify_" 8 "optimized" } } */
