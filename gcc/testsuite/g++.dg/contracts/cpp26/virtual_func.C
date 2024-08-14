@@ -40,6 +40,35 @@ int fooBase(Base& b)
     return b.f(1);
 }
 
+void j(){};
+struct BB
+{
+  virtual int f(const int a) pre (a > 5) { return a;}
+  void h{};
+};
+struct B
+{
+  void g(){};
+};
+
+struct Child1 : Base
+{
+  virtual int f(const int a) pre (a > 14){ return a + 10; }
+};
+
+void foo(Base& b){
+  b.f(3);
+  b.h();
+  b.g();
+  j();
+}
+
+void bar()
+{
+  Child1 c;
+  foo(c);
+}
+
 int main(int, char**)
 {
   Base b;
