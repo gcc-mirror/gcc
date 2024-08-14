@@ -7361,6 +7361,8 @@ package body Sem_Ch6 is
                   Error_Msg_N
                     ("implied return after this statement would have raised "
                      & "Program_Error", Last_Stm);
+                  Error_Msg_NE
+                    ("\procedure & is marked as No_Return!", Last_Stm, Proc);
 
                --  In normal compilation mode, do not warn on a generated call
                --  (e.g. in the body of a renaming as completion).
@@ -7369,11 +7371,15 @@ package body Sem_Ch6 is
                   Error_Msg_N
                     ("implied return after this statement will raise "
                      & "Program_Error??", Last_Stm);
+
+                  Error_Msg_NE
+                    ("\procedure & is marked as No_Return??!", Last_Stm, Proc);
+               else
+
+                  Error_Msg_NE
+                    ("procedure & is marked as No_Return!", Last_Stm, Proc);
                end if;
 
-               Error_Msg_Warn := SPARK_Mode /= On;
-               Error_Msg_NE
-                 ("\procedure & is marked as No_Return<<!", Last_Stm, Proc);
             end if;
 
             declare

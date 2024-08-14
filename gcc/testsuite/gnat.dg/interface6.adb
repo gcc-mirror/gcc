@@ -36,6 +36,7 @@ procedure Interface6 is
 
      procedure Test_Instance1 is new Test (T => Rec_Type);  --  { dg-error "actual must implement all interfaces of formal \"T\"" }
      procedure Test_Instance1 is new Test (T => Rec_Type1);  -- { dg-error "actual \"Rec_Type1\" must implement interface \"TI2\"" }
+     -- { dg-error "instantiation abandoned" "" { target *-*-* } 37 }
      procedure Test_Instance2 is new Test (T => Rec_Type2);
      procedure Test_Instance12 is new Test (T => Rec_Type12);
 

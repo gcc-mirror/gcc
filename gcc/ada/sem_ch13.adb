@@ -1247,7 +1247,7 @@ package body Sem_Ch13 is
 
                      if Etype (Expression (ASN)) = Any_Type then
                         Error_Msg_NE
-                          ("\aspect must be fully defined before & is frozen",
+                          ("aspect must be fully defined before & is frozen",
                            ASN, E);
                      end if;
 

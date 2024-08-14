@@ -2295,7 +2295,7 @@ package body Sem_Ch12 is
 
    procedure Abandon_Instantiation (N : Node_Id) is
    begin
-      Error_Msg_N ("\instantiation abandoned!", N);
+      Error_Msg_N ("instantiation abandoned!", N);
       raise Instantiation_Error;
    end Abandon_Instantiation;
 
