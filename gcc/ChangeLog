@@ -1,3 +1,34 @@
+2024-08-13  Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	PR tree-optimization/116353
+	* ifcvt.cc (bb_ok_for_noce_convert_multiple_sets): Check
+	noce_can_force_operand.
+
+2024-08-13  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/riscv-v.cc (legitimize_move): extrac -> extract.
+	(expand_vec_cmp_float): Remove duplicate vmnor.mm.
+	* config/riscv/riscv-vector-builtins.cc: ins -> insns.
+	* config/riscv/riscv.cc (riscv_init_machine_status): mwrvv -> mrvv.
+	* config/riscv/vector-iterators.md: RVVM8QImde -> RVVM8QImode
+	* config/riscv/vector.md: Replaced non-existant vsetivl with vsetivli.
+
+2024-08-13  Pan Li  <pan2.li@intel.com>
+
+	PR target/116103
+	* internal-fn.cc (type_strictly_matches_mode_p): Add handling
+	for vector bool type.
+
+2024-08-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR rtl-optimization/116170
+	* lra-constraints.cc (curr_insn_transform): Don't emit move back to
+	old operand if it's CONSTANT_P.
+
+2024-08-13  Mark Wielaard  <mark@klomp.org>
+
+	* config/avr/avr.opt.urls: Regenerate.
+
 2024-08-12  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR target/114759

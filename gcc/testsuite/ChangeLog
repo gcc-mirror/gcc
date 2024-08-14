@@ -1,3 +1,25 @@
+2024-08-13  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR testsuite/116155
+	* c-c++-common/fam-in-union-alone-in-struct-1.c: Adjust
+	check to account for default_packed targets.
+
+2024-08-13  Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	PR tree-optimization/116353
+	* gcc.target/i386/pr116353.c: New test.
+
+2024-08-13  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/114308
+	* gfortran.dg/abstract_type_10.f90: New test.
+
+2024-08-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR rtl-optimization/116170
+	* gcc.target/powerpc/pr116170.c: New test.
+
 2024-08-12  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR target/114759
