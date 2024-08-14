@@ -461,7 +461,7 @@ do {						\
 #define TARGET_ASM_ASSEMBLE_VISIBILITY i386_pe_assemble_visibility
 
 #undef SUB_TARGET_RECORD_STUB
-#define SUB_TARGET_RECORD_STUB mingw_pe_record_stub
+#define SUB_TARGET_RECORD_STUB(NAME, DECL) mingw_pe_record_stub((NAME), 0)
 
 /* Static stack checking is supported by means of probes.  */
 #define STACK_CHECK_STATIC_BUILTIN 1
@@ -470,7 +470,7 @@ do {						\
 # define HAVE_GAS_ALIGNED_COMM 0
 #endif
 
-#define PE_COFF_LEGITIMIZE_EXTERN_DECL \
+#define PE_COFF_LEGITIMIZE_EXTERN_DECL(RTX) \
   (ix86_cmodel == CM_LARGE_PIC || ix86_cmodel == CM_MEDIUM_PIC)
 
 #define HAVE_64BIT_POINTERS TARGET_64BIT_DEFAULT

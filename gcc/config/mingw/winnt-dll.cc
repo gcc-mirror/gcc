@@ -134,7 +134,7 @@ get_dllimport_decl (tree decl, bool beimport)
     {
       SYMBOL_REF_FLAGS (rtl) |= SYMBOL_FLAG_EXTERNAL;
 #ifdef SUB_TARGET_RECORD_STUB
-      SUB_TARGET_RECORD_STUB (name);
+      SUB_TARGET_RECORD_STUB (name, decl);
 #endif
     }
 
@@ -206,7 +206,7 @@ legitimize_pe_coff_symbol (rtx addr, bool inreg)
 	}
     }
 
-  if (!PE_COFF_LEGITIMIZE_EXTERN_DECL)
+  if (!PE_COFF_LEGITIMIZE_EXTERN_DECL (addr))
     return NULL_RTX;
 
   if (GET_CODE (addr) == SYMBOL_REF
