@@ -78,7 +78,7 @@ still needed for compilation.  */
 
 /* Declare the type properly for any external libcall.  */
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN) \
-  mingw_pe_declare_function_type (FILE, XSTR (FUN, 0), 1)
+  mingw_pe_declare_type (FILE, XSTR (FUN, 0), 1, 1)
 
 /* Use section relative relocations for debugging offsets.  Unlike
    other targets that fake this by putting the section VMA at 0, PE
@@ -212,6 +212,22 @@ still needed for compilation.  */
   DECL_WEAK ((DECL)))
 
 #define SUPPORTS_ONE_ONLY 1
+
+#undef ASM_DECLARE_OBJECT_NAME
+#define ASM_DECLARE_OBJECT_NAME(STREAM, NAME, DECL)			\
+  do {									\
+    mingw_pe_declare_type (STREAM, NAME, TREE_PUBLIC (DECL), 0);	\
+    ASM_OUTPUT_LABEL ((STREAM), (NAME));				\
+  } while (0)
+
+
+#undef ASM_DECLARE_FUNCTION_NAME
+#define ASM_DECLARE_FUNCTION_NAME(STREAM, NAME, DECL)	\
+  do {									\
+    mingw_pe_declare_type (STREAM, NAME, TREE_PUBLIC (DECL), 1);	\
+    aarch64_declare_function_name (STREAM, NAME, DECL);			\
+  } while (0)
+
 
 /* Define this to be nonzero if static stack checking is supported.  */
 #define STACK_CHECK_STATIC_BUILTIN 1

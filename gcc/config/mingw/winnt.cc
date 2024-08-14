@@ -576,20 +576,20 @@ i386_pe_asm_output_aligned_decl_common (FILE *stream, tree decl,
 
 #include "gsyms.h"
 
-/* Mark a function appropriately.  This should only be called for
+/* Mark a function or an object appropriately.  This should only be called for
    functions for which we are not emitting COFF debugging information.
    FILE is the assembler output file, NAME is the name of the
    function, and PUB is nonzero if the function is globally
    visible.  */
 
 void
-mingw_pe_declare_function_type (FILE *file, const char *name, int pub)
+mingw_pe_declare_type (FILE *file, const char *name, bool pub, bool func)
 {
   fprintf (file, "\t.def\t");
   assemble_name (file, name);
   fprintf (file, ";\t.scl\t%d;\t.type\t%d;\t.endef\n",
 	   pub ? (int) C_EXT : (int) C_STAT,
-	   (int) DT_FCN << N_BTSHFT);
+	   (int) (func ? DT_FCN : DT_NON) << N_BTSHFT);
 }
 
 /* Keep a list of external functions.  */
@@ -772,12 +772,12 @@ mingw_pe_file_end (void)
 	     the real function so that an (unused) import is created.  */
 	  const char *realsym = i386_find_on_wrapper_list (p->name);
 	  if (realsym)
-	    mingw_pe_declare_function_type (asm_out_file,
-		concat ("__real_", realsym, NULL), TREE_PUBLIC (decl));
+	    mingw_pe_declare_type (asm_out_file,
+		concat ("__real_", realsym, NULL), TREE_PUBLIC (decl), 1);
 #endif /* CXX_WRAP_SPEC_LIST */
 	  TREE_ASM_WRITTEN (decl) = 1;
-	  mingw_pe_declare_function_type (asm_out_file, p->name,
-					 TREE_PUBLIC (decl));
+	  mingw_pe_declare_type (asm_out_file, p->name,
+				 TREE_PUBLIC (decl), 1);
 	}
     }
 
@@ -816,7 +816,7 @@ mingw_pe_file_end (void)
 #ifdef ASM_WEAKEN_LABEL
 	      ASM_WEAKEN_LABEL (asm_out_file, name);
 #endif
-	      mingw_pe_declare_function_type (asm_out_file, name, 1);
+	      mingw_pe_declare_type (asm_out_file, name, 1, 1);
 	    }
 
 	  fprintf (asm_out_file, "\t.section\t.rdata$%s, \"dr\"\n"
@@ -1375,7 +1375,7 @@ void
 i386_pe_start_function (FILE *f, const char *name, tree decl)
 {
   mingw_pe_maybe_record_exported_symbol (decl, name, 0);
-  mingw_pe_declare_function_type (f, name, TREE_PUBLIC (decl));
+  mingw_pe_declare_type (f, name, TREE_PUBLIC (decl), 1);
   /* In case section was altered by debugging output.  */
   if (decl != NULL_TREE)
     switch_to_section (function_section (decl));

@@ -309,7 +309,7 @@ do {						\
 #define ASM_DECLARE_COLD_FUNCTION_NAME(FILE, NAME, DECL)	\
   do								\
     {								\
-      mingw_pe_declare_function_type (FILE, NAME, 0);		\
+      mingw_pe_declare_type (FILE, NAME, 0, 1);		\
       i386_pe_seh_cold_init (FILE, NAME);			\
       ASM_OUTPUT_LABEL (FILE, NAME);				\
     }								\
@@ -335,7 +335,7 @@ do {						\
 
 /* Declare the type properly for any external libcall.  */
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN) \
-  mingw_pe_declare_function_type (FILE, XSTR (FUN, 0), 1)
+  mingw_pe_declare_type (FILE, XSTR (FUN, 0), 1, 1)
 
 /* This says out to put a global symbol in the BSS section.  */
 #undef ASM_OUTPUT_ALIGNED_BSS
@@ -420,8 +420,8 @@ do {						\
 	= IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));		\
       mingw_pe_maybe_record_exported_symbol (DECL, alias, 0);		\
       if (TREE_CODE (DECL) == FUNCTION_DECL)				\
-	mingw_pe_declare_function_type (STREAM, alias,			\
-				       TREE_PUBLIC (DECL));		\
+	mingw_pe_declare_type (STREAM, alias,			\
+				       TREE_PUBLIC (DECL), 1);		\
       ASM_OUTPUT_DEF (STREAM, alias, IDENTIFIER_POINTER (TARGET));	\
     } while (0)
 
