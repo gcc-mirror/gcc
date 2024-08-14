@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-offload.h"  /* For offload_vars.  */
 #include "opts.h"
 #include "langhooks-def.h"  /* For lhd_simulate_record_decl  */
+#include "coroutines.h"
 
 /* Possible cases of bad specifiers type used by bad_specifiers. */
 enum bad_spec_place {
@@ -18533,36 +18534,6 @@ add_return_star_this_fixit (gcc_rich_location *richloc, tree fndecl)
 				       indent);
 }
 
-/* This function carries out the subset of finish_function operations needed
-   to emit the compiler-generated outlined helper functions used by the
-   coroutines implementation.  */
-
-static void
-emit_coro_helper (tree helper)
-{
-  /* This is a partial set of the operations done by finish_function()
-     plus emitting the result.  */
-  set_cfun (NULL);
-  current_function_decl = helper;
-  begin_scope (sk_function_parms, NULL);
-  store_parm_decls (DECL_ARGUMENTS (helper));
-  announce_function (helper);
-  allocate_struct_function (helper, false);
-  cfun->language = ggc_cleared_alloc<language_function> ();
-  poplevel (1, 0, 1);
-  maybe_save_constexpr_fundef (helper);
-  /* We must start each function with a clear fold cache.  */
-  clear_fold_cache ();
-  cp_fold_function (helper);
-  DECL_CONTEXT (DECL_RESULT (helper)) = helper;
-  BLOCK_SUPERCONTEXT (DECL_INITIAL (helper)) = helper;
-  /* This function has coroutine IFNs that we should handle in middle
-     end lowering.  */
-  cfun->coroutine_component = true;
-  cp_genericize (helper);
-  expand_or_defer_fn (helper);
-}
-
 /* Finish up a function declaration and compile that function
    all the way to assembler language output.  The free the storage
    for the function definition. INLINE_P is TRUE if we just
@@ -18582,10 +18553,6 @@ finish_function (bool inline_p)
   if (fndecl == NULL_TREE || fndecl == error_mark_node)
     return error_mark_node;
 
-  bool coro_p = (flag_coroutines
-		 && !processing_template_decl
-		 && DECL_COROUTINE_P (fndecl));
-  bool coro_emit_helpers = false;
   bool do_contracts = (DECL_HAS_CONTRACTS_P (fndecl)
 		       && !processing_template_decl);
 
@@ -18609,24 +18576,29 @@ finish_function (bool inline_p)
      error_mark_node.  */
   gcc_assert (DECL_INITIAL (fndecl) == error_mark_node);
 
-  if (coro_p)
+  cp_coroutine_transform *coroutine = nullptr;
+  if (flag_coroutines
+      && !processing_template_decl
+      && DECL_COROUTINE_P (fndecl)
+      && !DECL_RAMP_FN (fndecl))
     {
-      /* Only try to emit the coroutine outlined helper functions if the
-	 transforms succeeded.  Otherwise, treat errors in the same way as
-	 a regular function.  */
-      coro_emit_helpers = morph_fn_to_coro (fndecl, &resumer, &destroyer);
+      gcc_checking_assert (!DECL_CLONED_FUNCTION_P (fndecl)
+			   && !DECL_DEFAULTED_FN (fndecl));
+      coroutine = new cp_coroutine_transform (fndecl, inline_p);
+      if (coroutine && coroutine->cp_valid_coroutine ())
+	coroutine->apply_transforms ();
 
       /* We should handle coroutine IFNs in middle end lowering.  */
       cfun->coroutine_component = true;
 
       /* Do not try to process the ramp's EH unless outlining succeeded.  */
-      if (coro_emit_helpers && use_eh_spec_block (fndecl))
+      if (coroutine->cp_valid_coroutine () && use_eh_spec_block (fndecl))
 	finish_eh_spec_block (TYPE_RAISES_EXCEPTIONS
 			      (TREE_TYPE (fndecl)),
 			      current_eh_spec_block);
 
      /* If outlining succeeded, then add contracts handling if needed.  */
-     if (coro_emit_helpers && do_contracts)
+     if (coroutine->cp_valid_coroutine () && do_contracts)
 	maybe_apply_function_contracts (fndecl);
     }
   else
@@ -18867,15 +18839,8 @@ finish_function (bool inline_p)
 			      opt_for_fn (fndecl, flag_semantic_interposition)))
     TREE_NOTHROW (fndecl) = 1;
 
-  /* Emit the resumer and destroyer functions now, providing that we have
-     not encountered some fatal error.  */
-  if (coro_emit_helpers)
-    {
-      emit_coro_helper (resumer);
-      emit_coro_helper (destroyer);
-    }
-
  cleanup:
+
   /* We're leaving the context of this function, so zap cfun.  It's still in
      DECL_STRUCT_FUNCTION, and we'll restore it in tree_rest_of_compilation.  */
   set_cfun (NULL);
@@ -18896,6 +18861,23 @@ finish_function (bool inline_p)
 
   /* Clean up.  */
   invoke_plugin_callbacks (PLUGIN_FINISH_PARSE_FUNCTION, fndecl);
+
+  /* Build outlined functions for coroutines and contracts.  */
+
+  if (coroutine)
+    {
+      /* Emit the resumer and destroyer functions now, providing that we have
+	 not encountered some fatal error.  */
+      if (coroutine->cp_valid_coroutine ())
+	{
+	  coroutine->finish_transforms ();
+	  resumer = coroutine->get_resumer ();
+	  destroyer = coroutine->get_destroyer ();
+	  expand_or_defer_fn (resumer);
+	  expand_or_defer_fn (destroyer);
+	}
+      delete coroutine;
+    }
 
   /* If we have used outlined contracts checking functions, build and emit
      them here.  */
