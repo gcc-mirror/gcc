@@ -3125,6 +3125,13 @@ Again, if the native compiler miscompiles the stage1 compiler, you may
 need to work around this by avoiding non-working parts of the stage1
 compiler.  Use @code{STAGE1_TFLAGS} to this end.
 
+You can use @code{STAGE1_CFLAGS} to set the flags passed to the host compiler
+when building the stage1 compiler.  The default is to pass @option{-g}, but when
+the host compiler is GCC, this results in a non-optimized build of the stage1
+compiler.  You can speed up the bootstrap by using @samp{STAGE1_CFLAGS='-O2'}
+at the increased risk of miscompiling the stage1 compiler when the host
+compiler is buggy.
+
 If you used the flag @option{--enable-languages=@dots{}} to restrict
 the compilers to be built, only those you've actually enabled will be
 built.  This will of course only build those runtime libraries, for
