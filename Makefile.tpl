@@ -533,14 +533,11 @@ STAGE[+id+]_CONFIGURE_FLAGS = $(STAGE_CONFIGURE_FLAGS)
 STAGE1_CFLAGS = @stage1_cflags@
 STAGE1_CHECKING = @stage1_checking@
 STAGE1_LANGUAGES = @stage1_languages@
-# * We force-disable intermodule optimizations, even if
-#   --enable-intermodule was passed, since the installed compiler
-#   probably can't handle them.  Luckily, autoconf always respects
-#   the last argument when conflicting --enable arguments are passed.
-# * Likewise, we force-disable coverage flags, since the installed
-#   compiler probably has never heard of them.
+# * We force-disable coverage flags, since the installed compiler probably
+#   has never heard of them. Luckily, autoconf always respects the last
+#   argument when conflicting --enable arguments are passed.
 # * We also disable -Wformat, since older GCCs don't understand newer %s.
-STAGE1_CONFIGURE_FLAGS = --disable-intermodule $(STAGE1_CHECKING) \
+STAGE1_CONFIGURE_FLAGS = $(STAGE1_CHECKING) \
 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" \
 	  --disable-build-format-warnings
 
