@@ -14,7 +14,7 @@ union with_fam_2 {
 } with_fam_2_v = {.a = 0x1f2f3f4f};
 
 union with_fam_3 {
-  char a[];  
+  unsigned char a[];  
   int b[];  
 } with_fam_3_v = {.b = {0x1f2f3f4f, 0x5f6f7f8f}};
 
