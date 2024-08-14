@@ -1291,6 +1291,7 @@ aarch64-*-mingw*)
 	extra_options="${extra_options} mingw/cygming.opt mingw/mingw.opt"
 	extra_objs="${extra_objs} winnt.o winnt-dll.o"
 	c_target_objs="${c_target_objs} msformat-c.o"
+	cxx_target_objs="${cxx_target_objs} msformat-c.o"
 	d_target_objs="${d_target_objs} winnt-d.o"
 	tmake_file="${tmake_file} mingw/t-cygming"
 	case ${enable_threads} in
