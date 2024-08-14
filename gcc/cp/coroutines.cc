@@ -4553,10 +4553,16 @@ coro_rewrite_function_body (location_t fn_start, tree fnbody, tree orig,
 static tree
 split_coroutine_body_from_ramp (tree fndecl)
 {
-  tree body;
+  /* Sanity-check and punt if we have a nonsense tree because of earlier
+     parse errors, perhaps.  */
+  if (!current_binding_level
+      || current_binding_level->kind != sk_function_parms)
+    return NULL_TREE;
+
   /* Once we've tied off the original user-authored body in fn_body.
      Start the replacement synthesized ramp body.  */
 
+  tree body;
   if (use_eh_spec_block (fndecl))
     {
       body = pop_stmt_list (TREE_OPERAND (current_eh_spec_block, 0));
