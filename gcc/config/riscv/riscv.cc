@@ -10294,12 +10294,12 @@ static unsigned int
 riscv_dwarf_poly_indeterminate_value (unsigned int i, unsigned int *factor,
 				      int *offset)
 {
-  /* Polynomial invariant 1 == (VLENB / riscv_bytes_per_vector_chunk) - 1.
+  /* Polynomial invariant 1 == (VLENB / BYTES_PER_RISCV_VECTOR) - 1.
      1. TARGET_MIN_VLEN == 32, polynomial invariant 1 == (VLENB / 4) - 1.
      2. TARGET_MIN_VLEN > 32, polynomial invariant 1 == (VLENB / 8) - 1.
   */
   gcc_assert (i == 1);
-  *factor = riscv_bytes_per_vector_chunk;
+  *factor = BYTES_PER_RISCV_VECTOR.coeffs[1];
   *offset = 1;
   return RISCV_DWARF_VLENB;
 }
