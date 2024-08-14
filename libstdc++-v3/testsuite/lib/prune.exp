@@ -80,6 +80,15 @@ proc libstdc++-dg-prune { system text } {
     # Ignore dsymutil warning (tool bug is actually in the linker)
     regsub -all "(^|\n)\[^\n\]*could not find object file symbol for symbol\[^\n\]*" $text "" text
 
+    # This pattern, except requiring a capitalized "In" and with a
+    # sub-pattern matching a subsequent line "is not implemented and will
+    # always fail", is part of the standard dejagnu prune_warnings function.
+    # There's also a separate single-line pattern pruning the "is not
+    # implemented and will always fail".  Since that pattern is processed
+    # before this ${tool}-dg-prune function is called, we have to handle
+    # the single uncapitalized "in function" line.
+    regsub -all "(^|\n)\[^\n\]*: in function\[^\n\]*" $text "" text
+
     # If exceptions are disabled, mark tests expecting exceptions to be enabled
     # as unsupported.
     if { ![check_effective_target_exceptions_enabled] } {
