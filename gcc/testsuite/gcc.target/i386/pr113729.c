@@ -71,3 +71,65 @@ F (int, char, xor, ^)
 F (int64_t, char, xor, ^)
 F (int, short, xor, ^)
 F (int64_t, short, xor, ^)
+
+#define F2(TYPE1,TYPE2, OP_NAME, OP, IMM)  \
+TYPE1                                      \
+__attribute__ ((noipa))                    \
+f2_##OP_NAME##_##TYPE1##_##TYPE2 (TYPE2 a) \
+{                                          \
+  unsigned TYPE2 b = a OP IMM;             \
+  return b;                                \
+}			
+
+/* ashlqi3_1_zext<mode> */
+F2 (short, char, shl, <<, 7)
+F2 (int, char, shl, <<, 6)
+F2 (int64_t, char, shl, <<, 7)
+F2 (int, short, shl, <<, 6)
+F2 (int64_t, short, shl, <<, 3)
+
+/* ashrqi3_1_zext<mode> */
+F2 (short, char, sar, >>, 7)
+F2 (int, char, sar, >>, 6)
+F2 (int64_t, char, sar, >>, 7)
+F2 (int, short, sar, >>, 6)
+F2 (int64_t, short, sar, >>, 3)
+
+#define F3(TYPE1,TYPE2, OP_NAME, OP, IMM)   \
+TYPE1                                       \
+__attribute__ ((noipa))                     \
+f3_##OP_NAME##_##TYPE1##_##TYPE2 (TYPE2 a)  \
+{                                           \
+  TYPE2 b = a OP IMM;                       \
+  return b;                                 \
+}			
+
+/* lshrhi3_1_zext<mode> */
+F3 (short, uint8_t, shr, >>, 7)
+F3 (int, uint8_t, shr, >>, 6)
+F3 (int64_t, uint8_t, shr, >>, 7)
+F3 (int, uint16_t, shr, >>, 6)
+F3 (int64_t, uint16_t, shr, >>, 3)
+
+#define F4(TYPE1,TYPE2, OP_NAME, OP1, OP2, IMM1)                      \
+TYPE1                                                                 \
+__attribute__ ((noipa))                                               \
+foo4_##OP_NAME##_##TYPE1##_##TYPE2 (unsigned TYPE2 a)                 \
+{                                                                     \
+  unsigned TYPE2 b = (a OP1 IMM1 | a OP2 (8 * sizeof(TYPE2) - IMM1)); \
+  return b;                                                           \
+}
+
+/* rotrqi3_1_zext<mode> */
+F4 (short, char, ror, >>, <<, 1)
+F4 (int, char, ror, >>, <<, 1)
+F4 (long, char, ror, >>, <<, 1)
+F4 (int, short, ror, >>, <<, 1)
+F4 (long, short, ror, >>, <<, 1)
+
+/* rotlqi3_1_zext<mode> */
+F4 (short, char, rol, <<, >>, 1)
+F4 (int, char, rol, <<, >>, 1)
+F4 (long, char, rol, <<, >>, 1)
+F4 (int, short, rol, <<, >>, 1)
+F4 (long, short, rol, <<, >>, 1)
