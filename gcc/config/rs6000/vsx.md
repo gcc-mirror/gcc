@@ -5196,7 +5196,7 @@
 	(unspec:V2DI_DI
 	  [(match_operand:IEEE128 1 "altivec_register_operand" "v")]
 	 UNSPEC_VSX_SXEXPDP))]
-  "TARGET_P9_VECTOR"
+  "TARGET_FLOAT128_HW"
   "xsxexpqp %0,%1"
   [(set_attr "type" "vecmove")])
 
@@ -5215,7 +5215,7 @@
 	(unspec:VEC_TI [(match_operand:IEEE128 1
 			    "altivec_register_operand" "v")]
 	 UNSPEC_VSX_SXSIG))]
-  "TARGET_P9_VECTOR"
+  "TARGET_FLOAT128_HW"
   "xsxsigqp %0,%1"
   [(set_attr "type" "vecmove")])
 
@@ -5235,7 +5235,7 @@
 	 [(match_operand:IEEE128 1 "altivec_register_operand" "v")
 	  (match_operand:DI 2 "altivec_register_operand" "v")]
 	 UNSPEC_VSX_SIEXPQP))]
-  "TARGET_P9_VECTOR"
+  "TARGET_FLOAT128_HW"
   "xsiexpqp %0,%1,%2"
   [(set_attr "type" "vecmove")])
 
@@ -5247,7 +5247,7 @@
 			 (match_operand:V2DI_DI 2
 			  "altivec_register_operand" "v")]
 	 UNSPEC_VSX_SIEXPQP))]
-  "TARGET_P9_VECTOR"
+  "TARGET_FLOAT128_HW"
   "xsiexpqp %0,%1,%2"
   [(set_attr "type" "vecmove")])
 
@@ -5317,7 +5317,7 @@
    (set (match_operand:SI 0 "register_operand" "=r")
 	(CMP_TEST:SI (match_dup 3)
 		     (const_int 0)))]
-  "TARGET_P9_VECTOR"
+  "TARGET_FLOAT128_HW"
 {
   if (<CODE> == UNORDERED && !HONOR_NANS (<MODE>mode))
     {
@@ -5335,7 +5335,7 @@
 		          (match_operand:IEEE128 2 "altivec_register_operand" "v")]
 	  UNSPEC_VSX_SCMPEXPQP)
 	 (match_operand:SI 3 "zero_constant" "j")))]
-  "TARGET_P9_VECTOR"
+  "TARGET_FLOAT128_HW"
   "xscmpexpqp %0,%1,%2"
   [(set_attr "type" "fpcompare")])
 
@@ -5354,7 +5354,8 @@
    (set (match_operand:SI 0 "register_operand" "=r")
 	(eq:SI (match_dup 3)
 	       (const_int 0)))]
-  "TARGET_P9_VECTOR"
+  "TARGET_P9_VECTOR
+   && (!FLOAT128_IEEE_P (<MODE>mode) || TARGET_FLOAT128_HW)"
 {
   operands[3] = gen_reg_rtx (CCFPmode);
   operands[4] = CONST0_RTX (SImode);
@@ -5363,7 +5364,8 @@
 (define_expand "isinf<mode>2"
   [(use (match_operand:SI 0 "gpc_reg_operand"))
    (use (match_operand:IEEE_FP 1 "<fp_register_op>"))]
-  "TARGET_HARD_FLOAT && TARGET_P9_VECTOR"
+  "TARGET_P9_VECTOR
+   && (!FLOAT128_IEEE_P (<MODE>mode) || TARGET_FLOAT128_HW)"
 {
   int mask = VSX_TEST_DATA_CLASS_POS_INF | VSX_TEST_DATA_CLASS_NEG_INF;
   emit_insn (gen_xststdc_<mode> (operands[0], operands[1], GEN_INT (mask)));
@@ -5415,7 +5417,7 @@
    (set (match_operand:SI 0 "register_operand" "=r")
 	(lt:SI (match_dup 2)
 	       (const_int 0)))]
-  "TARGET_P9_VECTOR"
+  "TARGET_FLOAT128_HW"
 {
   operands[2] = gen_reg_rtx (CCFPmode);
 })
@@ -5446,7 +5448,8 @@
 	   (match_operand:SI 2 "u7bit_cint_operand" "n")]
 	  UNSPEC_VSX_STSTDC)
 	 (const_int 0)))]
-  "TARGET_P9_VECTOR"
+  "TARGET_P9_VECTOR
+   && (!FLOAT128_IEEE_P (<MODE>mode) || TARGET_FLOAT128_HW)"
   "xststdc<sdq>p %0,%<x>1,%2"
   [(set_attr "type" "fpcompare")])
 

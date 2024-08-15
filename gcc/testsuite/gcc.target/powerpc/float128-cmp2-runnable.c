@@ -1,6 +1,5 @@
 /* { dg-do run } */
-/* { dg-require-effective-target ppc_float128_sw } */
-/* { dg-require-effective-target p9vector_hw } */
+/* { dg-require-effective-target ppc_float128_hw } */
 /* { dg-options "-O2 -mdejagnu-cpu=power9 " } */
 
 #define NAN_Q __builtin_nanq ("")
