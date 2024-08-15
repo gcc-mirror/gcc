@@ -4618,7 +4618,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  if (parm_i->this_ptr || parm_i->lambda_cobj)
 	    {
 	      /* We pass a reference to *this to the allocator lookup.  */
-	      tree this_ref = cp_build_fold_indirect_ref (arg);
+	      /* It's unsafe to use the cp_ version here since current_class_ref
+		 might've gotten clobbered earlier during rewrite_param_uses.  */
+	      tree this_ref = build_fold_indirect_ref (arg);
 	      vec_safe_push (args, this_ref);
 	    }
 	  else
@@ -4838,7 +4840,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  if (parm.this_ptr || parm.lambda_cobj)
 	    {
 	      /* We pass a reference to *this to the param preview.  */
-	      tree this_ref = cp_build_fold_indirect_ref (arg);
+	      /* It's unsafe to use the cp_ version here since current_class_ref
+		 might've gotten clobbered earlier during rewrite_param_uses.  */
+	      tree this_ref = build_fold_indirect_ref (arg);
 	      vec_safe_push (promise_args, this_ref);
 	    }
 	  else if (parm.rv_ref)
