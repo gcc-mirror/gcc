@@ -1153,6 +1153,63 @@ private:
   bool m_is_pos;
 } op_cfn_goacc_dim_size (false), op_cfn_goacc_dim_pos (true);
 
+// Implement range operator for CFN_BUILT_IN_ISINF
+class cfn_isinf : public range_operator
+{
+public:
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  virtual bool fold_range (irange &r, tree type, const frange &op1,
+			   const irange &, relation_trio) const override
+  {
+    if (op1.undefined_p ())
+      return false;
+
+    if (op1.known_isinf ())
+      {
+	wide_int one = wi::one (TYPE_PRECISION (type));
+	r.set (type, one, one);
+	return true;
+      }
+
+    if (op1.known_isnan ()
+	|| (!real_isinf (&op1.lower_bound ())
+	    && !real_isinf (&op1.upper_bound ())))
+      {
+	r.set_zero (type);
+	return true;
+      }
+
+    r.set_varying (type);
+    return true;
+  }
+  virtual bool op1_range (frange &r, tree type, const irange &lhs,
+			  const frange &, relation_trio) const override
+  {
+    if (lhs.undefined_p ())
+      return false;
+
+    if (lhs.zero_p ())
+      {
+	nan_state nan (true);
+	r.set (type, real_min_representable (type),
+	       real_max_representable (type), nan);
+	return true;
+      }
+
+    if (!range_includes_zero_p (lhs))
+      {
+	// The range is [-INF,-INF][+INF,+INF], but it can't be represented.
+	// Set range to [-INF,+INF]
+	r.set_varying (type);
+	r.clear_nan ();
+	return true;
+      }
+
+    r.set_varying (type);
+    return true;
+  }
+} op_cfn_isinf;
 
 // Implement range operator for CFN_BUILT_IN_
 class cfn_parity : public range_operator
@@ -1244,6 +1301,11 @@ gimple_range_op_handler::maybe_builtin_call ()
     CASE_FLT_FN (CFN_BUILT_IN_SIGNBIT):
       m_op1 = gimple_call_arg (call, 0);
       m_operator = &op_cfn_signbit;
+      break;
+
+    CASE_FLT_FN (BUILT_IN_ISINF):
+      m_op1 = gimple_call_arg (call, 0);
+      m_operator = &op_cfn_isinf;
       break;
 
     CASE_CFN_COPYSIGN_ALL:
