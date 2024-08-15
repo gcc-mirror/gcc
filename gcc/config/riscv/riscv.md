@@ -68,6 +68,7 @@
   UNSPEC_FMAX
   UNSPEC_FMINM
   UNSPEC_FMAXM
+  UNSPEC_FCLASS
 
   ;; Stack tie
   UNSPEC_TIE
@@ -3477,6 +3478,68 @@
   [(set_attr "type" "fcmp")
    (set_attr "mode" "<UNITMODE>")
    (set (attr "length") (const_int 16))])
+
+;; fclass instruction output bitmap
+;;   0 negative infinity
+;;   1 negative normal number.
+;;   2 negative subnormal number.
+;;   3 -0
+;;   4 +0
+;;   5 positive subnormal number.
+;;   6 positive normal number.
+;;   7 positive infinity
+;;   8 signaling NaN.
+;;   9 quiet NaN
+
+(define_insn "fclass<ANYF:mode><X:mode>"
+  [(set (match_operand:X	     0 "register_operand" "=r")
+	(unspec [(match_operand:ANYF 1 "register_operand" " f")]
+		   UNSPEC_FCLASS))]
+  "TARGET_HARD_FLOAT"
+  "fclass.<fmt>\t%0,%1";
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "<UNITMODE>")])
+
+;; Implements optab for isfinite, isnormal, isinf
+
+(define_int_iterator FCLASS_MASK [126 66 129])
+(define_int_attr fclass_optab
+  [(126	"isfinite")
+   (66	"isnormal")
+   (129	"isinf")])
+
+(define_expand "<FCLASS_MASK:fclass_optab><ANYF:mode>2"
+  [(match_operand      0 "register_operand" "=r")
+   (match_operand:ANYF 1 "register_operand" " f")
+   (const_int FCLASS_MASK)]
+  "TARGET_HARD_FLOAT"
+{
+  if (GET_MODE (operands[0]) != SImode
+      && GET_MODE (operands[0]) != word_mode)
+    FAIL;
+
+  rtx t = gen_reg_rtx (word_mode);
+  rtx t_op0 = gen_reg_rtx (word_mode);
+
+  if (TARGET_64BIT)
+    emit_insn (gen_fclass<ANYF:mode>di (t, operands[1]));
+  else
+    emit_insn (gen_fclass<ANYF:mode>si (t, operands[1]));
+
+  riscv_emit_binary (AND, t, t, GEN_INT (<FCLASS_MASK>));
+  rtx cmp = gen_rtx_NE (word_mode, t, const0_rtx);
+  emit_insn (gen_cstore<mode>4 (t_op0, cmp, t, const0_rtx));
+
+  if (TARGET_64BIT)
+    {
+      t_op0 = gen_lowpart (SImode, t_op0);
+      SUBREG_PROMOTED_VAR_P (t_op0) = 1;
+      SUBREG_PROMOTED_SET (t_op0, SRP_SIGNED);
+    }
+
+  emit_move_insn (operands[0], t_op0);
+  DONE;
+})
 
 (define_insn "*seq_zero_<X:mode><GPR:mode>"
   [(set (match_operand:GPR       0 "register_operand" "=r")
