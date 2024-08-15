@@ -2575,8 +2575,26 @@ bool define_contract_wrapper_func(const tree& fndecl, const tree& wrapdecl, void
 
   vec<tree, va_gc> * args = build_arg_list (wrapdecl);
   tree return_type = TREE_TYPE (TREE_TYPE (fndecl));
+  tree *class_ptr = args->begin();
+  tree fn;
+  gcc_assert (class_ptr);
 
-  tree call = build_call_a (fndecl,
+  tree t;
+  tree binfo = lookup_base (TREE_TYPE (TREE_TYPE (*class_ptr)),
+			  DECL_CONTEXT (fndecl),
+			  ba_any, NULL, tf_warning_or_error);
+  gcc_assert (binfo && binfo != error_mark_node);
+
+  *class_ptr = build_base_path (PLUS_EXPR, *class_ptr, binfo, 1,
+				tf_warning_or_error);
+  if (TREE_SIDE_EFFECTS (*class_ptr))
+    *class_ptr = save_expr (*class_ptr);
+  t = build_pointer_type (TREE_TYPE (fndecl));
+  fn = build_vfn_ref (*class_ptr, DECL_VINDEX (fndecl));
+  TREE_TYPE (fn) = t;
+
+
+  tree call = build_call_a (fn,
 			    args->length (),
 			    args->address ());
 
