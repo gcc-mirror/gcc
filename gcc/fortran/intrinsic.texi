@@ -11928,15 +11928,15 @@ Subroutine
 and it is @code{INTENT(IN)}.  If it is @code{.true.}, the seed is set to
 a processor-dependent value that is the same each time @code{RANDOM_INIT}
 is called from the same image.  The term ``same image'' means a single
-instance of program execution.  The sequence of random numbers is different
-for repeated execution of the program.  If it is @code{.false.}, the seed
-is set to a processor-dependent value.
+instance of program execution.  The sequence of random numbers is the same
+for repeated execution of the program with the same execution environment.
+If it is @code{.false.}, the seed is set to a processor-dependent value.
 @item @var{IMAGE_DISTINCT} @tab Shall be a scalar with a
 @code{LOGICAL} type, and it is @code{INTENT(IN)}.  If it is @code{.true.},
-the seed is set to a processor-dependent value that is distinct from th
+the seed is set to a processor-dependent value that is distinct from the
 seed set by a call to @code{RANDOM_INIT} in another image.  If it is
-@code{.false.}, the seed is set to a value that does depend which image called
-@code{RANDOM_INIT}.
+@code{.false.}, the seed is set to a value that is the same on every image
+calling @code{RANDOM_INIT}.
 @end multitable
 
 @item @emph{Example}:
