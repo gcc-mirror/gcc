@@ -23,8 +23,10 @@ struct PromiseType {
 };
 
 struct Derived : Base {
+  int m = 41;
   Result f() {
-   co_return 42;
+   ++m;
+   co_return m;
   }
 };
 
