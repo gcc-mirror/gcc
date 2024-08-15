@@ -3023,6 +3023,9 @@ ix86_option_override_internal (bool main_args_p,
 	      if (TARGET_AVX512F_P (opts->x_ix86_isa_flags)
 		  && TARGET_EVEX512_P (opts->x_ix86_isa_flags2))
 		opts->x_ix86_move_max = PVW_AVX512;
+	      /* Align with vectorizer to avoid potential STLF issue.  */
+	      else if (TARGET_AVX_P (opts->x_ix86_isa_flags))
+		opts->x_ix86_move_max = PVW_AVX256;
 	      else
 		opts->x_ix86_move_max = PVW_AVX128;
 	    }
@@ -3047,6 +3050,9 @@ ix86_option_override_internal (bool main_args_p,
 	      if (TARGET_AVX512F_P (opts->x_ix86_isa_flags)
 		  && TARGET_EVEX512_P (opts->x_ix86_isa_flags2))
 		opts->x_ix86_store_max = PVW_AVX512;
+	      /* Align with vectorizer to avoid potential STLF issue.  */
+	      else if (TARGET_AVX_P (opts->x_ix86_isa_flags))
+		opts->x_ix86_store_max = PVW_AVX256;
 	      else
 		opts->x_ix86_store_max = PVW_AVX128;
 	    }
