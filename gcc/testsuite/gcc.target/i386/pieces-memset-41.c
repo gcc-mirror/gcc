@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mno-avx2 -mavx -mtune=sandybridge -mno-stackrealign" } */
+/* { dg-options "-O2 -mno-avx2 -mavx -mprefer-vector-width=128 -mtune=sandybridge -mno-stackrealign" } */
 /* Cope with --enable-frame-pointer.  */
 /* { dg-additional-options "-fomit-frame-pointer" } */
 
