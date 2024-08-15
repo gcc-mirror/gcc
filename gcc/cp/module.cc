@@ -7981,7 +7981,8 @@ trees_out::decl_value (tree decl, depset *dep)
 	      auto *entry = reinterpret_cast <spec_entry *> (dep->deps[0]);
 
 	      if (streaming_p ())
-		u (get_mergeable_specialization_flags (entry->tmpl, decl));
+		u (get_mergeable_specialization_flags (mk & MK_tmpl_decl_mask,
+						       entry->tmpl, decl));
 	      tree_node (entry->tmpl);
 	      tree_node (entry->args);
 	    }
