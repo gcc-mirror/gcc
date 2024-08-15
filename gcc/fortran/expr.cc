@@ -5803,6 +5803,10 @@ gfc_is_coindexed (gfc_expr *e)
 {
   gfc_ref *ref;
 
+  if (e->expr_type == EXPR_FUNCTION && e->value.function.isym
+      && e->value.function.isym->id == GFC_ISYM_CAF_GET)
+    e = e->value.function.actual->expr;
+
   for (ref = e->ref; ref; ref = ref->next)
     if (ref->type == REF_ARRAY && ref->u.ar.codimen > 0)
       return !gfc_ref_this_image (ref);

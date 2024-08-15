@@ -2200,16 +2200,12 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 		  else
 		    stmp = gfc_class_data_get (ctmp);
 
-		  /* Coarray scalar component expressions can emerge from
-		     the front end as array elements of the _data field.  */
-		  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (stmp)))
-		    stmp = gfc_conv_descriptor_data_get (stmp);
-
-		  if (!POINTER_TYPE_P (TREE_TYPE (stmp)))
+		  if (!CLASS_DATA (sym)->attr.codimension
+		      && !POINTER_TYPE_P (TREE_TYPE (stmp)))
 		    stmp = gfc_build_addr_expr (NULL, stmp);
 
 		  dtmp = gfc_class_data_get (ctree);
-		  stmp = fold_convert (TREE_TYPE (dtmp), stmp);
+		  stmp = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (dtmp), stmp);
 		  gfc_add_modify (&se.pre, dtmp, stmp);
 		  stmp = gfc_class_vptr_get (ctmp);
 		  dtmp = gfc_class_vptr_get (ctree);
