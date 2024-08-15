@@ -31,4 +31,7 @@
 
 #include "version.h"
 
-char gnat_version_string[] = version_string;
+/* Logically a reference to Gnatvsn.Ver_Len_Max.  Please keep in sync.  */
+#define VER_LEN_MAX 256
+
+char gnat_version_string[VER_LEN_MAX] = version_string;
