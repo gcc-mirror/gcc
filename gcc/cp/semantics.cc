@@ -2497,9 +2497,14 @@ check_accessibility_of_qualified_id (tree decl,
 	 OBJECT_TYPE.  */
       && CLASS_TYPE_P (object_type)
       && DERIVED_FROM_P (scope, object_type))
-    /* If we are processing a `->' or `.' expression, use the type of the
-       left-hand side.  */
-    qualifying_type = object_type;
+    {
+      /* If we are processing a `->' or `.' expression, use the type of the
+	 left-hand side.  */
+      if (tree open = currently_open_class (object_type))
+	qualifying_type = open;
+      else
+	qualifying_type = object_type;
+    }
   else if (nested_name_specifier)
     {
       /* If the reference is to a non-static member of the
