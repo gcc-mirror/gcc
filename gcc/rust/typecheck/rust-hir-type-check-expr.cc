@@ -85,7 +85,9 @@ TypeCheckExpr::visit (HIR::TupleIndexExpr &expr)
       TupleIndex index = expr.get_tuple_index ();
       if ((size_t) index >= tuple->num_fields ())
 	{
-	  rust_error_at (expr.get_locus (), "unknown field at index %i", index);
+	  rust_error_at (expr.get_locus (), ErrorCode::E0609,
+			 "no field %qi on type %qs", index,
+			 resolved->get_name ().c_str ());
 	  return;
 	}
 
@@ -1078,7 +1080,8 @@ TypeCheckExpr::visit (HIR::FieldAccessExpr &expr)
 				     &lookup, nullptr);
   if (!found)
     {
-      rust_error_at (expr.get_locus (), "unknown field [%s] for type [%s]",
+      rust_error_at (expr.get_locus (), ErrorCode::E0609,
+		     "no field %qs on type %qs",
 		     expr.get_field_name ().as_string ().c_str (),
 		     adt->as_string ().c_str ());
       return;
