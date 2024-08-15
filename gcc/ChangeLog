@@ -1,3 +1,16 @@
+2024-08-14  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2024-08-14  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390-builtin-types.def (BT_FN_UV16QI_UV2DI_UV2DI):
+	New.
+	(BT_FN_UV16QI_UV2DI_UV2DI_UV16QI): New.
+	* config/s390/s390-builtins.def (s390_vgfmg_128): New.
+	(s390_vgfmag_128): New.
+	* config/s390/vecintrin.h (vec_gfmsum_128): Use s390_vgfmg_128.
+	(vec_gfmsum_accum_128): Use s390_vgfmag_128.
+
 2024-08-13  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config.gcc (powerpc*-*-*): Add support for power11.
