@@ -121,6 +121,7 @@ public:
   insn_propagation (rtx_insn *, rtx, rtx, bool = true);
   bool apply_to_pattern (rtx *);
   bool apply_to_rvalue (rtx *);
+  bool apply_to_note (rtx *);
 
   /* Return true if we should accept a substitution into the address of
      memory expression MEM.  Undoing changes OLD_NUM_CHANGES and up restores

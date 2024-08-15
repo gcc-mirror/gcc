@@ -1469,6 +1469,19 @@ insn_propagation::apply_to_rvalue (rtx *loc)
   return res;
 }
 
+/* Like apply_to_rvalue, but specifically for the case where *LOC is in
+   a note.  This never changes the INSN_CODE.  */
+
+bool
+insn_propagation::apply_to_note (rtx *loc)
+{
+  auto old_code = INSN_CODE (insn);
+  bool res = apply_to_rvalue (loc);
+  if (INSN_CODE (insn) != old_code)
+    INSN_CODE (insn) = old_code;
+  return res;
+}
+
 /* Check whether INSN matches a specific alternative of an .md pattern.  */
 
 bool
