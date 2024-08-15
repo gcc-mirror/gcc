@@ -1267,6 +1267,61 @@ public:
   }
 } op_cfn_isfinite;
 
+//Implement range operator for CFN_BUILT_IN_ISNORMAL
+class cfn_isnormal :  public range_operator
+{
+public:
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  virtual bool fold_range (irange &r, tree type, const frange &op1,
+			   const irange &, relation_trio) const override
+  {
+    if (op1.undefined_p ())
+      return false;
+
+    if (op1.known_isnormal ())
+      {
+	wide_int one = wi::one (TYPE_PRECISION (type));
+	r.set (type, one, one);
+	return true;
+      }
+
+    if (op1.known_isnan ()
+	|| op1.known_isinf ()
+	|| op1.known_isdenormal_or_zero ())
+      {
+	r.set_zero (type);
+	return true;
+      }
+
+    r.set_varying (type);
+    return true;
+  }
+  virtual bool op1_range (frange &r, tree type, const irange &lhs,
+			  const frange &, relation_trio) const override
+  {
+    if (lhs.undefined_p ())
+      return false;
+
+    if (lhs.zero_p ())
+      {
+	r.set_varying (type);
+	return true;
+      }
+
+    if (!range_includes_zero_p (lhs))
+      {
+	nan_state nan (false);
+	r.set (type, real_min_representable (type),
+	       real_max_representable (type), nan);
+	return true;
+      }
+
+    r.set_varying (type);
+    return true;
+  }
+} op_cfn_isnormal;
+
 // Implement range operator for CFN_BUILT_IN_
 class cfn_parity : public range_operator
 {
@@ -1367,6 +1422,11 @@ gimple_range_op_handler::maybe_builtin_call ()
     case CFN_BUILT_IN_ISFINITE:
       m_op1 = gimple_call_arg (call, 0);
       m_operator = &op_cfn_isfinite;
+      break;
+
+    case CFN_BUILT_IN_ISNORMAL:
+      m_op1 = gimple_call_arg (call, 0);
+      m_operator = &op_cfn_isnormal;
       break;
 
     CASE_CFN_COPYSIGN_ALL:

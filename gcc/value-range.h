@@ -588,6 +588,8 @@ public:
   bool maybe_isinf () const;
   bool signbit_p (bool &signbit) const;
   bool nan_signbit_p (bool &signbit) const;
+  bool known_isnormal () const;
+  bool known_isdenormal_or_zero () const;
 
 protected:
   virtual bool contains_p (tree cst) const override;
@@ -1646,6 +1648,33 @@ frange::known_isfinite () const
   if (undefined_p () || varying_p () || m_kind == VR_ANTI_RANGE)
     return false;
   return (!maybe_isnan () && !real_isinf (&m_min) && !real_isinf (&m_max));
+}
+
+// Return TRUE if range is known to be normal.
+
+inline bool
+frange::known_isnormal () const
+{
+  if (!known_isfinite ())
+    return false;
+
+  machine_mode mode = TYPE_MODE (type ());
+  return (!real_isdenormal (&m_min, mode) && !real_isdenormal (&m_max, mode)
+	  && !real_iszero (&m_min) && !real_iszero (&m_max)
+	  && (!real_isneg (&m_min) || real_isneg (&m_max)));
+}
+
+// Return TRUE if range is known to be denormal.
+
+inline bool
+frange::known_isdenormal_or_zero () const
+{
+  if (!known_isfinite ())
+    return false;
+
+  machine_mode mode = TYPE_MODE (type ());
+  return ((real_isdenormal (&m_min, mode) || real_iszero (&m_min))
+	  && (real_isdenormal (&m_max, mode) || real_iszero (&m_max)));
 }
 
 // Return TRUE if range may be infinite.
