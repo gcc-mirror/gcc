@@ -810,6 +810,16 @@ gfc_conv_derived_to_class (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym,
   /* Now set the data field.  */
   ctree = gfc_class_data_get (var);
 
+  if (flag_coarray == GFC_FCOARRAY_LIB && CLASS_DATA (fsym)->attr.codimension)
+    {
+      tree token;
+      tmp = gfc_get_tree_for_caf_expr (e);
+      if (POINTER_TYPE_P (TREE_TYPE (tmp)))
+	tmp = build_fold_indirect_ref (tmp);
+      gfc_get_caf_token_offset (parmse, &token, nullptr, tmp, NULL_TREE, e);
+      gfc_add_modify (&parmse->pre, gfc_conv_descriptor_token (ctree), token);
+    }
+
   if (optional)
     cond_optional = gfc_conv_expr_present (e->symtree->n.sym);
 
@@ -2344,6 +2354,10 @@ gfc_get_tree_for_caf_expr (gfc_expr *expr)
 
   if (expr->symtree->n.sym->ts.type == BT_CLASS)
     {
+      if (DECL_P (caf_decl) && DECL_LANG_SPECIFIC (caf_decl)
+	  && GFC_DECL_SAVED_DESCRIPTOR (caf_decl))
+	caf_decl = GFC_DECL_SAVED_DESCRIPTOR (caf_decl);
+
       if (expr->ref && expr->ref->type == REF_ARRAY)
 	{
 	  caf_decl = gfc_class_data_get (caf_decl);
@@ -2408,16 +2422,12 @@ gfc_get_caf_token_offset (gfc_se *se, tree *token, tree *offset, tree caf_decl,
 {
   tree tmp;
 
+  gcc_assert (flag_coarray == GFC_FCOARRAY_LIB);
+
   /* Coarray token.  */
   if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (caf_decl)))
-    {
-      gcc_assert (GFC_TYPE_ARRAY_AKIND (TREE_TYPE (caf_decl))
-		    == GFC_ARRAY_ALLOCATABLE
-		  || expr->symtree->n.sym->attr.select_type_temporary
-		  || expr->symtree->n.sym->assoc);
       *token = gfc_conv_descriptor_token (caf_decl);
-    }
-  else if (DECL_LANG_SPECIFIC (caf_decl)
+  else if (DECL_P (caf_decl) && DECL_LANG_SPECIFIC (caf_decl)
 	   && GFC_DECL_TOKEN (caf_decl) != NULL_TREE)
     *token = GFC_DECL_TOKEN (caf_decl);
   else
@@ -2435,7 +2445,7 @@ gfc_get_caf_token_offset (gfc_se *se, tree *token, tree *offset, tree caf_decl,
       && (GFC_TYPE_ARRAY_AKIND (TREE_TYPE (caf_decl)) == GFC_ARRAY_ALLOCATABLE
 	  || GFC_TYPE_ARRAY_AKIND (TREE_TYPE (caf_decl)) == GFC_ARRAY_POINTER))
     *offset = build_int_cst (gfc_array_index_type, 0);
-  else if (DECL_LANG_SPECIFIC (caf_decl)
+  else if (DECL_P (caf_decl) && DECL_LANG_SPECIFIC (caf_decl)
 	   && GFC_DECL_CAF_OFFSET (caf_decl) != NULL_TREE)
     *offset = GFC_DECL_CAF_OFFSET (caf_decl);
   else if (GFC_TYPE_ARRAY_CAF_OFFSET (TREE_TYPE (caf_decl)) != NULL_TREE)
@@ -2502,11 +2512,13 @@ gfc_get_caf_token_offset (gfc_se *se, tree *token, tree *offset, tree caf_decl,
     }
   else if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (caf_decl)))
     tmp = gfc_conv_descriptor_data_get (caf_decl);
+  else if (INDIRECT_REF_P (caf_decl))
+    tmp = TREE_OPERAND (caf_decl, 0);
   else
-   {
-     gcc_assert (POINTER_TYPE_P (TREE_TYPE (caf_decl)));
-     tmp = caf_decl;
-   }
+    {
+      gcc_assert (POINTER_TYPE_P (TREE_TYPE (caf_decl)));
+      tmp = caf_decl;
+    }
 
   *offset = fold_build2_loc (input_location, MINUS_EXPR, gfc_array_index_type,
 			    fold_convert (gfc_array_index_type, *offset),
