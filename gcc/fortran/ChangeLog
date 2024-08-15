@@ -1,3 +1,21 @@
+2024-08-14  Harald Anlauf  <anlauf@gmx.de>
+
+	* simplify.cc (gfc_simplify_sizeof): Clear used gmp variable.
+	* target-memory.cc (gfc_target_expr_size): Likewise.
+
+2024-08-14  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/102973
+	* match.cc (gfc_match_associate): Reset proc_ptr parsing flag on
+	error.
+
+2024-08-14  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/116292
+	* trans-intrinsic.cc (conv_intrinsic_move_alloc): Get the vtab
+	only for derived types and classes and adjust _len for class
+	types.
+
 2024-08-13  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 

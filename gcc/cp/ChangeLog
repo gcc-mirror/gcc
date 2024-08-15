@@ -1,3 +1,9 @@
+2024-08-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116015
+	* call.cc (convert_for_arg_passing): Don't set_target_expr_eliding
+	when the TARGET_EXPR initializer is a CONSTRUCTOR.
+
 2024-08-10  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/116276

@@ -1,3 +1,52 @@
+2024-08-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116015
+	* g++.dg/cpp1y/nsdmi-aggr23.C: New test.
+
+2024-08-14  Lingling Kong  <lingling.kong@intel.com>
+
+	* gcc.target/i386/pr113729.c: Add testcase for shift and rotate.
+
+2024-08-14  Lingling Kong  <lingling.kong@intel.com>
+
+	* gcc.target/i386/pr113729.c: Add more tests.
+
+2024-08-14  Lingling Kong  <lingling.kong@intel.com>
+
+	* gcc.target/i386/pr113729.c: Add more test.
+	* gcc.target/i386/pr113729-adc-sbb.c: New test.
+
+2024-08-14  Lingling Kong  <lingling.kong@intel.com>
+
+	* gcc.target/i386/pr113729.c: New test.
+
+2024-08-14  Mark Wielaard  <mark@klomp.org>
+
+	* gcc.target/riscv/rvv/base/pr116202-run-1.c (dg-do run):
+	Add target riscv_v.
+
+2024-08-14  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/move_alloc_19.f90: New test.
+
+2024-08-14  Jeff Law  <jlaw@ventanamicro.com>
+
+	Revert:
+	2024-08-14  Jeff Law  <jlaw@ventanamicro.com>
+
+	* g++.target/m68k/m68k.exp: New test driver.
+	* g++.target/m68k/pr116244.C: New test.
+
+2024-08-14  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/116148
+	* c-c++-common/fam-in-union-alone-in-struct-2.c: Change the type of
+	member a[] of union with_fam_3 with unsigned char.
+
+2024-08-14  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr116174.c: New test.
+
 2024-08-13  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	PR testsuite/116155

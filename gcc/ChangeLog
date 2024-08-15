@@ -1,3 +1,120 @@
+2024-08-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116015
+	* gimplify.cc (gimplify_arg): Do not strip a TARGET_EXPR whose
+	initializer is a CONSTRUCTOR.
+
+2024-08-14  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/vecintrin.h (vec_vstbrh): Remove.
+	(vec_vstbrf): Remove.
+	(vec_vstbrg): Remove.
+	(vec_vstbrq): Remove.
+	(vec_vstbrf_flt): Remove.
+	(vec_vstbrg_dbl): Remove.
+	(vec_vsterb): Remove.
+	(vec_vsterh): Remove.
+	(vec_vsterf): Remove.
+	(vec_vsterg): Remove.
+	(vec_vsterf_flt): Remove.
+	(vec_vsterg_dbl): Remove.
+
+2024-08-14  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390-builtin-types.def (BT_FN_UV16QI_UV2DI_UV2DI):
+	New.
+	(BT_FN_UV16QI_UV2DI_UV2DI_UV16QI): New.
+	* config/s390/s390-builtins.def (s390_vgfmg_128): New.
+	(s390_vgfmag_128): New.
+	* config/s390/vecintrin.h (vec_gfmsum_128): Use s390_vgfmg_128.
+	(vec_gfmsum_accum_128): Use s390_vgfmag_128.
+
+2024-08-14  Lingling Kong  <lingling.kong@intel.com>
+
+	PR target/113729
+	* config/i386/i386.md (*ashlqi3_1_zext<mode><nf_name>):
+	New define_insn.
+	(*ashlhi3_1_zext<mode><nf_name>): Ditto.
+	(*<insn>qi3_1_zext<mode><nf_name>): Ditto.
+	(*<insn>hi3_1_zext<mode><nf_name>): Ditto.
+
+2024-08-14  Lingling Kong  <lingling.kong@intel.com>
+
+	PR target/113729
+	* config/i386/i386.md (*andqi_1_zext<mode><nf_name>): New
+	define_insn.
+	(*andhi_1_zext<mode><nf_name>): Ditto.
+	(*<code>qi_1_zext<mode><nf_name>): Ditto.
+	(*<code>hi_1_zext<mode><nf_name>): Ditto.
+	(*negqi_1_zext<mode><nf_name>): Ditto.
+	(*neghi_1_zext<mode><nf_name>): Ditto.
+	(*one_cmplqi2_1_zext<mode>): Ditto.
+	(*one_cmplhi2_1_zext<mode>): Ditto.
+
+2024-08-14  Lingling Kong  <lingling.kong@intel.com>
+
+	PR target/113729
+	* config/i386/i386.md (*subqi_1_zext<mode><nf_name>): New
+	define_insn.
+	(*subhi_1_zext<mode><nf_name>): Ditto.
+	(*addqi3_carry_zext<mode>): Ditto.
+	(*addhi3_carry_zext<mode>): Ditto.
+	(*addqi3_carry_zext<mode>_0): Ditto.
+	(*addhi3_carry_zext<mode>_0): Ditto.
+	(*addqi3_carry_zext<mode>_0r): Ditto.
+	(*addhi3_carry_zext<mode>_0r): Ditto.
+	(*subqi3_carry_zext<mode>): Ditto.
+	(*subhi3_carry_zext<mode>): Ditto.
+	(*subqi3_carry_zext<mode>_0): Ditto.
+	(*subhi3_carry_zext<mode>_0): Ditto.
+	(*subqi3_carry_zext<mode>_0r): Ditto.
+	(*subhi3_carry_zext<mode>_0r): Ditto.
+
+2024-08-14  Lingling Kong  <lingling.kong@intel.com>
+
+	PR target/113729
+	* config/i386/i386.md (*addqi_1_zext<mode><nf_name>): New
+	define.
+	(*addhi_1_zext<mode><nf_name>): Ditto.
+
+2024-08-14  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* genoutput.cc (struct operand_data): Add member 'eq_next' to
+	point to the next member with the same hash value in the
+	hash table.
+	(compare_operands): Move the comparison of the mode to the very
+	beginning to accelerate the comparison of the two operands.
+	(struct operand_data_hasher): New, a class that takes into account
+	the necessary elements for comparing the equality of two operands
+	in its hash value.
+	(operand_data_hasher::hash): New.
+	(operand_data_hasher::equal): New.
+	(operand_datas): New, hash table of konwn pattern operands.
+	(place_operands): Use a hash table instead of traversing the array
+	to find the same operand.
+	(main): Add initialization of the hash table 'operand_datas'.
+
+2024-08-14  Jeff Law  <jlaw@ventanamicro.com>
+
+	Revert:
+	2024-08-12  Jeff Law  <jlaw@ventanamicro.com>
+
+	* rtlanal.cc (subreg_regno): Update comment.
+	* final.cc (alter_subrg): Always use REGNO (SUBREG_REG ()) to get
+	the base regsiter for paradoxical subregs.
+
+2024-08-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/116174
+	* config/i386/i386.cc (ix86_align_loops): Move this to ..
+	* config/i386/i386-features.cc (ix86_align_loops): .. here.
+	(class pass_align_tight_loops): New class.
+	(make_pass_align_tight_loops): New function.
+	* config/i386/i386-passes.def: Insert pass_align_tight_loops
+	after pass_insert_endbr_and_patchable_area.
+	* config/i386/i386-protos.h (make_pass_align_tight_loops): New
+	declare.
+
 2024-08-13  Manolis Tsamis  <manolis.tsamis@vrull.eu>
 
 	PR tree-optimization/116353
