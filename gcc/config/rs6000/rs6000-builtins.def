@@ -2554,11 +2554,11 @@
 
   const signed int \
       __builtin_vsx_scalar_test_data_class_dp (double, const int<7>);
-    VSTDCDP xststdcdp {}
+    VSTDCDP xststdc_df {}
 
   const signed int \
       __builtin_vsx_scalar_test_data_class_sp (float, const int<7>);
-    VSTDCSP xststdcsp {}
+    VSTDCSP xststdc_sf {}
 
   const signed int __builtin_vsx_scalar_test_neg_dp (double);
     VSTDCNDP xststdcnegdp {}
@@ -2727,7 +2727,7 @@
 
   const signed int __builtin_vsx_scalar_test_data_class_qp (_Float128, \
                                                             const int<7>);
-    VSTDCQP xststdcqp_kf {}
+    VSTDCQP xststdc_kf {}
 
   const signed int __builtin_vsx_scalar_test_neg_qp (_Float128);
     VSTDCNQP xststdcnegqp_kf {}

@@ -5339,36 +5339,15 @@
   "xscmpexpqp %0,%1,%2"
   [(set_attr "type" "fpcompare")])
 
-;; VSX Scalar Test Data Class Quad-Precision
-;;  (Expansion for scalar_test_data_class (__ieee128, int))
-;;   (Has side effect of setting the lt bit if operand 1 is negative,
-;;    setting the eq bit if any of the conditions tested by operand 2
-;;    are satisfied, and clearing the gt and undordered bits to zero.)
-(define_expand "xststdcqp_<mode>"
-  [(set (match_dup 3)
-	(compare:CCFP
-	 (unspec:IEEE128
-	  [(match_operand:IEEE128 1 "altivec_register_operand" "v")
-	   (match_operand:SI 2 "u7bit_cint_operand" "n")]
-	  UNSPEC_VSX_STSTDC)
-	 (const_int 0)))
-   (set (match_operand:SI 0 "register_operand" "=r")
-	(eq:SI (match_dup 3)
-	       (const_int 0)))]
-  "TARGET_P9_VECTOR"
-{
-  operands[3] = gen_reg_rtx (CCFPmode);
-})
-
-;; VSX Scalar Test Data Class Double- and Single-Precision
+;; VSX Scalar Test Data Class Quad-/Double-/Single-Precision
 ;;  (The lt bit is set if operand 1 is negative.  The eq bit is set
 ;;   if any of the conditions tested by operand 2 are satisfied.
 ;;   The gt and unordered bits are cleared to zero.)
-(define_expand "xststdc<sd>p"
+(define_expand "xststdc_<mode>"
   [(set (match_dup 3)
 	(compare:CCFP
-	 (unspec:SFDF
-	  [(match_operand:SFDF 1 "vsx_register_operand" "wa")
+	 (unspec:IEEE_FP
+	  [(match_operand:IEEE_FP 1 "<fp_register_op>" "<wa_v>")
 	   (match_operand:SI 2 "u7bit_cint_operand" "n")]
 	  UNSPEC_VSX_STSTDC)
 	 (match_dup 4)))
@@ -5379,6 +5358,16 @@
 {
   operands[3] = gen_reg_rtx (CCFPmode);
   operands[4] = CONST0_RTX (SImode);
+})
+
+(define_expand "isinf<mode>2"
+  [(use (match_operand:SI 0 "gpc_reg_operand"))
+   (use (match_operand:IEEE_FP 1 "<fp_register_op>"))]
+  "TARGET_HARD_FLOAT && TARGET_P9_VECTOR"
+{
+  int mask = VSX_TEST_DATA_CLASS_POS_INF | VSX_TEST_DATA_CLASS_NEG_INF;
+  emit_insn (gen_xststdc_<mode> (operands[0], operands[1], GEN_INT (mask)));
+  DONE;
 })
 
 ;; The VSX Scalar Test Negative Quad-Precision
@@ -5416,27 +5405,16 @@
   operands[3] = CONST0_RTX (SImode);
 })
 
-(define_insn "*xststdcqp_<mode>"
+(define_insn "*xststdc_<mode>"
   [(set (match_operand:CCFP 0 "" "=y")
 	(compare:CCFP
-	 (unspec:IEEE128
-	  [(match_operand:IEEE128 1 "altivec_register_operand" "v")
+	 (unspec:IEEE_FP
+	  [(match_operand:IEEE_FP 1 "<fp_register_op>" "<wa_v>")
 	   (match_operand:SI 2 "u7bit_cint_operand" "n")]
 	  UNSPEC_VSX_STSTDC)
 	 (const_int 0)))]
   "TARGET_P9_VECTOR"
-  "xststdcqp %0,%1,%2"
-  [(set_attr "type" "fpcompare")])
-
-(define_insn "*xststdc<sd>p"
-  [(set (match_operand:CCFP 0 "" "=y")
-	(compare:CCFP
-	 (unspec:SFDF [(match_operand:SFDF 1 "vsx_register_operand" "wa")
-		       (match_operand:SI 2 "u7bit_cint_operand" "n")]
-	  UNSPEC_VSX_STSTDC)
-	 (match_operand:SI 3 "zero_constant" "j")))]
-  "TARGET_P9_VECTOR"
-  "xststdc<sd>p %0,%x1,%2"
+  "xststdc<sdq>p %0,%<x>1,%2"
   [(set_attr "type" "fpcompare")])
 
 ;; VSX Vector Extract Exponent Double and Single Precision
