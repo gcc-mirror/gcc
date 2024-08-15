@@ -4646,7 +4646,7 @@ resolve_operator (gfc_expr *e)
 	}
       else
 	{
-	  gfc_error ("Inconsistent coranks for operator at %%L and %%L",
+	  gfc_error ("Inconsistent coranks for operator at %L and %L",
 		     &op1->where, &op2->where);
 	  return false;
 	}
