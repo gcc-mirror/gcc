@@ -20220,6 +20220,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case IMPLICIT_CONV_EXPR:
       {
 	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	if (type == error_mark_node)
+	  RETURN (error_mark_node);
 	tree expr = RECUR (TREE_OPERAND (t, 0));
 	if (dependent_type_p (type) || type_dependent_expression_p (expr))
 	  {
