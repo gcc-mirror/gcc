@@ -5262,7 +5262,9 @@ package body Exp_Ch6 is
       --  function call is transformed into a reference to the result that has
       --  been built either on the primary or the secondary stack.
 
-      if Needs_Finalization (Etype (Subp)) then
+      if Nkind (Call_Node) = N_Function_Call
+        and then Needs_Finalization (Etype (Call_Node))
+      then
          if not Is_Build_In_Place_Function_Call (Call_Node)
            and then
              (No (First_Formal (Subp))
@@ -5270,7 +5272,7 @@ package body Exp_Ch6 is
                  not Is_Concurrent_Record_Type (Etype (First_Formal (Subp))))
          then
             Expand_Ctrl_Function_Call
-              (Call_Node, Needs_Secondary_Stack (Etype (Subp)));
+              (Call_Node, Needs_Secondary_Stack (Etype (Call_Node)));
 
          --  Build-in-place function calls which appear in anonymous contexts
          --  need a transient scope to ensure the proper finalization of the
@@ -5292,7 +5294,7 @@ package body Exp_Ch6 is
                  Is_Build_In_Place_Function_Call (Parent (Call_Node)))
          then
             Establish_Transient_Scope
-              (Call_Node, Needs_Secondary_Stack (Etype (Subp)));
+              (Call_Node, Needs_Secondary_Stack (Etype (Call_Node)));
          end if;
       end if;
    end Expand_Call_Helper;
