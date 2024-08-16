@@ -7851,6 +7851,9 @@ usual_deallocation_fn_p (tree fn)
    SIZE is the size of the memory block to be deleted.
    GLOBAL_P is true if the delete-expression should not consider
    class-specific delete operators.
+   CORO_P is true if the allocation is for a coroutine, where the two argument
+   usual deallocation should be chosen in preference to the single argument
+   version in a class context.
    PLACEMENT is the corresponding placement new call, or NULL_TREE.
 
    If this call to "operator delete" is being generated as part to
@@ -7859,10 +7862,10 @@ usual_deallocation_fn_p (tree fn)
    we call a deallocation function), then ALLOC_FN is the allocation
    function.  */
 
-tree
-build_op_delete_call (enum tree_code code, tree addr, tree size,
-		      bool global_p, tree placement,
-		      tree alloc_fn, tsubst_flags_t complain)
+static tree
+build_op_delete_call_1 (enum tree_code code, tree addr, tree size,
+			bool global_p, bool coro_p, tree placement,
+			tree alloc_fn, tsubst_flags_t complain)
 {
   tree fn = NULL_TREE;
   tree fns, fnname, type, t;
@@ -8041,7 +8044,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	    /* -- If the deallocation functions have class scope, the one
 	       without a parameter of type std::size_t is selected.  */
 	    bool want_size;
-	    if (DECL_CLASS_SCOPE_P (fn))
+	    if (DECL_CLASS_SCOPE_P (fn) && !coro_p)
 	      want_size = false;
 
 	    /* -- If the type is complete and if, for the second alternative
@@ -8177,6 +8180,27 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
     error ("no suitable %<operator %s%> for %qT",
 	   OVL_OP_INFO (false, code)->name, type);
   return error_mark_node;
+}
+
+/* Arguments as per build_op_delete_call_1 ().  */
+
+tree
+build_op_delete_call (enum tree_code code, tree addr, tree size, bool global_p,
+		      tree placement, tree alloc_fn, tsubst_flags_t complain)
+{
+  return build_op_delete_call_1 (code, addr, size, global_p, /*coro_p*/false,
+				 placement, alloc_fn, complain);
+}
+
+/* Arguments as per build_op_delete_call_1 ().  */
+
+tree
+build_coroutine_op_delete_call (enum tree_code code, tree addr, tree size,
+				bool global_p, tree placement, tree alloc_fn,
+				tsubst_flags_t complain)
+{
+  return build_op_delete_call_1 (code, addr, size, global_p, /*coro_p*/true,
+				 placement, alloc_fn, complain);
 }
 
 /* Issue diagnostics about a disallowed access of DECL, using DIAG_DECL

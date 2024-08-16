@@ -2202,55 +2202,7 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
    argument.  */
 
 static tree
-coro_get_frame_dtor (tree coro_fp, tree orig, tree frame_size,
-		     tree promise_type, location_t loc)
-{
-  tree del_coro_fr = NULL_TREE;
-  tree frame_arg = build1 (CONVERT_EXPR, ptr_type_node, coro_fp);
-  tree delname = ovl_op_identifier (false, DELETE_EXPR);
-  tree fns = lookup_promise_method (orig, delname, loc,
-					/*musthave=*/false);
-  if (fns && BASELINK_P (fns))
-    {
-      /* Look for sized version first, since this takes precedence.  */
-      vec<tree, va_gc> *args = make_tree_vector ();
-      vec_safe_push (args, frame_arg);
-      vec_safe_push (args, frame_size);
-      tree dummy_promise = build_dummy_object (promise_type);
-
-      /* It's OK to fail for this one... */
-      del_coro_fr = build_new_method_call (dummy_promise, fns, &args,
-					   NULL_TREE, LOOKUP_NORMAL, NULL,
-					   tf_none);
-
-      if (!del_coro_fr || del_coro_fr == error_mark_node)
-	{
-	  release_tree_vector (args);
-	  args = make_tree_vector_single (frame_arg);
-	  del_coro_fr = build_new_method_call (dummy_promise, fns, &args,
-					       NULL_TREE, LOOKUP_NORMAL, NULL,
-					       tf_none);
-	}
-
-      /* But one of them must succeed, or the program is ill-formed.  */
-      if (!del_coro_fr || del_coro_fr == error_mark_node)
-	{
-	  error_at (loc, "%qE is provided by %qT but is not usable with"
-		  " the function signature %qD", delname, promise_type, orig);
-	  del_coro_fr = error_mark_node;
-	}
-    }
-  else
-    {
-      del_coro_fr = build_op_delete_call (DELETE_EXPR, frame_arg, frame_size,
-					  /*global_p=*/true, /*placement=*/NULL,
-					  /*alloc_fn=*/NULL,
-					  tf_warning_or_error);
-      if (!del_coro_fr || del_coro_fr == error_mark_node)
-	del_coro_fr = error_mark_node;
-    }
-  return del_coro_fr;
-}
+build_coroutine_frame_delete_expr (tree, tree, tree, location_t);
 
 /* The actor transform.  */
 
@@ -2484,8 +2436,9 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
     }
 
   /* Build the frame DTOR.  */
-  tree del_coro_fr = coro_get_frame_dtor (actor_fp, orig, frame_size,
-					  promise_type, loc);
+  tree del_coro_fr
+    = build_coroutine_frame_delete_expr (actor_fp, frame_size,
+					 promise_type, loc);
   finish_expr_stmt (del_coro_fr);
   finish_then_clause (need_free_if);
   tree scope = IF_SCOPE (need_free_if);
@@ -4466,134 +4419,24 @@ split_coroutine_body_from_ramp (tree fndecl)
   return body;
 }
 
-/* Build the ramp function.
-   Here we take the original function definition which has now had its body
-   removed, and use it as the declaration of the ramp which both replaces the
-   user's written function at call sites, and is responsible for starting
-   the coroutine it defined.
-   returns NULL_TREE on error or an expression for the frame size.
+/* Build the expression to allocate the coroutine frame according to the
+   rules of [dcl.fct.def.coroutine] / 9.  */
 
-   We should arrive here with the state of the compiler as if we had just
-   executed start_preparsed_function().  */
-
-void
-cp_coroutine_transform::complete_ramp_function ()
+static tree
+build_coroutine_frame_alloc_expr (tree promise_type, tree orig_fn_decl,
+				  location_t fn_start, tree grooaf,
+				  hash_map<tree, param_info> *param_uses,
+				  tree frame_size)
 {
-  gcc_checking_assert (current_binding_level
-		       && current_binding_level->kind == sk_function_parms);
-
-  /* Avoid the code here attaching a location that makes the debugger jump.  */
-  location_t loc = fn_start;
-
-  tree promise_type = get_coroutine_promise_type (orig_fn_decl);
-  tree fn_return_type = TREE_TYPE (TREE_TYPE (orig_fn_decl));
-
-  /* Ramp: */
-  tree ramp_fnbody = begin_function_body ();
-  /* Now build the ramp function pieces.  */
-  tree ramp_bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
-  add_stmt (ramp_bind);
-  tree ramp_outer_bind = push_stmt_list ();
-
-  tree zeroinit = build1_loc (loc, CONVERT_EXPR,
-			      frame_ptr_type, nullptr_node);
-  tree coro_fp = coro_build_artificial_var (loc, "_Coro_frameptr",
-					    frame_ptr_type, orig_fn_decl,
-					    zeroinit);
-  tree varlist = coro_fp;
-
-  /* To signal that we need to cleanup copied function args.  */
-  if (flag_exceptions && DECL_ARGUMENTS (orig_fn_decl))
-    for (tree arg = DECL_ARGUMENTS (orig_fn_decl); arg != NULL;
-	arg = DECL_CHAIN (arg))
-      {
-	param_info *parm_i = param_uses.get (arg);
-	gcc_checking_assert (parm_i);
-	if (parm_i->trivial_dtor)
-	  continue;
-	DECL_CHAIN (parm_i->guard_var) = varlist;
-	varlist = parm_i->guard_var;
-      }
-
-  /* Signal that we need to clean up the promise object on exception.  */
-  tree coro_promise_live
-    = coro_build_artificial_var (loc, "_Coro_promise_live",
-				 boolean_type_node, orig_fn_decl, boolean_false_node);
-  DECL_CHAIN (coro_promise_live) = varlist;
-  varlist = coro_promise_live;
-
-  /* When the get-return-object is in the RETURN slot, we need to arrange for
-     cleanup on exception.  */
-  tree coro_gro_live
-    = coro_build_artificial_var (loc, "_Coro_gro_live",
-				 boolean_type_node, orig_fn_decl, boolean_false_node);
-
-  DECL_CHAIN (coro_gro_live) = varlist;
-  varlist = coro_gro_live;
-
-  /* Collected the scope vars we need ... only one for now. */
-  BIND_EXPR_VARS (ramp_bind) = nreverse (varlist);
-
-  /* We're now going to create a new top level scope block for the ramp
-     function.  */
-  tree top_block = make_node (BLOCK);
-
-  BIND_EXPR_BLOCK (ramp_bind) = top_block;
-  BLOCK_VARS (top_block) = BIND_EXPR_VARS (ramp_bind);
-  BLOCK_SUBBLOCKS (top_block) = NULL_TREE;
-  current_binding_level->blocks = top_block;
-
-  /* The decl_expr for the coro frame pointer, initialize to zero so that we
-     can pass it to the IFN_CO_FRAME (since there's no way to pass a type,
-     directly apparently).  This avoids a "used uninitialized" warning.  */
-
-  add_decl_expr (coro_fp);
-  if (flag_exceptions && DECL_ARGUMENTS (orig_fn_decl))
-    for (tree arg = DECL_ARGUMENTS (orig_fn_decl); arg != NULL;
-	arg = DECL_CHAIN (arg))
-      {
-	param_info *parm_i = param_uses.get (arg);
-	if (parm_i->trivial_dtor)
-	  continue;
-	add_decl_expr (parm_i->guard_var);
-      }
-  add_decl_expr (coro_promise_live);
-  add_decl_expr (coro_gro_live);
-
-  /* The CO_FRAME internal function is a mechanism to allow the middle end
-     to adjust the allocation in response to optimizations.  We provide the
-     current conservative estimate of the frame size (as per the current)
-     computed layout.  */
-  frame_size = TYPE_SIZE_UNIT (frame_type);
-  tree resizeable
-    = build_call_expr_internal_loc (loc, IFN_CO_FRAME, size_type_node, 2,
-				    frame_size, coro_fp);
-
-  /* [dcl.fct.def.coroutine] / 10 (part1)
-    The unqualified-id get_return_object_on_allocation_failure is looked up
-    in the scope of the promise type by class member access lookup.  */
-
-  /* We don't require this, so coro_build_promise_expression can return NULL,
-     but, if the lookup succeeds, then the function must be usable.  */
-  tree dummy_promise = build_dummy_object (get_coroutine_promise_type (orig_fn_decl));
-  tree grooaf
-    = coro_build_promise_expression (orig_fn_decl, dummy_promise,
-				     coro_gro_on_allocation_fail_identifier,
-				     loc, NULL, /*musthave=*/false);
-
-  /* however, should that fail, returning an error, the later stages can't
-     handle the erroneous expression, so we reset the call as if it was
-     absent.  */
-  if (grooaf == error_mark_node)
-    grooaf = NULL_TREE;
-
   /* Allocate the frame, this has several possibilities:
      [dcl.fct.def.coroutine] / 9 (part 1)
      The allocation function’s name is looked up in the scope of the promise
-     type.  It's not a failure for it to be absent see part 4, below.  */
+     type.  It is not a failure for it to be absent see part 4, below.  */
 
   tree nwname = ovl_op_identifier (false, NEW_EXPR);
-  tree new_fn = NULL_TREE;
+  tree new_fn_call = NULL_TREE;
+  tree dummy_promise
+    = build_dummy_object (get_coroutine_promise_type (orig_fn_decl));
 
   if (TYPE_HAS_NEW_OPERATOR (promise_type))
     {
@@ -4606,12 +4449,12 @@ cp_coroutine_transform::complete_ramp_function ()
 	requested, and has type std::size_t.  The lvalues p1...pn are the
 	succeeding arguments..  */
       vec<tree, va_gc> *args = make_tree_vector ();
-      vec_safe_push (args, resizeable); /* Space needed.  */
+      vec_safe_push (args, frame_size); /* Space needed.  */
 
       for (tree arg = DECL_ARGUMENTS (orig_fn_decl); arg != NULL;
 	   arg = DECL_CHAIN (arg))
 	{
-	  param_info *parm_i = param_uses.get (arg);
+	  param_info *parm_i = param_uses->get (arg);
 	  gcc_checking_assert (parm_i);
 	  if (parm_i->this_ptr || parm_i->lambda_cobj)
 	    {
@@ -4628,18 +4471,18 @@ cp_coroutine_transform::complete_ramp_function ()
       /* Note the function selected; we test to see if it's NOTHROW.  */
       tree func;
       /* Failure is not an error for this attempt.  */
-      new_fn = build_new_method_call (dummy_promise, fns, &args, NULL,
+      new_fn_call = build_new_method_call (dummy_promise, fns, &args, NULL,
 				      LOOKUP_NORMAL, &func, tf_none);
       release_tree_vector (args);
 
-      if (new_fn == error_mark_node)
+      if (new_fn_call == error_mark_node)
 	{
 	  /* [dcl.fct.def.coroutine] / 9 (part 3)
 	    If no viable function is found, overload resolution is performed
 	    again on a function call created by passing just the amount of
 	    space required as an argument of type std::size_t.  */
-	  args = make_tree_vector_single (resizeable); /* Space needed.  */
-	  new_fn = build_new_method_call (dummy_promise, fns, &args,
+	  args = make_tree_vector_single (frame_size); /* Space needed.  */
+	  new_fn_call = build_new_method_call (dummy_promise, fns, &args,
 					  NULL_TREE, LOOKUP_NORMAL, &func,
 					  tf_none);
 	  release_tree_vector (args);
@@ -4647,21 +4490,18 @@ cp_coroutine_transform::complete_ramp_function ()
 
      /* However, if the promise provides an operator new, then one of these
 	two options must be available.  */
-    if (new_fn == error_mark_node)
+    if (new_fn_call == error_mark_node)
       {
 	error_at (fn_start, "%qE is provided by %qT but is not usable with"
 		  " the function signature %qD", nwname, promise_type,
 		  orig_fn_decl);
-	new_fn = error_mark_node;
-	valid_coroutine = false;
-	return;
+	return error_mark_node;
       }
     else if (grooaf && !TYPE_NOTHROW_P (TREE_TYPE (func)))
       {
 	error_at (fn_start, "%qE is provided by %qT but %qE is not marked"
 		" %<throw()%> or %<noexcept%>", grooaf, promise_type, nwname);
-	valid_coroutine = false;
-	return;
+	return error_mark_node;
       }
     else if (!grooaf && TYPE_NOTHROW_P (TREE_TYPE (func)))
       warning_at (fn_start, 0, "%qE is marked %<throw()%> or %<noexcept%> but"
@@ -4693,31 +4533,219 @@ cp_coroutine_transform::complete_ramp_function ()
 					       LOOK_want::NORMAL,
 					       /*complain=*/true);
 	  if (!std_nt || std_nt == error_mark_node)
-	    error_at (fn_start, "%qE is provided by %qT but %<std::nothrow%> "
-		      "cannot be found", grooaf, promise_type);
+	    {
+	      /* Something is seriously wrong, punt.  */
+	      error_at (fn_start, "%qE is provided by %qT but %<std::nothrow%>"
+			" cannot be found", grooaf, promise_type);
+	      return error_mark_node;
+	    }
 	  vec_safe_push (args, std_nt);
 	}
 
       /* If we get to this point, we must succeed in looking up the global
-	 operator new for the params provided.  Extract a simplified version
-	 of the machinery from build_operator_new_call.  This can update the
-	 frame size.  */
+	 operator new for the params provided.  Since we are not setting
+	 size_check or cookie, we expect frame_size to be unaltered.  */
       tree cookie = NULL;
-      new_fn = build_operator_new_call (nwname, &args, &frame_size, &cookie,
-					/*align_arg=*/NULL,
-					/*size_check=*/NULL, /*fn=*/NULL,
-					tf_warning_or_error);
-      resizeable = build_call_expr_internal_loc
-	(loc, IFN_CO_FRAME, size_type_node, 2, frame_size, coro_fp);
-      /* If the operator call fails for some reason, then don't try to
-	 amend it.  */
-      if (new_fn != error_mark_node)
-	CALL_EXPR_ARG (new_fn, 0) = resizeable;
-
+      new_fn_call = build_operator_new_call (nwname, &args, &frame_size,
+					     &cookie, /*align_arg=*/NULL,
+					     /*size_check=*/NULL, /*fn=*/NULL,
+					     tf_warning_or_error);
       release_tree_vector (args);
     }
+  return new_fn_call;
+}
 
-  tree allocated = build1 (CONVERT_EXPR, frame_ptr_type, new_fn);
+/* Build an expression to delete the coroutine state frame.  */
+
+static tree
+build_coroutine_frame_delete_expr (tree coro_fp, tree frame_size,
+				   tree promise_type, location_t loc)
+{
+  /* Cast the frame pointer to a pointer to promise so that the build op
+     delete call will search the promise.  */
+  tree pptr_type = build_pointer_type (promise_type);
+  tree frame_arg = build1_loc (loc, CONVERT_EXPR, pptr_type, coro_fp);
+  /* [dcl.fct.def.coroutine] / 12 sentence 3:
+     If both a usual deallocation function with only a pointer parameter and
+     a usual deallocation function with both a pointer parameter and a size
+     parameter are found, then the selected deallocation function shall be the
+     one with two parameters.  */
+  tree del_coro_fr
+    = build_coroutine_op_delete_call (DELETE_EXPR, frame_arg, frame_size,
+				      /*global_p=*/false,  /*placement=*/NULL,
+				      /*alloc_fn=*/NULL, tf_warning_or_error);
+  if (!del_coro_fr || del_coro_fr == error_mark_node)
+    return error_mark_node;
+  return del_coro_fr;
+}
+
+/* Build the ramp function.
+   Here we take the original function definition which has now had its body
+   removed, and use it as the declaration of the ramp which both replaces the
+   user's written function at call sites, and is responsible for starting
+   the coroutine it defined.
+   returns NULL_TREE on error or an expression for the frame size.
+
+   We should arrive here with the state of the compiler as if we had just
+   executed start_preparsed_function().  */
+
+bool
+cp_coroutine_transform::build_ramp_function ()
+{
+  gcc_checking_assert (current_binding_level
+		       && current_binding_level->kind == sk_function_parms);
+
+  /* This is completely synthetic code, if we find an issue then we have not
+     much chance to point at the most useful place in the user's code.  In
+     lieu of this use the function start - so at least the diagnostic relates
+     to something that the user can inspect.  */
+  iloc_sentinel saved_position (fn_start);
+  location_t loc = fn_start;
+
+  tree promise_type = get_coroutine_promise_type (orig_fn_decl);
+  tree fn_return_type = TREE_TYPE (TREE_TYPE (orig_fn_decl));
+
+  /* [dcl.fct.def.coroutine] / 10 (part1)
+    The unqualified-id get_return_object_on_allocation_failure is looked up
+    in the scope of the promise type by class member access lookup.  */
+
+  /* We don't require this,  but, if the lookup succeeds, then the function
+     must be usable, punt if it is not.  */
+  tree grooaf_meth
+    = lookup_promise_method (orig_fn_decl,
+			     coro_gro_on_allocation_fail_identifier, loc,
+			     /*musthave*/ false);
+  tree grooaf = NULL_TREE;
+  tree dummy_promise
+    = build_dummy_object (get_coroutine_promise_type (orig_fn_decl));
+  if (grooaf_meth && grooaf_meth != error_mark_node)
+    {
+      grooaf
+	= coro_build_promise_expression (orig_fn_decl, dummy_promise,
+					 coro_gro_on_allocation_fail_identifier,
+					 fn_start, NULL, /*musthave=*/false);
+
+      /* That should succeed.  */
+      if (!grooaf || grooaf == error_mark_node)
+	{
+	  error_at (fn_start, "%qE is provided by %qT but is not usable with"
+		    " the function %qD", coro_gro_on_allocation_fail_identifier,
+		    promise_type, orig_fn_decl);
+	  return false;
+	}
+    }
+
+  /* Check early for usable allocator/deallocator, without which we cannot
+     build a useful ramp; early exit if they are not available or usable.  */
+
+  frame_size = TYPE_SIZE_UNIT (frame_type);
+
+  /* Make a var to represent the frame pointer early.  Initialize to zero so
+     that we can pass it to the IFN_CO_FRAME (to give that access to the frame
+     type).  */
+  tree coro_fp = coro_build_artificial_var (loc, "_Coro_frameptr",
+					    frame_ptr_type, orig_fn_decl,
+					    NULL_TREE);
+
+  tree new_fn_call
+    = build_coroutine_frame_alloc_expr (promise_type, orig_fn_decl, fn_start,
+					grooaf, &param_uses, frame_size);
+
+  /* We must have a useable allocator to proceed.  */
+  if (!new_fn_call || new_fn_call == error_mark_node)
+    return false;
+
+  /* Likewise, we need the DTOR to delete the frame.  */
+  tree delete_frame_call
+    = build_coroutine_frame_delete_expr (coro_fp, frame_size, promise_type,
+					 fn_start);
+  if (!delete_frame_call || delete_frame_call == error_mark_node)
+    return false;
+
+  /* At least verify we can lookup the get return object method.  */
+  tree get_ro_meth
+    = lookup_promise_method (orig_fn_decl,
+			     coro_get_return_object_identifier, loc,
+			     /*musthave*/ true);
+  if (!get_ro_meth || get_ro_meth == error_mark_node)
+    return false;
+
+  /* So now construct the Ramp: */
+
+  tree ramp_fnbody = begin_function_body ();
+  /* Now build the ramp function pieces.  */
+  tree ramp_bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
+  add_stmt (ramp_bind);
+  tree ramp_outer_bind = push_stmt_list ();
+  tree varlist = coro_fp;
+
+  /* To signal that we need to cleanup copied function args.  */
+  if (flag_exceptions && DECL_ARGUMENTS (orig_fn_decl))
+    for (tree arg = DECL_ARGUMENTS (orig_fn_decl); arg != NULL;
+	arg = DECL_CHAIN (arg))
+      {
+	param_info *parm_i = param_uses.get (arg);
+	gcc_checking_assert (parm_i);
+	if (parm_i->trivial_dtor)
+	  continue;
+	DECL_CHAIN (parm_i->guard_var) = varlist;
+	varlist = parm_i->guard_var;
+      }
+
+  /* Signal that we need to clean up the promise object on exception.  */
+  tree coro_promise_live
+    = coro_build_artificial_var (loc, "_Coro_promise_live", boolean_type_node,
+				 orig_fn_decl, boolean_false_node);
+  DECL_CHAIN (coro_promise_live) = varlist;
+  varlist = coro_promise_live;
+
+  /* When the get-return-object is in the RETURN slot, we need to arrange for
+     cleanup on exception.  */
+  tree coro_gro_live
+    = coro_build_artificial_var (loc, "_Coro_gro_live", boolean_type_node,
+				 orig_fn_decl, boolean_false_node);
+
+  DECL_CHAIN (coro_gro_live) = varlist;
+  varlist = coro_gro_live;
+
+  /* Collected the scope vars we need ... only one for now. */
+  BIND_EXPR_VARS (ramp_bind) = nreverse (varlist);
+
+  /* We're now going to create a new top level scope block for the ramp
+     function.  */
+  tree top_block = make_node (BLOCK);
+
+  BIND_EXPR_BLOCK (ramp_bind) = top_block;
+  BLOCK_VARS (top_block) = BIND_EXPR_VARS (ramp_bind);
+  BLOCK_SUBBLOCKS (top_block) = NULL_TREE;
+  current_binding_level->blocks = top_block;
+
+  add_decl_expr (coro_fp);
+  if (flag_exceptions && DECL_ARGUMENTS (orig_fn_decl))
+    for (tree arg = DECL_ARGUMENTS (orig_fn_decl); arg != NULL;
+	arg = DECL_CHAIN (arg))
+      {
+	param_info *parm_i = param_uses.get (arg);
+	if (parm_i->trivial_dtor)
+	  continue;
+	add_decl_expr (parm_i->guard_var);
+      }
+  add_decl_expr (coro_promise_live);
+  add_decl_expr (coro_gro_live);
+
+  /* Build the frame.  */
+
+  /* The CO_FRAME internal function is a mechanism to allow the middle end
+     to adjust the allocation in response to optimizations.  We provide the
+     current conservative estimate of the frame size (as per the current)
+     computed layout.  */
+
+  tree resizeable
+    = build_call_expr_internal_loc (loc, IFN_CO_FRAME, size_type_node, 2,
+				    frame_size,
+				    build_zero_cst (frame_ptr_type));
+  CALL_EXPR_ARG (new_fn_call, 0) = resizeable;
+  tree allocated = build1 (CONVERT_EXPR, frame_ptr_type, new_fn_call);
   tree r = cp_build_init_expr (coro_fp, allocated);
   finish_expr_stmt (r);
 
@@ -4943,8 +4971,7 @@ cp_coroutine_transform::complete_ramp_function ()
       BIND_EXPR_BODY (ramp_bind) = pop_stmt_list (ramp_outer_bind);
       /* Suppress warnings about the missing return value.  */
       suppress_warning (orig_fn_decl, OPT_Wreturn_type);
-      valid_coroutine = false;
-      return;
+      return false;
     }
 
   tree gro_context_body = push_stmt_list ();
@@ -5029,9 +5056,6 @@ cp_coroutine_transform::complete_ramp_function ()
   r = build_call_expr_loc (fn_start, resumer, 1, coro_fp);
   finish_expr_stmt (r);
 
-  /* Switch to using 'input_location' as the loc, since we're now more
-     logically doing things related to the end of the function.  */
-
   /* The ramp is done, we just need the return value.
      [dcl.fct.def.coroutine] / 7
      The expression promise.get_return_object() is used to initialize the
@@ -5061,11 +5085,9 @@ cp_coroutine_transform::complete_ramp_function ()
   else
     {
       /* We can't initialize a non-class return value from void.  */
-      error_at (input_location, "cannot initialize a return object of type"
+      error_at (fn_start, "cannot initialize a return object of type"
 		" %qT with an rvalue of type %<void%>", fn_return_type);
-      r = error_mark_node;
-      valid_coroutine = false;
-      return;
+      return false;
     }
 
   finish_return_stmt (r);
@@ -5145,12 +5167,7 @@ cp_coroutine_transform::complete_ramp_function ()
 	}
 
       /* We always expect to delete the frame.  */
-      tree del_coro_fr = coro_get_frame_dtor (coro_fp, orig_fn_decl, frame_size,
-					      promise_type, loc);
-      if (!del_coro_fr || del_coro_fr == error_mark_node)
-	valid_coroutine = false; /* Do not add this.  */
-      else
-	finish_expr_stmt (del_coro_fr);
+      finish_expr_stmt (delete_frame_call);
       tree rethrow = build_throw (loc, NULL_TREE, tf_warning_or_error);
       suppress_warning (rethrow);
       finish_expr_stmt (rethrow);
@@ -5160,6 +5177,7 @@ cp_coroutine_transform::complete_ramp_function ()
 
   BIND_EXPR_BODY (ramp_bind) = pop_stmt_list (ramp_outer_bind);
   finish_function_body (ramp_fnbody);
+  return true;
 }
 
 /* ------- Encapsulate analysis of the couroutine -------- */
@@ -5297,7 +5315,7 @@ cp_coroutine_transform::apply_transforms ()
   BINFO_TYPE (TYPE_BINFO (frame_type)) = frame_type;
   frame_type = finish_struct (frame_type, NULL_TREE);
 
-  complete_ramp_function ();
+  valid_coroutine = build_ramp_function ();
 }
 
 /* Having analysed and collected the necessary data we are now in a position

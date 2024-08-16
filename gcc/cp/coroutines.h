@@ -128,5 +128,5 @@ private:
   bool valid_coroutine = false;
 
   void wrap_original_function_body ();
-  void complete_ramp_function ();
+  bool build_ramp_function ();
 };

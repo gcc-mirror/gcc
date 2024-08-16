@@ -33,11 +33,11 @@ struct std::coroutine_traits<R, HandleRef, T...> {
 };
 
 int
-my_coro (std::coroutine_handle<>& h)
+my_coro (std::coroutine_handle<>& h) // { dg-error {cannot convert 'Thing' to 'int' in return} }
 {
   PRINT ("coro1: about to return");
   co_return;
-} // { dg-error {cannot convert 'Thing' to 'int' in return} }
+}
 
 int main ()
 {
