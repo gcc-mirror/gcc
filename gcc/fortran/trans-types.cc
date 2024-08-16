@@ -2386,7 +2386,7 @@ gfc_sym_type (gfc_symbol * sym, bool is_bind_c)
 	  else if (sym->attr.allocatable)
 	    akind = GFC_ARRAY_ALLOCATABLE;
 	  type = gfc_build_array_type (type, sym->as, akind, restricted,
-				       sym->attr.contiguous, false);
+				       sym->attr.contiguous, sym->as->corank);
 	}
     }
   else
@@ -2909,12 +2909,16 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
 	      else
 		akind = GFC_ARRAY_ALLOCATABLE;
 	      /* Pointers to arrays aren't actually pointer types.  The
-	         descriptors are separate, but the data is common.  */
-	      field_type = gfc_build_array_type (field_type, c->as, akind,
-						 !c->attr.target
-						 && !c->attr.pointer,
-						 c->attr.contiguous,
-						 codimen);
+		 descriptors are separate, but the data is common.  Every
+		 array pointer in a coarray derived type needs to provide space
+		 for the coarray management, too.  Therefore treat coarrays
+		 and pointers to coarrays in derived types the same.  */
+	      field_type = gfc_build_array_type
+		(
+		  field_type, c->as, akind, !c->attr.target && !c->attr.pointer,
+		  c->attr.contiguous,
+		  c->attr.codimension || c->attr.pointer ? codimen : 0
+		);
 	    }
 	  else
 	    field_type = gfc_get_nodesc_array_type (field_type, c->as,

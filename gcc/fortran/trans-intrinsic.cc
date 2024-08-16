@@ -12906,7 +12906,7 @@ conv_intrinsic_move_alloc (gfc_code *code)
       gfc_add_expr_to_block (&block, tmp);
     }
 
-  /* Move the pointer and update the array descriptor data.  */
+  /* Copy the array descriptor data.  */
   gfc_add_modify_loc (input_location, &block, to_se.expr, from_se.expr);
 
   /* Set "from" to NULL.  */
