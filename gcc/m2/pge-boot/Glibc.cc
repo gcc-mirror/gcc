@@ -224,14 +224,9 @@ libc_creat (char *p, mode_t mode)
 
 EXTERN
 int
-libc_open (void *p, int oflag, ...)
+libc_open (void *p, int oflag, int mode)
 {
-  va_list arg;
-  va_start (arg, oflag);
-  mode_t mode = va_arg (arg, mode_t);
-  int result = open (reinterpret_cast <char *> (p), oflag, mode);
-  va_end (arg);
-  return result;
+  return open (reinterpret_cast <char *> (p), oflag, mode);
 }
 
 EXTERN

@@ -67,7 +67,7 @@ tracedb (const char *format, ...)
 
 static
 void
-tracedb_open (const void *p, int flags, mode_t mode)
+tracedb_open (const void *p, int flags, int mode)
 {
 #if defined(BUILD_MC_LIBC_TRACE)
   bool item_written = false;
@@ -343,15 +343,11 @@ libc_creat (char *p, mode_t mode)
 
 EXTERN
 int
-libc_open (void *p, int oflag, ...)
+libc_open (void *p, int oflag, int mode)
 {
-  va_list arg;
-  va_start (arg, oflag);
-  mode_t mode = va_arg (arg, mode_t);
   tracedb_open (p, oflag, mode);
   int result = open (reinterpret_cast <char *> (p), oflag, mode);
   tracedb_result (result);
-  va_end (arg);
   return result;
 }
 

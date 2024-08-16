@@ -503,7 +503,7 @@ BEGIN
       THEN
          fd := libc.open(ADR("/dev/tty"), O_WRONLY, 0600B)
       ELSE
-         fd := libc.open(ADR("/dev/tty"), O_RDONLY)
+         fd := libc.open(ADR("/dev/tty"), O_RDONLY, 0)
       END ;
       IF tcgetattr(fd, new)=0
       THEN

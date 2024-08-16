@@ -26,6 +26,6 @@ CONST
 VAR
    fd: INTEGER ;
 BEGIN
-   fd := libc.open(ADR("/dev/tty"), O_RDONLY) ;
+   fd := libc.open(ADR("/dev/tty"), O_RDONLY, 0) ;
    libc.printf("fd = %d\n", fd)
 END openlibc.
