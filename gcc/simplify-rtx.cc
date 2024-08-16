@@ -7612,6 +7612,11 @@ simplify_context::simplify_subreg (machine_mode outermode, rtx op,
       poly_uint64 innermostsize = GET_MODE_SIZE (innermostmode);
       rtx newx;
 
+      /* Make sure that the relationship between the two subregs is
+	 known at compile time.  */
+      if (!ordered_p (outersize, innermostsize))
+	return NULL_RTX;
+
       if (outermode == innermostmode
 	  && known_eq (byte, 0U)
 	  && known_eq (SUBREG_BYTE (op), 0))
