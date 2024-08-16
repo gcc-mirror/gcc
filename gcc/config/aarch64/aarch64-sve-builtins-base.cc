@@ -1185,7 +1185,9 @@ public:
     if (BYTES_BIG_ENDIAN)
       return e.use_exact_insn (code_for_aarch64_sve_set_neonq (mode));
     insn_code icode = code_for_vcond_mask (mode, mode);
-    e.args[1] = lowpart_subreg (mode, e.args[1], GET_MODE (e.args[1]));
+    e.args[1] = force_subreg (mode, e.args[1], GET_MODE (e.args[1]),
+			      subreg_lowpart_offset (mode,
+						     GET_MODE (e.args[1])));
     e.add_output_operand (icode);
     e.add_input_operand (icode, e.args[1]);
     e.add_input_operand (icode, e.args[0]);
