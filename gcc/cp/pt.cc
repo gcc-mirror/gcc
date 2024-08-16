@@ -7361,10 +7361,11 @@ create_template_parm_object (tree expr, tsubst_flags_t complain)
 static GTY(()) hash_map<tree, tree> *tparm_obj_values;
 
 /* Find or build an nttp object for (already-validated) EXPR with name
-   NAME.  */
+   NAME.  When CHECK_INIT is false we don't need to process the initialiser,
+   it's already been done.  */
 
 tree
-get_template_parm_object (tree expr, tree name)
+get_template_parm_object (tree expr, tree name, bool check_init/*=true*/)
 {
   tree decl = get_global_binding (name);
   if (decl)
@@ -7385,9 +7386,18 @@ get_template_parm_object (tree expr, tree name)
     {
       /* If EXPR contains any PTRMEM_CST, they will get clobbered by
 	 lower_var_init before we're done mangling.  So store the original
-	 value elsewhere.  */
-      tree copy = unshare_constructor (expr);
+	 value elsewhere.  We only need to unshare EXPR if it's not yet
+	 been processed.  */
+      tree copy = check_init ? unshare_constructor (expr) : expr;
       hash_map_safe_put<hm_ggc> (tparm_obj_values, decl, copy);
+    }
+
+  if (!check_init)
+    {
+      /* The EXPR is the already processed initializer, set it on the NTTP
+	 object now so that cp_finish_decl doesn't do it again later.  */
+      DECL_INITIAL (decl) = expr;
+      DECL_INITIALIZED_P (decl) = 1;
     }
 
   pushdecl_top_level_and_finish (decl, expr);

@@ -7626,7 +7626,8 @@ enum { nt_opaque = false, nt_transparent = true };
 extern tree alias_template_specialization_p     (const_tree, bool);
 extern tree dependent_alias_template_spec_p     (const_tree, bool);
 extern bool dependent_opaque_alias_p            (const_tree);
-extern tree get_template_parm_object		(tree expr, tree mangle);
+extern tree get_template_parm_object		(tree expr, tree mangle,
+						 bool check_init = true);
 extern tree tparm_object_argument		(tree);
 extern bool explicit_class_specialization_p     (tree);
 extern bool push_tinst_level                    (tree);

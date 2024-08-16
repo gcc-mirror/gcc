@@ -9938,7 +9938,11 @@ trees_in::tree_node (bool is_use)
 	tree name = tree_node ();
 	if (!get_overrun ())
 	  {
-	    res = get_template_parm_object (init, name);
+	    /* We don't want to check the initializer as that may require
+	       name lookup, which could recursively start lazy loading.
+	       Instead we know that INIT is already valid so we can just
+	       apply that directly.  */
+	    res = get_template_parm_object (init, name, /*check_init=*/false);
 	    int tag = insert (res);
 	    dump (dumper::TREE)
 	      && dump ("Created nttp object:%d %N", tag, name);
