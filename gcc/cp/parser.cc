@@ -28259,7 +28259,11 @@ cp_parser_member_declaration (cp_parser* parser)
       if (!decl_specifiers.any_specifiers_p)
 	{
 	  cp_token *token = cp_lexer_peek_token (parser->lexer);
-	  maybe_warn_extra_semi (token->location, extra_semi_kind::member);
+	  if (decl_spec_token_start == token)
+	    maybe_warn_extra_semi (token->location, extra_semi_kind::member);
+	  else
+	    pedwarn (decl_spec_token_start->location, OPT_Wpedantic,
+		     "declaration does not declare anything");
 	}
       else
 	{
