@@ -8980,6 +8980,7 @@ package body Sem_Ch8 is
       while Present (Item) loop
          if Nkind (Item) = N_With_Clause
            and then Private_Present (Item)
+           and then Is_Entity_Name (Name (Item))
            and then Entity (Name (Item)) = E
          then
             return True;
