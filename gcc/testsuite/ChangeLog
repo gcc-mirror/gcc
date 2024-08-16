@@ -1,3 +1,32 @@
+2024-08-15  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-08-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116327
+	PR c++/104981
+	PR c++/115550
+	* g++.dg/coroutines/pr104981-preview-this.C: Improve coverage by
+	adding a non-static data member use within the coroutine member
+	function.
+	* g++.dg/coroutines/pr116327-preview-this.C: New test.
+
+2024-08-15  Craig Blackmore  <craig.blackmore@embecosm.com>
+
+	Backported from master:
+	2024-06-23  Craig Blackmore  <craig.blackmore@embecosm.com>
+
+	* gcc.target/riscv/mcpu-6.c: Skip for -O0, -O1, -Og.
+	* gcc.target/riscv/mcpu-7.c: Likewise.
+
+2024-08-15  Pan Li  <pan2.li@intel.com>
+
+	Backported from master:
+	2024-05-09  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/full-vec-move1.c:
+	Introduce extern func use to get rid of ccp4 optimization.
+
 2024-08-13  Michael Meissner  <meissner@linux.ibm.com>
 
 	* gcc.target/powerpc/power11-1.c: New test.

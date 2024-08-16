@@ -1,3 +1,14 @@
+2024-08-15  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-08-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116327
+	PR c++/104981
+	PR c++/115550
+	* coroutines.cc (morph_fn_to_coro): Use build_fold_indirect_ref
+	instead of cp_build_fold_indirect_ref.
+
 2024-08-06  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:
