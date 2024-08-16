@@ -5378,6 +5378,19 @@
     }
 })
 
+(define_expand "popcountti2"
+  [(match_operand:DI 0 "register_operand")
+   (match_operand:TI 1 "register_operand")]
+  "TARGET_SIMD && !TARGET_CSSC"
+{
+  rtx v = gen_reg_rtx (V16QImode);
+  rtx v1 = gen_reg_rtx (V16QImode);
+  emit_move_insn (v, gen_lowpart (V16QImode, operands[1]));
+  emit_insn (gen_popcountv16qi2 (v1, v));
+  emit_insn (gen_aarch64_zero_extenddi_reduc_plus_v16qi (operands[0], v1));
+  DONE;
+})
+
 (define_insn "clrsb<mode>2"
   [(set (match_operand:GPI 0 "register_operand" "=r")
         (clrsb:GPI (match_operand:GPI 1 "register_operand" "r")))]
