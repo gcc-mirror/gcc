@@ -1421,6 +1421,7 @@ ifeq ($(strip $(filter-out arm% aarch64 linux-android%,$(target_cpu) $(target_os
   s-taprop.adb<libgnarl/s-taprop__posix.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp__posix-foreign.adb \
+  a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
   system.ads<libgnat/system-linux-arm.ads
