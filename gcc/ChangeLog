@@ -1,3 +1,140 @@
+2024-08-16  Andrew Pinski  <pinskia@gmail.com>
+
+	* tree-ssa-phiopt.cc (factor_out_conditional_operation): Update
+	comment.
+
+2024-08-15  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/riscv.md: define_insn for fclass insn.
+	define_expand for isfinite, isnormal, isinf.
+
+2024-08-15  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*extendv2di2_highpart_stv_noavx512vl): Split
+	to an improved implementation on !TARGET_XOP.  On TARGET_XOP, use
+	a new pseudo for the intermediate to simplify register allocation.
+
+2024-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/116236
+	* rtlanal.cc (decompose_normal_address): Try to distinguish
+	bases and indices based on mode, before resorting to "baseness".
+
+2024-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/116343
+	* recog.h (insn_propagation::apply_to_note): Declare.
+	* recog.cc (insn_propagation::apply_to_note): New function.
+	* late-combine.cc (insn_combination::substitute_note): Use
+	apply_to_note instead of apply_to_rvalue.
+	* rtl-ssa/changes.cc (rtl_ssa::changes_are_worthwhile): Improve
+	dumping of costs for noop moves.
+
+2024-08-15  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (extendsidi2): Add ("=r", "f")
+	alternative and use movfr2gr.s for it.  The spec clearly states
+	movfr2gr.s sign extends the value to GRLEN.
+	(fclass_<fmt>): Make the result SImode instead of a floating
+	mode.  The fclass results are really not FP values.
+	(FCLASS_MASK): New define_int_iterator.
+	(fclass_optab): New define_int_attr.
+	(<FCLASS_MASK:fclass_optab><ANYF:mode>): New define_expand
+	template.
+
+2024-08-15  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/116274
+	* config/i386/i386-expand.cc (ix86_expand_vector_move):
+	Restrict special case TImode to 128-bit vector conversions via
+	V2DI under ix86_pre_reload_split ().
+	* config/i386/i386.cc (inline_secondary_memory_needed):
+	Movement between GENERAL_REGS and SSE_REGS for TImode doesn't
+	need secondary reload.
+	* config/i386/i386.md (*extendsidi2_rex64): Add a
+	define_peephole2 after it.
+
+2024-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/116371
+	* config/aarch64/aarch64-sve-builtins-sve2.h (svpext): Rename to...
+	(svpext_lane): ...this.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc (svpext_impl): Rename
+	to...
+	(svpext_lane_impl): ...this and update instantiation accordingly.
+	* config/aarch64/aarch64-sve-builtins-sve2.def (svpext): Rename to...
+	(svpext_lane): ...this.
+
+2024-08-15  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/rs6000.md (floatti<mode>2, floatunsti<mode>2,
+	fix_trunc<mode>ti2): Add guard TARGET_FLOAT128_HW.
+	* config/rs6000/vsx.md (xsxexpqp_<IEEE128:mode>_<V2DI_DI:mode>,
+	xsxsigqp_<IEEE128:mode>_<VEC_TI:mode>, xsiexpqpf_<mode>,
+	xsiexpqp_<IEEE128:mode>_<V2DI_DI:mode>, xscmpexpqp_<code>_<mode>,
+	*xscmpexpqp, xststdcnegqp_<mode>): Replace guard TARGET_P9_VECTOR
+	with TARGET_FLOAT128_HW.
+	(xststdc_<mode>, *xststdc_<mode>, isinf<mode>2): Add guard
+	TARGET_FLOAT128_HW for the IEEE128 modes.
+
+2024-08-15  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/97786
+	* config/rs6000/vsx.md (isnormal<mode>2): New expand.
+
+2024-08-15  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/97786
+	* config/rs6000/vsx.md (isfinite<mode>2): New expand.
+
+2024-08-15  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/97786
+	* config/rs6000/rs6000.md (constant VSX_TEST_DATA_CLASS_NAN,
+	VSX_TEST_DATA_CLASS_POS_INF, VSX_TEST_DATA_CLASS_NEG_INF,
+	VSX_TEST_DATA_CLASS_POS_ZERO, VSX_TEST_DATA_CLASS_NEG_ZERO,
+	VSX_TEST_DATA_CLASS_POS_DENORMAL, VSX_TEST_DATA_CLASS_NEG_DENORMAL):
+	Define.
+	(mode_attr sdq, vsx_altivec, wa_v, x): Define.
+	(mode_iterator IEEE_FP): Define.
+	* config/rs6000/vsx.md (isinf<mode>2): New expand.
+	(expand xststdcqp_<mode>, xststdc<sd>p): Combine into...
+	(expand xststdc_<mode>): ...this.
+	(insn *xststdcqp_<mode>, *xststdc<sd>p): Combine into...
+	(insn *xststdc_<mode>): ...this.
+	* config/rs6000/rs6000-builtin.cc (rs6000_expand_builtin): Rename
+	CODE_FOR_xststdcqp_kf as CODE_FOR_xststdc_kf,
+	CODE_FOR_xststdcqp_tf as CODE_FOR_xststdc_tf.
+	* config/rs6000/rs6000-builtins.def: Rename xststdcdp as xststdc_df,
+	xststdcsp as xststdc_sf, xststdcqp_kf as xststdc_kf.
+
+2024-08-15  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* gimple-range-op.cc (class cfn_isfinite): New.
+	(op_cfn_finite): New variables.
+	(gimple_range_op_handler::maybe_builtin_call): Handle
+	CFN_BUILT_IN_ISFINITE.
+	* value-range.h (class frange): Declear known_isnormal and
+	known_isdenormal_or_zero.
+	(frange::known_isnormal): Define.
+	(frange::known_isdenormal_or_zero): Define.
+
+2024-08-15  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* gimple-range-op.cc (class cfn_isfinite): New.
+	(op_cfn_finite): New variables.
+	(gimple_range_op_handler::maybe_builtin_call): Handle
+	CFN_BUILT_IN_ISFINITE.
+
+2024-08-15  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/114678
+	* gimple-range-op.cc (class cfn_isinf): New.
+	(op_cfn_isinf): New variables.
+	(gimple_range_op_handler::maybe_builtin_call): Handle
+	CASE_FLT_FN (BUILT_IN_ISINF).
+
 2024-08-14  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/116015

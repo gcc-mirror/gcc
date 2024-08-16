@@ -1,3 +1,112 @@
+2024-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/116387
+	* resolve.cc (resolve_operator): Use %L rather than %%L in format
+	string.
+
+2024-08-15  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/110033
+	* class.cc (gfc_is_class_scalar_expr): Coarray refs that ref
+	only self, aka this image, are regarded as scalar, too.
+	* resolve.cc (resolve_assoc_var): Ignore this image coarray refs
+	and do not build a new class type.
+	* trans-expr.cc (gfc_get_caf_token_offset): Get the caf token
+	from the descriptor for associated variables.
+	(gfc_conv_variable): Same.
+	(gfc_trans_pointer_assignment): Assign token to temporary
+	associate variable, too.
+	(gfc_trans_scalar_assign): Add flag that assign is for associate
+	and use it to assign the token.
+	(is_assoc_assign): Detect that expressions are for associate
+	assign.
+	(gfc_trans_assignment_1): Treat associate assigns like pointer
+	assignments where possible.
+	* trans-stmt.cc (trans_associate_var): Set same_class only for
+	class-targets.
+	* trans.h (gfc_trans_scalar_assign): Add flag to
+	trans_scalar_assign for marking associate assignments.
+
+2024-08-15  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* arith.cc (reduce_unary): Use expr.corank.
+	(reduce_binary_ac): Same.
+	(reduce_binary_ca): Same.
+	(reduce_binary_aa): Same.
+	* array.cc (gfc_match_array_ref): Same.
+	* check.cc (dim_corank_check): Same.
+	(gfc_check_move_alloc): Same.
+	(gfc_check_image_index): Same.
+	* class.cc (gfc_add_class_array_ref): Same.
+	(finalize_component): Same.
+	* data.cc (gfc_assign_data_value): Same.
+	* decl.cc (match_clist_expr): Same.
+	(add_init_expr_to_sym): Same.
+	* expr.cc (simplify_intrinsic_op): Same.
+	(simplify_parameter_variable): Same.
+	(gfc_check_assign_symbol): Same.
+	(gfc_get_variable_expr): Same.
+	(gfc_add_full_array_ref): Same.
+	(gfc_lval_expr_from_sym): Same.
+	(gfc_get_corank): Removed.
+	* frontend-passes.cc (callback_reduction): Use expr.corank.
+	(create_var): Same.
+	(combine_array_constructor): Same.
+	(optimize_minmaxloc): Same.
+	* gfortran.h (gfc_get_corank): Add corank to gfc_expr.
+	* intrinsic.cc (gfc_get_intrinsic_function_symbol): Use
+	expr.corank.
+	(gfc_convert_type_warn): Same.
+	(gfc_convert_chartype): Same.
+	* iresolve.cc (resolve_bound): Same.
+	(gfc_resolve_cshift): Same.
+	(gfc_resolve_eoshift): Same.
+	(gfc_resolve_logical): Same.
+	(gfc_resolve_matmul): Same.
+	* match.cc (copy_ts_from_selector_to_associate): Same.
+	* matchexp.cc (gfc_get_parentheses): Same.
+	* parse.cc (parse_associate): Same.
+	* primary.cc (gfc_match_rvalue): Same.
+	* resolve.cc (resolve_structure_cons): Same.
+	(resolve_actual_arglist): Same.
+	(resolve_elemental_actual): Same.
+	(resolve_generic_f0): Same.
+	(resolve_unknown_f): Same.
+	(resolve_operator): Same.
+	(gfc_expression_rank): Same and set dimen_type for coarray to
+	default.
+	(gfc_op_rank_conformable): Use expr.corank.
+	(add_caf_get_intrinsic): Same.
+	(resolve_variable): Same.
+	(gfc_fixup_inferred_type_refs): Same.
+	(check_host_association): Same.
+	(resolve_compcall): Same.
+	(resolve_expr_ppc): Same.
+	(resolve_assoc_var): Same.
+	(fixup_array_ref): Same.
+	(resolve_select_type): Same.
+	(add_comp_ref): Same.
+	(get_temp_from_expr): Same.
+	(resolve_fl_var_and_proc): Same.
+	(resolve_symbol): Same.
+	* symbol.cc (gfc_is_associate_pointer): Same.
+	* trans-array.cc (walk_coarray): Same.
+	(gfc_conv_expr_descriptor): Same.
+	(gfc_walk_array_ref): Same.
+	* trans-array.h (gfc_walk_array_ref): Same.
+	* trans-expr.cc (gfc_get_ultimate_alloc_ptr_comps_caf_token):
+	Same.
+	* trans-intrinsic.cc (trans_this_image): Same.
+	(trans_image_index): Same.
+	(conv_intrinsic_cobound): Same.
+	(gfc_walk_intrinsic_function): Same.
+	(conv_intrinsic_move_alloc): Same.
+	* trans-stmt.cc (gfc_trans_lock_unlock): Same.
+	(trans_associate_var): Same and adapt to slightly different
+	behaviour of expr.corank and gfc_get_corank.
+	(gfc_trans_allocate): Same.
+	* trans.cc (gfc_add_finalizer_call): Same.
+
 2024-08-14  Harald Anlauf  <anlauf@gmx.de>
 
 	* simplify.cc (gfc_simplify_sizeof): Clear used gmp variable.
