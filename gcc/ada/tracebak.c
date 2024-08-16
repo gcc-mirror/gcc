@@ -564,9 +564,10 @@ is_return_from(void *symbol_addr, void *ret_addr)
 #error Unhandled QNX architecture.
 #endif
 
-/*------------------- aarch64-linux or aarch64-rtems -----------------*/
+/*------------------- aarch64 FreeBSD, Linux, RTEMS -----------------*/
 
-#elif (defined (__aarch64__) && (defined (__linux__) || defined (__rtems__)))
+#elif (defined (__aarch64__) && (defined (__FreeBSD__) || \
+       defined (__linux__) || defined (__rtems__)))
 
 #define USE_GCC_UNWINDER
 #define PC_ADJUST -4
