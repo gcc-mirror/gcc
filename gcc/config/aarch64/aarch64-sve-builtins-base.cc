@@ -494,15 +494,22 @@ public:
   expand (function_expander &e) const OVERRIDE
   {
     machine_mode mode = e.vector_mode (0);
-    if (e.pred == PRED_x)
-      {
-	/* The pattern for CNOT includes an UNSPEC_PRED_Z, so needs
-	   a ptrue hint.  */
-	e.add_ptrue_hint (0, e.gp_mode (0));
-	return e.use_pred_x_insn (code_for_aarch64_pred_cnot (mode));
-      }
+    machine_mode pred_mode = e.gp_mode (0);
+    /* The underlying _x pattern is effectively:
 
-    return e.use_cond_insn (code_for_cond_cnot (mode), 0);
+	 dst = src == 0 ? 1 : 0
+
+       rather than an UNSPEC_PRED_X.  Using this form allows autovec
+       constructs to be matched by combine, but it means that the
+       predicate on the src == 0 comparison must be all-true.
+
+       For simplicity, represent other _x operations as fully-defined _m
+       operations rather than using a separate bespoke pattern.  */
+    if (e.pred == PRED_x
+	&& gen_lowpart (pred_mode, e.args[0]) == CONSTM1_RTX (pred_mode))
+      return e.use_pred_x_insn (code_for_aarch64_ptrue_cnot (mode));
+    return e.use_cond_insn (code_for_cond_cnot (mode),
+			    e.pred == PRED_x ? 1 : 0);
   }
 };
 
