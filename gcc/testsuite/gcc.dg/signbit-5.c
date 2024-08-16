@@ -1,8 +1,7 @@
 /* { dg-do run } */
-/* { dg-options "-O3" } */
+/* { dg-options "-O3 -fwrapv" } */
 
 /* This test does not work when the truth type does not match vector type.  */
-/* { dg-additional-options "-mno-avx512f" { target { i?86-*-* x86_64-*-* } } } */
 /* { dg-additional-options "-march=armv8-a" { target aarch64_sve } } */
 /* { dg-xfail-run-if "truth type does not match vector type" { amdgcn-*-* } } */
 /* { dg-xfail-run-if "truth type does not match vector type" { riscv_v } } */
