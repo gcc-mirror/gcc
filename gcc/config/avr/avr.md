@@ -1355,8 +1355,6 @@
                                     gen_int_mode (INTVAL (operands[1]), mode));
     rtx addr0 = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
     operands[0] = gen_rtx_MEM (BLKmode, addr0);
-    // Alignment is unused; just set it to 0.
-    operands[3] = const0_rtx;
   })
 
 
@@ -1364,7 +1362,7 @@
   [(set (mem:BLK (match_operand:HI 0 "register_operand" "e"))
         (const_int 0))
    (use (match_operand:QI 1 "register_operand" "r"))
-   (use (match_operand:QI 2 "const_int_operand" "n"))
+   (use (match_operand:HI 2 "const_int_operand" "n"))
    (clobber (match_scratch:HI 3 "=0"))
    (clobber (match_scratch:QI 4 "=&1"))]
   ""
@@ -1382,7 +1380,7 @@
   [(set (mem:BLK (match_operand:HI 0 "register_operand" "e"))
         (const_int 0))
    (use (match_operand:QI 1 "register_operand" "r"))
-   (use (match_operand:QI 2 "const_int_operand" "n"))
+   (use (match_operand:HI 2 "const_int_operand" "n"))
    (clobber (match_scratch:HI 3 "=0"))
    (clobber (match_scratch:QI 4 "=&1"))
    (clobber (reg:CC REG_CC))]
