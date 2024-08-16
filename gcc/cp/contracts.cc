@@ -1564,7 +1564,8 @@ handle_contracts_p (tree decl1)
 {
   return (flag_contracts
 	  && !processing_template_decl
-	  && DECL_ABSTRACT_ORIGIN (decl1) == NULL_TREE
+	  && (DECL_ABSTRACT_ORIGIN (decl1) == NULL_TREE
+	      || DECL_IS_WRAPPER_FN_P(decl1))
 	  && contract_any_active_p (DECL_CONTRACTS (decl1)));
 }
 
@@ -2065,7 +2066,8 @@ start_function_contracts (tree decl1)
 
   /* Contracts may have just been added without a chance to parse them, though
      we still need the PRE_FN available to generate a call to it.  */
-  if (!DECL_PRE_FN (decl1))
+  /* Do we already have declarations generated ? */
+  if (!DECL_PRE_FN (decl1) && !DECL_POST_FN (decl1))
     build_contract_function_decls (decl1);
 
 }
@@ -2383,7 +2385,7 @@ duplicate_contracts (tree newdecl, tree olddecl)
    PARM_DECL in OVERRIDER.  */
 
 void
-inherit_base_contracts (tree overrider, tree basefn)
+copy_and_remap_contracts (tree overrider, tree basefn)
 {
   tree last = NULL_TREE, contract_attrs = NULL_TREE;
   for (tree a = DECL_CONTRACTS (basefn);
@@ -2418,7 +2420,9 @@ build_contract_wrapper_function (tree fndecl)
   if (TREE_TYPE (fndecl) == error_mark_node)
     return error_mark_node;
 
-  const char *name = IDENTIFIER_POINTER (DECL_NAME (fndecl));
+  /* Use mangled name so we can differentiate between different virtual
+    functions of the same name. */
+  const char *name = IDENTIFIER_POINTER ((DECL_ASSEMBLER_NAME (fndecl)));
   name = ACONCAT ((name, ".contract_wrapper", NULL));
 
   location_t loc = DECL_SOURCE_LOCATION (fndecl);
@@ -2474,8 +2478,9 @@ build_contract_wrapper_function (tree fndecl)
     SET_DECL_ALIGN (wrapdecl, DECL_ALIGN (fndecl));
   /* Copy any alignment the user added.  */
   DECL_USER_ALIGN (wrapdecl) = DECL_USER_ALIGN (fndecl);
-  /* Apply attributes from the original fn.  */
-  DECL_ATTRIBUTES (wrapdecl) = copy_list (DECL_ATTRIBUTES (fndecl));
+
+  /* Apply attributes from the original fn.   */
+  copy_and_remap_contracts (wrapdecl, fndecl);
 
   DECL_ABSTRACT_ORIGIN (wrapdecl) = fndecl;
 
@@ -2522,14 +2527,14 @@ set_contract_wrapper_function (tree decl, tree wrapper)
 
 
 tree
-maybe_contract_wrap_new_method_call (tree fndecl, vec<tree, va_gc> *, tree call)
+maybe_contract_wrap_new_method_call (tree fndecl, tree call)
 {
 
   if (fndecl == error_mark_node) return fndecl;
 
   /* We only need to wrap the function if it's a virtual function  */
-  if (!handle_contracts_p (fndecl) || !DECL_VIRTUAL_P (fndecl))
-
+  if (!flag_contracts_nonattr || !handle_contracts_p (fndecl)
+      || !DECL_VIRTUAL_P (fndecl))
       return call;
 
   bool do_pre = has_active_preconditions (fndecl);
@@ -2560,6 +2565,7 @@ maybe_contract_wrap_new_method_call (tree fndecl, vec<tree, va_gc> *, tree call)
 
   tree wrapcall = build_call_expr_loc_vec(DECL_SOURCE_LOCATION (wrapdecl), wrapdecl, argwrap);
 
+  CALL_FROM_THUNK_P (wrapcall) = true;
   return wrapcall;
 }
 
@@ -2597,8 +2603,6 @@ bool define_contract_wrapper_func(const tree& fndecl, const tree& wrapdecl, void
   tree call = build_call_a (fn,
 			    args->length (),
 			    args->address ());
-
-  CALL_FROM_THUNK_P (call) = true;
 
   if (!VOID_TYPE_P (return_type))
     {
