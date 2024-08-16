@@ -10185,7 +10185,9 @@ fold_builtin_bit_query (location_t loc, enum built_in_function fcode,
   tree call = NULL_TREE, tem;
   if (TYPE_PRECISION (arg0_type) == MAX_FIXED_MODE_SIZE
       && (TYPE_PRECISION (arg0_type)
-	  == 2 * TYPE_PRECISION (long_long_unsigned_type_node)))
+	  == 2 * TYPE_PRECISION (long_long_unsigned_type_node))
+      /* If the target supports the optab, then don't do the expansion. */
+      && !direct_internal_fn_supported_p (ifn, arg0_type, OPTIMIZE_FOR_BOTH))
     {
       /* __int128 expansions using up to 2 long long builtins.  */
       arg0 = save_expr (arg0);
