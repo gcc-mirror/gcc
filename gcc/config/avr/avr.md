@@ -1374,7 +1374,7 @@
   [(set (mem:BLK (match_operand:HI 0 "register_operand" "e"))
         (const_int 0))
    (use (match_operand:QI 1 "register_operand" "r"))
-   (use (match_operand:QI 2 "const_int_operand" "n"))
+   (use (match_operand:HI 2 "const_int_operand" "n"))
    (clobber (match_scratch:HI 3 "=0"))
    (clobber (match_scratch:QI 4 "=&1"))]
   ""
@@ -1392,7 +1392,7 @@
   [(set (mem:BLK (match_operand:HI 0 "register_operand" "e"))
         (const_int 0))
    (use (match_operand:QI 1 "register_operand" "r"))
-   (use (match_operand:QI 2 "const_int_operand" "n"))
+   (use (match_operand:HI 2 "const_int_operand" "n"))
    (clobber (match_scratch:HI 3 "=0"))
    (clobber (match_scratch:QI 4 "=&1"))
    (clobber (reg:CC REG_CC))]
