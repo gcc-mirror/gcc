@@ -3497,11 +3497,11 @@ function_instance::operator== (const function_instance &other) const
 bool
 function_instance::any_type_float_p () const
 {
-  if (FLOAT_MODE_P (TYPE_MODE (get_return_type ())))
+  if (riscv_vector_float_type_p (get_return_type ()))
     return true;
 
   for (int i = 0; op_info->args[i].base_type != NUM_BASE_TYPES; ++i)
-    if (FLOAT_MODE_P (TYPE_MODE (get_arg_type (i))))
+    if (riscv_vector_float_type_p (get_arg_type (i)))
       return true;
 
   return false;

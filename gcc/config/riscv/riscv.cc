@@ -5898,9 +5898,12 @@ riscv_vector_int_type_p (const_tree type)
   return strstr (name, "int") != NULL || strstr (name, "uint") != NULL;
 }
 
-static bool
+bool
 riscv_vector_float_type_p (const_tree type)
 {
+  if (!riscv_vector_type_p (type))
+    return false;
+
   machine_mode mode = TYPE_MODE (type);
 
   if (VECTOR_MODE_P (mode))

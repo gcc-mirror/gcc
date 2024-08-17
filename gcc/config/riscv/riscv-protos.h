@@ -171,6 +171,7 @@ extern enum memmodel riscv_union_memmodels (enum memmodel, enum memmodel);
 extern bool riscv_reg_frame_related (rtx);
 extern void riscv_split_sum_of_two_s12 (HOST_WIDE_INT, HOST_WIDE_INT *,
 					HOST_WIDE_INT *);
+extern bool riscv_vector_float_type_p (const_tree type);
 
 /* Routines implemented in riscv-c.cc.  */
 void riscv_cpu_cpp_builtins (cpp_reader *);
