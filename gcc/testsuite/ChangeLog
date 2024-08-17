@@ -1,3 +1,51 @@
+2024-08-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/torture/pr85624.c: New test.
+
+2024-08-16  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-08-16  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* g++.dg/warn/pr33738.C: Added -fno-short-enums.
+	* g++.dg/warn/pr33738-2.C: Duplicate g++.dg/warn/pr33738.C with
+	-fshort-enums and removed xfail.
+
+2024-08-16  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-08-16  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* g++.dg/opt/pr97315-1.C: Add -fno-short-enums.
+
+2024-08-16  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-08-16  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+		    Yvan ROUX  <yvan.roux@foss.st.com>
+
+	* gcc.dg/signbit-5.c: Add -fwrapv and remove x86 exception.
+
+2024-08-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/115464
+	* gcc.target/aarch64/sve/acle/general/pr115464_2.c: New test.
+
+2024-08-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-06-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/115464
+	* gcc.target/aarch64/sve/acle/general/pr115464.c: New test.
+
+2024-08-16  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-08-14  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr116174.c: New test.
+
 2024-08-15  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

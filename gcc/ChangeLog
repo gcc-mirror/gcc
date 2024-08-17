@@ -1,3 +1,61 @@
+2024-08-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/85624
+	* config/avr/avr.md (*clrmemqi*): Use HImode for alignment operand.
+
+2024-08-16  Lingling Kong  <lingling.kong@intel.com>
+
+	* config/i386/sse.md (vpmadd52<vpmadd52type><mode>):
+	Prohibit egpr for vex version.
+	(vpdpbusd_<mode>): Ditto.
+	(vpdpbusds_<mode>): Ditto.
+	(vpdpwssd_<mode>): Ditto.
+	(vpdpwssds_<mode>): Ditto.
+	(*vcvtneps2bf16_v4sf): Ditto.
+	(*vcvtneps2bf16_v8sf): Ditto.
+	(vpdp<vpdotprodtype>_<mode>): Ditto.
+	(vbcstnebf162ps_<mode>): Ditto.
+	(vbcstnesh2ps_<mode>): Ditto.
+	(vcvtnee<bf16_ph>2ps_<mode>): Ditto.
+	(vcvtneo<bf16_ph>2ps_<mode>): Ditto.
+	(vpdp<vpdpwprodtype>_<mode>): Ditto.
+
+2024-08-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/115464
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svset_neonq_impl::expand): Use force_subreg instead of
+	lowpart_subreg.
+
+2024-08-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-06-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/115464
+	* simplify-rtx.cc (simplify_context::simplify_subreg): Don't try
+	to fold two subregs together if their relationship isn't known
+	at compile time.
+	* explow.h (force_subreg): Declare.
+	* explow.cc (force_subreg): New function.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svset_neonq_impl::expand): Use it instead of simplify_gen_subreg.
+
+2024-08-16  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-08-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/116174
+	* config/i386/i386.cc (ix86_align_loops): Move this to ..
+	* config/i386/i386-features.cc (ix86_align_loops): .. here.
+	(class pass_align_tight_loops): New class.
+	(make_pass_align_tight_loops): New function.
+	* config/i386/i386-passes.def: Insert pass_align_tight_loops
+	after pass_insert_endbr_and_patchable_area.
+	* config/i386/i386-protos.h (make_pass_align_tight_loops): New
+	declare.
+
 2024-08-14  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	Backported from master:
