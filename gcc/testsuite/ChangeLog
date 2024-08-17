@@ -1,3 +1,39 @@
+2024-08-16  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* g++.dg/warn/pr33738.C: Added -fno-short-enums.
+	* g++.dg/warn/pr33738-2.C: Duplicate g++.dg/warn/pr33738.C with
+	-fshort-enums and removed xfail.
+
+2024-08-16  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* g++.dg/opt/pr97315-1.C: Add -fno-short-enums.
+
+2024-08-16  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX  <yvan.roux@foss.st.com>
+
+	* gcc.dg/signbit-5.c: Add -fwrapv and remove x86 exception.
+
+2024-08-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/116378
+	* gm2/extensions/run/pass/testopen.mod: Add third argument
+	for open.
+	* gm2/isolib/run/pass/openlibc.mod: Ditto.
+	* gm2/pim/run/pass/testaddr3.mod: Ditto.
+
+2024-08-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* g++.dg/cpp0x/gen-attrs-84.C: New test.
+
+2024-08-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/113042
+	* gcc.target/aarch64/popcnt5.c: New test.
+	* gcc.target/aarch64/popcnt6.c: New test.
+	* gcc.target/aarch64/popcnt7.c: New test.
+	* gcc.target/aarch64/popcnt8.c: New test.
+
 2024-08-15  Vineet Gupta  <vineetg@rivosinc.com>
 
 	* gcc.target/riscv/fclass.c: New tests.

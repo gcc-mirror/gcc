@@ -1,3 +1,29 @@
+2024-08-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-libs-iso/StdChans.mod (in): Rename to ...
+	(inch): ... this.
+	(out): Rename to ...
+	(outch): ... this.
+	(err): Rename to ...
+	(errch): ... this.
+
+2024-08-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-libs/DynamicStrings.mod (Slice): Rename end to stop.
+
+2024-08-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/116378
+	* gm2-libs-iso/TermFile.mod (termOpen): Add third argument
+	for open.
+	* gm2-libs/libc.def (open): Remove vararg and use INTEGER for
+	mode parameter three.
+	* mc-boot-ch/Glibc.c (tracedb_open): Replace mode_t with int.
+	(libc_open): Rewrite without varargs.
+	* mc-boot/Glibc.h (libc_open): Replace varargs with int mode.
+	* pge-boot/Glibc.cc (libc_open): Rewrite.
+	* pge-boot/Glibc.h (libc_open): Replace varargs with int mode.
+
 2024-08-12  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/116181

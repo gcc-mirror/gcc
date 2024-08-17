@@ -1,3 +1,71 @@
+2024-08-16  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (enum cv_sym_type): Add S_REGREL32.
+	(write_fbreg_variable): New function.
+	(write_unoptimized_local_variable): Add fblock parameter, and handle
+	DW_OP_fbreg locations.
+	(write_unoptimized_function_vars): Add fbloc parameter.
+	(write_function): Extract frame base from DWARF.
+	* dwarf2out.cc (convert_cfa_to_fb_loc_list): Output simplified frame
+	base information for CodeView.
+
+2024-08-16  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (enum cv_sym_type): Add S_REGISTER.
+	(enum cv_x86_register): New type.
+	(enum cv_amd64_register): New type.
+	(dwarf_reg_to_cv): New function.
+	(write_s_register): New function.
+	(write_unoptimized_local_variable): Handle parameters and DW_OP_reg*
+	location types.
+
+2024-08-16  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (enum cv_sym_type): Add S_END and S_BLOCK32.
+	(write_local_s_ldata32): New function.
+	(write_unoptimized_local_variable): New function.
+	(write_s_block32): New function.
+	(write_s_end): New function.
+	(write_unoptimized_function_vars): New function.
+	(write_function): Call write_unoptimized_function_vars.
+
+2024-08-16  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (get_type_num_enumeration_type): Initialize last_type
+	to 0.
+	(get_type_num_struct): Likewise.
+
+2024-08-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-08-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/85624
+	* config/avr/avr.md (*clrmemqi*): Use HImode for alignment operand.
+
+2024-08-16  Lingling Kong  <lingling.kong@intel.com>
+
+	* config/i386/sse.md (vpmadd52<vpmadd52type><mode>):
+	Prohibit egpr for vex version.
+	(vpdpbusd_<mode>): Ditto.
+	(vpdpbusds_<mode>): Ditto.
+	(vpdpwssd_<mode>): Ditto.
+	(vpdpwssds_<mode>): Ditto.
+	(*vcvtneps2bf16_v4sf): Ditto.
+	(*vcvtneps2bf16_v8sf): Ditto.
+	(vpdp<vpdotprodtype>_<mode>): Ditto.
+	(vbcstnebf162ps_<mode>): Ditto.
+	(vbcstnesh2ps_<mode>): Ditto.
+	(vcvtnee<bf16_ph>2ps_<mode>): Ditto.
+	(vcvtneo<bf16_ph>2ps_<mode>): Ditto.
+	(vpdp<vpdpwprodtype>_<mode>): Ditto.
+
+2024-08-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/113042
+	* config/aarch64/aarch64.md (popcount<mode>2): Update pattern
+	to support ALLI modes.
+
 2024-08-16  Andrew Pinski  <pinskia@gmail.com>
 
 	* tree-ssa-phiopt.cc (factor_out_conditional_operation): Update

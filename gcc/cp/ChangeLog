@@ -1,3 +1,10 @@
+2024-08-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* parser.cc (cp_parser_member_declaration): Call maybe_warn_extra_semi
+	only if it is empty-declaration, if there are some tokens like
+	attribute, pedwarn that the declaration doesn't declare anything.
+
 2024-08-15  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/116320

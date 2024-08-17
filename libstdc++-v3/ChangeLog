@@ -1,3 +1,14 @@
+2024-08-16  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR libstdc++/116362
+	* configure.ac: Check newlib configuration whether iconv is enabled.
+	* configure: Regenerate.
+
+2024-08-16  Hans-Peter Nilsson  <hp@axis.com>
+
+	* testsuite/lib/prune.exp (libstdc++-dg-prune): Prune
+	uncapitalized "in function" warning from linker.
+
 2024-08-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/115744
