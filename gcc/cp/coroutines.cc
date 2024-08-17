@@ -5119,12 +5119,22 @@ cp_coroutine_transform::build_ramp_function ()
 	  finish_if_stmt_cond (coro_gro_live, gro_d_if);
 	  finish_expr_stmt (gro_ret_dtor);
 	  finish_then_clause (gro_d_if);
-	  tree gro_d_if_scope = IF_SCOPE (gro_d_if);
-	  IF_SCOPE (gro_d_if) = NULL;
-	  gro_d_if = do_poplevel (gro_d_if_scope);
-	  add_stmt (gro_d_if);
+	  finish_if_stmt (gro_d_if);
 	}
 
+      /* Before initial resume is called, the responsibility for cleanup on
+	 exception falls to the ramp.  After that, the coroutine body code
+	 should do the cleanup.  */
+      tree iarc_m = lookup_member (frame_type, coro_frame_i_a_r_c_id,
+				   1, 0, tf_warning_or_error);
+      tree iarc_x
+	= build_class_member_access_expr (deref_fp, iarc_m, NULL_TREE,
+					  /*preserve_reference*/false,
+					  tf_warning_or_error);
+      tree not_iarc
+	= build1_loc (loc, TRUTH_NOT_EXPR, boolean_type_node, iarc_x);
+      tree cleanup_if = begin_if_stmt ();
+      finish_if_stmt_cond (not_iarc, cleanup_if);
       /* If the promise is live, then run its dtor if that's available.  */
       if (promise_dtor && promise_dtor != error_mark_node)
 	{
@@ -5132,10 +5142,7 @@ cp_coroutine_transform::build_ramp_function ()
 	  finish_if_stmt_cond (coro_promise_live, promise_d_if);
 	  finish_expr_stmt (promise_dtor);
 	  finish_then_clause (promise_d_if);
-	  tree promise_d_if_scope = IF_SCOPE (promise_d_if);
-	  IF_SCOPE (promise_d_if) = NULL;
-	  promise_d_if = do_poplevel (promise_d_if_scope);
-	  add_stmt (promise_d_if);
+	  finish_if_stmt (promise_d_if);
 	}
 
       /* Clean up any frame copies of parms with non-trivial dtors.
@@ -5159,15 +5166,21 @@ cp_coroutine_transform::build_ramp_function ()
 	      finish_if_stmt_cond (parm_i->guard_var, dtor_if);
 	      finish_expr_stmt (parm_i->fr_copy_dtor);
 	      finish_then_clause (dtor_if);
-	      tree parm_d_if_scope = IF_SCOPE (dtor_if);
-	      IF_SCOPE (dtor_if) = NULL;
-	      dtor_if = do_poplevel (parm_d_if_scope);
-	      add_stmt (dtor_if);
+	      finish_if_stmt (dtor_if);
 	    }
 	}
 
-      /* We always expect to delete the frame.  */
+      /* No delete the frame if required.  */
+      tree fnf_if = begin_if_stmt ();
+      finish_if_stmt_cond (fnf_x, fnf_if);
       finish_expr_stmt (delete_frame_call);
+      finish_then_clause (fnf_if);
+      finish_if_stmt (fnf_if);
+
+      /* Finished cleanups conditional on "initial resume is not called".  */
+      finish_then_clause (cleanup_if);
+      finish_if_stmt (cleanup_if);
+
       tree rethrow = build_throw (loc, NULL_TREE, tf_warning_or_error);
       suppress_warning (rethrow);
       finish_expr_stmt (rethrow);
