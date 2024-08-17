@@ -1,3 +1,29 @@
+2024-08-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-04-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/114603
+	* config/aarch64/aarch64-sve.md (@aarch64_pred_cnot<mode>): Replace
+	with...
+	(@aarch64_ptrue_cnot<mode>): ...this, requiring operand 1 to be
+	a ptrue.
+	(*cnot<mode>): Require operand 1 to be a ptrue.
+	* config/aarch64/aarch64-sve-builtins-base.cc (svcnot_impl::expand):
+	Use aarch64_ptrue_cnot<mode> for _x operations that are predicated
+	with a ptrue.  Represent other _x operations as fully-defined _m
+	operations.
+
+2024-08-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-04-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/114607
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svusdot_impl::expand): Fix botched attempt to swap the operands
+	for svsudot.
+
 2024-08-12  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:
