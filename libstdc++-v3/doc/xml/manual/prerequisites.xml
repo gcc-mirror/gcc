@@ -14,9 +14,9 @@
 <para>
   Because libstdc++ is part of GCC, the primary source for
    installation instructions is
-   <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/install/">the GCC install page</link>.
+   <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/install/">the GCC install page</link>.
    In particular, list of prerequisite software needed to build the library
-   <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/install/prerequisites.html">
+   <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/install/prerequisites.html">
    starts with those requirements.</link> The same pages also list
    the tools you will need if you wish to modify the source.
 </para>
