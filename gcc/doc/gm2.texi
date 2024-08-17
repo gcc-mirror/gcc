@@ -108,7 +108,7 @@ PIM3: 'Programming in Modula-2', 3rd Corrected Edition, Springer Verlag,
 1985 (PIM3).
 
 PIM4: 'Programming in Modula-2', 4th Edition, Springer Verlag, 1988
-(@uref{http://freepages.modula2.org/report4/modula-2.html, PIM4}).
+(@uref{https://freepages.modula2.org/report4/modula-2.html, PIM4}).
 
 ISO: the ISO Modula-2 language as defined in 'ISO/IEC Information
 technology - programming languages - part 1: Modula-2 Language,
