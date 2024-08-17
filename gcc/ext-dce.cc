@@ -556,7 +556,7 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
 			     >> (INTVAL (XEXP (x, 1))
 				 + (XEXP (x, 1) != const0_rtx
 				    && code == SS_ASHIFT))))
-		  | (mask >> INTVAL (XEXP (x, 1))));
+		  | ((HOST_WIDE_INT)mask >> INTVAL (XEXP (x, 1))));
 	}
       return mmask;
 
