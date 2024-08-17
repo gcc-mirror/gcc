@@ -5501,33 +5501,33 @@ avr_out_movsi_mr_r_reg_disp_tiny (rtx op[], int *l)
   rtx src = op[1];
   rtx base = XEXP (dest, 0);
   int reg_base = REGNO (XEXP (base, 0));
-  int reg_src =true_regnum (src);
+  int reg_src = true_regnum (src);
 
   if (reg_base == reg_src)
     {
       *l = 11;
-      return ("mov __tmp_reg__,%A2"        CR_TAB
-	      "mov __zero_reg__,%B2"       CR_TAB
+      return ("mov __tmp_reg__,%A1"        CR_TAB
+	      "mov __zero_reg__,%B1"       CR_TAB
 	      TINY_ADIW (%I0, %J0, %o0)    CR_TAB
 	      "st %b0+,__tmp_reg__"        CR_TAB
 	      "st %b0+,__zero_reg__"       CR_TAB
-	      "st %b0+,%C2"                CR_TAB
-	      "st %b0,%D2"                 CR_TAB
+	      "st %b0+,%C1"                CR_TAB
+	      "st %b0,%D1"                 CR_TAB
 	      "clr __zero_reg__"           CR_TAB
 	      TINY_SBIW (%I0, %J0, %o0+3));
     }
   else if (reg_src == reg_base - 2)
     {
-      *l = 11;
-      return ("mov __tmp_reg__,%C2"         CR_TAB
-	      "mov __zero_reg__,%D2"        CR_TAB
-	      TINY_ADIW (%I0, %J0, %o0)     CR_TAB
-	      "st %b0+,%A0"                 CR_TAB
-	      "st %b0+,%B0"                 CR_TAB
-	      "st %b0+,__tmp_reg__"         CR_TAB
-	      "st %b0,__zero_reg__"         CR_TAB
-	      "clr __zero_reg__"            CR_TAB
-	      TINY_SBIW (%I0, %J0, %o0+3));
+      // This awkward case can occur when ext-dce turns zero-extend:SI(HI)
+      // into a paradoxical subreg, which register allocation may turn into
+      // something like *(R28:HI + 7) = R26:SI.  There is actually no need
+      // to store the upper 2 bytes of R26:SI as they are unused rubbish.
+      // See PR116390.
+      *l = 6;
+      return (TINY_ADIW (%I0, %J0, %o0)     CR_TAB
+	      "st %b0+,%A1"                 CR_TAB
+	      "st %b0,%B1"                  CR_TAB
+	      TINY_SBIW (%I0, %J0, %o0+1));
     }
   *l = 8;
   return (TINY_ADIW (%I0, %J0, %o0)     CR_TAB
