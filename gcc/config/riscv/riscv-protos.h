@@ -112,7 +112,7 @@ extern bool riscv_valid_base_register_p (rtx, machine_mode, bool);
 extern enum reg_class riscv_index_reg_class ();
 extern int riscv_regno_ok_for_index_p (int);
 extern int riscv_address_insns (rtx, machine_mode, bool);
-extern int riscv_const_insns (rtx);
+extern int riscv_const_insns (rtx, bool);
 extern int riscv_split_const_insns (rtx);
 extern int riscv_load_store_insns (rtx, rtx_insn *);
 extern rtx riscv_emit_move (rtx, rtx);

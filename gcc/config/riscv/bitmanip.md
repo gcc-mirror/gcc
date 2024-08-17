@@ -1078,7 +1078,7 @@
    && TARGET_ZBA
    && !paradoxical_subreg_p (operands[1])
    /* Only profitable if synthesis takes more than one insn.  */
-   && riscv_const_insns (operands[2]) != 1
+   && riscv_const_insns (operands[2], false) != 1
    /* We need the upper half to be zero.  */
    && (INTVAL (operands[2]) & HOST_WIDE_INT_C (0xffffffff00000000)) == 0
    /* And the the adjusted constant must either be something we can

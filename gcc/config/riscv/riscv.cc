@@ -1074,11 +1074,16 @@ riscv_build_integer_1 (struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS],
 }
 
 /* Fill CODES with a sequence of rtl operations to load VALUE.
-   Return the number of operations needed.  */
+   Return the number of operations needed.
+
+   ALLOW_NEW_PSEUDOS indicates if or caller wants to allow new pseudo
+   registers or not.  This is needed for cases where the integer synthesis and
+   costing code are used in insn conditions, we can't have costing allow
+   recognition at some points and reject at others.  */
 
 static int
 riscv_build_integer (struct riscv_integer_op *codes, HOST_WIDE_INT value,
-		     machine_mode mode)
+		     machine_mode mode, bool allow_new_pseudos)
 {
   int cost = riscv_build_integer_1 (codes, value, mode);
 
@@ -1129,7 +1134,8 @@ riscv_build_integer (struct riscv_integer_op *codes, HOST_WIDE_INT value,
       int alt_cost;
 
       HOST_WIDE_INT nval = ~value;
-      alt_cost = 1 + riscv_build_integer (alt_codes, nval, mode);
+      alt_cost = 1 + riscv_build_integer (alt_codes, nval,
+					  mode, allow_new_pseudos);
       if (alt_cost < cost)
 	{
 	  alt_codes[alt_cost - 1].code = XOR;
@@ -1185,7 +1191,7 @@ riscv_build_integer (struct riscv_integer_op *codes, HOST_WIDE_INT value,
 	 using zbkb.  We may do better than that if the upper or lower half
 	 can be synthesized with a single LUI, ADDI or BSET.  Regardless the
 	 basic steps are the same.  */
-      if (cost > 3 && can_create_pseudo_p ())
+      if (cost > 3 && can_create_pseudo_p () && allow_new_pseudos)
 	{
 	  struct riscv_integer_op hi_codes[RISCV_MAX_INTEGER_OPS];
 	  struct riscv_integer_op lo_codes[RISCV_MAX_INTEGER_OPS];
@@ -1238,20 +1244,28 @@ riscv_split_integer_cost (HOST_WIDE_INT val)
   unsigned HOST_WIDE_INT hival = sext_hwi ((val - loval) >> 32, 32);
   struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS];
 
-  cost = 2 + riscv_build_integer (codes, loval, VOIDmode);
+  /* This routine isn't used by pattern conditions, so whether or
+     not to allow new pseudos can be a function of where we are in the
+     RTL pipeline.  We shouldn't need scratch pseudos for this case
+     anyway.  */
+  bool allow_new_pseudos = can_create_pseudo_p ();
+  cost = 2 + riscv_build_integer (codes, loval, VOIDmode, allow_new_pseudos);
   if (loval != hival)
-    cost += riscv_build_integer (codes, hival, VOIDmode);
+    cost += riscv_build_integer (codes, hival, VOIDmode, allow_new_pseudos);
 
   return cost;
 }
 
-/* Return the cost of constructing the integer constant VAL.  */
+/* Return the cost of constructing the integer constant VAL.  ALLOW_NEW_PSEUDOS
+   potentially restricts if riscv_build_integer is allowed to create new
+   pseudo registers.  It must be false for calls directly or indirectly from
+   conditions in patterns.  */
 
 static int
-riscv_integer_cost (HOST_WIDE_INT val)
+riscv_integer_cost (HOST_WIDE_INT val, bool allow_new_pseudos)
 {
   struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS];
-  return MIN (riscv_build_integer (codes, val, VOIDmode),
+  return MIN (riscv_build_integer (codes, val, VOIDmode, allow_new_pseudos),
 	      riscv_split_integer_cost (val));
 }
 
@@ -1528,7 +1542,9 @@ riscv_float_const_rtx_index_for_fli (rtx x)
 static bool
 riscv_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
-  return riscv_const_insns (x) > 0;
+  /* With the post-reload usage, it seems best to just pass in FALSE
+     rather than pass ALLOW_NEW_PSEUDOS through the call chain.  */
+  return riscv_const_insns (x, false) > 0;
 }
 
 /* Implement TARGET_CANNOT_FORCE_CONST_MEM.
@@ -2076,10 +2092,14 @@ riscv_address_insns (rtx x, machine_mode mode, bool might_split_p)
 }
 
 /* Return the number of instructions needed to load constant X.
-   Return 0 if X isn't a valid constant.  */
+   Return 0 if X isn't a valid constant.
+
+   ALLOW_NEW_PSEUDOS controls whether or not we're going to be allowed
+   to create new pseduos.  It must be FALSE for any call directly or
+   indirectly from a pattern's condition.  */
 
 int
-riscv_const_insns (rtx x)
+riscv_const_insns (rtx x, bool allow_new_pseudos)
 {
   enum riscv_symbol_type symbol_type;
   rtx offset;
@@ -2096,7 +2116,7 @@ riscv_const_insns (rtx x)
 
     case CONST_INT:
       {
-	int cost = riscv_integer_cost (INTVAL (x));
+	int cost = riscv_integer_cost (INTVAL (x), allow_new_pseudos);
 	/* Force complicated constants to memory.  */
 	return cost < 4 ? cost : 0;
       }
@@ -2153,7 +2173,7 @@ riscv_const_insns (rtx x)
 		   scalar register.  Loading of a floating-point
 		   constant incurs a literal-pool access.  Allow this in
 		   order to increase vectorization possibilities.  */
-		int n = riscv_const_insns (elt);
+		int n = riscv_const_insns (elt, allow_new_pseudos);
 		if (CONST_DOUBLE_P (elt))
 		    return 1 + 4; /* vfmv.v.f + memory access.  */
 		else
@@ -2181,9 +2201,9 @@ riscv_const_insns (rtx x)
       split_const (x, &x, &offset);
       if (offset != 0)
 	{
-	  int n = riscv_const_insns (x);
+	  int n = riscv_const_insns (x, allow_new_pseudos);
 	  if (n != 0)
-	    return n + riscv_integer_cost (INTVAL (offset));
+	    return n + riscv_integer_cost (INTVAL (offset), allow_new_pseudos);
 	}
       return 0;
 
@@ -2211,8 +2231,12 @@ riscv_split_const_insns (rtx x)
 {
   unsigned int low, high;
 
-  low = riscv_const_insns (riscv_subword (x, false));
-  high = riscv_const_insns (riscv_subword (x, true));
+  /* This is not called from pattern conditions, so we can let
+     our location in the RTL pipeline control whether or not
+     new pseudos are created.  */
+  bool allow_new_pseudos = can_create_pseudo_p ();
+  low = riscv_const_insns (riscv_subword (x, false), allow_new_pseudos);
+  high = riscv_const_insns (riscv_subword (x, true), allow_new_pseudos);
   gcc_assert (low > 0 && high > 0);
   return low + high;
 }
@@ -2736,7 +2760,7 @@ riscv_move_integer (rtx temp, rtx dest, HOST_WIDE_INT value,
   mode = GET_MODE (dest);
   /* We use the original mode for the riscv_build_integer call, because HImode
      values are given special treatment.  */
-  num_ops = riscv_build_integer (codes, value, orig_mode);
+  num_ops = riscv_build_integer (codes, value, orig_mode, can_create_pseudo_p ());
 
   if (can_create_pseudo_p () && num_ops > 2 /* not a simple constant */
       && num_ops >= riscv_split_integer_cost (value))
@@ -3565,7 +3589,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 
     case CONST:
       /* Non trivial CONST_INT Fall through: check if need multiple insns.  */
-      if ((cost = riscv_const_insns (x)) > 0)
+      if ((cost = riscv_const_insns (x, can_create_pseudo_p ())) > 0)
 	{
 	  /* 1. Hoist will GCSE constants only if TOTAL returned is non-zero.
 	     2. For constants loaded more than once, the approach so far has
@@ -4693,7 +4717,7 @@ riscv_emit_int_compare (enum rtx_code *code, rtx *op0, rtx *op1,
 
 	      new_rhs = rhs + (increment ? 1 : -1);
 	      new_rhs = trunc_int_for_mode (new_rhs, GET_MODE (*op0));
-	      if (riscv_integer_cost (new_rhs) < riscv_integer_cost (rhs)
+	      if (riscv_integer_cost (new_rhs, true) < riscv_integer_cost (rhs, true)
 		  && (rhs < 0) == (new_rhs < 0))
 		{
 		  *op1 = GEN_INT (new_rhs);
