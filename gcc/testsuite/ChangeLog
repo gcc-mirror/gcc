@@ -1,3 +1,19 @@
+2024-08-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-04-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/114603
+	* gcc.target/aarch64/sve/acle/general/cnot_1.c: New test.
+
+2024-08-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-04-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/114607
+	* gcc.target/aarch64/sve/acle/asm/sudot_s32.c: New test.
+
 2024-08-12  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:
