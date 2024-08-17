@@ -5914,6 +5914,24 @@ has_use_on_stmt (tree name, gimple *stmt)
   return false;
 }
 
+/* Add the lhs of each statement of SEQ to DCE_WORKLIST. */
+
+static void
+mark_lhs_in_seq_for_dce (bitmap dce_worklist, gimple_seq seq)
+{
+  if (!dce_worklist)
+    return;
+
+  for (gimple_stmt_iterator i = gsi_start (seq);
+       !gsi_end_p (i); gsi_next (&i))
+    {
+      gimple *stmt = gsi_stmt (i);
+      tree name = gimple_get_lhs (stmt);
+      if (name && TREE_CODE (name) == SSA_NAME)
+	bitmap_set_bit (dce_worklist, SSA_NAME_VERSION (name));
+    }
+}
+
 /* Worker for fold_stmt_1 dispatch to pattern based folding with
    gimple_simplify.
 
@@ -5924,7 +5942,8 @@ has_use_on_stmt (tree name, gimple *stmt)
 static bool
 replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 				  gimple_match_op *res_op,
-				  gimple_seq *seq, bool inplace)
+				  gimple_seq *seq, bool inplace,
+				  bitmap dce_worklist)
 {
   gimple *stmt = gsi_stmt (*gsi);
   tree *ops = res_op->ops;
@@ -5992,6 +6011,8 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 	  print_gimple_stmt (dump_file, gsi_stmt (*gsi),
 			     0, TDF_SLIM);
 	}
+      // Mark the lhs of the new statements maybe for dce
+      mark_lhs_in_seq_for_dce (dce_worklist, *seq);
       gsi_insert_seq_before (gsi, *seq, GSI_SAME_STMT);
       return true;
     }
@@ -6015,6 +6036,8 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 	      print_gimple_stmt (dump_file, gsi_stmt (*gsi),
 				 0, TDF_SLIM);
 	    }
+	  // Mark the lhs of the new statements maybe for dce
+	  mark_lhs_in_seq_for_dce (dce_worklist, *seq);
 	  gsi_insert_seq_before (gsi, *seq, GSI_SAME_STMT);
 	  return true;
 	}
@@ -6032,6 +6055,8 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 	    print_gimple_seq (dump_file, *seq, 0, TDF_SLIM);
 	  print_gimple_stmt (dump_file, gsi_stmt (*gsi), 0, TDF_SLIM);
 	}
+      // Mark the lhs of the new statements maybe for dce
+      mark_lhs_in_seq_for_dce (dce_worklist, *seq);
       gsi_insert_seq_before (gsi, *seq, GSI_SAME_STMT);
       return true;
     }
@@ -6047,6 +6072,8 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 	      fprintf (dump_file, "gimple_simplified to ");
 	      print_gimple_seq (dump_file, *seq, 0, TDF_SLIM);
 	    }
+	  // Mark the lhs of the new statements maybe for dce
+	  mark_lhs_in_seq_for_dce (dce_worklist, *seq);
 	  gsi_replace_with_seq_vops (gsi, *seq);
 	  return true;
 	}
@@ -6214,7 +6241,8 @@ maybe_canonicalize_mem_ref_addr (tree *t, bool is_debug = false)
    distinguishes both cases.  */
 
 static bool
-fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
+fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree),
+	     bitmap dce_worklist = nullptr)
 {
   bool changed = false;
   gimple *stmt = gsi_stmt (*gsi);
@@ -6382,7 +6410,8 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
       if (gimple_simplify (stmt, &res_op, inplace ? NULL : &seq,
 			   valueize, valueize))
 	{
-	  if (replace_stmt_with_simplification (gsi, &res_op, &seq, inplace))
+	  if (replace_stmt_with_simplification (gsi, &res_op, &seq, inplace,
+						dce_worklist))
 	    changed = true;
 	  else
 	    gimple_seq_discard (seq);
@@ -6537,15 +6566,15 @@ follow_all_ssa_edges (tree val)
    which can produce *&x = 0.  */
 
 bool
-fold_stmt (gimple_stmt_iterator *gsi)
+fold_stmt (gimple_stmt_iterator *gsi, bitmap dce_bitmap)
 {
-  return fold_stmt_1 (gsi, false, no_follow_ssa_edges);
+  return fold_stmt_1 (gsi, false, no_follow_ssa_edges, dce_bitmap);
 }
 
 bool
-fold_stmt (gimple_stmt_iterator *gsi, tree (*valueize) (tree))
+fold_stmt (gimple_stmt_iterator *gsi, tree (*valueize) (tree), bitmap dce_bitmap)
 {
-  return fold_stmt_1 (gsi, false, valueize);
+  return fold_stmt_1 (gsi, false, valueize, dce_bitmap);
 }
 
 /* Perform the minimal folding on statement *GSI.  Only operations like

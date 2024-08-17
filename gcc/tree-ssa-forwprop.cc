@@ -3954,7 +3954,7 @@ pass_forwprop::execute (function *fun)
 		if (uses.space (1))
 		  uses.quick_push (USE_FROM_PTR (usep));
 
-	      if (fold_stmt (&gsi, fwprop_ssa_val))
+	      if (fold_stmt (&gsi, fwprop_ssa_val, simple_dce_worklist))
 		{
 		  changed = true;
 		  stmt = gsi_stmt (gsi);
