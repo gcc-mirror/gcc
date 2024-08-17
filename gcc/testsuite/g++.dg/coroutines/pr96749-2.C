@@ -27,7 +27,7 @@ struct Task {
 	struct promise_type {
 		auto initial_suspend() { return std::suspend_always{}; }
 		auto final_suspend() noexcept { return std::suspend_always{}; }
-		void get_return_object() {}
+		Task get_return_object() ;
 		void unhandled_exception() {}
 	};
 };

@@ -116,7 +116,7 @@ struct awaitable_frame_base {
   template <typename T> auto await_transform(T a) { return a; }
 };
 template <> struct awaitable_frame<void> : awaitable_frame_base {
-  void get_return_object();
+  awaitable<void> get_return_object();
 };
 } // namespace detail
 } // namespace asio

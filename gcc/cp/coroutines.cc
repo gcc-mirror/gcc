@@ -4646,8 +4646,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   /* Create the coro frame type, as far as it can be known at this stage.
      1. Types we already know.  */
 
-  tree fn_return_type = TREE_TYPE (TREE_TYPE (orig));
   tree promise_type = get_coroutine_promise_type (orig);
+  tree fn_return_type = TREE_TYPE (TREE_TYPE (orig));
+  bool void_ramp_p = VOID_TYPE_P (fn_return_type);
 
   /* 2. Types we need to define or look up.  */
 
@@ -4951,7 +4952,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       tree cond = build1 (CONVERT_EXPR, coro_frame_ptr, nullptr_node);
       cond = build2 (EQ_EXPR, boolean_type_node, coro_fp, cond);
       finish_if_stmt_cond (cond, if_stmt);
-      if (VOID_TYPE_P (fn_return_type))
+      if (void_ramp_p)
 	{
 	  /* Execute the get-return-object-on-alloc-fail call...  */
 	  finish_expr_stmt (grooaf);
@@ -5157,7 +5158,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 				     coro_get_return_object_identifier,
 				     fn_start, NULL, /*musthave=*/true);
   /* Without a return object we haven't got much clue what's going on.  */
-  if (get_ro == error_mark_node)
+  if (!get_ro || get_ro == error_mark_node)
     {
       BIND_EXPR_BODY (ramp_bind) = pop_stmt_list (ramp_body);
       DECL_SAVED_TREE (orig) = newbody;
@@ -5165,10 +5166,20 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       suppress_warning (orig, OPT_Wreturn_type);
       return false;
     }
+ 
+  /* Check for a bad get return object type.
+     [dcl.fct.def.coroutine] / 7 requires:
+     The expression promise.get_return_object() is used to initialize the
+     returned reference or prvalue result object ... */
+  tree gro_type = TREE_TYPE (get_ro);
+  if (VOID_TYPE_P (gro_type) && !void_ramp_p)
+    {
+      error_at (fn_start, "no viable conversion from %<void%> provided by"
+		" %<get_return_object%> to return type %qT", fn_return_type);
+      return false;
+    }
 
   tree gro_context_body = push_stmt_list ();
-  tree gro_type = TREE_TYPE (get_ro);
-  bool gro_is_void_p = VOID_TYPE_P (gro_type);
 
   tree gro = NULL_TREE;
   tree gro_bind_vars = NULL_TREE;
@@ -5177,8 +5188,11 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree gro_cleanup_stmt = NULL_TREE;
   /* We have to sequence the call to get_return_object before initial
      suspend.  */
-  if (gro_is_void_p)
-    r = get_ro;
+  if (void_ramp_p)
+    {
+      gcc_checking_assert (VOID_TYPE_P (gro_type));
+      r = get_ro;
+    }
   else if (same_type_p (gro_type, fn_return_type))
     {
      /* [dcl.fct.def.coroutine] / 7
@@ -5264,28 +5278,11 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
      for an object of the return type.  */
 
   if (same_type_p (gro_type, fn_return_type))
-    r = gro_is_void_p ? NULL_TREE : DECL_RESULT (orig);
-  else if (!gro_is_void_p)
+    r = void_ramp_p ? NULL_TREE : DECL_RESULT (orig);
+  else
     /* check_return_expr will automatically return gro as an rvalue via
        treat_lvalue_as_rvalue_p.  */
     r = gro;
-  else if (CLASS_TYPE_P (fn_return_type))
-    {
-      /* For class type return objects, we can attempt to construct,
-	 even if the gro is void. ??? Citation ??? c++/100476  */
-      r = build_special_member_call (NULL_TREE,
-				     complete_ctor_identifier, NULL,
-				     fn_return_type, LOOKUP_NORMAL,
-				     tf_warning_or_error);
-      r = build_cplus_new (fn_return_type, r, tf_warning_or_error);
-    }
-  else
-    {
-      /* We can't initialize a non-class return value from void.  */
-      error_at (input_location, "cannot initialize a return object of type"
-		" %qT with an rvalue of type %<void%>", fn_return_type);
-      r = error_mark_node;
-    }
 
   finish_return_stmt (r);
 
