@@ -52,7 +52,7 @@
   g++ command line options may change the ABI as a side-effect of
   use. Such flags include <code>-fpack-struct</code> and
   <code>-fno-exceptions</code>, but include others: see the complete
-  list in the GCC manual under the heading <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code%20Gen%20Options">Options
+  list in the GCC manual under the heading <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code%20Gen%20Options">Options
   for Code Generation Conventions</link>.
 </para>
 
