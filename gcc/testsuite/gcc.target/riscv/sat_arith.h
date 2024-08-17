@@ -227,7 +227,19 @@ sat_u_truc_##WT##_to_##NT##_fmt_1 (WT x) \
 }
 #define DEF_SAT_U_TRUC_FMT_1_WRAP(NT, WT) DEF_SAT_U_TRUC_FMT_1(NT, WT)
 
+#define DEF_SAT_U_TRUC_FMT_2(NT, WT)     \
+NT __attribute__((noinline))             \
+sat_u_truc_##WT##_to_##NT##_fmt_2 (WT x) \
+{                                        \
+  WT max = (WT)(NT)-1;                   \
+  return x > max ? (NT) max : (NT)x;     \
+}
+#define DEF_SAT_U_TRUC_FMT_2_WRAP(NT, WT) DEF_SAT_U_TRUC_FMT_2(NT, WT)
+
 #define RUN_SAT_U_TRUC_FMT_1(NT, WT, x) sat_u_truc_##WT##_to_##NT##_fmt_1 (x)
 #define RUN_SAT_U_TRUC_FMT_1_WRAP(NT, WT, x) RUN_SAT_U_TRUC_FMT_1(NT, WT, x)
+
+#define RUN_SAT_U_TRUC_FMT_2(NT, WT, x) sat_u_truc_##WT##_to_##NT##_fmt_2 (x)
+#define RUN_SAT_U_TRUC_FMT_2_WRAP(NT, WT, x) RUN_SAT_U_TRUC_FMT_2(NT, WT, x)
 
 #endif
