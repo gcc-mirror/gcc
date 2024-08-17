@@ -3060,7 +3060,7 @@ Please do and please read the GNU Emacs info under
 
 You might consider joining the GM2 Mailing list before you start
 coding.  The mailing list may be subscribed via a web interface
-@uref{http://lists.nongnu.org/mailman/listinfo/gm2} or via email
+@uref{https://lists.nongnu.org/mailman/listinfo/gm2} or via email
 @email{gm2-subscribe@@nongnu.org}.
 
 Many thanks and enjoy your coding!
