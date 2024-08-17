@@ -121,7 +121,7 @@ It might work with other compilers, though.</para>
   flag <literal>-fopenmp</literal>. This will link
   in <code>libgomp</code>, the
   <link xmlns:xlink="http://www.w3.org/1999/xlink"
-    xlink:href="http://gcc.gnu.org/onlinedocs/libgomp/">GNU Offloading and
+    xlink:href="https://gcc.gnu.org/onlinedocs/libgomp/">GNU Offloading and
     Multi Processing Runtime Library</link>,
   whose presence is mandatory.
 </para>
@@ -739,7 +739,7 @@ i. e. it is a singleton. It can be read and written by calling
 <code>__gnu_parallel::_Settings::set</code>, respectively.
 Please note that the first call return a const object, so direct manipulation
 is forbidden.
-See <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/index.html">
+See <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/index.html">
   <filename class="headerfile">&lt;parallel/settings.h&gt;</filename></link>
 for complete details.
 </para>
