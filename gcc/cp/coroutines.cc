@@ -4946,25 +4946,18 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	 control to the caller of the coroutine and the return value is
 	 obtained by a call to T::get_return_object_on_allocation_failure(),
 	 where T is the promise type.  */
-
-      gcc_checking_assert (same_type_p (fn_return_type, TREE_TYPE (grooaf)));
       tree if_stmt = begin_if_stmt ();
       tree cond = build1 (CONVERT_EXPR, coro_frame_ptr, nullptr_node);
       cond = build2 (EQ_EXPR, boolean_type_node, coro_fp, cond);
       finish_if_stmt_cond (cond, if_stmt);
+      r = NULL_TREE;
       if (void_ramp_p)
-	{
-	  /* Execute the get-return-object-on-alloc-fail call...  */
-	  finish_expr_stmt (grooaf);
-	  /* ... but discard the result, since we return void.  */
-	  finish_return_stmt (NULL_TREE);
-	}
+	/* Execute the get-return-object-on-alloc-fail call...  */
+	finish_expr_stmt (grooaf);
       else
-	{
-	  /* Get the fallback return object.  */
-	  r = build_cplus_new (fn_return_type, grooaf, tf_warning_or_error);
-	  finish_return_stmt (r);
-	}
+	/* Get the fallback return object.  */
+	r = grooaf;
+      finish_return_stmt (r);
       finish_then_clause (if_stmt);
       finish_if_stmt (if_stmt);
     }
