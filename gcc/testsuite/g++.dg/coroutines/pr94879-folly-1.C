@@ -39,9 +39,10 @@ public:
   std::g initial_suspend();
   l final_suspend() noexcept;
 };
+class n;
 class m : public j {
 public:
-  void get_return_object();
+  n get_return_object();
   void unhandled_exception();
 };
 class n {
