@@ -267,7 +267,7 @@ hardware, hand-crafted assembly is selected. This is the case for the following 
 <para>And for the rest, a simulated atomic lock via pthreads.
 </para>
 
-<para> Detailed information about compiler intrinsics for atomic operations can be found in the GCC <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc/_005f_005fatomic-Builtins.html"> documentation</link>.
+<para>Detailed information about compiler intrinsics for atomic operations can be found in the GCC <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/onlinedocs/gcc/_005f_005fatomic-Builtins.html"> documentation</link>.
 </para>
 
 <para> More details on the library fallbacks from the porting <link linkend="internals.thread_safety">section</link>.
@@ -290,7 +290,7 @@ the current host. In libstdc++ implementation files,
 </para>
 
 <para>Within libstdc++ sources, all calls to underlying thread functionality
-use this layer. More detail as to the specific interface can be found in the source <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/index.html">documentation</link>.
+use this layer. More detail as to the specific interface can be found in the source <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/index.html">documentation</link>.
 </para>
 
 <para>By design, the gthread layer is interoperable with the types,
