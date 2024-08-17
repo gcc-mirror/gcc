@@ -3015,7 +3015,7 @@ email to:
 or by
 @url{https://lists.nongnu.org/mailman/listinfo/gm2}.
 The mailing list contents can be viewed
-@url{https://lists.gnu.org/archive/html/gm2}.
+@url{https://lists.gnu.org/archive/html/gm2/}.
 
 @node Other languages, , Community, Using
 @section Other languages for GCC
