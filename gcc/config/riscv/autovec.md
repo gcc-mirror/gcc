@@ -2764,3 +2764,19 @@
     operands[2] = const0_rtx;
   }
 )
+
+;; -------------------------------------------------------------------------
+;; - vrol.vv vror.vv
+;; -------------------------------------------------------------------------
+(define_expand "v<bitmanip_optab><mode>3"
+  [(set (match_operand:VI 0 "register_operand")
+	(bitmanip_rotate:VI
+	  (match_operand:VI 1 "register_operand")
+	  (match_operand:VI 2 "register_operand")))]
+  "TARGET_ZVBB || TARGET_ZVKB"
+  {
+    riscv_vector::emit_vlmax_insn (code_for_pred_v (<CODE>, <MODE>mode),
+				   riscv_vector::BINARY_OP, operands);
+    DONE;
+  }
+)
