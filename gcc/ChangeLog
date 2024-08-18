@@ -1,3 +1,13 @@
+2024-08-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-08-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/116390
+	* config/avr/avr.cc (avr_out_movsi_mr_r_reg_disp_tiny): Fix
+	output templates for the reg_base == reg_src and
+	reg_src == reg_base - 2 cases.
+
 2024-08-16  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/85624
