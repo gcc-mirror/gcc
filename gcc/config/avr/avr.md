@@ -7605,7 +7605,7 @@
                        "sbc %C0,__zero_reg__" CR_TAB
                        "sbc %D0,__zero_reg__", operands);
 
-    int jump_mode = avr_jump_mode (operands[2], insn);
+    int jump_mode = avr_jump_mode (operands[2], insn, 3 - avr_adiw_reg_p (operands[0]));
     const char *op = ((EQ == <CODE>) ^ (jump_mode == 1)) ? "brcc" : "brcs";
     operands[1] = gen_rtx_CONST_STRING (VOIDmode, op);
 
@@ -7642,7 +7642,7 @@
       output_asm_insn ("subi %A0,1" CR_TAB
                        "sbc %B0,__zero_reg__", operands);
 
-    int jump_mode = avr_jump_mode (operands[2], insn);
+    int jump_mode = avr_jump_mode (operands[2], insn, 1 - avr_adiw_reg_p (operands[0]));
     const char *op = ((EQ == <CODE>) ^ (jump_mode == 1)) ? "brcc" : "brcs";
     operands[1] = gen_rtx_CONST_STRING (VOIDmode, op);
 
@@ -7681,7 +7681,7 @@
       output_asm_insn ("subi %A0,1" CR_TAB
                        "sbc %B0,__zero_reg__", operands);
 
-    int jump_mode = avr_jump_mode (operands[2], insn);
+    int jump_mode = avr_jump_mode (operands[2], insn, 1 - avr_adiw_reg_p (operands[0]));
     const char *op = ((EQ == <CODE>) ^ (jump_mode == 1)) ? "brcc" : "brcs";
     operands[1] = gen_rtx_CONST_STRING (VOIDmode, op);
 
@@ -7718,7 +7718,7 @@
                      "sub %A0,%3" CR_TAB
                      "sbc %B0,__zero_reg__", operands);
 
-    int jump_mode = avr_jump_mode (operands[2], insn);
+    int jump_mode = avr_jump_mode (operands[2], insn, 1 - avr_adiw_reg_p (operands[0]));
     const char *op = ((EQ == <CODE>) ^ (jump_mode == 1)) ? "brcc" : "brcs";
     operands[1] = gen_rtx_CONST_STRING (VOIDmode, op);
 
