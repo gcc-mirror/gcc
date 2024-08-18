@@ -916,7 +916,8 @@ name_lookup::search_namespace_only (tree scope)
 		if (unsigned base = cluster->indices[jx].base)
 		  if (unsigned span = cluster->indices[jx].span)
 		    do
-		      if (bitmap_bit_p (imports, base))
+		      if (bool (want & LOOK_want::ANY_REACHABLE)
+			  || bitmap_bit_p (imports, base))
 			goto found;
 		    while (++base, --span);
 		continue;
@@ -960,9 +961,17 @@ name_lookup::search_namespace_only (tree scope)
 			dup_detect |= dup;
 		      }
 
-		    if (STAT_TYPE_VISIBLE_P (bind))
-		      type = STAT_TYPE (bind);
-		    bind = STAT_VISIBLE (bind);
+		    if (bool (want & LOOK_want::ANY_REACHABLE))
+		      {
+			type = STAT_TYPE (bind);
+			bind = STAT_DECL (bind);
+		      }
+		    else
+		      {
+			if (STAT_TYPE_VISIBLE_P (bind))
+			  type = STAT_TYPE (bind);
+			bind = STAT_VISIBLE (bind);
+		      }
 		  }
 
 		/* And process it.  */
@@ -3761,6 +3770,10 @@ check_module_override (tree decl, tree mvec, bool hiding,
   tree nontmpl = STRIP_TEMPLATE (decl);
   bool attached = DECL_LANG_SPECIFIC (nontmpl) && DECL_MODULE_ATTACH_P (nontmpl);
 
+  /* For deduction guides we don't do normal name lookup, but rather consider
+     any reachable declaration, so we should check for overriding here too.  */
+  bool any_reachable = deduction_guide_p (decl);
+
   if (BINDING_VECTOR_SLOTS_PER_CLUSTER == BINDING_SLOTS_FIXED)
     {
       cluster++;
@@ -3775,7 +3788,8 @@ check_module_override (tree decl, tree mvec, bool hiding,
 	  continue;
 	if (!cluster->indices[jx].base)
 	  continue;
-	if (!bitmap_bit_p (imports, cluster->indices[jx].base))
+	if (!any_reachable
+	    && !bitmap_bit_p (imports, cluster->indices[jx].base))
 	  continue;
 	/* Is it loaded? */
 	if (cluster->slots[jx].is_lazy ())
@@ -3795,9 +3809,17 @@ check_module_override (tree decl, tree mvec, bool hiding,
 	    /* If there was a matching STAT_TYPE here then xref_tag
 	       should have found it, but we need to check anyway because
 	       a conflicting using-declaration may exist.  */
-	    if (STAT_TYPE_VISIBLE_P (bind))
-	      type = STAT_TYPE (bind);
-	    bind = STAT_VISIBLE (bind);
+	    if (any_reachable)
+	      {
+		type = STAT_TYPE (bind);
+		bind = STAT_DECL (bind);
+	      }
+	    else
+	      {
+		if (STAT_TYPE_VISIBLE_P (bind))
+		  type = STAT_TYPE (bind);
+		bind = STAT_VISIBLE (bind);
+	      }
 	  }
 
 	if (type)

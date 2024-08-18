@@ -30743,7 +30743,8 @@ deduction_guides_for (tree tmpl, bool &any_dguides_p, tsubst_flags_t complain)
     {
       guides = lookup_qualified_name (CP_DECL_CONTEXT (tmpl),
 				      dguide_name (tmpl),
-				      LOOK_want::NORMAL, /*complain*/false);
+				      LOOK_want::ANY_REACHABLE,
+				      /*complain=*/false);
       if (guides == error_mark_node)
 	guides = NULL_TREE;
       else

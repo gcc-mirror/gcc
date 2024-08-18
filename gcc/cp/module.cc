@@ -13645,7 +13645,7 @@ depset::hash::add_deduction_guides (tree decl)
   if (find_binding (ns, name))
     return;
 
-  tree guides = lookup_qualified_name (ns, name, LOOK_want::NORMAL,
+  tree guides = lookup_qualified_name (ns, name, LOOK_want::ANY_REACHABLE,
 				       /*complain=*/false);
   if (guides == error_mark_node)
     return;
@@ -15227,11 +15227,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		    if (dep->is_hidden ())
 		      flags |= cbf_hidden;
 		    else if (DECL_MODULE_EXPORT_P (STRIP_TEMPLATE (bound)))
-		      flags |= cbf_export;
-		    else if (deduction_guide_p (bound))
-		      /* Deduction guides are always exported so that they are
-			 visible to name lookup whenever their class template
-			 is reachable.  */
 		      flags |= cbf_export;
 		  }
 

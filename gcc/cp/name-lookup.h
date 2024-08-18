@@ -385,8 +385,11 @@ enum class LOOK_want
   TYPE = 1 << 1,  /* We only want TYPE_DECLS.  */
   NAMESPACE = 1 << 2,  /* We only want NAMESPACE_DECLS.  */
 
-  HIDDEN_FRIEND = 1 << 3, /* See hidden friends.  */
+  HIDDEN_FRIEND = 1 << 3,  /* See hidden friends.  */
   HIDDEN_LAMBDA = 1 << 4,  /* See lambda-ignored entities.  */
+
+  ANY_REACHABLE = 1 << 5,  /* Include reachable module declarations not
+			      normally visible to name lookup.  */
 
   TYPE_NAMESPACE = TYPE | NAMESPACE,  /* Either NAMESPACE or TYPE.  */
 };
