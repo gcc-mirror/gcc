@@ -3989,19 +3989,22 @@ avr_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 /* Choose mode for jump insn:
    1 - relative jump in range -63 <= x <= 62 ;
    2 - relative jump in range -2046 <= x <= 2045 ;
-   3 - absolute jump (only for ATmega[16]03).  */
+   3 - absolute jump (only when we have JMP / CALL).
+
+   When jumping backwards, assume the jump offset is EXTRA words
+   bigger than inferred from insn addresses.  */
 
 int
-avr_jump_mode (rtx x, rtx_insn *insn)
+avr_jump_mode (rtx x, rtx_insn *insn, int extra)
 {
   int dest_addr = INSN_ADDRESSES (INSN_UID (GET_CODE (x) == LABEL_REF
 					    ? XEXP (x, 0) : x));
   int cur_addr = INSN_ADDRESSES (INSN_UID (insn));
   int jump_distance = cur_addr - dest_addr;
 
-  if (IN_RANGE (jump_distance, -63, 62))
+  if (IN_RANGE (jump_distance, -63, 62 - extra))
     return 1;
-  else if (IN_RANGE (jump_distance, -2046, 2045))
+  else if (IN_RANGE (jump_distance, -2046, 2045 - extra))
     return 2;
   else if (AVR_HAVE_JMP_CALL)
     return 3;
