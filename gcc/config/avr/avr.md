@@ -1724,12 +1724,28 @@
                    (match_operand:ALL2 2 "nonmemory_or_const_operand" "r,s,IJ YIJ,n Ynn")))]
   ""
   "#"
-  "&& reload_completed"
+  "&& 1"
   [(parallel [(set (match_dup 0)
                    (plus:ALL2 (match_dup 1)
                               (match_dup 2)))
               (clobber (reg:CC REG_CC))])]
-  ""
+  {
+    // Passes like combine and fwprop1 may remove the scratch from an
+    // addhi3 insn.  Add the scratch again because having a QImode
+    // scratch reg available is better than spilling the operands in
+    // the case when we don't get a d-regs register.
+    if (! reload_completed
+        && const_operand (operands[2], <MODE>mode)
+        && ! stack_register_operand (operands[0], HImode)
+        && ! stack_register_operand (operands[1], HImode))
+      {
+        emit (gen_add<mode>3_clobber (operands[0], operands[1], operands[2]));
+        DONE;
+      }
+
+    if (! reload_completed)
+      FAIL;
+  }
   [(set_attr "isa" "*,*,adiw,*")])
 
 ;; "*addhi3"
