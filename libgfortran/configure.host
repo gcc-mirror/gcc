@@ -61,6 +61,15 @@ case "${host_cpu}" in
         ieee_support='yes'
         ;;
     esac
+    ;;
+
+  powerpc*)
+    case "${host_os}" in
+      darwin*)
+        fpu_host='fpu-macppc'
+        ieee_support='yes'
+        ;;
+    esac
 
 esac
 
