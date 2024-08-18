@@ -7,5 +7,3 @@
 export module foo;
 // { dg-error "Interface: no such module" "" { target *-*-* } .-1 }
 // { dg-error "failed reading mapper" "" { target *-*-* } 0 }
-
-// { dg-prune-output "not writing module" }

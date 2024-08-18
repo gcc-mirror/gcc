@@ -3681,7 +3681,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  public:
   /* Read and write module.  */
-  void write_begin (elf_out *to, cpp_reader *,
+  bool write_begin (elf_out *to, cpp_reader *,
 		    module_state_config &, unsigned &crc);
   void write_end (elf_out *to, cpp_reader *,
 		  module_state_config &, unsigned &crc);
@@ -18317,7 +18317,7 @@ ool_cmp (const void *a_, const void *b_)
      MOD_SNAME_PFX.cfg      : config data
 */
 
-void
+bool
 module_state::write_begin (elf_out *to, cpp_reader *reader,
 			   module_state_config &config, unsigned &crc)
 {
@@ -18395,10 +18395,7 @@ module_state::write_begin (elf_out *to, cpp_reader *reader,
   table.find_dependencies (this);
 
   if (!table.finalize_dependencies ())
-    {
-      to->set_error ();
-      return;
-    }
+    return false;
 
 #if CHECKING_P
   /* We're done verifying at-most once reading, reset to verify
@@ -18595,6 +18592,8 @@ module_state::write_begin (elf_out *to, cpp_reader *reader,
   // so-controlled.
   if (false)
     write_env (to);
+
+  return true;
 }
 
 // Finish module writing after we've emitted all dynamic initializers. 
@@ -20847,20 +20846,29 @@ finish_module_processing (cpp_reader *reader)
 
       cookie = new module_processing_cookie (cmi_name, tmp_name, fd, e);
 
-      if (errorcount
-	  /* Don't write the module if it contains an erroneous template.  */
-	  || (erroneous_templates
-	      && !erroneous_templates->is_empty ()))
-	warning_at (state->loc, 0, "not writing module %qs due to errors",
-		    state->get_flatname ());
+      if (errorcount)
+	/* Don't write the module if we have reported errors.  */;
+      else if (erroneous_templates
+	       && !erroneous_templates->is_empty ())
+	{
+	  /* Don't write the module if it contains an erroneous template.
+	     Also emit notes about where errors occurred in case
+	     -Wno-template-body was passed.  */
+	  auto_diagnostic_group d;
+	  error_at (state->loc, "not writing module %qs due to errors "
+		    "in template bodies", state->get_flatname ());
+	  if (!warn_template_body)
+	    inform (state->loc, "enable %<-Wtemplate-body%> for more details");
+	  for (auto e : *erroneous_templates)
+	    inform (e.second, "first error in %qD appeared here", e.first);
+	}
       else if (cookie->out.begin ())
 	{
-	  cookie->began = true;
-	  auto loc = input_location;
 	  /* So crashes finger-point the module decl.  */
-	  input_location = state->loc;
-	  state->write_begin (&cookie->out, reader, cookie->config, cookie->crc);
-	  input_location = loc;
+	  iloc_sentinel ils = state->loc;
+	  if (state->write_begin (&cookie->out, reader, cookie->config,
+				  cookie->crc))
+	    cookie->began = true;
 	}
 
       dump.pop (n);

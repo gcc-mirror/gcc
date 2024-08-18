@@ -28,5 +28,3 @@ export void use() {
 // here is an exposure of this type, so this should be an error; we don't yet
 // implement this checking however.
 struct {} s;  // { dg-error "TU-local" "" { xfail *-*-* } }
-
-// { dg-prune-output "not writing module" }

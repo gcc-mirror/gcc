@@ -3,4 +3,3 @@
 export module bob; // { dg-error "in included file" }
 # 6 "" 2
 // { dg-module-cmi !bob }
-// { dg-prune-output "not writing module" }

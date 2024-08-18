@@ -8,4 +8,3 @@ class B { // { dg-error "conflicts with import" }
   B() { object.value = 42; }
   A object;
 };
-// { dg-prune-output "not writing module" }

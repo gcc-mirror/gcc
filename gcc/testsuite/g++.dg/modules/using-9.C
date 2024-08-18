@@ -9,5 +9,3 @@ namespace outer {
 }
 
 export using outer::any_of;  // { dg-error "does not have external linkage" }
-
-// { dg-prune-output "not writing module" }

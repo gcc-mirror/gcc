@@ -19,5 +19,3 @@ export using enum s::e1;  // { dg-error "does not have external linkage" }
 export using enum s::e2;  // { dg-error "does not have external linkage" }
 export using enum m::e3;  // { dg-error "does not have external linkage" }
 export using enum m::e4;  // { dg-error "does not have external linkage" }
-
-// { dg-prune-output "not writing module" }

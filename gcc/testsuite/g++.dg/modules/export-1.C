@@ -24,5 +24,3 @@ export class A; // { dg-error "conflicting exporting for declaration" }
 
 template <typename T> struct B;
 export template <typename T> struct B {};  // { dg-error "conflicting exporting for declaration" }
-
-// { dg-warning "due to errors" "" { target *-*-* } 0 }

@@ -1,6 +1,6 @@
 // { dg-additional-options "-fmodules-ts" }
 
-export module frob; // { dg-error "failed to write" }
+export module frob;
 // { dg-module-cmi !frob }
 
 namespace {
