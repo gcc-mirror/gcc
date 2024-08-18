@@ -207,7 +207,7 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 	     wider than DImode.  */
 	  scalar_int_mode outer_mode;
 	  if (!is_a <scalar_int_mode> (GET_MODE (x), &outer_mode)
-	      || GET_MODE_BITSIZE (outer_mode) > 64)
+	      || GET_MODE_BITSIZE (outer_mode) > HOST_BITS_PER_WIDE_INT)
 	    {
 	      /* Skip the subrtxs of this destination.  There is
 		 little value in iterating into the subobjects, so
@@ -239,7 +239,7 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 		 that case.  Remember, we can not just continue to process
 		 the inner RTXs due to the STRICT_LOW_PART.  */
 	      if (!is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (x)), &outer_mode)
-		  || GET_MODE_BITSIZE (outer_mode) > 64)
+		  || GET_MODE_BITSIZE (outer_mode) > HOST_BITS_PER_WIDE_INT)
 		{
 		  /* Skip the subrtxs of the STRICT_LOW_PART.  We can't
 		     process them because it'll set objects as no longer
@@ -293,7 +293,7 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 		 the top of the loop which just complicates the flow even
 		 more.  */
 	      if (!is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (x)), &outer_mode)
-		  || GET_MODE_BITSIZE (outer_mode) > 64)
+		  || GET_MODE_BITSIZE (outer_mode) > HOST_BITS_PER_WIDE_INT)
 		{
 		  skipped_dest = true;
 		  iter.skip_subrtxes ();
@@ -329,7 +329,7 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 	    }
 
 	  /* BIT >= 64 indicates something went horribly wrong.  */
-	  gcc_assert (bit <= 63);
+	  gcc_assert (bit <= HOST_BITS_PER_WIDE_INT - 1);
 
 	  /* Now handle the actual object that was changed.  */
 	  if (REG_P (x))
@@ -483,6 +483,17 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
 
   enum machine_mode mode = GET_MODE_INNER (GET_MODE (x));
   unsigned HOST_WIDE_INT mmask = GET_MODE_MASK (mode);
+
+  /* While we don't try to optimize operations on types larger
+     than 64 bits, we do want to make sure not to invoke undefined
+     behavior when presented with such operations during use
+     processing.  The safe thing to do is to just return mmask
+     for that scenario indicating every possible chunk is life.  */
+  scalar_int_mode smode;
+  if (!is_a <scalar_int_mode> (mode, &smode)
+      || GET_MODE_BITSIZE (smode) > HOST_BITS_PER_WIDE_INT)
+    return mmask;
+
   switch (code)
     {
     case PLUS:
@@ -733,8 +744,17 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 				      && SUBREG_PROMOTED_UNSIGNED_P (y)))))
 			break;
 
-		      /* The SUBREG's mode determine the live width.  */
 		      bit = subreg_lsb (y).to_constant ();
+
+		      /* If this is a wide object (more bits than we can fit
+			 in a HOST_WIDE_INT), then just break from the SET
+			 context.   That will cause the iterator to walk down
+			 into the subrtx and if we land on a REG we'll mark
+			 the whole think live.  */
+		      if (bit >= HOST_BITS_PER_WIDE_INT)
+			break;
+
+		      /* The SUBREG's mode determines the live width.  */
 		      if (dst_mask)
 			{
 			  dst_mask <<= bit;
