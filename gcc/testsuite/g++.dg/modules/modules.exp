@@ -205,9 +205,19 @@ proc module_do_it { do_what testcase std asm_list } {
     if { !$ok } {
 	unresolved "$ident link"
     } else {
+	global target_triplet
 	set out [${tool}_target_compile $asm_list \
 		     $execname executable $options]
 	eval $xfail
+
+	# Do gcc-specific pruning.
+	set out [${tool}-dg-prune $target_triplet $out]
+	# Fix up remaining line-breaks similar to "regular" pruning
+	# calls.  Otherwise, a multi-line message stripped e.g. one
+	# part by the default prune_warnings and one part part by the
+	# gcc prune_gcc_output will have a residual line-break.
+	regsub "^\[\r\n\]+" $out "" out
+
 	if { $out == "" } {
 	    pass "$ident link"
 	} else {
