@@ -25,10 +25,7 @@
    Additional data is given here only where it applies to libstdc++.
   </para>
 
-   <para>As of GCC 4.0.1 the minimum version of binutils required to build
-      libstdc++ is <code>2.15.90.0.1.1</code>.
-      Older releases of libstdc++ do not require such a recent version,
-      but to take full advantage of useful space-saving features and
+   <para>To take full advantage of useful space-saving features and
       bug-fixes you should use a recent binutils whenever possible.
       The configure process will automatically detect and use these
       features if the underlying support is present.
