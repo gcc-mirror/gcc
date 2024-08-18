@@ -1,3 +1,39 @@
+2024-08-17  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/rvv/base/bug-7.c: New test.
+	* gcc.target/riscv/rvv/base/bug-8.c: New test.
+
+2024-08-17  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116282
+	* gcc.target/riscv/pr116282.c: New test.
+
+2024-08-17  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/rvv/base/bug-9.c: New test.
+
+2024-08-17  Pan Li  <pan2.li@intel.com>
+
+	PR target/116280
+	* gcc.target/riscv/rvv/base/pr116280-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr116280-2.c: New test.
+
+2024-08-17  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vrolr-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vrolr-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vrolr-template.h: New test.
+
+2024-08-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/116390
+	* gcc.target/avr/torture/pr116390.c: New test.
+
+2024-08-17  曾治金  <zhijin.zeng@spacemit.com>
+
+	PR target/116305
+	* gcc.target/riscv/rvv/base/scalable_vector_cfi.c: New test.
+
 2024-08-16  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	* g++.dg/warn/pr33738.C: Added -fno-short-enums.

@@ -1,3 +1,79 @@
+2024-08-17  Jeff Law  <jlaw@ventanamicro.com>
+
+	* ext-dce.cc (carry_backpropagate): Cast mask to HOST_WIDE_INT before
+	shifting.
+
+2024-08-17  Kevin Kirspel  <Kevin-Kirspel@idexx.com>
+
+	* config/riscv/t-rtems: Add ilp32f multilib.
+
+2024-08-17  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/v850/v850.md (rotlsi3): Allow more cases for V850E3V5+.
+
+2024-08-17  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/vector.md: Allow scalar operand to be 0.
+
+2024-08-17  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116282
+	* config/riscv/riscv-protos.h (riscv_const_insns): Add new argument.
+	* config/riscv/riscv.cc (riscv_build_integer): Add new argument
+	ALLOW_NEW_PSEUDOS.  Pass it down to recursive calls and check it
+	before using synthesis which allows new registers to be created.
+	(riscv_split_integer_cost): Pass new argument to riscv_build_integer.
+	(riscv_integer_cost): Add ALLOW_NEW_PSEUDOS argument, pass it down to
+	riscv_build_integer.
+	(riscv_legitimate_constant_p): Pass new argument to riscv_const_insns.
+	(riscv_const_insns): New argment ALLOW_NEW_PSEUDOS.  Pass it down to
+	riscv_integer_cost and riscv_const_insns.
+	(riscv_split_const_insns): Pass new argument to riscv_const_insns.
+	(riscv_move_integer, riscv_rtx_costs): Similarly.
+	* config/riscv/riscv.md (shadd with costly constant): Pass new argument
+	to riscv_const_insns.
+	* config/riscv/bitmanip.md (and with costly constant): Pass new argument
+	to riscv_const_insns.
+
+2024-08-17  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-protos.h (riscv_vector_float_type_p): New.
+	* config/riscv/riscv-vector-builtins.cc (function_instance::any_type_float_p):
+	Use riscv_vector_float_type_p instead of FLOAT_MODE_P for judgment.
+	* config/riscv/riscv.cc (riscv_vector_int_type_p): Change static to extern.
+
+2024-08-17  Pan Li  <pan2.li@intel.com>
+
+	PR target/116280
+	* config/riscv/autovec-opt.md: Add quad truncation to
+	align the mode requirement for vwsll.
+
+2024-08-17  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* config/riscv/autovec.md (v<bitmanip_optab><mode>3):
+	Add new define_expand pattern for vector rotate shift.
+
+2024-08-17  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/gm2.texi (What is GNU Modula-2): Tweak PIM4 link.
+
+2024-08-17  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/gm2.texi (Community): Tweak link to gm2 list archive.
+
+2024-08-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/116390
+	* config/avr/avr.cc (avr_out_movsi_mr_r_reg_disp_tiny): Fix
+	output templates for the reg_base == reg_src and
+	reg_src == reg_base - 2 cases.
+
+2024-08-17  曾治金  <zhijin.zeng@spacemit.com>
+
+	PR target/116305
+	* config/riscv/riscv.cc (riscv_dwarf_poly_indeterminate_value): Take
+	BYTES_PER_RISCV_VECTOR for *factor instead of riscv_bytes_per_vector_chunk.
+
 2024-08-16  Mark Harmstone  <mark@harmstone.com>
 
 	* dwarf2codeview.cc (enum cv_sym_type): Add S_REGREL32.

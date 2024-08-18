@@ -1,3 +1,27 @@
+2024-08-17  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/abi.xml: Update reference to
+	gcc.gnu.org/onlinedocs.
+	* doc/xml/manual/concurrency_extensions.xml (interface): Ditto.
+	* doc/xml/manual/extensions.xml: Ditto.
+	* doc/xml/manual/parallel_mode.xml: Ditto.
+	* doc/xml/manual/shared_ptr.xml: Ditto.
+	* doc/xml/manual/using_exceptions.xml: Ditto. And change GNU GCC
+	to GCC.
+	* doc/html/manual/abi.html: Regenerate.
+	* doc/html/manual/ext_concurrency_impl.html: Ditto.
+	* doc/html/manual/ext_demangling.html: Ditto.
+	* doc/html/manual/memory.html: Ditto.
+	* doc/html/manual/parallel_mode_design.html: Ditto.
+	* doc/html/manual/parallel_mode_using.html: Ditto.
+	* doc/html/manual/using_exceptions.html: Ditto.
+
+2024-08-17  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/prerequisites.xml: Tweak two links to
+	installation docs. Fix grammar.
+	* doc/html/manual/setup.html: Regenerate.
+
 2024-08-16  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR libstdc++/116362
