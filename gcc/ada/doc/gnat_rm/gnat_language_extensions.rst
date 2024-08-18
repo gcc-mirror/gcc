@@ -35,7 +35,8 @@ file, or in a ``.adc`` file corresponding to your project.
 * The ``-gnatX`` option, that you can pass to the compiler directly, will
   activate the curated subset of extensions.
 
-.. attention:: You can activate the extended set of extensions by using either
+.. attention:: You can activate the experimental set of extensions
+   in addition by using either
    the ``-gnatX0`` command line flag, or the pragma ``Extensions_Allowed`` with
    ``All_Extensions`` as an argument. However, it is not recommended you use
    this subset for serious projects; it is only meant as a technology preview
@@ -45,6 +46,9 @@ file, or in a ``.adc`` file corresponding to your project.
 
 Curated Extensions
 ==================
+
+Features activated via ``-gnatX`` or
+``pragma Extensions_Allowed (On)``.
 
 Local Declarations Without Block
 --------------------------------
@@ -356,6 +360,9 @@ https://github.com/AdaCore/ada-spark-rfcs/blob/master/considered/rfc-oop-first-c
 Experimental Language Extensions
 ================================
 
+Features activated via ``-gnatX0`` or
+``pragma Extensions_Allowed (All_Extensions)``.
+
 Conditional when constructs
 ---------------------------
 
@@ -662,3 +669,74 @@ Example:
 
 Link to the original RFC:
 https://github.com/AdaCore/ada-spark-rfcs/blob/topic/finalization-rehaul/considered/rfc-generalized-finalization.md
+
+Inference of Dependent Types in Generic Instantiations
+------------------------------------------------------
+
+If a generic formal type T2 depends on another formal type T1,
+the actual for T1 can be inferred from the actual for T2.
+That is, you can give the actual for T2, and leave out the one
+for T1.
+
+For example, ``Ada.Unchecked_Deallocation`` has two generic formals:
+
+.. code-block:: ada
+
+    generic
+       type Object (<>) is limited private;
+       type Name is access Object;
+    procedure Ada.Unchecked_Deallocation (X : in out Name);
+
+where ``Name`` depends on ``Object``. With this language extension,
+you can leave out the actual for ``Object``, as in:
+
+.. code-block:: ada
+
+    type Integer_Access is access all Integer;
+
+    procedure Free is new Unchecked_Deallocation (Name => Integer_Access);
+
+The compiler will infer that the actual type for ``Object`` is ``Integer``.
+Note that named notation is always required when using inference.
+
+The following inferences are allowed:
+
+- For a formal access type, the designated type can be inferred.
+
+- For a formal array type, the index type(s) and the component
+  type can be inferred.
+
+- For a formal type with discriminats, the type(s) of the discriminants
+  can be inferred.
+
+Example for arrays:
+
+.. code-block:: ada
+
+    generic
+        type Element_Type is private;
+        type Index_Type is (<>);
+        type Array_Type is array (Index_Type range <>) of Element_Type;
+    package Array_Operations is
+        ...
+    end Array_Operations;
+
+    ...
+
+    type Int_Array is array (Positive range <>) of Integer;
+
+    package Int_Array_Operations is new Array_Operations (Array_Type => Int_Array);
+
+The index and component types of ``Array_Type`` are inferred from
+``Int_Array``, so that the above instantiation is equivalent to
+the following standard-Ada instantiation:
+
+.. code-block:: ada
+
+    package Int_Array_Operations is new Array_Operations
+      (Element_Type => Integer,
+       Index_Type   => Positive,
+       Array_Type   => Int_Array);
+
+Link to the original RFC:
+https://github.com/AdaCore/ada-spark-rfcs/blob/topic/generic_instantiations/considered/rfc-inference-of-dependent-types.md
