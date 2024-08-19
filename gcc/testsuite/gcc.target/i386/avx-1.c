@@ -969,6 +969,12 @@
 #define __builtin_ia32_vfnmsubps256_mask_round(A, B, C, D, E) __builtin_ia32_vfnmsubps256_mask_round(A, B, C, D, 8)
 #define __builtin_ia32_vfnmsubps256_mask3_round(A, B, C, D, E) __builtin_ia32_vfnmsubps256_mask3_round(A, B, C, D, 8)
 #define __builtin_ia32_vfnmsubps256_maskz_round(A, B, C, D, E) __builtin_ia32_vfnmsubps256_maskz_round(A, B, C, D, 8)
+#define __builtin_ia32_getexppd256_mask_round(A, B, C, D) __builtin_ia32_getexppd256_mask_round(A, B, C, 8)
+#define __builtin_ia32_getexpph256_mask_round(A, B, C, D) __builtin_ia32_getexpph256_mask_round(A, B, C, 8)
+#define __builtin_ia32_getexpps256_mask_round(A, B, C, D) __builtin_ia32_getexpps256_mask_round(A, B, C, 8)
+#define __builtin_ia32_getmantpd256_mask_round(A, F, C, D, E) __builtin_ia32_getmantpd256_mask_round(A, 1, C, D, 8)
+#define __builtin_ia32_getmantph256_mask_round(A, F, C, D, E) __builtin_ia32_getmantph256_mask_round(A, 1, C, D, 8)
+#define __builtin_ia32_getmantps256_mask_round(A, F, C, D, E) __builtin_ia32_getmantps256_mask_round(A, 1, C, D, 8)
 
 #include <wmmintrin.h>
 #include <immintrin.h>
