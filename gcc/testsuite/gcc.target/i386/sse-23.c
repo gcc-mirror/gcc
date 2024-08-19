@@ -963,6 +963,11 @@
 #define __builtin_ia32_minpd256_mask_round(A, B, C, D, E) __builtin_ia32_minpd256_mask_round(A, B, C, D, 8)
 #define __builtin_ia32_minph256_mask_round(A, B, C, D, E) __builtin_ia32_minph256_mask_round(A, B, C, D, 8)
 #define __builtin_ia32_minps256_mask_round(A, B, C, D, E) __builtin_ia32_minps256_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_mulpd256_mask_round(A, B, C, D, E) __builtin_ia32_mulpd256_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_mulph256_mask_round(A, B, C, D, E) __builtin_ia32_mulph256_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_mulps256_mask_round(A, B, C, D, E) __builtin_ia32_mulps256_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_rangeps256_mask_round(A, B, C, D, E, F) __builtin_ia32_rangeps256_mask_round(A, B, 1, D, E, 8)
+#define __builtin_ia32_rangepd256_mask_round(A, B, C, D, E, F) __builtin_ia32_rangepd256_mask_round(A, B, 1, D, E, 8)
 
 #pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,fma,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,sha,xsavec,xsaves,clflushopt,clwb,mwaitx,clzero,pku,sgx,rdpid,gfni,vpclmulqdq,pconfig,wbnoinvd,enqcmd,avx512vp2intersect,serialize,tsxldtrk,amx-tile,amx-int8,amx-bf16,kl,widekl,avxvnni,avxifma,avxvnniint8,avxneconvert,cmpccxadd,amx-fp16,prefetchi,raoint,amx-complex,avxvnniint16,sm3,sha512,sm4,avx10.2-512")
 
