@@ -10396,8 +10396,10 @@ dwarf2out_maybe_output_loclist_view_pair (dw_loc_list_ref curr)
     }
   else
     {
-      dw2_asm_output_data_uleb128 (curr->vbegin, "Location view begin");
-      dw2_asm_output_data_uleb128 (curr->vend, "Location view end");
+      dw2_asm_output_data_uleb128 (ZERO_VIEW_P (curr->vbegin)
+				   ? 0 : curr->vbegin, "Location view begin");
+      dw2_asm_output_data_uleb128 (ZERO_VIEW_P (curr->vend)
+				   ? 0 : curr->vend, "Location view end");
     }
 #endif /* DW_LLE_view_pair */
 
@@ -10460,10 +10462,12 @@ output_loc_list (dw_loc_list_ref list_head)
 	    }
 	  else
 	    {
-	      dw2_asm_output_data_uleb128 (curr->vbegin,
+	      dw2_asm_output_data_uleb128 (ZERO_VIEW_P (curr->vbegin)
+					   ? 0 : curr->vbegin,
 					   "View list begin (%s)",
 					   list_head->vl_symbol);
-	      dw2_asm_output_data_uleb128 (curr->vend,
+	      dw2_asm_output_data_uleb128 (ZERO_VIEW_P (curr->vend)
+					   ? 0 : curr->vend,
 					   "View list end (%s)",
 					   list_head->vl_symbol);
 	    }
