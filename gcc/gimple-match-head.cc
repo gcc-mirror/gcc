@@ -943,6 +943,9 @@ gimple_extract (gimple *stmt, gimple_match_op *res_op,
 		|| code == VIEW_CONVERT_EXPR)
 	      {
 		tree op0 = TREE_OPERAND (gimple_assign_rhs1 (stmt), 0);
+		/* op0 needs to be a SSA name or an min invariant. */
+		if (TREE_CODE (op0) != SSA_NAME && !is_gimple_min_invariant (op0))
+		  return false;
 		res_op->set_op (code, type, valueize_op (op0));
 		return true;
 	      }
@@ -950,6 +953,9 @@ gimple_extract (gimple *stmt, gimple_match_op *res_op,
 	      {
 		tree rhs1 = gimple_assign_rhs1 (stmt);
 		tree op0 = valueize_op (TREE_OPERAND (rhs1, 0));
+		/* op0 needs to be a SSA name or an min invariant. */
+		if (TREE_CODE (op0) != SSA_NAME && !is_gimple_min_invariant (op0))
+		  return false;
 		res_op->set_op (code, type, op0,
 				TREE_OPERAND (rhs1, 1),
 				TREE_OPERAND (rhs1, 2),
