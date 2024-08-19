@@ -148,7 +148,7 @@ class AsyncBlockExpr;
 enum class InlineAsmOption;
 struct AnonConst;
 struct InlineAsmRegOrRegClass;
-struct InlineAsmOperand;
+class InlineAsmOperand;
 struct InlineAsmPlaceHolder;
 struct InlineAsmTemplatePiece;
 struct TupleClobber;

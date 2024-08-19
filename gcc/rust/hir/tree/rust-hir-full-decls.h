@@ -125,7 +125,8 @@ class AwaitExpr;
 class AsyncBlockExpr;
 class InlineAsmReg;
 class InlineAsmRegClass;
-struct InlineAsmRegOrRegClass;
+struct AnonConst;
+class InlineAsmOperand;
 class InlineAsm;
 
 // rust-stmt.h
