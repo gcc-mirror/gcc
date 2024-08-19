@@ -992,6 +992,9 @@
 #define __builtin_ia32_rndscalepd256_mask_round(A, B, C, D, E) __builtin_ia32_rndscalepd256_mask_round(A, 1, C, D, 8)
 #define __builtin_ia32_rndscaleph256_mask_round(A, B, C, D, E) __builtin_ia32_rndscaleph256_mask_round(A, 1, C, D, 8)
 #define __builtin_ia32_rndscaleps256_mask_round(A, B, C, D, E) __builtin_ia32_rndscaleps256_mask_round(A, 1, C, D, 8)
+#define __builtin_ia32_scalefpd256_mask_round(A, B, C, D, E) __builtin_ia32_scalefpd256_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_scalefph256_mask_round(A, B, C, D, E) __builtin_ia32_scalefph256_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_scalefps256_mask_round(A, B, C, D, E) __builtin_ia32_scalefps256_mask_round(A, B, C, D, 8)
 
 #include <wmmintrin.h>
 #include <immintrin.h>
