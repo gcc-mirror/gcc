@@ -502,9 +502,7 @@ rvv_builder::can_duplicate_repeating_sequence_p ()
       || GET_MODE_SIZE (m_new_inner_mode) > UNITS_PER_WORD
       || !get_vector_mode (m_new_inner_mode, new_size).exists (&m_new_mode))
     return false;
-  if (full_nelts ().is_constant ())
-    return repeating_sequence_p (0, full_nelts ().to_constant (), npatterns ());
-  return nelts_per_pattern () == 1;
+  return repeating_sequence_p (0, encoded_nelts (), npatterns ());
 }
 
 /* Return true if the vector is a simple sequence with one pattern and all
@@ -514,9 +512,7 @@ rvv_builder::is_repeating_sequence ()
 {
   if (npatterns () > 1)
     return false;
-  if (full_nelts ().is_constant ())
-    return repeating_sequence_p (0, full_nelts ().to_constant (), 1);
-  return nelts_per_pattern () == 1;
+  return repeating_sequence_p (0, encoded_nelts (), 1);
 }
 
 /* Return true if it is a repeating sequence that using
@@ -564,7 +560,7 @@ rvv_builder::repeating_sequence_use_merge_profitable_p ()
 
   unsigned int nelts = full_nelts ().to_constant ();
 
-  if (!repeating_sequence_p (0, nelts, npatterns ()))
+  if (!repeating_sequence_p (0, encoded_nelts (), npatterns ()))
     return false;
 
   unsigned int merge_cost = 1;
