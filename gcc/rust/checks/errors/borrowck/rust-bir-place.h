@@ -215,10 +215,12 @@ public:
   {
     internal_vector.emplace_back (std::forward<Args> (args)...);
   }
+  std::vector<T> &get_vector () { return internal_vector; }
   size_t size () const { return internal_vector.size (); }
 };
 
 using Scopes = IndexVec<ScopeId, Scope>;
+using Loans = IndexVec<LoanId, Loan>;
 
 /** Allocated places and keeps track of paths. */
 class PlaceDB
@@ -230,7 +232,7 @@ private:
   Scopes scopes;
   ScopeId current_scope = ROOT_SCOPE;
 
-  std::vector<Loan> loans;
+  Loans loans;
 
   FreeRegion next_free_region = {1};
 
@@ -251,11 +253,8 @@ public:
 
   size_t size () const { return places.size (); }
 
-  const std::vector<Loan> &get_loans () const { return loans; }
-  const Loan &get_loan (LoanId loan_id) const
-  {
-    return loans.at (loan_id.value);
-  }
+  const Loans &get_loans () const { return loans; }
+  const Loan &get_loan (LoanId loan_id) const { return loans.at (loan_id); }
 
   ScopeId get_current_scope_id () const { return current_scope; }
 
@@ -383,8 +382,9 @@ public:
   {
     LoanId id = {loans.size ()};
     loans.push_back (std::forward<Loan &&> (loan));
-    PlaceId borrowed_place = loans.rbegin ()->place;
-    places[loans.rbegin ()->place.value].borrowed_by.push_back (id);
+    PlaceId borrowed_place = loans.get_vector ().rbegin ()->place;
+    places[loans.get_vector ().rbegin ()->place.value].borrowed_by.push_back (
+      id);
     if (places[borrowed_place.value].kind == Place::DEREF)
       {
 	places[places[borrowed_place.value].path.parent.value]
