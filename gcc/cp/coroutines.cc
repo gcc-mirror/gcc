@@ -4442,7 +4442,13 @@ coro_rewrite_function_body (location_t fn_start, tree fnbody, tree orig,
 	     a reference type, look past the indirection.  */
 	  if (INDIRECT_REF_P (initial_await))
 	    initial_await = TREE_OPERAND (initial_await, 0);
-	  tree vec = TREE_OPERAND (initial_await, 3);
+	  /* In the case that the initial_await returns a target expression
+	     we might need to look through that to update the await expr.  */
+	  tree iaw = initial_await;
+	  if (TREE_CODE (iaw) == TARGET_EXPR)
+	    iaw = TARGET_EXPR_INITIAL (iaw);
+	  gcc_checking_assert (TREE_CODE (iaw) == CO_AWAIT_EXPR);
+	  tree vec = TREE_OPERAND (iaw, 3);
 	  tree aw_r = TREE_VEC_ELT (vec, 2);
 	  aw_r = convert_to_void (aw_r, ICV_STATEMENT, tf_warning_or_error);
 	  tree update = build2 (MODIFY_EXPR, boolean_type_node, i_a_r_c,
