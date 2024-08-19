@@ -218,6 +218,8 @@ public:
   size_t size () const { return internal_vector.size (); }
 };
 
+using Scopes = IndexVec<ScopeId, Scope>;
+
 /** Allocated places and keeps track of paths. */
 class PlaceDB
 {
@@ -225,7 +227,7 @@ private:
   // Possible optimizations: separate variables to speedup lookup.
   std::vector<Place> places;
   std::unordered_map<TyTy::BaseType *, PlaceId> constants_lookup;
-  std::vector<Scope> scopes;
+  Scopes scopes;
   ScopeId current_scope = ROOT_SCOPE;
 
   std::vector<Loan> loans;
@@ -257,14 +259,11 @@ public:
 
   ScopeId get_current_scope_id () const { return current_scope; }
 
-  const std::vector<Scope> &get_scopes () const { return scopes; }
+  const Scopes &get_scopes () const { return scopes; }
 
-  const Scope &get_current_scope () const
-  {
-    return scopes[current_scope.value];
-  }
+  const Scope &get_current_scope () const { return scopes[current_scope]; }
 
-  const Scope &get_scope (ScopeId id) const { return scopes[id.value]; }
+  const Scope &get_scope (ScopeId id) const { return scopes[id]; }
 
   FreeRegion get_next_free_region ()
   {
@@ -280,15 +279,15 @@ public:
   {
     ScopeId new_scope = {scopes.size ()};
     scopes.emplace_back ();
-    scopes[new_scope.value].parent = current_scope;
-    scopes[current_scope.value].children.push_back (new_scope);
+    scopes[new_scope].parent = current_scope;
+    scopes[current_scope].children.push_back (new_scope);
     current_scope = new_scope;
     return new_scope;
   }
 
   ScopeId pop_scope ()
   {
-    current_scope = scopes[current_scope.value].parent;
+    current_scope = scopes[current_scope].parent;
     return current_scope;
   }
 
@@ -304,7 +303,7 @@ public:
 
     if (new_place_ref.kind == Place::VARIABLE
 	|| new_place_ref.kind == Place::TEMPORARY)
-      scopes[current_scope.value].locals.push_back (new_place);
+      scopes[current_scope].locals.push_back (new_place);
 
     auto variances = Resolver::TypeCheckContext::get ()
 		       ->get_variance_analysis_ctx ()
@@ -494,9 +493,9 @@ private:
   WARN_UNUSED_RESULT bool is_in_scope (PlaceId place) const
   {
     for (ScopeId scope = current_scope; scope != INVALID_SCOPE;
-	 scope = scopes[scope.value].parent)
+	 scope = scopes[scope].parent)
       {
-	auto &scope_ref = scopes[scope.value];
+	auto &scope_ref = scopes[scope];
 	if (std::find (scope_ref.locals.begin (), scope_ref.locals.end (),
 		       place)
 	    != scope_ref.locals.end ())
