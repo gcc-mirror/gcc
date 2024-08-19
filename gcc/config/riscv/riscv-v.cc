@@ -1104,6 +1104,72 @@ expand_vec_series (rtx dest, rtx base, rtx step, rtx vid)
     emit_move_insn (dest, result);
 }
 
+/* Subroutine of riscv_vector_expand_vector_init.
+   Works as follows:
+   (a) Initialize TARGET by broadcasting element NELTS_REQD - 1 of BUILDER.
+   (b) Skip leading elements from BUILDER, which are the same as
+       element NELTS_REQD - 1.
+   (c) Insert earlier elements in reverse order in TARGET using vslide1down.  */
+
+static void
+expand_vector_init_insert_elems (rtx target, const rvv_builder &builder,
+				 int nelts_reqd)
+{
+  machine_mode mode = GET_MODE (target);
+  rtx dup = expand_vector_broadcast (mode, builder.elt (0));
+  emit_move_insn (target, dup);
+  int ndups = builder.count_dups (0, nelts_reqd - 1, 1);
+  for (int i = ndups; i < nelts_reqd; i++)
+    {
+      unsigned int unspec
+	= FLOAT_MODE_P (mode) ? UNSPEC_VFSLIDE1DOWN : UNSPEC_VSLIDE1DOWN;
+      insn_code icode = code_for_pred_slide (unspec, mode);
+      rtx ops[] = {target, target, builder.elt (i)};
+      emit_vlmax_insn (icode, BINARY_OP, ops);
+    }
+}
+
+/* Subroutine of expand_vec_init to handle case
+   when all trailing elements of builder are same.
+   This works as follows:
+   (a) Use expand_insn interface to broadcast last vector element in TARGET.
+   (b) Insert remaining elements in TARGET using insr.
+
+   ??? The heuristic used is to do above if number of same trailing elements
+   is greater than leading_ndups, loosely based on
+   heuristic from mostly_zeros_p.  May need fine-tuning.  */
+
+static bool
+expand_vector_init_trailing_same_elem (rtx target,
+				       const rtx_vector_builder &builder,
+				       int nelts_reqd)
+{
+  int leading_ndups = builder.count_dups (0, nelts_reqd - 1, 1);
+  int trailing_ndups = builder.count_dups (nelts_reqd - 1, -1, -1);
+  machine_mode mode = GET_MODE (target);
+
+  if (trailing_ndups > leading_ndups)
+    {
+      rtx dup = expand_vector_broadcast (mode, builder.elt (nelts_reqd - 1));
+      for (int i = nelts_reqd - trailing_ndups - 1; i >= 0; i--)
+	{
+	  unsigned int unspec
+	    = FLOAT_MODE_P (mode) ? UNSPEC_VFSLIDE1UP : UNSPEC_VSLIDE1UP;
+	  insn_code icode = code_for_pred_slide (unspec, mode);
+	  rtx tmp = gen_reg_rtx (mode);
+	  rtx ops[] = {tmp, dup, builder.elt (i)};
+	  emit_vlmax_insn (icode, BINARY_OP, ops);
+	  /* slide1up need source and dest to be different REG.  */
+	  dup = tmp;
+	}
+
+      emit_move_insn (target, dup);
+      return true;
+    }
+
+  return false;
+}
+
 static void
 expand_const_vector (rtx target, rtx src)
 {
@@ -2338,31 +2404,6 @@ preferred_simd_mode (scalar_mode mode)
   return word_mode;
 }
 
-/* Subroutine of riscv_vector_expand_vector_init.
-   Works as follows:
-   (a) Initialize TARGET by broadcasting element NELTS_REQD - 1 of BUILDER.
-   (b) Skip leading elements from BUILDER, which are the same as
-       element NELTS_REQD - 1.
-   (c) Insert earlier elements in reverse order in TARGET using vslide1down.  */
-
-static void
-expand_vector_init_insert_elems (rtx target, const rvv_builder &builder,
-				 int nelts_reqd)
-{
-  machine_mode mode = GET_MODE (target);
-  rtx dup = expand_vector_broadcast (mode, builder.elt (0));
-  emit_move_insn (target, dup);
-  int ndups = builder.count_dups (0, nelts_reqd - 1, 1);
-  for (int i = ndups; i < nelts_reqd; i++)
-    {
-      unsigned int unspec
-	= FLOAT_MODE_P (mode) ? UNSPEC_VFSLIDE1DOWN : UNSPEC_VSLIDE1DOWN;
-      insn_code icode = code_for_pred_slide (unspec, mode);
-      rtx ops[] = {target, target, builder.elt (i)};
-      emit_vlmax_insn (icode, BINARY_OP, ops);
-    }
-}
-
 /* Use merge approach to initialize the vector with repeating sequence.
    v = {a, b, a, b, a, b, a, b}.
 
@@ -2485,47 +2526,6 @@ expand_vector_init_merge_combine_sequence (rtx target,
   rtx merge_ops[] = {target, dup, sel, mask};
   icode = code_for_pred_merge_scalar (mode);
   emit_vlmax_insn (icode, MERGE_OP, merge_ops);
-}
-
-/* Subroutine of expand_vec_init to handle case
-   when all trailing elements of builder are same.
-   This works as follows:
-   (a) Use expand_insn interface to broadcast last vector element in TARGET.
-   (b) Insert remaining elements in TARGET using insr.
-
-   ??? The heuristic used is to do above if number of same trailing elements
-   is greater than leading_ndups, loosely based on
-   heuristic from mostly_zeros_p.  May need fine-tuning.  */
-
-static bool
-expand_vector_init_trailing_same_elem (rtx target,
-				       const rtx_vector_builder &builder,
-				       int nelts_reqd)
-{
-  int leading_ndups = builder.count_dups (0, nelts_reqd - 1, 1);
-  int trailing_ndups = builder.count_dups (nelts_reqd - 1, -1, -1);
-  machine_mode mode = GET_MODE (target);
-
-  if (trailing_ndups > leading_ndups)
-    {
-      rtx dup = expand_vector_broadcast (mode, builder.elt (nelts_reqd - 1));
-      for (int i = nelts_reqd - trailing_ndups - 1; i >= 0; i--)
-	{
-	  unsigned int unspec
-	    = FLOAT_MODE_P (mode) ? UNSPEC_VFSLIDE1UP : UNSPEC_VSLIDE1UP;
-	  insn_code icode = code_for_pred_slide (unspec, mode);
-	  rtx tmp = gen_reg_rtx (mode);
-	  rtx ops[] = {tmp, dup, builder.elt (i)};
-	  emit_vlmax_insn (icode, BINARY_OP, ops);
-	  /* slide1up need source and dest to be different REG.  */
-	  dup = tmp;
-	}
-
-      emit_move_insn (target, dup);
-      return true;
-    }
-
-  return false;
 }
 
 /* Initialize register TARGET from the elements in PARALLEL rtx VALS.  */
