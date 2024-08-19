@@ -7368,7 +7368,7 @@
         (unspec:VI248_AVX512VL
 	   [(match_operand:<ssePHmode> 1 "<round_nimm_predicate>" "<round_constraint>")]
 	   UNSPEC_US_FIX_NOTRUNC))]
-  "TARGET_AVX512FP16"
+  "TARGET_AVX512FP16 && <round_mode_condition>"
   "vcvtph2<sseintconvertsignprefix><sseintconvert>\t{<round_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_mask_op2>}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")
@@ -7756,7 +7756,7 @@
   [(set (match_operand:VF48H_AVX512VL 0 "register_operand" "=v")
 	(float_extend:VF48H_AVX512VL
 	  (match_operand:<ssePHmode> 1 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")))]
-  "TARGET_AVX512FP16"
+  "TARGET_AVX512FP16 && <round_saeonly_mode_condition>"
   "vcvtph2<castmode><ph2pssuffix>\t{<round_saeonly_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_saeonly_mask_op2>}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")
@@ -7779,14 +7779,14 @@
     }
 })
 
-(define_insn "avx512fp16_float_extend_ph<mode>2<mask_name>"
+(define_insn "avx512fp16_float_extend_ph<mode>2<mask_name><round_saeonly_name>"
   [(set (match_operand:VF4_128_8_256 0 "register_operand" "=v")
 	(float_extend:VF4_128_8_256
 	  (vec_select:V4HF
 	    (match_operand:V8HF 1 "register_operand" "v")
 	    (parallel [(const_int 0) (const_int 1) (const_int 2) (const_int 3)]))))]
-  "TARGET_AVX512FP16 && TARGET_AVX512VL"
-  "vcvtph2<castmode><ph2pssuffix>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %q1}"
+  "TARGET_AVX512FP16 && TARGET_AVX512VL && <round_saeonly_mode_condition>"
+  "vcvtph2<castmode><ph2pssuffix>\t{<round_saeonly_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %q1<round_saeonly_mask_op2>}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
@@ -28778,12 +28778,13 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "V8SF")])
 
-(define_insn "vcvtph2ps256<mask_name>"
+(define_insn "vcvtph2ps256<mask_name><round_saeonly_name>"
   [(set (match_operand:V8SF 0 "register_operand" "=v")
-	(unspec:V8SF [(match_operand:V8HI 1 "nonimmediate_operand" "vm")]
+	(unspec:V8SF [(match_operand:V8HI 1 "<round_saeonly_nimm_scalar_predicate>" "<round_saeonly_constraint>")]
 		     UNSPEC_VCVTPH2PS))]
-  "TARGET_F16C || TARGET_AVX512VL"
-  "vcvtph2ps\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+  "(TARGET_F16C || TARGET_AVX512VL)
+   && (!<round_saeonly_applied> || TARGET_AVX10_2_256)"
+  "vcvtph2ps\t{<round_saeonly_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_saeonly_mask_op2>}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "vex")
    (set_attr "btver2_decode" "double")
