@@ -199,6 +199,25 @@ struct Loan
   location_t location;
 };
 
+// I is the index type, T is the contained type
+template <typename I, typename T> class IndexVec
+{
+  std::vector<T> internal_vector;
+
+public:
+  T &at (I pid) { return internal_vector[pid.value]; }
+  const T &at (I pid) const { return internal_vector[pid.value]; }
+  T &operator[] (I pid) { return internal_vector[pid.value]; }
+  const T &operator[] (I pid) const { return internal_vector[pid.value]; }
+
+  void push_back (T &&param) { internal_vector.push_back (std::move (param)); }
+  template <typename... Args> void emplace_back (Args &&... args)
+  {
+    internal_vector.emplace_back (std::forward<Args> (args)...);
+  }
+  size_t size () const { return internal_vector.size (); }
+};
+
 /** Allocated places and keeps track of paths. */
 class PlaceDB
 {
