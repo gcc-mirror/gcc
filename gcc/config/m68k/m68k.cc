@@ -199,6 +199,7 @@ static machine_mode m68k_promote_function_mode (const_tree, machine_mode,
 static void m68k_asm_final_postscan_insn (FILE *, rtx_insn *insn, rtx [], int);
 static HARD_REG_SET m68k_zero_call_used_regs (HARD_REG_SET);
 static machine_mode m68k_c_mode_for_floating_type (enum tree_index);
+static bool m68k_use_lra_p (void);
 
 /* Initialize the GCC target structure.  */
 
@@ -307,7 +308,7 @@ static machine_mode m68k_c_mode_for_floating_type (enum tree_index);
 #endif
 
 #undef TARGET_LRA_P
-#define TARGET_LRA_P hook_bool_void_false
+#define TARGET_LRA_P m68k_use_lra_p
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	m68k_legitimate_address_p
@@ -7226,6 +7227,14 @@ m68k_c_mode_for_floating_type (enum tree_index ti)
   if (ti == TI_LONG_DOUBLE_TYPE)
     return LONG_DOUBLE_TYPE_MODE;
   return default_mode_for_floating_type (ti);
+}
+
+/* Implement TARGET_LRA_P.  */
+
+static bool
+m68k_use_lra_p ()
+{
+  return m68k_lra_p;
 }
 
 #include "gt-m68k.h"

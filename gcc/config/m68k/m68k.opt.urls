@@ -77,6 +77,8 @@ UrlSuffix(gcc/M680x0-Options.html#index-mhard-float-2)
 mlong-jump-table-offsets
 UrlSuffix(gcc/M680x0-Options.html#index-mlong-jump-table-offsets)
 
+; skipping UrlSuffix for 'mlra' due to finding no URLs
+
 mnobitfield
 UrlSuffix(gcc/M680x0-Options.html#index-mnobitfield)
 
