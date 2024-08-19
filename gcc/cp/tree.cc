@@ -5841,7 +5841,7 @@ char_type_p (tree type)
 	  || same_type_p (type, wchar_type_node));
 }
 
-/* Returns the kind of linkage associated with the indicated DECL.  Th
+/* Returns the kind of linkage associated with the indicated DECL.  The
    value returned is as specified by the language standard; it is
    independent of implementation details regarding template
    instantiation, etc.  For example, it is possible that a declaration
@@ -5858,53 +5858,75 @@ decl_linkage (tree decl)
      linkage first, and then transform that into a concrete
      implementation.  */
 
-  /* Things that don't have names have no linkage.  */
-  if (!DECL_NAME (decl))
+  /* An explicit type alias has no linkage.  */
+  if (TREE_CODE (decl) == TYPE_DECL
+      && !DECL_IMPLICIT_TYPEDEF_P (decl)
+      && !DECL_SELF_REFERENCE_P (decl))
+    {
+      /* But this could be a typedef name for linkage purposes, in which
+	 case we're interested in the linkage of the main decl.  */
+      if (decl == TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (decl))))
+	decl = TYPE_MAIN_DECL (TREE_TYPE (decl));
+      else
+	return lk_none;
+    }
+
+  /* Namespace-scope entities with no name usually have no linkage.  */
+  if (NAMESPACE_SCOPE_P (decl)
+      && (!DECL_NAME (decl) || IDENTIFIER_ANON_P (DECL_NAME (decl))))
+    {
+      if (TREE_CODE (decl) == TYPE_DECL && !TYPE_ANON_P (TREE_TYPE (decl)))
+	/* This entity has a typedef name for linkage purposes.  */;
+      else if (TREE_CODE (decl) == NAMESPACE_DECL && cxx_dialect >= cxx11)
+	/* An anonymous namespace has internal linkage since C++11.  */
+	return lk_internal;
+      else
+	return lk_none;
+    }
+
+  /* Fields and parameters have no linkage.  */
+  if (TREE_CODE (decl) == FIELD_DECL || TREE_CODE (decl) == PARM_DECL)
     return lk_none;
 
-  /* Fields have no linkage.  */
-  if (TREE_CODE (decl) == FIELD_DECL)
-    return lk_none;
-
-  /* Things in local scope do not have linkage.  */
+  /* Things in block scope do not have linkage.  */
   if (decl_function_context (decl))
     return lk_none;
+
+  /* Things in class scope have the linkage of their owning class.  */
+  if (tree ctype = DECL_CLASS_CONTEXT (decl))
+    return decl_linkage (TYPE_NAME (ctype));
+
+  /* Anonymous namespaces don't provide internal linkage in C++98,
+     but otherwise consider such declarations to be internal.  */
+  if (cxx_dialect >= cxx11 && decl_internal_context_p (decl))
+    return lk_internal;
+
+  /* Templates don't properly propagate TREE_PUBLIC, consider the
+     template result instead.  Any template that isn't a variable
+     or function must be external linkage by this point.  */
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
+    {
+      decl = DECL_TEMPLATE_RESULT (decl);
+      if (!decl || !VAR_OR_FUNCTION_DECL_P (decl))
+	return lk_external;
+    }
 
   /* Things that are TREE_PUBLIC have external linkage.  */
   if (TREE_PUBLIC (decl))
     return lk_external;
 
-  /* maybe_thunk_body clears TREE_PUBLIC on the maybe-in-charge 'tor variants,
-     check one of the "clones" for the real linkage.  */
-  if (DECL_MAYBE_IN_CHARGE_CDTOR_P (decl)
-      && DECL_CHAIN (decl)
-      && DECL_CLONED_FUNCTION_P (DECL_CHAIN (decl)))
-    return decl_linkage (DECL_CHAIN (decl));
-
-  if (TREE_CODE (decl) == NAMESPACE_DECL)
+  /* All types have external linkage in C++98, since anonymous namespaces
+     didn't explicitly confer internal linkage.  */
+  if (TREE_CODE (decl) == TYPE_DECL && cxx_dialect < cxx11)
     return lk_external;
 
-  /* Linkage of a CONST_DECL depends on the linkage of the enumeration
-     type.  */
-  if (TREE_CODE (decl) == CONST_DECL)
-    return decl_linkage (TYPE_NAME (DECL_CONTEXT (decl)));
-
-  /* Members of the anonymous namespace also have TREE_PUBLIC unset, but
-     are considered to have external linkage for language purposes, as do
-     template instantiations on targets without weak symbols.  DECLs really
-     meant to have internal linkage have DECL_THIS_STATIC set.  */
-  if (TREE_CODE (decl) == TYPE_DECL)
+  /* Variables or function decls not marked as TREE_PUBLIC might still
+     be external linkage, such as for template instantiations on targets
+     without weak symbols, decls referring to internal-linkage entities,
+     or compiler-generated entities; in such cases, decls really meant to
+     have internal linkage will have DECL_THIS_STATIC set.  */
+  if (VAR_OR_FUNCTION_DECL_P (decl) && !DECL_THIS_STATIC (decl))
     return lk_external;
-  if (VAR_OR_FUNCTION_DECL_P (decl))
-    {
-      if (!DECL_THIS_STATIC (decl))
-	return lk_external;
-
-      /* Static data members and static member functions from classes
-	 in anonymous namespace also don't have TREE_PUBLIC set.  */
-      if (DECL_CLASS_CONTEXT (decl))
-	return lk_external;
-    }
 
   /* Everything else has internal linkage.  */
   return lk_internal;
