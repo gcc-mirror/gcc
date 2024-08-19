@@ -142,7 +142,7 @@ BorrowCheckerDiagnostics::get_statement (Polonius::Point point)
 const BIR::Loan &
 BorrowCheckerDiagnostics::get_loan (Polonius::Loan loan)
 {
-  return bir_function.place_db.get_loans ()[loan];
+  return bir_function.place_db.get_loans ()[{loan}];
 }
 
 const HIR::LifetimeParam *
