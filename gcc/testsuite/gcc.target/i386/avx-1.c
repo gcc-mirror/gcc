@@ -864,6 +864,10 @@
 #define __builtin_ia32_vcvtph2qq256_mask_round(A, B, C, D) __builtin_ia32_vcvtph2qq256_mask_round(A, B, C, 8)
 #define __builtin_ia32_vcvtph2udq256_mask_round(A, B, C, D) __builtin_ia32_vcvtph2udq256_mask_round(A, B, C, 8)
 #define __builtin_ia32_vcvtph2uqq256_mask_round(A, B, C, D) __builtin_ia32_vcvtph2uqq256_mask_round(A, B, C, 8)
+#define __builtin_ia32_vcvtph2uw256_mask_round(A, B, C, D) __builtin_ia32_vcvtph2uw256_mask_round(A, B, C, 8)
+#define __builtin_ia32_vcvtph2w256_mask_round(A, B, C, D) __builtin_ia32_vcvtph2w256_mask_round(A, B, C, 8)
+#define __builtin_ia32_vcvtps2pd256_mask_round(A, B, C, D) __builtin_ia32_vcvtps2pd256_mask_round(A, B, C, 8)
+#define __builtin_ia32_vcvtps2phx256_mask_round(A, B, C, D) __builtin_ia32_vcvtps2phx256_mask_round(A, B, C, 8)
 
 #include <wmmintrin.h>
 #include <immintrin.h>
