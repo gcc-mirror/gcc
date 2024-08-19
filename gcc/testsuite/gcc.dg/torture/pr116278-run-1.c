@@ -1,5 +1,6 @@
-/* { dg-do compile } */
-/* { dg-options "-O2 -fdump-rtl-expand-details" } */
+/* { dg-do run } */
+/* { dg-require-effective-target int32 } */
+/* { dg-options "-O2" } */
 
 #include <stdint.h>
 
@@ -16,5 +17,3 @@ int main() {
   if (c != 65505)
     __builtin_abort ();
 }
-
-/* { dg-final { scan-rtl-dump-times ".SAT_ADD " 2 "expand" } } */
