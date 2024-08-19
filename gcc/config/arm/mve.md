@@ -5078,18 +5078,18 @@
 })
 
 ;;
-;; [vidupq_u_insn])
+;; [vddupq_u_insn, vidupq_u_insn]
 ;;
-(define_insn "mve_vidupq_u<mode>_insn"
+(define_insn "@mve_<mve_insn>q_u<mode>_insn"
  [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
        (unspec:MVE_2 [(match_operand:SI 2 "s_register_operand" "1")
 		      (match_operand:SI 3 "mve_imm_selective_upto_8" "Rg")]
-	 VIDUPQ))
+	VIDDUPQ))
   (set (match_operand:SI 1 "s_register_operand" "=Te")
-       (plus:SI (match_dup 2)
-		(match_operand:SI 4 "immediate_operand" "i")))]
+       (<viddupq_op>:SI (match_dup 2)
+			(match_operand:SI 4 "immediate_operand" "i")))]
  "TARGET_HAVE_MVE"
- "vidup.u%#<V_sz_elem>\t%q0, %1, %3")
+ "<mve_insn>.u%#<V_sz_elem>\t%q0, %1, %3")
 
 ;;
 ;; [vidupq_m_n_u])
@@ -5112,21 +5112,21 @@
 })
 
 ;;
-;; [vidupq_m_wb_u_insn])
+;; [vddupq_m_wb_u_insn, vidupq_m_wb_u_insn]
 ;;
-(define_insn "mve_vidupq_m_wb_u<mode>_insn"
+(define_insn "@mve_<mve_insn>q_m_wb_u<mode>_insn"
  [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
        (unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
 		      (match_operand:SI 3 "s_register_operand" "2")
 		      (match_operand:SI 4 "mve_imm_selective_upto_8" "Rg")
 		      (match_operand:<MVE_VPRED> 5 "vpr_register_operand" "Up")]
-	VIDUPQ_M))
+	VIDDUPQ_M))
   (set (match_operand:SI 2 "s_register_operand" "=Te")
-       (plus:SI (match_dup 3)
-		(match_operand:SI 6 "immediate_operand" "i")))]
+       (<viddupq_m_op>:SI (match_dup 3)
+			  (match_operand:SI 6 "immediate_operand" "i")))]
  "TARGET_HAVE_MVE"
- "vpst\;\tvidupt.u%#<V_sz_elem>\t%q0, %2, %4"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vidupq_u<mode>_insn"))
+ "vpst\;<mve_insn>t.u%#<V_sz_elem>\t%q0, %2, %4"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_u<mode>_insn"))
   (set_attr "length""8")])
 
 ;;
@@ -5147,20 +5147,6 @@
 })
 
 ;;
-;; [vddupq_u_insn])
-;;
-(define_insn "mve_vddupq_u<mode>_insn"
- [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
-       (unspec:MVE_2 [(match_operand:SI 2 "s_register_operand" "1")
-		      (match_operand:SI 3 "immediate_operand" "i")]
-	VDDUPQ))
-  (set (match_operand:SI 1 "s_register_operand" "=Te")
-       (minus:SI (match_dup 2)
-		 (match_operand:SI 4 "immediate_operand" "i")))]
- "TARGET_HAVE_MVE"
- "vddup.u%#<V_sz_elem>\t%q0, %1, %3")
-
-;;
 ;; [vddupq_m_n_u])
 ;;
 (define_expand "mve_vddupq_m_n_u<mode>"
@@ -5179,24 +5165,6 @@
 					     operands[4], inc));
   DONE;
 })
-
-;;
-;; [vddupq_m_wb_u_insn])
-;;
-(define_insn "mve_vddupq_m_wb_u<mode>_insn"
- [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
-       (unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
-		      (match_operand:SI 3 "s_register_operand" "2")
-		      (match_operand:SI 4 "mve_imm_selective_upto_8" "Rg")
-		      (match_operand:<MVE_VPRED> 5 "vpr_register_operand" "Up")]
-	VDDUPQ_M))
-  (set (match_operand:SI 2 "s_register_operand" "=Te")
-       (minus:SI (match_dup 3)
-		 (match_operand:SI 6 "immediate_operand" "i")))]
- "TARGET_HAVE_MVE"
- "vpst\;vddupt.u%#<V_sz_elem>\t%q0, %2, %4"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vddupq_u<mode>_insn"))
-  (set_attr "length""8")])
 
 ;;
 ;; [vdwdupq_n_u])

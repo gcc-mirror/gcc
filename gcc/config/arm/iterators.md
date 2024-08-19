@@ -1007,6 +1007,8 @@
 		 (VHSUBQ_M_S "vhsub") (VHSUBQ_M_U "vhsub")
 		 (VHSUBQ_N_S "vhsub") (VHSUBQ_N_U "vhsub")
 		 (VHSUBQ_S "vhsub") (VHSUBQ_U "vhsub")
+		 (VIDUPQ "vidup") (VDDUPQ "vddup")
+		 (VIDUPQ_M "vidup") (VDDUPQ_M "vddup")
 		 (VMAXAQ_M_S "vmaxa")
 		 (VMAXAQ_S "vmaxa")
 		 (VMAXAVQ_P_S "vmaxav")
@@ -1339,6 +1341,9 @@
 		 (VRNDQ_F "vrintz") (VRNDQ_M_F "vrintz")
 		 (VRNDXQ_F "vrintx") (VRNDXQ_M_F "vrintx")
 		 ])
+
+(define_int_attr viddupq_op [ (VIDUPQ "plus") (VDDUPQ "minus")])
+(define_int_attr viddupq_m_op [ (VIDUPQ_M "plus") (VDDUPQ_M "minus")])
 
 ;; plus and minus are the only SHIFTABLE_OPS for which Thumb2 allows
 ;; a stack pointer operand.  The minus operation is a candidate for an rsub
@@ -2961,6 +2966,8 @@
 (define_int_iterator VCVTxQ_M_F32_F16 [VCVTBQ_M_F32_F16 VCVTTQ_M_F32_F16])
 (define_int_iterator VCVTxQ [VCVTAQ_S VCVTAQ_U VCVTMQ_S VCVTMQ_U VCVTNQ_S VCVTNQ_U VCVTPQ_S VCVTPQ_U])
 (define_int_iterator VCVTxQ_M [VCVTAQ_M_S VCVTAQ_M_U VCVTMQ_M_S VCVTMQ_M_U VCVTNQ_M_S VCVTNQ_M_U VCVTPQ_M_S VCVTPQ_M_U])
+(define_int_iterator VIDDUPQ [VIDUPQ VDDUPQ])
+(define_int_iterator VIDDUPQ_M [VIDUPQ_M VDDUPQ_M])
 (define_int_iterator DLSTP [DLSTP8 DLSTP16 DLSTP32
 				   DLSTP64])
 (define_int_iterator LETP [LETP8 LETP16 LETP32
