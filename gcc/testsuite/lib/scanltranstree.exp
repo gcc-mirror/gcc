@@ -19,130 +19,68 @@
 
 load_lib scandump.exp
 
-# Utility for scanning compiler result, invoked via dg-final.
-# Call pass if pattern is present, otherwise fail.
-#
-# Argument 0 is the regexp to match
-# Argument 1 is the name of the dumped tree pass
-# Argument 2 handles expected failures and the like
-proc scan-ltrans-tree-dump { args } {
-
-    if { [llength $args] < 2 } {
-	error "scan-ltrans-tree-dump: too few arguments"
-	return
-    }
-    if { [llength $args] > 3 } {
-	error "scan-ltrans-tree-dump: too many arguments"
-	return
-    }
-    if { [llength $args] >= 3 } {
-	scan-dump "ltrans-tree" [lindex $args 0] \
-		  "\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 1]" ".ltrans0.ltrans" \
-		  [lindex $args 2]
-    } else {
-	scan-dump "ltrans-tree" [lindex $args 0] \
-		  "\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 1]" ".ltrans0.ltrans"
-    }
+# The first item in the list is an LTO equivalent of the second item
+# in the list; see the documentation of the second item for details.
+foreach { name scan type suffix } {
+    scan-ltrans-tree-dump scan-dump ltrans-tree t
+    scan-ltrans-tree-dump-not scan-dump-not ltrans-tree t
+    scan-ltrans-tree-dump-dem scan-dump-dem ltrans-tree t
+    scan-ltrans-tree-dump-dem-not scan-dump-dem-not ltrans-tree t
+} {
+    eval [string map [list @NAME@ $name \
+			   @SCAN@ $scan \
+			   @TYPE@ $type \
+			   @SUFFIX@ $suffix] {
+        proc @NAME@ { args } {
+	    if { [llength $args] < 2 } {
+		error "@NAME@: too few arguments"
+		return
+	    }
+	    if { [llength $args] > 3 } {
+		error "@NAME@: too many arguments"
+		return
+	    }
+	    if { [llength $args] >= 3 } {
+		@SCAN@ @TYPE@ [lindex $args 0] \
+		    "\[0-9\]\[0-9\]\[0-9\]@SUFFIX@.[lindex $args 1]" \
+		    ".ltrans0.ltrans" \
+		    [lindex $args 2]
+	    } else {
+		@SCAN@ @TYPE@ [lindex $args 0] \
+		    "\[0-9\]\[0-9\]\[0-9\]@SUFFIX@.[lindex $args 1]" \
+		    ".ltrans0.ltrans"
+	    }
+        }
+    }]
 }
 
-# Call pass if pattern is present given number of times, otherwise fail.
-# Argument 0 is the regexp to match
-# Argument 1 is number of times the regexp must be found
-# Argument 2 is the name of the dumped tree pass
-# Argument 3 handles expected failures and the like
-proc scan-ltrans-tree-dump-times { args } {
-
-    if { [llength $args] < 3 } {
-	error "scan-ltrans-tree-dump-times: too few arguments"
-	return
-    }
-    if { [llength $args] > 4 } {
-	error "scan-ltrans-tree-dump-times: too many arguments"
-	return
-    }
-    if { [llength $args] >= 4 } {
-	scan-dump-times "ltrans-tree" [lindex $args 0] [lindex $args 1] \
-			"\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 2]" \
-			".ltrans0.ltrans" [lindex $args 3]
-    } else {
-	scan-dump-times "ltrans-tree" [lindex $args 0] [lindex $args 1] \
-			"\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 2]" ".ltrans0.ltrans"
-    }
-}
-
-# Call pass if pattern is not present, otherwise fail.
-#
-# Argument 0 is the regexp to match
-# Argument 1 is the name of the dumped tree pass
-# Argument 2 handles expected failures and the like
-proc scan-ltrans-tree-dump-not { args } {
-
-    if { [llength $args] < 2 } {
-	error "scan-ltrans-tree-dump-not: too few arguments"
-	return
-    }
-    if { [llength $args] > 3 } {
-	error "scan-ltrans-tree-dump-not: too many arguments"
-	return
-    }
-    if { [llength $args] >= 3 } {
-	scan-dump-not "ltrans-tree" [lindex $args 0] \
-		      "\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 1]" ".ltrans0.ltrans" \
-		      [lindex $args 2]
-    } else {
-	scan-dump-not "ltrans-tree" [lindex $args 0] \
-		      "\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 1]" ".ltrans0.ltrans"
-    }
-}
-
-# Utility for scanning demangled compiler result, invoked via dg-final.
-# Call pass if pattern is present, otherwise fail.
-#
-# Argument 0 is the regexp to match
-# Argument 1 is the name of the dumped tree pass
-# Argument 2 handles expected failures and the like
-proc scan-ltrans-tree-dump-dem { args } {
-
-    if { [llength $args] < 2 } {
-	error "scan-ltrans-tree-dump-dem: too few arguments"
-	return
-    }
-    if { [llength $args] > 3 } {
-	error "scan-ltrans-tree-dump-dem: too many arguments"
-	return
-    }
-    if { [llength $args] >= 3 } {
-	scan-dump-dem "ltrans-tree" [lindex $args 0] \
-		      "\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 1]" ".ltrans0.ltrans" \
-		      [lindex $args 2]
-    } else {
-	scan-dump-dem "ltrans-tree" [lindex $args 0] \
-		      "\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 1]" ".ltrans0.ltrans"
-    }
-}
-
-# Call pass if demangled pattern is not present, otherwise fail.
-#
-# Argument 0 is the regexp to match
-# Argument 1 is the name of the dumped tree pass
-# Argument 2 handles expected failures and the like
-proc scan-ltrans-tree-dump-dem-not { args } {
-
-    if { [llength $args] < 2 } {
-	error "scan-ltrans-tree-dump-dem-not: too few arguments"
-	return
-    }
-    if { [llength $args] > 3 } {
-	error "scan-ltrans-tree-dump-dem-not: too many arguments"
-	return
-    }
-    if { [llength $args] >= 3 } {
-	scan-dump-dem-not "ltrans-tree" [lindex $args 0] \
-			  "\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 1]" \
-			  ".ltrans0.ltrans" [lindex $args 2]
-    } else {
-	scan-dump-dem-not "ltrans-tree" [lindex $args 0] \
-			  "\[0-9\]\[0-9\]\[0-9\]t.[lindex $args 1]" \
-			  ".ltrans0.ltrans"
-    }
+# The first item in the list is an LTO equivalent of the second item
+# in the list; see the documentation of the second item for details.
+foreach { name scan type suffix } {
+    scan-ltrans-tree-dump-times scan-dump-times ltrans-tree t
+} {
+    eval [string map [list @NAME@ $name \
+			   @SCAN@ $scan \
+			   @TYPE@ $type \
+			   @SUFFIX@ $suffix] {
+	proc @NAME@ { args } {
+	    if { [llength $args] < 3 } {
+		error "@NAME@: too few arguments"
+		return
+	    }
+	    if { [llength $args] > 4 } {
+		error "@NAME@: too many arguments"
+		return
+	    }
+	    if { [llength $args] >= 4 } {
+		@SCAN@ "@TYPE@" [lindex $args 0] [lindex $args 1] \
+		    "\[0-9\]\[0-9\]\[0-9\]@SUFFIX@.[lindex $args 2]" \
+		    ".ltrans0.ltrans" [lindex $args 3]
+	    } else {
+		@SCAN@ "@TYPE@" [lindex $args 0] [lindex $args 1] \
+		    "\[0-9\]\[0-9\]\[0-9\]@SUFFIX@.[lindex $args 2]" \
+		    ".ltrans0.ltrans"
+	    }
+	}
+    }]
 }
