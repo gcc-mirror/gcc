@@ -518,7 +518,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator++()
     {
       if (_M_dereferenceable()) [[likely]]
-      ++_M_rep;
+	++_M_rep;
       else
 	{
 	  __glibcxx_assert(_M_dereferenceable());
@@ -533,7 +533,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const bool __decrementable
 	= _M_rep != nullptr && _M_rep[-1]._M_id == _M_id;
       if (__decrementable) [[likely]]
-      --_M_rep;
+	--_M_rep;
       else
 	{
 	  __glibcxx_assert(__decrementable);
