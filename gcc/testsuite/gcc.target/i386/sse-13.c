@@ -916,5 +916,14 @@
 #define __builtin_ia32_fixupimmpd256_maskz_round(A, B, C, D, E, F) __builtin_ia32_fixupimmpd256_maskz_round(A, B, C, 1, E, 8)
 #define __builtin_ia32_fixupimmps256_mask_round(A, B, C, D, E, F) __builtin_ia32_fixupimmps256_mask_round(A, B, C, 1, E, 8)
 #define __builtin_ia32_fixupimmps256_maskz_round(A, B, C, D, E, F) __builtin_ia32_fixupimmps256_maskz_round(A, B, C, 1, E, 8)
+#define __builtin_ia32_vfmaddpd256_mask_round(A, B, C, D, E) __builtin_ia32_vfmaddpd256_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_vfmaddpd256_mask3_round(A, B, C, D, E) __builtin_ia32_vfmaddpd256_mask3_round(A, B, C, D, 8)
+#define __builtin_ia32_vfmaddpd256_maskz_round(A, B, C, D, E) __builtin_ia32_vfmaddpd256_maskz_round(A, B, C, D, 8)
+#define __builtin_ia32_vfmaddph256_mask_round(A, B, C, D, E) __builtin_ia32_vfmaddph256_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_vfmaddph256_mask3_round(A, B, C, D, E) __builtin_ia32_vfmaddph256_mask3_round(A, B, C, D, 8)
+#define __builtin_ia32_vfmaddph256_maskz_round(A, B, C, D, E) __builtin_ia32_vfmaddph256_maskz_round(A, B, C, D, 8)
+#define __builtin_ia32_vfmaddps256_mask_round(A, B, C, D, E) __builtin_ia32_vfmaddps256_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_vfmaddps256_mask3_round(A, B, C, D, E) __builtin_ia32_vfmaddps256_mask3_round(A, B, C, D, 8)
+#define __builtin_ia32_vfmaddps256_maskz_round(A, B, C, D, E) __builtin_ia32_vfmaddps256_maskz_round(A, B, C, D, 8)
 
 #include <x86intrin.h>

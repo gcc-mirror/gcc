@@ -891,6 +891,15 @@
 #define __builtin_ia32_fixupimmpd256_maskz_round(A, B, C, D, E, F) __builtin_ia32_fixupimmpd256_maskz_round(A, B, C, 1, E, 8)
 #define __builtin_ia32_fixupimmps256_mask_round(A, B, C, D, E, F) __builtin_ia32_fixupimmps256_mask_round(A, B, C, 1, E, 8)
 #define __builtin_ia32_fixupimmps256_maskz_round(A, B, C, D, E, F) __builtin_ia32_fixupimmps256_maskz_round(A, B, C, 1, E, 8)
+#define __builtin_ia32_vfmaddpd256_mask_round(A, B, C, D, E) __builtin_ia32_vfmaddpd256_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_vfmaddpd256_mask3_round(A, B, C, D, E) __builtin_ia32_vfmaddpd256_mask3_round(A, B, C, D, 8)
+#define __builtin_ia32_vfmaddpd256_maskz_round(A, B, C, D, E) __builtin_ia32_vfmaddpd256_maskz_round(A, B, C, D, 8)
+#define __builtin_ia32_vfmaddph256_mask_round(A, B, C, D, E) __builtin_ia32_vfmaddph256_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_vfmaddph256_mask3_round(A, B, C, D, E) __builtin_ia32_vfmaddph256_mask3_round(A, B, C, D, 8)
+#define __builtin_ia32_vfmaddph256_maskz_round(A, B, C, D, E) __builtin_ia32_vfmaddph256_maskz_round(A, B, C, D, 8)
+#define __builtin_ia32_vfmaddps256_mask_round(A, B, C, D, E) __builtin_ia32_vfmaddps256_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_vfmaddps256_mask3_round(A, B, C, D, E) __builtin_ia32_vfmaddps256_mask3_round(A, B, C, D, 8)
+#define __builtin_ia32_vfmaddps256_maskz_round(A, B, C, D, E) __builtin_ia32_vfmaddps256_maskz_round(A, B, C, D, 8)
 
 #pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,fma,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,sha,xsavec,xsaves,clflushopt,clwb,mwaitx,clzero,pku,sgx,rdpid,gfni,vpclmulqdq,pconfig,wbnoinvd,enqcmd,avx512vp2intersect,serialize,tsxldtrk,amx-tile,amx-int8,amx-bf16,kl,widekl,avxvnni,avxifma,avxvnniint8,avxneconvert,cmpccxadd,amx-fp16,prefetchi,raoint,amx-complex,avxvnniint16,sm3,sha512,sm4,avx10.2-512")
 
