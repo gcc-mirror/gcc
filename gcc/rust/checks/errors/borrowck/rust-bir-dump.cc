@@ -84,7 +84,7 @@ simplify_cfg (Function &func, std::vector<BasicBlockId> &bb_fold_map)
       // BB0 cannot be folded as it is an entry block.
       for (BasicBlockId i = {1}; i.value < func.basic_blocks.size (); ++i.value)
 	{
-	  const BasicBlock &bb = func.basic_blocks[bb_fold_map[i.value].value];
+	  const BasicBlock &bb = func.basic_blocks[bb_fold_map[i.value]];
 	  if (bb.statements.empty () && bb.is_goto_terminated ())
 	    {
 	      auto dst = bb.successors.at (0);
@@ -149,13 +149,13 @@ Dump::go (bool enable_simplify_cfg)
       if (bb_fold_map[statement_bb.value] != statement_bb)
 	continue; // This BB was folded.
 
-      if (func.basic_blocks[statement_bb.value].statements.empty ()
-	  && func.basic_blocks[statement_bb.value].successors.empty ())
+      if (func.basic_blocks[statement_bb].statements.empty ()
+	  && func.basic_blocks[statement_bb].successors.empty ())
 	continue;
 
       bb_terminated = false;
 
-      BasicBlock &bb = func.basic_blocks[statement_bb.value];
+      BasicBlock &bb = func.basic_blocks[statement_bb];
       stream << "\n";
       stream << indentation << "bb" << bb_fold_map[statement_bb.value].value
 	     << ": {\n";
@@ -192,8 +192,7 @@ Dump::visit (const Statement &stmt)
       stream << "switchInt(";
       visit_move_place (stmt.get_place ());
       stream << ") -> [";
-      print_comma_separated (stream,
-			     func.basic_blocks[statement_bb.value].successors,
+      print_comma_separated (stream, func.basic_blocks[statement_bb].successors,
 			     [this] (BasicBlockId succ) {
 			       stream << "bb" << bb_fold_map[succ.value].value;
 			     });
@@ -207,9 +206,8 @@ Dump::visit (const Statement &stmt)
     case Statement::Kind::GOTO:
       stream
 	<< "goto -> bb"
-	<< bb_fold_map
-	     [func.basic_blocks[statement_bb.value].successors.at (0).value]
-	       .value;
+	<< bb_fold_map[func.basic_blocks[statement_bb].successors.at (0).value]
+	     .value;
       bb_terminated = true;
       break;
     case Statement::Kind::STORAGE_DEAD:
@@ -329,8 +327,7 @@ Dump::visit (const CallExpr &expr)
 			   visit_move_place (place_id);
 			 });
   stream << ") -> [";
-  print_comma_separated (stream,
-			 func.basic_blocks[statement_bb.value].successors,
+  print_comma_separated (stream, func.basic_blocks[statement_bb].successors,
 			 [this] (BasicBlockId succ) {
 			   stream << "bb" << bb_fold_map[succ.value].value;
 			 });

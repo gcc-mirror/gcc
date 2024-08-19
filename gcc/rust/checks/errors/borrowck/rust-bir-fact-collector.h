@@ -40,7 +40,7 @@ class FactCollector : public Visitor
 
   // Read-only context.
   const PlaceDB &place_db;
-  const std::vector<BasicBlock> &basic_blocks;
+  const BasicBlocks &basic_blocks;
   const PlaceId first_local;
   const location_t location;
 
@@ -212,7 +212,7 @@ protected: // Main collection entry points (for different categories).
     for (current_bb = ENTRY_BASIC_BLOCK;
 	 current_bb.value < basic_blocks.size (); ++current_bb.value)
       {
-	auto &bb = basic_blocks[current_bb.value];
+	auto &bb = basic_blocks[current_bb];
 	for (current_stmt = 0; current_stmt < bb.statements.size ();
 	     ++current_stmt)
 	  {
@@ -393,7 +393,7 @@ protected: // Main collection entry points (for different categories).
 protected: // Statement visitor helpers
   WARN_UNUSED_RESULT const BasicBlock &get_current_bb () const
   {
-    return basic_blocks[current_bb.value];
+    return basic_blocks[current_bb];
   }
 
   WARN_UNUSED_RESULT static Polonius::Point

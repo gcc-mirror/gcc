@@ -76,7 +76,7 @@ struct BuilderContext
   Resolver::Resolver &resolver;
 
   // BIR output
-  std::vector<BasicBlock> basic_blocks;
+  BasicBlocks basic_blocks;
   BasicBlockId current_bb = ENTRY_BASIC_BLOCK;
 
   /**
@@ -107,7 +107,7 @@ public:
     basic_blocks.emplace_back (); // StartBB
   }
 
-  BasicBlock &get_current_bb () { return basic_blocks[current_bb.value]; }
+  BasicBlock &get_current_bb () { return basic_blocks[current_bb]; }
 
   const LoopAndLabelCtx &lookup_label (NodeId label)
   {
@@ -378,7 +378,7 @@ protected: // CFG helpers
 
   void add_jump (BasicBlockId from, BasicBlockId to)
   {
-    ctx.basic_blocks[from.value].successors.emplace_back (to);
+    ctx.basic_blocks[from].successors.emplace_back (to);
   }
 
   void add_jump_to (BasicBlockId bb) { add_jump (ctx.current_bb, bb); }
