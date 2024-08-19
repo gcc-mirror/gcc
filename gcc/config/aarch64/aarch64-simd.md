@@ -7809,7 +7809,16 @@
 	(match_operand:VSTRUCT_QD 1 "general_operand"))]
   "TARGET_FLOAT"
 {
-  if (can_create_pseudo_p ())
+  if (known_eq (GET_MODE_SIZE (<MODE>mode), 16)
+      && operands[1] == CONST0_RTX (<MODE>mode)
+      && MEM_P (operands[0])
+      && (can_create_pseudo_p ()
+	  || memory_address_p (TImode, XEXP (operands[0], 0))))
+    {
+      operands[0] = adjust_address (operands[0], TImode, 0);
+      operands[1] = CONST0_RTX (TImode);
+    }
+  else if (can_create_pseudo_p ())
     {
       if (GET_CODE (operands[0]) != REG)
 	operands[1] = force_reg (<MODE>mode, operands[1]);
