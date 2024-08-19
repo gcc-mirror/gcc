@@ -1,4 +1,5 @@
 // { dg-do run }
+// { dg-prune-output "use of enum values across objects may fail" }
 // { dg-options "-O2 -Wtype-limits -fstrict-enums -fshort-enums" }
 extern void link_error (void);
 
