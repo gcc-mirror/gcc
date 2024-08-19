@@ -17175,22 +17175,20 @@ The precision of division is propotional to this param when division
 approximation is enabled.  The default value is 2.
 
 @item aarch64-autovec-preference
-Force an ISA selection strategy for auto-vectorization.  Accepts values from
-0 to 4, inclusive.
+Force an ISA selection strategy for auto-vectorization.
 @table @samp
-@item 0
+@item default
 Use the default heuristics.
-@item 1
+@item asimd-only
 Use only Advanced SIMD for auto-vectorization.
-@item 2
+@item sve-only
 Use only SVE for auto-vectorization.
-@item 3
+@item prefer-asimd
 Use both Advanced SIMD and SVE.  Prefer Advanced SIMD when the costs are
 deemed equal.
-@item 4
+@item prefer-sve
 Use both Advanced SIMD and SVE.  Prefer SVE when the costs are deemed equal.
 @end table
-The default value is 0.
 
 @item aarch64-ldp-policy
 Fine-grained policy for load pairs.

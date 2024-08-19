@@ -16405,7 +16405,7 @@ record_potential_advsimd_unrolling (loop_vec_info loop_vinfo)
 
   /* Check whether it is possible in principle to use Advanced SIMD
      instead.  */
-  if (aarch64_autovec_preference == 2)
+  if (aarch64_autovec_preference == AARCH64_AUTOVEC_SVE_ONLY)
     return;
 
   /* We don't want to apply the heuristic to outer loops, since it's
@@ -22311,8 +22311,8 @@ static bool
 aarch64_cmp_autovec_modes (machine_mode sve_m, machine_mode asimd_m)
 {
   /* Take into account the aarch64-autovec-preference param if non-zero.  */
-  bool only_asimd_p = aarch64_autovec_preference == 1;
-  bool only_sve_p = aarch64_autovec_preference == 2;
+  bool only_asimd_p = aarch64_autovec_preference == AARCH64_AUTOVEC_ASIMD_ONLY;
+  bool only_sve_p = aarch64_autovec_preference == AARCH64_AUTOVEC_SVE_ONLY;
 
   if (only_asimd_p)
     return false;
@@ -22320,8 +22320,8 @@ aarch64_cmp_autovec_modes (machine_mode sve_m, machine_mode asimd_m)
     return true;
 
   /* The preference in case of a tie in costs.  */
-  bool prefer_asimd = aarch64_autovec_preference == 3;
-  bool prefer_sve = aarch64_autovec_preference == 4;
+  bool prefer_asimd = aarch64_autovec_preference == AARCH64_AUTOVEC_PREFER_ASIMD;
+  bool prefer_sve = aarch64_autovec_preference == AARCH64_AUTOVEC_PREFER_SVE;
 
   poly_int64 nunits_sve = GET_MODE_NUNITS (sve_m);
   poly_int64 nunits_asimd = GET_MODE_NUNITS (asimd_m);
@@ -22422,8 +22422,8 @@ aarch64_autovectorize_vector_modes (vector_modes *modes, bool)
        than an SVE main loop with N bytes then by default we'll try to
        use the SVE loop to vectorize the epilogue instead.  */
 
-  bool only_asimd_p = aarch64_autovec_preference == 1;
-  bool only_sve_p = aarch64_autovec_preference == 2;
+  bool only_asimd_p = aarch64_autovec_preference == AARCH64_AUTOVEC_ASIMD_ONLY;
+  bool only_sve_p = aarch64_autovec_preference == AARCH64_AUTOVEC_SVE_ONLY;
 
   unsigned int sve_i = (TARGET_SVE && !only_asimd_p) ? 0 : ARRAY_SIZE (sve_modes);
   unsigned int advsimd_i = 0;

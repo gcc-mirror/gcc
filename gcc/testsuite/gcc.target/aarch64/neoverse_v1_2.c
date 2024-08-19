@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -mcpu=neoverse-v1 --param aarch64-autovec-preference=1 -fdump-tree-vect-details" } */
+/* { dg-options "-O2 -mcpu=neoverse-v1 --param aarch64-autovec-preference=asimd-only -fdump-tree-vect-details" } */
 
 void
 f (float x[restrict][100], float y[restrict][100])

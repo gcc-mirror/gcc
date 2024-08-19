@@ -115,6 +115,23 @@ enum aarch64_key_type {
   AARCH64_KEY_B
 };
 
+/* An enum for setting the auto-vectorization preference:
+   - AARCH64_AUTOVEC_DEFAULT: Use default heuristics
+   - AARCH64_AUTOVEC_ASIMD_ONLY: Use only Advanced SIMD (Neon)
+   for auto-vectorisation
+   - AARCH64_AUTOVEC_SVE_ONLY: Use only SVE for auto-vectorisation
+   - AARCH64_AUTOVEC_PREFER_ASIMD: Use both Neon and SVE,
+   but prefer Neon when the costs are equal
+   - AARCH64_AUTOVEC_PREFER_SVE: Use both Neon and SVE,
+   but prefer SVE when the costs are equal.  */
+enum aarch64_autovec_preference_enum {
+  AARCH64_AUTOVEC_DEFAULT,
+  AARCH64_AUTOVEC_ASIMD_ONLY,
+  AARCH64_AUTOVEC_SVE_ONLY,
+  AARCH64_AUTOVEC_PREFER_ASIMD,
+  AARCH64_AUTOVEC_PREFER_SVE
+};
+
 /* An enum specifying how to handle load and store pairs using
    a fine-grained policy:
    - LDP_STP_POLICY_DEFAULT: Use the policy defined in the tuning structure.
