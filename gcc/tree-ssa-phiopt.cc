@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "tree-ssa-propagate.h"
 #include "tree-ssa-dce.h"
+#include "calls.h"
 
 /* Return the singleton PHI in the SEQ of PHIs for edges E0 and E1. */
 
@@ -370,6 +371,25 @@ factor_out_conditional_operation (edge e0, edge e1, gphi *phi,
   /* Create a new PHI stmt.  */
   result = PHI_RESULT (phi);
   temp = make_ssa_name (TREE_TYPE (new_arg0), NULL);
+
+  gimple_match_op new_op = arg0_op;
+
+  /* Create the operation stmt if possible and insert it.  */
+  new_op.ops[0] = temp;
+  gimple_seq seq = NULL;
+  result = maybe_push_res_to_seq (&new_op, &seq, result);
+
+  /* If we can't create the new statement, release the temp name
+     and return back.  */
+  if (!result)
+    {
+      release_ssa_name (temp);
+      return NULL;
+    }
+
+  gsi = gsi_after_labels (gimple_bb (phi));
+  gsi_insert_seq_before (&gsi, seq, GSI_CONTINUE_LINKING);
+
   newphi = create_phi_node (temp, gimple_bb (phi));
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -397,16 +417,6 @@ factor_out_conditional_operation (edge e0, edge e1, gphi *phi,
 
   add_phi_arg (newphi, new_arg0, e0, locus);
   add_phi_arg (newphi, new_arg1, e1, locus);
-
-  gimple_match_op new_op = arg0_op;
-
-  /* Create the operation stmt and insert it.  */
-  new_op.ops[0] = temp;
-  gimple_seq seq = NULL;
-  result = maybe_push_res_to_seq (&new_op, &seq, result);
-  gcc_assert (result);
-  gsi = gsi_after_labels (gimple_bb (phi));
-  gsi_insert_seq_before (&gsi, seq, GSI_CONTINUE_LINKING);
 
   /* Remove the original PHI stmt.  */
   gsi = gsi_for_stmt (phi);
