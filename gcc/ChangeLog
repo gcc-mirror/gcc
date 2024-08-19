@@ -1,3 +1,24 @@
+2024-08-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-08-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/116407
+	* config/avr/avr.md (*dec-and-branchhi!=-1.l.clobber):
+	Increase the additional jump offset to 2 words.
+
+2024-08-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-08-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/116407
+	* config/avr/avr-protos.h (avr_jump_mode): Add an int argument.
+	* config/avr/avr.cc (avr_jump_mode): Add an int argument to increase
+	the computed jump offset of backwards branches.
+	* config/avr/avr.md (*dec-and-branchhi!=-1, *dec-and-branchsi!=-1):
+	Increase the jump offset used by avr_jump_mode() as needed.
+
 2024-08-17  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
