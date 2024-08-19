@@ -630,6 +630,20 @@ report_not_enum (location_t location, tree fndecl, unsigned int argno,
 	    " a valid %qT value", actual, argno + 1, fndecl, enumtype);
 }
 
+/* Report that LOCATION has a call to FNDECL in which argument ARGNO has
+   the value ACTUAL, whereas the function requires one of VALUE0..3.
+   ARGNO counts from zero.  */
+static void
+report_not_one_of (location_t location, tree fndecl, unsigned int argno,
+		   HOST_WIDE_INT actual, HOST_WIDE_INT value0,
+		   HOST_WIDE_INT value1, HOST_WIDE_INT value2,
+		   HOST_WIDE_INT value3)
+{
+  error_at (location, "passing %wd to argument %d of %qE, which expects"
+	    " %wd, %wd, %wd or %wd", actual, argno + 1, fndecl, value0, value1,
+	    value2, value3);
+}
+
 /* Checks that the mve.fp extension is enabled, given that REQUIRES_FLOAT
    indicates whether it is required or not for function FNDECL.
    Report an error against LOCATION if not.  */
@@ -1967,6 +1981,36 @@ function_checker::require_immediate_enum (unsigned int rel_argno, tree type)
 
   report_not_enum (location, fndecl, argno, actual, type);
   return false;
+}
+
+/* Check that argument REL_ARGNO is an integer constant expression that
+   has one of the given values.  */
+bool
+function_checker::require_immediate_one_of (unsigned int rel_argno,
+					    HOST_WIDE_INT value0,
+					    HOST_WIDE_INT value1,
+					    HOST_WIDE_INT value2,
+					    HOST_WIDE_INT value3)
+{
+  unsigned int argno = m_base_arg + rel_argno;
+  if (!argument_exists_p (argno))
+    return true;
+
+  HOST_WIDE_INT actual;
+  if (!require_immediate (argno, actual))
+    return false;
+
+  if (actual != value0
+      && actual != value1
+      && actual != value2
+      && actual != value3)
+    {
+      report_not_one_of (location, fndecl, argno, actual,
+			 value0, value1, value2, value3);
+      return false;
+    }
+
+  return true;
 }
 
 /* Check that argument REL_ARGNO is an integer constant expression in the
