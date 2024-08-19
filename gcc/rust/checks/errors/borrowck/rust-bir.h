@@ -30,6 +30,8 @@ namespace Rust {
 namespace BIR {
 
 struct BasicBlock;
+struct BasicBlockId;
+using BasicBlocks = IndexVec<BasicBlockId, BasicBlock>;
 class Statement;
 class AbstractExpr;
 
@@ -42,7 +44,7 @@ struct Function
 {
   PlaceDB place_db;
   std::vector<PlaceId> arguments;
-  std::vector<BasicBlock> basic_blocks;
+  BasicBlocks basic_blocks;
   FreeRegions universal_regions;
   std::vector<std::pair<FreeRegion, FreeRegion>> universal_region_bounds;
   std::unordered_map<Polonius::Origin, HIR::LifetimeParam *> region_hir_map;

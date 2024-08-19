@@ -565,7 +565,7 @@ ExprStmtBuilder::visit (HIR::IfExpr &expr)
   add_jump (if_block, then_start_block);
   add_jump (if_block, final_block);
 
-  auto &then_end_bb = ctx.basic_blocks[then_end_block.value];
+  auto &then_end_bb = ctx.basic_blocks[then_end_block];
   if (then_end_bb.is_goto_terminated () && then_end_bb.successors.empty ())
     add_jump (then_end_block, final_block);
 }
@@ -602,11 +602,11 @@ ExprStmtBuilder::visit (HIR::IfExprConseqElse &expr)
   add_jump (if_end_bb, then_start_bb);
   add_jump (if_end_bb, else_start_bb);
 
-  auto &then_bb = ctx.basic_blocks[then_end_bb.value];
+  auto &then_bb = ctx.basic_blocks[then_end_bb];
   if (then_bb.is_goto_terminated () && then_bb.successors.empty ())
     add_jump (then_end_bb, final_start_bb);
 
-  auto &else_bb = ctx.basic_blocks[else_end_bb.value];
+  auto &else_bb = ctx.basic_blocks[else_end_bb];
   if (else_bb.is_goto_terminated () && else_bb.successors.empty ())
     add_jump (else_end_bb, final_start_bb);
 }

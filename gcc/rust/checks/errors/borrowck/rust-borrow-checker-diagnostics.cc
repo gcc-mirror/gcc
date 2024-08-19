@@ -135,8 +135,8 @@ BorrowCheckerDiagnostics::get_statement (Polonius::Point point)
   // assert that the extracted indexes are valid
   rust_assert (bb_index < bir_function.basic_blocks.size ());
   rust_assert (statement_index
-	       < bir_function.basic_blocks[bb_index].statements.size ());
-  return bir_function.basic_blocks[bb_index].statements[statement_index];
+	       < bir_function.basic_blocks[{bb_index}].statements.size ());
+  return bir_function.basic_blocks[{bb_index}].statements[statement_index];
 }
 
 const BIR::Loan &
