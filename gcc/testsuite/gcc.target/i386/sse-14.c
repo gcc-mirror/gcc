@@ -1019,3 +1019,20 @@ test_2 (_mm512_gf2p8affine_epi64_epi8, __m512i, __m512i, __m512i, 1)
 
 /* sm3intrin.h */
 test_3 (_mm_sm3rnds2_epi32, __m128i, __m128i, __m128i, __m128i, 1)
+
+/* avx10_2roundingintrin.h */
+test_2 (_mm256_add_round_pd, __m256d, __m256d, __m256d, 9)
+test_2 (_mm256_add_round_ph, __m256h, __m256h, __m256h, 8)
+test_2 (_mm256_add_round_ps, __m256, __m256, __m256, 9)
+test_2x (_mm256_cmp_round_pd_mask, __mmask8, __m256d, __m256d, 1, 8)
+test_2x (_mm256_cmp_round_ph_mask, __mmask16, __m256h, __m256h, 1, 8)
+test_2x (_mm256_cmp_round_ps_mask, __mmask8, __m256, __m256, 1, 8)
+test_3 (_mm256_maskz_add_round_pd, __m256d, __mmask8, __m256d, __m256d, 9)
+test_3 (_mm256_maskz_add_round_ph, __m256h, __mmask16, __m256h, __m256h, 8)
+test_3 (_mm256_maskz_add_round_ps, __m256, __mmask8, __m256, __m256, 9)
+test_3x (_mm256_mask_cmp_round_pd_mask, __mmask8, __mmask8, __m256d, __m256d, 1, 8)
+test_3x (_mm256_mask_cmp_round_ph_mask, __mmask16, __mmask16, __m256h, __m256h, 1, 8)
+test_3x (_mm256_mask_cmp_round_ps_mask, __mmask8, __mmask8, __m256, __m256, 1, 8)
+test_4 (_mm256_mask_add_round_pd, __m256d, __m256d, __mmask8, __m256d, __m256d, 9)
+test_4 (_mm256_mask_add_round_ph, __m256h, __m256h, __mmask16, __m256h, __m256h, 8)
+test_4 (_mm256_mask_add_round_ps, __m256, __m256, __mmask8, __m256, __m256, 9)

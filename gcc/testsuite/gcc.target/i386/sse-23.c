@@ -824,6 +824,14 @@
 /* sm3intrin.h */
 #define __builtin_ia32_vsm3rnds2(A, B, C, D) __builtin_ia32_vsm3rnds2 (A, B, C, 1)
 
+/* avx10_2roundingintrin.h */
+#define __builtin_ia32_addpd256_mask_round(A, B, C, D, E) __builtin_ia32_addpd256_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_addph256_mask_round(A, B, C, D, E) __builtin_ia32_addph256_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_addps256_mask_round(A, B, C, D, E) __builtin_ia32_addps256_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_cmppd256_mask_round(A, B, C, D, E) __builtin_ia32_cmppd256_mask_round(A, B, 1, D, 8)
+#define __builtin_ia32_cmpph256_mask_round(A, B, C, D, E) __builtin_ia32_cmpph256_mask_round(A, B, 1, D, 8)
+#define __builtin_ia32_cmpps256_mask_round(A, B, C, D, E) __builtin_ia32_cmpps256_mask_round(A, B, 1, D, 8)
+
 #pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,fma,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,sha,xsavec,xsaves,clflushopt,clwb,mwaitx,clzero,pku,sgx,rdpid,gfni,vpclmulqdq,pconfig,wbnoinvd,enqcmd,avx512vp2intersect,serialize,tsxldtrk,amx-tile,amx-int8,amx-bf16,kl,widekl,avxvnni,avxifma,avxvnniint8,avxneconvert,cmpccxadd,amx-fp16,prefetchi,raoint,amx-complex,avxvnniint16,sm3,sha512,sm4,avx10.2-512")
 
 #include <x86intrin.h>

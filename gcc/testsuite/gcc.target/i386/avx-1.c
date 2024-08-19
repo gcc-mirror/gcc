@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -mavx2 -maes -mpclmul -mgfni -mavx512bw -mavx512fp16 -mavx512vl -mprefetchi" } */
+/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -mavx2 -maes -mpclmul -mgfni -mprefetchi -mavx10.2-512" } */
 /* { dg-add-options bind_pic_locally } */
 
 #include <mm_malloc.h>
@@ -841,6 +841,14 @@
 
 /* sm3intrin.h */
 #define __builtin_ia32_vsm3rnds2(A, B, C, D) __builtin_ia32_vsm3rnds2 (A, B, C, 1)
+
+/* avx10_2roundingintrin.h */
+#define __builtin_ia32_addpd256_mask_round(A, B, C, D, E) __builtin_ia32_addpd256_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_addph256_mask_round(A, B, C, D, E) __builtin_ia32_addph256_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_addps256_mask_round(A, B, C, D, E) __builtin_ia32_addps256_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_cmppd256_mask_round(A, B, C, D, E) __builtin_ia32_cmppd256_mask_round(A, B, 1, D, 8)
+#define __builtin_ia32_cmpph256_mask_round(A, B, C, D, E) __builtin_ia32_cmpph256_mask_round(A, B, 1, D, 8)
+#define __builtin_ia32_cmpps256_mask_round(A, B, C, D, E) __builtin_ia32_cmpps256_mask_round(A, B, 1, D, 8)
 
 #include <wmmintrin.h>
 #include <immintrin.h>

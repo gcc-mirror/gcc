@@ -138,4 +138,6 @@
 
 #include <amxfp16intrin.h>
 
+#include <avx10_2roundingintrin.h>
+
 #endif /* _IMMINTRIN_H_INCLUDED */
