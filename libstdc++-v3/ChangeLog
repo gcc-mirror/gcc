@@ -1,3 +1,9 @@
+2024-08-18  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/prerequisites.xml: Remove note from the
+	GCC 4.0.1 days.
+	* doc/html/manual/setup.html: Regenerate.
+
 2024-08-17  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/abi.xml: Update reference to

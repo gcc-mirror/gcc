@@ -1,3 +1,62 @@
+2024-08-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.target/i386/pr87007-5.c: Disable phi-opt.
+
+2024-08-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/116407
+	* gcc.target/avr/torture/pr116407-2.c: New test.
+	* gcc.target/avr/torture/pr116407-4.c: New test.
+
+2024-08-18  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-2.c: Adjust
+	the expand dump check times.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-3.c: Ditto.
+	* gcc.target/riscv/sat_arith_data.h: Add test helper macros.
+	* gcc.target/riscv/sat_u_trunc-4.c: New test.
+	* gcc.target/riscv/sat_u_trunc-5.c: New test.
+	* gcc.target/riscv/sat_u_trunc-6.c: New test.
+	* gcc.target/riscv/sat_u_trunc-run-4.c: New test.
+	* gcc.target/riscv/sat_u_trunc-run-5.c: New test.
+	* gcc.target/riscv/sat_u_trunc-run-6.c: New test.
+
+2024-08-18  Pan Li  <pan2.li@intel.com>
+
+	PR target/116278
+	* gcc.target/riscv/sat_u_add-11.c: Adjust asm check body.
+	* gcc.target/riscv/sat_u_add-15.c: Ditto.
+	* gcc.target/riscv/sat_u_add-19.c: Ditto.
+	* gcc.target/riscv/sat_u_add-23.c: Ditto.
+	* gcc.target/riscv/sat_u_add-3.c: Ditto.
+	* gcc.target/riscv/sat_u_add-7.c: Ditto.
+	* gcc.target/riscv/sat_u_add_imm-11.c: Ditto.
+	* gcc.target/riscv/sat_u_add_imm-15.c: Ditto.
+	* gcc.target/riscv/sat_u_add_imm-3.c: Ditto.
+	* gcc.target/riscv/sat_u_add_imm-7.c: Ditto.
+	* gcc.target/riscv/pr116278-run-1.c: New test.
+	* gcc.target/riscv/pr116278-run-2.c: New test.
+
+2024-08-18  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat_u_trunc-13.c: New test.
+	* gcc.target/riscv/sat_u_trunc-14.c: New test.
+	* gcc.target/riscv/sat_u_trunc-15.c: New test.
+	* gcc.target/riscv/sat_u_trunc-run-13.c: New test.
+	* gcc.target/riscv/sat_u_trunc-run-14.c: New test.
+	* gcc.target/riscv/sat_u_trunc-run-15.c: New test.
+
+2024-08-18  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat_u_trunc-7.c: New test.
+	* gcc.target/riscv/sat_u_trunc-8.c: New test.
+	* gcc.target/riscv/sat_u_trunc-9.c: New test.
+	* gcc.target/riscv/sat_u_trunc-run-7.c: New test.
+	* gcc.target/riscv/sat_u_trunc-run-8.c: New test.
+	* gcc.target/riscv/sat_u_trunc-run-9.c: New test.
+
 2024-08-17  Jin Ma  <jinma@linux.alibaba.com>
 
 	* gcc.target/riscv/rvv/base/bug-7.c: New test.

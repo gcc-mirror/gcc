@@ -1,3 +1,9 @@
+2024-08-18  Sergey Fedorov  <vital.had@gmail.com>
+
+	* config/fpu-macppc.h (new file): initial support for powerpc-darwin.
+	* configure.host: enable ieee_support for powerpc-darwin case,
+	set fpu_host='fpu-macppc'.
+
 2024-07-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/105361

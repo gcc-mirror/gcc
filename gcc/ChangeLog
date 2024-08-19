@@ -1,3 +1,78 @@
+2024-08-18  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/115876
+	* ext-dce.cc (ext_dce_process_sets): Replace hardcoded 63/64 instances
+	with HOST_BITS_PER_WIDE_INT based values.
+	(carry_backpropagate): Handle modes with more bits than
+	HOST_BITS_PER_WIDE_INT gracefully, avoiding undefined behavior.
+	(ext_dce_process_uses): Handle subreg offsets which would result
+	in ubsan shifts gracefully, avoiding undefined behavior.
+
+2024-08-18  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/gm2.texi (Contributing): Tweak gm2 mailing list address.
+
+2024-08-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gimple-match-exports.cc (gimple_match_op::operands_occurs_in_abnormal_phi):
+	New function.
+	* gimple-match.h (gimple_match_op): Add operands_occurs_in_abnormal_phi.
+	* tree-ssa-phiopt.cc (factor_out_conditional_operation): Use gimple_match_op
+	instead of manually extracting from/creating the gimple.
+
+2024-08-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (*add<mode>3_split) [!reload_completed]:
+	Add a scratch:QI to 16-bit additions with constant.
+
+2024-08-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/116407
+	* config/avr/avr.md (*dec-and-branchhi!=-1.l.clobber):
+	Increase the additional jump offset to 2 words.
+
+2024-08-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/116407
+	* config/avr/avr-protos.h (avr_jump_mode): Add an int argument.
+	* config/avr/avr.cc (avr_jump_mode): Add an int argument to increase
+	the computed jump offset of backwards branches.
+	* config/avr/avr.md (*dec-and-branchhi!=-1, *dec-and-branchsi!=-1):
+	Increase the jump offset used by avr_jump_mode() as needed.
+
+2024-08-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gimple-fold.cc (mark_lhs_in_seq_for_dce): New function.
+	(replace_stmt_with_simplification): Call mark_lhs_in_seq_for_dce
+	right before inserting the sequence.
+	(fold_stmt_1): Add dce_worklist argument, update call to
+	replace_stmt_with_simplification.
+	(fold_stmt): Add dce_worklist argument, update call to fold_stmt_1.
+	(fold_stmt_inplace): Update call to fold_stmt_1.
+	* gimple-fold.h (fold_stmt): Add bitmap argument.
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Update call to fold_stmt.
+
+2024-08-18  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/iterators.md (ANYI_QUAD_TRUNC): New iterator for
+	quad truncation.
+	(ANYI_OCT_TRUNC): New iterator for oct truncation.
+	(ANYI_QUAD_TRUNCATED): New attr for truncated quad modes.
+	(ANYI_OCT_TRUNCATED): New attr for truncated oct modes.
+	(anyi_quad_truncated): Ditto but for lower case.
+	(anyi_oct_truncated): Ditto but for lower case.
+	* config/riscv/riscv.md (ustrunc<mode><anyi_quad_truncated>2):
+	Add new pattern for quad truncation.
+	(ustrunc<mode><anyi_oct_truncated>2): Ditto but for oct.
+
+2024-08-18  Pan Li  <pan2.li@intel.com>
+
+	PR target/116278
+	* config/riscv/riscv.cc (riscv_gen_zero_extend_rtx): Add new
+	func impl to zero extend rtx.
+	(riscv_expand_usadd): Leverage above func to cleanup operands 0
+	and remove the special handing for SImode in RV64.
+
 2024-08-17  Jeff Law  <jlaw@ventanamicro.com>
 
 	* ext-dce.cc (carry_backpropagate): Cast mask to HOST_WIDE_INT before
