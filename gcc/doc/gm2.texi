@@ -3027,7 +3027,7 @@ These exist and can be found on the frontends web page on the
 @section License of GNU Modula-2
 
 GNU Modula-2 is free software, the compiler is held under the GPL v3
-@uref{http://www.gnu.org/licenses/gpl.txt},
+@uref{http://www.gnu.org/licenses/gpl-3.0.txt},
 its libraries (pim, iso and Logitech compatible) are under the
 GPL v3 with the GCC run time library exception clause.
 
