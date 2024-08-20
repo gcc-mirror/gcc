@@ -3515,10 +3515,24 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
      given an empty BB to convert, and we can't handle that.  */
   gcc_assert (!insn_info.is_empty ());
 
-  /* Now fixup the assignments.  */
-  for (unsigned i = 0; i < insn_info.length (); i++)
-    if (insn_info[i]->target != insn_info[i]->temporary)
-      noce_emit_move_insn (insn_info[i]->target, insn_info[i]->temporary);
+  /* Now fixup the assignments.
+     PR116405: Iterate in reverse order and keep track of the targets so that
+     a move does not overwrite a subsequent value when multiple instructions
+     have the same target.  */
+  unsigned i;
+  noce_multiple_sets_info *info;
+  bitmap set_targets = BITMAP_ALLOC (&reg_obstack);
+  FOR_EACH_VEC_ELT_REVERSE (insn_info, i, info)
+    {
+      gcc_checking_assert (REG_P (info->target));
+
+      if (info->target != info->temporary
+	  && !bitmap_bit_p (set_targets, REGNO (info->target)))
+	noce_emit_move_insn (info->target, info->temporary);
+
+      bitmap_set_bit (set_targets, REGNO (info->target));
+    }
+  BITMAP_FREE (set_targets);
 
   /* Actually emit the sequence if it isn't too expensive.  */
   rtx_insn *seq = get_insns ();
