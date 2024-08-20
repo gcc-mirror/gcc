@@ -54,9 +54,8 @@
 
 // C++ < 20 || __cpp_concepts < 202002L || __cpp_constexpr < 201811L
 #if __cpp_lib_variant < 202106L
-# include <ext/aligned_buffer.h> // Use __aligned_membuf instead of union.
+# include <ext/aligned_buffer.h> // Use __aligned_membuf for storage.
 #endif
-
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -209,17 +208,18 @@ namespace __variant
     __as(const std::variant<_Types...>&& __v) noexcept
     { return std::move(__v); }
 
-  // For C++17:
-  // _Uninitialized<T> is guaranteed to be a trivially destructible type,
-  // even if T is not.
-  // For C++20:
-  // _Uninitialized<T> is trivially destructible iff T is, so _Variant_union
-  // needs a constrained non-trivial destructor.
+#if __cpp_lib_variant < 202106L
   template<typename _Type, bool = std::is_trivially_destructible_v<_Type>>
     struct _Uninitialized;
+#else
+  template<typename _Type, bool /* unused */ = true>
+    struct _Uninitialized;
+#endif
 
-  template<typename _Type>
-    struct _Uninitialized<_Type, true>
+  // The primary template is used for trivially destructible types in C++17,
+  // and for all types in C++20.
+  template<typename _Type, bool>
+    struct _Uninitialized
     {
       template<typename... _Args>
 	constexpr
@@ -227,6 +227,7 @@ namespace __variant
 	: _M_storage(std::forward<_Args>(__args)...)
 	{ }
 
+#if __cpp_lib_variant < 202106L
       constexpr const _Type& _M_get() const & noexcept
       { return _M_storage; }
 
@@ -238,46 +239,18 @@ namespace __variant
 
       constexpr _Type&& _M_get() && noexcept
       { return std::move(_M_storage); }
+#endif
 
       _Type _M_storage;
     };
 
+#if __cpp_lib_variant < 202106L
+  // This partial specialization is used for non-trivially destructible types
+  // in C++17, so that _Uninitialized<T> is trivially destructible and can be
+  // used as a union member in _Variadic_union.
   template<typename _Type>
     struct _Uninitialized<_Type, false>
     {
-#if __cpp_lib_variant >= 202106L
-      template<typename... _Args>
-	constexpr
-	_Uninitialized(in_place_index_t<0>, _Args&&... __args)
-	: _M_storage(std::forward<_Args>(__args)...)
-	{ }
-
-      constexpr ~_Uninitialized() { }
-
-      _Uninitialized(const _Uninitialized&) = default;
-      _Uninitialized(_Uninitialized&&) = default;
-      _Uninitialized& operator=(const _Uninitialized&) = default;
-      _Uninitialized& operator=(_Uninitialized&&) = default;
-
-      constexpr const _Type& _M_get() const & noexcept
-      { return _M_storage; }
-
-      constexpr _Type& _M_get() & noexcept
-      { return _M_storage; }
-
-      constexpr const _Type&& _M_get() const && noexcept
-      { return std::move(_M_storage); }
-
-      constexpr _Type&& _M_get() && noexcept
-      { return std::move(_M_storage); }
-
-      struct _Empty_byte { };
-
-      union {
-	_Empty_byte _M_empty;
-	_Type _M_storage;
-      };
-#else
       template<typename... _Args>
 	constexpr
 	_Uninitialized(in_place_index_t<0>, _Args&&... __args)
@@ -299,7 +272,6 @@ namespace __variant
       { return std::move(*_M_storage._M_ptr()); }
 
       __gnu_cxx::__aligned_membuf<_Type> _M_storage;
-#endif
     };
 
   template<size_t _Np, typename _Union>
@@ -316,6 +288,22 @@ namespace __variant
 	return __variant::__get_n<_Np - 3>(
 		 std::forward<_Union>(__u)._M_rest._M_rest._M_rest);
     }
+#else
+  template<size_t _Np, typename _Union>
+    constexpr auto&&
+    __get_n(_Union&& __u) noexcept
+    {
+      if constexpr (_Np == 0)
+	return std::forward<_Union>(__u)._M_first._M_storage;
+      else if constexpr (_Np == 1)
+	return std::forward<_Union>(__u)._M_rest._M_first._M_storage;
+      else if constexpr (_Np == 2)
+	return std::forward<_Union>(__u)._M_rest._M_rest._M_first._M_storage;
+      else
+	return __variant::__get_n<_Np - 3>(
+		 std::forward<_Union>(__u)._M_rest._M_rest._M_rest);
+    }
+#endif
 
   // Returns the typed storage for __v.
   template<size_t _Np, typename _Variant>
@@ -428,6 +416,9 @@ namespace __variant
 
       ~_Variadic_union() = default;
 
+      // If any alternative type is not trivially destructible then we need a
+      // user-provided destructor that does nothing. The active alternative
+      // will be destroyed by _Variant_storage::_M_reset() instead of here.
       constexpr ~_Variadic_union()
 	requires (!__trivially_destructible)
       { }
@@ -486,7 +477,7 @@ namespace __variant
 	constexpr
 	_Variant_storage(in_place_index_t<_Np>, _Args&&... __args)
 	: _M_u(in_place_index<_Np>, std::forward<_Args>(__args)...),
-	_M_index{_Np}
+	  _M_index{_Np}
 	{ }
 
       constexpr void
@@ -532,7 +523,7 @@ namespace __variant
 	constexpr
 	_Variant_storage(in_place_index_t<_Np>, _Args&&... __args)
 	: _M_u(in_place_index<_Np>, std::forward<_Args>(__args)...),
-	_M_index{_Np}
+	  _M_index{_Np}
 	{ }
 
       constexpr void
