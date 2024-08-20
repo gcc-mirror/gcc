@@ -2142,15 +2142,6 @@ riscv_const_insns (rtx x, bool allow_new_pseudos)
 	  ...etc.  */
 	if (riscv_v_ext_mode_p (GET_MODE (x)))
 	  {
-	    /* const series vector.  */
-	    rtx base, step;
-	    if (const_vec_series_p (x, &base, &step))
-	      {
-		/* This is not accurate, we will need to adapt the COST
-		 * accurately according to BASE && STEP.  */
-		return 1;
-	      }
-
 	    rtx elt;
 	    if (const_vec_duplicate_p (x, &elt))
 	      {
@@ -2185,6 +2176,15 @@ riscv_const_insns (rtx x, bool allow_new_pseudos)
 		    else
 		      return 1 + 4; /*vmv.v.x + memory access.  */
 		  }
+	      }
+
+	    /* const series vector.  */
+	    rtx base, step;
+	    if (const_vec_series_p (x, &base, &step))
+	      {
+		/* This cost is not accurate, we will need to adapt the COST
+		   accurately according to BASE && STEP.  */
+		return 1;
 	      }
 	  }
 
