@@ -1,3 +1,12 @@
+2024-08-19  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-08-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116384
+	* pt.cc (tsubst_expr) <case IMPLICIT_CONV_EXPR>: Bail if tsubst
+	returns error_mark_node.
+
 2024-08-15  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,19 @@
+2024-08-19  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-08-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116384
+	* g++.dg/cpp0x/vt-116384.C: New test.
+
+2024-08-19  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-08-19  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* g++.dg/warn/pr33738-2.C: dg-prune arm linker messages about
+	size of enums.
+
 2024-08-18  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
