@@ -10289,9 +10289,8 @@ addressable_p (tree gnu_expr, tree gnu_type)
 		   check the alignment of the containing record, as it is
 		   guaranteed to be not smaller than that of its most
 		   aligned field that is not a bit-field.  */
-		&& (!STRICT_ALIGNMENT
-		    || DECL_ALIGN (TREE_OPERAND (gnu_expr, 1))
-		       >= TYPE_ALIGN (TREE_TYPE (gnu_expr))))
+		&& DECL_ALIGN (TREE_OPERAND (gnu_expr, 1))
+		   >= TYPE_ALIGN (TREE_TYPE (gnu_expr)))
 	       /* The field of a padding record is always addressable.  */
 	       || TYPE_IS_PADDING_P (TREE_TYPE (TREE_OPERAND (gnu_expr, 0))))
 	      && addressable_p (TREE_OPERAND (gnu_expr, 0), NULL_TREE));
