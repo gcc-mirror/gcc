@@ -17959,10 +17959,22 @@ post_load_processing ()
       dump () && dump ("Post-load processing of %N", decl);
 
       gcc_checking_assert (DECL_MAYBE_IN_CHARGE_CDTOR_P (decl));
-      /* Cloning can cause loading -- specifically operator delete for
-	 the deleting dtor.  */
-      if (!TREE_ASM_WRITTEN (decl) && maybe_clone_body (decl))
-	TREE_ASM_WRITTEN (decl) = 1;
+
+      if (DECL_COMDAT (decl))
+	comdat_linkage (decl);
+      if (!TREE_ASM_WRITTEN (decl))
+	{
+	  /* Cloning can cause loading -- specifically operator delete for
+	     the deleting dtor.  */
+	  if (maybe_clone_body (decl))
+	    TREE_ASM_WRITTEN (decl) = 1;
+	  else
+	    {
+	      /* We didn't clone the cdtor, make sure we emit it.  */
+	      note_vague_linkage_fn (decl);
+	      cgraph_node::finalize_function (decl, true);
+	    }
+	}
     }
 
   cfun = old_cfun;
