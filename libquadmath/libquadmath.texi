@@ -118,18 +118,18 @@ The following mathematical constants of type @code{__float128} are defined.
 
 @table @asis
 @item @code{M_Eq}: the constant e (Euler's number)
-@item @code{M_LOG2Eq}: binary logarithm of 2
-@item @code{M_LOG10Eq}: common, decimal logarithm of 2
+@item @code{M_LOG2Eq}: base 2 logarithm of e
+@item @code{M_LOG10Eq}: decimal (base 10) logarithm of e
 @item @code{M_LN2q}: natural logarithm of 2
 @item @code{M_LN10q}: natural logarithm of 10
 @item @code{M_PIq}: pi
 @item @code{M_PI_2q}: pi divided by two
 @item @code{M_PI_4q}: pi divided by four
-@item @code{M_1_PIq}: one over pi
-@item @code{M_2_PIq}: one over two pi
-@item @code{M_2_SQRTPIq}: two over square root of pi
+@item @code{M_1_PIq}: one divided by pi
+@item @code{M_2_PIq}: two divided by pi
+@item @code{M_2_SQRTPIq}: two divided by square root of pi
 @item @code{M_SQRT2q}: square root of 2
-@item @code{M_SQRT1_2q}: one over square root of 2
+@item @code{M_SQRT1_2q}: one divided by square root of 2
 @end table
 
 
