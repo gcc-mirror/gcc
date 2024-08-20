@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Aug 26, 2024
+GNAT User's Guide for Native Platforms , Aug 30, 2024
 
 AdaCore
 
@@ -13481,7 +13481,7 @@ in the string after @code{-gnaty}
 then proper indentation is checked, with the digit indicating the
 indentation level required. A value of zero turns off this style check.
 The rule checks that the following constructs start on a column that is
-a multiple of the alignment level:
+one plus a multiple of the alignment level:
 
 
 @itemize *
@@ -13499,10 +13499,10 @@ or body or that completes a compound statement.
 @end itemize
 
 Full line comments must be
-aligned with the @code{--} starting on a column that is a multiple of
+aligned with the @code{--} starting on a column that is one plus a multiple of
 the alignment level, or they may be aligned the same way as the following
 non-blank line (this is useful when full line comments appear in the middle
-of a statement, or they may be aligned with the source line on the previous
+of a statement), or they may be aligned with the source line on the previous
 non-blank line.
 @end table
 
