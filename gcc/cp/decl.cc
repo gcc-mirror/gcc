@@ -13317,9 +13317,8 @@ grokdeclarator (const cp_declarator *declarator,
 	    /* [dcl.array]/1:
 
 	       The optional attribute-specifier-seq appertains to the
-	       array.  */
-	    returned_attrs = attr_chainon (returned_attrs,
-					   declarator->std_attributes);
+	       array type.  */
+	    decl_attributes (&type, declarator->std_attributes, 0);
 	  break;
 
 	case cdk_function:
