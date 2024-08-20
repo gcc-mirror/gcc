@@ -7686,6 +7686,8 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 	  gnu_field_type = gnu_packable_type;
 	  if (!gnu_size)
 	    gnu_size = rm_size (gnu_field_type);
+	  if (TREE_CODE (gnu_size) != INTEGER_CST)
+	    gnu_size = NULL_TREE;
 	}
     }
 
