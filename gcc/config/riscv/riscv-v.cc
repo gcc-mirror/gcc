@@ -51,6 +51,7 @@
 #include "targhooks.h"
 #include "predict.h"
 #include "errors.h"
+#include "riscv-v.h"
 
 using namespace riscv_vector;
 
@@ -435,58 +436,6 @@ emit_nonvlmax_insn (unsigned icode, unsigned insn_flags, rtx *ops, rtx vl)
   e.set_vl (vl);
   e.emit_insn ((enum insn_code) icode, ops);
 }
-
-class rvv_builder : public rtx_vector_builder
-{
-public:
-  rvv_builder () : rtx_vector_builder () {}
-  rvv_builder (machine_mode mode, unsigned int npatterns,
-	       unsigned int nelts_per_pattern)
-    : rtx_vector_builder (mode, npatterns, nelts_per_pattern)
-  {
-    m_inner_mode = GET_MODE_INNER (mode);
-    m_inner_bits_size = GET_MODE_BITSIZE (m_inner_mode);
-    m_inner_bytes_size = GET_MODE_SIZE (m_inner_mode);
-    m_mask_mode = get_mask_mode (mode);
-
-    gcc_assert (
-      int_mode_for_size (inner_bits_size (), 0).exists (&m_inner_int_mode));
-    m_int_mode
-      = get_vector_mode (m_inner_int_mode, GET_MODE_NUNITS (mode)).require ();
-  }
-
-  bool can_duplicate_repeating_sequence_p ();
-  bool is_repeating_sequence ();
-  rtx get_merged_repeating_sequence ();
-
-  bool repeating_sequence_use_merge_profitable_p ();
-  bool combine_sequence_use_slideup_profitable_p ();
-  bool combine_sequence_use_merge_profitable_p ();
-  rtx get_merge_scalar_mask (unsigned int, machine_mode) const;
-
-  bool single_step_npatterns_p () const;
-  bool npatterns_all_equal_p () const;
-  bool interleaved_stepped_npatterns_p () const;
-  bool npatterns_vid_diff_repeated_p () const;
-
-  machine_mode new_mode () const { return m_new_mode; }
-  scalar_mode inner_mode () const { return m_inner_mode; }
-  scalar_int_mode inner_int_mode () const { return m_inner_int_mode; }
-  machine_mode mask_mode () const { return m_mask_mode; }
-  machine_mode int_mode () const { return m_int_mode; }
-  unsigned int inner_bits_size () const { return m_inner_bits_size; }
-  unsigned int inner_bytes_size () const { return m_inner_bytes_size; }
-
-private:
-  scalar_mode m_inner_mode;
-  scalar_int_mode m_inner_int_mode;
-  machine_mode m_new_mode;
-  scalar_int_mode m_new_inner_mode;
-  machine_mode m_mask_mode;
-  machine_mode m_int_mode;
-  unsigned int m_inner_bits_size;
-  unsigned int m_inner_bytes_size;
-};
 
 /* Return true if the vector duplicated by a super element which is the fusion
    of consecutive elements.
