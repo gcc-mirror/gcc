@@ -1426,7 +1426,7 @@ canonicalize_loop_ivs (class loop *loop, tree *nit, bool bump_in_latch)
       precision = TYPE_PRECISION (type);
     }
 
-  scalar_int_mode mode = smallest_int_mode_for_size (precision);
+  scalar_int_mode mode = smallest_int_mode_for_size (precision).require ();
   precision = GET_MODE_PRECISION (mode);
   type = build_nonstandard_integer_type (precision, unsigned_p);
 

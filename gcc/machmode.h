@@ -905,15 +905,15 @@ decimal_float_mode_for_size (unsigned int size)
     (mode_for_size (size, MODE_DECIMAL_FLOAT, 0));
 }
 
-extern machine_mode smallest_mode_for_size (poly_uint64, enum mode_class);
+extern opt_machine_mode smallest_mode_for_size (poly_uint64, enum mode_class);
 
-/* Find the narrowest integer mode that contains at least SIZE bits.
-   Such a mode must exist.  */
+/* Find the narrowest integer mode that contains at least SIZE bits,
+   if such a mode exists.  */
 
-inline scalar_int_mode
+inline opt_scalar_int_mode
 smallest_int_mode_for_size (poly_uint64 size)
 {
-  return as_a <scalar_int_mode> (smallest_mode_for_size (size, MODE_INT));
+  return dyn_cast <scalar_int_mode> (smallest_mode_for_size (size, MODE_INT));
 }
 
 extern opt_scalar_int_mode int_mode_for_mode (machine_mode);

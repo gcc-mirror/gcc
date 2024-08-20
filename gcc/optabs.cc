@@ -2551,7 +2551,8 @@ expand_twoval_binop_libfunc (optab binoptab, rtx op0, rtx op1,
 
   /* The value returned by the library function will have twice as
      many bits as the nominal MODE.  */
-  libval_mode = smallest_int_mode_for_size (2 * GET_MODE_BITSIZE (mode));
+  libval_mode
+    = smallest_int_mode_for_size (2 * GET_MODE_BITSIZE (mode)).require ();
   start_sequence ();
   libval = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
 				    libval_mode,

@@ -4867,7 +4867,7 @@ expand_debug_expr (tree exp)
 		if (maybe_gt (bitsize, MAX_BITSIZE_MODE_ANY_INT))
 		  return NULL;
 		/* Bitfield.  */
-		mode1 = smallest_int_mode_for_size (bitsize);
+		mode1 = smallest_int_mode_for_size (bitsize).require ();
 	      }
 	    poly_int64 bytepos = bits_to_bytes_round_down (bitpos);
 	    if (maybe_ne (bytepos, 0))

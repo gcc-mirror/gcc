@@ -972,7 +972,8 @@ store_integral_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
 	 objects are meant to be handled before calling this function.  */
       fixed_size_mode value_mode = as_a <fixed_size_mode> (GET_MODE (value));
       if (value_mode == VOIDmode)
-	value_mode = smallest_int_mode_for_size (nwords * BITS_PER_WORD);
+	value_mode
+	  = smallest_int_mode_for_size (nwords * BITS_PER_WORD).require ();
 
       last = get_last_insn ();
       for (int i = 0; i < nwords; i++)

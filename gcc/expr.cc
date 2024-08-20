@@ -596,7 +596,7 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
   if (GET_MODE_CLASS (to_mode) == MODE_PARTIAL_INT)
     {
       scalar_int_mode full_mode
-	= smallest_int_mode_for_size (GET_MODE_BITSIZE (to_mode));
+	= smallest_int_mode_for_size (GET_MODE_BITSIZE (to_mode)).require ();
 
       gcc_assert (convert_optab_handler (trunc_optab, to_mode, full_mode)
 		  != CODE_FOR_nothing);
@@ -611,7 +611,7 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
     {
       rtx new_from;
       scalar_int_mode full_mode
-	= smallest_int_mode_for_size (GET_MODE_BITSIZE (from_mode));
+	= smallest_int_mode_for_size (GET_MODE_BITSIZE (from_mode)).require ();
       convert_optab ctab = unsignedp ? zext_optab : sext_optab;
       enum insn_code icode;
 
@@ -1492,7 +1492,7 @@ op_by_pieces_d::smallest_fixed_size_mode_for_size (unsigned int size)
 	  }
     }
 
-  return smallest_int_mode_for_size (size * BITS_PER_UNIT);
+  return smallest_int_mode_for_size (size * BITS_PER_UNIT).require ();
 }
 
 /* This function contains the main loop used for expanding a block
@@ -2385,10 +2385,10 @@ emit_block_move_via_oriented_loop (rtx x, rtx y, rtx size,
   if (mode != GET_MODE (y_addr))
     {
       scalar_int_mode xmode
-	= smallest_int_mode_for_size (GET_MODE_BITSIZE (mode));
+	= smallest_int_mode_for_size (GET_MODE_BITSIZE (mode)).require ();
       scalar_int_mode ymode
 	= smallest_int_mode_for_size (GET_MODE_BITSIZE
-				      (GET_MODE (y_addr)));
+				      (GET_MODE (y_addr))).require ();
       if (GET_MODE_BITSIZE (xmode) < GET_MODE_BITSIZE (ymode))
 	mode = ymode;
       else
@@ -3667,7 +3667,7 @@ copy_blkmode_to_reg (machine_mode mode_in, tree src)
   n_regs = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
   dst_words = XALLOCAVEC (rtx, n_regs);
   bitsize = MIN (TYPE_ALIGN (TREE_TYPE (src)), BITS_PER_WORD);
-  min_mode = smallest_int_mode_for_size (bitsize);
+  min_mode = smallest_int_mode_for_size (bitsize).require ();
 
   /* Copy the structure BITSIZE bits at a time.  */
   for (bitpos = 0, xbitpos = padding_correction;
@@ -8205,7 +8205,8 @@ store_field (rtx target, poly_int64 bitsize, poly_int64 bitpos,
 	  HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (exp));
 	  machine_mode temp_mode = GET_MODE (temp);
 	  if (temp_mode == BLKmode || temp_mode == VOIDmode)
-	    temp_mode = smallest_int_mode_for_size (size * BITS_PER_UNIT);
+	    temp_mode
+	      = smallest_int_mode_for_size (size * BITS_PER_UNIT).require ();
 	  rtx temp_target = gen_reg_rtx (temp_mode);
 	  emit_group_store (temp_target, temp, TREE_TYPE (exp), size);
 	  temp = temp_target;
@@ -8279,7 +8280,7 @@ store_field (rtx target, poly_int64 bitsize, poly_int64 bitpos,
 	 word size, we need to load the value (see again store_bit_field).  */
       if (GET_MODE (temp) == BLKmode && known_le (bitsize, BITS_PER_WORD))
 	{
-	  temp_mode = smallest_int_mode_for_size (bitsize);
+	  temp_mode = smallest_int_mode_for_size (bitsize).require ();
 	  temp = extract_bit_field (temp, bitsize, 0, 1, NULL_RTX, temp_mode,
 				    temp_mode, false, NULL);
 	}

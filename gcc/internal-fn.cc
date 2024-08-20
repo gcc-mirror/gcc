@@ -2824,7 +2824,7 @@ expand_arith_overflow (enum tree_code code, gimple *stmt)
       if (orig_precres == precres && precop <= BITS_PER_WORD)
 	{
 	  int p = MAX (min_precision, precop);
-	  scalar_int_mode m = smallest_int_mode_for_size (p);
+	  scalar_int_mode m = smallest_int_mode_for_size (p).require ();
 	  tree optype = build_nonstandard_integer_type (GET_MODE_PRECISION (m),
 							uns0_p && uns1_p
 							&& unsr_p);
@@ -2867,7 +2867,7 @@ expand_arith_overflow (enum tree_code code, gimple *stmt)
       if (orig_precres == precres)
 	{
 	  int p = MAX (prec0, prec1);
-	  scalar_int_mode m = smallest_int_mode_for_size (p);
+	  scalar_int_mode m = smallest_int_mode_for_size (p).require ();
 	  tree optype = build_nonstandard_integer_type (GET_MODE_PRECISION (m),
 							uns0_p && uns1_p
 							&& unsr_p);

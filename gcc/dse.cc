@@ -1737,7 +1737,8 @@ find_shift_sequence (poly_int64 access_size,
   if (store_info->const_rhs
       && known_le (access_size, GET_MODE_SIZE (MAX_MODE_INT)))
     {
-      auto new_mode = smallest_int_mode_for_size (access_size * BITS_PER_UNIT);
+      auto new_mode = smallest_int_mode_for_size
+	(access_size * BITS_PER_UNIT).require ();
       auto byte = subreg_lowpart_offset (new_mode, store_mode);
       rtx ret
 	= simplify_subreg (new_mode, store_info->const_rhs, store_mode, byte);

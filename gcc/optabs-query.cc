@@ -205,6 +205,7 @@ get_best_extraction_insn (extraction_insn *insn,
 			  machine_mode field_mode)
 {
   opt_scalar_int_mode mode_iter;
+
   FOR_EACH_MODE_FROM (mode_iter, smallest_int_mode_for_size (struct_bits))
     {
       scalar_int_mode mode = mode_iter.require ();

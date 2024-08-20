@@ -7163,7 +7163,7 @@ assign_int_registers (int bitpos, assign_data_t *data)
      at the moment but may wish to revisit.  */
   if (intoffset % BITS_PER_WORD != 0)
     mode = smallest_int_mode_for_size (BITS_PER_WORD
-				       - intoffset % BITS_PER_WORD);
+				       - intoffset % BITS_PER_WORD).require ();
   else
     mode = word_mode;
 

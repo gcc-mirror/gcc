@@ -796,7 +796,7 @@
       elt += (BYTES_BIG_ENDIAN ? -1 : 1) * (sz - isz) / isz;
     }
   else if (isz > sz)
-    inner = smallest_int_mode_for_size (sz * BITS_PER_UNIT);
+    inner = smallest_int_mode_for_size (sz * BITS_PER_UNIT).require ();
   val = const_vector_elt_as_int (op, elt);
   return EASY_VECTOR_MSB (val, inner);
 })

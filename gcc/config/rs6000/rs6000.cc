@@ -6261,7 +6261,7 @@ vspltis_constant (rtx op, unsigned step, unsigned copies)
           | (small_val & mask)))
 	return false;
       splat_val = small_val;
-      inner = smallest_int_mode_for_size (bitsize);
+      inner = smallest_int_mode_for_size (bitsize).require ();
     }
 
   /* Check if SPLAT_VAL can really be the operand of a vspltis[bhw].  */

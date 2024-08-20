@@ -7042,7 +7042,7 @@ s390_expand_insv (rtx dest, rtx op1, rtx op2, rtx src)
       return true;
     }
 
-  smode = smallest_int_mode_for_size (bitsize);
+  smode = smallest_int_mode_for_size (bitsize).require ();
   smode_bsize = GET_MODE_BITSIZE (smode);
   mode_bsize = GET_MODE_BITSIZE (mode);
 
