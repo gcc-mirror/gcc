@@ -7878,8 +7878,13 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
         --parser->prevent_constrained_type_specifiers;
 	/* Parse the cast itself.  */
 	if (!cp_parser_error_occurred (parser))
-	  postfix_expression
-	    = cp_parser_functional_cast (parser, type);
+	  {
+	    if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
+	      /* This can only be a cast.  */
+	      cp_parser_commit_to_topmost_tentative_parse (parser);
+	    postfix_expression
+	      = cp_parser_functional_cast (parser, type);
+	  }
 	/* If that worked, we're done.  */
 	if (cp_parser_parse_definitely (parser))
 	  break;
@@ -26372,7 +26377,7 @@ cp_parser_braced_list (cp_parser *parser, bool *non_constant_p /*=nullptr*/)
 
   /* Consume the `{' token.  */
   matching_braces braces;
-  braces.require_open (parser);
+  bool found_opening_brace = braces.require_open (parser);
   /* Create a CONSTRUCTOR to represent the braced-initializer.  */
   initializer = make_node (CONSTRUCTOR);
   /* If it's not a `}', then there is a non-trivial initializer.  */
@@ -26390,8 +26395,16 @@ cp_parser_braced_list (cp_parser *parser, bool *non_constant_p /*=nullptr*/)
   else if (non_constant_p)
     *non_constant_p = false;
   /* Now, there should be a trailing `}'.  */
-  location_t finish_loc = cp_lexer_peek_token (parser->lexer)->location;
-  braces.require_close (parser);
+  cp_token * token = cp_lexer_peek_token (parser->lexer);
+  location_t finish_loc = token->location;
+  /* The part with CPP_SEMICOLON is just a heuristic.  */
+  if (!braces.require_close (parser) && token->type != CPP_SEMICOLON
+      && found_opening_brace && cp_parser_skip_to_closing_brace (parser))
+    {
+      cp_lexer_consume_token (parser->lexer);
+      inform (finish_loc,
+	      "probably missing a comma or an operator before");
+    }
   TREE_TYPE (initializer) = init_list_type_node;
   recompute_constructor_flags (initializer);
 
