@@ -855,11 +855,12 @@ make_edges_bb (basic_block bb, struct omp_region **pcur_region, int *pomp_index)
 
   if (!last)
     return ret;
-
+    
+  update_stmt_eh_region(last);
   switch (gimple_code (last))
     {
     case GIMPLE_GOTO:
-      if (make_goto_expr_edges (bb))
+      if (make_goto_expr_edges (bb))  
 	ret = 1;
       fallthru = false;
       break;

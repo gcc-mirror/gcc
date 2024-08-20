@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 
 typedef struct eh_region_d *eh_region;
+typedef struct eh_landing_pad_d *eh_landing_pad;
 
 extern void using_eh_for_cleanups (void);
 extern void add_stmt_to_eh_lp (gimple *, int);
@@ -30,6 +31,8 @@ extern bool remove_stmt_from_eh_lp (gimple *);
 extern int lookup_stmt_eh_lp_fn (struct function *, const gimple *);
 extern int lookup_stmt_eh_lp (const gimple *);
 extern bool make_eh_dispatch_edges (geh_dispatch *);
+extern bool match_lp (eh_landing_pad, vec<tree> *);
+extern void update_stmt_eh_region(gimple *);
 extern edge make_eh_edge (gimple *);
 extern edge redirect_eh_edge (edge, basic_block);
 extern void redirect_eh_dispatch_edge (geh_dispatch *, edge, basic_block);
@@ -38,6 +41,8 @@ extern bool operation_could_trap_helper_p (enum tree_code, bool, bool, bool,
 extern bool operation_could_trap_p (enum tree_code, bool, bool, tree);
 extern bool tree_could_trap_p (tree);
 extern tree rewrite_to_non_trapping_overflow (tree);
+extern void extract_exception_types_for_call (gcall *, vec<tree> *);
+extern bool stmt_throw_types (function *, gimple *, vec<tree> *);
 extern bool stmt_could_throw_p (function *, gimple *);
 extern bool stmt_unremovable_because_of_non_call_eh_p (function *, gimple *);
 extern bool tree_could_throw_p (tree);
