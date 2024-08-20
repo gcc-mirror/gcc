@@ -1,3 +1,15 @@
+2024-08-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115657
+	* decl.cc (build_enumerator): Call maybe_fold_non_dependent_expr
+	instead of fold_non_dependent_expr.
+
+2024-08-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116384
+	* pt.cc (tsubst_expr) <case IMPLICIT_CONV_EXPR>: Bail if tsubst
+	returns error_mark_node.
+
 2024-08-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/110345

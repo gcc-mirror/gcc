@@ -1,3 +1,19 @@
+2024-08-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/46371
+	PR fortran/56496
+	* expr.cc (gfc_is_coindexed): Detect is coindexed also when
+	rewritten to caf_get.
+	* trans-stmt.cc (trans_associate_var): Always accept a
+	descriptor for coarrays.
+
+2024-08-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/84244
+	* trans-types.cc (gfc_get_derived_type): When a caf_sub_token is
+	generated for a component, link it to the component it is
+	generated for (the previous one).
+
 2024-08-16  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/114146

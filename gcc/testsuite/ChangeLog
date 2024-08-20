@@ -1,3 +1,258 @@
+2024-08-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115657
+	* g++.dg/cpp1y/constexpr-recursion2.C: New test.
+	* g++.dg/template/conv21.C: New test.
+
+2024-08-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116384
+	* g++.dg/cpp0x/vt-116384.C: New test.
+
+2024-08-19  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	PR target/112108
+	* gcc.target/aarch64/acle/ls64_guard-1.c: New test.
+	* gcc.target/aarch64/acle/ls64_guard-2.c: New test.
+	* gcc.target/aarch64/acle/ls64_guard-3.c: New test.
+	* gcc.target/aarch64/acle/ls64_guard-4.c: New test.
+
+2024-08-19  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	PR target/112108
+	* gcc.target/aarch64/acle/memtag_guard-1.c: New test.
+	* gcc.target/aarch64/acle/memtag_guard-2.c: New test.
+	* gcc.target/aarch64/acle/memtag_guard-3.c: New test.
+	* gcc.target/aarch64/acle/memtag_guard-4.c: New test.
+
+2024-08-19  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	PR target/112108
+	* gcc.target/aarch64/acle/tme_guard-1.c: New test.
+	* gcc.target/aarch64/acle/tme_guard-2.c: New test.
+	* gcc.target/aarch64/acle/tme_guard-3.c: New test.
+	* gcc.target/aarch64/acle/tme_guard-4.c: New test.
+
+2024-08-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray/select_type_1.f90: New test.
+	* gfortran.dg/coarray/select_type_2.f90: New test.
+	* gfortran.dg/coarray/select_type_3.f90: New test.
+
+2024-08-19  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* g++.dg/warn/pr33738-2.C: dg-prune arm linker messages about
+	size of enums.
+
+2024-08-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/scanltranstree.exp: Redefine the routines using two
+	templates.
+
+2024-08-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/84244
+	* gfortran.dg/coarray/ptr_comp_5.f08: New test.
+
+2024-08-19  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: Add test.
+
+2024-08-19  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: Add test.
+
+2024-08-19  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: Add test.
+
+2024-08-19  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: Add test.
+
+2024-08-19  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: Add test.
+
+2024-08-19  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: Add test.
+
+2024-08-19  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: Add test.
+
+2024-08-19  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: Add test.
+
+2024-08-19  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: Add test.
+
+2024-08-19  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: Add test.
+
+2024-08-19  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: New test.
+
+2024-08-19  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: New test.
+
+2024-08-19  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: New test.
+
+2024-08-19  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-2.c: Add test.
+
+2024-08-19  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-2.c: Add test.
+
+2024-08-19  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-2.c: New test.
+
+2024-08-19  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-1.c: Add test.
+
+2024-08-19  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-1.c: Add test.
+
+2024-08-19  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-1.c: Add test.
+
+2024-08-19  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/sse-14.c: Add new macro test.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-1.c: Add test.
+
+2024-08-19  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/sse-14.c: Add new macro test.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-1.c: Add test.
+
+2024-08-19  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add -mavx10.2 and new builtin test.
+	* gcc.target/i386/avx-2.c: Ditto.
+	* gcc.target/i386/sse-13.c: Add new tests.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-1.c: New test.
+
 2024-08-18  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	* gcc.target/i386/pr87007-5.c: Disable phi-opt.

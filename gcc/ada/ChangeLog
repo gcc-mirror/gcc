@@ -1,3 +1,12 @@
+2024-08-19  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR ada/115917
+	* gnatvsn.ads: Add note about the duplication of this value in
+	version.c.
+	* version.c (VER_LEN_MAX): Define to the same value as
+	Gnatvsn.Ver_Len_Max.
+	(gnat_version_string): Use VER_LEN_MAX as bound.
+
 2024-08-08  Steve Baird  <baird@adacore.com>
 
 	* sem_ch6.adb (Check_Discriminant_Conformance): Perform check for
