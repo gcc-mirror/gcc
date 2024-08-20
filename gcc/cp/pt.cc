@@ -23619,28 +23619,31 @@ type_unification_real (tree tparms,
 		 is important if the default argument contains something that
 		 might be instantiation-dependent like access (87480).  */
 	      processing_template_decl_sentinel s (!any_dependent_targs);
-	      tree substed = NULL_TREE;
-	      if (saw_undeduced == 1 && !any_dependent_targs)
-		{
-		  /* First instatiate in template context, in case we still
-		     depend on undeduced template parameters.  */
-		  ++processing_template_decl;
-		  substed = tsubst_template_arg (arg, full_targs, complain,
-						 NULL_TREE);
-		  --processing_template_decl;
-		  if (substed != error_mark_node
-		      && !uses_template_parms (substed))
-		    /* We replaced all the tparms, substitute again out of
-		       template context.  */
-		    substed = NULL_TREE;
-		}
-	      if (!substed)
-		substed = tsubst_template_arg (arg, full_targs, complain,
-					       NULL_TREE);
 
-	      if (!uses_template_parms (substed))
-		arg = convert_template_argument (parm, substed, full_targs,
-						 complain, i, NULL_TREE);
+	      tree used_tparms = NULL_TREE;
+	      if (saw_undeduced == 1)
+		{
+		  tree tparms_list = build_tree_list (size_int (1), tparms);
+		  used_tparms = find_template_parameters (arg, tparms_list);
+		  for (; used_tparms; used_tparms = TREE_CHAIN (used_tparms))
+		    {
+		      int level, index;
+		      template_parm_level_and_index (TREE_VALUE (used_tparms),
+						     &level, &index);
+		      if (TREE_VEC_ELT (targs, index) == NULL_TREE)
+			break;
+		    }
+		}
+
+	      if (!used_tparms)
+		{
+		  /* All template parameters within this default argument are
+		     deduced, so we can use it.  */
+		  arg = tsubst_template_arg (arg, full_targs, complain,
+					     NULL_TREE);
+		  arg = convert_template_argument (parm, arg, full_targs,
+						   complain, i, NULL_TREE);
+		}
 	      else if (saw_undeduced == 1)
 		arg = NULL_TREE;
 	      else if (!any_dependent_targs)
