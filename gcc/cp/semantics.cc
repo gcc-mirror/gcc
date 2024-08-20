@@ -5242,7 +5242,7 @@ expand_or_defer_fn_1 (tree fn)
 	 demand, so we also need to keep the body.  Otherwise we don't
 	 need it anymore.  */
       if (!DECL_DECLARED_CONSTEXPR_P (fn)
-	  && !(modules_p () && vague_linkage_p (fn)))
+	  && !(module_maybe_has_cmi_p () && vague_linkage_p (fn)))
 	DECL_SAVED_TREE (fn) = NULL_TREE;
       return false;
     }
