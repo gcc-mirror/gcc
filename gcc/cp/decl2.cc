@@ -2434,7 +2434,7 @@ import_export_class (tree ctype)
        translation unit, then export the class; otherwise, import
        it.  */
       import_export = -1;
-  else if (TYPE_POLYMORPHIC_P (ctype))
+  else if (TYPE_CONTAINS_VPTR_P (ctype))
     {
       tree cdecl = TYPE_NAME (ctype);
       if (DECL_LANG_SPECIFIC (cdecl) && DECL_MODULE_ATTACH_P (cdecl))
@@ -3530,7 +3530,7 @@ import_export_decl (tree decl)
 	  class_type = type;
 	  import_export_class (type);
 	  if (CLASSTYPE_INTERFACE_KNOWN (type)
-	      && TYPE_POLYMORPHIC_P (type)
+	      && TYPE_CONTAINS_VPTR_P (type)
 	      && CLASSTYPE_INTERFACE_ONLY (type)
 	      /* If -fno-rtti was specified, then we cannot be sure
 		 that RTTI information will be emitted with the
