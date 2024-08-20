@@ -1109,26 +1109,19 @@ expand_const_vector (rtx target, rtx src)
 {
   machine_mode mode = GET_MODE (target);
   rtx result = register_operand (target, mode) ? target : gen_reg_rtx (mode);
-  if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
-    {
-      rtx elt;
-      gcc_assert (
-	const_vec_duplicate_p (src, &elt)
-	&& (rtx_equal_p (elt, const0_rtx) || rtx_equal_p (elt, const1_rtx)));
-      rtx ops[] = {result, src};
-      emit_vlmax_insn (code_for_pred_mov (mode), UNARY_MASK_OP, ops);
-
-      if (result != target)
-	emit_move_insn (target, result);
-      return;
-    }
-
   rtx elt;
   if (const_vec_duplicate_p (src, &elt))
     {
+      if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
+	{
+	  gcc_assert (rtx_equal_p (elt, const0_rtx)
+		      || rtx_equal_p (elt, const1_rtx));
+	  rtx ops[] = {result, src};
+	  emit_vlmax_insn (code_for_pred_mov (mode), UNARY_MASK_OP, ops);
+	}
       /* Element in range -16 ~ 15 integer or 0.0 floating-point,
 	 we use vmv.v.i instruction.  */
-      if (valid_vec_immediate_p (src))
+      else if (valid_vec_immediate_p (src))
 	{
 	  rtx ops[] = {result, src};
 	  emit_vlmax_insn (code_for_pred_mov (mode), UNARY_OP, ops);
