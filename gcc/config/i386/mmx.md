@@ -169,7 +169,7 @@
 
 (define_expand "mov<mode>"
   [(set (match_operand:MMXMODE 0 "nonimmediate_operand")
-	(match_operand:MMXMODE 1 "nonimmediate_operand"))]
+	(match_operand:MMXMODE 1 "nonimm_or_0_operand"))]
   "TARGET_MMX || TARGET_MMX_WITH_SSE"
 {
   ix86_expand_vector_move (<MODE>mode, operands);

@@ -1387,7 +1387,7 @@
 
 (define_expand "mov<mode>"
   [(set (match_operand:VMOVE 0 "nonimmediate_operand")
-	(match_operand:VMOVE 1 "nonimmediate_operand"))]
+	(match_operand:VMOVE 1 "nonimmediate_or_sse_const_operand"))]
   "TARGET_SSE"
 {
   ix86_expand_vector_move (<MODE>mode, operands);
