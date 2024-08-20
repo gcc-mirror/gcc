@@ -1457,10 +1457,8 @@ namespace __detail::__variant
 
       static_assert(sizeof...(_Types) > 0,
 		    "variant must have at least one alternative");
-      static_assert(!(std::is_reference_v<_Types> || ...),
-		    "variant must have no reference alternative");
-      static_assert(!(std::is_void_v<_Types> || ...),
-		    "variant must have no void alternative");
+      static_assert(((std::is_object_v<_Types> && !is_array_v<_Types>) && ...),
+		    "variant alternatives must be non-array object types");
 
       using _Base = __detail::__variant::_Variant_base<_Types...>;
 
