@@ -1150,26 +1150,29 @@ static void
 expand_const_vector (rtx target, rtx src)
 {
   machine_mode mode = GET_MODE (target);
+  rtx result = register_operand (target, mode) ? target : gen_reg_rtx (mode);
   if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
     {
       rtx elt;
       gcc_assert (
 	const_vec_duplicate_p (src, &elt)
 	&& (rtx_equal_p (elt, const0_rtx) || rtx_equal_p (elt, const1_rtx)));
-      rtx ops[] = {target, src};
+      rtx ops[] = {result, src};
       emit_vlmax_insn (code_for_pred_mov (mode), UNARY_MASK_OP, ops);
+
+      if (result != target)
+	emit_move_insn (target, result);
       return;
     }
 
   rtx elt;
   if (const_vec_duplicate_p (src, &elt))
     {
-      rtx tmp = register_operand (target, mode) ? target : gen_reg_rtx (mode);
       /* Element in range -16 ~ 15 integer or 0.0 floating-point,
 	 we use vmv.v.i instruction.  */
       if (satisfies_constraint_vi (src) || satisfies_constraint_Wc0 (src))
 	{
-	  rtx ops[] = {tmp, src};
+	  rtx ops[] = {result, src};
 	  emit_vlmax_insn (code_for_pred_mov (mode), UNARY_OP, ops);
 	}
       else
@@ -1186,7 +1189,7 @@ expand_const_vector (rtx target, rtx src)
 	     instruction (vsetvl a5, zero).  */
 	  if (lra_in_progress)
 	    {
-	      rtx ops[] = {tmp, elt};
+	      rtx ops[] = {result, elt};
 	      emit_vlmax_insn (code_for_pred_broadcast (mode), UNARY_OP, ops);
 	    }
 	  else
@@ -1194,15 +1197,15 @@ expand_const_vector (rtx target, rtx src)
 	      struct expand_operand ops[2];
 	      enum insn_code icode = optab_handler (vec_duplicate_optab, mode);
 	      gcc_assert (icode != CODE_FOR_nothing);
-	      create_output_operand (&ops[0], tmp, mode);
+	      create_output_operand (&ops[0], result, mode);
 	      create_input_operand (&ops[1], elt, GET_MODE_INNER (mode));
 	      expand_insn (icode, 2, ops);
-	      tmp = ops[0].value;
+	      result = ops[0].value;
 	    }
 	}
 
-      if (tmp != target)
-	emit_move_insn (target, tmp);
+      if (result != target)
+	emit_move_insn (target, result);
       return;
     }
 
@@ -1210,7 +1213,10 @@ expand_const_vector (rtx target, rtx src)
   rtx base, step;
   if (const_vec_series_p (src, &base, &step))
     {
-      expand_vec_series (target, base, step);
+      expand_vec_series (result, base, step);
+
+      if (result != target)
+	emit_move_insn (target, result);
       return;
     }
 
@@ -1243,7 +1249,7 @@ expand_const_vector (rtx target, rtx src)
 	       all element equal to 0x0706050403020100.  */
 	  rtx ele = builder.get_merged_repeating_sequence ();
 	  rtx dup = expand_vector_broadcast (builder.new_mode (), ele);
-	  emit_move_insn (target, gen_lowpart (mode, dup));
+	  emit_move_insn (result, gen_lowpart (mode, dup));
 	}
       else
 	{
@@ -1272,8 +1278,8 @@ expand_const_vector (rtx target, rtx src)
 	  emit_vlmax_insn (code_for_pred_scalar (AND, builder.int_mode ()),
 			    BINARY_OP, and_ops);
 
-	  rtx tmp = gen_reg_rtx (builder.mode ());
-	  rtx dup_ops[] = {tmp, builder.elt (0)};
+	  rtx tmp1 = gen_reg_rtx (builder.mode ());
+	  rtx dup_ops[] = {tmp1, builder.elt (0)};
 	  emit_vlmax_insn (code_for_pred_broadcast (builder.mode ()), UNARY_OP,
 			    dup_ops);
 	  for (unsigned int i = 1; i < builder.npatterns (); i++)
@@ -1285,12 +1291,12 @@ expand_const_vector (rtx target, rtx src)
 
 	      /* Merge scalar to each i.  */
 	      rtx tmp2 = gen_reg_rtx (builder.mode ());
-	      rtx merge_ops[] = {tmp2, tmp, builder.elt (i), mask};
+	      rtx merge_ops[] = {tmp2, tmp1, builder.elt (i), mask};
 	      insn_code icode = code_for_pred_merge_scalar (builder.mode ());
 	      emit_vlmax_insn (icode, MERGE_OP, merge_ops);
-	      tmp = tmp2;
+	      tmp1 = tmp2;
 	    }
-	  emit_move_insn (target, tmp);
+	  emit_move_insn (result, tmp1);
 	}
     }
   else if (CONST_VECTOR_STEPPED_P (src))
@@ -1362,11 +1368,11 @@ expand_const_vector (rtx target, rtx src)
 	      /* Step 5: Add starting value to all elements.  */
 	      HOST_WIDE_INT init_val = INTVAL (builder.elt (0));
 	      if (init_val == 0)
-		emit_move_insn (target, tmp3);
+		emit_move_insn (result, tmp3);
 	      else
 		{
 		  rtx dup = gen_const_vector_dup (builder.mode (), init_val);
-		  rtx add_ops[] = {target, tmp3, dup};
+		  rtx add_ops[] = {result, tmp3, dup};
 		  icode = code_for_pred (PLUS, builder.mode ());
 		  emit_vlmax_insn (icode, BINARY_OP, add_ops);
 		}
@@ -1396,7 +1402,7 @@ expand_const_vector (rtx target, rtx src)
 
 		  /* Step 2: Generate result = VID + diff.  */
 		  rtx vec = v.build ();
-		  rtx add_ops[] = {target, vid, vec};
+		  rtx add_ops[] = {result, vid, vec};
 		  emit_vlmax_insn (code_for_pred (PLUS, builder.mode ()),
 				   BINARY_OP, add_ops);
 		}
@@ -1412,24 +1418,24 @@ expand_const_vector (rtx target, rtx src)
 		    v.quick_push (builder.elt (i));
 		  rtx new_base = v.build ();
 
-		  /* Step 2: Generate tmp = VID >> LOG2 (NPATTERNS).  */
+		  /* Step 2: Generate tmp1 = VID >> LOG2 (NPATTERNS).  */
 		  rtx shift_count
 		    = gen_int_mode (exact_log2 (builder.npatterns ()),
 				    builder.inner_mode ());
-		  rtx tmp = expand_simple_binop (builder.mode (), LSHIFTRT,
+		  rtx tmp1 = expand_simple_binop (builder.mode (), LSHIFTRT,
 						 vid, shift_count, NULL_RTX,
 						 false, OPTAB_DIRECT);
 
-		  /* Step 3: Generate tmp2 = tmp * step.  */
+		  /* Step 3: Generate tmp2 = tmp1 * step.  */
 		  rtx tmp2 = gen_reg_rtx (builder.mode ());
 		  rtx step
 		    = simplify_binary_operation (MINUS, builder.inner_mode (),
 						 builder.elt (v.npatterns()),
 						 builder.elt (0));
-		  expand_vec_series (tmp2, const0_rtx, step, tmp);
+		  expand_vec_series (tmp2, const0_rtx, step, tmp1);
 
-		  /* Step 4: Generate target = tmp2 + new_base.  */
-		  rtx add_ops[] = {target, tmp2, new_base};
+		  /* Step 4: Generate result = tmp2 + new_base.  */
+		  rtx add_ops[] = {result, tmp2, new_base};
 		  emit_vlmax_insn (code_for_pred (PLUS, builder.mode ()),
 				   BINARY_OP, add_ops);
 		}
@@ -1462,13 +1468,13 @@ expand_const_vector (rtx target, rtx src)
 	  if (int_mode_for_size (new_smode_bitsize, 0).exists (&new_smode)
 	      && get_vector_mode (new_smode, new_nunits).exists (&new_mode))
 	    {
-	      rtx tmp = gen_reg_rtx (new_mode);
+	      rtx tmp1 = gen_reg_rtx (new_mode);
 	      base1 = gen_int_mode (rtx_to_poly_int64 (base1), new_smode);
-	      expand_vec_series (tmp, base1, gen_int_mode (step1, new_smode));
+	      expand_vec_series (tmp1, base1, gen_int_mode (step1, new_smode));
 
 	      if (rtx_equal_p (base2, const0_rtx) && known_eq (step2, 0))
 		/* { 1, 0, 2, 0, ... }.  */
-		emit_move_insn (target, gen_lowpart (mode, tmp));
+		emit_move_insn (result, gen_lowpart (mode, tmp1));
 	      else if (known_eq (step2, 0))
 		{
 		  /* { 1, 1, 2, 1, ... }.  */
@@ -1478,10 +1484,10 @@ expand_const_vector (rtx target, rtx src)
 		    gen_int_mode (builder.inner_bits_size (), new_smode),
 		    NULL_RTX, false, OPTAB_DIRECT);
 		  rtx tmp2 = gen_reg_rtx (new_mode);
-		  rtx and_ops[] = {tmp2, tmp, scalar};
+		  rtx and_ops[] = {tmp2, tmp1, scalar};
 		  emit_vlmax_insn (code_for_pred_scalar (AND, new_mode),
 				   BINARY_OP, and_ops);
-		  emit_move_insn (target, gen_lowpart (mode, tmp2));
+		  emit_move_insn (result, gen_lowpart (mode, tmp2));
 		}
 	      else
 		{
@@ -1495,10 +1501,10 @@ expand_const_vector (rtx target, rtx src)
 		    gen_int_mode (builder.inner_bits_size (), Pmode), NULL_RTX,
 		    false, OPTAB_DIRECT);
 		  rtx tmp3 = gen_reg_rtx (new_mode);
-		  rtx ior_ops[] = {tmp3, tmp, shifted_tmp2};
+		  rtx ior_ops[] = {tmp3, tmp1, shifted_tmp2};
 		  emit_vlmax_insn (code_for_pred (IOR, new_mode), BINARY_OP,
 				   ior_ops);
-		  emit_move_insn (target, gen_lowpart (mode, tmp3));
+		  emit_move_insn (result, gen_lowpart (mode, tmp3));
 		}
 	    }
 	  else
@@ -1526,7 +1532,7 @@ expand_const_vector (rtx target, rtx src)
 	      rtx mask = gen_reg_rtx (builder.mask_mode ());
 	      expand_vec_cmp (mask, EQ, and_vid, CONST1_RTX (mode));
 
-	      rtx ops[] = {target, tmp1, tmp2, mask};
+	      rtx ops[] = {result, tmp1, tmp2, mask};
 	      emit_vlmax_insn (code_for_pred_merge (mode), MERGE_OP, ops);
 	    }
 	}
@@ -1536,6 +1542,9 @@ expand_const_vector (rtx target, rtx src)
     }
   else
     gcc_unreachable ();
+
+  if (result != target)
+    emit_move_insn (target, result);
 }
 
 /* Get the frm mode with given CONST_INT rtx, the default mode is
