@@ -5,13 +5,13 @@
 #include "sat_arith.h"
 
 /*
-** sat_u_truc_uint16_t_to_uint8_t_fmt_1:
+** sat_u_trunc_uint16_t_to_uint8_t_fmt_1:
 ** sltiu\s+[atx][0-9]+,\s*a0,\s*255
 ** addi\s+[atx][0-9]+,\s*[atx][0-9]+,\s*-1
 ** or\s+[atx][0-9]+,\s*[atx][0-9]+,\s*[atx][0-9]+
 ** andi\s+[atx][0-9]+,\s*[atx][0-9]+,\s*0xff
 ** ret
 */
-DEF_SAT_U_TRUC_FMT_1(uint8_t, uint16_t)
+DEF_SAT_U_TRUNC_FMT_1(uint8_t, uint16_t)
 
 /* { dg-final { scan-rtl-dump-times ".SAT_TRUNC " 2 "expand" } } */

@@ -5,7 +5,7 @@
 #include "sat_arith.h"
 
 /*
-** sat_u_truc_uint64_t_to_uint32_t_fmt_1:
+** sat_u_trunc_uint64_t_to_uint32_t_fmt_1:
 ** li\s+[atx][0-9]+,\s*-1
 ** srli\s+[atx][0-9]+,\s*[atx][0-9]+,\s*32
 ** sltu\s+[atx][0-9]+,\s*a0,\s*[atx][0-9]+
@@ -14,6 +14,6 @@
 ** sext.w\s+a0,\s*a0
 ** ret
 */
-DEF_SAT_U_TRUC_FMT_1(uint32_t, uint64_t)
+DEF_SAT_U_TRUNC_FMT_1(uint32_t, uint64_t)
 
 /* { dg-final { scan-rtl-dump-times ".SAT_TRUNC " 2 "expand" } } */

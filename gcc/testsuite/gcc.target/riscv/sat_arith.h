@@ -218,40 +218,40 @@ sat_u_sub_##T##_fmt_12 (T x, T y)                      \
 /* Saturation Truncate (unsigned and signed)                                  */
 /******************************************************************************/
 
-#define DEF_SAT_U_TRUC_FMT_1(NT, WT)     \
+#define DEF_SAT_U_TRUNC_FMT_1(NT, WT)    \
 NT __attribute__((noinline))             \
-sat_u_truc_##WT##_to_##NT##_fmt_1 (WT x) \
+sat_u_trunc_##WT##_to_##NT##_fmt_1 (WT x) \
 {                                        \
   bool overflow = x > (WT)(NT)(-1);      \
   return ((NT)x) | (NT)-overflow;        \
 }
-#define DEF_SAT_U_TRUC_FMT_1_WRAP(NT, WT) DEF_SAT_U_TRUC_FMT_1(NT, WT)
+#define DEF_SAT_U_TRUNC_FMT_1_WRAP(NT, WT) DEF_SAT_U_TRUNC_FMT_1(NT, WT)
 
-#define DEF_SAT_U_TRUC_FMT_2(NT, WT)     \
+#define DEF_SAT_U_TRUNC_FMT_2(NT, WT)    \
 NT __attribute__((noinline))             \
-sat_u_truc_##WT##_to_##NT##_fmt_2 (WT x) \
+sat_u_trunc_##WT##_to_##NT##_fmt_2 (WT x) \
 {                                        \
   WT max = (WT)(NT)-1;                   \
   return x > max ? (NT) max : (NT)x;     \
 }
-#define DEF_SAT_U_TRUC_FMT_2_WRAP(NT, WT) DEF_SAT_U_TRUC_FMT_2(NT, WT)
+#define DEF_SAT_U_TRUNC_FMT_2_WRAP(NT, WT) DEF_SAT_U_TRUNC_FMT_2(NT, WT)
 
-#define DEF_SAT_U_TRUC_FMT_3(NT, WT)     \
+#define DEF_SAT_U_TRUNC_FMT_3(NT, WT)    \
 NT __attribute__((noinline))             \
-sat_u_truc_##WT##_to_##NT##_fmt_3 (WT x) \
+sat_u_trunc_##WT##_to_##NT##_fmt_3 (WT x) \
 {                                        \
   WT max = (WT)(NT)-1;                   \
   return x <= max ? (NT)x : (NT) max;    \
 }
-#define DEF_SAT_U_TRUC_FMT_3_WRAP(NT, WT) DEF_SAT_U_TRUC_FMT_3(NT, WT)
+#define DEF_SAT_U_TRUNC_FMT_3_WRAP(NT, WT) DEF_SAT_U_TRUNC_FMT_3(NT, WT)
 
-#define RUN_SAT_U_TRUC_FMT_1(NT, WT, x) sat_u_truc_##WT##_to_##NT##_fmt_1 (x)
-#define RUN_SAT_U_TRUC_FMT_1_WRAP(NT, WT, x) RUN_SAT_U_TRUC_FMT_1(NT, WT, x)
+#define RUN_SAT_U_TRUNC_FMT_1(NT, WT, x) sat_u_trunc_##WT##_to_##NT##_fmt_1 (x)
+#define RUN_SAT_U_TRUNC_FMT_1_WRAP(NT, WT, x) RUN_SAT_U_TRUNC_FMT_1(NT, WT, x)
 
-#define RUN_SAT_U_TRUC_FMT_2(NT, WT, x) sat_u_truc_##WT##_to_##NT##_fmt_2 (x)
-#define RUN_SAT_U_TRUC_FMT_2_WRAP(NT, WT, x) RUN_SAT_U_TRUC_FMT_2(NT, WT, x)
+#define RUN_SAT_U_TRUNC_FMT_2(NT, WT, x) sat_u_trunc_##WT##_to_##NT##_fmt_2 (x)
+#define RUN_SAT_U_TRUNC_FMT_2_WRAP(NT, WT, x) RUN_SAT_U_TRUNC_FMT_2(NT, WT, x)
 
-#define RUN_SAT_U_TRUC_FMT_3(NT, WT, x) sat_u_truc_##WT##_to_##NT##_fmt_3 (x)
-#define RUN_SAT_U_TRUC_FMT_3_WRAP(NT, WT, x) RUN_SAT_U_TRUC_FMT_3(NT, WT, x)
+#define RUN_SAT_U_TRUNC_FMT_3(NT, WT, x) sat_u_trunc_##WT##_to_##NT##_fmt_3 (x)
+#define RUN_SAT_U_TRUNC_FMT_3_WRAP(NT, WT, x) RUN_SAT_U_TRUNC_FMT_3(NT, WT, x)
 
 #endif
