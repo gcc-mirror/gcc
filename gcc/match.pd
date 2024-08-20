@@ -3325,6 +3325,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   }
   (if (otype_precision < itype_precision && wi::eq_p (trunc_max, int_cst))))))
 
+/* Unsigned saturation truncate, case 3, sizeof (WT) > sizeof (NT).
+   SAT_U_TRUNC = (NT)X | ((NT)(X <= (WT)-1) + (NT)-1).  */
+(match (unsigned_integer_sat_trunc @0)
+ (bit_ior:c (plus:c (convert (le @0 INTEGER_CST@1)) INTEGER_CST@2)
+	    (convert @0))
+ (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
+      && TYPE_UNSIGNED (TREE_TYPE (@0)))
+ (with
+  {
+   unsigned itype_precision = TYPE_PRECISION (TREE_TYPE (@0));
+   unsigned otype_precision = TYPE_PRECISION (type);
+   wide_int trunc_max = wi::mask (otype_precision, false, itype_precision);
+   wide_int max = wi::mask (otype_precision, false, otype_precision);
+   wide_int int_cst_1 = wi::to_wide (@1);
+   wide_int int_cst_2 = wi::to_wide (@2);
+  }
+  (if (wi::eq_p (trunc_max, int_cst_1) && wi::eq_p (max, int_cst_2))))))
+
 /* x >  y  &&  x != XXX_MIN  -->  x > y
    x >  y  &&  x == XXX_MIN  -->  false . */
 (for eqne (eq ne)
