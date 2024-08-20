@@ -28995,11 +28995,12 @@ cp_parser_base_clause (cp_parser* parser)
 /* Parse a base-specifier.
 
    base-specifier:
-     :: [opt] nested-name-specifier [opt] class-name
-     virtual access-specifier [opt] :: [opt] nested-name-specifier
-       [opt] class-name
-     access-specifier virtual [opt] :: [opt] nested-name-specifier
-       [opt] class-name
+     attribute-specifier-seq [opt] :: [opt] nested-name-specifier [opt]
+       class-name
+     attribute-specifier-seq [opt] virtual access-specifier [opt] :: [opt]
+       nested-name-specifier [opt] class-name
+     attribute-specifier-seq [opt] access-specifier virtual [opt] :: [opt]
+       nested-name-specifier [opt] class-name
 
    Returns a TREE_LIST.  The TREE_PURPOSE will be one of
    ACCESS_{DEFAULT,PUBLIC,PROTECTED,PRIVATE}_[VIRTUAL]_NODE to
@@ -29017,6 +29018,12 @@ cp_parser_base_specifier (cp_parser* parser)
   bool class_scope_p, template_p;
   tree access = access_default_node;
   tree type;
+  location_t attrs_loc = cp_lexer_peek_token (parser->lexer)->location;
+  tree std_attrs = cp_parser_std_attribute_spec_seq (parser);
+
+  if (std_attrs != NULL_TREE && any_nonignored_attribute_p (std_attrs))
+    warning_at (attrs_loc, OPT_Wattributes,
+		"attributes on base specifiers are ignored");
 
   /* Process the optional `virtual' and `access-specifier'.  */
   while (!done)
