@@ -83,6 +83,8 @@ private:
   unsigned int m_inner_bytes_size;
 };
 
+extern bool valid_vec_immediate_p(rtx);
+
 } // namespace riscv_vector
 
 #endif // GCC_RISCV_V_H

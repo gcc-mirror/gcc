@@ -794,6 +794,15 @@ const_vec_all_in_range_p (rtx vec, poly_int64 minval, poly_int64 maxval)
   return true;
 }
 
+/* Returns true if the vector's elements are all duplicates in
+   range -16 ~ 15 integer or 0.0 floating-point.  */
+
+bool
+valid_vec_immediate_p (rtx x)
+{
+  return (satisfies_constraint_vi (x) || satisfies_constraint_Wc0 (x));
+}
+
 /* Return a const vector of VAL. The VAL can be either const_int or
    const_poly_int.  */
 
@@ -1119,7 +1128,7 @@ expand_const_vector (rtx target, rtx src)
     {
       /* Element in range -16 ~ 15 integer or 0.0 floating-point,
 	 we use vmv.v.i instruction.  */
-      if (satisfies_constraint_vi (src) || satisfies_constraint_Wc0 (src))
+      if (valid_vec_immediate_p (src))
 	{
 	  rtx ops[] = {result, src};
 	  emit_vlmax_insn (code_for_pred_mov (mode), UNARY_OP, ops);

@@ -2158,11 +2158,9 @@ riscv_const_insns (rtx x, bool allow_new_pseudos)
 		if (maybe_gt (GET_MODE_SIZE (smode), UNITS_PER_WORD)
 		    && !immediate_operand (elt, Pmode))
 		  return 0;
-		/* Constants from -16 to 15 can be loaded with vmv.v.i.
-		   The Wc0, Wc1 constraints are already covered by the
-		   vi constraint so we do not need to check them here
-		   separately.  */
-		if (satisfies_constraint_vi (x))
+		/* Constants in range -16 ~ 15 integer or 0.0 floating-point
+		   can be emitted using vmv.v.i.  */
+		if (valid_vec_immediate_p (x))
 		  return 1;
 
 		/* Any int/FP constants can always be broadcast from a
