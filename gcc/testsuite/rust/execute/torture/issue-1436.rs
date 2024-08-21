@@ -1,4 +1,7 @@
 // { dg-options "-w" }
+
+#![feature(intrinsics)]
+
 #[lang = "sized"]
 pub trait Sized {}
 

@@ -21,6 +21,7 @@
 #include "rust-attribute-values.h"
 #include "rust-ast-visitor.h"
 #include "rust-feature.h"
+#include "rust-ast-full.h"
 
 namespace Rust {
 
@@ -75,16 +76,17 @@ FeatureGate::gate (Feature::Name name, location_t loc,
   if (!valid_features.count (name))
     {
       auto feature = Feature::create (name);
-      auto issue = feature.issue ();
-      if (issue > 0)
+      if (auto issue = feature.issue ())
 	{
+	  auto issue_number = issue.value ();
 	  const char *fmt_str
 	    = "%s. see issue %u "
 	      "<https://github.com/rust-lang/rust/issues/%u> for more "
 	      "information. add `#![feature(%s)]` to the crate attributes to "
 	      "enable.";
 	  rust_error_at (loc, ErrorCode::E0658, fmt_str, error_msg.c_str (),
-			 issue, issue, feature.as_string ().c_str ());
+			 issue_number, issue_number,
+			 feature.as_string ().c_str ());
 	}
       else
 	{
@@ -169,7 +171,7 @@ FeatureGate::visit (AST::TraitImpl &impl)
 	  "negative_impls are not yet implemented");
 
   AST::DefaultASTVisitor::visit (impl);
-};
+}
 
 void
 FeatureGate::visit (AST::BoxExpr &expr)

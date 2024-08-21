@@ -17,50 +17,44 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-feature.h"
-#include "rust-session-manager.h"
 
 namespace Rust {
 
 Feature
-Feature::create (Feature::Name name)
+Feature::create (Feature::Name f)
 {
-  switch (name)
+  switch (f)
     {
     case Feature::Name::ASSOCIATED_TYPE_BOUNDS:
       return Feature (Feature::Name::ASSOCIATED_TYPE_BOUNDS,
 		      Feature::State::ACCEPTED, "associated_type_bounds",
-		      "1.34.0", 52662, tl::nullopt, "");
+		      "1.34.0", 52662);
     case Feature::Name::INTRINSICS:
-      return Feature (Feature::Name::INTRINSICS, Feature::State::ACCEPTED,
-		      "intrinsics", "1.0.0", 0, tl::nullopt, "");
+      return Feature (f, Feature::State::ACCEPTED, "intrinsics", "1.0.0");
     case Feature::Name::RUSTC_ATTRS:
-      return Feature (Feature::Name::RUSTC_ATTRS, Feature::State::ACCEPTED,
-		      "rustc_attrs", "1.0.0", 0, tl::nullopt, "");
+      return Feature (f, Feature::State::ACCEPTED, "rustc_attrs", "1.0.0");
     case Feature::Name::DECL_MACRO:
-      return Feature (Feature::Name::DECL_MACRO, Feature::State::ACCEPTED,
-		      "decl_macro", "1.0.0", 0, tl::nullopt, "");
+      return Feature (f, Feature::State::ACCEPTED, "decl_macro", "1.0.0",
+		      39412);
     case Feature::Name::EXTERN_TYPES:
-      return Feature (Feature::Name::EXTERN_TYPES, Feature::State::ACTIVE,
-		      "extern_types", "1.23.0", 43467, tl::nullopt, "");
+      return Feature (f, Feature::State::ACTIVE, "extern_types", "1.23.0",
+		      43467);
     case Feature::Name::NEGATIVE_IMPLS:
-      return Feature (Feature::Name::NEGATIVE_IMPLS, Feature::State::ACTIVE,
-		      "negative_impls", "1.0.0", 68318, tl::nullopt, "");
+      return Feature (f, Feature::State::ACTIVE, "negative_impls", "1.0.0",
+		      68318);
     case Feature::Name::BOX_SYNTAX:
-      return Feature (Feature::Name::BOX_SYNTAX, Feature::State::ACTIVE,
-		      "box_syntax", "1.0.0", 49733, tl::nullopt, "");
+      return Feature (f, Feature::State::ACTIVE, "box_syntax", "1.0.0", 49733);
     case Feature::Name::DROPCK_EYEPATCH:
-      return Feature (Feature::Name::DROPCK_EYEPATCH, Feature::State::ACTIVE,
-		      "dropck_eyepatch", "1.10.0", 34761, tl::nullopt, "");
+      return Feature (f, Feature::State::ACTIVE, "dropck_eyepatch", "1.10.0",
+		      34761);
     case Feature::Name::RAW_REF_OP:
-      return Feature (Feature::Name::RAW_REF_OP, Feature::State::ACTIVE,
-		      "raw_ref_op", "1.41.0", 64490, tl::nullopt, "");
+      return Feature (f, Feature::State::ACTIVE, "raw_ref_op", "1.41.0", 64490);
     case Feature::Name::EXCLUSIVE_RANGE_PATTERN:
       return Feature (Feature::Name::EXCLUSIVE_RANGE_PATTERN,
 		      Feature::State::ACTIVE, "exclusive_range_pattern",
-		      "1.11.0", 37854, tl::nullopt, "");
+		      "1.11.0", 37854);
     case Feature::Name::PRELUDE_IMPORT:
-      return Feature (Feature::Name::PRELUDE_IMPORT, Feature::State::ACTIVE,
-		      "prelude_import", "1.0.0", 0, tl::nullopt, "");
+      return Feature (f, Feature::State::ACTIVE, "prelude_import", "1.0.0");
     default:
       rust_unreachable ();
     }

@@ -57,16 +57,17 @@ public:
   Name name () { return m_name; }
   const std::string &description () { return m_description; }
   State state () { return m_state; }
-  unsigned issue () { return m_issue; }
+  tl::optional<unsigned> issue () { return m_issue; }
 
   static tl::optional<Name> as_name (const std::string &name);
   static Feature create (Name name);
 
 private:
   Feature (Name name, State state, const char *name_str,
-	   const char *rustc_since, unsigned issue_number,
-	   const tl::optional<CompileOptions::Edition> &edition,
-	   const char *description)
+	   const char *rustc_since,
+	   tl::optional<unsigned> issue_number = tl::nullopt,
+	   const tl::optional<CompileOptions::Edition> &edition = tl::nullopt,
+	   const char *description = "")
     : m_state (state), m_name (name), m_name_str (name_str),
       m_rustc_since (rustc_since), m_issue (issue_number), edition (edition),
       m_description (description)
@@ -76,9 +77,9 @@ private:
   Name m_name;
   std::string m_name_str;
   std::string m_rustc_since;
-  unsigned m_issue;
+  tl::optional<unsigned> m_issue;
   tl::optional<CompileOptions::Edition> edition;
-  std::string m_description;
+  std::string m_description; // TODO: Switch to optional?
 
   static const std::map<std::string, Name> name_hash_map;
 };
