@@ -2848,30 +2848,6 @@ proc check_ppc_cpu_supports_hw_available { } {
     }]
 }
 
-# Return 1 if the target supports executing 750CL paired-single instructions, 0
-# otherwise.  Cache the result.
-
-proc check_750cl_hw_available { } {
-    return [check_cached_effective_target 750cl_hw_available {
-	# If this is not the right target then we can skip the test.
-	if { ![istarget powerpc-*paired*] } {
-	    expr 0
-	} else {
-	    check_runtime_nocache 750cl_hw_available {
-		 int main()
-		 {
-		 #ifdef __MACH__
-		   asm volatile ("ps_mul v0,v0,v0");
-		 #else
-		   asm volatile ("ps_mul 0,0,0");
-		 #endif
-		   return 0;
-		 }
-	    } "-mpaired"
-	}
-    }]
-}
-
 # Return 1 if the target supports executing power8 vector instructions, 0
 # otherwise.  Cache the result.
 
@@ -8329,7 +8305,7 @@ proc check_effective_target_vect_pack_trunc { } {
 
 proc check_effective_target_vect_unpack { } {
     return [check_cached_effective_target_indexed vect_unpack {
-      expr { ([istarget powerpc*-*-*] && ![istarget powerpc-*paired*])
+      expr { [istarget powerpc*-*-*]
 	     || [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || [istarget ia64-*-*]
 	     || [istarget aarch64*-*-*]
@@ -11702,14 +11678,7 @@ proc check_vect_support_and_set_flags { } {
     global dg-do-what-default
     global EFFECTIVE_TARGETS
 
-    if  [istarget powerpc-*paired*]  {
-	lappend DEFAULT_VECTCFLAGS "-mpaired"
-	if [check_750cl_hw_available] {
-	    set dg-do-what-default run
-	} else {
-	    set dg-do-what-default compile
-	}
-    } elseif [istarget powerpc*-*-*] {
+    if [istarget powerpc*-*-*] {
 	# Skip targets not supporting -maltivec.
 	if ![is-effective-target powerpc_altivec_ok] {
 	    return 0
