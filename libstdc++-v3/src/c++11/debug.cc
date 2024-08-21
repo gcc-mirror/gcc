@@ -380,7 +380,7 @@ namespace __gnu_debug
 
   __gnu_cxx::__mutex&
   _Safe_sequence_base::
-  _M_get_mutex() throw ()
+  _M_get_mutex() noexcept
   { return get_safe_base_mutex(this); }
 
   void
@@ -393,7 +393,7 @@ namespace __gnu_debug
 
   void
   _Safe_sequence_base::
-  _M_attach_single(_Safe_iterator_base* __it, bool __constant) throw ()
+  _M_attach_single(_Safe_iterator_base* __it, bool __constant) noexcept
   {
     _Safe_iterator_base*& __its =
       __constant ? _M_const_iterators : _M_iterators;
@@ -414,7 +414,7 @@ namespace __gnu_debug
 
   void
   _Safe_sequence_base::
-  _M_detach_single(_Safe_iterator_base* __it) throw ()
+  _M_detach_single(_Safe_iterator_base* __it) noexcept
   {
     // Remove __it from this sequence's list
     __it->_M_unlink();
@@ -443,7 +443,7 @@ namespace __gnu_debug
 
   void
   _Safe_iterator_base::
-  _M_attach_single(_Safe_sequence_base* __seq, bool __constant) throw ()
+  _M_attach_single(_Safe_sequence_base* __seq, bool __constant) noexcept
   {
     _M_detach_single();
 
@@ -478,7 +478,7 @@ namespace __gnu_debug
 
   void
   _Safe_iterator_base::
-  _M_detach_single() throw ()
+  _M_detach_single() noexcept
   {
     if (_M_sequence)
       {
@@ -489,7 +489,7 @@ namespace __gnu_debug
 
   void
   _Safe_iterator_base::
-  _M_reset() throw ()
+  _M_reset() noexcept
   {
     reset_sequence_ptr(_M_sequence);
     // Do not reset version, so that a detached iterator does not look like a
@@ -501,17 +501,17 @@ namespace __gnu_debug
 
   bool
   _Safe_iterator_base::
-  _M_singular() const throw ()
+  _M_singular() const noexcept
   { return !_M_sequence || _M_version != _M_sequence->_M_version; }
 
   bool
   _Safe_iterator_base::
-  _M_can_compare(const _Safe_iterator_base& __x) const throw ()
+  _M_can_compare(const _Safe_iterator_base& __x) const noexcept
   { return _M_sequence == __x._M_sequence; }
 
   __gnu_cxx::__mutex&
   _Safe_iterator_base::
-  _M_get_mutex() throw ()
+  _M_get_mutex() noexcept
   { return _M_sequence->_M_get_mutex(); }
 
   _Safe_unordered_container_base*
@@ -538,7 +538,7 @@ namespace __gnu_debug
 
   void
   _Safe_local_iterator_base::
-  _M_attach_single(_Safe_sequence_base* __cont, bool __constant) throw ()
+  _M_attach_single(_Safe_sequence_base* __cont, bool __constant) noexcept
   {
     _M_detach_single();
 
@@ -566,7 +566,7 @@ namespace __gnu_debug
 
   void
   _Safe_local_iterator_base::
-  _M_detach_single() throw ()
+  _M_detach_single() noexcept
   {
     if (_M_sequence)
       {
@@ -608,7 +608,7 @@ namespace __gnu_debug
 
   void
   _Safe_unordered_container_base::
-  _M_attach_local_single(_Safe_iterator_base* __it, bool __constant) throw ()
+  _M_attach_local_single(_Safe_iterator_base* __it, bool __constant) noexcept
   {
     _Safe_iterator_base*& __its =
       __constant ? _M_const_local_iterators : _M_local_iterators;
@@ -629,7 +629,7 @@ namespace __gnu_debug
 
   void
   _Safe_unordered_container_base::
-  _M_detach_local_single(_Safe_iterator_base* __it) throw ()
+  _M_detach_local_single(_Safe_iterator_base* __it) noexcept
   {
     // Remove __it from this container's list
     __it->_M_unlink();
@@ -1233,7 +1233,7 @@ namespace
 namespace __gnu_debug
 {
   _Error_formatter&
-  _Error_formatter::_M_message(_Debug_msg_id __id) const throw ()
+  _Error_formatter::_M_message(_Debug_msg_id __id) const noexcept
   {
     return const_cast<_Error_formatter*>(this)
       ->_M_message(_S_debug_messages[__id]);
@@ -1334,7 +1334,7 @@ namespace __gnu_debug
   template<typename _Tp>
     void
     _Error_formatter::_M_format_word(char*, int, const char*, _Tp)
-    const throw ()
+    const noexcept
     { }
 
   void
@@ -1346,7 +1346,7 @@ namespace __gnu_debug
   { }
 
   void
-  _Error_formatter::_M_get_max_length() const throw ()
+  _Error_formatter::_M_get_max_length() const noexcept
   { }
 
   // Instantiations.
