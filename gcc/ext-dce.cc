@@ -422,8 +422,13 @@ ext_dce_try_optimize_insn (rtx_insn *insn, rtx set)
     {
       int ok = validate_change (insn, &SET_SRC (set), new_pattern, false);
 
+      rtx x = SET_DEST (set);
+      while (SUBREG_P (x) || GET_CODE (x) == ZERO_EXTRACT)
+	x = XEXP (x, 0);
+
+      gcc_assert (REG_P (x));
       if (ok)
-	bitmap_set_bit (changed_pseudos, REGNO (SET_DEST (set)));
+	bitmap_set_bit (changed_pseudos, REGNO (x));
 
       if (dump_file)
 	{
