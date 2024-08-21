@@ -92,9 +92,9 @@ Rib::insert (std::string name, Definition def)
 	{
 	  if (std::find (current.ids.cbegin (), current.ids.cend (), id)
 	      == current.ids.cend ())
-	    {
-	      current.ids.push_back (id);
-	    }
+	    current.ids.push_back (id);
+	  else
+	    return tl::make_unexpected (DuplicateNameError (name, id));
 	}
     }
   else if (it->second.shadowable)
