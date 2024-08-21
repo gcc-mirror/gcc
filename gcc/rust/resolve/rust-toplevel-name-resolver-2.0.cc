@@ -27,7 +27,7 @@ namespace Rust {
 namespace Resolver2_0 {
 
 TopLevel::TopLevel (NameResolutionContext &resolver)
-  : DefaultResolver (resolver)
+  : DefaultResolver (resolver), dirty (false)
 {}
 
 template <typename T>
@@ -47,8 +47,9 @@ TopLevel::insert_or_error_out (const Identifier &identifier,
   node_locations.emplace (node_id, locus);
 
   auto result = ctx.insert (identifier, node_id, ns);
-
-  if (!result && result.error ().existing != node_id)
+  if (result)
+    dirty = true;
+  else if (result.error ().existing != node_id)
     {
       rich_location rich_loc (line_table, locus);
       rich_loc.add_range (node_locations[result.error ().existing]);

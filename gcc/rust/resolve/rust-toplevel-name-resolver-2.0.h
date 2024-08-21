@@ -43,6 +43,8 @@ public:
 
   void go (AST::Crate &crate);
 
+  bool is_dirty () { return dirty; }
+
   // Each import will be transformed into an instance of `ImportKind`, a class
   // representing some of the data we need to resolve in the
   // `EarlyNameResolver`. Basically, for each `UseTree` that we see in
@@ -129,6 +131,10 @@ public:
 			    Namespace ns);
 
 private:
+  // If a new export has been defined whilst visiting the visitor is considered
+  // dirty
+  bool dirty;
+
   // FIXME: Do we move these to our mappings?
   std::unordered_map<NodeId, location_t> node_locations;
 

@@ -34,8 +34,12 @@ class Early : public DefaultResolver
 {
   using DefaultResolver::visit;
 
+  bool dirty;
+
 public:
   Early (NameResolutionContext &ctx);
+
+  bool is_dirty () { return dirty; }
 
   void go (AST::Crate &crate);
 
