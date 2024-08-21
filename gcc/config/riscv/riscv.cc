@@ -7974,8 +7974,22 @@ riscv_v_adjust_scalable_frame (rtx target, poly_int64 offset, bool epilogue)
 
   /* If doing stack clash protection then we use a loop to allocate and probe
      the stack.  */
-  if (flag_stack_clash_protection && !epilogue)
+  if (flag_stack_clash_protection)
     {
+      if (epilogue)
+	{
+	  insn = emit_insn (gen_add3_insn (target, target, adjust_size));
+
+	  if (!frame_pointer_needed)
+	    {
+	      add_reg_note (insn, REG_CFA_DEF_CFA,
+			plus_constant (Pmode, stack_pointer_rtx, -offset));
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	    }
+
+	  return;
+	}
+
       HOST_WIDE_INT min_probe_threshold
 	= (1 << param_stack_clash_protection_guard_size) - STACK_CLASH_CALLER_GUARD;
 
@@ -8008,7 +8022,7 @@ riscv_v_adjust_scalable_frame (rtx target, poly_int64 offset, bool epilogue)
       if (!frame_pointer_needed)
 	{
 	  add_reg_note (insn, REG_CFA_DEF_CFA,
-			plus_constant (Pmode, stack_pointer_rtx, -offset));
+			plus_constant (Pmode, stack_pointer_rtx, offset));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
 
