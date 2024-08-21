@@ -8007,10 +8007,11 @@ arm_function_ok_for_sibcall (tree decl, tree exp)
       && DECL_WEAK (decl))
     return false;
 
-  /* We cannot tailcall an indirect call by descriptor if all the call-clobbered
-     general registers are live (r0-r3 and ip).  This can happen when:
-      - IP contains the static chain, or
-      - IP is needed for validating the PAC signature.  */
+  /* Indirect tailcalls need a call-clobbered register to hold the function
+     address.  But we only have r0-r3 and ip in that class.  If r0-r3 all hold
+     function arguments, then we can only use IP.  But IP may be needed in the
+     epilogue (for PAC validation), or for passing the static chain.  We have
+     to disable the tail call if nothing is available.  */
   if (!decl
       && ((CALL_EXPR_BY_DESCRIPTOR (exp) && !flag_trampolines)
 	  || arm_current_function_pac_enabled_p()))
@@ -8022,18 +8023,33 @@ arm_function_ok_for_sibcall (tree decl, tree exp)
       arm_init_cumulative_args (&cum, fntype, NULL_RTX, NULL_TREE);
       cum_v = pack_cumulative_args (&cum);
 
-      for (tree t = TYPE_ARG_TYPES (fntype); t; t = TREE_CHAIN (t))
+      tree arg;
+      call_expr_arg_iterator iter;
+      unsigned used_regs = 0;
+
+      /* Layout each actual argument in turn.  If it is allocated to
+	 core regs, note which regs have been allocated.  */
+      FOR_EACH_CALL_EXPR_ARG (arg, iter, exp)
 	{
-	  tree type = TREE_VALUE (t);
-	  if (!VOID_TYPE_P (type))
+	  tree type = TREE_TYPE (arg);
+	  function_arg_info arg_info (type, /*named=*/true);
+	  rtx reg = arm_function_arg (cum_v, arg_info);
+	  if (reg && REG_P (reg)
+	      && REGNO (reg) <= LAST_ARG_REGNUM)
 	    {
-	      function_arg_info arg (type, /*named=*/true);
-	      arm_function_arg_advance (cum_v, arg);
+	      /* Avoid any chance of UB here.  We don't care if TYPE
+		 is very large since it will use up all the argument regs.  */
+	      unsigned nregs = MIN (ARM_NUM_REGS2 (GET_MODE (reg), type),
+				    LAST_ARG_REGNUM + 1);
+	      used_regs |= ((1 << nregs) - 1) << REGNO (reg);
 	    }
+	  arm_function_arg_advance (cum_v, arg_info);
 	}
 
-      function_arg_info arg (integer_type_node, /*named=*/true);
-      if (!arm_function_arg (cum_v, arg))
+      /* We've used all the argument regs, and we know IP is live during the
+	 epilogue for some reason, so we can't tailcall.  */
+      if ((used_regs & ((1 << (LAST_ARG_REGNUM + 1)) - 1))
+	  == ((1 << (LAST_ARG_REGNUM + 1)) - 1))
 	return false;
     }
 
