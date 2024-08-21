@@ -870,10 +870,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_WordT*	_M_wp;
 	size_t 	_M_bpos;
 
-	// left undefined
-	reference();
-
-      public:
 	_GLIBCXX23_CONSTEXPR
 	reference(bitset& __b, size_t __pos) _GLIBCXX_NOEXCEPT
 	{
@@ -881,6 +877,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  _M_bpos = _Base::_S_whichbit(__pos);
 	}
 
+      public:
 #if __cplusplus >= 201103L
 	reference(const reference&) = default;
 #endif
