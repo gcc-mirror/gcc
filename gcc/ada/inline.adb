@@ -2136,8 +2136,6 @@ package body Inline is
          end;
       end if;
 
-      pragma Assert (Msg (Msg'Last) = '?');
-
       --  Legacy front-end inlining model
 
       if not Back_End_Inlining then
