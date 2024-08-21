@@ -2031,9 +2031,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 			  gfc_class_data_get (GFC_DECL_SAVED_DESCRIPTOR (tmp)));
 	}
       else
-	gfc_add_modify (&se.pre, sym->backend_decl,
-			build1 (VIEW_CONVERT_EXPR,
-				TREE_TYPE (sym->backend_decl), se.expr));
+	gfc_add_modify (&se.pre, sym->backend_decl, se.expr);
 
       if (unlimited)
 	{
