@@ -1,5 +1,5 @@
 /* { dg-do compile { target ia32 } } */
-/* { dg-options "-O2 -mavx -mno-avx512vl -std=c++11" } */
+/* { dg-options "-O2 -mavx -mno-avx512vl -mstv -mno-stackrealign -std=c++11" } */
 
 struct SymbolDesc push_back(SymbolDesc);
 struct SymbolDesc {
