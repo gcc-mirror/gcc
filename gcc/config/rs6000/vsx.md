@@ -659,7 +659,7 @@
 
 (define_insn "*vsx_le_perm_store_<mode>"
   [(set (match_operand:VSX_D 0 "indexed_or_indirect_operand" "=Z")
-        (match_operand:VSX_D 1 "vsx_register_operand" "+wa"))]
+        (match_operand:VSX_D 1 "vsx_register_operand" "wa"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
   [(set_attr "type" "vecstore")
@@ -729,7 +729,7 @@
 
 (define_insn "*vsx_le_perm_store_<mode>"
   [(set (match_operand:VSX_W 0 "indexed_or_indirect_operand" "=Z")
-        (match_operand:VSX_W 1 "vsx_register_operand" "+wa"))]
+        (match_operand:VSX_W 1 "vsx_register_operand" "wa"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
   [(set_attr "type" "vecstore")
@@ -804,7 +804,7 @@
 
 (define_insn "*vsx_le_perm_store_v8hi"
   [(set (match_operand:V8HI 0 "indexed_or_indirect_operand" "=Z")
-        (match_operand:V8HI 1 "vsx_register_operand" "+wa"))]
+        (match_operand:V8HI 1 "vsx_register_operand" "wa"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
   [(set_attr "type" "vecstore")
@@ -889,7 +889,7 @@
 
 (define_insn "*vsx_le_perm_store_v16qi"
   [(set (match_operand:V16QI 0 "indexed_or_indirect_operand" "=Z")
-        (match_operand:V16QI 1 "vsx_register_operand" "+wa"))]
+        (match_operand:V16QI 1 "vsx_register_operand" "wa"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
   [(set_attr "type" "vecstore")
@@ -1059,7 +1059,7 @@
 
 (define_insn "*vsx_le_perm_store_<mode>"
   [(set (match_operand:VSX_LE_128 0 "memory_operand" "=Z,Q")
-        (match_operand:VSX_LE_128 1 "vsx_register_operand" "+wa,r"))]
+        (match_operand:VSX_LE_128 1 "vsx_register_operand" "wa,r"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR
    && !altivec_indexed_or_indirect_operand (operands[0], <MODE>mode)"
   "@
