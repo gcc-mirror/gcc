@@ -4797,7 +4797,7 @@ package body Exp_Attr is
             --  then replace this attribute with a reference to 'Range_Length
             --  of the appropriate index subtype (since otherwise the
             --  back end will try to give us the value of 'Length for
-            --  this implementation type).s
+            --  this implementation type).
 
             elsif Is_Constrained (Ptyp) then
                Rewrite (N,
@@ -4866,6 +4866,73 @@ package body Exp_Attr is
 
                   Analyze_And_Resolve (N, Typ);
                end if;
+            end;
+
+         --  Overflow-related transformations need Length attribute rewritten
+         --  using non-attribute expressions. So generate
+         --   (if Pref'First > Pref'Last
+         --    then 0
+         --    else ((Pref'Last - Pref'First) + 1)) .
+
+         elsif Overflow_Check_Mode in Minimized_Or_Eliminated
+
+            --  This Comes_From_Source test fixes a regression test failure
+            --  involving a Length attribute reference generated as part of
+            --  the expansion of a concatentation operator; it is unclear
+            --  whether this is the right solution to that problem.
+
+            and then Comes_From_Source (N)
+
+            --  This Base_Type equality test is so that we only perform this
+            --  transformation if we can do it without introducing
+            --  a type conversion anywhere in the resulting expansion;
+            --  a type conversion is just as bad as a Length attribute
+            --  reference for those overflow-related transformations.
+
+            and then Btyp = Base_Type (Get_Index_Subtype (N))
+
+         then
+            declare
+               function Prefix_Bound
+                 (Bound_Attr_Name : Name_Id; Is_First_Copy : Boolean := False)
+                 return Node_Id;
+               --  constructs a Pref'First or Pref'Last attribute reference
+
+               ------------------
+               -- Prefix_Bound --
+               ------------------
+
+               function Prefix_Bound
+                 (Bound_Attr_Name : Name_Id; Is_First_Copy : Boolean := False)
+                 return Node_Id
+               is
+                  Prefix : constant Node_Id :=
+                    (if Is_First_Copy
+                     then Duplicate_Subexpr (Pref)
+                     else Duplicate_Subexpr_No_Checks (Pref));
+               begin
+                  return Make_Attribute_Reference (Loc,
+                           Prefix         => Prefix,
+                           Attribute_Name => Bound_Attr_Name,
+                           Expressions    => New_Copy_List (Exprs));
+               end Prefix_Bound;
+            begin
+               Rewrite (N,
+                 Make_If_Expression (Loc,
+                   Expressions =>
+                     New_List (
+                       Node1 => Make_Op_Gt (Loc,
+                                  Prefix_Bound (Name_First,
+                                                Is_First_Copy => True),
+                                  Prefix_Bound (Name_Last)),
+                       Node2 => Make_Integer_Literal (Loc, 0),
+                       Node3 => Make_Op_Add (Loc,
+                                  Make_Op_Subtract (Loc,
+                                    Prefix_Bound (Name_Last),
+                                    Prefix_Bound (Name_First)),
+                                  Make_Integer_Literal (Loc, 1)))));
+
+               Analyze_And_Resolve (N, Typ);
             end;
 
          --  Otherwise leave it to the back end
