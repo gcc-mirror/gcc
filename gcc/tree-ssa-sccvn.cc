@@ -838,7 +838,8 @@ vn_reference_eq (const_vn_reference_t const vr1, const_vn_reference_t const vr2)
 	return false;
     }
   else if (TYPE_MODE (vr1->type) != TYPE_MODE (vr2->type)
-	   && !mode_can_transfer_bits (TYPE_MODE (vr1->type)))
+	   && (!mode_can_transfer_bits (TYPE_MODE (vr1->type))
+	       || !mode_can_transfer_bits (TYPE_MODE (vr2->type))))
     return false;
 
   i = 0;
