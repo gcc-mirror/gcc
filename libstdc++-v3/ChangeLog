@@ -1,3 +1,17 @@
+2024-08-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/optional: Remove redundant redeclaration.
+
+2024-08-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/text_encoding: Fix indentation.
+
+2024-08-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115744
+	* testsuite/18_support/headers/new/synopsis.cc [C++26]: Add
+	constexpr to placement operator new and operator new[].
+
 2024-08-18  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/prerequisites.xml: Remove note from the

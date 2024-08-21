@@ -1,3 +1,22 @@
+2024-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* init.cc (struct lang_flags): Change all members from char
+	typed fields to unsigned bit-fields.
+	(lang_defaults): Change formatting of the initializer so that it
+	fits to 68 columns rather than 147.
+
+2024-08-20  Alexander Monakov  <amonakov@ispras.ru>
+
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Check for SSSE3 instead of SSE4.2.
+	* files.cc (read_file_guts): Bump padding to 64 if HAVE_SSSE3.
+	* lex.cc (search_line_acc_char): Mark inline, not "unused".
+	(search_line_sse2): Mark inline.
+	(search_line_sse42): Replace with...
+	(search_line_ssse3): ... this new function.  Adjust the use...
+	(init_vectorized_lexer): ... here.  Simplify.
+
 2024-08-06  Andi Kleen  <ak@gcc.gnu.org>
 
 	* lex.cc (search_line_mmx): Remove function.

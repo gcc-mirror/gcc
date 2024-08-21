@@ -1,3 +1,9 @@
+2024-08-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/84246
+	* caf/single.c (send_by_ref): Created array's lbound is now 1
+	and the offset set correctly.
+
 2024-08-18  Sergey Fedorov  <vital.had@gmail.com>
 
 	* config/fpu-macppc.h (new file): initial support for powerpc-darwin.

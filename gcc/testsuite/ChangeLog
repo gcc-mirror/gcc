@@ -1,3 +1,168 @@
+2024-08-20  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Fix SAT_TRUNC typo.
+	* gcc.target/riscv/sat_u_trunc-1.c: Ditto.
+	* gcc.target/riscv/sat_u_trunc-13.c: Ditto.
+	* gcc.target/riscv/sat_u_trunc-14.c: Ditto.
+	* gcc.target/riscv/sat_u_trunc-15.c: Ditto.
+	* gcc.target/riscv/sat_u_trunc-2.c: Ditto.
+	* gcc.target/riscv/sat_u_trunc-3.c: Ditto.
+	* gcc.target/riscv/sat_u_trunc-4.c: Ditto.
+	* gcc.target/riscv/sat_u_trunc-5.c: Ditto.
+	* gcc.target/riscv/sat_u_trunc-6.c: Ditto.
+	* gcc.target/riscv/sat_u_trunc-7.c: Ditto.
+	* gcc.target/riscv/sat_u_trunc-8.c: Ditto.
+	* gcc.target/riscv/sat_u_trunc-9.c: Ditto.
+	* gcc.target/riscv/sat_u_trunc-run-1.c: Ditto.
+	* gcc.target/riscv/sat_u_trunc-run-13.c: Ditto.
+	* gcc.target/riscv/sat_u_trunc-run-14.c: Ditto.
+	* gcc.target/riscv/sat_u_trunc-run-15.c: Ditto.
+	* gcc.target/riscv/sat_u_trunc-run-2.c: Ditto.
+	* gcc.target/riscv/sat_u_trunc-run-3.c: Ditto.
+	* gcc.target/riscv/sat_u_trunc-run-4.c: Ditto.
+	* gcc.target/riscv/sat_u_trunc-run-5.c: Ditto.
+	* gcc.target/riscv/sat_u_trunc-run-6.c: Ditto.
+	* gcc.target/riscv/sat_u_trunc-run-7.c: Ditto.
+	* gcc.target/riscv/sat_u_trunc-run-8.c: Ditto.
+	* gcc.target/riscv/sat_u_trunc-run-9.c: Ditto.
+
+2024-08-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/export-1.C: Remove message.
+	* g++.dg/modules/internal-1.C: Remove message.
+	* g++.dg/modules/ambig-2_b.C: Remove unnecessary pruning.
+	* g++.dg/modules/atom-decl-2.C: Likewise.
+	* g++.dg/modules/atom-pragma-3.C: Likewise.
+	* g++.dg/modules/atom-preamble-2_f.C: Likewise.
+	* g++.dg/modules/block-decl-2.C: Likewise.
+	* g++.dg/modules/dir-only-4.C: Likewise.
+	* g++.dg/modules/enum-12.C: Likewise.
+	* g++.dg/modules/exp-xlate-1_b.C: Likewise.
+	* g++.dg/modules/export-3.C: Likewise.
+	* g++.dg/modules/friend-3.C: Likewise.
+	* g++.dg/modules/friend-5_b.C: Likewise.
+	* g++.dg/modules/inc-xlate-1_e.C: Likewise.
+	* g++.dg/modules/linkage-2.C: Likewise.
+	* g++.dg/modules/local-extern-1.C: Likewise.
+	* g++.dg/modules/main-1.C: Likewise.
+	* g++.dg/modules/map-2.C: Likewise.
+	* g++.dg/modules/mod-decl-1.C: Likewise.
+	* g++.dg/modules/mod-decl-3.C: Likewise.
+	* g++.dg/modules/pr99174.H: Likewise.
+	* g++.dg/modules/pr99468.H: Likewise.
+	* g++.dg/modules/token-1.C: Likewise.
+	* g++.dg/modules/token-3.C: Likewise.
+	* g++.dg/modules/token-4.C: Likewise.
+	* g++.dg/modules/token-5.C: Likewise.
+	* g++.dg/modules/using-10.C: Likewise.
+	* g++.dg/modules/using-12.C: Likewise.
+	* g++.dg/modules/using-3.C: Likewise.
+	* g++.dg/modules/using-9.C: Likewise.
+	* g++.dg/modules/using-enum-2.C: Likewise.
+	* g++.dg/modules/permissive-error-1.C: New test.
+	* g++.dg/modules/permissive-error-2.C: New test.
+
+2024-08-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116412
+	* gcc.dg/torture/pr116412-1.c: New test.
+
+2024-08-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116409
+	* gcc.dg/torture/pr116409-1.c: New test.
+	* gcc.dg/torture/pr116409-2.c: New test.
+
+2024-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* g++.dg/cpp0x/gen-attrs-82.C: New test.
+	* g++.dg/gomp/attrs-3.C (foo): Expect different diagnostics for
+	omp::directive attribute after closing square bracket of an automatic
+	declaration and add a test with the attribute after array's
+	declarator-id.
+
+2024-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* g++.dg/cpp0x/gen-attrs-83.C: New test.
+
+2024-08-20  Edwin Lu  <ewlu@rivosinc.com>
+
+	* gcc.dg/signbit-5.c: Remove riscv xfail exception
+
+2024-08-20  Franciszek Witt  <franek.witt@gmail.com>
+
+	PR c++/101232
+	* g++.dg/cpp0x/initlist-err1.C: New test.
+	* g++.dg/cpp0x/initlist-err2.C: New test.
+	* g++.dg/cpp0x/initlist-err3.C: New test.
+
+2024-08-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/103660
+	* g++.dg/tree-ssa/pr103660-4.C: New test.
+	* gcc.dg/tree-ssa/pr103660-4.c: New test.
+
+2024-08-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/103660
+	* g++.dg/tree-ssa/pr103660-2.C: New test.
+	* g++.dg/tree-ssa/pr103660-3.C: New test.
+	* gcc.dg/tree-ssa/pr103660-2.c: New test.
+	* gcc.dg/tree-ssa/pr103660-3.c: New test.
+
+2024-08-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/103660
+	* g++.dg/tree-ssa/pr103660-0.C: New test.
+	* g++.dg/tree-ssa/pr103660-1.C: New test.
+	* gcc.dg/tree-ssa/pr103660-0.c: New test.
+	* gcc.dg/tree-ssa/pr103660-1.c: New test.
+
+2024-08-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101463
+	* g++.dg/cpp1z/nontype6.C: New test.
+	* g++.dg/cpp1z/nontype6a.C: New test.
+
+2024-08-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116274
+	* gcc.target/i386/pr116274-2.c: New testcase.
+
+2024-08-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/84246
+	* gfortran.dg/coarray_allocate_7.f08: Adapt to array being
+	allocate by caf_send.
+
+2024-08-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/115020
+	* g++.dg/modules/pr115020_a.C: New test.
+	* g++.dg/modules/pr115020_b.C: New test.
+
+2024-08-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116403
+	* g++.dg/modules/dguide-4_a.C: New test.
+	* g++.dg/modules/dguide-4_b.C: New test.
+	* g++.dg/modules/dguide-4_c.C: New test.
+
+2024-08-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116382
+	* g++.dg/modules/tpl-nttp-1_a.C: New test.
+	* g++.dg/modules/tpl-nttp-1_b.C: New test.
+
+2024-08-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116364
+	* g++.dg/modules/tpl-spec-9_a.C: New test.
+	* g++.dg/modules/tpl-spec-9_b.C: New test.
+	* g++.dg/modules/tpl-spec-9_c.C: New test.
+
 2024-08-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/115657

@@ -1,3 +1,15 @@
+2024-08-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/84246
+	* resolve.cc (caf_possible_reallocate): Detect arrays that may
+	be reallocated by caf_send.
+	(resolve_ordinary_assign): More reliably detect assignments
+	where a rewrite to caf_send is needed.
+	* trans-expr.cc (gfc_trans_assignment_1): Remove rewrite to
+	caf_send, because this is done by resolve now.
+	* trans-intrinsic.cc (conv_caf_send): Prevent unneeded temporary
+	arrays.
+
 2024-08-19  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/46371

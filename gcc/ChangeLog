@@ -1,3 +1,60 @@
+2024-08-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* builtins.cc (fold_builtin_bit_query): Don't expand double
+	`unsigned long long` typess if there is an optab entry for that
+	type.
+
+2024-08-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR sanitizer/115205
+	* asan.cc (asan_instrument): Call initialize_sanitizer_builtins
+	for hwasan.
+	(hwasan_finish_file): Likewise.
+
+2024-08-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116412
+	* gimple-match-exports.cc (gimple_extract): Return false if op0
+	was not a SSA name nor a min invariant for REALPART_EXPR/IMAGPART_EXPR/VCE
+	and BIT_FIELD_REF.
+
+2024-08-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116409
+	* tree-ssa-phiopt.cc (factor_out_conditional_operation): Move
+	maybe_push_res_to_seq before creating the phi node and the debug dump.
+	Return false if maybe_push_res_to_seq fails.
+
+2024-08-20  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Specific) <c6x-*-*>: Normalize reference to
+	binutils.
+
+2024-08-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/103660
+	* match.pd (`(a ? b : 0) | (a ? 0 : c)`): New pattern.
+
+2024-08-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/103660
+	* match.pd (`((a CMP b) ? c : 0) | ((a CMP' b) ? d : 0)`): Extend to support
+	XOR and PLUS.
+
+2024-08-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116274
+	* tree-vect-slp.cc (vect_bb_slp_scalar_cost): Cost scalar loads
+	and stores as simple scalar stmts when they access a non-global,
+	not address-taken variable that doesn't have BLKmode assigned.
+
+2024-08-20  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+
+	* optc-save-gen.awk: New array var_target_opt. Use it to generate
+	if (!lto_stream_offload_p) check in cl_optimization_stream_out,
+	and generate a diagnostic with #error if accelerator backend uses
+	Optimization for target-specifc options in cl_optimization_stream_in.
+
 2024-08-19  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR target/113939

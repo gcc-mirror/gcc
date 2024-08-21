@@ -1,3 +1,79 @@
+2024-08-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* module.cc (module_state::write_begin): Return a boolean to
+	indicate errors rather than just doing set_error().
+	(finish_module_processing): Prevent emission of unnecessary
+	errors; only indicate module writing occurred if write_begin
+	succeeds.
+
+2024-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* decl.cc (grokdeclarator): Apply declarator->std_attributes
+	for cdk_array to type, rather than chaining it to returned_attrs.
+
+2024-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* parser.cc (cp_parser_base_specifier): Parse standard attributes
+	at the start and emit a warning if there are any non-ignored ones.
+
+2024-08-20  Franciszek Witt  <franek.witt@gmail.com>
+
+	PR c++/101232
+	* parser.cc (cp_parser_postfix_expression): Commit to the
+	parse in case we know its either a cast or invalid syntax.
+	(cp_parser_braced_list): Add a heuristic to inform about
+	missing comma or operator.
+
+2024-08-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101463
+	* pt.cc (type_unification_real): Directly look for undeduced
+	parameters in the default argument instead of doing a trial
+	substitution.
+
+2024-08-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/115020
+	* module.cc (has_definition): Only force writing definitions for
+	header_module_p.
+
+2024-08-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116403
+	* pt.cc (deduction_guides_for): Use ANY_REACHABLE for lookup of
+	deduction guides.
+	* module.cc (depset::hash::add_deduction_guides): Likewise.
+	(module_state::write_cluster): No longer override deduction
+	guides as exported.
+	* name-lookup.cc (name_lookup::search_namespace_only): Ignore
+	visibility when LOOK_want::ANY_REACHABLE is specified.
+	(check_module_override): Ignore visibility when checking for
+	ambiguating deduction guides.
+	* name-lookup.h (LOOK_want): New flag 'ANY_REACHABLE'.
+
+2024-08-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116382
+	* cp-tree.h (get_template_parm_object): Add check_init param.
+	* module.cc (trees_in::tree_node): Pass check_init=false when
+	building NTTPs.
+	* pt.cc (get_template_parm_object): Prevent cp_finish_decl from
+	validating the initializer when check_init=false.
+
+2024-08-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116364
+	* cp-tree.h (get_mergeable_specialization_flags): Adjust
+	signature.
+	* module.cc (trees_out::decl_value): Indicate whether this is a
+	type or decl specialisation.
+	* pt.cc (get_mergeable_specialization_flags): Match against the
+	type of a non-decl specialisation.
+	(add_mergeable_specialization): Use the already calculated spec
+	instead of always adding decl to DECL_TEMPLATE_INSTANTIATIONS.
+
 2024-08-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/115657
