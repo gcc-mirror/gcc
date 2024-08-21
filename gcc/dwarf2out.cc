@@ -13926,7 +13926,7 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 	   || (lang_hooks.types.get_array_descr_info
 	       && lang_hooks.types.get_array_descr_info (type, &info)))
     {
-      gen_type_die (type, context_die);
+      gen_type_die (type, mod_scope);
       return lookup_type_die (type);
     }
   else if (code == INTEGER_TYPE
@@ -13936,7 +13936,7 @@ modified_type_die (tree type, int cv_quals, bool reverse,
       tree bias = NULL_TREE;
       if (lang_hooks.types.get_type_bias)
 	bias = lang_hooks.types.get_type_bias (type);
-      mod_type_die = subrange_type_die (type, low, high, bias, context_die);
+      mod_type_die = subrange_type_die (type, low, high, bias, mod_scope);
       item_type = TREE_TYPE (type);
     }
   else if (is_base_type (type))
@@ -13973,10 +13973,10 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 	{
 	  dw_die_ref after_die
 	    = modified_type_die (type, cv_quals, false, context_die);
-	  add_child_die_after (comp_unit_die (), mod_type_die, after_die);
+	  add_child_die_after (mod_scope, mod_type_die, after_die);
 	}
       else
-	add_child_die (comp_unit_die (), mod_type_die);
+	add_child_die (mod_scope, mod_type_die);
 
       add_pubtype (type, mod_type_die);
     }
