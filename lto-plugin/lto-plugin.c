@@ -1191,16 +1191,19 @@ process_offload_section (void *data, const char *name, off_t offset, off_t len)
   return 1;
 }
 
-/* Callback used by a linker to check if the plugin will claim FILE. Writes
-   the result in CLAIMED.  If KNOWN_USED, the object is known by the linker
-   to be used, or an older API version is in use that does not provide that
-   information; otherwise, the linker is only determining whether this is
-   a plugin object and it should not be registered as having offload data if
-   not claimed by the plugin.  */
+/* Callback used by a linker to check if the plugin can claim FILE.
+   Writes the result in CAN_BE_CLAIMED.  If KNOWN_USED != 0, the object
+   is known by the linker to be included in link output, or an older API
+   version is in use that does not provide that information.  Otherwise,
+   the linker is only determining whether this is a plugin object and
+   only the symbol table is needed by the linker.  In this case, the
+   object should not be included in link output and this function will
+   be called by the linker again with KNOWN_USED != 0 after the linker
+   decides the object should be included in link output. */
 
 static enum ld_plugin_status
-claim_file_handler_v2 (const struct ld_plugin_input_file *file, int *claimed,
-		       int known_used)
+claim_file_handler_v2 (const struct ld_plugin_input_file *file,
+		       int *can_be_claimed, int known_used)
 {
   enum ld_plugin_status status;
   struct plugin_objfile obj;
@@ -1229,7 +1232,7 @@ claim_file_handler_v2 (const struct ld_plugin_input_file *file, int *claimed,
     }
   lto_file.handle = file->handle;
 
-  *claimed = 0;
+  *can_be_claimed = 0;
   obj.file = file;
   obj.found = 0;
   obj.offload = false;
@@ -1286,15 +1289,19 @@ claim_file_handler_v2 (const struct ld_plugin_input_file *file, int *claimed,
 			      lto_file.symtab.syms);
       check (status == LDPS_OK, LDPL_FATAL, "could not add symbols");
 
-      LOCK_SECTION;
-      num_claimed_files++;
-      claimed_files =
-	xrealloc (claimed_files,
-		  num_claimed_files * sizeof (struct plugin_file_info));
-      claimed_files[num_claimed_files - 1] = lto_file;
-      UNLOCK_SECTION;
+      /* Include it only if it is known to be used for link output.  */
+      if (known_used)
+	{
+	  LOCK_SECTION;
+	  num_claimed_files++;
+	  claimed_files =
+	    xrealloc (claimed_files,
+		      num_claimed_files * sizeof (struct plugin_file_info));
+	  claimed_files[num_claimed_files - 1] = lto_file;
+	  UNLOCK_SECTION;
+	}
 
-      *claimed = 1;
+      *can_be_claimed = 1;
     }
 
   LOCK_SECTION;
@@ -1310,10 +1317,10 @@ claim_file_handler_v2 (const struct ld_plugin_input_file *file, int *claimed,
   /* If this is an LTO file without offload, and it is the first LTO file, save
      the pointer to the last offload file in the list.  Further offload LTO
      files will be inserted after it, if any.  */
-  if (*claimed && !obj.offload && offload_files_last_lto == NULL)
+  if (*can_be_claimed && !obj.offload && offload_files_last_lto == NULL)
     offload_files_last_lto = offload_files_last;
 
-  if (obj.offload && (known_used || obj.found > 0))
+  if (obj.offload && known_used && obj.found > 0)
     {
       /* Add file to the list.  The order must be exactly the same as the final
 	 order after recompilation and linking, otherwise host and target tables
@@ -1324,7 +1331,9 @@ claim_file_handler_v2 (const struct ld_plugin_input_file *file, int *claimed,
       ofld->name = lto_file.name;
       ofld->next = NULL;
 
-      if (*claimed && offload_files_last_lto == NULL && file->offset != 0
+      if (*can_be_claimed
+	  && offload_files_last_lto == NULL
+	  && file->offset != 0
 	  && gold_version == -1)
 	{
 	  /* ld only: insert first LTO file from the archive after the last real
@@ -1341,7 +1350,7 @@ claim_file_handler_v2 (const struct ld_plugin_input_file *file, int *claimed,
 	      offload_files->next = ofld;
 	    }
 	}
-      else if (*claimed && offload_files_last_lto != NULL)
+      else if (*can_be_claimed && offload_files_last_lto != NULL)
 	{
 	  /* Insert LTO file after the last LTO file in the list.  */
 	  ofld->next = offload_files_last_lto->next;
@@ -1356,7 +1365,7 @@ claim_file_handler_v2 (const struct ld_plugin_input_file *file, int *claimed,
 	offload_files_last = ofld;
       if (file->offset == 0)
 	offload_files_last_obj = ofld;
-      if (*claimed)
+      if (*can_be_claimed)
 	offload_files_last_lto = ofld;
       num_offload_files++;
     }
