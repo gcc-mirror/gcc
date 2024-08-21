@@ -217,4 +217,12 @@ FeatureGate::visit (AST::RangePattern &pattern)
 	  "exclusive range pattern syntax is experimental");
 }
 
+void
+FeatureGate::visit (AST::UseTreeGlob &use)
+{
+  // At the moment, UseTrees do not have outer attributes, but they should. we
+  // need to eventually gate `#[prelude_import]` on use-trees based on the
+  // #[feature(prelude_import)]
+}
+
 } // namespace Rust

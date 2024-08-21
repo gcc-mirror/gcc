@@ -58,6 +58,9 @@ Feature::create (Feature::Name name)
       return Feature (Feature::Name::EXCLUSIVE_RANGE_PATTERN,
 		      Feature::State::ACTIVE, "exclusive_range_pattern",
 		      "1.11.0", 37854, tl::nullopt, "");
+    case Feature::Name::PRELUDE_IMPORT:
+      return Feature (Feature::Name::PRELUDE_IMPORT, Feature::State::ACTIVE,
+		      "prelude_import", "1.0.0", 0, tl::nullopt, "");
     default:
       rust_unreachable ();
     }
@@ -79,6 +82,7 @@ const std::map<std::string, Feature::Name> Feature::name_hash_map = {
   {"dropck_eyepatch", Feature::Name::DROPCK_EYEPATCH},
   {"raw_ref_op", Feature::Name::RAW_REF_OP},
   {"exclusive_range_pattern", Feature::Name::EXCLUSIVE_RANGE_PATTERN},
+  {"prelude_import", Feature::Name::PRELUDE_IMPORT},
 }; // namespace Rust
 
 tl::optional<Feature::Name>

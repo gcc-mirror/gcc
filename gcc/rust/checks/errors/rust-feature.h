@@ -50,6 +50,7 @@ public:
     DROPCK_EYEPATCH,
     RAW_REF_OP,
     EXCLUSIVE_RANGE_PATTERN,
+    PRELUDE_IMPORT,
   };
 
   const std::string &as_string () { return m_name_str; }

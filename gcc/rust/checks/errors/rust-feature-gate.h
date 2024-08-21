@@ -107,7 +107,7 @@ public:
   void visit (AST::TypeBoundWhereClauseItem &item) override {}
   void visit (AST::Module &module) override {}
   void visit (AST::ExternCrate &crate) override {}
-  void visit (AST::UseTreeGlob &use_tree) override {}
+  void visit (AST::UseTreeGlob &use_tree) override;
   void visit (AST::UseTreeList &use_tree) override {}
   void visit (AST::UseTreeRebind &use_tree) override {}
   void visit (AST::UseDeclaration &use_decl) override {}
