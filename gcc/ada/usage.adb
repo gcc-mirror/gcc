@@ -538,6 +538,8 @@ begin
    Write_Line ("        L*   turn off warnings for elaboration problems");
    Write_Line ("        .l   turn on info messages for inherited aspects");
    Write_Line ("        .L*  turn off info messages for inherited aspects");
+   Write_Line ("        _l   turn on warnings for implicitly limited types");
+   Write_Line ("        _L*  turn off warnings for implicitly limited types");
    Write_Line ("        m+   turn on warnings for variable assigned " &
                                                   "but not read");
    Write_Line ("        M*   turn off warnings for variable assigned " &
