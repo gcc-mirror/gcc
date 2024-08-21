@@ -477,17 +477,22 @@ struct binary_acca_int32_def : public overloaded_base<0>
   {
     unsigned int i, nargs;
     type_suffix_index type;
+    const char *first_type_name;
+
     if (!r.check_gp_argument (3, i, nargs)
 	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    first_type_name = (type_suffixes[type].unsigned_p
+		       ? "uint32_t"
+		       : "int32_t");
+    if (!r.require_scalar_type (0, first_type_name))
       return error_mark_node;
 
     unsigned int last_arg = i + 1;
     for (i = 1; i < last_arg; i++)
       if (!r.require_matching_vector_type (i, type))
 	return error_mark_node;
-
-    if (!r.require_integer_immediate (0))
-      return error_mark_node;
 
     return r.resolve_to (r.mode_suffix_id, type);
   }
@@ -514,17 +519,23 @@ struct binary_acca_int64_def : public overloaded_base<0>
   {
     unsigned int i, nargs;
     type_suffix_index type;
+    const char *first_type_name;
+
     if (!r.check_gp_argument (3, i, nargs)
 	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+
+    first_type_name = (type_suffixes[type].unsigned_p
+		       ? "uint64_t"
+		       : "int64_t");
+    if (!r.require_scalar_type (0, first_type_name))
       return error_mark_node;
 
     unsigned int last_arg = i + 1;
     for (i = 1; i < last_arg; i++)
       if (!r.require_matching_vector_type (i, type))
 	return error_mark_node;
-
-    if (!r.require_integer_immediate (0))
-      return error_mark_node;
 
     return r.resolve_to (r.mode_suffix_id, type);
   }
@@ -613,7 +624,7 @@ struct binary_lshift_unsigned_def : public overloaded_base<0>
 	 bool preserve_user_namespace) const override
   {
     b.add_overloaded_functions (group, MODE_n, preserve_user_namespace);
-    build_all (b, "vu0,vs0,ss32", group, MODE_n, preserve_user_namespace);
+    build_all (b, "vu0,vs0,su64", group, MODE_n, preserve_user_namespace);
   }
 
   tree
@@ -622,6 +633,7 @@ struct binary_lshift_unsigned_def : public overloaded_base<0>
     unsigned int i, nargs;
     type_suffix_index type;
     if (!r.check_gp_argument (2, i, nargs)
+	|| !r.require_integer_immediate (i)
 	|| (type = r.infer_vector_type (i-1)) == NUM_TYPE_SUFFIXES)
       return error_mark_node;
 
@@ -635,10 +647,6 @@ struct binary_lshift_unsigned_def : public overloaded_base<0>
 	if (!r.require_matching_vector_type (0, return_type))
 	  return error_mark_node;
       }
-
-    for (; i < nargs; ++i)
-      if (!r.require_integer_immediate (i))
-	return error_mark_node;
 
     return r.resolve_to (r.mode_suffix_id, type);
   }
@@ -1097,7 +1105,7 @@ struct binary_rshift_narrow_def : public overloaded_base<0>
 	 bool preserve_user_namespace) const override
   {
     b.add_overloaded_functions (group, MODE_n, preserve_user_namespace);
-    build_all (b, "vh0,vh0,v0,ss32", group, MODE_n, preserve_user_namespace);
+    build_all (b, "vh0,vh0,v0,su64", group, MODE_n, preserve_user_namespace);
   }
 
   tree
@@ -1144,7 +1152,7 @@ struct binary_rshift_narrow_unsigned_def : public overloaded_base<0>
 	 bool preserve_user_namespace) const override
   {
     b.add_overloaded_functions (group, MODE_n, preserve_user_namespace);
-    build_all (b, "vhu0,vhu0,v0,ss32", group, MODE_n, preserve_user_namespace);
+    build_all (b, "vhu0,vhu0,v0,su64", group, MODE_n, preserve_user_namespace);
   }
 
   tree
@@ -1588,7 +1596,7 @@ struct ternary_lshift_def : public overloaded_base<0>
 	 bool preserve_user_namespace) const override
   {
     b.add_overloaded_functions (group, MODE_n, preserve_user_namespace);
-    build_all (b, "v0,v0,v0,ss32", group, MODE_n, preserve_user_namespace);
+    build_all (b, "v0,v0,v0,su64", group, MODE_n, preserve_user_namespace);
   }
 
   tree
@@ -1683,7 +1691,7 @@ struct ternary_rshift_def : public overloaded_base<0>
 	 bool preserve_user_namespace) const override
   {
     b.add_overloaded_functions (group, MODE_n, preserve_user_namespace);
-    build_all (b, "v0,v0,v0,ss32", group, MODE_n, preserve_user_namespace);
+    build_all (b, "v0,v0,v0,su64", group, MODE_n, preserve_user_namespace);
   }
 
   tree
@@ -1838,9 +1846,16 @@ struct unary_int32_acc_def : public overloaded_base<0>
   {
     unsigned int i, nargs;
     type_suffix_index type;
+    const char *first_type_name;
+
     if (!r.check_gp_argument (2, i, nargs)
-	|| !r.require_integer_immediate (0)
 	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    first_type_name = (type_suffixes[type].unsigned_p
+		       ? "uint32_t"
+		       : "int32_t");
+    if (!r.require_scalar_type (0, first_type_name))
       return error_mark_node;
 
     return r.resolve_to (r.mode_suffix_id, type);
