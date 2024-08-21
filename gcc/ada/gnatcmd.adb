@@ -278,7 +278,8 @@ procedure GNATCmd is
 --  Start of processing for GNATCmd
 
 begin
-   --  All output from GNATCmd is debugging or error output: send to stderr
+   --  Almost all output from GNATCmd is debugging or error output: send to
+   --  stderr.
 
    Set_Standard_Error;
 
@@ -349,6 +350,7 @@ begin
          elsif Command_Arg <= Argument_Count
            and then Argument (Command_Arg) = Ada_Help_Switch
          then
+            Set_Standard_Output;
             Usage;
             Exit_Program (E_Success);
 
@@ -364,6 +366,7 @@ begin
 
          --  Add the following so that output is consistent with or without the
          --  --help flag.
+         Set_Standard_Output;
          Write_Eol;
          Write_Line ("Report bugs to report@adacore.com");
          return;
