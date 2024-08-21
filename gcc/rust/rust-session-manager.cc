@@ -928,18 +928,21 @@ Session::expansion (AST::Crate &crate, Resolver2_0::NameResolutionContext &ctx)
       if (saw_errors ())
 	break;
 
+      bool visitor_dirty = false;
+
       if (flag_name_resolution_2_0)
 	{
 	  Resolver2_0::Early early (ctx);
 	  early.go (crate);
 	  macro_errors = early.get_macro_resolve_errors ();
+	  visitor_dirty = early.is_dirty ();
 	}
       else
 	Resolver::EarlyNameResolver ().go (crate);
 
       ExpandVisitor (expander).go (crate);
 
-      fixed_point_reached = !expander.has_changed ();
+      fixed_point_reached = !expander.has_changed () && !visitor_dirty;
       expander.reset_changed_state ();
       iterations++;
 

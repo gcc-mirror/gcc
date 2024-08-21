@@ -26,7 +26,8 @@
 namespace Rust {
 namespace Resolver2_0 {
 
-Early::Early (NameResolutionContext &ctx) : DefaultResolver (ctx) {}
+Early::Early (NameResolutionContext &ctx) : DefaultResolver (ctx), dirty (false)
+{}
 
 void
 Early::insert_once (AST::MacroInvocation &invocation, NodeId resolved)
@@ -61,6 +62,7 @@ Early::go (AST::Crate &crate)
   // Once this is done, we finalize their resolution
   FinalizeImports (std::move (import_mappings), toplevel, ctx).go (crate);
 
+  dirty = toplevel.is_dirty ();
   // We now proceed with resolving macros, which can be nested in almost any
   // items
   textual_scope.push ();
