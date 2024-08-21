@@ -33,13 +33,7 @@ w_r ()
 
 /*
 ** w_w:
-** (
-**	vmov.f32	s2, s0
-**	vmov.f32	s3, s1
-** |
-**	vmov.f32	s3, s1
-**	vmov.f32	s2, s0
-** )
+**	vmov.f64	d1, d0
 **	bx	lr
 */
 void
