@@ -5129,22 +5129,23 @@
 })
 
 ;;
-;; [vdwdupq_wb_u_insn])
+;; [vdwdupq_wb_u_insn, viwdupq_wb_u_insn]
 ;;
-(define_insn "mve_vdwdupq_wb_u<mode>_insn"
+(define_insn "@mve_<mve_insn>q_wb_u<mode>_insn"
   [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
 	(unspec:MVE_2 [(match_operand:SI 2 "s_register_operand" "1")
 		       (subreg:SI (match_operand:DI 3 "s_register_operand" "r") 4)
 		       (match_operand:SI 4 "mve_imm_selective_upto_8" "Rg")]
-	 VDWDUPQ))
+	 VIDWDUPQ))
    (set (match_operand:SI 1 "s_register_operand" "=Te")
 	(unspec:SI [(match_dup 2)
 		    (subreg:SI (match_dup 3) 4)
 		    (match_dup 4)]
-	 VDWDUPQ))]
+	 VIDWDUPQ))]
   "TARGET_HAVE_MVE"
-  "vdwdup.u%#<V_sz_elem>\t%q0, %2, %R3, %4"
-)
+  "<mve_insn>.u%#<V_sz_elem>\t%q0, %2, %R3, %4"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_wb_u<mode>_insn"))
+  (set_attr "type" "mve_move")])
 
 ;;
 ;; [vdwdupq_m_n_u])
@@ -5187,27 +5188,27 @@
 })
 
 ;;
-;; [vdwdupq_m_wb_u_insn])
+;; [vdwdupq_m_wb_u_insn, viwdupq_m_wb_u_insn]
 ;;
-(define_insn "mve_vdwdupq_m_wb_u<mode>_insn"
+(define_insn "@mve_<mve_insn>q_m_wb_u<mode>_insn"
   [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
 	(unspec:MVE_2 [(match_operand:MVE_2 2 "s_register_operand" "0")
 		       (match_operand:SI 3 "s_register_operand" "1")
 		       (subreg:SI (match_operand:DI 4 "s_register_operand" "r") 4)
 		       (match_operand:SI 5 "mve_imm_selective_upto_8" "Rg")
 		       (match_operand:<MVE_VPRED> 6 "vpr_register_operand" "Up")]
-	 VDWDUPQ_M))
+	 VIDWDUPQ_M))
    (set (match_operand:SI 1 "s_register_operand" "=Te")
 	(unspec:SI [(match_dup 2)
 		    (match_dup 3)
 		    (subreg:SI (match_dup 4) 4)
 		    (match_dup 5)
 		    (match_dup 6)]
-	 VDWDUPQ_M))
+	 VIDWDUPQ_M))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vdwdupt.u%#<V_sz_elem>\t%q2, %3, %R4, %5"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vdwdupq_wb_u<mode>_insn"))
+  "vpst\;<mve_insn>t.u%#<V_sz_elem>\t%q2, %3, %R4, %5"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_wb_u<mode>_insn"))
   (set_attr "type" "mve_move")
   (set_attr "length""8")])
 
@@ -5245,24 +5246,6 @@
 					      operands[3]));
   DONE;
 })
-
-;;
-;; [viwdupq_wb_u_insn])
-;;
-(define_insn "mve_viwdupq_wb_u<mode>_insn"
-  [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:SI 2 "s_register_operand" "1")
-		       (subreg:SI (match_operand:DI 3 "s_register_operand" "r") 4)
-		       (match_operand:SI 4 "mve_imm_selective_upto_8" "Rg")]
-	 VIWDUPQ))
-   (set (match_operand:SI 1 "s_register_operand" "=Te")
-	(unspec:SI [(match_dup 2)
-		    (subreg:SI (match_dup 3) 4)
-		    (match_dup 4)]
-	 VIWDUPQ))]
-  "TARGET_HAVE_MVE"
-  "viwdup.u%#<V_sz_elem>\t%q0, %2, %R3, %4"
-)
 
 ;;
 ;; [viwdupq_m_n_u])
@@ -5303,31 +5286,6 @@
 						operands[5]));
   DONE;
 })
-
-;;
-;; [viwdupq_m_wb_u_insn])
-;;
-(define_insn "mve_viwdupq_m_wb_u<mode>_insn"
-  [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 2 "s_register_operand" "0")
-		       (match_operand:SI 3 "s_register_operand" "1")
-		       (subreg:SI (match_operand:DI 4 "s_register_operand" "r") 4)
-		       (match_operand:SI 5 "mve_imm_selective_upto_8" "Rg")
-		       (match_operand:<MVE_VPRED> 6 "vpr_register_operand" "Up")]
-	 VIWDUPQ_M))
-   (set (match_operand:SI 1 "s_register_operand" "=Te")
-	(unspec:SI [(match_dup 2)
-		    (match_dup 3)
-		    (subreg:SI (match_dup 4) 4)
-		    (match_dup 5)
-		    (match_dup 6)]
-	 VIWDUPQ_M))
-  ]
-  "TARGET_HAVE_MVE"
-  "vpst\;\tviwdupt.u%#<V_sz_elem>\t%q2, %3, %R4, %5"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_viwdupq_wb_u<mode>_insn"))
-  (set_attr "type" "mve_move")
-   (set_attr "length""8")])
 
 ;;
 ;; [vstrwq_scatter_base_wb_s vstrwq_scatter_base_wb_u]

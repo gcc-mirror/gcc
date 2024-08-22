@@ -1009,6 +1009,8 @@
 		 (VHSUBQ_S "vhsub") (VHSUBQ_U "vhsub")
 		 (VIDUPQ "vidup") (VDDUPQ "vddup")
 		 (VIDUPQ_M "vidup") (VDDUPQ_M "vddup")
+		 (VIWDUPQ "viwdup") (VDWDUPQ "vdwdup")
+		 (VIWDUPQ_M "viwdup") (VDWDUPQ_M "vdwdup")
 		 (VMAXAQ_M_S "vmaxa")
 		 (VMAXAQ_S "vmaxa")
 		 (VMAXAVQ_P_S "vmaxav")
@@ -2968,6 +2970,8 @@
 (define_int_iterator VCVTxQ_M [VCVTAQ_M_S VCVTAQ_M_U VCVTMQ_M_S VCVTMQ_M_U VCVTNQ_M_S VCVTNQ_M_U VCVTPQ_M_S VCVTPQ_M_U])
 (define_int_iterator VIDDUPQ [VIDUPQ VDDUPQ])
 (define_int_iterator VIDDUPQ_M [VIDUPQ_M VDDUPQ_M])
+(define_int_iterator VIDWDUPQ [VIWDUPQ VDWDUPQ])
+(define_int_iterator VIDWDUPQ_M [VIWDUPQ_M VDWDUPQ_M])
 (define_int_iterator DLSTP [DLSTP8 DLSTP16 DLSTP32
 				   DLSTP64])
 (define_int_iterator LETP [LETP8 LETP16 LETP32
