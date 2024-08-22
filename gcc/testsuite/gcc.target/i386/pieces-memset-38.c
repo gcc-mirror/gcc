@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mno-avx512f -mavx2 -mprefer-vector-width=128 -mtune=sandybridge" } */
+/* { dg-options "-O2 -mno-avx512f -mavx2 -mmove-max=128 -mstore-max=128 -mtune=sandybridge" } */
 
 extern char *dst;
 
