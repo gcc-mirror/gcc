@@ -14193,8 +14193,7 @@ supportable_widening_operation (vec_info *vinfo,
              by STMT is only directly used in the reduction statement.  */
 	  tree lhs = gimple_assign_lhs (vect_orig_stmt (stmt_info)->stmt);
 	  stmt_vec_info use_stmt_info = loop_info->lookup_single_use (lhs);
-	  if (use_stmt_info
-	      && STMT_VINFO_DEF_TYPE (use_stmt_info) == vect_reduction_def)
+	  if (use_stmt_info && STMT_VINFO_REDUC_DEF (use_stmt_info))
 	    return true;
         }
       c1 = VEC_WIDEN_MULT_LO_EXPR;
