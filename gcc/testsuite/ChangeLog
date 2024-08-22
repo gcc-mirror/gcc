@@ -1,3 +1,12 @@
+2024-08-21  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2024-06-26  Alexandre Oliva  <oliva@adacore.com>
+		    Richard Earnshaw  <Richard.Earnshaw@arm.com>
+
+	PR tree-optimization/113281
+	* gcc.target/arm/simd/mve-vshr.c: Add expected ranges.
+
 2024-08-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	Backported from master:
