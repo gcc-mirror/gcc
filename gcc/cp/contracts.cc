@@ -2256,6 +2256,12 @@ finish_function_contracts (tree fndecl)
       tree finished_post = finish_function (false);
       expand_or_defer_fn (finished_post);
     }
+
+  /* Check if we need to update wrapper function contracts. */
+  tree wrapdecl = get_contract_wrapper_function (fndecl);
+  if (wrapdecl){
+      copy_and_remap_contracts (wrapdecl, fndecl);
+  }
 }
 
 
@@ -2479,7 +2485,9 @@ build_contract_wrapper_function (tree fndecl)
   /* Copy any alignment the user added.  */
   DECL_USER_ALIGN (wrapdecl) = DECL_USER_ALIGN (fndecl);
 
-  /* Apply attributes from the original fn.   */
+  /* Apply attributes from the original fn.
+   TODO : we can probably skip this step if function needs
+   instantiating as it will be done as a part of instantiation. */
   copy_and_remap_contracts (wrapdecl, fndecl);
 
   DECL_ABSTRACT_ORIGIN (wrapdecl) = fndecl;
@@ -2573,7 +2581,7 @@ maybe_contract_wrap_new_method_call (tree fndecl, tree call)
 bool define_contract_wrapper_func(const tree& fndecl, const tree& wrapdecl, void*)
 {
 
-  start_preparsed_function (wrapdecl, DECL_ATTRIBUTES (wrapdecl), SF_DEFAULT | SF_PRE_PARSED);
+  start_preparsed_function (wrapdecl, /*DECL_ATTRIBUTES (wrapdecl)*/ NULL_TREE, SF_DEFAULT | SF_PRE_PARSED);
 
   tree body = begin_function_body ();
   tree compound_stmt = begin_compound_stmt (BCS_FN_BODY);
