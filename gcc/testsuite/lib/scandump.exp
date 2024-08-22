@@ -37,6 +37,10 @@ proc dump-base { args } {
     # gcc-defs to base compilation dumps only on the source basename.
     set dumpbase $src
     if { [string length $dumpbase_suf] != 0 } {
+	# Accept {} as dump base suffix to drop the source suffix entirely.
+	if { "$dumpbase_suf" == "{}" } {
+	    set dumpbase_suf ""
+	}
 	regsub {[.][^.]*$} $src $dumpbase_suf dumpbase
     }
     return $dumpbase
