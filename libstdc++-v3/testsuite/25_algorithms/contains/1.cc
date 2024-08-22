@@ -4,6 +4,10 @@
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 
+#if __cpp_lib_ranges_contains != 202207L
+# error "Feature-test macro __cpp_lib_ranges_contains has wrong value in <algorithm>"
+#endif
+
 namespace ranges = std::ranges;
 
 void
