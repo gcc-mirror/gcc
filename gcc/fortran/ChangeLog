@@ -1,3 +1,18 @@
+2024-08-21  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/86468
+	* trans-intrinsic.cc (conv_intrinsic_move_alloc): Correct
+	comment.
+	* trans-types.cc (gfc_sym_type): Pass coarray rank, not	false.
+	(gfc_get_derived_type): Only propagate	codimension for coarrays
+	and pointers to array components in derived typed coarrays.
+
+2024-08-21  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/77518
+	* trans-intrinsic.cc (gfc_conv_intrinsic_sizeof): Use
+	class_container of se when set.
+
 2024-08-20  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/84246

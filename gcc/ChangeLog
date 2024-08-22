@@ -1,3 +1,59 @@
+2024-08-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/116437
+	* ext-dce.cc (ext_dce_try_optimize_insn): Handle SUBREG and
+	ZERO_EXTRACT destinations.
+
+2024-08-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/116238
+	* config/aarch64/aarch64.cc (aarch64_hard_regno_caller_save_mode):
+	Only return SImode if we can convert to and from it.
+
+2024-08-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/113042
+	* config/aarch64/aarch64.md (popcountti2): New define_expand.
+
+2024-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116406
+	* tree-ssa-sccvn.cc (vn_reference_eq): Never equate
+	float and int when the float mode cannot transfer bits.
+	Do not try to anticipate which is the mode we actually load
+	from.
+
+2024-08-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR target/58416
+	* tree-sra.cc (types_risk_mangled_binary_repr_p): New function.
+	(sort_and_splice_var_accesses): Use it.
+	(propagate_subaccesses_from_rhs): Likewise.
+
+2024-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116380
+	* tree-loop-distribution.cc (copy_loop_before): Handle
+	out-of-loop defs appropriately.
+
+2024-08-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/vsx.md (define_insn *vsx_le_perm_store_{<VSX_D:mode>,
+	<VSX_W:mode>,v8hi,v16qi,<VSX_LE_128:mode>}): Remove constraint modifier
+	"+" from operand 1.
+
+2024-08-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/vsx.md (*vsx_le_perm_store_{<VSX_D:mode>,<VSX_W:mode>,
+	v8hi,v16qi,<VSX_LE_128:mode>} !reload_completed splitters): Assert
+	can_create_pseudo_p and always generate one new pseudo for operand 1.
+
+2024-08-21  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (mov<mode>): Align predicates for
+	operands[1] between mov<mode> and *mov<mode>_internal.
+	* config/i386/mmx.md (mov<mode>): Ditto.
+
 2024-08-21  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	* builtins.cc (fold_builtin_bit_query): Don't expand double

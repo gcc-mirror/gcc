@@ -1,3 +1,23 @@
+2024-08-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR tree-optimization/102958
+	* include/bits/char_traits.h (char_traits<char8_t>::length): Use
+	strlen.
+
+2024-08-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114862
+	* src/c++98/locale_facets.cc (__num_base::_S_format_float):
+	Check uppercase flag for fixed format.
+	* testsuite/22_locale/num_put/put/char/lwg4084.cc: New test.
+
+2024-08-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116381
+	* include/std/variant (variant): Fix conditions for
+	static_assert to match the spec.
+	* testsuite/20_util/variant/types_neg.cc: New test.
+
 2024-08-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/optional: Remove redundant redeclaration.

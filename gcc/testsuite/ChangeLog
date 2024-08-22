@@ -1,3 +1,87 @@
+2024-08-21  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vec_sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-13.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-14.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-15.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-16.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-17.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-18.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-run-13.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-run-14.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-run-15.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-run-16.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-run-17.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-run-18.c: New test.
+
+2024-08-21  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vec_sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-run-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-run-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-run-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-run-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-run-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-run-9.c: New test.
+
+2024-08-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/116238
+	* gcc.target/aarch64/sve/pr116238.c: New test.
+
+2024-08-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/113042
+	* gcc.target/aarch64/popcnt10.c: New test.
+	* gcc.target/aarch64/popcnt9.c: New test.
+
+2024-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116406
+	* gcc.dg/tree-ssa/pr116406.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-pre-30.c: On x86 dd -msse -mfpmath=sse.
+
+2024-08-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR target/58416
+	* gcc.dg/torture/pr58416.c: New test.
+
+2024-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116380
+	* gcc.dg/torture/pr116380.c: New testcase.
+
+2024-08-21  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray_lib_this_image_2.f90: Fix array rank in
+	tree dump scan.
+	* gfortran.dg/coarray_lib_token_4.f90: Same.
+	* gfortran.dg/coarray/move_alloc_2.f90: New test.
+
+2024-08-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.target/i386/pr116275-2.C (dg-options): Add -mstv
+	-mno-stackrealign.
+
+2024-08-21  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/77518
+	* gfortran.dg/coarray/sizeof_1.f90: New test.
+
+2024-08-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	* lib/target-supports.exp (check_vect_support_and_set_flags): Remove
+	the if arm checking powerpc-*paired*.
+	(check_750cl_hw_available): Remove.
+	(check_effective_target_vect_unpack): Remove the check on
+	powerpc-*paired*.
+
 2024-08-20  Pan Li  <pan2.li@intel.com>
 
 	* gcc.target/riscv/sat_arith.h: Fix SAT_TRUNC typo.
