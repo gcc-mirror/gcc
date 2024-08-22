@@ -2396,6 +2396,32 @@ finish_builtin_struct (tree type, const char *name, tree fields,
   layout_decl (TYPE_NAME (type), 0);
 }
 
+/* Compute TYPE_MODE for TYPE (which is ARRAY_TYPE).  */
+
+void compute_array_mode (tree type)
+{
+  gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
+
+  SET_TYPE_MODE (type, BLKmode);
+  if (TYPE_SIZE (type) != 0
+      && ! targetm.member_type_forces_blk (type, VOIDmode)
+      /* BLKmode elements force BLKmode aggregate;
+	 else extract/store fields may lose.  */
+      && (TYPE_MODE (TREE_TYPE (type)) != BLKmode
+	  || TYPE_NO_FORCE_BLK (TREE_TYPE (type))))
+    {
+      SET_TYPE_MODE (type, mode_for_array (TREE_TYPE (type),
+					   TYPE_SIZE (type)));
+      if (TYPE_MODE (type) != BLKmode
+	  && STRICT_ALIGNMENT && TYPE_ALIGN (type) < BIGGEST_ALIGNMENT
+	  && TYPE_ALIGN (type) < GET_MODE_ALIGNMENT (TYPE_MODE (type)))
+	{
+	  TYPE_NO_FORCE_BLK (type) = 1;
+	  SET_TYPE_MODE (type, BLKmode);
+	}
+    }
+}
+
 /* Calculate the mode, size, and alignment for TYPE.
    For an array type, calculate the element separation as well.
    Record TYPE on the chain of permanent or temporary types
@@ -2709,24 +2735,7 @@ layout_type (tree type)
 	align = MAX (align, BITS_PER_UNIT);
 #endif
 	SET_TYPE_ALIGN (type, align);
-	SET_TYPE_MODE (type, BLKmode);
-	if (TYPE_SIZE (type) != 0
-	    && ! targetm.member_type_forces_blk (type, VOIDmode)
-	    /* BLKmode elements force BLKmode aggregate;
-	       else extract/store fields may lose.  */
-	    && (TYPE_MODE (TREE_TYPE (type)) != BLKmode
-		|| TYPE_NO_FORCE_BLK (TREE_TYPE (type))))
-	  {
-	    SET_TYPE_MODE (type, mode_for_array (TREE_TYPE (type),
-						 TYPE_SIZE (type)));
-	    if (TYPE_MODE (type) != BLKmode
-		&& STRICT_ALIGNMENT && TYPE_ALIGN (type) < BIGGEST_ALIGNMENT
-		&& TYPE_ALIGN (type) < GET_MODE_ALIGNMENT (TYPE_MODE (type)))
-	      {
-		TYPE_NO_FORCE_BLK (type) = 1;
-		SET_TYPE_MODE (type, BLKmode);
-	      }
-	  }
+	compute_array_mode (type);
 	if (AGGREGATE_TYPE_P (element))
 	  TYPE_TYPELESS_STORAGE (type) = TYPE_TYPELESS_STORAGE (element);
 	/* When the element size is constant, check that it is at least as

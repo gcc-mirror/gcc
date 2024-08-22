@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "asan.h"
 #include "opts.h"
+#include "stor-layout.h"
 
 
 /* Read a STRING_CST from the string table in DATA_IN using input
@@ -395,6 +396,17 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
 #ifdef ACCEL_COMPILER
   if (TYPE_ALIGN (expr) > targetm.absolute_biggest_alignment)
     SET_TYPE_ALIGN (expr, targetm.absolute_biggest_alignment);
+
+  /* Host streams out VOIDmode for aggregate type. */
+  if (AGGREGATE_TYPE_P (expr) && TYPE_MODE (expr) == VOIDmode)
+    {
+      if (TREE_CODE (expr) == ARRAY_TYPE)
+	compute_array_mode (expr);
+      else if (RECORD_OR_UNION_TYPE_P (expr))
+	compute_record_mode (expr);
+      else
+	gcc_unreachable ();
+    }
 #endif
 }
 

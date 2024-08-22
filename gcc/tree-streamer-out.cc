@@ -187,7 +187,17 @@ pack_ts_fixed_cst_value_fields (struct bitpack_d *bp, tree expr)
 static void
 pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
 {
-  bp_pack_machine_mode (bp, DECL_MODE (expr));
+  /* Similar to TYPE_MODE, avoid streaming out host-specific DECL_MODE
+     for aggregate type with offloading enabled, and while streaming-in
+     recompute appropriate DECL_MODE for accelerator.  */
+  if (lto_stream_offload_p
+      && (VAR_P (expr)
+	  || TREE_CODE (expr) == PARM_DECL
+	  || TREE_CODE (expr) == FIELD_DECL)
+      && AGGREGATE_TYPE_P (TREE_TYPE (expr)))
+    bp_pack_machine_mode (bp, VOIDmode);
+  else
+    bp_pack_machine_mode (bp, DECL_MODE (expr));
   bp_pack_value (bp, DECL_NONLOCAL (expr), 1);
   bp_pack_value (bp, DECL_VIRTUAL_P (expr), 1);
   bp_pack_value (bp, DECL_IGNORED_P (expr), 1);
@@ -317,10 +327,18 @@ pack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
 static void
 pack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
 {
+  /* For offloading, avoid streaming out TYPE_MODE for aggregate type since
+     it may be host-specific. For eg, aarch64 uses OImode for ARRAY_TYPE
+     whose size is 256-bits, which is not representable on accelerator.
+     Instead stream out VOIDmode, and while streaming-in, recompute
+     appropriate TYPE_MODE for accelerator.  */
+  if (lto_stream_offload_p && AGGREGATE_TYPE_P (expr))
+    bp_pack_machine_mode (bp, VOIDmode);
   /* for VECTOR_TYPE, TYPE_MODE reevaluates the mode using target_flags
      not necessary valid in a global context.
      Use the raw value previously set by layout_type.  */
-  bp_pack_machine_mode (bp, TYPE_MODE_RAW (expr));
+  else
+    bp_pack_machine_mode (bp, TYPE_MODE_RAW (expr));
   /* TYPE_NO_FORCE_BLK is private to stor-layout and need
      no streaming.  */
   bp_pack_value (bp, TYPE_PACKED (expr), 1);

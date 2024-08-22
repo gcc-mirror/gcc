@@ -1752,6 +1752,15 @@ lto_read_tree_1 (class lto_input_block *ib, class data_in *data_in, tree expr)
 	 with -g1, see for example PR113488.  */
       else if (DECL_P (expr) && DECL_ABSTRACT_ORIGIN (expr) == expr)
 	DECL_ABSTRACT_ORIGIN (expr) = NULL_TREE;
+
+#ifdef ACCEL_COMPILER
+      if ((VAR_P (expr)
+	   || TREE_CODE (expr) == PARM_DECL
+	   || TREE_CODE (expr) == FIELD_DECL)
+	  && AGGREGATE_TYPE_P (TREE_TYPE (expr))
+	  && DECL_MODE (expr) == VOIDmode)
+	SET_DECL_MODE (expr, TYPE_MODE (TREE_TYPE (expr)));
+#endif
     }
 }
 
