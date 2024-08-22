@@ -1072,6 +1072,11 @@ ftms = {
 ftms = {
   name = ranges;
   values = {
+    v = 202406;
+    cxxmin = 26;
+    extra_cond = "__glibcxx_concepts";
+  };
+  values = {
     v = 202302;
     cxxmin = 23;
     extra_cond = "__glibcxx_concepts";

@@ -724,7 +724,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     concept indirectly_unary_invocable = indirectly_readable<_Iter>
       && copy_constructible<_Fn> && invocable<_Fn&, __indirect_value_t<_Iter>>
       && invocable<_Fn&, iter_reference_t<_Iter>>
-      && invocable<_Fn&, iter_common_reference_t<_Iter>>
       && common_reference_with<invoke_result_t<_Fn&, __indirect_value_t<_Iter>>,
 			       invoke_result_t<_Fn&, iter_reference_t<_Iter>>>;
 
@@ -733,15 +732,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       && copy_constructible<_Fn>
       && regular_invocable<_Fn&, __indirect_value_t<_Iter>>
       && regular_invocable<_Fn&, iter_reference_t<_Iter>>
-      && regular_invocable<_Fn&, iter_common_reference_t<_Iter>>
       && common_reference_with<invoke_result_t<_Fn&, __indirect_value_t<_Iter>>,
 			       invoke_result_t<_Fn&, iter_reference_t<_Iter>>>;
 
   template<typename _Fn, typename _Iter>
     concept indirect_unary_predicate = indirectly_readable<_Iter>
       && copy_constructible<_Fn> && predicate<_Fn&, __indirect_value_t<_Iter>>
-      && predicate<_Fn&, iter_reference_t<_Iter>>
-      && predicate<_Fn&, iter_common_reference_t<_Iter>>;
+      && predicate<_Fn&, iter_reference_t<_Iter>>;
 
   template<typename _Fn, typename _I1, typename _I2>
     concept indirect_binary_predicate
@@ -750,9 +747,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       && predicate<_Fn&, __indirect_value_t<_I1>, __indirect_value_t<_I2>>
       && predicate<_Fn&, __indirect_value_t<_I1>, iter_reference_t<_I2>>
       && predicate<_Fn&, iter_reference_t<_I1>, __indirect_value_t<_I2>>
-      && predicate<_Fn&, iter_reference_t<_I1>, iter_reference_t<_I2>>
-      && predicate<_Fn&, iter_common_reference_t<_I1>,
-		   iter_common_reference_t<_I2>>;
+      && predicate<_Fn&, iter_reference_t<_I1>, iter_reference_t<_I2>>;
 
   template<typename _Fn, typename _I1, typename _I2 = _I1>
     concept indirect_equivalence_relation
@@ -762,9 +757,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       && equivalence_relation<_Fn&, __indirect_value_t<_I1>, iter_reference_t<_I2>>
       && equivalence_relation<_Fn&, iter_reference_t<_I1>, __indirect_value_t<_I2>>
       && equivalence_relation<_Fn&, iter_reference_t<_I1>,
-			      iter_reference_t<_I2>>
-      && equivalence_relation<_Fn&, iter_common_reference_t<_I1>,
-			      iter_common_reference_t<_I2>>;
+			      iter_reference_t<_I2>>;
 
   template<typename _Fn, typename _I1, typename _I2 = _I1>
     concept indirect_strict_weak_order
@@ -773,9 +766,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       && strict_weak_order<_Fn&, __indirect_value_t<_I1>, __indirect_value_t<_I2>>
       && strict_weak_order<_Fn&, __indirect_value_t<_I1>, iter_reference_t<_I2>>
       && strict_weak_order<_Fn&, iter_reference_t<_I1>, __indirect_value_t<_I2>>
-      && strict_weak_order<_Fn&, iter_reference_t<_I1>, iter_reference_t<_I2>>
-      && strict_weak_order<_Fn&, iter_common_reference_t<_I1>,
-			   iter_common_reference_t<_I2>>;
+      && strict_weak_order<_Fn&, iter_reference_t<_I1>, iter_reference_t<_I2>>;
 
   template<typename _Fn, typename... _Is>
     requires (indirectly_readable<_Is> && ...)
