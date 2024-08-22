@@ -3192,6 +3192,15 @@ case "$enable_bootstrap:$ENABLE_GOLD: $configdirs :,$stage1_languages," in
     ;;
 esac
 
+# Bootstrapping GCC requires libstdc++-v3 so error out if libstdc++ is disabled with bootstrapping
+# Note C++ is always enabled for stage1 now.
+case "$enable_bootstrap:${noconfigdirs}" in
+  yes:*target-libstdc++-v3*)
+    AC_MSG_ERROR([bootstrapping with --disable-libstdcxx is not supported])
+    ;;
+esac
+
+
 extrasub_build=
 for module in ${build_configdirs} ; do
   if test -z "${no_recursion}" \
