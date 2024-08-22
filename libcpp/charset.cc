@@ -3093,6 +3093,7 @@ _cpp_convert_input (cpp_reader *pfile, const char *input_charset,
   struct cset_converter input_cset;
   struct _cpp_strbuf to;
   unsigned char *buffer;
+  size_t pad;
 
   input_cset = init_iconv_desc (pfile, SOURCE_CHARSET, input_charset);
   if (input_cset.func == convert_no_conversion)
@@ -3129,16 +3130,18 @@ _cpp_convert_input (cpp_reader *pfile, const char *input_charset,
 	}
     }
 
+#ifdef HAVE_SSSE3
+  pad = 64;
+#else
+  pad = 16;
+#endif
   /* Resize buffer if we allocated substantially too much, or if we
-     haven't enough space for the \n-terminator or following
-     15 bytes of padding (used to quiet warnings from valgrind or
-     Address Sanitizer, when the optimized lexer accesses aligned
-     16-byte memory chunks, including the bytes after the malloced,
-     area, and stops lexing on '\n').  */
-  if (to.len + 4096 < to.asize || to.len + 16 > to.asize)
-    to.text = XRESIZEVEC (uchar, to.text, to.len + 16);
+     don't have enough space for the following padding, which allows
+     search_line_fast to use (possibly misaligned) vector loads.  */
+  if (to.len + 4096 < to.asize || to.len + pad > to.asize)
+    to.text = XRESIZEVEC (uchar, to.text, to.len + pad);
 
-  memset (to.text + to.len, '\0', 16);
+  memset (to.text + to.len, '\0', pad);
 
   /* If the file is using old-school Mac line endings (\r only),
      terminate with another \r, not an \n, so that we do not mistake
