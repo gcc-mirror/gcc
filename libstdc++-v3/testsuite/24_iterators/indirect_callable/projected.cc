@@ -22,7 +22,12 @@
 template<typename T>
   using PI = std::projected<T, std::identity>;
 
+#if __GLIBCXX__
+// Verify our projected<I, identity> optimization.
+static_assert(std::same_as<PI<int*>, int*>);
+#else
 static_assert(std::same_as<PI<int*>::value_type, int>);
+#endif
 static_assert(std::same_as<decltype(*std::declval<const PI<int*>&>()), int&>);
 
 struct X
