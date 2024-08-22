@@ -4364,9 +4364,9 @@ get_atomic_access (Node_Id gnat_node, atomic_acces_t *type, bool *sync)
     gnat_node = Expression (gnat_node);
 
   /* Up to Ada 2012, for Atomic itself, only reads and updates of the object as
-     a whole require atomic access (RM C.6(15)).  But, starting with Ada 2022,
-     reads of or writes to a nonatomic subcomponent of the object also require
-     atomic access (RM C.6(19)).  */
+     a whole require atomic access (RM C.6(15)), unless the object is also VFA.
+     But, starting with Ada 2022, reads of or writes to nonatomic subcomponents
+     of the object also require atomic access (RM C.6(19)).  */
   if (node_is_atomic (gnat_node))
     {
       bool as_a_whole = true;
@@ -4375,7 +4375,9 @@ get_atomic_access (Node_Id gnat_node, atomic_acces_t *type, bool *sync)
       for (gnat_temp = gnat_node, gnat_parent = Parent (gnat_temp);
 	   node_is_component (gnat_parent) && Prefix (gnat_parent) == gnat_temp;
 	   gnat_temp = gnat_parent, gnat_parent = Parent (gnat_temp))
-	if (Ada_Version < Ada_2022 || node_is_atomic (gnat_parent))
+	if (Ada_Version < Ada_2022
+	    ? !node_is_volatile_full_access (gnat_node)
+	    : node_is_atomic (gnat_parent))
 	  goto not_atomic;
 	else
 	  as_a_whole = false;
