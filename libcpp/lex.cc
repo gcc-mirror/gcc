@@ -355,7 +355,8 @@ search_line_ssse3 (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
   /* Helper vector for pshufb-based matching:
      each character C we're searching for is at position (C % 16).  */
   v16qi lut = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, '\n', 0, '\\', '\r', 0, '?' };
-  static_assert ('\n' == 10 && '\r' == 13 && '\\' == 92 && '?' == 63);
+  static_assert('\n' == 10 && '\r' == 13 && '\\' == 92 && '?' == 63,
+                "host character encoding is ASCII");
 
   v16qi d1, d2, t1, t2;
   /* Unaligned loads.  Reading beyond the final newline is safe,
