@@ -12081,17 +12081,29 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 	    {
 	      tree rtype = TREE_TYPE (TREE_TYPE (arg0));
 	      if (real_onep (TREE_IMAGPART (arg1)))
-		return
-		  fold_build2_loc (loc, COMPLEX_EXPR, type,
-			       negate_expr (fold_build1_loc (loc, IMAGPART_EXPR,
-							     rtype, arg0)),
-			       fold_build1_loc (loc, REALPART_EXPR, rtype, arg0));
+		{
+		  if (TREE_CODE (arg0) != COMPLEX_EXPR)
+		    arg0 = save_expr (arg0);
+		  tree iarg0 = fold_build1_loc (loc, IMAGPART_EXPR,
+						rtype, arg0);
+		  tree rarg0 = fold_build1_loc (loc, REALPART_EXPR,
+						rtype, arg0);
+		  return fold_build2_loc (loc, COMPLEX_EXPR, type,
+					  negate_expr (iarg0),
+					  rarg0);
+		}
 	      else if (real_minus_onep (TREE_IMAGPART (arg1)))
-		return
-		  fold_build2_loc (loc, COMPLEX_EXPR, type,
-			       fold_build1_loc (loc, IMAGPART_EXPR, rtype, arg0),
-			       negate_expr (fold_build1_loc (loc, REALPART_EXPR,
-							     rtype, arg0)));
+		{
+		  if (TREE_CODE (arg0) != COMPLEX_EXPR)
+		    arg0 = save_expr (arg0);
+		  tree iarg0 = fold_build1_loc (loc, IMAGPART_EXPR,
+						rtype, arg0);
+		  tree rarg0 = fold_build1_loc (loc, REALPART_EXPR,
+						rtype, arg0);
+		  return fold_build2_loc (loc, COMPLEX_EXPR, type,
+					  iarg0,
+					  negate_expr (rarg0));
+		}
 	    }
 
 	  /* Optimize z * conj(z) for floating point complex numbers.
