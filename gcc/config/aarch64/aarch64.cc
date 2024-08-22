@@ -15565,6 +15565,12 @@ aarch64_register_move_cost (machine_mode mode,
 				reg_class_contents[FFR_REGS]))
     return 80;
 
+  /* Moves to/from sysregs are expensive, and must go via GPR.  */
+  if (from == MOVEABLE_SYSREGS)
+    return 80 + aarch64_register_move_cost (mode, GENERAL_REGS, to);
+  if (to == MOVEABLE_SYSREGS)
+    return 80 + aarch64_register_move_cost (mode, from, GENERAL_REGS);
+
   /* Moving between GPR and stack cost is the same as GP2GP.  */
   if ((from == GENERAL_REGS && to == STACK_REG)
       || (to == GENERAL_REGS && from == STACK_REG))
