@@ -988,7 +988,7 @@ ext_dce_init (void)
   all_blocks = BITMAP_ALLOC (NULL);
   changed_pseudos = BITMAP_ALLOC (NULL);
 
-  for (int i = 0; i < n_basic_blocks_for_fn (cfun); i++)
+  for (int i = 0; i < last_basic_block_for_fn (cfun); i++)
     if (i != ENTRY_BLOCK && i != EXIT_BLOCK)
       bitmap_set_bit (all_blocks, i);
 
