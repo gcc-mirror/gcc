@@ -144,10 +144,10 @@ package body Sem_Res is
    --  for restriction No_Direct_Boolean_Operators. This procedure also handles
    --  the style check for Style_Check_Boolean_And_Or.
 
-   function Is_Atomic_Ref_With_Address (N : Node_Id) return Boolean;
-   --  N is either an indexed component or a selected component. This function
-   --  returns true if the prefix denotes an atomic object that has an address
-   --  clause (the case in which we may want to issue a warning).
+   function Is_Atomic_Non_VFA_Ref_With_Address (N : Node_Id) return Boolean;
+   --  N is either an indexed component or a selected component. Return true
+   --  if the prefix denotes an Atomic but not Volatile_Full_Access object that
+   --  has an address clause (the case in which we may want to give a warning).
 
    function Is_Definite_Access_Type (E : N_Entity_Id) return Boolean;
    --  Determine whether E is an access type declared by an access declaration,
@@ -1486,28 +1486,42 @@ package body Sem_Res is
       end if;
    end Check_Parameterless_Call;
 
-   --------------------------------
-   -- Is_Atomic_Ref_With_Address --
-   --------------------------------
+   ----------------------------------------
+   -- Is_Atomic_Non_VFA_Ref_With_Address --
+   ----------------------------------------
 
-   function Is_Atomic_Ref_With_Address (N : Node_Id) return Boolean is
+   function Is_Atomic_Non_VFA_Ref_With_Address (N : Node_Id) return Boolean is
       Pref : constant Node_Id := Prefix (N);
 
-   begin
-      if not Is_Entity_Name (Pref) then
-         return False;
+      function Is_Atomic_Non_VFA (E : Entity_Id) return Boolean;
+      --  Return true if E is Atomic but not Volatile_Full_Access
 
-      else
+      -----------------------
+      -- Is_Atomic_Non_VFA --
+      -----------------------
+
+      function Is_Atomic_Non_VFA (E : Entity_Id) return Boolean is
+      begin
+         return Is_Atomic (E) and then not Is_Volatile_Full_Access (E);
+      end Is_Atomic_Non_VFA;
+
+   begin
+      if Is_Entity_Name (Pref) then
          declare
             Pent : constant Entity_Id := Entity (Pref);
             Ptyp : constant Entity_Id := Etype (Pent);
+
          begin
             return not Is_Access_Type (Ptyp)
-              and then (Is_Atomic (Ptyp) or else Is_Atomic (Pent))
+              and then (Is_Atomic_Non_VFA (Ptyp)
+                         or else Is_Atomic_Non_VFA (Pent))
               and then Present (Address_Clause (Pent));
          end;
+
+      else
+         return False;
       end if;
-   end Is_Atomic_Ref_With_Address;
+   end Is_Atomic_Non_VFA_Ref_With_Address;
 
    -----------------------------
    -- Is_Definite_Access_Type --
@@ -9658,7 +9672,7 @@ package body Sem_Res is
       --  object, or partial word accesses, both of which may be unexpected.
 
       if Nkind (N) = N_Indexed_Component
-        and then Is_Atomic_Ref_With_Address (N)
+        and then Is_Atomic_Non_VFA_Ref_With_Address (N)
         and then not (Has_Atomic_Components (Array_Type)
                        or else (Is_Entity_Name (Pref)
                                  and then Has_Atomic_Components
@@ -11434,7 +11448,7 @@ package body Sem_Res is
          --  the atomic object, or partial word accesses, both of which may be
          --  unexpected.
 
-         if Is_Atomic_Ref_With_Address (N)
+         if Is_Atomic_Non_VFA_Ref_With_Address (N)
            and then not Is_Atomic (Entity (S))
            and then not Is_Atomic (Etype (Entity (S)))
            and then Ada_Version < Ada_2022
