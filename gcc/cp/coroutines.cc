@@ -1149,55 +1149,18 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind,
   if (!awrs_meth || awrs_meth == error_mark_node)
     return error_mark_node;
 
-  /* To complete the lookups, we need an instance of 'e' which is built from
-     'o' according to [expr.await] 3.4.
+  /* [expr.await]/3.3 If o would be a prvalue, the temporary
+     materialization conversion ([conv.rval]) is applied.  */
+  if (!glvalue_p (o))
+    o = get_target_expr (o, tf_warning_or_error);
 
-     If we need to materialize this as a temporary, then that will have to be
-     'promoted' to a coroutine frame var.  However, if the awaitable is a
-     user variable, parameter or comes from a scope outside this function,
-     then we must use it directly - or we will see unnecessary copies.
-
-     If o is a variable, find the underlying var.  */
-  tree e_proxy = STRIP_NOPS (o);
-  if (INDIRECT_REF_P (e_proxy))
-    e_proxy = TREE_OPERAND (e_proxy, 0);
-  while (TREE_CODE (e_proxy) == COMPONENT_REF)
+  tree e_proxy = o;
+  if (glvalue_p (o))
+    o = NULL_TREE; /* Use the existing entity.  */
+  else /* We need to materialise it.  */
     {
-      e_proxy = TREE_OPERAND (e_proxy, 0);
-      if (INDIRECT_REF_P (e_proxy))
-	e_proxy = TREE_OPERAND (e_proxy, 0);
-      if (TREE_CODE (e_proxy) == CALL_EXPR)
-	{
-	  /* We could have operator-> here too.  */
-	  tree op = TREE_OPERAND (CALL_EXPR_FN (e_proxy), 0);
-	  if (DECL_OVERLOADED_OPERATOR_P (op)
-	      && DECL_OVERLOADED_OPERATOR_IS (op, COMPONENT_REF))
-	    {
-	      e_proxy = CALL_EXPR_ARG (e_proxy, 0);
-	      STRIP_NOPS (e_proxy);
-	      gcc_checking_assert (TREE_CODE (e_proxy) == ADDR_EXPR);
-	      e_proxy = TREE_OPERAND (e_proxy, 0);
-	    }
-	}
-      STRIP_NOPS (e_proxy);
-    }
-
-  /* Only build a temporary if we need it.  */
-  STRIP_NOPS (e_proxy);
-  if (TREE_CODE (e_proxy) == PARM_DECL
-      || (VAR_P (e_proxy) && !is_local_temp (e_proxy)))
-    {
-      e_proxy = o;
-      o = NULL_TREE; /* The var is already present.  */
-    }
-  else
-    {
-      tree p_type = o_type;
-      if (glvalue_p (o))
-	p_type = cp_build_reference_type (p_type, !lvalue_p (o));
-      e_proxy = get_awaitable_var (suspend_kind, p_type);
-      o = cp_build_modify_expr (loc, e_proxy, INIT_EXPR, o,
-				tf_warning_or_error);
+      e_proxy = get_awaitable_var (suspend_kind, o_type);
+      o = cp_build_init_expr (loc, e_proxy, o);
       e_proxy = convert_from_reference (e_proxy);
     }
 
