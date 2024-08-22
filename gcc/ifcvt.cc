@@ -3550,7 +3550,7 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
     return false;
 
   for (insn = seq; insn; insn = NEXT_INSN (insn))
-    if (JUMP_P (insn)
+    if (JUMP_P (insn) || CALL_P (insn)
 	|| recog_memoized (insn) == -1)
       return false;
 
