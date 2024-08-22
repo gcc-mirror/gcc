@@ -517,15 +517,11 @@ package body Exp_Ch6 is
       else
          Desig_Typ := Directly_Designated_Type (Ptr_Typ);
 
-         --  Check for a library-level access type whose designated type has
-         --  suppressed finalization or the access type is subject to pragma
-         --  No_Heap_Finalization. Such an access type lacks a collection. Pass
-         --  a null actual to callee in order to signal a missing collection.
+         --  Check for a type that is subject to pragma No_Heap_Finalization.
+         --  Such a type lacks a collection. Pass a null actual to callee to
+         --  signal a missing collection.
 
-         if Is_Library_Level_Entity (Ptr_Typ)
-           and then (Finalize_Storage_Only (Desig_Typ)
-                      or else No_Heap_Finalization (Ptr_Typ))
-         then
+         if No_Heap_Finalization (Ptr_Typ) then
             Actual := Make_Null (Loc);
 
          --  Types in need of finalization actions
