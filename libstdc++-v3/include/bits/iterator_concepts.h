@@ -552,9 +552,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     concept indirectly_readable
       = __detail::__indirectly_readable_impl<remove_cvref_t<_In>>;
 
+  namespace __detail
+  {
+    template<typename _Tp>
+      struct __indirect_value
+      { using type = iter_value_t<_Tp>&; };
+
+    // __indirect_value<projected<_Iter, _Proj>> is defined later.
+  } // namespace __detail
+
+  template<typename _Tp>
+    using __indirect_value_t = typename __detail::__indirect_value<_Tp>::type;
+
   template<indirectly_readable _Tp>
     using iter_common_reference_t
-      = common_reference_t<iter_reference_t<_Tp>, iter_value_t<_Tp>&>;
+      = common_reference_t<iter_reference_t<_Tp>, __indirect_value_t<_Tp>>;
 
   /// Requirements for writing a value into an iterator's referenced object.
   template<typename _Out, typename _Tp>
@@ -710,24 +722,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Fn, typename _Iter>
     concept indirectly_unary_invocable = indirectly_readable<_Iter>
-      && copy_constructible<_Fn> && invocable<_Fn&, iter_value_t<_Iter>&>
+      && copy_constructible<_Fn> && invocable<_Fn&, __indirect_value_t<_Iter>>
       && invocable<_Fn&, iter_reference_t<_Iter>>
       && invocable<_Fn&, iter_common_reference_t<_Iter>>
-      && common_reference_with<invoke_result_t<_Fn&, iter_value_t<_Iter>&>,
+      && common_reference_with<invoke_result_t<_Fn&, __indirect_value_t<_Iter>>,
 			       invoke_result_t<_Fn&, iter_reference_t<_Iter>>>;
 
   template<typename _Fn, typename _Iter>
     concept indirectly_regular_unary_invocable = indirectly_readable<_Iter>
       && copy_constructible<_Fn>
-      && regular_invocable<_Fn&, iter_value_t<_Iter>&>
+      && regular_invocable<_Fn&, __indirect_value_t<_Iter>>
       && regular_invocable<_Fn&, iter_reference_t<_Iter>>
       && regular_invocable<_Fn&, iter_common_reference_t<_Iter>>
-      && common_reference_with<invoke_result_t<_Fn&, iter_value_t<_Iter>&>,
+      && common_reference_with<invoke_result_t<_Fn&, __indirect_value_t<_Iter>>,
 			       invoke_result_t<_Fn&, iter_reference_t<_Iter>>>;
 
   template<typename _Fn, typename _Iter>
     concept indirect_unary_predicate = indirectly_readable<_Iter>
-      && copy_constructible<_Fn> && predicate<_Fn&, iter_value_t<_Iter>&>
+      && copy_constructible<_Fn> && predicate<_Fn&, __indirect_value_t<_Iter>>
       && predicate<_Fn&, iter_reference_t<_Iter>>
       && predicate<_Fn&, iter_common_reference_t<_Iter>>;
 
@@ -735,9 +747,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     concept indirect_binary_predicate
       = indirectly_readable<_I1> && indirectly_readable<_I2>
       && copy_constructible<_Fn>
-      && predicate<_Fn&, iter_value_t<_I1>&, iter_value_t<_I2>&>
-      && predicate<_Fn&, iter_value_t<_I1>&, iter_reference_t<_I2>>
-      && predicate<_Fn&, iter_reference_t<_I1>, iter_value_t<_I2>&>
+      && predicate<_Fn&, __indirect_value_t<_I1>, __indirect_value_t<_I2>>
+      && predicate<_Fn&, __indirect_value_t<_I1>, iter_reference_t<_I2>>
+      && predicate<_Fn&, iter_reference_t<_I1>, __indirect_value_t<_I2>>
       && predicate<_Fn&, iter_reference_t<_I1>, iter_reference_t<_I2>>
       && predicate<_Fn&, iter_common_reference_t<_I1>,
 		   iter_common_reference_t<_I2>>;
@@ -746,9 +758,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     concept indirect_equivalence_relation
       = indirectly_readable<_I1> && indirectly_readable<_I2>
       && copy_constructible<_Fn>
-      && equivalence_relation<_Fn&, iter_value_t<_I1>&, iter_value_t<_I2>&>
-      && equivalence_relation<_Fn&, iter_value_t<_I1>&, iter_reference_t<_I2>>
-      && equivalence_relation<_Fn&, iter_reference_t<_I1>, iter_value_t<_I2>&>
+      && equivalence_relation<_Fn&, __indirect_value_t<_I1>, __indirect_value_t<_I2>>
+      && equivalence_relation<_Fn&, __indirect_value_t<_I1>, iter_reference_t<_I2>>
+      && equivalence_relation<_Fn&, iter_reference_t<_I1>, __indirect_value_t<_I2>>
       && equivalence_relation<_Fn&, iter_reference_t<_I1>,
 			      iter_reference_t<_I2>>
       && equivalence_relation<_Fn&, iter_common_reference_t<_I1>,
@@ -758,9 +770,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     concept indirect_strict_weak_order
       = indirectly_readable<_I1> && indirectly_readable<_I2>
       && copy_constructible<_Fn>
-      && strict_weak_order<_Fn&, iter_value_t<_I1>&, iter_value_t<_I2>&>
-      && strict_weak_order<_Fn&, iter_value_t<_I1>&, iter_reference_t<_I2>>
-      && strict_weak_order<_Fn&, iter_reference_t<_I1>, iter_value_t<_I2>&>
+      && strict_weak_order<_Fn&, __indirect_value_t<_I1>, __indirect_value_t<_I2>>
+      && strict_weak_order<_Fn&, __indirect_value_t<_I1>, iter_reference_t<_I2>>
+      && strict_weak_order<_Fn&, iter_reference_t<_I1>, __indirect_value_t<_I2>>
       && strict_weak_order<_Fn&, iter_reference_t<_I1>, iter_reference_t<_I2>>
       && strict_weak_order<_Fn&, iter_common_reference_t<_I1>,
 			   iter_common_reference_t<_I2>>;
@@ -779,6 +791,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  using value_type = remove_cvref_t<indirect_result_t<_Proj&, _Iter>>;
 	  indirect_result_t<_Proj&, _Iter> operator*() const; // not defined
+
+	  // These are used to identify and obtain the template arguments of a
+	  // specialization of the 'projected' alias template below.
+	  using __projected_Iter = _Iter;
+	  using __projected_Proj = _Proj;
 	};
       };
 
@@ -790,6 +807,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  using value_type = remove_cvref_t<indirect_result_t<_Proj&, _Iter>>;
 	  using difference_type = iter_difference_t<_Iter>;
 	  indirect_result_t<_Proj&, _Iter> operator*() const; // not defined
+
+	  using __projected_Iter = _Iter;
+	  using __projected_Proj = _Proj;
 	};
       };
   } // namespace __detail
@@ -798,6 +818,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<indirectly_readable _Iter,
 	   indirectly_regular_unary_invocable<_Iter> _Proj>
     using projected = typename __detail::__projected<_Iter, _Proj>::__type;
+
+  // Matches specializations of the 'projected' alias template.
+  template<typename _Tp>
+    requires same_as<_Tp, projected<typename _Tp::__projected_Iter,
+				    typename _Tp::__projected_Proj>>
+    struct __detail::__indirect_value<_Tp>
+    {
+      using _Iter = typename _Tp::__projected_Iter;
+      using _Proj = typename _Tp::__projected_Proj;
+      using type = invoke_result_t<_Proj&, __indirect_value_t<_Iter>>;
+    };
 
   // [alg.req], common algorithm requirements
 
