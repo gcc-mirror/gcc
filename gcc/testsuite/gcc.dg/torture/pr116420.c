@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-additional-options "-fno-forward-propagate -fno-tree-ch" } */
 int a, d, e;
-char b = -1, c, f;
+signed char b = -1, c, f;
 int main() {
   int g;
   for (; d < 1; d++) {
