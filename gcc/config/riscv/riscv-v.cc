@@ -1303,25 +1303,61 @@ expand_const_vector (rtx target, rtx src)
 	      /* Generate the variable-length vector following this rule:
 		 { a, a, a + step, a + step, a + step * 2, a + step * 2, ...}
 		   E.g. { 0, 0, 8, 8, 16, 16, ... } */
-	      /* We want to create a pattern where value[ix] = floor (ix /
+
+	      /* We want to create a pattern where value[idx] = floor (idx /
 		 NPATTERNS). As NPATTERNS is always a power of two we can
-		 rewrite this as = ix & -NPATTERNS.  */
+		 rewrite this as = idx & -NPATTERNS.  */
 	      /* Step 2: VID AND -NPATTERNS:
 		 { 0&-4, 1&-4, 2&-4, 3 &-4, 4 &-4, 5 &-4, 6 &-4, 7 &-4, ... }
 	      */
 	      rtx imm
 		= gen_int_mode (-builder.npatterns (), builder.inner_mode ());
-	      rtx tmp = gen_reg_rtx (builder.mode ());
-	      rtx and_ops[] = {tmp, vid, imm};
+	      rtx tmp1 = gen_reg_rtx (builder.mode ());
+	      rtx and_ops[] = {tmp1, vid, imm};
 	      icode = code_for_pred_scalar (AND, builder.mode ());
 	      emit_vlmax_insn (icode, BINARY_OP, and_ops);
+
+	      /* Step 3: Convert to step size 1.  */
+	      rtx tmp2 = gen_reg_rtx (builder.mode ());
+	      /* log2 (npatterns) to get the shift amount to convert
+		 Eg.  { 0, 0, 0, 0, 4, 4, ... }
+		 into { 0, 0, 0, 0, 1, 1, ... }.  */
+	      HOST_WIDE_INT shift_amt = exact_log2 (builder.npatterns ()) ;
+	      rtx shift = gen_int_mode (shift_amt, builder.inner_mode ());
+	      rtx shift_ops[] = {tmp2, tmp1, shift};
+	      icode = code_for_pred_scalar (ASHIFTRT, builder.mode ());
+	      emit_vlmax_insn (icode, BINARY_OP, shift_ops);
+
+	      /* Step 4: Multiply to step size n.  */
+	      HOST_WIDE_INT step_size =
+		INTVAL (builder.elt (builder.npatterns ()))
+		- INTVAL (builder.elt (0));
+	      rtx tmp3 = gen_reg_rtx (builder.mode ());
+	      if (pow2p_hwi (step_size))
+		{
+		  /* Power of 2 can be handled with a left shift.  */
+		  HOST_WIDE_INT shift = exact_log2 (step_size);
+		  rtx shift_amount = gen_int_mode (shift, Pmode);
+		  insn_code icode = code_for_pred_scalar (ASHIFT, mode);
+		  rtx ops[] = {tmp3, tmp2, shift_amount};
+		  emit_vlmax_insn (icode, BINARY_OP, ops);
+		}
+	      else
+		{
+		  rtx mult_amt = gen_int_mode (step_size, builder.inner_mode ());
+		  insn_code icode = code_for_pred_scalar (MULT, builder.mode ());
+		  rtx ops[] = {tmp3, tmp2, mult_amt};
+		  emit_vlmax_insn (icode, BINARY_OP, ops);
+		}
+
+	      /* Step 5: Add starting value to all elements.  */
 	      HOST_WIDE_INT init_val = INTVAL (builder.elt (0));
 	      if (init_val == 0)
-		emit_move_insn (target, tmp);
+		emit_move_insn (target, tmp3);
 	      else
 		{
 		  rtx dup = gen_const_vector_dup (builder.mode (), init_val);
-		  rtx add_ops[] = {target, tmp, dup};
+		  rtx add_ops[] = {target, tmp3, dup};
 		  icode = code_for_pred (PLUS, builder.mode ());
 		  emit_vlmax_insn (icode, BINARY_OP, add_ops);
 		}
