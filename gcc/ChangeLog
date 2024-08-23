@@ -1,3 +1,12 @@
+2024-08-22  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-08-22  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	set ix86_{move_max,store_max} to PVW_AVX256 when TARGET_AVX
+	instead of PVW_AVX128.
+
 2024-08-18  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:

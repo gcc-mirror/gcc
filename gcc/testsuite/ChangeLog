@@ -1,3 +1,20 @@
+2024-08-22  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-08-22  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pieces-memcpy-10.c: Add -mprefer-vector-width=128.
+	* gcc.target/i386/pieces-memcpy-6.c: Ditto.
+	* gcc.target/i386/pieces-memset-38.c: Ditto.
+	* gcc.target/i386/pieces-memset-40.c: Ditto.
+	* gcc.target/i386/pieces-memset-41.c: Ditto.
+	* gcc.target/i386/pieces-memset-42.c: Ditto.
+	* gcc.target/i386/pieces-memset-43.c: Ditto.
+	* gcc.target/i386/pieces-strcpy-2.c: Ditto.
+	* gcc.target/i386/pieces-memcpy-22.c: New test.
+	* gcc.target/i386/pieces-memset-51.c: New test.
+	* gcc.target/i386/pieces-strcpy-3.c: New test.
+
 2024-08-20  Alexandre Oliva  <oliva@adacore.com>
 
 	Backported from master:
