@@ -4527,6 +4527,9 @@ storage_model_access_required_p (Node_Id gnat_node, Entity_Id *gnat_smo)
 static tree
 create_temporary (const char *prefix, tree type)
 {
+  if (CONTAINS_PLACEHOLDER_P (TYPE_SIZE (type)))
+    type = maybe_pad_type (type, max_size (TYPE_SIZE (type), true), 0,
+			   Empty, false, false, true);
   tree gnu_temp
     = create_var_decl (create_tmp_var_name (prefix), NULL_TREE,
 		      type, NULL_TREE,
