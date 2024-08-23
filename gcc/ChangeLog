@@ -1,3 +1,84 @@
+2024-08-22  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/116420
+	* ext-dce.cc (ext_dce_init): Fix loop iteration when setting up the
+	interesting block for DF to analyze.
+
+2024-08-22  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+
+	* lto-streamer-in.cc: (lto_read_tree_1): Set DECL_MODE (expr) to
+	TREE_TYPE (TYPE_MODE (expr)) if TREE_TYPE (expr) is aggregate type and
+	offloading is enabled.
+	* stor-layout.cc (layout_type): Move computation of mode for
+	ARRAY_TYPE from ...
+	(compute_array_mode): ... to here.
+	* stor-layout.h (compute_array_mode): Declare.
+	* tree-streamer-in.cc: Include stor-layout.h.
+	(unpack_ts_common_value_fields): Call compute_array_mode if offloading
+	is enabled.
+	* tree-streamer-out.cc (pack_ts_fixed_cst_value_fields): Stream out
+	VOIDmode if decl has aggregate type and offloading is enabled.
+	(pack_ts_type_common_value_fields): Stream out VOIDmode for aggregate
+	type if offloading is enabled.
+
+2024-08-22  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_v_adjust_scalable_frame): Add
+	epilogue code for stack-clash and fix prologue cfi note.
+
+2024-08-22  Andrew Pinski  <quic_apinski@quicinc.com>
+	    Richard Biener   <rguenther@suse.de>
+
+	PR middle-end/116454
+	* fold-const.cc (fold_binary_loc): Fix `a * +-1i`
+	by wrapping arg0 with save_expr when it is not COMPLEX_EXPR.
+
+2024-08-22  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR target/116365
+	* config/aarch64/aarch64-opts.h
+	(enum aarch64_autovec_preference_enum):	New enum.
+	* config/aarch64/aarch64.cc (aarch64_cmp_autovec_modes):
+	Change numerical to enum values.
+	(aarch64_autovectorize_vector_modes): Change numerical to enum
+	values.
+	(aarch64_vector_costs::record_potential_advsimd_unrolling):
+	Change numerical to enum values.
+	* config/aarch64/aarch64.opt: Change param type to enum.
+	* doc/invoke.texi: Update documentation.
+
+2024-08-22  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* dwarf2out.cc (dwarf2out_maybe_output_loclist_view_pair,
+	output_loc_list): Correct handling of -gno-as-loc-support,
+	use ZERO_VIEW_P to output view number as zero value.
+	* toplev.cc (process_options): Do not automatically disable
+	-gvariable-location-views when -gno-as-loc-support or
+	-gno-as-locview-support is used, instead do automatically
+	disable -gas-locview-support if -gno-as-loc-support is used.
+
+2024-08-22  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR debug/87440
+	* dwarf2out.cc (gen_inlined_subroutine_die): Handle the case
+	of multiple subranges correctly.
+
+2024-08-22  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR tree-optimization/101390
+	* tree-vect-patterns.cc (vect_recog_mod_var_pattern): Add new pattern.
+
+2024-08-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* toplev.cc (dump_final_alias_vcg): New.
+	(dump_final_node_vcg): Dump aliases along with node.
+
+2024-08-22  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	set ix86_{move_max,store_max} to PVW_AVX256 when TARGET_AVX
+	instead of PVW_AVX128.
+
 2024-08-21  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR rtl-optimization/116437

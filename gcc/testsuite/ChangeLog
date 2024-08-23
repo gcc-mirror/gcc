@@ -1,3 +1,79 @@
+2024-08-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/116464
+	* gcc.dg/torture/pr116420.c:
+
+2024-08-22  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/116420
+	* gcc.dg/torture/pr116420.c: New test.
+
+2024-08-22  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	* gcc.target/riscv/stack-check-cfa-3.c: Fix the expected output.
+
+2024-08-22  Andrew Pinski  <quic_apinski@quicinc.com>
+	    Richard Biener   <rguenther@suse.de>
+
+	PR middle-end/116454
+	* gcc.dg/torture/pr116454-1.c: New test.
+	* gcc.dg/torture/pr116454-2.c: New test.
+
+2024-08-22  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR target/116365
+	* gcc.target/aarch64/autovec_param_asimd-only.c: New test.
+	* gcc.target/aarch64/autovec_param_default.c: Likewise.
+	* gcc.target/aarch64/autovec_param_prefer-asimd.c: Likewise.
+	* gcc.target/aarch64/autovec_param_prefer-sve.c: Likewise.
+	* gcc.target/aarch64/autovec_param_sve-only.c: Likewise.
+	* gcc.target/aarch64/neoverse_v1_2.c: Update parameter value.
+	* gcc.target/aarch64/neoverse_v1_3.c: Likewise.
+	* gcc.target/aarch64/sve/cond_asrd_1.c: Likewise.
+	* gcc.target/aarch64/sve/cond_cnot_4.c: Likewise.
+	* gcc.target/aarch64/sve/cond_unary_5.c: Likewise.
+	* gcc.target/aarch64/sve/cond_uxt_5.c: Likewise.
+	* gcc.target/aarch64/sve/cond_xorsign_2.c: Likewise.
+	* gcc.target/aarch64/sve/pr98268-1.c: Likewise.
+	* gcc.target/aarch64/sve/pr98268-2.c: Likewise.
+
+2024-08-22  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gcc.dg/debug/dwarf2/inline2.c: Add checks for inline entry_pc.
+	* gcc.dg/debug/dwarf2/inline6.c: Add -gno-as-loc-support and check
+	the resulting location views.
+
+2024-08-22  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gcc.dg/debug/dwarf2/inline7.c: New test.
+
+2024-08-22  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR tree-optimization/101390
+	* gcc.dg/vect/vect-mod-var.c: New test.
+	* gcc.target/aarch64/sve/mod_1.c: Likewise.
+	* lib/target-supports.exp: New selector expression.
+
+2024-08-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/scandump.exp (dump-base): Support {} in dump base suffix
+	to drop it.
+	* gcc.dg/callgraph-info-1.c: New.
+
+2024-08-22  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pieces-memcpy-10.c: Add -mprefer-vector-width=128.
+	* gcc.target/i386/pieces-memcpy-6.c: Ditto.
+	* gcc.target/i386/pieces-memset-38.c: Ditto.
+	* gcc.target/i386/pieces-memset-40.c: Ditto.
+	* gcc.target/i386/pieces-memset-41.c: Ditto.
+	* gcc.target/i386/pieces-memset-42.c: Ditto.
+	* gcc.target/i386/pieces-memset-43.c: Ditto.
+	* gcc.target/i386/pieces-strcpy-2.c: Ditto.
+	* gcc.target/i386/pieces-memcpy-22.c: New test.
+	* gcc.target/i386/pieces-memset-51.c: New test.
+	* gcc.target/i386/pieces-strcpy-3.c: New test.
+
 2024-08-21  Pan Li  <pan2.li@intel.com>
 
 	* gcc.target/riscv/rvv/autovec/vec_sat_arith.h: Add test helper macros.

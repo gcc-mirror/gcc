@@ -1,3 +1,57 @@
+2024-08-22  Patrick Palka  <ppalka@redhat.com>
+
+	* testsuite/25_algorithms/contains/1.cc: Verify value of
+	__cpp_lib_ranges_contains.
+	* testsuite/25_algorithms/find_last/1.cc: Verify value of
+	__cpp_lib_ranges_find_last.
+	* testsuite/26_numerics/iota/2.cc: Verify value of
+	__cpp_lib_ranges_iota.
+
+2024-08-22  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/iterator_concepts.h (__detail::__projected): Define
+	an optimized partial specialization for when the projection is
+	std::identity.
+	* testsuite/24_iterators/indirect_callable/projected.cc: Verify the
+	optimization.
+
+2024-08-22  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/iterator_concepts.h (indirectly_unary_invocable):
+	Relax as per P2997R1.
+	(indirectly_regular_unary_invocable): Likewise.
+	(indirect_unary_predicate): Likewise.
+	(indirect_binary_predicate): Likewise.
+	(indirect_equivalence_relation): Likewise.
+	(indirect_strict_weak_order): Likewise.
+	* include/bits/version.def (ranges): Update value for C++26.
+	* include/bits/version.h: Regenerate.
+	* testsuite/24_iterators/indirect_callable/p2997r1.cc: New test.
+	* testsuite/std/ranges/version_c++23.cc: Remove.
+	* testsuite/std/ranges/headers/ranges/synopsis.cc: Refine the
+	__cpp_lib_ranges checks.
+
+2024-08-22  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/iterator_concepts.h (__detail::__indirect_value):
+	Define.
+	(__indirect_value_t): Define as per P2609R3.
+	(iter_common_reference_t): Adjust as per P2609R3.
+	(indirectly_unary_invocable): Likewise.
+	(indirectly_regular_unary_invocable): Likewise.
+	(indirect_unary_predicate): Likewise.
+	(indirect_binary_predicate): Likewise.
+	(indirect_equivalence_relation): Likewise.
+	(indirect_strict_weak_order): Likewise.
+	(__detail::__projected::__type): Define member aliases
+	__projected_Iter and __projected_Proj providing the
+	template arguments of the current specialization.
+	* include/bits/version.def (ranges): Update value.
+	* include/bits/version.h: Regenerate.
+	* testsuite/24_iterators/indirect_callable/p2609r3.cc: New test.
+	* testsuite/std/ranges/version_c++23.cc: Update expected value
+	of __cpp_lib_ranges macro.
+
 2024-08-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR tree-optimization/102958

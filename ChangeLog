@@ -1,3 +1,13 @@
+2024-08-22  Sam James  <sam@gentoo.org>
+
+	* Makefile.in: Regenerate.
+	* Makefile.tpl: Fix whitespace.
+
+2024-08-22  Sam James  <sam@gentoo.org>
+
+	* Makefile.in: Regenerate.
+	* Makefile.tpl (STAGE1_CONFIGURE_FLAGS): Remove --disable-intermodule.
+
 2024-08-07  navidr  <navidr@gcc.gnu.org>
 
 	* MAINTAINERS: Changing my email to gnu email.
