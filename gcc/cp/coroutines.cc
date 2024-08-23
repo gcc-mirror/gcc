@@ -95,6 +95,10 @@ struct GTY((for_user)) coroutine_info
   tree return_void;   /* The expression for p.return_void() if it exists.  */
   location_t first_coro_keyword; /* The location of the keyword that made this
 				    function into a coroutine.  */
+
+  /* Temporary variable number assigned by get_awaitable_var.  */
+  int awaitable_number = 0;
+
   /* Flags to avoid repeated errors for per-function issues.  */
   bool coro_ret_type_error_emitted;
   bool coro_promise_error_emitted;
@@ -981,15 +985,18 @@ enum suspend_point_kind {
 static tree
 get_awaitable_var (suspend_point_kind suspend_kind, tree v_type)
 {
-  static int awn = 0;
+  auto cinfo = get_coroutine_info (current_function_decl);
+  gcc_checking_assert (cinfo);
   char *buf;
   switch (suspend_kind)
     {
-      default: buf = xasprintf ("Aw%d", awn++); break;
-      case CO_YIELD_SUSPEND_POINT: buf =  xasprintf ("Yd%d", awn++); break;
-      case INITIAL_SUSPEND_POINT: buf =  xasprintf ("Is"); break;
-      case FINAL_SUSPEND_POINT: buf =  xasprintf ("Fs"); awn = 0; break;
-  }
+    default: buf = xasprintf ("Aw%d", cinfo->awaitable_number++); break;
+    case CO_YIELD_SUSPEND_POINT:
+      buf = xasprintf ("Yd%d", cinfo->awaitable_number++);
+      break;
+    case INITIAL_SUSPEND_POINT: buf = xasprintf ("Is"); break;
+    case FINAL_SUSPEND_POINT: buf = xasprintf ("Fs"); break;
+    }
   tree ret = get_identifier (buf);
   free (buf);
   ret = build_lang_decl (VAR_DECL, ret, v_type);
