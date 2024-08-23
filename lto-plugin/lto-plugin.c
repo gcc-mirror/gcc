@@ -1320,7 +1320,7 @@ claim_file_handler_v2 (const struct ld_plugin_input_file *file,
   if (*can_be_claimed && !obj.offload && offload_files_last_lto == NULL)
     offload_files_last_lto = offload_files_last;
 
-  if (obj.offload && known_used && obj.found > 0)
+  if (obj.offload && known_used)
     {
       /* Add file to the list.  The order must be exactly the same as the final
 	 order after recompilation and linking, otherwise host and target tables
