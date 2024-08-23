@@ -20,6 +20,7 @@
 
 #define IN_TARGET_CODE 1
 
+#define INCLUDE_VECTOR
 #include "config.h"
 #include "system.h"
 #include "intl.h"
@@ -33,6 +34,7 @@
 #include "cgraph.h"
 #include "c-family/c-common.h"
 #include "cfghooks.h"
+#include "cfganal.h"
 #include "df.h"
 #include "memmodel.h"
 #include "tm_p.h"
@@ -334,6 +336,452 @@ static bool
 ra_in_progress ()
 {
   return avr_lra_p ? lra_in_progress : reload_in_progress;
+}
+
+
+/* Return TRUE iff comparison code CODE is explicitly signed.  */
+
+static bool
+avr_strict_signed_p (rtx_code code)
+{
+  return code == GT || code == GE || code == LT || code == LE;
+}
+
+
+/* Return TRUE iff comparison code CODE is explicitly unsigned.  */
+
+static bool
+avr_strict_unsigned_p (rtx_code code)
+{
+  return code == GTU || code == GEU || code == LTU || code == LEU;
+}
+
+
+/* A class that represents the union of finitely many intervals.
+   The domain over which the intervals are defined is a finite integer
+   interval [m_min, m_max], usually the range of some [u]intN_t.
+   Supported operations are:
+   - Complement w.r.t. the domain (invert)
+   - Union (union_)
+   - Intersection (intersect)
+   - Difference / Setminus (minus).
+   Ranges is closed under all operations:  The result of all operations
+   is a Ranges over the same domain.  (As opposed to value-range.h which
+   may ICE for some operations, see below).
+
+   The representation is unique in the sense that when we have two
+   Ranges A and B, then
+   1)  A == B  <==>  A.size == B.size  &&  Ai == Bi for all i.
+
+   The representation is normalized:
+   2)  Ai != {}          ;; There are no empty intervals.
+   3)  Ai.hi < A{i+1}.lo ;; The Ai's are in increasing order and separated
+			 ;; by at least one value (non-adjacent).
+   The sub-intervals Ai are maintained as a std::vector.
+   The computation of union and intersection scales like  A.size * B.size
+   i.e. Ranges is only eligible for GCC when size() has a fixed upper
+   bound independent of the program being compiled (or there are other
+   means to guarantee that the complexity is linearistic).
+   In the context of avr.cc, we have size() <= 3.
+
+   The reason why we don't use value-range.h's irange or int_range is that
+   these use the integers Z as their domain, which makes computations like
+   invert() quite nasty as they may ICE for common cases.  Doing all
+   these special cases (like one sub-interval touches the domain bounds)
+   makes using value-range.h more laborious (and instable) than using our
+   own mini Ranger.  */
+
+struct Ranges
+{
+  // This is good enough as it covers (un)signed SImode.
+  using T = HOST_WIDE_INT;
+  typedef T scalar_type;
+
+  // Non-empty ranges.  Empty sets are only used transiently;
+  // Ranges.ranges[] doesn't use them.
+  struct SubRange
+  {
+    // Lower and upper bound, inclusively.
+    T lo, hi;
+
+    SubRange intersect (const SubRange &r) const
+    {
+      if (lo >= r.lo && hi <= r.hi)
+	return *this;
+      else if (r.lo >= lo && r.hi <= hi)
+	return r;
+      else if (lo > r.hi || hi < r.lo)
+	return SubRange { 1, 0 };
+      else
+	return SubRange { std::max (lo, r.lo), std::min (hi, r.hi) };
+    }
+
+    T cardinality () const
+    {
+      return std::max<T> (0, hi - lo + 1);
+    }
+  };
+
+  // Finitely many intervals over [m_min, m_max] that are normalized:
+  // No empty sets, increasing order, separated by at least one value.
+  T m_min, m_max;
+  std::vector<SubRange> ranges;
+
+  // Not used anywhere in Ranges; can be used elsewhere.
+  // May be clobbered by set operations.
+  int tag = -1;
+
+  enum initial_range { EMPTY, ALL };
+
+  Ranges (T mi, T ma, initial_range ir)
+    : m_min (mi), m_max (ma)
+  {
+    if (ir == ALL)
+      push (mi, ma);
+  }
+
+  // Domain is the range of some [u]intN_t.
+  static Ranges NBitsRanges (int n_bits, bool unsigned_p, initial_range ir)
+  {
+    T mask = ((T) 1 << n_bits) - 1;
+    gcc_assert (mask > 0);
+    T ma = mask >> ! unsigned_p;
+    return Ranges (unsigned_p ? 0 : -ma - 1, ma, ir);
+  }
+
+  static void sort2 (Ranges &a, Ranges &b)
+  {
+    if (a.size () && b.size ())
+      if (a.ranges[0].lo > b.ranges[0].lo)
+	std::swap (a, b);
+  }
+
+  void print (FILE *file) const
+  {
+    if (file)
+      {
+	fprintf (file, " .tag%d=#%d={", tag, size ());
+	for (const auto &r : ranges)
+	  fprintf (file, "[ %ld, %ld ]", (long) r.lo, (long) r.hi);
+	fprintf (file, "}\n");
+      }
+  }
+
+  // The number of sub-intervals in .ranges.
+  int size () const
+  {
+    return (int) ranges.size ();
+  }
+
+  // Append [LO, HI] & [m_min, m_max] to .ranges provided the
+  // former is non-empty.
+  void push (T lo, T hi)
+  {
+    lo = std::max (lo, m_min);
+    hi = std::min (hi, m_max);
+
+    if (lo <= hi)
+      ranges.push_back (SubRange { lo, hi });
+  }
+
+  // Append R to .ranges provided the former is non-empty.
+  void push (const SubRange &r)
+  {
+    push (r.lo, r.hi);
+  }
+
+  // Cardinality of the n-th interval.
+  T cardinality (int n) const
+  {
+    return n < size () ? ranges[n].cardinality () : 0;
+  }
+
+  // Check that *this is normalized: .ranges are non-empty, non-overlapping,
+  // non-adjacent and increasing.
+  bool check () const
+  {
+    bool bad = size () && (ranges[0].lo < m_min
+			   || ranges[size () - 1].hi > m_max);
+
+    for (int n = 0; n < size (); ++n)
+      {
+	bad |= ranges[n].lo > ranges[n].hi;
+	bad |= n > 0 && ranges[n - 1].hi >= ranges[n].lo;
+      }
+
+    if (bad)
+      print (dump_file);
+
+    return ! bad;
+  }
+
+  // Intersect A and B according to  (U Ai) & (U Bj) = U (Ai & Bj)
+  // This has quadratic complexity, but also the nice property that
+  // when A and B are normalized, then the result is too.
+  void intersect (const Ranges &r)
+  {
+    gcc_assert (m_min == r.m_min && m_max == r.m_max);
+
+    if (this == &r)
+      return;
+
+    std::vector<SubRange> rs;
+    std::swap (rs, ranges);
+
+    for (const auto &a : rs)
+      for (const auto &b : r.ranges)
+	push (a.intersect (b));
+  }
+
+  // Complement w.r.t. the domain [m_min, m_max].
+  void invert ()
+  {
+    std::vector<SubRange> rs;
+    std::swap (rs, ranges);
+
+    if (rs.size () == 0)
+	push (m_min, m_max);
+    else
+      {
+	push (m_min, rs[0].lo - 1);
+
+	for (size_t n = 1; n < rs.size (); ++n)
+	  push (rs[n - 1].hi + 1, rs[n].lo - 1);
+
+	push (rs[rs.size () - 1].hi + 1, m_max);
+      }
+  }
+
+  // Set-minus.
+  void minus (const Ranges &r)
+  {
+    gcc_assert (m_min == r.m_min && m_max == r.m_max);
+
+    Ranges sub = r;
+    sub.invert ();
+    intersect (sub);
+  }
+
+  // Union of sets.  Not needed in avr.cc but added for completeness.
+  // DeMorgan this for simplicity.
+  void union_ (const Ranges &r)
+  {
+    gcc_assert (m_min == r.m_min && m_max == r.m_max);
+
+    if (this != &r)
+      {
+	invert ();
+	minus (r);
+	invert ();
+      }
+  }
+
+  // Get the truth Ranges for  x <cmp> val.  For example,
+  // LT 3  will return  [m_min, 2].
+  Ranges truth (rtx_code cmp, T val, bool strict = true)
+  {
+    if (strict)
+      {
+	if (avr_strict_signed_p (cmp))
+	  gcc_assert (m_min == -m_max - 1);
+	else if (avr_strict_unsigned_p (cmp))
+	  gcc_assert (m_min == 0);
+
+	gcc_assert (IN_RANGE (val, m_min, m_max));
+      }
+
+    bool rev = cmp == NE || cmp == LTU || cmp == LT || cmp == GTU || cmp == GT;
+    if (rev)
+      cmp = reverse_condition (cmp);
+
+    T lo = m_min;
+    T hi = m_max;
+
+    if (cmp == EQ)
+      lo = hi = val;
+    else if (cmp == LEU || cmp == LE)
+      hi = val;
+    else if (cmp == GEU || cmp == GE)
+      lo = val;
+    else
+      gcc_unreachable ();
+
+    Ranges rs (m_min, m_max, Ranges::EMPTY);
+    rs.push (lo, hi);
+
+    if (rev)
+      rs.invert ();
+
+    return rs;
+  }
+}; // struct Ranges
+
+
+/* Suppose the inputs represent a code like
+
+      if (x <CMP1> XVAL1)  goto way1;
+      if (x <CMP2> XVAL2)  goto way2;
+      way3:;
+
+   with two integer mode comparisons where XVAL1 and XVAL2 are CONST_INT.
+   When this can be rewritten in the form
+
+      if (x <cond1> xval)  goto way1;
+      if (x <cond2> xval)  goto way2;
+      way3:;
+
+  then set CMP1 = cond1, CMP2 = cond2, and return xval.  Else return NULL_RTX.
+  When SWAPT is returned true, then way1 and way2 must be swapped.
+  When the incomping SWAPT is false, the outgoing one will be false, too.  */
+
+static rtx
+avr_2comparisons_rhs (rtx_code &cmp1, rtx xval1,
+		      rtx_code &cmp2, rtx xval2,
+		      machine_mode mode, bool &swapt)
+{
+  const bool may_swapt = swapt;
+  swapt = false;
+
+  //////////////////////////////////////////////////////////////////
+  // Step 0: Decide about signedness, map xval1/2 to the range
+  //         of [un]signed machine mode.
+
+  const bool signed1_p = avr_strict_signed_p (cmp1);
+  const bool signed2_p = avr_strict_signed_p (cmp2);
+  const bool unsigned1_p = avr_strict_unsigned_p (cmp1);
+  const bool unsigned2_p = avr_strict_unsigned_p (cmp2);
+  const bool signed_p = signed1_p || signed2_p;
+  bool unsigned_p = unsigned1_p || unsigned2_p;
+
+  using T = Ranges::scalar_type;
+  T val1 = INTVAL (xval1);
+  T val2 = INTVAL (xval2);
+
+  if (signed_p + unsigned_p > 1)
+    {
+      // Don't go down that rabbit hole.  When the RHSs are the
+      // same, we can still save one comparison.
+      return val1 == val2 ? xval1 : NULL_RTX;
+    }
+
+  // Decide about signedness.  When no explicit signedness is present,
+  // then cases that are close to the unsigned boundary like  EQ 0, EQ 1
+  // can also be optimized.
+  if (unsigned_p
+      || (! signed_p && IN_RANGE (val1, -2, 2)))
+    {
+      unsigned_p = true;
+      val1 = UINTVAL (xval1) & GET_MODE_MASK (mode);
+      val2 = UINTVAL (xval2) & GET_MODE_MASK (mode);
+    }
+
+  // No way we can decompose the domain in a usable manner when the
+  // RHSes are too far apart.
+  if (! IN_RANGE (val1 - val2, -2, 2))
+    return NULL_RTX;
+
+  //////////////////////////////////////////////////////////////////
+  // Step 1: Represent the input conditions as truth Ranges.  This
+  //         establishes a decomposition / coloring of the domain.
+
+  Ranges dom = Ranges::NBitsRanges (GET_MODE_BITSIZE (mode), unsigned_p,
+				    Ranges::ALL);
+  Ranges r[4] = { dom, dom.truth (cmp1, val1), dom.truth (cmp2, val2), dom };
+
+  // r[1] shadows r[2] shadows r[3].  r[0] is just for nice indices.
+  r[3].minus (r[2]);
+  r[3].minus (r[1]);
+  r[2].minus (r[1]);
+
+  //////////////////////////////////////////////////////////////////
+  // Step 2: Filter for cases where the domain decomposes into three
+  //         intervals:  One to the left, one to the right, and one
+  //         in the middle where the latter holds exactly one value.
+
+  for (int i = 1; i <= 3; ++i)
+    {
+      // Keep track of which Ranges is which.
+      r[i].tag = i;
+
+      gcc_assert (r[i].check ());
+
+      // Filter for proper intervals.  Also return for the empty set,
+      // since cases where [m_min, m_max] decomposes into two intervals
+      // or less have been sorted out by the generic optimizers already,
+      // and hence should not be seen here.  And more than two intervals
+      // at a time cannot be optimized of course.
+      if (r[i].size () != 1)
+	return NULL_RTX;
+    }
+
+  // Bubble-sort the three intervals such that:
+  // [1] is the left interval, i.e. the one taken by LT[U].
+  // [2] is the middle interval, i.e. the one taken by EQ.
+  // [3] is the right interval, i.e. the one taken by GT[U].
+  Ranges::sort2 (r[1], r[3]);
+  Ranges::sort2 (r[2], r[3]);
+  Ranges::sort2 (r[1], r[2]);
+
+  if (dump_file)
+    fprintf (dump_file,
+	     ";; Decomposed: .%d=[%ld, %ld] .%d=[%ld, %ld] .%d=[%ld, %ld]\n",
+	     r[1].tag, (long) r[1].ranges[0].lo, (long) r[1].ranges[0].hi,
+	     r[2].tag, (long) r[2].ranges[0].lo, (long) r[2].ranges[0].hi,
+	     r[3].tag, (long) r[3].ranges[0].lo, (long) r[3].ranges[0].hi);
+
+  // EQ / NE can handle only one value.
+  if (r[2].cardinality (0) != 1)
+    return NULL_RTX;
+
+  // Success! This is the sought for xval.
+  const T val = r[2].ranges[0].lo;
+
+  //////////////////////////////////////////////////////////////////
+  // Step 3: Work out which label gets which condition, trying to
+  //         avoid the expensive codes GT[U] and LE[U] if possible.
+  //         Avoiding expensive codes is always possible when labels
+  //         way1 and way2 may be swapped.
+
+  // The xx1 ways have an expensive GT for cmp1 which can be avoided
+  // by swapping way1 with way2.
+  swapt = may_swapt && r[3].tag == 1;
+  if (swapt)
+    std::swap (r[3], r[2].tag == 2 ? r[2] : r[1]);
+
+  // 6 = 3! ways to assign LT, EQ, GT to the three labels.
+  const int way = 100 * r[1].tag + 10 * r[2].tag + r[3].tag;
+
+  if (dump_file)
+    fprintf (dump_file, ";; Success: unsigned=%d, swapt=%d, way=%d, rhs=%ld\n",
+	     unsigned_p, swapt, way, (long) val);
+
+#define WAY(w, c1, c2)					\
+  case w:						\
+    cmp1 = unsigned_p ? unsigned_condition (c1) : c1;	\
+    cmp2 = unsigned_p ? unsigned_condition (c2) : c2;	\
+    break;
+
+  switch (way)
+    {
+    default:
+      gcc_unreachable();
+
+      // cmp1 gets the LT, avoid difficult branches for cmp2.
+      WAY (123, LT, EQ);
+      WAY (132, LT, NE);
+
+      // cmp1 gets the EQ, avoid difficult branches for cmp2.
+      WAY (213, EQ, LT);
+      WAY (312, EQ, GE);
+
+      // cmp1 gets the difficult GT, unavoidable as we may not swap way1/2.
+      WAY (231, GT, NE);
+      WAY (321, GT, EQ);
+    }
+
+#undef WAY
+
+  return gen_int_mode (val, mode);
 }
 
 
@@ -775,134 +1223,315 @@ avr_pass_casesi::avr_rest_of_handle_casesi (function *func)
 
 
 /* A helper for the next method.  Suppose we have two conditional branches
+   with REG and CONST_INT operands
 
       if (reg <cond1> xval1) goto label1;
       if (reg <cond2> xval2) goto label2;
 
-   If the second comparison is redundant and there is a code <cond> such
-   that the sequence can be performed as
+   If the second comparison is redundant and there are codes <cmp1>
+   and <cmp2> such that the sequence can be performed as
 
-      REG_CC = compare (reg, xval1);
-      if (REG_CC <cond1> 0)  goto label1;
-      if (REG_CC <cond> 0)   goto label2;
+      REG_CC = compare (reg, xval);
+      if (REG_CC <cmp1> 0) goto label1;
+      if (REG_CC <cmp2> 0) goto label2;
 
-   then return <cond>.  Otherwise, return UNKNOWN.
-   xval1 and xval2 are CONST_INT, and mode is the scalar int mode in which
-   the comparison will be carried out.  reverse_cond1 can be set to reverse
-   condition cond1.  This is useful if the second comparison does not follow
-   the first one, but is located after label1 like in:
+   then set COND1 to cmp1, COND2 to cmp2, SWAPT to true when the branch
+   targets have to be swapped, and return XVAL.  Otherwise, return NULL_RTX.
+   This function may clobber COND1 and COND2 even when it returns NULL_RTX.
+
+   REVERSE_COND1 can be set to reverse condition COND1.  This is useful
+   when the second comparison does not follow the first one, but is
+   located after label1 like in:
 
       if (reg <cond1> xval1) goto label1;
       ...
       label1:
-      if (reg <cond2> xval2) goto label2;  */
+      if (reg <cond2> xval2) goto label2;
 
-static enum rtx_code
-avr_redundant_compare (enum rtx_code cond1, rtx xval1,
-		       enum rtx_code cond2, rtx xval2,
-		       machine_mode mode, bool reverse_cond1)
+   In such a case we cannot swap the labels, and we may end up with a
+   difficult branch -- though one comparison can still be optimized out.
+   Getting rid of such difficult branches would require to reorder blocks. */
+
+static rtx
+avr_redundant_compare (rtx xreg1, rtx_code &cond1, rtx xval1,
+		       rtx xreg2, rtx_code &cond2, rtx xval2,
+		       bool reverse_cond1, bool &swapt)
 {
-  HOST_WIDE_INT ival1 = INTVAL (xval1);
-  HOST_WIDE_INT ival2 = INTVAL (xval2);
-
-  unsigned HOST_WIDE_INT mask = GET_MODE_MASK (mode);
-  unsigned HOST_WIDE_INT uval1 = mask & UINTVAL (xval1);
-  unsigned HOST_WIDE_INT uval2 = mask & UINTVAL (xval2);
+  // Make sure we have two REG <cond> CONST_INT comparisons with the same reg.
+  if (! rtx_equal_p (xreg1, xreg2)
+      || ! CONST_INT_P (xval1)
+      || ! CONST_INT_P (xval2))
+    return NULL_RTX;
 
   if (reverse_cond1)
     cond1 = reverse_condition (cond1);
 
-  if (cond1 == EQ)
+  // Allow swapping label1 <-> label2 only when ! reverse_cond1.
+  swapt = ! reverse_cond1;
+  rtx_code c1 = cond1;
+  rtx_code c2 = cond2;
+  rtx xval = avr_2comparisons_rhs (c1, xval1,
+				   c2, xval2, GET_MODE (xreg1), swapt);
+  if (! xval)
+    return NULL_RTX;
+
+  if (dump_file)
     {
-      ////////////////////////////////////////////////
-      // A sequence like
-      //    if (reg == val)  goto label1;
-      //    if (reg > val)   goto label2;
-      // can be re-written using the same, simple comparison like in:
-      //    REG_CC = compare (reg, val)
-      //    if (REG_CC == 0)  goto label1;
-      //    if (REG_CC >= 0)  goto label2;
-      if (ival1 == ival2
-	  && (cond2 == GT || cond2 == GTU))
-	return avr_normalize_condition (cond2);
+      rtx_code a1 = reverse_cond1 ? reverse_condition (cond1) : cond1;
+      rtx_code b1 = reverse_cond1 ? reverse_condition (c1) : c1;
+      const char *s_rev1 = reverse_cond1 ? " reverse_cond1" : "";
+      avr_dump (";; cond1: %C %r%s\n", a1, xval1, s_rev1);
+      avr_dump (";; cond2: %C %r\n", cond2, xval2);
+      avr_dump (";; => %C %d\n", b1, (int) INTVAL (xval));
+      avr_dump (";; => %C %d\n", c2, (int) INTVAL (xval));
+    }
 
-      // Similar, but the input sequence is like
-      //    if (reg == val)  goto label1;
-      //    if (reg >= val)  goto label2;
-      if (ival1 == ival2
-	  && (cond2 == GE || cond2 == GEU))
-	return cond2;
+  cond1 = c1;
+  cond2 = c2;
 
-      // Similar, but the input sequence is like
-      //    if (reg == val)      goto label1;
-      //    if (reg >= val + 1)  goto label2;
-      if ((cond2 == GE && ival2 == 1 + ival1)
-	  || (cond2 == GEU && uval2 == 1 + uval1))
-	return cond2;
-
-      // Similar, but the input sequence is like
-      //    if (reg == val)      goto label1;
-      //    if (reg >  val - 1)  goto label2;
-      if ((cond2 == GT && ival2 == ival1 - 1)
-	  || (cond2 == GTU && uval2 == uval1 - 1))
-	return avr_normalize_condition (cond2);
-
-      /////////////////////////////////////////////////////////
-      // A sequence like
-      //    if (reg == val)      goto label1;
-      //    if (reg < 1 + val)   goto label2;
-      // can be re-written as
-      //    REG_CC = compare (reg, val)
-      //    if (REG_CC == 0)  goto label1;
-      //    if (REG_CC < 0)   goto label2;
-      if ((cond2 == LT && ival2 == 1 + ival1)
-	  || (cond2 == LTU && uval2 == 1 + uval1))
-	return cond2;
-
-      // Similar, but with an input sequence like
-      //    if (reg == val)   goto label1;
-      //    if (reg <= val)   goto label2;
-      if (ival1 == ival2
-	  && (cond2 == LE || cond2 == LEU))
-	return avr_normalize_condition (cond2);
-
-      // Similar, but with an input sequence like
-      //    if (reg == val)  goto label1;
-      //    if (reg < val)   goto label2;
-      if (ival1 == ival2
-	  && (cond2 == LT || cond2 == LTU))
-	return cond2;
-
-      // Similar, but with an input sequence like
-      //    if (reg == val)      goto label1;
-      //    if (reg <= val - 1)  goto label2;
-      if ((cond2 == LE && ival2 == ival1 - 1)
-	  || (cond2 == LEU && uval2 == uval1 - 1))
-	return avr_normalize_condition (cond2);
-
-    } // cond1 == EQ
-
-  return UNKNOWN;
+  return xval;
 }
 
 
-/* If-else decision trees generated for switch / case may produce sequences
-   like
+/* Similar to the function above, but assume that
 
-      SREG = compare (reg, val);
-	  if (SREG == 0)  goto label1;
+      if (xreg1 <cond1> xval1) goto label1;
+      if (xreg2 <cond2> xval2) goto label2;
+
+   are two subsequent REG-REG comparisons.  When this can be represented as
+
+      REG_CC = compare (reg, xval);
+      if (REG_CC <cmp1> 0) goto label1;
+      if (REG_CC <cmp2> 0) goto label2;
+
+   then set XREG1 to reg, COND1 and COND2 accordingly, and return xval.
+   Otherwise, return NULL_RTX.  This optmization can be performed
+   when { xreg1, xval1 } and { xreg2, xval2 } are equal as sets.
+   It can be done in such a way that no difficult branches occur.  */
+
+static rtx
+avr_redundant_compare_regs (rtx &xreg1, rtx_code &cond1, rtx &xval1,
+			    rtx &xreg2, rtx_code &cond2, rtx &xval2,
+			    bool reverse_cond1)
+{
+  bool swapped;
+
+  if (! REG_P (xval1))
+    return NULL_RTX;
+  else if (rtx_equal_p (xreg1, xreg2)
+	   && rtx_equal_p (xval1, xval2))
+    swapped = false;
+  else if (rtx_equal_p (xreg1, xval2)
+	   && rtx_equal_p (xreg2, xval1))
+    swapped = true;
+  else
+    return NULL_RTX;
+
+  // Found a redundant REG-REG comparison.  Assume that the incoming
+  // representation has been canonicalized by CANONICALIZE_COMPARISON.
+  // We can always represent this using only one comparison and in such
+  // a way that no difficult branches are required.
+
+  if (dump_file)
+    {
+      const char *s_rev1 = reverse_cond1 ? " reverse_cond1" : "";
+      avr_dump (";; %r %C %r%s\n", xreg1, cond1, xval1, s_rev1);
+      avr_dump (";; %r %C %r\n", xreg2, cond2, xval2);
+    }
+
+  if (reverse_cond1)
+    cond1 = reverse_condition (cond1);
+
+  if (swapped)
+    {
+      if (cond1 == EQ || cond1 == NE)
+	{
+	  avr_dump (";; case #21\n");
+	  std::swap (xreg1, xval1);
+	}
+      else
+	{
+	  std::swap (xreg2, xval2);
+	  cond2 = swap_condition (cond2);
+
+	  // The swap may have introduced a difficult comparison.
+	  // In order to get of it, only a few cases need extra care.
+	  if ((cond1 == LT && cond2 == GT)
+	      || (cond1 == LTU && cond2 == GTU))
+	    {
+	      avr_dump (";; case #22\n");
+	      cond2 = NE;
+	    }
+	  else
+	    avr_dump (";; case #23\n");
+	}
+    }
+  else
+    avr_dump (";; case #20\n");
+
+  return xval1;
+}
+
+
+/* INSN1 and INSN2 are two cbranch insns for the same integer mode.
+   When FOLLOW_LABEL1 is false, then INSN2 is located in the fallthrough
+   path of INSN1.  When FOLLOW_LABEL1 is true, then INSN2 is located at
+   the true edge of INSN1, INSN2 is preceded by a barrier, and no other
+   edge leads to the basic block of INSN2.
+
+   Try to replace INSN1 and INSN2 by a compare insn and two branch insns.
+   When such a replacement has been performed, then return the insn where the
+   caller should continue scanning the insn stream.  Else, return nullptr.  */
+
+static rtx_insn*
+avr_optimize_2ifelse (rtx_jump_insn *insn1,
+		      rtx_jump_insn *insn2, bool follow_label1)
+{
+  avr_dump (";; Investigating jump_insn %d and jump_insn %d.\n",
+	    INSN_UID (insn1), INSN_UID (insn2));
+
+  // Extract the operands of the insns:
+  // $0 = comparison operator ($1, $2)
+  // $1 = reg
+  // $2 = reg or const_int
+  // $3 = code_label
+  // $4 = optional SCRATCH for HI, PSI, SI cases.
+
+  const auto &op = recog_data.operand;
+
+  extract_insn (insn1);
+  rtx xop1[5] = { op[0], op[1], op[2], op[3], op[4] };
+  int n_operands = recog_data.n_operands;
+
+  extract_insn (insn2);
+  rtx xop2[5] = { op[0], op[1], op[2], op[3], op[4] };
+
+  rtx_code code1 = GET_CODE (xop1[0]);
+  rtx_code code2 = GET_CODE (xop2[0]);
+  bool swap_targets = false;
+
+  // Search redundant REG-REG comparison.
+  rtx xval = avr_redundant_compare_regs (xop1[1], code1, xop1[2],
+					 xop2[1], code2, xop2[2],
+					 follow_label1);
+
+  // Search redundant REG-CONST_INT comparison.
+  if (! xval)
+    xval = avr_redundant_compare (xop1[1], code1, xop1[2],
+				  xop2[1], code2, xop2[2],
+				  follow_label1, swap_targets);
+  if (! xval)
+    {
+      avr_dump (";; Nothing found for jump_insn %d and jump_insn %d.\n",
+		INSN_UID (insn1), INSN_UID (insn2));
+      return nullptr;
+    }
+
+  if (follow_label1)
+    code1 = reverse_condition (code1);
+
+  //////////////////////////////////////////////////////
+  // Found a replacement.
+
+  if (dump_file)
+    {
+      avr_dump (";; => %C %r\n", code1, xval);
+      avr_dump (";; => %C %r\n", code2, xval);
+
+      fprintf (dump_file, "\n;; Found chain of jump_insn %d and"
+	       " jump_insn %d, follow_label1=%d:\n",
+	       INSN_UID (insn1), INSN_UID (insn2), follow_label1);
+      print_rtl_single (dump_file, PATTERN (insn1));
+      print_rtl_single (dump_file, PATTERN (insn2));
+    }
+
+  rtx_insn *next_insn
+    = next_nonnote_nondebug_insn (follow_label1 ? insn1 : insn2);
+
+  // Pop the new branch conditions and the new comparison.
+  // Prematurely split into compare + branch so that we can drop
+  // the 2nd comparison.  The following pass, split2, splits all
+  // insns for REG_CC, and it should still work as usual even when
+  // there are already some REG_CC insns around.
+
+  rtx xcond1 = gen_rtx_fmt_ee (code1, VOIDmode, cc_reg_rtx, const0_rtx);
+  rtx xcond2 = gen_rtx_fmt_ee (code2, VOIDmode, cc_reg_rtx, const0_rtx);
+  rtx xpat1 = gen_branch (xop1[3], xcond1);
+  rtx xpat2 = gen_branch (xop2[3], xcond2);
+  rtx xcompare = NULL_RTX;
+  machine_mode mode = GET_MODE (xop1[1]);
+
+  if (mode == QImode)
+    {
+      gcc_assert (n_operands == 4);
+      xcompare = gen_cmpqi3 (xop1[1], xval);
+    }
+  else
+    {
+      gcc_assert (n_operands == 5);
+      rtx scratch = GET_CODE (xop1[4]) == SCRATCH ? xop2[4] : xop1[4];
+      rtx (*gen_cmp)(rtx,rtx,rtx)
+	= mode == HImode  ? gen_gen_comparehi
+	: mode == PSImode ? gen_gen_comparepsi
+	: gen_gen_comparesi; // SImode
+      xcompare = gen_cmp (xop1[1], xval, scratch);
+    }
+
+  // Emit that stuff.
+
+  rtx_insn *cmp = emit_insn_before (xcompare, insn1);
+  rtx_jump_insn *branch1 = emit_jump_insn_after (xpat1, insn1);
+  rtx_jump_insn *branch2 = emit_jump_insn_after (xpat2, insn2);
+
+  JUMP_LABEL (branch1) = xop1[3];
+  JUMP_LABEL (branch2) = xop2[3];
+  // delete_insn() decrements LABEL_NUSES when deleting a JUMP_INSN,
+  // but when we pop a new JUMP_INSN, do it by hand.
+  ++LABEL_NUSES (xop1[3]);
+  ++LABEL_NUSES (xop2[3]);
+
+  delete_insn (insn1);
+  delete_insn (insn2);
+
+  if (swap_targets)
+    {
+      gcc_assert (! follow_label1);
+
+      basic_block to1 = BLOCK_FOR_INSN (xop1[3]);
+      basic_block to2 = BLOCK_FOR_INSN (xop2[3]);
+      edge e1 = find_edge (BLOCK_FOR_INSN (branch1), to1);
+      edge e2 = find_edge (BLOCK_FOR_INSN (branch2), to2);
+      gcc_assert (e1);
+      gcc_assert (e2);
+      redirect_edge_and_branch (e1, to2);
+      redirect_edge_and_branch (e2, to1);
+    }
+
+  // As a side effect, also recog the new insns.
+  gcc_assert (valid_insn_p (cmp));
+  gcc_assert (valid_insn_p (branch1));
+  gcc_assert (valid_insn_p (branch2));
+
+  return next_insn;
+}
+
+
+/* Sequences like
+
       SREG = compare (reg, 1 + val);
-	  if (SREG >= 0)  goto label2;
+	  if (SREG >= 0)  goto label1;
+      SREG = compare (reg, val);
+	  if (SREG == 0)  goto label2;
 
-   which can be optimized to
+   can be optimized to
 
       SREG = compare (reg, val);
-	  if (SREG == 0)  goto label1;
-	  if (SREG >= 0)  goto label2;
+	  if (SREG == 0)  goto label2;
+	  if (SREG >= 0)  goto label1;
 
-   The optimal place for such a pass would be directly after expand, but
-   it's not possible for a jump insn to target more than one code label.
-   Hence, run a mini pass right before split2 which introduces REG_CC.  */
+   Almost all cases where one of the comparisons is redundant can
+   be transformed in such a way that only one comparison is required
+   and no difficult branches are needed.  */
 
 void
 avr_pass_ifelse::avr_rest_of_handle_ifelse (function *)
@@ -931,143 +1560,43 @@ avr_pass_ifelse::avr_rest_of_handle_ifelse (function *)
 	continue;
 
       rtx_jump_insn *insn1 = as_a<rtx_jump_insn *> (insn);
-      rtx_jump_insn *insn2 = nullptr;
-      bool follow_label1 = false;
 
-      // Extract the operands of the first insn:
-      // $0 = comparison operator ($1, $2)
-      // $1 = reg
-      // $2 = reg or const_int
-      // $3 = code_label
-      // $4 = optional SCRATCH for HI, PSI, SI cases.
+      // jmp[0]: We can optimize cbranches that follow cbranch insn1.
+      rtx_insn *jmp[2] = { next_insn, nullptr };
 
-      const auto &op = recog_data.operand;
-
-      extract_insn (insn1);
-      rtx xop1[5] = { op[0], op[1], op[2], op[3], op[4] };
-      int n_operands = recog_data.n_operands;
-
-      // For now, we can optimize cbranches that follow an EQ cbranch,
-      // and cbranches that follow the label of a NE cbranch.
-
-      if (GET_CODE (xop1[0]) == EQ
-	  && JUMP_P (next_insn)
-	  && recog_memoized (next_insn) == icode1)
+      // jmp[1]: A cbranch following the label of cbranch insn1.
+      if (LABEL_NUSES (JUMP_LABEL (insn1)) == 1)
 	{
-	  // The 2nd cbranch insn follows insn1, i.e. is located in the
-	  // fallthrough path of insn1.
-
-	  insn2 = as_a<rtx_jump_insn *> (next_insn);
-	}
-      else if (GET_CODE (xop1[0]) == NE)
-	{
-	  // insn1 might branch to a label followed by a cbranch.
-
-	  rtx target1 = JUMP_LABEL (insn1);
 	  rtx_insn *code_label1 = JUMP_LABEL_AS_INSN (insn1);
-	  rtx_insn *next = next_nonnote_nondebug_insn (code_label1);
 	  rtx_insn *barrier = prev_nonnote_nondebug_insn (code_label1);
 
-	  if (// Target label of insn1 is used exactly once and
-	      // is not a fallthru, i.e. is preceded by a barrier.
-	      LABEL_NUSES (target1) == 1
-	      && barrier
-	      && BARRIER_P (barrier)
-	      // Following the target label is a cbranch of the same kind.
-	      && next
-	      && JUMP_P (next)
-	      && recog_memoized (next) == icode1)
-	    {
-	      follow_label1 = true;
-	      insn2 = as_a<rtx_jump_insn *> (next);
-	    }
-	}
+	  // When the target label of insn1 is used exactly once and is
+	  // not a fallthrough, i.e. is preceded by a barrier, then
+	  // consider the insn following that label.
+	  if (barrier && BARRIER_P (barrier))
+	    jmp[1] = next_nonnote_nondebug_insn (code_label1);
+      }
 
-      if (! insn2)
-	continue;
+      // With almost certainty, only one of the two possible jumps can
+      // be optimized with insn1, but it's hard to tell which one a priori.
+      // Just try both.  In the unlikely case where both could be optimized,
+      // prefer jmp[0] because eliminating difficult branches is impeded
+      // by following label1.
 
-      // Also extract operands of insn2, and filter for REG + CONST_INT
-      // comparsons against the same register.
+      for (int j = 0; j < 2; ++j)
+	if (jmp[j] && JUMP_P (jmp[j])
+	    && recog_memoized (jmp[j]) == icode1)
+	  {
+	    rtx_insn *next
+	      = avr_optimize_2ifelse (insn1, as_a<rtx_jump_insn *> (jmp[j]),
+				      j == 1 /* follow_label1 */);
+	    if (next)
+	      {
+		next_insn = next;
+		break;
+	      }
+	  }
 
-      extract_insn (insn2);
-      rtx xop2[5] = { op[0], op[1], op[2], op[3], op[4] };
-
-      if (! rtx_equal_p (xop1[1], xop2[1])
-	  || ! CONST_INT_P (xop1[2])
-	  || ! CONST_INT_P (xop2[2]))
-	continue;
-
-      machine_mode mode = GET_MODE (xop1[1]);
-      enum rtx_code code1 = GET_CODE (xop1[0]);
-      enum rtx_code code2 = GET_CODE (xop2[0]);
-
-      code2 = avr_redundant_compare (code1, xop1[2], code2, xop2[2],
-				     mode, follow_label1);
-      if (code2 == UNKNOWN)
-	continue;
-
-      //////////////////////////////////////////////////////
-      // Found a replacement.
-
-      if (dump_file)
-	{
-	  fprintf (dump_file, "\n;; Found chain of jump_insn %d and"
-		   " jump_insn %d, follow_label1=%d:\n",
-		   INSN_UID (insn1), INSN_UID (insn2), follow_label1);
-	  print_rtl_single (dump_file, PATTERN (insn1));
-	  print_rtl_single (dump_file, PATTERN (insn2));
-	}
-
-      if (! follow_label1)
-	next_insn = next_nonnote_nondebug_insn (insn2);
-
-      // Pop the new branch conditions and the new comparison.
-      // Prematurely split into compare + branch so that we can drop
-      // the 2nd comparison.  The following pass, split2, splits all
-      // insns for REG_CC, and it should still work as usual even when
-      // there are already some REG_CC insns around.
-
-      rtx xcond1 = gen_rtx_fmt_ee (code1, VOIDmode, cc_reg_rtx, const0_rtx);
-      rtx xcond2 = gen_rtx_fmt_ee (code2, VOIDmode, cc_reg_rtx, const0_rtx);
-      rtx xpat1 = gen_branch (xop1[3], xcond1);
-      rtx xpat2 = gen_branch (xop2[3], xcond2);
-      rtx xcompare = NULL_RTX;
-
-      if (mode == QImode)
-	{
-	  gcc_assert (n_operands == 4);
-	  xcompare = gen_cmpqi3 (xop1[1], xop1[2]);
-	}
-      else
-	{
-	  gcc_assert (n_operands == 5);
-	  rtx (*gen_cmp)(rtx,rtx,rtx)
-	    = mode == HImode  ? gen_gen_comparehi
-	    : mode == PSImode ? gen_gen_comparepsi
-	    : gen_gen_comparesi; // SImode
-	  xcompare = gen_cmp (xop1[1], xop1[2], xop1[4]);
-	}
-
-      // Emit that stuff.
-
-      rtx_insn *cmp = emit_insn_before (xcompare, insn1);
-      rtx_jump_insn *branch1 = emit_jump_insn_before (xpat1, insn1);
-      rtx_jump_insn *branch2 = emit_jump_insn_before (xpat2, insn2);
-
-      JUMP_LABEL (branch1) = xop1[3];
-      JUMP_LABEL (branch2) = xop2[3];
-      // delete_insn() decrements LABEL_NUSES when deleting a JUMP_INSN, but
-      // when we pop a new JUMP_INSN, do it by hand.
-      ++LABEL_NUSES (xop1[3]);
-      ++LABEL_NUSES (xop2[3]);
-
-      delete_insn (insn1);
-      delete_insn (insn2);
-
-      // As a side effect, also recog the new insns.
-      gcc_assert (valid_insn_p (cmp));
-      gcc_assert (valid_insn_p (branch1));
-      gcc_assert (valid_insn_p (branch2));
     } // loop insns
 }
 
