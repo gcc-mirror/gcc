@@ -9645,7 +9645,7 @@ gfc_trans_structure_assign (tree dest, gfc_expr * expr, bool init, bool coarray)
 
       /* Register the component with the caf-lib before it is initialized.
 	 Register only allocatable components, that are not coarray'ed
-	 components (%comp[*]).  Only register when the constructor is not the
+	 components (%comp[*]).  Only register when the constructor is the
 	 null-expression.  */
       if (coarray && !cm->attr.codimension
 	  && (cm->attr.allocatable || cm->attr.pointer)

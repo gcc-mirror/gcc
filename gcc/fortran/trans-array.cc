@@ -9417,10 +9417,9 @@ gfc_duplicate_allocatable_nocopy (tree dest, tree src, tree type, int rank)
 				NULL_TREE, NULL_TREE);
 }
 
-
 static tree
-duplicate_allocatable_coarray (tree dest, tree dest_tok, tree src,
-			       tree type, int rank)
+duplicate_allocatable_coarray (tree dest, tree dest_tok, tree src, tree type,
+			       int rank, tree add_when_allocated)
 {
   tree tmp;
   tree size;
@@ -9474,7 +9473,7 @@ duplicate_allocatable_coarray (tree dest, tree dest_tok, tree src,
       gfc_add_modify (&globalblock, tmp, build_int_cst (TREE_TYPE (tmp), rank));
 
       if (rank)
-	nelems = gfc_full_array_size (&block, src, rank);
+	nelems = gfc_full_array_size (&globalblock, src, rank);
       else
 	nelems = integer_one_node;
 
@@ -9505,7 +9504,7 @@ duplicate_allocatable_coarray (tree dest, tree dest_tok, tree src,
 				 fold_convert (size_type_node, size));
       gfc_add_expr_to_block (&block, tmp);
     }
-
+  gfc_add_expr_to_block (&block, add_when_allocated);
   tmp = gfc_finish_block (&block);
 
   /* Null the destination if the source is null; otherwise do
@@ -9684,7 +9683,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 	 gfc_duplicate_allocatable (), where the deep copy code is just added
 	 into the if's body, by adding tmp (the deep copy code) as last
 	 argument to gfc_duplicate_allocatable ().  */
-      if (purpose == COPY_ALLOC_COMP
+      if (purpose == COPY_ALLOC_COMP && caf_mode == 0
 	  && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (dest)))
 	tmp = gfc_duplicate_allocatable (dest, decl, decl_type, rank,
 					 tmp);
@@ -10414,8 +10413,9 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 						 c->caf_token,
 						 NULL_TREE);
 		    }
-		  tmp = duplicate_allocatable_coarray (dcmp, dst_tok, comp,
-						       ctype, rank);
+		  tmp
+		    = duplicate_allocatable_coarray (dcmp, dst_tok, comp, ctype,
+						     rank, add_when_allocated);
 		}
 	      else
 		tmp = gfc_duplicate_allocatable (dcmp, comp, ctype, rank,
