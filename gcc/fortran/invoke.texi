@@ -2117,7 +2117,7 @@ if @option{-ffrontend-optimize} is in effect.
 @cindex Front-end optimization
 @item -ffrontend-optimize
 This option performs front-end optimization, based on manipulating
-parts the Fortran parse tree.  Enabled by default by any @option{-O} option
+parts of the Fortran parse tree.  Enabled by default by any @option{-O} option
 except @option{-O0} and @option{-Og}.  Optimizations enabled by this option
 include:
 @itemize @bullet
