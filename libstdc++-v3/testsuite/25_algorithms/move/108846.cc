@@ -26,6 +26,37 @@ test_pr108846()
     // If this is optimized to memmove it will overwrite tail padding.
     std::move(src, src+1, dst);
     VERIFY(ddst.x == 3);
+#if __cpp_lib_ranges >= 201911L
+    std::ranges::move(src, src+1, dst);
+    VERIFY(ddst.x == 3);
+#endif
+}
+
+struct B2 {
+    B2(int i, short j) : i(i), j(j) {}
+    B2& operator=(B2&& b) { i = b.i; j = b.j; return *this; }
+    int i;
+    short j;
+};
+struct D2 : B2 {
+    D2(int i, short j, short x) : B2(i, j), x(x) {}
+    short x; // Stored in tail padding of B2
+};
+
+void
+test_move_only()
+{
+    D2 ddst(1, 2, 3);
+    D2 dsrc(4, 5, 6);
+    B2 *dst = &ddst;
+    B2 *src = &dsrc;
+    // Ensure the not-taken trivial copy path works for this type.
+    std::move(src, src+1, dst);
+    VERIFY(ddst.x == 3);
+#if __cpp_lib_ranges >= 201911L
+    std::ranges::move(src, src+1, dst);
+    VERIFY(ddst.x == 3);
+#endif
 }
 
 struct B3 {
@@ -40,19 +71,24 @@ struct D3 : B3 {
 };
 
 void
-test_move_only()
+test_move_only_trivial()
 {
     D3 ddst(1, 2, 3);
     D3 dsrc(4, 5, 6);
     B3 *dst = &ddst;
     B3 *src = &dsrc;
-    // Ensure the not-taken trivial copy path works for this type.
+    // If this is optimized to memmove it will overwrite tail padding.
     std::move(src, src+1, dst);
     VERIFY(ddst.x == 3);
+#if __cpp_lib_ranges >= 201911L
+    std::ranges::move(src, src+1, dst);
+    VERIFY(ddst.x == 3);
+#endif
 }
 
 int main()
 {
   test_pr108846();
   test_move_only();
+  test_move_only_trivial();
 }
