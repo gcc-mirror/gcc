@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "case-cfn-macros.h"
 #include "builtins.h"
 #include "optabs-tree.h"
+#include "tree-ssa-dce.h"
 
 /* For each complex ssa name, a lattice value.  We're interested in finding
    out whether a complex number is degenerate in some way, having only real
@@ -87,6 +88,9 @@ static vec<gphi *> phis_to_revisit;
 
 /* BBs that need EH cleanup.  */
 static bitmap need_eh_cleanup;
+
+/* SSA defs we should try to DCE.  */
+static bitmap dce_worklist;
 
 /* Lookup UID in the complex_variable_components hashtable and return the
    associated tree.  */
@@ -731,6 +735,7 @@ update_complex_assignment (gimple_stmt_iterator *gsi, tree r, tree i)
   update_stmt (stmt);
   if (maybe_clean_or_replace_eh_stmt (old_stmt, stmt))
     bitmap_set_bit (need_eh_cleanup, gimple_bb (stmt)->index);
+  bitmap_set_bit (dce_worklist, SSA_NAME_VERSION (gimple_assign_lhs (stmt)));
 
   update_complex_components (gsi, gsi_stmt (*gsi), r, i);
 }
@@ -1962,6 +1967,7 @@ tree_lower_complex (void)
   complex_propagate.ssa_propagate ();
 
   need_eh_cleanup = BITMAP_ALLOC (NULL);
+  dce_worklist = BITMAP_ALLOC (NULL);
 
   complex_variable_components = new int_tree_htab_type (10);
 
@@ -2007,6 +2013,9 @@ tree_lower_complex (void)
     }
 
   gsi_commit_edge_inserts ();
+
+  simple_dce_from_worklist (dce_worklist, need_eh_cleanup);
+  BITMAP_FREE (dce_worklist);
 
   unsigned todo
     = gimple_purge_all_dead_eh_edges (need_eh_cleanup) ? TODO_cleanup_cfg : 0;
