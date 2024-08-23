@@ -2469,10 +2469,10 @@ rs6000_analyze_swaps (function *fun)
 		    mode = V4SImode;
 		}
 
-	      if (ALTIVEC_OR_VSX_VECTOR_MODE (mode) || mode == TImode)
+	      if (ALTIVEC_OR_VSX_VECTOR_MODE (mode) || TI_OR_PTI_MODE (mode))
 		{
 		  insn_entry[uid].is_relevant = 1;
-		  if (mode == TImode || mode == V1TImode
+		  if (TI_OR_PTI_MODE (mode) || mode == V1TImode
 		      || FLOAT128_VECTOR_P (mode))
 		    insn_entry[uid].is_128_int = 1;
 		  if (DF_REF_INSN_INFO (mention))
@@ -2497,10 +2497,10 @@ rs6000_analyze_swaps (function *fun)
 		  && ALTIVEC_OR_VSX_VECTOR_MODE (GET_MODE (SET_DEST (insn))))
 		mode = GET_MODE (SET_DEST (insn));
 
-	      if (ALTIVEC_OR_VSX_VECTOR_MODE (mode) || mode == TImode)
+	      if (ALTIVEC_OR_VSX_VECTOR_MODE (mode) || TI_OR_PTI_MODE (mode))
 		{
 		  insn_entry[uid].is_relevant = 1;
-		  if (mode == TImode || mode == V1TImode
+		  if (TI_OR_PTI_MODE (mode) || mode == V1TImode
 		      || FLOAT128_VECTOR_P (mode))
 		    insn_entry[uid].is_128_int = 1;
 		  if (DF_REF_INSN_INFO (mention))
