@@ -23,6 +23,9 @@ main (void)
     {
       a[i] = BASE1 + i * 5;
       b[i] = BASE2 - i * 4;
+      /* b[i] cannot be 0 as that would cause undefined
+	 behavior with respect to `% b[i]`. */
+      b[i] = b[i] ? b[i] : 1;
       __asm__ volatile ("");
     }
 
