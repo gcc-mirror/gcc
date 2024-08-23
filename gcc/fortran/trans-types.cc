@@ -2905,18 +2905,26 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
      will be built and so we can return the type.  */
   for (c = derived->components; c; c = c->next)
     {
-      bool same_alloc_type = c->attr.allocatable
-			     && derived == c->ts.u.derived;
-
       if (c->ts.type == BT_UNION && c->ts.u.derived->backend_decl == NULL)
         c->ts.u.derived->backend_decl = gfc_get_union_type (c->ts.u.derived);
 
       if (c->ts.type != BT_DERIVED && c->ts.type != BT_CLASS)
 	continue;
 
-      if ((!c->attr.pointer && !c->attr.proc_pointer
-	  && !same_alloc_type)
-	  || c->ts.u.derived->backend_decl == NULL)
+      const bool incomplete_type
+	= c->ts.u.derived->backend_decl
+	  && TREE_CODE (c->ts.u.derived->backend_decl) == RECORD_TYPE
+	  && !(TYPE_LANG_SPECIFIC (c->ts.u.derived->backend_decl)
+	       && TYPE_LANG_SPECIFIC (c->ts.u.derived->backend_decl)->size);
+      const bool pointer_component
+	= c->attr.pointer || c->attr.allocatable || c->attr.proc_pointer;
+
+      /* Prevent endless recursion on recursive types (i.e. types that reference
+	 themself in a component.  Break the recursion by not building pointers
+	 to incomplete types again, aka types that are already in the build.  */
+      if (c->ts.u.derived->backend_decl == NULL
+	  || (c->attr.codimension && c->as->corank != codimen)
+	  || !(incomplete_type && pointer_component))
 	{
 	  int local_codim = c->attr.codimension ? c->as->corank: codimen;
 	  c->ts.u.derived->backend_decl = gfc_get_derived_type (c->ts.u.derived,
