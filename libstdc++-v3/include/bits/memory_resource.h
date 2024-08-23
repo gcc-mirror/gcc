@@ -52,7 +52,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 namespace pmr
 {
-  /// Class memory_resource
+  /// Class `memory_resource`
   /**
    * @ingroup pmr
    * @headerfile memory_resource
@@ -385,7 +385,12 @@ namespace pmr
 
   template<typename _Alloc> struct allocator_traits;
 
-  /// Partial specialization for std::pmr::polymorphic_allocator
+  /// Partial specialization for `std::pmr::polymorphic_allocator`
+  /**
+   * @ingroup pmr
+   * @headerfile memory_resource
+   * @since C++17
+   */
   template<typename _Tp>
     struct allocator_traits<pmr::polymorphic_allocator<_Tp>>
     {
