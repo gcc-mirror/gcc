@@ -549,7 +549,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #pragma GCC diagnostic pop
 
 #if _GLIBCXX_HOSTED
-  /// Partial specialization for std::allocator.
+  /**
+   * @brief  Partial specialization for `std::allocator`
+   * @headerfile memory
+   * @ingroup allocators
+   * @since C++11
+   * @see std::allocator_traits
+  */
   template<typename _Tp>
     struct allocator_traits<allocator<_Tp>>
     {
@@ -720,7 +726,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __rhs; }
     };
 
-  /// Explicit specialization for std::allocator<void>.
+  /**
+   * @brief  Explicit specialization for `std::allocator<void>`
+   * @headerfile memory
+   * @ingroup allocators
+   * @since C++11
+   * @see std::allocator_traits
+  */
   template<>
     struct allocator_traits<allocator<void>>
     {
