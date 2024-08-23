@@ -10294,8 +10294,20 @@ addressable_p (tree gnu_expr, tree gnu_type)
 		   check the alignment of the containing record, as it is
 		   guaranteed to be not smaller than that of its most
 		   aligned field that is not a bit-field.  */
-		&& DECL_ALIGN (TREE_OPERAND (gnu_expr, 1))
-		   >= TYPE_ALIGN (TREE_TYPE (gnu_expr)))
+		&& (DECL_ALIGN (TREE_OPERAND (gnu_expr, 1))
+		    >= TYPE_ALIGN (TREE_TYPE (gnu_expr))
+#ifdef TARGET_ALIGN_DOUBLE
+		   /* Cope with the misalignment of doubles in records for
+		      ancient 32-bit ABIs like that of x86/Linux.  */
+		   || (DECL_ALIGN (TREE_OPERAND (gnu_expr, 1)) == 32
+		       && TYPE_ALIGN (TREE_TYPE (gnu_expr)) == 64
+		       && !TARGET_ALIGN_DOUBLE
+#ifdef TARGET_64BIT
+		       && !TARGET_64BIT
+#endif
+		      )
+#endif
+		       ))
 	       /* The field of a padding record is always addressable.  */
 	       || TYPE_IS_PADDING_P (TREE_TYPE (TREE_OPERAND (gnu_expr, 0))))
 	      && addressable_p (TREE_OPERAND (gnu_expr, 0), NULL_TREE));
