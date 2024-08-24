@@ -1,3 +1,111 @@
+2024-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/documentation_hacking.xml: Update minimum
+	Doxygen version.
+	* doc/html/*: Regenerate.
+
+2024-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/tuple: Do not include implementation details in
+	Doxygen documentation.
+
+2024-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h: Improve doxygen docs for
+	allocator_traits specializations.
+	* include/bits/memory_resource.h: Likewise.
+
+2024-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/optional (__is_derived_from_optional): New
+	concept.
+	(operator<=>): Use __is_derived_from_optional.
+	* testsuite/20_util/optional/relops/lwg3746.cc: New test.
+
+2024-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_classes.tcc (__try_use_facet): Also avoid
+	dynamic_cast for const-qualified facet types.
+
+2024-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108619
+	* include/bits/alloc_traits.h (__allocator_traits_base): Add
+	variable templates for detecting which allocator operations are
+	supported.
+	(allocator_traits): Use 'if constexpr' instead of dispatching to
+	overloads constrained with enable_if.
+	(allocator_traits<allocator<T>>::construct): Use Construct if
+	construct_at is not supported. Use
+	__is_nothrow_new_constructible for noexcept-specifier.
+	(allocator_traits<allocator<void>>::construct): Use
+	__is_nothrow_new_constructible for noexcept-specifier.
+	* include/bits/new_allocator.h (construct): Likewise.
+	* include/ext/malloc_allocator.h (construct): Likewise.
+	* include/std/type_traits (__is_nothrow_new_constructible): New
+	variable template.
+	* testsuite/20_util/allocator/89510.cc: Adjust expected results.
+	* testsuite/ext/malloc_allocator/89510.cc: Likewise.
+	* testsuite/ext/new_allocator/89510.cc: Likewise.
+	* testsuite/20_util/allocator_traits/members/108619.cc: New test.
+
+2024-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (__formatter_chrono::_M_C_y_Y):
+	Ignore modifiers unless the formatting locale is not the C
+	locale.
+	(__formatter_chrono::_M_d_e): Likewise.
+	(__formatter_chrono::_M_H_I): Likewise.
+	(__formatter_chrono::_M_m): Likewise.
+	(__formatter_chrono::_M_M): Likewise.
+	(__formatter_chrono::_M_S): Likewise.
+	(__formatter_chrono::_M_u_w): Likewise.
+	(__formatter_chrono::_M_U_V_W): Likewise.
+
+2024-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115939
+	* include/bits/hashtable_policy.h (_Node_iterator): Add
+	operator== and operator!=.
+	(_Node_const_iterator): Likewise.
+	* testsuite/23_containers/unordered_map/115939.cc: New test.
+
+2024-08-23  Giovanni Bajo  <rasky@develer.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/88935
+	* include/bits/stl_algo.h (random_shuffle) [RAND_MAX < INT_MAX]:
+	Use xorshift instead of rand().
+	* testsuite/25_algorithms/random_shuffle/88935.cc: New test.
+
+2024-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/116369
+	* include/debug/safe_base.h (_Safe_sequence_base::_M_iterators):
+	Add mutable specifier.
+	(_Safe_sequence_base::_M_const_iterators): Likewise.
+
+2024-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/debug.cc: Replace throw() with noexcept.
+
+2024-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant [C++20] (_Uninitialized): Always use the
+	primary template.
+	[C++20] (__get_n): Access the _M_storage member directly.
+
+2024-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115098
+	* include/bits/stl_bvector.h (_Bit_reference): Make default
+	constructor private. Declare vector and bit iterators as
+	friends.
+	* include/std/bitset (bitset::reference): Make constructor and
+	data members private.
+	* testsuite/20_util/bitset/115098.cc: New test.
+	* testsuite/23_containers/vector/bool/115098.cc: New test.
+
 2024-08-22  Patrick Palka  <ppalka@redhat.com>
 
 	* testsuite/25_algorithms/contains/1.cc: Verify value of

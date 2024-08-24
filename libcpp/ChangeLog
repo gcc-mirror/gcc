@@ -1,3 +1,9 @@
+2024-08-23  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR preprocessor/116458
+	* charset.cc (_cpp_convert_input): Bump padding to 64 if
+	HAVE_SSSE3.
+
 2024-08-22  Marc Poulhiès  <poulhies@adacore.com>
 
 	* lex.cc(search_line_ssse3): fix static_assert to use 2 arguments.

@@ -1,3 +1,84 @@
+2024-08-23  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/riscv-v.cc (rvv_builder::can_duplicate_repeating_sequence_p):
+	Use encoded_nelts when calling repeating_sequence_p.
+	(rvv_builder::is_repeating_sequence): Ditto.
+	(rvv_builder::repeating_sequence_use_merge_profitable_p): Ditto.
+
+2024-08-23  Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	PR rtl-optimization/116372
+	PR rtl-optimization/116405
+	* ifcvt.cc (noce_convert_multiple_sets): Iterate backwards and track
+	target registers.
+
+2024-08-23  Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	PR middle-end/116358
+	* ifcvt.cc (noce_convert_multiple_sets): Disallow call insns.
+
+2024-08-23  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/116415
+	* config/rs6000/rs6000.h (TI_OR_PTI_MODE): New define.
+	* config/rs6000/rs6000-p8swap.cc (rs6000_analyze_swaps): Use it to
+	handle PTImode identically to TImode.
+
+2024-08-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116463
+	* tree-complex.cc: Include tree-ssa-dce.h.
+	(dce_worklist): New global.
+	(update_complex_assignment): Add SSA def to the DCE worklist.
+	(tree_lower_complex): Perform DCE.
+
+2024-08-23  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add form 4 for unsigned .SAT_TRUNC matching.
+
+2024-08-23  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR middle-end/115495
+	* cfgexpand.cc (expand_debug_expr): Require mode.
+	* combine.cc (make_extraction): Ditto.
+	* config/aarch64/aarch64.cc (aarch64_expand_cpymem): Ditto.
+	(aarch64_expand_setmem): Ditto.
+	* config/arc/arc.cc (arc_expand_cpymem): Ditto.
+	* config/arm/arm.cc (arm_expand_divmod_libfunc): Ditto.
+	* config/i386/i386.cc (ix86_get_mask_mode): Ditto.
+	* config/rs6000/predicates.md: Ditto.
+	* config/rs6000/rs6000.cc (vspltis_constant): Ditto.
+	* config/s390/s390.cc (s390_expand_insv): Ditto.
+	* config/sparc/sparc.cc (assign_int_registers): Ditto.
+	* coverage.cc (get_gcov_type): Ditto.
+	(get_gcov_unsigned_t): Ditto.
+	* dse.cc (find_shift_sequence): Ditto.
+	* expmed.cc (store_integral_bit_field): Ditto.
+	* expr.cc (convert_mode_scalar): Ditto.
+	(op_by_pieces_d::smallest_fixed_size_mode_for_size): Ditto.
+	(emit_block_move_via_oriented_loop): Ditto.
+	(copy_blkmode_to_reg): Ditto.
+	(store_field): Ditto.
+	* internal-fn.cc (expand_arith_overflow): Ditto.
+	* machmode.h (HAVE_MACHINE_MODES): Ditto.
+	(smallest_mode_for_size): Use opt_machine_mode.
+	(smallest_int_mode_for_size): Use opt_scalar_int_mode.
+	* optabs-query.cc (get_best_extraction_insn): Require mode.
+	* optabs.cc (expand_twoval_binop_libfunc): Ditto.
+	* stor-layout.cc (smallest_mode_for_size): Return
+	opt_machine_mode.
+	(layout_type): Require mode.
+	(initialize_sizetypes): Ditto.
+	* tree-ssa-loop-manip.cc (canonicalize_loop_ivs): Ditto.
+
+2024-08-23  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md (abs<mode>2): Expand via max (a, -a).
+
+2024-08-23  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/gm2.texi (License): Specifically link to GPL v3.0
+
 2024-08-22  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR rtl-optimization/116420

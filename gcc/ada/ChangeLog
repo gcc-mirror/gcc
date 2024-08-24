@@ -1,3 +1,184 @@
+2024-08-23  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR middle-end/115495
+	* gcc-interface/utils2.cc (fast_modulo_reduction): Require mode.
+	(nonbinary_modular_operation): Ditto.
+
+2024-08-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/misc.cc (gnat_get_array_descr_info): Test the
+	BIT_PACKED_ARRAY_TYPE_P flag only once on the final debug type. In
+	the case of records containing a template, replay the entire
+	processing for the array type contained therein.
+
+2024-08-23  Javier Miranda  <miranda@adacore.com>
+
+	* scng.adb (Scan): Call Error_Msg_GNAT_Extension() to report an
+	error, when the sources are compiled without Core_Extensions_
+	Allowed, and the scanner detects the beginning of an interpolated
+	string.
+
+2024-08-23  Sebastian Poeplau  <poeplau@adacore.com>
+
+	* libgnat/s-dwalin.adb (Symbolic_Address): Ignore symbol size in
+	address-to-symbol translation for PECOFF files.
+
+2024-08-23  Javier Miranda  <miranda@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference: [Put_Image]): Add
+	support for custom string types.
+	* exp_ch2.adb (Expand_N_Interpolated_String_Literal): Add a type
+	conversion to the result object declaration of custom string
+	types.
+	* exp_put_image.adb (Build_String_Put_Image_Call): Handle custom
+	string types.
+
+2024-08-23  Steve Baird  <baird@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Implicit_Dereference): Generate
+	error if an aspect specification specifies the
+	Implicit_Dereference aspect of a non-first subtype.
+
+2024-08-23  Steve Baird  <baird@adacore.com>
+
+	* checks.adb (Is_Signed_Integer_Arithmetic_Op): Return True in the
+	case of relational operator whose operands are of a signed integer
+	type.
+
+2024-08-23  Viljar Indus  <indus@adacore.com>
+
+	* libgnat/a-coinho__shared.ads: add limited keyword.
+	* libgnat/g-awk.adb: add limited keyword.
+	* libgnat/g-comlin.ads: add limited keyword.
+	* libgnat/s-excmac__arm.ads: add limited keyword.
+	* libgnat/s-excmac__gcc.ads: add limited keyword.
+	* libgnat/s-soflin.ads: add limited keyword.
+
+2024-08-23  Viljar Indus  <indus@adacore.com>
+
+	* sem_ch3.adb: Add method Check_Inherited_Limted_Record for
+	emitting the warning for an inherited limited type.
+	* warnsw.adb: Add processing for the -gnatw_l switch that
+	triggeres the inheritly limited type warning.
+	* warnsw.ads: same as above.
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst: Add
+	entry for -gnatw_l switch.
+	* gnat_ugn.texi: Regenerate.
+
+2024-08-23  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (Check_Private_Overriding): Improve code detecting
+	error on private function with controlling result. Fixes the
+	regression of ACATS bde0003.
+
+2024-08-23  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.ads, cstand.adb, exp_aggr.adb, exp_ch4.adb, exp_ch5.adb,
+	exp_dbug.adb, exp_util.adb, gnatlink.adb, lib-util.adb,
+	libgnat/a-except.adb, libgnat/a-exexpr.adb, libgnat/a-ngcoar.adb,
+	libgnat/s-rannum.adb, libgnat/s-trasym__dwarf.adb, osint.adb,
+	rtsfind.adb, sem_case.adb, sem_ch12.adb, sem_ch13.adb,
+	sem_ch3.adb, sem_ch6.adb, sem_eval.adb, sem_prag.adb,
+	sem_util.adb: Fix style.
+
+2024-08-23  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb (Ensure_Valid): Remove detection of boolean and
+	short-circuit operators.
+	(Expr_Known_Valid): Detect short-circuit operators; detection of
+	boolean operators was already done in this routine.
+
+2024-08-23  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb (Ensure_Valid): Use Find_Actual.
+
+2024-08-23  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb (Ensure_Valid): Use First_Actual/Next_Actual.
+	* exp_ch6.adb (Is_Direct_Deep_Call): Likewise.
+	* exp_util.adb (Type_Of_Formal): Likewise.
+	* sem_util.adb (Is_Container_Element): Likewise; cleanup
+	membership test by using a subtype.
+
+2024-08-23  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch13.adb (Analyze_One_Aspect): Temporarily remove reporting
+	an error when the new aspect is set to True and the extensions are
+	not enabled.
+
+2024-08-23  Javier Miranda  <miranda@adacore.com>
+
+	* exp_util.ads (Is_Expanded_Class_Wide_Interface_Object_Decl): New
+	subprogram.
+	* exp_util.adb (Is_Expanded_Class_Wide_Interface_Object_Decl):
+	ditto.
+	* sem_util.adb (Is_Aliased_View): Handle expanded class-wide type
+	object declaration.
+	* checks.adb (Is_Aliased_Unconstrained_Component): Protect the
+	frontend against calling Is_Aliased_View with Empty. Found working
+	on this issue.
+
+2024-08-23  Javier Miranda  <miranda@adacore.com>
+
+	* aspects.ads (Aspect_First_Controlling_Parameter): New aspect.
+	Defined as implementation defined aspect that has a static boolean
+	value and it is converted to pragma when the value is True.
+	* einfo.ads (Has_First_Controlling_Parameter): New attribute.
+	* exp_ch9.adb (Build_Corresponding_Record): Propagate the aspect
+	to the corresponding record type.
+	(Expand_N_Protected_Type_Declaration): Analyze the inherited
+	aspect to add the pragma.
+	(Expand_N_Task_Type_Declaration): ditto.
+	* freeze.adb (Warn_If_Implicitly_Inherited_Aspects): New
+	subprogram.
+	(Has_First_Ctrl_Param_Aspect): New subprogram.
+	(Freeze_Record_Type): Call Warn_If_Implicitly_Inherited_Aspects.
+	(Freeze_Subprogram): Check illegal subprograms of tagged types and
+	interface types that have this new aspect.
+	* gen_il-fields.ads (Has_First_Controlling_Parameter): New entity
+	field.
+	* gen_il-gen-gen_entities.adb (Has_First_Controlling_Parameter):
+	The new field is a semantic flag.
+	* gen_il-internals.adb (Image): Add
+	Has_First_Controlling_Parameter.
+	* par-prag.adb (Prag): No action for
+	Pragma_First_Controlling_Parameter since processing is handled
+	entirely in Sem_Prag.
+	* sem_ch12.adb (Validate_Private_Type_Instance): When the generic
+	formal has this new aspect, check that the actual type also has
+	this aspect.
+	* sem_ch13.adb (Analyze_One_Aspect): Check that the aspect is
+	applied to a tagged type or a concurrent type.
+	* sem_ch3.adb (Analyze_Full_Type_Declaration): Derived tagged
+	types inherit this new aspect, and also from their implemented
+	interface types.
+	(Process_Full_View): Propagate the aspect to the full view.
+	* sem_ch6.adb (Is_A_Primitive): New subprogram; used to factor
+	code and also clarify detection of primitives.
+	* sem_ch9.adb (Check_Interfaces): Propagate this new aspect to the
+	type implementing interface types.
+	* sem_disp.adb (Check_Controlling_Formals): Handle tagged type
+	that has the aspect and has subprograms overriding primitives of
+	tagged types that lack this aspect.
+	(Check_Dispatching_Operation): Warn on dispatching primitives
+	disallowed by this new aspect.
+	(Has_Predefined_Dispatching_Operation_Name): New subprogram.
+	(Find_Dispatching_Type): Handle dispatching functions of tagged
+	types that have the new aspect.
+	(Find_Primitive_Covering_Interface): For primitives of tagged
+	types that have the aspect and override a primitive of a parent
+	type that does not have the aspect, we must temporarily unset
+	attribute First_Controlling_ Parameter to properly check
+	conformance.
+	* sem_prag.ads (Aspect_Specifying_Pragma): Add new pragma.
+	* sem_prag.adb (Pragma_First_Controlling_Parameter): Handle new
+	pragma.
+	* snames.ads-tmpl (Name_First_Controlling_Parameter): New name.
+	* warnsw.ads (Warn_On_Non_Dispatching_Primitives): New warning.
+	* warnsw.adb (Warn_On_Non_Dispatching_Primitives): New warning;
+	not set by default when GNAT_Mode warnings are enabled, nor when
+	all warnings are enabled (-gnatwa).
+
 2024-08-19  Arsen Arsenović  <arsen@aarsen.me>
 
 	PR ada/115917

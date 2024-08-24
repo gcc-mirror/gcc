@@ -1,3 +1,62 @@
+2024-08-23  Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	PR rtl-optimization/116372
+	PR rtl-optimization/116405
+	* gcc.dg/pr116372.c: New test.
+	* gcc.dg/pr116405.c: New test.
+
+2024-08-23  Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	PR middle-end/116358
+	* gcc.target/aarch64/pr116358.c: New test.
+
+2024-08-23  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/116415
+	* gcc.target/powerpc/pr116415.c: New test.
+
+2024-08-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	Revert:
+	2024-08-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/102689
+	* gfortran.dg/class_transformational_1.f90: New test for class-
+	valued reshape.
+	* gfortran.dg/class_transformational_2.f90: New test for other
+	class_valued transformational intrinsics.
+
+2024-08-23  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR middle-end/115495
+	* gcc.target/riscv/rvv/autovec/pr115495.c: New test.
+
+2024-08-23  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/abs-rv32gcv.c: Adjust test
+	expectation.
+	* gcc.target/riscv/rvv/autovec/unop/abs-rv64gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/abs-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-8.c: Ditto.
+
+2024-08-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR other/116462
+	* gcc.dg/debug/dwarf2/inline7.c: Reduce test expectations.
+
+2024-08-23  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/116461
+	* gcc.dg/vect/vect-mod-var.c: Change the initialization loop so that
+	`b[i]` is never 0. Use 1 in those places.
+
 2024-08-22  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR testsuite/116464
