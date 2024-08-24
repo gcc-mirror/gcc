@@ -1,4 +1,5 @@
 // { dg-additional-options "-fschedule-insns -fno-thread-jumps -fno-dce" }
+/* { dg-require-effective-target scheduling } */
 
 int a, b, c;
 volatile int d;
