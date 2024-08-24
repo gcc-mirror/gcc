@@ -349,6 +349,8 @@ private:
     /** Only to be used by the guard. */
     void pop_binder () { binder_size_stack.pop (); }
 
+    bool binder_empty () { return binder_size_stack.empty (); }
+
     /**
      * Switch from resolving a function header to a function body.
      */
@@ -424,7 +426,8 @@ public:
     ~LifetimeResolverGuard ()
     {
       rust_assert (!ctx.lifetime_resolver_stack.empty ());
-      ctx.lifetime_resolver_stack.top ().pop_binder ();
+      if (!ctx.lifetime_resolver_stack.top ().binder_empty ())
+	ctx.lifetime_resolver_stack.top ().pop_binder ();
       if (kind == RESOLVER)
 	{
 	  ctx.lifetime_resolver_stack.pop ();
