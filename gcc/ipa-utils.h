@@ -106,6 +106,7 @@ cgraph_node *try_speculative_devirtualization (tree, HOST_WIDE_INT,
 void warn_types_mismatch (tree t1, tree t2, location_t loc1 = UNKNOWN_LOCATION,
 			  location_t loc2 = UNKNOWN_LOCATION);
 bool odr_or_derived_type_p (const_tree t);
+bool odr_equivalent_or_derived_p (tree t1, tree t2);
 bool odr_types_equivalent_p (tree type1, tree type2);
 bool odr_type_violation_reported_p (tree type);
 tree prevailing_odr_type (tree type);

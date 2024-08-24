@@ -1211,6 +1211,30 @@ skip_in_fields_list_p (tree t)
   return false;
 }
 
+/* Return true if T2 is derived form T1.  */
+
+bool
+odr_equivalent_or_derived_p (tree t1, tree t2)
+{
+  if (in_lto_p)
+    {
+      if (odr_types_equivalent_p (t1, t2))
+       return true;
+    }
+  else
+    {
+      if (TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
+       return true;
+    }
+  if (!TYPE_BINFO (t2))
+    return false;
+  for (unsigned int i = 0; i < BINFO_N_BASE_BINFOS (TYPE_BINFO (t2)); i++)
+    if (odr_equivalent_or_derived_p
+        (t1, BINFO_TYPE (BINFO_BASE_BINFO (TYPE_BINFO (t2), i))))
+    return true;
+  return false;
+}
+
 /* Compare T1 and T2, report ODR violations if WARN is true and set
    WARNED to true if anything is reported.  Return true if types match.
    If true is returned, the types are also compatible in the sense of
