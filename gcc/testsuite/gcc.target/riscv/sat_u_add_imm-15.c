@@ -5,7 +5,7 @@
 #include "sat_arith.h"
 
 /*
-** sat_u_add_imm7_uint32_t_fmt_4:
+** sat_u_add_imm7u_uint32_t_fmt_4:
 ** slli\s+[atx][0-9]+,\s*a0,\s*32
 ** srli\s+[atx][0-9]+,\s*[atx][0-9]+,\s*32
 ** addi\s+[atx][0-9]+,\s*a0,\s*7
@@ -17,6 +17,6 @@
 ** sext.w\s+a0,\s*a0
 ** ret
 */
-DEF_SAT_U_ADD_IMM_FMT_4(uint32_t, 7)
+DEF_SAT_U_ADD_IMM_FMT_4(uint32_t, 7u)
 
 /* { dg-final { scan-rtl-dump-times ".SAT_ADD " 2 "expand" } } */

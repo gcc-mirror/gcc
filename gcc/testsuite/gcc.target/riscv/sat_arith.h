@@ -90,6 +90,22 @@ sat_u_add_imm##IMM##_##T##_fmt_4 (T x)                          \
   return __builtin_add_overflow (x, IMM, &ret) == 0 ? ret : -1; \
 }
 
+#define DEF_SAT_U_ADD_IMM_TYPE_CHECK_FMT_1(T, IMM)         \
+T __attribute__((noinline))                                \
+sat_u_add_imm_type_check##_##T##_fmt_1 (T x)               \
+{                                                          \
+  T ret;                                                   \
+  return __builtin_add_overflow (x, IMM, &ret) ? -1 : ret; \
+}
+
+#define DEF_SAT_U_ADD_IMM_TYPE_CHECK_FMT_2(T, IMM)              \
+T __attribute__((noinline))                                     \
+sat_u_add_imm_type_check##_##T##_fmt_2 (T x)                    \
+{                                                               \
+  T ret;                                                        \
+  return __builtin_add_overflow (x, IMM, &ret) == 0 ? ret : -1; \
+}
+
 #define RUN_SAT_U_ADD_IMM_FMT_1(T, x, IMM, expect) \
   if (sat_u_add_imm##IMM##_##T##_fmt_1(x) != expect) __builtin_abort ()
 
