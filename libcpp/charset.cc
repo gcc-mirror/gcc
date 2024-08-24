@@ -3093,7 +3093,7 @@ _cpp_convert_input (cpp_reader *pfile, const char *input_charset,
   struct cset_converter input_cset;
   struct _cpp_strbuf to;
   unsigned char *buffer;
-  size_t pad;
+  size_t pad = CPP_BUFFER_PADDING;
 
   input_cset = init_iconv_desc (pfile, SOURCE_CHARSET, input_charset);
   if (input_cset.func == convert_no_conversion)
@@ -3130,11 +3130,6 @@ _cpp_convert_input (cpp_reader *pfile, const char *input_charset,
 	}
     }
 
-#ifdef HAVE_SSSE3
-  pad = 64;
-#else
-  pad = 16;
-#endif
   /* Resize buffer if we allocated substantially too much, or if we
      don't have enough space for the following padding, which allows
      search_line_fast to use (possibly misaligned) vector loads.  */

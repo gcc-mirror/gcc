@@ -359,8 +359,8 @@ search_line_ssse3 (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
                 "host character encoding is ASCII");
 
   v16qi d1, d2, t1, t2;
-  /* Unaligned loads.  Reading beyond the final newline is safe,
-     since files.cc:read_file_guts pads the allocation.  */
+  /* Unaligned loads, potentially using padding after the final newline.  */
+  static_assert (CPP_BUFFER_PADDING >= 64, "");
   d1 = *(const v16qi_u *)s;
   d2 = *(const v16qi_u *)(s + 16);
   unsigned m1, m2, found;

@@ -322,6 +322,13 @@ struct _cpp_line_note
   unsigned int type;
 };
 
+/* Tail padding required by search_line_fast alternatives.  */
+#ifdef HAVE_SSSE3
+#define CPP_BUFFER_PADDING 64
+#else
+#define CPP_BUFFER_PADDING 16
+#endif
+
 /* Represents the contents of a file cpplib has read in.  */
 struct cpp_buffer
 {

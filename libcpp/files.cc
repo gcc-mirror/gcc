@@ -732,11 +732,7 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file, location_t loc,
        the majority of C source files.  */
     size = 8 * 1024;
 
-#ifdef HAVE_SSSE3
-  pad = 64;
-#else
-  pad = 16;
-#endif
+  pad = CPP_BUFFER_PADDING;
   /* The '+ PAD' here is space for the final '\n' and PAD-1 bytes of padding,
      allowing search_line_fast to use (possibly misaligned) vector loads.  */
   buf = XNEWVEC (uchar, size + pad);
