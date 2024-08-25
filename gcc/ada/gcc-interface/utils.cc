@@ -2220,7 +2220,7 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
       if (DECL_BIT_FIELD (field)
 	  && operand_equal_p (this_size, TYPE_SIZE (type), 0))
 	{
-	  const unsigned int align = TYPE_ALIGN (type);
+	  const unsigned int align = default_field_alignment (field, type);
 
 	  /* In the general case, type alignment is required.  */
 	  if (value_factor_p (pos, align))

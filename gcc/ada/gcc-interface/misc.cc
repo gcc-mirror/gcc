@@ -28,6 +28,7 @@
 #include "coretypes.h"
 #include "target.h"
 #include "tree.h"
+#include "tm_p.h"
 #include "diagnostic.h"
 #include "opts.h"
 #include "alias.h"
@@ -1127,6 +1128,26 @@ must_pass_by_ref (tree gnu_type)
 	  || TYPE_IS_BY_REFERENCE_P (gnu_type)
 	  || (TYPE_SIZE_UNIT (gnu_type)
 	      && TREE_CODE (TYPE_SIZE_UNIT (gnu_type)) != INTEGER_CST));
+}
+
+/* Return the default alignment of a FIELD of TYPE declared in a record or
+   union type as specified by the ABI of the target architecture.  */
+
+unsigned int
+default_field_alignment (tree ARG_UNUSED (field), tree type)
+{
+  /* This is modeled on layout_decl.  */
+  unsigned int align = TYPE_ALIGN (type);
+
+#ifdef BIGGEST_FIELD_ALIGNMENT
+  align = MIN (align, (unsigned int) BIGGEST_FIELD_ALIGNMENT);
+#endif
+
+#ifdef ADJUST_FIELD_ALIGN
+  align = ADJUST_FIELD_ALIGN (field, type, align);
+#endif
+
+  return align;
 }
 
 /* This function is called by the front-end to enumerate all the supported
