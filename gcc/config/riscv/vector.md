@@ -1486,7 +1486,8 @@
   {
     /* Early expand DImode broadcast in RV32 system to avoid RA reload
        generate (set (reg) (vec_duplicate:DI)).  */
-    if (maybe_gt (GET_MODE_SIZE (<VEL>mode), GET_MODE_SIZE (Pmode)))
+    bool gt_p = maybe_gt (GET_MODE_SIZE (<VEL>mode), GET_MODE_SIZE (Pmode));
+    if (!FLOAT_MODE_P (<VEL>mode) && gt_p)
       {
         riscv_vector::emit_vlmax_insn (code_for_pred_broadcast (<MODE>mode),
 				       riscv_vector::UNARY_OP, operands);

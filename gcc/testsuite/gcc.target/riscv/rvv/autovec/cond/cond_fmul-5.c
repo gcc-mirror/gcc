@@ -25,6 +25,6 @@
 
 TEST_ALL (DEF_LOOP)
 
-/* { dg-final { scan-assembler-times {vfmul\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 3 } } */
-/* { dg-final { scan-assembler-times {vfmul\.vf\s+v[0-9]+,v[0-9]+,fa[0-9],v0.t} 6 } } */
+/* { dg-final { scan-assembler-times {vfmul\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 0 } } */
+/* { dg-final { scan-assembler-times {vfmul\.vf\s+v[0-9]+,v[0-9]+,fa[0-9],v0.t} 9 } } */
 /* { dg-final { scan-assembler-not {\tvf?merge\.v[vxi]m\t} } } */
