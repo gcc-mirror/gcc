@@ -1,4 +1,4 @@
-/* { dg-options "-march=rv32imc -mabi=ilp32" } */
+/* { dg-options "-march=rv32imc -mabi=ilp32 -fno-late-combine-instructions" } */
 /* { dg-skip-if "" { *-*-* } { "*" } { "-Os" } } */
 
 /* These loads cannot be compressed because only one compressed reg is
