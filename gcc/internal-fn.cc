@@ -5311,6 +5311,7 @@ expand_POPCOUNT (internal_fn fn, gcall *stmt)
   bool nonzero_arg = integer_zerop (gimple_call_arg (stmt, 1));
   tree type = TREE_TYPE (arg);
   machine_mode mode = TYPE_MODE (type);
+  machine_mode lhsmode = TYPE_MODE (TREE_TYPE (lhs));
   do_pending_stack_adjust ();
   start_sequence ();
   expand_unary_optab_fn (fn, stmt, popcount_optab);
@@ -5318,7 +5319,7 @@ expand_POPCOUNT (internal_fn fn, gcall *stmt)
   end_sequence ();
   start_sequence ();
   rtx plhs = expand_normal (lhs);
-  rtx pcmp = emit_store_flag (NULL_RTX, EQ, plhs, const1_rtx, mode, 0, 0);
+  rtx pcmp = emit_store_flag (NULL_RTX, EQ, plhs, const1_rtx, lhsmode, 0, 0);
   if (pcmp == NULL_RTX)
     {
     fail:
