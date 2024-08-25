@@ -245,6 +245,15 @@ sat_u_trunc_##WT##_to_##NT##_fmt_3 (WT x) \
 }
 #define DEF_SAT_U_TRUNC_FMT_3_WRAP(NT, WT) DEF_SAT_U_TRUNC_FMT_3(NT, WT)
 
+#define DEF_SAT_U_TRUNC_FMT_4(NT, WT)          \
+NT __attribute__((noinline))                   \
+sat_u_trunc_##WT##_to_##NT##_fmt_4 (WT x)      \
+{                                              \
+  bool not_overflow = x <= (WT)(NT)(-1);       \
+  return ((NT)x) | (NT)((NT)not_overflow - 1); \
+}
+#define DEF_SAT_U_TRUNC_FMT_4_WRAP(NT, WT) DEF_SAT_U_TRUNC_FMT_4(NT, WT)
+
 #define RUN_SAT_U_TRUNC_FMT_1(NT, WT, x) sat_u_trunc_##WT##_to_##NT##_fmt_1 (x)
 #define RUN_SAT_U_TRUNC_FMT_1_WRAP(NT, WT, x) RUN_SAT_U_TRUNC_FMT_1(NT, WT, x)
 
@@ -253,5 +262,8 @@ sat_u_trunc_##WT##_to_##NT##_fmt_3 (WT x) \
 
 #define RUN_SAT_U_TRUNC_FMT_3(NT, WT, x) sat_u_trunc_##WT##_to_##NT##_fmt_3 (x)
 #define RUN_SAT_U_TRUNC_FMT_3_WRAP(NT, WT, x) RUN_SAT_U_TRUNC_FMT_3(NT, WT, x)
+
+#define RUN_SAT_U_TRUNC_FMT_4(NT, WT, x) sat_u_trunc_##WT##_to_##NT##_fmt_4 (x)
+#define RUN_SAT_U_TRUNC_FMT_4_WRAP(NT, WT, x) RUN_SAT_U_TRUNC_FMT_4(NT, WT, x)
 
 #endif
