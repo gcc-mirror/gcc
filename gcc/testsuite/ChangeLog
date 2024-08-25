@@ -1,3 +1,60 @@
+2024-08-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/110635
+	* g++.dg/coroutines/pr110635.C: New test.
+
+2024-08-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/102051
+	* g++.dg/coroutines/pr102051.C: New test.
+
+2024-08-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/115908
+	* g++.dg/coroutines/pr115908.C: New test.
+
+2024-08-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/109682
+	* g++.dg/coroutines/pr109682.C: New test.
+
+2024-08-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/100476
+	* g++.dg/coroutines/coro-bad-gro-01-void-gro-non-class-coro.C:
+	Adjust expected diagnostic.
+	* g++.dg/coroutines/pr102489.C: Avoid void get_return_object.
+	* g++.dg/coroutines/pr103868.C: Likewise.
+	* g++.dg/coroutines/pr94879-folly-1.C: Likewise.
+	* g++.dg/coroutines/pr94883-folly-2.C: Likewise.
+	* g++.dg/coroutines/pr96749-2.C: Likewise.
+
+2024-08-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/113773
+	* g++.dg/coroutines/torture/pr113773.C: New test.
+
+2024-08-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/coro-bad-alloc-01-bad-op-del.C: Use revised
+	diagnostics.
+	* g++.dg/coroutines/coro-bad-gro-00-class-gro-scalar-return.C:
+	Likewise.
+	* g++.dg/coroutines/coro-bad-gro-01-void-gro-non-class-coro.C:
+	Likewise.
+	* g++.dg/coroutines/coro-bad-grooaf-00-static.C: Likewise.
+	* g++.dg/coroutines/ramp-return-b.C: Likewise.
+
+2024-08-24  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/113746
+	* g++.dg/parse/crash76.C: New test.
+
+2024-08-24  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.dg/torture/pr115929-2.c: Add dg-require-effective-target scheduling.
+	* gcc.dg/torture/pr116343.c: Same.
+
 2024-08-23  Manolis Tsamis  <manolis.tsamis@vrull.eu>
 
 	PR rtl-optimization/116372
