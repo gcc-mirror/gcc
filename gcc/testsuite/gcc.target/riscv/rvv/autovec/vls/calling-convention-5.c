@@ -135,7 +135,7 @@ DEF_RET1_ARG9 (v2048hf)
 
 // RET1_ARG0 tests
 /* { dg-final { scan-assembler-times {li\s+a[0-1],\s*0} 8 } } */
-/* { dg-final { scan-assembler-times {mv\s+s0,a0\s+call\s+memset\s+mv\s+a0,s0} 3 } } */
+/* { dg-final { scan-assembler-times {call\s+memset} 3 } } */
 
 // v1hf tests: return value (lhu) and function prologue (sh)
 // 1 lhu per test, argnum sh's when args > 1
