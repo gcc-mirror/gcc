@@ -1650,23 +1650,28 @@ timode_scalar_chain::compute_convert_gain ()
 	      else if (op1val == 64)
 		vcost = COSTS_N_INSNS (3);
 	      else if (op1val == 96)
-		vcost = COSTS_N_INSNS (4);
+		vcost = COSTS_N_INSNS (3);
 	      else if (op1val >= 111)
 		vcost = COSTS_N_INSNS (3);
-	      else if (TARGET_AVX2 && op1val == 32)
-		vcost = COSTS_N_INSNS (3);
 	      else if (TARGET_SSE4_1 && op1val == 32)
-		vcost = COSTS_N_INSNS (4);
+		vcost = COSTS_N_INSNS (3);
+	      else if (TARGET_SSE4_1
+		       && (op1val == 8 || op1val == 16 || op1val == 24))
+		vcost = COSTS_N_INSNS (3);
 	      else if (op1val >= 96)
-		vcost = COSTS_N_INSNS (5);
+		vcost = COSTS_N_INSNS (4);
+	      else if (TARGET_SSE4_1 && (op1val == 28 || op1val == 80))
+		vcost = COSTS_N_INSNS (4);
 	      else if ((op1val & 7) == 0)
-		vcost = COSTS_N_INSNS (6);
+		vcost = COSTS_N_INSNS (5);
 	      else if (TARGET_AVX2 && op1val < 32)
 		vcost = COSTS_N_INSNS (6);
+	      else if (TARGET_SSE4_1 && op1val < 15)
+		vcost = COSTS_N_INSNS (6);
 	      else if (op1val == 1 || op1val >= 64)
-		vcost = COSTS_N_INSNS (9);
+		vcost = COSTS_N_INSNS (8);
 	      else
-		vcost = COSTS_N_INSNS (10);
+		vcost = COSTS_N_INSNS (9);
 	    }
 	  igain = scost - vcost;
 	  break;
