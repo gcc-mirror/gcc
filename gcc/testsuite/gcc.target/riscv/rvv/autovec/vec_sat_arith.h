@@ -432,6 +432,19 @@ vec_sat_u_trunc_##NT##_##WT##_fmt_3 (NT *out, WT *in, unsigned limit) \
 }
 #define DEF_VEC_SAT_U_TRUNC_FMT_3_WRAP(NT, WT) DEF_VEC_SAT_U_TRUNC_FMT_3(NT, WT)
 
+#define DEF_VEC_SAT_U_TRUNC_FMT_4(NT, WT)                             \
+void __attribute__((noinline))                                        \
+vec_sat_u_trunc_##NT##_##WT##_fmt_4 (NT *out, WT *in, unsigned limit) \
+{                                                                     \
+  unsigned i;                                                         \
+  for (i = 0; i < limit; i++)                                         \
+    {                                                                 \
+      bool not_overflow = in[i] <= (WT)(NT)(-1);                      \
+      out[i] = ((NT)in[i]) | (NT)((NT)not_overflow - 1);              \
+    }                                                                 \
+}
+#define DEF_VEC_SAT_U_TRUNC_FMT_4_WRAP(NT, WT) DEF_VEC_SAT_U_TRUNC_FMT_4(NT, WT)
+
 #define RUN_VEC_SAT_U_TRUNC_FMT_1(NT, WT, out, in, N) \
   vec_sat_u_trunc_##NT##_##WT##_fmt_1 (out, in, N)
 #define RUN_VEC_SAT_U_TRUNC_FMT_1_WRAP(NT, WT, out, in, N) \
@@ -446,5 +459,10 @@ vec_sat_u_trunc_##NT##_##WT##_fmt_3 (NT *out, WT *in, unsigned limit) \
   vec_sat_u_trunc_##NT##_##WT##_fmt_3 (out, in, N)
 #define RUN_VEC_SAT_U_TRUNC_FMT_3_WRAP(NT, WT, out, in, N) \
   RUN_VEC_SAT_U_TRUNC_FMT_3(NT, WT, out, in, N)
+
+#define RUN_VEC_SAT_U_TRUNC_FMT_4(NT, WT, out, in, N) \
+  vec_sat_u_trunc_##NT##_##WT##_fmt_4 (out, in, N)
+#define RUN_VEC_SAT_U_TRUNC_FMT_4_WRAP(NT, WT, out, in, N) \
+  RUN_VEC_SAT_U_TRUNC_FMT_4(NT, WT, out, in, N)
 
 #endif
