@@ -1173,6 +1173,11 @@ maybe_process_partial_specialization (tree type)
 		       type, inst);
 	    }
 
+	  /* Make sure that the specialization is valid.  */
+	  if (!redeclare_class_template (type, current_template_parms,
+					 current_template_constraints ()))
+	    return error_mark_node;
+
 	  /* Mark TYPE as a specialization.  And as a result, we only
 	     have one level of template argument for the innermost
 	     class template.  */
