@@ -3135,7 +3135,7 @@ test_prefixes_and_wrapping ()
 
 /* Verify that URL-printing works as expected.  */
 
-void
+static void
 test_urls ()
 {
   {
@@ -3169,9 +3169,40 @@ test_urls ()
   }
 }
 
+static void
+test_urls_from_braces ()
+{
+  {
+    pretty_printer pp;
+    pp.set_url_format (URL_FORMAT_NONE);
+    pp_printf (&pp, "before %{text%} after",
+		    "http://example.com");
+    ASSERT_STREQ ("before text after",
+		  pp_formatted_text (&pp));
+  }
+
+  {
+    pretty_printer pp;
+    pp.set_url_format (URL_FORMAT_ST);
+    pp_printf (&pp, "before %{text%} after",
+		    "http://example.com");
+    ASSERT_STREQ ("before \33]8;;http://example.com\33\\text\33]8;;\33\\ after",
+		  pp_formatted_text (&pp));
+  }
+
+  {
+    pretty_printer pp;
+    pp.set_url_format (URL_FORMAT_BEL);
+    pp_printf (&pp, "before %{text%} after",
+		    "http://example.com");
+    ASSERT_STREQ ("before \33]8;;http://example.com\atext\33]8;;\a after",
+		  pp_formatted_text (&pp));
+  }
+}
+
 /* Verify that we gracefully reject null URLs.  */
 
-void
+static void
 test_null_urls ()
 {
   {
@@ -3221,8 +3252,7 @@ pp_printf_with_urlifier (pretty_printer *pp,
   va_end (ap);
 }
 
-
-void
+static void
 test_urlification ()
 {
   class test_urlifier : public urlifier
@@ -3424,6 +3454,7 @@ pretty_print_cc_tests ()
   test_pp_format ();
   test_prefixes_and_wrapping ();
   test_urls ();
+  test_urls_from_braces ();
   test_null_urls ();
   test_urlification ();
   test_utf8 ();
