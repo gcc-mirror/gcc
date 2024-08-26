@@ -2291,6 +2291,94 @@ struct viddup_def : public overloaded_base<0>
 };
 SHAPE (viddup)
 
+/* <T0>_t vfoo[_n]_t0(uint32_t, uint32_t, const int)
+   <T0>_t vfoo[_wb]_t0(uint32_t *, uint32_t, const int)
+
+   Shape for vector increment or decrement with wrap and duplicate operations
+   that take an integer or pointer to integer first argument, an integer second
+   argument and an immediate, and produce a vector.
+
+   Check that 'imm' is one of 1, 2, 4 or 8.
+
+   Example: vdwdupq.
+   uint8x16_t [__arm_]vdwdupq[_n]_u8(uint32_t a, uint32_t b, const int imm)
+   uint8x16_t [__arm_]vdwdupq[_wb]_u8(uint32_t *a, uint32_t b, const int imm)
+   uint8x16_t [__arm_]vdwdupq_m[_n_u8](uint8x16_t inactive, uint32_t a, uint32_t b, const int imm, mve_pred16_t p)
+   uint8x16_t [__arm_]vdwdupq_m[_wb_u8](uint8x16_t inactive, uint32_t *a, uint32_t b, const int imm, mve_pred16_t p)
+   uint8x16_t [__arm_]vdwdupq_x[_n]_u8(uint32_t a, uint32_t b, const int imm, mve_pred16_t p)
+   uint8x16_t [__arm_]vdwdupq_x[_wb]_u8(uint32_t *a, uint32_t b, const int imm, mve_pred16_t p)  */
+struct vidwdup_def : public overloaded_base<0>
+{
+  bool
+  explicit_type_suffix_p (unsigned int i, enum predication_index pred,
+			  enum mode_suffix_index,
+			  type_suffix_info) const override
+  {
+    return ((i == 0) && (pred != PRED_m));
+  }
+
+  bool
+  skip_overload_p (enum predication_index, enum mode_suffix_index mode) const override
+  {
+    /* For MODE_wb, share the overloaded instance with MODE_n.  */
+    if (mode == MODE_wb)
+      return true;
+
+    return false;
+  }
+
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "v0,su32,su32,su64", group, MODE_n, preserve_user_namespace);
+    build_all (b, "v0,as,su32,su64", group, MODE_wb, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type_suffix = NUM_TYPE_SUFFIXES;
+    if (!r.check_gp_argument (3, i, nargs))
+      return error_mark_node;
+
+    type_suffix = r.type_suffix_ids[0];
+    /* With PRED_m, ther is no type suffix, so infer it from the first (inactive)
+       argument.  */
+    if (type_suffix == NUM_TYPE_SUFFIXES)
+      type_suffix = r.infer_vector_type (0);
+
+    unsigned int last_arg = i - 2;
+    /* Check that last_arg is either scalar or pointer.  */
+    if (!r.scalar_argument_p (last_arg))
+      return error_mark_node;
+
+    if (!r.scalar_argument_p (last_arg + 1))
+      return error_mark_node;
+
+    if (!r.require_integer_immediate (last_arg + 2))
+      return error_mark_node;
+
+    /* With MODE_n we expect a scalar, with MODE_wb we expect a pointer.  */
+    mode_suffix_index mode_suffix;
+    if (POINTER_TYPE_P (r.get_argument_type (last_arg)))
+      mode_suffix = MODE_wb;
+    else
+      mode_suffix = MODE_n;
+
+    return r.resolve_to (mode_suffix, type_suffix);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    return c.require_immediate_one_of (2, 1, 2, 4, 8);
+  }
+};
+SHAPE (vidwdup)
+
 /* <T0>_t vfoo[_t0](<T0>_t, <T0>_t, mve_pred16_t)
 
    i.e. a version of the standard ternary shape in which
