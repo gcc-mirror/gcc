@@ -124,7 +124,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vectorizer.h"
 #include "tree-eh.h"
 #include "cgraph.h"
-#include "print-tree.h"
 
 /* For lang_hooks.types.type_for_mode.  */
 #include "langhooks.h"
