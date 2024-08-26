@@ -247,6 +247,8 @@
   UNSPEC_VCVTTPH2IUBS
   UNSPEC_VCVTTPS2IBS
   UNSPEC_VCVTTPS2IUBS
+  UNSPEC_SFIX_SATURATION
+  UNSPEC_UFIX_SATURATION
 ])
 
 (define_c_enum "unspecv" [
@@ -375,6 +377,10 @@
    (V4DF "TARGET_AVX512DQ && TARGET_AVX512VL")
    (V2DF "TARGET_AVX512DQ && TARGET_AVX512VL")])
 
+(define_mode_iterator VF1_VF2_AVX10_2
+  [(V16SF "TARGET_AVX10_2_512") V8SF V4SF
+   (V8DF "TARGET_AVX10_2_512") V4DF V2DF])
+
 (define_mode_iterator VFH
   [(V32HF "TARGET_AVX512FP16 && TARGET_EVEX512")
    (V16HF "TARGET_AVX512FP16 && TARGET_AVX512VL")
@@ -422,6 +428,9 @@
 ;; All DFmode vector float modes
 (define_mode_iterator VF2
   [(V8DF "TARGET_AVX512F && TARGET_EVEX512") (V4DF "TARGET_AVX") V2DF])
+
+(define_mode_iterator VF2_AVX10_2
+  [(V8DF "TARGET_AVX10_2_512") V4DF V2DF])
 
 ;; All DFmode & HFmode vector float modes
 (define_mode_iterator VF2H
@@ -569,6 +578,9 @@
 
 (define_mode_iterator VI8
   [(V8DI "TARGET_AVX512F && TARGET_EVEX512") (V4DI "TARGET_AVX") V2DI])
+
+(define_mode_iterator VI8_AVX10_2
+  [(V8DI "TARGET_AVX10_2_512") V4DI V2DI])
 
 (define_mode_iterator VI8_FVL
   [(V8DI "TARGET_AVX512F && TARGET_EVEX512") V4DI (V2DI "TARGET_AVX512VL")])
@@ -32228,7 +32240,9 @@
     (UNSPEC_VCVTPS2IBS "")
     (UNSPEC_VCVTPS2IUBS "u")
     (UNSPEC_VCVTTPS2IBS "")
-    (UNSPEC_VCVTTPS2IUBS "u")])
+    (UNSPEC_VCVTTPS2IUBS "u")
+    (UNSPEC_SFIX_SATURATION "")
+    (UNSPEC_UFIX_SATURATION "u")])
 
 (define_int_attr sat_cvt_trunc_prefix
    [(UNSPEC_VCVTNEBF162IBS "")
@@ -32306,3 +32320,70 @@
  [(set_attr "type" "ssecvt")
   (set_attr "prefix" "evex")
   (set_attr "mode" "<sseinsnmode>")])
+
+(define_int_iterator UNSPEC_SAT_CVT_DS_SIGN_ITER
+   [UNSPEC_SFIX_SATURATION
+    UNSPEC_UFIX_SATURATION])
+
+(define_mode_attr pd2dqssuff
+  [(V16SF "") (V8SF "") (V4SF "")
+   (V8DF "") (V4DF "{y}") (V2DF "{x}")])
+
+(define_insn "avx10_2_vcvtt<castmode>2<sat_cvt_sign_prefix>dqs<mode><mask_name><round_saeonly_name>"
+ [(set (match_operand:<VEC_GATHER_IDXSI> 0 "register_operand" "=v")
+       (unspec:<VEC_GATHER_IDXSI>
+	  [(match_operand:VF1_VF2_AVX10_2 1 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")]
+	  UNSPEC_SAT_CVT_DS_SIGN_ITER))]
+ "TARGET_AVX10_2_256 && <round_saeonly_mode_condition>"
+ "vcvtt<castmode>2<sat_cvt_sign_prefix>dqs<pd2dqssuff>\t{<round_saeonly_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_saeonly_mask_op2>}"
+ [(set_attr "type" "ssecvt")
+  (set_attr "prefix" "evex")
+  (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "avx10_2_vcvttpd2<sat_cvt_sign_prefix>qqs<mode><mask_name><round_saeonly_name>"
+ [(set (match_operand:<VEC_GATHER_IDXDI> 0 "register_operand" "=v")
+       (unspec:<VEC_GATHER_IDXDI>
+	  [(match_operand:VF2_AVX10_2 1 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")]
+	  UNSPEC_SAT_CVT_DS_SIGN_ITER))]
+ "TARGET_AVX10_2_256 && <round_saeonly_mode_condition>"
+ "vcvttpd2<sat_cvt_sign_prefix>qqs\t{<round_saeonly_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_saeonly_mask_op2>}"
+ [(set_attr "type" "ssecvt")
+  (set_attr "prefix" "evex")
+  (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "avx10_2_vcvttps2<sat_cvt_sign_prefix>qqs<mode><mask_name><round_saeonly_name>"
+ [(set (match_operand:VI8_AVX10_2 0 "register_operand" "=v")
+       (unspec:VI8_AVX10_2
+	  [(match_operand:<vpckfloat_temp_mode> 1 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")]
+	  UNSPEC_SAT_CVT_DS_SIGN_ITER))]
+ "TARGET_AVX10_2_256 && <round_saeonly_mode_condition>"
+ "vcvttps2<sat_cvt_sign_prefix>qqs\t{<round_saeonly_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_saeonly_mask_op2>}"
+ [(set_attr "type" "ssecvt")
+  (set_attr "prefix" "evex")
+  (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "avx10_2_vcvttsd2<sat_cvt_sign_prefix>sis<mode><round_saeonly_name>"
+ [(set (match_operand:SWI48 0 "register_operand" "=r")
+   (unspec:SWI48
+    [(vec_select:DF
+      (match_operand:V2DF 1 "<round_saeonly_nimm_scalar_predicate>" "<round_saeonly_constraint>")
+      (parallel [(const_int 0)]))]
+    UNSPEC_SAT_CVT_DS_SIGN_ITER))]
+ "TARGET_AVX10_2_256"
+ "vcvttsd2<sat_cvt_sign_prefix>sis\t{<round_saeonly_op2>%1, %0|%0, %1<round_saeonly_op2>}"
+ [(set_attr "type" "ssecvt")
+ (set_attr "prefix" "evex")
+ (set_attr "mode" "<MODE>")])
+
+(define_insn "avx10_2_vcvttss2<sat_cvt_sign_prefix>sis<mode><round_saeonly_name>"
+ [(set (match_operand:SWI48 0 "register_operand" "=r")
+   (unspec:SWI48
+    [(vec_select:SF
+      (match_operand:V4SF 1 "<round_saeonly_nimm_scalar_predicate>" "<round_saeonly_constraint>")
+      (parallel [(const_int 0)]))]
+    UNSPEC_SAT_CVT_DS_SIGN_ITER))]
+ "TARGET_AVX10_2_256"
+ "vcvttss2<sat_cvt_sign_prefix>sis\t{<round_saeonly_op2>%1, %0|%0, %1<round_saeonly_op2>}"
+ [(set_attr "type" "ssecvt")
+ (set_attr "prefix" "evex")
+ (set_attr "mode" "<MODE>")])
