@@ -9712,10 +9712,6 @@ package body Checks is
          Set_Do_Range_Check (N, False);
 
          case Nkind (N) is
-            when N_And_Then =>
-               Traverse (Left_Opnd (N));
-               return Skip;
-
             when N_Attribute_Reference =>
                Set_Do_Overflow_Check (N, False);
 
@@ -9723,34 +9719,28 @@ package body Checks is
                Set_Do_Overflow_Check (N, False);
 
                case Nkind (N) is
-                  when N_Op_Divide =>
+                  when N_Op_Divide
+                     | N_Op_Mod
+                     | N_Op_Rem
+                  =>
                      Set_Do_Division_Check (N, False);
 
-                  when N_Op_And =>
-                     Set_Do_Length_Check (N, False);
-
-                  when N_Op_Mod =>
-                     Set_Do_Division_Check (N, False);
-
-                  when N_Op_Or =>
-                     Set_Do_Length_Check (N, False);
-
-                  when N_Op_Rem =>
-                     Set_Do_Division_Check (N, False);
-
-                  when N_Op_Xor =>
+                  when N_Op_And
+                     | N_Op_Or
+                     | N_Op_Xor
+                  =>
                      Set_Do_Length_Check (N, False);
 
                   when others =>
                      null;
                end case;
 
-            when N_Or_Else =>
-               Traverse (Left_Opnd (N));
-               return Skip;
-
             when N_Selected_Component =>
                Set_Do_Discriminant_Check (N, False);
+
+            when N_Short_Circuit =>
+               Traverse (Left_Opnd (N));
+               return Skip;
 
             when N_Type_Conversion =>
                Set_Do_Length_Check   (N, False);
