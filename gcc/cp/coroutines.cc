@@ -4226,6 +4226,7 @@ coro_build_actor_or_destroy_function (tree orig, tree fn_type,
 
   tree id = get_identifier ("frame_ptr");
   tree fp = build_lang_decl (PARM_DECL, id, coro_frame_ptr);
+  DECL_ARTIFICIAL (fp) = true;
   DECL_CONTEXT (fp) = fn;
   DECL_ARG_TYPE (fp) = type_passed_as (coro_frame_ptr);
   DECL_ARGUMENTS (fn) = fp;
