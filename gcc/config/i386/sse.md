@@ -11505,19 +11505,20 @@
    (set_attr "mode" "V4SF,V4SF,V2SF,V2SF,V2SF")])
 
 (define_insn "sse_movss_<mode>"
-  [(set (match_operand:VI4F_128 0 "register_operand"   "=x,v")
+  [(set (match_operand:VI4F_128 0 "register_operand"   "=x,v,v")
 	(vec_merge:VI4F_128
-	  (match_operand:VI4F_128 2 "register_operand" " x,v")
-	  (match_operand:VI4F_128 1 "register_operand" " 0,v")
+	  (match_operand:VI4F_128 2 "register_operand" " x,v,v")
+	  (match_operand:VI4F_128 1 "reg_or_0_operand" " 0,v,C")
 	  (const_int 1)))]
   "TARGET_SSE"
   "@
    movss\t{%2, %0|%0, %2}
-   vmovss\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "noavx,avx")
+   vmovss\t{%2, %1, %0|%0, %1, %2}
+   vmovd\t{%2, %0|%0, %2}"
+  [(set_attr "isa" "noavx,avx,avx10_2")
    (set_attr "type" "ssemov")
-   (set_attr "prefix" "orig,maybe_evex")
-   (set_attr "mode" "SF")])
+   (set_attr "prefix" "orig,maybe_evex,evex")
+   (set_attr "mode" "SF,SF,SI")])
 
 (define_insn "avx2_vec_dup<mode>"
   [(set (match_operand:VF1_128_256 0 "register_operand" "=v")
@@ -11687,18 +11688,19 @@
 ;; see comment above inline_secondary_memory_needed function in i386.cc
 (define_insn "vec_set<mode>_0"
   [(set (match_operand:VI4F_128 0 "nonimmediate_operand"
-	  "=Yr,*x,v,v,v,x,x,v,Yr ,?x ,x  ,m ,m   ,m")
+	  "=Yr,*x,v,v,v,v,x,x,v,Yr ,?x ,x  ,m ,m   ,m")
 	(vec_merge:VI4F_128
 	  (vec_duplicate:VI4F_128
 	    (match_operand:<ssescalarmode> 2 "general_operand"
-	  " Yr,*x,v,m,r ,m,x,v,?jrjm,?jrjm,?rm,!x,?re,!*fF"))
+	  " Yr,*x,v,v,m,r ,m,x,v,?jrjm,?jrjm,?rm,!x,?re,!*fF"))
 	  (match_operand:VI4F_128 1 "nonimm_or_0_operand"
-	  " C , C,C,C,C ,C,0,v,0  ,0  ,x  ,0 ,0   ,0")
+	  " C , C,C,C,C,C ,C,0,v,0  ,0  ,x  ,0 ,0   ,0")
 	  (const_int 1)))]
   "TARGET_SSE"
   "@
    insertps\t{$0xe, %2, %0|%0, %2, 0xe}
    insertps\t{$0xe, %2, %0|%0, %2, 0xe}
+   vmovd\t{%2, %0|%0, %2}
    vinsertps\t{$0xe, %2, %2, %0|%0, %2, %2, 0xe}
    %vmov<ssescalarmodesuffix>\t{%2, %0|%0, %2}
    %vmovd\t{%2, %0|%0, %2}
@@ -11712,22 +11714,24 @@
    #
    #"
   [(set (attr "isa")
-     (cond [(eq_attr "alternative" "0,1,8,9")
+     (cond [(eq_attr "alternative" "0,1,9,10")
 	      (const_string "sse4_noavx")
-	    (eq_attr "alternative" "2,7,10")
+		(eq_attr "alternative" "2")
+		  (const_string "avx10_2")
+	    (eq_attr "alternative" "3,8,11")
 	      (const_string "avx")
-	    (eq_attr "alternative" "3,4")
+	    (eq_attr "alternative" "4,5")
 	      (const_string "sse2")
-	    (eq_attr "alternative" "5,6")
+	    (eq_attr "alternative" "6,7")
 	      (const_string "noavx")
 	   ]
 	   (const_string "*")))
    (set (attr "type")
-     (cond [(eq_attr "alternative" "0,1,2,8,9,10")
+     (cond [(eq_attr "alternative" "0,1,3,9,10,11")
 	      (const_string "sselog")
-	    (eq_attr "alternative" "12")
-	      (const_string "imov")
 	    (eq_attr "alternative" "13")
+	      (const_string "imov")
+	    (eq_attr "alternative" "14")
 	      (const_string "fmov")
 	   ]
 	   (const_string "ssemov")))
@@ -11736,44 +11740,45 @@
 		   (const_string "gpr16")
 		   (const_string "*")))
    (set (attr "prefix_extra")
-     (if_then_else (eq_attr "alternative" "8,9,10")
+     (if_then_else (eq_attr "alternative" "9,10,11")
 		   (const_string "1")
 		   (const_string "*")))
    (set (attr "length_immediate")
-     (if_then_else (eq_attr "alternative" "8,9,10")
+     (if_then_else (eq_attr "alternative" "9,10,11")
 		   (const_string "1")
 		   (const_string "*")))
    (set (attr "prefix")
-     (cond [(eq_attr "alternative" "0,1,5,6,8,9")
+     (cond [(eq_attr "alternative" "0,1,6,7,9,10")
 	      (const_string "orig")
-	    (eq_attr "alternative" "2")
+	    (eq_attr "alternative" "2,3")
 	      (const_string "maybe_evex")
-	    (eq_attr "alternative" "3,4")
+	    (eq_attr "alternative" "4,5")
 	      (const_string "maybe_vex")
-	    (eq_attr "alternative" "7,10")
+	    (eq_attr "alternative" "8,11")
 	      (const_string "vex")
 	   ]
 	   (const_string "*")))
-   (set_attr "mode" "SF,SF,SF,<ssescalarmode>,SI,SF,SF,SF,TI,TI,TI,*,*,*")
+   (set_attr "mode" "SF,SF,SI,SF,<ssescalarmode>,SI,SF,SF,SF,TI,TI,TI,*,*,*")
    (set (attr "preferred_for_speed")
-     (cond [(eq_attr "alternative" "4")
+     (cond [(eq_attr "alternative" "5")
 	      (symbol_ref "TARGET_INTER_UNIT_MOVES_TO_VEC")
 	   ]
 	   (symbol_ref "true")))])
 
 (define_insn "@vec_set<mode>_0"
   [(set (match_operand:V8_128 0 "register_operand"
-	  "=v,v,v,x,x,Yr,*x,x,x,x,v,v")
+	  "=v,v,v,v,x,x,Yr,*x,x,x,x,v,v")
 	(vec_merge:V8_128
 	  (vec_duplicate:V8_128
 	    (match_operand:<ssescalarmode> 2 "nonimmediate_operand"
-	  " r,m,v,r,m,Yr,*x,r,m,x,r,m"))
+	  " r,m,v,v,r,m,Yr,*x,r,m,x,r,m"))
 	  (match_operand:V8_128 1 "reg_or_0_operand"
-	  " C,C,v,0,0,0 ,0 ,x,x,x,v,v")
+	  " C,C,C,v,0,0,0 ,0 ,x,x,x,v,v")
 	  (const_int 1)))]
   "TARGET_SSE2"
   "@
    vmovw\t{%k2, %0|%0, %k2}
+   vmovw\t{%2, %0|%0, %2}
    vmovw\t{%2, %0|%0, %2}
    vmovsh\t{%2, %1, %0|%0, %1, %2}
    pinsrw\t{$0, %k2, %0|%0, %k2, 0}
@@ -11786,65 +11791,92 @@
    vpinsrw\t{$0, %k2, %1, %0|%0, %1, %k2, 0}
    vpinsrw\t{$0, %2, %1, %0|%0, %1, %2, 0}"
   [(set (attr "isa")
-	(cond [(eq_attr "alternative" "0,1,2")
+	(cond [(eq_attr "alternative" "0,1,3")
 		 (const_string "avx512fp16")
-	       (eq_attr "alternative" "3,4")
+	       (eq_attr "alternative" "2")
+		 (const_string "avx10_2")
+	       (eq_attr "alternative" "4,5")
 		 (const_string "noavx")
-	       (eq_attr "alternative" "5,6")
+	       (eq_attr "alternative" "6,7")
 		 (const_string "sse4_noavx")
-	       (eq_attr "alternative" "7,8,9")
+	       (eq_attr "alternative" "8,9,10")
 		 (const_string "avx")
-	       (eq_attr "alternative" "10,11")
+	       (eq_attr "alternative" "11,12")
 		 (const_string "avx512bw")
 	      ]
 	      (const_string "*")))
    (set (attr "type")
-     (if_then_else (eq_attr "alternative" "0,1,2,5,6,9")
+     (if_then_else (eq_attr "alternative" "0,1,2,3,6,7,10")
 		   (const_string "ssemov")
 		   (const_string "sselog")))
    (set (attr "prefix_data16")
-     (if_then_else (eq_attr "alternative" "3,4")
+     (if_then_else (eq_attr "alternative" "4,5")
 		   (const_string "1")
 		   (const_string "*")))
    (set (attr "prefix_extra")
-     (if_then_else (eq_attr "alternative" "5,6,9")
+     (if_then_else (eq_attr "alternative" "6,7,10")
 		   (const_string "1")
 		   (const_string "*")))
    (set (attr "length_immediate")
-     (if_then_else (eq_attr "alternative" "0,1,2")
+     (if_then_else (eq_attr "alternative" "0,1,2,3")
 		   (const_string "*")
 		   (const_string "1")))
    (set (attr "prefix")
-	(cond [(eq_attr "alternative" "0,1,2,10,11")
+	(cond [(eq_attr "alternative" "0,1,2,3,11,12")
 		 (const_string "evex")
-	       (eq_attr "alternative" "7,8,9")
+	       (eq_attr "alternative" "8,9,10")
 		 (const_string "vex")
 	      ]
 	      (const_string "orig")))
    (set (attr "mode")
-     (if_then_else (eq_attr "alternative" "0,1,2")
+     (if_then_else (eq_attr "alternative" "0,1,2,3")
 		   (const_string "HF")
 		   (const_string "TI")))
    (set (attr "enabled")
      (cond [(and (not (match_test "<MODE>mode == V8HFmode || <MODE>mode == V8BFmode"))
-		 (eq_attr "alternative" "2"))
+		 (eq_attr "alternative" "3"))
 	      (symbol_ref "false")
 	   ]
 	   (const_string "*")))])
 
+(define_insn_and_split "*vec_set<mode>_0_1"
+  [(set (match_operand:V8_128 0 "register_operand")
+	(vec_merge:V8_128
+	  (vec_duplicate:V8_128
+	    (vec_select:<ssescalarmode>
+	      (match_operand:V8_128 2 "nonimmediate_operand")
+	      (parallel [(const_int 0)])))
+	  (match_operand:V8_128 1 "reg_or_0_operand")
+	  (const_int 1)))]
+  "TARGET_SSE2 && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(vec_merge:V8_128
+	  (vec_duplicate:V8_128 (match_dup 2))
+	  (match_dup 1)
+	  (const_int 1)))]
+{
+  if (register_operand (operands[2], <MODE>mode))
+    operands[2] = force_reg (<MODE>mode, operands[2]);
+  operands[2] = gen_lowpart (<ssescalarmode>mode, operands[2]);
+})
+
 ;; vmovw clears also the higer bits
 (define_insn "vec_set<mode>_0"
-  [(set (match_operand:VI2F_256_512 0 "register_operand" "=v,v")
+  [(set (match_operand:VI2F_256_512 0 "register_operand" "=v,v,v")
 	(vec_merge:VI2F_256_512
 	  (vec_duplicate:VI2F_256_512
-	    (match_operand:<ssescalarmode> 2 "nonimmediate_operand" "r,m"))
+	    (match_operand:<ssescalarmode> 2 "nonimmediate_operand" "r,m,v"))
 	  (match_operand:VI2F_256_512 1 "const0_operand")
 	  (const_int 1)))]
   "TARGET_AVX512FP16"
   "@
    vmovw\t{%k2, %x0|%x0, %k2}
+   vmovw\t{%2, %x0|%x0, %2}
    vmovw\t{%2, %x0|%x0, %2}"
-  [(set_attr "type" "ssemov")
+  [(set_attr "isa" "*,*,avx10_2")
+   (set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
    (set_attr "mode" "HF")])
 
@@ -11889,16 +11921,20 @@
 })
 
 (define_insn "avx512fp16_mov<mode>"
-  [(set (match_operand:V8_128 0 "register_operand" "=v")
+  [(set (match_operand:V8_128 0 "register_operand" "=v,v")
 	(vec_merge:V8_128
-	  (match_operand:V8_128 2 "register_operand" "v")
-	  (match_operand:V8_128 1 "register_operand" "v")
+	  (match_operand:V8_128 2 "register_operand" "v,v")
+	  (match_operand:V8_128 1 "reg_or_0_operand" "v,C")
 	  (const_int 1)))]
-  "TARGET_AVX512FP16"
-  "vmovsh\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "type" "ssemov")
+  "TARGET_AVX512FP16
+  || (TARGET_AVX10_2_256 && const0_operand (operands[1], <MODE>mode))"
+  "@
+    vmovsh\t{%2, %1, %0|%0, %1, %2}
+    vmovw\t{%2, %0|%2, %0}"
+  [(set_attr "isa" "*,avx10_2")
+   (set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
-   (set_attr "mode" "HF")])
+   (set_attr "mode" "HF,HI")])
 
 ;; A subset is vec_setv4sf.
 (define_insn "*vec_setv4sf_sse4_1"

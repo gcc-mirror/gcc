@@ -160,4 +160,6 @@
 
 #include <avx10_2-512minmaxintrin.h>
 
+#include <avx10_2copyintrin.h>
+
 #endif /* _IMMINTRIN_H_INCLUDED */
