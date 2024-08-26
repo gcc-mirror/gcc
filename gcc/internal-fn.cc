@@ -5351,6 +5351,11 @@ expand_POPCOUNT (internal_fn fn, gcall *stmt)
   unsigned popcount_cost = (seq_cost (popcount_insns, speed_p)
 			    + seq_cost (popcount_cmp_insns, speed_p));
   unsigned cmp_cost = seq_cost (cmp_insns, speed_p);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf(dump_file, "popcount == 1: popcount cost: %u; cmp cost: %u\n",
+	    popcount_cost, cmp_cost);
+
   if (popcount_cost <= cmp_cost)
     emit_insn (popcount_insns);
   else
