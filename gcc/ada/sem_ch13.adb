@@ -4530,6 +4530,9 @@ package body Sem_Ch13 is
                         if (No (Expr) or else Entity (Expr) = Standard_True)
                           and then not Core_Extensions_Allowed
                         then
+                           Error_Msg_GNAT_Extension
+                             ("'First_'Controlling_'Parameter", Sloc (Aspect),
+                              Is_Core_Extension => True);
                            goto Continue;
                         end if;
 
@@ -4545,19 +4548,24 @@ package body Sem_Ch13 is
                            goto Continue;
                         end if;
 
-                        --  If the aspect is specified for a derived type, the
-                        --  specified value shall be confirming.
-
                         if Present (Expr)
-                          and then Is_Derived_Type (E)
-                          and then
-                            Has_First_Controlling_Parameter_Aspect (Etype (E))
                           and then Entity (Expr) = Standard_False
                         then
-                           Error_Msg_Name_1 := Nam;
-                           Error_Msg_N
-                             ("specification of inherited aspect% can only "
-                               & "confirm parent value", Id);
+                           --  If the aspect is specified for a derived type,
+                           --  the specified value shall be confirming.
+
+                           if Is_Derived_Type (E)
+                             and then Has_First_Controlling_Parameter_Aspect
+                                        (Etype (E))
+                           then
+                              Error_Msg_Name_1 := Nam;
+                              Error_Msg_N
+                                ("specification of inherited True value for "
+                                   & "aspect% can only confirm parent value",
+                                 Id);
+                           end if;
+
+                           goto Continue;
                         end if;
 
                         --  Given that the aspect has been explicitly given,
