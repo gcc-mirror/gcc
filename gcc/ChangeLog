@@ -1,3 +1,67 @@
+2024-08-25  demin.han  <demin.han@starfivetech.com>
+
+	* config/riscv/vector.md: Add !FLOAT_MODE_P constraint.
+
+2024-08-25  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* lower-subreg.cc (resolve_simple_move): Re-add calling emit_clobber
+	immediately before moving a multi-word register by parts.
+
+2024-08-25  Andi Kleen  <ak@gcc.gnu.org>
+
+	PR tree-optimization/115866
+	* tree-if-conv.cc (if_convertible_switch_p): New function.
+	(if_convertible_stmt_p): Check for switch.
+	(get_loop_body_in_if_conv_order): Handle switch.
+	(predicate_bbs): Likewise.
+	(predicate_statements): Likewise.
+	(remove_conditions_and_labels): Likewise.
+	(ifcvt_split_critical_edges): Likewise.
+	(ifcvt_local_dce): Likewise.
+
+2024-08-25  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (write_optimized_static_local_vars): New function.
+	(write_function): Call write_optimized_static_local_vars.
+
+2024-08-25  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (enum cv_sym_type): Add S_FRAMEPROC.
+	(write_s_frameproc): New function.
+	(write_function): Call write_s_frameproc.
+
+2024-08-25  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (enum cv_sym_type): Add S_DEFRANGE_REGISTER_REL.
+	(write_defrange_register_rel): New function.
+	(write_optimized_local_variable_loc): Add fbloc param, and call
+	write_defrange_register_rel.
+	(write_optimized_local_variable): Add fbloc param.
+	(write_optimized_function_vars): Add fbloc param.
+
+2024-08-25  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (enum cv_sym_type): Add S_LOCAL and
+	S_DEFRANGE_REGISTER.
+	(write_s_local): New function.
+	(write_defrange_register): New function.
+	(write_optimized_local_variable_loc): New function.
+	(write_optimized_local_variable): New function.
+	(write_optimized_function_vars): New function.
+	(write_function): Call write_optimized_function_vars if variable
+	tracking enabled.
+	* dwarf2out.cc (typedef var_loc_view): Move to dwarf2out.h.
+	(struct dw_loc_list_struct): Likewise.
+	* dwarf2out.h (typedef var_loc_view): Move from dwarf2out.h.
+	(struct dw_loc_list_struct): Likewise.
+	* opts.cc (finish_options): Enable variable tracking for CodeView.
+
+2024-08-25  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-features.cc (compute_convert_gain)
+	<case ASHIFTRT>: Update to match ix86_expand_v1ti_ashiftrt.
+
 2024-08-23  Patrick O'Neill  <patrick@rivosinc.com>
 
 	* config/riscv/riscv-v.cc (rvv_builder::can_duplicate_repeating_sequence_p):

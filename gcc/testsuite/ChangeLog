@@ -1,3 +1,81 @@
+2024-08-25  demin.han  <demin.han@starfivetech.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vadd-rv32gcv-nofm.c: Fix test.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv32gcv-nofm.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vmul-rv32gcv-nofm.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-rv32gcv-nofm.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_copysign-rv32gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fadd-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fadd-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fadd-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fadd-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul-5.c: Ditto.
+
+2024-08-25  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* gcc.target/riscv/pr43644.c: New test case.
+
+2024-08-25  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* g++.dg/init/array54.C: Require sync_int_long effective target.
+
+2024-08-25  Andi Kleen  <ak@gcc.gnu.org>
+
+	PR tree-optimization/115866
+	* gcc.dg/vect/vect-switch-ifcvt-1.c: New test.
+	* gcc.dg/vect/vect-switch-ifcvt-2.c: New test.
+	* gcc.dg/vect/vect-switch-search-line-fast.c: New test.
+	* gcc.dg/vect/vect-bitfield-read-1-not.c: Change to xfail.
+
+2024-08-25  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/cm_mv_rv32.c: Disable late-combine.
+
+2024-08-25  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-1.c: Update
+	expected output.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-2.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-3.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-4.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-5.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-6.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-7.c: Likewise.
+
+2024-08-25  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/shorten-memrefs-2.c: Turn off late-combine.
+	* gcc.target/riscv/shorten-memrefs-3.c: Likewise.
+	* gcc.target/riscv/shorten-memrefs-5.c: Likewise.
+	* gcc.target/riscv/shorten-memrefs-8.c: Likewise.
+
+2024-08-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/calling-c/libc/run/pass/calling-c-libc-run-pass.exp: New test.
+	* gm2/calling-c/libc/run/pass/testlibcstr.mod: New test.
+
 2024-08-24  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/110635
