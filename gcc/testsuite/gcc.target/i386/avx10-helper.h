@@ -53,6 +53,34 @@ scalef (float x, float y)
   return _mm_cvtss_f32 (out);
 }
 
+float NOINLINE
+getexp (float val)
+{
+    float res;
+    __m128 px = _mm_load_ss (&val);
+    __m128 mx = _mm_broadcastss_ps (px);
+    __m128 out = _mm_getexp_ps (mx);
+    return _mm_cvtss_f32 (out);
+}
+
+float NOINLINE
+rndscale (float val)
+{
+    __m128 px = _mm_load_ss (&val);
+    __m128 mx = _mm_broadcastss_ps (px);
+    __m128 out = _mm_roundscale_ps (mx, 0x10);
+    return _mm_cvtss_f32 (out);
+}
+
+float NOINLINE 
+getmant(float val)
+{
+    __m128 px = _mm_load_ss (&val);
+    __m128 mx = _mm_broadcastss_ps (px);
+    __m128 out = _mm_getmant_ps (mx, 0, 0);
+    return _mm_cvtss_f32 (out);
+}
+
 #endif /* AVX10_HELPER_INCLUDED */
 
 /* Intrinsic being tested. It has different deffinitions,

@@ -5,7 +5,7 @@
 
 #ifndef DO_TEST
 #define DO_TEST do_test
-#if defined(AVX10_512BIT)
+#if defined(AVX10_512BIT) || defined(AVX10_SCALAR)
 static void test_512 (void);
 #else
 static void test_256 (void);
@@ -16,7 +16,7 @@ __attribute__ ((noinline))
 static void
 do_test (void)
 {
-#if defined(AVX10_512BIT)
+#if defined(AVX10_512BIT) || defined(AVX10_SCALAR)
   test_512 ();
 #else
   test_256 ();

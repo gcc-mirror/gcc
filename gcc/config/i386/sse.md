@@ -230,6 +230,11 @@
   UNSPEC_VCVTNEPH2HF8S
   UNSPEC_VCVTHF82PH
   UNSPEC_VSCALEFPBF16
+  UNSPEC_VRNDSCALENEPBF16
+  UNSPEC_VREDUCENEPBF16
+  UNSPEC_VGETMANTPBF16
+  UNSPEC_VFPCLASSPBF16
+  UNSPEC_VCOMSBF16
 ])
 
 (define_c_enum "unspecv" [
@@ -835,6 +840,7 @@
 
 (define_mode_attr vecmemsuffix
   [(V32HF "{z}") (V16HF "{y}") (V8HF "{x}")
+   (V32BF "{z}") (V16BF "{y}") (V8BF "{x}")
    (V16SF "{z}") (V8SF "{y}") (V4SF "{x}")
    (V8DF "{z}") (V4DF "{y}") (V2DF "{x}")])
 
@@ -32105,3 +32111,89 @@
   [(set_attr "prefix" "evex")
    (set_attr "type" "ssemuladd")
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "avx10_2_rsqrtpbf16_<mode><mask_name>"
+   [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v")
+	 (unspec:VBF_AVX10_2
+	   [(match_operand:VBF_AVX10_2 1 "nonimmediate_operand" "vm")]
+	  UNSPEC_RSQRT))]
+   "TARGET_AVX10_2_256"
+   "vrsqrtpbf16\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+   [(set_attr "prefix" "evex")])
+
+(define_insn "avx10_2_sqrtnepbf16_<mode><mask_name>"
+   [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v")
+	 (sqrt:VBF_AVX10_2
+	   (match_operand:VBF_AVX10_2 1 "nonimmediate_operand" "vm")))]
+   "TARGET_AVX10_2_256"
+   "vsqrtnepbf16\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+   [(set_attr "prefix" "evex")])
+
+(define_insn "avx10_2_rcppbf16_<mode><mask_name>"
+   [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v")
+	 (unspec:VBF_AVX10_2
+	   [(match_operand:VBF_AVX10_2 1 "nonimmediate_operand" "vm")]
+	  UNSPEC_RCP))]
+   "TARGET_AVX10_2_256"
+   "vrcppbf16\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+   [(set_attr "prefix" "evex")])
+
+(define_insn "avx10_2_getexppbf16_<mode><mask_name>"
+   [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v")
+	 (unspec:VBF_AVX10_2
+	   [(match_operand:VBF_AVX10_2 1 "nonimmediate_operand" "vm")]
+	  UNSPEC_GETEXP))]
+   "TARGET_AVX10_2_256"
+   "vgetexppbf16\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+   [(set_attr "prefix" "evex")])
+
+(define_int_iterator BF16IMMOP
+   [UNSPEC_VRNDSCALENEPBF16
+    UNSPEC_VREDUCENEPBF16
+    UNSPEC_VGETMANTPBF16])
+
+(define_int_attr bf16immop
+   [(UNSPEC_VRNDSCALENEPBF16 "rndscalene")
+    (UNSPEC_VREDUCENEPBF16 "reducene")
+    (UNSPEC_VGETMANTPBF16 "getmant")])
+
+(define_insn "avx10_2_<bf16immop>pbf16_<mode><mask_name>"
+   [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v")
+	 (unspec:VBF_AVX10_2
+	   [(match_operand:VBF_AVX10_2 1 "nonimmediate_operand" "vm")
+	    (match_operand:SI 2 "const_0_to_255_operand")]
+	  BF16IMMOP))]
+   "TARGET_AVX10_2_256"
+   "v<bf16immop>pbf16\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+   [(set_attr "prefix" "evex")])
+
+(define_insn "avx10_2_fpclasspbf16_<mode><mask_scalar_merge_name>"
+   [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=k")
+	 (unspec:<avx512fmaskmode>
+	   [(match_operand:VBF_AVX10_2 1 "nonimmediate_operand" "vm")
+	    (match_operand 2 "const_0_to_255_operand")]
+	  UNSPEC_VFPCLASSPBF16))]
+   "TARGET_AVX10_2_256"
+   "vfpclasspbf16<vecmemsuffix>\t{%2, %1, %0<mask_scalar_merge_operand3>|%0<mask_scalar_merge_operand3>, %1, %2}"
+   [(set_attr "prefix" "evex")])
+
+(define_insn "avx10_2_cmppbf16_<mode><mask_scalar_merge_name>"
+   [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=k")
+	 (unspec:<avx512fmaskmode>
+	   [(match_operand:VBF_AVX10_2 1 "register_operand" "v")
+	    (match_operand:VBF_AVX10_2 2 "nonimmediate_operand" "vm")
+	    (match_operand 3 "const_0_to_31_operand" "n")]
+	  UNSPEC_PCMP))]
+   "TARGET_AVX10_2_256"
+   "vcmppbf16\t{%3, %2, %1, %0<mask_scalar_merge_operand4>|%0<mask_scalar_merge_operand4>, %1, %2, %3}"
+   [(set_attr "prefix" "evex")])
+
+(define_insn "avx10_2_comsbf16_v8bf"
+  [(set (reg:CCFP FLAGS_REG)
+	(unspec:CCFP
+	  [(match_operand:V8BF 0 "register_operand" "v")
+	   (match_operand:V8BF 1 "nonimmediate_operand" "vm")]
+	 UNSPEC_VCOMSBF16))]
+  "TARGET_AVX10_2_256"
+  "vcomsbf16\t{%1, %0|%0, %1}"
+  [(set_attr "prefix" "evex")])

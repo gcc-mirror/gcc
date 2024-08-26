@@ -998,6 +998,25 @@
 /* avx10_2-512convertintrin.h */
 #define __builtin_ia32_vcvt2ps2phx512_mask_round(A, B, C, D, E) __builtin_ia32_vcvt2ps2phx512_mask_round(A, B, C, D, 8)
 
+/* avx10_2-512bf16intrin.h */
+#define __builtin_ia32_rndscalenepbf16512_mask(A, B, C, D) __builtin_ia32_rndscalenepbf16512_mask(A, 123, C, D)
+#define __builtin_ia32_reducenepbf16512_mask(A, B, C, D) __builtin_ia32_reducenepbf16512_mask(A, 123, C, D)
+#define __builtin_ia32_getmantpbf16512_mask(A, B, C, D) __builtin_ia32_getmantpbf16512_mask(A, 1, C, D)
+#define __builtin_ia32_fpclasspbf16512_mask(A, B, C) __builtin_ia32_fpclasspbf16512_mask(A, 1, C)
+#define __builtin_ia32_cmppbf16512_mask(A, B, C, D) __builtin_ia32_cmppbf16512_mask(A, B, 1, D)
+
+/* avx10_2bf16intrin.h */
+#define __builtin_ia32_rndscalenepbf16256_mask(A, B, C, D) __builtin_ia32_rndscalenepbf16256_mask(A, 123, C, D)
+#define __builtin_ia32_rndscalenepbf16128_mask(A, B, C, D) __builtin_ia32_rndscalenepbf16128_mask(A, 123, C, D)
+#define __builtin_ia32_reducenepbf16256_mask(A, B, C, D) __builtin_ia32_reducenepbf16256_mask(A, 123, C, D)
+#define __builtin_ia32_reducenepbf16128_mask(A, B, C, D) __builtin_ia32_reducenepbf16128_mask(A, 123, C, D)
+#define __builtin_ia32_getmantpbf16256_mask(A, B, C, D) __builtin_ia32_getmantpbf16256_mask(A, 1, C, D)
+#define __builtin_ia32_getmantpbf16128_mask(A, B, C, D) __builtin_ia32_getmantpbf16128_mask(A, 1, C, D)
+#define __builtin_ia32_fpclasspbf16256_mask(A, B, C) __builtin_ia32_fpclasspbf16256_mask(A, 1, C)
+#define __builtin_ia32_fpclasspbf16128_mask(A, B, C) __builtin_ia32_fpclasspbf16128_mask(A, 1, C)
+#define __builtin_ia32_cmppbf16256_mask(A, B, C, D) __builtin_ia32_cmppbf16256_mask(A, B, 1, D)
+#define __builtin_ia32_cmppbf16128_mask(A, B, C, D) __builtin_ia32_cmppbf16128_mask(A, B, 1, D)
+
 #pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,fma,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,sha,xsavec,xsaves,clflushopt,clwb,mwaitx,clzero,pku,sgx,rdpid,gfni,vpclmulqdq,pconfig,wbnoinvd,enqcmd,avx512vp2intersect,serialize,tsxldtrk,amx-tile,amx-int8,amx-bf16,kl,widekl,avxvnni,avxifma,avxvnniint8,avxneconvert,cmpccxadd,amx-fp16,prefetchi,raoint,amx-complex,avxvnniint16,sm3,sha512,sm4,avx10.2-512")
 
 #include <x86intrin.h>
