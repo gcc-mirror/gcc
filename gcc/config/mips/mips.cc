@@ -22239,6 +22239,47 @@ mips_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
   return ok;
 }
 
+/* Expand a vector reduction.  FN is the binary pattern to reduce;
+   DEST is the destination; IN is the input vector.  */
+
+void
+mips_expand_msa_reduc (rtx (*fn) (rtx, rtx, rtx), rtx dest, rtx in)
+{
+  rtx swap, vec = in;
+  machine_mode mode = GET_MODE (in);
+  unsigned int i, gelt;
+  const unsigned nelt = GET_MODE_BITSIZE (mode) / GET_MODE_UNIT_BITSIZE (mode);
+  unsigned char perm[MAX_VECT_LEN];
+
+  /* We have no SHF.d.  */
+  if (nelt == 2)
+    {
+      perm[0] = 2;
+      perm[1] = 3;
+      perm[2] = 0;
+      perm[3] = 1;
+      rtx rsi = simplify_gen_subreg (V4SImode, in, mode, 0);
+      swap = gen_reg_rtx (V4SImode);
+      mips_expand_vselect (swap, rsi, perm, 4);
+      emit_move_insn (dest, gen_rtx_SUBREG (mode, swap, 0));
+      emit_insn (fn (dest, dest, vec));
+      return;
+    }
+
+  for (gelt=1; gelt<=nelt/2; gelt *= 2)
+    {
+      for (i = 0; i<nelt; i++)
+	perm[i] = ((i/gelt)%2) ? (i-gelt) : (i+gelt);
+      if (gelt == nelt/2)
+	swap = dest;
+      else
+	swap = gen_reg_rtx (mode);
+      mips_expand_vselect (swap, vec, perm, nelt);
+      emit_insn (fn (swap, swap, vec));
+      vec = swap;
+    }
+}
+
 /* Implement TARGET_SCHED_REASSOCIATION_WIDTH.  */
 
 static int
