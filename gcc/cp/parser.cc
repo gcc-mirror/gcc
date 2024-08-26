@@ -13232,18 +13232,22 @@ cp_parser_expression_statement (cp_parser* parser, tree in_statement_expr)
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON)
       && !cp_parser_uncommitted_to_tentative_parse_p (parser))
     {
+      bool has_errored = true;
       if (TREE_CODE (statement) == SCOPE_REF)
 	error_at (token->location, "need %<typename%> before %qE because "
 		  "%qT is a dependent scope",
 		  statement, TREE_OPERAND (statement, 0));
       else if (is_overloaded_fn (statement)
 	       && DECL_CONSTRUCTOR_P (get_first_fn (statement)))
+	/* A::A a; */
+	error_at (token->location, "%qE names the constructor, not the type",
+		  get_first_fn (statement));
+      else
+	has_errored = false;
+      if (has_errored)
 	{
-	  /* A::A a; */
-	  tree fn = get_first_fn (statement);
-	  error_at (token->location,
-		    "%<%T::%D%> names the constructor, not the type",
-		    DECL_CONTEXT (fn), DECL_NAME (fn));
+	  cp_parser_skip_to_end_of_statement (parser);
+	  return error_mark_node;
 	}
     }
 
