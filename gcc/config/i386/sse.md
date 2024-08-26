@@ -4692,6 +4692,22 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<ssescalarmode>")])
 
+(define_insn "avx10_2_<unord>comx<mode><round_saeonly_name>"
+  [(set (reg:CCFP FLAGS_REG)
+	(unspec:CCFP
+	  [(vec_select:MODEFH
+	     (match_operand:<ssevecmode> 0 "register_operand" "v")
+	     (parallel [(const_int 0)]))
+	   (vec_select:MODEFH
+	     (match_operand:<ssevecmode> 1 "<round_saeonly_nimm_scalar_predicate>" "<round_saeonly_constraint>")
+	     (parallel [(const_int 0)]))]
+	  UNSPEC_COMX))]
+  "TARGET_AVX10_2_256"
+  "v<unord>comx<ssemodesuffix>\t{<round_saeonly_op2>%1, %0|%0, %<iptr>1<round_saeonly_op2>}"
+  [(set_attr "type" "ssecomi")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<MODE>")])
+
 (define_insn "<sse>_<unord>comi<round_saeonly_name>"
   [(set (reg:CCFP FLAGS_REG)
 	(compare:CCFP
@@ -4701,7 +4717,7 @@
 	  (vec_select:MODEFH
 	    (match_operand:<ssevecmode> 1 "<round_saeonly_nimm_scalar_predicate>" "<round_saeonly_constraint>")
 	    (parallel [(const_int 0)]))))]
-  "SSE_FLOAT_MODE_P (<MODE>mode)"
+  "SSE_FLOAT_MODE_P (<MODE>mode) || <MODE>mode == E_HFmode"
   "%v<unord>comi<ssemodesuffix>\t{<round_saeonly_op2>%1, %0|%0, %<iptr>1<round_saeonly_op2>}"
   [(set_attr "type" "ssecomi")
    (set_attr "prefix" "maybe_vex")

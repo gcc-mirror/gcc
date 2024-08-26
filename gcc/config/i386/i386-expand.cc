@@ -10601,7 +10601,9 @@ ix86_ssecom_setcc (const enum rtx_code comparison,
   rtx_code_label *label = NULL;
 
   /* NB: For ordered EQ or unordered NE, check ZF alone isn't sufficient
-     with NAN operands.  */
+     with NAN operands.
+     Under TARGET_AVX10_2_256, VCOMX/VUCOMX are generated instead of
+     COMI/UCOMI.  VCOMX/VUCOMX will not set ZF for NAN operands.  */
   if (check_unordered)
     {
       gcc_assert (comparison == EQ || comparison == NE);
@@ -10640,7 +10642,7 @@ ix86_ssecom_setcc (const enum rtx_code comparison,
 
 static rtx
 ix86_expand_sse_comi (const struct builtin_description *d, tree exp,
-		      rtx target)
+		      rtx target, bool comx_ok)
 {
   rtx pat, set_dst;
   tree arg0 = CALL_EXPR_ARG (exp, 0);
@@ -10673,11 +10675,13 @@ ix86_expand_sse_comi (const struct builtin_description *d, tree exp,
     case GE:
       break;
     case EQ:
-      check_unordered = true;
+      if (!TARGET_AVX10_2_256 || !comx_ok)
+	check_unordered = true;
       mode = CCZmode;
       break;
     case NE:
-      check_unordered = true;
+      if (!TARGET_AVX10_2_256 || !comx_ok)
+	check_unordered = true;
       mode = CCZmode;
       const_val = const1_rtx;
       break;
@@ -10696,6 +10700,28 @@ ix86_expand_sse_comi (const struct builtin_description *d, tree exp,
       || !insn_p->operand[1].predicate (op1, mode1))
     op1 = copy_to_mode_reg (mode1, op1);
 
+  if ((comparison == EQ || comparison == NE)
+      && TARGET_AVX10_2_256 && comx_ok)
+    {
+      switch (icode)
+	{
+	case CODE_FOR_sse_comi:
+	  icode = CODE_FOR_avx10_2_comxsf;
+	  break;
+	case CODE_FOR_sse_ucomi:
+	  icode = CODE_FOR_avx10_2_ucomxsf;
+	  break;
+	case CODE_FOR_sse2_comi:
+	  icode = CODE_FOR_avx10_2_comxdf;
+	  break;
+	case CODE_FOR_sse2_ucomi:
+	  icode = CODE_FOR_avx10_2_ucomxdf;
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
   pat = GEN_FCN (icode) (op0, op1);
   if (! pat)
     return 0;
@@ -12190,7 +12216,7 @@ ix86_erase_embedded_rounding (rtx pat)
    with rounding.  */
 static rtx
 ix86_expand_sse_comi_round (const struct builtin_description *d,
-			    tree exp, rtx target)
+			    tree exp, rtx target, bool comx_ok)
 {
   rtx pat, set_dst;
   tree arg0 = CALL_EXPR_ARG (exp, 0);
@@ -12252,6 +12278,7 @@ ix86_expand_sse_comi_round (const struct builtin_description *d,
     op1 = safe_vector_operand (op1, mode1);
 
   enum rtx_code comparison = comparisons[INTVAL (op2)];
+  enum rtx_code orig_comp = comparison;
   bool ordered = ordereds[INTVAL (op2)];
   bool non_signaling = non_signalings[INTVAL (op2)];
   rtx const_val = const0_rtx;
@@ -12263,10 +12290,21 @@ ix86_expand_sse_comi_round (const struct builtin_description *d,
     case ORDERED:
       if (!ordered)
 	{
-	  /* NB: Use CCSmode/NE for _CMP_TRUE_UQ/_CMP_TRUE_US.  */
-	  if (!non_signaling)
-	    ordered = true;
-	  mode = CCSmode;
+	  if (TARGET_AVX10_2_256 && comx_ok)
+	    {
+	      /* Unlike VCOMI{SH,SS,SD}, VCOMX{SH,SS,SD} will set SF
+		 differently. So directly return true here.  */
+	      target = gen_reg_rtx (SImode);
+	      emit_move_insn (target, const1_rtx);
+	      return target;
+	    }
+	  else
+	    {
+	      /* NB: Use CCSmode/NE for _CMP_TRUE_UQ/_CMP_TRUE_US.  */
+	      if (!non_signaling)
+		ordered = true;
+	      mode = CCSmode;
+	    }
 	}
       else
 	{
@@ -12280,10 +12318,21 @@ ix86_expand_sse_comi_round (const struct builtin_description *d,
     case UNORDERED:
       if (ordered)
 	{
-	  /* NB: Use CCSmode/EQ for _CMP_FALSE_OQ/_CMP_FALSE_OS.  */
-	  if (non_signaling)
-	    ordered = false;
-	  mode = CCSmode;
+	  if (TARGET_AVX10_2_256 && comx_ok)
+	    {
+	      /* Unlike VCOMI{SH,SS,SD}, VCOMX{SH,SS,SD} will set SF
+		 differently. So directly return false here.  */
+	      target = gen_reg_rtx (SImode);
+	      emit_move_insn (target, const0_rtx);
+	      return target;
+	    }
+	  else
+	    {
+	      /* NB: Use CCSmode/EQ for _CMP_FALSE_OQ/_CMP_FALSE_OS.  */
+	      if (non_signaling)
+		ordered = false;
+	      mode = CCSmode;
+	    }
 	}
       else
 	{
@@ -12314,17 +12363,23 @@ ix86_expand_sse_comi_round (const struct builtin_description *d,
       if (ordered == non_signaling)
 	ordered = !ordered;
       break;
-    case EQ:
       /* NB: COMI/UCOMI will set ZF with NAN operands.  Use CCZmode for
-	 _CMP_EQ_OQ/_CMP_EQ_OS.  */
-      check_unordered = true;
+	 _CMP_EQ_OQ/_CMP_EQ_OS.
+	 Under TARGET_AVX10_2_256, VCOMX/VUCOMX are always generated instead
+	 of COMI/UCOMI, VCOMX/VUCOMX will not set ZF with NAN.  */
+    case EQ:
+      if (!TARGET_AVX10_2_256 || !comx_ok)
+	check_unordered = true;
       mode = CCZmode;
       break;
     case NE:
       /* NB: COMI/UCOMI will set ZF with NAN operands.  Use CCZmode for
-	 _CMP_NEQ_UQ/_CMP_NEQ_US.  */
+	 _CMP_NEQ_UQ/_CMP_NEQ_US.
+	 Under TARGET_AVX10_2_256, VCOMX/VUCOMX are always generated instead
+	 of COMI/UCOMI, VCOMX/VUCOMX will not set ZF with NAN.  */
       gcc_assert (!ordered);
-      check_unordered = true;
+      if (!TARGET_AVX10_2_256 || !comx_ok)
+	check_unordered = true;
       mode = CCZmode;
       const_val = const1_rtx;
       break;
@@ -12343,14 +12398,77 @@ ix86_expand_sse_comi_round (const struct builtin_description *d,
       || !insn_p->operand[1].predicate (op1, mode1))
     op1 = copy_to_mode_reg (mode1, op1);
 
+    /* Generate comx instead of comi when EQ/NE to avoid NAN checks.
+       Use orig_comp to exclude ORDERED/UNORDERED cases.  */
+  if ((orig_comp == EQ || orig_comp == NE)
+      && TARGET_AVX10_2_256 && comx_ok)
+    {
+      switch (icode)
+	{
+	case CODE_FOR_avx512fp16_comi_round:
+	  icode = CODE_FOR_avx10_2_comxhf_round;
+	  break;
+	case CODE_FOR_sse_comi_round:
+	  icode = CODE_FOR_avx10_2_comxsf_round;
+	  break;
+	case CODE_FOR_sse2_comi_round:
+	  icode = CODE_FOR_avx10_2_comxdf_round;
+	  break;
+
+	default:
+	  break;
+	}
+    }
+
+  /* Generate comi instead of comx when UNEQ/LTGT to avoid NAN checks.  */
+  if ((comparison == UNEQ || comparison == LTGT)
+       && TARGET_AVX10_2_256 && comx_ok)
+    {
+      switch (icode)
+	{
+	case CODE_FOR_avx10_2_comxhf_round:
+	  icode = CODE_FOR_avx512fp16_comi_round;
+	  break;
+	case CODE_FOR_avx10_2_comxsf_round:
+	  icode = CODE_FOR_sse_comi_round;
+	  break;
+	case CODE_FOR_avx10_2_comxdf_round:
+	  icode = CODE_FOR_sse2_comi_round;
+	  break;
+
+	default:
+	  break;
+	}
+    }
+
   /*
-     1. COMI: ordered and signaling.
-     2. UCOMI: unordered and non-signaling.
+     1. COMI/VCOMX: ordered and signaling.
+     2. UCOMI/VUCOMX: unordered and non-signaling.
    */
   if (non_signaling)
-    icode = (icode == CODE_FOR_sse_comi_round
-	     ? CODE_FOR_sse_ucomi_round
-	     : CODE_FOR_sse2_ucomi_round);
+    switch (icode)
+      {
+      case CODE_FOR_sse_comi_round:
+	icode = CODE_FOR_sse_ucomi_round;
+	break;
+      case CODE_FOR_sse2_comi_round:
+	icode = CODE_FOR_sse2_ucomi_round;
+	break;
+      case CODE_FOR_avx512fp16_comi_round:
+	icode = CODE_FOR_avx512fp16_ucomi_round;
+	break;
+      case CODE_FOR_avx10_2_comxsf_round:
+	icode = CODE_FOR_avx10_2_ucomxsf_round;
+	break;
+      case CODE_FOR_avx10_2_comxhf_round:
+	icode = CODE_FOR_avx10_2_ucomxhf_round;
+	break;
+      case CODE_FOR_avx10_2_comxdf_round:
+	icode = CODE_FOR_avx10_2_ucomxdf_round;
+	break;
+      default:
+	gcc_unreachable ();
+      }
 
   pat = GEN_FCN (icode) (op0, op1, op3);
   if (! pat)
@@ -12487,7 +12605,7 @@ ix86_expand_round_builtin (const struct builtin_description *d,
       break;
     case INT_FTYPE_V4SF_V4SF_INT_INT:
     case INT_FTYPE_V2DF_V2DF_INT_INT:
-      return ix86_expand_sse_comi_round (d, exp, target);
+      return ix86_expand_sse_comi_round (d, exp, target, true);
     case V4DF_FTYPE_V4DF_V4DF_V4DF_UQI_INT:
     case V8DF_FTYPE_V8DF_V8DF_V8DF_UQI_INT:
     case V2DF_FTYPE_V2DF_V2DF_V2DF_UQI_INT:
@@ -15628,7 +15746,7 @@ rdseed_step:
 	  case IX86_BUILTIN_VCOMSBF16GE:
 	  case IX86_BUILTIN_VCOMSBF16LT:
 	  case IX86_BUILTIN_VCOMSBF16LE:
-	   return ix86_expand_sse_comi (bdesc_args + i, exp, target);
+	    return ix86_expand_sse_comi (bdesc_args + i, exp, target, false);
 	  case IX86_BUILTIN_FABSQ:
 	  case IX86_BUILTIN_COPYSIGNQ:
 	    if (!TARGET_SSE)
@@ -15644,7 +15762,7 @@ rdseed_step:
       && fcode <= IX86_BUILTIN__BDESC_COMI_LAST)
     {
       i = fcode - IX86_BUILTIN__BDESC_COMI_FIRST;
-      return ix86_expand_sse_comi (bdesc_comi + i, exp, target);
+      return ix86_expand_sse_comi (bdesc_comi + i, exp, target, true);
     }
 
   if (fcode >= IX86_BUILTIN__BDESC_ROUND_ARGS_FIRST
