@@ -116,6 +116,7 @@ package System.OS_Interface is
    SIGPROF    : constant := System.Linux.SIGPROF;
    SIGXCPU    : constant := System.Linux.SIGXCPU;
    SIGXFSZ    : constant := System.Linux.SIGXFSZ;
+   SIGSYS     : constant := System.Linux.SIGSYS;
    SIGUNUSED  : constant := System.Linux.SIGUNUSED;
    SIGSTKFLT  : constant := System.Linux.SIGSTKFLT;
 

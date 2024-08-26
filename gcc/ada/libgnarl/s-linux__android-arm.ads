@@ -111,6 +111,7 @@ package System.Linux is
    SIGPROF    : constant := 27; --  profiling timer expired
    SIGXCPU    : constant := 24; --  CPU time limit exceeded
    SIGXFSZ    : constant := 25; --  filesize limit exceeded
+   SIGSYS     : constant := 31; --  bad argument to system call
    SIGUNUSED  : constant := 31; --  unused signal (GNU/Linux)
    SIGSTKFLT  : constant := 16; --  coprocessor stack fault (Linux)
    SIG32      : constant := 32; --  glibc internal signal
