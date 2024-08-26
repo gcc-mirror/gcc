@@ -10295,9 +10295,14 @@ addressable_p (tree gnu_expr, tree gnu_type)
 		   is guaranteed to be not smaller than that of its most
 		   aligned field that is not a bit-field.  However, we need
 		   to cope with quirks of ABIs that may misalign fields.  */
-		&& DECL_ALIGN (TREE_OPERAND (gnu_expr, 1))
-		   >= default_field_alignment (TREE_OPERAND (gnu_expr, 1),
-					       TREE_TYPE (gnu_expr)))
+		&& (DECL_ALIGN (TREE_OPERAND (gnu_expr, 1))
+		    >= default_field_alignment (TREE_OPERAND (gnu_expr, 1),
+						TREE_TYPE (gnu_expr))
+		    /* We do not enforce this on strict-alignment platforms for
+		       internal fields in order to keep supporting misalignment
+		       of tagged types in legacy code.  */
+		    || (!STRICT_ALIGNMENT
+			&& DECL_INTERNAL_P (TREE_OPERAND (gnu_expr, 1)))))
 	       /* The field of a padding record is always addressable.  */
 	       || TYPE_IS_PADDING_P (TREE_TYPE (TREE_OPERAND (gnu_expr, 0))))
 	      && addressable_p (TREE_OPERAND (gnu_expr, 0), NULL_TREE));
