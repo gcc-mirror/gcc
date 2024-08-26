@@ -3498,6 +3498,8 @@ pass_forwprop::execute (function *fun)
 
   cfg_changed = false;
 
+  calculate_dominance_info (CDI_DOMINATORS);
+
   /* Combine stmts with the stmts defining their operands.  Do that
      in an order that guarantees visiting SSA defs before SSA uses.  */
   lattice.create (num_ssa_names);
@@ -3537,12 +3539,11 @@ pass_forwprop::execute (function *fun)
       FOR_EACH_EDGE (e, ei, bb->preds)
 	{
 	  if ((e->flags & EDGE_EXECUTABLE)
-	      /* With dominators we could improve backedge handling
-		 when e->src is dominated by bb.  But for irreducible
-		 regions we have to take all backedges conservatively.
-		 We can handle single-block cycles as we know the
-		 dominator relationship here.  */
-	      || bb_to_rpo[e->src->index] > i)
+	      /* We can handle backedges in natural loops correctly but
+		 for irreducible regions we have to take all backedges
+		 conservatively when we did not visit the source yet.  */
+	      || (bb_to_rpo[e->src->index] > i
+		  && !dominated_by_p (CDI_DOMINATORS, e->src, e->dest)))
 	    {
 	      any = true;
 	      break;
