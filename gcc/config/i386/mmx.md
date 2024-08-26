@@ -1958,6 +1958,8 @@
 
 (define_mode_iterator VHF_32_64 [V2HF (V4HF "TARGET_MMX_WITH_SSE")])
 
+(define_mode_iterator VBF_32_64 [V2BF (V4BF "TARGET_MMX_WITH_SSE")])
+
 (define_expand "divv4hf3"
   [(set (match_operand:V4HF 0 "register_operand")
 	(div:V4HF
@@ -2036,6 +2038,26 @@
   DONE;
 })
 
+;; VDIVNEPBF16 does not generate floating point exceptions.
+(define_expand "<insn><mode>3"
+  [(set (match_operand:VBF_32_64 0 "register_operand")
+    (plusminusmultdiv:VBF_32_64
+      (match_operand:VBF_32_64 1 "nonimmediate_operand")
+      (match_operand:VBF_32_64 2 "nonimmediate_operand")))]
+  "TARGET_AVX10_2_256"
+{
+  rtx op0 = gen_reg_rtx (V8BFmode);
+  rtx op1 = lowpart_subreg (V8BFmode,
+			    force_reg (<MODE>mode, operands[1]), <MODE>mode);
+  rtx op2 = lowpart_subreg (V8BFmode,
+			    force_reg (<MODE>mode, operands[2]), <MODE>mode);
+
+  emit_insn (gen_<insn>v8bf3 (op0, op1, op2));
+
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8BFmode));
+  DONE;
+})
+
 (define_expand "divv2hf3"
   [(set (match_operand:V2HF 0 "register_operand")
 	(div:V2HF
@@ -2088,6 +2110,21 @@
   emit_insn (gen_mov<mov_to_sse_suffix>_<mode>_to_sse (op1, operands[1]));
   emit_insn (gen_sqrtv8hf2 (op0, op1));
   emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8HFmode));
+  DONE;
+})
+
+(define_expand "sqrt<mode>2"
+  [(set (match_operand:VBF_32_64 0 "register_operand")
+	(sqrt:VBF_32_64 (match_operand:VBF_32_64 1 "vector_operand")))]
+  "TARGET_AVX10_2_256"
+{
+  rtx op0 = gen_reg_rtx (V8BFmode);
+  rtx op1 = lowpart_subreg (V8BFmode,
+			    force_reg (<MODE>mode, operands[1]), <MODE>mode);
+
+  emit_insn (gen_sqrtv8bf2 (op0, op1));
+
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8BFmode));
   DONE;
 })
 
