@@ -1035,6 +1035,26 @@
 #define __builtin_ia32_cmppbf16256_mask(A, B, C, D) __builtin_ia32_cmppbf16256_mask(A, B, 1, D)
 #define __builtin_ia32_cmppbf16128_mask(A, B, C, D) __builtin_ia32_cmppbf16128_mask(A, B, 1, D)
 
+/* avx10_2-512satcvtintrin.h */
+#define __builtin_ia32_cvtph2ibs512_mask_round(A, B, C, D) __builtin_ia32_cvtph2ibs512_mask_round(A, B, C, 8)
+#define __builtin_ia32_cvtph2iubs512_mask_round(A, B, C, D) __builtin_ia32_cvtph2iubs512_mask_round(A, B, C, 8)
+#define __builtin_ia32_cvtps2ibs512_mask_round(A, B, C, D) __builtin_ia32_cvtps2ibs512_mask_round(A, B, C, 8)
+#define __builtin_ia32_cvtps2iubs512_mask_round(A, B, C, D) __builtin_ia32_cvtps2iubs512_mask_round(A, B, C, 8)
+#define __builtin_ia32_cvttph2ibs512_mask_round(A, B, C, D) __builtin_ia32_cvttph2ibs512_mask_round(A, B, C, 8)
+#define __builtin_ia32_cvttph2iubs512_mask_round(A, B, C, D) __builtin_ia32_cvttph2iubs512_mask_round(A, B, C, 8)
+#define __builtin_ia32_cvttps2ibs512_mask_round(A, B, C, D) __builtin_ia32_cvttps2ibs512_mask_round(A, B, C, 8)
+#define __builtin_ia32_cvttps2iubs512_mask_round(A, B, C, D) __builtin_ia32_cvttps2iubs512_mask_round(A, B, C, 8)
+
+/* avx10_2satcvtintrin.h */
+#define __builtin_ia32_cvtph2ibs256_mask_round(A, B, C, D) __builtin_ia32_cvtph2ibs256_mask_round(A, B, C, 8)
+#define __builtin_ia32_cvtph2iubs256_mask_round(A, B, C, D) __builtin_ia32_cvtph2iubs256_mask_round(A, B, C, 8)
+#define __builtin_ia32_cvtps2ibs256_mask_round(A, B, C, D) __builtin_ia32_cvtps2ibs256_mask_round(A, B, C, 8)
+#define __builtin_ia32_cvtps2iubs256_mask_round(A, B, C, D) __builtin_ia32_cvtps2iubs256_mask_round(A, B, C, 8)
+#define __builtin_ia32_cvttph2ibs256_mask_round(A, B, C, D) __builtin_ia32_cvttph2ibs256_mask_round(A, B, C, 8)
+#define __builtin_ia32_cvttph2iubs256_mask_round(A, B, C, D) __builtin_ia32_cvttph2iubs256_mask_round(A, B, C, 8)
+#define __builtin_ia32_cvttps2ibs256_mask_round(A, B, C, D) __builtin_ia32_cvttps2ibs256_mask_round(A, B, C, 8)
+#define __builtin_ia32_cvttps2iubs256_mask_round(A, B, C, D) __builtin_ia32_cvttps2iubs256_mask_round(A, B, C, 8)
+
 #include <wmmintrin.h>
 #include <immintrin.h>
 #include <mm3dnow.h>

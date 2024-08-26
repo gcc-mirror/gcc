@@ -152,4 +152,7 @@
 
 #include <avx10_2-512bf16intrin.h>
 
+#include <avx10_2satcvtintrin.h>
+
+#include <avx10_2-512satcvtintrin.h>
 #endif /* _IMMINTRIN_H_INCLUDED */

@@ -48,6 +48,7 @@ MAKE_MASK_MERGE(i_uw, unsigned short)
 MAKE_MASK_MERGE(bf16_uw, unsigned short)
 MAKE_MASK_MERGE(i_ud, unsigned int)
 MAKE_MASK_MERGE(i_uq, unsigned long long)
+MAKE_MASK_MERGE(bf16_bf, __bf16)
 
 #define MASK_MERGE(TYPE) merge_masking_##TYPE
 
@@ -74,6 +75,7 @@ MAKE_MASK_ZERO(i_uw, unsigned short)
 MAKE_MASK_ZERO(bf16_uw, unsigned short)
 MAKE_MASK_ZERO(i_ud, unsigned int)
 MAKE_MASK_ZERO(i_uq, unsigned long long)
+MAKE_MASK_ZERO(bf16_bf, __bf16)
 
 
 #define MASK_ZERO(TYPE) zero_masking_##TYPE
