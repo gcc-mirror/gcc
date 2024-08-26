@@ -106,6 +106,7 @@ enum cv_leaf_type {
   LF_UNION = 0x1506,
   LF_ENUM = 0x1507,
   LF_MEMBER = 0x150d,
+  LF_STMEMBER = 0x150e,
   LF_FUNC_ID = 0x1601,
   LF_STRING_ID = 0x1605,
   LF_CHAR = 0x8000,
@@ -1218,6 +1219,12 @@ struct codeview_subtype
       codeview_integer offset;
       char *name;
     } lf_member;
+    struct
+    {
+      uint16_t attributes;
+      uint32_t type;
+      char *name;
+    } lf_static_member;
   };
 };
 
@@ -3663,6 +3670,40 @@ write_lf_fieldlist (codeview_custom_type *t)
 
 	  break;
 
+	case LF_STMEMBER:
+	  /* This is lf_static_member in binutils and lfSTMember in Microsoft's
+	     cvinfo.h:
+
+	    struct lf_static_member
+	    {
+	      uint16_t kind;
+	      uint16_t attributes;
+	      uint32_t type;
+	      char name[];
+	    } ATTRIBUTE_PACKED;
+	  */
+
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, LF_STMEMBER);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, v->lf_static_member.attributes);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (4, false), asm_out_file);
+	  fprint_whex (asm_out_file, v->lf_static_member.type);
+	  putc ('\n', asm_out_file);
+
+	  name_len = strlen (v->lf_static_member.name) + 1;
+	  ASM_OUTPUT_ASCII (asm_out_file, v->lf_static_member.name, name_len);
+
+	  leaf_len = 8 + name_len;
+	  write_cv_padding (4 - (leaf_len % 4));
+
+	  free (v->lf_static_member.name);
+	  break;
+
 	default:
 	  break;
 	}
@@ -4958,6 +4999,91 @@ create_bitfield (dw_die_ref c)
   return ct->num;
 }
 
+/* Create an LF_MEMBER field list subtype for a struct member, returning its
+   pointer in el and its size in el_len.  */
+
+static void
+add_struct_member (dw_die_ref c, uint16_t accessibility,
+		   codeview_subtype **el, size_t *el_len)
+{
+  *el = (codeview_subtype *) xmalloc (sizeof (**el));
+  (*el)->next = NULL;
+  (*el)->kind = LF_MEMBER;
+  (*el)->lf_member.attributes = accessibility;
+
+  if (get_AT (c, DW_AT_data_bit_offset))
+    (*el)->lf_member.type = create_bitfield (c);
+  else
+    (*el)->lf_member.type = get_type_num (get_AT_ref (c, DW_AT_type),
+					  true, false);
+
+  (*el)->lf_member.offset.neg = false;
+  (*el)->lf_member.offset.num = get_AT_unsigned (c, DW_AT_data_member_location);
+
+  *el_len = 11 + cv_integer_len (&(*el)->lf_member.offset);
+
+  if (get_AT_string (c, DW_AT_name))
+    {
+      (*el)->lf_member.name = xstrdup (get_AT_string (c, DW_AT_name));
+      *el_len += strlen ((*el)->lf_member.name);
+    }
+  else
+    {
+      (*el)->lf_member.name = NULL;
+    }
+
+  if (*el_len % 4)
+    *el_len += 4 - (*el_len % 4);
+}
+
+/* Create an LF_STMEMBER field list subtype for a static struct member,
+   returning its pointer in el and its size in el_len.  */
+
+static void
+add_struct_static_member (dw_die_ref c, uint16_t accessibility,
+			  codeview_subtype **el, size_t *el_len)
+{
+  *el = (codeview_subtype *) xmalloc (sizeof (**el));
+  (*el)->next = NULL;
+  (*el)->kind = LF_STMEMBER;
+  (*el)->lf_static_member.attributes = accessibility;
+  (*el)->lf_static_member.type = get_type_num (get_AT_ref (c, DW_AT_type),
+					       true, false);
+  (*el)->lf_static_member.name = xstrdup (get_AT_string (c, DW_AT_name));
+
+  *el_len = 9 + strlen ((*el)->lf_static_member.name);
+
+  if (*el_len % 4)
+    *el_len += 4 - (*el_len % 4);
+}
+
+/* Translate a DWARF DW_AT_accessibility constant into its CodeView
+   equivalent.  If implicit, follow the C++ rules.  */
+
+static uint16_t
+get_accessibility (dw_die_ref c)
+{
+  switch (get_AT_unsigned (c, DW_AT_accessibility))
+    {
+    case DW_ACCESS_private:
+      return CV_ACCESS_PRIVATE;
+
+    case DW_ACCESS_protected:
+      return CV_ACCESS_PROTECTED;
+
+    case DW_ACCESS_public:
+      return CV_ACCESS_PUBLIC;
+
+    /* Members in a C++ struct or union are public by default, members
+      in a class are private.  */
+    default:
+      if (dw_get_die_tag (dw_get_die_parent (c)) == DW_TAG_class_type)
+	return CV_ACCESS_PRIVATE;
+      else
+	return CV_ACCESS_PUBLIC;
+    }
+}
+
 /* Process a DW_TAG_structure_type, DW_TAG_class_type, or DW_TAG_union_type
    DIE, add an LF_FIELDLIST and an LF_STRUCTURE / LF_CLASS / LF_UNION type,
    and return the number of the latter.  */
@@ -5002,66 +5128,29 @@ get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
       do
 	{
 	  codeview_subtype *el;
-	  size_t el_len;
+	  size_t el_len = 0;
+	  uint16_t accessibility;
 
 	  c = dw_get_die_sib (c);
 
-	  if (dw_get_die_tag (c) != DW_TAG_member)
-	    continue;
+	  accessibility = get_accessibility (c);
 
-	  el = (codeview_subtype *) xmalloc (sizeof (*el));
-	  el->next = NULL;
-	  el->kind = LF_MEMBER;
-
-	  switch (get_AT_unsigned (c, DW_AT_accessibility))
+	  switch (dw_get_die_tag (c))
 	    {
-	    case DW_ACCESS_private:
-	      el->lf_member.attributes = CV_ACCESS_PRIVATE;
+	    case DW_TAG_member:
+	      add_struct_member (c, accessibility, &el, &el_len);
 	      break;
 
-	    case DW_ACCESS_protected:
-	      el->lf_member.attributes = CV_ACCESS_PROTECTED;
+	    case DW_TAG_variable:
+	      add_struct_static_member (c, accessibility, &el, &el_len);
 	      break;
 
-	    case DW_ACCESS_public:
-	      el->lf_member.attributes = CV_ACCESS_PUBLIC;
-	      break;
-
-	    /* Members in a C++ struct or union are public by default, members
-	      in a class are private.  */
 	    default:
-	      if (dw_get_die_tag (type) == DW_TAG_class_type)
-		el->lf_member.attributes = CV_ACCESS_PRIVATE;
-	      else
-		el->lf_member.attributes = CV_ACCESS_PUBLIC;
 	      break;
 	    }
 
-	  if (get_AT (c, DW_AT_data_bit_offset))
-	    el->lf_member.type = create_bitfield (c);
-	  else
-	    el->lf_member.type = get_type_num (get_AT_ref (c, DW_AT_type),
-					       true, false);
-
-	  el->lf_member.offset.neg = false;
-	  el->lf_member.offset.num = get_AT_unsigned (c,
-						      DW_AT_data_member_location);
-
-	  el_len = 11;
-	  el_len += cv_integer_len (&el->lf_member.offset);
-
-	  if (get_AT_string (c, DW_AT_name))
-	    {
-	      el->lf_member.name = xstrdup (get_AT_string (c, DW_AT_name));
-	      el_len += strlen (el->lf_member.name);
-	    }
-	  else
-	    {
-	      el->lf_member.name = NULL;
-	    }
-
-	  if (el_len % 4)
-	    el_len += 4 - (el_len % 4);
+	  if (el_len == 0)
+	    continue;
 
 	  /* Add an LF_INDEX subtype if everything's too big for one
 	     LF_FIELDLIST.  */
