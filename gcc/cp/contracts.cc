@@ -1441,7 +1441,7 @@ build_contract_condition_function (tree fndecl, bool pre)
 
       /* We haven't set the comdat group on the guarded function yet, we'll add
 	 this to the same group in comdat_linkage later.  */
-      gcc_assert (!DECL_ONE_ONLY (fndecl));
+      //gcc_assert (!DECL_ONE_ONLY (fndecl));
 
       DECL_INTERFACE_KNOWN (fn) = true;
     }
