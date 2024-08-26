@@ -3520,6 +3520,7 @@ pass_forwprop::execute (function *fun)
     |= EDGE_EXECUTABLE;
   auto_vec<gimple *, 4> to_fixup;
   auto_vec<gimple *, 32> to_remove;
+  auto_vec<unsigned, 32> to_remove_defs;
   auto_vec<std::pair<int, int>, 10> edges_to_remove;
   auto_bitmap simple_dce_worklist;
   auto_bitmap need_ab_cleanup;
@@ -3596,7 +3597,7 @@ pass_forwprop::execute (function *fun)
 	  if (all_same)
 	    {
 	      if (may_propagate_copy (res, first))
-		to_remove.safe_push (phi);
+		to_remove_defs.safe_push (SSA_NAME_VERSION (res));
 	      fwprop_set_lattice_val (res, first);
 	    }
 	}
@@ -4088,7 +4089,7 @@ pass_forwprop::execute (function *fun)
 		     stmt for removal.  */
 		  if (val != lhs
 		      && may_propagate_copy (lhs, val))
-		    to_remove.safe_push (stmt);
+		    to_remove_defs.safe_push (SSA_NAME_VERSION (lhs));
 		  fwprop_set_lattice_val (lhs, val);
 		}
 	    }
@@ -4130,14 +4131,11 @@ pass_forwprop::execute (function *fun)
   free (bb_to_rpo);
   lattice.release ();
 
-  /* Remove stmts in reverse order to make debug stmt creation possible.  */
-  while (!to_remove.is_empty())
+  /* First remove chains of stmts where we check no uses remain.  */
+  simple_dce_from_worklist (simple_dce_worklist, to_purge);
+
+  auto remove = [](gimple *stmt)
     {
-      gimple *stmt = to_remove.pop ();
-      /* For example remove_prop_source_from_use can remove stmts queued
-	 for removal.  Deal with this gracefully.  */
-      if (!gimple_bb (stmt))
-	continue;
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Removing dead stmt ");
@@ -4153,8 +4151,28 @@ pass_forwprop::execute (function *fun)
 	  gsi_remove (&gsi, true);
 	  release_defs (stmt);
 	}
+    };
+
+  /* Then remove stmts we know we can remove even though we did not
+     substitute in dead code regions, so uses can remain.  Do so in reverse
+     order to make debug stmt creation possible.  */
+  while (!to_remove_defs.is_empty())
+    {
+      tree def = ssa_name (to_remove_defs.pop ());
+      /* For example remove_prop_source_from_use can remove stmts queued
+	 for removal.  Deal with this gracefully.  */
+      if (!def)
+	continue;
+      gimple *stmt = SSA_NAME_DEF_STMT (def);
+      remove (stmt);
     }
-  simple_dce_from_worklist (simple_dce_worklist, to_purge);
+
+  /* Wipe other queued stmts that do not have SSA defs.  */
+  while (!to_remove.is_empty())
+    {
+      gimple *stmt = to_remove.pop ();
+      remove (stmt);
+    }
 
   /* Fixup stmts that became noreturn calls.  This may require splitting
      blocks and thus isn't possible during the walk.  Do this
