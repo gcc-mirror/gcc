@@ -47,13 +47,8 @@ public:
     m_cur_children_array = nullptr;
   }
   void
-  on_begin_diagnostic (const diagnostic_info &) final override
-  {
-    /* No-op.  */
-  }
-  void
-  on_end_diagnostic (const diagnostic_info &diagnostic,
-		     diagnostic_t orig_diag_kind) final override;
+  on_report_diagnostic (const diagnostic_info &diagnostic,
+			diagnostic_t orig_diag_kind) final override;
   void on_diagram (const diagnostic_diagram &) final override
   {
     /* No-op.  */
@@ -225,14 +220,16 @@ make_json_for_path (diagnostic_context &context,
 }
 
 
-/* Implementation of "on_end_diagnostic" vfunc for JSON output.
+/* Implementation of "on_report_diagnostic" vfunc for JSON output.
    Generate a JSON object for DIAGNOSTIC, and store for output
    within current diagnostic group.  */
 
 void
-json_output_format::on_end_diagnostic (const diagnostic_info &diagnostic,
-				       diagnostic_t orig_diag_kind)
+json_output_format::on_report_diagnostic (const diagnostic_info &diagnostic,
+					  diagnostic_t orig_diag_kind)
 {
+  pp_output_formatted_text (m_context.printer, m_context.get_urlifier ());
+
   json::object *diag_obj = new json::object ();
 
   /* Get "kind" of diagnostic.  */
@@ -394,13 +391,6 @@ diagnostic_output_format_init_json (diagnostic_context &context)
 {
   /* Suppress normal textual path output.  */
   context.set_path_format (DPF_NONE);
-
-  /* The metadata is handled in JSON format, rather than as text.  */
-  context.set_show_cwe (false);
-  context.set_show_rules (false);
-
-  /* The option is handled in JSON format, rather than as text.  */
-  context.set_show_option_requested (false);
 
   /* Don't colorize the text.  */
   pp_show_color (context.printer) = false;

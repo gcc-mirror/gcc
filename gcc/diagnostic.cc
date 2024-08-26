@@ -1232,117 +1232,6 @@ get_cwe_url (int cwe)
   return xasprintf ("https://cwe.mitre.org/data/definitions/%i.html", cwe);
 }
 
-/* If DIAGNOSTIC has a CWE identifier, print it.
-
-   For example, if the diagnostic metadata associates it with CWE-119,
-   " [CWE-119]" will be printed, suitably colorized, and with a URL of a
-   description of the security issue.  */
-
-void
-diagnostic_context::print_any_cwe (const diagnostic_info &diagnostic)
-{
-  if (diagnostic.metadata == NULL)
-    return;
-
-  int cwe = diagnostic.metadata->get_cwe ();
-  if (cwe)
-    {
-      pretty_printer * const pp = this->printer;
-      char *saved_prefix = pp_take_prefix (pp);
-      pp_string (pp, " [");
-      pp_string (pp, colorize_start (pp_show_color (pp),
-				     diagnostic_kind_color[diagnostic.kind]));
-      if (pp->supports_urls_p ())
-	{
-	  char *cwe_url = get_cwe_url (cwe);
-	  pp_begin_url (pp, cwe_url);
-	  free (cwe_url);
-	}
-      pp_printf (pp, "CWE-%i", cwe);
-      pp_set_prefix (pp, saved_prefix);
-      if (pp->supports_urls_p ())
-	pp_end_url (pp);
-      pp_string (pp, colorize_stop (pp_show_color (pp)));
-      pp_character (pp, ']');
-    }
-}
-
-/* If DIAGNOSTIC has any rules associated with it, print them.
-
-   For example, if the diagnostic metadata associates it with a rule
-   named "STR34-C", then " [STR34-C]" will be printed, suitably colorized,
-   with any URL provided by the rule.  */
-
-void
-diagnostic_context::print_any_rules (const diagnostic_info &diagnostic)
-{
-  if (diagnostic.metadata == NULL)
-    return;
-
-  for (unsigned idx = 0; idx < diagnostic.metadata->get_num_rules (); idx++)
-    {
-      const diagnostic_metadata::rule &rule
-	= diagnostic.metadata->get_rule (idx);
-      if (char *desc = rule.make_description ())
-	{
-	  pretty_printer * const pp = this->printer;
-	  char *saved_prefix = pp_take_prefix (pp);
-	  pp_string (pp, " [");
-	  pp_string (pp,
-		     colorize_start (pp_show_color (pp),
-				     diagnostic_kind_color[diagnostic.kind]));
-	  char *url = NULL;
-	  if (pp->supports_urls_p ())
-	    {
-	      url = rule.make_url ();
-	      if (url)
-		pp_begin_url (pp, url);
-	    }
-	  pp_string (pp, desc);
-	  pp_set_prefix (pp, saved_prefix);
-	  if (pp->supports_urls_p ())
-	    if (url)
-	      pp_end_url (pp);
-	  free (url);
-	  pp_string (pp, colorize_stop (pp_show_color (pp)));
-	  pp_character (pp, ']');
-	  free (desc);
-	}
-    }
-}
-
-/* Print any metadata about the option used to control DIAGNOSTIC to CONTEXT's
-   printer, e.g. " [-Werror=uninitialized]".
-   Subroutine of diagnostic_context::report_diagnostic.  */
-
-void
-diagnostic_context::print_option_information (const diagnostic_info &diagnostic,
-					      diagnostic_t orig_diag_kind)
-{
-  if (char *option_text = make_option_name (diagnostic.option_index,
-					    orig_diag_kind, diagnostic.kind))
-    {
-      char *option_url = nullptr;
-      if (this->printer->supports_urls_p ())
-	option_url = make_option_url (diagnostic.option_index);
-      pretty_printer * const pp = this->printer;
-      pp_string (pp, " [");
-      pp_string (pp, colorize_start (pp_show_color (pp),
-				     diagnostic_kind_color[diagnostic.kind]));
-      if (option_url)
-	pp_begin_url (pp, option_url);
-      pp_string (pp, option_text);
-      if (option_url)
-	{
-	  pp_end_url (pp);
-	  free (option_url);
-	}
-      pp_string (pp, colorize_stop (pp_show_color (pp)));
-      pp_character (pp, ']');
-      free (option_text);
-    }
-}
-
 /* Returns whether a DIAGNOSTIC should be printed, and adjusts diagnostic->kind
    as appropriate for #pragma GCC diagnostic and -Werror=foo.  */
 
@@ -1517,15 +1406,10 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
   m_diagnostic_groups.m_emission_count++;
 
   pp_format (this->printer, &diagnostic->message, m_urlifier);
-  m_output_format->on_begin_diagnostic (*diagnostic);
-  pp_output_formatted_text (this->printer, m_urlifier);
-  if (m_show_cwe)
-    print_any_cwe (*diagnostic);
-  if (m_show_rules)
-    print_any_rules (*diagnostic);
-  if (m_show_option_requested)
-    print_option_information (*diagnostic, orig_diag_kind);
-  m_output_format->on_end_diagnostic (*diagnostic, orig_diag_kind);
+  /* Call vfunc in the output format.  This is responsible for
+     phase 3 of formatting, and for printing the result.  */
+  m_output_format->on_report_diagnostic (*diagnostic, orig_diag_kind);
+
   switch (m_extra_output_kind)
     {
     default:
@@ -1815,16 +1699,27 @@ diagnostic_text_output_format::~diagnostic_text_output_format ()
     }
 }
 
-void
-diagnostic_text_output_format::on_begin_diagnostic (const diagnostic_info &diagnostic)
-{
-  (*diagnostic_starter (&m_context)) (&m_context, &diagnostic);
-}
+/* Implementation of diagnostic_output_format::on_report_diagnostic vfunc
+   for GCC's standard textual output.  */
 
 void
-diagnostic_text_output_format::on_end_diagnostic (const diagnostic_info &diagnostic,
-						  diagnostic_t orig_diag_kind)
+diagnostic_text_output_format::
+on_report_diagnostic (const diagnostic_info &diagnostic,
+		      diagnostic_t orig_diag_kind)
 {
+  (*diagnostic_starter (&m_context)) (&m_context, &diagnostic);
+
+  pp_output_formatted_text (m_context.printer, m_context.get_urlifier ());
+
+  if (m_context.m_show_cwe)
+    print_any_cwe (diagnostic);
+
+  if (m_context.m_show_rules)
+    print_any_rules (diagnostic);
+
+  if (m_context.m_show_option_requested)
+    print_option_information (diagnostic, orig_diag_kind);
+
   (*diagnostic_finalizer (&m_context)) (&m_context, &diagnostic,
 					orig_diag_kind);
 }
@@ -1841,6 +1736,120 @@ diagnostic_text_output_format::on_diagram (const diagnostic_diagram &diagram)
   pp_newline (m_context.printer);
   pp_set_prefix (m_context.printer, saved_prefix);
   pp_flush (m_context.printer);
+}
+
+/* If DIAGNOSTIC has a CWE identifier, print it.
+
+   For example, if the diagnostic metadata associates it with CWE-119,
+   " [CWE-119]" will be printed, suitably colorized, and with a URL of a
+   description of the security issue.  */
+
+void
+diagnostic_text_output_format::print_any_cwe (const diagnostic_info &diagnostic)
+{
+  if (diagnostic.metadata == NULL)
+    return;
+
+  int cwe = diagnostic.metadata->get_cwe ();
+  if (cwe)
+    {
+      pretty_printer * const pp = m_context.printer;
+      char *saved_prefix = pp_take_prefix (pp);
+      pp_string (pp, " [");
+      pp_string (pp, colorize_start (pp_show_color (pp),
+				     diagnostic_kind_color[diagnostic.kind]));
+      if (pp->supports_urls_p ())
+	{
+	  char *cwe_url = get_cwe_url (cwe);
+	  pp_begin_url (pp, cwe_url);
+	  free (cwe_url);
+	}
+      pp_printf (pp, "CWE-%i", cwe);
+      pp_set_prefix (pp, saved_prefix);
+      if (pp->supports_urls_p ())
+	pp_end_url (pp);
+      pp_string (pp, colorize_stop (pp_show_color (pp)));
+      pp_character (pp, ']');
+    }
+}
+
+/* If DIAGNOSTIC has any rules associated with it, print them.
+
+   For example, if the diagnostic metadata associates it with a rule
+   named "STR34-C", then " [STR34-C]" will be printed, suitably colorized,
+   with any URL provided by the rule.  */
+
+void
+diagnostic_text_output_format::
+print_any_rules (const diagnostic_info &diagnostic)
+{
+  if (diagnostic.metadata == NULL)
+    return;
+
+  for (unsigned idx = 0; idx < diagnostic.metadata->get_num_rules (); idx++)
+    {
+      const diagnostic_metadata::rule &rule
+	= diagnostic.metadata->get_rule (idx);
+      if (char *desc = rule.make_description ())
+	{
+	  pretty_printer * const pp = m_context.printer;
+	  char *saved_prefix = pp_take_prefix (pp);
+	  pp_string (pp, " [");
+	  pp_string (pp,
+		     colorize_start (pp_show_color (pp),
+				     diagnostic_kind_color[diagnostic.kind]));
+	  char *url = NULL;
+	  if (pp->supports_urls_p ())
+	    {
+	      url = rule.make_url ();
+	      if (url)
+		pp_begin_url (pp, url);
+	    }
+	  pp_string (pp, desc);
+	  pp_set_prefix (pp, saved_prefix);
+	  if (pp->supports_urls_p ())
+	    if (url)
+	      pp_end_url (pp);
+	  free (url);
+	  pp_string (pp, colorize_stop (pp_show_color (pp)));
+	  pp_character (pp, ']');
+	  free (desc);
+	}
+    }
+}
+
+/* Print any metadata about the option used to control DIAGNOSTIC to CONTEXT's
+   printer, e.g. " [-Werror=uninitialized]".
+   Subroutine of diagnostic_context::report_diagnostic.  */
+
+void
+diagnostic_text_output_format::
+print_option_information (const diagnostic_info &diagnostic,
+			  diagnostic_t orig_diag_kind)
+{
+  if (char *option_text
+      = m_context.make_option_name (diagnostic.option_index,
+				    orig_diag_kind, diagnostic.kind))
+    {
+      char *option_url = nullptr;
+      pretty_printer * const pp = m_context.printer;
+      if (pp->supports_urls_p ())
+	option_url = m_context.make_option_url (diagnostic.option_index);
+      pp_string (pp, " [");
+      pp_string (pp, colorize_start (pp_show_color (pp),
+				     diagnostic_kind_color[diagnostic.kind]));
+      if (option_url)
+	pp_begin_url (pp, option_url);
+      pp_string (pp, option_text);
+      if (option_url)
+	{
+	  pp_end_url (pp);
+	  free (option_url);
+	}
+      pp_string (pp, colorize_stop (pp_show_color (pp)));
+      pp_character (pp, ']');
+      free (option_text);
+    }
 }
 
 /* Set the output format for CONTEXT to FORMAT, using BASE_FILE_NAME for

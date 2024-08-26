@@ -208,9 +208,12 @@ public:
 
   virtual void on_begin_group () = 0;
   virtual void on_end_group () = 0;
-  virtual void on_begin_diagnostic (const diagnostic_info &) = 0;
-  virtual void on_end_diagnostic (const diagnostic_info &,
-				  diagnostic_t orig_diag_kind) = 0;
+
+  /* Vfunc with responsibility for phase 3 of formatting the message
+     and "printing" the result.  */
+  virtual void on_report_diagnostic (const diagnostic_info &,
+				     diagnostic_t orig_diag_kind) = 0;
+
   virtual void on_diagram (const diagnostic_diagram &diagram) = 0;
   virtual bool machine_readable_stderr_p () const = 0;
 
@@ -237,14 +240,19 @@ public:
   ~diagnostic_text_output_format ();
   void on_begin_group () override {}
   void on_end_group () override {}
-  void on_begin_diagnostic (const diagnostic_info &) override;
-  void on_end_diagnostic (const diagnostic_info &,
-			  diagnostic_t orig_diag_kind) override;
+  void on_report_diagnostic (const diagnostic_info &,
+			     diagnostic_t orig_diag_kind) override;
   void on_diagram (const diagnostic_diagram &diagram) override;
   bool machine_readable_stderr_p () const final override
   {
     return false;
   }
+
+private:
+  void print_any_cwe (const diagnostic_info &diagnostic);
+  void print_any_rules (const diagnostic_info &diagnostic);
+  void print_option_information (const diagnostic_info &diagnostic,
+				 diagnostic_t orig_diag_kind);
 };
 
 /* A stack of sets of classifications: each entry in the stack is
@@ -381,6 +389,8 @@ public:
   diagnostic_start_span (diagnostic_context *context);
   friend diagnostic_finalizer_fn &
   diagnostic_finalizer (diagnostic_context *context);
+
+  friend class diagnostic_text_output_format;
 
   typedef void (*ice_handler_callback_t) (diagnostic_context *);
   typedef void (*set_locations_callback_t) (diagnostic_context *,
@@ -522,6 +532,7 @@ public:
   {
     return m_client_data_hooks;
   }
+  urlifier *get_urlifier () const { return m_urlifier; }
   text_art::theme *get_diagram_theme () const { return m_diagrams.m_theme; }
 
   int converted_column (expanded_location s) const;
@@ -585,11 +596,6 @@ public:
 
 private:
   bool includes_seen_p (const line_map_ordinary *map);
-
-  void print_any_cwe (const diagnostic_info &diagnostic);
-  void print_any_rules (const diagnostic_info &diagnostic);
-  void print_option_information (const diagnostic_info &diagnostic,
-				 diagnostic_t orig_diag_kind);
 
   void show_any_path (const diagnostic_info &diagnostic);
 
