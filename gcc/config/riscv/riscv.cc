@@ -11965,7 +11965,7 @@ riscv_expand_ussub (rtx dest, rtx x, rtx y)
 {
   machine_mode mode = GET_MODE (dest);
   rtx xmode_x = riscv_gen_unsigned_xmode_reg (x, mode);
-  rtx xmode_y = gen_lowpart (Xmode, y);
+  rtx xmode_y = riscv_gen_unsigned_xmode_reg (y, mode);
   rtx xmode_lt = gen_reg_rtx (Xmode);
   rtx xmode_minus = gen_reg_rtx (Xmode);
   rtx xmode_dest = gen_reg_rtx (Xmode);
