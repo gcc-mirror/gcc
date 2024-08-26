@@ -112,6 +112,7 @@ enum cv_leaf_type {
   LF_METHOD = 0x150f,
   LF_ONEMETHOD = 0x1511,
   LF_FUNC_ID = 0x1601,
+  LF_MFUNC_ID = 0x1602,
   LF_STRING_ID = 0x1605,
   LF_CHAR = 0x8000,
   LF_SHORT = 0x8001,
@@ -4293,6 +4294,56 @@ write_lf_func_id (codeview_custom_type *t)
   asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
 }
 
+/* Write an LF_MFUNC_ID type, which is the version of LF_FUNC_ID for struct
+   functions.  Instead of an LF_STRING_ID for the parent scope, we write the
+   type number of the parent struct.  */
+
+static void
+write_lf_mfunc_id (codeview_custom_type *t)
+{
+  size_t name_len;
+
+  /* This is lf_mfunc_id in binutils and lfMFuncId in Microsoft's cvinfo.h:
+
+    struct lf_mfunc_id
+    {
+      uint16_t size;
+      uint16_t kind;
+      uint32_t parent_type;
+      uint32_t function_type;
+      char name[];
+    } ATTRIBUTE_PACKED
+  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end - %LLcv_type%x_start\n",
+	       t->num, t->num);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_start:\n", t->num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->kind);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_mfunc_id.parent_type);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_mfunc_id.function_type);
+  putc ('\n', asm_out_file);
+
+  name_len = strlen (t->lf_mfunc_id.name) + 1;
+
+  ASM_OUTPUT_ASCII (asm_out_file, t->lf_mfunc_id.name, name_len);
+
+  write_cv_padding (4 - (name_len % 4));
+
+  free (t->lf_mfunc_id.name);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
+}
+
 /* Write an LF_STRING_ID type, which provides a deduplicated string that other
    types can reference.  */
 
@@ -4521,6 +4572,10 @@ write_custom_types (void)
 
 	case LF_FUNC_ID:
 	  write_lf_func_id (custom_types);
+	  break;
+
+	case LF_MFUNC_ID:
+	  write_lf_mfunc_id (custom_types);
 	  break;
 
 	case LF_STRING_ID:
@@ -6192,21 +6247,13 @@ get_scope_string_id (dw_die_ref die)
   return ret;
 }
 
-/* Process a DW_TAG_subprogram DIE, and add an S_GPROC32_ID or S_LPROC32_ID
-   symbol for this.  */
+/* Add an LF_FUNC_ID type and return its number (see write_lf_func_id).  */
 
-static void
-add_function (dw_die_ref die)
+static uint32_t
+add_lf_func_id (dw_die_ref die, const char *name)
 {
+  uint32_t function_type, scope_type;
   codeview_custom_type *ct;
-  const char *name = get_AT_string (die, DW_AT_name);
-  uint32_t function_type, func_id_type, scope_type;
-  codeview_symbol *s;
-
-  if (!name)
-    return;
-
-  /* Add an LF_FUNC_ID type for this function.  */
 
   function_type = get_type_num_subroutine_type (die, false, 0, 0, 0);
   scope_type = get_scope_string_id (die);
@@ -6221,7 +6268,84 @@ add_function (dw_die_ref die)
 
   add_custom_type (ct);
 
-  func_id_type = ct->num;
+  return ct->num;
+}
+
+/* Add an LF_MFUNC_ID type and return its number (see write_lf_mfunc_id).  */
+
+static uint32_t
+add_lf_mfunc_id (dw_die_ref die, const char *name)
+{
+  uint32_t function_type = 0, parent_type;
+  codeview_custom_type *ct;
+  dw_die_ref spec = get_AT_ref (die, DW_AT_specification);
+
+  parent_type = get_type_num (dw_get_die_parent (spec), false, false);
+
+  if (types_htab)
+    {
+      codeview_type **slot;
+
+      slot = types_htab->find_slot_with_hash (spec, htab_hash_pointer (spec),
+					      NO_INSERT);
+
+      if (slot && *slot)
+	function_type = (*slot)->num;
+    }
+
+  if (function_type == 0)
+    {
+      function_type = get_type_num_subroutine_type (die, false, parent_type,
+						    0, 0);
+    }
+
+  ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
+
+  ct->next = NULL;
+  ct->kind = LF_MFUNC_ID;
+  ct->lf_mfunc_id.parent_type = parent_type;
+  ct->lf_mfunc_id.function_type = function_type;
+  ct->lf_mfunc_id.name = xstrdup (name);
+
+  add_custom_type (ct);
+
+  return ct->num;
+}
+
+/* Process a DW_TAG_subprogram DIE, and add an S_GPROC32_ID or S_LPROC32_ID
+   symbol for this.  */
+
+static void
+add_function (dw_die_ref die)
+{
+  const char *name = get_AT_string (die, DW_AT_name);
+  uint32_t func_id_type;
+  codeview_symbol *s;
+  dw_die_ref spec = get_AT_ref (die, DW_AT_specification);
+  bool do_mfunc_id = false;
+
+  if (!name)
+    return;
+
+  if (spec && dw_get_die_parent (spec))
+    {
+      switch (dw_get_die_tag (dw_get_die_parent (spec)))
+	{
+	case DW_TAG_class_type:
+	case DW_TAG_structure_type:
+	case DW_TAG_union_type:
+	  do_mfunc_id = true;
+	  break;
+
+	default:
+	  break;
+	}
+    }
+
+  if (do_mfunc_id)
+    func_id_type = add_lf_mfunc_id (die, name);
+  else
+    func_id_type = add_lf_func_id (die, name);
 
   /* Add an S_GPROC32_ID / S_LPROC32_ID symbol.  */
 
