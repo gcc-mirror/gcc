@@ -580,7 +580,9 @@ public:
      (SARIF v2.1.0 section 3.27.13).
    - doesn't capture -Werror cleanly
    - doesn't capture inlining information (can SARIF handle this?)
-   - doesn't capture macro expansion information (can SARIF handle this?).  */
+   - doesn't capture macro expansion information (can SARIF handle this?).
+   - doesn't capture any diagnostic_metadata::rules associated with
+     a diagnostic.  */
 
 class sarif_builder
 {
@@ -1522,6 +1524,8 @@ sarif_builder::make_result_object (diagnostic_context &context,
 	}
 
       diagnostic.metadata->maybe_add_sarif_properties (*result_obj);
+
+      /* We don't yet support diagnostic_metadata::rule.  */
     }
 
   /* "level" property (SARIF v2.1.0 section 3.27.10).  */

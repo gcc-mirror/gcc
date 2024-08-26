@@ -101,7 +101,9 @@ set plugin_test_list [list \
 	  diagnostic-test-inlining-2.c \
 	  diagnostic-test-inlining-3.c \
 	  diagnostic-test-inlining-4.c } \
-    { diagnostic_plugin_test_metadata.c diagnostic-test-metadata.c } \
+    { diagnostic_plugin_test_metadata.c \
+	  diagnostic-test-metadata.c \
+	  diagnostic-test-metadata-sarif.c } \
     { diagnostic_plugin_test_paths.c \
 	  diagnostic-test-paths-1.c \
 	  diagnostic-test-paths-2.c \
