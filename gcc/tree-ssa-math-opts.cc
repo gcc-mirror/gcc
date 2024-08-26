@@ -4023,6 +4023,8 @@ extern bool gimple_unsigned_integer_sat_add (tree, tree*, tree (*)(tree));
 extern bool gimple_unsigned_integer_sat_sub (tree, tree*, tree (*)(tree));
 extern bool gimple_unsigned_integer_sat_trunc (tree, tree*, tree (*)(tree));
 
+extern bool gimple_signed_integer_sat_add (tree, tree*, tree (*)(tree));
+
 static void
 build_saturation_binary_arith_call (gimple_stmt_iterator *gsi, internal_fn fn,
 				    tree lhs, tree op_0, tree op_1)
@@ -4072,7 +4074,8 @@ match_unsigned_saturation_add (gimple_stmt_iterator *gsi, gassign *stmt)
 }
 
 /*
- * Try to match saturation unsigned add with PHI.
+ * Try to match saturation add with PHI.
+ * For unsigned integer:
  *   <bb 2> :
  *   _1 = x_3(D) + y_4(D);
  *   if (_1 >= x_3(D))
@@ -4086,10 +4089,31 @@ match_unsigned_saturation_add (gimple_stmt_iterator *gsi, gassign *stmt)
  *   # _2 = PHI <255(2), _1(3)>
  *   =>
  *   <bb 4> [local count: 1073741824]:
- *   _2 = .SAT_ADD (x_4(D), y_5(D));  */
+ *   _2 = .SAT_ADD (x_4(D), y_5(D));
+ *
+ * For signed integer:
+ *   x.0_1 = (long unsigned int) x_7(D);
+ *   y.1_2 = (long unsigned int) y_8(D);
+ *   _3 = x.0_1 + y.1_2;
+ *   sum_9 = (int64_t) _3;
+ *   _4 = x_7(D) ^ y_8(D);
+ *   _5 = x_7(D) ^ sum_9;
+ *   _15 = ~_4;
+ *   _16 = _5 & _15;
+ *   if (_16 < 0)
+ *     goto <bb 3>; [41.00%]
+ *   else
+ *     goto <bb 4>; [59.00%]
+ *   _11 = x_7(D) < 0;
+ *   _12 = (long int) _11;
+ *   _13 = -_12;
+ *   _14 = _13 ^ 9223372036854775807;
+ *   # _6 = PHI <_14(3), sum_9(2)>
+ *   =>
+ *   _6 = .SAT_ADD (x_5(D), y_6(D)); [tail call]  */
 
 static void
-match_unsigned_saturation_add (gimple_stmt_iterator *gsi, gphi *phi)
+match_saturation_add (gimple_stmt_iterator *gsi, gphi *phi)
 {
   if (gimple_phi_num_args (phi) != 2)
     return;
@@ -4097,7 +4121,8 @@ match_unsigned_saturation_add (gimple_stmt_iterator *gsi, gphi *phi)
   tree ops[2];
   tree phi_result = gimple_phi_result (phi);
 
-  if (gimple_unsigned_integer_sat_add (phi_result, ops, NULL))
+  if (gimple_unsigned_integer_sat_add (phi_result, ops, NULL)
+      || gimple_signed_integer_sat_add (phi_result, ops, NULL))
     build_saturation_binary_arith_call (gsi, phi, IFN_SAT_ADD, phi_result,
 					ops[0], ops[1]);
 }
@@ -6097,7 +6122,7 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
     gsi_next (&psi))
     {
       gimple_stmt_iterator gsi = gsi_after_labels (bb);
-      match_unsigned_saturation_add (&gsi, psi.phi ());
+      match_saturation_add (&gsi, psi.phi ());
       match_unsigned_saturation_sub (&gsi, psi.phi ());
     }
 
