@@ -11267,6 +11267,9 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V16HI_FTYPE_V8SI_V8SI:
     case V64QI_FTYPE_V64QI_V64QI:
     case V32QI_FTYPE_V32QI_V32QI:
+    case V32BF_FTYPE_V32BF_V32BF:
+    case V16BF_FTYPE_V16BF_V16BF:
+    case V8BF_FTYPE_V8BF_V8BF:
     case V16HI_FTYPE_V32QI_V32QI:
     case V16HI_FTYPE_V16HI_V16HI:
     case V8SI_FTYPE_V4DF_V4DF:
@@ -11434,6 +11437,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V16HI_FTYPE_V8HI_V16HI_UHI:
     case V16HI_FTYPE_HI_V16HI_UHI:
     case V8HI_FTYPE_V8HI_V8HI_UQI:
+    case V8BF_FTYPE_V8BF_V8BF_UQI:
     case V8HI_FTYPE_HI_V8HI_UQI:
     case V16HF_FTYPE_V16HF_V16HF_UHI:
     case V8SF_FTYPE_V8HI_V8SF_UQI:
@@ -11531,9 +11535,11 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V16HF_FTYPE_V16HF_V16HF_V16HF:
     case V16HI_FTYPE_V16HF_V16HI_UHI:
     case V16HI_FTYPE_V16HI_V16HI_UHI:
+    case V16BF_FTYPE_V16BF_V16BF_UHI:
     case V8HI_FTYPE_V16QI_V8HI_UQI:
     case V16HI_FTYPE_V16QI_V16HI_UHI:
     case V32HI_FTYPE_V32HI_V32HI_USI:
+    case V32BF_FTYPE_V32BF_V32BF_USI:
     case V32HI_FTYPE_V32QI_V32HI_USI:
     case V8DI_FTYPE_V16QI_V8DI_UQI:
     case V8DI_FTYPE_V2DI_V8DI_UQI:
@@ -11663,6 +11669,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
       break;
     case V32QI_FTYPE_V32QI_V32QI_V32QI_USI:
     case V32HI_FTYPE_V32HI_V32HI_V32HI_USI:
+    case V32BF_FTYPE_V32BF_V32BF_V32BF_USI:
     case V32HI_FTYPE_V64QI_V64QI_V32HI_USI:
     case V16SI_FTYPE_V32HI_V32HI_V16SI_UHI:
     case V64QI_FTYPE_V64QI_V64QI_V64QI_UDI:
@@ -11693,6 +11700,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V16SI_FTYPE_V16SI_V16SI_V16SI_UHI:
     case V16SI_FTYPE_V16SI_V4SI_V16SI_UHI:
     case V8HI_FTYPE_V8HI_V8HI_V8HI_UQI:
+    case V8BF_FTYPE_V8BF_V8BF_V8BF_UQI:
     case V8SI_FTYPE_V8SI_V8SI_V8SI_UQI:
     case V4SI_FTYPE_V4SI_V4SI_V4SI_UQI:
     case V16HF_FTYPE_V16HF_V16HF_V16HF_UQI:
@@ -11700,6 +11708,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V8SF_FTYPE_V8SF_V8SF_V8SF_UQI:
     case V16QI_FTYPE_V16QI_V16QI_V16QI_UHI:
     case V16HI_FTYPE_V16HI_V16HI_V16HI_UHI:
+    case V16BF_FTYPE_V16BF_V16BF_V16BF_UHI:
     case V2DI_FTYPE_V2DI_V2DI_V2DI_UQI:
     case V2DF_FTYPE_V2DF_V2DF_V2DF_UQI:
     case V4DI_FTYPE_V4DI_V4DI_V4DI_UQI:

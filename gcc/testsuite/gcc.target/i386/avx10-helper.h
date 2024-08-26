@@ -3,9 +3,55 @@
 
 #define AVX10
 #define AVX512FP16
-
+#define AVX512BF16
 #include "avx512f-helper.h"
 #include "avx512f-mask-type.h"
+#include <stdint.h>
+
+#define NOINLINE __attribute__((noinline,noclone))
+typedef union
+{
+  uint32_t int32;
+  float flt;
+}float_int_t;
+
+float NOINLINE
+convert_bf16_to_fp32 (unsigned short bf16)
+{
+  unsigned int ii = bf16 << 16;
+  return *(float*)&ii;
+}
+
+unsigned short NOINLINE
+convert_fp32_to_bf16 (float fp)
+{
+  float_int_t fi;
+  fi.flt = fp;
+  return ((fi.int32 >> 16) & 0xffff);
+}
+
+unsigned short NOINLINE
+convert_fp32_to_bf16_ne (float fp)
+{
+  float_int_t fi;
+  uint32_t rounding_bias, lsb;
+
+  fi.flt = fp;
+  lsb = (fi.int32 >> 16) & 0x1;
+  rounding_bias = 0x7fff + lsb;
+  fi.int32 += rounding_bias;
+
+  return ((fi.int32 >> 16) & 0xffff);
+}
+
+float NOINLINE
+scalef (float x, float y)
+{
+  __m128 px = _mm_load_ss (&x);
+  __m128 py = _mm_load_ss (&y);
+  __m128 out = _mm_scalef_ss (px, py);
+  return _mm_cvtss_f32 (out);
+}
 
 #endif /* AVX10_HELPER_INCLUDED */
 

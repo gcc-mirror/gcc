@@ -69,6 +69,12 @@ typedef union
 
 typedef union
 {
+  __m512bh x;
+  unsigned short a[32];
+} union512bf16_uw;
+
+typedef union
+{
   __m128h x;
   _Float16 a[8];
 } union128h;
@@ -78,6 +84,18 @@ typedef union
   __m256h x;
   _Float16 a[16];
 } union256h;
+
+typedef union
+{
+  __m128bh x;
+  unsigned short a[8];
+} union128bf16_uw;
+
+typedef union
+{
+  __m256bh x;
+  unsigned short a[16];
+} union256bf16_uw;
 
 #define CHECK_ROUGH_EXP(UNION_TYPE, VALUE_TYPE, FMT)		\
 static int							\
@@ -154,4 +172,13 @@ CHECK_FP_EXP (union256h, _Float16, ESP_FLOAT16, "%f")
 
 CHECK_ROUGH_EXP (union128h, _Float16, "%f")
 CHECK_ROUGH_EXP (union256h, _Float16, "%f")
+#endif
+
+#if defined(AVX512BF16)
+CHECK_EXP (union512bf16_uw, unsigned short, "%d")
+#endif
+
+#if defined(AVX512BF16)
+CHECK_EXP (union128bf16_uw, unsigned short, "%d")
+CHECK_EXP (union256bf16_uw, unsigned short, "%d")
 #endif
