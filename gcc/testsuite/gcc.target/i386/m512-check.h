@@ -63,6 +63,12 @@ typedef union
 
 typedef union
 {
+  __m512h x;
+  _Float16 a[32];
+} union512h;
+
+typedef union
+{
   __m128h x;
   _Float16 a[8];
 } union128h;
@@ -72,27 +78,6 @@ typedef union
   __m256h x;
   _Float16 a[16];
 } union256h;
-
-typedef union
-{
-  __m512h x;
-  _Float16 a[32];
-} union512h;
-
-CHECK_EXP (union512i_b, char, "%d")
-CHECK_EXP (union512i_w, short, "%d")
-CHECK_EXP (union512i_d, int, "0x%x")
-CHECK_EXP (union512i_q, long long, "0x%llx")
-CHECK_EXP (union512, float, "%f")
-CHECK_EXP (union512d, double, "%f")
-CHECK_EXP (union512i_ub, unsigned char, "%d")
-CHECK_EXP (union512i_uw, unsigned short, "%d")
-CHECK_EXP (union512i_ud, unsigned int, "0x%x")
-CHECK_EXP (union512i_uq, unsigned long long, "0x%llx")
-     
-
-CHECK_FP_EXP (union512, float, ESP_FLOAT, "%f")
-CHECK_FP_EXP (union512d, double, ESP_DOUBLE, "%f")
 
 #define CHECK_ROUGH_EXP(UNION_TYPE, VALUE_TYPE, FMT)		\
 static int							\
@@ -126,28 +111,47 @@ check_rough_##UNION_TYPE (UNION_TYPE u, const VALUE_TYPE *v,	\
   return err;							\
 }
 
-CHECK_ROUGH_EXP (union512, float, "%f")
-CHECK_ROUGH_EXP (union512d, double, "%f")
+#ifndef ESP_FLOAT16
+#define ESP_FLOAT16 0.27
+#endif
+
 CHECK_ROUGH_EXP (union256, float, "%f")
 CHECK_ROUGH_EXP (union256d, double, "%f")
 CHECK_ROUGH_EXP (union128, float, "%f")
 CHECK_ROUGH_EXP (union128d, double, "%f")
 
-#ifdef AVX512FP16
+#ifndef AVX512F_LEN
+CHECK_EXP (union512i_b, char, "%d")
+CHECK_EXP (union512i_w, short, "%d")
+CHECK_EXP (union512i_d, int, "0x%x")
+CHECK_EXP (union512i_q, long long, "0x%llx")
+CHECK_EXP (union512, float, "%f")
+CHECK_EXP (union512d, double, "%f")
+CHECK_EXP (union512i_ub, unsigned char, "%d")
+CHECK_EXP (union512i_uw, unsigned short, "%d")
+CHECK_EXP (union512i_ud, unsigned int, "0x%x")
+CHECK_EXP (union512i_uq, unsigned long long, "0x%llx")
+     
+CHECK_FP_EXP (union512, float, ESP_FLOAT, "%f")
+CHECK_FP_EXP (union512d, double, ESP_DOUBLE, "%f")
 
+CHECK_ROUGH_EXP (union512, float, "%f")
+CHECK_ROUGH_EXP (union512d, double, "%f")
+
+#if defined(AVX512FP16)
+CHECK_EXP (union512h, _Float16, "%f")
+CHECK_FP_EXP (union512h, _Float16, ESP_FLOAT16, "%f")
+CHECK_ROUGH_EXP (union512h, _Float16, "%f")
+#endif
+#endif
+
+#if defined(AVX512FP16)
 CHECK_EXP (union128h, _Float16, "%f")
 CHECK_EXP (union256h, _Float16, "%f")
-CHECK_EXP (union512h, _Float16, "%f")
-
-#ifndef ESP_FLOAT16
-#define ESP_FLOAT16 0.27
-#endif
 
 CHECK_FP_EXP (union128h, _Float16, ESP_FLOAT16, "%f")
 CHECK_FP_EXP (union256h, _Float16, ESP_FLOAT16, "%f")
-CHECK_FP_EXP (union512h, _Float16, ESP_FLOAT16, "%f")
 
 CHECK_ROUGH_EXP (union128h, _Float16, "%f")
 CHECK_ROUGH_EXP (union256h, _Float16, "%f")
-CHECK_ROUGH_EXP (union512h, _Float16, "%f")
 #endif
