@@ -95,7 +95,7 @@ def test_result(sarif):
         == "lock a is now held by thread 1"
     assert tf0['locations'][2]['executionOrder'] == 5
     assert tf0['locations'][2]['location']['message']['text'] \
-        == "deadlocked due to waiting for lock b in thread 1..."
+        == "deadlocked due to waiting for lock b in thread 1 (acquired by thread 2 at (4))..."
 
     assert len(tf1['locations']) == 3
     assert tf1['locations'][0]['executionOrder'] == 3
@@ -106,4 +106,4 @@ def test_result(sarif):
         == "lock b is now held by thread 2"
     assert tf1['locations'][2]['executionOrder'] == 6
     assert tf1['locations'][2]['location']['message']['text'] \
-        == "...whilst waiting for lock a in thread 2"
+        == "...whilst waiting for lock a in thread 2 (acquired by thread 1 at (2))"

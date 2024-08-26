@@ -217,13 +217,25 @@ class test_diagnostic_path : public simple_diagnostic_path
   : simple_diagnostic_path (event_pp)
   {
   }
-  void add_event_2 (event_location_t evloc, int stack_depth,
-		    const char *desc,
-		    diagnostic_thread_id_t thread_id = 0)
+  diagnostic_event_id_t
+  add_event_2 (event_location_t evloc, int stack_depth,
+	       const char *desc,
+	       diagnostic_thread_id_t thread_id = 0)
   {
     gcc_assert (evloc.m_fun);
-    add_thread_event (thread_id, evloc.m_loc, evloc.m_fun->decl,
+    return add_thread_event (thread_id, evloc.m_loc, evloc.m_fun->decl,
 		      stack_depth, desc);
+  }
+  diagnostic_event_id_t
+  add_event_2_with_event_id (event_location_t evloc, int stack_depth,
+			     const char *fmt,
+			     diagnostic_thread_id_t thread_id,
+			     diagnostic_event_id_t event_id)
+  {
+    gcc_assert (evloc.m_fun);
+    // FMT is assumed to have a single %@ argument
+    return add_thread_event (thread_id, evloc.m_loc, evloc.m_fun->decl,
+			     stack_depth, fmt, &event_id);
   }
   void add_entry (event_location_t evloc, int stack_depth,
 		  const char *funcname,
@@ -487,17 +499,23 @@ example_4 ()
       diagnostic_thread_id_t thread_1 = path.add_thread ("Thread 1");
       diagnostic_thread_id_t thread_2 = path.add_thread ("Thread 2");
       path.add_entry (entry_to_foo, 0, "foo", thread_1);
-      path.add_event_2 (call_to_acquire_lock_a_in_foo, 1,
-			"lock a is now held by thread 1", thread_1);
+      diagnostic_event_id_t event_a_acquired
+	= path.add_event_2 (call_to_acquire_lock_a_in_foo, 1,
+			    "lock a is now held by thread 1", thread_1);
       path.add_entry (entry_to_bar, 0, "bar", thread_2);
-      path.add_event_2 (call_to_acquire_lock_b_in_bar, 1,
-			"lock b is now held by thread 2", thread_2);
-      path.add_event_2 (call_to_acquire_lock_b_in_foo, 1,
-			"deadlocked due to waiting for lock b in thread 1...",
-			thread_1);
-      path.add_event_2 (call_to_acquire_lock_a_in_bar, 1,
-			"...whilst waiting for lock a in thread 2",
-			thread_2);
+      diagnostic_event_id_t event_b_acquired
+	= path.add_event_2 (call_to_acquire_lock_b_in_bar, 1,
+			    "lock b is now held by thread 2", thread_2);
+      path.add_event_2_with_event_id
+	(call_to_acquire_lock_b_in_foo, 1,
+	 "deadlocked due to waiting for lock b in thread 1"
+	 " (acquired by thread 2 at %@)...",
+	 thread_1, event_b_acquired);
+      path.add_event_2_with_event_id
+	(call_to_acquire_lock_a_in_bar, 1,
+	 "...whilst waiting for lock a in thread 2"
+	 " (acquired by thread 1 at %@)",
+	 thread_2, event_a_acquired);
       richloc.set_path (&path);
 
       diagnostic_metadata m;
