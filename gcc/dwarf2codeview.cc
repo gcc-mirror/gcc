@@ -95,9 +95,11 @@ enum cv_leaf_type {
   LF_MODIFIER = 0x1001,
   LF_POINTER = 0x1002,
   LF_PROCEDURE = 0x1008,
+  LF_MFUNCTION = 0x1009,
   LF_ARGLIST = 0x1201,
   LF_FIELDLIST = 0x1203,
   LF_BITFIELD = 0x1205,
+  LF_METHODLIST = 0x1206,
   LF_INDEX = 0x1404,
   LF_ENUMERATE = 0x1502,
   LF_ARRAY = 0x1503,
@@ -107,6 +109,8 @@ enum cv_leaf_type {
   LF_ENUM = 0x1507,
   LF_MEMBER = 0x150d,
   LF_STMEMBER = 0x150e,
+  LF_METHOD = 0x150f,
+  LF_ONEMETHOD = 0x1511,
   LF_FUNC_ID = 0x1601,
   LF_STRING_ID = 0x1605,
   LF_CHAR = 0x8000,
@@ -1225,7 +1229,25 @@ struct codeview_subtype
       uint32_t type;
       char *name;
     } lf_static_member;
+    struct
+    {
+      uint16_t method_attribute;
+      uint32_t method_type;
+      char *name;
+    } lf_onemethod;
+    struct
+    {
+      uint16_t count;
+      uint32_t method_list;
+      char *name;
+    } lf_method;
   };
+};
+
+struct lf_methodlist_entry
+{
+  uint16_t method_attribute;
+  uint32_t method_type;
 };
 
 struct codeview_custom_type
@@ -1303,9 +1325,31 @@ struct codeview_custom_type
     } lf_func_id;
     struct
     {
+      uint32_t parent_type;
+      uint32_t function_type;
+      char *name;
+    } lf_mfunc_id;
+    struct
+    {
       uint32_t substring;
       char *string;
     } lf_string_id;
+    struct
+    {
+      uint32_t return_type;
+      uint32_t containing_class_type;
+      uint32_t this_type;
+      uint8_t calling_convention;
+      uint8_t attributes;
+      uint16_t num_parameters;
+      uint32_t arglist;
+      int32_t this_adjustment;
+    } lf_mfunction;
+    struct
+    {
+      unsigned int count;
+      lf_methodlist_entry *entries;
+    } lf_methodlist;
   };
 };
 
@@ -1330,6 +1374,31 @@ struct string_id_hasher : nofree_ptr_hash <struct codeview_custom_type>
   }
 };
 
+struct codeview_method
+{
+  uint16_t attribute;
+  uint32_t type;
+  char *name;
+  unsigned int count;
+  struct codeview_method *next;
+  struct codeview_method *last;
+};
+
+struct method_hasher : nofree_ptr_hash <struct codeview_method>
+{
+  typedef const char *compare_type;
+
+  static hashval_t hash (const codeview_method *x)
+  {
+    return htab_hash_string (x->name);
+  }
+
+  static bool equal (const codeview_method *x, const char *y)
+  {
+    return !strcmp (x->name, y);
+  }
+};
+
 static unsigned int line_label_num;
 static unsigned int func_label_num;
 static unsigned int sym_label_num;
@@ -1348,6 +1417,10 @@ static codeview_deferred_type *deferred_types, *last_deferred_type;
 static hash_table<string_id_hasher> *string_id_htab;
 
 static uint32_t get_type_num (dw_die_ref type, bool in_struct, bool no_fwd_ref);
+static uint32_t get_type_num_subroutine_type (dw_die_ref type, bool in_struct,
+					      uint32_t containing_class_type,
+					      uint32_t this_type,
+					      int32_t this_adjustment);
 
 /* Record new line number against the current function.  */
 
@@ -3704,6 +3777,74 @@ write_lf_fieldlist (codeview_custom_type *t)
 	  free (v->lf_static_member.name);
 	  break;
 
+	case LF_ONEMETHOD:
+	  /* This is lf_onemethod in binutils and lfOneMethod in Microsoft's
+	     cvinfo.h:
+
+	    struct lf_onemethod
+	    {
+	      uint16_t kind;
+	      uint16_t method_attribute;
+	      uint32_t method_type;
+	      char name[];
+	    } ATTRIBUTE_PACKED;
+	  */
+
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, LF_ONEMETHOD);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, v->lf_onemethod.method_attribute);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (4, false), asm_out_file);
+	  fprint_whex (asm_out_file, v->lf_onemethod.method_type);
+	  putc ('\n', asm_out_file);
+
+	  name_len = strlen (v->lf_onemethod.name) + 1;
+	  ASM_OUTPUT_ASCII (asm_out_file, v->lf_onemethod.name, name_len);
+
+	  leaf_len = 8 + name_len;
+	  write_cv_padding (4 - (leaf_len % 4));
+
+	  free (v->lf_onemethod.name);
+	  break;
+
+	case LF_METHOD:
+	  /* This is lf_method in binutils and lfMethod in Microsoft's
+	     cvinfo.h:
+
+	    struct lf_method
+	    {
+	      uint16_t kind;
+	      uint16_t count;
+	      uint32_t method_list;
+	      char name[];
+	    } ATTRIBUTE_PACKED;
+	  */
+
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, LF_METHOD);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, v->lf_method.count);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (4, false), asm_out_file);
+	  fprint_whex (asm_out_file, v->lf_method.method_list);
+	  putc ('\n', asm_out_file);
+
+	  name_len = strlen (v->lf_method.name) + 1;
+	  ASM_OUTPUT_ASCII (asm_out_file, v->lf_method.name, name_len);
+
+	  leaf_len = 8 + name_len;
+	  write_cv_padding (4 - (leaf_len % 4));
+
+	  free (v->lf_method.name);
+	  break;
+
 	default:
 	  break;
 	}
@@ -4196,6 +4337,129 @@ write_lf_string_id (codeview_custom_type *t)
   asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
 }
 
+/* Write an LF_MFUNCTION type, representing a member function.  This is the
+   struct-scoped equivalent of the LF_PROCEDURE type.  */
+
+static void
+write_lf_mfunction (codeview_custom_type *t)
+{
+  /* This is lf_mfunction in binutils and lfMFunc in Microsoft's cvinfo.h:
+
+    struct lf_mfunction
+    {
+      uint16_t size;
+      uint16_t kind;
+      uint32_t return_type;
+      uint32_t containing_class_type;
+      uint32_t this_type;
+      uint8_t calling_convention;
+      uint8_t attributes;
+      uint16_t num_parameters;
+      uint32_t arglist;
+      int32_t this_adjustment;
+    } ATTRIBUTE_PACKED;
+  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end - %LLcv_type%x_start\n",
+	       t->num, t->num);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_start:\n", t->num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->kind);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_mfunction.return_type);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_mfunction.containing_class_type);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_mfunction.this_type);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (1, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_mfunction.calling_convention);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (1, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_mfunction.attributes);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_mfunction.num_parameters);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_mfunction.arglist);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_mfunction.this_adjustment);
+  putc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
+}
+
+/* Write an LF_METHODLIST type, which is an array of type numbers for
+   LF_MFUNCTION types.  Overloaded functions are represented by a LF_METHOD
+   subtype in the field list, which points to a LF_METHODLIST type for the
+   function's various forms.  */
+
+static void
+write_lf_methodlist (codeview_custom_type *t)
+{
+  /* This is lf_methodlist in binutils and lMethodList in Microsoft's cvinfo.h:
+
+    struct lf_methodlist_entry
+    {
+      uint16_t method_attribute;
+      uint16_t padding;
+      uint32_t method_type;
+    } ATTRIBUTE_PACKED;
+
+    struct lf_methodlist
+    {
+      uint16_t size;
+      uint16_t kind;
+      struct lf_methodlist_entry entries[];
+    } ATTRIBUTE_PACKED;
+  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end - %LLcv_type%x_start\n",
+	       t->num, t->num);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_start:\n", t->num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->kind);
+  putc ('\n', asm_out_file);
+
+  for (unsigned int i = 0; i < t->lf_methodlist.count; i++)
+    {
+      fputs (integer_asm_op (2, false), asm_out_file);
+      fprint_whex (asm_out_file, t->lf_methodlist.entries[i].method_attribute);
+      putc ('\n', asm_out_file);
+
+      fputs (integer_asm_op (2, false), asm_out_file);
+      fprint_whex (asm_out_file, 0);
+      putc ('\n', asm_out_file);
+
+      fputs (integer_asm_op (4, false), asm_out_file);
+      fprint_whex (asm_out_file, t->lf_methodlist.entries[i].method_type);
+      putc ('\n', asm_out_file);
+    }
+
+  free (t->lf_methodlist.entries);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
+}
+
 /* Write the .debug$T section, which contains all of our custom type
    definitions.  */
 
@@ -4261,6 +4525,14 @@ write_custom_types (void)
 
 	case LF_STRING_ID:
 	  write_lf_string_id (custom_types);
+	  break;
+
+	case LF_MFUNCTION:
+	  write_lf_mfunction (custom_types);
+	  break;
+
+	case LF_METHODLIST:
+	  write_lf_methodlist (custom_types);
 	  break;
 
 	default:
@@ -5057,6 +5329,123 @@ add_struct_static_member (dw_die_ref c, uint16_t accessibility,
     *el_len += 4 - (*el_len % 4);
 }
 
+/* Create a field list subtype for a struct function, returning its pointer in
+   el and its size in el_len.  If the function is not overloaded, create an
+   LF_ONEMETHOD subtype pointing to the LF_MFUNCTION.  Otherwise, add an
+   LF_METHODLIST type of the function's forms, and create an LF_METHOD subtype
+   pointing to this.  */
+
+static void
+add_struct_function (dw_die_ref c, hash_table<method_hasher> *method_htab,
+		     codeview_subtype **el, size_t *el_len)
+{
+  const char *name = get_AT_string (c, DW_AT_name);
+  codeview_method **slot, *meth;
+
+  slot = method_htab->find_slot_with_hash (name, htab_hash_string (name),
+					   NO_INSERT);
+  if (!slot)
+    return;
+
+  meth = *slot;
+
+  *el = (codeview_subtype *) xmalloc (sizeof (**el));
+  (*el)->next = NULL;
+
+  if (meth->count == 1)
+    {
+      (*el)->kind = LF_ONEMETHOD;
+      (*el)->lf_onemethod.method_attribute = meth->attribute;
+      (*el)->lf_onemethod.method_type = meth->type;
+      (*el)->lf_onemethod.name = xstrdup (name);
+
+      *el_len = 9 + strlen ((*el)->lf_onemethod.name);
+    }
+  else
+    {
+      codeview_custom_type *ct;
+      lf_methodlist_entry *ent;
+
+      ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
+
+      ct->next = NULL;
+      ct->kind = LF_METHODLIST;
+      ct->lf_methodlist.count = meth->count;
+      ct->lf_methodlist.entries = (lf_methodlist_entry *)
+	xmalloc (meth->count * sizeof (lf_methodlist_entry));
+
+      ent = ct->lf_methodlist.entries;
+      for (codeview_method *m = meth; m; m = m->next)
+	{
+	  ent->method_attribute = m->attribute;
+	  ent->method_type = m->type;
+	  ent++;
+	}
+
+      add_custom_type (ct);
+
+      (*el)->kind = LF_METHOD;
+      (*el)->lf_method.count = meth->count;
+      (*el)->lf_method.method_list = ct->num;
+      (*el)->lf_method.name = xstrdup (name);
+
+      *el_len = 9 + strlen ((*el)->lf_method.name);
+    }
+
+  if (*el_len % 4)
+    *el_len += 4 - (*el_len % 4);
+
+  method_htab->remove_elt_with_hash (name, htab_hash_string (name));
+
+  while (meth)
+    {
+      codeview_method *next = meth->next;
+
+      free (meth->name);
+      free (meth);
+      meth = next;
+    }
+}
+
+/* Create a new LF_MFUNCTION type for a struct function, add it to the
+   types_htab hash table, and return its type number.  */
+
+static uint32_t
+get_mfunction_type (dw_die_ref c)
+{
+  uint32_t containing_class_type, this_type, mfunction_type;
+  dw_die_ref obj_pointer;
+  codeview_type **slot, *t;
+
+  containing_class_type = get_type_num (dw_get_die_parent (c), true, false);
+
+  obj_pointer = get_AT_ref (c, DW_AT_object_pointer);
+  if (obj_pointer && dw_get_die_tag (obj_pointer) == DW_TAG_formal_parameter)
+    {
+      this_type = get_type_num (get_AT_ref (obj_pointer, DW_AT_type),
+				true, false);
+    }
+  else
+    {
+      this_type = 0;
+    }
+
+  mfunction_type = get_type_num_subroutine_type (c, true, containing_class_type,
+						 this_type, 0);
+
+  slot = types_htab->find_slot_with_hash (c, htab_hash_pointer (c), INSERT);
+
+  t = (codeview_type *) xmalloc (sizeof (codeview_type));
+
+  t->die = c;
+  t->num = mfunction_type;
+  t->is_fwd_ref = false;
+
+  *slot = t;
+
+  return mfunction_type;
+}
+
 /* Translate a DWARF DW_AT_accessibility constant into its CodeView
    equivalent.  If implicit, follow the C++ rules.  */
 
@@ -5082,6 +5471,30 @@ get_accessibility (dw_die_ref c)
       else
 	return CV_ACCESS_PUBLIC;
     }
+}
+
+/* Returns true if the struct function pointed to by die is an instantiated
+   template function.  These are skipped in CodeView struct definitions, as
+   otherwise the same type might not be deduplicated across different TUs.  */
+
+static bool
+is_templated_func (dw_die_ref die)
+{
+  dw_die_ref c = dw_get_die_child (die);
+
+  if (!c)
+    return false;
+
+  do
+    {
+      c = dw_get_die_sib (c);
+
+      if (dw_get_die_tag (c) == DW_TAG_template_type_param)
+	return true;
+    }
+  while (c != dw_get_die_child (die));
+
+  return false;
 }
 
 /* Process a DW_TAG_structure_type, DW_TAG_class_type, or DW_TAG_union_type
@@ -5122,7 +5535,68 @@ get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
 
   if (first_child)
     {
+      hash_table<method_hasher> *method_htab = NULL;
       dw_die_ref c;
+
+      /* First, loop through and record any non-templated member functions.
+	 This is because overloaded and non-overloaded functions are expressed
+	 differently in CodeView, so we need to have a hash table on the name
+	 to know how to record it later on.  */
+
+      c = first_child;
+      do
+	{
+	  c = dw_get_die_sib (c);
+
+	  if (dw_get_die_tag (c) == DW_TAG_subprogram)
+	    {
+	      const char *name = get_AT_string (c, DW_AT_name);
+	      codeview_method *meth, **slot;
+
+	      if (is_templated_func (c))
+		continue;
+
+	      if (!method_htab)
+		method_htab = new hash_table<method_hasher> (10);
+
+	      meth = (codeview_method *) xmalloc (sizeof (*meth));
+
+	      slot = method_htab->find_slot_with_hash (name,
+						       htab_hash_string (name),
+						       INSERT);
+
+	      meth->attribute = get_accessibility (c);
+
+	      if (!get_AT_ref (c, DW_AT_object_pointer))
+		meth->attribute |= CV_METHOD_STATIC;
+
+	      meth->type = get_mfunction_type (c);
+	      meth->next = NULL;
+
+	      if (*slot)
+		{
+		  if ((*slot)->last)
+		    (*slot)->last->next = meth;
+		  else
+		    (*slot)->next = meth;
+
+		  (*slot)->last = meth;
+		  (*slot)->count++;
+
+		  meth->name = NULL;
+		}
+	      else
+		{
+		  meth->name = xstrdup (name);
+		  meth->last = NULL;
+		  meth->count = 1;
+		  *slot = meth;
+		}
+	    }
+	}
+      while (c != first_child);
+
+      /* Now loop through again and record the actual members.  */
 
       c = first_child;
       do
@@ -5143,6 +5617,11 @@ get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
 
 	    case DW_TAG_variable:
 	      add_struct_static_member (c, accessibility, &el, &el_len);
+	      break;
+
+	    case DW_TAG_subprogram:
+	      if (!is_templated_func (c))
+		add_struct_function (c, method_htab, &el, &el_len);
 	      break;
 
 	    default:
@@ -5191,6 +5670,9 @@ get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
 	  num_members++;
 	}
       while (c != first_child);
+
+      if (method_htab)
+	delete method_htab;
     }
 
   while (ct)
@@ -5252,10 +5734,13 @@ get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
 }
 
 /* Process a DW_TAG_subroutine_type DIE, adding an LF_ARGLIST and an
-   LF_PROCEDURE type, and returning the number of the latter.  */
+   LF_PROCEDURE or LF_MFUNCTION type, and returning the number of the
+   latter.  */
 
 static uint32_t
-get_type_num_subroutine_type (dw_die_ref type, bool in_struct)
+get_type_num_subroutine_type (dw_die_ref type, bool in_struct,
+			      uint32_t containing_class_type,
+			      uint32_t this_type, int32_t this_adjustment)
 {
   codeview_custom_type *ct;
   uint32_t return_type, arglist_type;
@@ -5294,6 +5779,10 @@ get_type_num_subroutine_type (dw_die_ref type, bool in_struct)
 	      && dw_get_die_tag (c) != DW_TAG_unspecified_parameters)
 	    continue;
 
+	  /* We ignore "this" params here.  */
+	  if (get_AT_flag (c, DW_AT_artificial) != 0)
+	    continue;
+
 	  num_args++;
 	}
       while (c != first_child);
@@ -5323,6 +5812,9 @@ get_type_num_subroutine_type (dw_die_ref type, bool in_struct)
 	{
 	  c = dw_get_die_sib (c);
 
+	  if (get_AT_flag (c, DW_AT_artificial) != 0)
+	    continue;
+
 	  switch (dw_get_die_tag (c))
 	    {
 	    case DW_TAG_formal_parameter:
@@ -5351,17 +5843,33 @@ get_type_num_subroutine_type (dw_die_ref type, bool in_struct)
 
   arglist_type = ct->num;
 
-  /* Finally, create an LF_PROCEDURE.  */
+  /* Finally, create an LF_PROCEDURE or LF_MFUNCTION type.  */
 
   ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
 
   ct->next = NULL;
-  ct->kind = LF_PROCEDURE;
-  ct->lf_procedure.return_type = return_type;
-  ct->lf_procedure.calling_convention = 0;
-  ct->lf_procedure.attributes = 0;
-  ct->lf_procedure.num_parameters = num_args;
-  ct->lf_procedure.arglist = arglist_type;
+
+  if (containing_class_type != 0)
+    {
+      ct->kind = LF_MFUNCTION;
+      ct->lf_mfunction.return_type = return_type;
+      ct->lf_mfunction.containing_class_type = containing_class_type;
+      ct->lf_mfunction.this_type = this_type;
+      ct->lf_mfunction.calling_convention = 0;
+      ct->lf_mfunction.attributes = 0;
+      ct->lf_mfunction.num_parameters = num_args;
+      ct->lf_mfunction.arglist = arglist_type;
+      ct->lf_mfunction.this_adjustment = this_adjustment;
+    }
+  else
+    {
+      ct->kind = LF_PROCEDURE;
+      ct->lf_procedure.return_type = return_type;
+      ct->lf_procedure.calling_convention = 0;
+      ct->lf_procedure.attributes = 0;
+      ct->lf_procedure.num_parameters = num_args;
+      ct->lf_procedure.arglist = arglist_type;
+    }
 
   add_custom_type (ct);
 
@@ -5562,7 +6070,7 @@ get_type_num (dw_die_ref type, bool in_struct, bool no_fwd_ref)
       break;
 
     case DW_TAG_subroutine_type:
-      num = get_type_num_subroutine_type (type, in_struct);
+      num = get_type_num_subroutine_type (type, in_struct, 0, 0, 0);
       break;
 
     default:
@@ -5700,7 +6208,7 @@ add_function (dw_die_ref die)
 
   /* Add an LF_FUNC_ID type for this function.  */
 
-  function_type = get_type_num_subroutine_type (die, false);
+  function_type = get_type_num_subroutine_type (die, false, 0, 0, 0);
   scope_type = get_scope_string_id (die);
 
   ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));

@@ -66,6 +66,15 @@ along with GCC; see the file COPYING3.  If not see
 #define CV_ACCESS_PROTECTED	2
 #define CV_ACCESS_PUBLIC	3
 
+/* CV_methodprop_e values in cvinfo.h, shifted by 2 for CV_fldattr_t.  */
+#define CV_METHOD_VANILLA	0x00
+#define CV_METHOD_VIRTUAL	0x04
+#define CV_METHOD_STATIC	0x08
+#define CV_METHOD_FRIEND	0x0c
+#define CV_METHOD_INTRO		0x10
+#define CV_METHOD_PUREVIRT	0x14
+#define CV_METHOD_PUREINTRO	0x18
+
 #define CV_PROP_FWDREF		0x80
 
 /* Debug Format Interface.  Used in dwarf2out.cc.  */
