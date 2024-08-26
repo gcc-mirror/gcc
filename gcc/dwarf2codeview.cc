@@ -107,6 +107,7 @@ enum cv_leaf_type {
   LF_ENUM = 0x1507,
   LF_MEMBER = 0x150d,
   LF_FUNC_ID = 0x1601,
+  LF_STRING_ID = 0x1605,
   LF_CHAR = 0x8000,
   LF_SHORT = 0x8001,
   LF_USHORT = 0x8002,
@@ -1293,6 +1294,11 @@ struct codeview_custom_type
       uint32_t function_type;
       char *name;
     } lf_func_id;
+    struct
+    {
+      uint32_t substring;
+      char *string;
+    } lf_string_id;
   };
 };
 
@@ -1300,6 +1306,21 @@ struct codeview_deferred_type
 {
   struct codeview_deferred_type *next;
   dw_die_ref type;
+};
+
+struct string_id_hasher : nofree_ptr_hash <struct codeview_custom_type>
+{
+  typedef const char *compare_type;
+
+  static hashval_t hash (const codeview_custom_type *x)
+  {
+    return htab_hash_string (x->lf_string_id.string);
+  }
+
+  static bool equal (const codeview_custom_type *x, const char *y)
+  {
+    return !strcmp (x->lf_string_id.string, y);
+  }
 };
 
 static unsigned int line_label_num;
@@ -1317,6 +1338,7 @@ static codeview_symbol *sym, *last_sym;
 static hash_table<die_hasher> *types_htab;
 static codeview_custom_type *custom_types, *last_custom_type;
 static codeview_deferred_type *deferred_types, *last_deferred_type;
+static hash_table<string_id_hasher> *string_id_htab;
 
 static uint32_t get_type_num (dw_die_ref type, bool in_struct, bool no_fwd_ref);
 
@@ -4089,6 +4111,50 @@ write_lf_func_id (codeview_custom_type *t)
   asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
 }
 
+/* Write an LF_STRING_ID type, which provides a deduplicated string that other
+   types can reference.  */
+
+static void
+write_lf_string_id (codeview_custom_type *t)
+{
+  size_t string_len;
+
+  /* This is lf_string_id in binutils and lfStringId in Microsoft's cvinfo.h:
+
+    struct lf_string_id
+    {
+      uint16_t size;
+      uint16_t kind;
+      uint32_t substring;
+      char string[];
+    } ATTRIBUTE_PACKED;
+  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end - %LLcv_type%x_start\n",
+	       t->num, t->num);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_start:\n", t->num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->kind);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_string_id.substring);
+  putc ('\n', asm_out_file);
+
+  string_len = strlen (t->lf_string_id.string) + 1;
+
+  ASM_OUTPUT_ASCII (asm_out_file, t->lf_string_id.string, string_len);
+
+  write_cv_padding (4 - (string_len % 4));
+
+  free (t->lf_string_id.string);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
+}
+
 /* Write the .debug$T section, which contains all of our custom type
    definitions.  */
 
@@ -4152,6 +4218,10 @@ write_custom_types (void)
 	  write_lf_func_id (custom_types);
 	  break;
 
+	case LF_STRING_ID:
+	  write_lf_string_id (custom_types);
+	  break;
+
 	default:
 	  break;
 	}
@@ -4182,6 +4252,9 @@ codeview_debug_finish (void)
 
   if (types_htab)
     delete types_htab;
+
+  if (string_id_htab)
+    delete string_id_htab;
 }
 
 /* Translate a DWARF base type (DW_TAG_base_type) into its CodeView
@@ -5461,6 +5534,67 @@ add_variable (dw_die_ref die)
   last_sym = s;
 }
 
+/* Return the type number of the LF_STRING_ID entry corresponding to the given
+   string, creating a new one if necessary.  */
+
+static uint32_t
+add_string_id (const char *s)
+{
+  codeview_custom_type **slot;
+  codeview_custom_type *ct;
+
+  if (!string_id_htab)
+    string_id_htab = new hash_table<string_id_hasher> (10);
+
+  slot = string_id_htab->find_slot_with_hash (s, htab_hash_string (s),
+					      INSERT);
+  if (*slot)
+    return (*slot)->num;
+
+  ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
+
+  ct->next = NULL;
+  ct->kind = LF_STRING_ID;
+  ct->lf_string_id.substring = 0;
+  ct->lf_string_id.string = xstrdup (s);
+
+  add_custom_type (ct);
+
+  *slot = ct;
+
+  return ct->num;
+}
+
+/* Return the type number of the LF_STRING_ID corresponding to the given DIE's
+   parent, or 0 if it is in the global scope.  */
+
+static uint32_t
+get_scope_string_id (dw_die_ref die)
+{
+  dw_die_ref decl = get_AT_ref (die, DW_AT_specification);
+  char *name;
+  uint32_t ret;
+
+  if (decl)
+    die = decl;
+
+  die = dw_get_die_parent (die);
+  if (!die)
+    return 0;
+
+  if (dw_get_die_tag (die) == DW_TAG_compile_unit)
+    return 0;
+
+  name = get_name (die);
+  if (!name)
+    return 0;
+
+  ret = add_string_id (name);
+  free (name);
+
+  return ret;
+}
+
 /* Process a DW_TAG_subprogram DIE, and add an S_GPROC32_ID or S_LPROC32_ID
    symbol for this.  */
 
@@ -5469,7 +5603,7 @@ add_function (dw_die_ref die)
 {
   codeview_custom_type *ct;
   const char *name = get_AT_string (die, DW_AT_name);
-  uint32_t function_type, func_id_type;
+  uint32_t function_type, func_id_type, scope_type;
   codeview_symbol *s;
 
   if (!name)
@@ -5478,12 +5612,13 @@ add_function (dw_die_ref die)
   /* Add an LF_FUNC_ID type for this function.  */
 
   function_type = get_type_num_subroutine_type (die, false);
+  scope_type = get_scope_string_id (die);
 
   ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
 
   ct->next = NULL;
   ct->kind = LF_FUNC_ID;
-  ct->lf_func_id.parent_scope = 0;
+  ct->lf_func_id.parent_scope = scope_type;
   ct->lf_func_id.function_type = function_type;
   ct->lf_func_id.name = xstrdup (name);
 
