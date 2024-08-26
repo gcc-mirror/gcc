@@ -578,6 +578,9 @@
 (define_mode_iterator VI4_AVX512VL
   [(V16SI "TARGET_EVEX512") (V8SI "TARGET_AVX512VL") (V4SI "TARGET_AVX512VL")])
 
+(define_mode_iterator VI4_AVX10_2
+  [(V16SI "TARGET_AVX10_2_512") V8SI V4SI])
+
 (define_mode_iterator VI48_AVX512F_AVX512VL
   [V4SI V8SI (V16SI "TARGET_AVX512F && TARGET_EVEX512")
    (V2DI "TARGET_AVX512VL") (V4DI "TARGET_AVX512VL")
@@ -31241,16 +31244,67 @@
 })
 
 (define_insn "vpdp<vpdotprodtype>_<mode>"
-  [(set (match_operand:VI4_AVX 0 "register_operand" "=x")
+  [(set (match_operand:VI4_AVX 0 "register_operand" "=v")
 	(unspec:VI4_AVX
 	  [(match_operand:VI4_AVX 1 "register_operand" "0")
-	   (match_operand:VI4_AVX 2 "register_operand" "x")
-	   (match_operand:VI4_AVX 3 "nonimmediate_operand" "xjm")]
+	   (match_operand:VI4_AVX 2 "register_operand" "v")
+	   (match_operand:VI4_AVX 3 "nonimmediate_operand" "vm")]
 	  VPDOTPROD))]
-  "TARGET_AVXVNNIINT8"
+  "TARGET_AVXVNNIINT8 || TARGET_AVX10_2_256"
   "vpdp<vpdotprodtype>\t{%3, %2, %0|%0, %2, %3}"
-   [(set_attr "prefix" "vex")
-    (set_attr "addr" "gpr16")])
+   [(set_attr "prefix" "maybe_evex")])
+
+(define_insn "vpdp<vpdotprodtype>_v16si"
+  [(set (match_operand:V16SI 0 "register_operand" "=v")
+        (unspec:V16SI
+          [(match_operand:V16SI 1 "register_operand" "0")
+           (match_operand:V16SI 2 "register_operand" "v")
+           (match_operand:V16SI 3 "nonimmediate_operand" "vm")]
+          VPDOTPROD))]
+  "TARGET_AVX10_2_512"
+  "vpdp<vpdotprodtype>\t{%3, %2, %0|%0, %2, %3}"
+   [(set_attr "prefix" "evex")])
+
+(define_insn "vpdp<vpdotprodtype>_<mode>_mask"
+  [(set (match_operand:VI4_AVX10_2 0 "register_operand" "=v")
+	(vec_merge:VI4_AVX10_2
+	  (unspec:VI4_AVX10_2
+	    [(match_operand:VI4_AVX10_2 1 "register_operand" "0")
+	     (match_operand:VI4_AVX10_2 2 "register_operand" "v")
+	     (match_operand:VI4_AVX10_2 3 "nonimmediate_operand" "vm")]
+	    VPDOTPROD)
+	  (match_dup 1)
+	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk")))]
+  "TARGET_AVX10_2_256"
+  "vpdp<vpdotprodtype>\t{%3, %2, %0%{%4%}|%0%{%4%}, %2, %3}"
+   [(set_attr "prefix" "evex")])
+
+(define_expand "vpdp<vpdotprodtype>_<mode>_maskz"
+  [(set (match_operand:VI4_AVX10_2 0 "register_operand")
+	(vec_merge:VI4_AVX10_2
+	  (unspec:VI4_AVX10_2
+	    [(match_operand:VI4_AVX10_2 1 "register_operand")
+	     (match_operand:VI4_AVX10_2 2 "register_operand")
+	     (match_operand:VI4_AVX10_2 3 "nonimmediate_operand")]
+	    VPDOTPROD)
+	  (match_dup 5)
+	  (match_operand:<avx512fmaskmode> 4 "register_operand")))]
+  "TARGET_AVX10_2_256"
+  "operands[5] = CONST0_RTX (<MODE>mode);")
+
+(define_insn "*vpdp<vpdotprodtype>_<mode>_maskz"
+  [(set (match_operand:VI4_AVX10_2 0 "register_operand" "=v")
+	(vec_merge:VI4_AVX10_2
+	  (unspec:VI4_AVX10_2
+	    [(match_operand:VI4_AVX10_2 1 "register_operand" "0")
+	     (match_operand:VI4_AVX10_2 2 "register_operand" "v")
+	     (match_operand:VI4_AVX10_2 3 "nonimmediate_operand" "vm")]
+	    VPDOTPROD)
+	  (match_operand:VI4_AVX10_2 5 "const0_operand" "C")
+	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk")))]
+  "TARGET_AVX10_2_256"
+  "vpdp<vpdotprodtype>\t{%3, %2, %0%{%4%}%N5|%0%{%4%}%N5, %2, %3}"
+   [(set_attr "prefix" "evex")])
 
 (define_insn "vbcstnebf162ps_<mode>"
   [(set (match_operand:VF1_128_256 0 "register_operand" "=x")

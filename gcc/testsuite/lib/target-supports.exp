@@ -10619,6 +10619,42 @@ proc check_effective_target_apxf { } {
     } "-mapxf" ]
 }
 
+# Return 1 if avx10.2 instructions can be compiled.
+proc check_effective_target_avx10_2 { } {
+    return [check_no_compiler_messages avx10.2 object {
+	typedef int __v8si __attribute__ ((__vector_size__ (32)));
+	typedef char __mmask8;
+
+	__v8si
+	_mm256_mask_vpdpbssd_epi32 (__v8si __A, __mmask8 __U,
+				    __v8si __B, __v8si __C)
+	{
+	  return (__v8si) __builtin_ia32_vpdpbssd_v8si_mask ((__v8si)__A,
+							     (__v8si)__B,
+							     (__v8si)__C,
+							     (__mmask8)__U);
+	}
+    } "-mavx10.2" ]
+}
+
+# Return 1 if avx10.2-512 instructions can be compiled.
+proc check_effective_target_avx10_2_512 { } {
+    return [check_no_compiler_messages avx10.2-512 object {
+	typedef int __v16si __attribute__ ((__vector_size__ (64)));
+	typedef short __mmask16;
+
+	__v16si
+	_mm512_vpdpbssd_epi32 (__v16si __A, __mmask16 __U,
+			       __v16si __B, __v16si __C)
+	{
+	  return (__v16si) __builtin_ia32_vpdpbssd_v16si_mask ((__v16si)__A,
+							       (__v16si)__B,
+							       (__v16si)__C,
+							       (__mmask16)__U);
+	}
+    } "-mavx10.2-512" ]
+}
+
 # Return 1 if sse instructions can be compiled.
 proc check_effective_target_sse { } {
     return [check_no_compiler_messages sse object {

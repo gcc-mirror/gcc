@@ -140,4 +140,8 @@
 
 #include <avx10_2roundingintrin.h>
 
+#include <avx10_2mediaintrin.h>
+
+#include <avx10_2-512mediaintrin.h>
+
 #endif /* _IMMINTRIN_H_INCLUDED */

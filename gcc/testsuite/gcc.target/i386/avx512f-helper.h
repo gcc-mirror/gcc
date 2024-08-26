@@ -8,7 +8,11 @@
 #ifndef AVX512F_HELPER_INCLUDED
 #define AVX512F_HELPER_INCLUDED
 
+#if defined(AVX10)
+#include "avx10-check.h"
+#else
 #include "avx512-check.h"
+#endif
 
 /* Macros expansion.  */
 #define CONCAT(a,b,c) a ## b ## c
@@ -87,7 +91,7 @@ MAKE_MASK_ZERO(i_uq, unsigned long long)
 /* Function which calculates result.  */
 #define CALC EVAL(calc_, AVX512F_LEN,)
 
-#ifndef AVX512VL
+#if !defined(AVX512VL) || defined(AVX10_512)
 #define AVX512F_LEN 512
 #define AVX512F_LEN_HALF 256
 #endif
