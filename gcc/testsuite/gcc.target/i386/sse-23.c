@@ -1063,6 +1063,25 @@
 #define __builtin_ia32_cvttss2usis64_round(A, B) __builtin_ia32_cvttss2usis64_round(A, 8)
 #endif
 
+/* avx10_2-512minmaxintrin.h  */
+#define __builtin_ia32_minmaxpd512_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxpd512_mask_round (A, B, 100, D, E, 4)
+#define __builtin_ia32_minmaxph512_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxph512_mask_round (A, B, 100, D, E, 4)
+#define __builtin_ia32_minmaxps512_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxps512_mask_round (A, B, 100, D, E, 4)
+#define __builtin_ia32_minmaxnepbf16512_mask(A, B, C, W, U) __builtin_ia32_minmaxnepbf16512_mask (A, B, 100, W, U)
+
+/* avx10_2-minmaxintrin.h  */
+#define __builtin_ia32_minmaxsd_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxsd_mask_round (A, B, 100, D, E, 4)
+#define __builtin_ia32_minmaxsh_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxsh_mask_round (A, B, 100, D, E, 4)
+#define __builtin_ia32_minmaxss_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxss_mask_round (A, B, 100, D, E, 4)
+#define __builtin_ia32_minmaxnepbf16128_mask(A, B, C, D, E) __builtin_ia32_minmaxnepbf16128_mask (A, B, 100, D, E)
+#define __builtin_ia32_minmaxnepbf16256_mask(A, B, C, D, E) __builtin_ia32_minmaxnepbf16256_mask (A, B, 100, D, E)
+#define __builtin_ia32_minmaxpd128_mask(A, B, C, D, E) __builtin_ia32_minmaxpd128_mask (A, B, 100, D, E)
+#define __builtin_ia32_minmaxpd256_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxpd256_mask_round (A, B, 100, D, E, 4)
+#define __builtin_ia32_minmaxph128_mask(A, B, C, D, E) __builtin_ia32_minmaxph128_mask (A, B, 100, D, E)
+#define __builtin_ia32_minmaxph256_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxph256_mask_round (A, B, 100, D, E, 4)
+#define __builtin_ia32_minmaxps128_mask(A, B, C, D, E) __builtin_ia32_minmaxps128_mask (A, B, 100, D, E)
+#define __builtin_ia32_minmaxps256_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxps256_mask_round (A, B, 100, D, E, 4)
+
 #pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,fma,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,sha,xsavec,xsaves,clflushopt,clwb,mwaitx,clzero,pku,sgx,rdpid,gfni,vpclmulqdq,pconfig,wbnoinvd,enqcmd,avx512vp2intersect,serialize,tsxldtrk,amx-tile,amx-int8,amx-bf16,kl,widekl,avxvnni,avxifma,avxvnniint8,avxneconvert,cmpccxadd,amx-fp16,prefetchi,raoint,amx-complex,avxvnniint16,sm3,sha512,sm4,avx10.2-512")
 
 #include <x86intrin.h>

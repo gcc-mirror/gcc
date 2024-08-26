@@ -11891,6 +11891,10 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V8HI_FTYPE_V8HI_V8HI_INT_V8HI_INT:
     case V4SI_FTYPE_V4SI_V4SI_INT_V4SI_INT:
     case V2DI_FTYPE_V2DI_V2DI_INT_V2DI_INT:
+    case V8BF_FTYPE_V8BF_V8BF_INT_V8BF_UQI:
+    case V16BF_FTYPE_V16BF_V16BF_INT_V16BF_UHI:
+    case V32BF_FTYPE_V32BF_V32BF_INT_V32BF_USI:
+    case V8HF_FTYPE_V8HF_V8HF_INT_V8HF_UQI:
       nargs = 5;
       mask_pos = 1;
       nargs_constant = 2;
@@ -12541,6 +12545,10 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     case V2DF_FTYPE_V2DF_V2DF_INT_V2DF_UQI_INT:
     case V4SF_FTYPE_V4SF_V4SF_INT_V4SF_UQI_INT:
     case V8HF_FTYPE_V8HF_V8HF_INT_V8HF_UQI_INT:
+    case V8DF_FTYPE_V8DF_V8DF_INT_V8DF_UQI_INT:
+    case V32HF_FTYPE_V32HF_V32HF_INT_V32HF_USI_INT:
+    case V16HF_FTYPE_V16HF_V16HF_INT_V16HF_UHI_INT:
+    case V16SF_FTYPE_V16SF_V16SF_INT_V16SF_UHI_INT:
       nargs = 6;
       nargs_constant = 4;
       break;

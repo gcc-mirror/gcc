@@ -1081,6 +1081,25 @@
 #define __builtin_ia32_cvttss2usis64_round(A, B) __builtin_ia32_cvttss2usis64_round(A, 8)
 #endif
 
+/* avx10_2-512minmaxintrin.h  */
+#define __builtin_ia32_minmaxpd512_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxpd512_mask_round (A, B, 4, D, E, 4)
+#define __builtin_ia32_minmaxph512_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxph512_mask_round (A, B, 4, D, E, 4)
+#define __builtin_ia32_minmaxps512_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxps512_mask_round (A, B, 4, D, E, 4)
+#define __builtin_ia32_minmaxnepbf16512_mask(A, B, C, W, U) __builtin_ia32_minmaxnepbf16512_mask (A, B, 4, W, U)
+
+/* avx10_2minmaxintrin.h  */
+#define __builtin_ia32_minmaxsd_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxsd_mask_round (A, B, 4, D, E, 4)
+#define __builtin_ia32_minmaxsh_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxsh_mask_round (A, B, 4, D, E, 4)
+#define __builtin_ia32_minmaxss_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxss_mask_round (A, B, 4, D, E, 4)
+#define __builtin_ia32_minmaxnepbf16128_mask(A, B, C, D, E) __builtin_ia32_minmaxnepbf16128_mask (A, B, 4, D, E)
+#define __builtin_ia32_minmaxnepbf16256_mask(A, B, C, D, E) __builtin_ia32_minmaxnepbf16256_mask (A, B, 4, D, E)
+#define __builtin_ia32_minmaxpd128_mask(A, B, C, D, E) __builtin_ia32_minmaxpd128_mask (A, B, 4, D, E)
+#define __builtin_ia32_minmaxpd256_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxpd256_mask_round (A, B, 4, D, E, 4)
+#define __builtin_ia32_minmaxph128_mask(A, B, C, D, E) __builtin_ia32_minmaxph128_mask (A, B, 4, D, E)
+#define __builtin_ia32_minmaxph256_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxph256_mask_round (A, B, 4, D, E, 4)
+#define __builtin_ia32_minmaxps128_mask(A, B, C, D, E) __builtin_ia32_minmaxps128_mask (A, B, 4, D, E)
+#define __builtin_ia32_minmaxps256_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxps256_mask_round (A, B, 4, D, E, 4)
+
 #include <wmmintrin.h>
 #include <immintrin.h>
 #include <mm3dnow.h>

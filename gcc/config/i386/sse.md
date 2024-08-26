@@ -249,6 +249,8 @@
   UNSPEC_VCVTTPS2IUBS
   UNSPEC_SFIX_SATURATION
   UNSPEC_UFIX_SATURATION
+  UNSPEC_MINMAXNEPBF16
+  UNSPEC_MINMAX
 ])
 
 (define_c_enum "unspecv" [
@@ -500,6 +502,11 @@
    (V8HF "TARGET_AVX512FP16 && TARGET_AVX512VL")
    (V16SF "TARGET_EVEX512") (V8SF "TARGET_AVX512VL") (V4SF "TARGET_AVX512VL")
    (V8DF "TARGET_EVEX512") (V4DF "TARGET_AVX512VL") (V2DF "TARGET_AVX512VL")])
+
+(define_mode_iterator VFH_AVX10_2
+  [(V32HF "TARGET_AVX10_2_512") V16HF V8HF
+   (V16SF "TARGET_AVX10_2_512") V8SF V4SF
+   (V8DF "TARGET_AVX10_2_512") V4DF V2DF])
 
 (define_mode_iterator VF2_AVX512VL
   [(V8DF "TARGET_EVEX512") (V4DF "TARGET_AVX512VL") (V2DF "TARGET_AVX512VL")])
@@ -32387,3 +32394,42 @@
  [(set_attr "type" "ssecvt")
  (set_attr "prefix" "evex")
  (set_attr "mode" "<MODE>")])
+
+(define_insn "avx10_2_minmaxnepbf16_<mode><mask_name>"
+  [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v")
+    (unspec:VBF_AVX10_2
+      [(match_operand:VBF_AVX10_2 1 "register_operand" "v")
+       (match_operand:VBF_AVX10_2 2 "bcst_vector_operand" "vmBr")
+       (match_operand:SI 3 "const_0_to_255_operand")]
+       UNSPEC_MINMAXNEPBF16))]
+  "TARGET_AVX10_2_256"
+  "vminmaxnepbf16\t{%3, %2, %1, %0<mask_operand4>|%0<mask_operand4>, %1, %2, %3}"
+  [(set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "avx10_2_minmaxp<mode><mask_name><round_saeonly_name>"
+  [(set (match_operand:VFH_AVX10_2 0 "register_operand" "=v")
+    (unspec:VFH_AVX10_2
+      [(match_operand:VFH_AVX10_2 1 "register_operand" "v")
+       (match_operand:VFH_AVX10_2 2 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")
+       (match_operand:SI 3 "const_0_to_255_operand")]
+      UNSPEC_MINMAX))]
+  "TARGET_AVX10_2_256"
+  "vminmax<ssemodesuffix>\t{%3, <round_saeonly_mask_op4>%2, %1, %0<mask_operand4>|%0<mask_operand4>, %1, %2<round_saeonly_mask_op4>, %3}"
+  [(set_attr "prefix" "evex")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "avx10_2_minmaxs<mode><mask_scalar_name><round_saeonly_scalar_name>"
+  [(set (match_operand:VFH_128 0 "register_operand" "=v")
+    (vec_merge:VFH_128
+      (unspec:VFH_128
+        [(match_operand:VFH_128 1 "register_operand" "v")
+         (match_operand:VFH_128 2 "<round_saeonly_scalar_nimm_predicate>" "<round_saeonly_scalar_constraint>")
+         (match_operand:SI 3 "const_0_to_255_operand")]
+        UNSPEC_MINMAX)
+      (match_dup 1)
+      (const_int 1)))]
+  "TARGET_AVX10_2_256"
+  "vminmax<ssescalarmodesuffix>\t{%3, <round_saeonly_scalar_mask_op4>%2, %1, %0<mask_scalar_operand4>|%0<mask_scalar_operand4>, %1, %2<round_saeonly_scalar_mask_op4>, %3}"
+  [(set_attr "prefix" "evex")
+   (set_attr "mode" "<ssescalarmode>")])

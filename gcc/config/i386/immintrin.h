@@ -155,4 +155,9 @@
 #include <avx10_2satcvtintrin.h>
 
 #include <avx10_2-512satcvtintrin.h>
+
+#include <avx10_2minmaxintrin.h>
+
+#include <avx10_2-512minmaxintrin.h>
+
 #endif /* _IMMINTRIN_H_INCLUDED */
