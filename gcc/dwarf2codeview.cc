@@ -4511,6 +4511,79 @@ get_type_num_volatile_type (dw_die_ref type, bool in_struct)
   return ct->num;
 }
 
+/* Return the name of a DIE, traversing its parents in order to construct a
+   C++-style name if necessary.  */
+static char *
+get_name (dw_die_ref die)
+{
+  dw_die_ref decl = get_AT_ref (die, DW_AT_specification);
+  dw_die_ref parent;
+  const char *name;
+  char *str;
+  size_t len;
+
+  static const char anon[] = "<unnamed-tag>";
+  static const char sep[] = "::";
+
+  if (decl)
+    die = decl;
+
+  name = get_AT_string (die, DW_AT_name);
+
+  if (!name)
+    return NULL;
+
+  parent = dw_get_die_parent (die);
+
+  if (!parent || dw_get_die_tag (parent) == DW_TAG_compile_unit)
+    return xstrdup (name);
+
+  len = strlen (name);
+  while (parent && dw_get_die_tag (parent) != DW_TAG_compile_unit)
+    {
+      const char *ns_name = get_AT_string (parent, DW_AT_name);
+
+      len += sizeof (sep) - 1;
+
+      if (ns_name)
+	len += strlen (ns_name);
+      else
+	len += sizeof (anon) - 1;
+
+      parent = dw_get_die_parent (parent);
+    }
+
+  str = (char *) xmalloc (len + 1);
+  str[len] = 0;
+
+  len -= strlen (name);
+  memcpy (str + len, name, strlen (name));
+
+  parent = dw_get_die_parent (die);
+  while (parent && dw_get_die_tag (parent) != DW_TAG_compile_unit)
+    {
+      const char *ns_name = get_AT_string (parent, DW_AT_name);
+
+      len -= sizeof (sep) - 1;
+      memcpy (str + len, sep, sizeof (sep) - 1);
+
+      if (ns_name)
+	{
+	  len -= strlen (ns_name);
+	  memcpy (str + len, ns_name, strlen (ns_name));
+	}
+      else
+	{
+	  len -= sizeof (anon) - 1;
+	  memcpy (str + len, anon, sizeof (anon) - 1);
+	}
+
+      parent = dw_get_die_parent (parent);
+    }
+
+  return str;
+}
+
 /* Add a forward declaration for an enum.  This is legal from C++11 onwards.  */
 
 static uint32_t
@@ -4528,7 +4601,7 @@ add_enum_forward_def (dw_die_ref type)
   ct->lf_enum.underlying_type = get_type_num (get_AT_ref (type, DW_AT_type),
 					      false, false);
   ct->lf_enum.fieldlist = 0;
-  ct->lf_enum.name = xstrdup (get_AT_string (type, DW_AT_name));
+  ct->lf_enum.name = get_name (type);
 
   add_custom_type (ct);
 
@@ -4688,7 +4761,7 @@ get_type_num_enumeration_type (dw_die_ref type, bool in_struct)
   ct->lf_enum.underlying_type = get_type_num (get_AT_ref (type, DW_AT_type),
 					      in_struct, false);
   ct->lf_enum.fieldlist = last_type;
-  ct->lf_enum.name = xstrdup (get_AT_string (type, DW_AT_name));
+  ct->lf_enum.name = get_name (type);
 
   add_custom_type (ct);
 
@@ -4775,7 +4848,7 @@ add_struct_forward_def (dw_die_ref type)
   ct->lf_structure.vshape = 0;
   ct->lf_structure.length.neg = false;
   ct->lf_structure.length.num = 0;
-  ct->lf_structure.name = xstrdup (get_AT_string (type, DW_AT_name));
+  ct->lf_structure.name = get_name (type);
 
   add_custom_type (ct);
 
@@ -4823,7 +4896,6 @@ get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
   codeview_custom_type *ct;
   uint16_t num_members = 0;
   uint32_t last_type = 0;
-  const char *name;
 
   if ((in_struct && get_AT_string (type, DW_AT_name))
       || get_AT_flag (type, DW_AT_declaration))
@@ -5010,13 +5082,7 @@ get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
   ct->lf_structure.vshape = 0;
   ct->lf_structure.length.neg = false;
   ct->lf_structure.length.num = get_AT_unsigned (type, DW_AT_byte_size);
-
-  name = get_AT_string (type, DW_AT_name);
-
-  if (name)
-    ct->lf_structure.name = xstrdup (name);
-  else
-    ct->lf_structure.name = NULL;
+  ct->lf_structure.name = get_name (type);
 
   add_custom_type (ct);
 
@@ -5384,7 +5450,7 @@ add_variable (dw_die_ref die)
   s->kind = get_AT (die, DW_AT_external) ? S_GDATA32 : S_LDATA32;
   s->data_symbol.type = get_type_num (get_AT_ref (die, DW_AT_type), false,
 				      false);
-  s->data_symbol.name = xstrdup (name);
+  s->data_symbol.name = get_name (die);
   s->data_symbol.die = die;
 
   if (last_sym)
@@ -5436,7 +5502,7 @@ add_function (dw_die_ref die)
   s->function.next = 0;
   s->function.type = func_id_type;
   s->function.flags = 0;
-  s->function.name = xstrdup (name);
+  s->function.name = get_name (die);
   s->function.die = die;
 
   if (last_sym)
