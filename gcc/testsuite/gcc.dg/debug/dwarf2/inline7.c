@@ -1,6 +1,6 @@
 /* Verify that at least one of both inline instances have
    a DW_AT_ranges but no extra DW_TAG_lexical_block.  */
-/* { dg-options "-O -gdwarf -dA" } */
+/* { dg-options "-Os -gdwarf -dA" } */
 /* { dg-do compile } */
 /* { dg-final { scan-assembler-times "\\(DIE \\(\[^\n\]*\\) DW_TAG_inlined_subroutine" 2 } } */
 /* { dg-final { scan-assembler " DW_AT_ranges" } } */
