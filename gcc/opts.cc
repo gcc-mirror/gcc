@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "spellcheck.h"
 #include "opt-suggestions.h"
 #include "diagnostic-color.h"
+#include "diagnostic-format.h"
 #include "version.h"
 #include "selftest.h"
 #include "file-prefix-map.h"

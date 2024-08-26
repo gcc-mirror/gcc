@@ -40,6 +40,7 @@ compilation is specified by a string called a "spec".  */
 #include "opt-suggestions.h"
 #include "gcc.h"
 #include "diagnostic.h"
+#include "diagnostic-format.h"
 #include "flags.h"
 #include "opts.h"
 #include "filenames.h"

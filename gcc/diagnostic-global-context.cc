@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "intl.h"
 #include "diagnostic.h"
+#include "diagnostic-format.h"
 
 /* A diagnostic_context surrogate for stderr.  */
 static diagnostic_context global_diagnostic_context;

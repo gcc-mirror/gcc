@@ -27,6 +27,7 @@
 #include "plugin-version.h"
 #include "c-family/c-common.h"
 #include "diagnostic.h"
+#include "diagnostic-format-text.h"
 #include "context.h"
 
 int plugin_is_GPL_compatible;
