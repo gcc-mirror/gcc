@@ -1371,3 +1371,14 @@ test_4x (_mm256_mask_fixupimm_round_pd, __m256d, __m256d, __mmask8, __m256d, __m
 test_4x (_mm256_mask_fixupimm_round_ps, __m256, __m256, __mmask8, __m256, __m256i, 3, 8)
 test_4x (_mm256_mask_range_round_pd, __m256d, __m256d, __mmask8, __m256d, __m256d, 15, 8)
 test_4x (_mm256_mask_range_round_ps, __m256, __m256, __mmask8, __m256, __m256, 15, 8)
+
+/* avx10_2-512mediaintrin.h */
+test_2 (_mm512_mpsadbw_epu8, __m512i, __m512i, __m512i, 1)
+test_3 (_mm512_maskz_mpsadbw_epu8, __m512i, __mmask32, __m512i, __m512i, 1)
+test_4 (_mm512_mask_mpsadbw_epu8, __m512i, __m512i, __mmask32, __m512i, __m512i, 1)
+
+/* avx10_2mediaintrin.h */
+test_3 (_mm_maskz_mpsadbw_epu8, __m128i, __mmask8, __m128i, __m128i, 1)
+test_3 (_mm256_maskz_mpsadbw_epu8, __m256i, __mmask16, __m256i, __m256i, 1)
+test_4 (_mm_mask_mpsadbw_epu8, __m128i, __m128i, __mmask8, __m128i, __m128i, 1)
+test_4 (_mm256_mask_mpsadbw_epu8, __m256i, __m256i, __mmask16, __m256i, __m256i, 1)

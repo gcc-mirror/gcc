@@ -214,6 +214,8 @@
   UNSPEC_SM4KEY4
   UNSPEC_SM4RNDS4
 
+  ;; For AVX10.2 suppport
+  UNSPEC_VDPPHPS
 ])
 
 (define_c_enum "unspecv" [
@@ -464,6 +466,9 @@
 
 (define_mode_iterator VF1_AVX512VL
   [(V16SF "TARGET_EVEX512") (V8SF "TARGET_AVX512VL") (V4SF "TARGET_AVX512VL")])
+
+(define_mode_iterator VF1_AVX10_2
+  [(V16SF "TARGET_AVX10_2_512") V8SF V4SF])
 
 (define_mode_iterator VHFBF
   [(V32HF "TARGET_EVEX512") V16HF V8HF
@@ -23555,6 +23560,31 @@
    (set_attr "znver1_decode" "vector,vector,vector")
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_insn "avx10_2_mpsadbw<mask_name>"
+  [(set (match_operand:V64QI 0 "register_operand" "=v")
+        (unspec:V64QI
+          [(match_operand:V64QI 1 "register_operand" "v")
+           (match_operand:V64QI 2 "vector_operand" "vm")
+           (match_operand:SI 3 "const_0_to_255_operand" "n")]
+          UNSPEC_MPSADBW))]
+  "TARGET_AVX10_2_512"
+  "vmpsadbw\t{%3, %2, %1, %0<mask_operand4>|%0<mask_operand4>, %1, %2, %3}"
+  [(set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")])
+
+(define_insn "<mask_codefor><sse4_1_avx2>_mpsadbw<mask_name>"
+  [(set (match_operand:VI1 0 "register_operand" "=v")
+        (unspec:VI1
+          [(match_operand:VI1 1 "register_operand" "v")
+           (match_operand:VI1 2 "vector_operand" "vm")
+           (match_operand:SI 3 "const_0_to_255_operand" "n")]
+          UNSPEC_MPSADBW))]
+  "TARGET_AVX10_2_256"
+  "vmpsadbw\t{%3, %2, %1, %0<mask_operand4>|%0<mask_operand4>, %1, %2, %3}"
+  [(set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
 (define_insn "<sse4_1_avx2>_packusdw<mask_name>"
   [(set (match_operand:VI2_AVX2_AVX512BW 0 "register_operand" "=Yr,*x,<v_Yw>")
 	(unspec:VI2_AVX2_AVX512BW
@@ -31438,13 +31468,116 @@
 })
 
 (define_insn "vpdp<vpdpwprodtype>_<mode>"
-  [(set (match_operand:VI4_AVX 0 "register_operand" "=x")
+  [(set (match_operand:VI4_AVX 0 "register_operand" "=v")
 	(unspec:VI4_AVX
 	  [(match_operand:VI4_AVX 1 "register_operand" "0")
-	   (match_operand:VI4_AVX 2 "register_operand" "x")
-	   (match_operand:VI4_AVX 3 "nonimmediate_operand" "xjm")]
+	   (match_operand:VI4_AVX 2 "register_operand" "v")
+	   (match_operand:VI4_AVX 3 "nonimmediate_operand" "vm")]
 	  VPDPWPROD))]
-  "TARGET_AVXVNNIINT16"
+  "TARGET_AVXVNNIINT16 || TARGET_AVX10_2_256"
   "vpdp<vpdpwprodtype>\t{%3, %2, %0|%0, %2, %3}"
-   [(set_attr "prefix" "vex")
-    (set_attr "addr" "gpr16")])
+   [(set_attr "prefix" "maybe_evex")])
+
+(define_insn "vpdp<vpdpwprodtype>_v16si"
+  [(set (match_operand:V16SI 0 "register_operand" "=v")
+        (unspec:V16SI
+          [(match_operand:V16SI 1 "register_operand" "0")
+           (match_operand:V16SI 2 "register_operand" "v")
+           (match_operand:V16SI 3 "nonimmediate_operand" "vm")]
+          VPDPWPROD))]
+  "TARGET_AVX10_2_512"
+  "vpdp<vpdpwprodtype>\t{%3, %2, %0|%0, %2, %3}"
+  [(set_attr "prefix" "evex")])
+
+(define_insn "vpdp<vpdpwprodtype>_<mode>_mask"
+  [(set (match_operand:VI4_AVX10_2 0 "register_operand" "=v")
+	(vec_merge:VI4_AVX10_2
+	  (unspec:VI4_AVX10_2
+	    [(match_operand:VI4_AVX10_2 1 "register_operand" "0")
+	     (match_operand:VI4_AVX10_2 2 "register_operand" "v")
+	     (match_operand:VI4_AVX10_2 3 "nonimmediate_operand" "vm")]
+	    VPDPWPROD)
+	  (match_dup 1)
+	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk")))]
+  "TARGET_AVX10_2_256"
+  "vpdp<vpdpwprodtype>\t{%3, %2, %0%{%4%}|%0%{%4%}, %2, %3}"
+   [(set_attr "prefix" "evex")])
+
+(define_expand "vpdp<vpdpwprodtype>_<mode>_maskz"
+  [(set (match_operand:VI4_AVX10_2 0 "register_operand")
+	(vec_merge:VI4_AVX10_2
+	  (unspec:VI4_AVX10_2
+	    [(match_operand:VI4_AVX10_2 1 "register_operand")
+	     (match_operand:VI4_AVX10_2 2 "register_operand")
+	     (match_operand:VI4_AVX10_2 3 "nonimmediate_operand")]
+	    VPDPWPROD)
+	  (match_dup 5)
+	  (match_operand:<avx512fmaskmode> 4 "register_operand")))]
+  "TARGET_AVX10_2_256"
+  "operands[5] = CONST0_RTX (<MODE>mode);")
+
+(define_insn "*vpdp<vpdpwprodtype>_<mode>_maskz"
+  [(set (match_operand:VI4_AVX10_2 0 "register_operand" "=v")
+	(vec_merge:VI4_AVX10_2
+	  (unspec:VI4_AVX10_2
+	    [(match_operand:VI4_AVX10_2 1 "register_operand" "0")
+	     (match_operand:VI4_AVX10_2 2 "register_operand" "v")
+	     (match_operand:VI4_AVX10_2 3 "nonimmediate_operand" "vm")]
+	    VPDPWPROD)
+	  (match_operand:VI4_AVX10_2 5 "const0_operand" "C")
+	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk")))]
+  "TARGET_AVX10_2_256"
+  "vpdp<vpdpwprodtype>\t{%3, %2, %0%{%4%}%N5|%0%{%4%}%N5, %2, %3}"
+   [(set_attr "prefix" "evex")])
+
+(define_insn "vdpphps_<mode>"
+  [(set (match_operand:VF1_AVX10_2 0 "register_operand" "=v")
+	(unspec:VF1_AVX10_2
+	  [(match_operand:VF1_AVX10_2 1 "register_operand" "0")
+	   (match_operand:VF1_AVX10_2 2 "register_operand" "v")
+	   (match_operand:VF1_AVX10_2 3 "nonimmediate_operand" "vm")]
+	   UNSPEC_VDPPHPS))]
+  "TARGET_AVX10_2_256"
+  "vdpphps\t{%3, %2, %0|%0, %2, %3}"
+  [(set_attr "prefix" "evex")])
+
+(define_insn "vdpphps_<mode>_mask"
+  [(set (match_operand:VF1_AVX10_2 0 "register_operand" "=v")
+	(vec_merge:VF1_AVX10_2
+	  (unspec:VF1_AVX10_2
+	    [(match_operand:VF1_AVX10_2 1 "register_operand" "0")
+	     (match_operand:VF1_AVX10_2 2 "register_operand" "v")
+	     (match_operand:VF1_AVX10_2 3 "nonimmediate_operand" "vm")]
+	    UNSPEC_VDPPHPS)
+	  (match_dup 1)
+	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk")))]
+  "TARGET_AVX10_2_256"
+  "vdpphps\t{%3, %2, %0%{%4%}|%0%{%4%}, %2, %3}"
+  [(set_attr "prefix" "evex")])
+
+(define_expand "vdpphps_<mode>_maskz"
+  [(match_operand:VF1_AVX10_2 0 "register_operand")
+   (match_operand:VF1_AVX10_2 1 "register_operand")
+   (match_operand:VF1_AVX10_2 2 "register_operand")
+   (match_operand:VF1_AVX10_2 3 "nonimmediate_operand")
+   (match_operand:<avx512fmaskmode> 4 "register_operand")]
+  "TARGET_AVX10_2_256"
+{
+  emit_insn (gen_vdpphps_<mode>_maskz_1 (operands[0], operands[1],
+    operands[2], operands[3], CONST0_RTX(<MODE>mode), operands[4]));
+  DONE;
+})
+
+(define_insn "vdpphps_<mode>_maskz_1"
+  [(set (match_operand:VF1_AVX10_2 0 "register_operand" "=v")
+	(vec_merge:VF1_AVX10_2
+	  (unspec:VF1_AVX10_2
+	    [(match_operand:VF1_AVX10_2 1 "register_operand" "0")
+	     (match_operand:VF1_AVX10_2 2 "register_operand" "v")
+	     (match_operand:VF1_AVX10_2 3 "nonimmediate_operand" "vm")]
+	    UNSPEC_VDPPHPS)
+	  (match_operand:VF1_AVX10_2 4 "const0_operand" "C")
+	  (match_operand:<avx512fmaskmode> 5 "register_operand" "Yk")))]
+  "TARGET_AVX10_2_256"
+  "vdpphps\t{%3, %2, %0%{%5%}%N4|%0%{%5%}%N4, %2, %3}"
+  [(set_attr "prefix" "evex")])

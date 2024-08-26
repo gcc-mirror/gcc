@@ -1002,6 +1002,14 @@
 #define __builtin_ia32_subph256_mask_round(A, B, C, D, E) __builtin_ia32_subph256_mask_round(A, B, C, D, 8)
 #define __builtin_ia32_subps256_mask_round(A, B, C, D, E) __builtin_ia32_subps256_mask_round(A, B, C, D, 8)
 
+/* avx10_2-512mediaintrin.h */
+#define __builtin_ia32_mpsadbw512(A, B, C) __builtin_ia32_mpsadbw512 (A, B, 1)
+#define __builtin_ia32_mpsadbw512_mask(A, B, C, D, E) __builtin_ia32_mpsadbw512_mask (A, B, 1, D, E)
+
+/* avx10_2mediaintrin.h */
+#define __builtin_ia32_mpsadbw128_mask(A, B, C, D, E) __builtin_ia32_mpsadbw128_mask (A, B, 1, D, E)
+#define __builtin_ia32_mpsadbw256_mask(A, B, C, D, E) __builtin_ia32_mpsadbw256_mask (A, B, 1, D, E)
+
 #include <wmmintrin.h>
 #include <immintrin.h>
 #include <mm3dnow.h>
