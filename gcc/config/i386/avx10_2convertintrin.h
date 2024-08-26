@@ -970,6 +970,54 @@ _mm256_maskz_cvtnesph_phf8 (__mmask16 __U, __m256h __A)
 							 (__mmask16) __U);
 }
 
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtpbf8_ph (__m128i __A)
+{
+  return (__m128h) _mm_castsi128_ph ((__m128i) _mm_slli_epi16 (
+	 (__m128i) _mm_cvtepi8_epi16 (__A), 8));
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_cvtpbf8_ph (__m128h __S, __mmask8 __U, __m128i __A)
+{
+  return (__m128h) _mm_castsi128_ph ((__m128i) _mm_mask_slli_epi16 (
+	 (__m128i) __S, __U, (__m128i) _mm_cvtepi8_epi16 (__A), 8));
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_cvtpbf8_ph (__mmask8 __U, __m128i __A)
+{
+  return (__m128h) _mm_castsi128_ph ((__m128i) _mm_slli_epi16 (
+	 (__m128i) _mm_maskz_cvtepi8_epi16 (__U, __A), 8));
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_cvtpbf8_ph (__m128i __A)
+{
+  return (__m256h) _mm256_castsi256_ph ((__m256i) _mm256_slli_epi16 (
+	 (__m256i) _mm256_cvtepi8_epi16 (__A), 8));
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_cvtpbf8_ph (__m256h __S, __mmask8 __U, __m128i __A)
+{
+  return (__m256h) _mm256_castsi256_ph ((__m256i) _mm256_mask_slli_epi16 (
+	 (__m256i) __S, __U, (__m256i) _mm256_cvtepi8_epi16 (__A), 8));
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_cvtpbf8_ph (__mmask8 __U, __m128i __A)
+{
+  return (__m256h) _mm256_castsi256_ph ((__m256i) _mm256_slli_epi16 (
+	 (__m256i) _mm256_maskz_cvtepi8_epi16 (__U, __A), 8));
+}
+
 #ifdef __DISABLE_AVX10_2_256__
 #undef __DISABLE_AVX10_2_256__
 #pragma GCC pop_options

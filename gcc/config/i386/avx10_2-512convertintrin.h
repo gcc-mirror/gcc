@@ -540,6 +540,30 @@ _mm512_maskz_cvtnesph_phf8 (__mmask32 __U, __m512h __A)
 							 (__mmask32) __U);
 }
 
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvtpbf8_ph (__m256i __A)
+{
+  return (__m512h) _mm512_castsi512_ph ((__m512i) _mm512_slli_epi16 (
+	 (__m512i) _mm512_cvtepi8_epi16 (__A), 8));
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cvtpbf8_ph (__m512h __S, __mmask16 __U, __m256i __A)
+{
+  return (__m512h) _mm512_castsi512_ph ((__m512i) _mm512_mask_slli_epi16 (
+	 (__m512i) __S, __U, (__m512i) _mm512_cvtepi8_epi16 (__A), 8));
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_cvtpbf8_ph (__mmask16 __U, __m256i __A)
+{
+  return (__m512h) _mm512_castsi512_ph ((__m512i) _mm512_slli_epi16 (
+	 (__m512i) _mm512_maskz_cvtepi8_epi16 (__U, __A), 8));
+}
+
 #ifdef __DISABLE_AVX10_2_512__
 #undef __DISABLE_AVX10_2_512__
 #pragma GCC pop_options

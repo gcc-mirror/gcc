@@ -87,14 +87,22 @@
 /* { dg-final { scan-assembler-times "vcvtneph2hf8sy\[ \\t\]*%ymm\[0-9\]+,\[^\{\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvtneph2hf8sy\[ \\t\]*%ymm\[0-9\]+,\[^\{\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvtneph2hf8sy\[ \\t\]*%ymm\[0-9\]+,\[^\{\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpmovsxbw\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\]*%ymm\[0-9\](?:\n|\[ \\t\]+#)" 2 } } */
+/* { dg-final { scan-assembler-times "vpsllw\[ \t]\+\\\$8, %ymm\[0-9]\+, %ymm\[0-9]\+(?:\n|\[ \\t\]+#)" 2 } } */
+/* { dg-final { scan-assembler-times "vpsllw\[ \t]\+\\\$8, %ymm\[0-9]\+, %ymm\[0-9]\+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpmovsxbw\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpmovsxbw\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 2 } } */
+/* { dg-final { scan-assembler-times "vpsllw\[ \t]\+\\\$8, %xmm\[0-9]\+, %xmm\[0-9]\+(?:\n|\[ \\t\]+#)" 2 } } */
+/* { dg-final { scan-assembler-times "vpsllw\[ \t]\+\\\$8, %xmm\[0-9]\+, %xmm\[0-9]\+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpmovsxbw\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 } } */
 
 #include <immintrin.h>
 
 volatile __m128 x1,a1,b1;
 volatile __m256 x2,a2,b2;
-volatile __m128h y,x128h;
-volatile __m256h y2,x256h;
-volatile __m128i x128i;
+volatile __m128h y,x128h,z;
+volatile __m256h y2,x256h,z2;
+volatile __m128i x128i,z3;
 volatile __m256i x256i;
 volatile __mmask8 m8;
 volatile __mmask16 m16;
@@ -271,4 +279,16 @@ avx10_2_vcvtneph2hf8s_test (void)
   x128i = _mm256_cvtnesph_phf8 (x256h);
   x128i = _mm256_mask_cvtnesph_phf8 (x128i, m16, x256h);
   x128i = _mm256_maskz_cvtnesph_phf8 (m16, x256h);
+}
+
+void extern
+avx10_2_cvtbf8_fp16_test (void)
+{
+  y = _mm_cvtpbf8_ph (z3);
+  y = _mm_mask_cvtpbf8_ph (z, m8, z3);
+  y = _mm_maskz_cvtpbf8_ph (m8, z3);
+
+  y2 = _mm256_cvtpbf8_ph (z3);
+  y2 = _mm256_mask_cvtpbf8_ph (z2, m8, z3);
+  y2 = _mm256_maskz_cvtpbf8_ph (m8, z3);
 }

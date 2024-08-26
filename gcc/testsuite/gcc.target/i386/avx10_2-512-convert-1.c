@@ -45,13 +45,17 @@
 /* { dg-final { scan-assembler-times "vcvtneph2hf8s\[ \\t\]*%zmm\[0-9\]+,\[^\{\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvtneph2hf8s\[ \\t\]*%zmm\[0-9\]+,\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvtneph2hf8s\[ \\t\]*%zmm\[0-9\]+,\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpsllw\[ \t]\+\\\$8, %zmm\[0-9]\+, %zmm\[0-9]\+(?:\n|\[ \\t\]+#)" 2 } } */
+/* { dg-final { scan-assembler-times "vpsllw\[ \t]\+\\\$8, %zmm\[0-9]\+, %zmm\[0-9]\+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpmovsxbw\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\]*%zmm\[0-9\](?:\n|\[ \\t\]+#)" 2 } } */
+/* { dg-final { scan-assembler-times "vpmovsxbw\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 } } */
 
 #include <immintrin.h>
 
-volatile __m256i x256i;
+volatile __m256i x256i, z1;
 volatile __m512i x512i;
 volatile __m512 x, a1, b1;
-volatile __m512h y, x512h;
+volatile __m512h y, x512h, z;
 volatile __mmask16 m16;
 volatile __mmask32 m32;
 volatile __mmask64 m64;
@@ -173,4 +177,12 @@ avx10_2_512_vcvtneph2hf8s_test (void)
   x256i = _mm512_cvtnesph_phf8 (x512h);
   x256i = _mm512_mask_cvtnesph_phf8 (x256i, m32, x512h);
   x256i = _mm512_maskz_cvtnesph_phf8 (m32, x512h);
+}
+
+void extern
+avx10_2_512_cvtbf8_fp16_test (void)
+{
+  y = _mm512_cvtpbf8_ph (z1);
+  y = _mm512_mask_cvtpbf8_ph (z, m16, z1);
+  y = _mm512_maskz_cvtpbf8_ph (m16, z1);
 }
