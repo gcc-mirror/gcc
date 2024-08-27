@@ -1,6 +1,11 @@
 2024-12-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2024-08-27  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.dg/signbit-5.c: Un-XFAIL for GCN.
+
+	Backported from trunk:
 	2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* gcc.target/nvptx/march-map=sm_89.c: Adjust.
