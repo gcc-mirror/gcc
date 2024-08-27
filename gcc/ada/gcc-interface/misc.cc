@@ -28,6 +28,7 @@
 #include "coretypes.h"
 #include "target.h"
 #include "tree.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "diagnostic.h"
 #include "opts.h"
