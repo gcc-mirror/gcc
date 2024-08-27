@@ -2098,6 +2098,25 @@
   DONE;
 })
 
+(define_expand "<code><mode>3"
+  [(set (match_operand:VBF_32_64 0 "register_operand")
+    (smaxmin:VBF_32_64
+      (match_operand:VBF_32_64 1 "nonimmediate_operand")
+      (match_operand:VBF_32_64 2 "nonimmediate_operand")))]
+  "TARGET_AVX10_2_256"
+{
+  rtx op0 = gen_reg_rtx (V8BFmode);
+  rtx op1 = lowpart_subreg (V8BFmode,
+			    force_reg (<MODE>mode, operands[1]), <MODE>mode);
+  rtx op2 = lowpart_subreg (V8BFmode,
+			    force_reg (<MODE>mode, operands[2]), <MODE>mode);
+
+  emit_insn (gen_<code>v8bf3 (op0, op1, op2));
+
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8BFmode));
+  DONE;
+})
+
 (define_expand "sqrt<mode>2"
   [(set (match_operand:VHF_32_64 0 "register_operand")
 	(sqrt:VHF_32_64
