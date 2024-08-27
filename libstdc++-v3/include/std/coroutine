@@ -99,7 +99,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     public:
       // [coroutine.handle.con], construct/reset
-      constexpr coroutine_handle() noexcept : _M_fr_ptr(0) {}
+      constexpr coroutine_handle() noexcept : _M_fr_ptr(nullptr) {}
 
       constexpr coroutine_handle(std::nullptr_t __h) noexcept
 	: _M_fr_ptr(__h)
