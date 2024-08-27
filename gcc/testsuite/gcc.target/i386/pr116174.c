@@ -1,6 +1,6 @@
 /* { dg-do compile { target *-*-linux* } } */
 /* { dg-options "-O2 -g0 -fcf-protection=branch" } */
-/* Keep labels and directives ('.p2align', '.cfi_startproc').
+/* Keep labels and directives ('.p2align', '.cfi_startproc').  */
 /* { dg-final { check-function-bodies "**" "" "" { target "*-*-*" } {^\t?\.}  } } */
 
 /*
