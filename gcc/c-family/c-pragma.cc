@@ -964,6 +964,8 @@ handle_pragma_diagnostic_impl ()
   unsigned int option_index = find_opt (data.option_str + 1, lang_mask);
 
   if (early && !(c_option_is_from_cpp_diagnostics (option_index)
+		 /* For interpret_float.  */
+		 || option_index == OPT_Wc__23_extensions
 		 || option_index == OPT_Wunknown_pragmas))
     return;
 

@@ -20527,7 +20527,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	    error_at (token->location,
 		     "use of %<auto%> in template argument");
 	  else if (!flag_concepts)
-	    pedwarn (token->location, 0,
+	    pedwarn (token->location, OPT_Wc__20_extensions,
 		     "use of %<auto%> in parameter declaration "
 		     "only available with %<-std=c++20%> or %<-fconcepts%>");
 	  else if (cxx_dialect < cxx14)
