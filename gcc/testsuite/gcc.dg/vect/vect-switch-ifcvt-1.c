@@ -1,4 +1,4 @@
-/* { dg-require-effective-target vect_int } */
+/* { dg-require-effective-target vect_condition } */
 #include "tree-vect.h"
 
 extern void abort (void);
