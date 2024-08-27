@@ -6,6 +6,7 @@
 # Mingye Wang (Arthur2e5) <arthur200126@gmail.com>, 2015, 2016.
 # Boyuan Yang <073plan@gmail.com>, 2019, 2023, 2024.
 # Zixing Zhou <zixingzhou@foxmail.com>, 2023.
+# Zhanhaoxiang Zhang <zzhx2006@outlook.com>, 2024.
 #
 # Fellow translatiors:
 # Many of the fuzzy strings are caused by an addition of a period (".")
@@ -35,8 +36,8 @@ msgstr ""
 "Project-Id-Version: gcc 14.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2024-07-25 16:23+0000\n"
-"PO-Revision-Date: 2024-08-02 12:22-0400\n"
-"Last-Translator: Boyuan Yang <073plan@gmail.com>\n"
+"PO-Revision-Date: 2024-08-27 16:17+0800\n"
+"Last-Translator: Zhanhaoxiang Zhang <zzhx2006@outlook.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
@@ -44,7 +45,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Poedit 3.4.4\n"
+"X-Generator: Poedit 3.4.2\n"
 
 #: cif-code.def:39
 msgid "function not considered for inlining"
@@ -8005,46 +8006,39 @@ msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512
 msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512VBMI 内建函数及代码生成。"
 
 #: config/i386/i386.opt:778
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512IFMA built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX5124FMAPS built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512IFMA 内建函数及代码生成。"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX5124FMAPS 内建函数及代码生成。"
 
 #: config/i386/i386.opt:782
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VBMI built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX5124VNNIW built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512VBMI 内建函数及代码生成。"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX5124VNNIW 内建函数及代码生成。"
 
 #: config/i386/i386.opt:786
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512DQ built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512VPOPCNTDQ built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512DQ 内建函数及代码生成。"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512VPOPCNTDQ 内建函数及代码生成。"
 
 #: config/i386/i386.opt:790
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VBMI built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512VBMI2 built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512VBMI 内建函数及代码生成。"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512VBMI2 内建函数及代码生成。"
 
 #: config/i386/i386.opt:794
-#, fuzzy, no-c-format
-#| msgid "Support BMI built-in functions and code generation."
+#, no-c-format
 msgid "Support AVX512VNNI built-in functions and code generation."
-msgstr "支持 BMI 内建函数及代码生成"
+msgstr "支持 AVX512VNNI 内建函数及代码生成。"
 
 #: config/i386/i386.opt:798
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512IFMA built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512BITALG built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512IFMA 内建函数及代码生成。"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512BITALG 内建函数及代码生成。"
 
 #: config/i386/i386.opt:802
-#, fuzzy, no-c-format
-#| msgid "Support BMI built-in functions and code generation."
+#, no-c-format
 msgid "Support AVX512VP2INTERSECT built-in functions and code generation."
-msgstr "支持 BMI 内建函数及代码生成"
+msgstr "支持 AVX512VP2INTERSECT 内建函数及代码生成。"
 
 #: config/i386/i386.opt:806
 #, no-c-format
@@ -8082,58 +8076,49 @@ msgid "Support code generation of popcnt instruction."
 msgstr "支持生成 popcnt 指令。"
 
 #: config/i386/i386.opt:834
-#, fuzzy, no-c-format
-#| msgid "Support PKU built-in functions and code generation."
+#, no-c-format
 msgid "Support PCONFIG built-in functions and code generation."
-msgstr "支持 PKU 内建函数及代码生成。"
+msgstr "支持 PCONFIG 内建函数及代码生成。"
 
 #: config/i386/i386.opt:838
-#, fuzzy, no-c-format
-#| msgid "Support BMI built-in functions and code generation."
+#, no-c-format
 msgid "Support WBNOINVD built-in functions and code generation."
-msgstr "支持 BMI 内建函数及代码生成"
+msgstr "支持 WBNOINVD 内建函数及代码生成。"
 
 #: config/i386/i386.opt:842
-#, fuzzy, no-c-format
-#| msgid "Support RTM built-in functions and code generation."
+#, no-c-format
 msgid "Support PTWRITE built-in functions and code generation."
-msgstr "支持 RTM 内建函数及代码生成。"
+msgstr "支持 PTWRITE 内建函数及代码生成。"
 
 #: config/i386/i386.opt:846
-#, fuzzy, no-c-format
-#| msgid "Support BMI built-in functions and code generation."
+#, no-c-format
 msgid "Support UINTR built-in functions and code generation."
-msgstr "支持 BMI 内建函数及代码生成"
+msgstr "支持 UINTR 内建函数及代码生成。"
 
 #: config/i386/i386.opt:850
-#, fuzzy, no-c-format
-#| msgid "Support XOP built-in functions and code generation."
+#, no-c-format
 msgid "Support SGX built-in functions and code generation."
-msgstr "支持 XOP 内建函数及代码生成。"
+msgstr "支持 SGX 内建函数及代码生成。"
 
 #: config/i386/i386.opt:854
-#, fuzzy, no-c-format
-#| msgid "Support RDRND built-in functions and code generation."
+#, no-c-format
 msgid "Support RDPID built-in functions and code generation."
-msgstr "支持 RDRND 内建函数及代码生成。"
+msgstr "支持 RDPID 内建函数及代码生成。"
 
 #: config/i386/i386.opt:858
-#, fuzzy, no-c-format
-#| msgid "Support BMI built-in functions and code generation."
+#, no-c-format
 msgid "Support GFNI built-in functions and code generation."
-msgstr "支持 BMI 内建函数及代码生成"
+msgstr "支持 GFNI 内建函数及代码生成。"
 
 #: config/i386/i386.opt:862
-#, fuzzy, no-c-format
-#| msgid "Support AES built-in functions and code generation."
+#, no-c-format
 msgid "Support VAES built-in functions and code generation."
-msgstr "支持 AES 内建函数及代码生成。"
+msgstr "支持 VAES 内建函数及代码生成。"
 
 #: config/i386/i386.opt:866
-#, fuzzy, no-c-format
-#| msgid "Support PCLMUL built-in functions and code generation."
+#, no-c-format
 msgid "Support VPCLMULQDQ built-in functions and code generation."
-msgstr "支持 PCLMUL 内建函数及代码生成。"
+msgstr "支持 VPCLMULQDQ 内建函数及代码生成。"
 
 #: config/i386/i386.opt:870
 #, no-c-format
@@ -8392,28 +8377,24 @@ msgid "Force indirect call and jump via register."
 msgstr ""
 
 #: config/i386/i386.opt:1128
-#, fuzzy, no-c-format
-#| msgid "Support BMI built-in functions and code generation."
+#, no-c-format
 msgid "Support MOVDIRI built-in functions and code generation."
-msgstr "支持 BMI 内建函数及代码生成"
+msgstr "支持 MOVDIRI 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1132
-#, fuzzy, no-c-format
-#| msgid "Support BMI built-in functions and code generation."
+#, no-c-format
 msgid "Support MOVDIR64B built-in functions and code generation."
-msgstr "支持 BMI 内建函数及代码生成"
+msgstr "支持 MOVDIR64B 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1136
-#, fuzzy, no-c-format
-#| msgid "Support LWP built-in functions and code generation."
+#, no-c-format
 msgid "Support WAITPKG built-in functions and code generation."
-msgstr "支持 LWP 内建函数及代码生成。"
+msgstr "支持 WAITPKG 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1140
-#, fuzzy, no-c-format
-#| msgid "Support CLZERO built-in functions and code generation."
+#, no-c-format
 msgid "Support CLDEMOTE built-in functions and code generation."
-msgstr "支持 CLZERO 内建函数及代码。"
+msgstr "支持 CLDEMOTE 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1144
 #, fuzzy, no-c-format
@@ -8436,10 +8417,9 @@ msgid "Known choices for mitigation against straight line speculation with -mhar
 msgstr ""
 
 #: config/i386/i386.opt:1185
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VBMI built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512BF16 built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512VBMI 内建函数及代码生成。"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512BF16 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1190
 #, no-c-format
@@ -8487,10 +8467,9 @@ msgid "Support WIDEKL built-in functions and code generation."
 msgstr "支持 WIDEKL 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1226
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, and AVXVNNI built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2 和 AVX512F 内建函数及代码生成。"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2 和 AVXVNNI 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1231
 #, no-c-format
@@ -8498,16 +8477,14 @@ msgid "Emit GNU_PROPERTY_X86_ISA_1_NEEDED GNU property."
 msgstr ""
 
 #: config/i386/i386.opt:1235
-#, fuzzy, no-c-format
-#| msgid "Support MWAITX and MONITORX built-in functions and code generation."
+#, no-c-format
 msgid "Support MWAIT and MONITOR built-in functions and code generation."
-msgstr "支持 MWAITX 和 MONITORX 内建函数及代码生成。"
+msgstr "支持 MWAIT 和 MONITOR 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1239
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512IFMA built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512-FP16 built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512IFMA 内建函数及代码生成。"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512-FP16 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1243
 #, fuzzy, no-c-format
@@ -8520,46 +8497,39 @@ msgid "Instructions number above which STFL stall penalty can be compensated."
 msgstr ""
 
 #: config/i386/i386.opt:1251
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, and AVXIFMA built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2 和 AVX512F 内建函数及代码生成。"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2 和 AVXIFMA 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1256
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVXVNNIINT8 built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2 和 AVX512F 内建函数及代码生成。"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2 和 AVXVNNIINT8 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1261
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, and AVXNECONVERT build-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2 和 AVX512F 内建函数及代码生成。"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2 和 AVXNECONVERT 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1266
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, and CMPCCXADD build-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2 和 AVX512F 内建函数及代码生成。"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2 和 CMPCCXADD 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1271
-#, fuzzy, no-c-format
-#| msgid "Support F16C built-in functions and code generation."
+#, no-c-format
 msgid "Support AMX-FP16 built-in functions and code generation."
-msgstr "支持 F16C 内建函数及代码生成。"
+msgstr "支持 AMX-FP16 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1275
-#, fuzzy, no-c-format
-#| msgid "Support PREFETCHWT1 built-in functions and code generation."
+#, no-c-format
 msgid "Support PREFETCHI built-in functions and code generation."
-msgstr "支持 PREFETCHWT1 内建函数及代码生成。"
+msgstr "支持 PREFETCHI 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1279
-#, fuzzy, no-c-format
-#| msgid "Support BMI built-in functions and code generation."
+#, no-c-format
 msgid "Support RAOINT built-in functions and code generation."
-msgstr "支持 BMI 内建函数及代码生成"
+msgstr "支持 RAOINT 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1283
 #, no-c-format
@@ -8572,34 +8542,29 @@ msgid "-mlam=[none|u48|u57] Instrument meta data position in user data pointers.
 msgstr ""
 
 #: config/i386/i386.opt:1303
-#, fuzzy, no-c-format
-#| msgid "Support AES built-in functions and code generation."
+#, no-c-format
 msgid "Support AMX-COMPLEX built-in functions and code generation."
-msgstr "支持 AES 内建函数及代码生成。"
+msgstr "支持 AMX-COMPLEX 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1307
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVXVNNIINT16 built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2 和 AVX512F 内建函数及代码生成。"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2 和 AVXVNNIINT16 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1312
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and SM3 built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX 和 FMA 内建函数及代码生成。"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX 和 SM3 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1317
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and AVX2 built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and SHA512 built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX 和 AVX2 内建函数及代码生成。"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX 和 SHA512 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1322
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and SM4 built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX 和 FMA 内建函数及代码生成。"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX 和 SM4 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1327
 #, fuzzy, no-c-format
@@ -8622,28 +8587,24 @@ msgid "Enable GPR32 in inline asm when APX_F enabled."
 msgstr ""
 
 #: config/i386/i386.opt:1368
-#, fuzzy, no-c-format
-#| msgid "Support BMI2 built-in functions and code generation."
+#, no-c-format
 msgid "Support 512 bit vector built-in functions and code generation."
-msgstr "支持 BMI2 内建函数及代码生成。"
+msgstr "支持512位矢量内建函数及代码生成。"
 
 #: config/i386/i386.opt:1372
-#, fuzzy, no-c-format
-#| msgid "Support AES built-in functions and code generation."
+#, no-c-format
 msgid "Support USER_MSR built-in functions and code generation."
-msgstr "支持 AES 内建函数及代码生成。"
+msgstr "支持 USER_MSR 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1376 config/i386/i386.opt:1386
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, and AVX10.1 built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2 和 AVX512F 内建函数及代码生成。"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2 和 AVX10.1 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1381
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, and AVX10.1-512 built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2 和 AVX512F 内建函数及代码生成。"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2 和 AVX10.1-512 内建函数及代码生成。"
 
 #: config/pa/pa64-hpux.opt:23
 #, no-c-format
@@ -25405,10 +25366,9 @@ msgid_plural "%qD specifies more restrictive attributes than its target %qD: %s"
 msgstr[0] ""
 
 #: attribs.cc:2333 attribs.cc:2353
-#, fuzzy, gcc-internal-format
-#| msgid "%qD was declared here"
+#, gcc-internal-format
 msgid "%qD target declared here"
-msgstr "%qD在此声明"
+msgstr "%qD目标在此声明"
 
 #: attribs.cc:2347
 #, gcc-internal-format
@@ -25458,10 +25418,9 @@ msgid "offset %qwi outside bounds of constant string"
 msgstr "偏移量越过字符串常量界"
 
 #: builtins.cc:707 cp/name-lookup.cc:6830
-#, fuzzy, gcc-internal-format
-#| msgid "%qD declared here"
+#, gcc-internal-format
 msgid "%qE declared here"
-msgstr "%qD在此声明"
+msgstr "%qE在此声明"
 
 #: builtins.cc:1298
 #, gcc-internal-format
@@ -28429,10 +28388,9 @@ msgid "%<%.*s%> directive argument is not a nul-terminated string"
 msgstr ""
 
 #: gimple-ssa-sprintf.cc:3350 gimple-ssa-warn-access.cc:234
-#, fuzzy, gcc-internal-format
-#| msgid "template parameter type %qT declared %<friend%>"
+#, gcc-internal-format
 msgid "referenced argument declared here"
-msgstr "模板形参类型%qT声明为%<friend%>"
+msgstr "引用的参数在此声明"
 
 #: gimple-ssa-sprintf.cc:3357
 #, gcc-internal-format
@@ -28644,10 +28602,9 @@ msgid "%qD argument %i declared attribute %<nonstring%>"
 msgstr "%qD在其类外被声明为%<constexpr%>"
 
 #: gimple-ssa-warn-access.cc:671
-#, fuzzy, gcc-internal-format
-#| msgid "%qD declared here"
+#, gcc-internal-format
 msgid "argument %qD declared here"
-msgstr "%qD在此声明"
+msgstr "参数%qD在此声明"
 
 #: gimple-ssa-warn-access.cc:730
 #, fuzzy, gcc-internal-format
@@ -29582,10 +29539,9 @@ msgid "%qD pointer overflow between offset %s and size %s accessing array %qD wi
 msgstr ""
 
 #: gimple-ssa-warn-restrict.cc:1785 c-family/c-warn.cc:3804
-#, fuzzy, gcc-internal-format
-#| msgid "%qD declared here"
+#, gcc-internal-format
 msgid "array %qD declared here"
-msgstr "%qD在此声明"
+msgstr "数组%qD在此声明"
 
 #: gimple-ssa-warn-restrict.cc:1790 gimple-ssa-warn-restrict.cc:1796
 #, gcc-internal-format
@@ -29642,10 +29598,9 @@ msgid "%qD offset %s from the object at %qE is out of the bounds of %qT"
 msgstr "枚举值 %E 对其类型%<%T%>而言太大了"
 
 #: gimple-ssa-warn-restrict.cc:1866 gimple-ssa-warn-restrict.cc:1887
-#, fuzzy, gcc-internal-format
-#| msgid "%qD declared here"
+#, gcc-internal-format
 msgid "subobject %qD declared here"
-msgstr "%qD在此声明"
+msgstr "子对象%qD在此声明"
 
 #: gimple-ssa-warn-restrict.cc:1876
 #, fuzzy, gcc-internal-format
@@ -34517,10 +34472,9 @@ msgid "in this expression"
 msgstr "  在抛出的表达式中"
 
 #: tree-ssa-uninit.cc:306
-#, fuzzy, gcc-internal-format
-#| msgid "%qE is not initialized"
+#, gcc-internal-format
 msgid "%qD is used uninitialized"
-msgstr "%qE未经初始化"
+msgstr "%qD未经初始化被使用"
 
 #: tree-ssa-uninit.cc:308
 #, fuzzy, gcc-internal-format
@@ -34529,10 +34483,9 @@ msgid "%qD may be used uninitialized"
 msgstr "此函数中的%qD在使用前可能未初始化"
 
 #: tree-ssa-uninit.cc:315
-#, fuzzy, gcc-internal-format
-#| msgid "%qE is not initialized"
+#, gcc-internal-format
 msgid "%qs is used uninitialized"
-msgstr "%qE未经初始化"
+msgstr "%qs未经初始化被使用"
 
 #: tree-ssa-uninit.cc:318
 #, fuzzy, gcc-internal-format
@@ -34546,10 +34499,9 @@ msgid "%qD was declared here"
 msgstr "%qD在此声明"
 
 #: tree-ssa-uninit.cc:339
-#, fuzzy, gcc-internal-format
-#| msgid "%qD was declared here"
+#, gcc-internal-format
 msgid "%qs was declared here"
-msgstr "%qD在此声明"
+msgstr "%qs在此声明"
 
 #: tree-ssa-uninit.cc:450 tree-ssa-uninit.cc:760
 #, fuzzy, gcc-internal-format
@@ -34563,10 +34515,9 @@ msgid "accessing argument %u of a function declared with attribute %<%s%>"
 msgstr "忽略声明有 warn_unused_result 属性的函数的返回值"
 
 #: tree-ssa-uninit.cc:747
-#, fuzzy, gcc-internal-format
-#| msgid "%qE is not initialized"
+#, gcc-internal-format
 msgid "%qE is used uninitialized"
-msgstr "%qE未经初始化"
+msgstr "%qE未经初始化被使用"
 
 #: tree-ssa-uninit.cc:882
 #, fuzzy, gcc-internal-format
@@ -39075,9 +39026,9 @@ msgid "conversion from %qT to %qT may change value"
 msgstr "%qT转换自%qT时可能改变值"
 
 #: c-family/c-warn.cc:1459 c-family/c-warn.cc:1477 c-family/c-warn.cc:1494
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "overflow in conversion from %qT to %qT changes value from %qE to %qE"
-msgstr "C++ 中不允许从%qT到%qT的隐式转换"
+msgstr "在从%qT转换为%qT时发生溢出，值从%qE变为%qE"
 
 #: c-family/c-warn.cc:1464 c-family/c-warn.cc:1482 c-family/c-warn.cc:1499
 #, fuzzy, gcc-internal-format
@@ -39317,7 +39268,7 @@ msgstr "数组索引参数类型无效(有%qT)"
 #: c-family/c-warn.cc:1960
 #, gcc-internal-format
 msgid "invalid type argument of unary %<*%> (have %qT)"
-msgstr "一元 %<*%>参数类型无效(有%qT) "
+msgstr "一元 %<*%>参数类型无效(有%qT)"
 
 #: c-family/c-warn.cc:1965
 #, gcc-internal-format
@@ -54885,8 +54836,7 @@ msgstr "将 NULL 作为非指针实参 %P 传递给%qD"
 
 #: cp/call.cc:8287 cp/call.cc:8306 cp/decl.cc:10866 cp/decl.cc:10874
 #: cp/typeck.cc:4602
-#, fuzzy, gcc-internal-format
-#| msgid "declared here"
+#, gcc-internal-format
 msgid "  declared here"
 msgstr "在此声明"
 
@@ -55212,9 +55162,9 @@ msgid "%qD moving an object of non-trivial type %#qT and size %E into a region o
 msgstr ""
 
 #: cp/call.cc:11067
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%#qT declared here"
-msgstr "在此声明"
+msgstr "%#qT在此声明"
 
 #: cp/call.cc:11121
 #, fuzzy, gcc-internal-format
@@ -55463,9 +55413,9 @@ msgstr ""
 
 #: cp/class.cc:1694 cp/class.cc:1701 cp/class.cc:1708 cp/class.cc:1720
 #: cp/cvt.cc:1118 rust/backend/rust-tree.cc:643
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qT declared here"
-msgstr "在此声明"
+msgstr "%qT在此声明"
 
 #: cp/class.cc:1699
 #, gcc-internal-format
@@ -55674,9 +55624,9 @@ msgid "  but does not declare %<operator=(const %T&)%>"
 msgstr "但没有重载%<operator=(const %T&)%>"
 
 #: cp/class.cc:4228
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "pointer member %q+D declared here"
-msgstr "%q+D已在此声明过"
+msgstr "指针成员%q+D已在此声明过"
 
 #: cp/class.cc:4316
 #, gcc-internal-format
@@ -55826,9 +55776,9 @@ msgid "invalid use of %q#T with a flexible array member in %q#T"
 msgstr "对包含可变数组成员的结构的无效使用"
 
 #: cp/class.cc:7603
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "array member %q#D declared here"
-msgstr "%q+D已在此声明过"
+msgstr "数组成员%q#D已在此声明过"
 
 #: cp/class.cc:7631
 #, fuzzy, gcc-internal-format
@@ -56116,10 +56066,9 @@ msgid "dynamic type %qT of its operand does not have a base class of type %qT"
 msgstr "类型%qT不是类型%qT的基类"
 
 #: cp/constexpr.cc:2566
-#, fuzzy, gcc-internal-format
-#| msgid "variable %D of type %<io%> must be uninitialized"
+#, gcc-internal-format
 msgid "virtual table pointer is used uninitialized"
-msgstr "类型为%<io%>的变量 %D 不能被初始化"
+msgstr "虚拟表指针未初始化被使用"
 
 #: cp/constexpr.cc:2598 cp/constexpr.cc:2631
 #, gcc-internal-format
@@ -57432,10 +57381,9 @@ msgid "the coroutine promise type %qT declares both %<return_value%> and %<retur
 msgstr ""
 
 #: cp/coroutines.cc:515
-#, fuzzy, gcc-internal-format
-#| msgid "%qD was declared here"
+#, gcc-internal-format
 msgid "%<return_void%> declared here"
-msgstr "%qD在此声明"
+msgstr "%<return_void%>在此声明"
 
 #: cp/coroutines.cc:648 cp/coroutines.cc:726 cp/coroutines.cc:4283
 #, fuzzy, gcc-internal-format
@@ -58076,10 +58024,9 @@ msgid "unused structured binding declaration"
 msgstr "无效的函数声明"
 
 #: cp/decl.cc:718
-#, fuzzy, gcc-internal-format
-#| msgid "unused variable %q+D"
+#, gcc-internal-format
 msgid "unused variable %qD"
-msgstr "未使用的变量%q+D"
+msgstr "未使用的变量%qD"
 
 #: cp/decl.cc:728
 #, gcc-internal-format
@@ -58271,9 +58218,9 @@ msgstr "%q+#D已在此定义过"
 
 #: cp/decl.cc:2089 cp/name-lookup.cc:3370 cp/name-lookup.cc:3408
 #: cp/name-lookup.cc:3434
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q#D previously declared here"
-msgstr "%q+#D已在此定义过"
+msgstr "%q#D已在此定义过"
 
 #: cp/decl.cc:2097
 #, fuzzy, gcc-internal-format
@@ -58583,7 +58530,7 @@ msgstr "%q#T不是一个类"
 #: cp/decl.cc:4528 cp/decl.cc:4629
 #, gcc-internal-format
 msgid "no class template named %q#T in %q#T"
-msgstr "没有名为%q#T的类模板，在%q#T中 "
+msgstr "没有名为%q#T的类模板，在%q#T中"
 
 #: cp/decl.cc:4529
 #, fuzzy, gcc-internal-format
@@ -62021,10 +61968,9 @@ msgid "reference %qD is not yet bound to a value when used here"
 msgstr ""
 
 #: cp/init.cc:912
-#, fuzzy, gcc-internal-format
-#| msgid "member %qD is uninitialized reference"
+#, gcc-internal-format
 msgid "member %qD is used uninitialized"
-msgstr "成员%qD是未初始化的引用"
+msgstr "成员%qD未经初始化被使用"
 
 #: cp/init.cc:991
 #, gcc-internal-format
@@ -62859,10 +62805,9 @@ msgid "cannot import module in its own purview"
 msgstr ""
 
 #: cp/module.cc:14385 cp/module.cc:19710
-#, fuzzy, gcc-internal-format
-#| msgid "%qD declared here"
+#, gcc-internal-format
 msgid "module %qs declared here"
-msgstr "%qD在此声明"
+msgstr "模组%qs在此声明"
 
 #: cp/module.cc:14729
 #, gcc-internal-format
@@ -64308,9 +64253,9 @@ msgstr "%qD不是一个变量"
 
 #: cp/parser.cc:11688 cp/parser.cc:11698 cp/semantics.cc:4245
 #: cp/semantics.cc:4260
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q#D declared here"
-msgstr "%q+D已在此声明过"
+msgstr "%q#D在此声明"
 
 #: cp/parser.cc:11694
 #, fuzzy, gcc-internal-format
@@ -66274,9 +66219,9 @@ msgid "%qs tag used in naming %q#T"
 msgstr "使用了%qs标记，在命名%q#T时"
 
 #: cp/parser.cc:35014
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q#T was previously declared here"
-msgstr "以前在此声明过"
+msgstr "%q#T之前在此声明过"
 
 #: cp/parser.cc:35135
 #, fuzzy, gcc-internal-format
@@ -66883,10 +66828,9 @@ msgid "declaration of %q+#D shadows template parameter"
 msgstr "%q+D的声明隐藏了一个形参"
 
 #: cp/pt.cc:4495
-#, fuzzy, gcc-internal-format
-#| msgid "template parameter type %qT declared %<friend%>"
+#, gcc-internal-format
 msgid "template parameter %qD declared here"
-msgstr "模板形参类型%qT声明为%<friend%>"
+msgstr "模板参数%qD在此声明"
 
 #: cp/pt.cc:5179
 #, fuzzy, gcc-internal-format
@@ -67103,10 +67047,9 @@ msgid "redeclared here as %q#D"
 msgstr "在这里又被声明为%q#D"
 
 #: cp/pt.cc:6412
-#, fuzzy, gcc-internal-format
-#| msgid "declared here"
+#, gcc-internal-format
 msgid "redeclared here"
-msgstr "在此声明"
+msgstr "在这里又被声明"
 
 #: cp/pt.cc:6423
 #, fuzzy, gcc-internal-format
@@ -68203,10 +68146,9 @@ msgid "explicit object member function overrides virtual function"
 msgstr "内建函数%q+D未被声明为函数"
 
 #: cp/search.cc:2295
-#, fuzzy, gcc-internal-format
-#| msgid "indirect function %q+D cannot be declared weakref"
+#, gcc-internal-format
 msgid "virtual function declared here"
-msgstr "内联函数%q+D不能声明为有弱链接"
+msgstr "虚函数在此声明"
 
 #: cp/semantics.cc:1114
 #, gcc-internal-format
@@ -68953,8 +68895,7 @@ msgid "%<-fabi-version=12%> (GCC 8.1) accidentally changes the calling conventio
 msgstr ""
 
 #: cp/tree.cc:4535
-#, fuzzy, gcc-internal-format
-#| msgid "declared here"
+#, gcc-internal-format
 msgid " declared here"
 msgstr "在此声明"
 
@@ -69744,7 +69685,7 @@ msgstr "无法取右值表达式%<this%>的地址"
 #: cp/typeck.cc:7922 d/d-codegen.cc:719 rust/backend/rust-tree.cc:4745
 #, gcc-internal-format
 msgid "address of explicit register variable %qD requested"
-msgstr "要求显式寄存器变量%qD的地址。"
+msgstr "要求显式寄存器变量%qD的地址"
 
 #: cp/typeck.cc:7927 rust/backend/rust-tree.cc:4752
 #, gcc-internal-format
@@ -79506,7 +79447,7 @@ msgstr "在%C处需要“,”"
 #: fortran/openmp.cc:6145
 #, gcc-internal-format, gfc-internal-format
 msgid "Threadprivate variable at %C is an element of a COMMON block"
-msgstr " %C 处线程局部变量是个 COMMON 块的元素"
+msgstr "%C 处线程局部变量是个 COMMON 块的元素"
 
 #: fortran/openmp.cc:6182
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -81007,7 +80948,7 @@ msgstr "%C处 SEQUENCE 语句必须先于 CONTAINS"
 #: fortran/parse.cc:3426
 #, gcc-internal-format, gfc-internal-format
 msgid "Already inside a CONTAINS block at %C"
-msgstr "%C处已在一个 CONTAINS 块内部 "
+msgstr "%C处已在一个 CONTAINS 块内部"
 
 #: fortran/parse.cc:3545
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -86268,9 +86209,9 @@ msgid "size of %qD differ from the size of original declaration"
 msgstr "类型%qD不匹配原先的声明"
 
 #: lto/lto-symtab.cc:757
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD was previously declared here"
-msgstr "以前在此声明过"
+msgstr "%qD以前在此声明过"
 
 #: lto/lto-symtab.cc:760
 #, gcc-internal-format
@@ -86856,7 +86797,7 @@ msgstr "已弃用类 %qE"
 #: objc/objc-act.cc:1842
 #, gcc-internal-format
 msgid "could not find setter/getter for %qE in class %qE"
-msgstr "类 %2$qE 中找不到 %1$qE 的存取器。"
+msgstr "类 %2$qE 中找不到 %1$qE 的存取器"
 
 #: objc/objc-act.cc:1892
 #, fuzzy, gcc-internal-format
