@@ -1670,6 +1670,29 @@ coro_validate_builtin_call (tree call, tsubst_flags_t)
      The complete bodies for the ramp, actor and destroy function are passed
      back to finish_function for folding and gimplification.  */
 
+/* Helper to build a coroutine state frame access expression
+   CORO_FP is a frame pointer
+   MEMBER_ID is an identifier for a frame field
+   PRESERVE_REF is true, the expression returned will have REFERENCE_TYPE if
+   the MEMBER does.
+   COMPLAIN is passed to the underlying functions. */
+
+static tree
+coro_build_frame_access_expr (tree coro_ref, tree member_id, bool preserve_ref,
+			      tsubst_flags_t complain)
+{
+  gcc_checking_assert (INDIRECT_REF_P (coro_ref));
+  tree fr_type = TREE_TYPE (coro_ref);
+  tree mb = lookup_member (fr_type, member_id, /*protect=*/1, /*want_type=*/0,
+			   complain);
+  if (!mb || mb == error_mark_node)
+    return error_mark_node;
+  tree expr
+    = build_class_member_access_expr (coro_ref, mb, NULL_TREE,
+				      preserve_ref, complain);
+  return expr;
+}
+
 /* Helpers to build EXPR_STMT and void-cast EXPR_STMT, common ops.  */
 
 static tree
@@ -2064,19 +2087,13 @@ transform_await_expr (tree await_expr, await_xform_data *xform)
 	  We no longer need a [it had diagnostic value, maybe?]
 	  We need to replace the e_proxy in the awr_call.  */
 
-  tree coro_frame_type = TREE_TYPE (xform->actor_frame);
-
   /* If we have a frame var for the awaitable, get a reference to it.  */
   proxy_replace data;
   if (si->await_field_id)
     {
-      tree as_m
-	 = lookup_member (coro_frame_type, si->await_field_id,
-			  /*protect=*/1, /*want_type=*/0, tf_warning_or_error);
-      tree as = build_class_member_access_expr (xform->actor_frame, as_m,
-						NULL_TREE, true,
-						tf_warning_or_error);
-
+      tree as
+	= coro_build_frame_access_expr (xform->actor_frame, si->await_field_id,
+					true, tf_warning_or_error);
       /* Replace references to the instance proxy with the frame entry now
 	 computed.  */
       data.from = TREE_OPERAND (await_expr, 1);
@@ -2154,13 +2171,10 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	     known not-used.  */
 	  if (local_var.field_id == NULL_TREE)
 	    continue; /* Wasn't used.  */
-
-	  tree fld_ref
-	    = lookup_member (lvd->coro_frame_type, local_var.field_id,
-			     /*protect=*/1, /*want_type=*/0,
-			     tf_warning_or_error);
-	  tree fld_idx = build3 (COMPONENT_REF, TREE_TYPE (lvar),
-				 lvd->actor_frame, fld_ref, NULL_TREE);
+	  tree fld_idx
+	    = coro_build_frame_access_expr (lvd->actor_frame,
+					    local_var.field_id, true,
+					    tf_warning_or_error);
 	  local_var.field_idx = fld_idx;
 	  SET_DECL_VALUE_EXPR (lvar, fld_idx);
 	  DECL_HAS_VALUE_EXPR_P (lvar) = true;
@@ -2250,12 +2264,8 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   local_vars_transform xform_vars_data
     = {actor, actor_frame, coro_frame_type, loc, local_var_uses};
   cp_walk_tree (&fnbody, transform_local_var_uses, &xform_vars_data, NULL);
-
-  tree rat_field = lookup_member (coro_frame_type, coro_resume_index_id,
-				  1, 0, tf_warning_or_error);
-  tree rat = build3 (COMPONENT_REF, short_unsigned_type_node, actor_frame,
-		     rat_field, NULL_TREE);
-
+  tree rat = coro_build_frame_access_expr (actor_frame, coro_resume_index_id,
+					   false, tf_warning_or_error);
   tree ret_label
     = create_named_label_with_ctx (loc, "actor.suspend.ret", actor);
 
@@ -2345,10 +2355,8 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   add_stmt (r);
 
   /* actor's coroutine 'self handle'.  */
-  tree ash_m = lookup_member (coro_frame_type, coro_self_handle_id, 1,
-			      0, tf_warning_or_error);
-  tree ash = build_class_member_access_expr (actor_frame, ash_m, NULL_TREE,
-					     false, tf_warning_or_error);
+  tree ash = coro_build_frame_access_expr (actor_frame, coro_self_handle_id,
+					   false, tf_warning_or_error);
   /* So construct the self-handle from the frame address.  */
   tree hfa_m = get_coroutine_from_address (orig);
   /* Should have been set earlier by coro_promise_type_found_p.  */
@@ -2391,11 +2399,9 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 
   /* Here deallocate the frame (if we allocated it), which we will have at
      present.  */
-  tree fnf_m
-    = lookup_member (coro_frame_type, coro_frame_needs_free_id, 1,
-		     0, tf_warning_or_error);
-  tree fnf2_x = build_class_member_access_expr (actor_frame, fnf_m, NULL_TREE,
-						false, tf_warning_or_error);
+  tree fnf2_x
+   = coro_build_frame_access_expr (actor_frame, coro_frame_needs_free_id,
+				   false, tf_warning_or_error);
 
   tree need_free_if = begin_if_stmt ();
   fnf2_x = build1 (CONVERT_EXPR, integer_type_node, fnf2_x);
@@ -2403,11 +2409,9 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   finish_if_stmt_cond (cmp, need_free_if);
   while (!param_dtor_list->is_empty ())
     {
-      tree pid = param_dtor_list->pop ();
-      tree m = lookup_member (coro_frame_type, pid, 1, 0, tf_warning_or_error);
-      gcc_checking_assert (m);
-      tree a = build_class_member_access_expr (actor_frame, m, NULL_TREE,
-						false, tf_warning_or_error);
+      tree parm_id = param_dtor_list->pop ();
+      tree a = coro_build_frame_access_expr (actor_frame, parm_id, false,
+					     tf_warning_or_error);
       if (tree dtor = cxx_maybe_build_cleanup (a, tf_warning_or_error))
 	add_stmt (dtor);
     }
@@ -2504,11 +2508,8 @@ build_destroy_fn (location_t loc, tree coro_frame_type, tree destroy,
     = cp_build_indirect_ref (loc, destr_fp, RO_UNARY_STAR,
 			     tf_warning_or_error);
 
-  tree rat_field = lookup_member (coro_frame_type, coro_resume_index_id,
-				  1, 0, tf_warning_or_error);
-  tree rat
-    = build_class_member_access_expr (destr_frame, rat_field, NULL_TREE,
-				      /*reference*/false, tf_warning_or_error);
+  tree rat = coro_build_frame_access_expr (destr_frame, coro_resume_index_id,
+					   false, tf_warning_or_error);
 
   /* _resume_at |= 1 */
   tree dstr_idx
@@ -4836,13 +4837,9 @@ cp_coroutine_transform::build_ramp_function ()
 	{
 	  bool existed;
 	  param_info &parm = param_uses.get_or_insert (arg, &existed);
-
-	  tree fld_ref = lookup_member (frame_type, parm.field_id,
-					/*protect=*/1, /*want_type=*/0,
-					tf_warning_or_error);
 	  tree fld_idx
-	    = build_class_member_access_expr (deref_fp, fld_ref, NULL_TREE,
-					      false, tf_warning_or_error);
+	    = coro_build_frame_access_expr (deref_fp, parm.field_id,
+					    false, tf_warning_or_error);
 
 	  /* Add this to the promise CTOR arguments list, accounting for
 	     refs and special handling for method this ptr.  */
