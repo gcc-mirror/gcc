@@ -200,12 +200,13 @@ get_hard_regno (rtx x)
     reg = SUBREG_REG (x);
   if (! REG_P (reg))
     return -1;
-  if (! HARD_REGISTER_NUM_P (hard_regno = REGNO (reg)))
-    hard_regno = lra_get_regno_hard_regno (hard_regno);
+  int regno = REGNO (reg);
+  if (HARD_REGISTER_NUM_P (regno))
+    hard_regno = lra_get_elimination_hard_regno (regno);
+  else
+    hard_regno = lra_get_regno_hard_regno (regno);
   if (hard_regno < 0)
     return -1;
-  if (HARD_REGISTER_NUM_P (REGNO (reg)))
-    hard_regno = lra_get_elimination_hard_regno (hard_regno);
   if (SUBREG_P (x))
     hard_regno += subreg_regno_offset (hard_regno, GET_MODE (reg),
 				       SUBREG_BYTE (x),  GET_MODE (x));
@@ -221,13 +222,12 @@ get_reg_class (int regno)
 {
   int hard_regno;
 
-  if (! HARD_REGISTER_NUM_P (hard_regno = regno))
+  if (HARD_REGISTER_NUM_P (regno))
+    hard_regno = lra_get_elimination_hard_regno (regno);
+  else
     hard_regno = lra_get_regno_hard_regno (regno);
   if (hard_regno >= 0)
-    {
-      hard_regno = lra_get_elimination_hard_regno (hard_regno);
-      return REGNO_REG_CLASS (hard_regno);
-    }
+    return REGNO_REG_CLASS (hard_regno);
   if (regno >= new_regno_start)
     return lra_get_allocno_class (regno);
   return NO_REGS;
