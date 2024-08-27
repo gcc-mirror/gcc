@@ -1,6 +1,20 @@
 /* { dg-do compile { target *-*-linux* } } */
-/* { dg-options "-O2 -fcf-protection=branch" } */
+/* { dg-options "-O2 -g0 -fcf-protection=branch" } */
+/* Keep labels and directives ('.p2align', '.cfi_startproc').
+/* { dg-final { check-function-bodies "**" "" "" { target "*-*-*" } {^\t?\.}  } } */
 
+/*
+**foo:
+**.LFB0:
+**	.cfi_startproc
+** (
+**	endbr64
+**	.p2align 5
+** |
+**	endbr32
+** )
+**...
+*/
 char *
 foo (char *dest, const char *src)
 {
@@ -8,5 +22,3 @@ foo (char *dest, const char *src)
     /* nothing */;
   return --dest;
 }
-
-/* { dg-final { scan-assembler "\t\.cfi_startproc\n\tendbr(32|64)\n" } } */
