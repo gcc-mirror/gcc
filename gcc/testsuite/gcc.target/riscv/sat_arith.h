@@ -231,6 +231,13 @@ sat_u_sub_imm##IMM##_##T##_fmt_2 (T x)  \
   return x >= (T)IMM ? x - (T)IMM : 0;  \
 }
 
+#define DEF_SAT_U_SUB_IMM_FMT_3(T, IMM) \
+T __attribute__((noinline))             \
+sat_u_sub_imm##IMM##_##T##_fmt_3 (T y)  \
+{                                       \
+  return (T)IMM > y ? (T)IMM - y : 0;   \
+}
+
 #define RUN_SAT_U_SUB_FMT_1(T, x, y) sat_u_sub_##T##_fmt_1(x, y)
 #define RUN_SAT_U_SUB_FMT_2(T, x, y) sat_u_sub_##T##_fmt_2(x, y)
 #define RUN_SAT_U_SUB_FMT_3(T, x, y) sat_u_sub_##T##_fmt_3(x, y)
@@ -248,6 +255,8 @@ sat_u_sub_imm##IMM##_##T##_fmt_2 (T x)  \
   if (sat_u_sub_imm##IMM##_##T##_fmt_1(y) != expect) __builtin_abort ()
 #define RUN_SAT_U_SUB_IMM_FMT_2(T, x, IMM, expect) \
   if (sat_u_sub_imm##IMM##_##T##_fmt_2(x) != expect) __builtin_abort ()
+#define RUN_SAT_U_SUB_IMM_FMT_3(T, IMM, y, expect) \
+  if (sat_u_sub_imm##IMM##_##T##_fmt_3(y) != expect) __builtin_abort ()
 
 /******************************************************************************/
 /* Saturation Truncate (unsigned and signed)                                  */
