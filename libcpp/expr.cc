@@ -662,9 +662,9 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 	  if (radix == 8)
 	    radix = 10;
 
-	  if (CPP_PEDANTIC (pfile))
-	    cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
-				 "fixed-point constants are a GCC extension");
+	  cpp_pedwarning_with_line
+	    (pfile, CPP_W_PEDANTIC, virtual_location, 0,
+	     "fixed-point constants are a GCC extension");
 	  goto syntax_ok;
 	}
       else
@@ -701,11 +701,13 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 	  && !CPP_OPTION (pfile, extended_numbers))
 	{
 	  if (CPP_OPTION (pfile, cplusplus))
-	    cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
-				 "use of C++17 hexadecimal floating constant");
+	    cpp_pedwarning_with_line (pfile, CPP_W_CXX17_EXTENSIONS,
+				      virtual_location, 0, "use of C++17 "
+				      "hexadecimal floating constant");
 	  else
-	    cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
-				 "use of C99 hexadecimal floating constant");
+	    cpp_pedwarning_with_line (pfile, CPP_W_PEDANTIC,
+				      virtual_location, 0, "use of C99 "
+				      "hexadecimal floating constant");
 	}
 
       if (float_flag == AFTER_EXPON)
@@ -766,9 +768,10 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
       /* A suffix for double is a GCC extension via decimal float support.
 	 If the suffix also specifies an imaginary value we'll catch that
 	 later.  */
-      if ((result == CPP_N_MEDIUM) && CPP_PEDANTIC (pfile))
-	cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
-			     "suffix for double constant is a GCC extension");
+      if (result == CPP_N_MEDIUM)
+	cpp_pedwarning_with_line
+	  (pfile, CPP_W_PEDANTIC, virtual_location, 0,
+	   "suffix for double constant is a GCC extension");
 
       /* Radix must be 10 for decimal floats.  */
       if ((result & CPP_N_DFLOAT) && radix != 10)
@@ -779,15 +782,16 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
           return CPP_N_INVALID;
         }
 
-      if ((result & (CPP_N_FRACT | CPP_N_ACCUM)) && CPP_PEDANTIC (pfile))
-	cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
-			     "fixed-point constants are a GCC extension");
+      if (result & (CPP_N_FRACT | CPP_N_ACCUM))
+	cpp_pedwarning_with_line (pfile, CPP_W_PEDANTIC, virtual_location, 0,
+				  "fixed-point constants are a GCC extension");
 
       if (result & CPP_N_DFLOAT)
 	{
-	  if (CPP_PEDANTIC (pfile) && !CPP_OPTION (pfile, dfp_constants))
-	    cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
-				 "decimal float constants are a C23 feature");
+	  if (!CPP_OPTION (pfile, dfp_constants))
+	    cpp_pedwarning_with_line
+	      (pfile, CPP_W_PEDANTIC, virtual_location, 0,
+	       "decimal float constants are a C23 feature");
 	  else if (CPP_OPTION (pfile, cpp_warn_c11_c23_compat) > 0)
 	    cpp_warning_with_line (pfile, CPP_W_C11_C23_COMPAT,
 				   virtual_location, 0,
@@ -870,12 +874,12 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 		cpp_warning_with_line (pfile, CPP_W_C11_C23_COMPAT,
 				       virtual_location, 0, message);
 	    }
-	  else if (CPP_PEDANTIC (pfile) && !CPP_OPTION (pfile, true_false))
+	  else if (!CPP_OPTION (pfile, true_false))
 	    {
 	      const char *message = N_("ISO C does not support literal "
 				       "%<wb%> suffixes before C23");
-	      cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
-				   message);
+	      cpp_pedwarning_with_line (pfile, CPP_W_PEDANTIC,
+					virtual_location, 0, message);
 	    }
 	}
 
@@ -883,20 +887,27 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
     }
 
  syntax_ok:
-  if ((result & CPP_N_IMAGINARY) && CPP_PEDANTIC (pfile))
-    cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
-			 "imaginary constants are a GCC extension");
+  if (result & CPP_N_IMAGINARY)
+    cpp_pedwarning_with_line (pfile, CPP_W_PEDANTIC, virtual_location, 0,
+			      "imaginary constants are a GCC extension");
   if (radix == 2)
     {
+      bool warned = false;
       if (!CPP_OPTION (pfile, binary_constants)
 	  && CPP_PEDANTIC (pfile))
-	cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
-			     CPP_OPTION (pfile, cplusplus)
-			     ? N_("binary constants are a C++14 feature "
-				  "or GCC extension")
-			     : N_("binary constants are a C23 feature "
-				  "or GCC extension"));
-      else if (CPP_OPTION (pfile, cpp_warn_c11_c23_compat) > 0)
+	{
+	  if (CPP_OPTION (pfile, cplusplus))
+	    warned
+	      = (cpp_pedwarning_with_line
+		 (pfile, CPP_W_CXX14_EXTENSIONS, virtual_location, 0,
+		  "binary constants are a C++14 feature or GCC extension"));
+	  else
+	    warned
+	      = (cpp_pedwarning_with_line
+		 (pfile, CPP_W_PEDANTIC, virtual_location, 0,
+		  "binary constants are a C23 feature or GCC extension"));
+	}
+      if (!warned && CPP_OPTION (pfile, cpp_warn_c11_c23_compat) > 0)
 	cpp_warning_with_line (pfile, CPP_W_C11_C23_COMPAT,
 			       virtual_location, 0,
 			       "binary constants are a C23 feature");
@@ -1267,10 +1278,10 @@ eval_token (cpp_reader *pfile, const cpp_token *token,
 	{
 	  /* A pedantic warning takes precedence over a deprecated
 	     warning here.  */
-	  if (CPP_PEDANTIC (pfile))
-	    cpp_error_with_line (pfile, CPP_DL_PEDWARN,
-				 virtual_location, 0,
-				 "assertions are a GCC extension");
+	  if (cpp_pedwarning_with_line (pfile, CPP_W_PEDANTIC,
+					virtual_location, 0,
+					"assertions are a GCC extension"))
+	    ;
 	  else if (CPP_OPTION (pfile, cpp_warn_deprecated))
 	    cpp_warning_with_line (pfile, CPP_W_DEPRECATED, virtual_location, 0,
 				   "assertions are a deprecated extension");

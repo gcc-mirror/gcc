@@ -1856,11 +1856,12 @@ skip_whitespace (cpp_reader *pfile, cppchar_t c)
       /* Just \f \v or \0 left.  */
       else if (c == '\0')
 	saw_NUL = true;
-      else if (pfile->state.in_directive && CPP_PEDANTIC (pfile))
-	cpp_error_with_line (pfile, CPP_DL_PEDWARN, pfile->line_table->highest_line,
-			     CPP_BUF_COL (buffer),
-			     "%s in preprocessing directive",
-			     c == '\f' ? "form feed" : "vertical tab");
+      else if (pfile->state.in_directive)
+	cpp_pedwarning_with_line (pfile, CPP_W_PEDANTIC,
+				  pfile->line_table->highest_line,
+				  CPP_BUF_COL (buffer),
+				  "%s in preprocessing directive",
+				  c == '\f' ? "form feed" : "vertical tab");
 
       c = *buffer->cur++;
     }
@@ -2026,11 +2027,11 @@ maybe_va_opt_error (cpp_reader *pfile)
       if (!_cpp_in_system_header (pfile))
 	{
 	  if (CPP_OPTION (pfile, cplusplus))
-	    cpp_error (pfile, CPP_DL_PEDWARN,
-		       "__VA_OPT__ is not available until C++20");
+	    cpp_pedwarning (pfile, CPP_W_CXX20_EXTENSIONS,
+			    "__VA_OPT__ is not available until C++20");
 	  else
-	    cpp_error (pfile, CPP_DL_PEDWARN,
-		       "__VA_OPT__ is not available until C23");
+	    cpp_pedwarning (pfile, CPP_W_PEDANTIC,
+			    "__VA_OPT__ is not available until C23");
 	}
     }
   else if (!pfile->state.va_args_ok)
@@ -3903,8 +3904,9 @@ _cpp_lex_direct (cpp_reader *pfile)
 		   && CPP_PEDANTIC (pfile)
 		   && ! buffer->warned_cplusplus_comments)
 	    {
-	      if (cpp_error (pfile, CPP_DL_PEDWARN,
-			     "C++ style comments are not allowed in ISO C90"))
+	      if (cpp_pedwarning (pfile, CPP_W_PEDANTIC,
+				  "C++ style comments are not allowed "
+				  "in ISO C90"))
 		cpp_error (pfile, CPP_DL_NOTE,
 			   "(this will be reported only once per input file)");
 	      buffer->warned_cplusplus_comments = 1;

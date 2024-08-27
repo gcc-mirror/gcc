@@ -383,28 +383,37 @@ directive_diagnostics (cpp_reader *pfile, const directive *dir, int indented)
      -pedantic take precedence if both are applicable.  */
   if (! pfile->state.skipping)
     {
+      bool warned = false;
       if (dir->origin == EXTENSION
-	  && !(dir == &dtable[T_IMPORT] && CPP_OPTION (pfile, objc))
-	  && CPP_PEDANTIC (pfile))
-	cpp_error (pfile, CPP_DL_PEDWARN, "#%s is a GCC extension", dir->name);
-      else if (dir == &dtable[T_WARNING])
+	  && !(dir == &dtable[T_IMPORT] && CPP_OPTION (pfile, objc)))
+	warned
+	  = cpp_pedwarning (pfile, CPP_W_PEDANTIC, "#%s is a GCC extension",
+			    dir->name);
+      if (!warned && dir == &dtable[T_WARNING])
 	{
 	  if (CPP_PEDANTIC (pfile) && !CPP_OPTION (pfile, warning_directive))
 	    {
 	      if (CPP_OPTION (pfile, cplusplus))
-		cpp_error (pfile, CPP_DL_PEDWARN,
-			   "#%s before C++23 is a GCC extension", dir->name);
+		warned
+		  = cpp_pedwarning (pfile, CPP_W_CXX23_EXTENSIONS,
+				    "#%s before C++23 is a GCC extension",
+				    dir->name);
 	      else
-		cpp_error (pfile, CPP_DL_PEDWARN,
-			   "#%s before C23 is a GCC extension", dir->name);
+		warned
+		  = cpp_pedwarning (pfile, CPP_W_PEDANTIC,
+				    "#%s before C23 is a GCC extension",
+				    dir->name);
 	    }
-	  else if (CPP_OPTION (pfile, cpp_warn_c11_c23_compat) > 0)
-	    cpp_warning (pfile, CPP_W_C11_C23_COMPAT,
-			 "#%s before C23 is a GCC extension", dir->name);
+
+	  if (!warned && CPP_OPTION (pfile, cpp_warn_c11_c23_compat) > 0)
+	    warned = cpp_warning (pfile, CPP_W_C11_C23_COMPAT,
+				  "#%s before C23 is a GCC extension",
+				  dir->name);
 	}
-      else if (((dir->flags & DEPRECATED) != 0
-		|| (dir == &dtable[T_IMPORT] && !CPP_OPTION (pfile, objc)))
-	       && CPP_OPTION (pfile, cpp_warn_deprecated))
+
+      if (((dir->flags & DEPRECATED) != 0
+	   || (dir == &dtable[T_IMPORT] && !CPP_OPTION (pfile, objc)))
+	  && !warned)
 	cpp_warning (pfile, CPP_W_DEPRECATED,
                      "#%s is a deprecated GCC extension", dir->name);
     }
@@ -450,9 +459,9 @@ _cpp_handle_directive (cpp_reader *pfile, bool indented)
 
   if (was_parsing_args)
     {
-      if (CPP_OPTION (pfile, cpp_pedantic))
-	cpp_error (pfile, CPP_DL_PEDWARN,
-	     "embedding a directive within macro arguments is not portable");
+      cpp_pedwarning (pfile, CPP_W_PEDANTIC,
+		      "embedding a directive within macro arguments is not "
+		      "portable");
       pfile->state.parsing_args = 0;
       pfile->state.prevent_expansion = 0;
     }
@@ -477,10 +486,10 @@ _cpp_handle_directive (cpp_reader *pfile, bool indented)
   else if (dname->type == CPP_NUMBER && CPP_OPTION (pfile, lang) != CLK_ASM)
     {
       dir = &linemarker_dir;
-      if (CPP_PEDANTIC (pfile) && ! CPP_OPTION (pfile, preprocessed)
+      if (! CPP_OPTION (pfile, preprocessed)
 	  && ! pfile->state.skipping)
-	cpp_error (pfile, CPP_DL_PEDWARN,
-		   "style of line directive is a GCC extension");
+	cpp_pedwarning (pfile, CPP_W_PEDANTIC,
+			"style of line directive is a GCC extension");
     }
 
   if (dir)
@@ -1388,8 +1397,9 @@ do_line (cpp_reader *pfile)
       return;
     }
 
-  if (CPP_PEDANTIC (pfile) && (new_lineno == 0 || new_lineno > cap || wrapped))
-    cpp_error (pfile, CPP_DL_PEDWARN, "line number out of range");
+  if ((new_lineno == 0 || new_lineno > cap || wrapped)
+      && cpp_pedwarning (pfile, CPP_W_PEDANTIC, "line number out of range"))
+    ;
   else if (wrapped)
     cpp_error (pfile, CPP_DL_WARNING, "line number out of range");
 
@@ -2531,13 +2541,13 @@ do_elif (cpp_reader *pfile)
 	      && !pfile->state.skipping)
 	    {
 	      if (CPP_OPTION (pfile, cplusplus))
-		cpp_error (pfile, CPP_DL_PEDWARN,
-			   "#%s before C++23 is a GCC extension",
-			   pfile->directive->name);
+		cpp_pedwarning (pfile, CPP_W_CXX23_EXTENSIONS,
+				"#%s before C++23 is a GCC extension",
+				pfile->directive->name);
 	      else
-		cpp_error (pfile, CPP_DL_PEDWARN,
-			   "#%s before C23 is a GCC extension",
-			   pfile->directive->name);
+		cpp_pedwarning (pfile, CPP_W_PEDANTIC,
+				"#%s before C23 is a GCC extension",
+				pfile->directive->name);
 	    }
 	  pfile->state.skipping = 1;
 	}
@@ -2570,13 +2580,13 @@ do_elif (cpp_reader *pfile)
 		      && pfile->state.skipping != skip)
 		    {
 		      if (CPP_OPTION (pfile, cplusplus))
-			cpp_error (pfile, CPP_DL_PEDWARN,
-				   "#%s before C++23 is a GCC extension",
-				   pfile->directive->name);
+			cpp_pedwarning (pfile, CPP_W_CXX23_EXTENSIONS,
+					"#%s before C++23 is a GCC extension",
+					pfile->directive->name);
 		      else
-			cpp_error (pfile, CPP_DL_PEDWARN,
-				   "#%s before C23 is a GCC extension",
-				   pfile->directive->name);
+			cpp_pedwarning (pfile, CPP_W_PEDANTIC,
+					"#%s before C23 is a GCC extension",
+					pfile->directive->name);
 		    }
 		  pfile->state.skipping = skip;
 		}

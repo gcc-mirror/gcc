@@ -1196,13 +1196,13 @@ _cpp_arguments_ok (cpp_reader *pfile, cpp_macro *macro, const cpp_hashnode *node
 	      && ! CPP_OPTION (pfile, va_opt))
 	    {
 	      if (CPP_OPTION (pfile, cplusplus))
-		cpp_error (pfile, CPP_DL_PEDWARN,
-			   "ISO C++11 requires at least one argument "
-			   "for the \"...\" in a variadic macro");
+		cpp_pedwarning (pfile, CPP_W_CXX20_EXTENSIONS,
+				"ISO C++11 requires at least one argument "
+				"for the \"...\" in a variadic macro");
 	      else
-		cpp_error (pfile, CPP_DL_PEDWARN,
-			   "ISO C99 requires at least one argument "
-			   "for the \"...\" in a variadic macro");
+		cpp_pedwarning (pfile, CPP_W_PEDANTIC,
+				"ISO C99 requires at least one argument "
+				"for the \"...\" in a variadic macro");
 	    }
 	  return true;
 	}
@@ -2391,7 +2391,7 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 	       && ! macro->syshdr && ! _cpp_in_system_header (pfile))
 	{
 	  if (CPP_OPTION (pfile, cplusplus))
-	    cpp_pedwarning (pfile, CPP_W_PEDANTIC,
+	    cpp_pedwarning (pfile, CPP_W_VARIADIC_MACROS,
 			    "invoking macro %s argument %d: "
 			    "empty macro arguments are undefined"
 			    " in ISO C++98",
