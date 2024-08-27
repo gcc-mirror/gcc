@@ -3,7 +3,6 @@
 
 /* This test does not work when the truth type does not match vector type.  */
 /* { dg-additional-options "-march=armv8-a" { target aarch64_sve } } */
-/* { dg-xfail-run-if "truth type does not match vector type" { amdgcn-*-* } } */
 
 
 #include <stdint.h>
