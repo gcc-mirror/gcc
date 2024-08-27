@@ -3440,7 +3440,7 @@ assembly output.
 Passes if @var{symbol} is not defined as a hidden symbol in the test's
 assembly output.
 
-@item check-function-bodies @var{prefix} @var{terminator} [@var{options} [@{ target/xfail @var{selector} @}]]
+@item check-function-bodies @var{prefix} @var{terminator} [@var{options} [@{ target/xfail @var{selector} @} [@var{matched}]]]
 Looks through the source file for comments that give the expected assembly
 output for selected functions.  Each line of expected output starts with the
 prefix string @var{prefix} and the expected output for a function as a whole
@@ -3467,8 +3467,11 @@ Depending on the configuration (see
 @code{configure_check-function-bodies} in
 @file{gcc/testsuite/lib/scanasm.exp}), the test may discard from the
 compiler's assembly output directives such as @code{.cfi_startproc},
-local label definitions such as @code{.LFB0}, and more.
-It then matches the result against the expected
+local label definitions such as @code{.LFB0}, and more.  This behavior
+can be overridden using the optional @var{matched} argument, which
+specifies a regexp for lines that should not be discarded in this way.
+
+The test then matches the result against the expected
 output for a function as a single regular expression.  This means that
 later lines can use backslashes to refer back to @samp{(@dots{})}
 captures on earlier lines.  For example:
