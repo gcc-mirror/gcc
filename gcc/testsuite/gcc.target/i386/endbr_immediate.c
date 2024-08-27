@@ -2,7 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-fcf-protection -O2" } */
 /* { dg-final { scan-assembler-not "$-81915917" { target { ia32 } } } } */
-/* { dg-final { scan-assembler-not "$-98693133" { target { ! ia32 } } } } *
+/* { dg-final { scan-assembler-not "$-98693133" { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-not "$-423883778574778368" { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler "\[ \t\]*-81915917" { target { ia32 } } } } */
 /* { dg-final { scan-assembler "\[ \t\]*-98693133" { target { ! ia32 } } } } */
