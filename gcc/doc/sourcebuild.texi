@@ -3627,8 +3627,8 @@ stands for zero or more unmatched lines; the whitespace after
 @subsubsection Scan optimization dump files
 
 These commands are available for @var{kind} of @code{tree}, @code{ltrans-tree},
-@code{offload-tree}, @code{rtl}, @code{offload-rtl}, @code{ipa},
-@code{offload-ipa}, and @code{wpa-ipa}.
+@code{offload-tree}, @code{rtl}, @code{ltrans-rtl}, @code{offload-rtl},
+@code{ipa}, @code{offload-ipa}, and @code{wpa-ipa}.
 
 @table @code
 @item scan-@var{kind}-dump @var{regex} @var{suffix} [@{ target/xfail @var{selector} @}]

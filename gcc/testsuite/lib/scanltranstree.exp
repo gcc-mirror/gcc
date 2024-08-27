@@ -19,50 +19,44 @@
 
 load_lib scandump.exp
 
-# The first item in the list is an LTO equivalent of the second item
-# in the list; see the documentation of the second item for details.
-foreach { name scan type suffix } {
-    scan-ltrans-tree-dump scan-dump ltrans-tree t
-    scan-ltrans-tree-dump-not scan-dump-not ltrans-tree t
-    scan-ltrans-tree-dump-dem scan-dump-dem ltrans-tree t
-    scan-ltrans-tree-dump-dem-not scan-dump-dem-not ltrans-tree t
-} {
-    eval [string map [list @NAME@ $name \
-			   @SCAN@ $scan \
-			   @TYPE@ $type \
-			   @SUFFIX@ $suffix] {
-        proc @NAME@ { args } {
-	    if { [llength $args] < 2 } {
-		error "@NAME@: too few arguments"
-		return
+# Define scan-ltrans-{tree,rtl}-dump{,-not,-dem,-dem-not}.  These are LTO
+# variants of the corresponding functions without -ltrans in the name.
+foreach ir { tree rtl } {
+    foreach modifier { {} -not -dem -dem-not } {
+	eval [string map [list @NAME@ scan-ltrans-$ir-dump$modifier \
+			       @SCAN@ scan$modifier \
+			       @TYPE@ ltrans-$ir \
+			       @SUFFIX@ [string index $ir 0]] {
+	    proc @NAME@ { args } {
+		if { [llength $args] < 2 } {
+		    error "@NAME@: too few arguments"
+		    return
+		}
+		if { [llength $args] > 3 } {
+		    error "@NAME@: too many arguments"
+		    return
+		}
+		if { [llength $args] >= 3 } {
+		    @SCAN@ @TYPE@ [lindex $args 0] \
+			"\[0-9\]\[0-9\]\[0-9\]@SUFFIX@.[lindex $args 1]" \
+			".ltrans0.ltrans" \
+			[lindex $args 2]
+		} else {
+		    @SCAN@ @TYPE@ [lindex $args 0] \
+			"\[0-9\]\[0-9\]\[0-9\]@SUFFIX@.[lindex $args 1]" \
+			".ltrans0.ltrans"
+		}
 	    }
-	    if { [llength $args] > 3 } {
-		error "@NAME@: too many arguments"
-		return
-	    }
-	    if { [llength $args] >= 3 } {
-		@SCAN@ @TYPE@ [lindex $args 0] \
-		    "\[0-9\]\[0-9\]\[0-9\]@SUFFIX@.[lindex $args 1]" \
-		    ".ltrans0.ltrans" \
-		    [lindex $args 2]
-	    } else {
-		@SCAN@ @TYPE@ [lindex $args 0] \
-		    "\[0-9\]\[0-9\]\[0-9\]@SUFFIX@.[lindex $args 1]" \
-		    ".ltrans0.ltrans"
-	    }
-        }
-    }]
+	}]
+    }
 }
 
-# The first item in the list is an LTO equivalent of the second item
-# in the list; see the documentation of the second item for details.
-foreach { name scan type suffix } {
-    scan-ltrans-tree-dump-times scan-dump-times ltrans-tree t
-} {
-    eval [string map [list @NAME@ $name \
-			   @SCAN@ $scan \
-			   @TYPE@ $type \
-			   @SUFFIX@ $suffix] {
+# Define scan-ltrans-{tree,rtl}-dump-times.  These are LTO variants of the
+# corresponding functions without -ltrans in the name.
+foreach ir { tree rtl } {
+    eval [string map [list @NAME@ scan-ltrans-$ir-dump-times \
+			   @TYPE@ ltrans-$ir \
+			   @SUFFIX@ [string index $ir 0]] {
 	proc @NAME@ { args } {
 	    if { [llength $args] < 3 } {
 		error "@NAME@: too few arguments"
@@ -73,11 +67,11 @@ foreach { name scan type suffix } {
 		return
 	    }
 	    if { [llength $args] >= 4 } {
-		@SCAN@ "@TYPE@" [lindex $args 0] [lindex $args 1] \
+		scan-dump-times "@TYPE@" [lindex $args 0] [lindex $args 1] \
 		    "\[0-9\]\[0-9\]\[0-9\]@SUFFIX@.[lindex $args 2]" \
 		    ".ltrans0.ltrans" [lindex $args 3]
 	    } else {
-		@SCAN@ "@TYPE@" [lindex $args 0] [lindex $args 1] \
+		scan-dump-times "@TYPE@" [lindex $args 0] [lindex $args 1] \
 		    "\[0-9\]\[0-9\]\[0-9\]@SUFFIX@.[lindex $args 2]" \
 		    ".ltrans0.ltrans"
 	    }
