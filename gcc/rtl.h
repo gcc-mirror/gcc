@@ -2225,11 +2225,21 @@ struct address_info {
        reloading.
 
      - *BASE is a variable expression representing a base address.
-       It contains exactly one REG, SUBREG or MEM, pointed to by BASE_TERM.
+       It contains exactly one "term", pointed to by BASE_TERM.
+       This term can be one of the following:
+
+       (1) a REG, or a SUBREG of a REG
+       (2) an eliminated REG (a PLUS of (1) and a constant)
+       (3) a MEM, or a SUBREG of a MEM
+       (4) a SCRATCH
+
+       This term is the one that base_reg_class constrains.
 
      - *INDEX is a variable expression representing an index value.
        It may be a scaled expression, such as a MULT.  It has exactly
-       one REG, SUBREG or MEM, pointed to by INDEX_TERM.
+       one "term", pointed to by INDEX_TERM.  The possible terms are
+       the same as for BASE.  This term is the one that index_reg_class
+       constrains.
 
      - *DISP is a constant, possibly mutated.  DISP_TERM points to the
        unmutated RTX_CONST_OBJ.  */

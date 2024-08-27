@@ -6494,6 +6494,25 @@ binary_scale_code_p (enum rtx_code code)
           || code == ROTATERT);
 }
 
+/* Return true if X appears to be a valid base or index term.  */
+static bool
+valid_base_or_index_term_p (rtx x)
+{
+  if (GET_CODE (x) == SCRATCH)
+    return true;
+  /* Handle what appear to be eliminated forms of a register.  If we reach
+     here, the elimination occurs outside of the outermost PLUS tree,
+     and so the elimination offset cannot be treated as a displacement
+     of the main address.  Instead, we need to treat the whole PLUS as
+     the base or index term.  The address can only be made legitimate by
+     reloading the PLUS.  */
+  if (GET_CODE (x) == PLUS && CONST_SCALAR_INT_P (XEXP (x, 1)))
+    x = XEXP (x, 0);
+  if (GET_CODE (x) == SUBREG)
+    x = SUBREG_REG (x);
+  return REG_P (x) || MEM_P (x);
+}
+
 /* If *INNER can be interpreted as a base, return a pointer to the inner term
    (see address_info).  Return null otherwise.  */
 
@@ -6502,10 +6521,7 @@ get_base_term (rtx *inner)
 {
   if (GET_CODE (*inner) == LO_SUM)
     inner = strip_address_mutations (&XEXP (*inner, 0));
-  if (REG_P (*inner)
-      || MEM_P (*inner)
-      || GET_CODE (*inner) == SUBREG
-      || GET_CODE (*inner) == SCRATCH)
+  if (valid_base_or_index_term_p (*inner))
     return inner;
   return 0;
 }
@@ -6519,10 +6535,7 @@ get_index_term (rtx *inner)
   /* At present, only constant scales are allowed.  */
   if (binary_scale_code_p (GET_CODE (*inner)) && CONSTANT_P (XEXP (*inner, 1)))
     inner = strip_address_mutations (&XEXP (*inner, 0));
-  if (REG_P (*inner)
-      || MEM_P (*inner)
-      || GET_CODE (*inner) == SUBREG
-      || GET_CODE (*inner) == SCRATCH)
+  if (valid_base_or_index_term_p (*inner))
     return inner;
   return 0;
 }
