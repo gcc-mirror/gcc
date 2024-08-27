@@ -47,6 +47,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "asan.h"
 #include "gimplify.h"
+#include "print-tree.h"
+#include "ipa-utils.h"
 
 /* In some instances a tree and a gimple need to be stored in a same table,
    i.e. in hash tables. This is a structure to do this. */
@@ -2270,6 +2272,25 @@ make_eh_dispatch_edges (geh_dispatch *stmt)
 
   return true;
 }
+bool
+same_or_derived_type (tree t1, tree t2)
+{
+  t1 = TYPE_MAIN_VARIANT (t1);
+  t2 = TYPE_MAIN_VARIANT (t2);
+  if (t1 == t2)
+    return true;
+  while ((TREE_CODE (t1) == POINTER_TYPE || TREE_CODE (t1) == REFERENCE_TYPE)
+	 && TREE_CODE (t1) == TREE_CODE (t2))
+  {
+    t1 = TYPE_MAIN_VARIANT (TREE_TYPE (t1));
+    t2 = TYPE_MAIN_VARIANT (TREE_TYPE (t2));
+  }
+  if (t1 == t2)
+    return true;
+  if (!AGGREGATE_TYPE_P (t1) || !AGGREGATE_TYPE_P (t2))
+    return false;
+  return odr_equivalent_or_derived_p (t1, t2);
+}
 
 // Check if a landing pad can handle any of the given exception types
 bool match_lp(eh_landing_pad lp, vec<tree> *exception_types) {
@@ -2282,11 +2303,14 @@ bool match_lp(eh_landing_pad lp, vec<tree> *exception_types) {
         while (catch_handler) {
             tree type_list = catch_handler->type_list;
 
+	    if (!type_list)
+	      return true;
+
             for (tree t = type_list; t; t = TREE_CHAIN(t)) {
                 tree type = TREE_VALUE(t);
                 for (unsigned i = 0; i < exception_types->length(); ++i) {
                   // match found or a catch-all handler (NULL)
-                    if (type == (*exception_types)[i] || !type) {
+                    if (!type || same_or_derived_type ((*exception_types)[i], type)) {
                         return true;
                     }
                 }
