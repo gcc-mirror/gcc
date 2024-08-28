@@ -4323,6 +4323,11 @@ namespace __format
     constexpr void
     basic_format_parse_context<_CharT>::check_dynamic_spec(size_t __id) noexcept
     {
+      // This call enforces the Mandates: condition that _Ts contains valid
+      // types and each type appears at most once. It could be a static_assert
+      // but this way failures give better diagnostics, due to calling the
+      // non-constexpr __invalid_dynamic_spec function.
+      [[maybe_unused]]
       constexpr bool __ok = __check_dynamic_spec_types<_Ts...>();
 
       if consteval {
