@@ -761,6 +761,8 @@ expand_inline_asm_strings (InlineAsmContext &inline_asm_ctx)
   auto &inline_asm = inline_asm_ctx.inline_asm;
 
   auto str_vec = inline_asm.get_template_strs ();
+
+  decltype (str_vec) resulting_template_vec;
   for (auto &template_str : str_vec)
     {
       /*std::cout << template_str.symbol << std::endl;*/
@@ -769,20 +771,57 @@ expand_inline_asm_strings (InlineAsmContext &inline_asm_ctx)
 					  Fmt::ffi::ParseMode::InlineAsm);
       auto pieces_vec = pieces.get_pieces ();
 
+      std::string transformed_template_str = "";
       for (size_t i = 0; i < pieces_vec.size (); i++)
 	{
 	  auto piece = pieces_vec[i];
 	  if (piece.tag == Fmt::ffi::Piece::Tag::String)
 	    {
+	      transformed_template_str += piece.string._0.to_string ();
 	    }
-	  /*std::cout << "       " << i << ": " << piece.string._0.to_string
-	   * ()*/
-	  /*   << std::endl;*/
+	  else if (piece.tag == Fmt::ffi::Piece::Tag::NextArgument)
+	    {
+	      /*    std::cout << "       " << i << ": "*/
+	      /*<< piece.next_argument._0.to_string () << std::endl;*/
+
+	      auto next_argument = piece.next_argument._0;
+	      switch (piece.next_argument._0.position.tag)
+		{
+		  case Fmt::ffi::Position::Tag::ArgumentImplicitlyIs: {
+		    auto idx = next_argument.position.argument_implicitly_is._0;
+		    /*auto trait = next_argument.format;*/
+		    /*auto arg = arguments.at (idx);*/
+
+		    /* // FIXME(Arthur): This API sucks*/
+		    /* rust_assert (arg.get_kind ().kind*/
+		    /*== AST::FormatArgumentKind::Kind::Normal);*/
+		    /**/
+		    /* args.push_back ({arg.get_expr ().clone_expr (),
+		     * trait});*/
+
+		    transformed_template_str += "%" + std::to_string (idx);
+		    /*std::cout << "argument implicitly is: " << idx <<
+		     * std::endl;*/
+		    /*std::cout << "trait: " << trait.to_string () <<
+		     * std::endl;*/
+		    /*std::cout << "arg: " << arg.to_string () << std::endl;*/
+		  }
+		  break;
+		case Fmt::ffi::Position::Tag::ArgumentIs:
+		case Fmt::ffi::Position::Tag::ArgumentNamed:
+		  rust_sorry_at (inline_asm.get_locus (),
+				 "unhandled argument position specifier");
+		  break;
+		}
+	    }
 	}
+      template_str.symbol = transformed_template_str;
     }
 
+  inline_asm.template_strs = str_vec;
   return inline_asm_ctx;
 }
+
 tl::optional<AST::Fragment>
 parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
 	   AST::InvocKind semicolon, AST::AsmKind is_global_asm)
@@ -791,7 +830,8 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
   // We first parse all formatted strings. If we fail, then we return
   // tl::nullopt
 
-  // We then parse the asm arguments. If we fail, then we return tl::nullopt
+  // We then parse the asm arguments. If we fail, then we return
+  // tl::nullopt
 
   // We then validate. If we fail, then we return tl::nullopt
 
@@ -808,9 +848,10 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
 			     .and_then (parse_asm_arg)
 			     .and_then (validate);
 
-  // TODO: I'm putting the validation here because the rust reference put it
-  // here Per Arthur's advice we would actually do the validation in a different
-  // stage. and visit on the InlineAsm AST instead of it's context.
+  // TODO: I'm putting the validation here because the rust reference put
+  // it here Per Arthur's advice we would actually do the validation in a
+  // different stage. and visit on the InlineAsm AST instead of it's
+  // context.
   auto is_valid = (bool) resulting_context;
   if (is_valid)
     {
@@ -822,8 +863,9 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
 
       std::vector<AST::SingleASTNode> single_vec = {};
 
-      // If the macro invocation has a semicolon (`asm!("...");`), then we need
-      // to make it a statement. This way, it will be expanded properly.
+      // If the macro invocation has a semicolon (`asm!("...");`), then we
+      // need to make it a statement. This way, it will be expanded
+      // properly.
       if (semicolon == AST::InvocKind::Semicoloned)
 	single_vec.emplace_back (AST::SingleASTNode (
 	  Rust::make_unique<AST::ExprStmt> (std::move (node), invoc_locus,
@@ -846,7 +888,8 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
 tl::expected<InlineAsmContext, InlineAsmParseError>
 parse_format_strings (InlineAsmContext inline_asm_ctx)
 {
-  // Parse the first ever formatted string, success or not, will skip 1 token
+  // Parse the first ever formatted string, success or not, will skip 1
+  // token
   auto &parser = inline_asm_ctx.parser;
   auto last_token_id = inline_asm_ctx.last_token_id;
   auto fm_string = parse_format_string (inline_asm_ctx);
@@ -875,8 +918,8 @@ parse_format_strings (InlineAsmContext inline_asm_ctx)
 	{
 	  break;
 	}
-      // Ok after the comma is good, we better be parsing correctly everything
-      // in here, which is formatted string in ABNF
+      // Ok after the comma is good, we better be parsing correctly
+      // everything in here, which is formatted string in ABNF
       inline_asm_ctx.consumed_comma_without_formatted_string = false;
 
       token = parser.peek_current_token ();

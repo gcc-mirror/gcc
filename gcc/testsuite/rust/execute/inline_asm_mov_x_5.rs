@@ -1,9 +1,11 @@
-#![feature(rustc_attrs)]
+/* { dg-output "5\r*\n" }*/
 
+#![feature(rustc_attrs)]
 #[rustc_builtin_macro]
 macro_rules! asm {
     () => {};
 }
+
 extern "C" {
     fn printf(s: *const i8, ...);
 }
@@ -15,5 +17,6 @@ fn main() {
             "mov {}, 5",
             out(reg) _x
         );
+        printf("%d\n\0" as *const str as *const i8, _x);
     }
 }

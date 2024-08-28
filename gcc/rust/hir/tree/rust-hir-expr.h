@@ -4148,8 +4148,8 @@ public:
 
   bool is_simple_asm ()
   {
-    // TODO: Check back later to determine how an InlineAsm is simple.
-    return true;
+    // INFO: A simple asm is an asm that does not have any operands
+    return this->operands.size () == 0;
   }
 
   bool is_inline_asm ()
