@@ -589,7 +589,8 @@ Lexer::build_token ()
 		  if (current_char.is_eof ())
 		    {
 		      rust_error_at (
-			loc, "unexpected EOF while looking for end of comment");
+			loc, ErrorCode::E0758,
+			"unexpected EOF while looking for end of comment");
 		      break;
 		    }
 		  str += current_char;
@@ -644,7 +645,8 @@ Lexer::build_token ()
 		  if (current_char.is_eof ())
 		    {
 		      rust_error_at (
-			loc, "unexpected EOF while looking for end of comment");
+			loc, ErrorCode::E0758,
+			"unexpected EOF while looking for end of comment");
 		      break;
 		    }
 
@@ -708,7 +710,8 @@ Lexer::build_token ()
 		  if (current_char.is_eof ())
 		    {
 		      rust_error_at (
-			loc, "unexpected EOF while looking for end of comment");
+			loc, ErrorCode::E0758,
+			"unexpected EOF while looking for end of comment");
 		      break;
 		    }
 

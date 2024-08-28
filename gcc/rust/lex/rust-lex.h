@@ -115,14 +115,15 @@ private:
   // Request new Location for current column in line_table
   location_t get_current_location ();
 
-  // Skips the current input char.
+  // Skips the current input character.
   void skip_input ();
-  // Advances current input char to n + 1 chars ahead of current position.
+  // Advances current input character to n + 1 characters ahead of current
+  // position.
   void skip_input (int n);
 
-  // Peeks the current char.
+  // Peeks the current character.
   Codepoint peek_input ();
-  // Returns char n bytes ahead of current position.
+  // Returns character n characters ahead of current position.
   Codepoint peek_input (int n);
 
   // Classifies keyword (i.e. gets id for keyword).
