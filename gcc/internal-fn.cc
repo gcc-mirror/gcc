@@ -5332,11 +5332,11 @@ expand_POPCOUNT (internal_fn fn, gcall *stmt)
   start_sequence ();
   rtx op0 = expand_normal (arg);
   rtx argm1 = expand_simple_binop (mode, PLUS, op0, constm1_rtx, NULL_RTX,
-				   1, OPTAB_DIRECT);
+				   1, OPTAB_WIDEN);
   if (argm1 == NULL_RTX)
     goto fail;
   rtx argxorargm1 = expand_simple_binop (mode, nonzero_arg ? AND : XOR, op0,
-					 argm1, NULL_RTX, 1, OPTAB_DIRECT);
+					 argm1, NULL_RTX, 1, OPTAB_WIDEN);
   if (argxorargm1 == NULL_RTX)
     goto fail;
   rtx cmp;
