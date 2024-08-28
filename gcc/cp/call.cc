@@ -4319,12 +4319,17 @@ maybe_init_list_as_array (tree elttype, tree init)
   /* Check with a stub expression to weed out special cases, and check whether
      we call the same function for direct-init as copy-list-init.  */
   conversion_obstack_sentinel cos;
+  init_elttype = cp_build_qualified_type (init_elttype, TYPE_QUAL_CONST);
   tree arg = build_stub_object (init_elttype);
   conversion *c = implicit_conversion (elttype, init_elttype, arg, false,
 				       LOOKUP_NORMAL, tf_none);
   if (c && c->kind == ck_rvalue)
     c = next_conversion (c);
   if (!c || c->kind != ck_user)
+    return NULL_TREE;
+  /* Check that we actually can perform the conversion.  */
+  if (convert_like (c, arg, tf_none) == error_mark_node)
+    /* Let the normal code give the error.  */
     return NULL_TREE;
 
   tree first = CONSTRUCTOR_ELT (init, 0)->value;
@@ -4358,7 +4363,6 @@ maybe_init_list_as_array (tree elttype, tree init)
   if (!is_xible (INIT_EXPR, elttype, copy_argtypes))
     return NULL_TREE;
 
-  init_elttype = cp_build_qualified_type (init_elttype, TYPE_QUAL_CONST);
   tree arr = build_array_of_n_type (init_elttype, CONSTRUCTOR_NELTS (init));
   arr = finish_compound_literal (arr, init, tf_none);
   DECL_MERGEABLE (TARGET_EXPR_SLOT (arr)) = true;
