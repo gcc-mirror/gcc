@@ -33,6 +33,7 @@ with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Errout;         use Errout;
 with Eval_Fat;       use Eval_Fat;
+with Exp_Intr;       use Exp_Intr;
 with Exp_Util;       use Exp_Util;
 with Freeze;         use Freeze;
 with Lib;            use Lib;
@@ -191,7 +192,7 @@ package body Sem_Eval is
    --  (it is an error to make the call if these conditions are not met).
 
    procedure Eval_Intrinsic_Call (N : Node_Id; E : Entity_Id);
-   --  Evaluate a call N to an intrinsic subprogram E.
+   --  Evaluate a call N to an intrinsic subprogram E
 
    function Find_Universal_Operator_Type (N : Node_Id) return Entity_Id;
    --  Check whether an arithmetic operation with universal operands which is a
@@ -2888,13 +2889,43 @@ package body Sem_Eval is
       end if;
 
       case Nam is
-         when Name_Shift_Left  =>
+
+         --  Compilation date and time are the same for the entire compilation
+         --  unit, so we can replace them with static strings.
+
+         when Name_Compilation_ISO_Date
+            | Name_Compilation_Date
+            | Name_Compilation_Time
+         =>
+            Expand_Source_Info (N, Nam);
+
+         --  Calls to other intrinsics from the GNAT.Source_Info package give
+         --  different results, depending on where they occur. In particular,
+         --  for generics their results depend on where those generics are
+         --  instantiated; same for default values of subprogram parameters.
+         --  Those calls will behave as nonstatic, and we postpone their
+         --  rewriting until expansion.
+
+         when Name_Enclosing_Entity
+            | Name_File
+            | Name_Line
+            | Name_Source_Location
+         =>
+            if Inside_A_Generic
+              or else In_Spec_Expression
+            then
+               null;
+            else
+               Expand_Source_Info (N, Nam);
+            end if;
+
+         when Name_Shift_Left =>
             Eval_Shift (N, E, N_Op_Shift_Left);
          when Name_Shift_Right =>
             Eval_Shift (N, E, N_Op_Shift_Right);
          when Name_Shift_Right_Arithmetic =>
             Eval_Shift (N, E, N_Op_Shift_Right_Arithmetic);
-         when others           =>
+         when others =>
             null;
       end case;
    end Eval_Intrinsic_Call;
