@@ -918,6 +918,13 @@ public:
      the definition of exp_index_transform for details about the
      transformation.  */
   bool m_exp_index_transform_applied;
+
+  /* If switch conversion decided exponential index transform is viable, here
+     will be stored the types to which index variable has to be converted
+     before the logarithm and the "is power of 2" operations which are part of
+     the transform.  */
+  tree m_exp_index_transform_log2_type;
+  tree m_exp_index_transform_pow2p_type;
 };
 
 void

@@ -64,64 +64,147 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 using namespace tree_switch_conversion;
 
 /* Does the target have optabs needed to efficiently compute exact base two
-   logarithm of a value with type TYPE?
+   logarithm of a variable with type TYPE?
 
-   See gen_log2.  */
+   If yes, returns TYPE.  If no, returns NULL_TREE.  May also return another
+   type.  This indicates that logarithm of the variable can be computed but
+   only after it is converted to this type.
 
-static bool
+   Also see gen_log2.  */
+
+static tree
 can_log2 (tree type, optimization_type opt_type)
 {
-  /* Check if target supports FFS.  */
-  return direct_internal_fn_supported_p (IFN_FFS, type, opt_type);
+  /* Check if target supports FFS for given type.  */
+  if (direct_internal_fn_supported_p (IFN_FFS, type, opt_type))
+    return type;
+
+  /* Check if target supports FFS for some type we could convert to.  */
+  int prec = TYPE_PRECISION (type);
+  int i_prec = TYPE_PRECISION (integer_type_node);
+  int li_prec = TYPE_PRECISION (long_integer_type_node);
+  int lli_prec = TYPE_PRECISION (long_long_integer_type_node);
+  tree new_type;
+  if (prec <= i_prec
+      && direct_internal_fn_supported_p (IFN_FFS, integer_type_node, opt_type))
+    new_type = integer_type_node;
+  else if (prec <= li_prec
+	   && direct_internal_fn_supported_p (IFN_FFS, long_integer_type_node,
+					      opt_type))
+    new_type = long_integer_type_node;
+  else if (prec <= lli_prec
+	   && direct_internal_fn_supported_p (IFN_FFS,
+					      long_long_integer_type_node,
+					      opt_type))
+    new_type = long_long_integer_type_node;
+  else
+    return NULL_TREE;
+  return new_type;
 }
 
 /* Assume that OP is a power of two.  Build a sequence of gimple statements
    efficiently computing the base two logarithm of OP using special optabs.
    Return the ssa name represeting the result of the logarithm through RESULT.
 
-   Should only be used if target supports the needed optabs.  See can_log2.  */
+   Before computing the logarithm, OP may have to be converted to another type.
+   This should be specified in TYPE.  Use can_log2 to decide what this type
+   should be.
+
+   Should only be used if can_log2 doesn't reject the type of OP.  */
 
 static gimple_seq
-gen_log2 (tree op, location_t loc, tree *result)
+gen_log2 (tree op, location_t loc, tree *result, tree type)
 {
-  tree type = TREE_TYPE (op);
   gimple_seq stmts = NULL;
   gimple_stmt_iterator gsi = gsi_last (stmts);
-  tree tmp1 = gimple_build (&gsi, false, GSI_NEW_STMT, loc, IFN_FFS, type, op);
-  tree tmp2 = gimple_build (&gsi, false, GSI_NEW_STMT, loc, MINUS_EXPR, type,
-			    tmp1, build_one_cst (type));
-  *result = tmp2;
+
+  tree orig_type = TREE_TYPE (op);
+  tree tmp1;
+  if (type != orig_type)
+    tmp1 = gimple_convert (&gsi, false, GSI_NEW_STMT, loc, type, op);
+  else
+    tmp1 = op;
+  /* Build FFS (op) - 1.  */
+  tree tmp2 = gimple_build (&gsi, false, GSI_NEW_STMT, loc, IFN_FFS, orig_type,
+			    tmp1);
+  tree tmp3 = gimple_build (&gsi, false, GSI_NEW_STMT, loc, MINUS_EXPR,
+			    orig_type, tmp2, build_one_cst (orig_type));
+  *result = tmp3;
   return stmts;
+}
+
+/* Is it possible to efficiently check that a value of TYPE is a power of 2?
+
+   If yes, returns TYPE.  If no, returns NULL_TREE.  May also return another
+   type.  This indicates that logarithm of the variable can be computed but
+   only after it is converted to this type.
+
+   Also see gen_pow2p.  */
+
+static tree
+can_pow2p (tree type)
+{
+  /* __builtin_popcount supports the unsigned type or its long and long long
+     variants.  Choose the smallest out of those that can still fit TYPE.  */
+  int prec = TYPE_PRECISION (type);
+  int i_prec = TYPE_PRECISION (unsigned_type_node);
+  int li_prec = TYPE_PRECISION (long_unsigned_type_node);
+  int lli_prec = TYPE_PRECISION (long_long_unsigned_type_node);
+
+  if (prec <= i_prec)
+    return unsigned_type_node;
+  else if (prec <= li_prec)
+    return long_unsigned_type_node;
+  else if (prec <= lli_prec)
+    return long_long_unsigned_type_node;
+  else
+    return NULL_TREE;
 }
 
 /* Build a sequence of gimple statements checking that OP is a power of 2.  Use
    special optabs if target supports them.  Return the result as a
-   boolen_type_node ssa name through RESULT.  */
+   boolean_type_node ssa name through RESULT.  Assumes that OP's value will
+   be non-negative.  The generated check may give arbitrary answer for negative
+   values.
+
+   Before computing the check, OP may have to be converted to another type.
+   This should be specified in TYPE.  Use can_pow2p to decide what this type
+   should be.
+
+   Should only be used if can_pow2p returns true for type of OP.  */
 
 static gimple_seq
-gen_pow2p (tree op, location_t loc, optimization_type opt_type, tree *result)
+gen_pow2p (tree op, location_t loc, tree *result, tree type)
 {
-  tree type = TREE_TYPE (op);
   gimple_seq stmts = NULL;
   gimple_stmt_iterator gsi = gsi_last (stmts);
-  if (direct_internal_fn_supported_p (IFN_POPCOUNT, type, opt_type))
-    {
-      tree tmp = gimple_build (&gsi, false, GSI_NEW_STMT, loc, IFN_POPCOUNT,
-			       type, op);
-      *result = gimple_build (&gsi, false, GSI_NEW_STMT, loc, EQ_EXPR,
-			      boolean_type_node, tmp, build_one_cst (type));
-    }
+
+  built_in_function fn;
+  if (type == unsigned_type_node)
+    fn = BUILT_IN_POPCOUNT;
+  else if (type == long_unsigned_type_node)
+    fn = BUILT_IN_POPCOUNTL;
   else
     {
-      tree tmp1 = gimple_build (&gsi, false, GSI_NEW_STMT, loc, NEGATE_EXPR,
-				type, op);
-      tree tmp2 = gimple_build (&gsi, false, GSI_NEW_STMT, loc, BIT_AND_EXPR,
-				type, op, tmp1);
-      *result = gimple_build (&gsi, false, GSI_NEW_STMT, loc, EQ_EXPR,
-			      boolean_type_node, tmp2, op);
+      fn = BUILT_IN_POPCOUNTLL;
+      gcc_checking_assert (type == long_long_unsigned_type_node);
     }
+
+  tree orig_type = TREE_TYPE (op);
+  tree tmp1;
+  if (type != orig_type)
+    tmp1 = gimple_convert (&gsi, false, GSI_NEW_STMT, loc, type, op);
+  else
+    tmp1 = op;
+  /* Build __builtin_popcount{l,ll} (op) == 1.  */
+  tree tmp2 = gimple_build (&gsi, false, GSI_NEW_STMT, loc,
+			    as_combined_fn (fn), integer_type_node, tmp1);
+  *result = gimple_build (&gsi, false, GSI_NEW_STMT, loc, EQ_EXPR,
+			  boolean_type_node, tmp2,
+			  build_one_cst (integer_type_node));
   return stmts;
 }
+
 
 /* Constructor.  */
 
@@ -285,7 +368,11 @@ switch_conversion::is_exp_index_transform_viable (gswitch *swtch)
   unsigned num_labels = gimple_switch_num_labels (swtch);
 
   optimization_type opt_type = bb_optimization_type (swtch_bb);
-  if (!can_log2 (index_type, opt_type))
+  m_exp_index_transform_log2_type = can_log2 (index_type, opt_type);
+  if (!m_exp_index_transform_log2_type)
+    return false;
+  m_exp_index_transform_pow2p_type = can_pow2p (index_type);
+  if (!m_exp_index_transform_pow2p_type)
     return false;
 
   /* Check that each case label corresponds only to one value
@@ -380,8 +467,8 @@ switch_conversion::exp_index_transform (gswitch *swtch)
   new_edge2->probability = profile_probability::even ();
 
   tree tmp;
-  optimization_type opt_type = bb_optimization_type (cond_bb);
-  gimple_seq stmts = gen_pow2p (index, UNKNOWN_LOCATION, opt_type, &tmp);
+  gimple_seq stmts = gen_pow2p (index, UNKNOWN_LOCATION, &tmp,
+				m_exp_index_transform_pow2p_type);
   gsi = gsi_last_bb (cond_bb);
   gsi_insert_seq_after (&gsi, stmts, GSI_LAST_NEW_STMT);
   gcond *stmt_cond = gimple_build_cond (NE_EXPR, tmp, boolean_false_node,
@@ -402,7 +489,8 @@ switch_conversion::exp_index_transform (gswitch *swtch)
     }
 
   /* Insert a sequence of stmts that takes the log of the index variable.  */
-  stmts = gen_log2 (index, UNKNOWN_LOCATION, &tmp);
+  stmts = gen_log2 (index, UNKNOWN_LOCATION, &tmp,
+		    m_exp_index_transform_log2_type);
   gsi = gsi_after_labels (swtch_bb);
   gsi_insert_seq_before (&gsi, stmts, GSI_SAME_STMT);
 
