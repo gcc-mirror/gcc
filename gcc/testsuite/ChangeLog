@@ -1,3 +1,570 @@
+2024-08-27  Andi Kleen  <ak@gcc.gnu.org>
+
+	* gcc.dg/vect/vect-switch-ifcvt-1.c: Use vect_condition to
+	check if vectorizing conditions is supported for target.
+
+2024-08-27  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/109867
+	* g++.dg/coroutines/torture/pr109867.C: New test.
+
+2024-08-27  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/105483
+	* g++.dg/parse/error36.C: Adjust test expectation.
+	* g++.dg/tc1/dr147.C: Likewise.
+	* g++.old-deja/g++.other/typename1.C: Likewise.
+	* g++.dg/diagnostic/pr105483.C: New test.
+
+2024-08-27  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/armv8_1m-fp64-move-1.c: Update expected code.
+
+2024-08-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/pr116174.c: Add the missing */.
+
+2024-08-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/pr116174.c: Use check-function-bodies.
+	* lib/scanasm.exp (parse_function_bodies): Append the line if
+	$up_config(matched) matches the line.
+	(check-function-bodies): Add an argument for matched.  Set
+	up_config(matched) to $matched.  Append the expected line without
+	$config(line_prefix) to function_regexp if it starts with ".L".
+
+2024-08-27  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.dg/pr108757-1.c: Fixed dg-comment.
+	* gcc.dg/pr71071.c: Likewise.
+	* gcc.dg/tree-ssa/noreturn-1.c: Likewise.
+	* gcc.dg/tree-ssa/pr56727.c: Likewise.
+	* gcc.target/arc/loop-2.cpp: Likewise.
+	* gcc.target/arc/loop-3.c: Likewise.
+	* gcc.target/arc/pr9001107555.c: Likewise.
+	* gcc.target/arm/armv8_1m-fp16-move-1.c: Likewise.
+	* gcc.target/arm/armv8_1m-fp32-move-1.c: Likewise.
+	* gcc.target/arm/armv8_1m-fp64-move-1.c: Likewise.
+	* gcc.target/i386/amxint8-asmatt-1.c: Likewise.
+	* gcc.target/i386/amxint8-asmintel-1.c: Likewise.
+	* gcc.target/i386/avx512bw-vpermt2w-1.c: Likewise.
+	* gcc.target/i386/avx512vbmi-vpermt2b-1.c: Likewise.
+	* gcc.target/i386/endbr_immediate.c: Likewise.
+	* gcc.target/i386/pr96539.c: Likewise.
+	* gcc.target/i386/sse2-pr98461-2.c: Likewise.
+	* gcc.target/m68k/pr39726.c: Likewise.
+	* gcc.target/m68k/pr52076-1.c: Likewise.
+	* gcc.target/m68k/pr52076-2.c: Likewise.
+	* gcc.target/nvptx/v2si-vec-set-extract.c: Likewise.
+
+2024-08-27  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.dg/signbit-5.c: Un-XFAIL for GCN.
+
+2024-08-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/116482
+	* g++.dg/coroutines/pr116482.C: New test.
+
+2024-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116460
+	* g++.dg/torture/pr116460.C: New testcase.
+
+2024-08-27  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR other/116462
+	* gcc.dg/debug/dwarf2/inline7.c: Switch to -Os optimization.
+
+2024-08-27  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat_u_sub_imm-5.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-5_1.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-5_2.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-6.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-6_1.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-6_2.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-7.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-7_1.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-7_2.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-8.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-run-5.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-run-6.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-run-7.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-run-8.c: New test.
+
+2024-08-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/99243
+	* g++.dg/modules/map-2.C: Prune additional fatal error message.
+	* g++.dg/modules/inc-xlate-4_a.H: New test.
+	* g++.dg/modules/inc-xlate-4_b.H: New test.
+	* g++.dg/modules/inc-xlate-4_c.H: New test.
+
+2024-08-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/110980
+	* g++.dg/modules/inc-xlate-2_a.H: New test.
+	* g++.dg/modules/inc-xlate-2_b.H: New test.
+	* g++.dg/modules/inc-xlate-3.h: New test.
+	* g++.dg/modules/inc-xlate-3_a.H: New test.
+
+2024-08-26  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/113457
+	* g++.dg/coroutines/pr113457-1.C: New test.
+	* g++.dg/coroutines/pr113457.C: New test.
+
+2024-08-26  Arsen Arsenović  <arsen@aarsen.me>
+
+	* g++.dg/coroutines/pr115858.C: New test.
+
+2024-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_group_plugin.c: Include
+	"diagnostic-format-text.h".
+
+2024-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic-test-paths-multithreaded-inline-events.c:
+	Update expected output.
+	* gcc.dg/plugin/diagnostic-test-paths-multithreaded-sarif.py:
+	Likewise.
+	* gcc.dg/plugin/diagnostic-test-paths-multithreaded-separate-events.c:
+	Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_paths.c
+	(test_diagnostic_path::add_event_2): Return the id of the added
+	event.
+	(test_diagnostic_path::add_event_2_with_event_id): New.
+	(example_4): Add event IDs to the deadlock messages indicating
+	where the locks where acquired.
+
+2024-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic-test-metadata-sarif.c: New test,
+	based on diagnostic-test-metadata.c.
+	* gcc.dg/plugin/diagnostic-test-metadata-sarif.py: New script.
+	* gcc.dg/plugin/diagnostic-test-paths-multithreaded-sarif.c:
+	Replace scan-sarif-file directives with run-sarif-pytest, to
+	run...
+	* gcc.dg/plugin/diagnostic-test-paths-multithreaded-sarif.py:
+	...this new test.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add
+	diagnostic-test-metadata-sarif.c.
+	* gcc.dg/sarif-output/sarif.py: Move to...
+	* lib/sarif.py: ...here.
+	* lib/scansarif.exp (run-sarif-pytest): Prepend "lib" to
+	PYTHONPATH before running python scripts.
+
+2024-08-26  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/115716
+	* g++.dg/template/spec42.C: New test.
+	* g++.dg/template/spec43.C: New test.
+
+2024-08-26  Xi Ruoyao  <xry111@xry111.site>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116348
+	* gcc.c-torture/compile/pr116438.c: New test.
+
+2024-08-26  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat_u_add_imm-11.c: Adjust test case for imm.
+	* gcc.target/riscv/sat_u_add_imm-12.c: Ditto.
+	* gcc.target/riscv/sat_u_add_imm-15.c: Ditto.
+	* gcc.target/riscv/sat_u_add_imm-16.c: Ditto.
+	* gcc.target/riscv/sat_u_add_imm_type_check-1.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-10.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-11.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-12.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-13.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-14.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-15.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-16.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-17.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-18.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-19.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-2.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-20.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-21.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-22.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-23.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-24.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-25.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-26.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-27.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-28.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-29.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-3.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-30.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-31.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-32.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-33.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-34.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-35.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-36.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-37.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-38.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-39.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-4.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-40.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-41.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-42.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-43.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-44.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-45.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-46.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-47.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-48.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-49.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-5.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-50.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-51.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-52.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-6.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-7.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-8.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-9.c: New test.
+
+2024-08-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/116480
+	* gcc.dg/torture/pr116480-1.c: New test.
+	* gcc.dg/torture/pr116480-2.c: New test.
+
+2024-08-26  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10_2-512-convert-1.c: Add tests for new
+	intrin.
+	* gcc.target/i386/avx10_2-convert-1.c: Ditto.
+
+2024-08-26  Zhang, Jun  <jun.zhang@intel.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx10_2-compare-1.c: New test.
+
+2024-08-26  Zhang, Jun  <jun.zhang@intel.com>
+
+	* gcc.target/i386/avx10_2-vmovd-1.c: New test.
+	* gcc.target/i386/avx10_2-vmovd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vmovw-1.c: Ditto.
+	* gcc.target/i386/avx10_2-vmovw-2.c: Ditto.
+
+2024-08-26  Mo, Zewei  <zewei.mo@intel.com>
+	    Hu, Lin1  <lin1.hu@intel.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add macros.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx512f-helper.h: Add helper function.
+	* gcc.target/i386/avx10-minmax-helper.h: New helper file.
+	* gcc.target/i386/avx10_2-512-minmax-1.c: New test.
+	* gcc.target/i386/avx10_2-512-vminmaxnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vminmaxpd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vminmaxph-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vminmaxps-2.c: Ditto.
+	* gcc.target/i386/avx10_2-minmax-1.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxsd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxsh-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxss-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxpd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxph-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxps-2.c: Ditto.
+
+2024-08-26  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add macros.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-satcvt-1.c: Add test.
+	* gcc.target/i386/avx10_2-512-satcvt-1.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2dqs-2.c: New test.
+	* gcc.target/i386/avx10_2-512-vcvttpd2qqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2udqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2uqqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2dqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2qqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2udqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2uqqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttpd2dqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttpd2qqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttpd2udqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttpd2uqqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2dqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2qqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2udqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2uqqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttsd2sis-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttsd2usis-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttss2sis-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttss2usis-2.c: Ditto.
+
+2024-08-26  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add macros.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx512f-helper.h: Add new test macro.
+	* gcc.target/i386/m512-check.h: Add new type.
+	* gcc.target/i386/avx10_2-512-satcvt-1.c: New test.
+	* gcc.target/i386/avx10_2-512-vcvtnebf162ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtnebf162iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtph2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtph2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtps2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttnebf162ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttnebf162iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttph2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttph2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-satcvt-1.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtnebf162ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtnebf162iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtph2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtph2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttnebf162ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttnebf162iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttph2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttph2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2iubs-2.c: Ditto.
+
+2024-08-26  konglin1  <lingling.kong@intel.com>
+	    Levy Hsu  <admin@levyhsu.com>
+
+	* gcc.target/i386/avx10-check.h: Add AVX10_SCALAR.
+	* gcc.target/i386/avx10-helper.h: Add helper functions.
+	* gcc.target/i386/avx10_2-512-bf16-1.c: Add new tests.
+	* gcc.target/i386/avx10_2-bf16-1.c: Ditto.
+	* gcc.target/i386/avx-1.c: Add macros.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcmppbf16-2.c: New test.
+	* gcc.target/i386/avx10_2-512-vfpclasspbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vgetexppbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vgetmantpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vrcppbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vreducenepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vrndscalenepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vrsqrtpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vsqrtnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcmppbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcomsbf16-1.c: Ditto.
+	* gcc.target/i386/avx10_2-vcomsbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vfpclasspbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vgetexppbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vgetmantpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vrcppbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vreducenepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vrndscalenepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vrsqrtpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vsqrtnepbf16-2.c: Ditto.
+
+2024-08-26  konglin1  <lingling.kong@intel.com>
+	    Levy Hsu  <admin@levyhsu.com>
+
+	* gcc.target/i386/avx512f-helper.h: Add MAKE_MASK_MERGE and MAKE_MASK_ZERO
+	for bf16_uw.
+	* gcc.target/i386/m512-check.h: Add union512bf16_uw, union256bf16_uw,
+	union128bf16_uw and CHECK_EXP for them.
+	* gcc.target/i386/avx10-helper.h: New file.
+	* gcc.target/i386/avx10_2-512-bf16-1.c: New test.
+	* gcc.target/i386/avx10_2-512-vaddnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vdivnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vfmaddXXXnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vfmsubXXXnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vfnmaddXXXnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vfnmsubXXXnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vmaxpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vminpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vscalefpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vsubnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-bf16-1.c: Ditto.
+	* gcc.target/i386/avx10_2-vaddnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vdivnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vfmaddXXXnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vfmsubXXXnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vfnmaddXXXnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vfnmsubXXXnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vmaxpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vmulnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vscalefpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vsubnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vmulnepbf16-2.c: New file.
+
+2024-08-26  Levy Hsu  <admin@levyhsu.com>
+	    Kong Lingling  <lingling.kong@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add macros for const.
+	* gcc.target/i386/avx-2.c: Ditto.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-512-convert-1.c: New test.
+	* gcc.target/i386/avx10_2-512-vcvt2ps2phx-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvthf82ph-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtne2ph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtne2ph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtne2ph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtne2ph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtneph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtneph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtneph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtneph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-convert-1.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvt2ps2phx-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbiasph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbiasph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbiasph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbiasph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvthf82ph-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtne2ph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtne2ph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtne2ph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtne2ph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtneph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtneph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtneph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtneph2hf8s-2.c: Ditto.
+	* gcc.target/i386/fp8-helper.h: New helper file.
+
+2024-08-26  Haochen Jiang  <haochen.jiang@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/avxvnniint16-1.c: Add new macro test.
+	* gcc.target/i386/avx-1.c: Ditto.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-512-media-1.c: Add test.
+	* gcc.target/i386/avx10_2-media-1.c: Ditto.
+	* gcc.target/i386/avxvnniint16-builtin.c: New test.
+	* gcc.target/i386/avx10_2-512-vdpphps-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vmpsadbw-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpwsud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpwsuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpwusd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpwusds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpwuud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpwuuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-builtin-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vdpphps-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vmpsadbw-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwsud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwsuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwusd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwusds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwuud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwuuds-2.c: Ditto.
+
+2024-08-26  Hongyu Wang  <hongyu.wang@intel.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx512f-helper.h: Reuse AVX512F macros
+	for AVX10.
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute.
+	* lib/target-supports.exp
+	(check_effective_target_avx10_2): New.
+	(check_effective_target_avx10_2_512): Ditto.
+	* gcc.target/i386/avx10-check.h: New test file.
+	* gcc.target/i386/avx10-helper.h: Ditto.
+	* gcc.target/i386/avx10_2-builtin-1.c: Ditto.
+	* gcc.target/i386/avx10_2-512-media-1.c: Ditto.
+	* gcc.target/i386/avx10_2-media-1.c: Ditto..
+	* gcc.target/i386/avxvnniint8-builtin.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpbssd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpbssds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpbsud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpbsuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpbuud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpbuuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbssd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbssds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbsud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbsuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbuud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbuuds-2.c: Ditto.
+	* gcc.target/i386/avx10-os-support.h: New file.
+
+2024-08-26  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/m512-check.h: Wrap the function define with
+	correct vector size.
+
+2024-08-26  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macro.
+	* gcc.target/riscv/sat_u_sub_imm-1.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-1_1.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-1_2.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-2.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-2_1.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-2_2.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-3.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-3_1.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-3_2.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-4.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-run-1.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-run-2.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-run-3.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-run-4.c: New test.
+
+2024-08-26  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vec_sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-19.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-20.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-21.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-22.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-23.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-24.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-run-19.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-run-20.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-run-21.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-run-22.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-run-23.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-run-24.c: New test.
+
+2024-08-26  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat_u_trunc-19.c: New test.
+	* gcc.target/riscv/sat_u_trunc-20.c: New test.
+	* gcc.target/riscv/sat_u_trunc-21.c: New test.
+	* gcc.target/riscv/sat_u_trunc-22.c: New test.
+	* gcc.target/riscv/sat_u_trunc-23.c: New test.
+	* gcc.target/riscv/sat_u_trunc-24.c: New test.
+	* gcc.target/riscv/sat_u_trunc-run-19.c: New test.
+	* gcc.target/riscv/sat_u_trunc-run-20.c: New test.
+	* gcc.target/riscv/sat_u_trunc-run-21.c: New test.
+	* gcc.target/riscv/sat_u_trunc-run-22.c: New test.
+	* gcc.target/riscv/sat_u_trunc-run-23.c: New test.
+	* gcc.target/riscv/sat_u_trunc-run-24.c: New test.
+
 2024-08-25  demin.han  <demin.han@starfivetech.com>
 
 	* gcc.target/riscv/rvv/autovec/binop/vadd-rv32gcv-nofm.c: Fix test.

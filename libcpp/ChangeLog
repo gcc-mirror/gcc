@@ -1,3 +1,10 @@
+2024-08-26  Alexander Monakov  <amonakov@ispras.ru>
+
+	* internal.h (CPP_BUFFER_PADDING): New macro; use it ...
+	* charset.cc (_cpp_convert_input): ...here, and ...
+	* files.cc (read_file_guts): ...here, and ...
+	* lex.cc (search_line_ssse3): here.
+
 2024-08-23  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR preprocessor/116458

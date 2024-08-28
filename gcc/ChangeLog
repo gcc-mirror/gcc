@@ -1,3 +1,563 @@
+2024-08-27  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR target/116413
+	* config/m68k/m68k.cc (m68k_decompose_index): Accept ASHIFT like
+	MULT.
+	(m68k_rtx_costs) [PLUS]: Likewise.
+	(m68k_legitimize_address): Likewise.
+
+2024-08-27  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/riscv-v.cc (expand_vector_init_insert_elems): Relocate.
+	(expand_vector_init_trailing_same_elem): Ditto.
+
+2024-08-27  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/riscv-v.cc (expand_const_vector): Allow non-duplicate
+	to fall through other patterns before asserting.
+
+2024-08-27  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/riscv-v.h (valid_vec_immediate_p): Add new helper.
+	* config/riscv/riscv-v.cc (valid_vec_immediate_p): Ditto.
+	(expand_const_vector): Use new helper.
+	* config/riscv/riscv.cc (riscv_const_insns): Handle 0.0 floating-point
+	case.
+
+2024-08-27  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/riscv-v.cc (class rvv_builder): Move to riscv-v.h.
+	* config/riscv/riscv.cc (riscv_const_insns): Emit placeholder costs for
+	bool/stepped const vectors.
+	* config/riscv/riscv-v.h: New file.
+
+2024-08-27  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/riscv-v.cc (expand_const_vector): Use tmp register if
+	needed.
+
+2024-08-27  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/riscv.cc (riscv_const_insns): Relocate.
+
+2024-08-27  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/riscv-v.cc (expand_const_vector): Fix STEP size in
+	expander.
+
+2024-08-27  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/vfp.md (movdi_vfp, thumb2_movdf_vfp): Handle MVE
+	case.
+
+2024-08-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	* doc/sourcebuild.texi (check-function-bodies): Add an optional
+	argument for matched output lines.
+
+2024-08-27  Michael Matz  <matz@suse.de>
+
+	PR target/116429
+	* lra.cc (setup_sp_offset): Start with sp_offset from
+	before the new sequence, not from after.
+
+2024-08-27  Michael Matz  <matz@suse.de>
+
+	PR target/116374
+	* lra-eliminations.cc (init_elim_table): Use -1 as initializer.
+	(update_reg_eliminate): Accept -1 as not-yet-used marker.
+	(eliminate_regs_in_insn): Use previous_sp_offset only when
+	not first_p.
+
+2024-08-27  Michael Matz  <matz@suse.de>
+
+	PR target/116413
+	* final.cc (walk_alter_subreg): Recurse on AHIFT.
+
+2024-08-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/116413
+	* rtl.h (address_info): Update commentary.
+	* rtlanal.cc (valid_base_or_index_term_p): New function, split
+	out from...
+	(get_base_term, get_index_term): ...here.  Handle elimination PLUSes.
+
+2024-08-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/116321
+	* lra-constraints.cc (get_hard_regno): Only apply eliminations
+	to existing hard registers.
+	(get_reg_class): Likewise.
+
+2024-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116460
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): First do
+	simple_dce_from_worklist and then remove stmts in to_remove.
+	Track defs to be removed in to_remove_defs.
+
+2024-08-27  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv.cc (riscv_expand_ussub): Gen xmode for the
+	second operand, aka y in parameter.
+	* config/riscv/riscv.md (ussub<mode>3): Allow const_int for operand 2.
+
+2024-08-26  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR middle-end/115883
+	* combine.cc (make_more_copies): Copy attributes from the original
+	pseudo to the new copy.
+
+2024-08-26  Arsen Arsenović  <arsen@aarsen.me>
+
+	* coroutine-passes.cc (execute_early_expand_coro_ifns): Emit a
+	sorry if a statement is an alloca call.
+
+2024-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Add diagnostic-format-text.o.
+	* diagnostic-format-json.cc: Include "diagnostic-format.h".
+	* diagnostic-format-sarif.cc: Likewise.
+	* diagnostic-format-text.cc: New file, using material from
+	diagnostics.cc.
+	* diagnostic-global-context.cc: Include
+	"diagnostic-format.h".
+	* diagnostic-format-text.h: New file, using material from
+	diagnostics.h.
+	* diagnostic-format.h: New file, using material from
+	diagnostics.h.
+	* diagnostic.cc: Include "diagnostic-format.h" and
+	"diagnostic-format-text.h".
+	(diagnostic_text_output_format::~diagnostic_text_output_format):
+	Move to diagnostic-format-text.cc.
+	(diagnostic_text_output_format::on_report_diagnostic): Likewise.
+	(diagnostic_text_output_format::on_diagram): Likewise.
+	(diagnostic_text_output_format::print_any_cwe): Likewise.
+	(diagnostic_text_output_format::print_any_rules): Likewise.
+	(diagnostic_text_output_format::print_option_information):
+	Likewise.
+	* diagnostic.h (class diagnostic_output_format): Move to
+	diagnostic-format.h.
+	(class diagnostic_text_output_format): Move to
+	diagnostic-format-text.h.
+	(diagnostic_output_format_init): Move to
+	diagnostic-format.h.
+	(diagnostic_output_format_init_json_stderr): Likewise.
+	(diagnostic_output_format_init_json_file): Likewise.
+	(diagnostic_output_format_init_sarif_stderr): Likewise.
+	(diagnostic_output_format_init_sarif_file): Likewise.
+	(diagnostic_output_format_init_sarif_stream): Likewise.
+	* gcc.cc: Include "diagnostic-format.h".
+	* opts.cc: Include "diagnostic-format.h".
+
+2024-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-json.cc
+	(json_output_format::on_begin_diagnostic): Delete.
+	(json_output_format::on_end_diagnostic): Rename to...
+	(json_output_format::on_report_diagnostic): ...this and add call
+	to pp_output_formatted_text.
+	(diagnostic_output_format_init_json): Drop unnecessary calls
+	to disable textual printing of CWEs, rules, and options.
+	* diagnostic-format-sarif.cc (sarif_builder::end_diagnostic):
+	Rename to...
+	(sarif_builder::on_report_diagnostic): ...this and add call to
+	pp_output_formatted_text.
+	(sarif_output_format::on_begin_diagnostic): Delete.
+	(sarif_output_format::on_end_diagnostic): Rename to...
+	(sarif_output_format::on_report_diagnostic): ...this and update
+	call to m_builder accordingly.
+	(diagnostic_output_format_init_sarif): Drop unnecessary calls
+	to disable textual printing of CWEs, rules, and options.
+	* diagnostic.cc (diagnostic_context::print_any_cwe): Convert to...
+	(diagnostic_text_output_format::print_any_cwe): ...this.
+	(diagnostic_context::print_any_rules): Convert to...
+	(diagnostic_text_output_format::print_any_rules): ...this.
+	(diagnostic_context::print_option_information): Convert to...
+	(diagnostic_text_output_format::print_option_information):
+	...this.
+	(diagnostic_context::report_diagnostic): Replace calls to the
+	output format's on_begin_diagnostic, to pp_output_formatted_text,
+	printing CWE, rules, option info, and the call to the format's
+	on_end_diagnostic with a call to the format's
+	on_report_diagnostic.
+	(diagnostic_text_output_format::on_begin_diagnostic): Delete.
+	(diagnostic_text_output_format::on_end_diagnostic): Delete.
+	(diagnostic_text_output_format::on_report_diagnostic): New vfunc,
+	which effectively does the on_begin_diagnostic, the call to
+	pp_output_formatted_text, the calls for printing CWE, rules,
+	option info, and the call to the diagnostic_finalizer.
+	* diagnostic.h (diagnostic_output_format::on_begin_diagnostic):
+	Delete.
+	(diagnostic_output_format::on_end_diagnostic): Delete.
+	(diagnostic_output_format::on_report_diagnostic): New.
+	(diagnostic_text_output_format::on_begin_diagnostic): Delete.
+	(diagnostic_text_output_format::on_end_diagnostic): Delete.
+	(diagnostic_text_output_format::on_report_diagnostic): New.
+	(class diagnostic_context): Add friend class
+	diagnostic_text_output_format.
+	(diagnostic_context::get_urlifier): New accessor.
+	(diagnostic_context::print_any_cwe): Move decl...
+	(diagnostic_text_output_format::print_any_cwe): ...to here.
+	(diagnostic_context::print_any_rules): Move decl...
+	(diagnostic_text_output_format::print_any_rules): ...to here.
+	(diagnostic_context::print_option_information): Move decl...
+	(diagnostic_text_output_format::print_option_information): ...to
+	here.
+
+2024-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-sarif.cc: Add comments noting that we don't
+	yet capture any diagnostic_metadata::rules associated with a
+	diagnostic.
+
+2024-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* pretty-print.cc (selftest::test_urls): Make static.
+	(selftest::test_urls_from_braces): New.
+	(selftest::test_null_urls): Make static.
+	(selftest::test_urlification): Likewise.
+	(selftest::pretty_print_cc_tests): Call test_urls_from_braces.
+
+2024-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* json.h: Fix typo in comment about missing INCLUDE_MEMORY.
+
+2024-08-26  Andi Kleen  <ak@gcc.gnu.org>
+
+	* tree-if-conv.cc: Remove unneeded include from last change.
+
+2024-08-26  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR debug/116470
+	* configure.ac: Add the "nop" instruction for cpu type ft32.
+	* configure: Regenerate.
+	* dwarf2out.cc (dwarf2out_set_ignored_loc): Use the correct
+	line info section.
+
+2024-08-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116460
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Do not
+	process blocks in unreachable natural loops.
+
+2024-08-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.cc (simplify_gimple_switch_label_vec):
+	Delay removing edges and releasing dominator info, instead
+	record into edges_to_remove vector.
+	(simplify_gimple_switch): Pass through vector of to remove
+	edges.
+	(pass_forwprop::execute): Likewise.  Remove queued edges.
+
+2024-08-26  Xi Ruoyao  <xry111@xry111.site>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116348
+	* tree-vect-stmts.cc (supportable_widening_operation): Use
+	STMT_VINFO_REDUC_DEF (x) instead of
+	STMT_VINFO_DEF_TYPE (x) == vect_reduction_def.
+
+2024-08-26  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add int_fits_type_p check for .SAT_ADD imm operand.
+
+2024-08-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/116480
+	* internal-fn.cc (expand_POPCOUNT): Use the correct mode
+	for store flags.
+
+2024-08-26  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/avx10_2-512convertintrin.h
+	(_mm512_cvtpbf8_ph): New.
+	(_mm512_mask_cvtpbf8_ph): Ditto.
+	(_mm512_maskz_cvtpbf8_ph): Ditto.
+	* config/i386/avx10_2convertintrin.h
+	(_mm_cvtpbf8_ph): Ditto.
+	(_mm_mask_cvtpbf8_ph): Ditto.
+	(_mm_maskz_cvtpbf8_ph): Ditto.
+	(_mm256_cvtpbf8_ph): Ditto.
+	(_mm256_mask_cvtpbf8_ph): Ditto.
+	(_mm256_maskz_cvtpbf8_ph): Ditto.
+
+2024-08-26  Zhang, Jun  <jun.zhang@intel.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/i386-expand.cc
+	(ix86_ssecom_setcc): Mention behavior change on flags.
+	(ix86_expand_sse_comi): Handle AVX10.2 behavior.
+	(ix86_expand_sse_comi_round): Ditto.
+	(ix86_expand_round_builtin): Ditto.
+	(ix86_expand_builtin): Change function call.
+	* config/i386/i386.md (UNSPEC_COMX): New unspec.
+	* config/i386/sse.md
+	(avx10_2_v<unord>comx<ssemodesuffix><round_saeonly_name>): New.
+	(<sse>_<unord>comi<round_saeonly_name>): Add HFmode.
+
+2024-08-26  Zhang, Jun  <jun.zhang@intel.com>
+
+	* config.gcc: Add avx10_2copyintrin.h.
+	* config/i386/i386.md (avx10_2): New isa attribute.
+	* config/i386/immintrin.h: Include avx10_2copyintrin.h.
+	* config/i386/sse.md
+	(sse_movss_<mode>): Add new constraints to handle AVX10.2.
+	(vec_set<mode>_0): Ditto.
+	(@vec_set<mode>_0): Ditto.
+	(vec_set<mode>_0): Ditto.
+	(avx512fp16_mov<mode>): Ditto.
+	(*vec_set<mode>_0_1): New split.
+	* config/i386/avx10_2copyintrin.h: New file.
+
+2024-08-26  Mo, Zewei  <zewei.mo@intel.com>
+	    Hu, Lin1  <lin1.hu@intel.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config.gcc: Add avx10_2-512minmaxintrin.h and
+	avx10_2minmaxintrin.h.
+	* config/i386/i386-builtin-types.def:
+	Add DEF_FUNCTION_TYPE (V8BF, V8BF, V8BF, INT, V8BF, UQI),
+	(V16BF, V16BF, V16BF, INT, V16BF, UHI),
+	(V32BF, V32BF, V32BF, INT, V32BF, USI),
+	(V8HF, V8HF, V8HF, INT, V8HF, UQI),
+	(V8DF, V8DF, V8DF, INT, V8DF, UQI, INT),
+	(V32HF, V32HF, V32HF, INT, V32HF, USI, INT),
+	(V16HF, V16HF, V16HF, INT, V16HF, UHI, INT),
+	(V16SF, V16SF, V16SF, INT, V16SF, UHI, INT).
+	* config/i386/i386-builtin.def (BDESC): Add new builtins.
+	* config/i386/i386-expand.cc
+	(ix86_expand_args_builtin): Handle V8BF_FTYPE_V8BF_V8BF_INT_V8BF_UQI,
+	V16BF_FTYPE_V16BF_V16BF_INT_V16BF_UHI,
+	V32BF_FTYPE_V32BF_V32BF_INT_V32BF_USI,
+	V8HF_FTYPE_V8HF_V8HF_INT_V8HF_UQI,
+	(ix86_expand_round_builtin): Handle V8DF_FTYPE_V8DF_V8DF_INT_V8DF_UQI_INT,
+	V32HF_FTYPE_V32HF_V32HF_INT_V32HF_USI_INT,
+	V16HF_FTYPE_V16HF_V16HF_INT_V16HF_UHI_INT.
+	V16SF_FTYPE_V16SF_V16SF_INT_V16SF_UHI_INT.
+	* config/i386/immintrin.h: Include avx10_2-512mixmaxintrin.h and
+	avx10_2minmaxintrin.h.
+	* config/i386/sse.md (VFH_AVX10_2): New.
+	(avx10_2_vminmaxnepbf16_<mode><mask_name>): New define_insn.
+	(avx10_2_minmaxp<mode><mask_name><round_saeonly_name>): Ditto.
+	(avx10_2_minmaxs<mode><mask_scalar_name><round_saeonly_scalar_name>): Ditto.
+	* config/i386/avx10_2-512minmaxintrin.h: New file.
+	* config/i386/avx10_2minmaxintrin.h: Ditto.
+
+2024-08-26  Hu, Lin1  <lin1.hu@intel.com>
+
+	* config/i386/avx10_2-512satcvtintrin.h: Add new intrin.
+	* config/i386/avx10_2satcvtintrin.h: Ditto.
+	* config/i386/i386-builtin.def (BDESC): Add new builtins.
+	* config/i386/sse.md (VF1_VF2_AVX10_2): New iterator.
+	(VF2_AVX10_2): Ditto.
+	(VI8_AVX10_2): Ditto.
+	(sat_cvt_sign_prefix): Add new UNSPEC.
+	(UNSPEC_SAT_CVT_DS_SIGN_ITER): New iterator.
+	(pd2dqssuff): Ditto.
+	(avx10_2_vcvtt<castmode>2<sat_cvt_sign_prefix>dqs<mode><mask_name><round_saeonly_name>):
+	New.
+	(avx10_2_vcvttpd2<sat_cvt_sign_prefix>qqs<mode><mask_name><round_saeonly_name>):
+	Ditto.
+	(avx10_2_vcvttps2<sat_cvt_sign_prefix>qqs<mode><mask_name><round_saeonly_name>):
+	Ditto.
+	(avx10_2_vcvttsd2<sat_cvt_sign_prefix>sis<mode><round_saeonly_name>):
+	Ditto.
+	(avx10_2_vcvttss2<sat_cvt_sign_prefix>sis<mode><round_saeonly_name>):
+	Ditto.
+
+2024-08-26  Hu, Lin1  <lin1.hu@intel.com>
+
+	* config.gcc: Add avx10_2satcvtintrin.h and
+	avx10_2-512satcvtintrin.h.
+	* config/i386/i386-builtin-types.def:
+	Add DEF_FUNCTION_TYPE (V8HI, V8BF, V8HI, UQI),
+	(V16HI, V16BF, V16HI, UHI), (V32HI, V32BF, V32HI, USI),
+	(V16SI, V16SF, V16SI, UHI, INT), (V16HI, V16BF, V16HI, UHI, INT),
+	(V32HI, V32BF, V32HI, USI, INT).
+	* config/i386/i386-builtin.def (BDESC): Add new builtins.
+	* config/i386/i386-expand.cc (ix86_expand_args_builtin): Handle
+	V32HI_FTYPE_V32BF_V32HI_USI, V16HI_FTYPE_V16BF_V16HI_UHI,
+	V8HI_FTYPE_V8BF_V8HI_UQI.
+	(ix86_expand_round_builtin): Handle V32HI_FTYPE_V32BF_V32HI_USI_INT,
+	V16SI_FTYPE_V16SF_V16SI_UHI_INT, V16HI_FTYPE_V16BF_V16HI_UHI_INT.
+	* config/i386/immintrin.h: Include avx10_2satcvtintrin.h and
+	avx10_2-512savcvtintrin.h.
+	* config/i386/sse.md:
+	(UNSPEC_CVTNE_BF16_IBS_ITER): New iterator.
+	(sat_cvt_sign_prefix): Ditto.
+	(sat_cvt_trunc_prefix): Ditto.
+	(UNSPEC_CVT_PH_IBS_ITER): Ditto.
+	(UNSPEC_CVTT_PH_IBS_ITER): Ditto.
+	(UNSPEC_CVT_PS_IBS_ITER): Ditto.
+	(UNSPEC_CVTT_PS_IBS_ITER): Ditto.
+	(avx10_2_cvt<sat_cvt_trunc_prefix>nebf162i<sat_cvt_sign_prefix>bs<mode><mask_name>):
+	New define_insn.
+	(avx10_2_cvtph2i<sat_cvt_sign_prefix>bs<mode><mask_name><round_name>):
+	Ditto.
+	(avx10_2_cvttph2i<sat_cvt_sign_prefix>bs<mode><mask_name><round_saeonly_name>):
+	Ditto.
+	(avx10_2_cvtps2i<sat_cvt_sign_prefix>bs<mode><mask_name><round_name>):
+	Ditto.
+	(avx10_2_cvttps2i<sat_cvt_sign_prefix>bs<mode><mask_name><round_saeonly_name>):
+	Ditto.
+	* config/i386/avx10_2-512satcvtintrin.h: New file.
+	* config/i386/avx10_2satcvtintrin.h: Ditto.
+
+2024-08-26  konglin1  <lingling.kong@intel.com>
+	    Levy Hsu  <admin@levyhsu.com>
+
+	* config/i386/avx10_2-512bf16intrin.h: Add new intrinsics.
+	* config/i386/avx10_2bf16intrin.h: Diito.
+	* config/i386/i386-builtin-types.def : Add new DEF_FUNCTION_TYPE
+	for new type.
+	* config/i386/i386-builtin.def (BDESC): Add new buildin.
+	* config/i386/i386-expand.cc (ix86_expand_args_builtin):
+	Handle new type.
+	* config/i386/sse.md (vecmemsuffix): Add vector BF mode.
+	(avx10_2_rsqrtpbf16_<mode><mask_name>): New define_insn.
+	(avx10_2_sqrtnepbf16_<mode><mask_name>): Ditto.
+	(avx10_2_rcppbf16_<mode><mask_name>): Ditto.
+	(avx10_2_getexppbf16_<mode><mask_name>): Ditto.
+	(BF16IMMOP): New iterator.
+	(bf16immop): Ditto.
+	(avx10_2_<bf16immop>pbf16_<mode><mask_name>): New define_insn.
+	(avx10_2_fpclasspbf16_<mode><mask_scalar_merge_name>): Ditto.
+	(avx10_2_cmppbf16_<mode><mask_scalar_merge_name>): Ditto.
+	(avx10_2_comsbf16_v8bf): Ditto.
+
+2024-08-26  konglin1  <lingling.kong@intel.com>
+	    Levy Hsu  <admin@levyhsu.com>
+
+	* config.gcc: Add avx10_2-512bf16intrin.h and avx10_2bf16intrin.h.
+	* config/i386/i386-builtin-types.def : Add new
+	DEF_FUNCTION_TYPE for V32BF_FTYPE_V32BF_V32BF,
+	V16BF_FTYPE_V16BF_V16BF, V8BF_FTYPE_V8BF_V8BF,
+	V8BF_FTYPE_V8BF_V8BF_UQI, V16BF_FTYPE_V16BF_V16BF_UHI,
+	V32BF_FTYPE_V32BF_V32BF_USI, V32BF_FTYPE_V32BF_V32BF_V32BF_USI,
+	V8BF_FTYPE_V8BF_V8BF_V8BF_UQI and V16BF_FTYPE_V16BF_V16BF_V16BF_UHI.
+	* config/i386/i386-builtin.def (BDESC): Add new builtins.
+	* config/i386/i386-expand.cc (ix86_expand_args_builtin):
+	Handle new DEF_FUNCTION_TYPE.
+	* config/i386/immintrin.h: Include avx10_2-512bf16intrin.h and
+	avx10_2bf16intrin.h.
+	* config/i386/sse.md
+	(VBF_AVX10_2): New iterator.
+	(avx10_2_scalefpbf16_<mode><mask_name>): New define_insn.
+	(avx10_2_<code>nepbf16_<mode><mask_name>): Ditto.
+	(avx10_2_<insn>nepbf16_<mode><mask_name>): Ditto.
+	(avx10_2_fmaddnepbf16_<mode>_maskz): New expander.
+	(avx10_2_fnmaddnepbf16_<mode>_maskz): Ditto.
+	(avx10_2_fmsubnepbf16_<mode>_maskz): Ditto.
+	(avx10_2_fnmsubnepbf16_<mode>_maskz): Ditto.
+	(avx10_2_fmaddnepbf16_<mode><sd_maskz_name>): New define_insn.
+	(avx10_2_fmaddnepbf16_<mode>_mask): Ditto.
+	(avx10_2_fmaddnepbf16_<mode>_mask3): Ditto.
+	(avx10_2_fnmaddnepbf16_<mode><sd_maskz_name>): Ditto.
+	(avx10_2_fnmaddnepbf16_<mode>_mask): Ditto.
+	(avx10_2_fnmaddnepbf16_<mode>_mask3): Ditto.
+	(avx10_2_fmsubnepbf16_<mode><sd_maskz_name>): Ditto.
+	(avx10_2_fmsubnepbf16_<mode>_mask): Ditto.
+	(avx10_2_fmsubnepbf16_<mode>_mask3): Ditto.
+	(avx10_2_fnmsubnepbf16_<mode><sd_maskz_name>): Ditto.
+	(avx10_2_fnmsubnepbf16_<mode>_mask): Ditto.
+	(avx10_2_fnmsubnepbf16_<mode>_mask3): Ditto.
+	* config/i386/avx10_2-512bf16intrin.h: New file.
+	* config/i386/avx10_2bf16intrin.h: Ditto.
+
+2024-08-26  Levy Hsu  <admin@levyhsu.com>
+	    Kong Lingling  <lingling.kong@intel.com>
+
+	* config.gcc: Add avx10_2-512convertintrin.h and
+	avx10_2convertintrin.h.
+	* config/i386/i386-builtin-types.def: Add new DEF_POINTER_TYPE
+	and DEF_FUNCTION_TYPE.
+	* config/i386/i386-builtin.def (BDESC): Add new builtins.
+	* config/i386/i386-expand.cc (ix86_expand_args_builtin):
+	Handle AVX10.2.
+	(ix86_expand_round_builtin): Ditto.
+	* config/i386/immintrin.h: Include avx10_2-512convertintrin.h,
+	avx10_2convertintrin.h.
+	* config/i386/sse.md (VHF_AVX10_2): New iterator.
+	(bf16_ph): Add 512 bit mode.
+	(avx10_2_cvt2ps2phx_<mode><mask_name<round_name>): New define_insn.
+	(ssebvecmode): New iterator.
+	(UNSPEC_NECONVERTFP8_PACK): Ditto.
+	(neconvertfp8_pack): Ditto.
+	(vcvt<neconvertfp8_pack><mode><mask_name>): New define_insn.
+	(ssebvecmode_2): New iterator.
+	(UNSPEC_VCVTBIASPH2FP8_PACK): Ditto.
+	(biasph2fp8_pack): Ditto.
+	(vcvt<biasph2fp8_pack>v8hf): New expander.
+	(vcvt<biasph2fp8_pack>v8hf_mask): Ditto.
+	(*vcvt<biasph2bf8_pack>v8hf): New define_insn.
+	(*vcvt<biasph2fp8_pack>v8hf_mask): Ditto.
+	(VHF_AVX10_2_2): New iterator.
+	(vcvt<biasph2fp8_pack><mode><mask_name>): New define_insn.
+	(VHF_256_512): New iterator.
+	(ph2fp8suff): Ditto.
+	(UNSPEC_NECONVERTPH2FP8_PACK): Ditto.
+	(neconvertph2fp8): Ditto.
+	(vcvt<neconvertph2fp8>v8hf_mask): New expander.
+	(*vcvt<neconvertph2fp8>v8hf): New define_insn.
+	(*vcvt<neconvertph2fp8>v8hf_mask): Ditto.
+	(vcvt<neconvertph2fp8><mode><mask_name>): Ditto.
+	(vcvthf82ph<mode><mask_name>): Ditto.
+	* config/i386/avx10_2-512convertintrin.h: New file.
+	* config/i386/avx10_2convertintrin.h: Ditto.
+
+2024-08-26  Haochen Jiang  <haochen.jiang@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/avx10_2-512mediaintrin.h: Add new intrins.
+	* config/i386/avx10_2mediaintrin.h: Ditto.
+	* config/i386/i386-builtin.def: Add new builtins.
+	* config/i386/i386-builtins.cc (def_builtin): Handle shared
+	builtins between AVXVNNIINT16 and AVX10.2.
+	* config/i386/i386-expand.cc (ix86_check_builtin_isa_match):
+	Ditto.
+	* config/i386/sse.md (unspec): Add UNSPEC_VDPPHPS.
+	(avx10_2_mpsadbw<mask_name>): New define_insn.
+	(<mask_codefor><sse4_1_avx2>_mpsadbw<mask_name>): Ditto.
+	(vpdp<vpdpwprodtype>_<mode>): Add AVX10_2_256.
+	(vpdp<vpdpwprodtype>_v16si): New defin_insn.
+	(vpdp<vpdpwprodtype>_<mode>_mask): Ditto.
+	(*vpdp<vpdpwprodtype>_<mode>_maskz): Ditto.
+	(vpdp<vpdpwprodtype>_<mode>_maskz): New expander.
+	(vdpphps_<mode>): New define_insn.
+	(vdpphps_<mode>_mask): Ditto.
+	(*vdpphps_<mode>_maskz): Ditto.
+	(vdpphps_<mode>_maskz): New expander.
+
+2024-08-26  Hongyu Wang  <hongyu.wang@intel.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config.gcc: Add avx10_2mediaintrin.h and
+	avx10_2-512mediaintrin.h.
+	* config/i386/i386-builtin.def: Add new builtins.
+	* config/i386/i386-builtins.cc (def_builtin): Handle shared
+	builtins between AVXVNNIINT8 and AVX10.2.
+	* config/i386/i386-expand.cc (ix86_check_builtin_isa_match):
+	Ditto.
+	* config/i386/immintrin.h: Include avx10_2mediaintrin.h and
+	avx10_2-512mediaintrin.h
+	* config/i386/sse.md: (VI4_AVX10_2): New.
+	(vpdp<vpdotprodtype>_<mode>): Add AVX10_2_256.
+	(vpdp<vpdotprodtype>_v16si): New define_insn.
+	(vpdp<vpdotprodtype>_<mode>_mask): Ditto.
+	(*vpdp<vpdotprodtype>_<mode>_maskz): Ditto.
+	(vpdp<vpdotprodtype>_<mode>_maskz): New expander.
+	* config/i386/avx10_2-512mediaintrin.h: New file.
+	* config/i386/avx10_2mediaintrin.h: Ditto.
+
+2024-08-26  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv.cc (riscv_gen_unsigned_xmode_reg): Add new
+	func impl to gen xmode rtx reg from operand rtx.
+	(riscv_expand_ussub): Gen xmode reg for operand 1.
+	* config/riscv/riscv.md: Allow const_int for operand 1.
+
 2024-08-25  demin.han  <demin.han@starfivetech.com>
 
 	* config/riscv/vector.md: Add !FLOAT_MODE_P constraint.

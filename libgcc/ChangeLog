@@ -1,3 +1,7 @@
+2024-08-27  YunQiang Su  <syq@gcc.gnu.org>
+
+	* config/mips/lib1funcs.S: Includes mips16.S.
+
 2024-06-10  Jan Beulich  <jbeulich@suse.com>
 
 	* config/aarch64/cpuinfo.c: Provide AT_HWCAP2.

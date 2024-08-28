@@ -1,3 +1,65 @@
+2024-08-27  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/109867
+	* coroutines.cc (expand_one_await_expression): Replace uses of
+	build_case_label with finish_case_label.
+	(build_actor_fn): Ditto.
+	(create_anon_label_with_ctx): Remove now-unused function.
+
+2024-08-27  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/105483
+	* parser.cc (cp_parser_expression_statement): Use %qE instead of
+	incorrect %<%T::%D%>. Skip to end of statement and return
+	error_mark_node in case of error.
+
+2024-08-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* cxxapi-data.csv: Add C++20 and C++23 names from <chrono>,
+	<format>, <generator>, <iterator>, <print>, and <stdfloat>.
+	Set cxx11 dialect for std::ignore in <tuple>. Uncomment
+	atomic_flag functions from <atomic>.
+	* std-name-hint.gperf: Regenerate.
+	* std-name-hint.h: Regenerate.
+
+2024-08-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gen-cxxapi-file.py: Fix copyright dates in generated output.
+
+2024-08-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/116482
+	* coroutines.cc
+	(coro_build_actor_or_destroy_function): Make the parameter
+	decls DECL_ARTIFICIAL.
+
+2024-08-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/99243
+	* module.cc (module_state::set_filename): Handle repeated calls
+	to 'set_filename' as long as the CMI path matches.
+	(maybe_translate_include): Adjust comment.
+
+2024-08-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/110980
+	* module.cc (maybe_translate_include): Clean up.
+
+2024-08-26  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/113457
+	* coroutines.cc (struct coroutine_info): Add integer field
+	awaitable_number.  This is a counter used for assigning unique
+	names to awaitable temporaries.
+	(get_awaitable_var): Use awaitable_number from coroutine_info
+	instead of the static int awn.
+
+2024-08-26  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/115716
+	* pt.cc (maybe_process_partial_specialization): Call
+	redeclare_class_template.
+
 2024-08-24  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/110635

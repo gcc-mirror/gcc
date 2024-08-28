@@ -1,3 +1,12 @@
+2024-08-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115098
+	* python/libstdcxx/v6/printers.py (StdBitReferencePrinter): Add
+	comment.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Do not default
+	construct std::vector<bool>::reference.
+	* testsuite/libstdc++-prettyprinters/simple11.cc: Likewise.
+
 2024-08-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/documentation_hacking.xml: Update minimum
