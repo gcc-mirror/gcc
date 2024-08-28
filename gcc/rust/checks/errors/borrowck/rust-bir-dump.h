@@ -35,7 +35,7 @@ class Dump : public Visitor
   const std::string &name;
 
   IndexVec<BasicBlockId, BasicBlockId> bb_fold_map;
-  std::vector<PlaceId> place_map;
+  IndexVec<PlaceId, PlaceId> place_map;
 
   PlaceId statement_place = INVALID_PLACE;
   BasicBlockId statement_bb = INVALID_BB;
