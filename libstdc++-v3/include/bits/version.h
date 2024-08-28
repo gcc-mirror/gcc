@@ -1392,9 +1392,9 @@
 
 #if !defined(__cpp_lib_constrained_equality)
 # if (__cplusplus >= 202002L) && (__glibcxx_three_way_comparison)
-#  define __glibcxx_constrained_equality 202403L
+#  define __glibcxx_constrained_equality 202411L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_constrained_equality)
-#   define __cpp_lib_constrained_equality 202403L
+#   define __cpp_lib_constrained_equality 202411L
 #  endif
 # endif
 #endif /* !defined(__cpp_lib_constrained_equality) && defined(__glibcxx_want_constrained_equality) */

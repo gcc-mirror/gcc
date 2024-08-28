@@ -35,6 +35,7 @@
 
 #define __glibcxx_want_expected
 #define __glibcxx_want_freestanding_expected
+#define __glibcxx_want_constrained_equality
 #include <bits/version.h>
 
 #ifdef __cpp_lib_expected // C++ >= 23 && __cpp_concepts >= 202002L
@@ -1152,10 +1153,15 @@ namespace __expected
 
       template<typename _Up, typename _Er2>
 	requires (!is_void_v<_Up>)
+	  && requires (const _Tp& __t, const _Up& __u,
+		       const _Er& __e, const _Er2& __e2) {
+	    { __t == __u } -> convertible_to<bool>;
+	    { __e == __e2 } -> convertible_to<bool>;
+	  }
 	friend constexpr bool
 	operator==(const expected& __x, const expected<_Up, _Er2>& __y)
-	// FIXME: noexcept(noexcept(bool(*__x == *__y))
-		  // && noexcept(bool(__x.error() == __y.error())))
+	noexcept(noexcept(bool(*__x == *__y))
+		  && noexcept(bool(__x.error() == __y.error())))
 	{
 	  if (__x.has_value())
 	    return __y.has_value() && bool(*__x == *__y);
@@ -1164,15 +1170,22 @@ namespace __expected
 	}
 
       template<typename _Up>
+	requires (!__expected::__is_expected<_Up>)
+	  && requires (const _Tp& __t, const _Up& __u) {
+	    { __t == __u } -> convertible_to<bool>;
+	  }
 	friend constexpr bool
 	operator==(const expected& __x, const _Up& __v)
-	// FIXME: noexcept(noexcept(bool(*__x == __v)))
+	noexcept(noexcept(bool(*__x == __v)))
 	{ return __x.has_value() && bool(*__x == __v); }
 
       template<typename _Er2>
+	requires requires (const _Er& __e, const _Er2& __e2) {
+	  { __e == __e2 } -> convertible_to<bool>;
+	}
 	friend constexpr bool
 	operator==(const expected& __x, const unexpected<_Er2>& __e)
-	// FIXME: noexcept(noexcept(bool(__x.error() == __e.error())))
+	noexcept(noexcept(bool(__x.error() == __e.error())))
 	{ return !__x.has_value() && bool(__x.error() == __e.error()); }
 
       friend constexpr void
@@ -1819,9 +1832,12 @@ namespace __expected
 
       template<typename _Up, typename _Er2>
 	requires is_void_v<_Up>
+	  && requires (const _Er& __e, const _Er2& __e2) {
+	    { __e == __e2 } -> convertible_to<bool>;
+	  }
 	friend constexpr bool
 	operator==(const expected& __x, const expected<_Up, _Er2>& __y)
-	// FIXME: noexcept(noexcept(bool(__x.error() == __y.error())))
+	noexcept(noexcept(bool(__x.error() == __y.error())))
 	{
 	  if (__x.has_value())
 	    return __y.has_value();
@@ -1830,9 +1846,12 @@ namespace __expected
 	}
 
       template<typename _Er2>
+	requires requires (const _Er& __e, const _Er2& __e2) {
+	  { __e == __e2 } -> convertible_to<bool>;
+	}
 	friend constexpr bool
 	operator==(const expected& __x, const unexpected<_Er2>& __e)
-	// FIXME: noexcept(noexcept(bool(__x.error() == __e.error())))
+	noexcept(noexcept(bool(__x.error() == __e.error())))
 	{ return !__x.has_value() && bool(__x.error() == __e.error()); }
 
       friend constexpr void

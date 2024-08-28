@@ -1256,7 +1256,7 @@ ftms = {
 ftms = {
   name = constrained_equality;
   values = {
-    v = 202403;
+    v = 202411; // FIXME: 202403 for P2944R3, ??? for P3379R0
     cxxmin = 20;
     extra_cond = "__glibcxx_three_way_comparison";
   };
