@@ -1662,7 +1662,7 @@ avr-*-*)
 	tmake_file="${tmake_file} avr/t-avr avr/t-multilib"
 	use_gcc_stdint=wrap
 	extra_gcc_objs="driver-avr.o avr-devices.o"
-	extra_objs="avr-devices.o avr-log.o"
+	extra_objs="avr-devices.o avr-log.o avr-passes.o"
 	;;
 bfin*-elf*)
 	tm_file="${tm_file} elfos.h newlib-stdint.h bfin/elf.h"

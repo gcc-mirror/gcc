@@ -59,7 +59,13 @@ avr-log.o: $(srcdir)/config/avr/avr-log.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(INPUT_H) dumpfile.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
+avr-passes.o: $(srcdir)/config/avr/avr-passes.cc \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(INPUT_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+
 avr.o avr-c.o: $(srcdir)/config/avr/builtins.def
+
+avr-passes.o: $(srcdir)/config/avr/ranges.h
 
 # This overrides stdfix.h from USER_H which we supply and include
 # in our own stdfix.h as stdfix-gcc.h.
