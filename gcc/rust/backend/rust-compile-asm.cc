@@ -26,7 +26,7 @@ CompileAsm::asm_build_expr (HIR::InlineAsm &expr)
   ASM_BASIC_P (asm_expr) = expr.is_simple_asm ();
   ASM_VOLATILE_P (asm_expr) = false;
   ASM_INLINE_P (asm_expr) = expr.is_inline_asm ();
-  Backend::debug (asm_expr);
+  /*Backend::debug (asm_expr);*/
   return asm_expr;
 }
 

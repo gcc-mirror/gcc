@@ -2,13 +2,13 @@
 
 #[rustc_builtin_macro]
 macro_rules! asm {
-    () => {}
+    () => {};
 }
 
-fn main() {
+fn main() -> i32 {
     unsafe {
         asm!(
-            "add {0:e}, {0:e}",
+            "add {}, {}",
             in(reg) 0
         );
     }
@@ -20,18 +20,20 @@ fn main() {
     let _num2: i32 = 20;
     unsafe {
         asm!(
-            "add {0}, {0}",
+            "add {}, {}",
             inout(reg) num1 =>_num1,
             in(reg) _num2,
         );
     }
 
-    let mut _output_testing : u32 = 0;
+    let mut _output_testing: u32 = 0;
     unsafe {
         asm!(
-            "add {0}, {0}",
+            "add {}, {}",
             in(reg) _num1,
             //out(reg) _,
         );
     }
+
+    0
 }
