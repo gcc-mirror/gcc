@@ -90,7 +90,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Storage& operator=(const _Storage&) = delete;
 
       void* _M_ptr;
-      aligned_storage<sizeof(_M_ptr), alignof(void*)>::type _M_buffer;
+      unsigned char _M_buffer[sizeof(_M_ptr)];
     };
 
     template<typename _Tp, typename _Safe = is_nothrow_move_constructible<_Tp>,
