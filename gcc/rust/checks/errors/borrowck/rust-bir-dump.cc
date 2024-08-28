@@ -71,7 +71,7 @@ renumber_places (const Function &func, std::vector<PlaceId> &place_map)
 }
 
 void
-simplify_cfg (Function &func, std::vector<BasicBlockId> &bb_fold_map)
+simplify_cfg (Function &func, IndexVec<BasicBlockId, BasicBlockId> &bb_fold_map)
 {
   // The BIR builder can generate many useless basic blocks, which contain only
   // a goto.
@@ -84,11 +84,11 @@ simplify_cfg (Function &func, std::vector<BasicBlockId> &bb_fold_map)
       // BB0 cannot be folded as it is an entry block.
       for (BasicBlockId i = {1}; i.value < func.basic_blocks.size (); ++i.value)
 	{
-	  const BasicBlock &bb = func.basic_blocks[bb_fold_map[i.value]];
+	  const BasicBlock &bb = func.basic_blocks[bb_fold_map[i]];
 	  if (bb.statements.empty () && bb.is_goto_terminated ())
 	    {
 	      auto dst = bb.successors.at (0);
-	      if (bb_fold_map[dst.value] != dst)
+	      if (bb_fold_map[dst] != dst)
 		{
 		  rust_error_at (
 		    UNKNOWN_LOCATION,
@@ -100,12 +100,12 @@ simplify_cfg (Function &func, std::vector<BasicBlockId> &bb_fold_map)
 		  for (BasicBlockId i = ENTRY_BASIC_BLOCK;
 		       i.value < bb_fold_map.size (); ++i.value)
 		    {
-		      bb_fold_map[i.value] = i;
+		      bb_fold_map[i] = i;
 		    }
 		  stabilized = true;
 		  break;
 		}
-	      bb_fold_map[i.value] = dst;
+	      bb_fold_map[i] = dst;
 	      stabilized = false;
 	    }
 	}
@@ -119,7 +119,7 @@ Dump::go (bool enable_simplify_cfg)
   for (BasicBlockId i = ENTRY_BASIC_BLOCK; i.value < bb_fold_map.size ();
        ++i.value)
     {
-      bb_fold_map[i.value] = i;
+      bb_fold_map[i] = i;
     }
   for (size_t i = 0; i < place_map.size (); ++i)
     {
@@ -146,7 +146,7 @@ Dump::go (bool enable_simplify_cfg)
   for (statement_bb = ENTRY_BASIC_BLOCK;
        statement_bb.value < func.basic_blocks.size (); ++statement_bb.value)
     {
-      if (bb_fold_map[statement_bb.value] != statement_bb)
+      if (bb_fold_map[statement_bb] != statement_bb)
 	continue; // This BB was folded.
 
       if (func.basic_blocks[statement_bb].statements.empty ()
@@ -157,7 +157,7 @@ Dump::go (bool enable_simplify_cfg)
 
       BasicBlock &bb = func.basic_blocks[statement_bb];
       stream << "\n";
-      stream << indentation << "bb" << bb_fold_map[statement_bb.value].value
+      stream << indentation << "bb" << bb_fold_map[statement_bb].value
 	     << ": {\n";
       size_t i = 0;
       for (auto &stmt : bb.statements)
@@ -168,8 +168,8 @@ Dump::go (bool enable_simplify_cfg)
 	}
       if (!bb_terminated)
 	stream << indentation << indentation << "goto -> bb"
-	       << bb_fold_map[bb.successors.at (0).value].value << ";\t\t"
-	       << i++ << "\n";
+	       << bb_fold_map[bb.successors.at (0)].value << ";\t\t" << i++
+	       << "\n";
 
       stream << indentation << "}\n";
     }
@@ -194,7 +194,7 @@ Dump::visit (const Statement &stmt)
       stream << ") -> [";
       print_comma_separated (stream, func.basic_blocks[statement_bb].successors,
 			     [this] (BasicBlockId succ) {
-			       stream << "bb" << bb_fold_map[succ.value].value;
+			       stream << "bb" << bb_fold_map[succ].value;
 			     });
       stream << "]";
       bb_terminated = true;
@@ -206,8 +206,7 @@ Dump::visit (const Statement &stmt)
     case Statement::Kind::GOTO:
       stream
 	<< "goto -> bb"
-	<< bb_fold_map[func.basic_blocks[statement_bb].successors.at (0).value]
-	     .value;
+	<< bb_fold_map[func.basic_blocks[statement_bb].successors.at (0)].value;
       bb_terminated = true;
       break;
     case Statement::Kind::STORAGE_DEAD:
@@ -329,7 +328,7 @@ Dump::visit (const CallExpr &expr)
   stream << ") -> [";
   print_comma_separated (stream, func.basic_blocks[statement_bb].successors,
 			 [this] (BasicBlockId succ) {
-			   stream << "bb" << bb_fold_map[succ.value].value;
+			   stream << "bb" << bb_fold_map[succ].value;
 			 });
   stream << "]";
   bb_terminated = true;

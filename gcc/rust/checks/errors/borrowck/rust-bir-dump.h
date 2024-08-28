@@ -34,7 +34,7 @@ class Dump : public Visitor
   Function &func;
   const std::string &name;
 
-  std::vector<BasicBlockId> bb_fold_map;
+  IndexVec<BasicBlockId, BasicBlockId> bb_fold_map;
   std::vector<PlaceId> place_map;
 
   PlaceId statement_place = INVALID_PLACE;

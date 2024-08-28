@@ -205,6 +205,9 @@ template <typename I, typename T> class IndexVec
   std::vector<T> internal_vector;
 
 public:
+  IndexVec () = default;
+  IndexVec (size_t size) { internal_vector.reserve (size); }
+
   T &at (I pid) { return internal_vector[pid.value]; }
   const T &at (I pid) const { return internal_vector[pid.value]; }
   T &operator[] (I pid) { return internal_vector[pid.value]; }
