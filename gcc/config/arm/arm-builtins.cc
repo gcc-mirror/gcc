@@ -477,19 +477,6 @@ arm_ternop_unone_unone_none_none_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   (arm_ternop_unone_unone_none_none_qualifiers)
 
 static enum arm_type_qualifiers
-arm_ternop_unone_none_unone_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_none, qualifier_unsigned,
-      qualifier_immediate };
-#define TERNOP_UNONE_NONE_UNONE_IMM_QUALIFIERS \
-  (arm_ternop_unone_none_unone_imm_qualifiers)
-
-static enum arm_type_qualifiers
-arm_ternop_none_none_unone_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_none, qualifier_none, qualifier_unsigned, qualifier_immediate };
-#define TERNOP_NONE_NONE_UNONE_IMM_QUALIFIERS \
-  (arm_ternop_none_none_unone_imm_qualifiers)
-
-static enum arm_type_qualifiers
 arm_ternop_unone_unone_none_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_none,
     qualifier_immediate };

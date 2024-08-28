@@ -1664,34 +1664,6 @@
 ;;
 ;; [vshlcq_u vshlcq_s]
 ;;
-(define_expand "mve_vshlcq_vec_<supf><mode>"
- [(match_operand:MVE_2 0 "s_register_operand")
-  (match_operand:MVE_2 1 "s_register_operand")
-  (match_operand:SI 2 "s_register_operand")
-  (match_operand:SI 3 "mve_imm_32")
-  (unspec:MVE_2 [(const_int 0)] VSHLCQ)]
- "TARGET_HAVE_MVE"
-{
-  rtx ignore_wb = gen_reg_rtx (SImode);
-  emit_insn(gen_mve_vshlcq_<supf><mode>(operands[0], ignore_wb, operands[1],
-				      operands[2], operands[3]));
-  DONE;
-})
-
-(define_expand "mve_vshlcq_carry_<supf><mode>"
- [(match_operand:SI 0 "s_register_operand")
-  (match_operand:MVE_2 1 "s_register_operand")
-  (match_operand:SI 2 "s_register_operand")
-  (match_operand:SI 3 "mve_imm_32")
-  (unspec:MVE_2 [(const_int 0)] VSHLCQ)]
- "TARGET_HAVE_MVE"
-{
-  rtx ignore_vec = gen_reg_rtx (<MODE>mode);
-  emit_insn(gen_mve_vshlcq_<supf><mode>(ignore_vec, operands[0], operands[1],
-				      operands[2], operands[3]));
-  DONE;
-})
-
 (define_insn "@mve_vshlcq_<supf><mode>"
  [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
        (unspec:MVE_2 [(match_operand:MVE_2 2 "s_register_operand" "0")
@@ -6220,38 +6192,6 @@
 ;;
 ;; [vshlcq_m_u vshlcq_m_s]
 ;;
-(define_expand "mve_vshlcq_m_vec_<supf><mode>"
- [(match_operand:MVE_2 0 "s_register_operand")
-  (match_operand:MVE_2 1 "s_register_operand")
-  (match_operand:SI 2 "s_register_operand")
-  (match_operand:SI 3 "mve_imm_32")
-  (match_operand:<MVE_VPRED> 4 "vpr_register_operand")
-  (unspec:MVE_2 [(const_int 0)] VSHLCQ_M)]
- "TARGET_HAVE_MVE"
-{
-  rtx ignore_wb = gen_reg_rtx (SImode);
-  emit_insn (gen_mve_vshlcq_m_<supf><mode> (operands[0], ignore_wb, operands[1],
-					    operands[2], operands[3],
-					    operands[4]));
-  DONE;
-})
-
-(define_expand "mve_vshlcq_m_carry_<supf><mode>"
- [(match_operand:SI 0 "s_register_operand")
-  (match_operand:MVE_2 1 "s_register_operand")
-  (match_operand:SI 2 "s_register_operand")
-  (match_operand:SI 3 "mve_imm_32")
-  (match_operand:<MVE_VPRED> 4 "vpr_register_operand")
-  (unspec:MVE_2 [(const_int 0)] VSHLCQ_M)]
- "TARGET_HAVE_MVE"
-{
-  rtx ignore_vec = gen_reg_rtx (<MODE>mode);
-  emit_insn (gen_mve_vshlcq_m_<supf><mode> (ignore_vec, operands[0],
-					    operands[1], operands[2],
-					    operands[3], operands[4]));
-  DONE;
-})
-
 (define_insn "@mve_vshlcq_m_<supf><mode>"
  [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
        (unspec:MVE_2 [(match_operand:MVE_2 2 "s_register_operand" "0")
