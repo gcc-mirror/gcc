@@ -1921,6 +1921,27 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
       {
 	widest_int r1max = r1val | r1mask;
 	widest_int r2max = r2val | r2mask;
+	if (r2mask == 0)
+	  {
+	    widest_int shift = wi::exact_log2 (r2val);
+	    if (shift != -1)
+	      {
+		// Handle modulo by a power of 2 as a bitwise and.
+		widest_int tem_val, tem_mask;
+		bit_value_binop (BIT_AND_EXPR, sgn, width, &tem_val, &tem_mask,
+				 r1type_sgn, r1type_precision, r1val, r1mask,
+				 r2type_sgn, r2type_precision,
+				 r2val - 1, r2mask);
+		if (sgn == UNSIGNED
+		    || !wi::neg_p (r1max)
+		    || (tem_mask == 0 && tem_val == 0))
+		  {
+		    *val = tem_val;
+		    *mask = tem_mask;
+		    return;
+		  }
+	      }
+	  }
 	if (sgn == UNSIGNED
 	    || (!wi::neg_p (r1max) && !wi::neg_p (r2max)))
 	  {
@@ -1949,11 +1970,15 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 	}
       break;
 
+    case EXACT_DIV_EXPR:
     case TRUNC_DIV_EXPR:
       {
 	widest_int r1max = r1val | r1mask;
 	widest_int r2max = r2val | r2mask;
-	if (r2mask == 0 && !wi::neg_p (r1max))
+	if (r2mask == 0
+	    && (code == EXACT_DIV_EXPR
+		|| sgn == UNSIGNED
+		|| !wi::neg_p (r1max)))
 	  {
 	    widest_int shift = wi::exact_log2 (r2val);
 	    if (shift != -1)
