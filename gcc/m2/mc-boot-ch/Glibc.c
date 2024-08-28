@@ -343,10 +343,10 @@ libc_creat (char *p, mode_t mode)
 
 EXTERN
 int
-libc_open (void *p, int oflag, int mode)
+libc_open (void *p, int flags, int mode)
 {
-  tracedb_open (p, oflag, mode);
-  int result = open (reinterpret_cast <char *> (p), oflag, mode);
+  tracedb_open (p, flags, mode);
+  int result = open (reinterpret_cast <char *> (p), flags, mode);
   tracedb_result (result);
   return result;
 }
