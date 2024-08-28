@@ -105,8 +105,8 @@ static const sve_vec_cost generic_sve_vector_cost =
   2, /* fadda_f64_cost  */
   4, /* gather_load_x32_cost  */
   2, /* gather_load_x64_cost  */
-  12, /* gather_load_x32_init_cost  */
-  4, /* gather_load_x64_init_cost  */
+  0, /* gather_load_x32_init_cost  */
+  0, /* gather_load_x64_init_cost  */
   1 /* scatter_store_elt_cost  */
 };
 
