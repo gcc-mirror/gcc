@@ -86,7 +86,7 @@ statements (int n)
   /* Compound literals.  */
 
   (svint8_t) {};
-  (svint8_t) { sve_sc1 };
+  (svint8_t) { sve_sc1 }; /* { dg-error {incompatible types when initializing type 'signed char' using type 'svint8_t'} } */
 
   (int) { sve_sc1 }; /* { dg-error {incompatible types when initializing type 'int' using type 'svint8_t'} } */
 

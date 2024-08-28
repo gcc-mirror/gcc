@@ -47,25 +47,25 @@ f (int c)
   svbool_t sb;
   fixed_bool_t fb;
 
-  ss8 = ss8 + ss8; // { dg-error {invalid operands [^\n]* binary[^\n]*\+} }
-  ss8 = ss8 + fs8; // { dg-error {invalid operands [^\n]* binary[^\n]*\+} }
-  ss8 = ss8 + gs8; // { dg-error {invalid operands [^\n]* binary[^\n]*\+} }
-  ss8 += ss8; // { dg-error {invalid operands [^\n]* binary[^\n]*\+} }
-  ss8 += fs8; // { dg-error {invalid operands [^\n]* binary[^\n]*\+} }
-  ss8 += gs8; // { dg-error {invalid operands [^\n]* binary[^\n]*\+} }
+  ss8 = ss8 + ss8;
+  ss8 = ss8 + fs8;
+  ss8 = ss8 + gs8; /* { dg-error {cannot combine GNU and SVE vectors in a binary operation} } */
+  ss8 += ss8;
+  ss8 += fs8;
+  ss8 += gs8; /* { dg-error {cannot combine GNU and SVE vectors in a binary operation} } */
 
-  fs8 = fs8 + ss8; // { dg-error {invalid operands [^\n]* binary[^\n]*\+} }
+  fs8 = fs8 + ss8;
   fs8 = fs8 + fs8;
-  fs8 = fs8 + gs8; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
-  fs8 += ss8; // { dg-error {invalid operands [^\n]* binary[^\n]*\+} }
+  fs8 = fs8 + gs8; /* { dg-error {cannot combine GNU and SVE vectors in a binary operation} } */
+  fs8 += ss8;
   fs8 += fs8;
-  fs8 += gs8; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  fs8 += gs8; /* { dg-error {cannot combine GNU and SVE vectors in a binary operation} } */
 
-  gs8 = gs8 + ss8; // { dg-error {invalid operands [^\n]* binary[^\n]*\+} }
-  gs8 = gs8 + fs8; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gs8 = gs8 + ss8; /* { dg-error {cannot combine GNU and SVE vectors in a binary operation} } */
+  gs8 = gs8 + fs8; /* { dg-error {cannot combine GNU and SVE vectors in a binary operation} } */
   gs8 = gs8 + gs8;
-  gs8 += ss8; // { dg-error {invalid operands [^\n]* binary[^\n]*\+} }
-  gs8 += fs8; // { dg-error {cannot combine GNU and SVE vectors in a binary operation} }
+  gs8 += ss8; /* { dg-error {cannot combine GNU and SVE vectors in a binary operation} } */
+  gs8 += fs8; /* { dg-error {cannot combine GNU and SVE vectors in a binary operation} } */
   gs8 += gs8;
 
   fs8 = ss8;
