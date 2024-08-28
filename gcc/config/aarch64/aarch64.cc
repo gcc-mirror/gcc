@@ -16819,7 +16819,8 @@ aarch64_detect_vector_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
       && STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_GATHER_SCATTER)
     {
       unsigned int nunits = vect_nunits_for_cost (vectype);
-      if (GET_MODE_UNIT_BITSIZE (TYPE_MODE (vectype)) == 64)
+      /* Test for VNx2 modes, which have 64-bit containers.  */
+      if (known_eq (GET_MODE_NUNITS (TYPE_MODE (vectype)), aarch64_sve_vg))
 	return { sve_costs->gather_load_x64_cost, nunits };
       return { sve_costs->gather_load_x32_cost, nunits };
     }
@@ -17309,7 +17310,9 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	  const sve_vec_cost *sve_costs = aarch64_tune_params.vec_costs->sve;
 	  if (sve_costs)
 	    {
-	      if (GET_MODE_UNIT_BITSIZE (TYPE_MODE (vectype)) == 64)
+	      /* Test for VNx2 modes, which have 64-bit containers.  */
+	      if (known_eq (GET_MODE_NUNITS (TYPE_MODE (vectype)),
+			    aarch64_sve_vg))
 		m_sve_gather_scatter_init_cost
 		  += sve_costs->gather_load_x64_init_cost;
 	      else
