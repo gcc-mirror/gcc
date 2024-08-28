@@ -810,6 +810,7 @@ function_instance::has_inactive_argument () const
       || (base == functions::vrshlq && mode_suffix_id == MODE_n)
       || base == functions::vrshrnbq
       || base == functions::vrshrntq
+      || base == functions::vshlcq
       || base == functions::vshrnbq
       || base == functions::vshrntq
       || base == functions::vsliq

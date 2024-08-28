@@ -536,6 +536,77 @@ public:
   }
 };
 
+/* Map the vshlc function directly to CODE (UNSPEC, M) where M is the vector
+   mode associated with type suffix 0.  We need this special case because the
+   intrinsics derefrence the second parameter and update its contents.  */
+class vshlc_impl : public function_base
+{
+public:
+  unsigned int
+  call_properties (const function_instance &) const override
+  {
+    return CP_WRITE_MEMORY | CP_READ_MEMORY;
+  }
+
+  tree
+  memory_scalar_type (const function_instance &) const override
+  {
+    return get_typenode_from_name (UINT32_TYPE);
+  }
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    machine_mode mode = e.vector_mode (0);
+    insn_code code;
+    rtx insns, carry_ptr, carry, new_carry;
+    int carry_arg_no;
+
+    if (! e.type_suffix (0).integer_p)
+      gcc_unreachable ();
+
+    if (e.mode_suffix_id != MODE_none)
+      gcc_unreachable ();
+
+    carry_arg_no = 1;
+
+    carry = gen_reg_rtx (SImode);
+    carry_ptr = e.args[carry_arg_no];
+    emit_insn (gen_rtx_SET (carry, gen_rtx_MEM (SImode, carry_ptr)));
+    e.args[carry_arg_no] = carry;
+
+    new_carry = gen_reg_rtx (SImode);
+    e.args.quick_insert (0, new_carry);
+
+    switch (e.pred)
+      {
+      case PRED_none:
+	/* No predicate.  */
+	code = e.type_suffix (0).unsigned_p
+	  ? code_for_mve_vshlcq (VSHLCQ_U, mode)
+	  : code_for_mve_vshlcq (VSHLCQ_S, mode);
+	insns = e.use_exact_insn (code);
+	break;
+
+      case PRED_m:
+	/* "m" predicate.  */
+	code = e.type_suffix (0).unsigned_p
+	  ? code_for_mve_vshlcq_m (VSHLCQ_M_U, mode)
+	  : code_for_mve_vshlcq_m (VSHLCQ_M_S, mode);
+	insns = e.use_cond_insn (code, 0);
+	break;
+
+      default:
+	gcc_unreachable ();
+      }
+
+    /* Update carry.  */
+    emit_insn (gen_rtx_SET (gen_rtx_MEM (Pmode, carry_ptr), new_carry));
+
+    return insns;
+  }
+};
+
 } /* end anonymous namespace */
 
 namespace arm_mve {
@@ -868,6 +939,7 @@ FUNCTION_WITH_M_N_NO_F (vrshlq, VRSHLQ)
 FUNCTION_ONLY_N_NO_F (vrshrnbq, VRSHRNBQ)
 FUNCTION_ONLY_N_NO_F (vrshrntq, VRSHRNTQ)
 FUNCTION_ONLY_N_NO_F (vrshrq, VRSHRQ)
+FUNCTION (vshlcq, vshlc_impl,)
 FUNCTION_ONLY_N_NO_F (vshllbq, VSHLLBQ)
 FUNCTION_ONLY_N_NO_F (vshlltq, VSHLLTQ)
 FUNCTION_WITH_M_N_R (vshlq, VSHLQ)

@@ -1692,7 +1692,7 @@
   DONE;
 })
 
-(define_insn "mve_vshlcq_<supf><mode>"
+(define_insn "@mve_vshlcq_<supf><mode>"
  [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
        (unspec:MVE_2 [(match_operand:MVE_2 2 "s_register_operand" "0")
 		      (match_operand:SI 3 "s_register_operand" "1")
@@ -6252,7 +6252,7 @@
   DONE;
 })
 
-(define_insn "mve_vshlcq_m_<supf><mode>"
+(define_insn "@mve_vshlcq_m_<supf><mode>"
  [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
        (unspec:MVE_2 [(match_operand:MVE_2 2 "s_register_operand" "0")
 		      (match_operand:SI 3 "s_register_operand" "1")
