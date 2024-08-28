@@ -607,6 +607,98 @@ public:
   }
 };
 
+/* Map the vadc and similar functions directly to CODE (UNSPEC, UNSPEC).  Take
+   care of the implicit carry argument.  */
+class vadc_vsbc_impl : public function_base
+{
+public:
+  unsigned int
+  call_properties (const function_instance &) const override
+  {
+    unsigned int flags = CP_WRITE_MEMORY | CP_READ_FPCR;
+    return flags;
+  }
+
+  tree
+  memory_scalar_type (const function_instance &) const override
+  {
+    /* carry is "unsigned int".  */
+    return get_typenode_from_name ("unsigned int");
+  }
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    insn_code code;
+    rtx insns, carry_ptr, carry_out;
+    int carry_out_arg_no;
+    int unspec;
+
+    if (! e.type_suffix (0).integer_p)
+      gcc_unreachable ();
+
+    if (e.mode_suffix_id != MODE_none)
+      gcc_unreachable ();
+
+    /* Remove carry from arguments, it is implicit for the builtin.  */
+    switch (e.pred)
+      {
+      case PRED_none:
+	carry_out_arg_no = 2;
+	break;
+
+      case PRED_m:
+	carry_out_arg_no = 3;
+	break;
+
+      default:
+	gcc_unreachable ();
+      }
+
+    carry_ptr = e.args[carry_out_arg_no];
+    e.args.ordered_remove (carry_out_arg_no);
+
+    switch (e.pred)
+      {
+      case PRED_none:
+	/* No predicate.  */
+	unspec = e.type_suffix (0).unsigned_p
+	  ? VADCIQ_U
+	  : VADCIQ_S;
+	code = code_for_mve_q_v4si (unspec, unspec);
+	insns = e.use_exact_insn (code);
+	break;
+
+      case PRED_m:
+	/* "m" predicate.  */
+	unspec = e.type_suffix (0).unsigned_p
+	  ? VADCIQ_M_U
+	  : VADCIQ_M_S;
+	code = code_for_mve_q_m_v4si (unspec, unspec);
+	insns = e.use_cond_insn (code, 0);
+	break;
+
+      default:
+	gcc_unreachable ();
+      }
+
+    /* Update carry_out.  */
+    carry_out = gen_reg_rtx (SImode);
+    emit_insn (gen_get_fpscr_nzcvqc (carry_out));
+    emit_insn (gen_rtx_SET (carry_out,
+			    gen_rtx_LSHIFTRT (SImode,
+					      carry_out,
+					      GEN_INT (29))));
+    emit_insn (gen_rtx_SET (carry_out,
+			    gen_rtx_AND (SImode,
+					 carry_out,
+					 GEN_INT (1))));
+    emit_insn (gen_rtx_SET (gen_rtx_MEM (Pmode, carry_ptr), carry_out));
+
+    return insns;
+  }
+};
+
 } /* end anonymous namespace */
 
 namespace arm_mve {
@@ -777,6 +869,7 @@ namespace arm_mve {
 FUNCTION_PRED_P_S_U (vabavq, VABAVQ)
 FUNCTION_WITHOUT_N (vabdq, VABDQ)
 FUNCTION (vabsq, unspec_based_mve_function_exact_insn, (ABS, ABS, ABS, -1, -1, -1, VABSQ_M_S, -1, VABSQ_M_F, -1, -1, -1))
+FUNCTION (vadciq, vadc_vsbc_impl,)
 FUNCTION_WITH_RTX_M_N (vaddq, PLUS, VADDQ)
 FUNCTION_PRED_P_S_U (vaddlvaq, VADDLVAQ)
 FUNCTION_PRED_P_S_U (vaddlvq, VADDLVQ)

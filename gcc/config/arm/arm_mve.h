@@ -85,8 +85,6 @@
 #define vstrdq_scatter_base_wb_p(__addr, __offset, __value, __p) __arm_vstrdq_scatter_base_wb_p(__addr, __offset, __value, __p)
 #define vstrwq_scatter_base_wb_p(__addr, __offset, __value, __p) __arm_vstrwq_scatter_base_wb_p(__addr, __offset, __value, __p)
 #define vstrwq_scatter_base_wb(__addr, __offset, __value) __arm_vstrwq_scatter_base_wb(__addr, __offset, __value)
-#define vadciq(__a, __b, __carry_out) __arm_vadciq(__a, __b, __carry_out)
-#define vadciq_m(__inactive, __a, __b, __carry_out, __p) __arm_vadciq_m(__inactive, __a, __b, __carry_out, __p)
 #define vadcq(__a, __b, __carry) __arm_vadcq(__a, __b, __carry)
 #define vadcq_m(__inactive, __a, __b, __carry, __p) __arm_vadcq_m(__inactive, __a, __b, __carry, __p)
 #define vsbciq(__a, __b, __carry_out) __arm_vsbciq(__a, __b, __carry_out)
@@ -321,10 +319,6 @@
 #define vstrwq_scatter_base_wb_s32(__addr, __offset, __value) __arm_vstrwq_scatter_base_wb_s32(__addr, __offset, __value)
 #define vstrwq_scatter_base_wb_u32(__addr, __offset, __value) __arm_vstrwq_scatter_base_wb_u32(__addr, __offset, __value)
 #define vstrwq_scatter_base_wb_f32(__addr, __offset, __value) __arm_vstrwq_scatter_base_wb_f32(__addr, __offset, __value)
-#define vadciq_s32(__a, __b,  __carry_out) __arm_vadciq_s32(__a, __b,  __carry_out)
-#define vadciq_u32(__a, __b,  __carry_out) __arm_vadciq_u32(__a, __b,  __carry_out)
-#define vadciq_m_s32(__inactive, __a, __b,  __carry_out, __p) __arm_vadciq_m_s32(__inactive, __a, __b,  __carry_out, __p)
-#define vadciq_m_u32(__inactive, __a, __b,  __carry_out, __p) __arm_vadciq_m_u32(__inactive, __a, __b,  __carry_out, __p)
 #define vadcq_s32(__a, __b,  __carry) __arm_vadcq_s32(__a, __b,  __carry)
 #define vadcq_u32(__a, __b,  __carry) __arm_vadcq_u32(__a, __b,  __carry)
 #define vadcq_m_s32(__inactive, __a, __b,  __carry, __p) __arm_vadcq_m_s32(__inactive, __a, __b,  __carry, __p)
@@ -1688,42 +1682,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vstrwq_scatter_base_wb_u32 (uint32x4_t * __addr, const int __offset, uint32x4_t __value)
 {
   *__addr = __builtin_mve_vstrwq_scatter_base_wb_uv4si (*__addr, __offset, __value);
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vadciq_s32 (int32x4_t __a, int32x4_t __b, unsigned * __carry_out)
-{
-  int32x4_t __res = __builtin_mve_vadciq_sv4si (__a, __b);
-  *__carry_out = (__builtin_arm_get_fpscr_nzcvqc () >> 29) & 0x1u;
-  return __res;
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vadciq_u32 (uint32x4_t __a, uint32x4_t __b, unsigned * __carry_out)
-{
-  uint32x4_t __res = __builtin_mve_vadciq_uv4si (__a, __b);
-  *__carry_out = (__builtin_arm_get_fpscr_nzcvqc () >> 29) & 0x1u;
-  return __res;
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vadciq_m_s32 (int32x4_t __inactive, int32x4_t __a, int32x4_t __b, unsigned * __carry_out, mve_pred16_t __p)
-{
-  int32x4_t __res =  __builtin_mve_vadciq_m_sv4si (__inactive, __a, __b, __p);
-  *__carry_out = (__builtin_arm_get_fpscr_nzcvqc () >> 29) & 0x1u;
-  return __res;
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vadciq_m_u32 (uint32x4_t __inactive, uint32x4_t __a, uint32x4_t __b, unsigned * __carry_out, mve_pred16_t __p)
-{
-  uint32x4_t __res = __builtin_mve_vadciq_m_uv4si (__inactive, __a, __b, __p);
-  *__carry_out = (__builtin_arm_get_fpscr_nzcvqc () >> 29) & 0x1u;
-  return __res;
 }
 
 __extension__ extern __inline int32x4_t
@@ -3644,34 +3602,6 @@ __arm_vstrwq_scatter_base_wb (uint32x4_t * __addr, const int __offset, uint32x4_
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vadciq (int32x4_t __a, int32x4_t __b, unsigned * __carry_out)
-{
- return __arm_vadciq_s32 (__a, __b, __carry_out);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vadciq (uint32x4_t __a, uint32x4_t __b, unsigned * __carry_out)
-{
- return __arm_vadciq_u32 (__a, __b, __carry_out);
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vadciq_m (int32x4_t __inactive, int32x4_t __a, int32x4_t __b, unsigned * __carry_out, mve_pred16_t __p)
-{
- return __arm_vadciq_m_s32 (__inactive, __a, __b, __carry_out, __p);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vadciq_m (uint32x4_t __inactive, uint32x4_t __a, uint32x4_t __b, unsigned * __carry_out, mve_pred16_t __p)
-{
- return __arm_vadciq_m_u32 (__inactive, __a, __b, __carry_out, __p);
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vadcq (int32x4_t __a, int32x4_t __b, unsigned * __carry)
 {
  return __arm_vadcq_s32 (__a, __b, __carry);
@@ -5289,12 +5219,6 @@ extern void *__ARM_undef;
 #endif /* MVE Integer.  */
 
 
-#define __arm_vadciq(p0,p1,p2) ({ __typeof(p0) __p0 = (p0); \
-  __typeof(p1) __p1 = (p1); \
-  _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)])0, \
-  int (*)[__ARM_mve_type_int32x4_t][__ARM_mve_type_int32x4_t]: __arm_vadciq_s32 (__ARM_mve_coerce(__p0, int32x4_t), __ARM_mve_coerce(__p1, int32x4_t), p2), \
-  int (*)[__ARM_mve_type_uint32x4_t][__ARM_mve_type_uint32x4_t]: __arm_vadciq_u32 (__ARM_mve_coerce(__p0, uint32x4_t), __ARM_mve_coerce(__p1, uint32x4_t), p2));})
-
 #define __arm_vstrdq_scatter_base_wb_p(p0,p1,p2,p3) ({ __typeof(p2) __p2 = (p2); \
   _Generic( (int (*)[__ARM_mve_typeid(__p2)])0, \
   int (*)[__ARM_mve_type_int64x2_t]: __arm_vstrdq_scatter_base_wb_p_s64 (p0, p1, __ARM_mve_coerce(__p2, int64x2_t), p3), \
@@ -5320,19 +5244,6 @@ extern void *__ARM_undef;
 #define __arm_vldrdq_gather_shifted_offset_z(p0,p1,p2) ( _Generic( (int (*)[__ARM_mve_typeid(p0)])0, \
   int (*)[__ARM_mve_type_int64_t_ptr]: __arm_vldrdq_gather_shifted_offset_z_s64 (__ARM_mve_coerce_s64_ptr(p0, int64_t *), p1, p2), \
   int (*)[__ARM_mve_type_uint64_t_ptr]: __arm_vldrdq_gather_shifted_offset_z_u64 (__ARM_mve_coerce_u64_ptr(p0, uint64_t *), p1, p2)))
-
-#define __arm_vadciq_m(p0,p1,p2,p3,p4) ({ __typeof(p0) __p0 = (p0); \
-  __typeof(p1) __p1 = (p1); \
-  __typeof(p2) __p2 = (p2); \
-  _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)][__ARM_mve_typeid(__p2)])0, \
-  int (*)[__ARM_mve_type_int32x4_t][__ARM_mve_type_int32x4_t][__ARM_mve_type_int32x4_t]: __arm_vadciq_m_s32 (__ARM_mve_coerce(__p0, int32x4_t), __ARM_mve_coerce(__p1, int32x4_t), __ARM_mve_coerce(__p2, int32x4_t), p3, p4), \
-  int (*)[__ARM_mve_type_uint32x4_t][__ARM_mve_type_uint32x4_t][__ARM_mve_type_uint32x4_t]: __arm_vadciq_m_u32 (__ARM_mve_coerce(__p0, uint32x4_t), __ARM_mve_coerce(__p1, uint32x4_t), __ARM_mve_coerce(__p2, uint32x4_t), p3, p4));})
-
-#define __arm_vadciq(p0,p1,p2) ({ __typeof(p0) __p0 = (p0); \
-  __typeof(p1) __p1 = (p1); \
-  _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)])0, \
-  int (*)[__ARM_mve_type_int32x4_t][__ARM_mve_type_int32x4_t]: __arm_vadciq_s32 (__ARM_mve_coerce(__p0, int32x4_t), __ARM_mve_coerce(__p1, int32x4_t), p2), \
-  int (*)[__ARM_mve_type_uint32x4_t][__ARM_mve_type_uint32x4_t]: __arm_vadciq_u32 (__ARM_mve_coerce(__p0, uint32x4_t), __ARM_mve_coerce(__p1, uint32x4_t), p2));})
 
 #define __arm_vadcq_m(p0,p1,p2,p3,p4) ({ __typeof(p0) __p0 = (p0); \
   __typeof(p1) __p1 = (p1); \
