@@ -3038,6 +3038,15 @@ vect_print_slp_graph (dump_flags_t dump_kind, dump_location_t loc,
   vect_print_slp_graph (dump_kind, loc, entry, visited);
 }
 
+DEBUG_FUNCTION void
+debug (slp_instance instance)
+{
+  debug_dump_context ctx;
+  vect_print_slp_graph (MSG_NOTE,
+			dump_location_t::from_location_t (UNKNOWN_LOCATION),
+			SLP_INSTANCE_TREE (instance));
+}
+
 /* Mark the tree rooted at NODE with PURE_SLP.  */
 
 static void
