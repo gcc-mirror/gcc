@@ -77,6 +77,7 @@ namespace arm_mve
     extern const function_shape *const unary_n;
     extern const function_shape *const unary_widen;
     extern const function_shape *const unary_widen_acc;
+    extern const function_shape *const vadc_vsbc;
     extern const function_shape *const vctp;
     extern const function_shape *const vcvt;
     extern const function_shape *const vcvt_f16_f32;

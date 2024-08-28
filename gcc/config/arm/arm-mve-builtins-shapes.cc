@@ -1996,6 +1996,42 @@ struct unary_widen_acc_def : public overloaded_base<0>
 };
 SHAPE (unary_widen_acc)
 
+/* <T0>_t vfoo[_t0](T0, T0, uint32_t*)
+
+   Example: vadcq.
+   int32x4_t [__arm_]vadcq[_s32](int32x4_t a, int32x4_t b, unsigned *carry)
+   int32x4_t [__arm_]vadcq_m[_s32](int32x4_t inactive, int32x4_t a, int32x4_t b, unsigned *carry, mve_pred16_t p)  */
+struct vadc_vsbc_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "v0,v0,v0,as", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (3, i, nargs)
+	|| (type = r.infer_vector_type (0)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    if (!r.require_matching_vector_type (1, type))
+      return error_mark_node;
+
+    /* Check that last arg is a pointer.  */
+    if (!POINTER_TYPE_P (r.get_argument_type (i)))
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+};
+SHAPE (vadc_vsbc)
+
 /* mve_pred16_t foo_t0(uint32_t)
 
    Example: vctp16q.
