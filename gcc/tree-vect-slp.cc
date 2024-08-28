@@ -3486,6 +3486,7 @@ vect_build_slp_store_interleaving (vec<slp_tree> &rhs_nodes,
 	{
 	  SLP_TREE_CHILDREN (perm)
 	    .quick_push (SLP_TREE_CHILDREN (rhs_nodes[j])[l]);
+	  SLP_TREE_CHILDREN (rhs_nodes[j])[l]->refcnt++;
 	  for (unsigned k = 0;
 	       k < SLP_TREE_SCALAR_STMTS (rhs_nodes[j]).length (); ++k)
 	    {
@@ -3948,6 +3949,9 @@ vect_build_slp_instance (vec_info *vinfo,
 
 	  /* Now we assume we can build the root SLP node from all stores.  */
 	  node = vect_build_slp_store_interleaving (rhs_nodes, scalar_stmts);
+
+	  while (!rhs_nodes.is_empty ())
+	    vect_free_slp_tree (rhs_nodes.pop ());
 
 	  /* Create a new SLP instance.  */
 	  slp_instance new_instance = XNEW (class _slp_instance);
