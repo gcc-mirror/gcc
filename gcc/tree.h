@@ -1428,8 +1428,9 @@ class auto_suppress_location_wrappers
 #define ASM_INPUTS(NODE)        TREE_OPERAND (ASM_EXPR_CHECK (NODE), 2)
 #define ASM_CLOBBERS(NODE)      TREE_OPERAND (ASM_EXPR_CHECK (NODE), 3)
 #define ASM_LABELS(NODE)	TREE_OPERAND (ASM_EXPR_CHECK (NODE), 4)
-/* Nonzero if we want to create an ASM_INPUT instead of an
-   ASM_OPERAND with no operands.  */
+/* Nonzero if the asm is a basic asm, zero if it is an extended asm.
+   Basic asms use a plain ASM_INPUT insn pattern whereas extended asms
+   use an ASM_OPERANDS insn pattern.  */
 #define ASM_INPUT_P(NODE) (ASM_EXPR_CHECK (NODE)->base.static_flag)
 #define ASM_VOLATILE_P(NODE) (ASM_EXPR_CHECK (NODE)->base.public_flag)
 /* Nonzero if we want to consider this asm as minimum length and cost
