@@ -121,9 +121,9 @@ Dump::go (bool enable_simplify_cfg)
     {
       bb_fold_map[i] = i;
     }
-  for (size_t i = 0; i < place_map.size (); ++i)
+  for (PlaceId i = INVALID_PLACE; i.value < place_map.size (); ++i.value)
     {
-      place_map[i] = {i};
+      place_map[i] = i;
     }
 
   if (enable_simplify_cfg)
@@ -133,7 +133,7 @@ Dump::go (bool enable_simplify_cfg)
 
   stream << "fn " << name << "(";
   print_comma_separated (stream, func.arguments, [this] (PlaceId place_id) {
-    stream << "_" << place_map[place_id.value].value << ": "
+    stream << "_" << place_map[place_id].value << ": "
 	   << get_tyty_name (func.place_db[place_id].tyty);
   });
   stream << ") -> " << get_tyty_name (func.place_db[RETURN_VALUE_PLACE].tyty);
@@ -245,7 +245,7 @@ Dump::visit_place (PlaceId place_id)
     {
     case Place::TEMPORARY:
     case Place::VARIABLE:
-      stream << "_" << place_map[place_id.value].value;
+      stream << "_" << place_map[place_id].value;
       break;
     case Place::DEREF:
       stream << "(";
@@ -382,7 +382,7 @@ Dump::visit_scope (ScopeId id, size_t depth)
   for (auto &local : scope.locals)
     {
       indent (depth + 1) << "let _";
-      stream << place_map[local.value].value << ": "
+      stream << place_map[local].value << ": "
 	     << get_tyty_name (func.place_db[local].tyty);
       stream << ";\t";
 
