@@ -2418,6 +2418,50 @@ struct vpsel_def : public overloaded_base<0>
 };
 SHAPE (vpsel)
 
+/* <T0>_t vfoo[_t0](T0, uint32_t* , const int)
+
+   Check that 'imm' is in [1..32].
+
+   Example: vshlcq.
+   uint8x16_t [__arm_]vshlcq[_u8](uint8x16_t a, uint32_t *b, const int imm)
+   uint8x16_t [__arm_]vshlcq_m[_u8](uint8x16_t a, uint32_t *b, const int imm, mve_pred16_t p)  */
+struct vshlc_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "v0,v0,as,su64", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (3, i, nargs)
+	|| (type = r.infer_vector_type (0)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    /* Check that arg #2 is a pointer.  */
+    if (!POINTER_TYPE_P (r.get_argument_type (i - 1)))
+      return error_mark_node;
+
+    if (!r.require_integer_immediate (i))
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    return c.require_immediate_range (2, 1, 32);
+  }
+};
+SHAPE (vshlc)
+
 } /* end namespace arm_mve */
 
 #undef SHAPE
