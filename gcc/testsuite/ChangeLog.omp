@@ -1,6 +1,15 @@
 2025-04-02  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2024-08-28  Joern Rennecke  <joern.rennecke@riscy-ip.com>
+
+	PR testsuite/116271
+	* gcc.dg/vect/tsvc/vect-tsvc-s176.c [TRUNCATE_TEST]: Make sure
+	that m stays the same as the loop bound of the middle loop.
+	* gcc.dg/vect/tsvc/tsvc.h (get_expected_result) <s176> [TRUNCATE_TEST]:
+	Adjust expected value.
+
+	Backported from trunk:
 	2024-08-07  Joern Rennecke  <joern.rennecke@riscy-ip.com>
 
 	* gcc.dg/vect/tsvc/tsvc.h (iterations): Allow to override,

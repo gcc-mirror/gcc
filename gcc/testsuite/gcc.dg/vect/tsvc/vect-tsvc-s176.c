@@ -15,18 +15,20 @@ real_t s176(struct args_t * func_args)
 
     initialise_arrays(__func__);
 
-    int m = LEN_1D/2;
 #ifdef TRUNCATE_TEST
-    /* Do something equivalent to if (1) which the compiler is unlikely to
-       figure out.
-       FUNC_ARGS is in the caller's frame, so it shouldn't be between A and B.
-     */
-    if ((void *)func_args <= (void *)a || (void *)func_args >= (void *)b)
-	m = 32;
+/* Reduce the iteration counts without changing what is a variable and
+   what is a constant expression.
+   32000/25 == 640, i.e. it still has a nice power of two factor, but is
+   not a power of two itself, and still somewhat large-ish, so hopefully
+   this won't perturb the vectorizer decisions much.  */
+#define M_CONST LEN_1D/50
+#else
+#define M_CONST LEN_1D/2
 #endif
+    int m = M_CONST;
     
     for (int nl = 0; nl < 4*(10*iterations/LEN_1D); nl++) {
-        for (int j = 0; j < (LEN_1D/2); j++) {
+        for (int j = 0; j < (M_CONST); j++) {
             for (int i = 0; i < m; i++) {
                 a[i] += b[i+m-j-1] * c[j];
             }

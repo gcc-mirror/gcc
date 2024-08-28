@@ -1727,7 +1727,7 @@ real_t get_expected_result(const char * name)
 #ifndef TRUNCATE_TEST
         return 32021.121094f;
 #else /* TRUNCATE_TEST */
-        return 32024.082031f;
+        return 32023.751953f;
 #endif /* TRUNCATE_TEST */
 #endif /* iterations */
     } else {
