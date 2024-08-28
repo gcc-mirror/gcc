@@ -40,6 +40,10 @@
         integer, parameter :: omp_memspace_handle_kind = c_intptr_t
         integer, parameter :: omp_depend_kind = @OMP_DEPEND_KIND@
         integer, parameter :: omp_event_handle_kind = c_intptr_t
+        integer, parameter :: omp_interop_kind = c_intptr_t
+        integer, parameter :: omp_interop_fr_kind = c_int
+        integer, parameter :: omp_interop_property_kind = c_int
+        integer, parameter :: omp_interop_rc_kind = c_int
         integer (omp_sched_kind), parameter :: omp_sched_static = 1
         integer (omp_sched_kind), parameter :: omp_sched_dynamic = 2
         integer (omp_sched_kind), parameter :: omp_sched_guided = 3
@@ -172,6 +176,40 @@
                  parameter :: omp_low_lat_mem_space = 4
         integer, parameter :: omp_initial_device = -1
         integer, parameter :: omp_invalid_device = -4
+        integer (omp_interop_kind), &
+                 parameter :: omp_interop_none = 0_omp_interop_kind
+        integer (omp_interop_fr_kind), parameter :: omp_ifr_cuda = 1
+        integer (omp_interop_fr_kind), parameter :: omp_ifr_cuda_driver = 2
+        integer (omp_interop_fr_kind), parameter :: omp_ifr_opencl = 3
+        integer (omp_interop_fr_kind), parameter :: omp_ifr_sycl = 4
+        integer (omp_interop_fr_kind), parameter :: omp_ifr_hip = 5
+        integer (omp_interop_fr_kind), parameter :: omp_ifr_level_zero = 6
+        integer (omp_interop_fr_kind), parameter :: omp_ifr_hsa = 7
+        integer (omp_interop_fr_kind), &
+                 parameter :: omp_ifr_last = omp_ifr_hsa
+        integer (omp_interop_property_kind), parameter :: omp_ipr_fr_id = -1
+        integer (omp_interop_property_kind), parameter :: omp_ipr_fr_name = -2
+        integer (omp_interop_property_kind), parameter :: omp_ipr_vendor = -3
+        integer (omp_interop_property_kind), &
+                 parameter :: omp_ipr_vendor_name = -4
+        integer (omp_interop_property_kind), &
+                 parameter :: omp_ipr_device_num = -5
+        integer (omp_interop_property_kind), parameter :: omp_ipr_platform = -6
+        integer (omp_interop_property_kind), parameter :: omp_ipr_device = -7
+        integer (omp_interop_property_kind), &
+                 parameter :: omp_ipr_device_context = -8
+        integer (omp_interop_property_kind), &
+                 parameter :: omp_ipr_targetsync = -9
+        integer (omp_interop_property_kind), &
+                 parameter :: omp_ipr_first = omp_ipr_targetsync
+        integer (omp_interop_rc_kind), parameter :: omp_irc_no_value = 1
+        integer (omp_interop_rc_kind), parameter :: omp_irc_success = 0
+        integer (omp_interop_rc_kind), parameter :: omp_irc_empty = -1
+        integer (omp_interop_rc_kind), parameter :: omp_irc_out_of_range = -2
+        integer (omp_interop_rc_kind), parameter :: omp_irc_type_int = -3
+        integer (omp_interop_rc_kind), parameter :: omp_irc_type_ptr = -4
+        integer (omp_interop_rc_kind), parameter :: omp_irc_type_str = -5
+        integer (omp_interop_rc_kind), parameter :: omp_irc_other = -6
 
         type omp_alloctrait
           integer (kind=omp_alloctrait_key_kind) key
@@ -902,6 +940,67 @@
             integer(c_size_t), value :: size
             integer(c_int), value :: device_num
           end function omp_target_is_accessible
+        end interface
+
+        ! Interop functions: Note that the interface is not identical to the
+        ! OpenMP specification (c_int + VALUE + BIND(C) added) but usage
+        ! compatible; the following declarations permit to directly call the C
+        ! library function, except for the four string-returning functions.
+        interface
+          integer (c_int) function omp_get_num_interop_properties (interop) &
+              bind(C)
+            use, intrinsic :: iso_c_binding, only: c_int
+            use omp_lib_kinds
+            integer (omp_interop_kind), intent(in), value :: interop
+          end function omp_get_num_interop_properties
+
+          integer (c_intptr_t) function omp_get_interop_int (interop, &
+              property_id, ret_code) bind(C)
+            use, intrinsic :: iso_c_binding, only : c_intptr_t
+            use omp_lib_kinds
+            integer (omp_interop_kind), intent(in), value :: interop
+            integer (omp_interop_property_kind), value :: property_id
+            integer (omp_interop_rc_kind), optional, intent(out) :: ret_code
+          end function omp_get_interop_int
+
+          type (c_ptr) function omp_get_interop_ptr (interop, property_id, &
+              ret_code) bind(C)
+            use, intrinsic :: iso_c_binding, only : c_ptr
+            use omp_lib_kinds
+            integer (omp_interop_kind), intent(in), value :: interop
+            integer (omp_interop_property_kind), value :: property_id
+            integer (omp_interop_rc_kind), optional, intent(out) :: ret_code
+          end function omp_get_interop_ptr
+
+          character(:) function omp_get_interop_str (interop, property_id, &
+              ret_code)
+            use omp_lib_kinds
+            pointer :: omp_get_interop_str
+            integer (omp_interop_kind), intent(in), value :: interop
+            integer (omp_interop_property_kind), value :: property_id
+            integer (omp_interop_rc_kind), optional, intent(out) :: ret_code
+          end function omp_get_interop_str
+
+          character(:) function omp_get_interop_name (interop, property_id)
+            use omp_lib_kinds
+            pointer :: omp_get_interop_name
+            integer (omp_interop_kind), intent(in), value :: interop
+            integer (omp_interop_property_kind), value :: property_id
+          end function omp_get_interop_name
+
+          character(:) function omp_get_interop_type_desc (interop, property_id)
+            use omp_lib_kinds
+            pointer :: omp_get_interop_type_desc
+            integer (omp_interop_kind), intent(in), value :: interop
+            integer (omp_interop_property_kind), value :: property_id
+          end function omp_get_interop_type_desc
+
+          character(:) function omp_get_interop_rc_desc (interop, ret_code)
+            use omp_lib_kinds
+            pointer :: omp_get_interop_rc_desc
+            integer (omp_interop_kind), intent(in), value :: interop
+            integer (omp_interop_rc_kind), value :: ret_code
+          end function omp_get_interop_rc_desc
         end interface
 
 #if _OPENMP >= 201811

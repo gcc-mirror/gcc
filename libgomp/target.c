@@ -5113,6 +5113,116 @@ omp_pause_resource_all (omp_pause_resource_t kind)
 ialias (omp_pause_resource)
 ialias (omp_pause_resource_all)
 
+int
+omp_get_num_interop_properties (const omp_interop_t interop
+				__attribute__ ((unused)))
+{
+  /* Zero implementation defined. In total:
+     omp_get_num_interop_properties () - omp_ipr_first.  */
+  return 0;
+}
+
+omp_intptr_t
+omp_get_interop_int (const omp_interop_t interop __attribute__ ((unused)),
+		     omp_interop_property_t property_id,
+		     omp_interop_rc_t *ret_code)
+{
+  if (ret_code == NULL)
+    return 0;
+  if (property_id < omp_ipr_first || property_id >= 0)
+    *ret_code = omp_irc_out_of_range;
+  else
+    *ret_code = omp_irc_empty;  /* Assume omp_interop_none.  */
+  return 0;
+}
+
+void *
+omp_get_interop_ptr (const omp_interop_t interop __attribute__ ((unused)),
+		     omp_interop_property_t property_id,
+		     omp_interop_rc_t *ret_code)
+{
+  if (ret_code == NULL)
+    return NULL;
+  if (property_id < omp_ipr_first || property_id >= 0)
+    *ret_code = omp_irc_out_of_range;
+  else
+    *ret_code = omp_irc_empty;  /* Assume omp_interop_none.  */
+  return NULL;
+}
+
+const char *
+omp_get_interop_str (const omp_interop_t interop __attribute__ ((unused)),
+		     omp_interop_property_t property_id,
+		     omp_interop_rc_t *ret_code)
+{
+  if (ret_code == NULL)
+    return NULL;
+  if (property_id < omp_ipr_first || property_id >= 0)
+    *ret_code = omp_irc_out_of_range;
+  else
+    *ret_code = omp_irc_empty;  /* Assume omp_interop_none.  */
+  return NULL;
+}
+
+const char *
+omp_get_interop_name (const omp_interop_t interop __attribute__ ((unused)),
+		      omp_interop_property_t property_id)
+{
+  static const char *prop_string[0 - omp_ipr_first]
+    = {"fr_id", "fr_name", "vendor", "vendor_name", "device_num", "platform",
+       "device", "device_context", "targetsync"};
+  if (property_id < omp_ipr_first || property_id >= 0)
+    return NULL;
+  return prop_string[omp_ipr_fr_id - property_id];
+}
+
+const char *
+omp_get_interop_type_desc (const omp_interop_t interop,
+			   omp_interop_property_t property_id)
+{
+  static const char *desc[omp_ipr_fr_id - omp_ipr_device_num + 1]
+    = {"omp_interop_t",	/* fr_id */
+       "const char*",	/* fr_name */
+       "int",		/* vendor */
+       "const char *",	/* vendor_name */
+       "int"};		/* device_num */
+  if (property_id > omp_ipr_fr_id || property_id < omp_ipr_first)
+    return NULL;
+  if (interop == omp_interop_none)
+    return NULL;
+  if (property_id >= omp_ipr_device_num)
+    return desc[omp_ipr_fr_id - property_id];
+  return NULL;  /* FIXME: Call plugin.  */
+}
+
+const char *
+omp_get_interop_rc_desc (const omp_interop_t interop __attribute__ ((unused)),
+			 omp_interop_rc_t ret_code)
+{
+  static const char *rc_strings[omp_irc_no_value - omp_irc_other]
+    = {"no meaningful value available",
+       "successful",
+       "provided interoperability object is equal to omp_interop_none",
+       "property ID is out of range",
+       "property type is integer; use omp_get_interop_int",
+       "property type is pointer; use omp_get_interop_ptr",
+       "property type is string; use omp_get_interop_str"};
+
+  /* omp_irc_other is returned by device-side omp_get_interop_{int,ptr,str};
+     on the host it is not used, hence, return NULL here.   */
+  if (ret_code > omp_irc_no_value || ret_code <= omp_irc_other)
+    return NULL;
+  return rc_strings[omp_irc_no_value - ret_code];
+}
+
+ialias (omp_get_num_interop_properties)
+ialias (omp_get_interop_int)
+ialias (omp_get_interop_ptr)
+ialias (omp_get_interop_str)
+ialias (omp_get_interop_name)
+ialias (omp_get_interop_type_desc)
+ialias (omp_get_interop_rc_desc)
+
 #ifdef PLUGIN_SUPPORT
 
 /* This function tries to load a plugin for DEVICE.  Name of plugin is passed
