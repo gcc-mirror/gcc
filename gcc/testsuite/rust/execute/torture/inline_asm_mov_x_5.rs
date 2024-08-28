@@ -10,7 +10,7 @@ extern "C" {
     fn printf(s: *const i8, ...);
 }
 
-fn main() {
+fn main() -> i32 {
     let mut _x: i32 = 0;
     unsafe {
         asm!(
@@ -19,4 +19,5 @@ fn main() {
         );
         printf("%d\n\0" as *const str as *const i8, _x);
     }
+    0
 }
