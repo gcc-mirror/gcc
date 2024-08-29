@@ -1503,6 +1503,23 @@ general_scalar_chain::convert_insn (rtx_insn *insn)
   df_insn_rescan (insn);
 }
 
+/* Helper function to compute gain for loading an immediate constant.
+   Typically, two movabsq for TImode vs. vmovdqa for V1TImode, but
+   with numerous special cases.  */
+
+static int
+timode_immed_const_gain (rtx cst)
+{
+  /* movabsq vs. movabsq+vmovq+vunpacklqdq.  */
+  if (CONST_WIDE_INT_P (cst)
+      && CONST_WIDE_INT_NUNITS (cst) == 2
+      && CONST_WIDE_INT_ELT (cst, 0) == CONST_WIDE_INT_ELT (cst, 1))
+    return optimize_insn_for_size_p () ? -COSTS_N_BYTES (9)
+				       : -COSTS_N_INSNS (2);
+  /* 2x movabsq ~ vmovdqa.  */
+  return 0;
+}
+
 /* Compute a gain for chain conversion.  */
 
 int
@@ -1549,7 +1566,14 @@ timode_scalar_chain::compute_convert_gain ()
 	case CONST_INT:
 	  if (MEM_P (dst)
 	      && standard_sse_constant_p (src, V1TImode))
-	    igain = optimize_insn_for_size_p() ? COSTS_N_BYTES (11) : 1;
+	    igain = optimize_insn_for_size_p () ? COSTS_N_BYTES (11) : 1;
+	  break;
+
+	case CONST_WIDE_INT:
+	  /* 2 x mov vs. vmovdqa.  */
+	  if (MEM_P (dst))
+	    igain = optimize_insn_for_size_p () ? COSTS_N_BYTES (3)
+						: COSTS_N_INSNS (1);
 	  break;
 
 	case NOT:
@@ -1562,6 +1586,8 @@ timode_scalar_chain::compute_convert_gain ()
 	case IOR:
 	  if (!MEM_P (dst))
 	    igain = COSTS_N_INSNS (1);
+	  if (CONST_SCALAR_INT_P (XEXP (src, 1)))
+	    igain += timode_immed_const_gain (XEXP (src, 1));
 	  break;
 
 	case ASHIFT:
