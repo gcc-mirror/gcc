@@ -30,6 +30,7 @@
 #include "basic-block.h"
 #include "function.h"
 #include "gimple.h"
+#include "emit-rtl.h"
 #include "arm-mve-builtins.h"
 #include "arm-mve-builtins-shapes.h"
 #include "arm-mve-builtins-base.h"
@@ -402,6 +403,115 @@ public:
   }
 };
 
+/* Map the vidup / vddup function directly to CODE (UNSPEC, M) where M is the
+   vector mode associated with type suffix 0.  We need this special case
+   because in MODE_wb the builtins derefrence the first parameter and update
+   its contents.  We also have to insert the two additional parameters needed
+   by the builtins compared to the intrinsics.  */
+class viddup_impl : public function_base
+{
+public:
+  CONSTEXPR viddup_impl (bool inc_dec)
+    : m_inc_dec (inc_dec)
+  {}
+
+  /* Increment (true) or decrement (false).  */
+  bool m_inc_dec;
+
+  unsigned int
+  call_properties (const function_instance &fi) const override
+  {
+    if (fi.mode_suffix_id == MODE_wb)
+      return CP_WRITE_MEMORY | CP_READ_MEMORY;
+    else
+      return 0;
+  }
+
+  tree
+  memory_scalar_type (const function_instance &) const override
+  {
+    return get_typenode_from_name (UINT32_TYPE);
+  }
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    machine_mode mode = e.vector_mode (0);
+    insn_code code;
+    rtx insns, offset_ptr;
+    rtx new_offset;
+    int offset_arg_no;
+    rtx incr, total_incr;
+
+    if (! e.type_suffix (0).integer_p)
+      gcc_unreachable ();
+
+    if ((e.mode_suffix_id != MODE_n)
+	&& (e.mode_suffix_id != MODE_wb))
+      gcc_unreachable ();
+
+    offset_arg_no = (e.pred == PRED_m) ? 1 : 0;
+
+    /* In _wb mode, the start offset is passed via a pointer,
+       dereference it.  */
+    if (e.mode_suffix_id == MODE_wb)
+      {
+	rtx offset = gen_reg_rtx (SImode);
+	offset_ptr = e.args[offset_arg_no];
+	emit_insn (gen_rtx_SET (offset, gen_rtx_MEM (SImode, offset_ptr)));
+	e.args[offset_arg_no] = offset;
+      }
+
+    /* We have to shuffle parameters because the builtin needs additional
+       arguments:
+       - the updated "new_offset"
+       - total increment (incr * number of lanes)  */
+    new_offset = gen_reg_rtx (SImode);
+    e.args.quick_insert (offset_arg_no, new_offset);
+
+    incr = e.args[offset_arg_no + 2];
+    total_incr = gen_int_mode (INTVAL (incr)
+			       * GET_MODE_NUNITS (e.vector_mode (0)),
+			       SImode);
+    e.args.quick_push (total_incr);
+
+    /* _wb mode uses the _n builtins and adds code to update the
+       offset.  */
+    switch (e.pred)
+      {
+      case PRED_none:
+	/* No predicate.  */
+	code = m_inc_dec
+	  ? code_for_mve_q_u_insn (VIDUPQ, mode)
+	  : code_for_mve_q_u_insn (VDDUPQ, mode);
+	insns = e.use_exact_insn (code);
+	break;
+
+      case PRED_m:
+      case PRED_x:
+	/* "m" or "x" predicate.  */
+	code = m_inc_dec
+	  ? code_for_mve_q_m_wb_u_insn (VIDUPQ_M, mode)
+	  : code_for_mve_q_m_wb_u_insn (VDDUPQ_M, mode);
+
+	if (e.pred == PRED_m)
+	  insns = e.use_cond_insn (code, 0);
+	else
+	  insns = e.use_pred_x_insn (code);
+	break;
+
+      default:
+	gcc_unreachable ();
+      }
+
+    /* Update offset as appropriate.  */
+    if (e.mode_suffix_id == MODE_wb)
+      emit_insn (gen_rtx_SET (gen_rtx_MEM (Pmode, offset_ptr), new_offset));
+
+    return insns;
+  }
+};
+
 } /* end anonymous namespace */
 
 namespace arm_mve {
@@ -614,7 +724,9 @@ FUNCTION_WITHOUT_N_NO_F (vcvtmq, VCVTMQ)
 FUNCTION_WITHOUT_N_NO_F (vcvtnq, VCVTNQ)
 FUNCTION_WITHOUT_N_NO_F (vcvtpq, VCVTPQ)
 FUNCTION (vcvttq, vcvtxq_impl, (VCVTTQ_F16_F32, VCVTTQ_M_F16_F32, VCVTTQ_F32_F16, VCVTTQ_M_F32_F16))
+FUNCTION (vddupq, viddup_impl, (false))
 FUNCTION (vdupq, vdupq_impl, (VDUPQ_M_N_S, VDUPQ_M_N_U, VDUPQ_M_N_F))
+FUNCTION (vidupq, viddup_impl, (true))
 FUNCTION_WITH_RTX_M (veorq, XOR, VEORQ)
 FUNCTION (vfmaq, unspec_mve_function_exact_insn, (-1, -1, VFMAQ_F, -1, -1, VFMAQ_N_F, -1, -1, VFMAQ_M_F, -1, -1, VFMAQ_M_N_F))
 FUNCTION (vfmasq, unspec_mve_function_exact_insn, (-1, -1, -1, -1, -1, VFMASQ_N_F, -1, -1, -1, -1, -1, VFMASQ_M_N_F))
