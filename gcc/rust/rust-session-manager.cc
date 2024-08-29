@@ -401,31 +401,16 @@ Session::handle_input_files (int num_files, const char **files)
 
   const auto &file = files[0];
 
-  if (options.crate_name.empty ())
-    {
-      auto filename = "-";
-      if (num_files > 0)
-	filename = files[0];
-
-      auto crate_name = infer_crate_name (filename);
-      rust_debug ("inferred crate name: %s", crate_name.c_str ());
-      // set the preliminary crate name here
-      // we will figure out the real crate name in `handle_crate_name`
-      options.set_crate_name (crate_name);
-    }
-
-  CrateNum crate_num = mappings.get_next_crate_num (options.get_crate_name ());
-  mappings.set_current_crate (crate_num);
-
   rust_debug ("Attempting to parse file: %s", file);
   compile_crate (file);
 }
 
 void
-Session::handle_crate_name (const AST::Crate &parsed_crate)
+Session::handle_crate_name (const char *filename,
+			    const AST::Crate &parsed_crate)
 {
   auto &mappings = Analysis::Mappings::get ();
-  auto crate_name_changed = false;
+  auto crate_name_found = false;
   auto error = Error (UNDEF_LOCATION, std::string ());
 
   for (const auto &attr : parsed_crate.inner_attrs)
@@ -449,7 +434,6 @@ Session::handle_crate_name (const AST::Crate &parsed_crate)
 	  continue;
 	}
 
-      auto options = Session::get_instance ().options;
       if (options.crate_name_set_manually && (options.crate_name != msg_str))
 	{
 	  rust_error_at (attr.get_locus (),
@@ -457,19 +441,39 @@ Session::handle_crate_name (const AST::Crate &parsed_crate)
 			 "required to match, but %qs does not match %qs",
 			 options.crate_name.c_str (), msg_str.c_str ());
 	}
-      crate_name_changed = true;
+      crate_name_found = true;
       options.set_crate_name (msg_str);
-      mappings.set_crate_name (mappings.get_current_crate (), msg_str);
     }
 
-  options.crate_name_set_manually |= crate_name_changed;
-  if (!options.crate_name_set_manually
-      && !validate_crate_name (options.crate_name, error))
+  options.crate_name_set_manually |= crate_name_found;
+  if (!options.crate_name_set_manually)
     {
-      error.emit ();
-      rust_inform (linemap_position_for_column (line_table, 0),
-		   "crate name inferred from this file");
+      auto crate_name = infer_crate_name (filename);
+      if (crate_name.empty ())
+	{
+	  rust_error_at (UNDEF_LOCATION, "crate name is empty");
+	  rust_inform (linemap_position_for_column (line_table, 0),
+		       "crate name inferred from this file");
+	  return;
+	}
+
+      rust_debug ("inferred crate name: %s", crate_name.c_str ());
+      options.set_crate_name (crate_name);
+
+      if (!validate_crate_name (options.get_crate_name (), error))
+	{
+	  error.emit ();
+	  rust_inform (linemap_position_for_column (line_table, 0),
+		       "crate name inferred from this file");
+	  return;
+	}
     }
+
+  if (saw_errors ())
+    return;
+
+  CrateNum crate_num = mappings.get_next_crate_num (options.get_crate_name ());
+  mappings.set_current_crate (crate_num);
 }
 
 // Parses a single file with filename filename.
@@ -539,7 +543,7 @@ Session::compile_crate (const char *filename)
   std::unique_ptr<AST::Crate> ast_crate = parser.parse_crate ();
 
   // handle crate name
-  handle_crate_name (*ast_crate.get ());
+  handle_crate_name (filename, *ast_crate.get ());
 
   // dump options except lexer dump
   if (options.dump_option_enabled (CompileOptions::AST_DUMP_PRETTY))
@@ -1400,6 +1404,7 @@ rust_crate_name_validation_test (void)
   ASSERT_FALSE (Rust::validate_crate_name ("∀", error));
 
   /* Tests for crate name inference */
+  ASSERT_EQ (Rust::infer_crate_name (".rs"), "");
   ASSERT_EQ (Rust::infer_crate_name ("c.rs"), "c");
   // NOTE: ... but - is allowed when in the filename
   ASSERT_EQ (Rust::infer_crate_name ("a-b.rs"), "a_b");

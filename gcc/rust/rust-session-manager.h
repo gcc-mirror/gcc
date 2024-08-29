@@ -390,7 +390,7 @@ public:
 		      const struct cl_option_handlers *handlers);
   void handle_input_files (int num_files, const char **files);
   void init_options ();
-  void handle_crate_name (const AST::Crate &parsed_crate);
+  void handle_crate_name (const char *filename, const AST::Crate &parsed_crate);
 
   /* This function saves the filename data into the session manager using the
    * `move` semantics, and returns a C-style string referencing the input
