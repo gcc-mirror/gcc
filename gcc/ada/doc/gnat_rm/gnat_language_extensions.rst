@@ -53,9 +53,12 @@ Features activated via ``-gnatX`` or
 Local Declarations Without Block
 --------------------------------
 
-A basic_declarative_item may appear at the place of any statement.
-This avoids the heavy syntax of block_statements just to declare
-something locally.
+A ``basic_declarative_item`` may appear at the place of any statement. This
+avoids the heavy syntax of block_statements just to declare something locally.
+
+The only valid kind of declarations for now are ``object_declaration``,
+``object_renaming_declaration``, ``use_package_clause`` and
+``use_type_clause``.
 
 For example:
 
@@ -68,6 +71,49 @@ For example:
 
       X := X + Squared;
    end if;
+
+.. attention::
+
+   Note that local declarations in statement lists have their own scope, which
+   means that:
+
+   1. Those declarations are not visible from the potential exception handler:
+
+      .. code-block:: ada
+
+         begin
+            A : Integer
+            ...
+         exception
+            when others =>
+                Put_Line (A'Image) --  ILLEGAL
+         end;
+
+   2. The following is legal
+
+      .. code-block:: ada
+
+         declare
+            A : Integer := 10;
+         begin
+            A : Integer := 12;
+         end;
+
+      because it is roughly expanded into
+
+      .. code-block:: ada
+
+         declare
+            A : Integer := 10;
+         begin
+            declare
+               A : Integer := 12;
+            begin
+               ...
+            end;
+         end;
+
+       And as such the second ``A`` declaration is hiding the first one.
 
 Link to the original RFC:
 https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-local-vars-without-block.md

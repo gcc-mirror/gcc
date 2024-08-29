@@ -28961,9 +28961,12 @@ Features activated via @code{-gnatX} or
 @subsection Local Declarations Without Block
 
 
-A basic_declarative_item may appear at the place of any statement.
-This avoids the heavy syntax of block_statements just to declare
-something locally.
+A @code{basic_declarative_item} may appear at the place of any statement. This
+avoids the heavy syntax of block_statements just to declare something locally.
+
+The only valid kind of declarations for now are @code{object_declaration},
+@code{object_renaming_declaration}, @code{use_package_clause} and
+@code{use_type_clause}.
 
 For example:
 
@@ -28976,6 +28979,57 @@ if X > 5 then
    X := X + Squared;
 end if;
 @end example
+
+@cartouche
+@quotation Attention 
+Note that local declarations in statement lists have their own scope, which
+means that:
+
+
+@enumerate 
+
+@item 
+Those declarations are not visible from the potential exception handler:
+
+@example
+begin
+   A : Integer
+   ...
+exception
+   when others =>
+       Put_Line (A'Image) --  ILLEGAL
+end;
+@end example
+
+@item 
+The following is legal
+
+@example
+declare
+   A : Integer := 10;
+begin
+   A : Integer := 12;
+end;
+@end example
+
+because it is roughly expanded into
+
+@example
+  declare
+     A : Integer := 10;
+  begin
+     declare
+        A : Integer := 12;
+     begin
+        ...
+     end;
+  end;
+
+And as such the second `@w{`}A`@w{`} declaration is hiding the first one.
+@end example
+@end enumerate
+@end quotation
+@end cartouche
 
 Link to the original RFC:
 @indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-local-vars-without-block.md}

@@ -886,7 +886,7 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  Used in loop constructs and quantified expressions.
 
       function P_Sequence_Of_Statements
-        (SS_Flags : SS_Rec; Handled : Boolean := False) return List_Id;
+        (SS_Flags : SS_Rec) return List_Id;
       --  SS_Flags indicates the acceptable termination tokens; see body for
       --  details. Handled is true if we are parsing a handled sequence of
       --  statements.

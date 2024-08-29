@@ -23,10 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Style_Checks (All_Checks);
---  Turn off subprogram body ordering check. Subprograms are in order by RM
---  section rather than alphabetical.
-
 with Sinfo.CN;       use Sinfo.CN;
 
 separate (Par)
@@ -135,8 +131,7 @@ package body Ch5 is
    --  parsing a statement, then the scan pointer is advanced past the next
    --  semicolon and the parse continues.
 
-   function P_Sequence_Of_Statements
-     (SS_Flags : SS_Rec; Handled : Boolean := False) return List_Id
+   function P_Sequence_Of_Statements (SS_Flags : SS_Rec) return List_Id
    is
       Statement_Required : Boolean := SS_Flags.Sreq;
       --  This flag indicates if a subsequent statement (other than a pragma)
@@ -221,32 +216,57 @@ package body Ch5 is
    --  Start of processing for P_Sequence_Of_Statements
 
    begin
-      --  In Ada 2022, we allow declarative items to be mixed with
-      --  statements. The loop below alternates between calling
-      --  P_Declarative_Items to parse zero or more declarative items,
-      --  and parsing a statement.
+      --  When extensions are active, we allow declarative items to be mixed
+      --  with statements. The loop below alternates between calling
+      --  P_Declarative_Items to parse zero or more declarative items, and
+      --  parsing a statement.
 
       loop
          Ignore (Tok_Semicolon);
 
          declare
             Num_Statements : constant Nat := List_Length (Statement_List);
+            Decl           : Node_Id;
          begin
             P_Declarative_Items
               (Statement_List, Declare_Expression => False,
                In_Spec => False, In_Statements => True);
 
             --  Use the length of the list to determine whether we parsed
-            --  any declarative items. If so, it's an error unless language
-            --  extensions are enabled.
+            --  any declarative items.
 
             if List_Length (Statement_List) > Num_Statements then
+               Decl := Pick (Statement_List, Num_Statements + 1);
+
+               --  If so, it's an error unless language extensions are enabled.
+
                if All_Errors_Mode or else No (Decl_Loc) then
-                  Decl_Loc := Sloc (Pick (Statement_List, Num_Statements + 1));
+                  Decl_Loc := Sloc (Decl);
 
                   Error_Msg_GNAT_Extension
-                    ("declarations mixed with statements",
-                     Sloc (Pick (Statement_List, Num_Statements + 1)));
+                    ("declarations mixed with statements", Sloc (Decl),
+                     Is_Core_Extension => True);
+
+               end if;
+
+               --  Check every declaration added to the list, to see whether
+               --  it's part of the allowed subset of declarations. Only check
+               --  that if core extensions are allowed.
+
+               if Core_Extensions_Allowed then
+                  while Present (Decl) loop
+                     if not (Nkind (Decl) in
+                        N_Object_Declaration | N_Object_Renaming_Declaration |
+                        N_Use_Type_Clause | N_Use_Package_Clause |
+                        N_Representation_Clause)
+                     then
+                        Error_Msg
+                          ("Declaration kind not allowed in statements lists",
+                           Sloc (Decl));
+                     end if;
+
+                     Next (Decl);
+                  end loop;
                end if;
             end if;
          end;
@@ -937,12 +957,9 @@ package body Ch5 is
          exit when SS_Flags.Unco;
       end loop;
 
-      --  If there are no declarative items in the list, or if the list is part
-      --  of a handled sequence of statements, we just return the list.
-      --  Otherwise, we wrap the list in a block statement, so the declarations
-      --  will have a proper scope. In the Handled case, it would be wrong to
-      --  wrap, because we want the code before and after "begin" to be in the
-      --  same scope. Example:
+      --  If there are declarative items in the list, we always wrap it in a
+      --  block, so that anything declared in a statement list is not visible
+      --  from the exception handlers. Example:
       --
       --     if ... then
       --        use Some_Package;
@@ -958,17 +975,25 @@ package body Ch5 is
       --        end;
       --     end if;
       --
-      --  But we don't wrap this:
+      --  This:
       --
       --     declare
       --        X : Integer;
       --     begin
       --        X : Integer;
       --
-      --  Otherwise, we would fail to detect the error (conflicting X's).
-      --  Similarly, if a representation clause appears in the statement
-      --  part, we don't want it to appear more nested than the declarative
-      --  part -- that would cause an unwanted error.
+      --  is transformed into this:
+      --
+      --     declare
+      --        X : Integer;
+      --     begin
+      --        declare
+      --           X : Integer;
+      --        begin
+      --           ...
+      --
+      --  We hence don't try to detect this case, even though it can be
+      --  confusing to users, and might possibly deserve a warning.
 
       if Present (Decl_Loc) then
          --  Forbid labels and declarative items from coexisting. Otherwise,
@@ -983,47 +1008,17 @@ package body Ch5 is
             Error_Msg ("label in same list as declarative item", Label_Loc);
          end if;
 
-         --  Forbid exception handlers and declarative items from
-         --  coexisting. Example:
-         --
-         --     X : Integer := 123;
-         --     procedure P is
-         --     begin
-         --        X : Integer := 456;
-         --     exception
-         --        when Cain =>
-         --           Put(X);
-         --     end P;
-         --
-         --  It was proposed that in the handler, X should refer to the outer
-         --  X, but that's just confusing.
-
-         if Token = Tok_Exception then
-            Error_Msg
-              ("declarative item in statements conflicts with " &
-               "exception handler below",
-               Decl_Loc);
-            Error_Msg
-              ("exception handler conflicts with " &
-               "declarative item in statements above",
-               Token_Ptr);
-         end if;
-
-         if Handled then
-            return Statement_List;
-         else
-            declare
-               Loc : constant Source_Ptr := Sloc (First (Statement_List));
-               Block : constant Node_Id :=
-                 Make_Block_Statement
-                   (Loc,
-                    Handled_Statement_Sequence =>
-                      Make_Handled_Sequence_Of_Statements
-                        (Loc, Statements => Statement_List));
-            begin
-               return New_List (Block);
-            end;
-         end if;
+         declare
+            Loc : constant Source_Ptr := Sloc (First (Statement_List));
+            Block : constant Node_Id :=
+              Make_Block_Statement
+                (Loc,
+                 Handled_Statement_Sequence =>
+                   Make_Handled_Sequence_Of_Statements
+                     (Loc, Statements => Statement_List));
+         begin
+            return New_List (Block);
+         end;
       else
          return Statement_List;
       end if;
