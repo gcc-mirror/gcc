@@ -1120,6 +1120,16 @@ pp_token::dump (FILE *out) const
     case kind::end_url:
       fprintf (out, "END_URL");
       break;
+
+    case kind::event_id:
+      {
+	const pp_token_event_id *sub
+	  = as_a <const pp_token_event_id *> (this);
+	gcc_assert (sub->m_event_id.known_p ());
+	fprintf (out, "EVENT((%i))", sub->m_event_id.one_based ());
+      }
+      break;
+
     case kind::custom_data:
       {
 	const pp_token_custom_data *sub
@@ -1984,12 +1994,7 @@ pretty_printer::format (text_info *text)
 	    diagnostic_event_id_ptr event_id
 	      = va_arg (*text->m_args_ptr, diagnostic_event_id_ptr);
 	    gcc_assert (event_id->known_p ());
-
-	    pp_string (this, colorize_start (m_show_color, "path"));
-	    pp_character (this, '(');
-	    pp_decimal_int (this, event_id->one_based ());
-	    pp_character (this, ')');
-	    pp_string (this, colorize_stop (m_show_color));
+	    formatted_tok_list->push_back<pp_token_event_id> (*event_id);
 	  }
 	  break;
 
@@ -2181,6 +2186,18 @@ default_token_printer (pretty_printer *pp,
 	break;
       case pp_token::kind::end_url:
 	pp_end_url (pp);
+	break;
+
+      case pp_token::kind::event_id:
+	{
+	  pp_token_event_id *sub = as_a <pp_token_event_id *> (iter);
+	  gcc_assert (sub->m_event_id.known_p ());
+	  pp_string (pp, colorize_start (pp_show_color (pp), "path"));
+	  pp_character (pp, '(');
+	  pp_decimal_int (pp, sub->m_event_id.one_based ());
+	  pp_character (pp, ')');
+	  pp_string (pp, colorize_stop (pp_show_color (pp)));
+	}
 	break;
 
       case pp_token::kind::custom_data:

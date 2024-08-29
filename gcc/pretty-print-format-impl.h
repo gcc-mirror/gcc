@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_PRETTY_PRINT_FORMAT_IMPL_H
 
 #include "pretty-print.h"
+#include "diagnostic-event-id.h"
 
 /* A struct representing a pending item to be printed within
    pp_format.
@@ -31,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
    - begin/end named color
    - open/close quote
    - begin/end URL
+   - event IDs
    - custom data (for the formatter, for the pretty_printer,
      or the output format)
 
@@ -71,6 +73,8 @@ public:
 
     begin_url,
     end_url,
+
+    event_id,
 
     custom_data,
 
@@ -217,6 +221,34 @@ struct pp_token_end_url : public pp_token
   {
   }
 };
+
+struct pp_token_event_id : public pp_token
+{
+  pp_token_event_id (diagnostic_event_id_t event_id)
+  : pp_token (kind::event_id),
+    m_event_id (event_id)
+  {
+    gcc_assert (event_id.known_p ());
+  }
+
+  diagnostic_event_id_t m_event_id;
+};
+
+template <>
+template <>
+inline bool
+is_a_helper <pp_token_event_id *>::test (pp_token *tok)
+{
+  return tok->m_kind == pp_token::kind::event_id;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <const pp_token_event_id *>::test (const pp_token *tok)
+{
+  return tok->m_kind == pp_token::kind::event_id;
+}
 
 struct pp_token_custom_data : public pp_token
 {
