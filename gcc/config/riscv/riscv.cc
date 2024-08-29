@@ -12001,6 +12001,96 @@ riscv_expand_usadd (rtx dest, rtx x, rtx y)
   emit_move_insn (dest, gen_lowpart (mode, xmode_dest));
 }
 
+/* Return a new const RTX of MAX value based on given mode.  Only
+   int scalar mode is allowed.  */
+
+static rtx
+riscv_gen_sign_max_cst (machine_mode mode)
+{
+  switch (mode)
+    {
+    case QImode:
+      return GEN_INT (INT8_MAX);
+    case HImode:
+      return GEN_INT (INT16_MAX);
+    case SImode:
+      return GEN_INT (INT32_MAX);
+    case DImode:
+      return GEN_INT (INT64_MAX);
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Implements the signed saturation sub standard name ssadd for int mode.
+
+   z = SAT_ADD(x, y).
+   =>
+   1.  sum = x + y
+   2.  xor_0 = x ^ y
+   3.  xor_1 = x ^ sum
+   4.  lt = xor_1 < 0
+   5.  ge = xor_0 >= 0
+   6.  and = ge & lt
+   7.  lt = x < 0
+   8.  neg = -lt
+   9.  max = INT_MAX
+   10. max = max ^ neg
+   11. neg = -and
+   12. max = max & neg
+   13. and = and - 1
+   14. z = sum & and
+   15. z = z | max  */
+
+void
+riscv_expand_ssadd (rtx dest, rtx x, rtx y)
+{
+  machine_mode mode = GET_MODE (dest);
+  unsigned bitsize = GET_MODE_BITSIZE (mode).to_constant ();
+  rtx shift_bits = GEN_INT (bitsize - 1);
+  rtx xmode_x = gen_lowpart (Xmode, x);
+  rtx xmode_y = gen_lowpart (Xmode, y);
+  rtx xmode_sum = gen_reg_rtx (Xmode);
+  rtx xmode_dest = gen_reg_rtx (Xmode);
+  rtx xmode_xor_0 = gen_reg_rtx (Xmode);
+  rtx xmode_xor_1 = gen_reg_rtx (Xmode);
+  rtx xmode_ge = gen_reg_rtx (Xmode);
+  rtx xmode_lt = gen_reg_rtx (Xmode);
+  rtx xmode_neg = gen_reg_rtx (Xmode);
+  rtx xmode_and = gen_reg_rtx (Xmode);
+  rtx xmode_max = gen_reg_rtx (Xmode);
+
+  /* Step-1: sum = x + y, xor_0 = x ^ y, xor_1 = x ^ sum.  */
+  riscv_emit_binary (PLUS, xmode_sum, xmode_x, xmode_y);
+  riscv_emit_binary (XOR, xmode_xor_0, xmode_x, xmode_y);
+  riscv_emit_binary (XOR, xmode_xor_1, xmode_x, xmode_sum);
+
+  /* Step-2: lt = xor_1 < 0, ge = xor_0 >= 0, and = ge & lt.  */
+  riscv_emit_binary (LSHIFTRT, xmode_lt, xmode_xor_1, shift_bits);
+  riscv_emit_binary (LSHIFTRT, xmode_ge, xmode_xor_0, shift_bits);
+  riscv_emit_binary (XOR, xmode_ge, xmode_ge, CONST1_RTX (Xmode));
+  riscv_emit_binary (AND, xmode_and, xmode_lt, xmode_ge);
+  riscv_emit_binary (AND, xmode_and, xmode_and, CONST1_RTX (Xmode));
+
+  /* Step-3: lt = x < 0, neg = -lt  */
+  riscv_emit_binary (LT, xmode_lt, xmode_x, CONST0_RTX (Xmode));
+  riscv_emit_unary (NEG, xmode_neg, xmode_lt);
+
+  /* Step-4: max = 0x7f..., max = max ^ neg, neg = -and, max = max & neg  */
+  riscv_emit_move (xmode_max, riscv_gen_sign_max_cst (mode));
+  riscv_emit_binary (XOR, xmode_max, xmode_max, xmode_neg);
+  riscv_emit_unary (NEG, xmode_neg, xmode_and);
+  riscv_emit_binary (AND, xmode_max, xmode_max, xmode_neg);
+
+  /* Step-5: and = and - 1, dest = sum & and  */
+  riscv_emit_binary (PLUS, xmode_and, xmode_and, CONSTM1_RTX (Xmode));
+  riscv_emit_binary (AND, xmode_dest, xmode_sum, xmode_and);
+
+  /* Step-6: xmode_dest = xmode_dest | xmode_max, dest = xmode_dest  */
+  riscv_emit_binary (IOR, xmode_dest, xmode_dest, xmode_max);
+  emit_move_insn (dest, gen_lowpart (mode, xmode_dest));
+}
+
 /* Implements the unsigned saturation sub standard name usadd for int mode.
 
    z = SAT_SUB(x, y).

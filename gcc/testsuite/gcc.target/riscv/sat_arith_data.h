@@ -10,8 +10,20 @@
       T2 from;                          \
     };
 
+#define TEST_BINARY_STRUCT_NAME(T, NAME) test_##T##_##NAME##_s
+#define TEST_BINARY_STRUCT_DECL(T, NAME) struct TEST_BINARY_STRUCT_NAME(T, NAME)
+#define TEST_BINARY_STRUCT(T, NAME)       \
+  struct TEST_BINARY_STRUCT_NAME(T, NAME) \
+    {                                     \
+      T a, b;                             \
+      T expect;                           \
+    };
+
 #define TEST_UNARY_DATA(T1, T2)      t_##T1##_##T2##_s
 #define TEST_UNARY_DATA_WRAP(T1, T2) TEST_UNARY_DATA(T1, T2)
+
+#define TEST_BINARY_DATA(T, NAME)      t_##T##_##NAME##_s
+#define TEST_BINARY_DATA_WRAP(T, NAME) TEST_BINARY_DATA(T, NAME)
 
 TEST_UNARY_STRUCT (uint8_t, uint16_t)
 TEST_UNARY_STRUCT (uint8_t, uint32_t)
@@ -19,6 +31,11 @@ TEST_UNARY_STRUCT (uint8_t, uint64_t)
 TEST_UNARY_STRUCT (uint16_t, uint32_t)
 TEST_UNARY_STRUCT (uint16_t, uint64_t)
 TEST_UNARY_STRUCT (uint32_t, uint64_t)
+
+TEST_BINARY_STRUCT (int8_t,  ssadd)
+TEST_BINARY_STRUCT (int16_t, ssadd)
+TEST_BINARY_STRUCT (int32_t, ssadd)
+TEST_BINARY_STRUCT (int64_t, ssadd)
 
 TEST_UNARY_STRUCT_DECL(uint8_t, uint16_t) \
   TEST_UNARY_DATA(uint8_t, uint16_t)[] =
@@ -102,6 +119,74 @@ TEST_UNARY_STRUCT_DECL(uint32_t, uint64_t) \
   {4294967295,            4294967296},
   {4294967295, 18446744073709551614u},
   {4294967295, 18446744073709551615u},
+};
+
+TEST_BINARY_STRUCT_DECL(int8_t, ssadd) TEST_BINARY_DATA(int8_t, ssadd)[] =
+{
+  {   0,    0,    0},
+  {   2,    2,    4},
+  { 126,    1,  127},
+  { 127,    1,  127},
+  { 127,  127,  127},
+  {  -7,   -4,  -11},
+  {-128,   -1, -128},
+  {-127,   -1, -128},
+  {-128, -128, -128},
+  {-128,  127,   -1},
+  {-127,  127,    0},
+  {-122,  105,  -17},
+  {-122,  125,    3},
+};
+
+TEST_BINARY_STRUCT_DECL(int16_t, ssadd) TEST_BINARY_DATA(int16_t, ssadd)[] =
+{
+  {     0,      0,      0},
+  {     2,      2,      4},
+  { 32766,      1,  32767},
+  { 32767,      1,  32767},
+  { 32767,  32767,  32767},
+  {    -7,     -4,    -11},
+  {-32768,     -1, -32768},
+  {-32767,     -1, -32768},
+  {-32768, -32768, -32768},
+  {-32768,  32767,     -1},
+  {-32767,  32767,      0},
+  {-32732,  32712,    -20},
+  {-32732,  32734,      2},
+};
+
+TEST_BINARY_STRUCT_DECL(int32_t, ssadd) TEST_BINARY_DATA(int32_t, ssadd)[] =
+{
+  {          0,           0,           0},
+  {          2,           2,           4},
+  { 2147483646,           1,  2147483647},
+  { 2147483647,           1,  2147483647},
+  { 2147483647,  2147483647,  2147483647},
+  {         -7,          -4,         -11},
+  {-2147483648,          -1, -2147483648},
+  {-2147483647,          -1, -2147483648},
+  {-2147483648, -2147483648, -2147483648},
+  {-2147483648,  2147483647,          -1},
+  {-2147483647,  2147483647,           0},
+  {-2147483613,  2147483601,         -12},
+  {-2147483613,  2147483637,          24},
+};
+
+TEST_BINARY_STRUCT_DECL(int64_t, ssadd) TEST_BINARY_DATA(int64_t, ssadd)[] =
+{
+  {                      0,                       0,                       0},
+  {                      2,                       2,                       4},
+  {  9223372036854775806ll,                       1,   9223372036854775807ll},
+  {  9223372036854775807ll,                       1,   9223372036854775807ll},
+  {  9223372036854775807ll,   9223372036854775807ll,   9223372036854775807ll},
+  {                     -7,                      -4,                     -11},
+  {-9223372036854775808ull,                      -1, -9223372036854775808ull},
+  { -9223372036854775807ll,                      -1, -9223372036854775808ull},
+  {-9223372036854775808ull, -9223372036854775808ull, -9223372036854775808ull},
+  {-9223372036854775808ull,   9223372036854775807ll,                      -1},
+  { -9223372036854775807ll,   9223372036854775807ll,                       0},
+  { -9223372036854775803ll,   9223372036854775800ll,                      -3},
+  { -9223372036854775803ll,   9223372036854775805ll,                       2},
 };
 
 #endif
