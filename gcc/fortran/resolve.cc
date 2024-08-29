@@ -17262,6 +17262,9 @@ resolve_symbol (gfc_symbol *sym)
 	/* Mark the result symbol to be referenced, when it has allocatable
 	   components.  */
 	sym->result->attr.referenced = 1;
+      else if (a->function && !a->pointer && !a->allocatable && sym->result)
+	/* Default initialization for function results.  */
+	apply_default_init (sym->result);
     }
 
   if (sym->ts.type == BT_CLASS && sym->ns == gfc_current_ns
