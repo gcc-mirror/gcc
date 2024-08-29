@@ -100,6 +100,7 @@ enum cv_leaf_type {
   LF_FIELDLIST = 0x1203,
   LF_BITFIELD = 0x1205,
   LF_METHODLIST = 0x1206,
+  LF_BCLASS = 0x1400,
   LF_INDEX = 0x1404,
   LF_ENUMERATE = 0x1502,
   LF_ARRAY = 0x1503,
@@ -1242,6 +1243,12 @@ struct codeview_subtype
       uint32_t method_list;
       char *name;
     } lf_method;
+    struct
+    {
+      uint16_t attributes;
+      uint32_t base_class_type;
+      codeview_integer offset;
+    } lf_bclass;
   };
 };
 
@@ -1422,6 +1429,7 @@ static uint32_t get_type_num_subroutine_type (dw_die_ref type, bool in_struct,
 					      uint32_t containing_class_type,
 					      uint32_t this_type,
 					      int32_t this_adjustment);
+static void write_cv_padding (size_t padding);
 
 /* Record new line number against the current function.  */
 
@@ -3846,6 +3854,36 @@ write_lf_fieldlist (codeview_custom_type *t)
 	  free (v->lf_method.name);
 	  break;
 
+	case LF_BCLASS:
+	  /* This is lf_bclass in binutils and lfBClass in Microsoft's
+	     cvinfo.h:
+
+	    struct lf_bclass
+	    {
+	      uint16_t kind;
+	      uint16_t attributes;
+	      uint32_t base_class_type;
+	      uint16_t offset;
+	    } ATTRIBUTE_PACKED;
+	  */
+
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, LF_BCLASS);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, v->lf_bclass.attributes);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (4, false), asm_out_file);
+	  fprint_whex (asm_out_file, v->lf_bclass.base_class_type);
+	  putc ('\n', asm_out_file);
+
+	  leaf_len = 8 + write_cv_integer (&v->lf_bclass.offset);
+
+	  write_cv_padding (4 - (leaf_len % 4));
+	  break;
+
 	default:
 	  break;
 	}
@@ -5462,6 +5500,34 @@ add_struct_function (dw_die_ref c, hash_table<method_hasher> *method_htab,
     }
 }
 
+/* Create a field list subtype that records the base class that a struct
+   inherits from.  */
+
+static void
+add_struct_inheritance (dw_die_ref c, uint16_t accessibility,
+			codeview_subtype **el, size_t *el_len)
+{
+  /* FIXME: if DW_AT_virtuality is DW_VIRTUALITY_virtual this is a virtual
+	    base class, and we should be issuing an LF_VBCLASS record
+	    instead.  */
+  if (get_AT_unsigned (c, DW_AT_virtuality) == DW_VIRTUALITY_virtual)
+    return;
+
+  *el = (codeview_subtype *) xmalloc (sizeof (**el));
+  (*el)->next = NULL;
+  (*el)->kind = LF_BCLASS;
+  (*el)->lf_bclass.attributes = accessibility;
+  (*el)->lf_bclass.base_class_type = get_type_num (get_AT_ref (c, DW_AT_type),
+						   true, false);
+  (*el)->lf_bclass.offset.neg = false;
+  (*el)->lf_bclass.offset.num = get_AT_unsigned (c, DW_AT_data_member_location);
+
+  *el_len = 10 + cv_integer_len (&(*el)->lf_bclass.offset);
+
+  if (*el_len % 4)
+    *el_len += 4 - (*el_len % 4);
+}
+
 /* Create a new LF_MFUNCTION type for a struct function, add it to the
    types_htab hash table, and return its type number.  */
 
@@ -5677,6 +5743,10 @@ get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
 	    case DW_TAG_subprogram:
 	      if (!is_templated_func (c))
 		add_struct_function (c, method_htab, &el, &el_len);
+	      break;
+
+	    case DW_TAG_inheritance:
+	      add_struct_inheritance (c, accessibility, &el, &el_len);
 	      break;
 
 	    default:
