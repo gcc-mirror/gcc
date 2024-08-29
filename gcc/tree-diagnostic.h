@@ -53,6 +53,6 @@ void diagnostic_report_current_function (diagnostic_context *,
 
 void tree_diagnostics_defaults (diagnostic_context *context);
 bool default_tree_printer (pretty_printer *, text_info *, const char *,
-			   int, bool, bool, bool, bool *, const char **);
+			   int, bool, bool, bool, bool *, pp_token_list &);
 
 #endif /* ! GCC_TREE_DIAGNOSTIC_H */

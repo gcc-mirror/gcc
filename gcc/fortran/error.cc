@@ -1125,7 +1125,7 @@ gfc_notify_std (int std, const char *gmsgid, ...)
 static bool
 gfc_format_decoder (pretty_printer *pp, text_info *text, const char *spec,
 		    int precision, bool wide, bool set_locus, bool hash,
-		    bool *quoted, const char **buffer_ptr)
+		    bool *quoted, pp_token_list &formatted_token_list)
 {
   switch (*spec)
     {
@@ -1170,7 +1170,8 @@ gfc_format_decoder (pretty_printer *pp, text_info *text, const char *spec,
 	 etc. diagnostics can use the FE printer while the FE is still
 	 active.  */
       return default_tree_printer (pp, text, spec, precision, wide,
-				   set_locus, hash, quoted, buffer_ptr);
+				   set_locus, hash, quoted,
+				   formatted_token_list);
     }
 }
 

@@ -791,90 +791,39 @@ make_item_for_dump_symtab_node (symtab_node *node)
   return item;
 }
 
+struct wrapped_optinfo_item : public pp_token_custom_data::value
+{
+  wrapped_optinfo_item (std::unique_ptr<optinfo_item> item)
+  : m_optinfo_item (std::move (item))
+  {
+    gcc_assert (m_optinfo_item.get ());
+  }
+
+  void dump (FILE *out) const final override
+  {
+    fprintf (out, "OPTINFO(\"%s\")", m_optinfo_item->get_text ());
+  }
+
+  bool as_standard_tokens (pp_token_list &) final override
+  {
+    /* Keep as a custom token.  */
+    return false;
+  }
+
+  std::unique_ptr<optinfo_item> m_optinfo_item;
+};
+
 /* dump_pretty_printer's ctor.  */
 
 dump_pretty_printer::dump_pretty_printer (dump_context *context,
 					  dump_flags_t dump_kind)
-: pretty_printer (), m_context (context), m_dump_kind (dump_kind),
-  m_stashed_items ()
+: pretty_printer (),
+  m_context (context),
+  m_dump_kind (dump_kind),
+  m_token_printer (*this)
 {
   pp_format_decoder (this) = format_decoder_cb;
-}
-
-/* Phase 3 of formatting; compare with pp_output_formatted_text.
-
-   Emit optinfo_item instances for the various formatted chunks from phases
-   1 and 2 (i.e. pp_format).
-
-   Some chunks may already have had their items built (during decode_format).
-   These chunks have been stashed into m_stashed_items; we emit them here.
-
-   For all other purely textual chunks, they are printed into
-   buffer->formatted_obstack, and then emitted as a textual optinfo_item.
-   This consolidates multiple adjacent text chunks into a single text
-   optinfo_item.  */
-
-void
-dump_pretty_printer::emit_items (optinfo *dest)
-{
-  output_buffer *buffer = pp_buffer (this);
-  chunk_info *chunk_array = buffer->cur_chunk_array;
-  const char * const *args = chunk_array->get_args ();
-
-  gcc_assert (buffer->obstack == &buffer->formatted_obstack);
-  gcc_assert (buffer->line_length == 0);
-
-  unsigned stashed_item_idx = 0;
-  for (unsigned chunk = 0; args[chunk]; chunk++)
-    {
-      if (stashed_item_idx < m_stashed_items.length ()
-	  && args[chunk] == *m_stashed_items[stashed_item_idx].buffer_ptr)
-	{
-	  emit_any_pending_textual_chunks (dest);
-	  /* This chunk has a stashed item: use it.  */
-	  std::unique_ptr <optinfo_item> item
-	    (m_stashed_items[stashed_item_idx++].item);
-	  emit_item (std::move (item), dest);
-	}
-      else
-	/* This chunk is purely textual.  Print it (to
-	   buffer->formatted_obstack), so that we can consolidate adjacent
-	   chunks into one textual optinfo_item.  */
-	pp_string (this, args[chunk]);
-    }
-
-  emit_any_pending_textual_chunks (dest);
-
-  /* Ensure that we consumed all of stashed_items.  */
-  gcc_assert (stashed_item_idx == m_stashed_items.length ());
-
-  chunk_array->pop_from_output_buffer (*buffer);
-}
-
-/* Subroutine of dump_pretty_printer::emit_items
-   for consolidating multiple adjacent pure-text chunks into single
-   optinfo_items (in phase 3).  */
-
-void
-dump_pretty_printer::emit_any_pending_textual_chunks (optinfo *dest)
-{
-  output_buffer *const buffer = pp_buffer (this);
-  gcc_assert (buffer->obstack == &buffer->formatted_obstack);
-
-  /* Don't emit an item if the pending text is empty.  */
-  if (output_buffer_last_position_in_text (buffer) == NULL)
-    return;
-
-  char *formatted_text = xstrdup (pp_formatted_text (this));
-  std::unique_ptr<optinfo_item> item
-    = make_unique<optinfo_item> (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
-				 formatted_text);
-  emit_item (std::move (item), dest);
-
-  /* Clear the pending text by unwinding formatted_text back to the start
-     of the buffer (without deallocating).  */
-  obstack_free (&buffer->formatted_obstack,
-		buffer->formatted_obstack.object_base);
+  set_token_printer (&m_token_printer);
 }
 
 /* Emit ITEM and take ownership of it.  If DEST is non-NULL, add ITEM
@@ -889,17 +838,18 @@ dump_pretty_printer::emit_item (std::unique_ptr<optinfo_item> item,
     dest->add_item (std::move (item));
 }
 
-/* Record that ITEM (generated in phase 2 of formatting) is to be used for
-   the chunk at BUFFER_PTR in phase 3 (by emit_items).  */
+/* Append a custom pp_token for ITEM (generated in phase 2 of formatting)
+   into FORMATTTED_TOK_LIST, so that it can be emitted in phase 2.  */
 
 void
-dump_pretty_printer::stash_item (const char **buffer_ptr,
+dump_pretty_printer::stash_item (pp_token_list &formatted_tok_list,
 				 std::unique_ptr<optinfo_item> item)
 {
-  gcc_assert (buffer_ptr);
   gcc_assert (item.get ());
 
-  m_stashed_items.safe_push (stashed_item (buffer_ptr, item.release ()));
+  auto custom_data
+    = ::make_unique<wrapped_optinfo_item> (std::move (item));
+  formatted_tok_list.push_back<pp_token_custom_data> (std::move (custom_data));
 }
 
 /* pp_format_decoder callback for dump_pretty_printer, and thus for
@@ -912,10 +862,10 @@ dump_pretty_printer::format_decoder_cb (pretty_printer *pp, text_info *text,
 					const char *spec, int /*precision*/,
 					bool /*wide*/, bool /*set_locus*/,
 					bool /*verbose*/, bool */*quoted*/,
-					const char **buffer_ptr)
+					pp_token_list &formatted_tok_list)
 {
   dump_pretty_printer *opp = static_cast <dump_pretty_printer *> (pp);
-  return opp->decode_format (text, spec, buffer_ptr);
+  return opp->decode_format (text, spec, formatted_tok_list);
 }
 
 /* Format decoder for dump_pretty_printer, and thus for dump_printf and
@@ -942,7 +892,7 @@ dump_pretty_printer::format_decoder_cb (pretty_printer *pp, text_info *text,
 
 bool
 dump_pretty_printer::decode_format (text_info *text, const char *spec,
-				       const char **buffer_ptr)
+				    pp_token_list &formatted_tok_list)
 {
   /* Various format codes that imply making an optinfo_item and stashed it
      for later use (to capture metadata, rather than plain text).  */
@@ -954,7 +904,7 @@ dump_pretty_printer::decode_format (text_info *text, const char *spec,
 
 	/* Make an item for the node, and stash it.  */
 	auto item = make_item_for_dump_symtab_node (node);
-	stash_item (buffer_ptr, std::move (item));
+	stash_item (formatted_tok_list, std::move (item));
 	return true;
       }
 
@@ -964,7 +914,7 @@ dump_pretty_printer::decode_format (text_info *text, const char *spec,
 
 	/* Make an item for the stmt, and stash it.  */
 	auto item = make_item_for_dump_gimple_expr (stmt, 0, TDF_SLIM);
-	stash_item (buffer_ptr, std::move (item));
+	stash_item (formatted_tok_list, std::move (item));
 	return true;
       }
 
@@ -974,7 +924,7 @@ dump_pretty_printer::decode_format (text_info *text, const char *spec,
 
 	/* Make an item for the stmt, and stash it.  */
 	auto item = make_item_for_dump_gimple_stmt (stmt, 0, TDF_SLIM);
-	stash_item (buffer_ptr, std::move (item));
+	stash_item (formatted_tok_list, std::move (item));
 	return true;
       }
 
@@ -984,13 +934,94 @@ dump_pretty_printer::decode_format (text_info *text, const char *spec,
 
 	/* Make an item for the tree, and stash it.  */
 	auto item = make_item_for_dump_generic_expr (t, TDF_SLIM);
-	stash_item (buffer_ptr, std::move (item));
+	stash_item (formatted_tok_list, std::move (item));
 	return true;
       }
 
     default:
       return false;
     }
+}
+
+void
+dump_pretty_printer::custom_token_printer::
+print_tokens (pretty_printer *pp,
+	      const pp_token_list &tokens)
+{
+  /* Accumulate text whilst emitting items.  */
+  for (auto iter = tokens.m_first; iter; iter = iter->m_next)
+    switch (iter->m_kind)
+      {
+      default:
+	gcc_unreachable ();
+
+      case pp_token::kind::text:
+	{
+	  pp_token_text *sub = as_a <pp_token_text *> (iter);
+	  gcc_assert (sub->m_value.get ());
+	  pp_string (pp, sub->m_value.get ());
+	}
+	break;
+
+      case pp_token::kind::begin_color:
+      case pp_token::kind::end_color:
+	/* No-op for dumpfiles.  */
+	break;
+
+      case pp_token::kind::begin_quote:
+	pp_begin_quote (pp, pp_show_color (pp));
+	break;
+      case pp_token::kind::end_quote:
+	pp_end_quote (pp, pp_show_color (pp));
+	break;
+
+      case pp_token::kind::begin_url:
+      case pp_token::kind::end_url:
+	/* No-op for dumpfiles.  */
+	break;
+
+      case pp_token::kind::custom_data:
+	{
+	  emit_any_pending_textual_chunks ();
+	  pp_token_custom_data *sub = as_a <pp_token_custom_data *> (iter);
+	  gcc_assert (sub->m_value.get ());
+	  wrapped_optinfo_item *custom_data
+	    = static_cast<wrapped_optinfo_item *> (sub->m_value.get ());
+	  m_dump_pp.emit_item (std::move (custom_data->m_optinfo_item),
+			       m_optinfo);
+	}
+	break;
+      }
+
+  emit_any_pending_textual_chunks ();
+}
+
+/* Subroutine of dump_pretty_printer::custom_token_printer::print_tokens
+   for consolidating multiple adjacent pure-text chunks into single
+   optinfo_items (in phase 3).  */
+
+void
+dump_pretty_printer::custom_token_printer::
+emit_any_pending_textual_chunks ()
+{
+  dump_pretty_printer *pp = &m_dump_pp;
+  output_buffer *const buffer = pp_buffer (pp);
+  gcc_assert (buffer->obstack == &buffer->formatted_obstack);
+
+  /* Don't emit an item if the pending text is empty.  */
+  if (output_buffer_last_position_in_text (buffer) == nullptr)
+    return;
+
+  char *formatted_text = xstrdup (pp_formatted_text (pp));
+  std::unique_ptr<optinfo_item> item
+    = make_unique<optinfo_item> (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
+				 formatted_text);
+  pp->emit_item (std::move (item), m_optinfo);
+
+  /* Clear the pending text by unwinding formatted_text back to the start
+     of the buffer (without deallocating).  */
+  obstack_free (&buffer->formatted_obstack,
+		buffer->formatted_obstack.object_base);
 }
 
 /* Output a formatted message using FORMAT on appropriate dump streams.  */
@@ -1007,14 +1038,16 @@ dump_context::dump_printf_va (const dump_metadata_t &metadata,
   /* Phases 1 and 2, using pp_format.  */
   pp_format (&pp, &text);
 
-  /* Phase 3.  */
+  /* Phase 3: update the custom token_printer with any active optinfo.  */
   if (optinfo_enabled_p ())
     {
       optinfo &info = ensure_pending_optinfo (metadata);
-      pp.emit_items (&info);
+      pp.set_optinfo (&info);
     }
   else
-    pp.emit_items (NULL);
+    pp.set_optinfo (nullptr);
+
+  pp_output_formatted_text (&pp, nullptr);
 }
 
 /* Similar to dump_printf, except source location is also printed, and

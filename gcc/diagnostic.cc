@@ -1407,7 +1407,7 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
     m_output_format->on_begin_group ();
   m_diagnostic_groups.m_emission_count++;
 
-  pp_format (this->printer, &diagnostic->message, m_urlifier);
+  pp_format (this->printer, &diagnostic->message);
   /* Call vfunc in the output format.  This is responsible for
      phase 3 of formatting, and for printing the result.  */
   m_output_format->on_report_diagnostic (*diagnostic, orig_diag_kind);

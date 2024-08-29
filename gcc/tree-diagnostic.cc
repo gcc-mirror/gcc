@@ -55,7 +55,7 @@ default_tree_diagnostic_starter (diagnostic_context *context,
 bool
 default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
 		      int precision, bool wide, bool set_locus, bool hash,
-		      bool *, const char **)
+		      bool *, pp_token_list &)
 {
   tree t;
 

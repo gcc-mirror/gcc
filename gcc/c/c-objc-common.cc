@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dwarf2.h"
 
 static bool c_tree_printer (pretty_printer *, text_info *, const char *,
-			    int, bool, bool, bool, bool *, const char **);
+			    int, bool, bool, bool, bool *, pp_token_list &);
 
 /* Info for C language features which can be queried through
    __has_{feature,extension}.  */
@@ -318,7 +318,7 @@ pp_markup::element_quoted_type::print_type (pp_markup::context &ctxt)
 static bool
 c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
 		int precision, bool wide, bool set_locus, bool hash,
-		bool *quoted, const char **)
+		bool *quoted, pp_token_list &)
 {
   tree t = NULL_TREE;
   // FIXME: the next cast should be a dynamic_cast, when it is permitted.

@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
@@ -30,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-color.h"
 #include "diagnostic-event-id.h"
 #include "diagnostic-highlight-colors.h"
+#include "make-unique.h"
 #include "selftest.h"
 
 #if HAVE_ICONV
@@ -710,6 +712,10 @@ static int
 decode_utf8_char (const unsigned char *, size_t len, unsigned int *);
 static void pp_quoted_string (pretty_printer *, const char *, size_t = -1);
 
+static void
+default_token_printer (pretty_printer *pp,
+		       const pp_token_list &tokens);
+
 /* Overwrite the given location/range within this text_info's rich_location.
    For use e.g. when implementing "+" in client format decoders.  */
 
@@ -1063,196 +1069,408 @@ pp_indent (pretty_printer *pp)
 
 static const char *get_end_url_string (pretty_printer *);
 
-/* Append STR to OSTACK, without a null-terminator.  */
+/* struct pp_token.  */
 
-static void
-obstack_append_string (obstack *ostack, const char *str)
+pp_token::pp_token (enum kind k)
+: m_kind (k),
+  m_prev (nullptr),
+  m_next (nullptr)
 {
-  obstack_grow (ostack, str, strlen (str));
 }
 
-/* Append STR to OSTACK, without a null-terminator.  */
-
-static void
-obstack_append_string (obstack *ostack, const char *str, size_t len)
+void
+pp_token::dump (FILE *out) const
 {
-  obstack_grow (ostack, str, len);
-}
-
-/* Given quoted text within the buffer OBSTACK
-   at the half-open interval [QUOTED_TEXT_START_IDX, QUOTED_TEXT_END_IDX),
-   potentially use URLIFIER (if non-null) to see if there's a URL for the
-   quoted text.
-
-   If so, replace the quoted part of the text in the buffer with a URLified
-   version of the text, using PP's settings.
-
-   For example, given this is the buffer:
-     "this is a test `hello worldTRAILING-CONTENT"
-     .................^~~~~~~~~~~
-   with the quoted text starting at the 'h' of "hello world", the buffer
-   becomes:
-     "this is a test `BEGIN_URL(URL)hello worldEND(URL)TRAILING-CONTENT"
-     .................^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     .................-----------replacement-----------
-
-   Return the new offset into the buffer of the quoted text endpoint i.e.
-   the offset of "TRAILING-CONTENT" in the above.  */
-
-static size_t
-urlify_quoted_string (pretty_printer *pp,
-		      obstack *obstack,
-		      const urlifier *urlifier,
-		      size_t quoted_text_start_idx,
-		      size_t quoted_text_end_idx)
-{
-  if (!pp->supports_urls_p ())
-    return quoted_text_end_idx;
-  if (!urlifier)
-    return quoted_text_end_idx;
-
-  const size_t quoted_len = quoted_text_end_idx - quoted_text_start_idx;
-  if (quoted_len == 0)
-    /* Empty quoted string; do nothing.  */
-    return quoted_text_end_idx;
-  const char *start = (obstack->object_base + quoted_text_start_idx);
-  char *url = urlifier->get_url_for_quoted_text (start, quoted_len);
-  if (!url)
-    /* No URL for this quoted text; do nothing.  */
-    return quoted_text_end_idx;
-
-  /* Stash a copy of the remainder of the chunk.  */
-  char *text = xstrndup (start,
-			 obstack_object_size (obstack) - quoted_text_start_idx);
-
-  /* Replace quoted text...  */
-  obstack->next_free = obstack->object_base + quoted_text_start_idx;
-
-  /*  ...with URLified version of the text.  */
-  /* Begin URL.  */
-  switch (pp->get_url_format ())
+  switch (m_kind)
     {
     default:
-    case URL_FORMAT_NONE:
       gcc_unreachable ();
-    case URL_FORMAT_ST:
-      obstack_append_string (obstack, "\33]8;;");
-      obstack_append_string (obstack, url);
-      obstack_append_string (obstack, "\33\\");
+    case kind::text:
+      {
+	const pp_token_text *sub = as_a <const pp_token_text *> (this);
+	gcc_assert (sub->m_value.get ());
+	fprintf (out, "TEXT(\"%s\")", sub->m_value.get ());
+      }
       break;
-    case URL_FORMAT_BEL:
-      obstack_append_string (obstack, "\33]8;;");
-      obstack_append_string (obstack, url);
-      obstack_append_string (obstack, "\a");
+    case kind::begin_color:
+      {
+	const pp_token_begin_color *sub
+	  = as_a <const pp_token_begin_color *> (this);
+	gcc_assert (sub->m_value.get ());
+	fprintf (out, "BEGIN_COLOR(\"%s\")", sub->m_value.get ());
+	break;
+      }
+    case kind::end_color:
+      fprintf (out, "END_COLOR");
+      break;
+    case kind::begin_quote:
+      fprintf (out, "BEGIN_QUOTE");
+      break;
+    case kind::end_quote:
+      fprintf (out, "END_QUOTE");
+      break;
+    case kind::begin_url:
+      {
+	const pp_token_begin_url *sub
+	  = as_a <const pp_token_begin_url *> (this);
+	gcc_assert (sub->m_value.get ());
+	fprintf (out, "BEGIN_URL(\"%s\")", sub->m_value.get ());
+      }
+      break;
+    case kind::end_url:
+      fprintf (out, "END_URL");
+      break;
+    case kind::custom_data:
+      {
+	const pp_token_custom_data *sub
+	  = as_a <const pp_token_custom_data *> (this);
+	gcc_assert (sub->m_value.get ());
+	fprintf (out, "CUSTOM(");
+	sub->m_value->dump (out);
+	fprintf (out, ")");
+      }
       break;
     }
-  /* Add back the quoted part of the text.  */
-  obstack_append_string (obstack, text, quoted_len);
-  /* End URL.  */
-  obstack_append_string (obstack,
-			 get_end_url_string (pp));
-
-  size_t new_end_idx = obstack_object_size (obstack);
-
-  /* Add back the remainder of the text after the quoted part.  */
-  obstack_append_string (obstack, text + quoted_len);
-  free (text);
-  free (url);
-  return new_end_idx;
 }
 
-/* A class for tracking quoted text within a buffer for
-   use by a urlifier.  */
+/* Allocate SZ bytes within S, which must not be half-way through
+   building another object.  */
 
-class quoting_info
+static void *
+allocate_object (size_t sz, obstack &s)
 {
-public:
-  /* Called when quoted text is begun in phase 1 or 2.  */
-  void on_begin_quote (const output_buffer &buf,
-		       unsigned chunk_idx)
-  {
-    /* Stash location of start of quoted string.  */
-    size_t byte_offset = obstack_object_size (&buf.chunk_obstack);
-    m_loc_last_open_quote = location (chunk_idx, byte_offset);
-  }
+  /* We must not be half-way through an object.  */
+  gcc_assert (obstack_base (&s) == obstack_next_free (&s));
 
-  /* Called when quoted text is ended in phase 1 or 2.  */
-  void on_end_quote (pretty_printer *pp,
-		     output_buffer &buf,
-		     unsigned chunk_idx,
-		     const urlifier &urlifier)
-  {
-    /* If possible, do urlification now.  */
-    if (chunk_idx == m_loc_last_open_quote.m_chunk_idx)
-      {
-	urlify_quoted_string (pp,
-			      &buf.chunk_obstack,
-			      &urlifier,
-			      m_loc_last_open_quote.m_byte_offset,
-			      obstack_object_size (&buf.chunk_obstack));
-	m_loc_last_open_quote = location ();
-	return;
-      }
-    /* Otherwise the quoted text straddles multiple chunks.
-       Stash the location of end of quoted string for use in phase 3.  */
-    size_t byte_offset = obstack_object_size (&buf.chunk_obstack);
-    m_phase_3_quotes.push_back (run (m_loc_last_open_quote,
-				     location (chunk_idx, byte_offset)));
-    m_loc_last_open_quote = location ();
-  }
+  obstack_grow (&s, obstack_base (&s), sz);
+  void *buf = obstack_finish (&s);
+  return buf;
+}
 
-  bool has_phase_3_quotes_p () const
-  {
-    return m_phase_3_quotes.size () > 0;
-  }
-  void handle_phase_3 (pretty_printer *pp,
-		       const urlifier &urlifier);
+/* Make room for a pp_token instance within obstack S.  */
 
-private:
-  struct location
-  {
-    location ()
-    : m_chunk_idx (UINT_MAX),
-      m_byte_offset (SIZE_MAX)
+void *
+pp_token::operator new (size_t sz, obstack &s)
+{
+  return allocate_object (sz, s);
+}
+
+void
+pp_token::operator delete (void *)
+{
+  /* No-op: pp_tokens are allocated within obstacks, so
+     the memory will be reclaimed when the obstack is freed.  */
+}
+
+/* class pp_token_list.  */
+
+/* Make room for a pp_token_list instance within obstack S.  */
+
+void *
+pp_token_list::operator new (size_t sz, obstack &s)
+{
+  return allocate_object (sz, s);
+}
+
+void
+pp_token_list::operator delete (void *)
+{
+  /* No-op: pp_token_list allocated within obstacks don't
+     need their own reclaim the memory will be reclaimed when
+     the obstack is freed.  */
+}
+
+pp_token_list::pp_token_list (obstack &s)
+: m_obstack (s),
+  m_first (nullptr),
+  m_end (nullptr)
+{
+}
+
+pp_token_list::pp_token_list (pp_token_list &&other)
+: m_obstack (other.m_obstack),
+  m_first (other.m_first),
+  m_end (other.m_end)
+{
+  other.m_first = nullptr;
+  other.m_end = nullptr;
+}
+
+pp_token_list::~pp_token_list ()
+{
+  for (auto iter = m_first; iter; )
     {
+      pp_token *next = iter->m_next;
+      delete iter;
+      iter = next;
     }
+}
 
-    location (unsigned chunk_idx,
-	      size_t byte_offset)
-    : m_chunk_idx (chunk_idx),
-      m_byte_offset (byte_offset)
+void
+pp_token_list::push_back_text (label_text &&text)
+{
+  if (text.get ()[0] == '\0')
+    return; // pushing empty string is a no-op
+  push_back<pp_token_text> (std::move (text));
+}
+
+void
+pp_token_list::push_back (std::unique_ptr<pp_token> tok)
+{
+  if (!m_first)
     {
+      gcc_assert (m_end == nullptr);
+      m_first = tok.get ();
+      m_end = tok.get ();
     }
-
-    unsigned m_chunk_idx;
-    size_t m_byte_offset;
-  };
-
-  struct run
-  {
-    run (location start, location end)
-    : m_start (start), m_end (end)
+  else
     {
+      gcc_assert (m_end != nullptr);
+      m_end->m_next = tok.get ();
+      tok->m_prev = m_end;
+      m_end = tok.get ();
     }
+  tok.release ();
+}
 
-    location m_start;
-    location m_end;
-  };
+void
+pp_token_list::push_back_list (pp_token_list &&list)
+{
+  while (auto tok = list.pop_front ())
+    push_back (std::move (tok));
+}
 
-  location m_loc_last_open_quote;
-  std::vector<run> m_phase_3_quotes;
-};
+std::unique_ptr<pp_token>
+pp_token_list::pop_front ()
+{
+  pp_token *result = m_first;
+  if (result == nullptr)
+    return nullptr;
+
+  gcc_assert (result->m_prev == nullptr);
+  m_first = result->m_next;
+  if (result->m_next)
+    {
+      gcc_assert (result != m_end);
+      m_first->m_prev = nullptr;
+    }
+  else
+    {
+      gcc_assert (result == m_end);
+      m_end = nullptr;
+    }
+  result->m_next = nullptr;
+  return std::unique_ptr<pp_token> (result);
+}
+
+std::unique_ptr<pp_token>
+pp_token_list::remove_token (pp_token *tok)
+{
+  gcc_assert (tok);
+  if (tok->m_prev)
+    {
+      gcc_assert (tok != m_first);
+      tok->m_prev->m_next = tok->m_next;
+    }
+  else
+    {
+      gcc_assert (tok == m_first);
+      m_first = tok->m_next;
+    }
+  if (tok->m_next)
+    {
+      gcc_assert (tok != m_end);
+      tok->m_next->m_prev = tok->m_prev;
+    }
+  else
+    {
+      gcc_assert (tok == m_end);
+      m_end = tok->m_prev;
+    }
+  tok->m_prev = nullptr;
+  tok->m_next = nullptr;
+  gcc_assert (m_first != tok);
+  gcc_assert (m_end != tok);
+  return std::unique_ptr<pp_token> (tok);
+}
+
+/* Insert NEW_TOK after RELATIVE_TOK.  */
+
+void
+pp_token_list::insert_after (std::unique_ptr<pp_token> new_tok_up,
+			     pp_token *relative_tok)
+{
+  pp_token *new_tok = new_tok_up.release ();
+
+  gcc_assert (new_tok);
+  gcc_assert (new_tok->m_prev == nullptr);
+  gcc_assert (new_tok->m_next == nullptr);
+  gcc_assert (relative_tok);
+
+  if (relative_tok->m_next)
+    {
+      gcc_assert (relative_tok != m_end);
+      relative_tok->m_next->m_prev = new_tok;
+    }
+  else
+    {
+      gcc_assert (relative_tok == m_end);
+      m_end = new_tok;
+    }
+  new_tok->m_prev = relative_tok;
+  new_tok->m_next = relative_tok->m_next;
+  relative_tok->m_next = new_tok;
+}
+
+void
+pp_token_list::replace_custom_tokens ()
+{
+  pp_token *iter = m_first;
+  while (iter)
+    {
+      pp_token *next  = iter->m_next;
+      if (iter->m_kind == pp_token::kind::custom_data)
+	{
+	  pp_token_list tok_list (m_obstack);
+	  pp_token_custom_data *sub = as_a <pp_token_custom_data *> (iter);
+	  if (sub->m_value->as_standard_tokens (tok_list))
+	    {
+	      while (auto tok = tok_list.pop_front ())
+		{
+		  /* The resulting token list must not contain any
+		     custom data.  */
+		  gcc_assert (tok->m_kind != pp_token::kind::custom_data);
+		  insert_after (std::move (tok), iter);
+		}
+	      remove_token (iter);
+	    }
+	}
+      iter = next;
+    }
+}
+
+/* Merge any runs of consecutive text tokens within this list
+   into individual text tokens.  */
+
+void
+pp_token_list::merge_consecutive_text_tokens ()
+{
+  pp_token *start_of_run = m_first;
+  while (start_of_run)
+    {
+      if (start_of_run->m_kind != pp_token::kind::text)
+	{
+	  start_of_run = start_of_run->m_next;
+	  continue;
+	}
+      pp_token *end_of_run = start_of_run;
+      while (end_of_run->m_next
+	     && end_of_run->m_next->m_kind == pp_token::kind::text)
+	end_of_run = end_of_run->m_next;
+      if (end_of_run != start_of_run)
+	{
+	  /* start_of_run through end_of_run are a run of consecutive
+	     text tokens.  */
+
+	  /* Calculate size of buffer for merged text.  */
+	  size_t sz = 0;
+	  for (auto iter = start_of_run; iter != end_of_run->m_next;
+	       iter = iter->m_next)
+	    {
+	      pp_token_text *iter_text = static_cast<pp_token_text *> (iter);
+	      sz += strlen (iter_text->m_value.get ());
+	    }
+
+	  /* Allocate and populate buffer for merged text
+	     (within m_obstack).  */
+	  char * const buf = (char *)allocate_object (sz + 1, m_obstack);
+	  char *p = buf;
+	  for (auto iter = start_of_run; iter != end_of_run->m_next;
+	       iter = iter->m_next)
+	    {
+	      pp_token_text *iter_text = static_cast<pp_token_text *> (iter);
+	      size_t iter_sz = strlen (iter_text->m_value.get ());
+	      memcpy (p, iter_text->m_value.get (), iter_sz);
+	      p += iter_sz;
+	    }
+	  *p = '\0';
+
+	  /* Replace start_of_run's buffer pointer with the new buffer.  */
+	  static_cast<pp_token_text *> (start_of_run)->m_value
+	    = label_text::borrow (buf);
+
+	  /* Remove all the other text tokens in the run.  */
+	  pp_token * const next = end_of_run->m_next;
+	  while (start_of_run->m_next != next)
+	    remove_token (start_of_run->m_next);
+	  start_of_run = next;
+	}
+      else
+	start_of_run = end_of_run->m_next;
+    }
+}
+
+/* Apply URLIFIER to this token list.
+   Find BEGIN_QUOTE, TEXT, END_QUOTE triples, and if URLIFIER has a url
+   for the value of TEXT, then wrap TEXT in a {BEGIN,END}_URL pair.  */
+
+void
+pp_token_list::apply_urlifier (const urlifier &urlifier)
+{
+  for (pp_token *iter = m_first; iter; )
+    {
+      if (iter->m_kind == pp_token::kind::begin_quote
+	  && iter->m_next
+	  && iter->m_next->m_kind == pp_token::kind::text
+	  && iter->m_next->m_next
+	  && iter->m_next->m_next->m_kind == pp_token::kind::end_quote)
+	{
+	  pp_token *begin_quote = iter;
+	  pp_token_text *text = as_a <pp_token_text *> (begin_quote->m_next);
+	  pp_token *end_quote = text->m_next;
+	  if (char *url = urlifier.get_url_for_quoted_text
+			    (text->m_value.get (),
+			     strlen (text->m_value.get ())))
+	    {
+	      auto begin_url
+		= make_token<pp_token_begin_url> (label_text::take (url));
+	      auto end_url = make_token<pp_token_end_url> ();
+	      insert_after (std::move (begin_url), begin_quote);
+	      insert_after (std::move (end_url), text);
+	    }
+	  iter = end_quote->m_next;
+	}
+      else
+	iter = iter->m_next;
+    }
+}
+
+void
+pp_token_list::dump (FILE *out) const
+{
+  fprintf (out, "[");
+  for (auto iter = m_first; iter; iter = iter->m_next)
+    {
+      iter->dump (out);
+      if (iter->m_next)
+	fprintf (out, ", ");
+    }
+  fprintf (out, "]\n");
+}
+
 
 /* Adds a chunk to the end of formatted output, so that it
    will be printed by pp_output_formatted_text.  */
 
 void
-chunk_info::append_formatted_chunk (const char *content)
+chunk_info::append_formatted_chunk (obstack &s, const char *content)
 {
   unsigned int chunk_idx;
   for (chunk_idx = 0; m_args[chunk_idx]; chunk_idx++)
     ;
-  m_args[chunk_idx++] = content;
+  pp_token_list *tokens = pp_token_list::make (s);
+  tokens->push_back_text (label_text::borrow (content));
+  m_args[chunk_idx++] = tokens;
   m_args[chunk_idx] = nullptr;
 }
 
@@ -1262,34 +1480,33 @@ chunk_info::append_formatted_chunk (const char *content)
 void
 chunk_info::pop_from_output_buffer (output_buffer &buf)
 {
-  delete m_quotes;
   buf.cur_chunk_array = m_prev;
   obstack_free (&buf.chunk_obstack, this);
 }
 
 void
-chunk_info::on_begin_quote (const output_buffer &buf,
-			    unsigned chunk_idx,
-			    const urlifier *urlifier)
+chunk_info::dump (FILE *out) const
 {
-  if (!urlifier)
-    return;
-  if (!m_quotes)
-    m_quotes = new quoting_info ();
-  m_quotes->on_begin_quote (buf, chunk_idx);
+  for (size_t idx = 0; m_args[idx]; ++idx)
+    {
+      fprintf (out, "%i: ", (int)idx);
+      m_args[idx]->dump (out);
+    }
 }
 
-void
-chunk_info::on_end_quote (pretty_printer *pp,
-			  output_buffer &buf,
-			  unsigned chunk_idx,
-			  const urlifier *urlifier)
+/* Finish any text accumulating within CUR_OBSTACK,
+   terminating it.
+   Push a text pp_token to the end of TOK_LIST containing
+   a borrowed copy of the text in CUR_OBSTACK.  */
+
+static void
+push_back_any_text (pp_token_list *tok_list,
+		    obstack *cur_obstack)
 {
-  if (!urlifier)
-    return;
-  if (!m_quotes)
-    m_quotes = new quoting_info ();
-  m_quotes->on_end_quote (pp, buf, chunk_idx, *urlifier);
+  obstack_1grow (cur_obstack, '\0');
+  tok_list->push_back_text
+    (label_text::borrow (XOBFINISH (cur_obstack,
+				    const char *)));
 }
 
 /* The following format specifiers are recognized as being client independent:
@@ -1339,36 +1556,22 @@ chunk_info::on_end_quote (pretty_printer *pp,
 /* Implementation of pp_format.
    Formatting phases 1 and 2: render TEXT->format_spec plus
    text->m_args_ptr into a series of chunks in pp_buffer (PP)->args[].
-   Phase 3 is in pp_output_formatted_text.
-
-   If URLIFIER is non-NULL, then use it to add URLs for quoted
-   strings, so that e.g.
-     "before %<quoted%> after"
-   with a URLIFIER that has a URL for "quoted" might be emitted as:
-     "before `BEGIN_URL(http://example.com)quotedEND_URL' after"
-   This is handled here for message fragments that are:
-   - quoted entirely in phase 1 (e.g. "%<this is quoted%>"), or
-   - quoted entirely in phase 2 (e.g. "%qs"),
-   Quoted fragments that use a mixture of both phases
-   (e.g. "%<this is a mixture: %s %>")
-   are stashed into the output_buffer's m_quotes for use in phase 3.  */
+   Phase 3 is in pp_output_formatted_text.  */
 
 void
-pretty_printer::format (text_info *text,
-			const urlifier *urlifier)
+pretty_printer::format (text_info *text)
 {
   output_buffer * const buffer = m_buffer;
 
   unsigned int chunk = 0, argno;
-  const char **formatters[PP_NL_ARGMAX];
+  pp_token_list **formatters[PP_NL_ARGMAX];
 
   /* Allocate a new chunk structure.  */
   chunk_info *new_chunk_array = XOBNEW (&buffer->chunk_obstack, chunk_info);
 
   new_chunk_array->m_prev = buffer->cur_chunk_array;
-  new_chunk_array->m_quotes = nullptr;
   buffer->cur_chunk_array = new_chunk_array;
-  const char **args = new_chunk_array->m_args;
+  pp_token_list **args = new_chunk_array->m_args;
 
   /* Formatting phase 1: split up TEXT->format_spec into chunks in
      pp_buffer (PP)->args[].  Even-numbered chunks are to be output
@@ -1380,6 +1583,8 @@ pretty_printer::format (text_info *text,
 
   unsigned int curarg = 0;
   bool any_unnumbered = false, any_numbered = false;
+  pp_token_list *cur_token_list;
+  args[chunk++] = cur_token_list = pp_token_list::make (buffer->chunk_obstack);
   for (const char *p = text->m_format_spec; *p; )
     {
       while (*p != '\0' && *p != '%')
@@ -1403,44 +1608,39 @@ pretty_printer::format (text_info *text,
 
 	case '<':
 	  {
-	    obstack_grow (&buffer->chunk_obstack,
-			  open_quote, strlen (open_quote));
-	    const char *colorstr = colorize_start (m_show_color, "quote");
-	    obstack_grow (&buffer->chunk_obstack, colorstr, strlen (colorstr));
+	    push_back_any_text (cur_token_list, &buffer->chunk_obstack);
+	    cur_token_list->push_back<pp_token_begin_quote> ();
 	    p++;
-
-	    buffer->cur_chunk_array->on_begin_quote (*buffer, chunk, urlifier);
 	    continue;
 	  }
 
 	case '>':
 	  {
-	    buffer->cur_chunk_array->on_end_quote (this, *buffer, chunk, urlifier);
-
-	    const char *colorstr = colorize_stop (m_show_color);
-	    obstack_grow (&buffer->chunk_obstack, colorstr, strlen (colorstr));
+	    push_back_any_text (cur_token_list, &buffer->chunk_obstack);
+	    cur_token_list->push_back<pp_token_end_quote> ();
+	    p++;
+	    continue;
 	  }
-	  /* FALLTHRU */
 	case '\'':
-	  obstack_grow (&buffer->chunk_obstack,
-			close_quote, strlen (close_quote));
-	  p++;
+	  {
+	    push_back_any_text (cur_token_list, &buffer->chunk_obstack);
+	    cur_token_list->push_back<pp_token_end_quote> ();
+	    p++;
+	  }
 	  continue;
 
 	case '}':
 	  {
-	    const char *endurlstr = get_end_url_string (this);
-	    obstack_grow (&buffer->chunk_obstack, endurlstr,
-			  strlen (endurlstr));
+	    push_back_any_text (cur_token_list, &buffer->chunk_obstack);
+	    cur_token_list->push_back<pp_token_end_url> ();
+	    p++;
 	  }
-	  p++;
 	  continue;
 
 	case 'R':
 	  {
-	    const char *colorstr = colorize_stop (m_show_color);
-	    obstack_grow (&buffer->chunk_obstack, colorstr,
-			  strlen (colorstr));
+	    push_back_any_text (cur_token_list, &buffer->chunk_obstack);
+	    cur_token_list->push_back<pp_token_end_color> ();
 	    p++;
 	    continue;
 	  }
@@ -1455,10 +1655,13 @@ pretty_printer::format (text_info *text,
 
 	default:
 	  /* Handled in phase 2.  Terminate the plain chunk here.  */
-	  obstack_1grow (&buffer->chunk_obstack, '\0');
-	  args[chunk++] = XOBFINISH (&buffer->chunk_obstack, const char *);
+	  push_back_any_text (cur_token_list, &buffer->chunk_obstack);
 	  break;
 	}
+
+      /* Start a new token list for the formatting args.  */
+      args[chunk] = cur_token_list
+	= pp_token_list::make (buffer->chunk_obstack);
 
       if (ISDIGIT (*p))
 	{
@@ -1479,7 +1682,7 @@ pretty_printer::format (text_info *text,
 	}
       gcc_assert (argno < PP_NL_ARGMAX);
       gcc_assert (!formatters[argno]);
-      formatters[argno] = &args[chunk];
+      formatters[argno] = &args[chunk++];
       do
 	{
 	  obstack_1grow (&buffer->chunk_obstack, *p);
@@ -1531,23 +1734,39 @@ pretty_printer::format (text_info *text,
 	    }
 	}
       if (*p == '\0')
-	break;
+	{
+	  push_back_any_text (cur_token_list, &buffer->chunk_obstack);
+	  break;
+	}
 
       obstack_1grow (&buffer->chunk_obstack, '\0');
+      push_back_any_text (cur_token_list, &buffer->chunk_obstack);
+
+      /* Start a new token list for the next (non-formatted) text.  */
       gcc_assert (chunk < PP_NL_ARGMAX * 2);
-      args[chunk++] = XOBFINISH (&buffer->chunk_obstack, const char *);
+      args[chunk++] = cur_token_list
+	= pp_token_list::make (buffer->chunk_obstack);
     }
 
   obstack_1grow (&buffer->chunk_obstack, '\0');
+  push_back_any_text (cur_token_list, &buffer->chunk_obstack);
   gcc_assert (chunk < PP_NL_ARGMAX * 2);
-  args[chunk++] = XOBFINISH (&buffer->chunk_obstack, const char *);
-  args[chunk] = 0;
+  args[chunk] = nullptr;
 
   /* Set output to the argument obstack, and switch line-wrapping and
      prefixing off.  */
   buffer->obstack = &buffer->chunk_obstack;
   const int old_line_length = buffer->line_length;
   const pp_wrapping_mode_t old_wrapping_mode = pp_set_verbatim_wrapping (this);
+
+  /* Note that you can debug the state of the chunk arrays here using
+       (gdb) call buffer->cur_chunk_array->dump()
+     which, given e.g. "foo: %s bar: %s" might print:
+       0: [TEXT("foo: ")]
+       1: [TEXT("s")]
+       2: [TEXT(" bar: ")]
+       3: [TEXT("s")]
+  */
 
   /* Second phase.  Replace each formatter with the formatted text it
      corresponds to.  */
@@ -1562,10 +1781,20 @@ pretty_printer::format (text_info *text,
 
       const char *p;
 
+      /* We expect a single text token containing the formatter.  */
+      pp_token_list *tok_list = *(formatters[argno]);
+      gcc_assert (tok_list);
+      gcc_assert (tok_list->m_first == tok_list->m_end);
+      gcc_assert (tok_list->m_first->m_kind == pp_token::kind::text);
+
+      /* Accumulate the value of the formatted text into here.  */
+      pp_token_list *formatted_tok_list
+	= pp_token_list::make (buffer->chunk_obstack);
+
       /* We do not attempt to enforce any ordering on the modifier
 	 characters.  */
 
-      for (p = *formatters[argno];; p++)
+      for (p = as_a <pp_token_text *> (tok_list->m_first)->m_value.get ();; p++)
 	{
 	  switch (*p)
 	    {
@@ -1612,16 +1841,18 @@ pretty_printer::format (text_info *text,
 
       if (quote)
 	{
-	  pp_begin_quote (this, m_show_color);
-	  buffer->cur_chunk_array->on_begin_quote (*buffer, chunk, urlifier);
+	  push_back_any_text (formatted_tok_list, &buffer->chunk_obstack);
+	  formatted_tok_list->push_back<pp_token_begin_quote> ();
 	}
 
       switch (*p)
 	{
 	case 'r':
-	  pp_string (this, colorize_start (m_show_color,
-					 va_arg (*text->m_args_ptr,
-						 const char *)));
+	  {
+	    const char *color = va_arg (*text->m_args_ptr, const char *);
+	    formatted_tok_list->push_back<pp_token_begin_color>
+	      (label_text::borrow (color));
+	  }
 	  break;
 
 	case 'c':
@@ -1763,7 +1994,11 @@ pretty_printer::format (text_info *text,
 	  break;
 
 	case '{':
-	  begin_url (va_arg (*text->m_args_ptr, const char *));
+	  {
+	    const char *url = va_arg (*text->m_args_ptr, const char *);
+	    formatted_tok_list->push_back<pp_token_begin_url>
+	      (label_text::borrow (url));
+	  }
 	  break;
 
 	case 'e':
@@ -1772,7 +2007,7 @@ pretty_printer::format (text_info *text,
 	      = va_arg (*text->m_args_ptr, pp_element *);
 	    pp_markup::context ctxt (*this, *buffer, chunk,
 				     quote, /* by reference */
-				     urlifier);
+				     formatted_tok_list);
 	    element->add_to_phase_2 (ctxt);
 	  }
 	  break;
@@ -1787,22 +2022,23 @@ pretty_printer::format (text_info *text,
 	       (e.g. when printing "'TYPEDEF' aka 'TYPE'" in the C family
 	       of frontends).  */
 	    gcc_assert (pp_format_decoder (this));
+	    gcc_assert (formatted_tok_list);
 	    ok = m_format_decoder (this, text, p,
 				   precision, wide, plus, hash, &quote,
-				   formatters[argno]);
+				   *formatted_tok_list);
 	    gcc_assert (ok);
 	  }
 	}
 
       if (quote)
 	{
-	  buffer->cur_chunk_array->on_end_quote (this, *buffer,
-						 chunk, urlifier);
-	  pp_end_quote (this, m_show_color);
+	  push_back_any_text (formatted_tok_list, &buffer->chunk_obstack);
+	  formatted_tok_list->push_back<pp_token_end_quote> ();
 	}
 
-      obstack_1grow (&buffer->chunk_obstack, '\0');
-      *formatters[argno] = XOBFINISH (&buffer->chunk_obstack, const char *);
+      push_back_any_text (formatted_tok_list, &buffer->chunk_obstack);
+      delete *formatters[argno];
+      *formatters[argno] = formatted_tok_list;
     }
 
   if (CHECKING_P)
@@ -1833,6 +2069,8 @@ struct auto_obstack
     obstack_free (&m_obstack, NULL);
   }
 
+  operator obstack & () { return m_obstack; }
+
   void grow (const void *src, size_t length)
   {
     obstack_grow (&m_obstack, src, length);
@@ -1851,100 +2089,6 @@ struct auto_obstack
   obstack m_obstack;
 };
 
-/* Subroutine of pp_output_formatted_text for the awkward case where
-   quoted text straddles multiple chunks.
-
-   Flush PP's buffer's chunks to PP's output buffer, whilst inserting
-   URLs for any quoted text that should be URLified.
-
-   For example, given:
-   |  pp_format (pp,
-   |            "unrecognized option %qs; did you mean %<-%s%>",
-   |            "foo", "foption");
-   we would have these chunks:
-   |  chunk 0: "unrecognized option "
-   |  chunk 1: "`foo'" (already checked for urlification)
-   |  chunk 2: "; did you mean `-"
-   |                           ^*
-   |  chunk 3: "foption"
-   |            *******
-   |  chunk 4: "'"
-   |            ^
-   and this quoting_info would have recorded the open quote near the end
-   of chunk 2 and close quote at the start of chunk 4; this function would
-   check the combination of the end of chunk 2 and all of chunk 3 ("-foption")
-   for urlification.  */
-
-void
-quoting_info::handle_phase_3 (pretty_printer *pp,
-			      const urlifier &urlifier)
-{
-  unsigned int chunk;
-  output_buffer * const buffer = pp_buffer (pp);
-  chunk_info *chunk_array = buffer->cur_chunk_array;
-  const char * const *args = chunk_array->get_args ();
-  quoting_info *quoting = chunk_array->get_quoting_info ();
-
-  /* We need to construct the string into an intermediate buffer
-     for this case, since using pp_string can introduce prefixes
-     and line-wrapping, and omit whitespace at the start of lines.  */
-  auto_obstack combined_buf;
-
-  /* Iterate simultaneously through both
-     - the chunks and
-     - the runs of quoted characters
-     Accumulate text from the chunks into combined_buf, and handle
-     runs of quoted characters when handling the chunks they
-     correspond to.  */
-  size_t start_of_run_byte_offset = 0;
-  std::vector<quoting_info::run>::const_iterator iter_run
-    = quoting->m_phase_3_quotes.begin ();
-  std::vector<quoting_info::run>::const_iterator end_runs
-    = quoting->m_phase_3_quotes.end ();
-  for (chunk = 0; args[chunk]; chunk++)
-    {
-      size_t start_of_chunk_idx = combined_buf.object_size ();
-
-      combined_buf.grow (args[chunk], strlen (args[chunk]));
-
-      if (iter_run != end_runs
-	  && chunk == iter_run->m_end.m_chunk_idx)
-	{
-	  /* A run is ending; consider for it urlification.  */
-	  const size_t end_of_run_byte_offset
-	    = start_of_chunk_idx + iter_run->m_end.m_byte_offset;
-	  const size_t end_offset
-	    = urlify_quoted_string (pp,
-				    &combined_buf.m_obstack,
-				    &urlifier,
-				    start_of_run_byte_offset,
-				    end_of_run_byte_offset);
-
-	  /* If URLification occurred it will have grown the buffer.
-	     We need to update start_of_chunk_idx so that offsets
-	     relative to it are still correct, for the case where
-	     we have a chunk that both ends a quoted run and starts
-	     another quoted run.  */
-	  gcc_assert (end_offset >= end_of_run_byte_offset);
-	  start_of_chunk_idx += end_offset - end_of_run_byte_offset;
-
-	  iter_run++;
-	}
-      if (iter_run != end_runs
-	  && chunk == iter_run->m_start.m_chunk_idx)
-	{
-	  /* Note where the run starts w.r.t. the composed buffer.  */
-	  start_of_run_byte_offset
-	    = start_of_chunk_idx + iter_run->m_start.m_byte_offset;
-	}
-    }
-
-  /* Now print to PP.  */
-  const char *start
-    = static_cast <const char *> (combined_buf.object_base ());
-  pp_maybe_wrap_text (pp, start, start + combined_buf.object_size ());
-}
-
 /* Format of a message pointed to by TEXT.
    If URLIFIER is non-null then use it on any quoted text that was not
    handled in phases 1 or 2 to potentially add URLs.  */
@@ -1953,28 +2097,97 @@ void
 pp_output_formatted_text (pretty_printer *pp,
 			  const urlifier *urlifier)
 {
-  unsigned int chunk;
   output_buffer * const buffer = pp_buffer (pp);
-  chunk_info *chunk_array = buffer->cur_chunk_array;
-  const char * const *args = chunk_array->get_args ();
-  quoting_info *quoting = chunk_array->get_quoting_info ();
-
   gcc_assert (buffer->obstack == &buffer->formatted_obstack);
 
-  /* This is a third phase, first 2 phases done in pp_format_args.
-     Now we actually print it.  */
+  chunk_info *chunk_array = buffer->cur_chunk_array;
+  pp_token_list * const *token_lists = chunk_array->get_token_lists ();
 
-  /* If we have any deferred urlification, handle it now.  */
-  if (urlifier
-      && pp->supports_urls_p ()
-      && quoting
-      && quoting->has_phase_3_quotes_p ())
-    quoting->handle_phase_3 (pp, *urlifier);
-  else
-    for (chunk = 0; args[chunk]; chunk++)
-      pp_string (pp, args[chunk]);
+  {
+    /* Consolidate into one token list.  */
+    pp_token_list tokens (buffer->chunk_obstack);
+    for (unsigned chunk = 0; token_lists[chunk]; chunk++)
+      {
+	tokens.push_back_list (std::move (*token_lists[chunk]));
+	delete token_lists[chunk];
+      }
+
+    tokens.replace_custom_tokens ();
+
+    tokens.merge_consecutive_text_tokens ();
+
+    if (urlifier)
+      tokens.apply_urlifier (*urlifier);
+
+    /* This is a third phase, first 2 phases done in pp_format_args.
+       Now we actually print it.  */
+    if (pp->m_token_printer)
+      pp->m_token_printer->print_tokens (pp, tokens);
+    else
+      default_token_printer (pp, tokens);
+
+  /* Close the scope here to ensure that "tokens" above is fully cleared up
+     before popping the current chunk_info, since that latter will pop
+     the chunk_obstack, and "tokens" may be using blocks within
+     the current chunk_info's chunk_obstack level.  */
+  }
 
   chunk_array->pop_from_output_buffer (*buffer);
+}
+
+/* Default implementation of token printing.  */
+
+static void
+default_token_printer (pretty_printer *pp,
+		       const pp_token_list &tokens)
+{
+  /* Convert to text, possibly with colorization, URLs, etc.  */
+  for (auto iter = tokens.m_first; iter; iter = iter->m_next)
+    switch (iter->m_kind)
+      {
+      default:
+	gcc_unreachable ();
+
+      case pp_token::kind::text:
+	{
+	  pp_token_text *sub = as_a <pp_token_text *> (iter);
+	  pp_string (pp, sub->m_value.get ());
+	}
+	break;
+
+      case pp_token::kind::begin_color:
+	{
+	  pp_token_begin_color *sub = as_a <pp_token_begin_color *> (iter);
+	  pp_string (pp, colorize_start (pp_show_color (pp),
+					 sub->m_value.get ()));
+	}
+	break;
+      case pp_token::kind::end_color:
+	pp_string (pp, colorize_stop (pp_show_color (pp)));
+	break;
+
+      case pp_token::kind::begin_quote:
+	pp_begin_quote (pp, pp_show_color (pp));
+	break;
+      case pp_token::kind::end_quote:
+	pp_end_quote (pp, pp_show_color (pp));
+	break;
+
+      case pp_token::kind::begin_url:
+	{
+	  pp_token_begin_url *sub = as_a <pp_token_begin_url *> (iter);
+	  pp_begin_url (pp, sub->m_value.get ());
+	}
+	break;
+      case pp_token::kind::end_url:
+	pp_end_url (pp);
+	break;
+
+      case pp_token::kind::custom_data:
+	/* These should have been eliminated by replace_custom_tokens.  */
+	gcc_unreachable ();
+	break;
+      }
 }
 
 /* Helper subroutine of output_verbatim and verbatim. Do the appropriate
@@ -2113,6 +2326,7 @@ pretty_printer::pretty_printer (int maximum_length)
     m_wrapping (),
     m_format_decoder (nullptr),
     m_format_postprocessor (NULL),
+    m_token_printer (nullptr),
     m_emitted_prefix (false),
     m_need_newline (false),
     m_translate_identifiers (true),
@@ -2138,6 +2352,7 @@ pretty_printer::pretty_printer (const pretty_printer &other)
   m_wrapping (other.m_wrapping),
   m_format_decoder (other.m_format_decoder),
   m_format_postprocessor (NULL),
+  m_token_printer (other.m_token_printer),
   m_emitted_prefix (other.m_emitted_prefix),
   m_need_newline (other.m_need_newline),
   m_translate_identifiers (other.m_translate_identifiers),
@@ -2743,8 +2958,9 @@ void
 pp_markup::context::begin_quote ()
 {
   gcc_assert (!m_quoted);
-  pp_begin_quote (&m_pp, pp_show_color (&m_pp));
-  m_buf.cur_chunk_array->on_begin_quote (m_buf, m_chunk_idx, m_urlifier);
+  gcc_assert (m_formatted_token_list);
+  push_back_any_text ();
+  m_formatted_token_list->push_back<pp_token_begin_quote> ();
   m_quoted = true;
 }
 
@@ -2755,8 +2971,9 @@ pp_markup::context::end_quote ()
      printing a type emitting "TYPEDEF' {aka `TYPE'}".  */
   if (!m_quoted)
     return;
-  m_buf.cur_chunk_array->on_end_quote (&m_pp, m_buf, m_chunk_idx, m_urlifier);
-  pp_end_quote (&m_pp, pp_show_color (&m_pp));
+  gcc_assert (m_formatted_token_list);
+  push_back_any_text ();
+  m_formatted_token_list->push_back<pp_token_end_quote> ();
   m_quoted = false;
 }
 
@@ -2765,7 +2982,10 @@ pp_markup::context::begin_highlight_color (const char *color_name)
 {
   if (!pp_show_highlight_colors (&m_pp))
     return;
-  pp_string (&m_pp, colorize_start (pp_show_color (&m_pp), color_name));
+
+  push_back_any_text ();
+  m_formatted_token_list->push_back <pp_token_begin_color>
+    (label_text::borrow (color_name));
 }
 
 void
@@ -2773,10 +2993,20 @@ pp_markup::context::end_highlight_color ()
 {
   if (!pp_show_highlight_colors (&m_pp))
     return;
-  const char *colorstr = colorize_stop (pp_show_color (&m_pp));
-  obstack_grow (&m_buf.chunk_obstack, colorstr, strlen (colorstr));
+
+  push_back_any_text ();
+  m_formatted_token_list->push_back<pp_token_end_color> ();
 }
 
+void
+pp_markup::context::push_back_any_text ()
+{
+  obstack *cur_obstack = m_buf.obstack;
+  obstack_1grow (cur_obstack, '\0');
+  m_formatted_token_list->push_back_text
+    (label_text::borrow (XOBFINISH (cur_obstack,
+				    const char *)));
+}
 
 /* Color names for expressing "expected" vs "actual" values.  */
 const char *const highlight_colors::expected = "highlight-a";
@@ -3039,6 +3269,245 @@ test_pp_format ()
 		    1776, "second");
 }
 
+static void
+test_merge_consecutive_text_tokens ()
+{
+  auto_obstack s;
+  pp_token_list list (s);
+  list.push_back_text (label_text::borrow ("hello"));
+  list.push_back_text (label_text::borrow (" "));
+  list.push_back_text (label_text::take (xstrdup ("world")));
+  list.push_back_text (label_text::borrow ("!"));
+
+  list.merge_consecutive_text_tokens ();
+  // We expect a single text token, with concatenated text
+  ASSERT_EQ (list.m_first, list.m_end);
+  pp_token *tok = list.m_first;
+  ASSERT_NE (tok, nullptr);
+  ASSERT_EQ (tok->m_kind, pp_token::kind::text);
+  ASSERT_STREQ (as_a <pp_token_text *> (tok)->m_value.get (), "hello world!");
+}
+
+/* Verify that we can create custom tokens that can be lowered
+   in phase 3.  */
+
+static void
+test_custom_tokens_1 ()
+{
+  struct custom_token_adder : public pp_element
+  {
+  public:
+    struct value : public pp_token_custom_data::value
+    {
+      value (custom_token_adder &adder)
+      : m_adder (adder)
+      {
+	m_adder.m_num_living_values++;
+      }
+      value (const value &other)
+      : m_adder (other.m_adder)
+      {
+	m_adder.m_num_living_values++;
+      }
+      value (value &&other)
+      : m_adder (other.m_adder)
+      {
+	m_adder.m_num_living_values++;
+      }
+      value &operator= (const value &other) = delete;
+      value &operator= (value &&other) = delete;
+      ~value ()
+      {
+	m_adder.m_num_living_values--;
+      }
+
+      void dump (FILE *out) const final override
+      {
+	fprintf (out, "\"%s\"", m_adder.m_name);
+      }
+
+      bool as_standard_tokens (pp_token_list &out) final override
+      {
+	ASSERT_TRUE (m_adder.m_num_living_values > 0);
+	out.push_back<pp_token_text> (label_text::borrow (m_adder.m_name));
+	return true;
+      }
+
+      custom_token_adder &m_adder;
+    };
+
+    custom_token_adder (const char *name)
+    : m_name (name),
+      m_num_living_values (0)
+    {
+    }
+
+    void add_to_phase_2 (pp_markup::context &ctxt) final override
+    {
+      auto val_ptr = make_unique<value> (*this);
+      ctxt.m_formatted_token_list->push_back<pp_token_custom_data>
+	(std::move (val_ptr));
+    }
+
+    const char *m_name;
+    int m_num_living_values;
+  };
+
+  custom_token_adder e1 ("foo");
+  custom_token_adder e2 ("bar");
+  ASSERT_EQ (e1.m_num_living_values, 0);
+  ASSERT_EQ (e2.m_num_living_values, 0);
+
+  pretty_printer pp;
+  pp_printf (&pp, "before %e middle %e after", &e1, &e2);
+
+  /* Verify that instances were cleaned up.  */
+  ASSERT_EQ (e1.m_num_living_values, 0);
+  ASSERT_EQ (e2.m_num_living_values, 0);
+
+  ASSERT_STREQ (pp_formatted_text (&pp),
+		"before foo middle bar after");
+}
+
+/* Verify that we can create custom tokens that aren't lowered
+   in phase 3, but instead are handled by a custom token_printer.
+   Use this to verify the inputs seen by such token_printers.  */
+
+static void
+test_custom_tokens_2 ()
+{
+  struct custom_token_adder : public pp_element
+  {
+    struct value : public pp_token_custom_data::value
+    {
+    public:
+      value (custom_token_adder &adder)
+      : m_adder (adder)
+      {
+	m_adder.m_num_living_values++;
+      }
+      value (const value &other)
+      : m_adder (other.m_adder)
+      {
+	m_adder.m_num_living_values++;
+      }
+      value (value &&other)
+      : m_adder (other.m_adder)
+      {
+	m_adder.m_num_living_values++;
+      }
+      value &operator= (const value &other) = delete;
+      value &operator= (value &&other) = delete;
+      ~value ()
+      {
+	m_adder.m_num_living_values--;
+      }
+
+      void dump (FILE *out) const final override
+      {
+	fprintf (out, "\"%s\"", m_adder.m_name);
+      }
+
+      bool as_standard_tokens (pp_token_list &) final override
+      {
+	return false;
+      }
+
+      custom_token_adder &m_adder;
+    };
+
+    custom_token_adder (const char *name)
+    : m_name (name),
+      m_num_living_values (0)
+    {
+    }
+
+    void add_to_phase_2 (pp_markup::context &ctxt) final override
+    {
+      auto val_ptr = make_unique<value> (*this);
+      ctxt.m_formatted_token_list->push_back<pp_token_custom_data>
+	(std::move (val_ptr));
+    }
+
+    const char *m_name;
+    int m_num_living_values;
+  };
+
+  class custom_token_printer : public token_printer
+  {
+    void print_tokens (pretty_printer *pp,
+		       const pp_token_list &tokens) final override
+    {
+      /* Verify that TOKENS has:
+	 [TEXT("before "), CUSTOM("foo"), TEXT(" middle "), CUSTOM("bar"),
+	  TEXT(" after")]  */
+      pp_token *tok_0 = tokens.m_first;
+      ASSERT_NE (tok_0, nullptr);
+      ASSERT_EQ (tok_0->m_kind, pp_token::kind::text);
+      ASSERT_STREQ (as_a<pp_token_text *> (tok_0)->m_value.get (),
+		    "before ");
+
+      pp_token *tok_1 = tok_0->m_next;
+      ASSERT_NE (tok_1, nullptr);
+      ASSERT_EQ (tok_1->m_prev, tok_0);
+      ASSERT_EQ (tok_1->m_kind, pp_token::kind::custom_data);
+
+      custom_token_adder::value *v1
+	= static_cast <custom_token_adder::value *>
+	(as_a<pp_token_custom_data *> (tok_1)->m_value.get ());
+      ASSERT_STREQ (v1->m_adder.m_name, "foo");
+      ASSERT_TRUE (v1->m_adder.m_num_living_values > 0);
+
+      pp_token *tok_2 = tok_1->m_next;
+      ASSERT_NE (tok_2, nullptr);
+      ASSERT_EQ (tok_2->m_prev, tok_1);
+      ASSERT_EQ (tok_2->m_kind, pp_token::kind::text);
+      ASSERT_STREQ (as_a<pp_token_text *> (tok_2)->m_value.get (),
+		    " middle ");
+
+      pp_token *tok_3 = tok_2->m_next;
+      ASSERT_NE (tok_3, nullptr);
+      ASSERT_EQ (tok_3->m_prev, tok_2);
+      ASSERT_EQ (tok_3->m_kind, pp_token::kind::custom_data);
+      custom_token_adder::value *v3
+	= static_cast <custom_token_adder::value *>
+	(as_a<pp_token_custom_data *> (tok_3)->m_value.get ());
+      ASSERT_STREQ (v3->m_adder.m_name, "bar");
+      ASSERT_TRUE (v3->m_adder.m_num_living_values > 0);
+
+      pp_token *tok_4 = tok_3->m_next;
+      ASSERT_NE (tok_4, nullptr);
+      ASSERT_EQ (tok_4->m_prev, tok_3);
+      ASSERT_EQ (tok_4->m_kind, pp_token::kind::text);
+      ASSERT_STREQ (as_a<pp_token_text *> (tok_4)->m_value.get (),
+		    " after");
+      ASSERT_EQ (tok_4->m_next, nullptr);
+
+      /* Normally we'd loop over the tokens, printing them to PP
+	 and handling the custom tokens.
+	 Instead, print a message to PP to verify that we were called.  */
+      pp_string (pp, "print_tokens was called");
+    }
+  };
+
+  custom_token_adder e1 ("foo");
+  custom_token_adder e2 ("bar");
+  ASSERT_EQ (e1.m_num_living_values, 0);
+  ASSERT_EQ (e2.m_num_living_values, 0);
+
+  custom_token_printer tp;
+  pretty_printer pp;
+  pp.set_token_printer (&tp);
+  pp_printf (&pp, "before %e middle %e after", &e1, &e2);
+
+  /* Verify that instances were cleaned up.  */
+  ASSERT_EQ (e1.m_num_living_values, 0);
+  ASSERT_EQ (e2.m_num_living_values, 0);
+
+  ASSERT_STREQ (pp_formatted_text (&pp),
+		"print_tokens was called");
+}
+
 /* A subclass of pretty_printer for use by test_prefixes_and_wrapping.  */
 
 class test_pretty_printer : public pretty_printer
@@ -3248,7 +3717,7 @@ pp_printf_with_urlifier (pretty_printer *pp,
 
   va_start (ap, msg);
   text_info text (msg, &ap, errno);
-  pp_format (pp, &text, urlifier);
+  pp_format (pp, &text);
   pp_output_formatted_text (pp, urlifier);
   va_end (ap);
 }
@@ -3404,6 +3873,18 @@ test_urlification ()
       ("foo `\33]8;;http://example.com\33\\-foption\33]8;;\33\\' bar",
        pp_formatted_text (&pp));
   }
+
+  /* Test the example from pretty-print-format-impl.h.  */
+  {
+    pretty_printer pp;
+    pp.set_url_format (URL_FORMAT_ST);
+    pp_printf_with_urlifier (&pp, &urlifier,
+	       "foo: %i, bar: %s, option: %qs",
+	       42, "baz", "-foption");
+    ASSERT_STREQ (pp_formatted_text (&pp),
+		  "foo: 42, bar: baz, option:"
+		  " `]8;;http://example.com\\-foption]8;;\\'");
+  }
 }
 
 /* Test multibyte awareness.  */
@@ -3453,6 +3934,9 @@ pretty_print_cc_tests ()
 {
   test_basic_printing ();
   test_pp_format ();
+  test_merge_consecutive_text_tokens ();
+  test_custom_tokens_1 ();
+  test_custom_tokens_2 ();
   test_prefixes_and_wrapping ();
   test_urls ();
   test_urls_from_braces ();

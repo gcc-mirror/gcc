@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-name-hint.h"
 #include "attribs.h"
 #include "pretty-print-format-impl.h"
+#include "make-unique.h"
 
 #define pp_separate_with_comma(PP) pp_cxx_separate_with (PP, ',')
 #define pp_separate_with_semicolon(PP) pp_cxx_separate_with (PP, ';')
@@ -110,7 +111,7 @@ static void cp_print_error_function (diagnostic_context *,
 				     const diagnostic_info *);
 
 static bool cp_printer (pretty_printer *, text_info *, const char *,
-			int, bool, bool, bool, bool *, const char **);
+			int, bool, bool, bool, bool *, pp_token_list &);
 
 /* Color names for highlighting "%qH" vs "%qI" values,
    and ranges corresponding to them.  */
@@ -124,22 +125,50 @@ class deferred_printed_type
 {
 public:
   deferred_printed_type ()
-  : m_tree (NULL_TREE), m_buffer_ptr (NULL), m_verbose (false), m_quote (false)
+  : m_tree (NULL_TREE),
+    m_printed_text (),
+    m_token_list (nullptr),
+    m_verbose (false), m_quote (false)
   {}
 
-  deferred_printed_type (tree type, const char **buffer_ptr, bool verbose,
+  deferred_printed_type (tree type,
+			 pp_token_list &token_list,
+			 bool verbose,
 			 bool quote)
-  : m_tree (type), m_buffer_ptr (buffer_ptr), m_verbose (verbose),
+  : m_tree (type),
+    m_printed_text (),
+    m_token_list (&token_list),
+    m_verbose (verbose),
     m_quote (quote)
   {
     gcc_assert (type);
-    gcc_assert (buffer_ptr);
+  }
+
+  void set_text_for_token_list (const char *text, bool quote)
+  {
+    /* Replace the contents of m_token_list with a text token for TEXT,
+       possibly wrapped by BEGIN_QUOTE/END_QUOTE (if QUOTE is true).
+       This allows us to ignore any {BEGIN,END}_QUOTE tokens added
+       by %qH and %qI, and instead use the quoting from type_to_string,
+       and its logic for "aka".  */
+    while (m_token_list->m_first)
+      m_token_list->pop_front ();
+
+    if (quote)
+      m_token_list->push_back<pp_token_begin_quote> ();
+
+    // TEXT is gc-allocated, so we can borrow it
+    m_token_list->push_back_text (label_text::borrow (text));
+
+    if (quote)
+      m_token_list->push_back<pp_token_end_quote> ();
   }
 
   /* The tree is not GTY-marked: they are only non-NULL within a
      call to pp_format.  */
   tree m_tree;
-  const char **m_buffer_ptr;
+  label_text m_printed_text;
+  pp_token_list *m_token_list;
   bool m_verbose;
   bool m_quote;
 };
@@ -4402,26 +4431,7 @@ append_formatted_chunk (pretty_printer *pp, const char *content)
 {
   output_buffer *buffer = pp_buffer (pp);
   chunk_info *chunk_array = buffer->cur_chunk_array;
-  chunk_array->append_formatted_chunk (content);
-}
-
-/* Create a copy of CONTENT, with quotes added, and,
-   potentially, with colorization.
-   No escaped is performed on CONTENT.
-   The result is in a GC-allocated buffer. */
-
-static const char *
-add_quotes (const char *content, bool show_color)
-{
-  pretty_printer tmp_pp;
-  pp_show_color (&tmp_pp) = show_color;
-
-  /* We have to use "%<%s%>" rather than "%qs" here in order to avoid
-     quoting colorization bytes within the results and using either
-     pp_quote or pp_begin_quote doesn't work the same.  */
-  pp_printf (&tmp_pp, "%<%s%>", content);
-
-  return pp_ggc_formatted_text (&tmp_pp);
+  chunk_array->append_formatted_chunk (buffer->chunk_obstack, content);
 }
 
 #if __GNUC__ >= 10
@@ -4429,8 +4439,8 @@ add_quotes (const char *content, bool show_color)
 #endif
 
 /* If we had %H and %I, and hence deferred printing them,
-   print them now, storing the result into the chunk_info
-   for pp_format.  Quote them if 'q' was provided.
+   print them now, storing the result into custom_token_value
+   for the custom pp_token.  Quote them if 'q' was provided.
    Also print the difference in tree form, adding it as
    an additional chunk.  */
 
@@ -4448,13 +4458,13 @@ cxx_format_postprocessor::handle (pretty_printer *pp)
 	= show_highlight_colors ? highlight_colors::percent_i : nullptr;
       /* Avoid reentrancy issues by working with a copy of
 	 m_type_a and m_type_b, resetting them now.  */
-      deferred_printed_type type_a = m_type_a;
-      deferred_printed_type type_b = m_type_b;
+      deferred_printed_type type_a = std::move (m_type_a);
+      deferred_printed_type type_b = std::move (m_type_b);
       m_type_a = deferred_printed_type ();
       m_type_b = deferred_printed_type ();
 
-      gcc_assert (type_a.m_buffer_ptr);
-      gcc_assert (type_b.m_buffer_ptr);
+      gcc_assert (type_a.m_token_list);
+      gcc_assert (type_b.m_token_list);
 
       bool show_color = pp_show_color (pp);
 
@@ -4495,13 +4505,8 @@ cxx_format_postprocessor::handle (pretty_printer *pp)
 					percent_i);
 	}
 
-      if (type_a.m_quote)
-	type_a_text = add_quotes (type_a_text, show_color);
-      *type_a.m_buffer_ptr = type_a_text;
-
-       if (type_b.m_quote)
-	type_b_text = add_quotes (type_b_text, show_color);
-      *type_b.m_buffer_ptr = type_b_text;
+      type_a.set_text_for_token_list (type_a_text, type_a.m_quote);
+      type_b.set_text_for_token_list (type_b_text, type_b.m_quote);
    }
 }
 
@@ -4526,9 +4531,12 @@ cxx_format_postprocessor::handle (pretty_printer *pp)
    pretty_printer's m_format_postprocessor hook.
 
    This is called in phase 2 of pp_format, when it is accumulating
-   a series of formatted chunks.  We stash the location of the chunk
-   we're meant to have written to, so that we can write to it in the
-   m_format_postprocessor hook.
+   a series of pp_token lists.  Since we have to interact with the
+   fiddly quoting logic for "aka", we store the pp_token_list *
+   and in the m_format_postprocessor hook we generate text for the type
+   (possibly with quotes and colors), then replace all tokens in that token list
+   (such as [BEGIN_QUOTE, END_QUOTE]) with a text token containing the
+   freshly generated text.
 
    We also need to stash whether a 'q' prefix was provided (the QUOTE
    param)  so that we can add the quotes when writing out the delayed
@@ -4536,12 +4544,13 @@ cxx_format_postprocessor::handle (pretty_printer *pp)
 
 static void
 defer_phase_2_of_type_diff (deferred_printed_type *deferred,
-			    tree type, const char **buffer_ptr,
+			    tree type,
+			    pp_token_list &formatted_token_list,
 			    bool verbose, bool quote)
 {
   gcc_assert (deferred->m_tree == NULL_TREE);
-  gcc_assert (deferred->m_buffer_ptr == NULL);
-  *deferred = deferred_printed_type (type, buffer_ptr, verbose, quote);
+  *deferred = deferred_printed_type (type, formatted_token_list,
+				     verbose, quote);
 }
 
 /* Implementation of pp_markup::element_quoted_type::print_type
@@ -4578,7 +4587,7 @@ pp_markup::element_quoted_type::print_type (pp_markup::context &ctxt)
 static bool
 cp_printer (pretty_printer *pp, text_info *text, const char *spec,
 	    int precision, bool wide, bool set_locus, bool verbose,
-	    bool *quoted, const char **buffer_ptr)
+	    bool *quoted, pp_token_list &formatted_token_list)
 {
   gcc_assert (pp_format_postprocessor (pp));
   cxx_format_postprocessor *postprocessor
@@ -4618,11 +4627,11 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
     case 'F': result = fndecl_to_string (next_tree, verbose);	break;
     case 'H':
       defer_phase_2_of_type_diff (&postprocessor->m_type_a, next_tree,
-				  buffer_ptr, verbose, *quoted);
+				  formatted_token_list, verbose, *quoted);
       return true;
     case 'I':
       defer_phase_2_of_type_diff (&postprocessor->m_type_b, next_tree,
-				  buffer_ptr, verbose, *quoted);
+				  formatted_token_list, verbose, *quoted);
       return true;
     case 'L': result = language_to_string (next_lang);		break;
     case 'O': result = op_to_string (false, next_tcode);	break;

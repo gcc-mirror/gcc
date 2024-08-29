@@ -71,7 +71,8 @@ opt_problem::opt_problem (const dump_location_t &loc,
 
     /* Phase 3: dump the items to the "immediate" dump destinations,
        and storing them into m_optinfo for later retrieval.  */
-    pp.emit_items (&m_optinfo);
+    pp.set_optinfo (&m_optinfo);
+    pp_output_formatted_text (&pp, nullptr);
   }
 }
 
