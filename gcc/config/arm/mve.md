@@ -5690,158 +5690,87 @@
 }
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrdq_gather_base_wb_<supf>v2di_insn"))
   (set_attr "length" "8")])
-;;
-;; [vadciq_m_s, vadciq_m_u])
-;;
-(define_insn "mve_vadciq_m_<supf>v4si"
-  [(set (match_operand:V4SI 0 "s_register_operand" "=w")
-	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "0")
-		      (match_operand:V4SI 2 "s_register_operand" "w")
-		      (match_operand:V4SI 3 "s_register_operand" "w")
-		      (match_operand:V4BI 4 "vpr_register_operand" "Up")]
-	 VADCIQ_M))
-   (set (reg:SI VFPCC_REGNUM)
-	(unspec:SI [(const_int 0)]
-	 VADCIQ_M))
-  ]
-  "TARGET_HAVE_MVE"
-  "vpst\;vadcit.i32\t%q0, %q2, %q3"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vadciq_<supf>v4si"))
-  (set_attr "type" "mve_move")
-   (set_attr "length" "8")])
 
 ;;
-;; [vadciq_u, vadciq_s])
+;; [vadciq_u, vadciq_s]
+;; [vsbciq_s, vsbciq_u]
 ;;
-(define_insn "mve_vadciq_<supf>v4si"
+(define_insn "@mve_<mve_insn>q_<supf>v4si"
   [(set (match_operand:V4SI 0 "s_register_operand" "=w")
 	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "w")
 		      (match_operand:V4SI 2 "s_register_operand" "w")]
-	 VADCIQ))
+	 VxCIQ))
    (set (reg:SI VFPCC_REGNUM)
 	(unspec:SI [(const_int 0)]
-	 VADCIQ))
+	 VxCIQ))
   ]
   "TARGET_HAVE_MVE"
-  "vadci.i32\t%q0, %q1, %q2"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vadciq_<supf>v4si"))
+  "<mve_insn>.i32\t%q0, %q1, %q2"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_<supf>v4si"))
   (set_attr "type" "mve_move")
    (set_attr "length" "4")])
 
 ;;
-;; [vadcq_m_s, vadcq_m_u])
+;; [vadciq_m_s, vadciq_m_u]
+;; [vsbciq_m_u, vsbciq_m_s]
 ;;
-(define_insn "mve_vadcq_m_<supf>v4si"
+(define_insn "@mve_<mve_insn>q_m_<supf>v4si"
   [(set (match_operand:V4SI 0 "s_register_operand" "=w")
 	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "0")
 		      (match_operand:V4SI 2 "s_register_operand" "w")
 		      (match_operand:V4SI 3 "s_register_operand" "w")
 		      (match_operand:V4BI 4 "vpr_register_operand" "Up")]
-	 VADCQ_M))
+	 VxCIQ_M))
    (set (reg:SI VFPCC_REGNUM)
-	(unspec:SI [(reg:SI VFPCC_REGNUM)]
-	 VADCQ_M))
+	(unspec:SI [(const_int 0)]
+	 VxCIQ_M))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vadct.i32\t%q0, %q2, %q3"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vadcq_<supf>v4si"))
+  "vpst\;<mve_insn>t.i32\t%q0, %q2, %q3"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_<supf>v4si"))
   (set_attr "type" "mve_move")
    (set_attr "length" "8")])
 
 ;;
-;; [vadcq_u, vadcq_s])
+;; [vadcq_u, vadcq_s]
+;; [vsbcq_s, vsbcq_u]
 ;;
-(define_insn "mve_vadcq_<supf>v4si"
+(define_insn "@mve_<mve_insn>q_<supf>v4si"
   [(set (match_operand:V4SI 0 "s_register_operand" "=w")
 	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "w")
 		       (match_operand:V4SI 2 "s_register_operand" "w")]
-	 VADCQ))
+	 VxCQ))
    (set (reg:SI VFPCC_REGNUM)
 	(unspec:SI [(reg:SI VFPCC_REGNUM)]
-	 VADCQ))
+	 VxCQ))
   ]
   "TARGET_HAVE_MVE"
-  "vadc.i32\t%q0, %q1, %q2"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vadcq_<supf>v4si"))
+  "<mve_insn>.i32\t%q0, %q1, %q2"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_<supf>v4si"))
   (set_attr "type" "mve_move")
    (set_attr "length" "4")
    (set_attr "conds" "set")])
 
 ;;
-;; [vsbciq_m_u, vsbciq_m_s])
+;; [vadcq_m_s, vadcq_m_u]
+;; [vsbcq_m_u, vsbcq_m_s]
 ;;
-(define_insn "mve_vsbciq_m_<supf>v4si"
+(define_insn "@mve_<mve_insn>q_m_<supf>v4si"
   [(set (match_operand:V4SI 0 "s_register_operand" "=w")
-	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "w")
+	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "0")
 		      (match_operand:V4SI 2 "s_register_operand" "w")
 		      (match_operand:V4SI 3 "s_register_operand" "w")
 		      (match_operand:V4BI 4 "vpr_register_operand" "Up")]
-	 VSBCIQ_M))
-   (set (reg:SI VFPCC_REGNUM)
-	(unspec:SI [(const_int 0)]
-	 VSBCIQ_M))
-  ]
-  "TARGET_HAVE_MVE"
-  "vpst\;vsbcit.i32\t%q0, %q2, %q3"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vsbciq_<supf>v4si"))
-  (set_attr "type" "mve_move")
-   (set_attr "length" "8")])
-
-;;
-;; [vsbciq_s, vsbciq_u])
-;;
-(define_insn "mve_vsbciq_<supf>v4si"
-  [(set (match_operand:V4SI 0 "s_register_operand" "=w")
-	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "w")
-		      (match_operand:V4SI 2 "s_register_operand" "w")]
-	 VSBCIQ))
-   (set (reg:SI VFPCC_REGNUM)
-	(unspec:SI [(const_int 0)]
-	 VSBCIQ))
-  ]
-  "TARGET_HAVE_MVE"
-  "vsbci.i32\t%q0, %q1, %q2"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vsbciq_<supf>v4si"))
-  (set_attr "type" "mve_move")
-   (set_attr "length" "4")])
-
-;;
-;; [vsbcq_m_u, vsbcq_m_s])
-;;
-(define_insn "mve_vsbcq_m_<supf>v4si"
-  [(set (match_operand:V4SI 0 "s_register_operand" "=w")
-	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "w")
-		      (match_operand:V4SI 2 "s_register_operand" "w")
-		      (match_operand:V4SI 3 "s_register_operand" "w")
-		      (match_operand:V4BI 4 "vpr_register_operand" "Up")]
-	 VSBCQ_M))
+	 VxCQ_M))
    (set (reg:SI VFPCC_REGNUM)
 	(unspec:SI [(reg:SI VFPCC_REGNUM)]
-	 VSBCQ_M))
+	 VxCQ_M))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vsbct.i32\t%q0, %q2, %q3"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vsbcq_<supf>v4si"))
+  "vpst\;<mve_insn>t.i32\t%q0, %q2, %q3"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_<supf>v4si"))
   (set_attr "type" "mve_move")
    (set_attr "length" "8")])
-
-;;
-;; [vsbcq_s, vsbcq_u])
-;;
-(define_insn "mve_vsbcq_<supf>v4si"
-  [(set (match_operand:V4SI 0 "s_register_operand" "=w")
-	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "w")
-		      (match_operand:V4SI 2 "s_register_operand" "w")]
-	 VSBCQ))
-   (set (reg:SI VFPCC_REGNUM)
-	(unspec:SI [(reg:SI VFPCC_REGNUM)]
-	 VSBCQ))
-  ]
-  "TARGET_HAVE_MVE"
-  "vsbc.i32\t%q0, %q1, %q2"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vsbcq_<supf>v4si"))
-  (set_attr "type" "mve_move")
-   (set_attr "length" "4")])
 
 ;;
 ;; [vst2q])
