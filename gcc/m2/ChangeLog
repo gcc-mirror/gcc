@@ -1,3 +1,106 @@
+2024-08-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/116181
+	* Make-lang.in (MC_SRC_FLAGS): New macro.
+	(m2/mc-boot/$(SRC_PREFIX)%.o): Use MC_SRC_FLAGS.
+	(m2/mc-boot-ch/$(SRC_PREFIX)%.o): Ditto.
+	(m2/gm2-libs-boot/M2RTS.o): Ditto.
+	(m2/gm2-libs-boot/%.o): Ditto.
+	(GM2-LIBS-BOOT-H): New macro.
+	(m2/gm2-libs-boot/RTcodummy.o): Use MC_SRC_FLAGS.
+	Remove gm2-libs-host.h from the dependancy.
+	(m2/gm2-libs-boot/wrapc.o): Use MC_SRC_FLAGS.
+	Add dependancy GM2-LIBS-BOOT-H.
+	(m2/gm2-libs-boot/UnixArgs.o): Ditto.
+	(m2/gm2-libs-boot/choosetemp.o): Ditto.
+	(m2/gm2-libs-boot/errno.o): Ditto.
+	(m2/gm2-libs-boot/dtoa.o): Ditto.
+	(m2/gm2-libs-boot/ldtoa.o): Ditto.
+	(m2/gm2-libs-boot/termios.o): Ditto.
+	(m2/gm2-libs-boot/SysExceptions.o): Ditto.
+	(m2/gm2-compiler-boot/M2GCCDeclare.o): Add gm2-libs-ch to the
+	search path.
+	(m2/gm2-compiler-boot/M2Error.o): Ditto.
+	(m2/gm2-compiler-boot/%.o): Ditto.
+	(m2/pge-boot/%.o): Ditto.
+	* gm2-gcc/m2color.cc (m2color_colorize_start): Replace parameter
+	type char to void and recast to char * when calling colorize_start.
+	* gm2-gcc/m2color.h (m2color_colorize_start): Replace parameter
+	type char to void.
+	* gm2-gcc/m2type.h: Remove #if 0 block.
+	* gm2-libs-ch/SysExceptions.c (DECL_PROC_T): Provide alternative
+	defines for MC an gm2.
+	(PROC_FUNC): Ditto.
+	(EXTERN): Force undefine and redefine.
+	(SysExceptions_InitExceptionHandlers): Rewrite function
+	declaration using defined macros.
+	(_M2_SysExceptions_init): Use EXTERN.
+	(_M2_SysExceptions_finish): Replace with ...
+	(_M2_SysExceptions_fini): ... this and add parameters.
+	* gm2-libs-ch/UnixArgs.cc (gm2-libs-host.h): Include.
+	(GUnixArgs.h): Include.
+	(GM2RTS.h): Include.
+	(UnixArgs_GetArgV): Change return type to void *.
+	(UnixArgs_GetEnvV): Ditto.
+	* gm2-libs-ch/m2rts.h (M2RTS_RegisterModule_Cstr): Add new
+	conditional macro.
+	(M2RTS_RequestDependant): Remove.
+	(M2RTS_RegisterModule): Ditto.
+	(M2RTS_Terminate): Ditto.
+	(M2RTS_DeconstructModules): Ditto.
+	(M2RTS_Halt): Ditto.
+	(_M2_M2RTS_init): Ditto.
+	(M2RTS_ConstructModules): Ditto.
+	* gm2-libs-ch/termios.c (_termios_C): Define.
+	(EXTERN): Add conditional definition.
+	(doSetUnset): New function.
+	(_M2_termios_init): Add correct parameters.
+	(_M2_termios_finish): Ditto.
+	(_M2_termios_fini): Ditto.
+	* mc-boot-ch/GSysExceptions.c (DECL_PROC_T): New define.
+	(PROC_FUNC): Ditto.
+	(EXTERN): Force undef.
+	(SysExceptions_InitExceptionHandlers): Rewrite.
+	* mc-boot-ch/Glibc.c (libc_open): Rename parameter
+	oflag to flags.
+	* mc-boot-ch/Gtermios.cc (_termios_C): New define.
+	(KillTermios): Change parameter type from
+	struct termios * to termios_TERMIOS.
+	(tcsnow): Rewrite.
+	(tcsnow): Rewrite.
+	(tcsdrain): Rewrite.
+	(tcsflush): Rewrite.
+	(cfgetospeed): Rewrite.
+	(cfgetispeed): Rewrite.
+	(cfsetospeed): Rewrite.
+	(cfsetispeed): Rewrite.
+	(cfsetspeed): Rewrite.
+	(cfsetspeed): Rewrite.
+	(tcgetattr): Rewrite.
+	(tcsetattr): Rewrite.
+	(cfmakeraw): Rewrite.
+	(tcsendbreak): Rewrite.
+	(tcdrain): Rewrite.
+	(tcflushi): Rewrite.
+	(tcflusho): Rewrite.
+	(tcflushio): Rewrite.
+	(tcflowoni): Rewrite.
+	(tcflowoffi): Rewrite.
+	(tcflowono): Rewrite.
+	(tcflowoffo): Rewrite.
+	(GetFlag): Rewrite.
+	(SetFlag): Rewrite.
+	(GetChar): Rewrite.
+	(SetChar): Rewrite.
+	(InitTermios): Rewrite.
+	* pge-boot/GM2RTS.cc: Regenerate.
+	* pge-boot/GSysExceptions.cc: Ditto.
+	* pge-boot/Gtermios.cc: Ditto.
+	* pge-boot/m2rts.h: Rewrite.
+	* mc-boot-ch/GSYSTEM.h: New file.
+	* mc-boot-ch/GSysExceptions.h: New file.
+	* mc-boot-ch/Gtermios.h: New file.
+
 2024-08-24  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-libs/libc.def (atof): Export unqualified.

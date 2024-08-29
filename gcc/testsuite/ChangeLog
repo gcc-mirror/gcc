@@ -1,3 +1,136 @@
+2024-08-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116476
+	* g++.dg/cpp0x/initlist-opt2.C: New test.
+
+2024-08-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/torture/ifelse-c.h: New file.
+	* gcc.target/avr/torture/ifelse-d.h: New file.
+	* gcc.target/avr/torture/ifelse-q.h: New file.
+	* gcc.target/avr/torture/ifelse-r.h: New file.
+	* gcc.target/avr/torture/ifelse-c-i8.c: New test.
+	* gcc.target/avr/torture/ifelse-d-i8.c: New test.
+	* gcc.target/avr/torture/ifelse-q-i8.c: New test.
+	* gcc.target/avr/torture/ifelse-r-i8.c: New test.
+	* gcc.target/avr/torture/ifelse-c-i16.c: New test.
+	* gcc.target/avr/torture/ifelse-d-i16.c: New test.
+	* gcc.target/avr/torture/ifelse-q-i16.c: New test.
+	* gcc.target/avr/torture/ifelse-r-i16.c: New test.
+	* gcc.target/avr/torture/ifelse-c-u16.c: New test.
+	* gcc.target/avr/torture/ifelse-d-u16.c: New test.
+	* gcc.target/avr/torture/ifelse-q-u16.c: New test.
+	* gcc.target/avr/torture/ifelse-r-u16.c: New test.
+
+2024-08-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116424
+	* g++.dg/cpp2a/paren-init38.C: New test.
+
+2024-08-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/struct_zero.c: New test.
+
+2024-08-28  Filip Kastl  <fkastl@suse.cz>
+
+	PR tree-optimization/116355
+	* gcc.target/i386/switch-exp-transform-1.c: Don't test for
+	presence of POPCOUNT internal fn after switch conversion.  Test
+	for it after __builtin_popcount has had a chance to get
+	expanded.
+	* gcc.target/i386/switch-exp-transform-3.c: Also test char and
+	short.
+
+2024-08-28  Alex Coplan  <alex.coplan@arm.com>
+
+	PR libstdc++/116140
+	* lib/scanltranstree.exp (scan-ltrans-rtl-dump): New.
+	(scan-ltrans-rtl-dump-not): New.
+	(scan-ltrans-rtl-dump-dem): New.
+	(scan-ltrans-rtl-dump-dem-not): New.
+	(scan-ltrans-rtl-dump-times): New.
+
+2024-08-28  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/extern_template-7.C: New test.
+	* g++.dg/cpp23/ext-floating19.C: New test.
+	* g++.dg/cpp2a/abbrev-fn1.C: New test.
+
+2024-08-28  Pan Li  <pan2.li@intel.com>
+
+	PR target/116278
+	* gcc.target/riscv/pr116278-run-1.c: Take compile instead of run.
+	* gcc.target/riscv/pr116278-run-2.c: Ditto.
+	* gcc.dg/torture/pr116278-run-1.c: New test.
+	* gcc.dg/torture/pr116278-run-2.c: New test.
+
+2024-08-28  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vec_sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm_reconcile-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm_reconcile-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm_reconcile-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm_reconcile-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm_reconcile-13.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm_reconcile-14.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm_reconcile-15.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm_reconcile-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm_reconcile-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm_reconcile-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm_reconcile-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm_reconcile-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm_reconcile-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm_reconcile-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm_reconcile-9.c: New test.
+
+2024-08-28  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/autovec/rotr.c: New.
+
+2024-08-28  Joern Rennecke  <joern.rennecke@riscy-ip.com>
+
+	PR testsuite/116271
+	* gcc.dg/vect/tsvc/vect-tsvc-s176.c [TRUNCATE_TEST]: Make sure
+	that m stays the same as the loop bound of the middle loop.
+	* gcc.dg/vect/tsvc/tsvc.h (get_expected_result) <s176> [TRUNCATE_TEST]:
+	Adjust expected value.
+
+2024-08-28  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat_u_sub_imm-13.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-13_1.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-13_2.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-14.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-14_1.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-14_2.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-15.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-15_1.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-15_2.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-16.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-run-13.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-run-14.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-run-15.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-run-16.c: New test.
+
+2024-08-28  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat_u_sub_imm-10.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-10_1.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-10_2.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-11.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-11_1.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-11_2.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-12.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-9.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-9_1.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-9_2.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-run-10.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-run-11.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-run-12.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-run-9.c: New test.
+
 2024-08-27  Andi Kleen  <ak@gcc.gnu.org>
 
 	* gcc.dg/vect/vect-switch-ifcvt-1.c: Use vect_condition to

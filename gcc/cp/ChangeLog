@@ -1,3 +1,22 @@
+2024-08-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116476
+	* call.cc (maybe_init_list_as_array): Try convert_like and see if it
+	worked.
+
+2024-08-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116424
+	* typeck2.cc (process_init_constructor_record): Move the clearing of
+	TARGET_EXPR_ELIDING_P down.
+
+2024-08-28  Jason Merrill  <jason@redhat.com>
+
+	* parser.cc (cp_parser_simple_type_specifier): Use
+	-Wc++20-extensions for auto parameter pedwarn.
+	* pt.cc (do_decl_instantiation, do_type_instantiation): Use
+	-Wc++11-extensions for 'extern template'.
+
 2024-08-27  Arsen Arsenović  <arsen@aarsen.me>
 
 	PR c++/109867

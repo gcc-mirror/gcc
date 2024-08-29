@@ -1,3 +1,58 @@
+2024-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* configure.ac: Fix check for O_NONBLOCK.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
+2024-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/io_context: Remove name of unused
+	parameter.
+	* include/experimental/socket: Add [[maybe_unused]] attribute.
+
+2024-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (format_parse_context::check_dynamic_spec):
+	Add [[maybe_unused]] attribute and comment.
+
+2024-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (to): Remove unused typedef.
+
+2024-08-28  Kim Gräsman  <kim.grasman@gmail.com>
+
+	* config/cpu/aarch64/opt/ext/opt_random.h: Improve doxygen file
+	docs.
+	* config/cpu/i486/opt/ext/opt_random.h: Likewise.
+
+2024-08-28  Kim Gräsman  <kim.grasman@gmail.com>
+
+	* include/bits/cpp_type_traits.h: Improve doxygen file docs.
+
+2024-08-28  Jason Merrill  <jason@redhat.com>
+
+	* include/std/istream: Add cast to avoid -Wsign-compare.
+	* include/std/stacktrace: Likewise.
+
+2024-08-28  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/20_util/default_delete/void_neg.cc: Fix regexp quoting.
+
+2024-08-28  Jason Merrill  <jason@redhat.com>
+
+	* include/std/coroutine (coroutine_handle): Use nullptr instead of
+	0 as initializer for _M_fr_ptr.
+
+2024-08-28  Jason Merrill  <jason@redhat.com>
+
+	* include/bits/stl_uninitialized.h (__uninitialized_move_copy): Add
+	missing return.
+
+2024-08-28  Jason Merrill  <jason@redhat.com>
+
+	* include/decimal/decimal.h (_DEFINE_DECIMAL_BINARY_OP_WITH_INT):
+	Remove redundant semicolons.
+
 2024-08-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/115098

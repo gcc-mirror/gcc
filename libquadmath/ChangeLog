@@ -1,3 +1,9 @@
+2024-08-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* libquadmath.texi (M_LOG2Eq, M_LOG10Eq, M_1_PIq,
+	M_2_PIq, M_2_SQRTPIq, M_SQRT1_2q): Adjust descriptioni
+	of these constants.
+
 2024-08-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/116007

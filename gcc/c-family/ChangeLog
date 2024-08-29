@@ -1,3 +1,10 @@
+2024-08-28  Jason Merrill  <jason@redhat.com>
+
+	* c-pragma.cc (handle_pragma_diagnostic_impl): Also handle
+	-Wc++23-extensions early.
+	* c-lex.cc (interpret_float): Use -Wc++23-extensions for extended
+	floating point literal pedwarn.
+
 2024-08-09  Patrick Palka  <ppalka@redhat.com>
 
 	* c.opt.urls: Regenerate.

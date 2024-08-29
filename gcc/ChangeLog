@@ -1,3 +1,100 @@
+2024-08-28  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* internal-fn.cc (expand_POPCOUNT): Dump the costs for
+	the two choices.
+
+2024-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/contrib.texi (Contributors): Add Dhruv Matani.
+
+2024-08-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (INCLUDE_VECTOR): Define it.
+	(cfganal.h): Include it.
+	(Ranges): New struct.
+	(avr_2comparisons_rhs, avr_redundant_compare_regs)
+	(avr_strict_signed_p, avr_strict_unsigned_p): New static functions.
+	(avr_redundant_compare): Overhaul: Allow more cases.
+	(avr_optimize_2ifelse): New static function, outsourced from...
+	(avr_rest_of_handle_ifelse): ...this method.
+
+2024-08-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/tuning_models/generic.h (generic_sve_vector_cost):
+	Set gather_load_x32_init_cost and gather_load_x64_init_cost to 0.
+
+2024-08-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_detect_vector_stmt_subtype)
+	(aarch64_vector_costs::add_stmt_cost): Use the x64 cost rather
+	than x32 cost for all VNx2 modes.
+
+2024-08-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree.h (ASM_INPUT_P): Fix documentation.
+
+2024-08-28  Filip Kastl  <fkastl@suse.cz>
+
+	PR tree-optimization/116355
+	* tree-switch-conversion.cc (can_log2): Add capability to
+	suggest converting the operand to a different type.
+	(gen_log2): Add capability to generate a conversion in case the
+	operand is of a type incompatible with the logarithm operation.
+	(can_pow2p): New function.
+	(gen_pow2p): Rewrite to use __builtin_popcount instead of
+	manually inserting an internal fn call or bitmagic.  Also add
+	capability to generate a conversion.
+	(switch_conversion::is_exp_index_transform_viable): Call
+	can_pow2p.  Store types suggested by can_log2 and gen_log2.
+	(switch_conversion::exp_index_transform): Params of gen_pow2p
+	and gen_log2 changed so update their calls.
+	* tree-switch-conversion.h: Add m_exp_index_transform_log2_type
+	and m_exp_index_transform_pow2p_type to switch_conversion class
+	to track type conversions needed to generate the "is power of 2"
+	and logarithm operations.
+
+2024-08-28  Alex Coplan  <alex.coplan@arm.com>
+
+	PR libstdc++/116140
+	* doc/sourcebuild.texi: Document ltrans-rtl value of kind for
+	scan-<kind>-dump*.
+
+2024-08-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (debug): Add overload for slp_instance.
+
+2024-08-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_build_slp_store_interleaving):
+	Fix reference counting.
+	(vect_build_slp_instance): Release rhs_nodes.
+
+2024-08-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_build_slp_store_interleaving): Split
+	out from ...
+	(vect_build_slp_instance): Here.
+
+2024-08-28  Pan Li  <pan2.li@intel.com>
+
+	* tree-vect-patterns.cc (vect_recog_sat_add_pattern): Add fold
+	convert for const_int to the type of operand 0.
+
+2024-08-28  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/vector.md (mode_idx): Add vrol and vror.
+
+2024-08-28  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add the matching for signed .SAT_ADD.
+	* tree-ssa-math-opts.cc (gimple_signed_integer_sat_add): Add new
+	matching func decl.
+	(match_unsigned_saturation_add): Try signed .SAT_ADD and rename
+	to ...
+	(match_saturation_add): ... here.
+	(math_opts_dom_walker::after_dom_children): Update the above renamed
+	func from caller.
+
 2024-08-27  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR target/116413
