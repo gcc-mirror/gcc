@@ -4444,7 +4444,6 @@ tree_strip_any_location_wrapper (tree exp)
 
 #define integer_zero_node		global_trees[TI_INTEGER_ZERO]
 #define integer_one_node		global_trees[TI_INTEGER_ONE]
-#define integer_three_node              global_trees[TI_INTEGER_THREE]
 #define integer_minus_one_node		global_trees[TI_INTEGER_MINUS_ONE]
 #define size_zero_node			global_trees[TI_SIZE_ZERO]
 #define size_one_node			global_trees[TI_SIZE_ONE]

@@ -662,7 +662,6 @@ enum tree_index : unsigned {
 
   TI_INTEGER_ZERO,
   TI_INTEGER_ONE,
-  TI_INTEGER_THREE,
   TI_INTEGER_MINUS_ONE,
   TI_NULL_POINTER,
 
