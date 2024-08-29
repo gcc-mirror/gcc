@@ -1,3 +1,20 @@
+2024-08-28  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2024-08-10  Xi Ruoyao  <xry111@xry111.site>
+
+	PR testsuite/70150
+	* gcc.target/i386/fentryname3.c (dg-final): Revert r13-1614
+	change.
+
+2024-08-28  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2024-08-10  Xi Ruoyao  <xry111@xry111.site>
+
+	PR testsuite/70150
+	* gcc.target/i386/pr113689-1.c (dg-options): Add -no-pie.
+
 2024-08-22  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:
