@@ -71,7 +71,7 @@ contains
     allocatable :: t_init
   end function
 
-  type(t) function static_t_init() ! { dg-warning "not set" }
+  type(t) function static_t_init()
   end function
 end module test_pr58586_mod
 

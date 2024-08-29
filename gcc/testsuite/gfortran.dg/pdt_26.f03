@@ -43,4 +43,4 @@ program test_pdt
   if (any (c(1)%foo .ne. [13,15,17])) STOP 2
 end program test_pdt
 ! { dg-final { scan-tree-dump-times "__builtin_free" 8 "original" } }
-! { dg-final { scan-tree-dump-times "__builtin_malloc" 8 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_malloc" 9 "original" } }
