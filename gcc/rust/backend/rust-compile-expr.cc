@@ -321,8 +321,8 @@ CompileExpr::visit (HIR::IfExpr &expr)
 void
 CompileExpr::visit (HIR::InlineAsm &expr)
 {
-  CompileAsm a (ctx);
-  a.visit (expr);
+  CompileAsm asm_codegen (ctx);
+  ctx->add_statement (asm_codegen.tree_codegen_asm (expr));
   // translated = build_asm_expr (0, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE,
   //		       NULL_TREE, true, true);
   // CompileAsm::asm_build_expr (expr);

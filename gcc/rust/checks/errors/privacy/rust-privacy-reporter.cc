@@ -285,9 +285,7 @@ PrivacyReporter::visit (HIR::TypePathSegmentFunction &)
 
 void
 PrivacyReporter::visit (HIR::InlineAsm &)
-{
-  return;
-}
+{}
 
 void
 PrivacyReporter::visit (HIR::TypePath &path)

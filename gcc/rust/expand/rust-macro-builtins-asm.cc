@@ -39,6 +39,20 @@ std::map<AST::InlineAsmOption, std::string> InlineAsmOptionMap{
 
 std::set<std::string> potentially_nonpromoted_keywords
   = {"in", "out", "lateout", "inout", "inlateout", "const", "sym", "label"};
+
+std::string
+strip_double_quotes (const std::string &str)
+{
+  // Helper function strips the beginning and ending double quotes from a
+  // string.
+  std::string result = str;
+
+  rust_assert (result.size () >= 3);
+  result.erase (0, 1);
+  result.erase (result.size () - 1, 1);
+  return result;
+}
+
 tl::expected<InlineAsmContext, InlineAsmParseError>
 parse_clobber_abi (InlineAsmContext inline_asm_ctx)
 {
@@ -561,9 +575,7 @@ parse_options (InlineAsmContext &inline_asm_ctx)
 
       // Parse comma as optional
       if (parser.skip_token (COMMA))
-	{
-	  continue;
-	}
+	continue;
       else
 	{
 	  rust_unreachable ();
@@ -689,9 +701,7 @@ parse_asm_arg (InlineAsmContext inline_asm_ctx)
 	{
 	  auto expected = parse_clobber_abi (inline_asm_ctx);
 	  if (expected.has_value ())
-	    {
-	      continue;
-	    }
+	    continue;
 	  else if (expected.error () == COMMITTED)
 	    return expected;
 
@@ -703,9 +713,7 @@ parse_asm_arg (InlineAsmContext inline_asm_ctx)
 	{
 	  auto expected = parse_options (inline_asm_ctx);
 	  if (expected.has_value ())
-	    {
-	      continue;
-	    }
+	    continue;
 	  else if (expected.error () == COMMITTED)
 	    return expected;
 
@@ -718,13 +726,9 @@ parse_asm_arg (InlineAsmContext inline_asm_ctx)
 
       auto expected = parse_reg_operand (inline_asm_ctx);
       if (expected.has_value ())
-	{
-	  continue;
-	}
+	continue;
       else if (expected.error () == COMMITTED)
-	{
-	  return expected;
-	}
+	return expected;
 
       // Since parse_reg_operand is the last thing we've considered,
       // The non-committed parse error type means that we have exhausted our
@@ -742,21 +746,8 @@ parse_asm_arg (InlineAsmContext inline_asm_ctx)
   return tl::expected<InlineAsmContext, InlineAsmParseError> (inline_asm_ctx);
 }
 
-std::string
-strip_double_quotes (const std::string &str)
-{
-  // Helper function strips the beginning and ending double quotes from a
-  // string.
-  std::string result = str;
-
-  rust_assert (result.size () >= 3);
-  result.erase (0, 1);
-  result.erase (result.size () - 1, 1);
-  return result;
-}
-
 tl::expected<InlineAsmContext, InlineAsmParseError>
-expand_inline_asm_strings (InlineAsmContext &inline_asm_ctx)
+expand_inline_asm_strings (InlineAsmContext inline_asm_ctx)
 {
   auto &inline_asm = inline_asm_ctx.inline_asm;
 
@@ -846,20 +837,16 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
 
   auto resulting_context = parse_format_strings (inline_asm_ctx)
 			     .and_then (parse_asm_arg)
-			     .and_then (validate);
+			     .and_then (validate)
+			     .and_then (expand_inline_asm_strings);
 
   // TODO: I'm putting the validation here because the rust reference put
   // it here Per Arthur's advice we would actually do the validation in a
   // different stage. and visit on the InlineAsm AST instead of it's
   // context.
-  auto is_valid = (bool) resulting_context;
-  if (is_valid)
+  if (resulting_context)
     {
-      expand_inline_asm_strings (*resulting_context);
-    }
-  if (is_valid)
-    {
-      auto node = inline_asm_ctx.inline_asm.clone_expr_without_block ();
+      auto node = (*resulting_context).inline_asm.clone_expr_without_block ();
 
       std::vector<AST::SingleASTNode> single_vec = {};
 

@@ -7,14 +7,8 @@ namespace Compile {
 CompileAsm::CompileAsm (Context *ctx)
   : HIRCompileBase (ctx), translated (error_mark_node)
 {}
-void
-CompileAsm::visit (HIR::InlineAsm &expr)
-{
-  ctx->add_statement (asm_build_expr (expr));
-}
-
 tree
-CompileAsm::asm_build_expr (HIR::InlineAsm &expr)
+CompileAsm::tree_codegen_asm (HIR::InlineAsm &expr)
 {
   auto asm_expr
     = asm_build_stmt (expr.get_locus (), {asm_construct_string_tree (expr),
