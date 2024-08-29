@@ -1280,25 +1280,22 @@ expand_builtin_prefetch (tree exp)
      zero (read) and argument 2 (locality) defaults to 3 (high degree of
      locality).  */
   nargs = call_expr_nargs (exp);
-  if (nargs > 1)
-    arg1 = CALL_EXPR_ARG (exp, 1);
-  else
-    arg1 = integer_zero_node;
-  if (nargs > 2)
-    arg2 = CALL_EXPR_ARG (exp, 2);
-  else
-    arg2 = integer_three_node;
+  arg1 = nargs > 1 ? CALL_EXPR_ARG (exp, 1) : NULL_TREE;
+  arg2 = nargs > 2 ? CALL_EXPR_ARG (exp, 2) : NULL_TREE;
 
   /* Argument 0 is an address.  */
   op0 = expand_expr (arg0, NULL_RTX, Pmode, EXPAND_NORMAL);
 
   /* Argument 1 (read/write flag) must be a compile-time constant int.  */
-  if (TREE_CODE (arg1) != INTEGER_CST)
+  if (arg1 == NULL_TREE)
+    op1 = const0_rtx;
+  else if (TREE_CODE (arg1) != INTEGER_CST)
     {
       error ("second argument to %<__builtin_prefetch%> must be a constant");
-      arg1 = integer_zero_node;
+      op1 = const0_rtx;
     }
-  op1 = expand_normal (arg1);
+  else
+    op1 = expand_normal (arg1);
   /* Argument 1 must be either zero or one.  */
   if (INTVAL (op1) != 0 && INTVAL (op1) != 1)
     {
@@ -1308,12 +1305,15 @@ expand_builtin_prefetch (tree exp)
     }
 
   /* Argument 2 (locality) must be a compile-time constant int.  */
-  if (TREE_CODE (arg2) != INTEGER_CST)
+  if (arg2 == NULL_TREE)
+    op2 = GEN_INT (3);
+  else if (TREE_CODE (arg2) != INTEGER_CST)
     {
       error ("third argument to %<__builtin_prefetch%> must be a constant");
-      arg2 = integer_zero_node;
+      op2 = const0_rtx;
     }
-  op2 = expand_normal (arg2);
+  else
+    op2 = expand_normal (arg2);
   /* Argument 2 must be 0, 1, 2, or 3.  */
   if (INTVAL (op2) < 0 || INTVAL (op2) > 3)
     {
