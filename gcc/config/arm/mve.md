@@ -5061,22 +5061,6 @@
   (set_attr "length" "4")])
 
 ;;
-;; [vidupq_n_u])
-;;
-(define_expand "mve_vidupq_n_u<mode>"
- [(match_operand:MVE_2 0 "s_register_operand")
-  (match_operand:SI 1 "s_register_operand")
-  (match_operand:SI 2 "mve_imm_selective_upto_8")]
- "TARGET_HAVE_MVE"
-{
-  rtx temp = gen_reg_rtx (SImode);
-  emit_move_insn (temp, operands[1]);
-  rtx inc = gen_int_mode (INTVAL(operands[2]) * <MVE_LANES>, SImode);
-  emit_insn (gen_mve_vidupq_u<mode>_insn (operands[0], temp, operands[1],
-					  operands[2], inc));
-  DONE;
-})
-
 ;;
 ;; [vddupq_u_insn, vidupq_u_insn]
 ;;
@@ -5090,26 +5074,6 @@
 			(match_operand:SI 4 "immediate_operand" "i")))]
  "TARGET_HAVE_MVE"
  "<mve_insn>.u%#<V_sz_elem>\t%q0, %1, %3")
-
-;;
-;; [vidupq_m_n_u])
-;;
-(define_expand "mve_vidupq_m_n_u<mode>"
-  [(match_operand:MVE_2 0 "s_register_operand")
-   (match_operand:MVE_2 1 "s_register_operand")
-   (match_operand:SI 2 "s_register_operand")
-   (match_operand:SI 3 "mve_imm_selective_upto_8")
-   (match_operand:<MVE_VPRED> 4 "vpr_register_operand")]
-  "TARGET_HAVE_MVE"
-{
-  rtx temp = gen_reg_rtx (SImode);
-  emit_move_insn (temp, operands[2]);
-  rtx inc = gen_int_mode (INTVAL(operands[3]) * <MVE_LANES>, SImode);
-  emit_insn (gen_mve_vidupq_m_wb_u<mode>_insn(operands[0], operands[1], temp,
-					     operands[2], operands[3],
-					     operands[4], inc));
-  DONE;
-})
 
 ;;
 ;; [vddupq_m_wb_u_insn, vidupq_m_wb_u_insn]
@@ -5128,43 +5092,6 @@
  "vpst\;<mve_insn>t.u%#<V_sz_elem>\t%q0, %2, %4"
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_u<mode>_insn"))
   (set_attr "length""8")])
-
-;;
-;; [vddupq_n_u])
-;;
-(define_expand "mve_vddupq_n_u<mode>"
- [(match_operand:MVE_2 0 "s_register_operand")
-  (match_operand:SI 1 "s_register_operand")
-  (match_operand:SI 2 "mve_imm_selective_upto_8")]
- "TARGET_HAVE_MVE"
-{
-  rtx temp = gen_reg_rtx (SImode);
-  emit_move_insn (temp, operands[1]);
-  rtx inc = gen_int_mode (INTVAL(operands[2]) * <MVE_LANES>, SImode);
-  emit_insn (gen_mve_vddupq_u<mode>_insn (operands[0], temp, operands[1],
-					  operands[2], inc));
-  DONE;
-})
-
-;;
-;; [vddupq_m_n_u])
-;;
-(define_expand "mve_vddupq_m_n_u<mode>"
-  [(match_operand:MVE_2 0 "s_register_operand")
-   (match_operand:MVE_2 1 "s_register_operand")
-   (match_operand:SI 2 "s_register_operand")
-   (match_operand:SI 3 "mve_imm_selective_upto_8")
-   (match_operand:<MVE_VPRED> 4 "vpr_register_operand")]
-  "TARGET_HAVE_MVE"
-{
-  rtx temp = gen_reg_rtx (SImode);
-  emit_move_insn (temp, operands[2]);
-  rtx inc = gen_int_mode (INTVAL(operands[3]) * <MVE_LANES>, SImode);
-  emit_insn (gen_mve_vddupq_m_wb_u<mode>_insn(operands[0], operands[1], temp,
-					     operands[2], operands[3],
-					     operands[4], inc));
-  DONE;
-})
 
 ;;
 ;; [vdwdupq_n_u])
