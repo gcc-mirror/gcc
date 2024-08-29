@@ -120,7 +120,7 @@ class dump_context
   void end_any_optinfo ();
 
   void emit_optinfo (const optinfo *info);
-  void emit_item (optinfo_item *item, dump_flags_t dump_kind);
+  void emit_item (const optinfo_item &item, dump_flags_t dump_kind);
 
   bool apply_dump_filter_p (dump_flags_t dump_kind, dump_flags_t filter) const;
 
@@ -186,11 +186,12 @@ private:
   bool decode_format (text_info *text, const char *spec,
 		      const char **buffer_ptr);
 
-  void stash_item (const char **buffer_ptr, optinfo_item *item);
+  void stash_item (const char **buffer_ptr,
+		   std::unique_ptr<optinfo_item> item);
 
   void emit_any_pending_textual_chunks (optinfo *dest);
 
-  void emit_item (optinfo_item *item, optinfo *dest);
+  void emit_item (std::unique_ptr<optinfo_item> item, optinfo *dest);
 
   dump_context *m_context;
   dump_flags_t m_dump_kind;
