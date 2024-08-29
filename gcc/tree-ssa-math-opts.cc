@@ -5433,13 +5433,15 @@ match_uaddc_usubc (gimple_stmt_iterator *gsi, gimple *stmt, tree_code code)
 
 /* Replace .POPCOUNT (x) == 1 or .POPCOUNT (x) != 1 with
    (x & (x - 1)) > x - 1 or (x & (x - 1)) <= x - 1 if .POPCOUNT
-   isn't a direct optab.  */
+   isn't a direct optab.  Also handle `<=`/`>` to be
+   `x & (x - 1) !=/== x`. */
 
 static void
 match_single_bit_test (gimple_stmt_iterator *gsi, gimple *stmt)
 {
   tree clhs, crhs;
   enum tree_code code;
+  bool was_le = false;
   if (gimple_code (stmt) == GIMPLE_COND)
     {
       clhs = gimple_cond_lhs (stmt);
@@ -5452,8 +5454,11 @@ match_single_bit_test (gimple_stmt_iterator *gsi, gimple *stmt)
       crhs = gimple_assign_rhs2 (stmt);
       code = gimple_assign_rhs_code (stmt);
     }
-  if (code != EQ_EXPR && code != NE_EXPR)
+  if (code != LE_EXPR && code != GT_EXPR
+      && code != EQ_EXPR && code != NE_EXPR)
     return;
+  if (code == LE_EXPR || code == GT_EXPR)
+    was_le = true;
   if (TREE_CODE (clhs) != SSA_NAME || !integer_onep (crhs))
     return;
   gimple *call = SSA_NAME_DEF_STMT (clhs);
@@ -5477,8 +5482,9 @@ match_single_bit_test (gimple_stmt_iterator *gsi, gimple *stmt)
       /* Tell expand_POPCOUNT the popcount result is only used in equality
 	 comparison with one, so that it can decide based on rtx costs.  */
       gimple *g = gimple_build_call_internal (IFN_POPCOUNT, 2, arg,
-					      nonzero_arg ? integer_zero_node
-					      : integer_one_node);
+					      was_le ? integer_minus_one_node
+					      : (nonzero_arg ? integer_zero_node
+						 : integer_one_node));
       gimple_call_set_lhs (g, gimple_call_lhs (call));
       gimple_stmt_iterator gsi2 = gsi_for_stmt (call);
       gsi_replace (&gsi2, g, true);
@@ -5489,11 +5495,16 @@ match_single_bit_test (gimple_stmt_iterator *gsi, gimple *stmt)
 				   build_int_cst (type, -1));
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
   g = gimple_build_assign (make_ssa_name (type),
-			   nonzero_arg ? BIT_AND_EXPR : BIT_XOR_EXPR,
+			   (nonzero_arg || was_le) ? BIT_AND_EXPR : BIT_XOR_EXPR,
 			   arg, argm1);
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
   tree_code cmpcode;
-  if (nonzero_arg)
+  if (was_le)
+    {
+      argm1 = build_zero_cst (type);
+      cmpcode = code == LE_EXPR ? EQ_EXPR : NE_EXPR;
+    }
+  else if (nonzero_arg)
     {
       argm1 = build_zero_cst (type);
       cmpcode = code;
@@ -6188,6 +6199,8 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 
 	    case EQ_EXPR:
 	    case NE_EXPR:
+	    case LE_EXPR:
+	    case GT_EXPR:
 	      match_single_bit_test (&gsi, stmt);
 	      break;
 

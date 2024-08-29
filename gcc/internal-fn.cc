@@ -5304,11 +5304,16 @@ expand_POPCOUNT (internal_fn fn, gcall *stmt)
      Use rtx costs in that case to determine if .POPCOUNT (arg) == 1
      or (arg ^ (arg - 1)) > arg - 1 is cheaper.
      If .POPCOUNT second argument is 0, we additionally know that arg
-     is non-zero, so use arg & (arg - 1) == 0 instead.  */
+     is non-zero, so use arg & (arg - 1) == 0 instead.
+     If .POPCOUNT second argument is -1, the comparison was either `<= 1`
+     or `> 1`.  */
   bool speed_p = optimize_insn_for_speed_p ();
   tree lhs = gimple_call_lhs (stmt);
   tree arg = gimple_call_arg (stmt, 0);
   bool nonzero_arg = integer_zerop (gimple_call_arg (stmt, 1));
+  bool was_le = integer_minus_onep (gimple_call_arg (stmt, 1));
+  if (was_le)
+    nonzero_arg = true;
   tree type = TREE_TYPE (arg);
   machine_mode mode = TYPE_MODE (type);
   machine_mode lhsmode = TYPE_MODE (TREE_TYPE (lhs));
@@ -5360,10 +5365,23 @@ expand_POPCOUNT (internal_fn fn, gcall *stmt)
     emit_insn (popcount_insns);
   else
     {
+      start_sequence ();
       emit_insn (cmp_insns);
       plhs = expand_normal (lhs);
       if (GET_MODE (cmp) != GET_MODE (plhs))
 	cmp = convert_to_mode (GET_MODE (plhs), cmp, 1);
+      /* For `<= 1`, we need to produce `2 - cmp` or `cmp ? 1 : 2` as that
+	 then gets compared against 1 and we need the false case to be 2.  */
+      if (was_le)
+	{
+	  cmp = expand_simple_binop (GET_MODE (cmp), MINUS, const2_rtx,
+				     cmp, NULL_RTX, 1, OPTAB_WIDEN);
+	  if (!cmp)
+	    goto fail;
+	}
       emit_move_insn (plhs, cmp);
+      rtx_insn *all_insns = get_insns ();
+      end_sequence ();
+      emit_insn (all_insns);
     }
 }
