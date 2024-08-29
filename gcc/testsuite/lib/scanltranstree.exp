@@ -24,7 +24,7 @@ load_lib scandump.exp
 foreach ir { tree rtl } {
     foreach modifier { {} -not -dem -dem-not } {
 	eval [string map [list @NAME@ scan-ltrans-$ir-dump$modifier \
-			       @SCAN@ scan$modifier \
+			       @SCAN@ scan-dump$modifier \
 			       @TYPE@ ltrans-$ir \
 			       @SUFFIX@ [string index $ir 0]] {
 	    proc @NAME@ { args } {
