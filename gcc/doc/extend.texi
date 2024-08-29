@@ -9191,6 +9191,13 @@ initialization will result in future breakage.
 GCC emits warnings based on this attribute by default; use
 @option{-Wno-designated-init} to suppress them.
 
+@cindex @code{flag_enum} type attribute
+@item flag_enum
+This attribute may be applied to an enumerated type to indicate that
+its enumerators are used in bitwise operations, so e.g. @option{-Wswitch}
+should not warn about a @code{case} that corresponds to a bitwise
+combination of enumerators.
+
 @cindex @code{hardbool} type attribute
 @item hardbool
 @itemx hardbool (@var{false_value})

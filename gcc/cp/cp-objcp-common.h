@@ -128,6 +128,7 @@ static const scoped_attribute_specs *const cp_objcp_attribute_table[] =
   &std_attribute_table,
   &cxx_gnu_attribute_table,
   &c_common_gnu_attribute_table,
+  &c_common_clang_attribute_table,
   &c_common_format_attribute_table
 };
 

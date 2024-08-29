@@ -7672,9 +7672,9 @@ unless C++14 mode (or newer) is active.
 Warn whenever a @code{switch} statement has an index of enumerated type
 and lacks a @code{case} for one or more of the named codes of that
 enumeration.  (The presence of a @code{default} label prevents this
-warning.)  @code{case} labels outside the enumeration range also
-provoke warnings when this option is used (even if there is a
-@code{default} label).
+warning.)  @code{case} labels that do not correspond to enumerators also
+provoke warnings when this option is used, unless the enumeration is marked
+with the @code{flag_enum} attribute.
 This warning is enabled by @option{-Wall}.
 
 @opindex Wswitch-default
@@ -7688,8 +7688,9 @@ case.
 @item -Wswitch-enum
 Warn whenever a @code{switch} statement has an index of enumerated type
 and lacks a @code{case} for one or more of the named codes of that
-enumeration.  @code{case} labels outside the enumeration range also
-provoke warnings when this option is used.  The only difference
+enumeration.  @code{case} labels that do not correspond to enumerators also
+provoke warnings when this option is used, unless the enumeration is marked
+with the @code{flag_enum} attribute.  The only difference
 between @option{-Wswitch} and this option is that this option gives a
 warning about an omitted enumeration code even if there is a
 @code{default} label.

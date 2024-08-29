@@ -184,6 +184,7 @@ static tree handle_signed_bool_precision_attribute (tree *, tree, tree, int,
 static tree handle_hardbool_attribute (tree *, tree, tree, int, bool *);
 static tree handle_retain_attribute (tree *, tree, tree, int, bool *);
 static tree handle_fd_arg_attribute (tree *, tree, tree, int, bool *);
+static tree handle_flag_enum_attribute (tree *, tree, tree, int, bool *);
 static tree handle_null_terminated_string_arg_attribute (tree *, tree, tree, int, bool *);
 
 /* Helper to define attribute exclusions.  */
@@ -631,6 +632,8 @@ const struct attribute_spec c_common_gnu_attributes[] =
             handle_fd_arg_attribute, NULL},
   { "fd_arg_write",       1, 1, false, true, true, false,
             handle_fd_arg_attribute, NULL},         
+  { "flag_enum",	      0, 0, false, true, false, false,
+			      handle_flag_enum_attribute, NULL },
   { "null_terminated_string_arg", 1, 1, false, true, true, false,
 			      handle_null_terminated_string_arg_attribute, NULL}
 };
@@ -638,6 +641,17 @@ const struct attribute_spec c_common_gnu_attributes[] =
 const struct scoped_attribute_specs c_common_gnu_attribute_table =
 {
   "gnu", { c_common_gnu_attributes }
+};
+
+/* Attributes also recognized in the clang:: namespace.  */
+const struct attribute_spec c_common_clang_attributes[] = {
+  { "flag_enum",	      0, 0, false, true, false, false,
+			      handle_flag_enum_attribute, NULL }
+};
+
+const struct scoped_attribute_specs c_common_clang_attribute_table =
+{
+  "clang", { c_common_clang_attributes }
 };
 
 /* Give the specifications for the format attributes, used by C and all
@@ -5022,6 +5036,22 @@ handle_fd_arg_attribute (tree *node, tree name, tree args,
       return NULL_TREE;
 
   *no_add_attrs = true;  
+  return NULL_TREE;
+}
+
+/* Handle the "flag_enum" attribute.  */
+
+static tree
+handle_flag_enum_attribute (tree *node, tree ARG_UNUSED (name),
+			    tree ARG_UNUSED (args), int ARG_UNUSED (flags),
+			    bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != ENUMERAL_TYPE)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored on non-enum", name);
+      *no_add_attrs = true;
+    }
+
   return NULL_TREE;
 }
 
