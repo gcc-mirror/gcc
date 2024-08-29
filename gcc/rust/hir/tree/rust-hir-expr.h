@@ -4154,8 +4154,8 @@ public:
 
   bool is_inline_asm ()
   {
-    // TODO: Check back later to determine how an InlineAsm is inline.
-    return true;
+    // INFO: An inline asm is asm!, which is the opposite of a global_asm()
+    return !this->is_global_asm;
   }
   InlineAsm (location_t locus, bool is_global_asm,
 	     std::vector<AST::InlineAsmTemplatePiece> template_,

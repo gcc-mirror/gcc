@@ -12,10 +12,9 @@ fn main() {
         // This demonstrates that asm!'s is inferred with a unit type is parsed correctly.
         let _ = asm!("nop");
 
-        // This errors out per rust spec
-        //      The asm! block never returns, and its return type is defined as ! (never).
-        //      Behavior is undefined if execution falls through past the end of the asm code.
-        //      A noreturn asm block behaves just like a function which doesn't return; notably, local variables in scope are not dropped before it is invoked.
+        // The asm! block never returns, and its return type is defined as ! (never).
+        // Behavior is undefined if execution falls through past the end of the asm code.
+        // A noreturn asm block behaves just like a function which doesn't return; notably, local variables in scope are not dropped before it is invoked.
         let _ = asm!("nop", options(noreturn));
     }
 }
