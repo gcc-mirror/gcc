@@ -14019,6 +14019,7 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 	       || (cv_quals == TYPE_UNQUALIFIED)))
 	  || (TREE_CODE (name) == TYPE_DECL
 	      && DECL_NAME (name)
+	      && !DECL_NAMELESS (name)
 	      && (TREE_TYPE (name) == qualified_type
 		  || (lang_hooks.types.get_debug_type
 		      && (lang_hooks.types.get_debug_type (TREE_TYPE (name))
