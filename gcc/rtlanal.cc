@@ -6467,10 +6467,30 @@ strip_address_mutations (rtx *loc, enum rtx_code *outer_code)
 	/* (and ... (const_int -X)) is used to align to X bytes.  */
 	loc = &XEXP (*loc, 0);
       else if (code == SUBREG
-               && !OBJECT_P (SUBREG_REG (*loc))
-               && subreg_lowpart_p (*loc))
-	/* (subreg (operator ...) ...) inside and is used for mode
-	   conversion too.  */
+	       && (!OBJECT_P (SUBREG_REG (*loc))
+		   || CONSTANT_P (SUBREG_REG (*loc)))
+	       && subreg_lowpart_p (*loc))
+	/* (subreg (operator ...) ...) inside AND is used for mode
+	   conversion too.  It is also used for load-address operations
+	   in which an extension can be done for free, such as:
+
+	     (zero_extend:DI
+	       (subreg:SI (plus:DI (reg:DI R) (symbol_ref:DI "foo") 0)))
+
+	   The latter usage also covers subregs of plain "displacements",
+	   such as:
+
+	     (zero_extend:DI (subreg:SI (symbol_ref:DI "foo") 0))
+
+	   The inner address should then be the symbol_ref, not the subreg,
+	   similarly to the plus case above.
+
+	   In contrast, the subreg in:
+
+	     (zero_extend:DI (subreg:SI (reg:DI R) 0))
+
+	   should be treated as the base, since it should be replaced by
+	   an SImode hard register during register allocation.  */
 	loc = &SUBREG_REG (*loc);
       else
 	return loc;
