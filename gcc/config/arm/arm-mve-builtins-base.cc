@@ -407,16 +407,19 @@ public:
    vector mode associated with type suffix 0.  We need this special case
    because in MODE_wb the builtins derefrence the first parameter and update
    its contents.  We also have to insert the two additional parameters needed
-   by the builtins compared to the intrinsics.  */
+   by the builtins compared to the intrinsics.  In wrapping mode, we have to
+   match the 'hack' to make sure the 'wrap' parameters is in odd register.  */
 class viddup_impl : public function_base
 {
 public:
-  CONSTEXPR viddup_impl (bool inc_dec)
-    : m_inc_dec (inc_dec)
+  CONSTEXPR viddup_impl (bool inc_dec, bool wrap)
+    : m_inc_dec (inc_dec), m_wrap (wrap)
   {}
 
   /* Increment (true) or decrement (false).  */
   bool m_inc_dec;
+  /* v[id]wdup (true) or v[id]dup (false).  */
+  bool m_wrap;
 
   unsigned int
   call_properties (const function_instance &fi) const override
@@ -441,7 +444,6 @@ public:
     rtx insns, offset_ptr;
     rtx new_offset;
     int offset_arg_no;
-    rtx incr, total_incr;
 
     if (! e.type_suffix (0).integer_p)
       gcc_unreachable ();
@@ -465,15 +467,29 @@ public:
     /* We have to shuffle parameters because the builtin needs additional
        arguments:
        - the updated "new_offset"
-       - total increment (incr * number of lanes)  */
+       - total increment (incr * number of lanes) in the non-wrapping case
+       - hack to pass wrap in the top end of DImode operand so that it is
+         actually in a odd register  */
     new_offset = gen_reg_rtx (SImode);
     e.args.quick_insert (offset_arg_no, new_offset);
 
-    incr = e.args[offset_arg_no + 2];
-    total_incr = gen_int_mode (INTVAL (incr)
-			       * GET_MODE_NUNITS (e.vector_mode (0)),
-			       SImode);
-    e.args.quick_push (total_incr);
+    if (m_wrap)
+      {
+	rtx wrap = gen_reg_rtx (DImode);
+	emit_insn (gen_rtx_SET (gen_rtx_SUBREG (SImode, wrap, 4),
+				e.args[offset_arg_no + 2]));
+	emit_insn (gen_rtx_SET (gen_rtx_SUBREG (SImode, wrap, 0),
+				GEN_INT (0)));
+	e.args[offset_arg_no + 2] = wrap;
+      }
+    else
+      {
+	rtx incr = e.args[offset_arg_no + 2];
+	rtx total_incr = gen_int_mode (INTVAL (incr)
+				       * GET_MODE_NUNITS (e.vector_mode (0)),
+				       SImode);
+	e.args.quick_push (total_incr);
+      }
 
     /* _wb mode uses the _n builtins and adds code to update the
        offset.  */
@@ -481,18 +497,26 @@ public:
       {
       case PRED_none:
 	/* No predicate.  */
-	code = m_inc_dec
-	  ? code_for_mve_q_u_insn (VIDUPQ, mode)
-	  : code_for_mve_q_u_insn (VDDUPQ, mode);
+	code = m_wrap
+	  ? (m_inc_dec
+	     ? code_for_mve_q_wb_u_insn (VIWDUPQ, mode)
+	     : code_for_mve_q_wb_u_insn (VDWDUPQ, mode))
+	  : (m_inc_dec
+	     ? code_for_mve_q_u_insn (VIDUPQ, mode)
+	     : code_for_mve_q_u_insn (VDDUPQ, mode));
 	insns = e.use_exact_insn (code);
 	break;
 
       case PRED_m:
       case PRED_x:
 	/* "m" or "x" predicate.  */
-	code = m_inc_dec
-	  ? code_for_mve_q_m_wb_u_insn (VIDUPQ_M, mode)
-	  : code_for_mve_q_m_wb_u_insn (VDDUPQ_M, mode);
+	code = m_wrap
+	  ? (m_inc_dec
+	     ? code_for_mve_q_m_wb_u_insn (VIWDUPQ_M, mode)
+	     : code_for_mve_q_m_wb_u_insn (VDWDUPQ_M, mode))
+	  : (m_inc_dec
+	     ? code_for_mve_q_m_wb_u_insn (VIDUPQ_M, mode)
+	     : code_for_mve_q_m_wb_u_insn (VDDUPQ_M, mode));
 
 	if (e.pred == PRED_m)
 	  insns = e.use_cond_insn (code, 0);
@@ -724,9 +748,11 @@ FUNCTION_WITHOUT_N_NO_F (vcvtmq, VCVTMQ)
 FUNCTION_WITHOUT_N_NO_F (vcvtnq, VCVTNQ)
 FUNCTION_WITHOUT_N_NO_F (vcvtpq, VCVTPQ)
 FUNCTION (vcvttq, vcvtxq_impl, (VCVTTQ_F16_F32, VCVTTQ_M_F16_F32, VCVTTQ_F32_F16, VCVTTQ_M_F32_F16))
-FUNCTION (vddupq, viddup_impl, (false))
+FUNCTION (vddupq, viddup_impl, (false, false))
 FUNCTION (vdupq, vdupq_impl, (VDUPQ_M_N_S, VDUPQ_M_N_U, VDUPQ_M_N_F))
-FUNCTION (vidupq, viddup_impl, (true))
+FUNCTION (vdwdupq, viddup_impl, (false, true))
+FUNCTION (vidupq, viddup_impl, (true, false))
+FUNCTION (viwdupq, viddup_impl, (true, true))
 FUNCTION_WITH_RTX_M (veorq, XOR, VEORQ)
 FUNCTION (vfmaq, unspec_mve_function_exact_insn, (-1, -1, VFMAQ_F, -1, -1, VFMAQ_N_F, -1, -1, VFMAQ_M_F, -1, -1, VFMAQ_M_N_F))
 FUNCTION (vfmasq, unspec_mve_function_exact_insn, (-1, -1, -1, -1, -1, VFMASQ_N_F, -1, -1, -1, -1, -1, VFMASQ_M_N_F))
