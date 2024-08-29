@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "intl.h"
 #include "pretty-print.h"
+#include "pretty-print-format-impl.h"
 #include "pretty-print-markup.h"
 #include "pretty-print-urlifier.h"
 #include "diagnostic-color.h"
