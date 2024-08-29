@@ -11231,7 +11231,38 @@ package body Sem_Attr is
       --  If attribute was universal type, reset to actual type
 
       if Is_Universal_Numeric_Type (Etype (N)) then
-         Set_Etype (N, Typ);
+
+         --  If evaluating N might yield a value that that does not satisfy
+         --  the constraints of the subtype Typ, then we need to set the
+         --  Etype of N to "Base_Type (Typ)" instead of "Typ".
+         --  Otherwise we can end up incorrectly assuming that the value
+         --  belongs to the subtype and, as a result, eliminating required
+         --  runtime checks.
+         --  Rather than trying to analyze the expression and the subtype to
+         --  test for this case, it seems better to take the simpler approach;
+         --  that is, to ignore this opportunity for an insignificant
+         --  micro-optimization and to instead call Base_Type unconditionally.
+         --  But that doesn't work; it turns out that there is a corner case
+         --  where (for reasons that are not completely understood) we need
+         --  to set the Etype to Typ for reasons of correctness. See below
+         --  for description of this case.
+
+         if Attr_Id = Attribute_Pos
+           and then not Comes_From_Source (N)
+         then
+            --  This case occurs when indexing into a packed array and
+            --  the index type is an enumeration type that is subject to
+            --  an enumeration representation specification.
+            --  See the "Analyze_And_Resolve (Expr_Copy, Standard_Natural);"
+            --  statement in exp_pakd.adb .
+            --  For reasons that are not understood, we see a regression test
+            --  failure if we don't handle that case by calling Set_Etype here
+            --  with "Typ" instead of "Base_Type (Typ)").
+
+            Set_Etype (N, Typ);
+         else
+            Set_Etype (N, Base_Type (Typ));
+         end if;
       end if;
 
       --  A Ghost attribute must appear in a specific context
