@@ -5559,7 +5559,8 @@ c_parse_final_cleanups (void)
 	  && !(header_module_p ()
 	       && (DECL_DEFAULTED_FN (decl) || decl_tls_wrapper_p (decl)))
 	  /* Don't complain if the template was defined.  */
-	  && !(DECL_TEMPLATE_INSTANTIATION (decl)
+	  && !((DECL_TEMPLATE_INSTANTIATION (decl)
+		|| DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (decl))
 	       && DECL_INITIAL (DECL_TEMPLATE_RESULT
 				(template_for_substitution (decl))))
 	  && warning_at (DECL_SOURCE_LOCATION (decl), 0,
