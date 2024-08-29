@@ -27,6 +27,7 @@ extern const function_base *const vabavq;
 extern const function_base *const vabdq;
 extern const function_base *const vabsq;
 extern const function_base *const vadciq;
+extern const function_base *const vadcq;
 extern const function_base *const vaddlvaq;
 extern const function_base *const vaddlvq;
 extern const function_base *const vaddq;

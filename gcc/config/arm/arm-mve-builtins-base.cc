@@ -612,10 +612,19 @@ public:
 class vadc_vsbc_impl : public function_base
 {
 public:
+  CONSTEXPR vadc_vsbc_impl (bool init_carry)
+    : m_init_carry (init_carry)
+  {}
+
+  /* Initialize carry with 0 (vadci).  */
+  bool m_init_carry;
+
   unsigned int
   call_properties (const function_instance &) const override
   {
     unsigned int flags = CP_WRITE_MEMORY | CP_READ_FPCR;
+    if (!m_init_carry)
+      flags |= CP_READ_MEMORY;
     return flags;
   }
 
@@ -658,22 +667,59 @@ public:
     carry_ptr = e.args[carry_out_arg_no];
     e.args.ordered_remove (carry_out_arg_no);
 
+    if (!m_init_carry)
+      {
+	/* Prepare carry in:
+	   set_fpscr ( (fpscr & ~0x20000000u)
+		       | ((*carry & 1u) << 29) )  */
+	rtx carry_in = gen_reg_rtx (SImode);
+	rtx fpscr = gen_reg_rtx (SImode);
+	emit_insn (gen_get_fpscr_nzcvqc (fpscr));
+	emit_insn (gen_rtx_SET (carry_in, gen_rtx_MEM (SImode, carry_ptr)));
+
+	emit_insn (gen_rtx_SET (carry_in,
+				gen_rtx_ASHIFT (SImode,
+						carry_in,
+						GEN_INT (29))));
+	emit_insn (gen_rtx_SET (carry_in,
+				gen_rtx_AND (SImode,
+					     carry_in,
+					     GEN_INT (0x20000000))));
+	emit_insn (gen_rtx_SET (fpscr,
+				gen_rtx_AND (SImode,
+					     fpscr,
+					     GEN_INT (~0x20000000))));
+	emit_insn (gen_rtx_SET (carry_in,
+				gen_rtx_IOR (SImode,
+					     carry_in,
+					     fpscr)));
+	emit_insn (gen_set_fpscr_nzcvqc (carry_in));
+      }
+
     switch (e.pred)
       {
       case PRED_none:
 	/* No predicate.  */
-	unspec = e.type_suffix (0).unsigned_p
-	  ? VADCIQ_U
-	  : VADCIQ_S;
+	unspec = m_init_carry
+	  ? (e.type_suffix (0).unsigned_p
+	     ? VADCIQ_U
+	     : VADCIQ_S)
+	  : (e.type_suffix (0).unsigned_p
+	     ? VADCQ_U
+	     : VADCQ_S);
 	code = code_for_mve_q_v4si (unspec, unspec);
 	insns = e.use_exact_insn (code);
 	break;
 
       case PRED_m:
 	/* "m" predicate.  */
-	unspec = e.type_suffix (0).unsigned_p
-	  ? VADCIQ_M_U
-	  : VADCIQ_M_S;
+	unspec = m_init_carry
+	  ? (e.type_suffix (0).unsigned_p
+	     ? VADCIQ_M_U
+	     : VADCIQ_M_S)
+	  : (e.type_suffix (0).unsigned_p
+	     ? VADCQ_M_U
+	     : VADCQ_M_S);
 	code = code_for_mve_q_m_v4si (unspec, unspec);
 	insns = e.use_cond_insn (code, 0);
 	break;
@@ -869,7 +915,8 @@ namespace arm_mve {
 FUNCTION_PRED_P_S_U (vabavq, VABAVQ)
 FUNCTION_WITHOUT_N (vabdq, VABDQ)
 FUNCTION (vabsq, unspec_based_mve_function_exact_insn, (ABS, ABS, ABS, -1, -1, -1, VABSQ_M_S, -1, VABSQ_M_F, -1, -1, -1))
-FUNCTION (vadciq, vadc_vsbc_impl,)
+FUNCTION (vadciq, vadc_vsbc_impl, (true))
+FUNCTION (vadcq, vadc_vsbc_impl, (false))
 FUNCTION_WITH_RTX_M_N (vaddq, PLUS, VADDQ)
 FUNCTION_PRED_P_S_U (vaddlvaq, VADDLVAQ)
 FUNCTION_PRED_P_S_U (vaddlvq, VADDLVQ)
