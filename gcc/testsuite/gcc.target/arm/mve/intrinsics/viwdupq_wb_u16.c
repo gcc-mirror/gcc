@@ -41,9 +41,9 @@ foo1 (uint32_t *a, uint32_t b)
 **	...
 */
 uint16x8_t
-foo2 ()
+foo2 (uint32_t *a)
 {
-  return viwdupq_u16 (1, 1, 1);
+  return viwdupq_u16 (a, 1, 1);
 }
 
 #ifdef __cplusplus
