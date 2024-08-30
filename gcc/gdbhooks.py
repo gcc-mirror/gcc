@@ -453,6 +453,25 @@ class PassPrinter:
 
 ######################################################################
 
+VEC_KIND_EMBED = 0
+VEC_KIND_PTR = 1
+
+"""
+Given a vec or pointer to vec, return its layout (embedded or space
+efficient).
+"""
+def get_vec_kind(val):
+    typ = val.type
+    if typ.code == gdb.TYPE_CODE_PTR:
+        typ = typ.target()
+    kind = typ.template_argument(2).name
+    if kind == "vl_embed":
+        return VEC_KIND_EMBED
+    elif kind == "vl_ptr":
+        return VEC_KIND_PTR
+    else:
+        assert False, f"unexpected vec kind {kind}"
+
 class VecPrinter:
     #    -ex "up" -ex "p bb->preds"
     def __init__(self, gdbval):
@@ -467,11 +486,16 @@ class VecPrinter:
         return '0x%x' % intptr(self.gdbval)
 
     def children (self):
-        if intptr(self.gdbval) == 0:
-            return
-        m_vecpfx = self.gdbval['m_vecpfx']
-        m_num = m_vecpfx['m_num']
         val = self.gdbval
+        if intptr(val) != 0 and get_vec_kind(val) == VEC_KIND_PTR:
+            val = val['m_vec']
+
+        if intptr(val) == 0:
+            return
+
+        assert get_vec_kind(val) == VEC_KIND_EMBED
+        m_vecpfx = val['m_vecpfx']
+        m_num = m_vecpfx['m_num']
         typ = val.type
         if typ.code == gdb.TYPE_CODE_PTR:
             typ = typ.target()
