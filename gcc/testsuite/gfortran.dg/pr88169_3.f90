@@ -10,6 +10,5 @@ program main
    use foo_nml, only: bar => foo, x
    implicit none
    real a
-   namelist /bar/a  ! { dg-error "already is USE associated" }
+   namelist /bar/a  ! { dg-error "Legacy Extension: .* already is USE associated" }
 end program
-! { dg-final { cleanup-modules "foo_nml" } }

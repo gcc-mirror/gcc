@@ -5603,9 +5603,11 @@ gfc_match_namelist (void)
 	  return MATCH_ERROR;
 	}
 
+      /* A use associated name shall not be used as a namelist group name
+	 (e.g. F2003:C581).  It is only supported as a legacy extension.  */
       if (group_name->attr.flavor == FL_NAMELIST
 	  && group_name->attr.use_assoc
-	  && !gfc_notify_std (GFC_STD_GNU, "Namelist group name %qs "
+	  && !gfc_notify_std (GFC_STD_LEGACY, "Namelist group name %qs "
 			      "at %C already is USE associated and can"
 			      "not be respecified.", group_name->name))
 	return MATCH_ERROR;
