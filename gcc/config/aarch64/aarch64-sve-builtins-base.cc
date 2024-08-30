@@ -2000,6 +2000,19 @@ public:
   }
 };
 
+class svmul_impl : public rtx_code_function
+{
+public:
+  CONSTEXPR svmul_impl ()
+    : rtx_code_function (MULT, MULT, UNSPEC_COND_FMUL) {}
+
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    return f.fold_const_binary (MULT_EXPR);
+  }
+};
+
 class svnand_impl : public function_base
 {
 public:
@@ -3184,7 +3197,7 @@ FUNCTION (svmls_lane, svmls_lane_impl,)
 FUNCTION (svmmla, svmmla_impl,)
 FUNCTION (svmov, svmov_impl,)
 FUNCTION (svmsb, svmsb_impl,)
-FUNCTION (svmul, rtx_code_function, (MULT, MULT, UNSPEC_COND_FMUL))
+FUNCTION (svmul, svmul_impl,)
 FUNCTION (svmul_lane, CODE_FOR_MODE0 (aarch64_mul_lane),)
 FUNCTION (svmulh, unspec_based_function, (UNSPEC_SMUL_HIGHPART,
 					  UNSPEC_UMUL_HIGHPART, -1))
