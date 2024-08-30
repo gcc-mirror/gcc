@@ -1026,6 +1026,13 @@ public:
     this->name = name;
   }
 
+  // Cloning is required because we are running one instance of the pass
+  // before peephole2. and a second one after cprop_hardreg.
+  opt_pass * clone () final override
+  {
+    return make_avr_pass_fuse_add (m_ctxt);
+  }
+
   bool gate (function *) final override
   {
     return optimize && avr_fuse_add > 0;

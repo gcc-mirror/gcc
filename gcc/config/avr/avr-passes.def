@@ -26,6 +26,27 @@
 
 INSERT_PASS_BEFORE (pass_peephole2, 1, avr_pass_fuse_add);
 
+/* There are cases where avr-fuse-add doesn't find POST_INC cases because
+   the RTL code at that time is too long-winded, and moves registers back and
+   forth (which seems to be the same reason for why pass auto_inc_dec cannot
+   find POST_INC, either).  Some of that long-windedness is cleaned up very
+   late in pass cprop_hardreg, which opens up new opportunities to find post
+   increments.  An example is the following function from AVR-LibC's qsort:
+
+   void swapfunc (char *a, char *b, int n)
+   {
+       do
+       {
+           char tmp = *a;
+           *a++ = *b;
+           *b++ = tmp;
+       } while (--n > 0);
+   }
+
+   Hence, run avr-fuse-add twice; the second time after cprop_hardreg.  */
+
+INSERT_PASS_AFTER (pass_cprop_hardreg, 1, avr_pass_fuse_add);
+
 /* An analysis pass that runs prior to prologue / epilogue generation.
    Computes cfun->machine->gasisr.maybe which is used in prologue and
    epilogue generation provided -mgas-isr-prologues is on.  */
