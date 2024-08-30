@@ -320,6 +320,45 @@ build_16_32 (function_builder &b, const char *signature,
     }
 }
 
+/* TYPE is the largest type suffix associated with the arguments of R, but the
+   result is twice as wide.  Return the associated type suffix of
+   EXPECTED_TCLASS if it exists, otherwise report an appropriate error and
+   return NUM_TYPE_SUFFIXES.  */
+static type_suffix_index
+long_type_suffix (function_resolver &r,
+		  type_suffix_index type,
+		  type_class_index expected_tclass)
+{
+  unsigned int element_bits = type_suffixes[type].element_bits;
+  if (expected_tclass == function_resolver::SAME_TYPE_CLASS)
+    expected_tclass = type_suffixes[type].tclass;
+
+  if (type_suffixes[type].integer_p && element_bits < 64)
+    return find_type_suffix (expected_tclass, element_bits * 2);
+
+  r.report_no_such_form (type);
+  return NUM_TYPE_SUFFIXES;
+}
+
+/* Return the type suffix half as wide as TYPE with EXPECTED_TCLASS if it
+   exists, otherwise report an appropriate error and return
+   NUM_TYPE_SUFFIXES.  */
+static type_suffix_index
+half_type_suffix (function_resolver &r,
+		  type_suffix_index type,
+		  type_class_index expected_tclass)
+{
+  unsigned int element_bits = type_suffixes[type].element_bits;
+  if (expected_tclass == function_resolver::SAME_TYPE_CLASS)
+    expected_tclass = type_suffixes[type].tclass;
+
+  if (type_suffixes[type].integer_p && element_bits > 8)
+    return find_type_suffix (expected_tclass, element_bits / 2);
+
+  r.report_no_such_form (type);
+  return NUM_TYPE_SUFFIXES;
+}
+
 /* Declare the function shape NAME, pointing it to an instance
    of class <NAME>_def.  */
 #define SHAPE(NAME) \
@@ -779,15 +818,12 @@ struct binary_move_narrow_def : public overloaded_base<0>
   resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
-    type_suffix_index type;
+    type_suffix_index type, narrow_suffix;
     if (!r.check_gp_argument (2, i, nargs)
-	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES)
+	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES
+	|| ((narrow_suffix = half_type_suffix (r, type, r.SAME_TYPE_CLASS))
+	    == NUM_TYPE_SUFFIXES))
       return error_mark_node;
-
-    type_suffix_index narrow_suffix
-      = find_type_suffix (type_suffixes[type].tclass,
-			  type_suffixes[type].element_bits / 2);
-
 
     if (!r.require_matching_vector_type (0, narrow_suffix))
       return error_mark_node;
@@ -816,14 +852,12 @@ struct binary_move_narrow_unsigned_def : public overloaded_base<0>
   resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
-    type_suffix_index type;
+    type_suffix_index type, narrow_suffix;
     if (!r.check_gp_argument (2, i, nargs)
-	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES)
+	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES
+	|| ((narrow_suffix = half_type_suffix (r, type, TYPE_unsigned))
+	    == NUM_TYPE_SUFFIXES))
       return error_mark_node;
-
-    type_suffix_index narrow_suffix
-      = find_type_suffix (TYPE_unsigned,
-			  type_suffixes[type].element_bits / 2);
 
     if (!r.require_matching_vector_type (0, narrow_suffix))
       return error_mark_node;
@@ -1112,15 +1146,13 @@ struct binary_rshift_narrow_def : public overloaded_base<0>
   resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
-    type_suffix_index type;
+    type_suffix_index type, narrow_suffix;
     if (!r.check_gp_argument (3, i, nargs)
 	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES
+	|| ((narrow_suffix = half_type_suffix (r, type, r.SAME_TYPE_CLASS))
+	    == NUM_TYPE_SUFFIXES)
 	|| !r.require_integer_immediate (i))
       return error_mark_node;
-
-    type_suffix_index narrow_suffix
-      = find_type_suffix (type_suffixes[type].tclass,
-			  type_suffixes[type].element_bits / 2);
 
     if (!r.require_matching_vector_type (0, narrow_suffix))
       return error_mark_node;
@@ -1159,15 +1191,13 @@ struct binary_rshift_narrow_unsigned_def : public overloaded_base<0>
   resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
-    type_suffix_index type;
+    type_suffix_index type, narrow_suffix;
     if (!r.check_gp_argument (3, i, nargs)
 	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES
+	|| ((narrow_suffix = half_type_suffix (r, type, TYPE_unsigned))
+	    == NUM_TYPE_SUFFIXES)
 	|| !r.require_integer_immediate (i))
       return error_mark_node;
-
-    type_suffix_index narrow_suffix
-      = find_type_suffix (TYPE_unsigned,
-			  type_suffixes[type].element_bits / 2);
 
     if (!r.require_matching_vector_type (0, narrow_suffix))
       return error_mark_node;
@@ -1205,14 +1235,12 @@ struct binary_widen_def : public overloaded_base<0>
   resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
-    type_suffix_index type;
+    type_suffix_index type, wide_suffix;
     if (!r.check_gp_argument (2, i, nargs)
-	|| (type = r.infer_vector_type (i - 1)) == NUM_TYPE_SUFFIXES)
+	|| (type = r.infer_vector_type (i - 1)) == NUM_TYPE_SUFFIXES
+	|| ((wide_suffix = long_type_suffix (r, type, r.SAME_TYPE_CLASS))
+	    == NUM_TYPE_SUFFIXES))
       return error_mark_node;
-
-    type_suffix_index wide_suffix
-      = find_type_suffix (type_suffixes[type].tclass,
-			  type_suffixes[type].element_bits * 2);
 
     if (!r.require_matching_vector_type (i, type))
       return error_mark_node;
@@ -1298,16 +1326,14 @@ struct binary_widen_n_def : public overloaded_base<0>
   resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
-    type_suffix_index type;
+    type_suffix_index type, wide_suffix;
     tree res;
     if (!r.check_gp_argument (2, i, nargs)
 	|| (type = r.infer_vector_type (i - 1)) == NUM_TYPE_SUFFIXES
+	|| ((wide_suffix = long_type_suffix (r, type, r.SAME_TYPE_CLASS))
+	    == NUM_TYPE_SUFFIXES)
 	|| !r.require_integer_immediate (i))
       return error_mark_node;
-
-    type_suffix_index wide_suffix
-      = find_type_suffix (type_suffixes[type].tclass,
-			  type_suffixes[type].element_bits * 2);
 
     /* Check the inactive argument has the wide type.  */
     if (((r.pred == PRED_m) && (r.infer_vector_type (0) == wide_suffix))
@@ -1352,14 +1378,12 @@ struct binary_widen_opt_n_def : public overloaded_base<0>
   resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
-    type_suffix_index type;
+    type_suffix_index type, wide_suffix;
     if (!r.check_gp_argument (2, i, nargs)
-	|| (type = r.infer_vector_type (i - 1)) == NUM_TYPE_SUFFIXES)
+	|| (type = r.infer_vector_type (i - 1)) == NUM_TYPE_SUFFIXES
+	|| ((wide_suffix = long_type_suffix (r, type, r.SAME_TYPE_CLASS))
+	    == NUM_TYPE_SUFFIXES))
       return error_mark_node;
-
-    type_suffix_index wide_suffix
-      = find_type_suffix (type_suffixes[type].tclass,
-			  type_suffixes[type].element_bits * 2);
 
     /* Skip last argument, may be scalar, will be checked below by
        finish_opt_n_resolution.  */
@@ -1939,15 +1963,13 @@ struct unary_widen_def : public overloaded_base<0>
   resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
-    type_suffix_index type;
+    type_suffix_index type, wide_suffix;
     tree res;
     if (!r.check_gp_argument (1, i, nargs)
-	|| (type = r.infer_vector_type (i)) == NUM_TYPE_SUFFIXES)
+	|| (type = r.infer_vector_type (i)) == NUM_TYPE_SUFFIXES
+	|| ((wide_suffix = long_type_suffix (r, type, r.SAME_TYPE_CLASS))
+	    == NUM_TYPE_SUFFIXES))
       return error_mark_node;
-
-    type_suffix_index wide_suffix
-      = find_type_suffix (type_suffixes[type].tclass,
-			  type_suffixes[type].element_bits * 2);
 
     /* Check the inactive argument has the wide type.  */
     if ((r.pred == PRED_m)
