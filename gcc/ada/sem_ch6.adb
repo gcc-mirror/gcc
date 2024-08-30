@@ -6436,6 +6436,14 @@ package body Sem_Ch6 is
               (Typ : Entity_Id) return Boolean;
             --  Returns True iff Typ has a tagged limited partial view.
 
+            function Is_Derived_From_Immutably_Limited_Type
+              (Typ : Entity_Id) return Boolean;
+            --  Returns True iff Typ is a derived type (tagged or not)
+            --  whose ancestor type is immutably limited. The unusual
+            --  ("unusual" is one word for it) thing about this function
+            --  is that it handles the case where the ancestor name's Entity
+            --  attribute has not been set yet.
+
             -------------------------------------
             -- Has_Tagged_Limited_Partial_View --
             -------------------------------------
@@ -6450,6 +6458,31 @@ package body Sem_Ch6 is
                  and then Is_Tagged_Type (Priv)
                  and then Limited_Present (Parent (Priv));
             end Has_Tagged_Limited_Partial_View;
+
+            --------------------------------------------
+            -- Is_Derived_From_Immutably_Limited_Type --
+            --------------------------------------------
+
+            function Is_Derived_From_Immutably_Limited_Type
+              (Typ : Entity_Id) return Boolean
+            is
+               Type_Def : constant Node_Id := Type_Definition (Parent (Typ));
+               Parent_Name : Node_Id;
+            begin
+               if Nkind (Type_Def) /= N_Derived_Type_Definition then
+                  return False;
+               end if;
+               Parent_Name := Subtype_Indication (Type_Def);
+               if Nkind (Parent_Name) = N_Subtype_Indication then
+                  Parent_Name := Subtype_Mark (Parent_Name);
+               end if;
+               if Parent_Name not in N_Has_Entity_Id
+                 or else No (Entity (Parent_Name))
+               then
+                  Find_Type (Parent_Name);
+               end if;
+               return Is_Immutably_Limited_Type (Entity (Parent_Name));
+            end Is_Derived_From_Immutably_Limited_Type;
 
          begin
             if NewD or OldD then
@@ -6488,6 +6521,12 @@ package body Sem_Ch6 is
                  --  "with" sem_util).
 
                  and then not Has_Tagged_Limited_Partial_View
+                                (Defining_Identifier (N))
+
+                 --  Check for another case that would be awkward to handle
+                 --  in Is_Immutably_Limited_Type
+
+                 and then not Is_Derived_From_Immutably_Limited_Type
                                 (Defining_Identifier (N))
                then
                   Error_Msg_N
