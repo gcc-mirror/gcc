@@ -1,3 +1,519 @@
+2024-08-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116419
+	* diagnostic-event-id.h (diagnostic_event_id_t::zero_based): New.
+	* diagnostic-format-sarif.cc: Include "pretty-print-format-impl.h"
+	and "pretty-print-urlifier.h".
+	(sarif_result::sarif_result): Add param "idx_within_parent".
+	(sarif_result::get_index_within_parent): New accessor.
+	(sarif_result::m_idx_within_parent): New field.
+	(sarif_code_flow::sarif_code_flow): New ctor.
+	(sarif_code_flow::get_parent): New accessor.
+	(sarif_code_flow::get_index_within_parent): New accessor.
+	(sarif_code_flow::m_parent): New field.
+	(sarif_code_flow::m_thread_id_map): New field.
+	(sarif_code_flow::m_thread_flows_arr): New field.
+	(sarif_code_flow::m_all_tfl_objs): New field.
+	(sarif_thread_flow::sarif_thread_flow): Add "parent" and
+	"idx_within_parent" params.
+	(sarif_thread_flow::get_parent): New accessor.
+	(sarif_thread_flow::get_index_within_parent): New accessor.
+	(sarif_thread_flow::m_parent): New field.
+	(sarif_thread_flow::m_idx_within_parent): New field.
+	(sarif_thread_flow_location::sarif_thread_flow_location): New
+	ctor.
+	(sarif_thread_flow_location::get_parent): New accessor.
+	(sarif_thread_flow_location::get_index_within_parent): New
+	accessor.
+	(sarif_thread_flow_location::m_parent): New field.
+	(sarif_thread_flow_location::m_idx_within_parent): New field.
+	(sarif_builder::get_code_flow_for_event_ids): New accessor.
+	(class sarif_builder::sarif_token_printer): New.
+	(sarif_builder::m_token_printer): New member.
+	(sarif_builder::m_next_result_idx): New field.
+	(sarif_builder::m_current_code_flow): New field.
+	(sarif_code_flow::get_or_append_thread_flow): New.
+	(sarif_code_flow::get_thread_flow): New.
+	(sarif_code_flow::add_location): New.
+	(sarif_code_flow::get_thread_flow_loc_obj): New.
+	(sarif_thread_flow::add_location): Create the new
+	sarif_thread_flow_location internally, rather than passing
+	it in as a parm so that we can keep track of its index in
+	the array.  Return a reference to it.
+	(sarif_builder::sarif_builder): Initialize m_token_printer,
+	m_next_result_idx, and m_current_code_flow.
+	(sarif_builder::on_report_diagnostic): Pass index to
+	make_result_object.
+	(sarif_builder::make_result_object): Add "idx_within_parent" param
+	and pass to sarif_result ctor.  Pass code flow index to call to
+	make_code_flow_object.
+	(make_sarif_url_for_event): New.
+	(sarif_builder::make_code_flow_object): Add "idx_within_parent"
+	param and pass it to sarif_code_flow ctor.  Reimplement walking
+	of events so that we first create threadFlow objects for each
+	thread, then populate them with threadFlowLocation objects, so
+	that the IDs work.  Set m_current_code_flow whilst creating the
+	latter, so that we can create correct URIs for "%@".
+	(sarif_builder::make_thread_flow_location_object): Replace with...
+	(sarif_builder::populate_thread_flow_location_object): ...this.
+	(sarif_output_format::get_builder): New accessor.
+	(sarif_begin_embedded_link): New.
+	(sarif_end_embedded_link): New.
+	(sarif_builder::sarif_token_printer::print_tokens): New.
+	(diagnostic_output_format_init_sarif): Add "fmt" param; use it to
+	set the token printer and output format for the context.
+	(diagnostic_output_format_init_sarif_stderr): Move responsibility
+	for setting the context's output format to within
+	diagnostic_output_format_init_sarif.
+	(diagnostic_output_format_init_sarif_file): Likewise.
+	(diagnostic_output_format_init_sarif_stream): Likewise.
+	(test_sarif_diagnostic_context::test_sarif_diagnostic_context):
+	Likewise.
+	(selftest::test_make_location_object): Provide an idx for the
+	result.
+	(selftest::get_result_from_log): New.
+	(selftest::get_message_from_log): New.
+	(selftest::test_message_with_embedded_link): New test.
+	(selftest::diagnostic_format_sarif_cc_tests): Call it.
+	* pretty-print-format-impl.h: Include "diagnostic-event-id.h".
+	(pp_token::kind): Add "event_id".
+	(struct pp_token_event_id): New.
+	(is_a_helper <pp_token_event_id *>::test): New.
+	(is_a_helper <const pp_token_event_id *>::test): New.
+	* pretty-print.cc (pp_token::dump): Handle kind::event_id.
+	(pretty_printer::format): Update handling of "%@" in phase 2
+	so that we add a pp_token_event_id, rather that the text "(N)".
+	(default_token_printer): Handle pp_token::kind::event_id by
+	printing the text "(N)".
+
+2024-08-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.cc (diagnostic_context::report_diagnostic): Don't
+	pass m_urlifier to pp_format, as urlification now happens in
+	phase 3.
+	* dump-context.h (class dump_pretty_printer): Update leading
+	comment.
+	(dump_pretty_printer::emit_items): Drop decl.
+	(dump_pretty_printer::set_optinfo): New.
+	(class dump_pretty_printer::stashed_item): Delete class.
+	(class dump_pretty_printer::custom_token_printer): New class.
+	(dump_pretty_printer::format_decoder_cb): Convert param from
+	const char ** to pp_token_list &.
+	(dump_pretty_printer::decode_format): Likewise.
+	(dump_pretty_printer::stash_item): Likewise.
+	(dump_pretty_printer::emit_any_pending_textual_chunks): Drop decl.
+	(dump_pretty_printer::m_stashed_items): Delete field.
+	(dump_pretty_printer::m_token_printer): New member data.
+	* dumpfile.cc (struct wrapped_optinfo_item): New.
+	(dump_pretty_printer::dump_pretty_printer): Update for dropping
+	of field m_stashed_items and new field m_token_printer.
+	(dump_pretty_printer::emit_items): Delete; we now use
+	pp_output_formatted_text..
+	(dump_pretty_printer::emit_any_pending_textual_chunks): Delete.
+	(dump_pretty_printer::stash_item): Convert param from
+	const char ** to pp_token_list &.
+	(dump_pretty_printer::format_decoder_cb): Likewise.
+	(dump_pretty_printer::decode_format): Likewise.
+	(dump_pretty_printer::custom_token_printer::print_tokens): New.
+	(dump_pretty_printer::custom_token_printer::emit_any_pending_textual_chunks):
+	New.
+	(dump_context::dump_printf_va): Call set_optinfo on the
+	dump_pretty_printer.  Replace call to emit_items with a call to
+	pp_output_formatted_text.
+	* opt-problem.cc (opt_problem::opt_problem): Replace call to
+	emit_items with call to set_optinfo and call to
+	pp_output_formatted_text.
+	* pretty-print-format-impl.h (struct pp_token): New.
+	(struct pp_token_text): New.
+	(is_a_helper <pp_token_text *>::test): New.
+	(is_a_helper <const pp_token_text *>::test): New.
+	(struct pp_token_begin_color): New.
+	(is_a_helper <pp_token_begin_color *>::test): New.
+	(is_a_helper <const pp_token_begin_color *>::test): New.
+	(struct pp_token_end_color): New.
+	(struct pp_token_begin_quote): New.
+	(struct pp_token_end_quote): New.
+	(struct pp_token_begin_url): New.
+	(is_a_helper <pp_token_begin_url*>::test): New.
+	(is_a_helper <const pp_token_begin_url*>::test): New.
+	(struct pp_token_end_url): New.
+	(struct pp_token_custom_data): New.
+	(is_a_helper <pp_token_custom_data *>::test): New.
+	(is_a_helper <const pp_token_custom_data *>::test): New.
+	(class pp_token_list): New.
+	(chunk_info::get_args): Drop.
+	(chunk_info::get_quoting_info): Drop.
+	(chunk_info::get_token_lists): New accessor.
+	(chunk_info::append_formatted_chunk): Add obstack & param.
+	(chunk_info::dump): New decls.
+	(chunk_info::m_args): Convert element type from const char * to
+	pp_token_list *.  Rewrite/update comment.
+	(chunk_info::m_quotes): Drop field.
+	* pretty-print-markup.h (class pp_token_list): New forward decl.
+	(pp_markup::context::context): Drop urlifier param; add
+	formatted_token_list param.
+	(pp_markup::context::push_back_any_text): New decl.
+	(pp_markup::context::m_urlifier): Drop field.
+	(pp_markup::context::m_formatted_token_list): New field.
+	* pretty-print-urlifier.h: Update comment.
+	* pretty-print.cc: Define INCLUDE_MEMORY.  Include
+	"make-unique.h".
+	(default_token_printer): New forward decl.
+	(obstack_append_string): Delete.
+	(urlify_quoted_string): Delete.
+	(pp_token::pp_token): New.
+	(pp_token::dump): New.
+	(allocate_object): New.
+	(class quoting_info): Delete.
+	(pp_token::operator new): New.
+	(pp_token::operator delete): New.
+	(pp_token_list::operator new): New.
+	(pp_token_list::operator delete): New.
+	(pp_token_list::pp_token_list): New.
+	(pp_token_list::~pp_token_list): New.
+	(pp_token_list::push_back_text): New.
+	(pp_token_list::push_back): New.
+	(pp_token_list::push_back_list): New.
+	(pp_token_list::pop_front): New.
+	(pp_token_list::remove_token): New.
+	(pp_token_list::insert_after): New.
+	(pp_token_list::replace_custom_tokens): New.
+	(pp_token_list::merge_consecutive_text_tokens): New.
+	(pp_token_list::apply_urlifier): New.
+	(pp_token_list::dump): New.
+	(chunk_info::append_formatted_chunk): Add obstack & param and use
+	it to reimplement in terms of token lists.
+	(chunk_info::pop_from_output_buffer): Drop m_quotes.
+	(chunk_info::on_begin_quote): Delete.
+	(chunk_info::dump): New.
+	(chunk_info::on_end_quote): Delete.
+	(push_back_any_text): New.
+	(pretty_printer::format): Drop "urlifier" param and quoting_info
+	logic.  Convert "formatters" and "args" from const ** to
+	pp_token_list **.  Reimplement so that rather than just
+	accumulating a text buffer in the chunk_obstack for each arg,
+	instead also accumulate a pp_token_list and pp_tokens for each
+	arg.
+	(auto_obstack::operator obstack &): New.
+	(quoting_info::handle_phase_3): Delete.
+	(pp_output_formatted_text): Reimplement in terms of manipulations
+	of pp_token_lists, rather than char buffers.  Call
+	default_token_printer, or m_token_printer's print_tokens vfunc.
+	(default_token_printer): New.
+	(pretty_printer::pretty_printer): Initialize m_token_printer in
+	both ctors.
+	(pp_markup::context::begin_quote): Reimplement to use token list.
+	(pp_markup::context::end_quote): Likewise.
+	(pp_markup::context::begin_highlight_color): Likewise.
+	(pp_markup::context::end_highlight_color): Likewise.
+	(pp_markup::context::push_back_any_text): New.
+	(selftest::test_merge_consecutive_text_tokens): New.
+	(selftest::test_custom_tokens_1): New.
+	(selftest::test_custom_tokens_2): New.
+	(selftest::pp_printf_with_urlifier): Drop "urlifier" param from
+	call to pp_format.
+	(selftest::test_urlification): Add test of the example from
+	pretty-print-format-impl.h.
+	(selftest::pretty_print_cc_tests): Call the new selftest
+	functions.
+	* pretty-print.h (class quoting_info): Drop forward decl.
+	(class pp_token_list): New forward decl.
+	(printer_fn): Convert final param from const char ** to
+	pp_token_list &.
+	(class token_printer): New.
+	(class pretty_printer): Add pp_output_formatted_text as friend.
+	(pretty_printer::set_token_printer): New.
+	(pretty_printer::format): Drop urlifier param as this now happens
+	in phase 3.
+	(pretty_printer::m_format_decoder): Update comment.
+	(pretty_printer::m_token_printer): New field.
+	(pp_format): Drop urlifier param.
+	* tree-diagnostic.cc (default_tree_printer): Convert final param
+	from const char ** to pp_token_list &.
+	* tree-diagnostic.h: Likewise for decl.
+
+2024-08-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* dumpfile.cc: Include "pretty-print-format-impl.h".
+	* pretty-print-format-impl.h: New file, based on material from
+	pretty-print.h.
+	* pretty-print.cc: Include "pretty-print-format-impl.h".
+	* pretty-print.h (chunk_info): Replace full declaration with
+	a forward decl, moving full decl to pretty-print-format-impl.h.
+
+2024-08-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/aarch64/aarch64.cc: Define INCLUDE_MEMORY.
+	* config/arm/arm.cc: Likewise.
+	* config/i386/i386.cc: Likewise.
+	* config/loongarch/loongarch.cc: Likewise.
+	* config/riscv/riscv-vector-costs.cc: Likewise.
+	* config/riscv/riscv.cc: Likewise.
+	* config/rs6000/rs6000.cc: Likewise.
+	* dump-context.h (dump_context::emit_item): Convert "item" param
+	from * to const &.
+	(dump_pretty_printer::stash_item): Convert "item" param from
+	optinfo_ * to std::unique_ptr<optinfo_item>.
+	(dump_pretty_printer::emit_item): Likewise.
+	* dumpfile.cc: Include "make-unique.h".
+	(make_item_for_dump_gimple_stmt): Replace uses of optinfo_item *
+	with std::unique_ptr<optinfo_item>.
+	(dump_context::dump_gimple_stmt): Likewise.
+	(make_item_for_dump_gimple_expr): Likewise.
+	(dump_context::dump_gimple_expr): Likewise.
+	(make_item_for_dump_generic_expr): Likewise.
+	(dump_context::dump_generic_expr): Likewise.
+	(make_item_for_dump_symtab_node): Likewise.
+	(dump_pretty_printer::emit_items): Likewise.
+	(dump_pretty_printer::emit_any_pending_textual_chunks): Likewise.
+	(dump_pretty_printer::emit_item): Likewise.
+	(dump_pretty_printer::stash_item): Likewise.
+	(dump_pretty_printer::decode_format): Likewise.
+	(dump_context::dump_printf_va): Fix overlong line.
+	(make_item_for_dump_dec): Replace uses of optinfo_item * with
+	std::unique_ptr<optinfo_item>.
+	(dump_context::dump_dec): Likewise.
+	(dump_context::dump_symtab_node): Likewise.
+	(dump_context::begin_scope): Likewise.
+	(dump_context::emit_item): Likewise.
+	* gimple-loop-interchange.cc: Define INCLUDE_MEMORY.
+	* gimple-loop-jam.cc: Likewise.
+	* gimple-loop-versioning.cc: Likewise.
+	* graphite-dependences.cc: Likewise.
+	* graphite-isl-ast-to-gimple.cc: Likewise.
+	* graphite-optimize-isl.cc: Likewise.
+	* graphite-poly.cc: Likewise.
+	* graphite-scop-detection.cc: Likewise.
+	* graphite-sese-to-poly.cc: Likewise.
+	* graphite.cc: Likewise.
+	* opt-problem.cc: Likewise.
+	* optinfo.cc (optinfo::add_item): Convert "item" param from
+	optinfo_ * to std::unique_ptr<optinfo_item>.
+	(optinfo::emit_for_opt_problem): Update for change to
+	dump_context::emit_item.
+	* optinfo.h: Add #error to fail immediately if INCLUDE_MEMORY
+	wasn't defined, rather than fail to find std::unique_ptr.
+	(optinfo::add_item): Convert "item" param from optinfo_ * to
+	std::unique_ptr<optinfo_item>.
+	* sese.cc: Define INCLUDE_MEMORY.
+	* targhooks.cc: Likewise.
+	* tree-data-ref.cc: Likewise.
+	* tree-if-conv.cc: Likewise.
+	* tree-loop-distribution.cc: Likewise.
+	* tree-parloops.cc: Likewise.
+	* tree-predcom.cc: Likewise.
+	* tree-ssa-live.cc: Likewise.
+	* tree-ssa-loop-ivcanon.cc: Likewise.
+	* tree-ssa-loop-ivopts.cc: Likewise.
+	* tree-ssa-loop-prefetch.cc: Likewise.
+	* tree-ssa-loop-unswitch.cc: Likewise.
+	* tree-ssa-phiopt.cc: Likewise.
+	* tree-ssa-threadbackward.cc: Likewise.
+	* tree-ssa-threadupdate.cc: Likewise.
+	* tree-vect-data-refs.cc: Likewise.
+	* tree-vect-generic.cc: Likewise.
+	* tree-vect-loop-manip.cc: Likewise.
+	* tree-vect-loop.cc: Likewise.
+	* tree-vect-patterns.cc: Likewise.
+	* tree-vect-slp-patterns.cc: Likewise.
+	* tree-vect-slp.cc: Likewise.
+	* tree-vect-stmts.cc: Likewise.
+	* tree-vectorizer.cc: Likewise.
+
+2024-08-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.cc (load_reg): Don't generate load with
+	unscaled index address when !TARGET_NO_SPACE_REGS.
+	(pa_legitimate_address_p): Only allow unscaled index
+	addresses when TARGET_NO_SPACE_REGS.
+
+2024-08-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/116508
+	* internal-fn.cc (expand_POPCOUNT): Use OPTAB_WIDEN for PLUS and
+	XOR/AND expansion.
+
+2024-08-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/116516
+	* rtlanal.cc (strip_address_mutations): Allow subregs around
+	constant displacements.
+
+2024-08-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* dse.cc (find_shift_sequence): Allow smallest_int_mode_for_size
+	to failure.
+	* optabs.cc (expand_twoval_binop_libfunc): Likewise.
+
+2024-08-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/115830
+	* config/avr/avr-modes.def (CCN, CCZN): New CC_MODEs.
+	* config/avr/avr-protos.h (avr_cond_branch): New from
+	ret_cond_branch.
+	(avr_out_plus_set_N, avr_op8_ZN_operator, avr_cmp0_code)
+	(avr_out_op8_set_ZN, avr_len_op8_set_ZN): New protos.
+	(ccn_reg_rtx, cczn_reg_rtx): New declarations.
+	* config/avr/avr.cc (avr_cond_branch): New from ret_cond_branch.
+	(avr_cond_string): Add bool cc_overflow_unusable argument.
+	(avr_print_operand) ['L']: Like 'j' but overflow unusable.
+	['K']: Like 'k' but overflow unusable.
+	(avr_out_plus_set_ZN): Remove handling of QImode.
+	(avr_out_plus_set_N, avr_op8_ZN_operator, avr_cmp0_code)
+	(avr_out_op8_set_ZN, avr_len_op8_set_ZN): New functions.
+	(avr_adjust_insn_length) [ADJUST_LEN_ADD_SET_N]: Hande case.
+	(avr_class_max_nregs): All MODE_CCs occupy one hard reg.
+	(avr_hard_regno_nregs): Same.
+	(avr_hard_regno_mode_ok) [REG_CC]: Allow all MODE_CC.
+	(pass_manager.h, context.h, tree-pass.h): Include them.
+	(ccn_reg_rtx, cczn_reg_rtx): New GTY variables.
+	(avr_init_expanders): Initialize them.
+	(avr_option_override): Run peephole2 a second time.
+	* config/avr/avr.md (adjust_len) [add_set_N]: New attr value.
+	(ALLCC, HI_SI): New mode iterators.
+	(CCname): New mode attribute.
+	(eqnegtle, cmp_signed, op8_ZN): New code iterators.
+	(swap, SWAP): New code attributes.
+	(branch): Handle CCNmode and CCZNmode.  Assimilate...
+	(difficult_branch): ...this insn.
+	(p1m1): Remove.
+	(gen_add_for_<code>_<mode>): Adjust to CCNmode and CCZNmode. Use
+	HISI as mode iterator.  Extend peephole2s that produce them.
+	(*add.for.eqne.<mode>): Extend to *add.for.cc[z]n.<mode>.
+	(*ashift.for.ccn.<mode>): New insn and peephole2 to make them.
+	(*sub.for.cczn.<mode>, *sub-extend<mode>.for.cczn.<mode>):
+	New insns and peephole2s to make them.
+	(*op8.for.cczn.<code>): New insn and peephole2 to make them.
+	* config/avr/predicates.md (const_1_to_3_operand)
+	(abs1_abs2_operand, signed_comparison_operator)
+	(op8_ZN_operator): New predicates.
+
+2024-08-29  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/105104
+	* coroutine-passes.cc (execute_early_expand_coro_ifns): Don't
+	remove any labels.
+
+2024-08-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config.gcc (extra_objs) [target=avr]: Add avr-passes.o.
+	* config/avr/t-avr (avr-passes.o): New rule to make it.
+	* config/avr/avr.cc (#define INCLUDE_VECTOR): Remove.
+	(cfganal.h, cfgrtl.h, context.h, tree-pass.h, print-rtl.h): Don't
+	include them.
+	(avr_strict_signed_p, avr_strict_unsigned_p, avr_2comparisons_rhs)
+	(make_avr_pass_recompute_notes, make_avr_pass_casesi)
+	(make_avr_pass_ifelse, make_avr_pass_pre_proep, avr_split_tiny_move)
+	(emit_move_ccc, emit_move_ccc_after, reg_seen_between_p)
+	(avr_maybe_adjust_cfa, avr_redundant_compare_regs)
+	(avr_parallel_insn_from_insns, avr_is_casesi_sequence)
+	(avr_optimize_casesi, avr_redundant_compare, make_avr_pass_fuse_add)
+	(avr_optimize_2ifelse, avr_rest_of_handle_ifelse)
+	(avr_casei_sequence_check_operands)
+	Move functions...
+	(avr_pass_data_fuse_add, avr_pass_data_ifelse)
+	(avr_pass_data_casesi, avr_pass_data_recompute_notes)
+	(avr_pass_data_pre_proep): Move objects...
+	(avr_pass_fuse_add, avr_pass_pre_proep, avr_pass_recompute_notes)
+	(avr_pass_ifelse, avr_pass_casesi, AVR_LdSt_Props): Move classes...
+	* config/avr/avr-passes.cc: ... to this new C++ module.
+	(struct Ranges): Move to...
+	* config/avr/ranges.h: ...this new file.
+	* config/avr/avr-protos.h: Adjust comments.
+
+2024-08-29  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/116086
+	* config/riscv/autovec.md (vec_extract<mode><v_half>): Add
+	vector-vector extract for VLS modes.
+	* config/riscv/riscv.cc (riscv_can_change_mode_class): Forbid
+	VLS modes larger than one vector.
+	* config/riscv/vector-iterators.md: Add vector-vector extract
+	iterators.
+
+2024-08-29  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-features.cc (timode_immed_const_gain): New
+	function to determine the gain/cost on a CONST_WIDE_INT.
+	(timode_scalar_chain::compute_convert_gain): Fix whitespace.
+	<case CONST_WIDE_INT>: Provide more accurate estimates using
+	timode_immed_const_gain.
+	<case AND>: Handle CONSTANT_SCALAR_INT_P (src).
+
+2024-08-29  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (enum cv_leaf_type): Add LF_MFUNC_ID.
+	(write_lf_mfunc_id): New function.
+	(add_lf_func_id): New function.
+	(add_lf_mfunc_id): New function.
+	(add_function): Call add_lf_func_id or add_lf_mfunc_id.
+
+2024-08-29  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (enum cv_leaf_type): Add LF_MFUNCTION,
+	LF_METHODLIST, LF_METHOD, and LF_ONEMETHOD.
+	(struct codeview_subtype): Add lf_onemethod and lf_method to union.
+	(struct lf_methodlist_entry): New type.
+	(struct codeview_custom_type): Add lf_mfunc_id, lf_mfunction, and
+	lf_methodlist to union.
+	(struct codeview_method): New type.
+	(struct method_hasher): New type.
+	(get_type_num_subroutine_type): Add forward declaration.
+	(write_lf_fieldlist): Handle LF_ONEMETHOD and LF_METHOD.
+	(write_lf_mfunction): New function.
+	(write_lf_methodlist): New function.
+	(write_custom_types): Handle LF_MFUNCTION and LF_METHODLIST.
+	(add_struct_function): New function.
+	(get_mfunction_type): New function.
+	(is_templated_func): New function.
+	(get_type_num_struct): Handle DW_TAG_subprogram child DIEs.
+	(get_type_num_subroutine_type): Add containing_class_type, this_type,
+	and this_adjustment params, and handle creating LF_MFUNCTION types as
+	well as LF_PROCEDURE.
+	(get_type_num): New params for get_type_num_subroutine_type.
+	(add_function): New params for get_type_num_subroutine_type.
+	* dwarf2codeview.h (CV_METHOD_VANILLA, CV_METHOD_VIRTUAL): Define.
+	(CV_METHOD_STATIC, CV_METHOD_FRIEND, CV_METHOD_INTRO): Likewise.
+	(CV_METHOD_PUREVIRT, CV_METHOD_PUREINTRO): Likewise.
+
+2024-08-29  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (enum cv_leaf_type): Add LF_STMEMBER.
+	(struct codeview_subtype): Add lf_static_member to union.
+	(write_lf_fieldlist): Handle LF_STMEMBER.
+	(add_struct_member): New function.
+	(add_struct_static_member): New function.
+	(get_accessibility): New function.
+	(get_type_num_struct): Split out into add_struct_member and
+	get_accessibility, and handle static members.
+
+2024-08-29  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (enum cf_leaf_type): Add LF_STRING_ID.
+	(struct codeview_custom_type): Add lf_string_id to union.
+	(struct string_id_hasher): New type.
+	(string_id_htab): New global variable.
+	(write_lf_string_id): New function.
+	(write_custom_types): Call write_lf_string_id.
+	(codeview_debug_finish): Free string_id_htab.
+	(add_string_id): New function.
+	(get_scope_string_id): New function.
+	(add_function): Call get_scope_string_id and set scope.
+
+2024-08-29  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (get_name): New function.
+	(add_enum_forward_def): Call get_name.
+	(get_type_num_enumeration_type): Call get_name.
+	(add_struct_forward_def): Call get_name.
+	(get_type_num_struct): Call get_name.
+	(add_variable): Call get_name.
+	(add function): Call get_name.
+	* dwarf2out.cc (get_die_parent): Rename to dw_get_die_parent and make
+	non-static.
+	(generate_type_signature): Handle renamed get_die_parent.
+	* dwarf2out.h (dw_get_die_parent): Add declaration.
+
 2024-08-28  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	* internal-fn.cc (expand_POPCOUNT): Dump the costs for

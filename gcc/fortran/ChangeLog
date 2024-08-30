@@ -1,3 +1,15 @@
+2024-08-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc (gfc_format_decoder): Convert final param from
+	const char **buffer_ptr to pp_token_list &formatted_token_list,
+	and update call to default_tree_printer accordingly.
+
+2024-08-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/116530
+	* trans-io.cc (transfer_namelist_element): Prevent NULL pointer
+	dereference.
+
 2024-08-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	Revert:

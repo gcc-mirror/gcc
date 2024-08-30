@@ -1,3 +1,30 @@
+2024-08-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc: Include "make-unique.h".
+	(deferred_printed_type::m_buffer_ptr): Replace with...
+	(deferred_printed_type::m_printed_text): ...this and...
+	(deferred_printed_type::m_token_list): ...this.
+	(deferred_printed_type::deferred_printed_type): Update ctors for
+	above changes.
+	(deferred_printed_type::set_text_for_token_list): New.
+	(append_formatted_chunk): Pass chunk_obstack to
+	append_formatted_chunk.
+	(add_quotes): Delete.
+	(cxx_format_postprocessor::handle): Reimplement to call
+	deferred_printed_type::set_text_for_token_list, rather than store
+	buffer pointers.
+	(defer_phase_2_of_type_diff): Replace param "buffer_ptr"
+	with "formatted_token_list".  Reimplement by storing
+	a pointer to formatted_token_list so that the postprocessor can
+	put its text there.
+	(cp_printer): Convert param "buffer_ptr" to
+	"formatted_token_list".  Update calls to
+	defer_phase_2_of_type_diff accordingly.
+
+2024-08-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc: Include "pretty-print-format-impl.h".
+
 2024-08-28  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/116476

@@ -1,3 +1,70 @@
+2024-08-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116419
+	* gcc.dg/sarif-output/bad-pragma.c: New test.
+	* gcc.dg/sarif-output/test-bad-pragma.py: New test.
+	* gcc.dg/sarif-output/test-include-chain-2.py
+	(test_location_relationships): Update expected text of event to
+	include an intra-sarif URI to the other event.
+
+2024-08-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/dump_plugin.c: Define INCLUDE_MEMORY.
+
+2024-08-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/116530
+	* gfortran.dg/use_rename_12.f90: New test.
+
+2024-08-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/116508
+	* gcc.target/aarch64/popcnt-eq-1.c: New test.
+
+2024-08-29  Viljar Indus  <indus@adacore.com>
+
+	* gnat.dg/interface6.adb: Adjust test.
+
+2024-08-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/116516
+	* gcc.c-torture/compile/pr116516.c: New test.
+
+2024-08-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/115830
+	* gcc.target/avr/pr115830-add.c: New test.
+	* gcc.target/avr/pr115830-add-c.c: New test.
+	* gcc.target/avr/pr115830-add-i.c: New test.
+	* gcc.target/avr/pr115830-and.c: New test.
+	* gcc.target/avr/pr115830-asl.c: New test.
+	* gcc.target/avr/pr115830-asr.c: New test.
+	* gcc.target/avr/pr115830-ior.c: New test.
+	* gcc.target/avr/pr115830-lsr.c: New test.
+	* gcc.target/avr/pr115830-asl32.c: New test.
+	* gcc.target/avr/pr115830-sub.c: New test.
+	* gcc.target/avr/pr115830-sub-ext.c: New test.
+
+2024-08-29  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/105104
+	* g++.dg/coroutines/torture/pr105104.C: New test.
+
+2024-08-29  Alex Coplan  <alex.coplan@arm.com>
+
+	PR testsuite/116522
+	* lib/scanltranstree.exp: Fix name of underlying scan function
+	used for scan-ltrans-{tree,rtl}-dump{,-not,-dem,-dem-not}.
+
+2024-08-29  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/116086
+	* lib/target-supports.exp: Add effective target checks for
+	zvl256b and zvl512b.
+	* gcc.target/riscv/rvv/autovec/pr116086-2-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr116086-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr116086.c: New test.
+
 2024-08-28  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/116476

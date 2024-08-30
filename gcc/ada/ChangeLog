@@ -1,3 +1,123 @@
+2024-08-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch8.adb (Has_Private_With): Add test on Is_Entity_Name.
+
+2024-08-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Selected_Length_Checks.Get_E_Length): For a
+	component of a record with discriminants and if the expression is
+	a selected component, try to build an actual subtype from its
+	prefix instead of from the discriminal.
+
+2024-08-29  Steve Baird  <baird@adacore.com>
+
+	* sem_ch6.adb (Check_Discriminant_Conformance): Immediately after
+	calling Is_Immutably_Limited_Type, perform an additional test that
+	one might reasonably imagine would instead have been part of
+	Is_Immutably_Limited_Type. The new test is a call to a new
+	function Has_Tagged_Limited_Partial_View whose implementation
+	includes a call to Incomplete_Or_Partial_View, which cannot be
+	easily be called from Is_Immutably_Limited_Type (because sem_aux,
+	which is in the closure of the binder, cannot easily "with"
+	sem_util).
+	* sem_aux.adb (Is_Immutably_Limited): Include
+	N_Derived_Type_Definition case when testing Limited_Present flag.
+
+2024-08-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Expand_Call_Helper): In the case of a function
+	call, look at the Etype of the call node to determine whether
+	finalization actions need to be performed.
+
+2024-08-29  Viljar Indus  <indus@adacore.com>
+
+	* erroutc.adb (dmsg): Print Insertion_Sloc.
+
+2024-08-29  Viljar Indus  <indus@adacore.com>
+
+	* exp_aggr.adb (Expand_Range_Component): Remove extra warning
+	character. Use same conditional warning char.
+	* freeze.adb (Warn_Overlay): Use named warning character.
+	* restrict.adb (Id_Case): Use named warning character.
+	* sem_prag.adb (Rewrite_Assertion_Kind): Use default warning
+	character.
+
+2024-08-29  Viljar Indus  <indus@adacore.com>
+
+	* par-ch4.adb (P_Name): Use Error_Msg_Sloc for the location of the
+	continuation message.
+
+2024-08-29  Viljar Indus  <indus@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Inspection_Point): Improve sub
+	diagnostic generation.
+
+2024-08-29  Viljar Indus  <indus@adacore.com>
+
+	* sem_ch12.adb (Abandon_Instantiation): Remove continuation
+	characters from the error message.
+	* sem_ch13.adb (Check_False_Aspect_For_Derived_Type): Remove
+	continuation characters from the error message.
+	* sem_ch6.adb (Assert_False): Avoid creating a continuation
+	message without a parent. If no primary message is created then
+	the message is considered as primary.
+
+2024-08-29  Viljar Indus  <indus@adacore.com>
+
+	* erroutc.adb (Prescan_Message): Avoid not parsing all of the
+	message attributes.
+	* erroutc.ads: Update the documentation.
+
+2024-08-29  Viljar Indus  <indus@adacore.com>
+
+	* freeze.adb: Remove warning insertion characters from a
+	continuation message.
+	* sem_util.adb: Remove warning insertion characters from a
+	continuation message.
+	* sem_warn.adb: Use same warning character as the main message.
+
+2024-08-29  Viljar Indus  <indus@adacore.com>
+
+	* erroutc.ads: Add new method Output_Text_Within
+	* erroutc.adb: Move the line fitting code to a new method called
+	Output_Text_Within
+
+2024-08-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb (Expr_Known_Valid): Use Validated_View, which strips
+	type derivation and privacy.
+	* exp_ch3.adb (Simple_Init_Private_Type): Kill checks inside
+	unchecked conversions, just like in Simple_Init_Scalar_Type.
+
+2024-08-29  Viljar Indus  <indus@adacore.com>
+
+	* styleg.adb (Check_Line_Max_Length): Add the actual line length
+	to the diagnostic message.
+
+2024-08-29  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): Add loop over associations to locate
+	N_Iterated_Component_Associations that do not have an Iterator_Specification,
+	and if their Discrete_Choices list consists of a single choice, analyze it and
+	if it's the name of an iterator object, then create an Iterator_Specification
+	and associate it with the iterated component association.
+	(Resolve_Iterated_Association): Replace test for function call with test of
+	Is_Object_Reference, to handle other forms of iterator objects in container
+	aggregates.
+
+2024-08-29  Javier Miranda  <miranda@adacore.com>
+
+	* usage.adb (Usage): Document switch -gnatw_j
+	* doc/gnat_rm/gnat_language_extensions.rst: Add documentation.
+	* gnat_rm.texi: Regenerate.
+
+2024-08-29  Justin Squirek  <squirek@adacore.com>
+
+	* doc/gnat_rm/gnat_language_extensions.rst: Move conditional when
+	constructs out of the curated set.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
 2024-08-23  Robin Dapp  <rdapp@ventanamicro.com>
 
 	PR middle-end/115495
