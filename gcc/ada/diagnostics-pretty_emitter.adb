@@ -165,7 +165,7 @@ package body Diagnostics.Pretty_Emitter is
    function Get_Line_End
       (Buf : Source_Buffer_Ptr;
        Loc : Source_Ptr) return Source_Ptr;
-   --  Get the source location for the end of the line in Buf for Loc. If
+   --  Get the source location for the end of the line (LF) in Buf for Loc. If
    --  Loc is past the end of Buf already, return Buf'Last.
 
    function Get_Line_Start
@@ -176,6 +176,10 @@ package body Diagnostics.Pretty_Emitter is
    function Get_First_Line_Char
      (Buf : Source_Buffer_Ptr; Loc : Source_Ptr) return Source_Ptr;
    --  Get first non-space character in the line containing Loc
+
+   function Get_Last_Line_Char
+     (Buf : Source_Buffer_Ptr; Loc : Source_Ptr) return Source_Ptr;
+   --  Get last non line end [LF, CR] character in the line containing Loc
 
    function Image (X : Positive; Width : Positive) return String;
    --  Output number X over Width characters, with whitespace padding.
@@ -313,6 +317,25 @@ package body Diagnostics.Pretty_Emitter is
 
       return Cur_Loc;
    end Get_First_Line_Char;
+
+   ------------------------
+   -- Get_Last_Line_Char --
+   ------------------------
+
+   function Get_Last_Line_Char
+     (Buf : Source_Buffer_Ptr; Loc : Source_Ptr) return Source_Ptr
+   is
+      Cur_Loc : Source_Ptr := Get_Line_End (Buf, Loc);
+   begin
+
+      while Cur_Loc > Buf'First
+        and then Buf (Cur_Loc) in ASCII.LF | ASCII.CR
+      loop
+         Cur_Loc := Cur_Loc - 1;
+      end loop;
+
+      return Cur_Loc;
+   end Get_Last_Line_Char;
 
    -----------
    -- Image --
@@ -720,8 +743,9 @@ package body Diagnostics.Pretty_Emitter is
         Source_Text (Get_Source_File_Index (L.First));
 
       Col_L_Fst : constant Natural := Natural
-         (Get_Column_Number (Get_First_Line_Char (Buf, L.First)));
-      Col_L_Lst : constant Natural := Natural (Get_Column_Number (L.Last));
+        (Get_Column_Number (Get_First_Line_Char (Buf, L.First)));
+      Col_L_Lst : constant Natural := Natural
+        (Get_Column_Number (Get_Last_Line_Char (Buf, L.Last)));
 
       --  Carret positions
       Ptr      : constant Source_Ptr := Loc.Span.Ptr;
