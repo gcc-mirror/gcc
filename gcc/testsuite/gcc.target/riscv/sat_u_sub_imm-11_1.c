@@ -9,6 +9,8 @@
 ** li\s+[atx][0-9]+,\s*1
 ** slli\s+[atx][0-9]+,\s*[atx][0-9]+,\s*31
 ** addi\s+[atx][0-9]+,\s*[atx][0-9]+,\s*1
+** slli\s+a0,\s*a0,\s*32
+** srli\s+a0,\s*a0,\s*32
 ** sub\s+[atx][0-9]+,\s*[atx][0-9]+,\s*a0
 ** sltu\s+[atx][0-9]+,\s*[atx][0-9]+,\s*[atx][0-9]+
 ** addi\s+a0,\s*a0,\s*-1

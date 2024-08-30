@@ -6,6 +6,8 @@
 
 /*
 ** sat_u_sub_imm68719476732_uint32_t_fmt_2:
+** slli\s+a0,\s*a0,\s*32
+** srli\s+a0,\s*a0,\s*32
 ** li\s+[atx][0-9]+,\s*1
 ** slli\s+[atx][0-9]+,\s*[atx][0-9]+,\s*32
 ** addi\s+[atx][0-9]+,\s*[atx][0-9]+,\s*-4

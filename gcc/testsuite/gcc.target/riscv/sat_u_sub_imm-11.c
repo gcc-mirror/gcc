@@ -7,6 +7,8 @@
 /*
 ** sat_u_sub_imm255_uint32_t_fmt_3:
 ** li\s+[atx][0-9]+,\s*255
+** slli\s+a0,\s*a0,\s*32
+** srli\s+a0,\s*a0,\s*32
 ** sub\s+[atx][0-9]+,\s*[atx][0-9]+,\s*a0
 ** sltu\s+[atx][0-9]+,\s*[atx][0-9]+,\s*[atx][0-9]+
 ** addi\s+a0,\s*a0,\s*-1
