@@ -993,41 +993,10 @@
               (clobber (reg:CC REG_CC))])])
 
 
-;; For LPM loads from AS1 we split
-;;    R = *Z
-;; to
-;;    R = *Z++
-;;    Z = Z - sizeof (R)
-;;
-;; so that the second instruction can be optimized out.
-
-(define_split ; "split-lpmx"
-  [(set (match_operand:HISI 0 "register_operand" "")
-        (match_operand:HISI 1 "memory_operand" ""))]
-  "reload_completed
-   && AVR_HAVE_LPMX
-   && avr_mem_flash_p (operands[1])
-   && REG_P (XEXP (operands[1], 0))
-   && !reg_overlap_mentioned_p (XEXP (operands[1], 0), operands[0])"
-  [(set (match_dup 0)
-        (match_dup 2))
-   (set (match_dup 3)
-        (plus:HI (match_dup 3)
-                 (match_dup 4)))]
-  {
-     rtx addr = XEXP (operands[1], 0);
-
-    operands[2] = replace_equiv_address (operands[1],
-                                         gen_rtx_POST_INC (Pmode, addr));
-    operands[3] = addr;
-    operands[4] = gen_int_mode (-<SIZE>, HImode);
-  })
-
-
 ;; Legitimate address and stuff allows way more addressing modes than
 ;; Reduced Tiny actually supports.  Split them now so that we get
 ;; closer to real instructions which may result in some optimization
-;; opportunities.
+;; opportunities.  This applies also to fake X + offset addressing.
 (define_split
   [(parallel [(set (match_operand:MOVMODE 0 "nonimmediate_operand")
                    (match_operand:MOVMODE 1 "general_operand"))
@@ -1040,7 +1009,7 @@
    && (MEM_P (operands[0]) || MEM_P (operands[1]))"
   [(scratch)]
   {
-    if (avr_split_tiny_move (curr_insn, operands))
+    if (avr_split_fake_addressing_move (curr_insn, operands))
       DONE;
     FAIL;
   })
