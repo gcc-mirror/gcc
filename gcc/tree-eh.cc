@@ -2293,7 +2293,7 @@ same_or_derived_type (tree t1, tree t2)
 }
 
 // Check if a landing pad can handle any of the given exception types
-bool match_lp(eh_landing_pad lp, vec<tree> *exception_types) {
+bool match_lp (eh_landing_pad lp, vec<tree> *exception_types) {
     eh_region region = lp->region;
 
     // Ensure the region is of type ERT_TRY
@@ -2303,15 +2303,15 @@ bool match_lp(eh_landing_pad lp, vec<tree> *exception_types) {
         while (catch_handler) {
             tree type_list = catch_handler->type_list;
 
-            if(type_list == NULL) {
+            if (type_list == NULL) {
                 return true;
             }
 
-            for (tree t = type_list; t; t = TREE_CHAIN(t)) {
-                tree type = TREE_VALUE(t);
-                for (unsigned i = 0; i < exception_types->length(); ++i) {
+            for (tree t = type_list; t; t = TREE_CHAIN (t)) {
+                tree type = TREE_VALUE (t);
+                for (unsigned i = 0; i < exception_types->length (); ++i) {
                   // match found or a catch-all handler (NULL)
-                    if (!type || same_or_derived_type ((*exception_types)[i], type)) {
+                    if (!type || same_or_derived_type ( (*exception_types)[i], type)) {
                         return true;
                     }
                 }
@@ -2323,18 +2323,18 @@ bool match_lp(eh_landing_pad lp, vec<tree> *exception_types) {
 }
 
 // Function to update landing pad in throw_stmt_table for a given statement
-void update_stmt_eh_region(gimple *stmt) {
+void update_stmt_eh_region (gimple *stmt) {
   auto_vec<tree> exception_types;
   if (!stmt_throw_types (cfun, stmt, &exception_types)) {
         return;
     }
     
-    int lp_nr = lookup_stmt_eh_lp_fn(cfun, stmt);
+    int lp_nr = lookup_stmt_eh_lp_fn (cfun, stmt);
     if (lp_nr <= 0) {
         return;
     }
 
-    eh_landing_pad lp = get_eh_landing_pad_from_number(lp_nr);
+    eh_landing_pad lp = get_eh_landing_pad_from_number (lp_nr);
     if (!lp) {
         return;
     }
@@ -2345,12 +2345,12 @@ void update_stmt_eh_region(gimple *stmt) {
     while (region) {
         switch (region->type) {
             case ERT_CLEANUP:
-                *cfun->eh->throw_stmt_table->get(const_cast<gimple *>(stmt)) = lp->index;
+                *cfun->eh->throw_stmt_table->get (const_cast<gimple *> (stmt)) = lp->index;
                 return;
 
             case ERT_TRY:
-                if (match_lp(lp, &exception_types)) {
-                    *cfun->eh->throw_stmt_table->get(const_cast<gimple *>(stmt)) = lp->index;
+                if (match_lp (lp, &exception_types)) {
+                    *cfun->eh->throw_stmt_table->get (const_cast<gimple *> (stmt)) = lp->index;
                     return;
                 }
                 break;
@@ -2360,7 +2360,7 @@ void update_stmt_eh_region(gimple *stmt) {
                 return;
 
             case ERT_ALLOWED_EXCEPTIONS:
-                if (!match_lp(lp, &exception_types)) {
+                if (!match_lp (lp, &exception_types)) {
                     return;
                 }
                 break;
@@ -2371,7 +2371,7 @@ void update_stmt_eh_region(gimple *stmt) {
         region = region->outer;
     }
 
-    remove_stmt_from_eh_lp_fn(cfun, stmt);
+    remove_stmt_from_eh_lp_fn (cfun, stmt);
 }
 
 /* Create the single EH edge from STMT to its nearest landing pad,
@@ -3016,7 +3016,7 @@ stmt_could_throw_1_p (gassign *stmt)
   return false;
 }
 
-void extract_exception_types_for_call (gcall *call_stmt, vec<tree> *ret_vector) {
+void extract_types_for_call (gcall *call_stmt, vec<tree> *ret_vector) {
     tree callee = gimple_call_fndecl (call_stmt);
     if (callee == NULL_TREE) {
         return;
@@ -3045,7 +3045,7 @@ bool stmt_throw_types (function *fun, gimple *stmt, vec<tree> *ret_vector) {
 
     switch (gimple_code (stmt)) {
         case GIMPLE_CALL:
-            extract_exception_types_for_call (as_a<gcall*> (stmt), ret_vector);
+            extract_types_for_call (as_a<gcall*> (stmt), ret_vector);
             return !ret_vector->is_empty ();
 
         default:
