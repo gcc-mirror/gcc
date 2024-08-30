@@ -2126,7 +2126,8 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 				  * LOOP_VINFO_VECT_FACTOR (loop_vinfo) - gap,
 				  nunits, &tem, &remain)
 	      && (known_eq (remain, 0u)
-		  || (constant_multiple_p (nunits, remain, &num)
+		  || (known_ne (remain, 0u)
+		      && constant_multiple_p (nunits, remain, &num)
 		      && (vector_vector_composition_type (vectype, num,
 							  &half_vtype)
 			  != NULL_TREE))))
@@ -11519,7 +11520,8 @@ vectorizable_load (vec_info *vinfo,
 			  {
 			    /* remain should now be > 0 and < nunits.  */
 			    unsigned num;
-			    if (constant_multiple_p (nunits, remain, &num))
+			    if (known_ne (remain, 0u)
+				&& constant_multiple_p (nunits, remain, &num))
 			      {
 				tree ptype;
 				new_vtype
