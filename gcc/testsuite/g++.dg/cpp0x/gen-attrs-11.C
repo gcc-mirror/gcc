@@ -1,4 +1,4 @@
-// { dg-do compile { target c++11 } }
+// { dg-additional-options "-Wno-c++11-extensions" }
 // PR c++/13791
 
 template <typename T> struct O {

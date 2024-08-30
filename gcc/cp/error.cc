@@ -4735,9 +4735,10 @@ maybe_warn_cpp0x (cpp0x_warn_str str, location_t loc/*=input_location*/)
 		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
         break;
       case CPP0X_ATTRIBUTES:
-	pedwarn (loc, OPT_Wc__11_extensions,
-		 "C++11 attributes "
-		 "only available with %<-std=c++11%> or %<-std=gnu++11%>");
+	if (pedantic)
+	  pedwarn (loc, OPT_Wc__11_extensions,
+		   "C++11 attributes "
+		   "only available with %<-std=c++11%> or %<-std=gnu++11%>");
 	break;
       case CPP0X_REF_QUALIFIER:
 	pedwarn (loc, OPT_Wc__11_extensions,
