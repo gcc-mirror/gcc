@@ -2082,6 +2082,8 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
      for matching as we can succeed by means of builds from scalars
      and have no good way to "cost" one build against another.  */
   else if (is_a <loop_vec_info> (vinfo)
+	   /* Do not bother for single-lane SLP.  */
+	   && group_size > 1
 	   /* ???  We don't handle !vect_internal_def defs below.  */
 	   && STMT_VINFO_DEF_TYPE (stmt_info) == vect_internal_def
 	   /* ???  Do not associate a reduction, this will wreck REDUC_IDX
