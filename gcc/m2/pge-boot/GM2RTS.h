@@ -54,11 +54,6 @@ typedef struct M2RTS_ArgCVEnvP_p M2RTS_ArgCVEnvP;
 typedef void (*M2RTS_ArgCVEnvP_t) (int, void *, void *);
 struct M2RTS_ArgCVEnvP_p { M2RTS_ArgCVEnvP_t proc; };
 
-#define M2RTS_RegisterModule_Cstr(MODNAME,LIBNAME,init,fini,dep) \
-  M2RTS_RegisterModule (reinterpret_cast <void *> (const_cast <char *> (MODNAME)), \
-			reinterpret_cast <void *> (const_cast <char *> (LIBNAME)), \
-			init, fini, dep)
-
 EXTERN void M2RTS_ConstructModules (void * applicationmodule, void * libname, void * overrideliborder, int argc, void * argv, void * envp);
 EXTERN void M2RTS_DeconstructModules (void * applicationmodule, void * libname, int argc, void * argv, void * envp);
 
@@ -68,10 +63,7 @@ EXTERN void M2RTS_DeconstructModules (void * applicationmodule, void * libname, 
                     explored to determine initialization order.
 */
 
-EXTERN void M2RTS_RegisterModule (void *name, void *libname,
-				  M2RTS_ArgCVEnvP init,
-				  M2RTS_ArgCVEnvP fini,
-				  PROC dependencies);
+EXTERN void M2RTS_RegisterModule (void * name, void * libname, M2RTS_ArgCVEnvP init, M2RTS_ArgCVEnvP fini, PROC dependencies);
 
 /*
    RequestDependant - used to specify that modulename is dependant upon
