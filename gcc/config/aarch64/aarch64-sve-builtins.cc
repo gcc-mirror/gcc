@@ -1132,6 +1132,30 @@ report_not_enum (location_t location, tree fndecl, unsigned int argno,
 	    " a valid %qT value", actual, argno + 1, fndecl, enumtype);
 }
 
+/* Try to fold constant arguments ARG1 and ARG2 using the given tree_code.
+   Operations are not treated as overflowing.  */
+static tree
+aarch64_const_binop (enum tree_code code, tree arg1, tree arg2)
+{
+  if (poly_int_tree_p (arg1) && poly_int_tree_p (arg2))
+    {
+      poly_wide_int poly_res;
+      tree type = TREE_TYPE (arg1);
+      signop sign = TYPE_SIGN (type);
+      wi::overflow_type overflow = wi::OVF_NONE;
+
+      /* Return 0 for division by 0, like SDIV and UDIV do.  */
+      if (code == TRUNC_DIV_EXPR && integer_zerop (arg2))
+	return arg2;
+
+      if (!poly_int_binop (poly_res, code, arg1, arg2, sign, &overflow))
+	return NULL_TREE;
+      return force_fit_type (type, poly_res, false,
+			     TREE_OVERFLOW (arg1) | TREE_OVERFLOW (arg2));
+    }
+  return NULL_TREE;
+}
+
 /* Return a hash code for a function_instance.  */
 hashval_t
 function_instance::hash () const
@@ -3591,6 +3615,25 @@ gimple_folder::fold_to_vl_pred (unsigned int vl)
       builder.quick_push (bit ? minus_one : zero);
     }
   return gimple_build_assign (lhs, builder.build ());
+}
+
+/* Try to fold the call to a constant, given that, for integers, the call
+   is roughly equivalent to binary operation CODE.  aarch64_const_binop
+   handles any differences between CODE and the intrinsic.  */
+gimple *
+gimple_folder::fold_const_binary (enum tree_code code)
+{
+  gcc_assert (gimple_call_num_args (call) == 3);
+  tree pg = gimple_call_arg (call, 0);
+  tree op1 = gimple_call_arg (call, 1);
+  tree op2 = gimple_call_arg (call, 2);
+
+  if (type_suffix (0).integer_p
+      && (pred == PRED_x || is_ptrue (pg, type_suffix (0).element_bytes)))
+    if (tree res = vector_const_binop (code, op1, op2, aarch64_const_binop))
+      return gimple_build_assign (lhs, res);
+
+  return NULL;
 }
 
 /* Try to fold the call.  Return the new statement on success and null

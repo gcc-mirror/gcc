@@ -755,8 +755,13 @@ public:
   gimple *
   fold (gimple_folder &f) const override
   {
-    tree divisor = gimple_call_arg (f.call, 2);
-    tree divisor_cst = uniform_integer_cst_p (divisor);
+    if (auto *res = f.fold_const_binary (TRUNC_DIV_EXPR))
+      return res;
+
+    /* If the divisor is a uniform power of 2, fold to a shift
+       instruction.  */
+    tree op2 = gimple_call_arg (f.call, 2);
+    tree divisor_cst = uniform_integer_cst_p (op2);
 
     if (!divisor_cst || !integer_pow2p (divisor_cst))
       return NULL;
@@ -770,7 +775,7 @@ public:
 				    shapes::binary_uint_opt_n, MODE_n,
 				    f.type_suffix_ids, GROUP_none, f.pred);
 	call = f.redirect_call (instance);
-	tree d = INTEGRAL_TYPE_P (TREE_TYPE (divisor)) ? divisor : divisor_cst;
+	tree d = INTEGRAL_TYPE_P (TREE_TYPE (op2)) ? op2 : divisor_cst;
 	new_divisor = wide_int_to_tree (TREE_TYPE (d), tree_log2 (d));
       }
     else
