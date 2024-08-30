@@ -1412,7 +1412,7 @@ check_redeclaration_exception_specification (tree new_decl,
 /* Return true if OLD_DECL and NEW_DECL agree on constexprness.
    Otherwise issue diagnostics.  */
 
-static bool
+bool
 validate_constexpr_redeclaration (tree old_decl, tree new_decl)
 {
   old_decl = STRIP_TEMPLATE (old_decl);

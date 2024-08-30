@@ -3637,6 +3637,8 @@ push_local_extern_decl_alias (tree decl)
 	  if (decls_match (decl, *iter, /*record_versions*/false))
 	    {
 	      alias = *iter;
+	      if (!validate_constexpr_redeclaration (alias, decl))
+		return;
 	      break;
 	    }
 
