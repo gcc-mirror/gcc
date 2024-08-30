@@ -42,22 +42,6 @@ foo1 (uint8x16_t inactive, uint32_t *a, mve_pred16_t p)
   return vddupq_m (inactive, a, 1, p);
 }
 
-/*
-**foo2:
-**	...
-**	vmsr	p0, (?:ip|fp|r[0-9]+)(?:	@.*|)
-**	...
-**	vpst(?:	@.*|)
-**	...
-**	vddupt.u8	q[0-9]+, (?:ip|fp|r[0-9]+), #[0-9]+(?:	@.*|)
-**	...
-*/
-uint8x16_t
-foo2 (uint8x16_t inactive, mve_pred16_t p)
-{
-  return vddupq_m (inactive, 1, 1, p);
-}
-
 #ifdef __cplusplus
 }
 #endif

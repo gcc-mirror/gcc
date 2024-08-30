@@ -42,22 +42,6 @@ foo1 (uint32_t *a, mve_pred16_t p)
   return vddupq_x_u32 (a, 1, p);
 }
 
-/*
-**foo2:
-**	...
-**	vmsr	p0, (?:ip|fp|r[0-9]+)(?:	@.*|)
-**	...
-**	vpst(?:	@.*|)
-**	...
-**	vddupt.u32	q[0-9]+, (?:ip|fp|r[0-9]+), #[0-9]+(?:	@.*|)
-**	...
-*/
-uint32x4_t
-foo2 (mve_pred16_t p)
-{
-  return vddupq_x_u32 (1, 1, p);
-}
-
 #ifdef __cplusplus
 }
 #endif
