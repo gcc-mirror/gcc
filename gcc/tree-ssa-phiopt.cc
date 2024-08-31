@@ -265,6 +265,11 @@ factor_out_conditional_operation (edge e0, edge e1, gphi *phi,
   tree new_arg0 = arg0_op.ops[0];
   tree new_arg1;
 
+  /* If arg0 have > 1 use, then this transformation actually increases
+     the number of expressions evaluated at runtime.  */
+  if (!has_single_use (arg0))
+    return NULL;
+
   if (TREE_CODE (arg1) == SSA_NAME)
     {
       /* Check if arg1 is an SSA_NAME.  */
@@ -276,6 +281,11 @@ factor_out_conditional_operation (edge e0, edge e1, gphi *phi,
       if (arg1_op.num_ops != arg0_op.num_ops)
 	return NULL;
       if (arg1_op.operands_occurs_in_abnormal_phi ())
+	return NULL;
+
+      /* If arg1 have > 1 use, then this transformation actually increases
+	 the number of expressions evaluated at runtime.  */
+      if (!has_single_use (arg1))
 	return NULL;
 
       /* Either arg1_def_stmt or arg0_def_stmt should be conditional.  */
@@ -295,80 +305,68 @@ factor_out_conditional_operation (edge e0, edge e1, gphi *phi,
       if (dominated_by_p (CDI_DOMINATORS, gimple_bb (phi), gimple_bb (arg0_def_stmt)))
 	return NULL;
 
-      /* If arg1 is an INTEGER_CST, fold it to new type.  */
-      if (INTEGRAL_TYPE_P (TREE_TYPE (new_arg0))
-	  && (int_fits_type_p (arg1, TREE_TYPE (new_arg0))
-	      || (TYPE_PRECISION (TREE_TYPE (new_arg0))
+      /* Only handle if arg1 is a INTEGER_CST and one that fits
+	 into the new type or if it is the same precision.  */
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (new_arg0))
+	  || !(int_fits_type_p (arg1, TREE_TYPE (new_arg0))
+	       || (TYPE_PRECISION (TREE_TYPE (new_arg0))
 		   == TYPE_PRECISION (TREE_TYPE (arg1)))))
+	return NULL;
+
+      /* For the INTEGER_CST case, we are just moving the
+	 conversion from one place to another, which can often
+	 hurt as the conversion moves further away from the
+	 statement that computes the value.  So, perform this
+	 only if new_arg0 is an operand of COND_STMT, or
+	 if arg0_def_stmt is the only non-debug stmt in
+	 its basic block, because then it is possible this
+	 could enable further optimizations (minmax replacement
+	 etc.).  See PR71016.
+	 Note no-op conversions don't have this issue as
+	 it will not generate any zero/sign extend in that case.  */
+      if ((TYPE_PRECISION (TREE_TYPE (new_arg0))
+	   != TYPE_PRECISION (TREE_TYPE (arg1)))
+	  && new_arg0 != gimple_cond_lhs (cond_stmt)
+	  && new_arg0 != gimple_cond_rhs (cond_stmt)
+	  && gimple_bb (arg0_def_stmt) == e0->src)
 	{
-	  if (gimple_assign_cast_p (arg0_def_stmt))
+	  gsi = gsi_for_stmt (arg0_def_stmt);
+	  gsi_prev_nondebug (&gsi);
+	  if (!gsi_end_p (gsi))
 	    {
-	      /* For the INTEGER_CST case, we are just moving the
-		 conversion from one place to another, which can often
-		 hurt as the conversion moves further away from the
-		 statement that computes the value.  So, perform this
-		 only if new_arg0 is an operand of COND_STMT, or
-		 if arg0_def_stmt is the only non-debug stmt in
-		 its basic block, because then it is possible this
-		 could enable further optimizations (minmax replacement
-		 etc.).  See PR71016.
-		 Note no-op conversions don't have this issue as
-		 it will not generate any zero/sign extend in that case.  */
-	      if ((TYPE_PRECISION (TREE_TYPE (new_arg0))
-		    != TYPE_PRECISION (TREE_TYPE (arg1)))
-	          && new_arg0 != gimple_cond_lhs (cond_stmt)
-		  && new_arg0 != gimple_cond_rhs (cond_stmt)
-		  && gimple_bb (arg0_def_stmt) == e0->src)
+	      gimple *stmt = gsi_stmt (gsi);
+	      /* Ignore nops, predicates and labels. */
+	      if (gimple_code (stmt) == GIMPLE_NOP
+		  || gimple_code (stmt) == GIMPLE_PREDICT
+		  || gimple_code (stmt) == GIMPLE_LABEL)
+		;
+	      else if (gassign *assign = dyn_cast <gassign *> (stmt))
 		{
-		  gsi = gsi_for_stmt (arg0_def_stmt);
+		  tree lhs = gimple_assign_lhs (assign);
+		  enum tree_code ass_code
+		    = gimple_assign_rhs_code (assign);
+		  if (ass_code != MAX_EXPR && ass_code != MIN_EXPR)
+		    return NULL;
+		  if (lhs != gimple_assign_rhs1 (arg0_def_stmt))
+		    return NULL;
 		  gsi_prev_nondebug (&gsi);
 		  if (!gsi_end_p (gsi))
-		    {
-		      gimple *stmt = gsi_stmt (gsi);
-		      /* Ignore nops, predicates and labels. */
-		      if (gimple_code (stmt) == GIMPLE_NOP
-			  || gimple_code (stmt) == GIMPLE_PREDICT
-			  || gimple_code (stmt) == GIMPLE_LABEL)
-			;
-		      else if (gassign *assign = dyn_cast <gassign *> (stmt))
-			{
-			  tree lhs = gimple_assign_lhs (assign);
-			  enum tree_code ass_code
-			    = gimple_assign_rhs_code (assign);
-			  if (ass_code != MAX_EXPR && ass_code != MIN_EXPR)
-			    return NULL;
-			  if (lhs != gimple_assign_rhs1 (arg0_def_stmt))
-			    return NULL;
-			  gsi_prev_nondebug (&gsi);
-			  if (!gsi_end_p (gsi))
-			    return NULL;
-			}
-		      else
 			return NULL;
-		    }
-		  gsi = gsi_for_stmt (arg0_def_stmt);
-		  gsi_next_nondebug (&gsi);
-		  if (!gsi_end_p (gsi))
-		    return NULL;
 		}
-	      new_arg1 = fold_convert (TREE_TYPE (new_arg0), arg1);
-
-	      /* Drop the overlow that fold_convert might add. */
-	      if (TREE_OVERFLOW (new_arg1))
-		new_arg1 = drop_tree_overflow (new_arg1);
+	      else
+		return NULL;
 	    }
-	  else
+	  gsi = gsi_for_stmt (arg0_def_stmt);
+	  gsi_next_nondebug (&gsi);
+	  if (!gsi_end_p (gsi))
 	    return NULL;
 	}
-      else
-	return NULL;
-    }
+      new_arg1 = fold_convert (TREE_TYPE (new_arg0), arg1);
 
-  /*  If arg0/arg1 have > 1 use, then this transformation actually increases
-      the number of expressions evaluated at runtime.  */
-  if (!has_single_use (arg0)
-      || (arg1_def_stmt && !has_single_use (arg1)))
-    return NULL;
+      /* Drop the overlow that fold_convert might add. */
+      if (TREE_OVERFLOW (new_arg1))
+	new_arg1 = drop_tree_overflow (new_arg1);
+    }
 
   /* If types of new_arg0 and new_arg1 are different bailout.  */
   if (!types_compatible_p (TREE_TYPE (new_arg0), TREE_TYPE (new_arg1)))
