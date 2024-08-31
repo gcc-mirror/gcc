@@ -1,3 +1,20 @@
+2024-08-30  Jason Merrill  <jason@redhat.com>
+
+	* decl2.cc (c_parse_final_cleanups): Also check
+	DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION.
+
+2024-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* parser.cc (make_array_declarator): Add STD_ATTRS argument, set
+	declarator->std_attributes to it.
+	(cp_parser_new_type_id): Warn on non-ignored std_attributes on the
+	array declarator which is being omitted.
+	(cp_parser_direct_new_declarator): Parse standard attributes after
+	closing square bracket, pass it to make_array_declarator.
+	(cp_parser_direct_declarator): Pass std_attrs to make_array_declarator
+	instead of setting declarator->std_attributes manually.
+
 2024-08-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* error.cc: Include "make-unique.h".

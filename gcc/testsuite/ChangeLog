@@ -1,3 +1,34 @@
+2024-08-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101099
+	* g++.dg/concepts/pr101099.C: New test.
+
+2024-08-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115616
+	* g++.dg/template/friend83.C: New test.
+
+2024-08-30  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/diagnostic/used-inline1.C: New test.
+
+2024-08-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/98454
+	* gfortran.dg/alloc_comp_class_4.f03: Remove bogus pattern.
+	* gfortran.dg/pdt_26.f03: Adjust expected count.
+	* gfortran.dg/derived_result_3.f90: New test.
+
+2024-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* g++.dg/cpp0x/gen-attrs-80.C: New test.
+	* g++.dg/cpp0x/gen-attrs-81.C: New test.
+
+2024-08-30  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr116512.c: New test.
+
 2024-08-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116419

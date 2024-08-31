@@ -1,3 +1,57 @@
+2024-08-30  Alex Coplan  <alex.coplan@arm.com>
+
+	* gdbhooks.py (VEC_KIND_EMBED): New.
+	(VEC_KIND_PTR): New.
+	(get_vec_kind): New.
+	(VecPrinter.children): Also handle vectors with vl_ptr layout.
+
+2024-08-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR driver/104707
+	PR driver/97304
+	* gcc.cc (is_directory): Don't not include /usr/lib and /lib
+	for library directory pathes. Remove library argument.
+	(add_to_obstack): Update call to is_directory.
+	(driver_handle_option): Likewise.
+	(spec_path): Likewise.
+
+2024-08-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/116537
+	* tree-core.h (enum tree_index): Remove TI_INTEGER_THREE
+	* tree-ssa-loop-prefetch.cc (issue_prefetch_ref): Call build_int_cst
+	instead of using integer_three_node.
+	* tree.cc (build_common_tree_nodes): Remove initialization
+	of integer_three_node.
+	* tree.h (integer_three_node): Delete.
+
+2024-08-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* builtins.cc (expand_builtin_prefetch): Rewrite expansion of the optional
+	arguments to not expand known constants.
+
+2024-08-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (get_group_load_store_type): Check
+	known_ne (remain, 0u) before doing constant_multiple_p.
+	(vectorizable_load): Likewise.
+
+2024-08-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_build_slp_tree_2): Disable SLP
+	reassociation for single-lane.
+
+2024-08-30  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/116512
+	* config/i386/i386.cc (ix86_check_avx_upper_register): Iterate
+	subrtx to scan for avx upper register.
+	(ix86_check_avx_upper_stores): Inline old
+	ix86_check_avx_upper_register.
+	(ix86_avx_u128_mode_needed): Ditto, and replace
+	FOR_EACH_SUBRTX with call to new
+	ix86_check_avx_upper_register.
+
 2024-08-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116419

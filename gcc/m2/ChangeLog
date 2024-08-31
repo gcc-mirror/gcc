@@ -1,3 +1,9 @@
+2024-08-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/116181
+	* pge-boot/GM2RTS.h: Regenerate.
+	* pge-boot/m2rts.h: Ditto.
+
 2024-08-28  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/116181
