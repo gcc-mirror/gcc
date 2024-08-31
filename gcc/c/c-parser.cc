@@ -2677,8 +2677,9 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 		      /* Postfix [[]] attributes are valid with C23
 			 auto, although not with __auto_type, and
 			 modify the type given by the initializer.  */
-		      specs->postfix_attrs =
-			c_warn_type_attributes (specs->postfix_attrs);
+		      specs->postfix_attrs
+			= c_warn_type_attributes (specs->type,
+						  specs->postfix_attrs);
 		      decl_attributes (&specs->type, specs->postfix_attrs, 0);
 		      specs->postfix_attrs = NULL_TREE;
 		    }

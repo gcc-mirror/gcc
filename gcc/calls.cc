@@ -852,6 +852,23 @@ flags_from_decl_or_type (const_tree exp)
 	flags |= ECF_XTHROW;
 
       flags = special_function_p (exp, flags);
+
+      if ((flags & ECF_CONST) == 0
+	  && lookup_attribute ("unsequenced noptr",
+			       TYPE_ATTRIBUTES (TREE_TYPE (exp))))
+	{
+	  /* [[unsequenced]] with no pointers in arguments is like
+	     [[gnu::const]] without finite guarantee.  */
+	  flags |= ECF_CONST;
+	  if ((flags & ECF_PURE) == 0)
+	    flags |= ECF_LOOPING_CONST_OR_PURE;
+	}
+      if ((flags & (ECF_CONST | ECF_PURE)) == 0
+	  && lookup_attribute ("reproducible noptr",
+			       TYPE_ATTRIBUTES (TREE_TYPE (exp))))
+	/* [[reproducible]] with no pointers in arguments is like
+	   [[gnu::pure]] without finite guarantee.  */
+	flags |= ECF_PURE | ECF_LOOPING_CONST_OR_PURE;
     }
   else if (TYPE_P (exp))
     {
@@ -862,6 +879,17 @@ flags_from_decl_or_type (const_tree exp)
 	  && ((flags & ECF_CONST) != 0
 	      || lookup_attribute ("transaction_pure", TYPE_ATTRIBUTES (exp))))
 	flags |= ECF_TM_PURE;
+
+      if ((flags & ECF_CONST) == 0
+	  && lookup_attribute ("unsequenced noptr", TYPE_ATTRIBUTES (exp)))
+	/* [[unsequenced]] with no pointers in arguments is like
+	   [[gnu::const]] without finite guarantee.  */
+	flags |= ECF_CONST | ECF_LOOPING_CONST_OR_PURE;
+      if ((flags & ECF_CONST) == 0
+	  && lookup_attribute ("reproducible noptr", TYPE_ATTRIBUTES (exp)))
+	/* [[reproducible]] with no pointers in arguments is like
+	   [[gnu::pure]] without finite guarantee.  */
+	flags |= ECF_PURE | ECF_LOOPING_CONST_OR_PURE;
     }
   else
     gcc_unreachable ();

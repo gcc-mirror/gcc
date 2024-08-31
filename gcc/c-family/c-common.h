@@ -864,6 +864,8 @@ extern void check_function_format (const_tree, tree, int, tree *,
 extern bool attribute_fallthrough_p (tree);
 extern tree handle_format_attribute (tree *, tree, tree, int, bool *);
 extern tree handle_format_arg_attribute (tree *, tree, tree, int, bool *);
+extern tree handle_unsequenced_attribute (tree *, tree, tree, int, bool *);
+extern tree handle_reproducible_attribute (tree *, tree, tree, int, bool *);
 extern bool c_common_handle_option (size_t, const char *, HOST_WIDE_INT, int,
 				    location_t,
 				    const struct cl_option_handlers *);

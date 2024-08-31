@@ -445,7 +445,9 @@ c_common_has_attribute (cpp_reader *pfile, bool std_syntax)
 		  || is_attribute_p ("maybe_unused", attr_name)
 		  || is_attribute_p ("nodiscard", attr_name)
 		  || is_attribute_p ("noreturn", attr_name)
-		  || is_attribute_p ("_Noreturn", attr_name))
+		  || is_attribute_p ("_Noreturn", attr_name)
+		  || is_attribute_p ("reproducible", attr_name)
+		  || is_attribute_p ("unsequenced", attr_name))
 		result = 202311;
 	    }
 	  if (result)

@@ -4024,6 +4024,69 @@ diagnosed.  Because a pure function cannot have any observable side
 effects it does not make sense for such a function to return @code{void}.
 Declaring such a function is diagnosed.
 
+@cindex @code{unsequenced} function type attribute
+@cindex functions that have no side effects
+@item unsequenced
+
+This attribute is a GNU counterpart of the C23 @code{[[unsequenced]]}
+attribute, used to specify function pointers to effectless, idempotent,
+stateless and independent functions according to the C23 definition.
+
+Unlike the standard C23 attribute it can be also specified in attributes
+which appertain to function declarations and applies to the their function
+type even in that case.
+
+Unsequenced functions without pointer or reference arguments are similar
+to functions with the @code{const} attribute, except that @code{const}
+attribute also requires finiteness.  So, both functions with @code{const}
+and with @code{unsequenced} attributes can be optimized by common
+subexpression elimination, but only functions with @code{const}
+attribute can be optimized by dead code elimination if their result is
+unused or is used only by dead code.  Unsequenced functions without pointer
+or reference arguments with @code{void} return type are diagnosed because
+they can't store any results and don't have other observable side-effects
+either.
+
+Unsequenced functions with pointer or reference arguments can inspect
+objects through the passed pointers or references or references to pointers
+or can store additional results through those pointers or references or
+references to pointers.
+
+The @code{unsequenced} attribute imposes greater restrictions than
+the similar @code{reproducible} attribute and fewer restrictions than
+the @code{const} attribute, so during optimization @code{const} has
+precedence over @code{unsequenced} which has precedence over
+@code{reproducible}.
+
+@cindex @code{reproducible} function type attribute
+@cindex functions that have no side effects
+@item reproducible
+
+This attribute is a GNU counterpart of the C23 @code{[[reproducible]]}
+attribute, used to specify function pointers to effectless and idempotent
+functions according to the C23 definition.
+
+Unlike the standard C23 attribute it can be also specified in attributes
+which appertain to function declarations and applies to the their function
+type even in that case.
+
+Reproducible functions without pointer or reference arguments or which do
+not modify objects referenced by those pointer/reference arguments are
+similar to functions with the @code{pure} attribute, except that
+@code{pure} attribute also requires finiteness.  So, both functions with
+@code{pure} and with @code{reproducible} attributes can be optimized by common
+subexpression elimination if the global state or anything reachable through
+the pointer/reference arguments isn't modified, but only functions with
+@code{pure} attribute can be optimized by dead code elimination if their result is
+unused or is used only by dead code.  Reproducible functions without pointer
+or reference arguments with @code{void} return type are diagnosed because
+they can't store any results and don't have other observable side-effects
+either.
+
+Reproducible functions with pointer or reference arguments can store
+additional results through those pointers or references or references to
+pointers.
+
 @cindex @code{retain} function attribute
 @item retain
 For ELF targets that support the GNU or FreeBSD OSABIs, this attribute

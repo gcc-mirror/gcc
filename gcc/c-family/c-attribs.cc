@@ -444,6 +444,14 @@ const struct attribute_spec c_common_gnu_attributes[] =
   { "pure",                   0, 0, true,  false, false, false,
 			      handle_pure_attribute,
 	                      attr_const_pure_exclusions },
+  { "reproducible",           0, 0, false, true,  true,  false,
+			      handle_reproducible_attribute, NULL },
+  { "unsequenced",            0, 0, false, true,  true,  false,
+			      handle_unsequenced_attribute, NULL },
+  { "reproducible noptr",     0, 0, false, true,  true,  false,
+			      handle_reproducible_attribute, NULL },
+  { "unsequenced noptr",      0, 0, false, true,  true,  false,
+			      handle_unsequenced_attribute, NULL },
   { "transaction_callable",   0, 0, false, true,  false, false,
 			      handle_tm_attribute, NULL },
   { "transaction_unsafe",     0, 0, false, true,  false, true,
@@ -4278,6 +4286,53 @@ handle_pure_attribute (tree *node, tree name, tree ARG_UNUSED (args),
     }
 
   return NULL_TREE;
+}
+
+/* Handle an "unsequenced" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+tree
+handle_unsequenced_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+			      int flags, bool *no_add_attrs)
+{
+  tree fntype = *node;
+  for (tree argtype = TYPE_ARG_TYPES (fntype); argtype;
+       argtype = TREE_CHAIN (argtype))
+    /* If any of the arguments have pointer or reference type, just
+       add the attribute alone.  */
+    if (POINTER_TYPE_P (TREE_VALUE (argtype)))
+      return NULL_TREE;
+
+  if (VOID_TYPE_P (TREE_TYPE (fntype)))
+    warning (OPT_Wattributes, "%qE attribute on function type "
+	     "without pointer arguments returning %<void%>", name);
+  const char *name2;
+  if (IDENTIFIER_LENGTH (name) == sizeof ("unsequenced") - 1)
+    name2 = "unsequenced noptr";
+  else
+    name2 = "reproducible noptr";
+  if (!lookup_attribute (name2, TYPE_ATTRIBUTES (fntype)))
+    {
+      *no_add_attrs = true;
+      gcc_assert ((flags & (int) ATTR_FLAG_TYPE_IN_PLACE) == 0);
+      tree attr = tree_cons (get_identifier (name2), NULL_TREE,
+			     TYPE_ATTRIBUTES (fntype));
+      if (!lookup_attribute (IDENTIFIER_POINTER (name),
+			     TYPE_ATTRIBUTES (fntype)))
+	attr = tree_cons (name, NULL_TREE, attr);
+      *node = build_type_attribute_variant (*node, attr);
+    }
+  return NULL_TREE;
+}
+
+/* Handle a "reproducible" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+tree
+handle_reproducible_attribute (tree *node, tree name, tree args, int flags,
+			       bool *no_add_attrs)
+{
+  return handle_unsequenced_attribute (node, name, args, flags, no_add_attrs);
 }
 
 /* Digest an attribute list destined for a transactional memory statement.
