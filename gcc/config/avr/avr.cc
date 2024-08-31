@@ -4184,7 +4184,7 @@ avr_out_movsi_mr_r_reg_no_disp_tiny (rtx_insn *insn, rtx op[], int *l)
       /* "ld r26,-X" is undefined */
       if (reg_unused_after (insn, base))
 	{
-	  return *l = 7, ("mov __tmp_reg__, %B1"  CR_TAB
+	  return *l = 7, ("mov __tmp_reg__,%B1"   CR_TAB
 			  "st %0,%A1"             CR_TAB
 			  TINY_ADIW (%E0, %F0, 1) CR_TAB
 			  "st %0+,__tmp_reg__"    CR_TAB
@@ -4193,7 +4193,7 @@ avr_out_movsi_mr_r_reg_no_disp_tiny (rtx_insn *insn, rtx op[], int *l)
 	}
       else
 	{
-	  return *l = 9, ("mov __tmp_reg__, %B1"  CR_TAB
+	  return *l = 9, ("mov __tmp_reg__,%B1"   CR_TAB
 			  "st %0,%A1"             CR_TAB
 			  TINY_ADIW (%E0, %F0, 1) CR_TAB
 			  "st %0+,__tmp_reg__"    CR_TAB
@@ -4291,7 +4291,7 @@ out_movsi_mr_r (rtx_insn *insn, rtx op[], int *l)
     {
       if (io_address_operand (base, SImode))
 	{
-	  return *l=4,("out %i0, %A1"  CR_TAB
+	  return *l=4,("out %i0,%A1"   CR_TAB
 		       "out %i0+1,%B1" CR_TAB
 		       "out %i0+2,%C1" CR_TAB
 		       "out %i0+3,%D1");
@@ -8230,7 +8230,7 @@ avr_out_plus_set_ZN (rtx *xop, int *plen)
       && IN_RANGE (INTVAL (xval), 1, 63))
     {
       // Add 16-bit value in [1..63] to a w register.
-      return avr_asm_len ("adiw %0, %1", xop, plen, 1);
+      return avr_asm_len ("adiw %0,%1", xop, plen, 1);
     }
 
   // Addition won't work; subtract the negative of XVAL instead.
@@ -8259,7 +8259,7 @@ avr_out_plus_set_ZN (rtx *xop, int *plen)
 	  if (IN_RANGE (INTVAL (op[1]), 0, 63))
 	    {
 	      // SBIW can handle the lower 16 bits.
-	      avr_asm_len ("sbiw %0, %1", op, plen, 1);
+	      avr_asm_len ("sbiw %0,%1", op, plen, 1);
 
 	      // Next byte has already been handled: Skip it.
 	      ++i;
@@ -8273,8 +8273,8 @@ avr_out_plus_set_ZN (rtx *xop, int *plen)
 	{
 	  // d-regs can subtract immediates.
 	  avr_asm_len (i == 0
-		       ? "subi %0, %1"
-		       : "sbci %0, %1", op, plen, 1);
+		       ? "subi %0,%1"
+		       : "sbci %0,%1", op, plen, 1);
 	}
       else
 	{
@@ -8283,8 +8283,8 @@ avr_out_plus_set_ZN (rtx *xop, int *plen)
 	    {
 	      // Any register can subtract 0.
 	      avr_asm_len (i == 0
-			   ? "sub %0, __zero_reg__"
-			   : "sbc %0, __zero_reg__", op, plen, 1);
+			   ? "sub %0,__zero_reg__"
+			   : "sbc %0,__zero_reg__", op, plen, 1);
 	    }
 	  else
 	    {
@@ -8294,13 +8294,13 @@ avr_out_plus_set_ZN (rtx *xop, int *plen)
 		{
 		  // Load partial xval to QI clobber reg and memoize for later.
 		  gcc_assert (REG_P (op[2]));
-		  avr_asm_len ("ldi %2, %1", op, plen, 1);
+		  avr_asm_len ("ldi %2,%1", op, plen, 1);
 		  clobber_val = val8;
 		}
 
 	      avr_asm_len (i == 0
-			   ? "sub %0, %2"
-			   : "sbc %0, %2", op, plen, 1);
+			   ? "sub %0,%2"
+			   : "sbc %0,%2", op, plen, 1);
 	    }
 	}
     } // Loop bytes.
