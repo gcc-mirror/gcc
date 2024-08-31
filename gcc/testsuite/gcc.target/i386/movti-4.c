@@ -1,5 +1,5 @@
 /* { dg-do compile { target int128 } } */
-/* { dg-options "-Os -mavx" } */
+/* { dg-options "-O2 -mavx" } */
 __int128 m;
 
 void foo()
@@ -8,5 +8,4 @@ void foo()
 }
 
 /* { dg-final { scan-assembler-times "movabsq" 1 } } */
-/* { dg-final { scan-assembler-not "vmovq" } } */
-/* { dg-final { scan-assembler-not "vpunpcklqdq" } } */
+/* { dg-final { scan-assembler-times "vpand" 1 } } */

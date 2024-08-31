@@ -2330,14 +2330,16 @@ timode_scalar_to_vector_candidate_p (rtx_insn *insn)
 	      || CONST_SCALAR_INT_P (XEXP (src, 1))
 	      || timode_mem_p (XEXP (src, 1))))
 	return true;
-      return REG_P (XEXP (src, 0))
+      return (REG_P (XEXP (src, 0))
+	      || timode_mem_p (XEXP (src, 0)))
 	     && (REG_P (XEXP (src, 1))
 		 || CONST_SCALAR_INT_P (XEXP (src, 1))
 		 || timode_mem_p (XEXP (src, 1)));
 
     case IOR:
     case XOR:
-      return REG_P (XEXP (src, 0))
+      return (REG_P (XEXP (src, 0))
+	      || timode_mem_p (XEXP (src, 0)))
 	     && (REG_P (XEXP (src, 1))
 		 || CONST_SCALAR_INT_P (XEXP (src, 1))
 		 || timode_mem_p (XEXP (src, 1)));
