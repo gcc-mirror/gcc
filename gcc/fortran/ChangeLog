@@ -1,3 +1,12 @@
+2024-08-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-08-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/116530
+	* trans-io.cc (transfer_namelist_element): Prevent NULL pointer
+	dereference.
+
 2024-08-06  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
