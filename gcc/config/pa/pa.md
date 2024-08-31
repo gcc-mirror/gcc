@@ -3866,7 +3866,7 @@
 (define_insn ""
   [(set (match_operand:DF 0 "move_dest_operand"
 			  "=f,*r,T,?o,?Q,f,*r,*r,?*r,?f")
-	(match_operand:DF 1 "reg_or_0_or_nonsymb_mem_operand"
+	(match_operand:DF 1 "reg_or_0_or_mem_operand"
 			  "fG,*rG,f,*r,*r,RT,o,RQ,f,*r"))]
   "(register_operand (operands[0], DFmode)
     || reg_or_0_operand (operands[1], DFmode))
@@ -4040,7 +4040,7 @@
 (define_insn ""
   [(set (match_operand:DF 0 "move_dest_operand"
 			  "=r,?o,?Q,r,r")
-	(match_operand:DF 1 "reg_or_0_or_nonsymb_mem_operand"
+	(match_operand:DF 1 "reg_or_0_or_mem_operand"
 			  "rG,r,r,o,RQ"))]
   "(register_operand (operands[0], DFmode)
     || reg_or_0_operand (operands[1], DFmode))
@@ -4440,7 +4440,7 @@
 (define_insn ""
   [(set (match_operand:SF 0 "move_dest_operand"
 			  "=f,!*r,f,*r,T,Q,?*r,?f")
-	(match_operand:SF 1 "reg_or_0_or_nonsymb_mem_operand"
+	(match_operand:SF 1 "reg_or_0_or_mem_operand"
 			  "fG,!*rG,RT,RQ,f,*rG,f,*r"))]
   "(register_operand (operands[0], SFmode)
     || reg_or_0_operand (operands[1], SFmode))
@@ -4462,7 +4462,7 @@
 (define_insn ""
   [(set (match_operand:SF 0 "move_dest_operand"
 			  "=f,!*r,f,*r,T,Q")
-	(match_operand:SF 1 "reg_or_0_or_nonsymb_mem_operand"
+	(match_operand:SF 1 "reg_or_0_or_mem_operand"
 			  "fG,!*rG,RT,RQ,f,*rG"))]
   "(register_operand (operands[0], SFmode)
     || reg_or_0_operand (operands[1], SFmode))
@@ -4482,7 +4482,7 @@
 (define_insn ""
   [(set (match_operand:SF 0 "move_dest_operand"
 			  "=!*r,*r,Q")
-	(match_operand:SF 1 "reg_or_0_or_nonsymb_mem_operand"
+	(match_operand:SF 1 "reg_or_0_or_mem_operand"
 			  "!*rG,RQ,*rG"))]
   "(register_operand (operands[0], SFmode)
     || reg_or_0_operand (operands[1], SFmode))
@@ -4615,7 +4615,7 @@
 (define_insn ""
   [(set (match_operand:SF 0 "move_dest_operand"
 			  "=r,r,Q")
-	(match_operand:SF 1 "reg_or_0_or_nonsymb_mem_operand"
+	(match_operand:SF 1 "reg_or_0_or_mem_operand"
 			  "rG,RQ,rG"))]
   "(register_operand (operands[0], SFmode)
     || reg_or_0_operand (operands[1], SFmode))
