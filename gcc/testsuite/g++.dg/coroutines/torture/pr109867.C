@@ -16,7 +16,7 @@ struct task
 
 int main()
 {
-    auto t = []() -> task
+    __attribute__((__unused__)) auto t = []() -> task
     {
         co_return 2;
     }();

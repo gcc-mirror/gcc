@@ -13,7 +13,7 @@ coro1
 f (T y) noexcept
 {
   PRINT ("coro1: about to return");
-  T x = y;
+  __attribute__((__unused__)) T x = y;
   co_return 3;
 }
 

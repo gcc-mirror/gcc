@@ -1,4 +1,5 @@
 //  { dg-do run }
+//  { dg-additional-options "-Wno-unused-label" }
 
 // Check correct operation of await transform.
 

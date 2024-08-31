@@ -116,7 +116,6 @@ struct coro1 {
 struct coro1
 n4849_ia_thrower (int k)
 {
-  int caught = 0;
   PRINT ("f: about to return 22");
   co_return 22;
 }
