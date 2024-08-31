@@ -4661,6 +4661,56 @@ clear_padding_type_may_have_padding_p (tree type)
     }
 }
 
+/* Return true if TYPE has padding bits aside from those in fields,
+   elements, etc.  */
+
+bool
+type_has_padding_at_level_p (tree type)
+{
+  switch (TREE_CODE (type))
+    {
+    case RECORD_TYPE:
+      {
+	tree bitpos = size_zero_node;
+	/* Expect fields to be sorted by bit position.  */
+	for (tree f = TYPE_FIELDS (type); f; f = DECL_CHAIN (f))
+	  if (TREE_CODE (f) == FIELD_DECL)
+	    {
+	      if (DECL_PADDING_P (f))
+		return true;
+	      tree pos = bit_position (f);
+	      if (simple_cst_equal (bitpos, pos) != 1)
+		return true;
+	      if (!DECL_SIZE (f))
+		return true;
+	      bitpos = int_const_binop (PLUS_EXPR, pos, DECL_SIZE (f));
+	    }
+	if (simple_cst_equal (bitpos, TYPE_SIZE (type)) != 1)
+	  return true;
+	return false;
+      }
+    case UNION_TYPE:
+      /* If any of the fields is smaller than the whole, there is padding.  */
+      for (tree f = TYPE_FIELDS (type); f; f = DECL_CHAIN (f))
+	if (TREE_CODE (f) == FIELD_DECL)
+	  if (simple_cst_equal (TYPE_SIZE (TREE_TYPE (f)),
+				TREE_TYPE (type)) != 1)
+	    return true;
+      return false;
+    case ARRAY_TYPE:
+    case COMPLEX_TYPE:
+    case VECTOR_TYPE:
+      /* No recursing here, no padding at this level.  */
+      return false;
+    case REAL_TYPE:
+      return clear_padding_real_needs_padding_p (type);
+    case BITINT_TYPE:
+      return clear_padding_bitint_needs_padding_p (type);
+    default:
+      return false;
+    }
+}
+
 /* Emit a runtime loop:
    for (; buf.base != end; buf.base += sz)
      __builtin_clear_padding (buf.base);  */

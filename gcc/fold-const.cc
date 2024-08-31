@@ -8193,6 +8193,39 @@ native_encode_string (const_tree expr, unsigned char *ptr, int len, int off)
   return len;
 }
 
+/* Subroutine of native_encode_expr.  Encode the CONSTRUCTOR
+   specified by EXPR into the buffer PTR of length LEN bytes.
+   Return the number of bytes placed in the buffer, or zero
+   upon failure.  */
+
+static int
+native_encode_constructor (const_tree expr, unsigned char *ptr, int len, int off)
+{
+  /* We are only concerned with zero-initialization constructors here.  That's
+     all we expect to see in GIMPLE, so that's all native_encode_expr should
+     deal with.  For more general handling of constructors, there is
+     native_encode_initializer.  */
+  if (CONSTRUCTOR_NELTS (expr))
+    return 0;
+
+  /* Wide-char strings are encoded in target byte-order so native
+     encoding them is trivial.  */
+  if (BITS_PER_UNIT != CHAR_BIT
+      || !tree_fits_shwi_p (TYPE_SIZE_UNIT (TREE_TYPE (expr))))
+    return 0;
+
+  HOST_WIDE_INT total_bytes = tree_to_shwi (TYPE_SIZE_UNIT (TREE_TYPE (expr)));
+  if ((off == -1 && total_bytes > len) || off >= total_bytes)
+    return 0;
+  if (off == -1)
+    off = 0;
+  len = MIN (total_bytes - off, len);
+  if (ptr == NULL)
+    /* Dry run.  */;
+  else
+    memset (ptr, 0, len);
+  return len;
+}
 
 /* Subroutine of fold_view_convert_expr.  Encode the INTEGER_CST, REAL_CST,
    FIXED_CST, COMPLEX_CST, STRING_CST, or VECTOR_CST specified by EXPR into
@@ -8228,6 +8261,9 @@ native_encode_expr (const_tree expr, unsigned char *ptr, int len, int off)
 
     case STRING_CST:
       return native_encode_string (expr, ptr, len, off);
+
+    case CONSTRUCTOR:
+      return native_encode_constructor (expr, ptr, len, off);
 
     default:
       return 0;

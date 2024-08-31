@@ -5564,7 +5564,8 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	struct gimplify_init_ctor_preeval_data preeval_data;
 	HOST_WIDE_INT num_ctor_elements, num_nonzero_elements;
 	HOST_WIDE_INT num_unique_nonzero_elements;
-	bool complete_p, valid_const_initializer;
+	int complete_p;
+	bool valid_const_initializer;
 
 	/* Aggregate types must lower constructors to initialization of
 	   individual elements.  The exception is that a CONSTRUCTOR node
@@ -5667,6 +5668,17 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	else if (ensure_single_access && num_nonzero_elements == 0)
 	  /* If a single access to the target must be ensured and all elements
 	     are zero, then it's optimal to clear whatever their number.  */
+	  cleared = true;
+	/* If the object is small enough to go in registers, and it's
+	   not required to be constructed in memory, clear it first.
+	   That will avoid wasting cycles preserving any padding bits
+	   that might be there, and if there aren't any, the compiler
+	   is smart enough to optimize the clearing out.  */
+	else if (complete_p <= 0
+		 && !TREE_ADDRESSABLE (ctor)
+		 && !TREE_THIS_VOLATILE (object)
+		 && (TYPE_MODE (type) != BLKmode || TYPE_NO_FORCE_BLK (type))
+		 && optimize)
 	  cleared = true;
 	else
 	  cleared = false;
