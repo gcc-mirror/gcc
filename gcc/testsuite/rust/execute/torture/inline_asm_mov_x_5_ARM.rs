@@ -1,3 +1,4 @@
+/* { dg-do run { target arm*-*-* } } */
 /* { dg-output "5\r*\n" }*/
 
 #![feature(rustc_attrs)]
