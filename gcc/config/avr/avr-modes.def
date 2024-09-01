@@ -1,4 +1,5 @@
-/* Copyright (C) 2012-2024 Free Software Foundation, Inc.
+/* Extra machine modes for AVR 8-bit microcontrollers.
+   Copyright (C) 2012-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 

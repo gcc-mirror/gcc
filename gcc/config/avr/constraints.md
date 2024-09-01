@@ -1,4 +1,4 @@
-;; Constraint definitions for ATMEL AVR micro controllers.
+;; Insn constraint definitions for AVR 8-bit microcontrollers.
 ;; Copyright (C) 2006-2024 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.

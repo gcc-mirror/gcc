@@ -1,4 +1,5 @@
-/* Copyright (C) 2009-2024 Free Software Foundation, Inc.
+/* Code for the C/C++ front end for AVR 8-bit microcontrollers.
+   Copyright (C) 2009-2024 Free Software Foundation, Inc.
    Contributed by Anatoly Sokolov (aesok@post.ru)
 
    This file is part of GCC.

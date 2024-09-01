@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler,
-   for ATMEL AVR at90s8515, ATmega103/103L, ATmega603/603L microcontrollers.
+   for AVR 8-bit microcontrollers.
    Copyright (C) 1998-2024 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
 

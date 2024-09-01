@@ -1,4 +1,4 @@
-/* Functions and methods for avr specific passes registered in avr-passes.def.
+/* Support for avr-passes.def for AVR 8-bit microcontrollers.
    Copyright (C) 2024 Free Software Foundation, Inc.
 
    This file is part of GCC.

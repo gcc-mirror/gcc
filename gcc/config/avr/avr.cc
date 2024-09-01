@@ -1,4 +1,4 @@
-/* Subroutines for insn-output.cc for ATMEL AVR micro controllers
+/* Subroutines for insn-output.cc for AVR 8-bit microcontrollers
    Copyright (C) 1998-2024 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
 

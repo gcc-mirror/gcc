@@ -3999,7 +3999,7 @@ GNAT 4.6, 4.9 or 5 release branches are known to succeed.
 @end html
 @anchor{avr}
 @heading avr
-ATMEL AVR-family micro controllers.  These are used in embedded
+AVR 8-bit microcontrollers.  These are used in embedded
 applications.  There are no standard Unix configurations.
 @ifnothtml
 @xref{AVR Options,, AVR Options, gcc, Using the GNU Compiler

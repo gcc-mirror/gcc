@@ -1,4 +1,4 @@
-; Options for the ATMEL AVR port of the compiler.
+; Options for AVR 8-bit microcontrollers.
 
 ; Copyright (C) 2005-2024 Free Software Foundation, Inc.
 ;

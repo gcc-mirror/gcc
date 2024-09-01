@@ -1,5 +1,5 @@
 ;;   Machine description for GNU compiler,
-;;   for ATMEL AVR micro controllers.
+;;   for AVR 8-bit microcontrollers.
 ;;   Copyright (C) 1998-2024 Free Software Foundation, Inc.
 ;;   Contributed by Denis Chertykov (chertykov@gmail.com)
 

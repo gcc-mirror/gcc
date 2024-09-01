@@ -1,4 +1,4 @@
-/* Subroutines for log output for Atmel AVR back end.
+/* Subroutines for log output for AVR 8-bit microcontrollers.
    Copyright (C) 2011-2024 Free Software Foundation, Inc.
    Contributed by Georg-Johann Lay (avr@gjlay.de)
 
