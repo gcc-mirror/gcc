@@ -1,3 +1,16 @@
+2024-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/116130
+	* c-attribs.cc (c_common_gnu_attributes): Add entries for
+	"unsequenced", "reproducible", "unsequenced noptr" and
+	"reproducible noptr" attributes.
+	(handle_unsequenced_attribute): New function.
+	(handle_reproducible_attribute): Likewise.
+	* c-common.h (handle_unsequenced_attribute): Declare.
+	(handle_reproducible_attribute): Likewise.
+	* c-lex.cc (c_common_has_attribute): Return 202311 for standard
+	unsequenced and reproducible attributes.
+
 2024-08-28  Jason Merrill  <jason@redhat.com>
 
 	* c-pragma.cc (handle_pragma_diagnostic_impl): Also handle

@@ -1,3 +1,70 @@
+2024-08-31  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/movti-2.c: Change dg-options to -Os.
+	* gcc.target/i386/movti-4.c: Expected output of original movti-2.c.
+
+2024-08-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/coro.h: Use a variadic macro for PRINTF to
+	avoid unused warnings when output is disabled.
+	* g++.dg/coroutines/torture/co-await-04-control-flow.C: Avoid
+	unused warnings.
+	* g++.dg/coroutines/torture/co-ret-13-template-2.C: Likewise.
+	* g++.dg/coroutines/torture/exceptions-test-01-n4849-a.C: Likewise.
+	* g++.dg/coroutines/torture/local-var-04-hiding-nested-scopes.C:
+	Likewise.
+	* g++.dg/coroutines/torture/pr109867.C: Likewise.
+
+2024-08-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/torture/pr95615.inc: Check tha the
+	task object produced by get_return_object is correctly
+	deleted on exception.
+
+2024-08-31  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116098
+	* c-c++-common/torture/pr116098-1.c: New test.
+	* gcc.target/aarch64/csel-1.c: New test.
+
+2024-08-31  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.dg/tree-ssa/pr66726-2.c: Update scan dump message.
+
+2024-08-31  Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.dg/pr88169_3.f90: Adjust pattern.
+
+2024-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/ext/attr-unsequenced-1.C: New test.
+
+2024-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/116130
+	* c-c++-common/attr-reproducible-1.c: New test.
+	* c-c++-common/attr-reproducible-2.c: New test.
+	* c-c++-common/attr-unsequenced-1.c: New test.
+	* c-c++-common/attr-unsequenced-2.c: New test.
+	* gcc.dg/c23-attr-reproducible-1.c: New test.
+	* gcc.dg/c23-attr-reproducible-2.c: New test.
+	* gcc.dg/c23-attr-reproducible-3.c: New test.
+	* gcc.dg/c23-attr-reproducible-4.c: New test.
+	* gcc.dg/c23-attr-reproducible-5.c: New test.
+	* gcc.dg/c23-attr-reproducible-5-aux.c: New file.
+	* gcc.dg/c23-attr-unsequenced-1.c: New test.
+	* gcc.dg/c23-attr-unsequenced-2.c: New test.
+	* gcc.dg/c23-attr-unsequenced-3.c: New test.
+	* gcc.dg/c23-attr-unsequenced-4.c: New test.
+	* gcc.dg/c23-attr-unsequenced-5.c: New test.
+	* gcc.dg/c23-attr-unsequenced-5-aux.c: New file.
+	* gcc.dg/c23-has-c-attribute-2.c: Add tests for unsequenced
+	and reproducible attributes.
+
+2024-08-31  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/init-pad-1.c: New.
+
 2024-08-30  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/101099

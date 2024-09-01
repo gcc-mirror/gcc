@@ -1,3 +1,12 @@
+2024-08-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (coro_build_frame_access_expr): New.
+	(transform_await_expr): Use coro_build_frame_access_expr.
+	(transform_local_var_uses): Likewise.
+	(build_actor_fn): Likewise.
+	(build_destroy_fn): Likewise.
+	(cp_coroutine_transform::build_ramp_function): Likewise.
+
 2024-08-30  Jason Merrill  <jason@redhat.com>
 
 	* decl2.cc (c_parse_final_cleanups): Also check

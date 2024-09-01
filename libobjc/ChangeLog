@@ -1,3 +1,8 @@
+2024-08-31  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR libobjc/89586
+	* sendmsg.c (__objc_get_forward_imp): Add cast to `void*` before casting to IMP.
+
 2024-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* init.c (duplicate_classes): Fix duplicated words in comment; in in

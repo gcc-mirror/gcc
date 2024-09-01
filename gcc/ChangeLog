@@ -1,3 +1,76 @@
+2024-08-31  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-features.cc (timode_scalar_to_vector_candidate_p):
+	Support the first operand of AND, IOR and XOR being MEM_P, i.e. a
+	read-modify-write insn.
+
+2024-08-31  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-passes.cc (avr_pass_fuse_add) <clone>: Override.
+	* config/avr/avr-passes.def (avr_pass_fuse_add): Run again
+	after pass_cprop_hardreg.
+
+2024-08-31  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-protos.h (avr_split_tiny_move): Rename to
+	avr_split_fake_addressing_move.
+	* config/avr/avr-passes.def: Same.
+	* config/avr/avr-passes.cc: Same.
+	(avr_pass_data_fuse_add) <tv_id>: Set to TV_MACH_DEP.
+	* config/avr/avr.md (split-lpmx): Remove a define_split.  Such
+	splits are performed by avr_split_fake_addressing_move.
+
+2024-08-31  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.cc (pa_emit_move_sequence): Remove symbolic
+	memory work arounds for TARGET_ELF32.
+	(pa_legitimate_address_p): Likewise.  Allow symbolic
+	operands.  Adjust comment.
+	* config/pa/pa.md: Replace reg_or_0_or_nonsymb_mem_operand
+	with reg_or_0_or_mem_operand predicate in various unnamed
+	move insns.
+	* config/pa/predicates.md (floating_point_store_memory_operand):
+	Update comment.  Remove symbolic memory work arounds for
+	TARGET_ELF32.
+	(nonsymb_mem_operand): Rename to mem_operand.  Allow
+	symbolic memory operands.
+	(reg_or_0_or_nonsymb_mem_operand): Rename to
+	reg_or_0_or_mem_operand.  Allow symbolic memory operands.
+
+2024-08-31  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116098
+	* tree-ssa-phiopt.cc (factor_out_conditional_operation): Ignore
+	nops, labels and predicts for heuristic for conversion with a constant.
+
+2024-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/116130
+	* doc/extend.texi (unsequenced, reproducible): Document new function
+	type attributes.
+	* calls.cc (flags_from_decl_or_type): Handle "unsequenced noptr" and
+	"reproducible noptr" attributes.
+
+2024-08-31  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc: Follow the convention to not add a space
+	after comma when printing instructions.
+
+2024-08-31  Alexandre Oliva  <oliva@adacore.com>
+
+	* expr.cc (categorize_ctor_elements_1): Change p_complete to
+	int, to distinguish complete initialization in presence or
+	absence of uninitialized padding bits.
+	(categorize_ctor_elements): Likewise.  Adjust all callers...
+	* expr.h (categorize_ctor_elements): ... and declaration.
+	(type_has_padding_at_level_p): New.
+	* gimple-fold.cc (type_has_padding_at_level_p): New.
+	* fold-const.cc (native_encode_constructor): New.
+	(native_encode_expr): Call it.
+	* gimplify.cc (gimplify_init_constructor): Clear small
+	non-addressable non-volatile objects with padding or
+	other uninitialized fields as an optimization.
+
 2024-08-30  Alex Coplan  <alex.coplan@arm.com>
 
 	* gdbhooks.py (VEC_KIND_EMBED): New.

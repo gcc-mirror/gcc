@@ -1,3 +1,18 @@
+2024-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/116130
+	* c-decl.cc (handle_std_unsequenced_attribute): New function.
+	(handle_std_reproducible_attribute): Likewise.
+	(std_attributes): Add entries for "unsequenced" and "reproducible"
+	attributes.
+	(c_warn_type_attributes): Add TYPE argument.  Allow unsequenced
+	or reproducible attributes if it is FUNCTION_TYPE.
+	(groktypename): Adjust c_warn_type_attributes caller.
+	(grokdeclarator): Likewise.
+	(finish_declspecs): Likewise.
+	* c-parser.cc (c_parser_declaration_or_fndef): Likewise.
+	* c-tree.h (c_warn_type_attributes): Add TYPE argument.
+
 2024-08-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-objc-common.cc (c_tree_printer): Convert final param from
