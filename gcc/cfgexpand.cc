@@ -3121,7 +3121,7 @@ expand_asm_stmt (gasm *stmt)
 
   location_t locus = gimple_location (stmt);
 
-  if (gimple_asm_input_p (stmt))
+  if (gimple_asm_basic_p (stmt))
     {
       const char *s = gimple_asm_string (stmt);
       tree string = build_string (strlen (s), s);

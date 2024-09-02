@@ -8887,7 +8887,7 @@ stmt_can_terminate_bb_p (gimple *t)
     }
 
   if (gasm *asm_stmt = dyn_cast <gasm *> (t))
-    if (gimple_asm_volatile_p (asm_stmt) || gimple_asm_input_p (asm_stmt))
+    if (gimple_asm_volatile_p (asm_stmt) || gimple_asm_basic_p (asm_stmt))
       return true;
 
   return false;

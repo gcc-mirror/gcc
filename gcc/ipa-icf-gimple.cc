@@ -986,7 +986,7 @@ func_checker::compare_gimple_asm (const gasm *g1, const gasm *g2)
   if (gimple_asm_volatile_p (g1) != gimple_asm_volatile_p (g2))
     return false;
 
-  if (gimple_asm_input_p (g1) != gimple_asm_input_p (g2))
+  if (gimple_asm_basic_p (g1) != gimple_asm_basic_p (g2))
     return false;
 
   if (gimple_asm_inline_p (g1) != gimple_asm_inline_p (g2))

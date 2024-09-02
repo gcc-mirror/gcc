@@ -135,7 +135,7 @@ enum gimple_rhs_class
 
    Keep this list sorted.  */
 enum gf_mask {
-    GF_ASM_INPUT		= 1 << 0,
+    GF_ASM_BASIC		= 1 << 0,
     GF_ASM_VOLATILE		= 1 << 1,
     GF_ASM_INLINE		= 1 << 2,
     GF_CALL_FROM_THUNK		= 1 << 0,
@@ -4227,24 +4227,25 @@ gimple_asm_set_inline (gasm *asm_stmt, bool inline_p)
 }
 
 
-/* If INPUT_P is true, mark asm ASM_STMT as an ASM_INPUT.  */
+/* Mark whether asm ASM_STMT is a basic asm or an extended asm, based on
+   BASIC_P.  */
 
 inline void
-gimple_asm_set_input (gasm *asm_stmt, bool input_p)
+gimple_asm_set_basic (gasm *asm_stmt, bool basic_p)
 {
-  if (input_p)
-    asm_stmt->subcode |= GF_ASM_INPUT;
+  if (basic_p)
+    asm_stmt->subcode |= GF_ASM_BASIC;
   else
-    asm_stmt->subcode &= ~GF_ASM_INPUT;
+    asm_stmt->subcode &= ~GF_ASM_BASIC;
 }
 
 
-/* Return true if asm ASM_STMT is an ASM_INPUT.  */
+/* Return true if asm ASM_STMT is a basic asm rather than an extended asm.  */
 
 inline bool
-gimple_asm_input_p (const gasm *asm_stmt)
+gimple_asm_basic_p (const gasm *asm_stmt)
 {
-  return (asm_stmt->subcode & GF_ASM_INPUT) != 0;
+  return (asm_stmt->subcode & GF_ASM_BASIC) != 0;
 }
 
 
