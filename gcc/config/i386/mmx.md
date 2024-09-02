@@ -2692,6 +2692,86 @@
   DONE;
 })
 
+(define_expand "fma<mode>4"
+  [(set (match_operand:VBF_32_64 0 "register_operand")
+	(fma:VBF_32_64
+	  (match_operand:VBF_32_64 1 "nonimmediate_operand")
+	  (match_operand:VBF_32_64 2 "nonimmediate_operand")
+	  (match_operand:VBF_32_64 3 "nonimmediate_operand")))]
+  "TARGET_AVX10_2_256"
+{
+  rtx op0 = gen_reg_rtx (V8BFmode);
+  rtx op1 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[1]), <MODE>mode);
+  rtx op2 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[2]), <MODE>mode);
+  rtx op3 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[3]), <MODE>mode);
+
+  emit_insn (gen_fmav8bf4 (op0, op1, op2, op3));
+
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8BFmode));
+  DONE;
+})
+
+(define_expand "fms<mode>4"
+  [(set (match_operand:VBF_32_64 0 "register_operand")
+	(fma:VBF_32_64
+	  (match_operand:VBF_32_64   1 "nonimmediate_operand")
+	  (match_operand:VBF_32_64   2 "nonimmediate_operand")
+	  (neg:VBF_32_64
+	    (match_operand:VBF_32_64 3 "nonimmediate_operand"))))]
+  "TARGET_AVX10_2_256"
+{
+  rtx op0 = gen_reg_rtx (V8BFmode);
+  rtx op1 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[1]), <MODE>mode);
+  rtx op2 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[2]), <MODE>mode);
+  rtx op3 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[3]), <MODE>mode);
+
+  emit_insn (gen_fmsv8bf4 (op0, op1, op2, op3));
+
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8BFmode));
+  DONE;
+})
+
+(define_expand "fnma<mode>4"
+  [(set (match_operand:VBF_32_64 0 "register_operand")
+	(fma:VBF_32_64
+	  (neg:VBF_32_64
+	    (match_operand:VBF_32_64 1 "nonimmediate_operand"))
+	  (match_operand:VBF_32_64   2 "nonimmediate_operand")
+	  (match_operand:VBF_32_64   3 "nonimmediate_operand")))]
+  "TARGET_AVX10_2_256"
+{
+  rtx op0 = gen_reg_rtx (V8BFmode);
+  rtx op1 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[1]), <MODE>mode);
+  rtx op2 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[2]), <MODE>mode);
+  rtx op3 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[3]), <MODE>mode);
+
+  emit_insn (gen_fnmav8bf4 (op0, op1, op2, op3));
+
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8BFmode));
+  DONE;
+})
+
+(define_expand "fnms<mode>4"
+  [(set (match_operand:VBF_32_64 0 "register_operand")
+	(fma:VBF_32_64
+	  (neg:VBF_32_64
+	    (match_operand:VBF_32_64 1 "nonimmediate_operand"))
+	  (match_operand:VBF_32_64   2 "nonimmediate_operand")
+	  (neg:VBF_32_64
+	    (match_operand:VBF_32_64 3 "nonimmediate_operand"))))]
+  "TARGET_AVX10_2_256"
+{
+  rtx op0 = gen_reg_rtx (V8BFmode);
+  rtx op1 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[1]), <MODE>mode);
+  rtx op2 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[2]), <MODE>mode);
+  rtx op3 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[3]), <MODE>mode);
+
+  emit_insn (gen_fnmsv8bf4 (op0, op1, op2, op3));
+
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8BFmode));
+  DONE;
+})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Parallel half-precision floating point complex type operations
