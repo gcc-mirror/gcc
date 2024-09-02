@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mfpmath=sse" } */
+/* { dg-options "-O2 -mfpmath=sse -msse2" } */
 /* { dg-final { scan-assembler-times "comi" 1 } } */
 /* { dg-final { scan-assembler-times "set" 1 } } */
 
