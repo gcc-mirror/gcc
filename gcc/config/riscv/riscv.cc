@@ -3601,6 +3601,11 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       if (outer_code == INSN
 	  && register_operand (SET_DEST (x), GET_MODE (SET_DEST (x))))
 	{
+	  if (REG_P (SET_SRC (x)) && TARGET_DOUBLE_FLOAT && mode == DFmode)
+	    {
+	      *total = COSTS_N_INSNS (1);
+	      return true;
+	    }
 	  riscv_rtx_costs (SET_SRC (x), mode, outer_code, opno, total, speed);
 	  return true;
 	}
