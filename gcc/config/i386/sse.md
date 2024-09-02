@@ -31901,6 +31901,13 @@
    "vscalefpbf16\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
    [(set_attr "prefix" "evex")])
 
+(define_expand "<code><mode>3"
+  [(set (match_operand:VBF_AVX10_2 0 "register_operand")
+     (smaxmin:VBF_AVX10_2
+       (match_operand:VBF_AVX10_2 1 "register_operand")
+       (match_operand:VBF_AVX10_2 2 "nonimmediate_operand")))]
+  "TARGET_AVX10_2_256")
+
 (define_insn "avx10_2_<code>pbf16_<mode><mask_name>"
    [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v")
       (smaxmin:VBF_AVX10_2
