@@ -610,6 +610,10 @@
 (define_mode_iterator VI1_AVX512VNNI
   [(V64QI "TARGET_AVX512VNNI && TARGET_EVEX512") (V32QI "TARGET_AVX2") V16QI])
 
+(define_mode_iterator VI1_AVX512VNNIBW
+  [(V64QI "(TARGET_AVX512BW || TARGET_AVX512VNNI) && TARGET_EVEX512")
+   (V32QI "TARGET_AVX2") V16QI])
+
 (define_mode_iterator VI12_256_512_AVX512VL
   [(V64QI "TARGET_EVEX512") (V32QI "TARGET_AVX512VL")
    (V32HI "TARGET_EVEX512") (V16HI "TARGET_AVX512VL")])
@@ -626,6 +630,9 @@
 (define_mode_iterator VI2_AVX512VNNIBW
   [(V32HI "(TARGET_AVX512BW || TARGET_AVX512VNNI) && TARGET_EVEX512")
    (V16HI "TARGET_AVX2") V8HI])
+
+(define_mode_iterator VI2_AVX10_2
+  [(V32HI "TARGET_AVX10_2_512") V16HI V8HI])
 
 (define_mode_iterator VI4_AVX
   [(V8SI "TARGET_AVX") V4SI])
@@ -31232,12 +31239,13 @@
 
 (define_expand "sdot_prod<mode>"
   [(match_operand:<ssedvecmode> 0 "register_operand")
-   (match_operand:VI1_AVX2 1 "register_operand")
-   (match_operand:VI1_AVX2 2 "register_operand")
+   (match_operand:VI1_AVX512VNNIBW 1 "register_operand")
+   (match_operand:VI1_AVX512VNNIBW 2 "register_operand")
    (match_operand:<ssedvecmode> 3 "register_operand")]
   "TARGET_SSE2"
 {
-  if (TARGET_AVXVNNIINT8)
+  if ((<MODE_SIZE> == 64 && TARGET_AVX10_2_512)
+      || (<MODE_SIZE> < 64 && (TARGET_AVXVNNIINT8 || TARGET_AVX10_2_256)))
     {
       operands[1] = lowpart_subreg (<ssedvecmode>mode,
 				    force_reg (<MODE>mode, operands[1]),
@@ -31276,44 +31284,15 @@
   DONE;
 })
 
-(define_expand "sdot_prodv64qi"
-  [(match_operand:V16SI 0 "register_operand")
-   (match_operand:V64QI 1 "register_operand")
-   (match_operand:V64QI 2 "register_operand")
-   (match_operand:V16SI 3 "register_operand")]
-  "(TARGET_AVX512VNNI || TARGET_AVX512BW) && TARGET_EVEX512"
-{
-  /* Emulate with vpdpwssd.  */
-  rtx op1_lo = gen_reg_rtx (V32HImode);
-  rtx op1_hi = gen_reg_rtx (V32HImode);
-  rtx op2_lo = gen_reg_rtx (V32HImode);
-  rtx op2_hi = gen_reg_rtx (V32HImode);
-
-  emit_insn (gen_vec_unpacks_lo_v64qi (op1_lo, operands[1]));
-  emit_insn (gen_vec_unpacks_lo_v64qi (op2_lo, operands[2]));
-  emit_insn (gen_vec_unpacks_hi_v64qi (op1_hi, operands[1]));
-  emit_insn (gen_vec_unpacks_hi_v64qi (op2_hi, operands[2]));
-
-  rtx res1 = gen_reg_rtx (V16SImode);
-  rtx res2 = gen_reg_rtx (V16SImode);
-  rtx sum = gen_reg_rtx (V16SImode);
-
-  emit_move_insn (sum, CONST0_RTX (V16SImode));
-  emit_insn (gen_sdot_prodv32hi (res1, op1_lo, op2_lo, sum));
-  emit_insn (gen_sdot_prodv32hi (res2, op1_hi, op2_hi, operands[3]));
-
-  emit_insn (gen_addv16si3 (operands[0], res1, res2));
-  DONE;
-})
-
 (define_expand "udot_prod<mode>"
   [(match_operand:<ssedvecmode> 0 "register_operand")
-   (match_operand:VI1_AVX2 1 "register_operand")
-   (match_operand:VI1_AVX2 2 "register_operand")
+   (match_operand:VI1_AVX512VNNIBW 1 "register_operand")
+   (match_operand:VI1_AVX512VNNIBW 2 "register_operand")
    (match_operand:<ssedvecmode> 3 "register_operand")]
   "TARGET_SSE2"
 {
-  if (TARGET_AVXVNNIINT8)
+  if ((<MODE_SIZE> == 64 && TARGET_AVX10_2_512)
+      || (<MODE_SIZE> < 64 && (TARGET_AVXVNNIINT8 || TARGET_AVX10_2_256)))
     {
       operands[1] = lowpart_subreg (<ssedvecmode>mode,
 				    force_reg (<MODE>mode, operands[1]),
@@ -31349,36 +31328,6 @@
      emit_insn (gen_add<ssedvecmodelower>3 (operands[0], res1, res2));
    }
 
-  DONE;
-})
-
-(define_expand "udot_prodv64qi"
-  [(match_operand:V16SI 0 "register_operand")
-   (match_operand:V64QI 1 "register_operand")
-   (match_operand:V64QI 2 "register_operand")
-   (match_operand:V16SI 3 "register_operand")]
-  "(TARGET_AVX512VNNI || TARGET_AVX512BW) && TARGET_EVEX512"
-{
-  /* Emulate with vpdpwssd.  */
-  rtx op1_lo = gen_reg_rtx (V32HImode);
-  rtx op1_hi = gen_reg_rtx (V32HImode);
-  rtx op2_lo = gen_reg_rtx (V32HImode);
-  rtx op2_hi = gen_reg_rtx (V32HImode);
-
-  emit_insn (gen_vec_unpacku_lo_v64qi (op1_lo, operands[1]));
-  emit_insn (gen_vec_unpacku_lo_v64qi (op2_lo, operands[2]));
-  emit_insn (gen_vec_unpacku_hi_v64qi (op1_hi, operands[1]));
-  emit_insn (gen_vec_unpacku_hi_v64qi (op2_hi, operands[2]));
-
-  rtx res1 = gen_reg_rtx (V16SImode);
-  rtx res2 = gen_reg_rtx (V16SImode);
-  rtx sum = gen_reg_rtx (V16SImode);
-
-  emit_move_insn (sum, CONST0_RTX (V16SImode));
-  emit_insn (gen_sdot_prodv32hi (res1, op1_lo, op2_lo, sum));
-  emit_insn (gen_sdot_prodv32hi (res2, op1_hi, op2_hi, operands[3]));
-
-  emit_insn (gen_addv16si3 (operands[0], res1, res2));
   DONE;
 })
 
@@ -31757,10 +31706,10 @@
 
 (define_expand "usdot_prod<mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand")
-   (match_operand:VI2_AVX2 1 "register_operand")
-   (match_operand:VI2_AVX2 2 "register_operand")
+   (match_operand:VI2_AVX10_2 1 "register_operand")
+   (match_operand:VI2_AVX10_2 2 "register_operand")
    (match_operand:<sseunpackmode> 3 "register_operand")]
-  "TARGET_AVXVNNIINT16"
+  "TARGET_AVXVNNIINT16 || TARGET_AVX10_2_256"
 {
   operands[1] = lowpart_subreg (<sseunpackmode>mode,
                                 force_reg (<MODE>mode, operands[1]),
@@ -31775,10 +31724,10 @@
 
 (define_expand "udot_prod<mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand")
-   (match_operand:VI2_AVX2 1 "register_operand")
-   (match_operand:VI2_AVX2 2 "register_operand")
+   (match_operand:VI2_AVX10_2 1 "register_operand")
+   (match_operand:VI2_AVX10_2 2 "register_operand")
    (match_operand:<sseunpackmode> 3 "register_operand")]
-  "TARGET_AVXVNNIINT16"
+  "TARGET_AVXVNNIINT16 || TARGET_AVX10_2_256"
 {
   operands[1] = lowpart_subreg (<sseunpackmode>mode,
                                 force_reg (<MODE>mode, operands[1]),

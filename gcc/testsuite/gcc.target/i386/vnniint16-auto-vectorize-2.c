@@ -2,19 +2,24 @@
 /* { dg-options "-O2 -mavxvnniint16" } */
 /* { dg-require-effective-target avxvnniint16 } */
 
+#ifndef AVX10_2
 #define AVXVNNIINT16
-#ifndef CHECK
-#define CHECK "avx-check.h"
 #endif
 
-#ifndef TEST
-#define TEST avx_test
+#ifndef CHECK
+#define CHECK "avx-check.h"
 #endif
 
 #include CHECK
 #include "vnniint16-auto-vectorize-1.c"
 
+#ifndef TEST
+#define TEST avx_test
+#endif
+
+#ifndef N
 #define N 256
+#endif
 
 short a_i16[N];
 unsigned short b_u16[N], c_u16[N], d_u16[N];

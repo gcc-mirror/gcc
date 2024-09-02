@@ -2,19 +2,25 @@
 /* { dg-options "-O2 -mavxvnniint8" } */
 /* { dg-require-effective-target avxvnniint8 } */
 
+#ifndef AVX10_2
 #define AVXVNNIINT8
-#ifndef CHECK
-#define CHECK "avx-check.h"
 #endif
 
-#ifndef TEST
-#define TEST avx_test
+#ifndef CHECK
+#define CHECK "avx-check.h"
 #endif
 
 #include CHECK
 #include "vnniint8-auto-vectorize-1.c"
 
+#ifndef TEST
+#define TEST avx_test
+#endif
+
+#ifndef N
 #define N 256
+#endif
+
 char a_i8[N], b_i8[N];
 unsigned char c_u8[N], d_u8[N];
 int i8_exp, i8_ref;
