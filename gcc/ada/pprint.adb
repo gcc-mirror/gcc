@@ -653,6 +653,7 @@ package body Pprint is
 
             when N_Case_Expression
                | N_Delta_Aggregate
+               | N_External_Initializer
                | N_Interpolated_String_Literal
                | N_Op_Rotate_Left
                | N_Op_Rotate_Right

@@ -255,6 +255,7 @@ package body Sinfo.Utils is
        when Flag_Field
           | Node_Kind_Type_Field
           | Entity_Kind_Type_Field
+          | Source_File_Index_Field
           | Source_Ptr_Field
           | Small_Paren_Count_Type_Field
           | Convention_Id_Field

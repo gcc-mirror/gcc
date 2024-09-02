@@ -461,6 +461,9 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Actions, List_Id, Default_No_List),
         Sy (Expression, Node_Id, Default_Empty)));
 
+   Cc (N_External_Initializer, N_Subexpr,
+       (Sy (File_Index, Source_File_Index)));
+
    Cc (N_If_Expression, N_Subexpr,
        (Sy (Expressions, List_Id, Default_No_List),
         Sy (Is_Elsif, Flag),

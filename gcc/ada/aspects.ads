@@ -96,6 +96,7 @@ package Aspects is
       Aspect_Dispatching_Domain,
       Aspect_Dynamic_Predicate,
       Aspect_Exceptional_Cases,             -- GNAT
+      Aspect_External_Initialization,       -- GNAT
       Aspect_External_Name,
       Aspect_External_Tag,
       Aspect_Finalizable,                   -- GNAT
@@ -293,6 +294,7 @@ package Aspects is
       Aspect_Effective_Writes           => True,
       Aspect_Exceptional_Cases          => True,
       Aspect_Extensions_Visible         => True,
+      Aspect_External_Initialization    => True,
       Aspect_Favor_Top_Level            => True,
       Aspect_Finalizable                => True,
       Aspect_First_Controlling_Parameter => True,
@@ -437,6 +439,7 @@ package Aspects is
       Aspect_Dispatching_Domain         => Expression,
       Aspect_Dynamic_Predicate          => Expression,
       Aspect_Exceptional_Cases          => Expression,
+      Aspect_External_Initialization    => Expression,
       Aspect_External_Name              => Expression,
       Aspect_External_Tag               => Expression,
       Aspect_Finalizable                => Expression,
@@ -536,6 +539,7 @@ package Aspects is
       Aspect_Dynamic_Predicate            => False,
       Aspect_Exceptional_Cases            => False,
       Aspect_Exclusive_Functions          => False,
+      Aspect_External_Initialization      => False,
       Aspect_External_Name                => False,
       Aspect_External_Tag                 => False,
       Aspect_Finalizable                  => False,
@@ -711,6 +715,7 @@ package Aspects is
       Aspect_Exclusive_Functions          => Name_Exclusive_Functions,
       Aspect_Export                       => Name_Export,
       Aspect_Extensions_Visible           => Name_Extensions_Visible,
+      Aspect_External_Initialization      => Name_External_Initialization,
       Aspect_External_Name                => Name_External_Name,
       Aspect_External_Tag                 => Name_External_Tag,
       Aspect_Favor_Top_Level              => Name_Favor_Top_Level,
@@ -1050,6 +1055,7 @@ package Aspects is
       Aspect_Exceptional_Cases            => Never_Delay,
       Aspect_Export                       => Never_Delay,
       Aspect_Extensions_Visible           => Never_Delay,
+      Aspect_External_Initialization      => Never_Delay,
       Aspect_First_Controlling_Parameter  => Never_Delay,
       Aspect_Ghost                        => Never_Delay,
       Aspect_Global                       => Never_Delay,

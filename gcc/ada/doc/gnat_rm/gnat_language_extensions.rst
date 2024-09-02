@@ -740,3 +740,28 @@ the following standard-Ada instantiation:
 
 Link to the original RFC:
 https://github.com/AdaCore/ada-spark-rfcs/blob/topic/generic_instantiations/considered/rfc-inference-of-dependent-types.md
+
+External_Initialization Aspect
+------------------------------
+
+The ``External_Initialization`` aspect provides a feature similar to Rust's ``include_bytes!``
+and to C23's ``#embed``. It has the effect of initializing an object with the contents of
+a file specified by a file path.
+
+Only string objects and objects of type ``Ada.Streams.Stream_Element_Array`` can be subject
+to the ``External_Initialization`` aspect.
+
+Example:
+
+.. code-block:: ada
+
+   with Ada.Streams;
+
+   package P is
+      S : constant String with External_Initialization => "foo.txt";
+
+      X : constant Ada.Streams.Stream_Element_Array with External_Initialization => "bar.bin";
+   end P;
+
+Link to the original RFC:
+https://github.com/AdaCore/ada-spark-rfcs/blob/master/considered/rfc-embed-binary-resources.rst

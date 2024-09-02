@@ -147,7 +147,7 @@ package Types is
 
    type Text_Ptr is new Int range -4 .. Int'Last;
    --  -4 .. -1 are special; see constants below
-   type Text_Buffer is array (Text_Ptr range <>) of Character;
+   type Text_Buffer is array (Text_Ptr range <>) of aliased Character;
    --  Text buffer used to hold source file or library information file
 
    type Text_Buffer_Ptr is access all Text_Buffer;

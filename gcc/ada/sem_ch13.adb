@@ -4638,6 +4638,20 @@ package body Sem_Ch13 is
                          Chars      => Name_Storage_Size,
                          Expression => Relocate_Node (Expr));
                   end if;
+
+               when Aspect_External_Initialization =>
+                  Error_Msg_GNAT_Extension
+                    ("External_Initialization aspect", Sloc (Aspect));
+
+                  --  The External_Initialization aspect specifications that
+                  --  are attached to object declarations were already
+                  --  processed and detached from the list at an earlier stage,
+                  --  so we can only get here if the specification is not in an
+                  --  appropriate place.
+
+                  Error_Msg_N
+                    ("External_Initialization aspect can only be specified " &
+                     "for object declarations", Aspect);
             end case;
 
             --  Attach the corresponding pragma/attribute definition clause to
@@ -11566,6 +11580,7 @@ package body Sem_Ch13 is
             | Aspect_Dimension
             | Aspect_Dimension_System
             | Aspect_Exceptional_Cases
+            | Aspect_External_Initialization
             | Aspect_Global
             | Aspect_GNAT_Annotate
             | Aspect_Implicit_Dereference

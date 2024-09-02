@@ -60,6 +60,7 @@ package Gen_IL.Types is
       Upos,
       Nonzero_Uint,
       Ureal,
+      Source_File_Index,
 
       Node_Kind_Type, -- Type of result of Nkind function, i.e. Node_Kind
       Entity_Kind_Type, -- Type of result of Ekind function, i.e. Entity_Kind
@@ -249,6 +250,7 @@ package Gen_IL.Types is
       N_String_Literal,
       N_Explicit_Dereference,
       N_Expression_With_Actions,
+      N_External_Initializer,
       N_If_Expression,
       N_Indexed_Component,
       N_Interpolated_String_Literal,

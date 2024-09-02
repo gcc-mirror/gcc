@@ -56,6 +56,7 @@
 
 with Alloc;
 with Casing; use Casing;
+with Interfaces.C;
 with Namet;  use Namet;
 with System;
 with Table;
@@ -705,6 +706,14 @@ package Sinput is
    --  files that have been loaded so far will not be accessed before being
    --  reloaded. It is intended for tools that parse several times sources,
    --  to avoid memory leaks.
+
+   type C_Array is record
+      Pointer : access constant Character;
+      Length  : Interfaces.C.int range 0 .. Interfaces.C.int'Last;
+   end record with Convention => C_Pass_By_Copy;
+
+   function C_Source_Buffer (S : SFI) return C_Array with
+     Export, Convention => C, External_Name => "sinput__c_source_buffer";
 
 private
    pragma Inline (File_Name);

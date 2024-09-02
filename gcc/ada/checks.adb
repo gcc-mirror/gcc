@@ -10152,7 +10152,9 @@ package body Checks is
 
             --    T_Typ'Length = string-literal-length
 
-            if Nkind (Expr_Actual) = N_String_Literal
+            --  The above also applies to the External_Initializer case.
+
+            if Nkind (Expr_Actual) in N_String_Literal | N_External_Initializer
               and then Ekind (Etype (Expr_Actual)) = E_String_Literal_Subtype
             then
                Cond :=

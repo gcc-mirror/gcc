@@ -249,6 +249,12 @@ package body Sem is
          when N_Extension_Aggregate =>
             Analyze_Aggregate (N);
 
+         --  The expansion of the External_Initialization aspect creates fully
+         --  analyzed N_External_Initializer nodes.
+
+         when N_External_Initializer =>
+            null;
+
          when N_Formal_Object_Declaration =>
             Analyze_Formal_Object_Declaration (N);
 

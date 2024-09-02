@@ -872,6 +872,7 @@ package body Gen_IL.Gen is
              | Uint
              | Uint_Subtype
              | Ureal
+             | Source_File_Index
              | Source_Ptr
              | Union_Id
              | Node_Id

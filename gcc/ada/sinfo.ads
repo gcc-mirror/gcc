@@ -1291,6 +1291,10 @@ package Sinfo is
    --    modifications performed on the original expression such as replacement
    --    of the current type instance or substitutions of primitives.
 
+   --  File_Index
+   --    Present in N_External_Initializer nodes. Contains a Source_File_Index
+   --    that references the file the external initializer points to.
+
    --  First_Inlined_Subprogram
    --    Present in the N_Compilation_Unit node for the main program. Points
    --    to a chain of entities for subprograms that are to be inlined. The
@@ -8069,6 +8073,17 @@ package Sinfo is
       --  actions are inserted. The expander removes such empty cases after
       --  the expression of the node is fully analyzed and expanded, at which
       --  point it is safe to remove it, since no more actions can be inserted.
+
+      --------------------------
+      -- External Initializer --
+      --------------------------
+
+      --  This node is used to represent an instance of the
+      --  External_Initialization aspect.
+
+      --  N_External_Initializer
+      --  File_Index
+      --  plus fields for expression
 
       --------------------
       -- Free Statement --

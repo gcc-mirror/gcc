@@ -6401,6 +6401,17 @@ gnat_to_gnu (Node_Id gnat_node)
 	gnu_result = build_atomic_load (gnu_result, aa_sync);
       break;
 
+    case N_External_Initializer:
+      {
+	gnu_result_type = get_unpadded_type (Etype (gnat_node));
+	struct c_array a = C_Source_Buffer (File_Index (gnat_node));
+
+	gnu_result = build_string ((unsigned) a.length, a.pointer);
+
+	TREE_TYPE (gnu_result) = gnu_result_type;
+      }
+      break;
+
     case N_Integer_Literal:
       {
 	tree gnu_type;

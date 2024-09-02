@@ -276,6 +276,25 @@ package body Sinput is
       return +Buf;
    end Build_Location_String;
 
+   ---------------------
+   -- C_Source_Buffer --
+   ---------------------
+
+   function C_Source_Buffer (S : SFI) return C_Array is
+      use type Interfaces.C.int;
+
+      Length : constant Interfaces.C.int :=
+        Interfaces.C.int (Source_Last (S) - Source_First (S));
+
+      Text : constant Source_Buffer_Ptr := Source_Text (S);
+
+      Pointer : constant access constant Character :=
+        (if Length = 0 then null else
+          Text (Text'First)'Access);
+   begin
+      return (Pointer, Length);
+   end C_Source_Buffer;
+
    -------------------
    -- Check_For_BOM --
    -------------------
