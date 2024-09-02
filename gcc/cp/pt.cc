@@ -18930,7 +18930,7 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	tree asm_expr = tmp;
 	if (TREE_CODE (asm_expr) == CLEANUP_POINT_EXPR)
 	  asm_expr = TREE_OPERAND (asm_expr, 0);
-	ASM_INPUT_P (asm_expr) = ASM_INPUT_P (t);
+	ASM_BASIC_P (asm_expr) = ASM_BASIC_P (t);
       }
       break;
 

@@ -2458,7 +2458,7 @@ playback::block::add_extended_asm (location *loc,
   /* asm statements without outputs, including simple ones, are treated
      as volatile.  */
   ASM_VOLATILE_P (asm_stmt) = (outputs->length () == 0);
-  ASM_INPUT_P (asm_stmt) = 0; /* extended asm stmts are not "simple".  */
+  ASM_BASIC_P (asm_stmt) = 0;
   ASM_INLINE_P (asm_stmt) = is_inline;
   if (is_volatile)
     ASM_VOLATILE_P (asm_stmt) = 1;

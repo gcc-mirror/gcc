@@ -23143,7 +23143,7 @@ cp_parser_asm_definition (cp_parser* parser)
 	      if (TREE_CODE (temp) == CLEANUP_POINT_EXPR)
 		temp = TREE_OPERAND (temp, 0);
 
-	      ASM_INPUT_P (temp) = 1;
+	      ASM_BASIC_P (temp) = 1;
 	    }
 	}
       else

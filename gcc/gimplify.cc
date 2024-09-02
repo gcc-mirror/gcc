@@ -7352,7 +7352,7 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 			       ASM_VOLATILE_P (expr)
 			       || noutputs == 0
 			       || labels);
-      gimple_asm_set_input (stmt, ASM_INPUT_P (expr));
+      gimple_asm_set_input (stmt, ASM_BASIC_P (expr));
       gimple_asm_set_inline (stmt, ASM_INLINE_P (expr));
 
       gimplify_seq_add_stmt (pre_p, stmt);

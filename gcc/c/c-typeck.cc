@@ -11672,7 +11672,7 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
 
   /* asm statements without outputs, including simple ones, are treated
      as volatile.  */
-  ASM_INPUT_P (args) = simple;
+  ASM_BASIC_P (args) = simple;
   ASM_VOLATILE_P (args) = (noutputs == 0);
   ASM_INLINE_P (args) = is_inline;
 

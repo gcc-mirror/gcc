@@ -519,7 +519,7 @@ m2statement_BuildAsm (location_t location, tree instr, bool isVolatile,
 
   /* ASM statements without outputs, including simple ones, are treated
      as volatile.  */
-  ASM_INPUT_P (args) = isSimple;
+  ASM_BASIC_P (args) = isSimple;
   ASM_VOLATILE_P (args) = isVolatile;
 
   add_stmt (location, args);
