@@ -612,12 +612,14 @@ public:
 class vadc_vsbc_impl : public function_base
 {
 public:
-  CONSTEXPR vadc_vsbc_impl (bool init_carry)
-    : m_init_carry (init_carry)
+  CONSTEXPR vadc_vsbc_impl (bool init_carry, bool add)
+    : m_init_carry (init_carry), m_add (add)
   {}
 
   /* Initialize carry with 0 (vadci).  */
   bool m_init_carry;
+  /* Add (true) or Sub (false).  */
+  bool m_add;
 
   unsigned int
   call_properties (const function_instance &) const override
@@ -700,26 +702,42 @@ public:
       {
       case PRED_none:
 	/* No predicate.  */
-	unspec = m_init_carry
-	  ? (e.type_suffix (0).unsigned_p
-	     ? VADCIQ_U
-	     : VADCIQ_S)
-	  : (e.type_suffix (0).unsigned_p
-	     ? VADCQ_U
-	     : VADCQ_S);
+	unspec = m_add
+	  ? (m_init_carry
+	     ? (e.type_suffix (0).unsigned_p
+		? VADCIQ_U
+		: VADCIQ_S)
+	     : (e.type_suffix (0).unsigned_p
+		? VADCQ_U
+		: VADCQ_S))
+	  : (m_init_carry
+	     ? (e.type_suffix (0).unsigned_p
+		? VSBCIQ_U
+		: VSBCIQ_S)
+	     : (e.type_suffix (0).unsigned_p
+		? VSBCQ_U
+		: VSBCQ_S));
 	code = code_for_mve_q_v4si (unspec, unspec);
 	insns = e.use_exact_insn (code);
 	break;
 
       case PRED_m:
 	/* "m" predicate.  */
-	unspec = m_init_carry
-	  ? (e.type_suffix (0).unsigned_p
-	     ? VADCIQ_M_U
-	     : VADCIQ_M_S)
-	  : (e.type_suffix (0).unsigned_p
-	     ? VADCQ_M_U
-	     : VADCQ_M_S);
+	unspec = m_add
+	  ? (m_init_carry
+	     ? (e.type_suffix (0).unsigned_p
+		? VADCIQ_M_U
+		: VADCIQ_M_S)
+	     : (e.type_suffix (0).unsigned_p
+		? VADCQ_M_U
+		: VADCQ_M_S))
+	  : (m_init_carry
+	     ? (e.type_suffix (0).unsigned_p
+		? VSBCIQ_M_U
+		: VSBCIQ_M_S)
+	     : (e.type_suffix (0).unsigned_p
+		? VSBCQ_M_U
+		: VSBCQ_M_S));
 	code = code_for_mve_q_m_v4si (unspec, unspec);
 	insns = e.use_cond_insn (code, 0);
 	break;
@@ -915,8 +933,8 @@ namespace arm_mve {
 FUNCTION_PRED_P_S_U (vabavq, VABAVQ)
 FUNCTION_WITHOUT_N (vabdq, VABDQ)
 FUNCTION (vabsq, unspec_based_mve_function_exact_insn, (ABS, ABS, ABS, -1, -1, -1, VABSQ_M_S, -1, VABSQ_M_F, -1, -1, -1))
-FUNCTION (vadciq, vadc_vsbc_impl, (true))
-FUNCTION (vadcq, vadc_vsbc_impl, (false))
+FUNCTION (vadciq, vadc_vsbc_impl, (true, true))
+FUNCTION (vadcq, vadc_vsbc_impl, (false, true))
 FUNCTION_WITH_RTX_M_N (vaddq, PLUS, VADDQ)
 FUNCTION_PRED_P_S_U (vaddlvaq, VADDLVAQ)
 FUNCTION_PRED_P_S_U (vaddlvq, VADDLVQ)
@@ -1079,6 +1097,8 @@ FUNCTION_WITH_M_N_NO_F (vrshlq, VRSHLQ)
 FUNCTION_ONLY_N_NO_F (vrshrnbq, VRSHRNBQ)
 FUNCTION_ONLY_N_NO_F (vrshrntq, VRSHRNTQ)
 FUNCTION_ONLY_N_NO_F (vrshrq, VRSHRQ)
+FUNCTION (vsbciq, vadc_vsbc_impl, (true, false))
+FUNCTION (vsbcq, vadc_vsbc_impl, (false, false))
 FUNCTION (vshlcq, vshlc_impl,)
 FUNCTION_ONLY_N_NO_F (vshllbq, VSHLLBQ)
 FUNCTION_ONLY_N_NO_F (vshlltq, VSHLLTQ)
