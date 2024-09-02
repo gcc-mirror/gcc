@@ -1,3 +1,8 @@
+2024-09-01  Hans-Peter Nilsson  <hp@axis.com>
+
+	* g++.dg/modules/modules.exp (module_do_it): Prune compilation
+	messages.
+
 2024-08-31  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* gcc.target/i386/movti-2.c: Change dg-options to -Os.

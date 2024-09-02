@@ -1,3 +1,24 @@
+2024-09-01  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116554
+	* gimple-ssa-strength-reduction.cc: Include tree-ssa-dce.h.
+	(replace_mult_candidate): Add sdce_worklist argument, mark
+	the rhs1/rhs2 for maybe dceing.
+	(replace_unconditional_candidate): Add sdce_worklist argument,
+	Update call to replace_mult_candidate.
+	(replace_conditional_candidate): Add sdce_worklist argument,
+	update call to replace_mult_candidate.
+	(replace_uncond_cands_and_profitable_phis): Add sdce_worklist argument,
+	update call to replace_conditional_candidate,
+	replace_unconditional_candidate, and replace_uncond_cands_and_profitable_phis.
+	(replace_one_candidate): Add sdce_worklist argument, mark
+	the orig_rhs1/orig_rhs2 for maybe dceing.
+	(replace_profitable_candidates): Add sdce_worklist argument,
+	update call to replace_one_candidate and replace_profitable_candidates.
+	(analyze_candidates_and_replace): Call simple_dce_from_worklist and
+	update calls to replace_profitable_candidates, and
+	replace_uncond_cands_and_profitable_phis.
+
 2024-08-31  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* config/i386/i386-features.cc (timode_scalar_to_vector_candidate_p):
