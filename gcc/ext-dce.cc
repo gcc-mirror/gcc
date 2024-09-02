@@ -846,7 +846,7 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 	    bitmap_set_bit (livenow, rn + 1);
 	  if (size > 16)
 	    bitmap_set_bit (livenow, rn + 2);
-	  if (size == 32)
+	  if (size >= 32)
 	    bitmap_set_bit (livenow, rn + 3);
 	  iter.skip_subrtxes ();
 	}
