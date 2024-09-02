@@ -16187,6 +16187,8 @@ ix86_build_const_vector (machine_mode mode, bool vect, rtx value)
     case E_V32BFmode:
     case E_V16BFmode:
     case E_V8BFmode:
+    case E_V4BFmode:
+    case E_V2BFmode:
       n_elt = GET_MODE_NUNITS (mode);
       v = rtvec_alloc (n_elt);
       scalar_mode = GET_MODE_INNER (mode);
@@ -16226,6 +16228,8 @@ ix86_build_signbit_mask (machine_mode mode, bool vect, bool invert)
     case E_V32BFmode:
     case E_V16BFmode:
     case E_V8BFmode:
+    case E_V4BFmode:
+    case E_V2BFmode:
       vec_mode = mode;
       imode = HImode;
       break;

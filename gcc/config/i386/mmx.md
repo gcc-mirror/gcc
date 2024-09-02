@@ -121,7 +121,7 @@
 ;; Mapping of vector float modes to an integer mode of the same size
 (define_mode_attr mmxintvecmode
   [(V2SF "V2SI") (V2SI "V2SI") (V4HI "V4HI") (V8QI "V8QI")
-   (V4HF "V4HI") (V2HF "V2HI")])
+   (V4HF "V4HI") (V2HF "V2HI") (V4BF "V4HI") (V2BF "V2HI")])
 
 (define_mode_attr mmxintvecmodelower
   [(V2SF "v2si") (V2SI "v2si") (V4HI "v4hi") (V8QI "v8qi")
@@ -2147,18 +2147,22 @@
   DONE;
 })
 
+(define_mode_iterator VHBF_32_64
+ [V2BF (V4BF "TARGET_MMX_WITH_SSE")
+  V2HF (V4HF "TARGET_MMX_WITH_SSE")]) 
+
 (define_expand "<code><mode>2"
-  [(set (match_operand:VHF_32_64 0 "register_operand")
-	(absneg:VHF_32_64
-	  (match_operand:VHF_32_64 1 "register_operand")))]
+  [(set (match_operand:VHBF_32_64 0 "register_operand")
+	(absneg:VHBF_32_64
+	  (match_operand:VHBF_32_64 1 "register_operand")))]
   "TARGET_SSE"
   "ix86_expand_fp_absneg_operator (<CODE>, <MODE>mode, operands); DONE;")
 
 (define_insn_and_split "*mmx_<code><mode>"
-  [(set (match_operand:VHF_32_64 0 "register_operand" "=x,x,x")
-	(absneg:VHF_32_64
-	  (match_operand:VHF_32_64 1 "register_operand" "0,x,x")))
-   (use (match_operand:VHF_32_64 2 "register_operand" "x,0,x"))]
+  [(set (match_operand:VHBF_32_64 0 "register_operand" "=x,x,x")
+	(absneg:VHBF_32_64
+	  (match_operand:VHBF_32_64 1 "register_operand" "0,x,x")))
+   (use (match_operand:VHBF_32_64 2 "register_operand" "x,0,x"))]
   "TARGET_SSE"
   "#"
   "&& reload_completed"
@@ -2171,11 +2175,11 @@
   [(set_attr "isa" "noavx,noavx,avx")])
 
 (define_insn_and_split "*mmx_nabs<mode>2"
-  [(set (match_operand:VHF_32_64 0 "register_operand" "=x,x,x")
-	(neg:VHF_32_64
-	  (abs:VHF_32_64
-	    (match_operand:VHF_32_64 1 "register_operand" "0,x,x"))))
-   (use (match_operand:VHF_32_64 2 "register_operand" "x,0,x"))]
+  [(set (match_operand:VHBF_32_64 0 "register_operand" "=x,x,x")
+	(neg:VHBF_32_64
+	  (abs:VHBF_32_64
+	    (match_operand:VHBF_32_64 1 "register_operand" "0,x,x"))))
+   (use (match_operand:VHBF_32_64 2 "register_operand" "x,0,x"))]
   "TARGET_SSE"
   "#"
   "&& reload_completed"
@@ -2466,11 +2470,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define_insn "*mmx_andnot<mode>3"
-  [(set (match_operand:VHF_32_64 0 "register_operand"    "=x,x")
-	(and:VHF_32_64
-	  (not:VHF_32_64
-	    (match_operand:VHF_32_64 1 "register_operand" "0,x"))
-	  (match_operand:VHF_32_64 2 "register_operand"   "x,x")))]
+  [(set (match_operand:VHBF_32_64 0 "register_operand"    "=x,x")
+	(and:VHBF_32_64
+	  (not:VHBF_32_64
+	    (match_operand:VHBF_32_64 1 "register_operand" "0,x"))
+	  (match_operand:VHBF_32_64 2 "register_operand"   "x,x")))]
   "TARGET_SSE"
   "@
    andnps\t{%2, %0|%0, %2}
@@ -2481,10 +2485,10 @@
    (set_attr "mode" "V4SF")])
 
 (define_insn "<code><mode>3"
-  [(set (match_operand:VHF_32_64 0 "register_operand"   "=x,x")
-	(any_logic:VHF_32_64
-	  (match_operand:VHF_32_64 1 "register_operand" "%0,x")
-	  (match_operand:VHF_32_64 2 "register_operand" " x,x")))]
+  [(set (match_operand:VHBF_32_64 0 "register_operand"   "=x,x")
+	(any_logic:VHBF_32_64
+	  (match_operand:VHBF_32_64 1 "register_operand" "%0,x")
+	  (match_operand:VHBF_32_64 2 "register_operand" " x,x")))]
   "TARGET_SSE"
   "@
    <logic>ps\t{%2, %0|%0, %2}
@@ -2496,14 +2500,14 @@
 
 (define_expand "copysign<mode>3"
   [(set (match_dup 4)
-	(and:VHF_32_64
-	  (not:VHF_32_64 (match_dup 3))
-	  (match_operand:VHF_32_64 1 "register_operand")))
+	(and:VHBF_32_64
+	  (not:VHBF_32_64 (match_dup 3))
+	  (match_operand:VHBF_32_64 1 "register_operand")))
    (set (match_dup 5)
-	(and:VHF_32_64 (match_dup 3)
-		  (match_operand:VHF_32_64 2 "register_operand")))
-   (set (match_operand:VHF_32_64 0 "register_operand")
-	(ior:VHF_32_64 (match_dup 4) (match_dup 5)))]
+	(and:VHBF_32_64 (match_dup 3)
+		  (match_operand:VHBF_32_64 2 "register_operand")))
+   (set (match_operand:VHBF_32_64 0 "register_operand")
+	(ior:VHBF_32_64 (match_dup 4) (match_dup 5)))]
   "TARGET_SSE"
 {
   operands[3] = ix86_build_signbit_mask (<MODE>mode, true, false);
@@ -2514,11 +2518,11 @@
 
 (define_expand "xorsign<mode>3"
   [(set (match_dup 4)
-	(and:VHF_32_64 (match_dup 3)
-		  (match_operand:VHF_32_64 2 "register_operand")))
-   (set (match_operand:VHF_32_64 0 "register_operand")
-	(xor:VHF_32_64 (match_dup 4)
-		  (match_operand:VHF_32_64 1 "register_operand")))]
+	(and:VHBF_32_64 (match_dup 3)
+		  (match_operand:VHBF_32_64 2 "register_operand")))
+   (set (match_operand:VHBF_32_64 0 "register_operand")
+	(xor:VHBF_32_64 (match_dup 4)
+		  (match_operand:VHBF_32_64 1 "register_operand")))]
   "TARGET_SSE"
 {
   operands[3] = ix86_build_signbit_mask (<MODE>mode, true, false);
@@ -2530,7 +2534,7 @@
   [(set (match_operand:<mmxintvecmode> 0 "register_operand")
 	(lshiftrt:<mmxintvecmode>
 	  (subreg:<mmxintvecmode>
-	    (match_operand:VHF_32_64 1 "register_operand") 0)
+	    (match_operand:VHBF_32_64 1 "register_operand") 0)
 	  (match_dup 2)))]
   "TARGET_SSE2"
 {
