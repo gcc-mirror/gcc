@@ -11970,7 +11970,7 @@ riscv_expand_usadd (rtx dest, rtx x, rtx y)
   rtx xmode_sum = gen_reg_rtx (Xmode);
   rtx xmode_lt = gen_reg_rtx (Xmode);
   rtx xmode_x = riscv_gen_zero_extend_rtx (x, mode);
-  rtx xmode_y = gen_lowpart (Xmode, y);
+  rtx xmode_y = riscv_gen_zero_extend_rtx (y, mode);
   rtx xmode_dest = gen_reg_rtx (Xmode);
 
   /* Step-1: sum = x + y  */
