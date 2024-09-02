@@ -2,7 +2,7 @@
 // { dg-require-effective-target vect_simd_clones }
 // { dg-additional-options "-fopenmp-simd -fno-inline" }
 // { dg-additional-options "-mavx" { target avx_runtime } }
-// { dg-additional-sources "pr68762-2.cc" }
+// { dg-additional-sources "pr68762-2.cc" linkonly }
 
 #include "pr68762.h"
 
