@@ -1318,13 +1318,15 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	       && !(STMT_VINFO_GROUPED_ACCESS (stmt_info)
 		    && (first_stmt_code == ARRAY_REF
 			|| first_stmt_code == BIT_FIELD_REF
-			|| first_stmt_code == INDIRECT_REF
 			|| first_stmt_code == COMPONENT_REF
+			|| first_stmt_code == REALPART_EXPR
+			|| first_stmt_code == IMAGPART_EXPR
 			|| first_stmt_code == MEM_REF)
 		    && (rhs_code == ARRAY_REF
 			|| rhs_code == BIT_FIELD_REF
-			|| rhs_code == INDIRECT_REF
 			|| rhs_code == COMPONENT_REF
+			|| rhs_code == REALPART_EXPR
+			|| rhs_code == IMAGPART_EXPR
 			|| rhs_code == MEM_REF)))
 	      || (ldst_p
 		  && (STMT_VINFO_GROUPED_ACCESS (stmt_info)
