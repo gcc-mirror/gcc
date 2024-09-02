@@ -62,8 +62,10 @@ along with GCC; see the file COPYING3.  If not see
 /* Number of parallel tasks to run.  */
 static int lto_parallelism;
 
+#ifdef HAVE_WORKING_FORK
 /* Number of active WPA streaming processes.  */
 static int nruns = 0;
+#endif
 
 /* GNU make's jobserver info.  */
 static jobserver_info *jinfo = NULL;
