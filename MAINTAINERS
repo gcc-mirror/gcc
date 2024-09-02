@@ -676,7 +676,7 @@ Christoph Müllner               cmuellner       <christoph.muellner@vrull.eu>
 Steven Munroe                   munroesj        <munroesj52@gmail.com>
 Philippe De Muyter              -               <phdm@macqel.be>
 Joseph Myers                    jsm28           <josmyers@redhat.com>
-Szabolcs Nagy                   nsz             <szabolcs.nagy@arm.com>
+Szabolcs Nagy                   nsz             <nsz@gcc.gnu.org>
 Victor Do Nascimento            victorldn       <victor.donascimento@arm.com>
 Quentin Neill                   qneill          <quentin.neill.gnu@gmail.com>
 Adam Nemet                      nemet           <adambnemet@gmail.com>
@@ -927,6 +927,7 @@ H.J. Lu                                         <hjl.tools@gmail.com>
 Matthew Malcomson                               <mmalcomson@nvidia.com>
 Immad Mir                                       <mir@sourceware.org>
 Gaius Mulley                                    <gaiusmod2@gmail.com>
+Szabolcs Nagy                                   <nsz@gcc.gnu.org>
 Andrew Pinski                                   <quic_apinski@quicinc.com>
 Siddhesh Poyarekar                              <siddhesh@gotplt.org>
 Ramana Radhakrishnan                            <ramanara@nvidia.com>
