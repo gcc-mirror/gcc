@@ -829,23 +829,37 @@ namespace
   struct auto_win_file_handle
   {
     explicit
-    auto_win_file_handle(const wchar_t* p)
+    auto_win_file_handle(const wchar_t* p, std::error_code& ec) noexcept
     : handle(CreateFileW(p, 0,
 			 FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
-			 0, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0))
-    { }
+			 0, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0)),
+      ec(ec)
+    {
+      if (handle == INVALID_HANDLE_VALUE)
+	ec = std::__last_system_error();
+    }
 
     ~auto_win_file_handle()
     { if (*this) CloseHandle(handle); }
 
-    explicit operator bool() const
+    explicit operator bool() const noexcept
     { return handle != INVALID_HANDLE_VALUE; }
 
-    bool get_info()
-    { return GetFileInformationByHandle(handle, &info); }
+    bool get_info() noexcept
+    {
+      if (GetFileInformationByHandle(handle, &info))
+	return true;
+      ec = std::__last_system_error();
+      return false;
+    }
 
     HANDLE handle;
     BY_HANDLE_FILE_INFORMATION info;
+    // Like errno, we only set this on error and never clear it.
+    // This propagates an error_code to the caller when something goes wrong,
+    // but the caller should not assume a non-zero ec means an error happened
+    // unless they explicitly cleared it before passing it to our constructor.
+    std::error_code& ec;
   };
 }
 #endif
@@ -866,23 +880,14 @@ fs::equiv_files([[maybe_unused]] const char_type* p1, const stat_type& st1,
   if (st1.st_mode != st2.st_mode || st1.st_dev != st2.st_dev)
     return false;
 
-  // Need to use GetFileInformationByHandle to get more info about the files.
-  auto_win_file_handle h1(p1);
-  auto_win_file_handle h2(p2);
-  if (!h1 || !h2)
-    {
-      if (!h1 && !h2)
-	ec = __last_system_error();
-      return false;
-    }
-  if (!h1.get_info() || !h2.get_info())
-    {
-      ec = __last_system_error();
-      return false;
-    }
-  return h1.info.dwVolumeSerialNumber == h2.info.dwVolumeSerialNumber
-	   && h1.info.nFileIndexHigh == h2.info.nFileIndexHigh
-	   && h1.info.nFileIndexLow == h2.info.nFileIndexLow;
+  // Use GetFileInformationByHandle to get more info about the files.
+  if (auto_win_file_handle h1{p1, ec})
+    if (auto_win_file_handle h2{p2, ec})
+      if (h1.get_info() && h2.get_info())
+	return h1.info.dwVolumeSerialNumber == h2.info.dwVolumeSerialNumber
+		 && h1.info.nFileIndexHigh == h2.info.nFileIndexHigh
+		 && h1.info.nFileIndexLow == h2.info.nFileIndexLow;
+  return false;
 #endif // _GLIBCXX_FILESYSTEM_IS_WINDOWS
 }
 #endif // NEED_DO_COPY_FILE
@@ -1007,10 +1012,12 @@ std::uintmax_t
 fs::hard_link_count(const path& p, error_code& ec) noexcept
 {
 #if _GLIBCXX_FILESYSTEM_IS_WINDOWS
-  auto_win_file_handle h(p.c_str());
+  auto_win_file_handle h(p.c_str(), ec);
   if (h && h.get_info())
-    return static_cast<uintmax_t>(h.info.nNumberOfLinks);
-  ec = __last_system_error();
+    {
+      ec.clear();
+      return static_cast<uintmax_t>(h.info.nNumberOfLinks);
+    }
   return static_cast<uintmax_t>(-1);
 #elif defined _GLIBCXX_HAVE_SYS_STAT_H
   return do_stat(p, ec, std::mem_fn(&stat_type::st_nlink),
