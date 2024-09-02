@@ -45,7 +45,7 @@ svint64_t s64_z_pg (svbool_t pg)
 
 /*
 ** s64_z_pg_0:
-**	mov	z[0-9]+\.d, p[0-7]/z, #0
+**	mov	z[0-9]+\.b, #0
 **	ret
 */
 svint64_t s64_z_pg_0 (svbool_t pg)
@@ -55,9 +55,7 @@ svint64_t s64_z_pg_0 (svbool_t pg)
 
 /*
 ** s64_z_pg_by0:
-**	mov	(z[0-9]+\.d), #5
-**	mov	(z[0-9]+)\.b, #0
-**	sdivr	\2\.d, p[0-7]/m, \2\.d, \1
+**	mov	z[0-9]+\.b, #0
 **	ret
 */
 svint64_t s64_z_pg_by0 (svbool_t pg)
@@ -149,7 +147,7 @@ svint64_t s64_z_pg_n (svbool_t pg)
 
 /*
 ** s64_z_pg_n_s64_0:
-**	mov	z[0-9]+\.d, p[0-7]/z, #0
+**	mov	z[0-9]+\.b, #0
 **	ret
 */
 svint64_t s64_z_pg_n_s64_0 (svbool_t pg)
@@ -159,9 +157,7 @@ svint64_t s64_z_pg_n_s64_0 (svbool_t pg)
 
 /*
 ** s64_z_pg_n_s64_by0:
-**	mov	(z[0-9]+\.d), #5
-**	mov	(z[0-9]+)\.b, #0
-**	sdivr	\2\.d, p[0-7]/m, \2\.d, \1
+**	mov	z[0-9]+\.b, #0
 **	ret
 */
 svint64_t s64_z_pg_n_s64_by0 (svbool_t pg)
