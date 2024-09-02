@@ -447,9 +447,12 @@
 (define_mode_iterator VF2_AVX10_2
   [(V8DF "TARGET_AVX10_2_512") V4DF V2DF])
 
-;; All DFmode & HFmode vector float modes
-(define_mode_iterator VF2H
-  [(V32HF "TARGET_AVX512FP16 && TARGET_EVEX512")
+;; All DFmode & HFmode & BFmode vector float modes
+(define_mode_iterator VF2HB
+  [(V32BF "TARGET_AVX10_2_512")
+   (V16BF "TARGET_AVX10_2_256")
+   (V8BF "TARGET_AVX10_2_256")
+   (V32HF "TARGET_AVX512FP16 && TARGET_EVEX512")
    (V16HF "TARGET_AVX512FP16 && TARGET_AVX512VL")
    (V8HF "TARGET_AVX512FP16 && TARGET_AVX512VL")
    (V8DF "TARGET_AVX512F && TARGET_EVEX512") (V4DF "TARGET_AVX") V2DF])
@@ -2933,8 +2936,8 @@
    (set_attr "mode" "<MODE>")])
 
 (define_expand "sqrt<mode>2"
-  [(set (match_operand:VF2H 0 "register_operand")
-	(sqrt:VF2H (match_operand:VF2H 1 "vector_operand")))]
+  [(set (match_operand:VF2HB 0 "register_operand")
+	(sqrt:VF2HB (match_operand:VF2HB 1 "vector_operand")))]
   "TARGET_SSE2")
 
 (define_expand "sqrt<mode>2"
