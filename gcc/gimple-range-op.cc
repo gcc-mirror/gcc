@@ -972,8 +972,10 @@ cfn_clz::fold_range (irange &r, tree type, const irange &lh,
     {
       // If CLZ_DEFINED_VALUE_AT_ZERO is 2 with VALUE of prec,
       // return [prec, prec] or [-1, -1], otherwise ignore the range.
-      if (maxi == prec || mini == -1)
-	mini = maxi;
+      if (maxi == prec)
+	mini = prec;
+      else if (mini == -1)
+	maxi = -1;
     }
   else if (mini >= 0)
     mini = newmini;
