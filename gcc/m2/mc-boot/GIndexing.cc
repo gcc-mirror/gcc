@@ -14,10 +14,9 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
-You should have received a copy of the GNU General Public License along
-with gm2; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin Street, Fifth Floor,
-Boston, MA 02110-1301, USA.  */
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
 #include "system.h"
@@ -294,7 +293,7 @@ extern "C" void Indexing_PutIndice (Indexing_Index i, unsigned int n, void * a)
             }
           if (oldSize != static_cast<Indexing_Index__opaque> (i)->ArraySize)
             {
-              /* 
+              /*
                IF Debug
                THEN
                   printf2('increasing memory hunk from %d to %d
