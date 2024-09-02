@@ -838,7 +838,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	      using enum _Fp_fmt;
 #endif
 	      constexpr auto __fmt = _S_fp_fmt<_Tp>();
-	      if constexpr (__fmt == _X86_80bit || __fmt == _M68k_80bit)
+	      if constexpr (__fmt == _X86_80bit)
 		{
 		  if constexpr (sizeof(_Tp) == 3 * sizeof(int32_t))
 		    {
@@ -850,6 +850,11 @@ namespace std _GLIBCXX_VISIBILITY(default)
 		      auto __ival = __builtin_bit_cast(_Int<int64_t>, __val);
 		      return _Int<int16_t>(__ival._M_hi, __ival._M_lo);
 		    }
+		}
+	      else if constexpr (__fmt == _M68k_80bit)
+		{
+		  auto __ival = __builtin_bit_cast(_Int<int32_t>, __val);
+		  return _Int<int16_t>(__ival._M_hi >> 16, __ival._M_lo);
 		}
 	      else if constexpr (sizeof(_Tp) == 2 * sizeof(int64_t))
 		{
