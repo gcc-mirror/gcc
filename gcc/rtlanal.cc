@@ -1686,6 +1686,7 @@ set_noop_p (const_rtx set)
 	}
       return
 	REG_CAN_CHANGE_MODE_P (REGNO (dst), GET_MODE (src0), GET_MODE (dst))
+	&& validate_subreg (GET_MODE (dst), GET_MODE (src0), src0, offset)
 	&& simplify_subreg_regno (REGNO (src0), GET_MODE (src0),
 				  offset, GET_MODE (dst)) == (int) REGNO (dst);
     }
