@@ -2187,7 +2187,6 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	     blow up memory, see PR65518).  */
 	  if (loop_vinfo
 	      && *memory_access_type == VMAT_CONTIGUOUS
-	      && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ()
 	      && single_element_p
 	      && maybe_gt (group_size, TYPE_VECTOR_SUBPARTS (vectype)))
 	    {

@@ -4315,6 +4315,37 @@ vect_lower_load_permutations (loop_vec_info loop_vinfo,
 	  && ld_lanes_lanes == 0)
 	continue;
 
+      /* Build the permute to get the original load permutation order.  */
+      bool contiguous = true;
+      lane_permutation_t final_perm;
+      final_perm.create (SLP_TREE_LANES (load));
+      for (unsigned i = 0; i < SLP_TREE_LANES (load); ++i)
+	{
+	  final_perm.quick_push
+	    (std::make_pair (0, SLP_TREE_LOAD_PERMUTATION (load)[i]));
+	  if (i != 0
+	      && (SLP_TREE_LOAD_PERMUTATION (load)[i]
+		  != SLP_TREE_LOAD_PERMUTATION (load)[i-1] + 1))
+	    contiguous = false;
+	}
+
+      /* When the load permutation accesses a contiguous unpermuted,
+	 power-of-two aligned and sized chunk leave the load alone.
+	 We can likely (re-)load it more efficiently rather than
+	 extracting it from the larger load.
+	 ???  Long-term some of the lowering should move to where
+	 the vector types involved are fixed.  */
+      if (ld_lanes_lanes == 0
+	  && contiguous
+	  && (SLP_TREE_LANES (load) > 1 || loads.size () == 1)
+	  && pow2p_hwi (SLP_TREE_LANES (load))
+	  && SLP_TREE_LOAD_PERMUTATION (load)[0] % SLP_TREE_LANES (load) == 0
+	  && group_lanes % SLP_TREE_LANES (load) == 0)
+	{
+	  final_perm.release ();
+	  continue;
+	}
+
       /* First build (and possibly re-use) a load node for the
 	 unpermuted group.  Gaps in the middle and on the end are
 	 represented with NULL stmts.  */
@@ -4337,13 +4368,6 @@ vect_lower_load_permutations (loop_vec_info loop_vinfo,
 					 group_lanes,
 					 &max_nunits, matches, &limit,
 					 &tree_size, bst_map);
-
-      /* Build the permute to get the original load permutation order.  */
-      lane_permutation_t final_perm;
-      final_perm.create (SLP_TREE_LANES (load));
-      for (unsigned i = 0; i < SLP_TREE_LANES (load); ++i)
-	final_perm.quick_push
-	  (std::make_pair (0, SLP_TREE_LOAD_PERMUTATION (load)[i]));
 
       if (ld_lanes_lanes != 0)
 	{
@@ -4503,20 +4527,16 @@ vect_lower_load_permutations (loop_vec_info loop_vinfo,
 	  && STMT_VINFO_GROUPED_ACCESS (b0)
 	  && DR_GROUP_FIRST_ELEMENT (a0) == DR_GROUP_FIRST_ELEMENT (b0))
 	continue;
-      /* Just one SLP load of a possible group, leave those alone.  */
-      if (i == firsti + 1)
-	{
-	  firsti = i;
-	  continue;
-	}
-      /* Now we have multiple SLP loads of the same group from
+      /* Now we have one or multiple SLP loads of the same group from
 	 firsti to i - 1.  */
-      vect_lower_load_permutations (loop_vinfo, bst_map,
-				    make_array_slice (&loads[firsti],
-						      i - firsti));
+      if (STMT_VINFO_GROUPED_ACCESS (a0))
+	vect_lower_load_permutations (loop_vinfo, bst_map,
+				      make_array_slice (&loads[firsti],
+							i - firsti));
       firsti = i;
     }
-  if (firsti < loads.length () - 1)
+  if (firsti < loads.length ()
+      && STMT_VINFO_GROUPED_ACCESS (SLP_TREE_SCALAR_STMTS (loads[firsti])[0]))
     vect_lower_load_permutations (loop_vinfo, bst_map,
 				  make_array_slice (&loads[firsti],
 						    loads.length () - firsti));
