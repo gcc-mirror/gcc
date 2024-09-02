@@ -391,6 +391,19 @@
    (V8DF "TARGET_AVX512F && TARGET_EVEX512") (V4DF "TARGET_AVX")
    (V2DF "TARGET_SSE2")])
 
+(define_mode_iterator VF_BHSD
+  [(V32HF "TARGET_AVX512FP16 && TARGET_EVEX512")
+   (V16HF "TARGET_AVX512FP16 && TARGET_AVX512VL")
+   (V8HF "TARGET_AVX512FP16 && TARGET_AVX512VL")
+   (V16SF "TARGET_AVX512F && TARGET_EVEX512")
+   (V8SF "TARGET_AVX") V4SF
+   (V8DF "TARGET_AVX512F && TARGET_EVEX512")
+   (V4DF "TARGET_AVX") (V2DF "TARGET_SSE2")
+   (V32BF "TARGET_AVX10_2_512")
+   (V16BF "TARGET_AVX10_2_256")
+   (V8BF "TARGET_AVX10_2_256")
+  ])
+
 ;; 128-, 256- and 512-bit float vector modes for bitwise operations
 (define_mode_iterator VFB
   [(V32BF "TARGET_AVX512F && TARGET_EVEX512")
@@ -2527,10 +2540,10 @@
 })
 
 (define_expand "<insn><mode>3<mask_name><round_name>"
-  [(set (match_operand:VFH 0 "register_operand")
-	(plusminus:VFH
-	  (match_operand:VFH 1 "<round_nimm_predicate>")
-	  (match_operand:VFH 2 "<round_nimm_predicate>")))]
+  [(set (match_operand:VF_BHSD 0 "register_operand")
+	(plusminus:VF_BHSD
+	  (match_operand:VF_BHSD 1 "<round_nimm_predicate>")
+	  (match_operand:VF_BHSD 2 "<round_nimm_predicate>")))]
   "TARGET_SSE && <mask_mode512bit_condition> && <round_mode_condition>"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
@@ -2616,10 +2629,10 @@
 })
 
 (define_expand "mul<mode>3<mask_name><round_name>"
-  [(set (match_operand:VFH 0 "register_operand")
-	(mult:VFH
-	  (match_operand:VFH 1 "<round_nimm_predicate>")
-	  (match_operand:VFH 2 "<round_nimm_predicate>")))]
+  [(set (match_operand:VF_BHSD 0 "register_operand")
+	(mult:VF_BHSD
+	  (match_operand:VF_BHSD 1 "<round_nimm_predicate>")
+	  (match_operand:VF_BHSD 2 "<round_nimm_predicate>")))]
   "TARGET_SSE && <mask_mode512bit_condition> && <round_mode_condition>"
   "ix86_fixup_binary_operands_no_copy (MULT, <MODE>mode, operands);")
 
@@ -2730,6 +2743,26 @@
       && flag_unsafe_math_optimizations)
     {
       ix86_emit_swdivsf (operands[0], operands[1], operands[2], <MODE>mode);
+      DONE;
+    }
+})
+
+(define_expand "div<mode>3"
+  [(set (match_operand:VBF_AVX10_2 0 "register_operand")
+	(div:VBF_AVX10_2
+	  (match_operand:VBF_AVX10_2 1 "register_operand")
+	  (match_operand:VBF_AVX10_2 2 "vector_operand")))]
+  "TARGET_AVX10_2_256"
+{
+  if (TARGET_RECIP_VEC_DIV
+      && optimize_insn_for_speed_p ()
+      && flag_finite_math_only
+      && flag_unsafe_math_optimizations)
+    {
+      rtx op = gen_reg_rtx (<MODE>mode);
+      operands[2] = force_reg (<MODE>mode, operands[2]);
+      emit_insn (gen_avx10_2_rcppbf16_<mode> (op, operands[2]));
+      emit_insn (gen_avx10_2_mulnepbf16_<mode> (operands[0], operands[1], op));
       DONE;
     }
 })
