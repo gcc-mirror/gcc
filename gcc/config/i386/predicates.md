@@ -1633,7 +1633,13 @@
 })
 
 ;; Return true if this comparison only requires testing one flag bit.
+;; VCOMX/VUCOMX set ZF, SF, OF, differently from COMI/UCOMI.
 (define_predicate "ix86_trivial_fp_comparison_operator"
+  (if_then_else (match_test "TARGET_AVX10_2_256")
+		(match_code "gt,ge,unlt,unle,eq,uneq,ne,ltgt,ordered,unordered")
+		(match_code "gt,ge,unlt,unle,uneq,ltgt,ordered,unordered")))
+
+(define_predicate "ix86_trivial_fp_comparison_operator_xf"
   (match_code "gt,ge,unlt,unle,uneq,ltgt,ordered,unordered"))
 
 ;; Return true if we know how to do this comparison.  Others require
@@ -1644,6 +1650,12 @@
                              == IX86_FPCMP_ARITH")
                (match_operand 0 "comparison_operator")
                (match_operand 0 "ix86_trivial_fp_comparison_operator")))
+
+(define_predicate "ix86_fp_comparison_operator_xf"
+  (if_then_else (match_test "ix86_fp_comparison_strategy (GET_CODE (op))
+                             == IX86_FPCMP_ARITH")
+               (match_operand 0 "comparison_operator")
+               (match_operand 0 "ix86_trivial_fp_comparison_operator_xf")))
 
 ;; Return true if we can perform this comparison on TImode operands.
 (define_predicate "ix86_timode_comparison_operator"

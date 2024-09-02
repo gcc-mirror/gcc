@@ -2916,6 +2916,11 @@ ix86_expand_fp_compare (enum rtx_code code, rtx op0, rtx op1)
   switch (ix86_fp_comparison_strategy (code))
     {
     case IX86_FPCMP_COMI:
+      tmp = gen_rtx_COMPARE (CCFPmode, op0, op1);
+      if (TARGET_AVX10_2_256 && (code == EQ || code == NE))
+	tmp = gen_rtx_UNSPEC (CCFPmode, gen_rtvec (1, tmp), UNSPEC_OPTCOMX);
+      if (unordered_compare)
+	tmp = gen_rtx_UNSPEC (CCFPmode, gen_rtvec (1, tmp), UNSPEC_NOTRAP);
       cmp_mode = CCFPmode;
       emit_insn (gen_rtx_SET (gen_rtx_REG (CCFPmode, FLAGS_REG), tmp));
       break;

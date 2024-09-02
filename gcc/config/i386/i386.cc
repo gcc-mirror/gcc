@@ -16634,6 +16634,11 @@ ix86_fp_compare_code_to_integer (enum rtx_code code)
       return LEU;
     case LTGT:
       return NE;
+    case EQ:
+    case NE:
+      if (TARGET_AVX10_2_256)
+	return code;
+      /* FALLTHRU.  */
     default:
       return UNKNOWN;
     }
