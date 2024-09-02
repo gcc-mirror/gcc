@@ -1994,7 +1994,10 @@ cont:
 
       if (parallel)
 	{
-	  makefile = make_temp_file (".mk");
+	  if (save_temps)
+	    makefile = concat (dumppfx, "ltrans.mk", NULL);
+	  else
+	    makefile = make_temp_file (".mk");
 	  mstream = fopen (makefile, "w");
 	  qsort (ltrans_priorities, nr, sizeof (int) * 2, cmp_priority);
 	}
