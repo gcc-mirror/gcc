@@ -4797,6 +4797,19 @@
   DONE;
 })
 
+(define_expand "vec_cmp<mode><avx512fmaskmodelower>"
+  [(set (match_operand:<avx512fmaskmode> 0 "register_operand")
+	(match_operator:<avx512fmaskmode> 1 ""
+	  [(match_operand:VBF_AVX10_2 2 "register_operand")
+	   (match_operand:VBF_AVX10_2 3 "nonimmediate_operand")]))]
+  "TARGET_AVX10_2_256"
+{
+  bool ok = ix86_expand_mask_vec_cmp (operands[0], GET_CODE (operands[1]),
+				      operands[2], operands[3]);
+  gcc_assert (ok);
+  DONE;
+})
+
 (define_expand "vec_cmp<mode><sseintvecmodelower>"
   [(set (match_operand:<sseintvecmode> 0 "register_operand")
 	(match_operator:<sseintvecmode> 1 ""

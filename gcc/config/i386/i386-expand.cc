@@ -4036,6 +4036,8 @@ ix86_use_mask_cmp_p (machine_mode mode, machine_mode cmp_mode,
     return true;
   else if (GET_MODE_INNER (cmp_mode) == HFmode)
     return true;
+  else if (GET_MODE_INNER (cmp_mode) == BFmode)
+    return true;
 
   /* When op_true is NULL, op_false must be NULL, or vice versa.  */
   gcc_assert (!op_true == !op_false);
