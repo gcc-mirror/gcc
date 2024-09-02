@@ -8148,6 +8148,11 @@ package body Sem_Prag is
          Check_Arg_Is_OK_Static_Expression (Arg2, Standard_String);
          Analyze_And_Resolve (Arg1x, Standard_Boolean);
 
+         if CodePeer_Mode then
+               Rewrite (N, Make_Null_Statement (Loc));
+               return;
+         end if;
+
          --  In GNATprove mode, pragma Compile_Time_Error is translated as
          --  a Check pragma in GNATprove mode, handled as an assumption in
          --  GNATprove. This is correct as the compiler will issue an error
