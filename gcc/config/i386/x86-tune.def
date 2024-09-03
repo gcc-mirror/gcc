@@ -143,10 +143,17 @@ DEF_TUNE (X86_TUNE_FUSE_CMP_AND_BRANCH_SOFLAGS, "fuse_cmp_and_branch_soflags",
 
 /* X86_TUNE_FUSE_ALU_AND_BRANCH: Fuse alu with a subsequent conditional
    jump instruction when the alu instruction produces the CCFLAG consumed by
-   the conditional jump instruction. */
-DEF_TUNE (X86_TUNE_FUSE_ALU_AND_BRANCH, "fuse_alu_and_branch",
-		  m_SANDYBRIDGE | m_CORE_AVX2 | m_ZHAOXIN | m_GENERIC)
+   the conditional jump instruction.
 
+   TODO: znver5 supports fusing with SUB, ADD, INC, DEC, OR, AND,
+   There is also limitation for immediate and displacement supported.  */
+DEF_TUNE (X86_TUNE_FUSE_ALU_AND_BRANCH, "fuse_alu_and_branch",
+	  m_SANDYBRIDGE | m_CORE_AVX2 | m_ZHAOXIN | m_GENERIC | m_ZNVER5)
+
+/* X86_TUNE_FUSE_MOV_AND_ALU: mov and alu in case mov is reg-reg mov
+   and the destination is used by alu.  alu must be one of
+   ADD, ADC, AND, XOR, OR, SUB, SBB, INC, DEC, NOT, SAL, SHL, SHR, SAR.  */
+DEF_TUNE (X86_TUNE_FUSE_MOV_AND_ALU, "fuse_mov_and_alu", m_ZNVER5)
 
 /*****************************************************************************/
 /* Function prologue, epilogue and function calling sequences.               */
