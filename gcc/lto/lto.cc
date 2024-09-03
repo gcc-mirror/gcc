@@ -178,7 +178,7 @@ stream_out (char *temp_filename, lto_symtab_encoder_t encoder, int part)
 
   gcc_assert (!dump_file);
   streamer_dump_file = dump_begin (TDI_lto_stream_out, NULL, part);
-  ipa_write_optimization_summaries (encoder);
+  ipa_write_optimization_summaries (encoder, part == 0);
 
   free (CONST_CAST (char *, file->filename));
 

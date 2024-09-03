@@ -2829,11 +2829,13 @@ ipa_write_summaries_2 (opt_pass *pass, struct lto_out_decl_state *state)
    summaries.  SET is the set of nodes to be written.  */
 
 static void
-ipa_write_summaries_1 (lto_symtab_encoder_t encoder)
+ipa_write_summaries_1 (lto_symtab_encoder_t encoder,
+		       bool output_offload_tables_p)
 {
   pass_manager *passes = g->get_passes ();
   struct lto_out_decl_state *state = lto_new_out_decl_state ();
   state->symtab_node_encoder = encoder;
+  state->output_offload_tables_p = output_offload_tables_p;
 
   lto_output_init_mode_table ();
   lto_push_out_decl_state (state);
@@ -2897,7 +2899,8 @@ ipa_write_summaries (void)
     if (vnode->need_lto_streaming)
       lto_set_symtab_encoder_in_partition (encoder, vnode);
 
-  ipa_write_summaries_1 (compute_ltrans_boundary (encoder));
+  ipa_write_summaries_1 (compute_ltrans_boundary (encoder),
+			 flag_generate_offload);
 
   free (order);
   if (streamer_dump_file)
@@ -2952,10 +2955,12 @@ ipa_write_optimization_summaries_1 (opt_pass *pass,
    NULL, write out all summaries of all nodes. */
 
 void
-ipa_write_optimization_summaries (lto_symtab_encoder_t encoder)
+ipa_write_optimization_summaries (lto_symtab_encoder_t encoder,
+				  bool output_offload_tables_p)
 {
   struct lto_out_decl_state *state = lto_new_out_decl_state ();
   state->symtab_node_encoder = encoder;
+  state->output_offload_tables_p = output_offload_tables_p;
 
   lto_output_init_mode_table ();
   lto_push_out_decl_state (state);

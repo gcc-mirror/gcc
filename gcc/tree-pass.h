@@ -684,7 +684,8 @@ extern void emergency_dump_function (void);
 extern void print_current_pass (FILE *);
 extern void debug_pass (void);
 extern void ipa_write_summaries (void);
-extern void ipa_write_optimization_summaries (struct lto_symtab_encoder_d *);
+extern void ipa_write_optimization_summaries (struct lto_symtab_encoder_d *,
+					      bool);
 extern void ipa_read_summaries (void);
 extern void ipa_read_optimization_summaries (void);
 extern void register_one_dump_file (opt_pass *);

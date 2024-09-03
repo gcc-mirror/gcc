@@ -2829,7 +2829,8 @@ lto_output (void)
      statements using the statement UIDs.  */
   output_symtab ();
 
-  output_offload_tables ();
+  if (lto_get_out_decl_state ()->output_offload_tables_p)
+    output_offload_tables ();
 
   if (flag_checking)
     {

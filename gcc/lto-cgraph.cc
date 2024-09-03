@@ -1139,16 +1139,6 @@ output_offload_tables (void)
 
   streamer_write_uhwi_stream (ob->main_stream, 0);
   lto_destroy_simple_output_block (ob);
-
-  /* In WHOPR mode during the WPA stage the joint offload tables need to be
-     streamed to one partition only.  That's why we free offload_funcs and
-     offload_vars after the first call of output_offload_tables.  */
-  if (flag_wpa)
-    {
-      vec_free (offload_funcs);
-      vec_free (offload_vars);
-      vec_free (offload_ind_funcs);
-    }
 }
 
 /* Verify the partitioning of NODE.  */
