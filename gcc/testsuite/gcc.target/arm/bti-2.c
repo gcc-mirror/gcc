@@ -56,4 +56,4 @@ lab2:
   return 2;
 }
 
-/* { dg-final { scan-assembler-times "bti" 15 } } */
+/* { dg-final { scan-assembler-times "\tbti" 14 } } */
