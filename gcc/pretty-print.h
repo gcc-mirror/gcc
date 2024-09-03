@@ -69,7 +69,7 @@ enum diagnostic_prefixing_rule_t
   DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE = 0x2
 };
 
-class chunk_info;
+class pp_formatted_chunks;
 class output_buffer;
 class pp_token_list;
 class urlifier;
@@ -84,36 +84,44 @@ class output_buffer
 {
 public:
   output_buffer ();
+  output_buffer (const output_buffer &) = delete;
+  output_buffer (output_buffer &&) = delete;
   ~output_buffer ();
+  output_buffer & operator= (const output_buffer &) = delete;
+  output_buffer & operator= (output_buffer &&) = delete;
+
+  pp_formatted_chunks *push_formatted_chunks ();
+  void pop_formatted_chunks ();
 
   /* Obstack where the text is built up.  */
-  struct obstack formatted_obstack;
+  struct obstack m_formatted_obstack;
 
   /* Obstack containing a chunked representation of the format
      specification plus arguments.  */
-  struct obstack chunk_obstack;
+  struct obstack m_chunk_obstack;
 
   /* Currently active obstack: one of the above two.  This is used so
      that the text formatters don't need to know which phase we're in.  */
-  struct obstack *obstack;
+  struct obstack *m_obstack;
 
-  /* Stack of chunk arrays.  These come from the chunk_obstack.  */
-  chunk_info *cur_chunk_array;
+  /* Topmost element in a stack of arrays of formatted chunks.
+     These come from the chunk_obstack.  */
+  pp_formatted_chunks *m_cur_formatted_chunks;
 
   /* Where to output formatted text.  */
-  FILE *stream;
+  FILE *m_stream;
 
   /* The amount of characters output so far.  */
-  int line_length;
+  int m_line_length;
 
   /* This must be large enough to hold any printed integer or
      floating-point value.  */
-  char digit_buffer[128];
+  char m_digit_buffer[128];
 
   /* Nonzero means that text should be flushed when
      appropriate. Otherwise, text is buffered until either
      pp_really_flush or pp_clear_output_area are called.  */
-  bool flush_p;
+  bool m_flush_p;
 };
 
 /* Finishes constructing a NULL-terminated character string representing
@@ -121,8 +129,8 @@ public:
 inline const char *
 output_buffer_formatted_text (output_buffer *buff)
 {
-  obstack_1grow (buff->obstack, '\0');
-  return (const char *) obstack_base (buff->obstack);
+  obstack_1grow (buff->m_obstack, '\0');
+  return (const char *) obstack_base (buff->m_obstack);
 }
 
 /* Append to the output buffer a string specified by its
@@ -131,12 +139,12 @@ inline void
 output_buffer_append_r (output_buffer *buff, const char *start, int length)
 {
   gcc_checking_assert (start);
-  obstack_grow (buff->obstack, start, length);
+  obstack_grow (buff->m_obstack, start, length);
   for (int i = 0; i < length; i++)
     if (start[i] == '\n')
-      buff->line_length = 0;
+      buff->m_line_length = 0;
     else
-      buff->line_length++;
+      buff->m_line_length++;
 }
 
 /*  Return a pointer to the last character emitted in the
@@ -145,7 +153,7 @@ inline const char *
 output_buffer_last_position_in_text (const output_buffer *buff)
 {
   const char *p = NULL;
-  struct obstack *text = buff->obstack;
+  struct obstack *text = buff->m_obstack;
 
   if (obstack_base (text) != obstack_next_free (text))
     p = ((const char *) obstack_next_free (text)) - 1;
@@ -262,7 +270,7 @@ public:
 
   void set_output_stream (FILE *outfile)
   {
-    m_buffer->stream = outfile;
+    m_buffer->m_stream = outfile;
   }
 
   void set_token_printer (token_printer* tp)
@@ -508,8 +516,8 @@ pp_wrapping_mode (pretty_printer *pp)
 #define pp_scalar(PP, FORMAT, SCALAR)	                      \
   do					        	      \
     {			         			      \
-      sprintf (pp_buffer (PP)->digit_buffer, FORMAT, SCALAR); \
-      pp_string (PP, pp_buffer (PP)->digit_buffer);           \
+      sprintf (pp_buffer (PP)->m_digit_buffer, FORMAT, SCALAR); \
+      pp_string (PP, pp_buffer (PP)->m_digit_buffer);           \
     }						              \
   while (0)
 #define pp_decimal_int(PP, I)  pp_scalar (PP, "%d", I)
@@ -632,12 +640,12 @@ pp_wide_int (pretty_printer *pp, const wide_int_ref &w, signop sgn)
 {
   unsigned int len;
   print_dec_buf_size (w, sgn, &len);
-  if (UNLIKELY (len > sizeof (pp_buffer (pp)->digit_buffer)))
+  if (UNLIKELY (len > sizeof (pp_buffer (pp)->m_digit_buffer)))
     pp_wide_int_large (pp, w, sgn);
   else
     {
-      print_dec (w, pp_buffer (pp)->digit_buffer, sgn);
-      pp_string (pp, pp_buffer (pp)->digit_buffer);
+      print_dec (w, pp_buffer (pp)->m_digit_buffer, sgn);
+      pp_string (pp, pp_buffer (pp)->m_digit_buffer);
     }
 }
 

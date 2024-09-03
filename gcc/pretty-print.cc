@@ -741,25 +741,53 @@ text_info::get_location (unsigned int index_of_location) const
 // Default construct an output buffer.
 
 output_buffer::output_buffer ()
-  : formatted_obstack (),
-    chunk_obstack (),
-    obstack (&formatted_obstack),
-    cur_chunk_array (),
-    stream (stderr),
-    line_length (),
-    digit_buffer (),
-    flush_p (true)
+  : m_formatted_obstack (),
+    m_chunk_obstack (),
+    m_obstack (&m_formatted_obstack),
+    m_cur_formatted_chunks (nullptr),
+    m_stream (stderr),
+    m_line_length (),
+    m_digit_buffer (),
+    m_flush_p (true)
 {
-  obstack_init (&formatted_obstack);
-  obstack_init (&chunk_obstack);
+  obstack_init (&m_formatted_obstack);
+  obstack_init (&m_chunk_obstack);
 }
 
 // Release resources owned by an output buffer at the end of lifetime.
 
 output_buffer::~output_buffer ()
 {
-  obstack_free (&chunk_obstack, NULL);
-  obstack_free (&formatted_obstack, NULL);
+  obstack_free (&m_chunk_obstack, NULL);
+  obstack_free (&m_formatted_obstack, NULL);
+}
+
+/* Allocate a new pp_formatted_chunks from chunk_obstack and push
+   it onto this buffer's stack.
+   This represents the result of phases 1 and 2 of formatting.  */
+
+pp_formatted_chunks *
+output_buffer::push_formatted_chunks ()
+{
+  /* Allocate a new chunk structure.  */
+  pp_formatted_chunks *new_chunk_array
+    = XOBNEW (&m_chunk_obstack, pp_formatted_chunks);
+  new_chunk_array->m_prev = m_cur_formatted_chunks;
+  m_cur_formatted_chunks = new_chunk_array;
+  return new_chunk_array;
+}
+
+/* Deallocate the current pp_formatted_chunks structure and everything after it
+   (i.e. the associated series of formatted strings, pp_token_lists, and
+   pp_tokens).  */
+
+void
+output_buffer::pop_formatted_chunks ()
+{
+  pp_formatted_chunks *old_top = m_cur_formatted_chunks;
+  gcc_assert (old_top);
+  m_cur_formatted_chunks = old_top->m_prev;
+  obstack_free (&m_chunk_obstack, old_top);
 }
 
 #ifndef PTRDIFF_MAX
@@ -885,9 +913,9 @@ pp_write_text_to_stream (pretty_printer *pp)
 {
   const char *text = pp_formatted_text (pp);
 #ifdef __MINGW32__
-  mingw_ansi_fputs (text, pp_buffer (pp)->stream);
+  mingw_ansi_fputs (text, pp_buffer (pp)->m_stream);
 #else
-  fputs (text, pp_buffer (pp)->stream);
+  fputs (text, pp_buffer (pp)->m_stream);
 #endif
   pp_clear_output_area (pp);
 }
@@ -906,7 +934,7 @@ pp_write_text_as_dot_label_to_stream (pretty_printer *pp, bool for_record)
 {
   const char *text = pp_formatted_text (pp);
   const char *p = text;
-  FILE *fp = pp_buffer (pp)->stream;
+  FILE *fp = pp_buffer (pp)->m_stream;
 
   for (;*p; p++)
     {
@@ -975,7 +1003,7 @@ pp_write_text_as_html_like_dot_to_stream (pretty_printer *pp)
 {
   const char *text = pp_formatted_text (pp);
   const char *p = text;
-  FILE *fp = pp_buffer (pp)->stream;
+  FILE *fp = pp_buffer (pp)->m_stream;
 
   for (;*p; p++)
     {
@@ -1473,7 +1501,7 @@ pp_token_list::dump (FILE *out) const
    will be printed by pp_output_formatted_text.  */
 
 void
-chunk_info::append_formatted_chunk (obstack &s, const char *content)
+pp_formatted_chunks::append_formatted_chunk (obstack &s, const char *content)
 {
   unsigned int chunk_idx;
   for (chunk_idx = 0; m_args[chunk_idx]; chunk_idx++)
@@ -1484,18 +1512,8 @@ chunk_info::append_formatted_chunk (obstack &s, const char *content)
   m_args[chunk_idx] = nullptr;
 }
 
-/* Deallocate the current chunk structure and everything after it (i.e. the
-   associated series of formatted strings).  */
-
 void
-chunk_info::pop_from_output_buffer (output_buffer &buf)
-{
-  buf.cur_chunk_array = m_prev;
-  obstack_free (&buf.chunk_obstack, this);
-}
-
-void
-chunk_info::dump (FILE *out) const
+pp_formatted_chunks::dump (FILE *out) const
 {
   for (size_t idx = 0; m_args[idx]; ++idx)
     {
@@ -1564,9 +1582,12 @@ push_back_any_text (pp_token_list *tok_list,
    A format string can have at most 30 arguments.  */
 
 /* Implementation of pp_format.
-   Formatting phases 1 and 2: render TEXT->format_spec plus
-   text->m_args_ptr into a series of chunks in pp_buffer (PP)->args[].
-   Phase 3 is in pp_output_formatted_text.  */
+   Formatting phases 1 and 2:
+   - push a pp_formatted_chunks instance.
+   - render TEXT->format_spec plus text->m_args_ptr into the pp_formatted_chunks
+     instance as pp_token_lists.
+   Phase 3 is in pp_output_formatted_text, which pops the pp_formatted_chunks
+   instance.  */
 
 void
 pretty_printer::format (text_info *text)
@@ -1576,11 +1597,7 @@ pretty_printer::format (text_info *text)
   unsigned int chunk = 0, argno;
   pp_token_list **formatters[PP_NL_ARGMAX];
 
-  /* Allocate a new chunk structure.  */
-  chunk_info *new_chunk_array = XOBNEW (&buffer->chunk_obstack, chunk_info);
-
-  new_chunk_array->m_prev = buffer->cur_chunk_array;
-  buffer->cur_chunk_array = new_chunk_array;
+  pp_formatted_chunks *new_chunk_array = buffer->push_formatted_chunks ();
   pp_token_list **args = new_chunk_array->m_args;
 
   /* Formatting phase 1: split up TEXT->format_spec into chunks in
@@ -1594,12 +1611,13 @@ pretty_printer::format (text_info *text)
   unsigned int curarg = 0;
   bool any_unnumbered = false, any_numbered = false;
   pp_token_list *cur_token_list;
-  args[chunk++] = cur_token_list = pp_token_list::make (buffer->chunk_obstack);
+  args[chunk++] = cur_token_list
+    = pp_token_list::make (buffer->m_chunk_obstack);
   for (const char *p = text->m_format_spec; *p; )
     {
       while (*p != '\0' && *p != '%')
 	{
-	  obstack_1grow (&buffer->chunk_obstack, *p);
+	  obstack_1grow (&buffer->m_chunk_obstack, *p);
 	  p++;
 	}
 
@@ -1612,13 +1630,13 @@ pretty_printer::format (text_info *text)
 	  gcc_unreachable ();
 
 	case '%':
-	  obstack_1grow (&buffer->chunk_obstack, '%');
+	  obstack_1grow (&buffer->m_chunk_obstack, '%');
 	  p++;
 	  continue;
 
 	case '<':
 	  {
-	    push_back_any_text (cur_token_list, &buffer->chunk_obstack);
+	    push_back_any_text (cur_token_list, &buffer->m_chunk_obstack);
 	    cur_token_list->push_back<pp_token_begin_quote> ();
 	    p++;
 	    continue;
@@ -1626,14 +1644,14 @@ pretty_printer::format (text_info *text)
 
 	case '>':
 	  {
-	    push_back_any_text (cur_token_list, &buffer->chunk_obstack);
+	    push_back_any_text (cur_token_list, &buffer->m_chunk_obstack);
 	    cur_token_list->push_back<pp_token_end_quote> ();
 	    p++;
 	    continue;
 	  }
 	case '\'':
 	  {
-	    push_back_any_text (cur_token_list, &buffer->chunk_obstack);
+	    push_back_any_text (cur_token_list, &buffer->m_chunk_obstack);
 	    cur_token_list->push_back<pp_token_end_quote> ();
 	    p++;
 	  }
@@ -1641,7 +1659,7 @@ pretty_printer::format (text_info *text)
 
 	case '}':
 	  {
-	    push_back_any_text (cur_token_list, &buffer->chunk_obstack);
+	    push_back_any_text (cur_token_list, &buffer->m_chunk_obstack);
 	    cur_token_list->push_back<pp_token_end_url> ();
 	    p++;
 	  }
@@ -1649,7 +1667,7 @@ pretty_printer::format (text_info *text)
 
 	case 'R':
 	  {
-	    push_back_any_text (cur_token_list, &buffer->chunk_obstack);
+	    push_back_any_text (cur_token_list, &buffer->m_chunk_obstack);
 	    cur_token_list->push_back<pp_token_end_color> ();
 	    p++;
 	    continue;
@@ -1658,20 +1676,20 @@ pretty_printer::format (text_info *text)
 	case 'm':
 	  {
 	    const char *errstr = xstrerror (text->m_err_no);
-	    obstack_grow (&buffer->chunk_obstack, errstr, strlen (errstr));
+	    obstack_grow (&buffer->m_chunk_obstack, errstr, strlen (errstr));
 	  }
 	  p++;
 	  continue;
 
 	default:
 	  /* Handled in phase 2.  Terminate the plain chunk here.  */
-	  push_back_any_text (cur_token_list, &buffer->chunk_obstack);
+	  push_back_any_text (cur_token_list, &buffer->m_chunk_obstack);
 	  break;
 	}
 
       /* Start a new token list for the formatting args.  */
       args[chunk] = cur_token_list
-	= pp_token_list::make (buffer->chunk_obstack);
+	= pp_token_list::make (buffer->m_chunk_obstack);
 
       if (ISDIGIT (*p))
 	{
@@ -1695,7 +1713,7 @@ pretty_printer::format (text_info *text)
       formatters[argno] = &args[chunk++];
       do
 	{
-	  obstack_1grow (&buffer->chunk_obstack, *p);
+	  obstack_1grow (&buffer->m_chunk_obstack, *p);
 	  p++;
 	}
       while (strchr ("qwlzt+#", p[-1]));
@@ -1708,7 +1726,7 @@ pretty_printer::format (text_info *text)
 	    {
 	      do
 		{
-		  obstack_1grow (&buffer->chunk_obstack, *p);
+		  obstack_1grow (&buffer->m_chunk_obstack, *p);
 		  p++;
 		}
 	      while (ISDIGIT (p[-1]));
@@ -1717,7 +1735,7 @@ pretty_printer::format (text_info *text)
 	  else
 	    {
 	      gcc_assert (*p == '*');
-	      obstack_1grow (&buffer->chunk_obstack, '*');
+	      obstack_1grow (&buffer->m_chunk_obstack, '*');
 	      p++;
 
 	      if (ISDIGIT (*p))
@@ -1739,34 +1757,34 @@ pretty_printer::format (text_info *text)
 		  curarg++;
 		}
 	      gcc_assert (*p == 's');
-	      obstack_1grow (&buffer->chunk_obstack, 's');
+	      obstack_1grow (&buffer->m_chunk_obstack, 's');
 	      p++;
 	    }
 	}
       if (*p == '\0')
 	{
-	  push_back_any_text (cur_token_list, &buffer->chunk_obstack);
+	  push_back_any_text (cur_token_list, &buffer->m_chunk_obstack);
 	  break;
 	}
 
-      obstack_1grow (&buffer->chunk_obstack, '\0');
-      push_back_any_text (cur_token_list, &buffer->chunk_obstack);
+      obstack_1grow (&buffer->m_chunk_obstack, '\0');
+      push_back_any_text (cur_token_list, &buffer->m_chunk_obstack);
 
       /* Start a new token list for the next (non-formatted) text.  */
       gcc_assert (chunk < PP_NL_ARGMAX * 2);
       args[chunk++] = cur_token_list
-	= pp_token_list::make (buffer->chunk_obstack);
+	= pp_token_list::make (buffer->m_chunk_obstack);
     }
 
-  obstack_1grow (&buffer->chunk_obstack, '\0');
-  push_back_any_text (cur_token_list, &buffer->chunk_obstack);
+  obstack_1grow (&buffer->m_chunk_obstack, '\0');
+  push_back_any_text (cur_token_list, &buffer->m_chunk_obstack);
   gcc_assert (chunk < PP_NL_ARGMAX * 2);
   args[chunk] = nullptr;
 
   /* Set output to the argument obstack, and switch line-wrapping and
      prefixing off.  */
-  buffer->obstack = &buffer->chunk_obstack;
-  const int old_line_length = buffer->line_length;
+  buffer->m_obstack = &buffer->m_chunk_obstack;
+  const int old_line_length = buffer->m_line_length;
   const pp_wrapping_mode_t old_wrapping_mode = pp_set_verbatim_wrapping (this);
 
   /* Note that you can debug the state of the chunk arrays here using
@@ -1799,7 +1817,7 @@ pretty_printer::format (text_info *text)
 
       /* Accumulate the value of the formatted text into here.  */
       pp_token_list *formatted_tok_list
-	= pp_token_list::make (buffer->chunk_obstack);
+	= pp_token_list::make (buffer->m_chunk_obstack);
 
       /* We do not attempt to enforce any ordering on the modifier
 	 characters.  */
@@ -1851,7 +1869,7 @@ pretty_printer::format (text_info *text)
 
       if (quote)
 	{
-	  push_back_any_text (formatted_tok_list, &buffer->chunk_obstack);
+	  push_back_any_text (formatted_tok_list, &buffer->m_chunk_obstack);
 	  formatted_tok_list->push_back<pp_token_begin_quote> ();
 	}
 
@@ -2037,11 +2055,11 @@ pretty_printer::format (text_info *text)
 
       if (quote)
 	{
-	  push_back_any_text (formatted_tok_list, &buffer->chunk_obstack);
+	  push_back_any_text (formatted_tok_list, &buffer->m_chunk_obstack);
 	  formatted_tok_list->push_back<pp_token_end_quote> ();
 	}
 
-      push_back_any_text (formatted_tok_list, &buffer->chunk_obstack);
+      push_back_any_text (formatted_tok_list, &buffer->m_chunk_obstack);
       delete *formatters[argno];
       *formatters[argno] = formatted_tok_list;
     }
@@ -2056,8 +2074,8 @@ pretty_printer::format (text_info *text)
     m_format_postprocessor->handle (this);
 
   /* Revert to normal obstack and wrapping mode.  */
-  buffer->obstack = &buffer->formatted_obstack;
-  buffer->line_length = old_line_length;
+  buffer->m_obstack = &buffer->m_formatted_obstack;
+  buffer->m_line_length = old_line_length;
   pp_wrapping_mode (this) = old_wrapping_mode;
   clear_state ();
 }
@@ -2094,7 +2112,11 @@ struct auto_obstack
   obstack m_obstack;
 };
 
-/* Format of a message pointed to by TEXT.
+/* Phase 3 of formatting a message (phases 1 and 2 done by pp_format).
+
+   Pop a pp_formatted_chunks from chunk_obstack, collecting all the tokens from
+   phases 1 and 2 of formatting, and writing into text in formatted_obstack.
+
    If URLIFIER is non-null then use it on any quoted text that was not
    handled in phases 1 or 2 to potentially add URLs.  */
 
@@ -2103,14 +2125,14 @@ pp_output_formatted_text (pretty_printer *pp,
 			  const urlifier *urlifier)
 {
   output_buffer * const buffer = pp_buffer (pp);
-  gcc_assert (buffer->obstack == &buffer->formatted_obstack);
+  gcc_assert (buffer->m_obstack == &buffer->m_formatted_obstack);
 
-  chunk_info *chunk_array = buffer->cur_chunk_array;
+  pp_formatted_chunks *chunk_array = buffer->m_cur_formatted_chunks;
   pp_token_list * const *token_lists = chunk_array->get_token_lists ();
 
   {
     /* Consolidate into one token list.  */
-    pp_token_list tokens (buffer->chunk_obstack);
+    pp_token_list tokens (buffer->m_chunk_obstack);
     for (unsigned chunk = 0; token_lists[chunk]; chunk++)
       {
 	tokens.push_back_list (std::move (*token_lists[chunk]));
@@ -2132,12 +2154,12 @@ pp_output_formatted_text (pretty_printer *pp,
       default_token_printer (pp, tokens);
 
   /* Close the scope here to ensure that "tokens" above is fully cleared up
-     before popping the current chunk_info, since that latter will pop
+     before popping the current pp_formatted_chunks, since that latter will pop
      the chunk_obstack, and "tokens" may be using blocks within
-     the current chunk_info's chunk_obstack level.  */
+     the current pp_formatted_chunks's chunk_obstack level.  */
   }
 
-  chunk_array->pop_from_output_buffer (*buffer);
+  buffer->pop_formatted_chunks ();
 }
 
 /* Default implementation of token printing.  */
@@ -2229,10 +2251,10 @@ void
 pp_flush (pretty_printer *pp)
 {
   pp->clear_state ();
-  if (!pp_buffer (pp)->flush_p)
+  if (!pp_buffer (pp)->m_flush_p)
     return;
   pp_write_text_to_stream (pp);
-  fflush (pp_buffer (pp)->stream);
+  fflush (pp_buffer (pp)->m_stream);
 }
 
 /* Flush the content of BUFFER onto the attached stream independently
@@ -2242,7 +2264,7 @@ pp_really_flush (pretty_printer *pp)
 {
   pp->clear_state ();
   pp_write_text_to_stream (pp);
-  fflush (pp_buffer (pp)->stream);
+  fflush (pp_buffer (pp)->m_stream);
 }
 
 /* Sets the number of maximum characters per line PRETTY-PRINTER can
@@ -2259,9 +2281,9 @@ pp_set_line_maximum_length (pretty_printer *pp, int length)
 void
 pp_clear_output_area (pretty_printer *pp)
 {
-  obstack_free (pp_buffer (pp)->obstack,
-                obstack_base (pp_buffer (pp)->obstack));
-  pp_buffer (pp)->line_length = 0;
+  obstack_free (pp_buffer (pp)->m_obstack,
+		obstack_base (pp_buffer (pp)->m_obstack));
+  pp_buffer (pp)->m_line_length = 0;
 }
 
 /* Set PREFIX for PRETTY-PRINTER, taking ownership of PREFIX, which
@@ -2413,7 +2435,7 @@ void
 pp_append_text (pretty_printer *pp, const char *start, const char *end)
 {
   /* Emit prefix and skip whitespace if we're starting a new line.  */
-  if (pp_buffer (pp)->line_length == 0)
+  if (pp_buffer (pp)->m_line_length == 0)
     {
       pp->emit_prefix ();
       if (pp_is_wrapping_line (pp))
@@ -2444,7 +2466,7 @@ pp_last_position_in_text (const pretty_printer *pp)
 int
 pretty_printer::remaining_character_count_for_line ()
 {
-  return m_maximum_length - pp_buffer (this)->line_length;
+  return m_maximum_length - pp_buffer (this)->m_line_length;
 }
 
 /* Format a message into BUFFER a la printf.  */
@@ -2479,9 +2501,9 @@ pp_verbatim (pretty_printer *pp, const char *msg, ...)
 void
 pp_newline (pretty_printer *pp)
 {
-  obstack_1grow (pp_buffer (pp)->obstack, '\n');
+  obstack_1grow (pp_buffer (pp)->m_obstack, '\n');
   pp_needs_newline (pp) = false;
-  pp_buffer (pp)->line_length = 0;
+  pp_buffer (pp)->m_line_length = 0;
 }
 
 /* Have PRETTY-PRINTER add a CHARACTER.  */
@@ -2497,8 +2519,8 @@ pp_character (pretty_printer *pp, int c)
       if (ISSPACE (c))
         return;
     }
-  obstack_1grow (pp_buffer (pp)->obstack, c);
-  ++pp_buffer (pp)->line_length;
+  obstack_1grow (pp_buffer (pp)->m_obstack, c);
+  ++pp_buffer (pp)->m_line_length;
 }
 
 /* Append a STRING to the output area of PRETTY-PRINTER; the STRING may
@@ -3018,7 +3040,7 @@ pp_markup::context::end_highlight_color ()
 void
 pp_markup::context::push_back_any_text ()
 {
-  obstack *cur_obstack = m_buf.obstack;
+  obstack *cur_obstack = m_buf.m_obstack;
   obstack_1grow (cur_obstack, '\0');
   m_formatted_token_list->push_back_text
     (label_text::borrow (XOBFINISH (cur_obstack,

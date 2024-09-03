@@ -56,7 +56,7 @@ along with GCC; see the file COPYING3.  If not see
    To avoid needing lots of heap allocation/deallocation, pp_token
    instances are allocated in the pretty_printer's chunk_obstack:
    they must not outlive phase 3 of formatting of the given
-   chunk_info level.  */
+   pp_formatted_chunks level.  */
 
 struct pp_token
 {
@@ -317,8 +317,8 @@ public:
   pp_token &operator= (pp_token_list &&) = delete;
 
 /* Make a pp_token of the given subclass, using the relevant obstack to provide
-   the memory.  The pp_token must therefore not outlive the current chunk_info
-   level during formatting.  */
+   the memory.  The pp_token must therefore not outlive the current
+   pp_formatted_chunks level during formatting.  */
   template<typename Subclass, typename... Args>
   std::unique_ptr<pp_token>
   make_token (Args&&... args)
@@ -357,43 +357,33 @@ public:
   pp_token *m_end;
 };
 
-/* The chunk_info data structure forms a stack of the results from the
+/* The pp_formatted_chunks data structure forms a stack of the results from the
    first phase of formatting (pp_format) which have not yet been
    output (pp_output_formatted_text).  A stack is necessary because
    the diagnostic starter may decide to generate its own output by way
    of the formatter.  */
-class chunk_info
+class pp_formatted_chunks
 {
   friend class pretty_printer;
   friend class pp_markup::context;
+  friend class output_buffer;
 
 public:
   pp_token_list * const * get_token_lists () const { return m_args; }
 
   void append_formatted_chunk (obstack &s, const char *content);
 
-  void pop_from_output_buffer (output_buffer &buf);
-
   void dump (FILE *out) const;
   void DEBUG_FUNCTION dump () const { dump (stderr); }
 
 private:
-  void on_begin_quote (const output_buffer &buf,
-		       unsigned chunk_idx,
-		       const urlifier *urlifier);
-
-  void on_end_quote (pretty_printer *pp,
-		     output_buffer &buf,
-		     unsigned chunk_idx,
-		     const urlifier *urlifier);
-
-  /* Pointer to previous chunk on the stack.  */
-  chunk_info *m_prev;
+  /* Pointer to previous level on the stack.  */
+  pp_formatted_chunks *m_prev;
 
   /* Array of chunks to output.  Each chunk is a doubly-linked list of
      pp_token.
 
-     The chunks can be printed via chunk_info::dump ().
+     The chunks can be printed via pp_formatted_chunks::dump ().
 
      In the first phase of formatting, even-numbered chunks are
      to be output verbatim, odd-numbered chunks are format specifiers.
@@ -456,7 +446,9 @@ private:
      example, the in-memory layout of the chunk_obstack might look like
      this after phase 1:
 
-      + pp_token_list for chunk 0 (m_first: *)   <--- START of chunk_info level
+      + pp_formatted_chunks instance   <--- START of pp_formatted_chunks level
+      |
+      + pp_token_list for chunk 0 (m_first: *)
       |                                     |
       + "foo: \0"  <-------------\          |
       |                          |          |
@@ -483,7 +475,7 @@ private:
      At each stage, allocation of additional text buffers, tokens, and lists
      grow forwards in the obstack (though the internal pointers in linked
      lists might point backwards to earlier objects within the same
-     chunk_info level).  */
+     pp_formatted_chunks level).  */
 };
 
 #endif /* GCC_PRETTY_PRINT_FORMAT_IMPL_H */

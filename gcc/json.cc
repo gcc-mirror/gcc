@@ -87,7 +87,7 @@ void
 value::dump (FILE *outf, bool formatted) const
 {
   pretty_printer pp;
-  pp_buffer (&pp)->stream = outf;
+  pp_buffer (&pp)->m_stream = outf;
   print (&pp, formatted);
   pp_flush (&pp);
 }

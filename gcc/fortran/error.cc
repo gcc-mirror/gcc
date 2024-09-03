@@ -1640,7 +1640,7 @@ gfc_move_error_buffer_from_to (gfc_error_buffer * buffer_from,
 
   gfc_clear_pp_buffer (to);
   /* We make sure this is always buffered.  */
-  to->flush_p = false;
+  to->m_flush_p = false;
 
   if (! gfc_output_buffer_empty_p (from))
     {
@@ -1707,11 +1707,11 @@ gfc_diagnostics_init (void)
   global_dc->m_source_printing.caret_chars[0] = '1';
   global_dc->m_source_printing.caret_chars[1] = '2';
   pp_warning_buffer = new (XNEW (output_buffer)) output_buffer ();
-  pp_warning_buffer->flush_p = false;
+  pp_warning_buffer->m_flush_p = false;
   /* pp_error_buffer is statically allocated.  This simplifies memory
      management when using gfc_push/pop_error. */
   pp_error_buffer = &(error_buffer.buffer);
-  pp_error_buffer->flush_p = false;
+  pp_error_buffer->m_flush_p = false;
 }
 
 void

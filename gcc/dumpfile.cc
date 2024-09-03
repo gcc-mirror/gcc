@@ -1006,7 +1006,7 @@ emit_any_pending_textual_chunks ()
 {
   dump_pretty_printer *pp = &m_dump_pp;
   output_buffer *const buffer = pp_buffer (pp);
-  gcc_assert (buffer->obstack == &buffer->formatted_obstack);
+  gcc_assert (buffer->m_obstack == &buffer->m_formatted_obstack);
 
   /* Don't emit an item if the pending text is empty.  */
   if (output_buffer_last_position_in_text (buffer) == nullptr)
@@ -1020,8 +1020,8 @@ emit_any_pending_textual_chunks ()
 
   /* Clear the pending text by unwinding formatted_text back to the start
      of the buffer (without deallocating).  */
-  obstack_free (&buffer->formatted_obstack,
-		buffer->formatted_obstack.object_base);
+  obstack_free (&buffer->m_formatted_obstack,
+		buffer->m_formatted_obstack.object_base);
 }
 
 /* Output a formatted message using FORMAT on appropriate dump streams.  */

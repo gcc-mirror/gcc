@@ -3533,7 +3533,7 @@ type_to_string (tree typ, int verbose, bool postprocessed, bool *quote,
 	pp_string (cxx_pp, colorize_start (show_color, highlight_color));
     }
 
-  struct obstack *ob = pp_buffer (cxx_pp)->obstack;
+  struct obstack *ob = pp_buffer (cxx_pp)->m_obstack;
   int type_start, type_len;
   type_start = obstack_object_size (ob);
 
@@ -4430,8 +4430,8 @@ static void
 append_formatted_chunk (pretty_printer *pp, const char *content)
 {
   output_buffer *buffer = pp_buffer (pp);
-  chunk_info *chunk_array = buffer->cur_chunk_array;
-  chunk_array->append_formatted_chunk (buffer->chunk_obstack, content);
+  pp_formatted_chunks *chunk_array = buffer->m_cur_formatted_chunks;
+  chunk_array->append_formatted_chunk (buffer->m_chunk_obstack, content);
 }
 
 #if __GNUC__ >= 10
