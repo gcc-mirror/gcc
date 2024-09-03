@@ -282,7 +282,7 @@ public:
 
   void emit_prefix ();
 
-  void format (text_info *text);
+  void format (text_info &text);
 
   void maybe_space ();
 
@@ -579,7 +579,8 @@ extern void pp_flush (pretty_printer *);
 extern void pp_really_flush (pretty_printer *);
 inline void pp_format (pretty_printer *pp, text_info *text)
 {
-  pp->format (text);
+  gcc_assert (text);
+  pp->format (*text);
 }
 extern void pp_output_formatted_text (pretty_printer *,
 				      const urlifier * = nullptr);

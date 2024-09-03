@@ -30,13 +30,10 @@ class context
 {
 public:
   context (pretty_printer &pp,
-	   output_buffer &buf,
-	   unsigned chunk_idx,
 	   bool &quoted,
 	   pp_token_list *formatted_token_list)
   : m_pp (pp),
-    m_buf (buf),
-    m_chunk_idx (chunk_idx),
+    m_buf (*pp_buffer (&pp)),
     m_quoted (quoted),
     m_formatted_token_list (formatted_token_list)
   {
@@ -52,7 +49,6 @@ public:
 
   pretty_printer &m_pp;
   output_buffer &m_buf;
-  unsigned m_chunk_idx;
   bool &m_quoted;
   pp_token_list *m_formatted_token_list;
 };
