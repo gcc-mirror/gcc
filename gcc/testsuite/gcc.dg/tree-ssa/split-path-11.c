@@ -11,4 +11,4 @@ void foo(unsigned long long *M)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "join point for if-convertable half-diamond" 1 "split-paths" } } */
+/* { dg-final { scan-tree-dump-times "join point for if-convertable" 1 "split-paths" } } */

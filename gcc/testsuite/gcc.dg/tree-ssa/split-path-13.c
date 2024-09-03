@@ -1,5 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fsplit-paths -fdump-tree-split-paths-details " } */
+/* PR tree-optimization/112402 */
+/* This is similar to split-path-2.c but instead of the add
+   being inside both sides, we have a constant. */
 
 int
 foo(signed char *p, int n)
@@ -8,10 +11,12 @@ foo(signed char *p, int n)
   int i;
 
   for (i = 0; i < n; i++) {
+    int t;
     if (p[i] >= 0)
-      s++;
+      t = 1;
     else
-      s--;
+      t = -1;
+    s += t;
   }
 
   return s;

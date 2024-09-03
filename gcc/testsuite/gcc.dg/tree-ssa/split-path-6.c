@@ -57,6 +57,8 @@ oof (void)
     }
 }
 
+
+/* lookharder becomes an ifcvt'd/cmov. */
 void
 lookharder (char *string)
 {
@@ -73,4 +75,4 @@ lookharder (char *string)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "Duplicating join block" 3 "split-paths" } } */
+/* { dg-final { scan-tree-dump-times "Duplicating join block" 2 "split-paths" } } */
