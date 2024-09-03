@@ -4720,11 +4720,16 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 		  }
 	    }
 
+	  gimple *rep = STMT_VINFO_STMT (SLP_TREE_REPRESENTATIVE (slp_root));
+	  bool masked = (is_gimple_call (rep)
+			 && gimple_call_internal_p (rep)
+			 && internal_fn_mask_index
+			      (gimple_call_internal_fn (rep)) != -1);
 	  /* If the loads and stores can use load/store-lanes force re-discovery
 	     with single lanes.  */
 	  if (loads_permuted
 	      && !slp_root->ldst_lanes
-	      && vect_store_lanes_supported (vectype, group_size, false)
+	      && vect_store_lanes_supported (vectype, group_size, masked)
 	      != IFN_LAST)
 	    {
 	      bool can_use_lanes = true;
@@ -4734,13 +4739,23 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 		  {
 		    stmt_vec_info stmt_vinfo = DR_GROUP_FIRST_ELEMENT
 			(SLP_TREE_REPRESENTATIVE (load_node));
+		    rep = STMT_VINFO_STMT (stmt_vinfo);
+		    masked = (is_gimple_call (rep)
+			      && gimple_call_internal_p (rep)
+			      && internal_fn_mask_index
+				   (gimple_call_internal_fn (rep)));
 		    /* Use SLP for strided accesses (or if we can't
 		       load-lanes).  */
 		    if (STMT_VINFO_STRIDED_P (stmt_vinfo)
 			|| compare_step_with_zero (vinfo, stmt_vinfo) <= 0
 			|| vect_load_lanes_supported
 			     (STMT_VINFO_VECTYPE (stmt_vinfo),
-			      DR_GROUP_SIZE (stmt_vinfo), false) == IFN_LAST)
+			      DR_GROUP_SIZE (stmt_vinfo), masked) == IFN_LAST
+			/* ???  During SLP re-discovery with a single lane
+			   a masked grouped load will appear permuted and
+			   discovery will fail.  We have to rework this
+			   on the discovery side - for now avoid ICEing.  */
+			|| masked)
 		      {
 			can_use_lanes = false;
 			break;
