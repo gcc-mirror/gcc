@@ -376,6 +376,9 @@ public:
   void dump (FILE *out) const;
   void DEBUG_FUNCTION dump () const { dump (stderr); }
 
+  // For use in selftests
+  pp_formatted_chunks *get_prev () const { return m_prev; }
+
 private:
   /* Pointer to previous level on the stack.  */
   pp_formatted_chunks *m_prev;

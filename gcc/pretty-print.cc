@@ -3547,6 +3547,83 @@ test_custom_tokens_2 ()
 		"print_tokens was called");
 }
 
+/* Helper subroutine for test_pp_format_stack.
+   Call pp_format (phases 1 and 2), without calling phase 3.  */
+
+static void
+push_pp_format (pretty_printer *pp, const char *msg, ...)
+{
+  va_list ap;
+
+  va_start (ap, msg);
+  rich_location rich_loc (line_table, UNKNOWN_LOCATION);
+  text_info ti (msg, &ap, 0, nullptr, &rich_loc);
+  pp_format (pp, &ti);
+  va_end (ap);
+}
+
+#define ASSERT_TEXT_TOKEN(TOKEN, EXPECTED_TEXT)		\
+  SELFTEST_BEGIN_STMT						\
+    ASSERT_NE ((TOKEN), nullptr);				\
+    ASSERT_EQ ((TOKEN)->m_kind, pp_token::kind::text);		\
+    ASSERT_STREQ						\
+      (as_a <const pp_token_text *> (TOKEN)->m_value.get (),	\
+       (EXPECTED_TEXT));					\
+  SELFTEST_END_STMT
+
+
+/* Verify that the stack of pp_formatted_chunks works as expected.  */
+
+static void
+test_pp_format_stack ()
+{
+  auto_fix_quotes fix_quotes;
+
+  pretty_printer pp;
+  push_pp_format (&pp, "unexpected foo: %i bar: %qs", 42, "test");
+  push_pp_format (&pp, "In function: %qs", "test_fn");
+
+  /* Expect the top of the stack to have:
+     (gdb) call top->dump()
+     0: [TEXT("In function: ")]
+     1: [BEGIN_QUOTE, TEXT("test_fn"), END_QUOTE].  */
+
+  pp_formatted_chunks *top = pp_buffer (&pp)->m_cur_formatted_chunks;
+  ASSERT_NE (top, nullptr);
+  ASSERT_TEXT_TOKEN (top->get_token_lists ()[0]->m_first, "In function: ");
+  ASSERT_EQ (top->get_token_lists ()[1]->m_first->m_kind,
+	     pp_token::kind::begin_quote);
+  ASSERT_EQ (top->get_token_lists ()[2], nullptr);
+
+  /* Expect an entry in the stack below it with:
+     0: [TEXT("unexpected foo: ")]
+     1: [TEXT("42")]
+     2: [TEXT(" bar: ")]
+     3: [BEGIN_QUOTE, TEXT("test"), END_QUOTE].  */
+  pp_formatted_chunks *prev = top->get_prev ();
+  ASSERT_NE (prev, nullptr);
+  ASSERT_TEXT_TOKEN (prev->get_token_lists ()[0]->m_first, "unexpected foo: ");
+  ASSERT_TEXT_TOKEN (prev->get_token_lists ()[1]->m_first, "42");
+  ASSERT_TEXT_TOKEN (prev->get_token_lists ()[2]->m_first, " bar: ");
+  ASSERT_EQ (prev->get_token_lists ()[3]->m_first->m_kind,
+	     pp_token::kind::begin_quote);
+  ASSERT_EQ (prev->get_token_lists ()[4], nullptr);
+
+  ASSERT_EQ (prev->get_prev (), nullptr);
+
+  /* Pop the top of the stack.  */
+  pp_output_formatted_text (&pp);
+  ASSERT_EQ (pp_buffer (&pp)->m_cur_formatted_chunks, prev);
+  pp_newline (&pp);
+
+  /* Pop the remaining entry from the stack.  */
+  pp_output_formatted_text (&pp);
+  ASSERT_EQ (pp_buffer (&pp)->m_cur_formatted_chunks, nullptr);
+
+  ASSERT_STREQ (pp_formatted_text (&pp),
+		"In function: `test_fn'\nunexpected foo: 42 bar: `test'");
+}
+
 /* A subclass of pretty_printer for use by test_prefixes_and_wrapping.  */
 
 class test_pretty_printer : public pretty_printer
@@ -3976,6 +4053,7 @@ pretty_print_cc_tests ()
   test_merge_consecutive_text_tokens ();
   test_custom_tokens_1 ();
   test_custom_tokens_2 ();
+  test_pp_format_stack ();
   test_prefixes_and_wrapping ();
   test_urls ();
   test_urls_from_braces ();
