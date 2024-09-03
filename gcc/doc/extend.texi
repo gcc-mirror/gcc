@@ -7926,6 +7926,10 @@ The @code{counted_by} attribute may be attached to the C99 flexible array
 member of a structure.  It indicates that the number of the elements of the
 array is given by the field "@var{count}" in the same structure as the
 flexible array member.
+
+This attribute is available only in C for now.
+In C++ this attribute is ignored.
+
 GCC may use this information to improve detection of object size information
 for such structures and provide better results in compile-time diagnostics
 and runtime features like the array bound sanitizer and

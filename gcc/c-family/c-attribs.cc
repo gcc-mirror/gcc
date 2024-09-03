@@ -2867,8 +2867,16 @@ handle_counted_by_attribute (tree *node, tree name,
   tree argval = TREE_VALUE (args);
   tree old_counted_by = lookup_attribute ("counted_by", DECL_ATTRIBUTES (decl));
 
+  /* This attribute is not supported in C++.  */
+  if (c_dialect_cxx ())
+    {
+      warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
+		  "%qE attribute is not supported for C++ for now, ignored",
+		  name);
+      *no_add_attrs = true;
+    }
   /* This attribute only applies to field decls of a structure.  */
-  if (TREE_CODE (decl) != FIELD_DECL)
+  else if (TREE_CODE (decl) != FIELD_DECL)
     {
       error_at (DECL_SOURCE_LOCATION (decl),
 		"%qE attribute is not allowed for a non-field"
