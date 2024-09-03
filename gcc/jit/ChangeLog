@@ -1,3 +1,8 @@
+2024-09-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* jit-playback.cc (playback::block::add_extended_asm):  Rename
+	ASM_INPUT_P to ASM_BASIC_P.
+
 2024-07-24  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit-playback.cc (jit::playback_context::compile) Add a trailing

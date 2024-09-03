@@ -1,3 +1,190 @@
+2024-09-03  YunQiang Su  <syq@gcc.gnu.org>
+
+	* gcc.target/mips/msa-reduc.c: New tests.
+
+2024-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/optimize_one.c: Add -msse2 to dg-options.
+
+2024-09-02  Alexandre Oliva  <oliva@adacore.com>
+
+	PR d/115295
+	* g++.dg/vect/pr95401.cc: Add linkonly to dg-additional-sources.
+	* g++.dg/vect/pr68762-1.cc: Likewise.
+	* g++.dg/vect/simd-clone-3.cc: Likewise.
+	* g++.dg/vect/simd-clone-5.cc: Likewise.
+	* gcc.dg/vect/vect-simd-clone-10.c: Likewise.  Drop dg-do run.
+	* gcc.dg/vect/vect-simd-clone-12.c: Likewise.  Likewise.
+	* lib/gcc-defs.exp (additional_sources_omit_on_compile): New.
+	(dg-additional-sources): Add to it on linkonly.
+	(dg-additional-files-options): Omit select sources on compile.
+
+2024-09-02  Alex Coplan  <alex.coplan@arm.com>
+
+	* gcc.dg-selftests/dg-final.exp: Load scanltrans.exp instead of
+	scanltranstree.exp.
+	* lib/gcc-dg.exp: Likewise.
+	* lib/scanltranstree.exp: Rename to ...
+	* lib/scanltrans.exp: ... this.
+
+2024-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/116486
+	* gcc.dg/bitint-109.c: New test.
+
+2024-09-02  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-55.c: New testcase.
+	* gcc.dg/vect/slp-56.c: Likewise.
+	* gcc.dg/vect/slp-11c.c: Adjust.
+	* gcc.dg/vect/slp-53.c: Likewise.
+	* gcc.dg/vect/slp-cond-1.c: Likewise.
+	* gcc.dg/vect/vect-complex-5.c: Likewise.
+	* gcc.dg/vect/slp-1.c: Likewise.
+	* gcc.dg/vect/slp-54.c: Remove riscv XFAIL.
+	* gcc.dg/vect/slp-perm-5.c: Adjust.
+	* gcc.dg/vect/slp-perm-7.c: Likewise.
+	* gcc.dg/vect/slp-perm-8.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-11.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-11-big-array.c: Likewise.
+	* gcc.dg/vect/slp-perm-9.c: Remove expected SLP fail due to
+	three-vector permute.
+	* gcc.dg/vect/slp-perm-6.c: Remove XFAIL.
+	* gcc.dg/vect/slp-perm-1.c: Adjust.
+	* gcc.dg/vect/slp-perm-2.c: Likewise.
+	* gcc.dg/vect/slp-perm-3.c: Likewise.
+	* gcc.dg/vect/slp-perm-4.c: Likewise.
+	* gcc.dg/vect/pr68445.c: Likewise.
+	* gcc.dg/vect/slp-11b.c: Likewise.
+	* gcc.dg/vect/slp-2.c: Likewise.
+	* gcc.dg/vect/slp-23.c: Likewise.
+	* gcc.dg/vect/slp-33.c: Likewise.
+	* gcc.dg/vect/slp-42.c: Likewise.
+	* gcc.dg/vect/slp-46.c: Likewise.
+	* gcc.dg/vect/slp-perm-10.c: Likewise.
+
+2024-09-02  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-11a.c: Expect SLP.
+	* gcc.dg/vect/slp-12a.c: Likewise.
+	* gcc.dg/vect/slp-51.c: New testcase.
+	* gcc.dg/vect/slp-52.c: New testcase.
+
+2024-09-02  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* gcc.target/riscv/rv32-movdf-cost.c: New test.
+
+2024-09-02  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/116544
+	* gcc.dg/torture/pr116544.c: New test.
+
+2024-09-02  Levy Hsu  <admin@levyhsu.com>
+
+	* gcc.target/i386/avx10_2-512-bf-vector-cmpp-1.c: New test.
+	* gcc.target/i386/avx10_2-bf-vector-cmpp-1.c: Ditto.
+
+2024-09-02  Levy Hsu  <admin@levyhsu.com>
+
+	* gcc.target/i386/avx10_2-512-bf-vector-smaxmin-1.c: New test.
+	* gcc.target/i386/avx10_2-bf-vector-smaxmin-1.c: New test.
+
+2024-09-02  Levy Hsu  <admin@levyhsu.com>
+
+	* gcc.target/i386/avx10_2-512-bf-vector-fma-1.c: New test.
+	* gcc.target/i386/avx10_2-bf-vector-fma-1.c: New test.
+
+2024-09-02  Levy Hsu  <admin@levyhsu.com>
+
+	* gcc.target/i386/avx10_2-512-bf-vector-operations-1.c: New test.
+	* gcc.target/i386/avx10_2-bf-vector-operations-1.c: Ditto.
+
+2024-09-02  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx10_2-compare-1b.c: New test.
+
+2024-09-02  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/optimize_one.c: New test.
+
+2024-09-02  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/vnniint16-auto-vectorize-2.c: Only define
+	TEST when not defined.
+	* gcc.target/i386/vnniint8-auto-vectorize-2.c: Ditto.
+	* gcc.target/i386/vnniint16-auto-vectorize-3.c: New test.
+	* gcc.target/i386/vnniint16-auto-vectorize-4.c: Ditto.
+	* gcc.target/i386/vnniint8-auto-vectorize-3.c: Ditto.
+	* gcc.target/i386/vnniint8-auto-vectorize-4.c: Ditto.
+
+2024-09-02  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_u_trunc-16.c: New test.
+	* gcc.target/riscv/sat_u_trunc-17.c: New test.
+	* gcc.target/riscv/sat_u_trunc-18.c: New test.
+	* gcc.target/riscv/sat_u_trunc-run-16.c: New test.
+	* gcc.target/riscv/sat_u_trunc-run-17.c: New test.
+	* gcc.target/riscv/sat_u_trunc-run-18.c: New test.
+
+2024-09-02  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_u_trunc-10.c: New test.
+	* gcc.target/riscv/sat_u_trunc-11.c: New test.
+	* gcc.target/riscv/sat_u_trunc-12.c: New test.
+	* gcc.target/riscv/sat_u_trunc-run-10.c: New test.
+	* gcc.target/riscv/sat_u_trunc-run-11.c: New test.
+	* gcc.target/riscv/sat_u_trunc-run-12.c: New test.
+
+2024-09-02  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vec_sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-13.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-14.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-15.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-16.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-run-13.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-run-14.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-run-15.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-run-16.c: New test.
+
+2024-09-02  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-run-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-run-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-run-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-run-9.c: New test.
+
+2024-09-02  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_u_sub-11.c: Adjust asm check.
+	* gcc.target/riscv/sat_u_sub-15.c: Ditto.
+	* gcc.target/riscv/sat_u_sub-19.c: Ditto.
+	* gcc.target/riscv/sat_u_sub-23.c: Ditto.
+	* gcc.target/riscv/sat_u_sub-27.c: Ditto.
+	* gcc.target/riscv/sat_u_sub-3.c: Ditto.
+	* gcc.target/riscv/sat_u_sub-31.c: Ditto.
+	* gcc.target/riscv/sat_u_sub-35.c: Ditto.
+	* gcc.target/riscv/sat_u_sub-39.c: Ditto.
+	* gcc.target/riscv/sat_u_sub-43.c: Ditto.
+	* gcc.target/riscv/sat_u_sub-47.c: Ditto.
+	* gcc.target/riscv/sat_u_sub-7.c: Ditto.
+	* gcc.target/riscv/sat_u_sub_imm-11.c: Ditto.
+	* gcc.target/riscv/sat_u_sub_imm-11_1.c: Ditto.
+	* gcc.target/riscv/sat_u_sub_imm-11_2.c: Ditto.
+	* gcc.target/riscv/sat_u_sub_imm-15.c: Ditto.
+	* gcc.target/riscv/sat_u_sub_imm-15_1.c: Ditto.
+	* gcc.target/riscv/sat_u_sub_imm-15_2.c: Ditto.
+	* gcc.target/riscv/sat_u_sub_imm-3.c: Ditto.
+	* gcc.target/riscv/sat_u_sub_imm-3_1.c: Ditto.
+	* gcc.target/riscv/sat_u_sub_imm-3_2.c: Ditto.
+	* gcc.target/riscv/sat_u_sub_imm-7.c: Ditto.
+	* gcc.target/riscv/sat_u_sub_imm-7_1.c: Ditto.
+	* gcc.target/riscv/sat_u_sub_imm-7_2.c: Ditto.
+
 2024-09-01  Hans-Peter Nilsson  <hp@axis.com>
 
 	* g++.dg/modules/modules.exp (module_do_it): Prune compilation

@@ -1,3 +1,15 @@
+2024-09-02  Andrew Stubbs  <ams@baylibre.com>
+
+	* libgomp.texi: Remove fiji and gfx803.
+	* testsuite/libgomp.c/declare-variant-4.h: Remove fiji and gfx803.
+	* testsuite/libgomp.c/declare-variant-4-fiji.c: Removed.
+	* testsuite/libgomp.c/declare-variant-4-gfx803.c: Removed.
+
+2024-09-02  Alex Coplan  <alex.coplan@arm.com>
+
+	* testsuite/lib/libgomp.exp: Load scanltrans.exp instead of
+	scanltranstree.exp.
+
 2024-08-28  Tobias Burnus  <tburnus@baylibre.com>
 
 	* fortran.c (omp_get_interop_str_, omp_get_interop_name_,

@@ -1,3 +1,7 @@
+2024-09-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* toir.cc (IRVisitor): Rename ASM_INPUT_P to ASM_BASIC_P.
+
 2024-07-21  Sam James  <sam@gentoo.org>
 
 	* Make-lang.in (WARN_DFLAGS): Drop NOCOMMON_FLAG.

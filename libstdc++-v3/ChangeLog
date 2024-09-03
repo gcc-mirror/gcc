@@ -1,3 +1,22 @@
+2024-09-02  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/30_threads/future/members/poll.cc: Factor out
+	calibration, and run it unconditionally.  Lower its
+	strictness.  Bump wait_until_*'s slowness factor.
+
+2024-09-02  Alexandre Oliva  <oliva@adacore.com>
+
+	PR libstdc++/91486
+	* testsuite/30_threads/async/async.cc
+	(test_pr91486_wait_for): Mark status as unused.
+	(test_pr91486_wait_until): Likewise.  Initialize epoch later.
+
+2024-09-02  Andreas Schwab  <schwab@suse.de>
+
+	PR libstdc++/116513
+	* libsupc++/compare (_S_fp_bits) [__fmt == _M68k_80bit]: Shift
+	padding out of exponent word.
+
 2024-08-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* configure.ac: Fix check for O_NONBLOCK.

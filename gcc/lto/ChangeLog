@@ -1,3 +1,7 @@
+2024-09-02  Tobias Burnus  <tburnus@baylibre.com>
+
+	* lto.cc: Add missing HAVE_WORKING_FORK.
+
 2024-06-07  Simon Martin  <simon@nasilyan.com>
 
 	* lto-partition.cc: Define INCLUDE_VECTOR to avoid running into

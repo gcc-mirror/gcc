@@ -1,3 +1,7 @@
+2024-09-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-typeck.cc (build_asm_expr): Rename ASM_INPUT_P to ASM_BASIC_P.
+
 2024-08-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/116130

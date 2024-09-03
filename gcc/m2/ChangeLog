@@ -1,3 +1,53 @@
+2024-09-02  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/116557
+	* gm2-lang.cc: Replace physical address with URL in GPL header.
+	* gm2-lang.h: Ditto.
+	* images/LICENSE.IMG: Ditto.
+	* m2-tree.def: Ditto.
+	* mc-boot/GIndexing.cc: Ditto.
+	* mc-boot/Gkeyc.cc: Ditto.
+	* mc-boot/Glists.cc: Ditto.
+	* mc-boot/GmcComp.cc: Ditto.
+	* mc-boot/GmcDebug.cc: Ditto.
+	* mc-boot/GmcFileName.cc: Ditto.
+	* mc-boot/GmcMetaError.cc: Ditto.
+	* mc-boot/GmcOptions.cc: Ditto.
+	* mc-boot/GmcPreprocess.cc: Ditto.
+	* mc-boot/GmcPretty.cc: Ditto.
+	* mc-boot/GmcPrintf.cc: Ditto.
+	* mc-boot/GmcQuiet.cc: Ditto.
+	* mc-boot/GmcReserved.cc: Ditto.
+	* mc-boot/GmcSearch.cc: Ditto.
+	* mc-boot/GmcStack.cc: Ditto.
+	* mc/Indexing.mod: Ditto.
+	* mc/keyc.mod: Ditto.
+	* mc/lists.mod: Ditto.
+	* mc/mcComp.mod: Ditto.
+	* mc/mcDebug.mod: Ditto.
+	* mc/mcFileName.mod: Ditto.
+	* mc/mcMetaError.mod: Ditto.
+	* mc/mcOptions.mod: Ditto.
+	* mc/mcPreprocess.mod: Ditto.
+	* mc/mcPretty.mod: Ditto.
+	* mc/mcPrintf.mod: Ditto.
+	* mc/mcQuiet.mod: Ditto.
+	* mc/mcReserved.mod: Ditto.
+	* mc/mcSearch.mod: Ditto.
+	* mc/mcStack.mod: Ditto.
+	* tools-src/buildpg: Ditto.
+	* tools-src/calcpath: Ditto.
+	* tools-src/checkmeta.py: Ditto.
+	* tools-src/def2doc.py: Ditto.
+	* tools-src/makeSystem: Ditto.
+	* tools-src/tidydates.py: Ditto.
+
+2024-09-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gm2-gcc/m2block.cc (flush_pending_note): Rename ASM_INPUT_P
+	to ASM_BASIC_P.
+	* gm2-gcc/m2statement.cc (m2statement_BuildAsm): Likewise.
+
 2024-08-30  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/116181

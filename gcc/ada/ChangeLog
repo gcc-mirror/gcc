@@ -1,3 +1,61 @@
+2024-09-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity): Cap the Esize of a
+	floating-point type to the size of the widest format supported in
+	hardware if it is explicity defined.
+
+2024-09-02  Viljar Indus  <indus@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst: update
+	documentation for the -gnatw_l switch.
+	* usage.adb: Add -gnatw_l entry.
+	* gnat_ugn.texi: Regenerate.
+
+2024-09-02  Ronan Desplanques  <desplanques@adacore.com>
+
+	* gnatcmd.adb (GNATCmd): Fix standard output stream.
+
+2024-09-02  Ronan Desplanques  <desplanques@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst: Fix
+	minor issues.
+	* gnat_ugn.texi: Regenerate.
+
+2024-09-02  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_rm/gnat_language_extensions.rst: I assume "extended set
+	of extensions" was a typo for "experimental set of extensions",
+	because "extended extensions" is repetitive and redundant. "in
+	addition" clarifies that the one subsumes the other. Add a
+	reminder at the start of each subsection about what switch/pragma
+	enables what extensions. Add new section about "Inference of
+	Dependent Types in Generic Instantiations".
+	* gnat_rm.texi: Regenerate.
+
+2024-09-02  Patrick Bernardi  <bernardi@adacore.com>
+
+	* s-oscons-tmplt.c: Define sizes of pthread data types on FreeBSD.
+	* tracebak.c: Use GCC unwinder and adjust PC appropriately on
+	aarch64-freebsd.
+
+2024-09-02  Marc Poulhiès  <poulhies@adacore.com>
+
+	* exp_ch9.adb (Reset_Scopes_To): Adjust comment.
+	(Reset_Scopes_To.Reset_Scope): Adjust the scope reset for object
+	declaration. In particular, visit the children nodes if any. Also
+	extend the handling of other declarations to
+	N_Implicit_Label_Declaration.
+
+2024-09-02  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Replace calls to Sloc
+	with uses of Loc; turn variable Prag into constant.
+
+2024-09-02  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_imgv.adb (Expand_User_Defined_Enumeration_Image)
+	(Expand_Image_Attribute): Remove redundant guards.
+
 2024-08-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch8.adb (Has_Private_With): Add test on Is_Entity_Name.

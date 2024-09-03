@@ -1,3 +1,8 @@
+2024-09-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* pt.cc (tsubst_stmt): Rename ASM_INPUT_P to ASM_BASIC_P.
+	* parser.cc (cp_parser_asm_definition): Likewise.
+
 2024-08-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc (coro_build_frame_access_expr): New.
