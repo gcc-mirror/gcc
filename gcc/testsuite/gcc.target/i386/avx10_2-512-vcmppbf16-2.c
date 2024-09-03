@@ -8,7 +8,8 @@
 #define AVX10_512BIT
 #endif
 #include "avx10-helper.h"
-#define SIZE_RES (AVX512F_LEN / 16)
+#define SIZE (AVX512F_LEN / 16)
+#include "avx512f-mask-type.h"
 
 void
 TEST (void)
@@ -18,7 +19,7 @@ TEST (void)
   UNION_TYPE (AVX512F_LEN, bf16_uw) src1, src2;
   MASK_TYPE mask = MASK_VALUE;
   
-  for (i = 0; i < SIZE_RES; i++)
+  for (i = 0; i < SIZE; i++)
     {
       float x = 0.5;
       float y = 0.25;

@@ -10,15 +10,15 @@
 #include "avx10-helper.h"
 #include <limits.h>
 
-#define SRC_SIZE ((AVX512F_LEN) / 64)
-#define DST_SIZE ((AVX512F_LEN) / 64)
+#define SIZE (AVX512F_LEN / 64)
+#include "avx512f-mask-type.h"
 
 static void
 CALC (double *s, long long *r)
 {
   int i;
 
-  for (i = 0; i < SRC_SIZE; i++)
+  for (i = 0; i < SIZE; i++)
     {
       if (s[i] > LLONG_MAX)
 	r[i] = LLONG_MAX;
@@ -35,16 +35,16 @@ TEST (void)
   UNION_TYPE (AVX512F_LEN, d) s;
   UNION_TYPE (AVX512F_LEN, i_q) res1, res2, res3;
   MASK_TYPE mask = MASK_VALUE;
-  long long res_ref[DST_SIZE] = { 0 };
+  long long res_ref[SIZE] = { 0 };
   int i, sign = 1;
 
-  for (i = 0; i < SRC_SIZE; i++)
+  for (i = 0; i < SIZE; i++)
     {
       s.a[i] = 1.23 * (i + 2) * sign;
       sign = -sign;
     }
 
-  for (i = 0; i < DST_SIZE; i++)
+  for (i = 0; i < SIZE; i++)
     res2.a[i] = DEFAULT_VALUE;
 
 #if AVX512F_LEN == 128
@@ -62,11 +62,11 @@ TEST (void)
   if (UNION_CHECK (AVX512F_LEN, i_q) (res1, res_ref))
     abort ();
 
-  MASK_MERGE (i_q) (res_ref, mask, SRC_SIZE);
+  MASK_MERGE (i_q) (res_ref, mask, SIZE);
   if (UNION_CHECK (AVX512F_LEN, i_q) (res2, res_ref))
     abort ();
 
-  MASK_ZERO (i_q) (res_ref, mask, SRC_SIZE);
+  MASK_ZERO (i_q) (res_ref, mask, SIZE);
   if (UNION_CHECK (AVX512F_LEN, i_q) (res3, res_ref))
     abort ();
 }

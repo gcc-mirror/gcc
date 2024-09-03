@@ -10,8 +10,9 @@
 #include "avx10-helper.h"
 #include <limits.h>
 
-#define SRC_SIZE ((AVX512F_LEN) / 64)
-#define DST_SIZE ((AVX512F_LEN_HALF) / 32)
+#define SRC_SIZE (AVX512F_LEN / 64)
+#define SIZE (AVX512F_LEN_HALF / 32)
+#include "avx512f-mask-type.h"
 
 static void
 CALC (double *s, unsigned int *r)
@@ -35,7 +36,7 @@ TEST (void)
   UNION_TYPE (AVX512F_LEN, d) s;
   UNION_TYPE (AVX512F_LEN_HALF, i_ud) res1, res2, res3;
   MASK_TYPE mask = MASK_VALUE;
-  unsigned int res_ref[DST_SIZE] = { 0 };
+  unsigned int res_ref[SIZE] = { 0 };
   int i, sign = 1;
 
   for (i = 0; i < SRC_SIZE; i++)
@@ -44,7 +45,7 @@ TEST (void)
       sign = -sign;
     }
 
-  for (i = 0; i < DST_SIZE; i++)
+  for (i = 0; i < SIZE; i++)
     res2.a[i] = DEFAULT_VALUE;
 
 #if AVX512F_LEN == 128

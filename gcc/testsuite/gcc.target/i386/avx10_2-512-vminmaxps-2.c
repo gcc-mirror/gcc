@@ -6,10 +6,11 @@
 #define AVX10_2
 #define AVX10_512BIT
 #endif
-#define SIZE (AVX512F_LEN / 32)
 #include "avx10-helper.h"
+#define SIZE (AVX512F_LEN / 32)
 #include <stdbool.h>
 #include "avx10-minmax-helper.h"
+#include "avx512f-mask-type.h"
 
 void static
 CALC (float *r, float *s1, float *s2, int R)

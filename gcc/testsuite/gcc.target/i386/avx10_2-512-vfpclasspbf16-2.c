@@ -8,7 +8,8 @@
 #define AVX10_512BIT
 #endif
 #include "avx10-helper.h"
-#define SIZE_RES (AVX512F_LEN / 16)
+#define SIZE (AVX512F_LEN / 16)
+#include "avx512f-mask-type.h"
 
 void
 TEST (void)
@@ -20,13 +21,13 @@ TEST (void)
   UNION_TYPE (AVX512F_LEN, ) src2;
   MASK_TYPE mask = MASK_VALUE;
 
-  for (i = 0; i < SIZE_RES / 2; i++)
+  for (i = 0; i < SIZE / 2; i++)
     {
       src1.a[i] = 0;
       src2.a[i] = (uint32_t) (src1.a[i]) << 16;
     }
 
-  for (i = SIZE_RES / 2; i < SIZE_RES; i++)
+  for (i = SIZE / 2; i < SIZE; i++)
     src1.a[i] = 0;
   
   src1.a[0] = 0x7FC0;

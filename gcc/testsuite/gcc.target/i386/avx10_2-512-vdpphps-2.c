@@ -10,8 +10,9 @@
 
 #include "avx10-helper.h"
 
-#define SRC_SIZE AVX512F_LEN / 16
-#define SIZE AVX512F_LEN / 32
+#define SRC_SIZE (AVX512F_LEN / 16)
+#define SIZE (AVX512F_LEN / 32)
+#include "avx512f-mask-type.h"
 
 static void  
 CALC (float *dest, _Float16 *src1, _Float16 *src2)
