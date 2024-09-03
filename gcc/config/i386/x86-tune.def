@@ -515,17 +515,18 @@ DEF_TUNE (X86_TUNE_USE_SCATTER_8PARTS, "use_scatter_8parts",
 
 /* X86_TUNE_AVOID_128FMA_CHAINS: Avoid creating loops with tight 128bit or
    smaller FMA chain.  */
-DEF_TUNE (X86_TUNE_AVOID_128FMA_CHAINS, "avoid_fma_chains", m_ZNVER1 | m_ZNVER2 | m_ZNVER3 | m_ZNVER4
+DEF_TUNE (X86_TUNE_AVOID_128FMA_CHAINS, "avoid_fma_chains", m_ZNVER
           | m_YONGFENG | m_GENERIC)
 
 /* X86_TUNE_AVOID_256FMA_CHAINS: Avoid creating loops with tight 256bit or
    smaller FMA chain.  */
-DEF_TUNE (X86_TUNE_AVOID_256FMA_CHAINS, "avoid_fma256_chains", m_ZNVER2 | m_ZNVER3 | m_ZNVER4
-	  | m_CORE_HYBRID | m_SAPPHIRERAPIDS | m_CORE_ATOM | m_GENERIC)
+DEF_TUNE (X86_TUNE_AVOID_256FMA_CHAINS, "avoid_fma256_chains",
+	  m_ZNVER2 | m_ZNVER3 | m_ZNVER4 | m_ZNVER5 | m_CORE_HYBRID
+	  | m_SAPPHIRERAPIDS | m_CORE_ATOM | m_GENERIC)
 
 /* X86_TUNE_AVOID_512FMA_CHAINS: Avoid creating loops with tight 512bit or
    smaller FMA chain.  */
-DEF_TUNE (X86_TUNE_AVOID_512FMA_CHAINS, "avoid_fma512_chains", m_NONE)
+DEF_TUNE (X86_TUNE_AVOID_512FMA_CHAINS, "avoid_fma512_chains", m_ZNVER5)
 
 /* X86_TUNE_V2DF_REDUCTION_PREFER_PHADDPD: Prefer haddpd
    for v2df vector reduction.  */
