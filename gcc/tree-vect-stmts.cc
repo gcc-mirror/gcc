@@ -2127,6 +2127,7 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	  unsigned HOST_WIDE_INT tem, num;
 	  if (overrun_p
 	      && !masked_p
+	      && *memory_access_type != VMAT_LOAD_STORE_LANES
 	      && (((alss = vect_supportable_dr_alignment (vinfo, first_dr_info,
 							  vectype, misalign)))
 		   == dr_aligned
