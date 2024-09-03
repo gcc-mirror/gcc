@@ -1,3 +1,17 @@
+2024-09-02  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-08-30  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/116512
+	* config/i386/i386.cc (ix86_check_avx_upper_register): Iterate
+	subrtx to scan for avx upper register.
+	(ix86_check_avx_upper_stores): Inline old
+	ix86_check_avx_upper_register.
+	(ix86_avx_u128_mode_needed): Ditto, and replace
+	FOR_EACH_SUBRTX with call to new
+	ix86_check_avx_upper_register.
+
 2024-08-22  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:
