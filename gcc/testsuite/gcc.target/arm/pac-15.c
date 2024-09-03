@@ -24,7 +24,7 @@ int main (void)
 }
 
 /* { dg-final { scan-assembler-times "\.pacspval" 1 } } */
-/* { dg-final { scan-assembler-times "pac	ip, lr, sp" 3 } } */
+/* { dg-final { scan-assembler-times "\tpac\tip, lr, sp" 3 } } */
 /* { dg-final { scan-assembler-times "\.cfi_register 143, 12" 3 } } */
 /* { dg-final { scan-assembler-times "\.save {r7, ra_auth_code, lr}" 2 } } */
 /* { dg-final { scan-assembler-times "\.cfi_offset 143, -8" 2 } } */
