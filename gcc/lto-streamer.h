@@ -535,6 +535,9 @@ struct lto_out_decl_state
 
   /* True if decl state is compressed.  */
   bool compressed;
+
+  /* True if offload tables should be output. */
+  bool output_offload_tables_p;
 };
 
 typedef struct lto_out_decl_state *lto_out_decl_state_ptr;

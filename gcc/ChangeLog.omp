@@ -1,3 +1,20 @@
+2024-12-18  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from trunk:
+	2024-09-03  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR lto/116535
+	* lto-cgraph.cc (output_offload_tables): Remove offload_ frees.
+	* lto-streamer-out.cc (lto_output): Make call to it depend on
+	lto_get_out_decl_state ()->output_offload_tables_p.
+	* lto-streamer.h (struct lto_out_decl_state): Add
+	output_offload_tables_p field.
+	* tree-pass.h (ipa_write_optimization_summaries): Add bool argument.
+	* passes.cc (ipa_write_summaries_1): Add bool
+	output_offload_tables_p arg.
+	(ipa_write_summaries): Update call.
+	(ipa_write_optimization_summaries): Accept output_offload_tables_p.
+
 2024-08-01  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
