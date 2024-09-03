@@ -6652,8 +6652,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (!flag_trapping_math || !tree_expr_maybe_nan_p (@0))
   { constant_boolean_node (false, type); }))
 (simplify
- (bit_and (ordered @0 @1) (ne @0 @1))
- (bit_not (uneq @0 @1)))
+ (bit_and:c (ordered @0 @1) (ne @0 @1))
+ (ltgt @0 @1))
 
 /* x == ~x -> false */
 /* x != ~x -> true */
