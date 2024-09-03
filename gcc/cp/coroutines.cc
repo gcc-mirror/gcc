@@ -4483,10 +4483,7 @@ cp_coroutine_transform::wrap_original_function_body ()
       suppress_warning (rethrow);
       finish_expr_stmt (rethrow);
       finish_then_clause (not_iarc_if);
-      tree iarc_scope = IF_SCOPE (not_iarc_if);
-      IF_SCOPE (not_iarc_if) = NULL;
-      not_iarc_if = do_poplevel (iarc_scope);
-      add_stmt (not_iarc_if);
+      finish_if_stmt (not_iarc_if);
       /* ... else call the promise unhandled exception method
 	 but first we set done = true and the resume index to 0.
 	 If the unhandled exception method returns, then we continue
