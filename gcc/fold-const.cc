@@ -1241,7 +1241,6 @@ poly_int_binop (poly_wide_int &res, enum tree_code code,
 		const_tree arg1, const_tree arg2,
 		signop sign, wi::overflow_type *overflow)
 {
-  gcc_assert (NUM_POLY_INT_COEFFS != 1);
   gcc_assert (poly_int_tree_p (arg1) && poly_int_tree_p (arg2));
 
   if (TREE_CODE (arg1) == INTEGER_CST && TREE_CODE (arg2) == INTEGER_CST)
@@ -1253,6 +1252,8 @@ poly_int_binop (poly_wide_int &res, enum tree_code code,
       res = wi_res;
       return true;
     }
+
+  gcc_assert (NUM_POLY_INT_COEFFS != 1);
 
   switch (code)
     {
