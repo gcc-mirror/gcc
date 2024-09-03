@@ -8504,7 +8504,7 @@ is_compatible_template_arg (tree parm, tree arg, tree args)
         return false;
     }
 
-  return weakly_subsumes (parm_cons, arg);
+  return ttp_subsumes (parm_cons, arg);
 }
 
 // Convert a placeholder argument into a binding to the original
@@ -11582,6 +11582,7 @@ tsubst_friend_function (tree decl, tree args)
 	    ;
 	  else
 	    {
+	      tree old_template = most_general_template (old_decl);
 	      tree new_template = TI_TEMPLATE (new_friend_template_info);
 	      tree new_args = TI_ARGS (new_friend_template_info);
 
@@ -11619,7 +11620,7 @@ tsubst_friend_function (tree decl, tree args)
 		  /* Reassign any specializations already in the hash table
 		     to the new more general template, and add the
 		     additional template args.  */
-		  for (t = DECL_TEMPLATE_INSTANTIATIONS (old_decl);
+		  for (t = DECL_TEMPLATE_INSTANTIATIONS (old_template);
 		       t != NULL_TREE;
 		       t = TREE_CHAIN (t))
 		    {
@@ -11632,15 +11633,15 @@ tsubst_friend_function (tree decl, tree args)
 
 		      decl_specializations->remove_elt (&elt);
 
-		      DECL_TI_ARGS (spec)
-			= add_outermost_template_args (new_args,
-						       DECL_TI_ARGS (spec));
+		      tree& spec_args = DECL_TI_ARGS (spec);
+		      spec_args = add_outermost_template_args
+			(new_args, INNERMOST_TEMPLATE_ARGS (spec_args));
 
 		      register_specialization
-			(spec, new_template, DECL_TI_ARGS (spec), true, 0);
+			(spec, new_template, spec_args, true, 0);
 
 		    }
-		  DECL_TEMPLATE_INSTANTIATIONS (old_decl) = NULL_TREE;
+		  DECL_TEMPLATE_INSTANTIATIONS (old_template) = NULL_TREE;
 		}
 	    }
 
@@ -20406,6 +20407,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case IMPLICIT_CONV_EXPR:
       {
 	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	if (type == error_mark_node)
+	  RETURN (error_mark_node);
 	tree expr = RECUR (TREE_OPERAND (t, 0));
 	if (dependent_type_p (type) || type_dependent_expression_p (expr))
 	  {
@@ -23291,6 +23294,8 @@ deducible_expression (tree expr)
   /* Strip implicit conversions and implicit INDIRECT_REFs.  */
   while (CONVERT_EXPR_P (expr)
 	 || TREE_CODE (expr) == VIEW_CONVERT_EXPR
+	 || (TREE_CODE (expr) == IMPLICIT_CONV_EXPR
+	     && IMPLICIT_CONV_EXPR_FORCED (expr))
 	 || REFERENCE_REF_P (expr))
     expr = TREE_OPERAND (expr, 0);
   return (TREE_CODE (expr) == TEMPLATE_PARM_INDEX);
@@ -24820,7 +24825,9 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
      signedness is the only information lost, and I think that will be
      okay.  VIEW_CONVERT_EXPR can appear with class NTTP, thanks to
      finish_id_expression_1, and are also OK.  */
-  while (CONVERT_EXPR_P (parm) || TREE_CODE (parm) == VIEW_CONVERT_EXPR)
+  while (CONVERT_EXPR_P (parm) || TREE_CODE (parm) == VIEW_CONVERT_EXPR
+	 || (TREE_CODE (parm) == IMPLICIT_CONV_EXPR
+	     && IMPLICIT_CONV_EXPR_FORCED (parm)))
     parm = TREE_OPERAND (parm, 0);
 
   if (arg == error_mark_node)
@@ -30600,7 +30607,7 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 			  (INNERMOST_TEMPLATE_PARMS (fullatparms)));
     }
 
-  tsubst_flags_t complain = tf_warning_or_error;
+  tsubst_flags_t complain = tf_none;
   tree aguides = NULL_TREE;
   tree atparms = INNERMOST_TEMPLATE_PARMS (fullatparms);
   unsigned natparms = TREE_VEC_LENGTH (atparms);

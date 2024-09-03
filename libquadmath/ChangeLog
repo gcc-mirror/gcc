@@ -1,3 +1,12 @@
+2024-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116007
+	* math/sqrtq.c (TFtype): For PowerPC without __LONG_DOUBLE_IEEE128__
+	define to __float128 before including soft-fp.h and quad.h.
+
 2024-08-01  Release Manager
 
 	* GCC 14.2.0 released.

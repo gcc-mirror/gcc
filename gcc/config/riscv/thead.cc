@@ -453,10 +453,8 @@ th_memidx_classify_address_modify (struct riscv_address_info *info, rtx x,
   if (!TARGET_XTHEADMEMIDX)
     return false;
 
-  if (!TARGET_64BIT && mode == DImode)
-    return false;
-
-  if (!(INTEGRAL_MODE_P (mode) && GET_MODE_SIZE (mode).to_constant () <= 8))
+  if (GET_MODE_CLASS (mode) != MODE_INT
+      || GET_MODE_SIZE (mode).to_constant () > UNITS_PER_WORD)
     return false;
 
   if (GET_CODE (x) != POST_MODIFY

@@ -1407,6 +1407,7 @@ hppa_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       /* If the index adds a large constant, try to scale the
 	 constant so that it can be loaded with only one insn.  */
       if (GET_CODE (XEXP (idx, 1)) == CONST_INT
+	  && INTVAL (XEXP (idx, 1)) % (1 << shift_val) == 0
 	  && VAL_14_BITS_P (INTVAL (XEXP (idx, 1))
 			    / INTVAL (XEXP (XEXP (idx, 0), 1)))
 	  && INTVAL (XEXP (idx, 1)) % INTVAL (XEXP (XEXP (idx, 0), 1)) == 0)

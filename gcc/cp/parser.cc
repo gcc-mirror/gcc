@@ -2598,7 +2598,7 @@ static tree cp_parser_type_id_1
 static void cp_parser_type_specifier_seq
   (cp_parser *, cp_parser_flags, bool, bool, cp_decl_specifier_seq *);
 static tree cp_parser_parameter_declaration_clause
-  (cp_parser *, cp_parser_flags);
+  (cp_parser *, cp_parser_flags, bool);
 static tree cp_parser_parameter_declaration_list
   (cp_parser *, cp_parser_flags, auto_vec<tree> *);
 static cp_parameter_declarator *cp_parser_parameter_declaration
@@ -11971,7 +11971,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       /* Parse parameters.  */
       param_list
 	= cp_parser_parameter_declaration_clause
-	    (parser, CP_PARSER_FLAGS_TYPENAME_OPTIONAL);
+	    (parser, CP_PARSER_FLAGS_TYPENAME_OPTIONAL, /*lambda_p=*/true);
 
       /* Default arguments shall not be specified in the
 	 parameter-declaration-clause of a lambda-declarator.  */
@@ -20761,9 +20761,13 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	}
 
       /* If it didn't work out, we don't have a TYPE.  */
-      if ((flags & CP_PARSER_FLAGS_OPTIONAL)
-	  && !cp_parser_parse_definitely (parser))
-	type = NULL_TREE;
+      if (flags & CP_PARSER_FLAGS_OPTIONAL)
+	{
+	  if (!type)
+	    cp_parser_simulate_error (parser);
+	  if (!cp_parser_parse_definitely (parser))
+	    type = NULL_TREE;
+	}
 
       /* Keep track of all name-lookups performed in class scopes.  */
       if (type
@@ -24039,7 +24043,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 
 	      /* Parse the parameter-declaration-clause.  */
 	      params
-		= cp_parser_parameter_declaration_clause (parser, flags);
+		= cp_parser_parameter_declaration_clause (parser, flags,
+							  /*lambda_p=*/false);
 	      const location_t parens_end
 		= cp_lexer_peek_token (parser->lexer)->location;
 
@@ -25388,13 +25393,17 @@ function_being_declared_is_template_p (cp_parser* parser)
 
    The parser flags FLAGS is used to control type-specifier parsing.
 
+   LAMBDA_P is true if this is the parameter-declaration-clause of
+   a lambda-declarator.
+
    Returns a representation for the parameter declarations.  A return
    value of NULL indicates a parameter-declaration-clause consisting
    only of an ellipsis.  */
 
 static tree
 cp_parser_parameter_declaration_clause (cp_parser* parser,
-					cp_parser_flags flags)
+					cp_parser_flags flags,
+					bool lambda_p)
 {
   tree parameters;
   cp_token *token;
@@ -25403,15 +25412,15 @@ cp_parser_parameter_declaration_clause (cp_parser* parser,
   auto cleanup = make_temp_override
     (parser->auto_is_implicit_function_template_parm_p);
 
-  if (!processing_specialization
-      && !processing_template_parmlist
-      && !processing_explicit_instantiation
-      /* default_arg_ok_p tracks whether this is a parameter-clause for an
-         actual function or a random abstract declarator.  */
-      && parser->default_arg_ok_p)
-    if (!current_function_decl
-	|| (current_class_type && LAMBDA_TYPE_P (current_class_type)))
-      parser->auto_is_implicit_function_template_parm_p = true;
+  if (lambda_p
+      || (!processing_specialization
+	  && !processing_template_parmlist
+	  && !processing_explicit_instantiation
+	  /* default_arg_ok_p tracks whether this is a parameter-clause for an
+	     actual function or a random abstract declarator.  */
+	  && parser->default_arg_ok_p
+	  && !current_function_decl))
+    parser->auto_is_implicit_function_template_parm_p = true;
 
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
@@ -31609,7 +31618,8 @@ cp_parser_requirement_parameter_list (cp_parser *parser)
     return error_mark_node;
 
   tree parms = (cp_parser_parameter_declaration_clause
-		(parser, CP_PARSER_FLAGS_TYPENAME_OPTIONAL));
+		(parser, CP_PARSER_FLAGS_TYPENAME_OPTIONAL,
+		 /*lambda_p=*/false));
 
   if (!parens.require_close (parser))
     return error_mark_node;

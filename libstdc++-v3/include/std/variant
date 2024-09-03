@@ -490,7 +490,7 @@ namespace __variant
       constexpr void
       _M_reset()
       {
-	if (!_M_valid()) [[unlikely]]
+	if (!_M_valid()) [[__unlikely__]]
 	  return;
 
 	std::__do_visit<void>([](auto&& __this_mem) mutable

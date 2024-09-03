@@ -12279,7 +12279,17 @@ sh_recog_treg_set_expr (rtx op, machine_mode mode)
      have to capture its current state and restore it afterwards.  */
   recog_data_d prev_recog_data = recog_data;
 
-  rtx_insn* i = make_insn_raw (gen_rtx_SET (get_t_reg_rtx (), op));
+  /* Note we can't use insn_raw here since that increases the uid
+     and could cause debug compare differences; this insn never leaves
+     this function so create a dummy one. */
+  rtx_insn* i = as_a <rtx_insn *> (rtx_alloc (INSN));
+
+  INSN_UID (i) = 1;
+  PATTERN (i) = gen_rtx_SET (get_t_reg_rtx (), op);
+  INSN_CODE (i) = -1;
+  REG_NOTES (i) = NULL;
+  INSN_LOCATION (i) = curr_insn_location ();
+  BLOCK_FOR_INSN (i) = NULL;
   SET_PREV_INSN (i) = NULL;
   SET_NEXT_INSN (i) = NULL;
 

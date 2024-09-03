@@ -98,8 +98,8 @@ __lcbb(const void *ptr, int bndry)
 #define vec_splat_u64 __builtin_s390_vec_splat_u64
 #define vec_splat_s64 __builtin_s390_vec_splat_s64
 #define vec_checksum __builtin_s390_vcksm
-#define vec_gfmsum_128 __builtin_s390_vgfmg
-#define vec_gfmsum_accum_128 __builtin_s390_vgfmag
+#define vec_gfmsum_128 __builtin_s390_vgfmg_128
+#define vec_gfmsum_accum_128 __builtin_s390_vgfmag_128
 #define vec_ceil(X)   __builtin_s390_vfi((X), 4, 6)
 #define vec_roundp(X) __builtin_s390_vfi((X), 4, 6)
 #define vec_floor(X)  __builtin_s390_vfi((X), 4, 7)

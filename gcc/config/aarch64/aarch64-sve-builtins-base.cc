@@ -1174,7 +1174,7 @@ public:
        Advanced SIMD argument as an SVE vector.  */
     if (!BYTES_BIG_ENDIAN
 	&& is_undef (CALL_EXPR_ARG (e.call_expr, 0)))
-      return simplify_gen_subreg (mode, e.args[1], GET_MODE (e.args[1]), 0);
+      return force_subreg (mode, e.args[1], GET_MODE (e.args[1]), 0);
 
     rtx_vector_builder builder (VNx16BImode, 16, 2);
     for (unsigned int i = 0; i < 16; i++)
@@ -1185,7 +1185,9 @@ public:
     if (BYTES_BIG_ENDIAN)
       return e.use_exact_insn (code_for_aarch64_sve_set_neonq (mode));
     insn_code icode = code_for_vcond_mask (mode, mode);
-    e.args[1] = lowpart_subreg (mode, e.args[1], GET_MODE (e.args[1]));
+    e.args[1] = force_subreg (mode, e.args[1], GET_MODE (e.args[1]),
+			      subreg_lowpart_offset (mode,
+						     GET_MODE (e.args[1])));
     e.add_output_operand (icode);
     e.add_input_operand (icode, e.args[1]);
     e.add_input_operand (icode, e.args[0]);

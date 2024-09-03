@@ -3919,7 +3919,8 @@ pass_forwprop::execute (function *fun)
 	      tree val = fwprop_ssa_val (use);
 	      if (val && val != use)
 		{
-		  bitmap_set_bit (simple_dce_worklist, SSA_NAME_VERSION (use));
+		  if (!is_gimple_debug (stmt))
+		    bitmap_set_bit (simple_dce_worklist, SSA_NAME_VERSION (use));
 		  if (may_propagate_copy (use, val))
 		    {
 		      propagate_value (usep, val);
@@ -3959,12 +3960,13 @@ pass_forwprop::execute (function *fun)
 		    if (gimple_cond_true_p (cond)
 			|| gimple_cond_false_p (cond))
 		      cfg_changed = true;
-		  /* Queue old uses for simple DCE.  */
-		  for (tree use : uses)
-		    if (TREE_CODE (use) == SSA_NAME
-			&& !SSA_NAME_IS_DEFAULT_DEF (use))
-		      bitmap_set_bit (simple_dce_worklist,
-				      SSA_NAME_VERSION (use));
+		  /* Queue old uses for simple DCE if not debug statement.  */
+		  if (!is_gimple_debug (stmt))
+		    for (tree use : uses)
+		      if (TREE_CODE (use) == SSA_NAME
+			  && !SSA_NAME_IS_DEFAULT_DEF (use))
+			bitmap_set_bit (simple_dce_worklist,
+					SSA_NAME_VERSION (use));
 		}
 
 	      if (changed || substituted_p)

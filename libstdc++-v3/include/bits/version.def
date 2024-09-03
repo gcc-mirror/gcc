@@ -574,6 +574,7 @@ ftms = {
     v = 201907;
     cxxmin = 20;
     hosted = yes;
+    cxx11abi = yes; // std::chrono::tzdb requires cxx11 std::string
   };
   values = {
     v = 201611;

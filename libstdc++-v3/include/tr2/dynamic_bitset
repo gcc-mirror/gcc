@@ -815,10 +815,7 @@ namespace tr2
       operator>>=(size_type __pos)
       {
 	if (__builtin_expect(__pos < this->_M_Nb, 1))
-	  {
-	    this->_M_do_right_shift(__pos);
-	    this->_M_do_sanitize();
-	  }
+	  this->_M_do_right_shift(__pos);
 	else
 	  this->_M_do_reset();
 	return *this;

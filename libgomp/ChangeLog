@@ -1,3 +1,12 @@
+2024-08-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-07-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	* testsuite/libgomp.oacc-fortran/privatized-ref-2.f90: Cut
+	dg-note about 'a' and remove bogus warnings about its array
+	descriptor components being used uninitialized.
+
 2024-08-01  Release Manager
 
 	* GCC 14.2.0 released.

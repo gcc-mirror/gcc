@@ -2052,6 +2052,10 @@ avr_pass_fuse_add::Mem_Insn::Mem_Insn (rtx_insn *insn)
   else
     return;
 
+  if (avr_mem_memx_p (mem)
+      || avr_load_libgcc_p (mem))
+    return;
+
   addr = XEXP (mem, 0);
   addr_code = GET_CODE (addr);
 
@@ -3985,19 +3989,22 @@ avr_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 /* Choose mode for jump insn:
    1 - relative jump in range -63 <= x <= 62 ;
    2 - relative jump in range -2046 <= x <= 2045 ;
-   3 - absolute jump (only for ATmega[16]03).  */
+   3 - absolute jump (only when we have JMP / CALL).
+
+   When jumping backwards, assume the jump offset is EXTRA words
+   bigger than inferred from insn addresses.  */
 
 int
-avr_jump_mode (rtx x, rtx_insn *insn)
+avr_jump_mode (rtx x, rtx_insn *insn, int extra)
 {
   int dest_addr = INSN_ADDRESSES (INSN_UID (GET_CODE (x) == LABEL_REF
 					    ? XEXP (x, 0) : x));
   int cur_addr = INSN_ADDRESSES (INSN_UID (insn));
   int jump_distance = cur_addr - dest_addr;
 
-  if (IN_RANGE (jump_distance, -63, 62))
+  if (IN_RANGE (jump_distance, -63, 62 - extra))
     return 1;
-  else if (IN_RANGE (jump_distance, -2046, 2045))
+  else if (IN_RANGE (jump_distance, -2046, 2045 - extra))
     return 2;
   else if (AVR_HAVE_JMP_CALL)
     return 3;
@@ -5497,33 +5504,33 @@ avr_out_movsi_mr_r_reg_disp_tiny (rtx op[], int *l)
   rtx src = op[1];
   rtx base = XEXP (dest, 0);
   int reg_base = REGNO (XEXP (base, 0));
-  int reg_src =true_regnum (src);
+  int reg_src = true_regnum (src);
 
   if (reg_base == reg_src)
     {
       *l = 11;
-      return ("mov __tmp_reg__,%A2"        CR_TAB
-	      "mov __zero_reg__,%B2"       CR_TAB
+      return ("mov __tmp_reg__,%A1"        CR_TAB
+	      "mov __zero_reg__,%B1"       CR_TAB
 	      TINY_ADIW (%I0, %J0, %o0)    CR_TAB
 	      "st %b0+,__tmp_reg__"        CR_TAB
 	      "st %b0+,__zero_reg__"       CR_TAB
-	      "st %b0+,%C2"                CR_TAB
-	      "st %b0,%D2"                 CR_TAB
+	      "st %b0+,%C1"                CR_TAB
+	      "st %b0,%D1"                 CR_TAB
 	      "clr __zero_reg__"           CR_TAB
 	      TINY_SBIW (%I0, %J0, %o0+3));
     }
   else if (reg_src == reg_base - 2)
     {
-      *l = 11;
-      return ("mov __tmp_reg__,%C2"         CR_TAB
-	      "mov __zero_reg__,%D2"        CR_TAB
-	      TINY_ADIW (%I0, %J0, %o0)     CR_TAB
-	      "st %b0+,%A0"                 CR_TAB
-	      "st %b0+,%B0"                 CR_TAB
-	      "st %b0+,__tmp_reg__"         CR_TAB
-	      "st %b0,__zero_reg__"         CR_TAB
-	      "clr __zero_reg__"            CR_TAB
-	      TINY_SBIW (%I0, %J0, %o0+3));
+      // This awkward case can occur when ext-dce turns zero-extend:SI(HI)
+      // into a paradoxical subreg, which register allocation may turn into
+      // something like *(R28:HI + 7) = R26:SI.  There is actually no need
+      // to store the upper 2 bytes of R26:SI as they are unused rubbish.
+      // See PR116390.
+      *l = 6;
+      return (TINY_ADIW (%I0, %J0, %o0)     CR_TAB
+	      "st %b0+,%A1"                 CR_TAB
+	      "st %b0,%B1"                  CR_TAB
+	      TINY_SBIW (%I0, %J0, %o0+1));
     }
   *l = 8;
   return (TINY_ADIW (%I0, %J0, %o0)     CR_TAB

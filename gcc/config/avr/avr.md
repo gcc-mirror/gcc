@@ -1374,7 +1374,7 @@
   [(set (mem:BLK (match_operand:HI 0 "register_operand" "e"))
         (const_int 0))
    (use (match_operand:QI 1 "register_operand" "r"))
-   (use (match_operand:QI 2 "const_int_operand" "n"))
+   (use (match_operand:HI 2 "const_int_operand" "n"))
    (clobber (match_scratch:HI 3 "=0"))
    (clobber (match_scratch:QI 4 "=&1"))]
   ""
@@ -1392,7 +1392,7 @@
   [(set (mem:BLK (match_operand:HI 0 "register_operand" "e"))
         (const_int 0))
    (use (match_operand:QI 1 "register_operand" "r"))
-   (use (match_operand:QI 2 "const_int_operand" "n"))
+   (use (match_operand:HI 2 "const_int_operand" "n"))
    (clobber (match_scratch:HI 3 "=0"))
    (clobber (match_scratch:QI 4 "=&1"))
    (clobber (reg:CC REG_CC))]
@@ -7771,7 +7771,7 @@
                        "sbc %C0,__zero_reg__" CR_TAB
                        "sbc %D0,__zero_reg__", operands);
 
-    int jump_mode = avr_jump_mode (operands[2], insn);
+    int jump_mode = avr_jump_mode (operands[2], insn, 3 - avr_adiw_reg_p (operands[0]));
     const char *op = ((EQ == <CODE>) ^ (jump_mode == 1)) ? "brcc" : "brcs";
     operands[1] = gen_rtx_CONST_STRING (VOIDmode, op);
 
@@ -7808,7 +7808,7 @@
       output_asm_insn ("subi %A0,1" CR_TAB
                        "sbc %B0,__zero_reg__", operands);
 
-    int jump_mode = avr_jump_mode (operands[2], insn);
+    int jump_mode = avr_jump_mode (operands[2], insn, 1 - avr_adiw_reg_p (operands[0]));
     const char *op = ((EQ == <CODE>) ^ (jump_mode == 1)) ? "brcc" : "brcs";
     operands[1] = gen_rtx_CONST_STRING (VOIDmode, op);
 
@@ -7847,7 +7847,7 @@
       output_asm_insn ("subi %A0,1" CR_TAB
                        "sbc %B0,__zero_reg__", operands);
 
-    int jump_mode = avr_jump_mode (operands[2], insn);
+    int jump_mode = avr_jump_mode (operands[2], insn, 1 - avr_adiw_reg_p (operands[0]));
     const char *op = ((EQ == <CODE>) ^ (jump_mode == 1)) ? "brcc" : "brcs";
     operands[1] = gen_rtx_CONST_STRING (VOIDmode, op);
 
@@ -7884,7 +7884,7 @@
                      "sub %A0,%3" CR_TAB
                      "sbc %B0,__zero_reg__", operands);
 
-    int jump_mode = avr_jump_mode (operands[2], insn);
+    int jump_mode = avr_jump_mode (operands[2], insn, 2);
     const char *op = ((EQ == <CODE>) ^ (jump_mode == 1)) ? "brcc" : "brcs";
     operands[1] = gen_rtx_CONST_STRING (VOIDmode, op);
 

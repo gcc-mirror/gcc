@@ -3253,6 +3253,197 @@ make_pass_remove_partial_avx_dependency (gcc::context *ctxt)
   return new pass_remove_partial_avx_dependency (ctxt);
 }
 
+/* When a hot loop can be fit into one cacheline,
+   force align the loop without considering the max skip.  */
+static void
+ix86_align_loops ()
+{
+  basic_block bb;
+
+  /* Don't do this when we don't know cache line size.  */
+  if (ix86_cost->prefetch_block == 0)
+    return;
+
+  loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
+  profile_count count_threshold = cfun->cfg->count_max / param_align_threshold;
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      rtx_insn *label = BB_HEAD (bb);
+      bool has_fallthru = 0;
+      edge e;
+      edge_iterator ei;
+
+      if (!LABEL_P (label))
+	continue;
+
+      profile_count fallthru_count = profile_count::zero ();
+      profile_count branch_count = profile_count::zero ();
+
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	{
+	  if (e->flags & EDGE_FALLTHRU)
+	    has_fallthru = 1, fallthru_count += e->count ();
+	  else
+	    branch_count += e->count ();
+	}
+
+      if (!fallthru_count.initialized_p () || !branch_count.initialized_p ())
+	continue;
+
+      if (bb->loop_father
+	  && bb->loop_father->latch != EXIT_BLOCK_PTR_FOR_FN (cfun)
+	  && (has_fallthru
+	      ? (!(single_succ_p (bb)
+		   && single_succ (bb) == EXIT_BLOCK_PTR_FOR_FN (cfun))
+		 && optimize_bb_for_speed_p (bb)
+		 && branch_count + fallthru_count > count_threshold
+		 && (branch_count > fallthru_count * param_align_loop_iterations))
+	      /* In case there'no fallthru for the loop.
+		 Nops inserted won't be executed.  */
+	      : (branch_count > count_threshold
+		 || (bb->count > bb->prev_bb->count * 10
+		     && (bb->prev_bb->count
+			 <= ENTRY_BLOCK_PTR_FOR_FN (cfun)->count / 2)))))
+	{
+	  rtx_insn* insn, *end_insn;
+	  HOST_WIDE_INT size = 0;
+	  bool padding_p = true;
+	  basic_block tbb = bb;
+	  unsigned cond_branch_num = 0;
+	  bool detect_tight_loop_p = false;
+
+	  for (unsigned int i = 0; i != bb->loop_father->num_nodes;
+	       i++, tbb = tbb->next_bb)
+	    {
+	      /* Only handle continuous cfg layout. */
+	      if (bb->loop_father != tbb->loop_father)
+		{
+		  padding_p = false;
+		  break;
+		}
+
+	      FOR_BB_INSNS (tbb, insn)
+		{
+		  if (!NONDEBUG_INSN_P (insn))
+		    continue;
+		  size += ix86_min_insn_size (insn);
+
+		  /* We don't know size of inline asm.
+		     Don't align loop for call.  */
+		  if (asm_noperands (PATTERN (insn)) >= 0
+		      || CALL_P (insn))
+		    {
+		      size = -1;
+		      break;
+		    }
+		}
+
+	      if (size == -1 || size > ix86_cost->prefetch_block)
+		{
+		  padding_p = false;
+		  break;
+		}
+
+	      FOR_EACH_EDGE (e, ei, tbb->succs)
+		{
+		  /* It could be part of the loop.  */
+		  if (e->dest == bb)
+		    {
+		      detect_tight_loop_p = true;
+		      break;
+		    }
+		}
+
+	      if (detect_tight_loop_p)
+		break;
+
+	      end_insn = BB_END (tbb);
+	      if (JUMP_P (end_insn))
+		{
+		  /* For decoded icache:
+		     1. Up to two branches are allowed per Way.
+		     2. A non-conditional branch is the last micro-op in a Way.
+		  */
+		  if (onlyjump_p (end_insn)
+		      && (any_uncondjump_p (end_insn)
+			  || single_succ_p (tbb)))
+		    {
+		      padding_p = false;
+		      break;
+		    }
+		  else if (++cond_branch_num >= 2)
+		    {
+		      padding_p = false;
+		      break;
+		    }
+		}
+
+	    }
+
+	  if (padding_p && detect_tight_loop_p)
+	    {
+	      emit_insn_before (gen_max_skip_align (GEN_INT (ceil_log2 (size)),
+						    GEN_INT (0)), label);
+	      /* End of function.  */
+	      if (!tbb || tbb == EXIT_BLOCK_PTR_FOR_FN (cfun))
+		break;
+	      /* Skip bb which already fits into one cacheline.  */
+	      bb = tbb;
+	    }
+	}
+    }
+
+  loop_optimizer_finalize ();
+  free_dominance_info (CDI_DOMINATORS);
+}
+
+namespace {
+
+const pass_data pass_data_align_tight_loops =
+{
+  RTL_PASS, /* type */
+  "align_tight_loops", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_MACH_DEP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_align_tight_loops : public rtl_opt_pass
+{
+public:
+  pass_align_tight_loops (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_align_tight_loops, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate (function *) final override
+    {
+      return optimize && optimize_function_for_speed_p (cfun);
+    }
+
+  unsigned int execute (function *) final override
+    {
+      timevar_push (TV_MACH_DEP);
+#ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
+      ix86_align_loops ();
+#endif
+      timevar_pop (TV_MACH_DEP);
+      return 0;
+    }
+}; // class pass_align_tight_loops
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_align_tight_loops (gcc::context *ctxt)
+{
+  return new pass_align_tight_loops (ctxt);
+}
+
 /* This compares the priority of target features in function DECL1
    and DECL2.  It returns positive value if DECL1 is higher priority,
    negative value if DECL2 is higher priority and 0 if they are the

@@ -9,6 +9,9 @@
     && defined(FE_TOWARDZERO) \
     && defined(FE_INEXACT)
 #define USE_SOFT_FP 1
+#if defined(_ARCH_PPC) && !defined(__LONG_DOUBLE_IEEE128__)
+#define TFtype __float128
+#endif
 #include "../../libgcc/soft-fp/soft-fp.h"
 #include "../../libgcc/soft-fp/quad.h"
 #endif

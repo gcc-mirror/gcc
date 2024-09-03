@@ -2571,7 +2571,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				      void>;
     };
 
-#if __cplusplus > 202020L
+#if __glibcxx_ranges_as_const // >= C++23
   template<indirectly_readable _It>
     using iter_const_reference_t
       = common_reference_t<const iter_value_t<_It>&&, iter_reference_t<_It>>;

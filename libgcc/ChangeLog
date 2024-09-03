@@ -1,3 +1,10 @@
+2024-08-27  YunQiang Su  <syq@gcc.gnu.org>
+
+	Backported from master:
+	2024-08-27  YunQiang Su  <syq@gcc.gnu.org>
+
+	* config/mips/lib1funcs.S: Includes mips16.S.
+
 2024-08-01  Release Manager
 
 	* GCC 14.2.0 released.

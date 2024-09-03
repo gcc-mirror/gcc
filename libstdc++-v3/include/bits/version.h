@@ -639,7 +639,7 @@
 #undef __glibcxx_want_boyer_moore_searcher
 
 #if !defined(__cpp_lib_chrono)
-# if (__cplusplus >= 202002L) && _GLIBCXX_HOSTED
+# if (__cplusplus >= 202002L) && _GLIBCXX_USE_CXX11_ABI && _GLIBCXX_HOSTED
 #  define __glibcxx_chrono 201907L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_chrono)
 #   define __cpp_lib_chrono 201907L

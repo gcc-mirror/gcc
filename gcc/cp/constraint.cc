@@ -3610,13 +3610,14 @@ strictly_subsumes (tree ci, tree tmpl)
   return subsumes (n1, n2) && !subsumes (n2, n1);
 }
 
-/* Returns true when the constraints in CI subsume the
-   associated constraints of TMPL.  */
+/* Returns true when the template template parameter constraints in CI
+   subsume the associated constraints of the template template argument
+   TMPL.  */
 
 bool
-weakly_subsumes (tree ci, tree tmpl)
+ttp_subsumes (tree ci, tree tmpl)
 {
-  tree n1 = get_normalized_constraints_from_info (ci, NULL_TREE);
+  tree n1 = get_normalized_constraints_from_info (ci, tmpl);
   tree n2 = get_normalized_constraints_from_decl (tmpl);
 
   return subsumes (n1, n2);
