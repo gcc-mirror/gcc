@@ -2925,7 +2925,9 @@
 ;; for IOR/XOR.  It probably doesn't matter for AND.
 ;;
 ;; We also don't want to do this if the immediate already fits in a simm12
-;; field.
+;; field, or is a single bit operand, or when we might be able to generate
+;; a shift-add sequence via the splitter in bitmanip.md
+;; in bitmanip.md for masks that are a run of consecutive ones.
 (define_insn_and_split "<optab>_shift_reverse<X:mode>"
   [(set (match_operand:X 0 "register_operand" "=r")
     (any_bitwise:X (ashift:X (match_operand:X 1 "register_operand" "r")
@@ -2934,9 +2936,9 @@
   "(!SMALL_OPERAND (INTVAL (operands[3]))
     && SMALL_OPERAND (INTVAL (operands[3]) >> INTVAL (operands[2]))
     && popcount_hwi (INTVAL (operands[3])) > 1
-    && (!TARGET_64BIT
-	|| (exact_log2 ((INTVAL (operands[3]) >> INTVAL (operands[2])) + 1)
-	     == -1))
+    && (!(TARGET_64BIT && TARGET_ZBA)
+	|| !consecutive_bits_operand (operands[3], VOIDmode)
+	|| !imm123_operand (operands[2], VOIDmode))
     && (INTVAL (operands[3]) & ((1ULL << INTVAL (operands[2])) - 1)) == 0)"
   "#"
   "&& 1"
