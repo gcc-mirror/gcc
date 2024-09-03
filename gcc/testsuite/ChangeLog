@@ -1,3 +1,10 @@
+2024-09-02  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-08-30  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr116512.c: New test.
+
 2024-08-30  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
