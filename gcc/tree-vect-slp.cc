@@ -2958,14 +2958,17 @@ vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
 	dump_printf (dump_kind, " %u[%u]",
 		     SLP_TREE_LANE_PERMUTATION (node)[i].first,
 		     SLP_TREE_LANE_PERMUTATION (node)[i].second);
-      dump_printf (dump_kind, " }\n");
+      dump_printf (dump_kind, " }%s\n",
+		   node->ldst_lanes ? " (load-lanes)" : "");
     }
   if (SLP_TREE_CHILDREN (node).is_empty ())
     return;
   dump_printf_loc (metadata, user_loc, "\tchildren");
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
     dump_printf (dump_kind, " %p", (void *)child);
-  dump_printf (dump_kind, "\n");
+  dump_printf (dump_kind, "%s\n",
+	       node->ldst_lanes && !SLP_TREE_LANE_PERMUTATION (node).exists ()
+	       ? " (store-lanes)" : "");
 }
 
 DEBUG_FUNCTION void
