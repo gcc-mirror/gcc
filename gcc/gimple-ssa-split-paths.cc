@@ -167,6 +167,19 @@ is_feasible_trace (basic_block bb)
   int num_stmts_in_pred2
     = EDGE_COUNT (pred2->succs) == 1 ? count_stmts_in_block (pred2) : 0;
 
+  /* Upper Hard limit on the number statements to copy.  */
+  if (num_stmts_in_join
+      >= param_max_jump_thread_duplication_stmts)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Duplicating block %d would be too duplicate "
+		 "too many statments: %d >= %d\n",
+		 bb->index, num_stmts_in_join,
+		 param_max_jump_thread_duplication_stmts);
+      return false;
+    }
+
   /* This is meant to catch cases that are likely opportunities for
      if-conversion.  Essentially we look for the case where
      BB's predecessors are both single statement blocks where
@@ -406,12 +419,6 @@ is_feasible_trace (basic_block bb)
   /* We may want something here which looks at dataflow and tries
      to guess if duplication of BB is likely to result in simplification
      of instructions in BB in either the original or the duplicate.  */
-
-  /* Upper Hard limit on the number statements to copy.  */
-  if (num_stmts_in_join
-      >= param_max_jump_thread_duplication_stmts)
-    return false;
-
   return true;
 }
 
