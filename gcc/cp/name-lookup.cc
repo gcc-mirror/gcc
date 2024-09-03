@@ -3725,17 +3725,10 @@ maybe_record_mergeable_decl (tree *slot, tree name, tree decl)
   if (TREE_CODE (*slot) != BINDING_VECTOR)
     return;
 
-  if (!TREE_PUBLIC (CP_DECL_CONTEXT (decl)))
-    /* Member of internal namespace.  */
+  if (decl_linkage (decl) == lk_internal)
     return;
 
   tree not_tmpl = STRIP_TEMPLATE (decl);
-  if ((TREE_CODE (not_tmpl) == FUNCTION_DECL
-       || VAR_P (not_tmpl))
-      && DECL_THIS_STATIC (not_tmpl))
-    /* Internal linkage.  */
-    return;
-
   bool is_attached = (DECL_LANG_SPECIFIC (not_tmpl)
 		      && DECL_MODULE_ATTACH_P (not_tmpl));
   tree *gslot = get_fixed_binding_slot
