@@ -5206,38 +5206,47 @@ pushdecl_outermost_localscope (tree x)
 static bool
 check_can_export_using_decl (tree binding)
 {
-  tree decl = STRIP_TEMPLATE (binding);
+  /* Declarations in header units are always OK.  */
+  if (header_module_p ())
+    return true;
 
-  /* Linkage is determined by the owner of an enumerator.  */
-  if (TREE_CODE (decl) == CONST_DECL)
-    decl = TYPE_NAME (DECL_CONTEXT (decl));
-
-  /* If the using decl is exported, the things it refers
-     to must also be exported (or not have module attachment).  */
-  if (!DECL_MODULE_EXPORT_P (decl)
-      && (DECL_LANG_SPECIFIC (decl)
-	  && DECL_MODULE_ATTACH_P (decl)))
+  /* We want the linkage of the underlying entity, so strip typedefs.
+     If the underlying entity is a builtin type then we're OK.  */
+  tree entity = binding;
+  if (TREE_CODE (entity) == TYPE_DECL)
     {
-      bool internal_p = !TREE_PUBLIC (decl);
+      entity = TYPE_MAIN_DECL (TREE_TYPE (entity));
+      if (!entity)
+	return true;
+    }
 
-      /* A template in an anonymous namespace doesn't constrain TREE_PUBLIC
-	 until it's instantiated, so double-check its context.  */
-      if (!internal_p && TREE_CODE (binding) == TEMPLATE_DECL)
-	internal_p = decl_internal_context_p (decl);
+  linkage_kind linkage = decl_linkage (entity);
+  tree not_tmpl = STRIP_TEMPLATE (entity);
 
+  /* Attachment is determined by the owner of an enumerator.  */
+  if (TREE_CODE (not_tmpl) == CONST_DECL)
+    not_tmpl = TYPE_NAME (DECL_CONTEXT (not_tmpl));
+
+  /* If the using decl is exported, the things it refers to must
+     have external linkage.  decl_linkage returns lk_external for
+     module linkage so also check for attachment.  */
+  if (linkage != lk_external
+      || (DECL_LANG_SPECIFIC (not_tmpl)
+	  && DECL_MODULE_ATTACH_P (not_tmpl)
+	  && !DECL_MODULE_EXPORT_P (not_tmpl)))
+    {
       auto_diagnostic_group d;
       error ("exporting %q#D that does not have external linkage",
 	     binding);
-      if (TREE_CODE (decl) == TYPE_DECL && !DECL_IMPLICIT_TYPEDEF_P (decl))
-	/* An un-exported explicit type alias has no linkage.  */
-	inform (DECL_SOURCE_LOCATION (binding),
-		"%q#D declared here with no linkage", binding);
-      else if (internal_p)
-	inform (DECL_SOURCE_LOCATION (binding),
-		"%q#D declared here with internal linkage", binding);
+      if (linkage == lk_none)
+	inform (DECL_SOURCE_LOCATION (entity),
+		"%q#D declared here with no linkage", entity);
+      else if (linkage == lk_internal)
+	inform (DECL_SOURCE_LOCATION (entity),
+		"%q#D declared here with internal linkage", entity);
       else
-	inform (DECL_SOURCE_LOCATION (binding),
-		"%q#D declared here with module linkage", binding);
+	inform (DECL_SOURCE_LOCATION (entity),
+		"%q#D declared here with module linkage", entity);
       return false;
     }
 
