@@ -615,7 +615,7 @@ ix86_fuse_mov_alu_p (rtx_insn *mov, rtx_insn *alu)
   /* One of operands should be register.  */
   if (op1 && (!REG_P (op0) || REGNO (op0) != REGNO (reg)))
     std::swap (op0, op1);
-  if (!REG_P (op0) || REGNO (op1) != REGNO (reg))
+  if (!REG_P (op0) || REGNO (op0) != REGNO (reg))
     return false;
   if (op1
       && !REG_P (op1)
