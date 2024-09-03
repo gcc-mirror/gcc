@@ -1488,6 +1488,34 @@
   DONE;
 })
 
+(define_expand "vec_extract<mode><vls_quarter>"
+  [(set (match_operand:<VLS_QUARTER>	 0 "nonimmediate_operand")
+     (vec_select:<VLS_QUARTER>
+       (match_operand:VLS_HAS_QUARTER	 1 "register_operand")
+       (parallel
+	 [(match_operand		 2 "immediate_operand")])))]
+  "TARGET_VECTOR"
+{
+  int sz = GET_MODE_NUNITS (<VLS_QUARTER>mode).to_constant ();
+  int part = INTVAL (operands[2]);
+
+  rtx start = GEN_INT (part * sz);
+  rtx tmp = operands[1];
+
+  if (part != 0)
+    {
+      tmp = gen_reg_rtx (<MODE>mode);
+
+      rtx ops[] = {tmp, operands[1], start};
+      riscv_vector::emit_vlmax_insn
+	(code_for_pred_slide (UNSPEC_VSLIDEDOWN, <MODE>mode),
+	 riscv_vector::BINARY_OP, ops);
+    }
+
+  emit_move_insn (operands[0], gen_lowpart (<VLS_QUARTER>mode, tmp));
+  DONE;
+})
+
 ;; -------------------------------------------------------------------------
 ;; ---- [FP] Binary operations
 ;; -------------------------------------------------------------------------
