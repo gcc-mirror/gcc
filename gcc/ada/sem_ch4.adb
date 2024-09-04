@@ -2414,6 +2414,8 @@ package body Sem_Ch4 is
 
          case Nkind (A) is
             when N_Object_Declaration =>
+               Inspect_Deferred_Constant_Completion (A);
+
                if Nkind (Object_Definition (A)) = N_Access_Definition then
                   Error_Msg_N
                     ("anonymous access type not allowed in declare_expression",

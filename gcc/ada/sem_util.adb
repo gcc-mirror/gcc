@@ -14811,13 +14811,8 @@ package body Sem_Util is
    -- Inspect_Deferred_Constant_Completion --
    ------------------------------------------
 
-   procedure Inspect_Deferred_Constant_Completion (Decls : List_Id) is
-      Decl : Node_Id;
-
+   procedure Inspect_Deferred_Constant_Completion (Decl : Node_Id) is
    begin
-      Decl := First (Decls);
-      while Present (Decl) loop
-
          --  Deferred constant signature
 
          if Nkind (Decl) = N_Object_Declaration
@@ -14838,6 +14833,15 @@ package body Sem_Util is
               Defining_Identifier (Decl));
          end if;
 
+   end Inspect_Deferred_Constant_Completion;
+
+   procedure Inspect_Deferred_Constant_Completion (Decls : List_Id) is
+      Decl : Node_Id;
+
+   begin
+      Decl := First (Decls);
+      while Present (Decl) loop
+         Inspect_Deferred_Constant_Completion (Decl);
          Next (Decl);
       end loop;
    end Inspect_Deferred_Constant_Completion;

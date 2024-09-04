@@ -1718,6 +1718,11 @@ package Sem_Util is
    --  prefix is an access type, rewrite the access type node N (which is the
    --  prefix, e.g. of an indexed component) as an explicit dereference.
 
+   procedure Inspect_Deferred_Constant_Completion (Decl : Node_Id);
+   --  If Decl is a constant object declaration without a default value, check
+   --  whether it has been completed by a full constant declaration or an
+   --  Import pragma. Emit an error message if that is not the case.
+
    procedure Inspect_Deferred_Constant_Completion (Decls : List_Id);
    --  Examine all deferred constants in the declaration list Decls and check
    --  whether they have been completed by a full constant declaration or an
