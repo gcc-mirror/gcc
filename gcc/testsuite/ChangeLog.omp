@@ -3,6 +3,12 @@
 	Backported from trunk:
 	2024-09-04  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	PR target/104957
+	* gcc.target/nvptx/alias-to-alias-1.c: New.
+
+	Backported from trunk:
+	2024-09-04  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* gcc.target/nvptx/alias-weak-1.c: New.
 
 2024-07-30  Tobias Burnus  <tburnus@baylibre.com>
