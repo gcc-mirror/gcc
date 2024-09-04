@@ -1,3 +1,10 @@
+2024-12-18  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from trunk:
+	2024-09-04  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/alias-weak-1.c: New.
+
 2024-07-30  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
