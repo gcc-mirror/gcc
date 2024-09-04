@@ -8149,8 +8149,8 @@ package body Sem_Prag is
          Analyze_And_Resolve (Arg1x, Standard_Boolean);
 
          if CodePeer_Mode then
-               Rewrite (N, Make_Null_Statement (Loc));
-               return;
+            Rewrite (N, Make_Null_Statement (Loc));
+            return;
          end if;
 
          --  In GNATprove mode, pragma Compile_Time_Error is translated as
