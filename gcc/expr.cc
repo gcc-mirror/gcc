@@ -9648,6 +9648,7 @@ expand_expr_divmod (tree_code code, machine_mode mode, tree treeop0,
       end_sequence ();
       unsigned uns_cost = seq_cost (uns_insns, speed_p);
       unsigned sgn_cost = seq_cost (sgn_insns, speed_p);
+      bool was_tie = false;
 
       /* If costs are the same then use as tie breaker the other other
 	 factor.  */
@@ -9655,7 +9656,13 @@ expand_expr_divmod (tree_code code, machine_mode mode, tree treeop0,
 	{
 	  uns_cost = seq_cost (uns_insns, !speed_p);
 	  sgn_cost = seq_cost (sgn_insns, !speed_p);
+	  was_tie = true;
 	}
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	  fprintf(dump_file, "positive division:%s unsigned cost: %u; "
+		  "signed cost: %u\n", was_tie ? "(needed tie breaker)":"",
+		  uns_cost, sgn_cost);
 
       if (uns_cost < sgn_cost || (uns_cost == sgn_cost && unsignedp))
 	{
