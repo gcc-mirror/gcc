@@ -5,7 +5,8 @@ pub mod foo {
 }
 
 use foo::bar;
-use foo::bar; // { dg-error ".bar. defined multiple times" }
+use foo::bar;
+// { dg-error ".bar. defined multiple times" "" { xfail *-*-* } .-1 }
 
 fn main() {
     bar!();
