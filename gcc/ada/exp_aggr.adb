@@ -5908,12 +5908,7 @@ package body Exp_Aggr is
       then
          return;
 
-      elsif Present (Component_Associations (N))
-        and then Nkind (First (Component_Associations (N))) =
-                 N_Iterated_Component_Association
-        and then
-          Present (Iterator_Specification (First (Component_Associations (N))))
-      then
+      elsif Is_Two_Pass_Aggregate (N) then
          Two_Pass_Aggregate_Expansion (N);
          return;
 
@@ -8709,6 +8704,21 @@ package body Exp_Aggr is
         and then Is_Scalar_Type (Component_Type (Typ))
         and then C in Uint_1 | Uint_2 | Uint_4; -- False if No_Uint
    end Is_Two_Dim_Packed_Array;
+
+   ---------------------------
+   -- Is_Two_Pass_Aggregate --
+   ---------------------------
+
+   function Is_Two_Pass_Aggregate (N : Node_Id) return Boolean is
+   begin
+      return Nkind (N) = N_Aggregate
+        and then Present (Component_Associations (N))
+        and then Nkind (First (Component_Associations (N))) =
+                   N_Iterated_Component_Association
+        and then
+          Present
+            (Iterator_Specification (First (Component_Associations (N))));
+   end Is_Two_Pass_Aggregate;
 
    --------------------
    -- Late_Expansion --
