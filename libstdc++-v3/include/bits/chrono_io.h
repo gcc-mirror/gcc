@@ -2939,8 +2939,9 @@ namespace __detail
 	    __is.setstate(ios_base::failbit);
 	  else
 	    {
-	      auto __st = __p._M_sys_days + __p._M_time - *__offset;
-	      auto __tt = tai_clock::from_utc(utc_clock::from_sys(__st));
+	      constexpr sys_days __epoch(-days(4383)); // 1958y/1/1
+	      auto __d = __p._M_sys_days - __epoch + __p._M_time - *__offset;
+	      tai_time<common_type_t<_Duration, seconds>> __tt(__d);
 	      __tp = chrono::time_point_cast<_Duration>(__tt);
 	    }
 	}
@@ -2977,9 +2978,10 @@ namespace __detail
 	    __is.setstate(ios_base::failbit);
 	  else
 	    {
-	      auto __st = __p._M_sys_days + __p._M_time - *__offset;
-	      auto __tt = gps_clock::from_utc(utc_clock::from_sys(__st));
-	      __tp = chrono::time_point_cast<_Duration>(__tt);
+	      constexpr sys_days __epoch(days(3657)); // 1980y/1/Sunday[1]
+	      auto __d = __p._M_sys_days - __epoch + __p._M_time - *__offset;
+	      gps_time<common_type_t<_Duration, seconds>> __gt(__d);
+	      __tp = chrono::time_point_cast<_Duration>(__gt);
 	    }
 	}
       return __is;

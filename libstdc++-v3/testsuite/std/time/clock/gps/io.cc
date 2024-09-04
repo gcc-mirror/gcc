@@ -42,13 +42,19 @@ test_format()
   // PR libstdc++/113500
   s = std::format("{}", gt + 150ms + 10.5s);
   VERIFY( s == "2000-01-01 00:00:23.650" );
+
+  s = std::format("{:%Z %z %Ez %Oz}", gt);
+  VERIFY( s == "GPS +0000 +00:00 +00:00" );
+
+  s = std::format("{}", gps_seconds{});
+  VERIFY( s == "1980-01-06 00:00:00" );
 }
 
 void
 test_parse()
 {
   using namespace std::chrono;
-  const sys_seconds expected = sys_days(2023y/August/9) + 20h + 44min + 3s;
+  const sys_seconds expected = sys_days(2023y/August/9) + 20h + 43min + 45s;
   gps_seconds tp;
 
   minutes offset;
@@ -59,6 +65,20 @@ test_parse()
   VERIFY( tp == clock_cast<gps_clock>(expected) );
   VERIFY( abbrev == "BST" );
   VERIFY( offset == 60min );
+
+  // Test round trip
+  std::stringstream ss;
+  ss << clock_cast<gps_clock>(expected) << " GPS -1234";
+  VERIFY( ss >> parse("%F %T %Z %z", tp, abbrev, offset) );
+  VERIFY( ! ss.eof() );
+  VERIFY( (tp + offset) == clock_cast<gps_clock>(expected) );
+  VERIFY( abbrev == "GPS" );
+  VERIFY( offset == -(12h + 34min) );
+
+  ss.str("");
+  ss << gps_seconds{};
+  VERIFY( ss >> parse("%F %T", tp) );
+  VERIFY( tp.time_since_epoch() == 0s );
 }
 
 int main()

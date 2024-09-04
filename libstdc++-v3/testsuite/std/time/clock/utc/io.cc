@@ -116,6 +116,13 @@ test_format()
   // PR libstdc++/113500
   s = std::format("{}", leap + 100ms + 2.5s);
   VERIFY( s == "2017-01-01 00:00:01.600");
+
+  std::chrono::utc_seconds t0{};
+  s = std::format("{:%Z %z %Ez %Oz}", t0);
+  VERIFY( s == "UTC +0000 +00:00 +00:00" );
+
+  s = std::format("{}", t0);
+  VERIFY( s == "1970-01-01 00:00:00" );
 }
 
 void
@@ -146,6 +153,21 @@ test_parse()
   VERIFY( is >> parse("%G-W%V-%u %T", tp) );
   VERIFY( ! is.eof() );
   VERIFY( tp == clock_cast<utc_clock>(expected) );
+
+  // Test round trip
+  std::stringstream ss;
+  ss << clock_cast<utc_clock>(expected) << " 0012 UTC";
+  VERIFY( ss >> parse("%F %T %z %Z", tp, abbrev, offset) );
+  VERIFY( ss.eof() );
+  VERIFY( (tp + offset) == clock_cast<utc_clock>(expected) );
+  VERIFY( abbrev == "UTC" );
+  VERIFY( offset == 12min );
+
+  ss.str("");
+  ss.clear();
+  ss << utc_seconds{};
+  VERIFY( ss >> parse("%F %T", tp) );
+  VERIFY( tp.time_since_epoch() == 0s );
 }
 
 int main()

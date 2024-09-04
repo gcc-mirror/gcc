@@ -86,6 +86,9 @@ test_format()
   s = std::format("{:%Z %T %F %z %Ez}", ltf);
   __builtin_puts(s.c_str());
   VERIFY( s == "FOO 20:22:02 2024-07-28 -0100 -01:00" );
+
+  s = std::format("{}", local_seconds{});
+  VERIFY( s == "1970-01-01 00:00:00" );
 }
 
 void
@@ -103,6 +106,20 @@ test_parse()
   VERIFY( tp == local_seconds(expected.time_since_epoch()) );
   VERIFY( abbrev == "BST" );
   VERIFY( offset == 60min );
+
+  // Test round trip
+  std::stringstream ss;
+  ss << local_seconds{expected.time_since_epoch()} << " X 0123";
+  VERIFY( ss >> parse("%F %T %Z %z", tp, abbrev, offset) );
+  VERIFY( ! ss.eof() );
+  VERIFY( tp == local_seconds{expected.time_since_epoch()} );
+  VERIFY( abbrev == "X" );
+  VERIFY( offset == (1h + 23min) );
+
+  ss.str("");
+  ss << local_seconds{};
+  VERIFY( ss >> parse("%F %T", tp) );
+  VERIFY( tp.time_since_epoch() == 0s );
 }
 
 int main()
