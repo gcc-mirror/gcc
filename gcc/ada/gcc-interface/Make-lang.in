@@ -365,6 +365,7 @@ GNAT_ADA_OBJS =	\
  ada/fname.o	\
  ada/freeze.o	\
  ada/frontend.o	\
+ ada/generate_minimal_reproducer.o	\
  ada/get_targ.o	\
  ada/ghost.o	\
  ada/gnat_cuda.o \
@@ -492,6 +493,7 @@ GNAT1_C_OBJS+=    \
  ada/errno.o      \
  ada/init.o       \
  ada/initialize.o \
+ ada/mkdir.o      \
  ada/raise.o      \
  ada/raise-gcc.o  \
  ada/rtfinal.o    \

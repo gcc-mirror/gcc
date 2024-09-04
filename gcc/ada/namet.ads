@@ -423,6 +423,9 @@ package Namet is
    --  Unlocks the name table to allow use of the extra space reserved by the
    --  call to Lock. See gnat1drv for details of the need for this.
 
+   procedure Unlock_If_Locked;
+   --  If the name table is locked, calls Unlock. Otherwise, does nothing.
+
    procedure Write_Name (Id : Valid_Name_Id);
    --  Write_Name writes the characters of the specified name using the
    --  standard output procedures in package Output. The name is written

@@ -1520,6 +1520,17 @@ package body Namet is
       return Buf.Chars (1 .. Buf.Length);
    end To_String;
 
+   ----------------------
+   -- Unlock_If_Locked --
+   ----------------------
+
+   procedure Unlock_If_Locked is
+   begin
+      if Name_Chars.Locked then
+         Unlock;
+      end if;
+   end Unlock_If_Locked;
+
    ------------
    -- Unlock --
    ------------

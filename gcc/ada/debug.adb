@@ -150,7 +150,7 @@ package body Debug is
    --  d_j  Read JSON files and populate Repinfo tables (opposite of -gnatRjs)
    --  d_k  In CodePeer mode disable expansion of assertion checks
    --  d_l  Disable strict alignment of array types with aliased component
-   --  d_m
+   --  d_m  Run adareducer on crash
    --  d_n
    --  d_o
    --  d_p  Ignore assertion pragmas for elaboration
@@ -177,7 +177,7 @@ package body Debug is
    --  d_J
    --  d_K  (Reserved) Enable reporting a warning on known-problem issues
    --  d_L  Output trace information on elaboration checking
-   --  d_M
+   --  d_M  Ignore Source_File_Name and Source_File_Name_Project pragmas
    --  d_N
    --  d_O
    --  d_P

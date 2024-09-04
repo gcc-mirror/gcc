@@ -93,6 +93,15 @@ package body Fname.UF is
    --  Table recording calls to Set_File_Name_Pattern. Note that the first two
    --  entries are set to represent the standard GNAT rules for file naming.
 
+   procedure Instantiate_SFN_Pattern
+     (Pattern   : SFN_Pattern_Entry;
+      Buf       : in out Bounded_String;
+      Is_Predef : Boolean := False);
+   --  On entry, Buf must contain a unit name. After returning, Buf contains
+   --  the file name corresponding to the unit following the naming pattern
+   --  described by Pattern. Is_Predef must be whether the unit name in Buf
+   --  is a predefined unit name as defined by Is_Predefined_Unit_Name.
+
    -----------------------
    -- File_Name_Of_Body --
    -----------------------
@@ -163,6 +172,29 @@ package body Fname.UF is
 
       return Unknown;
    end Get_Expected_Unit_Type;
+
+   ---------------------------
+   -- Get_Default_File_Name --
+   ---------------------------
+
+   function Get_Default_File_Name (Uname : Unit_Name_Type) return String is
+      Buf : Bounded_String;
+
+      Pattern : SFN_Pattern_Entry;
+   begin
+      Get_Unit_Name_String (Buf, Uname, False);
+
+      if Is_Spec_Name (Uname) then
+         Pattern := SFN_Patterns.Table (1);
+      else
+         pragma Assert (Is_Body_Name (Uname));
+         Pattern := SFN_Patterns.Table (2);
+      end if;
+
+      Instantiate_SFN_Pattern (Pattern, Buf);
+
+      return To_String (Buf);
+   end Get_Default_File_Name;
 
    -------------------
    -- Get_File_Name --
@@ -261,22 +293,10 @@ package body Fname.UF is
                    Name_Buffer (1 .. Name_Len);
 
          Pent : Nat;
-         Plen : Natural;
          Fnam : File_Name_Type := No_File;
-         J    : Natural;
-         Dot  : String_Ptr;
-         Dotl : Natural;
 
          Is_Predef : Boolean;
          --  Set True for predefined file
-
-         function C (N : Natural) return Character;
-         --  Return N'th character of pattern
-
-         function C (N : Natural) return Character is
-         begin
-            return SFN_Patterns.Table (Pent).Pat (N);
-         end C;
 
       --  Start of search through pattern table
 
@@ -309,122 +329,8 @@ package body Fname.UF is
                   Name_Len := Uname'Length;
                   Name_Buffer (1 .. Name_Len) := Uname;
 
-                  --  Apply casing, except that we do not do this for the case
-                  --  of a predefined library file. For the latter, we always
-                  --  use the all lower case name, regardless of the setting.
-
-                  if not Is_Predef then
-                     Set_Casing (SFN_Patterns.Table (Pent).Cas);
-                  end if;
-
-                  --  If dot translation required do it
-
-                  Dot  := SFN_Patterns.Table (Pent).Dot;
-                  Dotl := Dot.all'Length;
-
-                  if Dot.all /= "." then
-                     J := 1;
-
-                     while J <= Name_Len loop
-                        if Name_Buffer (J) = '.' then
-
-                           if Dotl = 1 then
-                              Name_Buffer (J) := Dot (Dot'First);
-
-                           else
-                              Name_Buffer (J + Dotl .. Name_Len + Dotl - 1) :=
-                                Name_Buffer (J + 1 .. Name_Len);
-                              Name_Buffer (J .. J + Dotl - 1) := Dot.all;
-                              Name_Len := Name_Len + Dotl - 1;
-                           end if;
-
-                           J := J + Dotl;
-
-                        --  Skip past wide char sequences to avoid messing with
-                        --  dot characters that are part of a sequence.
-
-                        elsif Name_Buffer (J) = ASCII.ESC
-                          or else (Upper_Half_Encoding
-                                    and then
-                                      Name_Buffer (J) in Upper_Half_Character)
-                        then
-                           Skip_Wide (Name_Buffer, J);
-                        else
-                           J := J + 1;
-                        end if;
-                     end loop;
-                  end if;
-
-                  --  Here move result to right if preinsertion before *
-
-                  Plen := SFN_Patterns.Table (Pent).Pat'Length;
-                  for K in 1 .. Plen loop
-                     if C (K) = '*' then
-                        if K /= 1 then
-                           Name_Buffer (1 + K - 1 .. Name_Len + K - 1) :=
-                             Name_Buffer (1 .. Name_Len);
-
-                           for L in 1 .. K - 1 loop
-                              Name_Buffer (L) := C (L);
-                           end loop;
-
-                           Name_Len := Name_Len + K - 1;
-                        end if;
-
-                        for L in K + 1 .. Plen loop
-                           Name_Len := Name_Len + 1;
-                           Name_Buffer (Name_Len) := C (L);
-                        end loop;
-
-                        exit;
-                     end if;
-                  end loop;
-
-                  --  Execute possible crunch on constructed name. The krunch
-                  --  operation excludes any extension that may be present.
-
-                  J := Name_Len;
-                  while J > 1 loop
-                     exit when Name_Buffer (J) = '.';
-                     J := J - 1;
-                  end loop;
-
-                  --  Case of extension present
-
-                  if J > 1 then
-                     declare
-                        Ext : constant String := Name_Buffer (J .. Name_Len);
-
-                     begin
-                        --  Remove extension
-
-                        Name_Len := J - 1;
-
-                        --  Krunch what's left
-
-                        Krunch
-                          (Name_Buffer,
-                           Name_Len,
-                           Integer (Maximum_File_Name_Length),
-                           Debug_Flag_4);
-
-                        --  Replace extension
-
-                        Name_Buffer
-                          (Name_Len + 1 .. Name_Len + Ext'Length) := Ext;
-                        Name_Len := Name_Len + Ext'Length;
-                     end;
-
-                  --  Case of no extension present, straight krunch on the
-                  --  entire file name.
-
-                  else
-                     Krunch
-                       (Name_Buffer,
-                        Name_Len,
-                        Integer (Maximum_File_Name_Length),
-                        Debug_Flag_4);
-                  end if;
+                  Instantiate_SFN_Pattern
+                    (SFN_Patterns.Table (Pent), Global_Name_Buffer, Is_Predef);
 
                   Fnam := Name_Find;
 
@@ -542,6 +448,145 @@ package body Fname.UF is
          Dot => new String'("-"),
          Cas => All_Lower_Case));
    end Initialize;
+
+   -----------------------------
+   -- Instantiate_SFN_Pattern --
+   -----------------------------
+
+   procedure Instantiate_SFN_Pattern
+     (Pattern   : SFN_Pattern_Entry;
+      Buf       : in out Bounded_String;
+      Is_Predef : Boolean := False)
+   is
+      function C (N : Natural) return Character;
+      --  Return N'th character of pattern
+
+      function C (N : Natural) return Character is
+      begin
+         return Pattern.Pat (N);
+      end C;
+
+      Dot : constant String_Ptr := Pattern.Dot;
+
+      Dotl : constant Natural := Dot.all'Length;
+
+      Plen : constant Natural := Pattern.Pat'Length;
+
+      J : Natural;
+   begin
+      --  Apply casing, except that we do not do this for the case
+      --  of a predefined library file. For the latter, we always
+      --  use the all lower case name, regardless of the setting.
+
+      if not Is_Predef then
+         Set_Casing (Buf, Pattern.Cas);
+      end if;
+
+      --  If dot translation required do it
+
+      if Dot.all /= "." then
+         J := 1;
+
+         while J <= Buf.Length loop
+            if Buf.Chars (J) = '.' then
+
+               if Dotl = 1 then
+                  Buf.Chars (J) := Dot (Dot'First);
+
+               else
+                  Buf.Chars (J + Dotl .. Buf.Length + Dotl - 1) :=
+                    Buf.Chars (J + 1 .. Buf.Length);
+                  Buf.Chars (J .. J + Dotl - 1) := Dot.all;
+                  Buf.Length := Buf.Length + Dotl - 1;
+               end if;
+
+               J := J + Dotl;
+
+            --  Skip past wide char sequences to avoid messing with
+            --  dot characters that are part of a sequence.
+
+            elsif Buf.Chars (J) = ASCII.ESC
+              or else (Upper_Half_Encoding
+                        and then
+                          Buf.Chars (J) in Upper_Half_Character)
+            then
+               Skip_Wide (Buf.Chars, J);
+            else
+               J := J + 1;
+            end if;
+         end loop;
+      end if;
+
+      --  Here move result to right if preinsertion before *
+
+      for K in 1 .. Plen loop
+         if C (K) = '*' then
+            if K /= 1 then
+               Buf.Chars (1 + K - 1 .. Buf.Length + K - 1) :=
+                 Buf.Chars (1 .. Buf.Length);
+
+               for L in 1 .. K - 1 loop
+                  Buf.Chars (L) := C (L);
+               end loop;
+
+               Buf.Length := Buf.Length + K - 1;
+            end if;
+
+            for L in K + 1 .. Plen loop
+               Buf.Length := Buf.Length + 1;
+               Buf.Chars (Buf.Length) := C (L);
+            end loop;
+
+            exit;
+         end if;
+      end loop;
+
+      --  Execute possible crunch on constructed name. The krunch
+      --  operation excludes any extension that may be present.
+
+      J := Buf.Length;
+      while J > 1 loop
+         exit when Buf.Chars (J) = '.';
+         J := J - 1;
+      end loop;
+
+      --  Case of extension present
+
+      if J > 1 then
+         declare
+            Ext : constant String := Buf.Chars (J .. Buf.Length);
+
+         begin
+            --  Remove extension
+
+            Buf.Length := J - 1;
+
+            --  Krunch what's left
+
+            Krunch
+              (Buf.Chars,
+               Buf.Length,
+               Integer (Maximum_File_Name_Length),
+               Debug_Flag_4);
+
+            --  Replace extension
+
+            Buf.Chars
+              (Buf.Length + 1 .. Buf.Length + Ext'Length) := Ext;
+            Buf.Length := Buf.Length + Ext'Length;
+         end;
+
+      --  Case of no extension present, straight krunch on the
+      --  entire file name.
+
+      else
+         Krunch
+           (Buf.Chars,
+            Buf.Length,
+            Integer (Maximum_File_Name_Length),
+            Debug_Flag_4);
+      end if;
+   end Instantiate_SFN_Pattern;
 
    ----------
    -- Lock --

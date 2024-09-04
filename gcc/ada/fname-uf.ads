@@ -53,6 +53,9 @@ package Fname.UF is
    --  be determined with the file naming conventions in use, then the returned
    --  value is set to Unknown.
 
+   function Get_Default_File_Name (Uname : Unit_Name_Type) return String;
+   --  Returns the file name of Uname under the default GNAT naming scheme.
+
    function Get_File_Name
      (Uname    : Unit_Name_Type;
       Subunit  : Boolean;

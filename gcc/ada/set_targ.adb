@@ -837,11 +837,11 @@ begin
 
       save_argc : Nat;
       pragma Import (C, save_argc);
-      --  Saved value of argc (number of arguments), imported from misc.c
+      --  Saved value of argc (number of arguments), imported from misc.cc
 
       save_argv : Arg_Array_Ptr;
       pragma Import (C, save_argv);
-      --  Saved value of argv (argument pointers), imported from misc.c
+      --  Saved value of argv (argument pointers), imported from misc.cc
 
       gnat_argc : Nat;
       gnat_argv : Arg_Array_Ptr;

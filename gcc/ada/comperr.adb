@@ -30,6 +30,7 @@
 with Atree;          use Atree;
 with Debug;          use Debug;
 with Errout;         use Errout;
+with Generate_Minimal_Reproducer;
 with Gnatvsn;        use Gnatvsn;
 with Lib;            use Lib;
 with Namet;          use Namet;
@@ -263,7 +264,7 @@ package body Comperr is
             Src : Source_Buffer_Ptr;
 
          begin
-            Namet.Unlock;
+            Namet.Unlock_If_Locked;
             Name_Buffer (1 .. 12) := "gnat_bug.box";
             Name_Len := 12;
             Read_Source_File (Name_Enter, 0, Hi, Src, FD);
@@ -403,6 +404,14 @@ package body Comperr is
                Write_Str ("list may be incomplete");
          end;
 
+         begin
+            if Debug_Flag_Underscore_M then
+               Generate_Minimal_Reproducer;
+            end if;
+         exception
+            when others => null;
+         end;
+
          Write_Eol;
          Set_Standard_Output;
 
@@ -539,5 +548,4 @@ package body Comperr is
 
       Write_Char (After);
    end Repeat_Char;
-
 end Comperr;
