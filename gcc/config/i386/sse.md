@@ -17908,8 +17908,8 @@
 	  (match_operand:VI_128_256 1 "vector_all_ones_operand")
 	  (match_operand:VI_128_256 2 "const0_operand")
 	  (unspec:<avx512fmaskmode>
-	    [(match_operand:VI_128_256 3 "nonimmediate_operand")
-	     (match_operand:VI_128_256 4 "nonimmediate_operand")
+	    [(match_operand:VI_128_256 3 "nonimm_or_0_operand")
+	     (match_operand:VI_128_256 4 "nonimm_or_0_operand")
 	     (match_operand:SI 5 "const_0_to_7_operand")]
 	     UNSPEC_PCMP)))]
   "TARGET_AVX512VL && ix86_pre_reload_split ()
@@ -17928,6 +17928,11 @@
 {
   if (INTVAL (operands[5]) == 1)
     std::swap (operands[3], operands[4]);
+
+  operands[3] = force_reg (<MODE>mode, operands[3]);
+  if (operands[4] == CONST0_RTX (<MODE>mode))
+    operands[4] = force_reg (<MODE>mode, operands[4]);
+
   enum rtx_code code = INTVAL (operands[5]) ? GT : EQ;
   emit_move_insn (operands[0], gen_rtx_fmt_ee (code, <MODE>mode,
 					       operands[3], operands[4]));
