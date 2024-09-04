@@ -1,3 +1,7 @@
+2024-09-03  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx512fp16-vfpclassph-1c.c: New test.
+
 2024-09-02  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:
