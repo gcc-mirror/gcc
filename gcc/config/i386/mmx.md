@@ -2290,6 +2290,23 @@
   DONE;
 })
 
+;;This instruction does not generate floating point exceptions
+(define_expand "vec_cmp<mode>qi"
+  [(set (match_operand:QI 0 "register_operand")
+	(match_operator:QI 1 ""
+	  [(match_operand:VBF_32_64 2 "register_operand")
+	   (match_operand:VBF_32_64 3 "nonimmediate_operand")]))]
+  "TARGET_AVX10_2_256"
+{
+  rtx op2 = lowpart_subreg (V8BFmode,
+			     force_reg (<MODE>mode, operands[2]), <MODE>mode);
+  rtx op3 = lowpart_subreg (V8BFmode,
+			     force_reg (<MODE>mode, operands[3]), <MODE>mode);
+
+  emit_insn (gen_vec_cmpv8bfqi (operands[0], operands[1], op2, op3));
+  DONE;
+})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Parallel half-precision floating point rounding operations.
