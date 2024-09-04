@@ -1,3 +1,9 @@
+2024-09-03  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/avx512fp16intrin.h
+	(_mm512_mask_fpclass_ph_mask): Correct mask type to __mmask32.
+	(_mm512_fpclass_ph_mask): Ditto.
+
 2024-09-02  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:
