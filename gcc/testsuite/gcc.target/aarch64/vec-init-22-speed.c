@@ -7,6 +7,6 @@
 
 #include "vec-init-22.h"
 
-/* { dg-final { scan-assembler-times {\tfmov\td[0-9]+, x[0-9]+} 2 } } */
+/* { dg-final { scan-assembler-times {\tfmov\ts[0-9]+, w[0-9]+} 2 } } */
 /* { dg-final { scan-assembler-times {\tins\tv[0-9]+\.h\[[1-3]\], w[0-9]+} 6 } } */
 /* { dg-final { scan-assembler {\tzip1\tv[0-9]+\.8h, v[0-9]+\.8h, v[0-9]+\.8h} } } */
