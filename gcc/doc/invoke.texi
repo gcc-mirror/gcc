@@ -15473,6 +15473,10 @@ In each case, the @var{value} is an integer.  The following choices
 of @var{name} are recognized for all targets:
 
 @table @gcctabopt
+@item phiopt-factor-max-stmts-live
+When factoring statements out of if/then/else, this is the max # of statements
+after the defining statement to be allow to extend the lifetime of a name
+
 @item predictable-branch-outcome
 When branch is predicted to be taken with probability lower than this threshold
 (in percent), then it is considered well predictable.
