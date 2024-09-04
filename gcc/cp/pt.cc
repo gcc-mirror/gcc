@@ -7887,25 +7887,22 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
   return convert_from_reference (expr);
 }
 
-/* Subroutine of coerce_template_template_parms, which returns 1 if
-   PARM_PARM and ARG_PARM match using the rule for the template
-   parameters of template template parameters. Both PARM and ARG are
-   template parameters; the rest of the arguments are the same as for
-   coerce_template_template_parms.
- */
-static int
-coerce_template_template_parm (tree parm,
-                              tree arg,
-                              tsubst_flags_t complain,
-                              tree in_decl,
-                              tree outer_args)
+/* Subroutine of coerce_template_template_parms, which returns true if
+   PARM and ARG match using the rule for the template parameters of
+   template template parameters.  Both PARM and ARG are template parameters;
+   the rest of the arguments are the same as for
+   coerce_template_template_parms.  */
+
+static bool
+coerce_template_template_parm (tree parm, tree arg, tsubst_flags_t complain,
+			       tree in_decl, tree outer_args)
 {
   if (arg == NULL_TREE || error_operand_p (arg)
       || parm == NULL_TREE || error_operand_p (parm))
-    return 0;
+    return false;
 
   if (TREE_CODE (arg) != TREE_CODE (parm))
-    return 0;
+    return false;
 
   switch (TREE_CODE (parm))
     {
@@ -7916,7 +7913,7 @@ coerce_template_template_parm (tree parm,
       {
 	if (!coerce_template_template_parms
 	    (parm, arg, complain, in_decl, outer_args))
-	  return 0;
+	  return false;
       }
       /* Fall through.  */
 
@@ -7924,7 +7921,7 @@ coerce_template_template_parm (tree parm,
       if (TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (arg))
 	  && !TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (parm)))
 	/* Argument is a parameter pack but parameter is not.  */
-	return 0;
+	return false;
       break;
 
     case PARM_DECL:
@@ -7940,13 +7937,13 @@ coerce_template_template_parm (tree parm,
 	  tree t = tsubst (TREE_TYPE (parm), outer_args, complain, in_decl);
 	  if (!uses_template_parms (t)
 	      && !same_type_p (t, TREE_TYPE (arg)))
-	    return 0;
+	    return false;
 	}
 
       if (TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (arg))
 	  && !TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (parm)))
 	/* Argument is a parameter pack but parameter is not.  */
-	return 0;
+	return false;
 
       break;
 
@@ -7954,7 +7951,7 @@ coerce_template_template_parm (tree parm,
       gcc_unreachable ();
     }
 
-  return 1;
+  return true;
 }
 
 /* Coerce template argument list ARGLIST for use with template
