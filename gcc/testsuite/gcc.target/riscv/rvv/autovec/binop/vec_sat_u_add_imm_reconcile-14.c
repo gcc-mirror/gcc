@@ -6,4 +6,4 @@
 
 DEF_VEC_SAT_U_ADD_IMM_FMT_3(uint64_t, 18446744073709551615ull)
 
-/* { dg-final { scan-rtl-dump-times ".SAT_ADD " 2 "expand" } } */
+/* { dg-final { scan-rtl-dump-times ".SAT_ADD " 4 "expand" } } */

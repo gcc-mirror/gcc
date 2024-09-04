@@ -16,4 +16,4 @@
 */
 DEF_VEC_SAT_U_ADD_FMT_4(uint8_t)
 
-/* { dg-final { scan-rtl-dump-times ".SAT_ADD " 2 "expand" } } */
+/* { dg-final { scan-rtl-dump-times ".SAT_ADD " 4 "expand" } } */
