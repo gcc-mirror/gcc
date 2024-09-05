@@ -1,3 +1,67 @@
+2024-09-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (addressable_p) <COMPONENT_REF>: Add kludge
+	to cope with ancient 32-bit ABIs.
+
+2024-09-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (create_temporary): Deal with types whose
+	size is self-referential by allocating the maximum size.
+
+2024-09-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (get_atomic_access): Deal specifically with
+	nodes that are both Atomic and Volatile_Full_Access in Ada 2012.
+
+2024-09-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (addressable_p) <COMPONENT_REF>: Take into
+	account the alignment of the field on all platforms.
+
+2024-09-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_field): Clear again gnu_size
+	after updating it if it is not constant.
+
+2024-09-03  Marc Poulhiès  <poulhies@adacore.com>
+
+	* exp_unst.adb (Check_Static_Type::Note_Uplevel_Bound): Refactor
+	to use the generic Traverse_Proc.
+	(Check_Static_Type): Adjust calls to Note_Uplevel_Bound as the
+	previous second parameter was unused, so removed.
+
+2024-09-03  Steve Baird  <baird@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): If it makes sense
+	to do so, then rewrite a Length attribute reference as an
+	equivalent conditional expression.
+
+2024-09-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_res.adb (Is_Atomic_Ref_With_Address): Rename into...
+	(Is_Atomic_Non_VFA_Ref_With_Address): ...this and adjust the
+	implementation to exclude Volatile_Full_Access objects.
+	(Resolve_Indexed_Component): Adjust to above renaming.
+	(Resolve_Selected_Component): Likewise.
+
+2024-09-03  Steve Baird  <baird@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): Implement the two new
+	legality rules of AI11-0106. Add code to avoid cascading error
+	messages.
+
+2024-09-03  Bob Duff  <duff@adacore.com>
+
+	* exp_ch6.adb (Add_Collection_Actual_To_Build_In_Place_Call):
+	Remove Finalize_Storage_Only from the code that checks whether to
+	pass null to the Collection parameter. Having done that, we don't
+	need to check for Is_Library_Level_Entity, because
+	No_Heap_Finalization requires that. And if we ever change
+	No_Heap_Finalization to allow nested access types, we will still
+	want to pass null. Note that the comment "Such a type lacks a
+	collection." is incorrect in the case of Finalize_Storage_Only;
+	such types have a collection.
+
 2024-09-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.cc (gnat_to_gnu_entity): Cap the Esize of a

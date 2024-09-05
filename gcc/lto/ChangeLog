@@ -1,3 +1,9 @@
+2024-09-03  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR lto/116535
+	* lto.cc (stream_out): Update call to
+	ipa_write_optimization_summaries to pass true for first partition.
+
 2024-09-02  Tobias Burnus  <tburnus@baylibre.com>
 
 	* lto.cc: Add missing HAVE_WORKING_FORK.

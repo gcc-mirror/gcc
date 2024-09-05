@@ -1,3 +1,12 @@
+2024-09-04  Marc Poulhiès  <dkm@kataplop.net>
+
+	* configure: Regenerate.
+	* configure.ac: Save LIBS around calls to AC_SEARCH_LIBS.
+
+2024-09-03  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* MAINTAINERS: Update my email address and add myself to DCO.
+
 2024-08-22  Sam James  <sam@gentoo.org>
 
 	* Makefile.in: Regenerate.

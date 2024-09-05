@@ -1,3 +1,368 @@
+2024-09-04  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_split_integer_cost): Adjust the
+	cost of negative repeating constants.
+	(riscv_split_integer): Handle negative repeating constants.
+
+2024-09-04  Tom Tromey  <tromey@adacore.com>
+
+	* dwarf2out.cc (modified_type_die): Check DECL_NAMELESS.
+
+2024-09-04  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/106973
+	* internal-fn.def (CO_YIELD): Mark as ECF_LEAF.
+
+2024-09-04  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-object-size.cc (object_sizes_execute): Mark lhs for maybe dceing
+	if doing a propagate. Call simple_dce_from_worklist.
+
+2024-09-04  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/gen-opt.sh: Use 'enum ptx_isa' instead of 'int'.
+	* config/nvptx/nvptx-gen.opt: Regenerate.
+	* config/nvptx/nvptx.opt: Use 'enum ptx_version' instead of 'int'.
+	* config/nvptx/nvptx-opts.h (enum ptx_isa): Add 'PTX_ISA_unset'.
+	(enum ptx_version): Add 'PTX_VERSION_unset'.
+	* config/nvptx/nvptx-c.cc (nvptx_cpu_cpp_builtins): Adjust.
+	* config/nvptx/nvptx.cc (default_ptx_version_option)
+	(handle_ptx_version_option, nvptx_option_override)
+	(nvptx_file_start): Likewise.
+
+2024-09-04  Frederik Harwath  <frederik@codesourcery.com>
+	    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* predict.cc (pass_profile::execute): Fix dump message.
+
+2024-09-04  Frederik Harwath  <frederik@codesourcery.com>
+
+	* tree-cfg.h (gimple_debug_cfg): Change argument type from int
+	to dump_flags_t.
+
+2024-09-04  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* passes.cc: Document 'pass_postreload' vs. 'pass_late_compilation'.
+	* passes.def: Likewise.
+
+2024-09-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_lower_load_permutations): Also
+	process single-use grouped loads.
+	Avoid lowering contiguous aligned power-of-two sized
+	chunks, those are better handled by the vector size
+	specific SLP code generation.
+	* tree-vect-stmts.cc (get_group_load_store_type): Drop
+	the unrelated requirement of a load permutation for the
+	single-element interleaving limit.
+
+2024-09-04  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/x86-tune-costs.h (znver5_cost): Update instruction
+	costs.
+
+2024-09-04  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* expr.cc (expand_expr_divmod): Add dump of the two costs for
+	positive division.
+
+2024-09-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.md (lra_szext_decomposed_indir_plus): New
+	peephole2 pattern.
+
+2024-09-04  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv.cc (riscv_expand_usadd): Zero extend
+	the second operand of usadd as the first operand does.
+	* config/riscv/riscv.md (usadd<m>3): Allow imm operand for
+	scalar usadd pattern.
+
+2024-09-03  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/112402
+	* gimple-ssa-split-paths.cc (poor_ifcvt_pred): New function.
+	(is_feasible_trace): Remove old heurstics for ifcvt cases.
+	For num_stmts <=1 for both pred check poor_ifcvt_pred on both
+	pred.
+
+2024-09-03  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gimple-ssa-split-paths.cc (is_feasible_trace): Move
+	check for # of statments in join earlier and add a
+	debug print.
+
+2024-09-03  Qing Zhao  <qing.zhao@oracle.com>
+
+	* doc/extend.texi: Explicitly mentions counted_by is available
+	only in C for now.
+
+2024-09-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* pretty-print-markup.h (pp_markup::context::context): Drop
+	params "buf" and "chunk_idx", initializing m_buf from pp.
+	(pp_markup::context::m_chunk_idx): Drop field.
+	* pretty-print.cc (pretty_printer::format): Convert param
+	from a text_info * to a text_info &.  Split out phase 1
+	and phase 2 into subroutines...
+	(format_phase_1): New, from pretty_printer::format.
+	(format_phase_2): Likewise.
+	* pretty-print.h (pretty_printer::format): Convert param
+	from a text_info * to a text_info &.
+	(pp_format): Update for above change.  Assert that text_info is
+	non-null.
+
+2024-09-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* pretty-print-format-impl.h (pp_formatted_chunks::get_prev): New
+	accessor.
+	* pretty-print.cc (selftest::push_pp_format): New.
+	(ASSERT_TEXT_TOKEN): New macro.
+	(selftest::test_pp_format_stack): New test.
+	(selftest::pretty_print_cc_tests): New.
+
+2024-09-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.cc (diagnostic_set_caret_max_width): Prefix all
+	output_buffer fields with "m_".
+	* dumpfile.cc (emit_any_pending_textual_chunks): Likewise.
+	(emit_any_pending_textual_chunks): Likewise.
+	* gimple-pretty-print.cc (gimple_dump_bb_buff): Likewise.
+	* json.cc (value::dump): Likewise.
+	* pretty-print-format-impl.h (class chunk_info): Rename to...
+	(class pp_formatted_chunks): ...this.  Add friend
+	class output_buffer.  Update comment near end of decl to show
+	the pp_formatted_chunks instance on the chunk_obstack.
+	(pp_formatted_chunks::pop_from_output_buffer): Delete decl.
+	(pp_formatted_chunks::on_begin_quote): Delete decl that should
+	have been removed in r15-3311-ge31b6176996567.
+	(pp_formatted_chunks::on_end_quote): Likewise.
+	(pp_formatted_chunks::m_prev): Update for renaming.
+	* pretty-print.cc (output_buffer::output_buffer): Prefix all
+	fields with "m_".  Rename "cur_chunk_array" to
+	"m_cur_formatted_chunks".
+	(output_buffer::~output_buffer): Prefix all fields with "m_".
+	(output_buffer::push_formatted_chunks): New.
+	(output_buffer::pop_formatted_chunks): New.
+	(pp_write_text_to_stream): Prefix all output_buffer fields with
+	"m_".
+	(pp_write_text_as_dot_label_to_stream): Likewise.
+	(pp_write_text_as_html_like_dot_to_stream): Likewise.
+	(chunk_info::append_formatted_chunk): Rename to...
+	(pp_formatted_chunks::append_formatted_chunk): ...this.
+	(chunk_info::pop_from_output_buffer): Delete.
+	(pretty_printer::format): Update leading comment to mention
+	pushing pp_formatted_chunks, and to reflect changes in
+	r15-3311-ge31b6176996567.  Prefix all output_buffer fields with
+	"m_".
+	(pp_output_formatted_text): Update leading comment to mention
+	popping a pp_formatted_chunks, and to reflect the changes in
+	r15-3311-ge31b6176996567.  Prefix all output_buffer fields with
+	"m_" and rename "cur_chunk_array" to "m_cur_formatted_chunks".
+	Replace call to chunk_info::pop_from_output_buffer with a call to
+	output_buffer::pop_formatted_chunks.
+	(pp_flush): Prefix all output_buffer fields with "m_".
+	(pp_really_flush): Likewise.
+	(pp_clear_output_area): Likewise.
+	(pp_append_text): Likewise.
+	(pretty_printer::remaining_character_count_for_line): Likewise.
+	(pp_newline): Likewise.
+	(pp_character): Likewise.
+	(pp_markup::context::push_back_any_text): Likewise.
+	* pretty-print.h (class chunk_info): Rename to...
+	(class pp_formatted_chunks): ...this.
+	(class output_buffer): Delete unimplemented rule-of-5 members.
+	(output_buffer::push_formatted_chunks): New decl.
+	(output_buffer::pop_formatted_chunks): New decl.
+	(output_buffer::formatted_obstack): Rename to...
+	(output_buffer::m_formatted_obstack): ...this.
+	(output_buffer::chunk_obstack): Rename to...
+	(output_buffer::m_chunk_obstack): ...this.
+	(output_buffer::obstack): Rename to...
+	(output_buffer::m_obstack): ...this.
+	(output_buffer::cur_chunk_array): Rename to...
+	(output_buffer::m_cur_formatted_chunks): ...this.
+	(output_buffer::stream): Rename to...
+	(output_buffer::m_stream): ...this.
+	(output_buffer::line_length): Rename to...
+	(output_buffer::m_line_length): ...this.
+	(output_buffer::digit_buffer): Rename to...
+	(output_buffer::m_digit_buffer): ...this.
+	(output_buffer::flush_p): Rename to...
+	(output_buffer::m_flush_p): ...this.
+	(output_buffer_formatted_text): Prefix all output_buffer fields
+	with "m_".
+	(output_buffer_append_r): Likewise.
+	(output_buffer_last_position_in_text): Likewise.
+	(pretty_printer::set_output_stream): Likewise.
+	(pp_scalar): Likewise.
+	(pp_wide_int): Likewise.
+	* tree-pretty-print.cc (dump_generic_node): Likewise.
+	(dump_generic_node): Likewise.
+	(pp_double_int): Likewise.
+
+2024-09-03  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/i386.cc (ix86_reassociation_width): Update for Znver5.
+	* config/i386/x86-tune-costs.h (znver5_costs): Update reassociation
+	widths.
+
+2024-09-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	* J: Drop file that should not have been committed
+
+2024-09-03  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/x86-tune-sched.cc (ix86_fuse_mov_alu_p): Fix
+	typo.
+
+2024-09-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_print_slp_tree): Annotate load
+	and store-lanes nodes.
+
+2024-09-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (get_group_load_store_type): Only disable
+	peeling for gaps by using smaller vectors when not using
+	load-lanes.
+
+2024-09-03  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/i386.h (TARGET_FUSE_MOV_AND_ALU): New tune.
+	* config/i386/x86-tune-sched.cc (ix86_issue_rate): Updat for znver5.
+	(ix86_adjust_cost): Add TODO about znver5 memory latency.
+	(ix86_fuse_mov_alu_p): New.
+	(ix86_macro_fusion_pair_p): Use it.
+	* config/i386/x86-tune.def (X86_TUNE_FUSE_ALU_AND_BRANCH): Add ZNVER5.
+	(X86_TUNE_FUSE_MOV_AND_ALU): New tune;
+
+2024-09-03  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/x86-tune.def (X86_TUNE_USE_GATHER_2PARTS): Disable for
+	ZNVER5.
+	(X86_TUNE_USE_SCATTER_2PARTS): Disable for ZNVER5.
+	(X86_TUNE_USE_GATHER_4PARTS): Disable for ZNVER5.
+	(X86_TUNE_USE_SCATTER_4PARTS): Disable for ZNVER5.
+	(X86_TUNE_USE_GATHER_8PARTS): Disable for ZNVER5.
+	(X86_TUNE_USE_SCATTER_8PARTS): Disable for ZNVER5.
+
+2024-09-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR ipa/116410
+	* ipa-modref.cc (analyze_parms): Always analyze function parameter
+	for LTO.
+
+2024-09-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/115921
+	* config/riscv/riscv.md (reassociate bitwise ops): Tighten test for
+	cases we do not want reassociate.
+	* J: New file.
+
+2024-09-03  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/x86-tune.def (X86_TUNE_AVOID_128FMA_CHAINS): Enable for
+	znver5.
+	(X86_TUNE_AVOID_256FMA_CHAINS): Likewise.
+	(X86_TUNE_AVOID_512FMA_CHAINS): Likewise.
+
+2024-09-03  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR lto/116535
+	* lto-cgraph.cc (output_offload_tables): Remove offload_ frees.
+	* lto-streamer-out.cc (lto_output): Make call to it depend on
+	lto_get_out_decl_state ()->output_offload_tables_p.
+	* lto-streamer.h (struct lto_out_decl_state): Add
+	output_offload_tables_p field.
+	* tree-pass.h (ipa_write_optimization_summaries): Add bool argument.
+	* passes.cc (ipa_write_summaries_1): Add bool
+	output_offload_tables_p arg.
+	(ipa_write_summaries): Update call.
+	(ipa_write_optimization_summaries): Accept output_offload_tables_p.
+
+2024-09-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116575
+	* tree-vect-slp.cc (vect_analyze_slp): Properly compute
+	the mask argument for vect_load/store_lanes_supported.
+	When the load is masked for now avoid rediscovery.
+
+2024-09-03  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/avx512fp16intrin.h
+	(_mm512_mask_fpclass_ph_mask): Correct mask type to __mmask32.
+	(_mm512_fpclass_ph_mask): Ditto.
+
+2024-09-03  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.cc (poly_int_binop): Move assert on
+	NUM_POLY_INT_COEFFS after INTEGER_CST processing.
+
+2024-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/116501
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_addsub_overflow):
+	In the last_ovf case, use build_zero_cst operand not just when
+	TYPE_UNSIGNED (typeN), but also when precN >= 0.
+
+2024-09-03  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc (svmul_impl::fold):
+	Try constant folding.
+
+2024-09-03  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc (svdiv_impl::fold):
+	Try constant folding.
+	* config/aarch64/aarch64-sve-builtins.h: Declare
+	gimple_folder::fold_const_binary.
+	* config/aarch64/aarch64-sve-builtins.cc (aarch64_const_binop):
+	New function to fold binary SVE intrinsics without overflow.
+	(gimple_folder::fold_const_binary): New helper function for
+	constant folding of SVE intrinsics.
+
+2024-09-03  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* fold-const.h: Declare vector_const_binop.
+	* fold-const.cc (const_binop): Remove cases for vector constants.
+	(vector_const_binop): New function that folds vector constants
+	element-wise.
+	(int_const_binop): Remove call to wide_int_binop.
+	(poly_int_binop): Add call to wide_int_binop.
+
+2024-09-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Handle mixing
+	all of handled components besides ARRAY_RANGE_REF, drop
+	handling of INDIRECT_REF.
+
+2024-09-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vect_get_vector_types_for_stmt):
+	Handle all internal_store_fn_p the same.  Remove special-casing
+	for the scalar_type of IFN_MASK_STORE.
+
+2024-09-03  Levy Hsu  <admin@levyhsu.com>
+
+	* config/i386/mmx.md (<code><mode>3): New define_expand for V2BF/V4BFsmaxmin
+
+2024-09-03  Levy Hsu  <admin@levyhsu.com>
+
+	* config/i386/mmx.md (VBF_32_64): New mode iterator for partial vectorized V2BF/V4BF.
+	(<insn><mode>3): New define_expand for plusminusmultdiv.
+	(sqrt<mode>2): New define_expand for sqrt.
+
+2024-09-03  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-protos.h (riscv_expand_ssadd): Add new func
+	decl for expanding ssadd.
+	* config/riscv/riscv.cc (riscv_gen_sign_max_cst): Add new func
+	impl to gen the max int rtx.
+	(riscv_expand_ssadd): Add new func impl to expand the ssadd.
+	* config/riscv/riscv.md (ssadd<mode>3): Add new pattern for
+	signed integer .SAT_ADD.
+
 2024-09-03  YunQiang Su  <syq@gcc.gnu.org>
 
 	* config/mips/mips-msa.md: (MSA_NO_HADD): we have HADD for

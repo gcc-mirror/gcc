@@ -1,3 +1,8 @@
+2024-09-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer-logging.cc (logger::logger): Prefix all output_buffer
+	fields with "m_".
+
 2024-07-24  David Malcolm  <dmalcolm@redhat.com>
 
 	* checker-event.cc (maybe_add_sarif_properties): Update setting

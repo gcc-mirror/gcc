@@ -1,3 +1,212 @@
+2024-09-04  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	* gcc.target/riscv/synthesis-11.c: New test.
+
+2024-09-04  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-13.c: Adjust
+	expected output.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-14.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-15.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-17.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-18.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-19.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-20.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm_reconcile-1.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm_reconcile-2.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm_reconcile-5.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm_reconcile-6.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm_reconcile-9.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm_reconcile-10.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm_reconcile-13.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm_reconcile-14.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm_reconcile-15.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-9.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-10.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-11.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-12.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-13.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-14.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-15.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-17.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-18.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-19.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-20.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-21.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-22.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-23.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-24.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-33.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-34.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-35.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-36.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-37.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-38.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-39.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-40.c: Likewise.
+
+2024-09-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113108
+	* g++.dg/cpp1z/noexcept-type28.C: New test.
+
+2024-09-04  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/108620
+	* g++.dg/coroutines/pr108620.C: New test.
+
+2024-09-04  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/106973
+	* g++.dg/coroutines/pr106973.C: New test.
+
+2024-09-04  Richard Biener  <rguenther@suse.de>
+
+	* gfortran.dg/vect/vect-8.f90: Use dg-additional-options.
+
+2024-09-04  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR middle-end/60797
+	PR target/104957
+	* gcc.dg/pr60797.c: For nvptx, specify '-mno-alias'.
+
+2024-09-04  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/104957
+	* gcc.target/nvptx/alias-to-alias-1.c: New.
+
+2024-09-04  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/alias-weak-1.c: New.
+
+2024-09-04  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-46.c: Remove XFAIL.
+
+2024-09-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_u_add-11.c: Make asm check robust.
+	* gcc.target/riscv/sat_u_add-15.c: Ditto.
+	* gcc.target/riscv/sat_u_add-19.c: Ditto.
+	* gcc.target/riscv/sat_u_add-23.c: Ditto.
+	* gcc.target/riscv/sat_u_add-3.c: Ditto.
+	* gcc.target/riscv/sat_u_add-7.c: Ditto.
+
+2024-09-04  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/116589
+	* gcc.target/aarch64/vec-init-22-speed.c: Update scan for better code gen.
+
+2024-09-03  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/112402
+	* gcc.dg/tree-ssa/split-path-11.c: Update scan.
+	* gcc.dg/tree-ssa/split-path-2.c: Update scan.
+	* gcc.dg/tree-ssa/split-path-5.c: Update scan.
+	* gcc.dg/tree-ssa/split-path-6.c: Update scan.
+	* g++.dg/tree-ssa/pr88797.C: Update scan.
+	* gcc.dg/tree-ssa/split-path-13.c: New test.
+
+2024-09-03  Qing Zhao  <qing.zhao@oracle.com>
+
+	* g++.dg/ext/flex-array-counted-by.C: New test.
+	* g++.dg/ext/flex-array-counted-by-2.C: New test.
+
+2024-09-03  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/gen-attrs-1.C: Also run in C++98 mode.
+	* g++.dg/cpp0x/gen-attrs-11.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-13.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-15.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-75.C: Don't expect C++98 warning after
+	__extension__.
+
+2024-09-03  Andi Kleen  <ak@gcc.gnu.org>
+
+	PR testsuite/116080
+	* c-c++-common/musttail1.c: Use musttail target.
+	* c-c++-common/musttail12.c: Use struct_musttail target.
+	* c-c++-common/musttail2.c: Use musttail target.
+	* c-c++-common/musttail3.c: Likewise.
+	* c-c++-common/musttail4.c: Likewise.
+	* c-c++-common/musttail7.c: Likewise.
+	* c-c++-common/musttail8.c: Likewise.
+	* g++.dg/musttail10.C: Likewise. Replace powerpc checks with
+	external_musttail.
+	* g++.dg/musttail11.C: Use musttail target.
+	* g++.dg/musttail6.C: Use musttail target. Replace powerpc
+	checks with external_musttail.
+	* g++.dg/musttail9.C: Use musttail target.
+	* lib/target-supports.exp: Add musttail, struct_musttail,
+	external_musttail targets. Remove optimization for musttail.
+	Use unique file names for musttail.
+
+2024-09-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109095
+	* g++.dg/cpp2a/nontype-class66.C: New test.
+
+2024-09-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/115921
+	* gcc.target/riscv/pr115921.c: New test.
+
+2024-09-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116575
+	* gcc.dg/vect/pr116575.c: New testcase.
+
+2024-09-03  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx512fp16-vfpclassph-1c.c: New test.
+
+2024-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/116501
+	* gcc.dg/torture/bitint-73.c: New test.
+
+2024-09-03  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* gcc.target/aarch64/sve/const_fold_mul_1.c: New test.
+
+2024-09-03  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* gcc.target/aarch64/sve/const_fold_div_1.c: New test.
+
+2024-09-03  Levy Hsu  <admin@levyhsu.com>
+
+	* gcc.target/i386/avx10_2-partial-bf-vector-smaxmin-1.c: New test.
+
+2024-09-03  Levy Hsu  <admin@levyhsu.com>
+
+	* gcc.target/i386/avx10_2-partial-bf-vector-fast-math-1.c: New test.
+	* gcc.target/i386/avx10_2-partial-bf-vector-operations-1.c: New test.
+
+2024-09-03  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat_arith_data.h: Add test data.
+	* gcc.target/riscv/sat_s_add-1.c: New test.
+	* gcc.target/riscv/sat_s_add-2.c: New test.
+	* gcc.target/riscv/sat_s_add-3.c: New test.
+	* gcc.target/riscv/sat_s_add-4.c: New test.
+	* gcc.target/riscv/sat_s_add-run-1.c: New test.
+	* gcc.target/riscv/sat_s_add-run-2.c: New test.
+	* gcc.target/riscv/sat_s_add-run-3.c: New test.
+	* gcc.target/riscv/sat_s_add-run-4.c: New test.
+	* gcc.target/riscv/scalar_sat_binary_run_xxx.h: New test.
+
 2024-09-03  YunQiang Su  <syq@gcc.gnu.org>
 
 	* gcc.target/mips/msa-reduc.c: New tests.

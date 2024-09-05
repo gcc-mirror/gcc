@@ -1,3 +1,28 @@
+2024-09-04  Marek Polacek  <polacek@redhat.com>
+
+	* pt.cc (coerce_template_template_parm): Return bool instead of int.
+
+2024-09-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113108
+	* pt.cc (resolve_overloaded_unification): Call
+	maybe_instantiate_noexcept.
+
+2024-09-03  Jason Merrill  <jason@redhat.com>
+
+	* parser.cc (cp_nth_tokens_can_be_std_attribute_p): Don't check
+	cxx_dialect.
+	* error.cc (maybe_warn_cpp0x): Only complain about C++11 attributes
+	if pedantic.
+
+2024-09-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc (type_to_string): Prefix all output_buffer fields with
+	"m_".
+	(append_formatted_chunk): Likewise.  Rename "chunk_info" to
+	"pp_formatted_chunks" and field cur_chunk_array with
+	m_cur_formatted_chunks.
+
 2024-09-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* pt.cc (tsubst_stmt): Rename ASM_INPUT_P to ASM_BASIC_P.

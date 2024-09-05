@@ -1,3 +1,8 @@
+2024-09-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-objc-common.cc (print_type): Prefix all output_buffer fields
+	with "m_".
+
 2024-09-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-typeck.cc (build_asm_expr): Rename ASM_INPUT_P to ASM_BASIC_P.

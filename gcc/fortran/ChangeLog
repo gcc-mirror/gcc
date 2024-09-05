@@ -1,3 +1,9 @@
+2024-09-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc (gfc_move_error_buffer_from_to): Prefix all
+	output_buffer fields with "m_".
+	(gfc_diagnostics_init): Likewise.
+
 2024-08-31  Harald Anlauf  <anlauf@gmx.de>
 
 	* match.cc (gfc_match_namelist): Downgrade feature from GNU to

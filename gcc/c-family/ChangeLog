@@ -1,3 +1,17 @@
+2024-09-03  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-attribs.cc (handle_counted_by_attribute): Is ignored and issues
+	warning with -Wattributes in C++ for now.
+
+2024-09-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-ada-spec.cc (dump_ada_node): Prefix all output_buffer fields
+	with "m_".
+	* c-pretty-print.cc (pp_c_integer_constant): Likewise.
+	(pp_c_integer_constant): Likewise.
+	(pp_c_floating_constant): Likewise.
+	(pp_c_fixed_constant): Likewise.
+
 2024-08-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/116130
