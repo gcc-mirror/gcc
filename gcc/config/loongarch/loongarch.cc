@@ -6142,6 +6142,8 @@ loongarch_print_operand_reloc (FILE *file, rtx op, bool hi64_part,
    'i'	Print i if the operand is not a register.
    'L'  Print the low-part relocation associated with OP.
    'm'	Print one less than CONST_INT OP in decimal.
+   'M'	Print the indices of the lowest enabled bit and the highest
+	enabled bit in a mask (for bstr* instructions).
    'N'	Print the inverse of the integer branch condition for comparison OP.
    'Q'  Print R_LARCH_RELAX for TLS IE.
    'r'  Print address 12-31bit relocation associated with OP.
@@ -6264,6 +6266,16 @@ loongarch_print_operand (FILE *file, rtx op, int letter)
     case 'm':
       if (CONST_INT_P (op))
 	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (op) - 1);
+      else
+	output_operand_lossage ("invalid use of '%%%c'", letter);
+      break;
+
+    case 'M':
+      if (CONST_INT_P (op))
+	{
+	  HOST_WIDE_INT mask = INTVAL (op);
+	  fprintf (file, "%d,%d", floor_log2 (mask), ctz_hwi (mask));
+	}
       else
 	output_operand_lossage ("invalid use of '%%%c'", letter);
       break;

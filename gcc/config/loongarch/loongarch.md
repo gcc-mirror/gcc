@@ -485,7 +485,11 @@
 ;; This code iterator allows the three bitwise instructions to be generated
 ;; from the same template.
 (define_code_iterator any_bitwise [and ior xor])
+(define_code_iterator any_or [ior xor])
 (define_code_iterator neg_bitwise [and ior])
+(define_code_attr bitwise_operand [(and "and_operand")
+				   (ior "uns_arith_operand")
+				   (xor "uns_arith_operand")])
 
 ;; This code iterator allows unsigned and signed division to be generated
 ;; from the same template.
@@ -1537,23 +1541,37 @@
 ;;  ....................
 ;;
 
-(define_insn "<optab><mode>3"
-  [(set (match_operand:X 0 "register_operand" "=r,r")
-	(any_bitwise:X (match_operand:X 1 "register_operand" "%r,r")
-		       (match_operand:X 2 "uns_arith_operand" "r,K")))]
+(define_insn "*<optab><mode>3"
+  [(set (match_operand:GPR 0 "register_operand" "=r,r")
+	(any_or:GPR (match_operand:GPR 1 "register_operand" "%r,r")
+		    (match_operand:GPR 2 "uns_arith_operand" "r,K")))]
   ""
   "<insn>%i2\t%0,%1,%2"
   [(set_attr "type" "logical")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "*<optab>si3_internal"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(any_bitwise:SI (match_operand:SI 1 "register_operand" "%r,r")
-			(match_operand:SI 2 "uns_arith_operand"    " r,K")))]
-  "TARGET_64BIT"
-  "<insn>%i2\t%0,%1,%2"
-  [(set_attr "type" "logical")
-   (set_attr "mode" "SI")])
+(define_insn "*and<mode>3"
+  [(set (match_operand:GPR 0 "register_operand" "=r,r,r,r")
+	(and:GPR (match_operand:GPR 1 "register_operand" "%r,r,r,0")
+		 (match_operand:GPR 2 "and_operand" "r,K,Yx,Yy")))]
+  ""
+  "@
+   and\t%0,%1,%2
+   andi\t%0,%1,%2
+   * operands[2] = GEN_INT (INTVAL (operands[2]) \
+			    & GET_MODE_MASK (<MODE>mode)); \
+     return \"bstrpick.<d>\t%0,%1,%M2\";
+   * operands[2] = GEN_INT (~INTVAL (operands[2]) \
+			    & GET_MODE_MASK (<MODE>mode)); \
+     return \"bstrins.<d>\t%0,%.,%M2\";"
+  [(set_attr "move_type" "logical,logical,pick_ins,pick_ins")
+   (set_attr "mode" "<MODE>")])
+
+(define_expand "<optab><mode>3"
+  [(set (match_operand:X 0 "register_operand")
+	(any_bitwise:X (match_operand:X 1 "register_operand")
+		       (match_operand:X 2 "<bitwise_operand>")))]
+  "")
 
 (define_insn "one_cmpl<mode>2"
   [(set (match_operand:X 0 "register_operand" "=r")
@@ -1570,41 +1588,6 @@
   "nor\t%0,%.,%1"
   [(set_attr "type" "logical")
    (set_attr "mode" "SI")])
-
-(define_insn "and<mode>3_extended"
-  [(set (match_operand:GPR 0 "register_operand" "=r")
-	(and:GPR (match_operand:GPR 1 "nonimmediate_operand" "r")
-		 (match_operand:GPR 2 "low_bitmask_operand" "Yx")))]
-  ""
-{
-  int len;
-
-  len = low_bitmask_len (<MODE>mode, INTVAL (operands[2]));
-  operands[2] = GEN_INT (len-1);
-  return "bstrpick.<d>\t%0,%1,%2,0";
-}
-  [(set_attr "move_type" "pick_ins")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn_and_split "*bstrins_<mode>_for_mask"
-  [(set (match_operand:GPR 0 "register_operand" "=r")
-	(and:GPR (match_operand:GPR 1 "register_operand" "r")
-		 (match_operand:GPR 2 "ins_zero_bitmask_operand" "i")))]
-  ""
-  "#"
-  ""
-  [(set (match_dup 0) (match_dup 1))
-   (set (zero_extract:GPR (match_dup 0) (match_dup 2) (match_dup 3))
-	(const_int 0))]
-  {
-    unsigned HOST_WIDE_INT mask = ~UINTVAL (operands[2]);
-    int lo = ffs_hwi (mask) - 1;
-    int len = low_bitmask_len (<MODE>mode, mask >> lo);
-
-    len = MIN (len, GET_MODE_BITSIZE (<MODE>mode) - lo);
-    operands[2] = GEN_INT (len);
-    operands[3] = GEN_INT (lo);
-  })
 
 (define_insn_and_split "*bstrins_<mode>_for_ior_mask"
   [(set (match_operand:GPR 0 "register_operand" "=r")
