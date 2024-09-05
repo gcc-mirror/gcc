@@ -165,14 +165,6 @@ DefaultResolver::visit (AST::Enum &type)
 }
 
 void
-DefaultResolver::visit (AST::StructExprFieldIdentifierValue &)
-{}
-
-void
-DefaultResolver::visit (AST::StructExprFieldIndexValue &)
-{}
-
-void
 DefaultResolver::visit (AST::ClosureExprInner &expr)
 {
   if (expr.is_marked_for_strip ())
@@ -212,34 +204,6 @@ DefaultResolver::visit (AST::ClosureExprInnerTyped &expr)
 }
 
 void
-DefaultResolver::visit (AST::ContinueExpr &expr)
-{}
-
-void
-DefaultResolver::visit (AST::RangeFromToExpr &expr)
-{}
-
-void
-DefaultResolver::visit (AST::RangeFromExpr &expr)
-{}
-
-void
-DefaultResolver::visit (AST::RangeToExpr &expr)
-{}
-
-void
-DefaultResolver::visit (AST::RangeFromToInclExpr &expr)
-{}
-
-void
-DefaultResolver::visit (AST::RangeToInclExpr &expr)
-{}
-
-void
-DefaultResolver::visit (AST::ReturnExpr &expr)
-{}
-
-void
 DefaultResolver::visit (AST::CallExpr &expr)
 {
   expr.get_function_expr ().accept_vis (*this);
@@ -270,18 +234,6 @@ DefaultResolver::visit (AST::MethodCallExpr &expr)
 }
 
 void
-DefaultResolver::visit (AST::LoopExpr &expr)
-{}
-
-void
-DefaultResolver::visit (AST::WhileLoopExpr &expr)
-{}
-
-void
-DefaultResolver::visit (AST::WhileLetLoopExpr &expr)
-{}
-
-void
 DefaultResolver::visit (AST::IfExpr &expr)
 {
   expr.get_condition_expr ().accept_vis (*this);
@@ -295,14 +247,6 @@ DefaultResolver::visit (AST::IfExprConseqElse &expr)
   expr.get_if_block ().accept_vis (*this);
   expr.get_else_block ().accept_vis (*this);
 }
-
-void
-DefaultResolver::visit (AST::IfLetExpr &expr)
-{}
-
-void
-DefaultResolver::visit (AST::IfLetExprConseqElse &)
-{}
 
 void
 DefaultResolver::visit (AST::MatchExpr &expr)
@@ -322,34 +266,6 @@ DefaultResolver::visit (AST::MatchExpr &expr)
 }
 
 void
-DefaultResolver::visit (AST::AwaitExpr &expr)
-{}
-
-void
-DefaultResolver::visit (AST::AsyncBlockExpr &expr)
-{}
-
-void
-DefaultResolver::visit (AST::DelimTokenTree &)
-{}
-
-void
-DefaultResolver::visit (AST::AttrInputMetaItemContainer &)
-{}
-
-void
-DefaultResolver::visit (AST::IdentifierExpr &expr)
-{}
-
-void
-DefaultResolver::visit (AST::LifetimeParam &)
-{}
-
-void
-DefaultResolver::visit (AST::ConstGenericParam &)
-{}
-
-void
 DefaultResolver::visit (AST::PathInExpression &expr)
 {
   for (auto &seg : expr.get_segments ())
@@ -365,98 +281,6 @@ DefaultResolver::visit (AST::PathInExpression &expr)
 	  arg.accept_vis (*this);
       }
 }
-
-void
-DefaultResolver::visit (AST::TypePathSegmentGeneric &)
-{}
-
-void
-DefaultResolver::visit (AST::TypePathSegmentFunction &)
-{}
-
-void
-DefaultResolver::visit (AST::TypePath &)
-{}
-
-void
-DefaultResolver::visit (AST::QualifiedPathInExpression &)
-{}
-
-void
-DefaultResolver::visit (AST::QualifiedPathInType &)
-{}
-
-void
-DefaultResolver::visit (AST::LiteralExpr &expr)
-{}
-
-void
-DefaultResolver::visit (AST::AttrInputLiteral &)
-{}
-
-void
-DefaultResolver::visit (AST::AttrInputMacro &)
-{}
-
-void
-DefaultResolver::visit (AST::MetaItemLitExpr &expr)
-{}
-
-void
-DefaultResolver::visit (AST::MetaItemPathLit &)
-{}
-
-void
-DefaultResolver::visit (AST::StructExprStruct &)
-{}
-
-void
-DefaultResolver::visit (AST::StructExprStructFields &)
-{}
-
-void
-DefaultResolver::visit (AST::StructExprStructBase &)
-{}
-
-void
-DefaultResolver::visit (AST::TypeParam &)
-{}
-
-void
-DefaultResolver::visit (AST::LifetimeWhereClauseItem &)
-{}
-
-void
-DefaultResolver::visit (AST::TypeBoundWhereClauseItem &)
-{}
-
-void
-DefaultResolver::visit (AST::ExternCrate &)
-{}
-
-void
-DefaultResolver::visit (AST::UseTreeGlob &)
-{}
-
-void
-DefaultResolver::visit (AST::UseTreeList &)
-{}
-
-void
-DefaultResolver::visit (AST::UseTreeRebind &)
-{}
-
-void
-DefaultResolver::visit (AST::UseDeclaration &)
-{}
-
-void
-DefaultResolver::visit (AST::TypeAlias &)
-{}
-
-void
-DefaultResolver::visit (AST::EnumItem &)
-{}
 
 void
 DefaultResolver::visit (AST::EnumItemTuple &item)
@@ -502,98 +326,6 @@ DefaultResolver::visit (AST::StaticItem &item)
   // FIXME: Why do we need a Rib here?
   ctx.scoped (Rib::Kind::ConstantItem, item.get_node_id (), expr_vis);
 }
-
-void
-DefaultResolver::visit (AST::TraitItemConst &)
-{}
-
-void
-DefaultResolver::visit (AST::TraitItemType &)
-{}
-
-void
-DefaultResolver::visit (AST::ExternalTypeItem &)
-{}
-
-void
-DefaultResolver::visit (AST::ExternalStaticItem &)
-{}
-
-void
-DefaultResolver::visit (AST::MacroMatchRepetition &)
-{}
-
-void
-DefaultResolver::visit (AST::MacroMatcher &)
-{}
-
-void
-DefaultResolver::visit (AST::MacroRulesDefinition &)
-{}
-
-void
-DefaultResolver::visit (AST::MacroInvocation &)
-{}
-
-void
-DefaultResolver::visit (AST::MetaItemPath &)
-{}
-
-void
-DefaultResolver::visit (AST::MetaItemSeq &)
-{}
-
-void
-DefaultResolver::visit (AST::MetaListPaths &)
-{}
-
-void
-DefaultResolver::visit (AST::MetaListNameValueStr &)
-{}
-
-void
-DefaultResolver::visit (AST::AltPattern &)
-{}
-
-void
-DefaultResolver::visit (AST::EmptyStmt &)
-{}
-
-void
-DefaultResolver::visit (AST::TraitBound &)
-{}
-
-void
-DefaultResolver::visit (AST::ImplTraitType &)
-{}
-
-void
-DefaultResolver::visit (AST::TraitObjectType &)
-{}
-
-void
-DefaultResolver::visit (AST::ImplTraitTypeOneBound &)
-{}
-
-void
-DefaultResolver::visit (AST::TraitObjectTypeOneBound &)
-{}
-
-void
-DefaultResolver::visit (AST::BareFunctionType &)
-{}
-
-void
-DefaultResolver::visit (AST::SelfParam &)
-{}
-
-void
-DefaultResolver::visit (AST::FunctionParam &)
-{}
-
-void
-DefaultResolver::visit (AST::VariadicParam &)
-{}
 
 } // namespace Resolver2_0
 } // namespace Rust
