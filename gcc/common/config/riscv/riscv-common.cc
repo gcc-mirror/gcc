@@ -2079,7 +2079,7 @@ riscv_select_multilib_by_abi (
   const std::string &riscv_current_abi_str,
   const std::vector<riscv_multi_lib_info_t> &multilib_infos)
 {
-  for (size_t i = 0; i < multilib_infos.size (); ++i)
+  for (ssize_t i = multilib_infos.size (); i >= 0; --i)
     if (riscv_current_abi_str == multilib_infos[i].abi_str)
       return xstrdup (multilib_infos[i].path.c_str ());
 
