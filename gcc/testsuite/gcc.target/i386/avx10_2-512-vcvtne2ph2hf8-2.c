@@ -12,7 +12,8 @@
 #include "fp8-helper.h"
 
 #define SIZE_SRC (AVX512F_LEN / 16)
-#define SIZE_RES (AVX512F_LEN / 8)
+#define SIZE (AVX512F_LEN / 8)
+#include "avx512f-mask-type.h"
 
 void
 CALC (unsigned char *r, _Float16 *s1, _Float16 *s2)
@@ -24,7 +25,7 @@ CALC (unsigned char *r, _Float16 *s1, _Float16 *s2)
   hf8_bf8 = 0;
   saturate = 0;
   
-  for (i = 0; i < SIZE_RES; i++)
+  for (i = 0; i < SIZE; i++)
     {
       r[i] = 0;
       if (i < SIZE_SRC)
@@ -45,9 +46,10 @@ void
 TEST (void)
 {
   int i,sign;
-  UNION_TYPE (AVX512F_LEN, i_b) res; 
+  UNION_TYPE (AVX512F_LEN, i_b) res1, res2, res3; 
   UNION_TYPE (AVX512F_LEN, h) src1, src2;
-  unsigned char res_ref[SIZE_RES];
+  MASK_TYPE mask = MASK_VALUE;
+  unsigned char res_ref[SIZE];
 
   sign = 1;
   for (i = 0; i < SIZE_SRC; i++)
@@ -57,9 +59,22 @@ TEST (void)
       sign = -sign;
     }
 
-  res.x = INTRINSIC (_cvtne2ph_phf8) (src1.x, src2.x);
+  for (i = 0; i < SIZE; i++)
+    res2.a[i] = DEFAULT_VALUE;
+
   CALC(res_ref, src1.a, src2.a);
 
+  res1.x = INTRINSIC (_cvtne2ph_phf8) (src1.x, src2.x);
+  if (UNION_CHECK (AVX512F_LEN, i_b) (res, res_ref))
+    abort ();
+
+  res2.x = INTRINSIC (_mask_cvtne2ph_phf8) (res2.x, mask, src1.x, src2.x);
+  MASK_MERGE (h) (res_ref, mask, SIZE);
+  if (UNION_CHECK (AVX512F_LEN, i_b) (res, res_ref))
+    abort ();
+
+  res3.x = INTRINSIC (_maskz_cvtne2ph_phf8) (mask, src1.x, src2.x);
+  MASK_ZERO (h) (res_ref, mask, SIZE);
   if (UNION_CHECK (AVX512F_LEN, i_b) (res, res_ref))
     abort ();
 }
