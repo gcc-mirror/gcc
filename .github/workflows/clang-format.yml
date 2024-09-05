@@ -19,7 +19,7 @@ jobs:
     - name: Copy .clang-format file
       run: cp contrib/clang-format .clang-format
     - name: Check clang-format
-      uses: DoozyX/clang-format-lint-action@v0.11
+      uses: DoozyX/clang-format-lint-action@v0.18.2
       with:
         source: 'gcc/rust/ libgrust/'
         extensions: 'h,cc'
