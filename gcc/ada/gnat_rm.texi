@@ -912,8 +912,29 @@ Experimental Language Extensions
 * Case pattern matching:: 
 * Mutably Tagged Types with Size’Class Aspect:: 
 * Generalized Finalization:: 
+* No_Raise aspect:: 
 * Inference of Dependent Types in Generic Instantiations:: 
 * External_Initialization Aspect:: 
+
+Storage Model
+
+* Aspect Storage_Model_Type:: 
+* Aspect Designated_Storage_Model:: 
+* Legacy Storage Pools:: 
+
+Simpler accessibility model
+
+* Standalone objects:: 
+* Subprogram parameters:: 
+* Function results:: 
+* Discriminants and allocators:: 
+
+No_Raise aspect
+
+* New specification for Ada.Finalization.Controlled: New specification for Ada Finalization Controlled. 
+* Finalized tagged types:: 
+* Composite types:: 
+* Interoperability with controlled types:: 
 
 Security Hardening Features
 
@@ -28980,10 +29001,26 @@ if X > 5 then
 end if;
 @end example
 
+It is generally a good practice to declare local variables (or constants) with as
+short a lifetime as possible. However, introducing a declare block to accomplish
+this is a relatively heavy syntactic load along with a traditional extra level
+of indentation. The alternative syntax supported here allows declaring symbols
+in any statement sequence. Lifetime of such local declarations is until the end of
+the enclosing construct. The same enclosing construct cannot contain several
+declarations of the same symbol; however, overriding symbols from higher-level
+scopes works similarly to the explicit @code{declare} block.
+
+If the enclosing construct allows an exception handler (such as an accept
+statement, begin-except-end block or a subprogram body), declarations that
+appear at the place of a statement are `not' visible within the handler. Only
+declarations that precede the beginning of the construct with an exception
+handler would be visible in this handler.
+
 @cartouche
 @quotation Attention 
-Note that local declarations in statement lists have their own scope, which
-means that:
+Here are a couple of examples illustrating the scoping rules described above.
+
+@quotation
 
 
 @enumerate 
@@ -29029,10 +29066,8 @@ And as such the second `@w{`}A`@w{`} declaration is hiding the first one.
 @end example
 @end enumerate
 @end quotation
+@end quotation
 @end cartouche
-
-Link to the original RFC:
-@indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-local-vars-without-block.md}
 
 @node Fixed lower bounds for array types and subtypes,Prefixed-view notation for calls to primitive subprograms of untagged types,Local Declarations Without Block,Curated Extensions
 @anchor{gnat_rm/gnat_language_extensions fixed-lower-bounds-for-array-types-and-subtypes}@anchor{446}
@@ -29085,9 +29120,6 @@ the efficiency of indexing operations, since the compiler statically knows the
 lower bound of unconstrained array formals when the formal’s subtype has index
 ranges with static fixed lower bounds.
 
-Link to the original RFC:
-@indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-fixed-lower-bound.rst}
-
 @node Prefixed-view notation for calls to primitive subprograms of untagged types,Expression defaults for generic formal functions,Fixed lower bounds for array types and subtypes,Curated Extensions
 @anchor{gnat_rm/gnat_language_extensions prefixed-view-notation-for-calls-to-primitive-subprograms-of-untagged-types}@anchor{447}
 @subsection Prefixed-view notation for calls to primitive subprograms of untagged types
@@ -29104,7 +29136,7 @@ This same notation is already available for tagged types. This extension allows
 for untagged types. It is allowed for all primitive operations of the type
 independent of whether they were originally declared in a package spec or its
 private part, or were inherited and/or overridden as part of a derived type
-declaration occuring anywhere, so long as the first parameter is of the type,
+declaration occurring anywhere, so long as the first parameter is of the type,
 or an access parameter designating the type.
 
 For example:
@@ -29138,9 +29170,6 @@ pragma Assert (V.Length = 2);
 pragma Assert (V.Nth_Element(1) = 42);
 @end example
 
-Link to the original RFC:
-@indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-prefixed-untagged.rst}
-
 @node Expression defaults for generic formal functions,String interpolation,Prefixed-view notation for calls to primitive subprograms of untagged types,Curated Extensions
 @anchor{gnat_rm/gnat_language_extensions expression-defaults-for-generic-formal-functions}@anchor{448}
 @subsection Expression defaults for generic formal functions
@@ -29166,6 +29195,13 @@ private
    -- ...
 end Stacks;
 @end example
+
+@cartouche
+@quotation Todo 
+I do not understand this feature enough to decide if the description above
+is sufficient for documentation.
+@end quotation
+@end cartouche
 
 Link to the original RFC:
 @indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-expression-functions-as-default-for-generic-formal-function-parameters.rst}
@@ -29321,9 +29357,6 @@ Put_Line
    f" an open brace is \@{");
 @end example
 
-Link to the original RFC:
-@indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-string-interpolation.md}
-
 @node Constrained attribute for generic objects,Static aspect on intrinsic functions,String interpolation,Curated Extensions
 @anchor{gnat_rm/gnat_language_extensions constrained-attribute-for-generic-objects}@anchor{44a}
 @subsection Constrained attribute for generic objects
@@ -29422,11 +29455,27 @@ private
 end R;
 @end example
 
-Link to the original RFC:
-@indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/considered/rfc-oop-first-controlling.rst}
+Restricting the position of controlling parameter offers several advantages:
+
+
+@itemize *
+
+@item 
+Simplification of the dispatching rules improves readability of Ada programs.
+One doesn’t need to analyze all subprogram parameters to understand if the given
+subprogram is a primitive of a certain tagged type.
+
+@item 
+A programmer is free to use any type, including classwide types, on other
+parameters of a subprogram, without the need to consider possible effects of
+overriding a primitive or creating new one.
+
+@item 
+Return type of a function is never considered as a controlling parameter.
+@end itemize
 
 @node Experimental Language Extensions,,Curated Extensions,GNAT language extensions
-@anchor{gnat_rm/gnat_language_extensions experimental-language-extensions}@anchor{6a}@anchor{gnat_rm/gnat_language_extensions id2}@anchor{44d}
+@anchor{gnat_rm/gnat_language_extensions experimental-language-extensions}@anchor{6a}@anchor{gnat_rm/gnat_language_extensions id3}@anchor{44d}
 @section Experimental Language Extensions
 
 
@@ -29441,6 +29490,7 @@ Features activated via @code{-gnatX0} or
 * Case pattern matching:: 
 * Mutably Tagged Types with Size’Class Aspect:: 
 * Generalized Finalization:: 
+* No_Raise aspect:: 
 * Inference of Dependent Types in Generic Instantiations:: 
 * External_Initialization Aspect:: 
 
@@ -29515,26 +29565,288 @@ begin
 end;
 @end example
 
-Link to the original RFC:
-@indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-conditional-when-constructs.rst}
-
 @node Storage Model,Attribute Super,Conditional when constructs,Experimental Language Extensions
 @anchor{gnat_rm/gnat_language_extensions storage-model}@anchor{44f}
 @subsection Storage Model
 
 
-This feature proposes to redesign the concepts of Storage Pools into a more
-efficient model allowing higher performances and easier integration with low
-footprint embedded run-times.
+This extends Storage Pools into a more efficient model allowing higher performances,
+easier integration with low footprint embedded run-times and copying data between
+different pools of memory. The latter is especially useful when working with distributed
+memory models, in particular to support interactions with GPU.
 
-It also extends it to support distributed memory models, in particular to
-support interactions with GPU.
+@menu
+* Aspect Storage_Model_Type:: 
+* Aspect Designated_Storage_Model:: 
+* Legacy Storage Pools:: 
 
-Here is a link to the full RFC:
-@indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-storage-model.rst}
+@end menu
+
+@node Aspect Storage_Model_Type,Aspect Designated_Storage_Model,,Storage Model
+@anchor{gnat_rm/gnat_language_extensions aspect-storage-model-type}@anchor{450}
+@subsubsection Aspect Storage_Model_Type
+
+
+A Storage model is a type which is associated with an aspect
+“Storage_Model_Type”, e.g.:
+
+@example
+type A_Model is null record
+   with Storage_Model_Type;
+@end example
+
+Storage_Model_Type itself accepts six parameters:
+
+
+@itemize -
+
+@item 
+Address_Type, the type of the address managed by this model. This has to be
+a scalar type or derived from System.Address.
+
+@item 
+Allocate, a procedure used for allocating memory in this model
+
+@item 
+Deallocate, a procedure used for deallocating memory in this model
+
+@item 
+Copy_To, a procedure used to copy memory from native memory to this model
+
+@item 
+Copy_From, a procedure used to copy memory from this model to native memory
+
+@item 
+Storage_Size, a function returning the amount of memory left
+
+@item 
+Null_Address, a value for the null address value
+@end itemize
+
+By default, Address_Type is System.Address, and all other five subprograms are
+performing native operations (e.g. the allocator is the native new allocator).
+Users can decide to specify one or more of these. When an Address_Type is
+specified and different than System.Address, the all other five subprograms have
+to be specified.
+
+The prototypes of these procedures are as follows:
+
+@example
+procedure Allocate
+  (Model           : in out A_Model;
+   Storage_Address : out Address_Type;
+   Size            : Storage_Count;
+   Alignment       : Storage_Count);
+
+procedure Deallocate
+  (Model           : in out A_Model;
+   Storage_Address : out Address_Type;
+   Size            : Storage_Count;
+   Alignment       : Storage_Count);
+
+procedure Copy_To
+  (Model   : in out A_Model;
+   Target  : Address_Type;
+   Source  : System.Address;
+   Size    : Storage_Count);
+
+procedure Copy_From
+  (Model  : in out A_Model;
+   Target : System.Address;
+   Source : Address_Type;
+   Size   : Storage_Count);
+
+function Storage_Size
+  (Pool : A_Model)
+   return Storage_Count;
+@end example
+
+Here’s an example of how this could be instantiated in the context of CUDA:
+
+@example
+package CUDA_Memory is
+
+   type CUDA_Storage_Model is null record
+      with Storage_Model_Type => (
+         Address_Type => CUDA_Address,
+         Allocate     => CUDA_Allocate,
+         Deallocate   => CUDA_Deallocate,
+         Copy_To      => CUDA_Copy_To,
+         Copy_From    => CUDA_Copy_From,
+         Storage_Size => CUDA_Storage_Size,
+         Null_Address => CUDA_Null_Address
+      );
+
+   type CUDA_Address is new System.Address;
+   --  We're assuming for now same address size on host and device
+
+   procedure CUDA_Allocate
+     (Model           : in out CUDA_Storage_Model;
+      Storage_Address : out CUDA_Address;
+      Size            : Storage_Count;
+      Alignment       : Storage_Count);
+
+   procedure CUDA_Deallocate
+     (Model           : in out CUDA_Storage_Model;
+      Storage_Address : out CUDA_Address;
+      Size            : Storage_Count;
+      Alignment       : Storage_Count);
+
+   procedure CUDA_Copy_To
+     (Model  : in out CUDA_Storage_Model;
+      Target : CUDA_Address;
+      Source : System.Address;
+      Size   : Storage_Count);
+
+   procedure CUDA_Copy_From
+     (Model   : in out CUDA_Storage_Model;
+      Target  : System.Address;
+      Source  : CUDA_Address;
+      Size    : Storage_Count);
+
+   function CUDA_Storage_Size
+     (Pool : CUDA_Storage_Model)
+      return Storage_Count return Storage_Count'Last;
+
+   CUDA_Null_Address : constant CUDA_Address :=
+      CUDA_Address (System.Null_Address);
+
+   CUDA_Memory : CUDA_Storage_Model;
+
+end CUDA_Memory;
+@end example
+
+@node Aspect Designated_Storage_Model,Legacy Storage Pools,Aspect Storage_Model_Type,Storage Model
+@anchor{gnat_rm/gnat_language_extensions aspect-designated-storage-model}@anchor{451}
+@subsubsection Aspect Designated_Storage_Model
+
+
+A new aspect, Designated_Storage_Model, allows to specify the memory model
+for the objects pointed by an access type. Under this aspect, allocations
+and deallocations will come from the specified memory model instead
+of the standard ones. In addition, if write operations are needed for
+initialization, or if there is a copy of the target object from and to a
+standard memory area, the Copy_To and Copy_From functions will be called.
+It allows to encompass the capabilities of storage pools, e.g.:
+
+@example
+procedure Main is
+   type Integer_Array is array (Integer range <>) of Integer;
+
+   type Host_Array_Access is access all Integer_Array;
+   type Device_Array_Access is access Integer_Array
+      with Designated_Storage_Model => CUDA_Memory;
+
+   procedure Free is new Unchecked_Deallocation
+      (Host_Array_Type, Host_Array_Access);
+   procedure Free is new Unchecked_Deallocation
+      (Device_Array_Type, Device_Array_Access);
+
+   Host_Array : Host_Array_Access := new Integer_Array (1 .. 10);
+
+   Device_Array : Device_Array_Access := new Host_Array (1 .. 10);
+   --  Calls CUDA_Storage_Model.Allocate to allocate the fat pointers and
+   --  the bounds, then CUDA_Storage_Model.Copy_In to copy the values of the
+   --  boundaries.
+begin
+   Host_Array.all := (others => 0);
+
+   Device_Array.all := Host_Array.all;
+   --  Calls CUDA_Storage_Model.Copy_To to write to the device array from the
+   --  native memory.
+
+   Host_Array.all := Device_Array.all;
+   --  Calls CUDA_Storage_Model.Copy_From to read from the device array and
+   --  write to native memory.
+
+   Free (Host_Array);
+
+   Free (Device_Array);
+   --  Calls CUDA_Storage_Model.Deallocate;
+end;
+@end example
+
+Taking ‘Address of an object with a specific memory model returns an object of
+the type of the address for that memory category, which may be different from
+System.Address.
+
+When copying is performed between two specific memory models, the native memory
+is used as a temporary between the two. E.g.:
+
+@example
+type Foo_I is access Integer with Designated_Storage_Model => Foo;
+type Bar_I is access Integer with Designated_Storage_Model => Bar;
+
+  X : Foo_I := new Integer;
+  Y : Bar_I := new Integer;
+begin
+  X.all := Y.all;
+@end example
+
+conceptually becomes:
+
+@example
+  X : Foo_I := new Integer;
+  T : Integer;
+  Y : Bar_I := new Integer;
+begin
+  T := Y.all;
+  X.all := T;
+@end example
+
+@node Legacy Storage Pools,,Aspect Designated_Storage_Model,Storage Model
+@anchor{gnat_rm/gnat_language_extensions legacy-storage-pools}@anchor{452}
+@subsubsection Legacy Storage Pools
+
+
+Legacy Storage Pools are now replaced by a Storage_Model_Type.
+They are implemented as follows:
+
+@example
+type Root_Storage_Pool is abstract
+  new Ada.Finalization.Limited_Controlled with private
+with Storage_Model_Type => (
+   Allocate     => Allocate,
+   Deallocate   => Deallocate,
+   Storage_Size => Storage_Size
+);
+pragma Preelaborable_Initialization (Root_Storage_Pool);
+
+procedure Allocate
+  (Pool                     : in out Root_Storage_Pool;
+   Storage_Address          : out System.Address;
+   Size_In_Storage_Elements : System.Storage_Elements.Storage_Count;
+   Alignment                : System.Storage_Elements.Storage_Count)
+is abstract;
+
+procedure Deallocate
+  (Pool                     : in out Root_Storage_Pool;
+   Storage_Address          : System.Address;
+   Size_In_Storage_Elements : System.Storage_Elements.Storage_Count;
+   Alignment                : System.Storage_Elements.Storage_Count)
+is abstract;
+
+function Storage_Size
+  (Pool : Root_Storage_Pool)
+   return System.Storage_Elements.Storage_Count
+is abstract;
+@end example
+
+The legacy notation:
+
+@example
+type My_Pools is new Root_Storage_Pool with record [...]
+
+My_Pool_Instance : Storage_Model_Pool.Storage_Model :=
+   My_Pools'(others => <>);
+
+type Acc is access Integer_Array with Storage_Pool => My_Pool;
+@end example
+
+can still be accepted as a shortcut for the new syntax.
 
 @node Attribute Super,Simpler accessibility model,Storage Model,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions attribute-super}@anchor{450}
+@anchor{gnat_rm/gnat_language_extensions attribute-super}@anchor{453}
 @subsection Attribute Super
 
 
@@ -29543,49 +29855,376 @@ Here is a link to the full RFC:
 The @code{Super} attribute can be applied to objects of tagged types in order
 to obtain a view conversion to the most immediate specific parent type.
 
-It cannot be applied to objects of types without any ancestors, or types whose
-immediate parent is abstract.
+It cannot be applied to objects of types without any ancestors.
 
 @example
 type T1 is tagged null record;
 procedure P (V : T1);
 
 type T2 is new T1 with null record;
-procedure P (V : T2);
 
-procedure Call (V : T2'Class) is
+type T3 is new T2 with null record;
+procedure P (V : T3);
+
+procedure Call (
+  V1 : T1'Class;
+  V2 : T2'Class;
+  V3 : T3'Class) is
 begin
-  V'Super.P; --  Equivalent to "P (T1 (V));", a nondispatching call
-             --  to T1's primitive procedure P.
+  V1'Super.P; --  Illegal call as T1 doesn't have any ancestors
+  V2'Super.P; --  Equivalent to "T1 (V).P;", a non-dispatching call
+              --  to T1's primitive procedure P.
+  V3'Super.P; --  Equivalent to "T2 (V).P;"; Since T2 doesn't
+              --  override P, a non-dispatching call to T1.P is
+              --  executed.
 end;
 @end example
 
-Here is a link to the full RFC:
-@indicateurl{https://github.com/QuentinOchem/ada-spark-rfcs/blob/oop/considered/rfc-oop-super.rst}
-
 @node Simpler accessibility model,Case pattern matching,Attribute Super,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions simpler-accessibility-model}@anchor{451}
+@anchor{gnat_rm/gnat_language_extensions simpler-accessibility-model}@anchor{454}
 @subsection Simpler accessibility model
 
 
-The goal of this feature is to restore a common understanding of accessibility
-rules for implementers and users alike. The new rules should both be effective
-at preventing errors and feel natural and compatible in an Ada environment
-while removing dynamic accessibility checking.
+The goal of this feature is to simplify the accessibility rules by removing
+dynamic accessibility checks that are often difficult to understand and debug.
+The new rules are effective at preventing errors, at the expense of loosing
+some flexibility in the use of anonymous access types.
 
-Here is a link to the full RFC:
-@indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-simpler-accessibility.md}
+The feature can be activated with pragma “No_Dynamic_Accessibility_Checks”.
+As a result, a set of restrictions apply that can be categorized into three
+use-case of anonymous access types:
+
+
+@itemize *
+
+@item 
+standalone objects,
+
+@item 
+subprogam parameters and
+
+@item 
+function results.
+@end itemize
+
+Each of those use-cases is explained separately below. All of the refined rules are
+compatible with the [use of anonymous access types in SPARK]
+(@indicateurl{http://docs.adacore.com/spark2014-docs/html/lrm/declarations-and-types.html#access-types}).
+
+@menu
+* Standalone objects:: 
+* Subprogram parameters:: 
+* Function results:: 
+* Discriminants and allocators:: 
+
+@end menu
+
+@node Standalone objects,Subprogram parameters,,Simpler accessibility model
+@anchor{gnat_rm/gnat_language_extensions standalone-objects}@anchor{455}
+@subsubsection Standalone objects
+
+
+@example
+Var        : access T := ...
+Var_To_Cst : access constant T := ...
+Cst        : constant access T := ...
+Cst_To_Cst : constant access constant T := ...
+@end example
+
+The accessibility levels of standalone objects of anonymous access type (both
+constants or variables) is derived of the level of their object declaration.
+This supports many common use-cases without the employment of @code{Unchecked_Access}
+while still removing the need for dynamic checks.
+
+The most major benefit of this change is the compatibility with standard Ada rules.
+
+For example, the following assignment is legal without @code{Unchecked_Access} that
+would be required without using the No_Dynamic_Accessibility_Checks pragma:
+
+@example
+pragma Restrictions (No_Dynamic_Accessibility_Checks);
+
+procedure Accessibility is
+
+   type T is null record;
+   type T_Ptr is access all T;
+
+   T_Inst : aliased T;
+   Anon  : access T := T_Inst'Access;
+   Named : T_Ptr := Anon;
+
+begin
+   null;
+end;
+@end example
+
+@node Subprogram parameters,Function results,Standalone objects,Simpler accessibility model
+@anchor{gnat_rm/gnat_language_extensions subprogram-parameters}@anchor{456}
+@subsubsection Subprogram parameters
+
+
+@example
+procedure P (V : access T; X : access constant T);
+@end example
+
+When the type of a formal parameter is of anonymous access then, from the caller’s
+perspective, its level is seen to be at least as deep as that of the type of the
+corresponding actual parameter (whatever that actual parameter might be) -
+meaning any actual can be used for an anonymous access parameter without the use
+of ‘Unchecked_Access.
+
+@cartouche
+@quotation Todo 
+the example below doesn’t demonstrate the feature – X’Access is legal in plain Ada.
+@end quotation
+@end cartouche
+
+@example
+pragma Restrictions (No_Dynamic_Accessibility_Checks);
+
+procedure Accessibility is
+
+   procedure Foo (Param : access Integer) is null;
+   X : aliased Integer;
+begin
+   Foo (X'Access);
+end;
+@end example
+
+From the callee’s perspective, the level of anonymous access formal parameters would be
+between the level of the subprogram and the level of the subprogram’s locals. This has the effect
+of formal parameters being treated as local to the callee except in:
+
+
+@itemize *
+
+@item 
+Use as a function result
+
+@item 
+Use as a value for an access discriminant in result object
+
+@item 
+Use as an assignments between formal parameters
+@end itemize
+
+Note that with these more restricted rules we lose track of accessibility levels when assigned to
+local objects thus making (in the example below) the assignment to Node2.Link from Temp below
+compile-time illegal.
+
+@cartouche
+@quotation Todo 
+the code below gives the same error messages with and without the pragma
+@end quotation
+@end cartouche
+
+@example
+type Node is record
+   Data : Integer;
+   Link : access Node;
+end record;
+
+procedure Swap_Links (Node1, Node2 : in out Node) is
+   Temp : constant access Integer := Node1.Link; -- We lose the "association" to Node1
+begin
+   Node1.Link := Node2.Link; -- Allowed
+   Node2.Link := Temp; -- Not allowed
+end;
+
+function Identity (N : access Node) return access Node is
+   Local : constant access Node := N;
+begin
+   if True then
+      return N; -- Allowed
+   else
+      return Local; -- Not allowed
+   end if;
+end;
+@end example
+
+@node Function results,Discriminants and allocators,Subprogram parameters,Simpler accessibility model
+@anchor{gnat_rm/gnat_language_extensions function-results}@anchor{457}
+@subsubsection Function results
+
+
+@example
+function Get (X : Rec) return access T;
+@end example
+
+@cartouche
+@quotation Todo 
+clarify the list/reword
+@end quotation
+@end cartouche
+
+The accessibility level of the result of a call to a function that has an anonymous access result type defined to be as
+whatever is deepest out of the following:
+
+
+@itemize *
+
+@item 
+The level of the subprogram
+
+@item 
+The level of any actual parameter corresponding to a formal parameter of an anonymous access type
+
+@item 
+The level of each parameter that has a part with both one or more access discriminants and an unconstrained subtype
+
+@item 
+The level of any actual parameter corresponding to a formal parameter which is explicitly aliased
+@end itemize
+
+NOTE: We would need to include an additional item in the list if we were not to enforce the below restriction on tagged types:
+
+
+@itemize *
+
+@item 
+The level of any actual parameter corresponding to a formal parameter of a tagged type
+@end itemize
+
+Function result example:
+
+@cartouche
+@quotation Todo 
+verify the examples. Clarify, if they define expected behavior with the pragma or general restriction
+that is modified by the pragma
+@end quotation
+@end cartouche
+
+@example
+declare
+   type T is record
+      Comp : aliased Integer;
+   end record;
+
+   function Identity (Param : access Integer) return access Integer is
+   begin
+      return Param; -- Legal
+   end;
+
+   function Identity_2 (Param : aliased Integer) return access Integer is
+   begin
+      return Param'Access; -- Legal
+   end;
+
+   X : access Integer;
+begin
+   X := Identity (X); -- Legal
+   declare
+      Y : access Integer;
+      Z : aliased Integer;
+   begin
+      X := Identity (Y); -- Illegal since Y is too deep
+      X := Identity_2 (Z); -- Illegal since Z is too deep
+   end;
+end;
+@end example
+
+However, an additional restriction that falls out of the above logic is that tagged type extensions `cannot'
+allow additional anonymous access discriminants in order to prevent upward conversions potentially making
+such “hidden” anonymous access discriminants visible and prone to memory leaks.
+
+@cartouche
+@quotation Todo 
+verify the examples. Clarify, if they define expected behavior with the pragma or general restriction
+that is modified by the pragma
+@end quotation
+@end cartouche
+
+Here is an example of one such case of an upward conversion which would lead to a memory leak:
+
+@example
+declare
+   type T is tagged null record;
+   type T2 (Disc : access Integer) is new T with null record; -- Must be illegal
+
+   function Identity (Param : aliased T'Class) return access Integer is
+   begin
+      return T2 (T'Class (Param)).Disc; -- Here P gets effectively returned and set to X
+   end;
+
+   X : access Integer;
+begin
+   declare
+      P : aliased Integer;
+      Y : T2 (P'Access);
+   begin
+      X := Identity (T'Class (Y)); -- Pass local variable P (via Y's discriminant),
+                                 -- leading to a memory leak.
+   end;
+end;
+`@w{`}`
+
+Thus we need to make the following illegal to avoid such situations:
+
+`@w{`}`ada
+package Pkg1 is
+   type T1 is tagged null record;
+   function Func (X1 : T1) return access Integer is (null);
+end;
+
+package Pkg2 is
+   type T2 (Ptr1, Ptr2 : access Integer) is new Pkg1.T1 with null record; -- Illegal
+   ...
+end;
+@end example
+
+In order to prevent upward conversions of anonymous function results (like below), we
+also would need to assure that the level of such a result (from the callee’s perspective)
+is statically deeper:
+
+@cartouche
+@quotation Todo 
+verify the examples. Clarify, if they define expected behavior with the pragma or general restriction
+that is modified by the pragma
+@end quotation
+@end cartouche
+
+@example
+declare
+   type Ref is access all Integer;
+   Ptr : Ref;
+   function Foo (Param : access Integer) return access Integer is
+   begin
+      return Result : access Integer := Param; do
+         Ptr := Ref (Result); -- Not allowed
+      end return;
+   end;
+begin
+   declare
+      Local : aliased Integer;
+   begin
+      Foo (Local'Access).all := 123;
+   end;
+end;
+@end example
+
+@node Discriminants and allocators,,Function results,Simpler accessibility model
+@anchor{gnat_rm/gnat_language_extensions discriminants-and-allocators}@anchor{458}
+@subsubsection Discriminants and allocators
+
+
+@cartouche
+@quotation Todo 
+I have removed this section as it was referring to a feature which was never
+implemented by gnat. Double-check that this is correct.
+@end quotation
+@end cartouche
 
 @node Case pattern matching,Mutably Tagged Types with Size’Class Aspect,Simpler accessibility model,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions case-pattern-matching}@anchor{452}
+@anchor{gnat_rm/gnat_language_extensions case-pattern-matching}@anchor{459}
 @subsection Case pattern matching
 
 
-The selector for a case statement (but not yet for a case expression) may be of a composite type, subject to
-some restrictions (described below). Aggregate syntax is used for choices
-of such a case statement; however, in cases where a “normal” aggregate would
-require a discrete value, a discrete subtype may be used instead; box
-notation can also be used to match all values.
+The selector for a case statement (but not for a case expression) may
+be of a composite type, subject to some restrictions (described below).
+Aggregate syntax is used for choices of such a case statement; however,
+in cases where a “normal” aggregate would require a discrete value, a
+discrete subtype may be used instead; box notation can also be used to
+match all values.
 
 Consider this example:
 
@@ -29660,7 +30299,7 @@ matched (and the first one did not), then the actual parameters will be
 reversed.
 
 Within the choice list for single alternative, each choice must define the same
-set of bindings and the component subtypes for for a given identifer must all
+set of bindings and the component subtypes for for a given identifier must all
 statically match. Currently, the case of a binding for a nondiscrete component
 is not implemented.
 
@@ -29705,22 +30344,16 @@ compile-time capacity limits in some annoyingly common scenarios; the
 message generated in such cases is usually “Capacity exceeded in compiling
 case statement with composite selector type”.
 
-Link to the original RFC:
-@indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-pattern-matching.rst}
-
 @node Mutably Tagged Types with Size’Class Aspect,Generalized Finalization,Case pattern matching,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions mutably-tagged-types-with-size-class-aspect}@anchor{453}
+@anchor{gnat_rm/gnat_language_extensions mutably-tagged-types-with-size-class-aspect}@anchor{45a}
 @subsection Mutably Tagged Types with Size’Class Aspect
 
 
-The @cite{Size’Class} aspect can be applied to a tagged type to specify a size
+The @code{Size'Class} aspect can be applied to a tagged type to specify a size
 constraint for the type and its descendants. When this aspect is specified
 on a tagged type, the class-wide type of that type is considered to be a
 “mutably tagged” type - meaning that objects of the class-wide type can have
 their tag changed by assignment from objects with a different tag.
-
-When the aspect is applied to a type, the size of each of its descendant types
-must not exceed the size specified for the aspect.
 
 Example:
 
@@ -29733,7 +30366,7 @@ type Derived_Type is new Base with record
 end record;  -- ERROR if Derived_Type exceeds 16 bytes
 @end example
 
-Class-wide types with a specified @cite{Size’Class} can be used as the type of
+Class-wide types with a specified @code{Size'Class} can be used as the type of
 array components, record components, and stand-alone objects.
 
 @example
@@ -29741,25 +30374,120 @@ Inst : Base'Class;
 type Array_of_Base is array (Positive range <>) of Base'Class;
 @end example
 
-Note: Legality of the @cite{Size’Class} aspect is subject to certain restrictions on
-the tagged type, such as being undiscriminated, having no dynamic composite
-subcomponents, among others detailed in the RFC.
+If the @code{Size'Class} aspect is specified for a type @code{T}, then every
+specific descendant of @code{T} [redundant: (including @code{T})]
 
-Link to the original RFC:
-@indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/topic/rfc-finally/considered/rfc-class-size.md}
 
-@node Generalized Finalization,Inference of Dependent Types in Generic Instantiations,Mutably Tagged Types with Size’Class Aspect,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions generalized-finalization}@anchor{454}
+@itemize -
+
+@item 
+shall have a Size that does not exceed the specified value; and
+
+@item 
+shall be undiscriminated; and
+
+@item 
+shall have no composite subcomponent whose subtype is subject to a
+dynamic constraint; and
+
+@item 
+shall have no interface progenitors; and
+
+@item 
+shall not have a tagged partial view other than a private extension; and
+
+@item 
+shall not have a statically deeper accessibility level than that of @code{T}.
+@end itemize
+
+In addition to the places where Legality Rules normally apply (see 12.3),
+these legality rules apply also in the private part and in the body of an
+instance of a generic unit.
+
+For any subtype @code{S} that is a subtype of a descendant of @code{T}, @code{S'Class'Size} is
+defined to yield the specified value [redundant:,  although @code{S'Class'Size} is
+not a static expression].
+
+A class-wide descendant of a type with a specified @code{Size'Class} aspect is
+defined to be a “mutably tagged” type. Any subtype of a mutably tagged type is,
+by definition, a definite subtype (RM 3.3 notwithstanding). Default
+initialization of an object of such a definite subtype proceeds as for the
+corresponding specific type, except that @code{Program_Error} is raised if the
+specific type is abstract. [In particular, the initial tag of the object is
+that of the corresponding specific type.]
+
+An object of a tagged type is defined to be “tag-constrained” if it is
+
+
+@itemize -
+
+@item 
+an object whose type is not mutably tagged; or
+
+@item 
+a constant object; or
+
+@item 
+a view conversion of a tag-constrained object; or
+
+@item 
+a formal @code{in out} or @code{out} parameter whose corresponding
+actual parameter is tag-constrained.
+@end itemize
+
+In the case of an assignment to a tagged variable that
+is not tag-constrained, no check is performed that the tag of the value of
+the expression is the same as that of the target (RM 5.2 notwithstanding).
+Instead, the tag of the target object becomes that of the source object of
+the assignment.
+An assignment to a composite object similarly copies the tags of any
+sub-components of the source object that have a mutably-tagged type.
+
+The @code{Constrained} attribute is defined for any name denoting an object of a
+mutably tagged type (RM 3.7.2 notwithstanding). In this case, the Constrained
+attribute yields the value True if the object is tag-constrained and False
+otherwise.
+
+Renaming is not allowed (see 8.5.1) for a type conversion having an operand of
+a mutably tagged type @code{MT} and a target type @code{TT} such that @code{TT'Class}
+does not cover @code{MT}, nor for any part of such an object, nor for any slice
+of such an object. This rule also applies in any context where a name is
+required to be one for which “renaming is allowed” (for example, see RM 12.4).
+
+A name denoting a view of a variable of a mutably tagged type shall not
+occur as an operative constituent of the prefix of a name denoting a
+prefixed view of a callable entity, except as the callee name in a call to
+the callable entity.
+
+For a type conversion between two general access types, either both or neither
+of the designated types shall be mutably tagged. For an @code{Access} (or
+@code{Unchecked_Access}) attribute reference, the designated type of the type of the
+attribute reference and the type of the prefix of the attribute shall either
+both or neither be mutably tagged.
+
+The execution of a construct is erroneous if the construct has a constituent
+that is a name denoting a sub-component of a tagged object and the object’s
+tag is changed by this execution between evaluating the name and the last use
+(within this execution) of the subcomponent denoted by the name.
+
+If the type of a formal parameter is a specific tagged type then the execution
+of the call is erroneous if the tag of the actual is changed while the formal
+parameter exists (that is, before leaving the corresponding callable
+construct).
+
+@node Generalized Finalization,No_Raise aspect,Mutably Tagged Types with Size’Class Aspect,Experimental Language Extensions
+@anchor{gnat_rm/gnat_language_extensions generalized-finalization}@anchor{45b}
 @subsection Generalized Finalization
 
 
-The @cite{Finalizable} aspect can be applied to any record type, tagged or not,
-to specify that it provides the same level of control on the operations of initialization, finalization, and assignment of objects as the controlled
+The @code{Finalizable} aspect can be applied to any record type, tagged or not,
+to specify that it provides the same level of control on the operations of
+initialization, finalization, and assignment of objects as the controlled
 types (see RM 7.6(2) for a high-level overview). The only restriction is
 that the record type must be a root type, in other words not a derived type.
 
 The aspect additionally makes it possible to specify relaxed semantics for
-the finalization operations by means of the @cite{Relaxed_Finalization} setting.
+the finalization operations by means of the @code{Relaxed_Finalization} setting.
 
 Example:
 
@@ -29777,11 +30505,204 @@ procedure Finalize   (Obj : in out Ctrl);
 procedure Initialize (Obj : in out Ctrl);
 @end example
 
-Link to the original RFC:
-@indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/topic/finalization-rehaul/considered/rfc-generalized-finalization.md}
+The three procedures have the same profile, taking a single @code{in out T}
+parameter.
 
-@node Inference of Dependent Types in Generic Instantiations,External_Initialization Aspect,Generalized Finalization,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions inference-of-dependent-types-in-generic-instantiations}@anchor{455}
+We follow the same dynamic semantics as controlled objects:
+
+@quotation
+
+
+@itemize -
+
+@item 
+@code{Initialize} is called when an object of type @code{T} is declared without
+default expression.
+
+@item 
+@code{Adjust} is called after an object of type @code{T} is assigned a new value.
+
+@item 
+@code{Finalize} is called when an object of type @code{T} goes out of scope (for
+stack-allocated objects) or is explicitly deallocated (for heap-allocated
+objects). It is also called when on the value being replaced in an
+assignment.
+@end itemize
+@end quotation
+
+However the following differences are enforced by default when compared to the
+current Ada controlled-objects finalization model:
+
+
+@itemize *
+
+@item 
+No automatic finalization of heap allocated objects: @code{Finalize} is only
+called when an object is implicitly deallocated. As a consequence, no-runtime
+support is needed for the implicit case, and no header will be maintained for
+this in heap-allocated controlled objects.
+
+Heap-allocated objects allocated through a nested access type definition will
+hence `not' be deallocated either. The result is simply that memory will be
+leaked in those cases.
+
+@item 
+The @code{Finalize} procedure should have have the @ref{45c,,No_Raise aspect} specified.
+If that’s not the case, a compilation error will be raised.
+@end itemize
+
+Additionally, two other configuration aspects are added,
+@code{Legacy_Heap_Finalization} and @code{Exceptions_In_Finalize}:
+
+
+@itemize *
+
+@item 
+@code{Legacy_Heap_Finalization}: Uses the legacy automatic finalization of
+heap-allocated objects
+
+@item 
+@code{Exceptions_In_Finalize}: Allow users to have a finalizer that raises exceptions
+`NB!' note that using this aspect introduces execution time penalities.
+@end itemize
+
+@node No_Raise aspect,Inference of Dependent Types in Generic Instantiations,Generalized Finalization,Experimental Language Extensions
+@anchor{gnat_rm/gnat_language_extensions id11}@anchor{45d}@anchor{gnat_rm/gnat_language_extensions no-raise-aspect}@anchor{45c}
+@subsection No_Raise aspect
+
+
+The @code{No_Raise} aspect can be applied to a subprogram to declare that this subprogram is not
+expected to raise any exceptions. Should an exception still occur during the execution of
+this subpropgram, @code{Program_Error} is raised.
+
+@menu
+* New specification for Ada.Finalization.Controlled: New specification for Ada Finalization Controlled. 
+* Finalized tagged types:: 
+* Composite types:: 
+* Interoperability with controlled types:: 
+
+@end menu
+
+@node New specification for Ada Finalization Controlled,Finalized tagged types,,No_Raise aspect
+@anchor{gnat_rm/gnat_language_extensions new-specification-for-ada-finalization-controlled}@anchor{45e}
+@subsubsection New specification for @code{Ada.Finalization.Controlled}
+
+
+@code{Ada.Finalization.Controlled} is now specified as:
+
+@example
+type Controlled is abstract tagged null record
+   with Initialize => Initialize,
+      Adjust => Adjust,
+      Finalize => Finalize,
+      Legacy_Heap_Finalization, Exceptions_In_Finalize;
+
+      procedure Initialize (Self : in out Controlled) is abstract;
+      procedure Adjust (Self : in out Controlled) is abstract;
+      procedure Finalize (Self : in out Controlled) is abstract;
+@end example
+
+### Examples
+
+A simple example of a ref-counted type:
+
+@example
+type T is record
+   Value : Integer;
+   Ref_Count : Natural := 0;
+end record;
+
+procedure Inc_Ref (X : in out T);
+procedure Dec_Ref (X : in out T);
+
+type T_Access is access all T;
+
+type T_Ref is record
+   Value : T_Access;
+end record
+   with Adjust   => Adjust,
+      Finalize => Finalize;
+
+procedure Adjust (Ref : in out T_Ref) is
+begin
+   Inc_Ref (Ref.Value);
+end Adjust;
+
+procedure Finalize (Ref : in out T_Ref) is
+begin
+   Def_Ref (Ref.Value);
+end Finalize;
+@end example
+
+A simple file handle that ensures resources are properly released:
+
+@example
+package P is
+   type File (<>) is limited private;
+
+   function Open (Path : String) return File;
+
+   procedure Close (F : in out File);
+private
+   type File is limited record
+      Handle : ...;
+   end record
+      with Finalize => Close;
+@end example
+
+@node Finalized tagged types,Composite types,New specification for Ada Finalization Controlled,No_Raise aspect
+@anchor{gnat_rm/gnat_language_extensions finalized-tagged-types}@anchor{45f}
+@subsubsection Finalized tagged types
+
+
+Aspects are inherited by derived types and optionally overriden by those. The
+compiler-generated calls to the user-defined operations are then
+dispatching whenever it makes sense, i.e. the object in question is of
+classwide type and the class includes at least one finalized-type.
+
+However note that for simplicity, it is forbidden to change the value of any of
+those new aspects in derived types.
+
+@node Composite types,Interoperability with controlled types,Finalized tagged types,No_Raise aspect
+@anchor{gnat_rm/gnat_language_extensions composite-types}@anchor{460}
+@subsubsection Composite types
+
+
+When a finalized type is used as a component of a composite type, the latter
+becomes finalized as well. The three primitives are derived automatically
+in order to call the primitives of their components.
+
+If that composite type was already user-finalized, then the compiler
+calls the primitives of the components so as to stay consistent with today’s
+controlled types’s behavior.
+
+So, @code{Initialize} and @code{Adjust} are called on components before they
+are called on the composite object, but @code{Finalize} is  called on the composite
+object first.
+
+@node Interoperability with controlled types,,Composite types,No_Raise aspect
+@anchor{gnat_rm/gnat_language_extensions interoperability-with-controlled-types}@anchor{461}
+@subsubsection Interoperability with controlled types
+
+
+As a consequence of the redefinition of the @code{Controlled} type as a base type
+with the new aspects defined, interoperability with controlled type naturally
+follows the definition of the above rules. In particular:
+
+
+@itemize *
+
+@item 
+It is possible to have a new finalized type have a controlled type
+component
+
+@item 
+It is possible to have a controlled type have a finalized type
+component
+@end itemize
+
+@node Inference of Dependent Types in Generic Instantiations,External_Initialization Aspect,No_Raise aspect,Experimental Language Extensions
+@anchor{gnat_rm/gnat_language_extensions inference-of-dependent-types-in-generic-instantiations}@anchor{462}
 @subsection Inference of Dependent Types in Generic Instantiations
 
 
@@ -29824,7 +30745,7 @@ For a formal array type, the index type(s) and the component
 type can be inferred.
 
 @item 
-For a formal type with discriminats, the type(s) of the discriminants
+For a formal type with discriminants, the type(s) of the discriminants
 can be inferred.
 @end itemize
 
@@ -29832,11 +30753,11 @@ Example for arrays:
 
 @example
 generic
-    type Element_Type is private;
-    type Index_Type is (<>);
-    type Array_Type is array (Index_Type range <>) of Element_Type;
+   type Element_Type is private;
+   type Index_Type is (<>);
+   type Array_Type is array (Index_Type range <>) of Element_Type;
 package Array_Operations is
-    ...
+   ...
 end Array_Operations;
 
 ...
@@ -29852,16 +30773,13 @@ the following standard-Ada instantiation:
 
 @example
 package Int_Array_Operations is new Array_Operations
-  (Element_Type => Integer,
-   Index_Type   => Positive,
-   Array_Type   => Int_Array);
+   (Element_Type => Integer,
+      Index_Type   => Positive,
+      Array_Type   => Int_Array);
 @end example
 
-Link to the original RFC:
-@indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/topic/generic_instantiations/considered/rfc-inference-of-dependent-types.md}
-
 @node External_Initialization Aspect,,Inference of Dependent Types in Generic Instantiations,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions external-initialization-aspect}@anchor{456}
+@anchor{gnat_rm/gnat_language_extensions external-initialization-aspect}@anchor{463}
 @subsection External_Initialization Aspect
 
 
@@ -29884,11 +30802,33 @@ package P is
 end P;
 @end example
 
-Link to the original RFC:
-@indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/considered/rfc-embed-binary-resources.rst}
+@code{External_Initialization} aspect accepts the following parameters:
+
+
+@itemize -
+
+@item 
+mandatory @code{Path}: the path the compiler uses to access the binary resource;
+
+@item 
+optional @code{Maximum_Size}: the maximum number of bytes the compiler reads from
+the resource;
+
+@item 
+optional @code{If_Empty}: an expression used in place of read data in case
+the resource is empty;
+@end itemize
+
+@code{Path} is resolved according to the same rules the compiler uses for loading the source files.
+
+@cartouche
+@quotation Attention 
+The maximum size of loaded files is limited to 2@w{^31} bytes.
+@end quotation
+@end cartouche
 
 @node Security Hardening Features,Obsolescent Features,GNAT language extensions,Top
-@anchor{gnat_rm/security_hardening_features doc}@anchor{457}@anchor{gnat_rm/security_hardening_features id1}@anchor{458}@anchor{gnat_rm/security_hardening_features security-hardening-features}@anchor{15}
+@anchor{gnat_rm/security_hardening_features doc}@anchor{464}@anchor{gnat_rm/security_hardening_features id1}@anchor{465}@anchor{gnat_rm/security_hardening_features security-hardening-features}@anchor{15}
 @chapter Security Hardening Features
 
 
@@ -29910,7 +30850,7 @@ change.
 @end menu
 
 @node Register Scrubbing,Stack Scrubbing,,Security Hardening Features
-@anchor{gnat_rm/security_hardening_features register-scrubbing}@anchor{459}
+@anchor{gnat_rm/security_hardening_features register-scrubbing}@anchor{466}
 @section Register Scrubbing
 
 
@@ -29946,7 +30886,7 @@ programming languages, see @cite{Using the GNU Compiler Collection (GCC)}.
 @c Stack Scrubbing:
 
 @node Stack Scrubbing,Hardened Conditionals,Register Scrubbing,Security Hardening Features
-@anchor{gnat_rm/security_hardening_features stack-scrubbing}@anchor{45a}
+@anchor{gnat_rm/security_hardening_features stack-scrubbing}@anchor{467}
 @section Stack Scrubbing
 
 
@@ -30090,7 +31030,7 @@ Bar_Callable_Ptr.
 @c Hardened Conditionals:
 
 @node Hardened Conditionals,Hardened Booleans,Stack Scrubbing,Security Hardening Features
-@anchor{gnat_rm/security_hardening_features hardened-conditionals}@anchor{45b}
+@anchor{gnat_rm/security_hardening_features hardened-conditionals}@anchor{468}
 @section Hardened Conditionals
 
 
@@ -30180,7 +31120,7 @@ be used with other programming languages supported by GCC.
 @c Hardened Booleans:
 
 @node Hardened Booleans,Control Flow Redundancy,Hardened Conditionals,Security Hardening Features
-@anchor{gnat_rm/security_hardening_features hardened-booleans}@anchor{45c}
+@anchor{gnat_rm/security_hardening_features hardened-booleans}@anchor{469}
 @section Hardened Booleans
 
 
@@ -30241,7 +31181,7 @@ and more details on that attribute, see @cite{Using the GNU Compiler Collection 
 @c Control Flow Redundancy:
 
 @node Control Flow Redundancy,,Hardened Booleans,Security Hardening Features
-@anchor{gnat_rm/security_hardening_features control-flow-redundancy}@anchor{45d}
+@anchor{gnat_rm/security_hardening_features control-flow-redundancy}@anchor{46a}
 @section Control Flow Redundancy
 
 
@@ -30409,7 +31349,7 @@ see @cite{Using the GNU Compiler Collection (GCC)}.  These options
 can be used with other programming languages supported by GCC.
 
 @node Obsolescent Features,Compatibility and Porting Guide,Security Hardening Features,Top
-@anchor{gnat_rm/obsolescent_features doc}@anchor{45e}@anchor{gnat_rm/obsolescent_features id1}@anchor{45f}@anchor{gnat_rm/obsolescent_features obsolescent-features}@anchor{16}
+@anchor{gnat_rm/obsolescent_features doc}@anchor{46b}@anchor{gnat_rm/obsolescent_features id1}@anchor{46c}@anchor{gnat_rm/obsolescent_features obsolescent-features}@anchor{16}
 @chapter Obsolescent Features
 
 
@@ -30428,7 +31368,7 @@ compatibility purposes.
 @end menu
 
 @node pragma No_Run_Time,pragma Ravenscar,,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features id2}@anchor{460}@anchor{gnat_rm/obsolescent_features pragma-no-run-time}@anchor{461}
+@anchor{gnat_rm/obsolescent_features id2}@anchor{46d}@anchor{gnat_rm/obsolescent_features pragma-no-run-time}@anchor{46e}
 @section pragma No_Run_Time
 
 
@@ -30441,7 +31381,7 @@ preferred usage is to use an appropriately configured run-time that
 includes just those features that are to be made accessible.
 
 @node pragma Ravenscar,pragma Restricted_Run_Time,pragma No_Run_Time,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features id3}@anchor{462}@anchor{gnat_rm/obsolescent_features pragma-ravenscar}@anchor{463}
+@anchor{gnat_rm/obsolescent_features id3}@anchor{46f}@anchor{gnat_rm/obsolescent_features pragma-ravenscar}@anchor{470}
 @section pragma Ravenscar
 
 
@@ -30450,7 +31390,7 @@ The pragma @code{Ravenscar} has exactly the same effect as pragma
 is part of the new Ada 2005 standard.
 
 @node pragma Restricted_Run_Time,pragma Task_Info,pragma Ravenscar,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features id4}@anchor{464}@anchor{gnat_rm/obsolescent_features pragma-restricted-run-time}@anchor{465}
+@anchor{gnat_rm/obsolescent_features id4}@anchor{471}@anchor{gnat_rm/obsolescent_features pragma-restricted-run-time}@anchor{472}
 @section pragma Restricted_Run_Time
 
 
@@ -30460,7 +31400,7 @@ preferred since the Ada 2005 pragma @code{Profile} is intended for
 this kind of implementation dependent addition.
 
 @node pragma Task_Info,package System Task_Info s-tasinf ads,pragma Restricted_Run_Time,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features id5}@anchor{466}@anchor{gnat_rm/obsolescent_features pragma-task-info}@anchor{467}
+@anchor{gnat_rm/obsolescent_features id5}@anchor{473}@anchor{gnat_rm/obsolescent_features pragma-task-info}@anchor{474}
 @section pragma Task_Info
 
 
@@ -30486,7 +31426,7 @@ in the spec of package System.Task_Info in the runtime
 library.
 
 @node package System Task_Info s-tasinf ads,,pragma Task_Info,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features package-system-task-info}@anchor{468}@anchor{gnat_rm/obsolescent_features package-system-task-info-s-tasinf-ads}@anchor{469}
+@anchor{gnat_rm/obsolescent_features package-system-task-info}@anchor{475}@anchor{gnat_rm/obsolescent_features package-system-task-info-s-tasinf-ads}@anchor{476}
 @section package System.Task_Info (@code{s-tasinf.ads})
 
 
@@ -30496,7 +31436,7 @@ to support the @code{Task_Info} pragma. The predefined Ada package
 standard replacement for GNAT’s @code{Task_Info} functionality.
 
 @node Compatibility and Porting Guide,GNU Free Documentation License,Obsolescent Features,Top
-@anchor{gnat_rm/compatibility_and_porting_guide doc}@anchor{46a}@anchor{gnat_rm/compatibility_and_porting_guide compatibility-and-porting-guide}@anchor{17}@anchor{gnat_rm/compatibility_and_porting_guide id1}@anchor{46b}
+@anchor{gnat_rm/compatibility_and_porting_guide doc}@anchor{477}@anchor{gnat_rm/compatibility_and_porting_guide compatibility-and-porting-guide}@anchor{17}@anchor{gnat_rm/compatibility_and_porting_guide id1}@anchor{478}
 @chapter Compatibility and Porting Guide
 
 
@@ -30518,7 +31458,7 @@ applications developed in other Ada environments.
 @end menu
 
 @node Writing Portable Fixed-Point Declarations,Compatibility with Ada 83,,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide id2}@anchor{46c}@anchor{gnat_rm/compatibility_and_porting_guide writing-portable-fixed-point-declarations}@anchor{46d}
+@anchor{gnat_rm/compatibility_and_porting_guide id2}@anchor{479}@anchor{gnat_rm/compatibility_and_porting_guide writing-portable-fixed-point-declarations}@anchor{47a}
 @section Writing Portable Fixed-Point Declarations
 
 
@@ -30640,7 +31580,7 @@ If you follow this scheme you will be guaranteed that your fixed-point
 types will be portable.
 
 @node Compatibility with Ada 83,Compatibility between Ada 95 and Ada 2005,Writing Portable Fixed-Point Declarations,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-ada-83}@anchor{46e}@anchor{gnat_rm/compatibility_and_porting_guide id3}@anchor{46f}
+@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-ada-83}@anchor{47b}@anchor{gnat_rm/compatibility_and_porting_guide id3}@anchor{47c}
 @section Compatibility with Ada 83
 
 
@@ -30668,7 +31608,7 @@ following subsections treat the most likely issues to be encountered.
 @end menu
 
 @node Legal Ada 83 programs that are illegal in Ada 95,More deterministic semantics,,Compatibility with Ada 83
-@anchor{gnat_rm/compatibility_and_porting_guide id4}@anchor{470}@anchor{gnat_rm/compatibility_and_porting_guide legal-ada-83-programs-that-are-illegal-in-ada-95}@anchor{471}
+@anchor{gnat_rm/compatibility_and_porting_guide id4}@anchor{47d}@anchor{gnat_rm/compatibility_and_porting_guide legal-ada-83-programs-that-are-illegal-in-ada-95}@anchor{47e}
 @subsection Legal Ada 83 programs that are illegal in Ada 95
 
 
@@ -30768,7 +31708,7 @@ the fix is usually simply to add the @code{(<>)} to the generic declaration.
 @end itemize
 
 @node More deterministic semantics,Changed semantics,Legal Ada 83 programs that are illegal in Ada 95,Compatibility with Ada 83
-@anchor{gnat_rm/compatibility_and_porting_guide id5}@anchor{472}@anchor{gnat_rm/compatibility_and_porting_guide more-deterministic-semantics}@anchor{473}
+@anchor{gnat_rm/compatibility_and_porting_guide id5}@anchor{47f}@anchor{gnat_rm/compatibility_and_porting_guide more-deterministic-semantics}@anchor{480}
 @subsection More deterministic semantics
 
 
@@ -30796,7 +31736,7 @@ which open select branches are executed.
 @end itemize
 
 @node Changed semantics,Other language compatibility issues,More deterministic semantics,Compatibility with Ada 83
-@anchor{gnat_rm/compatibility_and_porting_guide changed-semantics}@anchor{474}@anchor{gnat_rm/compatibility_and_porting_guide id6}@anchor{475}
+@anchor{gnat_rm/compatibility_and_porting_guide changed-semantics}@anchor{481}@anchor{gnat_rm/compatibility_and_porting_guide id6}@anchor{482}
 @subsection Changed semantics
 
 
@@ -30838,7 +31778,7 @@ covers only the restricted range.
 @end itemize
 
 @node Other language compatibility issues,,Changed semantics,Compatibility with Ada 83
-@anchor{gnat_rm/compatibility_and_porting_guide id7}@anchor{476}@anchor{gnat_rm/compatibility_and_porting_guide other-language-compatibility-issues}@anchor{477}
+@anchor{gnat_rm/compatibility_and_porting_guide id7}@anchor{483}@anchor{gnat_rm/compatibility_and_porting_guide other-language-compatibility-issues}@anchor{484}
 @subsection Other language compatibility issues
 
 
@@ -30871,7 +31811,7 @@ include @code{pragma Interface} and the floating point type attributes
 @end itemize
 
 @node Compatibility between Ada 95 and Ada 2005,Implementation-dependent characteristics,Compatibility with Ada 83,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide compatibility-between-ada-95-and-ada-2005}@anchor{478}@anchor{gnat_rm/compatibility_and_porting_guide id8}@anchor{479}
+@anchor{gnat_rm/compatibility_and_porting_guide compatibility-between-ada-95-and-ada-2005}@anchor{485}@anchor{gnat_rm/compatibility_and_porting_guide id8}@anchor{486}
 @section Compatibility between Ada 95 and Ada 2005
 
 
@@ -30943,7 +31883,7 @@ can declare a function returning a value from an anonymous access type.
 @end itemize
 
 @node Implementation-dependent characteristics,Compatibility with Other Ada Systems,Compatibility between Ada 95 and Ada 2005,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide id9}@anchor{47a}@anchor{gnat_rm/compatibility_and_porting_guide implementation-dependent-characteristics}@anchor{47b}
+@anchor{gnat_rm/compatibility_and_porting_guide id9}@anchor{487}@anchor{gnat_rm/compatibility_and_porting_guide implementation-dependent-characteristics}@anchor{488}
 @section Implementation-dependent characteristics
 
 
@@ -30966,7 +31906,7 @@ transition from certain Ada 83 compilers.
 @end menu
 
 @node Implementation-defined pragmas,Implementation-defined attributes,,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide id10}@anchor{47c}@anchor{gnat_rm/compatibility_and_porting_guide implementation-defined-pragmas}@anchor{47d}
+@anchor{gnat_rm/compatibility_and_porting_guide id10}@anchor{489}@anchor{gnat_rm/compatibility_and_porting_guide implementation-defined-pragmas}@anchor{48a}
 @subsection Implementation-defined pragmas
 
 
@@ -30988,7 +31928,7 @@ avoiding compiler rejection of units that contain such pragmas; they are not
 relevant in a GNAT context and hence are not otherwise implemented.
 
 @node Implementation-defined attributes,Libraries,Implementation-defined pragmas,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide id11}@anchor{47e}@anchor{gnat_rm/compatibility_and_porting_guide implementation-defined-attributes}@anchor{47f}
+@anchor{gnat_rm/compatibility_and_porting_guide id11}@anchor{48b}@anchor{gnat_rm/compatibility_and_porting_guide implementation-defined-attributes}@anchor{48c}
 @subsection Implementation-defined attributes
 
 
@@ -31002,7 +31942,7 @@ Ada 83, GNAT supplies the attributes @code{Bit}, @code{Machine_Size} and
 @code{Type_Class}.
 
 @node Libraries,Elaboration order,Implementation-defined attributes,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide id12}@anchor{480}@anchor{gnat_rm/compatibility_and_porting_guide libraries}@anchor{481}
+@anchor{gnat_rm/compatibility_and_porting_guide id12}@anchor{48d}@anchor{gnat_rm/compatibility_and_porting_guide libraries}@anchor{48e}
 @subsection Libraries
 
 
@@ -31031,7 +31971,7 @@ be preferable to retrofit the application using modular types.
 @end itemize
 
 @node Elaboration order,Target-specific aspects,Libraries,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide elaboration-order}@anchor{482}@anchor{gnat_rm/compatibility_and_porting_guide id13}@anchor{483}
+@anchor{gnat_rm/compatibility_and_porting_guide elaboration-order}@anchor{48f}@anchor{gnat_rm/compatibility_and_porting_guide id13}@anchor{490}
 @subsection Elaboration order
 
 
@@ -31067,7 +32007,7 @@ pragmas either globally (as an effect of the `-gnatE' switch) or locally
 @end itemize
 
 @node Target-specific aspects,,Elaboration order,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide id14}@anchor{484}@anchor{gnat_rm/compatibility_and_porting_guide target-specific-aspects}@anchor{485}
+@anchor{gnat_rm/compatibility_and_porting_guide id14}@anchor{491}@anchor{gnat_rm/compatibility_and_porting_guide target-specific-aspects}@anchor{492}
 @subsection Target-specific aspects
 
 
@@ -31080,10 +32020,10 @@ on the robustness of the original design.  Moreover, Ada 95 (and thus
 Ada 2005 and Ada 2012) are sometimes
 incompatible with typical Ada 83 compiler practices regarding implicit
 packing, the meaning of the Size attribute, and the size of access values.
-GNAT’s approach to these issues is described in @ref{486,,Representation Clauses}.
+GNAT’s approach to these issues is described in @ref{493,,Representation Clauses}.
 
 @node Compatibility with Other Ada Systems,Representation Clauses,Implementation-dependent characteristics,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-other-ada-systems}@anchor{487}@anchor{gnat_rm/compatibility_and_porting_guide id15}@anchor{488}
+@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-other-ada-systems}@anchor{494}@anchor{gnat_rm/compatibility_and_porting_guide id15}@anchor{495}
 @section Compatibility with Other Ada Systems
 
 
@@ -31126,7 +32066,7 @@ far beyond this minimal set, as described in the next section.
 @end itemize
 
 @node Representation Clauses,Compatibility with HP Ada 83,Compatibility with Other Ada Systems,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide id16}@anchor{489}@anchor{gnat_rm/compatibility_and_porting_guide representation-clauses}@anchor{486}
+@anchor{gnat_rm/compatibility_and_porting_guide id16}@anchor{496}@anchor{gnat_rm/compatibility_and_porting_guide representation-clauses}@anchor{493}
 @section Representation Clauses
 
 
@@ -31219,7 +32159,7 @@ with thin pointers.
 @end itemize
 
 @node Compatibility with HP Ada 83,,Representation Clauses,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-hp-ada-83}@anchor{48a}@anchor{gnat_rm/compatibility_and_porting_guide id17}@anchor{48b}
+@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-hp-ada-83}@anchor{497}@anchor{gnat_rm/compatibility_and_porting_guide id17}@anchor{498}
 @section Compatibility with HP Ada 83
 
 
@@ -31249,7 +32189,7 @@ extension of package System.
 @end itemize
 
 @node GNU Free Documentation License,Index,Compatibility and Porting Guide,Top
-@anchor{share/gnu_free_documentation_license doc}@anchor{48c}@anchor{share/gnu_free_documentation_license gnu-fdl}@anchor{1}@anchor{share/gnu_free_documentation_license gnu-free-documentation-license}@anchor{48d}
+@anchor{share/gnu_free_documentation_license doc}@anchor{499}@anchor{share/gnu_free_documentation_license gnu-fdl}@anchor{1}@anchor{share/gnu_free_documentation_license gnu-free-documentation-license}@anchor{49a}
 @chapter GNU Free Documentation License
 
 
