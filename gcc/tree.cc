@@ -2084,12 +2084,18 @@ build_vector_from_ctor (tree type, const vec<constructor_elt, va_gc> *v)
   if (vec_safe_length (v) == 0)
     return build_zero_cst (type);
 
-  unsigned HOST_WIDE_INT idx, nelts;
+  unsigned HOST_WIDE_INT idx, nelts, step = 1;
   tree value;
 
-  /* We can't construct a VECTOR_CST for a variable number of elements.  */
-  nelts = TYPE_VECTOR_SUBPARTS (type).to_constant ();
-  tree_vector_builder vec (type, nelts, 1);
+  /* If the vector is a VLA, build a VLA constant vector.  */
+  if (!TYPE_VECTOR_SUBPARTS (type).is_constant (&nelts))
+    {
+      nelts = constant_lower_bound (TYPE_VECTOR_SUBPARTS (type));
+      gcc_assert (vec_safe_length (v) <= nelts);
+      step = 2;
+    }
+
+  tree_vector_builder vec (type, nelts, step);
   FOR_EACH_CONSTRUCTOR_VALUE (v, idx, value)
     {
       if (TREE_CODE (value) == VECTOR_CST)
@@ -2102,7 +2108,7 @@ build_vector_from_ctor (tree type, const vec<constructor_elt, va_gc> *v)
       else
 	vec.quick_push (value);
     }
-  while (vec.length () < nelts)
+  while (vec.length () < nelts * step)
     vec.quick_push (build_zero_cst (TREE_TYPE (type)));
 
   return vec.build ();

@@ -12083,12 +12083,18 @@ retry:
 	{
 	  tree elttype = TYPE_MAIN_VARIANT (TREE_TYPE (constructor_type));
 
-	 /* Do a basic check of initializer size.  Note that vectors
-	    always have a fixed size derived from their type.  */
-	  if (tree_int_cst_lt (constructor_max_index, constructor_index))
+	  /* Do a basic check of initializer size.  Note that vectors
+	     may not always have a fixed size derived from their type.  */
+	  if (maybe_lt (tree_to_poly_uint64 (constructor_max_index),
+			tree_to_poly_uint64 (constructor_index)))
 	    {
-	      pedwarn_init (loc, 0,
-			    "excess elements in vector initializer");
+	      /* Diagose VLA out-of-bounds as errors.  */
+	      if (tree_to_poly_uint64 (constructor_max_index).is_constant())
+		pedwarn_init (loc, 0,
+			      "excess elements in vector initializer");
+	      else
+		error_init (loc, "excess elements in vector initializer");
+
 	      break;
 	    }
 
