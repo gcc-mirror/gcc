@@ -8,7 +8,7 @@ macro_rules! asm {
 fn main() -> i32 {
     unsafe {
         asm!(
-            "add {}, {}",
+            "add {}, 1",
             in(reg) 0
         );
     }
@@ -21,15 +21,15 @@ fn main() -> i32 {
     unsafe {
         asm!(
             "add {}, {}",
-            inout(reg) num1 =>_num1,
             in(reg) _num2,
+            out(reg) _num1,
         );
     }
 
     let mut _output_testing: u32 = 0;
     unsafe {
         asm!(
-            "add {}, {}",
+            "add {}, 1",
             in(reg) _num1,
             //out(reg) _,
         );

@@ -330,8 +330,8 @@ parse_reg_operand_in (InlineAsmContext inline_asm_ctx)
 
       // TODO: When we've succesfully parse an expr, remember to clone_expr()
       // instead of nullptr
-      // struct AST::InlineAsmOperand::In in (reg, nullptr);
-      // inline_asm_ctx.inline_asm.operands.push_back (in);
+      struct AST::InlineAsmOperand::In in (reg, std::move (expr));
+      inline_asm_ctx.inline_asm.operands.push_back (in);
       return inline_asm_ctx;
     }
   return tl::unexpected<InlineAsmParseError> (NONCOMMITED);
@@ -792,8 +792,9 @@ expand_inline_asm_strings (InlineAsmContext inline_asm_ctx)
 		     * trait});*/
 
 		    transformed_template_str += "%" + std::to_string (idx);
-		    /*std::cout << "argument implicitly is: " << idx <<
-		     * std::endl;*/
+		    // std::cout << "argument implicitly is: " << idx <<
+		    // std::endl; std::cout << "transformed template str is:"
+		    // << transformed_template_str << std::endl;
 		    /*std::cout << "trait: " << trait.to_string () <<
 		     * std::endl;*/
 		    /*std::cout << "arg: " << arg.to_string () << std::endl;*/
