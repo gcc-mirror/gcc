@@ -2058,7 +2058,8 @@ static void
 mark_vtable_entries (tree decl, vec<tree> &consteval_vtables)
 {
   /* It's OK for the vtable to refer to deprecated virtual functions.  */
-  warning_sentinel w(warn_deprecated_decl);
+  auto du = make_temp_override (deprecated_state,
+				UNAVAILABLE_DEPRECATED_SUPPRESS);
 
   bool consteval_seen = false;
 
