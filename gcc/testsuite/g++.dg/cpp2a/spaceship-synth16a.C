@@ -13,4 +13,5 @@ int main() {
   X x;
   static_assert(noexcept(x <=> x));
   x <=> x;
+  constexpr auto r = X{} <=> X{};
 }
