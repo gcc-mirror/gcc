@@ -3929,14 +3929,31 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
 
       /* If it's an add + mult (which is equivalent to shift left) and
 	 it's immediate operand satisfies const_immalsl_operand predicate.  */
-      if ((mode == SImode || (TARGET_64BIT && mode == DImode))
-	  && GET_CODE (XEXP (x, 0)) == MULT)
+      if (code == PLUS
+	  && (mode == SImode || (TARGET_64BIT && mode == DImode)))
 	{
-	  rtx op2 = XEXP (XEXP (x, 0), 1);
-	  if (const_immalsl_operand (op2, mode))
+	  HOST_WIDE_INT shamt = -1;
+	  rtx lhs = XEXP (x, 0);
+	  rtx_code code_lhs = GET_CODE (lhs);
+
+	  switch (code_lhs)
+	    {
+	    case ASHIFT:
+	      if (CONST_INT_P (XEXP (lhs, 1)))
+		shamt = INTVAL (XEXP (lhs, 1));
+	      break;
+	    case MULT:
+	      if (CONST_INT_P (XEXP (lhs, 1)))
+		shamt = exact_log2 (INTVAL (XEXP (lhs, 1)));
+	      break;
+	    default:
+	      break;
+	    }
+
+	  if (IN_RANGE (shamt, 1, 4))
 	    {
 	      *total = (COSTS_N_INSNS (1)
-			+ set_src_cost (XEXP (XEXP (x, 0), 0), mode, speed)
+			+ set_src_cost (XEXP (lhs, 0), mode, speed)
 			+ set_src_cost (XEXP (x, 1), mode, speed));
 	      return true;
 	    }
