@@ -1,3 +1,56 @@
+2024-09-04  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	PR target/112108
+	* config/aarch64/aarch64-builtins.cc (handle_arm_acle_h): Remove
+	feature check at initialisation.
+	(aarch64_general_check_builtin_call): Check ls64 intrinsics.
+	* config/aarch64/arm_acle.h: (data512_t) Make always available.
+
+2024-09-04  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	PR target/112108
+	* config/aarch64/aarch64-builtins.cc (aarch64_init_memtag_builtins):
+	Define intrinsic names directly.
+	(aarch64_general_init_builtins): Move memtag intialisation...
+	(handle_arm_acle_h): ...to here, and remove feature check.
+	(aarch64_general_check_builtin_call): Check memtag intrinsics.
+	* config/aarch64/arm_acle.h (__arm_mte_create_random_tag)
+	(__arm_mte_exclude_tag, __arm_mte_ptrdiff)
+	(__arm_mte_increment_tag, __arm_mte_set_tag, __arm_mte_get_tag):
+	Remove.
+
+2024-09-04  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	PR target/112108
+	* config/aarch64/aarch64-builtins.cc (aarch64_init_tme_builtins):
+	Define intrinsic names directly.
+	(aarch64_general_init_builtins): Move tme initialisation...
+	(handle_arm_acle_h): ...to here, and remove feature check.
+	(aarch64_general_check_builtin_call): Check tme intrinsics.
+	* config/aarch64/arm_acle.h (__tstart, __tcommit, __tcancel)
+	(__ttest): Remove.
+	(_TMFAILURE_*): Define unconditionally.
+
+2024-09-04  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.cc (check_builtin_call)
+	(expand_builtin): Update calls to the below.
+	(report_missing_extension, report_missing_registers)
+	(check_required_extensions): Move out of aarch64_sve namespace,
+	rename, and move into...
+	* config/aarch64/aarch64-builtins.cc (aarch64_report_missing_extension)
+	(aarch64_report_missing_registers)
+	(aarch64_check_required_extensions) ...here.
+	* config/aarch64/aarch64-protos.h (aarch64_check_required_extensions):
+	Add prototype.
+
+2024-09-04  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.cc
+	(check_required_registers): Remove target check and rename to...
+	(report_missing_registers): ...this.
+	(check_required_extensions): Refactor.
+
 2024-09-03  Haochen Jiang  <haochen.jiang@intel.com>
 
 	* config/i386/avx512fp16intrin.h

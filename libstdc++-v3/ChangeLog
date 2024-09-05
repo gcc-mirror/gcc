@@ -1,3 +1,99 @@
+2024-09-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_ops.cc (auto_win_file_handle): Add error_code&
+	member and set it if CreateFileW or GetFileInformationByHandle
+	fails.
+	(fs::equiv_files) [_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Simplify
+	control flow.
+	(fs::hard_link_count) [_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Clear ec
+	on success.
+	* testsuite/27_io/filesystem/operations/hard_link_count.cc:
+	Check error handling.
+
+2024-09-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-07-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_ops.cc (auto_win_file_handle): Change constructor
+	parameter from const path& to const wchar_t*.
+	(fs::equiv_files): New function.
+	(fs::equivalent): Use equiv_files.
+	* src/filesystem/ops-common.h (fs::equiv_files): Declare.
+	(do_copy_file): Use equiv_files.
+	* src/filesystem/ops.cc (fs::equiv_files): Define.
+	(fs::copy, fs::equivalent): Use equiv_files.
+	* testsuite/27_io/filesystem/operations/copy.cc: Test
+	overwriting directory contents recursively.
+	* testsuite/27_io/filesystem/operations/copy_file.cc: Test
+	overwriting existing files.
+
+2024-09-04  Lennox Shou Hao Ho  <lennoxhoe@gmail.com>
+
+	Backported from master:
+	2024-07-30  Lennox Shou Hao Ho  <lennoxhoe@gmail.com>
+
+	PR libstdc++/113663
+	* src/c++17/fs_ops.cc (fs::equivalent): Moved helper class
+	auto_handle to anonymous namespace as auto_win_file_handle.
+	(fs::hard_link_count): Changed Windows implementation to use
+	information provided by GetFileInformationByHandle which is more
+	reliable.
+	* testsuite/27_io/filesystem/operations/hard_link_count.cc: New
+	test.
+
+2024-09-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116549
+	* include/bits/stl_iterator.h (disable_sized_sentinel_for):
+	Define specialization for two move_iterator types, as per LWG
+	3736.
+	* testsuite/24_iterators/move_iterator/lwg3736.cc: New test.
+
+2024-09-04  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	Backported from master:
+	2024-09-03  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* include/std/deque: Define macro
+	__glibcxx_want_allocator_traits_is_always_equal.
+	* include/std/forward_list: Likewise.
+	* include/std/list: Likewise.
+	* include/std/map: Likewise.
+	* include/std/scoped_allocator: Likewise.
+	* include/std/set: Likewise.
+	* include/std/string: Likewise.
+	* include/std/unordered_map: Likewise.
+	* include/std/unordered_set: Likewise.
+	* include/std/vector: Likewise.
+	* testsuite/20_util/headers/memory/version.cc: New test.
+	* testsuite/20_util/scoped_allocator/version.cc: Likewise.
+	* testsuite/21_strings/headers/string/version.cc: Likewise.
+	* testsuite/23_containers/deque/version.cc: Likewise.
+	* testsuite/23_containers/forward_list/version.cc: Likewise.
+	* testsuite/23_containers/list/version.cc: Likewise.
+	* testsuite/23_containers/map/version.cc: Likewise.
+	* testsuite/23_containers/set/version.cc: Likewise.
+	* testsuite/23_containers/unordered_map/version.cc: Likewise.
+	* testsuite/23_containers/unordered_set/version.cc: Likewise.
+	* testsuite/23_containers/vector/version.cc: Likewise.
+
+2024-09-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-08-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116381
+	* include/std/variant (variant): Fix conditions for
+	static_assert to match the spec.
+	* testsuite/20_util/variant/types_neg.cc: New test.
+
 2024-08-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
