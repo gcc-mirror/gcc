@@ -1664,7 +1664,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	  if (DECL_P (decl))
 	    {
 	      if (DECL_SIZE (decl)
-		  && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
+		  && !poly_int_tree_p (DECL_SIZE (decl)))
 		{
 		  tree decl2 = DECL_VALUE_EXPR (decl);
 		  gcc_assert (INDIRECT_REF_P (decl2));
@@ -1906,7 +1906,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 		    = remap_type (TREE_TYPE (decl), &ctx->cb);
 		}
 	      else if (DECL_SIZE (decl)
-		       && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
+		       && !poly_int_tree_p (DECL_SIZE (decl)))
 		{
 		  tree decl2 = DECL_VALUE_EXPR (decl);
 		  gcc_assert (INDIRECT_REF_P (decl2));
@@ -12750,7 +12750,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  }
 
 	if (DECL_SIZE (var)
-	    && TREE_CODE (DECL_SIZE (var)) != INTEGER_CST)
+	    && !poly_int_tree_p (DECL_SIZE (var)))
 	  {
 	    tree var2 = DECL_VALUE_EXPR (var);
 	    gcc_assert (TREE_CODE (var2) == INDIRECT_REF);
@@ -13077,7 +13077,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    else
 	      {
 		if (DECL_SIZE (ovar)
-		    && TREE_CODE (DECL_SIZE (ovar)) != INTEGER_CST)
+		    && !poly_int_tree_p (DECL_SIZE (ovar)))
 		  {
 		    tree ovar2 = DECL_VALUE_EXPR (ovar);
 		    gcc_assert (TREE_CODE (ovar2) == INDIRECT_REF);
