@@ -477,10 +477,11 @@ Session::compile_crate (const char *filename)
     rust_fatal_error (
       UNDEF_LOCATION, "%s",
       "gccrs is not yet able to compile Rust code "
-      "properly. Most of the errors produced will be gccrs' fault and not the "
-      "crate you are trying to compile. Because of this, please reports issues "
-      "to us directly instead of opening issues on said crate's "
-      "repository.\n\nOur github repository: "
+      "properly. Most of the errors produced will be the fault of gccrs and "
+      "not the crate you are trying to compile. Because of this, please report "
+      "errors directly to us instead of opening issues on said crate's "
+      "repository.\n\n"
+      "Our github repository: "
       "https://github.com/rust-gcc/gccrs\nOur bugzilla tracker: "
       "https://gcc.gnu.org/bugzilla/"
       "buglist.cgi?bug_status=__open__&component=rust&product=gcc\n\n"
