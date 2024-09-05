@@ -1337,7 +1337,7 @@ public:
 	{
 	  use_fvrp = true;
 	  warning (OPT_Wdisabled_optimization,
-		   "Using fast VRP algorithm. %d basic blocks"
+		   "using fast VRP algorithm; %d basic blocks"
 		   " exceeds %<--param=vrp-block-limit=%d%> limit",
 		   n_basic_blocks_for_fn (fun),
 		   param_vrp_block_limit);
