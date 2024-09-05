@@ -97,6 +97,8 @@ public:
   void go (AST::Crate &crate);
 
 private:
+  using AST::DefaultASTVisitor::visit;
+
   void visit (AST::UseDeclaration &) override;
 
   Early::ImportMappings data;
