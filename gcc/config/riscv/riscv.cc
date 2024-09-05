@@ -4218,11 +4218,29 @@ riscv_noce_conversion_profitable_p (rtx_insn *seq,
 	      riscv_if_info.original_cost += COSTS_N_INSNS (1);
 	      riscv_if_info.max_seq_cost += COSTS_N_INSNS (1);
 	    }
-	  last_dest = NULL_RTX;
+
 	  rtx dest = SET_DEST (x);
-	  if (COMPARISON_P (src)
+
+	  /* Do something similar for the  moves that are likely to
+	     turn into NOP moves by the time the register allocator is
+	     done.  These are also side effects of how our sCC expanders
+	     work.  We'll want to check and update LAST_DEST here too.  */
+	  if (last_dest
 	      && REG_P (dest)
-	      && GET_MODE (dest) == SImode)
+	      && GET_MODE (dest) == SImode
+	      && SUBREG_P (src)
+	      && SUBREG_PROMOTED_VAR_P (src)
+	      && REGNO (SUBREG_REG (src)) == REGNO (last_dest))
+	    {
+	      riscv_if_info.original_cost += COSTS_N_INSNS (1);
+	      riscv_if_info.max_seq_cost += COSTS_N_INSNS (1);
+	      if (last_dest)
+		last_dest = dest;
+	    }
+	  else
+	    last_dest = NULL_RTX;
+
+	  if (COMPARISON_P (src) && REG_P (dest))
 	    last_dest = dest;
 	}
       else
@@ -4904,13 +4922,31 @@ riscv_expand_int_scc (rtx target, enum rtx_code code, rtx op0, rtx op1, bool *in
   riscv_extend_comparands (code, &op0, &op1);
   op0 = force_reg (word_mode, op0);
 
+  /* For sub-word targets on rv64, do the computation in DImode
+     then extract the lowpart for the final target, marking it
+     as sign extended.  Note that it's also properly zero extended,
+     but it's probably more profitable to expose it as sign extended.  */
+  rtx t;
+  if (TARGET_64BIT && GET_MODE (target) == SImode)
+    t = gen_reg_rtx (DImode);
+  else
+    t = target;
+
   if (code == EQ || code == NE)
     {
       rtx zie = riscv_zero_if_equal (op0, op1);
-      riscv_emit_binary (code, target, zie, const0_rtx);
+      riscv_emit_binary (code, t, zie, const0_rtx);
     }
   else
-    riscv_emit_int_order_test (code, invert_ptr, target, op0, op1);
+    riscv_emit_int_order_test (code, invert_ptr, t, op0, op1);
+
+  if (t != target)
+    {
+      t = gen_lowpart (SImode, t);
+      SUBREG_PROMOTED_VAR_P (t) = 1;
+      SUBREG_PROMOTED_SET (t, SRP_SIGNED);
+      emit_move_insn (target, t);
+    }
 }
 
 /* Like riscv_expand_int_scc, but for floating-point comparisons.  */
