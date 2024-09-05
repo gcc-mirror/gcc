@@ -14,13 +14,13 @@ toolset for the full Ada programming language.
 It documents the features of the compiler and tools, and explains
 how to use them to build Ada applications.
 
-GNAT implements Ada 95, Ada 2005, Ada 2012, and Ada 202x, and it may also be
-invoked in Ada 83 compatibility mode.
-By default, GNAT assumes Ada 2012, but you can override with a
-compiler switch (:ref:`Compiling_Different_Versions_of_Ada`)
-to explicitly specify the language version.
-Throughout this manual, references to 'Ada' without a year suffix
-apply to all Ada versions of the language, starting with Ada 95.
+GNAT implements Ada 95, Ada 2005, Ada 2012, and Ada 2022.  You may
+also invoke it in Ada 83 compatibility mode.  By default, GNAT assumes
+Ada 2012, but you can use a compiler switch
+(:ref:`Compiling_Different_Versions_of_Ada`) to explicitly specify the
+language version.  Throughout this manual, references to 'Ada' without
+a year suffix apply to all versions of the Ada language starting with
+Ada 95.
 
 What This Guide Contains
 ========================
@@ -130,10 +130,10 @@ in this guide:
 
     and then shown this way.
 
-* Commands that are entered by the user are shown as preceded by a prompt string
+* Commands that you enter are shown as preceded by a prompt string
   comprising the ``$`` character followed by a space.
 
 * Full file names are shown with the '/' character
   as the directory separator; e.g., :file:`parent-dir/subdir/myfile.adb`.
   If you are using GNAT on a Windows platform, please note that
-  the '\\' character should be used instead.
+  you should use the '\\' character instead.

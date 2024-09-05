@@ -17,8 +17,8 @@ Elaboration Order Handling in GNAT
 .. index:: Order of elaboration
 .. index:: Elaboration control
 
-This appendix describes the handling of elaboration code in Ada and GNAT, and
-discusses how the order of elaboration of program units can be controlled in
+This appendix describes the handling of elaboration code in Ada and GNAT and
+discusses how you can control the order of elaboration of program units in
 GNAT, either automatically or with explicit programming features.
 
 .. _Elaboration_Code:
@@ -36,7 +36,7 @@ initializing data. These sections are referred to as **elaboration code**.
 Elaboration code is executed as follows:
 
 * All partitions of an Ada program are executed in parallel with one another,
-  possibly in a separate address space, and possibly on a separate computer.
+  possibly in a separate address space and possibly on a separate computer.
 
 * The execution of a partition involves running the environment task for that
   partition.
@@ -71,8 +71,9 @@ In addition to the Ada terminology, this appendix defines the following terms:
 
 * *Target*
 
-  A construct elaborated by a scenario is referred to as *elaboration target*
-  or simply **target**. GNAT recognizes the following targets:
+  A construct elaborated by a scenario is referred to as an
+  *elaboration target* or simply a **target**. GNAT recognizes the
+  following targets:
 
   - For ``'Access`` of entries, operators, and subprograms, the target is the
     entry, operator, or subprogram being aliased.
@@ -188,7 +189,8 @@ factors:
 
 * invocations performed in elaboration code
 
-A program may have several elaboration orders depending on its structure.
+A program may have several possible elaboration orders depending on
+its structure:
 
   .. code-block:: ada
 
@@ -256,7 +258,7 @@ Ada states that a total elaboration order must exist, but it does not define
 what this order is. A compiler is thus tasked with choosing a suitable
 elaboration order which satisfies the dependencies imposed by |with| clauses,
 unit categorization, elaboration-control pragmas, and invocations performed in
-elaboration code. Ideally an order that avoids ABE problems should be chosen,
+elaboration code. Ideally, an order that avoids ABE problems should be chosen,
 however a compiler may not always find such an order due to complications with
 respect to control and data flow.
 
@@ -277,7 +279,7 @@ provides three lines of defense:
 
 * *Dynamic semantics*
 
-  Dynamic checks are performed at run time, to ensure that a target is
+  Dynamic checks are performed at run time to ensure that a target is
   elaborated prior to a scenario that invokes it, thus avoiding ABE problems.
   A failed run-time check raises exception ``Program_Error``. The following
   restrictions apply:
@@ -304,7 +306,7 @@ provides three lines of defense:
 
 * *Elaboration control*
 
-  Pragmas are provided for the programmer to specify the desired elaboration
+  Ada provides pragmas for you to specify the desired elaboration
   order.
 
 .. _Controlling_the_Elaboration_Order_in_Ada:
@@ -312,12 +314,12 @@ provides three lines of defense:
 Controlling the Elaboration Order in Ada
 ========================================
 
-Ada provides several idioms and pragmas to aid the programmer with specifying
-the desired elaboration order and avoiding ABE problems altogether.
+Ada provides several idioms and pragmas to aid you in specifying your
+desired elaboration order and avoiding ABE problems.
 
 * *Packages without a body*
 
-  A library package which does not require a completing body does not suffer
+  A library package that does not require a completing body does not suffer
   from ABE problems.
 
   .. code-block:: ada
@@ -391,9 +393,9 @@ the desired elaboration order and avoiding ABE problems altogether.
      body of Server
      spec of Client
 
-  because the spec of ``Server`` must be elaborated prior to ``Client`` by
-  virtue of the |with| clause, and in addition the body of ``Server`` must be
-  elaborated immediately after the spec of ``Server``.
+  because the spec of ``Server`` must be elaborated prior to
+  ``Client`` by virtue of the |with| clause and the body of ``Server``
+  must be elaborated immediately after the spec of ``Server``.
 
   Removing pragma ``Elaborate_Body`` could result in the following incorrect
   elaboration order:
@@ -420,7 +422,7 @@ depend on.
 
 * *pragma Elaborate (Unit)*
 
-  Pragma ``Elaborate`` can be placed in the context clauses of a unit, after a
+  You can place pragma ``Elaborate``  in the context clauses of a unit, after a
   |with| clause. It guarantees that both the spec and body of its argument will
   be elaborated prior to the unit with the pragma. Note that other unrelated
   units may be elaborated in between the spec and the body.
@@ -473,11 +475,12 @@ depend on.
 
 * *pragma Elaborate_All (Unit)*
 
-  Pragma ``Elaborate_All`` is placed in the context clauses of a unit, after
-  a |with| clause. It guarantees that both the spec and body of its argument
-  will be elaborated prior to the unit with the pragma, as well as all units
-  |withed| by the spec and body of the argument, recursively. Note that other
-  unrelated units may be elaborated in between the spec and the body.
+  You can place pragma ``Elaborate_All`` in the context clauses of a
+  unit, after a |with| clause. It guarantees that both the spec and
+  body of its argument will be elaborated prior to the unit with the
+  pragma as well as all units |withed| by the spec and body of the
+  argument, recursively. Note that other unrelated units may be
+  elaborated in between the spec and the body.
 
   .. code-block:: ada
 
@@ -566,12 +569,12 @@ the server unit requires a body and does not have pragma Pure, Preelaborate,
 or Elaborate_Body, then the client unit should have pragma Elaborate or
 Elaborate_All for the server unit.*
 
-If the rule outlined above is not followed, then a program may fall in one of
-the following states:
+If you do not follow the rule outlined above, a program may fall in one of
+the following ways:
 
 * *No elaboration order exists*
 
-  In this case a compiler must diagnose the situation, and refuse to build an
+  In this case a compiler must diagnose the situation and refuse to build an
   executable program.
 
 * *One or more incorrect elaboration orders exist*
@@ -581,17 +584,17 @@ the following states:
 
 * *Several elaboration orders exist, some correct, some incorrect*
 
-  In this case the programmer has not controlled the elaboration order. As a
-  result, a compiler may or may not pick one of the correct orders, and the
+  In this case, you have not controlled the elaboration order. As a
+  result, a compiler may or may not pick one of the correct orders and the
   program may or may not raise ``Program_Error`` when it is run. This is the
-  worst possible state because the program may fail on another compiler, or
-  even another version of the same compiler.
+  worst possible state because the program may fail on another compiler or
+  even a different version of the same compiler.
 
 * *One or more correct orders exist*
 
-  In this case a compiler can build an executable program, and the program is
+  In this case a compiler can build an executable program and the program is
   run successfully. This state may be guaranteed by following the outlined
-  rules, or may be the result of good program architecture.
+  rules or may be the result of good program architecture.
 
 Note that one additional advantage of using ``Elaborate`` and ``Elaborate_All``
 is that the program continues to stay in the last state (one or more correct
@@ -602,9 +605,9 @@ orders exist) even if maintenance changes the bodies of targets.
 Controlling the Elaboration Order in GNAT
 =========================================
 
-In addition to Ada semantics and rules synthesized from them, GNAT offers
-three elaboration models to aid the programmer with specifying the correct
-elaboration order and to diagnose elaboration problems.
+In addition to Ada semantics and rules synthesized from them, GNAT
+offers three elaboration models to aid you in specifying the correct
+elaboration order and in diagnosing elaboration problems.
 
 .. index:: Dynamic elaboration model
 
@@ -631,7 +634,7 @@ elaboration order and to diagnose elaboration problems.
   assumptions stated above. An order obtained using the dynamic model may fail
   an ABE check at run time when GNAT ignored an invocation.
 
-  The dynamic model is enabled with compiler switch :switch:`-gnatE`.
+  You enable the dynamic model with the compiler switch :switch:`-gnatE`.
 
 .. index:: Static elaboration model
 
@@ -678,24 +681,25 @@ elaboration order and to diagnose elaboration problems.
   following legacy models:
 
   - `Legacy elaboration-checking model` available in pre-18.x versions of GNAT.
-    This model is enabled with compiler switch :switch:`-gnatH`.
+    You can enable this model with compiler switch :switch:`-gnatH`.
 
   - `Legacy elaboration-order model` available in pre-20.x versions of GNAT.
-    This model is enabled with binder switch :switch:`-H`.
+    You can enable this model with binder switch :switch:`-H`.
 
 .. index:: Relaxed elaboration mode
 
-The dynamic, legacy, and static models can be relaxed using compiler switch
-:switch:`-gnatJ`, making them more permissive. Note that in this mode, GNAT
-may not diagnose certain elaboration issues or install run-time checks.
+You can relax the dynamic, legacy, and static models by specifying
+compiler switch :switch:`-gnatJ`, which makes them more permissive. Note
+that in this mode, GNAT may not diagnose certain elaboration issues or
+install run-time checks.
 
 .. _Mixing_Elaboration_Models:
 
 Mixing Elaboration Models
 =========================
 
-It is possible to mix units compiled with a different elaboration model,
-however the following rules must be observed:
+You can mix units compiled with different elaboration models. However
+you must observe the following rules:
 
 * A client unit compiled with the dynamic model can only |with| a server unit
   that meets at least one of the following criteria:
@@ -718,7 +722,7 @@ violated, the binder emits a warning:
      warning: "x.ads" has dynamic elaboration checks and with's
      warning:   "y.ads" which has static elaboration checks
 
-The warnings can be suppressed by binder switch :switch:`-ws`.
+You can suppress these warnings by specifying binder switch :switch:`-ws`.
 
 .. _ABE_Diagnostics:
 
@@ -729,14 +733,14 @@ GNAT performs extensive diagnostics on a unit-by-unit basis for all scenarios
 that invoke internal targets, regardless of whether the dynamic, SPARK, or
 static model is in effect.
 
-Note that GNAT emits warnings rather than hard errors whenever it encounters an
+Note that GNAT emits warnings rather than errors whenever it encounters an
 elaboration problem. This is because the elaboration model in effect may be too
-conservative, or a particular scenario may not be invoked due conditional
-execution. The warnings can be suppressed selectively with ``pragma Warnings
+conservative or a particular scenario may not be invoked due to conditional
+execution. You can selectively suppress the warnings with ``pragma Warnings
 (Off)`` or globally with compiler switch :switch:`-gnatwL`.
 
 A *guaranteed ABE* arises when the body of a target is not elaborated early
-enough, and causes *all* scenarios that directly invoke the target to fail.
+enough and causes *all* scenarios that directly invoke the target to fail.
 
   .. code-block:: ada
 
@@ -763,7 +767,7 @@ the declaration of ``Val``. This invokes function ``ABE``, however the body of
         >>> warning: Program_Error will be raised at run time
 
 A *conditional ABE* arises when the body of a target is not elaborated early
-enough, and causes *some* scenarios that directly invoke the target to fail.
+enough and causes *some* scenarios that directly invoke the target to fail.
 
   .. code-block:: ada
 
@@ -821,8 +825,8 @@ SPARK Diagnostics
 =================
 
 GNAT enforces the SPARK rules of elaboration as defined in the SPARK Reference
-Manual section 7.7 when compiler switch :switch:`-gnatd.v` is in effect. Note
-that GNAT emits hard errors whenever it encounters a violation of the SPARK
+Manual section 7.7 when you specify compiler switch :switch:`-gnatd.v`. Note
+that GNAT emits errors whenever it encounters a violation of the SPARK
 rules.
 
   ::
@@ -938,7 +942,7 @@ subprograms, where the program controls the order of initialization explicitly.
 Although this is the most desirable option, it may be impractical and involve
 too much modification, especially in the case of complex legacy code.
 
-When faced with an elaboration circularity, the programmer should also consider
+When faced with an elaboration circularity, you should also consider
 the tactics given in the suggestions section of the circularity diagnostic.
 Depending on the units involved in the circularity, their |with| clauses,
 purity, preelaborability, presence of elaboration-control pragmas and
@@ -951,10 +955,9 @@ following tactics to eliminate the circularity:
 
      remove pragma Elaborate for unit "..." in unit "..."
 
-  This tactic is suggested when the binder has determined that pragma
-  ``Elaborate``:
+  The binder suggests this tactic when it has determined that:
 
-  - Prevents a set of units from being elaborated.
+  - pragma ``Elaborate`` prevents a set of units from being elaborated.
 
   - The removal of the pragma will not eliminate the semantic effects of the
     pragma. In other words, the argument of the pragma will still be elaborated
@@ -962,7 +965,7 @@ following tactics to eliminate the circularity:
 
   - The removal of the pragma will enable the successful ordering of the units.
 
-  The programmer should remove the pragma as advised, and rebuild the program.
+  You should remove the pragma as advised and rebuild the program.
 
 * Pragma Elaborate_All elimination
 
@@ -970,10 +973,10 @@ following tactics to eliminate the circularity:
 
      remove pragma Elaborate_All for unit "..." in unit "..."
 
-  This tactic is suggested when the binder has determined that pragma
-  ``Elaborate_All``:
+  The binder suggests this tactic when it has determined that:
 
-  - Prevents a set of units from being elaborated.
+  - pragma ``Elaborate_All`` prevents a set of units from being
+    elaborated.
 
   - The removal of the pragma will not eliminate the semantic effects of the
     pragma. In other words, the argument of the pragma along with its |with|
@@ -981,7 +984,7 @@ following tactics to eliminate the circularity:
 
   - The removal of the pragma will enable the successful ordering of the units.
 
-  The programmer should remove the pragma as advised, and rebuild the program.
+  You should remove the pragma as advised and rebuild the program.
 
 * Pragma Elaborate_All downgrade
 
@@ -989,12 +992,12 @@ following tactics to eliminate the circularity:
 
      change pragma Elaborate_All for unit "..." to Elaborate in unit "..."
 
-  This tactic is always suggested with the pragma ``Elaborate_All`` elimination
-  tactic. It offers a different alternative of guaranteeing that the argument
-  of the pragma will still be elaborated prior to the unit containing the
-  pragma.
+  The binder always suggests this tactic when it suggests the pragma
+  ``Elaborate_All`` elimination tactic. It offers a different
+  alternative of guaranteeing that the argument of the pragma will
+  still be elaborated prior to the unit containing the pragma.
 
-  The programmer should update the pragma as advised, and rebuild the program.
+  You should update the pragma as advised and rebuild the program.
 
 * Pragma Elaborate_Body elimination
 
@@ -1002,10 +1005,9 @@ following tactics to eliminate the circularity:
 
      remove pragma Elaborate_Body in unit "..."
 
-  This tactic is suggested when the binder has determined that pragma
-  ``Elaborate_Body``:
+  The binder suggests this tactic when it has determined that:
 
-  - Prevents a set of units from being elaborated.
+  - pragma ``Elaborate_Body`` prevents a set of units from being elaborated.
 
   - The removal of the pragma will enable the successful ordering of the units.
 
@@ -1013,7 +1015,8 @@ following tactics to eliminate the circularity:
   other purposes, such as guaranteeing the initialization of a variable
   declared in the spec by elaboration code in the body.
 
-  The programmer should remove the pragma as advised, and rebuild the program.
+  If the pragma is not required for another purpose, you should remove
+  the pragma as advised and rebuild the program.
 
 * Use of pragma Restrictions
 
@@ -1021,7 +1024,7 @@ following tactics to eliminate the circularity:
 
      use pragma Restrictions (No_Entry_Calls_In_Elaboration_Code)
 
-  This tactic is suggested when the binder has determined that a task
+  The binder suggests this tactic when it has determined that a task
   activation at elaboration time:
 
   - Prevents a set of units from being elaborated.
@@ -1046,16 +1049,16 @@ following tactics to eliminate the circularity:
   - The use of the dynamic model will enable the successful ordering of the
     units.
 
-  The programmer has two options:
+  You have two options:
 
   - Determine the units involved in the invocation using the detailed
-    invocation information, and add compiler switch :switch:`-gnatE` to the
-    compilation arguments of selected files only. This approach will yield
+    invocation information and add compiler switch :switch:`-gnatE` to the
+    compilation arguments of those units only. This approach will yield
     safer elaboration orders compared to the other option because it will
     minimize the opportunities presented to the dynamic model for ignoring
     invocations.
 
-  - Add compiler switch :switch:`-gnatE` to the general compilation arguments.
+  - Add compiler switch :switch:`-gnatE` to the global compilation arguments.
 
 * Use of detailed invocation information
 
@@ -1063,13 +1066,13 @@ following tactics to eliminate the circularity:
 
      use detailed invocation information (compiler switch -gnatd_F)
 
-  This tactic is always suggested with the use of the dynamic model tactic. It
-  causes the circularity section of the circularity diagnostic to describe the
-  flow of elaboration code from a unit to a unit, enumerating all such paths in
-  the process.
+  The binder always suggests this tactic when it suggests use of the
+  dynamic model tactic. It causes the circularity section of the
+  circularity diagnostic to describe the flow of elaboration code from
+  a unit to a unit, enumerating all such paths in the process.
 
-  The programmer should analyze this information to determine which units
-  should be compiled with the dynamic model.
+  You should analyze this information to determine which units should
+  be compiled with the dynamic model.
 
 * Forced-dependency elimination
 
@@ -1077,16 +1080,16 @@ following tactics to eliminate the circularity:
 
      remove the dependency of unit "..." on unit "..." from the argument of switch -f
 
-  This tactic is suggested when the binder has determined that a dependency
-  present in the forced-elaboration-order file indicated by binder switch
-  :switch:`-f`:
+  The binder suggests this tactic when it has determined that a
+  dependency present in the forced-elaboration-order file indicated by
+  binder switch :switch:`-f`:
 
   - Prevents a set of units from being elaborated.
 
   - The removal of the dependency will enable the successful ordering of the
     units.
 
-  The programmer should edit the forced-elaboration-order file, remove the
+  You should edit the forced-elaboration-order file, remove the
   dependency, and rebind the program.
 
 * All forced-dependency elimination
@@ -1095,11 +1098,11 @@ following tactics to eliminate the circularity:
 
      remove switch -f
 
-  This tactic is suggested in case editing the forced-elaboration-order file is
-  not an option.
+  The binder suggests this tactic when editing the
+  forced-elaboration-order file is not an option.
 
-  The programmer should remove binder switch :switch:`-f` from the binder
-  arguments, and rebind.
+  You should remove binder switch :switch:`-f` from the binder
+  arguments and rebind.
 
 * Multiple-circularities diagnostic
 
@@ -1107,16 +1110,16 @@ following tactics to eliminate the circularity:
 
      diagnose all circularities (binder switch -d_C)
 
-  By default, the binder will diagnose only the highest-precedence circularity.
-  If the program contains multiple circularities, the binder will suggest the
-  use of binder switch :switch:`-d_C` in order to obtain the diagnostics of all
-  circularities.
+  By default, the binder only diagnoses the highest-precedence
+  circularity.  If the program contains multiple circularities, the
+  binder will suggest the use of binder switch :switch:`-d_C` in order
+  to obtain the diagnostics for each circularity.
 
-  The programmer should add binder switch :switch:`-d_C` to the binder
-  arguments, and rebind.
+  You should add binder switch :switch:`-d_C` to the binder arguments
+  and rebind.
 
 If none of the tactics suggested by the binder eliminate the elaboration
-circularity, the programmer should consider using one of the legacy elaboration
+circularity, you should consider using one of the legacy elaboration
 models, in the following order:
 
 * Use the pre-20.x legacy elaboration-order model, with binder switch
@@ -1150,7 +1153,7 @@ the elaboration order chosen by the binder.
 .. index:: -gnatel  (gnat)
 
 :switch:`-gnatel`
-  Turn on info messages on generated Elaborate[_All] pragmas
+  Turn on informational messages on generated Elaborate[_All] pragmas
 
   This switch is only applicable to the pre-20.x legacy elaboration models.
   The post-20.x elaboration model no longer relies on implicitly generated
@@ -1280,23 +1283,23 @@ the elaboration order chosen by the binder.
 Summary of Procedures for Elaboration Control
 =============================================
 
-A programmer should first compile the program with the default options, using
+You should first compile the program with the default options, using
 none of the binder or compiler switches. If the binder succeeds in finding an
 elaboration order, then apart from possible cases involving dispatching calls
 and access-to-subprogram types, the program is free of elaboration errors.
 
-If it is important for the program to be portable to compilers other than GNAT,
-then the programmer should use compiler switch :switch:`-gnatel` and consider
-the messages about missing or implicitly created ``Elaborate`` and
-``Elaborate_All`` pragmas.
+If it is important for the program to be portable to compilers other
+than GNAT, you should use compiler switch :switch:`-gnatel` and
+consider the messages about missing or implicitly created
+``Elaborate`` and ``Elaborate_All`` pragmas.
 
-If the binder reports an elaboration circularity, the programmer has several
+If the binder reports an elaboration circularity, you have several
 options:
 
-* Ensure that elaboration warnings are enabled. This will allow the static
+* Ensure that elaboration warnings are enabled. This allows the static
   model to output trace information of elaboration issues. The trace
-  information could shed light on previously unforeseen dependencies, as well
-  as their origins. Elaboration warnings are enabled with compiler switch
+  information could shed light on previously unforeseen dependencies as well
+  as their origins. You enable elaboration warnings with compiler switch
   :switch:`-gnatwl`.
 
 * Cosider the tactics given in the suggestions section of the circularity

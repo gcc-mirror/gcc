@@ -9,10 +9,10 @@ Inline Assembler
 .. index:: Inline Assembler
 
 If you need to write low-level software that interacts directly
-with the hardware, Ada provides two ways to incorporate assembly
+with the hardware, Ada provides two ways for you to incorporate assembly
 language code into your program.  First, you can import and invoke
 external routines written in assembly language, an Ada feature fully
-supported by GNAT.  However, for small sections of code it may be simpler
+supported by GNAT.  However, for small sections of code, it may be simpler
 or more efficient to include assembly language statements directly
 in your Ada source program, using the facilities of the implementation-defined
 package ``System.Machine_Code``, which incorporates the gcc
@@ -24,14 +24,14 @@ including the following:
 * Automatic usage of the proper calling conventions
 * Access to Ada constants and variables
 * Definition of intrinsic routines
-* Possibility of inlining a subprogram comprising assembler code
+* Possibility of inlining a subprogram consisting of assembler code
 * Code optimizer can take Inline Assembler code into account
 
 This appendix presents a series of examples to show you how to use
 the Inline Assembler.  Although it focuses on the Intel x86,
 the general approach applies also to other processors.
-It is assumed that you are familiar with Ada
-and with assembly language programming.
+It is assumed you are familiar with both Ada
+and assembly language programming.
 
 .. _Basic_Assembler_Syntax:
 
@@ -99,9 +99,9 @@ pre-processor) documentation for further information.
 A Simple Example of Inline Assembler
 ====================================
 
-The following example will generate a single assembly language statement,
+The following example generate a single assembly language statement,
 ``nop``, which does nothing.  Despite its lack of run-time effect,
-the example will be useful in illustrating the basics of
+the example is useful in illustrating the basics of
 the Inline Assembler facility.
 
   .. code-block:: ada
@@ -114,18 +114,18 @@ the Inline Assembler facility.
 
 ``Asm`` is a procedure declared in package ``System.Machine_Code``;
 here it takes one parameter, a *template string* that must be a static
-expression and that will form the generated instruction.
+expression that produces the generated instruction.
 ``Asm`` may be regarded as a compile-time procedure that parses
-the template string and additional parameters (none here),
-from which it generates a sequence of assembly language instructions.
+the template string and any additional parameters (none, in this case)
+and generates one or more assembly language instructions.
 
 The examples in this chapter will illustrate several of the forms
 for invoking ``Asm``; a complete specification of the syntax
 is found in the ``Machine_Code_Insertions`` section of the
 :title:`GNAT Reference Manual`.
 
-Under the standard GNAT conventions, the ``Nothing`` procedure
-should be in a file named :file:`nothing.adb`.
+Under the standard GNAT conventions, you should put the ``Nothing`` procedure
+in a file named :file:`nothing.adb`.
 You can build the executable in the usual way:
 
   ::
@@ -155,7 +155,7 @@ where the options are:
     do not add runtime checks
 
 This gives a human-readable assembler version of the code. The resulting
-file will have the same name as the Ada source file, but with a ``.s``
+file has the same name as the Ada source file but with a ``.s``
 extension. In our example, the file :file:`nothing.s` has the following
 contents:
 
@@ -183,8 +183,8 @@ can differ on different targets. For example, GNU/Linux uses '#APP' while
 on NT you will see '/APP'.
 
 If you make a mistake in your assembler code (such as using the
-wrong size modifier, or using a wrong operand for the instruction) GNAT
-will report this error in a temporary file, which will be deleted when
+wrong size modifier or using a wrong operand for the instruction) GNAT
+will report this error in a temporary file, which is deleted when
 the compilation is finished.  Generating an assembler file will help
 in such cases, since you can assemble this file separately using the
 ``as`` assembler that comes with gcc.
@@ -197,7 +197,7 @@ Assembling the file using the command
 
 will give you error messages whose lines correspond to the assembler
 input file, so you can easily find and correct any mistakes you made.
-If there are no errors, ``as`` will generate an object file
+If there are no errors, ``as`` generates an object file called
 :file:`nothing.out`.
 
 
@@ -227,10 +227,10 @@ statements.
         Put_Line ("Flags register:" & Flags'Img);
      end Get_Flags;
 
-In order to have a nicely aligned assembly listing, we have separated
-multiple assembler statements in the Asm template string with linefeed
-(ASCII.LF) and horizontal tab (ASCII.HT) characters.
-The resulting section of the assembly output file is:
+We have separated multiple assembler statements in the Asm template
+string with linefeed (ASCII.LF) and horizontal tab (ASCII.HT)
+characters in order to have a nicely aligned assembly listing.  The
+resulting section of the assembly output file is:
 
   ::
 
@@ -269,20 +269,21 @@ In the generated assembly code, one of the percent signs will be stripped off.
 Names such as ``%0``, ``%1``, ``%2``, etc., denote input or output
 variables: operands you later define using ``Input`` or ``Output``
 parameters to ``Asm``.
-An output variable is illustrated in
-the third statement in the Asm template string:
+An output variable is shown in
+the third section of the Asm template string:
 
   ::
 
      movl %%eax, %0
 
-The intent is to store the contents of the eax register in a variable that can
-be accessed in Ada.  Simply writing ``movl %%eax, Flags`` would not
-necessarily work, since the compiler might optimize by using a register
-to hold Flags, and the expansion of the ``movl`` instruction would not be
-aware of this optimization.  The solution is not to store the result directly
-but rather to advise the compiler to choose the correct operand form;
-that is the purpose of the ``%0`` output variable.
+The intent of this section is to store the contents of the ``eax``
+register in a variable that can be accessed in Ada.  Simply writing
+``movl %%eax, Flags`` would not necessarily work, since the compiler
+might optimize by using a register to hold ``Flags``, and the expansion of
+the ``movl`` instruction would not be aware of this optimization.  The
+solution is not to store the result directly but rather to advise the
+compiler to choose the correct operand form; that is the purpose of
+the ``%0`` output variable.
 
 Information about the output variable is supplied in the ``Outputs``
 parameter to ``Asm``:
@@ -292,14 +293,14 @@ parameter to ``Asm``:
      Outputs => Unsigned_32'Asm_Output ("=g", Flags));
 
 The output is defined by the ``Asm_Output`` attribute of the target type;
-the general format is
+the general format is:
 
   .. code-block:: ada
 
      Type'Asm_Output (constraint_string, variable_name)
 
 The constraint string directs the compiler how
-to store/access the associated variable.  In the example
+to store/access the associated variable.  In the example:
 
   .. code-block:: ada
 
@@ -316,14 +317,14 @@ the optimizer from keeping it in a register.  In contrast,
 uses the ``"r"`` (register) constraint, telling the compiler to
 store the variable in a register.
 
-If the constraint is preceded by the equal character '=', it tells
-the compiler that the variable will be used to store data into it.
+If you precede the constraint with the equal character ('='), it tells
+the compiler that the variable will have data stored into it.
 
 In the ``Get_Flags`` example, we used the ``"g"`` (global) constraint,
-allowing the optimizer to choose whatever it deems best.
+allowing the optimizer to choose whatever operand it deems best.
 
 There are a fairly large number of constraints, but the ones that are
-most useful (for the Intel x86 processor) are the following:
+most useful for the Intel x86 processor are the following:
 
  ====== ==========================================
  *=*    output constraint
@@ -340,9 +341,9 @@ most useful (for the Intel x86 processor) are the following:
  *q*    use one of eax, ebx, ecx, edx, esi or edi
  ====== ==========================================
 
-The full set of constraints is described in the gcc and ``as``
-documentation; note that it is possible to combine certain constraints
-in one constraint string.
+The full set of constraints is described in the ``gcc`` and ``as``
+documentation; note that you can combine certain constraints
+into one constraint string.
 
 You specify the association of an output variable with an assembler operand
 through the :samp:`%{n}` notation, where *n* is a non-negative
@@ -356,9 +357,8 @@ integer.  Thus in
           Outputs => Unsigned_32'Asm_Output ("=g", Flags));
 
 
-``%0`` will be replaced in the expanded code by the appropriate operand,
-whatever
-the compiler decided for the ``Flags`` variable.
+``%0`` is replaced in the expanded code by the appropriate operand,
+whatever the compiler chose for the ``Flags`` variable.
 
 In general, you may have any number of output variables:
 
@@ -381,8 +381,8 @@ For example:
 where ``Var_A``, ``Var_B``, and ``Var_C`` are variables
 in the Ada program.
 
-As a variation on the ``Get_Flags`` example, we can use the constraints
-string to direct the compiler to store the eax register into the ``Flags``
+As a variation on the ``Get_Flags`` example, we can use the constraint
+string to direct the compiler to store the ``eax`` register into the ``Flags``
 variable, instead of including the store instruction explicitly in the
 ``Asm`` template string:
 
@@ -402,7 +402,7 @@ variable, instead of including the store instruction explicitly in the
      end Get_Flags_2;
 
 The ``"a"`` constraint tells the compiler that the ``Flags``
-variable will come from the eax register. Here is the resulting code:
+variable will come from the ``eax`` register. Here is the resulting code:
 
   ::
 
@@ -415,7 +415,7 @@ variable will come from the eax register. Here is the resulting code:
 The compiler generated the store of eax into Flags after
 expanding the assembler code.
 
-Actually, there was no need to pop the flags into the eax register;
+In fact, there was no need to pop the flags into the ``eax`` register;
 more simply, we could just pop the flags directly into the program variable:
 
   .. code-block:: ada
@@ -441,7 +441,7 @@ Input Variables in Inline Assembler
 
 The example in this section illustrates how to specify the source operands
 for assembly language statements.
-The program simply increments its input value by 1:
+The procedure simply increments its input value by 1:
 
   .. code-block:: ada
 
@@ -469,27 +469,27 @@ The program simply increments its input value by 1:
      end Increment;
 
 The ``Outputs`` parameter to ``Asm`` specifies
-that the result will be in the eax register and that it is to be stored
+that the result is in the ``eax`` register and that it is to be stored
 in the ``Result`` variable.
 
 The ``Inputs`` parameter looks much like the ``Outputs`` parameter,
 but with an ``Asm_Input`` attribute.
 The ``"="`` constraint, indicating an output value, is not present.
 
-You can have multiple input variables, in the same way that you can have more
+You can have multiple input variables in the same way you can have more
 than one output variable.
 
 The parameter count (%0, %1) etc, still starts at the first output statement,
 and continues with the input statements.
 
 Just as the ``Outputs`` parameter causes the register to be stored into the
-target variable after execution of the assembler statements, so does the
-``Inputs`` parameter cause its variable to be loaded into the register
+target variable after execution of the assembler statements, the
+``Inputs`` parameter causes its variable to be loaded into the register
 before execution of the assembler statements.
 
 Thus the effect of the ``Asm`` invocation is:
 
-* load the 32-bit value of ``Value`` into eax
+* load the 32-bit value of ``Value`` into ``eax``
 * execute the ``incl %eax`` instruction
 * store the contents of eax into the ``Result`` variable
 
@@ -520,7 +520,7 @@ frame) can be significant, compared to the amount of code in the subprogram
 body.  A solution is to apply Ada's ``Inline`` pragma to the subprogram,
 which directs the compiler to expand invocations of the subprogram at the
 point(s) of call, instead of setting up a stack frame for out-of-line calls.
-Here is the resulting program:
+Here's the resulting program:
 
   .. code-block:: ada
 
@@ -593,14 +593,14 @@ such as Ada is that the compiler needs to be aware of which registers are
 being used by the assembly code.  In some cases, such as the earlier examples,
 the constraint string is sufficient to indicate register usage (e.g.,
 ``"a"`` for
-the eax register).  But more generally, the compiler needs an explicit
+the ``eax`` register).  But, more generally, the compiler needs an explicit
 identification of the registers that are used by the Inline Assembly
 statements.
 
 Using a register that the compiler doesn't know about
-could be a side effect of an instruction (like ``mull``
-storing its result in both eax and edx).
-It can also arise from explicit register usage in your
+could be a side effect of an instruction (like ``mull``, which
+stores its result into both ``eax`` and ``edx``).
+It can also arise from explicit register usage within your
 assembly code; for example:
 
   .. code-block:: ada
@@ -611,10 +611,10 @@ assembly code; for example:
           Inputs  => Unsigned_32'Asm_Input  ("g", Var_In));
 
 where the compiler (since it does not analyze the ``Asm`` template string)
-does not know you are using the ebx register.
+does not know you are using the ``ebx`` register.
 
 In such cases you need to supply the ``Clobber`` parameter to ``Asm``,
-to identify the registers that will be used by your assembly code:
+to identify the registers used by your assembly code:
 
 
   .. code-block:: ada
@@ -626,9 +626,9 @@ to identify the registers that will be used by your assembly code:
           Clobber => "ebx");
 
 The Clobber parameter is a static string expression specifying the
-register(s) you are using.  Note that register names are *not* prefixed
-by a percent sign. Also, if more than one register is used then their names
-are separated by commas; e.g., ``"eax, ebx"``
+register(s) you are using.  Note that register names are *not*
+prefixed by a percent sign. Also, if more than one register is used,
+you separate their names by commas; e.g., ``"eax, ebx"``
 
 The ``Clobber`` parameter has several additional uses:
 
@@ -648,7 +648,7 @@ unwanted effects.  For example, when an ``Asm`` invocation with an input
 variable is inside a loop, the compiler might move the loading of the input
 variable outside the loop, regarding it as a one-time initialization.
 
-If this effect is not desired, you can disable such optimizations by setting
+If you don't want this to happen, you can disable such optimizations by setting
 the ``Volatile`` parameter to ``True``; for example:
 
   .. code-block:: ada
@@ -664,7 +664,7 @@ By default, ``Volatile`` is set to ``False`` unless there is no
 ``Outputs`` parameter.
 
 Although setting ``Volatile`` to ``True`` prevents unwanted
-optimizations, it will also disable other optimizations that might be
+optimizations, it also disables other optimizations that might be
 important for efficiency. In general, you should set ``Volatile``
 to ``True`` only if the compiler's optimizations have created
 problems.
