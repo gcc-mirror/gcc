@@ -244,7 +244,6 @@ class DefaultASTVisitor : public ASTVisitor
 public:
   virtual void visit (AST::Crate &crate);
 
-protected:
   virtual void visit (AST::Token &tok) override;
   virtual void visit (AST::DelimTokenTree &delim_tok_tree) override;
   virtual void visit (AST::AttrInputMetaItemContainer &input) override;
