@@ -4135,7 +4135,9 @@ package body Sem_Ch6 is
                Set_Is_Public (Body_Id, False);
             end if;
 
-            Freeze_Before (N, Body_Id);
+            if not Has_Delayed_Freeze (Body_Id) then
+               Freeze_Before (N, Body_Id);
+            end if;
          end if;
 
          if Nkind (N) /= N_Subprogram_Body_Stub then

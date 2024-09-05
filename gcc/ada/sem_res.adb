@@ -4658,6 +4658,15 @@ package body Sem_Res is
             A_Typ := Etype (A);
             F_Typ := Etype (F);
 
+            --  If A_Typ is complete and F_Typ is not, then adjust F_Typ
+
+            if Ekind (F_Typ) = E_Incomplete_Type
+              and then Present (Full_View (F_Typ))
+              and then not Is_Incomplete_Type (A_Typ)
+            then
+               F_Typ := Full_View (F_Typ);
+            end if;
+
             --  An actual cannot be an untagged formal incomplete type
 
             if Ekind (A_Typ) = E_Incomplete_Type

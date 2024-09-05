@@ -1228,6 +1228,18 @@ package body Sem_Type is
          return Has_Non_Limited_View (T2)
            and then Covers (T1, Get_Full_View (Non_Limited_View (T2)));
 
+      --  Coverage for incomplete types
+
+      elsif Ekind (T1) = E_Incomplete_Type
+        and then Present (Full_View (T1))
+      then
+         return Covers (Full_View (T1), T2);
+
+      elsif Ekind (T2) = E_Incomplete_Type
+        and then Present (Full_View (T2))
+      then
+         return Covers (T1, Full_View (T2));
+
       --  Ada 2005 (AI-412): Coverage for regular incomplete subtypes
 
       elsif Ekind (T1) = E_Incomplete_Subtype then
@@ -3585,6 +3597,9 @@ package body Sem_Type is
 
       if Is_Anonymous_Access_Type (T) then
          return Ada_Version >= Ada_2005;
+
+      elsif Is_Incomplete_Type (T) then
+         return False;
 
       elsif not Is_Limited_Type (T) then
          return True;
