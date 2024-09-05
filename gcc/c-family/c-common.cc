@@ -9075,10 +9075,12 @@ convert_vector_to_array_for_subscript (location_t loc,
       ret = !lvalue_p (*vecp);
 
       index = fold_for_warn (index);
-      if (TREE_CODE (index) == INTEGER_CST)
-        if (!tree_fits_uhwi_p (index)
-	    || maybe_ge (tree_to_uhwi (index), TYPE_VECTOR_SUBPARTS (type)))
-	  warning_at (loc, OPT_Warray_bounds_, "index value is out of bound");
+      /* Warn out-of-bounds index for vectors only if known.  */
+      if (poly_int_tree_p (index))
+	if (!tree_fits_poly_uint64_p (index)
+	    || known_ge (tree_to_poly_uint64 (index),
+			  TYPE_VECTOR_SUBPARTS (type)))
+	    warning_at (loc, OPT_Warray_bounds_, "index value is out of bound");
 
       /* We are building an ARRAY_REF so mark the vector as addressable
          to not run into the gimplifiers premature setting of DECL_GIMPLE_REG_P
