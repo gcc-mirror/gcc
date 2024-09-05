@@ -3175,7 +3175,7 @@ verify_types_in_gimple_reference (tree expr, bool require_lvalue)
 	      return true;
 	    }
 	  if (!AGGREGATE_TYPE_P (TREE_TYPE (op))
-	      && maybe_gt (size + bitpos,
+	      && known_gt (size + bitpos,
 			   tree_to_poly_uint64 (TYPE_SIZE (TREE_TYPE (op)))))
 	    {
 	      error ("position plus size exceeds size of referenced object in "

@@ -6347,7 +6347,7 @@ maybe_canonicalize_mem_ref_addr (tree *t, bool is_debug = false)
 					 (TYPE_SIZE (TREE_TYPE (*t))));
 		  widest_int ext
 		    = wi::add (idx, wi::to_widest (TYPE_SIZE (TREE_TYPE (*t))));
-		  if (wi::les_p (ext, wi::to_widest (TYPE_SIZE (vtype))))
+		  if (maybe_le (ext, wi::to_poly_widest (TYPE_SIZE (vtype))))
 		    {
 		      *t = build3_loc (EXPR_LOCATION (*t), BIT_FIELD_REF,
 				       TREE_TYPE (*t),
