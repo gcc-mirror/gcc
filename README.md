@@ -45,6 +45,12 @@ Fetch dependencies for Ubuntu:
 $ apt install build-essential libgmp3-dev libmpfr-dev libmpc-dev flex bison autogen gcc-multilib dejagnu
 ```
 
+Fetch dependencies for Fedora:
+
+```bash
+$ dnf install autoconf automake dejagnu flex bison glibc-devel.{x86_64,i686} gmp-devel libmpc-devel mpfr-devel
+```
+
 Clone the repository
 
 ```bash
