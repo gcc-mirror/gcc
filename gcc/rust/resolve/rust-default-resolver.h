@@ -57,17 +57,9 @@ public:
   // Visitors that visit their expression node(s)
   void visit (AST::ClosureExprInner &) override;
   void visit (AST::ClosureExprInnerTyped &) override;
-  void visit (AST::CallExpr &) override;
-  void visit (AST::MethodCallExpr &) override;
-  void visit (AST::IfExpr &) override;
-  void visit (AST::IfExprConseqElse &) override;
   void visit (AST::MatchExpr &) override;
 
   // Leaf visitors, which do nothing by default
-  void visit (AST::PathInExpression &) override;
-  void visit (AST::EnumItemTuple &) override;
-  void visit (AST::EnumItemStruct &) override;
-  void visit (AST::EnumItemDiscriminant &) override;
   void visit (AST::ConstantItem &) override;
   void visit (AST::StaticItem &) override;
 

@@ -170,17 +170,7 @@ DefaultResolver::visit (AST::ClosureExprInner &expr)
   if (expr.is_marked_for_strip ())
     return;
 
-  for (auto &param : expr.get_params ())
-    {
-      if (param.is_error ())
-	continue;
-
-      param.get_pattern ().accept_vis (*this);
-      if (param.has_type_given ())
-	param.get_type ().accept_vis (*this);
-    }
-
-  expr.get_definition_expr ().accept_vis (*this);
+  AST::DefaultASTVisitor::visit (expr);
 }
 
 void
@@ -189,63 +179,7 @@ DefaultResolver::visit (AST::ClosureExprInnerTyped &expr)
   if (expr.is_marked_for_strip ())
     return;
 
-  for (auto &param : expr.get_params ())
-    {
-      if (param.is_error ())
-	continue;
-
-      param.get_pattern ().accept_vis (*this);
-      if (param.has_type_given ())
-	param.get_type ().accept_vis (*this);
-    }
-
-  expr.get_definition_block ().accept_vis (*this);
-  expr.get_return_type ().accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::CallExpr &expr)
-{
-  expr.get_function_expr ().accept_vis (*this);
-
-  for (auto &param : expr.get_params ())
-    param->accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::MethodCallExpr &expr)
-{
-  expr.get_receiver_expr ().accept_vis (*this);
-
-  if (expr.get_method_name ().has_generic_args ())
-    {
-      auto &args = expr.get_method_name ().get_generic_args ();
-      for (auto &arg : args.get_generic_args ())
-	arg.accept_vis (*this);
-      for (auto &arg : args.get_binding_args ())
-	if (!arg.is_error ())
-	  arg.get_type ().accept_vis (*this);
-      for (auto &arg : args.get_lifetime_args ())
-	arg.accept_vis (*this);
-    }
-
-  for (auto &param : expr.get_params ())
-    param->accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::IfExpr &expr)
-{
-  expr.get_condition_expr ().accept_vis (*this);
-  expr.get_if_block ().accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::IfExprConseqElse &expr)
-{
-  expr.get_condition_expr ().accept_vis (*this);
-  expr.get_if_block ().accept_vis (*this);
-  expr.get_else_block ().accept_vis (*this);
+  AST::DefaultASTVisitor::visit (expr);
 }
 
 void
@@ -254,53 +188,7 @@ DefaultResolver::visit (AST::MatchExpr &expr)
   if (expr.is_marked_for_strip ())
     return;
 
-  expr.get_scrutinee_expr ().accept_vis (*this);
-  for (auto &arm : expr.get_match_cases ())
-    {
-      arm.get_expr ().accept_vis (*this);
-      for (auto &pat : arm.get_arm ().get_patterns ())
-	pat->accept_vis (*this);
-      if (arm.get_arm ().has_match_arm_guard ())
-	arm.get_arm ().get_guard_expr ().accept_vis (*this);
-    }
-}
-
-void
-DefaultResolver::visit (AST::PathInExpression &expr)
-{
-  for (auto &seg : expr.get_segments ())
-    if (seg.has_generic_args ())
-      {
-	auto &args = seg.get_generic_args ();
-	for (auto &arg : args.get_generic_args ())
-	  arg.accept_vis (*this);
-	for (auto &arg : args.get_binding_args ())
-	  if (!arg.is_error ())
-	    arg.get_type ().accept_vis (*this);
-	for (auto &arg : args.get_lifetime_args ())
-	  arg.accept_vis (*this);
-      }
-}
-
-void
-DefaultResolver::visit (AST::EnumItemTuple &item)
-{
-  for (auto &field : item.get_tuple_fields ())
-    field.get_field_type ().accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::EnumItemStruct &item)
-{
-  for (auto &field : item.get_struct_fields ())
-    field.get_field_type ().accept_vis (*this);
-}
-
-void
-DefaultResolver::visit (AST::EnumItemDiscriminant &item)
-{
-  if (item.has_expr ())
-    item.get_expr ().accept_vis (*this);
+  AST::DefaultASTVisitor::visit (expr);
 }
 
 void
