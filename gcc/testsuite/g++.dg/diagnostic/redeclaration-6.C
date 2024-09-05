@@ -1,5 +1,6 @@
 // PR c++/116239
 // { dg-do compile { target c++20 } }
+// { dg-additional-options "-fno-implicit-constexpr" }
 
 consteval void f1();
 void f2();
