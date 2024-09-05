@@ -1,5 +1,4 @@
 #include "rust-compile-asm.h"
-#include "rust-system.h"
 #include "rust-compile-expr.h"
 namespace Rust {
 namespace Compile {
@@ -107,7 +106,26 @@ tree
 CompileAsm::asm_construct_inputs (HIR::InlineAsm &expr)
 {
   // TODO: Do i need to do this?
-  return NULL_TREE;
+  tree head = NULL_TREE;
+  for (auto &input : expr.get_operands ())
+    {
+      if (input.get_register_type () == AST::InlineAsmOperand::RegisterType::In)
+	{
+	  auto in = input.get_in ();
+
+	  tree in_tree = CompileExpr::Compile (in.expr.get (), this->ctx);
+	  // expects a tree list
+	  // TODO: This assumes that the input is a register
+	  std::string expr_name = "r";
+	  auto name = build_string (expr_name.size () + 1, expr_name.c_str ());
+	  head
+	    = chainon (head, build_tree_list (build_tree_list (NULL_TREE, name),
+					      in_tree));
+
+	  /*head = chainon (head, out_tree);*/
+	}
+    }
+  return head;
 }
 
 tree
