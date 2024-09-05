@@ -34,6 +34,123 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-map.h"
 #include "coroutines.h"
 
+/* ================= Debug. ================= */
+
+#include "langhooks.h"
+#include "cxx-pretty-print.h"
+
+/* Walk through the fields of the type TYP and print them to the pretty printer
+   PP.  */
+
+static void
+dump_record_fields (cxx_pretty_printer *pp, tree typ)
+{
+  pp->type_id (typ);
+  pp_newline_and_indent (pp, 2);
+  pp_left_brace (pp);
+  pp_indentation (pp) += 2;
+
+  /* We'll be on a new line, we don't need padding.  */
+  pp->set_padding (pp_none);
+
+  for (tree tmp = TYPE_FIELDS (typ); tmp; tmp = DECL_CHAIN (tmp))
+    {
+      pp_newline_and_indent (pp, 0);
+      pp->declaration (tmp);
+    }
+
+  pp_newline_and_indent (pp, -2);
+  pp_right_brace (pp);
+  pp_newline_and_indent (pp, -2);
+}
+
+/* The lang-coro stream.  */
+static FILE *dmp_str = NULL;
+
+/* ID of the lang-coro dump. */
+int coro_dump_id;
+
+/* Flags passed to the lang-coro dump.  */
+static dump_flags_t coro_dump_flags;
+
+/* Pretty print the function FNDECL, which ought to be a coroutine before
+   co_await expansion, into the lang-coro dump, if it is enabled.  */
+
+static void
+coro_maybe_dump_initial_function (tree fndecl)
+{
+  if (!dmp_str)
+    return;
+
+  bool lambda_p = LAMBDA_TYPE_P (DECL_CONTEXT (fndecl));
+  fprintf (dmp_str, "%s %s original:\n",
+	   (lambda_p ? "Lambda" : "Function"),
+	    lang_hooks.decl_printable_name (fndecl, 2));
+
+  cxx_pretty_printer pp;
+  pp.set_output_stream (dmp_str);
+  pp.flags = coro_dump_flags;
+  pp.declaration (fndecl);
+  pp_newline_and_flush (&pp);
+}
+
+/* Pretty print the RAMP function to the lang-coro dump, if it is enabled.  */
+
+static void
+coro_maybe_dump_ramp (tree ramp)
+{
+  if (!dmp_str)
+    return;
+
+  cxx_pretty_printer pp;
+  pp.set_output_stream (dmp_str);
+  pp.flags = coro_dump_flags;
+
+  pp_string (&pp, "Ramp function:");
+  pp_newline_and_indent (&pp, 0);
+  pp.declaration (ramp);
+  pp_newline_and_flush (&pp);
+}
+
+/* For a given ACTOR and DESTROY, if lang-coro dumping is enabled, pretty-print
+   their contents to the lang-coro dump.  */
+
+static void
+coro_maybe_dump_transformed_functions (tree actor, tree destroy)
+{
+  if (!dmp_str)
+    return;
+
+  cxx_pretty_printer pp;
+  pp.set_output_stream (dmp_str);
+  pp.flags = coro_dump_flags;
+
+  if (!actor || actor == error_mark_node)
+    {
+      pp_string (&pp, "Transform failed");
+      pp_newline_and_flush (&pp);
+      return;
+    }
+
+  tree frame = TREE_TYPE (TREE_TYPE (DECL_ARGUMENTS (actor)));
+  pp_string (&pp, "Frame type:");
+  pp_newline (&pp);
+  dump_record_fields (&pp, frame);
+  pp_newline_and_flush (&pp);
+
+  pp_string (&pp, "Actor/resumer:");
+  pp_newline (&pp);
+  pp.declaration (actor);
+  pp_newline_and_flush (&pp);
+
+  pp_string (&pp, "Destroyer:");
+  pp_newline (&pp);
+  pp.declaration (destroy);
+  pp_newline_and_flush (&pp);
+}
+
+/* ================= END Debug. ================= */
+
 static bool coro_promise_type_found_p (tree, location_t);
 
 /* GCC C++ coroutines implementation.
@@ -5226,6 +5343,10 @@ cp_coroutine_transform::~cp_coroutine_transform ()
 void
 cp_coroutine_transform::apply_transforms ()
 {
+  if (dmp_str == NULL)
+    dmp_str = dump_begin (coro_dump_id, &coro_dump_flags);
+
+  coro_maybe_dump_initial_function (orig_fn_decl);
 
   coroutine_body
     = split_coroutine_body_from_ramp (orig_fn_decl);
@@ -5273,6 +5394,7 @@ cp_coroutine_transform::apply_transforms ()
   frame_type = finish_struct (frame_type, NULL_TREE);
 
   valid_coroutine = build_ramp_function ();
+  coro_maybe_dump_ramp (orig_fn_decl);
 }
 
 /* Having analysed and collected the necessary data we are now in a position
@@ -5291,6 +5413,8 @@ cp_coroutine_transform::finish_transforms ()
 
   current_function_decl = destroyer;
   build_destroy_fn (fn_start, frame_type, destroyer, resumer, inline_p);
+
+  coro_maybe_dump_transformed_functions (resumer, destroyer);
 }
 
 #include "gt-cp-coroutines.h"

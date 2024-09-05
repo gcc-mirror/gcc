@@ -2294,7 +2294,7 @@ pp_cxx_template_parameter (cxx_pretty_printer *pp, tree t)
     {
     case TYPE_DECL:
       pp_cxx_ws_string (pp, "class");
-      if (TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (t)))
+      if (TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (parameter)))
 	pp_cxx_ws_string (pp, "...");
       if (DECL_NAME (parameter))
 	pp_cxx_tree_identifier (pp, DECL_NAME (parameter));
@@ -2480,6 +2480,7 @@ cxx_pretty_printer::declaration (tree t)
       }
   else switch (TREE_CODE (t))
     {
+    case FIELD_DECL:
     case VAR_DECL:
     case TYPE_DECL:
       pp_cxx_simple_declaration (this, t);
