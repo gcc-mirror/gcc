@@ -5459,7 +5459,8 @@ gfc_create_module_variable (gfc_symbol * sym)
   /* Create the variable.  */
   pushdecl (decl);
   gcc_assert (sym->ns->proc_name->attr.flavor == FL_MODULE
-	      || (sym->ns->parent->proc_name->attr.flavor == FL_MODULE
+	      || ((sym->ns->parent->proc_name->attr.flavor == FL_MODULE
+		   || sym->ns->parent->proc_name->attr.flavor == FL_PROCEDURE)
 		  && sym->fn_result_spec));
   DECL_CONTEXT (decl) = sym->ns->proc_name->backend_decl;
   rest_of_decl_compilation (decl, 1, 0);
