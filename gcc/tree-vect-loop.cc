@@ -10228,7 +10228,7 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 	  vec_steps.safe_push (vec_step);
 	  tree step_mul = gimple_build_vector (&init_stmts, &mul_elts);
 	  if (peel_mul)
-	    step_mul = gimple_build (&init_stmts, PLUS_EXPR, step_vectype,
+	    step_mul = gimple_build (&init_stmts, MINUS_EXPR, step_vectype,
 				     step_mul, peel_mul);
 	  if (!init_node)
 	    vec_init = gimple_build_vector (&init_stmts, &init_elts);
