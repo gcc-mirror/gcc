@@ -4276,7 +4276,26 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 			 ? wi::max_value (TYPE_PRECISION (type), SIGNED)
 			 : wi::min_value (TYPE_PRECISION (type), SIGNED))))))
 	 && single_use (@3))
-     (mult (plusminus @2 { build_one_cst (type); }) @0))))))
+      (mult (plusminus @2 { build_one_cst (type); }) @0)))))
+ /* (A * B) + (-C) -> (B - C/A) * A, if C is a multiple of A.  */
+ (if (!ALL_FRACT_MODE_P (TYPE_MODE (type)))
+  (simplify
+    (plus (mult:cs integer_nonzerop@0 @1) INTEGER_CST@2)
+    /* Exclude the case that @2 == min to prevent UB when calculating abs
+       and (B - C/A).  */
+    (if (TREE_CODE (type) == INTEGER_TYPE
+	&& wi::neg_p (wi::to_wide (@2))
+	&& wi::to_wide (@2) != wi::min_value (TYPE_PRECISION (type), SIGNED))
+      (with {
+	wide_int c0 = wi::to_wide (@0);
+	wide_int c2 = wi::to_wide (@2);
+	wide_int c2_abs = wi::abs (c2); }
+      (if (wi::multiple_of_p (c2_abs, c0, TYPE_SIGN (type)))
+	(with {
+	  /* Calculate @2 / @0 in order to factorize the expression.  */
+	  wide_int div_res = wi::sdiv_trunc (c2, c0);
+	  tree div_cst = wide_int_to_tree (type, div_res); }
+	(mult (plus @1 { div_cst; }) @0))))))))
 
 #if GIMPLE
 /* Canonicalize X + (X << C) into X * (1 + (1 << C)) and
