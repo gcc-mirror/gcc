@@ -894,7 +894,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* X - (X / Y) * Y is the same as X % Y.  */
 (simplify
  (minus (convert1? @0) (convert2? (mult:c (trunc_div @@0 @@1) @1)))
- (if (INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type))
+ (if (INTEGRAL_TYPE_P (type)
+      || (VECTOR_INTEGER_TYPE_P (type)
+	  && ((optimize_vectors_before_lowering_p ()
+	       && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
+	      || target_supports_op_p (type, TRUNC_MOD_EXPR,
+				       optab_vector))))
   (convert (trunc_mod @0 @1))))
 
 /* x * (1 + y / x) - y -> x - y % x */
