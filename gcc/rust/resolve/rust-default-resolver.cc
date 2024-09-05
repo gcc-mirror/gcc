@@ -30,13 +30,7 @@ DefaultResolver::visit (AST::BlockExpr &expr)
   // extracting the lambda from the `scoped` call otherwise the code looks like
   // a hot turd thanks to our .clang-format
 
-  auto inner_fn = [this, &expr] () {
-    for (auto &stmt : expr.get_statements ())
-      stmt->accept_vis (*this);
-
-    if (expr.has_tail_expr ())
-      expr.get_tail_expr ().accept_vis (*this);
-  };
+  auto inner_fn = [this, &expr] () { AST::DefaultASTVisitor::visit (expr); };
 
   ctx.scoped (Rib::Kind::Normal, expr.get_node_id (), inner_fn);
 }
@@ -44,10 +38,7 @@ DefaultResolver::visit (AST::BlockExpr &expr)
 void
 DefaultResolver::visit (AST::Module &module)
 {
-  auto item_fn = [this, &module] () {
-    for (auto &item : module.get_items ())
-      item->accept_vis (*this);
-  };
+  auto item_fn = [this, &module] () { AST::DefaultASTVisitor::visit (module); };
 
   ctx.scoped (Rib::Kind::Module, module.get_node_id (), item_fn,
 	      module.get_name ());
@@ -56,38 +47,8 @@ DefaultResolver::visit (AST::Module &module)
 void
 DefaultResolver::visit (AST::Function &function)
 {
-  auto def_fn = [this, &function] () {
-    for (auto &p : function.get_function_params ())
-      {
-	if (p->is_variadic ())
-	  {
-	    auto &param = static_cast<AST::VariadicParam &> (*p);
-	    if (param.has_pattern ())
-	      param.get_pattern ().accept_vis (*this);
-	  }
-	else if (p->is_self ())
-	  {
-	    auto &param = static_cast<AST::SelfParam &> (*p);
-
-	    if (param.has_type ())
-	      param.get_type ().accept_vis (*this);
-
-	    param.get_lifetime ().accept_vis (*this);
-	  }
-	else
-	  {
-	    auto &param = static_cast<AST::FunctionParam &> (*p);
-	    param.get_pattern ().accept_vis (*this);
-	    param.get_type ().accept_vis (*this);
-	  }
-      }
-
-    if (function.has_return_type ())
-      visit (function.get_return_type ());
-
-    if (function.has_body ())
-      function.get_definition ().value ()->accept_vis (*this);
-  };
+  auto def_fn
+    = [this, &function] () { AST::DefaultASTVisitor::visit (function); };
 
   ctx.scoped (Rib::Kind::Function, function.get_node_id (), def_fn);
 }
@@ -95,20 +56,14 @@ DefaultResolver::visit (AST::Function &function)
 void
 DefaultResolver::visit (AST::ForLoopExpr &expr)
 {
-  ctx.scoped (Rib::Kind::Normal, expr.get_node_id (), [this, &expr] () {
-    expr.get_pattern ().accept_vis (*this);
-    expr.get_iterator_expr ().accept_vis (*this);
-    expr.get_loop_block ().accept_vis (*this);
-  });
+  ctx.scoped (Rib::Kind::Normal, expr.get_node_id (),
+	      [this, &expr] () { AST::DefaultASTVisitor::visit (expr); });
 }
 
 void
 DefaultResolver::visit (AST::Trait &trait)
 {
-  auto inner_fn = [this, &trait] () {
-    for (auto &item : trait.get_trait_items ())
-      item->accept_vis (*this);
-  };
+  auto inner_fn = [this, &trait] () { AST::DefaultASTVisitor::visit (trait); };
 
   ctx.scoped (Rib::Kind::TraitOrImpl, trait.get_node_id (), inner_fn,
 	      trait.get_identifier () /* FIXME: Is that valid?*/);
@@ -117,11 +72,7 @@ DefaultResolver::visit (AST::Trait &trait)
 void
 DefaultResolver::visit (AST::InherentImpl &impl)
 {
-  auto inner_fn = [this, &impl] () {
-    visit (impl.get_type ());
-    for (auto &item : impl.get_impl_items ())
-      item->accept_vis (*this);
-  };
+  auto inner_fn = [this, &impl] () { AST::DefaultASTVisitor::visit (impl); };
 
   ctx.scoped (Rib::Kind::TraitOrImpl, impl.get_node_id (), inner_fn);
 }
@@ -129,10 +80,7 @@ DefaultResolver::visit (AST::InherentImpl &impl)
 void
 DefaultResolver::visit (AST::TraitImpl &impl)
 {
-  auto inner_fn = [this, &impl] () {
-    for (auto &item : impl.get_impl_items ())
-      item->accept_vis (*this);
-  };
+  auto inner_fn = [this, &impl] () { AST::DefaultASTVisitor::visit (impl); };
 
   ctx.scoped (Rib::Kind::TraitOrImpl, impl.get_node_id (), inner_fn);
 }
@@ -155,10 +103,7 @@ DefaultResolver::visit (AST::Enum &type)
 {
   // FIXME: Do we need to scope anything by default?
 
-  auto variant_fn = [this, &type] () {
-    for (auto &variant : type.get_variants ())
-      variant->accept_vis (*this);
-  };
+  auto variant_fn = [this, &type] () { AST::DefaultASTVisitor::visit (type); };
 
   ctx.scoped (Rib::Kind::Item /* FIXME: Correct? */, type.get_node_id (),
 	      variant_fn, type.get_identifier ());
@@ -196,10 +141,8 @@ DefaultResolver::visit (AST::ConstantItem &item)
 {
   if (item.has_expr ())
     {
-      auto expr_vis = [this, &item] () {
-	item.get_expr ().accept_vis (*this);
-	visit (item.get_type ());
-      };
+      auto expr_vis
+	= [this, &item] () { AST::DefaultASTVisitor::visit (item); };
 
       // FIXME: Why do we need a Rib here?
       ctx.scoped (Rib::Kind::ConstantItem, item.get_node_id (), expr_vis);
@@ -209,7 +152,7 @@ DefaultResolver::visit (AST::ConstantItem &item)
 void
 DefaultResolver::visit (AST::StaticItem &item)
 {
-  auto expr_vis = [this, &item] () { item.get_expr ().accept_vis (*this); };
+  auto expr_vis = [this, &item] () { AST::DefaultASTVisitor::visit (item); };
 
   // FIXME: Why do we need a Rib here?
   ctx.scoped (Rib::Kind::ConstantItem, item.get_node_id (), expr_vis);
