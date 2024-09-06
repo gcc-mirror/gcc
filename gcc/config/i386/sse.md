@@ -17929,7 +17929,8 @@
   if (INTVAL (operands[5]) == 1)
     std::swap (operands[3], operands[4]);
 
-  operands[3] = force_reg (<MODE>mode, operands[3]);
+  if (operands[3] == CONST0_RTX (<MODE>mode))
+    operands[3] = force_reg (<MODE>mode, operands[3]);
   if (operands[4] == CONST0_RTX (<MODE>mode))
     operands[4] = force_reg (<MODE>mode, operands[4]);
 
