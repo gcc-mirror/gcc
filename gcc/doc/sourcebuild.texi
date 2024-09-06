@@ -4165,7 +4165,7 @@ compiler options from @env{COMPAT_OPTIONS}.  When
 the compiler under test but with combinations of the options from
 @env{COMPAT_OPTIONS}.
 
-To run only the C++ compatibility suite using the compiler under test
+To run only the basic C++ compatibility suite using the compiler under test
 and another version of GCC using specific compiler options, do the
 following from @file{@var{objdir}/gcc}:
 
@@ -4176,6 +4176,22 @@ make -k \
   COMPAT_OPTIONS="@var{lists as shown above}" \
   check-c++ \
   RUNTESTFLAGS="compat.exp"
+@end smallexample
+
+The file @file{struct-layout-1.exp} provides a few more test cases
+exercising pseudo-randomly generated structure layouts.
+Defining @env{RUN_ALL_COMPAT_TESTS} would increase the number of
+generated tests to yield even more coverage.  As an example, to modify
+the above test command to run the maximum number of ABI tests for C++, do:
+
+@smallexample
+rm site.exp
+make -k \
+  ALT_CXX_UNDER_TEST=$@{alt_prefix@}/bin/g++ \
+  COMPAT_OPTIONS="@var{lists as shown above}" \
+  check-c++ \
+  RUNTESTFLAGS="compat.exp struct-layout-1.exp" \
+  RUN_ALL_COMPAT_TESTS=1
 @end smallexample
 
 A test that fails when the source files are compiled with different
