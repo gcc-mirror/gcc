@@ -2606,9 +2606,10 @@ trans_code (gfc_code * code, tree cond)
 	case EXEC_OMP_DISTRIBUTE_SIMD:
 	case EXEC_OMP_DO:
 	case EXEC_OMP_DO_SIMD:
-	case EXEC_OMP_LOOP:
 	case EXEC_OMP_ERROR:
 	case EXEC_OMP_FLUSH:
+	case EXEC_OMP_INTEROP:
+	case EXEC_OMP_LOOP:
 	case EXEC_OMP_MASKED:
 	case EXEC_OMP_MASKED_TASKLOOP:
 	case EXEC_OMP_MASKED_TASKLOOP_SIMD:

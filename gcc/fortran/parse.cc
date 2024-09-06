@@ -1165,6 +1165,9 @@ decode_omp_directive (void)
     case 'f':
       matcho ("flush", gfc_match_omp_flush, ST_OMP_FLUSH);
       break;
+    case 'i':
+      matcho ("interop", gfc_match_omp_interop, ST_OMP_INTEROP);
+      break;
     case 'm':
       matcho ("masked taskloop simd", gfc_match_omp_masked_taskloop_simd,
 	      ST_OMP_MASKED_TASKLOOP_SIMD);
@@ -1881,6 +1884,7 @@ next_statement (void)
   case ST_OMP_CANCEL: case ST_OMP_CANCELLATION_POINT: case ST_OMP_DEPOBJ: \
   case ST_OMP_TARGET_UPDATE: case ST_OMP_TARGET_ENTER_DATA: \
   case ST_OMP_TARGET_EXIT_DATA: case ST_OMP_ORDERED_DEPEND: case ST_OMP_ERROR: \
+  case ST_OMP_INTEROP: \
   case ST_ERROR_STOP: case ST_OMP_SCAN: case ST_SYNC_ALL: \
   case ST_SYNC_IMAGES: case ST_SYNC_MEMORY: case ST_LOCK: case ST_UNLOCK: \
   case ST_FORM_TEAM: case ST_CHANGE_TEAM: \
@@ -2809,6 +2813,9 @@ gfc_ascii_statement (gfc_statement st, bool strip_sentinel)
       break;
     case ST_OMP_FLUSH:
       p = "!$OMP FLUSH";
+      break;
+    case ST_OMP_INTEROP:
+      p = "!$OMP INTEROP";
       break;
     case ST_OMP_LOOP:
       p = "!$OMP LOOP";

@@ -18,6 +18,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_VECTOR
+#define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -78,7 +80,7 @@ static const struct gfc_omp_directive gfc_omp_directives[] = {
   /* "error" becomes GFC_OMP_DIR_EXECUTABLE with at(execution) */
   {"error", GFC_OMP_DIR_UTILITY, ST_OMP_ERROR},
   {"flush", GFC_OMP_DIR_EXECUTABLE, ST_OMP_FLUSH},
-  /* {"interop", GFC_OMP_DIR_EXECUTABLE, ST_OMP_INTEROP}, */
+  {"interop", GFC_OMP_DIR_EXECUTABLE, ST_OMP_INTEROP},
   {"loop", GFC_OMP_DIR_EXECUTABLE, ST_OMP_LOOP},
   {"masked", GFC_OMP_DIR_EXECUTABLE, ST_OMP_MASKED},
   /* {"metadirective", GFC_OMP_DIR_META, ST_OMP_METADIRECTIVE}, */
@@ -193,7 +195,8 @@ gfc_free_omp_clauses (gfc_omp_clauses *c)
     gfc_free_omp_namelist (c->lists[i],
 			   i == OMP_LIST_AFFINITY || i == OMP_LIST_DEPEND,
 			   i == OMP_LIST_ALLOCATE,
-			   i == OMP_LIST_USES_ALLOCATORS);
+			   i == OMP_LIST_USES_ALLOCATORS,
+			   i == OMP_LIST_INIT);
   gfc_free_expr_list (c->wait_list);
   gfc_free_expr_list (c->tile_list);
   gfc_free_expr_list (c->sizes_list);
@@ -559,7 +562,7 @@ syntax:
   gfc_error ("Syntax error in OpenMP variable list at %C");
 
 cleanup:
-  gfc_free_omp_namelist (head, false, false, false);
+  gfc_free_omp_namelist (head, false, false, false, false);
   gfc_current_locus = old_loc;
   return MATCH_ERROR;
 }
@@ -649,7 +652,7 @@ syntax:
   gfc_error ("Syntax error in OpenMP variable list at %C");
 
 cleanup:
-  gfc_free_omp_namelist (head, false, false, false);
+  gfc_free_omp_namelist (head, false, false, false, false);
   gfc_current_locus = old_loc;
   return MATCH_ERROR;
 }
@@ -758,7 +761,7 @@ syntax:
   gfc_error ("Syntax error in OpenMP SINK dependence-type list at %C");
 
 cleanup:
-  gfc_free_omp_namelist (head, false, false, false);
+  gfc_free_omp_namelist (head, false, false, false, false);
   gfc_current_locus = old_loc;
   return MATCH_ERROR;
 }
@@ -1106,6 +1109,9 @@ enum omp_mask2
   OMP_CLAUSE_FULL,  /* OpenMP 5.1.  */
   OMP_CLAUSE_PARTIAL,  /* OpenMP 5.1.  */
   OMP_CLAUSE_SIZES,  /* OpenMP 5.1.  */
+  OMP_CLAUSE_INIT,  /* OpenMP 5.1.  */
+  OMP_CLAUSE_DESTROY,  /* OpenMP 5.1.  */
+  OMP_CLAUSE_USE,  /* OpenMP 5.1.  */
   /* This must come last.  */
   OMP_MASK2_LAST
 };
@@ -1517,7 +1523,7 @@ gfc_match_omp_clause_reduction (char pc, gfc_omp_clauses *c, bool openacc,
       *head = NULL;
       gfc_error_now ("!$OMP DECLARE REDUCTION %s not found at %L",
 		     buffer, &old_loc);
-      gfc_free_omp_namelist (n, false, false, false);
+      gfc_free_omp_namelist (n, false, false, false, false);
     }
   else
     for (n = *head; n; n = n->next)
@@ -1808,8 +1814,327 @@ gfc_match_omp_clause_uses_allocators (gfc_omp_clauses *c)
   return MATCH_YES;
 
 error:
-  gfc_free_omp_namelist (head, false, false, true);
+  gfc_free_omp_namelist (head, false, false, true, false);
   return MATCH_ERROR;
+}
+
+
+/* Match the 'prefer_type' modifier of the interop 'init' clause:
+   with either OpenMP 5.1's
+     prefer_type ( <const-int-expr|string literal> [, ...]
+   or
+     prefer_type ( '{' <fr(...) | attr (...)>, ...] '}' [, '{' ... '}' ] )
+   where 'fr' takes an integer named constant or a string literal
+   and 'attr takes a string literal, starting with 'ompx_')
+
+Document string + int format
+*/
+
+static match
+gfc_match_omp_prefer_type (char **pref_str, int *pref_str_len, int **pref_int_array)
+{
+  gfc_expr *e;
+  size_t cnt = 0;
+  std::vector<int> int_list;
+  std::string pref_string;
+  /* New syntax.  */
+  if (gfc_peek_ascii_char () == '{')
+    do
+      {
+	if (gfc_match ("{ ") != MATCH_YES)
+	  {
+	    gfc_error ("Expected %<{%> at %C");
+	    return MATCH_ERROR;
+	  }
+	std::string attr;
+	bool fr_found = false;
+	do
+	  {
+	    if (gfc_match ("fr ( ") == MATCH_YES)
+	      {
+		if (fr_found)
+		  {
+		    gfc_error ("Duplicated %<fr%> preference-selector-name "
+			       "at %C");
+		    return MATCH_ERROR;
+		  }
+		fr_found = true;
+		gfc_symbol *sym = NULL;
+		locus loc = gfc_current_locus;
+		if (gfc_match_symbol (&sym, 0) != MATCH_YES
+		    || gfc_match (" _") == MATCH_YES)
+		  {
+		    gfc_current_locus = loc;
+		    if (gfc_match_expr (&e) == MATCH_ERROR)
+		      return MATCH_ERROR;
+		  }
+		if ((!sym && !e)
+		    || (e && (!gfc_resolve_expr (e)
+			      || e->expr_type != EXPR_CONSTANT
+			      || e->ts.type != BT_CHARACTER
+			      || e->ts.kind != gfc_default_character_kind
+			      || e->value.character.length == 0))
+		    || (sym && (sym->attr.flavor != FL_PARAMETER
+				|| sym->ts.type != BT_INTEGER
+				|| !mpz_fits_sint_p (sym->value->value.integer)
+				|| sym->attr.dimension)))
+		  {
+		    gfc_error ("Expected constant integer identifier or "
+			       "non-empty default-kind character literal at %L",
+			       &e->where);
+		    gfc_free_expr (e);
+		    return MATCH_ERROR;
+		  }
+		if (sym)
+		  {
+		    for (size_t i = int_list.size(); i < cnt; ++i)
+		      int_list.push_back (0);
+		    int_list.push_back (mpz_get_si (sym->value->value.integer));
+		    pref_string += ' ';
+		    pref_string += '\0';
+		  }
+		else
+		  {
+		    char *str = XALLOCAVEC (char, e->value.character.length+1);
+		    for (int i = 0; i < e->value.character.length + 1; i++)
+		      str[i] = e->value.character.string[i];
+		   if (memchr (str, '\0', e->value.character.length) != 0)
+		     {
+		       gfc_error ("Unexpected null character in character "
+				  "literal at %L", &loc);
+		       return MATCH_ERROR;
+		     }
+		    pref_string += str;
+		    pref_string += '\0';
+		  }
+	      }
+	    else if (gfc_match ("attr ( ") == MATCH_YES)
+	      {
+		locus loc = gfc_current_locus;
+		if (gfc_match_expr (&e) != MATCH_YES
+		    || e->expr_type != EXPR_CONSTANT
+		    || e->ts.type != BT_CHARACTER)
+		  {
+		    gfc_error ("Expected default-kind character literal at %L",
+			       &loc);
+		    gfc_free_expr (e);
+		    return MATCH_ERROR;
+		  }
+		char *str = XALLOCAVEC (char, e->value.character.length+1);
+		for (int i = 0; i < e->value.character.length + 1; i++)
+		  str[i] = e->value.character.string[i];
+		if (!startswith (str, "ompx_"))
+		  {
+		    gfc_error ("Character literal at %L must start with "
+			      "%<ompx_%>", &e->where);
+		    gfc_free_expr (e);
+		    return MATCH_ERROR;
+		  }
+		if (memchr (str, '\0', e->value.character.length) != 0
+		    || memchr (str, ',', e->value.character.length) != 0)
+		  {
+		    gfc_error ("Unexpected null or %<,%> character in "
+			       "character literal at %L", &e->where);
+		    return MATCH_ERROR;
+		  }
+		attr += str;
+		attr += '\0';
+	      }
+	    else
+	      {
+		gfc_error ("Expected %<fr(%> or %<attr(%> at %C");
+		return MATCH_ERROR;
+	      }
+	    ++cnt;
+	    if (gfc_match (") ") != MATCH_YES)
+	      {
+		gfc_error ("Expected %<)%> at %C");
+		return MATCH_ERROR;
+	      }
+	    if (gfc_match (", ") == MATCH_YES)
+	      continue;
+	    if (gfc_match ("} ") == MATCH_YES)
+	      break;
+	    gfc_error ("Expected %<,%> or %<}%> at %C");
+	    return MATCH_ERROR;
+	  }
+	while (true);
+	if (!fr_found)
+	  {
+	    pref_string += ' ';
+	    pref_string += '\0';
+	  }
+	pref_string += attr;
+	pref_string += '\0';
+
+	if (gfc_match (", ") == MATCH_YES)
+	  continue;
+	if (gfc_match (") ") == MATCH_YES)
+	  break;
+	gfc_error ("Expected %<,%> or %<)%> at %C");
+	return MATCH_ERROR;
+      }
+    while (true);
+  else
+    do
+      {
+	if (gfc_match_expr (&e) != MATCH_YES)
+	  return MATCH_ERROR;
+	if (!gfc_resolve_expr (e)
+	    || e->expr_type != EXPR_CONSTANT
+	    || (e->ts.type != BT_INTEGER && e->ts.type != BT_CHARACTER)
+	    || (e->ts.type == BT_INTEGER
+		&& !mpz_fits_sint_p (e->value.integer))
+	    || (e->ts.type == BT_CHARACTER
+		&& (e->ts.kind != gfc_default_character_kind
+		    || e->value.character.length == 0)))
+	  {
+	    gfc_error ("Expected constant integer expression or non-empty "
+		       "default-kind character literal at %L", &e->where);
+	    gfc_free_expr (e);
+	    return MATCH_ERROR;
+	  }
+	if (e->ts.type == BT_INTEGER)
+	  {
+	    for (size_t i = int_list.size(); i < cnt; ++i)
+	      int_list.push_back (0);
+	    int_list.push_back (mpz_get_si (e->value.integer));
+	    pref_string += ' ';
+	  }
+	else
+	  {
+	    char *str = XALLOCAVEC (char, e->value.character.length+1);
+	    for (int i = 0; i < e->value.character.length + 1; i++)
+	      str[i] = e->value.character.string[i];
+	    if (memchr (str, '\0', e->value.character.length) != 0)
+	      {
+		gfc_error ("Unexpected null character in character literal "
+			   "at %L", &e->where);
+		return MATCH_ERROR;
+	      }
+	    pref_string += str;
+	  }
+	pref_string += '\0';
+	pref_string += '\0';
+	++cnt;
+	gfc_free_expr (e);
+	if (gfc_match (", ") == MATCH_YES)
+	  continue;
+	if (gfc_match (") ") == MATCH_YES)
+	  break;
+	gfc_error ("Expected %<,%> or %<)%> at %C");
+	return MATCH_ERROR;
+      }
+    while (true);
+  if (!int_list.empty())
+    for (size_t i = int_list.size(); i < cnt; ++i)
+     int_list.push_back (0);
+
+  pref_string += '\0';
+
+  *pref_str_len = pref_string.length();
+  *pref_str = XNEWVEC (char, pref_string.length ());
+  memcpy (*pref_str, pref_string.data (), pref_string.length ());
+  if (!int_list.empty ())
+    {
+      *pref_int_array = XNEWVEC (int, cnt);
+      memcpy (*pref_int_array, int_list.data (), sizeof (int) * cnt);
+    }
+  return MATCH_YES;
+}
+
+
+/* Match OpenMP 5.1's 'init' clause for 'interop' objects:
+   init([prefer_type(...)][,][<target|targetsync>, ...] :] interop-obj-list)  */
+
+static match
+gfc_match_omp_init (gfc_omp_namelist **list)
+{
+  bool target = false, targetsync = false;
+  char *pref_str = NULL;
+  int pref_str_len = 0;
+  int *pref_int_array = NULL;
+  match m;
+  locus old_loc = gfc_current_locus;
+  do {
+       if (gfc_match ("prefer_type ( ") == MATCH_YES)
+	{
+	  if (pref_str)
+	    {
+	      gfc_error ("Duplicate %<prefer_type%> modifier at %C");
+	      return MATCH_ERROR;
+	    }
+	  m = gfc_match_omp_prefer_type (&pref_str, &pref_str_len,
+					 &pref_int_array);
+	  if (m != MATCH_YES)
+	    return m;
+	  if (gfc_match (", ") == MATCH_YES)
+	    continue;
+	  if (gfc_match (": ") == MATCH_YES)
+	    break;
+	  gfc_error ("Expected %<,%> or %<:%> at %C");
+	  return MATCH_ERROR;
+	}
+       if (gfc_match ("targetsync ") == MATCH_YES)
+	{
+	  targetsync = true;
+	  if (gfc_match (", ") == MATCH_YES)
+	    continue;
+	  if (gfc_match (": ") == MATCH_YES)
+	    break;
+	  gfc_char_t c = gfc_peek_char ();
+	  if (!pref_str
+	      && (c == ')'
+		  || (gfc_current_form != FORM_FREE
+		      && (c == '_' || ISALPHA (c)))))
+	    {
+	      gfc_current_locus = old_loc;
+	      break;
+	    }
+	  gfc_error ("Expected %<,%> or %<:%> at %C");
+	  return MATCH_ERROR;
+	}
+      if (gfc_match ("target ") == MATCH_YES)
+	{
+	  target = true;
+	  if (gfc_match (", ") == MATCH_YES)
+	    continue;
+	  if (gfc_match (": ") == MATCH_YES)
+	    break;
+	  gfc_char_t c = gfc_peek_char ();
+	  if (!pref_str
+	      && (c == ')'
+		  || (gfc_current_form != FORM_FREE
+		      && (c == '_' || ISALPHA (c)))))
+	    {
+	      gfc_current_locus = old_loc;
+	      break;
+	    }
+	  gfc_error ("Expected %<,%> or %<:%> at %C");
+	  return MATCH_ERROR;
+	}
+      if (pref_str)
+	{
+	  gfc_error ("Expected %<target%> or %<targetsync%> at %C");
+	  return MATCH_ERROR;
+	}
+      gfc_current_locus = old_loc;
+      break;
+    }
+  while (true);
+
+ gfc_omp_namelist **head = NULL;
+ if (gfc_match_omp_variable_list ("", list, false, NULL, &head) != MATCH_YES)
+   return MATCH_ERROR;
+ for (gfc_omp_namelist *n = *head; n; n = n->next)
+   {
+     n->u.init.target = target;
+     n->u.init.targetsync = targetsync;
+     n->u.init.str = pref_str;
+     n->u.init.len = pref_str_len;
+     n->u2.interop_int = pref_int_array;
+   }
+ return MATCH_YES;
 }
 
 
@@ -1934,7 +2259,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 
 	      if (end_colon && gfc_match (" %e )", &alignment) != MATCH_YES)
 		{
-		  gfc_free_omp_namelist (*head, false, false, false);
+		  gfc_free_omp_namelist (*head, false, false, false, false);
 		  gfc_current_locus = old_loc;
 		  *head = NULL;
 		  break;
@@ -2498,6 +2823,11 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		}
 	      continue;
 	    }
+	  if ((mask & OMP_CLAUSE_DESTROY)
+	      && gfc_match_omp_variable_list ("destroy (",
+					      &c->lists[OMP_LIST_DESTROY],
+					      true) == MATCH_YES)
+	    continue;
 	  if ((mask & OMP_CLAUSE_DETACH)
 	      && !openacc
 	      && !c->detach
@@ -2856,6 +3186,14 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		c->indirect = 1;
 	      continue;
 	    }
+	  if ((mask & OMP_CLAUSE_INIT)
+	      && gfc_match ("init ( ") == MATCH_YES)
+	    {
+	      m = gfc_match_omp_init (&c->lists[OMP_LIST_INIT]);
+	      if (m == MATCH_YES)
+		continue;
+	      goto error;
+	    }
 	  if ((mask & OMP_CLAUSE_IS_DEVICE_PTR)
 	      && gfc_match_omp_variable_list
 		   ("is_device_ptr (",
@@ -2929,7 +3267,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		    end_colon = true;
 		  else if (gfc_match (" )") != MATCH_YES)
 		    {
-		      gfc_free_omp_namelist (*head, false, false, false);
+		      gfc_free_omp_namelist (*head, false, false, false, false);
 		      gfc_current_locus = old_loc;
 		      *head = NULL;
 		      break;
@@ -2940,7 +3278,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		{
 		  if (gfc_match (" %e )", &step) != MATCH_YES)
 		    {
-		      gfc_free_omp_namelist (*head, false, false, false);
+		      gfc_free_omp_namelist (*head, false, false, false, false);
 		      gfc_current_locus = old_loc;
 		      *head = NULL;
 		      goto error;
@@ -3037,7 +3375,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		    }
 		  if (has_error)
 		    {
-		      gfc_free_omp_namelist (*head, false, false, false);
+		      gfc_free_omp_namelist (*head, false, false, false, false);
 		      *head = NULL;
 		      goto error;
 		    }
@@ -3774,6 +4112,11 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      needs_space = true;
 	      continue;
 	    }
+	  if ((mask & OMP_CLAUSE_USE)
+	      && gfc_match_omp_variable_list ("use (",
+					      &c->lists[OMP_LIST_USE],
+					      true) == MATCH_YES)
+	    continue;
 	  if ((mask & OMP_CLAUSE_USE_DEVICE)
 	      && gfc_match_omp_variable_list ("use_device (",
 					      &c->lists[OMP_LIST_USE_DEVICE],
@@ -4590,6 +4933,9 @@ cleanup:
   (omp_mask (OMP_CLAUSE_SIZES))
 #define OMP_ALLOCATORS_CLAUSES \
   omp_mask (OMP_CLAUSE_ALLOCATE)
+#define OMP_INTEROP_CLAUSES \
+  (omp_mask (OMP_CLAUSE_DEPEND) | OMP_CLAUSE_NOWAIT | OMP_CLAUSE_DEVICE \
+   | OMP_CLAUSE_INIT | OMP_CLAUSE_DESTROY | OMP_CLAUSE_USE)
 
 
 static match
@@ -4669,7 +5015,7 @@ gfc_match_omp_allocate (void)
 	  gfc_error ("Unexpected expression as list item at %L in ALLOCATE "
 		     "directive", &n->expr->where);
 
-	gfc_free_omp_namelist (vars, false, true, false);
+	gfc_free_omp_namelist (vars, false, true, false, false);
 	goto error;
       }
 
@@ -5082,14 +5428,14 @@ gfc_match_omp_flush (void)
     {
       gfc_error ("List specified together with memory order clause in FLUSH "
 		 "directive at %C");
-      gfc_free_omp_namelist (list, false, false, false);
+      gfc_free_omp_namelist (list, false, false, false, false);
       gfc_free_omp_clauses (c);
       return MATCH_ERROR;
     }
   if (gfc_match_omp_eos () != MATCH_YES)
     {
       gfc_error ("Unexpected junk after $OMP FLUSH statement at %C");
-      gfc_free_omp_namelist (list, false, false, false);
+      gfc_free_omp_namelist (list, false, false, false, false);
       gfc_free_omp_clauses (c);
       return MATCH_ERROR;
     }
@@ -5767,6 +6113,14 @@ gfc_ignore_trait_property_extension_list (void)
       return MATCH_ERROR;
     }
 }
+
+
+match
+gfc_match_omp_interop (void)
+{
+  return match_omp (EXEC_OMP_INTEROP, OMP_INTEROP_CLAUSES);
+}
+
 
 /* OpenMP 5.0:
 
@@ -7618,7 +7972,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	"DEVICE_RESIDENT", "LINK", "USE_DEVICE",
 	"CACHE", "IS_DEVICE_PTR", "USE_DEVICE_PTR", "USE_DEVICE_ADDR",
 	"NONTEMPORAL", "ALLOCATE", "HAS_DEVICE_ADDR", "ENTER",
-	"USES_ALLOCATORS" };
+	"USES_ALLOCATORS", "INIT", "USE", "DESTROY" };
   STATIC_ASSERT (ARRAY_SIZE (clause_names) == OMP_LIST_NUM);
 
   if (omp_clauses == NULL)
@@ -8001,6 +8355,29 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	    }
 	}
 
+  if (code
+      && code->op == EXEC_OMP_INTEROP
+      && omp_clauses->lists[OMP_LIST_DEPEND])
+    {
+      if (!omp_clauses->lists[OMP_LIST_INIT]
+	  && !omp_clauses->lists[OMP_LIST_USE]
+	  && !omp_clauses->lists[OMP_LIST_DESTROY])
+	{
+	  gfc_error ("DEPEND clause at %L requires action clause with "
+		     "%<targetsync%> interop-type",
+		     &omp_clauses->lists[OMP_LIST_DEPEND]->where);
+	}
+      for (n = omp_clauses->lists[OMP_LIST_INIT]; n; n = n->next)
+	if (!n->u.init.targetsync)
+	  {
+	    gfc_error ("DEPEND clause at %L requires %<targetsync%> "
+		       "interop-type, lacking it for %qs at %L",
+		       &omp_clauses->lists[OMP_LIST_DEPEND]->where,
+		       n->sym->name, &n->where);
+	    break;
+	  }
+    }
+
   /* Detect specifically the case where we have "map(x) private(x)" and raise
      an error.  If we have "...simd" combined directives though, the "private"
      applies to the simd part, so this is permitted though.  */
@@ -8130,7 +8507,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		{
 		  prev->next = n->next;
 		  n->next = NULL;
-		  gfc_free_omp_namelist (n, false, true, false);
+		  gfc_free_omp_namelist (n, false, true, false, false);
 		  n = prev->next;
 		}
 	      continue;
@@ -11283,6 +11660,8 @@ omp_code_to_statement (gfc_code *code)
       return ST_OMP_ERROR;
     case EXEC_OMP_FLUSH:
       return ST_OMP_FLUSH;
+    case EXEC_OMP_INTEROP:
+      return ST_OMP_INTEROP;
     case EXEC_OMP_DISTRIBUTE:
       return ST_OMP_DISTRIBUTE;
     case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
@@ -11841,6 +12220,7 @@ gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns)
     case EXEC_OMP_ASSUME:
     case EXEC_OMP_CANCEL:
     case EXEC_OMP_ERROR:
+    case EXEC_OMP_INTEROP:
     case EXEC_OMP_MASKED:
     case EXEC_OMP_ORDERED:
     case EXEC_OMP_PARALLEL_WORKSHARE:

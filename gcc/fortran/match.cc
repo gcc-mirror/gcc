@@ -5540,10 +5540,11 @@ gfc_free_namelist (gfc_namelist *name)
 void
 gfc_free_omp_namelist (gfc_omp_namelist *name, bool free_ns,
 		       bool free_align_allocator,
-		       bool free_mem_traits_space)
+		       bool free_mem_traits_space, bool free_init)
 {
   gfc_omp_namelist *n;
   gfc_expr *last_allocator = NULL;
+  char *last_init_str = NULL;
 
   for (; name; name = n)
     {
@@ -5552,6 +5553,7 @@ gfc_free_omp_namelist (gfc_omp_namelist *name, bool free_ns,
 	gfc_free_expr (name->u.align);
       else if (free_mem_traits_space)
 	{ }  /* name->u.memspace_sym: shall not call gfc_free_symbol here. */
+
       if (free_ns)
 	gfc_free_namespace (name->u2.ns);
       else if (free_align_allocator)
@@ -5564,6 +5566,15 @@ gfc_free_omp_namelist (gfc_omp_namelist *name, bool free_ns,
 	}
       else if (free_mem_traits_space)
 	{ }  /* name->u2.traits_sym: shall not call gfc_free_symbol here. */
+      else if (free_init)
+	{
+	  if (name->u.init.str != last_init_str)
+	    {
+	      last_init_str = name->u.init.str;
+	      free (name->u.init.str);
+	      free (name->u2.interop_int);
+	    }
+	}
       else if (name->u2.udr)
 	{
 	  if (name->u2.udr->combiner)
