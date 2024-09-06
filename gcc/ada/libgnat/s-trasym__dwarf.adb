@@ -637,14 +637,24 @@ package body System.Traceback.Symbolic is
    -- Symbolic_Traceback --
    ------------------------
 
+   LDAD_Header : constant String := "Load address: ";
+   --  Copied from Ada.Exceptions.Exception_Data
+
    function Symbolic_Traceback
      (Traceback    : Tracebacks_Array;
       Suppress_Hex : Boolean) return String
    is
-      Res : Bounded_String (Max_Length => Max_String_Length);
+      Load_Address : constant Address := Get_Executable_Load_Address;
+      Res          : Bounded_String (Max_Length => Max_String_Length);
+
    begin
       System.Soft_Links.Lock_Task.all;
       Init_Exec_Module;
+      if Load_Address /= Null_Address then
+         Append (Res, LDAD_Header);
+         Append_Address (Res, Load_Address);
+         Append (Res, ASCII.LF);
+      end if;
       Symbolic_Traceback_No_Lock (Traceback, Suppress_Hex, Res);
       System.Soft_Links.Unlock_Task.all;
 
