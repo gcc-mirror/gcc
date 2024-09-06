@@ -2407,6 +2407,56 @@ namespace __detail
   template<typename _Duration>
     using _Parser_t = _Parser<common_type_t<_Duration, seconds>>;
 
+  template<typename _Duration>
+    consteval bool
+    __use_floor()
+    {
+      if constexpr (_Duration::period::den == 1)
+	{
+	  switch (_Duration::period::num)
+	  {
+	    case minutes::period::num:
+	    case hours::period::num:
+	    case days::period::num:
+	    case weeks::period::num:
+	    case years::period::num:
+	      return true;
+	  }
+	}
+      return false;
+    }
+
+  // A "do the right thing" rounding function for duration and time_point
+  // values extracted by from_stream. When treat_as_floating_point is true
+  // we don't want to do anything, just a straightforward conversion.
+  // When the destination type has a period of minutes, hours, days, weeks,
+  // or years, we use chrono::floor to truncate towards negative infinity.
+  // This ensures that an extracted timestamp such as 2024-09-05 13:00:00
+  // will produce 2024-09-05 when rounded to days, rather than rounding up
+  // to 2024-09-06 (a different day).
+  // Otherwise, use chrono::round to get the nearest value representable
+  // in the destination type.
+  template<typename _ToDur, typename _Tp>
+    constexpr auto
+    __round(const _Tp& __t)
+    {
+      if constexpr (__is_duration_v<_Tp>)
+	{
+	  if constexpr (treat_as_floating_point_v<typename _Tp::rep>)
+	    return chrono::duration_cast<_ToDur>(__t);
+	  else if constexpr (__detail::__use_floor<_ToDur>())
+	    return chrono::floor<_ToDur>(__t);
+	  else
+	    return chrono::round<_ToDur>(__t);
+	}
+      else
+	{
+	  static_assert(__is_time_point_v<_Tp>);
+	  using _Tpt = time_point<typename _Tp::clock, _ToDur>;
+	  return _Tpt(__detail::__round<_ToDur>(__t.time_since_epoch()));
+	}
+    }
+
 } // namespace __detail
 /// @endcond
 
@@ -2421,7 +2471,7 @@ namespace __detail
       auto __need = __format::_ChronoParts::_TimeOfDay;
       __detail::_Parser_t<duration<_Rep, _Period>> __p(__need);
       if (__p(__is, __fmt, __abbrev, __offset))
-	__d = chrono::duration_cast<duration<_Rep, _Period>>(__p._M_time);
+	__d = __detail::__round<duration<_Rep, _Period>>(__p._M_time);
       return __is;
     }
 
@@ -2882,7 +2932,7 @@ namespace __detail
 	  else
 	    {
 	      auto __st = __p._M_sys_days + __p._M_time - *__offset;
-	      __tp = chrono::time_point_cast<_Duration>(__st);
+	      __tp = __detail::__round<_Duration>(__st);
 	    }
 	}
       return __is;
@@ -2918,7 +2968,7 @@ namespace __detail
 	  // "23:59:60" to correctly produce a time within a leap second.
 	  auto __ut = utc_clock::from_sys(__p._M_sys_days) + __p._M_time
 			- *__offset;
-	  __tp = chrono::time_point_cast<_Duration>(__ut);
+	  __tp = __detail::__round<_Duration>(__ut);
 	}
       return __is;
     }
@@ -2956,7 +3006,7 @@ namespace __detail
 	      constexpr sys_days __epoch(-days(4383)); // 1958y/1/1
 	      auto __d = __p._M_sys_days - __epoch + __p._M_time - *__offset;
 	      tai_time<common_type_t<_Duration, seconds>> __tt(__d);
-	      __tp = chrono::time_point_cast<_Duration>(__tt);
+	      __tp = __detail::__round<_Duration>(__tt);
 	    }
 	}
       return __is;
@@ -2995,7 +3045,7 @@ namespace __detail
 	      constexpr sys_days __epoch(days(3657)); // 1980y/1/Sunday[1]
 	      auto __d = __p._M_sys_days - __epoch + __p._M_time - *__offset;
 	      gps_time<common_type_t<_Duration, seconds>> __gt(__d);
-	      __tp = chrono::time_point_cast<_Duration>(__gt);
+	      __tp = __detail::__round<_Duration>(__gt);
 	    }
 	}
       return __is;
@@ -3020,7 +3070,7 @@ namespace __detail
     {
       sys_time<_Duration> __st;
       if (chrono::from_stream(__is, __fmt, __st, __abbrev, __offset))
-	__tp = chrono::time_point_cast<_Duration>(file_clock::from_sys(__st));
+	__tp = __detail::__round<_Duration>(file_clock::from_sys(__st));
       return __is;
     }
 
@@ -3049,7 +3099,7 @@ namespace __detail
 	{
 	  days __d = __p._M_sys_days.time_since_epoch();
 	  auto __t = local_days(__d) + __p._M_time; // ignore offset
-	  __tp = chrono::time_point_cast<_Duration>(__t);
+	  __tp = __detail::__round<_Duration>(__t);
 	}
       return __is;
     }

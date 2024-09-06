@@ -75,6 +75,26 @@ test_parse()
   VERIFY( abbrev == "GPS" );
   VERIFY( offset == -(12h + 34min) );
 
+  // Test rounding
+  ss.clear();
+  ss.str("2224-09-06 23");
+  gps_time<days> d;
+  ss >> parse("%F %H", d); // Should be truncated to start of day, not rounded.
+  ss.str("");
+  ss << d;
+  VERIFY( ss.str() == "2224-09-06 00:00:00" );
+  ss.str("1969-12-31 23");
+  ss >> parse("%F %H", d); // Should be truncated to start of day, not rounded.
+  ss.str("");
+  ss << d;
+  VERIFY( ss.str() == "1969-12-31 00:00:00" );
+
+  gps_time<duration<long, std::ratio<10>>> ds; // decaseconds
+  ss.str("2224-09-06 15:07:06");
+  ss >> parse("%F %T", ds); // Should be rounded to nearest decasecond.
+  ss << ds;
+  VERIFY( ss.str() == "2224-09-06 15:07:10" );
+
   ss.str("");
   ss << gps_seconds{};
   VERIFY( ss >> parse("%F %T", tp) );
