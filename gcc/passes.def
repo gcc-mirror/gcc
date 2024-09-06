@@ -157,9 +157,9 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_ipa_profile);
   NEXT_PASS (pass_ipa_icf);
   NEXT_PASS (pass_ipa_devirt);
+  NEXT_PASS (pass_ipa_cdtor_merge);
   NEXT_PASS (pass_ipa_cp);
   NEXT_PASS (pass_ipa_sra);
-  NEXT_PASS (pass_ipa_cdtor_merge);
   NEXT_PASS (pass_ipa_fn_summary);
   NEXT_PASS (pass_ipa_inline);
   NEXT_PASS (pass_ipa_pure_const);
