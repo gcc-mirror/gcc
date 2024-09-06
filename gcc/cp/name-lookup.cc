@@ -6606,7 +6606,7 @@ pop_decl_namespace (void)
 /* Process a namespace-alias declaration.  */
 
 void
-do_namespace_alias (tree alias, tree name_space)
+do_namespace_alias (location_t loc, tree alias, tree name_space)
 {
   if (name_space == error_mark_node)
     return;
@@ -6616,7 +6616,7 @@ do_namespace_alias (tree alias, tree name_space)
   name_space = ORIGINAL_NAMESPACE (name_space);
 
   /* Build the alias.  */
-  alias = build_lang_decl (NAMESPACE_DECL, alias, void_type_node);
+  alias = build_lang_decl_loc (loc, NAMESPACE_DECL, alias, void_type_node);
   DECL_NAMESPACE_ALIAS (alias) = name_space;
   DECL_EXTERNAL (alias) = 1;
   DECL_CONTEXT (alias) = FROB_CONTEXT (current_scope ());
@@ -6628,6 +6628,7 @@ do_namespace_alias (tree alias, tree name_space)
     return;
 
   set_originating_module (alias);
+  check_module_decl_linkage (alias);
 
   /* Emit debug info for namespace alias.  */
   if (!building_stmt_list_p ())
@@ -8569,6 +8570,7 @@ pushtag (tree name, tree type, TAG_how how)
   /* Set type visibility now if this is a forward declaration.  */
   TREE_PUBLIC (decl) = 1;
   determine_visibility (decl);
+  check_module_decl_linkage (decl);
 
   return type;
 }
@@ -9274,8 +9276,18 @@ push_namespace (tree name, bool make_inline)
 	  if (TREE_PUBLIC (ns))
 	    DECL_MODULE_EXPORT_P (ns) = true;
 	  else if (!header_module_p ())
-	    error_at (input_location,
-		      "exporting namespace with internal linkage");
+	    {
+	      if (name)
+		{
+		  auto_diagnostic_group d;
+		  error_at (input_location, "exporting namespace %qD with "
+			    "internal linkage", ns);
+		  inform (input_location, "%qD has internal linkage because "
+			  "it was declared in an unnamed namespace", ns);
+		}
+	      else
+		error_at (input_location, "exporting unnamed namespace");
+	    }
 	}
       if (module_purview_p ())
 	DECL_MODULE_PURVIEW_P (ns) = true;

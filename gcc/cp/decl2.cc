@@ -1019,6 +1019,7 @@ finish_static_data_member_decl (tree decl,
     }
 
   cp_finish_decl (decl, init, init_const_expr_p, asmspec_tree, flags);
+  check_module_decl_linkage (decl);
 }
 
 /* DECLARATOR and DECLSPECS correspond to a class member.  The other

@@ -25,4 +25,4 @@ namespace {
   export namespace ns {}  // { dg-error "internal linkage" }
 }
 
-export namespace {}  // { dg-error "internal linkage" }
+export namespace {}  // { dg-error "exporting unnamed namespace" }

@@ -799,7 +799,7 @@ plugin_add_namespace_alias (cc1_plugin::connection *,
   tree name = get_identifier (id);
   tree target = convert_in (target_in);
 
-  do_namespace_alias (name, target);
+  do_namespace_alias (input_location, name, target);
 
   return 1;
 }

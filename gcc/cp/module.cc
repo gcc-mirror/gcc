@@ -20153,11 +20153,34 @@ set_originating_module (tree decl, bool friend_p ATTRIBUTE_UNUSED)
       DECL_MODULE_ATTACH_P (decl) = true;
     }
 
-  if (!module_exporting_p ())
+  /* It is ill-formed to export a declaration with internal linkage.  However,
+     at the point this function is called we don't yet always know whether this
+     declaration has internal linkage; instead we defer this check for callers
+     to do once visibility has been determined.  */
+  if (module_exporting_p ())
+    DECL_MODULE_EXPORT_P (decl) = true;
+}
+
+/* Checks whether DECL within a module unit has valid linkage for its kind.
+   Must be called after visibility for DECL has been finalised.  */
+
+void
+check_module_decl_linkage (tree decl)
+{
+  if (!module_has_cmi_p ())
     return;
 
-  // FIXME: Check ill-formed linkage
-  DECL_MODULE_EXPORT_P (decl) = true;
+  /* An internal-linkage declaration cannot be generally be exported.
+     But it's OK to export any declaration from a header unit, including
+     internal linkage declarations.  */
+  if (!header_module_p ()
+      && DECL_MODULE_EXPORT_P (decl)
+      && decl_linkage (decl) == lk_internal)
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"exporting declaration %qD with internal linkage", decl);
+      DECL_MODULE_EXPORT_P (decl) = false;
+    }
 }
 
 /* DECL is keyed to CTX for odr purposes.  */
