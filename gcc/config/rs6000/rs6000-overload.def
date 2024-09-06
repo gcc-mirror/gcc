@@ -4403,12 +4403,20 @@
     XXEVAL  XXEVAL_VUQ
 
 [VEC_TEST_LSBB_ALL_ONES, vec_test_lsbb_all_ones, __builtin_vec_xvtlsbb_all_ones]
+  signed int __builtin_vec_xvtlsbb_all_ones (vsc);
+    XVTLSBB_ONES LSBB_ALL_ONES_VSC
   signed int __builtin_vec_xvtlsbb_all_ones (vuc);
-    XVTLSBB_ONES
+    XVTLSBB_ONES LSBB_ALL_ONES_VUC
+  signed int __builtin_vec_xvtlsbb_all_ones (vbc);
+    XVTLSBB_ONES LSBB_ALL_ONES_VBC
 
 [VEC_TEST_LSBB_ALL_ZEROS, vec_test_lsbb_all_zeros, __builtin_vec_xvtlsbb_all_zeros]
+  signed int __builtin_vec_xvtlsbb_all_zeros (vsc);
+    XVTLSBB_ZEROS LSBB_ALL_ZEROS_VSC
   signed int __builtin_vec_xvtlsbb_all_zeros (vuc);
-    XVTLSBB_ZEROS
+    XVTLSBB_ZEROS LSBB_ALL_ZEROS_VUC
+  signed int __builtin_vec_xvtlsbb_all_zeros (vbc);
+    XVTLSBB_ZEROS LSBB_ALL_ZEROS_VBC
 
 [VEC_TRUNC, vec_trunc, __builtin_vec_trunc]
   vf __builtin_vec_trunc (vf);

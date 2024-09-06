@@ -23421,6 +23421,25 @@ signed long long will sign extend the rightmost byte of each doubleword.
 The following additional built-in functions are also available for the
 PowerPC family of processors, starting with ISA 3.1 (@option{-mcpu=power10}):
 
+@smallexample
+@exdent int vec_test_lsbb_all_ones (vector signed char);
+@exdent int vec_test_lsbb_all_ones (vector unsigned char);
+@exdent int vec_test_lsbb_all_ones (vector bool char);
+@end smallexample
+@findex vec_test_lsbb_all_ones
+
+The builtin @code{vec_test_lsbb_all_ones} returns 1 if the least significant
+bit in each byte is equal to 1.  It returns 0 otherwise.
+
+@smallexample
+@exdent int vec_test_lsbb_all_zeros (vector signed char);
+@exdent int vec_test_lsbb_all_zeros (vector unsigned char);
+@exdent int vec_test_lsbb_all_zeros (vector bool char);
+@end smallexample
+@findex vec_test_lsbb_all_zeros
+
+The builtin @code{vec_test_lsbb_all_zeros} returns 1 if the least significant
+bit in each byte is equal to zero.  It returns 0 otherwise.
 
 @smallexample
 @exdent vector unsigned long long int
