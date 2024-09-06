@@ -6685,6 +6685,9 @@ vect_recog_cond_store_pattern (vec_info *vinfo,
   /* Check if the else value matches the original loaded one.  */
   bool invert = false;
   tree cmp_ls = gimple_arg (cond_stmt, 0);
+  if (TREE_CODE (cmp_ls) != SSA_NAME)
+    return NULL;
+
   tree cond_arg1 = gimple_arg (cond_stmt, 1);
   tree cond_arg2 = gimple_arg (cond_stmt, 2);
 
