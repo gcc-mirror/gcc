@@ -1,3 +1,26 @@
+2024-09-05  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116606
+	* g++.dg/ext/attr-unavailable-13.C: New test.
+
+2024-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/116501
+	* gcc.dg/torture/bitint-73.c: New test.
+
+2024-09-05  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2024-09-05  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/signbit-5.c: Remove -fwrapv and change INT_MIN to INT_MIN+1.
+
 2024-09-04  Andrew Carlotti  <andrew.carlotti@arm.com>
 
 	PR target/112108

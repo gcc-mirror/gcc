@@ -1,3 +1,33 @@
+2024-09-05  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2024-09-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR ipa/116410
+	* ipa-modref.cc (analyze_parms): Always analyze function parameter
+	for LTO.
+
+2024-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/116501
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_addsub_overflow):
+	In the last_ovf case, use build_zero_cst operand not just when
+	TYPE_UNSIGNED (typeN), but also when precN >= 0.
+
+2024-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116219
+	* gimple-expr.cc (remove_suffix): Formatting fixes.
+	(create_tmp_var_name): Don't call clean_symbol_name.
+	* gimplify.cc (gimplify_init_constructor): When promoting automatic
+	DECL_NAMELESS vars to static, don't preserve their DECL_NAME.
+
 2024-09-04  Andrew Carlotti  <andrew.carlotti@arm.com>
 
 	PR target/112108

@@ -1,3 +1,12 @@
+2024-09-05  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116606
+	* decl2.cc (mark_vtable_entries): Temporarily override deprecated_state to
+	UNAVAILABLE_DEPRECATED_SUPPRESS.  Remove a warning_sentinel.
+
 2024-08-19  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
