@@ -1,3 +1,21 @@
+2024-09-05  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2024-09-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR ipa/116410
+	* ipa-modref.cc (analyze_parms): Always analyze function parameter
+	for LTO.
+
+2024-09-05  Tejas Belagod  <tejas.belagod@arm.com>
+
+	Backported from master:
+	2024-02-16  Tejas Belagod  <tejas.belagod@arm.com>
+
+	PR target/113780
+	* config/arm/arm.cc (arm_function_ok_for_sibcall): Don't allow tailcalls
+	for indirect calls with 4 or more arguments in pac-enabled functions.
+
 2024-09-03  Haochen Jiang  <haochen.jiang@intel.com>
 
 	* config/i386/avx512fp16intrin.h
