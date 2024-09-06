@@ -1395,17 +1395,33 @@ check_redeclaration_exception_specification (tree new_decl,
       bool complained = true;
       location_t new_loc = DECL_SOURCE_LOCATION (new_decl);
       auto_diagnostic_group d;
-      if (DECL_IN_SYSTEM_HEADER (old_decl))
+
+      if (DECL_IN_SYSTEM_HEADER (old_decl) && DECL_EXTERN_C_P (old_decl))
+	/* Don't fuss about the C library; the C library functions are not
+	   specified to have exception specifications (just behave as if they
+	   have them), but some implementations include them.  */
 	complained = pedwarn (new_loc, OPT_Wsystem_headers, msg, new_decl);
       else if (!flag_exceptions)
 	/* We used to silently permit mismatched eh specs with
-	   -fno-exceptions, so make them a pedwarn now.  */
+	   -fno-exceptions, so only complain if -pedantic.  */
 	complained = pedwarn (new_loc, OPT_Wpedantic, msg, new_decl);
+      else if (!new_exceptions)
+	/* Reduce to pedwarn for omitted exception specification.  No warning
+	   flag for this; silence the warning by correcting the code.  */
+	complained = pedwarn (new_loc, 0, msg, new_decl);
       else
 	error_at (new_loc, msg, new_decl);
+
       if (complained)
 	inform (DECL_SOURCE_LOCATION (old_decl),
 		"from previous declaration %qF", old_decl);
+
+      /* Copy the old exception specification if new_decl has none.  Unless the
+	 old decl is extern "C", as obscure code might depend on the type of
+	 the new declaration (e.g. noexcept-type19.C).  */
+      if (!new_exceptions && !DECL_EXTERN_C_P (old_decl))
+	TREE_TYPE (new_decl)
+	  = build_exception_variant (TREE_TYPE (new_decl), old_exceptions);
     }
 }
 
