@@ -490,6 +490,9 @@ can_duplicate_and_interleave_p (vec_info *vinfo, unsigned int count,
       if (!multiple_p (elt_bytes, 2, &elt_bytes))
 	return false;
       nvectors *= 2;
+      /* We need to be able to fuse COUNT / NVECTORS elements together.  */
+      if (!multiple_p (count, nvectors))
+	return false;
     }
 }
 
