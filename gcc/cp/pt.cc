@@ -18654,7 +18654,6 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		  {
 		    bool const_init = false;
 		    cp_decomp decomp_d, *decomp = NULL;
-		    tree ndecl = error_mark_node;
 		    tree asmspec_tree = NULL_TREE;
 		    maybe_push_decl (decl);
 
@@ -18667,8 +18666,10 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 			&& TREE_TYPE (pattern_decl) != error_mark_node)
 		      {
 			decomp = &decomp_d;
-			ndecl = tsubst_decomp_names (decl, pattern_decl, args,
-						     complain, in_decl, decomp);
+			if (tsubst_decomp_names (decl, pattern_decl, args,
+						 complain, in_decl, decomp)
+			    == error_mark_node)
+			  decomp = NULL;
 		      }
 
 		    init = tsubst_init (init, decl, args, complain, in_decl);
@@ -18695,9 +18696,6 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 		    cp_finish_decl (decl, init, const_init, asmspec_tree, 0,
 				    decomp);
-
-		    if (ndecl != error_mark_node)
-		      cp_finish_decomp (ndecl, decomp);
 		  }
 	      }
 	  }

@@ -103,7 +103,7 @@ static tree check_special_function_return_type
 static tree push_cp_library_fn (enum tree_code, tree, int);
 static tree build_cp_library_fn (tree, enum tree_code, tree, int);
 static void store_parm_decls (tree);
-static void initialize_local_var (tree, tree);
+static void initialize_local_var (tree, tree, bool);
 static void expand_static_init (tree, tree);
 static location_t smallest_type_location (const cp_decl_specifier_seq*);
 static bool identify_goto (tree, location_t, const location_t *,
@@ -8074,14 +8074,13 @@ wrap_temporary_cleanups (tree init, tree guard)
 /* Generate code to initialize DECL (a local variable).  */
 
 static void
-initialize_local_var (tree decl, tree init)
+initialize_local_var (tree decl, tree init, bool decomp)
 {
   tree type = TREE_TYPE (decl);
   tree cleanup;
   int already_used;
 
-  gcc_assert (VAR_P (decl)
-	      || TREE_CODE (decl) == RESULT_DECL);
+  gcc_assert (VAR_P (decl) || TREE_CODE (decl) == RESULT_DECL);
   gcc_assert (!TREE_STATIC (decl));
 
   if (DECL_SIZE (decl) == NULL_TREE)
@@ -8101,7 +8100,8 @@ initialize_local_var (tree decl, tree init)
     DECL_READ_P (decl) = 1;
 
   /* Generate a cleanup, if necessary.  */
-  cleanup = cxx_maybe_build_cleanup (decl, tf_warning_or_error);
+  cleanup = (decomp ? NULL_TREE
+	     : cxx_maybe_build_cleanup (decl, tf_warning_or_error));
 
   /* Perform the initialization.  */
   if (init)
@@ -8136,10 +8136,16 @@ initialize_local_var (tree decl, tree init)
 
 	  gcc_assert (building_stmt_list_p ());
 	  saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
-	  current_stmt_tree ()->stmts_are_full_exprs_p = 1;
+	  /* Avoid CLEANUP_POINT_EXPR for the structured binding
+	     bases, those will have CLEANUP_POINT_EXPR at the end of
+	     code emitted by cp_finish_decomp.  */
+	  if (decomp)
+	    current_stmt_tree ()->stmts_are_full_exprs_p = 0;
+	  else
+	    current_stmt_tree ()->stmts_are_full_exprs_p = 1;
 	  finish_expr_stmt (init);
-	  current_stmt_tree ()->stmts_are_full_exprs_p =
-	    saved_stmts_are_full_exprs_p;
+	  current_stmt_tree ()->stmts_are_full_exprs_p
+	    = saved_stmts_are_full_exprs_p;
 	}
     }
 
@@ -8462,6 +8468,16 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
   int was_readonly = 0;
   bool var_definition_p = false;
   tree auto_node;
+  auto_vec<tree> extra_cleanups;
+  struct decomp_cleanup {
+    tree decl;
+    cp_decomp *&decomp;
+    ~decomp_cleanup ()
+    {
+      if (decomp && DECL_DECOMPOSITION_P (decl))
+	cp_finish_decomp (decl, decomp);
+    }
+  } decomp_cl = { decl, decomp };
 
   if (decl == error_mark_node)
     return;
@@ -8949,6 +8965,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       add_decl_expr (decl);
     }
 
+  tree decomp_init = NULL_TREE;
   /* Let the middle end know about variables and functions -- but not
      static data members in uninstantiated class templates.  */
   if (VAR_OR_FUNCTION_DECL_P (decl))
@@ -9010,6 +9027,9 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       if (var_definition_p)
 	abstract_virtuals_error (decl, type);
 
+      if (decomp && !cp_finish_decomp (decl, decomp, true))
+	decomp = NULL;
+
       if (TREE_TYPE (decl) == error_mark_node)
 	/* No initialization required.  */
 	;
@@ -9042,8 +9062,89 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	}
       /* A variable definition.  */
       else if (DECL_FUNCTION_SCOPE_P (decl) && !TREE_STATIC (decl))
-	/* Initialize the local variable.  */
-	initialize_local_var (decl, init);
+	{
+	  /* Initialize the local variable.  */
+	  if (!decomp)
+	    initialize_local_var (decl, init, false);
+	  else
+	    {
+	      tree cleanup = NULL_TREE;
+	      if (DECL_SIZE (decl))
+		cleanup = cxx_maybe_build_cleanup (decl, tf_warning_or_error);
+	      /* If cp_finish_decomp needs to emit any code, we need to emit that
+		 code after code emitted by initialize_local_var in a single
+		 CLEANUP_POINT_EXPR, so that temporaries are destructed only
+		 after the cp_finish_decomp emitted code.
+		 If there are any cleanups, either extend_ref_init_temps
+		 created ones or e.g. array destruction, push those first
+		 with the cleanups guarded on a bool temporary, initially
+		 set to false and set to true after initialize_local_var
+		 emitted code.  */
+	      tree guard = NULL_TREE;
+	      if (cleanups || cleanup)
+		{
+		  guard = force_target_expr (boolean_type_node,
+					     boolean_false_node, tf_none);
+		  add_stmt (guard);
+		  guard = TARGET_EXPR_SLOT (guard);
+		}
+	      tree sl = push_stmt_list ();
+	      initialize_local_var (decl, init, true);
+	      if (guard)
+		{
+		  add_stmt (build2 (MODIFY_EXPR, boolean_type_node,
+				    guard, boolean_true_node));
+		  for (tree &t : *cleanups)
+		    t = build3 (COND_EXPR, void_type_node,
+				guard, t, void_node);
+		  if (cleanup)
+		    cleanup = build3 (COND_EXPR, void_type_node,
+				      guard, cleanup, void_node);
+		}
+	      unsigned before = stmt_list_stack->length ();
+	      cp_finish_decomp (decl, decomp);
+	      decomp = NULL;
+	      unsigned n_extra_cleanups = stmt_list_stack->length () - before;
+	      sl = pop_stmt_list (sl);
+	      if (n_extra_cleanups)
+		{
+		  /* If cp_finish_decomp needs any cleanups, such as for
+		     extend_ref_init_temps created vars, pop_stmt_list
+		     popped that all, so push those extra cleanups around
+		     the whole sequence with a guard variable.  */
+		  gcc_assert (TREE_CODE (sl) == STATEMENT_LIST);
+		  guard = force_target_expr (integer_type_node,
+					     integer_zero_node, tf_none);
+		  add_stmt (guard);
+		  guard = TARGET_EXPR_SLOT (guard);
+		  for (unsigned i = 0; i < n_extra_cleanups; ++i)
+		    {
+		      tree_stmt_iterator tsi = tsi_last (sl);
+		      gcc_assert (!tsi_end_p (tsi));
+		      tree last = tsi_stmt (tsi);
+		      gcc_assert (TREE_CODE (last) == CLEANUP_STMT
+				  && !CLEANUP_EH_ONLY (last));
+		      tree cst = build_int_cst (integer_type_node, i + 1);
+		      tree cl = build3 (COND_EXPR, void_type_node,
+					build2 (GE_EXPR, boolean_type_node,
+						guard, cst),
+					CLEANUP_EXPR (last), void_node);
+		      extra_cleanups.safe_push (cl);
+		      tsi_link_before (&tsi, build2 (MODIFY_EXPR,
+						     integer_type_node,
+						     guard, cst),
+				       TSI_SAME_STMT);
+		      tree sl2 = CLEANUP_BODY (last);
+		      gcc_assert (TREE_CODE (sl2) == STATEMENT_LIST);
+		      tsi_link_before (&tsi, sl2, TSI_SAME_STMT);
+		      tsi_delink (&tsi);
+		    }
+		}
+	      decomp_init = maybe_cleanup_point_expr_void (sl);
+	      if (cleanup)
+		finish_decl_cleanup (decl, cleanup);
+	    }
+	}
 
       /* If a variable is defined, and then a subsequent
 	 definition with external linkage is encountered, we will
@@ -9069,6 +9170,12 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	}
       release_tree_vector (cleanups);
     }
+
+  for (tree t : &extra_cleanups)
+    push_cleanup (NULL_TREE, t, false);
+
+  if (decomp_init)
+    add_stmt (decomp_init);
 
   if (was_readonly)
     TREE_READONLY (decl) = 1;
@@ -9355,10 +9462,11 @@ cp_maybe_mangle_decomp (tree decl, cp_decomp *decomp)
 /* Finish a decomposition declaration.  DECL is the underlying declaration
    "e", FIRST is the head of a chain of decls for the individual identifiers
    chained through DECL_CHAIN in reverse order and COUNT is the number of
-   those decls.  */
+   those decls.  If TEST_P is true, return true if any code would need to be
+   actually emitted but don't emit it.  Return false otherwise.  */
 
-void
-cp_finish_decomp (tree decl, cp_decomp *decomp)
+bool
+cp_finish_decomp (tree decl, cp_decomp *decomp, bool test_p)
 {
   tree first = decomp->decl;
   unsigned count = decomp->count;
@@ -9377,7 +9485,7 @@ cp_finish_decomp (tree decl, cp_decomp *decomp)
 	}
       if (DECL_P (decl) && DECL_NAMESPACE_SCOPE_P (decl))
 	SET_DECL_ASSEMBLER_NAME (decl, get_identifier ("<decomp>"));
-      return;
+      return false;
     }
 
   location_t loc = DECL_SOURCE_LOCATION (decl);
@@ -9401,7 +9509,7 @@ cp_finish_decomp (tree decl, cp_decomp *decomp)
 	    fit_decomposition_lang_decl (first, decl);
 	  first = DECL_CHAIN (first);
 	}
-      return;
+      return false;
     }
 
   auto_vec<tree, 16> v;
@@ -9545,6 +9653,8 @@ cp_finish_decomp (tree decl, cp_decomp *decomp)
       eltscnt = tree_to_uhwi (tsize);
       if (count != eltscnt)
 	goto cnt_mismatch;
+      if (test_p)
+	return true;
       if (!processing_template_decl && DECL_DECOMP_BASE (decl))
 	{
 	  /* For structured bindings used in conditions we need to evaluate
@@ -9696,6 +9806,7 @@ cp_finish_decomp (tree decl, cp_decomp *decomp)
 	    DECL_HAS_VALUE_EXPR_P (v[i]) = 1;
 	  }
     }
+  return false;
 }
 
 /* Returns a declaration for a VAR_DECL as if:

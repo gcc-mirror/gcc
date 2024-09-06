@@ -14524,8 +14524,6 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr,
   cp_finish_decl (range_decl, deref_begin,
 		  /*is_constant_init*/false, NULL_TREE,
 		  LOOKUP_ONLYCONVERTING, decomp);
-  if (DECL_DECOMPOSITION_P (range_decl))
-    cp_finish_decomp (range_decl, decomp);
 
   warn_for_range_copy (range_decl, deref_begin);
 
@@ -16448,13 +16446,12 @@ cp_parser_decomposition_declaration (cp_parser *parser,
       if (decl != error_mark_node)
 	{
 	  cp_decomp decomp = { prev, cnt };
-	  cp_finish_decl (decl, initializer, non_constant_p, NULL_TREE,
-			  (is_direct_init ? LOOKUP_NORMAL : LOOKUP_IMPLICIT),
-			  &decomp);
 	  if (keyword != RID_MAX)
 	    DECL_DECOMP_BASE (decl)
 	      = keyword == RID_SWITCH ? integer_one_node : integer_zero_node;
-	  cp_finish_decomp (decl, &decomp);
+	  cp_finish_decl (decl, initializer, non_constant_p, NULL_TREE,
+			  (is_direct_init ? LOOKUP_NORMAL : LOOKUP_IMPLICIT),
+			  &decomp);
 	}
     }
   else if (decl != error_mark_node)
@@ -44848,8 +44845,6 @@ cp_finish_omp_range_for (tree orig, tree begin)
 					NULL_TREE, tf_warning_or_error),
 		  /*is_constant_init*/false, NULL_TREE,
 		  LOOKUP_ONLYCONVERTING, decomp);
-  if (DECL_DECOMPOSITION_P (decl))
-    cp_finish_decomp (decl, decomp);
 }
 
 /* Return true if next tokens contain a standard attribute that contains
