@@ -172,6 +172,7 @@ GRS_OBJS = \
     rust/rust-borrow-checker.o \
     rust/rust-borrow-checker-diagnostics.o\
     rust/rust-bir-builder-expr-stmt.o \
+    rust/rust-bir-builder-pattern.o \
     rust/rust-bir-dump.o \
     rust/rust-polonius.o\
     rust/rust-hir-dot-operator.o \
