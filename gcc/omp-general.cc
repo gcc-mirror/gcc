@@ -1293,6 +1293,8 @@ omp_check_context_selector (location_t loc, tree ctx)
   for (tree tss = ctx; tss; tss = TREE_CHAIN (tss))
     {
       enum omp_tss_code tss_code = OMP_TSS_CODE (tss);
+      bool saw_any_prop = false;
+      bool saw_other_prop = false;
 
       /* We can parse this, but not handle it yet.  */
       if (tss_code == OMP_TRAIT_SET_TARGET_DEVICE)
@@ -1329,9 +1331,61 @@ omp_check_context_selector (location_t loc, tree ctx)
 	  else
 	    ts_seen[ts_code] = true;
 
+	  /* If trait-property "any" is specified in the "kind"
+	     trait-selector of the "device" selector set or the
+	     "target_device" selector sets, no other trait-property
+	     may be specified in the same selector set.  */
+	  if (ts_code == OMP_TRAIT_DEVICE_KIND)
+	    for (tree p = OMP_TS_PROPERTIES (ts); p; p = TREE_CHAIN (p))
+	      {
+		const char *prop = omp_context_name_list_prop (p);
+		if (!prop)
+		  continue;
+		else if (strcmp (prop, "any") == 0)
+		  saw_any_prop = true;
+		else
+		  saw_other_prop = true;
+	      }
+	  /* It seems slightly suspicious that the spec's language covers
+	     the device_num selector too, but
+	       target_device={device_num(whatever),kind(any)}
+	     is probably not terribly useful anyway.  */
+	  else if (ts_code == OMP_TRAIT_DEVICE_ARCH
+		   || ts_code == OMP_TRAIT_DEVICE_ISA
+		   || ts_code == OMP_TRAIT_DEVICE_NUM)
+	    saw_other_prop = true;
+
+	  /* Each trait-property can only be specified once in a trait-selector
+	     other than the construct selector set.  FIXME: only handles
+	     name-list properties, not clause-list properties, since the
+	     "requires" selector is not implemented yet (PR 113067).  */
+	  if (tss_code != OMP_TRAIT_SET_CONSTRUCT)
+	    for (tree p1 = OMP_TS_PROPERTIES (ts); p1; p1 = TREE_CHAIN (p1))
+	      {
+		if (OMP_TP_NAME (p1) != OMP_TP_NAMELIST_NODE)
+		  break;
+		const char *n1 = omp_context_name_list_prop (p1);
+		if (!n1)
+		  continue;
+		for (tree p2 = TREE_CHAIN (p1); p2; p2 = TREE_CHAIN (p2))
+		  {
+		    const char *n2 = omp_context_name_list_prop (p2);
+		    if (!n2)
+		      continue;
+		    if (!strcmp (n1, n2))
+		      {
+			error_at (loc,
+				  "trait-property %qs specified more "
+				  "than once in %qs selector",
+				  n1, OMP_TS_NAME (ts));
+			return error_mark_node;
+		      }
+		  }
+	      }
+
+	  /* Check for unknown properties.  */
 	  if (omp_ts_map[ts_code].valid_properties == NULL)
 	    continue;
-
 	  for (tree p = OMP_TS_PROPERTIES (ts); p; p = TREE_CHAIN (p))
 	    for (unsigned j = 0; ; j++)
 	      {
@@ -1380,6 +1434,14 @@ omp_check_context_selector (location_t loc, tree ctx)
 		  /* Identifier traits.  */
 		  break;
 	      }
+	}
+
+      if (saw_any_prop && saw_other_prop)
+	{
+	  error_at (loc,
+		    "no other trait-property may be specified "
+		    "in the same selector set with %<kind(\"any\")%>");
+	  return error_mark_node;
 	}
     }
   return ctx;
