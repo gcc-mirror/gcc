@@ -1,3 +1,93 @@
+2024-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (addressable_p) <COMPONENT_REF>: Add bypass
+	for internal fields on strict-alignment platforms.
+
+2024-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (default_field_alignment): New function.
+	* gcc-interface/misc.cc: Include tm_p header file.
+	(default_field_alignment): New function.
+	* gcc-interface/trans.cc (addressable_p) <COMPONENT_REF>: Replace
+	previous alignment klduge with call to default_field_alignment.
+	* gcc-interface/utils.cc (finish_record_type): Likewise for the
+	alignment based on which DECL_BIT_FIELD should be cleared.
+
+2024-09-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.ads, exp_util.adb (Duplicate_Subexpr_No_Checks):
+	Remove parameters, which are no longer used.
+
+2024-09-05  Viljar Indus  <indus@adacore.com>
+
+	* par-endh.adb: add call to new diagnostic for end loop errors.
+	* sem_ch13.adb: add call to new diagnostic for default iterator
+	error and record representation being too late.
+	* sem_ch4.adb: Add new diagnostic for wrong operands.
+	* sem_ch9.adb: Add new diagnostic for a Lock_Free warning.
+	* libgnat/g-lists.adb (Ensure_Unlocked): Make checks for tampering
+	conditional.
+	* libgnat/g-lists.ads: Add parameter Tampering_Checks to control
+	whether tampering checks should be executed.
+	* backend_utils.adb: Add new gcc switches
+	'-fdiagnostics-format=sarif-file' and
+	'-fdiagnostics-format=sarif-stderr'.
+	* debug.adb: document -gnatd_D switch.
+	* diagnostics-brief_emitter.adb: New package for displaying
+	diagnostic messages in a compact manner.
+	* diagnostics-brief_emitter.ads: Same as above.
+	* diagnostics-constructors.adb: New pacakge for providing simpler
+	constructor methods for new diagnostic objects.
+	* diagnostics-constructors.ads: Same as above.
+	* diagnostics-converter.adb: New package for converting old
+	Error_Msg_Object-s to Diagnostic_Types.
+	* diagnostics-converter.ads: Same as above.
+	* diagnostics-json_utils.adb: Package for utility methods related
+	to emitting JSON.
+	* diagnostics-json_utils.ads: Same as above.
+	* diagnostics-pretty_emitter.adb: New package for displaying
+	diagnostic messages in a more elaborate manner.
+	* diagnostics-pretty_emitter.ads: Same as above.
+	* diagnostics-repository.adb: New package for collecting all
+	created error messages.
+	* diagnostics-repository.ads: Same as above.
+	* diagnostics-sarif_emitter.adb: New pacakge for converting all of
+	the diagnostics into a report in the SARIF format.
+	* diagnostics-sarif_emitter.ads: Same as above.
+	* diagnostics-switch_repository.adb: New package containing the
+	definitions for all of the warninging switches.
+	* diagnostics-switch_repository.ads: Same as above.
+	* diagnostics-utils.adb: Contains various utility methods for the
+	diagnostic pacakges.
+	* diagnostics-utils.ads: Same as above.
+	* diagnostics.adb: Contains the definitions and common functions
+	for all the new diagnostics objects.
+	* diagnostics.ads: Same as above.
+	* errout.adb: Relocate the old implementations for brief and
+	pretty printing the diagnostic messages and the entrypoint to the
+	new implementation if a debug switch is used.
+	* errout.ads: Improve documentation. Make Set_Msg_Text publicly
+	available.
+	* opt.ads: Add the flag SARIF_File which controls whether the
+	diagnostic messages should be printed to a file in the SARIF
+	format. Add the flag SARIF_Output to control whether the
+	diagnostic messages should be printed to std-err in the SARIF
+	format.
+	* gcc-interface/Make-lang.in: Add new pacakages to the object
+	list.
+	* gcc-interface/Makefile.in: Add new pacakages to the object list.
+
+2024-09-05  Jose Ruiz  <ruiz@adacore.com>
+
+	* ali-util.adb (Get_File_Checksum): Force the parsing for
+	the checksum computation of runtime files to be done in
+	the corresponding recent Ada version.
+
+2024-09-05  Ronan Desplanques  <desplanques@adacore.com>
+
+	* inline.adb (Cannot_Inline): Remove assertion.
+	* inline.ads (Cannot_Inline): Add precondition.
+
 2024-09-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.cc (addressable_p) <COMPONENT_REF>: Add kludge

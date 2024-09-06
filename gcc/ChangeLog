@@ -1,3 +1,89 @@
+2024-09-05  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_expand_int_scc): For rv64, use a DI
+	temporary for the output and a promoted subreg to extract it into SI
+	arget.
+	(riscv_noce_conversion_profitable_p): Recognize new output from
+	sCC expansion too.
+
+2024-09-05  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi: Remove an extra char in @item sme2.
+
+2024-09-05  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+
+	* gimplify.cc (omp_add_variable): Check if decl size is not poly_int_tree_p.
+	(gimplify_adjust_omp_clauses): Likewise.
+	* omp-low.cc (scan_sharing_clauses): Likewise.
+	(lower_omp_target): Likewise.
+
+2024-09-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/104957
+	* config/nvptx/nvptx.cc (write_fn_proto_1): Revert 2022-03-22
+	change; 'write_fn_marker' also for alias DECL.
+	(nvptx_asm_output_def_from_decls): 'write_fn_marker' for alias
+	DEF.
+
+2024-09-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords): Document
+	'nvptx_default_ptx_isa_version_at_least_6_0',
+	'nvptx_runtime_alias_ptx'.
+	(Add Options): Document 'nvptx_alias_ptx'.
+
+2024-09-05  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-patterns.cc (vect_recog_cond_store_pattern): Use pattern
+	statement.
+
+2024-09-05  Tamar Christina  <tamar.christina@arm.com>
+
+	* doc/invoke.texi: Remove duplicate armv9-a mention.
+
+2024-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vrp.cc (pass_vrp::execute): Start diagnostics with
+	lowercase u rather than capital U, use semicolon instead of dot.
+
+2024-09-05  YunQiang Su  <yunqiang@isrc.iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc(riscv_select_multilib_by_abi):
+	look up reversely as the fallback path is listed as the 1st one.
+
+2024-09-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_analyze_slp): Analyze SLP for live
+	but otherwise unused defs.
+
+2024-09-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gen-pass-instances.awk: Handle 'PUSH_INSERT_PASSES_WITHIN'.
+	* pass_manager.h (PUSH_INSERT_PASSES_WITHIN): Adjust.
+	* passes.cc (PUSH_INSERT_PASSES_WITHIN): Likewise.
+
+2024-09-05  Levy Hsu  <admin@levyhsu.com>
+
+	* config/i386/mmx.md (TARGET_MMX_WITH_SSE): New mode iterator VBF_32_64
+	(fma<mode>4): define_expand for V2BF/V4BF fma<mode>4.
+	(fnma<mode>4): define_expand for V2BF/V4BF fnma<mode>4.
+	(fms<mode>4): define_expand for V2BF/V4BF fms<mode>4.
+	(fnms<mode>4): define_expand for V2BF/V4BF fnms<mode>4.
+
+2024-09-05  Hu, Lin1  <lin1.hu@intel.com>
+
+	* match.pd: Fix match for (bit_and (ordered @0 @1) (ne @0 @1)).
+
+2024-09-05  Levy Hsu  <admin@levyhsu.com>
+
+	* config/i386/i386.cc (ix86_build_const_vector): Add V2BF/V4BF.
+	(ix86_build_signbit_mask): Add V2BF/V4BF.
+	* config/i386/mmx.md: Modified supported logic op to use VHBF_32_64.
+
+2024-09-05  Levy Hsu  <admin@levyhsu.com>
+
+	* config/i386/i386.cc (ix86_preferred_simd_mode): Add BFmode Support.
+
 2024-09-04  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
 
 	* config/riscv/riscv.cc (riscv_split_integer_cost): Adjust the
