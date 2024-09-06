@@ -4652,7 +4652,9 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 		     reduction path.  In that case we'd have to reverse
 		     engineer that conversion stmt following the chain using
 		     reduc_idx and from the PHI using reduc_def.  */
-		  && STMT_VINFO_DEF_TYPE (next_info) == vect_reduction_def)
+		  && (STMT_VINFO_DEF_TYPE (next_info) == vect_reduction_def
+		      || (STMT_VINFO_DEF_TYPE (next_info)
+			  == vect_double_reduction_def)))
 		{
 		  /* Do not discover SLP reductions combining lane-reducing
 		     ops, that will fail later.  */
