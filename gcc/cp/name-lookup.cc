@@ -9121,6 +9121,11 @@ make_namespace_finish (tree ns, tree *slot, bool from_import = false)
 
   if (DECL_NAMESPACE_INLINE_P (ns) || !DECL_NAME (ns))
     emit_debug_info_using_namespace (ctx, ns, true);
+
+  /* An unnamed namespace implicitly has a using-directive inserted so
+     that its contents are usable in the surrounding context.  */
+  if (!DECL_NAMESPACE_INLINE_P (ns) && !DECL_NAME (ns))
+    add_using_namespace (NAMESPACE_LEVEL (ctx)->using_directives, ns);
 }
 
 /* Push into the scope of the NAME namespace.  If NAME is NULL_TREE,
@@ -9257,11 +9262,6 @@ push_namespace (tree name, bool make_inline)
 	      gcc_checking_assert (slot);
 	    }
 	  make_namespace_finish (ns, slot);
-
-	  /* Add the anon using-directive here, we don't do it in
-	     make_namespace_finish.  */
-	  if (!DECL_NAMESPACE_INLINE_P (ns) && !name)
-	    add_using_namespace (current_binding_level->using_directives, ns);
 	}
     }
 

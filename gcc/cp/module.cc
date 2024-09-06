@@ -13903,15 +13903,15 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
       return (flags & WMB_Using
 	      ? flags & WMB_Export : DECL_MODULE_EXPORT_P (decl));
     }
-  else if (DECL_NAME (decl) && !data->met_namespace)
+  else if (!data->met_namespace)
     {
       /* Namespace, walk exactly once.  */
-      gcc_checking_assert (TREE_PUBLIC (decl));
       data->met_namespace = true;
       if (data->hash->add_namespace_entities (decl, data->partitions))
 	{
 	  /* It contains an exported thing, so it is exported.  */
 	  gcc_checking_assert (DECL_MODULE_PURVIEW_P (decl));
+	  gcc_checking_assert (TREE_PUBLIC (decl) || header_module_p ());
 	  DECL_MODULE_EXPORT_P (decl) = true;
 	}
 
@@ -16329,8 +16329,7 @@ module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
       tree ns = b->get_entity ();
 
       gcc_checking_assert (TREE_CODE (ns) == NAMESPACE_DECL);
-      /* P1815 may have something to say about this.  */
-      gcc_checking_assert (TREE_PUBLIC (ns));
+      gcc_checking_assert (TREE_PUBLIC (ns) || header_module_p ());
 
       unsigned flags = 0;
       if (TREE_PUBLIC (ns))
