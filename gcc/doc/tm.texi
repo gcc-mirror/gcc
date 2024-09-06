@@ -4005,6 +4005,14 @@ Note that the elimination of the argument pointer with the stack pointer is
 specified first since that is the preferred elimination.
 @end defmac
 
+@defmac RELOAD_ELIMINABLE_REGS
+Like @code{ELIMINABLE_REGS}, but only used in the old reload framework where
+it takes precedence over @code{ELIMINABLE_REGS}.  This macro can be useful
+during the transition to LRA because there are cases where reload and LRA
+disagree on how eliminable registers should be represented. For an example,
+see @file{avr.h}.
+@end defmac
+
 @deftypefn {Target Hook} bool TARGET_CAN_ELIMINATE (const int @var{from_reg}, const int @var{to_reg})
 This target hook should return @code{true} if the compiler is allowed to
 try to replace register number @var{from_reg} with register number
