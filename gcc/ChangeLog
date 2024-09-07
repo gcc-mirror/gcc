@@ -1,3 +1,130 @@
+2024-09-06  Carl Love  <cel@linux.ibm.com>
+
+	* config/rs6000/rs6000-overload.def (vec_test_lsbb_all_ones,
+	vec_test_lsbb_all_zeros): Add built-in instances for vector signed
+	char and vector bool char.
+	* doc/extend.texi (vec_test_lsbb_all_ones,
+	vec_test_lsbb_all_zeros): Add documentation for the
+	existing built-ins.
+
+2024-09-06  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/116628
+	* tree-vect-patterns.cc (vect_recog_cond_store_pattern): Add SSA_NAME
+	check on expression.
+
+2024-09-06  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/116598
+	* config/aarch64/aarch64.cc (aarch64_lookup_shared_state_flags): Use
+	is_attribute_namespace_p and get_attribute_name instead of manually grabbing
+	the namespace and name of the attribute.
+
+2024-09-06  Martin Jambor  <mjambor@suse.cz>
+
+	* passes.def: Move pass_ipa_cdtor_merge before pass_ipa_cp and
+	pass_ipa_sra.
+
+2024-09-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/115815
+	* cgraph.cc (cgraph_node_cannot_be_local_p_1): Also check
+	DECL_STATIC_CONSTRUCTOR and DECL_STATIC_DESTRUCTOR.
+	* ipa-visibility.cc (non_local_p): Likewise.
+	(cgraph_node::local_p): Delete extraneous line of tabs.
+
+2024-09-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_analyze_slp): Also handle discovery
+	for double reductions.
+
+2024-09-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_analyze_slp): Perform single-lane
+	loop SLP discovery for non-grouped stores.  Move check on the root
+	for re-doing SLP analysis with a single lane for load/store-lanes
+	earlier and make sure we are dealing with a grouped access.
+	* tree-vect-stmts.cc (vectorizable_store): Always set
+	vec_num for SLP.
+
+2024-09-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.h: Remove "Atmel" from header comment.
+	* config/avr/avr.cc: Same.
+	* config/avr/avr.md: Same.
+	* config/avr/avr.opt: Same.
+	* config/avr/avr-dimode.md: Same.
+	* config/avr/avr-fixed.md: Same.
+	* config/avr/constraints.md: Same.
+	* config/avr/predicates.md: Same.
+	* config/avr/avr-log.cc: Same.
+	* config/avr/avrlibc.h: Same.
+	* config/avr/specs.h: Same.
+	* common/config/avr/avr-common.cc: Same.
+	* doc/install.texi: Same.
+	* config/avr/avr-arch.h: Adjust header comment.
+	* config/avr/avr-c.cc: Same.
+	* config/avr/avr-mcus.def: Same.
+	* config/avr/avr-modes.def: Same.
+	* config/avr/avr-passes.cc: Same.
+	* config/avr/avr-passes.def: Same.
+	* config/avr/avr-protos.h: Same.
+	* config/avr/driver-avr.cc: Same.
+	* config/avr/elf.h: Same.
+	* config/avr/gen-avr-mmcu-specs.cc: Same.
+	* config/avr/gen-avr-mmcu-texi.cc: Same.
+
+2024-09-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116610
+	* tree-vect-loop.cc (vectorizable_induction): Use MINUS_EXPR
+	to apply a mask peeling adjustment.
+
+2024-09-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116609
+	* tree-vect-loop.cc (vectorizable_live_operation_1): Support
+	partial vectors for single-lane SLP.
+
+2024-09-06  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_build_integer): Detect constants
+	were the higher half is the lower half inverted.
+
+2024-09-06  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_build_integer): Detect new case
+	of constants that can be improved.
+	(riscv_move_integer): Add synthesys for concatening constants
+	without Zbkb.
+
+2024-09-06  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add int_fits_type_p check for .SAT_SUB imm operand.
+
+2024-09-06  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add int_fits_type_p check for .SAT_SUB imm operand.
+
+2024-09-06  YunQiang Su  <syq@gcc.gnu.org>
+
+	* common/config/riscv/riscv-common.cc(riscv_select_multilib_by_abi):
+	Fix out of index problem.
+
+2024-09-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46457
+	PR c++/81665
+	* doc/extend.texi: Document flag_enum attribute.
+	* doc/invoke.texi: Mention flag_enum in -Wswitch.
+
+2024-09-06  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/115517
+	* config/i386/sse.md (*avx2_pcmp<mode>3_1): Change predicate
+	of operands[1] and operands[2] from nonimmdiate_operand to
+	nonimm_or_0_operand.
+
 2024-09-05  Jeff Law  <jlaw@ventanamicro.com>
 
 	* config/riscv/riscv.cc (riscv_expand_int_scc): For rv64, use a DI

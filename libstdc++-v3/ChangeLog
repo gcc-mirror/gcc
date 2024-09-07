@@ -1,3 +1,35 @@
+2024-09-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (from_stream): Fix conversions in
+	overloads for gps_time and tai_time.
+	* testsuite/std/time/clock/file/io.cc: Test round tripping using
+	chrono::parse. Add additional std::format tests.
+	* testsuite/std/time/clock/gps/io.cc: Likewise.
+	* testsuite/std/time/clock/local/io.cc: Likewise.
+	* testsuite/std/time/clock/tai/io.cc: Likewise.
+	* testsuite/std/time/clock/utc/io.cc: Likewise.
+
+2024-09-06  Jason Merrill  <jason@redhat.com>
+
+	* include/bits/regex_constants.h: Add __ to attribute.
+
+2024-09-06  Jason Merrill  <jason@redhat.com>
+
+	* include/bits/c++config: Avoid redefining __GLIBCXX__.
+
+2024-09-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46457
+	PR c++/81665
+	* include/bits/regex_constants.h: Use flag_enum.
+
+2024-09-06  Jason Merrill  <jason@redhat.com>
+
+	* include/bits/ios_base.h (_GLIBCXX_NOREPLACE_UNUSED): New.
+	(_Ios_Openmode): Add unused attributes.
+	* testsuite/27_io/ios_base/types/openmode/case_label.cc: Handle
+	noreplace.
+
 2024-09-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++17/fs_ops.cc (auto_win_file_handle): Add error_code&

@@ -1,3 +1,108 @@
+2024-09-06  Jason Merrill  <jason@redhat.com>
+
+	PR tree-optimization/107919
+	* g++.dg/warn/Wuninitialized-pr107919-1.C: Add -Wsystem-headers and
+	xfail.
+
+2024-09-06  Carl Love  <cel@linux.ibm.com>
+
+	* gcc.target/powerpc/lsbb-runnable.c: Add test cases for the vector
+	signed char and vector bool char instances of
+	vec_test_lsbb_all_zeros and vec_test_lsbb_all_ones built-ins.
+	* gcc.target/powerpc/lsbb.c: Add compile test cases for the vector
+	signed char and vector bool char instances of
+	vec_test_lsbb_all_zeros and vec_test_lsbb_all_ones built-ins.
+
+2024-09-06  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/116628
+	* gcc.dg/vect/pr116628.c: New test.
+
+2024-09-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/115815
+	* gcc.dg/lto/pr115815_0.c: New test.
+
+2024-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/115769
+	* g++.dg/DRs/dr2867-1.C: New test.
+	* g++.dg/DRs/dr2867-2.C: New test.
+
+2024-09-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR rtl-optimization/116321
+	* gcc.target/avr/torture/lra-pr116321.c: New test.
+
+2024-09-06  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.dg/gomp/interop-1.f90: New test.
+	* gfortran.dg/gomp/interop-2.f90: New test.
+	* gfortran.dg/gomp/interop-3.f90: New test.
+
+2024-09-06  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/O3-pr39675-2.c: Adjust expected number of SLP.
+	* gcc.dg/vect/fast-math-vect-call-1.c: Likewise.
+	* gcc.dg/vect/no-scevccp-slp-31.c: Likewise.
+	* gcc.dg/vect/slp-12b.c: Likewise.
+	* gcc.dg/vect/slp-12c.c: Likewise.
+	* gcc.dg/vect/slp-19a.c: Likewise.
+	* gcc.dg/vect/slp-19b.c: Likewise.
+	* gcc.dg/vect/slp-4-big-array.c: Likewise.
+	* gcc.dg/vect/slp-4.c: Likewise.
+	* gcc.dg/vect/slp-5.c: Likewise.
+	* gcc.dg/vect/slp-7.c: Likewise.
+	* gcc.dg/vect/slp-perm-7.c: Likewise.
+	* gcc.dg/vect/slp-37.c: Likewise.
+	* gcc.dg/vect/fast-math-vect-call-2.c: Likewise.
+	* gcc.dg/vect/slp-26.c: RISC-V can now SLP two instances.
+	* gcc.dg/vect/vect-outer-slp-3.c: Disable vectorization of
+	initialization loop.
+	* gcc.dg/vect/slp-reduc-5.c: Likewise.
+	* gcc.dg/vect/no-scevccp-outer-12.c: Un-XFAIL.  SLP can handle
+	inner loop inductions with multiple vector stmt copies.
+	* gfortran.dg/vect/vect-8.f90: Adjust expected number of
+	vectorized loops.
+	* gcc.target/i386/vectorize1.c: Adjust what we scan for.
+
+2024-09-06  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	* gcc.target/riscv/synthesis-15.c: New test.
+
+2024-09-06  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	* gcc.target/riscv/synthesis-7.c: Adjust expected output.
+	* gcc.target/riscv/synthesis-12.c: New test.
+	* gcc.target/riscv/synthesis-13.c: New test.
+	* gcc.target/riscv/synthesis-14.c: New test.
+
+2024-09-06  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat_u_add_imm_type_check-57.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-58.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-59.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-60.c: New test.
+
+2024-09-06  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat_u_add_imm_type_check-53.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-54.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-55.c: New test.
+	* gcc.target/riscv/sat_u_add_imm_type_check-56.c: New test.
+
+2024-09-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46457
+	PR c++/81665
+	* c-c++-common/attr-flag-enum-1.c: New test.
+
+2024-09-06  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr115517.c: New test.
+
 2024-09-05  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/diagnostic/redeclaration-6.C: Add -fno-implicit-constexpr.

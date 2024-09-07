@@ -1,3 +1,10 @@
+2024-09-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46457
+	PR c++/81665
+	* c-objc-common.h (c_objc_attribute_table): Add
+	c_common_clang_attribute_table.
+
 2024-09-03  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-objc-common.cc (print_type): Prefix all output_buffer fields

@@ -1,3 +1,39 @@
+2024-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/115769
+	* cp-tree.h: Partially implement CWG 2867 - Order of initialization
+	for structured bindings.
+	(cp_finish_decomp): Add TEST_P argument defaulted to false.
+	* decl.cc (initialize_local_var): Add DECOMP argument, if true,
+	don't build cleanup and temporarily override stmts_are_full_exprs_p
+	to 0 rather than 1.  Formatting fix.
+	(cp_finish_decl): Invoke cp_finish_decomp for structured bindings
+	here, first with test_p.  For automatic structured binding bases
+	if the test cp_finish_decomp returned true wrap the initialization
+	together with what non-test cp_finish_decomp emits with a
+	CLEANUP_POINT_EXPR, and if there are any CLEANUP_STMTs needed, emit
+	them around the whole CLEANUP_POINT_EXPR with guard variables for the
+	cleanups.  Call cp_finish_decomp using RAII if not called with
+	decomp != NULL otherwise.
+	(cp_finish_decomp): Add TEST_P argument, change return type from
+	void to bool, if TEST_P is true, return true instead of emitting
+	actual code for the tuple case, otherwise return false.
+	* parser.cc (cp_convert_range_for): Don't call cp_finish_decomp
+	after cp_finish_decl.
+	(cp_parser_decomposition_declaration): Set DECL_DECOMP_BASE
+	before cp_finish_decl call.  Don't call cp_finish_decomp after
+	cp_finish_decl.
+	(cp_finish_omp_range_for): Don't call cp_finish_decomp after
+	cp_finish_decl.
+	* pt.cc (tsubst_stmt): Likewise.
+
+2024-09-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46457
+	PR c++/81665
+	* cp-objcp-common.h (cp_objcp_attribute_table): Add
+	c_common_clang_attribute_table.
+
 2024-09-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/116606
