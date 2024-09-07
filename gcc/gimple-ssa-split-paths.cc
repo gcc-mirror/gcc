@@ -208,7 +208,7 @@ is_feasible_trace (basic_block bb)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
-		 "Duplicating block %d would be too duplicate "
+		 "Duplicating block %d would duplicate "
 		 "too many statments: %d >= %d\n",
 		 bb->index, num_stmts_in_join,
 		 param_max_jump_thread_duplication_stmts);
