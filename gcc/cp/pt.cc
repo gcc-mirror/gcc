@@ -19679,6 +19679,18 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       LAMBDA_EXPR_EXTRA_ARGS (t) = build_extra_args (t, args, complain);
       return t;
     }
+  if (LAMBDA_EXPR_EXTRA_ARGS (t))
+    {
+      /* If we deferred substitution into this lambda, then its original
+	 context (e.g. default template argument context) might be unrelated
+	 to the current context it's embedded in.  After add_extra_args though,
+	 the innermost levels of 'args' will correspond to the lambda context,
+	 so get rid of all unrelated levels.  */
+      tree ctx_parms = DECL_TEMPLATE_PARMS (DECL_TI_TEMPLATE (oldfn));
+      if (generic_lambda_fn_p (oldfn))
+	ctx_parms = TREE_CHAIN (ctx_parms);
+      args = get_innermost_template_args (args, TMPL_PARMS_DEPTH (ctx_parms));
+    }
 
   tree r = build_lambda_expr ();
 
