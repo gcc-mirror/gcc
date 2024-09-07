@@ -960,11 +960,11 @@ th_asm_output_opcode (FILE *asm_out_file, const char *p)
 	      if (strstr (p, "zero,zero"))
 		return "th.vsetvli\tzero,zero,e%0,%m1";
 	      else
-		return "th.vsetvli\tzero,%0,e%1,%m2";
+		return "th.vsetvli\tzero,%z0,e%1,%m2";
 	    }
 	  else
 	    {
-	      return "th.vsetvli\t%0,%1,e%2,%m3";
+	      return "th.vsetvli\t%z0,%z1,e%2,%m3";
 	    }
 	}
 
