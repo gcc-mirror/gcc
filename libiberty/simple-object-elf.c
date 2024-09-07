@@ -128,9 +128,9 @@ typedef struct {
 
 #define SHN_UNDEF	0		/* Undefined section */
 #define SHN_LORESERVE	0xFF00		/* Begin range of reserved indices */
-#define SHN_COMMON	0xFFF2	/* Associated symbol is in common */
+#define SHN_COMMON	0xFFF2		/* Associated symbol is in common */
 #define SHN_XINDEX	0xFFFF		/* Section index is held elsewhere */
-#define SHN_HIRESERVE	0xffff		/* End of reserved indices */
+#define SHN_HIRESERVE	0xFFFF		/* End of reserved indices */
 
 
 /* 32-bit ELF program header.  */
@@ -569,8 +569,8 @@ simple_object_elf_find_sections (simple_object_read *sobj,
 				 void *data,
 				 int *err)
 {
-  struct simple_object_elf_read *eor =
-    (struct simple_object_elf_read *) sobj->data;
+  struct simple_object_elf_read *eor
+    = (struct simple_object_elf_read *) sobj->data;
   const struct elf_type_functions *type_functions = eor->type_functions;
   unsigned char ei_class = eor->ei_class;
   size_t shdr_size;
@@ -662,8 +662,8 @@ simple_object_elf_fetch_attributes (simple_object_read *sobj,
 				    const char **errmsg ATTRIBUTE_UNUSED,
 				    int *err ATTRIBUTE_UNUSED)
 {
-  struct simple_object_elf_read *eor =
-    (struct simple_object_elf_read *) sobj->data;
+  struct simple_object_elf_read *eor
+    = (struct simple_object_elf_read *) sobj->data;
   struct simple_object_elf_attributes *ret;
 
   ret = XNEW (struct simple_object_elf_attributes);
@@ -689,10 +689,10 @@ simple_object_elf_release_read (void *data)
 static const char *
 simple_object_elf_attributes_merge (void *todata, void *fromdata, int *err)
 {
-  struct simple_object_elf_attributes *to =
-    (struct simple_object_elf_attributes *) todata;
-  struct simple_object_elf_attributes *from =
-    (struct simple_object_elf_attributes *) fromdata;
+  struct simple_object_elf_attributes *to
+    = (struct simple_object_elf_attributes *) todata;
+  struct simple_object_elf_attributes *from
+    = (struct simple_object_elf_attributes *) fromdata;
 
   if (to->ei_data != from->ei_data || to->ei_class != from->ei_class)
     {
@@ -751,8 +751,8 @@ simple_object_elf_start_write (void *attributes_data,
 			       const char **errmsg ATTRIBUTE_UNUSED,
 			       int *err ATTRIBUTE_UNUSED)
 {
-  struct simple_object_elf_attributes *attrs =
-    (struct simple_object_elf_attributes *) attributes_data;
+  struct simple_object_elf_attributes *attrs
+    = (struct simple_object_elf_attributes *) attributes_data;
   struct simple_object_elf_write *ret;
 
   /* We're just going to record the attributes, but we need to make a
@@ -769,8 +769,8 @@ static int
 simple_object_elf_write_ehdr (simple_object_write *sobj, int descriptor,
 			      const char **errmsg, int *err)
 {
-  struct simple_object_elf_attributes *attrs =
-    (struct simple_object_elf_attributes *) sobj->data;
+  struct simple_object_elf_attributes *attrs
+    = (struct simple_object_elf_attributes *) sobj->data;
   const struct elf_type_functions* fns;
   unsigned char cl;
   size_t ehdr_size;
@@ -852,8 +852,8 @@ simple_object_elf_write_shdr (simple_object_write *sobj, int descriptor,
 			      size_t sh_entsize,
 			      const char **errmsg, int *err)
 {
-  struct simple_object_elf_attributes *attrs =
-    (struct simple_object_elf_attributes *) sobj->data;
+  struct simple_object_elf_attributes *attrs
+    = (struct simple_object_elf_attributes *) sobj->data;
   const struct elf_type_functions* fns;
   unsigned char cl;
   size_t shdr_size;
@@ -894,8 +894,8 @@ static const char *
 simple_object_elf_write_to_file (simple_object_write *sobj, int descriptor,
 				 int *err)
 {
-  struct simple_object_elf_write *eow =
-    (struct simple_object_elf_write *) sobj->data;
+  struct simple_object_elf_write *eow
+    = (struct simple_object_elf_write *) sobj->data;
   struct simple_object_elf_attributes *attrs = &eow->attrs;
   unsigned char cl;
   size_t ehdr_size;
@@ -1088,11 +1088,11 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 					   char *(*pfn) (const char *),
 					   int *err)
 {
-  struct simple_object_elf_read *eor =
-    (struct simple_object_elf_read *) sobj->data;
+  struct simple_object_elf_read *eor
+    = (struct simple_object_elf_read *) sobj->data;
   const struct elf_type_functions *type_functions = eor->type_functions;
-  struct simple_object_elf_write *eow =
-    (struct simple_object_elf_write *) dobj->data;
+  struct simple_object_elf_write *eow
+    = (struct simple_object_elf_write *) dobj->data;
   unsigned char ei_class = eor->ei_class;
   size_t shdr_size;
   unsigned int shnum;
@@ -1106,10 +1106,13 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
   int changed;
   int *pfnret;
   const char **pfnname;
-  unsigned new_i;
+  unsigned new_i, new_count;
   unsigned *sh_map;
   unsigned first_shndx = 0;
   unsigned int *symtab_indices_shndx;
+  int pass_symtab_indices_shndx;
+  unsigned int first_symtab_indices_shndx;
+  unsigned char **symtab_indices_shndx_buf;
 
   shdr_size = (ei_class == ELFCLASS32
 	       ? sizeof (Elf32_External_Shdr)
@@ -1179,8 +1182,7 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
       ret = (*pfn) (name);
       pfnret[i - 1] = ret == NULL ? -1 : 0;
       pfnname[i - 1] = ret == NULL ? name : ret;
-      if (first_shndx == 0
-	  && pfnret[i - 1] == 0)
+      if (first_shndx == 0 && pfnret[i - 1] == 0)
 	first_shndx = i;
 
       /* Remember the indexes of existing SHT_SYMTAB_SHNDX sections.  */
@@ -1191,11 +1193,12 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 	  unsigned int sh_link;
 	  sh_link = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
 				     shdr, sh_link, Elf_Word);
-	  symtab_indices_shndx[sh_link - 1] = i - 1;
-	  /* Always discard the extended index sections, after
-	     copying it will not be needed.  This way we don't need to
-	     update it and deal with the ordering constraints of
-	     processing the existing symtab and changing the index.  */
+	  symtab_indices_shndx[sh_link - 1] = i;
+	  /* Discard the extended index sections, after copying it will not
+	     be needed, unless we need more than SHN_LORESERVE - 1 sections
+	     in the output.  This way we don't need to update it and deal with
+	     the ordering constraints of processing the existing symtab and
+	     changing the index.  */
 	  pfnret[i - 1] = -1;
 	}
     }
@@ -1291,16 +1294,25 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
       else
 	sh_map[i] = new_i++;
     }
+  first_symtab_indices_shndx = new_i;
+  symtab_indices_shndx_buf = NULL;
   if (new_i - 1 >= SHN_LORESERVE)
-    {
-      *err = ENOTSUP;
-      return "Too many copied sections";
-    }
-  eow->shdrs = XNEWVEC (unsigned char, shdr_size * (new_i - 1));
+    for (i = 1; i < shnum; ++i)
+      if (pfnret[i - 1] == 0 && symtab_indices_shndx[i - 1] != 0)
+	{
+	  pfnret[symtab_indices_shndx[i - 1] - 1] = 0;
+	  sh_map[symtab_indices_shndx[i - 1]] = new_i++;
+	}
+  new_count = new_i;
+  if (new_count != first_symtab_indices_shndx)
+    symtab_indices_shndx_buf
+      = XNEWVEC (unsigned char *, new_count - first_symtab_indices_shndx);
+  eow->shdrs = XNEWVEC (unsigned char, shdr_size * (new_count - 1));
 
   /* Then perform the actual copying.  */
   new_i = 0;
-  for (i = 1; i < shnum; ++i)
+  pass_symtab_indices_shndx = 0;
+  for (i = 1; i <= shnum; ++i)
     {
       unsigned char *shdr;
       unsigned int sh_name, sh_type;
@@ -1311,11 +1323,30 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
       off_t flags;
       unsigned char *buf;
 
+      if (i == shnum)
+	{
+	  if (new_count - 1 < SHN_LORESERVE || pass_symtab_indices_shndx)
+	    break;
+	  i = 0;
+	  pass_symtab_indices_shndx = 1;
+	  continue;
+	}
+
       if (pfnret[i - 1])
 	continue;
 
-      new_i++;
       shdr = shdrs + (i - 1) * shdr_size;
+      sh_type = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+				 shdr, sh_type, Elf_Word);
+      if (sh_type == SHT_SYMTAB_SHNDX)
+	{
+	  if (!pass_symtab_indices_shndx)
+	    continue;
+	}
+      else if (pass_symtab_indices_shndx)
+	continue;
+
+      new_i++;
       sh_name = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
 				 shdr, sh_name, Elf_Word);
       if (sh_name >= name_size)
@@ -1324,6 +1355,7 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 	  XDELETEVEC (names);
 	  XDELETEVEC (shdrs);
 	  XDELETEVEC (symtab_indices_shndx);
+	  XDELETEVEC (symtab_indices_shndx_buf);
 	  return "ELF section name out of range";
 	}
 
@@ -1332,16 +1364,14 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 				shdr, sh_offset, Elf_Addr);
       length = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
 				shdr, sh_size, Elf_Addr);
-      sh_type = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
-				 shdr, sh_type, Elf_Word);
 
-      dest = simple_object_write_create_section (dobj, pfnname[i - 1],
-						 0, &errmsg, err);
+      dest = simple_object_write_create_section (dobj, name, 0, &errmsg, err);
       if (dest == NULL)
 	{
 	  XDELETEVEC (names);
 	  XDELETEVEC (shdrs);
 	  XDELETEVEC (symtab_indices_shndx);
+	  XDELETEVEC (symtab_indices_shndx_buf);
 	  return errmsg;
 	}
 
@@ -1363,6 +1393,7 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 	  XDELETEVEC (names);
 	  XDELETEVEC (shdrs);
 	  XDELETEVEC (symtab_indices_shndx);
+	  XDELETEVEC (symtab_indices_shndx_buf);
 	  return errmsg;
 	}
 
@@ -1378,7 +1409,8 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 	  /* Read the section index table if present.  */
 	  if (symtab_indices_shndx[i - 1] != 0)
 	    {
-	      unsigned char *sidxhdr = shdrs + symtab_indices_shndx[i - 1] * shdr_size;
+	      unsigned char *sidxhdr
+		= shdrs + (symtab_indices_shndx[i - 1] - 1) * shdr_size;
 	      off_t sidxoff = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
 					       sidxhdr, sh_offset, Elf_Addr);
 	      size_t sidxsz = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
@@ -1388,11 +1420,20 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 				   sidxhdr, sh_type, Elf_Word);
 	      if (shndx_type != SHT_SYMTAB_SHNDX)
 		return "Wrong section type of a SYMTAB SECTION INDICES section";
-	      shndx_table = (unsigned *)XNEWVEC (char, sidxsz);
-	      simple_object_internal_read (sobj->descriptor,
-					   sobj->offset + sidxoff,
-					   (unsigned char *)shndx_table,
-					   sidxsz, &errmsg, err);
+	      shndx_table = (unsigned *) XNEWVEC (char, sidxsz);
+	      if (!simple_object_internal_read (sobj->descriptor,
+						sobj->offset + sidxoff,
+						(unsigned char *) shndx_table,
+						sidxsz, &errmsg, err))
+		{
+		  XDELETEVEC (buf);
+		  XDELETEVEC (names);
+		  XDELETEVEC (shdrs);
+		  XDELETEVEC (symtab_indices_shndx);
+		  XDELETEVEC (shndx_table);
+		  XDELETEVEC (symtab_indices_shndx_buf);
+		  return errmsg;
+		}
 	    }
 
 	  /* Find a WEAK HIDDEN symbol which name we will use for removed
@@ -1407,17 +1448,20 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 	      unsigned char *st_other;
 	      if (ei_class == ELFCLASS32)
 		{
-		  st_info = &((Elf32_External_Sym *)ent)->st_info;
-		  st_other = &((Elf32_External_Sym *)ent)->st_other;
+		  st_info = &((Elf32_External_Sym *) ent)->st_info;
+		  st_other = &((Elf32_External_Sym *) ent)->st_other;
 		}
 	      else
 		{
-		  st_info = &((Elf64_External_Sym *)ent)->st_info;
-		  st_other = &((Elf64_External_Sym *)ent)->st_other;
+		  st_info = &((Elf64_External_Sym *) ent)->st_info;
+		  st_other = &((Elf64_External_Sym *) ent)->st_other;
 		}
 	      if (st_shndx == SHN_XINDEX)
-		st_shndx = type_functions->fetch_Elf_Word
-		    ((unsigned char *)(shndx_table + (ent - buf) / entsize));
+		{
+		  unsigned char *ndx_ptr
+		    = (unsigned char *) (shndx_table + (ent - buf) / entsize);
+		  st_shndx = type_functions->fetch_Elf_Word (ndx_ptr);
+		}
 
 	      if (st_shndx != SHN_COMMON
 		  && !(st_shndx != SHN_UNDEF
@@ -1442,19 +1486,26 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 	      unsigned char *st_info;
 	      unsigned char *st_other;
 	      int discard = 0;
+	      unsigned char *ndx_ptr = NULL;
 	      if (ei_class == ELFCLASS32)
 		{
-		  st_info = &((Elf32_External_Sym *)ent)->st_info;
-		  st_other = &((Elf32_External_Sym *)ent)->st_other;
+		  st_info = &((Elf32_External_Sym *) ent)->st_info;
+		  st_other = &((Elf32_External_Sym *) ent)->st_other;
 		}
 	      else
 		{
-		  st_info = &((Elf64_External_Sym *)ent)->st_info;
-		  st_other = &((Elf64_External_Sym *)ent)->st_other;
+		  st_info = &((Elf64_External_Sym *) ent)->st_info;
+		  st_other = &((Elf64_External_Sym *) ent)->st_other;
 		}
+	      if (shndx_table)
+		ndx_ptr
+		  = (unsigned char *) (shndx_table + (ent - buf) / entsize);
+
 	      if (st_shndx == SHN_XINDEX)
-		st_shndx = type_functions->fetch_Elf_Word
-		    ((unsigned char *)(shndx_table + (ent - buf) / entsize));
+		{
+		  st_shndx = type_functions->fetch_Elf_Word (ndx_ptr);
+		  type_functions->set_Elf_Word (ndx_ptr, SHN_UNDEF);
+		}
 	      /* Eliminate all COMMONs - this includes __gnu_lto_slim
 		 which otherwise cause endless LTO plugin invocation.
 		 FIXME: remove the condition once we remove emission
@@ -1488,9 +1539,14 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 			 defined in the first prevailing section.  */
 		      ELF_SET_FIELD (type_functions, ei_class, Sym,
 				     ent, st_name, Elf_Word, 0);
+		      st_shndx = sh_map[first_shndx];
+		      if (st_shndx >= SHN_LORESERVE)
+			{
+			  type_functions->set_Elf_Word (ndx_ptr, st_shndx);
+			  st_shndx = SHN_XINDEX;
+			}
 		      ELF_SET_FIELD (type_functions, ei_class, Sym,
-				     ent, st_shndx, Elf_Half,
-				     sh_map[first_shndx]);
+				     ent, st_shndx, Elf_Half, st_shndx);
 		    }
 		  else
 		    {
@@ -1514,11 +1570,24 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 		}
 	      else if (raw_st_shndx < SHN_LORESERVE
 		       || raw_st_shndx == SHN_XINDEX)
-		/* Remap the section reference.  */
-		ELF_SET_FIELD (type_functions, ei_class, Sym,
-			       ent, st_shndx, Elf_Half, sh_map[st_shndx]);
+		{
+		  /* Remap the section reference.  */
+		  st_shndx = sh_map[st_shndx];
+		  if (st_shndx >= SHN_LORESERVE)
+		    {
+		      type_functions->set_Elf_Word (ndx_ptr, st_shndx);
+		      st_shndx = SHN_XINDEX;
+		    }
+		  ELF_SET_FIELD (type_functions, ei_class, Sym,
+				 ent, st_shndx, Elf_Half, st_shndx);
+		}
 	    }
-	  XDELETEVEC (shndx_table);
+	  if (symtab_indices_shndx_buf)
+	    symtab_indices_shndx_buf[sh_map[symtab_indices_shndx[i - 1]]
+				     - first_symtab_indices_shndx]
+	      = (unsigned char *) shndx_table;
+	  else
+	    XDELETEVEC (shndx_table);
 	}
       else if (sh_type == SHT_GROUP)
 	{
@@ -1538,15 +1607,21 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 	  /* Adjust the length.  */
 	  length = dst - buf;
 	}
+      else if (sh_type == SHT_SYMTAB_SHNDX)
+	{
+	  XDELETEVEC (buf);
+	  buf = symtab_indices_shndx_buf[new_i - first_symtab_indices_shndx];
+	  symtab_indices_shndx_buf[new_i - first_symtab_indices_shndx] = NULL;
+	}
 
-      errmsg = simple_object_write_add_data (dobj, dest,
-					     buf, length, 1, err);
+      errmsg = simple_object_write_add_data (dobj, dest, buf, length, 1, err);
       XDELETEVEC (buf);
       if (errmsg)
 	{
 	  XDELETEVEC (names);
 	  XDELETEVEC (shdrs);
 	  XDELETEVEC (symtab_indices_shndx);
+	  XDELETEVEC (symtab_indices_shndx_buf);
 	  return errmsg;
 	}
 
@@ -1586,6 +1661,7 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
   XDELETEVEC (pfnname);
   XDELETEVEC (symtab_indices_shndx);
   XDELETEVEC (sh_map);
+  XDELETEVEC (symtab_indices_shndx_buf);
 
   return NULL;
 }
