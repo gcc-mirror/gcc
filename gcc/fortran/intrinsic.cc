@@ -95,6 +95,12 @@ gfc_type_letter (bt type, bool logical_equals_int)
       c = 'h';
       break;
 
+      /* 'u' would be the logical choice, but it is used for
+	 "unknown", let's use m for "modulo".  */
+    case BT_UNSIGNED:
+      c = 'm';
+      break;
+
     default:
       c = 'u';
       break;
@@ -1656,7 +1662,7 @@ add_functions (void)
   make_generic ("bgt", GFC_ISYM_BGT, GFC_STD_F2008);
 
   add_sym_1 ("bit_size", GFC_ISYM_BIT_SIZE, CLASS_INQUIRY, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F95,
-	     gfc_check_i, gfc_simplify_bit_size, NULL,
+	     gfc_check_iu, gfc_simplify_bit_size, NULL,
 	     i, BT_INTEGER, di, REQUIRED);
 
   make_generic ("bit_size", GFC_ISYM_BIT_SIZE, GFC_STD_F95);
@@ -2257,6 +2263,13 @@ add_functions (void)
 
   make_generic ("long", GFC_ISYM_LONG, GFC_STD_GNU);
 
+  add_sym_2 ("uint", GFC_ISYM_UINT, CLASS_ELEMENTAL, ACTUAL_NO, BT_UNSIGNED,
+	     di, GFC_STD_GNU, gfc_check_uint, gfc_simplify_uint,
+	     gfc_resolve_uint, a, BT_REAL, dr, REQUIRED, kind, BT_INTEGER, di,
+	     OPTIONAL);
+
+  make_generic ("uint", GFC_ISYM_UINT, GFC_STD_GNU);
+
   add_sym_2 ("ior", GFC_ISYM_IOR, CLASS_ELEMENTAL, ACTUAL_NO, BT_INTEGER, di,
 	     GFC_STD_F95,
 	     gfc_check_iand_ieor_ior, gfc_simplify_ior, gfc_resolve_ior,
@@ -2686,7 +2699,7 @@ add_functions (void)
   make_generic ("minval", GFC_ISYM_MINVAL, GFC_STD_F95);
 
   add_sym_2 ("mod", GFC_ISYM_MOD, CLASS_ELEMENTAL, ACTUAL_YES, BT_INTEGER, di, GFC_STD_F77,
-	     gfc_check_a_p, gfc_simplify_mod, gfc_resolve_mod,
+	     gfc_check_mod, gfc_simplify_mod, gfc_resolve_mod,
 	     a, BT_INTEGER, di, REQUIRED, p, BT_INTEGER, di, REQUIRED);
 
   if (flag_dec_intrinsic_ints)
@@ -2708,7 +2721,7 @@ add_functions (void)
   make_generic ("mod", GFC_ISYM_MOD, GFC_STD_F77);
 
   add_sym_2 ("modulo", GFC_ISYM_MODULO, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, di, GFC_STD_F95,
-	     gfc_check_a_p, gfc_simplify_modulo, gfc_resolve_modulo,
+	     gfc_check_mod, gfc_simplify_modulo, gfc_resolve_modulo,
 	     a, BT_REAL, di, REQUIRED, p, BT_REAL, di, REQUIRED);
 
   make_generic ("modulo", GFC_ISYM_MODULO, GFC_STD_F95);
@@ -2736,7 +2749,7 @@ add_functions (void)
   make_generic ("nint", GFC_ISYM_NINT, GFC_STD_F77);
 
   add_sym_1 ("not", GFC_ISYM_NOT, CLASS_ELEMENTAL, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F95,
-	     gfc_check_i, gfc_simplify_not, gfc_resolve_not,
+	     gfc_check_iu, gfc_simplify_not, gfc_resolve_not,
 	     i, BT_INTEGER, di, REQUIRED);
 
   if (flag_dec_intrinsic_ints)
@@ -2785,14 +2798,14 @@ add_functions (void)
 
   add_sym_1 ("popcnt", GFC_ISYM_POPCNT, CLASS_ELEMENTAL, ACTUAL_NO,
 	     BT_INTEGER, di, GFC_STD_F2008,
-	     gfc_check_i, gfc_simplify_popcnt, NULL,
+	     gfc_check_iu, gfc_simplify_popcnt, NULL,
 	     i, BT_INTEGER, di, REQUIRED);
 
   make_generic ("popcnt", GFC_ISYM_POPCNT, GFC_STD_F2008);
 
   add_sym_1 ("poppar", GFC_ISYM_POPPAR, CLASS_ELEMENTAL, ACTUAL_NO,
 	     BT_INTEGER, di, GFC_STD_F2008,
-	     gfc_check_i, gfc_simplify_poppar, NULL,
+	     gfc_check_iu, gfc_simplify_poppar, NULL,
 	     i, BT_INTEGER, di, REQUIRED);
 
   make_generic ("poppar", GFC_ISYM_POPPAR, GFC_STD_F2008);
@@ -2952,6 +2965,18 @@ add_functions (void)
 	     gfc_simplify_selected_int_kind, NULL, r, BT_INTEGER, di, REQUIRED);
 
   make_generic ("selected_int_kind", GFC_ISYM_SI_KIND, GFC_STD_F95);
+
+  if (flag_unsigned)
+    {
+
+      add_sym_1 ("selected_unsigned_kind", GFC_ISYM_SU_KIND,
+		 CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_INTEGER, di,
+		 GFC_STD_GNU, gfc_check_selected_int_kind,
+		 gfc_simplify_selected_unsigned_kind, NULL, r, BT_INTEGER, di,
+		 REQUIRED);
+
+      make_generic ("selected_unsigned_kind", GFC_ISYM_SU_KIND, GFC_STD_GNU);
+    }
 
   add_sym_1 ("selected_logical_kind", GFC_ISYM_SL_KIND, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_INTEGER, di,
 	     GFC_STD_F2023, /* it has the same requirements */ gfc_check_selected_int_kind,
@@ -4043,6 +4068,15 @@ add_conversions (void)
 	add_conv (BT_COMPLEX, gfc_real_kinds[j].kind,
 		  BT_INTEGER, gfc_integer_kinds[i].kind, GFC_STD_F77);
       }
+
+  if (flag_unsigned)
+    {
+      for (i = 0; gfc_unsigned_kinds[i].kind != 0; i++)
+	for (j = 0; gfc_unsigned_kinds[j].kind != 0; j++)
+	  if (i != j)
+	    add_conv (BT_UNSIGNED, gfc_unsigned_kinds[i].kind,
+		      BT_UNSIGNED, gfc_unsigned_kinds[j].kind, GFC_STD_GNU);
+    }
 
   if ((gfc_option.allow_std & GFC_STD_LEGACY) != 0)
     {
@@ -5317,7 +5351,8 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag,
       else if (from_ts.type == ts->type
 	       || (from_ts.type == BT_INTEGER && ts->type == BT_REAL)
 	       || (from_ts.type == BT_INTEGER && ts->type == BT_COMPLEX)
-	       || (from_ts.type == BT_REAL && ts->type == BT_COMPLEX))
+	       || (from_ts.type == BT_REAL && ts->type == BT_COMPLEX)
+	       || (from_ts.type == BT_UNSIGNED && ts->type == BT_UNSIGNED))
 	{
 	  /* Larger kinds can hold values of smaller kinds without problems.
 	     Hence, only warn if target kind is smaller than the source

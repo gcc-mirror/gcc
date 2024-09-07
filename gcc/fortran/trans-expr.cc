@@ -5835,6 +5835,10 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
 	    }
 	  else
 	    gcc_unreachable ();
+
+	case BT_UNSIGNED:
+	  gfc_internal_error ("Unsigned not yet implemented");
+
 	case BT_PROCEDURE:
 	case BT_HOLLERITH:
 	case BT_UNION:

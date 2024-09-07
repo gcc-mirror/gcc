@@ -563,6 +563,14 @@ show_expr (gfc_expr *p)
 	    fprintf (dumpfile, "_%d", p->ts.kind);
 	  break;
 
+	case BT_UNSIGNED:
+	  mpz_out_str (dumpfile, 10, p->value.integer);
+	  fputc('u', dumpfile);
+
+	  if (p->ts.kind != gfc_default_integer_kind)
+	    fprintf (dumpfile, "_%d", p->ts.kind);
+	  break;
+
 	case BT_LOGICAL:
 	  if (p->value.logical)
 	    fputs (".true.", dumpfile);

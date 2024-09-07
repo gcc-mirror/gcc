@@ -3426,6 +3426,13 @@ gfc_conv_intrinsic_mod (gfc_se * se, gfc_expr * expr, int modulo)
 				   args[0], args[1]);
       break;
 
+    case BT_UNSIGNED:
+      /* Even easier, we only need one.  */
+      type = TREE_TYPE (args[0]);
+      se->expr = fold_build2_loc (input_location, TRUNC_MOD_EXPR, type,
+				  args[0], args[1]);
+      break;
+
     case BT_REAL:
       fmod = NULL_TREE;
       /* Check if we have a builtin fmod.  */
@@ -6775,6 +6782,7 @@ gfc_conv_intrinsic_shift (gfc_se * se, gfc_expr * expr, bool right_shift,
 {
   tree args[2], type, num_bits, cond;
   tree bigshift;
+  bool do_convert = false;
 
   gfc_conv_intrinsic_function_args (se, expr, args, 2);
 
@@ -6783,15 +6791,24 @@ gfc_conv_intrinsic_shift (gfc_se * se, gfc_expr * expr, bool right_shift,
   type = TREE_TYPE (args[0]);
 
   if (!arithmetic)
-    args[0] = fold_convert (unsigned_type_for (type), args[0]);
+    {
+      args[0] = fold_convert (unsigned_type_for (type), args[0]);
+      do_convert = true;
+    }
   else
     gcc_assert (right_shift);
+
+  if (flag_unsigned && arithmetic && expr->ts.type == BT_UNSIGNED)
+    {
+      do_convert = true;
+      args[0] = fold_convert (signed_type_for (type), args[0]);
+    }
 
   se->expr = fold_build2_loc (input_location,
 			      right_shift ? RSHIFT_EXPR : LSHIFT_EXPR,
 			      TREE_TYPE (args[0]), args[0], args[1]);
 
-  if (!arithmetic)
+  if (do_convert)
     se->expr = fold_convert (type, se->expr);
 
   if (!arithmetic)
@@ -10918,6 +10935,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
     case GFC_ISYM_INT2:
     case GFC_ISYM_INT8:
     case GFC_ISYM_LONG:
+    case GFC_ISYM_UINT:
       gfc_conv_intrinsic_int (se, expr, RND_TRUNC);
       break;
 

@@ -3177,8 +3177,12 @@ gfc_trans_integer_select (gfc_code * code)
 
 	  if (cp->low)
 	    {
-	      low = gfc_conv_mpz_to_tree (cp->low->value.integer,
-					  cp->low->ts.kind);
+	      if (cp->low->ts.type == BT_INTEGER)
+		low = gfc_conv_mpz_to_tree (cp->low->value.integer,
+					    cp->low->ts.kind);
+	      else
+		low = gfc_conv_mpz_unsigned_to_tree (cp->low->value.integer,
+						     cp->low->ts.kind);
 
 	      /* If there's only a lower bound, set the high bound to the
 		 maximum value of the case expression.  */
@@ -3207,8 +3211,15 @@ gfc_trans_integer_select (gfc_code * code)
 	      if (!cp->low
 		  || (mpz_cmp (cp->low->value.integer,
 				cp->high->value.integer) != 0))
-		high = gfc_conv_mpz_to_tree (cp->high->value.integer,
-					     cp->high->ts.kind);
+		{
+		  if (cp->high->ts.type == BT_INTEGER)
+		    high = gfc_conv_mpz_to_tree (cp->high->value.integer,
+						 cp->high->ts.kind);
+		  else
+		    high
+		      = gfc_conv_mpz_unsigned_to_tree (cp->high->value.integer,
+						       cp->high->ts.kind);
+		}
 
 	      /* Unbounded case.  */
 	      if (!cp->low)
@@ -3718,6 +3729,7 @@ gfc_trans_select (gfc_code * code)
 	break;
 
       case BT_INTEGER:
+      case BT_UNSIGNED:
 	body = gfc_trans_integer_select (code);
 	break;
 

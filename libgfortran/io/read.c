@@ -54,7 +54,7 @@ set_integer (void *dest, GFC_INTEGER_LARGEST value, int length)
       }
       break;
 #endif
-/* length=10 comes about for kind=10 real/complex BOZ, cf. PR41711. */
+/* length=10 comes about for kind=10 real/complex BOZ, see PR41711. */
     case 10:
     case 16:
       {
@@ -84,6 +84,62 @@ set_integer (void *dest, GFC_INTEGER_LARGEST value, int length)
     case 1:
       {
 	GFC_INTEGER_1 tmp = value;
+	memcpy (dest, (void *) &tmp, length);
+      }
+      break;
+    default:
+      internal_error (NULL, "Bad integer kind");
+    }
+}
+
+/* set_integer()-- All of the integer assignments come here to
+   actually place the value into memory.  */
+
+void
+set_unsigned (void *dest, GFC_UINTEGER_LARGEST value, int length)
+{
+  NOTE ("set_integer: %lld %p", (long long int) value, dest);
+  switch (length)
+    {
+#ifdef HAVE_GFC_UINTEGER_16
+#ifdef HAVE_GFC_REAL_17
+    case 17:
+      {
+	GFC_UINTEGER_16 tmp = value;
+	memcpy (dest, (void *) &tmp, 16);
+      }
+      break;
+#endif
+/* length=10 comes about for kind=10 real/complex BOZ, cf. PR41711.  */
+    case 10:
+    case 16:
+      {
+	GFC_UINTEGER_16 tmp = value;
+	memcpy (dest, (void *) &tmp, length);
+      }
+      break;
+#endif
+    case 8:
+      {
+	GFC_UINTEGER_8 tmp = value;
+	memcpy (dest, (void *) &tmp, length);
+      }
+      break;
+    case 4:
+      {
+	GFC_UINTEGER_4 tmp = value;
+	memcpy (dest, (void *) &tmp, length);
+      }
+      break;
+    case 2:
+      {
+	GFC_UINTEGER_2 tmp = value;
+	memcpy (dest, (void *) &tmp, length);
+      }
+      break;
+    case 1:
+      {
+	GFC_UINTEGER_1 tmp = value;
 	memcpy (dest, (void *) &tmp, length);
       }
       break;
@@ -132,6 +188,28 @@ si_max (int length)
     }
 }
 
+GFC_UINTEGER_LARGEST
+us_max (int length)
+{
+  switch (length)
+    {
+#ifdef HAVE_GFC_UINTEGER_16
+    case 17:
+    case 16:
+      return GFC_UINTEGER_16_HUGE;
+#endif
+    case 8:
+      return GFC_UINTEGER_8_HUGE;
+    case 4:
+      return GFC_UINTEGER_4_HUGE;
+    case 2:
+      return GFC_UINTEGER_2_HUGE;
+    case 1:
+      return GFC_UINTEGER_1_HUGE;
+    default:
+      internal_error (NULL, "Bad unsigned kind");
+    }
+}
 
 /* convert_real()-- Convert a character representation of a floating
    point number to the machine number.  Returns nonzero if there is an
@@ -392,7 +470,7 @@ read_utf8 (st_parameter_dt *dtp, size_t *nbytes)
     if ((c & ~masks[nb-1]) == patns[nb-1])
       goto found;
   goto invalid;
-	
+
  found:
   c = (c & masks[nb-1]);
   nread = nb - 1;
@@ -423,7 +501,7 @@ read_utf8 (st_parameter_dt *dtp, size_t *nbytes)
     goto invalid;
 
   return c;
-      
+
  invalid:
   generate_error (&dtp->common, LIBERROR_READ_VALUE, "Invalid UTF-8 encoding");
   return (gfc_char4_t) '?';
@@ -466,7 +544,7 @@ read_default_char1 (st_parameter_dt *dtp, char *p, size_t len, size_t width)
   size_t m;
 
   s = read_block_form (dtp, &width);
-  
+
   if (s == NULL)
     return;
   if (width > len)
@@ -610,7 +688,7 @@ read_a_char4 (st_parameter_dt *dtp, const fnode *f, char *p, size_t length)
     read_utf8_char4 (dtp, p, length, w);
   else
     read_default_char4 (dtp, p, length, w);
-  
+
   dtp->u.p.sf_read_comma =
     dtp->u.p.current_unit->decimal_status == DECIMAL_COMMA ? 0 : 1;
 }
@@ -651,7 +729,7 @@ next_char (st_parameter_dt *dtp, char **p, size_t *w)
   if (c != ' ')
     return c;
   if (dtp->u.p.blank_status != BLANK_UNSPECIFIED)
-    return ' ';  /* return a blank to signal a null */ 
+    return ' ';  /* return a blank to signal a null */
 
   /* At this point, the rest of the field has to be trailing blanks */
 
@@ -730,19 +808,19 @@ read_decimal (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
       c = next_char (dtp, &p, &w);
       if (c == '\0')
 	break;
-	
+
       if (c == ' ')
         {
 	  if (dtp->u.p.blank_status == BLANK_NULL)
 	    {
 	      /* Skip spaces.  */
 	      for ( ; w > 0; p++, w--)
-		if (*p != ' ') break; 
+		if (*p != ' ') break;
 	      continue;
 	    }
 	  if (dtp->u.p.blank_status == BLANK_ZERO) c = '0';
         }
-        
+
       if (c < '0' || c > '9')
 	goto bad;
 
@@ -774,6 +852,119 @@ read_decimal (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
  overflow:
   generate_error (&dtp->common, LIBERROR_READ_OVERFLOW,
 		  "Value overflowed during integer read");
+  next_record (dtp, 1);
+
+}
+
+/* read_decimal_unsigned() - almost the same as above.  Checks for sign
+   and overflow are performed with -pedantic.  */
+
+void
+read_decimal_unsigned (st_parameter_dt *dtp, const fnode *f, char *dest,
+		       int length)
+{
+  GFC_UINTEGER_LARGEST value, old_value;
+  size_t w;
+  int negative;
+  char c, *p;
+
+  w = f->u.w;
+
+  /* This is a legacy extension, and the frontend will only allow such cases
+   * through when -fdec-format-defaults is passed.
+   */
+  if (w == (size_t) DEFAULT_WIDTH)
+    w = default_width_for_integer (length);
+
+  p = read_block_form (dtp, &w);
+
+  if (p == NULL)
+    return;
+
+  p = eat_leading_spaces (&w, p);
+  if (w == 0)
+    {
+      set_unsigned (dest, (GFC_UINTEGER_LARGEST) 0, length);
+      return;
+    }
+
+  negative = 0;
+
+  switch (*p)
+    {
+    case '-':
+      if (compile_options.pedantic)
+	goto no_sign;
+
+      negative = 1;
+
+      /* Fall through.  */
+
+    case '+':
+      p++;
+      if (--w == 0)
+	goto bad;
+      /* Fall through.  */
+
+    default:
+      break;
+    }
+
+  /* At this point we have a digit-string.  */
+  value = 0;
+
+  for (;;)
+    {
+      c = next_char (dtp, &p, &w);
+      if (c == '\0')
+	break;
+
+      if (c == ' ')
+	{
+	  if (dtp->u.p.blank_status == BLANK_NULL)
+	    {
+	      /* Skip spaces.  */
+	      for ( ; w > 0; p++, w--)
+		if (*p != ' ') break;
+	      continue;
+	    }
+	  if (dtp->u.p.blank_status == BLANK_ZERO) c = '0';
+	}
+
+      if (c < '0' || c > '9')
+	goto bad;
+
+      c -= '0';
+      old_value = value;
+      value = 10 * value + c;
+      if (compile_options.pedantic && value < old_value)
+	goto overflow;
+    }
+
+  if (negative)
+    value = -value;
+
+  if (compile_options.pedantic && value > us_max (length))
+    goto overflow;
+
+  set_unsigned (dest, value, length);
+  return;
+
+ bad:
+  generate_error (&dtp->common, LIBERROR_READ_VALUE,
+		  "Bad value during unsigned integer read");
+  next_record (dtp, 1);
+  return;
+
+ no_sign:
+  generate_error (&dtp->common, LIBERROR_READ_VALUE,
+		  "Negative sign for unsigned integer read");
+  next_record (dtp, 1);
+  return;
+
+ overflow:
+  generate_error (&dtp->common, LIBERROR_READ_OVERFLOW,
+		  "Value overflowed during unsigned integer read");
   next_record (dtp, 1);
 
 }
@@ -992,7 +1183,7 @@ read_f (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
   if (w == 0)
     goto zero;
 
-  /* Check for Infinity or NaN.  */    
+  /* Check for Infinity or NaN.  */
   if (unlikely ((w >= 3 && (*p == 'i' || *p == 'I' || *p == 'n' || *p == 'N'))))
     {
       int seen_paren = 0;
@@ -1034,9 +1225,9 @@ read_f (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
 	  ++p;
 	  ++out;
 	}
-	 
+
       *out = '\0';
-      
+
       if (seen_paren != 0 && seen_paren != 2)
 	goto bad_float;
 
@@ -1133,7 +1324,7 @@ found_digit:
       ++p;
       --w;
     }
-  
+
   /* No exponent has been seen, so we use the current scale factor.  */
   exponent = - dtp->u.p.scale_factor;
   goto done;
@@ -1171,7 +1362,7 @@ exponent:
 	  ++p;
 	  --w;
 	}
-	
+
       /* Only allow trailing blanks.  */
       while (w > 0)
 	{
@@ -1180,7 +1371,7 @@ exponent:
 	  ++p;
 	  --w;
 	}
-    }    
+    }
   else  /* BZ or BN status is enabled.  */
     {
       while (w > 0)
@@ -1220,7 +1411,7 @@ done:
      significand.  */
   else if (!seen_int_digit && !seen_dec_digit)
     {
-      notify_std (&dtp->common, GFC_STD_LEGACY, 
+      notify_std (&dtp->common, GFC_STD_LEGACY,
 		  "REAL input of style 'E+NN'");
       *(out++) = '0';
     }
@@ -1313,20 +1504,20 @@ read_x (st_parameter_dt *dtp, size_t n)
   if ((dtp->u.p.current_unit->pad_status == PAD_NO || is_internal_unit (dtp))
       && dtp->u.p.current_unit->bytes_left < (gfc_offset) n)
     n = dtp->u.p.current_unit->bytes_left;
-    
+
   if (n == 0)
     return;
-    
+
   if (dtp->u.p.current_unit->flags.encoding == ENCODING_UTF8)
     {
       gfc_char4_t c;
       size_t nbytes, j;
-    
+
       /* Proceed with decoding one character at a time.  */
       for (j = 0; j < n; j++)
 	{
 	  c = read_utf8 (dtp, &nbytes);
-    
+
 	  /* Check for a short read and if so, break out.  */
 	  if (nbytes == 0 || c == (gfc_char4_t)0)
 	    break;
@@ -1363,7 +1554,7 @@ read_x (st_parameter_dt *dtp, size_t n)
 	     the rest of the I/O statement.  Set the corresponding flag.  */
 	  if (dtp->u.p.advance_status == ADVANCE_NO || dtp->u.p.seen_dollar)
 	    dtp->u.p.eor_condition = 1;
-	    
+
 	  /* If we encounter a CR, it might be a CRLF.  */
 	  if (q == '\r') /* Probably a CRLF */
 	    {
@@ -1377,7 +1568,7 @@ read_x (st_parameter_dt *dtp, size_t n)
 	  goto done;
 	}
       n++;
-    } 
+    }
 
  done:
   if (((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0) ||
@@ -1386,4 +1577,3 @@ read_x (st_parameter_dt *dtp, size_t n)
   dtp->u.p.current_unit->bytes_left -= n;
   dtp->u.p.current_unit->strm_pos += (gfc_offset) n;
 }
-

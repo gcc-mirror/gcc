@@ -4344,6 +4344,17 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
       goto get_kind;
     }
 
+  if (flag_unsigned)
+    {
+      if ((matched_type && strcmp ("unsigned", name) == 0)
+	  || (!matched_type && gfc_match (" unsigned") == MATCH_YES))
+	{
+	  ts->type = BT_UNSIGNED;
+	  ts->kind = gfc_default_integer_kind;
+	  goto get_kind;
+	}
+    }
+
   if ((matched_type && strcmp ("character", name) == 0)
       || (!matched_type && gfc_match (" character") == MATCH_YES))
     {

@@ -117,6 +117,8 @@ enum iocall
   IOCALL_WRITE_DONE,
   IOCALL_X_INTEGER,
   IOCALL_X_INTEGER_WRITE,
+  IOCALL_X_UNSIGNED,
+  IOCALL_X_UNSIGNED_WRITE,
   IOCALL_X_LOGICAL,
   IOCALL_X_LOGICAL_WRITE,
   IOCALL_X_CHARACTER,
@@ -333,6 +335,14 @@ gfc_build_io_library_fndecls (void)
 
   iocall[IOCALL_X_INTEGER_WRITE] = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("transfer_integer_write")), ". w R . ",
+	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
+
+  iocall[IOCALL_X_UNSIGNED] = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("transfer_unsigned")), ". w W . ",
+	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
+
+  iocall[IOCALL_X_UNSIGNED_WRITE] = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("transfer_unsigned_write")), ". w R . ",
 	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
 
   iocall[IOCALL_X_LOGICAL] = gfc_build_library_function_decl_with_spec (
@@ -2339,6 +2349,15 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr,
 	function = iocall[IOCALL_X_INTEGER];
       else
 	function = iocall[IOCALL_X_INTEGER_WRITE];
+
+      break;
+
+    case BT_UNSIGNED:
+      arg2 = build_int_cst (unsigned_type_node, kind);
+      if (last_dt == READ)
+	function = iocall[IOCALL_X_UNSIGNED];
+      else
+	function = iocall[IOCALL_X_UNSIGNED_WRITE];
 
       break;
 

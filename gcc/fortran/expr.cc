@@ -159,6 +159,7 @@ gfc_get_constant_expr (bt type, int kind, locus *where)
   switch (type)
     {
     case BT_INTEGER:
+    case BT_UNSIGNED:
       mpz_init (e->value.integer);
       break;
 
@@ -296,6 +297,7 @@ gfc_copy_expr (gfc_expr *p)
       switch (q->ts.type)
 	{
 	case BT_INTEGER:
+	case BT_UNSIGNED:
 	  mpz_init_set (q->value.integer, p->value.integer);
 	  break;
 
@@ -696,7 +698,6 @@ gfc_extract_int (gfc_expr *expr, int *result, int report_error)
   return false;
 }
 
-
 /* Same as gfc_extract_int, but use a HWI.  */
 
 bool
@@ -899,7 +900,8 @@ gfc_kind_max (gfc_expr *e1, gfc_expr *e2)
 static bool
 numeric_type (bt type)
 {
-  return type == BT_COMPLEX || type == BT_REAL || type == BT_INTEGER;
+  return type == BT_COMPLEX || type == BT_REAL || type == BT_INTEGER
+    || type == BT_UNSIGNED;
 }
 
 

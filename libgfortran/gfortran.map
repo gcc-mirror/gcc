@@ -1775,4 +1775,6 @@ GFORTRAN_15 {
   global:
     _gfortran_internal_pack_class;
     _gfortran_internal_unpack_class;
+    _gfortran_transfer_unsigned;
+    _gfortran_transfer_unsigned_write;
 } GFORTRAN_14;

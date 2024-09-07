@@ -86,8 +86,10 @@ static GTY(()) tree gfc_cfi_descriptor_base[2 * (CFI_MAX_RANK + 2)];
 #define MAX_INT_KINDS 5
 gfc_integer_info gfc_integer_kinds[MAX_INT_KINDS + 1];
 gfc_logical_info gfc_logical_kinds[MAX_INT_KINDS + 1];
+gfc_unsigned_info gfc_unsigned_kinds[MAX_INT_KINDS + 1];
 static GTY(()) tree gfc_integer_types[MAX_INT_KINDS + 1];
 static GTY(()) tree gfc_logical_types[MAX_INT_KINDS + 1];
+static GTY(()) tree gfc_unsigned_types[MAX_INT_KINDS + 1];
 
 #define MAX_REAL_KINDS 5
 gfc_real_info gfc_real_kinds[MAX_REAL_KINDS + 1];
@@ -109,6 +111,7 @@ int gfc_index_integer_kind;
 /* The default kinds of the various types.  */
 
 int gfc_default_integer_kind;
+int gfc_default_unsigned_kind;
 int gfc_max_integer_kind;
 int gfc_default_real_kind;
 int gfc_default_double_kind;
@@ -413,6 +416,14 @@ gfc_init_kinds (void)
       gfc_integer_kinds[i_index].digits = bitsize - 1;
       gfc_integer_kinds[i_index].bit_size = bitsize;
 
+      if (flag_unsigned)
+	{
+	  gfc_unsigned_kinds[i_index].kind = kind;
+	  gfc_unsigned_kinds[i_index].radix = 2;
+	  gfc_unsigned_kinds[i_index].digits = bitsize;
+	  gfc_unsigned_kinds[i_index].bit_size = bitsize;
+	}
+
       gfc_logical_kinds[i_index].kind = kind;
       gfc_logical_kinds[i_index].bit_size = bitsize;
 
@@ -584,6 +595,8 @@ gfc_init_kinds (void)
       gfc_default_integer_kind = gfc_integer_kinds[i_index - 1].kind;
       gfc_numeric_storage_size = gfc_integer_kinds[i_index - 1].bit_size;
     }
+
+  gfc_default_unsigned_kind = gfc_default_integer_kind;
 
   /* Choose the default real kind.  Again, we choose 4 when possible.  */
   if (flag_default_real_8)
@@ -757,6 +770,18 @@ validate_integer (int kind)
 }
 
 static int
+validate_unsigned (int kind)
+{
+  int i;
+
+  for (i = 0; gfc_unsigned_kinds[i].kind != 0; i++)
+    if (gfc_unsigned_kinds[i].kind == kind)
+      return i;
+
+  return -1;
+}
+
+static int
 validate_real (int kind)
 {
   int i;
@@ -809,6 +834,9 @@ gfc_validate_kind (bt type, int kind, bool may_fail)
       break;
     case BT_INTEGER:
       rc = validate_integer (kind);
+      break;
+    case BT_UNSIGNED:
+      rc = validate_unsigned (kind);
       break;
     case BT_LOGICAL:
       rc = validate_logical (kind);
@@ -880,6 +908,24 @@ gfc_build_uint_type (int size)
   return make_unsigned_type (size);
 }
 
+static tree
+gfc_build_unsigned_type (gfc_unsigned_info *info)
+{
+  int mode_precision = info->bit_size;
+
+  if (mode_precision == CHAR_TYPE_SIZE)
+    info->c_unsigned_char = 1;
+  if (mode_precision == SHORT_TYPE_SIZE)
+    info->c_unsigned_short = 1;
+  if (mode_precision == INT_TYPE_SIZE)
+    info->c_unsigned_int = 1;
+  if (mode_precision == LONG_TYPE_SIZE)
+    info->c_unsigned_long = 1;
+  if (mode_precision == LONG_LONG_TYPE_SIZE)
+    info->c_unsigned_long_long = 1;
+
+  return gfc_build_uint_type (mode_precision);
+}
 
 static tree
 gfc_build_real_type (gfc_real_info *info)
@@ -1034,6 +1080,40 @@ gfc_init_types (void)
     }
   gfc_character1_type_node = gfc_character_types[0];
 
+  /* The middle end only recognizes a single unsigned type.  For
+     compatibility of existing test cases, let's just use the
+     character type.  The reader of tree dumps is expected to be able
+     to deal with this.  */
+
+  if (flag_unsigned)
+    {
+      for (index = 0; gfc_unsigned_kinds[index].kind != 0;++index)
+	{
+	  int index_char = -1;
+	  for (int i=0; gfc_character_kinds[i].kind != 0; i++)
+	    {
+	      if (gfc_character_kinds[i].bit_size
+		  == gfc_unsigned_kinds[index].bit_size)
+		{
+		  index_char = i;
+		  break;
+		}
+	    }
+	  if (index_char > 0)
+	    {
+	      gfc_unsigned_types[index] = gfc_character_types[index_char];
+	    }
+	  else
+	    {
+	      type = gfc_build_unsigned_type (&gfc_unsigned_kinds[index]);
+	      gfc_unsigned_types[index] = type;
+	      snprintf (name_buf, sizeof(name_buf), "unsigned(kind=%d)",
+			gfc_integer_kinds[index].kind);
+	      PUSH_TYPE (name_buf, type);
+	    }
+	}
+    }
+
   PUSH_TYPE ("byte", unsigned_char_type_node);
   PUSH_TYPE ("void", void_type_node);
 
@@ -1090,6 +1170,13 @@ gfc_get_int_type (int kind)
 {
   int index = gfc_validate_kind (BT_INTEGER, kind, true);
   return index < 0 ? 0 : gfc_integer_types[index];
+}
+
+tree
+gfc_get_unsigned_type (int kind)
+{
+  int index = gfc_validate_kind (BT_UNSIGNED, kind, true);
+  return index < 0 ? 0 : gfc_unsigned_types[index];
 }
 
 tree
@@ -1190,6 +1277,10 @@ gfc_typenode_for_spec (gfc_typespec * spec, int codim)
 	}
       else
         basetype = gfc_get_int_type (spec->kind);
+      break;
+
+    case BT_UNSIGNED:
+      basetype = gfc_get_unsigned_type (spec->kind);
       break;
 
     case BT_REAL:

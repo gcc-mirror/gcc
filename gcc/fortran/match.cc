@@ -2132,6 +2132,13 @@ gfc_match_type_spec (gfc_typespec *ts)
       goto kind_selector;
     }
 
+  if (flag_unsigned && gfc_match ("unsigned") == MATCH_YES)
+    {
+      ts->type = BT_UNSIGNED;
+      ts->kind = gfc_default_integer_kind;
+      goto kind_selector;
+    }
+
   if (gfc_match ("double precision") == MATCH_YES)
     {
       ts->type = BT_REAL;
@@ -6207,7 +6214,9 @@ match_case_selector (gfc_case **cp)
 	goto cleanup;
 
       if (c->high->ts.type != BT_LOGICAL && c->high->ts.type != BT_INTEGER
-	  && c->high->ts.type != BT_CHARACTER)
+	  && c->high->ts.type != BT_CHARACTER
+	  && (!flag_unsigned
+	      || (flag_unsigned && c->high->ts.type != BT_UNSIGNED)))
 	{
 	  gfc_error ("Expression in CASE selector at %L cannot be %s",
 		     &c->high->where, gfc_typename (&c->high->ts));
@@ -6223,7 +6232,9 @@ match_case_selector (gfc_case **cp)
 	goto need_expr;
 
       if (c->low->ts.type != BT_LOGICAL && c->low->ts.type != BT_INTEGER
-	  && c->low->ts.type != BT_CHARACTER)
+	  && c->low->ts.type != BT_CHARACTER
+	  && (!flag_unsigned
+	      || (flag_unsigned && c->low->ts.type != BT_UNSIGNED)))
 	{
 	  gfc_error ("Expression in CASE selector at %L cannot be %s",
 		     &c->low->where, gfc_typename (&c->low->ts));
@@ -6242,7 +6253,9 @@ match_case_selector (gfc_case **cp)
 	  if (m == MATCH_YES
 	      && c->high->ts.type != BT_LOGICAL
 	      && c->high->ts.type != BT_INTEGER
-	      && c->high->ts.type != BT_CHARACTER)
+	      && c->high->ts.type != BT_CHARACTER
+	      && (!flag_unsigned
+		  || (flag_unsigned && c->high->ts.type != BT_UNSIGNED)))
 	    {
 	      gfc_error ("Expression in CASE selector at %L cannot be %s",
 			 &c->high->where, gfc_typename (c->high));

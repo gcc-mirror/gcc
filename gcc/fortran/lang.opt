@@ -788,6 +788,10 @@ frepack-arrays
 Fortran Var(flag_repack_arrays)
 Copy array sections into a contiguous block on procedure entry.
 
+funsigned
+Fortran Var(flag_unsigned)
+Experimental unsigned numbers.
+
 fcoarray=
 Fortran RejectNegative Joined Enum(gfc_fcoarray) Var(flag_coarray) Init(GFC_FCOARRAY_NONE)
 -fcoarray=<none|single|lib>	Specify which coarray parallelization should be used.
