@@ -1,5 +1,6 @@
 /* PR tree-optimization/116588 */
 /* { dg-do run { target bitint575 } } */
+/* { dg-require-effective-target int128 } */
 /* { dg-options "-O2 -fno-vect-cost-model -fno-tree-dominator-opts -fno-tree-fre --param=vrp-block-limit=0  -DDEBUG -fdump-tree-vrp2-details" } */
 
 int a;
