@@ -20170,6 +20170,22 @@ check_module_decl_linkage (tree decl)
   if (!module_has_cmi_p ())
     return;
 
+  /* A header unit shall not contain a definition of a non-inline function
+     or variable (not template) whose name has external linkage.  */
+  if (header_module_p ()
+      && !processing_template_decl
+      && ((TREE_CODE (decl) == FUNCTION_DECL
+	   && !DECL_DECLARED_INLINE_P (decl))
+	  || (TREE_CODE (decl) == VAR_DECL
+	      && !DECL_INLINE_VAR_P (decl)))
+      && decl_defined_p (decl)
+      && !(DECL_LANG_SPECIFIC (decl)
+	   && DECL_TEMPLATE_INSTANTIATION (decl))
+      && decl_linkage (decl) == lk_external)
+    error_at (DECL_SOURCE_LOCATION (decl),
+	      "external linkage definition of %qD in header module must "
+	      "be declared %<inline%>", decl);
+
   /* An internal-linkage declaration cannot be generally be exported.
      But it's OK to export any declaration from a header unit, including
      internal linkage declarations.  */

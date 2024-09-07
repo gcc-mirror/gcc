@@ -6,7 +6,7 @@ template<int I> int Fn ()
   return I;
 }
 
-template<> int Fn<1> () 
+template<> inline int Fn<1> () 
 {
   return 0;
 }

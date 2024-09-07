@@ -11072,6 +11072,9 @@ grokfndecl (tree ctype,
 	 have one: the restriction that you can't repeat a deduction guide
 	 makes them more like a definition anyway.  */
       DECL_INITIAL (decl) = void_node;
+      /* But to ensure that external-linkage deduction guides in header units
+	 don't fall afoul of [module.import] p6, mark them as inline.  */
+      DECL_DECLARED_INLINE_P (decl) = true;
       break;
     default:
       break;

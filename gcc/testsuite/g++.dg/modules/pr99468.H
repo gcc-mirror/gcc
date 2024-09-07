@@ -3,4 +3,4 @@
 
 module M; // { dg-error "module-declaration not permitted" }
 
-int i;
+inline int i;

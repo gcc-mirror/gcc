@@ -19,4 +19,4 @@ struct tuple {
     = typename _TupleConstraints<Ts...>::template __constructible<Us...>;
 };
 
-tuple<int, int> t;
+inline tuple<int, int> t;
