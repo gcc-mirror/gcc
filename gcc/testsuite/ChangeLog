@@ -1,3 +1,8 @@
+2024-09-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116567
+	* g++.dg/cpp2a/lambda-targ7.C: New test.
+
 2024-09-05  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

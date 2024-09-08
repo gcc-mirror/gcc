@@ -1,3 +1,10 @@
+2024-09-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116567
+	* pt.cc (tsubst_lambda_expr): For a deferred-substitution lambda,
+	trim the augmented template arguments to match the template depth
+	of the lambda.
+
 2024-09-05  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
