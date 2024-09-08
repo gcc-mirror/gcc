@@ -1,3 +1,155 @@
+2024-09-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* arith.cc (gfc_reduce_unsigned): New function.
+	(gfc_arith_error): Add ARITH_UNSIGNED_TRUNCATED and
+	ARITH_UNSIGNED_NEGATIVE.
+	(gfc_arith_init_1): Initialize unsigned types.
+	(gfc_check_unsigned_range): New function.
+	(gfc_range_check): Handle unsigned types.
+	(gfc_arith_uminus): Likewise.
+	(gfc_arith_plus): Likewise.
+	(gfc_arith_minus): Likewise.
+	(gfc_arith_times): Likewise.
+	(gfc_arith_divide): Likewise.
+	(gfc_compare_expr): Likewise.
+	(eval_intrinsic): Likewise.
+	(gfc_int2int): Also convert unsigned.
+	(gfc_uint2uint): New function.
+	(gfc_int2uint): New function.
+	(gfc_uint2int): New function.
+	(gfc_uint2real): New function.
+	(gfc_uint2complex): New function.
+	(gfc_real2uint): New function.
+	(gfc_complex2uint): New function.
+	(gfc_log2uint): New function.
+	(gfc_uint2log): New function.
+	* arith.h (gfc_int2uint, gfc_uint2uint, gfc_uint2int, gfc_uint2real):
+	Add prototypes.
+	(gfc_uint2complex, gfc_real2uint, gfc_complex2uint, gfc_log2uint):
+	Likewise.
+	(gfc_uint2log): Likewise.
+	* check.cc (gfc_boz2uint): New function
+	(type_check2): New function.
+	(int_or_real_or_unsigned_check): New function.
+	(less_than_bitsizekind): Adjust for unsingeds.
+	(less_than_bitsize2): Likewise.
+	(gfc_check_allocated): Likewise.
+	(gfc_check_mod): Likewise.
+	(gfc_check_bge_bgt_ble_blt): Likewise.
+	(gfc_check_bitfcn): Likewise.
+	(gfc_check_digits): Likewise.
+	(gfc_check_dshift): Likewise.
+	(gfc_check_huge): Likewise.
+	(gfc_check_iu): New function.
+	(gfc_check_iand_ieor_ior): Adjust for unsigneds.
+	(gfc_check_ibits): Likewise.
+	(gfc_check_uint): New function.
+	(gfc_check_ishft): Adjust for unsigneds.
+	(gfc_check_ishftc): Likewise.
+	(gfc_check_min_max): Likewise.
+	(gfc_check_merge_bits): Likewise.
+	(gfc_check_selected_int_kind): Likewise.
+	(gfc_check_shift): Likewise.
+	(gfc_check_mvbits): Likewise.
+	(gfc_invalid_unsigned_ops): Likewise.
+	* decl.cc (gfc_match_decl_type_spec): Likewise.
+	* dump-parse-tree.cc (show_expr): Likewise.
+	* expr.cc (gfc_get_constant_expr): Likewise.
+	(gfc_copy_expr): Likewise.
+	(gfc_extract_int): Likewise.
+	(numeric_type): Likewise.
+	* gfortran.h (enum arith): Extend with ARITH_UNSIGNED_TRUNCATED
+	and ARITH_UNSIGNED_NEGATIVE.
+	(enum gfc_isym_id): Extend with GFC_ISYM_SU_KIND and GFC_ISYM_UINT.
+	(gfc_check_unsigned_range): New prototype-
+	(gfc_arith_error): Likewise.
+	(gfc_reduce_unsigned): Likewise.
+	(gfc_boz2uint): Likewise.
+	(gfc_invalid_unsigned_ops): Likewise.
+	(gfc_convert_mpz_to_unsigned): Likewise.
+	* gfortran.texi: Add some rudimentary documentation.
+	* intrinsic.cc (gfc_type_letter): Adjust for unsigneds.
+	(add_functions): Add uint and adjust functions to be called.
+	(add_conversions): Add unsigned conversions.
+	(gfc_convert_type_warn): Adjust for unsigned.
+	* intrinsic.h (gfc_check_iu, gfc_check_uint, gfc_check_mod, gfc_simplify_uint,
+	gfc_simplify_selected_unsigned_kind, gfc_resolve_uint): New prototypes.
+	* invoke.texi: Add -funsigned.
+	* iresolve.cc (gfc_resolve_dshift): Handle unsigneds.
+	(gfc_resolve_iand): Handle unsigneds.
+	(gfc_resolve_ibclr): Handle unsigneds.
+	(gfc_resolve_ibits): Handle unsigneds.
+	(gfc_resolve_ibset): Handle unsigneds.
+	(gfc_resolve_ieor): Handle unsigneds.
+	(gfc_resolve_ior): Handle unsigneds.
+	(gfc_resolve_uint): Handle unsigneds.
+	(gfc_resolve_merge_bits): Handle unsigneds.
+	(gfc_resolve_not): Handle unsigneds.
+	* lang.opt: Add -funsigned.
+	* libgfortran.h: Add BT_UNSIGNED.
+	* match.cc (gfc_match_type_spec): Match UNSIGNED.
+	* misc.cc (gfc_basic_typename): Add UNSIGNED.
+	(gfc_typename): Likewise.
+	* primary.cc (convert_unsigned): New function.
+	(match_unsigned_constant): New function.
+	(gfc_match_literal_constant): Handle unsigned.
+	* resolve.cc (resolve_operator): Handle unsigned.
+	(resolve_ordinary_assign): Likewise.
+	* simplify.cc (convert_mpz_to_unsigned): Renamed to...
+	(gfc_convert_mpz_to_unsigned): and adjusted.
+	(gfc_simplify_bit_size): Adjusted for unsigned.
+	(compare_bitwise): Likewise.
+	(gfc_simplify_bge): Likewise.
+	(gfc_simplify_bgt): Likewise.
+	(gfc_simplify_ble): Likewise.
+	(gfc_simplify_blt): Likewise.
+	(simplify_cmplx): Likewise.
+	(gfc_simplify_digits): Likewise.
+	(simplify_dshift): Likewise.
+	(gfc_simplify_huge): Likewise.
+	(gfc_simplify_iand): Likewise.
+	(gfc_simplify_ibclr): Likewise.
+	(gfc_simplify_ibits): Likewise.
+	(gfc_simplify_ibset): Likewise.
+	(gfc_simplify_ieor): Likewise.
+	(gfc_simplify_uint): Likewise.
+	(gfc_simplify_ior): Likewise.
+	(simplify_shift): Likewise.
+	(gfc_simplify_ishftc): Likewise.
+	(gfc_simplify_merge_bits): Likewise.
+	(min_max_choose): Likewise.
+	(gfc_simplify_mod): Likewise.
+	(gfc_simplify_modulo): Likewise.
+	(gfc_simplify_popcnt): Likewise.
+	(gfc_simplify_range): Likewise.
+	(gfc_simplify_selected_unsigned_kind): Likewise.
+	(gfc_convert_constant): Likewise.
+	* target-memory.cc (size_unsigned): New function.
+	(gfc_element_size): Adjust for unsigned.
+	* trans-const.h (gfc_conv_mpz_unsigned_to_tree): Add prototype.
+	* trans-const.cc (gfc_conv_mpz_unsigned_to_tree): Handle unsigneds.
+	(gfc_conv_constant_to_tree): Likewise.
+	* trans-decl.cc (gfc_conv_cfi_to_gfc): Put in "not yet implemented".
+	* trans-expr.cc (gfc_conv_gfc_desc_to_cfi_desc): Likewise.
+	* trans-stmt.cc (gfc_trans_integer_select): Handle unsigned.
+	(gfc_trans_select): Likewise.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_mod): Handle unsigned.
+	(gfc_conv_intrinsic_shift): Likewise.
+	(gfc_conv_intrinsic_function): Add GFC_ISYM_UINT.
+	* trans-io.cc (enum iocall): Add IOCALL_X_UNSIGNED and IOCALL_X_UNSIGNED_WRITE.
+	(gfc_build_io_library_fndecls): Add transfer_unsigned and transfer_unsigned_write.
+	(transfer_expr): Handle unsigneds.
+	* trans-types.cc (gfc_unsinged_kinds): New array.
+	(gfc_unsigned_types): Likewise.
+	(gfc_init_kinds): Handle them.
+	(validate_unsigned): New function.
+	(gfc_validate_kind): Use it.
+	(gfc_build_unsigned_type): New function.
+	(gfc_init_types): Use it.
+	(gfc_get_unsigned_type): New function.
+	(gfc_typenode_for_spec): Handle unsigned.
+	* trans-types.h (gfc_get_unsigned_type): New prototype.
+
 2024-09-06  Tobias Burnus  <tburnus@baylibre.com>
 
 	* dump-parse-tree.cc (show_omp_namelist): Handle OMP_LIST_INIT.

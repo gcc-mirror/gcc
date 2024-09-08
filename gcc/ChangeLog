@@ -1,3 +1,23 @@
+2024-09-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gimple-ssa-split-paths.cc (is_feasible_trace): Fix wording
+	on the print.
+
+2024-09-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/116588
+	* tree-vrp.cc (execute_fast_vrp): Start with all edges executable.
+
+2024-09-07  Zhao Dingyi  <dingyizhao.zdy@outlook.com>
+
+	* config/riscv/xiangshan.md: Add atomic, trap, fcvt_i2f, fcvt_f2i.
+
+2024-09-07  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/116592
+	* config/riscv/thead.cc (th_asm_output_opcode): Change '0' to
+	"zero"
+
 2024-09-06  Carl Love  <cel@linux.ibm.com>
 
 	* config/rs6000/rs6000-overload.def (vec_test_lsbb_all_ones,

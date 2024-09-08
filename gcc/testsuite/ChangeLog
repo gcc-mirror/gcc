@@ -1,3 +1,55 @@
+2024-09-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.dg/pr116588.c: Require int128.
+
+2024-09-07  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/diagnostic/pr65923.C: Add noexcept.
+	* g++.dg/cpp1z/aligned-new3.C: Expect pedwarn.
+	* g++.dg/cpp1z/noexcept-type19.C: Add comment.
+
+2024-09-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116567
+	* g++.dg/cpp2a/lambda-targ7.C: New test.
+
+2024-09-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/116588
+	* gcc.dg/pr116588.c: New.
+
+2024-09-07  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/116592
+	* gcc.target/riscv/rvv/xtheadvector/pr116592.c: New test.
+
+2024-09-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/unsigned_1.f90: New test.
+	* gfortran.dg/unsigned_10.f90: New test.
+	* gfortran.dg/unsigned_11.f90: New test.
+	* gfortran.dg/unsigned_12.f90: New test.
+	* gfortran.dg/unsigned_13.f90: New test.
+	* gfortran.dg/unsigned_14.f90: New test.
+	* gfortran.dg/unsigned_15.f90: New test.
+	* gfortran.dg/unsigned_16.f90: New test.
+	* gfortran.dg/unsigned_17.f90: New test.
+	* gfortran.dg/unsigned_18.f90: New test.
+	* gfortran.dg/unsigned_19.f90: New test.
+	* gfortran.dg/unsigned_2.f90: New test.
+	* gfortran.dg/unsigned_20.f90: New test.
+	* gfortran.dg/unsigned_21.f90: New test.
+	* gfortran.dg/unsigned_22.f90: New test.
+	* gfortran.dg/unsigned_23.f90: New test.
+	* gfortran.dg/unsigned_24.f: New test.
+	* gfortran.dg/unsigned_3.f90: New test.
+	* gfortran.dg/unsigned_4.f90: New test.
+	* gfortran.dg/unsigned_5.f90: New test.
+	* gfortran.dg/unsigned_6.f90: New test.
+	* gfortran.dg/unsigned_7.f90: New test.
+	* gfortran.dg/unsigned_8.f90: New test.
+	* gfortran.dg/unsigned_9.f90: New test.
+
 2024-09-06  Jason Merrill  <jason@redhat.com>
 
 	PR tree-optimization/107919

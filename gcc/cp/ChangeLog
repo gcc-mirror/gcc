@@ -1,3 +1,22 @@
+2024-09-07  Jason Merrill  <jason@redhat.com>
+
+	* decl.cc (check_redeclaration_exception_specification): Remove
+	OPT_Wsystem_headers from pedwarn when the old declaration is
+	in a system header.  Also check std namespace.
+
+2024-09-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116567
+	* pt.cc (coerce_template_parms): Set tf_partial when substituting
+	into a default template argument in a template context.
+	(build_extra_args): Set TREE_STATIC on the deferred args if this
+	is a partial substitution.
+	(add_extra_args): Check TREE_STATIC instead of dependence of args.
+	Adjust merging behavior in that case.
+	(tsubst_lammda_expr): Check for tf_partial instead of dependence
+	of args when determining whether to defer substitution.
+	(tsubst_expr) <case LAMBDA_EXPR>: Remove tf_partial early exit.
+
 2024-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/115769
