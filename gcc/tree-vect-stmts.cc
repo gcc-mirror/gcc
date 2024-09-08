@@ -13353,6 +13353,12 @@ vect_analyze_stmt (vec_info *vinfo,
       return opt_result::success ();
     }
 
+  /* When we arrive here with a non-SLP statement and we are supposed
+     to use SLP for everything fail vectorization.  */
+  if (!node && param_vect_force_slp)
+    return opt_result::failure_at (stmt_info->stmt,
+				   "needs non-SLP handling\n");
+
   ok = true;
   if (!bb_vinfo
       && (STMT_VINFO_RELEVANT_P (stmt_info)

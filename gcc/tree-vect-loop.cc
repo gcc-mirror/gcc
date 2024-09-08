@@ -2891,6 +2891,12 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal,
   /* This is the point where we can re-start analysis with SLP forced off.  */
 start_over:
 
+  /* When we arrive here with SLP disabled and we are supposed
+     to use SLP for everything fail vectorization.  */
+  if (!slp && param_vect_force_slp)
+    return opt_result::failure_at (vect_location,
+				   "may need non-SLP handling\n");
+
   /* Apply the suggested unrolling factor, this was determined by the backend
      during finish_cost the first time we ran the analyzis for this
      vector mode.  */
