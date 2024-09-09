@@ -1871,9 +1871,10 @@ option_enabled (int opt_idx, unsigned lang_mask, void *opts)
 }
 
 int
-compiler_diagnostic_option_manager::option_enabled_p (int opt_idx) const
+compiler_diagnostic_option_manager::
+option_enabled_p (diagnostic_option_id opt_id) const
 {
-  return option_enabled (opt_idx, m_lang_mask, m_opts);
+  return option_enabled (opt_id.m_idx, m_lang_mask, m_opts);
 }
 
 /* Fill STATE with the current state of option OPTION in OPTS.  Return

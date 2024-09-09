@@ -136,7 +136,7 @@ enum diagnostic_text_art_charset
 struct diagnostic_info
 {
   diagnostic_info ()
-    : message (), richloc (), metadata (), x_data (), kind (), option_index (),
+    : message (), richloc (), metadata (), x_data (), kind (), option_id (),
       m_iinfo ()
   { }
 
@@ -155,7 +155,7 @@ struct diagnostic_info
   /* The kind of diagnostic it is about.  */
   diagnostic_t kind;
   /* Which OPT_* directly controls this diagnostic.  */
-  int option_index;
+  diagnostic_option_id option_id;
 
   /* Inlining context containing locations for each call site along
      the inlining stack.  */
@@ -189,17 +189,17 @@ class diagnostic_option_manager
 public:
   virtual ~diagnostic_option_manager () {}
 
-  /* Return 1 if option OPT_IDX is enabled, 0 if it is disabled,
+  /* Return 1 if option OPTION_ID is enabled, 0 if it is disabled,
      or -1 if it isn't a simple on-off switch
      (or if the value is unknown, typically set later in target).  */
-  virtual int option_enabled_p (int opt_idx) const = 0;
+  virtual int option_enabled_p (diagnostic_option_id option_id) const = 0;
 
-  /* Return malloced memory for the name of the option OPT_IDX
+  /* Return malloced memory for the name of the option OPTION_ID
      which enabled a diagnostic, originally of type ORIG_DIAG_KIND but
      possibly converted to DIAG_KIND by options such as -Werror.
      May return NULL if no name is to be printed.
      May be passed 0 as well as the index of a particular option.  */
-  virtual char *make_option_name (int opt_idx,
+  virtual char *make_option_name (diagnostic_option_id option_id,
 				  diagnostic_t orig_diag_kind,
 				  diagnostic_t diag_kind) const = 0;
 
@@ -207,7 +207,7 @@ public:
      a diagnostic.
      May return NULL if no URL is available.
      May be passed 0 as well as the index of a particular option.  */
-  virtual char *make_option_url (int opt_idx) const = 0;
+  virtual char *make_option_url (diagnostic_option_id option_id) const = 0;
 };
 
 class edit_context;
@@ -236,20 +236,20 @@ public:
      is empty, revert to the state based on command line parameters.  */
   void pop (location_t where);
 
-  bool option_unspecified_p (int opt) const
+  bool option_unspecified_p (diagnostic_option_id option_id) const
   {
-    return get_current_override (opt) == DK_UNSPECIFIED;
+    return get_current_override (option_id) == DK_UNSPECIFIED;
   }
 
-  diagnostic_t get_current_override (int opt) const
+  diagnostic_t get_current_override (diagnostic_option_id option_id) const
   {
-    gcc_assert (opt < m_n_opts);
-    return m_classify_diagnostic[opt];
+    gcc_assert (option_id.m_idx < m_n_opts);
+    return m_classify_diagnostic[option_id.m_idx];
   }
 
   diagnostic_t
   classify_diagnostic (const diagnostic_context *context,
-		       int option_index,
+		       diagnostic_option_id option_id,
 		       diagnostic_t new_kind,
 		       location_t where);
 
@@ -263,7 +263,12 @@ private:
   struct diagnostic_classification_change_t
   {
     location_t location;
+
+    /* For DK_POP, this is the index of the corresponding push (as stored
+       in m_push_list).
+       Otherwise, this is an option index.  */
     int option;
+
     diagnostic_t kind;
   };
 
@@ -386,11 +391,11 @@ public:
   void begin_group ();
   void end_group ();
 
-  bool warning_enabled_at (location_t loc, int opt);
+  bool warning_enabled_at (location_t loc, diagnostic_option_id option_id);
 
-  bool option_unspecified_p (int opt) const
+  bool option_unspecified_p (diagnostic_option_id option_id) const
   {
-    return m_option_classifier.option_unspecified_p (opt);
+    return m_option_classifier.option_unspecified_p (option_id);
   }
 
   bool report_diagnostic (diagnostic_info *);
@@ -401,12 +406,12 @@ public:
   void action_after_output (diagnostic_t diag_kind);
 
   diagnostic_t
-  classify_diagnostic (int option_index,
+  classify_diagnostic (diagnostic_option_id option_id,
 		       diagnostic_t new_kind,
 		       location_t where)
   {
     return m_option_classifier.classify_diagnostic (this,
-						    option_index,
+						    option_id,
 						    new_kind,
 						    where);
   }
@@ -507,29 +512,29 @@ public:
   }
 
   /* Option-related member functions.  */
-  inline bool option_enabled_p (int option_index) const
+  inline bool option_enabled_p (diagnostic_option_id option_id) const
   {
     if (!m_option_mgr)
       return true;
-    return m_option_mgr->option_enabled_p (option_index);
+    return m_option_mgr->option_enabled_p (option_id);
   }
 
-  inline char *make_option_name (int option_index,
-				diagnostic_t orig_diag_kind,
-				diagnostic_t diag_kind) const
+  inline char *make_option_name (diagnostic_option_id option_id,
+				 diagnostic_t orig_diag_kind,
+				 diagnostic_t diag_kind) const
   {
     if (!m_option_mgr)
       return nullptr;
-    return m_option_mgr->make_option_name (option_index,
+    return m_option_mgr->make_option_name (option_id,
 					   orig_diag_kind,
 					   diag_kind);
   }
 
-  inline char *make_option_url (int option_index) const
+  inline char *make_option_url (diagnostic_option_id option_id) const
   {
     if (!m_option_mgr)
       return nullptr;
-    return m_option_mgr->make_option_url (option_index);
+    return m_option_mgr->make_option_url (option_id);
   }
 
   void
@@ -544,10 +549,10 @@ public:
   label_text get_location_text (const expanded_location &s) const;
 
   bool diagnostic_impl (rich_location *, const diagnostic_metadata *,
-			int, const char *,
+			diagnostic_option_id, const char *,
 			va_list *, diagnostic_t) ATTRIBUTE_GCC_DIAG(5,0);
   bool diagnostic_n_impl (rich_location *, const diagnostic_metadata *,
-			  int, unsigned HOST_WIDE_INT,
+			  diagnostic_option_id, unsigned HOST_WIDE_INT,
 			  const char *, const char *, va_list *,
 			  diagnostic_t) ATTRIBUTE_GCC_DIAG(7,0);
 
@@ -850,9 +855,10 @@ diagnostic_ready_p ()
    diagnostic.  */
 
 inline void
-diagnostic_override_option_index (diagnostic_info *info, int optidx)
+diagnostic_set_option_id (diagnostic_info *info,
+			  diagnostic_option_id option_id)
 {
-  info->option_index = optidx;
+  info->option_id = option_id;
 }
 
 /* Diagnostic related functions.  */
@@ -925,11 +931,11 @@ diagnostic_initialize_input_context (diagnostic_context *context,
 /* Force diagnostics controlled by OPTIDX to be kind KIND.  */
 inline diagnostic_t
 diagnostic_classify_diagnostic (diagnostic_context *context,
-				int optidx,
+				diagnostic_option_id option_id,
 				diagnostic_t kind,
 				location_t where)
 {
-  return context->classify_diagnostic (optidx, kind, where);
+  return context->classify_diagnostic (option_id, kind, where);
 }
 
 inline void
@@ -1052,15 +1058,15 @@ extern char *build_message_string (const char *, ...) ATTRIBUTE_PRINTF_1;
 extern int num_digits (int);
 
 inline bool
-warning_enabled_at (location_t loc, int opt)
+warning_enabled_at (location_t loc, diagnostic_option_id option_id)
 {
-  return global_dc->warning_enabled_at (loc, opt);
+  return global_dc->warning_enabled_at (loc, option_id);
 }
 
 inline bool
-option_unspecified_p (int opt)
+option_unspecified_p (diagnostic_option_id option_id)
 {
-  return global_dc->option_unspecified_p (opt);
+  return global_dc->option_unspecified_p (option_id);
 }
 
 extern char *get_cwe_url (int cwe);

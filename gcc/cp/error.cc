@@ -231,7 +231,7 @@ cp_adjust_diagnostic_info (diagnostic_context *context,
   if (diagnostic->kind == DK_ERROR)
     if (tree tmpl = get_current_template ())
       {
-	diagnostic->option_index = OPT_Wtemplate_body;
+	diagnostic->option_id = OPT_Wtemplate_body;
 
 	if (context->m_permissive)
 	  diagnostic->kind = DK_WARNING;
@@ -4769,11 +4769,13 @@ maybe_warn_variadic_templates (void)
 
 
 /* Issue an ISO C++98 pedantic warning at LOCATION, conditional on
-   option OPT with text GMSGID.  Use this function to report
+   option OPTION_ID with text GMSGID.  Use this function to report
    diagnostics for constructs that are invalid C++98, but valid
    C++0x.  */
 bool
-pedwarn_cxx98 (location_t location, int opt, const char *gmsgid, ...)
+pedwarn_cxx98 (location_t location,
+	       diagnostic_option_id option_id,
+	       const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
@@ -4783,7 +4785,7 @@ pedwarn_cxx98 (location_t location, int opt, const char *gmsgid, ...)
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
 		       (cxx_dialect == cxx98) ? DK_PEDWARN : DK_WARNING);
-  diagnostic.option_index = opt;
+  diagnostic.option_id = option_id;
   ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
   va_end (ap);
   return ret;

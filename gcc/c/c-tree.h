@@ -899,13 +899,13 @@ extern void c_bind (location_t, tree, bool);
 extern bool tag_exists_p (enum tree_code, tree);
 
 /* In c-errors.cc */
-extern bool pedwarn_c90 (location_t, int opt, const char *, ...)
+extern bool pedwarn_c90 (location_t, diagnostic_option_id, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
-extern bool pedwarn_c99 (location_t, int opt, const char *, ...)
+extern bool pedwarn_c99 (location_t, diagnostic_option_id, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
-extern bool pedwarn_c11 (location_t, int opt, const char *, ...)
+extern bool pedwarn_c11 (location_t, diagnostic_option_id, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
-extern bool pedwarn_c23 (location_t, int opt, const char *, ...)
+extern bool pedwarn_c23 (location_t, diagnostic_option_id, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
 
 extern void

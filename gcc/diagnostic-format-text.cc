@@ -190,13 +190,13 @@ print_option_information (const diagnostic_info &diagnostic,
 			  diagnostic_t orig_diag_kind)
 {
   if (char *option_text
-      = m_context.make_option_name (diagnostic.option_index,
+      = m_context.make_option_name (diagnostic.option_id,
 				    orig_diag_kind, diagnostic.kind))
     {
       char *option_url = nullptr;
       pretty_printer * const pp = get_printer ();
       if (pp->supports_urls_p ())
-	option_url = m_context.make_option_url (diagnostic.option_index);
+	option_url = m_context.make_option_url (diagnostic.option_id);
       pp_string (pp, " [");
       const char *kind_color = diagnostic_get_color_for_kind (diagnostic.kind);
       pp_string (pp, colorize_start (pp_show_color (pp), kind_color));

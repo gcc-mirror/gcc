@@ -482,7 +482,7 @@ diagnostic_set_info_translated (diagnostic_info *diagnostic, const char *msg,
   diagnostic->richloc = richloc;
   diagnostic->metadata = NULL;
   diagnostic->kind = kind;
-  diagnostic->option_index = 0;
+  diagnostic->option_id = 0;
 }
 
 /* Initialize DIAGNOSTIC, where the message GMSGID has not yet been
@@ -1004,23 +1004,23 @@ default_diagnostic_finalizer (diagnostic_context *context,
 
 /* Interface to specify diagnostic kind overrides.  Returns the
    previous setting, or DK_UNSPECIFIED if the parameters are out of
-   range.  If OPTION_INDEX is zero, the new setting is for all the
+   range.  If OPTION_ID is zero, the new setting is for all the
    diagnostics.  */
 diagnostic_t
 diagnostic_option_classifier::
 classify_diagnostic (const diagnostic_context *context,
-		     int option_index,
+		     diagnostic_option_id option_id,
 		     diagnostic_t new_kind,
 		     location_t where)
 {
   diagnostic_t old_kind;
 
-  if (option_index < 0
-      || option_index >= m_n_opts
+  if (option_id.m_idx < 0
+      || option_id.m_idx >= m_n_opts
       || new_kind >= DK_LAST_DIAGNOSTIC_KIND)
     return DK_UNSPECIFIED;
 
-  old_kind = m_classify_diagnostic[option_index];
+  old_kind = m_classify_diagnostic[option_id.m_idx];
 
   /* Handle pragmas separately, since we need to keep track of *where*
      the pragmas were.  */
@@ -1031,13 +1031,13 @@ classify_diagnostic (const diagnostic_context *context,
       /* Record the command-line status, so we can reset it back on DK_POP. */
       if (old_kind == DK_UNSPECIFIED)
 	{
-	  old_kind = !context->option_enabled_p (option_index)
+	  old_kind = !context->option_enabled_p (option_id)
 	    ? DK_IGNORED : DK_ANY;
-	  m_classify_diagnostic[option_index] = old_kind;
+	  m_classify_diagnostic[option_id.m_idx] = old_kind;
 	}
 
       for (i = m_n_classification_history - 1; i >= 0; i --)
-	if (m_classification_history[i].option == option_index)
+	if (m_classification_history[i].option == option_id.m_idx)
 	  {
 	    old_kind = m_classification_history[i].kind;
 	    break;
@@ -1048,12 +1048,12 @@ classify_diagnostic (const diagnostic_context *context,
 	(diagnostic_classification_change_t *) xrealloc (m_classification_history, (i + 1)
 							 * sizeof (diagnostic_classification_change_t));
       m_classification_history[i].location = where;
-      m_classification_history[i].option = option_index;
+      m_classification_history[i].option = option_id.m_idx;
       m_classification_history[i].kind = new_kind;
       m_n_classification_history ++;
     }
   else
-    m_classify_diagnostic[option_index] = new_kind;
+    m_classify_diagnostic[option_id.m_idx] = new_kind;
 
   return old_kind;
 }
@@ -1205,9 +1205,9 @@ update_effective_level_from_pragmas (diagnostic_info *diagnostic) const
 	      continue;
 	    }
 
-	  int option = hist.option;
+	  diagnostic_option_id option = hist.option;
 	  /* The option 0 is for all the diagnostics.  */
-	  if (option == 0 || option == diagnostic->option_index)
+	  if (option == 0 || option == diagnostic->option_id)
 	    {
 	      diagnostic_t kind = hist.kind;
 	      if (kind != DK_UNSPECIFIED)
@@ -1239,13 +1239,13 @@ diagnostic_context::diagnostic_enabled (diagnostic_info *diagnostic)
   get_any_inlining_info (diagnostic);
 
   /* Diagnostics with no option or -fpermissive are always enabled.  */
-  if (!diagnostic->option_index
-      || diagnostic->option_index == m_opt_permissive)
+  if (!diagnostic->option_id.m_idx
+      || diagnostic->option_id == m_opt_permissive)
     return true;
 
   /* This tests if the user provided the appropriate -Wfoo or
      -Wno-foo option.  */
-  if (!option_enabled_p (diagnostic->option_index))
+  if (!option_enabled_p (diagnostic->option_id))
     return false;
 
   /* This tests for #pragma diagnostic changes.  */
@@ -1255,10 +1255,10 @@ diagnostic_context::diagnostic_enabled (diagnostic_info *diagnostic)
   /* This tests if the user provided the appropriate -Werror=foo
      option.  */
   if (diag_class == DK_UNSPECIFIED
-      && !option_unspecified_p (diagnostic->option_index))
+      && !option_unspecified_p (diagnostic->option_id))
     {
       const diagnostic_t new_kind
-	= m_option_classifier.get_current_override (diagnostic->option_index);
+	= m_option_classifier.get_current_override (diagnostic->option_id);
       if (new_kind != DK_ANY)
 	/* DK_ANY means the diagnostic is not to be ignored, but we don't want
 	   to change it specifically to DK_ERROR or DK_WARNING; we want to
@@ -1274,17 +1274,18 @@ diagnostic_context::diagnostic_enabled (diagnostic_info *diagnostic)
   return true;
 }
 
-/* Returns whether warning OPT is enabled at LOC.  */
+/* Returns whether warning OPTION_ID is enabled at LOC.  */
 
 bool
-diagnostic_context::warning_enabled_at (location_t loc, int opt)
+diagnostic_context::warning_enabled_at (location_t loc,
+					diagnostic_option_id option_id)
 {
   if (!diagnostic_report_warnings_p (this, loc))
     return false;
 
   rich_location richloc (line_table, loc);
   diagnostic_info diagnostic = {};
-  diagnostic.option_index = opt;
+  diagnostic.option_id = option_id;
   diagnostic.richloc = &richloc;
   diagnostic.message.m_richloc = &richloc;
   diagnostic.kind = DK_WARNING;
@@ -1527,7 +1528,8 @@ diagnostic_append_note (diagnostic_context *context,
 bool
 diagnostic_context::diagnostic_impl (rich_location *richloc,
 				     const diagnostic_metadata *metadata,
-				     int opt, const char *gmsgid,
+				     diagnostic_option_id option_id,
+				     const char *gmsgid,
 				     va_list *ap, diagnostic_t kind)
 {
   diagnostic_info diagnostic;
@@ -1535,13 +1537,13 @@ diagnostic_context::diagnostic_impl (rich_location *richloc,
     {
       diagnostic_set_info (&diagnostic, gmsgid, ap, richloc,
 			   m_permissive ? DK_WARNING : DK_ERROR);
-      diagnostic.option_index = (opt != -1 ? opt : m_opt_permissive);
+      diagnostic.option_id = (option_id.m_idx != -1 ? option_id : m_opt_permissive);
     }
   else
     {
       diagnostic_set_info (&diagnostic, gmsgid, ap, richloc, kind);
       if (kind == DK_WARNING || kind == DK_PEDWARN)
-	diagnostic.option_index = opt;
+	diagnostic.option_id = option_id;
     }
   diagnostic.metadata = metadata;
   return report_diagnostic (&diagnostic);
@@ -1552,7 +1554,8 @@ diagnostic_context::diagnostic_impl (rich_location *richloc,
 bool
 diagnostic_context::diagnostic_n_impl (rich_location *richloc,
 				       const diagnostic_metadata *metadata,
-				       int opt, unsigned HOST_WIDE_INT n,
+				       diagnostic_option_id option_id,
+				       unsigned HOST_WIDE_INT n,
 				       const char *singular_gmsgid,
 				       const char *plural_gmsgid,
 				       va_list *ap, diagnostic_t kind)
@@ -1571,7 +1574,7 @@ diagnostic_context::diagnostic_n_impl (rich_location *richloc,
   const char *text = ngettext (singular_gmsgid, plural_gmsgid, gtn);
   diagnostic_set_info_translated (&diagnostic, text, ap, richloc, kind);
   if (kind == DK_WARNING)
-    diagnostic.option_index = opt;
+    diagnostic.option_id = option_id;
   diagnostic.metadata = metadata;
   return report_diagnostic (&diagnostic);
 }

@@ -978,7 +978,7 @@ gfc_warning (int opt, const char *gmsgid, va_list ap)
 
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
 		       DK_WARNING);
-  diagnostic.option_index = opt;
+  diagnostic.option_id = opt;
   bool ret = gfc_report_diagnostic (&diagnostic);
 
   if (buffered_p)
@@ -1367,7 +1367,7 @@ gfc_warning_now_at (location_t loc, int opt, const char *gmsgid, ...)
 
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_WARNING);
-  diagnostic.option_index = opt;
+  diagnostic.option_id = opt;
   ret = gfc_report_diagnostic (&diagnostic);
   va_end (argp);
   return ret;
@@ -1386,7 +1386,7 @@ gfc_warning_now (int opt, const char *gmsgid, ...)
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
 		       DK_WARNING);
-  diagnostic.option_index = opt;
+  diagnostic.option_id = opt;
   ret = gfc_report_diagnostic (&diagnostic);
   va_end (argp);
   return ret;
@@ -1405,7 +1405,7 @@ gfc_warning_internal (int opt, const char *gmsgid, ...)
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
 		       DK_WARNING);
-  diagnostic.option_index = opt;
+  diagnostic.option_id = opt;
   ret = gfc_report_diagnostic (&diagnostic);
   va_end (argp);
   return ret;

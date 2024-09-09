@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 class gcc_diagnostic_option_manager : public diagnostic_option_manager
 {
 public:
-  char *make_option_url (int opt) const final override;
+  char *make_option_url (diagnostic_option_id option_id) const final override;
 
 protected:
   gcc_diagnostic_option_manager (unsigned lang_mask)
@@ -49,8 +49,8 @@ public:
   {
   }
 
-  int option_enabled_p (int opt_idx) const final override;
-  char *make_option_name (int opt_idx,
+  int option_enabled_p (diagnostic_option_id option_id) const final override;
+  char *make_option_name (diagnostic_option_id option_id,
 			  diagnostic_t orig_diag_kind,
 			  diagnostic_t diag_kind) const final override;
 

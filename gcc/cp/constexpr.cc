@@ -168,7 +168,7 @@ constexpr_error (location_t location, bool constexpr_fundef_p,
     {
       diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
 			   cxx_dialect < cxx23 ? DK_PEDWARN : DK_WARNING);
-      diagnostic.option_index = OPT_Winvalid_constexpr;
+      diagnostic.option_id = OPT_Winvalid_constexpr;
       ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
     }
   else

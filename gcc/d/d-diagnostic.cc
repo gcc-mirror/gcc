@@ -198,7 +198,7 @@ d_diagnostic_report_diagnostic (const Loc &loc, int opt, const char *format,
       diagnostic_set_info_translated (&diagnostic, xformat, &argp,
 				      &rich_loc, kind);
       if (opt != 0)
-	diagnostic.option_index = opt;
+	diagnostic.option_id = opt;
 
       diagnostic_report_diagnostic (global_dc, &diagnostic);
     }

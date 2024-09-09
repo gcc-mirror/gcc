@@ -252,7 +252,7 @@ json_output_format::on_report_diagnostic (const diagnostic_info &diagnostic,
   diag_obj->set_string ("message", pp_formatted_text (pp));
   pp_clear_output_area (pp);
 
-  if (char *option_text = m_context.make_option_name (diagnostic.option_index,
+  if (char *option_text = m_context.make_option_name (diagnostic.option_id,
 						      orig_diag_kind,
 						      diagnostic.kind))
     {
@@ -260,7 +260,7 @@ json_output_format::on_report_diagnostic (const diagnostic_info &diagnostic,
       free (option_text);
     }
 
-  if (char *option_url = m_context.make_option_url (diagnostic.option_index))
+  if (char *option_url = m_context.make_option_url (diagnostic.option_id))
     {
       diag_obj->set_string ("option_url", option_url);
       free (option_url);

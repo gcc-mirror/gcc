@@ -1642,7 +1642,7 @@ sarif_builder::make_result_object (diagnostic_context &context,
   /* "ruleId" property (SARIF v2.1.0 section 3.27.5).  */
   /* Ideally we'd have an option_name for these.  */
   if (char *option_text
-	= context.make_option_name (diagnostic.option_index,
+	= context.make_option_name (diagnostic.option_id,
 				    orig_diag_kind, diagnostic.kind))
     {
       /* Lazily create reportingDescriptor objects for and add to m_rules_arr.
@@ -1754,7 +1754,7 @@ make_reporting_descriptor_object_for_warning (diagnostic_context &context,
      it seems redundant compared to "id".  */
 
   /* "helpUri" property (SARIF v2.1.0 section 3.49.12).  */
-  if (char *option_url = context.make_option_url (diagnostic.option_index))
+  if (char *option_url = context.make_option_url (diagnostic.option_id))
     {
       reporting_desc->set_string ("helpUri", option_url);
       free (option_url);

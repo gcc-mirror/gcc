@@ -3705,22 +3705,22 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
 
 char *
 compiler_diagnostic_option_manager::
-make_option_name (int option_index,
+make_option_name (diagnostic_option_id option_id,
 		  diagnostic_t orig_diag_kind,
 		  diagnostic_t diag_kind) const
 {
-  if (option_index)
+  if (option_id.m_idx)
     {
       /* A warning classified as an error.  */
       if ((orig_diag_kind == DK_WARNING || orig_diag_kind == DK_PEDWARN)
 	  && diag_kind == DK_ERROR)
 	return concat (cl_options[OPT_Werror_].opt_text,
 		       /* Skip over "-W".  */
-		       cl_options[option_index].opt_text + 2,
+		       cl_options[option_id.m_idx].opt_text + 2,
 		       NULL);
       /* A warning with option.  */
       else
-	return xstrdup (cl_options[option_index].opt_text);
+	return xstrdup (cl_options[option_id.m_idx].opt_text);
     }
   /* A warning without option classified as an error.  */
   else if ((orig_diag_kind == DK_WARNING || orig_diag_kind == DK_PEDWARN
@@ -3781,11 +3781,13 @@ get_option_url_suffix (int option_index, unsigned lang_mask)
    which enabled a diagnostic.  */
 
 char *
-gcc_diagnostic_option_manager::make_option_url (int option_index) const
+gcc_diagnostic_option_manager::
+make_option_url (diagnostic_option_id option_id) const
 {
-  if (option_index)
+  if (option_id.m_idx)
     {
-      label_text url_suffix = get_option_url_suffix (option_index, m_lang_mask);
+      label_text url_suffix = get_option_url_suffix (option_id.m_idx,
+						     m_lang_mask);
       if (url_suffix.get ())
 	return concat (DOCUMENTATION_ROOT_URL, url_suffix.get (), nullptr);
     }
