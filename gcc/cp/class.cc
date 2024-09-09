@@ -6488,27 +6488,14 @@ check_bases_and_members (tree t)
   for (fn = TYPE_FIELDS (t); fn; fn = DECL_CHAIN (fn))
     if (DECL_DECLARES_FUNCTION_P (fn)
 	&& !DECL_ARTIFICIAL (fn)
-	&& DECL_DEFAULTED_IN_CLASS_P (fn))
-      {
+	&& DECL_DEFAULTED_IN_CLASS_P (fn)
 	/* ...except handle comparisons later, in finish_struct_1.  */
-	if (special_function_p (fn) == sfk_comparison)
-	  continue;
-
-	int copy = copy_fn_p (fn);
-	if (copy > 0)
-	  {
-	    bool imp_const_p
-	      = (DECL_CONSTRUCTOR_P (fn) ? !cant_have_const_ctor
-		 : !no_const_asn_ref);
-	    bool fn_const_p = (copy == 2);
-
-	    if (fn_const_p && !imp_const_p)
-	      /* If the function is defaulted outside the class, we just
-		 give the synthesis error.  Core Issue #1331 says this is
-		 no longer ill-formed, it is defined as deleted instead.  */
-	      DECL_DELETED_FN (fn) = true;
-	  }
-	defaulted_late_check (fn);
+	&& special_function_p (fn) != sfk_comparison)
+      {
+	bool imp_const_p
+	  = (DECL_CONSTRUCTOR_P (fn) ? !cant_have_const_ctor
+	     : !no_const_asn_ref);
+	defaulted_late_check (fn, imp_const_p);
       }
 
   if (LAMBDA_TYPE_P (t))

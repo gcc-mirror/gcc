@@ -251,6 +251,7 @@ in the following sections.
 -Wcomma-subscript  -Wconditionally-supported
 -Wno-conversion-null  -Wctad-maybe-unsupported
 -Wctor-dtor-privacy  -Wdangling-reference
+-Wno-defaulted-function-deleted
 -Wno-delete-incomplete
 -Wdelete-non-virtual-dtor  -Wno-deprecated-array-compare
 -Wdeprecated-copy -Wdeprecated-copy-dtor
@@ -4797,6 +4798,14 @@ not caught by reference. @option{-Wcatch-value} is enabled by @option{-Wall}.
 @opindex Wno-conditionally-supported
 @item -Wconditionally-supported @r{(C++ and Objective-C++ only)}
 Warn for conditionally-supported (C++11 [intro.defs]) constructs.
+
+@opindex Wdefaulted-function-deleted
+@opindex Wno-defaulted-function-deleted
+@item -Wno-defaulted-function-deleted @r{(C++ and Objective-C++ only)}
+Warn when an explicitly defaulted function is deleted by the compiler.
+That can occur when the function's declared type does not match the type
+of the function that would have been implicitly declared.  This warning
+is enabled by default.
 
 @opindex Wdelete-incomplete
 @opindex Wno-delete-incomplete

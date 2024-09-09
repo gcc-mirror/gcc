@@ -13,7 +13,7 @@ template<typename T> struct W
 {
   W();
   // This should now compile and be =deleted.
-  W(const W&) = default;
+  W(const W&) = default; // { dg-error "implicitly deleted" "" { target c++17_down } }
   T t;
 };
 

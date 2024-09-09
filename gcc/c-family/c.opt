@@ -629,6 +629,10 @@ Wdeclaration-missing-parameter-type
 C ObjC Var(warn_declaration_missing_parameter) Warning Init(1)
 Warn for missing parameter types in function declarations.
 
+Wdefaulted-function-deleted
+C++ ObjC++ Var(warn_defaulted_fn_deleted) Init(1) Warning
+Warn when an explicitly defaulted function is deleted.
+
 Wdelete-incomplete
 C++ ObjC++ Var(warn_delete_incomplete) Init(1) Warning
 Warn when deleting a pointer to incomplete type.
