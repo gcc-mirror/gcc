@@ -172,15 +172,16 @@ c_diagnostic_finalizer (diagnostic_context *context,
 			const diagnostic_info *diagnostic,
 			diagnostic_t)
 {
-  char *saved_prefix = pp_take_prefix (context->printer);
-  pp_set_prefix (context->printer, NULL);
-  pp_newline (context->printer);
-  diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind);
+  pretty_printer *const pp = context->m_printer;
+  char *saved_prefix = pp_take_prefix (pp);
+  pp_set_prefix (pp, NULL);
+  pp_newline (pp);
+  diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind, pp);
   /* By default print macro expansion contexts in the diagnostic
      finalizer -- for tokens resulting from macro expansion.  */
   virt_loc_aware_diagnostic_finalizer (context, diagnostic);
-  pp_set_prefix (context->printer, saved_prefix);
-  pp_flush (context->printer);
+  pp_set_prefix (pp, saved_prefix);
+  pp_flush (pp);
 }
 
 /* Common default settings for diagnostics.  */

@@ -3691,7 +3691,7 @@ add_diagnostic (diagnostic_context *diag_context,
 {
   /* At this point the text has been formatted into the pretty-printer's
      output buffer.  */
-  pretty_printer *pp = diag_context->printer;
+  pretty_printer *pp = diag_context->m_printer;
   const char *text = pp_formatted_text (pp);
 
   /* Get location information (if any) from the diagnostic.

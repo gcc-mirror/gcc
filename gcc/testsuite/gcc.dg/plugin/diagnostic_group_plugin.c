@@ -168,7 +168,7 @@ void
 test_diagnostic_starter (diagnostic_context *context,
 			 const diagnostic_info *diagnostic)
 {
-  pp_set_prefix (context->printer, xstrdup ("PREFIX: "));
+  pp_set_prefix (context->m_printer, xstrdup ("PREFIX: "));
 }
 
 /* Custom diagnostic callback, to avoid having the path in the
@@ -178,8 +178,8 @@ void
 test_diagnostic_start_span_fn (diagnostic_context *context,
 			       expanded_location exploc)
 {
-  pp_string (context->printer, "START_SPAN_FN: ");
-  pp_newline (context->printer);
+  pp_string (context->m_printer, "START_SPAN_FN: ");
+  pp_newline (context->m_printer);
 }
 
 /* Custom output format subclass.  */
@@ -194,17 +194,17 @@ class test_output_format : public diagnostic_text_output_format
   void on_begin_group () final override
   {
     /* Loudly announce a new diagnostic group.  */
-    pp_string (m_context.printer,
+    pp_string (m_context.m_printer,
 	       "================================= BEGIN GROUP ==============================");
-    pp_newline (m_context.printer);
+    pp_newline (m_context.m_printer);
   }
   void on_end_group () final override
   {
     /* Loudly announce the end of a diagnostic group.  */
-    pp_set_prefix (m_context.printer, NULL);
-    pp_string (m_context.printer,
+    pp_set_prefix (m_context.m_printer, NULL);
+    pp_string (m_context.m_printer,
 	       "---------------------------------- END GROUP -------------------------------");
-    pp_newline_and_flush (m_context.printer);
+    pp_newline_and_flush (m_context.m_printer);
   }
 };
 

@@ -275,9 +275,9 @@ cp_seen_error ()
 void
 cxx_initialize_diagnostics (diagnostic_context *context)
 {
-  pretty_printer *base = context->printer;
+  pretty_printer *base = context->m_printer;
   cxx_pretty_printer *pp = XNEW (cxx_pretty_printer);
-  context->printer = new (pp) cxx_pretty_printer ();
+  context->m_printer = new (pp) cxx_pretty_printer ();
 
   /* It is safe to free this object because it was previously XNEW()'d.  */
   base->~pretty_printer ();
@@ -3674,7 +3674,7 @@ cxx_print_error_function (diagnostic_context *context, const char *file,
   else
     prefix = NULL;
   lhd_print_error_function (context, file, diagnostic);
-  pp_set_prefix (context->printer, prefix);
+  pp_set_prefix (context->m_printer, prefix);
   maybe_print_instantiation_context (context);
 }
 
@@ -3687,8 +3687,8 @@ cp_diagnostic_starter (diagnostic_context *context,
   maybe_print_instantiation_context (context);
   maybe_print_constexpr_context (context);
   maybe_print_constraint_context (context);
-  pp_set_prefix (context->printer, diagnostic_build_prefix (context,
-								 diagnostic));
+  pp_set_prefix (context->m_printer, diagnostic_build_prefix (context,
+							      diagnostic));
 }
 
 /* Print current function onto BUFFER, in the process of reporting
@@ -3706,16 +3706,17 @@ cp_print_error_function (diagnostic_context *context,
     return;
   if (diagnostic_last_function_changed (context, diagnostic))
     {
-      char *old_prefix = pp_take_prefix (context->printer);
+      pretty_printer *const pp = context->m_printer;
+      char *old_prefix = pp_take_prefix (pp);
       const char *file = LOCATION_FILE (diagnostic_location (diagnostic));
       tree abstract_origin = diagnostic_abstract_origin (diagnostic);
       char *new_prefix = (file && abstract_origin == NULL)
 			 ? file_name_as_prefix (context, file) : NULL;
 
-      pp_set_prefix (context->printer, new_prefix);
+      pp_set_prefix (pp, new_prefix);
 
       if (current_function_decl == NULL)
-	pp_string (context->printer, _("At global scope:"));
+	pp_string (pp, _("At global scope:"));
       else
 	{
 	  tree fndecl, ao;
@@ -3729,7 +3730,7 @@ cp_print_error_function (diagnostic_context *context,
 	  else
 	    fndecl = current_function_decl;
 
-	  pp_printf (context->printer, function_category (fndecl),
+	  pp_printf (pp, function_category (fndecl),
 		     fndecl);
 
 	  while (abstract_origin)
@@ -3768,33 +3769,33 @@ cp_print_error_function (diagnostic_context *context,
 	      if (fndecl)
 		{
 		  expanded_location s = expand_location (*locus);
-		  pp_character (context->printer, ',');
-		  pp_newline (context->printer);
+		  pp_character (pp, ',');
+		  pp_newline (pp);
 		  if (s.file != NULL)
 		    {
 		      if (context->m_show_column && s.column != 0)
-			pp_printf (context->printer,
+			pp_printf (pp,
 				   _("    inlined from %qD at %r%s:%d:%d%R"),
 				   fndecl,
 				   "locus", s.file, s.line, s.column);
 		      else
-			pp_printf (context->printer,
+			pp_printf (pp,
 				   _("    inlined from %qD at %r%s:%d%R"),
 				   fndecl,
 				   "locus", s.file, s.line);
 
 		    }
 		  else
-		    pp_printf (context->printer, _("    inlined from %qD"),
+		    pp_printf (pp, _("    inlined from %qD"),
 			       fndecl);
 		}
 	    }
-	  pp_character (context->printer, ':');
+	  pp_character (pp, ':');
 	}
-      pp_newline (context->printer);
+      pp_newline (pp);
 
       diagnostic_set_last_function (context, diagnostic);
-      context->printer->set_prefix (old_prefix);
+      pp->set_prefix (old_prefix);
     }
 }
 
@@ -3847,7 +3848,7 @@ print_instantiation_full_context (diagnostic_context *context)
 
   if (p)
     {
-      pp_verbatim (context->printer,
+      pp_verbatim (context->m_printer,
 		   p->list_p ()
 		   ? _("%s: In substitution of %qS:\n")
 		   : _("%s: In instantiation of %q#D:\n"),
@@ -3874,23 +3875,25 @@ print_instantiation_partial_context_line (diagnostic_context *context,
 
   expanded_location xloc = expand_location (loc);
 
+  pretty_printer *const pp = context->m_printer;
+
   if (context->m_show_column)
-    pp_verbatim (context->printer, _("%r%s:%d:%d:%R   "),
+    pp_verbatim (pp, _("%r%s:%d:%d:%R   "),
 		 "locus", xloc.file, xloc.line, xloc.column);
   else
-    pp_verbatim (context->printer, _("%r%s:%d:%R   "),
+    pp_verbatim (pp, _("%r%s:%d:%R   "),
 		 "locus", xloc.file, xloc.line);
 
   if (t != NULL)
     {
       if (t->list_p ())
-	pp_verbatim (context->printer,
+	pp_verbatim (pp,
 		     recursive_p
 		     ? _("recursively required by substitution of %qS\n")
 		     : _("required by substitution of %qS\n"),
 		     t->get_node ());
       else
-	pp_verbatim (context->printer,
+	pp_verbatim (pp,
 		     recursive_p
 		     ? _("recursively required from %q#D\n")
 		     : _("required from %q#D\n"),
@@ -3898,15 +3901,15 @@ print_instantiation_partial_context_line (diagnostic_context *context,
     }
   else
     {
-      pp_verbatim (context->printer,
+      pp_verbatim (pp,
 		   recursive_p
 		   ? _("recursively required from here\n")
 		   : _("required from here\n"));
     }
   gcc_rich_location rich_loc (loc);
-  char *saved_prefix = pp_take_prefix (context->printer);
+  char *saved_prefix = pp_take_prefix (pp);
   diagnostic_show_locus (context, &rich_loc, DK_NOTE);
-  pp_set_prefix (context->printer, saved_prefix);
+  pp_set_prefix (pp, saved_prefix);
 }
 
 /* Same as print_instantiation_full_context but less verbose.  */
@@ -3955,14 +3958,15 @@ print_instantiation_partial_context (diagnostic_context *context,
 	{
 	  expanded_location xloc;
 	  xloc = expand_location (loc);
+	  pretty_printer *const pp = context->m_printer;
 	  if (context->m_show_column)
-	    pp_verbatim (context->printer,
+	    pp_verbatim (pp,
 			 _("%r%s:%d:%d:%R   [ skipping %d instantiation "
 			   "contexts, use -ftemplate-backtrace-limit=0 to "
 			   "disable ]\n"),
 			 "locus", xloc.file, xloc.line, xloc.column, skip);
 	  else
-	    pp_verbatim (context->printer,
+	    pp_verbatim (pp,
 			 _("%r%s:%d:%R   [ skipping %d instantiation "
 			   "contexts, use -ftemplate-backtrace-limit=0 to "
 			   "disable ]\n"),
@@ -4015,15 +4019,16 @@ maybe_print_constexpr_context (diagnostic_context *context)
     {
       expanded_location xloc = expand_location (EXPR_LOCATION (t));
       const char *s = expr_as_string (t, 0);
+      pretty_printer *const pp = context->m_printer;
       if (context->m_show_column)
-	pp_verbatim (context->printer,
+	pp_verbatim (pp,
 		     _("%r%s:%d:%d:%R   in %<constexpr%> expansion of %qs"),
 		     "locus", xloc.file, xloc.line, xloc.column, s);
       else
-	pp_verbatim (context->printer,
+	pp_verbatim (pp,
 		     _("%r%s:%d:%R   in %<constexpr%> expansion of %qs"),
 		     "locus", xloc.file, xloc.line, s);
-      pp_newline (context->printer);
+      pp_newline (pp);
     }
 }
 
@@ -4032,11 +4037,12 @@ static void
 print_location (diagnostic_context *context, location_t loc)
 {
   expanded_location xloc = expand_location (loc);
+  pretty_printer *const pp = context->m_printer;
   if (context->m_show_column)
-    pp_verbatim (context->printer, _("%r%s:%d:%d:%R   "),
+    pp_verbatim (pp, _("%r%s:%d:%d:%R   "),
                  "locus", xloc.file, xloc.line, xloc.column);
   else
-    pp_verbatim (context->printer, _("%r%s:%d:%R   "),
+    pp_verbatim (pp, _("%r%s:%d:%R   "),
                  "locus", xloc.file, xloc.line);
 }
 
@@ -4044,7 +4050,8 @@ static void
 print_constrained_decl_info (diagnostic_context *context, tree decl)
 {
   print_location (context, DECL_SOURCE_LOCATION (decl));
-  pp_verbatim (context->printer, "required by the constraints of %q#D\n", decl);
+  pretty_printer *const pp = context->m_printer;
+  pp_verbatim (pp, "required by the constraints of %q#D\n", decl);
 }
 
 static void
@@ -4056,7 +4063,7 @@ print_concept_check_info (diagnostic_context *context, tree expr, tree map, tree
 
   print_location (context, DECL_SOURCE_LOCATION (tmpl));
 
-  cxx_pretty_printer *pp = (cxx_pretty_printer *)context->printer;
+  cxx_pretty_printer *const pp = (cxx_pretty_printer *)context->m_printer;
   pp_verbatim (pp, "required for the satisfaction of %qE", expr);
   if (map && map != error_mark_node)
     {
@@ -4077,7 +4084,8 @@ print_constraint_context_head (diagnostic_context *context, tree cxt, tree args)
   if (!src)
     {
       print_location (context, input_location);
-      pp_verbatim (context->printer, "required for constraint satisfaction\n");
+      pretty_printer *const pp = context->m_printer;
+      pp_verbatim (pp, "required for constraint satisfaction\n");
       return NULL_TREE;
     }
   if (DECL_P (src))
@@ -4103,21 +4111,23 @@ print_requires_expression_info (diagnostic_context *context, tree constr, tree a
     return;
 
   print_location (context, cp_expr_loc_or_input_loc (expr));
-  pp_verbatim (context->printer, "in requirements ");
+  cxx_pretty_printer *const pp
+    = static_cast <cxx_pretty_printer *> (context->m_printer);
+  pp_verbatim (pp, "in requirements ");
 
   tree parms = TREE_OPERAND (expr, 0);
   if (parms)
-    pp_verbatim (context->printer, "with ");
+    pp_verbatim (pp, "with ");
   while (parms)
     {
-      pp_verbatim (context->printer, "%q#D", parms);
+      pp_verbatim (pp, "%q#D", parms);
       if (TREE_CHAIN (parms))
-        pp_separate_with_comma ((cxx_pretty_printer *)context->printer);
+	pp_separate_with_comma (pp);
       parms = TREE_CHAIN (parms);
     }
-  pp_cxx_parameter_mapping ((cxx_pretty_printer *)context->printer, map);
+  pp_cxx_parameter_mapping (pp, map);
 
-  pp_verbatim (context->printer, "\n");
+  pp_verbatim (pp, "\n");
 }
 
 void

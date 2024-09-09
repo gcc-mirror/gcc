@@ -1136,8 +1136,8 @@ sarif_result::on_nested_diagnostic (diagnostic_context &context,
     = builder.make_location_object (*this, *diagnostic.richloc, nullptr,
 				    diagnostic_artifact_role::result_file);
   auto message_obj
-    = builder.make_message_object (pp_formatted_text (context.printer));
-  pp_clear_output_area (context.printer);
+    = builder.make_message_object (pp_formatted_text (context.m_printer));
+  pp_clear_output_area (context.m_printer);
   location_obj->set<sarif_message> ("message", std::move (message_obj));
 
   add_related_location (std::move (location_obj));
@@ -1321,8 +1321,8 @@ sarif_ice_notification (diagnostic_context &context,
 
   /* "message" property (SARIF v2.1.0 section 3.85.5).  */
   auto message_obj
-    = builder.make_message_object (pp_formatted_text (context.printer));
-  pp_clear_output_area (context.printer);
+    = builder.make_message_object (pp_formatted_text (context.m_printer));
+  pp_clear_output_area (context.m_printer);
   set<sarif_message> ("message", std::move (message_obj));
 
   /* "level" property (SARIF v2.1.0 section 3.58.6).  */
@@ -1515,7 +1515,7 @@ sarif_builder::on_report_diagnostic (diagnostic_context &context,
 				     const diagnostic_info &diagnostic,
 				     diagnostic_t orig_diag_kind)
 {
-  pp_output_formatted_text (context.printer, context.get_urlifier ());
+  pp_output_formatted_text (context.m_printer, context.get_urlifier ());
 
   if (diagnostic.kind == DK_ICE || diagnostic.kind == DK_ICE_NOBT)
     {
@@ -1696,8 +1696,8 @@ sarif_builder::make_result_object (diagnostic_context &context,
 
   /* "message" property (SARIF v2.1.0 section 3.27.11).  */
   auto message_obj
-    = make_message_object (pp_formatted_text (context.printer));
-  pp_clear_output_area (context.printer);
+    = make_message_object (pp_formatted_text (context.m_printer));
+  pp_clear_output_area (context.m_printer);
   result_obj->set<sarif_message> ("message", std::move (message_obj));
 
   /* "locations" property (SARIF v2.1.0 section 3.27.12).  */
@@ -1910,7 +1910,7 @@ sarif_builder::make_location_object (sarif_location_manager &loc_mgr,
 
       std::unique_ptr<sarif_multiformat_message_string> result
 	= builder.make_multiformat_message_string
-	    (pp_formatted_text (dc.printer));
+	    (pp_formatted_text (dc.m_printer));
 
       diagnostic_finish (&dc);
 
@@ -2609,19 +2609,20 @@ sarif_builder::make_message_object_for_diagram (diagnostic_context &context,
   /* "text" property (SARIF v2.1.0 section 3.11.8).  */
   message_obj->set_string ("text", diagram.get_alt_text ());
 
-  char *saved_prefix = pp_take_prefix (context.printer);
-  pp_set_prefix (context.printer, nullptr);
+  pretty_printer *const pp = context.m_printer;
+  char *saved_prefix = pp_take_prefix (pp);
+  pp_set_prefix (pp, nullptr);
 
   /* "To produce a code block in Markdown, simply indent every line of
      the block by at least 4 spaces or 1 tab."
      Here we use 4 spaces.  */
-  diagram.get_canvas ().print_to_pp (context.printer, "    ");
-  pp_set_prefix (context.printer, saved_prefix);
+  diagram.get_canvas ().print_to_pp (pp, "    ");
+  pp_set_prefix (pp, saved_prefix);
 
   /* "markdown" property (SARIF v2.1.0 section 3.11.9).  */
-  message_obj->set_string ("markdown", pp_formatted_text (context.printer));
+  message_obj->set_string ("markdown", pp_formatted_text (pp));
 
-  pp_clear_output_area (context.printer);
+  pp_clear_output_area (pp);
 
   return message_obj;
 }
@@ -3346,10 +3347,10 @@ diagnostic_output_format_init_sarif (diagnostic_context &context,
   context.set_ice_handler_callback (sarif_ice_handler);
 
   /* Don't colorize the text.  */
-  pp_show_color (context.printer) = false;
+  pp_show_color (context.m_printer) = false;
   context.set_show_highlight_colors (false);
 
-  context.printer->set_token_printer
+  context.m_printer->set_token_printer
     (&fmt->get_builder ().get_token_printer ());
   context.set_output_format (fmt.release ());
 }

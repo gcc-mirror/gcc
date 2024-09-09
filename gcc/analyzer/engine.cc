@@ -1421,7 +1421,7 @@ exploded_node::dump (FILE *fp,
 {
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
   pp.set_output_stream (fp);
   dump_to_pp (&pp, ext_state);
   pp_flush (&pp);
@@ -4830,7 +4830,7 @@ exploded_path::dump (FILE *fp, const extrinsic_state *ext_state) const
 {
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
   pp.set_output_stream (fp);
   dump_to_pp (&pp, ext_state);
   pp_flush (&pp);
@@ -6330,7 +6330,7 @@ run_checkers ()
     get_or_create_any_logfile ();
     if (dump_fout)
       the_logger.set_logger (new logger (dump_fout, 0, 0,
-					 *global_dc->printer));
+					 *global_dc->m_printer));
     LOG_SCOPE (the_logger.get_logger ());
 
     impl_run_checkers (the_logger.get_logger ());

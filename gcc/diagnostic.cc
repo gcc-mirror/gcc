@@ -89,9 +89,10 @@ build_message_string (const char *msg, ...)
 char *
 file_name_as_prefix (diagnostic_context *context, const char *f)
 {
+  pretty_printer *const pp = context->m_printer;
   const char *locus_cs
-    = colorize_start (pp_show_color (context->printer), "locus");
-  const char *locus_ce = colorize_stop (pp_show_color (context->printer));
+    = colorize_start (pp_show_color (pp), "locus");
+  const char *locus_ce = colorize_stop (pp_show_color (pp));
   return build_message_string ("%s%s:%s ", locus_cs, f, locus_ce);
 }
 
@@ -126,7 +127,7 @@ diagnostic_set_caret_max_width (diagnostic_context *context, int value)
 {
   /* One minus to account for the leading empty space.  */
   value = value ? value - 1 
-    : (isatty (fileno (pp_buffer (context->printer)->m_stream))
+    : (isatty (fileno (pp_buffer (context->m_printer)->m_stream))
        ? get_terminal_width () - 1: INT_MAX);
   
   if (value <= 0) 
@@ -194,8 +195,8 @@ diagnostic_context::initialize (int n_opts)
 {
   /* Allocate a basic pretty-printer.  Clients will replace this a
      much more elaborated pretty-printer if they wish.  */
-  this->printer = XNEW (pretty_printer);
-  new (this->printer) pretty_printer ();
+  m_printer = XNEW (pretty_printer);
+  new (m_printer) pretty_printer ();
 
   m_file_cache = new file_cache ();
   memset (m_diagnostic_count, 0, sizeof m_diagnostic_count);
@@ -203,7 +204,7 @@ diagnostic_context::initialize (int n_opts)
   m_n_opts = n_opts;
   m_option_classifier.init (n_opts);
   m_source_printing.enabled = false;
-  diagnostic_set_caret_max_width (this, pp_line_cutoff (this->printer));
+  diagnostic_set_caret_max_width (this, pp_line_cutoff (m_printer));
   for (int i = 0; i < rich_location::STATICALLY_ALLOCATED_RANGES; i++)
     m_source_printing.caret_chars[i] = '^';
   m_show_cwe = false;
@@ -302,7 +303,7 @@ diagnostic_context::color_init (int value)
       else
 	value = DIAGNOSTICS_COLOR_DEFAULT;
     }
-  pp_show_color (this->printer)
+  pp_show_color (m_printer)
     = colorize_init ((diagnostic_color_rule_t) value);
 }
 
@@ -330,7 +331,7 @@ diagnostic_context::urls_init (int value)
 	value = DIAGNOSTICS_URLS_DEFAULT;
     }
 
-  this->printer->set_url_format
+  m_printer->set_url_format
     (determine_url_format ((diagnostic_url_rule_t) value));
 }
 
@@ -373,9 +374,9 @@ diagnostic_context::finish ()
 
   /* diagnostic_context::initialize allocates this->printer using XNEW
      and placement-new.  */
-  this->printer->~pretty_printer ();
-  XDELETE (this->printer);
-  this->printer = nullptr;
+  m_printer->~pretty_printer ();
+  XDELETE (m_printer);
+  m_printer = nullptr;
 
   if (m_edit_context_ptr)
     {
@@ -589,7 +590,7 @@ maybe_line_and_column (int line, int col)
 label_text
 diagnostic_context::get_location_text (const expanded_location &s) const
 {
-  pretty_printer *pp = this->printer;
+  pretty_printer *pp = m_printer;
   const char *locus_cs = colorize_start (pp_show_color (pp), "locus");
   const char *locus_ce = colorize_stop (pp_show_color (pp));
   const char *file = s.file ? s.file : progname;
@@ -633,7 +634,7 @@ diagnostic_build_prefix (diagnostic_context *context,
 
   const char *text = _(diagnostic_kind_text[diagnostic->kind]);
   const char *text_cs = "", *text_ce = "";
-  pretty_printer *pp = context->printer;
+  pretty_printer *pp = context->m_printer;
 
   if (diagnostic_kind_color[diagnostic->kind])
     {
@@ -873,12 +874,13 @@ diagnostic_context::includes_seen_p (const line_map_ordinary *map)
 void
 diagnostic_context::report_current_module (location_t where)
 {
+  pretty_printer *pp = m_printer;
   const line_map_ordinary *map = NULL;
 
-  if (pp_needs_newline (this->printer))
+  if (pp_needs_newline (m_printer))
     {
-      pp_newline (this->printer);
-      pp_needs_newline (this->printer) = false;
+      pp_newline (pp);
+      pp_needs_newline (pp) = false;
     }
 
   if (where <= BUILTINS_LOCATION)
@@ -924,15 +926,15 @@ diagnostic_context::report_current_module (location_t where)
 	      unsigned index = (was_module ? 6 : is_module ? 4
 				: need_inc ? 2 : 0) + !first;
 
-	      pp_verbatim (this->printer, "%s%s %r%s%s%R",
+	      pp_verbatim (pp, "%s%s %r%s%s%R",
 			   first ? "" : was_module ? ", " : ",\n",
 			   _(msgs[index]),
 			   "locus", s.file, line_col);
 	      first = false, need_inc = was_module, was_module = is_module;
 	    }
 	  while (!includes_seen_p (map));
-	  pp_verbatim (this->printer, ":");
-	  pp_newline (this->printer);
+	  pp_verbatim (pp, ":");
+	  pp_newline (pp);
 	}
     }
 }
@@ -981,8 +983,8 @@ default_diagnostic_starter (diagnostic_context *context,
 			    const diagnostic_info *diagnostic)
 {
   diagnostic_report_current_module (context, diagnostic_location (diagnostic));
-  pp_set_prefix (context->printer, diagnostic_build_prefix (context,
-							    diagnostic));
+  pretty_printer *const pp = context->m_printer;
+  pp_set_prefix (pp, diagnostic_build_prefix (context, diagnostic));
 }
 
 void
@@ -990,8 +992,9 @@ default_diagnostic_start_span_fn (diagnostic_context *context,
 				  expanded_location exploc)
 {
   label_text text = context->get_location_text (exploc);
-  pp_string (context->printer, text.get ());
-  pp_newline (context->printer);
+  pretty_printer *pp = context->m_printer;
+  pp_string (pp, text.get ());
+  pp_newline (pp);
 }
 
 void
@@ -999,12 +1002,13 @@ default_diagnostic_finalizer (diagnostic_context *context,
 			      const diagnostic_info *diagnostic,
 			      diagnostic_t)
 {
-  char *saved_prefix = pp_take_prefix (context->printer);
-  pp_set_prefix (context->printer, NULL);
-  pp_newline (context->printer);
-  diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind);
-  pp_set_prefix (context->printer, saved_prefix);
-  pp_flush (context->printer);
+  pretty_printer *const pp = context->m_printer;
+  char *saved_prefix = pp_take_prefix (pp);
+  pp_set_prefix (pp, NULL);
+  pp_newline (pp);
+  diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind, pp);
+  pp_set_prefix (pp, saved_prefix);
+  pp_flush (pp);
 }
 
 /* Interface to specify diagnostic kind overrides.  Returns the
@@ -1342,7 +1346,7 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
 	 through.  Don't do this more than once.  */
       if ((diagnostic->kind == DK_ICE || diagnostic->kind == DK_ICE_NOBT)
 	  && m_lock == 1)
-	pp_newline_and_flush (this->printer);
+	pp_newline_and_flush (m_printer);
       else
 	error_recursion ();
     }
@@ -1407,7 +1411,7 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
     m_output_format->on_begin_group ();
   m_diagnostic_groups.m_emission_count++;
 
-  pp_format (this->printer, &diagnostic->message);
+  pp_format (m_printer, &diagnostic->message);
   /* Call vfunc in the output format.  This is responsible for
      phase 3 of formatting, and for printing the result.  */
   m_output_format->on_report_diagnostic (*diagnostic, orig_diag_kind);
@@ -1418,17 +1422,17 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
       break;
     case EXTRA_DIAGNOSTIC_OUTPUT_fixits_v1:
       print_parseable_fixits (get_file_cache (),
-			      this->printer, diagnostic->richloc,
+			      m_printer, diagnostic->richloc,
 			      DIAGNOSTICS_COLUMN_UNIT_BYTE,
 			      m_tabstop);
-      pp_flush (this->printer);
+      pp_flush (m_printer);
       break;
     case EXTRA_DIAGNOSTIC_OUTPUT_fixits_v2:
       print_parseable_fixits (get_file_cache (),
-			      this->printer, diagnostic->richloc,
+			      m_printer, diagnostic->richloc,
 			      DIAGNOSTICS_COLUMN_UNIT_DISPLAY,
 			      m_tabstop);
-      pp_flush (this->printer);
+      pp_flush (m_printer);
       break;
     }
   diagnostic_action_after_output (this, diagnostic->kind);
@@ -1513,15 +1517,16 @@ diagnostic_append_note (diagnostic_context *context,
       va_end (ap);
       return;
     }
-  char *saved_prefix = pp_take_prefix (context->printer);
-  pp_set_prefix (context->printer,
+  pretty_printer *pp = context->m_printer;
+  char *saved_prefix = pp_take_prefix (pp);
+  pp_set_prefix (pp,
                  diagnostic_build_prefix (context, &diagnostic));
-  pp_format (context->printer, &diagnostic.message);
-  pp_output_formatted_text (context->printer);
-  pp_destroy_prefix (context->printer);
-  pp_set_prefix (context->printer, saved_prefix);
-  pp_newline (context->printer);
-  diagnostic_show_locus (context, &richloc, DK_NOTE);
+  pp_format (pp, &diagnostic.message);
+  pp_output_formatted_text (pp);
+  pp_destroy_prefix (pp);
+  pp_set_prefix (pp, saved_prefix);
+  pp_newline (pp);
+  diagnostic_show_locus (context, &richloc, DK_NOTE, pp);
   va_end (ap);
 }
 
@@ -1602,7 +1607,7 @@ void
 diagnostic_context::error_recursion ()
 {
   if (m_lock < 3)
-    pp_newline_and_flush (this->printer);
+    pp_newline_and_flush (m_printer);
 
   fnotice (stderr,
 	   "internal compiler error: error reporting routines re-entered.\n");
@@ -1632,7 +1637,7 @@ fancy_abort (const char *file, int line, const char *function)
      initialized yet, or might be in use by another thread).
      Handle such cases as gracefully as possible by falling back to a
      minimal abort handler that only relies on i18n.  */
-  if (global_dc->printer == NULL)
+  if (global_dc->m_printer == nullptr)
     {
       /* Print the error message.  */
       fnotice (stderr, diagnostic_kind_text[DK_ICE]);

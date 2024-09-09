@@ -5585,7 +5585,7 @@ test_type_mismatch_range_labels ()
 		  "                 ~^     ~~~\n"
 		  "                  |     |\n"
 		  "                  char* int\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   else
     /* "char *", with a space.  */
     ASSERT_STREQ ("   printf (\"msg: %i\\n\", msg);\n"
@@ -5593,7 +5593,7 @@ test_type_mismatch_range_labels ()
 		  "                  |     |\n"
 		  "                  |     int\n"
 		  "                  char *\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
 }
 
 /* Run all of the selftests within this file.  */

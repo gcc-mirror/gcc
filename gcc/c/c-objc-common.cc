@@ -411,9 +411,9 @@ has_c_linkage (const_tree decl ATTRIBUTE_UNUSED)
 void
 c_initialize_diagnostics (diagnostic_context *context)
 {
-  pretty_printer *base = context->printer;
+  pretty_printer *base = context->m_printer;
   c_pretty_printer *pp = XNEW (c_pretty_printer);
-  context->printer = new (pp) c_pretty_printer ();
+  context->m_printer = new (pp) c_pretty_printer ();
 
   /* It is safe to free this object because it was previously XNEW()'d.  */
   base->~pretty_printer ();

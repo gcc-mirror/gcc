@@ -373,15 +373,16 @@ lhd_print_error_function (diagnostic_context *context, const char *file,
 {
   if (diagnostic_last_function_changed (context, diagnostic))
     {
-      char *old_prefix = pp_take_prefix (context->printer);
+      pretty_printer *const pp = context->m_printer;
+      char *old_prefix = pp_take_prefix (pp);
       tree abstract_origin = diagnostic_abstract_origin (diagnostic);
       char *new_prefix = (file && abstract_origin == NULL)
 			 ? file_name_as_prefix (context, file) : NULL;
 
-      pp_set_prefix (context->printer, new_prefix);
+      pp_set_prefix (pp, new_prefix);
 
       if (current_function_decl == NULL)
-	pp_printf (context->printer, _("At top level:"));
+	pp_printf (pp, _("At top level:"));
       else
 	{
 	  tree fndecl, ao;
@@ -397,11 +398,11 @@ lhd_print_error_function (diagnostic_context *context, const char *file,
 
 	  if (TREE_CODE (TREE_TYPE (fndecl)) == METHOD_TYPE)
 	    pp_printf
-	      (context->printer, _("In member function %qs"),
+	      (pp, _("In member function %qs"),
 	       identifier_to_locale (lang_hooks.decl_printable_name (fndecl, 2)));
 	  else
 	    pp_printf
-	      (context->printer, _("In function %qs"),
+	      (pp, _("In function %qs"),
 	       identifier_to_locale (lang_hooks.decl_printable_name (fndecl, 2)));
 
 	  while (abstract_origin)
@@ -440,33 +441,33 @@ lhd_print_error_function (diagnostic_context *context, const char *file,
 	      if (fndecl)
 		{
 		  expanded_location s = expand_location (*locus);
-		  pp_comma (context->printer);
-		  pp_newline (context->printer);
+		  pp_comma (pp);
+		  pp_newline (pp);
 		  if (s.file != NULL)
 		    {
 		      if (context->m_show_column)
-			pp_printf (context->printer,
+			pp_printf (pp,
 				   _("    inlined from %qs at %r%s:%d:%d%R"),
 				   identifier_to_locale (lang_hooks.decl_printable_name (fndecl, 2)),
 				   "locus", s.file, s.line, s.column);
 		      else
-			pp_printf (context->printer,
+			pp_printf (pp,
 				   _("    inlined from %qs at %r%s:%d%R"),
 				   identifier_to_locale (lang_hooks.decl_printable_name (fndecl, 2)),
 				   "locus", s.file, s.line);
 
 		    }
 		  else
-		    pp_printf (context->printer, _("    inlined from %qs"),
+		    pp_printf (pp, _("    inlined from %qs"),
 			       identifier_to_locale (lang_hooks.decl_printable_name (fndecl, 2)));
 		}
 	    }
-	  pp_colon (context->printer);
+	  pp_colon (pp);
 	}
 
       diagnostic_set_last_function (context, diagnostic);
-      pp_newline_and_flush (context->printer);
-      context->printer->set_prefix (old_prefix);
+      pp_newline_and_flush (pp);
+      pp->set_prefix (old_prefix);
     }
 }
 

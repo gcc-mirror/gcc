@@ -349,7 +349,7 @@ reachable_regions::dump () const
 {
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
   pp.set_output_stream (stderr);
   dump_to_pp (&pp);
   pp_flush (&pp);

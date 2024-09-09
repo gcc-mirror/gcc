@@ -41,6 +41,8 @@ public:
   virtual void on_diagram (const diagnostic_diagram &diagram) = 0;
   virtual bool machine_readable_stderr_p () const = 0;
 
+  pretty_printer *get_printer () const { return m_context.m_printer; }
+
 protected:
   diagnostic_output_format (diagnostic_context &context)
   : m_context (context)

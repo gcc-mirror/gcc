@@ -1327,7 +1327,7 @@ layout::layout (const diagnostic_context &context,
 : m_options (context.m_source_printing),
   m_line_table (richloc.get_line_table ()),
   m_file_cache (context.get_file_cache ()),
-  m_pp (pp ? pp : context.printer),
+  m_pp (pp ? pp : context.m_printer),
   /* Ensure we have a non-null m_theme. */
   m_theme (context.get_diagram_theme ()
 	   ? *context.get_diagram_theme ()
@@ -3504,7 +3504,7 @@ test_layout_x_offset_display_utf8 (const line_table_case &case_)
 		  "that occupies 8 bytes and 4 display columns, starting at "
 		  "column #102.\n"
 		  "     | ^\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* Similar to the previous example, but now the offset called for would split
@@ -3529,7 +3529,7 @@ test_layout_x_offset_display_utf8 (const line_table_case &case_)
 		  "that occupies 8 bytes and 4 display columns, starting at "
 		  "column #102.\n"
 		  "     |  ^\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
 }
@@ -3601,7 +3601,7 @@ test_layout_x_offset_display_tab (const line_table_case &case_)
       dc.m_tabstop = tabstop;
       layout test_layout (dc, richloc, DK_ERROR, nullptr);
       test_layout.print_line (1);
-      const char *out = pp_formatted_text (dc.printer);
+      const char *out = pp_formatted_text (dc.m_printer);
       ASSERT_EQ (NULL, strchr (out, '\t'));
       const char *left_quote = strchr (out, '`');
       const char *right_quote = strchr (out, '\'');
@@ -3638,7 +3638,7 @@ test_layout_x_offset_display_tab (const line_table_case &case_)
 	  "display columns, starting at column #103.\n"
 	  "     |   ^\n";
       const char *expected_output = (extra_width[tabstop] ? output1 : output2);
-      ASSERT_STREQ (expected_output, pp_formatted_text (dc.printer));
+      ASSERT_STREQ (expected_output, pp_formatted_text (dc.m_printer));
     }
 }
 
@@ -3651,7 +3651,7 @@ test_diagnostic_show_locus_unknown_location ()
   test_diagnostic_context dc;
   rich_location richloc (line_table, UNKNOWN_LOCATION);
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-  ASSERT_STREQ ("", pp_formatted_text (dc.printer));
+  ASSERT_STREQ ("", pp_formatted_text (dc.m_printer));
 }
 
 /* Verify that diagnostic_show_locus works sanely for various
@@ -3675,7 +3675,7 @@ test_one_liner_simple_caret ()
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   ASSERT_STREQ (" foo = bar.field;\n"
 		"          ^\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
 }
 
 /* No column information (column == 0).
@@ -3689,7 +3689,7 @@ test_one_liner_no_column ()
   rich_location richloc (line_table, caret);
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   ASSERT_STREQ (" foo = bar.field;\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
 }
 
 /* Caret and range.  */
@@ -3706,7 +3706,7 @@ test_one_liner_caret_and_range ()
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   ASSERT_STREQ (" foo = bar.field;\n"
 		"       ~~~^~~~~~\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
 }
 
 /* Multiple ranges and carets.  */
@@ -3739,7 +3739,7 @@ test_one_liner_multiple_carets_and_ranges ()
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   ASSERT_STREQ (" foo = bar.field;\n"
 		" ~A~   ~B~ ~~C~~\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
 }
 
 /* Insertion fix-it hint: adding an "&" to the front of "bar.field". */
@@ -3755,7 +3755,7 @@ test_one_liner_fixit_insert_before ()
   ASSERT_STREQ (" foo = bar.field;\n"
 		"       ^\n"
 		"       &\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
 }
 
 /* Insertion fix-it hint: adding a "[0]" after "foo". */
@@ -3773,7 +3773,7 @@ test_one_liner_fixit_insert_after ()
   ASSERT_STREQ (" foo = bar.field;\n"
 		" ^~~\n"
 		"    [0]\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
 }
 
 /* Removal fix-it hint: removal of the ".field".
@@ -3796,19 +3796,19 @@ test_one_liner_fixit_remove ()
     ASSERT_STREQ (" foo = bar.field;\n"
 		  "          ^~~~~~\n"
 		  "          ------\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* Test of adding a prefix.  */
   {
     test_diagnostic_context dc;
-    pp_prefixing_rule (dc.printer) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
-    pp_set_prefix (dc.printer, xstrdup ("TEST PREFIX:"));
+    pp_prefixing_rule (dc.m_printer) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
+    pp_set_prefix (dc.m_printer, xstrdup ("TEST PREFIX:"));
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ ("TEST PREFIX: foo = bar.field;\n"
 		  "TEST PREFIX:          ^~~~~~\n"
 		  "TEST PREFIX:          ------\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* Normal, with ruler.  */
@@ -3823,7 +3823,7 @@ test_one_liner_fixit_remove ()
 		  " foo = bar.field;\n"
 		  "          ^~~~~~\n"
 		  "          ------\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* Test of adding a prefix, with ruler.  */
@@ -3831,15 +3831,15 @@ test_one_liner_fixit_remove ()
     test_diagnostic_context dc;
     dc.m_source_printing.show_ruler_p = true;
     dc.m_source_printing.max_width = 50;
-    pp_prefixing_rule (dc.printer) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
-    pp_set_prefix (dc.printer, xstrdup ("TEST PREFIX:"));
+    pp_prefixing_rule (dc.m_printer) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
+    pp_set_prefix (dc.m_printer, xstrdup ("TEST PREFIX:"));
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ ("TEST PREFIX:          1         2         3         4         5\n"
 		  "TEST PREFIX: 12345678901234567890123456789012345678901234567890\n"
 		  "TEST PREFIX: foo = bar.field;\n"
 		  "TEST PREFIX:          ^~~~~~\n"
 		  "TEST PREFIX:          ------\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* Test of adding a prefix, with ruler and line numbers.  */
@@ -3848,15 +3848,15 @@ test_one_liner_fixit_remove ()
     dc.m_source_printing.show_ruler_p = true;
     dc.m_source_printing.max_width = 50;
     dc.m_source_printing.show_line_numbers_p = true;
-    pp_prefixing_rule (dc.printer) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
-    pp_set_prefix (dc.printer, xstrdup ("TEST PREFIX:"));
+    pp_prefixing_rule (dc.m_printer) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
+    pp_set_prefix (dc.m_printer, xstrdup ("TEST PREFIX:"));
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ ("TEST PREFIX:      |          1         2         3         4         5\n"
 		  "TEST PREFIX:      | 12345678901234567890123456789012345678901234567890\n"
 		  "TEST PREFIX:    1 | foo = bar.field;\n"
 		  "TEST PREFIX:      |          ^~~~~~\n"
 		  "TEST PREFIX:      |          ------\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 }
 
@@ -3875,7 +3875,7 @@ test_one_liner_fixit_replace ()
   ASSERT_STREQ (" foo = bar.field;\n"
 		"           ^~~~~\n"
 		"           m_field\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
 }
 
 /* Replace fix-it hint: replacing "field" with "m_field",
@@ -3900,7 +3900,7 @@ test_one_liner_fixit_replace_non_equal_range ()
 		"     ^\n"
 		"           -----\n"
 		"           m_field\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
 }
 
 /* Replace fix-it hint: replacing "field" with "m_field",
@@ -3924,7 +3924,7 @@ test_one_liner_fixit_replace_equal_secondary_range ()
   ASSERT_STREQ (" foo = bar.field;\n"
 		"     ^     ~~~~~\n"
 		"           m_field\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
 }
 
 /* Verify that we can use ad-hoc locations when adding fixits to a
@@ -3957,7 +3957,7 @@ test_one_liner_fixit_validation_adhoc_locations ()
     ASSERT_STREQ (" foo = bar.field;\n"
 		  "       ^~~~~~~~~~                               \n"
 		  "       test\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* Remove.  */
@@ -3973,7 +3973,7 @@ test_one_liner_fixit_validation_adhoc_locations ()
     ASSERT_STREQ (" foo = bar.field;\n"
 		  "       ^~~~~~~~~~                               \n"
 		  "       -----------------------------------------\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* Replace.  */
@@ -3989,7 +3989,7 @@ test_one_liner_fixit_validation_adhoc_locations ()
     ASSERT_STREQ (" foo = bar.field;\n"
 		  "       ^~~~~~~~~~                               \n"
 		  "       test\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 }
 
@@ -4008,7 +4008,7 @@ test_one_liner_many_fixits_1 ()
   ASSERT_STREQ (" foo = bar.field;\n"
 		"     ^\n"
 		"     aaaaaaaaaaaaaaaaaaa\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
 }
 
 /* Ensure that we can add an arbitrary number of fix-it hints to a
@@ -4030,7 +4030,7 @@ test_one_liner_many_fixits_2 ()
   ASSERT_STREQ (" foo = bar.field;\n"
 		"     ^\n"
 		" a a a a a a a a a a a a a a a a a a a\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
 }
 
 /* Test of labeling the ranges within a rich_location.  */
@@ -4067,7 +4067,7 @@ test_one_liner_labels ()
 		    " ^~~   ~~~ ~~~~~\n"
 		    " |     |   |\n"
 		    " 0     1   2\n",
-		    pp_formatted_text (dc.printer));
+		    pp_formatted_text (dc.m_printer));
     }
 
     /* Verify that we can disable label-printing.  */
@@ -4077,7 +4077,7 @@ test_one_liner_labels ()
       diagnostic_show_locus (&dc, &richloc, DK_ERROR);
       ASSERT_STREQ (" foo = bar.field;\n"
 		    " ^~~   ~~~ ~~~~~\n",
-		    pp_formatted_text (dc.printer));
+		    pp_formatted_text (dc.m_printer));
     }
   }
 
@@ -4098,7 +4098,7 @@ test_one_liner_labels ()
 		  " |     |   label 2\n"
 		  " |     label 1\n"
 		  " label 0\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* Example of boundary conditions: label 0 and 1 have just enough clearance,
@@ -4118,7 +4118,7 @@ test_one_liner_labels ()
 		  " |     |   |\n"
 		  " |     |   c\n"
 		  " aaaaa bbbb\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* Example of out-of-order ranges (thus requiring a sort).  */
@@ -4136,7 +4136,7 @@ test_one_liner_labels ()
 		  " ~~~   ~~~ ^~~~~\n"
 		  " |     |   |\n"
 		  " 2     1   0\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* Ensure we don't ICE if multiple ranges with labels are on
@@ -4157,7 +4157,7 @@ test_one_liner_labels ()
 		  "       label 0\n"
 		  "       label 1\n"
 		  "       label 2\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* Example of out-of-order ranges (thus requiring a sort), where
@@ -4198,7 +4198,7 @@ test_one_liner_labels ()
 		  " label 2a\n"
 		  " label 2b\n"
 		  " label 2c\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* Verify that a NULL result from range_label::get_text is
@@ -4211,7 +4211,7 @@ test_one_liner_labels ()
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ (" foo = bar.field;\n"
 		  "       ^~~\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
    }
 
   /* TODO: example of formatted printing (needs to be in
@@ -4283,7 +4283,7 @@ test_one_liner_simple_caret_utf8 ()
 				  "_field\xcf\x80"
 					 ";\n"
 		"               ^\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
 }
 
 /* Caret and range.  */
@@ -4303,7 +4303,7 @@ test_one_liner_caret_and_range_utf8 ()
 				  "_field\xcf\x80"
 					 ";\n"
 		"          ~~~~~^~~~~~~~~~\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
 }
 
 /* Multiple ranges and carets.  */
@@ -4339,7 +4339,7 @@ test_one_liner_multiple_carets_and_ranges_utf8 ()
 				  "_field\xcf\x80"
 					 ";\n"
 		" ~~~~A~   ~~~B~ ~~~~~C~~~\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
 }
 
 /* Insertion fix-it hint: adding an "&" to the front of "P_bar.field". */
@@ -4359,7 +4359,7 @@ test_one_liner_fixit_insert_before_utf8 ()
 					 ";\n"
 		"          ^\n"
 		"          &\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
 }
 
 /* Insertion fix-it hint: adding a "[0]" after "SS_foo". */
@@ -4381,7 +4381,7 @@ test_one_liner_fixit_insert_after_utf8 ()
 					 ";\n"
 		" ^~~~~~\n"
 		"       [0]\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
 }
 
 /* Removal fix-it hint: removal of the ".SS_fieldP". */
@@ -4403,7 +4403,7 @@ test_one_liner_fixit_remove_utf8 ()
 					 ";\n"
 		"               ^~~~~~~~~~\n"
 		"               ----------\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
 }
 
 /* Replace fix-it hint: replacing "SS_fieldP" with "m_SSfieldP". */
@@ -4426,7 +4426,7 @@ test_one_liner_fixit_replace_utf8 ()
 		"                ^~~~~~~~~\n"
 		"                m_\xf0\x9f\x98\x82"
 				    "_field\xcf\x80\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
 }
 
 /* Replace fix-it hint: replacing "SS_fieldP" with "m_SSfieldP",
@@ -4456,7 +4456,7 @@ test_one_liner_fixit_replace_non_equal_range_utf8 ()
 		"                ---------\n"
 		"                m_\xf0\x9f\x98\x82"
 				    "_field\xcf\x80\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
 }
 
 /* Replace fix-it hint: replacing "SS_fieldP" with "m_SSfieldP",
@@ -4485,7 +4485,7 @@ test_one_liner_fixit_replace_equal_secondary_range_utf8 ()
 		"        ^       ~~~~~~~~~\n"
 		"                m_\xf0\x9f\x98\x82"
 				    "_field\xcf\x80\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
 }
 
 /* Verify that we can use ad-hoc locations when adding fixits to a
@@ -4522,7 +4522,7 @@ test_one_liner_fixit_validation_adhoc_locations_utf8 ()
 					   ";\n"
 		  "          ^~~~~~~~~~~~~~~~                     \n"
 		  "          test\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
   }
 
   /* Remove.  */
@@ -4542,7 +4542,7 @@ test_one_liner_fixit_validation_adhoc_locations_utf8 ()
 					   ";\n"
 		  "          ^~~~~~~~~~~~~~~~                     \n"
 		  "          -------------------------------------\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
   }
 
   /* Replace.  */
@@ -4562,7 +4562,7 @@ test_one_liner_fixit_validation_adhoc_locations_utf8 ()
 					   ";\n"
 		  "          ^~~~~~~~~~~~~~~~                     \n"
 		  "          test\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
   }
 }
 
@@ -4586,7 +4586,7 @@ test_one_liner_many_fixits_1_utf8 ()
 		"        ^\n"
 		"        \xcf\x80@\xcf\x80@\xcf\x80@\xcf\x80@\xcf\x80@"
 		"\xcf\x80@\xcf\x80@\xcf\x80@\xcf\x80@\xcf\x80\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
 }
 
 /* Ensure that we can add an arbitrary number of fix-it hints to a
@@ -4617,7 +4617,7 @@ test_one_liner_many_fixits_2_utf8 ()
 		"        ^\n"
 		" \xcf\x80 @ \xcf\x80 @ \xcf\x80 @ \xcf\x80 @  \xcf\x80 @"
 		" \xcf\x80 @ \xcf\x80 @ \xcf\x80 @ \xcf\x80 @ \xcf\x80\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
 }
 
 /* Test of labeling the ranges within a rich_location.  */
@@ -4670,7 +4670,7 @@ test_one_liner_labels_utf8 ()
 			   "   \xf0\x9f\x98\x82\xf0\x9f\x98\x82\xcf\x80"
 				   " \xf0\x9f\x98\x82\xcf\x80\xf0\x9f\x98\x82"
 					 "\xf0\x9f\x98\x82\xcf\x80\xcf\x80\n",
-		    pp_formatted_text (dc.printer));
+		    pp_formatted_text (dc.m_printer));
     }
 
   }
@@ -4697,7 +4697,7 @@ test_one_liner_labels_utf8 ()
 		  " |        |     label 2\xcf\x80\n"
 		  " |        label 1\xcf\x80\n"
 		  " label 0\xf0\x9f\x98\x82\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* Example of boundary conditions: label 0 and 1 have just enough clearance,
@@ -4722,7 +4722,7 @@ test_one_liner_labels_utf8 ()
 		  " |        |     c\n"
 		  " aaaaa\xf0\x9f\x98\x82\xcf\x80"
 			   " bb\xf0\x9f\x98\x82\xf0\x9f\x98\x82\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* Example of escaping the source lines.  */
@@ -4745,7 +4745,7 @@ test_one_liner_labels_utf8 ()
 		    " label 0\xf0\x9f\x98\x82"
 		    /* ... */ "       label 1\xcf\x80"
 		    /* ...................*/ "     label 2\xcf\x80\n",
-		    pp_formatted_text (dc.printer));
+		    pp_formatted_text (dc.m_printer));
     }
     {
       test_diagnostic_context dc;
@@ -4758,7 +4758,7 @@ test_one_liner_labels_utf8 ()
 	 " label 0\xf0\x9f\x98\x82"
 	 /* ... */ "              label 1\xcf\x80"
 	 /* ..........................*/ "     label 2\xcf\x80\n",
-	 pp_formatted_text (dc.printer));
+	 pp_formatted_text (dc.m_printer));
     }
   }
 }
@@ -4777,7 +4777,7 @@ test_one_liner_colorized_utf8 ()
 
   /* In order to avoid having the test depend on exactly how the colorization
      was effected, just confirm there are two pi characters in the output.  */
-  const char *result = pp_formatted_text (dc.printer);
+  const char *result = pp_formatted_text (dc.m_printer);
   const char *null_term = result + strlen (result);
   const char *first_pi = strstr (result, "\xcf\x80");
   ASSERT_TRUE (first_pi && first_pi <= null_term - 2);
@@ -4886,7 +4886,7 @@ test_add_location_if_nearby (const line_table_case &case_)
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ (" struct same_line { double x; double y; ;\n"
 		  "                  ~                    ^\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* Test of add_location_if_nearby on a different line to the
@@ -4953,7 +4953,7 @@ test_diagnostic_show_locus_fixit_lines (const line_table_case &case_)
     ASSERT_STREQ (" struct point origin = {x: 0.0,\n"
 		  "                         ^\n"
 		  "                        .=\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* The multiline case.  The caret for the rich_location is on line 6;
@@ -4977,7 +4977,7 @@ test_diagnostic_show_locus_fixit_lines (const line_table_case &case_)
 		  "                         : 0.0};\n"
 		  "                         ^\n"
 		  "                         =\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* As above, but verify the behavior of multiple line spans
@@ -4999,7 +4999,7 @@ test_diagnostic_show_locus_fixit_lines (const line_table_case &case_)
 		  "    6 |                         : 0.0};\n"
 		  "      |                         ^\n"
 		  "      |                         =\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 }
 
@@ -5208,7 +5208,7 @@ test_overlapped_fixit_printing (const line_table_case &case_)
 		  "                   ^~~~~~~~~~\n"
 		  "            -----------------\n"
 		  "            const_cast<foo *> (ptr->field)\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
 
     /* Unit-test the line_corrections machinery.  */
     char_display_policy policy (make_policy (dc, richloc));
@@ -5279,7 +5279,7 @@ test_overlapped_fixit_printing (const line_table_case &case_)
 		  "            -\n"
 		  "            CAST (-\n"
 		  "                  ) (        )\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* Example where none are consolidated during printing.  */
@@ -5296,7 +5296,7 @@ test_overlapped_fixit_printing (const line_table_case &case_)
 		  "            -\n"
 		  "            CST ( -\n"
 		  "                  ) (        )\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* Example of deletion fix-it hints.  */
@@ -5316,7 +5316,7 @@ test_overlapped_fixit_printing (const line_table_case &case_)
 		  "                   ^~~~~~~~~~\n"
 		  "            -------\n"
 		  "            (bar *)\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* Example of deletion fix-it hints that would overlap.  */
@@ -5336,7 +5336,7 @@ test_overlapped_fixit_printing (const line_table_case &case_)
 		  "                   ^~~~~~~~~~\n"
 		  "            -----------------\n"
 		  "            (longer *)(foo *)\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* Example of insertion fix-it hints that would overlap.  */
@@ -5354,7 +5354,7 @@ test_overlapped_fixit_printing (const line_table_case &case_)
 		  "                   ^~~~~~~~~~\n"
 		  "            -------\n"
 		  "            LONGER THAN THE CAST(foo *)TEST\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 }
 
@@ -5425,7 +5425,7 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
 		  "            const_cast<f\xf0\x9f\x98\x82"
 					    " *> (ptr->field\xcf\x80"
 							    ")\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
 
     /* Unit-test the line_corrections machinery.  */
     char_display_policy policy (make_policy (dc, richloc));
@@ -5500,7 +5500,7 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
 		  "            -\n"
 		  "            CAST (-\n"
 		  "                  ) (         )\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* Example where none are consolidated during printing.  */
@@ -5520,7 +5520,7 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
 		  "            -\n"
 		  "            CST ( -\n"
 		  "                  ) (         )\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* Example of deletion fix-it hints.  */
@@ -5544,7 +5544,7 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
 		  "            -------\n"
 		  "            (bar\xf0\x9f\x98\x82"
 				    " *)\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* Example of deletion fix-it hints that would overlap.  */
@@ -5569,7 +5569,7 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
 		  "            (long\xf0\x9f\x98\x82"
 				     " *)(f\xf0\x9f\x98\x82"
 					    " *)\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* Example of insertion fix-it hints that would overlap.  */
@@ -5593,7 +5593,7 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
 		  "            L\xf0\x9f\x98\x82"
 				 "NGER THAN THE CAST(f\xf0\x9f\x98\x82"
 						       " *)TEST\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 }
 
@@ -5663,7 +5663,7 @@ test_overlapped_fixit_printing_2 (const line_table_case &case_)
     ASSERT_STREQ (" int a5[][0][0] = { 1, 2 };\n"
 		  "                    ^\n"
 		  "                     } {\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* Various overlapping insertions, some occurring "out of order"
@@ -5686,7 +5686,7 @@ test_overlapped_fixit_printing_2 (const line_table_case &case_)
 		  "                    ^\n"
 		  " {                  -----\n"
 		  "                    {{1}}}}, {{{2 }}\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 }
 
@@ -5729,7 +5729,7 @@ test_fixit_insert_containing_newline (const line_table_case &case_)
 		    "+      break;\n"
 		    "     case 'b':\n"
 		    "     ^~~~~~~~~\n",
-		    pp_formatted_text (dc.printer));
+		    pp_formatted_text (dc.m_printer));
     }
 
     /* With line numbers.  */
@@ -5741,7 +5741,7 @@ test_fixit_insert_containing_newline (const line_table_case &case_)
 		    "  +++ |+      break;\n"
 		    "    3 |     case 'b':\n"
 		    "      |     ^~~~~~~~~\n",
-		    pp_formatted_text (dc.printer));
+		    pp_formatted_text (dc.m_printer));
     }
   }
 
@@ -5755,7 +5755,7 @@ test_fixit_insert_containing_newline (const line_table_case &case_)
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ ("     case 'b':\n"
 		  "     ^~~~~~~~~\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 }
 
@@ -5807,7 +5807,7 @@ test_fixit_insert_containing_newline_2 (const line_table_case &case_)
 		  "FILENAME:3:2:\n"
 		  "  putchar (ch);\n"
 		  "  ^~~~~~~\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* With line-numbering, the line spans are close enough to be
@@ -5821,7 +5821,7 @@ test_fixit_insert_containing_newline_2 (const line_table_case &case_)
 		  "    2 | {\n"
 		  "    3 |  putchar (ch);\n"
 		  "      |  ^~~~~~~\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 }
 
@@ -5861,7 +5861,7 @@ test_fixit_replace_containing_newline (const line_table_case &case_)
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   ASSERT_STREQ (" foo = bar ();\n"
 		"             ^\n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
 }
 
 /* Fix-it hint, attempting to delete a newline.
@@ -5907,7 +5907,7 @@ test_fixit_deletion_affecting_newline (const line_table_case &case_)
 		"          ~^\n"
 		"       );\n"
 		"       ~    \n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
 }
 
 static void
@@ -5951,7 +5951,7 @@ test_tab_expansion (const line_table_case &case_)
     test_layout.print_line (1);
     ASSERT_STREQ ("            This: `      ' is a tab.\n"
 		  "            ^\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 
   /* Confirm the display width was tracked correctly across the internal tab
@@ -5966,7 +5966,7 @@ test_tab_expansion (const line_table_case &case_)
     test_layout.print_line (1);
     ASSERT_STREQ ("            This: `      ' is a tab.\n"
 		  "                         ^\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 }
 
@@ -6004,7 +6004,7 @@ test_escaping_bytes_1 (const line_table_case &case_)
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ (" before \1\2\3\v\x80\xff""after\n"
 		  "       ^   ~\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
   richloc.set_escape_on_output (true);
   {
@@ -6014,7 +6014,7 @@ test_escaping_bytes_1 (const line_table_case &case_)
     ASSERT_STREQ
       (" before<U+0000><U+0001><U+0002><U+0003><U+000B><80><ff>after\n"
        "       ^~~~~~~~                        ~~~~~~~~\n",
-       pp_formatted_text (dc.printer));
+       pp_formatted_text (dc.m_printer));
   }
   {
     test_diagnostic_context dc;
@@ -6022,7 +6022,7 @@ test_escaping_bytes_1 (const line_table_case &case_)
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ (" before<00><01><02><03><0b><80><ff>after\n"
 		  "       ^~~~            ~~~~\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 }
 
@@ -6057,7 +6057,7 @@ test_escaping_bytes_2 (const line_table_case &case_)
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ ("  after\n"
 		  " ^\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
   richloc.set_escape_on_output (true);
   {
@@ -6066,7 +6066,7 @@ test_escaping_bytes_2 (const line_table_case &case_)
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ (" <U+0000>after\n"
 		  " ^~~~~~~~\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
   {
     test_diagnostic_context dc;
@@ -6074,7 +6074,7 @@ test_escaping_bytes_2 (const line_table_case &case_)
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ (" <00>after\n"
 		  " ^~~~\n",
-		  pp_formatted_text (dc.printer));
+		  pp_formatted_text (dc.m_printer));
   }
 }
 
@@ -6120,7 +6120,7 @@ test_line_numbers_multiline_range ()
 		"   | ~~~~~^~~~~~~~~~\n"
 		"11 | this is line 11\n"
 		"   | ~~~~  \n",
-		pp_formatted_text (dc.printer));
+		pp_formatted_text (dc.m_printer));
 }
 
 /* Run all of the selftests within this file.  */

@@ -229,7 +229,7 @@ announce_function (tree decl)
 	fprintf (stderr, " %s",
 		 identifier_to_locale (lang_hooks.decl_printable_name (decl, 2)));
       fflush (stderr);
-      pp_needs_newline (global_dc->printer) = true;
+      pp_needs_newline (global_dc->m_printer) = true;
       diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
     }
 }
@@ -2387,7 +2387,7 @@ toplev::main (int argc, char **argv)
   if (auto edit_context_ptr = global_dc->get_edit_context ())
     {
       pretty_printer pp;
-      pp_show_color (&pp) = pp_show_color (global_dc->printer);
+      pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
       edit_context_ptr->print_diff (&pp, true);
       pp_flush (&pp);
     }

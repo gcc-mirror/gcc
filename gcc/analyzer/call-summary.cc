@@ -148,7 +148,7 @@ call_summary::dump (const extrinsic_state &ext_state,
 {
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
   pp.set_output_stream (fp);
   dump_to_pp (ext_state, &pp, simple);
   pp_flush (&pp);
@@ -887,7 +887,7 @@ call_summary_replay::dump (FILE *fp, bool simple) const
 {
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
   pp.set_output_stream (fp);
   dump_to_pp (&pp, simple);
   pp_flush (&pp);

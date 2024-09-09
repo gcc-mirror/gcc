@@ -923,7 +923,7 @@ error_printf (const char *gmsgid, ...)
 static void
 gfc_clear_pp_buffer (output_buffer *this_buffer)
 {
-  pretty_printer *pp = global_dc->printer;
+  pretty_printer *pp = global_dc->m_printer;
   output_buffer *tmp_buffer = pp_buffer (pp);
   pp_buffer (pp) = this_buffer;
   pp_clear_output_area (pp);
@@ -963,7 +963,7 @@ gfc_warning (int opt, const char *gmsgid, va_list ap)
   diagnostic_info diagnostic;
   rich_location rich_loc (line_table, UNKNOWN_LOCATION);
   bool fatal_errors = global_dc->m_fatal_errors;
-  pretty_printer *pp = global_dc->printer;
+  pretty_printer *pp = global_dc->m_printer;
   output_buffer *tmp_buffer = pp_buffer (pp);
 
   gfc_clear_pp_buffer (pp_warning_buffer);
@@ -1196,7 +1196,7 @@ gfc_diagnostic_build_kind_prefix (diagnostic_context *context,
   gcc_assert (diagnostic->kind < DK_LAST_DIAGNOSTIC_KIND);
   const char *text = _(diagnostic_kind_text[diagnostic->kind]);
   const char *text_cs = "", *text_ce = "";
-  pretty_printer *pp = context->printer;
+  pretty_printer *const pp = context->m_printer;
 
   if (diagnostic_kind_color[diagnostic->kind])
     {
@@ -1213,7 +1213,7 @@ static char *
 gfc_diagnostic_build_locus_prefix (diagnostic_context *context,
 				   expanded_location s)
 {
-  pretty_printer *pp = context->printer;
+  pretty_printer *const pp = context->m_printer;
   const char *locus_cs = colorize_start (pp_show_color (pp), "locus");
   const char *locus_ce = colorize_stop (pp_show_color (pp));
   return (s.file == NULL
@@ -1232,7 +1232,7 @@ static char *
 gfc_diagnostic_build_locus_prefix (diagnostic_context *context,
 				   expanded_location s, expanded_location s2)
 {
-  pretty_printer *pp = context->printer;
+  pretty_printer *const pp = context->m_printer;
   const char *locus_cs = colorize_start (pp_show_color (pp), "locus");
   const char *locus_ce = colorize_stop (pp_show_color (pp));
 
@@ -1269,6 +1269,7 @@ static void
 gfc_diagnostic_starter (diagnostic_context *context,
 			const diagnostic_info *diagnostic)
 {
+  pretty_printer *const pp = context->m_printer;
   char * kind_prefix = gfc_diagnostic_build_kind_prefix (context, diagnostic);
 
   expanded_location s1 = diagnostic_expand_location (diagnostic);
@@ -1290,7 +1291,7 @@ gfc_diagnostic_starter (diagnostic_context *context,
       || diagnostic_location (diagnostic, 0) <= BUILTINS_LOCATION
       || diagnostic_location (diagnostic, 0) == context->m_last_location)
     {
-      pp_set_prefix (context->printer,
+      pp_set_prefix (pp,
 		     concat (locus_prefix, " ", kind_prefix, NULL));
       free (locus_prefix);
 
@@ -1304,26 +1305,27 @@ gfc_diagnostic_starter (diagnostic_context *context,
 	  [locus]:[prefix]: (1)
 
 	 and we flush with a new line before setting the new prefix.  */
-      pp_string (context->printer, "(1)");
-      pp_newline (context->printer);
+      pp_string (pp, "(1)");
+      pp_newline (pp);
       locus_prefix = gfc_diagnostic_build_locus_prefix (context, s2);
-      pp_set_prefix (context->printer,
+      pp_set_prefix (pp,
 		     concat (locus_prefix, " ", kind_prefix, NULL));
       free (kind_prefix);
       free (locus_prefix);
     }
   else
     {
-      pp_verbatim (context->printer, "%s", locus_prefix);
+      pp_verbatim (pp, "%s", locus_prefix);
       free (locus_prefix);
       /* Fortran uses an empty line between locus and caret line.  */
-      pp_newline (context->printer);
-      pp_set_prefix (context->printer, NULL);
-      pp_newline (context->printer);
-      diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind);
+      pp_newline (pp);
+      pp_set_prefix (pp, NULL);
+      pp_newline (pp);
+      diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind,
+			     pp);
       /* If the caret line was shown, the prefix does not contain the
 	 locus.  */
-      pp_set_prefix (context->printer, kind_prefix);
+      pp_set_prefix (pp, kind_prefix);
     }
 }
 
@@ -1333,11 +1335,12 @@ gfc_diagnostic_start_span (diagnostic_context *context,
 {
   char *locus_prefix;
   locus_prefix = gfc_diagnostic_build_locus_prefix (context, exploc);
-  pp_verbatim (context->printer, "%s", locus_prefix);
+  pretty_printer * const pp = context->m_printer;
+  pp_verbatim (pp, "%s", locus_prefix);
   free (locus_prefix);
-  pp_newline (context->printer);
+  pp_newline (pp);
   /* Fortran uses an empty line between locus and caret line.  */
-  pp_newline (context->printer);
+  pp_newline (pp);
 }
 
 
@@ -1346,8 +1349,9 @@ gfc_diagnostic_finalizer (diagnostic_context *context,
 			  const diagnostic_info *diagnostic ATTRIBUTE_UNUSED,
 			  diagnostic_t orig_diag_kind ATTRIBUTE_UNUSED)
 {
-  pp_destroy_prefix (context->printer);
-  pp_newline_and_flush (context->printer);
+  pretty_printer *const pp = context->m_printer;
+  pp_destroy_prefix (pp);
+  pp_newline_and_flush (pp);
 }
 
 /* Immediate warning (i.e. do not buffer the warning) with an explicit
@@ -1461,7 +1465,7 @@ gfc_warning_check (void)
 {
   if (! gfc_output_buffer_empty_p (pp_warning_buffer))
     {
-      pretty_printer *pp = global_dc->printer;
+      pretty_printer *pp = global_dc->m_printer;
       output_buffer *tmp_buffer = pp_buffer (pp);
       pp_buffer (pp) = pp_warning_buffer;
       pp_really_flush (pp);
@@ -1502,7 +1506,7 @@ gfc_error_opt (int opt, const char *gmsgid, va_list ap)
   diagnostic_info diagnostic;
   rich_location richloc (line_table, UNKNOWN_LOCATION);
   bool fatal_errors = global_dc->m_fatal_errors;
-  pretty_printer *pp = global_dc->printer;
+  pretty_printer *pp = global_dc->m_printer;
   output_buffer *tmp_buffer = pp_buffer (pp);
 
   gfc_clear_pp_buffer (pp_error_buffer);
@@ -1609,7 +1613,7 @@ gfc_error_check (void)
       || ! gfc_output_buffer_empty_p (pp_error_buffer))
     {
       error_buffer.flag = false;
-      pretty_printer *pp = global_dc->printer;
+      pretty_printer *pp = global_dc->m_printer;
       output_buffer *tmp_buffer = pp_buffer (pp);
       pp_buffer (pp) = pp_error_buffer;
       pp_really_flush (pp);

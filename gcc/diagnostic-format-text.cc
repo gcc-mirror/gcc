@@ -41,17 +41,18 @@ diagnostic_text_output_format::~diagnostic_text_output_format ()
   /* Some of the errors may actually have been warnings.  */
   if (m_context.diagnostic_count (DK_WERROR))
     {
+      pretty_printer *pp = m_context.m_printer;
       /* -Werror was given.  */
       if (m_context.warning_as_error_requested_p ())
-	pp_verbatim (m_context.printer,
+	pp_verbatim (pp,
 		     _("%s: all warnings being treated as errors"),
 		     progname);
       /* At least one -Werror= was given.  */
       else
-	pp_verbatim (m_context.printer,
+	pp_verbatim (pp,
 		     _("%s: some warnings being treated as errors"),
 		     progname);
-      pp_newline_and_flush (m_context.printer);
+      pp_newline_and_flush (pp);
     }
 }
 
@@ -63,9 +64,11 @@ diagnostic_text_output_format::
 on_report_diagnostic (const diagnostic_info &diagnostic,
 		      diagnostic_t orig_diag_kind)
 {
+  pretty_printer *pp = m_context.m_printer;
+
   (*diagnostic_starter (&m_context)) (&m_context, &diagnostic);
 
-  pp_output_formatted_text (m_context.printer, m_context.get_urlifier ());
+  pp_output_formatted_text (pp, m_context.get_urlifier ());
 
   if (m_context.m_show_cwe)
     print_any_cwe (diagnostic);
@@ -76,22 +79,25 @@ on_report_diagnostic (const diagnostic_info &diagnostic,
   if (m_context.m_show_option_requested)
     print_option_information (diagnostic, orig_diag_kind);
 
-  (*diagnostic_finalizer (&m_context)) (&m_context, &diagnostic,
+  (*diagnostic_finalizer (&m_context)) (&m_context,
+					&diagnostic,
 					orig_diag_kind);
 }
 
 void
 diagnostic_text_output_format::on_diagram (const diagnostic_diagram &diagram)
 {
-  char *saved_prefix = pp_take_prefix (m_context.printer);
-  pp_set_prefix (m_context.printer, NULL);
+  pretty_printer *const pp = get_printer ();
+
+  char *saved_prefix = pp_take_prefix (pp);
+  pp_set_prefix (pp, NULL);
   /* Use a newline before and after and a two-space indent
      to make the diagram stand out a little from the wall of text.  */
-  pp_newline (m_context.printer);
-  diagram.get_canvas ().print_to_pp (m_context.printer, "  ");
-  pp_newline (m_context.printer);
-  pp_set_prefix (m_context.printer, saved_prefix);
-  pp_flush (m_context.printer);
+  pp_newline (pp);
+  diagram.get_canvas ().print_to_pp (pp, "  ");
+  pp_newline (pp);
+  pp_set_prefix (pp, saved_prefix);
+  pp_flush (pp);
 }
 
 /* If DIAGNOSTIC has a CWE identifier, print it.
@@ -109,7 +115,7 @@ diagnostic_text_output_format::print_any_cwe (const diagnostic_info &diagnostic)
   int cwe = diagnostic.metadata->get_cwe ();
   if (cwe)
     {
-      pretty_printer * const pp = m_context.printer;
+      pretty_printer * const pp = get_printer ();
       char *saved_prefix = pp_take_prefix (pp);
       pp_string (pp, " [");
       const char *kind_color = diagnostic_get_color_for_kind (diagnostic.kind);
@@ -148,7 +154,7 @@ print_any_rules (const diagnostic_info &diagnostic)
 	= diagnostic.metadata->get_rule (idx);
       if (char *desc = rule.make_description ())
 	{
-	  pretty_printer * const pp = m_context.printer;
+	  pretty_printer * const pp = get_printer ();
 	  char *saved_prefix = pp_take_prefix (pp);
 	  pp_string (pp, " [");
 	  const char *kind_color
@@ -188,7 +194,7 @@ print_option_information (const diagnostic_info &diagnostic,
 				    orig_diag_kind, diagnostic.kind))
     {
       char *option_url = nullptr;
-      pretty_printer * const pp = m_context.printer;
+      pretty_printer * const pp = get_printer ();
       if (pp->supports_urls_p ())
 	option_url = m_context.make_option_url (diagnostic.option_index);
       pp_string (pp, " [");

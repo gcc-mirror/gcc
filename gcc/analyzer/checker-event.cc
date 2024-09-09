@@ -199,7 +199,7 @@ checker_event::debug () const
 {
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
   pp.set_output_stream (stderr);
   dump (&pp);
   pp_newline (&pp);

@@ -278,7 +278,7 @@ function_point::print_source_line (pretty_printer *pp) const
   debug_diagnostic_context tmp_dc;
   gcc_rich_location richloc (stmt->location);
   diagnostic_show_locus (&tmp_dc, &richloc, DK_ERROR);
-  pp_string (pp, pp_formatted_text (tmp_dc.printer));
+  pp_string (pp, pp_formatted_text (tmp_dc.m_printer));
 }
 
 /* class program_point.  */
@@ -301,7 +301,7 @@ DEBUG_FUNCTION void
 program_point::dump () const
 {
   pretty_printer pp;
-  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
   pp.set_output_stream (stderr);
   print (&pp, format (true));
   pp_flush (&pp);

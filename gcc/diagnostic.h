@@ -431,7 +431,7 @@ public:
   void set_show_rules (bool val) { m_show_rules = val; }
   void set_show_highlight_colors (bool val)
   {
-    pp_show_highlight_colors (printer) = val;
+    pp_show_highlight_colors (m_printer) = val;
   }
   void set_path_format (enum diagnostic_path_format val)
   {
@@ -557,11 +557,11 @@ private:
   void print_path (const diagnostic_path &path);
 
   /* Data members.
-     Ideally, all of these would be private and have "m_" prefixes.  */
+     Ideally, all of these would be private.  */
 
 public:
   /* Where most of the diagnostic formatting work is done.  */
-  pretty_printer *printer;
+  pretty_printer *m_printer;
 
 private:
   /* Cache of source code.  */
@@ -818,10 +818,10 @@ diagnostic_finalizer (diagnostic_context *context)
 #define diagnostic_info_auxiliary_data(DI) (DI)->x_data
 
 /* Same as pp_format_decoder.  Works on 'diagnostic_context *'.  */
-#define diagnostic_format_decoder(DC) pp_format_decoder ((DC)->printer)
+#define diagnostic_format_decoder(DC) pp_format_decoder ((DC)->m_printer)
 
 /* Same as pp_prefixing_rule.  Works on 'diagnostic_context *'.  */
-#define diagnostic_prefixing_rule(DC) pp_prefixing_rule ((DC)->printer)
+#define diagnostic_prefixing_rule(DC) pp_prefixing_rule ((DC)->m_printer)
 
 /* Raise SIGABRT on any diagnostic of severity DK_ERROR or higher.  */
 inline void
@@ -840,7 +840,7 @@ extern diagnostic_context *global_dc;
 inline bool
 diagnostic_ready_p ()
 {
-  return global_dc->printer != nullptr;
+  return global_dc->m_printer != nullptr;
 }
 
 /* The number of errors that have been issued so far.  Ideally, these

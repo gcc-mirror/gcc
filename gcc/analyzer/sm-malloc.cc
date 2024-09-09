@@ -585,7 +585,7 @@ DEBUG_FUNCTION void
 deallocator_set::dump () const
 {
   pretty_printer pp;
-  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
   pp.set_output_stream (stderr);
   dump_to_pp (&pp);
   pp_newline (&pp);
@@ -1651,8 +1651,8 @@ private:
 
   static bool sufficiently_similar_p (tree expr_a, tree expr_b)
   {
-    pretty_printer *pp_a = global_dc->printer->clone ();
-    pretty_printer *pp_b = global_dc->printer->clone ();
+    pretty_printer *pp_a = global_dc->m_printer->clone ();
+    pretty_printer *pp_b = global_dc->m_printer->clone ();
     pp_printf (pp_a, "%qE", expr_a);
     pp_printf (pp_b, "%qE", expr_b);
     bool result = (strcmp (pp_formatted_text (pp_a), pp_formatted_text (pp_b))

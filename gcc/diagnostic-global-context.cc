@@ -44,8 +44,8 @@ verbatim (const char *gmsgid, ...)
 
   va_start (ap, gmsgid);
   text_info text (_(gmsgid), &ap, errno);
-  pp_format_verbatim (global_dc->printer, &text);
-  pp_newline_and_flush (global_dc->printer);
+  pp_format_verbatim (global_dc->m_printer, &text);
+  pp_newline_and_flush (global_dc->m_printer);
   va_end (ap);
 }
 

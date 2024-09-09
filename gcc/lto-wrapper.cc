@@ -1364,7 +1364,7 @@ init_num_threads (void)
 void
 print_lto_docs_link ()
 {
-  bool print_url = global_dc->printer->supports_urls_p ();
+  bool print_url = global_dc->m_printer->supports_urls_p ();
   const char *url = global_dc->make_option_url (OPT_flto);
 
   pretty_printer pp;

@@ -1561,7 +1561,7 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
        sd.get_index (), sd.m_d->get_kind (), sd.m_snode->m_index);
   log ("num dupes: %i", sd.get_num_dupes ());
 
-  pretty_printer *pp = global_dc->printer->clone ();
+  pretty_printer *pp = global_dc->m_printer->clone ();
 
   const exploded_path *epath = sd.get_best_epath ();
   gcc_assert (epath);

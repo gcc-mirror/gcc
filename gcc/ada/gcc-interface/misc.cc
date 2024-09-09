@@ -306,14 +306,14 @@ internal_error_function (diagnostic_context *context, const char *msgid,
   emergency_dump_function ();
 
   /* Reset the pretty-printer.  */
-  pp_clear_output_area (context->printer);
+  pp_clear_output_area (context->m_printer);
 
   /* Format the message into the pretty-printer.  */
   text_info tinfo (msgid, ap, errno);
-  pp_format_verbatim (context->printer, &tinfo);
+  pp_format_verbatim (context->m_printer, &tinfo);
 
   /* Extract a (writable) pointer to the formatted text.  */
-  buffer = xstrdup (pp_formatted_text (context->printer));
+  buffer = xstrdup (pp_formatted_text (context->m_printer));
 
   /* Go up to the first newline.  */
   for (p = buffer; *p; p++)

@@ -437,7 +437,7 @@ supergraph::dump_dot_to_pp (pretty_printer *pp,
 void
 supergraph::dump_dot_to_file (FILE *fp, const dump_args_t &dump_args) const
 {
-  pretty_printer *pp = global_dc->printer->clone ();
+  pretty_printer *pp = global_dc->m_printer->clone ();
   pp_show_color (pp) = 0;
   /* %qE in logs for SSA_NAMEs should show the ssa names, rather than
      trying to prettify things by showing the underlying var.  */
@@ -900,7 +900,7 @@ superedge::dump () const
 {
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
   pp.set_output_stream (stderr);
   dump (&pp);
   pp_newline (&pp);

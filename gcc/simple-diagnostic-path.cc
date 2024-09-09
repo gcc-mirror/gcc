@@ -220,16 +220,17 @@ simple_diagnostic_path_cc_tests ()
 {
   /* In a few places we use the global dc's printer to determine
      colorization so ensure this off during the tests.  */
-  const bool saved_show_color = pp_show_color (global_dc->printer);
-  pp_show_color (global_dc->printer) = false;
+  pretty_printer *global_pp = global_dc->m_printer;
+  const bool saved_show_color = pp_show_color (global_pp);
+  pp_show_color (global_pp) = false;
 
   auto_fix_quotes fix_quotes;
   std::unique_ptr<pretty_printer> event_pp
-    = std::unique_ptr<pretty_printer> (global_dc->printer->clone ());
+    = std::unique_ptr<pretty_printer> (global_pp->clone ());
 
   test_intraprocedural_path (event_pp.get ());
 
-  pp_show_color (global_dc->printer) = saved_show_color;
+  pp_show_color (global_pp) = saved_show_color;
 }
 
 } // namespace selftest

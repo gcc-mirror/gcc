@@ -3056,7 +3056,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fmessage_length_:
-      pp_set_line_maximum_length (dc->printer, value);
+      pp_set_line_maximum_length (dc->m_printer, value);
       diagnostic_set_caret_max_width (dc, value);
       break;
 

@@ -109,7 +109,7 @@ uncertainty_t::dump (bool simple) const
 {
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
   pp.set_output_stream (stderr);
   dump_to_pp (&pp, simple);
   pp_newline (&pp);
@@ -146,7 +146,7 @@ binding_key::dump (bool simple) const
 {
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
   pp.set_output_stream (stderr);
   dump_to_pp (&pp, simple);
   pp_newline (&pp);
@@ -775,7 +775,7 @@ binding_map::dump (bool simple) const
 {
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
   pp.set_output_stream (stderr);
   dump_to_pp (&pp, simple, true);
   pp_newline (&pp);
@@ -1402,7 +1402,7 @@ binding_cluster::dump (bool simple) const
 {
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
   pp.set_output_stream (stderr);
   pp_string (&pp, "  cluster for: ");
   m_base_region->dump_to_pp (&pp, simple);
@@ -2638,7 +2638,7 @@ store::dump (bool simple) const
 {
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
   pp.set_output_stream (stderr);
   dump_to_pp (&pp, simple, true, NULL);
   pp_newline (&pp);
