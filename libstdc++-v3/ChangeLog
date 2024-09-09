@@ -1,3 +1,14 @@
+2024-09-08  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-08-03  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/move.h (__like_impl): New metafunction.
+	(__like_t): Redefine in terms of __like_impl.
+	(forward_like): Redefine in terms of __like_t.
+	* testsuite/20_util/forward_like/2_neg.cc: Don't expect
+	error outside the immediate context anymore.
+
 2024-09-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

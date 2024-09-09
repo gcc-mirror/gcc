@@ -1,3 +1,21 @@
+2024-09-08  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-08-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116320
+	* g++.dg/template/access42.C: New test.
+
+2024-09-08  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-08-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116276
+	* g++.dg/cpp23/class-deduction-inherited4.C: Remove an xfail.
+	* g++.dg/cpp23/class-deduction-inherited5.C: New test.
+	* g++.dg/cpp23/class-deduction-inherited6.C: New test.
+
 2024-09-07  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/116567
