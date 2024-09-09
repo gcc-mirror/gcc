@@ -2221,7 +2221,10 @@ sarif_builder::get_sarif_column (expanded_location exploc) const
    or return nullptr.
 
    If COLUMN_OVERRIDE is non-zero, then use it as the column number
-   if LOC has no column information.  */
+   if LOC has no column information.
+
+   We only support text properties of regions ("text regions"),
+   not binary properties ("binary regions"); see 3.30.1.  */
 
 std::unique_ptr<sarif_region>
 sarif_builder::maybe_make_region_object (location_t loc,
@@ -2244,11 +2247,16 @@ sarif_builder::maybe_make_region_object (location_t loc,
   if (exploc_finish.file !=exploc_caret.file)
     return nullptr;
 
+  /* We can have line == 0 in the presence of "#" lines.
+     SARIF requires lines > 0, so if we hit this case we don't have a
+     way of validly representing the region as SARIF; bail out.  */
+  if (exploc_start.line <= 0)
+    return nullptr;
+
   auto region_obj = ::make_unique<sarif_region> ();
 
   /* "startLine" property (SARIF v2.1.0 section 3.30.5) */
-  if (exploc_start.line > 0)
-    region_obj->set_integer ("startLine", exploc_start.line);
+  region_obj->set_integer ("startLine", exploc_start.line);
 
   /* "startColumn" property (SARIF v2.1.0 section 3.30.6).
 
@@ -2316,11 +2324,16 @@ maybe_make_region_object_for_context (location_t loc,
   if (exploc_finish.file !=exploc_caret.file)
     return nullptr;
 
+  /* We can have line == 0 in the presence of "#" lines.
+     SARIF requires lines > 0, so if we hit this case we don't have a
+     way of validly representing the region as SARIF; bail out.  */
+  if (exploc_start.line <= 0)
+    return nullptr;
+
   auto region_obj = ::make_unique<sarif_region> ();
 
   /* "startLine" property (SARIF v2.1.0 section 3.30.5) */
-  if (exploc_start.line > 0)
-    region_obj->set_integer ("startLine", exploc_start.line);
+  region_obj->set_integer ("startLine", exploc_start.line);
 
   /* "endLine" property (SARIF v2.1.0 section 3.30.7) */
   if (exploc_finish.line != exploc_start.line
@@ -2627,7 +2640,7 @@ sarif_builder::make_multiformat_message_string (const char *msg) const
   return message_obj;
 }
 
-#define SARIF_SCHEMA "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json"
+#define SARIF_SCHEMA "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json"
 #define SARIF_VERSION "2.1.0"
 
 /* Make a top-level "sarifLog" object (SARIF v2.1.0 section 3.13).  */
