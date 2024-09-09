@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-forwprop1-details" } */
+/* Make this work for default 'LOGICAL_OP_NON_SHORT_CIRCUIT == false' configurations:
+   { dg-additional-options "--param logical-op-non-short-circuit=1" } */
 
 int is_ordered_and_nonequal_sh_1 (float a, float b)
 {
