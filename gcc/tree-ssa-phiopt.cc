@@ -97,7 +97,7 @@ replace_phi_edge_with_variable (basic_block cond_block,
 {
   basic_block bb = gimple_bb (phi);
   gimple_stmt_iterator gsi;
-  tree phi_result = PHI_RESULT (phi);
+  tree phi_result = gimple_phi_result (phi);
   bool deleteboth = false;
 
   /* Duplicate range info if they are the only things setting the target PHI.
@@ -373,7 +373,7 @@ factor_out_conditional_operation (edge e0, edge e1, gphi *phi,
     return NULL;
 
   /* Create a new PHI stmt.  */
-  result = PHI_RESULT (phi);
+  result = gimple_phi_result (phi);
   temp = make_ssa_name (TREE_TYPE (new_arg0), NULL);
 
   gimple_match_op new_op = arg0_op;
@@ -1684,7 +1684,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb, basic_block alt_
   tree smaller, larger, arg_true, arg_false;
   gimple_stmt_iterator gsi, gsi_from;
 
-  tree type = TREE_TYPE (PHI_RESULT (phi));
+  tree type = TREE_TYPE (gimple_phi_result (phi));
 
   gcond *cond = as_a <gcond *> (*gsi_last_bb (cond_bb));
   enum tree_code cmp = gimple_cond_code (cond);
@@ -2022,7 +2022,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb, basic_block alt_
       /* Emit the statement to compute min/max.  */
       location_t locus = gimple_location (last_nondebug_stmt (cond_bb));
       gimple_seq stmts = NULL;
-      tree phi_result = PHI_RESULT (phi);
+      tree phi_result = gimple_phi_result (phi);
       result = gimple_build (&stmts, locus, minmax, TREE_TYPE (phi_result),
 			     arg0, arg1);
       result = gimple_build (&stmts, locus, ass_code, TREE_TYPE (phi_result),
@@ -2224,7 +2224,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb, basic_block alt_
 
   /* Emit the statement to compute min/max.  */
   gimple_seq stmts = NULL;
-  tree phi_result = PHI_RESULT (phi);
+  tree phi_result = gimple_phi_result (phi);
 
   /* When we can't use a MIN/MAX_EXPR still make sure the expression
      stays in a form to be recognized by ISA that map to IEEE x > y ? x : y
@@ -2298,7 +2298,7 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 		       edge e0, edge e1, gphi *phi,
 		       tree arg0, tree arg1)
 {
-  tree phires = PHI_RESULT (phi);
+  tree phires = gimple_phi_result (phi);
   if (!INTEGRAL_TYPE_P (TREE_TYPE (phires))
       || TYPE_UNSIGNED (TREE_TYPE (phires))
       || !tree_fits_shwi_p (arg0)
@@ -3399,7 +3399,7 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
   add_phi_arg (newphi, rhs, e0, locus);
   add_phi_arg (newphi, name, e1, locus);
 
-  new_stmt = gimple_build_assign (lhs, PHI_RESULT (newphi));
+  new_stmt = gimple_build_assign (lhs, gimple_phi_result (newphi));
 
   /* 4) Insert that PHI node.  */
   gsi = gsi_after_labels (join_bb);
@@ -3481,7 +3481,7 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
   add_phi_arg (newphi, then_rhs, EDGE_SUCC (then_bb, 0), then_locus);
   add_phi_arg (newphi, else_rhs, EDGE_SUCC (else_bb, 0), else_locus);
 
-  new_stmt = gimple_build_assign (lhs, PHI_RESULT (newphi));
+  new_stmt = gimple_build_assign (lhs, gimple_phi_result (newphi));
 
   /* 3) Insert that PHI node.  */
   gsi = gsi_after_labels (join_bb);
