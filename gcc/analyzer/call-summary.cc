@@ -724,8 +724,6 @@ call_summary_replay::convert_region_from_summary_1 (const region *summary_reg)
       break;
     case RK_CAST:
       {
-	const cast_region *summary_cast_reg
-	  = as_a <const cast_region *> (summary_reg);
 	const region *summary_parent_reg = summary_reg->get_parent_region ();
 	const region *caller_parent_reg
 	  = convert_region_from_summary (summary_parent_reg);
