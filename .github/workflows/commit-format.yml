@@ -96,11 +96,9 @@ jobs:
             echo -n "$f : "
                if awk 'BEGIN { in_footer = 0; error = 0;}
                        { DEFAULT = 1; }
-                       /^Signed-off-by/ { in_footer = 1; DEFAULT = 0;}
-                       /^Co-authored-by/ { in_footer = 1; DEFAULT = 0;}
-                       /^Reviewed-by/  { in_footer = 1; DEFAULT = 0;}
+                       /^(Signed-off|Co-authored|Reviewed|Tested)-by/ { in_footer = 1; DEFAULT = 0;}
                        /^\s*$/  { DEFAULT = 0; }
-                       DEFAULT { if (in_footer == 1) { printf $0 " appears after some Signed-off-by/Co-authored-by line "; error = 1; exit (1);} }';
+                       DEFAULT { if (in_footer == 1) { printf $0 " appears after some Signed-off-by/Co-authored-by/Tested-by/Reviewed-by line "; error = 1; exit (1);} }';
                then
                    echo OK
                else
