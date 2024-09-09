@@ -11022,14 +11022,13 @@ pa_legitimate_address_p (machine_mode mode, rtx x, bool strict, code_helper)
 	return true;
 
       if (!TARGET_DISABLE_INDEXING
-	  && GET_CODE (index) == MULT
 	  /* Only accept base operands with the REG_POINTER flag prior to
 	     reload on targets with non-equivalent space registers.  */
 	  && (TARGET_NO_SPACE_REGS
-	      || (base == XEXP (x, 1)
-		  && (reload_completed
-		      || (reload_in_progress && HARD_REGISTER_P (base))
-		      || REG_POINTER (base))))
+	      || reload_completed
+	      || (reload_in_progress && HARD_REGISTER_P (base))
+	      || REG_POINTER (base))
+	  && GET_CODE (index) == MULT
 	  && REG_P (XEXP (index, 0))
 	  && GET_MODE (XEXP (index, 0)) == Pmode
 	  && MODE_OK_FOR_SCALED_INDEXING_P (mode)
