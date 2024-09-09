@@ -1,3 +1,12 @@
+2024-09-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/116621
+	* gcc.target/i386/pr116621.c: New test.
+
+2024-09-08  Jørgen Kvalsvik  <j@lambda.is>
+
+	* gcc.misc-tests/gcov-23.c: Use dg-compile, not gcc -c
+
 2024-09-07  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	* gcc.dg/pr116588.c: Require int128.

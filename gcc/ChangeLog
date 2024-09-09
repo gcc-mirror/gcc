@@ -1,3 +1,16 @@
+2024-09-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/116621
+	* config/i386/i386.cc (ix86_gimplify_va_arg): Don't use temp for
+	a PARALLEL BLKmode container of an EXPR_LIST expression in a
+	TImode register.
+
+2024-09-08  Jørgen Kvalsvik  <j@lambda.is>
+
+	* gcov.cc (release_structures): Release source_lines.
+	(slurp): New function.
+	(output_lines): Read sources with slurp.
+
 2024-09-07  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	* gimple-ssa-split-paths.cc (is_feasible_trace): Fix wording
