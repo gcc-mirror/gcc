@@ -36,14 +36,14 @@
 // ISO C++ 14882: 20.4.6  C library
 //
 
+#ifndef _GLIBCXX_CSTRING
+#define _GLIBCXX_CSTRING 1
+
 #pragma GCC system_header
 
 #define __glibcxx_want_freestanding_cstring
 #include <bits/version.h>
 #include <string.h>
-
-#ifndef _GLIBCXX_CSTRING
-#define _GLIBCXX_CSTRING 1
 
 // Get rid of those macros defined in <string.h> in lieu of real functions.
 #undef memchr

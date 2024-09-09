@@ -36,6 +36,9 @@
 // ISO C++ 14882: 26.5  C library
 //
 
+#ifndef _GLIBCXX_CMATH
+#define _GLIBCXX_CMATH 1
+
 #pragma GCC system_header
 
 #include <bits/requires_hosted.h>
@@ -52,9 +55,6 @@
 #pragma GCC diagnostic pop
 
 #include <bits/std_abs.h>
-
-#ifndef _GLIBCXX_CMATH
-#define _GLIBCXX_CMATH 1
 
 #define __glibcxx_want_hypot
 #define __glibcxx_want_interpolate

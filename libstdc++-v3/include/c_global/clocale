@@ -36,13 +36,13 @@
 // ISO C++ 14882: 18.2.2  Implementation properties: C library
 //
 
+#ifndef _GLIBCXX_CLOCALE
+#define _GLIBCXX_CLOCALE 1
+
 #pragma GCC system_header
 
 #include <bits/c++config.h>
 #include <locale.h>
-
-#ifndef _GLIBCXX_CLOCALE
-#define _GLIBCXX_CLOCALE 1
 
 // Get rid of those macros defined in <locale.h> in lieu of real functions.
 #undef setlocale

@@ -26,6 +26,9 @@
  *  This is a Standard C++ Library header.
  */
 
+#ifndef _GLIBCXX_TGMATH_H
+#define _GLIBCXX_TGMATH_H 1
+
 #include <bits/c++config.h>
 
 #if __cplusplus >= 201103L
@@ -35,8 +38,5 @@
 #  include_next <tgmath.h>
 # endif
 #endif
-
-#ifndef _GLIBCXX_TGMATH_H
-#define _GLIBCXX_TGMATH_H 1
 
 #endif

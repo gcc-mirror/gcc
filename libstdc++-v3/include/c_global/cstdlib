@@ -36,12 +36,12 @@
 // ISO C++ 14882: 20.4.6  C library
 //
 
+#ifndef _GLIBCXX_CSTDLIB
+#define _GLIBCXX_CSTDLIB 1
+
 #pragma GCC system_header
 
 #include <bits/c++config.h>
-
-#ifndef _GLIBCXX_CSTDLIB
-#define _GLIBCXX_CSTDLIB 1
 
 #if !_GLIBCXX_HOSTED
 // The C standard does not require a freestanding implementation to
