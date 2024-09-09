@@ -1093,11 +1093,11 @@ general_init (const char *argv0, bool init_signals, unique_argv original_argv)
     (global_options_init.x_flag_diagnostics_show_highlight_colors);
   global_dc->m_internal_error = internal_error_function;
   const unsigned lang_mask = lang_hooks.option_lang_mask ();
-  global_dc->set_option_hooks (option_enabled,
-			       &global_options,
-			       option_name,
-			       get_option_url,
-			       lang_mask);
+  global_dc->set_option_manager
+    (new compiler_diagnostic_option_manager (*global_dc,
+					     lang_mask,
+					     &global_options),
+     lang_mask);
   global_dc->set_urlifier (make_gcc_urlifier (lang_mask));
 
   if (init_signals)

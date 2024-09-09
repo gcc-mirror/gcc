@@ -181,14 +181,34 @@ typedef void (*diagnostic_finalizer_fn) (diagnostic_context *,
 					 const diagnostic_info *,
 					 diagnostic_t);
 
-typedef int (*diagnostic_option_enabled_cb) (int, unsigned, void *);
-typedef char *(*diagnostic_make_option_name_cb) (const diagnostic_context *,
-						 int,
-						 diagnostic_t,
-						 diagnostic_t);
-typedef char *(*diagnostic_make_option_url_cb) (const diagnostic_context *,
-						int,
-						unsigned);
+/* Abstract base class for the diagnostic subsystem to make queries
+   about command-line options.  */
+
+class diagnostic_option_manager
+{
+public:
+  virtual ~diagnostic_option_manager () {}
+
+  /* Return 1 if option OPT_IDX is enabled, 0 if it is disabled,
+     or -1 if it isn't a simple on-off switch
+     (or if the value is unknown, typically set later in target).  */
+  virtual int option_enabled_p (int opt_idx) const = 0;
+
+  /* Return malloced memory for the name of the option OPT_IDX
+     which enabled a diagnostic, originally of type ORIG_DIAG_KIND but
+     possibly converted to DIAG_KIND by options such as -Werror.
+     May return NULL if no name is to be printed.
+     May be passed 0 as well as the index of a particular option.  */
+  virtual char *make_option_name (int opt_idx,
+				  diagnostic_t orig_diag_kind,
+				  diagnostic_t diag_kind) const = 0;
+
+  /* Return malloced memory for a URL describing the option that controls
+     a diagnostic.
+     May return NULL if no URL is available.
+     May be passed 0 as well as the index of a particular option.  */
+  virtual char *make_option_url (int opt_idx) const = 0;
+};
 
 class edit_context;
 namespace json { class value; }
@@ -489,43 +509,36 @@ public:
   /* Option-related member functions.  */
   inline bool option_enabled_p (int option_index) const
   {
-    if (!m_option_callbacks.m_option_enabled_cb)
+    if (!m_option_mgr)
       return true;
-    return m_option_callbacks.m_option_enabled_cb
-      (option_index,
-       m_option_callbacks.m_lang_mask,
-       m_option_callbacks.m_option_state);
+    return m_option_mgr->option_enabled_p (option_index);
   }
 
   inline char *make_option_name (int option_index,
 				diagnostic_t orig_diag_kind,
 				diagnostic_t diag_kind) const
   {
-    if (!m_option_callbacks.m_make_option_name_cb)
+    if (!m_option_mgr)
       return nullptr;
-    return m_option_callbacks.m_make_option_name_cb (this, option_index,
-						     orig_diag_kind,
-						     diag_kind);
+    return m_option_mgr->make_option_name (option_index,
+					   orig_diag_kind,
+					   diag_kind);
   }
 
   inline char *make_option_url (int option_index) const
   {
-    if (!m_option_callbacks.m_make_option_url_cb)
+    if (!m_option_mgr)
       return nullptr;
-    return m_option_callbacks.m_make_option_url_cb (this, option_index,
-						    get_lang_mask ());
+    return m_option_mgr->make_option_url (option_index);
   }
 
   void
-  set_option_hooks (diagnostic_option_enabled_cb option_enabled_cb,
-		    void *option_state,
-		    diagnostic_make_option_name_cb make_option_name_cb,
-		    diagnostic_make_option_url_cb make_option_url_cb,
-		    unsigned lang_mask);
+  set_option_manager (diagnostic_option_manager *mgr,
+		      unsigned lang_mask);
 
   unsigned get_lang_mask () const
   {
-    return m_option_callbacks.m_lang_mask;
+    return m_lang_mask;
   }
 
   label_text get_location_text (const expanded_location &s) const;
@@ -656,33 +669,8 @@ public:
   void (*m_adjust_diagnostic_info)(diagnostic_context *, diagnostic_info *);
 
 private:
-  /* Client-supplied callbacks for working with options.  */
-  struct {
-    /* Client hook to say whether the option controlling a diagnostic is
-       enabled.  Returns nonzero if enabled, zero if disabled.  */
-    diagnostic_option_enabled_cb m_option_enabled_cb;
-
-    /* Client information to pass as second argument to
-       m_option_enabled_cb.  */
-    void *m_option_state;
-
-    /* Client hook to return the name of an option that controls a
-       diagnostic.  Returns malloced memory.  The first diagnostic_t
-       argument is the kind of diagnostic before any reclassification
-       (of warnings as errors, etc.); the second is the kind after any
-       reclassification.  May return NULL if no name is to be printed.
-       May be passed 0 as well as the index of a particular option.  */
-    diagnostic_make_option_name_cb m_make_option_name_cb;
-
-    /* Client hook to return a URL describing the option that controls
-       a diagnostic.  Returns malloced memory.  May return NULL if no URL
-       is available.  May be passed 0 as well as the index of a
-       particular option.  */
-    diagnostic_make_option_url_cb m_make_option_url_cb;
-
-    /* A copy of lang_hooks.option_lang_mask ().  */
-    unsigned m_lang_mask;
-  } m_option_callbacks;
+  diagnostic_option_manager *m_option_mgr;
+  unsigned m_lang_mask;
 
   /* An optional hook for adding URLs to quoted text strings in
      diagnostics.  Only used for the main diagnostic message.  */

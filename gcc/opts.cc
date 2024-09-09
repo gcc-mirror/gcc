@@ -3699,13 +3699,15 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
 }
 
 /* Return malloced memory for the name of the option OPTION_INDEX
-   which enabled a diagnostic (context CONTEXT), originally of type
+   which enabled a diagnostic, originally of type
    ORIG_DIAG_KIND but possibly converted to DIAG_KIND by options such
    as -Werror.  */
 
 char *
-option_name (const diagnostic_context *context, int option_index,
-	     diagnostic_t orig_diag_kind, diagnostic_t diag_kind)
+compiler_diagnostic_option_manager::
+make_option_name (int option_index,
+		  diagnostic_t orig_diag_kind,
+		  diagnostic_t diag_kind) const
 {
   if (option_index)
     {
@@ -3723,7 +3725,7 @@ option_name (const diagnostic_context *context, int option_index,
   /* A warning without option classified as an error.  */
   else if ((orig_diag_kind == DK_WARNING || orig_diag_kind == DK_PEDWARN
 	    || diag_kind == DK_WARNING)
-	   && context->warning_as_error_requested_p ())
+	   && m_context.warning_as_error_requested_p ())
     return xstrdup (cl_options[OPT_Werror].opt_text);
   else
     return NULL;
@@ -3776,16 +3778,14 @@ get_option_url_suffix (int option_index, unsigned lang_mask)
 }
 
 /* Return malloced memory for a URL describing the option OPTION_INDEX
-   which enabled a diagnostic (context CONTEXT).  */
+   which enabled a diagnostic.  */
 
 char *
-get_option_url (const diagnostic_context *,
-		int option_index,
-		unsigned lang_mask)
+gcc_diagnostic_option_manager::make_option_url (int option_index) const
 {
   if (option_index)
     {
-      label_text url_suffix = get_option_url_suffix (option_index, lang_mask);
+      label_text url_suffix = get_option_url_suffix (option_index, m_lang_mask);
       if (url_suffix.get ())
 	return concat (DOCUMENTATION_ROOT_URL, url_suffix.get (), nullptr);
     }

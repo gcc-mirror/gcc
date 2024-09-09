@@ -226,10 +226,7 @@ diagnostic_context::initialize (int n_opts)
   m_text_callbacks.m_begin_diagnostic = default_diagnostic_starter;
   m_text_callbacks.m_start_span = default_diagnostic_start_span_fn;
   m_text_callbacks.m_end_diagnostic = default_diagnostic_finalizer;
-  m_option_callbacks.m_option_enabled_cb = nullptr;
-  m_option_callbacks.m_option_state = nullptr;
-  m_option_callbacks.m_make_option_name_cb = nullptr;
-  m_option_callbacks.m_make_option_url_cb = nullptr;
+  m_option_mgr = nullptr;
   m_urlifier = nullptr;
   m_last_location = UNKNOWN_LOCATION;
   m_last_module = nullptr;
@@ -446,18 +443,12 @@ diagnostic_context::set_original_argv (unique_argv original_argv)
 }
 
 void
-diagnostic_context::
-set_option_hooks (diagnostic_option_enabled_cb option_enabled_cb,
-		  void *option_state,
-		  diagnostic_make_option_name_cb make_option_name_cb,
-		  diagnostic_make_option_url_cb make_option_url_cb,
-		  unsigned lang_mask)
+diagnostic_context::set_option_manager (diagnostic_option_manager *mgr,
+					unsigned lang_mask)
 {
-  m_option_callbacks.m_option_enabled_cb = option_enabled_cb;
-  m_option_callbacks.m_option_state = option_state;
-  m_option_callbacks.m_make_option_name_cb = make_option_name_cb;
-  m_option_callbacks.m_make_option_url_cb = make_option_url_cb;
-  m_option_callbacks.m_lang_mask = lang_mask;
+  delete m_option_mgr;
+  m_option_mgr = mgr;
+  m_lang_mask = lang_mask;
 }
 
 void
