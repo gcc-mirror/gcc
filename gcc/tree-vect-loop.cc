@@ -4325,7 +4325,8 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 	  && is_a <gphi *> (phi_use_stmt)
 	  && flow_bb_inside_loop_p (loop->inner, gimple_bb (phi_use_stmt))
 	  && (op1 == PHI_ARG_DEF_FROM_EDGE (phi_use_stmt,
-					    loop_latch_edge (loop->inner))))
+					    loop_latch_edge (loop->inner)))
+	  && lcphis.length () == 1)
         {
           if (dump_enabled_p ())
             report_vect_op (MSG_NOTE, def_stmt,
