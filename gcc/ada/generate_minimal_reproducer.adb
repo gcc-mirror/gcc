@@ -29,6 +29,7 @@ with Lib;
 with Namet; use Namet;
 with Osint; use Osint;
 with Output; use Output;
+with Sinfo.Nodes;
 with System.CRTL;
 with System.OS_Lib; use System.OS_Lib;
 with Types; use Types;
@@ -126,8 +127,16 @@ begin
 
             File_Copy_Path : constant String :=
               Src_Dir_Path & Directory_Separator & Default_File_Name;
+
+            --  We may have synthesized units for child subprograms without
+            --  spec files. We need to filter out those units because we would
+            --  create bogus spec files that break compilation if we didn't.
+            Is_Synthetic_Subprogram_Spec : constant Boolean :=
+              not Sinfo.Nodes.Comes_From_Source (Lib.Cunit (J));
          begin
-            if not Lib.Is_Internal_Unit (J) then
+            if not Lib.Is_Internal_Unit (J)
+              and then not Is_Synthetic_Subprogram_Spec
+            then
                --  Mapped_Path_Name might have returned No_File. This has been
                --  observed for files with a Source_File_Name pragma.
                if Path = No_File then
