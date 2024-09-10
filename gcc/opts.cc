@@ -3070,11 +3070,14 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_foffload_abi_:
+    case OPT_foffload_abi_host_opts_:
 #ifdef ACCEL_COMPILER
       /* Handled in the 'mkoffload's.  */
 #else
-      error_at (loc, "%<-foffload-abi%> option can be specified only for "
-		"offload compiler");
+      error_at (loc,
+		"%qs option can be specified only for offload compiler",
+		(code == OPT_foffload_abi_) ? "-foffload-abi"
+					    : "-foffload-abi-host-opts");
 #endif
       break;
 

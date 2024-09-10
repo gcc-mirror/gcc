@@ -3680,8 +3680,8 @@ char *
 ix86_offload_options (void)
 {
   if (TARGET_LP64)
-    return xstrdup ("-foffload-abi=lp64");
-  return xstrdup ("-foffload-abi=ilp32");
+    return xstrdup ("-foffload-abi=lp64 -foffload-abi-host-opts=-m64");
+  return xstrdup ("-foffload-abi=ilp32 -foffload-abi-host-opts=-m32");
 }
 
 /* Handle "cdecl", "stdcall", "fastcall", "regparm", "thiscall",

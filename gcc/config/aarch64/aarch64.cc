@@ -19000,9 +19000,9 @@ static char *
 aarch64_offload_options (void)
 {
   if (TARGET_ILP32)
-    return xstrdup ("-foffload-abi=ilp32");
+    return xstrdup ("-foffload-abi=ilp32 -foffload-abi-host-opts=-mabi=ilp32");
   else
-    return xstrdup ("-foffload-abi=lp64");
+    return xstrdup ("-foffload-abi=lp64 -foffload-abi-host-opts=-mabi=lp64");
 }
 
 static struct machine_function *

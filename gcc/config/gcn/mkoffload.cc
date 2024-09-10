@@ -133,6 +133,8 @@ static const char *gcn_dumpbase;
 static struct obstack files_to_cleanup;
 
 enum offload_abi offload_abi = OFFLOAD_ABI_UNSET;
+const char *offload_abi_host_opts = NULL;
+
 uint32_t elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX900;  // Default GPU architecture.
 uint32_t elf_flags = EF_AMDGPU_FEATURE_SRAMECC_UNSUPPORTED_V4;
 
@@ -819,17 +821,10 @@ compile_native (const char *infile, const char *outfile, const char *compiler,
   obstack_ptr_grow (&argv_obstack, gcn_dumpbase);
   obstack_ptr_grow (&argv_obstack, "-dumpbase-ext");
   obstack_ptr_grow (&argv_obstack, ".c");
-  switch (offload_abi)
-    {
-    case OFFLOAD_ABI_LP64:
-      obstack_ptr_grow (&argv_obstack, "-m64");
-      break;
-    case OFFLOAD_ABI_ILP32:
-      obstack_ptr_grow (&argv_obstack, "-m32");
-      break;
-    default:
-      gcc_unreachable ();
-    }
+  if (!offload_abi_host_opts)
+    fatal_error (input_location,
+		 "%<-foffload-abi-host-opts%> not specified.");
+  obstack_ptr_grow (&argv_obstack, offload_abi_host_opts);
   obstack_ptr_grow (&argv_obstack, infile);
   obstack_ptr_grow (&argv_obstack, "-c");
   obstack_ptr_grow (&argv_obstack, "-o");
@@ -998,6 +993,15 @@ main (int argc, char **argv)
 			 "unrecognizable argument of option %<" STR "%>");
 	}
 #undef STR
+      else if (startswith (argv[i], "-foffload-abi-host-opts="))
+	{
+	  if (offload_abi_host_opts)
+	    fatal_error (input_location,
+			 "%<-foffload-abi-host-opts%> specified "
+			 "multiple times");
+	  offload_abi_host_opts
+	    = argv[i] + strlen ("-foffload-abi-host-opts=");
+	}
       else if (strcmp (argv[i], "-fopenmp") == 0)
 	fopenmp = true;
       else if (strcmp (argv[i], "-fopenacc") == 0)

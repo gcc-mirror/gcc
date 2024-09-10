@@ -2361,6 +2361,10 @@ Enum(offload_abi) String(ilp32) Value(OFFLOAD_ABI_ILP32)
 EnumValue
 Enum(offload_abi) String(lp64) Value(OFFLOAD_ABI_LP64)
 
+foffload-abi-host-opts=
+Common Joined MissingArgError(option missing after %qs)
+-foffload-abi-host-opts=<options>	Specify host ABI options.
+
 fomit-frame-pointer
 Common Var(flag_omit_frame_pointer) Optimization
 When possible do not generate stack frames.
