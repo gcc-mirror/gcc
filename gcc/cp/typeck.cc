@@ -4175,10 +4175,23 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function,
       if (!nonvirtual && is_dummy_object (instance_ptr))
 	nonvirtual = true;
 
-      if (TREE_SIDE_EFFECTS (instance_ptr))
-	instance_ptr = instance_save_expr = save_expr (instance_ptr);
+      /* Use save_expr even when instance_ptr doesn't have side-effects,
+	 unless it is a simple decl (save_expr won't do anything on
+	 constants), so that we don't ubsan instrument the expression
+	 multiple times.  See PR116449.  */
+      if (TREE_SIDE_EFFECTS (instance_ptr)
+	  || (!nonvirtual && !DECL_P (instance_ptr)))
+	{
+	  instance_save_expr = save_expr (instance_ptr);
+	  if (instance_save_expr == instance_ptr)
+	    instance_save_expr = NULL_TREE;
+	  else
+	    instance_ptr = instance_save_expr;
+	}
 
-      if (TREE_SIDE_EFFECTS (function))
+      /* See above comment.  */
+      if (TREE_SIDE_EFFECTS (function)
+	  || (!nonvirtual && !DECL_P (function)))
 	function = save_expr (function);
 
       /* Start by extracting all the information from the PMF itself.  */
