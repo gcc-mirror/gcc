@@ -8,10 +8,8 @@
 /*
 ** vec_sat_u_sub_uint16_t_fmt_2:
 ** ...
-** vsetvli\s+[atx][0-9]+,\s*[atx][0-9]+,\s*e16,\s*m1,\s*ta,\s*ma
+** vsetvli\s+[atx][0-9]+,\s*zero,\s*e16,\s*m1,\s*ta,\s*ma
 ** ...
-** vle16\.v\s+v[0-9]+,\s*0\([atx][0-9]+\)
-** vle16\.v\s+v[0-9]+,\s*0\([atx][0-9]+\)
 ** vssubu\.vv\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+
 ** ...
 */

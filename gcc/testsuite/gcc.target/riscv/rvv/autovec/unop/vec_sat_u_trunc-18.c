@@ -8,10 +8,9 @@
 /*
 ** vec_sat_u_trunc_uint32_t_uint64_t_fmt_3:
 ** ...
-** vsetvli\s+[atx][0-9]+,\s*[atx][0-9]+,\s*e32,\s*mf2,\s*ta,\s*ma
-** vle64\.v\s+v[0-9]+,\s*0\([atx][0-9]+\)
+** vsetvli\s+[atx][0-9]+,\s*zero,\s*e32,\s*mf2,\s*ta,\s*ma
+** ...
 ** vnclipu\.wi\s+v[0-9]+,\s*v[0-9]+,\s*0
-** vse32\.v\s+v[0-9]+,\s*0\([atx][0-9]+\)
 ** ...
 */
 DEF_VEC_SAT_U_TRUNC_FMT_3 (uint32_t, uint64_t)

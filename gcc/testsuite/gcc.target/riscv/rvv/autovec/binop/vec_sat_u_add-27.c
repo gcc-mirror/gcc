@@ -8,10 +8,8 @@
 /*
 ** vec_sat_u_add_uint32_t_fmt_7:
 ** ...
-** vsetvli\s+[atx][0-9]+,\s*[atx][0-9]+,\s*e32,\s*m1,\s*ta,\s*ma
+** vsetvli\s+[atx][0-9]+,\s*zero,\s*e32,\s*m1,\s*ta,\s*ma
 ** ...
-** vle32\.v\s+v[0-9]+,\s*0\([atx][0-9]+\)
-** vle32\.v\s+v[0-9]+,\s*0\([atx][0-9]+\)
 ** vsaddu\.vv\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+
 ** ...
 */
