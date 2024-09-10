@@ -365,10 +365,9 @@ namespace __format
 
 /// @cond undocumented
   template<typename _Tp, template<typename...> class _Class>
-    static constexpr bool __is_specialization_of = false;
+    constexpr bool __is_specialization_of = false;
   template<template<typename...> class _Class, typename... _Args>
-    static constexpr bool __is_specialization_of<_Class<_Args...>, _Class>
-      = true;
+    constexpr bool __is_specialization_of<_Class<_Args...>, _Class> = true;
 
 namespace __format
 {
