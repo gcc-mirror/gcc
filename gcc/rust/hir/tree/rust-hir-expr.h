@@ -93,6 +93,7 @@ class LiteralExpr : public ExprWithoutBlock
 {
   Literal literal;
   location_t locus;
+  bool negative_number = false;
 
 public:
   std::string as_string () const override
@@ -131,6 +132,14 @@ public:
   const Literal &get_literal () const { return literal; }
 
   ExprType get_expression_type () const override final { return ExprType::Lit; }
+
+  bool is_negative () const { return negative_number; }
+  void set_negative ()
+  {
+    rust_assert (get_lit_type () == Literal::LitType::INT
+		 || get_lit_type () == Literal::LitType::FLOAT);
+    negative_number = true;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
