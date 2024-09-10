@@ -5990,6 +5990,31 @@ avr_out_compare (rtx_insn *insn, rtx *xop, int *plen)
 	}
     }
 
+  /* Comparisons == and != may change the order in which the sub-bytes are
+     being compared.  Start with the high 16 bits so we can use SBIW.  */
+
+  if (n_bytes == 4
+      && compare_eq_p (insn)
+      && AVR_HAVE_ADIW
+      && REGNO (xreg) >= REG_22)
+    {
+      if (xval == const0_rtx)
+	return avr_asm_len ("sbiw %C0,0"           CR_TAB
+			    "cpc %B0,__zero_reg__" CR_TAB
+			    "cpc %A0,__zero_reg__", xop, plen, 3);
+
+      rtx xhi16 = simplify_gen_subreg (HImode, xval, mode, 2);
+      if (IN_RANGE (UINTVAL (xhi16) & GET_MODE_MASK (HImode), 0, 63)
+	  && reg_unused_after (insn, xreg))
+	{
+	  xop[1] = xhi16;
+	  avr_asm_len ("sbiw %C0,%1", xop, plen, 1);
+	  xop[1] = xval;
+	  return avr_asm_len ("sbci %B0,hi8(%1)" CR_TAB
+			      "sbci %A0,lo8(%1)", xop, plen, 2);
+	}
+    }
+
   for (int i = 0; i < n_bytes; i++)
     {
       /* We compare byte-wise.  */
