@@ -911,7 +911,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	      __str._M_data(__str._M_local_buf);
 	  }
 	else // Need to do a deep copy
-	  assign(__str);
+	  _M_assign(__str);
 	__str.clear();
 	return *this;
       }
