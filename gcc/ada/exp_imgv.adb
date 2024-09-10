@@ -2497,18 +2497,43 @@ package body Exp_Imgv is
       Attr_Name : Name_Id;
       Str_Typ   : Entity_Id)
    is
+      P    : Node_Id;
       Ptyp : Entity_Id;
 
    begin
-      Ptyp := Etype (Pref);
+      P    := Pref;
+      Ptyp := Etype (P);
+
+      --  If the type of the prefix is universal integer, which is a very large
+      --  type, try to compute a narrower type. This may happen when the prefix
+      --  itself is an attribute returning universal integer or a named number.
+
+      if Ptyp = Universal_Integer then
+         if Nkind (P) in N_Type_Conversion | N_Unchecked_Type_Conversion then
+            P    := Expression (P);
+            Ptyp := Etype (P);
+
+         elsif Nkind (P) = N_Integer_Literal then
+            declare
+               Val  : constant Uint    := Intval (P);
+               Neg  : constant Boolean := Val < Uint_0;
+               Bits : constant Nat     := Num_Bits (Val) + Boolean'Pos (Neg);
+
+            begin
+               if Bits <= System_Max_Integer_Size then
+                  Ptyp := Integer_Type_For (UI_From_Int (Bits), not Neg);
+               end if;
+            end;
+         end if;
+      end if;
 
       --  If the prefix is a component that depends on a discriminant, then
       --  create an actual subtype for it.
 
-      if Nkind (Pref) = N_Selected_Component then
+      if Nkind (P) = N_Selected_Component then
          declare
             Decl : constant Node_Id :=
-                     Build_Actual_Subtype_Of_Component (Ptyp, Pref);
+                     Build_Actual_Subtype_Of_Component (Ptyp, P);
          begin
             if Present (Decl) then
                Insert_Action (N, Decl);
@@ -2521,7 +2546,7 @@ package body Exp_Imgv is
         Make_Attribute_Reference (Sloc (N),
           Prefix         => New_Occurrence_Of (Ptyp, Sloc (N)),
           Attribute_Name => Attr_Name,
-          Expressions    => New_List (Unchecked_Convert_To (Ptyp, Pref))));
+          Expressions    => New_List (Unchecked_Convert_To (Ptyp, P))));
 
       Analyze_And_Resolve (N, Str_Typ);
    end Rewrite_Object_Image;
