@@ -1,3 +1,8 @@
+2024-09-09  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/116617
+	* doc/invoke.texi: Add meteorlake, raptorlake and lunarlake.
+
 2024-09-05  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
