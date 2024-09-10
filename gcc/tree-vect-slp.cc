@@ -3265,9 +3265,10 @@ calculate_unrolling_factor (poly_uint64 nunits, unsigned int group_size)
 static inline bool
 vect_is_slp_load_node  (slp_tree root)
 {
-  return SLP_TREE_DEF_TYPE (root) == vect_internal_def
-	 && STMT_VINFO_GROUPED_ACCESS (SLP_TREE_REPRESENTATIVE (root))
-	 && DR_IS_READ (STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (root)));
+  return (SLP_TREE_CODE (root) != VEC_PERM_EXPR
+	  && SLP_TREE_DEF_TYPE (root) == vect_internal_def
+	  && STMT_VINFO_GROUPED_ACCESS (SLP_TREE_REPRESENTATIVE (root))
+	  && DR_IS_READ (STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (root))));
 }
 
 
