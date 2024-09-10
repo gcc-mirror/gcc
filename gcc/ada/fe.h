@@ -179,8 +179,10 @@ extern void Get_Variant_Encoding	(Entity_Id);
 /* exp_tss: */
 
 #define Is_Init_Proc	exp_tss__is_init_proc
+#define Is_Rep_To_Pos	exp_tss__is_rep_to_pos
 
 extern Boolean Is_Init_Proc		(Entity_Id);
+extern Boolean Is_Rep_To_Pos		(Entity_Id);
 
 /* exp_util: */
 

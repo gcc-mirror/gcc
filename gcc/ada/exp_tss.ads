@@ -154,6 +154,11 @@ package Exp_Tss is
 
    --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
+   function Is_Rep_To_Pos (E : Entity_Id) return Boolean;
+   --  Version for Rep to Pos conversions, same as Is_TSS (E, TSS_Rep_To_Pos);
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function Is_TSS (E : Entity_Id; Nam : TSS_Name_Type) return Boolean;
    --  Determines if given entity (E) is the name of a TSS identified by Nam
 
