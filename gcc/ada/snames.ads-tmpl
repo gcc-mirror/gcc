@@ -680,6 +680,7 @@ package Snames is
    Name_Shared_Passive                 : constant Name_Id := N + $;
    Name_Side_Effects                   : constant Name_Id := N + $; -- GNAT
    Name_Simple_Storage_Pool_Type       : constant Name_Id := N + $; -- GNAT
+   Name_Simulate_Internal_Error        : constant Name_Id := N + $; -- GNAT
    Name_Source_Reference               : constant Name_Id := N + $; -- GNAT
    Name_Static_Elaboration_Desired     : constant Name_Id := N + $; -- GNAT
 
@@ -1952,6 +1953,7 @@ package Snames is
       Pragma_Shared_Passive,
       Pragma_Side_Effects,
       Pragma_Simple_Storage_Pool_Type,
+      Pragma_Simulate_Internal_Error,
       Pragma_Source_Reference,
       Pragma_Static_Elaboration_Desired,
       Pragma_Stream_Convert,
