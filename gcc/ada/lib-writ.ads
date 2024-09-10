@@ -1064,6 +1064,7 @@ package Lib.Writ is
 
    procedure Add_Preprocessing_Dependency (S : Source_File_Index);
    --  Indicate that there is a dependency to be added on a preprocessing data
-   --  file or on a preprocessing definition file.
+   --  file, on a preprocessing definition file or on a file included through
+   --  External_Initialization.
 
 end Lib.Writ;

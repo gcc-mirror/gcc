@@ -47,6 +47,7 @@ with Ghost;          use Ghost;
 with Itypes;         use Itypes;
 with Layout;         use Layout;
 with Lib;            use Lib;
+with Lib.Writ;
 with Lib.Xref;       use Lib.Xref;
 with Mutably_Tagged;    use Mutably_Tagged;
 with Namet;          use Namet;
@@ -3946,6 +3947,8 @@ package body Sem_Ch3 is
                   Error_Msg_N ("cannot find input file", Specification);
                   return;
                end if;
+
+               Lib.Writ.Add_Preprocessing_Dependency (Source_File_I);
 
                Expr :=
                  Make_External_Initializer
