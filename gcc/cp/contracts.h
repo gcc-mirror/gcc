@@ -265,6 +265,11 @@ enum contract_matching_context
 #define DECL_POST_FN(NODE) \
   (get_postcondition_function ((NODE)))
 
+/* For a FUNCTION_DECL of a guarded function, this holds the function decl
+   where caller contract checks are emitted.  */
+#define DECL_WRAPPER_FN(NODE) \
+  (get_contract_wrapper_function ((NODE)))
+
 /* True iff the FUNCTION_DECL is the pre function for a guarded function.  */
 #define DECL_IS_PRE_FN_P(NODE) \
   (DECL_ABSTRACT_ORIGIN (NODE) && DECL_PRE_FN (DECL_ABSTRACT_ORIGIN (NODE)) == NODE)
@@ -272,6 +277,12 @@ enum contract_matching_context
 /* True iff the FUNCTION_DECL is the post function for a guarded function.  */
 #define DECL_IS_POST_FN_P(NODE) \
   (DECL_ABSTRACT_ORIGIN (NODE) && DECL_POST_FN (DECL_ABSTRACT_ORIGIN (NODE)) == NODE)
+
+/* True iff the FUNCTION_DECL is the caller contract wrapper function
+  for a guarded function.  */
+#define DECL_IS_WRAPPER_FN_P(NODE) \
+  (DECL_ABSTRACT_ORIGIN (NODE) && DECL_WRAPPER_FN (DECL_ABSTRACT_ORIGIN (NODE)) == NODE)
+
 
 extern void remove_contract_attributes		(tree);
 extern void copy_contract_attributes		(tree, tree);
@@ -281,6 +292,7 @@ extern void rebuild_postconditions		(tree);
 extern bool check_postcondition_result		(tree, tree, location_t);
 extern tree get_precondition_function		(tree);
 extern tree get_postcondition_function		(tree);
+extern tree get_contract_wrapper_function	(tree);
 extern void duplicate_contracts			(tree, tree);
 extern void match_deferred_contracts		(tree);
 extern void defer_guarded_contract_match	(tree, tree, tree);
@@ -290,7 +302,7 @@ extern tree invalidate_contract			(tree);
 extern void update_late_contract		(tree, tree, tree);
 extern tree splice_out_contracts		(tree);
 extern bool all_attributes_are_contracts_p	(tree);
-extern void inherit_base_contracts		(tree, tree);
+extern void copy_and_remap_contracts		(tree, tree);
 //extern tree apply_postcondition_to_return	(tree);
 extern void start_function_contracts		(tree);
 extern void maybe_apply_function_contracts	(tree);
