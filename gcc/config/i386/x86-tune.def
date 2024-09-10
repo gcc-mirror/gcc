@@ -153,7 +153,8 @@ DEF_TUNE (X86_TUNE_FUSE_ALU_AND_BRANCH, "fuse_alu_and_branch",
 /* X86_TUNE_FUSE_MOV_AND_ALU: mov and alu in case mov is reg-reg mov
    and the destination is used by alu.  alu must be one of
    ADD, ADC, AND, XOR, OR, SUB, SBB, INC, DEC, NOT, SAL, SHL, SHR, SAR.  */
-DEF_TUNE (X86_TUNE_FUSE_MOV_AND_ALU, "fuse_mov_and_alu", m_ZNVER5)
+DEF_TUNE (X86_TUNE_FUSE_MOV_AND_ALU, "fuse_mov_and_alu",
+	 m_ZNVER5 | m_GRANITERAPIDS | m_GRANITERAPIDS_D)
 
 /*****************************************************************************/
 /* Function prologue, epilogue and function calling sequences.               */
