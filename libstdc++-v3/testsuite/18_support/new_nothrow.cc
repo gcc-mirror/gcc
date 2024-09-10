@@ -41,7 +41,15 @@ static void new_handler ()
         throw MyBadAlloc ();
 }
 
-void* operator new (size_t n)
+#if __cplusplus >= 201103L
+# define THROW_BAD_ALLOC noexcept(false)
+# define NOEXCEPT noexcept
+# else
+# define THROW_BAD_ALLOC throw(std::bad_alloc)
+# define NOEXCEPT throw()
+#endif
+
+void* operator new (size_t n) THROW_BAD_ALLOC
 {
     static size_t cntr;
 
@@ -64,12 +72,6 @@ void* operator new (size_t n)
     }
 }
 
-#if __cplusplus >= 201103L
-#define NOEXCEPT noexcept
-#else
-#define NOEXCEPT
-#endif
-
 void operator delete (void *p) NOEXCEPT
 {
     ++delete_called;
@@ -77,7 +79,7 @@ void operator delete (void *p) NOEXCEPT
         free (static_cast<size_t*>(p) - 1);
 }
 
-void* operator new[] (size_t n)
+void* operator new[] (size_t n) THROW_BAD_ALLOC
 {
     ++new_vec_called;
     return operator new(n);
