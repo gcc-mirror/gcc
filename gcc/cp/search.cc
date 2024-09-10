@@ -160,12 +160,16 @@ get_parent_with_private_access (tree decl, tree binfo)
 
   tree base_binfo = NULL_TREE;
 
-  /* Iterate through immediate parent classes.  */
+  /* Iterate through immediate parent classes.
+     Note that the base list might contain WILDCARD_TYPE_P types, that
+     should be ignored here.  */
   for (int i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
     {
+      tree base_binfo_type = BINFO_TYPE (base_binfo);
       /* This parent had private access.  Therefore that's why BINFO can't
 	  access DECL.  */
-      if (access_in_type (BINFO_TYPE (base_binfo), decl) == ak_private)
+      if (RECORD_OR_UNION_TYPE_P (base_binfo_type)
+	  && access_in_type (base_binfo_type, decl) == ak_private)
 	return base_binfo;
     }
 
