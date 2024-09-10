@@ -31,8 +31,8 @@ TEST_TYPE (uint16_t, 128)
 TEST_TYPE (int32_t, 128)
 TEST_TYPE (uint32_t, 128)
 
-/* { dg-final { scan-assembler-times {\tadd\tz[0-9]+\.b,} 6 } } */
-/* { dg-final { scan-assembler-times {\tlsl\tz[0-9]+\.b,} 6 } } */
+/* { dg-final { scan-assembler-times {\tadd\tz[0-9]+\.b,} 8 } } */
+/* { dg-final { scan-assembler-times {\tlsl\tz[0-9]+\.b,} 4 } } */
 
 /* { dg-final { scan-assembler-times {\tadr\tz[0-9]+\.s, \[z[0-9]+\.s, z[0-9]+\.s, lsl #?1\]\n} 4 } } */
 /* { dg-final { scan-assembler-times {\tadr\tz[0-9]+\.s, \[z[0-9]+\.s, z[0-9]+\.s, lsl #?2\]\n} 4 } } */

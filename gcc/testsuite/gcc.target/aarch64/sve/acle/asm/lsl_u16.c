@@ -296,7 +296,7 @@ TEST_UNIFORM_ZX (lsl_w0_u16_x_untied, svuint16_t, uint16_t,
 
 /*
 ** lsl_1_u16_x_tied1:
-**	lsl	z0\.h, z0\.h, #1
+**	add	z0\.h, z0\.h, z0\.h
 **	ret
 */
 TEST_UNIFORM_Z (lsl_1_u16_x_tied1, svuint16_t,
@@ -305,7 +305,7 @@ TEST_UNIFORM_Z (lsl_1_u16_x_tied1, svuint16_t,
 
 /*
 ** lsl_1_u16_x_untied:
-**	lsl	z0\.h, z1\.h, #1
+**	add	z0\.h, z1\.h, z1\.h
 **	ret
 */
 TEST_UNIFORM_Z (lsl_1_u16_x_untied, svuint16_t,
