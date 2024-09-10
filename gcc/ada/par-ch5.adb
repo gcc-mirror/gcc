@@ -257,8 +257,7 @@ package body Ch5 is
                   while Present (Decl) loop
                      if not (Nkind (Decl) in
                         N_Object_Declaration | N_Object_Renaming_Declaration |
-                        N_Use_Type_Clause | N_Use_Package_Clause |
-                        N_Representation_Clause)
+                        N_Use_Type_Clause | N_Use_Package_Clause)
                      then
                         Error_Msg
                           ("Declaration kind not allowed in statements lists",
