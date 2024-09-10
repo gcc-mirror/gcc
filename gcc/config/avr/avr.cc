@@ -153,16 +153,6 @@ static const char *out_movqi_mr_r (rtx_insn *, rtx[], int *);
 static const char *out_movhi_mr_r (rtx_insn *, rtx[], int *);
 static const char *out_movsi_mr_r (rtx_insn *, rtx[], int *);
 
-static int get_sequence_length (rtx_insn *insns);
-static int sequent_regs_live (void);
-static const char *ptrreg_to_str (int);
-static int avr_num_arg_regs (machine_mode, const_tree);
-static int avr_operand_rtx_cost (rtx, machine_mode, enum rtx_code,
-				 int, bool);
-static void output_reload_in_const (rtx *, rtx, int *, bool);
-static struct machine_function *avr_init_machine_status (void);
-static bool _reg_unused_after (rtx_insn *insn, rtx reg, bool look_at_insn);
-
 
 /* Prototypes for hook implementors if needed before their implementation.  */
 
@@ -456,7 +446,10 @@ avr_option_override (void)
   avr_addr.sp_l = 0x3D + avr_arch->sfr_offset;
   avr_addr.sp_h = avr_addr.sp_l + 1;
 
-  init_machine_status = avr_init_machine_status;
+  init_machine_status = []()
+  {
+    return ggc_cleared_alloc<machine_function> ();
+  };
 
   avr_log_set_avr_log();
 
@@ -471,14 +464,6 @@ avr_option_override (void)
 
     register_pass (&peep2_2_info);
   }
-}
-
-/* Function to set up the backend function structure.  */
-
-static struct machine_function *
-avr_init_machine_status (void)
-{
-  return ggc_cleared_alloc<machine_function> ();
 }
 
 
@@ -1179,7 +1164,7 @@ sequent_regs_live (void)
 
 /* Obtain the length sequence of insns.  */
 
-int
+static int
 get_sequence_length (rtx_insn *insns)
 {
   int length = 0;
@@ -2933,6 +2918,7 @@ avr_init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype, rtx libname,
   cfun->machine->sibcall_fails = 0;
 }
 
+
 /* Returns the number of registers to allocate for a function argument.  */
 
 static int
@@ -3096,6 +3082,152 @@ avr_xload_libgcc_p (machine_mode mode)
 
   return (n_bytes > 1
 	  || avr_n_flash > 1);
+}
+
+
+/* Return true when INSN has a REG_UNUSED note for hard reg REG.
+   rtlanal.cc::find_reg_note() uses == to compare XEXP (link, 0)
+   therefore use a custom function.  */
+
+static bool
+avr_insn_has_reg_unused_note_p (rtx_insn *insn, rtx reg)
+{
+  for (rtx link = REG_NOTES (insn); link; link = XEXP (link, 1))
+    if (REG_NOTE_KIND (link) == REG_UNUSED
+	&& REG_P (XEXP (link, 0))
+	&& REGNO (reg) >= REGNO (XEXP (link, 0))
+	&& END_REGNO (reg) <= END_REGNO (XEXP (link, 0)))
+      return true;
+
+  return false;
+}
+
+
+/* A helper for the next function.
+   Return nonzero if REG is not used after INSN.
+   We assume REG is a reload reg, and therefore does
+   not live past labels.  It may live past calls or jumps though.  */
+
+static bool
+_reg_unused_after (rtx_insn *insn, rtx reg, bool look_at_insn)
+{
+  if (look_at_insn)
+    {
+      /* If the reg is set by this instruction, then it is safe for our
+	 case.  Disregard the case where this is a store to memory, since
+	 we are checking a register used in the store address.  */
+      rtx set = single_set (insn);
+      if (set && !MEM_P (SET_DEST (set))
+	  && reg_overlap_mentioned_p (reg, SET_DEST (set)))
+	return 1;
+
+      /* This case occurs when fuse-add introduced a POST_INC addressing,
+	 but the address register is unused after.  */
+      if (set)
+	{
+	  rtx mem = MEM_P (SET_SRC (set)) ? SET_SRC (set) : SET_DEST (set);
+	  if (MEM_P (mem)
+	      && reg_overlap_mentioned_p (reg, XEXP (mem, 0))
+	      && avr_insn_has_reg_unused_note_p (insn, reg))
+	    return 1;
+	}
+    }
+
+  while ((insn = NEXT_INSN (insn)))
+    {
+      rtx set;
+      enum rtx_code code = GET_CODE (insn);
+
+#if 0
+      /* If this is a label that existed before reload, then the register
+	 if dead here.  However, if this is a label added by reorg, then
+	 the register may still be live here.  We can't tell the difference,
+	 so we just ignore labels completely.  */
+      if (code == CODE_LABEL)
+	return 1;
+      /* else */
+#endif
+
+      if (!INSN_P (insn))
+	continue;
+
+      if (code == JUMP_INSN)
+	return 0;
+
+      /* If this is a sequence, we must handle them all at once.
+	 We could have for instance a call that sets the target register,
+	 and an insn in a delay slot that uses the register.  In this case,
+	 we must return 0.  */
+      else if (code == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
+	{
+	  rtx_sequence *seq = as_a <rtx_sequence *> (PATTERN (insn));
+	  int retval = 0;
+
+	  for (int i = 0; i < seq->len (); i++)
+	    {
+	      rtx_insn *this_insn = seq->insn (i);
+	      rtx set = single_set (this_insn);
+
+	      if (CALL_P (this_insn))
+		code = CALL_INSN;
+	      else if (JUMP_P (this_insn))
+		{
+		  if (INSN_ANNULLED_BRANCH_P (this_insn))
+		    return 0;
+		  code = JUMP_INSN;
+		}
+
+	      if (set && reg_overlap_mentioned_p (reg, SET_SRC (set)))
+		return 0;
+	      if (set && reg_overlap_mentioned_p (reg, SET_DEST (set)))
+		{
+		  if (!MEM_P (SET_DEST (set)))
+		    retval = 1;
+		  else
+		    return 0;
+		}
+	      if (set == 0
+		  && reg_overlap_mentioned_p (reg, PATTERN (this_insn)))
+		return 0;
+	    }
+	  if (retval == 1)
+	    return 1;
+	  else if (code == JUMP_INSN)
+	    return 0;
+	}
+
+      if (code == CALL_INSN)
+	{
+	  rtx tem;
+	  for (tem = CALL_INSN_FUNCTION_USAGE (insn); tem; tem = XEXP (tem, 1))
+	    if (GET_CODE (XEXP (tem, 0)) == USE
+		&& REG_P (XEXP (XEXP (tem, 0), 0))
+		&& reg_overlap_mentioned_p (reg, XEXP (XEXP (tem, 0), 0)))
+	      return 0;
+	  if (call_used_or_fixed_reg_p (REGNO (reg)))
+	    return 1;
+	}
+
+      set = single_set (insn);
+
+      if (set && reg_overlap_mentioned_p (reg, SET_SRC (set)))
+	return 0;
+      if (set && reg_overlap_mentioned_p (reg, SET_DEST (set)))
+	return !MEM_P (SET_DEST (set));
+      if (set == 0 && reg_overlap_mentioned_p (reg, PATTERN (insn)))
+	return 0;
+    }
+  return 1;
+}
+
+
+/* Return nonzero if register REG dead after INSN.  */
+
+int
+reg_unused_after (rtx_insn *insn, rtx reg)
+{
+  return (dead_or_set_p (insn, reg)
+	  || (REG_P (reg) && _reg_unused_after (insn, reg, true)));
 }
 
 
@@ -3441,6 +3573,232 @@ avr_out_xload (rtx_insn * /*insn*/, rtx *op, int *plen)
     avr_asm_len ("mov %0,%3", xop, plen, 1);
 
   return "";
+}
+
+
+/* A helper for `output_reload_insisf' and `output_reload_inhi'.  */
+/* Set register OP[0] to compile-time constant OP[1].
+   CLOBBER_REG is a QI clobber register or NULL_RTX.
+   LEN == NULL: output instructions.
+   LEN != NULL: set *LEN to the length of the instruction sequence
+		(in words) printed with LEN = NULL.
+   If CLEAR_P is true, OP[0] had been cleard to Zero already.
+   If CLEAR_P is false, nothing is known about OP[0].
+
+   The effect on cc0 is as follows:
+
+   Load 0 to any register except ZERO_REG : NONE
+   Load ld register with any value        : NONE
+   Anything else:                         : CLOBBER  */
+
+static void
+output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
+{
+  rtx src = op[1];
+  rtx dest = op[0];
+  rtx xval, xdest[4];
+  int ival[4];
+  int clobber_val = 1234;
+  bool cooked_clobber_p = false;
+  bool set_p = false;
+  machine_mode mode = GET_MODE (dest);
+  int n_bytes = GET_MODE_SIZE (mode);
+
+  gcc_assert (REG_P (dest)
+	      && CONSTANT_P (src));
+
+  if (len)
+    *len = 0;
+
+  /* (REG:SI 14) is special: It's neither in LD_REGS nor in NO_LD_REGS
+     but has some subregs that are in LD_REGS.  Use the MSB (REG:QI 17).  */
+
+  if (REGNO (dest) < REG_16
+      && REGNO (dest) + GET_MODE_SIZE (mode) > REG_16)
+    {
+      clobber_reg = all_regs_rtx[REGNO (dest) + n_bytes - 1];
+    }
+
+  /* We might need a clobber reg but don't have one.  Look at the value to
+     be loaded more closely.  A clobber is only needed if it is a symbol
+     or contains a byte that is neither 0, -1 or a power of 2.  */
+
+  if (NULL_RTX == clobber_reg
+      && !test_hard_reg_class (LD_REGS, dest)
+      && (! (CONST_INT_P (src) || CONST_FIXED_P (src) || CONST_DOUBLE_P (src))
+	  || !avr_popcount_each_byte (src, n_bytes,
+				      (1 << 0) | (1 << 1) | (1 << 8))))
+    {
+      /* We have no clobber register but need one.  Cook one up.
+	 That's cheaper than loading from constant pool.  */
+
+      cooked_clobber_p = true;
+      clobber_reg = all_regs_rtx[REG_Z + 1];
+      avr_asm_len ("mov __tmp_reg__,%0", &clobber_reg, len, 1);
+    }
+
+  /* Now start filling DEST from LSB to MSB.  */
+
+  for (int n = 0; n < n_bytes; n++)
+    {
+      bool done_byte = false;
+      rtx xop[3];
+
+      /* Crop the n-th destination byte.  */
+
+      xdest[n] = simplify_gen_subreg (QImode, dest, mode, n);
+      int ldreg_p = test_hard_reg_class (LD_REGS, xdest[n]);
+
+      if (!CONST_INT_P (src)
+	  && !CONST_FIXED_P (src)
+	  && !CONST_DOUBLE_P (src))
+	{
+	  static const char *const asm_code[][2] =
+	    {
+	      { "ldi %2,lo8(%1)"  CR_TAB "mov %0,%2",    "ldi %0,lo8(%1)"  },
+	      { "ldi %2,hi8(%1)"  CR_TAB "mov %0,%2",    "ldi %0,hi8(%1)"  },
+	      { "ldi %2,hlo8(%1)" CR_TAB "mov %0,%2",    "ldi %0,hlo8(%1)" },
+	      { "ldi %2,hhi8(%1)" CR_TAB "mov %0,%2",    "ldi %0,hhi8(%1)" }
+	    };
+
+	  xop[0] = xdest[n];
+	  xop[1] = src;
+	  xop[2] = clobber_reg;
+
+	  avr_asm_len (asm_code[n][ldreg_p], xop, len, ldreg_p ? 1 : 2);
+
+	  continue;
+	}
+
+      /* Crop the n-th source byte.  */
+
+      xval = simplify_gen_subreg (QImode, src, mode, n);
+      ival[n] = INTVAL (xval);
+
+      /* Look if we can reuse the low word by means of MOVW.  */
+
+      if (n == 2
+	  && n_bytes >= 4
+	  && AVR_HAVE_MOVW)
+	{
+	  rtx lo16 = simplify_gen_subreg (HImode, src, mode, 0);
+	  rtx hi16 = simplify_gen_subreg (HImode, src, mode, 2);
+
+	  if (INTVAL (lo16) == INTVAL (hi16))
+	    {
+	      if (INTVAL (lo16) != 0 || !clear_p)
+		avr_asm_len ("movw %C0,%A0", &op[0], len, 1);
+
+	      break;
+	    }
+	}
+
+      /* Don't use CLR so that cc0 is set as expected.  */
+
+      if (ival[n] == 0)
+	{
+	  if (!clear_p)
+	    avr_asm_len (ldreg_p ? "ldi %0,0"
+			 : AVR_ZERO_REGNO == REGNO (xdest[n]) ? "clr %0"
+			 : "mov %0,__zero_reg__",
+			 &xdest[n], len, 1);
+	  continue;
+	}
+
+      if (clobber_val == ival[n]
+	  && REGNO (clobber_reg) == REGNO (xdest[n]))
+	{
+	  continue;
+	}
+
+      /* LD_REGS can use LDI to move a constant value */
+
+      if (ldreg_p)
+	{
+	  xop[0] = xdest[n];
+	  xop[1] = xval;
+	  avr_asm_len ("ldi %0,lo8(%1)", xop, len, 1);
+	  continue;
+	}
+
+      /* Try to reuse value already loaded in some lower byte. */
+
+      for (int j = 0; j < n; j++)
+	if (ival[j] == ival[n])
+	  {
+	    xop[0] = xdest[n];
+	    xop[1] = xdest[j];
+
+	    avr_asm_len ("mov %0,%1", xop, len, 1);
+	    done_byte = true;
+	    break;
+	  }
+
+      if (done_byte)
+	continue;
+
+      /* Need no clobber reg for -1: Use CLR/DEC */
+
+      if (ival[n] == -1)
+	{
+	  if (!clear_p)
+	    avr_asm_len ("clr %0", &xdest[n], len, 1);
+
+	  avr_asm_len ("dec %0", &xdest[n], len, 1);
+	  continue;
+	}
+      else if (ival[n] == 1)
+	{
+	  if (!clear_p)
+	    avr_asm_len ("clr %0", &xdest[n], len, 1);
+
+	  avr_asm_len ("inc %0", &xdest[n], len, 1);
+	  continue;
+	}
+
+      /* Use T flag or INC to manage powers of 2 if we have
+	 no clobber reg.  */
+
+      if (NULL_RTX == clobber_reg
+	  && single_one_operand (xval, QImode))
+	{
+	  xop[0] = xdest[n];
+	  xop[1] = GEN_INT (exact_log2 (ival[n] & GET_MODE_MASK (QImode)));
+
+	  gcc_assert (constm1_rtx != xop[1]);
+
+	  if (!set_p)
+	    {
+	      set_p = true;
+	      avr_asm_len ("set", xop, len, 1);
+	    }
+
+	  if (!clear_p)
+	    avr_asm_len ("clr %0", xop, len, 1);
+
+	  avr_asm_len ("bld %0,%1", xop, len, 1);
+	  continue;
+	}
+
+      /* We actually need the LD_REGS clobber reg.  */
+
+      gcc_assert (NULL_RTX != clobber_reg);
+
+      xop[0] = xdest[n];
+      xop[1] = xval;
+      xop[2] = clobber_reg;
+      clobber_val = ival[n];
+
+      avr_asm_len ("ldi %2,lo8(%1)" CR_TAB
+		   "mov %0,%2", xop, len, 2);
+    }
+
+  /* If we cooked up a clobber reg above, restore it.  */
+
+  if (cooked_clobber_p)
+    {
+      avr_asm_len ("mov %0,__tmp_reg__", &clobber_reg, len, 1);
+    }
 }
 
 
@@ -5523,21 +5881,6 @@ avr_canonicalize_comparison (int *icode, rtx *op0, rtx *op1, bool op0_fixed)
 	  return;
 	}
     }
-}
-
-
-/* Implement `TARGET_C_MODE_FOR_FLOATING_TYPE'.  Return SFmode or DFmode
-   for TI_{LONG_,}DOUBLE_TYPE which is for {long,} double type, go with
-   the default one for the others.  */
-
-static machine_mode
-avr_c_mode_for_floating_type (enum tree_index ti)
-{
-  if (ti == TI_DOUBLE_TYPE)
-    return avr_double == 32 ? SFmode : DFmode;
-  if (ti == TI_LONG_DOUBLE_TYPE)
-    return avr_long_double == 32 ? SFmode : DFmode;
-  return default_mode_for_floating_type (ti);
 }
 
 
@@ -9955,151 +10298,6 @@ avr_adjust_insn_length (rtx_insn *insn, int len)
 }
 
 
-/* Return true when INSN has a REG_UNUSED note for hard reg REG.
-   rtlanal.cc::find_reg_note() uses == to compare XEXP (link, 0)
-   therefore use a custom function.  */
-
-static bool
-avr_insn_has_reg_unused_note_p (rtx_insn *insn, rtx reg)
-{
-  for (rtx link = REG_NOTES (insn); link; link = XEXP (link, 1))
-    if (REG_NOTE_KIND (link) == REG_UNUSED
-	&& REG_P (XEXP (link, 0))
-	&& REGNO (reg) >= REGNO (XEXP (link, 0))
-	&& END_REGNO (reg) <= END_REGNO (XEXP (link, 0)))
-      return true;
-
-  return false;
-}
-
-
-/* Return nonzero if register REG dead after INSN.  */
-
-int
-reg_unused_after (rtx_insn *insn, rtx reg)
-{
-  return (dead_or_set_p (insn, reg)
-	  || (REG_P (reg) && _reg_unused_after (insn, reg, true)));
-}
-
-/* A helper for the previous function.
-   Return nonzero if REG is not used after INSN.
-   We assume REG is a reload reg, and therefore does
-   not live past labels.  It may live past calls or jumps though.  */
-
-bool
-_reg_unused_after (rtx_insn *insn, rtx reg, bool look_at_insn)
-{
-  if (look_at_insn)
-    {
-      /* If the reg is set by this instruction, then it is safe for our
-	 case.  Disregard the case where this is a store to memory, since
-	 we are checking a register used in the store address.  */
-      rtx set = single_set (insn);
-      if (set && !MEM_P (SET_DEST (set))
-	  && reg_overlap_mentioned_p (reg, SET_DEST (set)))
-	return 1;
-
-      /* This case occurs when fuse-add introduced a POST_INC addressing,
-	 but the address register is unused after.  */
-      if (set)
-	{
-	  rtx mem = MEM_P (SET_SRC (set)) ? SET_SRC (set) : SET_DEST (set);
-	  if (MEM_P (mem)
-	      && reg_overlap_mentioned_p (reg, XEXP (mem, 0))
-	      && avr_insn_has_reg_unused_note_p (insn, reg))
-	    return 1;
-	}
-    }
-
-  while ((insn = NEXT_INSN (insn)))
-    {
-      rtx set;
-      enum rtx_code code = GET_CODE (insn);
-
-#if 0
-      /* If this is a label that existed before reload, then the register
-	 if dead here.  However, if this is a label added by reorg, then
-	 the register may still be live here.  We can't tell the difference,
-	 so we just ignore labels completely.  */
-      if (code == CODE_LABEL)
-	return 1;
-      /* else */
-#endif
-
-      if (!INSN_P (insn))
-	continue;
-
-      if (code == JUMP_INSN)
-	return 0;
-
-      /* If this is a sequence, we must handle them all at once.
-	 We could have for instance a call that sets the target register,
-	 and an insn in a delay slot that uses the register.  In this case,
-	 we must return 0.  */
-      else if (code == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
-	{
-	  rtx_sequence *seq = as_a <rtx_sequence *> (PATTERN (insn));
-	  int retval = 0;
-
-	  for (int i = 0; i < seq->len (); i++)
-	    {
-	      rtx_insn *this_insn = seq->insn (i);
-	      rtx set = single_set (this_insn);
-
-	      if (CALL_P (this_insn))
-		code = CALL_INSN;
-	      else if (JUMP_P (this_insn))
-		{
-		  if (INSN_ANNULLED_BRANCH_P (this_insn))
-		    return 0;
-		  code = JUMP_INSN;
-		}
-
-	      if (set && reg_overlap_mentioned_p (reg, SET_SRC (set)))
-		return 0;
-	      if (set && reg_overlap_mentioned_p (reg, SET_DEST (set)))
-		{
-		  if (!MEM_P (SET_DEST (set)))
-		    retval = 1;
-		  else
-		    return 0;
-		}
-	      if (set == 0
-		  && reg_overlap_mentioned_p (reg, PATTERN (this_insn)))
-		return 0;
-	    }
-	  if (retval == 1)
-	    return 1;
-	  else if (code == JUMP_INSN)
-	    return 0;
-	}
-
-      if (code == CALL_INSN)
-	{
-	  rtx tem;
-	  for (tem = CALL_INSN_FUNCTION_USAGE (insn); tem; tem = XEXP (tem, 1))
-	    if (GET_CODE (XEXP (tem, 0)) == USE
-		&& REG_P (XEXP (XEXP (tem, 0), 0))
-		&& reg_overlap_mentioned_p (reg, XEXP (XEXP (tem, 0), 0)))
-	      return 0;
-	  if (call_used_or_fixed_reg_p (REGNO (reg)))
-	    return 1;
-	}
-
-      set = single_set (insn);
-
-      if (set && reg_overlap_mentioned_p (reg, SET_SRC (set)))
-	return 0;
-      if (set && reg_overlap_mentioned_p (reg, SET_DEST (set)))
-	return !MEM_P (SET_DEST (set));
-      if (set == 0 && reg_overlap_mentioned_p (reg, PATTERN (insn)))
-	return 0;
-    }
-  return 1;
-}
-
-
 /* Implement `TARGET_ASM_INTEGER'.  */
 /* Target hook for assembling integer objects.  The AVR version needs
    special handling for references to certain labels.  */
@@ -11468,7 +11666,7 @@ avr_cbranch_cost (rtx x)
 }
 
 
-/* Mutually recursive subroutine of avr_rtx_cost for calculating the
+/* Mutually recursive subroutine of `avr_rtx_cost' for calculating the
    cost of an RTX operand given its context.  X is the rtx of the
    operand, MODE is its mode, and OUTER is the rtx_code of this
    operand's parent operator.  */
@@ -12935,232 +13133,6 @@ avr_regno_mode_code_ok_for_base_p (int regno, machine_mode /*mode*/,
     }
 
   return ok;
-}
-
-
-/* A helper for `output_reload_insisf' and `output_reload_inhi'.  */
-/* Set 32-bit register OP[0] to compile-time constant OP[1].
-   CLOBBER_REG is a QI clobber register or NULL_RTX.
-   LEN == NULL: output instructions.
-   LEN != NULL: set *LEN to the length of the instruction sequence
-		(in words) printed with LEN = NULL.
-   If CLEAR_P is true, OP[0] had been cleard to Zero already.
-   If CLEAR_P is false, nothing is known about OP[0].
-
-   The effect on cc0 is as follows:
-
-   Load 0 to any register except ZERO_REG : NONE
-   Load ld register with any value        : NONE
-   Anything else:                         : CLOBBER  */
-
-static void
-output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
-{
-  rtx src = op[1];
-  rtx dest = op[0];
-  rtx xval, xdest[4];
-  int ival[4];
-  int clobber_val = 1234;
-  bool cooked_clobber_p = false;
-  bool set_p = false;
-  machine_mode mode = GET_MODE (dest);
-  int n_bytes = GET_MODE_SIZE (mode);
-
-  gcc_assert (REG_P (dest)
-	      && CONSTANT_P (src));
-
-  if (len)
-    *len = 0;
-
-  /* (REG:SI 14) is special: It's neither in LD_REGS nor in NO_LD_REGS
-     but has some subregs that are in LD_REGS.  Use the MSB (REG:QI 17).  */
-
-  if (REGNO (dest) < REG_16
-      && REGNO (dest) + GET_MODE_SIZE (mode) > REG_16)
-    {
-      clobber_reg = all_regs_rtx[REGNO (dest) + n_bytes - 1];
-    }
-
-  /* We might need a clobber reg but don't have one.  Look at the value to
-     be loaded more closely.  A clobber is only needed if it is a symbol
-     or contains a byte that is neither 0, -1 or a power of 2.  */
-
-  if (NULL_RTX == clobber_reg
-      && !test_hard_reg_class (LD_REGS, dest)
-      && (! (CONST_INT_P (src) || CONST_FIXED_P (src) || CONST_DOUBLE_P (src))
-	  || !avr_popcount_each_byte (src, n_bytes,
-				      (1 << 0) | (1 << 1) | (1 << 8))))
-    {
-      /* We have no clobber register but need one.  Cook one up.
-	 That's cheaper than loading from constant pool.  */
-
-      cooked_clobber_p = true;
-      clobber_reg = all_regs_rtx[REG_Z + 1];
-      avr_asm_len ("mov __tmp_reg__,%0", &clobber_reg, len, 1);
-    }
-
-  /* Now start filling DEST from LSB to MSB.  */
-
-  for (int n = 0; n < n_bytes; n++)
-    {
-      bool done_byte = false;
-      rtx xop[3];
-
-      /* Crop the n-th destination byte.  */
-
-      xdest[n] = simplify_gen_subreg (QImode, dest, mode, n);
-      int ldreg_p = test_hard_reg_class (LD_REGS, xdest[n]);
-
-      if (!CONST_INT_P (src)
-	  && !CONST_FIXED_P (src)
-	  && !CONST_DOUBLE_P (src))
-	{
-	  static const char *const asm_code[][2] =
-	    {
-	      { "ldi %2,lo8(%1)"  CR_TAB "mov %0,%2",    "ldi %0,lo8(%1)"  },
-	      { "ldi %2,hi8(%1)"  CR_TAB "mov %0,%2",    "ldi %0,hi8(%1)"  },
-	      { "ldi %2,hlo8(%1)" CR_TAB "mov %0,%2",    "ldi %0,hlo8(%1)" },
-	      { "ldi %2,hhi8(%1)" CR_TAB "mov %0,%2",    "ldi %0,hhi8(%1)" }
-	    };
-
-	  xop[0] = xdest[n];
-	  xop[1] = src;
-	  xop[2] = clobber_reg;
-
-	  avr_asm_len (asm_code[n][ldreg_p], xop, len, ldreg_p ? 1 : 2);
-
-	  continue;
-	}
-
-      /* Crop the n-th source byte.  */
-
-      xval = simplify_gen_subreg (QImode, src, mode, n);
-      ival[n] = INTVAL (xval);
-
-      /* Look if we can reuse the low word by means of MOVW.  */
-
-      if (n == 2
-	  && n_bytes >= 4
-	  && AVR_HAVE_MOVW)
-	{
-	  rtx lo16 = simplify_gen_subreg (HImode, src, mode, 0);
-	  rtx hi16 = simplify_gen_subreg (HImode, src, mode, 2);
-
-	  if (INTVAL (lo16) == INTVAL (hi16))
-	    {
-	      if (INTVAL (lo16) != 0 || !clear_p)
-		avr_asm_len ("movw %C0,%A0", &op[0], len, 1);
-
-	      break;
-	    }
-	}
-
-      /* Don't use CLR so that cc0 is set as expected.  */
-
-      if (ival[n] == 0)
-	{
-	  if (!clear_p)
-	    avr_asm_len (ldreg_p ? "ldi %0,0"
-			 : AVR_ZERO_REGNO == REGNO (xdest[n]) ? "clr %0"
-			 : "mov %0,__zero_reg__",
-			 &xdest[n], len, 1);
-	  continue;
-	}
-
-      if (clobber_val == ival[n]
-	  && REGNO (clobber_reg) == REGNO (xdest[n]))
-	{
-	  continue;
-	}
-
-      /* LD_REGS can use LDI to move a constant value */
-
-      if (ldreg_p)
-	{
-	  xop[0] = xdest[n];
-	  xop[1] = xval;
-	  avr_asm_len ("ldi %0,lo8(%1)", xop, len, 1);
-	  continue;
-	}
-
-      /* Try to reuse value already loaded in some lower byte. */
-
-      for (int j = 0; j < n; j++)
-	if (ival[j] == ival[n])
-	  {
-	    xop[0] = xdest[n];
-	    xop[1] = xdest[j];
-
-	    avr_asm_len ("mov %0,%1", xop, len, 1);
-	    done_byte = true;
-	    break;
-	  }
-
-      if (done_byte)
-	continue;
-
-      /* Need no clobber reg for -1: Use CLR/DEC */
-
-      if (ival[n] == -1)
-	{
-	  if (!clear_p)
-	    avr_asm_len ("clr %0", &xdest[n], len, 1);
-
-	  avr_asm_len ("dec %0", &xdest[n], len, 1);
-	  continue;
-	}
-      else if (ival[n] == 1)
-	{
-	  if (!clear_p)
-	    avr_asm_len ("clr %0", &xdest[n], len, 1);
-
-	  avr_asm_len ("inc %0", &xdest[n], len, 1);
-	  continue;
-	}
-
-      /* Use T flag or INC to manage powers of 2 if we have
-	 no clobber reg.  */
-
-      if (NULL_RTX == clobber_reg
-	  && single_one_operand (xval, QImode))
-	{
-	  xop[0] = xdest[n];
-	  xop[1] = GEN_INT (exact_log2 (ival[n] & GET_MODE_MASK (QImode)));
-
-	  gcc_assert (constm1_rtx != xop[1]);
-
-	  if (!set_p)
-	    {
-	      set_p = true;
-	      avr_asm_len ("set", xop, len, 1);
-	    }
-
-	  if (!clear_p)
-	    avr_asm_len ("clr %0", xop, len, 1);
-
-	  avr_asm_len ("bld %0,%1", xop, len, 1);
-	  continue;
-	}
-
-      /* We actually need the LD_REGS clobber reg.  */
-
-      gcc_assert (NULL_RTX != clobber_reg);
-
-      xop[0] = xdest[n];
-      xop[1] = xval;
-      xop[2] = clobber_reg;
-      clobber_val = ival[n];
-
-      avr_asm_len ("ldi %2,lo8(%1)" CR_TAB
-		   "mov %0,%2", xop, len, 2);
-    }
-
-  /* If we cooked up a clobber reg above, restore it.  */
-
-  if (cooked_clobber_p)
-    {
-      avr_asm_len ("mov %0,__tmp_reg__", &clobber_reg, len, 1);
-    }
 }
 
 
@@ -15297,6 +15269,21 @@ avr_md_asm_adjust (vec<rtx> &/*outputs*/, vec<rtx> &/*inputs*/,
   clobbers.safe_push (cc_reg_rtx);
   SET_HARD_REG_BIT (clobbered_regs, REG_CC);
   return NULL;
+}
+
+
+/* Implement `TARGET_C_MODE_FOR_FLOATING_TYPE'.  Return SFmode or DFmode
+   for TI_{LONG_,}DOUBLE_TYPE which is for {long,} double type, go with
+   the default one for the others.  */
+
+static machine_mode
+avr_c_mode_for_floating_type (enum tree_index ti)
+{
+  if (ti == TI_DOUBLE_TYPE)
+    return avr_double == 32 ? SFmode : DFmode;
+  if (ti == TI_LONG_DOUBLE_TYPE)
+    return avr_long_double == 32 ? SFmode : DFmode;
+  return default_mode_for_floating_type (ti);
 }
 
 
