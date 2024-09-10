@@ -1,3 +1,9 @@
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* jit-playback.cc (add_diagnostic): Rename diagnostic_context's
+	"printer" field to "m_printer".
+
 2024-09-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* jit-playback.cc (playback::block::add_extended_asm):  Rename

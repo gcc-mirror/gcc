@@ -1,3 +1,336 @@
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* ipa-pure-const.cc: Replace include of "opts.h" with
+	"opts-diagnostic.h".
+	(suggest_attribute): Convert param from int to
+	diagnostic_option_id.
+	* lto-wrapper.cc (class lto_diagnostic_option_manager): Use
+	diagnostic_option_id rather than "int".
+	* opts-common.cc
+	(compiler_diagnostic_option_manager::option_enabled_p): Likewise.
+	* opts-diagnostic.h (class gcc_diagnostic_option_manager):
+	Likewise.
+	(class compiler_diagnostic_option_manager): Likewise.
+	* opts.cc (compiler_diagnostic_option_manager::make_option_name):
+	Likewise.
+	(gcc_diagnostic_option_manager::make_option_url): Likewise.
+	* substring-locations.cc
+	(format_string_diagnostic_t::emit_warning_n_va): Likewise.
+	(format_string_diagnostic_t::emit_warning_va): Likewise.
+	(format_string_diagnostic_t::emit_warning): Likewise.
+	(format_string_diagnostic_t::emit_warning_n): Likewise.
+	* substring-locations.h
+	(format_string_diagnostic_t::emit_warning_va): Likewise.
+	(format_string_diagnostic_t::emit_warning_n_va): Likewise.
+	(format_string_diagnostic_t::emit_warning): Likewise.
+	(format_string_diagnostic_t::emit_warning_n): Likewise.
+
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-core.h (struct diagnostic_option_id): New.
+	(warning): Use it rather than "int" for param.
+	(warning_n): Likewise.
+	(warning_at): Likewise.
+	(warning_meta): Likewise.
+	(pedwarn): Likewise.
+	(permerror_opt): Likewise.
+	(emit_diagnostic): Likewise.
+	(emit_diagnostic_valist): Likewise.
+	(emit_diagnostic_valist_meta): Likewise.
+	* diagnostic-format-json.cc
+	(json_output_format::on_report_diagnostic): Update for renaming of
+	diagnostic_info field.
+	* diagnostic-format-sarif.cc (sarif_builder::make_result_object):
+	Likewise.
+	(make_reporting_descriptor_object_for_warning): Likewise.
+	* diagnostic-format-text.cc (print_option_information): Likewise.
+	* diagnostic-global-context.cc (emit_diagnostic): Use
+	"diagnostic_option_id option_id" rather than "int opt".
+	(emit_diagnostic_valist): Likewise.
+	(emit_diagnostic_valist_meta): Likewise.
+	(warning): Likewise.
+	(warning_at): Likewise.
+	(warning_meta): Likewise.
+	(warning_n): Likewise.
+	(pedwarn): Likewise.
+	(permerror_opt): Likewise.
+	* diagnostic.cc (diagnostic_set_info_translated): Update for
+	renaming of diagnostic_info field.
+	(diagnostic_option_classifier::classify_diagnostic): Use
+	"diagnostic_option_id option_id" rather than "int opt".
+	(update_effective_level_from_pragmas): Update for renaming of
+	diagnostic_info field.
+	(diagnostic_context::diagnostic_enabled): Likewise.
+	(diagnostic_context::warning_enabled_at): Use
+	"diagnostic_option_id option_id" rather than "int opt".
+	(diagnostic_context::diagnostic_impl): Likewise.
+	(diagnostic_context::diagnostic_n_impl): Likewise.
+	* diagnostic.h (diagnostic_info::diagnostic_info): Update for...
+	(diagnostic_info::option_index): Rename...
+	(diagnostic_info::option_id): ...to this.
+	(class diagnostic_option_manager): Use
+	"diagnostic_option_id option_id" rather than "int opt" for vfuncs.
+	(diagnostic_option_classifier): Likewise for member funcs.
+	(diagnostic_classification_change_t::option): Add comment.
+	(diagnostic_context::warning_enabled_at): Use
+	"diagnostic_option_id option_id" rather than "int option_index".
+	(diagnostic_context::option_unspecified_p): Likewise.
+	(diagnostic_context::classify_diagnostic): Likewise.
+	(diagnostic_context::option_enabled_p): Likewise.
+	(diagnostic_context::make_option_name): Likewise.
+	(diagnostic_context::make_option_url): Likewise.
+	(diagnostic_context::diagnostic_impl): Likewise.
+	(diagnostic_context::diagnostic_n_impl): Likewise.
+	(diagnostic_override_option_index): Rename...
+	(diagnostic_set_option_id): ...to this, and update for
+	diagnostic_info field renaming.
+	(diagnostic_classify_diagnostic): Use "diagnostic_option_id"
+	rather than "int".
+	(warning_enabled_at): Likewise.
+	(option_unspecified_p): Likewise.
+
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.cc (diagnostic_context::initialize): Replace
+	m_options_callbacks with m_option_mgr.
+	(diagnostic_context::set_option_hooks): Replace with...
+	(diagnostic_context::set_option_manager): ...this.
+	* diagnostic.h (diagnostic_option_enabled_cb): Delete.
+	(diagnostic_make_option_name_cb): Delete.
+	(diagnostic_make_option_url_cb): Delete.
+	(class diagnostic_option_manager): New.
+	(diagnostic_manager::option_enabled_p): Convert from using
+	m_option_callbacks to m_option_mgr.
+	(diagnostic_manager::make_option_name): Likewise.
+	(diagnostic_manager::make_option_url): Likewise.
+	(diagnostic_manager::set_option_hooks): Replace with...
+	(diagnostic_manager::set_option_manager): ...this.
+	(diagnostic_manager::get_lang_mask): Update for field changes.
+	(diagnostic_manager::m_option_callbacks): Replace with...
+	(diagnostic_manager::m_option_mgr): ...this and...
+	(diagnostic_manager::m_lang_mask): ...this.
+	* lto-wrapper.cc (class lto_diagnostic_option_manager): New.
+	(main): Port from option hooks to diagnostic_option_manager.
+	* opts-common.cc: Include "opts-diagnostic.h".
+	(compiler_diagnostic_option_manager::option_enabled_p): New.
+	* opts-diagnostic.h (option_name): Drop decl.
+	(get_option_url): Drop decl.
+	(class gcc_diagnostic_option_manager): New.
+	(class compiler_diagnostic_option_manager): New.
+	* opts.cc (option_name): Convert to...
+	(compiler_diagnostic_option_manager::make_option_name): ...this.
+	(get_option_url): Convert to...
+	(gcc_diagnostic_option_manager::make_option_url): ...this.
+	* toplev.cc (general_init): Port from option hooks to
+	diagnostic_option_manager.
+
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* attribs.cc (decls_mismatched_attributes): Rename
+	diagnostic_context's "printer" field to "m_printer".
+	(attr_access::array_as_string): Likewise.
+	* diagnostic-format-json.cc
+	(json_output_format::on_report_diagnostic): Likewise.
+	(diagnostic_output_format_init_json): Likewise.
+	* diagnostic-format-sarif.cc
+	(sarif_result::on_nested_diagnostic): Likewise.
+	(sarif_ice_notification): Likewise.
+	(sarif_builder::on_report_diagnostic): Likewise.
+	(sarif_builder::make_result_object): Likewise.
+	(sarif_builder::make_location_object): Likewise.
+	(sarif_builder::make_message_object_for_diagram): Likewise.
+	(diagnostic_output_format_init_sarif): Likewise.
+	* diagnostic-format-text.cc
+	(diagnostic_text_output_format::~diagnostic_text_output_format):
+	Likewise.
+	(diagnostic_text_output_format::on_report_diagnostic): Likewise.
+	(diagnostic_text_output_format::on_diagram): Likewise.
+	(diagnostic_text_output_format::print_any_cwe): Likewise.
+	(diagnostic_text_output_format::print_any_rules): Likewise.
+	(diagnostic_text_output_format::print_option_information):
+	Likewise.
+	* diagnostic-format.h (diagnostic_output_format::get_printer):
+	New.
+	* diagnostic-global-context.cc (verbatim): Rename
+	diagnostic_context's "printer" field to "m_printer".
+	* diagnostic-path.cc (path_label::get_text): Likewise.
+	(print_path_summary_as_text): Likewise.
+	(diagnostic_context::print_path): Likewise.
+	(selftest::test_empty_path): Likewise.
+	(selftest::test_intraprocedural_path): Likewise.
+	(selftest::test_interprocedural_path_1): Likewise.
+	(selftest::test_interprocedural_path_2): Likewise.
+	(selftest::test_recursion): Likewise.
+	(selftest::test_control_flow_1): Likewise.
+	(selftest::test_control_flow_2): Likewise.
+	(selftest::test_control_flow_3): Likewise.
+	(assert_cfg_edge_path_streq): Likewise.
+	(selftest::test_control_flow_5): Likewise.
+	(selftest::test_control_flow_6): Likewise.
+	* diagnostic-show-locus.cc (layout::layout): Likewise.
+	(selftest::test_layout_x_offset_display_utf8): Likewise.
+	(selftest::test_layout_x_offset_display_tab): Likewise.
+	(selftest::test_diagnostic_show_locus_unknown_location): Likewise.
+	(selftest::test_one_liner_simple_caret): Likewise.
+	(selftest::test_one_liner_no_column): Likewise.
+	(selftest::test_one_liner_caret_and_range): Likewise.
+	(selftest::test_one_liner_multiple_carets_and_ranges): Likewise.
+	(selftest::test_one_liner_fixit_insert_before): Likewise.
+	(selftest::test_one_liner_fixit_insert_after): Likewise.
+	(selftest::test_one_liner_fixit_remove): Likewise.
+	(selftest::test_one_liner_fixit_replace): Likewise.
+	(selftest::test_one_liner_fixit_replace_non_equal_range):
+	Likewise.
+	(selftest::test_one_liner_fixit_replace_equal_secondary_range):
+	Likewise.
+	(selftest::test_one_liner_fixit_validation_adhoc_locations):
+	Likewise.
+	(selftest::test_one_liner_many_fixits_1): Likewise.
+	(selftest::test_one_liner_many_fixits_2): Likewise.
+	(selftest::test_one_liner_labels): Likewise.
+	(selftest::test_one_liner_simple_caret_utf8): Likewise.
+	(selftest::test_one_liner_caret_and_range_utf8): Likewise.
+	(selftest::test_one_liner_multiple_carets_and_ranges_utf8):
+	Likewise.
+	(selftest::test_one_liner_fixit_insert_before_utf8): Likewise.
+	(selftest::test_one_liner_fixit_insert_after_utf8): Likewise.
+	(selftest::test_one_liner_fixit_remove_utf8): Likewise.
+	(selftest::test_one_liner_fixit_replace_utf8): Likewise.
+	(selftest::test_one_liner_fixit_replace_non_equal_range_utf8):
+	Likewise.
+	(selftest::test_one_liner_fixit_replace_equal_secondary_range_utf8):
+	Likewise.
+	(selftest::test_one_liner_fixit_validation_adhoc_locations_utf8):
+	Likewise.
+	(selftest::test_one_liner_many_fixits_1_utf8): Likewise.
+	(selftest::test_one_liner_many_fixits_2_utf8): Likewise.
+	(selftest::test_one_liner_labels_utf8): Likewise.
+	(selftest::test_one_liner_colorized_utf8): Likewise.
+	(selftest::test_add_location_if_nearby): Likewise.
+	(selftest::test_diagnostic_show_locus_fixit_lines): Likewise.
+	(selftest::test_overlapped_fixit_printing): Likewise.
+	(selftest::test_overlapped_fixit_printing_utf8): Likewise.
+	(selftest::test_overlapped_fixit_printing_2): Likewise.
+	(selftest::test_fixit_insert_containing_newline): Likewise.
+	(selftest::test_fixit_insert_containing_newline_2): Likewise.
+	(selftest::test_fixit_replace_containing_newline): Likewise.
+	(selftest::test_fixit_deletion_affecting_newline): Likewise.
+	(selftest::test_tab_expansion): Likewise.
+	(selftest::test_escaping_bytes_1): Likewise.
+	(selftest::test_escaping_bytes_2): Likewise.
+	(selftest::test_line_numbers_multiline_range): Likewise.
+	* diagnostic.cc (file_name_as_prefix): Likewise.
+	(diagnostic_set_caret_max_width): Likewise.
+	(diagnostic_context::initialize): Likewise.
+	(diagnostic_context::color_init): Likewise.
+	(diagnostic_context::urls_init): Likewise.
+	(diagnostic_context::finish): Likewise.
+	(diagnostic_context::get_location_text): Likewise.
+	(diagnostic_build_prefix): Likewise.
+	(diagnostic_context::report_current_module): Likewise.
+	(default_diagnostic_starter): Likewise.
+	(default_diagnostic_start_span_fn): Likewise.
+	(default_diagnostic_finalizer): Likewise.
+	(diagnostic_context::report_diagnostic): Likewise.
+	(diagnostic_append_note): Likewise.
+	(diagnostic_context::error_recursion): Likewise.
+	(fancy_abort): Likewise.
+	* diagnostic.h (diagnostic_context::set_show_highlight_colors):
+	Likewise.
+	(diagnostic_context::printer): Rename to...
+	(diagnostic_context::m_printer): ...this.
+	(diagnostic_format_decoder): Rename diagnostic_context's "printer"
+	field to "m_printer".
+	(diagnostic_prefixing_rule): Likewise.
+	(diagnostic_ready_p): Likewise.
+	* gimple-ssa-warn-access.cc (pass_waccess::maybe_warn_memmodel):
+	Likewise.
+	* langhooks.cc (lhd_print_error_function): Likewise.
+	* lto-wrapper.cc (print_lto_docs_link): Likewise.
+	* opts-global.cc (init_options_once): Likewise.
+	* opts.cc (common_handle_option): Likewise.
+	* simple-diagnostic-path.cc (simple_diagnostic_path_cc_tests):
+	Likewise.
+	* text-art/dump.h (dump_to_file<T>): Likewise.
+	* toplev.cc (announce_function): Likewise.
+	(toplev::main): Likewise.
+	* tree-diagnostic.cc (default_tree_diagnostic_starter): Likewise.
+	* tree.cc (escaped_string::escape): Likewise.
+	(selftest::test_escaped_strings): Likewise.
+
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116603
+	* diagnostic-format-sarif.cc (SARIF_SCHEMA): Update URL.
+	(sarif_builder::maybe_make_region_object): Don't create regions
+	with startLine <= 0.
+	(sarif_builder::maybe_make_region_object_for_context): Likewise.
+
+2024-09-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*insvdi_lowpart_1): Use "o" constraint
+	instead of "m" for double-word mode memory operands.
+	(*add<dwi>3_doubleword_zext): Ditto.
+	(*addv<dwi>4_doubleword_1): Use "jO" constraint instead of "jM"
+	for double-word mode memory operands.
+
+2024-09-09  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/90693
+	* internal-fn.cc (expand_POPCOUNT): Handle the second argument
+	being `-1` for `<= 1`.
+	* tree-ssa-math-opts.cc (match_single_bit_test): Handle LE/GT
+	cases.
+	(math_opts_dom_walker::after_dom_children): Call match_single_bit_test
+	for LE_EXPR/GT_EXPR also.
+
+2024-09-09  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.cc (pa_legitimate_address_p): Don't
+	canonicalize operand order of scaled index addresses.
+
+2024-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116514
+	* tree-ssa-ccp.cc (bit_value_binop): Handle EXACT_DIV_EXPR
+	like TRUNC_DIV_EXPR.  Handle exact division of a signed value
+	by a power-of-two like a shift.  Handle unsigned division by
+	a power-of-two like a shift.
+	Handle unsigned TRUNC_MOD_EXPR by power-of-two, handle signed
+	TRUNC_MOD_EXPR by power-of-two if the result is zero.
+
+2024-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116647
+	* tree-vect-loop.cc (vect_is_simple_reduction): Add missing
+	check to double reduction detection.
+
+2024-09-09  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116601
+	* gimple-fold.cc (optimize_memcpy_to_memset): Move
+	from tree-ssa-ccp.cc and rename. Also return true
+	if the optimization happened.
+	(gimple_fold_builtin_memory_op): Call
+	optimize_memcpy_to_memset.
+	(fold_stmt_1): Call optimize_memcpy_to_memset for
+	load/store copies.
+	* tree-ssa-ccp.cc (optimize_memcpy): Delete.
+	(pass_fold_builtins::execute): Remove code that
+	calls optimize_memcpy.
+
+2024-09-09  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-phiopt.cc (factor_out_conditional_operation): Move the has_single_use
+	checks much earlier. Remove redundant check for gimple_assign_cast_p.
+	Change around the check if the integral consts fits into the new type.
+
+2024-09-09  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/116617
+	* doc/invoke.texi: Add meteorlake, raptorlake and lunarlake.
+
 2024-09-08  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/116621

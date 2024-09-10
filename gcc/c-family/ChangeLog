@@ -1,3 +1,18 @@
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.cc (c_option_controlling_cpp_diagnostic): Return
+	diagnostic_option_id rather than int.
+	(c_cpp_diagnostic): Update for renaming of
+	diagnostic_override_option_index to diagnostic_set_option_id.
+
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* c-format.cc (selftest::test_type_mismatch_range_labels): Rename
+	diagnostic_context's "printer" field to "m_printer".
+	(selftest::test_type_mismatch_range_labels): Likewise.
+	* c-opts.cc (c_diagnostic_finalizer): Likewise.
+
 2024-09-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/46457

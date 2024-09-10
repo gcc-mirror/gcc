@@ -1,3 +1,87 @@
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* gcc.dg/plugin/analyzer_cpython_plugin.c (dump_refcnt_info):
+	Update for renaming of field "printer" to "m_printer".
+	* gcc.dg/plugin/diagnostic_group_plugin.c
+	(test_diagnostic_starter): Likewise.
+	(test_diagnostic_start_span_fn): Likewise.
+	(test_output_format::on_begin_group): Likewise.
+	(test_output_format::on_end_group): Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_paths.c: Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c
+	(custom_diagnostic_finalizer): Likewise.
+
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116603
+	* gcc.dg/plugin/diagnostic-test-metadata-sarif.py (test_basics):
+	Update expected schema URL.
+	* gcc.dg/plugin/diagnostic-test-paths-multithreaded-sarif.py:
+	Likewise.
+	* gcc.dg/sarif-output/test-include-chain-1.py: Likewise.
+	* gcc.dg/sarif-output/test-include-chain-2.py: Likewise.
+	* gcc.dg/sarif-output/test-missing-semicolon.py: Likewise.
+	* gcc.dg/sarif-output/test-no-diagnostics.py: Likewise.
+	* gcc.dg/sarif-output/test-werror.py: Likewise.
+	* lib/sarif-schema-2.1.0.json: Update with copy downloaded from
+	https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json
+
+2024-09-09  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/90693
+	* gcc.target/aarch64/popcnt-le-1.c: New test.
+	* gcc.target/aarch64/popcnt-le-2.c: New test.
+	* gcc.target/aarch64/popcnt-le-3.c: New test.
+
+2024-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116514
+	* gcc.dg/tree-ssa/ssa-ccp-44.c: New testcase.
+
+2024-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116647
+	* gcc.dg/torture/pr116647.c: New testcase.
+	* gcc.dg/vect/no-scevccp-pr86725-2.c: Adjust expected pattern.
+	* gcc.dg/vect/no-scevccp-pr86725-4.c: Likewise.
+
+2024-09-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/115250
+	* gnat.dg/opt58_pkg.ads: Convert to Unix line ending.
+	* gnat.dg/opt58.adb: Likewise and pass -gnatws to the compiler.
+
+2024-09-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/115246
+	* gnat.dg/alignment14.adb (My_Int2): Delete.
+	(Arr2): Likewise.
+
+2024-09-09  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116601
+	* gcc.dg/pr78408-1.c: Adjust dump scan to match where
+	the optimization now happens.
+	* g++.dg/torture/except-2.C: New test.
+
+2024-09-09  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/fast-math-vect-call-2.c: Disable epilogue
+	vectorization.
+
+2024-09-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/116588
+	* gcc.dg/pr116588.c: Remove -DDEBUG from dg-options.
+	(main): Remove debugging code and simplify.
+
+2024-09-09  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR testsuite/116635
+	* gcc.dg/opt-ordered-and-nonequal-1.c: Fix re
+	'LOGICAL_OP_NON_SHORT_CIRCUIT'.
+
 2024-09-08  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/116621

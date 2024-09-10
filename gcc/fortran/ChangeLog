@@ -1,3 +1,31 @@
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* cpp.cc (cb_cpp_diagnostic_cpp_option): Convert return type from
+	"int" to "diagnostic_option_id".
+	(cb_cpp_diagnostic): Update for renaming of
+	diagnostic_override_option_index to diagnostic_set_option_id.
+	* error.cc (gfc_warning): Update for renaming of diagnostic_info
+	field.
+	(gfc_warning_now_at): Likewise.
+	(gfc_warning_now): Likewise.
+	(gfc_warning_internal): Likewise.
+
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* error.cc (gfc_clear_pp_buffer): Rename diagnostic_context's
+	"printer" field to "m_printer".
+	(gfc_warning): Likewise.
+	(gfc_diagnostic_build_kind_prefix): Likewise.
+	(gfc_diagnostic_build_locus_prefix): Likewise.
+	(gfc_diagnostic_starter): Likewise.
+	(gfc_diagnostic_starter): Likewise.
+	(gfc_diagnostic_start_span): Likewise.
+	(gfc_diagnostic_finalizer): Likewise.
+	(gfc_warning_check): Likewise.
+	(gfc_error_opt): Likewise.
+	(gfc_error_check): Likewise.
+
 2024-09-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* arith.cc (gfc_reduce_unsigned): New function.

@@ -1,3 +1,9 @@
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* gcc-interface/misc.cc (internal_error_function): Rename
+	diagnostic_context's "printer" field to "m_printer".
+
 2024-09-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.cc (addressable_p) <COMPONENT_REF>: Add bypass

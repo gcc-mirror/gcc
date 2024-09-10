@@ -1,3 +1,14 @@
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* d-diagnostic.cc (d_diagnostic_report_diagnostic): Update for
+	renaming of diagnostic_info field.
+
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* d-diagnostic.cc (d_diagnostic_report_diagnostic): Rename
+	diagnostic_context's "printer" field to "m_printer".
+
 2024-09-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* toir.cc (IRVisitor): Rename ASM_INPUT_P to ASM_BASIC_P.

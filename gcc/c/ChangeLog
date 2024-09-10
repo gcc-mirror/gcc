@@ -1,3 +1,22 @@
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-errors.cc (pedwarn_c23): Use "diagnostic_option_id option_id"
+	rather than "int opt".  Update for renaming of diagnostic_info
+	field.
+	(pedwarn_c11): Likewise.
+	(pedwarn_c99): Likewise.
+	(pedwarn_c90): Likewise.
+	* c-tree.h (pedwarn_c90): Likewise for decl.
+	(pedwarn_c99): Likewise.
+	(pedwarn_c11): Likewise.
+	(pedwarn_c23): Likewise.
+
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* c-objc-common.cc (c_initialize_diagnostics): Rename
+	diagnostic_context's "printer" field to "m_printer".
+
 2024-09-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/46457

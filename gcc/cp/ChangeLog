@@ -1,3 +1,33 @@
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* constexpr.cc (constexpr_error): Update for renaming of
+	diagnostic_info field.
+	* cp-tree.h (pedwarn_cxx98): Use "diagnostic_option_id" rather
+	than "int".
+	* error.cc (cp_adjust_diagnostic_info): Update for renaming of
+	diagnostic_info field.
+	(pedwarn_cxx98): Use "diagnostic_option_id option_id" rather than
+	"int opt".  Update for renaming of diagnostic_info field.
+	(diagnostic_set_info): Likewise.
+
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* error.cc (cxx_initialize_diagnostics): Rename
+	diagnostic_context's "printer" field to "m_printer".
+	(cxx_print_error_function): Likewise.
+	(cp_diagnostic_starter): Likewise.
+	(cp_print_error_function): Likewise.
+	(print_instantiation_full_context): Likewise.
+	(print_instantiation_partial_context_line): Likewise.
+	(maybe_print_constexpr_context): Likewise.
+	(print_location): Likewise.
+	(print_constrained_decl_info): Likewise.
+	(print_concept_check_info): Likewise.
+	(print_constraint_context_head): Likewise.
+	(print_requires_expression_info): Likewise.
+	* module.cc (noisy_p): Likewise.
+
 2024-09-07  Jason Merrill  <jason@redhat.com>
 
 	* decl.cc (check_redeclaration_exception_specification): Remove
