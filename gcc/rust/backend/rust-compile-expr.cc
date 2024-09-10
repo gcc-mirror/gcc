@@ -235,7 +235,21 @@ void
 CompileExpr::visit (HIR::NegationExpr &expr)
 {
   auto op = expr.get_expr_type ();
-  auto negated_expr = CompileExpr::Compile (expr.get_expr ().get (), ctx);
+
+  const auto literal_expr = expr.get_expr ().get ();
+  if (op == NegationOperator::NEGATE
+      && literal_expr->get_expression_type () == HIR::Expr::ExprType::Lit)
+    {
+      auto new_literal_expr = static_cast<HIR::LiteralExpr *> (literal_expr);
+      auto lit_type = new_literal_expr->get_lit_type ();
+      if (lit_type == HIR::Literal::LitType::INT
+	  || lit_type == HIR::Literal::LitType::FLOAT)
+	{
+	  new_literal_expr->set_negative ();
+	}
+    }
+  auto negated_expr = CompileExpr::Compile (literal_expr, ctx);
+
   auto location = expr.get_locus ();
 
   // this might be an operator overload situation lets check
@@ -1506,12 +1520,21 @@ CompileExpr::compile_integer_literal (const HIR::LiteralExpr &expr,
   mpz_init (type_max);
   get_type_static_bounds (type, type_min, type_max);
 
+  if (expr.is_negative ())
+    {
+      mpz_neg (ival, ival);
+    }
   if (mpz_cmp (ival, type_min) < 0 || mpz_cmp (ival, type_max) > 0)
     {
       rust_error_at (expr.get_locus (),
 		     "integer overflows the respective type %qs",
 		     tyty->get_name ().c_str ());
       return error_mark_node;
+    }
+  // Other tests break if we don't reverse the negation
+  if (expr.is_negative ())
+    {
+      mpz_neg (ival, ival);
     }
 
   tree result = wide_int_to_tree (type, wi::from_mpz (type, ival, true));
@@ -1530,6 +1553,8 @@ CompileExpr::compile_float_literal (const HIR::LiteralExpr &expr,
   rust_assert (expr.get_lit_type () == HIR::Literal::FLOAT);
   const auto literal_value = expr.get_literal ();
 
+  tree type = TyTyResolveCompile::compile (ctx, tyty);
+
   mpfr_t fval;
   if (mpfr_init_set_str (fval, literal_value.as_string ().c_str (), 10,
 			 MPFR_RNDN)
@@ -1539,12 +1564,44 @@ CompileExpr::compile_float_literal (const HIR::LiteralExpr &expr,
       return error_mark_node;
     }
 
-  tree type = TyTyResolveCompile::compile (ctx, tyty);
-
   // taken from:
   // see go/gofrontend/expressions.cc:check_float_type
-  mpfr_exp_t exp = mpfr_get_exp (fval);
-  bool real_value_overflow = exp > TYPE_PRECISION (type);
+  bool real_value_overflow;
+
+  if (mpfr_regular_p (fval) != 0)
+    {
+      mpfr_exp_t exp = mpfr_get_exp (fval);
+      mpfr_exp_t min_exp;
+      mpfr_exp_t max_exp;
+
+      /*
+       * By convention, the radix point of the significand is just before the
+       * first digit (which is always 1 due to normalization), like in the C
+       * language, but unlike in IEEE 754 (thus, for a given number, the
+       * exponent values in MPFR and in IEEE 754 differ by 1).
+       */
+      switch (TYPE_PRECISION (type))
+	{
+	case 32:
+	  min_exp = -128 + 1;
+	  max_exp = 127 + 1;
+	  break;
+	case 64:
+	  min_exp = -1024 + 1;
+	  max_exp = 1023 + 1;
+	  break;
+	default:
+	  rust_error_at (expr.get_locus (),
+			 "precision of type %<%s%> not supported",
+			 tyty->get_name ().c_str ());
+	  return error_mark_node;
+	}
+      real_value_overflow = exp < min_exp || exp > max_exp;
+    }
+  else
+    {
+      real_value_overflow = false;
+    }
 
   REAL_VALUE_TYPE r1;
   real_from_mpfr (&r1, fval, type, GMP_RNDN);
