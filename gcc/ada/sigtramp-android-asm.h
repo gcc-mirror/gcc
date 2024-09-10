@@ -2,11 +2,11 @@
  *                                                                          *
  *                         GNAT COMPILER COMPONENTS                         *
  *                                                                          *
- *                             S I G T R A M P                              *
+ *                      S I G T R A M P - T A R G E T                       *
  *                                                                          *
- *                         Asm Implementation File                          *
+ *                     Asm Implementation Include File                      *
  *                                                                          *
- *           Copyright (C) 2015-2024, Free Software Foundation, Inc.        *
+ *           Copyright (C) 2024, Free Software Foundation, Inc.             *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -29,62 +29,19 @@
  *                                                                          *
  ****************************************************************************/
 
-/******************************************************
- * ARM-Android version of the __gnat_sigtramp service *
- ******************************************************/
+/*****************************************************************
+ * CPU specific parts of the __gnat_sigtramp service for Android *
+ *****************************************************************/
 
-#include <sys/ucontext.h>
+/* The intended use mode of this header is to provide macros
+   and a prologue to the generation of an asm function, as in
 
-#include "sigtramp.h"
-/* See sigtramp.h for a general explanation of functionality.  */
+     #include <this-header>
+     asm (SIGTRAMP_START(<symbol-name>));
+     asm (SIGTRAMP_BODY);
+     asm (SIGTRAMP_END(<symbol-name>));
 
-/* ----------------------
-   -- General comments --
-   ----------------------
-
-   Stubs are generated from toplevel asms,
-   The general idea is to establish CFA as the sigcontext
-   and state where to find the registers as offsets from there.
-
-   We support stubs for VxWorks and Android, providing unwind info for
-   common registers. We might need variants with support for floating
-   point or altivec registers as well at some point.
-
-   For Android it would be simpler to write this in Asm since there's only
-   one variant, but to keep it looking like the VxWorks stubs,
-   C is the choice for our toplevel interface.
-
-   Note that the registers we "restore" here are those to which we have
-   direct access through the system sigcontext structure, which includes
-   only a partial set of the non-volatiles ABI-wise.  */
-
-/* -----------------------------------------
-   -- Protypes for our internal asm stubs --
-   -----------------------------------------
-
-   The registers are expected to be at SIGCONTEXT + 12 (reference the
-   sicontext structure in asm/sigcontext.h which describes the first
-   3 * 4byte fields.)  Even though our symbols will remain local, the
-   prototype claims "extern" and not "static" to prevent compiler complaints
-   about a symbol used but never defined.  */
-
-/* sigtramp stub providing unwind info for common registers.  */
-
-extern void __gnat_sigtramp_common
-  (int signo, void *siginfo, void *sigcontext,
-   __sigtramphandler_t * handler);
-
-void __gnat_sigtramp (int signo, void *si, void *sc,
-                      __sigtramphandler_t * handler)
-     __attribute__((optimize(2)));
-
-void __gnat_sigtramp (int signo, void *si, void *ucontext,
-                      __sigtramphandler_t * handler)
-{
-  struct sigcontext *mcontext = &((ucontext_t *) ucontext)->uc_mcontext;
-
-  __gnat_sigtramp_common (signo, si, mcontext, handler);
-}
+   and nothing else after.  */
 
 /* asm string construction helpers.  */
 
@@ -102,6 +59,8 @@ void __gnat_sigtramp (int signo, void *si, void *ucontext,
 
 #undef TCR
 #define TCR(S) TAB(CR(S))
+
+#if defined(__arm__)
 
 /* Trampoline body block
    ---------------------  */
@@ -145,19 +104,9 @@ TCR(".fnstart")
 CR(".fnend") \
 TCR(".size " S(SYM) ", .-" S(SYM))
 
-/*----------------------------
-  -- And now, the real code --
-  ---------------------------- */
+#endif
 
 /* Text section start.  The compiler isn't aware of that switch.  */
 
 asm (".text\n"
      TCR(".align 2"));
-
-/* sigtramp stub for common registers.  */
-
-#define TRAMP_COMMON __gnat_sigtramp_common
-
-asm (SIGTRAMP_START(TRAMP_COMMON));
-asm (SIGTRAMP_BODY);
-asm (SIGTRAMP_END(TRAMP_COMMON));

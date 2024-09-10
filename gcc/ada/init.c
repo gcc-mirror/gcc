@@ -2831,15 +2831,8 @@ static void
 __gnat_error_handler (int sig, siginfo_t *si, void *ucontext)
 {
   __gnat_adjust_context_for_raise (sig, ucontext);
-
-  /* The ARM port relies on a sigtramp.  Others such as aarch64,
-     dwarf info based, rely on kernel CFI.  */
-#if defined(__arm__)
   __gnat_sigtramp (sig, (void *) si, (void *) ucontext,
 		   (__sigtramphandler_t *)&__gnat_map_signal);
-#else
-  __gnat_map_signal (sig, si, ucontext);
-#endif
 }
 
 /* This must be in keeping with System.OS_Interface.Alternate_Stack_Size.  */

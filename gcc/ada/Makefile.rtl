@@ -1430,22 +1430,20 @@ ifeq ($(strip $(filter-out arm% aarch64 linux-android%,$(target_cpu) $(target_os
 
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
 
-  # 32bit arm relies on a sigtramp for signal->exception propagation
-  # while aarch64 relies on kernel dwarf CFI.  And as a 64bit target,
-  # aarch64 can also incorporate support for 128bit arithmetic.
+  # ARM and aarch64 rely on different unwinding mechanisms, and as
+  # a 64bit target, aarch64 can also incorporate support for 128bit
+  # arithmetic.
 
   ifeq ($(strip $(filter-out arm%, $(target_cpu))),)
      SELECTED_PAIRS=arm-android
 
      EH_MECHANISM=-arm
-     SIGTRAMP_OBJ=sigtramp-armdroid.o
      LIBGNAT_TARGET_PAIRS += \
        s-linux.ads<libgnarl/s-linux__android-arm.ads
   else
      SELECTED_PAIRS=aarch64-android
 
      EH_MECHANISM=-gcc
-     SIGTRAMP_OBJ=
      LIBGNAT_TARGET_PAIRS += \
        s-linux.ads<libgnarl/s-linux__android-aarch64.ads
 
@@ -1453,8 +1451,8 @@ ifeq ($(strip $(filter-out arm% aarch64 linux-android%,$(target_cpu) $(target_os
      EXTRA_GNATRTL_NONTASKING_OBJS = $(GNATRTL_128BIT_OBJS)
   endif
 
-  EXTRA_LIBGNAT_OBJS+=$(SIGTRAMP_OBJ)
-  EXTRA_LIBGNAT_SRCS+=sigtramp.h
+  EXTRA_LIBGNAT_OBJS+=sigtramp-android.o
+  EXTRA_LIBGNAT_SRCS+=sigtramp.h sigtramp-android-asm.h
   THREADSLIB =
   GNATLIB_SHARED = gnatlib-shared-dual
   LIBRARY_VERSION := $(LIB_VERSION)
