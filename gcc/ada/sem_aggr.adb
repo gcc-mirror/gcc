@@ -26,6 +26,8 @@
 with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
+with Debug;          use Debug;
+with Diagnostics.Constructors; use Diagnostics.Constructors;
 with Einfo;          use Einfo;
 with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
@@ -4051,6 +4053,21 @@ package body Sem_Aggr is
         Empty_Subp, Add_Named_Subp, Add_Unnamed_Subp,
         New_Indexed_Subp, Assign_Indexed_Subp);
 
+      if Present (First (Expressions (N)))
+        and then Present (First (Component_Associations (N)))
+      then
+         if Debug_Flag_Underscore_DD then
+            Record_Mixed_Container_Aggregate_Error
+              (Aggr       => N,
+               Pos_Elem   => First (Expressions (N)),
+               Named_Elem => First (Component_Associations (N)));
+         else
+            Error_Msg_N
+              ("container aggregate cannot be both positional and named", N);
+         end if;
+         return;
+      end if;
+
       if Present (Add_Unnamed_Subp)
         and then No (New_Indexed_Subp)
         and then Present (Etype (Add_Unnamed_Subp))
@@ -4184,14 +4201,6 @@ package body Sem_Aggr is
             if Present (Component_Associations (N))
               and then not Is_Empty_List (Component_Associations (N))
             then
-               if Present (Expressions (N))
-                 and then not Is_Empty_List (Expressions (N))
-               then
-                  Error_Msg_N ("container aggregate cannot be "
-                    & "both positional and named", N);
-                  return;
-               end if;
-
                Comp := First (Component_Associations (N));
 
                while Present (Comp) loop

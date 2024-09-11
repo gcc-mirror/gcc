@@ -39,7 +39,8 @@ package Diagnostics is
       GNAT0007,
       GNAT0008,
       GNAT0009,
-      GNAT0010);
+      GNAT0010,
+      GNAT0011);
 
    --  Labeled_Span_Type represents a span of source code that is associated
    --  with a textual label. Primary spans indicate the primary location of the
