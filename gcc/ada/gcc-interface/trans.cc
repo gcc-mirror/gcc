@@ -4230,7 +4230,10 @@ node_is_atomic (Node_Id gnat_node)
       if (!Is_Object (gnat_entity))
 	break;
       return Is_Atomic (gnat_entity)
+	     /* Disregard the flag on unconstrained arrays or simple constants
+		since we cannot or need not generate an atomic access.  */
 	     || (Is_Atomic (Etype (gnat_entity))
+		 && Ekind (Etype (gnat_entity)) != E_Array_Type
 		 && !simple_constant_p (gnat_entity));
 
     case N_Selected_Component:
@@ -4270,7 +4273,10 @@ node_is_volatile_full_access (Node_Id gnat_node)
       if (!Is_Object (gnat_entity))
 	break;
       return Is_Volatile_Full_Access (gnat_entity)
+	     /* Disregard the flag on unconstrained arrays or simple constants
+		since we cannot or need not generate a full access.  */
 	     || (Is_Volatile_Full_Access (Etype (gnat_entity))
+		 && Ekind (Etype (gnat_entity)) != E_Array_Type
 		 && !simple_constant_p (gnat_entity));
 
     case N_Selected_Component:
