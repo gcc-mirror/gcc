@@ -8434,11 +8434,6 @@ trees_in::decl_value ()
 	  add_mergeable_specialization (!is_type, &spec, decl, spec_flags);
 	}
 
-      /* When making a CMI from a partition we're going to need to walk partial
-	 specializations again, so make sure they're tracked.  */
-      if (state->is_partition () && (spec_flags & 2))
-	set_defining_module_for_partial_spec (inner);
-
       if (NAMESPACE_SCOPE_P (decl)
 	  && (mk == MK_named || mk == MK_unique
 	      || mk == MK_enum || mk == MK_friend_spec)
@@ -13356,16 +13351,20 @@ depset::hash::add_partial_entities (vec<tree, va_gc> *partial_classes)
 	     specialization.  */
 	  gcc_checking_assert (dep->get_entity_kind ()
 			       == depset::EK_PARTIAL);
+
+	  /* Only emit GM entities if reached.  */
+	  if (!DECL_LANG_SPECIFIC (inner)
+	      || !DECL_MODULE_PURVIEW_P (inner))
+	    dep->set_flag_bit<DB_UNREACHED_BIT> ();
 	}
       else
-	/* It was an explicit specialization, not a partial one.  */
-	gcc_checking_assert (dep->get_entity_kind ()
-			     == depset::EK_SPECIALIZATION);
-
-      /* Only emit GM entities if reached.  */
-      if (!DECL_LANG_SPECIFIC (inner)
-	  || !DECL_MODULE_PURVIEW_P (inner))
-	dep->set_flag_bit<DB_UNREACHED_BIT> ();
+	{
+	  /* It was an explicit specialization, not a partial one.
+	     We should have already added this.  */
+	  gcc_checking_assert (dep->get_entity_kind ()
+			       == depset::EK_SPECIALIZATION);
+	  gcc_checking_assert (dep->is_special ());
+	}
     }
 }
 
