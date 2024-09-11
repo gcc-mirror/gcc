@@ -7337,8 +7337,12 @@ package body Sem_Ch12 is
          then
             --  If the formal is a tagged type the corresponding class-wide
             --  type has been generated as well, and it must be skipped.
+            --  Likewise, for a formal discrete type, the base type has been
+            --  generated as well (see Analyze_Formal_Discrete_Type).
 
-            if Is_Type (E2) and then Is_Tagged_Type (E2) then
+            if Is_Type (E2)
+              and then (Is_Tagged_Type (E2) or else Is_Enumeration_Type (E2))
+            then
                Next_Entity (E2);
             end if;
 
