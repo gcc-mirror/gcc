@@ -1267,6 +1267,7 @@ void aarch64_expand_reversed_crc_using_pmull (scalar_mode, scalar_mode, rtx *);
 
 void aarch64_expand_fp_spaceship (rtx, rtx, rtx, rtx);
 
+extern bool aarch64_pacret_enabled ();
 extern bool aarch64_gcs_enabled ();
 
 extern unsigned aarch64_data_alignment (const_tree exp, unsigned align);

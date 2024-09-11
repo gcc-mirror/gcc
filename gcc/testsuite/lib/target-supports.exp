@@ -12442,6 +12442,21 @@ proc check_effective_target_aarch64_tiny { } {
     }
 }
 
+# Return 1 if Gas supports AEABI build attributes on AArch64 target
+proc check_effective_target_aarch64_gas_has_build_attributes { } {
+    if { ![istarget aarch64*-*-*] } {
+	return 0
+    }
+
+    return [check_no_compiler_messages aarch64_gas_has_build_attributes object {
+	/* Assembly */
+	.aeabi_subsection aeabi_feature_and_bits, optional, ULEB128
+	.aeabi_attribute Tag_Feature_BTI, 1
+	.aeabi_attribute Tag_Feature_PAC, 1
+	.aeabi_attribute Tag_Feature_GCS, 1
+    }]
+}
+
 # Create functions to check that the AArch64 assembler supports the
 # various architecture extensions via the .arch_extension pseudo-op.
 

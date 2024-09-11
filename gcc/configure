@@ -28249,6 +28249,43 @@ $as_echo "#define HAVE_AS_SMALL_PIC_RELOCS 1" >>confdefs.h
 
 fi
 
+    # Check if we have binutils support for AEABI build attributes.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for support of AEABI build attributes" >&5
+$as_echo_n "checking assembler for support of AEABI build attributes... " >&6; }
+if ${gcc_cv_as_aarch64_aeabi_build_attributes+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_aarch64_aeabi_build_attributes=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '
+	.aeabi_subsection aeabi_feature_and_bits, optional, ULEB128
+	.aeabi_attribute Tag_Feature_BTI, 1
+	.aeabi_attribute Tag_Feature_PAC, 1
+	.aeabi_attribute Tag_Feature_GCS, 1
+    ' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_aarch64_aeabi_build_attributes=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_aarch64_aeabi_build_attributes" >&5
+$as_echo "$gcc_cv_as_aarch64_aeabi_build_attributes" >&6; }
+if test $gcc_cv_as_aarch64_aeabi_build_attributes = yes; then
+
+$as_echo "#define HAVE_AS_AEABI_BUILD_ATTRIBUTES 1" >>confdefs.h
+
+fi
+
     # Enable Branch Target Identification Mechanism and Return Address
     # Signing by default.
     # Check whether --enable-standard-branch-protection was given.

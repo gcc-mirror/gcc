@@ -109,6 +109,10 @@
    and 1 MOVI/DUP (same size as a call).  */
 #define MAX_SET_SIZE(speed) (speed ? 256 : 96)
 
+#ifndef HAVE_AS_AEABI_BUILD_ATTRIBUTES
+#define HAVE_AS_AEABI_BUILD_ATTRIBUTES 0
+#endif
+
 /* Flags that describe how a function shares certain architectural state
    with its callers.
 
@@ -8755,6 +8759,13 @@ aarch_bti_j_insn_p (rtx_insn *insn)
 
   rtx pat = PATTERN (insn);
   return GET_CODE (pat) == UNSPEC_VOLATILE && XINT (pat, 1) == UNSPECV_BTI_J;
+}
+
+/* Return TRUE if Pointer Authentication for the return address is enabled.  */
+bool
+aarch64_pacret_enabled (void)
+{
+  return (aarch_ra_sign_scope != AARCH_FUNCTION_NONE);
 }
 
 /* Return TRUE if Guarded Control Stack is enabled.  */
@@ -25334,7 +25345,6 @@ aarch64_start_file (void)
 }
 
 /* Emit load exclusive.  */
-
 static void
 aarch64_emit_load_exclusive (machine_mode mode, rtx rval,
 			     rtx mem, rtx model_rtx)
@@ -29970,16 +29980,37 @@ aarch64_file_end_indicate_exec_stack ()
 {
   file_end_indicate_exec_stack ();
 
-  aarch64::section_note_gnu_property gnu_properties;
+  /* Check whether the current assembler supports AEABI build attributes, if
+     not fallback to .note.gnu.property section.  */
+  if (HAVE_AS_AEABI_BUILD_ATTRIBUTES)
+    {
+      using namespace aarch64;
+      aeabi_subsection<BA_TagFeature_t, bool, 3>
+	aeabi_subsec ("aeabi_feature_and_bits", true);
 
-  if (aarch_bti_enabled ())
-    gnu_properties.bti_enabled ();
-  if (aarch_ra_sign_scope != AARCH_FUNCTION_NONE)
-    gnu_properties.pac_enabled ();
-  if (aarch64_gcs_enabled ())
-    gnu_properties.gcs_enabled ();
+      aeabi_subsec.append (
+	make_aeabi_attribute (Tag_Feature_BTI, aarch_bti_enabled ()));
+      aeabi_subsec.append (
+	make_aeabi_attribute (Tag_Feature_PAC, aarch64_pacret_enabled ()));
+      aeabi_subsec.append (
+	make_aeabi_attribute (Tag_Feature_GCS, aarch64_gcs_enabled ()));
 
-  gnu_properties.write ();
+      if (!aeabi_subsec.empty ())
+	aeabi_subsec.write (asm_out_file);
+    }
+  else
+    {
+      aarch64::section_note_gnu_property gnu_properties;
+
+      if (aarch_bti_enabled ())
+	gnu_properties.bti_enabled ();
+      if (aarch64_pacret_enabled ())
+	gnu_properties.pac_enabled ();
+      if (aarch64_gcs_enabled ())
+	gnu_properties.gcs_enabled ();
+
+      gnu_properties.write ();
+    }
 }
 
 /* Helper function for straight line speculation.
