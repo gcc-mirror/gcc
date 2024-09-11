@@ -3516,75 +3516,37 @@ dt_operand::gen (FILE *f, int indent, bool gimple, int depth)
 void
 dt_operand::gen_phi_on_cond (FILE *f, int indent, int depth)
 {
-  fprintf_indent (f, indent,
-    "basic_block _b%d = gimple_bb (_a%d);\n", depth, depth);
-
-  fprintf_indent (f, indent, "if (gimple_phi_num_args (_a%d) == 2)\n", depth);
-
-  indent += 2;
-  fprintf_indent (f, indent, "{\n");
-  indent += 2;
-
-  fprintf_indent (f, indent,
-    "basic_block _pb_0_%d = EDGE_PRED (_b%d, 0)->src;\n", depth, depth);
-  fprintf_indent (f, indent,
-    "basic_block _pb_1_%d = EDGE_PRED (_b%d, 1)->src;\n", depth, depth);
-  fprintf_indent (f, indent,
-    "basic_block _db_%d = safe_dyn_cast <gcond *> (*gsi_last_bb (_pb_0_%d)) ? "
-    "_pb_0_%d : _pb_1_%d;\n", depth, depth, depth, depth);
-  fprintf_indent (f, indent,
-    "basic_block _other_db_%d = safe_dyn_cast <gcond *> "
-    "(*gsi_last_bb (_pb_0_%d)) ? _pb_1_%d : _pb_0_%d;\n",
-    depth, depth, depth, depth);
-
-  fprintf_indent (f, indent,
-    "gcond *_ct_%d = safe_dyn_cast <gcond *> (*gsi_last_bb (_db_%d));\n",
-    depth, depth);
-  fprintf_indent (f, indent, "if (_ct_%d"
-    " && EDGE_COUNT (_other_db_%d->preds) == 1\n", depth, depth);
-  fprintf_indent (f, indent,
-    "  && EDGE_COUNT (_other_db_%d->succs) == 1\n", depth);
-  fprintf_indent (f, indent,
-    "  && EDGE_PRED (_other_db_%d, 0)->src == _db_%d)\n", depth, depth);
-
-  indent += 2;
-  fprintf_indent (f, indent, "{\n");
-  indent += 2;
-
-  fprintf_indent (f, indent,
-    "tree _cond_lhs_%d = gimple_cond_lhs (_ct_%d);\n", depth, depth);
-  fprintf_indent (f, indent,
-    "tree _cond_rhs_%d = gimple_cond_rhs (_ct_%d);\n", depth, depth);
-
   char opname_0[20];
   char opname_1[20];
   char opname_2[20];
+
   gen_opname (opname_0, 0);
+  gen_opname (opname_1, 1);
+  gen_opname (opname_2, 2);
 
   fprintf_indent (f, indent,
-    "tree %s = build2 (gimple_cond_code (_ct_%d), "
+    "basic_block _b%d = gimple_bb (_a%d);\n", depth, depth);
+  fprintf_indent (f, indent, "tree %s, %s;\n", opname_1, opname_2);
+  fprintf_indent (f, indent,
+    "gcond *_cond_%d = match_cond_with_binary_phi (_a%d, &%s, &%s);\n",
+    depth, depth, opname_1, opname_2);
+
+  fprintf_indent (f, indent, "if (_cond_%d)\n", depth);
+
+  indent += 2;
+  fprintf_indent (f, indent, "{\n");
+  indent += 2;
+
+  fprintf_indent (f, indent,
+    "tree _cond_lhs_%d = gimple_cond_lhs (_cond_%d);\n", depth, depth);
+  fprintf_indent (f, indent,
+    "tree _cond_rhs_%d = gimple_cond_rhs (_cond_%d);\n", depth, depth);
+  fprintf_indent (f, indent,
+    "tree %s = build2 (gimple_cond_code (_cond_%d), "
     "boolean_type_node, _cond_lhs_%d, _cond_rhs_%d);\n",
     opname_0, depth, depth, depth);
 
-  fprintf_indent (f, indent,
-    "bool _arg_0_is_true_%d = gimple_phi_arg_edge (_a%d, 0)->flags"
-    " & EDGE_TRUE_VALUE;\n", depth, depth);
-
-  gen_opname (opname_1, 1);
-  fprintf_indent (f, indent,
-    "tree %s = gimple_phi_arg_def (_a%d, _arg_0_is_true_%d ? 0 : 1);\n",
-    opname_1, depth, depth);
-
-  gen_opname (opname_2, 2);
-  fprintf_indent (f, indent,
-    "tree %s = gimple_phi_arg_def (_a%d, _arg_0_is_true_%d ? 1 : 0);\n",
-    opname_2, depth, depth);
-
   gen_kids (f, indent, true, depth);
-
-  indent -= 2;
-  fprintf_indent (f, indent, "}\n");
-  indent -= 2;
 
   indent -= 2;
   fprintf_indent (f, indent, "}\n");
