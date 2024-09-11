@@ -42,6 +42,7 @@ public:
   void visit (AST::UseTreeGlob &use_tree) override;
   void visit (AST::Function &function) override;
   void visit (AST::TraitImpl &impl) override;
+  void visit (AST::Trait &trait) override;
   void visit (AST::ExternalTypeItem &item) override;
   void visit (AST::ExternBlock &block) override;
   void visit (AST::MacroRulesDefinition &rules_def) override;

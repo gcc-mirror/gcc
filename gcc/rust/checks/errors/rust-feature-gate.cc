@@ -174,6 +174,15 @@ FeatureGate::visit (AST::TraitImpl &impl)
 }
 
 void
+FeatureGate::visit (AST::Trait &trait)
+{
+  if (trait.is_auto ())
+    gate (Feature::Name::AUTO_TRAITS, trait.get_locus (),
+	  "auto traits are experimental and possibly buggy");
+  AST::DefaultASTVisitor::visit (trait);
+}
+
+void
 FeatureGate::visit (AST::BoxExpr &expr)
 {
   gate (
