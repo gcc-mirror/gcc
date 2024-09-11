@@ -1004,6 +1004,9 @@ public:
 
   void parse_insn (insn_info *insn)
   {
+    /* The VL dest of the insn */
+    rtx dest_vl = NULL_RTX;
+
     m_insn = insn;
     m_bb = insn->bb ();
     /* Return if it is debug insn for the consistency with optimize == 0.  */
@@ -1037,7 +1040,10 @@ public:
     if (m_avl)
       {
 	if (vsetvl_insn_p (insn->rtl ()) || has_vlmax_avl ())
-	  m_vl = ::get_vl (insn->rtl ());
+	  {
+	    m_vl = ::get_vl (insn->rtl ());
+	    dest_vl = m_vl;
+	  }
 
 	if (has_nonvlmax_reg_avl ())
 	  m_avl_def = find_access (insn->uses (), REGNO (m_avl))->def ();
@@ -1134,22 +1140,22 @@ public:
       }
 
     /* Determine if dest operand(vl) has been used by non-RVV instructions.  */
-    if (has_vl ())
+    if (dest_vl)
       {
 	const hash_set<use_info *> vl_uses
-	  = get_all_real_uses (get_insn (), REGNO (get_vl ()));
+	  = get_all_real_uses (get_insn (), REGNO (dest_vl));
 	for (use_info *use : vl_uses)
 	  {
 	    gcc_assert (use->insn ()->is_real ());
 	    rtx_insn *rinsn = use->insn ()->rtl ();
 	    if (!has_vl_op (rinsn)
-		|| count_regno_occurrences (rinsn, REGNO (get_vl ())) != 1)
+		|| count_regno_occurrences (rinsn, REGNO (dest_vl)) != 1)
 	      {
 		m_vl_used_by_non_rvv_insn = true;
 		break;
 	      }
 	    rtx avl = ::get_avl (rinsn);
-	    if (!avl || !REG_P (avl) || REGNO (get_vl ()) != REGNO (avl))
+	    if (!avl || !REG_P (avl) || REGNO (dest_vl) != REGNO (avl))
 	      {
 		m_vl_used_by_non_rvv_insn = true;
 		break;
