@@ -8876,7 +8876,7 @@
    cvtsi2sd{l}\t{%2, %0|%0, %2}
    vcvtsi2sd{l}\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "isa" "noavx,noavx,avx")
-   (set_attr "type" "sseicvt")
+   (set_attr "type" "sseicvt2")
    (set_attr "athlon_decode" "double,direct,*")
    (set_attr "amdfam10_decode" "vector,double,*")
    (set_attr "bdver1_decode" "double,direct,*")
@@ -8898,7 +8898,7 @@
    cvtsi2sd{q}\t{%2, %0|%0, %2}
    vcvtsi2sd{q}\t{%2, <round_op3>%1, %0|%0, %1<round_op3>, %2}"
   [(set_attr "isa" "noavx,noavx,avx")
-   (set_attr "type" "sseicvt")
+   (set_attr "type" "sseicvt2")
    (set_attr "athlon_decode" "double,direct,*")
    (set_attr "amdfam10_decode" "vector,double,*")
    (set_attr "bdver1_decode" "double,direct,*")
@@ -11808,6 +11808,8 @@
 	      (const_string "imov")
 	    (eq_attr "alternative" "14")
 	      (const_string "fmov")
+	    (eq_attr "alternative" "4,6")
+	      (const_string "ssemov2")
 	   ]
 	   (const_string "ssemov")))
    (set (attr "addr")
