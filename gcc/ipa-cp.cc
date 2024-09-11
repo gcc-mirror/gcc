@@ -2519,8 +2519,7 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
     return false;
 
   if (!param_type
-      || (!INTEGRAL_TYPE_P (param_type)
-	  && !POINTER_TYPE_P (param_type)))
+      || !ipa_vr_supported_type_p (param_type))
     return dest_lat->set_to_bottom ();
 
   if (jfunc->type == IPA_JF_PASS_THROUGH)
