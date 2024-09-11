@@ -3945,6 +3945,8 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 
   vec<tree>& simd_clone_info = (slp_node ? SLP_TREE_SIMD_CLONE_INFO (slp_node)
 				: STMT_VINFO_SIMD_CLONE_INFO (stmt_info));
+  if (!vec_stmt)
+    simd_clone_info.truncate (0);
   arginfo.reserve (nargs, true);
   auto_vec<slp_tree> slp_op;
   slp_op.safe_grow_cleared (nargs);
@@ -3993,10 +3995,10 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 
       /* For linear arguments, the analyze phase should have saved
 	 the base and step in {STMT_VINFO,SLP_TREE}_SIMD_CLONE_INFO.  */
-      if (i * 3 + 4 <= simd_clone_info.length ()
+      if (vec_stmt
+	  && i * 3 + 4 <= simd_clone_info.length ()
 	  && simd_clone_info[i * 3 + 2])
 	{
-	  gcc_assert (vec_stmt);
 	  thisarginfo.linear_step = tree_to_shwi (simd_clone_info[i * 3 + 2]);
 	  thisarginfo.op = simd_clone_info[i * 3 + 1];
 	  thisarginfo.simd_lane_linear
@@ -4051,7 +4053,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
   unsigned group_size = slp_node ? SLP_TREE_LANES (slp_node) : 1;
   unsigned int badness = 0;
   struct cgraph_node *bestn = NULL;
-  if (simd_clone_info.exists ())
+  if (vec_stmt)
     bestn = cgraph_node::get (simd_clone_info[0]);
   else
     for (struct cgraph_node *n = node->simd_clones; n != NULL;
