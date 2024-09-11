@@ -2327,6 +2327,8 @@ function_expander::use_contiguous_load_insn (insn_code icode)
 
   add_output_operand (icode);
   add_mem_operand (mem_mode, get_contiguous_base ());
+  if (pred == PRED_z)
+    add_input_operand (icode, args[1]);
   return generate_insn (icode);
 }
 
@@ -2339,6 +2341,8 @@ function_expander::use_contiguous_store_insn (insn_code icode)
 
   add_mem_operand (mem_mode, get_contiguous_base ());
   add_input_operand (icode, args[1]);
+  if (pred == PRED_p)
+    add_input_operand (icode, args[2]);
   return generate_insn (icode);
 }
 
