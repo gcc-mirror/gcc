@@ -1461,7 +1461,9 @@ struct inherent_def : public nonoverloaded_base
 };
 SHAPE (inherent)
 
-/* sv<t0>_t svfoo[_t0](const <t0>_t *)
+/* <T0>_t vfoo[_t0](const <s0>_t *)
+
+   where <s0> is the scalar name of <T0>.
 
    Example: vld1q.
    int8x16_t [__arm_]vld1q[_s8](int8_t const *base)
@@ -1492,6 +1494,24 @@ struct load_def : public overloaded_base<0>
   }
 };
 SHAPE (load)
+
+/* <T0>_t foo_t0 (const <X>_t *)
+
+   where <X> is determined by the function base name.
+
+   Example: vldrq.
+   int32x4_t [__arm_]vldrwq_s32 (int32_t const *base)
+   uint32x4_t [__arm_]vldrhq_z_u32 (uint16_t const *base, mve_pred16_t p)  */
+struct load_ext_def : public nonoverloaded_base
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    build_all (b, "t0,al", group, MODE_none, preserve_user_namespace);
+  }
+};
+SHAPE (load_ext)
 
 /* <T0>_t vfoo[_t0](<T0>_t)
    <T0>_t vfoo_n_t0(<sT0>_t)
@@ -1542,14 +1562,18 @@ struct mvn_def : public overloaded_base<0>
 };
 SHAPE (mvn)
 
-/* void vfoo[_t0](<X>_t *, v<t0>[xN]_t)
+/* void vfoo[_t0](<X>_t *, <T0>[xN]_t)
 
    where <X> might be tied to <t0> (for non-truncating stores) or might
    depend on the function base name (for truncating stores).
 
    Example: vst1q.
    void [__arm_]vst1q[_s8](int8_t *base, int8x16_t value)
-   void [__arm_]vst1q_p[_s8](int8_t *base, int8x16_t value, mve_pred16_t p)  */
+   void [__arm_]vst1q_p[_s8](int8_t *base, int8x16_t value, mve_pred16_t p)
+
+   Example: vstrb.
+   void [__arm_]vstrbq[_s16](int8_t *base, int16x8_t value)
+   void [__arm_]vstrbq_p[_s16](int8_t *base, int16x8_t value, mve_pred16_t p)  */
 struct store_def : public overloaded_base<0>
 {
   void
