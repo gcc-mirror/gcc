@@ -1,3 +1,46 @@
+2024-09-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/misc.cc: Include memmodel.h before tm_p.h.
+
+2024-09-10  Viljar Indus  <indus@adacore.com>
+
+	* gcc-interface/decl.cc: Use same warning characters in
+	continuation messages.
+	* gcc-interface/trans.cc: Likewise.
+
+2024-09-10  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch13.adb (Analyze_One_Aspect): Call
+	Error_Msg_GNAT_Extension() to report an error when the aspect
+	First_Controlling_Parameter is set to True and the sources are
+	compiled without Core_Extensions_ Allowed.
+	* sem_prag.adb (Pragma_First_Controlling_Parameter): Call
+	subprogram Error_Msg_GNAT_Extension() to report an error when the
+	aspect First_Controlling_Parameter is set to True and the sources
+	are compiled without Core_Extensions_Allowed. Report an error when
+	the aspect pragma does not confirm an inherited True value.
+
+2024-09-10  Viljar Indus  <indus@adacore.com>
+
+	* diagnostics-pretty_emitter.adb (Get_Last_Line_Char): New. Get
+	the last non line change character. Write_Span_Labels use the
+	adjusted line end pointer to calculate the length of the span.
+
+2024-09-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_intr.ads, exp_intr.adb (Expand_Source_Info): Move
+	declaration to package spec.
+	* sem_eval.adb (Eval_Intrinsic_Call): Evaluate calls to
+	GNAT.Source_Info where possible.
+
+2024-09-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb (Remove_Checks): Combine CASE alternatives.
+
+2024-09-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/s-os_lib.ads: Remove extra whitespace.
+
 2024-09-09  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116613

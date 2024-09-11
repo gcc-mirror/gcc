@@ -1,3 +1,16 @@
+2024-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116449
+	* typeck.cc (get_member_function_from_ptrfunc): Use save_expr
+	on instance_ptr and function even if it doesn't have side-effects,
+	as long as it isn't a decl.
+
+2024-09-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116369
+	* call.cc (set_up_extended_ref_temp): Don't mark a temporary
+	TREE_READONLY if its type is TYPE_HAS_MUTABLE_P.
+
 2024-09-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* constexpr.cc (constexpr_error): Update for renaming of

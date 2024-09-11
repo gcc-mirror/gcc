@@ -1,3 +1,55 @@
+2024-09-10  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+
+	PR target/96265
+	* common.opt (foffload-abi-host-opts): New option.
+	* config/aarch64/aarch64.cc (aarch64_offload_options): Pass
+	-foffload-abi-host-opts.
+	* config/i386/i386-options.cc (ix86_offload_options): Likewise.
+	* config/rs6000/rs6000.cc (rs6000_offload_options): Likewise.
+	* config/nvptx/mkoffload.cc (offload_abi_host_opts): Define.
+	(compile_native): Append offload_abi_host_opts to argv_obstack.
+	(main): Handle option -foffload-abi-host-opts.
+	* config/gcn/mkoffload.cc (offload_abi_host_opts): Define.
+	(compile_native): Append offload_abi_host_opts to argv_obstack.
+	(main): Handle option -foffload-abi-host-opts.
+	* lto-wrapper.cc (merge_and_complain): Handle
+	-foffload-abi-host-opts.
+	(append_compiler_options): Likewise.
+	* opts.cc (common_handle_option): Likewise.
+
+2024-09-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116658
+	* tree-vect-slp.cc (vect_is_slp_load_node): Make sure
+	node isn't a permute.
+
+2024-09-10  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add the form 2 of signed .SAT_ADD matching.
+
+2024-09-10  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-phiopt.cc (execute_over_cond_phis): New template function,
+	moved the common parts from pass_phiopt::execute/pass_cselim::execute.
+	(pass_phiopt::execute): Move the functon specific parts of the loop
+	into an lamdba.
+	(pass_cselim::execute): Likewise.
+
+2024-09-10  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116643
+	* tree-ssa-phiopt.cc (replace_phi_edge_with_variable): s/PHI_RESULT/gimple_phi_result/.
+	(factor_out_conditional_operation): Likewise.
+	(minmax_replacement): Likewise.
+	(spaceship_replacement): Likewise.
+	(cond_store_replacement): Likewise.
+	(cond_if_else_store_replacement_1): Likewise.
+
+2024-09-10  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (*avx2_pcmp<mode>3_1): Don't force_reg
+	operands[3] when it's not const0_rtx.
+
 2024-09-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* ipa-pure-const.cc: Replace include of "opts.h" with
