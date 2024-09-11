@@ -3116,25 +3116,200 @@
   (set_attr "type" "mve_move")
    (set_attr "length""8")])
 
-;;
-;; [vstrbq_s vstrbq_u]
-;;
-(define_insn "mve_vstrbq_<supf><mode>"
-  [(set (match_operand:<MVE_B_ELEM> 0 "mve_memory_operand" "=Ux")
-	(unspec:<MVE_B_ELEM> [(match_operand:MVE_2 1 "s_register_operand" "w")]
-	 VSTRBQ))
+;; Vector stores
+;; [vstrbq_s8, vstrhq_s16, vstrwq_s32,
+;;  vstrbq_u8, vstrhq_u16, vstrwq_u32,
+;;  vst1q ]
+(define_insn "@mve_vstrq_<mode>"
+  [(set (match_operand:MVE_VLD_ST 0 "mve_memory_operand" "=Ux")
+	(unspec:MVE_VLD_ST
+	  [(match_operand:MVE_VLD_ST 1 "s_register_operand" "w")]
+	  VSTRQ))
   ]
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
+   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+{
+  rtx ops[2];
+  int regno = REGNO (operands[1]);
+  ops[1] = gen_rtx_REG (TImode, regno);
+  ops[0]  = operands[0];
+  output_asm_insn ("vstr<MVE_elem_ch>.<V_sz_elem>\t%q1, %E0",ops);
+  return "";
+}
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrq_<mode>"))
+  (set_attr "length" "4")])
+
+;; Predicated vector stores
+;; [vstrbq_p_s8, vstrhq_p_s16, vstrwq_p_s32,
+;;  vstrbq_p_u8, vstrhq_p_u16, vstrwq_p_u32,
+;;  vst1q_p ]
+(define_insn "@mve_vstrq_p_<mode>"
+  [(set (match_operand:MVE_VLD_ST 0 "mve_memory_operand" "=Ux")
+	(unspec:MVE_VLD_ST [
+	   (match_operand:MVE_VLD_ST 1 "s_register_operand" "w")
+	   (match_operand:<MVE_VPRED> 2 "vpr_register_operand" "Up")
+	   (match_dup 0)
+	] VSTRQ_P))
+  ]
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
+   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+{
+  rtx ops[2];
+  int regno = REGNO (operands[1]);
+  ops[1] = gen_rtx_REG (TImode, regno);
+  ops[0]  = operands[0];
+  output_asm_insn ("vpst\;vstr<MVE_elem_ch>t.<V_sz_elem>\t%q1, %E0",ops);
+  return "";
+}
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrq_<mode>"))
+  (set_attr "type" "mve_move")
+  (set_attr "length" "8")])
+
+;; Truncating vector stores
+;; [vstrbq_s16, vstrbq_s32, vstrhq_s32,
+;;  vstrbq_u16, vstrbq_u32, vstrhq_u32]
+(define_insn "@mve_vstrq_truncate_<mode>"
+  [(set (match_operand:MVE_w_narrow_TYPE 0 "mve_memory_operand" "=Ux")
+	(unspec:MVE_w_narrow_TYPE
+	  [(truncate:MVE_w_narrow_TYPE
+	    (match_operand:<MVE_wide_n_TYPE> 1 "s_register_operand" "w"))]
+	  VSTRQ_TRUNC
+	))]
   "TARGET_HAVE_MVE"
 {
-   rtx ops[2];
-   int regno = REGNO (operands[1]);
-   ops[1] = gen_rtx_REG (TImode, regno);
-   ops[0]  = operands[0];
-   output_asm_insn("vstrb.<V_sz_elem>\t%q1, %E0",ops);
-   return "";
+  rtx ops[2];
+  int regno = REGNO (operands[1]);
+  ops[1] = gen_rtx_REG (TImode, regno);
+  ops[0]  = operands[0];
+  output_asm_insn ("vstr<MVE_elem_ch>.<MVE_wide_n_sz_elem>\t%q1, %E0",ops);
+  return "";
 }
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrbq_<supf><mode>"))
+  [(set (attr "mve_unpredicated_insn")
+	(symbol_ref "CODE_FOR_mve_vstrq_truncate_<mode>"))
+   (set_attr "length" "4")])
+
+;; Predicated truncating vector stores
+;; [vstrbq_p_s16, vstrbq_p_s32, vstrhq_p_s32,
+;;  vstrbq_p_u16, vstrbq_p_u32, vstrhq_p_u32]
+(define_insn "@mve_vstrq_p_truncate_<mode>"
+  [(set (match_operand:MVE_w_narrow_TYPE 0 "mve_memory_operand" "=Ux")
+	(unspec:MVE_w_narrow_TYPE [
+	  (truncate:MVE_w_narrow_TYPE
+	    (match_operand:<MVE_wide_n_TYPE> 1 "s_register_operand" "w"))
+	  (match_operand:<MVE_wide_n_VPRED> 2 "vpr_register_operand" "Up")
+	  (match_dup 0)
+	] VSTRQ_TRUNC_P))]
+  "TARGET_HAVE_MVE"
+{
+  rtx ops[2];
+  int regno = REGNO (operands[1]);
+  ops[1] = gen_rtx_REG (TImode, regno);
+  ops[0]  = operands[0];
+  output_asm_insn (
+    "vpst\;vstr<MVE_elem_ch>t.<MVE_wide_n_sz_elem>\t%q1, %E0",
+    ops
+  );
+  return "";
+}
+ [(set (attr "mve_unpredicated_insn")
+       (symbol_ref "CODE_FOR_mve_vstrq_truncate_<mode>"))
+  (set_attr "type" "mve_move")
+  (set_attr "length" "8")])
+
+;; Vector Loads
+;; [vldrbq_s8, vldrhq_s16, vldrwq_s32,
+;;  vldrbq_u8, vldrhq_u16, vldrwq_u32,
+;;  vld1q ]
+(define_insn "@mve_vldrq_<mode>"
+  [(set (match_operand:MVE_VLD_ST 0 "s_register_operand" "=w")
+	(unspec:MVE_VLD_ST
+	  [(match_operand:MVE_VLD_ST 1 "mve_memory_operand" "Ux")]
+	  VLDRQ))]
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
+   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+{
+  rtx ops[2];
+  int regno = REGNO (operands[0]);
+  ops[0] = gen_rtx_REG (TImode, regno);
+  ops[1]  = operands[1];
+  output_asm_insn ("vldr<MVE_elem_ch>.<V_sz_elem>\t%q0, %E1",ops);
+  return "";
+ }
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrq_<mode>"))
   (set_attr "length" "4")])
+
+;; Predicated vector loads
+;; [vldrbq_z_s8, vldrhq_z_s16, vldrwq_z_s32,
+;;  vldrbq_z_u8, vldrhq_z_u16, vldrwq_z_u32,
+;;  vld1q_z ]
+(define_insn "@mve_vldrq_z_<mode>"
+  [(set (match_operand:MVE_VLD_ST 0 "s_register_operand" "=w")
+	(unspec:MVE_VLD_ST [
+	   (match_operand:MVE_VLD_ST 1 "mve_memory_operand" "Ux")
+	   (match_operand:<MVE_VPRED> 2 "vpr_register_operand" "Up")
+	] VLDRQ_Z))]
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
+   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+{
+  rtx ops[2];
+  int regno = REGNO (operands[0]);
+  ops[0] = gen_rtx_REG (TImode, regno);
+  ops[1]  = operands[1];
+  output_asm_insn ("vpst\;vldr<MVE_elem_ch>t.<V_sz_elem>\t%q0, %E1",ops);
+  return "";
+}
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrq_<mode>"))
+  (set_attr "type" "mve_move")
+  (set_attr "length" "8")])
+
+;; Extending vector loads
+;; [vldrbq_s16, vldrbq_s32, vldrhq_s32,
+;;  vldrbq_u16, vldrbq_u32, vldrhq_u32]
+(define_insn "@mve_vldrq_extend_<mode><US>"
+  [(set (match_operand:<MVE_wide_n_TYPE> 0 "s_register_operand" "=w")
+	(unspec:<MVE_wide_n_TYPE>
+	  [(SE:<MVE_wide_n_TYPE>
+	    (match_operand:MVE_w_narrow_TYPE 1 "mve_memory_operand" "Ux"))]
+	  VLDRQ_EXT))]
+  "TARGET_HAVE_MVE"
+{
+  rtx ops[2];
+  int regno = REGNO (operands[0]);
+  ops[0] = gen_rtx_REG (TImode, regno);
+  ops[1]  = operands[1];
+  output_asm_insn ("vldr<MVE_elem_ch>.<US><MVE_wide_n_sz_elem>\t%q0, %E1",ops);
+  return "";
+}
+ [(set (attr "mve_unpredicated_insn")
+       (symbol_ref "CODE_FOR_mve_vldrq_extend_<mode><US>"))
+  (set_attr "length" "4")])
+
+;; Predicated extending vector loads
+;; [vldrbq_z_s16, vldrbq_z_s32, vldrhq_z_s32,
+;;  vldrbq_z_u16, vldrbq_z_u32, vldrhq_z_u32]
+(define_insn "@mve_vldrq_z_extend_<mode><US>"
+  [(set (match_operand:<MVE_wide_n_TYPE> 0 "s_register_operand" "=w")
+	  (unspec:<MVE_wide_n_TYPE> [
+	      (SE:<MVE_wide_n_TYPE>
+		(match_operand:MVE_w_narrow_TYPE 1 "mve_memory_operand" "Ux"))
+	      (match_operand:<MVE_wide_n_VPRED> 2 "vpr_register_operand" "Up")
+	  ] VLDRQ_EXT_Z))]
+  "TARGET_HAVE_MVE"
+{
+  rtx ops[2];
+  int regno = REGNO (operands[0]);
+  ops[0] = gen_rtx_REG (TImode, regno);
+  ops[1]  = operands[1];
+  output_asm_insn (
+    "vpst\;vldr<MVE_elem_ch>t.<US><MVE_wide_n_sz_elem>\t%q0, %E1",
+    ops
+  );
+  return "";
+}
+ [(set (attr "mve_unpredicated_insn")
+       (symbol_ref "CODE_FOR_mve_vldrq_extend_<mode><US>"))
+  (set_attr "type" "mve_move")
+  (set_attr "length" "8")])
 
 ;;
 ;; [vstrbq_scatter_offset_s vstrbq_scatter_offset_u]
@@ -3210,29 +3385,6 @@
    return "";
 }
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrbq_gather_offset_<supf><mode>"))
-  (set_attr "length" "4")])
-
-;;
-;; [vldrbq_s vldrbq_u]
-;;
-(define_insn "mve_vldrbq_<supf><mode>"
-  [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:<MVE_B_ELEM> 1 "mve_memory_operand" "Ux")]
-	 VLDRBQ))
-  ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[2];
-   int regno = REGNO (operands[0]);
-   ops[0] = gen_rtx_REG (TImode, regno);
-   ops[1]  = operands[1];
-   if (<V_sz_elem> == 8)
-     output_asm_insn ("vldrb.<V_sz_elem>\t%q0, %E1",ops);
-   else
-     output_asm_insn ("vldrb.<supf><V_sz_elem>\t%q0, %E1",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrbq_<supf><mode>"))
   (set_attr "length" "4")])
 
 ;;
@@ -3313,25 +3465,6 @@
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrwq_scatter_base_<supf>v4si"))
   (set_attr "length" "8")])
 
-(define_insn "mve_vstrbq_p_<supf><mode>"
-  [(set (match_operand:<MVE_B_ELEM> 0 "mve_memory_operand" "=Ux")
-	(unspec:<MVE_B_ELEM>
-	 [(match_operand:MVE_2 1 "s_register_operand" "w")
-	  (match_operand:<MVE_VPRED> 2 "vpr_register_operand" "Up")
-	  (match_dup 0)]
-	 VSTRBQ))]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[2];
-   int regno = REGNO (operands[1]);
-   ops[1] = gen_rtx_REG (TImode, regno);
-   ops[0]  = operands[0];
-   output_asm_insn ("vpst\;vstrbt.<V_sz_elem>\t%q1, %E0",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrbq_<supf><mode>"))
-  (set_attr "length" "8")])
-
 ;;
 ;; [vldrbq_gather_offset_z_s vldrbq_gather_offset_z_u]
 ;;
@@ -3359,30 +3492,6 @@
   (set_attr "length" "8")])
 
 ;;
-;; [vldrbq_z_s vldrbq_z_u]
-;;
-(define_insn "mve_vldrbq_z_<supf><mode>"
-  [(set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:<MVE_B_ELEM> 1 "mve_memory_operand" "Ux")
-		       (match_operand:<MVE_VPRED> 2 "vpr_register_operand" "Up")]
-	 VLDRBQ))
-  ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[2];
-   int regno = REGNO (operands[0]);
-   ops[0] = gen_rtx_REG (TImode, regno);
-   ops[1]  = operands[1];
-   if (<V_sz_elem> == 8)
-     output_asm_insn ("vpst\;vldrbt.<V_sz_elem>\t%q0, %E1",ops);
-   else
-     output_asm_insn ("vpst\;vldrbt.<supf><V_sz_elem>\t%q0, %E1",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrbq_<supf><mode>"))
-  (set_attr "length" "8")])
-
-;;
 ;; [vldrwq_gather_base_z_s vldrwq_gather_base_z_u]
 ;;
 (define_insn "mve_vldrwq_gather_base_z_<supf>v4si"
@@ -3403,26 +3512,6 @@
 }
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrwq_gather_base_<supf>v4si"))
   (set_attr "length" "8")])
-
-;;
-;; [vldrhq_f]
-;;
-(define_insn "mve_vldrhq_fv8hf"
-  [(set (match_operand:V8HF 0 "s_register_operand" "=w")
-	(unspec:V8HF [(match_operand:V8HI 1 "mve_memory_operand" "Ux")]
-	 VLDRHQ_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-   rtx ops[2];
-   int regno = REGNO (operands[0]);
-   ops[0] = gen_rtx_REG (TImode, regno);
-   ops[1]  = operands[1];
-   output_asm_insn ("vldrh.16\t%q0, %E1",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrhq_fv8hf"))
-  (set_attr "length" "4")])
 
 ;;
 ;; [vldrhq_gather_offset_s vldrhq_gather_offset_u]
@@ -3523,176 +3612,6 @@
 }
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrhq_gather_shifted_offset_<supf><mode>"))
   (set_attr "length" "8")])
-
-;;
-;; [vldrhq_s, vldrhq_u]
-;;
-(define_insn "mve_vldrhq_<supf><mode>"
-  [(set (match_operand:MVE_5 0 "s_register_operand" "=w")
-	(unspec:MVE_5 [(match_operand:<MVE_H_ELEM> 1 "mve_memory_operand" "Ux")]
-	 VLDRHQ))
-  ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[2];
-   int regno = REGNO (operands[0]);
-   ops[0] = gen_rtx_REG (TImode, regno);
-   ops[1]  = operands[1];
-   if (<V_sz_elem> == 16)
-     output_asm_insn ("vldrh.16\t%q0, %E1",ops);
-   else
-     output_asm_insn ("vldrh.<supf><V_sz_elem>\t%q0, %E1",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrhq_<supf><mode>"))
-  (set_attr "length" "4")])
-
-;;
-;; [vldrhq_z_f]
-;;
-(define_insn "mve_vldrhq_z_fv8hf"
-  [(set (match_operand:V8HF 0 "s_register_operand" "=w")
-	(unspec:V8HF [(match_operand:V8HI 1 "mve_memory_operand" "Ux")
-	(match_operand:<MVE_VPRED> 2 "vpr_register_operand" "Up")]
-	 VLDRHQ_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-   rtx ops[2];
-   int regno = REGNO (operands[0]);
-   ops[0] = gen_rtx_REG (TImode, regno);
-   ops[1]  = operands[1];
-   output_asm_insn ("vpst\;vldrht.16\t%q0, %E1",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrhq_fv8hf"))
-  (set_attr "length" "8")])
-
-;;
-;; [vldrhq_z_s vldrhq_z_u]
-;;
-(define_insn "mve_vldrhq_z_<supf><mode>"
-  [(set (match_operand:MVE_5 0 "s_register_operand" "=w")
-	(unspec:MVE_5 [(match_operand:<MVE_H_ELEM> 1 "mve_memory_operand" "Ux")
-	(match_operand:<MVE_VPRED> 2 "vpr_register_operand" "Up")]
-	 VLDRHQ))
-  ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[2];
-   int regno = REGNO (operands[0]);
-   ops[0] = gen_rtx_REG (TImode, regno);
-   ops[1]  = operands[1];
-   if (<V_sz_elem> == 16)
-     output_asm_insn ("vpst\;vldrht.16\t%q0, %E1",ops);
-   else
-     output_asm_insn ("vpst\;vldrht.<supf><V_sz_elem>\t%q0, %E1",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrhq_<supf><mode>"))
-  (set_attr "length" "8")])
-
-;;
-;; [vldrwq_f]
-;;
-(define_insn "mve_vldrwq_fv4sf"
-  [(set (match_operand:V4SF 0 "s_register_operand" "=w")
-	(unspec:V4SF [(match_operand:V4SI 1 "mve_memory_operand" "Ux")]
-	 VLDRWQ_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-   rtx ops[2];
-   int regno = REGNO (operands[0]);
-   ops[0] = gen_rtx_REG (TImode, regno);
-   ops[1]  = operands[1];
-   output_asm_insn ("vldrw.32\t%q0, %E1",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrwq_fv4sf"))
-  (set_attr "length" "4")])
-
-;;
-;; [vldrwq_s vldrwq_u]
-;;
-(define_insn "mve_vldrwq_<supf>v4si"
-  [(set (match_operand:V4SI 0 "s_register_operand" "=w")
-	(unspec:V4SI [(match_operand:V4SI 1 "mve_memory_operand" "Ux")]
-	 VLDRWQ))
-  ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[2];
-   int regno = REGNO (operands[0]);
-   ops[0] = gen_rtx_REG (TImode, regno);
-   ops[1]  = operands[1];
-   output_asm_insn ("vldrw.32\t%q0, %E1",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrwq_<supf>v4si"))
-  (set_attr "length" "4")])
-
-;;
-;; [vldrwq_z_f]
-;;
-(define_insn "mve_vldrwq_z_fv4sf"
-  [(set (match_operand:V4SF 0 "s_register_operand" "=w")
-	(unspec:V4SF [(match_operand:V4SI 1 "mve_memory_operand" "Ux")
-	(match_operand:V4BI 2 "vpr_register_operand" "Up")]
-	 VLDRWQ_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-   rtx ops[2];
-   int regno = REGNO (operands[0]);
-   ops[0] = gen_rtx_REG (TImode, regno);
-   ops[1]  = operands[1];
-   output_asm_insn ("vpst\;vldrwt.32\t%q0, %E1",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrwq_fv4sf"))
-  (set_attr "length" "8")])
-
-;;
-;; [vldrwq_z_s vldrwq_z_u]
-;;
-(define_insn "mve_vldrwq_z_<supf>v4si"
-  [(set (match_operand:V4SI 0 "s_register_operand" "=w")
-	(unspec:V4SI [(match_operand:V4SI 1 "mve_memory_operand" "Ux")
-	(match_operand:V4BI 2 "vpr_register_operand" "Up")]
-	 VLDRWQ))
-  ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[2];
-   int regno = REGNO (operands[0]);
-   ops[0] = gen_rtx_REG (TImode, regno);
-   ops[1]  = operands[1];
-   output_asm_insn ("vpst\;vldrwt.32\t%q0, %E1",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrwq_<supf>v4si"))
-  (set_attr "length" "8")])
-
-(define_expand "@mve_vld1q_f<mode>"
-  [(match_operand:MVE_0 0 "s_register_operand")
-   (unspec:MVE_0 [(match_operand:<MVE_CNVT> 1 "mve_memory_operand")] VLD1Q_F)
-  ]
-  "TARGET_HAVE_MVE || TARGET_HAVE_MVE_FLOAT"
-{
-  emit_insn (gen_mve_vldr<V_sz_elem1>q_f<mode>(operands[0],operands[1]));
-  DONE;
-})
-
-(define_expand "@mve_vld1q_<supf><mode>"
-  [(match_operand:MVE_2 0 "s_register_operand")
-   (unspec:MVE_2 [(match_operand:MVE_2 1 "mve_memory_operand")] VLD1Q)
-  ]
-  "TARGET_HAVE_MVE"
-{
-  emit_insn (gen_mve_vldr<V_sz_elem1>q_<supf><mode>(operands[0],operands[1]));
-  DONE;
-})
 
 ;;
 ;; [vldrdq_gather_base_s vldrdq_gather_base_u]
@@ -4131,71 +4050,6 @@
   (set_attr "length" "8")])
 
 ;;
-;; [vstrhq_f]
-;;
-(define_insn "mve_vstrhq_fv8hf"
-  [(set (match_operand:V8HI 0 "mve_memory_operand" "=Ux")
-	(unspec:V8HI [(match_operand:V8HF 1 "s_register_operand" "w")]
-	 VSTRHQ_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-   rtx ops[2];
-   int regno = REGNO (operands[1]);
-   ops[1] = gen_rtx_REG (TImode, regno);
-   ops[0]  = operands[0];
-   output_asm_insn ("vstrh.16\t%q1, %E0",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrhq_fv8hf"))
-  (set_attr "length" "4")])
-
-;;
-;; [vstrhq_p_f]
-;;
-(define_insn "mve_vstrhq_p_fv8hf"
-  [(set (match_operand:V8HI 0 "mve_memory_operand" "=Ux")
-	(unspec:V8HI
-	 [(match_operand:V8HF 1 "s_register_operand" "w")
-	  (match_operand:V8BI 2 "vpr_register_operand" "Up")
-	  (match_dup 0)]
-	 VSTRHQ_F))]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-   rtx ops[2];
-   int regno = REGNO (operands[1]);
-   ops[1] = gen_rtx_REG (TImode, regno);
-   ops[0]  = operands[0];
-   output_asm_insn ("vpst\;vstrht.16\t%q1, %E0",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrhq_fv8hf"))
-  (set_attr "length" "8")])
-
-;;
-;; [vstrhq_p_s vstrhq_p_u]
-;;
-(define_insn "mve_vstrhq_p_<supf><mode>"
-  [(set (match_operand:<MVE_H_ELEM> 0 "mve_memory_operand" "=Ux")
-	(unspec:<MVE_H_ELEM>
-	 [(match_operand:MVE_5 1 "s_register_operand" "w")
-	  (match_operand:<MVE_VPRED> 2 "vpr_register_operand" "Up")
-	  (match_dup 0)]
-	 VSTRHQ))
-  ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[2];
-   int regno = REGNO (operands[1]);
-   ops[1] = gen_rtx_REG (TImode, regno);
-   ops[0]  = operands[0];
-   output_asm_insn ("vpst\;vstrht.<V_sz_elem>\t%q1, %E0",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrhq_<supf><mode>"))
-  (set_attr "length" "8")])
-
-;;
 ;; [vstrhq_scatter_offset_p_s vstrhq_scatter_offset_p_u]
 ;;
 (define_expand "mve_vstrhq_scatter_offset_p_<supf><mode>"
@@ -4319,130 +4173,6 @@
   "vstrh.<V_sz_elem>\t%q2, [%0, %q1, uxtw #1]"
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrhq_scatter_shifted_offset_<supf><mode>_insn"))
   (set_attr "length" "4")])
-
-;;
-;; [vstrhq_s, vstrhq_u]
-;;
-(define_insn "mve_vstrhq_<supf><mode>"
-  [(set (match_operand:<MVE_H_ELEM> 0 "mve_memory_operand" "=Ux")
-	(unspec:<MVE_H_ELEM> [(match_operand:MVE_5 1 "s_register_operand" "w")]
-	 VSTRHQ))
-  ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[2];
-   int regno = REGNO (operands[1]);
-   ops[1] = gen_rtx_REG (TImode, regno);
-   ops[0]  = operands[0];
-   output_asm_insn ("vstrh.<V_sz_elem>\t%q1, %E0",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrhq_<supf><mode>"))
-  (set_attr "length" "4")])
-
-;;
-;; [vstrwq_f]
-;;
-(define_insn "mve_vstrwq_fv4sf"
-  [(set (match_operand:V4SI 0 "mve_memory_operand" "=Ux")
-	(unspec:V4SI [(match_operand:V4SF 1 "s_register_operand" "w")]
-	 VSTRWQ_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-   rtx ops[2];
-   int regno = REGNO (operands[1]);
-   ops[1] = gen_rtx_REG (TImode, regno);
-   ops[0]  = operands[0];
-   output_asm_insn ("vstrw.32\t%q1, %E0",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrwq_fv4sf"))
-  (set_attr "length" "4")])
-
-;;
-;; [vstrwq_p_f]
-;;
-(define_insn "mve_vstrwq_p_fv4sf"
-  [(set (match_operand:V4SI 0 "mve_memory_operand" "=Ux")
-	(unspec:V4SI
-	 [(match_operand:V4SF 1 "s_register_operand" "w")
-	  (match_operand:V4BI 2 "vpr_register_operand" "Up")
-	  (match_dup 0)]
-	 VSTRWQ_F))]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-   rtx ops[2];
-   int regno = REGNO (operands[1]);
-   ops[1] = gen_rtx_REG (TImode, regno);
-   ops[0]  = operands[0];
-   output_asm_insn ("vpst\;vstrwt.32\t%q1, %E0",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrwq_fv4sf"))
-  (set_attr "length" "8")])
-
-;;
-;; [vstrwq_p_s vstrwq_p_u]
-;;
-(define_insn "mve_vstrwq_p_<supf>v4si"
-  [(set (match_operand:V4SI 0 "mve_memory_operand" "=Ux")
-	(unspec:V4SI
-	 [(match_operand:V4SI 1 "s_register_operand" "w")
-	  (match_operand:V4BI 2 "vpr_register_operand" "Up")
-	  (match_dup 0)]
-	 VSTRWQ))]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[2];
-   int regno = REGNO (operands[1]);
-   ops[1] = gen_rtx_REG (TImode, regno);
-   ops[0]  = operands[0];
-   output_asm_insn ("vpst\;vstrwt.32\t%q1, %E0",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrwq_<supf>v4si"))
-  (set_attr "length" "8")])
-
-;;
-;; [vstrwq_s vstrwq_u]
-;;
-(define_insn "mve_vstrwq_<supf>v4si"
-  [(set (match_operand:V4SI 0 "mve_memory_operand" "=Ux")
-	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "w")]
-	 VSTRWQ))
-  ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[2];
-   int regno = REGNO (operands[1]);
-   ops[1] = gen_rtx_REG (TImode, regno);
-   ops[0]  = operands[0];
-   output_asm_insn ("vstrw.32\t%q1, %E0",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrwq_<supf>v4si"))
-  (set_attr "length" "4")])
-
-(define_expand "@mve_vst1q_f<mode>"
-  [(match_operand:<MVE_CNVT> 0 "mve_memory_operand")
-   (unspec:<MVE_CNVT> [(match_operand:MVE_0 1 "s_register_operand")] VST1Q_F)
-  ]
-  "TARGET_HAVE_MVE || TARGET_HAVE_MVE_FLOAT"
-{
-  emit_insn (gen_mve_vstr<V_sz_elem1>q_f<mode>(operands[0],operands[1]));
-  DONE;
-})
-
-(define_expand "@mve_vst1q_<supf><mode>"
-  [(match_operand:MVE_2 0 "mve_memory_operand")
-   (unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand")] VST1Q)
-  ]
-  "TARGET_HAVE_MVE"
-{
-  emit_insn (gen_mve_vstr<V_sz_elem1>q_<supf><mode>(operands[0],operands[1]));
-  DONE;
-})
 
 ;;
 ;; [vstrdq_scatter_base_p_s vstrdq_scatter_base_p_u]

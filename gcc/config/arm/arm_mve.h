@@ -43,10 +43,8 @@
 #ifndef __ARM_MVE_PRESERVE_USER_NAMESPACE
 #define vst4q(__addr, __value) __arm_vst4q(__addr, __value)
 #define vstrbq_scatter_offset(__base, __offset, __value) __arm_vstrbq_scatter_offset(__base, __offset, __value)
-#define vstrbq(__addr, __value) __arm_vstrbq(__addr, __value)
 #define vstrwq_scatter_base(__addr, __offset, __value) __arm_vstrwq_scatter_base(__addr, __offset, __value)
 #define vldrbq_gather_offset(__base, __offset) __arm_vldrbq_gather_offset(__base, __offset)
-#define vstrbq_p(__addr, __value, __p) __arm_vstrbq_p(__addr, __value, __p)
 #define vstrbq_scatter_offset_p(__base, __offset, __value, __p) __arm_vstrbq_scatter_offset_p(__base, __offset, __value, __p)
 #define vstrwq_scatter_base_p(__addr, __offset, __value, __p) __arm_vstrwq_scatter_base_p(__addr, __offset, __value, __p)
 #define vldrbq_gather_offset_z(__base, __offset, __p) __arm_vldrbq_gather_offset_z(__base, __offset, __p)
@@ -66,10 +64,6 @@
 #define vstrhq_scatter_offset_p(__base, __offset, __value, __p) __arm_vstrhq_scatter_offset_p(__base, __offset, __value, __p)
 #define vstrhq_scatter_shifted_offset(__base, __offset, __value) __arm_vstrhq_scatter_shifted_offset(__base, __offset, __value)
 #define vstrhq_scatter_shifted_offset_p(__base, __offset, __value, __p) __arm_vstrhq_scatter_shifted_offset_p(__base, __offset, __value, __p)
-#define vstrhq(__addr, __value) __arm_vstrhq(__addr, __value)
-#define vstrhq_p(__addr, __value, __p) __arm_vstrhq_p(__addr, __value, __p)
-#define vstrwq(__addr, __value) __arm_vstrwq(__addr, __value)
-#define vstrwq_p(__addr, __value, __p) __arm_vstrwq_p(__addr, __value, __p)
 #define vstrdq_scatter_base_p(__addr, __offset, __value, __p) __arm_vstrdq_scatter_base_p(__addr, __offset, __value, __p)
 #define vstrdq_scatter_base(__addr, __offset, __value) __arm_vstrdq_scatter_base(__addr, __offset, __value)
 #define vstrdq_scatter_offset_p(__base, __offset, __value, __p) __arm_vstrdq_scatter_offset_p(__base, __offset, __value, __p)
@@ -85,9 +79,7 @@
 #define vstrdq_scatter_base_wb_p(__addr, __offset, __value, __p) __arm_vstrdq_scatter_base_wb_p(__addr, __offset, __value, __p)
 #define vstrwq_scatter_base_wb_p(__addr, __offset, __value, __p) __arm_vstrwq_scatter_base_wb_p(__addr, __offset, __value, __p)
 #define vstrwq_scatter_base_wb(__addr, __offset, __value) __arm_vstrwq_scatter_base_wb(__addr, __offset, __value)
-#define vst1q_p(__addr, __value, __p) __arm_vst1q_p(__addr, __value, __p)
 #define vst2q(__addr, __value) __arm_vst2q(__addr, __value)
-#define vld1q_z(__base, __p) __arm_vld1q_z(__base, __p)
 #define vld2q(__addr) __arm_vld2q(__addr)
 #define vld4q(__addr) __arm_vld4q(__addr)
 #define vsetq_lane(__a, __b, __idx) __arm_vsetq_lane(__a, __b, __idx)
@@ -103,40 +95,22 @@
 #define vst4q_f16( __addr, __value) __arm_vst4q_f16( __addr, __value)
 #define vst4q_f32( __addr, __value) __arm_vst4q_f32( __addr, __value)
 #define vpnot(__a) __arm_vpnot(__a)
-#define vstrbq_s8( __addr, __value) __arm_vstrbq_s8( __addr, __value)
-#define vstrbq_u8( __addr, __value) __arm_vstrbq_u8( __addr, __value)
-#define vstrbq_u16( __addr, __value) __arm_vstrbq_u16( __addr, __value)
 #define vstrbq_scatter_offset_s8( __base, __offset, __value) __arm_vstrbq_scatter_offset_s8( __base, __offset, __value)
 #define vstrbq_scatter_offset_u8( __base, __offset, __value) __arm_vstrbq_scatter_offset_u8( __base, __offset, __value)
 #define vstrbq_scatter_offset_u16( __base, __offset, __value) __arm_vstrbq_scatter_offset_u16( __base, __offset, __value)
-#define vstrbq_s16( __addr, __value) __arm_vstrbq_s16( __addr, __value)
-#define vstrbq_u32( __addr, __value) __arm_vstrbq_u32( __addr, __value)
 #define vstrbq_scatter_offset_s16( __base, __offset, __value) __arm_vstrbq_scatter_offset_s16( __base, __offset, __value)
 #define vstrbq_scatter_offset_u32( __base, __offset, __value) __arm_vstrbq_scatter_offset_u32( __base, __offset, __value)
-#define vstrbq_s32( __addr, __value) __arm_vstrbq_s32( __addr, __value)
 #define vstrbq_scatter_offset_s32( __base, __offset, __value) __arm_vstrbq_scatter_offset_s32( __base, __offset, __value)
 #define vstrwq_scatter_base_s32(__addr,  __offset, __value) __arm_vstrwq_scatter_base_s32(__addr,  __offset, __value)
 #define vstrwq_scatter_base_u32(__addr,  __offset, __value) __arm_vstrwq_scatter_base_u32(__addr,  __offset, __value)
 #define vldrbq_gather_offset_u8(__base, __offset) __arm_vldrbq_gather_offset_u8(__base, __offset)
 #define vldrbq_gather_offset_s8(__base, __offset) __arm_vldrbq_gather_offset_s8(__base, __offset)
-#define vldrbq_s8(__base) __arm_vldrbq_s8(__base)
-#define vldrbq_u8(__base) __arm_vldrbq_u8(__base)
 #define vldrbq_gather_offset_u16(__base, __offset) __arm_vldrbq_gather_offset_u16(__base, __offset)
 #define vldrbq_gather_offset_s16(__base, __offset) __arm_vldrbq_gather_offset_s16(__base, __offset)
-#define vldrbq_s16(__base) __arm_vldrbq_s16(__base)
-#define vldrbq_u16(__base) __arm_vldrbq_u16(__base)
 #define vldrbq_gather_offset_u32(__base, __offset) __arm_vldrbq_gather_offset_u32(__base, __offset)
 #define vldrbq_gather_offset_s32(__base, __offset) __arm_vldrbq_gather_offset_s32(__base, __offset)
-#define vldrbq_s32(__base) __arm_vldrbq_s32(__base)
-#define vldrbq_u32(__base) __arm_vldrbq_u32(__base)
 #define vldrwq_gather_base_s32(__addr,  __offset) __arm_vldrwq_gather_base_s32(__addr,  __offset)
 #define vldrwq_gather_base_u32(__addr,  __offset) __arm_vldrwq_gather_base_u32(__addr,  __offset)
-#define vstrbq_p_s8( __addr, __value, __p) __arm_vstrbq_p_s8( __addr, __value, __p)
-#define vstrbq_p_s32( __addr, __value, __p) __arm_vstrbq_p_s32( __addr, __value, __p)
-#define vstrbq_p_s16( __addr, __value, __p) __arm_vstrbq_p_s16( __addr, __value, __p)
-#define vstrbq_p_u8( __addr, __value, __p) __arm_vstrbq_p_u8( __addr, __value, __p)
-#define vstrbq_p_u32( __addr, __value, __p) __arm_vstrbq_p_u32( __addr, __value, __p)
-#define vstrbq_p_u16( __addr, __value, __p) __arm_vstrbq_p_u16( __addr, __value, __p)
 #define vstrbq_scatter_offset_p_s8( __base, __offset, __value, __p) __arm_vstrbq_scatter_offset_p_s8( __base, __offset, __value, __p)
 #define vstrbq_scatter_offset_p_s32( __base, __offset, __value, __p) __arm_vstrbq_scatter_offset_p_s32( __base, __offset, __value, __p)
 #define vstrbq_scatter_offset_p_s16( __base, __offset, __value, __p) __arm_vstrbq_scatter_offset_p_s16( __base, __offset, __value, __p)
@@ -151,12 +125,6 @@
 #define vldrbq_gather_offset_z_u16(__base, __offset, __p) __arm_vldrbq_gather_offset_z_u16(__base, __offset, __p)
 #define vldrbq_gather_offset_z_u32(__base, __offset, __p) __arm_vldrbq_gather_offset_z_u32(__base, __offset, __p)
 #define vldrbq_gather_offset_z_s8(__base, __offset, __p) __arm_vldrbq_gather_offset_z_s8(__base, __offset, __p)
-#define vldrbq_z_s16(__base, __p) __arm_vldrbq_z_s16(__base, __p)
-#define vldrbq_z_u8(__base, __p) __arm_vldrbq_z_u8(__base, __p)
-#define vldrbq_z_s8(__base, __p) __arm_vldrbq_z_s8(__base, __p)
-#define vldrbq_z_s32(__base, __p) __arm_vldrbq_z_s32(__base, __p)
-#define vldrbq_z_u16(__base, __p) __arm_vldrbq_z_u16(__base, __p)
-#define vldrbq_z_u32(__base, __p) __arm_vldrbq_z_u32(__base, __p)
 #define vldrwq_gather_base_z_u32(__addr,  __offset, __p) __arm_vldrwq_gather_base_z_u32(__addr,  __offset, __p)
 #define vldrwq_gather_base_z_s32(__addr,  __offset, __p) __arm_vldrwq_gather_base_z_s32(__addr,  __offset, __p)
 #define vldrhq_gather_offset_s32(__base, __offset) __arm_vldrhq_gather_offset_s32(__base, __offset)
@@ -175,22 +143,6 @@
 #define vldrhq_gather_shifted_offset_z_s16(__base, __offset, __p) __arm_vldrhq_gather_shifted_offset_z_s16(__base, __offset, __p)
 #define vldrhq_gather_shifted_offset_z_u32(__base, __offset, __p) __arm_vldrhq_gather_shifted_offset_z_u32(__base, __offset, __p)
 #define vldrhq_gather_shifted_offset_z_u16(__base, __offset, __p) __arm_vldrhq_gather_shifted_offset_z_u16(__base, __offset, __p)
-#define vldrhq_s32(__base) __arm_vldrhq_s32(__base)
-#define vldrhq_s16(__base) __arm_vldrhq_s16(__base)
-#define vldrhq_u32(__base) __arm_vldrhq_u32(__base)
-#define vldrhq_u16(__base) __arm_vldrhq_u16(__base)
-#define vldrhq_z_s32(__base, __p) __arm_vldrhq_z_s32(__base, __p)
-#define vldrhq_z_s16(__base, __p) __arm_vldrhq_z_s16(__base, __p)
-#define vldrhq_z_u32(__base, __p) __arm_vldrhq_z_u32(__base, __p)
-#define vldrhq_z_u16(__base, __p) __arm_vldrhq_z_u16(__base, __p)
-#define vldrwq_s32(__base) __arm_vldrwq_s32(__base)
-#define vldrwq_u32(__base) __arm_vldrwq_u32(__base)
-#define vldrwq_z_s32(__base, __p) __arm_vldrwq_z_s32(__base, __p)
-#define vldrwq_z_u32(__base, __p) __arm_vldrwq_z_u32(__base, __p)
-#define vldrhq_f16(__base) __arm_vldrhq_f16(__base)
-#define vldrhq_z_f16(__base, __p) __arm_vldrhq_z_f16(__base, __p)
-#define vldrwq_f32(__base) __arm_vldrwq_f32(__base)
-#define vldrwq_z_f32(__base, __p) __arm_vldrwq_z_f32(__base, __p)
 #define vldrdq_gather_base_s64(__addr,  __offset) __arm_vldrdq_gather_base_s64(__addr,  __offset)
 #define vldrdq_gather_base_u64(__addr,  __offset) __arm_vldrdq_gather_base_u64(__addr,  __offset)
 #define vldrdq_gather_base_z_s64(__addr,  __offset, __p) __arm_vldrdq_gather_base_z_s64(__addr,  __offset, __p)
@@ -221,7 +173,6 @@
 #define vldrwq_gather_shifted_offset_z_f32(__base, __offset, __p) __arm_vldrwq_gather_shifted_offset_z_f32(__base, __offset, __p)
 #define vldrwq_gather_shifted_offset_z_s32(__base, __offset, __p) __arm_vldrwq_gather_shifted_offset_z_s32(__base, __offset, __p)
 #define vldrwq_gather_shifted_offset_z_u32(__base, __offset, __p) __arm_vldrwq_gather_shifted_offset_z_u32(__base, __offset, __p)
-#define vstrhq_f16(__addr, __value) __arm_vstrhq_f16(__addr, __value)
 #define vstrhq_scatter_offset_s32( __base, __offset, __value) __arm_vstrhq_scatter_offset_s32( __base, __offset, __value)
 #define vstrhq_scatter_offset_s16( __base, __offset, __value) __arm_vstrhq_scatter_offset_s16( __base, __offset, __value)
 #define vstrhq_scatter_offset_u32( __base, __offset, __value) __arm_vstrhq_scatter_offset_u32( __base, __offset, __value)
@@ -238,21 +189,6 @@
 #define vstrhq_scatter_shifted_offset_p_s16( __base, __offset, __value, __p) __arm_vstrhq_scatter_shifted_offset_p_s16( __base, __offset, __value, __p)
 #define vstrhq_scatter_shifted_offset_p_u32( __base, __offset, __value, __p) __arm_vstrhq_scatter_shifted_offset_p_u32( __base, __offset, __value, __p)
 #define vstrhq_scatter_shifted_offset_p_u16( __base, __offset, __value, __p) __arm_vstrhq_scatter_shifted_offset_p_u16( __base, __offset, __value, __p)
-#define vstrhq_s32(__addr, __value) __arm_vstrhq_s32(__addr, __value)
-#define vstrhq_s16(__addr, __value) __arm_vstrhq_s16(__addr, __value)
-#define vstrhq_u32(__addr, __value) __arm_vstrhq_u32(__addr, __value)
-#define vstrhq_u16(__addr, __value) __arm_vstrhq_u16(__addr, __value)
-#define vstrhq_p_f16(__addr, __value, __p) __arm_vstrhq_p_f16(__addr, __value, __p)
-#define vstrhq_p_s32(__addr, __value, __p) __arm_vstrhq_p_s32(__addr, __value, __p)
-#define vstrhq_p_s16(__addr, __value, __p) __arm_vstrhq_p_s16(__addr, __value, __p)
-#define vstrhq_p_u32(__addr, __value, __p) __arm_vstrhq_p_u32(__addr, __value, __p)
-#define vstrhq_p_u16(__addr, __value, __p) __arm_vstrhq_p_u16(__addr, __value, __p)
-#define vstrwq_f32(__addr, __value) __arm_vstrwq_f32(__addr, __value)
-#define vstrwq_s32(__addr, __value) __arm_vstrwq_s32(__addr, __value)
-#define vstrwq_u32(__addr, __value) __arm_vstrwq_u32(__addr, __value)
-#define vstrwq_p_f32(__addr, __value, __p) __arm_vstrwq_p_f32(__addr, __value, __p)
-#define vstrwq_p_s32(__addr, __value, __p) __arm_vstrwq_p_s32(__addr, __value, __p)
-#define vstrwq_p_u32(__addr, __value, __p) __arm_vstrwq_p_u32(__addr, __value, __p)
 #define vstrdq_scatter_base_p_s64(__addr, __offset, __value, __p) __arm_vstrdq_scatter_base_p_s64(__addr, __offset, __value, __p)
 #define vstrdq_scatter_base_p_u64(__addr, __offset, __value, __p) __arm_vstrdq_scatter_base_p_u64(__addr, __offset, __value, __p)
 #define vstrdq_scatter_base_s64(__addr, __offset, __value) __arm_vstrdq_scatter_base_s64(__addr, __offset, __value)
@@ -313,46 +249,30 @@
 #define vstrwq_scatter_base_wb_s32(__addr, __offset, __value) __arm_vstrwq_scatter_base_wb_s32(__addr, __offset, __value)
 #define vstrwq_scatter_base_wb_u32(__addr, __offset, __value) __arm_vstrwq_scatter_base_wb_u32(__addr, __offset, __value)
 #define vstrwq_scatter_base_wb_f32(__addr, __offset, __value) __arm_vstrwq_scatter_base_wb_f32(__addr, __offset, __value)
-#define vst1q_p_u8(__addr, __value, __p) __arm_vst1q_p_u8(__addr, __value, __p)
-#define vst1q_p_s8(__addr, __value, __p) __arm_vst1q_p_s8(__addr, __value, __p)
 #define vst2q_s8(__addr, __value) __arm_vst2q_s8(__addr, __value)
 #define vst2q_u8(__addr, __value) __arm_vst2q_u8(__addr, __value)
-#define vld1q_z_u8(__base, __p) __arm_vld1q_z_u8(__base, __p)
-#define vld1q_z_s8(__base, __p) __arm_vld1q_z_s8(__base, __p)
 #define vld2q_s8(__addr) __arm_vld2q_s8(__addr)
 #define vld2q_u8(__addr) __arm_vld2q_u8(__addr)
 #define vld4q_s8(__addr) __arm_vld4q_s8(__addr)
 #define vld4q_u8(__addr) __arm_vld4q_u8(__addr)
-#define vst1q_p_u16(__addr, __value, __p) __arm_vst1q_p_u16(__addr, __value, __p)
-#define vst1q_p_s16(__addr, __value, __p) __arm_vst1q_p_s16(__addr, __value, __p)
 #define vst2q_s16(__addr, __value) __arm_vst2q_s16(__addr, __value)
 #define vst2q_u16(__addr, __value) __arm_vst2q_u16(__addr, __value)
-#define vld1q_z_u16(__base, __p) __arm_vld1q_z_u16(__base, __p)
-#define vld1q_z_s16(__base, __p) __arm_vld1q_z_s16(__base, __p)
 #define vld2q_s16(__addr) __arm_vld2q_s16(__addr)
 #define vld2q_u16(__addr) __arm_vld2q_u16(__addr)
 #define vld4q_s16(__addr) __arm_vld4q_s16(__addr)
 #define vld4q_u16(__addr) __arm_vld4q_u16(__addr)
-#define vst1q_p_u32(__addr, __value, __p) __arm_vst1q_p_u32(__addr, __value, __p)
-#define vst1q_p_s32(__addr, __value, __p) __arm_vst1q_p_s32(__addr, __value, __p)
 #define vst2q_s32(__addr, __value) __arm_vst2q_s32(__addr, __value)
 #define vst2q_u32(__addr, __value) __arm_vst2q_u32(__addr, __value)
-#define vld1q_z_u32(__base, __p) __arm_vld1q_z_u32(__base, __p)
-#define vld1q_z_s32(__base, __p) __arm_vld1q_z_s32(__base, __p)
 #define vld2q_s32(__addr) __arm_vld2q_s32(__addr)
 #define vld2q_u32(__addr) __arm_vld2q_u32(__addr)
 #define vld4q_s32(__addr) __arm_vld4q_s32(__addr)
 #define vld4q_u32(__addr) __arm_vld4q_u32(__addr)
 #define vld4q_f16(__addr) __arm_vld4q_f16(__addr)
 #define vld2q_f16(__addr) __arm_vld2q_f16(__addr)
-#define vld1q_z_f16(__base, __p) __arm_vld1q_z_f16(__base, __p)
 #define vst2q_f16(__addr, __value) __arm_vst2q_f16(__addr, __value)
-#define vst1q_p_f16(__addr, __value, __p) __arm_vst1q_p_f16(__addr, __value, __p)
 #define vld4q_f32(__addr) __arm_vld4q_f32(__addr)
 #define vld2q_f32(__addr) __arm_vld2q_f32(__addr)
-#define vld1q_z_f32(__base, __p) __arm_vld1q_z_f32(__base, __p)
 #define vst2q_f32(__addr, __value) __arm_vst2q_f32(__addr, __value)
-#define vst1q_p_f32(__addr, __value, __p) __arm_vst1q_p_f32(__addr, __value, __p)
 #define vsetq_lane_f16(__a, __b,  __idx) __arm_vsetq_lane_f16(__a, __b,  __idx)
 #define vsetq_lane_f32(__a, __b,  __idx) __arm_vsetq_lane_f32(__a, __b,  __idx)
 #define vsetq_lane_s16(__a, __b,  __idx) __arm_vsetq_lane_s16(__a, __b,  __idx)
@@ -508,48 +428,6 @@ __arm_vstrbq_scatter_offset_u16 (uint8_t * __base, uint16x8_t __offset, uint16x8
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrbq_s8 (int8_t * __addr, int8x16_t __value)
-{
-  __builtin_mve_vstrbq_sv16qi ((__builtin_neon_qi *) __addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrbq_s32 (int8_t * __addr, int32x4_t __value)
-{
-  __builtin_mve_vstrbq_sv4si ((__builtin_neon_qi *) __addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrbq_s16 (int8_t * __addr, int16x8_t __value)
-{
-  __builtin_mve_vstrbq_sv8hi ((__builtin_neon_qi *) __addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrbq_u8 (uint8_t * __addr, uint8x16_t __value)
-{
-  __builtin_mve_vstrbq_uv16qi ((__builtin_neon_qi *) __addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrbq_u32 (uint8_t * __addr, uint32x4_t __value)
-{
-  __builtin_mve_vstrbq_uv4si ((__builtin_neon_qi *) __addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrbq_u16 (uint8_t * __addr, uint16x8_t __value)
-{
-  __builtin_mve_vstrbq_uv8hi ((__builtin_neon_qi *) __addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vstrwq_scatter_base_s32 (uint32x4_t __addr, const int __offset, int32x4_t __value)
 {
   __builtin_mve_vstrwq_scatter_base_sv4si (__addr, __offset, __value);
@@ -576,20 +454,6 @@ __arm_vldrbq_gather_offset_s8 (int8_t const * __base, uint8x16_t __offset)
   return __builtin_mve_vldrbq_gather_offset_sv16qi ((__builtin_neon_qi *) __base, __offset);
 }
 
-__extension__ extern __inline int8x16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrbq_s8 (int8_t const * __base)
-{
-  return __builtin_mve_vldrbq_sv16qi ((__builtin_neon_qi *) __base);
-}
-
-__extension__ extern __inline uint8x16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrbq_u8 (uint8_t const * __base)
-{
-  return __builtin_mve_vldrbq_uv16qi ((__builtin_neon_qi *) __base);
-}
-
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vldrbq_gather_offset_u16 (uint8_t const * __base, uint16x8_t __offset)
@@ -602,20 +466,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vldrbq_gather_offset_s16 (int8_t const * __base, uint16x8_t __offset)
 {
   return __builtin_mve_vldrbq_gather_offset_sv8hi ((__builtin_neon_qi *) __base, __offset);
-}
-
-__extension__ extern __inline int16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrbq_s16 (int8_t const * __base)
-{
-  return __builtin_mve_vldrbq_sv8hi ((__builtin_neon_qi *) __base);
-}
-
-__extension__ extern __inline uint16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrbq_u16 (uint8_t const * __base)
-{
-  return __builtin_mve_vldrbq_uv8hi ((__builtin_neon_qi *) __base);
 }
 
 __extension__ extern __inline uint32x4_t
@@ -634,20 +484,6 @@ __arm_vldrbq_gather_offset_s32 (int8_t const * __base, uint32x4_t __offset)
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrbq_s32 (int8_t const * __base)
-{
-  return __builtin_mve_vldrbq_sv4si ((__builtin_neon_qi *) __base);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrbq_u32 (uint8_t const * __base)
-{
-  return __builtin_mve_vldrbq_uv4si ((__builtin_neon_qi *) __base);
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vldrwq_gather_base_s32 (uint32x4_t __addr, const int __offset)
 {
   return __builtin_mve_vldrwq_gather_base_sv4si (__addr, __offset);
@@ -658,48 +494,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vldrwq_gather_base_u32 (uint32x4_t __addr, const int __offset)
 {
   return __builtin_mve_vldrwq_gather_base_uv4si (__addr, __offset);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrbq_p_s8 (int8_t * __addr, int8x16_t __value, mve_pred16_t __p)
-{
-  __builtin_mve_vstrbq_p_sv16qi ((__builtin_neon_qi *) __addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrbq_p_s32 (int8_t * __addr, int32x4_t __value, mve_pred16_t __p)
-{
-  __builtin_mve_vstrbq_p_sv4si ((__builtin_neon_qi *) __addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrbq_p_s16 (int8_t * __addr, int16x8_t __value, mve_pred16_t __p)
-{
-  __builtin_mve_vstrbq_p_sv8hi ((__builtin_neon_qi *) __addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrbq_p_u8 (uint8_t * __addr, uint8x16_t __value, mve_pred16_t __p)
-{
-  __builtin_mve_vstrbq_p_uv16qi ((__builtin_neon_qi *) __addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrbq_p_u32 (uint8_t * __addr, uint32x4_t __value, mve_pred16_t __p)
-{
-  __builtin_mve_vstrbq_p_uv4si ((__builtin_neon_qi *) __addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrbq_p_u16 (uint8_t * __addr, uint16x8_t __value, mve_pred16_t __p)
-{
-  __builtin_mve_vstrbq_p_uv8hi ((__builtin_neon_qi *) __addr, __value, __p);
 }
 
 __extension__ extern __inline void
@@ -798,48 +592,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vldrbq_gather_offset_z_u16 (uint8_t const * __base, uint16x8_t __offset, mve_pred16_t __p)
 {
   return __builtin_mve_vldrbq_gather_offset_z_uv8hi ((__builtin_neon_qi *) __base, __offset, __p);
-}
-
-__extension__ extern __inline int8x16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrbq_z_s8 (int8_t const * __base, mve_pred16_t __p)
-{
-  return __builtin_mve_vldrbq_z_sv16qi ((__builtin_neon_qi *) __base, __p);
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrbq_z_s32 (int8_t const * __base, mve_pred16_t __p)
-{
-  return __builtin_mve_vldrbq_z_sv4si ((__builtin_neon_qi *) __base, __p);
-}
-
-__extension__ extern __inline int16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrbq_z_s16 (int8_t const * __base, mve_pred16_t __p)
-{
-  return __builtin_mve_vldrbq_z_sv8hi ((__builtin_neon_qi *) __base, __p);
-}
-
-__extension__ extern __inline uint8x16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrbq_z_u8 (uint8_t const * __base, mve_pred16_t __p)
-{
-  return __builtin_mve_vldrbq_z_uv16qi ((__builtin_neon_qi *) __base, __p);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrbq_z_u32 (uint8_t const * __base, mve_pred16_t __p)
-{
-  return __builtin_mve_vldrbq_z_uv4si ((__builtin_neon_qi *) __base, __p);
-}
-
-__extension__ extern __inline uint16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrbq_z_u16 (uint8_t const * __base, mve_pred16_t __p)
-{
-  return __builtin_mve_vldrbq_z_uv8hi ((__builtin_neon_qi *) __base, __p);
 }
 
 __extension__ extern __inline int32x4_t
@@ -966,91 +718,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vldrhq_gather_shifted_offset_z_u16 (uint16_t const * __base, uint16x8_t __offset, mve_pred16_t __p)
 {
   return __builtin_mve_vldrhq_gather_shifted_offset_z_uv8hi ((__builtin_neon_hi *) __base, __offset, __p);
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrhq_s32 (int16_t const * __base)
-{
-  return __builtin_mve_vldrhq_sv4si ((__builtin_neon_hi *) __base);
-}
-
-__extension__ extern __inline int16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrhq_s16 (int16_t const * __base)
-{
-  return __builtin_mve_vldrhq_sv8hi ((__builtin_neon_hi *) __base);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrhq_u32 (uint16_t const * __base)
-{
-  return __builtin_mve_vldrhq_uv4si ((__builtin_neon_hi *) __base);
-}
-
-__extension__ extern __inline uint16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrhq_u16 (uint16_t const * __base)
-{
-  return __builtin_mve_vldrhq_uv8hi ((__builtin_neon_hi *) __base);
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrhq_z_s32 (int16_t const * __base, mve_pred16_t __p)
-{
-  return __builtin_mve_vldrhq_z_sv4si ((__builtin_neon_hi *) __base, __p);
-}
-
-__extension__ extern __inline int16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrhq_z_s16 (int16_t const * __base, mve_pred16_t __p)
-{
-  return __builtin_mve_vldrhq_z_sv8hi ((__builtin_neon_hi *) __base, __p);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrhq_z_u32 (uint16_t const * __base, mve_pred16_t __p)
-{
-  return __builtin_mve_vldrhq_z_uv4si ((__builtin_neon_hi *) __base, __p);
-}
-
-__extension__ extern __inline uint16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrhq_z_u16 (uint16_t const * __base, mve_pred16_t __p)
-{
-  return __builtin_mve_vldrhq_z_uv8hi ((__builtin_neon_hi *) __base, __p);
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrwq_s32 (int32_t const * __base)
-{
-  return __builtin_mve_vldrwq_sv4si ((__builtin_neon_si *) __base);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrwq_u32 (uint32_t const * __base)
-{
-  return __builtin_mve_vldrwq_uv4si ((__builtin_neon_si *) __base);
-}
-
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrwq_z_s32 (int32_t const * __base, mve_pred16_t __p)
-{
-  return __builtin_mve_vldrwq_z_sv4si ((__builtin_neon_si *) __base, __p);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrwq_z_u32 (uint32_t const * __base, mve_pred16_t __p)
-{
-  return __builtin_mve_vldrwq_z_uv4si ((__builtin_neon_si *) __base, __p);
 }
 
 __extension__ extern __inline int64x2_t
@@ -1304,90 +971,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vstrhq_scatter_shifted_offset_p_u16 (uint16_t * __base, uint16x8_t __offset, uint16x8_t __value, mve_pred16_t __p)
 {
   __builtin_mve_vstrhq_scatter_shifted_offset_p_uv8hi ((__builtin_neon_hi *) __base, __offset, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrhq_s32 (int16_t * __addr, int32x4_t __value)
-{
-  __builtin_mve_vstrhq_sv4si ((__builtin_neon_hi *) __addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrhq_s16 (int16_t * __addr, int16x8_t __value)
-{
-  __builtin_mve_vstrhq_sv8hi ((__builtin_neon_hi *) __addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrhq_u32 (uint16_t * __addr, uint32x4_t __value)
-{
-  __builtin_mve_vstrhq_uv4si ((__builtin_neon_hi *) __addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrhq_u16 (uint16_t * __addr, uint16x8_t __value)
-{
-  __builtin_mve_vstrhq_uv8hi ((__builtin_neon_hi *) __addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrhq_p_s32 (int16_t * __addr, int32x4_t __value, mve_pred16_t __p)
-{
-  __builtin_mve_vstrhq_p_sv4si ((__builtin_neon_hi *) __addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrhq_p_s16 (int16_t * __addr, int16x8_t __value, mve_pred16_t __p)
-{
-  __builtin_mve_vstrhq_p_sv8hi ((__builtin_neon_hi *) __addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrhq_p_u32 (uint16_t * __addr, uint32x4_t __value, mve_pred16_t __p)
-{
-  __builtin_mve_vstrhq_p_uv4si ((__builtin_neon_hi *) __addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrhq_p_u16 (uint16_t * __addr, uint16x8_t __value, mve_pred16_t __p)
-{
-  __builtin_mve_vstrhq_p_uv8hi ((__builtin_neon_hi *) __addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrwq_s32 (int32_t * __addr, int32x4_t __value)
-{
-  __builtin_mve_vstrwq_sv4si ((__builtin_neon_si *) __addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrwq_u32 (uint32_t * __addr, uint32x4_t __value)
-{
-  __builtin_mve_vstrwq_uv4si ((__builtin_neon_si *) __addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrwq_p_s32 (int32_t * __addr, int32x4_t __value, mve_pred16_t __p)
-{
-  __builtin_mve_vstrwq_p_sv4si ((__builtin_neon_si *) __addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrwq_p_u32 (uint32_t * __addr, uint32x4_t __value, mve_pred16_t __p)
-{
-  __builtin_mve_vstrwq_p_uv4si ((__builtin_neon_si *) __addr, __value, __p);
 }
 
 __extension__ extern __inline void
@@ -1668,20 +1251,6 @@ __arm_vstrwq_scatter_base_wb_u32 (uint32x4_t * __addr, const int __offset, uint3
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vst1q_p_u8 (uint8_t * __addr, uint8x16_t __value, mve_pred16_t __p)
-{
-  return __arm_vstrbq_p_u8 (__addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vst1q_p_s8 (int8_t * __addr, int8x16_t __value, mve_pred16_t __p)
-{
-  return __arm_vstrbq_p_s8 (__addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vst2q_s8 (int8_t * __addr, int8x16x2_t __value)
 {
   union { int8x16x2_t __i; __builtin_neon_oi __o; } __rv;
@@ -1696,20 +1265,6 @@ __arm_vst2q_u8 (uint8_t * __addr, uint8x16x2_t __value)
   union { uint8x16x2_t __i; __builtin_neon_oi __o; } __rv;
   __rv.__i = __value;
   __builtin_mve_vst2qv16qi ((__builtin_neon_qi *) __addr, __rv.__o);
-}
-
-__extension__ extern __inline uint8x16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vld1q_z_u8 (uint8_t const *__base, mve_pred16_t __p)
-{
-  return __arm_vldrbq_z_u8 ( __base, __p);
-}
-
-__extension__ extern __inline int8x16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vld1q_z_s8 (int8_t const *__base, mve_pred16_t __p)
-{
-  return __arm_vldrbq_z_s8 ( __base, __p);
 }
 
 __extension__ extern __inline int8x16x2_t
@@ -1750,20 +1305,6 @@ __arm_vld4q_u8 (uint8_t const * __addr)
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vst1q_p_u16 (uint16_t * __addr, uint16x8_t __value, mve_pred16_t __p)
-{
-  return __arm_vstrhq_p_u16 (__addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vst1q_p_s16 (int16_t * __addr, int16x8_t __value, mve_pred16_t __p)
-{
-  return __arm_vstrhq_p_s16 (__addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vst2q_s16 (int16_t * __addr, int16x8x2_t __value)
 {
   union { int16x8x2_t __i; __builtin_neon_oi __o; } __rv;
@@ -1778,20 +1319,6 @@ __arm_vst2q_u16 (uint16_t * __addr, uint16x8x2_t __value)
   union { uint16x8x2_t __i; __builtin_neon_oi __o; } __rv;
   __rv.__i = __value;
   __builtin_mve_vst2qv8hi ((__builtin_neon_hi *) __addr, __rv.__o);
-}
-
-__extension__ extern __inline uint16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vld1q_z_u16 (uint16_t const *__base, mve_pred16_t __p)
-{
-  return __arm_vldrhq_z_u16 ( __base, __p);
-}
-
-__extension__ extern __inline int16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vld1q_z_s16 (int16_t const *__base, mve_pred16_t __p)
-{
-  return __arm_vldrhq_z_s16 ( __base, __p);
 }
 
 __extension__ extern __inline int16x8x2_t
@@ -1832,20 +1359,6 @@ __arm_vld4q_u16 (uint16_t const * __addr)
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vst1q_p_u32 (uint32_t * __addr, uint32x4_t __value, mve_pred16_t __p)
-{
-  return __arm_vstrwq_p_u32 (__addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vst1q_p_s32 (int32_t * __addr, int32x4_t __value, mve_pred16_t __p)
-{
-  return __arm_vstrwq_p_s32 (__addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vst2q_s32 (int32_t * __addr, int32x4x2_t __value)
 {
   union { int32x4x2_t __i; __builtin_neon_oi __o; } __rv;
@@ -1860,20 +1373,6 @@ __arm_vst2q_u32 (uint32_t * __addr, uint32x4x2_t __value)
   union { uint32x4x2_t __i; __builtin_neon_oi __o; } __rv;
   __rv.__i = __value;
   __builtin_mve_vst2qv4si ((__builtin_neon_si *) __addr, __rv.__o);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vld1q_z_u32 (uint32_t const *__base, mve_pred16_t __p)
-{
-  return __arm_vldrwq_z_u32 ( __base, __p);
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vld1q_z_s32 (int32_t const *__base, mve_pred16_t __p)
-{
-  return __arm_vldrwq_z_s32 ( __base, __p);
 }
 
 __extension__ extern __inline int32x4x2_t
@@ -2180,34 +1679,6 @@ __arm_vst4q_f32 (float32_t * __addr, float32x4x4_t __value)
   __builtin_mve_vst4qv4sf (__addr, __rv.__o);
 }
 
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrwq_f32 (float32_t const * __base)
-{
-  return __builtin_mve_vldrwq_fv4sf((__builtin_neon_si *) __base);
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrwq_z_f32 (float32_t const * __base, mve_pred16_t __p)
-{
-  return __builtin_mve_vldrwq_z_fv4sf((__builtin_neon_si *) __base, __p);
-}
-
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrhq_z_f16 (float16_t const * __base, mve_pred16_t __p)
-{
-  return __builtin_mve_vldrhq_z_fv8hf((__builtin_neon_hi *) __base, __p);
-}
-
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrhq_f16 (float16_t const * __base)
-{
-  return __builtin_mve_vldrhq_fv8hf((__builtin_neon_hi *) __base);
-}
-
 __extension__ extern __inline float16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vldrhq_gather_offset_f16 (float16_t const * __base, uint16x8_t __offset)
@@ -2276,34 +1747,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vldrwq_gather_shifted_offset_z_f32 (float32_t const * __base, uint32x4_t __offset, mve_pred16_t __p)
 {
   return __builtin_mve_vldrwq_gather_shifted_offset_z_fv4sf ((__builtin_neon_si *) __base, __offset, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrwq_p_f32 (float32_t * __addr, float32x4_t __value, mve_pred16_t __p)
-{
-  __builtin_mve_vstrwq_p_fv4sf ((__builtin_neon_si *) __addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrwq_f32 (float32_t * __addr, float32x4_t __value)
-{
-  __builtin_mve_vstrwq_fv4sf ((__builtin_neon_si *) __addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrhq_f16 (float16_t * __addr, float16x8_t __value)
-{
-  __builtin_mve_vstrhq_fv8hf ((__builtin_neon_hi *) __addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrhq_p_f16 (float16_t * __addr, float16x8_t __value, mve_pred16_t __p)
-{
-  __builtin_mve_vstrhq_p_fv8hf ((__builtin_neon_hi *) __addr, __value, __p);
 }
 
 __extension__ extern __inline void
@@ -2428,13 +1871,6 @@ __arm_vld2q_f16 (float16_t const * __addr)
   return __rv.__i;
 }
 
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vld1q_z_f16 (float16_t const *__base, mve_pred16_t __p)
-{
-  return __arm_vldrhq_z_f16 (__base, __p);
-}
-
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vst2q_f16 (float16_t * __addr, float16x8x2_t __value)
@@ -2442,13 +1878,6 @@ __arm_vst2q_f16 (float16_t * __addr, float16x8x2_t __value)
   union { float16x8x2_t __i; __builtin_neon_oi __o; } __rv;
   __rv.__i = __value;
   __builtin_mve_vst2qv8hf (__addr, __rv.__o);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vst1q_p_f16 (float16_t * __addr, float16x8_t __value, mve_pred16_t __p)
-{
-  return __arm_vstrhq_p_f16 (__addr, __value, __p);
 }
 
 __extension__ extern __inline float32x4x4_t
@@ -2469,13 +1898,6 @@ __arm_vld2q_f32 (float32_t const * __addr)
   return __rv.__i;
 }
 
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vld1q_z_f32 (float32_t const *__base, mve_pred16_t __p)
-{
-  return __arm_vldrwq_z_f32 (__base, __p);
-}
-
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vst2q_f32 (float32_t * __addr, float32x4x2_t __value)
@@ -2483,13 +1905,6 @@ __arm_vst2q_f32 (float32_t * __addr, float32x4x2_t __value)
   union { float32x4x2_t __i; __builtin_neon_oi __o; } __rv;
   __rv.__i = __value;
   __builtin_mve_vst2qv4sf (__addr, __rv.__o);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vst1q_p_f32 (float32_t * __addr, float32x4_t __value, mve_pred16_t __p)
-{
-  return __arm_vstrwq_p_f32 (__addr, __value, __p);
 }
 
 __extension__ extern __inline float16x8_t
@@ -2614,48 +2029,6 @@ __arm_vstrbq_scatter_offset (uint8_t * __base, uint16x8_t __offset, uint16x8_t _
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrbq (int8_t * __addr, int8x16_t __value)
-{
- __arm_vstrbq_s8 (__addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrbq (int8_t * __addr, int32x4_t __value)
-{
- __arm_vstrbq_s32 (__addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrbq (int8_t * __addr, int16x8_t __value)
-{
- __arm_vstrbq_s16 (__addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrbq (uint8_t * __addr, uint8x16_t __value)
-{
- __arm_vstrbq_u8 (__addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrbq (uint8_t * __addr, uint32x4_t __value)
-{
- __arm_vstrbq_u32 (__addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrbq (uint8_t * __addr, uint16x8_t __value)
-{
- __arm_vstrbq_u16 (__addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vstrwq_scatter_base (uint32x4_t __addr, const int __offset, int32x4_t __value)
 {
  __arm_vstrwq_scatter_base_s32 (__addr, __offset, __value);
@@ -2708,48 +2081,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vldrbq_gather_offset (int8_t const * __base, uint32x4_t __offset)
 {
  return __arm_vldrbq_gather_offset_s32 (__base, __offset);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrbq_p (int8_t * __addr, int8x16_t __value, mve_pred16_t __p)
-{
- __arm_vstrbq_p_s8 (__addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrbq_p (int8_t * __addr, int32x4_t __value, mve_pred16_t __p)
-{
- __arm_vstrbq_p_s32 (__addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrbq_p (int8_t * __addr, int16x8_t __value, mve_pred16_t __p)
-{
- __arm_vstrbq_p_s16 (__addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrbq_p (uint8_t * __addr, uint8x16_t __value, mve_pred16_t __p)
-{
- __arm_vstrbq_p_u8 (__addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrbq_p (uint8_t * __addr, uint32x4_t __value, mve_pred16_t __p)
-{
- __arm_vstrbq_p_u32 (__addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrbq_p (uint8_t * __addr, uint16x8_t __value, mve_pred16_t __p)
-{
- __arm_vstrbq_p_u16 (__addr, __value, __p);
 }
 
 __extension__ extern __inline void
@@ -3188,90 +2519,6 @@ __arm_vstrhq_scatter_shifted_offset_p (uint16_t * __base, uint16x8_t __offset, u
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrhq (int16_t * __addr, int32x4_t __value)
-{
- __arm_vstrhq_s32 (__addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrhq (int16_t * __addr, int16x8_t __value)
-{
- __arm_vstrhq_s16 (__addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrhq (uint16_t * __addr, uint32x4_t __value)
-{
- __arm_vstrhq_u32 (__addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrhq (uint16_t * __addr, uint16x8_t __value)
-{
- __arm_vstrhq_u16 (__addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrhq_p (int16_t * __addr, int32x4_t __value, mve_pred16_t __p)
-{
- __arm_vstrhq_p_s32 (__addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrhq_p (int16_t * __addr, int16x8_t __value, mve_pred16_t __p)
-{
- __arm_vstrhq_p_s16 (__addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrhq_p (uint16_t * __addr, uint32x4_t __value, mve_pred16_t __p)
-{
- __arm_vstrhq_p_u32 (__addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrhq_p (uint16_t * __addr, uint16x8_t __value, mve_pred16_t __p)
-{
- __arm_vstrhq_p_u16 (__addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrwq (int32_t * __addr, int32x4_t __value)
-{
- __arm_vstrwq_s32 (__addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrwq (uint32_t * __addr, uint32x4_t __value)
-{
- __arm_vstrwq_u32 (__addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrwq_p (int32_t * __addr, int32x4_t __value, mve_pred16_t __p)
-{
- __arm_vstrwq_p_s32 (__addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrwq_p (uint32_t * __addr, uint32x4_t __value, mve_pred16_t __p)
-{
- __arm_vstrwq_p_u32 (__addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vstrdq_scatter_base_p (uint64x2_t __addr, const int __offset, int64x2_t __value, mve_pred16_t __p)
 {
  __arm_vstrdq_scatter_base_p_s64 (__addr, __offset, __value, __p);
@@ -3468,20 +2715,6 @@ __arm_vstrwq_scatter_base_wb (uint32x4_t * __addr, const int __offset, uint32x4_
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vst1q_p (uint8_t * __addr, uint8x16_t __value, mve_pred16_t __p)
-{
- __arm_vst1q_p_u8 (__addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vst1q_p (int8_t * __addr, int8x16_t __value, mve_pred16_t __p)
-{
- __arm_vst1q_p_s8 (__addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vst2q (int8_t * __addr, int8x16x2_t __value)
 {
  __arm_vst2q_s8 (__addr, __value);
@@ -3492,20 +2725,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vst2q (uint8_t * __addr, uint8x16x2_t __value)
 {
  __arm_vst2q_u8 (__addr, __value);
-}
-
-__extension__ extern __inline uint8x16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vld1q_z (uint8_t const *__base, mve_pred16_t __p)
-{
- return __arm_vld1q_z_u8 (__base, __p);
-}
-
-__extension__ extern __inline int8x16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vld1q_z (int8_t const *__base, mve_pred16_t __p)
-{
- return __arm_vld1q_z_s8 (__base, __p);
 }
 
 __extension__ extern __inline int8x16x2_t
@@ -3538,20 +2757,6 @@ __arm_vld4q (uint8_t const * __addr)
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vst1q_p (uint16_t * __addr, uint16x8_t __value, mve_pred16_t __p)
-{
- __arm_vst1q_p_u16 (__addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vst1q_p (int16_t * __addr, int16x8_t __value, mve_pred16_t __p)
-{
- __arm_vst1q_p_s16 (__addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vst2q (int16_t * __addr, int16x8x2_t __value)
 {
  __arm_vst2q_s16 (__addr, __value);
@@ -3562,20 +2767,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vst2q (uint16_t * __addr, uint16x8x2_t __value)
 {
  __arm_vst2q_u16 (__addr, __value);
-}
-
-__extension__ extern __inline uint16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vld1q_z (uint16_t const *__base, mve_pred16_t __p)
-{
- return __arm_vld1q_z_u16 (__base, __p);
-}
-
-__extension__ extern __inline int16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vld1q_z (int16_t const *__base, mve_pred16_t __p)
-{
- return __arm_vld1q_z_s16 (__base, __p);
 }
 
 __extension__ extern __inline int16x8x2_t
@@ -3608,20 +2799,6 @@ __arm_vld4q (uint16_t const * __addr)
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vst1q_p (uint32_t * __addr, uint32x4_t __value, mve_pred16_t __p)
-{
- __arm_vst1q_p_u32 (__addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vst1q_p (int32_t * __addr, int32x4_t __value, mve_pred16_t __p)
-{
- __arm_vst1q_p_s32 (__addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vst2q (int32_t * __addr, int32x4x2_t __value)
 {
  __arm_vst2q_s32 (__addr, __value);
@@ -3632,20 +2809,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vst2q (uint32_t * __addr, uint32x4x2_t __value)
 {
  __arm_vst2q_u32 (__addr, __value);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vld1q_z (uint32_t const *__base, mve_pred16_t __p)
-{
- return __arm_vld1q_z_u32 (__base, __p);
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vld1q_z (int32_t const *__base, mve_pred16_t __p)
-{
- return __arm_vld1q_z_s32 (__base, __p);
 }
 
 __extension__ extern __inline int32x4x2_t
@@ -3862,34 +3025,6 @@ __arm_vldrwq_gather_shifted_offset_z (float32_t const * __base, uint32x4_t __off
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrwq_p (float32_t * __addr, float32x4_t __value, mve_pred16_t __p)
-{
- __arm_vstrwq_p_f32 (__addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrwq (float32_t * __addr, float32x4_t __value)
-{
- __arm_vstrwq_f32 (__addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrhq (float16_t * __addr, float16x8_t __value)
-{
- __arm_vstrhq_f16 (__addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vstrhq_p (float16_t * __addr, float16x8_t __value, mve_pred16_t __p)
-{
- __arm_vstrhq_p_f16 (__addr, __value, __p);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vstrhq_scatter_offset (float16_t * __base, uint16x8_t __offset, float16x8_t __value)
 {
  __arm_vstrhq_scatter_offset_f16 (__base, __offset, __value);
@@ -3986,25 +3121,11 @@ __arm_vld2q (float16_t const * __addr)
  return __arm_vld2q_f16 (__addr);
 }
 
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vld1q_z (float16_t const *__base, mve_pred16_t __p)
-{
- return __arm_vld1q_z_f16 (__base, __p);
-}
-
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vst2q (float16_t * __addr, float16x8x2_t __value)
 {
  __arm_vst2q_f16 (__addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vst1q_p (float16_t * __addr, float16x8_t __value, mve_pred16_t __p)
-{
- __arm_vst1q_p_f16 (__addr, __value, __p);
 }
 
 __extension__ extern __inline float32x4x4_t
@@ -4021,25 +3142,11 @@ __arm_vld2q (float32_t const * __addr)
  return __arm_vld2q_f32 (__addr);
 }
 
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vld1q_z (float32_t const *__base, mve_pred16_t __p)
-{
- return __arm_vld1q_z_f32 (__base, __p);
-}
-
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vst2q (float32_t * __addr, float32x4x2_t __value)
 {
  __arm_vst2q_f32 (__addr, __value);
-}
-
-__extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vst1q_p (float32_t * __addr, float32x4_t __value, mve_pred16_t __p)
-{
- __arm_vst1q_p_f32 (__addr, __value, __p);
 }
 
 __extension__ extern __inline float16x8_t
@@ -4393,17 +3500,6 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_float16_t_ptr][__ARM_mve_type_float16x8x4_t]: __arm_vst4q_f16 (__ARM_mve_coerce_f16_ptr(__p0, float16_t *), __ARM_mve_coerce(__p1, float16x8x4_t)), \
   int (*)[__ARM_mve_type_float32_t_ptr][__ARM_mve_type_float32x4x4_t]: __arm_vst4q_f32 (__ARM_mve_coerce_f32_ptr(__p0, float32_t *), __ARM_mve_coerce(__p1, float32x4x4_t)));})
 
-#define __arm_vld1q_z(p0,p1) ( \
-  _Generic( (int (*)[__ARM_mve_typeid(p0)])0, \
-  int (*)[__ARM_mve_type_int8_t_ptr]: __arm_vld1q_z_s8 (__ARM_mve_coerce_s8_ptr(p0, int8_t *), p1), \
-  int (*)[__ARM_mve_type_int16_t_ptr]: __arm_vld1q_z_s16 (__ARM_mve_coerce_s16_ptr(p0, int16_t *), p1), \
-  int (*)[__ARM_mve_type_int32_t_ptr]: __arm_vld1q_z_s32 (__ARM_mve_coerce_s32_ptr(p0, int32_t *), p1), \
-  int (*)[__ARM_mve_type_uint8_t_ptr]: __arm_vld1q_z_u8 (__ARM_mve_coerce_u8_ptr(p0, uint8_t *), p1), \
-  int (*)[__ARM_mve_type_uint16_t_ptr]: __arm_vld1q_z_u16 (__ARM_mve_coerce_u16_ptr(p0, uint16_t *), p1), \
-  int (*)[__ARM_mve_type_uint32_t_ptr]: __arm_vld1q_z_u32 (__ARM_mve_coerce_u32_ptr(p0, uint32_t *), p1), \
-  int (*)[__ARM_mve_type_float16_t_ptr]: __arm_vld1q_z_f16 (__ARM_mve_coerce_f16_ptr(p0, float16_t *), p1), \
-  int (*)[__ARM_mve_type_float32_t_ptr]: __arm_vld1q_z_f32 (__ARM_mve_coerce_f32_ptr(p0, float32_t *), p1)))
-
 #define __arm_vld2q(p0) ( \
   _Generic( (int (*)[__ARM_mve_typeid(p0)])0, \
   int (*)[__ARM_mve_type_int8_t_ptr]: __arm_vld2q_s8 (__ARM_mve_coerce_s8_ptr(p0, int8_t *)), \
@@ -4482,17 +3578,6 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_uint32_t_ptr]: __arm_vldrwq_gather_shifted_offset_z_u32 (__ARM_mve_coerce_u32_ptr(p0, uint32_t *), p1, p2), \
   int (*)[__ARM_mve_type_float32_t_ptr]: __arm_vldrwq_gather_shifted_offset_z_f32 (__ARM_mve_coerce_f32_ptr(p0, float32_t *), p1, p2)))
 
-#define __arm_vst1q_p(p0,p1,p2) ({ __typeof(p1) __p1 = (p1); \
-  _Generic( (int (*)[__ARM_mve_typeid(p0)][__ARM_mve_typeid(__p1)])0, \
-  int (*)[__ARM_mve_type_int8_t_ptr][__ARM_mve_type_int8x16_t]: __arm_vst1q_p_s8 (__ARM_mve_coerce_s8_ptr(p0, int8_t *), __ARM_mve_coerce(__p1, int8x16_t), p2), \
-  int (*)[__ARM_mve_type_int16_t_ptr][__ARM_mve_type_int16x8_t]: __arm_vst1q_p_s16 (__ARM_mve_coerce_s16_ptr(p0, int16_t *), __ARM_mve_coerce(__p1, int16x8_t), p2), \
-  int (*)[__ARM_mve_type_int32_t_ptr][__ARM_mve_type_int32x4_t]: __arm_vst1q_p_s32 (__ARM_mve_coerce_s32_ptr(p0, int32_t *), __ARM_mve_coerce(__p1, int32x4_t), p2), \
-  int (*)[__ARM_mve_type_uint8_t_ptr][__ARM_mve_type_uint8x16_t]: __arm_vst1q_p_u8 (__ARM_mve_coerce_u8_ptr(p0, uint8_t *), __ARM_mve_coerce(__p1, uint8x16_t), p2), \
-  int (*)[__ARM_mve_type_uint16_t_ptr][__ARM_mve_type_uint16x8_t]: __arm_vst1q_p_u16 (__ARM_mve_coerce_u16_ptr(p0, uint16_t *), __ARM_mve_coerce(__p1, uint16x8_t), p2), \
-  int (*)[__ARM_mve_type_uint32_t_ptr][__ARM_mve_type_uint32x4_t]: __arm_vst1q_p_u32 (__ARM_mve_coerce_u32_ptr(p0, uint32_t *), __ARM_mve_coerce(__p1, uint32x4_t), p2), \
-  int (*)[__ARM_mve_type_float16_t_ptr][__ARM_mve_type_float16x8_t]: __arm_vst1q_p_f16 (__ARM_mve_coerce_f16_ptr(p0, float16_t *), __ARM_mve_coerce(__p1, float16x8_t), p2), \
-  int (*)[__ARM_mve_type_float32_t_ptr][__ARM_mve_type_float32x4_t]: __arm_vst1q_p_f32 (__ARM_mve_coerce_f32_ptr(p0, float32_t *), __ARM_mve_coerce(__p1, float32x4_t), p2));})
-
 #define __arm_vst2q(p0,p1) ({ __typeof(p1) __p1 = (p1); \
   _Generic( (int (*)[__ARM_mve_typeid(p0)][__ARM_mve_typeid(__p1)])0, \
   int (*)[__ARM_mve_type_int8_t_ptr][__ARM_mve_type_int8x16x2_t]: __arm_vst2q_s8 (__ARM_mve_coerce_s8_ptr(p0, int8_t *), __ARM_mve_coerce(__p1, int8x16x2_t)), \
@@ -4503,22 +3588,6 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_uint32_t_ptr][__ARM_mve_type_uint32x4x2_t]: __arm_vst2q_u32 (__ARM_mve_coerce_u32_ptr(p0, uint32_t *), __ARM_mve_coerce(__p1, uint32x4x2_t)), \
   int (*)[__ARM_mve_type_float16_t_ptr][__ARM_mve_type_float16x8x2_t]: __arm_vst2q_f16 (__ARM_mve_coerce_f16_ptr(p0, float16_t *), __ARM_mve_coerce(__p1, float16x8x2_t)), \
   int (*)[__ARM_mve_type_float32_t_ptr][__ARM_mve_type_float32x4x2_t]: __arm_vst2q_f32 (__ARM_mve_coerce_f32_ptr(p0, float32_t *), __ARM_mve_coerce(__p1, float32x4x2_t)));})
-
-#define __arm_vstrhq(p0,p1) ({ __typeof(p1) __p1 = (p1); \
-  _Generic( (int (*)[__ARM_mve_typeid(p0)][__ARM_mve_typeid(__p1)])0, \
-  int (*)[__ARM_mve_type_int16_t_ptr][__ARM_mve_type_int16x8_t]: __arm_vstrhq_s16 (__ARM_mve_coerce_s16_ptr(p0, int16_t *), __ARM_mve_coerce(__p1, int16x8_t)), \
-  int (*)[__ARM_mve_type_int16_t_ptr][__ARM_mve_type_int32x4_t]: __arm_vstrhq_s32 (__ARM_mve_coerce_s16_ptr(p0, int16_t *), __ARM_mve_coerce(__p1, int32x4_t)), \
-  int (*)[__ARM_mve_type_uint16_t_ptr][__ARM_mve_type_uint16x8_t]: __arm_vstrhq_u16 (__ARM_mve_coerce_u16_ptr(p0, uint16_t *), __ARM_mve_coerce(__p1, uint16x8_t)), \
-  int (*)[__ARM_mve_type_uint16_t_ptr][__ARM_mve_type_uint32x4_t]: __arm_vstrhq_u32 (__ARM_mve_coerce_u16_ptr(p0, uint16_t *), __ARM_mve_coerce(__p1, uint32x4_t)), \
-  int (*)[__ARM_mve_type_float16_t_ptr][__ARM_mve_type_float16x8_t]: __arm_vstrhq_f16 (__ARM_mve_coerce_f16_ptr(p0, float16_t *), __ARM_mve_coerce(__p1, float16x8_t)));})
-
-#define __arm_vstrhq_p(p0,p1,p2) ({ __typeof(p1) __p1 = (p1); \
-  _Generic( (int (*)[__ARM_mve_typeid(p0)][__ARM_mve_typeid(__p1)])0, \
-  int (*)[__ARM_mve_type_int16_t_ptr][__ARM_mve_type_int16x8_t]: __arm_vstrhq_p_s16 (__ARM_mve_coerce_s16_ptr(p0, int16_t *), __ARM_mve_coerce(__p1, int16x8_t), p2), \
-  int (*)[__ARM_mve_type_int16_t_ptr][__ARM_mve_type_int32x4_t]: __arm_vstrhq_p_s32 (__ARM_mve_coerce_s16_ptr(p0, int16_t *), __ARM_mve_coerce(__p1, int32x4_t), p2), \
-  int (*)[__ARM_mve_type_uint16_t_ptr][__ARM_mve_type_uint16x8_t]: __arm_vstrhq_p_u16 (__ARM_mve_coerce_u16_ptr(p0, uint16_t *), __ARM_mve_coerce(__p1, uint16x8_t), p2), \
-  int (*)[__ARM_mve_type_uint16_t_ptr][__ARM_mve_type_uint32x4_t]: __arm_vstrhq_p_u32 (__ARM_mve_coerce_u16_ptr(p0, uint16_t *), __ARM_mve_coerce(__p1, uint32x4_t), p2), \
-  int (*)[__ARM_mve_type_float16_t_ptr][__ARM_mve_type_float16x8_t]: __arm_vstrhq_p_f16 (__ARM_mve_coerce_f16_ptr(p0, float16_t *), __ARM_mve_coerce(__p1, float16x8_t), p2));})
 
 #define __arm_vstrhq_scatter_offset_p(p0,p1,p2,p3) ({ __typeof(p1) __p1 = (p1); \
   __typeof(p2) __p2 = (p2); \
@@ -4555,18 +3624,6 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_uint16_t_ptr][__ARM_mve_type_uint16x8_t][__ARM_mve_type_uint16x8_t]: __arm_vstrhq_scatter_shifted_offset_u16 (__ARM_mve_coerce_u16_ptr(p0, uint16_t *), __ARM_mve_coerce(__p1, uint16x8_t), __ARM_mve_coerce(__p2, uint16x8_t)), \
   int (*)[__ARM_mve_type_uint16_t_ptr][__ARM_mve_type_uint32x4_t][__ARM_mve_type_uint32x4_t]: __arm_vstrhq_scatter_shifted_offset_u32 (__ARM_mve_coerce_u16_ptr(p0, uint16_t *), __ARM_mve_coerce(__p1, uint32x4_t), __ARM_mve_coerce(__p2, uint32x4_t)), \
   int (*)[__ARM_mve_type_float16_t_ptr][__ARM_mve_type_uint16x8_t][__ARM_mve_type_float16x8_t]: __arm_vstrhq_scatter_shifted_offset_f16 (__ARM_mve_coerce_f16_ptr(p0, float16_t *), __ARM_mve_coerce(__p1, uint16x8_t), __ARM_mve_coerce(__p2, float16x8_t)));})
-
-#define __arm_vstrwq_p(p0,p1,p2) ({ __typeof(p1) __p1 = (p1); \
-  _Generic( (int (*)[__ARM_mve_typeid(p0)][__ARM_mve_typeid(__p1)])0, \
-  int (*)[__ARM_mve_type_int32_t_ptr][__ARM_mve_type_int32x4_t]: __arm_vstrwq_p_s32 (__ARM_mve_coerce_s32_ptr(p0, int32_t *), __ARM_mve_coerce(__p1, int32x4_t), p2), \
-  int (*)[__ARM_mve_type_uint32_t_ptr][__ARM_mve_type_uint32x4_t]: __arm_vstrwq_p_u32 (__ARM_mve_coerce_u32_ptr(p0, uint32_t *), __ARM_mve_coerce(__p1, uint32x4_t), p2), \
-  int (*)[__ARM_mve_type_float32_t_ptr][__ARM_mve_type_float32x4_t]: __arm_vstrwq_p_f32 (__ARM_mve_coerce_f32_ptr(p0, float32_t *), __ARM_mve_coerce(__p1, float32x4_t), p2));})
-
-#define __arm_vstrwq(p0,p1) ({ __typeof(p1) __p1 = (p1); \
-  _Generic( (int (*)[__ARM_mve_typeid(p0)][__ARM_mve_typeid(__p1)])0, \
-  int (*)[__ARM_mve_type_int32_t_ptr][__ARM_mve_type_int32x4_t]: __arm_vstrwq_s32 (__ARM_mve_coerce_s32_ptr(p0, int32_t *), __ARM_mve_coerce(__p1, int32x4_t)), \
-  int (*)[__ARM_mve_type_uint32_t_ptr][__ARM_mve_type_uint32x4_t]: __arm_vstrwq_u32 (__ARM_mve_coerce_u32_ptr(p0, uint32_t *), __ARM_mve_coerce(__p1, uint32x4_t)), \
-  int (*)[__ARM_mve_type_float32_t_ptr][__ARM_mve_type_float32x4_t]: __arm_vstrwq_f32 (__ARM_mve_coerce_f32_ptr(p0, float32_t *), __ARM_mve_coerce(__p1, float32x4_t)));})
 
 #define __arm_vstrhq_scatter_offset(p0,p1,p2) ({ __typeof(p1) __p1 = (p1); \
   __typeof(p2) __p2 = (p2); \
@@ -4798,15 +3855,6 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_int32_t_ptr]: __arm_vldrwq_gather_shifted_offset_z_s32 (__ARM_mve_coerce_s32_ptr(__p0, int32_t *), p1, p2), \
   int (*)[__ARM_mve_type_uint32_t_ptr]: __arm_vldrwq_gather_shifted_offset_z_u32 (__ARM_mve_coerce_u32_ptr(__p0, uint32_t *), p1, p2));})
 
-#define __arm_vst1q_p(p0,p1,p2) ({ __typeof(p1) __p1 = (p1); \
-  _Generic( (int (*)[__ARM_mve_typeid(p0)][__ARM_mve_typeid(__p1)])0, \
-  int (*)[__ARM_mve_type_int8_t_ptr][__ARM_mve_type_int8x16_t]: __arm_vst1q_p_s8 (__ARM_mve_coerce_s8_ptr(p0, int8_t *), __ARM_mve_coerce(__p1, int8x16_t), p2), \
-  int (*)[__ARM_mve_type_int16_t_ptr][__ARM_mve_type_int16x8_t]: __arm_vst1q_p_s16 (__ARM_mve_coerce_s16_ptr(p0, int16_t *), __ARM_mve_coerce(__p1, int16x8_t), p2), \
-  int (*)[__ARM_mve_type_int32_t_ptr][__ARM_mve_type_int32x4_t]: __arm_vst1q_p_s32 (__ARM_mve_coerce_s32_ptr(p0, int32_t *), __ARM_mve_coerce(__p1, int32x4_t), p2), \
-  int (*)[__ARM_mve_type_uint8_t_ptr][__ARM_mve_type_uint8x16_t]: __arm_vst1q_p_u8 (__ARM_mve_coerce_u8_ptr(p0, uint8_t *), __ARM_mve_coerce(__p1, uint8x16_t), p2), \
-  int (*)[__ARM_mve_type_uint16_t_ptr][__ARM_mve_type_uint16x8_t]: __arm_vst1q_p_u16 (__ARM_mve_coerce_u16_ptr(p0, uint16_t *), __ARM_mve_coerce(__p1, uint16x8_t), p2), \
-  int (*)[__ARM_mve_type_uint32_t_ptr][__ARM_mve_type_uint32x4_t]: __arm_vst1q_p_u32 (__ARM_mve_coerce_u32_ptr(p0, uint32_t *), __ARM_mve_coerce(__p1, uint32x4_t), p2));})
-
 #define __arm_vst2q(p0,p1) ({ __typeof(p1) __p1 = (p1); \
   _Generic( (int (*)[__ARM_mve_typeid(p0)][__ARM_mve_typeid(__p1)])0, \
   int (*)[__ARM_mve_type_int8_t_ptr][__ARM_mve_type_int8x16x2_t]: __arm_vst2q_s8 (__ARM_mve_coerce_s8_ptr(p0, int8_t *), __ARM_mve_coerce(__p1, int8x16x2_t)), \
@@ -4815,20 +3863,6 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_uint8_t_ptr][__ARM_mve_type_uint8x16x2_t]: __arm_vst2q_u8 (__ARM_mve_coerce_u8_ptr(p0, uint8_t *), __ARM_mve_coerce(__p1, uint8x16x2_t)), \
   int (*)[__ARM_mve_type_uint16_t_ptr][__ARM_mve_type_uint16x8x2_t]: __arm_vst2q_u16 (__ARM_mve_coerce_u16_ptr(p0, uint16_t *), __ARM_mve_coerce(__p1, uint16x8x2_t)), \
   int (*)[__ARM_mve_type_uint32_t_ptr][__ARM_mve_type_uint32x4x2_t]: __arm_vst2q_u32 (__ARM_mve_coerce_u32_ptr(p0, uint32_t *), __ARM_mve_coerce(__p1, uint32x4x2_t)));})
-
-#define __arm_vstrhq(p0,p1) ({ __typeof(p1) __p1 = (p1); \
-  _Generic( (int (*)[__ARM_mve_typeid(p0)][__ARM_mve_typeid(__p1)])0, \
-  int (*)[__ARM_mve_type_int16_t_ptr][__ARM_mve_type_int16x8_t]: __arm_vstrhq_s16 (__ARM_mve_coerce_s16_ptr(p0, int16_t *), __ARM_mve_coerce(__p1, int16x8_t)), \
-  int (*)[__ARM_mve_type_int16_t_ptr][__ARM_mve_type_int32x4_t]: __arm_vstrhq_s32 (__ARM_mve_coerce_s16_ptr(p0, int16_t *), __ARM_mve_coerce(__p1, int32x4_t)), \
-  int (*)[__ARM_mve_type_uint16_t_ptr][__ARM_mve_type_uint16x8_t]: __arm_vstrhq_u16 (__ARM_mve_coerce_u16_ptr(p0, uint16_t *), __ARM_mve_coerce(__p1, uint16x8_t)), \
-  int (*)[__ARM_mve_type_uint16_t_ptr][__ARM_mve_type_uint32x4_t]: __arm_vstrhq_u32 (__ARM_mve_coerce_u16_ptr(p0, uint16_t *), __ARM_mve_coerce(__p1, uint32x4_t)));})
-
-#define __arm_vstrhq_p(p0,p1,p2) ({ __typeof(p1) __p1 = (p1); \
-  _Generic( (int (*)[__ARM_mve_typeid(p0)][__ARM_mve_typeid(__p1)])0, \
-  int (*)[__ARM_mve_type_int16_t_ptr][__ARM_mve_type_int16x8_t]: __arm_vstrhq_p_s16 (__ARM_mve_coerce_s16_ptr(p0, int16_t *), __ARM_mve_coerce(__p1, int16x8_t), p2), \
-  int (*)[__ARM_mve_type_int16_t_ptr][__ARM_mve_type_int32x4_t]: __arm_vstrhq_p_s32 (__ARM_mve_coerce_s16_ptr(p0, int16_t *), __ARM_mve_coerce(__p1, int32x4_t), p2), \
-  int (*)[__ARM_mve_type_uint16_t_ptr][__ARM_mve_type_uint16x8_t]: __arm_vstrhq_p_u16 (__ARM_mve_coerce_u16_ptr(p0, uint16_t *), __ARM_mve_coerce(__p1, uint16x8_t), p2), \
-  int (*)[__ARM_mve_type_uint16_t_ptr][__ARM_mve_type_uint32x4_t]: __arm_vstrhq_p_u32 (__ARM_mve_coerce_u16_ptr(p0, uint16_t *), __ARM_mve_coerce(__p1, uint32x4_t), p2));})
 
 #define __arm_vstrhq_scatter_offset_p(p0,p1,p2,p3) ({ __typeof(p1) __p1 = (p1); \
   __typeof(p2) __p2 = (p2); \
@@ -4861,17 +3895,6 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_int16_t_ptr][__ARM_mve_type_uint32x4_t][__ARM_mve_type_int32x4_t]: __arm_vstrhq_scatter_shifted_offset_s32 (__ARM_mve_coerce_s16_ptr(p0, int16_t *), __ARM_mve_coerce(__p1, uint32x4_t), __ARM_mve_coerce(__p2, int32x4_t)), \
   int (*)[__ARM_mve_type_uint16_t_ptr][__ARM_mve_type_uint16x8_t][__ARM_mve_type_uint16x8_t]: __arm_vstrhq_scatter_shifted_offset_u16 (__ARM_mve_coerce_u16_ptr(p0, uint16_t *), __ARM_mve_coerce(__p1, uint16x8_t), __ARM_mve_coerce(__p2, uint16x8_t)), \
   int (*)[__ARM_mve_type_uint16_t_ptr][__ARM_mve_type_uint32x4_t][__ARM_mve_type_uint32x4_t]: __arm_vstrhq_scatter_shifted_offset_u32 (__ARM_mve_coerce_u16_ptr(p0, uint16_t *), __ARM_mve_coerce(__p1, uint32x4_t), __ARM_mve_coerce(__p2, uint32x4_t)));})
-
-
-#define __arm_vstrwq(p0,p1) ({ __typeof(p1) __p1 = (p1); \
-  _Generic( (int (*)[__ARM_mve_typeid(p0)][__ARM_mve_typeid(__p1)])0, \
-  int (*)[__ARM_mve_type_int32_t_ptr][__ARM_mve_type_int32x4_t]: __arm_vstrwq_s32 (__ARM_mve_coerce_s32_ptr(p0, int32_t *), __ARM_mve_coerce(__p1, int32x4_t)), \
-  int (*)[__ARM_mve_type_uint32_t_ptr][__ARM_mve_type_uint32x4_t]: __arm_vstrwq_u32 (__ARM_mve_coerce_u32_ptr(p0, uint32_t *), __ARM_mve_coerce(__p1, uint32x4_t)));})
-
-#define __arm_vstrwq_p(p0,p1,p2) ({ __typeof(p1) __p1 = (p1); \
-  _Generic( (int (*)[__ARM_mve_typeid(p0)][__ARM_mve_typeid(__p1)])0, \
-  int (*)[__ARM_mve_type_int32_t_ptr][__ARM_mve_type_int32x4_t]: __arm_vstrwq_p_s32 (__ARM_mve_coerce_s32_ptr(p0, int32_t *), __ARM_mve_coerce(__p1, int32x4_t), p2), \
-  int (*)[__ARM_mve_type_uint32_t_ptr][__ARM_mve_type_uint32x4_t]: __arm_vstrwq_p_u32 (__ARM_mve_coerce_u32_ptr(p0, uint32_t *), __ARM_mve_coerce(__p1, uint32x4_t), p2));})
 
 #define __arm_vstrdq_scatter_base_p(p0,p1,p2,p3) ({ __typeof(p2) __p2 = (p2); \
   _Generic( (int (*)[__ARM_mve_typeid(__p2)])0, \
@@ -4949,14 +3972,6 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_uint16x8_t]: __arm_vuninitializedq_u16 (), \
   int (*)[__ARM_mve_type_uint32x4_t]: __arm_vuninitializedq_u32 (), \
   int (*)[__ARM_mve_type_uint64x2_t]: __arm_vuninitializedq_u64 ());})
-
-#define __arm_vld1q_z(p0,p1) ( _Generic( (int (*)[__ARM_mve_typeid(p0)])0, \
-  int (*)[__ARM_mve_type_int8_t_ptr]: __arm_vld1q_z_s8 (__ARM_mve_coerce_s8_ptr(p0, int8_t *), p1), \
-  int (*)[__ARM_mve_type_int16_t_ptr]: __arm_vld1q_z_s16 (__ARM_mve_coerce_s16_ptr(p0, int16_t *), p1), \
-  int (*)[__ARM_mve_type_int32_t_ptr]: __arm_vld1q_z_s32 (__ARM_mve_coerce_s32_ptr(p0, int32_t *), p1), \
-  int (*)[__ARM_mve_type_uint8_t_ptr]: __arm_vld1q_z_u8 (__ARM_mve_coerce_u8_ptr(p0, uint8_t *), p1), \
-  int (*)[__ARM_mve_type_uint16_t_ptr]: __arm_vld1q_z_u16 (__ARM_mve_coerce_u16_ptr(p0, uint16_t *), p1), \
-  int (*)[__ARM_mve_type_uint32_t_ptr]: __arm_vld1q_z_u32 (__ARM_mve_coerce_u32_ptr(p0, uint32_t *), p1)))
 
 #define __arm_vld2q(p0) ( _Generic( (int (*)[__ARM_mve_typeid(p0)])0, \
   int (*)[__ARM_mve_type_int8_t_ptr]: __arm_vld2q_s8 (__ARM_mve_coerce_s8_ptr(p0, int8_t *)), \
@@ -5044,25 +4059,6 @@ extern void *__ARM_undef;
   int (*)[__ARM_mve_type_uint8_t_ptr][__ARM_mve_type_uint8x16_t]: __arm_vldrbq_gather_offset_u8(__ARM_mve_coerce_u8_ptr(p0, uint8_t *), __ARM_mve_coerce(__p1, uint8x16_t)), \
   int (*)[__ARM_mve_type_uint8_t_ptr][__ARM_mve_type_uint16x8_t]: __arm_vldrbq_gather_offset_u16(__ARM_mve_coerce_u8_ptr(p0, uint8_t *), __ARM_mve_coerce(__p1, uint16x8_t)), \
   int (*)[__ARM_mve_type_uint8_t_ptr][__ARM_mve_type_uint32x4_t]: __arm_vldrbq_gather_offset_u32(__ARM_mve_coerce_u8_ptr(p0, uint8_t *), __ARM_mve_coerce(__p1, uint32x4_t)));})
-
-#define __arm_vstrbq(p0,p1) ({ __typeof(p1) __p1 = (p1); \
-  _Generic( (int (*)[__ARM_mve_typeid(p0)][__ARM_mve_typeid(__p1)])0, \
-  int (*)[__ARM_mve_type_int8_t_ptr][__ARM_mve_type_int8x16_t]: __arm_vstrbq_s8 (__ARM_mve_coerce_s8_ptr(p0, int8_t *), __ARM_mve_coerce(__p1, int8x16_t)), \
-  int (*)[__ARM_mve_type_int8_t_ptr][__ARM_mve_type_int16x8_t]: __arm_vstrbq_s16 (__ARM_mve_coerce_s8_ptr(p0, int8_t *), __ARM_mve_coerce(__p1, int16x8_t)), \
-  int (*)[__ARM_mve_type_int8_t_ptr][__ARM_mve_type_int32x4_t]: __arm_vstrbq_s32 (__ARM_mve_coerce_s8_ptr(p0, int8_t *), __ARM_mve_coerce(__p1, int32x4_t)), \
-  int (*)[__ARM_mve_type_uint8_t_ptr][__ARM_mve_type_uint8x16_t]: __arm_vstrbq_u8 (__ARM_mve_coerce_u8_ptr(p0, uint8_t *), __ARM_mve_coerce(__p1, uint8x16_t)), \
-  int (*)[__ARM_mve_type_uint8_t_ptr][__ARM_mve_type_uint16x8_t]: __arm_vstrbq_u16 (__ARM_mve_coerce_u8_ptr(p0, uint8_t *), __ARM_mve_coerce(__p1, uint16x8_t)), \
-  int (*)[__ARM_mve_type_uint8_t_ptr][__ARM_mve_type_uint32x4_t]: __arm_vstrbq_u32 (__ARM_mve_coerce_u8_ptr(p0, uint8_t *), __ARM_mve_coerce(__p1, uint32x4_t)));})
-
-#define __arm_vstrbq_p(p0,p1,p2) ({ __typeof(p0) __p0 = (p0); \
-  __typeof(p1) __p1 = (p1); \
-  _Generic( (int (*)[__ARM_mve_typeid(__p0)][__ARM_mve_typeid(__p1)])0, \
-  int (*)[__ARM_mve_type_int8_t_ptr][__ARM_mve_type_int8x16_t]: __arm_vstrbq_p_s8 (__ARM_mve_coerce_s8_ptr(__p0, int8_t *), __ARM_mve_coerce(__p1, int8x16_t), p2), \
-  int (*)[__ARM_mve_type_int8_t_ptr][__ARM_mve_type_int16x8_t]: __arm_vstrbq_p_s16 (__ARM_mve_coerce_s8_ptr(__p0, int8_t *), __ARM_mve_coerce(__p1, int16x8_t), p2), \
-  int (*)[__ARM_mve_type_int8_t_ptr][__ARM_mve_type_int32x4_t]: __arm_vstrbq_p_s32 (__ARM_mve_coerce_s8_ptr(__p0, int8_t *), __ARM_mve_coerce(__p1, int32x4_t), p2), \
-  int (*)[__ARM_mve_type_uint8_t_ptr][__ARM_mve_type_uint8x16_t]: __arm_vstrbq_p_u8 (__ARM_mve_coerce_u8_ptr(__p0, uint8_t *), __ARM_mve_coerce(__p1, uint8x16_t), p2), \
-  int (*)[__ARM_mve_type_uint8_t_ptr][__ARM_mve_type_uint16x8_t]: __arm_vstrbq_p_u16 (__ARM_mve_coerce_u8_ptr(__p0, uint8_t *), __ARM_mve_coerce(__p1, uint16x8_t), p2), \
-  int (*)[__ARM_mve_type_uint8_t_ptr][__ARM_mve_type_uint32x4_t]: __arm_vstrbq_p_u32 (__ARM_mve_coerce_u8_ptr(__p0, uint8_t *), __ARM_mve_coerce(__p1, uint32x4_t), p2));})
 
 #define __arm_vstrdq_scatter_base(p0,p1,p2) ({ __typeof(p2) __p2 = (p2); \
   _Generic( (int (*)[__ARM_mve_typeid(__p2)])0, \

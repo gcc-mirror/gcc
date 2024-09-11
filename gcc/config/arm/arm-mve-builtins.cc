@@ -150,8 +150,10 @@ CONSTEXPR const type_suffix_info type_suffixes[NUM_TYPE_SUFFIXES + 1] = {
    class ("b", "f", etc.) and a numerical bit count.  */
 
 /* _f16.  */
-#define TYPES_float16(S, D) \
-  S (f16)
+#define TYPES_float_16(S, D) S (f16)
+
+/* _f32.  */
+#define TYPES_float_32(S, D) S (f32)
 
 /* _f16 _f32.  */
 #define TYPES_all_float(S, D) \
@@ -304,7 +306,8 @@ static const type_suffix_pair types_none[] = {
 
 DEF_MVE_TYPES_ARRAY (all_integer);
 DEF_MVE_TYPES_ARRAY (all_integer_with_64);
-DEF_MVE_TYPES_ARRAY (float16);
+DEF_MVE_TYPES_ARRAY (float_16);
+DEF_MVE_TYPES_ARRAY (float_32);
 DEF_MVE_TYPES_ARRAY (all_float);
 DEF_MVE_TYPES_ARRAY (all_signed);
 DEF_MVE_TYPES_ARRAY (all_unsigned);
@@ -342,6 +345,11 @@ static const predication_index preds_mx_or_none[] = {
 static const predication_index preds_p_or_none[] = {
   PRED_p, PRED_none, NUM_PREDS
 };
+
+/* Used by functions that have the z predicated form, in addition to
+   an unpredicated form.  */
+static const predication_index preds_z_or_none[]
+  = {PRED_z, PRED_none, NUM_PREDS};
 
 /* A list of all MVE ACLE functions.  */
 static CONSTEXPR const function_group_info function_groups[] = {
@@ -1661,6 +1669,7 @@ function_resolver::check_gp_argument (unsigned int nops,
 
 	case PRED_p:
 	case PRED_x:
+	case PRED_z:
 	  /* Add final predicate.  */
 	  nargs = nops + 1;
 	  break;

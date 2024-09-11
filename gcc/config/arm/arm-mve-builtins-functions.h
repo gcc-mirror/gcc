@@ -958,19 +958,6 @@ public:
   memory_vector_mode (const function_instance &fi) const override
   {
     machine_mode mode = fi.vector_mode (0);
-    /* Vectors of floating-point are managed in memory as vectors of
-       integers.  */
-    switch (mode)
-      {
-      case E_V4SFmode:
-	mode = E_V4SImode;
-	break;
-      case E_V8HFmode:
-	mode = E_V8HImode;
-	break;
-      default:
-	break;
-      }
 
     if (m_vectors_per_tuple != 1)
       mode = targetm.array_mode (mode, m_vectors_per_tuple).require ();

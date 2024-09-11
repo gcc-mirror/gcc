@@ -150,16 +150,18 @@ public:
   expand (function_expander &e) const override
   {
     insn_code icode;
-    if (e.type_suffix (0).float_p)
-      icode = code_for_mve_vld1q_f(e.vector_mode (0));
-    else
+    switch (e.pred)
       {
-	if (e.type_suffix (0).unsigned_p)
-	  icode = code_for_mve_vld1q(VLD1Q_U,
-				     e.vector_mode (0));
-	else
-	  icode = code_for_mve_vld1q(VLD1Q_S,
-				     e.vector_mode (0));
+      case PRED_none:
+	icode = code_for_mve_vldrq (e.vector_mode (0));
+	break;
+
+      case PRED_z:
+	icode = code_for_mve_vldrq_z (e.vector_mode (0));
+	break;
+
+      default:
+	gcc_unreachable ();
       }
     return e.use_contiguous_load_insn (icode);
   }
@@ -178,18 +180,110 @@ public:
   expand (function_expander &e) const override
   {
     insn_code icode;
-    if (e.type_suffix (0).float_p)
-      icode = code_for_mve_vst1q_f(e.vector_mode (0));
-    else
+    switch (e.pred)
       {
-	if (e.type_suffix (0).unsigned_p)
-	  icode = code_for_mve_vst1q(VST1Q_U,
-				     e.vector_mode (0));
-	else
-	  icode = code_for_mve_vst1q(VST1Q_S,
-				     e.vector_mode (0));
+      case PRED_none:
+	icode = code_for_mve_vstrq (e.vector_mode (0));
+	break;
+
+      case PRED_p:
+	icode = code_for_mve_vstrq_p (e.vector_mode (0));
+	break;
+
+      default:
+	gcc_unreachable ();
       }
     return e.use_contiguous_store_insn (icode);
+  }
+};
+
+/* Builds the vstrq* intrinsics.  */
+class vstrq_impl : public store_truncating
+{
+public:
+  using store_truncating::store_truncating;
+
+  unsigned int call_properties (const function_instance &) const override
+  {
+    return CP_WRITE_MEMORY;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    insn_code icode;
+    switch (e.pred)
+      {
+      case PRED_none:
+	if (e.vector_mode (0) == e.memory_vector_mode ())
+	  /* Non-truncating store case.  */
+	  icode = code_for_mve_vstrq (e.vector_mode (0));
+	else
+	  /* Truncating store case.
+	     (there is only one possible truncation for each memory mode so only
+	     one mode argument is needed).  */
+	  icode = code_for_mve_vstrq_truncate (e.memory_vector_mode ());
+	break;
+
+      case PRED_p:
+	if (e.vector_mode (0) == e.memory_vector_mode ())
+	  icode = code_for_mve_vstrq_p (e.vector_mode (0));
+	else
+	  icode = code_for_mve_vstrq_p_truncate (e.memory_vector_mode ());
+	break;
+
+      default:
+	gcc_unreachable ();
+      }
+
+    return e.use_contiguous_store_insn (icode);
+  }
+};
+
+/* Builds the vldrq* intrinsics.  */
+class vldrq_impl : public load_extending
+{
+public:
+  using load_extending::load_extending;
+
+  unsigned int call_properties (const function_instance &) const override
+  {
+    return CP_READ_MEMORY;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    insn_code icode;
+    switch (e.pred)
+      {
+      case PRED_none:
+	if (e.vector_mode (0) == e.memory_vector_mode ())
+	  /* Non-extending load case.  */
+	  icode = code_for_mve_vldrq (e.vector_mode (0));
+	else
+	  /* Extending load case.
+	     (there is only one extension for each memory mode so only one type
+	     argument is needed).  */
+	  icode = code_for_mve_vldrq_extend (e.memory_vector_mode (),
+					     e.type_suffix (0).unsigned_p
+					     ? ZERO_EXTEND
+					     : SIGN_EXTEND);
+	break;
+
+      case PRED_z:
+	if (e.vector_mode (0) == e.memory_vector_mode ())
+	  icode = code_for_mve_vldrq_z (e.vector_mode (0));
+	else
+	  icode = code_for_mve_vldrq_z_extend (e.memory_vector_mode (),
+					       e.type_suffix (0).unsigned_p
+					       ? ZERO_EXTEND
+					       : SIGN_EXTEND);
+	break;
+
+      default:
+	gcc_unreachable ();
+      }
+
+    return e.use_contiguous_load_insn (icode);
   }
 };
 
@@ -989,6 +1083,9 @@ FUNCTION (vfmsq, unspec_mve_function_exact_insn, (-1, -1, VFMSQ_F, -1, -1, -1, -
 FUNCTION_WITH_M_N_NO_F (vhaddq, VHADDQ)
 FUNCTION_WITH_M_N_NO_F (vhsubq, VHSUBQ)
 FUNCTION (vld1q, vld1_impl,)
+FUNCTION (vldrbq, vldrq_impl, (TYPE_SUFFIX_s8, TYPE_SUFFIX_u8))
+FUNCTION (vldrhq, vldrq_impl, (TYPE_SUFFIX_s16, TYPE_SUFFIX_u16, TYPE_SUFFIX_f16))
+FUNCTION (vldrwq, vldrq_impl, (TYPE_SUFFIX_s32, TYPE_SUFFIX_u32, TYPE_SUFFIX_f32))
 FUNCTION_PRED_P_S (vmaxavq, VMAXAVQ)
 FUNCTION_WITHOUT_N_NO_U_F (vmaxaq, VMAXAQ)
 FUNCTION_ONLY_F (vmaxnmaq, VMAXNMAQ)
@@ -1109,6 +1206,9 @@ FUNCTION_ONLY_N_NO_F (vshrq, VSHRQ)
 FUNCTION_ONLY_N_NO_F (vsliq, VSLIQ)
 FUNCTION_ONLY_N_NO_F (vsriq, VSRIQ)
 FUNCTION (vst1q, vst1_impl,)
+FUNCTION (vstrbq, vstrq_impl, (QImode, opt_scalar_mode ()))
+FUNCTION (vstrhq, vstrq_impl, (HImode, HFmode))
+FUNCTION (vstrwq, vstrq_impl, (SImode, SFmode))
 FUNCTION_WITH_RTX_M_N (vsubq, MINUS, VSUBQ)
 FUNCTION (vuninitializedq, vuninitializedq_impl,)
 
