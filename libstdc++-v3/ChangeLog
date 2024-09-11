@@ -1,3 +1,24 @@
+2024-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdb.cc (minmax_year, minmax_year2): Remove.
+	(years_from_to): New class replacing minmax_year and
+	minmax_year2.
+	(format_abbrev_str, select_std_or_dst_abbrev): Move earlier in
+	the file. Handle "-" for letters.
+	(ZoneInfo::to): Use format_abbrev_str to expand %z.
+	(ZoneInfo::set_abbrev): Remove exception. Change parameter from
+	reference to value.
+	(operator>>(istream&, Rule&)): Do not clear letters when it
+	contains "-".
+	(time_zone::_M_get_sys_info): Add missing logic to find the Rule
+	in effect before the time point.
+	* testsuite/std/time/tzdb/1.cc: Adjust for vanguard format using
+	"GMT" as the Zone name, not as a Link to "Etc/GMT".
+	* testsuite/std/time/time_zone/sys_info_abbrev.cc: New test.
+
 2024-09-08  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
