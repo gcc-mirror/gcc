@@ -2143,19 +2143,11 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	  if (chain.length () == 2)
 	    {
 	      /* In a chain of just two elements resort to the regular
-		 operand swapping scheme.  If we run into a length
-		 mismatch still hard-FAIL.  */
-	      if (chain_len == 0)
-		hard_fail = false;
-	      else
-		{
-		  matches[lane] = false;
-		  /* ???  We might want to process the other lanes, but
-		     make sure to not give false matching hints to the
-		     caller for lanes we did not process.  */
-		  if (lane != group_size - 1)
-		    matches[0] = false;
-		}
+		 operand swapping scheme.  Likewise if we run into a
+		 length mismatch process regularly as well as we did not
+		 process the other lanes we cannot report a good hint what
+		 lanes to try swapping in the parent.  */
+	      hard_fail = false;
 	      break;
 	    }
 	  else if (chain_len == 0)
@@ -2428,6 +2420,11 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	  return node;
 	}
 out:
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "failed to line up SLP graph by re-associating "
+			 "operations in lanes%s\n",
+			 !hard_fail ? " trying regular discovery" : "");
       while (!children.is_empty ())
 	vect_free_slp_tree (children.pop ());
       while (!chains.is_empty ())
@@ -7554,7 +7551,9 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
   /* We're having difficulties scheduling nodes with just constant
      operands and no scalar stmts since we then cannot compute a stmt
      insertion place.  */
-  if (!seen_non_constant_child && SLP_TREE_SCALAR_STMTS (node).is_empty ())
+  if (res
+      && !seen_non_constant_child
+      && SLP_TREE_SCALAR_STMTS (node).is_empty ())
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
@@ -10280,7 +10279,7 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
   if (dump_p)
     {
       dump_printf_loc (MSG_NOTE, vect_location,
-		       "vectorizing permutation");
+		       "vectorizing permutation %p", (void *)node);
       for (unsigned i = 0; i < perm.length (); ++i)
 	dump_printf (MSG_NOTE, " op%u[%u]", perm[i].first, perm[i].second);
       if (repeating_p)
