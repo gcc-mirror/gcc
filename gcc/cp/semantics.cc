@@ -13482,10 +13482,10 @@ finish_builtin_launder (location_t loc, tree arg, tsubst_flags_t complain)
     arg = decay_conversion (arg, complain);
   if (error_operand_p (arg))
     return error_mark_node;
-  if (!type_dependent_expression_p (arg)
-      && !TYPE_PTR_P (TREE_TYPE (arg)))
+  if (!type_dependent_expression_p (arg) && !TYPE_PTROB_P (TREE_TYPE (arg)))
     {
-      error_at (loc, "non-pointer argument to %<__builtin_launder%>");
+      error_at (loc, "type %qT of argument to %<__builtin_launder%> "
+		"is not a pointer to object type", TREE_TYPE (arg));
       return error_mark_node;
     }
   if (processing_template_decl)
