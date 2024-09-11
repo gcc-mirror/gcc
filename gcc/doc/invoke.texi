@@ -23492,6 +23492,12 @@ of the build computer.  At present, this feature is only supported on
 GNU/Linux, and not all architectures are recognized.  If the auto-detect
 is unsuccessful the option has no effect.
 
+@option{-march=unset} causes the compiler to ignore any
+@option{-march=@dots{}} options that appear earlier on the command line
+and behave as if the option was never passed.  This is useful to avoid
+warnings about conflicting CPU and architecture options when the two
+produce different architecture specifications.
+
 @opindex mtune
 @item -mtune=@var{name}
 This option specifies the name of the target ARM processor for
@@ -23653,6 +23659,12 @@ See @option{-mtune} for more information.
 of the build computer.  At present, this feature is only supported on
 GNU/Linux, and not all architectures are recognized.  If the auto-detect
 is unsuccessful the option has no effect.
+
+@option{-mcpu=unset} causes the compiler to ignore any
+@option{-mcpu=@dots{}} options that appear earlier on the command line
+and behave as if the option was never passed.  This is useful to avoid
+warnings about conflicting CPU and architecture options when the two
+produce different architecture specifications.
 
 @opindex mfpu
 @item -mfpu=@var{name}
