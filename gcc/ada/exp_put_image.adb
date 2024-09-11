@@ -293,10 +293,9 @@ package body Exp_Put_Image is
       Loc     : constant Source_Ptr := Sloc (N);
       P_Type  : constant Entity_Id  := Entity (Prefix (N));
       U_Type  : constant Entity_Id  := Underlying_Type (P_Type);
-      FST     : constant Entity_Id  := First_Subtype (U_Type);
       Sink    : constant Node_Id    := First (Expressions (N));
       Item    : constant Node_Id    := Next (Sink);
-      P_Size  : constant Uint       := Esize (FST);
+      P_Size  : constant Uint       := Esize (U_Type);
       Lib_RE  : RE_Id;
 
    begin
