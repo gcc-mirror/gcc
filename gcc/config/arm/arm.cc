@@ -76,6 +76,7 @@
 #include "opts.h"
 #include "aarch-common.h"
 #include "aarch-common-protos.h"
+#include "machmode.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -36210,6 +36211,20 @@ arm_output_load_tpidr (rtx dst, bool pred_p)
 	    pred_p ? "%?" : "", tpidr_coproc_num);
   output_asm_insn (buf, &dst);
   return "";
+}
+
+/* Return the MVE vector mode that has NUNITS elements of mode INNER_MODE.  */
+opt_machine_mode
+arm_mve_data_mode (scalar_mode inner_mode, poly_uint64 nunits)
+{
+  enum mode_class mclass
+    = (SCALAR_FLOAT_MODE_P (inner_mode) ? MODE_VECTOR_FLOAT : MODE_VECTOR_INT);
+  machine_mode mode;
+  FOR_EACH_MODE_IN_CLASS (mode, mclass)
+    if (inner_mode == GET_MODE_INNER (mode)
+	&& known_eq (nunits, GET_MODE_NUNITS (mode)))
+      return mode;
+  return opt_machine_mode ();
 }
 
 #include "gt-arm.h"

@@ -20,6 +20,8 @@
 #ifndef GCC_ARM_MVE_BUILTINS_FUNCTIONS_H
 #define GCC_ARM_MVE_BUILTINS_FUNCTIONS_H
 
+#include "arm-protos.h"
+
 namespace arm_mve {
 
 /* Wrap T, which is derived from function_base, and indicate that the
@@ -975,6 +977,107 @@ public:
 
     return mode;
   }
+};
+
+/* A function_base that loads elements from memory and extends them
+   to a wider element.  The memory element type is a fixed part of
+   the function base name.  */
+class load_extending : public function_base
+{
+public:
+  CONSTEXPR load_extending (type_suffix_index signed_memory_type,
+			    type_suffix_index unsigned_memory_type,
+			    type_suffix_index float_memory_type)
+    : m_signed_memory_type (signed_memory_type),
+      m_unsigned_memory_type (unsigned_memory_type),
+      m_float_memory_type (float_memory_type)
+  {}
+  CONSTEXPR load_extending (type_suffix_index signed_memory_type,
+			    type_suffix_index unsigned_memory_type)
+    : m_signed_memory_type (signed_memory_type),
+      m_unsigned_memory_type (unsigned_memory_type),
+      m_float_memory_type (NUM_TYPE_SUFFIXES)
+  {}
+
+  unsigned int call_properties (const function_instance &) const override
+  {
+    return CP_READ_MEMORY;
+  }
+
+  tree memory_scalar_type (const function_instance &fi) const override
+  {
+    type_suffix_index memory_type_suffix
+      = (fi.type_suffix (0).integer_p
+	 ? (fi.type_suffix (0).unsigned_p
+	    ? m_unsigned_memory_type
+	    : m_signed_memory_type)
+	 : m_float_memory_type);
+    return scalar_types[type_suffixes[memory_type_suffix].vector_type];
+  }
+
+  machine_mode memory_vector_mode (const function_instance &fi) const override
+  {
+    type_suffix_index memory_type_suffix
+      = (fi.type_suffix (0).integer_p
+	 ? (fi.type_suffix (0).unsigned_p
+	    ? m_unsigned_memory_type
+	    : m_signed_memory_type)
+	 : m_float_memory_type);
+    machine_mode mem_mode = type_suffixes[memory_type_suffix].vector_mode;
+    machine_mode reg_mode = fi.vector_mode (0);
+
+    return arm_mve_data_mode (GET_MODE_INNER (mem_mode),
+			      GET_MODE_NUNITS (reg_mode)).require ();
+  }
+
+  /* The type of the memory elements.  This is part of the function base
+     name rather than a true type suffix.  */
+  type_suffix_index m_signed_memory_type;
+  type_suffix_index m_unsigned_memory_type;
+  type_suffix_index m_float_memory_type;
+};
+
+/* A function_base that truncates vector elements and stores them to memory.
+   The memory element width is a fixed part of the function base name.  */
+class store_truncating : public function_base
+{
+public:
+  CONSTEXPR store_truncating (scalar_mode to_int_mode,
+			      opt_scalar_mode to_float_mode)
+    : m_to_int_mode (to_int_mode), m_to_float_mode (to_float_mode)
+  {}
+
+  unsigned int call_properties (const function_instance &) const override
+  {
+    return CP_WRITE_MEMORY;
+  }
+
+  tree memory_scalar_type (const function_instance &fi) const override
+  {
+    /* In truncating stores, the signedness of the memory element is defined
+       to be the same as the signedness of the vector element.  The signedness
+       doesn't make any difference to the behavior of the function.  */
+    type_class_index tclass = fi.type_suffix (0).tclass;
+    unsigned int element_bits
+      = GET_MODE_BITSIZE (fi.type_suffix (0).integer_p
+			  ? m_to_int_mode
+			  : m_to_float_mode.require ());
+    type_suffix_index suffix = find_type_suffix (tclass, element_bits);
+    return scalar_types[type_suffixes[suffix].vector_type];
+  }
+
+  machine_mode memory_vector_mode (const function_instance &fi) const override
+  {
+    poly_uint64 nunits = GET_MODE_NUNITS (fi.vector_mode (0));
+    scalar_mode mode = (fi.type_suffix (0).integer_p
+			? m_to_int_mode
+			: m_to_float_mode.require ());
+    return arm_mve_data_mode (mode, nunits).require ();
+  }
+
+  /* The mode of a single memory element.  */
+  scalar_mode m_to_int_mode;
+  opt_scalar_mode m_to_float_mode;
 };
 
 } /* end namespace arm_mve */

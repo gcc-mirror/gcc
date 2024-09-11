@@ -616,4 +616,7 @@ void arm_initialize_isa (sbitmap, const enum isa_feature *);
 const char * arm_gen_far_branch (rtx *, int, const char * , const char *);
 
 bool arm_mve_immediate_check(rtx, machine_mode, bool);
+
+opt_machine_mode arm_mve_data_mode (scalar_mode, poly_uint64);
+
 #endif /* ! GCC_ARM_PROTOS_H */
