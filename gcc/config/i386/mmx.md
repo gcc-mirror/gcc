@@ -70,6 +70,9 @@
 ;; 8-byte and 4-byte HImode vector modes
 (define_mode_iterator VI2_32_64 [(V4HI "TARGET_MMX_WITH_SSE") V2HI])
 
+;; 8-byte, 4-byte and 2-byte QImode vector modes
+(define_mode_iterator VI1_16_32_64 [(V8QI "TARGET_MMX_WITH_SSE") V4QI V2QI])
+
 ;; 4-byte and 2-byte integer vector modes
 (define_mode_iterator VI_16_32 [V4QI V2QI V2HI])
 
@@ -6803,3 +6806,24 @@
   [(set_attr "type" "mmx")
    (set_attr "modrm" "0")
    (set_attr "memory" "none")])
+
+(define_insn "popcount<mode>2"
+  [(set (match_operand:VI1_16_32_64 0 "register_operand" "=v")
+	(popcount:VI1_16_32_64
+	  (match_operand:VI1_16_32_64 1 "register_operand" "v")))]
+  "TARGET_AVX512VL && TARGET_AVX512BITALG"
+  "vpopcntb\t{%1, %0|%0, %1}")
+
+(define_insn "popcount<mode>2"
+  [(set (match_operand:VI2_32_64 0 "register_operand" "=v")
+	(popcount:VI2_32_64
+	  (match_operand:VI2_32_64 1 "register_operand" "v")))]
+  "TARGET_AVX512VL && TARGET_AVX512BITALG"
+  "vpopcntw\t{%1, %0|%0, %1}")
+
+(define_insn "popcountv2si2"
+  [(set (match_operand:V2SI 0 "register_operand" "=v")
+	(popcount:V2SI
+	  (match_operand:V2SI 1 "register_operand" "v")))]
+  "TARGET_AVX512VPOPCNTDQ && TARGET_AVX512VL && TARGET_MMX_WITH_SSE"
+  "vpopcntd\t{%1, %0|%0, %1}")
