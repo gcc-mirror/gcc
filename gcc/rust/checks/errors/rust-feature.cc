@@ -55,6 +55,9 @@ Feature::create (Feature::Name f)
 		      "1.11.0", 37854);
     case Feature::Name::PRELUDE_IMPORT:
       return Feature (f, Feature::State::ACTIVE, "prelude_import", "1.0.0");
+    case Feature::Name::AUTO_TRAITS:
+      return Feature (f, Feature::State::ACTIVE, "optin_builtin_traits",
+		      "1.0.0", 13231);
     default:
       rust_unreachable ();
     }
