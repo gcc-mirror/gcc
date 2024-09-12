@@ -9,7 +9,9 @@ struct S {
   void a()
     try {
     } catch (int ()
-	     noexcept (({ union b a; true; }))) // { dg-error "constant" }
+	     noexcept (({ union b a; true; }))) // { dg-error "'b a' has incomplete type" }
   {
   }
 };
+
+template void S::a<int>(); // { dg-message "required from here" }
