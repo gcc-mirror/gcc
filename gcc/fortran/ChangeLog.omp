@@ -1,3 +1,18 @@
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* gfortran.h (struct gfc_omp_namelist): Move udm field into a new
+	union u3.
+	* match.cc (gfc_free_omp_namelist): Change references to u2.udm to
+	u3.udm.
+	* module.cc (load_omp_udms): Likewise.
+	(write_omp_udm): Likewise.
+	* openmp.cc (gfc_match_motion_var_list): Likewise.
+	(gfc_match_omp_clauses): Likewise.
+	(resolve_omp_clauses): Likewise.
+	(gfc_omp_instantiate_mapper): Likewise.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Likewise.
+	(gfc_find_nested_mappers): Likewise.
+
 2025-03-21  Paul-Antoine Arras  <parras@baylibre.com>
 
 	Backported from master:
