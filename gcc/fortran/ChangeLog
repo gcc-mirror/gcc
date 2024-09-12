@@ -1,3 +1,9 @@
+2024-09-11  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/116661
+	* openmp.cc (gfc_match_omp_prefer_type): NULL init a gfc_expr
+	variable and use right locus in gfc_error.
+
 2024-09-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* cpp.cc (cb_cpp_diagnostic_cpp_option): Convert return type from

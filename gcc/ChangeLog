@@ -1,3 +1,57 @@
+2024-09-11  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.cc (propagate_vr_across_jump_function): Use
+	ipa_vr_supported_type_p instead of explicit check for integral and
+	pointer types.
+
+2024-09-11  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.h (ipa_supports_p): Rename to ipa_vr_supported_type_p.
+	* ipa-cp.cc (ipa_vr_operation_and_type_effects): Adjust called
+	function name.
+	(propagate_vr_across_jump_function): Likewise.
+	* ipa-prop.cc (ipa_compute_jump_functions_for_edge): Likewise.
+	(ipcp_get_parm_bits): Likewise.
+
+2024-09-11  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/116597
+	* config/arm/arm.cc (arm_function_ok_for_sibcall): Use the list of
+	actuals for the call, not the list of formals.
+
+2024-09-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116674
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Support
+	re-analysis.
+
+2024-09-11  Alex Coplan  <alex.coplan@arm.com>
+
+	PR libstdc++/116140
+	* lto-streamer-in.cc (input_struct_function_base): Stream in
+	fn->has_unroll.
+	* lto-streamer-out.cc (output_struct_function_base): Stream out
+	fn->has_unroll.
+
+2024-09-11  Tobias Burnus  <tburnus@baylibre.com>
+
+	* omp-general.cc (omp_runtime_api_procname): Add
+	omp_get_interop_{int,name,ptr,rc_desc,str,type_desc}
+	and omp_get_num_interop_properties.
+
+2024-09-11  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add case 2 for the signed .SAT_ADD consumed by
+	vect pattern.
+	* tree-vect-patterns.cc (gimple_signed_integer_sat_add): Add new
+	matching func decl for signed .SAT_ADD.
+	(vect_recog_sat_add_pattern): Add signed .SAT_ADD pattern match.
+
+2024-09-11  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/x86-tune.def (X86_TUNE_FUSE_MOV_AND_ALU): Enable
+	for GNR and GNR-D.
+
 2024-09-10  Prathamesh Kulkarni  <prathameshk@nvidia.com>
 
 	PR target/96265

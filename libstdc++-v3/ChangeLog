@@ -1,3 +1,9 @@
+2024-09-11  Alex Coplan  <alex.coplan@arm.com>
+
+	PR libstdc++/116140
+	* include/bits/stl_algobase.h (std::__find_if): Add #pragma to
+	request GCC to unroll the loop.
+
 2024-09-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/116159
