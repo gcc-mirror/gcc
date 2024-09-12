@@ -3218,7 +3218,7 @@
    (set_attr "type" "mmxadd,sseadd,sseadd")
    (set_attr "mode" "DI,TI,TI")])
 
-(define_insn "*<insn><mode>3"
+(define_insn "<insn><mode>3"
   [(set (match_operand:VI_16_32 0 "register_operand" "=x,Yw")
         (sat_plusminus:VI_16_32
 	  (match_operand:VI_16_32 1 "register_operand" "<comm>0,Yw")
