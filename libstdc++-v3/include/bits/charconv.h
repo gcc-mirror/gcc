@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_CHARCONV_H
 #define _GLIBCXX_CHARCONV_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #if __cplusplus >= 201103L
 

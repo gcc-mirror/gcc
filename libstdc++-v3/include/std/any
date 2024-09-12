@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_ANY
 #define _GLIBCXX_ANY 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #define __glibcxx_want_any
 #include <bits/version.h>

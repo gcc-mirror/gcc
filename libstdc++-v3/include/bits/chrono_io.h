@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_CHRONO_IO_H
 #define _GLIBCXX_CHRONO_IO_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #if __cplusplus >= 202002L
 

@@ -30,7 +30,9 @@
 #ifndef _USES_ALLOCATOR_ARGS
 #define _USES_ALLOCATOR_ARGS 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/version.h>
 

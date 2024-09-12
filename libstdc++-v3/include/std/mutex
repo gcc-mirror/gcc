@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_MUTEX
 #define _GLIBCXX_MUTEX 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // concurrency
 

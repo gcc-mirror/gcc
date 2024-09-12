@@ -43,7 +43,9 @@
 #ifndef _ROPE
 #define _ROPE 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // GNU extensions are currently omitted
 

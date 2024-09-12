@@ -30,7 +30,9 @@
 #ifndef _HASHTABLE_H
 #define _HASHTABLE_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/hashtable_policy.h>
 #include <bits/enable_special_members.h>

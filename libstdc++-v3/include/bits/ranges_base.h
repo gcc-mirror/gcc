@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_RANGES_BASE_H
 #define _GLIBCXX_RANGES_BASE_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #if __cplusplus > 201703L
 #include <initializer_list>

@@ -34,7 +34,9 @@
 #ifndef _STRINGFWD_H
 #define _STRINGFWD_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 #include <bits/memoryfwd.h>

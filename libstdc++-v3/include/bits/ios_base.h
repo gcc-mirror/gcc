@@ -34,7 +34,9 @@
 #ifndef _IOS_BASE_H
 #define _IOS_BASE_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <ext/atomicity.h>
 #include <bits/localefwd.h>

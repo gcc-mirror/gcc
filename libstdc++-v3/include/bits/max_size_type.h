@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_MAX_SIZE_TYPE_H
 #define _GLIBCXX_MAX_SIZE_TYPE_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #if __cplusplus > 201703L && __cpp_lib_concepts
 #include <ext/numeric_traits.h>

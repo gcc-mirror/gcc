@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_SEMAPHORE_BASE_H
 #define _GLIBCXX_SEMAPHORE_BASE_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/atomic_base.h>
 #include <bits/chrono.h>

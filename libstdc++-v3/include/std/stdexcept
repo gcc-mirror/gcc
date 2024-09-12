@@ -33,7 +33,9 @@
 #ifndef _GLIBCXX_STDEXCEPT
 #define _GLIBCXX_STDEXCEPT 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <exception>
 #include <string>

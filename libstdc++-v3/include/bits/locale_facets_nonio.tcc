@@ -30,7 +30,9 @@
 #ifndef _LOCALE_FACETS_NONIO_TCC
 #define _LOCALE_FACETS_NONIO_TCC 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

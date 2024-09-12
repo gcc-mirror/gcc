@@ -39,7 +39,9 @@
 #ifndef _GLIBCXX_CERRNO
 #define _GLIBCXX_CERRNO 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 #include <errno.h>

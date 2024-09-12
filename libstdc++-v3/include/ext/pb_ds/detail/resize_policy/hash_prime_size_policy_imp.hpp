@@ -40,7 +40,9 @@
 
 #ifdef PB_DS_CLASS_C_DEC
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 namespace detail
 {

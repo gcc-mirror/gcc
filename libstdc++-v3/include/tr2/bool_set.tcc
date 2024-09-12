@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_TR2_BOOL_SET_TCC
 #define _GLIBCXX_TR2_BOOL_SET_TCC 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

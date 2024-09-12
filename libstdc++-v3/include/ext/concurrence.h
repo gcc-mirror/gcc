@@ -29,7 +29,9 @@
 #ifndef _CONCURRENCE_H
 #define _CONCURRENCE_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <exception>
 #include <bits/gthr.h> 

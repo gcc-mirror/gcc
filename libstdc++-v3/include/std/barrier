@@ -38,7 +38,9 @@
 #ifndef _GLIBCXX_BARRIER
 #define _GLIBCXX_BARRIER 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // threading primitive
 

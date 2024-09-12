@@ -34,7 +34,9 @@
 #ifndef _LOCALE_FACETS_H
 #define _LOCALE_FACETS_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <cwctype>	// For wctype_t
 #include <cctype>

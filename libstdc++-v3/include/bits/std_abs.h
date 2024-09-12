@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_BITS_STD_ABS_H
 #define _GLIBCXX_BITS_STD_ABS_H
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 

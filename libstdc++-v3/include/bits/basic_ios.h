@@ -30,7 +30,9 @@
 #ifndef _BASIC_IOS_H
 #define _BASIC_IOS_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/localefwd.h>
 #include <bits/locale_classes.h>

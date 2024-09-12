@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_BIT
 #define _GLIBCXX_BIT 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #if __cplusplus >= 201402L
 

@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_MEMORY_RESOURCE_H
 #define _GLIBCXX_MEMORY_RESOURCE_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #if __cplusplus >= 201703L
 

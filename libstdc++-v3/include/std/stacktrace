@@ -24,7 +24,9 @@
 #ifndef _GLIBCXX_STACKTRACE
 #define _GLIBCXX_STACKTRACE 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // std::string bound
 

@@ -33,7 +33,9 @@
 #ifndef _GLIBCXX_LOCALE
 #define _GLIBCXX_LOCALE	1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // locales
 

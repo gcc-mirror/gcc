@@ -36,7 +36,9 @@
 #ifndef _CODECVT_H
 #define _CODECVT_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 #include <bits/locale_classes.h> // locale::facet

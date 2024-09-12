@@ -36,7 +36,9 @@
 #ifndef _POINTER_H
 #define _POINTER_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #if _GLIBCXX_HOSTED
 #  include <iosfwd>

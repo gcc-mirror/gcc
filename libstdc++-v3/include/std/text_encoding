@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_TEXT_ENCODING
 #define _GLIBCXX_TEXT_ENCODING
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h>
 

@@ -34,7 +34,9 @@
 #ifndef _BASIC_STRING_H
 #define _BASIC_STRING_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <ext/alloc_traits.h>
 #include <debug/debug.h>

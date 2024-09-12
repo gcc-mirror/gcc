@@ -30,7 +30,9 @@
 #define _GLIBCXX_GENERATOR
 
 #include <ranges>
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 

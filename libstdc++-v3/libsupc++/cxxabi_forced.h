@@ -31,7 +31,9 @@
 #ifndef _CXXABI_FORCED_H
 #define _CXXABI_FORCED_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #pragma GCC visibility push(default)
 

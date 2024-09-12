@@ -34,8 +34,9 @@
 #ifndef _SSTREAM_TCC
 #define _SSTREAM_TCC 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
-
+#endif
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc++11-extensions" // extern template
 

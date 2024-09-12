@@ -30,7 +30,9 @@
 #ifndef _FORWARD_LIST_H
 #define _FORWARD_LIST_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <initializer_list>
 #include <bits/stl_iterator_base_types.h>

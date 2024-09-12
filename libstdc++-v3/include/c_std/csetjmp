@@ -39,7 +39,9 @@
 #ifndef _GLIBCXX_CSETJMP
 #define _GLIBCXX_CSETJMP 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 #include <setjmp.h>

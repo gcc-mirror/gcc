@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_TR1_TYPE_TRAITS
 #define _GLIBCXX_TR1_TYPE_TRAITS 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc++11-extensions"

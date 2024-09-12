@@ -32,7 +32,9 @@
 #ifndef _VALARRAY_AFTER_H
 #define _VALARRAY_AFTER_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

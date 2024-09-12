@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_DEBUG_MAP
 #define _GLIBCXX_DEBUG_MAP 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 namespace std _GLIBCXX_VISIBILITY(default) { namespace __debug {

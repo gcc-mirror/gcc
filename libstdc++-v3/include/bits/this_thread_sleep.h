@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_THIS_THREAD_SLEEP_H
 #define _GLIBCXX_THIS_THREAD_SLEEP_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #if __cplusplus >= 201103L
 #include <bits/chrono.h> // std::chrono::*

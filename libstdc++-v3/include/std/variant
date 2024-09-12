@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_VARIANT
 #define _GLIBCXX_VARIANT 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #define __glibcxx_want_freestanding_variant
 #define __glibcxx_want_variant

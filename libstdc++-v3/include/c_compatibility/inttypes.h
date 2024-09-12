@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_INTTYPES_H
 #define _GLIBCXX_INTTYPES_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic" // include_next

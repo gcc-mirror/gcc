@@ -34,7 +34,9 @@
 #ifndef _CHAR_TRAITS_H
 #define _CHAR_TRAITS_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 

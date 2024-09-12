@@ -34,7 +34,9 @@
 #ifndef _GLIBCXX_EXPERIMENTAL_STRING_VIEW
 #define _GLIBCXX_EXPERIMENTAL_STRING_VIEW 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // experimental is currently omitted
 

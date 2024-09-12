@@ -30,7 +30,9 @@
 #ifndef _OSTREAM_INSERT_H
 #define _OSTREAM_INSERT_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <iosfwd>
 #include <bits/cxxabi_forced.h>
