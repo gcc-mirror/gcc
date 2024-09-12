@@ -1,8 +1,8 @@
 /* Verify that hardware multiply is preferred on XScale. */
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-require-effective-target arm_arch_xscale_arm_ok } */
-/* { dg-add-options arm_arch_xscale_arm } */
+/* { dg-require-effective-target arm_cpu_xscale_arm_ok } */
+/* { dg-add-options arm_cpu_xscale_arm } */
 
 
 /* Brett Gaines' test case. */
