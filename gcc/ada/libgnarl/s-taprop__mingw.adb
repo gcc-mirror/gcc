@@ -68,11 +68,11 @@ package body System.Task_Primitives.Operations is
    use System.Win32;
    use System.Win32.Ext;
 
-   pragma Link_With ("-Xlinker --stack=0x200000,0x1000");
-   --  Change the default stack size (2 MB) for tasking programs on Windows.
-   --  This allows about 1000 tasks running at the same time. Note that
-   --  we set the stack size for non tasking programs on System unit.
-   --  Also note that under Windows XP, we use a Windows XP extension to
+   pragma Link_With ("-Xlinker --stack=0x800000,0x1000");
+   --  Change the default stack size (8 MB) for tasking programs on Windows.
+   --  This allows at least 1000 tasks running at the same time. Note that
+   --  we set the stack size for non tasking programs in the System unit.
+   --  Also note that under Windows, we use a Windows extension to
    --  specify the stack size on a per task basis, as done under other OSes.
 
    ----------------
