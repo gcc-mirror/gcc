@@ -850,8 +850,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	using __not_self = __not_<is_same<optional, __remove_cvref_t<_Up>>>;
       template<typename _Up>
 	using __not_tag = __not_<is_same<in_place_t, __remove_cvref_t<_Up>>>;
-      template<typename _Up>
-	using __is_bool = is_same<remove_cv_t<_Up>, bool>;
       template<typename... _Cond>
 	using _Requires = enable_if_t<__and_v<_Cond...>, bool>;
 #endif
