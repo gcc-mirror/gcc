@@ -2779,14 +2779,12 @@ riscv_legitimize_tls_address (rtx loc)
     case TLS_MODEL_GLOBAL_DYNAMIC:
       if (TARGET_TLSDESC)
 	{
-	  static unsigned seqno;
 	  tp = gen_rtx_REG (Pmode, THREAD_POINTER_REGNUM);
 	  a0 = gen_rtx_REG (Pmode, GP_ARG_FIRST);
 	  dest = gen_reg_rtx (Pmode);
 
-	  emit_insn (gen_tlsdesc (Pmode, loc, GEN_INT (seqno)));
+	  emit_insn (gen_tlsdesc (Pmode, loc));
 	  emit_insn (gen_add3_insn (dest, a0, tp));
-	  seqno++;
 	}
       else
 	{

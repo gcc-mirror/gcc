@@ -2327,17 +2327,16 @@
 
 (define_insn "@tlsdesc<mode>"
   [(set (reg:P A0_REGNUM)
-	    (unspec:P
-			[(match_operand:P 0 "symbolic_operand" "")
-			 (match_operand:P 1 "const_int_operand")]
-			UNSPEC_TLSDESC))
+	(unspec:P
+	    [(match_operand:P 0 "symbolic_operand" "")]
+	    UNSPEC_TLSDESC))
    (clobber (reg:P T0_REGNUM))]
   "TARGET_TLSDESC"
   {
-    return ".LT%1: auipc\ta0,%%tlsdesc_hi(%0)\;"
-           "<load>\tt0,%%tlsdesc_load_lo(.LT%1)(a0)\;"
-           "addi\ta0,a0,%%tlsdesc_add_lo(.LT%1)\;"
-           "jalr\tt0,t0,%%tlsdesc_call(.LT%1)";
+    return ".LT%=: auipc\ta0,%%tlsdesc_hi(%0)\;"
+           "<load>\tt0,%%tlsdesc_load_lo(.LT%=)(a0)\;"
+           "addi\ta0,a0,%%tlsdesc_add_lo(.LT%=)\;"
+           "jalr\tt0,t0,%%tlsdesc_call(.LT%=)";
   }
   [(set_attr "type" "multi")
    (set_attr "length" "16")
