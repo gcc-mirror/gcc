@@ -1,5 +1,6 @@
 /* { dg-options "-fprofile-arcs -ftest-coverage -Ofast" } */
 /* { dg-do run { target native } } */
+/* { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } } */
 
 #include <iostream>
 

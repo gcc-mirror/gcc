@@ -32,6 +32,7 @@ int main(int, char **) {
   return 0;
 }
 
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }
 // { dg-output "contract violation in function S::S<int> at .*.C:8: .*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function S::S<int> at .*.C:8: .*(\n|\r\n|\r)" }
 // { dg-output "S::S.T.: -1(\n|\r\n|\r)" }

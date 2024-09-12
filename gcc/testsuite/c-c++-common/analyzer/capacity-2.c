@@ -1,4 +1,5 @@
 /* { dg-skip-if "" { powerpc*-*-aix* } } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib size_t" { ! hostedlib } } */
 
 #include <stdlib.h>
 #include "analyzer-decls.h"

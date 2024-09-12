@@ -1,4 +1,5 @@
 // { dg-do run  }
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }
 //Lifetime of temporaries:
 //egcs 2.92 performs cleanup for temporaries inside new expressions
 //after the new is complete, not at the end of the full expression.

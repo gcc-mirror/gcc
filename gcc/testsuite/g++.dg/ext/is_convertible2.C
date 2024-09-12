@@ -1,5 +1,6 @@
 // PR c++/106784
 // { dg-do compile { target c++20 } }
+// { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } }
 // Adapted from <https://en.cppreference.com/w/cpp/types/is_convertible>.
 
 #include <string>

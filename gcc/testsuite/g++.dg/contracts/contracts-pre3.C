@@ -403,6 +403,7 @@ member::S member::T1::funend(int m, double n)
   return s;
 }
 
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }
 // { dg-output "contract violation in function member::T1::vfun at .*.C:37:  .*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function member::T1::vfun at .*.C:38:  .*(\n|\r\n|\r)" }
 // { dg-output "vfun::x: 10(\n|\r\n|\r)" }

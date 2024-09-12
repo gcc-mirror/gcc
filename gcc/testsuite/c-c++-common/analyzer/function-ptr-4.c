@@ -1,3 +1,5 @@
+/* { dg-skip-if "requires hosted libstdc++ for stdlib free" { ! hostedlib } } */
+
 /* Test to see if the analyzer detect and analyze calls via 
    function pointers or not.  */
 

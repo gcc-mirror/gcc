@@ -2,6 +2,7 @@
    an unknown function (PR analyzer/98575).  */
 
 /* { dg-additional-options "-O2" } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
 
 #include <stdio.h>
 #include <stdlib.h>

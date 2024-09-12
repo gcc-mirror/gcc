@@ -4,6 +4,7 @@
 // { dg-options "-std=c++2a -fcontracts -fcontract-build-level=audit" }
 // { dg-shouldfail "assert violation" }
 // { dg-output "contract violation in function main" }
+// { dg-skip-if "requires hosted libstdc++ for stdc++exp" { ! hostedlib } }
 
 int main()
 {

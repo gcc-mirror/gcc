@@ -1,4 +1,5 @@
 // { dg-options "-std=c++17 -fchar8_t" }
+// { dg-skip-if "requires hosted libstdc++ for cassert" { ! hostedlib } }
 
 #include <cstdint>
 #include <cassert>

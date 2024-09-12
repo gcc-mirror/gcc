@@ -1,6 +1,7 @@
 // check that contracts can be handled even when exceptions are disabled
 // { dg-do run }
 // { dg-options "-std=c++2a -fcontracts -fno-exceptions " }
+// { dg-skip-if "requires hosted libstdc++ for stdc++exp" { ! hostedlib } }
 // { dg-output "contract violation in function f at .* a<5" }
 
 #include <exception>

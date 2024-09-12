@@ -4,6 +4,7 @@
 //
 // { dg-do run }
 // { dg-options "-O3" }
+// { dg-skip-if "requires hosted libstdc++ for cstring" { ! hostedlib } }
 
 #include <cstring>
 #include <fstream>

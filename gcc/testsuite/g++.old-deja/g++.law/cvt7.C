@@ -1,4 +1,5 @@
 // { dg-do run  }
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }
 // GROUPS passed conversions
 // cvt file
 // From: krste@icsi.berkeley.edu (Krste Asanovic)

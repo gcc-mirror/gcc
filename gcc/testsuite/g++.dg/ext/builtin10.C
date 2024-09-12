@@ -1,5 +1,6 @@
 // { dg-do compile { target correct_iso_cpp_string_wchar_protos } }
 // { dg-options "-O2 -fdump-tree-optimized" }
+// { dg-skip-if "requires hosted libstdc++ for cstring" { ! hostedlib } }
 
 #include <cstring>
 

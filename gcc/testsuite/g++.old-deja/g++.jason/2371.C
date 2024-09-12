@@ -1,5 +1,6 @@
 // { dg-do run  }
 // { dg-options "" }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 # 1 "SetLS.cc"
 // GROUPS passed templates nested-classes
 //

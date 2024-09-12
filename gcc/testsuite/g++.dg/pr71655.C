@@ -2,6 +2,7 @@
 // { dg-do compile }
 // { dg-options "-O3 -std=c++11" }
 // { dg-additional-options "-msse4" { target i?86-*-* x86_64-*-* } }
+// { dg-skip-if "requires hosted libstdc++ for valarray" { ! hostedlib } }
 
 #include <functional>
 #include <valarray>

@@ -1,5 +1,6 @@
 // __builtin_LINE gets the location where the default argument is expanded.
 // { dg-do run }
+// { dg-skip-if "requires hosted libstdc++ for cassert" { ! hostedlib } }
 
 #include <cassert>
 struct Foo

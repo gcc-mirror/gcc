@@ -1,6 +1,7 @@
 // PR c++/105838
 // { dg-additional-options -fdump-tree-gimple }
 // { dg-do compile { target c++11 } }
+// { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } }
 
 // Check that we call the basic_string constructor once (and define it once).
 // { dg-final { scan-tree-dump-times {>::basic_string} 2 "gimple" } }

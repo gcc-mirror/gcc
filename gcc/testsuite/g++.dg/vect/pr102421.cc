@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-O3" } */
 /* { dg-additional-options "-march=armv8.2-a+sve" { target aarch64-*-* } } */
+/* { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } } */
 
 #include <vector>
 

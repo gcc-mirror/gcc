@@ -1,6 +1,7 @@
 // { dg-options "-O" }
 // { dg-options "-O -maltivec" { target { powerpc*-*-darwin* && powerpc_altivec_ok } } }
 // { dg-do run }
+// { dg-skip-if "requires hosted libstdc++ for cstring" { ! hostedlib } }
 
 #include <cstdlib>
 #include <cstring>

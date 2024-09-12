@@ -1,4 +1,5 @@
 // { dg-do run { target c++11 } }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 // PR rtl-optimization/95493 comment 8
 
 #include <array>

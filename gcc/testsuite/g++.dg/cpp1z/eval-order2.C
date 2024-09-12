@@ -1,5 +1,6 @@
 // P0145R2: Refining Expression Order for C++
 // { dg-do run { target c++17 } }
+// { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } }
 
 #include <string>
 #define assert(X) if (!(X)) __builtin_abort();

@@ -16,4 +16,5 @@ int main(int, char **)
   ]];
 }
 
+// { dg-skip-if "requires hosted libstdc++ for stdc++exp" { ! hostedlib } }
 // { dg-output "contract violation in function main at .*.C:8: x < 10 && y > 123.*(\n|\r\n|\r)" }

@@ -1,3 +1,5 @@
+/* { dg-skip-if "requires hosted libstdc++ for stdlib free" { ! hostedlib } } */
+
 #include <stdlib.h>
 #include "../../gcc.dg/analyzer/analyzer-decls.h"
 

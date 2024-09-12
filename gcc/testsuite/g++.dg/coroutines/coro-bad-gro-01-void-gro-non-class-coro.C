@@ -1,3 +1,5 @@
+// { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
+
 // Test handling of the case where we have a void g-r-o and a non-void
 // and non-class-type ramp return.
 

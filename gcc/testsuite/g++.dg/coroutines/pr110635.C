@@ -1,3 +1,4 @@
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 
 #define CASE 0
 #include <coroutine>

@@ -1,5 +1,7 @@
 // { dg-additional-options "-fcontracts -fcontract-continuation-mode=on" }
 // { dg-do run }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
+
 #include <iostream>
 #include <coroutine>
 
@@ -59,4 +61,4 @@ int main() {
     std::cout << "main continues" << std::endl;
 }
 
-// { dg-output "contract violation in function seq at .*.C:45: from \<= to.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function seq at .*.C:47: from \<= to.*(\n|\r\n|\r)" }

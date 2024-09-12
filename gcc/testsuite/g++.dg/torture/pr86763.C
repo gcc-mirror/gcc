@@ -1,6 +1,7 @@
 // { dg-do run { target { *-*-linux* } } }
 // { dg-additional-options "-fschedule-insns2 -fstrict-aliasing" }
 // { dg-additional-options "-lrt" }
+// { dg-skip-if "requires hosted libstdc++ for cassert" { ! hostedlib } }
 
 #include <cstdint>
 #include <cassert>

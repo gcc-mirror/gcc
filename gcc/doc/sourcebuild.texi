@@ -2819,6 +2819,10 @@ Target is @samp{freestanding} as defined in section 4 of the C99 standard.
 Effectively, it is a target which supports no extra headers or libraries
 other than what is considered essential.
 
+@item hostedlib
+Target is not @samp{freestanding}, and, if the language is C++,
+@code{libstdc++}'s hosted mode is not disabled.
+
 @item gettimeofday
 Target supports @code{gettimeofday}.
 

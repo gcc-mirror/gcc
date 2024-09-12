@@ -1,5 +1,6 @@
 /* PR c++/590 */
 /* { dg-do compile } */
+/* { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } } */
 
 #include <iostream>
 #include <sstream>

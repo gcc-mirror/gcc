@@ -1,5 +1,6 @@
 // { dg-do compile { target c++17 } }
 // { dg-options "-fconcepts" }
+// { dg-skip-if "requires hosted libstdc++ for cassert" { ! hostedlib } }
 
 #include <cassert>
 

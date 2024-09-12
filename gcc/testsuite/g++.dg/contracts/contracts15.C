@@ -48,6 +48,7 @@ int main(int, char**) {
   return 0;
 }
 
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 // { dg-output "custom std::handle_contract_violation called: 30 .*/contracts15.C(\n|\r\n|\r)" }
 // { dg-output "synth caught direct: -30(\n|\r\n|\r)" }
 // { dg-output "custom std::handle_contract_violation called: 18 .*/contracts15.C(\n|\r\n|\r)" }

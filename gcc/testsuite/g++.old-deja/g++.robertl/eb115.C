@@ -1,5 +1,6 @@
 // { dg-do run  }
 // { dg-options "-O" }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 
 #include <iostream>
 #include <typeinfo>

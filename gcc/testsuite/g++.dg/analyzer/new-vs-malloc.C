@@ -1,3 +1,5 @@
+/* { dg-skip-if "requires hosted libstdc++ for cstdlib free" { ! hostedlib } } */
+
 #include <cstdlib>
 
 struct s {};

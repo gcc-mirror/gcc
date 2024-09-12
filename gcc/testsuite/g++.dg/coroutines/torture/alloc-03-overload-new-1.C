@@ -1,4 +1,5 @@
 //  { dg-do run }
+//  { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
 
 /* check codegen for overloaded simple operator new/delete.
    here check that we prefer the overload that accounts the function

@@ -1,3 +1,5 @@
+/* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
+
 #include <stdlib.h>
 typedef struct z_stream_s {
   unsigned char *next_out;

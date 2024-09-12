@@ -1,5 +1,6 @@
 // { dg-do assemble  }
 // { dg-options "-O -Wall  -fgcse" }
+// { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } }
 // From: Klaus-Georg Adams <Klaus-Georg.Adams@chemie.uni-karlsruhe.de> 
 // Reported against EGCS snaps 98/06/28.
 //

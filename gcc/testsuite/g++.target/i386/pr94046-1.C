@@ -1,6 +1,7 @@
 // PR target/94046
 // { dg-do compile }
 // { dg-options "-O2 -mavx2 -mxop" }
+// { dg-skip-if "requires hosted libstdc++ for cstdlib malloc" { ! hostedlib } }
 
 #include <x86intrin.h>
 

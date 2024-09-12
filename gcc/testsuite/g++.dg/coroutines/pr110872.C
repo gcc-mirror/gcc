@@ -1,5 +1,6 @@
 // { dg-additional-options "-fcontracts -fcontract-continuation-mode=on" }
 // { dg-do run }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 
 #include <iostream>
 #include <coroutine>
@@ -46,4 +47,4 @@ int main() {
     std::cout << "main continues" << std::endl;
 }
 
-// { dg-output "contract violation in function val at .*.C:35: g.is_valid().*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function val at .*.C:36: g.is_valid().*(\n|\r\n|\r)" }

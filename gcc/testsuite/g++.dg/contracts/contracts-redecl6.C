@@ -160,6 +160,7 @@ namespace nondefining
   }
 }
 
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }
 // { dg-output "contract violation in function defining::T1::vfun at .*.C:25: .*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function defining::T1::vfun at .*.C:26: .*(\n|\r\n|\r)" }
 // { dg-output "vfun::x: 10(\n|\r\n|\r)" }

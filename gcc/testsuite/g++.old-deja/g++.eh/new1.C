@@ -2,6 +2,7 @@
 // Test that a throw in foo destroys the A, but does not free the memory.
 // Avoid use of none-overridable new/delete operators in shared
 // { dg-options "-static" { target *-*-mingw* } }
+// { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } }
 
 #include <cstddef>
 #include <cstdlib>

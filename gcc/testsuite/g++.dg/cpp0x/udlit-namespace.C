@@ -1,4 +1,5 @@
 // { dg-do run { target c++11 } }
+// { dg-skip-if "requires hosted libstdc++ for cmath" { ! hostedlib } }
 
 // Test user-defined literals.
 // Test simple operator declaration and definition in namespaces.

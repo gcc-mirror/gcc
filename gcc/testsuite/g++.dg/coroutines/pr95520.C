@@ -1,5 +1,6 @@
 // { dg-do run }
 // { dg-output "coroutine name: MyFoo" }
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }
 #include <coroutine>
 #include <cstdio>
 

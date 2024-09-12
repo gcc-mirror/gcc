@@ -1,5 +1,6 @@
 // C++26 P2747R2 - constexpr placement new
 // { dg-do compile { target c++26 } }
+// { dg-skip-if "requires hosted libstdc++ for memory allocator" { ! hostedlib } }
 
 #include <memory>
 #include <new>

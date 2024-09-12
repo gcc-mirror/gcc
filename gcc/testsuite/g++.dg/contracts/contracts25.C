@@ -50,6 +50,7 @@ int main(int, char **) {
   return 0;
 }
 
+// { dg-skip-if "requires hosted libstdc++ for stdc++exp" { ! hostedlib } }
 // { dg-output "contract violation in function ffun at .*.C:12: .*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function ftfun<int> at .*.C:30: .*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function explicitfn at .*.C:36: .*(\n|\r\n|\r)" }

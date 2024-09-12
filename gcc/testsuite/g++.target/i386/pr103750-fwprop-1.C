@@ -2,6 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -std=c++1y -march=cannonlake -fdump-rtl-fwprop1" } */
 /* { dg-final { scan-rtl-dump-not "subreg:HI\[ \\\(\]*reg:SI\[^\n]*\n\[^\n]*UNSPEC_TZCNT" "fwprop1" } } */
+/* { dg-skip-if "requires hosted libstdc++ for cstdlib malloc" { ! hostedlib } } */
 
 #include<immintrin.h>
 const char16_t *qustrchr(char16_t *n, char16_t *e, char16_t c) noexcept

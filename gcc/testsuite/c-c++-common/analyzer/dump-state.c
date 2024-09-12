@@ -1,3 +1,5 @@
+/* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
+
 /* Verify that __analyzer_dump_state works as expected.  */
 
 #include <stdlib.h>

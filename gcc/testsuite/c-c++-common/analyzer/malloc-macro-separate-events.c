@@ -1,6 +1,7 @@
 /* Test path-printing in the face of macros.  */
 
 /* { dg-additional-options "-fdiagnostics-path-format=separate-events" } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib free" { ! hostedlib } } */
 
 #include "malloc-macro.h"
 

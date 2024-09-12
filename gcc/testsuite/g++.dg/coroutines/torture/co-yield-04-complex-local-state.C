@@ -1,4 +1,5 @@
 //  { dg-do run }
+//  { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 
 // using non-trivial types in the coro.
 

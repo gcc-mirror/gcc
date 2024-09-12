@@ -3,6 +3,7 @@
 // { dg-options "" }
 // { dg-add-options float16 }
 // { dg-add-options bfloat16 }
+// { dg-skip-if "requires hosted libstdc++ for complex" { ! hostedlib } }
 
 #include <complex>
 #include <stdfloat>

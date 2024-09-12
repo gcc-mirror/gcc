@@ -1,6 +1,8 @@
 // { dg-lto-do link }
 // { dg-require-effective-target lto_incremental }
 // { dg-lto-options { { -flto -std=c++14 -r -nostdlib } } }
+/* { dg-skip-if "requires hosted libstdc++ for memory make_unique" { ! hostedlib } } */
+
 #include <memory>
 namespace {
 class A {

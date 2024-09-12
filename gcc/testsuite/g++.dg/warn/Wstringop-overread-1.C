@@ -1,6 +1,7 @@
 // PR middle-end/98994
 // { dg-do compile }
 // { dg-additional-options "-Wstringop-overread -O2" }
+// { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } }
 
 #include <string>
 

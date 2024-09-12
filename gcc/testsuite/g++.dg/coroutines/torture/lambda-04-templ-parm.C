@@ -1,5 +1,6 @@
 // { dg-do run }
 // { dg-additional-options "-std=c++2a" }
+// { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
 
 // generic Lambda with template parm (from c++20)
 

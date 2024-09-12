@@ -1,5 +1,6 @@
 // { dg-do compile { target c++11 } }
 // { dg-additional-options "-fdump-tree-original -fdump-tree-gimple" }
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 
 #include <vector>
 

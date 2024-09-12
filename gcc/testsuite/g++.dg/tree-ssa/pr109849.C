@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-sra -fdump-tree-optimized" } */
+/* { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } } */
 
 #include <vector>
 typedef unsigned int uint32_t;

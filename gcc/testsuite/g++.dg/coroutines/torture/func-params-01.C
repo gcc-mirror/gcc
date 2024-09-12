@@ -1,4 +1,5 @@
 //  { dg-do run }
+//  { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
 
 // Simplest test that we correctly handle function params in the body
 // of the coroutine.  No local state, just the parm.

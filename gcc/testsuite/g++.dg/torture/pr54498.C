@@ -1,5 +1,6 @@
 // { dg-do run }
 // { dg-additional-options "-fno-tree-sra" }
+// { dg-skip-if "requires hosted libstdc++ for complex" { ! hostedlib } }
 
 #include <complex>
 

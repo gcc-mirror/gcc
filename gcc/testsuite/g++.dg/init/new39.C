@@ -1,5 +1,6 @@
 // Testcase for overflow handling in operator new[].
 // { dg-do run }
+// { dg-skip-if "requires hosted libstdc++ for stdexcept" { ! hostedlib } }
 
 #include <stdlib.h>
 #include <stdexcept>

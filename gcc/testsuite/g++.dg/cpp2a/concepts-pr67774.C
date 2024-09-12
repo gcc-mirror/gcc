@@ -1,5 +1,6 @@
 // { dg-do compile { target c++20 } }
 // { dg-additional-options "-fconcepts" }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 
 #include <type_traits>
 #include <utility>

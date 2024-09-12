@@ -1,4 +1,5 @@
 // { dg-do compile { target c++11 } }
+// { dg-skip-if "requires hosted libstdc++ for functional function" { ! hostedlib } }
 // __is_invocable should handle std::reference_wrapper correctly.
 
 #include <functional>

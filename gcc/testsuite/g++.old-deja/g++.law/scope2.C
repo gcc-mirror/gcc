@@ -1,4 +1,6 @@
 // { dg-do run  }
+// { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } }
+
 // GROUPS passed scoping
 // scoping file
 // From: svkakkad@cs.utexas.edu (Sheetal V. Kakkad)

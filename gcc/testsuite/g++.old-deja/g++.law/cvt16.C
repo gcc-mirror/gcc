@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 // GROUPS passed conversions
 // cvt file
 // Message-Id: <9304121647.AA25819@tnt>

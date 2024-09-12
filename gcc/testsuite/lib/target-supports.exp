@@ -865,6 +865,24 @@ proc check_effective_target_freestanding { } {
     return 0
 }
 
+# Return 1 if a hosted implementation of libstdc++ is available
+# (i.e. not freestanding).  Language must be c++.
+proc check_effective_target_hostedlib { } {
+    if [check_effective_target_freestanding] {
+        return 0
+    }
+    if [check_effective_target_c++] {
+        return [check_no_compiler_messages hostedlib assembly {
+            #include <bits/c++config.h>
+            #if ! _GLIBCXX_HOSTED
+            #error not hosted
+            #endif
+	    int hosted;
+        }]
+    }
+    return 1
+}
+
 # Check to see that file I/O functions are available.
 proc check_effective_target_fileio { } {
     return [check_no_compiler_messages fileio_available executable {

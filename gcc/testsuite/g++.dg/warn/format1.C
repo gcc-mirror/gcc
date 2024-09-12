@@ -2,6 +2,7 @@
 // Origin: Joseph Myers <jsm28@cam.ac.uk>.
 // { dg-do compile }
 // { dg-options "-ansi -pedantic -Wformat" }
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }
 
 #include <cstdio>
 

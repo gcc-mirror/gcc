@@ -1,5 +1,6 @@
 // Testcase from P0305R1
 // { dg-do compile { target c++17 } }
+// { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } }
 
 #include <string>
 #include <map>

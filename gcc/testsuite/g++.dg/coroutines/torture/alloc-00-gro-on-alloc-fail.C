@@ -1,4 +1,5 @@
 //  { dg-do run }
+//  { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
 
 /* check the code-gen for the failed alloc return.
    Here we use an allocator that doesn't fail so that the code

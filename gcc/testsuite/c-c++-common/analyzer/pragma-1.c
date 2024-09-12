@@ -1,3 +1,5 @@
+/* { dg-skip-if "requires hosted libstdc++ for stdlib free" { ! hostedlib } } */
+
 /* Verify that we can disable analyzer warnings via pragmas.  */
 
 #include <stdlib.h>

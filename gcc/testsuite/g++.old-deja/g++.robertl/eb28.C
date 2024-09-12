@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 #include <vector>
 
 using namespace std;

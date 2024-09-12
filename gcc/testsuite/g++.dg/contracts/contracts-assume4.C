@@ -2,6 +2,7 @@
 // not cause constexpr eval failure
 // { dg-do run }
 // { dg-options "-std=c++2a -fcontracts" }
+// { dg-skip-if "requires hosted libstdc++ for stdc++exp" { ! hostedlib } }
 
 constexpr int f(int t); // { dg-warning "used but never defined" }
 

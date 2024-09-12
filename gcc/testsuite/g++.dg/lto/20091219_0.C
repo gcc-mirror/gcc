@@ -1,5 +1,6 @@
 // { dg-lto-do run }
 // { dg-lto-options {{-O3 -flto}} }
+// { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } }
 
 #include <string>
 #include <map>

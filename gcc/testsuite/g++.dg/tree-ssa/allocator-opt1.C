@@ -1,5 +1,6 @@
 // PR c++/105838
 // { dg-additional-options -fdump-tree-gimple }
+// { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } }
 
 // Check that there's only one allocator (temporary) variable.
 // Currently the dump doesn't print the allocator template arg in this context.

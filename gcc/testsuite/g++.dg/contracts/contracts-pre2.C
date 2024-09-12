@@ -174,6 +174,7 @@ namespace nonnullary
   }
 }
 
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }
 // { dg-output "contract violation in function nullary::fun at .*.C:12: .*(\n|\r\n|\r)" }
 // { dg-output "fun::x: 10(\n|\r\n|\r)" }
 // { dg-output "contract violation in function nullary::fun2 at .*.C:18: .*(\n|\r\n|\r)" }

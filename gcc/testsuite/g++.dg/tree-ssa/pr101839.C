@@ -1,6 +1,7 @@
 // { dg-do run }                                                            
 // { dg-options "-O2 -fdump-tree-optimized" }                                   
 // { dg-require-effective-target c++11 }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 
 #include <string.h>
 #include <iostream>

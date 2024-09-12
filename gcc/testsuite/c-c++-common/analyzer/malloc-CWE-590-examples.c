@@ -1,5 +1,6 @@
 /* { dg-additional-options "-Wno-free-nonheap-object" } */
 /* { dg-require-effective-target size32plus } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib free" { ! hostedlib } } */
 
 /* Examples adapted from https://cwe.mitre.org/data/definitions/590.html
    which states "Copyright © 2006–2022, The MITRE Corporation. CWE, CWSS, CWRAF, and the CWE logo are trademarks of The MITRE Corporation."

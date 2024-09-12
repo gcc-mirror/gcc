@@ -1,5 +1,6 @@
 // { dg-do assemble  }
 // { dg-additional-options -fpermissive }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 // GROUPS passed missed-error
 // missed-error file
 // From: ndc!don@csvax.cs.caltech.edu (Don Erway)

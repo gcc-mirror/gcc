@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-skip-if "requires hosted libstdc++ for sstream" { ! hostedlib } }
 // Since the constructor is in streambuf.h, additional diagnostics are
 // produced, which are not really supported in the old-deja framework
 

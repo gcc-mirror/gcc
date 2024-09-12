@@ -1,6 +1,7 @@
 // { dg-do compile }
 // { dg-require-effective-target c++17 }
 // { dg-options "-O2 -Wall" }
+// { dg-skip-if "requires hosted libstdc++ for cwchar" { ! hostedlib } }
 
 #include <stdint.h>
 #include <optional>

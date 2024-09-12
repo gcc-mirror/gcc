@@ -1,5 +1,6 @@
 // { dg-do assemble  }
 // { dg-options "-w" }
+// { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } }
 // GROUPS passed old-abort
 //#include <GetOpt.h>
 #include <stdio.h>

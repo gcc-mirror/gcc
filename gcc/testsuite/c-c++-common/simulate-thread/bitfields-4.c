@@ -1,6 +1,7 @@
 /* { dg-do link } */
 /* { dg-options "-fno-allow-store-data-races" } */
 /* { dg-final { simulate-thread } } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib calloc" { ! hostedlib } } */
 
 #include <stdio.h>
 #include <stdlib.h>

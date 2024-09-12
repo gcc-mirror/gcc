@@ -1,6 +1,7 @@
 // PR c++/113256
 // { dg-do compile { target c++14 } }
 // { dg-options "-Wdangling-reference" }
+// { dg-skip-if "requires hosted libstdc++ for cassert" { ! hostedlib } }
 
 #include <utility>
 #include <cassert>

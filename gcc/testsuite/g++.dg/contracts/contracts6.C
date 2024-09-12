@@ -2,6 +2,7 @@
 // error during runtime when the contract build level is off
 // { dg-do run }
 // { dg-options "-std=c++2a -fcontracts -fcontract-build-level=off" }
+// { dg-skip-if "requires hosted libstdc++ for stdc++exp" { ! hostedlib } }
 
 int main()
 {

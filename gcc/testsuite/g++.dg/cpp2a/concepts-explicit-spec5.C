@@ -1,4 +1,5 @@
 // { dg-do compile { target c++20 } }
+// { dg-skip-if "requires hosted libstdc++ for cassert" { ! hostedlib } }
 
 #include <cassert>
 

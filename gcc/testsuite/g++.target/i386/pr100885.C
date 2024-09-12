@@ -1,5 +1,6 @@
 /* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-mavx512vl -mno-avx512bw -O2 -Wno-int-to-pointer-cast -std=c++14" } */
+/* { dg-skip-if "requires hosted libstdc++ for cstdlib malloc" { ! hostedlib } } */
 
 #include<x86intrin.h>
 typedef unsigned char byte;

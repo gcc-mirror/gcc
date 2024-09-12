@@ -1,6 +1,7 @@
 // PR target/71910
 // { dg-do compile }
 // { dg-additional-options "-O2" }
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 
 #include <vector>
 

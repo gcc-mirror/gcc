@@ -1,6 +1,7 @@
 // We cannot compile this yet, much run it - but one day it might be
 // feasible, so do the minimum for now.
 // { dg-additional-options " -fsyntax-only -Wno-vla" }
+// { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
 
 #include "coro.h"
 

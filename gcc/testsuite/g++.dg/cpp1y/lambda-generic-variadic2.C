@@ -1,6 +1,7 @@
 // PR c++/64105
 // This test was ICEing in C++11 mode.
 // { dg-do compile { target c++11 } }
+// { dg-skip-if "requires hosted libstdc++ for functional function" { ! hostedlib } }
 
 #include <functional>
 

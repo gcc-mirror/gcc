@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fdump-tree-lsplit-details -std=c++11" } */
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
+
 #include <vector>
 #include <cmath>
 

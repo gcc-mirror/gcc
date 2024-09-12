@@ -1,4 +1,5 @@
 //  { dg-do run { target c++17 } }
+//  { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
 
 #include "../coro.h"
 

@@ -1,5 +1,7 @@
 /* { dg-do run { target sse4 } } */
 /* { dg-options " -O2 -msse4.1 -mfpmath=sse -std=gnu++20" } */
+/* { dg-skip-if "requires hosted libstdc++ for cmath" { ! hostedlib } } */
+
 #include <math.h>
 
 #ifndef CHECK_H

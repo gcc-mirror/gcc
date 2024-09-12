@@ -9,6 +9,7 @@
    for that in this case).  */
 
 // { dg-options "-fdiagnostics-show-template-tree -Wno-return-type" }
+// { dg-skip-if "requires hosted libstdc++ for map" { ! hostedlib } }
 
 #include <map>
 #include <vector>
