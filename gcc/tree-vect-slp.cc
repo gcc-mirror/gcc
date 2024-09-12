@@ -7976,19 +7976,27 @@ vect_slp_analyze_operations (vec_info *vinfo)
 	  || (SLP_INSTANCE_KIND (instance) == slp_inst_kind_bb_reduc
 	      && !vectorizable_bb_reduc_epilogue (instance, &cost_vec)))
         {
+	  cost_vec.release ();
 	  slp_tree node = SLP_INSTANCE_TREE (instance);
 	  stmt_vec_info stmt_info;
 	  if (!SLP_INSTANCE_ROOT_STMTS (instance).is_empty ())
 	    stmt_info = SLP_INSTANCE_ROOT_STMTS (instance)[0];
 	  else
 	    stmt_info = SLP_TREE_SCALAR_STMTS (node)[0];
+	  if (is_a <loop_vec_info> (vinfo))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "unsupported SLP instance starting from: %G",
+				 stmt_info->stmt);
+	      return false;
+	    }
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "removing SLP instance operations starting from: %G",
 			     stmt_info->stmt);
 	  vect_free_slp_instance (instance);
           vinfo->slp_instances.ordered_remove (i);
-	  cost_vec.release ();
 	  while (!visited_vec.is_empty ())
 	    visited.remove (visited_vec.pop ());
 	}
