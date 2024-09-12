@@ -332,15 +332,17 @@ factor_out_conditional_operation (edge e0, edge e1, gphi *phi,
 	{
 	  gsi = gsi_for_stmt (arg0_def_stmt);
 	  gsi_prev_nondebug (&gsi);
+	  /* Ignore nops, predicates and labels. */
+	  while (!gsi_end_p (gsi)
+		  && (gimple_code (gsi_stmt (gsi)) == GIMPLE_NOP
+		      || gimple_code (gsi_stmt (gsi)) == GIMPLE_PREDICT
+		      || gimple_code (gsi_stmt (gsi)) == GIMPLE_LABEL))
+	    gsi_prev_nondebug (&gsi);
+
 	  if (!gsi_end_p (gsi))
 	    {
 	      gimple *stmt = gsi_stmt (gsi);
-	      /* Ignore nops, predicates and labels. */
-	      if (gimple_code (stmt) == GIMPLE_NOP
-		  || gimple_code (stmt) == GIMPLE_PREDICT
-		  || gimple_code (stmt) == GIMPLE_LABEL)
-		;
-	      else if (gassign *assign = dyn_cast <gassign *> (stmt))
+	      if (gassign *assign = dyn_cast <gassign *> (stmt))
 		{
 		  tree lhs = gimple_assign_lhs (assign);
 		  enum tree_code ass_code
