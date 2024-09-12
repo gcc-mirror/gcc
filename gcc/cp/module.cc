@@ -11829,7 +11829,7 @@ has_definition (tree decl)
 	       since there's no TU to emit them in otherwise.  */
 	    return true;
 
-	  if (!TREE_CONSTANT (decl))
+	  if (!decl_maybe_constant_var_p (decl))
 	    return false;
 
 	  return true;
