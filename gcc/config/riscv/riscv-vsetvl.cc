@@ -2796,6 +2796,9 @@ pre_vsetvl::fuse_local_vsetvl_info ()
 		      curr_info.dump (dump_file, "        ");
 		    }
 		  m_dem.merge (prev_info, curr_info);
+		  if (!curr_info.vl_used_by_non_rvv_insn_p ()
+		      && vsetvl_insn_p (curr_info.get_insn ()->rtl ()))
+		    m_delete_list.safe_push (curr_info);
 		  if (curr_info.get_read_vl_insn ())
 		    prev_info.set_read_vl_insn (curr_info.get_read_vl_insn ());
 		  if (dump_file && (dump_flags & TDF_DETAILS))
