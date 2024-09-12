@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "target.h"
 #include "cp-tree.h"
+#include "decl.h"
 #include "stringpool.h"
 #include "cgraph.h"
 #include "varasm.h"
@@ -282,6 +283,11 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 
   /* Thunks are always addressable; they only appear in vtables.  */
   TREE_ADDRESSABLE (thunk_fndecl) = 1;
+
+  /* Don't diagnose deprecated or unavailable functions just because they
+     have thunks emitted for them.  */
+  auto du = make_temp_override (deprecated_state,
+                                UNAVAILABLE_DEPRECATED_SUPPRESS);
 
   /* Figure out what function is being thunked to.  It's referenced in
      this translation unit.  */
