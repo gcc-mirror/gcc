@@ -23,6 +23,7 @@
 #include "rust-ast-resolve-pattern.h"
 #include "rust-ast-resolve-path.h"
 #include "diagnostic.h"
+#include "rust-expr.h"
 
 namespace Rust {
 namespace Resolver {
@@ -92,6 +93,12 @@ ResolveExpr::visit (AST::MethodCallExpr &expr)
   auto const &in_params = expr.get_params ();
   for (auto &param : in_params)
     ResolveExpr::go (*param, prefix, canonical_prefix);
+}
+
+void
+ResolveExpr::visit (AST::ErrorPropagationExpr &expr)
+{
+  ResolveExpr::go (expr.get_propagating_expr (), prefix, canonical_prefix);
 }
 
 void
