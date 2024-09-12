@@ -5825,7 +5825,10 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		  if (ref->type == REF_COMPONENT || ref->type == REF_ARRAY)
 		    lastref = ref;
 
+	      /* FIXME: Currently no support for strided target updates with
+		 iterators.  */
 	      if ((list == OMP_LIST_TO || list == OMP_LIST_FROM)
+		  && !iterator
 		  && (!n->expr || (lastref && lastref->type == REF_ARRAY))
 		  && !gfc_omp_contiguous_update_p (n))
 		{
