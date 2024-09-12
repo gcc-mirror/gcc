@@ -371,8 +371,8 @@ unsigned num_macro_tokens_counter = 0;
 
 /* Wrapper around cpp_get_token to skip CPP_PADDING tokens
    and not consume CPP_EOF.  */
-static const cpp_token *
-cpp_get_token_no_padding (cpp_reader *pfile)
+const cpp_token *
+_cpp_get_token_no_padding (cpp_reader *pfile)
 {
   for (;;)
     {
@@ -385,32 +385,32 @@ cpp_get_token_no_padding (cpp_reader *pfile)
     }
 }
 
-/* Handle meeting "__has_include" builtin macro.  */
+/* Helper function for builtin_has_include and builtin_has_embed.  */
 
-static int
-builtin_has_include (cpp_reader *pfile, cpp_hashnode *op, bool has_next)
+static char *
+builtin_has_include_1 (cpp_reader *pfile, const char *name, bool *paren,
+		       bool *bracket, location_t *loc)
 {
-  int result = 0;
-
   if (!pfile->state.in_directive)
     cpp_error (pfile, CPP_DL_ERROR,
-	       "\"%s\" used outside of preprocessing directive",
-	       NODE_NAME (op));
+	       "\"%s\" used outside of preprocessing directive", name);
 
   pfile->state.angled_headers = true;
   const auto sav_padding = pfile->state.directive_wants_padding;
   pfile->state.directive_wants_padding = true;
-  const cpp_token *token = cpp_get_token_no_padding (pfile);
-  bool paren = token->type == CPP_OPEN_PAREN;
-  if (paren)
-    token = cpp_get_token_no_padding (pfile);
+  const cpp_token *token = _cpp_get_token_no_padding (pfile);
+  *paren = token->type == CPP_OPEN_PAREN;
+  if (*paren)
+    token = _cpp_get_token_no_padding (pfile);
   else
     cpp_error (pfile, CPP_DL_ERROR,
-	       "missing '(' before \"%s\" operand", NODE_NAME (op));
+	       "missing '(' before \"%s\" operand", name);
   pfile->state.angled_headers = false;
   pfile->state.directive_wants_padding = sav_padding;
 
-  bool bracket = token->type != CPP_STRING;
+  if (loc)
+    *loc = token->src_loc;
+  *bracket = token->type != CPP_STRING;
   char *fname = NULL;
   if (token->type == CPP_STRING || token->type == CPP_HEADER_NAME)
     {
@@ -422,7 +422,19 @@ builtin_has_include (cpp_reader *pfile, cpp_hashnode *op, bool has_next)
     fname = _cpp_bracket_include (pfile);
   else
     cpp_error (pfile, CPP_DL_ERROR,
-	       "operator \"%s\" requires a header-name", NODE_NAME (op));
+	       "operator \"%s\" requires a header-name", name);
+  return fname;
+}
+
+/* Handle meeting "__has_include" builtin macro.  */
+
+static int
+builtin_has_include (cpp_reader *pfile, cpp_hashnode *op, bool has_next)
+{
+  int result = 0;
+  bool paren, bracket;
+  char *fname = builtin_has_include_1 (pfile, (const char *) NODE_NAME (op),
+				       &paren, &bracket, NULL);
 
   if (fname)
     {
@@ -437,9 +449,66 @@ builtin_has_include (cpp_reader *pfile, cpp_hashnode *op, bool has_next)
     }
 
   if (paren
-      && cpp_get_token_no_padding (pfile)->type != CPP_CLOSE_PAREN)
+      && _cpp_get_token_no_padding (pfile)->type != CPP_CLOSE_PAREN)
     cpp_error (pfile, CPP_DL_ERROR,
 	       "missing ')' after \"%s\" operand", NODE_NAME (op));
+
+  return result;
+}
+
+/* Handle the "__has_embed" expression.  */
+
+static int
+builtin_has_embed (cpp_reader *pfile)
+{
+  int result = 0;
+  bool paren, bracket;
+  struct cpp_embed_params params = {};
+  char *fname = builtin_has_include_1 (pfile, "__has_embed", &paren,
+				       &bracket, &params.loc);
+
+  if (fname)
+    {
+      params.has_embed = true;
+      auto save_in_directive = pfile->state.in_directive;
+      auto save_angled_headers = pfile->state.angled_headers;
+      auto save_directive_wants_padding = pfile->state.directive_wants_padding;
+      auto save_op_stack = pfile->op_stack;
+      auto save_op_limit = pfile->op_limit;
+      auto save_skip_eval = pfile->state.skip_eval;
+      auto save_mi_ind_cmacro = pfile->mi_ind_cmacro;
+      /* Tell the lexer this is an embed directive.  */
+      pfile->state.in_directive = 3;
+      pfile->state.angled_headers = false;
+      pfile->state.directive_wants_padding = false;
+      pfile->op_stack = NULL;
+      pfile->op_limit = NULL;
+      bool ok = _cpp_parse_embed_params (pfile, &params);
+      free (pfile->op_stack);
+      pfile->state.in_directive = save_in_directive;
+      pfile->state.angled_headers = save_angled_headers;
+      pfile->state.directive_wants_padding = save_directive_wants_padding;
+      pfile->op_stack = save_op_stack;
+      pfile->op_limit = save_op_limit;
+      pfile->state.skip_eval = save_skip_eval;
+      pfile->mi_ind_cmacro = save_mi_ind_cmacro;
+
+      if (!*fname)
+	{
+	  cpp_error_with_line (pfile, CPP_DL_ERROR, params.loc, 0,
+			       "empty filename in '%s'", "__has_embed");
+	  ok = false;
+	}
+
+      /* Do not do the lookup if we're skipping, that's unnecessary
+	 IO.  */
+      if (ok && !pfile->state.skip_eval)
+	result = _cpp_stack_embed (pfile, fname, bracket, &params);
+
+      XDELETEVEC (fname);
+    }
+  else if (paren)
+    _cpp_get_token_no_padding (pfile);
 
   return result;
 }
@@ -679,6 +748,16 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
     case BT_HAS_INCLUDE_NEXT:
       number = builtin_has_include (pfile, node,
 				    node->value.builtin == BT_HAS_INCLUDE_NEXT);
+      break;
+
+    case BT_HAS_EMBED:
+      if (CPP_OPTION (pfile, traditional))
+	{
+	  cpp_error (pfile, CPP_DL_ERROR, /* FIXME should be DL_SORRY */
+		     "'__has_embed' not supported in traditional C");
+	  break;
+	}
+      number = builtin_has_embed (pfile);
       break;
 
     case BT_HAS_FEATURE:

@@ -360,6 +360,7 @@ merge_include_chains (const char *sysroot, cpp_reader *pfile, int verbose)
       add_sysroot_to_chain (sysroot, INC_BRACKET);
       add_sysroot_to_chain (sysroot, INC_SYSTEM);
       add_sysroot_to_chain (sysroot, INC_AFTER);
+      add_sysroot_to_chain (sysroot, INC_EMBED);
     }
 
   /* Join the SYSTEM and AFTER chains.  Remove duplicates in the
@@ -383,6 +384,10 @@ merge_include_chains (const char *sysroot, cpp_reader *pfile, int verbose)
     = remove_duplicates (pfile, heads[INC_QUOTE], heads[INC_SYSTEM],
 			 heads[INC_BRACKET], verbose);
 
+  /* Remove duplicates from EMBED that are in itself.  */
+  heads[INC_EMBED]
+    = remove_duplicates (pfile, heads[INC_EMBED], 0, 0, verbose);
+
   /* If verbose, print the list of dirs to search.  */
   if (verbose)
     {
@@ -398,6 +403,13 @@ merge_include_chains (const char *sysroot, cpp_reader *pfile, int verbose)
 	  fprintf (stderr, " %s\n", p->name);
 	}
       fprintf (stderr, _("End of search list.\n"));
+      if (heads[INC_EMBED])
+	{
+	  fprintf (stderr, _("#embed <...> search starts here:\n"));
+	  for (p = heads[INC_EMBED]; p; p = p->next)
+	    fprintf (stderr, " %s\n", p->name);
+	  fprintf (stderr, _("End of #embed search list.\n"));
+	}
     }
 }
 
@@ -506,7 +518,7 @@ register_include_chains (cpp_reader *pfile, const char *sysroot,
   merge_include_chains (sysroot, pfile, verbose);
 
   cpp_set_include_chains (pfile, heads[INC_QUOTE], heads[INC_BRACKET],
-			  quote_ignores_source_dir);
+			  heads[INC_EMBED], quote_ignores_source_dir);
 }
 
 /* Return the current chain of cpp dirs.  */

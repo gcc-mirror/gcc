@@ -624,6 +624,10 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       add_prefixed_path (arg, INC_BRACKET);
       break;
 
+    case OPT__embed_dir_:
+      add_path (xstrdup (arg), INC_EMBED, 0, true);
+      break;
+
     case OPT_lang_asm:
       cpp_set_lang (parse_in, CLK_ASM);
       cpp_opts->dollars_in_ident = false;

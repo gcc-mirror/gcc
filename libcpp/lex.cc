@@ -5220,7 +5220,20 @@ cpp_directive_only_process (cpp_reader *pfile,
 		     error messages. */
 		  buffer->line_base -= pos - line_start;
 
-		  _cpp_handle_directive (pfile, line_start + 1 != pos);
+		  if (_cpp_handle_directive (pfile, line_start + 1 != pos) == 2)
+		    {
+		      if (pfile->directive_result.type != CPP_PADDING)
+			cb (pfile, CPP_DO_token, data,
+			    &pfile->directive_result, pfile->directive_result.src_loc);
+		      if (pfile->context->prev)
+			{
+			  gcc_assert (pfile->context->tokens_kind == TOKENS_KIND_DIRECT);
+			  for (const cpp_token *tok = FIRST (pfile->context).token;
+			       tok != LAST (pfile->context).token; ++tok)
+			    cb (pfile, CPP_DO_token, data, tok, tok->src_loc);
+			  _cpp_pop_context (pfile);
+			}
+		    }
 
 		  /* Sanitize the line settings.  Duplicate #include's can
 		     mess things up. */

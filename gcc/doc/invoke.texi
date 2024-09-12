@@ -722,6 +722,7 @@ Objective-C and Objective-C++ Dialects}.
 -iplugindir=@var{dir}  -iprefix @var{file}
 -iquote @var{dir}  -isysroot @var{dir}  -isystem @var{dir}
 -iwithprefix @var{dir}  -iwithprefixbefore @var{dir}
+--embed-dir=@var{dir}
 -L@var{dir}  -no-canonical-prefixes  --no-sysroot-suffix
 -nostdinc  -nostdinc++  --sysroot=@var{dir}}
 

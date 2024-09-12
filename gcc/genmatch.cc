@@ -5634,7 +5634,7 @@ main (int argc, char **argv)
   dir->name = getpwd ();
   if (!dir->name)
     dir->name = ASTRDUP (".");
-  cpp_set_include_chains (r, dir, NULL, false);
+  cpp_set_include_chains (r, dir, NULL, NULL, false);
 
   if (!cpp_read_main_file (r, input))
     return 1;

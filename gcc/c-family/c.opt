@@ -66,6 +66,16 @@ C ObjC C++ ObjC++ Separate Alias(d)
 -dump=
 C ObjC C++ ObjC++ Joined Alias(d)
 
+-embed-dir=
+C ObjC C++ ObjC++ Joined MissingArgError(missing filename after %qs)
+--embed-dir=<dir>	Add <dir> to the #embed path.
+
+-embed-directory
+C ObjC C++ ObjC++ Separate Alias(-embed-dir=) MissingArgError(missing path after %qs)
+
+-embed-directory=
+C ObjC C++ ObjC++ Joined Alias(-embed-dir=) MissingArgError(missing path after %qs)
+
 -imacros
 C ObjC C++ ObjC++ Separate Alias(imacros) MissingArgError(missing filename after %qs)
 

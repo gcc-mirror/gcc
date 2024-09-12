@@ -159,6 +159,7 @@ static void cpp_pop_definition (cpp_reader *, struct def_pragma_macro *);
   D(error,	T_ERROR,	STDC89,    0)				\
   D(pragma,	T_PRAGMA,	STDC89,    IN_I)			\
   D(warning,	T_WARNING,	STDC23,    0)				\
+  D(embed,	T_EMBED,	STDC23,    INCL | EXPAND)		\
   D(include_next, T_INCLUDE_NEXT, EXTENSION, INCL | EXPAND)		\
   D(ident,	T_IDENT,	EXTENSION, IN_I)			\
   D(import,	T_IMPORT,	EXTENSION, INCL | EXPAND)  /* ObjC */	\
@@ -326,7 +327,8 @@ end_directive (cpp_reader *pfile, int skip_line)
   /* We don't skip for an assembler #.  */
   else if (skip_line)
     {
-      skip_rest_of_line (pfile);
+      if (pfile->directive != &dtable[T_EMBED])
+	skip_rest_of_line (pfile);
       if (!pfile->keep_tokens)
 	{
 	  pfile->cur_run = &pfile->base_run;
@@ -569,7 +571,15 @@ _cpp_handle_directive (cpp_reader *pfile, bool indented)
     prepare_directive_trad (pfile);
 
   if (dir)
-    pfile->directive->handler (pfile);
+    {
+      pfile->directive->handler (pfile);
+      if (pfile->directive == &dtable[T_EMBED]
+	  && skip
+	  && CPP_OPTION (pfile, directives_only))
+	/* Signal to cpp_directive_only_process it needs to emit
+	   the #embed expansion.  */
+	skip = 2;
+    }
   else if (skip == 0)
     _cpp_backup_tokens (pfile, 1);
 
@@ -821,9 +831,10 @@ parse_include (cpp_reader *pfile, int *pangle_brackets,
       return NULL;
     }
 
-  if (pfile->directive == &dtable[T_PRAGMA])
+  if (pfile->directive == &dtable[T_PRAGMA]
+      || pfile->directive == &dtable[T_EMBED])
     {
-      /* This pragma allows extra tokens after the file name.  */
+      /* This pragma or #embed allows extra tokens after the file name.  */
     }
   else if (buf == NULL || CPP_OPTION (pfile, discard_comments))
     check_eol (pfile, true);
@@ -919,6 +930,343 @@ do_include_next (cpp_reader *pfile)
       type = IT_INCLUDE;
     }
   do_include_common (pfile, type);
+}
+
+/* Skip over balanced preprocessing tokens until END is found.
+   If SAVE is non-NULL, remember the parsed tokens in it.  NESTED is
+   false in the outermost invocation of the function and true
+   when called recursively.  */
+
+static void
+skip_balanced_token_seq (cpp_reader *pfile, cpp_ttype end,
+			 cpp_embed_params_tokens *save, bool nested)
+{
+  do
+    {
+      const cpp_token *token = cpp_peek_token (pfile, 0);
+      if (token->type == CPP_EOF)
+	{
+	  char c = 0;
+	  switch (end)
+	    {
+	    case CPP_CLOSE_PAREN: c = '('; break;
+	    case CPP_CLOSE_SQUARE: c = '['; break;
+	    case CPP_CLOSE_BRACE: c = '{'; break;
+	    default: abort ();
+	    }
+	  cpp_error (pfile, CPP_DL_ERROR, "unbalanced '%c'", c);
+	  return;
+	}
+      token = cpp_get_token (pfile);
+      if (save
+	  && (token->type != CPP_PADDING || save->count)
+	  && (token->type != end || nested))
+	{
+	  if (save->count == 0)
+	    {
+	      _cpp_init_tokenrun (&save->base_run, 4);
+	      save->cur_run = &save->base_run;
+	      save->cur_token = save->base_run.base;
+	    }
+	  else if (save->cur_token == save->cur_run->limit)
+	    {
+	      save->cur_run->next = XNEW (tokenrun);
+	      save->cur_run->next->prev = save->cur_run;
+	      _cpp_init_tokenrun (save->cur_run->next, 4);
+	      save->cur_run = save->cur_run->next;
+	      save->cur_token = save->cur_run->base;
+	    }
+	  *save->cur_token = *token;
+	  save->cur_token->flags |= NO_EXPAND;
+	  save->cur_token++;
+	  save->count++;
+	}
+      if (token->type == end)
+	return;
+      switch (token->type)
+	{
+	case CPP_OPEN_PAREN:
+	  skip_balanced_token_seq (pfile, CPP_CLOSE_PAREN, save, true);
+	  break;
+	case CPP_OPEN_SQUARE:
+	  skip_balanced_token_seq (pfile, CPP_CLOSE_SQUARE, save, true);
+	  break;
+	case CPP_OPEN_BRACE:
+	  skip_balanced_token_seq (pfile, CPP_CLOSE_BRACE, save, true);
+	  break;
+	case CPP_CLOSE_PAREN:
+	  cpp_error (pfile, CPP_DL_ERROR, "unbalanced '%c'", ')');
+	  break;
+	case CPP_CLOSE_SQUARE:
+	  cpp_error (pfile, CPP_DL_ERROR, "unbalanced '%c'", ']');
+	  break;
+	case CPP_CLOSE_BRACE:
+	  cpp_error (pfile, CPP_DL_ERROR, "unbalanced '%c'", '}');
+	  break;
+	default:
+	  break;
+	}
+    }
+  while (1);
+}
+
+#define EMBED_PARAMS \
+  EMBED_PARAM (LIMIT, "limit")		\
+  EMBED_PARAM (PREFIX, "prefix")	\
+  EMBED_PARAM (SUFFIX, "suffix")	\
+  EMBED_PARAM (IF_EMPTY, "if_empty")
+
+enum embed_param_kind {
+#define EMBED_PARAM(c, s) EMBED_PARAM_##c,
+  EMBED_PARAMS
+#undef EMBED_PARAM
+  NUM_EMBED_PARAMS
+};
+
+static struct { int len; const char *name; } embed_params[NUM_EMBED_PARAMS] = {
+#define EMBED_PARAM(c, s) { sizeof (s) - 1, s },
+  EMBED_PARAMS
+#undef EMBED_PARAM
+};
+
+/* Parse parameters of #embed directive or __has_embed expression.
+   Fills in details about parsed parameters in *PARAMS.
+   Returns true if all the parameters have been successfully parsed,
+   false on errors.  */
+
+bool
+_cpp_parse_embed_params (cpp_reader *pfile, struct cpp_embed_params *params)
+{
+  const cpp_token *token = _cpp_get_token_no_padding (pfile);
+  bool ret = true;
+  int seen = 0;
+  params->limit = -1;
+  do
+    {
+      const unsigned char *param_name = NULL;
+      const unsigned char *param_prefix = NULL;
+      int param_name_len = 0, param_prefix_len = 0;
+      bool has_scope = false;
+      if (token->type != CPP_NAME)
+	{
+	  if (token->type == CPP_EOF)
+	    {
+	      if (params->has_embed)
+		{
+		  cpp_error (pfile, CPP_DL_ERROR, "expected ')'");
+		  return false;
+		}
+	      return ret;
+	    }
+	  else if (token->type == CPP_CLOSE_PAREN && params->has_embed)
+	    return ret;
+	  cpp_error (pfile, CPP_DL_ERROR, "expected parameter name");
+	  return false;
+	}
+      param_name = NODE_NAME (token->val.node.spelling);
+      param_name_len = NODE_LEN (token->val.node.spelling);
+      location_t loc = token->src_loc;
+      token = _cpp_get_token_no_padding (pfile);
+      if (token->type == CPP_SCOPE)
+	{
+	  has_scope = true;
+	  token = _cpp_get_token_no_padding (pfile);
+	}
+      else if (token->type == CPP_COLON
+	       && (token->flags & COLON_SCOPE) != 0)
+	{
+	  has_scope = true;
+	  token = _cpp_get_token_no_padding (pfile);
+	  if (token->type != CPP_COLON)
+	    {
+	      cpp_error (pfile, CPP_DL_ERROR, "expected ':'");
+	      return false;
+	    }
+	  token = _cpp_get_token_no_padding (pfile);
+	}
+      if (has_scope)
+	{
+	  if (token->type != CPP_NAME)
+	    {
+	      cpp_error (pfile, CPP_DL_ERROR, "expected parameter name");
+	      return false;
+	    }
+	  param_prefix = param_name;
+	  param_prefix_len = param_name_len;
+	  param_name = NODE_NAME (token->val.node.spelling);
+	  param_name_len = NODE_LEN (token->val.node.spelling);
+	  loc = token->src_loc;
+	  token = _cpp_get_token_no_padding (pfile);
+	}
+      if (param_name_len > 4
+	  && param_name[0] == '_'
+	  && param_name[1] == '_'
+	  && param_name[param_name_len - 1] == '_'
+	  && param_name[param_name_len - 2] == '_')
+	{
+	  param_name += 2;
+	  param_name_len -= 4;
+	}
+      if (param_prefix
+	  && param_prefix_len > 4
+	  && param_prefix[0] == '_'
+	  && param_prefix[1] == '_'
+	  && param_prefix[param_prefix_len - 1] == '_'
+	  && param_prefix[param_prefix_len - 2] == '_')
+	{
+	  param_prefix += 2;
+	  param_prefix_len -= 4;
+	}
+      size_t param_kind = -1;
+      if (param_prefix == NULL)
+	{
+	  for (size_t i = 0; i < NUM_EMBED_PARAMS; ++i)
+	    if (param_name_len == embed_params[i].len
+		&& memcmp (param_name, embed_params[i].name,
+			   param_name_len) == 0)
+	      {
+		param_kind = i;
+		break;
+	      }
+	}
+      if (param_kind != (size_t) -1)
+	{
+	  if ((seen & (1 << param_kind)) == 0)
+	    seen |= 1 << param_kind;
+	  else
+	    cpp_error_with_line (pfile, CPP_DL_ERROR, loc, 0,
+				 "duplicate embed parameter '%.*s%s%.*s'",
+				 param_prefix_len,
+				 param_prefix
+				 ? (const char *) param_prefix : "",
+				 param_prefix ? "::" : "",
+				 param_name_len, param_name);
+	}
+      else
+	{
+	  ret = false;
+	  if (!params->has_embed)
+	    cpp_error_with_line (pfile, CPP_DL_ERROR, loc, 0,
+				 "unknown embed parameter '%.*s%s%.*s'",
+				 param_prefix_len,
+				 param_prefix
+				 ? (const char *) param_prefix : "",
+				 param_prefix ? "::" : "",
+				 param_name_len, param_name);
+	}
+      if (param_kind != (size_t) -1 && token->type != CPP_OPEN_PAREN)
+	cpp_error_with_line (pfile, CPP_DL_ERROR, loc, 0,
+			     "expected '('");
+      else if (param_kind == EMBED_PARAM_LIMIT)
+	{
+	  if (params->has_embed && pfile->op_stack == NULL)
+	    _cpp_expand_op_stack (pfile);
+	  params->limit = _cpp_parse_expr (pfile, "#embed", token);
+	  token = _cpp_get_token_no_padding (pfile);
+	}
+      else if (token->type == CPP_OPEN_PAREN)
+	{
+	  cpp_embed_params_tokens *save = NULL;
+	  auto save_comments = pfile->state.save_comments;
+	  switch (param_kind)
+	    {
+	    case EMBED_PARAM_PREFIX: save = &params->prefix; break;
+	    case EMBED_PARAM_SUFFIX: save = &params->suffix; break;
+	    case EMBED_PARAM_IF_EMPTY: save = &params->if_empty; break;
+	    default: break;
+	    }
+	  if (params->has_embed)
+	    save = NULL;
+	  else if (save)
+	    pfile->state.save_comments = !CPP_OPTION (pfile, discard_comments);
+	  skip_balanced_token_seq (pfile, CPP_CLOSE_PAREN, save, false);
+	  pfile->state.save_comments = save_comments;
+	  token = _cpp_get_token_no_padding (pfile);
+	}
+    }
+  while (1);
+}
+
+/* Handle #embed directive.  */
+
+static void
+do_embed (cpp_reader *pfile)
+{
+  int angle_brackets;
+  struct cpp_embed_params params = {};
+  bool ok;
+  const char *fname = NULL;
+
+  /* Tell the lexer this is an embed directive.  */
+  pfile->state.in_directive = 3;
+
+  if (CPP_OPTION (pfile, traditional))
+    {
+      cpp_error (pfile, CPP_DL_ERROR, /* FIXME should be DL_SORRY */
+		 "#embed not supported in traditional C");
+      skip_rest_of_line (pfile);
+      goto done;
+    }
+
+  if (CPP_PEDANTIC (pfile) && !CPP_OPTION (pfile, embed))
+    {
+      if (CPP_OPTION (pfile, cplusplus))
+	cpp_error (pfile, CPP_DL_PEDWARN,
+		   "#%s is a GCC extension", "embed");
+      else
+	cpp_error (pfile, CPP_DL_PEDWARN,
+		   "#%s before C23 is a GCC extension", "embed");
+    }
+
+  fname = parse_include (pfile, &angle_brackets, NULL, &params.loc);
+  if (!fname)
+    {
+      skip_rest_of_line (pfile);
+      goto done;
+    }
+
+  if (!*fname)
+    {
+      cpp_error_with_line (pfile, CPP_DL_ERROR, params.loc, 0,
+			   "empty filename in #%s",
+			   pfile->directive->name);
+      skip_rest_of_line (pfile);
+      goto done;
+    }
+
+  pfile->state.angled_headers = false;
+  pfile->state.directive_wants_padding = false;
+  ok = _cpp_parse_embed_params (pfile, &params);
+
+  /* Get out of macro context, if we are.  */
+  skip_rest_of_line (pfile);
+
+  if (ok)
+    _cpp_stack_embed (pfile, fname, angle_brackets, &params);
+
+  for (int i = 0; i < 3; ++i)
+    {
+      cpp_embed_params_tokens *p;
+      if (i == 0)
+	p = &params.prefix;
+      else if (i == 1)
+	p = &params.suffix;
+      else
+	p = &params.if_empty;
+      if (p->count == 0)
+	continue;
+      tokenrun *n;
+      for (tokenrun *t = &p->base_run; t; t = n)
+	{
+	  n = t->next;
+	  XDELETEVEC (t->base);
+	  if (t != &p->base_run)
+	    XDELETE (t);
+	}
+    }
+
+ done:
+  XDELETEVEC (fname);
 }
 
 /* Subroutine of do_linemarker.  Read possible flags after file name.
@@ -2084,7 +2432,7 @@ do_if (cpp_reader *pfile)
   int skip = 1;
 
   if (! pfile->state.skipping)
-    skip = _cpp_parse_expr (pfile, true) == false;
+    skip = _cpp_parse_expr (pfile, "#if", NULL) == false;
 
   push_conditional (pfile, skip, T_IF, pfile->mi_ind_cmacro);
 }
@@ -2172,7 +2520,7 @@ do_elif (cpp_reader *pfile)
       else
 	{
 	  if (pfile->directive == &dtable[T_ELIF])
-	    pfile->state.skipping = !_cpp_parse_expr (pfile, false);
+	    pfile->state.skipping = !_cpp_parse_expr (pfile, "#elif", NULL);
 	  else
 	    {
 	      cpp_hashnode *node = lex_macro_node (pfile, false);
