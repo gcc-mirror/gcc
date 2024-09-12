@@ -40,6 +40,7 @@ package body System.Value_N is
       Indexes : System.Address;
       Hash    : Hash_Function_Ptr;
       Num     : Natural;
+      Is_Wide : Boolean;
       Str     : String)
       return    Integer with Pure_Function;
    --  Same as Value_Enumeration, except returns negative if Value_Enumeration
@@ -54,6 +55,7 @@ package body System.Value_N is
       Indexes : System.Address;
       Hash    : Hash_Function_Ptr;
       Num     : Natural;
+      Is_Wide : Boolean;
       Str     : String)
       return    Integer
    is
@@ -76,7 +78,7 @@ package body System.Value_N is
       pragma Assert (Num + 1 in IndexesT'Range);
 
    begin
-      Normalize_String (S, F, L);
+      Normalize_String (S, F, L, To_Upper_Case => not Is_Wide);
 
       declare
          Normal : String renames S (F .. L);
@@ -120,11 +122,13 @@ package body System.Value_N is
       Indexes : System.Address;
       Hash    : Hash_Function_Ptr;
       Num     : Natural;
+      Is_Wide : Boolean;
       Str     : String)
       return    Boolean
    is
    begin
-      return Value_Enumeration_Pos (Names, Indexes, Hash, Num, Str) >= 0;
+      return
+        Value_Enumeration_Pos (Names, Indexes, Hash, Num, Is_Wide, Str) >= 0;
    end Valid_Value_Enumeration;
 
    -----------------------
@@ -136,11 +140,12 @@ package body System.Value_N is
       Indexes : System.Address;
       Hash    : Hash_Function_Ptr;
       Num     : Natural;
+      Is_Wide : Boolean;
       Str     : String)
       return    Natural
    is
       Result : constant Integer :=
-        Value_Enumeration_Pos (Names, Indexes, Hash, Num, Str);
+        Value_Enumeration_Pos (Names, Indexes, Hash, Num, Is_Wide, Str);
 
    begin
       --  The comparison eliminates the need for a range check on return

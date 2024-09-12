@@ -53,7 +53,7 @@ is
       S : String (Str'Range) := Str;
 
    begin
-      Normalize_String (S, F, L);
+      Normalize_String (S, F, L, To_Upper_Case => True);
 
       pragma Assert (F = System.Val_Spec.First_Non_Space_Ghost
                      (S, Str'First, Str'Last));

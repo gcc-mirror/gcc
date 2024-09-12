@@ -47,6 +47,7 @@ package System.Value_N is
       Indexes : System.Address;
       Hash    : Hash_Function_Ptr;
       Num     : Natural;
+      Is_Wide : Boolean;
       Str     : String)
       return    Natural with Inline;
    --  Used to compute Enum'Value (Str) where Enum is some enumeration type
@@ -60,7 +61,8 @@ package System.Value_N is
    --  The parameter Hash is a (perfect) hash function for Names and Indexes.
    --  The parameter Num is the value N - 1 (i.e. Enum'Pos (Enum'Last)).
    --  The reason that Indexes is passed by address is that the actual type
-   --  is created on the fly by the expander.
+   --  is created on the fly by the expander. The parameter Is_Wide is True
+   --  if the original attribute was [Wide_]Wide_Value.
    --
    --  Str is the argument of the attribute function, and may have leading
    --  and trailing spaces, and letters can be upper or lower case or mixed.
@@ -72,6 +74,7 @@ package System.Value_N is
       Indexes : System.Address;
       Hash    : Hash_Function_Ptr;
       Num     : Natural;
+      Is_Wide : Boolean;
       Str     : String)
       return    Boolean with Inline;
    --  Returns True if Str is a valid Image of some enumeration literal, False
