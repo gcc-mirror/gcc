@@ -1220,6 +1220,320 @@ cpp_probe_header_unit (cpp_reader *pfile, const char *name, bool angle,
   return nullptr;
 }
 
+/* Helper function for _cpp_stack_embed.  Finish #embed/__has_embed processing
+   after a file is found and data loaded into buffer.  */
+
+static int
+finish_embed (cpp_reader *pfile, _cpp_file *file,
+	      struct cpp_embed_params *params)
+{
+  const uchar *buffer = file->buffer;
+  size_t limit = file->limit;
+  if (params->offset - file->offset > limit)
+    limit = 0;
+  else
+    {
+      buffer += params->offset - file->offset;
+      limit -= params->offset - file->offset;
+    }
+  if (params->limit < limit)
+    limit = params->limit;
+
+  /* For sizes larger than say 64 bytes, this is just a temporary
+     solution, we should emit a single new token which the FEs will
+     handle as an optimization.  */
+  size_t max = INTTYPE_MAXIMUM (size_t) / sizeof (cpp_token);
+  if (limit > max / 2
+      || (limit
+	  ? (params->prefix.count > max
+	     || params->suffix.count > max
+	     || (limit * 2 - 1 + params->prefix.count
+		 + params->suffix.count > max))
+	  : params->if_empty.count > max))
+    {
+      cpp_error_at (pfile, CPP_DL_ERROR, params->loc,
+		    "%s is too large", file->path);
+      return 0;
+    }
+
+  size_t len = 0;
+  for (size_t i = 0; i < limit; ++i)
+    {
+      if (buffer[i] < 10)
+	len += 2;
+      else if (buffer[i] < 100)
+	len += 3;
+#if UCHAR_MAX == 255
+      else
+	len += 4;
+#else
+      else if (buffer[i] < 1000)
+	len += 4;
+      else
+	{
+	  char buf[64];
+	  len += sprintf (buf, "%d", buffer[i]) + 1;
+	}
+#endif
+      if (len > INTTYPE_MAXIMUM (ssize_t))
+	{
+	  cpp_error_at (pfile, CPP_DL_ERROR, params->loc,
+			"%s is too large", file->path);
+	  return 0;
+	}
+    }
+  uchar *s = len ? _cpp_unaligned_alloc (pfile, len) : NULL;
+  _cpp_buff *tok_buff = NULL;
+  cpp_token *toks = NULL, *tok = &pfile->directive_result;
+  size_t count = 0;
+  if (limit)
+    count = (params->prefix.count + limit * 2 - 1
+	     + params->suffix.count) - 1;
+  else if (params->if_empty.count)
+    count = params->if_empty.count - 1;
+  if (count)
+    {
+      tok_buff = _cpp_get_buff (pfile, count * sizeof (cpp_token));
+      toks = (cpp_token *) tok_buff->base;
+    }
+  cpp_embed_params_tokens *prefix
+    = limit ? &params->prefix : &params->if_empty;
+  if (prefix->count)
+    {
+      *tok = *prefix->base_run.base;
+      tok = toks;
+      tokenrun *cur_run = &prefix->base_run;
+      while (cur_run)
+	{
+	  size_t cnt = (cur_run->next ? cur_run->limit
+			: prefix->cur_token) - cur_run->base;
+	  cpp_token *t = cur_run->base;
+	  if (cur_run == &prefix->base_run)
+	    {
+	      t++;
+	      cnt--;
+	    }
+	  memcpy (tok, t, cnt * sizeof (cpp_token));
+	  tok += cnt;
+	  cur_run = cur_run->next;
+	}
+    }
+  for (size_t i = 0; i < limit; ++i)
+    {
+      tok->src_loc = params->loc;
+      tok->type = CPP_NUMBER;
+      tok->flags = NO_EXPAND;
+      if (i == 0)
+	tok->flags |= PREV_WHITE;
+      tok->val.str.text = s;
+      tok->val.str.len = sprintf ((char *) s, "%d", buffer[i]);
+      s += tok->val.str.len + 1;
+      if (tok == &pfile->directive_result)
+	tok = toks;
+      else
+	tok++;
+      if (i < limit - 1)
+	{
+	  tok->src_loc = params->loc;
+	  tok->type = CPP_COMMA;
+	  tok->flags = NO_EXPAND;
+	  tok++;
+	}
+    }
+  if (limit && params->suffix.count)
+    {
+      tokenrun *cur_run = &params->suffix.base_run;
+      cpp_token *orig_tok = tok;
+      while (cur_run)
+	{
+	  size_t cnt = (cur_run->next ? cur_run->limit
+			: params->suffix.cur_token) - cur_run->base;
+	  cpp_token *t = cur_run->base;
+	  memcpy (tok, t, cnt * sizeof (cpp_token));
+	  tok += cnt;
+	  cur_run = cur_run->next;
+	}
+      orig_tok->flags |= PREV_WHITE;
+    }
+  pfile->directive_result.flags |= PREV_WHITE;
+  if (count)
+    {
+      _cpp_push_token_context (pfile, NULL, toks, count);
+      pfile->context->buff = tok_buff;
+    }
+  return limit ? 1 : 2;
+}
+
+/* Helper function for initialization of base64_dec table.
+   Can't rely on ASCII compatibility, so check each letter
+   separately.  */
+
+constexpr signed char
+base64_dec_fn (unsigned char c)
+{
+  return (c == 'A' ? 0 : c == 'B' ? 1 : c == 'C' ? 2 : c == 'D' ? 3
+	  : c == 'E' ? 4 : c == 'F' ? 5 : c == 'G' ? 6 : c == 'H' ? 7
+	  : c == 'I' ? 8 : c == 'J' ? 9 : c == 'K' ? 10 : c == 'L' ? 11
+	  : c == 'M' ? 12 : c == 'N' ? 13 : c == 'O' ? 14 : c == 'P' ? 15
+	  : c == 'Q' ? 16 : c == 'R' ? 17 : c == 'S' ? 18 : c == 'T' ? 19
+	  : c == 'U' ? 20 : c == 'V' ? 21 : c == 'W' ? 22 : c == 'X' ? 23
+	  : c == 'Y' ? 24 : c == 'Z' ? 25
+	  : c == 'a' ? 26 : c == 'b' ? 27 : c == 'c' ? 28 : c == 'd' ? 29
+	  : c == 'e' ? 30 : c == 'f' ? 31 : c == 'g' ? 32 : c == 'h' ? 33
+	  : c == 'i' ? 34 : c == 'j' ? 35 : c == 'k' ? 36 : c == 'l' ? 37
+	  : c == 'm' ? 38 : c == 'n' ? 39 : c == 'o' ? 40 : c == 'p' ? 41
+	  : c == 'q' ? 42 : c == 'r' ? 43 : c == 's' ? 44 : c == 't' ? 45
+	  : c == 'u' ? 46 : c == 'v' ? 47 : c == 'w' ? 48 : c == 'x' ? 49
+	  : c == 'y' ? 50 : c == 'z' ? 51
+	  : c == '0' ? 52 : c == '1' ? 53 : c == '2' ? 54 : c == '3' ? 55
+	  : c == '4' ? 56 : c == '5' ? 57 : c == '6' ? 58 : c == '7' ? 59
+	  : c == '8' ? 60 : c == '9' ? 61 : c == '+' ? 62 : c == '/' ? 63
+	  : -1);
+}
+
+/* base64 decoding table.  */
+
+static constexpr signed char base64_dec[] = {
+#define B64D0(x) base64_dec_fn (x)
+#define B64D1(x) B64D0 (x), B64D0 (x + 1), B64D0 (x + 2), B64D0 (x + 3)
+#define B64D2(x) B64D1 (x), B64D1 (x + 4), B64D1 (x + 8), B64D1 (x + 12)
+#define B64D3(x) B64D2 (x), B64D2 (x + 16), B64D2 (x + 32), B64D2 (x + 48)
+  B64D3 (0), B64D3 (64), B64D3 (128), B64D3 (192)
+};
+
+/* Helper function for _cpp_stack_embed.  Handle #embed/__has_embed with
+   gnu::base64 parameter.  */
+
+static int
+finish_base64_embed (cpp_reader *pfile, const char *fname, bool angle,
+		     struct cpp_embed_params *params)
+{
+  size_t len, end, i, j, base64_len = 0, cnt;
+  uchar *buf = NULL, *q, pbuf[4], qbuf[3];
+  const uchar *base64_str;
+  if (angle || strcmp (fname, "."))
+    {
+      if (!params->has_embed)
+	cpp_error_at (pfile, CPP_DL_ERROR, params->loc,
+		      "'gnu::base64' parameter can be only used with \".\"");
+      return 0;
+    }
+  tokenrun *cur_run = &params->base64.base_run;
+  cpp_token *tend, *tok;
+  while (cur_run)
+    {
+      tend = cur_run->next ? cur_run->limit : params->base64.cur_token;
+      for (tok = cur_run->base; tok < tend; ++tok)
+	{
+	  if (tok->val.str.len < 2
+	      || tok->val.str.text[0] != '"'
+	      || tok->val.str.text[tok->val.str.len - 1] != '"')
+	    {
+	    fail:
+	      cpp_error_at (pfile, CPP_DL_ERROR, params->loc,
+			    "'gnu::base64' argument not valid base64 "
+			    "encoded string");
+	      free (buf);
+	      return 0;
+	    }
+	  if (tok->val.str.len - 2 > (~(size_t) 0) - base64_len)
+	    goto fail;
+	  base64_len += tok->val.str.len - 2;
+	}
+      cur_run = cur_run->next;
+    }
+  if ((base64_len & 3) != 0)
+    goto fail;
+  len = base64_len / 4 * 3;
+  end = len;
+
+  if (params->has_embed)
+    q = qbuf;
+  else
+    {
+      buf = XNEWVEC (uchar, len ? len : 1);
+      q = buf;
+    }
+  cur_run = &params->base64.base_run;
+  tend = cur_run->next ? cur_run->limit : params->base64.cur_token;
+  tok = cur_run->base;
+  base64_str = tok->val.str.text + 1;
+  cnt = tok->val.str.len - 2;
+  ++tok;
+  for (i = 0; i < end; i += 3)
+    {
+      for (j = 0; j < 4; ++j)
+	{
+	  while (cnt == 0)
+	    {
+	      if (tok == tend)
+		{
+		  cur_run = cur_run->next;
+		  tend = (cur_run->next ? cur_run->limit
+			  : params->base64.cur_token);
+		  tok = cur_run->base;
+		}
+	      base64_str = tok->val.str.text + 1;
+	      cnt = tok->val.str.len - 2;
+	      ++tok;
+	    }
+	  pbuf[j] = *base64_str;
+	  base64_str++;
+	  --cnt;
+	}
+      if (pbuf[3] == '=' && i + 3 >= end)
+	{
+	  end = len - 3;
+	  --len;
+	  if (pbuf[2] == '=')
+	    --len;
+	  break;
+	}
+      int a = base64_dec[pbuf[0]];
+      int b = base64_dec[pbuf[1]];
+      int c = base64_dec[pbuf[2]];
+      int d = base64_dec[pbuf[3]];
+      if (a == -1 || b == -1 || c == -1 || d == -1)
+	goto fail;
+      q[0] = (a << 2) | (b >> 4);
+      q[1] = (b << 4) | (c >> 2);
+      q[2] = (c << 6) | d;
+      if (!params->has_embed)
+	q += 3;
+    }
+  if (len != end)
+    {
+      int a = base64_dec[pbuf[0]];
+      int b = base64_dec[pbuf[1]];
+      if (a == -1 || b == -1)
+	goto fail;
+      q[0] = (a << 2) | (b >> 4);
+      if (len - end == 2)
+	{
+	  int c = base64_dec[pbuf[2]];
+	  if (c == -1)
+	    goto fail;
+	  q[1] = (b << 4) | (c >> 2);
+	  if ((c & 3) != 0)
+	    goto fail;
+	}
+      else if ((b & 15) != 0)
+	goto fail;
+    }
+  if (params->has_embed)
+    return len ? 1 : 2;
+  _cpp_file *file = make_cpp_file (NULL, "");
+  file->embed = 1;
+  file->next_file = pfile->all_files;
+  pfile->all_files = file;
+  params->limit = -1;
+  params->offset = 0;
+  file->limit = len;
+  file->buffer = buf;
+  file->path = xstrdup ("<base64>");
+  return finish_embed (pfile, file, params);
+}
+
 /* Try to load FNAME with #embed/__has_embed parameters PARAMS.
    If !PARAMS->has_embed, return new token in pfile->directive_result
    (first token) and rest in a pushed non-macro context.
@@ -1230,6 +1544,8 @@ int
 _cpp_stack_embed (cpp_reader *pfile, const char *fname, bool angle,
 		  struct cpp_embed_params *params)
 {
+  if (params->base64.count)
+    return finish_base64_embed (pfile, fname, angle, params);
   cpp_dir *dir = search_path_head (pfile, fname, angle, IT_EMBED,
 				   params->has_embed);
   if (!dir)
@@ -1449,141 +1765,7 @@ _cpp_stack_embed (cpp_reader *pfile, const char *fname, bool angle,
       return limit && params->limit ? 1 : 2;
     }
 
-  const uchar *buffer = file->buffer;
-  size_t limit = file->limit;
-  if (params->offset - file->offset > limit)
-    limit = 0;
-  else
-    {
-      buffer += params->offset - file->offset;
-      limit -= params->offset - file->offset;
-    }
-  if (params->limit < limit)
-    limit = params->limit;
-
-  /* For sizes larger than say 64 bytes, this is just a temporary
-     solution, we should emit a single new token which the FEs will
-     handle as an optimization.  */
-  size_t max = INTTYPE_MAXIMUM (size_t) / sizeof (cpp_token);
-  if (limit > max / 2
-      || (limit
-	  ? (params->prefix.count > max
-	     || params->suffix.count > max
-	     || (limit * 2 + params->prefix.count
-		 + params->suffix.count > max))
-	  : params->if_empty.count > max))
-    {
-      cpp_error_at (pfile, CPP_DL_ERROR, params->loc,
-		    "%s is too large", file->path);
-      return 0;
-    }
-
-  size_t len = 0;
-  for (size_t i = 0; i < limit; ++i)
-    {
-      if (buffer[i] < 10)
-	len += 2;
-      else if (buffer[i] < 100)
-	len += 3;
-#if UCHAR_MAX == 255
-      else
-	len += 4;
-#else
-      else if (buffer[i] < 1000)
-	len += 4;
-      else
-	{
-	  char buf[64];
-	  len += sprintf (buf, "%d", buffer[i]) + 1;
-	}
-#endif
-      if (len > INTTYPE_MAXIMUM (ssize_t))
-	{
-	  cpp_error_at (pfile, CPP_DL_ERROR, params->loc,
-			"%s is too large", file->path);
-	  return 0;
-	}
-    }
-  uchar *s = len ? _cpp_unaligned_alloc (pfile, len) : NULL;
-  _cpp_buff *tok_buff = NULL;
-  cpp_token *toks = NULL, *tok = &pfile->directive_result;
-  size_t count = 0;
-  if (limit)
-    count = (params->prefix.count + limit * 2 - 1
-	     + params->suffix.count) - 1;
-  else if (params->if_empty.count)
-    count = params->if_empty.count - 1;
-  if (count)
-    {
-      tok_buff = _cpp_get_buff (pfile, count * sizeof (cpp_token));
-      toks = (cpp_token *) tok_buff->base;
-    }
-  cpp_embed_params_tokens *prefix
-    = limit ? &params->prefix : &params->if_empty;
-  if (prefix->count)
-    {
-      *tok = *prefix->base_run.base;
-      tok = toks;
-      tokenrun *cur_run = &prefix->base_run;
-      while (cur_run)
-	{
-	  size_t cnt = (cur_run->next ? cur_run->limit
-			: prefix->cur_token) - cur_run->base;
-	  cpp_token *t = cur_run->base;
-	  if (cur_run == &prefix->base_run)
-	    {
-	      t++;
-	      cnt--;
-	    }
-	  memcpy (tok, t, cnt * sizeof (cpp_token));
-	  tok += cnt;
-	  cur_run = cur_run->next;
-	}
-    }
-  for (size_t i = 0; i < limit; ++i)
-    {
-      tok->src_loc = params->loc;
-      tok->type = CPP_NUMBER;
-      tok->flags = NO_EXPAND;
-      if (i == 0)
-	tok->flags |= PREV_WHITE;
-      tok->val.str.text = s;
-      tok->val.str.len = sprintf ((char *) s, "%d", buffer[i]);
-      s += tok->val.str.len + 1;
-      if (tok == &pfile->directive_result)
-	tok = toks;
-      else
-	tok++;
-      if (i < limit - 1)
-	{
-	  tok->src_loc = params->loc;
-	  tok->type = CPP_COMMA;
-	  tok->flags = NO_EXPAND;
-	  tok++;
-	}
-    }
-  if (limit && params->suffix.count)
-    {
-      tokenrun *cur_run = &params->suffix.base_run;
-      cpp_token *orig_tok = tok;
-      while (cur_run)
-	{
-	  size_t cnt = (cur_run->next ? cur_run->limit
-			: params->suffix.cur_token) - cur_run->base;
-	  cpp_token *t = cur_run->base;
-	  memcpy (tok, t, cnt * sizeof (cpp_token));
-	  tok += cnt;
-	  cur_run = cur_run->next;
-	}
-      orig_tok->flags |= PREV_WHITE;
-    }
-  pfile->directive_result.flags |= PREV_WHITE;
-  if (count)
-    {
-      _cpp_push_token_context (pfile, NULL, toks, count);
-      pfile->context->buff = tok_buff;
-    }
-  return limit ? 1 : 2;
+  return finish_embed (pfile, file, params);
 }
 
 /* Retrofit the just-entered main file asif it was an include.  This

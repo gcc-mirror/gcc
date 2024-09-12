@@ -3967,7 +3967,8 @@ with currently supported standard parameters @code{limit}, @code{prefix},
 @code{suffix} and @code{if_empty}, or implementation defined parameters
 specified by a unique vendor prefix followed by @code{::} followed by
 name of the parameter.  GCC uses the @code{gnu} prefix for vendor
-parameters and currently supports the @code{gnu::offset} parameter.
+parameters and currently supports the @code{gnu::offset} and
+@code{gnu::base64} parameters.
 
 The @code{limit} parameter argument is a constant expression which
 specifies the maximum number of bytes included by the directive,
@@ -3980,6 +3981,17 @@ resource is empty.
 The @code{gnu::offset} parameter argument is a constant expression
 which specifies how many bytes to skip from the start of the resource.
 @code{limit} is then counted from that position.
+
+The @code{gnu::base64} parameter argument is a possibly concatenated
+character string literal with base64 encoded data.  See
+@uref{https://datatracker.ietf.org/doc/html/rfc4648#section-4}.  There
+should be no newlines in the string literal and because this parameter
+is meant namely for use by the preprocessor itself, there is no support
+for any escape sequences in the string literal argument.  If @code{gnu::base64}
+parameter is specified, the @code{limit} and @code{gnu::offset} parameters
+should not be specified and the filename should be always @code{"."}.
+Instead of reading a file the directive will decode the base64 encoded
+data and use that as the data to include.
 
 The @code{#embed} directive is not supported in the Traditional Mode
 (@pxref{Traditional Mode}).

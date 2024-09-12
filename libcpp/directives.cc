@@ -159,7 +159,7 @@ static void cpp_pop_definition (cpp_reader *, struct def_pragma_macro *);
   D(error,	T_ERROR,	STDC89,    0)				\
   D(pragma,	T_PRAGMA,	STDC89,    IN_I)			\
   D(warning,	T_WARNING,	STDC23,    0)				\
-  D(embed,	T_EMBED,	STDC23,    INCL | EXPAND)		\
+  D(embed,	T_EMBED,	STDC23,    IN_I | INCL | EXPAND)	\
   D(include_next, T_INCLUDE_NEXT, EXTENSION, INCL | EXPAND)		\
   D(ident,	T_IDENT,	EXTENSION, IN_I)			\
   D(import,	T_IMPORT,	EXTENSION, INCL | EXPAND)  /* ObjC */	\
@@ -941,6 +941,50 @@ do_include_next (cpp_reader *pfile)
   do_include_common (pfile, type);
 }
 
+/* Helper function for skip_balanced_token_seq and _cpp_parse_embed_params.
+   Save one token *TOKEN into *SAVE.  */
+
+static void
+save_token_for_embed (cpp_embed_params_tokens *save, const cpp_token *token)
+{
+  if (save->count == 0)
+    {
+      _cpp_init_tokenrun (&save->base_run, 4);
+      save->cur_run = &save->base_run;
+      save->cur_token = save->base_run.base;
+    }
+  else if (save->cur_token == save->cur_run->limit)
+    {
+      save->cur_run->next = XNEW (tokenrun);
+      save->cur_run->next->prev = save->cur_run;
+      _cpp_init_tokenrun (save->cur_run->next, 4);
+      save->cur_run = save->cur_run->next;
+      save->cur_token = save->cur_run->base;
+    }
+  *save->cur_token = *token;
+  save->cur_token->flags |= NO_EXPAND;
+  save->cur_token++;
+  save->count++;
+}
+
+/* Free memory associated with saved tokens in *SAVE.  */
+
+void
+_cpp_free_embed_params_tokens (cpp_embed_params_tokens *save)
+{
+  if (save->count == 0)
+    return;
+  tokenrun *n;
+  for (tokenrun *t = &save->base_run; t; t = n)
+    {
+      n = t->next;
+      XDELETEVEC (t->base);
+      if (t != &save->base_run)
+	XDELETE (t);
+    }
+  save->count = 0;
+}
+
 /* Skip over balanced preprocessing tokens until END is found.
    If SAVE is non-NULL, remember the parsed tokens in it.  NESTED is
    false in the outermost invocation of the function and true
@@ -970,26 +1014,7 @@ skip_balanced_token_seq (cpp_reader *pfile, cpp_ttype end,
       if (save
 	  && (token->type != CPP_PADDING || save->count)
 	  && (token->type != end || nested))
-	{
-	  if (save->count == 0)
-	    {
-	      _cpp_init_tokenrun (&save->base_run, 4);
-	      save->cur_run = &save->base_run;
-	      save->cur_token = save->base_run.base;
-	    }
-	  else if (save->cur_token == save->cur_run->limit)
-	    {
-	      save->cur_run->next = XNEW (tokenrun);
-	      save->cur_run->next->prev = save->cur_run;
-	      _cpp_init_tokenrun (save->cur_run->next, 4);
-	      save->cur_run = save->cur_run->next;
-	      save->cur_token = save->cur_run->base;
-	    }
-	  *save->cur_token = *token;
-	  save->cur_token->flags |= NO_EXPAND;
-	  save->cur_token++;
-	  save->count++;
-	}
+	save_token_for_embed (save, token);
       if (token->type == end)
 	return;
       switch (token->type)
@@ -1024,6 +1049,7 @@ skip_balanced_token_seq (cpp_reader *pfile, cpp_ttype end,
   EMBED_PARAM (PREFIX, "prefix")	\
   EMBED_PARAM (SUFFIX, "suffix")	\
   EMBED_PARAM (IF_EMPTY, "if_empty")	\
+  EMBED_PARAM (GNU_BASE64, "base64")	\
   EMBED_PARAM (GNU_OFFSET, "offset")
 
 enum embed_param_kind {
@@ -1067,12 +1093,33 @@ _cpp_parse_embed_params (cpp_reader *pfile, struct cpp_embed_params *params)
 		  cpp_error (pfile, CPP_DL_ERROR, "expected ')'");
 		  return false;
 		}
-	      return ret;
 	    }
-	  else if (token->type == CPP_CLOSE_PAREN && params->has_embed)
-	    return ret;
-	  cpp_error (pfile, CPP_DL_ERROR, "expected parameter name");
-	  return false;
+	  else if (token->type != CPP_CLOSE_PAREN || !params->has_embed)
+	    {
+	      cpp_error (pfile, CPP_DL_ERROR, "expected parameter name");
+	      return false;
+	    }
+	  if (params->base64.count
+	      && (seen & ((1 << EMBED_PARAM_LIMIT)
+			  | (1 << EMBED_PARAM_GNU_OFFSET))) != 0)
+	    {
+	      ret = false;
+	      if (!params->has_embed)
+		cpp_error_with_line (pfile, CPP_DL_ERROR,
+				     params->base64.base_run.base->src_loc, 0,
+				     "'gnu::base64' parameter conflicts with "
+				     "'limit' or 'gnu::offset' parameters");
+	    }
+	  else if (params->base64.count == 0
+		   && CPP_OPTION (pfile, preprocessed))
+	    {
+	      ret = false;
+	      if (!params->has_embed)
+		cpp_error_with_line (pfile, CPP_DL_ERROR, params->loc, 0,
+				     "'gnu::base64' parameter required in "
+				     "preprocessed source");
+	    }
+	  return ret;
 	}
       param_name = NODE_NAME (token->val.node.spelling);
       param_name_len = NODE_LEN (token->val.node.spelling);
@@ -1197,6 +1244,53 @@ _cpp_parse_embed_params (cpp_reader *pfile, struct cpp_embed_params *params)
 	    }
  	  token = _cpp_get_token_no_padding (pfile);
 	}
+      else if (param_kind == EMBED_PARAM_GNU_BASE64)
+	{
+	  token = _cpp_get_token_no_padding (pfile);
+	  while (token->type == CPP_OTHER
+		 && CPP_OPTION (pfile, preprocessed)
+		 && !CPP_OPTION (pfile, directives_only)
+		 && token->val.str.len == 1
+		 && token->val.str.text[0] == '\\')
+	    {
+	      /* Allow backslash newline inside of gnu::base64 argument
+		 for -fpreprocessed, so that it doesn't have to be
+		 megabytes long line.  */
+	      pfile->state.in_directive = 0;
+	      token = _cpp_get_token_no_padding (pfile);
+	      pfile->state.in_directive = 3;
+	    }
+	  if (token->type == CPP_STRING)
+	    {
+	      do
+		{
+		  save_token_for_embed (&params->base64, token);
+		  token = _cpp_get_token_no_padding (pfile);
+		  while (token->type == CPP_OTHER
+			 && CPP_OPTION (pfile, preprocessed)
+			 && !CPP_OPTION (pfile, directives_only)
+			 && token->val.str.len == 1
+			 && token->val.str.text[0] == '\\')
+		    {
+		      pfile->state.in_directive = 0;
+		      token = _cpp_get_token_no_padding (pfile);
+		      pfile->state.in_directive = 3;
+		    }
+		}
+	      while (token->type == CPP_STRING);
+	      if (token->type != CPP_CLOSE_PAREN)
+		cpp_error_with_line (pfile, CPP_DL_ERROR, token->src_loc, 0,
+				     "expected ')'");
+	    }
+	  else
+	    {
+	      cpp_error_with_line (pfile, CPP_DL_ERROR, token->src_loc, 0,
+				   "expected character string literal");
+	      if (token->type != CPP_CLOSE_PAREN)
+		token = _cpp_get_token_no_padding (pfile);
+	    }
+	  token = _cpp_get_token_no_padding (pfile);
+	}
       else if (token->type == CPP_OPEN_PAREN)
 	{
 	  cpp_embed_params_tokens *save = NULL;
@@ -1277,26 +1371,10 @@ do_embed (cpp_reader *pfile)
   if (ok)
     _cpp_stack_embed (pfile, fname, angle_brackets, &params);
 
-  for (int i = 0; i < 3; ++i)
-    {
-      cpp_embed_params_tokens *p;
-      if (i == 0)
-	p = &params.prefix;
-      else if (i == 1)
-	p = &params.suffix;
-      else
-	p = &params.if_empty;
-      if (p->count == 0)
-	continue;
-      tokenrun *n;
-      for (tokenrun *t = &p->base_run; t; t = n)
-	{
-	  n = t->next;
-	  XDELETEVEC (t->base);
-	  if (t != &p->base_run)
-	    XDELETE (t);
-	}
-    }
+  _cpp_free_embed_params_tokens (&params.prefix);
+  _cpp_free_embed_params_tokens (&params.suffix);
+  _cpp_free_embed_params_tokens (&params.if_empty);
+  _cpp_free_embed_params_tokens (&params.base64);
 
  done:
   XDELETEVEC (fname);

@@ -505,6 +505,8 @@ builtin_has_embed (cpp_reader *pfile)
       if (ok && !pfile->state.skip_eval)
 	result = _cpp_stack_embed (pfile, fname, bracket, &params);
 
+      _cpp_free_embed_params_tokens (&params.base64);
+
       XDELETEVEC (fname);
     }
   else if (paren)

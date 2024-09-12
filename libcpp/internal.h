@@ -638,7 +638,7 @@ struct cpp_embed_params
   location_t loc;
   bool has_embed;
   cpp_num_part limit, offset;
-  cpp_embed_params_tokens prefix, suffix, if_empty;
+  cpp_embed_params_tokens prefix, suffix, if_empty, base64;
 };
 
 /* Character classes.  Based on the more primitive macros in safe-ctype.h.
@@ -812,6 +812,7 @@ extern void _cpp_restore_pragma_names (cpp_reader *, char **);
 extern int _cpp_do__Pragma (cpp_reader *, location_t);
 extern void _cpp_init_directives (cpp_reader *);
 extern void _cpp_init_internal_pragmas (cpp_reader *);
+extern void _cpp_free_embed_params_tokens (cpp_embed_params_tokens *);
 extern bool _cpp_parse_embed_params (cpp_reader *, struct cpp_embed_params *);
 extern void _cpp_do_file_change (cpp_reader *, enum lc_reason, const char *,
 				 linenum_type, unsigned int);
