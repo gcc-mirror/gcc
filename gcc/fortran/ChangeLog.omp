@@ -1,5 +1,10 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* trans-openmp.cc (gfc_trans_omp_clauses): Disable strided updates
+	when iterators are used in the clause.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* dump-parse-tree.cc (show_omp_namelist): Add iterator support for
 	OMP_LIST_TO and OMP_LIST_FROM.
 	* match.cc (gfc_free_namelist): Free namespace for OMP_LIST_TO and

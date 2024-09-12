@@ -1,5 +1,12 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* c-typeck.cc (handle_omp_array_sections): Add extra argument.  Set
+	argument to true if array section has a stride that is not one.
+	(c_finish_omp_clauses): Disable strided updates when iterators are
+	used in the clause.  Emit sorry if strided.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* c-parser.cc (c_parser_omp_clause_from_to): Parse 'iterator' modifier.
 	* c-typeck.cc (c_finish_omp_clauses): Finish iterators for to/from
 	clauses.

@@ -14597,7 +14597,7 @@ omp_array_section_low_bound (location_t loc, tree node)
 
 static bool
 handle_omp_array_sections (tree *pc, tree **pnext, enum c_omp_region_type ort,
-			   int *discontiguous)
+			   int *discontiguous, bool *strided = NULL)
 {
   tree c = *pc;
   bool maybe_zero_len = false;
@@ -14686,6 +14686,8 @@ handle_omp_array_sections (tree *pc, tree **pnext, enum c_omp_region_type ort,
 
 	  if (stride == NULL_TREE)
 	    stride = size_one_node;
+	  if (strided && !integer_onep (stride))
+	    *strided = true;
 	  if (discontiguous && *discontiguous)
 	    {
 	      /* This condition is similar to the error check below, but
@@ -16214,13 +16216,22 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		grp_sentinel = OMP_CLAUSE_CHAIN (c);
 
 		tree *pnext = NULL;
+		/* FIXME: Strided target updates not supported together with
+		   iterators yet.  */
 		int discontiguous
 		  = (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TO
-		     || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FROM);
-		if (handle_omp_array_sections (pc, &pnext, ort, &discontiguous))
+		     || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FROM)
+		    && !OMP_CLAUSE_ITERATORS (c);
+		bool strided = false;
+		if (handle_omp_array_sections (pc, &pnext, ort, &discontiguous,
+					       &strided))
 		  remove = true;
 		else
 		  {
+		    if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TO
+			 || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FROM)
+			&& OMP_CLAUSE_ITERATORS (c) && strided)
+		      sorry ("strided target updates with iterators");
 		    c = *pc;
 		    t = OMP_CLAUSE_DECL (c);
 		    if (!omp_mappable_type (TREE_TYPE (t)))
