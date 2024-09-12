@@ -637,7 +637,7 @@ struct cpp_embed_params
 {
   location_t loc;
   bool has_embed;
-  cpp_num_part limit;
+  cpp_num_part limit, offset;
   cpp_embed_params_tokens prefix, suffix, if_empty;
 };
 

@@ -90,6 +90,9 @@ struct _cpp_file
   /* Size for #embed, perhaps smaller than st.st_size.  */
   size_t limit;
 
+  /* Offset for #embed.  */
+  off_t offset;
+
   /* File descriptor.  Invalid if -1, otherwise open.  */
   int fd;
 
@@ -1242,8 +1245,11 @@ _cpp_stack_embed (cpp_reader *pfile, const char *fname, bool angle,
   _cpp_file *orig_file = file;
   if (file->buffer_valid
       && (!S_ISREG (file->st.st_mode)
-	  || (file->limit < file->st.st_size + (size_t) 0
-	      && file->limit < params->limit)))
+	  || file->offset + (cpp_num_part) 0 > params->offset
+	  || (file->limit < file->st.st_size - file->offset + (size_t) 0
+	      && (params->offset - file->offset > (cpp_num_part) file->limit
+		  || file->limit - (params->offset
+				    - file->offset) < params->limit))))
     {
       bool found = false;
       if (S_ISREG (file->st.st_mode))
@@ -1256,8 +1262,13 @@ _cpp_stack_embed (cpp_reader *pfile, const char *fname, bool angle,
 		 && strcmp (file->path, file->next_file->path) == 0)
 	    {
 	      file = file->next_file;
-	      if (file->limit >= file->st.st_size + (size_t) 0
-		  || file->limit >= params->limit)
+	      if (file->offset + (cpp_num_part) 0 <= params->offset
+		  && (file->limit >= (file->st.st_size - file->offset
+				      + (size_t) 0)
+		      || (params->offset
+			  - file->offset <= (cpp_num_part) file->limit
+			  && file->limit - (params->offset
+					    - file->offset) >= params->limit)))
 		{
 		  found = true;
 		  break;
@@ -1313,8 +1324,10 @@ _cpp_stack_embed (cpp_reader *pfile, const char *fname, bool angle,
       if (regular)
 	{
 	  cpp_num_part limit;
-	  if (file->st.st_size + (cpp_num_part) 0 < params->limit)
-	    limit = file->st.st_size;
+	  if (file->st.st_size + (cpp_num_part) 0 < params->offset)
+	    limit = 0;
+	  else if (file->st.st_size - params->offset < params->limit)
+	    limit = file->st.st_size - params->offset;
 	  else
 	    limit = params->limit;
 	  if (params->has_embed)
@@ -1325,6 +1338,14 @@ _cpp_stack_embed (cpp_reader *pfile, const char *fname, bool angle,
 			    "%s is too large", file->path);
 	      goto fail;
 	    }
+	  if (lseek (file->fd, params->offset, SEEK_CUR)
+	      != (off_t) params->offset)
+	    {
+	      cpp_errno_filename (pfile, CPP_DL_ERROR, file->path,
+				  params->loc);
+	      goto fail;
+	    }
+	  file->offset = params->offset;
 	  file->limit = limit;
 	  size = limit;
 	}
@@ -1336,6 +1357,38 @@ _cpp_stack_embed (cpp_reader *pfile, const char *fname, bool angle,
 	size = params->limit;
       buf = XNEWVEC (uchar, size ? size : 1);
       total = 0;
+
+      if (!regular && params->offset)
+	{
+	  uchar *buf2 = buf;
+	  ssize_t size2 = size;
+	  cpp_num_part total2 = params->offset;
+
+	  if (params->offset > 8 * 1024 && size < 8 * 1024)
+	    {
+	      size2 = 32 * 1024;
+	      buf2 = XNEWVEC (uchar, size2);
+	    }
+	  do
+	    {
+	      if ((cpp_num_part) size2 > total2)
+		size2 = total2;
+	      count = read (file->fd, buf2, size2);
+	      if (count < 0)
+		{
+		  cpp_errno_filename (pfile, CPP_DL_ERROR, file->path,
+				      params->loc);
+		  if (buf2 != buf)
+		    free (buf2);
+		  free (buf);
+		  goto fail;
+		}
+	      total2 -= count;
+	    }
+	  while (total2);
+	  if (buf2 != buf)
+	    free (buf2);
+	}
 
       while ((count = read (file->fd, buf + total, size - total)) > 0)
 	{
@@ -1377,7 +1430,10 @@ _cpp_stack_embed (cpp_reader *pfile, const char *fname, bool angle,
 	  file->limit = total;
 	}
       else if (!regular)
-	file->limit = total;
+	{
+	  file->offset = params->offset;
+	  file->limit = total;
+	}
 
       file->buffer_start = buf;
       file->buffer = buf;
@@ -1386,9 +1442,22 @@ _cpp_stack_embed (cpp_reader *pfile, const char *fname, bool angle,
       file->fd = -1;
     }
   else if (params->has_embed)
-    return file->limit && params->limit ? 1 : 2;
+    {
+      if (params->offset - file->offset > file->limit)
+	return 2;
+      size_t limit = file->limit - (params->offset - file->offset);
+      return limit && params->limit ? 1 : 2;
+    }
 
+  const uchar *buffer = file->buffer;
   size_t limit = file->limit;
+  if (params->offset - file->offset > limit)
+    limit = 0;
+  else
+    {
+      buffer += params->offset - file->offset;
+      limit -= params->offset - file->offset;
+    }
   if (params->limit < limit)
     limit = params->limit;
 
@@ -1412,20 +1481,20 @@ _cpp_stack_embed (cpp_reader *pfile, const char *fname, bool angle,
   size_t len = 0;
   for (size_t i = 0; i < limit; ++i)
     {
-      if (file->buffer[i] < 10)
+      if (buffer[i] < 10)
 	len += 2;
-      else if (file->buffer[i] < 100)
+      else if (buffer[i] < 100)
 	len += 3;
 #if UCHAR_MAX == 255
       else
 	len += 4;
 #else
-      else if (file->buffer[i] < 1000)
+      else if (buffer[i] < 1000)
 	len += 4;
       else
 	{
 	  char buf[64];
-	  len += sprintf (buf, "%d", file->buffer[i]) + 1;
+	  len += sprintf (buf, "%d", buffer[i]) + 1;
 	}
 #endif
       if (len > INTTYPE_MAXIMUM (ssize_t))
@@ -1479,7 +1548,7 @@ _cpp_stack_embed (cpp_reader *pfile, const char *fname, bool angle,
       if (i == 0)
 	tok->flags |= PREV_WHITE;
       tok->val.str.text = s;
-      tok->val.str.len = sprintf ((char *) s, "%d", file->buffer[i]);
+      tok->val.str.len = sprintf ((char *) s, "%d", buffer[i]);
       s += tok->val.str.len + 1;
       if (tok == &pfile->directive_result)
 	tok = toks;

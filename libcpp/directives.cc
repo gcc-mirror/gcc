@@ -1014,13 +1014,15 @@ skip_balanced_token_seq (cpp_reader *pfile, cpp_ttype end,
   EMBED_PARAM (LIMIT, "limit")		\
   EMBED_PARAM (PREFIX, "prefix")	\
   EMBED_PARAM (SUFFIX, "suffix")	\
-  EMBED_PARAM (IF_EMPTY, "if_empty")
+  EMBED_PARAM (IF_EMPTY, "if_empty")	\
+  EMBED_PARAM (GNU_OFFSET, "offset")
 
 enum embed_param_kind {
 #define EMBED_PARAM(c, s) EMBED_PARAM_##c,
   EMBED_PARAMS
 #undef EMBED_PARAM
-  NUM_EMBED_PARAMS
+  NUM_EMBED_PARAMS,
+  NUM_EMBED_STD_PARAMS = EMBED_PARAM_IF_EMPTY + 1
 };
 
 static struct { int len; const char *name; } embed_params[NUM_EMBED_PARAMS] = {
@@ -1120,7 +1122,18 @@ _cpp_parse_embed_params (cpp_reader *pfile, struct cpp_embed_params *params)
       size_t param_kind = -1;
       if (param_prefix == NULL)
 	{
-	  for (size_t i = 0; i < NUM_EMBED_PARAMS; ++i)
+	  for (size_t i = 0; i < NUM_EMBED_STD_PARAMS; ++i)
+	    if (param_name_len == embed_params[i].len
+		&& memcmp (param_name, embed_params[i].name,
+			   param_name_len) == 0)
+	      {
+		param_kind = i;
+		break;
+	      }
+	}
+      else if (param_prefix_len == 3 && memcmp (param_prefix, "gnu", 3) == 0)
+	{
+	  for (size_t i = NUM_EMBED_STD_PARAMS; i < NUM_EMBED_PARAMS; ++i)
 	    if (param_name_len == embed_params[i].len
 		&& memcmp (param_name, embed_params[i].name,
 			   param_name_len) == 0)
@@ -1157,12 +1170,23 @@ _cpp_parse_embed_params (cpp_reader *pfile, struct cpp_embed_params *params)
       if (param_kind != (size_t) -1 && token->type != CPP_OPEN_PAREN)
 	cpp_error_with_line (pfile, CPP_DL_ERROR, loc, 0,
 			     "expected '('");
-      else if (param_kind == EMBED_PARAM_LIMIT)
+      else if (param_kind == EMBED_PARAM_LIMIT
+	       || param_kind == EMBED_PARAM_GNU_OFFSET)
 	{
-	  if (params->has_embed && pfile->op_stack == NULL)
-	    _cpp_expand_op_stack (pfile);
-	  params->limit = _cpp_parse_expr (pfile, "#embed", token);
-	  token = _cpp_get_token_no_padding (pfile);
+ 	  if (params->has_embed && pfile->op_stack == NULL)
+ 	    _cpp_expand_op_stack (pfile);
+	  cpp_num_part res = _cpp_parse_expr (pfile, "#embed", token);
+	  if (param_kind == EMBED_PARAM_LIMIT)
+	    params->limit = res;
+	  else
+	    {
+	      if (res > INTTYPE_MAXIMUM (off_t))
+		cpp_error_with_line (pfile, CPP_DL_ERROR, loc, 0,
+				     "too large 'gnu::offset' argument");
+	      else
+		params->offset = res;
+	    }
+ 	  token = _cpp_get_token_no_padding (pfile);
 	}
       else if (token->type == CPP_OPEN_PAREN)
 	{

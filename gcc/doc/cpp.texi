@@ -3966,8 +3966,8 @@ treated the same), followed by parameter argument in parentheses, like
 with currently supported standard parameters @code{limit}, @code{prefix},
 @code{suffix} and @code{if_empty}, or implementation defined parameters
 specified by a unique vendor prefix followed by @code{::} followed by
-name of the parameter.  GCC will use the @code{gnu} prefix but currently
-doesn't support any extensions.
+name of the parameter.  GCC uses the @code{gnu} prefix for vendor
+parameters and currently supports the @code{gnu::offset} parameter.
 
 The @code{limit} parameter argument is a constant expression which
 specifies the maximum number of bytes included by the directive,
@@ -3976,6 +3976,10 @@ which are prepended and appended to the integer literal sequence if
 that sequence is not empty and @code{if_empty} argument is balanced token
 sequence which is used as expansion for @code{#embed} directive if the
 resource is empty.
+
+The @code{gnu::offset} parameter argument is a constant expression
+which specifies how many bytes to skip from the start of the resource.
+@code{limit} is then counted from that position.
 
 The @code{#embed} directive is not supported in the Traditional Mode
 (@pxref{Traditional Mode}).
