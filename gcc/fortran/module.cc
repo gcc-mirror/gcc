@@ -2781,6 +2781,7 @@ static const mstring bt_types[] = {
     minit ("UNKNOWN", BT_UNKNOWN),
     minit ("VOID", BT_VOID),
     minit ("ASSUMED", BT_ASSUMED),
+    minit ("UNSIGNED", BT_UNSIGNED),
     minit (NULL, -1)
 };
 
