@@ -247,6 +247,68 @@ avr_tolower (char *lo, const char *up)
 }
 
 
+/* Return chunk of mode MODE of X as an rtx.  N specifies the subreg
+   byte at which the chunk starts.  N must be an integral multiple
+   of the mode size.  */
+
+static rtx
+avr_chunk (machine_mode mode, rtx x, int n)
+{
+  gcc_assert (n % GET_MODE_SIZE (mode) == 0);
+  machine_mode xmode = GET_MODE (x) == VOIDmode ? DImode : GET_MODE (x);
+  return simplify_gen_subreg (mode, x, xmode, n);
+}
+
+
+/* Return the N-th byte of X as an rtx.  */
+
+static rtx
+avr_byte (rtx x, int n)
+{
+  return avr_chunk (QImode, x, n);
+}
+
+
+/* Return the sub-word of X starting at byte number N.  */
+
+static rtx
+avr_word (rtx x, int n)
+{
+  return avr_chunk (HImode, x, n);
+}
+
+
+/* Return the N-th byte of compile-time constant X as an int8_t.  */
+
+static int8_t
+avr_int8 (rtx x, int n)
+{
+  gcc_assert (CONST_INT_P (x) || CONST_FIXED_P (x) || CONST_DOUBLE_P (x));
+
+  return (int8_t) trunc_int_for_mode (INTVAL (avr_byte (x, n)), QImode);
+}
+
+/* Return the N-th byte of compile-time constant X as an uint8_t.  */
+
+static uint8_t
+avr_uint8 (rtx x, int n)
+{
+  return (uint8_t) avr_int8 (x, n);
+}
+
+
+/* Return the sub-word of compile-time constant X that starts
+   at byte N as an int16_t.  */
+
+static int16_t
+avr_int16 (rtx x, int n)
+{
+  gcc_assert (CONST_INT_P (x) || CONST_FIXED_P (x) || CONST_DOUBLE_P (x));
+
+  return (int16_t) trunc_int_for_mode (INTVAL (avr_word (x, n)), HImode);
+}
+
+
 /* Constraint helper function.  XVAL is a CONST_INT or a CONST_DOUBLE.
    Return true if the least significant N_BYTES bytes of XVAL all have a
    popcount in POP_MASK and false, otherwise.  POP_MASK represents a subset
@@ -5917,9 +5979,6 @@ avr_out_compare (rtx_insn *insn, rtx *xop, int *plen)
       xval = avr_to_int_mode (xop[1]);
     }
 
-  /* MODE of the comparison.  */
-  machine_mode mode = GET_MODE (xreg);
-
   gcc_assert (REG_P (xreg));
   gcc_assert ((CONST_INT_P (xval) && n_bytes <= 4)
 	      || (const_double_operand (xval, VOIDmode) && n_bytes == 8));
@@ -5927,13 +5986,15 @@ avr_out_compare (rtx_insn *insn, rtx *xop, int *plen)
   if (plen)
     *plen = 0;
 
+  const bool eqne_p = compare_eq_p (insn);
+
   /* Comparisons == +/-1 and != +/-1 can be done similar to camparing
      against 0 by ORing the bytes.  This is one instruction shorter.
      Notice that 64-bit comparisons are always against reg:ALL8 18 (ACC_A)
      and therefore don't use this.  */
 
-  if (!test_hard_reg_class (LD_REGS, xreg)
-      && compare_eq_p (insn)
+  if (eqne_p
+      && ! test_hard_reg_class (LD_REGS, xreg)
       && reg_unused_after (insn, xreg))
     {
       if (xval == const1_rtx)
@@ -5962,39 +6023,11 @@ avr_out_compare (rtx_insn *insn, rtx *xop, int *plen)
 	}
     }
 
-  /* Comparisons == -1 and != -1 of a d-register that's used after the
-     comparison.  (If it's unused after we use CPI / SBCI or ADIW sequence
-     from below.)  Instead of  CPI Rlo,-1 / LDI Rx,-1 / CPC Rhi,Rx  we can
-     use  CPI Rlo,-1 / CPC Rhi,Rlo  which is 1 instruction shorter:
-     If CPI is true then Rlo contains -1 and we can use Rlo instead of Rx
-     when CPC'ing the high part.  If CPI is false then CPC cannot render
-     the result to true.  This also works for the more generic case where
-     the constant is of the form 0xabab.  */
-
-  if (n_bytes == 2
-      && xval != const0_rtx
-      && test_hard_reg_class (LD_REGS, xreg)
-      && compare_eq_p (insn)
-      && !reg_unused_after (insn, xreg))
-    {
-      rtx xlo8 = simplify_gen_subreg (QImode, xval, mode, 0);
-      rtx xhi8 = simplify_gen_subreg (QImode, xval, mode, 1);
-
-      if (INTVAL (xlo8) == INTVAL (xhi8))
-	{
-	  xop[0] = xreg;
-	  xop[1] = xlo8;
-
-	  return avr_asm_len ("cpi %A0,%1"  CR_TAB
-			      "cpc %B0,%A0", xop, plen, 2);
-	}
-    }
-
   /* Comparisons == and != may change the order in which the sub-bytes are
      being compared.  Start with the high 16 bits so we can use SBIW.  */
 
   if (n_bytes == 4
-      && compare_eq_p (insn)
+      && eqne_p
       && AVR_HAVE_ADIW
       && REGNO (xreg) >= REG_22)
     {
@@ -6003,56 +6036,57 @@ avr_out_compare (rtx_insn *insn, rtx *xop, int *plen)
 			    "cpc %B0,__zero_reg__" CR_TAB
 			    "cpc %A0,__zero_reg__", xop, plen, 3);
 
-      rtx xhi16 = simplify_gen_subreg (HImode, xval, mode, 2);
-      if (IN_RANGE (UINTVAL (xhi16) & GET_MODE_MASK (HImode), 0, 63)
-	  && reg_unused_after (insn, xreg))
+      int16_t hi16 = avr_int16 (xval, 2);
+      if (reg_unused_after (insn, xreg)
+	  && (IN_RANGE (hi16, 0, 63)
+	      || (eqne_p
+		  && IN_RANGE (hi16, -63, -1))))
 	{
-	  xop[1] = xhi16;
-	  avr_asm_len ("sbiw %C0,%1", xop, plen, 1);
-	  xop[1] = xval;
+	  rtx op[] = { xop[0], avr_word (xval, 2) };
+	  avr_asm_len (hi16 < 0 ? "adiw %C0,%n1" : "sbiw %C0,%1",
+		       op, plen, 1);
 	  return avr_asm_len ("sbci %B0,hi8(%1)" CR_TAB
 			      "sbci %A0,lo8(%1)", xop, plen, 2);
 	}
     }
 
+  bool changed[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+
   for (int i = 0; i < n_bytes; i++)
     {
       /* We compare byte-wise.  */
-      rtx reg8 = simplify_gen_subreg (QImode, xreg, mode, i);
-      rtx xval8 = simplify_gen_subreg (QImode, xval, mode, i);
+      xop[0] = avr_byte (xreg, i);
+      xop[1] = avr_byte (xval, i);
 
       /* 8-bit value to compare with this byte.  */
-      unsigned int val8 = UINTVAL (xval8) & GET_MODE_MASK (QImode);
-
-      /* Registers R16..R31 can operate with immediate.  */
-      bool ld_reg_p = test_hard_reg_class (LD_REGS, reg8);
-
-      xop[0] = reg8;
-      xop[1] = gen_int_mode (val8, QImode);
+      unsigned int val8 = avr_uint8 (xval, i);
 
       /* Word registers >= R24 can use SBIW/ADIW with 0..63.  */
 
       if (i == 0
-	  && avr_adiw_reg_p (reg8))
+	  && n_bytes >= 2
+	  && avr_adiw_reg_p (xop[0]))
 	{
-	  int val16 = trunc_int_for_mode (INTVAL (xval), HImode);
+	  int val16 = avr_int16 (xval, 0);
 
 	  if (IN_RANGE (val16, 0, 63)
 	      && (val8 == 0
 		  || reg_unused_after (insn, xreg)))
 	    {
 	      avr_asm_len ("sbiw %0,%1", xop, plen, 1);
-
+	      changed[0] = changed[1] = val8 != 0;
 	      i++;
 	      continue;
 	    }
 
-	  if (n_bytes == 2
-	      && IN_RANGE (val16, -63, -1)
-	      && compare_eq_p (insn)
+	  if (IN_RANGE (val16, -63, -1)
+	      && eqne_p
 	      && reg_unused_after (insn, xreg))
 	    {
-	      return avr_asm_len ("adiw %0,%n1", xop, plen, 1);
+	      avr_asm_len ("adiw %0,%n1", xop, plen, 1);
+	      changed[0] = changed[1] = true;
+	      i++;
+	      continue;
 	    }
 	}
 
@@ -6071,7 +6105,7 @@ avr_out_compare (rtx_insn *insn, rtx *xop, int *plen)
 	 instruction; the only difference is that comparisons don't write
 	 the result back to the target register.  */
 
-      if (ld_reg_p)
+      if (test_hard_reg_class (LD_REGS, xop[0]))
 	{
 	  if (i == 0)
 	    {
@@ -6081,8 +6115,35 @@ avr_out_compare (rtx_insn *insn, rtx *xop, int *plen)
 	  else if (reg_unused_after (insn, xreg))
 	    {
 	      avr_asm_len ("sbci %0,%1", xop, plen, 1);
+	      changed[i] = true;
 	      continue;
 	    }
+	}
+
+      /* When byte comparisons for an EQ or NE comparison look like
+	     compare (x[i], C)
+	     compare (x[j], C)
+	 then we can instead use
+	     compare (x[i], C)
+	     compare (x[j], x[i])
+	 which is shorter, and the outcome of the comparison is the same.  */
+
+      if (eqne_p)
+	{
+	  bool found = false;
+
+	  for (int j = 0; j < i && ! found; ++j)
+	    if (val8 == avr_uint8 (xval, j)
+		// Make sure that we didn't clobber x[j] above.
+		&& ! changed[j])
+	      {
+		rtx op[] = { xop[0], avr_byte (xreg, j) };
+		avr_asm_len ("cpc %0,%1", op, plen, 1);
+		found = true;
+	      }
+
+	  if (found)
+	    continue;
 	}
 
       /* Must load the value into the scratch register.  */
