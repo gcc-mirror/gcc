@@ -2008,11 +2008,8 @@ strip_typedefs_expr (tree t, bool *remove_attributes, unsigned int flags)
       }
 
     case LAMBDA_EXPR:
+    case STMT_EXPR:
       return t;
-
-    case STATEMENT_LIST:
-      error ("statement-expression in a constant expression");
-      return error_mark_node;
 
     default:
       break;
