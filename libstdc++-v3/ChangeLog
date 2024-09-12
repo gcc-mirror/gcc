@@ -1,3 +1,24 @@
+2024-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116159
+	* include/std/iostream (ios_base_library_init): Only define for
+	ELF targets.
+	* src/c++98/ios_init.cc (ios_base_library_init): Likewise.
+
+2024-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116641
+	* include/bits/basic_string.h (operator=(basic_string&&)): Call
+	_M_assign instead of assign.
+	* testsuite/21_strings/basic_string/allocator/116641.cc: New
+	test.
+
 2024-09-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
