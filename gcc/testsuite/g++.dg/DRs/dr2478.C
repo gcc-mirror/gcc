@@ -2,7 +2,7 @@
 // { dg-do compile { target c++20 } }
 
 // Defeat -fimplicit-constexpr
-int ii;
+int ii; // { dg-prune-output "value of 'ii' is not usable in a constant expr" }
 
 template <typename T>
 struct S {

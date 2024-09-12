@@ -1057,9 +1057,16 @@ explain_invalid_constexpr_fn (tree fun)
   /* Only diagnose defaulted functions, lambdas, or instantiations.  */
   else if (!DECL_DEFAULTED_FN (fun)
 	   && !LAMBDA_TYPE_P (CP_DECL_CONTEXT (fun))
+	   && !(flag_implicit_constexpr
+		&& !DECL_DECLARED_CONSTEXPR_P (fun)
+		&& DECL_DECLARED_INLINE_P (fun))
 	   && !is_instantiation_of_constexpr (fun))
     {
       inform (DECL_SOURCE_LOCATION (fun), "%qD declared here", fun);
+      if (flag_implicit_constexpr && !maybe_constexpr_fn (fun)
+	  && decl_defined_p (fun))
+	inform (DECL_SOURCE_LOCATION (fun),
+		"%<-fimplicit-constexpr%> only affects %<inline%> functions");
       return;
     }
   if (diagnosed == NULL)
