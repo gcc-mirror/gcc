@@ -7421,10 +7421,9 @@ tree lookup_qualified_name (tree t, const char *p, LOOK_want w, bool c)
 static bool
 qualified_namespace_lookup (tree scope, name_lookup *lookup)
 {
-  timevar_start (TV_NAME_LOOKUP);
+  auto_cond_timevar tv (TV_NAME_LOOKUP);
   query_oracle (lookup->name);
   bool found = lookup->search_qualified (ORIGINAL_NAMESPACE (scope));
-  timevar_stop (TV_NAME_LOOKUP);
   return found;
 }
 
