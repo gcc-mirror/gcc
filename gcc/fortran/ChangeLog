@@ -1,3 +1,7 @@
+2024-09-12  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* module.cc (bt_types): Add BT_UNSIGNED.
+
 2024-09-11  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR fortran/116661

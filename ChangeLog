@@ -1,3 +1,7 @@
+2024-09-12  YunQiang Su  <syq@gcc.gnu.org>
+
+	* .gitignore: Add .vscode.
+
 2024-09-04  Marc Poulhiès  <dkm@kataplop.net>
 
 	* configure: Regenerate.

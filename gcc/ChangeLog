@@ -1,3 +1,95 @@
+2024-09-12  Alexandre Oliva  <oliva@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* doc/sourcebuild.texi (hostedlib): New effective target.
+
+2024-09-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/112600
+	* config/i386/mmx.md (<sat_plusminus:insn><mode>3): Rename
+	from *<sat_plusminus:insn><mode>3.
+
+2024-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/cpp.texi (Binary Resource Inclusion): Document gnu::base64
+	parameter.
+
+2024-09-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.h (OPTION_DEFAULT_SPECS): Allow -mcpu and -march
+	to be unset.
+	(ARCH_CPU_CLEANUP_SPECS): Likewise
+	(DRIVER_SELF_SPECS): Add ARCH_CPU_CLEANUP_SPECS
+	* doc/invoke.texi (arm: -mcpu= and -march=): Document use of 'unset'.
+
+2024-09-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*insvti_lowpart_1): Use "o" constraint
+	instead of "m" for double-word mode memory operands.
+
+2024-09-12  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390-protos.h (s390_gen_lowpart_subreg): Remove.
+	* config/s390/s390.cc (s390_gen_lowpart_subreg): Remove.
+	(s390_expand_insv): Use adjust_address() and emit a
+	strict_low_part only in case of a natural subreg.
+	* config/s390/s390.md: Use gen_lowpart() instead of
+	s390_gen_lowpart_subreg().
+
+2024-09-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_slp_analyze_operations): When
+	doing loop analysis fail after the first failed SLP
+	instance.  Only remove instances when doing BB vectorization.
+	* tree-vect-loop.cc (vect_analyze_loop_2): Check whether
+	vect_slp_analyze_operations failed instead of checking
+	the number of SLP instances remaining.
+
+2024-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/cpp.texi (Binary Resource Inclusion): Document gnu::offset
+	#embed parameter.
+
+2024-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105863
+	* doc/cppdiropts.texi (--embed-dir=): Document.
+	* doc/cpp.texi (Binary Resource Inclusion): New chapter.
+	(__has_embed): Document.
+	* doc/invoke.texi (Directory Options): Mention --embed-dir=.
+	* gcc.cc (cpp_unique_options): Add %{-embed*}.
+	* genmatch.cc (main): Adjust cpp_set_include_chains caller.
+	* incpath.h (enum incpath_kind): Add INC_EMBED.
+	* incpath.cc (merge_include_chains): Handle INC_EMBED.
+	(register_include_chains): Adjust cpp_set_include_chains caller.
+
+2024-09-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_build_slp_tree_2): On reassociation
+	chain length mismatch do not fail discovery of the node
+	but try without re-associating to compute a better matches[].
+	Provide a reassociation failure hint in the dump.
+	(vect_slp_analyze_node_operations): Avoid stray failure
+	dumping.
+	(vectorizable_slp_permutation_1): Dump the address of the
+	SLP node representing the permutation.
+
+2024-09-12  Levy Hsu  <admin@levyhsu.com>
+
+	* config/i386/i386.cc (ix86_get_mask_mode):
+	Enable BFmode for targetm.vectorize.get_mask_mode with AVX10.2.
+	* config/i386/mmx.md (vec_cmp<mode>qi):
+	Implement vec_cmpv2bfqi and vec_cmpv4bfqi.
+
+2024-09-12  Bohan Lei  <garthlei@linux.alibaba.com>
+
+	* config/riscv/riscv-vsetvl.cc (pre_vsetvl::fuse_local_vsetvl_info):
+	Delete vsetvl insn when `prev_info` is compatible
+
+2024-09-12  garthlei  <garthlei@linux.alibaba.com>
+
+	* config/riscv/riscv-vsetvl.cc: Use `dest_vl` for dest VL operand
+
 2024-09-11  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-cp.cc (propagate_vr_across_jump_function): Use

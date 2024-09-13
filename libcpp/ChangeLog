@@ -1,3 +1,123 @@
+2024-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* internal.h (struct cpp_embed_params): Add base64 member.
+	(_cpp_free_embed_params_tokens): Declare.
+	* directives.cc (DIRECTIVE_TABLE): Add IN_I flag to T_EMBED.
+	(save_token_for_embed, _cpp_free_embed_params_tokens): New functions.
+	(EMBED_PARAMS): Add gnu::base64 entry.
+	(_cpp_parse_embed_params): Parse gnu::base64 parameter.  If
+	-fpreprocessed without -fdirectives-only, require #embed to have
+	gnu::base64 parameter.  Diagnose conflict between gnu::base64 and
+	limit or gnu::offset parameters.
+	(do_embed): Use _cpp_free_embed_params_tokens.
+	* files.cc (finish_embed, base64_dec_fn): New functions.
+	(base64_dec): New array.
+	(B64D0, B64D1, B64D2, B64D3): Define.
+	(finish_base64_embed): New function.
+	(_cpp_stack_embed): Use finish_embed.  Handle params->base64
+	using finish_base64_embed.
+	* macro.cc (builtin_has_embed): Call _cpp_free_embed_params_tokens.
+
+2024-09-12  Jason Merrill  <jason@redhat.com>
+
+	* include/cpplib.h (enum cpp_warning_reason): Add
+	CPP_W_CXX{14,17,20,23}_EXTENSIONS.
+	* charset.cc (_cpp_valid_ucn, convert_hex, convert_oct)
+	(convert_escape, narrow_str_to_charconst): Use cpp_pedwarning
+	instead of cpp_error for pedwarns.
+	* directives.cc (directive_diagnostics, _cpp_handle_directive)
+	(do_line, do_elif): Likewise.
+	* expr.cc (cpp_classify_number, eval_token): Likewise.
+	* lex.cc (skip_whitespace, maybe_va_opt_error)
+	(_cpp_lex_direct): Likewise.
+	* macro.cc (_cpp_arguments_ok): Likewise.
+	(replace_args): Use -Wvariadic-macros for pedwarn about
+	empty macro arguments.
+
+2024-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* internal.h (struct cpp_embed_params): Add offset member.
+	* directives.cc (EMBED_PARAMS): Add gnu::offset entry.
+	(enum embed_param_kind): Add NUM_EMBED_STD_PARAMS.
+	(_cpp_parse_embed_params): Use NUM_EMBED_STD_PARAMS rather than
+	NUM_EMBED_PARAMS when parsing standard parameters.  Parse gnu::offset
+	parameter.
+	* files.cc (struct _cpp_file): Add offset member.
+	(_cpp_stack_embed): Handle params->offset.
+
+2024-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105863
+	* include/cpplib.h: Implement C23 N3017 #embed - a scannable,
+	tooling-friendly binary resource inclusion mechanism paper.
+	(struct cpp_options): Add embed member.
+	(enum cpp_builtin_type): Add BT_HAS_EMBED.
+	(cpp_set_include_chains): Add another cpp_dir * argument to
+	the declaration.
+	* internal.h (enum include_type): Add IT_EMBED.
+	(struct cpp_reader): Add embed_include member.
+	(struct cpp_embed_params_tokens): New type.
+	(struct cpp_embed_params): New type.
+	(_cpp_get_token_no_padding): Declare.
+	(enum _cpp_find_file_kind): Add _cpp_FFK_EMBED and _cpp_FFK_HAS_EMBED.
+	(_cpp_stack_embed): Declare.
+	(_cpp_parse_expr): Change return type to cpp_num_part instead of
+	bool, change second argument from bool to const char * and add third
+	argument.
+	(_cpp_parse_embed_params): Declare.
+	* directives.cc (DIRECTIVE_TABLE): Add embed entry.
+	(end_directive): Don't call skip_rest_of_line for T_EMBED directive.
+	(_cpp_handle_directive): Return 2 rather than 1 for T_EMBED in
+	directives-only mode.
+	(parse_include): Don't Call check_eol for T_EMBED directive.
+	(skip_balanced_token_seq): New function.
+	(EMBED_PARAMS): Define.
+	(enum embed_param_kind): New type.
+	(embed_params): New variable.
+	(_cpp_parse_embed_params): New function.
+	(do_embed): New function.
+	(do_if): Adjust _cpp_parse_expr caller.
+	(do_elif): Likewise.
+	* expr.cc (parse_defined): Diagnose defined in #embed or __has_embed
+	parameters.
+	(_cpp_parse_expr): Change return type to cpp_num_part instead of
+	bool, change second argument from bool to const char * and add third
+	argument.  Adjust function comment.  For #embed/__has_embed parameters
+	add an artificial CPP_OPEN_PAREN.  Use the second argument DIR
+	directly instead of string literals conditional on IS_IF.
+	For #embed/__has_embed parameter, stop on reaching CPP_CLOSE_PAREN
+	matching the artificial one.  Diagnose negative or too large embed
+	parameter operands.
+	(num_binary_op): Use #embed instead of #if for diagnostics if inside
+	#embed/__has_embed parameter.
+	(num_div_op): Likewise.
+	* files.cc (struct _cpp_file): Add limit member and embed bitfield.
+	(search_cache): Add IS_EMBED argument, formatting fix.  Skip over
+	files with different file->embed from the argument.
+	(find_file_in_dir): Don't call pch_open_file if file->embed.
+	(_cpp_find_file): Handle _cpp_FFK_EMBED and _cpp_FFK_HAS_EMBED.
+	(read_file_guts): Formatting fix.
+	(has_unique_contents): Ignore file->embed files.
+	(search_path_head): Handle IT_EMBED type.
+	(_cpp_stack_embed): New function.
+	(_cpp_get_file_stat): Formatting fix.
+	(cpp_set_include_chains): Add embed argument, save it to
+	pfile->embed_include and compute lens for the chain.
+	* init.cc (struct lang_flags): Add embed member.
+	(lang_defaults): Add embed initializers.
+	(cpp_set_lang): Initialize CPP_OPTION (pfile, embed).
+	(builtin_array): Add __has_embed entry.
+	(cpp_init_builtins): Predefine __STDC_EMBED_NOT_FOUND__,
+	__STDC_EMBED_FOUND__ and __STDC_EMBED_EMPTY__.
+	* lex.cc (cpp_directive_only_process): Handle #embed.
+	* macro.cc (cpp_get_token_no_padding): Rename to ...
+	(_cpp_get_token_no_padding): ... this.  No longer static.
+	(builtin_has_include_1): New function.
+	(builtin_has_include): Use it.  Use _cpp_get_token_no_padding
+	instead of cpp_get_token_no_padding.
+	(builtin_has_embed): New function.
+	(_cpp_builtin_macro_text): Handle BT_HAS_EMBED.
+
 2024-08-26  Alexander Monakov  <amonakov@ispras.ru>
 
 	* internal.h (CPP_BUFFER_PADDING): New macro; use it ...

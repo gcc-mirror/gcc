@@ -1,3 +1,17 @@
+2024-09-12  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add CppReason for Wc++{14,17,20,23}-extensions.
+	* c-pragma.cc (handle_pragma_diagnostic_impl): Don't check
+	OPT_Wc__23_extensions.
+
+2024-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105863
+	* c.opt (-embed-dir=): New option.
+	(-embed-directory): New alias.
+	(-embed-directory=): New alias.
+	* c-opts.cc (c_common_handle_option): Handle OPT__embed_dir_.
+
 2024-09-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-common.cc (c_option_controlling_cpp_diagnostic): Return

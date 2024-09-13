@@ -1,3 +1,1144 @@
+2024-09-12  Alexandre Oliva  <oliva@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* lib/target-supports.exp (check_effective_target_hostedlib):
+	New.
+	* g++.dg/contracts/contracts-access1.C: Skip if !hostedlib
+	because of libstdc++exp.
+	* g++.dg/contracts/contracts-assume3.C: Likewise.
+	* g++.dg/contracts/contracts-assume4.C: Likewise.
+	* g++.dg/contracts/contracts-config1.C: Likewise.
+	* g++.dg/contracts/contracts-constexpr1.C: Likewise.
+	* g++.dg/contracts/contracts-deduced2.C: Likewise.
+	* g++.dg/contracts/contracts-externC.C: Likewise.
+	* g++.dg/contracts/contracts-friend1.C: Likewise.
+	* g++.dg/contracts/contracts-multiline1.C: Likewise.
+	* g++.dg/contracts/contracts-nested-class2.C: Likewise.
+	* g++.dg/contracts/contracts-post2.C: Likewise.
+	* g++.dg/contracts/contracts-post3.C: Likewise.
+	* g++.dg/contracts/contracts-pre2a2.C: Likewise.
+	* g++.dg/contracts/contracts10.C: Likewise.
+	* g++.dg/contracts/contracts18.C: Likewise.
+	* g++.dg/contracts/contracts19.C: Likewise.
+	* g++.dg/contracts/contracts2.C: Likewise.
+	* g++.dg/contracts/contracts24.C: Likewise.
+	* g++.dg/contracts/contracts25.C: Likewise.
+	* g++.dg/contracts/contracts3.C: Likewise.
+	* g++.dg/contracts/contracts4.C: Likewise.
+	* g++.dg/contracts/contracts5.C: Likewise.
+	* g++.dg/contracts/contracts6.C: Likewise.
+	* g++.dg/contracts/contracts7.C: Likewise.
+	* g++.dg/contracts/contracts9.C: Likewise.
+	* g++.dg/contracts/pr110159.C: Likewise.
+	* g++.dg/contracts/pr115434.C: Likewise.  Adjust line numbers.
+	* c-c++-common/pr36513-2.c: Skip if !hostedlib because of
+	unavailable headers.
+	* c-c++-common/analyzer/pr93290.c: Likewise.
+	* g++.dg/analyzer/pr93212.C: Likewise.
+	* g++.dg/analyzer/vfunc-2.C: Likewise.
+	* g++.dg/cdce3.C: Likewise.  Adjust line numbers.
+	* g++.dg/concepts/expression.C: Likewise.
+	* g++.dg/concepts/fn3.C: Likewise.
+	* g++.dg/concepts/fn9.C: Likewise.
+	* g++.dg/concepts/generic-fn.C: Likewise.
+	* g++.dg/contracts/contracts-assume2.C: Likewise.
+	* g++.dg/contracts/contracts-ignore2.C: Likewise.
+	* g++.dg/contracts/contracts-post7.C: Likewise.
+	* g++.dg/contracts/contracts-pre10.C: Likewise.
+	* g++.dg/contracts/contracts-pre2.C: Likewise.
+	* g++.dg/contracts/contracts-pre3.C: Likewise.
+	* g++.dg/contracts/contracts-pre4.C: Likewise.
+	* g++.dg/contracts/contracts-pre5.C: Likewise.
+	* g++.dg/contracts/contracts-pre7.C: Likewise.
+	* g++.dg/contracts/contracts-pre9.C: Likewise.
+	* g++.dg/contracts/contracts-redecl3.C: Likewise.
+	* g++.dg/contracts/contracts-redecl4.C: Likewise.
+	* g++.dg/contracts/contracts-redecl6.C: Likewise.
+	* g++.dg/contracts/contracts-redecl7.C: Likewise.
+	* g++.dg/contracts/contracts-tmpl-spec1.C: Likewise.
+	* g++.dg/contracts/contracts-tmpl-spec2.C: Likewise.
+	* g++.dg/contracts/contracts-tmpl-spec3.C: Likewise.
+	* g++.dg/contracts/contracts14.C: Likewise.
+	* g++.dg/contracts/contracts15.C: Likewise.
+	* g++.dg/contracts/contracts16.C: Likewise.
+	* g++.dg/contracts/contracts17.C: Likewise.
+	* g++.dg/contracts/contracts22.C: Likewise.
+	* g++.dg/contracts/contracts35.C: Likewise.
+	* g++.dg/coroutines/pr100611.C: Likewise.
+	* g++.dg/coroutines/pr100772-b.C: Likewise.
+	* g++.dg/coroutines/pr101133.C: Likewise.
+	* g++.dg/coroutines/pr101367.C: Likewise.
+	* g++.dg/coroutines/pr101976.C: Likewise.
+	* g++.dg/coroutines/pr102454.C: Likewise.
+	* g++.dg/coroutines/pr104051.C: Likewise.
+	* g++.dg/coroutines/pr110635.C: Likewise.
+	* g++.dg/coroutines/pr110871.C: Likewise.  Adjust line numbers.
+	* g++.dg/coroutines/pr110872.C: Likewise.  Likewise.
+	* g++.dg/coroutines/pr94288.C: Likewise.
+	* g++.dg/coroutines/pr95520.C: Likewise.
+	* g++.dg/coroutines/pr95736.C: Likewise.
+	* g++.dg/coroutines/pr97587.C: Likewise.
+	* g++.dg/coroutines/pr99576_1.C: Likewise.
+	* g++.dg/coroutines/pr99576_2.C: Likewise.
+	* g++.dg/coroutines/ramp-return-a.C: Likewise.
+	* g++.dg/coroutines/ramp-return-b.C: Likewise.
+	* g++.dg/coroutines/ramp-return-c.C: Likewise.
+	* g++.dg/coroutines/symmetric-transfer-00-basic.C: Likewise.
+	* g++.dg/coroutines/torture/co-await-16-template-traits.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-ret-15-default-return_void.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-yield-04-complex-local-state.C:
+	Likewise.
+	* g++.dg/coroutines/torture/extern-c-coroutine.C: Likewise.
+	* g++.dg/coroutines/torture/func-params-08.C: Likewise.
+	* g++.dg/coroutines/torture/func-params-09-awaitable-parms.C:
+	Likewise.
+	* g++.dg/coroutines/torture/local-var-05-awaitable.C:
+	Likewise.
+	* g++.dg/coroutines/torture/pr95615-01.C: Likewise.
+	* g++.dg/coroutines/torture/pr95615-02.C: Likewise.
+	* g++.dg/coroutines/torture/pr95615-03.C: Likewise.
+	* g++.dg/coroutines/torture/pr95615-04.C: Likewise.
+	* g++.dg/coroutines/torture/pr95615-05.C: Likewise.
+	* g++.dg/coroutines/torture/pr98704.C: Likewise.
+	* g++.dg/cpp/pr80005.C: Likewise.
+	* g++.dg/cpp0x/Wliteral-suffix.C: Likewise.
+	* g++.dg/cpp0x/Wpessimizing-move2.C: Likewise.
+	* g++.dg/cpp0x/constexpr-70001-3.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ice16.C: Likewise.
+	* g++.dg/cpp0x/dc5.C: Likewise.
+	* g++.dg/cpp0x/enum35.C: Likewise.
+	* g++.dg/cpp0x/enum36.C: Likewise.
+	* g++.dg/cpp0x/initlist-opt1.C: Likewise.
+	* g++.dg/cpp0x/initlist-vect2.C: Likewise.
+	* g++.dg/cpp0x/initlist13.C: Likewise.
+	* g++.dg/cpp0x/initlist15.C: Likewise.
+	* g++.dg/cpp0x/initlist25.C: Likewise.
+	* g++.dg/cpp0x/initlist54.C: Likewise.
+	* g++.dg/cpp0x/initlist92.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-capture-const-ref-neg.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-capture-const-ref.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-const-neg.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-const.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-deduce.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-in-class-neg.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-in-class.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-mixed.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-mutable.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-nested.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-non-const.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-nop.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-nullptr.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-pass.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-recursive.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-ref-default.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-ref.C: Likewise.
+	* g++.dg/cpp0x/nullptr20.C: Likewise.
+	* g++.dg/cpp0x/pr61038.C: Likewise.
+	* g++.dg/cpp0x/rv-trivial-bug.C: Likewise.
+	* g++.dg/cpp0x/udlit-concat-neg.C: Likewise.
+	* g++.dg/cpp0x/udlit-concat.C: Likewise.
+	* g++.dg/cpp0x/udlit-embed-quote.C: Likewise.
+	* g++.dg/cpp0x/udlit-extended-id-1.C: Likewise.
+	* g++.dg/cpp0x/udlit-general.C: Likewise.
+	* g++.dg/cpp0x/udlit-namespace.C: Likewise.
+	* g++.dg/cpp0x/udlit-raw-op.C: Likewise.
+	* g++.dg/cpp0x/udlit-raw-str.C: Likewise.
+	* g++.dg/cpp0x/udlit-resolve-char8_t.C: Likewise.
+	* g++.dg/cpp0x/udlit-resolve.C: Likewise.
+	* g++.dg/cpp0x/udlit-sfinae.C: Likewise.
+	* g++.dg/cpp0x/udlit-string-literal.C: Likewise.
+	* g++.dg/cpp0x/udlit-suffix-neg.C: Likewise.
+	* g++.dg/cpp1y/udlit-userdef-string.C: Likewise.
+	* g++.dg/cpp0x/udlit-template.C: Likewise.
+	* g++.dg/cpp0x/variadic-bind.C: Likewise.
+	* g++.dg/cpp0x/variadic-function.C: Likewise.
+	* g++.dg/cpp0x/variadic-mem_fn.C: Likewise.
+	* g++.dg/cpp0x/variadic-tuple.C: Likewise.
+	* g++.dg/cpp1y/auto-fn45.C: Likewise.
+	* g++.dg/cpp1y/complex_literals1.C: Likewise.
+	* g++.dg/cpp1y/complex_literals1a.C: Likewise.
+	* g++.dg/cpp1y/constexpr-66093.C: Likewise.
+	* g++.dg/cpp1y/constexpr-assert1.C: Likewise.
+	* g++.dg/cpp1y/constexpr-assert2.C: Likewise.
+	* g++.dg/cpp1y/feat-cxx14.C: Likewise.
+	* g++.dg/cpp1y/lambda-generic-69078-2.C: Likewise.
+	* g++.dg/cpp1y/lambda-generic-x.C: Likewise.
+	* g++.dg/cpp1y/lambda-init8.C: Likewise.
+	* g++.dg/cpp1y/new2.C: Likewise.
+	* g++.dg/cpp1y/nsdmi-aggr12.C: Likewise.
+	* g++.dg/cpp1y/pr57640.C: Likewise.
+	* g++.dg/cpp1y/pr77786.C: Likewise.
+	* g++.dg/cpp1y/pr95226.C: Likewise.
+	* g++.dg/cpp1y/udlit-char-template-sfinae.C: Likewise.
+	* g++.dg/cpp1y/udlit-char-template-vs-std-literal-operator.C:
+	Likewise.
+	* g++.dg/cpp1z/class-deduction14.C: Likewise.
+	* g++.dg/cpp1z/constexpr-asm-1.C: Likewise.
+	* g++.dg/cpp1z/constexpr-asm-3.C: Likewise.
+	* g++.dg/cpp1z/decomp37.C: Likewise.
+	* g++.dg/cpp1z/eval-order2.C: Likewise.
+	* g++.dg/cpp1z/feat-cxx1z.C: Likewise.
+	* g++.dg/cpp1z/fold1.C: Likewise.
+	* g++.dg/cpp1z/init-statement6.C: Likewise.
+	* g++.dg/cpp1z/launder3.C: Likewise.
+	* g++.dg/cpp1z/launder4.C: Likewise.
+	* g++.dg/cpp1z/launder5.C: Likewise.
+	* g++.dg/cpp1z/launder6.C: Likewise.
+	* g++.dg/cpp1z/utf8.C: Likewise.
+	* g++.dg/cpp23/ext-floating12.C: Likewise.
+	* g++.dg/cpp23/feat-cxx2b.C: Likewise.
+	* g++.dg/cpp26/constexpr-voidptr1.C: Likewise.
+	* g++.dg/cpp26/feat-cxx26.C: Likewise.
+	* g++.dg/cpp2a/concepts-cmath.C: Likewise.
+	* g++.dg/cpp2a/concepts-explicit-spec1.C: Likewise.
+	* g++.dg/cpp2a/concepts-explicit-spec4.C: Likewise.
+	* g++.dg/cpp2a/concepts-explicit-spec5.C: Likewise.
+	* g++.dg/cpp2a/concepts-memfun.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr67774.C: Likewise.
+	* g++.dg/cpp2a/cond-triv2.C: Likewise.
+	* g++.dg/cpp2a/feat-cxx2a.C: Likewise.
+	* g++.dg/cpp2a/nontype-float1.C: Likewise.
+	* g++.dg/diagnostic/disable.C: Likewise.
+	* g++.dg/diagnostic/missing-header-pr110164.C: Likewise.
+	* g++.dg/diagnostic/pr65923.C: Likewise.
+	* g++.dg/eh/arm-vfp-unwind.C: Likewise.
+	* g++.dg/eh/crossjump1.C: Likewise.
+	* g++.dg/eh/omit-frame-pointer.C: Likewise.
+	* g++.dg/eh/simd-3.C: Likewise.
+	* g++.dg/ext/bases.C: Likewise.
+	* g++.dg/ext/builtin-line1.C: Likewise.
+	* g++.dg/ext/builtin10.C: Likewise.
+	* g++.dg/ext/complex4.C: Likewise.
+	* g++.dg/ext/has_nothrow_assign.C: Likewise.
+	* g++.dg/ext/has_nothrow_assign_odr.C: Likewise.
+	* g++.dg/ext/has_nothrow_constructor.C: Likewise.
+	* g++.dg/ext/has_nothrow_constructor_odr.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-1.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-2.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-3.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-4.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-5.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-6.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-7.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy_odr.C: Likewise.
+	* g++.dg/ext/has_trivial_assign.C: Likewise.
+	* g++.dg/ext/has_trivial_constructor.C: Likewise.
+	* g++.dg/ext/has_trivial_copy.C: Likewise.
+	* g++.dg/ext/has_trivial_destructor-1.C: Likewise.
+	* g++.dg/ext/has_virtual_destructor.C: Likewise.
+	* g++.dg/ext/is_abstract.C: Likewise.
+	* g++.dg/ext/is_aggregate.C: Likewise.
+	* g++.dg/ext/is_base_of.C: Likewise.
+	* g++.dg/ext/is_class.C: Likewise.
+	* g++.dg/ext/is_convertible2.C: Likewise.
+	* g++.dg/ext/is_empty.C: Likewise.
+	* g++.dg/ext/is_enum.C: Likewise.
+	* g++.dg/ext/is_pod.C: Likewise.
+	* g++.dg/ext/is_polymorphic.C: Likewise.
+	* g++.dg/ext/is_union.C: Likewise.
+	* g++.dg/ext/underlying_type10.C: Likewise.
+	* g++.dg/ext/underlying_type4.C: Likewise.
+	* g++.dg/gcov/gcov-14.C: Likewise.
+	* g++.dg/gcov/gcov-18.C: Likewise.
+	* g++.dg/gcov/pr88045.C: Likewise.
+	* g++.dg/gcov/pr88263-2.C: Likewise.
+	* g++.dg/gcov/pr88263.C: Likewise.
+	* g++.dg/gomp/has_device_addr-non-lvalue-1.C: Likewise.
+	* g++.dg/gomp/ind-base-3.C: Likewise.
+	* g++.dg/gomp/map-assignment-1.C: Likewise.
+	* g++.dg/gomp/map-lvalue-ref-1.C: Likewise.
+	* g++.dg/gomp/map-ptrmem-1.C: Likewise.
+	* g++.dg/gomp/map-ptrmem-2.C: Likewise.
+	* g++.dg/gomp/map-static-cast-lvalue-1.C: Likewise.
+	* g++.dg/gomp/map-ternary-1.C: Likewise.
+	* g++.dg/gomp/member-array-2.C: Likewise.
+	* g++.dg/gomp/pr71910.C: Likewise.
+	* g++.dg/gomp/pr91118-1.C: Likewise.
+	* g++.dg/gomp/sink-2.C: Likewise.
+	* g++.dg/gomp/target-this-3.C: Likewise.
+	* g++.dg/gomp/target-this-4.C: Likewise.
+	* g++.dg/gomp/tile-1.C: Likewise.
+	* g++.dg/gomp/tile-2.C: Likewise.
+	* g++.dg/gomp/unroll-1.C: Likewise.
+	* g++.dg/gomp/unroll-2.C: Likewise.
+	* g++.dg/gomp/unroll-3.C: Likewise.
+	* g++.dg/graphite/id-1.C: Likewise.
+	* g++.dg/graphite/pr42130.C: Likewise.
+	* g++.dg/inherit/virtual8.C: Likewise.
+	* g++.dg/init/array4.C: Likewise.
+	* g++.dg/init/new18.C: Likewise.
+	* g++.dg/init/new39.C: Likewise.
+	* g++.dg/init/new40.C: Likewise.
+	* g++.dg/ipa/devirt-29.C: Likewise.
+	* g++.dg/ipa/pr85549.C: Likewise.
+	* g++.dg/lookup/missing-std-include-3.C: Likewise.
+	* g++.dg/lookup/pr21802.C: Likewise.
+	* g++.dg/lto/20091022-2_0.C: Likewise.
+	* g++.dg/lto/20091219_0.C: Likewise.
+	* g++.dg/lto/pr80287_0.C: Likewise.
+	* g++.dg/lto/pr89358_0.C: Likewise.
+	* g++.dg/lto/pr89358_1.C: Likewise.
+	* g++.dg/modules/binding-1_a.H: Likewise.
+	* g++.dg/modules/binding-1_b.H: Likewise.
+	* g++.dg/modules/contracts-1_a.C: Likewise.
+	* g++.dg/modules/contracts-1_b.C: Likewise.
+	* g++.dg/modules/contracts-2_a.C: Likewise.
+	* g++.dg/modules/contracts-2_b.C: Likewise.
+	* g++.dg/modules/contracts-3_a.C: Likewise.
+	* g++.dg/modules/contracts-3_b.C: Likewise.
+	* g++.dg/modules/contracts-4_a.C: Likewise.
+	* g++.dg/modules/contracts-4_d.C: Likewise.
+	* g++.dg/modules/global-3_a.C: Likewise.
+	* g++.dg/modules/hello-1_a.C: Likewise.
+	* g++.dg/modules/hello-2_a.C: Likewise.
+	* g++.dg/modules/hello-2_b.C: Likewise.
+	* g++.dg/modules/iostream-1_a.H: Likewise.
+	* g++.dg/modules/p1689-2.C: Likewise.
+	* g++.dg/modules/part-5_c.C: Likewise.
+	* g++.dg/modules/pr99023_a.X: Likewise.
+	* g++.dg/modules/pr99166_a.X: Likewise.
+	* g++.dg/modules/pr99166_b.C: Likewise.
+	* g++.dg/modules/pr99425-2_a.X: Likewise.
+	* g++.dg/modules/pr99425-2_b.X: Likewise.
+	* g++.dg/modules/string-1_a.H: Likewise.
+	* g++.dg/modules/string-1_b.C: Likewise.
+	* g++.dg/modules/string-view1.C: Likewise.
+	* g++.dg/modules/xtreme-header-1_a.H: Likewise.
+	* g++.dg/modules/xtreme-header-1_b.C: Likewise.
+	* g++.dg/modules/xtreme-header-2_a.H: Likewise.
+	* g++.dg/modules/xtreme-header-2_b.C: Likewise.
+	* g++.dg/modules/xtreme-header-3_a.H: Likewise.
+	* g++.dg/modules/xtreme-header-3_b.C: Likewise.
+	* g++.dg/modules/xtreme-header-4_a.H: Likewise.
+	* g++.dg/modules/xtreme-header-4_b.C: Likewise.
+	* g++.dg/modules/xtreme-header-5_a.H: Likewise.
+	* g++.dg/modules/xtreme-header-5_b.C: Likewise.
+	* g++.dg/modules/xtreme-header-6_a.H: Likewise.
+	* g++.dg/modules/xtreme-header-6_b.C: Likewise.
+	* g++.dg/modules/xtreme-header-7_a.H: Likewise.
+	* g++.dg/modules/xtreme-header-7_b.C: Likewise.
+	* g++.dg/modules/xtreme-header_a.H: Likewise.
+	* g++.dg/modules/xtreme-header_b.C: Likewise.
+	* g++.dg/modules/xtreme-tr1_a.H: Likewise.
+	* g++.dg/modules/xtreme-tr1_b.C: Likewise.
+	* g++.dg/opt/builtins2.C: Likewise.
+	* g++.dg/opt/dtor4-aux.cc: Likewise.
+	* g++.dg/opt/dtor4.C: Likewise.
+	* g++.dg/opt/nrv17.C: Likewise.
+	* g++.dg/opt/pr102970.C: Likewise.
+	* g++.dg/opt/pr109434.C: Likewise.
+	* g++.dg/opt/pr110879.C: Likewise.
+	* g++.dg/opt/pr15551.C: Likewise.
+	* g++.dg/opt/pr30965.C: Likewise.
+	* g++.dg/opt/pr65074.C: Likewise.
+	* g++.dg/opt/pr66119.C: Likewise.
+	* g++.dg/opt/pr77844.C: Likewise.
+	* g++.dg/opt/pr85393.C: Likewise.
+	* g++.dg/opt/pr94223.C: Likewise.
+	* g++.dg/other/final7.C: Likewise.
+	* g++.dg/other/pr40561.C: Likewise.
+	* g++.dg/parse/lookup1.C: Likewise.
+	* g++.dg/parse/parse5.C: Likewise.
+	* g++.dg/pch/system-1.C: Likewise.
+	* g++.dg/pch/system-1.Hs: Likewise.
+	* g++.dg/pch/system-2.C: Likewise.
+	* g++.dg/pch/system-2.Hs: Likewise.
+	* g++.dg/pr100253.C: Likewise.
+	* g++.dg/pr104547.C: Likewise.
+	* g++.dg/pr107087.C: Likewise.
+	* g++.dg/pr71488.C: Likewise.
+	* g++.dg/pr71655.C: Likewise.
+	* g++.dg/pr79095-3.C: Likewise.
+	* g++.dg/pr83239.C: Likewise.
+	* g++.dg/pr99966.C: Likewise.
+	* g++.dg/rtti/typeid4.C: Likewise.
+	* g++.dg/spellcheck-inttypes.C: Likewise.
+	* g++.dg/template/friend10.C: Likewise.
+	* g++.dg/template/pr69961a.C: Likewise.
+	* g++.dg/template/show-template-tree-3.C: Likewise.
+	* g++.dg/tm/inherit2.C: Likewise.
+	* g++.dg/tm/pr46270.C: Likewise.
+	* g++.dg/torture/alias-1.C: Likewise.
+	* g++.dg/torture/builtin-location.C: Likewise.
+	* g++.dg/torture/pr103669.C: Likewise.
+	* g++.dg/torture/pr104601.C: Likewise.
+	* g++.dg/torture/pr106922.C: Likewise.
+	* g++.dg/torture/pr111019.C: Likewise.
+	* g++.dg/torture/pr33572.C: Likewise.
+	* g++.dg/torture/pr33735.C: Likewise.
+	* g++.dg/torture/pr34099.C: Likewise.
+	* g++.dg/torture/pr39417.C: Likewise.
+	* g++.dg/torture/pr44972.C: Likewise.
+	* g++.dg/torture/pr46364.C: Likewise.
+	* g++.dg/torture/pr49628.C: Likewise.
+	* g++.dg/torture/pr49938.C: Likewise.
+	* g++.dg/torture/pr51903.C: Likewise.
+	* g++.dg/torture/pr54498.C: Likewise.
+	* g++.dg/torture/pr60750.C: Likewise.
+	* g++.dg/torture/pr67600.C: Likewise.
+	* g++.dg/torture/pr82084.C: Likewise.
+	* g++.dg/torture/pr86763.C: Likewise.
+	* g++.dg/torture/pr95493-1.C: Likewise.
+	* g++.dg/tree-ssa/allocator-opt1.C: Likewise.
+	* g++.dg/tree-ssa/copyprop.C: Likewise.
+	* g++.dg/tree-ssa/empty-loop.C: Likewise.
+	* g++.dg/tree-ssa/initlist-opt1.C: Likewise.
+	* g++.dg/tree-ssa/initlist-opt2.C: Likewise.
+	* g++.dg/tree-ssa/initlist-opt3.C: Likewise.
+	* g++.dg/tree-ssa/initlist-opt5.C: Likewise.
+	* g++.dg/tree-ssa/loop-cond-split-1.C: Likewise.
+	* g++.dg/tree-ssa/loop-split-1.C: Likewise.
+	* g++.dg/tree-ssa/pr101839.C: Likewise.
+	* g++.dg/tree-ssa/pr104529.C: Likewise.
+	* g++.dg/tree-ssa/pr109849.C: Likewise.
+	* g++.dg/tree-ssa/pr14703.C: Likewise.
+	* g++.dg/tree-ssa/pr19786.C: Likewise.
+	* g++.dg/tree-ssa/pr46228.C: Likewise.
+	* g++.dg/tree-ssa/pr63841.C: Likewise.
+	* g++.dg/tree-ssa/pr69336.C: Likewise.
+	* g++.dg/tree-ssa/pr78847.C: Likewise.
+	* g++.dg/tree-ssa/pr95638.C: Likewise.
+	* g++.dg/uninit-pr105937.C: Likewise.
+	* g++.dg/vect/pr102421.cc: Likewise.
+	* g++.dg/vect/pr105053.cc: Likewise.
+	* g++.dg/vect/pr33426-ivdep-4.cc: Likewise.
+	* g++.dg/vect/pr64410.cc: Likewise.
+	* g++.dg/vect/slp-pr87105.cc: Likewise.
+	* g++.dg/vect/vect-novector-pragma.cc: Likewise.
+	* g++.dg/warn/Warray-bounds-27.C: Likewise.
+	* g++.dg/warn/Wdangling-pointer-pr110055.C: Likewise.
+	* g++.dg/warn/Wdangling-reference10.C: Likewise.
+	* g++.dg/warn/Wdangling-reference14.C: Likewise.
+	* g++.dg/warn/Wdangling-reference17.C: Likewise.
+	* g++.dg/warn/Wdangling-reference4.C: Likewise.
+	* g++.dg/warn/Wdangling-reference5.C: Likewise.
+	* g++.dg/warn/Wfree-nonheap-object-3.C: Likewise.
+	* g++.dg/warn/Winline-3.C: Likewise.
+	* g++.dg/warn/Wmemset-elt-size1.C: Likewise.
+	* g++.dg/warn/Wparentheses-34.C: Likewise.
+	* g++.dg/warn/Wstrict-aliasing-bogus-escape-2.C: Likewise.
+	* g++.dg/warn/Wstrict-aliasing-bogus-escape.C: Likewise.
+	* g++.dg/warn/Wstringop-overflow-6.C: Likewise.
+	* g++.dg/warn/Wstringop-overflow-8.C: Likewise.
+	* g++.dg/warn/Wstringop-overread-1.C: Likewise.
+	* g++.dg/warn/Wuninitialized-33.C: Likewise.
+	* g++.dg/warn/Wuninitialized-pr111123-1.C: Likewise.
+	* g++.dg/warn/format1.C: Likewise.
+	* g++.dg/warn/huge-val1.C: Likewise.
+	* g++.dg/warn/string1.C: Likewise.
+	* g++.dg/warn/uninit-pr105562.C: Likewise.
+	* g++.old-deja/g++.benjamin/15071.C: Likewise.
+	* g++.old-deja/g++.brendan/copy9.C: Likewise.
+	* g++.old-deja/g++.brendan/crash15.C: Likewise.
+	* g++.old-deja/g++.brendan/crash20.C: Likewise.
+	* g++.old-deja/g++.brendan/crash30.C: Likewise.
+	* g++.old-deja/g++.brendan/crash38.C: Likewise.
+	* g++.old-deja/g++.brendan/crash39.C: Likewise.
+	* g++.old-deja/g++.brendan/crash49.C: Likewise.
+	* g++.old-deja/g++.brendan/crash52.C: Likewise.
+	* g++.old-deja/g++.brendan/crash62.C: Likewise.
+	* g++.old-deja/g++.brendan/cvt1.C: Likewise.
+	* g++.old-deja/g++.brendan/err-msg3.C: Likewise.
+	* g++.old-deja/g++.brendan/nest21.C: Likewise.
+	* g++.old-deja/g++.brendan/ptolemy2.C: Likewise.
+	* g++.old-deja/g++.jason/2371.C: Likewise.
+	* g++.old-deja/g++.jason/template24.C: Likewise.
+	* g++.old-deja/g++.jason/template31.C: Likewise.
+	* g++.old-deja/g++.jason/typeid1.C: Likewise.
+	* g++.old-deja/g++.law/arg1.C: Likewise.
+	* g++.old-deja/g++.law/arg8.C: Likewise.
+	* g++.old-deja/g++.law/arm12.C: Likewise.
+	* g++.old-deja/g++.law/arm9.C: Likewise.
+	* g++.old-deja/g++.law/bad-error7.C: Likewise.
+	* g++.old-deja/g++.law/code-gen5.C: Likewise.
+	* g++.old-deja/g++.law/ctors10.C: Likewise.
+	* g++.old-deja/g++.law/ctors12.C: Likewise.
+	* g++.old-deja/g++.law/ctors13.C: Likewise.
+	* g++.old-deja/g++.law/ctors17.C: Likewise.
+	* g++.old-deja/g++.law/ctors6.C: Likewise.
+	* g++.old-deja/g++.law/cvt16.C: Likewise.
+	* g++.old-deja/g++.law/cvt2.C: Likewise.
+	* g++.old-deja/g++.law/cvt7.C: Likewise.
+	* g++.old-deja/g++.law/except5.C: Likewise.
+	* g++.old-deja/g++.law/missed-error2.C: Likewise.
+	* g++.old-deja/g++.law/nest3.C: Likewise.
+	* g++.old-deja/g++.law/operators32.C: Likewise.
+	* g++.old-deja/g++.law/operators4.C: Likewise.
+	* g++.old-deja/g++.law/vbase1.C: Likewise.
+	* g++.old-deja/g++.law/virtual3.C: Likewise.
+	* g++.old-deja/g++.law/visibility1.C: Likewise.
+	* g++.old-deja/g++.law/visibility10.C: Likewise.
+	* g++.old-deja/g++.law/visibility13.C: Likewise.
+	* g++.old-deja/g++.law/visibility17.C: Likewise.
+	* g++.old-deja/g++.law/visibility2.C: Likewise.
+	* g++.old-deja/g++.law/visibility22.C: Likewise.
+	* g++.old-deja/g++.law/visibility25.C: Likewise.
+	* g++.old-deja/g++.law/visibility7.C: Likewise.
+	* g++.old-deja/g++.law/weak.C: Likewise.
+	* g++.old-deja/g++.martin/new1.C: Likewise.
+	* g++.old-deja/g++.mike/dyncast7.C: Likewise.
+	* g++.old-deja/g++.mike/eh13.C: Likewise.
+	* g++.old-deja/g++.mike/eh2.C: Likewise.
+	* g++.old-deja/g++.mike/net34.C: Likewise.
+	* g++.old-deja/g++.mike/net46.C: Likewise.
+	* g++.old-deja/g++.mike/p658.C: Likewise.
+	* g++.old-deja/g++.mike/rtti1.C: Likewise.
+	* g++.old-deja/g++.ns/using4.C: Likewise.
+	* g++.old-deja/g++.ns/using6.C: Likewise.
+	* g++.old-deja/g++.other/defarg6.C: Likewise.
+	* g++.old-deja/g++.other/headers1.C: Likewise.
+	* g++.old-deja/g++.other/init9.C: Likewise.
+	* g++.old-deja/g++.other/inline14.C: Likewise.
+	* g++.old-deja/g++.other/inline2.C: Likewise.
+	* g++.old-deja/g++.other/inline7.C: Likewise.
+	* g++.old-deja/g++.other/inline8.C: Likewise.
+	* g++.old-deja/g++.other/optimize2.C: Likewise.
+	* g++.old-deja/g++.other/sibcall1.C: Likewise.
+	* g++.old-deja/g++.other/unchanging1.C: Likewise.
+	* g++.old-deja/g++.pt/crash68.C: Likewise.
+	* g++.old-deja/g++.pt/memtemp100.C: Likewise.
+	* g++.old-deja/g++.robertl/eb109.C: Likewise.
+	* g++.old-deja/g++.robertl/eb113.C: Likewise.
+	* g++.old-deja/g++.robertl/eb115.C: Likewise.
+	* g++.old-deja/g++.robertl/eb124.C: Likewise.
+	* g++.old-deja/g++.robertl/eb127.C: Likewise.
+	* g++.old-deja/g++.robertl/eb129.C: Likewise.
+	* g++.old-deja/g++.robertl/eb129a.C: Likewise.
+	* g++.old-deja/g++.robertl/eb130.C: Likewise.
+	* g++.old-deja/g++.robertl/eb132.C: Likewise.
+	* g++.old-deja/g++.robertl/eb15.C: Likewise.
+	* g++.old-deja/g++.robertl/eb21.C: Likewise.
+	* g++.old-deja/g++.robertl/eb24.C: Likewise.
+	* g++.old-deja/g++.robertl/eb27.C: Likewise.
+	* g++.old-deja/g++.robertl/eb28.C: Likewise.
+	* g++.old-deja/g++.robertl/eb29.C: Likewise.
+	* g++.old-deja/g++.robertl/eb3.C: Likewise.
+	* g++.old-deja/g++.robertl/eb30.C: Likewise.
+	* g++.old-deja/g++.robertl/eb31.C: Likewise.
+	* g++.old-deja/g++.robertl/eb33.C: Likewise.
+	* g++.old-deja/g++.robertl/eb36.C: Likewise.
+	* g++.old-deja/g++.robertl/eb39.C: Likewise.
+	* g++.old-deja/g++.robertl/eb4.C: Likewise.
+	* g++.old-deja/g++.robertl/eb41.C: Likewise.
+	* g++.old-deja/g++.robertl/eb43.C: Likewise.
+	* g++.old-deja/g++.robertl/eb44.C: Likewise.
+	* g++.old-deja/g++.robertl/eb46.C: Likewise.
+	* g++.old-deja/g++.robertl/eb54.C: Likewise.
+	* g++.old-deja/g++.robertl/eb55.C: Likewise.
+	* g++.old-deja/g++.robertl/eb59.C: Likewise.
+	* g++.old-deja/g++.robertl/eb60.C: Likewise.
+	* g++.old-deja/g++.robertl/eb62.C: Likewise.
+	* g++.old-deja/g++.robertl/eb66.C: Likewise.
+	* g++.old-deja/g++.robertl/eb7.C: Likewise.
+	* g++.old-deja/g++.robertl/eb73.C: Likewise.
+	* g++.old-deja/g++.robertl/eb77.C: Likewise.
+	* g++.old-deja/g++.robertl/eb79.C: Likewise.
+	* g++.old-deja/g++.warn/iomanip.C: Likewise.
+	* g++.target/i386/pr105638.C: Likewise.
+	* g++.target/i386/pr110170.C: Likewise.
+	* g++.target/i386/pr80566-1.C: Likewise.
+	* g++.target/i386/pr80566-2.C: Likewise.
+	* c-c++-common/analyzer/allocation-size-1.c: Skip if
+	!hostedlib because of unavailable declarations.
+	* c-c++-common/analyzer/allocation-size-2.c: Likewise.
+	* c-c++-common/analyzer/allocation-size-3.c: Likewise.
+	* c-c++-common/analyzer/allocation-size-4.c: Likewise.
+	* c-c++-common/analyzer/analyzer-verbosity-0.c: Likewise.
+	* c-c++-common/analyzer/analyzer-verbosity-1.c: Likewise.
+	* c-c++-common/analyzer/analyzer-verbosity-2.c: Likewise.
+	* c-c++-common/analyzer/analyzer-verbosity-3.c: Likewise.
+	* c-c++-common/analyzer/call-summaries-1.c: Likewise.
+	* c-c++-common/analyzer/call-summaries-malloc.c: Likewise.
+	* c-c++-common/analyzer/callbacks-1.c: Likewise.
+	* c-c++-common/analyzer/callbacks-2.c: Likewise.
+	* c-c++-common/analyzer/capacity-1.c: Likewise.
+	* c-c++-common/analyzer/capacity-2.c: Likewise.
+	* c-c++-common/analyzer/capacity-3.c: Likewise.
+	* c-c++-common/analyzer/compound-assignment-1.c: Likewise.
+	* c-c++-common/analyzer/data-model-14.c: Likewise.
+	* c-c++-common/analyzer/data-model-20.c: Likewise.
+	* c-c++-common/analyzer/data-model-5d.c: Likewise.
+	* c-c++-common/analyzer/disabling.c: Likewise.
+	* c-c++-common/analyzer/dump-state.c: Likewise.
+	* c-c++-common/analyzer/edges-2.c: Likewise.
+	* c-c++-common/analyzer/first-field-2.c: Likewise.
+	* c-c++-common/analyzer/flex-with-call-summaries.c: Likewise.
+	* c-c++-common/analyzer/flex-without-call-summaries.c:
+	Likewise.
+	* c-c++-common/analyzer/flexible-array-member-1.c: Likewise.
+	* c-c++-common/analyzer/function-ptr-2.c: Likewise.
+	* c-c++-common/analyzer/function-ptr-3.c: Likewise.
+	* c-c++-common/analyzer/function-ptr-4.c: Likewise.
+	* c-c++-common/analyzer/gzio.c: Likewise.
+	* c-c++-common/analyzer/imprecise-floating-point-1.c:
+	Likewise.
+	* c-c++-common/analyzer/leak-2.c: Likewise.
+	* c-c++-common/analyzer/leak-3.c: Likewise.
+	* c-c++-common/analyzer/leak-4.c: Likewise.
+	* c-c++-common/analyzer/loop-0-up-to-n-by-1-with-iter-obj.c:
+	Likewise.
+	* c-c++-common/analyzer/loop-3.c: Likewise.
+	* c-c++-common/analyzer/malloc-3.c: Likewise.
+	* c-c++-common/analyzer/malloc-5.c: Likewise.
+	* c-c++-common/analyzer/malloc-CWE-401-example.c: Likewise.
+	* c-c++-common/analyzer/malloc-CWE-415-examples.c: Likewise.
+	* c-c++-common/analyzer/malloc-CWE-416-examples.c: Likewise.
+	* c-c++-common/analyzer/malloc-CWE-590-examples.c: Likewise.
+	* c-c++-common/analyzer/malloc-callbacks.c: Likewise.
+	* c-c++-common/analyzer/malloc-dce.c: Likewise.
+	* c-c++-common/analyzer/malloc-dedupe-1.c: Likewise.
+	* c-c++-common/analyzer/malloc-in-loop.c: Likewise.
+	* c-c++-common/analyzer/malloc-ipa-1.c: Likewise.
+	* c-c++-common/analyzer/malloc-ipa-10.c: Likewise.
+	* c-c++-common/analyzer/malloc-ipa-11.c: Likewise.
+	* c-c++-common/analyzer/malloc-ipa-12.c: Likewise.
+	* c-c++-common/analyzer/malloc-ipa-13a.c: Likewise.
+	* c-c++-common/analyzer/malloc-ipa-2.c: Likewise.
+	* c-c++-common/analyzer/malloc-ipa-3.c: Likewise.
+	* c-c++-common/analyzer/malloc-ipa-4.c: Likewise.
+	* c-c++-common/analyzer/malloc-ipa-5.c: Likewise.
+	* c-c++-common/analyzer/malloc-ipa-6.c: Likewise.
+	* c-c++-common/analyzer/malloc-ipa-7.c: Likewise.
+	* c-c++-common/analyzer/malloc-ipa-9.c: Likewise.
+	* c-c++-common/analyzer/malloc-macro-inline-events.c:
+	Likewise.
+	* c-c++-common/analyzer/malloc-macro-separate-events.c:
+	Likewise.
+	* c-c++-common/analyzer/malloc-many-paths-3.c: Likewise.
+	* c-c++-common/analyzer/malloc-meaning-1.c: Likewise.
+	* c-c++-common/analyzer/malloc-paths-1.c: Likewise.
+	* c-c++-common/analyzer/malloc-paths-2.c: Likewise.
+	* c-c++-common/analyzer/malloc-paths-3.c: Likewise.
+	* c-c++-common/analyzer/malloc-paths-4.c: Likewise.
+	* c-c++-common/analyzer/malloc-paths-5.c: Likewise.
+	* c-c++-common/analyzer/malloc-paths-6.c: Likewise.
+	* c-c++-common/analyzer/malloc-paths-7.c: Likewise.
+	* c-c++-common/analyzer/malloc-paths-8.c: Likewise.
+	* c-c++-common/analyzer/malloc-paths-9-noexcept.c: Likewise.
+	* c-c++-common/analyzer/malloc-sarif-1.c: Likewise.
+	* c-c++-common/analyzer/malloc-vs-local-1a.c: Likewise.
+	* c-c++-common/analyzer/malloc-vs-local-1b.c: Likewise.
+	* c-c++-common/analyzer/malloc-vs-local-2.c: Likewise.
+	* c-c++-common/analyzer/malloc-vs-local-3.c: Likewise.
+	* c-c++-common/analyzer/out-of-bounds-1.c: Likewise.
+	* c-c++-common/analyzer/out-of-bounds-2.c: Likewise.
+	* c-c++-common/analyzer/out-of-bounds-diagram-3.c: Likewise.
+	* c-c++-common/analyzer/out-of-bounds-diagram-8.c: Likewise.
+	* c-c++-common/analyzer/paths-3.c: Likewise.
+	* c-c++-common/analyzer/paths-6.c: Likewise.
+	* c-c++-common/analyzer/paths-7.c: Likewise.
+	* c-c++-common/analyzer/pr103526.c: Likewise.
+	* c-c++-common/analyzer/pr106539.c: Likewise.
+	* c-c++-common/analyzer/pr94399.c: Likewise.
+	* c-c++-common/analyzer/pr94851-1.c: Likewise.
+	* c-c++-common/analyzer/pr94851-2.c: Likewise.
+	* c-c++-common/analyzer/pr94851-4.c: Likewise.
+	* c-c++-common/analyzer/pr97608.c: Likewise.
+	* c-c++-common/analyzer/pr98918.c: Likewise.
+	* c-c++-common/analyzer/pr99716-2.c: Likewise.
+	* c-c++-common/analyzer/pr99716-3.c: Likewise.
+	* c-c++-common/analyzer/pragma-1.c: Likewise.
+	* c-c++-common/analyzer/pragma-2.c: Likewise.
+	* c-c++-common/analyzer/sarif-path-role.c: Likewise.
+	* c-c++-common/analyzer/scope-1.c: Likewise.
+	* c-c++-common/analyzer/strndup-1.c: Likewise.
+	* c-c++-common/analyzer/taint-alloc-3.c: Likewise.
+	* c-c++-common/analyzer/taint-realloc.c: Likewise.
+	* c-c++-common/analyzer/use-after-free-3.c: Likewise.
+	* c-c++-common/analyzer/zlib-4.c: Likewise.
+	* c-c++-common/goacc/kernels-counter-vars-function-scope.c:
+	Likewise.
+	* c-c++-common/goacc/kernels-loop-2.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-3.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-data-2.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-data-enter-exit-2.c:
+	Likewise.
+	* c-c++-common/goacc/kernels-loop-data-enter-exit.c:
+	Likewise.
+	* c-c++-common/goacc/kernels-loop-data-update.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-data.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-g.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-mod-not-zero.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-n.c: Likewise.
+	* c-c++-common/goacc/kernels-loop.c: Likewise.
+	* c-c++-common/goacc/kernels-one-counter-var.c: Likewise.
+	* c-c++-common/goacc/kernels-parallel-loop-data-enter-exit.c:
+	Likewise.
+	* c-c++-common/gomp/pr103642.c: Likewise.
+	* c-c++-common/gomp/target-implicit-map-2.c: Likewise.
+	* c-c++-common/simulate-thread/bitfields-4.c: Likewise.
+	* c-c++-common/tm/malloc.c: Likewise.
+	* g++.dg/abi/mangle36.C: Likewise.
+	* g++.dg/abi/mangle40.C: Likewise.
+	* g++.dg/abi/mangle41.C: Likewise.
+	* g++.dg/analyzer/cstdlib.C: Likewise.
+	* g++.dg/analyzer/fanalyzer-show-events-in-system-headers-default.C:
+	Likewise.
+	* g++.dg/analyzer/fanalyzer-show-events-in-system-headers-no.C:
+	Likewise.
+	* g++.dg/analyzer/fanalyzer-show-events-in-system-headers.C:
+	Likewise.
+	* g++.dg/analyzer/malloc.C: Likewise.
+	* g++.dg/analyzer/new-vs-malloc.C: Likewise.
+	* g++.dg/analyzer/placement-new-size.C: Likewise.
+	* g++.dg/analyzer/vfunc-3.C: Likewise.
+	* g++.dg/analyzer/vfunc-5.C: Likewise.
+	* g++.dg/coroutines/coro-bad-gro-00-class-gro-scalar-return.C:
+	Likewise.
+	* g++.dg/coroutines/coro-bad-gro-01-void-gro-non-class-coro.C:
+	Likewise.
+	* g++.dg/coroutines/pr101765.C: Likewise.
+	* g++.dg/coroutines/pr95477.C: Likewise.
+	* g++.dg/coroutines/pr95599.C: Likewise.
+	* g++.dg/coroutines/pr95711.C: Likewise.
+	* g++.dg/coroutines/torture/alloc-00-gro-on-alloc-fail.C:
+	Likewise.
+	* g++.dg/coroutines/torture/alloc-01-overload-newdel.C:
+	Likewise.
+	* g++.dg/coroutines/torture/alloc-02-fail-new-grooaf-check.C:
+	Likewise.
+	* g++.dg/coroutines/torture/alloc-03-overload-new-1.C:
+	Likewise.
+	* g++.dg/coroutines/torture/alloc-04-overload-del-use-two-args.C:
+	Likewise.
+	* g++.dg/coroutines/torture/call-00-co-aw-arg.C: Likewise.
+	* g++.dg/coroutines/torture/call-01-multiple-co-aw.C:
+	Likewise.
+	* g++.dg/coroutines/torture/call-02-temp-co-aw.C: Likewise.
+	* g++.dg/coroutines/torture/call-03-temp-ref-co-aw.C:
+	Likewise.
+	* g++.dg/coroutines/torture/class-00-co-ret.C: Likewise.
+	* g++.dg/coroutines/torture/class-01-co-ret-parm.C: Likewise.
+	* g++.dg/coroutines/torture/class-02-templ-parm.C: Likewise.
+	* g++.dg/coroutines/torture/class-03-operator-templ-parm.C:
+	Likewise.
+	* g++.dg/coroutines/torture/class-04-lambda-1.C: Likewise.
+	* g++.dg/coroutines/torture/class-05-lambda-capture-copy-local.C:
+	Likewise.
+	* g++.dg/coroutines/torture/class-06-lambda-capture-ref.C:
+	Likewise.
+	* g++.dg/coroutines/torture/class-07-data-member.C: Likewise.
+	* g++.dg/coroutines/torture/co-await-00-trivial.C: Likewise.
+	* g++.dg/coroutines/torture/co-await-01-with-value.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-await-02-xform.C: Likewise.
+	* g++.dg/coroutines/torture/co-await-03-rhs-op.C: Likewise.
+	* g++.dg/coroutines/torture/co-await-04-control-flow.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-await-05-loop.C: Likewise.
+	* g++.dg/coroutines/torture/co-await-06-ovl.C: Likewise.
+	* g++.dg/coroutines/torture/co-await-07-tmpl.C: Likewise.
+	* g++.dg/coroutines/torture/co-await-08-cascade.C: Likewise.
+	* g++.dg/coroutines/torture/co-await-09-pair.C: Likewise.
+	* g++.dg/coroutines/torture/co-await-10-template-fn-arg.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-await-11-forwarding.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-await-12-operator-2.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-await-13-return-ref.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-await-14-return-ref-to-auto.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-await-15-return-non-triv.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-await-17-capture-comp-ref.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-await-18-if-cond.C: Likewise.
+	* g++.dg/coroutines/torture/co-await-19-while-cond.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-await-20-do-while-cond.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-await-21-switch-value.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-await-22-truth-and-of-if.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-await-24-for-init.C: Likewise.
+	* g++.dg/coroutines/torture/co-await-25-for-condition.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-await-26-for-iteration-expr.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-ret-00-void-return-is-ready.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-ret-01-void-return-is-suspend.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-ret-03-different-GRO-type.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-ret-04-GRO-nontriv.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-ret-05-return-value.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-ret-06-template-promise-val-1.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-ret-07-void-cast-expr.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-ret-08-template-cast-ret.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-ret-09-bool-await-susp.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-ret-10-expression-evaluates-once.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-ret-11-co-ret-co-await.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-ret-12-co-ret-fun-co-await.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-ret-13-template-2.C: Likewise.
+	* g++.dg/coroutines/torture/co-ret-14-template-3.C: Likewise.
+	* g++.dg/coroutines/torture/co-ret-16-simple-control-flow.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-ret-17-void-ret-coro.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-yield-00-triv.C: Likewise.
+	* g++.dg/coroutines/torture/co-yield-01-multi.C: Likewise.
+	* g++.dg/coroutines/torture/co-yield-02-loop.C: Likewise.
+	* g++.dg/coroutines/torture/co-yield-03-tmpl.C: Likewise.
+	* g++.dg/coroutines/torture/co-yield-03-tmpl-nondependent.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-yield-05-co-aw.C: Likewise.
+	* g++.dg/coroutines/torture/co-yield-06-fun-parm.C: Likewise.
+	* g++.dg/coroutines/torture/co-yield-07-template-fn-param.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-yield-08-more-refs.C:
+	Likewise.
+	* g++.dg/coroutines/torture/co-yield-09-more-templ-refs.C:
+	Likewise.
+	* g++.dg/coroutines/torture/exceptions-test-0.C: Likewise.
+	* g++.dg/coroutines/torture/exceptions-test-01-n4849-a.C:
+	Likewise.
+	* g++.dg/coroutines/torture/func-params-00.C: Likewise.
+	* g++.dg/coroutines/torture/func-params-01.C: Likewise.
+	* g++.dg/coroutines/torture/func-params-02.C: Likewise.
+	* g++.dg/coroutines/torture/func-params-03.C: Likewise.
+	* g++.dg/coroutines/torture/func-params-04.C: Likewise.
+	* g++.dg/coroutines/torture/func-params-05.C: Likewise.
+	* g++.dg/coroutines/torture/func-params-06.C: Likewise.
+	* g++.dg/coroutines/torture/func-params-07.C: Likewise.
+	* g++.dg/coroutines/torture/lambda-00-co-ret.C: Likewise.
+	* g++.dg/coroutines/torture/lambda-01-co-ret-parm.C:
+	Likewise.
+	* g++.dg/coroutines/torture/lambda-02-co-yield-values.C:
+	Likewise.
+	* g++.dg/coroutines/torture/lambda-03-auto-parm-1.C:
+	Likewise.
+	* g++.dg/coroutines/torture/lambda-04-templ-parm.C: Likewise.
+	* g++.dg/coroutines/torture/lambda-05-capture-copy-local.C:
+	Likewise.
+	* g++.dg/coroutines/torture/lambda-06-multi-capture.C:
+	Likewise.
+	* g++.dg/coroutines/torture/lambda-07-multi-yield.C:
+	Likewise.
+	* g++.dg/coroutines/torture/lambda-08-co-ret-parm-ref.C:
+	Likewise.
+	* g++.dg/coroutines/torture/lambda-09-init-captures.C:
+	Likewise.
+	* g++.dg/coroutines/torture/lambda-10-mutable.C: Likewise.
+	* g++.dg/coroutines/torture/local-var-00-const.C: Likewise.
+	* g++.dg/coroutines/torture/local-var-01-single.C: Likewise.
+	* g++.dg/coroutines/torture/local-var-02-conditional.C:
+	Likewise.
+	* g++.dg/coroutines/torture/local-var-03-with-awaits.C:
+	Likewise.
+	* g++.dg/coroutines/torture/local-var-04-hiding-nested-scopes.C:
+	Likewise.
+	* g++.dg/coroutines/torture/local-var-06-structured-binding.C:
+	Likewise.
+	* g++.dg/coroutines/torture/mid-suspend-destruction-0.C:
+	Likewise.
+	* g++.dg/coroutines/torture/pr95003.C: Likewise.
+	* g++.dg/coroutines/torture/pr95519-00-return_void.C:
+	Likewise.
+	* g++.dg/coroutines/torture/pr95519-01-initial-suspend.C:
+	Likewise.
+	* g++.dg/coroutines/torture/pr95519-02-final_suspend.C:
+	Likewise.
+	* g++.dg/coroutines/torture/pr95519-03-return-value.C:
+	Likewise.
+	* g++.dg/coroutines/torture/pr95519-04-yield-value.C:
+	Likewise.
+	* g++.dg/coroutines/torture/pr95519-05-gro.C: Likewise.
+	* g++.dg/coroutines/torture/pr95519-06-grooaf.C: Likewise.
+	* g++.dg/coroutines/torture/pr95519-07-unhandled-exception.C:
+	Likewise.
+	* g++.dg/cpp0x/lambda/lambda-std-function.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-this8.C: Likewise.
+	* g++.dg/cpp0x/pr70887.C: Likewise.
+	* g++.dg/cpp1y/lambda-generic-variadic2.C: Likewise.
+	* g++.dg/cpp23/subscript5.C: Likewise.
+	* g++.dg/cpp23/subscript6.C: Likewise.
+	* g++.dg/cpp26/constexpr-new2.C: Likewise.
+	* g++.dg/cpp2a/destroying-delete5.C: Likewise.
+	* g++.dg/eh/filter2.C: Likewise.
+	* g++.dg/eh/uncaught1.C: Likewise.
+	* g++.dg/eh/uncaught2.C: Likewise.
+	* g++.dg/expr/anew1.C: Likewise.
+	* g++.dg/expr/anew2.C: Likewise.
+	* g++.dg/expr/anew3.C: Likewise.
+	* g++.dg/expr/anew4.C: Likewise.
+	* g++.dg/ext/cleanup-10.C: Likewise.
+	* g++.dg/ext/cleanup-11.C: Likewise.
+	* g++.dg/ext/cleanup-5.C: Likewise.
+	* g++.dg/ext/cleanup-8.C: Likewise.
+	* g++.dg/ext/cleanup-9.C: Likewise.
+	* g++.dg/ext/is_invocable2.C: Likewise.
+	* g++.dg/goacc/pr107028-2.C: Likewise.
+	* g++.dg/gomp/target-lambda-2.C: Likewise.
+	* g++.dg/init/new11.C: Likewise.
+	* g++.dg/init/value3.C: Likewise.
+	* g++.dg/lto/pr66180_0.C: Likewise.
+	* g++.dg/opt/eh4.C: Likewise.
+	* g++.dg/opt/pr103989.C: Likewise.
+	* g++.dg/opt/pr80385.C: Likewise.
+	* g++.dg/opt/reload3.C: Likewise.
+	* g++.dg/other/i386-1.C: Likewise.
+	* g++.dg/other/i386-11.C: Likewise.
+	* g++.dg/other/i386-2.C: Likewise.
+	* g++.dg/other/i386-3.C: Likewise.
+	* g++.dg/other/i386-4.C: Likewise.
+	* g++.dg/other/i386-7.C: Likewise.
+	* g++.dg/other/i386-8.C: Likewise.
+	* g++.dg/other/mmintrin.C: Likewise.
+	* g++.dg/other/pr34435.C: Likewise.
+	* g++.dg/other/pr40446.C: Likewise.
+	* g++.dg/other/pr49133.C: Likewise.
+	* g++.dg/other/ucnid-1-utf8.C: Likewise.
+	* g++.dg/other/ucnid-1.C: Likewise.
+	* g++.dg/pr80481.C: Likewise.
+	* g++.dg/torture/pr10148.C: Likewise.
+	* g++.dg/torture/pr91334.C: Likewise.
+	* g++.dg/torture/pr91606.C: Likewise.
+	* g++.dg/tree-ssa/pr102216-2.C: Likewise.
+	* g++.dg/vect/slp-pr98855.cc: Likewise.
+	* g++.dg/warn/Wsystem-headers1a.C: Likewise.
+	* g++.dg/warn/noreturn-1.C: Likewise.
+	* g++.old-deja/g++.abi/arraynew.C: Likewise.
+	* g++.old-deja/g++.abi/cxa_vec.C: Likewise.
+	* g++.old-deja/g++.brendan/new3.C: Likewise.
+	* g++.old-deja/g++.eh/new1.C: Likewise.
+	* g++.old-deja/g++.eh/new2.C: Likewise.
+	* g++.old-deja/g++.jason/template44.C: Likewise.
+	* g++.old-deja/g++.law/arm13.C: Likewise.
+	* g++.old-deja/g++.law/scope2.C: Likewise.
+	* g++.old-deja/g++.mike/eh47.C: Likewise.
+	* g++.old-deja/g++.mike/ns15.C: Likewise.
+	* g++.old-deja/g++.mike/p710.C: Likewise.
+	* g++.old-deja/g++.mike/p9706.C: Likewise.
+	* g++.old-deja/g++.oliva/new1.C: Likewise.
+	* g++.old-deja/g++.other/delete8.C: Likewise.
+	* g++.target/i386/avx-pr54700-1.C: Likewise.
+	* g++.target/i386/avx-pr54700-2.C: Likewise.
+	* g++.target/i386/avx2-pr54700-1.C: Likewise.
+	* g++.target/i386/avx2-pr54700-2.C: Likewise.
+	* g++.target/i386/avx512bw-pr96246-2.C: Likewise.
+	* g++.target/i386/avx512vl-pr54700-1a.C: Likewise.
+	* g++.target/i386/avx512vl-pr54700-1b.C: Likewise.
+	* g++.target/i386/avx512vl-pr54700-2a.C: Likewise.
+	* g++.target/i386/avx512vl-pr54700-2b.C: Likewise.
+	* g++.target/i386/avx512vl-pr96246-2.C: Likewise.
+	* g++.target/i386/mvc4.C: Likewise.
+	* g++.target/i386/pr100885.C: Likewise.
+	* g++.target/i386/pr102166.C: Likewise.
+	* g++.target/i386/pr103750-fwprop-1.C: Likewise.
+	* g++.target/i386/pr105593.C: Likewise.
+	* g++.target/i386/pr112443.C: Likewise.
+	* g++.target/i386/pr113560.C: Likewise.
+	* g++.target/i386/pr88152.C: Likewise.
+	* g++.target/i386/pr88998.C: Likewise.
+	* g++.target/i386/pr94046-1.C: Likewise.
+	* g++.target/i386/pr94046-2.C: Likewise.
+	* g++.target/i386/sse4_1-pr54700-1.C: Likewise.
+	* g++.target/i386/sse4_1-pr54700-2.C: Likewise.
+	* g++.dg/tree-ssa/pr20458.C: Skip if !hostedlib because of
+	unavailable library definitions.
+
+2024-09-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/116673
+	* g++.dg/cpp1z/launder2.C: Adjust dg-error strings.
+	* g++.dg/cpp1z/launder10.C: New test.
+
+2024-09-12  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.dg/unsigned_kiss.f90: New test.
+
+2024-09-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/112600
+	* gcc.target/i386/pr112600-3a.c: New test.
+	* gcc.target/i386/pr112600-3b.c: New test.
+
+2024-09-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116418
+	* g++.dg/eh/pr84968.C: No longer expect an ahead of time diagnostic
+	for the statement-expresssion.  Instantiate the template and expect
+	an incomplete type error instead.
+	* g++.dg/ext/stmtexpr26.C: New test.
+
+2024-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116636
+	* g++.dg/warn/deprecated-19.C: New test.
+
+2024-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/cpp/embed-17.c: New test.
+	* c-c++-common/cpp/embed-18.c: New test.
+	* c-c++-common/cpp/embed-19.c: New test.
+	* c-c++-common/cpp/embed-27.c: New test.
+	* gcc.dg/cpp/embed-6.c: New test.
+	* gcc.dg/cpp/embed-7.c: New test.
+
+2024-09-12  Jason Merrill  <jason@redhat.com>
+
+	* c-c++-common/pragma-diag-17.c: New test.
+	* g++.dg/cpp0x/va-opt1.C: New test.
+	* g++.dg/cpp23/named-universal-char-escape3.C: New test.
+
+2024-09-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* lib/target-supports.exp: Move xscale to new generator table.
+	(check_effective_target_arm_arch_FUNC_ok): Add -mcpu=unset to the
+	list of flags.
+	(add_options_for_arm_arch_FUNC): Likewise.
+	(check_effective_target_arm_cpu_FUNC_ok): New function.
+	(add_options_for_arm_cpu_FUNC): Likewise.
+	(check_effective_target_arm_cpu_FUNC_link): Likewise.
+	(check_effective_target_arm_cpu_FUNC_multilib): Likewise.
+	* gcc.target/arm/g2.c: Update dg directives.
+	* gcc.target/arm/scd42-2.c: Likewise.
+
+2024-09-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96097
+	* g++.dg/template/ttp44.C: New test.
+
+2024-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/cpp/embed-15.c: New test.
+	* c-c++-common/cpp/embed-16.c: New test.
+	* gcc.dg/cpp/embed-5.c: New test.
+
+2024-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105863
+	* c-c++-common/cpp/embed-1.c: New test.
+	* c-c++-common/cpp/embed-2.c: New test.
+	* c-c++-common/cpp/embed-3.c: New test.
+	* c-c++-common/cpp/embed-4.c: New test.
+	* c-c++-common/cpp/embed-5.c: New test.
+	* c-c++-common/cpp/embed-6.c: New test.
+	* c-c++-common/cpp/embed-7.c: New test.
+	* c-c++-common/cpp/embed-8.c: New test.
+	* c-c++-common/cpp/embed-9.c: New test.
+	* c-c++-common/cpp/embed-10.c: New test.
+	* c-c++-common/cpp/embed-11.c: New test.
+	* c-c++-common/cpp/embed-12.c: New test.
+	* c-c++-common/cpp/embed-13.c: New test.
+	* c-c++-common/cpp/embed-14.c: New test.
+	* c-c++-common/cpp/embed-25.c: New test.
+	* c-c++-common/cpp/embed-26.c: New test.
+	* c-c++-common/cpp/embed-dir/embed-1.inc: New test.
+	* c-c++-common/cpp/embed-dir/embed-3.c: New test.
+	* c-c++-common/cpp/embed-dir/embed-4.c: New test.
+	* c-c++-common/cpp/embed-dir/magna-carta.txt: New test.
+	* gcc.dg/cpp/embed-1.c: New test.
+	* gcc.dg/cpp/embed-2.c: New test.
+	* gcc.dg/cpp/embed-3.c: New test.
+	* gcc.dg/cpp/embed-4.c: New test.
+	* g++.dg/cpp/embed-1.C: New test.
+	* g++.dg/cpp/embed-2.C: New test.
+	* g++.dg/cpp/embed-3.C: New test.
+
+2024-09-12  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/116323
+	* g++.dg/template/access43.C: New test.
+
+2024-09-12  Levy Hsu  <admin@levyhsu.com>
+
+	* gcc.target/i386/part-vect-vec_cmpbf.c: New test.
+
+2024-09-12  Bohan Lei  <garthlei@linux.alibaba.com>
+
+	* gcc.target/riscv/rvv/vsetvl/vsetvl_bug-4.c: New test.
+
+2024-09-12  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10-helper.h: Do not include
+	avx512f-mask-type.h.
+	* gcc.target/i386/avx10_2-512-vaddnepbf16-2.c:
+	Define SIZE and include avx512f-mask-type.h.
+	* gcc.target/i386/avx10_2-512-vcmppbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtnebf162ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtnebf162iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtph2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtph2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtps2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttnebf162ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttnebf162iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2dqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2qqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2udqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2uqqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttph2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttph2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2dqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2qqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2udqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2uqqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vdivnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vdpphps-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vfmaddXXXnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vfmsubXXXnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vfnmaddXXXnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vfnmsubXXXnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vfpclasspbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vgetexppbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vgetmantpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vmaxpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vminmaxnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vminmaxpd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vminmaxph-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vminmaxps-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vminpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vmpsadbw-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vmulnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpbssd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpbssds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpbsud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpbsuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpbuud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpbuuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpwsud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpwsuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpwusd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpwusds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpwuud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpwuuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vrcppbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vreducenepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vrndscalenepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vrsqrtpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vscalefpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vsqrtnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vsubnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx512fp16-vfpclassph-1b.c: Ditto.
+
+2024-09-12  garthlei  <garthlei@linux.alibaba.com>
+
+	* gcc.target/riscv/rvv/vsetvl/vsetvl_bug-3.c: New test.
+
+2024-09-12  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116496
+	* g++.dg/modules/partial-5_a.C: New test.
+	* g++.dg/modules/partial-5_b.C: New test.
+
 2024-09-11  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/116597

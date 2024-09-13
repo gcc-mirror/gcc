@@ -1,3 +1,44 @@
+2024-09-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/116673
+	* semantics.cc (finish_builtin_launder): Diagnose function
+	pointers and cv void pointers.
+
+2024-09-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116418
+	* tree.cc (strip_typedefs_expr) <case STATEMENT_LIST>: Replace
+	this error path with ...
+	<case STMT_EXPR>: ... this, returning the original tree.
+
+2024-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116636
+	* method.cc: Include decl.h.
+	(use_thunk): Temporarily change deprecated_state to
+	UNAVAILABLE_DEPRECATED_SUPPRESS.
+
+2024-09-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96097
+	* pt.cc (coerce_template_template_parm): Increment
+	processing_template_decl before calling tsubst.
+
+2024-09-12  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/116323
+	* search.cc (get_parent_with_private_access): Only call access_in_type
+	for RECORD_OR_UNION_TYPE_P base BINFOs.
+
+2024-09-12  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116496
+	* module.cc (trees_in::decl_value): Don't call
+	set_defining_module_for_partial_spec here.
+	(depset::hash::add_partial_entities): Clarity assertions.
+	* pt.cc (add_mergeable_specialization): Always call
+	set_defining_module_for_partial_spec when adding a partial spec.
+
 2024-09-11  Alex Coplan  <alex.coplan@arm.com>
 
 	PR libstdc++/116140
