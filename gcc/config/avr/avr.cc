@@ -308,6 +308,15 @@ avr_int16 (rtx x, int n)
   return (int16_t) trunc_int_for_mode (INTVAL (avr_word (x, n)), HImode);
 }
 
+/* Return the sub-word of compile-time constant X that starts
+   at byte N as an uint16_t.  */
+
+static uint16_t
+avr_uint16 (rtx x, int n)
+{
+  return (uint16_t) avr_int16 (x, n);
+}
+
 
 /* Constraint helper function.  XVAL is a CONST_INT or a CONST_DOUBLE.
    Return true if the least significant N_BYTES bytes of XVAL all have a
@@ -317,15 +326,9 @@ avr_int16 (rtx x, int n)
 bool
 avr_popcount_each_byte (rtx xval, int n_bytes, int pop_mask)
 {
-  machine_mode mode = GET_MODE (xval);
-
-  if (VOIDmode == mode)
-    mode = SImode;
-
   for (int i = 0; i < n_bytes; i++)
     {
-      rtx xval8 = simplify_gen_subreg (QImode, xval, mode, i);
-      unsigned int val8 = UINTVAL (xval8) & GET_MODE_MASK (QImode);
+      unsigned int val8 = avr_uint8 (xval, i);
 
       if ((pop_mask & (1 << popcount_hwi (val8))) == 0)
 	return false;
@@ -342,15 +345,9 @@ avr_popcount_each_byte (rtx xval, int n_bytes, int pop_mask)
 bool
 avr_xor_noclobber_dconst (rtx xval, int n_bytes)
 {
-  machine_mode mode = GET_MODE (xval);
-
-  if (VOIDmode == mode)
-    mode = SImode;
-
   for (int i = 0; i < n_bytes; ++i)
     {
-      rtx xval8 = simplify_gen_subreg (QImode, xval, mode, i);
-      unsigned int val8 = UINTVAL (xval8) & GET_MODE_MASK (QImode);
+      unsigned int val8 = avr_uint8 (xval, i);
 
       if (val8 != 0 && val8 != 0xff && val8 != 0x80)
 	return false;
@@ -3414,7 +3411,7 @@ avr_out_lpm_no_lpmx (rtx_insn *insn, rtx *xop, int *plen)
 
       for (int i = 0; i < n_bytes; ++i)
 	{
-	  rtx reg = simplify_gen_subreg (QImode, dest, GET_MODE (dest), i);
+	  rtx reg = avr_byte (dest, i);
 
 	  if (i > 0)
 	    avr_asm_len ("adiw %2,1", xop, plen, 1);
@@ -3676,9 +3673,9 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
      but has some subregs that are in LD_REGS.  Use the MSB (REG:QI 17).  */
 
   if (REGNO (dest) < REG_16
-      && REGNO (dest) + GET_MODE_SIZE (mode) > REG_16)
+      && END_REGNO (dest) > REG_16)
     {
-      clobber_reg = all_regs_rtx[REGNO (dest) + n_bytes - 1];
+      clobber_reg = all_regs_rtx[END_REGNO (dest) - 1];
     }
 
   /* We might need a clobber reg but don't have one.  Look at the value to
@@ -3708,7 +3705,7 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
 
       /* Crop the n-th destination byte.  */
 
-      xdest[n] = simplify_gen_subreg (QImode, dest, mode, n);
+      xdest[n] = avr_byte (dest, n);
       int ldreg_p = test_hard_reg_class (LD_REGS, xdest[n]);
 
       if (!CONST_INT_P (src)
@@ -3734,7 +3731,7 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
 
       /* Crop the n-th source byte.  */
 
-      xval = simplify_gen_subreg (QImode, src, mode, n);
+      xval = avr_byte (src, n);
       ival[n] = INTVAL (xval);
 
       /* Look if we can reuse the low word by means of MOVW.  */
@@ -3743,12 +3740,12 @@ output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
 	  && n_bytes >= 4
 	  && AVR_HAVE_MOVW)
 	{
-	  rtx lo16 = simplify_gen_subreg (HImode, src, mode, 0);
-	  rtx hi16 = simplify_gen_subreg (HImode, src, mode, 2);
+	  int lo16 = avr_int16 (src, 0);
+	  int hi16 = avr_int16 (src, 2);
 
-	  if (INTVAL (lo16) == INTVAL (hi16))
+	  if (lo16 == hi16)
 	    {
-	      if (INTVAL (lo16) != 0 || !clear_p)
+	      if (lo16 != 0 || ! clear_p)
 		avr_asm_len ("movw %C0,%A0", &op[0], len, 1);
 
 	      break;
@@ -6275,7 +6272,7 @@ avr_out_cmp_ext (rtx xop[], enum rtx_code code, int *plen)
     {
       // Sign-extend the high-byte of zreg to tmp_reg.
       int zmsb = GET_MODE_SIZE (zmode) - 1;
-      rtx xzmsb = simplify_gen_subreg (QImode, zreg, zmode, zmsb);
+      rtx xzmsb = avr_byte (zreg, zmsb);
 
       avr_asm_len ("mov __tmp_reg__,%0" CR_TAB
 		   "rol __tmp_reg__"    CR_TAB
@@ -6298,10 +6295,8 @@ avr_out_cmp_ext (rtx xop[], enum rtx_code code, int *plen)
   for (int b = 1; b < n_bytes; ++b)
     {
       rtx regs[2];
-      regs[1 - z] = simplify_gen_subreg (QImode, reg, mode, b);
-      regs[z] = (b < GET_MODE_SIZE (zmode)
-		 ? simplify_gen_subreg (QImode, zreg, zmode, b)
-		 : zex);
+      regs[1 - z] = avr_byte (reg, b);
+      regs[z] = b < GET_MODE_SIZE (zmode) ? avr_byte (zreg, b) : zex;
 
       avr_asm_len ("cpc %0,%1", regs, plen, 1);
     }
@@ -8038,8 +8033,8 @@ avr_out_plus_1 (rtx insn, rtx *xop, int *plen, enum rtx_code code,
       for (int i = 0; i < n_bytes; i++)
 	{
 	  /* We operate byte-wise on the destination.  */
-	  op[0] = simplify_gen_subreg (QImode, xop[0], mode, i);
-	  op[1] = simplify_gen_subreg (QImode, xop[2], mode, i);
+	  op[0] = avr_byte (xop[0], i);
+	  op[1] = avr_byte (xop[2], i);
 
 	  if (i == 0)
 	    avr_asm_len (code == PLUS ? "add %0,%1" : "sub %0,%1",
@@ -8075,8 +8070,7 @@ avr_out_plus_1 (rtx insn, rtx *xop, int *plen, enum rtx_code code,
 
   if (SS_PLUS == code_sat && MINUS == code
       && sign < 0
-      && 0x80 == (INTVAL (simplify_gen_subreg (QImode, xval, imode, n_bytes-1))
-		  & GET_MODE_MASK (QImode)))
+      && 0x80 == avr_uint8 (xval, n_bytes - 1))
     {
       /* We compute x + 0x80 by means of SUB instructions.  We negated the
 	 constant subtrahend above and are left with  x - (-128)  so that we
@@ -8085,7 +8079,7 @@ avr_out_plus_1 (rtx insn, rtx *xop, int *plen, enum rtx_code code,
 	 where this must be done is when NEG overflowed in case [2s] because
 	 the V computation needs the right sign of the subtrahend.  */
 
-      rtx msb = simplify_gen_subreg (QImode, xop[0], mode, n_bytes - 1);
+      rtx msb = avr_byte (xop[0], n_bytes - 1);
 
       avr_asm_len ("subi %0,128" CR_TAB
 		   "brmi 0f", &msb, plen, 2);
@@ -8097,8 +8091,8 @@ avr_out_plus_1 (rtx insn, rtx *xop, int *plen, enum rtx_code code,
   for (int i = 0; i < n_bytes; i++)
     {
       /* We operate byte-wise on the destination.  */
-      rtx reg8 = simplify_gen_subreg (QImode, xop[0], mode, i);
-      rtx xval8 = simplify_gen_subreg (QImode, xval, imode, i);
+      rtx reg8 = avr_byte (xop[0], i);
+      rtx xval8 = avr_byte (xval, i);
 
       /* 8-bit value to operate with this byte. */
       unsigned int val8 = UINTVAL (xval8) & GET_MODE_MASK (QImode);
@@ -8116,8 +8110,7 @@ avr_out_plus_1 (rtx insn, rtx *xop, int *plen, enum rtx_code code,
 	  && i + 2 <= n_bytes
 	  && avr_adiw_reg_p (reg8))
 	{
-	  rtx xval16 = simplify_gen_subreg (HImode, xval, imode, i);
-	  unsigned int val16 = UINTVAL (xval16) & GET_MODE_MASK (HImode);
+	  unsigned int val16 = avr_uint16 (xval, i);
 
 	  /* Registers R24, X, Y, Z can use ADIW/SBIW with constants < 64
 	     i.e. operate word-wise.  */
@@ -8272,10 +8265,8 @@ avr_out_plus_1 (rtx insn, rtx *xop, int *plen, enum rtx_code code,
      The cases a - b actually perform  a - (-(-b))  if B is CONST.
   */
 
-  op[0] = simplify_gen_subreg (QImode, xop[0], mode, n_bytes-1);
-  op[1] = n_bytes > 1
-    ? simplify_gen_subreg (QImode, xop[0], mode, n_bytes-2)
-    : NULL_RTX;
+  op[0] = avr_byte (xop[0], n_bytes - 1);
+  op[1] = n_bytes > 1 ? avr_byte (xop[0], n_bytes - 2) : NULL_RTX;
 
   bool need_copy = true;
   int len_call = 1 + AVR_HAVE_JMP_CALL;
@@ -8308,7 +8299,7 @@ avr_out_plus_1 (rtx insn, rtx *xop, int *plen, enum rtx_code code,
 	{
 	  /* [1s,reg] */
 
-	  op[2] = simplify_gen_subreg (QImode, xop[2], mode, n_bytes-1);
+	  op[2] = avr_byte (xop[2], n_bytes - 1);
 
 	  if (n_bytes == 1)
 	    avr_asm_len ("ldi %0,0x80" CR_TAB
@@ -8324,7 +8315,7 @@ avr_out_plus_1 (rtx insn, rtx *xop, int *plen, enum rtx_code code,
 	{
 	  /* [3s,reg] */
 
-	  op[2] = simplify_gen_subreg (QImode, xop[2], mode, n_bytes-1);
+	  op[2] = avr_byte (xop[2], n_bytes - 1);
 
 	  if (n_bytes == 1)
 	    avr_asm_len ("ldi %0,0x7f" CR_TAB
@@ -8565,8 +8556,7 @@ avr_out_plus (rtx insn, rtx *xop, int *plen, bool out_label)
 
   /* Saturation will need the sign of the original operand.  */
 
-  rtx xmsb = simplify_gen_subreg (QImode, op[2], imode, n_bytes-1);
-  int sign = INTVAL (xmsb) < 0 ? -1 : 1;
+  int sign = avr_int8 (op[2], n_bytes - 1) < 0 ? -1 : 1;
 
   /* If we subtract and the subtrahend is a constant, then negate it
      so that avr_out_plus_1 can be used.  */
@@ -8678,13 +8668,13 @@ avr_out_plus_set_ZN (rtx *xop, int *plen)
   // SBIW'ed in one go.
   for (int i = 0; i < n_bytes; ++i)
     {
-      op[0] = simplify_gen_subreg (QImode, xreg, mode, i);
+      op[0] = avr_byte (xreg, i);
 
       if (i == 0
 	  && n_bytes >= 2
 	  && avr_adiw_reg_p (op[0]))
 	{
-	  op[1] = simplify_gen_subreg (HImode, xval, mode, 0);
+	  op[1] = avr_word (xval, 0);
 	  if (IN_RANGE (INTVAL (op[1]), 0, 63))
 	    {
 	      // SBIW can handle the lower 16 bits.
@@ -8696,7 +8686,7 @@ avr_out_plus_set_ZN (rtx *xop, int *plen)
 	    }
 	}
 
-      op[1] = simplify_gen_subreg (QImode, xval, mode, i);
+      op[1] = avr_byte (xval, i);
 
       if (test_hard_reg_class (LD_REGS, op[0]))
 	{
@@ -8911,11 +8901,10 @@ avr_out_bitop (rtx insn, rtx *xop, int *plen)
   for (int i = 0; i < n_bytes; i++)
     {
       /* We operate byte-wise on the destination.  */
-      rtx reg8 = simplify_gen_subreg (QImode, xop[0], mode, i);
-      rtx xval8 = simplify_gen_subreg (QImode, xop[2], mode, i);
+      rtx reg8 = avr_byte (xop[0], i);
 
       /* 8-bit value to operate with this byte. */
-      unsigned int val8 = UINTVAL (xval8) & GET_MODE_MASK (QImode);
+      unsigned int val8 = avr_uint8 (xop[2], i);
 
       /* Number of bits set in the current byte of the constant.  */
       int pop8 = popcount_hwi (val8);
@@ -9281,11 +9270,9 @@ avr_out_insv (rtx_insn *insn, rtx xop[], int *plen)
   rtx op[4] =
     {
       // Output
-      simplify_gen_subreg (QImode, xop[0], mode, obit / 8),
-      GEN_INT (obit & 7),
+      avr_byte (xop[0], obit / 8), GEN_INT (obit & 7),
       // Input
-      simplify_gen_subreg (QImode, xop[1], mode, ibit / 8),
-      GEN_INT (ibit & 7)
+      avr_byte (xop[1], ibit / 8), GEN_INT (ibit & 7)
     };
   obit &= 7;
   ibit &= 7;
@@ -9372,7 +9359,7 @@ avr_out_insv (rtx_insn *insn, rtx xop[], int *plen)
     {
       for (int b = 0; b < n_bytes; ++b)
 	{
-	  rtx byte = simplify_gen_subreg (QImode, xop[0], mode, b);
+	  rtx byte = avr_byte (xop[0], b);
 	  if (REGNO (byte) != REGNO (op[0]))
 	    avr_asm_len ("clr %0", &byte, plen, 1);
 	}
@@ -9392,7 +9379,7 @@ avr_out_insv (rtx_insn *insn, rtx xop[], int *plen)
   else
     for (int b = 0; b < n_bytes; ++b)
       {
-	rtx byte = simplify_gen_subreg (QImode, xop[0], mode, b);
+	rtx byte = avr_byte (xop[0], b);
 	avr_asm_len ("clr %0", &byte, plen, 1);
       }
 
@@ -9416,7 +9403,7 @@ avr_out_extr (rtx_insn *insn, rtx xop[], int *plen)
 
   if (GET_MODE (src) != QImode)
     {
-      src = xop[1] = simplify_gen_subreg (QImode, src, GET_MODE (src), bit / 8);
+      src = xop[1] = avr_byte (src, bit / 8);
       bit %= 8;
       xop[2] = GEN_INT (bit);
     }
@@ -10423,10 +10410,7 @@ avr_assemble_integer (rtx x, unsigned int size, int aligned_p)
       /* varasm fails to handle big fixed modes that don't fit in hwi.  */
 
       for (unsigned n = 0; n < size; n++)
-	{
-	  rtx xn = simplify_gen_subreg (QImode, x, GET_MODE (x), n);
-	  default_assemble_integer (xn, 1, aligned_p);
-	}
+	default_assemble_integer (avr_byte (x, n), 1, aligned_p);
 
       return true;
     }
@@ -11507,6 +11491,7 @@ avr_asm_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
 
   return sect;
 }
+
 
 /* Implement `TARGET_ASM_FILE_START'.  */
 /* Outputs some text at the start of each assembler file.  */
