@@ -182,44 +182,6 @@ xputenv (const char *string)
   putenv (CONST_CAST (char *, string));
 }
 
-/* Read the whole input file.  It will be NUL terminated (but
-   remember, there could be a NUL in the file itself.  */
-
-static const char *
-read_file (FILE *stream, size_t *plen)
-{
-  size_t alloc = 16384;
-  size_t base = 0;
-  char *buffer;
-
-  if (!fseek (stream, 0, SEEK_END))
-    {
-      /* Get the file size.  */
-      long s = ftell (stream);
-      if (s >= 0)
-	alloc = s + 100;
-      fseek (stream, 0, SEEK_SET);
-    }
-  buffer = XNEWVEC (char, alloc);
-
-  for (;;)
-    {
-      size_t n = fread (buffer + base, 1, alloc - base - 1, stream);
-
-      if (!n)
-	break;
-      base += n;
-      if (base + 1 == alloc)
-	{
-	  alloc *= 2;
-	  buffer = XRESIZEVEC (char, buffer, alloc);
-	}
-    }
-  buffer[base] = 0;
-  *plen = base;
-  return buffer;
-}
-
 /* Parse STR, saving found tokens into PVALUES and return their number.
    Tokens are assumed to be delimited by ':'.  */
 
@@ -651,10 +613,6 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
   struct oaccdims *dims = XOBFINISH (&dims_os, struct oaccdims *);
   struct regcount *regcounts = XOBFINISH (&regcounts_os, struct regcount *);
 
-  fprintf (cfile, "#include <stdlib.h>\n");
-  fprintf (cfile, "#include <stdint.h>\n");
-  fprintf (cfile, "#include <stdbool.h>\n\n");
-
   fprintf (cfile, "static const int gcn_num_vars = %d;\n\n", var_count);
   fprintf (cfile, "static const int gcn_num_ind_funcs = %d;\n\n", ind_fn_count);
 
@@ -719,35 +677,28 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 /* Embed an object file into a C source file.  */
 
 static void
-process_obj (FILE *in, FILE *cfile, uint32_t omp_requires)
+process_obj (const char *fname_in, FILE *cfile, uint32_t omp_requires)
 {
-  size_t len = 0;
-  const char *input = read_file (in, &len);
-
   /* Dump out an array containing the binary.
-     FIXME: do this with objcopy.  */
-  fprintf (cfile, "static unsigned char gcn_code[] = {");
-  for (size_t i = 0; i < len; i += 17)
-    {
-      fprintf (cfile, "\n\t");
-      for (size_t j = i; j < i + 17 && j < len; j++)
-	fprintf (cfile, "%3u,", (unsigned char) input[j]);
-    }
-  fprintf (cfile, "\n};\n\n");
+     If the file is empty, a parse error is shown as the argument to is_empty
+     is an undeclared identifier.  */
+  fprintf (cfile,
+	   "static unsigned char gcn_code[] = {\n"
+	   "#embed \"%s\" if_empty (error_file_is_empty)\n"
+	   "};\n\n", fname_in);
 
   fprintf (cfile,
 	   "static const struct gcn_image {\n"
-	   "  size_t size;\n"
+	   "  __SIZE_TYPE__ size;\n"
 	   "  void *image;\n"
 	   "} gcn_image = {\n"
-	   "  %zu,\n"
+	   "  sizeof(gcn_code),\n"
 	   "  gcn_code\n"
-	   "};\n\n",
-	   len);
+	   "};\n\n");
 
   fprintf (cfile,
 	   "static const struct gcn_data {\n"
-	   "  uintptr_t omp_requires_mask;\n"
+	   "  __UINTPTR_TYPE__ omp_requires_mask;\n"
 	   "  const struct gcn_image *gcn_image;\n"
 	   "  unsigned kernel_count;\n"
 	   "  const struct hsa_kernel_description *kernel_infos;\n"
@@ -1305,13 +1256,7 @@ main (int argc, char **argv)
       fork_execute (ld_argv[0], CONST_CAST (char **, ld_argv), true, ".ld_args");
       obstack_free (&ld_argv_obstack, NULL);
 
-      in = fopen (gcn_o_name, "r");
-      if (!in)
-	fatal_error (input_location, "cannot open intermediate gcn obj file");
-
-      process_obj (in, cfile, omp_requires);
-
-      fclose (in);
+      process_obj (gcn_o_name, cfile, omp_requires);
 
       xputenv (concat ("GCC_EXEC_PREFIX=", execpath, NULL));
       xputenv (concat ("COMPILER_PATH=", cpath, NULL));
