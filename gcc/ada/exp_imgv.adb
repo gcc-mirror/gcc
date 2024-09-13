@@ -2539,13 +2539,12 @@ package body Exp_Imgv is
 
          elsif Nkind (P) = N_Integer_Literal then
             declare
-               Val  : constant Uint    := Intval (P);
-               Neg  : constant Boolean := Val < Uint_0;
-               Bits : constant Nat     := Num_Bits (Val) + Boolean'Pos (Neg);
+               Val  : constant Uint := Intval (P);
+               Siz  : constant Nat  := Type_Size_For (Val);
 
             begin
-               if Bits <= System_Max_Integer_Size then
-                  Ptyp := Integer_Type_For (UI_From_Int (Bits), not Neg);
+               if Siz <= System_Max_Integer_Size then
+                  Ptyp := Integer_Type_For (UI_From_Int (Siz), Val >= Uint_0);
                end if;
             end;
          end if;

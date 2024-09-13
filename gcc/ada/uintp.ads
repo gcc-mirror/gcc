@@ -264,6 +264,9 @@ package Uintp is
    --  function is used for capacity checks, and it can be one bit off
    --  without affecting its usage.
 
+   function Type_Size_For (Input : Valid_Uint) return Nat;
+   --  Returns the size of an integer type that can accommodate Input
+
    ---------------------
    -- Output Routines --
    ---------------------

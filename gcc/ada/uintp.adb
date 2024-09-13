@@ -758,6 +758,19 @@ package body Uintp is
       end if;
    end Release_And_Save;
 
+   --------------------
+   --  Type_Size_For --
+   --------------------
+
+   function Type_Size_For (Input : Valid_Uint) return Nat is
+      Neg  : constant Boolean := Input < Uint_0;
+
+   begin
+      --  Num_Bits is correct only for nonnegative values
+
+      return Num_Bits (Input) + Boolean'Pos (Neg);
+   end Type_Size_For;
+
    -------------
    -- UI_Abs --
    -------------
