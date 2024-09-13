@@ -1,3 +1,32 @@
+2024-09-12  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-09-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96097
+	* pt.cc (coerce_template_template_parm): Increment
+	processing_template_decl before calling tsubst.
+
+2024-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116636
+	* method.cc: Include decl.h.
+	(use_thunk): Temporarily change deprecated_state to
+	UNAVAILABLE_DEPRECATED_SUPPRESS.
+
+2024-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116449
+	* typeck.cc (get_member_function_from_ptrfunc): Use save_expr
+	on instance_ptr and function even if it doesn't have side-effects,
+	as long as it isn't a decl.
+
 2024-09-08  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

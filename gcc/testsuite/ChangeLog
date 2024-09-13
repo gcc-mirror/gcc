@@ -1,3 +1,27 @@
+2024-09-12  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-09-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96097
+	* g++.dg/template/ttp44.C: New test.
+
+2024-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116636
+	* g++.dg/warn/deprecated-19.C: New test.
+
+2024-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116449
+	* g++.dg/ubsan/pr116449.C: New test.
+
 2024-09-08  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

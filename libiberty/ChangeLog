@@ -1,3 +1,27 @@
+2024-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/116614
+	* simple-object-elf.c (SHN_COMMON): Align comment with neighbouring
+	comments.
+	(SHN_HIRESERVE): Use uppercase hex digits instead of lowercase for
+	consistency.
+	(simple_object_elf_find_sections): Formatting fixes.
+	(simple_object_elf_fetch_attributes): Likewise.
+	(simple_object_elf_attributes_merge): Likewise.
+	(simple_object_elf_start_write): Likewise.
+	(simple_object_elf_write_ehdr): Likewise.
+	(simple_object_elf_write_shdr): Likewise.
+	(simple_object_elf_write_to_file): Likewise.
+	(simple_object_elf_copy_lto_debug_section): Likewise.  Don't fail for
+	new_i - 1 >= SHN_LORESERVE, instead arrange in that case to copy
+	over .symtab_shndx sections, though emit those last and compute their
+	section content when processing associated .symtab sections.  Handle
+	simple_object_internal_read failure even in the .symtab_shndx reading
+	case.
+
 2024-08-01  Release Manager
 
 	* GCC 14.2.0 released.
