@@ -52,6 +52,11 @@ private
       Data : char_array (1 .. OS_Constants.PTHREAD_MUTEX_SIZE);
    end record;
    pragma Convention (C, pthread_mutex_t);
-   for pthread_mutex_t'Alignment use Interfaces.C.unsigned_long'Alignment;
+   for pthread_mutex_t'Alignment use
+     Integer'Max (Interfaces.C.unsigned_long'Alignment,
+                  System.Address'Alignment);
+   --  On some targets (e.g. CHERI), pointers have larger alignment than
+   --  unsigned_long. On other targets (e.g. some 16-bit targets) long is
+   --  larger than a pointer. Choose the largest to err on the side of caution.
 
 end System.OS_Locks;
