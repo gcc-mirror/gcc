@@ -360,6 +360,12 @@ factor_out_conditional_operation (edge e0, edge e1, gphi *phi,
 	    }
 	  gsi = gsi_for_stmt (arg0_def_stmt);
 	  gsi_next_nondebug (&gsi);
+	  /* Skip past nops and predicates. */
+	  while (!gsi_end_p (gsi)
+		  && (gimple_code (gsi_stmt (gsi)) == GIMPLE_NOP
+		      || gimple_code (gsi_stmt (gsi)) == GIMPLE_PREDICT))
+	    gsi_next_nondebug (&gsi);
+	  /* Reject if the statement was not at the end of the block. */
 	  if (!gsi_end_p (gsi))
 	    return NULL;
 	}
