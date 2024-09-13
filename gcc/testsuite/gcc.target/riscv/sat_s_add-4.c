@@ -5,26 +5,25 @@
 #include "sat_arith.h"
 
 /*
-** sat_s_add_int8_t_fmt_1:
+** sat_s_add_int64_t_fmt_1:
 ** add\s+[atx][0-9]+,\s*a0,\s*a1
 ** xor\s+[atx][0-9]+,\s*a0,\s*a1
 ** xor\s+[atx][0-9]+,\s*a0,\s*[atx][0-9]+
-** srli\s+[atx][0-9]+,\s*[atx][0-9]+,\s*7
-** srli\s+[atx][0-9]+,\s*[atx][0-9]+,\s*7
+** srli\s+[atx][0-9]+,\s*[atx][0-9]+,\s*63
+** srli\s+[atx][0-9]+,\s*[atx][0-9]+,\s*63
 ** xori\s+[atx][0-9]+,\s*[atx][0-9]+,\s*1
 ** and\s+[atx][0-9]+,\s*[atx][0-9]+,\s*[atx][0-9]+
-** andi\s+[atx][0-9]+,\s*[atx][0-9]+,\s*1
 ** srai\s+[atx][0-9]+,\s*[atx][0-9]+,\s*63
-** xori\s+[atx][0-9]+,\s*[atx][0-9]+,\s*127
+** li\s+[atx][0-9]+,\s*-1
+** srli\s+[atx][0-9]+,\s*[atx][0-9]+,\s*1
+** xor\s+[atx][0-9]+,\s*[atx][0-9]+,\s*[atx][0-9]+
 ** neg\s+[atx][0-9]+,\s*[atx][0-9]+
 ** and\s+[atx][0-9]+,\s*[atx][0-9]+,\s*[atx][0-9]+
 ** addi\s+[atx][0-9]+,\s*[atx][0-9]+,\s*-1
 ** and\s+[atx][0-9]+,\s*[atx][0-9]+,\s*[atx][0-9]+
 ** or\s+a0,\s*[atx][0-9]+,\s*[atx][0-9]+
-** slliw\s+a0,\s*a0,\s*24
-** sraiw\s+a0,\s*a0,\s*24
 ** ret
 */
-DEF_SAT_S_ADD_FMT_1(int8_t, uint8_t, INT8_MIN, INT8_MAX)
+DEF_SAT_S_ADD_FMT_1(int64_t, uint64_t, INT64_MIN, INT64_MAX)
 
 /* { dg-final { scan-rtl-dump-times ".SAT_ADD " 2 "expand" } } */
