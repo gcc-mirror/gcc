@@ -1744,9 +1744,9 @@ package body Exp_Imgv is
                   E : constant Entity_Id := Entity (Name (First (Args)));
 
                begin
-                  Is_Wide := Is_RTE (E, RE_Wide_String_To_String)
+                  Is_Wide := Is_RTE (E, RE_Enum_Wide_String_To_String)
                                or else
-                             Is_RTE (E, RE_Wide_Wide_String_To_String);
+                             Is_RTE (E, RE_Enum_Wide_Wide_String_To_String);
                end;
 
             else

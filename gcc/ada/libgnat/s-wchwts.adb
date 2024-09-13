@@ -29,14 +29,23 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.WCh_Con; use System.WCh_Con;
-with System.WCh_Cnv; use System.WCh_Cnv;
+with System.Case_Util; use System.Case_Util;
+with System.WCh_Con;   use System.WCh_Con;
+with System.WCh_Cnv;   use System.WCh_Cnv;
 
 package body System.WCh_WtS is
 
    -----------------------
    -- Local Subprograms --
    -----------------------
+
+   procedure Normalize_String
+     (S  : in out String;
+      EM : WC_Encoding_Method);
+   --  If S does not represent a character literal, then any lower case
+   --  characters in S are changed to their upper case counterparts, while
+   --  wide characters are unchanged. EM indicates their encoding method.
+   --  This is the wide counterpart of System.Val_Util.Normalize_String.
 
    procedure Store_UTF_32_Character
      (U  : UTF_32_Code;
@@ -47,6 +56,113 @@ package body System.WCh_WtS is
    --  whose code is given as U, starting at S (P + 1). P is incremented to
    --  point to the last character stored. Raises CE if character cannot be
    --  stored using the given encoding method.
+
+   ----------------------
+   -- Normalize_String --
+   ----------------------
+
+   procedure Normalize_String
+     (S  : in out String;
+      EM : WC_Encoding_Method)
+   is
+      procedure Skip_Wide (S : String; P : in out Natural);
+      --  On entry S (P) points to an ESC character for a wide character escape
+      --  sequence or an upper half character if the encoding method uses the
+      --  upper bit, or a left bracket if the brackets encoding method is in
+      --  use. On exit, P is bumped past the wide character sequence.
+
+      ---------------
+      -- Skip_Wide --
+      ---------------
+
+      procedure Skip_Wide (S : String; P : in out Natural) is
+         function Skip_Char return Character;
+         --  Function to skip one character of wide character escape sequence
+
+         ---------------
+         -- Skip_Char --
+         ---------------
+
+         function Skip_Char return Character is
+         begin
+            P := P + 1;
+            return S (P - 1);
+         end Skip_Char;
+
+         function WC_Skip is new Char_Sequence_To_UTF_32 (Skip_Char);
+
+         Discard : UTF_32_Code;
+         pragma Warnings (Off, Discard);
+
+      --  Start of processing for Skip_Wide
+
+      begin
+         --  Capture invalid wide characters errors since we are going to
+         --  discard the result anyway. We just want to move past it.
+
+         begin
+            Discard := WC_Skip (Skip_Char, EM);
+         exception
+            when Constraint_Error =>
+               null;
+         end;
+      end Skip_Wide;
+
+      F, L, Ptr : Natural;
+
+   begin
+      F := S'First;
+      L := S'Last;
+
+      --  Case of empty string
+
+      if F > L then
+         return;
+      end if;
+
+      --  Scan for leading spaces
+
+      while F < L and then S (F) = ' ' loop
+         F := F + 1;
+      end loop;
+
+      --  Case of no nonspace characters found. Decrease L to ensure L < F
+      --  without risking an overflow if F is Integer'Last.
+
+      if S (F) = ' ' then
+         L := L - 1;
+         return;
+      end if;
+
+      --  Scan for trailing spaces
+
+      while S (L) = ' ' loop
+         L := L - 1;
+      end loop;
+
+      --  Convert to upper case if S is not a character literal
+
+      if S (F) /= ''' then
+         Ptr := F;
+
+         while Ptr <= L loop
+            --  This mimics the handling of wide characters in a call to
+            --  Casing.Set_Casing (All_Upper_Case) in the compiler.
+
+            if S (Ptr) = ASCII.ESC
+              or else S (Ptr) = '['
+              or else (EM in WC_Upper_Half_Encoding_Method
+                         and then Character'Pos (S (Ptr)) >= 16#80#)
+            then
+               Skip_Wide (S, Ptr);
+
+            else
+               S (Ptr) := To_Upper (S (Ptr));
+               Ptr := Ptr + 1;
+            end if;
+         end loop;
+      end if;
+   end Normalize_String;
 
    ----------------------------
    -- Store_UTF_32_Character --
@@ -77,6 +193,36 @@ package body System.WCh_WtS is
    begin
       Store_Chars (U, EM);
    end Store_UTF_32_Character;
+
+   --------------------------------
+   -- Enum_Wide_String_To_String --
+   --------------------------------
+
+   function Enum_Wide_String_To_String
+     (S  : Wide_String;
+      EM : WC_Encoding_Method) return String
+   is
+      Result : String := Wide_String_To_String (S, EM);
+
+   begin
+      Normalize_String (Result, EM);
+      return Result;
+   end Enum_Wide_String_To_String;
+
+   -------------------------------------
+   -- Enum_Wide_Wide_String_To_String --
+   -------------------------------------
+
+   function Enum_Wide_Wide_String_To_String
+     (S  : Wide_Wide_String;
+      EM : WC_Encoding_Method) return String
+   is
+      Result : String := Wide_Wide_String_To_String (S, EM);
+
+   begin
+      Normalize_String (Result, EM);
+      return Result;
+   end Enum_Wide_Wide_String_To_String;
 
    ---------------------------
    -- Wide_String_To_String --

@@ -2044,6 +2044,8 @@ package Rtsfind is
      RE_String_To_Wide_String,           -- System.WCh_StW
      RE_String_To_Wide_Wide_String,      -- System.WCh_StW
 
+     RE_Enum_Wide_String_To_String,      -- System.WCh_WtS
+     RE_Enum_Wide_Wide_String_To_String, -- System.WCh_WtS
      RE_Wide_String_To_String,           -- System.WCh_WtS
      RE_Wide_Wide_String_To_String,      -- System.WCh_WtS
 
@@ -3701,6 +3703,8 @@ package Rtsfind is
      RE_String_To_Wide_String            => System_WCh_StW,
      RE_String_To_Wide_Wide_String       => System_WCh_StW,
 
+     RE_Enum_Wide_String_To_String       => System_WCh_WtS,
+     RE_Enum_Wide_Wide_String_To_String  => System_WCh_WtS,
      RE_Wide_String_To_String            => System_WCh_WtS,
      RE_Wide_Wide_String_To_String       => System_WCh_WtS,
 
