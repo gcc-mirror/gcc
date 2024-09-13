@@ -3204,8 +3204,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	    integer_zerop)
 	(bit_xor:c (negate (convert (lt @0 integer_zerop))) max_value)
 	@2)
- (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type)
-      && types_match (type, @0, @1))))
+ (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type))))
 
 /* Signed saturation add, case 2:
    T sum = (T)((UT)X + (UT)Y)
