@@ -4073,9 +4073,10 @@ package body Sem_Ch13 is
                   end if;
 
                when Aspect_Finalizable =>
-                  if not All_Extensions_Allowed then
+                  if not Core_Extensions_Allowed then
                      Error_Msg_Name_1 := Nam;
-                     Error_Msg_GNAT_Extension ("aspect %", Loc);
+                     Error_Msg_GNAT_Extension
+                       ("aspect %", Loc, Is_Core_Extension => True);
                      goto Continue;
 
                   elsif not Is_Type (E) then

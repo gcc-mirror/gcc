@@ -11574,7 +11574,7 @@ package body Exp_Util is
       --  The aspect Finalizable may change the name of the primitives when
       --  present, but it's a GNAT extension.
 
-      if All_Extensions_Allowed then
+      if Core_Extensions_Allowed then
          declare
             Rep : constant Node_Id :=
               Get_Rep_Item (Typ, Name_Finalizable, Check_Parents => True);
