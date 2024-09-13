@@ -1790,11 +1790,28 @@ ftms = {
 };
 
 ftms = {
+  name = constexpr_new;
+  values = {
+    v = 202406;
+    cxxmin = 26;
+    extra_cond = "__cpp_constexpr >= 202406L";
+  };
+};
+
+ftms = {
   name = fstream_native_handle;
   values = {
     v = 202306;
     cxxmin = 26;
     hosted = yes;
+  };
+};
+
+ftms = {
+  name = ranges_concat;
+  values = {
+    v = 202403;
+    cxxmin = 26;
   };
 };
 
@@ -1839,23 +1856,6 @@ ftms = {
     cxxmin = 26;
     hosted = yes;
     extra_cond = "__glibcxx_to_chars";
-  };
-};
-
-ftms = {
-  name = ranges_concat;
-  values = {
-    v = 202403;
-    cxxmin = 26;
-  };
-};
-
-ftms = {
-  name = constexpr_new;
-  values = {
-    v = 202406;
-    cxxmin = 26;
-    extra_cond = "__cpp_constexpr >= 202406L";
   };
 };
 
