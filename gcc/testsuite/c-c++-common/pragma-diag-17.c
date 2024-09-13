@@ -12,7 +12,7 @@ void f()
   0b0100;	   /* { dg-error "binary constant" "" { target { ! c++14 } } } */
 #pragma GCC diagnostic ignored "-Wpedantic"
   2.0j;
-  1.0dd;
+  1.0dd; /* { dg-error "decimal floating-point" "" { target { ! dfp } } } */
   1.0d;
 
 #ifdef __cplusplus
