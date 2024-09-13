@@ -789,29 +789,31 @@ It cannot be applied to objects of types without any ancestors.
                 --  executed.
   end;
 
-Simpler accessibility model
+Simpler Accessibility Model
 ---------------------------
 
 The goal of this feature is to simplify the accessibility rules by removing
 dynamic accessibility checks that are often difficult to understand and debug.
-The new rules are effective at preventing errors, at the expense of loosing
-some flexibility in the use of anonymous access types.
+The new rules eliminate the need for runtime accessibility checks by imposing
+more conservative legality rules when enabled via a new restriction (see RM 13.12),
+No_Dynamic_Accessibility_Checks, which prevents dangling reference problems
+at compile time.
 
-The feature can be activated with pragma "No_Dynamic_Accessibility_Checks".
-As a result, a set of restrictions apply that can be categorized into three
-use-case of anonymous access types:
+This restriction has no effect on the user-visible behavior of a program when executed;
+the only effect of this restriction is to enable additional compile-time checks
+(described below) which ensure statically that Ada's dynamic accessibility checks
+will not fail.
 
-* standalone objects,
-* subprogam parameters and
-* function results.
+The feature can be activated with ``pragma Restrictions (No_Dynamic_Accessibility_Checks);``.
+As a result, additional compile-time checks are performed; these checks pertain to
+stand-alone objects, subprogram parameters, and function results as described below.
 
-Each of those use-cases is explained separately below. All of the refined rules are
-compatible with the [use of anonymous access types in SPARK]
+All of the refined rules are compatible with the [use of anonymous access types in SPARK]
 (http://docs.adacore.com/spark2014-docs/html/lrm/declarations-and-types.html#access-types).
 
 
-Standalone objects
-^^^^^^^^^^^^^^^^^^
+Stand-alone objects
+^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: ada
 
@@ -820,32 +822,41 @@ Standalone objects
    Cst        : constant access T := ...
    Cst_To_Cst : constant access constant T := ...
 
-The accessibility levels of standalone objects of anonymous access type (both
-constants or variables) is derived of the level of their object declaration.
+In this section, we will refer to a stand-alone object of an anonymous access
+type as an SO.
+
+When the restriction is in effect, the "statically deeper" relationship
+(see RM 3.10.2(4)) does apply to the type of a SO (contrary to RM 3.10.2(19.2))
+and, for the purposes of compile-time checks, the accessibility level of the
+type of a SO is the accessibility level of that SO.
 This supports many common use-cases without the employment of ``Unchecked_Access``
 while still removing the need for dynamic checks.
 
-The most major benefit of this change is the compatibility with standard Ada rules.
-
-For example, the following assignment is legal without ``Unchecked_Access`` that
-would be required without using the No_Dynamic_Accessibility_Checks pragma:
+This statically disallows cases that would otherwise require a dynamic accessibility
+check, such as
 
 .. code-block:: ada
 
-   pragma Restrictions (No_Dynamic_Accessibility_Checks);
+   type Ref is access all Integer;
+   Ptr : Ref;
+   Good : aliased Integer;
 
-   procedure Accessibility is
-
-      type T is null record;
-      type T_Ptr is access all T;
-
-      T_Inst : aliased T;
-      Anon  : access T := T_Inst'Access;
-      Named : T_Ptr := Anon;
-
+   procedure Proc is
+      Bad : aliased Integer;
+      Stand_Alone : access Integer;
    begin
-      null;
-   end;
+      if <some condition> then
+         Stand_Alone := Good'Access;
+      else
+         Stand_Alone := Bad'Access;
+      end if;
+      Ptr := Ref (Stand_Alone);
+   end Proc;
+
+If a No_Dynamic_Accessibility_Checks restriction is in effect, then the otherwise-legal
+type conversion (the right-hand side of the assignment to Ptr) becomes a violation
+of the RM 4.6 rule "The accessibility level of the operand type shall not be
+statically deeper than that of the target type ...".
 
 Subprogram parameters
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -855,27 +866,44 @@ Subprogram parameters
    procedure P (V : access T; X : access constant T);
 
 
-When the type of a formal parameter is of an anonymous access type then, from the caller's
-perspective, its level is seen to be at least as deep as that of the type of the
-corresponding actual parameter (whatever that actual parameter might be) -
-meaning any actual can be used for an anonymous access parameter without the use
-of 'Unchecked_Access.
+In most cases (the exceptions are described below), a No_Dynamic_Accessibility_Checks
+restriction means that the "statically deeper" relationship does apply to the anonymous
+type of an access parameter specifying an access-to-object type (contrary to RM 3.10.2(19.1))
+and, for purposes of compile-time "statically deeper" checks, the accessibility level
+of the type of such a parameter is the accessibility level of the parameter.
 
-.. todo::
+This change (at least as described so far) doesn't affect the caller's side, but on the
+callee's side it means that object designated by a non-null parameter of an anonymous
+access type is treated as having the same accessibility level as a local object declared
+immediately within the called subprogram.
 
-   the example below doesn't demonstrate the feature -- X'Access is legal in plain Ada.
+With the restriction in effect, the otherwise-legal type conversion in the following example
+becomes illegal:
 
 .. code-block:: ada
 
-      pragma Restrictions (No_Dynamic_Accessibility_Checks);
+   type Ref is access all Integer;
+   Ptr : Ref;
 
-      procedure Accessibility is
+   procedure Proc (Param : access Integer) is
+   begin
+      Ptr := Ref (Param);
+   end Proc;
 
-         procedure Foo (Param : access Integer) is null;
-         X : aliased Integer;
-      begin
-         Foo (X'Access);
-      end;
+The aforementioned exceptions have to do with return statements from functions that either
+return the given parameter (in the case of a function whose result type is an anonymous
+access type) or return the given parameter value as an access discriminant of the function
+result (or of some discriminated part thereof). More specifically, the "statically deeper"
+changes described above do not apply for purposes of checking the "shall not be statically
+deeper" rule for access discriminant parts of function results (RM 6.5(5.9)) or in determining
+the legality of an (implicit) type conversion from the anonymous access type of a parameter
+of a function to an anonymous access result type of that function. In order to prevent these
+rule relaxations from introducing the possibility of dynamic accessibility check failures,
+compensating compile-time checks are performed at the call site to prevent cases where
+including the value of an access parameter as part of a function result could make such
+check failures possible (specifically, the discriminant checks of RM 6.5(21) or, in the
+case of an anonymous access result type, the RM 4.6(48) check performed when converting
+to that result type). These compile-time checks are described in the next section.
 
 From the callee's perspective, the level of anonymous access formal parameters would be
 between the level of the subprogram and the level of the subprogram's locals. This has the effect
@@ -889,10 +917,6 @@ Note that with these more restricted rules we lose track of accessibility levels
 local objects thus making (in the example below) the assignment to Node2.Link from Temp below
 compile-time illegal.
 
-.. todo::
-
-   the code below gives the same error messages with and without the pragma
-
 .. code-block:: ada
 
    type Node is record
@@ -901,22 +925,21 @@ compile-time illegal.
    end record;
 
    procedure Swap_Links (Node1, Node2 : in out Node) is
-      Temp : constant access Integer := Node1.Link; -- We lose the "association" to Node1
+      Temp : constant access Node := Node1.Link; -- We lose the "association" to Node1
    begin
       Node1.Link := Node2.Link; -- Allowed
-      Node2.Link := Temp; -- Not allowed
+      Node2.Link := Temp;       -- Not allowed
    end;
 
    function Identity (N : access Node) return access Node is
       Local : constant access Node := N;
    begin
       if True then
-         return N; -- Allowed
+         return N;              -- Allowed
       else
-         return Local; -- Not allowed
+         return Local;          -- Not allowed
       end if;
    end;
-
 
 Function results
 ^^^^^^^^^^^^^^^^
@@ -925,28 +948,29 @@ Function results
 
    function Get (X : Rec) return access T;
 
-.. todo::
+If the result subtype of a function is either an anonymous access (sub)type, a
+class-wide (sub)type, an unconstrained subtype with an access discriminant, or
+a type with an unconstrained subcomponent subtype that has at least one access
+discriminant (this last case is only possible if the access discriminant has a
+default value), then we say that the function result type "might require an
+anonymous-access-part accessibility check". If a function has an access parameter,
+or a parameter whose subtype "might require an anonymous-access-part accessibility
+check", then we say that the each such parameter "might be used to pass in an
+anonymous-access value". If the first of these conditions holds for the result
+subtype of a function and the second condition holds for at least one parameter
+that function, then it is possible that a call to that function could return a
+result that contains anonymous-access values that were passed in via the parameter.
 
-   clarify the list/reword
-
-The accessibility level of the result of a call to a function that has an anonymous access result type defined to be as
-whatever is deepest out of the following:
-
-* The level of the subprogram
-* The level of any actual parameter corresponding to a formal parameter of an anonymous access type
-* The level of each parameter that has a part with both one or more access discriminants and an unconstrained subtype
-* The level of any actual parameter corresponding to a formal parameter which is explicitly aliased
-
-NOTE: We would need to include an additional item in the list if we were not to enforce the below restriction on tagged types:
-
-* The level of any actual parameter corresponding to a formal parameter of a tagged type
+Given a function call where the result type "might require an anonymous-access-part
+accessibility check" and a formal parameter of that function that "might be used to
+pass in an anonymous-access value", either the type of that formal parameter is an
+anonymous access type or it is not. If it is, and if a No_Dynamic_Access_Checks
+restriction is in effect, then the accessibility level of the type of the actual
+parameter shall be statically known to not be deeper than that of the master of
+the call. If it isn't, then the accessibility level of the actual parameter shall
+be statically known to not be deeper than that of the master of the call.
 
 Function result example:
-
-.. todo::
-
-   verify the examples. Clarify, if they define expected behavior with the pragma or general restriction
-   that is modified by the pragma
 
 .. code-block:: ada
 
@@ -957,7 +981,7 @@ Function result example:
 
       function Identity (Param : access Integer) return access Integer is
       begin
-         return Param; -- Legal
+         return Param;        -- Legal
       end;
 
       function Identity_2 (Param : aliased Integer) return access Integer is
@@ -967,24 +991,20 @@ Function result example:
 
       X : access Integer;
    begin
-      X := Identity (X); -- Legal
+      X := Identity (X);      -- Legal
       declare
          Y : access Integer;
          Z : aliased Integer;
       begin
-         X := Identity (Y); -- Illegal since Y is too deep
+         X := Identity (Y);   -- Illegal since Y is too deep
          X := Identity_2 (Z); -- Illegal since Z is too deep
       end;
    end;
 
-However, an additional restriction that falls out of the above logic is that tagged type extensions *cannot*
-allow additional anonymous access discriminants in order to prevent upward conversions potentially making
-such "hidden" anonymous access discriminants visible and prone to memory leaks.
-
-.. todo::
-
-   verify the examples. Clarify, if they define expected behavior with the pragma or general restriction
-   that is modified by the pragma
+In order to avoid having to expand the definition of "might be used to pass in an
+anonymous-access value" to include any parameter of a tagged type, the
+No_Dynamic_Access_Checks restriction also imposes a requirement that a type extension
+cannot include the explicit definition of an access discriminant.
 
 Here is an example of one such case of an upward conversion which would lead to a memory leak:
 
@@ -1028,11 +1048,6 @@ In order to prevent upward conversions of anonymous function results (like below
 also would need to assure that the level of such a result (from the callee's perspective)
 is statically deeper:
 
-.. todo::
-
-   verify the examples. Clarify, if they define expected behavior with the pragma or general restriction
-   that is modified by the pragma
-
 .. code-block:: ada
 
    declare
@@ -1051,15 +1066,6 @@ is statically deeper:
          Foo (Local'Access).all := 123;
       end;
    end;
-
-
-Discriminants and allocators
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. todo::
-
-   I have removed this section as it was referring to a feature which was never
-   implemented by gnat. Double-check that this is correct.
 
 Case pattern matching
 ---------------------
@@ -1254,7 +1260,7 @@ the expression is the same as that of the target (RM 5.2 notwithstanding).
 Instead, the tag of the target object becomes that of the source object of
 the assignment.
 An assignment to a composite object similarly copies the tags of any
-sub-components of the source object that have a mutably-tagged type.
+subcomponents of the source object that have a mutably-tagged type.
 
 The ``Constrained`` attribute is defined for any name denoting an object of a
 mutably tagged type (RM 3.7.2 notwithstanding). In this case, the Constrained
@@ -1279,7 +1285,7 @@ attribute reference and the type of the prefix of the attribute shall either
 both or neither be mutably tagged.
 
 The execution of a construct is erroneous if the construct has a constituent
-that is a name denoting a sub-component of a tagged object and the object's
+that is a name denoting a subcomponent of a tagged object and the object's
 tag is changed by this execution between evaluating the name and the last use
 (within this execution) of the subcomponent denoted by the name.
 
