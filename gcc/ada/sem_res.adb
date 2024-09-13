@@ -4667,14 +4667,56 @@ package body Sem_Res is
                F_Typ := Full_View (F_Typ);
             end if;
 
-            --  An actual cannot be an untagged formal incomplete type
+            --  An actual cannot be of an untagged incomplete view; the result
+            --  object of a function call cannot be of an incomplete view
+            --  (RM 3.10.1(10)).
 
             if Ekind (A_Typ) = E_Incomplete_Type
-              and then not Is_Tagged_Type (A_Typ)
-              and then Is_Generic_Type (A_Typ)
+              and then (Nkind (A) = N_Function_Call
+                          or else not Is_Tagged_Type (A_Typ))
             then
-               Error_Msg_N
-                 ("invalid use of untagged formal incomplete type", A);
+               --  No error if the call is placed in the initializing
+               --  expression of a component of the full-view of the
+               --  incomplete type. For example:
+
+               --    type T;
+               --    function F (Obj : T) return Integer;
+
+               --    type T is record
+               --       Data : Integer := F (T);
+               --    end record;
+
+               if Present (Full_View (A_Typ))
+                 and then Full_View (A_Typ) = Current_Scope
+                 and then In_Spec_Expression
+                 and then In_Default_Expr
+               then
+                  null;
+
+               --  No error if the call is performed in pre/postconditions, and
+               --  it is an incomplete type of a limited-with clause.
+
+               elsif From_Limited_With (A_Typ)
+                 and then Present (Non_Limited_View (A_Typ))
+                 and then Is_Subprogram (Current_Scope)
+                 and then
+                   (In_Spec_Expression
+                      or else
+                    Present (Class_Preconditions_Subprogram (Current_Scope)))
+               then
+                  null;
+
+               elsif Is_Generic_Type (A_Typ) then
+                  if Is_Tagged_Type (A_Typ) then
+                     Error_Msg_N
+                       ("invalid use of tagged formal incomplete type", A);
+                  else
+                     Error_Msg_N
+                       ("invalid use of untagged formal incomplete type", A);
+                  end if;
+               else
+                  Check_Fully_Declared (A_Typ, A);
+               end if;
             end if;
 
             --  For mode IN, if actual is an entity, and the type of the formal
