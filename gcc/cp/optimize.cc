@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "target.h"
 #include "cp-tree.h"
+#include "decl.h"
 #include "stringpool.h"
 #include "cgraph.h"
 #include "debug.h"
@@ -288,6 +289,11 @@ maybe_thunk_body (tree fn, bool force)
   /* Don't use thunks if the base clone omits inherited parameters.  */
   if (ctor_omit_inherited_parms (fns[0]))
     return 0;
+
+  /* Don't diagnose deprecated or unavailable cdtors just because they
+     have thunks emitted for them.  */
+  auto du = make_temp_override (deprecated_state,
+				UNAVAILABLE_DEPRECATED_SUPPRESS);
 
   DECL_ABSTRACT_P (fn) = false;
   if (!DECL_WEAK (fn))
