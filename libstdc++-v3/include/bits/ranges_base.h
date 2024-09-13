@@ -42,6 +42,12 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic" // __int128
 
+#if __glibcxx_algorithm_default_value_type // C++ >= 26
+# define _GLIBCXX26_RANGE_ALGO_DEF_VAL_T(_I, _P) = projected_value_t<_I, _P>
+#else
+# define _GLIBCXX26_RANGE_ALGO_DEF_VAL_T(_I, _P)
+#endif
+
 #ifdef __cpp_lib_concepts
 namespace std _GLIBCXX_VISIBILITY(default)
 {

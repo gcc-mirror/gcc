@@ -1968,6 +1968,16 @@
 #endif /* !defined(__cpp_lib_unreachable) && defined(__glibcxx_want_unreachable) */
 #undef __glibcxx_want_unreachable
 
+#if !defined(__cpp_lib_algorithm_default_value_type)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_algorithm_default_value_type 202403L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_algorithm_default_value_type)
+#   define __cpp_lib_algorithm_default_value_type 202403L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_algorithm_default_value_type) && defined(__glibcxx_want_algorithm_default_value_type) */
+#undef __glibcxx_want_algorithm_default_value_type
+
 #if !defined(__cpp_lib_fstream_native_handle)
 # if (__cplusplus >  202302L) && _GLIBCXX_HOSTED
 #  define __glibcxx_fstream_native_handle 202306L

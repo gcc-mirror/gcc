@@ -532,7 +532,9 @@ namespace ranges
 
   struct __fill_n_fn
   {
-    template<typename _Tp, output_iterator<const _Tp&> _Out>
+    template<typename _Out,
+	     typename _Tp _GLIBCXX26_DEF_VAL_T(iter_value_t<_Out>)>
+      requires output_iterator<_Out, const _Tp&>
       constexpr _Out
       operator()(_Out __first, iter_difference_t<_Out> __n,
 		 const _Tp& __value) const
@@ -577,8 +579,10 @@ namespace ranges
 
   struct __fill_fn
   {
-    template<typename _Tp,
-	     output_iterator<const _Tp&> _Out, sentinel_for<_Out> _Sent>
+    template<typename _Out,
+	     sentinel_for<_Out> _Sent,
+	     typename _Tp _GLIBCXX26_DEF_VAL_T(iter_value_t<_Out>)>
+      requires output_iterator<_Out, const _Tp&>
       constexpr _Out
       operator()(_Out __first, _Sent __last, const _Tp& __value) const
       {
@@ -604,7 +608,9 @@ namespace ranges
 	  }
       }
 
-    template<typename _Tp, output_range<const _Tp&> _Range>
+    template<typename _Range,
+	     typename _Tp _GLIBCXX26_DEF_VAL_T(range_value_t<_Range>)>
+      requires output_range<_Range, const _Tp&>
       constexpr borrowed_iterator_t<_Range>
       operator()(_Range&& __r, const _Tp& __value) const
       {

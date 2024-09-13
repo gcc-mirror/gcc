@@ -829,6 +829,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using type = invoke_result_t<_Proj&, __indirect_value_t<_Iter>>;
     };
 
+#if __glibcxx_algorithm_default_value_type // C++ >= 26
+  template<indirectly_readable _Iter,
+	   indirectly_regular_unary_invocable<_Iter> _Proj>
+    using projected_value_t
+	= remove_cvref_t<invoke_result_t<_Proj&, iter_value_t<_Iter>&>>;
+#endif
+
   // [alg.req], common algorithm requirements
 
   /// [alg.req.ind.move], concept `indirectly_movable`

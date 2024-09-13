@@ -1782,6 +1782,14 @@ ftms = {
 };
 
 ftms = {
+  name = algorithm_default_value_type;
+  values = {
+    v = 202403;
+    cxxmin = 26;
+  };
+};
+
+ftms = {
   name = fstream_native_handle;
   values = {
     v = 202306;
