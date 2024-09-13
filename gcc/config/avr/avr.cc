@@ -12972,7 +12972,7 @@ test_hard_reg_class (enum reg_class rclass, rtx x)
 }
 
 
-/* Helper for jump_over_one_insn_p:  Test if INSN is a 2-word instruction
+/* Helper for `jump_over_one_insn_p':  Test if INSN is a 2-word instruction
    and thus is suitable to be skipped by CPSE, SBRC, etc.  */
 
 static bool
@@ -12986,7 +12986,10 @@ avr_2word_insn_p (rtx_insn *insn)
   switch (INSN_CODE (insn))
     {
     default:
-      return false;
+      return (recog_memoized (insn) >= 0
+	      // Transparent calls may be skipped.
+	      && (get_attr_type (insn) == TYPE_XCALL
+		  || get_attr_adjust_len (insn) == ADJUST_LEN_CALL));
 
     case CODE_FOR_movqi_insn:
     case CODE_FOR_movuqq_insn:
