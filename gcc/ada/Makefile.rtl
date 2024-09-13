@@ -1789,10 +1789,8 @@ ifeq ($(strip $(filter-out %aarch64 freebsd%,$(target_cpu) $(target_os))),)
   a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
   s-dorepr.adb<libgnat/s-dorepr__fma.adb \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
-  s-intman.adb<libgnarl/s-intman__posix.adb \
   s-mudido.adb<libgnarl/s-mudido__affinity.adb \
   s-osinte.adb<libgnarl/s-osinte__freebsd.adb \
-  s-osinte.ads<libgnarl/s-osinte__freebsd.ads \
   s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__posix.adb \
@@ -1803,7 +1801,20 @@ ifeq ($(strip $(filter-out %aarch64 freebsd%,$(target_cpu) $(target_os))),)
   $(GNATRTL_128BIT_PAIRS) \
   system.ads<libgnat/system-freebsd.ads
 
-  EXTRA_GNATRTL_NONTASKING_OBJS = $(GNATRTL_128BIT_OBJS)
+  # Morello CheriBSD
+  ifneq (,$(findstring morello,$(target_alias)))
+    LIBGNAT_TARGET_PAIRS += \
+    s-intman.adb<libgnarl/s-intman__cheribsd.adb \
+    s-osinte.ads<libgnarl/s-osinte__cheribsd.ads
+
+    EXTRA_GNATRTL_NONTASKING_OBJS += i-cheri.o i-cheri-exceptions.o
+  else
+    LIBGNAT_TARGET_PAIRS += \
+    s-intman.adb<libgnarl/s-intman__posix.adb \
+    s-osinte.ads<libgnarl/s-osinte__freebsd.ads
+  endif
+
+  EXTRA_GNATRTL_NONTASKING_OBJS += $(GNATRTL_128BIT_OBJS)
 
   GNATLIB_SHARED = gnatlib-shared-dual
 
@@ -3132,6 +3143,7 @@ ADA_EXCLUDE_SRCS =\
   g-allein.ads g-alleve.adb g-alleve.ads g-altcon.adb g-altcon.ads \
   g-altive.ads g-alveop.adb g-alveop.ads g-alvety.ads g-alvevi.ads \
   g-intpri.ads g-regist.adb g-regist.ads g-sse.ads    g-ssvety.ads \
+  i-cheri.ads i-cheri.adb i-cheri-exceptions.ads \
   i-vxwoio.adb i-vxwoio.ads i-vxwork.ads \
   s-linux.ads  s-vxwext.adb s-vxwext.ads s-win32.ads  s-winext.ads \
   s-stchop.ads s-stchop.adb \
