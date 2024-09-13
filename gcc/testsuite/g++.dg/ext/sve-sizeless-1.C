@@ -301,7 +301,7 @@ statements (int n)
 
   // Other built-ins
 
-  __builtin_launder (sve_sc1); // { dg-error {non-pointer argument to '__builtin_launder'} }
+  __builtin_launder (sve_sc1); // { dg-error {not a pointer to object type} }
   __builtin_memcpy (&sve_sc1, &sve_sc2, 2);
 
   // Lambdas
