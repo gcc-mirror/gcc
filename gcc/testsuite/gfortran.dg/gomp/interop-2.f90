@@ -26,7 +26,7 @@ implicit none
 integer(omp_interop_kind) :: obj1, obj2, obj3, obj4, obj5
 integer :: x
 
-!$omp interop init ( prefer_type( {fr(1_"") }) : obj1) ! { dg-error "Expected constant integer identifier or non-empty default-kind character literal" }
+!$omp interop init ( prefer_type( {fr(1_"") }) : obj1) ! { dg-error "Expected scalar integer parameter or non-empty default-kind character literal" }
 !$omp interop init ( prefer_type( {fr(1_"hip") , attr(omp_ifr_cuda) }) : obj1) ! { dg-error "Expected default-kind character literal" }
 
 !$omp interop init ( prefer_type( {fr(1_"hip") , attr("myooption") }) : obj1) ! { dg-error "Character literal at .1. must start with 'ompx_'" }

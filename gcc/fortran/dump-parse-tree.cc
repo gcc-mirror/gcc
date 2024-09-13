@@ -37,6 +37,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "constructor.h"
 #include "version.h"
 #include "parse.h"  /* For gfc_ascii_statement.  */
+#include "omp-api.h"  /* For omp_get_name_from_fr_id.  */
+#include "gomp-constants.h"  /* For GOMP_INTEROP_IFR_SEPARATOR.  */
 
 /* Keep track of indentation for symbol tree dumps.  */
 static int show_level = 0;
@@ -1537,35 +1539,69 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	}
       else if (list_type == OMP_LIST_INIT)
 	{
-	  int i = 0;
 	  if (n->u.init.target)
 	    fputs ("target,", dumpfile);
 	  if (n->u.init.targetsync)
 	    fputs ("targetsync,", dumpfile);
-	  char *prefer_type = n->u.init.str;
-	  if (n->u.init.len)
-	    fputs ("prefer_type(", dumpfile);
-	  if (n->u.init.len)
-	    while (*prefer_type)
-	      {
-		fputc ('{', dumpfile);
-		if (n->u2.interop_int && n->u2.interop_int[i] != 0)
-		  fprintf (dumpfile, "fr(%d),", n->u2.interop_int[i]);
-		else if (prefer_type[0] != ' ' || prefer_type[1] != '\0')
-		  fprintf (dumpfile, "fr(\"%s\"),", prefer_type);
-		prefer_type += 1 + strlen (prefer_type);
-
-		while (*prefer_type)
-		  {
-		    fprintf (dumpfile, "attr(\"%s\"),", prefer_type);
-		    prefer_type += 1 + strlen (prefer_type);
-		  }
-		fputc ('}', dumpfile);
-		++prefer_type;
-		++i;
+	  if (n->u2.init_interop_fr)
+	    {
+	      char *attr_str = n->u.init.attr;
+	      int idx = 0;
+	      int fr_id;
+	      fputs ("prefer_type(", dumpfile);
+	      do
+		{
+		  fr_id = n->u2.init_interop_fr[idx];
+		  fputc ('{', dumpfile);
+		  if (fr_id != GOMP_INTEROP_IFR_NONE)
+		    {
+		      fputs ("fr(", dumpfile);
+		      do
+			{
+			  const char *fr_str = omp_get_name_from_fr_id (fr_id);
+			  if (fr_str)
+			    fprintf (dumpfile, "\"%s\"", fr_str);
+			  else
+			    fprintf (dumpfile, "%d", fr_id);
+			  fr_id = n->u2.init_interop_fr[++idx];
+			  if (fr_id != GOMP_INTEROP_IFR_SEPARATOR)
+			    fputc (',', dumpfile);
+			}
+		      while (fr_id != GOMP_INTEROP_IFR_SEPARATOR);
+		      fputc (')', dumpfile);
+		      if (attr_str && (attr_str[0] != ' ' || attr_str[1] != '\0'))
+			fputc (',', dumpfile);
+		    }
+		  else
+		    fr_id = n->u2.init_interop_fr[++idx];
+		  if (attr_str && attr_str[0] == ' ' && attr_str[1] == '\0')
+		    attr_str += 2;
+		  else if (attr_str)
+		    {
+		      fputs ("attr(\"", dumpfile);
+		      do
+			{
+			  fputs ((char *) attr_str, dumpfile);
+			  fputc ('"', dumpfile);
+			  attr_str += strlen (attr_str) + 1;
+			  if (attr_str[0] == '\0')
+			    break;
+			  fputs (",\"", dumpfile);
+			}
+		      while (true);
+		      fputc (')', dumpfile);
+		    }
+		  fputc ('}', dumpfile);
+		  fr_id = n->u2.init_interop_fr[++idx];
+		  if (fr_id == GOMP_INTEROP_IFR_SEPARATOR)
+		    break;
+		  fputc (',', dumpfile);
+		  if (attr_str)
+		    ++attr_str;
+		}
+	      while (true);
+	      fputc (')', dumpfile);
 	    }
-	  if (n->u.init.len)
-	    fputc (')', dumpfile);
 	  fputc (':', dumpfile);
 	}
       fprintf (dumpfile, "%s", n->sym ? n->sym->name : "omp_all_memory");

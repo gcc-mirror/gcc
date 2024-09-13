@@ -33,7 +33,7 @@ integer :: x
 !$omp&        destroy(obj2, obj3) depend(inout: x) use(obj4, obj5) device(device_num: 0)
 
 !$omp assume contains(interop)
-  !$omp interop init(prefer_type("cu"//char(1)//"da") : obj3)
+  !$omp interop init(prefer_type("cu"//char(1)//"da") : obj3)  ! { dg-warning "Unknown foreign runtime identifier 'cu\\\\x01da'" }
 !$omp end assume
 
 !$omp interop init(obj1, obj2, obj1), use(obj4) destroy(obj4)

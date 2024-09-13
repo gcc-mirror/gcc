@@ -388,6 +388,11 @@ enum gomp_map_kind
 #define GOMP_REQUIRES_REVERSE_OFFLOAD       0x80
 #define GOMP_REQUIRES_TARGET_USED           0x200
 
+/* Interop foreign-runtime data.  */
+#define GOMP_INTEROP_IFR_LAST	7
+#define GOMP_INTEROP_IFR_SEPARATOR -1
+#define GOMP_INTEROP_IFR_NONE -2
+
 /* HSA specific data structures.  */
 
 /* Identifiers of device-specific target arguments.  */
