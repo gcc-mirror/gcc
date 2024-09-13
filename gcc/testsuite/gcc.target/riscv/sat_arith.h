@@ -132,8 +132,21 @@ sat_s_add_##T##_fmt_1 (T x, T y)             \
 #define DEF_SAT_S_ADD_FMT_1_WRAP(T, UT, MIN, MAX) \
   DEF_SAT_S_ADD_FMT_1(T, UT, MIN, MAX)
 
+#define DEF_SAT_S_ADD_FMT_2(T, UT, MIN, MAX) \
+T __attribute__((noinline))                  \
+sat_s_add_##T##_fmt_2 (T x, T y)             \
+{                                            \
+  T sum = (UT)x + (UT)y;                     \
+  if ((x ^ y) < 0 || (sum ^ x) >= 0)         \
+    return sum;                              \
+  return x < 0 ? MIN : MAX;                  \
+}
+
 #define RUN_SAT_S_ADD_FMT_1(T, x, y) sat_s_add_##T##_fmt_1(x, y)
 #define RUN_SAT_S_ADD_FMT_1_WRAP(T, x, y) RUN_SAT_S_ADD_FMT_1(T, x, y)
+
+#define RUN_SAT_S_ADD_FMT_2(T, x, y) sat_s_add_##T##_fmt_2(x, y)
+#define RUN_SAT_S_ADD_FMT_2_WRAP(T, x, y) RUN_SAT_S_ADD_FMT_2(T, x, y)
 
 /******************************************************************************/
 /* Saturation Sub (Unsigned and Signed)                                       */
