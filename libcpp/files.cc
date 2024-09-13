@@ -1284,7 +1284,7 @@ finish_embed (cpp_reader *pfile, _cpp_file *file,
     }
   uchar *s = len ? _cpp_unaligned_alloc (pfile, len) : NULL;
   _cpp_buff *tok_buff = NULL;
-  cpp_token *toks = NULL, *tok = &pfile->directive_result;
+  cpp_token *tok = &pfile->directive_result, *toks = tok;
   size_t count = 0;
   if (limit)
     count = (params->prefix.count + limit * 2 - 1
