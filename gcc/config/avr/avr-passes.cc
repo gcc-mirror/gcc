@@ -813,7 +813,7 @@ avr_optimize_casesi (rtx_insn *insns[5], rtx *xop)
 
   // How the original switch value was extended to SImode; this is
   // SIGN_EXTEND or ZERO_EXTEND.
-  enum rtx_code code = GET_CODE (xop[9]);
+  rtx_code code = GET_CODE (xop[9]);
 
   // Lower index, upper index (plus one) and range of case calues.
   HOST_WIDE_INT low_idx = -INTVAL (xop[1]);
@@ -1078,7 +1078,7 @@ public:
   {
     rtx reg_or_0, mem, addr, addr_reg;
     int addr_regno;
-    enum rtx_code addr_code;
+    rtx_code addr_code;
     machine_mode mode;
     addr_space_t addr_space;
     bool store_p, volatile_p;
@@ -1744,7 +1744,7 @@ avr_split_fake_addressing_move (rtx_insn * /*insn*/, rtx *xop)
 
   machine_mode mode = GET_MODE (mem);
   rtx base, addr = XEXP (mem, 0);
-  enum rtx_code addr_code = GET_CODE (addr);
+  rtx_code addr_code = GET_CODE (addr);
 
   if (REG_P (reg_or_0)
       && reg_overlap_mentioned_p (reg_or_0, addr))
@@ -1784,7 +1784,7 @@ avr_split_fake_addressing_move (rtx_insn * /*insn*/, rtx *xop)
 	mem_volatile_p = true;
     }
 
-  enum rtx_code new_code = UNKNOWN;
+  rtx_code new_code = UNKNOWN;
   HOST_WIDE_INT add = 0, sub = 0;
   int msize = GET_MODE_SIZE (mode);
 

@@ -6660,7 +6660,7 @@
     int icode = (int) GET_CODE (operands[0]);
 
     targetm.canonicalize_comparison (&icode, &operands[1], &operands[2], false);
-    PUT_CODE (operands[0], (enum rtx_code) icode);
+    PUT_CODE (operands[0], (rtx_code) icode);
   })
 
 (define_expand "cbranch<mode>4"
@@ -6677,7 +6677,7 @@
     int icode = (int) GET_CODE (operands[0]);
 
     targetm.canonicalize_comparison (&icode, &operands[1], &operands[2], false);
-    PUT_CODE (operands[0], (enum rtx_code) icode);
+    PUT_CODE (operands[0], (rtx_code) icode);
   })
 
 
@@ -10020,7 +10020,7 @@
                       (pc)))]
   {
     rtx xval = avr_to_int_mode (operands[2]);
-    enum rtx_code code = GET_CODE (operands[0]);
+    rtx_code code = GET_CODE (operands[0]);
 
     if (code == GT && xval == const0_rtx)
       code = LT;
@@ -10060,7 +10060,7 @@
                       (pc)))]
   {
     rtx xval = avr_to_int_mode (operands[2]);
-    enum rtx_code code = GET_CODE (operands[0]);
+    rtx_code code = GET_CODE (operands[0]);
 
     if (code == GT && xval == const0_rtx)
       code = LT;

@@ -459,11 +459,11 @@
                       (label_ref (match_operand 3))
                       (pc)))]
   "avr_have_dimode"
-   {
+  {
     int icode = (int) GET_CODE (operands[0]);
 
     targetm.canonicalize_comparison (&icode, &operands[1], &operands[2], false);
-    operands[0] = gen_rtx_fmt_ee ((enum rtx_code) icode,
+    operands[0] = gen_rtx_fmt_ee ((rtx_code) icode,
                                   VOIDmode, operands[1], operands[2]);
 
     rtx acc_a = gen_rtx_REG (<MODE>mode, ACC_A);
@@ -488,7 +488,7 @@
         emit_jump_insn (gen_cbranch_<mode>2_split (operands[0], operands[3]));
       }
     DONE;
-   })
+  })
 
 (define_insn_and_split "cbranch_<mode>2_split"
   [(set (pc)

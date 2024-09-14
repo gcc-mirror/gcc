@@ -214,7 +214,7 @@ static GTY(()) rtx xstring_e;
 
 /* Current architecture.  */
 const avr_arch_t *avr_arch;
-enum avr_arch_id avr_arch_index;
+avr_arch_id avr_arch_index;
 
 /* Unnamed sections associated to __attribute__((progmem)) aka. PROGMEM
    or to address space __flash* or __memx.  Only used as singletons inside
@@ -518,7 +518,7 @@ avr_option_override (void)
   {
     opt_pass *extra_peephole2
       = g->get_passes ()->get_pass_peephole2 ()->clone ();
-    struct register_pass_info peep2_2_info
+    register_pass_info peep2_2_info
       = { extra_peephole2, "peephole2", 1, PASS_POS_INSERT_AFTER };
 
     register_pass (&peep2_2_info);
@@ -564,10 +564,10 @@ avr_init_expanders (void)
 /* Implement `REGNO_REG_CLASS'.  */
 /* Return register class for register R.  */
 
-enum reg_class
+reg_class
 avr_regno_reg_class (int r)
 {
-  static const enum reg_class reg_class_tab[] =
+  static const reg_class reg_class_tab[] =
     {
       R0_REG,
       /* r1 - r15 */
@@ -2130,7 +2130,7 @@ avr_address_tiny_absdata_p (rtx x, machine_mode mode)
 
 static inline bool
 avr_reg_ok_for_addr_p (rtx reg, addr_space_t as,
-		       RTX_CODE outer_code, bool strict)
+		       rtx_code outer_code, bool strict)
 {
   return (REG_P (reg)
 	  && (avr_regno_mode_code_ok_for_base_p (REGNO (reg), QImode,
@@ -2717,7 +2717,7 @@ avr_print_operand (FILE *file, rtx x, int code)
 		     " with data memory address"))
 	  {
 	    output_addr_const (stderr, x);
-	    fprintf(stderr,"\n");
+	    fprintf (stderr, "\n");
 	  }
       /* Use normal symbol for direct address no linker trampoline needed */
       output_addr_const (file, x);
@@ -2768,7 +2768,7 @@ avr_print_operand (FILE *file, rtx x, int code)
 static bool
 avr_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 				    unsigned int align,
-				    enum by_pieces_operation op, bool speed_p)
+				    by_pieces_operation op, bool speed_p)
 {
   if (op != MOVE_BY_PIECES
       || (speed_p && size > MOVE_MAX_PIECES))
@@ -3195,7 +3195,7 @@ _reg_unused_after (rtx_insn *insn, rtx reg, bool look_at_insn)
   while ((insn = NEXT_INSN (insn)))
     {
       rtx set;
-      enum rtx_code code = GET_CODE (insn);
+      rtx_code code = GET_CODE (insn);
 
 #if 0
       /* If this is a label that existed before reload, then the register
@@ -3459,7 +3459,7 @@ avr_out_lpm (rtx_insn *insn, rtx *op, int *plen)
     }
 
   rtx addr = XEXP (src, 0);
-  RTX_CODE code = GET_CODE (addr);
+  rtx_code code = GET_CODE (addr);
 
   gcc_assert (REG_P (dest));
   gcc_assert (REG == code || POST_INC == code);
@@ -3964,7 +3964,7 @@ output_movhi (rtx_insn *insn, rtx xop[], int *plen)
 	} /* REG_P (src) */
       else if (CONSTANT_P (src))
 	{
-	  return output_reload_inhi (xop, NULL, plen);
+	  return output_reload_inhi (xop, NULL_RTX, plen);
 	}
       else if (MEM_P (src))
 	{
@@ -5819,7 +5819,7 @@ avr_frame_pointer_required_p (void)
    For now, just look at the next insn, which misses some opportunities like
    following jumps.  */
 
-static RTX_CODE
+static rtx_code
 compare_condition (rtx_insn *insn)
 {
   rtx set;
@@ -5846,7 +5846,7 @@ compare_condition (rtx_insn *insn)
 static bool
 compare_sign_p (rtx_insn *insn)
 {
-  RTX_CODE cond = compare_condition (insn);
+  rtx_code cond = compare_condition (insn);
   return (cond == GE || cond == LT);
 }
 
@@ -5856,7 +5856,7 @@ compare_sign_p (rtx_insn *insn)
 static bool
 compare_eq_p (rtx_insn *insn)
 {
-  RTX_CODE cond = compare_condition (insn);
+  rtx_code cond = compare_condition (insn);
   return (cond == EQ || cond == NE);
 }
 
@@ -5869,7 +5869,7 @@ compare_eq_p (rtx_insn *insn)
 static void
 avr_canonicalize_comparison (int *icode, rtx *op0, rtx *op1, bool op0_fixed)
 {
-  enum rtx_code code = (enum rtx_code) *icode;
+  rtx_code code = (rtx_code) *icode;
   machine_mode mode = GET_MODE (*op0);
 
   bool signed_p = code == GT || code == LE;
@@ -6240,7 +6240,7 @@ avr_out_tstsi (rtx_insn *insn, rtx *op, int *plen)
    PLEN == 0: Print instructions.  */
 
 const char *
-avr_out_cmp_ext (rtx xop[], enum rtx_code code, int *plen)
+avr_out_cmp_ext (rtx xop[], rtx_code code, int *plen)
 {
   // The smaller reg is the one that's to be extended.  Get its index as z.
   int z = GET_MODE_SIZE (GET_MODE (xop[1])) < GET_MODE_SIZE (GET_MODE (xop[0]));
@@ -7883,14 +7883,14 @@ avr_out_plus_ext (rtx_insn *insn, rtx *yop, int *plen)
      Hence we have to dig by hand... */
 
   const rtx src = SET_SRC (avr_cc_set (insn, &ccmode));
-  const RTX_CODE add = GET_CODE (src);
+  const rtx_code add = GET_CODE (src);
   gcc_assert (GET_CODE (src) == PLUS || GET_CODE (src) == MINUS);
 
   // Use XOP[] in the remainder with XOP[0] = YOP[0] and XOP[1] = YOP[1/2].
   rtx xop[2] = { yop[0], yop[add == PLUS ? 1 : 2] };
   const rtx xreg = XEXP (src, add == PLUS ? 1 : 0);
   const rtx xext = XEXP (src, add == PLUS ? 0 : 1);
-  const RTX_CODE ext = GET_CODE (xext);
+  const rtx_code ext = GET_CODE (xext);
 
   gcc_assert (REG_P (xreg)
 	      && (ext == ZERO_EXTEND || ext == SIGN_EXTEND || ext == REG));
@@ -7982,8 +7982,8 @@ avr_out_plus_ext (rtx_insn *insn, rtx *yop, int *plen)
    fixed-point rounding, cf. `avr_out_round'.  */
 
 static void
-avr_out_plus_1 (rtx insn, rtx *xop, int *plen, enum rtx_code code,
-		enum rtx_code code_sat, int sign, bool out_label)
+avr_out_plus_1 (rtx insn, rtx *xop, int *plen, rtx_code code,
+		rtx_code code_sat, int sign, bool out_label)
 {
   /* MODE of the operation.  */
   machine_mode mode = GET_MODE (xop[0]);
@@ -8444,7 +8444,7 @@ avr_out_plus_1 (rtx insn, rtx *xop, int *plen, enum rtx_code code,
    are additions/subtraction for pointer modes, i.e. HImode and PSImode.  */
 
 static const char *
-avr_out_plus_symbol (rtx *xop, enum rtx_code code, int *plen)
+avr_out_plus_symbol (rtx *xop, rtx_code code, int *plen)
 {
   machine_mode mode = GET_MODE (xop[0]);
 
@@ -8500,8 +8500,8 @@ avr_out_plus (rtx insn, rtx *xop, int *plen, bool out_label)
   machine_mode mode = GET_MODE (xdest);
   scalar_int_mode imode = int_mode_for_mode (mode).require ();
   int n_bytes = GET_MODE_SIZE (mode);
-  enum rtx_code code_sat = GET_CODE (SET_SRC (xpattern));
-  enum rtx_code code
+  rtx_code code_sat = GET_CODE (SET_SRC (xpattern));
+  rtx_code code
     = (PLUS == code_sat || SS_PLUS == code_sat || US_PLUS == code_sat
        ? PLUS : MINUS);
 
@@ -8862,7 +8862,7 @@ avr_out_bitop (rtx insn, rtx *xop, int *plen)
 {
   /* CODE and MODE of the operation.  */
   rtx xpattern = INSN_P (insn) ? single_set (as_a <rtx_insn *> (insn)) : insn;
-  enum rtx_code code = GET_CODE (SET_SRC (xpattern));
+  rtx_code code = GET_CODE (SET_SRC (xpattern));
   machine_mode mode = GET_MODE (xop[0]);
 
   /* Number of bytes to operate on.  */
@@ -9011,12 +9011,12 @@ void
 avr_emit_xior_with_shift (rtx_insn *insn, rtx *xop, int bitoff)
 {
   rtx src = SET_SRC (single_set (insn));
-  RTX_CODE xior = GET_CODE (src);
+  rtx_code xior = GET_CODE (src);
   gcc_assert (xior == XOR || xior == IOR);
   gcc_assert (bitoff % 8 == 0);
 
   // Work out the shift offset in bytes; negative for shift right.
-  RTX_CODE shift = GET_CODE (XEXP (src, 0));
+  rtx_code shift = GET_CODE (XEXP (src, 0));
   int byteoff = 0?0
     : shift == ASHIFT ? bitoff / 8
     : shift == LSHIFTRT ? -bitoff / 8
@@ -9241,7 +9241,7 @@ avr_out_insv (rtx_insn *insn, rtx xop[], int *plen)
     }
 
   // Any of ASHIFT, LSHIFTRT, ASHIFTRT.
-  enum rtx_code code = GET_CODE (XEXP (xsrc, 0));
+  rtx_code code = GET_CODE (XEXP (xsrc, 0));
   int shift = code == ASHIFT ? INTVAL (xop2) : -INTVAL (xop2);
 
   // Determines the position of the output bit.
@@ -9518,7 +9518,7 @@ const char *
 avr_out_fract (rtx_insn *insn, rtx operands[], bool intsigned, int *plen)
 {
   rtx xop[6];
-  RTX_CODE shift = UNKNOWN;
+  rtx_code shift = UNKNOWN;
   bool sign_in_carry = false;
   bool msb_in_carry = false;
   bool lsb_in_tmp_reg = false;
@@ -10276,7 +10276,7 @@ avr_adjust_insn_length (rtx_insn *insn, int len)
 
   /* Read from insn attribute "adjust_len" if/how length is to be adjusted.  */
 
-  enum attr_adjust_len adjust_len = get_attr_adjust_len (insn);
+  attr_adjust_len adjust_len = get_attr_adjust_len (insn);
 
   if (adjust_len == ADJUST_LEN_NO)
     {
@@ -11731,10 +11731,10 @@ avr_cbranch_cost (rtx x)
    operand's parent operator.  */
 
 static int
-avr_operand_rtx_cost (rtx x, machine_mode mode, enum rtx_code outer,
+avr_operand_rtx_cost (rtx x, machine_mode mode, rtx_code outer,
 		      int opno, bool speed)
 {
-  enum rtx_code code = GET_CODE (x);
+  rtx_code code = GET_CODE (x);
 
   switch (code)
     {
@@ -11766,7 +11766,7 @@ static bool
 avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 		 int /*opno*/, int *total, bool speed)
 {
-  enum rtx_code code = GET_CODE (x);
+  rtx_code code = GET_CODE (x);
   HOST_WIDE_INT val;
 
   switch (code)
@@ -12087,8 +12087,8 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	    {
 	      rtx op0 = XEXP (x, 0);
 	      rtx op1 = XEXP (x, 1);
-	      enum rtx_code code0 = GET_CODE (op0);
-	      enum rtx_code code1 = GET_CODE (op1);
+	      rtx_code code0 = GET_CODE (op0);
+	      rtx_code code1 = GET_CODE (op1);
 	      bool ex0 = SIGN_EXTEND == code0 || ZERO_EXTEND == code0;
 	      bool ex1 = SIGN_EXTEND == code1 || ZERO_EXTEND == code1;
 
@@ -12778,7 +12778,7 @@ avr_insn_cost (rtx_insn *insn, bool speed)
       subrtx_iterator::array_type array;
       FOR_EACH_SUBRTX (iter, array, SET_SRC (set), NONCONST)
 	{
-	  enum rtx_code code = GET_CODE (*iter);
+	  rtx_code code = GET_CODE (*iter);
 	  not_bit_p |= code == NOT || code == XOR || code == GE;
 	}
 
@@ -12871,8 +12871,8 @@ extra_constraint_Q (rtx x)
 
 /* Convert condition code CONDITION to the valid AVR condition code.  */
 
-RTX_CODE
-avr_normalize_condition (RTX_CODE condition)
+rtx_code
+avr_normalize_condition (rtx_code condition)
 {
   switch (condition)
     {
@@ -12947,7 +12947,7 @@ avr_function_value (const_tree type, const_tree /*fn_decl_or_type*/,
 }
 
 int
-test_hard_reg_class (enum reg_class rclass, rtx x)
+test_hard_reg_class (reg_class rclass, rtx x)
 {
   int regno = true_regnum (x);
   if (regno < 0)
@@ -13109,9 +13109,9 @@ avr_hard_regno_call_part_clobbered (unsigned, unsigned regno,
 
 /* Implement `MODE_CODE_BASE_REG_CLASS'.  */
 
-enum reg_class
+reg_class
 avr_mode_code_base_reg_class (machine_mode /*mode*/, addr_space_t as,
-			      RTX_CODE outer_code, RTX_CODE /*index_code*/)
+			      rtx_code outer_code, rtx_code /*index_code*/)
 {
   if (!ADDR_SPACE_GENERIC_P (as))
     {
@@ -13134,8 +13134,8 @@ avr_mode_code_base_reg_class (machine_mode /*mode*/, addr_space_t as,
 
 bool
 avr_regno_mode_code_ok_for_base_p (int regno, machine_mode /*mode*/,
-				   addr_space_t as, RTX_CODE outer_code,
-				   RTX_CODE /*index_code*/)
+				   addr_space_t as, rtx_code outer_code,
+				   rtx_code /*index_code*/)
 {
   bool ok = false;
 
@@ -13481,7 +13481,7 @@ avr_hard_regno_rename_ok (unsigned int old_reg, unsigned int new_reg)
 const char *
 avr_out_sbxx_branch (rtx_insn *insn, rtx operands[])
 {
-  enum rtx_code comp = GET_CODE (operands[0]);
+  rtx_code comp = GET_CODE (operands[0]);
   bool long_jump = get_attr_length (insn) >= 4;
   bool reverse = long_jump || jump_over_one_insn_p (insn, operands[3]);
 
@@ -14379,7 +14379,7 @@ avr_has_nibble_0xf (rtx ival)
 typedef struct
 {
   /* tree code of binary function G */
-  enum tree_code code;
+  tree_code code;
 
   /* The constant second argument of G */
   int arg;
@@ -14642,7 +14642,7 @@ struct GTY(()) avr_builtin_description
    that a built-in's ID can be used to access the built-in by means of
    avr_bdesc[ID]  */
 
-static GTY(()) struct avr_builtin_description
+static GTY(()) avr_builtin_description
 avr_bdesc[AVR_BUILTIN_COUNT] =
   {
 #define DEF_BUILTIN(NAME, N_ARGS, TYPE, ICODE, LIBNAME)         \
@@ -14938,7 +14938,7 @@ avr_expand_builtin (tree exp, rtx target, rtx /*subtarget*/,
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   const char *bname = IDENTIFIER_POINTER (DECL_NAME (fndecl));
   unsigned int id = DECL_MD_FUNCTION_CODE (fndecl);
-  const struct avr_builtin_description *d = &avr_bdesc[id];
+  const avr_builtin_description *d = &avr_bdesc[id];
   tree arg0;
   rtx op0;
 
@@ -15339,7 +15339,7 @@ avr_md_asm_adjust (vec<rtx> &/*outputs*/, vec<rtx> &/*inputs*/,
    the default one for the others.  */
 
 static machine_mode
-avr_c_mode_for_floating_type (enum tree_index ti)
+avr_c_mode_for_floating_type (tree_index ti)
 {
   if (ti == TI_DOUBLE_TYPE)
     return avr_double == 32 ? SFmode : DFmode;
@@ -15352,7 +15352,7 @@ avr_c_mode_for_floating_type (enum tree_index ti)
 /* Worker function for `FLOAT_LIB_COMPARE_RETURNS_BOOL'.  */
 
 bool
-avr_float_lib_compare_returns_bool (machine_mode mode, enum rtx_code)
+avr_float_lib_compare_returns_bool (machine_mode mode, rtx_code)
 {
   if (mode == DFmode)
     {
@@ -15581,7 +15581,7 @@ avr_use_lra_p ()
 #undef TARGET_C_MODE_FOR_FLOATING_TYPE
 #define TARGET_C_MODE_FOR_FLOATING_TYPE avr_c_mode_for_floating_type
 
-struct gcc_target targetm = TARGET_INITIALIZER;
+gcc_target targetm = TARGET_INITIALIZER;
 
 
 #include "gt-avr.h"

@@ -51,7 +51,7 @@ static tree
 avr_resolve_overloaded_builtin (unsigned int iloc, tree fndecl, void *vargs)
 {
   tree type0, type1, fold = NULL_TREE;
-  enum avr_builtin_id id = AVR_BUILTIN_COUNT;
+  avr_builtin_id id = AVR_BUILTIN_COUNT;
   location_t loc = (location_t) iloc;
   vec<tree, va_gc> &args = * (vec<tree, va_gc>*) vargs;
 
@@ -291,7 +291,7 @@ avr_toupper (char *up, const char *lo)
 /* Worker function for TARGET_CPU_CPP_BUILTINS.  */
 
 void
-avr_cpu_cpp_builtins (struct cpp_reader *pfile)
+avr_cpu_cpp_builtins (cpp_reader *pfile)
 {
   builtin_define_std ("AVR");
 

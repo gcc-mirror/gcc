@@ -20,7 +20,7 @@
 
 
 extern int avr_function_arg_regno_p (int r);
-extern void avr_cpu_cpp_builtins (struct cpp_reader * pfile);
+extern void avr_cpu_cpp_builtins (cpp_reader * pfile);
 extern enum reg_class avr_regno_reg_class (int r);
 extern void asm_globalize_label (FILE *file, const char *name);
 extern void avr_adjust_reg_alloc_order (void);
@@ -66,7 +66,7 @@ extern const char *avr_out_plus_set_N (rtx*, int*);
 extern const char *avr_out_op8_set_ZN (rtx_code, rtx*, int*);
 extern int avr_len_op8_set_ZN (rtx_code, rtx*);
 extern bool avr_op8_ZN_operator (rtx);
-extern const char *avr_out_cmp_ext (rtx*, enum rtx_code, int*);
+extern const char *avr_out_cmp_ext (rtx*, rtx_code, int*);
 
 extern const char *ashlqi3_out (rtx_insn *insn, rtx operands[], int *len);
 extern const char *ashlhi3_out (rtx_insn *insn, rtx operands[], int *len);
@@ -123,11 +123,11 @@ extern int jump_over_one_insn_p (rtx_insn *insn, rtx dest);
 
 extern void avr_final_prescan_insn (rtx_insn *insn, rtx *operand,
 				    int num_operands);
-extern RTX_CODE avr_normalize_condition (RTX_CODE condition);
+extern rtx_code avr_normalize_condition (rtx_code condition);
 extern void out_shift_with_cnt (const char *templ, rtx_insn *insn,
 				rtx operands[], int *len, int t_len);
-extern enum reg_class avr_mode_code_base_reg_class (machine_mode, addr_space_t, RTX_CODE, RTX_CODE);
-extern bool avr_regno_mode_code_ok_for_base_p (int, machine_mode, addr_space_t, RTX_CODE, RTX_CODE);
+extern enum reg_class avr_mode_code_base_reg_class (machine_mode, addr_space_t, rtx_code, rtx_code);
+extern bool avr_regno_mode_code_ok_for_base_p (int, machine_mode, addr_space_t, rtx_code, rtx_code);
 extern rtx avr_incoming_return_addr_rtx (void);
 extern rtx avr_legitimize_reload_address (rtx*, machine_mode, int, int, int, int, rtx (*)(rtx,int));
 extern bool avr_adiw_reg_p (rtx);
@@ -137,7 +137,7 @@ extern bool avr_load_libgcc_p (rtx);
 extern bool avr_xload_libgcc_p (machine_mode);
 extern rtx avr_eval_addr_attrib (rtx x);
 
-extern bool avr_float_lib_compare_returns_bool (machine_mode, enum rtx_code);
+extern bool avr_float_lib_compare_returns_bool (machine_mode, rtx_code);
 
 static inline unsigned
 regmask (machine_mode mode, unsigned regno)
