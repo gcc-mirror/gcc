@@ -474,7 +474,11 @@ package body Namet is
 
             P := 1;
             while P < Temp.Length loop
-               if Temp.Chars (P + 1) in 'A' .. 'Z' then
+               --  Cheap test for the common case of no encoding
+
+               if Temp.Chars (P + 1) in 'A' .. 'Z'
+                 and then Temp.Chars (P + 1) /= 'W'
+               then
                   P := P + 1;
 
                --  Uhh encoding
