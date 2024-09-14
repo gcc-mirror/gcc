@@ -87,7 +87,6 @@
    UNSPEC_FMUL
    UNSPEC_FMULS
    UNSPEC_FMULSU
-   UNSPEC_COPYSIGN
    UNSPEC_INSERT_BITS
    UNSPEC_ROUND
    ])
@@ -9272,12 +9271,18 @@
 ;; Copysign
 
 (define_insn "copysignsf3"
-  [(set (match_operand:SF 0 "register_operand"             "=r")
-        (unspec:SF [(match_operand:SF 1 "register_operand"  "0")
-                    (match_operand:SF 2 "register_operand"  "r")]
-                   UNSPEC_COPYSIGN))]
+  [(set (match_operand:SF 0 "register_operand"              "=r")
+        (copysign:SF (match_operand:SF 1 "register_operand"  "0")
+                     (match_operand:SF 2 "nonmemory_operand" "rF")))]
   ""
-  "bst %D2,7\;bld %D0,7"
+  {
+    if (const_double_operand (operands[2], SFmode))
+      {
+        rtx xmsb = simplify_gen_subreg (QImode, operands[2], SFmode, 3);
+        return INTVAL (xmsb) < 0 ? "set\;bld %D0,7" : "clt\;bld %D0,7";
+      }
+    return "bst %D2,7\;bld %D0,7";
+  }
   [(set_attr "length" "2")])
 
 ;; Swap Bytes (change byte-endianness)
