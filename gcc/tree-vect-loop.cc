@@ -12803,6 +12803,7 @@ optimize_mask_stores (class loop *loop)
 		  if (has_zero_uses (lhs))
 		    {
 		      gsi_remove (&gsi_from, true);
+		      release_defs (stmt1);
 		      continue;
 		    }
 		}
