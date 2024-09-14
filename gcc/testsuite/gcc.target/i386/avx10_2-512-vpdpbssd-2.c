@@ -13,6 +13,8 @@
 #define SRC_SIZE (AVX512F_LEN / 8)
 #define SIZE (AVX512F_LEN / 32)
 
+#include "avx512f-mask-type.h"
+
 static void
 CALC (int *r, int *dst, char *s1, char *s2)
 {

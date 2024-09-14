@@ -8,6 +8,7 @@
 #include "avx10-helper.h"
 #include <stdbool.h>
 #include "avx10-minmax-helper.h"
+#include "avx512f-mask-type.h"
 
 void static
 CALC (float *r, float *s1, float *s2, int R)
