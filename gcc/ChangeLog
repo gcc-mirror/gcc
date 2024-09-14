@@ -1,3 +1,35 @@
+2024-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-08-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116287
+	* config/i386/i386.cc (ix86_fold_builtin) <case IX86_BUILTIN_BEXTR32>:
+	When folding into zero without checking whether first argument is
+	constant, use omit_one_operand.
+	(ix86_fold_builtin) <case IX86_BUILTIN_BZHI32>: Likewise.
+
+2024-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-07-23  Jakub Jelinek  <jakub@redhat.com>
+		    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116034
+	* tree-ssa.cc (maybe_rewrite_mem_ref_base): Only use IMAGPART_EXPR
+	if MEM_REF offset is equal to element type size.
+
+2024-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/115527
+	* gimple-fold.cc (clear_padding_flush): Introduce endsize
+	variable and use it instead of wordsize when comparing it against
+	nonzero_last.
+	(clear_padding_type): Increment off by sz.
+
 2024-09-09  Haochen Jiang  <haochen.jiang@intel.com>
 
 	PR target/116617
