@@ -1,3 +1,5 @@
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
+
 // https://gcc.gnu.org/PR108620
 #include <iostream>
 #include <memory>

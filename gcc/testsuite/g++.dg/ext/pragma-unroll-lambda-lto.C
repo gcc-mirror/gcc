@@ -1,5 +1,6 @@
 // { dg-do link { target c++11 } }
 // { dg-options "-O2 -flto -fdump-rtl-loop2_unroll" }
+// { dg-skip-if "requires hosted libstdc++ for cstdlib rand" { ! hostedlib } }
 
 #include <cstdlib>
 
