@@ -1,3 +1,20 @@
+2024-09-13  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	PR libstdc++/108846
+	PR libstdc++/116471
+	* include/bits/ranges_algobase.h (__assign_one): New helper
+	function.
+	(__copy_or_move): Remove a spurious static_assert; use
+	__assign_one for memcpyable ranges of length 1.
+	(__copy_or_move_backward): Likewise.
+	* testsuite/25_algorithms/copy/108846.cc: Extend to range-based
+	algorithms, and cover both memcpyable and non-memcpyable
+	cases.
+	* testsuite/25_algorithms/copy_backward/108846.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/108846.cc: Likewise.
+	* testsuite/25_algorithms/move/108846.cc: Likewise.
+	* testsuite/25_algorithms/move_backward/108846.cc: Likewise.
+
 2024-09-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/optional (__is_bool): Remove.

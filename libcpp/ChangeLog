@@ -1,3 +1,8 @@
+2024-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* files.cc (finish_embed): Initialize toks to tok rather
+	than NULL.
+
 2024-09-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* internal.h (struct cpp_embed_params): Add base64 member.

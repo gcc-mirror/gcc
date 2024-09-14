@@ -1,3 +1,35 @@
+2024-09-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/116696
+	* g++.dg/DRs/dr2478.C: Prune extra diagnostic.
+	* g++.dg/ext/fimplicit-constexpr1.C: New test.
+
+2024-09-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/116661
+	* gfortran.dg/gomp/interop-1.f90: Extend, update dg-*.
+	* gfortran.dg/gomp/interop-2.f90: Update dg-error.
+	* gfortran.dg/gomp/interop-3.f90: Add dg-warning.
+
+2024-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116678
+	* g++.dg/warn/deprecated-20.C: New test.
+
+2024-09-13  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/vector/long-double-asm-abi.c: Adapt
+	scan-assembler directive.
+	* gcc.target/s390/vector/long-double-to-i64.c: Adapt
+	scan-assembler directive.
+	* gcc.target/s390/pr115860-1.c: New test.
+
+2024-09-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/116653
+	* gfortran.dg/unsigned_21.f90:
+	* gfortran.dg/unsigned_21_be.f90: New test.
+
 2024-09-12  Alexandre Oliva  <oliva@adacore.com>
 	    Olivier Hainque  <hainque@adacore.com>
 

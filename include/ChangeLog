@@ -1,3 +1,9 @@
+2024-09-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/116661
+	* gomp-constants.h (GOMP_INTEROP_IFR_LAST,
+	GOMP_INTEROP_IFR_SEPARATOR, GOMP_INTEROP_IFR_NONE): New.
+
 2024-08-09  Will Hawkins  <hawkinsw@obs.cr>
 
 	* btf.h (BTF_TYPE_INFO): Protect against user providing invalid

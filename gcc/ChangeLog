@@ -1,3 +1,78 @@
+2024-09-13  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_2word_insn_p): Return true for
+	transparent calls: When insn attribute "type" is "xcall"
+	or when "adjust_len" is "call".
+
+2024-09-13  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-phiopt.cc (factor_out_conditional_operation): Instead
+	of just ignorning a NOP/PREDICT, skip over them before checking
+	the heuristics.
+
+2024-09-13  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc: Use functions like avr_byte,
+	avr_word, avr_[u]int8/16 if convenient.
+	(avr_uint16): New function.
+
+2024-09-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/116661
+	* omp-api.h (omp_get_fr_id_from_name, omp_get_name_from_fr_id): New
+	prototypes.
+	* omp-general.cc (omp_get_fr_id_from_name, omp_get_name_from_fr_id):
+	New.
+
+2024-09-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/mkoffload.cc (read_file): Remove.
+	(process_asm): Do not add '#include' to generated C file.
+	(process_obj): Generate C file that uses #embed and use
+	__SIZE_TYPE__ and __UINTPTR_TYPE__ instead the #include-defined
+	size_t and uintptr.
+	(main): Update call to it; remove no longer needed file I/O.
+
+2024-09-13  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/115860
+	* config/s390/s390.cc (print_operand): Remove operand specifier
+	%V.
+	* config/s390/s390.md (UNSPEC_TF_TO_FPRX2): New.
+	* config/s390/vector.md (*tf_to_fprx2_0): Remove.
+	(*tf_to_fprx2_1): Remove.
+	(tf_to_fprx2): New.
+
+2024-09-13  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390.cc (s390_mem_constraint): Check displacement
+	for AQ and AR constraints.
+
+2024-09-13  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_chunk, avr_byte, avr_word)
+	(avr_int8, avr_uint8, avr_int16): New helper functions.
+	(avr_out_compare): Overhaul.
+
+2024-09-13  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_out_compare): Tweak 32-bit EQ and NE
+	comparisons that can use SBIW for the hi16 part.
+
+2024-09-13  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_init_machine_status): Move code to...
+	(avr_option_override) <init_machine_status>: ...lambda.
+	(avr_insn_has_reg_unused_note_p): Move up.
+	(_reg_unused_after, reg_unused_after): Move up.
+	(output_reload_in_const): Move up.
+	(avr_c_mode_for_floating_type): Move down.
+
+2024-09-13  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Remove the types_match check for signed SAT_ADD
+	case 1.
+
 2024-09-12  Alexandre Oliva  <oliva@adacore.com>
 	    Olivier Hainque  <hainque@adacore.com>
 

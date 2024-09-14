@@ -1,3 +1,14 @@
+2024-09-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/116661
+	* gfortran.h (gfc_omp_namelist): Rename 'init' members for clarity.
+	* match.cc (gfc_free_omp_namelist): Handle renaming.
+	* dump-parse-tree.cc (show_omp_namelist): Update for new format
+	and features.
+	* openmp.cc (gfc_match_omp_prefer_type): Parse list to 'fr' and 'attr';
+	store 'fr' values as integer.
+	(gfc_match_omp_init): Rename variable names.
+
 2024-09-12  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* module.cc (bt_types): Add BT_UNSIGNED.

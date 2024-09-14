@@ -1,3 +1,17 @@
+2024-09-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/116696
+	* constexpr.cc (explain_invalid_constexpr_fn): When
+	-fimplicit-constexpr, also explain inline functions, and point out
+	non-inline functions.
+
+2024-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116678
+	* optimize.cc: Include decl.h.
+	(maybe_thunk_body): Temporarily change deprecated_state to
+	UNAVAILABLE_DEPRECATED_SUPPRESS.
+
 2024-09-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/116673
