@@ -2,9 +2,9 @@
 // { dg-do compile { target c++20 } }
 // { dg-options "-Wdangling-reference" }
 
-class X { };
-const X x1;
-const X x2;
+class X { int i; };
+const X x1 {};
+const X x2 {};
 
 template<bool... N>
 [[gnu::no_dangling(N)]] const X& get(const int& i); // { dg-error "parameter packs not expanded" }

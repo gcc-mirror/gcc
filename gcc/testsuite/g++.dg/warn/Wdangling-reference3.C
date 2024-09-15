@@ -18,6 +18,7 @@ struct G {
 };
 
 struct F {
+  int i;
   G& f();
 };
 

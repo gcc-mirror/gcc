@@ -131,6 +131,7 @@ int n = 1;
 const int& refmax = max(n - 1, n + 1); // { dg-warning "dangling reference" }
 
 struct Y {
+  int i;
   operator int&();
   operator int&&();
   const int& foo(const int&);
