@@ -90,7 +90,7 @@ bar ()
 	return false;
     }
 
-  S<N> e = __LINE__;
+  S<N> e (__LINE__);
   //   ^ column 8
   S<N> f = 1.0;
   if (cmp (e.loc.file_name (), file1))

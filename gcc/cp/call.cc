@@ -8669,6 +8669,10 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	   rvalue, but we know it's read.  */
 	mark_exp_read (expr);
 
+	/* Give the conversion call the location of EXPR rather than the
+	   location of the context that caused the conversion.  */
+	iloc_sentinel ils (loc);
+
 	/* Pass LOOKUP_NO_CONVERSION so rvalue/base handling knows not to allow
 	   any more UDCs.  */
 	expr = build_over_call (cand, LOOKUP_NORMAL|LOOKUP_NO_CONVERSION,
