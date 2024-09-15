@@ -237,6 +237,8 @@ CompileExpr::visit (HIR::NegationExpr &expr)
   auto op = expr.get_expr_type ();
 
   const auto literal_expr = expr.get_expr ().get ();
+
+  // If it's a negated integer/float literal, we can return early
   if (op == NegationOperator::NEGATE
       && literal_expr->get_expression_type () == HIR::Expr::ExprType::Lit)
     {
@@ -246,10 +248,12 @@ CompileExpr::visit (HIR::NegationExpr &expr)
 	  || lit_type == HIR::Literal::LitType::FLOAT)
 	{
 	  new_literal_expr->set_negative ();
+	  translated = CompileExpr::Compile (literal_expr, ctx);
+	  return;
 	}
     }
-  auto negated_expr = CompileExpr::Compile (literal_expr, ctx);
 
+  auto negated_expr = CompileExpr::Compile (literal_expr, ctx);
   auto location = expr.get_locus ();
 
   // this might be an operator overload situation lets check
@@ -1530,11 +1534,6 @@ CompileExpr::compile_integer_literal (const HIR::LiteralExpr &expr,
 		     "integer overflows the respective type %qs",
 		     tyty->get_name ().c_str ());
       return error_mark_node;
-    }
-  // Other tests break if we don't reverse the negation
-  if (expr.is_negative ())
-    {
-      mpz_neg (ival, ival);
     }
 
   tree result = wide_int_to_tree (type, wi::from_mpz (type, ival, true));
