@@ -170,7 +170,7 @@
    ashlsi, ashrsi, lshrsi,
    ashlpsi, ashrpsi, lshrpsi,
    insert_bits, insv_notbit, insv,
-   add_set_ZN, add_set_N, cmp_uext, cmp_sext,
+   add_set_ZN, add_set_N, cmp_uext, cmp_sext, cmp_lsr,
    no"
   (const_string "no"))
 
@@ -6631,6 +6631,34 @@
    (set_attr "adjust_len" "tstsi,*,compare,compare")])
 
 
+;; "*cmphi_lsr"
+;; "*cmpsi_lsr"
+;; "*cmppsi_lsr"
+(define_insn_and_split "*cmp<mode>_lsr"
+  [(set (reg:CC REG_CC)
+        (compare:CC (lshiftrt:HISI (match_operand:HISI 0 "register_operand"    "r")
+                                   (match_operand:QI 1 "const_8_16_24_operand" "n"))
+                    (const_int 0)))
+   (clobber (scratch:QI))]
+  "reload_completed"
+  {
+    return avr_out_cmp_lsr (insn, operands, NULL);
+  }
+  "&& 1"
+  [;; "cmpqi3"
+   (set (reg:CC REG_CC)
+        (compare:CC (match_dup 0)
+                    (const_int 0)))]
+  {
+    // When the comparison is just one byte, then cmpqi3.
+    if (INTVAL (operands[1]) / 8 == <SIZE> - 1)
+      operands[0] = simplify_gen_subreg (QImode, operands[0], <MODE>mode, <SIZE> - 1);
+    else
+      FAIL;
+  }
+  [(set_attr "adjust_len" "cmp_lsr")])
+
+
 ;; A helper for avr_pass_ifelse::avr_rest_of_handle_ifelse().
 (define_expand "gen_compare<mode>"
   [(parallel [(set (reg:CC REG_CC)
@@ -6724,20 +6752,9 @@
                        (label_ref (match_dup 3))
                        (pc)))]
    {
-     // Unsigned >= 65536 and < 65536 can be performed by testing the
-     // high word against 0.
-     if ((GET_CODE (operands[0]) == LTU
-          || GET_CODE (operands[0]) == GEU)
-         && const_operand (operands[2], <MODE>mode)
-         && INTVAL (avr_to_int_mode (operands[2])) == 65536)
-       {
-         // "cmphi3" of the high word against 0.
-         operands[0] = copy_rtx (operands[0]);
-         PUT_CODE (operands[0], GET_CODE (operands[0]) == GEU ? NE : EQ);
-         operands[1] = simplify_gen_subreg (HImode, operands[1], <MODE>mode, 2);
-         operands[2] = const0_rtx;
-         operands[4] = gen_rtx_SCRATCH (QImode);
-       }
+     // Unsigned >= 256^n and < 256^n can be performed by testing the
+     // higher bytes against 0 (*cmpsi_lsr).
+     avr_maybe_cmp_lsr (operands);
    })
 
 ;; "cbranchpsi4_insn"
@@ -6760,7 +6777,12 @@
          (if_then_else (match_op_dup 0
                          [(reg:CC REG_CC) (const_int 0)])
                        (label_ref (match_dup 3))
-                       (pc)))])
+                       (pc)))]
+   {
+     // Unsigned >= 256^n and < 256^n can be performed by testing the
+     // higher bytes against 0 (*cmppsi_lsr).
+     avr_maybe_cmp_lsr (operands);
+   })
 
 ;; "cbranchhi4_insn"
 ;; "cbranchhq4_insn"  "cbranchuhq4_insn"  "cbranchha4_insn"  "cbranchuha4_insn"
@@ -6786,20 +6808,10 @@
                        (pc)))]
    {
      // Unsigned >= 256 and < 256 can be performed by testing the
-     // high byte against 0.
-     if ((GET_CODE (operands[0]) == LTU
-          || GET_CODE (operands[0]) == GEU)
-         && const_operand (operands[2], <MODE>mode)
-         && INTVAL (avr_to_int_mode (operands[2])) == 256)
-       {
-         rtx_code code = GET_CODE (operands[0]) == GEU ? NE : EQ;
-         rtx hi8 = simplify_gen_subreg (QImode, operands[1], <MODE>mode, 1);
-         rtx cmp = gen_rtx_fmt_ee (code, VOIDmode, cc_reg_rtx, const0_rtx);
-         emit (gen_cmpqi3 (hi8, const0_rtx));
-         emit (gen_branch (operands[3], cmp));
-         DONE;
-       }
+     // high byte against 0 (*cmphi_lsr).
+     avr_maybe_cmp_lsr (operands);
    })
+
 
 ;; Combiner pattern to compare sign- or zero-extended register against
 ;; a wider register, like comparing uint8_t against uint16_t.
