@@ -6026,25 +6026,15 @@ avr_out_compare (rtx_insn *insn, rtx *xop, int *plen)
   if (n_bytes == 4
       && eqne_p
       && AVR_HAVE_ADIW
-      && REGNO (xreg) >= REG_22)
+      && REGNO (xreg) >= REG_22
+      && (xval == const0_rtx
+	  || (IN_RANGE (avr_int16 (xval, 2), 0, 63)
+	      && reg_unused_after (insn, xreg))))
     {
-      if (xval == const0_rtx)
-	return avr_asm_len ("sbiw %C0,0"           CR_TAB
-			    "cpc %B0,__zero_reg__" CR_TAB
-			    "cpc %A0,__zero_reg__", xop, plen, 3);
-
-      int16_t hi16 = avr_int16 (xval, 2);
-      if (reg_unused_after (insn, xreg)
-	  && (IN_RANGE (hi16, 0, 63)
-	      || (eqne_p
-		  && IN_RANGE (hi16, -63, -1))))
-	{
-	  rtx op[] = { xop[0], avr_word (xval, 2) };
-	  avr_asm_len (hi16 < 0 ? "adiw %C0,%n1" : "sbiw %C0,%1",
-		       op, plen, 1);
-	  return avr_asm_len ("sbci %B0,hi8(%1)" CR_TAB
-			      "sbci %A0,lo8(%1)", xop, plen, 2);
-	}
+      xop[2] = avr_word (xval, 2);
+      return avr_asm_len ("sbiw %C0,%2"      CR_TAB
+			  "sbci %B0,hi8(%1)" CR_TAB
+			  "sbci %A0,lo8(%1)", xop, plen, 3);
     }
 
   bool changed[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -6078,12 +6068,10 @@ avr_out_compare (rtx_insn *insn, rtx *xop, int *plen)
 
 	  if (IN_RANGE (val16, -63, -1)
 	      && eqne_p
+	      && n_bytes == 2
 	      && reg_unused_after (insn, xreg))
 	    {
-	      avr_asm_len ("adiw %0,%n1", xop, plen, 1);
-	      changed[0] = changed[1] = true;
-	      i++;
-	      continue;
+	      return avr_asm_len ("adiw %0,%n1", xop, plen, 1);
 	    }
 	}
 
