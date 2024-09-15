@@ -22,4 +22,10 @@ void foo ()
 
   pf = reinterpret_cast <PF>(po); // { dg-warning "8:casting between pointer-to-function and pointer-to-object is conditionally-supported" }
   po = reinterpret_cast <PO>(pf); // { dg-warning "8:casting between pointer-to-function and pointer-to-object is conditionally-supported" }
+
+  pf = __extension__ reinterpret_cast <PF>(pv);
+  pv = __extension__ reinterpret_cast <PV>(pf);
+
+  pf = __extension__ reinterpret_cast <PF>(po);
+  po = __extension__ reinterpret_cast <PO>(pf);
 }

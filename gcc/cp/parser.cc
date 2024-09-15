@@ -9150,9 +9150,15 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 
 	    /* Save away the PEDANTIC flag.  */
 	    cp_parser_extension_opt (parser, &saved_pedantic);
+	    /* Also suppress -Wconditionally-supported.  */
+	    diagnostic_push_diagnostics (global_dc, input_location);
+	    diagnostic_classify_diagnostic
+	      (global_dc, OPT_Wconditionally_supported,
+	       DK_IGNORED, input_location);
 	    /* Parse the cast-expression.  */
 	    expr = cp_parser_simple_cast_expression (parser);
 	    /* Restore the PEDANTIC flag.  */
+	    diagnostic_pop_diagnostics (global_dc, input_location);
 	    pedantic = saved_pedantic;
 
 	    return expr;
