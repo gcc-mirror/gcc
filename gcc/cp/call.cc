@@ -14291,12 +14291,14 @@ do_warn_dangling_reference (tree expr, bool arg_p)
 	    if ((arg = do_warn_dangling_reference (arg, /*arg_p=*/true)))
 	      {
 		/* If we know the temporary could not bind to the return type,
-		   don't warn.  This is for scalars only because for classes
-		   we can't be sure we are not returning its sub-object.  */
-		if (SCALAR_TYPE_P (TREE_TYPE (arg))
+		   don't warn.  This is for scalars and empty classes only
+		   because for other classes we can't be sure we are not
+		   returning its sub-object.  */
+		if ((SCALAR_TYPE_P (TREE_TYPE (arg))
+		     || is_empty_class (TREE_TYPE (arg)))
 		    && TYPE_REF_P (rettype)
-		    && !reference_related_p (TREE_TYPE (arg),
-					     TREE_TYPE (rettype)))
+		    && !reference_related_p (TREE_TYPE (rettype),
+					     TREE_TYPE (arg)))
 		  continue;
 		return expr;
 	      }
