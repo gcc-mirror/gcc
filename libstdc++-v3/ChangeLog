@@ -1,3 +1,19 @@
+2024-09-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (__formatter_fp::_M_localize): Add comments
+	and micro-optimize string copy.
+
+2024-09-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/semaphore_base.h (__platform_semaphore): Refactor
+	loops to all use similar forms.
+	(__platform_semaphore::_M_try_acquire_until): Use chrono::ceil
+	to explicitly convert to __clock_t::time_point.
+	* testsuite/30_threads/semaphore/try_acquire_for.cc: Check that
+	using a very high resolution timeout compiles.
+	* testsuite/30_threads/semaphore/platform_try_acquire_for.cc:
+	New test.
+
 2024-09-13  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
 
 	PR libstdc++/108846

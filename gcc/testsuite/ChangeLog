@@ -1,3 +1,29 @@
+2024-09-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/116716
+	* gcc.c-torture/execute/pr52286.c: Fix inline-asm for 16bit case.
+
+2024-09-14  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/116681
+	* g++.dg/cpp2a/concepts-pr116681.C: New test.
+
+2024-09-14  Jason Merrill  <jason@redhat.com>
+
+	* c-c++-common/pragma-diag-17.c: Handle !dfp targets.
+
+2024-09-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* g++.dg/ext/sve-sizeless-1.C: Adjust dg-error string.
+
+2024-09-14  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.dg/coroutines/pr108620.C: Skip if !hostedlib because of
+	unavailable headers.
+	* g++.dg/other/profile1.C: Likewise.
+	* g++.dg/ext/pragma-unroll-lambda-lto.C: Skip if !hostedlib
+	because of unavailable declarations.
+
 2024-09-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/116696

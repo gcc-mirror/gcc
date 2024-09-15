@@ -1,3 +1,9 @@
+2024-09-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (UNSPEC_COPYSIGN): Remove define_enum.
+	(copysignsf3): Use copysign instead of UNSPEC_COPYSIGN.
+	Allow const_double for operand 2.
+
 2024-09-13  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.cc (avr_2word_insn_p): Return true for
