@@ -535,6 +535,7 @@ stmt_vec_info
 vec_info::add_pattern_stmt (gimple *stmt, stmt_vec_info stmt_info)
 {
   stmt_vec_info res = new_stmt_vec_info (stmt);
+  res->pattern_stmt_p = true;
   set_vinfo_for_stmt (stmt, res, false);
   STMT_VINFO_RELATED_STMT (res) = stmt_info;
   return res;
