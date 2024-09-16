@@ -1,3 +1,11 @@
+2024-09-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2024-09-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/116621
+	* gcc.target/i386/pr116621.c: New test.
+
 2024-09-12  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
