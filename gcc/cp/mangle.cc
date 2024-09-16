@@ -3255,7 +3255,13 @@ write_member_name (tree member)
     }
   else if (DECL_P (member))
     {
-      gcc_assert (!DECL_OVERLOADED_OPERATOR_P (member));
+      if (ANON_AGGR_TYPE_P (TREE_TYPE (member)))
+	;
+      else if (DECL_OVERLOADED_OPERATOR_P (member))
+	{
+	  if (abi_check (16))
+	    write_string ("on");
+	}
       write_unqualified_name (member);
     }
   else if (TREE_CODE (member) == TEMPLATE_ID_EXPR)
