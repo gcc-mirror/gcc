@@ -22,7 +22,10 @@
 #include "rust-token-converter.h"
 #include "rust-attributes.h"
 
-#ifndef _WIN32
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#else
 #include <dlfcn.h>
 #endif
 
@@ -100,12 +103,16 @@ static_assert (
 
 } // namespace
 
-template <typename Symbol, typename Callback>
+template <typename Handle, typename Symbol, typename Callback>
 bool
-register_callback (void *handle, Symbol, std::string symbol_name,
+register_callback (Handle handle, Symbol, std::string symbol_name,
 		   Callback callback)
 {
+#ifdef _WIN32
+  FARPROC addr = GetProcAddress (handle, symbol_name.c_str ());
+#else
   void *addr = dlsym (handle, symbol_name.c_str ());
+#endif
   if (addr == nullptr)
     {
       rust_error_at (UNDEF_LOCATION,
@@ -127,7 +134,19 @@ register_callback (void *handle, Symbol, std::string symbol_name,
 const ProcMacro::ProcmacroArray *
 load_macros_array (std::string path)
 {
-#ifndef _WIN32
+#ifdef _WIN32
+  HMODULE handle = LoadLibraryA (path.c_str ());
+  // We're leaking the handle since we can't ever unload it
+  if (!handle)
+    {
+      char msg[300];
+      FormatMessageA (FORMAT_MESSAGE_FROM_SYSTEM
+			| FORMAT_MESSAGE_IGNORE_INSERTS,
+		      nullptr, GetLastError (), 0, msg, sizeof msg, nullptr);
+      rust_debug ("Error whilst opening procedural macro: %s", msg);
+      return nullptr;
+    }
+#else
   void *handle = dlopen (path.c_str (), RTLD_LAZY | RTLD_LOCAL);
   // We're leaking the handle since we can't ever unload it
   if (!handle)
@@ -135,6 +154,7 @@ load_macros_array (std::string path)
       rust_debug ("Error whilst opening procedural macro: %s", dlerror ());
       return nullptr;
     }
+#endif
 
   if (!REGISTER_CALLBACK (handle, __gccrs_proc_macro_ts_from_str_,
 			  tokenstream_from_string))
@@ -151,12 +171,12 @@ load_macros_array (std::string path)
   auto symbol_name = generate_proc_macro_decls_symbol (0 /* FIXME */);
 
   return *reinterpret_cast<const ProcMacro::ProcmacroArray **> (
-    dlsym (handle, symbol_name.c_str ()));
+#ifdef _WIN32
+    GetProcAddress (handle, symbol_name.c_str ())
 #else
-  rust_sorry_at (UNDEF_LOCATION,
-		 "Procedural macros are not yet supported on windows host");
-  rust_unreachable ();
+    dlsym (handle, symbol_name.c_str ())
 #endif
+  );
 }
 
 #undef REGISTER_CALLBACK

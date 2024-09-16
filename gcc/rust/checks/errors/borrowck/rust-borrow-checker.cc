@@ -27,20 +27,6 @@ namespace Rust {
 namespace HIR {
 
 void
-mkdir_wrapped (const std::string &dirname)
-{
-  int ret;
-#ifdef _WIN32
-  ret = _mkdir (dirname.c_str ());
-#elif unix
-  ret = mkdir (dirname.c_str (), 0775);
-#elif __APPLE__
-  ret = mkdir (dirname.c_str (), 0775);
-#endif
-  rust_assert (ret == 0 || errno == EEXIST);
-}
-
-void
 dump_function_bir (const std::string &filename, BIR::Function &func,
 		   const std::string &name)
 {
@@ -63,11 +49,11 @@ BorrowChecker::go (HIR::Crate &crate)
 
   if (enable_dump_bir)
     {
-      mkdir_wrapped ("bir_dump");
+      mkdir ("bir_dump", 0755);
       auto &mappings = Analysis::Mappings::get ();
       crate_name
 	= *mappings.get_crate_name (crate.get_mappings ().get_crate_num ());
-      mkdir_wrapped ("nll_facts_gccrs");
+      mkdir ("nll_facts_gccrs", 0755);
     }
 
   FunctionCollector collector;
@@ -95,8 +81,9 @@ BorrowChecker::go (HIR::Crate &crate)
 
       if (enable_dump_bir)
 	{
-	  mkdir_wrapped ("nll_facts_gccrs/"
-			 + func->get_function_name ().as_string ());
+	  auto dir
+	    = "nll_facts_gccrs/" + func->get_function_name ().as_string ();
+	  mkdir (dir.c_str (), 0755);
 	  auto dump_facts_to_file
 	    = [&] (const std::string &suffix,
 		   void (Polonius::Facts::*fn) (std::ostream &) const) {
