@@ -1,3 +1,21 @@
+2024-09-15  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/warn/Wconditionally-supported-1.C: Add __extension__ cases.
+
+2024-09-15  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/srcloc17.C: Adjust initialization.
+
+2024-09-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/115905
+	* g++.dg/coroutines/torture/pr115905.C: New test.
+
+2024-09-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116699
+	* gcc.dg/tree-ssa/phi-opt-factor-1.c: New test.
+
 2024-09-14  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR testsuite/116716

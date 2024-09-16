@@ -1,3 +1,38 @@
+2024-09-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/span (span::__iter_tag): Declare nested type.
+	(span::iterator): Use __iter_tag as second template argument.
+	* include/std/stacktrace (basic_stacktrace::iterator): Use _Impl
+	as second template argument.
+
+2024-09-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/using.xml (_GLIBCXX_NO_FREESTANDING_CHRONO):
+	Document macro.
+	* doc/html/*: Regenerate.
+	* include/bits/chrono.h [_GLIBCXX_NO_FREESTANDING_CHRONO]:
+	Only include <bits/require_hosted.h> when this macro is defined.
+	[_GLIBCXX_HOSTED]: Only define clocks for hosted.
+	* include/bits/version.def (chrono_udls): Remove hosted=yes.
+	* include/bits/version.h: Regenerate.
+	* include/std/chrono [_GLIBCXX_HOSTED]: Only define clocks and
+	time zone utilities for hosted.
+	* testsuite/std/time/freestanding.cc: New test.
+
+2024-09-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_classes.h (__is_facet): New helper.
+	* include/bits/locale_classes.tcc (locale::combine): Check that
+	_Facet type is valid.
+
+2024-09-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110512
+	* include/pstl/execution_impl.h (__are_random_access_iterators):
+	Recognize C++20 random access iterators, and use more efficient
+	implementations.
+	* testsuite/25_algorithms/pstl/110512.cc: New test.
+
 2024-09-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/format (__formatter_fp::_M_localize): Add comments

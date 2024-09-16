@@ -1,3 +1,22 @@
+2024-09-15  Jason Merrill  <jason@redhat.com>
+
+	* parser.cc (cp_parser_unary_expression) [RID_EXTENSION]: Also
+	suppress -Wconditionally-supported.
+
+2024-09-15  Jason Merrill  <jason@redhat.com>
+
+	* call.cc (convert_like_internal) [ck_user]: Use iloc_sentinel.
+
+2024-09-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/115905
+	* coroutines.cc (struct coro_aw_data): Add a member for the
+	restart dispatch label.
+	(expand_one_await_expression): Rework to modernise and to
+	handle the boolean await_suspend() case.
+	(build_actor_fn): Rework the dispatcher and allow for a jump
+	back to the dispatcher.
+
 2024-09-14  Jason Merrill  <jason@redhat.com>
 
 	* tree.cc (handle_init_priority_attribute): Check

@@ -1,3 +1,19 @@
+2024-09-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116699
+	* tree-ssa-phiopt.cc (factor_out_conditional_operation): Skip over nop/predicates
+	for seeing the assignment is the last statement.
+
+2024-09-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-vect-loop.cc (optimize_mask_stores): Call release_defs
+	after the call to gsi_remove with last argument of true.
+
+2024-09-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* bitmap.h (class auto_bitmap): Mark copy/move constructor/operator=
+	as deleted.
+
 2024-09-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md (UNSPEC_COPYSIGN): Remove define_enum.

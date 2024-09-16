@@ -1,3 +1,9 @@
+2024-09-15  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-expr.cc (gfc_advance_se_ss_chain): Don't use an element
+	from the parent scalarization chain when the current chain reaches
+	its end.
+
 2024-09-13  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR fortran/116661
