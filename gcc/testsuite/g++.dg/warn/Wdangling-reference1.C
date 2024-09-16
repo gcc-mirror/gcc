@@ -117,7 +117,7 @@ const B& b10 = lox (H{}); // { dg-warning "dangling reference" }
 
 struct S {
   const int &r; // { dg-warning "dangling reference" }
-  S() : r(f(10)) { } // { dg-message "destroyed" }
+  S() : r(f(10)) { } // { dg-message "created" }
 };
 
 // From cppreference.

@@ -14253,19 +14253,18 @@ reference_like_class_p (tree ctype)
   return false;
 }
 
-/* Helper for maybe_warn_dangling_reference to find a problematic CALL_EXPR
-   that initializes the LHS (and at least one of its arguments represents
-   a temporary, as outlined in maybe_warn_dangling_reference), or NULL_TREE
+/* Helper for maybe_warn_dangling_reference to find a problematic temporary
+   in EXPR (as outlined in maybe_warn_dangling_reference), or NULL_TREE
    if none found.  For instance:
 
-     const S& s = S().self(); // S::self (&TARGET_EXPR <...>)
-     const int& r = (42, f(1)); // f(1)
-     const int& t = b ? f(1) : f(2); // f(1)
-     const int& u = b ? f(1) : f(g); // f(1)
-     const int& v = b ? f(g) : f(2); // f(2)
+     const S& s = S().self(); // S()
+     const int& r = (42, f(1)); // temporary for passing 1 to f
+     const int& t = b ? f(1) : f(2); // temporary for 1
+     const int& u = b ? f(1) : f(g); // temporary for 1
+     const int& v = b ? f(g) : f(2); // temporary for 2
      const int& w = b ? f(g) : f(g); // NULL_TREE
      const int& y = (f(1), 42); // NULL_TREE
-     const int& z = f(f(1)); // f(f(1))
+     const int& z = f(f(1)); // temporary for 1
 
    EXPR is the initializer.  If ARG_P is true, we're processing an argument
    to a function; the point is to distinguish between, for example,
@@ -14365,7 +14364,7 @@ do_warn_dangling_reference (tree expr, bool arg_p)
 		    && !reference_related_p (TREE_TYPE (rettype),
 					     TREE_TYPE (arg)))
 		  continue;
-		return expr;
+		return arg;
 	      }
 	  /* Don't warn about member functions like:
 	      std::any a(...);
@@ -14438,8 +14437,8 @@ maybe_warn_dangling_reference (const_tree decl, tree init)
       auto_diagnostic_group d;
       if (warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wdangling_reference,
 		      "possibly dangling reference to a temporary"))
-	inform (EXPR_LOCATION (call), "the temporary was destroyed at "
-		"the end of the full expression %qE", call);
+	inform (EXPR_LOCATION (call), "%qT temporary created here",
+		TREE_TYPE (call));
     }
 }
 
