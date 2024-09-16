@@ -56,22 +56,23 @@ package Sem_Type is
    --  identifier, there is a set of possible types corresponding to the types
    --  that the overloaded call may return. We keep a 1-to-1 correspondence
    --  between interpretations and types: for user-defined subprograms the type
-   --  is the declared return type. For operators, the type is determined by
-   --  the type of the arguments. If the arguments themselves are overloaded,
-   --  we enter the operator name in the names table for each possible result
-   --  type. In most cases, arguments are not overloaded and only one
-   --  interpretation is present anyway.
+   --  is the declared result type Typ. For operators, the type is determined
+   --  either only by the result type Typ for arithmetic operators or by the
+   --  result type and the type of the operands Opnd_Typ for comparisoon and
+   --  equality operators. If the operands are themselves overloaded, we enter
+   --  the operator name in the names table for each possible result type.
 
    type Interp is record
       Nam         : Entity_Id;
       Typ         : Entity_Id;
-      Abstract_Op : Entity_Id := Empty;
+      Opnd_Typ    : Entity_Id;
+      Abstract_Op : Entity_Id;
    end record;
 
    --  Entity Abstract_Op is set to the abstract operation which potentially
    --  disables the interpretation in Ada 2005 mode.
 
-   No_Interp : constant Interp := (Empty, Empty, Empty);
+   No_Interp : constant Interp := (Empty, Empty, Empty, Empty);
 
    type Interp_Index is new Int;
 
@@ -115,10 +116,10 @@ package Sem_Type is
    --  error reports.
 
    procedure Add_One_Interp
-     (N         : Node_Id;
-      E         : Entity_Id;
-      T         : Entity_Id;
-      Opnd_Type : Entity_Id := Empty);
+     (N        : Node_Id;
+      E        : Entity_Id;
+      T        : Entity_Id;
+      Opnd_Typ : Entity_Id := Empty);
    --  Add (E, T) to the list of interpretations of the node being resolved.
    --  For calls and operators, i.e. for nodes that have a name field, E is an
    --  overloadable entity, and T is its type. For constructs such as indexed
@@ -130,7 +131,7 @@ package Sem_Type is
    --
    --  For operators, the legality of the operation depends on the visibility
    --  of T and its scope. If the operator is an equality or comparison, T is
-   --  always Boolean, and we use Opnd_Type, which is a candidate type for one
+   --  always Boolean, and we use Opnd_Typ, which is a candidate type for one
    --  of the operands of N, to check visibility.
 
    procedure Get_First_Interp

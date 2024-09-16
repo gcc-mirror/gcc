@@ -7455,6 +7455,8 @@ package body Sem_Ch4 is
                then
                   It := Disambiguate (L, Valid_I, I, Any_Type);
 
+                  --  Note the ambiguity for later, see below
+
                   if It = No_Interp then
                      L_Typ := Any_Type;
                      R_Typ := T;
@@ -7471,6 +7473,12 @@ package body Sem_Ch4 is
 
             Get_Next_Interp (I, It);
          end loop;
+
+         --  Record the operator as an interpretation of the operation if we
+         --  have found a valid pair of types for the two operands. If we have
+         --  found more than one such pair and did not manage to disambiguate
+         --  them, record an "ambiguous" operator as the interpretation, that
+         --  Disambiguate in Sem_Type will specifically recognize.
 
          if Present (L_Typ) then
             Set_Etype (L, L_Typ);

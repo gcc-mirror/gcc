@@ -197,10 +197,10 @@ package body Sem_Type is
    --------------------
 
    procedure Add_One_Interp
-     (N         : Node_Id;
-      E         : Entity_Id;
-      T         : Entity_Id;
-      Opnd_Type : Entity_Id := Empty)
+     (N        : Node_Id;
+      E        : Entity_Id;
+      T        : Entity_Id;
+      Opnd_Typ : Entity_Id := Empty)
    is
       Vis_Type : Entity_Id;
 
@@ -308,7 +308,7 @@ package body Sem_Type is
             end if;
          end loop;
 
-         All_Interp.Table (All_Interp.Last) := (Name, Typ, Abstr_Op);
+         All_Interp.Table (All_Interp.Last) := (Name, Typ, Opnd_Typ, Abstr_Op);
          All_Interp.Append (No_Interp);
       end Add_Entry;
 
@@ -369,8 +369,8 @@ package body Sem_Type is
       --  it is the type of the operand that is relevant here.
 
       if Ekind (E) = E_Operator then
-         if Present (Opnd_Type) then
-            Vis_Type := Opnd_Type;
+         if Present (Opnd_Typ) then
+            Vis_Type := Opnd_Typ;
          else
             Vis_Type := Base_Type (T);
          end if;
@@ -663,7 +663,7 @@ package body Sem_Type is
                        and then not Is_Inherited_Operation (H)
                      then
                         All_Interp.Table (All_Interp.Last) :=
-                          (H, Etype (H), Empty);
+                          (H, Etype (H), Empty, Empty);
                         All_Interp.Append (No_Interp);
                         goto Next_Homograph;
 
@@ -1317,6 +1317,12 @@ package body Sem_Type is
       --  the generic. Within the instance the actual is represented by a
       --  constructed subprogram renaming.
 
+      function Is_Ambiguous_Boolean_Operator (I : Interp) return Boolean;
+      --  Determine whether I corresponds to an "ambiguous" boolean operator.
+      --  Such an interpretation is used to record the ambiguity of operands
+      --  diagnosed during the analysis of comparison and equality operations.
+      --  See Find_Comparison_Equality_Types in Sem_Ch4 for the rationale.
+
       function Matches (Op : Node_Id; Func_Id : Entity_Id) return Boolean;
       --  Determine whether function Func_Id is an exact match for binary or
       --  unary operator Op.
@@ -1417,6 +1423,17 @@ package body Sem_Type is
              (Is_Generic_Instance (Scope (S))
                or else Is_Wrapper_Package (Scope (S)));
       end Is_Actual_Subprogram;
+
+      -----------------------------------
+      -- Is_Ambiguous_Boolean_Operator --
+      -----------------------------------
+
+      function Is_Ambiguous_Boolean_Operator (I : Interp) return Boolean is
+      begin
+         return Ekind (I.Nam) = E_Operator
+           and then I.Typ = Standard_Boolean
+           and then I.Opnd_Typ = Any_Type;
+      end Is_Ambiguous_Boolean_Operator;
 
       -------------
       -- Matches --
@@ -1824,12 +1841,24 @@ package body Sem_Type is
       It1  := It;
       Nam1 := It.Nam;
 
+      --  Return immediately if either corresponds to a recorded ambiguity
+
+      if Is_Ambiguous_Boolean_Operator (It1) then
+         return It1;
+      end if;
+
       while I /= I2 loop
          Get_Next_Interp (I, It);
       end loop;
 
       It2  := It;
       Nam2 := It.Nam;
+
+      --  See above
+
+      if Is_Ambiguous_Boolean_Operator (It2) then
+         return It2;
+      end if;
 
       --  Check whether one of the entities is an Ada 2005/2012/2022 and we
       --  are operating in an earlier mode, in which case we discard the Ada
