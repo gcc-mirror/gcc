@@ -2343,6 +2343,11 @@ package body Sem_Ch8 is
                      elsif From_Limited_With (Etype (F)) then
                         null;
 
+                     --  Incomplete types are never frozen (AI12-0155-1)
+
+                     elsif Is_Incomplete_Type (Etype (F)) then
+                        null;
+
                      else
                         Error_Msg_NE
                           ("type& must be frozen before this point",
