@@ -3397,6 +3397,103 @@ shuffle_compress_patterns (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* Recognize patterns like [4 5 6 7 12 13 14 15] where either the lower
+   or the higher parts of both vectors are combined into one.  */
+
+static bool
+shuffle_slide_patterns (struct expand_vec_perm_d *d)
+{
+  machine_mode vmode = d->vmode;
+  poly_int64 vec_len = d->perm.length ();
+
+  if (!vec_len.is_constant ())
+    return false;
+
+  int vlen = vec_len.to_constant ();
+  if (vlen < 4)
+    return false;
+
+  if (d->one_vector_p)
+    return false;
+
+  /* For a slideup OP0 can stay, for a slidedown OP1 can.
+     The former requires that the first element of the permutation
+     is the first element of OP0, the latter that the last permutation
+     element is the last element of OP1.  */
+  bool slideup = false;
+  bool slidedown = false;
+
+  /* For a slideup the permutation must start at OP0's first element.  */
+  if (known_eq (d->perm[0], 0))
+    slideup = true;
+
+  /* For a slidedown the permutation must end at OP1's last element.  */
+  if (known_eq (d->perm[vlen - 1], 2 * vlen - 1))
+    slidedown = true;
+
+  if (slideup && slidedown)
+    return false;
+
+  if (!slideup && !slidedown)
+    return false;
+
+  /* Check for a monotonic sequence with one pivot.  */
+  int pivot = -1;
+  for (int i = 0; i < vlen; i++)
+    {
+      if (pivot == -1 && known_ge (d->perm[i], vec_len))
+	pivot = i;
+      if (i > 0 && i != pivot
+	  && maybe_ne (d->perm[i], d->perm[i - 1] + 1))
+	return false;
+    }
+
+  if (pivot == -1)
+    return false;
+
+  /* For a slideup OP1's part (to be slid up) must be a low part,
+     i.e. starting with its first element.  */
+  if (slideup && maybe_ne (d->perm[pivot], vlen))
+      return false;
+
+  /* For a slidedown OP0's part (to be slid down) must be a high part,
+     i.e. ending with its last element.  */
+  if (slidedown && maybe_ne (d->perm[pivot - 1], vlen - 1))
+    return false;
+
+  /* Success!  */
+  if (d->testing_p)
+    return true;
+
+  /* PIVOT is the start of the lower/higher part of OP1 or OP2.
+     For a slideup it indicates how many elements of OP1 to
+     skip/slide over.  For a slidedown it indicates how long
+     OP1's high part is, while VLEN - PIVOT is the amount to slide.  */
+  int slide_cnt = slideup ? pivot : vlen - pivot;
+  insn_code icode;
+  if (slideup)
+    {
+      /* No need for a vector length because we slide up until the
+	 end of OP1 anyway.  */
+      rtx ops[] = {d->target, d->op0, d->op1, gen_int_mode (slide_cnt, Pmode)};
+      icode = code_for_pred_slide (UNSPEC_VSLIDEUP, vmode);
+      emit_vlmax_insn (icode, SLIDEUP_OP_MERGE, ops);
+    }
+  else
+    {
+      /* Here we need a length because we slide to the beginning of OP1
+	 leaving the remaining elements undisturbed.  */
+      int len = pivot;
+      rtx ops[] = {d->target, d->op1, d->op0,
+		   gen_int_mode (slide_cnt, Pmode)};
+      icode = code_for_pred_slide (UNSPEC_VSLIDEDOWN, vmode);
+      emit_nonvlmax_insn (icode, BINARY_OP_TUMA, ops,
+			  gen_int_mode (len, Pmode));
+    }
+
+  return true;
+}
+
 /* Recognize decompress patterns:
 
    1. VEC_PERM_EXPR op0 and op1
@@ -3710,6 +3807,8 @@ expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 	  if (shuffle_merge_patterns (d))
 	    return true;
 	  if (shuffle_consecutive_patterns (d))
+	    return true;
+	  if (shuffle_slide_patterns (d))
 	    return true;
 	  if (shuffle_compress_patterns (d))
 	    return true;
