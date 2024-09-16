@@ -89,7 +89,7 @@ extract_module_path (const AST::AttrVec &inner_attrs,
   // Source: rustc compiler
   // (https://github.com/rust-lang/rust/blob/9863bf51a52b8e61bcad312f81b5193d53099f9f/compiler/rustc_expand/src/module.rs#L174)
 #if defined(HAVE_DOS_BASED_FILE_SYSTEM)
-  path.replace ('/', '\\');
+  std::replace (path.begin (), path.end (), '/', '\\');
 #endif /* HAVE_DOS_BASED_FILE_SYSTEM */
 
   return path;
