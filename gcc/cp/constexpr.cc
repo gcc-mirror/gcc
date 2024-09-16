@@ -7225,6 +7225,7 @@ maybe_warn_about_constant_value (location_t loc, tree decl)
       && warn_interference_size
       && !OPTION_SET_P (param_destruct_interfere_size)
       && DECL_CONTEXT (decl) == std_node
+      && DECL_NAME (decl)
       && id_equal (DECL_NAME (decl), "hardware_destructive_interference_size")
       && (LOCATION_FILE (input_location) != main_input_filename
 	  || module_exporting_p ())
