@@ -1075,11 +1075,8 @@ package body Diagnostics.Pretty_Emitter is
                                     Diag : Diagnostic_Type)
                                     return Boolean
    is
-      Sub_Loc : constant Labeled_Span_Type :=
-        Get_Primary_Labeled_Span (Sub_Diag.Locations);
-
-      Diag_Loc : constant Labeled_Span_Type :=
-        Get_Primary_Labeled_Span (Diag.Locations);
+      Sub_Loc  : constant Labeled_Span_Type := Primary_Location (Sub_Diag);
+      Diag_Loc : constant Labeled_Span_Type := Primary_Location (Diag);
 
       function Has_Multiple_Files (Spans : Labeled_Span_List) return Boolean;
 
@@ -1124,11 +1121,8 @@ package body Diagnostics.Pretty_Emitter is
                                 Diag : Diagnostic_Type)
                                 return Boolean
    is
-      Sub_Loc : constant Labeled_Span_Type :=
-        Get_Primary_Labeled_Span (Sub_Diag.Locations);
-
-      Diag_Loc : constant Labeled_Span_Type :=
-        Get_Primary_Labeled_Span (Diag.Locations);
+      Sub_Loc  : constant Labeled_Span_Type := Primary_Location (Sub_Diag);
+      Diag_Loc : constant Labeled_Span_Type := Primary_Location (Diag);
    begin
       return Sub_Loc /= No_Labeled_Span
         and then Diag_Loc /= No_Labeled_Span

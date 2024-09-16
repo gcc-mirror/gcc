@@ -317,11 +317,7 @@ package Diagnostics is
       Tagless_Warning,
       --  Warning representing the old warnings created with the '?' insertion
       --  character.
-      Info,
-      Info_Warning
-      --  Info warnings are old messages where both warning and info were set
-      --  to true. These info messages behave like warnings and are usually
-      --  accompanied by a warning tag.
+      Info
    );
 
    type Diagnostic_Entry_Type is record

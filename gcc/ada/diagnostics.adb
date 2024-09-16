@@ -119,19 +119,8 @@ package body Diagnostics is
    function Primary_Location
      (Diagnostic : Sub_Diagnostic_Type) return Labeled_Span_Type
    is
-      use Labeled_Span_Lists;
-      Loc : Labeled_Span_Type;
-
-      It : Iterator := Iterate (Diagnostic.Locations);
    begin
-      while Has_Next (It) loop
-         Next (It, Loc);
-         if Loc.Is_Primary then
-            return Loc;
-         end if;
-      end loop;
-
-      return (others => <>);
+      return Get_Primary_Labeled_Span (Diagnostic.Locations);
    end Primary_Location;
 
    ------------------
