@@ -1593,7 +1593,7 @@ locates data in flash but
 accesses to these data read from generic address space, i.e.@:
 from RAM,
 so that you need special accessors like @code{pgm_read_byte}
-from @w{@uref{https://www.nongnu.org/avr-libc/user-manual/,AVR-LibC}}
+from @w{@uref{https://avrdudes.github.io/avr-libc/avr-libc-user-manual/,AVR-LibC}}
 together with attribute @code{progmem}.
 
 @noindent
@@ -5181,7 +5181,7 @@ globally enable interrupts.
 
 The recommended way to use these attributes is by means of the
 @code{ISR} macro provided by @code{avr/interrupt.h} from
-@w{@uref{https://www.nongnu.org/avr-libc/user-manual/group__avr__interrupts.html,,AVR-LibC}}:
+@w{@uref{https://avrdudes.github.io/avr-libc/avr-libc-user-manual/group__avr__interrupts.html,,AVR-LibC}}:
 @example
 #include <avr/interrupt.h>
 
@@ -5219,7 +5219,7 @@ static void my_handler (void)
 Notice that the handler function needs not to be externally visible.
 The recommended way to use these attributes is by means of the
 @code{ISR_N} macro provided by @code{avr/interrupt.h} from
-@w{@uref{https://www.nongnu.org/avr-libc/user-manual/group__avr__interrupts.html,,AVR-LibC}}:
+@w{@uref{https://avrdudes.github.io/avr-libc/avr-libc-user-manual/group__avr__interrupts.html,,AVR-LibC}}:
 
 @example
 #include <avr/interrupt.h>

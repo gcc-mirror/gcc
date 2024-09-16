@@ -2688,8 +2688,9 @@ omitted from @file{libgcc.a} on the assumption that it will be provided by
 <a name="avr"></a>
 @end html
 @item --with-avrlibc
-Only supported for the AVR target. Specifies that @samp{AVR-Libc} is
-being used as the target C@tie{} library.  This causes float support
+Only supported for the AVR target. Specifies that
+@uref{https://github.com/avrdudes/avr-libc/,,AVR-LibC}
+is being used as the target C@tie{} library.  This causes float support
 functions like @code{__addsf3} to be omitted from @file{libgcc.a} on
 the assumption that it will be provided by @file{libm.a}.  For more
 technical details, cf. @uref{https://gcc.gnu.org/PR54461,,PR54461}.
