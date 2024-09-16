@@ -191,6 +191,18 @@ EXTERN decl_node decl_lookupModule (nameKey_Name n);
 EXTERN void decl_putDefForC (decl_node n);
 
 /*
+   putDefUnqualified - the definition module uses export unqualified.
+*/
+
+EXTERN void decl_putDefUnqualified (decl_node n);
+
+/*
+   isDefUnqualified - returns TRUE if the definition module uses unqualified.
+*/
+
+EXTERN bool decl_isDefUnqualified (decl_node n);
+
+/*
    lookupInScope - looks up a symbol named, n, from, scope.
 */
 

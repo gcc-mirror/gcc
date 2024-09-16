@@ -33,7 +33,7 @@ IMPLEMENTATION MODULE M2ALU ;
 *)
 
 FROM ASCII IMPORT nul ;
-FROM SYSTEM IMPORT WORD ;
+FROM SYSTEM IMPORT WORD, ADDRESS ;
 FROM NameKey IMPORT KeyToCharStar, MakeKey, CharKey ;
 FROM M2Error IMPORT InternalError, FlushErrors ;
 FROM M2Debug IMPORT Assert ;
@@ -60,8 +60,8 @@ FROM SymbolTable IMPORT NulSym, IsEnumeration, IsSubrange, IsValueSolved, PushVa
 
 IMPORT DynamicStrings ;
 
-FROM m2tree IMPORT Tree ;
-FROM m2linemap IMPORT location_t, UnknownLocation ;
+FROM gcctypes IMPORT location_t, tree ;
+FROM m2linemap IMPORT UnknownLocation ;
 
 FROM m2expr IMPORT BuildAdd, BuildSub, BuildMult,
                    BuildDivTrunc, BuildModTrunc, BuildDivFloor, BuildModFloor,
@@ -122,7 +122,7 @@ TYPE
                    solved         : BOOLEAN ;
                    constructorType: CARDINAL ;
                    next           : PtrToValue ;
-                   numberValue    : Tree ;
+                   numberValue    : tree ;
 
                    CASE type: cellType OF
 
@@ -146,7 +146,7 @@ VAR
    RangeFreeList   : listOfRange ;
    FreeList,
    TopOfStack      : PtrToValue ;
-   EnumerationValue: Tree ;
+   EnumerationValue: tree ;
    EnumerationField: CARDINAL ;
    CurrentTokenNo  : CARDINAL ;
    (* WatchedValue    : PtrToValue ;  *)
@@ -694,7 +694,7 @@ END GetSetValueType ;
    PushIntegerTree - pushes a gcc tree value onto the ALU stack.
 *)
 
-PROCEDURE PushIntegerTree (t: Tree) ;
+PROCEDURE PushIntegerTree (t: tree) ;
 VAR
    v: PtrToValue ;
 BEGIN
@@ -713,10 +713,10 @@ END PushIntegerTree ;
    PopIntegerTree - pops a gcc tree value from the ALU stack.
 *)
 
-PROCEDURE PopIntegerTree () : Tree ;
+PROCEDURE PopIntegerTree () : tree ;
 VAR
    v: PtrToValue ;
-   t: Tree ;
+   t: tree ;
 BEGIN
    v := Pop() ;
    WITH v^ DO
@@ -736,7 +736,7 @@ END PopIntegerTree ;
    PushRealTree - pushes a gcc tree value onto the ALU stack.
 *)
 
-PROCEDURE PushRealTree (t: Tree) ;
+PROCEDURE PushRealTree (t: tree) ;
 VAR
    v: PtrToValue ;
 BEGIN
@@ -755,10 +755,10 @@ END PushRealTree ;
    PopRealTree - pops a gcc tree value from the ALU stack.
 *)
 
-PROCEDURE PopRealTree () : Tree ;
+PROCEDURE PopRealTree () : tree ;
 VAR
    v: PtrToValue ;
-   t: Tree ;
+   t: tree ;
 BEGIN
    v := Pop() ;
    WITH v^ DO
@@ -778,7 +778,7 @@ END PopRealTree ;
    PushComplexTree - pushes a gcc tree value onto the ALU stack.
 *)
 
-PROCEDURE PushComplexTree (t: Tree) ;
+PROCEDURE PushComplexTree (t: tree) ;
 VAR
    v: PtrToValue ;
 BEGIN
@@ -797,10 +797,10 @@ END PushComplexTree ;
    PopComplexTree - pops a gcc tree value from the ALU stack.
 *)
 
-PROCEDURE PopComplexTree () : Tree ;
+PROCEDURE PopComplexTree () : tree ;
 VAR
    v: PtrToValue ;
-   t: Tree ;
+   t: tree ;
 BEGIN
    v := Pop() ;
    WITH v^ DO
@@ -824,7 +824,7 @@ END PopComplexTree ;
 *)
 
 PROCEDURE PushSetTree (tokenno: CARDINAL;
-                       t: Tree; sym: CARDINAL) ;
+                       t: tree; sym: CARDINAL) ;
 VAR
    v: PtrToValue ;
    c,
@@ -868,10 +868,10 @@ END PushSetTree ;
    PopSetTree - pops a gcc tree from the ALU stack.
 *)
 
-PROCEDURE PopSetTree (tokenno: CARDINAL) : Tree ;
+PROCEDURE PopSetTree (tokenno: CARDINAL) : tree ;
 VAR
    v: PtrToValue ;
-   t: Tree ;
+   t: tree ;
 BEGIN
    v := Pop() ;
    WITH v^ DO
@@ -900,10 +900,10 @@ END PopSetTree ;
    PopConstructorTree - returns a tree containing the compound literal.
 *)
 
-PROCEDURE PopConstructorTree (tokenno: CARDINAL) : Tree ;
+PROCEDURE PopConstructorTree (tokenno: CARDINAL) : tree ;
 VAR
    v: PtrToValue ;
-   t: Tree ;
+   t: tree ;
 BEGIN
    v := Pop() ;
    WITH v^ DO
@@ -3503,7 +3503,7 @@ END FindValueEnum ;
          of type, type.
 *)
 
-PROCEDURE Val (tokenno: CARDINAL; type: CARDINAL; value: Tree) : CARDINAL ;
+PROCEDURE Val (tokenno: CARDINAL; type: CARDINAL; value: tree) : CARDINAL ;
 VAR
    sym: CARDINAL ;
 BEGIN
@@ -3548,7 +3548,7 @@ END DupConst ;
 *)
 
 PROCEDURE DupConstAndAdd (tokenno: CARDINAL;
-                          sym: CARDINAL; extra: Tree) : CARDINAL ;
+                          sym: CARDINAL; extra: tree) : CARDINAL ;
 BEGIN
    PushValue(sym) ;
    PushIntegerTree(extra) ;
@@ -3565,7 +3565,7 @@ END DupConstAndAdd ;
 *)
 
 PROCEDURE DupConstAndAddMod (tokenno: CARDINAL;
-                             sym: CARDINAL; extra: Tree;
+                             sym: CARDINAL; extra: tree;
                              l, h: CARDINAL) : CARDINAL ;
 BEGIN
    (* result := (((sym-l) + extra) MOD (h-l)) + l) *)
@@ -3977,7 +3977,7 @@ END IsRangeLess ;
    MinTree - returns the tree symbol which has the least value.
 *)
 
-PROCEDURE MinTree (tokenno: CARDINAL; a, b: Tree) : Tree ;
+PROCEDURE MinTree (tokenno: CARDINAL; a, b: tree) : tree ;
 BEGIN
    PushIntegerTree(a) ;
    ConvertToInt ;
@@ -3996,7 +3996,7 @@ END MinTree ;
    MaxTree - returns the symbol which has the greatest value.
 *)
 
-PROCEDURE MaxTree (tokenno: CARDINAL; a, b: Tree) : Tree ;
+PROCEDURE MaxTree (tokenno: CARDINAL; a, b: tree) : tree ;
 BEGIN
    PushIntegerTree(a) ;
    ConvertToInt ;
@@ -4015,7 +4015,7 @@ END MaxTree ;
    IsIntersectionTree - returns TRUE if ranges, a..b, and, c..d, intersect.
 *)
 
-PROCEDURE IsIntersectionTree (tokenno: CARDINAL; a, b, c, d: Tree) : BOOLEAN ;
+PROCEDURE IsIntersectionTree (tokenno: CARDINAL; a, b, c, d: tree) : BOOLEAN ;
 BEGIN
    (* easier to prove NOT outside limits *)
    PushIntegerTree(a) ;
@@ -4044,7 +4044,7 @@ END IsIntersectionTree ;
    SubTree - returns the tree value containing (a-b)
 *)
 
-PROCEDURE SubTree (a, b: Tree) : Tree ;
+PROCEDURE SubTree (a, b: tree) : tree ;
 BEGIN
    PushIntegerTree(a) ;
    PushIntegerTree(b) ;
@@ -4401,9 +4401,9 @@ END GetRange ;
                        low and high are the limits of the subrange.
 *)
 
-PROCEDURE BuildStructBitset (tokenno: CARDINAL; v: PtrToValue; low, high: Tree) : Tree ;
+PROCEDURE BuildStructBitset (tokenno: CARDINAL; v: PtrToValue; low, high: tree) : tree ;
 VAR
-   BitsInSet : Tree ;
+   BitsInSet : tree ;
    bpw       : CARDINAL ;
    cons      : Constructor ;
 BEGIN
@@ -4468,7 +4468,7 @@ END BuildStructBitset ;
                               { (cardinal), (cardinal) etc }
 *)
 
-PROCEDURE ConstructLargeOrSmallSet (tokenno: CARDINAL; v: PtrToValue; low, high: CARDINAL) : Tree ;
+PROCEDURE ConstructLargeOrSmallSet (tokenno: CARDINAL; v: PtrToValue; low, high: CARDINAL) : tree ;
 BEGIN
    PushValue(high) ;
    ConvertToInt ;
@@ -4492,10 +4492,10 @@ END ConstructLargeOrSmallSet ;
                           set const as defined by, v.
 *)
 
-PROCEDURE ConstructSetConstant (tokenno: CARDINAL; v: PtrToValue) : Tree ;
+PROCEDURE ConstructSetConstant (tokenno: CARDINAL; v: PtrToValue) : tree ;
 VAR
    n1, n2   : Name ;
-   gccsym   : Tree ;
+   gccsym   : tree ;
    baseType,
    high, low: CARDINAL ;
 BEGIN
@@ -4530,10 +4530,10 @@ END ConstructSetConstant ;
                         array constructor.
 *)
 
-PROCEDURE ConvertConstToType (tokenno: CARDINAL; field: CARDINAL; init: CARDINAL) : Tree ;
+PROCEDURE ConvertConstToType (tokenno: CARDINAL; field: CARDINAL; init: CARDINAL) : tree ;
 VAR
    initT,
-   nBytes: Tree ;
+   nBytes: tree ;
 BEGIN
    IF IsConstString(init) AND IsArray(SkipType(GetType(field))) AND
       (SkipTypeAndSubrange(GetType(GetType(field)))=Char)
@@ -4555,7 +4555,7 @@ END ConvertConstToType ;
    ConstructRecordConstant - builds a struct initializer, as defined by, v.
 *)
 
-PROCEDURE ConstructRecordConstant (tokenno: CARDINAL; v: PtrToValue) : Tree ;
+PROCEDURE ConstructRecordConstant (tokenno: CARDINAL; v: PtrToValue) : tree ;
 VAR
    n1, n2      : Name ;
    i,
@@ -4639,7 +4639,7 @@ END GetConstructorField ;
 
 PROCEDURE GetConstructorElement (tokenno: CARDINAL; v: PtrToValue; i: CARDINAL) : CARDINAL ;
 VAR
-   j: Tree ;
+   j: tree ;
    e: listOfElements ;
 BEGIN
    WITH v^ DO
@@ -4746,15 +4746,15 @@ END GetArrayLimits ;
    InitialiseArrayOfCharWithString -
 *)
 
-PROCEDURE InitialiseArrayOfCharWithString (tokenno: CARDINAL; cons: Tree;
-                                           el, baseType, arrayType: CARDINAL) : Tree ;
+PROCEDURE InitialiseArrayOfCharWithString (tokenno: CARDINAL; cons: ADDRESS;
+                                           el, baseType, arrayType: CARDINAL) : tree ;
 VAR
    isChar   : BOOLEAN ;
    s, letter: String ;
    i, l     : CARDINAL ;
    high, low: CARDINAL ;
    value,
-   indice   : Tree ;
+   indice   : tree ;
    location : location_t ;
 BEGIN
    location := TokenToLocation(tokenno) ;
@@ -4830,9 +4830,9 @@ END InitialiseArrayOfCharWithString ;
    CheckElementString -
 *)
 
-PROCEDURE CheckElementString (el, arrayType: CARDINAL; tokenno: CARDINAL) : Tree ;
+PROCEDURE CheckElementString (el, arrayType: CARDINAL; tokenno: CARDINAL) : tree ;
 VAR
-   cons: Tree ;
+   cons: ADDRESS ;
 BEGIN
    IF IsString(arrayType) AND IsString(el)
    THEN
@@ -4848,13 +4848,13 @@ END CheckElementString ;
    InitialiseArrayWith -
 *)
 
-PROCEDURE InitialiseArrayWith (tokenno: CARDINAL; cons: Tree;
-                               v: PtrToValue; el, high, low, arrayType: CARDINAL) : Tree ;
+PROCEDURE InitialiseArrayWith (tokenno: CARDINAL; cons: ADDRESS;
+                               v: PtrToValue; el, high, low, arrayType: CARDINAL) : tree ;
 VAR
    location: location_t ;
    i       : CARDINAL ;
    indice,
-   value   : Tree ;
+   value   : tree ;
 BEGIN
    location := TokenToLocation (tokenno) ;
    i := 0 ;
@@ -4900,7 +4900,7 @@ PROCEDURE CheckGetCharFromString (location: location_t;
                                   constDecl: PtrToValue;
                                   consType: CARDINAL ;
                                   arrayIndex: CARDINAL;
-                                  VAR value: Tree) : BOOLEAN ;
+                                  VAR value: tree) : BOOLEAN ;
 VAR
    elementIndex: CARDINAL ;
    element     : CARDINAL ;
@@ -4957,14 +4957,14 @@ END CheckGetCharFromString ;
    InitialiseArrayOfCharWith -
 *)
 
-PROCEDURE InitialiseArrayOfCharWith (tokenno: CARDINAL; cons: Tree;
+PROCEDURE InitialiseArrayOfCharWith (tokenno: CARDINAL; cons: ADDRESS;
                                      constDecl: PtrToValue;
-                                     el, high, low, consType, arrayType: CARDINAL) : Tree ;
+                                     el, high, low, consType, arrayType: CARDINAL) : tree ;
 VAR
    location  : location_t ;
    arrayIndex: CARDINAL ;      (* arrayIndex is the char position index of the final string.  *)
    indice,
-   value     : Tree ;
+   value     : tree ;
 BEGIN
    location := TokenToLocation (tokenno) ;
    arrayIndex := 0 ;
@@ -5004,14 +5004,14 @@ END InitialiseArrayOfCharWith ;
    ConstructArrayConstant - builds a struct initializer, as defined by, v.
 *)
 
-PROCEDURE ConstructArrayConstant (tokenno: CARDINAL; v: PtrToValue) : Tree ;
+PROCEDURE ConstructArrayConstant (tokenno: CARDINAL; v: PtrToValue) : tree ;
 VAR
    n1, n2    : Name ;
    el1, el2,
    baseType,
    arrayType,
    high, low : CARDINAL ;
-   cons      : Constructor ;
+   cons      : ADDRESS ;
 BEGIN
    WITH v^ DO
       IF constructorType=NulSym
@@ -5052,9 +5052,9 @@ END ConstructArrayConstant ;
                 value  {e1..e2}.
 *)
 
-PROCEDURE BuildRange (tokenno: CARDINAL; e1, e2: Tree) : Tree ;
+PROCEDURE BuildRange (tokenno: CARDINAL; e1, e2: tree) : tree ;
 VAR
-   c, i, t : Tree ;
+   c, i, t : tree ;
    location: location_t ;
 BEGIN
    location := TokenToLocation(tokenno) ;
@@ -5066,11 +5066,11 @@ BEGIN
       e1 := e2 ;
       e2 := c
    END ;
-   t := Tree(NIL) ;
+   t := tree(NIL) ;
    PushIntegerTree(e1) ;
    i := PopIntegerTree() ;
    REPEAT
-      IF t=Tree(NIL)
+      IF t=tree(NIL)
       THEN
          t := BuildLSL(location, GetWordOne(location), ToWord(location, i), FALSE)
       ELSE
@@ -5093,10 +5093,10 @@ END BuildRange ;
 *)
 
 PROCEDURE BuildBitset (tokenno: CARDINAL;
-                       v: PtrToValue; low, high: Tree) : Tree ;
+                       v: PtrToValue; low, high: tree) : tree ;
 VAR
    tl, th,
-   t       : Tree ;
+   t       : tree ;
    n       : CARDINAL ;
    r1, r2  : CARDINAL ;
    location: location_t ;
@@ -5175,7 +5175,7 @@ END IsValueAndTreeKnown ;
                    error message.
 *)
 
-PROCEDURE CheckOverflow (tokenno: CARDINAL; t: Tree) ;
+PROCEDURE CheckOverflow (tokenno: CARDINAL; t: tree) ;
 BEGIN
    IF TreeOverflow (t)
    THEN
@@ -5191,7 +5191,7 @@ END CheckOverflow ;
                           error message.
 *)
 
-PROCEDURE CheckOrResetOverflow (tokenno: CARDINAL; t: Tree; check: BOOLEAN) ;
+PROCEDURE CheckOrResetOverflow (tokenno: CARDINAL; t: tree; check: BOOLEAN) ;
 BEGIN
    IF check
    THEN
@@ -5206,7 +5206,7 @@ END CheckOrResetOverflow ;
    PushGCCArrayTree - pushes a gcc tree value onto the ALU stack.
 *)
 
-PROCEDURE PushGCCArrayTree (gcc: Tree; t: CARDINAL) ;
+PROCEDURE PushGCCArrayTree (gcc: tree; t: CARDINAL) ;
 VAR
    v: PtrToValue ;
 BEGIN
@@ -5227,7 +5227,7 @@ END PushGCCArrayTree ;
    PushGCCSetTree - pushes a gcc tree value onto the ALU stack.
 *)
 
-PROCEDURE PushGCCSetTree (gcc: Tree; t: CARDINAL) ;
+PROCEDURE PushGCCSetTree (gcc: tree; t: CARDINAL) ;
 VAR
    v: PtrToValue ;
 BEGIN
@@ -5248,7 +5248,7 @@ END PushGCCSetTree ;
    PushGCCRecordTree - pushes a gcc tree value onto the ALU stack.
 *)
 
-PROCEDURE PushGCCRecordTree (gcc: Tree; t: CARDINAL) ;
+PROCEDURE PushGCCRecordTree (gcc: tree; t: CARDINAL) ;
 VAR
    v: PtrToValue ;
 BEGIN
@@ -5270,7 +5270,7 @@ END PushGCCRecordTree ;
                     front end type.
 *)
 
-PROCEDURE PushTypeOfTree (sym: CARDINAL; gcc: Tree) ;
+PROCEDURE PushTypeOfTree (sym: CARDINAL; gcc: tree) ;
 VAR
    t: CARDINAL ;
 BEGIN

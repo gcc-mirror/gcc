@@ -49,6 +49,18 @@ extern "C" {
 
 
 /*
+   useGccTree - indicate we have imported tree from gcctypes.
+*/
+
+EXTERN void keyc_useGccTree (void);
+
+/*
+   useGccLocation - indicate we have imported tree from gcctypes.
+*/
+
+EXTERN void keyc_useGccLocation (void);
+
+/*
    useUnistd - need to use unistd.h call using open/close/read/write require this header.
 */
 

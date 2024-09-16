@@ -1,7 +1,7 @@
-(* m2misc.def definition module for m2misc.cc.
+(* gcctypes provides a placeholder module for gcc declared data types.
 
-Copyright (C) 2011-2024 Free Software Foundation, Inc.
-Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+Copyright (C) 2024 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaiusmod2@gmail.com>.
 
 This file is part of GNU Modula-2.
 
@@ -19,14 +19,18 @@ You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  *)
 
-DEFINITION MODULE FOR "C" m2misc ;
+DEFINITION MODULE gcctypes ;
 
-FROM gcctypes IMPORT tree ;
 FROM SYSTEM IMPORT ADDRESS ;
 
-PROCEDURE DebugTree (t: tree) ;
-PROCEDURE error (message: ARRAY OF CHAR) ;
-PROCEDURE cerror (message: ADDRESS) ;
-PROCEDURE warning_m2_dump_filter (message, rule: ADDRESS) ;
+EXPORT UNQUALIFIED location_t, tree ;
 
-END m2misc.
+
+TYPE
+   (* Not declared here by the bootstrap tool mc when
+      --gcc-config-system is used.  *)
+   location_t = CARDINAL ;
+   tree = ADDRESS ;
+
+
+END gcctypes.

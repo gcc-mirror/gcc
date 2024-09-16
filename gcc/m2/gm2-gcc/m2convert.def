@@ -21,8 +21,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 DEFINITION MODULE FOR "C" m2convert ;
 
-FROM m2tree IMPORT Tree ;
-FROM m2linemap IMPORT location_t ;
+FROM gcctypes IMPORT location_t, tree ;
 
 
 (*
@@ -30,35 +29,35 @@ FROM m2linemap IMPORT location_t ;
             a WORD.
 *)
 
-PROCEDURE ToWord (location: location_t; expr: Tree) : Tree ;
+PROCEDURE ToWord (location: location_t; expr: tree) : tree ;
 
 
 (*
    ToCardinal - convert an expression, expr, to a CARDINAL.
 *)
 
-PROCEDURE ToCardinal (location: location_t; expr: Tree) : Tree ;
+PROCEDURE ToCardinal (location: location_t; expr: tree) : tree ;
 
 
 (*
    ToInteger - convert an expression, expr, to an INTEGER.
 *)
 
-PROCEDURE ToInteger (location: location_t; expr: Tree) : Tree ;
+PROCEDURE ToInteger (location: location_t; expr: tree) : tree ;
 
 
 (*
    ToBitset - convert an expression, expr, to a BITSET.
 *)
 
-PROCEDURE ToBitset (location: location_t; expr: Tree) : Tree ;
+PROCEDURE ToBitset (location: location_t; expr: tree) : tree ;
 
 
 (*
    ConvertToPtr - convert an expression to a void *.
 *)
 
-PROCEDURE ConvertToPtr (p: Tree) : Tree ;
+PROCEDURE ConvertToPtr (p: tree) : tree ;
 
 
 (*
@@ -67,7 +66,7 @@ PROCEDURE ConvertToPtr (p: Tree) : Tree ;
                    should suppress overflow checking.
 *)
 
-PROCEDURE BuildConvert (location: location_t; type: Tree; value: Tree; checkOverflow: BOOLEAN) : Tree ;
+PROCEDURE BuildConvert (location: location_t; type: tree; value: tree; checkOverflow: BOOLEAN) : tree ;
 
 
 (*
@@ -76,14 +75,14 @@ PROCEDURE BuildConvert (location: location_t; type: Tree; value: Tree; checkOver
                              overflow checking is performed.
 *)
 
-PROCEDURE ConvertConstantAndCheck (location: location_t; type: Tree; expr: Tree) : Tree ;
+PROCEDURE ConvertConstantAndCheck (location: location_t; type: tree; expr: tree) : tree ;
 
 
 (*
    ConvertString - converts string, expr, into a string of type, type.
 *)
 
-PROCEDURE ConvertString (type, expr: Tree) : Tree ;
+PROCEDURE ConvertString (type, expr: tree) : tree ;
 
 
 (*
@@ -92,7 +91,7 @@ PROCEDURE ConvertString (type, expr: Tree) : Tree ;
                    expr is returned unaltered.
 *)
 
-PROCEDURE GenericToType (location: location_t; type, expr: Tree) : Tree ;
+PROCEDURE GenericToType (location: location_t; type, expr: tree) : tree ;
 
 
 END m2convert.

@@ -114,7 +114,8 @@ FROM m2type IMPORT GetIntegerType,
                    InitBaseTypes ;
 
 FROM m2expr IMPORT GetSizeOf ;
-FROM m2linemap IMPORT location_t, BuiltinsLocation ;
+FROM gcctypes IMPORT location_t ;
+FROM m2linemap IMPORT BuiltinsLocation ;
 FROM m2decl IMPORT BuildIntegerConstant ;
 
 

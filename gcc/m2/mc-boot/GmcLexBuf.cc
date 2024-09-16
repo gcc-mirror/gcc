@@ -707,7 +707,7 @@ static void checkIfNeedToDuplicate (void)
       currentSource = newList ();
       while (l != h)
         {
-          addTo (newElement (reinterpret_cast<void *> (l->name)));
+          addTo (newElement (reinterpret_cast <void *> (l->name)));
           l = l->right;
         }
     }

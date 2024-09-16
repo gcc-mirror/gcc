@@ -73,7 +73,7 @@ FROM M2Base IMPORT Real, Cardinal, Integer, Complex,
                    LongReal, LongCard, LongInt, LongComplex,
                    ShortReal, ShortCard, ShortInt, ShortComplex ;
 
-FROM m2tree IMPORT Tree ;
+FROM gcctypes IMPORT tree ;
 FROM m2linemap IMPORT BuiltinsLocation ;
 FROM m2decl IMPORT GetBitsPerBitset, GetBitsPerUnit ;
 
@@ -116,7 +116,7 @@ END Init ;
    CreateMinMaxFor - creates the min and max values for, type, given gccType.
 *)
 
-PROCEDURE CreateMinMaxFor (type: CARDINAL; min, max: ARRAY OF CHAR; gccType: Tree) ;
+PROCEDURE CreateMinMaxFor (type: CARDINAL; min, max: ARRAY OF CHAR; gccType: tree) ;
 VAR
    maxval, minval: CARDINAL ;
 BEGIN
@@ -140,7 +140,7 @@ END CreateMinMaxFor ;
 
 PROCEDURE MapType (type: CARDINAL;
                    name, min, max: ARRAY OF CHAR;
-                   needsExporting: BOOLEAN; t: Tree) ;
+                   needsExporting: BOOLEAN; t: tree) ;
 VAR
    n: Name ;
 BEGIN
@@ -170,7 +170,7 @@ END MapType ;
 *)
 
 PROCEDURE CreateType (name, min, max: ARRAY OF CHAR;
-                      needsExporting: BOOLEAN; gccType: Tree) : CARDINAL ;
+                      needsExporting: BOOLEAN; gccType: tree) : CARDINAL ;
 VAR
    type: CARDINAL ;
 BEGIN
@@ -194,7 +194,7 @@ END CreateType ;
 *)
 
 PROCEDURE AttemptToCreateType (name, min, max: ARRAY OF CHAR;
-                               needsExporting: BOOLEAN; gccType: Tree) ;
+                               needsExporting: BOOLEAN; gccType: tree) ;
 BEGIN
    Assert (IsLegal (CreateType (name, min, max, needsExporting, gccType)))
 END AttemptToCreateType ;
@@ -206,7 +206,7 @@ END AttemptToCreateType ;
 *)
 
 PROCEDURE CreateSetType (name, highBit: ARRAY OF CHAR;
-                         needsExporting: BOOLEAN; gccType: Tree) : CARDINAL ;
+                         needsExporting: BOOLEAN; gccType: tree) : CARDINAL ;
 VAR
    low,
    high,
@@ -237,7 +237,7 @@ END CreateSetType ;
 *)
 
 PROCEDURE AttemptToCreateSetType (name, highBit: ARRAY OF CHAR;
-                                  needsExporting: BOOLEAN; gccType: Tree) ;
+                                  needsExporting: BOOLEAN; gccType: tree) ;
 BEGIN
    Assert (IsLegal (CreateSetType (name, highBit, needsExporting, gccType)))
 END AttemptToCreateSetType ;

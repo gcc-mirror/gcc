@@ -22,7 +22,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 DEFINITION MODULE FOR "C" m2pp ;
 
 FROM SYSTEM IMPORT ADDRESS ;
-FROM m2tree IMPORT Tree ;
+FROM gcctypes IMPORT tree ;
 
 
 (*
@@ -39,7 +39,7 @@ PROCEDURE CreateDumpGimple (templatename: ADDRESS; templatelen: CARDINAL) ;
 PROCEDURE CloseDumpGimple ;
 
 
-PROCEDURE DumpGimpleFd (fd: INTEGER; fndecl: Tree) ;
+PROCEDURE DumpGimpleFd (fd: INTEGER; fndecl: tree) ;
 
 
 END m2pp.

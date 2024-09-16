@@ -26,6 +26,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "GM2LexBuf.h"
 #include "input.h"
 #include "m2options.h"
+#include "Gm2linemap.h"
 
 static int cpreprocessor = 0;  /* Replace this with correct getter.  */
 

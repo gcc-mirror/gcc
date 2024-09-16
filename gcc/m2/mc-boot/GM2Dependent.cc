@@ -590,7 +590,7 @@ static M2Dependent_ModuleChain LookupModuleN (M2Dependent_DependencyState state,
     {
       ptr = Modules.array[state-M2Dependent_unregistered];
       do {
-        if (((strncmp (reinterpret_cast<M2Dependent_PtrToChar> (ptr->name), reinterpret_cast<M2Dependent_PtrToChar> (name), max (namelen, static_cast<unsigned int> (strlen_ (reinterpret_cast<M2Dependent_PtrToChar> (ptr->name)))))) == 0) && ((strncmp (reinterpret_cast<M2Dependent_PtrToChar> (ptr->libname), reinterpret_cast<M2Dependent_PtrToChar> (libname), max (libnamelen, static_cast<unsigned int> (strlen_ (reinterpret_cast<M2Dependent_PtrToChar> (ptr->libname)))))) == 0))
+        if (((strncmp (reinterpret_cast <M2Dependent_PtrToChar> (ptr->name), reinterpret_cast <M2Dependent_PtrToChar> (name), max (namelen, static_cast<unsigned int> (strlen_ (reinterpret_cast <M2Dependent_PtrToChar> (ptr->name)))))) == 0) && ((strncmp (reinterpret_cast <M2Dependent_PtrToChar> (ptr->libname), reinterpret_cast <M2Dependent_PtrToChar> (libname), max (libnamelen, static_cast<unsigned int> (strlen_ (reinterpret_cast <M2Dependent_PtrToChar> (ptr->libname)))))) == 0))
           {
             return ptr;
           }
@@ -610,7 +610,7 @@ static M2Dependent_ModuleChain LookupModuleN (M2Dependent_DependencyState state,
 
 static M2Dependent_ModuleChain LookupModule (M2Dependent_DependencyState state, void * name, void * libname)
 {
-  return LookupModuleN (state, name, static_cast<unsigned int> (strlen_ (reinterpret_cast<M2Dependent_PtrToChar> (name))), libname, static_cast<unsigned int> (strlen_ (reinterpret_cast<M2Dependent_PtrToChar> (libname))));
+  return LookupModuleN (state, name, static_cast<unsigned int> (strlen_ (reinterpret_cast <M2Dependent_PtrToChar> (name))), libname, static_cast<unsigned int> (strlen_ (reinterpret_cast <M2Dependent_PtrToChar> (libname))));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1113,7 +1113,7 @@ static void ForceDependencies (void * overrideliborder)
               case ',':
                 modname = start;
                 modlen = len;
-                ForceModule (reinterpret_cast<void *> (modname), modlen, reinterpret_cast<void *> (libname), liblen);
+                ForceModule (reinterpret_cast <void *> (modname), modlen, reinterpret_cast <void *> (libname), liblen);
                 libname = NULL;
                 liblen = 0;
                 modlen = 0;
@@ -1131,7 +1131,7 @@ static void ForceDependencies (void * overrideliborder)
         }
       if (start != pc)
         {
-          ForceModule (reinterpret_cast<void *> (start), len, reinterpret_cast<void *> (libname), liblen);
+          ForceModule (reinterpret_cast <void *> (start), len, reinterpret_cast <void *> (libname), liblen);
         }
       combine (M2Dependent_user, M2Dependent_ordered);
     }
@@ -1208,7 +1208,7 @@ static bool equal (void * cstr, const char *str_, unsigned int _str_high)
   /* make a local copy of each unbounded array.  */
   memcpy (str, str_, _str_high+1);
 
-  return (strncmp (reinterpret_cast<M2Dependent_PtrToChar> (cstr), reinterpret_cast<M2Dependent_PtrToChar> (const_cast<void*> (static_cast<const void*>(str))), StrLib_StrLen ((const char *) str, _str_high))) == 0;
+  return (strncmp (reinterpret_cast <M2Dependent_PtrToChar> (cstr), reinterpret_cast <M2Dependent_PtrToChar> (const_cast<void*> (static_cast<const void*>(str))), StrLib_StrLen ((const char *) str, _str_high))) == 0;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1249,7 +1249,7 @@ static void SetupDebugFlags (void)
   pc = static_cast<SetupDebugFlags__T1> (libc_getenv (const_cast<void*> (static_cast<const void*>("GCC_M2LINK_RTFLAG"))));
   while ((pc != NULL) && ((*pc) != ASCII_nul))
     {
-      if (equal (reinterpret_cast<void *> (pc), (const char *) "all", 3))
+      if (equal (reinterpret_cast <void *> (pc), (const char *) "all", 3))
         {
           ModuleTrace = true;
           DependencyTrace = true;
@@ -1260,43 +1260,43 @@ static void SetupDebugFlags (void)
           WarningTrace = true;
           pc += 3;
         }
-      else if (equal (reinterpret_cast<void *> (pc), (const char *) "module", 6))
+      else if (equal (reinterpret_cast <void *> (pc), (const char *) "module", 6))
         {
           /* avoid dangling else.  */
           ModuleTrace = true;
           pc += 6;
         }
-      else if (equal (reinterpret_cast<void *> (pc), (const char *) "warning", 7))
+      else if (equal (reinterpret_cast <void *> (pc), (const char *) "warning", 7))
         {
           /* avoid dangling else.  */
           WarningTrace = true;
           pc += 7;
         }
-      else if (equal (reinterpret_cast<void *> (pc), (const char *) "hex", 3))
+      else if (equal (reinterpret_cast <void *> (pc), (const char *) "hex", 3))
         {
           /* avoid dangling else.  */
           HexTrace = true;
           pc += 3;
         }
-      else if (equal (reinterpret_cast<void *> (pc), (const char *) "dep", 3))
+      else if (equal (reinterpret_cast <void *> (pc), (const char *) "dep", 3))
         {
           /* avoid dangling else.  */
           DependencyTrace = true;
           pc += 3;
         }
-      else if (equal (reinterpret_cast<void *> (pc), (const char *) "pre", 3))
+      else if (equal (reinterpret_cast <void *> (pc), (const char *) "pre", 3))
         {
           /* avoid dangling else.  */
           PreTrace = true;
           pc += 3;
         }
-      else if (equal (reinterpret_cast<void *> (pc), (const char *) "post", 4))
+      else if (equal (reinterpret_cast <void *> (pc), (const char *) "post", 4))
         {
           /* avoid dangling else.  */
           PostTrace = true;
           pc += 4;
         }
-      else if (equal (reinterpret_cast<void *> (pc), (const char *) "force", 5))
+      else if (equal (reinterpret_cast <void *> (pc), (const char *) "force", 5))
         {
           /* avoid dangling else.  */
           ForceTrace = true;

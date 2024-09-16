@@ -31,7 +31,7 @@ DEFINITION MODULE M2System ;
                  are mapped onto their equivalents in the gcc backend.
 *)
 
-FROM m2linemap IMPORT location_t ;
+FROM gcctypes IMPORT location_t ;
 
 EXPORT QUALIFIED
                  System,           (* The SYSTEM module symbol.  *)

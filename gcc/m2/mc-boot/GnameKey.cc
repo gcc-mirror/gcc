@@ -192,12 +192,12 @@ static nameKey_Name doMakeKey (nameKey_ptrToChar n, unsigned int higha)
       lastIndice += 1;
       child->key = lastIndice;
       child->data = n;
-      Indexing_PutIndice (keyIndex, child->key, reinterpret_cast<void *> (n));
+      Indexing_PutIndice (keyIndex, child->key, reinterpret_cast <void *> (n));
       k = lastIndice;
     }
   else
     {
-      Storage_DEALLOCATE (reinterpret_cast<void **> (&n), higha+1);
+      Storage_DEALLOCATE (reinterpret_cast <void **> (&n), higha+1);
       k = child->key;
     }
   return k;
@@ -305,7 +305,7 @@ extern "C" nameKey_Name nameKey_makeKey (const char *a_, unsigned int _a_high)
   memcpy (a, a_, _a_high+1);
 
   higha = StrLib_StrLen ((const char *) a, _a_high);
-  Storage_ALLOCATE (reinterpret_cast<void **> (&p), higha+1);
+  Storage_ALLOCATE (reinterpret_cast <void **> (&p), higha+1);
   if (p == NULL)
     {
       M2RTS_HALT (-1);  /* out of memory error  */
@@ -352,7 +352,7 @@ extern "C" nameKey_Name nameKey_makekey (void * a)
   else
     {
       higha = static_cast<unsigned int> (libc_strlen (a));
-      Storage_ALLOCATE (reinterpret_cast<void **> (&p), higha+1);
+      Storage_ALLOCATE (reinterpret_cast <void **> (&p), higha+1);
       if (p == NULL)
         {
           M2RTS_HALT (-1);  /* out of memory error  */

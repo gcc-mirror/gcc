@@ -93,7 +93,7 @@ static DynamicStrings_String makeTempFile (DynamicStrings_String ext)
 
 static DynamicStrings_String onExitDelete (DynamicStrings_String filename)
 {
-  alists_includeItemIntoList (listOfFiles, reinterpret_cast<void *> (DynamicStrings_Dup (filename)));
+  alists_includeItemIntoList (listOfFiles, reinterpret_cast <void *> (DynamicStrings_Dup (filename)));
   return filename;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -148,7 +148,7 @@ extern "C" DynamicStrings_String mcPreprocess_preprocessModule (DynamicStrings_S
     }
   else
     {
-      tempfile = DynamicStrings_InitStringCharStar (reinterpret_cast<void *> (makeTempFile (DynamicStrings_InitString ((const char *) "cpp", 3))));
+      tempfile = DynamicStrings_InitStringCharStar (reinterpret_cast <void *> (makeTempFile (DynamicStrings_InitString ((const char *) "cpp", 3))));
       commandLine = DynamicStrings_Dup (command);
       commandLine = DynamicStrings_ConCat (DynamicStrings_ConCat (DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Dup (commandLine), ' '), filename), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) " -o ", 4))), tempfile);
       if (mcOptions_getVerbose ())

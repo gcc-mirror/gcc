@@ -21,8 +21,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 DEFINITION MODULE FOR "C" m2treelib ;
 
-FROM m2tree IMPORT Tree ;
-FROM m2linemap IMPORT location_t ;
+FROM gcctypes IMPORT location_t, tree ;
 FROM SYSTEM IMPORT ADDRESS ;
 
 TYPE
@@ -35,28 +34,28 @@ TYPE
                              NULL is returned if, op, is a constant.
 *)
 
-PROCEDURE get_set_address_if_var (location: location_t; op: Tree; is_lvalue, is_const: BOOLEAN) : Tree ;
+PROCEDURE get_set_address_if_var (location: location_t; op: tree; is_lvalue, is_const: BOOLEAN) : tree ;
 
 
 (*
     get_set_field_rhs - returns the value of p->field.
 *)
 
-PROCEDURE get_set_field_rhs (location: location_t; p: Tree; field: Tree) : Tree ;
+PROCEDURE get_set_field_rhs (location: location_t; p: tree; field: tree) : tree ;
 
 
 (*
     get_set_field_lhs - returns the address of p->field.
 *)
 
-PROCEDURE get_set_field_lhs (location: location_t; p: Tree; field: Tree) : Tree ;
+PROCEDURE get_set_field_lhs (location: location_t; p: tree; field: tree) : tree ;
 
 
 (*
     get_set_address - returns the address of op1.
 *)
 
-PROCEDURE get_set_address (location: location_t; op1: Tree; is_lvalue: BOOLEAN) : Tree ;
+PROCEDURE get_set_address (location: location_t; op1: tree; is_lvalue: BOOLEAN) : tree ;
 
 
 (*
@@ -64,7 +63,7 @@ PROCEDURE get_set_address (location: location_t; op1: Tree; is_lvalue: BOOLEAN) 
                     Either p->field or the constant(op.fieldNo) is returned.
 *)
 
-PROCEDURE get_set_value (location: location_t; p: Tree; field: Tree; is_const: BOOLEAN; op: Tree; fieldNo: CARDINAL) : Tree ;
+PROCEDURE get_set_value (location: location_t; p: tree; field: tree; is_const: BOOLEAN; op: tree; fieldNo: CARDINAL) : tree ;
 
 
 (*
@@ -76,7 +75,7 @@ PROCEDURE get_set_value (location: location_t; p: Tree; field: Tree; is_const: B
                    appropriate field number.
 *)
 
-PROCEDURE get_field_no (type: Tree; op: Tree; is_const: BOOLEAN; fieldNo: CARDINAL) : Tree ;
+PROCEDURE get_field_no (type: tree; op: tree; is_const: BOOLEAN; fieldNo: CARDINAL) : tree ;
 
 
 (*
@@ -84,18 +83,18 @@ PROCEDURE get_field_no (type: Tree; op: Tree; is_const: BOOLEAN; fieldNo: CARDIN
                  copied upon indirection.
 *)
 
-PROCEDURE get_rvalue (location: location_t; t: Tree; type: Tree; is_lvalue: BOOLEAN) : Tree ;
+PROCEDURE get_rvalue (location: location_t; t: tree; type: tree; is_lvalue: BOOLEAN) : tree ;
 
 
 (*
     DoCall - build a call tree arranging the parameter list as a vector.
 *)
 
-PROCEDURE DoCall (location: location_t; rettype: Tree; funcptr: Tree; param_list: Tree) : Tree ;
+PROCEDURE DoCall (location: location_t; rettype: tree; funcptr: tree; param_list: tree) : tree ;
 
 
 
-PROCEDURE build_modify_expr (location: location_t; des: Tree; modifycode: tree_code; copy: Tree) : Tree ;
+PROCEDURE build_modify_expr (location: location_t; des: tree; modifycode: tree_code; copy: tree) : tree ;
 
 
 (*
@@ -103,7 +102,7 @@ PROCEDURE build_modify_expr (location: location_t; des: Tree; modifycode: tree_c
                      If the result is true then jump to label.
 *)
 
-PROCEDURE do_jump_if_bit (location: location_t; code: tree_code; word: Tree; bit: Tree; label: ADDRESS) ;
+PROCEDURE do_jump_if_bit (location: location_t; code: tree_code; word: tree; bit: tree; label: ADDRESS) ;
 
 
 END m2treelib.

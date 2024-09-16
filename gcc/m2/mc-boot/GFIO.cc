@@ -585,7 +585,7 @@ static FIO_File InitializeFile (FIO_File f, void * fname, unsigned int flength, 
     }
   else
     {
-      Indexing_PutIndice (FileInfo, f, reinterpret_cast<void *> (fd));
+      Indexing_PutIndice (FileInfo, f, reinterpret_cast <void *> (fd));
       fd->name.size = flength+1;  /* need to guarantee the nul for C  */
       fd->usage = use;  /* need to guarantee the nul for C  */
       fd->output = towrite;

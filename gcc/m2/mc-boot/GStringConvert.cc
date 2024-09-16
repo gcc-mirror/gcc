@@ -1772,11 +1772,11 @@ extern "C" DynamicStrings_String StringConvert_LongrealToString (long double x, 
   if (TotalWidth == 0)
     {
       maxprecision = true;
-      r = ldtoa_ldtoa (x, ldtoa_decimaldigits, 100, &point, &sign);
+      r = ldtoa_ldtoa (x, static_cast<int> (ldtoa_decimaldigits), 100, &point, &sign);
     }
   else
     {
-      r = ldtoa_ldtoa (x, ldtoa_decimaldigits, 100, &point, &sign);
+      r = ldtoa_ldtoa (x, static_cast<int> (ldtoa_decimaldigits), 100, &point, &sign);
     }
   s = DynamicStrings_InitStringCharStar (r);
   libc_free (r);
