@@ -2695,7 +2695,7 @@ functions like @code{__addsf3} to be omitted from @file{libgcc.a} on
 the assumption that it will be provided by @file{libm.a}.  For more
 technical details, cf. @uref{https://gcc.gnu.org/PR54461,,PR54461}.
 It is not supported for
-RTEMS configurations, which currently use newlib.  The option is
+RTEMS configurations, which currently use Newlib.  The option is
 supported since version 4.7.2 and is the default in 4.8.0 and newer.
 
 @item --with-double=@{32|64|32,64|64,32@}
@@ -4007,26 +4007,22 @@ applications.  There are no standard Unix configurations.
 Collection (GCC)},
 @end ifnothtml
 @ifhtml
-See ``AVR Options'' in the main manual
+See @uref{https://gcc.gnu.org/onlinedocs/gcc/AVR-Options.html,,AVR Options}
+in the main manual
 @end ifhtml
 for the list of supported MCU types.
 
-Use @samp{configure --target=avr --enable-languages="c"} to configure GCC@.
+Use @samp{configure --target=avr --enable-languages="c,c++"} to configure GCC@.
 
 Further installation notes and other useful information about AVR tools
 can also be obtained from:
 
 @itemize @bullet
 @item
-@uref{http://www.nongnu.org/avr/,,http://www.nongnu.org/avr/}
+@uref{https://avrdudes.github.io/avr-libc/avr-libc-user-manual/install_tools.html,,AVR-LibC: Building and Installing the GNU Tool Chain}
+@item
+@uref{https://github.com/sprintersb/atest?tab=readme-ov-file#running-the-avr-gcc-testsuite-using-the-avrtest-simulator,,AVRtest: Running the avr-gcc Testsuite}
 @end itemize
-
-The following error:
-@smallexample
-Error: register required
-@end smallexample
-
-indicates that you should upgrade to a newer version of the binutils.
 
 @html
 <hr />
