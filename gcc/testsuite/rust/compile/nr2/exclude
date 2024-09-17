@@ -3,7 +3,6 @@
 debug-diagnostics-on.rs
 
 # main list
-all-cast.rs
 attr-mismatch-crate-name.rs
 attr_deprecated.rs
 attr_deprecated_2.rs
@@ -11,13 +10,9 @@ auto_trait_super_trait.rs
 auto_trait_valid.rs
 auto_trait_invalid.rs
 bad=file-name.rs
-bad_type2.rs
 bounds1.rs
-break-rust1.rs
 break-rust2.rs
 break-rust3.rs
-break2.rs
-break_with_value_inside_loop.rs
 macros/builtin/eager1.rs
 macros/builtin/eager2.rs
 macros/builtin/recurse2.rs
@@ -35,14 +30,9 @@ complex_qualified_path_in_expr.rs
 const-issue1440.rs
 const1.rs
 const3.rs
-const4.rs
-const8.rs
-const9.rs
-const_generics_1.rs
 const_generics_3.rs
 const_generics_4.rs
 const_generics_5.rs
-const_generics_6.rs
 const_generics_7.rs
 const_generics_8.rs
 derive_empty.rs
@@ -51,7 +41,6 @@ derive_macro3.rs
 derive_macro4.rs
 derive_macro6.rs
 diagnostic_underline.rs
-expand_macro_qual_path_in_type.rs
 expected_type_args2.rs
 expected_type_args3.rs
 feature_rust_attri0.rs
@@ -59,7 +48,6 @@ feature_rust_attri1.rs
 for_lifetimes.rs
 format_args_basic_expansion.rs
 found_struct.rs
-func1.rs
 generic-default1.rs
 generics1.rs
 generics10.rs
@@ -73,20 +61,17 @@ generics7.rs
 generics8.rs
 generics9.rs
 if_let_expr.rs
-implicit_returns_err4.rs
 infer-crate-name.rs
 issue-1005.rs
 issue-1006.rs
 issue-1019.rs
 issue-1031.rs
 issue-1034.rs
-issue-1073.rs
 issue-1089.rs
 issue-1128.rs
 issue-1129-2.rs
 issue-1130.rs
 issue-1131.rs
-issue-1152.rs
 issue-1165.rs
 issue-1173.rs
 issue-1235.rs
@@ -96,7 +81,6 @@ issue-1289.rs
 issue-1383.rs
 issue-1447.rs
 issue-1483.rs
-issue-1524.rs
 issue-1589.rs
 issue-1725-1.rs
 issue-1725-2.rs
@@ -142,7 +126,6 @@ issue-2772-2.rs
 issue-2775.rs
 issue-2747.rs
 issue-2782.rs
-issue-2788.rs
 issue-2812.rs
 issue-850.rs
 issue-852.rs
@@ -157,14 +140,12 @@ macros/mbe/macro15.rs
 macros/mbe/macro20.rs
 macros/mbe/macro23.rs
 macros/mbe/macro40.rs
-macros/mbe/macro42.rs
 macros/mbe/macro43.rs
 macros/mbe/macro44.rs
 macros/mbe/macro50.rs
 macros/mbe/macro54.rs
 macros/mbe/macro55.rs
 macros/mbe/macro6.rs
-macros/mbe/macro9.rs
 macros/mbe/macro_rules_macro_rules.rs
 macros/mbe/macro_use1.rs
 match-never-ltype.rs
@@ -204,10 +185,7 @@ privacy5.rs
 privacy6.rs
 privacy8.rs
 macros/proc/attribute_non_function.rs
-macros/proc/attribute_non_root_method.rs
 macros/proc/derive_non_function.rs
-macros/proc/non_root_method.rs
-macros/proc/non_root_trait_method.rs
 macros/proc/non_function.rs
 pub_restricted_1.rs
 pub_restricted_2.rs
@@ -256,7 +234,6 @@ use_2.rs
 v0-mangle1.rs
 v0-mangle2.rs
 while_break_expr.rs
-rust-const-blog-issue.rs
 negative_impls.rs
 auto_trait.rs
 exhaustiveness1.rs
@@ -272,8 +249,6 @@ issue-3045-1.rs
 issue-3045-2.rs
 issue-3046.rs
 unknown-associated-item.rs
-box_syntax_feature_gate.rs
-dropck_eyepatch_feature_gate.rs
 inline_asm_parse_output_operand.rs
 issue-3030.rs
 issue-3035.rs
