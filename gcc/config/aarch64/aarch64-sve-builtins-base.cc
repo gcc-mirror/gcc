@@ -2020,7 +2020,22 @@ public:
   gimple *
   fold (gimple_folder &f) const override
   {
-    return f.fold_const_binary (MULT_EXPR);
+    if (auto *res = f.fold_const_binary (MULT_EXPR))
+      return res;
+
+    /* If one of the operands is all zeros, fold to zero vector.  */
+    tree op1 = gimple_call_arg (f.call, 1);
+    if (integer_zerop (op1))
+      return gimple_build_assign (f.lhs, op1);
+
+    tree pg = gimple_call_arg (f.call, 0);
+    tree op2 = gimple_call_arg (f.call, 2);
+    if (integer_zerop (op2)
+	&& (f.pred != PRED_m
+	    || is_ptrue (pg, f.type_suffix (0).element_bytes)))
+      return gimple_build_assign (f.lhs, build_zero_cst (TREE_TYPE (f.lhs)));
+
+    return NULL;
   }
 };
 

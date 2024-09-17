@@ -35,7 +35,7 @@ svint64_t s64_z_pg (svbool_t pg)
 
 /*
 ** s64_z_pg_0:
-**	mov	z[0-9]+\.d, p[0-7]/z, #0
+**	mov	z[0-9]+\.b, #0
 **	ret
 */
 svint64_t s64_z_pg_0 (svbool_t pg)
@@ -117,7 +117,7 @@ svint64_t s64_z_pg_n (svbool_t pg)
 
 /*
 ** s64_z_pg_n_s64_0:
-**	mov	z[0-9]+\.d, p[0-7]/z, #0
+**	mov	z[0-9]+\.b, #0
 **	ret
 */
 svint64_t s64_z_pg_n_s64_0 (svbool_t pg)
