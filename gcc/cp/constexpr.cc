@@ -8201,8 +8201,11 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 			      TREE_TYPE (op), TREE_TYPE (TREE_TYPE (sop)),
 			      TREE_TYPE (type));
 		    tree obj = build_fold_indirect_ref (sop);
-		    inform (DECL_SOURCE_LOCATION (obj),
-			    "pointed-to object declared here");
+		    if (TREE_CODE (obj) == COMPONENT_REF)
+		      obj = TREE_OPERAND (obj, 1);
+		    if (DECL_P (obj))
+		      inform (DECL_SOURCE_LOCATION (obj),
+			      "pointed-to object declared here");
 		  }
 		*non_constant_p = true;
 		return t;
