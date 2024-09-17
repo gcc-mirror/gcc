@@ -152,10 +152,10 @@ Late::visit (AST::IdentifierPattern &identifier)
   // do we insert in labels or in values
   // but values does not allow shadowing... since functions cannot shadow
   // do we insert functions in labels as well?
-  auto ok
-    = ctx.values.insert (identifier.get_ident (), identifier.get_node_id ());
 
-  rust_assert (ok);
+  // We do want to ignore duplicated data because some situations rely on it.
+  std::ignore
+    = ctx.values.insert (identifier.get_ident (), identifier.get_node_id ());
 }
 
 void
