@@ -3469,6 +3469,17 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
   then_locus = gimple_location (then_assign);
   else_locus = gimple_location (else_assign);
 
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf(dump_file, "factoring out stores:\n\tthen:\n");
+      print_gimple_stmt (dump_file, then_assign, 0,
+			 TDF_VOPS|TDF_MEMSYMS);
+      fprintf(dump_file, "\telse:\n");
+      print_gimple_stmt (dump_file, else_assign, 0,
+			 TDF_VOPS|TDF_MEMSYMS);
+      fprintf (dump_file, "\n");
+    }
+
   /* Now we've checked the constraints, so do the transformation:
      1) Remove the stores.  */
   gsi = gsi_for_stmt (then_assign);
@@ -3490,6 +3501,16 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
   add_phi_arg (newphi, else_rhs, EDGE_SUCC (else_bb, 0), else_locus);
 
   new_stmt = gimple_build_assign (lhs, gimple_phi_result (newphi));
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf(dump_file, "to use phi:\n");
+      print_gimple_stmt (dump_file, newphi, 0,
+			 TDF_VOPS|TDF_MEMSYMS);
+      fprintf(dump_file, "\n");
+      print_gimple_stmt (dump_file, new_stmt, 0,
+			 TDF_VOPS|TDF_MEMSYMS);
+      fprintf(dump_file, "\n\n");
+    }
 
   /* 3) Insert that PHI node.  */
   gsi = gsi_after_labels (join_bb);
