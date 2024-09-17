@@ -3587,9 +3587,6 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
   vec<ddr_p> then_ddrs, else_ddrs;
   gimple *then_store, *else_store;
   bool found, ok = false, res;
-  struct data_dependence_relation *ddr;
-  data_reference_p then_dr, else_dr;
-  int i, j;
   tree then_lhs, else_lhs;
   basic_block blocks[3];
 
@@ -3640,8 +3637,8 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
     }
 
   /* Find pairs of stores with equal LHS.  */
-  auto_vec<gimple *, 1> then_stores, else_stores;
-  FOR_EACH_VEC_ELT (then_datarefs, i, then_dr)
+  auto_vec<std::pair<gimple *, gimple *>, 1> stores_pairs;
+  for (auto then_dr : then_datarefs)
     {
       if (DR_IS_READ (then_dr))
         continue;
@@ -3652,7 +3649,7 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
 	continue;
       found = false;
 
-      FOR_EACH_VEC_ELT (else_datarefs, j, else_dr)
+      for (auto else_dr : else_datarefs)
         {
           if (DR_IS_READ (else_dr))
             continue;
@@ -3672,13 +3669,12 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
       if (!found)
         continue;
 
-      then_stores.safe_push (then_store);
-      else_stores.safe_push (else_store);
+      stores_pairs.safe_push (std::make_pair (then_store, else_store));
     }
 
   /* No pairs of stores found.  */
-  if (!then_stores.length ()
-      || then_stores.length () > (unsigned) param_max_stores_to_sink)
+  if (!stores_pairs.length ()
+      || stores_pairs.length () > (unsigned) param_max_stores_to_sink)
     {
       free_data_refs (then_datarefs);
       free_data_refs (else_datarefs);
@@ -3706,7 +3702,7 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
 
   /* Check that there are no read-after-write or write-after-write dependencies
      in THEN_BB.  */
-  FOR_EACH_VEC_ELT (then_ddrs, i, ddr)
+  for (auto ddr : then_ddrs)
     {
       struct data_reference *dra = DDR_A (ddr);
       struct data_reference *drb = DDR_B (ddr);
@@ -3728,7 +3724,7 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
 
   /* Check that there are no read-after-write or write-after-write dependencies
      in ELSE_BB.  */
-  FOR_EACH_VEC_ELT (else_ddrs, i, ddr)
+  for (auto ddr : else_ddrs)
     {
       struct data_reference *dra = DDR_A (ddr);
       struct data_reference *drb = DDR_B (ddr);
@@ -3749,9 +3745,10 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
     }
 
   /* Sink stores with same LHS.  */
-  FOR_EACH_VEC_ELT (then_stores, i, then_store)
+  for (auto &store_pair : stores_pairs)
     {
-      else_store = else_stores[i];
+      then_store = store_pair.first;
+      else_store = store_pair.second;
       res = cond_if_else_store_replacement_1 (then_bb, else_bb, join_bb,
                                               then_store, else_store);
       ok = ok || res;
