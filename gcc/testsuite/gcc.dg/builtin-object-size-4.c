@@ -482,7 +482,7 @@ test8 (unsigned cond)
   if (__builtin_object_size (&p[-4], 3) != (cond ? 6 : 10))
     FAIL ();
 #else
-  if (__builtin_object_size (&p[-4], 3) != 0)
+  if (__builtin_object_size (&p[-4], 3) != 6)
     FAIL ();
 #endif
 
@@ -493,7 +493,7 @@ test8 (unsigned cond)
   if (__builtin_object_size (p, 3) != ((cond ? 2 : 6) + cond))
     FAIL ();
 #else
-  if (__builtin_object_size (p, 3) != 0)
+  if (__builtin_object_size (p, 3) != 2)
     FAIL ();
 #endif
 
@@ -505,7 +505,7 @@ test8 (unsigned cond)
   if (__builtin_object_size (p, 3) != sizeof (y.c) - 8 + cond)
     FAIL ();
 #else
-  if (__builtin_object_size (p, 3) != 0)
+  if (__builtin_object_size (p, 3) != sizeof (y.c) - 8)
     FAIL ();
 #endif
 }
