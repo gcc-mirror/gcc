@@ -1456,16 +1456,16 @@ case "$have_compiler:$host:$target:$enable_bootstrap" in
     ;;
 esac
 
-# When bootstrapping with GCC, build stage 1 in C++11 mode to ensure that a
-# C++11 compiler can still start the bootstrap.  Otherwise, if building GCC,
-# require C++11 (or higher).
+# When bootstrapping with GCC, build stage 1 in C++14 mode to ensure that a
+# C++14 compiler can still start the bootstrap.  Otherwise, if building GCC,
+# require C++14 (or higher).
 if test "$enable_bootstrap:$GXX" = "yes:yes"; then
-  CXX="$CXX -std=c++11"
+  CXX="$CXX -std=c++14"
 elif test "$have_compiler" = yes; then
-  AX_CXX_COMPILE_STDCXX(11)
+  AX_CXX_COMPILE_STDCXX(14)
 
   if test "${build}" != "${host}"; then
-    AX_CXX_COMPILE_STDCXX(11, [], [], [_FOR_BUILD])
+    AX_CXX_COMPILE_STDCXX(14, [], [], [_FOR_BUILD])
   fi
 fi
 
