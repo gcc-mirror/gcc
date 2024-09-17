@@ -1,3 +1,64 @@
+2024-09-16  Pengxuan Zheng  <quic_pzheng@quicinc.com>
+
+	PR target/113328
+	* config/aarch64/aarch64.cc (aarch64_simd_valid_immediate): Improve
+	handling of some ADVSIMD vectors by using SVE's INDEX if TARGET_SVE is
+	available.
+	(aarch64_output_simd_mov_immediate): Likewise.
+
+2024-09-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/invoke.texi (AVR Options): Update AVR-LibC weblink from
+	nongnu.org to https://github.com/avrdudes/avr-libc
+	* doc/extend.texi (AVR Named Address Spaces): Same.
+	(AVR Function Attributes): Same.
+	* doc/install.texi (Cross-Compiler-Specific Options, AVR): Same.
+
+2024-09-16  Soumya AR  <soumyaa@nvidia.com>
+
+	* config/aarch64/aarch64-sve.md (*post_ra_v<optab><mode>3): Split pattern
+	to accomodate left and right shifts separately.
+	(*post_ra_v_ashl<mode>3): Matches left shifts with additional
+	constraint to check for shifts by 1.
+	(*post_ra_v_<optab><mode>3): Matches right shifts.
+
+2024-09-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-protos.h (avr_out_cmp_lsr, avr_maybe_cmp_lsr): New.
+	* config/avr/avr.cc (avr_maybe_cmp_lsr, avr_out_cmp_lsr): New functions.
+	(avr_out_compare) [GEU, LTU]: Start output at byte CTZ(xval) / 8.
+	(avr_adjust_insn_length) [ADJUST_LEN_CMP_LSR]: Handle case.
+	* config/avr/avr.md (adjust_len) <cmp_lsr>: New attr value.
+	(*cmp<mode>_lsr): New define_insn_and_split.
+	(cbranch<mode>4_insn): When splitting, run avr_maybe_cmp_lsr()
+	which may map the operands to *cmp<mode>_lsr.
+
+2024-09-16  Andreas Schwab  <schwab@suse.de>
+
+	PR target/116693
+	* config/riscv/riscv.cc (riscv_legitimize_tls_address): Don't pass
+	seqno to gen_tlsdesc and remove it.
+	* config/riscv/riscv.md (@tlsdesc<mode>): Remove operand 1.  Use
+	%= instead of %1 in template.
+
+2024-09-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-vectorizer.cc (vec_info::add_pattern_stmt): Set pattern_stmt_p.
+
+2024-09-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc: Use rtx_code for RTX codes.
+	Drop enum and struct tags.
+	* config/avr/avr.md: Same.
+	* config/avr/avr-c.cc: Same.
+	* config/avr/avr-dimode.md: Same.
+	* config/avr/avr-passes.cc: Same.
+	* config/avr/avr-protos.h: Same.
+
+2024-09-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_out_compare): Don't mix ADIW with SBCI / CPC.
+
 2024-09-15  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR tree-optimization/116699

@@ -1,3 +1,13 @@
+2024-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* .editorconfig: New file.
+	* include/std/.editorconfig: New file.
+
+2024-09-16  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/intro.xml: Update link to installation docs.
+	* doc/html/manual/make.html: Regenerate.
+
 2024-09-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/span (span::__iter_tag): Declare nested type.

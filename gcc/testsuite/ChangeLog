@@ -1,3 +1,59 @@
+2024-09-16  Pengxuan Zheng  <quic_pzheng@quicinc.com>
+
+	PR target/113328
+	* gcc.target/aarch64/sve/acle/general/dupq_1.c: Update test to use
+	SVE's INDEX instruction.
+	* gcc.target/aarch64/sve/acle/general/dupq_2.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/dupq_3.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/dupq_4.c: Likewise.
+	* gcc.target/aarch64/sve/vec_init_3.c: New test.
+
+2024-09-16  Soumya AR  <soumyaa@nvidia.com>
+
+	* gcc.target/aarch64/sve/acle/asm/lsl_s16.c: Updated instances of lsl-1
+	with corresponding add.
+	* gcc.target/aarch64/sve/acle/asm/lsl_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_wide_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_wide_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_wide_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_wide_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_wide_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_wide_u8.c: Likewise.
+	* gcc.target/aarch64/sve/adr_1.c: Likewise.
+	* gcc.target/aarch64/sve/adr_6.c: Likewise.
+	* gcc.target/aarch64/sve/cond_mla_7.c: Likewise.
+	* gcc.target/aarch64/sve/cond_mla_8.c: Likewise.
+	* gcc.target/aarch64/sve/shift_2.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1sh_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1sh_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1uh_gather_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1uh_gather_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/rshl_s16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/rshl_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/rshl_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/rshl_s8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/rshl_u16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/rshl_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/rshl_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/rshl_u8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1h_scatter_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1h_scatter_u64.c: Likewise.
+	* gcc.target/aarch64/sve/sve_shl_add.c: New test.
+
+2024-09-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/torture/cmp-lsr-i32.c: New test.
+	* gcc.target/avr/torture/cmp-lsr-u16.c: New test.
+	* gcc.target/avr/torture/cmp-lsr-u24.c: New test.
+	* gcc.target/avr/torture/cmp-lsr-u32.c: New test.
+	* gcc.target/avr/torture/cmp-lsr-u64.c: New test.
+
 2024-09-15  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/warn/Wconditionally-supported-1.C: Add __extension__ cases.
