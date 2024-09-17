@@ -16,6 +16,20 @@
 
 #include "config/gcn/gcn-opts.h"
 
+extern const struct gcn_device_def {
+  enum processor_type id;
+  const char *name;
+  const char *NAME;
+  enum gcn_isa isa;
+
+  /* Features.  */
+  enum hsaco_attr_type xnack_default;
+  enum hsaco_attr_type sramecc_default;
+  enum hsaco_attr_type wave64_default;
+  enum hsaco_attr_type cumode_default;
+  int max_isa_vgprs;
+} gcn_devices[];
+
 #define TARGET_CPU_CPP_BUILTINS()                                              \
   do                                                                           \
     {                                                                          \
@@ -32,26 +46,9 @@
 	builtin_define ("__RDNA3__");                                          \
       else                                                                     \
 	gcc_unreachable ();                                                    \
-      if (TARGET_VEGA10)                                                       \
-	builtin_define ("__gfx900__");                                         \
-      else if (TARGET_VEGA20)                                                  \
-	builtin_define ("__gfx906__");                                         \
-      else if (TARGET_GFX908)                                                  \
-	builtin_define ("__gfx908__");                                         \
-      else if (TARGET_GFX90a)                                                  \
-	builtin_define ("__gfx90a__");                                         \
-      else if (TARGET_GFX90c)                                                  \
-	builtin_define ("__gfx90c__");                                         \
-      else if (TARGET_GFX1030)                                                 \
-	builtin_define ("__gfx1030__");                                        \
-      else if (TARGET_GFX1036)                                                 \
-	builtin_define ("__gfx1036__");                                        \
-      else if (TARGET_GFX1100)                                                 \
-	builtin_define ("__gfx1100__");                                        \
-      else if (TARGET_GFX1103)                                                 \
-	builtin_define ("__gfx1103__");                                        \
-      else                                                                     \
-	gcc_unreachable ();                                                    \
+      char *name = (char *)xmalloc (sizeof (gcn_devices[gcn_arch].name) + 5);  \
+      sprintf (name, "__%s__", gcn_devices[gcn_arch].name);                    \
+      builtin_define (name);                                                   \
   } while (0)
 
 #define ASSEMBLER_DIALECT (TARGET_RDNA2_PLUS ? 1 : 0)

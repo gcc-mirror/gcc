@@ -98,6 +98,14 @@ static hash_map<tree, int> lds_allocs;
 #define MAX_NORMAL_VGPR_COUNT	24
 #define MAX_NORMAL_AVGPR_COUNT	24
 
+/* Import all the data from gcn-devices.def.
+   The PROCESSOR_GFXnnn should be indices for this table.  */
+const struct gcn_device_def gcn_devices[] = {
+#define GCN_DEVICE(name, NAME, ELF, ISA, XNACK, SRAMECC, WAVE64, CU, VGPRS) \
+    {PROCESSOR_ ## NAME, #name, #NAME, ISA, XNACK, SRAMECC, WAVE64, CU, VGPRS},
+#include "gcn-devices.def"
+};
+
 /* }}}  */
 /* {{{ Initialization and options.  */
 
@@ -133,17 +141,8 @@ gcn_option_override (void)
   if (!flag_pic)
     flag_pic = flag_pie;
 
-  gcn_isa = (gcn_arch == PROCESSOR_VEGA10 ? ISA_GCN5
-      : gcn_arch == PROCESSOR_VEGA20 ? ISA_GCN5
-      : gcn_arch == PROCESSOR_GFX908 ? ISA_CDNA1
-      : gcn_arch == PROCESSOR_GFX90a ? ISA_CDNA2
-      : gcn_arch == PROCESSOR_GFX90c ? ISA_GCN5
-      : gcn_arch == PROCESSOR_GFX1030 ? ISA_RDNA2
-      : gcn_arch == PROCESSOR_GFX1036 ? ISA_RDNA2
-      : gcn_arch == PROCESSOR_GFX1100 ? ISA_RDNA3
-      : gcn_arch == PROCESSOR_GFX1103 ? ISA_RDNA3
-      : ISA_UNKNOWN);
-  gcc_assert (gcn_isa != ISA_UNKNOWN);
+  gcc_assert (gcn_arch >= 0 && gcn_arch < PROCESSOR_COUNT);
+  gcn_isa = gcn_devices[gcn_arch].isa;
 
   /* Reserve 1Kb (somewhat arbitrarily) of LDS space for reduction results and
      worker broadcasts.  */
@@ -164,20 +163,13 @@ gcn_option_override (void)
     }
 
   /* gfx1030 and gfx1100 do not support XNACK.  */
-  if (gcn_arch == PROCESSOR_GFX1030
-      || gcn_arch == PROCESSOR_GFX1036
-      || gcn_arch == PROCESSOR_GFX1100
-      || gcn_arch == PROCESSOR_GFX1103)
+  if (gcn_devices[gcn_arch].xnack_default == HSACO_ATTR_UNSUPPORTED)
     {
       if (flag_xnack == HSACO_ATTR_ON)
 	error ("%<-mxnack=on%> is incompatible with %<-march=%s%>",
-	       (gcn_arch == PROCESSOR_GFX1030 ? "gfx1030"
-		: gcn_arch == PROCESSOR_GFX1036 ? "gfx1036"
-		: gcn_arch == PROCESSOR_GFX1100 ? "gfx1100"
-		: gcn_arch == PROCESSOR_GFX1103 ? "gfx1103"
-		: NULL));
-      /* Allow HSACO_ATTR_ANY silently because that's the default.  */
-      flag_xnack = HSACO_ATTR_OFF;
+	       gcn_devices[gcn_arch].name);
+      /* Allow HSACO_ATTR_ANY silently.  */
+      flag_xnack = HSACO_ATTR_UNSUPPORTED;
     }
 
   /* There's no need for XNACK on devices without USM, and there are register
@@ -185,23 +177,10 @@ gcn_option_override (void)
      available.
      FIXME: can the regalloc mean the default can be really "any"?  */
   if (flag_xnack == HSACO_ATTR_DEFAULT)
-    switch (gcn_arch)
-      {
-      case PROCESSOR_VEGA10:
-      case PROCESSOR_VEGA20:
-      case PROCESSOR_GFX908:
-	flag_xnack = HSACO_ATTR_OFF;
-	break;
-      case PROCESSOR_GFX90a:
-      case PROCESSOR_GFX90c:
-	flag_xnack = HSACO_ATTR_ANY;
-	break;
-      default:
-	gcc_unreachable ();
-      }
+    flag_xnack = gcn_devices[gcn_arch].xnack_default;
 
   if (flag_sram_ecc == HSACO_ATTR_DEFAULT)
-    flag_sram_ecc = HSACO_ATTR_ANY;
+    flag_sram_ecc = gcn_devices[gcn_arch].sramecc_default;
 }
 
 /* }}}  */
@@ -3030,25 +3009,7 @@ gcn_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
     case omp_device_arch:
       return strcmp (name, "amdgcn") == 0 || strcmp (name, "gcn") == 0;
     case omp_device_isa:
-      if (strcmp (name, "gfx900") == 0)
-	return gcn_arch == PROCESSOR_VEGA10;
-      if (strcmp (name, "gfx906") == 0)
-	return gcn_arch == PROCESSOR_VEGA20;
-      if (strcmp (name, "gfx908") == 0)
-	return gcn_arch == PROCESSOR_GFX908;
-      if (strcmp (name, "gfx90a") == 0)
-	return gcn_arch == PROCESSOR_GFX90a;
-      if (strcmp (name, "gfx90c") == 0)
-	return gcn_arch == PROCESSOR_GFX90c;
-      if (strcmp (name, "gfx1030") == 0)
-	return gcn_arch == PROCESSOR_GFX1030;
-      if (strcmp (name, "gfx1036") == 0)
-	return gcn_arch == PROCESSOR_GFX1036;
-      if (strcmp (name, "gfx1100") == 0)
-	return gcn_arch == PROCESSOR_GFX1100;
-      if (strcmp (name, "gfx1103") == 0)
-	return gcn_arch == PROCESSOR_GFX1103;
-      return 0;
+      return strcmp (name, gcn_devices[gcn_arch].name) == 0;
     default:
       gcc_unreachable ();
     }
@@ -6545,54 +6506,11 @@ output_file_start (void)
      configuration.  */
   const char *xnack = (flag_xnack == HSACO_ATTR_ON ? ":xnack+"
 		       : flag_xnack == HSACO_ATTR_OFF ? ":xnack-"
-		       : "");
+		       : "" /* Unsupported or "any".  */);
   const char *sram_ecc = (flag_sram_ecc == HSACO_ATTR_ON ? ":sramecc+"
 			  : flag_sram_ecc == HSACO_ATTR_OFF ? ":sramecc-"
-			  : "");
-
-  const char *cpu;
-  switch (gcn_arch)
-    {
-    case PROCESSOR_VEGA10:
-      cpu = "gfx900";
-      sram_ecc = "";
-      break;
-    case PROCESSOR_VEGA20:
-      cpu = "gfx906";
-      sram_ecc = "";
-      break;
-    case PROCESSOR_GFX908:
-      cpu = "gfx908";
-      break;
-    case PROCESSOR_GFX90a:
-      cpu = "gfx90a";
-      break;
-    case PROCESSOR_GFX90c:
-      cpu = "gfx90c";
-      sram_ecc = "";
-      break;
-    case PROCESSOR_GFX1030:
-      cpu = "gfx1030";
-      xnack = "";
-      sram_ecc = "";
-      break;
-    case PROCESSOR_GFX1036:
-      cpu = "gfx1036";
-      xnack = "";
-      sram_ecc = "";
-      break;
-    case PROCESSOR_GFX1100:
-      cpu = "gfx1100";
-      xnack = "";
-      sram_ecc = "";
-      break;
-    case PROCESSOR_GFX1103:
-      cpu = "gfx1103";
-      xnack = "";
-      sram_ecc = "";
-      break;
-    default: gcc_unreachable ();
-    }
+			  : "" /* Unsupported or "any".  */);
+  const char *cpu = gcn_devices[gcn_arch].name;
 
   fprintf(asm_out_file, "\t.amdgcn_target \"amdgcn-unknown-amdhsa--%s%s%s\"\n",
 	  cpu, sram_ecc, xnack);
@@ -6739,11 +6657,13 @@ gcn_hsa_declare_function_name (FILE *file, const char *name,
   if (!TARGET_ARCHITECTED_FLAT_SCRATCH)
     fprintf (file,
 	   "\t  .amdhsa_reserve_flat_scratch\t0\n");
-  if (gcn_arch == PROCESSOR_GFX90a)
+  if (TARGET_AVGPR_COMBINED)
     fprintf (file,
-	     "\t  .amdhsa_accum_offset\t%i\n"
-	     "\t  .amdhsa_tg_split\t0\n",
+	     "\t  .amdhsa_accum_offset\t%i\n",
 	     vgpr); /* The AGPRs come after the VGPRs.  */
+  if (TARGET_TGSPLIT)
+    fprintf (file,
+	     "\t  .amdhsa_tg_split\t0\n");
   fputs ("\t.end_amdhsa_kernel\n", file);
 
 #if 1
@@ -6774,7 +6694,7 @@ gcn_hsa_declare_function_name (FILE *file, const char *name,
 	   (TARGET_WAVE64_COMPAT
 	    ? " ; wavefrontsize64 counts double on SIMD32"
 	    : ""));
-  if (gcn_arch == PROCESSOR_GFX90a || gcn_arch == PROCESSOR_GFX908)
+  if (TARGET_AVGPRS)
     fprintf (file, "            .agpr_count: %i\n", avgpr);
   fputs ("        .end_amdgpu_metadata\n", file);
 #endif

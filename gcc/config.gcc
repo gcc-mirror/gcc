@@ -1806,11 +1806,12 @@ ft32-*-elf)
 	tmake_file="${tmake_file} ft32/t-ft32"
 	;;
 amdgcn-*-amdhsa)
-	tm_file="elfos.h gcn/gcn-hsa.h gcn/gcn.h newlib-stdint.h"
+	tm_file="elfos.h gcn/gcn-hsa.h gcn/gcn.h newlib-stdint.h ./gcn-device-macros.h"
 	tmake_file="gcn/t-gcn-hsa"
 	native_system_header_dir=/include
 	extra_modes=gcn/gcn-modes.def
 	extra_objs="${extra_objs} gcn-tree.o"
+	extra_options="${extra_options} gcn/gcn-tables.opt"
 	case "$host" in
 	x86_64*-*-linux-gnu )
 		if test "$ac_cv_search_dlopen" != no; then

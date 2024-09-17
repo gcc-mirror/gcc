@@ -21,43 +21,12 @@
 HeaderInclude
 config/gcn/gcn-opts.h
 
-Enum
-Name(gpu_type) Type(enum processor_type)
-GCN GPU type to use:
-
-EnumValue
-Enum(gpu_type) String(gfx900) Value(PROCESSOR_VEGA10)
-
-EnumValue
-Enum(gpu_type) String(gfx906) Value(PROCESSOR_VEGA20)
-
-EnumValue
-Enum(gpu_type) String(gfx908) Value(PROCESSOR_GFX908)
-
-EnumValue
-Enum(gpu_type) String(gfx90a) Value(PROCESSOR_GFX90a)
-
-EnumValue
-Enum(gpu_type) String(gfx90c) Value(PROCESSOR_GFX90c)
-
-EnumValue
-Enum(gpu_type) String(gfx1030) Value(PROCESSOR_GFX1030)
-
-EnumValue
-Enum(gpu_type) String(gfx1036) Value(PROCESSOR_GFX1036)
-
-EnumValue
-Enum(gpu_type) String(gfx1100) Value(PROCESSOR_GFX1100)
-
-EnumValue
-Enum(gpu_type) String(gfx1103) Value(PROCESSOR_GFX1103)
-
 march=
-Target RejectNegative Negative(march=) Joined ToLower Enum(gpu_type) Var(gcn_arch) Init(PROCESSOR_VEGA10)
+Target RejectNegative Negative(march=) Joined ToLower Enum(gpu_type) Var(gcn_arch) Init(PROCESSOR_GFX900)
 Specify the name of the target GPU.
 
 mtune=
-Target RejectNegative Negative(mtune=) Joined ToLower Enum(gpu_type) Var(gcn_tune) Init(PROCESSOR_VEGA10)
+Target RejectNegative Negative(mtune=) Joined ToLower Enum(gpu_type) Var(gcn_tune) Init(PROCESSOR_GFX900)
 Specify the name of the target GPU.
 
 m32
@@ -114,7 +83,7 @@ Target RejectNegative Joined ToLower Enum(hsaco_attr_type) Var(flag_xnack) Init(
 Compile for devices requiring XNACK enabled. Default \"any\" if USM is supported.
 
 msram-ecc=
-Target RejectNegative Joined ToLower Enum(hsaco_attr_type) Var(flag_sram_ecc) Init(HSACO_ATTR_ANY)
+Target RejectNegative Joined ToLower Enum(hsaco_attr_type) Var(flag_sram_ecc) Init(HSACO_ATTR_DEFAULT)
 Compile for devices with the SRAM ECC feature enabled, or not. Default \"any\".
 
 -param=gcn-preferred-vectorization-factor=

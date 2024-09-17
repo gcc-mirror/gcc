@@ -17,29 +17,14 @@
 #ifndef GCN_OPTS_H
 #define GCN_OPTS_H
 
-/* Which processor to generate code or schedule for.  */
+/* Create constants for PROCESSOR_GFX???.  */
 enum processor_type
 {
-  PROCESSOR_VEGA10,  // gfx900
-  PROCESSOR_VEGA20,  // gfx906
-  PROCESSOR_GFX908,
-  PROCESSOR_GFX90a,
-  PROCESSOR_GFX90c,
-  PROCESSOR_GFX1030,
-  PROCESSOR_GFX1036,
-  PROCESSOR_GFX1100,
-  PROCESSOR_GFX1103
+#define GCN_DEVICE(name, NAME, ...) \
+  PROCESSOR_ ## NAME,
+#include "gcn-devices.def"
+  PROCESSOR_COUNT
 };
-
-#define TARGET_VEGA10 (gcn_arch == PROCESSOR_VEGA10)
-#define TARGET_VEGA20 (gcn_arch == PROCESSOR_VEGA20)
-#define TARGET_GFX908 (gcn_arch == PROCESSOR_GFX908)
-#define TARGET_GFX90a (gcn_arch == PROCESSOR_GFX90a)
-#define TARGET_GFX90c (gcn_arch == PROCESSOR_GFX90c)
-#define TARGET_GFX1030 (gcn_arch == PROCESSOR_GFX1030)
-#define TARGET_GFX1036 (gcn_arch == PROCESSOR_GFX1036)
-#define TARGET_GFX1100 (gcn_arch == PROCESSOR_GFX1100)
-#define TARGET_GFX1103 (gcn_arch == PROCESSOR_GFX1103)
 
 /* Set in gcn_option_override.  */
 extern enum gcn_isa {
@@ -63,10 +48,12 @@ extern enum gcn_isa {
 
 #define TARGET_PACKED_WORK_ITEMS (TARGET_CDNA2_PLUS || TARGET_RDNA3)
 
-#define TARGET_XNACK (flag_xnack != HSACO_ATTR_OFF)
+#define TARGET_XNACK (flag_xnack == HSACO_ATTR_ON \
+		      || flag_xnack == HSACO_ATTR_ANY)
 
 enum hsaco_attr_type
 {
+  HSACO_ATTR_UNSUPPORTED,
   HSACO_ATTR_OFF,
   HSACO_ATTR_ON,
   HSACO_ATTR_ANY,
@@ -106,5 +93,7 @@ enum hsaco_attr_type
 /* Different devices uses different cache control instructions.  */
 #define TARGET_WBINVL1_CACHE (!TARGET_RDNA2_PLUS)
 #define TARGET_GLn_CACHE TARGET_RDNA2_PLUS
+/* Some devices have TGSPLIT, which needs at least metadata.  */
+#define TARGET_TGSPLIT TARGET_CDNA2_PLUS
 
 #endif

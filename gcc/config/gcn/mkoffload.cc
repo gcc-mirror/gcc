@@ -49,24 +49,13 @@
 #undef  ELFABIVERSION_AMDGPU_HSA_V4
 #define ELFABIVERSION_AMDGPU_HSA_V4 2
 
-#undef  EF_AMDGPU_MACH_AMDGCN_GFX900
-#define EF_AMDGPU_MACH_AMDGCN_GFX900 0x2c
-#undef  EF_AMDGPU_MACH_AMDGCN_GFX906
-#define EF_AMDGPU_MACH_AMDGCN_GFX906 0x2f
-#undef  EF_AMDGPU_MACH_AMDGCN_GFX908
-#define EF_AMDGPU_MACH_AMDGCN_GFX908 0x30
-#undef  EF_AMDGPU_MACH_AMDGCN_GFX90a
-#define EF_AMDGPU_MACH_AMDGCN_GFX90a 0x3f
-#undef  EF_AMDGPU_MACH_AMDGCN_GFX90c
-#define EF_AMDGPU_MACH_AMDGCN_GFX90c 0x32
-#undef  EF_AMDGPU_MACH_AMDGCN_GFX1030
-#define EF_AMDGPU_MACH_AMDGCN_GFX1030 0x36
-#undef  EF_AMDGPU_MACH_AMDGCN_GFX1036
-#define EF_AMDGPU_MACH_AMDGCN_GFX1036 0x45
-#undef  EF_AMDGPU_MACH_AMDGCN_GFX1100
-#define EF_AMDGPU_MACH_AMDGCN_GFX1100 0x41
-#undef  EF_AMDGPU_MACH_AMDGCN_GFX1103
-#define EF_AMDGPU_MACH_AMDGCN_GFX1103 0x44
+/* Extract the EF_AMDGPU_MACH_AMDGCN_GFXnnn from the def file.  */
+enum elf_arch_code {
+#define GCN_DEVICE(name, NAME, ELF_ARCH, ...) \
+  EF_AMDGPU_MACH_AMDGCN_ ## NAME = ELF_ARCH,
+#include "gcn-devices.def"
+#undef GCN_DEVICE
+};
 
 #define EF_AMDGPU_FEATURE_XNACK_V4	0x300  /* Mask.  */
 #define EF_AMDGPU_FEATURE_XNACK_UNSUPPORTED_V4	0x000
@@ -797,25 +786,15 @@ compile_native (const char *infile, const char *outfile, const char *compiler,
 static int
 get_arch (const char *str, const char *with_arch_str)
 {
-  if (strcmp (str, "gfx900") == 0)
-    return EF_AMDGPU_MACH_AMDGCN_GFX900;
-  else if (strcmp (str, "gfx906") == 0)
-    return EF_AMDGPU_MACH_AMDGCN_GFX906;
-  else if (strcmp (str, "gfx908") == 0)
-    return EF_AMDGPU_MACH_AMDGCN_GFX908;
-  else if (strcmp (str, "gfx90a") == 0)
-    return EF_AMDGPU_MACH_AMDGCN_GFX90a;
-  else if (strcmp (str, "gfx90c") == 0)
-    return EF_AMDGPU_MACH_AMDGCN_GFX90c;
-  else if (strcmp (str, "gfx1030") == 0)
-    return EF_AMDGPU_MACH_AMDGCN_GFX1030;
-  else if (strcmp (str, "gfx1036") == 0)
-    return EF_AMDGPU_MACH_AMDGCN_GFX1036;
-  else if (strcmp (str, "gfx1100") == 0)
-    return EF_AMDGPU_MACH_AMDGCN_GFX1100;
-  else if (strcmp (str, "gfx1103") == 0)
-    return EF_AMDGPU_MACH_AMDGCN_GFX1103;
+  /* Use the def file to map the name to the elf_arch_code.  */
+  if (!str) ;
+#define GCN_DEVICE(name, NAME, ELF, ...) \
+  else if (strcmp (str, #name) == 0) \
+    return ELF;
+#include "gcn-devices.def"
+#undef GCN_DEVICE
 
+  /* else */
   error ("unrecognized argument in option %<-march=%s%>", str);
 
   /* The suggestions are based on the configured multilib support; the compiler
@@ -1023,41 +1002,36 @@ main (int argc, char **argv)
       gcc_unreachable ();
     }
 
-  /* This must match gcn-hsa.h's settings for NO_XNACK, NO_SRAM_ECC
-     and ASM_SPEC.  */
+  /* Set the default ELF flags for XNACK.  */
   switch (elf_arch)
     {
-    case EF_AMDGPU_MACH_AMDGCN_GFX1030:
-    case EF_AMDGPU_MACH_AMDGCN_GFX1036:
-    case EF_AMDGPU_MACH_AMDGCN_GFX1100:
-    case EF_AMDGPU_MACH_AMDGCN_GFX1103:
-      SET_XNACK_UNSET (elf_flags);
-      SET_SRAM_ECC_UNSET (elf_flags);
-      break;
-    case EF_AMDGPU_MACH_AMDGCN_GFX900:
-      SET_XNACK_OFF (elf_flags);
-      SET_SRAM_ECC_UNSET (elf_flags);
-      break;
-    case EF_AMDGPU_MACH_AMDGCN_GFX906:
-      SET_XNACK_OFF (elf_flags);
-      SET_SRAM_ECC_ANY (elf_flags);
-      break;
-    case EF_AMDGPU_MACH_AMDGCN_GFX908:
-      SET_XNACK_OFF (elf_flags);
-      if (TEST_SRAM_ECC_UNSET (elf_flags))
-	SET_SRAM_ECC_ANY (elf_flags);
-      break;
-    case EF_AMDGPU_MACH_AMDGCN_GFX90a:
-      if (TEST_XNACK_UNSET (elf_flags))
-	SET_XNACK_ANY (elf_flags);
-      if (TEST_SRAM_ECC_UNSET (elf_flags))
-	SET_SRAM_ECC_ANY (elf_flags);
-      break;
-    case EF_AMDGPU_MACH_AMDGCN_GFX90c:
-      if (TEST_XNACK_UNSET (elf_flags))
-	SET_XNACK_ANY (elf_flags);
-      SET_SRAM_ECC_UNSET (elf_flags);
-      break;
+#define GCN_DEVICE(name, NAME, ELF, ISA, XNACK, SRAM, ...) \
+    case ELF: XNACK; break;
+#define HSACO_ATTR_UNSUPPORTED SET_XNACK_UNSET (elf_flags)
+#define HSACO_ATTR_OFF SET_XNACK_OFF (elf_flags)
+#define HSACO_ATTR_ANY \
+      if (TEST_XNACK_UNSET (elf_flags)) SET_XNACK_ANY (elf_flags)
+#include "gcn-devices.def"
+#undef HSACO_ATTR_UNSUPPORTED
+#undef HSACO_ATTR_OFF
+#undef HSACO_ATTR_ANY
+    default:
+      fatal_error (input_location, "unhandled architecture");
+    }
+
+  /* Set the default ELF flags for SRAM_ECC.  */
+  switch (elf_arch)
+    {
+#define GCN_DEVICE(name, NAME, ELF, ISA, XNACK, SRAM, ...) \
+    case ELF: SRAM; break;
+#define HSACO_ATTR_UNSUPPORTED SET_SRAM_ECC_UNSET (elf_flags)
+#define HSACO_ATTR_OFF SET_SRAM_ECC_OFF (elf_flags)
+#define HSACO_ATTR_ANY \
+      if (TEST_SRAM_ECC_UNSET (elf_flags)) SET_SRAM_ECC_ANY (elf_flags)
+#include "gcn-devices.def"
+#undef HSACO_ATTR_UNSUPPORTED
+#undef HSACO_ATTR_OFF
+#undef HSACO_ATTR_ANY
     default:
       fatal_error (input_location, "unhandled architecture");
     }
