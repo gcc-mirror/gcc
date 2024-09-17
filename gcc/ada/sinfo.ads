@@ -1686,6 +1686,10 @@ package Sinfo is
    --    actuals to support a build-in-place style of call have been added to
    --    the call.
 
+   --  Is_Expanded_Prefixed_Call
+   --    This flag is set in N_Function_Call and N_Procedure_Call_Statement
+   --    nodes to indicate that it is an expanded prefixed call.
+
    --  Is_Generic_Contract_Pragma
    --    This flag is present in N_Pragma nodes. It is set when the pragma is
    --    a source construct, applies to a generic unit or its body, and denotes
@@ -5505,6 +5509,7 @@ package Sinfo is
       --  First_Named_Actual
       --  Controlling_Argument (set to Empty if not dispatching)
       --  Is_Elaboration_Checks_OK_Node
+      --  Is_Expanded_Prefixed_Call
       --  Is_SPARK_Mode_On_Node
       --  Is_Elaboration_Warnings_OK_Node
       --  No_Elaboration_Check
@@ -5541,6 +5546,7 @@ package Sinfo is
       --  Is_Elaboration_Warnings_OK_Node
       --  No_Elaboration_Check
       --  Is_Expanded_Build_In_Place_Call
+      --  Is_Expanded_Prefixed_Call
       --  Is_Known_Guaranteed_ABE
       --  plus fields for expression
 

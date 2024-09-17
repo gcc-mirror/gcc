@@ -408,11 +408,13 @@ begin -- Gen_IL.Gen.Gen_Nodes
    Cc (N_Function_Call, N_Subprogram_Call,
        (Sy (Name, Node_Id, Default_Empty),
         Sy (Parameter_Associations, List_Id, Default_No_List),
-        Sm (Is_Expanded_Build_In_Place_Call, Flag)));
+        Sm (Is_Expanded_Build_In_Place_Call, Flag),
+        Sm (Is_Expanded_Prefixed_Call, Flag)));
 
    Cc (N_Procedure_Call_Statement, N_Subprogram_Call,
        (Sy (Name, Node_Id, Default_Empty),
-        Sy (Parameter_Associations, List_Id, Default_No_List)));
+        Sy (Parameter_Associations, List_Id, Default_No_List),
+        Sm (Is_Expanded_Prefixed_Call, Flag)));
 
    Ab (N_Raise_xxx_Error, N_Subexpr);
 

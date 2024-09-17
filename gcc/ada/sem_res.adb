@@ -3889,54 +3889,48 @@ package body Sem_Res is
       -------------------------
 
       procedure Check_Prefixed_Call is
-         Act    : constant Node_Id   := First_Actual (N);
-         A_Type : constant Entity_Id := Etype (Act);
-         F_Type : constant Entity_Id := Etype (First_Formal (Nam));
-         Orig   : constant Node_Id := Original_Node (N);
-         New_A  : Node_Id;
+         Actual      : constant Node_Id   := First_Actual (N);
+         Actual_Type : constant Entity_Id := Etype (Actual);
+         Formal_Type : constant Entity_Id := Etype (First_Formal (Nam));
+         New_Actual  : Node_Id;
 
       begin
          --  Check whether the call is a prefixed call, with or without
          --  additional actuals.
 
-         if Nkind (Orig) = N_Selected_Component
-           or else
-             (Nkind (Orig) = N_Indexed_Component
-               and then Nkind (Prefix (Orig)) = N_Selected_Component
-               and then Is_Entity_Name (Prefix (Prefix (Orig)))
-               and then Is_Entity_Name (Act)
-               and then Chars (Act) = Chars (Prefix (Prefix (Orig))))
-         then
-            if Is_Access_Type (A_Type)
-              and then not Is_Access_Type (F_Type)
+         if Is_Expanded_Prefixed_Call (N) then
+
+            --  Introduce dereference on object in prefix
+
+            if Is_Access_Type (Actual_Type)
+              and then not Is_Access_Type (Formal_Type)
             then
-               --  Introduce dereference on object in prefix
+               New_Actual :=
+                 Make_Explicit_Dereference (Sloc (Actual),
+                   Prefix => Relocate_Node (Actual));
+               Rewrite (Actual, New_Actual);
+               Analyze (Actual);
 
-               New_A :=
-                 Make_Explicit_Dereference (Sloc (Act),
-                   Prefix => Relocate_Node (Act));
-               Rewrite (Act, New_A);
-               Analyze (Act);
+            --  Conversely, if the formal is an access parameter and the object
+            --  is not an access type or a reference type (i.e. a type with the
+            --  Implicit_Dereference aspect specified), add an implicit 'Access
+            --  to the prefix. Its analysis will check that the object is
+            --  aliased.
 
-            elsif Is_Access_Type (F_Type)
-              and then not Is_Access_Type (A_Type)
+            elsif Is_Access_Type (Formal_Type)
+              and then not Is_Access_Type (Actual_Type)
+              and then (not Has_Implicit_Dereference (Actual_Type)
+                or else
+                  not Is_Access_Type
+                        (Designated_Type
+                           (Etype (Get_Reference_Discriminant (Actual_Type)))))
             then
-               --  Introduce an implicit 'Access in prefix
-
-               if not Is_Aliased_View (Act) then
-                  Error_Msg_NE
-                    ("object in prefixed call to& must be aliased "
-                     & "(RM 4.1.3 (13 1/2))",
-                    Prefix (Act), Nam);
-               end if;
-
-               Rewrite (Act,
+               Rewrite (Actual,
                  Make_Attribute_Reference (Loc,
                    Attribute_Name => Name_Access,
-                   Prefix         => Relocate_Node (Act)));
+                   Prefix         => Relocate_Node (Actual)));
+               Analyze (Actual);
             end if;
-
-            Analyze (Act);
          end if;
       end Check_Prefixed_Call;
 
@@ -4933,6 +4927,31 @@ package body Sem_Res is
                         Msg    => "(Ada 2005) NULL not allowed in "
                                   & "null-excluding formal??",
                         Reason => CE_Null_Not_Allowed);
+                  end if;
+               end if;
+
+               --  In a prefixed call, if the prefix is an access type
+               --  it cannot be null.
+
+               if Is_Access_Type (F_Typ)
+                 and then A = First_Actual (N)
+                 and then Is_Expanded_Prefixed_Call (N)
+               then
+                  if not Is_Access_Type (A_Typ)
+                    and then not Is_Aliased_View (A)
+                  then
+                     Error_Msg_NE
+                       ("object in prefixed call to& must be aliased "
+                        & "(RM 4.1.3 (13 1/2))",
+                       A, Nam);
+                  end if;
+
+                  if Debug_Flag_Underscore_PP
+                    and then
+                      (Is_Controlling_Formal (F)
+                         or else Is_Class_Wide_Type (Designated_Type (F_Typ)))
+                  then
+                     Install_Null_Excluding_Check (A);
                   end if;
                end if;
             end if;
