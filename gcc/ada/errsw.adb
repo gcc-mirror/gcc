@@ -22,9 +22,10 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
-with Diagnostics.JSON_Utils; use Diagnostics.JSON_Utils;
-with Output;                 use Output;
-package body Diagnostics.Switch_Repository is
+with JSON_Utils; use JSON_Utils;
+with Output;     use Output;
+
+package body Errsw is
 
    Switches : constant array (Switch_Id)
      of Switch_Type :=
@@ -553,12 +554,6 @@ package body Diagnostics.Switch_Repository is
       return Switches (Id);
    end Get_Switch;
 
-   function Get_Switch (Diag : Diagnostic_Type) return Switch_Type is
-
-   begin
-      return Get_Switch (Diag.Switch);
-   end Get_Switch;
-
    -------------------
    -- Get_Switch_Id --
    -------------------
@@ -575,26 +570,6 @@ package body Diagnostics.Switch_Repository is
       end loop;
 
       return No_Switch_Id;
-   end Get_Switch_Id;
-
-   -------------------
-   -- Get_Switch_Id --
-   -------------------
-
-   function Get_Switch_Id (E : Error_Msg_Object) return Switch_Id is
-      Switch_Name : constant String :=
-        (if E.Warn_Chr = "$ " then "gnatel"
-         elsif E.Warn_Chr in "? " | "  " then ""
-         elsif E.Kind in Erroutc.Warning | Erroutc.Info
-         then "gnatw" & E.Warn_Chr
-         elsif E.Kind in Erroutc.Style then "gnatw" & E.Warn_Chr
-         else "");
-   begin
-      if Switch_Name /= "" then
-         return Get_Switch_Id (Switch_Name);
-      else
-         return No_Switch_Id;
-      end if;
    end Get_Switch_Id;
 
    -----------------------------
@@ -687,4 +662,4 @@ package body Diagnostics.Switch_Repository is
       Write_Eol;
    end Print_Switch_Repository;
 
-end Diagnostics.Switch_Repository;
+end Errsw;

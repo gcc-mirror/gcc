@@ -26,11 +26,10 @@
 with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
-with Debug;          use Debug;
-with Diagnostics.Constructors; use Diagnostics.Constructors;
 with Einfo;          use Einfo;
 with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
+with Errid;          use Errid;
 with Errout;         use Errout;
 with Expander;       use Expander;
 with Exp_Tss;        use Exp_Tss;
@@ -4038,15 +4037,18 @@ package body Sem_Aggr is
       if Present (First (Expressions (N)))
         and then Present (First (Component_Associations (N)))
       then
-         if Debug_Flag_Underscore_DD then
-            Record_Mixed_Container_Aggregate_Error
-              (Aggr       => N,
-               Pos_Elem   => First (Expressions (N)),
-               Named_Elem => First (Component_Associations (N)));
-         else
-            Error_Msg_N
-              ("container aggregate cannot be both positional and named", N);
-         end if;
+         Error_Msg_N
+           (Msg        =>
+              "container aggregate cannot be both positional and named",
+            N          => N,
+            Error_Code => GNAT0006,
+            Spans      =>
+              (1 =>
+                 Secondary_Labeled_Span
+                   (First (Expressions (N)), "positional element "),
+               2 =>
+                 Secondary_Labeled_Span
+                   (First (Component_Associations (N)), "named element")));
          return;
       end if;
 

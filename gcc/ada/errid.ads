@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2025, Free Software Foundation, Inc.         --
+--          Copyright (C) 19925, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -22,7 +22,40 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
-package Diagnostics.Repository is
+with Types; use Types;
+with Errsw; use Errsw;
+
+package Errid is
+
+   type Status_Type is
+     (Active,
+      Deprecated);
+
+   type Diagnostic_Id is
+     (No_Diagnostic_Id,
+      GNAT0001,
+      GNAT0002,
+      GNAT0003,
+      GNAT0004,
+      GNAT0005,
+      GNAT0006);
+
+   function To_String (Id : Diagnostic_Id) return String;
+   --  Convert the diagnostic ID to a 4 character string padded with 0-s.
+
+   type Diagnostic_Entry_Type is record
+      Status : Status_Type := Active;
+
+      Human_Id : String_Ptr := null;
+      --  A human readable code for the diagnostic. If the diagnostic has a
+      --  switch with a human id then the human_id of the switch shall be used
+      --  in SARIF reports.
+
+      Documentation : String_Ptr := null;
+
+      Switch : Switch_Id := No_Switch_Id;
+      --  The switch that controls the diagnostic message.
+   end record;
 
    type Diagnostics_Registry_Type is
      array (Diagnostic_Id) of Diagnostic_Entry_Type;
@@ -53,56 +86,26 @@ package Diagnostics.Repository is
       GNAT0002         =>
         (Status        => Active,
          Human_Id      =>
-           new String'("Invalid_Operand_Types_For_Operator_Error"),
-         Documentation => new String'("./error_codes/GNAT0002.md"),
-         Switch        => No_Switch_Id),
-      GNAT0003         =>
-        (Status        => Active,
-         Human_Id      =>
-           new String'("Invalid_Operand_Types_Left_To_Int_Error"),
-         Documentation => new String'("./error_codes/GNAT0003.md"),
-         Switch        => No_Switch_Id),
-      GNAT0004         =>
-        (Status        => Active,
-         Human_Id      =>
-           new String'("Invalid_Operand_Types_Right_To_Int_Error"),
-         Documentation => new String'("./error_codes/GNAT0004.md"),
-         Switch        => No_Switch_Id),
-      GNAT0005         =>
-        (Status        => Active,
-         Human_Id      =>
-           new String'("Invalid_Operand_Types_Left_Acc_Error"),
-         Documentation => new String'("./error_codes/GNAT0005.md"),
-         Switch        => No_Switch_Id),
-      GNAT0006         =>
-        (Status        => Active,
-         Human_Id      =>
-           new String'("Invalid_Operand_Types_Right_Acc_Error"),
-         Documentation => new String'("./error_codes/GNAT0006.md"),
-         Switch        => No_Switch_Id),
-      GNAT0007         =>
-        (Status        => Active,
-         Human_Id      =>
            new String'("Invalid_Operand_Types_General_Error"),
          Documentation => new String'("./error_codes/GNAT0007.md"),
          Switch        => No_Switch_Id),
-      GNAT0008         =>
+      GNAT0003         =>
         (Status        => Active,
          Human_Id      =>
            new String'("Pragma_No_Effect_With_Lock_Free_Warning"),
          Documentation => new String'("./error_codes/GNAT0008.md"),
          Switch        => No_Switch_Id),
-      GNAT0009         =>
+      GNAT0004         =>
         (Status        => Active,
          Human_Id      => new String'("End_Loop_Expected_Error"),
          Documentation => new String'("./error_codes/GNAT0009.md"),
          Switch        => No_Switch_Id),
-      GNAT0010         =>
+      GNAT0005         =>
         (Status        => Active,
          Human_Id      => new String'("Representation_Too_Late_Error"),
          Documentation => new String'("./error_codes/GNAT0010.md"),
          Switch        => No_Switch_Id),
-      GNAT0011         =>
+      GNAT0006         =>
         (Status        => Active,
          Human_Id      => new String'("Mixed_Container_Aggregate_Error"),
          Documentation => new String'("./error_codes/GNAT0011.md"),
@@ -110,4 +113,4 @@ package Diagnostics.Repository is
 
    procedure Print_Diagnostic_Repository;
 
-end Diagnostics.Repository;
+end Errid;

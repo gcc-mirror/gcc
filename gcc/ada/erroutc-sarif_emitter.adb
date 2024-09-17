@@ -23,18 +23,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Errout;                    use Errout;
-with Diagnostics.JSON_Utils;    use Diagnostics.JSON_Utils;
-with Diagnostics.Utils;         use Diagnostics.Utils;
-with Gnatvsn;                   use Gnatvsn;
-with Lib;                       use Lib;
-with Namet;                     use Namet;
-with Osint;                     use Osint;
-with Output;                    use Output;
-with Sinput;                    use Sinput;
+with JSON_Utils; use JSON_Utils;
+with GNAT.Lists; use GNAT.Lists;
+with Gnatvsn;    use Gnatvsn;
+with Lib;        use Lib;
+with Namet;      use Namet;
+with Osint;      use Osint;
+with Output;     use Output;
+with Sinput;     use Sinput;
 with System.OS_Lib;
 
-package body Diagnostics.SARIF_Emitter is
+package body Erroutc.SARIF_Emitter is
 
    --  SARIF attribute names
 
@@ -77,7 +76,7 @@ package body Diagnostics.SARIF_Emitter is
 
    SARIF_Version : constant String := "2.1.0";
    pragma Style_Checks ("M100");
-   SARIF_Schema  : constant String :=
+   SARIF_Schema : constant String :=
      "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json";
    pragma Style_Checks ("M79");
 
@@ -90,15 +89,44 @@ package body Diagnostics.SARIF_Emitter is
    --  and it is also the path that all other Uri attributes will be created
    --  relative to.
 
+   procedure Destroy (Elem : in out Error_Msg_Object) is null;
+   pragma Inline (Destroy);
+   package Error_Msg_Lists is new Doubly_Linked_Lists
+     (Element_Type    => Error_Msg_Object,
+      "="             => "=",
+      Destroy_Element => Destroy,
+      Check_Tampering => False);
+
+   subtype Error_Msg_List is Error_Msg_Lists.Doubly_Linked_List;
+
+   procedure Destroy (Elem : in out Edit_Type);
+
+   procedure Destroy (Elem : in out Edit_Type) is
+   begin
+      --  Diagnostic elements will be freed when all the diagnostics have been
+      --  emitted.
+      null;
+   end Destroy;
+
+   pragma Inline (Destroy);
+
+   package Edit_Lists is new Doubly_Linked_Lists
+     (Element_Type    => Edit_Type,
+      "="             => "=",
+      Destroy_Element => Destroy,
+      Check_Tampering => False);
+
+   subtype Edit_List is Edit_Lists.Doubly_Linked_List;
+
    type Artifact_Change is record
-      File_Index  : Source_File_Index;
+      File_Index : Source_File_Index;
       --  Index for the source file
 
       Replacements : Edit_List;
       --  Regions of texts to be edited
    end record;
 
-   procedure Destroy (Elem : in out Artifact_Change) is null;
+   procedure Destroy (Elem : in out Artifact_Change);
    pragma Inline (Destroy);
 
    function Equals (L, R : Artifact_Change) return Boolean is
@@ -116,7 +144,7 @@ package body Diagnostics.SARIF_Emitter is
    --  Group edits of a Fix into Artifact_Changes that organize the edits by
    --  file name.
 
-   function Get_Unique_Rules (Diags : Diagnostic_List) return Diagnostic_List;
+   function Get_Unique_Rules return Error_Msg_List;
    --  Get a list of diagnostics that have unique Diagnostic Id-s.
 
    procedure Print_Replacement (Replacement : Edit_Type);
@@ -135,7 +163,7 @@ package body Diagnostics.SARIF_Emitter is
    --    artifactChanges: [<ArtifactChange>]
    --  }
 
-   procedure Print_Fixes (Diag : Diagnostic_Type);
+   procedure Print_Fixes (E_Msg : Error_Msg_Object);
    --  Print the fixes node
    --
    --  "fixes": [
@@ -172,8 +200,7 @@ package body Diagnostics.SARIF_Emitter is
    --     "uriBaseId": "PWD"
    --   }
 
-   procedure Print_Location (Loc : Labeled_Span_Type;
-                             Msg : String_Ptr);
+   procedure Print_Location (Loc : Labeled_Span_Type; Msg : String_Ptr);
    --  Print a location node that consists of
    --  * an optional message node
    --  * a physicalLocation node
@@ -197,7 +224,7 @@ package body Diagnostics.SARIF_Emitter is
    --    }
    --  }
 
-   procedure Print_Locations (Diag : Diagnostic_Type);
+   procedure Print_Locations (E_Msg : Error_Msg_Object);
    --  Print a locations node that consists of multiple location nodes. However
    --  typically just one location for the primary span of the diagnostic.
    --
@@ -224,7 +251,7 @@ package body Diagnostics.SARIF_Emitter is
    --    }
    --  },
 
-   procedure Print_Related_Locations (Diag : Diagnostic_Type);
+   procedure Print_Related_Locations (E_Msg : Error_Msg_Object);
    --  Print a relatedLocations node that consists of multiple location nodes.
    --  Related locations are the non-primary spans of the diagnostic and the
    --  primary locations of sub-diagnostics.
@@ -233,11 +260,12 @@ package body Diagnostics.SARIF_Emitter is
    --      <Location (Diag.Loc)>
    --   ],
 
-   procedure Print_Region (Start_Line : Int;
-                           Start_Col  : Int;
-                           End_Line   : Int;
-                           End_Col    : Int;
-                           Name       : String := N_REGION);
+   procedure Print_Region
+     (Start_Line : Int;
+      Start_Col  : Int;
+      End_Line   : Int;
+      End_Col    : Int;
+      Name       : String := N_REGION);
    --  Print a region node.
    --
    --  More specifically a text region node that specifies the textual
@@ -265,7 +293,7 @@ package body Diagnostics.SARIF_Emitter is
    --  the GNAT span definition and we amend the endColumn value so that it
    --  matches the SARIF definition.
 
-   procedure Print_Result (Diag : Diagnostic_Type);
+   procedure Print_Result (E_Msg : Error_Msg_Object);
    --   {
    --     "ruleId": <Diag.Id>,
    --     "level": <Diag.Kind>,
@@ -276,7 +304,7 @@ package body Diagnostics.SARIF_Emitter is
    --     "relatedLocations": [<Secondary_Locations>]
    --  },
 
-   procedure Print_Results (Diags : Diagnostic_List);
+   procedure Print_Results;
    --  Print a results node that consists of multiple result nodes for each
    --  diagnostic instance.
    --
@@ -284,7 +312,7 @@ package body Diagnostics.SARIF_Emitter is
    --     <Result (Diag)>
    --   ]
 
-   procedure Print_Rule (Diag : Diagnostic_Type);
+   procedure Print_Rule (E : Error_Msg_Object);
    --  Print a rule node that consists of the following attributes:
    --  * ruleId
    --  * name
@@ -294,7 +322,7 @@ package body Diagnostics.SARIF_Emitter is
    --    "name": <Human_Id(Diag)>
    --  },
 
-   procedure Print_Rules (Diags : Diagnostic_List);
+   procedure Print_Rules;
    --  Print a rules node that consists of multiple rule nodes.
    --  Rules are considered to be a set of unique diagnostics with the unique
    --  id-s.
@@ -303,7 +331,7 @@ package body Diagnostics.SARIF_Emitter is
    --     <Rule (Diag)>
    --   ]
 
-   procedure Print_Runs (Diags : Diagnostic_List);
+   procedure Print_Runs;
    --  Print a runs node that can consist of multiple run nodes.
    --  However for our report it consists of a single run that consists of
    --  * a tool node
@@ -314,7 +342,7 @@ package body Diagnostics.SARIF_Emitter is
    --     "results": [<Results (Diags)>]
    --   }
 
-   procedure Print_Tool (Diags : Diagnostic_List);
+   procedure Print_Tool;
    --  Print a tool node that consists of
    --  * a driver node that consists of:
    --    * name
@@ -329,6 +357,15 @@ package body Diagnostics.SARIF_Emitter is
    --    }
    --  }
 
+   -------------
+   -- Destroy --
+   -------------
+
+   procedure Destroy (Elem : in out Artifact_Change) is
+   begin
+      Edit_Lists.Destroy (Elem.Replacements);
+   end Destroy;
+
    --------------------------
    -- Get_Artifact_Changes --
    --------------------------
@@ -341,8 +378,7 @@ package body Diagnostics.SARIF_Emitter is
       -- Insert --
       ------------
 
-      procedure Insert (Changes : Artifact_Change_List; E : Edit_Type)
-      is
+      procedure Insert (Changes : Artifact_Change_List; E : Edit_Type) is
          A : Artifact_Change;
 
          It : Artifact_Change_Lists.Iterator :=
@@ -363,7 +399,7 @@ package body Diagnostics.SARIF_Emitter is
             Edit_Lists.Append (Replacements, E);
             Artifact_Change_Lists.Append
               (Changes,
-               (File_Index   => Get_Source_File_Index (E.Span.Ptr),
+              (File_Index    => Get_Source_File_Index (E.Span.Ptr),
                 Replacements => Replacements));
          end;
       end Insert;
@@ -372,12 +408,19 @@ package body Diagnostics.SARIF_Emitter is
 
       E : Edit_Type;
 
-      It : Edit_Lists.Iterator := Edit_Lists.Iterate (Fix.Edits);
+      It : Edit_Id;
+
+      --  Start of processing for Get_Artifact_Changes
+
    begin
-      while Edit_Lists.Has_Next (It) loop
-         Edit_Lists.Next (It, E);
+      It := Fix.Edits;
+
+      while It /= No_Edit loop
+         E := Edits.Table (It);
 
          Insert (Changes, E);
+
+         It := E.Next;
       end loop;
 
       return Changes;
@@ -387,46 +430,46 @@ package body Diagnostics.SARIF_Emitter is
    -- Get_Unique_Rules --
    ----------------------
 
-   function Get_Unique_Rules (Diags : Diagnostic_List)
-                              return Diagnostic_List
-   is
-      use Diagnostics.Diagnostics_Lists;
+   function Get_Unique_Rules return Error_Msg_List is
+      use Error_Msg_Lists;
 
-      procedure Insert (Rules : Diagnostic_List; D : Diagnostic_Type);
+      procedure Insert (Rules : Error_Msg_List; E : Error_Msg_Object);
 
       ------------
       -- Insert --
       ------------
 
-      procedure Insert (Rules : Diagnostic_List; D : Diagnostic_Type) is
+      procedure Insert (Rules : Error_Msg_List; E : Error_Msg_Object) is
          It : Iterator := Iterate (Rules);
-         R  : Diagnostic_Type;
+         R  : Error_Msg_Object;
       begin
          while Has_Next (It) loop
             Next (It, R);
 
-            if R.Id = D.Id then
+            if R.Id = E.Id then
                return;
-            elsif R.Id > D.Id then
-               Insert_Before (Rules, R, D);
+            elsif R.Id > E.Id then
+               Insert_Before (Rules, R, E);
                return;
             end if;
          end loop;
 
-         Append (Rules, D);
+         Append (Rules, E);
       end Insert;
 
-      D : Diagnostic_Type;
-      Unique_Rules : constant Diagnostic_List := Create;
+      Unique_Rules : constant Error_Msg_List := Create;
 
-      It : Iterator := Iterate (Diags);
+      E : Error_Msg_Id;
+
+      --  Start of processing for Get_Unique_Rules
+
    begin
-      if Present (Diags) then
-         while Has_Next (It) loop
-            Next (It, D);
-            Insert (Unique_Rules, D);
-         end loop;
-      end if;
+      E := First_Error_Msg;
+      while E /= No_Error_Msg loop
+         Insert (Unique_Rules, Errors.Table (E));
+
+         Next_Error_Msg (E);
+      end loop;
 
       return Unique_Rules;
    end Get_Unique_Rules;
@@ -435,10 +478,9 @@ package body Diagnostics.SARIF_Emitter is
    -- Print_Artifact_Change --
    ---------------------------
 
-   procedure Print_Artifact_Change (A : Artifact_Change)
-   is
-      use Diagnostics.Edit_Lists;
-      E : Edit_Type;
+   procedure Print_Artifact_Change (A : Artifact_Change) is
+      use Edit_Lists;
+      E    : Edit_Type;
       E_It : Iterator;
 
       First : Boolean := True;
@@ -511,19 +553,15 @@ package body Diagnostics.SARIF_Emitter is
               and then Abs_Name (Abs_Name'First) =
                 Current_Dir (Current_Dir'First)
             then
-               Write_String_Attribute
-                 (N_URI, To_File_Uri (Abs_Name));
+               Write_String_Attribute (N_URI, To_File_Uri (Abs_Name));
             else
                Write_String_Attribute
-                 (N_URI,
-                  To_File_Uri
-                    (Relative_Path (Abs_Name, Current_Dir)));
+                 (N_URI, To_File_Uri (Relative_Path (Abs_Name, Current_Dir)));
 
                Write_Char (',');
                NL_And_Indent;
 
-               Write_String_Attribute
-                 (N_URI_BASE_ID, URI_Base_Id_Name);
+               Write_String_Attribute (N_URI_BASE_ID, URI_Base_Id_Name);
             end if;
          end;
       else
@@ -564,11 +602,12 @@ package body Diagnostics.SARIF_Emitter is
 
       --  Print deletedRegion
 
-      Print_Region (Start_Line => Line_Fst,
-                    Start_Col  => Col_Fst,
-                    End_Line   => Line_Lst,
-                    End_Col    => Col_Lst,
-                    Name       => N_DELETED_REGION);
+      Print_Region
+        (Start_Line => Line_Fst,
+         Start_Col  => Col_Fst,
+         End_Line   => Line_Lst,
+         End_Col    => Col_Lst,
+         Name       => N_DELETED_REGION);
 
       if Replacement.Text /= null then
          Write_Char (',');
@@ -608,7 +647,7 @@ package body Diagnostics.SARIF_Emitter is
          use Artifact_Change_Lists;
          Changes : Artifact_Change_List := Get_Artifact_Changes (Fix);
          A       : Artifact_Change;
-         A_It    : Iterator := Iterate (Changes);
+         A_It    : Iterator             := Iterate (Changes);
       begin
          Write_Str ("""" & N_ARTIFACT_CHANGES & """" & ": " & "[");
          Begin_Block;
@@ -643,31 +682,30 @@ package body Diagnostics.SARIF_Emitter is
    -- Print_Fixes --
    -----------------
 
-   procedure Print_Fixes (Diag : Diagnostic_Type) is
-      use Diagnostics.Fix_Lists;
-      F  : Fix_Type;
-      F_It : Iterator;
+   procedure Print_Fixes (E_Msg : Error_Msg_Object) is
+      F    : Fix_Type;
+      F_It : Fix_Id;
 
       First : Boolean := True;
    begin
       Write_Str ("""" & N_FIXES & """" & ": " & "[");
       Begin_Block;
 
-      if Present (Diag.Fixes) then
-         F_It := Iterate (Diag.Fixes);
-         while Has_Next (F_It) loop
-            Next (F_It, F);
+      F_It := E_Msg.Fixes;
+      while F_It /= No_Fix loop
+         F := Fixes.Table (F_It);
 
-            if First then
-               First := False;
-            else
-               Write_Char (',');
-            end if;
+         if First then
+            First := False;
+         else
+            Write_Char (',');
+         end if;
 
-            NL_And_Indent;
-            Print_Fix (F);
-         end loop;
-      end if;
+         NL_And_Indent;
+         Print_Fix (F);
+
+         F_It := F.Next;
+      end loop;
 
       End_Block;
       NL_And_Indent;
@@ -736,11 +774,12 @@ package body Diagnostics.SARIF_Emitter is
    -- Print_Region --
    ------------------
 
-   procedure Print_Region (Start_Line : Int;
-                           Start_Col  : Int;
-                           End_Line   : Int;
-                           End_Col    : Int;
-                           Name       : String := N_REGION)
+   procedure Print_Region
+     (Start_Line : Int;
+      Start_Col  : Int;
+      End_Line   : Int;
+       End_Col   : Int;
+      Name       : String := N_REGION)
    is
 
    begin
@@ -774,9 +813,7 @@ package body Diagnostics.SARIF_Emitter is
    -- Print_Location --
    --------------------
 
-   procedure Print_Location (Loc : Labeled_Span_Type;
-                             Msg : String_Ptr)
-   is
+   procedure Print_Location (Loc : Labeled_Span_Type; Msg : String_Ptr) is
 
       --  Span start positions
       Fst      : constant Source_Ptr := Loc.Span.First;
@@ -815,10 +852,11 @@ package body Diagnostics.SARIF_Emitter is
 
       --  Print region
 
-      Print_Region (Start_Line => Line_Fst,
-                    Start_Col  => Col_Fst,
-                    End_Line   => Line_Lst,
-                    End_Col    => Col_Lst);
+      Print_Region
+        (Start_Line => Line_Fst,
+         Start_Col  => Col_Fst,
+         End_Line   => Line_Lst,
+         End_Col    => Col_Lst);
 
       End_Block;
       NL_And_Indent;
@@ -833,18 +871,18 @@ package body Diagnostics.SARIF_Emitter is
    -- Print_Locations --
    ---------------------
 
-   procedure Print_Locations (Diag : Diagnostic_Type) is
-      use Diagnostics.Labeled_Span_Lists;
+   procedure Print_Locations (E_Msg : Error_Msg_Object) is
       Loc : Labeled_Span_Type;
-      It : Iterator := Iterate (Diag.Locations);
+      It  : Labeled_Span_Id;
 
       First : Boolean := True;
    begin
       Write_Str ("""" & N_LOCATIONS & """" & ": " & "[");
       Begin_Block;
 
-      while Has_Next (It) loop
-         Next (It, Loc);
+      It := E_Msg.Locations;
+      while It /= No_Labeled_Span loop
+         Loc := Locations.Table (It);
 
          --  Only the primary span is considered as the main location other
          --  spans are considered related locations
@@ -859,12 +897,13 @@ package body Diagnostics.SARIF_Emitter is
             NL_And_Indent;
             Print_Location (Loc, Loc.Label);
          end if;
+
+         It := Loc.Next;
       end loop;
 
       End_Block;
       NL_And_Indent;
       Write_Char (']');
-
    end Print_Locations;
 
    -------------------
@@ -912,13 +951,12 @@ package body Diagnostics.SARIF_Emitter is
    -- Print_Related_Locations --
    -----------------------------
 
-   procedure Print_Related_Locations (Diag : Diagnostic_Type) is
-      Loc : Labeled_Span_Type;
-      Loc_It : Labeled_Span_Lists.Iterator :=
-        Labeled_Span_Lists.Iterate (Diag.Locations);
+   procedure Print_Related_Locations (E_Msg : Error_Msg_Object) is
+      Loc    : Labeled_Span_Type;
+      Loc_It : Labeled_Span_Id;
 
-      Sub : Sub_Diagnostic_Type;
-      Sub_It : Sub_Diagnostic_Lists.Iterator;
+      Sub    : Error_Msg_Object;
+      Sub_It : Error_Msg_Id;
 
       First : Boolean := True;
    begin
@@ -927,8 +965,9 @@ package body Diagnostics.SARIF_Emitter is
 
       --  Related locations are the non-primary spans of the diagnostic
 
-      while Labeled_Span_Lists.Has_Next (Loc_It) loop
-         Labeled_Span_Lists.Next (Loc_It, Loc);
+      Loc_It := E_Msg.Locations;
+      while Loc_It /= No_Labeled_Span loop
+         Loc := Locations.Table (Loc_It);
 
          --  Non-primary spans are considered related locations
 
@@ -942,78 +981,64 @@ package body Diagnostics.SARIF_Emitter is
             NL_And_Indent;
             Print_Location (Loc, Loc.Label);
          end if;
+         Loc_It := Loc.Next;
       end loop;
 
       --  And the sub-diagnostic locations
 
-      if Sub_Diagnostic_Lists.Present (Diag.Sub_Diagnostics) then
-         Sub_It := Sub_Diagnostic_Lists.Iterate (Diag.Sub_Diagnostics);
+      Sub_It := E_Msg.Next;
+      while Sub_It /= No_Error_Msg and then Errors.Table (Sub_It).Msg_Cont loop
+         Sub := Errors.Table (Sub_It);
 
-         while Sub_Diagnostic_Lists.Has_Next (Sub_It) loop
-            Sub_Diagnostic_Lists.Next (Sub_It, Sub);
+         declare
+            Found : Boolean := False;
 
-            declare
-               Found : Boolean := False;
+            Prim_Loc_Id : Labeled_Span_Id;
+         begin
+            Prim_Loc_Id := Primary_Location (Sub);
 
-               Prim_Loc : Labeled_Span_Type;
-            begin
-               if Labeled_Span_Lists.Present (Sub.Locations) then
-                  Loc_It := Labeled_Span_Lists.Iterate (Sub.Locations);
-                  while Labeled_Span_Lists.Has_Next (Loc_It) loop
-                     Labeled_Span_Lists.Next (Loc_It, Loc);
+            if Prim_Loc_Id /= No_Labeled_Span then
+               Found := True;
+            else
+               Prim_Loc_Id := Primary_Location (E_Msg);
+               Found       := True;
+            end if;
 
-                     --  For sub-diagnostic locations, only the primary span is
-                     --  considered.
+            --  For mapping sub-diagnostics to related locations we have to
+            --  make some compromises in details.
+            --
+            --  Firstly we only make one entry that is for the primary span
+            --  of the sub-diagnostic.
+            --
+            --  Secondly this span can also have a label. However this
+            --  pattern is not advised and by default we include the message
+            --  of the sub-diagnostic as the message in location node since
+            --  it should have more information.
 
-                     if not Found and then Loc.Is_Primary then
-                        Found    := True;
-                        Prim_Loc := Loc;
-                     end if;
-                  end loop;
+            if Found then
+               if First then
+                  First := False;
                else
-
-                  --  If there are no locations for the sub-diagnostic then use
-                  --  the primary location of the main diagnostic.
-
-                  Found    := True;
-                  Prim_Loc := Primary_Location (Diag);
+                  Write_Char (',');
                end if;
+               NL_And_Indent;
+               Print_Location (Locations.Table (Prim_Loc_Id), Sub.Text);
+            end if;
+         end;
 
-               --  For mapping sub-diagnostics to related locations we have to
-               --  make some compromises in details.
-               --
-               --  Firstly we only make one entry that is for the primary span
-               --  of the sub-diagnostic.
-               --
-               --  Secondly this span can also have a label. However this
-               --  pattern is not advised and by default we include the message
-               --  of the sub-diagnostic as the message in location node since
-               --  it should have more information.
-
-               if Found then
-                  if First then
-                     First := False;
-                  else
-                     Write_Char (',');
-                  end if;
-                  NL_And_Indent;
-                  Print_Location (Prim_Loc, Sub.Message);
-               end if;
-            end;
-         end loop;
-      end if;
+         Next_Continuation_Msg (Sub_It);
+      end loop;
 
       End_Block;
       NL_And_Indent;
       Write_Char (']');
-
    end Print_Related_Locations;
 
    ------------------
    -- Print_Result --
    ------------------
 
-   procedure Print_Result (Diag : Diagnostic_Type) is
+   procedure Print_Result (E_Msg : Error_Msg_Object) is
 
    begin
       Write_Char ('{');
@@ -1022,42 +1047,42 @@ package body Diagnostics.SARIF_Emitter is
 
       --  Print ruleId
 
-      Write_String_Attribute (N_RULE_ID, "[" & To_String (Diag.Id) & "]");
+      Write_String_Attribute (N_RULE_ID, "[" & To_String (E_Msg.Id) & "]");
 
       Write_Char (',');
       NL_And_Indent;
 
       --  Print level
 
-      Write_String_Attribute (N_LEVEL, Kind_To_String (Diag));
+      Write_String_Attribute (N_LEVEL, Kind_To_String (E_Msg));
 
       Write_Char (',');
       NL_And_Indent;
 
       --  Print message
 
-      Print_Message (Diag.Message.all);
+      Print_Message (E_Msg.Text.all);
 
       Write_Char (',');
       NL_And_Indent;
 
       --  Print locations
 
-      Print_Locations (Diag);
+      Print_Locations (E_Msg);
 
       Write_Char (',');
       NL_And_Indent;
 
       --  Print related locations
 
-      Print_Related_Locations (Diag);
+      Print_Related_Locations (E_Msg);
 
       Write_Char (',');
       NL_And_Indent;
 
       --  Print fixes
 
-      Print_Fixes (Diag);
+      Print_Fixes (E_Msg);
 
       End_Block;
       NL_And_Indent;
@@ -1069,32 +1094,28 @@ package body Diagnostics.SARIF_Emitter is
    -- Print_Results --
    -------------------
 
-   procedure Print_Results (Diags : Diagnostic_List) is
-      use Diagnostics.Diagnostics_Lists;
-
-      D : Diagnostic_Type;
-
-      It : Iterator := Iterate (All_Diagnostics);
+   procedure Print_Results is
+      E : Error_Msg_Id;
 
       First : Boolean := True;
    begin
       Write_Str ("""" & N_RESULTS & """" & ": " & "[");
       Begin_Block;
 
-      if Present (Diags) then
-         while Has_Next (It) loop
-            Next (It, D);
+      E := First_Error_Msg;
+      while E /= No_Error_Msg loop
+         if First then
+            First := False;
+         else
+            Write_Char (',');
+         end if;
 
-            if First then
-               First := False;
-            else
-               Write_Char (',');
-            end if;
+         NL_And_Indent;
 
-            NL_And_Indent;
-            Print_Result (D);
-         end loop;
-      end if;
+         Print_Result (Errors.Table (E));
+
+         Next_Error_Msg (E);
+      end loop;
 
       End_Block;
       NL_And_Indent;
@@ -1105,14 +1126,14 @@ package body Diagnostics.SARIF_Emitter is
    -- Print_Rule --
    ----------------
 
-   procedure Print_Rule (Diag : Diagnostic_Type) is
-      Human_Id : constant String_Ptr := Get_Human_Id (Diag);
+   procedure Print_Rule (E : Error_Msg_Object) is
+      Human_Id : constant String_Ptr := Get_Human_Id (E);
    begin
       Write_Char ('{');
       Begin_Block;
       NL_And_Indent;
 
-      Write_String_Attribute (N_ID, "[" & To_String (Diag.Id) & "]");
+      Write_String_Attribute (N_ID, "[" & To_String (E.Id) & "]");
       Write_Char (',');
       NL_And_Indent;
 
@@ -1131,13 +1152,11 @@ package body Diagnostics.SARIF_Emitter is
    -- Print_Rules --
    -----------------
 
-   procedure Print_Rules (Diags : Diagnostic_List) is
-      use Diagnostics.Diagnostics_Lists;
-
-      R : Diagnostic_Type;
-      Rules : constant Diagnostic_List := Get_Unique_Rules (Diags);
-
-      It : Iterator := Iterate (Rules);
+   procedure Print_Rules is
+      use Error_Msg_Lists;
+      R     : Error_Msg_Object;
+      Rules : Error_Msg_List := Get_Unique_Rules;
+      It    : Iterator       := Iterate (Rules);
 
       First : Boolean := True;
    begin
@@ -1161,13 +1180,14 @@ package body Diagnostics.SARIF_Emitter is
       NL_And_Indent;
       Write_Char (']');
 
+      Error_Msg_Lists.Destroy (Rules);
    end Print_Rules;
 
    ----------------
    -- Print_Tool --
    ----------------
 
-   procedure Print_Tool (Diags : Diagnostic_List) is
+   procedure Print_Tool is
 
    begin
       Write_Str ("""" & N_TOOL & """" & ": " & "{");
@@ -1190,7 +1210,7 @@ package body Diagnostics.SARIF_Emitter is
       Write_Char (',');
       NL_And_Indent;
 
-      Print_Rules (Diags);
+      Print_Rules;
 
       --  End of tool.driver
 
@@ -1211,7 +1231,7 @@ package body Diagnostics.SARIF_Emitter is
    -- Print_Runs --
    ----------------
 
-   procedure Print_Runs (Diags : Diagnostic_List) is
+   procedure Print_Runs is
 
    begin
       Write_Str ("""" & N_RUNS & """" & ": " & "[");
@@ -1227,7 +1247,7 @@ package body Diagnostics.SARIF_Emitter is
 
       --  A run consists of a tool
 
-      Print_Tool (Diags);
+      Print_Tool;
 
       Write_Char (',');
       NL_And_Indent;
@@ -1244,7 +1264,7 @@ package body Diagnostics.SARIF_Emitter is
 
       --  A run consists of results
 
-      Print_Results (Diags);
+      Print_Results;
 
       --  End of run
 
@@ -1265,7 +1285,7 @@ package body Diagnostics.SARIF_Emitter is
    -- Print_SARIF_Report --
    ------------------------
 
-   procedure Print_SARIF_Report (Diags : Diagnostic_List) is
+   procedure Print_SARIF_Report is
    begin
       Write_Char ('{');
       Begin_Block;
@@ -1279,7 +1299,7 @@ package body Diagnostics.SARIF_Emitter is
       Write_Char (',');
       NL_And_Indent;
 
-      Print_Runs (Diags);
+      Print_Runs;
 
       End_Block;
       NL_And_Indent;
@@ -1288,4 +1308,4 @@ package body Diagnostics.SARIF_Emitter is
       Write_Eol;
    end Print_SARIF_Report;
 
-end Diagnostics.SARIF_Emitter;
+end Erroutc.SARIF_Emitter;

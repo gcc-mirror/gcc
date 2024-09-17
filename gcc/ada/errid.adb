@@ -22,12 +22,23 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
-with Diagnostics.JSON_Utils;        use Diagnostics.JSON_Utils;
-with Diagnostics.Utils;             use Diagnostics.Utils;
-with Diagnostics.Switch_Repository; use Diagnostics.Switch_Repository;
-with Output;                        use Output;
+with JSON_Utils; use JSON_Utils;
+with Output;     use Output;
 
-package body Diagnostics.Repository is
+package body Errid is
+
+   ---------------
+   -- To_String --
+   ---------------
+
+   function To_String (Id : Diagnostic_Id) return String is
+   begin
+      if Id = No_Diagnostic_Id then
+         return "GNAT0000";
+      else
+         return Id'Img;
+      end if;
+   end To_String;
 
    ---------------------------------
    -- Print_Diagnostic_Repository --
@@ -119,4 +130,4 @@ package body Diagnostics.Repository is
       Write_Eol;
    end Print_Diagnostic_Repository;
 
-end Diagnostics.Repository;
+end Errid;

@@ -27,6 +27,8 @@
 --  reporting packages, including Errout and Prj.Err.
 
 with Table;
+with Errsw; use Errsw;
+with Errid; use Errid;
 with Types; use Types;
 
 package Erroutc is
@@ -177,6 +179,84 @@ package Erroutc is
    --  The following record type and table are used to represent error
    --  messages, with one entry in the table being allocated for each message.
 
+   type Labeled_Span_Id is new Int;
+   No_Labeled_Span : constant Labeled_Span_Id := 0;
+
+   type Labeled_Span_Type is record
+      Label : String_Ptr := null;
+      --  Text associated with the span
+
+      Span : Source_Span := (others => No_Location);
+      --  Textual region in the source code
+
+      Is_Primary : Boolean := True;
+      --  Primary spans are used to indicate the primary location of the
+      --  diagnostic. Typically there should just be one primary span per
+      --  diagnostic.
+      --  Non-primary spans are used to indicate secondary locations and
+      --  typically are formatted in a different way or omitted in some
+      --  contexts.
+
+      Is_Region : Boolean := False;
+      --  Regional spans are multiline spans that have a unique way of being
+      --  displayed in the pretty output.
+
+      Next : Labeled_Span_Id := No_Labeled_Span;
+
+   end record;
+
+   No_Labeled_Span_Object : Labeled_Span_Type := (others => <>);
+
+   package Locations is new Table.Table (
+     Table_Component_Type => Labeled_Span_Type,
+     Table_Index_Type     => Labeled_Span_Id,
+     Table_Low_Bound      => 1,
+     Table_Initial        => 200,
+     Table_Increment      => 200,
+     Table_Name           => "Location");
+
+   type Edit_Id is new Int;
+   No_Edit : constant Edit_Id := 0;
+
+   type Edit_Type is record
+      Span : Source_Span;
+      --  Region of the file to be removed
+
+      Text : String_Ptr;
+      --  Text to be inserted at the start location of the span
+
+      Next : Edit_Id := No_Edit;
+   end record;
+
+   package Edits is new Table.Table (
+     Table_Component_Type => Edit_Type,
+     Table_Index_Type     => Edit_Id,
+     Table_Low_Bound      => 1,
+     Table_Initial        => 200,
+     Table_Increment      => 200,
+     Table_Name           => "Edit");
+
+   type Fix_Id is new Int;
+   No_Fix : constant Fix_Id := 0;
+
+   type Fix_Type is record
+      Description : String_Ptr := null;
+      --  Message describing the fix that will be displayed to the user.
+
+      Edits : Edit_Id := No_Edit;
+      --   File changes for the fix.
+
+      Next : Fix_Id := No_Fix;
+   end record;
+
+   package Fixes is new Table.Table (
+     Table_Component_Type => Fix_Type,
+     Table_Index_Type     => Fix_Id,
+     Table_Low_Bound      => 1,
+     Table_Initial        => 200,
+     Table_Increment      => 200,
+     Table_Name           => "Fix");
+
    type Error_Msg_Object is record
       Text : String_Ptr;
       --  Text of error message, fully expanded with all insertions
@@ -248,6 +328,27 @@ package Erroutc is
       --  in the circuit for deleting duplicate/redundant error messages.
 
       Kind : Error_Msg_Type;
+      --  The kind of the error message. This determines how the message
+      --  should be handled and what kind of prefix should be added before the
+      --  message text.
+
+      Switch : Switch_Id := No_Switch_Id;
+      --  Identifier for a given switch that enabled the diagnostic
+
+      Id : Diagnostic_Id := No_Diagnostic_Id;
+      --  Unique error code for the given message
+
+      Locations : Labeled_Span_Id := No_Labeled_Span;
+      --  Identifier to the first location identified by the error message.
+      --  These locations are marked with an underlying span line and
+      --  optionally given a short label.
+
+      Fixes : Fix_Id := No_Fix;
+      --  Identifier to the first fix object for the error message. The fix
+      --  contains a suggestion to prevent the error from being triggered.
+      --  This includes edits that can be made to the source code. An edit
+      --  contians a region of the code that needs to be changed and the new
+      --  text that should be inserted to that region.
    end record;
 
    package Errors is new Table.Table (
@@ -267,6 +368,56 @@ package Erroutc is
    --  The last entry on the list of error messages. Note: this is not the same
    --  as the physically last entry in the error message table, since messages
    --  are not always inserted in sequence.
+
+   procedure Next_Error_Msg (E : in out Error_Msg_Id);
+   --  Update E to point to the next error message in the list of error
+   --  messages. Skip deleted and continuation messages.
+
+   procedure Next_Continuation_Msg (E : in out Error_Msg_Id);
+   --  Update E to point to the next continuation message
+
+   function Kind_To_String (E : Error_Msg_Object) return String is
+     (if E.Warn_Err then "error"
+      else
+        (case E.Kind is
+           when Error | Non_Serious_Error => "error",
+           when Warning                   => "warning",
+           when Style                     => "style",
+           when Info                      => "info",
+           when Low_Check                 => "low",
+           when Medium_Check              => "medium",
+           when High_Check                => "high"));
+   --  Returns the name of the error message kind. If it is a warning that has
+   --  been turned to an error then it returns "error".
+
+   function Get_Doc_Switch (E : Error_Msg_Object) return String;
+   --  Returns the documentation switch for a given Error_Msg_Object.
+   --
+   --  This either the name of the switch encased in brackets. E.g [-gnatwx].
+   --
+   --  If the Warn_Char is "* " is then it will return [restriction warning].
+   --
+   --  Otherwise for messages without a switch it will return
+   --  [enabled by default] .
+
+   function Primary_Location (E : Error_Msg_Object) return Labeled_Span_Id;
+   --  Returns the first Primary Labeled_Span associated with the error
+   --  message. Otherwise it returns No_Labeled_Span.
+
+   function Get_Human_Id (E : Error_Msg_Object) return String_Ptr;
+   --  Returns a longer human readable name for the switch associated with the
+   --  error message.
+
+   function Get_Switch (E : Error_Msg_Object) return Switch_Type;
+   --  Returns the Switch information for the given error message
+
+   function Get_Switch_Id (E : Error_Msg_Object) return Switch_Id;
+   --  Returns the Switch information identifier for the given error message
+
+   function Get_Switch_Id
+     (Kind : Error_Msg_Type; Warn_Chr : String) return Switch_Id;
+   --  Returns the Switch information identifier based on the error kind and
+   --  the warning character.
 
    --------------------------
    -- Warning Mode Control --
@@ -422,6 +573,14 @@ package Erroutc is
    function SGR_Locus return String is
      (SGR_Seq (Color_Bold));
 
+   function Get_SGR_Code (E_Msg : Error_Msg_Object) return String is
+     (if E_Msg.Warn_Err then SGR_Error
+      else
+        (case E_Msg.Kind is
+           when Warning | Style => SGR_Warning,
+           when Info => SGR_Note,
+           when others => SGR_Error));
+
    -----------------
    -- Subprograms --
    -----------------
@@ -513,7 +672,7 @@ package Erroutc is
    --  splits the line generating multiple lines of output, and in this case
    --  the last line has no terminating end of line character.
 
-   procedure Output_Text_Within (Txt : String_Ptr; Line_Length : Nat);
+   procedure Output_Text_Within (Txt : String; Line_Length : Nat);
    --  Output the text in Txt, splitting it into lines of at most the size of
    --  Line_Length.
 
@@ -548,6 +707,14 @@ package Erroutc is
    --
    --  Note that the call has no effect for continuation messages (those whose
    --  first character is '\') except for the Has_Insertion_Line setting.
+
+   --  Definitions for valid message kind prefixes within error messages.
+
+   Info_Prefix   : constant String := "info: ";
+   Low_Prefix    : constant String := "low: ";
+   Medium_Prefix : constant String := "medium: ";
+   High_Prefix   : constant String := "high: ";
+   Style_Prefix  : constant String := "(style) ";
 
    procedure Purge_Messages (From : Source_Ptr; To : Source_Ptr);
    --  All error messages whose location is in the range From .. To (not

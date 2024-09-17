@@ -23,6 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package Diagnostics.Pretty_Emitter is
-   procedure Print_Diagnostic (Diag : Diagnostic_Type);
-end Diagnostics.Pretty_Emitter;
+package Erroutc.Pretty_Emitter is
+   procedure Print_Error_Messages;
+end Erroutc.Pretty_Emitter;

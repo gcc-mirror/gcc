@@ -28,11 +28,10 @@ with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
 with Contracts;      use Contracts;
-with Debug;          use Debug;
-with Diagnostics.Constructors; use Diagnostics.Constructors;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
+with Errid;          use Errid;
 with Errout;         use Errout;
 with Exp_Ch9;        use Exp_Ch9;
 with Elists;         use Elists;
@@ -2200,18 +2199,21 @@ package body Sem_Ch9 is
                --  Pragma case
 
                else
-                  if Debug_Flag_Underscore_DD then
-                     Record_Pragma_No_Effect_With_Lock_Free_Warning
-                       (Pragma_Node     => Prio_Item,
-                        Pragma_Name     => Pragma_Name (Prio_Item),
-                        Lock_Free_Node  => Id,
-                        Lock_Free_Range => Parent (Id));
-                  else
-                     Error_Msg_Name_1 := Pragma_Name (Prio_Item);
-                     Error_Msg_NE
-                       ("pragma% for & has no effect when Lock_Free given??",
-                        Prio_Item, Id);
-                  end if;
+                  Error_Msg_Name_1 := Pragma_Name (Prio_Item);
+                  Error_Msg_NE
+                     (Msg        =>
+                        "pragma% for & has no effect when Lock_Free given??",
+                     N          => Prio_Item,
+                     E          => Id,
+                     Error_Code => GNAT0003,
+                     Label      => "No effect",
+                     Spans      =>
+                        (1 =>
+                           Labeled_Span
+                              (Span       => To_Full_Span (Parent (Id)),
+                              Label      => "Lock_Free in effect here",
+                              Is_Primary => False,
+                              Is_Region  => True)));
                end if;
             end if;
          end;

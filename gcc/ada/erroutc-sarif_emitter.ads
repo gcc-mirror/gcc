@@ -23,7 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package Diagnostics.SARIF_Emitter is
+package Erroutc.SARIF_Emitter is
 
-   procedure Print_SARIF_Report (Diags : Diagnostic_List);
-end Diagnostics.SARIF_Emitter;
+   procedure Print_SARIF_Report;
+end Erroutc.SARIF_Emitter;

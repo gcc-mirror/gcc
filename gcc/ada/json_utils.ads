@@ -22,8 +22,9 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
+with Types; use Types;
 
-package Diagnostics.JSON_Utils is
+package JSON_Utils is
 
    JSON_FORMATTING : constant Boolean := True;
    --  Adds newlines and indentation to the output JSON.
@@ -77,4 +78,4 @@ package Diagnostics.JSON_Utils is
    --  The Value is surrounded by double quotes ("") and the special characters
    --  within the string are escaped.
 
-end Diagnostics.JSON_Utils;
+end JSON_Utils;

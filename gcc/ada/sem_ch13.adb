@@ -29,11 +29,11 @@ with Atree;            use Atree;
 with Checks;           use Checks;
 with Contracts;        use Contracts;
 with Debug;            use Debug;
-with Diagnostics.Constructors; use Diagnostics.Constructors;
 with Einfo;            use Einfo;
 with Einfo.Entities;   use Einfo.Entities;
 with Einfo.Utils;      use Einfo.Utils;
 with Elists;           use Elists;
+with Errid;            use Errid;
 with Errout;           use Errout;
 with Exp_Ch3;          use Exp_Ch3;
 with Exp_Disp;         use Exp_Disp;
@@ -12170,18 +12170,15 @@ package body Sem_Ch13 is
 
          if not Check_Primitive_Function (Subp, Typ) then
             if Present (Ref_Node) then
-               if Debug_Flag_Underscore_DD then
-                  Record_Default_Iterator_Not_Primitive_Error
-                    (Ref_Node, Subp);
-               else
-                  Error_Msg_N ("improper function for default iterator!",
-                     Ref_Node);
-                  Error_Msg_Sloc := Sloc (Subp);
-                  Error_Msg_NE
-                     ("\\default iterator defined # "
-                     & "must be a local primitive or class-wide function",
-                     Ref_Node, Subp);
-               end if;
+               Error_Msg_N
+                 ("improper function for default iterator!",
+                  Ref_Node,
+                  GNAT0001);
+               Error_Msg_Sloc := Sloc (Subp);
+               Error_Msg_NE
+                  ("\\default iterator defined # "
+                  & "must be a local primitive or class-wide function",
+                  Ref_Node, Subp);
             end if;
 
             return False;
@@ -15874,27 +15871,36 @@ package body Sem_Ch13 is
          --  anyway, no reason to be too strict about this.
 
          if not Relaxed_RM_Semantics then
-            if Debug_Flag_Underscore_DD then
-
-               S := First_Subtype (T);
-               if Present (Freeze_Node (S)) then
-                  Record_Representation_Too_Late_Error
-                    (Rep    => N,
-                     Freeze => Freeze_Node (S),
-                     Def    => S);
-               else
-                  Error_Msg_N ("|representation item appears too late!", N);
-               end if;
-
+            S := First_Subtype (T);
+            if Present (Freeze_Node (S)) then
+               Error_Msg_N
+                 (Msg        =>
+                    "record representation cannot be specified" &
+                    " after the type is frozen",
+                  N          => N,
+                  Error_Code => GNAT0005,
+                  Label      =>
+                    "record representation clause specified here",
+                  Spans      =>
+                    (1 =>
+                       Secondary_Labeled_Span
+                         (N     => Freeze_Node (S),
+                          Label =>
+                            "Type " & To_Name (S) &
+                            " is frozen here"),
+                     2 =>
+                       Secondary_Labeled_Span
+                         (N     => S,
+                          Label =>
+                            "Type " & To_Name (S) &
+                            " is declared here")));
+               Error_Msg_Sloc := Sloc (Freeze_Node (S));
+               Error_Msg_N
+                 ("\\move the record representation clause" &
+                  " before the freeze point #",
+                  N);
             else
                Error_Msg_N ("|representation item appears too late!", N);
-
-               S := First_Subtype (T);
-               if Present (Freeze_Node (S)) then
-                  Error_Msg_NE
-                    ("??no more representation items for }",
-                     Freeze_Node (S), S);
-               end if;
             end if;
          end if;
       end Too_Late;

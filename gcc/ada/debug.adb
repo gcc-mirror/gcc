@@ -168,7 +168,7 @@ package body Debug is
    --  d_A  Stop generation of ALI file
    --  d_B  Warn on build-in-place function calls
    --  d_C
-   --  d_D  Use improved diagnostics
+   --  d_D
    --  d_E  Print diagnostics and switch repository
    --  d_F  Encode full invocation paths in ALI files
    --  d_G

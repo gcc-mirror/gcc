@@ -28,7 +28,7 @@ with Osint;
 with Output; use Output;
 with System.OS_Lib;
 
-package body Diagnostics.JSON_Utils is
+package body JSON_Utils is
 
    -----------------
    -- Begin_Block --
@@ -251,4 +251,4 @@ package body Diagnostics.JSON_Utils is
       Write_Char ('"');
    end Write_String_Attribute;
 
-end Diagnostics.JSON_Utils;
+end JSON_Utils;
