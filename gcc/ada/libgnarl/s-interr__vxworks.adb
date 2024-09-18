@@ -273,7 +273,6 @@ package body System.Interrupts is
       Check_Reserved_Interrupt (Interrupt);
       Interrupt_Manager.Attach_Handler (New_Handler, Interrupt, Static);
    end Attach_Handler;
-   pragma Obsolescent (Attach_Handler, "Use the VXBus subsystem instead");
 
    -----------------------------
    -- Bind_Interrupt_To_Entry --

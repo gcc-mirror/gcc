@@ -1157,6 +1157,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworks7%, $(target_cpu) $(targe
     else
       ifeq ($(strip $(filter-out kernel-smp,$(THREAD_KIND))),)
         LIBGNAT_TARGET_PAIRS += \
+        s-interr.ads<libgnarl/s-interr__vxworks.ads \
         s-interr.adb<libgnarl/s-interr__vxworks.adb \
         s-mudido.adb<libgnarl/s-mudido__affinity.adb \
         s-tpopsp.adb<libgnarl/s-tpopsp__vxworks-tls.adb \
@@ -1168,6 +1169,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworks7%, $(target_cpu) $(targe
       else
         ifeq ($(strip $(filter-out kernel,$(THREAD_KIND))),)
           LIBGNAT_TARGET_PAIRS += \
+          s-interr.ads<libgnarl/s-interr__vxworks.ads \
           s-interr.adb<libgnarl/s-interr__vxworks.adb \
           s-tpopsp.adb<libgnarl/s-tpopsp__vxworks.adb \
           s-vxwext.ads<libgnarl/s-vxwext__kernel.ads \
@@ -1287,6 +1289,7 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks7%, $(target_cpu) $(target_vend
   else
     ifeq ($(strip $(filter-out kernel-smp, $(THREAD_KIND))),)
       LIBGNAT_TARGET_PAIRS += \
+      s-interr.ads<libgnarl/s-interr__vxworks.ads \
       s-interr.adb<libgnarl/s-interr__vxworks.adb \
       s-mudido.adb<libgnarl/s-mudido__affinity.adb \
       s-tpopsp.adb<libgnarl/s-tpopsp__vxworks-tls.adb \
@@ -1326,6 +1329,7 @@ ifeq ($(strip $(filter-out aarch64 arm wrs vxworks7%, $(target_cpu) $(target_ven
   a-nuaufl.ads<libgnat/a-nuaufl__wraplf.ads \
   a-nashfl.ads<libgnat/a-nashfl__wraplf.ads \
   s-inmaop.adb<libgnarl/s-inmaop__hwint.adb \
+  s-interr.ads<libgnarl/s-interr__vxworks.ads \
   s-interr.adb<libgnarl/s-interr__vxworks.adb \
   s-intman.ads<libgnarl/s-intman__vxworks.ads \
   s-intman.adb<libgnarl/s-intman__vxworks.adb \
