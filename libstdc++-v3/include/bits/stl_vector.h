@@ -2041,7 +2041,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     { return (__x.size() == __y.size()
 	      && std::equal(__x.begin(), __x.end(), __y.begin())); }
 
-#if __cpp_lib_three_way_comparison
+#if __cpp_lib_three_way_comparison // >= C++20
   /**
    *  @brief  Vector ordering relation.
    *  @param  __x  A `vector`.
@@ -2054,8 +2054,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  `<` and `>=` etc.
   */
   template<typename _Tp, typename _Alloc>
-    _GLIBCXX20_CONSTEXPR
-    inline __detail::__synth3way_t<_Tp>
+    constexpr __detail::__synth3way_t<_Tp>
     operator<=>(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
     {
       return std::lexicographical_compare_three_way(__x.begin(), __x.end(),
