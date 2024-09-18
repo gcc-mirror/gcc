@@ -6759,8 +6759,15 @@ dependent_opaque_alias_p (const_tree t)
 {
   return (TYPE_P (t)
 	  && typedef_variant_p (t)
-	  && any_dependent_type_attributes_p (DECL_ATTRIBUTES
-					      (TYPE_NAME (t))));
+	  && (any_dependent_type_attributes_p (DECL_ATTRIBUTES
+					       (TYPE_NAME (t)))
+	      /* Treat a dependent decltype(lambda) alias as opaque so that we
+		 don't prematurely strip it when used as a template argument.
+		 Otherwise substitution into each occurrence of the (stripped)
+		 alias would incorrectly yield a distinct lambda type.  */
+	      || (TREE_CODE (t) == DECLTYPE_TYPE
+		  && TREE_CODE (DECLTYPE_TYPE_EXPR (t)) == LAMBDA_EXPR
+		  && !typedef_variant_p (DECL_ORIGINAL_TYPE (TYPE_NAME (t))))));
 }
 
 /* Return the number of innermost template parameters in TMPL.  */
