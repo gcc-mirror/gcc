@@ -3773,7 +3773,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	      *total = COSTS_N_INSNS (1);
 	      return true;
 	    }
-	  riscv_rtx_costs (SET_SRC (x), mode, outer_code, opno, total, speed);
+	  riscv_rtx_costs (SET_SRC (x), mode, SET, opno, total, speed);
 	  return true;
 	}
 
