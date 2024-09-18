@@ -1,3 +1,11 @@
+2024-09-17  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-09-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116676
+	* g++.dg/cpp1z/constexpr-116676.C: New test.
+
 2024-09-15  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
