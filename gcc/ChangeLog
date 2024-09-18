@@ -1,3 +1,14 @@
+2024-09-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116534
+	* fold-const.cc (operand_compare::operand_equal_p): If either
+	field's DECL_FIELD_OFFSET is null, compare the fields with ==.
+
+2024-09-17  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc (svdiv_impl::fold):
+	Add folding of all-zero operands to zero vector.
+
 2024-09-16  Pengxuan Zheng  <quic_pzheng@quicinc.com>
 
 	PR target/113328
