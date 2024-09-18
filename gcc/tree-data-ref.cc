@@ -765,6 +765,14 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
   if (INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_TRAPS (type))
     return false;
 
+  if (TREE_CODE (op0) == SSA_NAME
+      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op0))
+    return false;
+  if (op1
+      && TREE_CODE (op1) == SSA_NAME
+      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op1))
+    return false;
+
   switch (code)
     {
     case INTEGER_CST:
@@ -860,9 +868,6 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 
     case SSA_NAME:
       {
-	if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op0))
-	  return false;
-
 	gimple *def_stmt = SSA_NAME_DEF_STMT (op0);
 	enum tree_code subcode;
 
