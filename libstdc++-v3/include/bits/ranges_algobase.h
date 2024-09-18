@@ -286,7 +286,7 @@ namespace ranges
 	{
 	  if (!std::__is_constant_evaluated())
 	    {
-	      if constexpr (__memcpyable<_Iter, _Out>::__value)
+	      if constexpr (__memcpyable<_Out, _Iter>::__value)
 		{
 		  using _ValueTypeI = iter_value_t<_Iter>;
 		  auto __num = __last - __first;
