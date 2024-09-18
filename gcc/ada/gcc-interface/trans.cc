@@ -5010,9 +5010,12 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 					       TREE_TYPE (gnu_name))))
 	    gnu_name = convert (gnu_name_type, gnu_name);
 
-	  /* If the temporary is created  because of aliasing considerations,
+	  /* If the temporary is created because of aliasing considerations,
+	     or would have been so created if the actual was addressable,
 	     it must be in the target type of the (unchecked) conversion.  */
-	  if (aliasing)
+	  if (aliasing
+	      || (node_is_type_conversion (gnat_actual)
+		  && !aliasable_p (gnu_name, gnu_actual_type)))
 	    {
 	      if (Nkind (gnat_actual) == N_Unchecked_Type_Conversion)
 		gnu_name = unchecked_convert (gnu_actual_type, gnu_name,
