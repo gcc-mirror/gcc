@@ -648,6 +648,8 @@ extern GTY(()) int darwin_ms_struct;
 #define ASM_OPTIONS "%{v} %{w:-W} %{I*}"
 #endif
 
+#define AS_NEEDS_DASH_FOR_PIPED_INPUT
+
 /* Default Darwin ASM_SPEC, very simple. */
 #define ASM_SPEC \
 "%{static} -arch %(darwin_arch) " \
