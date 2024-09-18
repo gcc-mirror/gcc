@@ -1862,6 +1862,15 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t, tree fun,
   int nparms = list_length (parms);
   int nbinds = nargs < nparms ? nargs : nparms;
   tree binds = make_tree_vec (nbinds);
+
+  /* The call is not a constant expression if it involves the cdtor for a type
+     with virtual bases.  */
+  if (DECL_HAS_IN_CHARGE_PARM_P (fun) || DECL_HAS_VTT_PARM_P (fun))
+    {
+      *non_constant_p = true;
+      return binds;
+    }
+
   for (i = 0; i < nargs; ++i)
     {
       tree x, arg;
@@ -1871,7 +1880,7 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t, tree fun,
       x = get_nth_callarg (t, i);
       /* For member function, the first argument is a pointer to the implied
          object.  For a constructor, it might still be a dummy object, in
-         which case we get the real argument from ctx. */
+	 which case we get the real argument from ctx.  */
       if (i == 0 && DECL_CONSTRUCTOR_P (fun)
 	  && is_dummy_object (x))
 	{
