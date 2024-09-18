@@ -4400,10 +4400,10 @@
 	  (sat_int_minus_binop:VI_D
 	    (match_operand:VI_D 3 "register_operand"     " vr, vr, vr, vr")
 	    (vec_duplicate:VI_D
-	      (match_operand:<VEL> 4 "register_operand"  "  r,  r,  r,  r")))
+	      (match_operand:<VEL> 4 "reg_or_0_operand"  "  rJ, rJ, rJ, rJ")))
 	  (match_operand:VI_D 2 "vector_merge_operand"   " vu,  0, vu,  0")))]
   "TARGET_VECTOR"
-  "v<insn>.vx\t%0,%3,%4%p1"
+  "v<insn>.vx\t%0,%3,%z4%p1"
   [(set_attr "type" "<int_binop_insn_type>")
    (set_attr "mode" "<MODE>")])
 
@@ -4422,10 +4422,10 @@
 	    (match_operand:VI_D 3 "register_operand"         " vr, vr, vr, vr")
 	    (vec_duplicate:VI_D
 	      (sign_extend:<VEL>
-	        (match_operand:<VSUBEL> 4 "register_operand" "  r,  r,  r,  r"))))
+		(match_operand:<VSUBEL> 4 "reg_or_0_operand" "  rJ, rJ, rJ, rJ"))))
 	  (match_operand:VI_D 2 "vector_merge_operand"       " vu,  0, vu,  0")))]
   "TARGET_VECTOR && !TARGET_64BIT"
-  "v<insn>.vx\t%0,%3,%4%p1"
+  "v<insn>.vx\t%0,%3,%z4%p1"
   [(set_attr "type" "<int_binop_insn_type>")
    (set_attr "mode" "<MODE>")])
 
