@@ -480,6 +480,9 @@ extern rtx hppa_pic_save_rtx (void);
 #define INDEX_REG_CLASS GENERAL_REGS
 #define BASE_REG_CLASS GENERAL_REGS
 
+/* True if register is a general register.  */
+#define GENERAL_REGNO_P(N) ((N) >= 1 && (N) <= 31)
+
 #define FP_REG_CLASS_P(CLASS) \
   ((CLASS) == FP_REGS || (CLASS) == FPUPPER_REGS)
 
