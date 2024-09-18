@@ -11891,6 +11891,11 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 		 "lambda templates are only available with "
 		 "%<-std=c++20%> or %<-std=gnu++20%>");
 
+      /* Even though the whole lambda may be a default argument, its
+	 template-parameter-list is a context where it's OK to create
+	 new parameters.  */
+      auto lvf = make_temp_override (parser->local_variables_forbidden_p, 0u);
+
       cp_lexer_consume_token (parser->lexer);
 
       template_param_list = cp_parser_template_parameter_list (parser);
@@ -20989,8 +20994,8 @@ cp_parser_placeholder_type_specifier (cp_parser *parser, location_t loc,
       /* In a default argument we may not be creating new parameters.  */
       if (parser->local_variables_forbidden_p & LOCAL_VARS_FORBIDDEN)
 	{
-	  /* If this assert turns out to be false, do error() instead.  */
-	  gcc_assert (tentative);
+	  if (!tentative)
+	    error_at (loc, "invalid use of concept-name %qD", con);
 	  return error_mark_node;
 	}
       return build_constrained_parameter (con, proto, args);
