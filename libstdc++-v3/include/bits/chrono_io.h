@@ -1608,8 +1608,20 @@ namespace __format
 	       basic_format_context<_Out, _CharT>& __fc) const
 	{
 	  if constexpr (numeric_limits<_Rep>::is_signed)
-	    if (__d < __d.zero())
-	      return _M_f._M_format(-__d, __fc, true);
+	    if (__d < __d.zero()) [[unlikely]]
+	      {
+		if constexpr (is_integral_v<_Rep>)
+		  {
+		    // -d is undefined for the most negative integer.
+		    // Convert duration to corresponding unsigned rep.
+		    using _URep = make_unsigned_t<_Rep>;
+		    auto __ucnt = -static_cast<_URep>(__d.count());
+		    auto __ud = chrono::duration<_URep, _Period>(__ucnt);
+		    return _M_f._M_format(__ud, __fc, true);
+		  }
+		else
+		  return _M_f._M_format(-__d, __fc, true);
+	      }
 	  return _M_f._M_format(__d, __fc, false);
 	}
 
