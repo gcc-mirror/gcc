@@ -1249,19 +1249,56 @@ public:
 
   /// Returns a pointer to the stored value
   constexpr const T *operator->() const {
+    // constexpr function must only contain a return statement in C++11
+#ifdef TL_OPTIONAL_CXX14
+    // undefined behavior if we don't have a value
+    rust_assert(has_value ());
+#endif
+
     return std::addressof(this->m_value);
   }
 
   TL_OPTIONAL_11_CONSTEXPR T *operator->() {
+    // constexpr function must only contain a return statement in C++11
+#ifdef TL_OPTIONAL_CXX14
+    // undefined behavior if we don't have a value
+    rust_assert(has_value ());
+#endif
+
     return std::addressof(this->m_value);
   }
 
   /// Returns the stored value
-  TL_OPTIONAL_11_CONSTEXPR T &operator*() & { return this->m_value; }
+  TL_OPTIONAL_11_CONSTEXPR T &operator*() &
+  {
+    // constexpr function must only contain a return statement in C++11
+#ifdef TL_OPTIONAL_CXX14
+    // undefined behavior if we don't have a value
+    rust_assert(has_value ());
+#endif
 
-  constexpr const T &operator*() const & { return this->m_value; }
+    return this->m_value;
+  }
 
-  TL_OPTIONAL_11_CONSTEXPR T &&operator*() && {
+  constexpr const T &operator*() const &
+  {
+    // constexpr function must only contain a return statement in C++11
+#ifdef TL_OPTIONAL_CXX14
+    // undefined behavior if we don't have a value
+    rust_assert(has_value ());
+#endif
+
+    return this->m_value;
+  }
+
+  TL_OPTIONAL_11_CONSTEXPR T &&operator*() &&
+  {
+    // constexpr function must only contain a return statement in C++11
+#ifdef TL_OPTIONAL_CXX14
+    // undefined behavior if we don't have a value
+    rust_assert(has_value ());
+#endif
+
     return std::move(this->m_value);
   }
 
@@ -1988,14 +2025,49 @@ public:
   void swap(optional &rhs) noexcept { std::swap(m_value, rhs.m_value); }
 
   /// Returns a pointer to the stored value
-  constexpr const T *operator->() const noexcept { return m_value; }
+  constexpr const T *operator->() const noexcept
+  {
+    // constexpr function must only contain a return statement in C++11
+#ifdef TL_OPTIONAL_CXX14
+    // undefined behavior if we don't have a value
+    rust_assert(has_value ());
+#endif
 
-  TL_OPTIONAL_11_CONSTEXPR T *operator->() noexcept { return m_value; }
+    return m_value;
+  }
+
+  TL_OPTIONAL_11_CONSTEXPR T *operator->() noexcept
+  {
+    // constexpr function must only contain a return statement in C++11
+#ifdef TL_OPTIONAL_CXX14
+    // undefined behavior if we don't have a value
+    rust_assert(has_value ());
+#endif
+
+    return m_value;
+  }
 
   /// Returns the stored value
-  TL_OPTIONAL_11_CONSTEXPR T &operator*() noexcept { return *m_value; }
+  TL_OPTIONAL_11_CONSTEXPR T &operator*() noexcept {
+    // constexpr function must only contain a return statement in C++11
+#ifdef TL_OPTIONAL_CXX14
+    // undefined behavior if we don't have a value
+    rust_assert(has_value ());
+#endif
 
-  constexpr const T &operator*() const noexcept { return *m_value; }
+    return *m_value;
+  }
+
+  constexpr const T &operator*() const noexcept
+  {
+    // constexpr function must only contain a return statement in C++11
+#ifdef TL_OPTIONAL_CXX14
+    // undefined behavior if we don't have a value
+    rust_assert(has_value ());
+#endif
+
+    return *m_value;
+  }
 
   constexpr bool has_value() const noexcept { return m_value != nullptr; }
 
