@@ -150,7 +150,9 @@ namespace __detail
       __s.flags(__os.flags());
       __s.imbue(__os.getloc());
       __s.precision(__os.precision());
-      __s << __d.count();
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4118. How should duration formatters format custom rep types?
+      __s << +__d.count();
       __detail::__fmt_units_suffix<period, _CharT>(_Out(__s));
       __os << std::move(__s).str();
       return __os;
@@ -635,8 +637,10 @@ namespace __format
 		case 'Q':
 		  // %Q The duration's numeric value.
 		  if constexpr (chrono::__is_duration_v<_Tp>)
+		    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+		    // 4118. How should duration formatters format custom rep?
 		    __out = std::format_to(__print_sign(), _S_empty_spec,
-					   __t.count());
+					   +__t.count());
 		  else
 		    __throw_format_error("chrono format error: argument is "
 					 "not a duration");
@@ -1703,6 +1707,7 @@ namespace __format
 /// @endcond
 
   template<typename _Rep, typename _Period, typename _CharT>
+    requires __format::__formattable_impl<_Rep, _CharT>
     struct formatter<chrono::duration<_Rep, _Period>, _CharT>
     {
       constexpr typename basic_format_parse_context<_CharT>::iterator

@@ -23,6 +23,24 @@ test01()
   VERIFY( s == "3[2]s" );
   std::getline(ss, s);
   VERIFY( s == "9[2/3]s" );
+
+  // LWG 4118. How should duration formatters format custom rep types?
+  ss.str("");
+  ss << duration<char>(121) << ' ';
+  ss << duration<wchar_t>(122) << ' ';
+  ss << duration<signed char>(123) << ' ';
+  ss << duration<unsigned char>(124) << ' ';
+  ss << duration<char8_t>(125) << ' ';
+  ss << duration<char16_t>(126) << ' ';
+  ss << duration<char32_t>(127) << ' ';
+  VERIFY( ss.str() == "121s 122s 123s 124s 125s 126s 127s " );
+
+  ss.str("");
+  ss << std::hex << std::uppercase << duration<const char>(0x1A) << ' ';
+  ss << std::hex << std::uppercase << duration<const wchar_t>(0x2A) << ' ';
+  ss << std::hex << std::uppercase << duration<signed char>(0x3A) << ' ';
+  ss << std::scientific << duration<const double>(4.5) << ' ';
+  VERIFY( ss.str() == "1As 2As 3As 4.500000E+00s " );
 }
 
 void
@@ -44,6 +62,24 @@ test02()
   VERIFY( s == L"3[2]s" );
   std::getline(ss, s);
   VERIFY( s == L"9[2/3]s" );
+
+  // LWG 4118. How should duration formatters format custom rep types?
+  ss.str(L"");
+  ss << duration<char>(121) << ' ';
+  ss << duration<wchar_t>(122) << ' ';
+  ss << duration<signed char>(123) << ' ';
+  ss << duration<unsigned char>(124) << ' ';
+  ss << duration<char8_t>(125) << ' ';
+  ss << duration<char16_t>(126) << ' ';
+  ss << duration<char32_t>(127) << ' ';
+  VERIFY( ss.str() == L"121s 122s 123s 124s 125s 126s 127s " );
+
+  ss.str(L"");
+  ss << std::hex << std::uppercase << duration<const char>(0x1A) << ' ';
+  ss << std::hex << std::uppercase << duration<const wchar_t>(0x2A) << ' ';
+  ss << std::hex << std::uppercase << duration<signed char>(0x3A) << ' ';
+  ss << std::scientific << duration<const double>(4.5) << ' ';
+  VERIFY( ss.str() == L"1As 2As 3As 4.500000E+00s " );
 #endif
 }
 
@@ -114,6 +150,36 @@ test_format()
   VERIFY( s == expected );
   s = std::format("{:%Q%q}", minsec);
   VERIFY( s == expected );
+
+  // LWG 4118. How should duration formatters format custom rep types?
+  s = std::format("{}", std::chrono::duration<char>(100));
+  VERIFY( s == "100s" );
+  s = std::format("{:%Q}", std::chrono::duration<char>(101));
+  VERIFY( s == "101" );
+#ifdef _GLIBCXX_USE_WCHAR_T
+  ws = std::format(L"{}", std::chrono::duration<char>(102));
+  VERIFY( ws == L"102s" );
+  ws = std::format(L"{}", std::chrono::duration<wchar_t>(103));
+  VERIFY( ws == L"103s" );
+#endif
+  s = std::format("{}", std::chrono::duration<signed char>(50));
+  VERIFY( s == "50s" );
+  s = std::format("{:%Q}", std::chrono::duration<signed char>(51));
+  VERIFY( s == "51" );
+  s = std::format("{}", std::chrono::duration<unsigned char>(52));
+  VERIFY( s == "52s" );
+  s = std::format("{:%Q}", std::chrono::duration<unsigned char>(53));
+  VERIFY( s == "53" );
+
+#if __cplusplus > 202002L
+  static_assert( ! std::formattable<std::chrono::duration<wchar_t>, char> );
+  static_assert( ! std::formattable<std::chrono::duration<char8_t>, char> );
+  static_assert( ! std::formattable<std::chrono::duration<char16_t>, char> );
+  static_assert( ! std::formattable<std::chrono::duration<char32_t>, char> );
+  static_assert( ! std::formattable<std::chrono::duration<char8_t>, wchar_t> );
+  static_assert( ! std::formattable<std::chrono::duration<char16_t>, wchar_t> );
+  static_assert( ! std::formattable<std::chrono::duration<char32_t>, wchar_t> );
+#endif
 }
 
 void
