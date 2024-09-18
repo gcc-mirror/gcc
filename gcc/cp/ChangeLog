@@ -1,3 +1,11 @@
+2024-09-17  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-09-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116676
+	* constexpr.cc (maybe_warn_about_constant_value): Check DECL_NAME.
+
 2024-09-12  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
