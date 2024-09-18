@@ -170,6 +170,7 @@
    UNSPEC_VSTRIL
    UNSPEC_SLDB
    UNSPEC_SRDB
+   UNSPEC_VECTOR_SHIFT
 ])
 
 (define_c_enum "unspecv"
@@ -2175,6 +2176,56 @@
   "TARGET_ALTIVEC"
   "vsro %0,%1,%2"
   [(set_attr "type" "vecperm")])
+
+;; Optimize V2DI shifts by constants.  This relies on the shift instructions
+;; only looking at the bits needed to do the shift.  This means we can use
+;; VSPLTISW or XXSPLTIB to load up the constant, and not worry about the bits
+;; that the vector shift instructions will not use.
+(define_mode_iterator VSHIFT_MODE	[(V4SI "TARGET_P9_VECTOR")
+					 (V2DI "TARGET_P8_VECTOR")])
+
+(define_code_iterator vshift_code	[ashift ashiftrt lshiftrt])
+(define_code_attr vshift_attr		[(ashift   "ashift")
+					 (ashiftrt "ashiftrt")
+					 (lshiftrt "lshiftrt")])
+
+(define_insn_and_split "*altivec_<mode>_<vshift_attr>_const"
+  [(set (match_operand:VSHIFT_MODE 0 "register_operand" "=v")
+	(vshift_code:VSHIFT_MODE
+	 (match_operand:VSHIFT_MODE 1 "register_operand" "v")
+	 (match_operand:VSHIFT_MODE 2 "vector_shift_constant" "")))
+   (clobber (match_scratch:VSHIFT_MODE 3 "=&v"))]
+  "((<MODE>mode == V2DImode && TARGET_P8_VECTOR)
+    || (<MODE>mode == V4SImode && TARGET_P9_VECTOR))"
+  "#"
+  "&& 1"
+  [(set (match_dup 3)
+	(unspec:VSHIFT_MODE [(match_dup 4)] UNSPEC_VECTOR_SHIFT))
+   (set (match_dup 0)
+	(vshift_code:VSHIFT_MODE (match_dup 1)
+				 (match_dup 3)))]
+{
+  if (GET_CODE (operands[3]) == SCRATCH)
+    operands[3] = gen_reg_rtx (<MODE>mode);
+
+  operands[4] = GET_CODE (operands[2]) == CONST_VECTOR
+		? CONST_VECTOR_ELT (operands[2], 0)
+		: XEXP (operands[2], 0);
+})
+
+(define_insn "*altivec_<mode>_shift_const"
+  [(set (match_operand:VSHIFT_MODE 0 "register_operand" "=v")
+	(unspec:VSHIFT_MODE [(match_operand 1 "const_int_operand" "n")]
+			    UNSPEC_VECTOR_SHIFT))]
+  "TARGET_P8_VECTOR"
+{
+  if (UINTVAL (operands[1]) <= 15)
+    return "vspltisw %0,%1";
+  else if (TARGET_P9_VECTOR)
+    return "xxspltib %x0,%1";
+  else
+    gcc_unreachable ();
+})
 
 (define_insn "altivec_vsum4ubs"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
