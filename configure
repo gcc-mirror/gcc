@@ -9086,7 +9086,7 @@ if test -d ${srcdir}/gcc; then
         lang_requires_boot_languages=
         # set srcdir during sourcing lang_frag to the gcc dir.
         # Sadly overriding srcdir on the . line doesn't work in plain sh as it
-        # polutes this shell
+        # pollutes this shell
         saved_srcdir=${srcdir}
         srcdir=${srcdir}/gcc . ${lang_frag}
         srcdir=${saved_srcdir}
