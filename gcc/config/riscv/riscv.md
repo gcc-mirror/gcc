@@ -56,6 +56,8 @@
   UNSPEC_FLT_QUIET
   UNSPEC_FLE_QUIET
   UNSPEC_COPYSIGN
+  UNSPEC_FMV_X_W
+  UNSPEC_FMVH_X_D
   UNSPEC_RINT
   UNSPEC_ROUND
   UNSPEC_FLOOR
@@ -2626,8 +2628,9 @@
 
 (define_insn "movsidf2_low_rv32"
   [(set (match_operand:SI      0 "register_operand" "=  r")
-	(truncate:SI
-	    (match_operand:DF 1 "register_operand"  "zmvf")))]
+	(unspec:SI
+	    [(match_operand:DF 1 "register_operand" "zmvf")]
+	UNSPEC_FMV_X_W))]
   "TARGET_HARD_FLOAT && !TARGET_64BIT && TARGET_ZFA"
   "fmv.x.w\t%0,%1"
   [(set_attr "move_type" "fmove")
@@ -2636,11 +2639,10 @@
 
 
 (define_insn "movsidf2_high_rv32"
-  [(set (match_operand:SI      0 "register_operand"    "=  r")
-	(truncate:SI
-            (lshiftrt:DF
-                (match_operand:DF 1 "register_operand" "zmvf")
-                (const_int 32))))]
+  [(set (match_operand:SI      0 "register_operand" "=  r")
+	(unspec:SI
+	    [(match_operand:DF 1 "register_operand" "zmvf")]
+	UNSPEC_FMVH_X_D))]
   "TARGET_HARD_FLOAT && !TARGET_64BIT && TARGET_ZFA"
   "fmvh.x.d\t%0,%1"
   [(set_attr "move_type" "fmove")
