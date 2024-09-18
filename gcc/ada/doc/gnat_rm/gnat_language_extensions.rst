@@ -14,8 +14,9 @@ There are two sets of language extensions:
   available to users early on.
 
 * The second is the experimental set. It includes the first, but also
-  experimental features, that are here because they're still in an early
-  prototyping phase.
+  experimental features, which are considered experimental because
+  they're still in an early prototyping phase.
+  These features might be removed or heavily modified at any time.
 
 How to activate the extended GNAT Ada superset
 ==============================================
@@ -32,12 +33,12 @@ There are two ways to activate the extended GNAT Ada superset:
 As a configuration pragma, you can either put it at the beginning of a source
 file, or in a ``.adc`` file corresponding to your project.
 
-* The ``-gnatX`` option, that you can pass to the compiler directly, will
+* The ``-gnatX`` command-line option will
   activate the curated subset of extensions.
 
 .. attention:: You can activate the experimental set of extensions
    in addition by using either
-   the ``-gnatX0`` command line flag, or the pragma ``Extensions_Allowed`` with
+   the ``-gnatX0`` command-line option, or the pragma ``Extensions_Allowed`` with
    ``All_Extensions`` as an argument. However, it is not recommended you use
    this subset for serious projects; it is only meant as a technology preview
    for use in playground experiments.
@@ -56,8 +57,8 @@ Local Declarations Without Block
 A ``basic_declarative_item`` may appear at the place of any statement. This
 avoids the heavy syntax of block_statements just to declare something locally.
 
-The only valid kind of declarations for now are ``object_declaration``,
-``object_renaming_declaration``, ``use_package_clause`` and
+The only valid kinds of declarations for now are ``object_declaration``,
+``object_renaming_declaration``, ``use_package_clause``, and
 ``use_type_clause``.
 
 For example:
@@ -75,10 +76,11 @@ For example:
 It is generally a good practice to declare local variables (or constants) with as
 short a lifetime as possible. However, introducing a declare block to accomplish
 this is a relatively heavy syntactic load along with a traditional extra level
-of indentation. The alternative syntax supported here allows declaring symbols
-in any statement sequence. Lifetime of such local declarations is until the end of
+of indentation. The alternative syntax supported here allows declarations
+in any statement sequence.
+The lifetime of such local declarations is until the end of
 the enclosing construct. The same enclosing construct cannot contain several
-declarations of the same symbol; however, overriding symbols from higher-level
+declarations of the same defining name; however, overriding symbols from higher-level
 scopes works similarly to the explicit ``declare`` block.
 
 If the enclosing construct allows an exception handler (such as an accept
@@ -188,8 +190,8 @@ appear within parentheses after the name of the primitive operation.
 
 This same notation is already available for tagged types. This extension allows
 for untagged types. It is allowed for all primitive operations of the type
-independent of whether they were originally declared in a package spec or its
-private part, or were inherited and/or overridden as part of a derived type
+independent of whether they were originally declared in a package spec,
+or were inherited and/or overridden as part of a derived type
 declaration occurring anywhere, so long as the first parameter is of the type,
 or an access parameter designating the type.
 
@@ -248,18 +250,17 @@ Here is an example of this feature:
        -- ...
     end Stacks;
 
-.. todo::
-
-   I do not understand this feature enough to decide if the description above
-   is sufficient for documentation.
-
-Link to the original RFC:
-https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-expression-functions-as-default-for-generic-formal-function-parameters.rst
+If Stacks is instantiated with an explicit actual for Copy,
+then that will be called when Copy is called in the generic body.
+If the default is used (i.e. there is no actual corresponding to Copy),
+then calls to Copy in the instance will simply return Item.
 
 String interpolation
 --------------------
 
 The syntax for string literals is extended to support string interpolation.
+An interpolated string literal starts with ``f``, immediately before
+the first double-quote character.
 
 Within an interpolated string literal, an arbitrary expression, when
 enclosed in ``{ ... }``, is expanded at run time into the result of calling
@@ -278,6 +279,12 @@ will be evaluated and included in the string.
    begin
       Put_Line (f"The name is {Name} and the sum is {X + Y}.");
    end Test_Interpolation;
+
+This will print:
+
+.. code-block:: ada
+
+    The name is Leo and the sum is 27.
 
 In addition, an escape character (``\``) is provided for inserting certain
 standard control characters (such as ``\t`` for tabulation or ``\n`` for
@@ -302,9 +309,10 @@ escaped_character   meaning
 ``\}``              ``}``
 =================   =================
 
-Note that, unlike normal string literals, doubled characters have no
+Note that, unlike normal string literals, doubled double-quote characters have no
 special significance. So to include a double-quote or a brace character
 in an interpolated string, they must be preceded by a ``\``.
+Multiple interpolated strings are concatenated.
 For example:
 
 .. code-block:: ada
@@ -313,6 +321,13 @@ For example:
       (f"X = {X} and Y = {Y} and X+Y = {X+Y};\n" &
        f" a double quote is \" and" &
        f" an open brace is \{");
+
+This will print:
+
+.. code-block:: ada
+
+      X = 12 and Y = 15 and X+Y = 27
+      a double quote is " and an open brace is {
 
 Constrained attribute for generic objects
 -----------------------------------------
@@ -365,7 +380,7 @@ Here is an example of this feature:
 
        function F2 (V : Child) return Child;
        -- Primitive, but only controlling on the first parameter
-    end;
+    end Example;
 
 Note that ``function F2 (V : Child) return Child;`` differs from ``F2 (V : Child)
 return Child'Class;`` in that the return type is a specific, definite type. This
@@ -412,11 +427,11 @@ Restricting the position of controlling parameter offers several advantages:
   One doesn't need to analyze all subprogram parameters to understand if the given
   subprogram is a primitive of a certain tagged type.
 
-* A programmer is free to use any type, including classwide types, on other
+* A programmer is free to use any type, including class-wide types, on other
   parameters of a subprogram, without the need to consider possible effects of
   overriding a primitive or creating new one.
 
-* Return type of a function is never considered as a controlling parameter.
+* The result of a function is never a controlling result.
 
 
 .. _Experimental_Language_Extensions:
@@ -440,7 +455,7 @@ To do a conditional return in a procedure the following syntax should be used:
    procedure P (Condition : Boolean) is
    begin
       return when Condition;
-   end;
+   end P;
 
 This will return from the procedure if ``Condition`` is true.
 
@@ -497,7 +512,7 @@ An exception message can also be added:
 Storage Model
 -------------
 
-This extends Storage Pools into a more efficient model allowing higher performances,
+This extends Storage Pools into a more efficient model allowing higher performance,
 easier integration with low footprint embedded run-times and copying data between
 different pools of memory. The latter is especially useful when working with distributed
 memory models, in particular to support interactions with GPU.
@@ -505,13 +520,13 @@ memory models, in particular to support interactions with GPU.
 Aspect Storage_Model_Type
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A Storage model is a type which is associated with an aspect
-"Storage_Model_Type", e.g.:
+A Storage model is a type with a specified ``Storage_Model_Type``
+aspect, e.g.:
 
 .. code-block:: Ada
 
    type A_Model is null record
-      with Storage_Model_Type;
+      with Storage_Model_Type (...);
 
 Storage_Model_Type itself accepts six parameters:
 
@@ -524,10 +539,10 @@ Storage_Model_Type itself accepts six parameters:
 - Storage_Size, a function returning the amount of memory left
 - Null_Address, a value for the null address value
 
-By default, Address_Type is System.Address, and all other five subprograms are
-performing native operations (e.g. the allocator is the native new allocator).
+By default, Address_Type is System.Address, and the five subprograms
+perform native operations (e.g. the allocator is the native ``new`` allocator).
 Users can decide to specify one or more of these. When an Address_Type is
-specified and different than System.Address, the all other five subprograms have
+specified to be other than System.Address, all of the subprograms have
 to be specified.
 
 The prototypes of these procedures are as follows:
@@ -665,7 +680,7 @@ It allows to encompass the capabilities of storage pools, e.g.:
       --  Calls CUDA_Storage_Model.Deallocate;
    end;
 
-Taking 'Address of an object with a specific memory model returns an object of
+Taking ``'Address`` of an object with a specific memory model returns an object of
 the type of the address for that memory category, which may be different from
 System.Address.
 
@@ -840,7 +855,7 @@ Subprogram parameters
    procedure P (V : access T; X : access constant T);
 
 
-When the type of a formal parameter is of anonymous access then, from the caller's
+When the type of a formal parameter is of an anonymous access type then, from the caller's
 perspective, its level is seen to be at least as deep as that of the type of the
 corresponding actual parameter (whatever that actual parameter might be) -
 meaning any actual can be used for an anonymous access parameter without the use
@@ -1423,7 +1438,7 @@ Finalized tagged types
 Aspects are inherited by derived types and optionally overriden by those. The
 compiler-generated calls to the user-defined operations are then
 dispatching whenever it makes sense, i.e. the object in question is of
-classwide type and the class includes at least one finalized-type.
+class-wide type and the class includes at least one finalized tagged type.
 
 However note that for simplicity, it is forbidden to change the value of any of
 those new aspects in derived types.
