@@ -1,6 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-rtl-loop2_unroll-details-blocks -funroll-loops" } */
-/* { dg-additional-options "-fno-tree-vectorize" { target amdgcn-*-* } } */
+/* { dg-options "-O2 -fno-tree-vectorize -fdump-rtl-loop2_unroll-details-blocks -funroll-loops" } */
 
 struct a {int a[7];};
 int t(struct a *a, int n)

@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -funroll-loops --param max-unroll-times=8 -fpredictive-commoning -fdump-tree-pcom-details-blocks" } */
+/* { dg-options "-O2 -fno-tree-vectorize -funroll-loops --param max-unroll-times=8 -fpredictive-commoning -fdump-tree-pcom-details-blocks" } */
 
 /* Test for predictive commoning of expressions, without reassociation.  */
 

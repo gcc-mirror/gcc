@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-unroll-loops" } */
+/* { dg-options "-O2 -fno-tree-vectorize -fno-unroll-loops" } */
 
 int *a;
 long len;

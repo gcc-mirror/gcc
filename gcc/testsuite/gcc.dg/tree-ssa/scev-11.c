@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-ivopts-details" } */
+/* { dg-options "-O2 -fno-tree-vectorize -fdump-tree-ivopts-details" } */
 
 int a[128];
 extern int b[];
