@@ -23,6 +23,7 @@
 #include "rust-default-resolver.h"
 #include "rust-name-resolution-context.h"
 #include "rust-path.h"
+#include "rust-system.h"
 #include "rust-tyty.h"
 #include "rust-hir-type-check.h"
 
@@ -223,9 +224,11 @@ Late::visit (AST::TypePath &type)
   // typepath-like path resolution? that sounds good
 
   auto resolved = ctx.types.get (type.get_segments ().back ()->as_string ());
-
-  ctx.map_usage (Usage (type.get_node_id ()),
-		 Definition (resolved->get_node_id ()));
+  if (resolved)
+    ctx.map_usage (Usage (type.get_node_id ()),
+		   Definition (resolved->get_node_id ()));
+  else
+    rust_unreachable ();
 }
 
 void
