@@ -1,3 +1,21 @@
+2024-09-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116714
+	PR c++/107390
+	* pt.cc (dependent_opaque_alias_p): Also return true for a
+	decltype(lambda) alias.
+
+2024-09-18  Jason Merrill  <jason@redhat.com>
+
+	* call.cc (do_warn_dangling_reference): Return temporary
+	instead of the call it's passed to.
+	(maybe_warn_dangling_reference): Adjust diagnostic.
+
+2024-09-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115361
+	* call.cc (do_warn_dangling_reference): Check is_empty_class.
+
 2024-09-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/116741

@@ -1,3 +1,80 @@
+2024-09-18  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_s_add-4.c: Update test for int64_t
+	instead of int8_t.
+
+2024-09-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116714
+	PR c++/107390
+	* g++.dg/cpp2a/lambda-uneval18.C: New test.
+
+2024-09-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/zfa-fmovh-fmovp-bug.c: New test.
+
+2024-09-18  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* gcc.target/riscv/xtheadbb-extu-4.c: New.
+
+2024-09-18  Bohan Lei  <garthlei@linux.alibaba.com>
+
+	* gcc.target/riscv/rvv/base/vssubu-1.c: New test.
+	* gcc.target/riscv/rvv/base/vssubu-2.c: New test.
+
+2024-09-18  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/warn/Wdangling-reference1.C: Adjust diagnostic.
+
+2024-09-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115361
+	* g++.dg/ext/attr-no-dangling6.C
+	* g++.dg/ext/attr-no-dangling7.C
+	* g++.dg/ext/attr-no-dangling8.C
+	* g++.dg/ext/attr-no-dangling9.C
+	* g++.dg/warn/Wdangling-reference1.C
+	* g++.dg/warn/Wdangling-reference2.C
+	* g++.dg/warn/Wdangling-reference3.C: Make classes non-empty.
+	* g++.dg/warn/Wdangling-reference23.C: New test.
+
+2024-09-18  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR tree-optimization/116569
+	* gcc.dg/torture/pr116569.c: New test.
+
+2024-09-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR rtl-optimization/116326
+	* gcc.target/avr/torture/lra-pr116324.c: New test.
+	* gcc.target/avr/torture/lra-pr116325.c: New test.
+
+2024-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116585
+	* gcc.dg/torture/pr116585.c: New testcase.
+
+2024-09-18  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_data.h: Add test
+	data for vector ssadd.
+	* gcc.target/riscv/rvv/autovec/vec_sat_arith.h: Add test helper
+	macros.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-run-4.c: New test.
+
+2024-09-18  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/89213
+	* gcc.target/powerpc/pr89213.c: New test.
+	* gcc.target/powerpc/vec-rlmi-rlnm.c: Update instruction count.
+
 2024-09-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/116741

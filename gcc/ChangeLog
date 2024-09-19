@@ -1,3 +1,100 @@
+2024-09-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.h (GENERAL_REGNO_P): Define.
+	* config/pa/pa.md: Add SImode and SFmode peephole2
+	patterns to generate loads and stores with long
+	displacements.
+
+2024-09-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv.md: Change "truncate" to unspec for the Zfa extension on rv32.
+
+2024-09-18  Richard Biener  <rguenther@suse.de>
+
+	* params.opt (vect-force-slp): New param, default 0.
+	* doc/invoke.texi (--param vect-force-slp): Document.
+	* tree-vect-loop.cc (vect_analyze_loop_2): When analyzing
+	without SLP but --param vect-force-slp is 1 fail.
+	* tree-vect-stmts.cc (vect_analyze_stmt): Fail vectorization
+	for non-SLP stmts when --param vect-force-slp is 1.
+
+2024-09-18  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* config/riscv/riscv.cc (riscv_rtx_costs): Fix the outer_code
+	when calculating the cost of SET expression.
+
+2024-09-18  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* config/riscv/thead.md (*th_extu<mode>4): Fix th.extu
+	operands exceeding range on rv32.
+
+2024-09-18  Bohan Lei  <garthlei@linux.alibaba.com>
+
+	* config/riscv/vector.md: Allow zero operand for DI variants of
+	vssubu.vx
+
+2024-09-18  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR tree-optimization/116569
+	* match.pd: Guard simplification to trunc_mod with check for
+	mod optab support.
+
+2024-09-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR rtl-optimization/116326
+	* reload1.cc (reg_eliminate_1): Initialize from
+	RELOAD_ELIMINABLE_REGS if defined.
+	* config/avr/avr.h (RELOAD_ELIMINABLE_REGS): Copy from ELIMINABLE_REGS.
+	(ELIMINABLE_REGS): Don't mention sub-regnos of the frame pointer.
+	* doc/tm.texi.in (Eliminating Frame Pointer and Arg Pointer)
+	<RELOAD_ELIMINABLE_REGS>: Add documentation.
+	* doc/tm.texi: Rebuild.
+
+2024-09-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/install.texi (Host/Target specific installation notes for GCC)
+	[avr]: Update web links to AVR-LibC and AVR Options.
+	Remove outdated note about Binutils.
+
+2024-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116585
+	* tree-data-ref.cc (split_constant_offset_1): When either
+	operand is subject to abnormal coalescing do no further
+	processing.
+
+2024-09-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-phiopt.cc (cond_if_else_store_replacement): Use
+	range fors and use one vec for then/else stores instead of 2.
+
+2024-09-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-phiopt.cc (cond_if_else_store_replacement_1): Add debug dump.
+
+2024-09-18  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (ssadd<mode>3): Add new pattern for
+	signed integer vector SAT_ADD.
+	* config/riscv/riscv-protos.h (expand_vec_ssadd): Add new func
+	decl for vector ssadd expanding.
+	* config/riscv/riscv-v.cc (expand_vec_ssadd): Add new func impl
+	to expand vector ssadd pattern.
+
+2024-09-18  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/89213
+	* config/rs6000/altivec.md (UNSPEC_VECTOR_SHIFT): New unspec.
+	(VSHIFT_MODE): New mode iterator.
+	(vshift_code): New code iterator.
+	(vshift_attr): New code attribute.
+	(altivec_<mode>_<vshift_attr>_const): New pattern to optimize
+	vector long long/int shifts by a constant.
+	(altivec_<mode>_shift_const): New helper insn to load up a
+	constant used by the shift operation.
+	* config/rs6000/predicates.md (vector_shift_constant): New
+	predicate.
+
 2024-09-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/116534

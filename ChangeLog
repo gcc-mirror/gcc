@@ -1,3 +1,8 @@
+2024-09-18  Andrew Kreimer  <algonell@gmail.com>
+
+	* configure.ac: Fix typos.
+	* configure: Rebuilt.
+
 2024-09-12  YunQiang Su  <syq@gcc.gnu.org>
 
 	* .gitignore: Add .vscode.

@@ -1,3 +1,8 @@
+2024-09-18  Filip Kastl  <fkastl@suse.cz>
+
+	* check-params-in-docs.py: Skip tables of values of a param.
+	Remove code that skips items beginning with a number.
+
 2024-08-01  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* gcc_update (files_and_dependencies): Update for

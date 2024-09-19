@@ -1,3 +1,7 @@
+2024-09-18  Jason Merrill  <jason@redhat.com>
+
+	* include/bits/basic_ios.h: Add braces.
+
 2024-09-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* .editorconfig: New file.
