@@ -5547,21 +5547,6 @@ build_classic_dist_vector (struct data_dependence_relation *ddr,
 						   DDR_NB_LOOPS (ddr), 0));
     }
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      unsigned i;
-
-      fprintf (dump_file, "(build_classic_dist_vector\n");
-      for (i = 0; i < DDR_NUM_DIST_VECTS (ddr); i++)
-	{
-	  fprintf (dump_file, "  dist_vector = (");
-	  print_lambda_vector (dump_file, DDR_DIST_VECT (ddr, i),
-			       DDR_NB_LOOPS (ddr));
-	  fprintf (dump_file, "  )\n");
-	}
-      fprintf (dump_file, ")\n");
-    }
-
   return true;
 }
 
@@ -5673,7 +5658,24 @@ subscript_dependence_tester (struct data_dependence_relation *ddr,
 
   compute_subscript_distance (ddr);
   if (build_classic_dist_vector (ddr, loop_nest))
-    build_classic_dir_vector (ddr);
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  unsigned i;
+
+	  fprintf (dump_file, "(build_classic_dist_vector\n");
+	  for (i = 0; i < DDR_NUM_DIST_VECTS (ddr); i++)
+	    {
+	      fprintf (dump_file, "  dist_vector = (");
+	      print_lambda_vector (dump_file, DDR_DIST_VECT (ddr, i),
+				   DDR_NB_LOOPS (ddr));
+	      fprintf (dump_file, "  )\n");
+	    }
+	  fprintf (dump_file, ")\n");
+	}
+
+      build_classic_dir_vector (ddr);
+    }
 }
 
 /* Returns true when all the access functions of A are affine or
