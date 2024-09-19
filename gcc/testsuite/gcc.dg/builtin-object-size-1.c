@@ -712,6 +712,25 @@ test11 (void)
 }
 #endif
 
+void
+__attribute__ ((noinline))
+test12 (unsigned off)
+{
+  char *buf2 = malloc (10);
+  char *p;
+  size_t t;
+
+  p = &buf2[off];
+
+#ifdef __builtin_object_size
+  if (__builtin_object_size (p, 0) != 10 - off)
+    FAIL ();
+#else
+  if (__builtin_object_size (p, 0) != 10)
+    FAIL ();
+#endif
+}
+
 int
 main (void)
 {
@@ -730,5 +749,7 @@ main (void)
 #ifndef SKIP_STRNDUP
   test11 ();
 #endif
+  test12 (0);
+  test12 (2);
   DONE ();
 }
