@@ -1,3 +1,87 @@
+2024-09-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116460
+	* g++.dg/torture/pr116460.C: New testcase.
+
+2024-09-18  Joern Rennecke  <joern.rennecke@riscy-ip.com>
+
+	Backported from master:
+	2024-08-07  Joern Rennecke  <joern.rennecke@riscy-ip.com>
+
+	* g++.dg/vect/pr115278.cc: Make cast's type agree with
+	assignment destination WRITE.
+
+2024-09-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/115426
+	* gcc.dg/pr115426.c: New testcase.
+
+2024-09-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-08-22  Andrew Pinski  <quic_apinski@quicinc.com>
+		    Richard Biener   <rguenther@suse.de>
+
+	PR middle-end/116454
+	* gcc.dg/torture/pr116454-1.c: New test.
+	* gcc.dg/torture/pr116454-2.c: New test.
+
+2024-09-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116380
+	* gcc.dg/torture/pr116380.c: New testcase.
+
+2024-09-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-08-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116274
+	* gcc.target/i386/pr116274-2.c: New testcase.
+
+2024-09-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-08-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/116258
+	PR middle-end/116259
+	* gcc.target/aarch64/pr116258.c: New test.
+	* gcc.target/aarch64/sve/pr116259-1.c: New test.
+
+2024-09-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-08-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116258
+	* gcc.target/i386/pr116258.c: Also allow vpermilps.
+
+2024-09-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-08-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116258
+	* gcc.target/i386/pr116258.c: New testcase.
+
+2024-09-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/115641
+	* gcc.dg/torture/pr115641.c: New testcase.
+
 2024-09-17  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

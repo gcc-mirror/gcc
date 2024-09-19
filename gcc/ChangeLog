@@ -1,3 +1,78 @@
+2024-09-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116460
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): First do
+	simple_dce_from_worklist and then remove stmts in to_remove.
+	Track defs to be removed in to_remove_defs.
+
+2024-09-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/115426
+	* gimplify.cc (gimplify_asm_expr): Handle "rm" output
+	constraint gimplified to a register (operation).
+
+2024-09-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-09-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116610
+	* tree-vect-loop.cc (vectorizable_induction): Use MINUS_EXPR
+	to apply a mask peeling adjustment.
+
+2024-09-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-08-22  Andrew Pinski  <quic_apinski@quicinc.com>
+		    Richard Biener   <rguenther@suse.de>
+
+	PR middle-end/116454
+	* fold-const.cc (fold_binary_loc): Fix `a * +-1i`
+	by wrapping arg0 with save_expr when it is not COMPLEX_EXPR.
+
+2024-09-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116380
+	* tree-loop-distribution.cc (copy_loop_before): Handle
+	out-of-loop defs appropriately.
+
+2024-09-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-08-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116274
+	* tree-vect-slp.cc (vect_bb_slp_scalar_cost): Cost scalar loads
+	and stores as simple scalar stmts when they access a non-global,
+	not address-taken variable that doesn't have BLKmode assigned.
+
+2024-09-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-08-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116258
+	* tree-vect-generic.cc (expand_vector_operations_1): Do not
+	lower PAREN_EXPR.
+
+2024-09-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/115641
+	* fold-const.cc (decode_field_reference): If the inner
+	reference isn't something we can take the address of, fail.
+
 2024-09-15  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
