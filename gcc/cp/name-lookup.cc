@@ -2874,6 +2874,12 @@ supplement_binding (cxx_binding *binding, tree decl)
 		 "%<-std=c++2c%> or %<-std=gnu++2c%>");
       binding->value = name_lookup::ambiguous (decl, binding->value);
     }
+  else if (binding->scope->kind != sk_class
+	   && TREE_CODE (decl) == USING_DECL
+	   && decls_match (target_bval, target_decl))
+    /* Since P1787 (DR 36) it is OK to redeclare entities via using-decl,
+       except in class scopes.  */
+    ok = false;
   else
     {
       if (!error_operand_p (bval))
@@ -5377,8 +5383,7 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
   else if (value
 	   /* Ignore anticipated builtins.  */
 	   && !anticipated_builtin_p (value)
-	   && (fn_scope_p
-	       || !decls_match (lookup.value, strip_using_decl (value))))
+	   && !decls_match (lookup.value, strip_using_decl (value)))
     {
       diagnose_name_conflict (lookup.value, value);
       failed = true;
@@ -6651,9 +6656,6 @@ push_using_decl_bindings (name_lookup *lookup, tree name, tree value)
       type = binding->type;
     }
 
-  /* DR 36 questions why using-decls at function scope may not be
-     duplicates.  Disallow it, as C++11 claimed and PR 20420
-     implemented.  */
   if (lookup)
     do_nonmember_using_decl (*lookup, true, true, &value, &type);
 

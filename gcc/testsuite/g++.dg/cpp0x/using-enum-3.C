@@ -9,7 +9,7 @@
 void f ()
 {
   enum e { a };
-  using e::a;  // { dg-error "redeclaration" }
+  using e::a;  // { dg-bogus "redeclaration" "P1787" }
   // { dg-error "enum" "" { target { ! c++2a } } .-1 }
 }
 
