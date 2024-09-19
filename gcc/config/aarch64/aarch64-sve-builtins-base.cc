@@ -2036,7 +2036,38 @@ public:
 	    || is_ptrue (pg, f.type_suffix (0).element_bytes)))
       return gimple_build_assign (f.lhs, build_zero_cst (TREE_TYPE (f.lhs)));
 
-    return NULL;
+    /* If one of the operands is a uniform power of 2, fold to a left shift
+       by immediate.  */
+    tree op1_cst = uniform_integer_cst_p (op1);
+    tree op2_cst = uniform_integer_cst_p (op2);
+    tree shift_op1, shift_op2;
+    if (op1_cst && integer_pow2p (op1_cst)
+	&& (f.pred != PRED_m
+	    || is_ptrue (pg, f.type_suffix (0).element_bytes)))
+      {
+	shift_op1 = op2;
+	shift_op2 = op1_cst;
+      }
+    else if (op2_cst && integer_pow2p (op2_cst))
+      {
+	shift_op1 = op1;
+	shift_op2 = op2_cst;
+      }
+    else
+      return NULL;
+
+    if (integer_onep (shift_op2))
+      return NULL;
+
+    shift_op2 = wide_int_to_tree (unsigned_type_for (TREE_TYPE (shift_op2)),
+				  tree_log2 (shift_op2));
+    function_instance instance ("svlsl", functions::svlsl,
+				shapes::binary_uint_opt_n, MODE_n,
+				f.type_suffix_ids, GROUP_none, f.pred);
+    gcall *call = f.redirect_call (instance);
+    gimple_call_set_arg (call, 1, shift_op1);
+    gimple_call_set_arg (call, 2, shift_op2);
+    return call;
   }
 };
 
