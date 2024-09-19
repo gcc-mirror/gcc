@@ -1612,7 +1612,7 @@ eq_evolutions_p (const_tree chrec0, const_tree chrec1)
       || TREE_CODE (chrec0) != TREE_CODE (chrec1))
     return false;
 
-  if (chrec0 == chrec1)
+  if (operand_equal_p (chrec0, chrec1, 0))
     return true;
 
   if (! types_compatible_p (TREE_TYPE (chrec0), TREE_TYPE (chrec1)))
@@ -1639,7 +1639,7 @@ eq_evolutions_p (const_tree chrec0, const_tree chrec1)
 			      TREE_OPERAND (chrec1, 0));
 
     default:
-      return operand_equal_p (chrec0, chrec1, 0);
+      return false;
     }
 }
 
