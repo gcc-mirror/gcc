@@ -4728,7 +4728,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (cond (ne @0 integer_zerop) (op@2 @3 @1) integer_zerop )
    (if (bitwise_equal_p (@0, @3)
-        && tree_expr_nonzero_p (@1))
+        && tree_expr_nonzero_p (@1)
+	/* Cannot make a expression with side effects
+	   unconditional. */
+	&& expr_no_side_effects_p (@3))
     @2)))
 
 /* Note we prefer the != case here
@@ -4738,7 +4741,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for op (mult bit_and)
  (simplify
   (cond (ne @0 integer_zerop) (op:c@2 @1 @3) integer_zerop)
-  (if (bitwise_equal_p (@0, @3))
+  (if (bitwise_equal_p (@0, @3)
+	/* Cannot make a expression with side effects
+	   unconditional. */
+	&& expr_no_side_effects_p (@1))
    @2)))
 
 /* Simplifications of shift and rotates.  */

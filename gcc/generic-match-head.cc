@@ -115,6 +115,18 @@ optimize_successive_divisions_p (tree, tree)
   return false;
 }
 
+/* Returns true if the expression T has no side effects
+   including not trapping. */
+static inline bool
+expr_no_side_effects_p (tree t)
+{
+  if (TREE_SIDE_EFFECTS (t))
+    return false;
+  if (generic_expr_could_trap_p (t))
+    return false;
+  return true;
+}
+
 /* Return true if EXPR1 and EXPR2 have the same value, but not necessarily
    same type.  The types can differ through nop conversions.  */
 
