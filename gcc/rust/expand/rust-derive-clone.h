@@ -59,8 +59,9 @@ private:
    * }
    *
    */
-  std::unique_ptr<Item> clone_impl (std::unique_ptr<AssociatedItem> &&clone_fn,
-				    std::string name);
+  std::unique_ptr<Item>
+  clone_impl (std::unique_ptr<AssociatedItem> &&clone_fn, std::string name,
+	      const std::vector<std::unique_ptr<GenericParam>> &type_generics);
 
   virtual void visit_struct (StructStruct &item);
   virtual void visit_tuple (TupleStruct &item);

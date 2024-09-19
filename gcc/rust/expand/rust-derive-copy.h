@@ -40,7 +40,9 @@ private:
    *
    * impl Copy for <type> {}
    */
-  std::unique_ptr<Item> copy_impl (std::string name);
+  std::unique_ptr<Item>
+  copy_impl (std::string name,
+	     const std::vector<std::unique_ptr<GenericParam>> &type_generics);
 
   virtual void visit_struct (StructStruct &item);
   virtual void visit_tuple (TupleStruct &item);

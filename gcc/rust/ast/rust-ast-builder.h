@@ -82,9 +82,15 @@ public:
   /* And similarly for type path segments */
   std::unique_ptr<TypePathSegment> type_path_segment (std::string seg) const;
 
+  std::unique_ptr<TypePathSegment>
+  generic_type_path_segment (std::string seg, GenericArgs args) const;
+
   /* Create a Type from a single string - the most basic kind of type in our AST
    */
   std::unique_ptr<Type> single_type_path (std::string type) const;
+
+  std::unique_ptr<Type> single_generic_type_path (std::string type,
+						  GenericArgs args) const;
 
   /**
    * Create a path in expression from multiple segments (`Clone::clone`). You
@@ -115,6 +121,17 @@ public:
 
   /* Create a wildcard pattern (`_`) */
   std::unique_ptr<Pattern> wildcard () const;
+
+  static std::unique_ptr<Type> new_type (Type &type);
+
+  static std::unique_ptr<GenericParam>
+  new_lifetime_param (LifetimeParam &param);
+
+  static std::unique_ptr<GenericParam> new_type_param (TypeParam &param);
+
+  static Lifetime new_lifetime (const Lifetime &lifetime);
+
+  static GenericArgs new_generic_args (GenericArgs &args);
 
 private:
   /**
