@@ -3005,6 +3005,8 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 
   if (old == error_mark_node)
     old = NULL_TREE;
+
+  tree old_bval = old;
   old = strip_using_decl (old);
 
   if (DECL_IMPLICIT_TYPEDEF_P (decl))
@@ -3021,7 +3023,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	  gcc_checking_assert (!to_type);
 	  hide_type = hiding;
 	  to_type = decl;
-	  to_val = old;
+	  to_val = old_bval;
 	}
       else
 	hide_value = hiding;
@@ -3034,7 +3036,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
       /* OLD is an implicit typedef.  Move it to to_type.  */
       gcc_checking_assert (!to_type);
 
-      to_type = old;
+      to_type = old_bval;
       hide_type = hide_value;
       old = NULL_TREE;
       hide_value = false;
@@ -3093,7 +3095,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	{
 	  if (same_type_p (TREE_TYPE (old), TREE_TYPE (decl)))
 	    /* Two type decls to the same type.  Do nothing.  */
-	    return old;
+	    return old_bval;
 	  else
 	    goto conflict;
 	}
@@ -3106,7 +3108,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 
 	  /* The new one must be an alias at this point.  */
 	  gcc_assert (DECL_NAMESPACE_ALIAS (decl));
-	  return old;
+	  return old_bval;
 	}
       else if (TREE_CODE (old) == VAR_DECL)
 	{
@@ -3121,7 +3123,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
       else
 	{
 	conflict:
-	  diagnose_name_conflict (decl, old);
+	  diagnose_name_conflict (decl, old_bval);
 	  to_val = NULL_TREE;
 	}
     }

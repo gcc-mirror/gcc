@@ -1,10 +1,10 @@
 
 namespace Y
 {
-  extern int I; //  { dg-message "previous declaration" }
+  extern int I;
 }
 
-using Y::I;
+using Y::I; // { dg-message "previous declaration" }
 extern int I; // { dg-error "conflicts with a previous" }
 
 extern int J;
