@@ -36,7 +36,7 @@ msgstr ""
 "Project-Id-Version: gcc 14.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2024-07-25 16:23+0000\n"
-"PO-Revision-Date: 2024-08-27 16:17+0800\n"
+"PO-Revision-Date: 2024-09-15 10:21+0800\n"
 "Last-Translator: Zhanhaoxiang Zhang <zzhx2006@outlook.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
@@ -351,10 +351,8 @@ msgid "-install_name only allowed with -dynamiclib"
 msgstr "-install_name 只能和 -dynamiclib 一起使用"
 
 #: config/darwin.h:191
-#, fuzzy
-#| msgid "-bundle not allowed with -dynamiclib"
 msgid "-bundle not allowed with -shared"
-msgstr "-bundle 不允许与 -dynamiclib 一起使用"
+msgstr "-bundle 不允许与 -shared 一起使用"
 
 #: config/darwin.h:192
 msgid "-bundle not allowed with -dynamiclib"
@@ -781,10 +779,9 @@ msgid "Produce a backtrace when a runtime error is encountered."
 msgstr "遇到运行时错误时打印函数调用回溯"
 
 #: fortran/lang.opt:418
-#, fuzzy, no-c-format
-#| msgid "-fblas-matmul-limit=<n>\tSize of the smallest matrix for which matmul will use BLAS"
+#, no-c-format
 msgid "-fblas-matmul-limit=<n>\tSize of the smallest matrix for which matmul will use BLAS."
-msgstr "-fblas-matmul-limit=<n>\t使用 BLAS 进行矩阵乘法的矩阵大小下限"
+msgstr "-fblas-matmul-limit=<n>\t使用 BLAS 进行矩阵乘法的矩阵大小下限。"
 
 #: fortran/lang.opt:425
 #, fuzzy, no-c-format
@@ -1204,10 +1201,9 @@ msgid "-fcoarray=<none|single|lib>\tSpecify which coarray parallelization should
 msgstr "-fcoarray=[...]\t指定要使用的集合数组并行化"
 
 #: fortran/lang.opt:805
-#, fuzzy, no-c-format
-#| msgid "-fcheck=[...]\tSpecify which runtime checks are to be performed"
+#, no-c-format
 msgid "-fcheck=[...]\tSpecify which runtime checks are to be performed."
-msgstr "-fcheck=[...]\t指定要进行哪种运行时检查"
+msgstr "-fcheck=[...]\t指定要进行哪种运行时检查。"
 
 #: fortran/lang.opt:809
 #, fuzzy, no-c-format
@@ -1395,10 +1391,9 @@ msgid "Use the WIP borrow checker."
 msgstr ""
 
 #: c-family/c.opt:182
-#, fuzzy, no-c-format
-#| msgid "-A<question>=<answer>\tAssert the <answer> to <question>.  Putting '-' before <question> disables the <answer> to <question>"
+#, no-c-format
 msgid "-A<question>=<answer>\tAssert the <answer> to <question>.  Putting '-' before <question> disables the <answer> to <question>."
-msgstr "-A<问题>=<答案>\t给出问题的答案。在问题前加一个‘-’将禁用其答案"
+msgstr "-A<问题>=<答案>\t给出问题的答案。在问题前加一个‘-’将禁用其答案。"
 
 #: c-family/c.opt:186
 #, no-c-format
@@ -1411,16 +1406,14 @@ msgid "Do not discard comments in macro expansions."
 msgstr "展开宏时不丢弃注释。"
 
 #: c-family/c.opt:194
-#, fuzzy, no-c-format
-#| msgid "-D<macro>[=<val>]\tDefine a <macro> with <val> as its value.  If just <macro> is given, <val> is taken to be 1"
+#, no-c-format
 msgid "-D<macro>[=<val>]\tDefine a <macro> with <val> as its value.  If just <macro> is given, <val> is taken to be 1."
-msgstr "-D<宏>[=<值>]\t将宏定义为值。如果只给出了宏，值将被定为 1"
+msgstr "-D<宏>[=<值>]\t将宏定义为值。如果只给出了宏，值将被定为 1。"
 
 #: c-family/c.opt:201
-#, fuzzy, no-c-format
-#| msgid "-F <dir>\tAdd <dir> to the end of the main framework include path"
+#, no-c-format
 msgid "-F <dir>\tAdd <dir> to the end of the main framework include path."
-msgstr "-F <目录>\t将目录添加至主框架包含路径的末尾"
+msgstr "-F <目录>\t将目录添加至主框架包含路径的末尾。"
 
 #: c-family/c.opt:205
 #, fuzzy, no-c-format
@@ -1435,10 +1428,9 @@ msgid "Print the name of header files as they are used."
 msgstr "打印使用到的头文件名"
 
 #: c-family/c.opt:213
-#, fuzzy, no-c-format
-#| msgid "-I <dir>\tAdd <dir> to the end of the main include path"
+#, no-c-format
 msgid "-I <dir>\tAdd <dir> to the end of the main include path."
-msgstr "-I <目录>\t将目录添加至主包含路径末尾"
+msgstr "-I <目录>\t将目录添加至主包含路径末尾。"
 
 #: c-family/c.opt:217
 #, no-c-format
@@ -1451,10 +1443,9 @@ msgid "Generate make dependencies and compile."
 msgstr "生成 make 依赖规则并编译。"
 
 #: c-family/c.opt:225
-#, fuzzy, no-c-format
-#| msgid "-MF <file>\tWrite dependency output to the given file"
+#, no-c-format
 msgid "-MF <file>\tWrite dependency output to the given file."
-msgstr "-MF <文件>\t将依赖项输出到给定文件"
+msgstr "-MF <文件>\t将依赖项输出到给定文件。"
 
 #: c-family/c.opt:229
 #, no-c-format
@@ -3035,10 +3026,9 @@ msgid "Allow the arguments of the '?' operator to have different types."
 msgstr "允许‘?’运算符的参数有不同的类型"
 
 #: c-family/c.opt:1737
-#, fuzzy, no-c-format
-#| msgid "-fconst-string-class=<name>\tUse class <name> for constant strings"
+#, no-c-format
 msgid "-fconst-string-class=<name>\tUse class <name> for constant strings."
-msgstr "-fconst-string-class=<名字>\t使用名字作为常量字符串类的名称"
+msgstr "-fconst-string-class=<名字>\t使用<名字>作为常量字符串类的名称。"
 
 #: c-family/c.opt:1741
 #, fuzzy, no-c-format
@@ -3667,64 +3657,54 @@ msgid "Interpret imaginary, fixed-point, or other gnu number suffix as the corre
 msgstr ""
 
 #: c-family/c.opt:2370
-#, fuzzy, no-c-format
-#| msgid "-idirafter <dir>\tAdd <dir> to the end of the system include path"
+#, no-c-format
 msgid "-idirafter <dir>\tAdd <dir> to the end of the system include path."
-msgstr "-idirafter <目录>\t将目录添加至系统包含路径末尾"
+msgstr "-idirafter <目录>\t将目录添加至系统包含路径末尾。"
 
 #: c-family/c.opt:2374
-#, fuzzy, no-c-format
-#| msgid "-imacros <file>\tAccept definition of macros in <file>"
+#, no-c-format
 msgid "-imacros <file>\tAccept definition of macros in <file>."
-msgstr "-imacros <文件>\t接受文件中定义的宏"
+msgstr "-imacros <文件>\t接受文件中定义的宏。"
 
 #: c-family/c.opt:2378
-#, fuzzy, no-c-format
-#| msgid "-imultilib <dir>\tSet <dir> to be the multilib include subdirectory"
+#, no-c-format
 msgid "-imultilib <dir>\tSet <dir> to be the multilib include subdirectory."
-msgstr "-imultilib <目录>\t将目录设定为 multilib 的包含子目录"
+msgstr "-imultilib <目录>\t将目录设定为 multilib 的包含子目录。"
 
 #: c-family/c.opt:2382
-#, fuzzy, no-c-format
-#| msgid "-include <file>\tInclude the contents of <file> before other files"
+#, no-c-format
 msgid "-include <file>\tInclude the contents of <file> before other files."
-msgstr "-include <文件>\t在包含其它文件之前先包含该文件的内容"
+msgstr "-include <文件>\t在包含其它文件之前先包含该文件的内容。"
 
 #: c-family/c.opt:2386
-#, fuzzy, no-c-format
-#| msgid "-iprefix <path>\tSpecify <path> as a prefix for next two options"
+#, no-c-format
 msgid "-iprefix <path>\tSpecify <path> as a prefix for next two options."
-msgstr "-iprefix <路径>\t将路径指定为下两个选项的前缀"
+msgstr "-iprefix <路径>\t将路径指定为下两个选项的前缀。"
 
 #: c-family/c.opt:2390
-#, fuzzy, no-c-format
-#| msgid "-isysroot <dir>\tSet <dir> to be the system root directory"
+#, no-c-format
 msgid "-isysroot <dir>\tSet <dir> to be the system root directory."
-msgstr "-isysroot <目录>\t将目录设为系统根目录"
+msgstr "-isysroot <目录>\t将目录设为系统根目录。"
 
 #: c-family/c.opt:2394
-#, fuzzy, no-c-format
-#| msgid "-isystem <dir>\tAdd <dir> to the start of the system include path"
+#, no-c-format
 msgid "-isystem <dir>\tAdd <dir> to the start of the system include path."
-msgstr "-isystem <目录>\t将目录添加至系统包含路径开头"
+msgstr "-isystem <目录>\t将目录添加至系统包含路径开头。"
 
 #: c-family/c.opt:2398
-#, fuzzy, no-c-format
-#| msgid "-iquote <dir>\tAdd <dir> to the end of the quote include path"
+#, no-c-format
 msgid "-iquote <dir>\tAdd <dir> to the end of the quote include path."
-msgstr "-iquote <目录>\t将目录添加至括起的包含路径末尾"
+msgstr "-iquote <目录>\t将目录添加至括起的包含路径末尾。"
 
 #: c-family/c.opt:2402
-#, fuzzy, no-c-format
-#| msgid "-iwithprefix <dir>\tAdd <dir> to the end of the system include path"
+#, no-c-format
 msgid "-iwithprefix <dir>\tAdd <dir> to the end of the system include path."
-msgstr "-iwithprefix <目录>\t将目录添加至系统包含路径末尾"
+msgstr "-iwithprefix <目录>\t将目录添加至系统包含路径末尾。"
 
 #: c-family/c.opt:2406
-#, fuzzy, no-c-format
-#| msgid "-iwithprefixbefore <dir>\tAdd <dir> to the end of the main include path"
+#, no-c-format
 msgid "-iwithprefixbefore <dir>\tAdd <dir> to the end of the main include path."
-msgstr "-iwithprefixbefore <目录>\t将目录添加至主包含路径末尾"
+msgstr "-iwithprefixbefore <目录>\t将目录添加至主包含路径末尾。"
 
 #: c-family/c.opt:2416
 #, no-c-format
@@ -5432,10 +5412,9 @@ msgid "Generate compile-time CFString objects."
 msgstr "生成编译时 CFString 对象"
 
 #: config/darwin.opt:42
-#, fuzzy, no-c-format
-#| msgid "-iframework <dir>\tAdd <dir> to the end of the system framework include path"
+#, no-c-format
 msgid "-iframework <dir>\tAdd <dir> to the end of the system framework include path."
-msgstr "-iframework <目录>\t将目录添加至系统框架包含路径的末尾"
+msgstr "-iframework <目录>\t将目录添加至系统框架包含路径的末尾。"
 
 #: config/darwin.opt:50
 #, fuzzy, no-c-format
@@ -6265,10 +6244,9 @@ msgid "-march=help\tPrint supported -march extensions."
 msgstr ""
 
 #: config/riscv/riscv.opt:103 config/mips/mips.opt:430
-#, fuzzy, no-c-format
-#| msgid "-mtune=PROCESSOR\tOptimize the output for PROCESSOR"
+#, no-c-format
 msgid "-mtune=PROCESSOR\tOptimize the output for PROCESSOR."
-msgstr "-mtune=处理器\t为指定的处理器优化输出"
+msgstr "-mtune=处理器\t为指定的处理器优化输出。"
 
 #: config/riscv/riscv.opt:107
 #, fuzzy, no-c-format
@@ -6475,34 +6453,29 @@ msgid "-msim\tUse simulator runtime."
 msgstr "-msim\t使用仿真器运行时。"
 
 #: config/m32c/m32c.opt:27
-#, fuzzy, no-c-format
-#| msgid "-mcpu=r8c\tCompile code for R8C variants"
+#, no-c-format
 msgid "-mcpu=r8c\tCompile code for R8C variants."
-msgstr "-mcpu=r8c\t为 R8C 变种编译代码"
+msgstr "-mcpu=r8c\t为 R8C 变种编译代码。"
 
 #: config/m32c/m32c.opt:31
-#, fuzzy, no-c-format
-#| msgid "-mcpu=m16c\tCompile code for M16C variants"
+#, no-c-format
 msgid "-mcpu=m16c\tCompile code for M16C variants."
-msgstr "-mcpu=m16c\t为 M16C 变种编译代码"
+msgstr "-mcpu=m16c\t为 M16C 变种编译代码。"
 
 #: config/m32c/m32c.opt:35
-#, fuzzy, no-c-format
-#| msgid "-mcpu=m32cm\tCompile code for M32CM variants"
+#, no-c-format
 msgid "-mcpu=m32cm\tCompile code for M32CM variants."
-msgstr "-mcpu=m32cm\t为 M32CM 变种编译代码"
+msgstr "-mcpu=m32cm\t为 M32CM 变种编译代码。"
 
 #: config/m32c/m32c.opt:39
-#, fuzzy, no-c-format
-#| msgid "-mcpu=m32c\tCompile code for M32C variants"
+#, no-c-format
 msgid "-mcpu=m32c\tCompile code for M32C variants."
-msgstr "-mcpu=m32c\t为 M32C 变种编译代码"
+msgstr "-mcpu=m32c\t为 M32C 变种编译代码。"
 
 #: config/m32c/m32c.opt:43
-#, fuzzy, no-c-format
-#| msgid "-memregs=\tNumber of memreg bytes (default: 16, range: 0..16)"
+#, no-c-format
 msgid "-memregs=\tNumber of memreg bytes (default: 16, range: 0..16)."
-msgstr "-memregs=\tmemreg 字节数(默认：16，范围：0..16)"
+msgstr "-memregs=\tmemreg 字节数(默认：16，范围：0..16)。"
 
 #: config/msp430/msp430.opt:7
 #, no-c-format
@@ -8992,10 +8965,9 @@ msgid "Optimization. Use subroutines for function prologues and epilogues."
 msgstr "使用子程序完成函数前言/尾声"
 
 #: config/avr/avr.opt:27
-#, fuzzy, no-c-format
-#| msgid "-mmcu=MCU\tSelect the target MCU"
+#, no-c-format
 msgid "-mmcu=<MCU>\tSelect the target MCU."
-msgstr "-mmcu=MCU\t选择目标 MCU"
+msgstr "-mmcu=MCU\t选择目标 MCU。"
 
 #: config/avr/avr.opt:31
 #, fuzzy, no-c-format
@@ -10309,16 +10281,14 @@ msgid "Use the ELFv2 ABI."
 msgstr "使用 ELFv2 ABI。"
 
 #: config/rs6000/rs6000.opt:392
-#, fuzzy, no-c-format
-#| msgid "-mcpu=\tUse features of and schedule code for given CPU"
+#, no-c-format
 msgid "-mcpu=\tUse features of and schedule code for given CPU."
-msgstr "-mcpu=\t使用指定 CPU 的特性和调度代码"
+msgstr "-mcpu=\t使用指定 CPU 的特性和调度代码。"
 
 #: config/rs6000/rs6000.opt:396
-#, fuzzy, no-c-format
-#| msgid "-mtune=\tSchedule code for given CPU"
+#, no-c-format
 msgid "-mtune=\tSchedule code for given CPU."
-msgstr "-mtune=\t为指定的 CPU 调度代码"
+msgstr "-mtune=\t为指定的 CPU 调度代码。"
 
 #: config/rs6000/rs6000.opt:400
 #, fuzzy, no-c-format
@@ -10871,10 +10841,9 @@ msgid "FPU types of LoongArch:"
 msgstr "LoongArch 的 FPU 类型："
 
 #: config/loongarch/loongarch.opt:62
-#, fuzzy, no-c-format
-#| msgid "-march=ISA\tGenerate code for the given ISA"
+#, no-c-format
 msgid "-mfpu=FPU\tGenerate code for the given FPU."
-msgstr "-march=ISA\t为给定的 ISA 生成代码"
+msgstr "-mfpu=FPU\t为给定的 FPU 生成代码."
 
 #: config/loongarch/loongarch.opt:69 config/mips/mips.opt:398
 #, fuzzy, no-c-format
@@ -10923,10 +10892,9 @@ msgid "LoongArch ARCH presets:"
 msgstr "LoongArch CPU 类型："
 
 #: config/loongarch/loongarch.opt:132
-#, fuzzy, no-c-format
-#| msgid "-march=ISA\tGenerate code for the given ISA"
+#, no-c-format
 msgid "-march=PROCESSOR\tGenerate code for the given PROCESSOR ISA."
-msgstr "-march=ISA\t为给定的 ISA 生成代码"
+msgstr "-march=PROCESSOR\t为给定的 PROCESSOR ISA 生成代码。"
 
 #: config/loongarch/loongarch.opt:136
 #, fuzzy, no-c-format
@@ -10936,9 +10904,8 @@ msgstr "LoongArch CPU 类型："
 
 #: config/loongarch/loongarch.opt:155
 #, fuzzy, no-c-format
-#| msgid "-mtune=PROCESSOR\tOptimize the output for PROCESSOR"
 msgid "-mtune=PROCESSOR\tGenerate optimized code for PROCESSOR."
-msgstr "-mtune=处理器\t为指定的处理器优化输出"
+msgstr "-mtune=处理器\t为指定的处理器优化输出。"
 
 #: config/loongarch/loongarch.opt:164
 #, no-c-format
@@ -10946,10 +10913,9 @@ msgid "Base ABI types for LoongArch:"
 msgstr ""
 
 #: config/loongarch/loongarch.opt:177
-#, fuzzy, no-c-format
-#| msgid "-mabi=ABI\tGenerate code that conforms to the given ABI"
+#, no-c-format
 msgid "-mabi=BASEABI\tGenerate code that conforms to the given BASEABI."
-msgstr "-mabi=ABI\t生成遵循给定 ABI 的代码"
+msgstr "-mabi=BASEABI\t生成遵循给定 BASEABI 的代码。"
 
 #: config/loongarch/loongarch.opt:186 config/mips/mips.opt:71
 #, fuzzy, no-c-format
@@ -12079,10 +12045,9 @@ msgid "Use table lookup optimization for small signed integer divisions."
 msgstr "在树级别进行循环优化"
 
 #: config/microblaze/microblaze.opt:52
-#, fuzzy, no-c-format
-#| msgid "-mcpu=PROCESSOR\t\tUse features of and schedule code for given CPU"
+#, no-c-format
 msgid "-mcpu=PROCESSOR\t\tUse features of and schedule code for given CPU."
-msgstr "-mcpu=处理器\t使用指定 CPU 的特性并为其调度代码"
+msgstr "-mcpu=处理器\t\t使用指定 CPU 的特性并为其调度代码。"
 
 #: config/microblaze/microblaze.opt:56
 #, fuzzy, no-c-format
@@ -13031,22 +12996,19 @@ msgid "Override -mbest-lib-options."
 msgstr "覆盖 -mbest-lib-options"
 
 #: config/cris/cris.opt:165
-#, fuzzy, no-c-format
-#| msgid "-march=ARCH\tGenerate code for the specified chip or CPU version"
+#, no-c-format
 msgid "-march=ARCH\tGenerate code for the specified chip or CPU version."
-msgstr "-march=ARCH\t为指定的芯片或 CPU 版本生成代码"
+msgstr "-march=ARCH\t为指定的芯片或 CPU 版本生成代码。"
 
 #: config/cris/cris.opt:169
-#, fuzzy, no-c-format
-#| msgid "-mtune=ARCH\tTune alignment for the specified chip or CPU version"
+#, no-c-format
 msgid "-mtune=ARCH\tTune alignment for the specified chip or CPU version."
-msgstr "-mtune=ARCH\t为指定的芯片或 CPU 版本调整对齐"
+msgstr "-mtune=ARCH\t为指定的芯片或 CPU 版本调整对齐。"
 
 #: config/cris/cris.opt:173
-#, fuzzy, no-c-format
-#| msgid "-mmax-stackframe=SIZE\tWarn when a stackframe is larger than the specified size"
+#, no-c-format
 msgid "-mmax-stackframe=SIZE\tWarn when a stackframe is larger than the specified size."
-msgstr "-mmax-stackframe=N\t当栈帧大于指定值时给出警告"
+msgstr "-mmax-stackframe=N\t当栈帧大于指定值时给出警告。"
 
 #: config/cris/cris.opt:180
 #, no-c-format
@@ -13572,10 +13534,9 @@ msgid "-minline-memops-threshold=<number> Maximum size of memset/memmove/memcpy 
 msgstr ""
 
 #: config/mips/mips.opt:32
-#, fuzzy, no-c-format
-#| msgid "-mabi=ABI\tGenerate code that conforms to the given ABI"
+#, no-c-format
 msgid "-mabi=ABI\tGenerate code that conforms to the given ABI."
-msgstr "-mabi=ABI\t生成遵循给定 ABI 的代码"
+msgstr "-mabi=ABI\t生成遵循给定 ABI 的代码。"
 
 #: config/mips/mips.opt:36
 #, no-c-format
@@ -13601,10 +13562,9 @@ msgid "Use integer madd/msub instructions."
 msgstr "使用整数乘加/减指令"
 
 #: config/mips/mips.opt:67
-#, fuzzy, no-c-format
-#| msgid "-march=ISA\tGenerate code for the given ISA"
+#, no-c-format
 msgid "-march=ISA\tGenerate code for the given ISA."
-msgstr "-march=ISA\t为给定的 ISA 生成代码"
+msgstr "-march=ISA\t为给定的 ISA 生成代码。"
 
 #: config/mips/mips.opt:75
 #, fuzzy, no-c-format
@@ -13819,10 +13779,9 @@ msgid "An alias for minterlink-compressed provided for backward-compatibility."
 msgstr "不起作用。为向前兼容保留的选项。"
 
 #: config/mips/mips.opt:285
-#, fuzzy, no-c-format
-#| msgid "-mipsN\tGenerate code for ISA level N"
+#, no-c-format
 msgid "-mipsN\tGenerate code for ISA level N."
-msgstr "-mipsN\t为级别 N 的 ISA 生成代码"
+msgstr "-mipsN\t为级别 N 的 ISA 生成代码。"
 
 #: config/mips/mips.opt:289
 #, no-c-format
@@ -14272,10 +14231,9 @@ msgid "Enable generation of ARC SIMD instructions via target-specific builtins."
 msgstr ""
 
 #: config/arc/arc.opt:234
-#, fuzzy, no-c-format
-#| msgid "-mcpu=CPU\tCompile code for ARC variant CPU"
+#, no-c-format
 msgid "-mcpu=CPU\tCompile code for ARC variant CPU."
-msgstr "-mcpu=CPU\t为 ARC 变种 CPU 编译代码"
+msgstr "-mcpu=CPU\t为 ARC 变种 CPU 编译代码。"
 
 #: config/arc/arc.opt:238
 #, no-c-format
@@ -14289,9 +14247,8 @@ msgstr "为乘法指令设定的开销"
 
 #: config/arc/arc.opt:250
 #, fuzzy, no-c-format
-#| msgid "-mcpu=CPU\tCompile code for ARC variant CPU"
 msgid "-mtune=TUNE\tTune code for given ARC variant."
-msgstr "-mcpu=CPU\t为 ARC 变种 CPU 编译代码"
+msgstr "-mtune=TUNE\t为 ARC 变种 CPU 编译代码"
 
 #: config/arc/arc.opt:284
 #, fuzzy, no-c-format
@@ -14610,10 +14567,9 @@ msgid "Display target specific command line options (including assembler and lin
 msgstr ""
 
 #: common.opt:466
-#, fuzzy, no-c-format
-#| msgid "-O<number>\tSet optimization level to <number>"
+#, no-c-format
 msgid "-O<number>\tSet optimization level to <number>."
-msgstr "-O<N>\t将优化等级设为 N"
+msgstr "-O<N>\t将优化等级设为 N。"
 
 #: common.opt:470
 #, fuzzy, no-c-format
@@ -15058,22 +15014,19 @@ msgid "Warn about unsupported features in ThreadSanitizer."
 msgstr "使用了非原型的函数声明时给出警告"
 
 #: common.opt:904
-#, fuzzy, no-c-format
-#| msgid "-aux-info <file>\tEmit declaration information into <file>"
+#, no-c-format
 msgid "-aux-info <file>\tEmit declaration information into <file>."
-msgstr "-aux-info <文件>\t将声明信息写入文件"
+msgstr "-aux-info <文件>\t将声明信息写入文件。"
 
 #: common.opt:917
-#, fuzzy, no-c-format
-#| msgid "-d<letters>\tEnable dumps from specific passes of the compiler"
+#, no-c-format
 msgid "-d<letters>\tEnable dumps from specific passes of the compiler."
-msgstr "-d<字母>\t为指定的某趟汇译启用内存转储"
+msgstr "-d<字母>\t为指定的某趟汇译启用内存转储。"
 
 #: common.opt:921
-#, fuzzy, no-c-format
-#| msgid "-dumpbase <file>\tSet the file basename to be used for dumps"
+#, no-c-format
 msgid "-dumpbase <file>\tSet the file basename to be used for dumps."
-msgstr "-dumpbase <文件>\t设定内存转储使用的文件基本名"
+msgstr "-dumpbase <文件>\t设定内存转储使用的文件基本名。"
 
 #: common.opt:925
 #, no-c-format
@@ -15081,10 +15034,9 @@ msgid "-dumpbase-ext .<ext>    Drop a trailing .<ext> from the dump basename to 
 msgstr ""
 
 #: common.opt:929
-#, fuzzy, no-c-format
-#| msgid "-dumpdir <dir>\tSet the directory name to be used for dumps"
+#, no-c-format
 msgid "-dumpdir <dir>\tSet the directory name to be used for dumps."
-msgstr "-dumpdir <目录>\t设定内存转储使用的目录名"
+msgstr "-dumpdir <目录>\t设定内存转储使用的目录名。"
 
 #: common.opt:1035
 #, fuzzy, no-c-format
@@ -15222,16 +15174,14 @@ msgid "Output callgraph information on a per-file basis with decorations."
 msgstr "为每个函数重用 r30"
 
 #: common.opt:1197
-#, fuzzy, no-c-format
-#| msgid "-fcall-saved-<register>\tMark <register> as being preserved across functions"
+#, no-c-format
 msgid "-fcall-saved-<register>\tMark <register> as being preserved across functions."
-msgstr "-fcall-saved-<寄存器>\t认为寄存器在函数调用后值不变"
+msgstr "-fcall-saved-<寄存器>\t认为寄存器在函数调用后值不变。"
 
 #: common.opt:1201
-#, fuzzy, no-c-format
-#| msgid "-fcall-used-<register>\tMark <register> as being corrupted by function calls"
+#, no-c-format
 msgid "-fcall-used-<register>\tMark <register> as being corrupted by function calls."
-msgstr "-fcall-used-<寄存器>\t认为寄存器的值将被函数调用所改变"
+msgstr "-fcall-used-<寄存器>\t认为寄存器的值将被函数调用所改变。"
 
 #: common.opt:1208
 #, fuzzy, no-c-format
@@ -15279,10 +15229,9 @@ msgid "Put uninitialized globals in the common section."
 msgstr "不将未初始化的全局数据放在公共节中"
 
 #: common.opt:1248
-#, fuzzy, no-c-format
-#| msgid "-fcompare-debug[=<opts>]\tCompile with and without e.g. -gtoggle, and compare the final-insns dump"
+#, no-c-format
 msgid "-fcompare-debug[=<opts>]\tCompile with and without e.g. -gtoggle, and compare the final-insns dump."
-msgstr "-fcompare-debug[=<选项>]\t分别在带与不带“选项”，例如 -gtoggle，的情况下编译，然后比较最后的指令输出"
+msgstr "-fcompare-debug[=<选项>]\t分别在带与不带“选项”，例如 -gtoggle，的情况下编译，然后比较最后的指令输出。"
 
 #: common.opt:1252
 #, fuzzy, no-c-format
@@ -17604,10 +17553,9 @@ msgid "-gz=<format>\tGenerate compressed debug sections in format <format>."
 msgstr "生成默认格式的调试信息"
 
 #: common.opt:3649
-#, fuzzy, no-c-format
-#| msgid "-iplugindir=<dir>\tSet <dir> to be the default plugin directory"
+#, no-c-format
 msgid "-iplugindir=<dir>\tSet <dir> to be the default plugin directory."
-msgstr "-iplugindir=<目录>\t将目录设定为默认的插件子目录"
+msgstr "-iplugindir=<目录>\t将目录设定为默认的插件子目录。"
 
 #: common.opt:3653
 #, fuzzy, no-c-format
@@ -17615,10 +17563,9 @@ msgid "-imultiarch <dir>\tSet <dir> to be the multiarch include subdirectory."
 msgstr "-imultilib <目录>\t将目录设定为 multilib 的包含子目录"
 
 #: common.opt:3681
-#, fuzzy, no-c-format
-#| msgid "-o <file>\tPlace output into <file>"
+#, no-c-format
 msgid "-o <file>\tPlace output into <file>."
-msgstr "-o <文件>\t将输出写入文件"
+msgstr "-o <文件>\t将输出写入文件。"
 
 #: common.opt:3685
 #, fuzzy, no-c-format
@@ -19320,10 +19267,8 @@ msgid "compilation terminated.\n"
 msgstr "编译中断。\n"
 
 #: diagnostic.cc:881
-#, fuzzy
-#| msgid "          %s"
 msgid "                 from"
-msgstr "          %s"
+msgstr "          从"
 
 #: diagnostic.cc:882
 msgid "In file included from"
@@ -19331,10 +19276,8 @@ msgstr ""
 
 #. 2
 #: diagnostic.cc:883
-#, fuzzy
-#| msgid "    inlined from %qs"
 msgid "        included from"
-msgstr "    内联自%qs"
+msgstr "        包含自"
 
 #: diagnostic.cc:884
 msgid "In module"
@@ -20087,18 +20030,16 @@ msgid "  -h, --help                      Print this help, then exit\n"
 msgstr "  -h, --help                      打印此帮助并退出\n"
 
 #: gcov.cc:981
-#, fuzzy, c-format
-#| msgid "  -i, --json-format               Output JSON intermediate format into .gcov.json.gz file\n"
+#, c-format
 msgid ""
 "  -j, --json-format               Output JSON intermediate format\n"
 "                                    into .gcov.json.gz file\n"
-msgstr "  -i, --json-format               以 JSON 中间格式输出至 .gcov.json.gz 文件\n"
+msgstr "  -j, --json-format               以 JSON 中间格式输出至 .gcov.json.gz 文件\n"
 
 #: gcov.cc:983
-#, fuzzy, c-format
-#| msgid "  -j, --human-readable            Output human readable numbers\n"
+#, c-format
 msgid "  -H, --human-readable            Output human readable numbers\n"
-msgstr "  -j, --human-readable            输出人类可读的数字\n"
+msgstr "  -H, --human-readable            输出人类可读的数字\n"
 
 #: gcov.cc:984
 #, c-format
@@ -22922,9 +22863,8 @@ msgid "{anonymous}"
 msgstr ""
 
 #: cp/error.cc:1352
-#, fuzzy
 msgid "(anonymous namespace)"
-msgstr "%qT有一个基类%qT使用匿名命名空间"
+msgstr "(匿名命名空间)"
 
 #: cp/error.cc:1452
 #, fuzzy
@@ -22988,22 +22928,16 @@ msgid "At global scope:"
 msgstr "在全局域："
 
 #: cp/error.cc:3665
-#, fuzzy
-#| msgid "    inlined from %qs at %r%s:%d:%d%R"
 msgid "    inlined from %qD at %r%s:%d:%d%R"
-msgstr "    内联自%qs于 %r%s:%d:%d%R"
+msgstr "    内联自%qD于 %r%s:%d:%d%R"
 
 #: cp/error.cc:3670
-#, fuzzy
-#| msgid "    inlined from %qs at %r%s:%d%R"
 msgid "    inlined from %qD at %r%s:%d%R"
-msgstr "    内联自%qs于 %r%s:%d%R"
+msgstr "    内联自%qD于 %r%s:%d%R"
 
 #: cp/error.cc:3676
-#, fuzzy
-#| msgid "    inlined from %qs"
 msgid "    inlined from %qD"
-msgstr "    内联自%qs"
+msgstr "    内联自%qD"
 
 #: cp/error.cc:3703
 #, fuzzy
@@ -24652,10 +24586,9 @@ msgid "%<soft-float%> and long-double-128 are incompatible"
 msgstr "soft-float 与 long-double-128 互不兼容"
 
 #: config/rs6000/rtems.h:121 config/rs6000/rs6000.cc:3471
-#, fuzzy, gcc-internal-format
-#| msgid "-m64 requires a PowerPC64 cpu"
+#, gcc-internal-format
 msgid "%<-m64%> requires a PowerPC64 cpu"
-msgstr "-m64 需要 PowerPC64 CPU"
+msgstr "%<-m64%> 需要 PowerPC64 CPU"
 
 #. The macro SUBTARGET_OVERRIDE_OPTIONS is provided for subtargets, to
 #. get control in TARGET_OPTION_OVERRIDE.
@@ -31882,10 +31815,9 @@ msgid "invalid number of arguments for %<-falign-%s%> option: %qs"
 msgstr "提供给函数%qE的实参太多"
 
 #: opts.cc:2435
-#, fuzzy, gcc-internal-format
-#| msgid "-malign-loops=%d is not between 0 and %d"
+#, gcc-internal-format
 msgid "%<-falign-%s%> is not between 0 and %d"
-msgstr "-malign-loops=%d 不在 0 和 %d 之间"
+msgstr "%<-falign-%s%> 不在 0 和 %d 之间"
 
 #: opts.cc:2494
 #, fuzzy, gcc-internal-format
@@ -33017,27 +32949,24 @@ msgid "Graphite loop optimizations cannot be used (isl is not available) (%<-fgr
 msgstr "石墨循环最佳化无法使用 (-fgraphite，-fgraphite-identity，-floop-block，-floop-flatten，-floop-interchange，-floop-strip-mine，-floop-parallelize-all，而-ftree-loop-linear)"
 
 #: toplev.cc:1297
-#, fuzzy, gcc-internal-format
-#| msgid "-fstack-protector not supported for this target"
+#, gcc-internal-format
 msgid "%<-fcf-protection=full%> is not supported for this target"
-msgstr "-fstack-protector 在此目标机上不受支持"
+msgstr "%<-fcf-protection=full%> 在此目标机上不受支持"
 
 #: toplev.cc:1304
-#, fuzzy, gcc-internal-format
-#| msgid "-fstack-protector not supported for this target"
+#, gcc-internal-format
 msgid "%<-fcf-protection=branch%> is not supported for this target"
-msgstr "-fstack-protector 在此目标机上不受支持"
+msgstr "%<-fcf-protection=branch%> 在此目标机上不受支持"
 
 #: toplev.cc:1311
-#, fuzzy, gcc-internal-format
-#| msgid "-fstack-protector not supported for this target"
+#, gcc-internal-format
 msgid "%<-fcf-protection=return%> is not supported for this target"
-msgstr "-fstack-protector 在此目标机上不受支持"
+msgstr "%<-fcf-protection=return%> 在此目标机上不受支持"
 
 #: toplev.cc:1326
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<-fabi-version=1%> is no longer supported"
-msgstr "开关%qs不再被支持"
+msgstr "%<-fabi-version=1%> 不再被支持"
 
 #: toplev.cc:1342
 #, gcc-internal-format
@@ -33093,10 +33022,9 @@ msgid "%<-ffunction-sections%> not supported for this target"
 msgstr "-ffunction-sections 在此目标机上不受支持"
 
 #: toplev.cc:1534
-#, fuzzy, gcc-internal-format
-#| msgid "-fdata-sections not supported for this target"
+#, gcc-internal-format
 msgid "%<-fdata-sections%> not supported for this target"
-msgstr "-fdata-sections 在此目标机上不受支持"
+msgstr "%<-fdata-sections%> 在此目标机上不受支持"
 
 #: toplev.cc:1542
 #, fuzzy, gcc-internal-format
@@ -33117,10 +33045,9 @@ msgid "%<-fprefetch-loop-arrays%> is not supported with %<-Os%>"
 msgstr "-fprefetch-loop-arrays 不支持与 -Os 并用"
 
 #: toplev.cc:1570
-#, fuzzy, gcc-internal-format
-#| msgid "-fassociative-math disabled; other options take precedence"
+#, gcc-internal-format
 msgid "%<-fassociative-math%> disabled; other options take precedence"
-msgstr "-fassociative-math 为其他选项所禁用"
+msgstr "%<-fassociative-math%> 为其他选项所禁用"
 
 #: toplev.cc:1578
 #, fuzzy, gcc-internal-format
@@ -38078,10 +38005,9 @@ msgid "%qE is a member of a union"
 msgstr "%qD不是一个成员模板函数"
 
 #: c-family/c-opts.cc:343
-#, fuzzy, gcc-internal-format
-#| msgid "-I- specified twice"
+#, gcc-internal-format
 msgid "%<-I-%> specified twice"
-msgstr "-I- 指定了两次"
+msgstr "%<-I-%> 指定了两次"
 
 #: c-family/c-opts.cc:346
 #, fuzzy, gcc-internal-format
@@ -38225,16 +38151,14 @@ msgid "%<-MG%> may only be used with %<-M%> or %<-MM%>"
 msgstr "-MG 只能与 -M 或 -MM 一起使用"
 
 #: c-family/c-opts.cc:1529
-#, fuzzy, gcc-internal-format
-#| msgid "-fdirectives-only is incompatible with -Wunused_macros"
+#, gcc-internal-format
 msgid "%<-fdirectives-only%> is incompatible with %<-Wunused-macros%>"
-msgstr "-fdirectives-only 与 -Wunused_macros 不兼容"
+msgstr "%<-fdirectives-only%> 与 %<-Wunused-macros%> 不兼容"
 
 #: c-family/c-opts.cc:1532
-#, fuzzy, gcc-internal-format
-#| msgid "-fdirectives-only is incompatible with -traditional"
+#, gcc-internal-format
 msgid "%<-fdirectives-only%> is incompatible with %<-traditional%>"
-msgstr "-fdirectives-only 与 -traditional 不兼容"
+msgstr "%<-fdirectives-only%> 与 %<-traditional%> 不兼容"
 
 #: c-family/c-opts.cc:1634
 #, gcc-internal-format
@@ -42070,10 +41994,9 @@ msgid "enabling callee interworking support is only meaningful when compiling fo
 msgstr "被调用者协作只在为 Thumb 编译时有意义"
 
 #: config/arm/arm.cc:3001
-#, fuzzy, gcc-internal-format
-#| msgid "-g with -mno-apcs-frame may not give sensible debugging"
+#, gcc-internal-format
 msgid "%<-g%> with %<-mno-apcs-frame%> may not give sensible debugging"
-msgstr "-g 与 -mno-apcs-frame 并用可能不能给出有意义的调试信息"
+msgstr "%<-g%> 与 %<-mno-apcs-frame%> 并用可能不能给出有意义的调试信息"
 
 #: config/arm/arm.cc:3006
 #, gcc-internal-format
@@ -42142,10 +42065,9 @@ msgid "%<-mapcs-stack-check%> incompatible with %<-mno-apcs-frame%>"
 msgstr "-mapcs-stack-check 和 -mno-apcs-frame 互不兼容"
 
 #: config/arm/arm.cc:3652
-#, fuzzy, gcc-internal-format
-#| msgid "-fpic and -mapcs-reent are incompatible"
+#, gcc-internal-format
 msgid "%<-fpic%> and %<-mapcs-reent%> are incompatible"
-msgstr "-fpic 和 -mapcs-reent 互不兼容"
+msgstr "%<-fpic%> 和 %<-mapcs-reent%> 互不兼容"
 
 #: config/arm/arm.cc:3655
 #, gcc-internal-format
@@ -42453,26 +42375,24 @@ msgid "unknown core architecture %qs specified with %qs"
 msgstr "不能为%q+D指定对齐"
 
 #: config/avr/avr.cc:1150 config/pru/pru.cc:601 config/visium/visium.cc:422
-#, fuzzy, gcc-internal-format
-#| msgid "-fpic is not supported"
+#, gcc-internal-format
 msgid "%<-fpic%> is not supported"
-msgstr "不支持 -fpic"
+msgstr "不支持 %<-fpic%>"
 
 #: config/avr/avr.cc:1152 config/pru/pru.cc:603 config/visium/visium.cc:424
-#, fuzzy, gcc-internal-format
-#| msgid "-fPIC is not supported"
+#, gcc-internal-format
 msgid "%<-fPIC%> is not supported"
-msgstr "不支持 -fPIC"
+msgstr "不支持 %<-fPIC%>"
 
 #: config/avr/avr.cc:1154 config/pru/pru.cc:605
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<-fpie%> is not supported"
-msgstr "不支持"
+msgstr "不支持 %<-fpie%>"
 
 #: config/avr/avr.cc:1156 config/pru/pru.cc:607
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<-fPIE%> is not supported"
-msgstr "不支持"
+msgstr "不支持 %<-fPIE%>"
 
 #: config/avr/avr.cc:1452 config/avr/avr.cc:1457 config/riscv/riscv.cc:9730
 #, fuzzy, gcc-internal-format
@@ -43947,10 +43867,9 @@ msgid "%<-fcf-protection=full%> is not enabled by %<-fhardened%> because it was 
 msgstr ""
 
 #: config/i386/i386-options.cc:3280
-#, fuzzy, gcc-internal-format
-#| msgid "-mnop-mcount is not compatible with this target"
+#, gcc-internal-format
 msgid "%<-fcf-protection%> is not compatible with this target"
-msgstr "-mnop-mcount 与此目标不兼容"
+msgstr "%<-fcf-protection%> 与此目标不兼容"
 
 #: config/i386/i386-options.cc:3447
 #, fuzzy, gcc-internal-format
@@ -44678,16 +44597,14 @@ msgid "%<-mpcrel%> %<-fPIC%> is not currently supported on selected cpu"
 msgstr "-mpcrel -fPIC 目前在所选的 CPU 上不受支持"
 
 #: config/m68k/m68k.cc:670
-#, fuzzy, gcc-internal-format
-#| msgid "-falign-labels=%d is not supported"
+#, gcc-internal-format
 msgid "%<-falign-labels=%d%> is not supported"
-msgstr "不支持 -falign-labels=%d"
+msgstr "不支持 %<-falign-labels=%d%>"
 
 #: config/m68k/m68k.cc:677
-#, fuzzy, gcc-internal-format
-#| msgid "-falign-loops=%d is not supported"
+#, gcc-internal-format
 msgid "%<-falign-loops=%d%> is not supported"
-msgstr "不支持 -falign-loops=%d"
+msgstr "不支持 %<-falign-loops=%d%>"
 
 #: config/m68k/m68k.cc:685
 #, fuzzy, gcc-internal-format
@@ -45849,16 +45766,14 @@ msgid "PIC code generation is not compatible with fast indirect calls"
 msgstr "PIC 代码生成与快速间接调用不兼容"
 
 #: config/pa/pa.cc:547
-#, fuzzy, gcc-internal-format
-#| msgid "-g is only supported when using GAS on this processor,"
+#, gcc-internal-format
 msgid "%<-g%> is only supported when using GAS on this processor"
-msgstr "此处理器只有使用 GAS 时才支持 -g"
+msgstr "此处理器只有使用 GAS 时才支持 %<-g%>"
 
 #: config/pa/pa.cc:548
-#, fuzzy, gcc-internal-format
-#| msgid "-g option disabled"
+#, gcc-internal-format
 msgid "%<-g%> option disabled"
-msgstr "-g 选项已被禁用"
+msgstr "%<-g%> 选项已被禁用"
 
 #: config/pru/pru-passes.cc:111
 #, fuzzy, gcc-internal-format
@@ -47592,10 +47507,9 @@ msgid "%<-fexcess-precision=standard%> for Ada"
 msgstr "对 Ada 而言 -fexcess-precision=standard"
 
 #: ada/gcc-interface/misc.cc:260
-#, fuzzy, gcc-internal-format
-#| msgid "-fexcess-precision=standard for Ada"
+#, gcc-internal-format
 msgid "%<-fexcess-precision=16%> for Ada"
-msgstr "对 Ada 而言 -fexcess-precision=standard"
+msgstr "对 Ada 而言 %<-fexcess-precision=16%>"
 
 #: ada/gcc-interface/trans.cc:348
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -55261,10 +55175,8 @@ msgid "choosing %qD over %qD"
 msgstr "选择%qD而不是%qD"
 
 #: cp/call.cc:13104
-#, fuzzy
-#| msgid "  for conversion from %qT to %qT"
 msgid "  for conversion from %qH to %qI"
-msgstr "以从%qT转换为%qT"
+msgstr "以从%qH转换为%qI"
 
 #: cp/call.cc:13107
 #, gcc-internal-format
@@ -55277,16 +55189,14 @@ msgid "default argument mismatch in overload resolution"
 msgstr "重载解决时默认参数不匹配"
 
 #: cp/call.cc:13395
-#, fuzzy, gcc-internal-format
-#| msgid " candidate 1: %q+#F"
+#, gcc-internal-format
 msgid " candidate 1: %q#F"
-msgstr "备选 1: %q+#F"
+msgstr "备选 1: %q#F"
 
 #: cp/call.cc:13397
-#, fuzzy, gcc-internal-format
-#| msgid " candidate 2: %q+#F"
+#, gcc-internal-format
 msgid " candidate 2: %q#F"
-msgstr "备选 2: %q+#F"
+msgstr "备选 2: %q#F"
 
 #: cp/call.cc:13443
 #, gcc-internal-format
@@ -55484,10 +55394,9 @@ msgid "%qD was hidden"
 msgstr "%q+D为"
 
 #: cp/class.cc:3304
-#, fuzzy, gcc-internal-format
-#| msgid "  by %q+D"
+#, gcc-internal-format
 msgid "  by %qD"
-msgstr "%q+D所隐藏"
+msgstr "%qD所隐藏"
 
 #: cp/class.cc:3516
 #, fuzzy, gcc-internal-format
@@ -58479,10 +58388,9 @@ msgid "  enters synchronized or atomic statement"
 msgstr "  进入了同步化或原子化语句"
 
 #: cp/decl.cc:3794 cp/decl.cc:3947
-#, fuzzy, gcc-internal-format
-#| msgid "jump into statement expression"
+#, gcc-internal-format
 msgid "  enters statement expression"
-msgstr "跳转至语句表达式中"
+msgstr "进入了语句表达式"
 
 #: cp/decl.cc:3801 cp/decl.cc:3943
 #, gcc-internal-format
@@ -61281,10 +61189,9 @@ msgid "no functions named %qD"
 msgstr "在函数%qs中"
 
 #: cp/decl2.cc:925
-#, fuzzy, gcc-internal-format
-#| msgid "label %qD defined here"
+#, gcc-internal-format
 msgid "%#qT defined here"
-msgstr "标号%qD在此定义"
+msgstr "%#qT在此定义"
 
 #: cp/decl2.cc:985
 #, gcc-internal-format
@@ -62010,10 +61917,9 @@ msgid "base %qT will be initialized after"
 msgstr "基类%qT将在"
 
 #: cp/init.cc:1358
-#, fuzzy, gcc-internal-format
-#| msgid "  %q+#D"
+#, gcc-internal-format
 msgid "  %q#D"
-msgstr "%q+#D"
+msgstr "  %q+#D"
 
 #: cp/init.cc:1360
 #, gcc-internal-format
@@ -66557,10 +66463,9 @@ msgid "specialization of %qD in different namespace"
 msgstr "在不同命名空间内对%qD的特例化"
 
 #: cp/pt.cc:891
-#, fuzzy, gcc-internal-format
-#| msgid "  from definition of %q+#D"
+#, gcc-internal-format
 msgid "  from definition of %q#D"
-msgstr "  从%q+#D的定义"
+msgstr "  从%q#D的定义"
 
 #: cp/pt.cc:908
 #, gcc-internal-format
@@ -66810,10 +66715,9 @@ msgid "        %qD"
 msgstr "       %qD"
 
 #: cp/pt.cc:4364
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "          %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "        %s"
-msgstr "          %s"
+msgstr "        %s"
 
 #: cp/pt.cc:4490
 #, fuzzy, gcc-internal-format
@@ -70216,10 +70120,9 @@ msgid "  because the following virtual functions are pure within %qT:"
 msgstr "因为下列虚函数在%qT中为纯虚函数："
 
 #: cp/typeck2.cc:242
-#, fuzzy, gcc-internal-format
-#| msgid "        %qD"
+#, gcc-internal-format
 msgid "    %#qD"
-msgstr "       %qD"
+msgstr "       %#qD"
 
 #: cp/typeck2.cc:282
 #, fuzzy, gcc-internal-format
@@ -80683,10 +80586,9 @@ msgid "%<-fexcess-precision=standard%> for Fortran"
 msgstr "对 Fortran 而言 -fexcess-precision=standard"
 
 #: fortran/options.cc:292
-#, fuzzy, gcc-internal-format
-#| msgid "-fexcess-precision=standard for Fortran"
+#, gcc-internal-format
 msgid "%<-fexcess-precision=16%> for Fortran"
-msgstr "对 Fortran 而言 -fexcess-precision=standard"
+msgstr "对 Fortran 而言 %<-fexcess-precision=16%>"
 
 #: fortran/options.cc:386
 #, fuzzy, gcc-internal-format
@@ -85854,10 +85756,9 @@ msgid "gfc_trans_select(): Bad type for case expr."
 msgstr "gfc_trans_code()：错误的语句代码"
 
 #: fortran/trans-types.cc:537
-#, fuzzy, gcc-internal-format
-#| msgid "-freorder-blocks-and-partition not supported on this architecture"
+#, gcc-internal-format
 msgid "%<-fconvert=r16_ieee%> or %<-fconvert=r16_ibm%> not supported on this architecture"
-msgstr "-freorder-blocks-and-partition 不能在此架构下工作"
+msgstr "%<-fconvert=r16_ieee%> 或 %<-fconvert=r16_ibm%> 不能在此架构下工作"
 
 #: fortran/trans-types.cc:550
 #, fuzzy, gcc-internal-format
