@@ -5168,8 +5168,6 @@ build_classic_dist_vector_1 (struct data_dependence_relation *ddr,
 	  non_affine_dependence_relation (ddr);
 	  return false;
 	}
-      else
-	*init_b = true;
     }
 
   return true;
