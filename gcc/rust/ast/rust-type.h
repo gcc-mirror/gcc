@@ -48,6 +48,11 @@ public:
 
   std::vector<LifetimeParam> &get_for_lifetimes () { return for_lifetimes; }
 
+  const std::vector<LifetimeParam> &get_for_lifetimes () const
+  {
+    return for_lifetimes;
+  }
+
   TraitBound (TypePath type_path, location_t locus, bool in_parens = false,
 	      bool opening_question_mark = false,
 	      std::vector<LifetimeParam> for_lifetimes
@@ -80,6 +85,11 @@ public:
 
   bool is_in_parens () const { return in_parens; }
   bool has_opening_question_mark () const { return opening_question_mark; }
+
+  TypeParamBoundType get_bound_type () const override
+  {
+    return TypeParamBound::TypeParamBoundType::TRAIT;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

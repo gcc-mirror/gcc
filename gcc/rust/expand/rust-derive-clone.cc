@@ -73,8 +73,9 @@ DeriveClone::clone_fn (std::unique_ptr<Expr> &&clone_expr)
  *
  */
 std::unique_ptr<Item>
-DeriveClone::clone_impl (std::unique_ptr<AssociatedItem> &&clone_fn,
-			 std::string name)
+DeriveClone::clone_impl (
+  std::unique_ptr<AssociatedItem> &&clone_fn, std::string name,
+  const std::vector<std::unique_ptr<GenericParam>> &type_generics)
 {
   // should that be `$crate::core::clone::Clone` instead?
   auto segments = std::vector<std::unique_ptr<TypePathSegment>> ();
@@ -84,10 +85,79 @@ DeriveClone::clone_impl (std::unique_ptr<AssociatedItem> &&clone_fn,
   auto trait_items = std::vector<std::unique_ptr<AssociatedItem>> ();
   trait_items.emplace_back (std::move (clone_fn));
 
+  // we need to build up the generics for this impl block which will be just a
+  // clone of the types specified ones
+  //
+  // for example:
+  //
+  // #[derive(Clone)]
+  // struct Be<T: Clone> { ... }
+  //
+  // we need to generate the impl block:
+  //
+  // impl<T: Clone> Clone for Be<T>
+
+  std::vector<Lifetime> lifetime_args;
+  std::vector<GenericArg> generic_args;
+  std::vector<std::unique_ptr<GenericParam>> impl_generics;
+  for (const auto &generic : type_generics)
+    {
+      switch (generic->get_kind ())
+	{
+	  case GenericParam::Kind::Lifetime: {
+	    LifetimeParam &lifetime_param = (LifetimeParam &) *generic.get ();
+
+	    Lifetime l = builder.new_lifetime (lifetime_param.get_lifetime ());
+	    lifetime_args.push_back (std::move (l));
+
+	    auto impl_lifetime_param
+	      = builder.new_lifetime_param (lifetime_param);
+	    impl_generics.push_back (std::move (impl_lifetime_param));
+	  }
+	  break;
+
+	  case GenericParam::Kind::Type: {
+	    TypeParam &type_param = (TypeParam &) *generic.get ();
+
+	    std::unique_ptr<Type> associated_type = builder.single_type_path (
+	      type_param.get_type_representation ().as_string ());
+
+	    GenericArg type_arg
+	      = GenericArg::create_type (std::move (associated_type));
+	    generic_args.push_back (std::move (type_arg));
+
+	    auto impl_type_param = builder.new_type_param (type_param);
+	    impl_generics.push_back (std::move (impl_type_param));
+	  }
+	  break;
+
+	  case GenericParam::Kind::Const: {
+	    rust_unreachable ();
+
+	    // TODO
+	    // const ConstGenericParam *const_param
+	    //   = (const ConstGenericParam *) generic.get ();
+	    // std::unique_ptr<Expr> const_expr = nullptr;
+
+	    // GenericArg type_arg
+	    //   = GenericArg::create_const (std::move (const_expr));
+	    // generic_args.push_back (std::move (type_arg));
+	  }
+	  break;
+	}
+    }
+
+  GenericArgs generic_args_for_self (lifetime_args, generic_args,
+				     {} /*binding args*/, loc);
+  std::unique_ptr<Type> self_type_path
+    = impl_generics.empty ()
+	? builder.single_type_path (name)
+	: builder.single_generic_type_path (name, generic_args_for_self);
+
   return std::unique_ptr<Item> (
     new TraitImpl (clone, /* unsafe */ false,
 		   /* exclam */ false, std::move (trait_items),
-		   /* generics */ {}, builder.single_type_path (name),
+		   std::move (impl_generics), std::move (self_type_path),
 		   WhereClause::create_empty (), Visibility::create_private (),
 		   {}, {}, loc));
 }
@@ -122,7 +192,8 @@ DeriveClone::visit_tuple (TupleStruct &item)
   auto constructor = builder.call (std::move (path), std::move (cloned_fields));
 
   expanded = clone_impl (clone_fn (std::move (constructor)),
-			 item.get_identifier ().as_string ());
+			 item.get_identifier ().as_string (),
+			 item.get_generic_params ());
 }
 
 void
@@ -133,7 +204,8 @@ DeriveClone::visit_struct (StructStruct &item)
       auto unit_ctor
 	= builder.struct_expr_struct (item.get_struct_name ().as_string ());
       expanded = clone_impl (clone_fn (std::move (unit_ctor)),
-			     item.get_struct_name ().as_string ());
+			     item.get_struct_name ().as_string (),
+			     item.get_generic_params ());
       return;
     }
 
@@ -151,7 +223,8 @@ DeriveClone::visit_struct (StructStruct &item)
   auto ctor = builder.struct_expr (item.get_struct_name ().as_string (),
 				   std::move (cloned_fields));
   expanded = clone_impl (clone_fn (std::move (ctor)),
-			 item.get_struct_name ().as_string ());
+			 item.get_struct_name ().as_string (),
+			 item.get_generic_params ());
 }
 
 void
@@ -187,7 +260,8 @@ DeriveClone::visit_union (Union &item)
   auto block = builder.block (std::move (stmts), std::move (tail_expr));
 
   expanded = clone_impl (clone_fn (std::move (block)),
-			 item.get_identifier ().as_string ());
+			 item.get_identifier ().as_string (),
+			 item.get_generic_params ());
 }
 
 } // namespace AST

@@ -479,15 +479,23 @@ public:
 
   std::string as_string () const;
 
-  // TODO: is this better? Or is a "vis_pattern" better?
   std::vector<GenericArg> &get_generic_args () { return generic_args; }
 
-  // TODO: is this better? Or is a "vis_pattern" better?
   std::vector<GenericArgsBinding> &get_binding_args () { return binding_args; }
+
+  const std::vector<GenericArgsBinding> &get_binding_args () const
+  {
+    return binding_args;
+  }
 
   std::vector<Lifetime> &get_lifetime_args () { return lifetime_args; };
 
-  location_t get_locus () { return locus; }
+  const std::vector<Lifetime> &get_lifetime_args () const
+  {
+    return lifetime_args;
+  };
+
+  location_t get_locus () const { return locus; }
 };
 
 /* A segment of a path in expression, including an identifier aspect and maybe

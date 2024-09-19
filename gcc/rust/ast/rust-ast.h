@@ -1477,6 +1477,12 @@ protected:
 class TypeParamBound : public Visitable
 {
 public:
+  enum TypeParamBoundType
+  {
+    TRAIT,
+    LIFETIME
+  };
+
   virtual ~TypeParamBound () {}
 
   // Unique pointer custom clone function
@@ -1490,6 +1496,8 @@ public:
   NodeId get_node_id () const { return node_id; }
 
   virtual location_t get_locus () const = 0;
+
+  virtual TypeParamBoundType get_bound_type () const = 0;
 
 protected:
   // Clone function implementation as pure virtual method
@@ -1546,11 +1554,16 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  LifetimeType get_lifetime_type () { return lifetime_type; }
+  LifetimeType get_lifetime_type () const { return lifetime_type; }
 
   location_t get_locus () const override final { return locus; }
 
   std::string get_lifetime_name () const { return lifetime_name; }
+
+  TypeParamBoundType get_bound_type () const override
+  {
+    return TypeParamBound::TypeParamBoundType::LIFETIME;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -1618,6 +1631,11 @@ public:
   bool has_lifetime_bounds () const { return !lifetime_bounds.empty (); }
 
   std::vector<Lifetime> &get_lifetime_bounds () { return lifetime_bounds; }
+
+  const std::vector<Lifetime> &get_lifetime_bounds () const
+  {
+    return lifetime_bounds;
+  }
 
   // Returns whether the lifetime param has an outer attribute.
   bool has_outer_attribute () const { return !outer_attrs.empty (); }

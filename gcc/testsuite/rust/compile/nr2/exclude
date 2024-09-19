@@ -249,3 +249,6 @@ inline_asm_parse_output_operand.rs
 issue-3030.rs
 issue-3035.rs
 issue-3082.rs
+issue-3139-1.rs
+issue-3139-2.rs
+issue-3139-3.rs
