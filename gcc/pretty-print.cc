@@ -1923,7 +1923,7 @@ format_phase_2 (pretty_printer *pp,
 	    /* When quoting, print alphanumeric, punctuation, and the space
 	       character unchanged, and all others in hexadecimal with the
 	       "\x" prefix.  Otherwise print them all unchanged.  */
-	    int chr = va_arg (*text.m_args_ptr, int);
+	    char chr = (char) va_arg (*text.m_args_ptr, int);
 	    if (ISPRINT (chr) || !quote)
 	      pp_character (pp, chr);
 	    else

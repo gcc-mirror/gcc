@@ -181,7 +181,7 @@ enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER] =
 
 /* The "default" register map used in 32bit mode.  */
 
-int const debugger_register_map[FIRST_PSEUDO_REGISTER] =
+unsigned int const debugger_register_map[FIRST_PSEUDO_REGISTER] =
 {
   /* general regs */
   0, 2, 1, 3, 6, 7, 4, 5,
@@ -212,7 +212,7 @@ int const debugger_register_map[FIRST_PSEUDO_REGISTER] =
 
 /* The "default" register map used in 64bit mode.  */
 
-int const debugger64_register_map[FIRST_PSEUDO_REGISTER] =
+unsigned int const debugger64_register_map[FIRST_PSEUDO_REGISTER] =
 {
   /* general regs */
   0, 1, 2, 3, 4, 5, 6, 7,
@@ -294,7 +294,7 @@ int const debugger64_register_map[FIRST_PSEUDO_REGISTER] =
 	17 for %st(6) (gcc regno = 14)
 	18 for %st(7) (gcc regno = 15)
 */
-int const svr4_debugger_register_map[FIRST_PSEUDO_REGISTER] =
+unsigned int const svr4_debugger_register_map[FIRST_PSEUDO_REGISTER] =
 {
   /* general regs */
   0, 2, 1, 3, 6, 7, 5, 4,

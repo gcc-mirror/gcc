@@ -585,7 +585,6 @@ AC_SUBST(aliasing_flags)
 # * 'long long'
 # * variadic macros
 # * overlong strings
-# * C++11 narrowing conversions in { }
 # So, we only use -pedantic if we can disable those warnings.
 
 # In stage 1, disable -Wformat warnings from old GCCs about new % codes
@@ -595,7 +594,7 @@ AC_ARG_ENABLE(build-format-warnings,
 AS_IF([test $enable_build_format_warnings = no],
       [wf_opt=-Wno-format],[wf_opt=])
 ACX_PROG_CXX_WARNING_OPTS(
-	m4_quote(m4_do([-W -Wall -Wno-narrowing -Wwrite-strings ],
+	m4_quote(m4_do([-W -Wall -Wno-error=narrowing -Wwrite-strings ],
 		       [-Wcast-qual $wf_opt])),
 		       [loose_warn])
 ACX_PROG_CC_WARNING_OPTS(

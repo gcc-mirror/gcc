@@ -7489,8 +7489,8 @@ vect_prologue_cost_for_slp (slp_tree node,
       nelt_limit = const_nunits;
       hash_set<vect_scalar_ops_slice_hash> vector_ops;
       for (unsigned int i = 0; i < SLP_TREE_NUMBER_OF_VEC_STMTS (node); ++i)
-	if (!vector_ops.add ({ ops, i * const_nunits, const_nunits }))
-	  starts.quick_push (i * const_nunits);
+	if (!vector_ops.add ({ ops, i * nelt_limit, nelt_limit }))
+	  starts.quick_push (i * nelt_limit);
     }
   else
     {

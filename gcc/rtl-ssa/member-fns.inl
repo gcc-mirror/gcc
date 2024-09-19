@@ -41,7 +41,8 @@ access_array_builder::quick_push (access_info *access)
 inline array_slice<access_info *>
 access_array_builder::finish ()
 {
-  auto num_accesses = obstack_object_size (m_obstack) / sizeof (access_info *);
+  unsigned num_accesses
+    = obstack_object_size (m_obstack) / sizeof (access_info *);
   if (num_accesses == 0)
     return {};
 

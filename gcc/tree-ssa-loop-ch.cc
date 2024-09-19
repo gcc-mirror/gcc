@@ -839,8 +839,8 @@ ch_base::copy_headers (function *fun)
 	 copied.  TODO -- handle while (a || b) - like cases, by not requiring
 	 the header to have just a single successor and copying up to
 	 postdominator.  */
-      int nheaders = 0;
-      int last_win_nheaders = 0;
+      unsigned int nheaders = 0;
+      unsigned int last_win_nheaders = 0;
       bool last_win_invariant_exit = false;
       ch_decision ret;
       auto_vec <ch_decision, 32> decision;
@@ -893,7 +893,7 @@ ch_base::copy_headers (function *fun)
 	}
       /* "Duplicate" all BBs with zero cost following last basic blocks we
 	 decided to copy.  */
-      while (last_win_nheaders < (int)decision.length ()
+      while (last_win_nheaders < decision.length ()
 	     && decision[last_win_nheaders] == ch_possible_zero_cost)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))

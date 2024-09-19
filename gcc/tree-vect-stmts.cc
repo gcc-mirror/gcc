@@ -1711,11 +1711,11 @@ vect_truncate_gather_scatter_offset (stmt_vec_info stmt_info,
     count = max_iters.to_shwi ();
 
   /* Try scales of 1 and the element size.  */
-  int scales[] = { 1, vect_get_scalar_dr_size (dr_info) };
+  unsigned int scales[] = { 1, vect_get_scalar_dr_size (dr_info) };
   wi::overflow_type overflow = wi::OVF_NONE;
   for (int i = 0; i < 2; ++i)
     {
-      int scale = scales[i];
+      unsigned int scale = scales[i];
       widest_int factor;
       if (!wi::multiple_of_p (wi::to_widest (step), scale, SIGNED, &factor))
 	continue;
@@ -6539,7 +6539,8 @@ vectorizable_operation (vec_info *vinfo,
   poly_uint64 nunits_in;
   poly_uint64 nunits_out;
   tree vectype_out;
-  int ncopies, vec_num;
+  unsigned int ncopies;
+  int vec_num;
   int i;
   vec<tree> vec_oprnds0 = vNULL;
   vec<tree> vec_oprnds1 = vNULL;

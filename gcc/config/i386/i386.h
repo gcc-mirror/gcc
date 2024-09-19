@@ -2091,9 +2091,9 @@ do {							\
 #define DEBUGGER_REGNO(N) \
   (TARGET_64BIT ? debugger64_register_map[(N)] : debugger_register_map[(N)])
 
-extern int const debugger_register_map[FIRST_PSEUDO_REGISTER];
-extern int const debugger64_register_map[FIRST_PSEUDO_REGISTER];
-extern int const svr4_debugger_register_map[FIRST_PSEUDO_REGISTER];
+extern unsigned int const debugger_register_map[FIRST_PSEUDO_REGISTER];
+extern unsigned int const debugger64_register_map[FIRST_PSEUDO_REGISTER];
+extern unsigned int const svr4_debugger_register_map[FIRST_PSEUDO_REGISTER];
 
 /* Before the prologue, RA is at 0(%esp).  */
 #define INCOMING_RETURN_ADDR_RTX \

@@ -3220,15 +3220,15 @@ process_constraint (constraint_t t)
 /* Return the position, in bits, of FIELD_DECL from the beginning of its
    structure.  */
 
-static HOST_WIDE_INT
+static unsigned HOST_WIDE_INT
 bitpos_of_field (const tree fdecl)
 {
-  if (!tree_fits_shwi_p (DECL_FIELD_OFFSET (fdecl))
-      || !tree_fits_shwi_p (DECL_FIELD_BIT_OFFSET (fdecl)))
+  if (!tree_fits_uhwi_p (DECL_FIELD_OFFSET (fdecl))
+      || !tree_fits_uhwi_p (DECL_FIELD_BIT_OFFSET (fdecl)))
     return -1;
 
-  return (tree_to_shwi (DECL_FIELD_OFFSET (fdecl)) * BITS_PER_UNIT
-	  + tree_to_shwi (DECL_FIELD_BIT_OFFSET (fdecl)));
+  return (tree_to_uhwi (DECL_FIELD_OFFSET (fdecl)) * BITS_PER_UNIT
+	  + tree_to_uhwi (DECL_FIELD_BIT_OFFSET (fdecl)));
 }
 
 
@@ -5925,7 +5925,7 @@ field_must_have_pointers (tree t)
 
 static bool
 push_fields_onto_fieldstack (tree type, vec<fieldoff_s> *fieldstack,
-			     HOST_WIDE_INT offset)
+			     unsigned HOST_WIDE_INT offset)
 {
   tree field;
   bool empty_p = true;
@@ -5943,7 +5943,7 @@ push_fields_onto_fieldstack (tree type, vec<fieldoff_s> *fieldstack,
     if (TREE_CODE (field) == FIELD_DECL)
       {
 	bool push = false;
-	HOST_WIDE_INT foff = bitpos_of_field (field);
+	unsigned HOST_WIDE_INT foff = bitpos_of_field (field);
 	tree field_type = TREE_TYPE (field);
 
 	if (!var_can_have_subvars (field)
@@ -5988,7 +5988,7 @@ push_fields_onto_fieldstack (tree type, vec<fieldoff_s> *fieldstack,
 		&& !must_have_pointers_p
 		&& !pair->must_have_pointers
 		&& !pair->has_unknown_size
-		&& pair->offset + (HOST_WIDE_INT)pair->size == offset + foff)
+		&& pair->offset + pair->size == offset + foff)
 	      {
 		pair->size += tree_to_uhwi (DECL_SIZE (field));
 	      }

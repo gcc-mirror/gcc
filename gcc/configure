@@ -7146,7 +7146,6 @@ fi
 # * 'long long'
 # * variadic macros
 # * overlong strings
-# * C++11 narrowing conversions in { }
 # So, we only use -pedantic if we can disable those warnings.
 
 # In stage 1, disable -Wformat warnings from old GCCs about new % codes
@@ -7170,7 +7169,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 loose_warn=
 save_CXXFLAGS="$CXXFLAGS"
-for real_option in -W -Wall -Wno-narrowing -Wwrite-strings -Wcast-qual $wf_opt; do
+for real_option in -W -Wall -Wno-error=narrowing -Wwrite-strings -Wcast-qual $wf_opt; do
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in
@@ -21406,7 +21405,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21409 "configure"
+#line 21408 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -21512,7 +21511,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21515 "configure"
+#line 21514 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

@@ -2409,7 +2409,7 @@ public:
   const value_type &back () const;
   const value_type &operator[] (unsigned int i) const;
 
-  size_t size () const { return m_size; }
+  unsigned size () const { return m_size; }
   size_t size_bytes () const { return m_size * sizeof (T); }
   bool empty () const { return m_size == 0; }
 

@@ -444,7 +444,7 @@ pair_fusion_bb_info::track_access (insn_info *insn, bool load_p, rtx mem)
   const bool fpsimd_op_p = m_pass->fpsimd_op_p (reg_op, mem_mode, load_p);
 
   // Note pair_operand_mode_ok_p already rejected VL modes.
-  const HOST_WIDE_INT mem_size = GET_MODE_SIZE (mem_mode).to_constant ();
+  const unsigned mem_size = GET_MODE_SIZE (mem_mode).to_constant ();
   const lfs_fields lfs = { load_p, fpsimd_op_p, mem_size };
 
   if (track_via_mem_expr (insn, mem, lfs))
