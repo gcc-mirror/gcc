@@ -280,6 +280,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Wdeclaration-after-statement)
 Wdeclaration-missing-parameter-type
 UrlSuffix(gcc/Warning-Options.html#index-Wdeclaration-missing-parameter-type)
 
+Wdefaulted-function-deleted
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wdefaulted-function-deleted)
+
 Wdelete-incomplete
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wdelete-incomplete)
 
