@@ -9505,6 +9505,7 @@ duplicate_allocatable_coarray (tree dest, tree dest_tok, tree src, tree type,
 				  gfc_build_addr_expr (NULL_TREE, dest_tok),
 				  NULL_TREE, NULL_TREE, NULL_TREE,
 				  GFC_CAF_COARRAY_ALLOC_REGISTER_ONLY);
+      gfc_add_modify (&block, dest, gfc_conv_descriptor_data_get (dummy_desc));
       null_data = gfc_finish_block (&block);
 
       gfc_init_block (&block);
@@ -9514,6 +9515,7 @@ duplicate_allocatable_coarray (tree dest, tree dest_tok, tree src, tree type,
 				  gfc_build_addr_expr (NULL_TREE, dest_tok),
 				  NULL_TREE, NULL_TREE, NULL_TREE,
 				  GFC_CAF_COARRAY_ALLOC);
+      gfc_add_modify (&block, dest, gfc_conv_descriptor_data_get (dummy_desc));
 
       tmp = builtin_decl_explicit (BUILT_IN_MEMCPY);
       tmp = build_call_expr_loc (input_location, tmp, 3, dest, src,
