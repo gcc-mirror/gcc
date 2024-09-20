@@ -3957,6 +3957,7 @@ vect_build_slp_instance (vec_info *vinfo,
 	  /* Calculate the unrolling factor based on the smallest type.  */
 	  poly_uint64 unrolling_factor = 1;
 
+	  unsigned int rhs_common_nlanes = 0;
 	  unsigned int start = 0, end = i;
 	  while (start < group_size)
 	    {
@@ -3978,6 +3979,10 @@ vect_build_slp_instance (vec_info *vinfo,
 					     calculate_unrolling_factor
 					       (max_nunits, end - start));
 		  rhs_nodes.safe_push (node);
+		  if (start == 0)
+		    rhs_common_nlanes = SLP_TREE_LANES (node);
+		  else if (rhs_common_nlanes != SLP_TREE_LANES (node))
+		    rhs_common_nlanes = 0;
 		  start = end;
 		  if (want_store_lanes || force_single_lane)
 		    end = start + 1;
@@ -4014,6 +4019,19 @@ vect_build_slp_instance (vec_info *vinfo,
 			}
 		}
 	    }
+
+	  /* Now re-assess whether we want store lanes in case the
+	     discovery ended up producing all single-lane RHSs.  */
+	  if (rhs_common_nlanes == 1
+	      && ! STMT_VINFO_GATHER_SCATTER_P (stmt_info)
+	      && ! STMT_VINFO_STRIDED_P (stmt_info)
+	      && compare_step_with_zero (vinfo, stmt_info) > 0
+	      && (vect_store_lanes_supported (SLP_TREE_VECTYPE (rhs_nodes[0]),
+					      group_size,
+					      SLP_TREE_CHILDREN
+						(rhs_nodes[0]).length () != 1)
+		  != IFN_LAST))
+	    want_store_lanes = true;
 
 	  /* Now we assume we can build the root SLP node from all stores.  */
 	  if (want_store_lanes)
