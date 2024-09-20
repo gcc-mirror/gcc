@@ -197,13 +197,9 @@ checker_event::dump (pretty_printer *pp) const
 DEBUG_FUNCTION void
 checker_event::debug () const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
-  pp.set_output_stream (stderr);
+  tree_dump_pretty_printer pp (stderr);
   dump (&pp);
   pp_newline (&pp);
-  pp_flush (&pp);
 }
 
 /* Hook for being notified when this event has its final id EMISSION_ID

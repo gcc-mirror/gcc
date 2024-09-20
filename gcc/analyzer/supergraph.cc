@@ -898,13 +898,9 @@ superedge::dump (pretty_printer *pp) const
 DEBUG_FUNCTION void
 superedge::dump () const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
-  pp.set_output_stream (stderr);
+  tree_dump_pretty_printer pp (stderr);
   dump (&pp);
   pp_newline (&pp);
-  pp_flush (&pp);
 }
 
 /* Implementation of dedge::dump_dot for superedges.

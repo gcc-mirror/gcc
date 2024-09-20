@@ -363,12 +363,8 @@ call_details::dump_to_pp (pretty_printer *pp, bool simple) const
 DEBUG_FUNCTION void
 call_details::dump (bool simple) const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
-  pp.set_output_stream (stderr);
+  tree_dump_pretty_printer pp (stderr);
   dump_to_pp (&pp, simple);
-  pp_flush (&pp);
 }
 
 /* Get a conjured_svalue for this call for REG,

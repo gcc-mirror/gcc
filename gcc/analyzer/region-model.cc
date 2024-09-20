@@ -223,13 +223,9 @@ region_to_value_map::dump_to_pp (pretty_printer *pp, bool simple,
 DEBUG_FUNCTION void
 region_to_value_map::dump (bool simple) const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
-  pp.set_output_stream (stderr);
+  tree_dump_pretty_printer pp (stderr);
   dump_to_pp (&pp, simple, true);
   pp_newline (&pp);
-  pp_flush (&pp);
 }
 
 /* Generate a JSON value for this region_to_value_map.
@@ -483,13 +479,9 @@ region_model::dump_to_pp (pretty_printer *pp, bool simple,
 void
 region_model::dump (FILE *fp, bool simple, bool multiline) const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
-  pp.set_output_stream (fp);
+  tree_dump_pretty_printer pp (fp);
   dump_to_pp (&pp, simple, multiline);
   pp_newline (&pp);
-  pp_flush (&pp);
 }
 
 /* Dump a multiline representation of this model to stderr.  */
@@ -7397,12 +7389,8 @@ model_merger::dump_to_pp (pretty_printer *pp, bool simple) const
 void
 model_merger::dump (FILE *fp, bool simple) const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
-  pp.set_output_stream (fp);
+  tree_dump_pretty_printer pp (fp);
   dump_to_pp (&pp, simple);
-  pp_flush (&pp);
 }
 
 /* Dump a multiline representation of this merger to stderr.  */

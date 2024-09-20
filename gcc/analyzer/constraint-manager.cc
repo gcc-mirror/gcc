@@ -182,13 +182,9 @@ range::dump_to_pp (pretty_printer *pp) const
 DEBUG_FUNCTION void
 range::dump () const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
-  pp.set_output_stream (stderr);
+  tree_dump_pretty_printer pp (stderr);
   dump_to_pp (&pp);
   pp_newline (&pp);
-  pp_flush (&pp);
 }
 
 /* Determine if there is only one possible value for this range.
@@ -445,13 +441,9 @@ bounded_range::dump_to_pp (pretty_printer *pp, bool show_types) const
 void
 bounded_range::dump (bool show_types) const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
-  pp.set_output_stream (stderr);
+  tree_dump_pretty_printer pp (stderr);
   dump_to_pp (&pp, show_types);
   pp_newline (&pp);
-  pp_flush (&pp);
 }
 
 json::object *
@@ -718,13 +710,9 @@ bounded_ranges::dump_to_pp (pretty_printer *pp, bool show_types) const
 DEBUG_FUNCTION void
 bounded_ranges::dump (bool show_types) const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
-  pp.set_output_stream (stderr);
+  tree_dump_pretty_printer pp (stderr);
   dump_to_pp (&pp, show_types);
   pp_newline (&pp);
-  pp_flush (&pp);
 }
 
 json::value *
@@ -1769,12 +1757,8 @@ constraint_manager::dump_to_pp (pretty_printer *pp, bool multiline) const
 void
 constraint_manager::dump (FILE *fp) const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
-  pp.set_output_stream (fp);
+  tree_dump_pretty_printer pp (fp);
   dump_to_pp (&pp, true);
-  pp_flush (&pp);
 }
 
 /* Dump a multiline representation of this constraint_manager to stderr.  */

@@ -107,13 +107,9 @@ uncertainty_t::dump_to_pp (pretty_printer *pp, bool simple) const
 DEBUG_FUNCTION void
 uncertainty_t::dump (bool simple) const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
-  pp.set_output_stream (stderr);
+  tree_dump_pretty_printer pp (stderr);
   dump_to_pp (&pp, simple);
   pp_newline (&pp);
-  pp_flush (&pp);
 }
 
 /* class binding_key.  */
@@ -144,13 +140,9 @@ binding_key::make (store_manager *mgr, const region *r)
 DEBUG_FUNCTION void
 binding_key::dump (bool simple) const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
-  pp.set_output_stream (stderr);
+  tree_dump_pretty_printer pp (stderr);
   dump_to_pp (&pp, simple);
   pp_newline (&pp);
-  pp_flush (&pp);
 }
 
 /* Get a description of this binding_key.  */
@@ -230,11 +222,9 @@ bit_range::dump_to_pp (pretty_printer *pp) const
 DEBUG_FUNCTION void
 bit_range::dump () const
 {
-  pretty_printer pp;
-  pp.set_output_stream (stderr);
+  tree_dump_pretty_printer pp (stderr);
   dump_to_pp (&pp);
   pp_newline (&pp);
-  pp_flush (&pp);
 }
 
 /* Generate a JSON value for this bit_range.
@@ -506,11 +496,9 @@ byte_range::dump_to_pp (pretty_printer *pp) const
 DEBUG_FUNCTION void
 byte_range::dump () const
 {
-  pretty_printer pp;
-  pp.set_output_stream (stderr);
+  tree_dump_pretty_printer pp (stderr);
   dump_to_pp (&pp);
   pp_newline (&pp);
-  pp_flush (&pp);
 }
 
 /* Generate a JSON value for this byte_range.
@@ -773,13 +761,9 @@ binding_map::dump_to_pp (pretty_printer *pp, bool simple,
 DEBUG_FUNCTION void
 binding_map::dump (bool simple) const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
-  pp.set_output_stream (stderr);
+  tree_dump_pretty_printer pp (stderr);
   dump_to_pp (&pp, simple, true);
   pp_newline (&pp);
-  pp_flush (&pp);
 }
 
 /* Return a new json::object of the form
@@ -1400,17 +1384,13 @@ binding_cluster::dump_to_pp (pretty_printer *pp, bool simple,
 DEBUG_FUNCTION void
 binding_cluster::dump (bool simple) const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
-  pp.set_output_stream (stderr);
+  tree_dump_pretty_printer pp (stderr);
   pp_string (&pp, "  cluster for: ");
   m_base_region->dump_to_pp (&pp, simple);
   pp_string (&pp, ": ");
   pp_newline (&pp);
   dump_to_pp (&pp, simple, true);
   pp_newline (&pp);
-  pp_flush (&pp);
 }
 
 /* Assert that this object is valid.  */
@@ -2636,13 +2616,9 @@ store::dump_to_pp (pretty_printer *pp, bool simple, bool multiline,
 DEBUG_FUNCTION void
 store::dump (bool simple) const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
-  pp.set_output_stream (stderr);
+  tree_dump_pretty_printer pp (stderr);
   dump_to_pp (&pp, simple, true, NULL);
   pp_newline (&pp);
-  pp_flush (&pp);
 }
 
 /* Assert that this object is valid.  */

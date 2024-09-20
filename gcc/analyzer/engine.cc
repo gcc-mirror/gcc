@@ -1419,12 +1419,8 @@ void
 exploded_node::dump (FILE *fp,
 		     const extrinsic_state &ext_state) const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
-  pp.set_output_stream (fp);
+  tree_dump_pretty_printer pp (fp);
   dump_to_pp (&pp, ext_state);
-  pp_flush (&pp);
 }
 
 /* Dump a multiline representation of this node to stderr.  */
@@ -4828,12 +4824,8 @@ exploded_path::dump_to_pp (pretty_printer *pp,
 void
 exploded_path::dump (FILE *fp, const extrinsic_state *ext_state) const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
-  pp.set_output_stream (fp);
+  tree_dump_pretty_printer pp (fp);
   dump_to_pp (&pp, ext_state);
-  pp_flush (&pp);
 }
 
 /* Dump this path in multiline form to stderr.  */

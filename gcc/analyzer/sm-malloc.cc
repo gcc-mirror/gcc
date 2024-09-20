@@ -584,12 +584,9 @@ deallocator_set::deallocator_set (malloc_state_machine *sm,
 DEBUG_FUNCTION void
 deallocator_set::dump () const
 {
-  pretty_printer pp;
-  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
-  pp.set_output_stream (stderr);
+  tree_dump_pretty_printer pp (stderr);
   dump_to_pp (&pp);
   pp_newline (&pp);
-  pp_flush (&pp);
 }
 
 /* struct custom_deallocator_set : public deallocator_set.  */

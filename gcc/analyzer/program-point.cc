@@ -300,11 +300,8 @@ program_point::print (pretty_printer *pp, const format &f) const
 DEBUG_FUNCTION void
 program_point::dump () const
 {
-  pretty_printer pp;
-  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
-  pp.set_output_stream (stderr);
+  tree_dump_pretty_printer pp (stderr);
   print (&pp, format (true));
-  pp_flush (&pp);
 }
 
 /* Return a new json::object of the form
