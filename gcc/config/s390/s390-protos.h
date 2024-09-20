@@ -50,7 +50,6 @@ extern void s390_set_has_landing_pad_p (bool);
 extern bool s390_hard_regno_rename_ok (unsigned int, unsigned int);
 extern int s390_class_max_nregs (enum reg_class, machine_mode);
 extern bool s390_return_addr_from_memory(void);
-extern rtx s390_gen_lowpart_subreg (machine_mode, rtx);
 extern bool s390_fma_allowed_p (machine_mode);
 #if S390_USE_TARGET_ATTRIBUTE
 extern tree s390_valid_target_attribute_tree (tree args,
