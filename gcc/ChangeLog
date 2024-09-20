@@ -1,3 +1,28 @@
+2024-09-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ipa-modref.cc (modref_eaf_analysis::analyze_ssa_name): Always
+	process both the load and the store of a memory copy operation.
+
+2024-09-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2024-09-12  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390-protos.h (s390_gen_lowpart_subreg): Remove.
+	* config/s390/s390.cc (s390_gen_lowpart_subreg): Remove.
+	(s390_expand_insv): Use adjust_address() and emit a
+	strict_low_part only in case of a natural subreg.
+	* config/s390/s390.md: Use gen_lowpart() instead of
+	s390_gen_lowpart_subreg().
+
+2024-09-19  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* doc/invoke.texi: Add corei7, corei7-avx, core-avx-i,
+	core-avx2, atom, slm, gracemont and emerarldrapids. Reorder
+	the -march documentation by splitting them into date-to-now
+	products, P-core, E-core and Xeon Phi. Refine the product names in
+	documentation.
+
 2024-09-18  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
