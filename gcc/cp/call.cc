@@ -13350,13 +13350,10 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 	}
     }
 
-  /* F1 is a member of a class D, F2 is a member of a base class B of D, and
-     for all arguments the corresponding parameters of F1 and F2 have the same
-     type (CWG 2273/2277). */
-  if (DECL_P (cand1->fn) && DECL_CLASS_SCOPE_P (cand1->fn)
-      && !DECL_CONV_FN_P (cand1->fn)
-      && DECL_P (cand2->fn) && DECL_CLASS_SCOPE_P (cand2->fn)
-      && !DECL_CONV_FN_P (cand2->fn))
+  /* F1 is a constructor for a class D, F2 is a constructor for a base class B
+     of D, and for all arguments the corresponding parameters of F1 and F2 have
+     the same type (CWG 2273/2277).  */
+  if (DECL_INHERITED_CTOR (cand1->fn) || DECL_INHERITED_CTOR (cand2->fn))
     {
       tree base1 = DECL_CONTEXT (strip_inheriting_ctors (cand1->fn));
       tree base2 = DECL_CONTEXT (strip_inheriting_ctors (cand2->fn));

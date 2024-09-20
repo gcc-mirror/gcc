@@ -24,5 +24,5 @@ struct C: B {
 int main()
 {
   C c (42);
-  c.f();
+  c.f(); // { dg-error "ambiguous" }
 }
