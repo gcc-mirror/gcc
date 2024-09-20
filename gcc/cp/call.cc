@@ -12808,27 +12808,6 @@ class_of_implicit_object (z_candidate *cand)
   return BINFO_TYPE (cand->conversion_path);
 }
 
-/* True if candidates C1 and C2 have corresponding object parameters per
-   [basic.scope.scope].  */
-
-static bool
-object_parms_correspond (z_candidate *c1, tree fn1, z_candidate *c2, tree fn2)
-{
-  tree context = class_of_implicit_object (c1);
-  tree ctx2 = class_of_implicit_object (c2);
-  if (!ctx2)
-    /* Leave context as is. */;
-  else if (!context)
-    context = ctx2;
-  else if (context != ctx2)
-    /* This can't happen for normal function calls, since it means finding
-       functions in multiple bases which would fail with an ambiguous lookup,
-       but it can occur with reversed operators.  */
-    return false;
-
-  return object_parms_correspond (fn1, fn2, context);
-}
-
 /* Return whether the first parameter of C1 matches the second parameter
    of C2.  */
 
@@ -12893,16 +12872,19 @@ cand_parms_match (z_candidate *c1, z_candidate *c2, pmatch match_kind)
   tree parms1 = TYPE_ARG_TYPES (TREE_TYPE (fn1));
   tree parms2 = TYPE_ARG_TYPES (TREE_TYPE (fn2));
 
-  if (!(DECL_FUNCTION_MEMBER_P (fn1)
-	&& DECL_FUNCTION_MEMBER_P (fn2)))
-    /* Early escape.  */;
-
-  /* CWG2789 is not adequate, it should specify corresponding object
-     parameters, not same typed object parameters.  */
-  else if (!object_parms_correspond (c1, fn1, c2, fn2))
-    return false;
-  else
+  if (DECL_FUNCTION_MEMBER_P (fn1)
+      && DECL_FUNCTION_MEMBER_P (fn2))
     {
+      tree base1 = DECL_CONTEXT (strip_inheriting_ctors (fn1));
+      tree base2 = DECL_CONTEXT (strip_inheriting_ctors (fn2));
+      if (base1 != base2)
+	return false;
+
+      /* Use object_parms_correspond to simplify comparing iobj/xobj/static
+	 member functions.  */
+      if (!object_parms_correspond (fn1, fn2, base1))
+	return false;
+
       /* We just compared the object parameters, if they don't correspond
 	 we already returned false.  */
       auto skip_parms = [] (tree fn, tree parms)
@@ -13269,10 +13251,14 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 	return winner;
     }
 
-  /* Concepts: F1 and F2 are non-template functions with the same
-     parameter-type-lists, and F1 is more constrained than F2 according to the
-     partial ordering of constraints described in 13.5.4.  */
-
+  /* F1 and F2 are non-template functions and
+     - they have the same non-object-parameter-type-lists ([dcl.fct]), and
+     - if they are member functions, both are direct members of the same
+       class, and
+     - if both are non-static member functions, they have the same types for
+       their object parameters, and
+     - F1 is more constrained than F2 according to the partial ordering of
+       constraints described in [temp.constr.order].  */
   if (flag_concepts && DECL_P (cand1->fn) && DECL_P (cand2->fn)
       && !cand1->template_decl && !cand2->template_decl
       && cand_parms_match (cand1, cand2, pmatch::current))
