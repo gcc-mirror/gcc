@@ -3251,6 +3251,22 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type)
       && types_match (type, @0, @1))))
 
+/* Signed saturation add, case 5:
+   T sum = (T)((UT)X + (UT)Y);
+   SAT_S_ADD = (X ^ sum) < 0 & ~((X ^ Y) < 0) ? (-(T)(X < 0) ^ MAX) : sum;
+
+   The T and UT are type pair like T=int8_t, UT=uint8_t.  */
+(match (signed_integer_sat_add @0 @1)
+ (cond^ (bit_and:c (lt (bit_xor @0 (nop_convert@2 (plus (nop_convert @0)
+							 (nop_convert @1))))
+		       integer_zerop)
+		   (bit_not (lt (bit_xor:c @0 @1) integer_zerop)))
+	(bit_xor:c (nop_convert (negate (nop_convert (convert
+						      (lt @0 integer_zerop)))))
+		   max_value)
+	@2)
+ (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type))))
+
 /* Unsigned saturation sub, case 1 (branch with gt):
    SAT_U_SUB = X > Y ? X - Y : 0  */
 (match (unsigned_integer_sat_sub @0 @1)
