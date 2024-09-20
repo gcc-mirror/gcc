@@ -1,3 +1,20 @@
+2024-09-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/106606
+	* trans-types.cc (gfc_get_derived_type): Only build non-pointer
+	derived types as component's types when they are not yet built.
+
+2024-09-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/85002
+	* trans-array.cc (duplicate_allocatable_coarray): Allow adding
+	of deep copy code in the when-allocated case.  Add bounds
+	computation before condition, because coarrays need the bounds
+	also when not allocated.
+	(structure_alloc_comps): Duplication in the coarray case is done
+	already, omit it.  Add the deep-code when duplication a coarray.
+	* trans-expr.cc (gfc_trans_structure_assign): Fix comment.
+
 2024-09-15  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* trans-expr.cc (gfc_advance_se_ss_chain): Don't use an element

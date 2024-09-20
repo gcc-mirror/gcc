@@ -1,3 +1,41 @@
+2024-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116492
+	DR 2789
+	* call.cc (object_parms_correspond): Remove.
+	(cand_parms_match): Return false for member functions that come
+	from different classes.  Adjust call to object_parms_correspond.
+	(joust): Update comment for the non-template "more constrained"
+	case.
+
+2024-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	DR 2273
+	* call.cc (joust): Restrict inheritedness tiebreaker to
+	constructors.
+
+2024-09-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (coro_build_artificial_var_with_dve): New.
+	(coro_build_and_push_artificial_var): New.
+	(coro_build_and_push_artificial_var_with_dve): New.
+	(analyze_fn_parms): Ensure that frame entries cannot clash
+	with local variables.
+	(build_coroutine_frame_delete_expr): Amend comment.
+	(cp_coroutine_transform::build_ramp_function): Rework to
+	avoid manual management of variables and scopes.
+
+2024-09-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116162
+	* class.cc (check_bases_and_members): Don't set DECL_DELETED_FN here,
+	leave it to defaulted_late_check.
+	* cp-tree.h (maybe_delete_defaulted_fn): Declare.
+	(defaulted_late_check): Add a tristate parameter.
+	* method.cc (maybe_delete_defaulted_fn): New.
+	(defaulted_late_check): Add a tristate parameter.  Call
+	maybe_delete_defaulted_fn instead of giving an error.
+
 2024-09-18  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/116714

@@ -1,3 +1,12 @@
+2024-09-19  Marek Polacek  <polacek@redhat.com>
+
+	* c.opt.urls: Regenerate.
+
+2024-09-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116162
+	* c.opt (Wdefaulted-function-deleted): New.
+
 2024-09-12  Jason Merrill  <jason@redhat.com>
 
 	* c.opt: Add CppReason for Wc++{14,17,20,23}-extensions.

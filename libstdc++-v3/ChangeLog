@@ -1,3 +1,77 @@
+2024-09-19  Jason Merrill  <jason@redhat.com>
+
+	* include/bits/algorithmfwd.h:
+	* include/bits/allocator.h:
+	* include/bits/codecvt.h:
+	* include/bits/concept_check.h:
+	* include/bits/cpp_type_traits.h:
+	* include/bits/hashtable.h:
+	* include/bits/iterator_concepts.h:
+	* include/bits/ostream_insert.h:
+	* include/bits/ranges_base.h:
+	* include/bits/regex_automaton.h:
+	* include/bits/std_abs.h:
+	* include/bits/stl_algo.h:
+	* include/c_compatibility/fenv.h:
+	* include/c_compatibility/inttypes.h:
+	* include/c_compatibility/stdint.h:
+	* include/ext/concurrence.h:
+	* include/ext/type_traits.h:
+	* testsuite/ext/type_traits/add_unsigned_floating_neg.cc:
+	* testsuite/ext/type_traits/add_unsigned_integer_neg.cc:
+	* testsuite/ext/type_traits/remove_unsigned_floating_neg.cc:
+	* testsuite/ext/type_traits/remove_unsigned_integer_neg.cc:
+	* include/bits/basic_ios.tcc:
+	* include/bits/basic_string.tcc:
+	* include/bits/fstream.tcc:
+	* include/bits/istream.tcc:
+	* include/bits/locale_classes.tcc:
+	* include/bits/locale_facets.tcc:
+	* include/bits/ostream.tcc:
+	* include/bits/regex_compiler.tcc:
+	* include/bits/sstream.tcc:
+	* include/bits/streambuf.tcc:
+	* configure: Regenerate.
+	* include/bits/c++config:
+	* include/c/cassert:
+	* include/c/cctype:
+	* include/c/cerrno:
+	* include/c/cfloat:
+	* include/c/climits:
+	* include/c/clocale:
+	* include/c/cmath:
+	* include/c/csetjmp:
+	* include/c/csignal:
+	* include/c/cstdarg:
+	* include/c/cstddef:
+	* include/c/cstdio:
+	* include/c/cstdlib:
+	* include/c/cstring:
+	* include/c/ctime:
+	* include/c/cwchar:
+	* include/c/cwctype:
+	* include/c_global/climits:
+	* include/c_global/cmath:
+	* include/c_global/cstddef:
+	* include/c_global/cstdlib:
+	* include/decimal/decimal:
+	* include/ext/rope:
+	* include/std/any:
+	* include/std/charconv:
+	* include/std/complex:
+	* include/std/coroutine:
+	* include/std/format:
+	* include/std/iomanip:
+	* include/std/limits:
+	* include/std/numbers:
+	* include/tr1/functional:
+	* include/tr1/tuple:
+	* include/tr1/type_traits:
+	* libsupc++/compare:
+	* libsupc++/new: Add #pragma GCC diagnostic to suppress
+	undesired warnings.
+	* acinclude.m4: Change -Wabi version from 2 to 19.
+
 2024-09-18  Jason Merrill  <jason@redhat.com>
 
 	* include/bits/basic_ios.h: Add braces.

@@ -1,3 +1,241 @@
+2024-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116492
+	DR 2789
+	* g++.dg/cpp2a/concepts-memfun4.C: Also compile in C++20 mode.
+	Expect ambiguity when candidates come from different classes.
+	* g++.dg/cpp2a/concepts-inherit-ctor12.C: New test.
+
+2024-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	DR 2273
+	* g++.dg/cpp1z/using1.C: Expect ambiguity for non-constructor call.
+	* g++.dg/overload/using5.C: Likewise.
+
+2024-09-20  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/rtl/aarch64/vector-eq.c: New test.
+
+2024-09-20  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/116628
+	* gcc.dg/vect/pr116628.c: Update cmdline.
+
+2024-09-20  Richard Biener  <rguenther@suse.de>
+
+	* gfortran.dg/vect/vect-8.f90: Allow one more vectorized loop.
+
+2024-09-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/TI-constants-nolra.c: Removed.
+	* gcc.target/s390/pr79895.c: Removed.
+
+2024-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/116397
+	* gcc.dg/vect/slp-reduc-3.c: Look for " = VEC_PERM_EXPR"
+	instead of "VEC_PERM_EXPR".
+
+2024-09-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/ipa/modref-4.c: New test.
+
+2024-09-20  Sam James  <sam@gentoo.org>
+
+	* gcc.target/m68k/pr108640.c: Fix dg directive typo.
+	* gcc.target/m68k/pr110934.c: Ditto.
+	* gcc.target/m68k/pr82420.c: Ditto.
+	* gcc.target/powerpc/pr99708.c: Ditto.
+
+2024-09-20  Uros Bizjak  <ubizjak@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116738
+	* gcc.target/i386/sse-pr116738.c: New test.
+
+2024-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/116784
+	* gcc.dg/vect/slp-perm-9.c: Use vect_perm_short also for
+	the SLP check.
+
+2024-09-20  Sam James  <sam@gentoo.org>
+
+	* gcc.dg/debug/btf/btf-datasec-1.c: Fix whitespace.
+
+2024-09-20  Sam James  <sam@gentoo.org>
+
+	* g++.dg/other/operator2.C: Fix dg-do directive.
+	* gcc.dg/Warray-bounds-67.c: Ditto.
+	* gcc.dg/cpp/builtin-macro-1.c: Ditto.
+	* gcc.dg/tree-ssa/builtin-snprintf-3.c: Ditto.
+	* obj-c++.dg/empty-private-1.mm: Ditto.
+
+2024-09-20  Sam James  <sam@gentoo.org>
+
+	* gcc.dg/debug/btf/btf-array-1.c: Fix dg-do directive syntax.
+	* gcc.dg/debug/btf/btf-bitfields-1.c: Ditto.
+	* gcc.dg/debug/btf/btf-bitfields-2.c: Ditto.
+	* gcc.dg/debug/btf/btf-datasec-1.c: Ditto.
+	* gcc.dg/debug/btf/btf-union-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-anonymous-struct-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-anonymous-union-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-array-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-array-2.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-array-4.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-array-5.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-array-6.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-attr-mode-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-attr-used-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-bitfields-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-bitfields-2.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-bitfields-3.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-bitfields-4.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-complex-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-cvr-quals-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-cvr-quals-2.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-cvr-quals-3.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-cvr-quals-4.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-enum-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-enum-2.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-file-scope-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-float-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-forward-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-forward-2.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-func-index-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-function-pointers-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-function-pointers-2.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-function-pointers-3.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-function-pointers-4.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-functions-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-int-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-objt-index-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-pointers-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-pointers-2.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-preamble-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-str-table-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-struct-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-struct-2.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-struct-array-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-struct-array-2.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-typedef-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-typedef-2.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-typedef-3.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-typedef-struct-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-typedef-struct-2.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-typedef-struct-3.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-union-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-variables-1.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-variables-2.c: Ditto.
+	* gcc.dg/debug/ctf/ctf-variables-3.c: Ditto.
+
+2024-09-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116162
+	* g++.dg/cpp0x/defaulted15.C: Add dg-warning/dg-error.
+	* g++.dg/cpp0x/defaulted51.C: Likewise.
+	* g++.dg/cpp0x/defaulted52.C: Likewise.
+	* g++.dg/cpp0x/defaulted53.C: Likewise.
+	* g++.dg/cpp0x/defaulted54.C: Likewise.
+	* g++.dg/cpp0x/defaulted56.C: Likewise.
+	* g++.dg/cpp0x/defaulted57.C: Likewise.
+	* g++.dg/cpp0x/defaulted58.C: Likewise.
+	* g++.dg/cpp0x/defaulted59.C: Likewise.
+	* g++.dg/cpp0x/defaulted63.C: New test.
+	* g++.dg/cpp0x/defaulted64.C: New test.
+	* g++.dg/cpp0x/defaulted65.C: New test.
+	* g++.dg/cpp0x/defaulted66.C: New test.
+	* g++.dg/cpp0x/defaulted67.C: New test.
+	* g++.dg/cpp0x/defaulted68.C: New test.
+	* g++.dg/cpp0x/defaulted69.C: New test.
+	* g++.dg/cpp23/defaulted1.C: New test.
+
+2024-09-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat_s_add-5.c: New test.
+	* gcc.target/riscv/sat_s_add-6.c: New test.
+	* gcc.target/riscv/sat_s_add-7.c: New test.
+	* gcc.target/riscv/sat_s_add-8.c: New test.
+	* gcc.target/riscv/sat_s_add-run-5.c: New test.
+	* gcc.target/riscv/sat_s_add-run-6.c: New test.
+	* gcc.target/riscv/sat_s_add-run-7.c: New test.
+	* gcc.target/riscv/sat_s_add-run-8.c: New test.
+
+2024-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116768
+	* gcc.dg/torture/pr116768.c: New testcase.
+
+2024-09-19  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-outer-slp-1.c: Adjust.
+
+2024-09-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/recursive_alloc_comp_5.f90: New test.
+
+2024-09-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-21.c: Adjust
+	the dump check times from 2 to 4.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-22.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-23.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-24.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-25.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-26.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-27.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-28.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-29.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-30.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-31.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-8.c: Ditto.
+
+2024-09-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray/alloc_comp_9.f90: New test.
+
+2024-09-19  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* gcc.target/aarch64/sve/const_fold_mul_1.c: Adjust expected
+	outcome.
+	* gcc.target/aarch64/sve/fold_mul_zero.c: New test.
+
+2024-09-19  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10_2-512-vcvt2ps2phx-2.c: Enhance mask test.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvthf82ph-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtne2ph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtne2ph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtne2ph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtne2ph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtneph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtneph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtneph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtneph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx512f-helper.h: Fix a typo in macro define.
+
+2024-09-19  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10_2-512-vpdpbssd-2.c: Include
+	avx512f-mask-type.h.
+	* gcc.target/i386/avx10_2-vminmaxsd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxsh-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxss-2.c: Ditto.
+
+2024-09-19  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/pr84877.c: Try to make the test result	consistent by
+	misaligning the stack.
+
 2024-09-18  Pan Li  <pan2.li@intel.com>
 
 	* gcc.target/riscv/sat_s_add-4.c: Update test for int64_t

@@ -1,3 +1,35 @@
+2024-09-20  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/target.c (omp_get_uid_from_device,
+	omp_get_device_from_uid): Add stub implementation.
+	* config/nvptx/target.c (omp_get_uid_from_device,
+	omp_get_device_from_uid): Likewise.
+	* fortran.c (omp_get_uid_from_device_,
+	omp_get_uid_from_device_8_): New functions.
+	* libgomp-plugin.h (GOMP_OFFLOAD_get_uid): Add prototype.
+	* libgomp.h (struct gomp_device_descr): Add 'uid' and 'get_uid_func'.
+	* libgomp.map (GOMP_6.0): New, includind the new UID routines.
+	* libgomp.texi (OpenMP Technical Report 13): Mark UID routines as 'Y'.
+	(Device Information Routines): Document new UID routines.
+	(Offload-Target Specifics): Document UID format.
+	* omp.h.in (omp_get_device_from_uid, omp_get_uid_from_device):
+	New prototype.
+	* omp_lib.f90.in (omp_get_device_from_uid, omp_get_uid_from_device):
+	New interface.
+	* omp_lib.h.in: Likewise.
+	* plugin/cuda-lib.def: Add cuDeviceGetUuid and cuDeviceGetUuid_v2 via
+	CUDA_ONE_CALL_MAYBE_NULL.
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_get_uid): New.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_get_uid): New.
+	* target.c (str_omp_initial_device): New static var.
+	(STR_OMP_DEV_PREFIX): Define.
+	(gomp_get_uid_for_device, omp_get_uid_from_device,
+	omp_get_device_from_uid): New.
+	(gomp_load_plugin_for_device): DLSYM_OPT the function 'get_uid'.
+	(gomp_target_init): Set the device's 'uid' field to NULL.
+	* testsuite/libgomp.c/device_uid.c: New test.
+	* testsuite/libgomp.fortran/device_uid.f90: New test.
+
 2024-09-02  Andrew Stubbs  <ams@baylibre.com>
 
 	* libgomp.texi: Remove fiji and gfx803.

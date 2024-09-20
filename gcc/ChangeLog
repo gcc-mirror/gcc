@@ -1,3 +1,165 @@
+2024-09-20  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.h (VECTOR_STORE_FLAG_VALUE): New.
+
+2024-09-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (AS_NEEDS_DASH_FOR_PIPED_INPUT): New.
+
+2024-09-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (get_group_load_store_type): Fall back
+	to VMAT_ELEMENTWISE when single element interleaving of
+	a too large group.
+	(vectorizable_load): Do not try to verify load permutations
+	when using VMAT_ELEMENTWISE for single-lane SLP and fix code
+	generation for this case.
+
+2024-09-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_analyze_slp): Lookup patterns when
+	discovering from only-live roots.
+
+2024-09-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390.cc (s390_lra_p): Remove.
+	(TARGET_LRA_P): Remove.
+	* config/s390/s390.opt (mlra): Remove.
+	* config/s390/s390.opt.urls (mlra): Remove.
+
+2024-09-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ipa-modref.cc (modref_eaf_analysis::analyze_ssa_name): Always
+	process both the load and the store of a memory copy operation.
+
+2024-09-20  Tobias Burnus  <tburnus@baylibre.com>
+
+	* omp-general.cc (omp_runtime_api_procname): Add
+	get_device_from_uid and omp_get_uid_from_device routines.
+
+2024-09-20  Uros Bizjak  <ubizjak@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116738
+	* config/i386/subst.md (mask_scalar_operand_arg34,
+	mask_scalar_expand_op3, round_saeonly_scalar_mask_arg3): New
+	subst attributes.
+	* config/i386/sse.md
+	(<sse>_vm<code><mode>3<mask_scalar_name><round_saeonly_scalar_name>):
+	Change from define_insn to define_expand, rename the old define_insn
+	to ...
+	(*<sse>_vm<code><mode>3<mask_scalar_name><round_saeonly_scalar_name>):
+	... this.
+	(<sse>_ieee_vm<ieee_maxmin><mode>3<mask_scalar_name><round_saeonly_scalar_name>):
+	New define_insn.
+
+2024-09-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/116643
+	* ssa-iterators.h (single_phi_def): Use gimple_phi_result
+	instead of PHI_RESULT.
+	(op_iter_init_phidef): Use gimple_phi_result/gimple_phi_result_ptr
+	instead of PHI_RESULT/PHI_RESULT_PTR.
+	* tree-ssa-operands.h (PHI_RESULT_PTR): Remove.
+	(PHI_RESULT): Use gimple_phi_result directly.
+	(SET_PHI_RESULT): Use gimple_phi_result_ptr directly.
+
+2024-09-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116162
+	* doc/invoke.texi: Document -Wdefaulted-function-deleted.
+
+2024-09-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2asm.cc (eh_data_format_name): Use constexpr initialization
+	of format_names table for C++14 instead of a large switch.
+
+2024-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116768
+	* tree-data-ref.cc (build_classic_dist_vector_1): Revert
+	PR101009 change.
+	* tree-chrec.cc (eq_evolutions_p): Make sure (sizetype)1
+	and (int)1 compare equal.
+
+2024-09-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_analyze_slp): Add force_single_lane
+	parameter.
+	* tree-vect-slp.cc (vect_analyze_slp_instance): Remove
+	defaulting of force_single_lane.
+	(vect_build_slp_instance): Likewise.  Pass down appropriate
+	force_single_lane.
+	(vect_analyze_slp): Add force_sigle_lane parameter and pass
+	it down appropriately.
+	(vect_slp_analyze_bb_1): Always do multi-lane SLP.
+	* tree-vect-loop.cc (vect_analyze_loop_2): Track two SLP
+	modes and adjust accordingly.
+	(vect_analyze_loop_1): Save the SLP mode when unrolling.
+
+2024-09-19  Jason Merrill  <jason@redhat.com>
+
+	* ginclude/stdint-wrap.h: Add #pragma GCC diagnostic to suppress
+	undesired warnings.
+	* gsyslimits.h: Likewise.
+
+2024-09-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-data-ref.cc (build_classic_dist_vector): Move
+	distance vector dumping to single caller ...
+	(subscript_dependence_tester): ... here, dumping always
+	when we succeed computing it.
+
+2024-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116573
+	* tree-vect-loop.cc (vect_analyze_loop_2): Allow .SELECV_VL
+	for SLP but disable it when there's multi-lane instances.
+	* tree-vect-stmts.cc (vectorizable_store): Only compute the
+	ptr increment when generating code.
+	(vectorizable_load): Likewise.
+
+2024-09-19  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add the form 3 of signed .SAT_ADD matching.
+
+2024-09-19  Pan Li  <pan2.li@intel.com>
+
+	* genmatch.cc (dt_operand::gen_phi_on_cond): Leverage the
+	match_cond_with_binary_phi API to get cond gimple, true and
+	false TREE arg.
+
+2024-09-19  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc (svmul_impl::fold):
+	Add folding of all-zero operands to zero vector.
+
+2024-09-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/tuning_models/neoversev2.h (neoversev2_prefetch_tune):
+	Define.
+	(neoversev2_tunings): Use it.
+
+2024-09-19  Hu, Lin1  <lin1.hu@intel.com>
+
+	* config/i386/i386.md: Add ssemov2, sseicvt2.
+	* config/i386/sse.md (sse2_cvtsi2sd): Apply sseicvt2.
+	(sse2_cvtsi2sdq<round_name>): Ditto.
+	(vec_set<mode>_0): Apply ssemov2 for 4, 6.
+
+2024-09-19  Pan Li  <pan2.li@intel.com>
+
+	* gimple-match-head.cc (match_cond_with_binary_phi): Add new func
+	impl to match binary phi for true and false arg.
+
+2024-09-19  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* doc/invoke.texi: Add corei7, corei7-avx, core-avx-i,
+	core-avx2, atom, slm, gracemont and emerarldrapids. Reorder
+	the -march documentation by splitting them into date-to-now
+	products, P-core and E-core. Refine the product names in
+	documentation.
+
 2024-09-18  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.h (GENERAL_REGNO_P): Define.
