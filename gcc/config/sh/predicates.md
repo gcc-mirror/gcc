@@ -485,6 +485,17 @@
 	 && sh_legitimate_index_p (mode, XEXP (plus0_rtx, 1), TARGET_SH2A, true);
 })
 
+;; Returns true if OP is a pc relative load operand.
+(define_predicate "pc_relative_load_operand"
+  (match_code "mem")
+{
+  if (GET_MODE (op) != QImode
+      && IS_PC_RELATIVE_LOAD_ADDR_P (XEXP (op, 0)))
+    return true;
+
+  return false;
+})
+
 ;; Returns true if OP is a valid source operand for a logical operation.
 (define_predicate "logical_operand"
   (and (match_code "subreg,reg,const_int")
