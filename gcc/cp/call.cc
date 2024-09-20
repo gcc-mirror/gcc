@@ -12826,6 +12826,14 @@ cand_parms_match (z_candidate *c1, z_candidate *c2, pmatch match_kind)
 	&& DECL_FUNCTION_MEMBER_P (fn2)))
     /* Early escape.  */;
 
+  else if ((DECL_INHERITED_CTOR (fn1) || DECL_INHERITED_CTOR (fn2))
+	   && (DECL_CONTEXT (strip_inheriting_ctors (fn1))
+	       != DECL_CONTEXT (strip_inheriting_ctors (fn2))))
+    /* This should really be checked for all member functions as per
+       CWG2789, but for GCC 14 we check this only for constructors since
+       without r15-3740 doing so would result in inconsistent handling
+       of object parameters (such as in concepts-memfun4.C).  */
+    return false;
   /* CWG2789 is not adequate, it should specify corresponding object
      parameters, not same typed object parameters.  */
   else if (!object_parms_correspond (c1, fn1, c2, fn2))
