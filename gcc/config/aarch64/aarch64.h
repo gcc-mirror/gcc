@@ -156,6 +156,16 @@
 
 #define PCC_BITFIELD_TYPE_MATTERS	1
 
+/* Use the same RTL truth representation for vector elements as we do
+   for scalars.  This maintains the property that a comparison like
+   eq:V4SI is a composition of 4 individual eq:SIs, just like plus:V4SI
+   is a composition of 4 individual plus:SIs.
+
+   This means that Advanced SIMD comparisons are represented in RTL as
+   (neg (op ...)).  */
+
+#define VECTOR_STORE_FLAG_VALUE(MODE) CONST1_RTX (GET_MODE_INNER (MODE))
+
 #ifndef USED_FOR_TARGET
 
 /* Define an enum of all features (ISA modes, architectures and extensions).
