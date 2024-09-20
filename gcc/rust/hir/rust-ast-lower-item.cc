@@ -690,8 +690,8 @@ ASTLoweringItem::visit (AST::TraitImpl &impl_block)
     }
 
   BoundPolarity polarity = impl_block.is_exclam ()
-			     ? BoundPolarity::RegularBound
-			     : BoundPolarity::NegativeBound;
+			     ? BoundPolarity::NegativeBound
+			     : BoundPolarity::RegularBound;
   HIR::ImplBlock *hir_impl_block = new HIR::ImplBlock (
     mapping, std::move (impl_items), std::move (generic_params),
     std::unique_ptr<HIR::Type> (impl_type),
