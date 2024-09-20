@@ -8,7 +8,7 @@
      - (0x13 << 24) | 0x40 - note that this is aligned to 0x40.
      - (0x13 << 24) | 0x31 - in case structures are packed.  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gbtf -dA" } */
 /* { dg-require-effective-target int32plus } */
 

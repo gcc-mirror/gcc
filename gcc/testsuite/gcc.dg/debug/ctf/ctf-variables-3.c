@@ -8,7 +8,7 @@
    single CTF variable and a single entry in the CTF object info section
    are expected.  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 
 /* { dg-final { scan-assembler-times "0x12000000\[\t \]+\[^\n\]*ctt_info" 2 } } */

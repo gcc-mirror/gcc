@@ -1,6 +1,6 @@
 /* CTF generation of function pointers.  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 /* { dg-final { scan-assembler-times "\[\t \]0x16000001\[\t \]+\[^\n\]*ctt_info" 1 } } */
 /* { dg-final { scan-assembler-times "\[\t \]0x16000002\[\t \]+\[^\n\]*ctt_info" 1 } } */

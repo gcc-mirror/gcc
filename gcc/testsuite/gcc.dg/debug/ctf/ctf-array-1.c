@@ -8,7 +8,7 @@
    a1 : cta_nelems = 2, 5
    buf : cta_nelems = 0.  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 
 /* { dg-final { scan-assembler-times "0x12000000\[\t \]+\[^\n\]*ctt_info" 5 } } */

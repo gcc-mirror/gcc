@@ -9,7 +9,7 @@
    type.  The second assembler tag is due to a ref type in a CVR CTF record.
    TBD - perhaps a more robust string pattern is needed.  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 
 /* { dg-final { scan-assembler-times "\[\t \]0x26000000\[\t \]+\[^\n\]*ctt_info" 2 } } */

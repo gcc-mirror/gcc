@@ -4,7 +4,7 @@
    
    This testcase has a mix of C constructs containing COMPLEX_TYPE.  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 /* { dg-require-effective-target libc_has_complex_functions } */
 

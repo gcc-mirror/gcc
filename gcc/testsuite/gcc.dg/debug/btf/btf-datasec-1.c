@@ -1,3 +1,4 @@
+
 /* BTF generation of BTF_KIND_DATASEC records.
 
    We expect 3 DATASEC records: one for each of .data, .rodata and .bss.
@@ -9,7 +10,7 @@
    so we cannot check them.
  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gbtf -dA" } */
 /* { dg-additional-options "-msdata=none" { target { { powerpc*-*-* } && ilp32 } } } */
 /* { dg-additional-options "-msmall-data-limit=0" { target { riscv*-*-* } } } */
