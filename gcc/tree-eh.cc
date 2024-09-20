@@ -3053,6 +3053,71 @@ bool stmt_throw_types (function *fun, gimple *stmt, vec<tree> *ret_vector) {
     }
 }
 
+// To get the all exception types from a resx stmt  
+void extract_types_for_resx (gimple *resx_stmt, vec<tree> *ret_vector) {
+	edge e;
+	edge_iterator ei;
+	
+  basic_block bb = gimple_bb (resx_stmt);
+	
+  // Iterate over edges to walk up the basic blocks
+  FOR_EACH_EDGE (e, ei, bb->pred)
+  {
+  	// Get the last stmt of the basic block as it is an EH stmt
+  	bb = e->src;
+  	gimple_stmt_iterator gsi = gsi_last_bb (bb);
+	  gimple *last_stmt = gsi_stmt (gsi);
+	
+	  if (bb->aux)continue;
+	  bb->aux = (void*)1;
+	
+	  if (e->flags & EDGE_EH){
+      if (gimple_code (last_stmt) == GIMPLE_CALL) {
+        // check if its a throw
+        extract_types_for_call (as_a<gcall*> (last_stmt), ret_vector);
+        continue;
+      }
+      else if (gimple_code(last_stmt) == GIMPLE_RESX){
+        // Recursively processing resx
+        extract_types_for_resx (last_stmt, ret_vector);
+        continue;
+      }
+	
+    }
+  	else extract_types_for_resx (last_stmt, ret_vector);
+  }
+}
+
+// To get the types being thrown outside of a function
+void extract_fun_resx_types (function *fun){
+	basic_block bb;
+	gimple_stmt_iterator gsi;
+	vec<tree> *exception_types;
+
+	FOR_EACH_BB_FN (bb, fun)
+	{
+		bb->aux = (void*)1;
+		gsi = gsi_last_bb (bb);
+		gimple *stmt = gsi_stmt (gsi);
+		vec<tree> *ret_vector;
+
+		if (stmt_can_throw_external (stmt)){
+			if (gimple_code (stmt) == GIMPLE_RESX){
+				extract_types_for_resx (stmt, ret_vector);
+			}
+			
+			else if (gimple_code (stmt) == GIMPLE_CALL){
+				extract_types_for_call (as_a<gcall*> (stmt), ret_vector);
+			}
+		}
+
+		for (unsigned i = 0;i<ret_vector->length ();++i){
+			tree type = (*ret_vector)[i];
+			exception_types->safe_push (type);
+		}
+	}
+}
+
 /* Return true if statement STMT within FUN could throw an exception.  */
 
 bool
