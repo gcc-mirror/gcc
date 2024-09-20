@@ -74,6 +74,8 @@ set plugin_test_list [list \
 	  crash-test-write-though-null-stderr.c \
 	  crash-test-ice-sarif.c \
 	  crash-test-write-though-null-sarif.c } \
+    { diagnostic_plugin_xhtml_format.c \
+	  diagnostic-test-xhtml-1.c } \
     { diagnostic_group_plugin.c \
 	  diagnostic-group-test-1.c } \
     { diagnostic_plugin_test_show_locus.c \
