@@ -248,6 +248,8 @@ public:
 
   void visit (AST::NeverType &type) override;
 
+  void visit (AST::TupleType &type) override;
+
 private:
   ResolveTypeToCanonicalPath ();
 
