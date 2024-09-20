@@ -8767,6 +8767,8 @@ extern tree coro_get_actor_function		(tree);
 extern tree coro_get_destroy_function		(tree);
 extern tree coro_get_ramp_function		(tree);
 
+extern tree co_await_get_resume_call		(tree await_expr);
+
 /* contracts.cc */
 extern tree make_postcondition_variable		(cp_expr);
 extern tree make_postcondition_variable		(cp_expr, tree);

@@ -725,6 +725,18 @@ coro_get_destroy_function (tree decl)
   return NULL_TREE;
 }
 
+/* Given a CO_AWAIT_EXPR AWAIT_EXPR, return its resume call.  */
+
+tree
+co_await_get_resume_call (tree await_expr)
+{
+  gcc_checking_assert (TREE_CODE (await_expr) == CO_AWAIT_EXPR);
+  tree vec = TREE_OPERAND (await_expr, 3);
+  if (!vec)
+    return nullptr;
+  return TREE_VEC_ELT (vec, 2);
+}
+
 /* These functions assumes that the caller has verified that the state for
    the decl has been initialized, we try to minimize work here.  */
 
