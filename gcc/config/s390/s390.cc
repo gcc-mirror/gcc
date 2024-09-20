@@ -11342,13 +11342,6 @@ s390_can_change_mode_class (machine_mode from_mode,
   return true;
 }
 
-/* Return true if we use LRA instead of reload pass.  */
-static bool
-s390_lra_p (void)
-{
-  return s390_lra_flag;
-}
-
 /* Return true if register FROM can be eliminated via register TO.  */
 
 static bool
@@ -18443,9 +18436,6 @@ s390_c_mode_for_floating_type (enum tree_index ti)
 
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P s390_legitimate_constant_p
-
-#undef TARGET_LRA_P
-#define TARGET_LRA_P s390_lra_p
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE s390_can_eliminate
