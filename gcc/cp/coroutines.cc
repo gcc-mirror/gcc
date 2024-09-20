@@ -730,14 +730,14 @@ coro_get_destroy_function (tree decl)
 
 /* Given a CO_AWAIT_EXPR AWAIT_EXPR, return its resume call.  */
 
-tree*
+tree
 co_await_get_resume_call (tree await_expr)
 {
   gcc_checking_assert (TREE_CODE (await_expr) == CO_AWAIT_EXPR);
   tree vec = TREE_OPERAND (await_expr, 3);
   if (!vec)
     return nullptr;
-  return &TREE_VEC_ELT (vec, 2);
+  return TREE_VEC_ELT (vec, 2);
 }
 
 

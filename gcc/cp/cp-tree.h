@@ -8782,7 +8782,7 @@ extern tree coro_get_actor_function		(tree);
 extern tree coro_get_destroy_function		(tree);
 extern tree coro_get_ramp_function		(tree);
 
-extern tree* co_await_get_resume_call		(tree await_expr);
+extern tree co_await_get_resume_call		(tree await_expr);
 
 
 /* contracts.cc */
