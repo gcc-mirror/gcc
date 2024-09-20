@@ -1394,8 +1394,9 @@ namespace __format
 
   // We can format a floating-point type iff it is usable with to_chars.
   template<typename _Tp>
-    concept __formattable_float = requires (_Tp __t, char* __p)
-    { __format::to_chars(__p, __p, __t, chars_format::scientific, 6); };
+    concept __formattable_float
+      = is_same_v<remove_cv_t<_Tp>, _Tp> && requires (_Tp __t, char* __p)
+      { __format::to_chars(__p, __p, __t, chars_format::scientific, 6); };
 
   template<__char _CharT>
     struct __formatter_fp
@@ -2103,52 +2104,52 @@ namespace __format
 #endif // USE_WCHAR_T
   /// @}
 
-  /// Format an integer.
-  template<integral _Tp, __format::__char _CharT>
-    requires (!__is_one_of<_Tp, char, wchar_t, char16_t, char32_t>::value)
-    struct formatter<_Tp, _CharT>
-    {
-      formatter() = default;
+/// @cond undocumented
+namespace __format
+{
+  // each cv-unqualified arithmetic type ArithmeticT other than
+  // char, wchar_t, char8_t, char16_t, or char32_t
+  template<typename _Tp>
+    constexpr bool __is_formattable_integer = __is_integer<_Tp>::__value;
 
-      [[__gnu__::__always_inline__]]
-      constexpr typename basic_format_parse_context<_CharT>::iterator
-      parse(basic_format_parse_context<_CharT>& __pc)
-      {
-	return _M_f.template _M_parse<_Tp>(__pc);
-      }
-
-      template<typename _Out>
-	typename basic_format_context<_Out, _CharT>::iterator
-	format(_Tp __u, basic_format_context<_Out, _CharT>& __fc) const
-	{ return _M_f.format(__u, __fc); }
-
-    private:
-      __format::__formatter_int<_CharT> _M_f;
-    };
-
-#if defined __SIZEOF_INT128__ && defined __STRICT_ANSI__
-  template<typename _Tp, __format::__char _CharT>
-    requires (__is_one_of<_Tp, __int128, unsigned __int128>::value)
-    struct formatter<_Tp, _CharT>
-    {
-      formatter() = default;
-
-      [[__gnu__::__always_inline__]]
-      constexpr typename basic_format_parse_context<_CharT>::iterator
-      parse(basic_format_parse_context<_CharT>& __pc)
-      {
-	return _M_f.template _M_parse<_Tp>(__pc);
-      }
-
-      template<typename _Out>
-	typename basic_format_context<_Out, _CharT>::iterator
-	format(_Tp __u, basic_format_context<_Out, _CharT>& __fc) const
-	{ return _M_f.format(__u, __fc); }
-
-    private:
-      __format::__formatter_int<_CharT> _M_f;
-    };
+#if defined __SIZEOF_INT128__
+  template<> inline constexpr bool __is_formattable_integer<__int128>  = true;
+  template<> inline constexpr bool __is_formattable_integer<unsigned __int128>
+      = true;
 #endif
+
+  template<> inline constexpr bool __is_formattable_integer<char> = false;
+  template<> inline constexpr bool __is_formattable_integer<wchar_t> = false;
+#ifdef _GLIBCXX_USE_CHAR8_T
+  template<> inline constexpr bool __is_formattable_integer<char8_t> = false;
+#endif
+  template<> inline constexpr bool __is_formattable_integer<char16_t> = false;
+  template<> inline constexpr bool __is_formattable_integer<char32_t> = false;
+}
+/// ~endcond
+
+  /// Format an integer.
+  template<typename _Tp, __format::__char _CharT>
+    requires __format::__is_formattable_integer<_Tp>
+    struct formatter<_Tp, _CharT>
+    {
+      formatter() = default;
+
+      [[__gnu__::__always_inline__]]
+      constexpr typename basic_format_parse_context<_CharT>::iterator
+      parse(basic_format_parse_context<_CharT>& __pc)
+      {
+	return _M_f.template _M_parse<_Tp>(__pc);
+      }
+
+      template<typename _Out>
+	typename basic_format_context<_Out, _CharT>::iterator
+	format(_Tp __u, basic_format_context<_Out, _CharT>& __fc) const
+	{ return _M_f.format(__u, __fc); }
+
+    private:
+      __format::__formatter_int<_CharT> _M_f;
+    };
 
 #if defined __glibcxx_to_chars
   /// Format a floating-point value.
@@ -2541,6 +2542,8 @@ namespace __format
 } // namespace __format
 /// @endcond
 
+// Concept std::formattable was introduced by P2286R8 "Formatting Ranges",
+// but we can't guard it with __cpp_lib_format_ranges until we define that!
 #if __cplusplus > 202002L
   // [format.formattable], concept formattable
   template<typename _Tp, typename _CharT>
