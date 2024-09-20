@@ -4723,6 +4723,7 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 	    if (TREE_CODE (def) == SSA_NAME
 		&& !virtual_operand_p (def)
 		&& (stmt_info = loop_vinfo->lookup_def (def))
+		&& ((stmt_info = vect_stmt_to_vectorize (stmt_info)), true)
 		&& STMT_VINFO_RELEVANT (stmt_info) == vect_used_only_live
 		&& STMT_VINFO_LIVE_P (stmt_info)
 		&& (STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def
