@@ -145,8 +145,15 @@ ASTLowerQualifiedPathInType::visit (AST::QualifiedPathInType &path)
 
   HIR::Type *qual_type
     = ASTLoweringType::translate (path.get_qualified_path_type ().get_type ());
-  HIR::TypePath *qual_trait = ASTLowerTypePath::translate (
-    path.get_qualified_path_type ().get_as_type_path ());
+
+  HIR::TypePath *qual_trait = nullptr;
+  if (!path.get_qualified_path_type ().is_error ())
+    {
+      AST::QualifiedPathType &qualifier = path.get_qualified_path_type ();
+      if (qualifier.has_as_clause ())
+	qual_trait
+	  = ASTLowerTypePath::translate (qualifier.get_as_type_path ());
+    }
 
   HIR::QualifiedPathType qual_path_type (
     qual_mappings, std::unique_ptr<HIR::Type> (qual_type),
