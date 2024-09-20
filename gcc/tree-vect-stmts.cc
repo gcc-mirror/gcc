@@ -2190,11 +2190,12 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	      && single_element_p
 	      && maybe_gt (group_size, TYPE_VECTOR_SUBPARTS (vectype)))
 	    {
+	      *memory_access_type = VMAT_ELEMENTWISE;
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				 "single-element interleaving not supported "
-				 "for not adjacent vector loads\n");
-	      return false;
+				 "for not adjacent vector loads, using "
+				 "elementwise access\n");
 	    }
 	}
     }
@@ -10039,7 +10040,23 @@ vectorizable_load (vec_info *vinfo,
   else
     group_size = 1;
 
-  if (slp && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
+  vect_memory_access_type memory_access_type;
+  enum dr_alignment_support alignment_support_scheme;
+  int misalignment;
+  poly_int64 poffset;
+  internal_fn lanes_ifn;
+  if (!get_load_store_type (vinfo, stmt_info, vectype, slp_node, mask, VLS_LOAD,
+			    ncopies, &memory_access_type, &poffset,
+			    &alignment_support_scheme, &misalignment, &gs_info,
+			    &lanes_ifn))
+    return false;
+
+  /* ???  The following checks should really be part of
+     get_group_load_store_type.  */
+  if (slp
+      && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ()
+      && !(memory_access_type == VMAT_ELEMENTWISE
+	   && SLP_TREE_LANES (slp_node) == 1))
     {
       slp_perm = true;
 
@@ -10078,17 +10095,6 @@ vectorizable_load (vec_info *vinfo,
 	  return false;
 	}
     }
-
-  vect_memory_access_type memory_access_type;
-  enum dr_alignment_support alignment_support_scheme;
-  int misalignment;
-  poly_int64 poffset;
-  internal_fn lanes_ifn;
-  if (!get_load_store_type (vinfo, stmt_info, vectype, slp_node, mask, VLS_LOAD,
-			    ncopies, &memory_access_type, &poffset,
-			    &alignment_support_scheme, &misalignment, &gs_info,
-			    &lanes_ifn))
-    return false;
 
   if (slp_node
       && slp_node->ldst_lanes
@@ -10292,7 +10298,8 @@ vectorizable_load (vec_info *vinfo,
 	  first_dr_info = dr_info;
 	}
 
-      if (slp && grouped_load)
+      if (slp && grouped_load
+	  && memory_access_type == VMAT_STRIDED_SLP)
 	{
 	  group_size = DR_GROUP_SIZE (first_stmt_info);
 	  ref_type = get_group_alias_ptr_type (first_stmt_info);

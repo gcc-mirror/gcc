@@ -708,5 +708,5 @@ END SUBROUTINE kernel
 
 ! { dg-final { scan-tree-dump-times "vectorized 2\[56\] loops" 1 "vect" { target aarch64_sve } } }
 ! { dg-final { scan-tree-dump-times "vectorized 2\[45\] loops" 1 "vect" { target { aarch64*-*-* && { ! aarch64_sve } } } } }
-! { dg-final { scan-tree-dump-times "vectorized 2\[345\] loops" 1 "vect" { target { vect_intdouble_cvt && { ! aarch64*-*-* } } } } }
+! { dg-final { scan-tree-dump-times "vectorized 2\[3456\] loops" 1 "vect" { target { vect_intdouble_cvt && { ! aarch64*-*-* } } } } }
 ! { dg-final { scan-tree-dump-times "vectorized 17 loops" 1 "vect" { target { { ! vect_intdouble_cvt } && { ! aarch64*-*-* } } } } }
