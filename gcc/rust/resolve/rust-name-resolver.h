@@ -163,8 +163,12 @@ public:
   Scope &get_macro_scope () { return macro_scope; }
 
   NodeId get_global_type_node_id () { return global_type_node_id; }
+
   void set_unit_type_node_id (NodeId id) { unit_ty_node_id = id; }
   NodeId get_unit_type_node_id () { return unit_ty_node_id; }
+
+  void set_never_type_node_id (NodeId id) { never_ty_node_id = id; }
+  NodeId get_never_type_node_id () { return never_ty_node_id; }
 
   void push_new_module_scope (NodeId module_id)
   {
@@ -208,7 +212,7 @@ private:
   Resolver ();
 
   void generate_builtins ();
-  void setup_builtin (const std::string &name, TyTy::BaseType *tyty);
+  NodeId setup_builtin (const std::string &name, TyTy::BaseType *tyty);
 
   Analysis::Mappings &mappings;
   TypeCheckContext *tyctx;
@@ -222,6 +226,7 @@ private:
 
   NodeId global_type_node_id;
   NodeId unit_ty_node_id;
+  NodeId never_ty_node_id;
 
   // map a AST Node to a Rib
   std::map<NodeId, Rib *> name_ribs;

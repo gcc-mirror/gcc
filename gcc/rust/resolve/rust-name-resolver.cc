@@ -429,7 +429,10 @@ Resolver::generate_builtins ()
   setup_builtin ("isize", isize);
   setup_builtin ("char", char_tyty);
   setup_builtin ("str", str);
-  setup_builtin ("!", never);
+
+  // never type
+  NodeId never_node_id = setup_builtin ("!", never);
+  set_never_type_node_id (never_node_id);
 
   // unit type ()
   TyTy::TupleType *unit_tyty
@@ -443,7 +446,7 @@ Resolver::generate_builtins ()
   set_unit_type_node_id (unit_type->get_node_id ());
 }
 
-void
+NodeId
 Resolver::setup_builtin (const std::string &name, TyTy::BaseType *tyty)
 {
   AST::PathIdentSegment seg (name, BUILTINS_LOCATION);
@@ -459,6 +462,8 @@ Resolver::setup_builtin (const std::string &name, TyTy::BaseType *tyty)
   mappings.insert_canonical_path (
     builtin_type->get_node_id (),
     CanonicalPath::new_seg (builtin_type->get_node_id (), name));
+
+  return builtin_type->get_node_id ();
 }
 
 void
