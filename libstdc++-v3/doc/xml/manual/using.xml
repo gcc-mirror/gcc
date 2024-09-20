@@ -1356,7 +1356,7 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
   of the macro is <literal>1</literal> which causes the new ABI to be active,
   so to use the old ABI you must explicitly define the macro to
   <literal>0</literal> before including any library headers.
-  (Be aware that some GNU/Linux distributions configure GCC 5 differently so
+  (Be aware that some GNU/Linux distributions configured GCC 5 differently so
   that the default value of the macro is <literal>0</literal> and users must
   define it to <literal>1</literal> to enable the new ABI.)
 </para>
@@ -1414,6 +1414,30 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
   Handlers for <classname>std::exception</classname> will always catch
   iostreams exceptions, because the old and new type both inherit from
   <classname>std::exception</classname>.
+</para>
+
+<para>
+  Some features are not supported when using the old ABI, including:
+  <itemizedlist>
+  <listitem>
+    Using <classname>std::string::const_iterator</classname> for
+    positional arguments to member functions such as
+    <function>std::string::erase</function>.
+  </listitem>
+  <listitem>
+    Allocator propagation in <classname>std::string</classname>.
+  </listitem>
+  <listitem>
+    Using <classname>std::string</classname> at compile-time in
+    <code>constexpr</code> functions.
+  </listitem>
+  <listitem>
+    Class <classname>std::chrono::time_zone</classname> and all related APIs.
+  </listitem>
+  <listitem>
+    The <filename class="headerfile">&lt;syncstream&gt;</filename> header.
+  </listitem>
+  </itemizedlist>
 </para>
 
 <section xml:id="manual.intro.using.abi.trouble" xreflabel="Dual ABI Troubleshooting"><info><title>Troubleshooting</title></info>
