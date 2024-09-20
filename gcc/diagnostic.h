@@ -495,7 +495,7 @@ public:
   {
     return m_edit_context_ptr;
   }
-  const diagnostic_client_data_hooks *get_client_data_hooks ()
+  const diagnostic_client_data_hooks *get_client_data_hooks () const
   {
     return m_client_data_hooks;
   }

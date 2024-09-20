@@ -166,10 +166,9 @@ public:
   sarif_invocation (sarif_builder &builder,
 		    const char * const *original_argv);
 
-  void add_notification_for_ice (diagnostic_context &context,
-				 const diagnostic_info &diagnostic,
+  void add_notification_for_ice (const diagnostic_info &diagnostic,
 				 sarif_builder &builder);
-  void prepare_to_flush (diagnostic_context &context);
+  void prepare_to_flush (sarif_builder &builder);
 
 private:
   std::unique_ptr<json::array> m_notifications_arr;
@@ -395,12 +394,10 @@ public:
   unsigned get_index_within_parent () const { return m_idx_within_parent; }
 
   void
-  on_nested_diagnostic (diagnostic_context &context,
-			const diagnostic_info &diagnostic,
+  on_nested_diagnostic (const diagnostic_info &diagnostic,
 			diagnostic_t orig_diag_kind,
 			sarif_builder &builder);
-  void on_diagram (diagnostic_context &context,
-		   const diagnostic_diagram &diagram,
+  void on_diagram (const diagnostic_diagram &diagram,
 		   sarif_builder &builder);
 
   void
@@ -583,8 +580,7 @@ class sarif_replacement : public sarif_object {};
 class sarif_ice_notification : public sarif_location_manager
 {
 public:
-  sarif_ice_notification (diagnostic_context &context,
-			  const diagnostic_info &diagnostic,
+  sarif_ice_notification (const diagnostic_info &diagnostic,
 			  sarif_builder &builder);
 
   void
@@ -654,11 +650,9 @@ public:
 		 const char *main_input_filename_,
 		 bool formatted);
 
-  void on_report_diagnostic (diagnostic_context &context,
-			     const diagnostic_info &diagnostic,
+  void on_report_diagnostic (const diagnostic_info &diagnostic,
 			     diagnostic_t orig_diag_kind);
-  void emit_diagram (diagnostic_context &context,
-		     const diagnostic_diagram &diagram);
+  void emit_diagram (const diagnostic_diagram &diagram);
   void end_group ();
 
   std::unique_ptr<sarif_result> take_current_result ()
@@ -685,8 +679,7 @@ public:
   std::unique_ptr<sarif_message>
   make_message_object (const char *msg) const;
   std::unique_ptr<sarif_message>
-  make_message_object_for_diagram (diagnostic_context &context,
-				   const diagnostic_diagram &diagram);
+  make_message_object_for_diagram (const diagnostic_diagram &diagram);
   std::unique_ptr<sarif_artifact_content>
   maybe_make_artifact_content_object (const char *filename) const;
 
@@ -699,6 +692,8 @@ public:
     return m_current_code_flow;
   }
 
+  diagnostic_context &get_context () const { return m_context; }
+  pretty_printer *get_printer () const { return m_printer; }
   token_printer &get_token_printer () { return m_token_printer; }
 
 private:
@@ -716,8 +711,7 @@ private:
   };
 
   std::unique_ptr<sarif_result>
-  make_result_object (diagnostic_context &context,
-		      const diagnostic_info &diagnostic,
+  make_result_object (const diagnostic_info &diagnostic,
 		      diagnostic_t orig_diag_kind,
 		      unsigned idx_within_parent);
   void
@@ -777,8 +771,7 @@ private:
   std::unique_ptr<sarif_tool_component_reference>
   make_tool_component_reference_object_for_cwe () const;
   std::unique_ptr<sarif_reporting_descriptor>
-  make_reporting_descriptor_object_for_warning (diagnostic_context &context,
-						const diagnostic_info &diagnostic,
+  make_reporting_descriptor_object_for_warning (const diagnostic_info &diagnostic,
 						diagnostic_t orig_diag_kind,
 						const char *option_text);
   std::unique_ptr<sarif_reporting_descriptor>
@@ -809,6 +802,7 @@ private:
   int get_sarif_column (expanded_location exploc) const;
 
   diagnostic_context &m_context;
+  pretty_printer *m_printer;
   const line_maps *m_line_maps;
   sarif_token_printer m_token_printer;
 
@@ -885,23 +879,24 @@ sarif_invocation::sarif_invocation (sarif_builder &builder,
 		     make_date_time_string_for_current_time ());
 }
 
-/* Handle an internal compiler error DIAGNOSTIC occurring on CONTEXT.
+/* Handle an internal compiler error DIAGNOSTIC.
    Add an object representing the ICE to the notifications array.  */
 
 void
-sarif_invocation::add_notification_for_ice (diagnostic_context &context,
-					    const diagnostic_info &diagnostic,
+sarif_invocation::add_notification_for_ice (const diagnostic_info &diagnostic,
 					    sarif_builder &builder)
 {
   m_success = false;
 
   m_notifications_arr->append<sarif_ice_notification>
-    (::make_unique<sarif_ice_notification> (context, diagnostic, builder));
+    (::make_unique<sarif_ice_notification> (diagnostic, builder));
 }
 
 void
-sarif_invocation::prepare_to_flush (diagnostic_context &context)
+sarif_invocation::prepare_to_flush (sarif_builder &builder)
 {
+  const diagnostic_context &context = builder.get_context ();
+
   /* "executionSuccessful" property (SARIF v2.1.0 section 3.20.14).  */
   if (context.execution_failed_p ())
     m_success = false;
@@ -1124,8 +1119,7 @@ sarif_location_manager::process_worklist_item (sarif_builder &builder,
    secondary diagnostics occur (such as notes to a warning).  */
 
 void
-sarif_result::on_nested_diagnostic (diagnostic_context &context,
-				    const diagnostic_info &diagnostic,
+sarif_result::on_nested_diagnostic (const diagnostic_info &diagnostic,
 				    diagnostic_t /*orig_diag_kind*/,
 				    sarif_builder &builder)
 {
@@ -1136,8 +1130,8 @@ sarif_result::on_nested_diagnostic (diagnostic_context &context,
     = builder.make_location_object (*this, *diagnostic.richloc, nullptr,
 				    diagnostic_artifact_role::result_file);
   auto message_obj
-    = builder.make_message_object (pp_formatted_text (context.m_printer));
-  pp_clear_output_area (context.m_printer);
+    = builder.make_message_object (pp_formatted_text (builder.get_printer ()));
+  pp_clear_output_area (builder.get_printer ());
   location_obj->set<sarif_message> ("message", std::move (message_obj));
 
   add_related_location (std::move (location_obj));
@@ -1150,13 +1144,11 @@ sarif_result::on_nested_diagnostic (diagnostic_context &context,
    (SARIF v2.1.0 section 3.28.5).  */
 
 void
-sarif_result::on_diagram (diagnostic_context &context,
-			  const diagnostic_diagram &diagram,
+sarif_result::on_diagram (const diagnostic_diagram &diagram,
 			  sarif_builder &builder)
 {
   auto location_obj = ::make_unique<sarif_location> ();
-  auto message_obj
-    = builder.make_message_object_for_diagram (context, diagram);
+  auto message_obj = builder.make_message_object_for_diagram (diagram);
   location_obj->set<sarif_message> ("message", std::move (message_obj));
 
   add_related_location (std::move (location_obj));
@@ -1308,8 +1300,7 @@ sarif_location::lazily_add_relationships_array ()
    DIAGNOSTIC is an internal compiler error.  */
 
 sarif_ice_notification::
-sarif_ice_notification (diagnostic_context &context,
-			const diagnostic_info &diagnostic,
+sarif_ice_notification (const diagnostic_info &diagnostic,
 			sarif_builder &builder)
 {
   /* "locations" property (SARIF v2.1.0 section 3.58.4).  */
@@ -1321,8 +1312,8 @@ sarif_ice_notification (diagnostic_context &context,
 
   /* "message" property (SARIF v2.1.0 section 3.85.5).  */
   auto message_obj
-    = builder.make_message_object (pp_formatted_text (context.m_printer));
-  pp_clear_output_area (context.m_printer);
+    = builder.make_message_object (pp_formatted_text (builder.get_printer ()));
+  pp_clear_output_area (builder.get_printer ());
   set<sarif_message> ("message", std::move (message_obj));
 
   /* "level" property (SARIF v2.1.0 section 3.58.6).  */
@@ -1480,6 +1471,7 @@ sarif_builder::sarif_builder (diagnostic_context &context,
 			      const char *main_input_filename_,
 			      bool formatted)
 : m_context (context),
+  m_printer (context.m_printer),
   m_line_maps (line_maps),
   m_token_printer (*this),
   m_invocation_obj
@@ -1511,30 +1503,27 @@ sarif_builder::sarif_builder (diagnostic_context &context,
 /* Implementation of "on_report_diagnostic" for SARIF output.  */
 
 void
-sarif_builder::on_report_diagnostic (diagnostic_context &context,
-				     const diagnostic_info &diagnostic,
+sarif_builder::on_report_diagnostic (const diagnostic_info &diagnostic,
 				     diagnostic_t orig_diag_kind)
 {
-  pp_output_formatted_text (context.m_printer, context.get_urlifier ());
+  pp_output_formatted_text (m_printer, m_context.get_urlifier ());
 
   if (diagnostic.kind == DK_ICE || diagnostic.kind == DK_ICE_NOBT)
     {
-      m_invocation_obj->add_notification_for_ice (context, diagnostic, *this);
+      m_invocation_obj->add_notification_for_ice (diagnostic, *this);
       return;
     }
 
   if (m_cur_group_result)
     /* Nested diagnostic.  */
-    m_cur_group_result->on_nested_diagnostic (context,
-					      diagnostic,
+    m_cur_group_result->on_nested_diagnostic (diagnostic,
 					      orig_diag_kind,
 					      *this);
   else
     {
       /* Top-level diagnostic.  */
-      m_cur_group_result
-	= make_result_object (context, diagnostic, orig_diag_kind,
-			      m_next_result_idx++);
+      m_cur_group_result = make_result_object (diagnostic, orig_diag_kind,
+					       m_next_result_idx++);
     }
 }
 
@@ -1542,12 +1531,11 @@ sarif_builder::on_report_diagnostic (diagnostic_context &context,
    for SARIF output.  */
 
 void
-sarif_builder::emit_diagram (diagnostic_context &context,
-			     const diagnostic_diagram &diagram)
+sarif_builder::emit_diagram (const diagnostic_diagram &diagram)
 {
   /* We must be within the emission of a top-level diagnostic.  */
   gcc_assert (m_cur_group_result);
-  m_cur_group_result->on_diagram (context, diagram, *this);
+  m_cur_group_result->on_diagram (diagram, *this);
 }
 
 /* Implementation of "end_group_cb" for SARIF output.  */
@@ -1569,7 +1557,7 @@ sarif_builder::end_group ()
 std::unique_ptr<sarif_log>
 sarif_builder::flush_to_object ()
 {
-  m_invocation_obj->prepare_to_flush (m_context);
+  m_invocation_obj->prepare_to_flush (*this);
   std::unique_ptr<sarif_log> top
     = make_top_level_object (std::move (m_invocation_obj),
 			     std::move (m_results_array));
@@ -1632,8 +1620,7 @@ make_rule_id_for_diagnostic_kind (diagnostic_t diag_kind)
 /* Make a "result" object (SARIF v2.1.0 section 3.27) for DIAGNOSTIC.  */
 
 std::unique_ptr<sarif_result>
-sarif_builder::make_result_object (diagnostic_context &context,
-				   const diagnostic_info &diagnostic,
+sarif_builder::make_result_object (const diagnostic_info &diagnostic,
 				   diagnostic_t orig_diag_kind,
 				   unsigned idx_within_parent)
 {
@@ -1642,8 +1629,8 @@ sarif_builder::make_result_object (diagnostic_context &context,
   /* "ruleId" property (SARIF v2.1.0 section 3.27.5).  */
   /* Ideally we'd have an option_name for these.  */
   if (char *option_text
-	= context.make_option_name (diagnostic.option_id,
-				    orig_diag_kind, diagnostic.kind))
+	= m_context.make_option_name (diagnostic.option_id,
+				      orig_diag_kind, diagnostic.kind))
     {
       /* Lazily create reportingDescriptor objects for and add to m_rules_arr.
 	 Set ruleId referencing them.  */
@@ -1657,8 +1644,7 @@ sarif_builder::make_result_object (diagnostic_context &context,
 	  m_rule_id_set.add (option_text);
 
 	  m_rules_arr->append<sarif_reporting_descriptor>
-	    (make_reporting_descriptor_object_for_warning (context,
-							   diagnostic,
+	    (make_reporting_descriptor_object_for_warning (diagnostic,
 							   orig_diag_kind,
 							   option_text));
 	}
@@ -1696,8 +1682,8 @@ sarif_builder::make_result_object (diagnostic_context &context,
 
   /* "message" property (SARIF v2.1.0 section 3.27.11).  */
   auto message_obj
-    = make_message_object (pp_formatted_text (context.m_printer));
-  pp_clear_output_area (context.m_printer);
+    = make_message_object (pp_formatted_text (m_printer));
+  pp_clear_output_area (m_printer);
   result_obj->set<sarif_message> ("message", std::move (message_obj));
 
   /* "locations" property (SARIF v2.1.0 section 3.27.12).  */
@@ -1740,8 +1726,7 @@ sarif_builder::make_result_object (diagnostic_context &context,
 
 std::unique_ptr<sarif_reporting_descriptor>
 sarif_builder::
-make_reporting_descriptor_object_for_warning (diagnostic_context &context,
-					      const diagnostic_info &diagnostic,
+make_reporting_descriptor_object_for_warning (const diagnostic_info &diagnostic,
 					      diagnostic_t /*orig_diag_kind*/,
 					      const char *option_text)
 {
@@ -1754,7 +1739,7 @@ make_reporting_descriptor_object_for_warning (diagnostic_context &context,
      it seems redundant compared to "id".  */
 
   /* "helpUri" property (SARIF v2.1.0 section 3.49.12).  */
-  if (char *option_url = context.make_option_url (diagnostic.option_id))
+  if (char *option_url = m_context.make_option_url (diagnostic.option_id))
     {
       reporting_desc->set_string ("helpUri", option_url);
       free (option_url);
@@ -2601,15 +2586,14 @@ sarif_builder::make_message_object (const char *msg) const
    of the message.  */
 
 std::unique_ptr<sarif_message>
-sarif_builder::make_message_object_for_diagram (diagnostic_context &context,
-						const diagnostic_diagram &diagram)
+sarif_builder::make_message_object_for_diagram (const diagnostic_diagram &diagram)
 {
   auto message_obj = ::make_unique<sarif_message> ();
 
   /* "text" property (SARIF v2.1.0 section 3.11.8).  */
   message_obj->set_string ("text", diagram.get_alt_text ());
 
-  pretty_printer *const pp = context.m_printer;
+  pretty_printer *const pp = m_printer;
   char *saved_prefix = pp_take_prefix (pp);
   pp_set_prefix (pp, nullptr);
 
@@ -3131,13 +3115,13 @@ public:
   }
   void
   on_report_diagnostic (const diagnostic_info &diagnostic,
-			    diagnostic_t orig_diag_kind) final override
+			diagnostic_t orig_diag_kind) final override
   {
-    m_builder.on_report_diagnostic (m_context, diagnostic, orig_diag_kind);
+    m_builder.on_report_diagnostic (diagnostic, orig_diag_kind);
   }
   void on_diagram (const diagnostic_diagram &diagram) final override
   {
-    m_builder.emit_diagram (m_context, diagram);
+    m_builder.emit_diagram (diagram);
   }
   void after_diagnostic (const diagnostic_info &) final override
   {
