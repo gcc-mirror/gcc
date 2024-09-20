@@ -507,6 +507,15 @@ ResolveTypeToCanonicalPath::visit (AST::NeverType &type)
   result = CanonicalPath::new_seg (type.get_node_id (), "!");
 }
 
+void
+ResolveTypeToCanonicalPath::visit (AST::TupleType &type)
+{
+  if (!type.is_unit_type ())
+    rust_unreachable ();
+
+  result = CanonicalPath::new_seg (type.get_node_id (), "()");
+}
+
 ResolveTypeToCanonicalPath::ResolveTypeToCanonicalPath ()
   : ResolverBase (), result (CanonicalPath::create_empty ())
 {}
