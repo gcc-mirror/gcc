@@ -59,7 +59,7 @@ MULTIDO = true
 MULTICLEAN = true
 
 # Not configured per top-level version, since that doesn't get passed
-# down at configure time, but overrridden by the top-level install
+# down at configure time, but overridden by the top-level install
 # target.
 INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@

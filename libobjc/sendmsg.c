@@ -1007,7 +1007,7 @@ __objc_install_dtable_for_class (Class cls)
     return;
 
   /* We have this function cache the implementation pointers for
-     _objc_get_prepared_imp but the dispatch table won't be initilized
+     _objc_get_prepared_imp but the dispatch table won't be initialized
      until __objc_send_initialize completes.  */
   __objc_prepare_dtable_for_class (cls);
 
