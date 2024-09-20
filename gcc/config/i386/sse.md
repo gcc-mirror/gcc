@@ -3333,7 +3333,27 @@
 	   (const_string "*")))
    (set_attr "mode" "<ssescalarmode>")])
 
-(define_insn "<sse>_vm<code><mode>3<mask_scalar_name><round_saeonly_scalar_name>"
+(define_expand "<sse>_vm<code><mode>3<mask_scalar_name><round_saeonly_scalar_name>"
+  [(set (match_operand:VFH_128 0 "register_operand")
+	(vec_merge:VFH_128
+	  (smaxmin:VFH_128
+	    (match_operand:VFH_128 1 "register_operand")
+	    (match_operand:VFH_128 2 "nonimmediate_operand"))
+	 (match_dup 1)
+	 (const_int 1)))]
+  "TARGET_SSE"
+{
+  if (!flag_finite_math_only || flag_signed_zeros)
+    {
+      emit_insn (gen_<sse>_ieee_vm<maxmin_float><mode>3<mask_scalar_name><round_saeonly_scalar_name>
+		 (operands[0], operands[1], operands[2]
+		  <mask_scalar_operand_arg34>
+		  <round_saeonly_scalar_mask_arg3>));
+      DONE;
+    }
+})
+
+(define_insn "*<sse>_vm<code><mode>3<mask_scalar_name><round_saeonly_scalar_name>"
   [(set (match_operand:VFH_128 0 "register_operand" "=x,v")
 	(vec_merge:VFH_128
 	  (smaxmin:VFH_128
@@ -3345,6 +3365,25 @@
   "@
    <maxmin_float><ssescalarmodesuffix>\t{%2, %0|%0, %<iptr>2}
    v<maxmin_float><ssescalarmodesuffix>\t{<round_saeonly_scalar_mask_op3>%2, %1, %0<mask_scalar_operand3>|%0<mask_scalar_operand3>, %1, %<iptr>2<round_saeonly_scalar_mask_op3>}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sse")
+   (set_attr "btver2_sse_attr" "maxmin")
+   (set_attr "prefix" "<round_saeonly_scalar_prefix>")
+   (set_attr "mode" "<ssescalarmode>")])
+
+(define_insn "<sse>_ieee_vm<ieee_maxmin><mode>3<mask_scalar_name><round_saeonly_scalar_name>"
+  [(set (match_operand:VFH_128 0 "register_operand" "=x,v")
+	(vec_merge:VFH_128
+	  (unspec:VFH_128
+	    [(match_operand:VFH_128 1 "register_operand" "0,v")
+	     (match_operand:VFH_128 2 "nonimmediate_operand" "xm,<round_saeonly_scalar_constraint>")]
+	    IEEE_MAXMIN)
+	 (match_dup 1)
+	 (const_int 1)))]
+  "TARGET_SSE"
+  "@
+   <ieee_maxmin><ssescalarmodesuffix>\t{%2, %0|%0, %<iptr>2}
+   v<ieee_maxmin><ssescalarmodesuffix>\t{<round_saeonly_scalar_mask_op3>%2, %1, %0<mask_scalar_operand3>|%0<mask_scalar_operand3>, %1, %<iptr>2<round_saeonly_scalar_mask_op3>}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sse")
    (set_attr "btver2_sse_attr" "maxmin")
