@@ -43,6 +43,8 @@ extern bool tree_could_trap_p (tree);
 extern tree rewrite_to_non_trapping_overflow (tree);
 extern void extract_exception_types_for_call (gcall *, vec<tree> *);
 extern bool stmt_throw_types (function *, gimple *, vec<tree> *);
+extern void extract_types_for_resx (gimple *, vec<tree> *);
+extern void extract_fun_resx_types (function *);
 extern bool stmt_could_throw_p (function *, gimple *);
 extern bool stmt_unremovable_because_of_non_call_eh_p (function *, gimple *);
 extern bool tree_could_throw_p (tree);
