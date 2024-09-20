@@ -29,6 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with System.Address_To_Access_Conversions;
 with System.Storage_Elements;
 with System.Unsigned_Types;
 
@@ -69,12 +70,16 @@ package body System.Pack_53 is
    --  Use maximum possible alignment, given the bit field size, since this
    --  will result in the most efficient code possible for the field.
 
-   type Cluster_Ref is access Cluster;
+   package AAC is new Address_To_Access_Conversions (Cluster);
+   --  We convert addresses to access values and dereference them instead of
+   --  directly using overlays in order to work around the implementation of
+   --  the RM 13.3(19) clause, which would pessimize the generated code.
 
    type Rev_Cluster is new Cluster
      with Bit_Order            => Reverse_Bit_Order,
           Scalar_Storage_Order => Reverse_Bit_Order;
-   type Rev_Cluster_Ref is access Rev_Cluster;
+
+   package Rev_AAC is new Address_To_Access_Conversions (Rev_Cluster);
 
    ------------
    -- Get_53 --
@@ -85,9 +90,10 @@ package body System.Pack_53 is
       N       : Natural;
       Rev_SSO : Boolean) return Bits_53
    is
-      A  : constant System.Address := Arr + Bits * Ofs (Uns (N) / 8);
-      C  : Cluster_Ref     with Address => A'Address, Import;
-      RC : Rev_Cluster_Ref with Address => A'Address, Import;
+      A  : constant System.Address         := Arr + Bits * Ofs (Uns (N) / 8);
+      C  : constant AAC.Object_Pointer     := AAC.To_Pointer (A);
+      RC : constant Rev_AAC.Object_Pointer := Rev_AAC.To_Pointer (A);
+
    begin
       return
          (if Rev_SSO then
@@ -124,9 +130,10 @@ package body System.Pack_53 is
       E       : Bits_53;
       Rev_SSO : Boolean)
    is
-      A  : constant System.Address := Arr + Bits * Ofs (Uns (N) / 8);
-      C  : Cluster_Ref     with Address => A'Address, Import;
-      RC : Rev_Cluster_Ref with Address => A'Address, Import;
+      A  : constant System.Address         := Arr + Bits * Ofs (Uns (N) / 8);
+      C  : constant AAC.Object_Pointer     := AAC.To_Pointer (A);
+      RC : constant Rev_AAC.Object_Pointer := Rev_AAC.To_Pointer (A);
+
    begin
       if Rev_SSO then
          case N07 (Uns (N) mod 8) is
