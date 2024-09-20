@@ -734,7 +734,8 @@ TypeCheckItem::validate_trait_impl_block (
   bool impl_block_missing_trait_items
     = !specified_bound.is_error ()
       && trait_reference->size () != trait_item_refs.size ();
-  if (impl_block_missing_trait_items)
+  if (impl_block_missing_trait_items
+      && impl_block.get_polarity () == BoundPolarity::RegularBound)
     {
       // filter the missing impl_items
       std::vector<std::reference_wrapper<const TraitItemReference>>

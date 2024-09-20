@@ -291,3 +291,4 @@ unknown-associated-item.rs
 box_syntax_feature_gate.rs
 dropck_eyepatch_feature_gate.rs
 inline_asm_parse_output_operand.rs
+issue-3030.rs
