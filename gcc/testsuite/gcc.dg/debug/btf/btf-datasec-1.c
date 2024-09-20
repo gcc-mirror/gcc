@@ -1,4 +1,3 @@
-
 /* BTF generation of BTF_KIND_DATASEC records.
 
    We expect 3 DATASEC records: one for each of .data, .rodata and .bss.
