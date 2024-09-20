@@ -1577,6 +1577,18 @@ sh_encode_section_info (tree decl, rtx rtl, int first)
     SYMBOL_REF_FLAGS (XEXP (rtl, 0)) |= SYMBOL_FLAG_FUNCVEC_FUNCTION;
 }
 
+/* Test Sid constraint with subreg index.  See also the comment in
+   prepare_move_operands.  */
+bool
+sh_satisfies_constraint_Sid_subreg_index (rtx op)
+{
+  return ((GET_CODE (op) == MEM)
+	  && ((GET_CODE (XEXP (op, 0)) == PLUS)
+	      && ((GET_CODE (XEXP (XEXP (op, 0), 0)) == REG)
+		  && ((GET_CODE (XEXP (XEXP (op, 0), 1)) == SUBREG)
+		      && (GET_CODE (XEXP (XEXP (XEXP (op, 0), 1), 0)) == REG)))));
+}
+
 /* Prepare operands for a move define_expand; specifically, one of the
    operands must be in a register.  */
 void

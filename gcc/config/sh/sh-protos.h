@@ -61,6 +61,7 @@ extern rtx legitimize_pic_address (rtx, machine_mode, rtx);
 extern bool nonpic_symbol_mentioned_p (rtx);
 extern void output_pic_addr_const (FILE *, rtx);
 extern bool expand_block_move (rtx *);
+extern bool sh_satisfies_constraint_Sid_subreg_index (rtx);
 extern void prepare_move_operands (rtx[], machine_mode mode);
 extern bool sh_expand_cmpstr (rtx *);
 extern bool sh_expand_cmpnstr (rtx *);

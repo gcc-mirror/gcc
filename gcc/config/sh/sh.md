@@ -4801,7 +4801,38 @@
 
 (define_expand "extend<mode>si2"
   [(set (match_operand:SI 0 "arith_reg_dest")
-	(sign_extend:SI (match_operand:QIHI 1 "general_extend_operand")))])
+	(sign_extend:SI (match_operand:QIHI 1 "general_extend_operand")))]
+  ""
+{
+  /* When the displacement addressing is used, RA will assign r0 to
+       the pseudo register operand for the QI/HImode load.  See
+       the comment in sh.cc:prepare_move_operand and PR target/55212.  */
+  if (! lra_in_progress && ! reload_completed
+      && sh_lra_p ()
+      && ! TARGET_SH2A
+      && arith_reg_dest (operands[0], <MODE>mode)
+      && short_displacement_mem_operand (operands[1], <MODE>mode))
+    {
+      emit_insn (gen_extend<mode>si2_short_mem_disp_z (operands[0],
+													     operands[1]));
+      DONE;
+    }
+})
+
+(define_insn_and_split "extend<mode>si2_short_mem_disp_z"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(sign_extend:SI
+	    (match_operand:QIHI 1 "short_displacement_mem_operand" "m")))
+   (clobber (reg:SI R0_REG))]
+  "TARGET_SH1 && ! TARGET_SH2A && sh_lra_p ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 2) (sign_extend:SI (match_dup  1)))
+   (set (match_dup 0) (match_dup 2))]
+{
+  operands[2] = gen_rtx_REG (SImode, R0_REG);
+}
+  [(set_attr "type" "load")])
 
 (define_insn_and_split "*extend<mode>si2_compact_reg"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
@@ -5343,8 +5374,49 @@
         operands[1] = gen_lowpart (<MODE>mode, reg);
     }
 
+  if (! lra_in_progress && ! reload_completed
+      && sh_lra_p ()
+      && ! TARGET_SH2A
+      && arith_reg_operand (operands[1], <MODE>mode)
+      && (satisfies_constraint_Sid (operands[0])
+              || sh_satisfies_constraint_Sid_subreg_index (operands[0])))
+    {
+      rtx adr = XEXP (operands[0], 0);
+      rtx base = XEXP (adr, 0);
+      rtx idx = XEXP (adr, 1);
+      emit_insn (gen_mov<mode>_store_mem_index (base, idx,
+												      operands[1]));
+      DONE;
+    }
+
   prepare_move_operands (operands, <MODE>mode);
 })
+
+(define_insn "*mov<mode>_store_mem_index"
+  [(set (mem:QIHI
+		(plus:SI (match_operand:SI 0 "arith_reg_operand" "%r")
+			       (match_operand:SI 1 "arith_reg_operand" "z")))
+	   (match_operand:QIHI 2 "arith_reg_operand" "r"))]
+  "TARGET_SH1 && ! TARGET_SH2A && sh_lra_p ()
+   && REG_P (operands[1]) && REGNO (operands[1]) == R0_REG"
+  "mov.<bw>	%2,@(%1,%0)"
+  [(set_attr "type" "store")])
+
+(define_insn_and_split "mov<mode>_store_mem_index"
+  [(set (mem:QIHI
+		(plus:SI (match_operand:SI 0 "arith_reg_operand" "%r")
+			       (match_operand:SI 1 "arith_reg_operand" "^zr")))
+	   (match_operand:QIHI 2 "arith_reg_operand" "r"))
+   (clobber (reg:SI R0_REG))]
+  "TARGET_SH1 && ! TARGET_SH2A && sh_lra_p ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 3) (match_dup 1))
+    (set (mem:QIHI (plus:SI (match_dup 0) (match_dup 3))) (match_dup 2))]
+{
+  operands[3] = gen_rtx_REG (SImode, R0_REG);
+}
+  [(set_attr "type" "store")])
 
 ;; The pre-dec and post-inc mems must be captured by the '<' and '>'
 ;; constraints, otherwise wrong code might get generated.
@@ -5627,6 +5699,22 @@
    (set_attr "type" "fmove,move,pcfload,fload,fstore,pcload,load,store,load,
 		    fload")
    (set_attr "late_fp_use" "*,*,*,*,yes,*,*,*,*,*")
+   (set (attr "fp_mode") (if_then_else (eq_attr "fmovd" "yes")
+					   (const_string "double")
+					   (const_string "none")))])
+
+;; LRA will try to satisfy the constraints in match_scratch for the memory
+;; displacements and it will make issues on this target.  Use R0 as a scratch
+;; register for the constant load.
+(define_insn "movdf_i4_F_z"
+  [(set (match_operand:DF 0 "fp_arith_reg_operand" "=d")
+	(match_operand:DF 1 "const_double_operand" "F"))
+   (use (reg:SI FPSCR_MODES_REG))
+   (clobber (reg:SI R0_REG))]
+  "TARGET_FPU_DOUBLE && sh_lra_p ()"
+  "#"
+  [(set_attr "type" "pcfload")
+   (set (attr "length") (if_then_else (eq_attr "fmovd" "yes") (const_int 4) (const_int 8)))
    (set (attr "fp_mode") (if_then_else (eq_attr "fmovd" "yes")
 					   (const_string "double")
 					   (const_string "none")))])
