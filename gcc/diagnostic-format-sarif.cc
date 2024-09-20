@@ -3139,6 +3139,10 @@ public:
   {
     m_builder.emit_diagram (m_context, diagram);
   }
+  void after_diagnostic (const diagnostic_info &) final override
+  {
+    /* No-op.  */
+  }
 
   sarif_builder &get_builder () { return m_builder; }
 

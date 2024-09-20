@@ -39,9 +39,16 @@ public:
 				     diagnostic_t orig_diag_kind) = 0;
 
   virtual void on_diagram (const diagnostic_diagram &diagram) = 0;
+  virtual void after_diagnostic (const diagnostic_info &) = 0;
   virtual bool machine_readable_stderr_p () const = 0;
 
+  diagnostic_context &get_context () const { return m_context; }
   pretty_printer *get_printer () const { return m_context.m_printer; }
+
+  text_art::theme *get_diagram_theme () const
+  {
+    return m_context.get_diagram_theme ();
+  }
 
 protected:
   diagnostic_output_format (diagnostic_context &context)

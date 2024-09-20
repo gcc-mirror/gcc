@@ -20,10 +20,10 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DIAGNOSTIC_MACRO_UNWINDING_H
 #define GCC_DIAGNOSTIC_MACRO_UNWINDING_H
 
-void virt_loc_aware_diagnostic_finalizer (diagnostic_context *,
+void virt_loc_aware_diagnostic_finalizer (diagnostic_text_output_format &,
 					  const diagnostic_info *);
 
-extern void maybe_unwind_expanded_macro_loc (diagnostic_context *context,
+extern void maybe_unwind_expanded_macro_loc (diagnostic_text_output_format &,
 					     location_t where);
 
 #endif /* ! GCC_DIAGNOSTIC_MACRO_UNWINDING_H */

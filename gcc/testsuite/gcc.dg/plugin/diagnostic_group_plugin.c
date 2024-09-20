@@ -165,10 +165,10 @@ pass_test_groups::execute (function *fun)
    expected output.  */
 
 void
-test_diagnostic_starter (diagnostic_context *context,
-			 const diagnostic_info *diagnostic)
+test_diagnostic_text_starter (diagnostic_text_output_format &text_output,
+			      const diagnostic_info *diagnostic)
 {
-  pp_set_prefix (context->m_printer, xstrdup ("PREFIX: "));
+  pp_set_prefix (text_output.get_printer (), xstrdup ("PREFIX: "));
 }
 
 /* Custom diagnostic callback, to avoid having the path in the
@@ -224,7 +224,7 @@ plugin_init (struct plugin_name_args *plugin_info,
   if (!plugin_default_version_check (version, &gcc_version))
     return 1;
 
-  diagnostic_starter (global_dc) = test_diagnostic_starter;
+  diagnostic_text_starter (global_dc) = test_diagnostic_text_starter;
   diagnostic_start_span (global_dc) = test_diagnostic_start_span_fn;
   global_dc->set_output_format (new test_output_format (*global_dc));
 

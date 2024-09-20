@@ -131,11 +131,12 @@ ResolveExpr::visit (AST::AssignmentExpr &expr)
    the default bug reporting instructions, as there is no bug to report.  */
 
 static void ATTRIBUTE_NORETURN
-funny_ice_finalizer (diagnostic_context *context,
-		     const diagnostic_info *diagnostic, diagnostic_t diag_kind)
+funny_ice_text_finalizer (diagnostic_text_output_format &text_output,
+			  const diagnostic_info *diagnostic,
+			  diagnostic_t diag_kind)
 {
   gcc_assert (diag_kind == DK_ICE_NOBT);
-  default_diagnostic_finalizer (context, diagnostic, diag_kind);
+  default_diagnostic_text_finalizer (text_output, diagnostic, diag_kind);
   fnotice (stderr, "You have broken GCC Rust. This is a feature.\n");
   exit (ICE_EXIT_CODE);
 }
@@ -161,7 +162,7 @@ ResolveExpr::visit (AST::IdentifierExpr &expr)
 	 resolve.  Emit a funny ICE.  We set the finalizer to our custom one,
 	 and use the lower-level emit_diagnostic () instead of the more common
 	 internal_error_no_backtrace () in order to pass our locus.  */
-      diagnostic_finalizer (global_dc) = funny_ice_finalizer;
+      diagnostic_text_finalizer (global_dc) = funny_ice_text_finalizer;
       emit_diagnostic (DK_ICE_NOBT, expr.get_locus (), -1,
 		       "are you trying to break %s? how dare you?",
 		       expr.as_string ().c_str ());

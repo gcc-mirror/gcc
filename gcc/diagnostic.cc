@@ -85,11 +85,11 @@ build_message_string (const char *msg, ...)
   return str;
 }
 
-/* Same as diagnostic_build_prefix, but only the source FILE is given.  */
+/* Same as build_prefix, but only the source FILE is given.  */
 char *
-file_name_as_prefix (diagnostic_context *context, const char *f)
+diagnostic_text_output_format::file_name_as_prefix (const char *f) const
 {
-  pretty_printer *const pp = context->m_printer;
+  pretty_printer *const pp = get_printer ();
   const char *locus_cs
     = colorize_start (pp_show_color (pp), "locus");
   const char *locus_ce = colorize_stop (pp_show_color (pp));
@@ -223,13 +223,12 @@ diagnostic_context::initialize (int n_opts)
   m_max_errors = 0;
   m_internal_error = nullptr;
   m_adjust_diagnostic_info = nullptr;
-  m_text_callbacks.m_begin_diagnostic = default_diagnostic_starter;
+  m_text_callbacks.m_begin_diagnostic = default_diagnostic_text_starter;
   m_text_callbacks.m_start_span = default_diagnostic_start_span_fn;
-  m_text_callbacks.m_end_diagnostic = default_diagnostic_finalizer;
+  m_text_callbacks.m_end_diagnostic = default_diagnostic_text_finalizer;
   m_option_mgr = nullptr;
   m_urlifier = nullptr;
   m_last_location = UNKNOWN_LOCATION;
-  m_last_module = nullptr;
   m_client_aux_data = nullptr;
   m_lock = 0;
   m_inhibit_notes_p = false;
@@ -259,7 +258,6 @@ diagnostic_context::initialize (int n_opts)
   m_output_format = new diagnostic_text_output_format (*this);
   m_set_locations_cb = nullptr;
   m_ice_handler_cb = nullptr;
-  m_includes_seen = nullptr;
   m_client_data_hooks = nullptr;
   m_diagrams.m_theme = nullptr;
   m_original_argv = nullptr;
@@ -379,12 +377,6 @@ diagnostic_context::finish ()
     {
       delete m_edit_context_ptr;
       m_edit_context_ptr = nullptr;
-    }
-
-  if (m_includes_seen)
-    {
-      delete m_includes_seen;
-      m_includes_seen = nullptr;
     }
 
   if (m_client_data_hooks)
@@ -554,36 +546,14 @@ diagnostic_context::converted_column (expanded_location s) const
   return one_based_col + (m_column_origin - 1);
 }
 
-/* Return a formatted line and column ':%line:%column'.  Elided if
-   line == 0 or col < 0.  (A column of 0 may be valid due to the
-   -fdiagnostics-column-origin option.)
-   The result is a statically allocated buffer.  */
-
-static const char *
-maybe_line_and_column (int line, int col)
-{
-  static char result[32];
-
-  if (line)
-    {
-      size_t l
-	= snprintf (result, sizeof (result),
-		    col >= 0 ? ":%d:%d" : ":%d", line, col);
-      gcc_checking_assert (l < sizeof (result));
-    }
-  else
-    result[0] = 0;
-  return result;
-}
-
 /* Return a string describing a location e.g. "foo.c:42:10".  */
 
 label_text
-diagnostic_context::get_location_text (const expanded_location &s) const
+diagnostic_context::get_location_text (const expanded_location &s,
+				       bool colorize) const
 {
-  pretty_printer *pp = m_printer;
-  const char *locus_cs = colorize_start (pp_show_color (pp), "locus");
-  const char *locus_ce = colorize_stop (pp_show_color (pp));
+  const char *locus_cs = colorize_start (colorize, "locus");
+  const char *locus_ce = colorize_stop (colorize);
   const char *file = s.file ? s.file : progname;
   int line = 0;
   int col = -1;
@@ -618,24 +588,24 @@ get_diagnostic_kind_text (diagnostic_t kind)
    diagnostic, e.g. "foo.c:42:10: error: ".  The caller is responsible for
    freeing the memory.  */
 char *
-diagnostic_build_prefix (diagnostic_context *context,
-			 const diagnostic_info *diagnostic)
+diagnostic_text_output_format::
+build_prefix (const diagnostic_info &diagnostic) const
 {
-  gcc_assert (diagnostic->kind < DK_LAST_DIAGNOSTIC_KIND);
+  gcc_assert (diagnostic.kind < DK_LAST_DIAGNOSTIC_KIND);
 
-  const char *text = _(diagnostic_kind_text[diagnostic->kind]);
+  const char *text = _(diagnostic_kind_text[diagnostic.kind]);
   const char *text_cs = "", *text_ce = "";
-  pretty_printer *pp = context->m_printer;
+  pretty_printer *pp = get_printer ();
 
-  if (diagnostic_kind_color[diagnostic->kind])
+  if (diagnostic_kind_color[diagnostic.kind])
     {
       text_cs = colorize_start (pp_show_color (pp),
-				diagnostic_kind_color[diagnostic->kind]);
+				diagnostic_kind_color[diagnostic.kind]);
       text_ce = colorize_stop (pp_show_color (pp));
     }
 
-  const expanded_location s = diagnostic_expand_location (diagnostic);
-  label_text location_text = context->get_location_text (s);
+  const expanded_location s = diagnostic_expand_location (&diagnostic);
+  label_text location_text = get_location_text (s);
 
   char *result = build_message_string ("%s %s%s%s", location_text.get (),
 				       text_cs, text, text_ce);
@@ -837,104 +807,11 @@ diagnostic_context::action_after_output (diagnostic_t diag_kind)
     }
 }
 
-/* Only dump the "In file included from..." stack once for each file.  */
-
-bool
-diagnostic_context::includes_seen_p (const line_map_ordinary *map)
-{
-  /* No include path for main.  */
-  if (MAIN_FILE_P (map))
-    return true;
-
-  /* Always identify C++ modules, at least for now.  */
-  auto probe = map;
-  if (linemap_check_ordinary (map)->reason == LC_RENAME)
-    /* The module source file shows up as LC_RENAME inside LC_MODULE.  */
-    probe = linemap_included_from_linemap (line_table, map);
-  if (MAP_MODULE_P (probe))
-    return false;
-
-  if (!m_includes_seen)
-    m_includes_seen = new hash_set<location_t, false, location_hash>;
-
-  /* Hash the location of the #include directive to better handle files
-     that are included multiple times with different macros defined.  */
-  return m_includes_seen->add (linemap_included_from (map));
-}
-
-void
-diagnostic_context::report_current_module (location_t where)
-{
-  pretty_printer *pp = m_printer;
-  const line_map_ordinary *map = NULL;
-
-  if (pp_needs_newline (m_printer))
-    {
-      pp_newline (pp);
-      pp_needs_newline (pp) = false;
-    }
-
-  if (where <= BUILTINS_LOCATION)
-    return;
-
-  linemap_resolve_location (line_table, where,
-			    LRK_MACRO_DEFINITION_LOCATION,
-			    &map);
-
-  if (map && m_last_module != map)
-    {
-      m_last_module = map;
-      if (!includes_seen_p (map))
-	{
-	  bool first = true, need_inc = true, was_module = MAP_MODULE_P (map);
-	  expanded_location s = {};
-	  do
-	    {
-	      where = linemap_included_from (map);
-	      map = linemap_included_from_linemap (line_table, map);
-	      bool is_module = MAP_MODULE_P (map);
-	      s.file = LINEMAP_FILE (map);
-	      s.line = SOURCE_LINE (map, where);
-	      int col = -1;
-	      if (first && m_show_column)
-		{
-		  s.column = SOURCE_COLUMN (map, where);
-		  col = converted_column (s);
-		}
-	      const char *line_col = maybe_line_and_column (s.line, col);
-	      static const char *const msgs[] =
-		{
-		 NULL,
-		 N_("                 from"),
-		 N_("In file included from"),	/* 2 */
-		 N_("        included from"),
-		 N_("In module"),		/* 4 */
-		 N_("of module"),
-		 N_("In module imported at"),	/* 6 */
-		 N_("imported at"),
-		};
-
-	      unsigned index = (was_module ? 6 : is_module ? 4
-				: need_inc ? 2 : 0) + !first;
-
-	      pp_verbatim (pp, "%s%s %r%s%s%R",
-			   first ? "" : was_module ? ", " : ",\n",
-			   _(msgs[index]),
-			   "locus", s.file, line_col);
-	      first = false, need_inc = was_module, was_module = is_module;
-	    }
-	  while (!includes_seen_p (map));
-	  pp_verbatim (pp, ":");
-	  pp_newline (pp);
-	}
-    }
-}
-
 /* If DIAGNOSTIC has a diagnostic_path and this context supports
    printing paths, print the path.  */
 
 void
-diagnostic_context::show_any_path (const diagnostic_info &diagnostic)
+diagnostic_text_output_format::show_any_path (const diagnostic_info &diagnostic)
 {
   const diagnostic_path *path = diagnostic.richloc->get_path ();
   if (!path)
@@ -970,36 +847,13 @@ logical_location::function_p () const
 }
 
 void
-default_diagnostic_starter (diagnostic_context *context,
-			    const diagnostic_info *diagnostic)
-{
-  diagnostic_report_current_module (context, diagnostic_location (diagnostic));
-  pretty_printer *const pp = context->m_printer;
-  pp_set_prefix (pp, diagnostic_build_prefix (context, diagnostic));
-}
-
-void
 default_diagnostic_start_span_fn (diagnostic_context *context,
 				  expanded_location exploc)
 {
-  label_text text = context->get_location_text (exploc);
   pretty_printer *pp = context->m_printer;
+  label_text text = context->get_location_text (exploc, pp_show_color (pp));
   pp_string (pp, text.get ());
   pp_newline (pp);
-}
-
-void
-default_diagnostic_finalizer (diagnostic_context *context,
-			      const diagnostic_info *diagnostic,
-			      diagnostic_t)
-{
-  pretty_printer *const pp = context->m_printer;
-  char *saved_prefix = pp_take_prefix (pp);
-  pp_set_prefix (pp, NULL);
-  pp_newline (pp);
-  diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind, pp);
-  pp_set_prefix (pp, saved_prefix);
-  pp_flush (pp);
 }
 
 /* Interface to specify diagnostic kind overrides.  Returns the
@@ -1436,7 +1290,7 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
 
   m_lock--;
 
-  show_any_path (*diagnostic);
+  m_output_format->after_diagnostic (*diagnostic);
 
   return true;
 }
@@ -1492,12 +1346,14 @@ trim_filename (const char *name)
   return p;
 }
 
-/* Add a note with text GMSGID and with LOCATION to the diagnostic CONTEXT.  */
+/* Add a purely textual note with text GMSGID and with LOCATION.  */
+
 void
-diagnostic_append_note (diagnostic_context *context,
-                        location_t location,
-                        const char * gmsgid, ...)
+diagnostic_text_output_format::append_note (location_t location,
+					    const char * gmsgid, ...)
 {
+  diagnostic_context *context = &get_context ();
+
   diagnostic_info diagnostic;
   va_list ap;
   rich_location richloc (line_table, location);
@@ -1509,10 +1365,9 @@ diagnostic_append_note (diagnostic_context *context,
       va_end (ap);
       return;
     }
-  pretty_printer *pp = context->m_printer;
+  pretty_printer *pp = get_printer ();
   char *saved_prefix = pp_take_prefix (pp);
-  pp_set_prefix (pp,
-                 diagnostic_build_prefix (context, &diagnostic));
+  pp_set_prefix (pp, build_prefix (diagnostic));
   pp_format (pp, &diagnostic.message);
   pp_output_formatted_text (pp);
   pp_destroy_prefix (pp);
@@ -1983,7 +1838,7 @@ assert_location_text (const char *expected_loc_text,
   xloc.data = NULL;
   xloc.sysp = false;
 
-  label_text actual_loc_text = dc.get_location_text (xloc);
+  label_text actual_loc_text = dc.get_location_text (xloc, false);
   ASSERT_STREQ (expected_loc_text, actual_loc_text.get ());
 }
 

@@ -54,6 +54,10 @@ public:
   {
     /* No-op.  */
   }
+  void after_diagnostic (const diagnostic_info &) final override
+  {
+    /* No-op.  */
+  }
 
 protected:
   json_output_format (diagnostic_context &context,

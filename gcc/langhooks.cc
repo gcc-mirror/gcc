@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "cgraph.h"
 #include "debug.h"
+#include "diagnostic-format-text.h"
 
 /* Do nothing; in many cases the default hook.  */
 
@@ -368,16 +369,18 @@ lhd_handle_option (size_t code ATTRIBUTE_UNUSED,
 /* The default function to print out name of current function that caused
    an error.  */
 void
-lhd_print_error_function (diagnostic_context *context, const char *file,
+lhd_print_error_function (diagnostic_text_output_format &text_output,
+			  const char *file,
 			  const diagnostic_info *diagnostic)
 {
+  diagnostic_context *const context = &text_output.get_context ();
   if (diagnostic_last_function_changed (context, diagnostic))
     {
-      pretty_printer *const pp = context->m_printer;
+      pretty_printer *const pp = text_output.get_printer ();
       char *old_prefix = pp_take_prefix (pp);
       tree abstract_origin = diagnostic_abstract_origin (diagnostic);
       char *new_prefix = (file && abstract_origin == NULL)
-			 ? file_name_as_prefix (context, file) : NULL;
+			 ? text_output.file_name_as_prefix (file) : NULL;
 
       pp_set_prefix (pp, new_prefix);
 

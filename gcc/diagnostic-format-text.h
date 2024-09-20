@@ -33,7 +33,9 @@ class diagnostic_text_output_format : public diagnostic_output_format
 {
 public:
   diagnostic_text_output_format (diagnostic_context &context)
-  : diagnostic_output_format (context)
+  : diagnostic_output_format (context),
+    m_last_module (nullptr),
+    m_includes_seen (nullptr)
   {}
   ~diagnostic_text_output_format ();
   void on_begin_group () override {}
@@ -41,16 +43,43 @@ public:
   void on_report_diagnostic (const diagnostic_info &,
 			     diagnostic_t orig_diag_kind) override;
   void on_diagram (const diagnostic_diagram &diagram) override;
+  void after_diagnostic (const diagnostic_info &) final override;
   bool machine_readable_stderr_p () const final override
   {
     return false;
   }
+
+  /* Helpers for writing lang-specific starters/finalizers for text output.  */
+  char *build_prefix (const diagnostic_info &) const;
+  void report_current_module (location_t where);
+  void append_note (location_t location,
+		    const char * gmsgid, ...) ATTRIBUTE_GCC_DIAG(3,4);
+
+
+  char *file_name_as_prefix (const char *) const;
+
+  void print_path (const diagnostic_path &path);
+
+  bool show_column_p () const { return get_context ().m_show_column; }
 
 private:
   void print_any_cwe (const diagnostic_info &diagnostic);
   void print_any_rules (const diagnostic_info &diagnostic);
   void print_option_information (const diagnostic_info &diagnostic,
 				 diagnostic_t orig_diag_kind);
+
+  label_text get_location_text (const expanded_location &s) const;
+  bool includes_seen_p (const line_map_ordinary *map);
+
+  void show_any_path (const diagnostic_info &diagnostic);
+
+  /* Used to detect when the input file stack has changed since last
+     described.  */
+  const line_map_ordinary *m_last_module;
+
+  /* Include files that report_current_module has already listed the
+     include path for.  */
+  hash_set<location_t, false, location_hash> *m_includes_seen;
 };
 
 #endif /* ! GCC_DIAGNOSTIC_FORMAT_TEXT_H */

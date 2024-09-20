@@ -171,15 +171,15 @@ struct diagnostic_info
 };
 
 /*  Forward declarations.  */
-typedef void (*diagnostic_starter_fn) (diagnostic_context *,
-				       const diagnostic_info *);
+typedef void (*diagnostic_text_starter_fn) (diagnostic_text_output_format &,
+					    const diagnostic_info *);
 
 typedef void (*diagnostic_start_span_fn) (diagnostic_context *,
 					  expanded_location);
 
-typedef void (*diagnostic_finalizer_fn) (diagnostic_context *,
-					 const diagnostic_info *,
-					 diagnostic_t);
+typedef void (*diagnostic_text_finalizer_fn) (diagnostic_text_output_format &,
+					      const diagnostic_info *,
+					      diagnostic_t);
 
 /* Abstract base class for the diagnostic subsystem to make queries
    about command-line options.  */
@@ -352,12 +352,12 @@ class diagnostic_context
 {
 public:
   /* Give access to m_text_callbacks.  */
-  friend diagnostic_starter_fn &
-  diagnostic_starter (diagnostic_context *context);
+  friend diagnostic_text_starter_fn &
+  diagnostic_text_starter (diagnostic_context *context);
   friend diagnostic_start_span_fn &
   diagnostic_start_span (diagnostic_context *context);
-  friend diagnostic_finalizer_fn &
-  diagnostic_finalizer (diagnostic_context *context);
+  friend diagnostic_text_finalizer_fn &
+  diagnostic_text_finalizer (diagnostic_context *context);
 
   friend class diagnostic_text_output_format;
 
@@ -399,8 +399,6 @@ public:
   }
 
   bool report_diagnostic (diagnostic_info *);
-
-  void report_current_module (location_t where);
 
   void check_max_errors (bool flush);
   void action_after_output (diagnostic_t diag_kind);
@@ -546,7 +544,8 @@ public:
     return m_lang_mask;
   }
 
-  label_text get_location_text (const expanded_location &s) const;
+  label_text get_location_text (const expanded_location &s,
+				bool colorize) const;
 
   bool diagnostic_impl (rich_location *, const diagnostic_metadata *,
 			diagnostic_option_id, const char *,
@@ -557,10 +556,6 @@ public:
 			  diagnostic_t) ATTRIBUTE_GCC_DIAG(7,0);
 
 private:
-  bool includes_seen_p (const line_map_ordinary *map);
-
-  void show_any_path (const diagnostic_info &diagnostic);
-
   void error_recursion () ATTRIBUTE_NORETURN;
 
   bool diagnostic_enabled (diagnostic_info *diagnostic);
@@ -571,8 +566,6 @@ private:
 		   diagnostic_t diagnostic_kind,
 		   pretty_printer *pp,
 		   diagnostic_source_effect_info *effect_info);
-
-  void print_path (const diagnostic_path &path);
 
   /* Data members.
      Ideally, all of these would be private.  */
@@ -654,7 +647,7 @@ private:
        from "/home/gdr/src/nifty_printer.h:56:
        ...
     */
-    diagnostic_starter_fn m_begin_diagnostic;
+    diagnostic_text_starter_fn m_begin_diagnostic;
 
     /* This function is called by diagnostic_show_locus in between
        disjoint spans of source code, so that the context can print
@@ -662,7 +655,7 @@ private:
     diagnostic_start_span_fn m_start_span;
 
     /* This function is called after the diagnostic message is printed.  */
-    diagnostic_finalizer_fn m_end_diagnostic;
+    diagnostic_text_finalizer_fn m_end_diagnostic;
   } m_text_callbacks;
 
 public:
@@ -689,10 +682,6 @@ public:
   location_t m_last_location;
 
 private:
-  /* Used to detect when the input file stack has changed since last
-     described.  */
-  const line_map_ordinary *m_last_module;
-
   int m_lock;
 
 public:
@@ -751,10 +740,6 @@ private:
   /* Optional callback for attempting to handle ICEs gracefully.  */
   ice_handler_callback_t m_ice_handler_cb;
 
-  /* Include files that diagnostic_report_current_module has already listed the
-     include path for.  */
-  hash_set<location_t, false, location_hash> *m_includes_seen;
-
   /* A bundle of hooks for providing data to the context about its client
      e.g. version information, plugins, etc.
      Used by SARIF output to give metadata about the client that's
@@ -783,8 +768,8 @@ diagnostic_inhibit_notes (diagnostic_context * context)
 
 /* Client supplied function to announce a diagnostic
    (for text-based diagnostic output).  */
-inline diagnostic_starter_fn &
-diagnostic_starter (diagnostic_context *context)
+inline diagnostic_text_starter_fn &
+diagnostic_text_starter (diagnostic_context *context)
 {
   return context->m_text_callbacks.m_begin_diagnostic;
 }
@@ -800,8 +785,8 @@ diagnostic_start_span (diagnostic_context *context)
 
 /* Client supplied function called after a diagnostic message is
    displayed (for text-based diagnostic output).  */
-inline diagnostic_finalizer_fn &
-diagnostic_finalizer (diagnostic_context *context)
+inline diagnostic_text_finalizer_fn &
+diagnostic_text_finalizer (diagnostic_context *context)
 {
   return context->m_text_callbacks.m_end_diagnostic;
 }
@@ -888,13 +873,6 @@ diagnostic_finish (diagnostic_context *context)
 }
 
 inline void
-diagnostic_report_current_module (diagnostic_context *context,
-				  location_t where)
-{
-  context->report_current_module (where);
-}
-
-inline void
 diagnostic_show_locus (diagnostic_context *context,
 		       rich_location *richloc,
 		       diagnostic_t diagnostic_kind,
@@ -975,16 +953,14 @@ extern void diagnostic_set_info_translated (diagnostic_info *, const char *,
 					    va_list *, rich_location *,
 					    diagnostic_t)
      ATTRIBUTE_GCC_DIAG(2,0);
-extern void diagnostic_append_note (diagnostic_context *, location_t,
-                                    const char *, ...) ATTRIBUTE_GCC_DIAG(3,4);
 #endif
-extern char *diagnostic_build_prefix (diagnostic_context *, const diagnostic_info *);
-void default_diagnostic_starter (diagnostic_context *, const diagnostic_info *);
+void default_diagnostic_text_starter (diagnostic_text_output_format &,
+				      const diagnostic_info *);
 void default_diagnostic_start_span_fn (diagnostic_context *,
 				       expanded_location);
-void default_diagnostic_finalizer (diagnostic_context *,
-				   const diagnostic_info *,
-				   diagnostic_t);
+void default_diagnostic_text_finalizer (diagnostic_text_output_format &,
+					const diagnostic_info *,
+					diagnostic_t);
 void diagnostic_set_caret_max_width (diagnostic_context *context, int value);
 
 inline void
@@ -1050,7 +1026,6 @@ diagnostic_same_line (const diagnostic_context *context,
 extern const char *diagnostic_get_color_for_kind (diagnostic_t kind);
 
 /* Pure text formatting support functions.  */
-extern char *file_name_as_prefix (diagnostic_context *, const char *);
 
 extern char *build_message_string (const char *, ...) ATTRIBUTE_PRINTF_1;
 
@@ -1072,5 +1047,7 @@ option_unspecified_p (diagnostic_option_id option_id)
 extern char *get_cwe_url (int cwe);
 
 extern const char *get_diagnostic_kind_text (diagnostic_t kind);
+
+const char *maybe_line_and_column (int line, int col);
 
 #endif /* ! GCC_DIAGNOSTIC_H */

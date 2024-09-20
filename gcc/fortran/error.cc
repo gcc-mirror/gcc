@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "diagnostic-color.h"
 #include "tree-diagnostic.h" /* tree_diagnostics_defaults */
+#include "diagnostic-format-text.h"
 
 static int suppress_errors = 0;
 
@@ -1266,10 +1267,11 @@ gfc_diagnostic_build_locus_prefix (diagnostic_context *context,
        [locus of primary range]: Error: Some error at (1) and (2)
 */
 static void
-gfc_diagnostic_starter (diagnostic_context *context,
-			const diagnostic_info *diagnostic)
+gfc_diagnostic_text_starter (diagnostic_text_output_format &text_output,
+			     const diagnostic_info *diagnostic)
 {
-  pretty_printer *const pp = context->m_printer;
+  diagnostic_context *const context = &text_output.get_context ();
+  pretty_printer *const pp = text_output.get_printer ();
   char * kind_prefix = gfc_diagnostic_build_kind_prefix (context, diagnostic);
 
   expanded_location s1 = diagnostic_expand_location (diagnostic);
@@ -1345,11 +1347,11 @@ gfc_diagnostic_start_span (diagnostic_context *context,
 
 
 static void
-gfc_diagnostic_finalizer (diagnostic_context *context,
-			  const diagnostic_info *diagnostic ATTRIBUTE_UNUSED,
-			  diagnostic_t orig_diag_kind ATTRIBUTE_UNUSED)
+gfc_diagnostic_text_finalizer (diagnostic_text_output_format &text_output,
+			       const diagnostic_info *diagnostic ATTRIBUTE_UNUSED,
+			       diagnostic_t orig_diag_kind ATTRIBUTE_UNUSED)
 {
-  pretty_printer *const pp = context->m_printer;
+  pretty_printer *const pp = text_output.get_printer ();
   pp_destroy_prefix (pp);
   pp_newline_and_flush (pp);
 }
@@ -1704,9 +1706,9 @@ gfc_errors_to_warnings (bool f)
 void
 gfc_diagnostics_init (void)
 {
-  diagnostic_starter (global_dc) = gfc_diagnostic_starter;
+  diagnostic_text_starter (global_dc) = gfc_diagnostic_text_starter;
   diagnostic_start_span (global_dc) = gfc_diagnostic_start_span;
-  diagnostic_finalizer (global_dc) = gfc_diagnostic_finalizer;
+  diagnostic_text_finalizer (global_dc) = gfc_diagnostic_text_finalizer;
   diagnostic_format_decoder (global_dc) = gfc_format_decoder;
   global_dc->m_source_printing.caret_chars[0] = '1';
   global_dc->m_source_printing.caret_chars[1] = '2';
@@ -1724,8 +1726,8 @@ gfc_diagnostics_finish (void)
   tree_diagnostics_defaults (global_dc);
   /* We still want to use the gfc starter and finalizer, not the tree
      defaults.  */
-  diagnostic_starter (global_dc) = gfc_diagnostic_starter;
-  diagnostic_finalizer (global_dc) = gfc_diagnostic_finalizer;
+  diagnostic_text_starter (global_dc) = gfc_diagnostic_text_starter;
+  diagnostic_text_finalizer (global_dc) = gfc_diagnostic_text_finalizer;
   global_dc->m_source_printing.caret_chars[0] = '^';
   global_dc->m_source_printing.caret_chars[1] = '^';
 }
