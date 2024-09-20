@@ -24,13 +24,16 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#include "GM2RTS.h"
-
 #ifdef MC_M2
+#include "GM2RTS.h"
 /* mc sources do not register their init fini functions as they are
    initialized by a static scaffold (called by main).  */
 #define M2RTS_RegisterModule_Cstr(MODNAME,LIBNAME,init,fini,dep)
 #else
+#define M2RTS_INIT(X) void (*X)(int, char**, char**)
+#define M2RTS_DEP(X) void (*X)(void)
+extern "C" void M2RTS_RegisterModule (void * name, void * libname, M2RTS_INIT(init),
+				      M2RTS_INIT(fini), M2RTS_DEP(dependencies));
 #define M2RTS_RegisterModule_Cstr(MODNAME,LIBNAME,init,fini,dep) \
   M2RTS_RegisterModule (reinterpret_cast <void *> (const_cast <char *> (MODNAME)), \
 			reinterpret_cast <void *> (const_cast <char *> (LIBNAME)), \

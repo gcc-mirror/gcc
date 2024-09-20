@@ -32,7 +32,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "gm2-libs-host.h"
 
 #include "GUnixArgs.h"
-#include "GM2RTS.h"
 
 static int UnixArgs_ArgC;
 static char **UnixArgs_ArgV;
