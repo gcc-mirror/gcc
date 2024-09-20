@@ -69,7 +69,7 @@ ResolveType::visit (AST::InferredType &)
 void
 ResolveType::visit (AST::NeverType &)
 {
-  // FIXME
+  resolved_node = resolver->get_never_type_node_id ();
 }
 
 void
@@ -499,6 +499,12 @@ ResolveTypeToCanonicalPath::visit (AST::TraitObjectType &)
 {
   // FIXME is this actually allowed? dyn A+B
   rust_unreachable ();
+}
+
+void
+ResolveTypeToCanonicalPath::visit (AST::NeverType &type)
+{
+  result = CanonicalPath::new_seg (type.get_node_id (), "!");
 }
 
 ResolveTypeToCanonicalPath::ResolveTypeToCanonicalPath ()

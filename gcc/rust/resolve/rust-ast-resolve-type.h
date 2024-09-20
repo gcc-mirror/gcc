@@ -246,6 +246,8 @@ public:
 
   void visit (AST::TraitObjectType &type) override;
 
+  void visit (AST::NeverType &type) override;
+
 private:
   ResolveTypeToCanonicalPath ();
 

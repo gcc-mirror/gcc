@@ -276,3 +276,4 @@ box_syntax_feature_gate.rs
 dropck_eyepatch_feature_gate.rs
 inline_asm_parse_output_operand.rs
 issue-3030.rs
+issue-3035.rs
