@@ -91,7 +91,7 @@ namespace N1 {
 
   A<> a;
   B<> b;
-  // when comparing the A op== to the reversed B op==, we compare them in
-  // reverse order, so they match, and we choose the more constrained.
-  static_assert (a == b);
+  // A op== and B op== are defined in different classes so constraints
+  // aren't considered, and the tie is broken via reversedness.
+  static_assert (!(a == b));
 }

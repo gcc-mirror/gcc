@@ -12865,10 +12865,6 @@ cand_parms_match (z_candidate *c1, z_candidate *c2, pmatch match_kind)
 	}
     }
 
-  else if (reversed)
-    return (reversed_match (c1, c2)
-	    && reversed_match (c2, c1));
-
   tree parms1 = TYPE_ARG_TYPES (TREE_TYPE (fn1));
   tree parms2 = TYPE_ARG_TYPES (TREE_TYPE (fn2));
 
@@ -12879,6 +12875,10 @@ cand_parms_match (z_candidate *c1, z_candidate *c2, pmatch match_kind)
       tree base2 = DECL_CONTEXT (strip_inheriting_ctors (fn2));
       if (base1 != base2)
 	return false;
+
+      if (reversed)
+	return (reversed_match (c1, c2)
+		&& reversed_match (c2, c1));
 
       /* Use object_parms_correspond to simplify comparing iobj/xobj/static
 	 member functions.  */
@@ -12897,6 +12897,9 @@ cand_parms_match (z_candidate *c1, z_candidate *c2, pmatch match_kind)
       parms1 = skip_parms (fn1, parms1);
       parms2 = skip_parms (fn2, parms2);
     }
+  else if (reversed)
+    return (reversed_match (c1, c2)
+	    && reversed_match (c2, c1));
   return compparms (parms1, parms2);
 }
 
