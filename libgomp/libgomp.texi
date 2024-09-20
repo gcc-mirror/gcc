@@ -443,7 +443,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
       of the @code{interop} construct @tab N @tab
 @item Invoke virtual member functions of C++ objects created on the host device
       on other devices @tab N @tab
-@item @code{iterator} and @code{mapper} as map-type modifier in @code{declare mappter}
+@item @code{iterator} and @code{mapper} as map-type modifier in @code{declare mapper}
       @tab N @tab
 @end multitable
 
@@ -582,7 +582,7 @@ Technical Report (TR) 13 is the third preview for OpenMP 6.0.
 @item @code{omp_is_free_agent} and @code{omp_ancestor_is_free_agent} routines
       @tab N @tab
 @item @code{omp_get_device_from_uid} and @code{omp_get_uid_from_device} routines
-      @tab N @tab
+      @tab Y @tab
 @item @code{omp_get_device_num_teams}, @code{omp_set_device_num_teams},
       @code{omp_get_device_teams_thread_limit}, and
       @code{omp_set_device_teams_thread_limit} routines @tab N @tab
@@ -1675,12 +1675,12 @@ They have C linkage and do not throw exceptions.
 @menu
 * omp_get_num_procs::           Number of processors online
 @c * omp_get_max_progress_width:: <fixme>/TR11
-@c * omp_get_device_from_uid::  <fixme>/TR13
-@c * omp_get_uid_from_device::  <fixme>/TR13
 * omp_set_default_device::      Set the default device for target regions
 * omp_get_default_device::      Get the default device for target regions
 * omp_get_num_devices::         Number of target devices
 * omp_get_device_num::          Get device that current thread is running on
+* omp_get_device_from_uid::     Obtain the device number to a unique id
+* omp_get_uid_from_device::     Obtain the unique id of a device
 * omp_is_initial_device::       Whether executing on the host device
 * omp_get_initial_device::      Device number of host device
 @c * omp_get_device_num_teams::  <fixme>/TR13
@@ -1826,6 +1826,71 @@ as required since OpenMP 5.0.
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.2.37.
+@end table
+
+
+
+@node omp_get_device_from_uid
+@subsection @code{omp_get_device_from_uid} -- Obtain the device number to a unique id
+@table @asis
+@item @emph{Description}:
+This function returns the device number associated with the passed
+unique-identifier (UID) string.  If no device with this UID is available, the value
+@code{omp_invalid_device} is returned.  The effect of running this routine in a
+@code{target} region is unspecified.
+
+GCC treats the UID string case sensitive; for the initial device, GCC currently
+only accepts the value @code{OMP_INITIAL_DEVICE} and returns for it the value
+of @code{omp_initial_device}.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_device_from_uid(const char *uid);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_device_from_uid(uid)}
+@item                   @tab @code{character(len=*), intent(in) :: uid}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_uid_from_device}, @ref{Offload-Target Specifics}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v6.0}, Section 24.7
+@end table
+
+
+
+@node omp_get_uid_from_device
+@subsection @code{omp_get_uid_from_device} -- Obtain the unique id of a device
+@table @asis
+@item @emph{Description}:
+This function returns a pointer to a string that represents a unique identifier
+(UID) for the device specified by @var{device_num}.  It returns a @code{NULL} (C/C++)
+or a disassociated pointer (Fortran) for @code{omp_invalid_device}.  The effect of
+running this routine in a @code{target} region is unspecified.
+
+GCC currently returns for initial device the value @code{OMP_INITIAL_DEVICE}.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{const char *omp_get_uid_from_device(int device_num);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{character(:) function omp_get_uid_from_device(device_num)}
+@item @emph{Interface}: @tab @code{pointer :: omp_get_uid_from_device}
+@item                   @tab @code{integer, intent(in) :: device_num}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_uid_from_device}, @ref{Offload-Target Specifics}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v6.0}, Section 24.8
 @end table
 
 
@@ -3455,13 +3520,13 @@ The effect when invoked from within a @code{target} region is unspecified.
 
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{subroutine omp_display_env(vebose)}
+@item @emph{Interface}: @tab @code{subroutine omp_display_env(verbose)}
 @item                   @tab @code{logical, intent(in) :: verbose}
 @end multitable
 
 @item @emph{Example}:
 Note that the GCC-specific ICVs, such as the shown @code{GOMP_SPINCOUNT},
-are only printed when @var{varbose} set to @code{true}.
+are only printed when @var{verbose} set to @code{true}.
 
 @smallexample
 OPENMP DISPLAY ENVIRONMENT BEGIN
@@ -6517,6 +6582,11 @@ The implementation remark:
       @code{omp_thread_mem_alloc}, all use low-latency memory as first
       preference, and fall back to main graphics memory when the low-latency
       pool is exhausted.
+@item The unique identifier (UID), used with OpenMP's API UID routines, is the
+      value returned by the HSA runtime library for @code{HSA_AMD_AGENT_INFO_UUID}.
+      For GPUs, it is currently @samp{GPU-} followed by 16 lower-case hex digits,
+      yielding a string like @code{GPU-f914a2142fc3413a}.  The output matches
+      the one used by @code{rocminfo}.
 @end itemize
 
 
@@ -6604,6 +6674,13 @@ The implementation remark:
       @code{omp_thread_mem_alloc}, all use low-latency memory as first
       preference, and fall back to main graphics memory when the low-latency
       pool is exhausted.
+@item The unique identifier (UID), used with OpenMP's API UID routines, consists
+      of the @samp{GPU-} prefix followed by the 16-bytes UUID as returned by
+      the CUDA runtime library.  This UUID is output in grouped lower-case
+      hex digits; the grouping of those 32 digits is: 8 digits, hyphen,
+      4 digits, hyphen, 4 digits, hyphen, 16 digits. This leads to a string
+      like @code{GPU-a8081c9e-f03e-18eb-1827-bf5ba95afa5d}.  The output
+      matches the format used by @code{nvidia-smi}.
 @end itemize
 
 

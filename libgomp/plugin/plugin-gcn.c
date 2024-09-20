@@ -3316,6 +3316,22 @@ GOMP_OFFLOAD_get_name (void)
   return "gcn";
 }
 
+const char *
+GOMP_OFFLOAD_get_uid (int ord)
+{
+  char *str;
+  hsa_status_t status;
+  struct agent_info *agent = get_agent_info (ord);
+
+  /* HSA documentation states: maximally 21 characters including NUL.  */
+  str = GOMP_PLUGIN_malloc (21 * sizeof (char));
+  status = hsa_fns.hsa_agent_get_info_fn (agent->id, HSA_AMD_AGENT_INFO_UUID,
+					  str);
+  if (status != HSA_STATUS_SUCCESS)
+    hsa_fatal ("Could not obtain device UUID", status);
+  return str;
+}
+
 /* Return the specific capabilities the HSA accelerator have.  */
 
 unsigned int

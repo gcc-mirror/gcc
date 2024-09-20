@@ -443,6 +443,14 @@ GOMP_5.1.3 {
 	omp_get_interop_rc_desc_;
 } GOMP_5.1.2;
 
+GOMP_6.0 {
+  global:
+	omp_get_device_from_uid;
+	omp_get_uid_from_device;
+	omp_get_uid_from_device_;
+	omp_get_uid_from_device_8_;
+} GOMP_5.1.3;
+
 OACC_2.0 {
   global:
 	acc_get_num_devices;

@@ -1242,6 +1242,40 @@ GOMP_OFFLOAD_get_name (void)
   return "nvptx";
 }
 
+const char *
+GOMP_OFFLOAD_get_uid (int ord)
+{
+  CUresult r;
+  CUuuid s;
+  struct ptx_device *dev = ptx_devices[ord];
+
+  if (CUDA_CALL_EXISTS (cuDeviceGetUuid_v2))
+    r = CUDA_CALL_NOCHECK (cuDeviceGetUuid_v2, &s, dev->dev);
+  else if (CUDA_CALL_EXISTS (cuDeviceGetUuid))
+    r = CUDA_CALL_NOCHECK (cuDeviceGetUuid, &s, dev->dev);
+  else
+    r = CUDA_ERROR_NOT_FOUND;
+  if (r != CUDA_SUCCESS)
+    GOMP_PLUGIN_fatal ("cuDeviceGetUuid error: %s", cuda_error (r));
+
+  size_t len = strlen ("GPU-12345678-9abc-defg-hijk-lmniopqrstuv");
+  char *str = (char *) GOMP_PLUGIN_malloc (len + 1);
+  sprintf (str,
+	   "GPU-%02x" "%02x" "%02x" "%02x"
+	   "-%02x" "%02x"
+	   "-%02x" "%02x"
+	   "-%02x" "%02x" "%02x" "%02x" "%02x" "%02x" "%02x" "%02x",
+	   (unsigned char) s.bytes[0], (unsigned char) s.bytes[1],
+	   (unsigned char) s.bytes[2], (unsigned char) s.bytes[3],
+	   (unsigned char) s.bytes[4], (unsigned char) s.bytes[5],
+	   (unsigned char) s.bytes[6], (unsigned char) s.bytes[7],
+	   (unsigned char) s.bytes[8], (unsigned char) s.bytes[9],
+	   (unsigned char) s.bytes[10], (unsigned char) s.bytes[11],
+	   (unsigned char) s.bytes[12], (unsigned char) s.bytes[13],
+	   (unsigned char) s.bytes[14], (unsigned char) s.bytes[15]);
+  return str;
+}
+
 unsigned int
 GOMP_OFFLOAD_get_caps (void)
 {

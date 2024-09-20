@@ -295,6 +295,18 @@ omp_get_interop_rc_desc (const omp_interop_t interop __attribute__ ((unused)),
   return rc_strings[omp_irc_no_value - ret_code];
 }
 
+const char *
+omp_get_uid_from_device (int device_num __attribute__ ((unused)))
+{
+  return NULL;
+}
+
+int
+omp_get_device_from_uid (const char *uid __attribute__ ((unused)))
+{
+  return omp_invalid_device;
+}
+
 ialias (omp_get_num_interop_properties)
 ialias (omp_get_interop_int)
 ialias (omp_get_interop_ptr)
@@ -302,3 +314,5 @@ ialias (omp_get_interop_str)
 ialias (omp_get_interop_name)
 ialias (omp_get_interop_type_desc)
 ialias (omp_get_interop_rc_desc)
+ialias (omp_get_uid_from_device)
+ialias (omp_get_device_from_uid)

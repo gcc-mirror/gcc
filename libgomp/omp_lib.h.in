@@ -610,3 +610,26 @@
           integer (omp_interop_rc_kind), value :: ret_code
         end function omp_get_interop_rc_desc
       end interface
+
+      interface
+!       Note: In gfortran, strings are \0 termined
+        integer(c_int) function omp_get_device_from_uid(uid) bind(C)
+          use iso_c_binding
+          character(c_char), intent(in) :: uid(*)
+        end function omp_get_device_from_uid
+      end interface
+
+      interface omp_get_uid_from_device
+!       Deviation from OpenMP 6.0: VALUE added.
+        character(:) function omp_get_uid_from_device (device_num)
+          use iso_c_binding
+          pointer :: omp_get_uid_from_device
+          integer(c_int32_t), intent(in), value :: device_num
+        end function omp_get_uid_from_device
+
+        character(:) function omp_get_uid_from_device_8 (device_num)
+          use iso_c_binding
+          pointer :: omp_get_uid_from_device_8
+          integer(c_int64_t), intent(in), value :: device_num
+        end function omp_get_uid_from_device_8
+      end interface omp_get_uid_from_device
