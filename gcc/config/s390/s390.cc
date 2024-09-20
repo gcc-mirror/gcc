@@ -516,31 +516,6 @@ s390_return_addr_from_memory ()
   return cfun_gpr_save_slot(RETURN_REGNUM) == SAVE_SLOT_STACK;
 }
 
-/* Generate a SUBREG for the MODE lowpart of EXPR.
-
-   In contrast to gen_lowpart it will always return a SUBREG
-   expression.  This is useful to generate STRICT_LOW_PART
-   expressions.  */
-rtx
-s390_gen_lowpart_subreg (machine_mode mode, rtx expr)
-{
-  rtx lowpart = gen_lowpart (mode, expr);
-
-  /* There might be no SUBREG in case it could be applied to the hard
-     REG rtx or it could be folded with a paradoxical subreg.  Bring
-     it back.  */
-  if (!SUBREG_P (lowpart))
-    {
-      machine_mode reg_mode = TARGET_ZARCH ? DImode : SImode;
-      gcc_assert (REG_P (lowpart));
-      lowpart = gen_lowpart_SUBREG (mode,
-				    gen_rtx_REG (reg_mode,
-						 REGNO (lowpart)));
-    }
-
-  return lowpart;
-}
-
 /* Return nonzero if it's OK to use fused multiply-add for MODE.  */
 bool
 s390_fma_allowed_p (machine_mode mode)
@@ -6982,15 +6957,21 @@ s390_expand_insv (rtx dest, rtx op1, rtx op2, rtx src)
       /* Emit a strict_low_part pattern if possible.  */
       if (smode_bsize == bitsize && bitpos == mode_bsize - smode_bsize)
 	{
-	  rtx low_dest = s390_gen_lowpart_subreg (smode, dest);
-	  rtx low_src = gen_lowpart (smode, src);
-
-	  switch (smode)
+	  rtx low_dest = gen_lowpart (smode, dest);
+	  if (SUBREG_P (low_dest) && !paradoxical_subreg_p (low_dest))
 	    {
-	    case E_QImode: emit_insn (gen_movstrictqi (low_dest, low_src)); return true;
-	    case E_HImode: emit_insn (gen_movstricthi (low_dest, low_src)); return true;
-	    case E_SImode: emit_insn (gen_movstrictsi (low_dest, low_src)); return true;
-	    default: break;
+	      poly_int64 offset = GET_MODE_SIZE (mode) - GET_MODE_SIZE (smode);
+	      rtx low_src = adjust_address (src, smode, offset);
+	      switch (smode)
+		{
+		case E_QImode: emit_insn (gen_movstrictqi (low_dest, low_src));
+			       return true;
+		case E_HImode: emit_insn (gen_movstricthi (low_dest, low_src));
+			       return true;
+		case E_SImode: emit_insn (gen_movstrictsi (low_dest, low_src));
+			       return true;
+		default: break;
+		}
 	    }
 	}
 
