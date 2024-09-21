@@ -1,3 +1,196 @@
+2024-09-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* text-art/dump.h (dump_to_file): Simplify using
+	tree_dump_pretty_printer.
+	* tree-diagnostic.h (class tree_dump_pretty_printer): New.
+
+2024-09-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* diagnostic-format-sarif.cc (sarif_builder::m_printer): New
+	field.
+	(sarif_invocation::add_notification_for_ice): Drop context param.
+	(sarif_invocation::prepare_to_flush): Convert param from context
+	to builder.
+	(sarif_result::on_nested_diagnostic): Drop context param.  Use
+	builder's printer.
+	(sarif_result::on_diagram): Drop context param.
+	(sarif_ice_notification::sarif_ice_notification): Drop context
+	param.  Use builder's printer.
+	(sarif_builder::sarif_builder): Initialize m_printer.
+	(sarif_builder::on_report_diagnostic): Drop context param.  Use
+	builder's printer.
+	(sarif_builder::emit_diagram): Drop context param.
+	(sarif_builder::flush_to_object): Use this rather than context
+	for call to prepare_to_flush.
+	(sarif_builder::make_result_object): Drop context param.  Use
+	builder's printer.
+	(sarif_builder::make_reporting_descriptor_object_for_warning):
+	Drop context param.
+	(sarif_builder::make_message_object_for_diagram): Likewise.
+	Use builder's printer.
+	(sarif_output_format::on_report_diagnostic): Drop context param
+	from call to sarif_builder::on_report_diagnostic.
+	(sarif_output_format::on_diagram): Drop context param from call to
+	sarif_builder::emit_diagram.
+	* diagnostic.h (diagnostic_conetxt::get_client_data_hooks): Make const.
+
+2024-09-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* coretypes.h (class diagnostic_text_output_format): Add forward
+	decl.
+	* diagnostic-format-json.cc
+	(json_output_format::after_diagnostic): New.
+	* diagnostic-format-sarif.cc
+	(sarif_output_format::after_diagnostic): New.
+	* diagnostic-format-text.cc: Use pragmas to ignore -Wformat-diag.
+	(diagnostic_text_output_format::~diagnostic_text_output_format):
+	Use get_printer.  Clean up m_includes_seen here, rather than
+	in ~diagnostic_context.
+	(diagnostic_text_output_format::on_report_diagnostic):  Use
+	get_printer.  Update for callback renamings and pass *this
+	to them, rather than &m_context.
+	(diagnostic_text_output_format::after_diagnostic): New.
+	(diagnostic_text_output_format::includes_seen_p): Move here
+	from diagnostic_context/diagnostic.cc.
+	(diagnostic_text_output_format::get_location_text): New.
+	(maybe_line_and_column): Move here from diagnostic.cc and make
+	non-static.
+	(diagnostic_text_output_format::report_current_module): Move
+	here from diagnostic_context/diagnostic.cc.
+	(default_diagnostic_text_starter): Move here from diagnostic.cc,
+	renaming from default_diagnostic_starter.
+	(default_diagnostic_text_finalizer): Likewise, renaming from
+	default_diagnostic_finalizer.
+	* diagnostic-format-text.h
+	(diagnostic_text_output_format::diagnostic_text_output_format):
+	Initialize m_last_module and m_includes_seen.
+	(diagnostic_text_output_format::after_diagnostic): New decl.
+	(diagnostic_text_output_format::build_prefix): New decl.
+	(diagnostic_text_output_format::report_current_module): New decl.
+	(diagnostic_text_output_format::append_note): New decl.
+	(diagnostic_text_output_format::file_name_as_prefix): New decl.
+	(diagnostic_text_output_format::print_path): New decl.
+	(diagnostic_text_output_format::show_column_p): New decl.
+	(diagnostic_text_output_format::get_location_text): New decl.
+	(diagnostic_text_output_format::includes_seen_p): New decl.
+	(diagnostic_text_output_format::show_any_path): New decl.
+	(diagnostic_text_output_format::m_last_module): New field.
+	(diagnostic_text_output_format::m_includes_seen): New field.
+	* diagnostic-format.h
+	(diagnostic_output_format::after_diagnostic): New vfunc.
+	(diagnostic_output_format::get_context): New.
+	(diagnostic_output_format::get_diagram_theme): New.
+	* diagnostic-macro-unwinding.cc: Include
+	"diagnostic-format-text.h".
+	(maybe_unwind_expanded_macro_loc): Convert first param from
+	diagnostic_context * to diagnostic_text_output_format & and update
+	accordingly.
+	(virt_loc_aware_diagnostic_finalizer): Likewise.
+	* diagnostic-macro-unwinding.h
+	(virt_loc_aware_diagnostic_finalizer): Likewise.
+	(maybe_unwind_expanded_macro_loc): Likewise.
+	* diagnostic-path.cc: Include "diagnostic-format-text.h".
+	(path_label::path_label): Drop "ctxt" param and add "colorize"
+	and "allow_emojis" params.  Update initializations.
+	(path_label::get_text): Use m_colorize rather than querying
+	m_ctxt.m_printer.  Use m_allow_emojis rather than querying
+	m_ctxt's diagram theme.
+	(path_label::m_ctxt): Drop field.
+	(path_label::m_colorize): Drop field.
+	(path_label::m_allow_emojis): Drop field.
+	(event_range::event_range): Drop param "ctxt".  Add params
+	"colorize_labels" and "allow_emojis".
+	(event_range::print): Convert first param from
+	diagnostic_context & to diagnostic_text_output_format & and update
+	accordingly.
+	(path_summary::path_summary): Likewise.
+	(path_summary::print_swimlane_for_event_range): Likewise.
+	(print_path_summary_as_text): Likewise for 3rd param.
+	(diagnostic_context::print_path): Convert to...
+	(diagnostic_text_output_format::print_path): ...this.
+	(selftest::test_empty_path): Update to use a
+	diagnostic_text_output_format.
+	(selftest::test_intraprocedural_path): Likewise.
+	(selftest::test_interprocedural_path_1): Likewise.
+	(selftest::test_interprocedural_path_2): Likewise.
+	(selftest::test_recursion): Likewise.
+	(selftest::test_control_flow_1): Likewise.
+	(selftest::test_control_flow_2): Likewise.
+	(selftest::test_control_flow_3): Likewise.
+	(selftest::assert_cfg_edge_path_streq): Likewise.
+	(selftest::test_control_flow_5): Likewise.
+	(selftest::test_control_flow_6): Likewise.
+	* diagnostic.cc (file_name_as_prefix): Convert to...
+	(diagnostic_text_output_format::file_name_as_prefix): ...this.
+	(diagnostic_context::initialize): Update for renamings.
+	Move m_last_module and m_includes_seen into text output.
+	(diagnostic_context::finish): Likewise.
+	(diagnostic_context::get_location_text): Add "colorize" param.
+	(diagnostic_build_prefix): Convert to...
+	(diagnostic_text_output_format::build_prefix): ...this.
+	(diagnostic_context::includes_seen_p): Move from here to
+	diagnostic_text_output_format/diagnostic-format-text.cc.
+	(diagnostic_context::report_current_module): Likewise.
+	(diagnostic_context::show_any_path): Convert to...
+	(diagnostic_text_output_format::show_any_path): ...this.
+	(default_diagnostic_starter): Rename and move to
+	diagnostic-format-text.cc.
+	(default_diagnostic_start_span_fn): Pass colorize bool
+	to get_location_text.
+	(default_diagnostic_finalizer): Rename and move to
+	diagnostic-format-text.cc.
+	(diagnostic_context::report_diagnostic): Replace call to
+	show_any_path with call to new output format "after_diagnostic"
+	vfunc, moving show_any_path call to the text output format.
+	(diagnostic_append_note): Convert to...
+	(diagnostic_text_output_format::append_note): ...this.
+	(selftest::assert_location_text): Pass in false for colorization.
+	* diagnostic.h (diagnostic_starter_fn): Rename to...
+	(diagnostic_text_starter_fn): ...this.  Convert first param from
+	diagnostic_context * to diagnostic_text_output_format &.
+	(diagnostic_finalizer_fn, diagnostic_text_finalizer_fn): Likewise.
+	(diagnostic_context): Update friends for renamings.
+	(diagnostic_context::report_current_module): Move to text output
+	format.
+	(diagnostic_context::get_location_text): Add "colorize" bool.
+	(diagnostic_context::includes_seen_p): Move to text output format.
+	(diagnostic_context::show_any_path): Likewise.
+	(diagnostic_context::print_path): Likewise.
+	(diagnostic_context::m_text_callbacks): Update for renamings.
+	(diagnostic_context::m_last_module): Move to text output format.
+	(diagnostic_context::m_includes_seen): Likewise.
+	(diagnostic_starter): Rename to...
+	(diagnostic_text_starter): ...this and update return type.
+	(diagnostic_finalizer): Rename to...
+	(diagnostic_text_finalizer): ...this and update return type.
+	(diagnostic_report_current_module): Drop decl in favor of a member
+	function of diagnostic_text_output_format.
+	(diagnostic_append_note): Likewise.
+	(default_diagnostic_starter): Rename to...
+	(default_diagnostic_text_starter): ...this, updating type.
+	(default_diagnostic_finalizer): Rename to...
+	(default_diagnostic_text_finalizer): ...this, updating type.
+	(file_name_as_prefix): Drop decl.
+	* langhooks-def.h (lhd_print_error_function): Convert first param
+	from diagnostic_context * to diagnostic_text_output_format &.
+	* langhooks.cc: Include "diagnostic-format-text.h".
+	(lhd_print_error_function): Likewise.  Update accordingly
+	* langhooks.h (lang_hooks::print_error_function): Convert first
+	param from diagnostic_context * to
+	diagnostic_text_output_format &.
+	* tree-diagnostic.cc: Include "diagnostic-format-text.h".
+	(diagnostic_report_current_function): Convert first param from
+	diagnostic_context * to diagnostic_text_output_format & and update
+	accordingly.
+	(default_tree_diagnostic_starter): Rename to...
+	(default_tree_diagnostic_text_starter): ...this.  Convert first
+	param from diagnostic_context * to diagnostic_text_output_format &
+	and update accordingly.
+	(tree_diagnostics_defaults): Update for renamings.
+
 2024-09-20  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/aarch64/aarch64.h (VECTOR_STORE_FLAG_VALUE): New.

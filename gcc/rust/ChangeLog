@@ -1,3 +1,11 @@
+2024-09-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* resolve/rust-ast-resolve-expr.cc
+	(funny_ice_finalizer): : Convert first param from
+	diagnostic_context * to diagnostic_text_output_format &.
+	(ResolveExpr::visit): Update for renaming.
+
 2024-08-12  Arthur Cohen  <arthur.cohen@embecosm.com>
 
 	* checks/errors/borrowck/rust-bir-builder.h: Cast size_t values to unsigned

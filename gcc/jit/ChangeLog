@@ -1,3 +1,12 @@
+2024-09-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* dummy-frontend.cc: Include "diagnostic-format-text.h".
+	(jit_begin_diagnostic): Convert first param from
+	diagnostic_context * to diagnostic_text_output_format &
+	(jit_end_diagnostic): Likewise.  Update accordingly.
+	(jit_langhook_init): Update for renamings.
+
 2024-09-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* libgccjit.h: Include <sys/types.h>

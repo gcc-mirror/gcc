@@ -1,3 +1,49 @@
+2024-09-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* access-diagram.cc (access_range::dump): Simplify using
+	tree_dump_pretty_printer.
+	* call-details.cc (call_details::dump): Likewise.
+	* call-summary.cc (call_summary::dump): Likewise.
+	(call_summary_replay::dump): Likewise.
+	* checker-event.cc (checker_event::debug): Likewise.
+	* constraint-manager.cc (range::dump): Likewise.
+	(bounded_range::dump): Likewise.
+	(bounded_ranges::dump): Likewise.
+	(constraint_manager::dump): Likewise.
+	* engine.cc (exploded_node::dump): Likewise.
+	(exploded_path::dump): Likewise.
+	* program-point.cc (program_point::dump): Likewise.
+	* program-state.cc (extrinsic_state::dump_to_file): Likewise.
+	(sm_state_map::dump): Likewise.
+	(program_state::dump_to_file): Likewise.
+	* ranges.cc (symbolic_byte_offset::dump): Likewise.
+	(symbolic_byte_range::dump): Likewise.
+	* record-layout.cc (record_layout::dump): Likewise.
+	* region-model-reachability.cc (reachable_regions::dump):
+	Likewise.
+	* region-model.cc (region_to_value_map::dump): Likewise.
+	(region_model::dump): Likewise.
+	(model_merger::dump): Likewise.
+	* region.cc (region_offset::dump): Likewise.
+	(region::dump): Likewise.
+	* sm-malloc.cc (deallocator_set::dump): Likewise.
+	* store.cc (uncertainty_t::dump): Likewise.
+	(binding_key::dump): Likewise.
+	(bit_range::dump): Likewise.
+	(byte_range::dump): Likewise.
+	(binding_map::dump): Likewise.
+	(binding_cluster::dump): Likewise.
+	(store::dump): Likewise.
+	* supergraph.cc (superedge::dump): Likewise.
+	* svalue.cc (svalue::dump): Likewise.
+
+2024-09-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* diagnostic-manager.cc (diagnostic_manager::emit_saved_diagnostic):
+	Remove remove redundant 'pp'.
+
 2024-09-09  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116613

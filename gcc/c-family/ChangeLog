@@ -1,3 +1,13 @@
+2024-09-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* c-opts.cc: Include "diagnostic-format-text.h".
+	(c_diagnostic_finalizer): Rename to...
+	(c_diagnostic_text_finalizer): ...this.  Convert first param
+	from diagnostic_context * to diagnostic_text_output_format & and
+	update accordingly.
+	(c_common_diagnostics_set_defaults): Update for renamings.
+
 2024-09-19  Marek Polacek  <polacek@redhat.com>
 
 	* c.opt.urls: Regenerate.

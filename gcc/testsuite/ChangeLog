@@ -1,3 +1,58 @@
+2024-09-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* gcc.dg/plugin/diagnostic-test-xhtml-1.c: New test.
+	* gcc.dg/plugin/diagnostic_plugin_xhtml_format.c: New test plugin.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add the above.
+
+2024-09-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* g++.dg/plugin/show_template_tree_color_plugin.c
+	(noop_starter_fn): Rename to...
+	(noop_text_starter_fn): ...this.  Update first param from dc to
+	text_output.
+	(plugin_init): Update for renamings.
+	* gcc.dg/plugin/diagnostic_group_plugin.c
+	(test_diagnostic_starter): Rename to...
+	(test_diagnostic_text_starter): ...this.  Update first param from
+	dc to text_output.
+	(plugin_init): Update for renaming.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c: Include
+	"diagnostic-format-text.h".
+	(custom_diagnostic_finalizer): Rename to...
+	(custom_diagnostic_text_finalizer): ...this.  Update first param
+	from dc to text_output.
+	(test_show_locus): Update for renamings.
+	* gcc.dg/plugin/location_overflow_plugin.c: Include
+	"diagnostic-format-text.h".
+	(original_finalizer): Rename to...
+	(original_text_finalizer): ...this and update type.
+	(verify_unpacked_ranges): Update first param from dc to
+	text_output.  Update for this and for renamings.
+	(verify_no_columns): Likewise.
+	(plugin_init): Update for renamings.
+
+2024-09-20  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/116726
+	* gcc.dg/pr116726.c: New test.
+
+2024-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	DR 2789
+	* g++.dg/cpp2a/concepts-memfun4.C: Adjust expected result
+	involving reversed candidate.
+
+2024-09-20  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/iso/fail/testarrayunbounded2.mod: New test.
+	* gm2/iso/fail/testarrayunbounded3.mod: New test.
+	* gm2/iso/fail/testarrayunbounded4.mod: New test.
+	* gm2/iso/fail/testarrayunbounded5.mod: New test.
+	* gm2/iso/fail/testarrayunbounded6.mod: New test.
+	* gm2/iso/pass/testarrayunbounded.mod: New test.
+
 2024-09-20  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/116492

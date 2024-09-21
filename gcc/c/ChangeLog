@@ -1,3 +1,9 @@
+2024-09-20  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/116726
+	* c-typeck.cc (tagged_types_tu_compatible_p): Restore value
+	of the cache after recursing into comptypes_internal.
+
 2024-09-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-errors.cc (pedwarn_c23): Use "diagnostic_option_id option_id"

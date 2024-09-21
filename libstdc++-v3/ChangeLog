@@ -1,3 +1,17 @@
+2024-09-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116529
+	* include/bits/unique_ptr.h (unique_ptr(auto_ptr<U>&&)):
+	Use pointer instead of T*.
+	* testsuite/20_util/unique_ptr/creation/116529.cc: New test.
+
+2024-09-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116777
+	* doc/xml/manual/using.xml: Document features that are not
+	supported for the gcc4-compatible ABI.
+	* doc/html/manual/using_dual_abi.html: Regenerate.
+
 2024-09-19  Jason Merrill  <jason@redhat.com>
 
 	* include/bits/algorithmfwd.h:

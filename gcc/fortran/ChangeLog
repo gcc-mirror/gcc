@@ -1,3 +1,16 @@
+2024-09-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* error.cc: Include "diagnostic-format-text.h".
+	(gfc_diagnostic_starter): Rename to...
+	(gfc_diagnostic_text_starter): ...this.  Convert first
+	param from diagnostic_context * to diagnostic_text_output_format &
+	and update accordingly.
+	(gfc_diagnostic_finalizer, gfc_diagnostic_text_finalizer):
+	Likewise.
+	(gfc_diagnostics_init): Update for renamings.
+	(gfc_diagnostics_finish): Likewise.
+
 2024-09-19  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/106606

@@ -1,3 +1,20 @@
+2024-09-20  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2Check.mod (checkUnboundedArray): New
+	procedure function.
+	(checkUnboundedUnbounded): Ditto.
+	(checkUnbounded): Rewrite to check the unbounded data
+	type.
+	(checkPair): Add comment.
+	(doCheckPair): Add comment.
+	Remove tinfo parameter from the call to checkTypeKindViolation.
+	(checkTypeKindViolation): Remove ununsed parameter tinfo.
+	* gm2-libs-ch/UnixArgs.cc (GM2RTS.h): Remove include.
+	* gm2-libs-ch/m2rts.h (M2RTS_INIT): New define.
+	(M2RTS_DEP): Ditto.
+	(M2RTS_RegisterModule): New prototype.
+	(GM2RTS.h): Add include to the MC_M2 block.
+
 2024-09-16  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* Make-lang.in (GM2_BOOT_INCLUDES): New variable.

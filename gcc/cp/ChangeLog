@@ -1,3 +1,36 @@
+2024-09-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* cp-tree.h (cxx_print_error_function): Convert first param
+	from diagnostic_context * to diagnostic_text_output_format &.
+	* error.cc: Include "diagnostic-format-text.h".
+	(cxx_initialize_diagnostics): Update for renamings.
+	(cxx_print_error_function): Convert first param from
+	diagnostic_context * to diagnostic_text_output_format & and update
+	accordingly
+	(cp_diagnostic_starter): Rename to...
+	(cp_diagnostic_text_starter): ...this.  Convert first
+	param from diagnostic_context * to diagnostic_text_output_format &
+	and update accordingly.
+	(cp_print_error_function): Likewise.
+	(print_instantiation_full_context): Likewise.
+	(print_instantiation_partial_context_line): Likewise.
+	(print_instantiation_partial_context): Likewise.
+	(maybe_print_instantiation_context): Likewise.
+	(maybe_print_constexpr_context): Likewise.
+	(print_location): Likewise.
+	(print_constrained_decl_info): Likewise.
+	(print_concept_check_info): Likewise.
+	(print_constraint_context_head): Likewise.
+	(print_requires_expression_info): Likewise.
+	(maybe_print_single_constraint_context): Likewise.
+
+2024-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	DR 2789
+	* call.cc (cand_parms_match): Check for matching class contexts
+	even in the reversed case.
+
 2024-09-20  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/116492
