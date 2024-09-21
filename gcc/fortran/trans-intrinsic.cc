@@ -5378,6 +5378,7 @@ strip_kind_from_actual (gfc_actual_arglist * actual)
 	 pos0 = 0;
 	 pos1 = 0;
 	 S1 = from1;
+	 second_loop_entry = false;
 	 while (S1 <= to1) {
 	   S0 = from0;
 	   while (s0 <= to0 {
@@ -5390,6 +5391,7 @@ strip_kind_from_actual (gfc_actual_arglist * actual)
 		 limit = a[S1][S0];
 		 pos0 = S0 + (1 - from0);
 		 pos1 = S1 + (1 - from1);
+		 second_loop_entry = true;
 		 goto lab1;
 	       }
 	     }
@@ -5399,9 +5401,9 @@ strip_kind_from_actual (gfc_actual_arglist * actual)
 	 }
 	 goto lab2;
 	 lab1:;
-	 S1 = from1;
+	 S1 = second_loop_entry ? S1 : from1;
 	 while (S1 <= to1) {
-	   S0 = from0;
+	   S0 = second_loop_entry ? S0 : from0;
 	   while (S0 <= to0) {
 	     if (mask[S1][S0])
 	       if (a[S1][S0] < limit) {
@@ -5409,6 +5411,7 @@ strip_kind_from_actual (gfc_actual_arglist * actual)
 		 pos0 = S + (1 - from0);
 		 pos1 = S + (1 - from1);
 	       }
+	     second_loop_entry = false;
 	     S0++;
 	   }
 	   S1++;
@@ -5480,6 +5483,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   gfc_expr *backexpr;
   gfc_se backse;
   tree pos[GFC_MAX_DIMENSIONS];
+  tree idx[GFC_MAX_DIMENSIONS];
   tree result_var = NULL_TREE;
   int n;
   bool optional_mask;
@@ -5561,6 +5565,8 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 			       gfc_get_string ("pos%d", i));
       offset[i] = gfc_create_var (gfc_array_index_type,
 				  gfc_get_string ("offset%d", i));
+      idx[i] = gfc_create_var (gfc_array_index_type,
+			       gfc_get_string ("idx%d", i));
     }
 
   /* Walk the arguments.  */
@@ -5646,6 +5652,18 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 			   build_int_cst (TREE_TYPE (tmp), 1));
 
   gfc_add_modify (&se->pre, limit, tmp);
+
+  /* If we are in a case where we generate two sets of loops, the second one
+     should continue where the first stopped instead of restarting from the
+     beginning.  So nested loops in the second set should have a partial range
+     on the first iteration, but they should start from the beginning and span
+     their full range on the following iterations.  So we use conditionals in
+     the loops lower bounds, and use the following variable in those
+     conditionals to decide whether to use the original loop bound or to use
+     the index at which the loop from the first set stopped.  */
+  tree second_loop_entry = gfc_create_var (logical_type_node,
+					   "second_loop_entry");
+  gfc_add_modify (&se->pre, second_loop_entry, logical_false_node);
 
   /* Initialize the scalarizer.  */
   gfc_init_loopinfo (&loop);
@@ -5790,7 +5808,10 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
       tmp = fold_build2_loc (input_location, PLUS_EXPR, TREE_TYPE (pos[i]),
 			     loop.loopvar[i], offset[i]);
       gfc_add_modify (&ifblock, pos[i], tmp);
+      gfc_add_modify (&ifblock, idx[i], loop.loopvar[i]);
     }
+
+  gfc_add_modify (&ifblock, second_loop_entry, logical_true_node);
 
   if (lab1)
     gfc_add_expr_to_block (&ifblock, build1_v (GOTO_EXPR, lab1));
@@ -5854,6 +5875,12 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 
   if (lab1)
     {
+      for (int i = 0; i < loop.dimen; i++)
+	loop.from[i] = fold_build3_loc (input_location, COND_EXPR,
+					TREE_TYPE (loop.from[i]),
+					second_loop_entry, idx[i],
+					loop.from[i]);
+
       gfc_trans_scalarized_loop_boundary (&loop, &body);
 
       stmtblock_t * const outer_block = &loop.code[loop.dimen - 1];
@@ -5959,7 +5986,9 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 	}
       else
 	tmp = gfc_finish_block (&block);
+
       gfc_add_expr_to_block (&body, tmp);
+      gfc_add_modify (&body, second_loop_entry, logical_false_node);
     }
 
   gfc_trans_scalarizing_loops (&loop, &body);
