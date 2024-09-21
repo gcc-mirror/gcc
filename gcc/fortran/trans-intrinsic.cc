@@ -5283,66 +5283,95 @@ strip_kind_from_actual (gfc_actual_arglist * actual)
    we need to handle.  For performance reasons we sometimes create two
    loops instead of one, where the second one is much simpler.
    Examples for minloc intrinsic:
-   1) Result is an array, a call is generated
-   2) Array mask is used and NaNs need to be supported:
-      limit = Infinity;
-      pos = 0;
-      S = from;
-      while (S <= to) {
-	if (mask[S]) {
-	  if (pos == 0) pos = S + (1 - from);
-	  if (a[S] <= limit) { limit = a[S]; pos = S + (1 - from); goto lab1; }
-	}
-	S++;
-      }
-      goto lab2;
-      lab1:;
-      while (S <= to) {
-	if (mask[S]) if (a[S] < limit) { limit = a[S]; pos = S + (1 - from); }
-	S++;
-      }
-      lab2:;
-   3) NaNs need to be supported, but it is known at compile time or cheaply
-      at runtime whether array is nonempty or not:
-      limit = Infinity;
-      pos = 0;
-      S = from;
-      while (S <= to) {
-	if (a[S] <= limit) { limit = a[S]; pos = S + (1 - from); goto lab1; }
-	S++;
-      }
-      if (from <= to) pos = 1;
-      goto lab2;
-      lab1:;
-      while (S <= to) {
-	if (a[S] < limit) { limit = a[S]; pos = S + (1 - from); }
-	S++;
-      }
-      lab2:;
-   4) NaNs aren't supported, array mask is used:
-      limit = infinities_supported ? Infinity : huge (limit);
-      pos = 0;
-      S = from;
-      while (S <= to) {
-	if (mask[S]) { limit = a[S]; pos = S + (1 - from); goto lab1; }
-	S++;
-      }
-      goto lab2;
-      lab1:;
-      while (S <= to) {
-	if (mask[S]) if (a[S] < limit) { limit = a[S]; pos = S + (1 - from); }
-	S++;
-      }
-      lab2:;
-   5) Same without array mask:
-      limit = infinities_supported ? Infinity : huge (limit);
-      pos = (from <= to) ? 1 : 0;
-      S = from;
-      while (S <= to) {
-	if (a[S] < limit) { limit = a[S]; pos = S + (1 - from); }
-	S++;
-      }
-   For 3) and 5), if mask is scalar, this all goes into a conditional,
+   A: Result is scalar.
+      1) Array mask is used and NaNs need to be supported:
+	 limit = Infinity;
+	 pos = 0;
+	 S = from;
+	 while (S <= to) {
+	   if (mask[S]) {
+	     if (pos == 0) pos = S + (1 - from);
+	     if (a[S] <= limit) {
+	       limit = a[S];
+	       pos = S + (1 - from);
+	       goto lab1;
+	     }
+	   }
+	   S++;
+	 }
+	 goto lab2;
+	 lab1:;
+	 while (S <= to) {
+	   if (mask[S])
+	     if (a[S] < limit) {
+	       limit = a[S];
+	       pos = S + (1 - from);
+	     }
+	   S++;
+	 }
+	 lab2:;
+      2) NaNs need to be supported, but it is known at compile time or cheaply
+	 at runtime whether array is nonempty or not:
+	 limit = Infinity;
+	 pos = 0;
+	 S = from;
+	 while (S <= to) {
+	   if (a[S] <= limit) {
+	     limit = a[S];
+	     pos = S + (1 - from);
+	     goto lab1;
+	   }
+	   S++;
+	 }
+	 if (from <= to) pos = 1;
+	 goto lab2;
+	 lab1:;
+	 while (S <= to) {
+	   if (a[S] < limit) {
+	     limit = a[S];
+	     pos = S + (1 - from);
+	   }
+	   S++;
+	 }
+	 lab2:;
+      3) NaNs aren't supported, array mask is used:
+	 limit = infinities_supported ? Infinity : huge (limit);
+	 pos = 0;
+	 S = from;
+	 while (S <= to) {
+	   if (mask[S]) {
+	     limit = a[S];
+	     pos = S + (1 - from);
+	     goto lab1;
+	   }
+	   S++;
+	 }
+	 goto lab2;
+	 lab1:;
+	 while (S <= to) {
+	   if (mask[S])
+	     if (a[S] < limit) {
+	       limit = a[S];
+	       pos = S + (1 - from);
+	     }
+	   S++;
+	 }
+	 lab2:;
+      4) Same without array mask:
+	 limit = infinities_supported ? Infinity : huge (limit);
+	 pos = (from <= to) ? 1 : 0;
+	 S = from;
+	 while (S <= to) {
+	   if (a[S] < limit) {
+	     limit = a[S];
+	     pos = S + (1 - from);
+	   }
+	   S++;
+	 }
+   B) ARRAY has rank 1, and DIM is absent.  Use the same code as the scalar
+      case and wrap the result in an array.
+   C) Otherwise, a call is generated
+   For 2) and 4), if mask is scalar, this all goes into a conditional,
    setting pos = 0; in the else branch.
 
    Since we now also support the BACK argument, instead of using
@@ -5356,7 +5385,7 @@ strip_kind_from_actual (gfc_actual_arglist * actual)
      ....
 
      The optimizer is smart enough to move the condition out of the loop.
-     The are now marked as unlikely to for further speedup.  */
+     They are now marked as unlikely too for further speedup.  */
 
 static void
 gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
@@ -5387,6 +5416,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   gfc_expr *backexpr;
   gfc_se backse;
   tree pos;
+  tree result_var = NULL_TREE;
   int n;
   bool optional_mask;
 
@@ -5402,8 +5432,19 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 
   if (se->ss)
     {
-      gfc_conv_intrinsic_funcall (se, expr);
-      return;
+      if (se->ss->info->useflags)
+	{
+	  /* The inline implementation of MINLOC/MAXLOC has been generated
+	     before, out of the scalarization loop; now we can just use the
+	     result.  */
+	  gfc_conv_tmp_array_ref (se);
+	  return;
+	}
+      else if (!gfc_inline_intrinsic_function_p (expr))
+	{
+	  gfc_conv_intrinsic_funcall (se, expr);
+	  return;
+	}
     }
 
   arrayexpr = actual->expr;
@@ -5429,10 +5470,29 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
       return;
     }
 
+  type = gfc_typenode_for_spec (&expr->ts);
+
+  if (expr->rank > 0)
+    {
+      gfc_array_spec as;
+      memset (&as, 0, sizeof (as));
+
+      as.rank = 1;
+      as.lower[0] = gfc_get_int_expr (gfc_index_integer_kind,
+				      &arrayexpr->where,
+				      HOST_WIDE_INT_1);
+      as.upper[0] = gfc_get_int_expr (gfc_index_integer_kind,
+				      &arrayexpr->where,
+				      HOST_WIDE_INT_1);
+
+      tree array = gfc_get_nodesc_array_type (type, &as, PACKED_STATIC, true);
+
+      result_var = gfc_create_var (array, "loc_result");
+    }
+
   /* Initialize the result.  */
   pos = gfc_create_var (gfc_array_index_type, "pos");
   offset = gfc_create_var (gfc_array_index_type, "offset");
-  type = gfc_typenode_for_spec (&expr->ts);
 
   /* Walk the arguments.  */
   arrayss = gfc_walk_expr (arrayexpr);
@@ -5838,7 +5898,18 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
     }
   gfc_cleanup_loop (&loop);
 
-  se->expr = convert (type, pos);
+  tree value = convert (type, pos);
+  if (expr->rank > 0)
+    {
+      tree res_arr_ref = gfc_build_array_ref (result_var, gfc_index_zero_node,
+					      NULL_TREE, true);
+
+      gfc_add_modify (&se->pre, res_arr_ref, value);
+
+      se->expr = result_var;
+    }
+  else
+    se->expr = value;
 }
 
 /* Emit code for findloc.  */
@@ -11565,6 +11636,19 @@ walk_inline_intrinsic_arith (gfc_ss *ss, gfc_expr *expr)
 }
 
 
+/* Create the gfc_ss list for the arguments to MINLOC or MAXLOC when the
+   function is to be inlined.  */
+
+static gfc_ss *
+walk_inline_intrinsic_minmaxloc (gfc_ss *ss, gfc_expr *expr ATTRIBUTE_UNUSED)
+{
+  if (expr->rank == 0)
+    return ss;
+
+  return gfc_get_array_ss (ss, expr, 1, GFC_SS_INTRINSIC);
+}
+
+
 static gfc_ss *
 walk_inline_intrinsic_function (gfc_ss * ss, gfc_expr * expr)
 {
@@ -11577,6 +11661,10 @@ walk_inline_intrinsic_function (gfc_ss * ss, gfc_expr * expr)
 
       case GFC_ISYM_TRANSPOSE:
 	return walk_inline_intrinsic_transpose (ss, expr);
+
+      case GFC_ISYM_MAXLOC:
+      case GFC_ISYM_MINLOC:
+	return walk_inline_intrinsic_minmaxloc (ss, expr);
 
       default:
 	gcc_unreachable ();
@@ -11597,6 +11685,8 @@ gfc_add_intrinsic_ss_code (gfc_loopinfo * loop ATTRIBUTE_UNUSED, gfc_ss * ss)
     case GFC_ISYM_LBOUND:
     case GFC_ISYM_UCOBOUND:
     case GFC_ISYM_LCOBOUND:
+    case GFC_ISYM_MAXLOC:
+    case GFC_ISYM_MINLOC:
     case GFC_ISYM_THIS_IMAGE:
     case GFC_ISYM_SHAPE:
       break;
@@ -11688,16 +11778,14 @@ gfc_inline_intrinsic_function_p (gfc_expr *expr)
 	  return false;
 
 	gfc_actual_arglist *array_arg = expr->value.function.actual;
-	gfc_actual_arglist *dim_arg = array_arg->next;
 
 	gfc_expr *array = array_arg->expr;
-	gfc_expr *dim = dim_arg->expr;
 
 	if (!(array->ts.type == BT_INTEGER
 	      || array->ts.type == BT_REAL))
 	  return false;
 
-	if (array->rank == 1 && dim != nullptr)
+	if (array->rank == 1)
 	  return true;
 
 	return false;

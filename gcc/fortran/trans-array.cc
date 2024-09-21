@@ -4771,6 +4771,8 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	    case GFC_ISYM_UBOUND:
 	    case GFC_ISYM_LCOBOUND:
 	    case GFC_ISYM_UCOBOUND:
+	    case GFC_ISYM_MAXLOC:
+	    case GFC_ISYM_MINLOC:
 	    case GFC_ISYM_SHAPE:
 	    case GFC_ISYM_THIS_IMAGE:
 	      loop->dimen = ss->dimen;
@@ -4820,6 +4822,29 @@ done:
 	case GFC_SS_INTRINSIC:
 	  switch (expr->value.function.isym->id)
 	    {
+	    case GFC_ISYM_MINLOC:
+	    case GFC_ISYM_MAXLOC:
+	      {
+		gfc_se se;
+		gfc_init_se (&se, nullptr);
+		se.loop = loop;
+		se.ss = ss;
+		gfc_conv_intrinsic_function (&se, expr);
+		gfc_add_block_to_block (&outer_loop->pre, &se.pre);
+		gfc_add_block_to_block (&outer_loop->post, &se.post);
+
+		info->descriptor = se.expr;
+
+		info->data = gfc_conv_array_data (info->descriptor);
+		info->data = gfc_evaluate_now (info->data, &outer_loop->pre);
+
+		info->offset = gfc_index_zero_node;
+		info->start[0] = gfc_index_zero_node;
+		info->end[0] = gfc_index_zero_node;
+		info->stride[0] = gfc_index_one_node;
+		continue;
+	      }
+
 	    /* Fall through to supply start and stride.  */
 	    case GFC_ISYM_LBOUND:
 	    case GFC_ISYM_UBOUND:
