@@ -3246,7 +3246,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    SAT_S_ADD = IMAGPART_EXPR (Z) != 0 ? (-(T)(X < 0) ^ MAX) : sum;  */
 (match (signed_integer_sat_add @0 @1)
  (cond^ (ne (imagpart (IFN_ADD_OVERFLOW:c@2 @0 @1)) integer_zerop)
-	(bit_xor:c (negate (convert (lt @0 integer_zerop))) max_value)
+	(bit_xor:c (nop_convert?
+		    (negate (nop_convert? (convert (lt @0 integer_zerop)))))
+		   max_value)
 	(realpart @2))
  (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type)
       && types_match (type, @0, @1))))
