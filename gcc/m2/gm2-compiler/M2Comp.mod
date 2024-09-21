@@ -226,7 +226,7 @@ END GenerateDependenciesFromList ;
                           the source code is found in sourcefile.
 *)
 
-PROCEDURE GenerateDependencies (sourcefile: String) ;
+PROCEDURE GenerateDependencies ;
 BEGIN
    IF IsDefImp (GetMainModule ())
    THEN
@@ -252,7 +252,7 @@ BEGIN
    FlushWarnings ; FlushErrors ;
    IF GetM () OR GetMM ()
    THEN
-      GenerateDependencies (s)
+      GenerateDependencies
    END ;
    IF NOT PPonly
    THEN
@@ -652,7 +652,7 @@ END ReadDepContents ;
    WriteDep - write the dependencies and target to file out.
 *)
 
-PROCEDURE WriteDep (dep: String; contents: Index; out: File) ;
+PROCEDURE WriteDep (contents: Index; out: File) ;
 VAR
    i, h: CARDINAL ;
    line: String ;
@@ -692,7 +692,7 @@ END WriteDep ;
    WritePhonyDep - write the dependencies and target to file out.
 *)
 
-PROCEDURE WritePhonyDep (dep: String; contents: Index; out: File) ;
+PROCEDURE WritePhonyDep (contents: Index; out: File) ;
 VAR
    i, h: CARDINAL ;
    line: String ;
@@ -735,10 +735,10 @@ BEGIN
       END ;
       IF IsNoError (out)
       THEN
-         WriteDep (dep, contents, out) ;
+         WriteDep (contents, out) ;
          IF GetMP ()
          THEN
-            WritePhonyDep (dep, contents, out)
+            WritePhonyDep (contents, out)
          END
       END ;
       IF GetMF () = NIL
