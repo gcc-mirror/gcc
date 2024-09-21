@@ -676,6 +676,33 @@ finline-arg-packing
 Fortran  Var(flag_inline_arg_packing) Init(-1)
 -finline-arg-packing	Perform argument packing inline.
 
+finline-intrinsics
+Fortran RejectNegative Enum(gfc_inlineable_intrinsics) Var(flag_inline_intrinsics, GFC_FLAG_INLINE_INTRINSIC_ALL) Undocumented
+
+fno-inline-intrinsics
+Fortran RejectNegative Enum(gfc_inlineable_intrinsics) Var(flag_inline_intrinsics, GFC_FLAG_INLINE_INTRINSIC_NONE) Undocumented
+
+finline-intrinsics=
+Fortran Joined Var(flag_inline_intrinsics) Enum(gfc_inlineable_intrinsics) Init(GFC_FLAG_INLINE_INTRINSIC_ALL_UNSET) EnumSet
+Enable generation of inline code instead of calls to functions from the library to implement intrinsics.
+
+Enum
+Name(gfc_inlineable_intrinsics) Type(int) UnknownError(%qs is not an inline-controlable intrinsic)
+
+; This is not part of any set
+; EnumValue
+; Enum(gfc_inlineable_intrinsics) String(none) Value(GFC_FLAG_INLINE_INTRINSIC_NONE)
+
+EnumValue
+Enum(gfc_inlineable_intrinsics) String(maxloc) Value(GFC_FLAG_INLINE_INTRINSIC_MAXLOC) Set(1)
+
+EnumValue
+Enum(gfc_inlineable_intrinsics) String(minloc) Value(GFC_FLAG_INLINE_INTRINSIC_MINLOC) Set(2)
+
+; This is not part of any set
+; EnumValue
+; Enum(gfc_inlineable_intrinsics) String(all) Value(GFC_FLAG_INLINE_INTRINSIC_ALL)
+
 finline-matmul-limit=
 Fortran RejectNegative Joined UInteger Var(flag_inline_matmul_limit) Init(-1)
 -finline-matmul-limit=<n>	Specify the size of the largest matrix for which matmul will be inlined.

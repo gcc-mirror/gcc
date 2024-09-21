@@ -11868,10 +11868,11 @@ gfc_inline_intrinsic_function_p (gfc_expr *expr)
   gfc_actual_arglist *args, *dim_arg, *mask_arg;
   gfc_expr *maskexpr;
 
-  if (!expr->value.function.isym)
+  gfc_intrinsic_sym *isym = expr->value.function.isym;
+  if (!isym)
     return false;
 
-  switch (expr->value.function.isym->id)
+  switch (isym->id)
     {
     case GFC_ISYM_PRODUCT:
     case GFC_ISYM_SUM:
@@ -11907,8 +11908,12 @@ gfc_inline_intrinsic_function_p (gfc_expr *expr)
     case GFC_ISYM_MINLOC:
     case GFC_ISYM_MAXLOC:
       {
-	/* Disable inline expansion if code size matters.  */
-	if (optimize_size)
+	if ((isym->id == GFC_ISYM_MINLOC
+	     && (flag_inline_intrinsics
+		 & GFC_FLAG_INLINE_INTRINSIC_MINLOC) == 0)
+	    || (isym->id == GFC_ISYM_MAXLOC
+		&& (flag_inline_intrinsics
+		    & GFC_FLAG_INLINE_INTRINSIC_MAXLOC) == 0))
 	  return false;
 
 	gfc_actual_arglist *array_arg = expr->value.function.actual;

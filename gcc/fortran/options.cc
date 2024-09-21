@@ -472,7 +472,26 @@ gfc_post_options (const char **pfilename)
   /* Implement -fno-automatic as -fmax-stack-var-size=0.  */
   if (!flag_automatic)
     flag_max_stack_var_size = 0;
-  
+
+  /* Decide inlining preference depending on optimization if nothing was
+     specified on the command line.  */
+  if ((flag_inline_intrinsics & GFC_FLAG_INLINE_INTRINSIC_MAXLOC)
+      == GFC_FLAG_INLINE_INTRINSIC_MAXLOC_UNSET)
+    {
+      if (optimize == 0 || optimize_size != 0)
+	flag_inline_intrinsics &= ~GFC_FLAG_INLINE_INTRINSIC_MAXLOC;
+      else
+	flag_inline_intrinsics |= GFC_FLAG_INLINE_INTRINSIC_MAXLOC;
+    }
+  if ((flag_inline_intrinsics & GFC_FLAG_INLINE_INTRINSIC_MINLOC)
+      == GFC_FLAG_INLINE_INTRINSIC_MINLOC_UNSET)
+    {
+      if (optimize == 0 || optimize_size != 0)
+	flag_inline_intrinsics &= ~GFC_FLAG_INLINE_INTRINSIC_MINLOC;
+      else
+	flag_inline_intrinsics |= GFC_FLAG_INLINE_INTRINSIC_MINLOC;
+    }
+
   /* If the user did not specify an inline matmul limit, inline up to the BLAS
      limit or up to 30 if no external BLAS is specified.  */
 

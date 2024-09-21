@@ -194,6 +194,7 @@ and warnings}.
 -finit-character=@var{n} -finit-integer=@var{n} -finit-local-zero
 -finit-derived -finit-logical=@var{<true|false>}
 -finit-real=@var{<zero|inf|-inf|nan|snan>}
+-finline-intrinsics[=<@var{minloc},@var{maxloc}>]
 -finline-matmul-limit=@var{n}
 -finline-arg-packing -fmax-array-constructor=@var{n}
 -fmax-stack-var-size=@var{n} -fno-align-commons -fno-automatic
@@ -1996,6 +1997,34 @@ involved are not square, the size comparison is performed using the
 geometric mean of the dimensions of the argument and result matrices.
 
 The default value for @var{n} is 30.
+
+@opindex @code{finline-intrinsics}
+@item -finline-intrinsics
+@itemx -finline-intrinsics=@var{intr1},@var{intr2},...
+Prefer generating inline code over calls to libgfortran functions to implement
+intrinsics.
+
+Usage of intrinsics can be implemented either by generating a call to the
+libgfortran library function or by directly generating inline code.  For most
+intrinsics, only a single variant is available, and there is no choice of
+implementation.  However, some intrinsics can use a library function or inline
+code, where inline code typically offers opportunities for additional
+optimization over a library function.  With @code{-finline-intrinsics=...} or
+@code{-fno-inline-intrinsics=...}, the choice applies only to the intrinsics
+present in the comma-separated list provided as argument.
+
+For each intrinsic, if no choice of implementation was made through either of
+the flag variants, a default behaviour is chosen depending on optimization:
+library calls are generated when not optimizing or when optimizing for size;
+otherwise inline code is preferred.
+
+The set of intrinsics allowed as argument to @code{-finline-intrinsics=}
+is currently limited to @code{MAXLOC} and @code{MINLOC}.  The effect of
+the flag is moreover limited to calls of those intrinsics without
+@code{DIM} argument and with @code{ARRAY} of a non-@code{CHARACTER} type.
+The case of rank-1 argument and @code{DIM} argument present, i.e.
+@code{MAXLOC(A(:),DIM=1)} or @code{MINLOC(A(:),DIM=1)} is inlined
+unconditionally for numeric rank-1 array argument @code{A}.
 
 @opindex @code{finline-matmul-limit}
 @item -finline-matmul-limit=@var{n}
