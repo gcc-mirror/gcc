@@ -402,7 +402,7 @@ match_cond_with_binary_phi (gphi *phi, tree *true_arg, tree *false_arg)
   if (EDGE_COUNT (pred_b0->succs) == 2
       && EDGE_COUNT (pred_b1->succs) == 1
       && EDGE_COUNT (pred_b1->preds) == 1
-      && pred_b0 == EDGE_PRED (gimple_bb (phi), 0)->src)
+      && pred_b0 == EDGE_PRED (pred_b1, 0)->src)
     /*
      * +------+
      * | b0:  |
