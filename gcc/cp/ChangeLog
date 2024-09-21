@@ -1,3 +1,20 @@
+2024-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-09-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116418
+	* tree.cc (strip_typedefs_expr) <case STATEMENT_LIST>: Replace
+	this error path with ...
+	<case STMT_EXPR>: ... this, returning the original tree.
+
+2024-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116492
+	DR 2789
+	* call.cc (cand_parms_match): Return false for constructors that
+	come from different classes.
+
 2024-09-17  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
