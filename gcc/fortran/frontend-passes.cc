@@ -2281,7 +2281,8 @@ optimize_minmaxloc (gfc_expr **e)
       || fn->value.function.actual == NULL
       || fn->value.function.actual->expr == NULL
       || fn->value.function.actual->expr->ts.type == BT_CHARACTER
-      || fn->value.function.actual->expr->rank != 1)
+      || fn->value.function.actual->expr->rank != 1
+      || gfc_inline_intrinsic_function_p (fn))
     return;
 
   *e = gfc_get_array_expr (fn->ts.type, fn->ts.kind, &fn->where);

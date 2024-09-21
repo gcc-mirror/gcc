@@ -11680,6 +11680,29 @@ gfc_inline_intrinsic_function_p (gfc_expr *expr)
     case GFC_ISYM_TRANSPOSE:
       return true;
 
+    case GFC_ISYM_MINLOC:
+    case GFC_ISYM_MAXLOC:
+      {
+	/* Disable inline expansion if code size matters.  */
+	if (optimize_size)
+	  return false;
+
+	gfc_actual_arglist *array_arg = expr->value.function.actual;
+	gfc_actual_arglist *dim_arg = array_arg->next;
+
+	gfc_expr *array = array_arg->expr;
+	gfc_expr *dim = dim_arg->expr;
+
+	if (!(array->ts.type == BT_INTEGER
+	      || array->ts.type == BT_REAL))
+	  return false;
+
+	if (array->rank == 1 && dim != nullptr)
+	  return true;
+
+	return false;
+      }
+
     default:
       return false;
     }
