@@ -4736,6 +4736,146 @@ gfc_conv_section_startstride (stmtblock_t * block, gfc_ss * ss, int dim)
 }
 
 
+/* Generate in INNER the bounds checking code along the dimension DIM for
+   the array associated with SS_INFO.  */
+
+static void
+add_check_section_in_array_bounds (stmtblock_t *inner, gfc_ss_info *ss_info,
+				   int dim)
+{
+  gfc_expr *expr = ss_info->expr;
+  locus *expr_loc = &expr->where;
+  const char *expr_name = expr->symtree->name;
+
+  gfc_array_info *info = &ss_info->data.array;
+
+  bool check_upper;
+  if (dim == info->ref->u.ar.dimen - 1
+      && info->ref->u.ar.as->type == AS_ASSUMED_SIZE)
+    check_upper = false;
+  else
+    check_upper = true;
+
+  /* Zero stride is not allowed.  */
+  tree tmp = fold_build2_loc (input_location, EQ_EXPR, logical_type_node,
+			      info->stride[dim], gfc_index_zero_node);
+  char * msg = xasprintf ("Zero stride is not allowed, for dimension %d "
+			  "of array '%s'", dim + 1, expr_name);
+  gfc_trans_runtime_check (true, false, tmp, inner, expr_loc, msg);
+  free (msg);
+
+  tree desc = info->descriptor;
+
+  /* This is the run-time equivalent of resolve.cc's
+     check_dimension.  The logical is more readable there
+     than it is here, with all the trees.  */
+  tree lbound = gfc_conv_array_lbound (desc, dim);
+  tree end = info->end[dim];
+  tree ubound = check_upper ? gfc_conv_array_ubound (desc, dim) : NULL_TREE;
+
+  /* non_zerosized is true when the selected range is not
+     empty.  */
+  tree stride_pos = fold_build2_loc (input_location, GT_EXPR, logical_type_node,
+				     info->stride[dim], gfc_index_zero_node);
+  tmp = fold_build2_loc (input_location, LE_EXPR, logical_type_node,
+			 info->start[dim], end);
+  stride_pos = fold_build2_loc (input_location, TRUTH_AND_EXPR,
+				logical_type_node, stride_pos, tmp);
+
+  tree stride_neg = fold_build2_loc (input_location, LT_EXPR, logical_type_node,
+				     info->stride[dim], gfc_index_zero_node);
+  tmp = fold_build2_loc (input_location, GE_EXPR, logical_type_node,
+			 info->start[dim], end);
+  stride_neg = fold_build2_loc (input_location, TRUTH_AND_EXPR,
+				logical_type_node, stride_neg, tmp);
+  tree non_zerosized = fold_build2_loc (input_location, TRUTH_OR_EXPR,
+					logical_type_node, stride_pos,
+					stride_neg);
+
+  /* Check the start of the range against the lower and upper
+     bounds of the array, if the range is not empty.
+     If upper bound is present, include both bounds in the
+     error message.  */
+  if (check_upper)
+    {
+      tmp = fold_build2_loc (input_location, LT_EXPR, logical_type_node,
+			     info->start[dim], lbound);
+      tmp = fold_build2_loc (input_location, TRUTH_AND_EXPR, logical_type_node,
+			     non_zerosized, tmp);
+      tree tmp2 = fold_build2_loc (input_location, GT_EXPR, logical_type_node,
+				   info->start[dim], ubound);
+      tmp2 = fold_build2_loc (input_location, TRUTH_AND_EXPR, logical_type_node,
+			      non_zerosized, tmp2);
+      msg = xasprintf ("Index '%%ld' of dimension %d of array '%s' outside of "
+		       "expected range (%%ld:%%ld)", dim + 1, expr_name);
+      gfc_trans_runtime_check (true, false, tmp, inner, expr_loc, msg,
+	  fold_convert (long_integer_type_node, info->start[dim]),
+	  fold_convert (long_integer_type_node, lbound),
+	  fold_convert (long_integer_type_node, ubound));
+      gfc_trans_runtime_check (true, false, tmp2, inner, expr_loc, msg,
+	  fold_convert (long_integer_type_node, info->start[dim]),
+	  fold_convert (long_integer_type_node, lbound),
+	  fold_convert (long_integer_type_node, ubound));
+      free (msg);
+    }
+  else
+    {
+      tmp = fold_build2_loc (input_location, LT_EXPR, logical_type_node,
+			     info->start[dim], lbound);
+      tmp = fold_build2_loc (input_location, TRUTH_AND_EXPR, logical_type_node,
+			     non_zerosized, tmp);
+      msg = xasprintf ("Index '%%ld' of dimension %d of array '%s' below "
+		       "lower bound of %%ld", dim + 1, expr_name);
+      gfc_trans_runtime_check (true, false, tmp, inner, expr_loc, msg,
+	  fold_convert (long_integer_type_node, info->start[dim]),
+	  fold_convert (long_integer_type_node, lbound));
+      free (msg);
+    }
+
+  /* Compute the last element of the range, which is not
+     necessarily "end" (think 0:5:3, which doesn't contain 5)
+     and check it against both lower and upper bounds.  */
+
+  tmp = fold_build2_loc (input_location, MINUS_EXPR, gfc_array_index_type,
+			 end, info->start[dim]);
+  tmp = fold_build2_loc (input_location, TRUNC_MOD_EXPR, gfc_array_index_type,
+			 tmp, info->stride[dim]);
+  tmp = fold_build2_loc (input_location, MINUS_EXPR, gfc_array_index_type,
+			 end, tmp);
+  tree tmp2 = fold_build2_loc (input_location, LT_EXPR, logical_type_node,
+			       tmp, lbound);
+  tmp2 = fold_build2_loc (input_location, TRUTH_AND_EXPR, logical_type_node,
+			  non_zerosized, tmp2);
+  if (check_upper)
+    {
+      tree tmp3 = fold_build2_loc (input_location, GT_EXPR, logical_type_node,
+				   tmp, ubound);
+      tmp3 = fold_build2_loc (input_location, TRUTH_AND_EXPR, logical_type_node,
+			      non_zerosized, tmp3);
+      msg = xasprintf ("Index '%%ld' of dimension %d of array '%s' outside of "
+		       "expected range (%%ld:%%ld)", dim + 1, expr_name);
+      gfc_trans_runtime_check (true, false, tmp2, inner, expr_loc, msg,
+	  fold_convert (long_integer_type_node, tmp),
+	  fold_convert (long_integer_type_node, ubound),
+	  fold_convert (long_integer_type_node, lbound));
+      gfc_trans_runtime_check (true, false, tmp3, inner, expr_loc, msg,
+	  fold_convert (long_integer_type_node, tmp),
+	  fold_convert (long_integer_type_node, ubound),
+	  fold_convert (long_integer_type_node, lbound));
+      free (msg);
+    }
+  else
+    {
+      msg = xasprintf ("Index '%%ld' of dimension %d of array '%s' below "
+		       "lower bound of %%ld", dim + 1, expr_name);
+      gfc_trans_runtime_check (true, false, tmp2, inner, expr_loc, msg,
+	  fold_convert (long_integer_type_node, tmp),
+	  fold_convert (long_integer_type_node, lbound));
+      free (msg);
+    }
+}
+
+
 /* Calculates the range start and stride for a SS chain.  Also gets the
    descriptor and data pointer.  The range of vector subscripts is the size
    of the vector.  Array bounds are also checked.  */
@@ -4746,7 +4886,6 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
   int n;
   tree tmp;
   gfc_ss *ss;
-  tree desc;
 
   gfc_loopinfo * const outer_loop = outermost_loop (loop);
 
@@ -4916,10 +5055,8 @@ done:
   if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
     {
       stmtblock_t block;
-      tree lbound, ubound;
-      tree end;
       tree size[GFC_MAX_DIMENSIONS];
-      tree stride_pos, stride_neg, non_zerosized, tmp2, tmp3;
+      tree tmp3;
       gfc_array_info *info;
       char *msg;
       int dim;
@@ -4985,163 +5122,15 @@ done:
 	     dimensions are checked later.  */
 	  for (n = 0; n < loop->dimen; n++)
 	    {
-	      bool check_upper;
-
 	      dim = ss->dim[n];
 	      if (info->ref->u.ar.dimen_type[dim] != DIMEN_RANGE)
 		continue;
 
-	      if (dim == info->ref->u.ar.dimen - 1
-		  && info->ref->u.ar.as->type == AS_ASSUMED_SIZE)
-		check_upper = false;
-	      else
-		check_upper = true;
-
-	      /* Zero stride is not allowed.  */
-	      tmp = fold_build2_loc (input_location, EQ_EXPR, logical_type_node,
-				     info->stride[dim], gfc_index_zero_node);
-	      msg = xasprintf ("Zero stride is not allowed, for dimension %d "
-			       "of array '%s'", dim + 1, expr_name);
-	      gfc_trans_runtime_check (true, false, tmp, &inner,
-				       expr_loc, msg);
-	      free (msg);
-
-	      desc = info->descriptor;
-
-	      /* This is the run-time equivalent of resolve.cc's
-		 check_dimension().  The logical is more readable there
-		 than it is here, with all the trees.  */
-	      lbound = gfc_conv_array_lbound (desc, dim);
-	      end = info->end[dim];
-	      if (check_upper)
-		ubound = gfc_conv_array_ubound (desc, dim);
-	      else
-		ubound = NULL;
-
-	      /* non_zerosized is true when the selected range is not
-		 empty.  */
-	      stride_pos = fold_build2_loc (input_location, GT_EXPR,
-					logical_type_node, info->stride[dim],
-					gfc_index_zero_node);
-	      tmp = fold_build2_loc (input_location, LE_EXPR, logical_type_node,
-				     info->start[dim], end);
-	      stride_pos = fold_build2_loc (input_location, TRUTH_AND_EXPR,
-					    logical_type_node, stride_pos, tmp);
-
-	      stride_neg = fold_build2_loc (input_location, LT_EXPR,
-				     logical_type_node,
-				     info->stride[dim], gfc_index_zero_node);
-	      tmp = fold_build2_loc (input_location, GE_EXPR, logical_type_node,
-				     info->start[dim], end);
-	      stride_neg = fold_build2_loc (input_location, TRUTH_AND_EXPR,
-					    logical_type_node,
-					    stride_neg, tmp);
-	      non_zerosized = fold_build2_loc (input_location, TRUTH_OR_EXPR,
-					       logical_type_node,
-					       stride_pos, stride_neg);
-
-	      /* Check the start of the range against the lower and upper
-		 bounds of the array, if the range is not empty.
-	         If upper bound is present, include both bounds in the
-		 error message.  */
-	      if (check_upper)
-		{
-		  tmp = fold_build2_loc (input_location, LT_EXPR,
-					 logical_type_node,
-					 info->start[dim], lbound);
-		  tmp = fold_build2_loc (input_location, TRUTH_AND_EXPR,
-					 logical_type_node,
-					 non_zerosized, tmp);
-		  tmp2 = fold_build2_loc (input_location, GT_EXPR,
-					  logical_type_node,
-					  info->start[dim], ubound);
-		  tmp2 = fold_build2_loc (input_location, TRUTH_AND_EXPR,
-					  logical_type_node,
-					  non_zerosized, tmp2);
-		  msg = xasprintf ("Index '%%ld' of dimension %d of array '%s' "
-				   "outside of expected range (%%ld:%%ld)",
-				   dim + 1, expr_name);
-		  gfc_trans_runtime_check (true, false, tmp, &inner,
-					   expr_loc, msg,
-		     fold_convert (long_integer_type_node, info->start[dim]),
-		     fold_convert (long_integer_type_node, lbound),
-		     fold_convert (long_integer_type_node, ubound));
-		  gfc_trans_runtime_check (true, false, tmp2, &inner,
-					   expr_loc, msg,
-		     fold_convert (long_integer_type_node, info->start[dim]),
-		     fold_convert (long_integer_type_node, lbound),
-		     fold_convert (long_integer_type_node, ubound));
-		  free (msg);
-		}
-	      else
-		{
-		  tmp = fold_build2_loc (input_location, LT_EXPR,
-					 logical_type_node,
-					 info->start[dim], lbound);
-		  tmp = fold_build2_loc (input_location, TRUTH_AND_EXPR,
-					 logical_type_node, non_zerosized, tmp);
-		  msg = xasprintf ("Index '%%ld' of dimension %d of array '%s' "
-				   "below lower bound of %%ld",
-				   dim + 1, expr_name);
-		  gfc_trans_runtime_check (true, false, tmp, &inner,
-					   expr_loc, msg,
-		     fold_convert (long_integer_type_node, info->start[dim]),
-		     fold_convert (long_integer_type_node, lbound));
-		  free (msg);
-		}
-
-	      /* Compute the last element of the range, which is not
-		 necessarily "end" (think 0:5:3, which doesn't contain 5)
-		 and check it against both lower and upper bounds.  */
-
-	      tmp = fold_build2_loc (input_location, MINUS_EXPR,
-				     gfc_array_index_type, end,
-				     info->start[dim]);
-	      tmp = fold_build2_loc (input_location, TRUNC_MOD_EXPR,
-				     gfc_array_index_type, tmp,
-				     info->stride[dim]);
-	      tmp = fold_build2_loc (input_location, MINUS_EXPR,
-				     gfc_array_index_type, end, tmp);
-	      tmp2 = fold_build2_loc (input_location, LT_EXPR,
-				      logical_type_node, tmp, lbound);
-	      tmp2 = fold_build2_loc (input_location, TRUTH_AND_EXPR,
-				      logical_type_node, non_zerosized, tmp2);
-	      if (check_upper)
-		{
-		  tmp3 = fold_build2_loc (input_location, GT_EXPR,
-					  logical_type_node, tmp, ubound);
-		  tmp3 = fold_build2_loc (input_location, TRUTH_AND_EXPR,
-					  logical_type_node, non_zerosized, tmp3);
-		  msg = xasprintf ("Index '%%ld' of dimension %d of array '%s' "
-				   "outside of expected range (%%ld:%%ld)",
-				   dim + 1, expr_name);
-		  gfc_trans_runtime_check (true, false, tmp2, &inner,
-					   expr_loc, msg,
-		     fold_convert (long_integer_type_node, tmp),
-		     fold_convert (long_integer_type_node, ubound),
-		     fold_convert (long_integer_type_node, lbound));
-		  gfc_trans_runtime_check (true, false, tmp3, &inner,
-					   expr_loc, msg,
-		     fold_convert (long_integer_type_node, tmp),
-		     fold_convert (long_integer_type_node, ubound),
-		     fold_convert (long_integer_type_node, lbound));
-		  free (msg);
-		}
-	      else
-		{
-		  msg = xasprintf ("Index '%%ld' of dimension %d of array '%s' "
-				   "below lower bound of %%ld",
-				   dim + 1, expr_name);
-		  gfc_trans_runtime_check (true, false, tmp2, &inner,
-					   expr_loc, msg,
-		     fold_convert (long_integer_type_node, tmp),
-		     fold_convert (long_integer_type_node, lbound));
-		  free (msg);
-		}
+	      add_check_section_in_array_bounds (&inner, ss_info, dim);
 
 	      /* Check the section sizes match.  */
 	      tmp = fold_build2_loc (input_location, MINUS_EXPR,
-				     gfc_array_index_type, end,
+				     gfc_array_index_type, info->end[dim],
 				     info->start[dim]);
 	      tmp = fold_build2_loc (input_location, FLOOR_DIV_EXPR,
 				     gfc_array_index_type, tmp,
