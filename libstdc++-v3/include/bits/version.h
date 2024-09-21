@@ -856,7 +856,7 @@
 #undef __glibcxx_want_atomic_ref
 
 #if !defined(__cpp_lib_atomic_value_initialization)
-# if (__cplusplus >= 202002L)
+# if (__cplusplus >= 202002L) && (__cpp_concepts >= 201907L)
 #  define __glibcxx_atomic_value_initialization 201911L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_atomic_value_initialization)
 #   define __cpp_lib_atomic_value_initialization 201911L

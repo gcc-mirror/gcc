@@ -770,6 +770,7 @@ ftms = {
   values = {
     v = 201911;
     cxxmin = 20;
+    extra_cond = "__cpp_concepts >= 201907L";
   };
 };
 
