@@ -34,8 +34,10 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
+#if __cplusplus
 #pragma GCC diagnostic ignored "-Wc++11-extensions"
 #pragma GCC diagnostic ignored "-Wc++23-extensions" // bf16
+#endif
 
 // The major release number for the GCC release the C++ library belongs to.
 #define _GLIBCXX_RELEASE
