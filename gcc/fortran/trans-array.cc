@@ -4876,6 +4876,35 @@ add_check_section_in_array_bounds (stmtblock_t *inner, gfc_ss_info *ss_info,
 }
 
 
+/* Tells whether we need to generate bounds checking code for the array
+   associated with SS.  */
+
+bool
+bounds_check_needed (gfc_ss *ss)
+{
+  /* Catch allocatable lhs in f2003.  */
+  if (flag_realloc_lhs && ss->no_bounds_check)
+    return false;
+
+  gfc_ss_info *ss_info = ss->info;
+  if (ss_info->type == GFC_SS_SECTION)
+    return true;
+
+  if (!(ss_info->type == GFC_SS_INTRINSIC
+	&& ss_info->expr
+	&& ss_info->expr->expr_type == EXPR_FUNCTION))
+    return false;
+
+  gfc_intrinsic_sym *isym = ss_info->expr->value.function.isym;
+  if (!(isym
+	&& (isym->id == GFC_ISYM_MAXLOC
+	    || isym->id == GFC_ISYM_MINLOC)))
+    return false;
+
+  return gfc_inline_intrinsic_function_p (ss_info->expr);
+}
+
+
 /* Calculates the range start and stride for a SS chain.  Also gets the
    descriptor and data pointer.  The range of vector subscripts is the size
    of the vector.  Array bounds are also checked.  */
@@ -4977,10 +5006,17 @@ done:
 		info->data = gfc_conv_array_data (info->descriptor);
 		info->data = gfc_evaluate_now (info->data, &outer_loop->pre);
 
-		info->offset = gfc_index_zero_node;
+		gfc_expr *array = expr->value.function.actual->expr;
+		tree rank = build_int_cst (gfc_array_index_type, array->rank);
+
+		tree tmp = fold_build2_loc (input_location, MINUS_EXPR,
+					    gfc_array_index_type, rank,
+					    gfc_index_one_node);
+
+		info->end[0] = gfc_evaluate_now (tmp, &outer_loop->pre);
 		info->start[0] = gfc_index_zero_node;
-		info->end[0] = gfc_index_zero_node;
 		info->stride[0] = gfc_index_one_node;
+		info->offset = gfc_index_zero_node;
 		continue;
 	      }
 
@@ -5098,14 +5134,10 @@ done:
 	  const char *expr_name;
 	  char *ref_name = NULL;
 
+	  if (!bounds_check_needed (ss))
+	    continue;
+
 	  ss_info = ss->info;
-	  if (ss_info->type != GFC_SS_SECTION)
-	    continue;
-
-	  /* Catch allocatable lhs in f2003.  */
-	  if (flag_realloc_lhs && ss->no_bounds_check)
-	    continue;
-
 	  expr = ss_info->expr;
 	  expr_loc = &expr->where;
 	  if (expr->ref)
@@ -5123,10 +5155,13 @@ done:
 	  for (n = 0; n < loop->dimen; n++)
 	    {
 	      dim = ss->dim[n];
-	      if (info->ref->u.ar.dimen_type[dim] != DIMEN_RANGE)
-		continue;
+	      if (ss_info->type == GFC_SS_SECTION)
+		{
+		  if (info->ref->u.ar.dimen_type[dim] != DIMEN_RANGE)
+		    continue;
 
-	      add_check_section_in_array_bounds (&inner, ss_info, dim);
+		  add_check_section_in_array_bounds (&inner, ss_info, dim);
+		}
 
 	      /* Check the section sizes match.  */
 	      tmp = fold_build2_loc (input_location, MINUS_EXPR,
@@ -5147,9 +5182,14 @@ done:
 		{
 		  tmp3 = fold_build2_loc (input_location, NE_EXPR,
 					  logical_type_node, tmp, size[n]);
-		  msg = xasprintf ("Array bound mismatch for dimension %d "
-				   "of array '%s' (%%ld/%%ld)",
-				   dim + 1, expr_name);
+		  if (ss_info->type == GFC_SS_INTRINSIC)
+		    msg = xasprintf ("Extent mismatch for dimension %d of the "
+				     "result of intrinsic '%s' (%%ld/%%ld)",
+				     dim + 1, expr_name);
+		  else
+		    msg = xasprintf ("Array bound mismatch for dimension %d "
+				     "of array '%s' (%%ld/%%ld)",
+				     dim + 1, expr_name);
 
 		  gfc_trans_runtime_check (true, false, tmp3, &inner,
 					   expr_loc, msg,

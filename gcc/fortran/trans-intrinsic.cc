@@ -5368,9 +5368,30 @@ strip_kind_from_actual (gfc_actual_arglist * actual)
 	   }
 	   S++;
 	 }
-   B) ARRAY has rank 1, and DIM is absent.  Use the same code as the scalar
+   B: ARRAY has rank 1, and DIM is absent.  Use the same code as the scalar
       case and wrap the result in an array.
-   C) Otherwise, a call is generated
+   C: ARRAY has rank > 1, NANs are not supported, and DIM and MASK are absent.
+      Generate code similar to the single loop scalar case, but using one
+      variable per dimension, for example if ARRAY has rank 2:
+      4) NAN's aren't supported, no MASK:
+	 limit = infinities_supported ? Infinity : huge (limit);
+	 pos0 = (from0 <= to0 && from1 <= to1) ? 1 : 0;
+	 pos1 = (from0 <= to0 && from1 <= to1) ? 1 : 0;
+	 S1 = from1;
+	 while (S1 <= to1) {
+	   S0 = from0;
+	   while (S0 <= to0) {
+	     if (a[S1][S0] < limit) {
+	       limit = a[S1][S0];
+	       pos0 = S + (1 - from0);
+	       pos1 = S + (1 - from1);
+	     }
+	     S0++;
+	   }
+	   S1++;
+	 }
+	 result = { pos0, pos1 };
+   D: Otherwise, a call is generated.
    For 2) and 4), if mask is scalar, this all goes into a conditional,
    setting pos = 0; in the else branch.
 
@@ -5384,8 +5405,8 @@ strip_kind_from_actual (gfc_actual_arglist * actual)
    if (cond) {
      ....
 
-     The optimizer is smart enough to move the condition out of the loop.
-     They are now marked as unlikely too for further speedup.  */
+   The optimizer is smart enough to move the condition out of the loop.
+   They are now marked as unlikely too for further speedup.  */
 
 static void
 gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
@@ -5400,7 +5421,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   tree cond;
   tree elsetmp;
   tree ifbody;
-  tree offset;
+  tree offset[GFC_MAX_DIMENSIONS];
   tree nonempty;
   tree lab1, lab2;
   tree b_if, b_else;
@@ -5415,7 +5436,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   gfc_expr *maskexpr;
   gfc_expr *backexpr;
   gfc_se backse;
-  tree pos;
+  tree pos[GFC_MAX_DIMENSIONS];
   tree result_var = NULL_TREE;
   int n;
   bool optional_mask;
@@ -5483,7 +5504,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 				      HOST_WIDE_INT_1);
       as.upper[0] = gfc_get_int_expr (gfc_index_integer_kind,
 				      &arrayexpr->where,
-				      HOST_WIDE_INT_1);
+				      arrayexpr->rank);
 
       tree array = gfc_get_nodesc_array_type (type, &as, PACKED_STATIC, true);
 
@@ -5491,8 +5512,13 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
     }
 
   /* Initialize the result.  */
-  pos = gfc_create_var (gfc_array_index_type, "pos");
-  offset = gfc_create_var (gfc_array_index_type, "offset");
+  for (int i = 0; i < arrayexpr->rank; i++)
+    {
+      pos[i] = gfc_create_var (gfc_array_index_type,
+			       gfc_get_string ("pos%d", i));
+      offset[i] = gfc_create_var (gfc_array_index_type,
+				  gfc_get_string ("offset%d", i));
+    }
 
   /* Walk the arguments.  */
   arrayss = gfc_walk_expr (arrayexpr);
@@ -5611,10 +5637,26 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   loop.temp_dim = loop.dimen;
   gfc_conv_loop_setup (&loop, &expr->where);
 
-  gcc_assert (loop.dimen == 1);
-  if (nonempty == NULL && maskss == NULL && loop.from[0] && loop.to[0])
-    nonempty = fold_build2_loc (input_location, LE_EXPR, logical_type_node,
-				loop.from[0], loop.to[0]);
+  if (nonempty == NULL && maskss == NULL)
+    {
+      nonempty = logical_true_node;
+
+      for (int i = 0; i < loop.dimen; i++)
+	{
+	  if (!(loop.from[i] && loop.to[i]))
+	    {
+	      nonempty = NULL;
+	      break;
+	    }
+
+	  tree tmp = fold_build2_loc (input_location, LE_EXPR,
+				      logical_type_node, loop.from[i],
+				      loop.to[i]);
+
+	  nonempty = fold_build2_loc (input_location, TRUTH_ANDIF_EXPR,
+				      logical_type_node, nonempty, tmp);
+	}
+    }
 
   lab1 = NULL;
   lab2 = NULL;
@@ -5624,14 +5666,18 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
      is non-empty and no MASK is used, we can initialize to 1 to simplify
      the inner loop.  */
   if (nonempty != NULL && !HONOR_NANS (DECL_MODE (limit)))
-    gfc_add_modify (&loop.pre, pos,
-		    fold_build3_loc (input_location, COND_EXPR,
-				     gfc_array_index_type,
-				     nonempty, gfc_index_one_node,
-				     gfc_index_zero_node));
+    {
+      tree init = fold_build3_loc (input_location, COND_EXPR,
+				   gfc_array_index_type, nonempty,
+				   gfc_index_one_node,
+				   gfc_index_zero_node);
+      for (int i = 0; i < loop.dimen; i++)
+	gfc_add_modify (&loop.pre, pos[i], init);
+    }
   else
     {
-      gfc_add_modify (&loop.pre, pos, gfc_index_zero_node);
+      gcc_assert (loop.dimen == 1);
+      gfc_add_modify (&loop.pre, pos[0], gfc_index_zero_node);
       lab1 = gfc_build_label_decl (NULL_TREE);
       TREE_USED (lab1) = 1;
       lab2 = gfc_build_label_decl (NULL_TREE);
@@ -5640,11 +5686,14 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 
   /* An offset must be added to the loop
      counter to obtain the required position.  */
-  gcc_assert (loop.from[0]);
+  for (int i = 0; i < loop.dimen; i++)
+    {
+      gcc_assert (loop.from[i]);
 
-  tmp = fold_build2_loc (input_location, MINUS_EXPR, gfc_array_index_type,
-			 gfc_index_one_node, loop.from[0]);
-  gfc_add_modify (&loop.pre, offset, tmp);
+      tmp = fold_build2_loc (input_location, MINUS_EXPR, gfc_array_index_type,
+			     gfc_index_one_node, loop.from[i]);
+      gfc_add_modify (&loop.pre, offset[i], tmp);
+    }
 
   gfc_mark_ss_chain_used (arrayss, lab1 ? 3 : 1);
   if (maskss)
@@ -5685,20 +5734,23 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
       tree ifbody2;
 
       gfc_start_block (&ifblock2);
-      tmp = fold_build2_loc (input_location, PLUS_EXPR, TREE_TYPE (pos),
-			     loop.loopvar[0], offset);
-      gfc_add_modify (&ifblock2, pos, tmp);
+      tmp = fold_build2_loc (input_location, PLUS_EXPR, TREE_TYPE (pos[0]),
+			     loop.loopvar[0], offset[0]);
+      gfc_add_modify (&ifblock2, pos[0], tmp);
       ifbody2 = gfc_finish_block (&ifblock2);
-      cond = fold_build2_loc (input_location, EQ_EXPR, logical_type_node, pos,
-			      gfc_index_zero_node);
+      cond = fold_build2_loc (input_location, EQ_EXPR, logical_type_node,
+			      pos[0], gfc_index_zero_node);
       tmp = build3_v (COND_EXPR, cond, ifbody2,
 		      build_empty_stmt (input_location));
       gfc_add_expr_to_block (&block, tmp);
     }
 
-  tmp = fold_build2_loc (input_location, PLUS_EXPR, TREE_TYPE (pos),
-			 loop.loopvar[0], offset);
-  gfc_add_modify (&ifblock, pos, tmp);
+  for (int i = 0; i < loop.dimen; i++)
+    {
+      tmp = fold_build2_loc (input_location, PLUS_EXPR, TREE_TYPE (pos[i]),
+			     loop.loopvar[i], offset[i]);
+      gfc_add_modify (&ifblock, pos[i], tmp);
+    }
 
   if (lab1)
     gfc_add_expr_to_block (&ifblock, build1_v (GOTO_EXPR, lab1));
@@ -5762,13 +5814,15 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 
   if (lab1)
     {
+      gcc_assert (loop.dimen == 1);
+
       gfc_trans_scalarized_loop_boundary (&loop, &body);
 
       if (HONOR_NANS (DECL_MODE (limit)))
 	{
 	  if (nonempty != NULL)
 	    {
-	      ifbody = build2_v (MODIFY_EXPR, pos, gfc_index_one_node);
+	      ifbody = build2_v (MODIFY_EXPR, pos[0], gfc_index_one_node);
 	      tmp = build3_v (COND_EXPR, nonempty, ifbody,
 			      build_empty_stmt (input_location));
 	      gfc_add_expr_to_block (&loop.code[0], tmp);
@@ -5805,9 +5859,9 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
       /* Assign the value to the limit...  */
       gfc_add_modify (&ifblock, limit, arrayse.expr);
 
-      tmp = fold_build2_loc (input_location, PLUS_EXPR, TREE_TYPE (pos),
-			     loop.loopvar[0], offset);
-      gfc_add_modify (&ifblock, pos, tmp);
+      tmp = fold_build2_loc (input_location, PLUS_EXPR, TREE_TYPE (pos[0]),
+			     loop.loopvar[0], offset[0]);
+      gfc_add_modify (&ifblock, pos[0], tmp);
 
       ifbody = gfc_finish_block (&ifblock);
 
@@ -5870,6 +5924,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   /* For a scalar mask, enclose the loop in an if statement.  */
   if (maskexpr && maskss == NULL)
     {
+      gcc_assert (loop.dimen == 1);
       tree ifmask;
 
       gfc_init_se (&maskse, NULL);
@@ -5884,7 +5939,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 	 the pos variable the same way as above.  */
 
       gfc_init_block (&elseblock);
-      gfc_add_modify (&elseblock, pos, gfc_index_zero_node);
+      gfc_add_modify (&elseblock, pos[0], gfc_index_zero_node);
       elsetmp = gfc_finish_block (&elseblock);
       ifmask = conv_mask_condition (&maskse, maskexpr, optional_mask);
       tmp = build3_v (COND_EXPR, ifmask, tmp, elsetmp);
@@ -5898,18 +5953,22 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
     }
   gfc_cleanup_loop (&loop);
 
-  tree value = convert (type, pos);
   if (expr->rank > 0)
     {
-      tree res_arr_ref = gfc_build_array_ref (result_var, gfc_index_zero_node,
-					      NULL_TREE, true);
+      for (int i = 0; i < arrayexpr->rank; i++)
+	{
+	  tree res_idx = build_int_cst (gfc_array_index_type, i);
+	  tree res_arr_ref = gfc_build_array_ref (result_var, res_idx,
+						  NULL_TREE, true);
 
-      gfc_add_modify (&se->pre, res_arr_ref, value);
+	  tree value = convert (type, pos[i]);
+	  gfc_add_modify (&se->pre, res_arr_ref, value);
+	}
 
       se->expr = result_var;
     }
   else
-    se->expr = value;
+    se->expr = convert (type, pos[0]);
 }
 
 /* Emit code for findloc.  */
@@ -11778,14 +11837,23 @@ gfc_inline_intrinsic_function_p (gfc_expr *expr)
 	  return false;
 
 	gfc_actual_arglist *array_arg = expr->value.function.actual;
+	gfc_actual_arglist *dim_arg = array_arg->next;
+	gfc_actual_arglist *mask_arg = dim_arg->next;
 
 	gfc_expr *array = array_arg->expr;
+	gfc_expr *dim = dim_arg->expr;
+	gfc_expr *mask = mask_arg->expr;
 
 	if (!(array->ts.type == BT_INTEGER
 	      || array->ts.type == BT_REAL))
 	  return false;
 
 	if (array->rank == 1)
+	  return true;
+
+	if (array->ts.type == BT_INTEGER
+	    && dim == nullptr
+	    && mask == nullptr)
 	  return true;
 
 	return false;
