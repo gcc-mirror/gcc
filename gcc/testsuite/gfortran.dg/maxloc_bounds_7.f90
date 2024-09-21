@@ -1,6 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-fbounds-check" }
-! { dg-shouldfail "Incorrect extent in return value of MAXLOC intrinsic: is 3, should be 2" }
+! { dg-shouldfail "Incorrect extent in return value of MAXLOC intrinsic: is 3, should be 2|Array bound mismatch for dimension 1 of array 'res' .3/2." }
 module tst
 contains
   subroutine foo(res)
@@ -18,4 +18,4 @@ program main
   integer :: res(3)
   call foo(res)
 end program main
-! { dg-output "Fortran runtime error: Incorrect extent in return value of MAXLOC intrinsic: is 3, should be 2" }
+! { dg-output "Fortran runtime error: Incorrect extent in return value of MAXLOC intrinsic: is 3, should be 2|Array bound mismatch for dimension 1 of array 'res' .3/2." }

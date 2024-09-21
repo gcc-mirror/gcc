@@ -5924,7 +5924,6 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   /* For a scalar mask, enclose the loop in an if statement.  */
   if (maskexpr && maskss == NULL)
     {
-      gcc_assert (loop.dimen == 1);
       tree ifmask;
 
       gfc_init_se (&maskse, NULL);
@@ -5939,7 +5938,8 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 	 the pos variable the same way as above.  */
 
       gfc_init_block (&elseblock);
-      gfc_add_modify (&elseblock, pos[0], gfc_index_zero_node);
+      for (int i = 0; i < loop.dimen; i++)
+	gfc_add_modify (&elseblock, pos[i], gfc_index_zero_node);
       elsetmp = gfc_finish_block (&elseblock);
       ifmask = conv_mask_condition (&maskse, maskexpr, optional_mask);
       tmp = build3_v (COND_EXPR, ifmask, tmp, elsetmp);
@@ -11851,9 +11851,12 @@ gfc_inline_intrinsic_function_p (gfc_expr *expr)
 	if (array->rank == 1)
 	  return true;
 
-	if (array->ts.type == BT_INTEGER
-	    && dim == nullptr
-	    && mask == nullptr)
+	if (array->ts.type != BT_INTEGER
+	    || dim != nullptr)
+	  return false;
+
+	if (mask == nullptr
+	    || mask->rank == 0)
 	  return true;
 
 	return false;
