@@ -1,0 +1,3 @@
+# Support building with -mmacosx-version-min back to macOS 11.
+DARWIN_MIN_LIB_VERSION = -mmacosx-version-min=11
+DARWIN_MIN_CRT_VERSION = -mmacosx-version-min=11
