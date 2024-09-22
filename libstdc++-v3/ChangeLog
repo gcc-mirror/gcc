@@ -1,3 +1,43 @@
+2024-09-21  Jason Merrill  <jason@redhat.com>
+
+	* include/c_compatibility/ctype.h
+	* include/c_compatibility/errno.h
+	* include/c_compatibility/float.h
+	* include/c_compatibility/iso646.h
+	* include/c_compatibility/limits.h
+	* include/c_compatibility/locale.h
+	* include/c_compatibility/setjmp.h
+	* include/c_compatibility/signal.h
+	* include/c_compatibility/stdarg.h
+	* include/c_compatibility/stdbool.h
+	* include/c_compatibility/stddef.h
+	* include/c_compatibility/stdio.h
+	* include/c_compatibility/string.h
+	* include/c_compatibility/tgmath.h
+	* include/c_compatibility/time.h
+	* include/c_compatibility/uchar.h
+	* include/c_compatibility/wchar.h
+	* include/c_compatibility/wctype.h
+	* include/c_global/ccomplex
+	* include/c_global/cctype
+	* include/c_global/cerrno
+	* include/c_global/cfloat
+	* include/c_global/climits
+	* include/c_global/clocale
+	* include/c_global/cmath
+	* include/c_global/csetjmp
+	* include/c_global/csignal
+	* include/c_global/cstdalign
+	* include/c_global/cstdarg
+	* include/c_global/cstdbool
+	* include/c_global/cstdio
+	* include/c_global/cstdlib
+	* include/c_global/cstring
+	* include/c_global/ctgmath
+	* include/c_global/ctime
+	* include/c_global/cwchar
+	* include/c_global/cwctype: Move header guard before #includes.
+
 2024-09-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/116529

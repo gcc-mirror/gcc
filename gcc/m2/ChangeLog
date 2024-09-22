@@ -1,3 +1,10 @@
+2024-09-21  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2Comp.mod (GenerateDependencies): Remove
+	unused parameter.
+	(WriteDep): Remove parameter dep.
+	(WritePhoneDep): Ditto.
+
 2024-09-20  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-compiler/M2Check.mod (checkUnboundedArray): New

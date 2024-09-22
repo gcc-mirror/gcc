@@ -1,3 +1,105 @@
+2024-09-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/90608
+	* invoke.texi(finline-intrinsics): Document new flag.
+	* lang.opt (finline-intrinsics, finline-intrinsics=,
+	fno-inline-intrinsics): New flags.
+	* options.cc (gfc_post_options): If the option variable controlling
+	the inlining of MAXLOC (respectively MINLOC) has not been set, set
+	it or clear it depending on the optimization option variables.
+	* trans-intrinsic.cc (gfc_inline_intrinsic_function_p): Return false
+	if inlining for the intrinsic is disabled according to the option
+	variable.
+
+2024-09-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/90608
+	* trans-intrinsic.cc (gfc_conv_intrinsic_minmaxloc): Generate a set
+	of index variables.  Set them using the loop indexes before leaving
+	the first set of loops.  Generate a new loop entry predicate.
+	Initialize it.  Set it before leaving the first set of loops.  Clear
+	it in the body of the second set of loops.  For the second set of
+	loops, update each loop lower bound to use the corresponding index
+	variable if the predicate variable is set.
+
+2024-09-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/90608
+	* trans-intrinsic.cc (gfc_conv_intrinsic_minmaxloc): Initialize
+	and update all the variables.  Put the label and goto in the
+	outermost scalarizer loop.  Don't start the second loop where the
+	first stopped.
+	(gfc_inline_intrinsic_function_p): Also return TRUE for array MASK
+	or for any REAL type.
+
+2024-09-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/90608
+	* trans-intrinsic.cc (gfc_conv_intrinsic_minmaxloc): Generate
+	variable initialization for each dimension in the else branch of
+	the toplevel condition.
+	(gfc_inline_intrinsic_function_p): Return TRUE for scalar MASK.
+
+2024-09-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/90608
+	* trans-array.cc (gfc_conv_ss_startstride): Set the MINLOC/MAXLOC
+	result upper bound using the rank of the ARRAY argument.  Ajdust
+	the error message for intrinsic result arrays.  Only check array
+	bounds for array references.  Move bound check decision code...
+	(bounds_check_needed): ... here as a new predicate.  Allow bound
+	check for MINLOC/MAXLOC intrinsic results.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_minmaxloc): Change the
+	result array upper bound to the rank of ARRAY.  Update the NONEMPTY
+	variable to depend on the non-empty extent of every dimension.  Use
+	one variable per dimension instead of a single variable for the
+	position and the offset.  Update their declaration, initialization,
+	and update to affect the variable of each dimension.  Use the first
+	variable only in areas only accessed with rank 1 ARRAY argument.
+	Set every element of the result using its corresponding variable.
+	(gfc_inline_intrinsic_function_p): Return true for integral ARRAY
+	and absent DIM and MASK.
+
+2024-09-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.cc (gfc_conv_ss_startstride): Move array bound check
+	generation code...
+	(add_check_section_in_array_bounds): ... here as a new function.
+
+2024-09-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* frontend-passes.cc (optimize_minmaxloc): Remove.
+	(optimize_expr): Remove dispatch to optimize_minmaxloc.
+
+2024-09-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/90608
+	* trans-array.cc (gfc_conv_ss_startstride): Set the scalarization
+	rank based on the MINLOC/MAXLOC rank if needed.  Call the inline
+	code generation and setup the scalarizer array descriptor info
+	in the MINLOC and MAXLOC cases.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_minmaxloc): Return the
+	result array element if the scalarizer is setup and we are inside
+	the loops.  Restrict library function call dispatch to the case
+	where inline expansion is not supported.  Declare an array result
+	if the expression isn't scalar.  Initialize the array result single
+	element and return the result variable if the expression isn't
+	scalar.
+	(walk_inline_intrinsic_minmaxloc): New function.
+	(walk_inline_intrinsic_function): Add MINLOC and MAXLOC cases,
+	dispatching to walk_inline_intrinsic_minmaxloc.
+	(gfc_add_intrinsic_ss_code): Add MINLOC and MAXLOC cases.
+	(gfc_inline_intrinsic_function_p): Return true if ARRAY has rank 1,
+	regardless of DIM.
+
+2024-09-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/90608
+	* frontend-passes.cc (optimize_minmaxloc): Skip if we can generate
+	inline code for the unmodified expression.
+	* trans-intrinsic.cc (gfc_inline_intrinsic_function_p): Add
+	MINLOC and MAXLOC cases.
+
 2024-09-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116613

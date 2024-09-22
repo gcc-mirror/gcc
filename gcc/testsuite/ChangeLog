@@ -1,3 +1,41 @@
+2024-09-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/90608
+	* gfortran.dg/minmaxloc_18.f90: New test.
+	* gfortran.dg/minmaxloc_18a.f90: New test.
+	* gfortran.dg/minmaxloc_18b.f90: New test.
+	* gfortran.dg/minmaxloc_18c.f90: New test.
+	* gfortran.dg/minmaxloc_18d.f90: New test.
+
+2024-09-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/90608
+	* gfortran.dg/maxloc_bounds_5.f90: Additionally accept error
+	messages reported by the scalarizer.
+	* gfortran.dg/maxloc_bounds_6.f90: Ditto.
+
+2024-09-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/90608
+	* gfortran.dg/maxloc_bounds_7.f90: Additionally accept the error message
+	reported by the scalarizer.
+
+2024-09-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/90608
+	* gfortran.dg/maxloc_bounds_4.f90: Additionally accept the error
+	message emitted by the scalarizer.
+
+2024-09-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/90608
+	* gfortran.dg/ieee/maxloc_nan_1.f90: New test.
+	* gfortran.dg/ieee/minloc_nan_1.f90: New test.
+	* gfortran.dg/maxloc_7.f90: New test.
+	* gfortran.dg/maxloc_with_mask_1.f90: New test.
+	* gfortran.dg/minloc_8.f90: New test.
+	* gfortran.dg/minloc_with_mask_1.f90: New test.
+
 2024-09-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116792
