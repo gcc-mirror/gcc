@@ -12356,6 +12356,18 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
       vect_schedule_slp (loop_vinfo, LOOP_VINFO_SLP_INSTANCES (loop_vinfo));
     }
 
+  /* Generate the loop invariant statements.  */
+  if (!gimple_seq_empty_p (LOOP_VINFO_INV_PATTERN_DEF_SEQ (loop_vinfo)))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "------>generating loop invariant statements\n");
+      gimple_stmt_iterator gsi;
+      gsi = gsi_after_labels (loop_preheader_edge (loop)->src);
+      gsi_insert_seq_before (&gsi, LOOP_VINFO_INV_PATTERN_DEF_SEQ (loop_vinfo),
+			     GSI_CONTINUE_LINKING);
+    }
+
   /* FORNOW: the vectorizer supports only loops which body consist
      of one basic block (header + empty latch). When the vectorizer will
      support more involved loop forms, the order by which the BBs are

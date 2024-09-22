@@ -9159,6 +9159,20 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
 
 	      vect_location = saved_vect_location;
 	    }
+
+
+	  /* Generate the invariant statements.  */
+	  if (!gimple_seq_empty_p (bb_vinfo->inv_pattern_def_seq))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+			 "------>generating invariant statements\n");
+
+	      gimple_stmt_iterator gsi;
+	      gsi = gsi_after_labels (bb_vinfo->bbs[0]);
+	      gsi_insert_seq_after (&gsi, bb_vinfo->inv_pattern_def_seq,
+				    GSI_CONTINUE_LINKING);
+	    }
 	}
       else
 	{

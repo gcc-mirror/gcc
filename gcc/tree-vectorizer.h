@@ -512,6 +512,12 @@ public:
   /* The count of the basic blocks in the vectorization region.  */
   unsigned int nbbs;
 
+  /* Used to keep a sequence of def stmts of a pattern stmt that are loop
+    invariant if they exists.
+    The sequence is emitted in the loop preheader should the loop be vectorized
+    and are reset when undoing patterns.  */
+  gimple_seq inv_pattern_def_seq;
+
 private:
   stmt_vec_info new_stmt_vec_info (gimple *stmt);
   void set_vinfo_for_stmt (gimple *, stmt_vec_info, bool = true);
@@ -1042,6 +1048,7 @@ public:
 #define LOOP_VINFO_ORIG_LOOP_INFO(L)       (L)->orig_loop_info
 #define LOOP_VINFO_SIMD_IF_COND(L)         (L)->simd_if_cond
 #define LOOP_VINFO_INNER_LOOP_COST_FACTOR(L) (L)->inner_loop_cost_factor
+#define LOOP_VINFO_INV_PATTERN_DEF_SEQ(L)  (L)->inv_pattern_def_seq
 
 #define LOOP_VINFO_FULLY_MASKED_P(L)		\
   (LOOP_VINFO_USING_PARTIAL_VECTORS_P (L)	\

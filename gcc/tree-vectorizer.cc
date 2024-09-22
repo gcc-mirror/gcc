@@ -466,7 +466,8 @@ vec_info::vec_info (vec_info::vec_kind kind_in, vec_info_shared *shared_)
     shared (shared_),
     stmt_vec_info_ro (false),
     bbs (NULL),
-    nbbs (0)
+    nbbs (0),
+    inv_pattern_def_seq (NULL)
 {
   stmt_vec_infos.create (50);
 }
