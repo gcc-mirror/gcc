@@ -37,10 +37,6 @@ enum gimple_code {
 extern const char *const gimple_code_name[];
 extern const unsigned char gimple_rhs_class_table[];
 
-/* Strip the outermost pointer, from tr1/type_traits.  */
-template<typename T> struct remove_pointer { typedef T type; };
-template<typename T> struct remove_pointer<T *> { typedef T type; };
-
 /* Error out if a gimple tuple is addressed incorrectly.  */
 #if defined ENABLE_GIMPLE_CHECKING
 #define gcc_gimple_checking_assert(EXPR) gcc_assert (EXPR)
@@ -72,7 +68,7 @@ GIMPLE_CHECK2(const gimple *gs,
   T ret = dyn_cast <T> (gs);
   if (!ret)
     gimple_check_failed (gs, file, line, fun,
-			 remove_pointer<T>::type::code_, ERROR_MARK);
+			 std::remove_pointer<T>::type::code_, ERROR_MARK);
   return ret;
 }
 template <typename T>
@@ -91,7 +87,7 @@ GIMPLE_CHECK2(gimple *gs,
   T ret = dyn_cast <T> (gs);
   if (!ret)
     gimple_check_failed (gs, file, line, fun,
-			 remove_pointer<T>::type::code_, ERROR_MARK);
+			 std::remove_pointer<T>::type::code_, ERROR_MARK);
   return ret;
 }
 #else  /* not ENABLE_GIMPLE_CHECKING  */
