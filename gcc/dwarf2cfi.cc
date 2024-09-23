@@ -1547,13 +1547,13 @@ dwarf2out_frame_debug_cfa_window_save (void)
   cur_row->window_save = true;
 }
 
-/* A subroutine of dwarf2out_frame_debug, process a REG_CFA_TOGGLE_RA_MANGLE.
+/* A subroutine of dwarf2out_frame_debug, process a REG_CFA_NEGATE_RA_STATE.
    Note: DW_CFA_GNU_window_save dwarf opcode is reused for toggling RA mangle
    state, this is a target specific operation on AArch64 and can only be used
    on other targets if they don't use the window save operation otherwise.  */
 
 static void
-dwarf2out_frame_debug_cfa_toggle_ra_mangle (void)
+dwarf2out_frame_debug_cfa_negate_ra_state (void)
 {
   dw_cfi_ref cfi = new_cfi ();
 
@@ -2341,8 +2341,8 @@ dwarf2out_frame_debug (rtx_insn *insn)
 	handled_one = true;
 	break;
 
-      case REG_CFA_TOGGLE_RA_MANGLE:
-	dwarf2out_frame_debug_cfa_toggle_ra_mangle ();
+      case REG_CFA_NEGATE_RA_STATE:
+	dwarf2out_frame_debug_cfa_negate_ra_state ();
 	handled_one = true;
 	break;
 

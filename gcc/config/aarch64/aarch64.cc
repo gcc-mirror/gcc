@@ -9612,7 +9612,7 @@ aarch64_expand_prologue (void)
 	  default:
 	    gcc_unreachable ();
 	}
-      add_reg_note (insn, REG_CFA_TOGGLE_RA_MANGLE, const0_rtx);
+      add_reg_note (insn, REG_CFA_NEGATE_RA_STATE, const0_rtx);
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
@@ -10033,7 +10033,7 @@ aarch64_expand_epilogue (rtx_call_insn *sibcall)
 	  default:
 	    gcc_unreachable ();
 	}
-      add_reg_note (insn, REG_CFA_TOGGLE_RA_MANGLE, const0_rtx);
+      add_reg_note (insn, REG_CFA_NEGATE_RA_STATE, const0_rtx);
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
