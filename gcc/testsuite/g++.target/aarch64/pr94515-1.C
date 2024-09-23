@@ -15,12 +15,20 @@ void unwind (void)
 __attribute__((noinline, noipa, target("branch-protection=pac-ret")))
 int test (int z)
 {
+  // paciasp -> cfi_negate_ra_state: RA_no_signing -> RA_signing_SP
   if (z) {
     asm volatile ("":::"x20","x21");
     unwind ();
+    // autiasp -> cfi_negate_ra_state: RA_signing_SP -> RA_no_signing
     return 1;
   } else {
+    // 2nd cfi_negate_ra_state because the CFI directives are processed linearily.
+    // At this point, the unwinder would believe that the address is not signed
+    // due to the previous return. That's why the compiler has to emit second
+    // cfi_negate_ra_state to mean that the return address is still signed.
+    // cfi_negate_ra_state: RA_no_signing -> RA_signing_SP
     unwind ();
+    // autiasp -> cfi_negate_ra_state: RA_signing_SP -> RA_no_signing
     return 2;
   }
 }
