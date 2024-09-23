@@ -3108,7 +3108,6 @@ used in .eh_frame or .debug_frame is different from that used in other
 debug info sections.  Given a GCC hard register number, this macro
 should return the .eh_frame register number.  The default is
 @code{DEBUGGER_REGNO (@var{regno})}.
-
 @end defmac
 
 @defmac DWARF2_FRAME_REG_OUT (@var{regno}, @var{for_eh})
@@ -6621,6 +6620,10 @@ the target supports DWARF 2 frame unwind information.
 @hook TARGET_DWARF_REGISTER_SPAN
 
 @hook TARGET_DWARF_FRAME_REG_MODE
+
+@hook TARGET_OUTPUT_CFI_DIRECTIVE
+
+@hook TARGET_DW_CFI_OPRND1_DESC
 
 @hook TARGET_INIT_DWARF_REG_SIZES_EXTRA
 

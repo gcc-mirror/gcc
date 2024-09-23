@@ -1,4 +1,4 @@
-/* PR target/94515. Check .cfi_window_save with multiple return paths.  */
+/* PR target/94515. Check .cfi_negate_ra_state with multiple return paths.  */
 /* { dg-do run } */
 /* { dg-require-effective-target lp64 } */
 /* { dg-additional-options "-O2 --save-temps" } */
@@ -38,7 +38,7 @@ int main ()
 }
 
 /* This check only works if there are two return paths in test and
-   cfi_window_save is used for both instead of cfi_remember_state
+   cfi_negate_ra_state is used for both instead of cfi_remember_state
    plus cfi_restore_state.  This is currently the case with -O2.  */
 
-/* { dg-final { scan-assembler-times {\t\.cfi_window_save\n} 4 } } */
+/* { dg-final { scan-assembler-times {\t\.cfi_negate_ra_state\n} 4 } } */

@@ -4127,6 +4127,26 @@ clobbered parts of a register altering the frame register size",
  machine_mode, (int regno),
  default_dwarf_frame_reg_mode)
 
+/* Print out architecture-specific CFI directives to the assembly file.  */
+DEFHOOK
+(output_cfi_directive,
+ "This hook handles architecture-specific CFI directives and prints\n\
+them out to the assembly file @var{f}.\n\
+Return true if a architecture-specific directive was found, false\n\
+otherwise.",
+ bool, (FILE * f, dw_cfi_ref cfi),
+ hook_bool_FILEptr_dwcfiptr_false)
+
+DEFHOOK
+(dw_cfi_oprnd1_desc,
+ "This hook informs the caller what the architecture-specific directives\n\
+takes as a first operand.\n\
+Return true if a architecture-specific directive was found and\n\
+@var{oprnd_type} is set, false otherwise and @var{oprnd_type} is not\n\
+modified.",
+ bool, (dwarf_call_frame_info cfi_opc, dw_cfi_oprnd_type & oprnd_type),
+ hook_bool_dwcfi_dwcfioprndtyperef_false)
+
 /* If expand_builtin_init_dwarf_reg_sizes needs to fill in table
    entries not corresponding directly to registers below
    FIRST_PSEUDO_REGISTER, this hook should generate the necessary

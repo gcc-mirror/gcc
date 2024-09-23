@@ -60,6 +60,7 @@
 #include "opts.h"
 #include "gimplify.h"
 #include "dwarf2.h"
+#include "dwarf2out.h"
 #include "gimple-iterator.h"
 #include "tree-vectorizer.h"
 #include "aarch64-cost-tables.h"
@@ -1448,6 +1449,32 @@ aarch64_dwarf_frame_reg_mode (int regno)
   if (PR_REGNUM_P (regno))
     return VOIDmode;
   return default_dwarf_frame_reg_mode (regno);
+}
+
+/* Implement TARGET_OUTPUT_CFI_DIRECTIVE.  */
+static bool
+aarch64_output_cfi_directive (FILE *f, dw_cfi_ref cfi)
+{
+  bool found = false;
+  if (cfi->dw_cfi_opc == DW_CFA_AARCH64_negate_ra_state)
+    {
+      fprintf (f, "\t.cfi_negate_ra_state\n");
+      found = true;
+    }
+  return found;
+}
+
+/* Implement TARGET_DW_CFI_OPRND1_DESC.  */
+static bool
+aarch64_dw_cfi_oprnd1_desc (dwarf_call_frame_info cfi_opc,
+			    dw_cfi_oprnd_type &oprnd_type)
+{
+  if (cfi_opc == DW_CFA_AARCH64_negate_ra_state)
+    {
+      oprnd_type = dw_cfi_oprnd_unused;
+      return true;
+    }
+  return false;
 }
 
 /* If X is a CONST_DOUBLE, return its bit representation as a constant
@@ -30834,6 +30861,12 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_DWARF_FRAME_REG_MODE
 #define TARGET_DWARF_FRAME_REG_MODE aarch64_dwarf_frame_reg_mode
+
+#undef TARGET_OUTPUT_CFI_DIRECTIVE
+#define TARGET_OUTPUT_CFI_DIRECTIVE aarch64_output_cfi_directive
+
+#undef TARGET_DW_CFI_OPRND1_DESC
+#define TARGET_DW_CFI_OPRND1_DESC aarch64_dw_cfi_oprnd1_desc
 
 #undef TARGET_PROMOTED_TYPE
 #define TARGET_PROMOTED_TYPE aarch64_promoted_type

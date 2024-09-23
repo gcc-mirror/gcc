@@ -1,4 +1,4 @@
-/* PR target/94515. Check .cfi_window_save with multiple return paths.  */
+/* PR target/94515. Check .cfi_negate_ra_state with multiple return paths.  */
 /* { dg-do run } */
 /* { dg-require-effective-target lp64 } */
 /* { dg-additional-options "-O2 -mbranch-protection=pac-ret" } */

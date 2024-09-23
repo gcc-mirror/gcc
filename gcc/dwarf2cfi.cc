@@ -69,10 +69,12 @@ struct GTY(()) dw_cfi_row
   /* The expressions for any register column that is saved.  */
   cfi_vec reg_save;
 
-  /* True if the register window is saved.  */
+  /* SPARC extension for DW_CFA_GNU_window_save.
+     True if the register window is saved.  */
   bool window_save;
 
-  /* True if the return address is in a mangled state.  */
+  /* AArch64 extension for DW_CFA_AARCH64_negate_ra_state.
+     True if the return address is in a mangled state.  */
   bool ra_mangled;
 };
 
@@ -801,8 +803,6 @@ cfi_oprnd_equal_p (enum dw_cfi_oprnd_type t, dw_cfi_oprnd *a, dw_cfi_oprnd *b)
 static bool
 cfi_equal_p (dw_cfi_ref a, dw_cfi_ref b)
 {
-  enum dwarf_call_frame_info opc;
-
   /* Make things easier for our callers, including missing operands.  */
   if (a == b)
     return true;
@@ -810,7 +810,7 @@ cfi_equal_p (dw_cfi_ref a, dw_cfi_ref b)
     return false;
 
   /* Obviously, the opcodes must match.  */
-  opc = a->dw_cfi_opc;
+  dwarf_call_frame_info opc = a->dw_cfi_opc;
   if (opc != b->dw_cfi_opc)
     return false;
 
@@ -1547,17 +1547,13 @@ dwarf2out_frame_debug_cfa_window_save (void)
   cur_row->window_save = true;
 }
 
-/* A subroutine of dwarf2out_frame_debug, process a REG_CFA_NEGATE_RA_STATE.
-   Note: DW_CFA_GNU_window_save dwarf opcode is reused for toggling RA mangle
-   state, this is a target specific operation on AArch64 and can only be used
-   on other targets if they don't use the window save operation otherwise.  */
+/* A subroutine of dwarf2out_frame_debug, process REG_CFA_NEGATE_RA_STATE.  */
 
 static void
 dwarf2out_frame_debug_cfa_negate_ra_state (void)
 {
   dw_cfi_ref cfi = new_cfi ();
-
-  cfi->dw_cfi_opc = DW_CFA_GNU_window_save;
+  cfi->dw_cfi_opc = DW_CFA_AARCH64_negate_ra_state;
   add_cfi (cfi);
   cur_row->ra_mangled = !cur_row->ra_mangled;
 }
@@ -2426,8 +2422,7 @@ change_cfi_row (dw_cfi_row *old_row, dw_cfi_row *new_row)
       dw_cfi_ref cfi = new_cfi ();
 
       gcc_assert (!old_row->window_save && !new_row->window_save);
-      /* DW_CFA_GNU_window_save is reused for toggling RA mangle state.  */
-      cfi->dw_cfi_opc = DW_CFA_GNU_window_save;
+      cfi->dw_cfi_opc = DW_CFA_AARCH64_negate_ra_state;
       add_cfi (cfi);
     }
 }
@@ -3516,9 +3511,6 @@ output_cfi (dw_cfi_ref cfi, dw_fde_ref fde, int for_eh)
 	  dw2_asm_output_data_sleb128 (off, NULL);
 	  break;
 
-	case DW_CFA_GNU_window_save:
-	  break;
-
 	case DW_CFA_def_cfa_expression:
 	case DW_CFA_expression:
 	case DW_CFA_val_expression:
@@ -3631,10 +3623,6 @@ output_cfi_directive (FILE *f, dw_cfi_ref cfi)
 	}
       break;
 
-    case DW_CFA_GNU_window_save:
-      fprintf (f, "\t.cfi_window_save\n");
-      break;
-
     case DW_CFA_def_cfa_expression:
     case DW_CFA_expression:
     case DW_CFA_val_expression:
@@ -3651,7 +3639,8 @@ output_cfi_directive (FILE *f, dw_cfi_ref cfi)
       break;
 
     default:
-      gcc_unreachable ();
+      if (!targetm.output_cfi_directive (f, cfi))
+	gcc_unreachable ();
     }
 }
 

@@ -3911,7 +3911,6 @@ used in .eh_frame or .debug_frame is different from that used in other
 debug info sections.  Given a GCC hard register number, this macro
 should return the .eh_frame register number.  The default is
 @code{DEBUGGER_REGNO (@var{regno})}.
-
 @end defmac
 
 @defmac DWARF2_FRAME_REG_OUT (@var{regno}, @var{for_eh})
@@ -10056,6 +10055,21 @@ Given a register, this hook should return the mode which the
 corresponding Dwarf frame register should have.  This is normally
 used to return a smaller mode than the raw mode to prevent call
 clobbered parts of a register altering the frame register size
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_OUTPUT_CFI_DIRECTIVE (FILE * @var{f}, dw_cfi_ref @var{cfi})
+This hook handles architecture-specific CFI directives and prints
+them out to the assembly file @var{f}.
+Return true if a architecture-specific directive was found, false
+otherwise.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_DW_CFI_OPRND1_DESC (dwarf_call_frame_info @var{cfi_opc}, dw_cfi_oprnd_type & @var{oprnd_type})
+This hook informs the caller what the architecture-specific directives
+takes as a first operand.
+Return true if a architecture-specific directive was found and
+@var{oprnd_type} is set, false otherwise and @var{oprnd_type} is not
+modified.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_INIT_DWARF_REG_SIZES_EXTRA (tree @var{address})

@@ -141,6 +141,12 @@ struct gomp_single;
 struct gomp_target;
 struct gomp_teams;
 
+/* Forward declaration of CFI's and DWARF's types.  */
+struct dw_cfi_node;
+using dw_cfi_ref = struct dw_cfi_node *;
+enum dw_cfi_oprnd_type: int;
+enum dwarf_call_frame_info: int;
+
 /* Subclasses of symtab_node, using indentation to show the class
    hierarchy.  */
 
