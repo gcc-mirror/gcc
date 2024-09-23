@@ -1570,11 +1570,7 @@ Example:
 
 ``External_Initialization`` aspect accepts the following parameters:
 
-- mandatory ``Path``: the path the compiler uses to access the binary resource;
-- optional ``Maximum_Size``: the maximum number of bytes the compiler reads from
-  the resource;
-- optional ``If_Empty``: an expression used in place of read data in case
-  the resource is empty;
+- mandatory ``Path``: the path the compiler uses to access the binary resource.
 
 ``Path`` is resolved according to the same rules the compiler uses for loading the source files.
 

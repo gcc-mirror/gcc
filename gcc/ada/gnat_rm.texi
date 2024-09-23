@@ -30786,15 +30786,7 @@ end P;
 @itemize -
 
 @item 
-mandatory @code{Path}: the path the compiler uses to access the binary resource;
-
-@item 
-optional @code{Maximum_Size}: the maximum number of bytes the compiler reads from
-the resource;
-
-@item 
-optional @code{If_Empty}: an expression used in place of read data in case
-the resource is empty;
+mandatory @code{Path}: the path the compiler uses to access the binary resource.
 @end itemize
 
 @code{Path} is resolved according to the same rules the compiler uses for loading the source files.
