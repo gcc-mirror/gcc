@@ -1,3 +1,9 @@
+2024-09-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.host: From macOS 11, limit earliest macOS support
+	to macOS 11.
+	* config/t-darwin-min-11: New file.
+
 2024-08-27  YunQiang Su  <syq@gcc.gnu.org>
 
 	* config/mips/lib1funcs.S: Includes mips16.S.

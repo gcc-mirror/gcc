@@ -1,3 +1,50 @@
+2024-09-22  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat_s_add-13.c: New test.
+	* gcc.target/riscv/sat_s_add-14.c: New test.
+	* gcc.target/riscv/sat_s_add-15.c: New test.
+	* gcc.target/riscv/sat_s_add-16.c: New test.
+	* gcc.target/riscv/sat_s_add-run-13.c: New test.
+	* gcc.target/riscv/sat_s_add-run-14.c: New test.
+	* gcc.target/riscv/sat_s_add-run-15.c: New test.
+	* gcc.target/riscv/sat_s_add-run-16.c: New test.
+
+2024-09-22  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat_s_add-10.c: New test.
+	* gcc.target/riscv/sat_s_add-11.c: New test.
+	* gcc.target/riscv/sat_s_add-12.c: New test.
+	* gcc.target/riscv/sat_s_add-9.c: New test.
+	* gcc.target/riscv/sat_s_add-run-10.c: New test.
+	* gcc.target/riscv/sat_s_add-run-11.c: New test.
+	* gcc.target/riscv/sat_s_add-run-12.c: New test.
+	* gcc.target/riscv/sat_s_add-run-9.c: New test.
+
+2024-09-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/torture/special-termination-00-sync-completion.C: New test.
+	* g++.dg/coroutines/torture/special-termination-01-self-destruct.C: New test.
+
+2024-09-22  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/bb-slp-conditional_store_1.c: New test.
+	* gcc.dg/vect/vect-conditional_store_5.c: New test.
+	* gcc.dg/vect/vect-conditional_store_6.c: New test.
+
+2024-09-22  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/sve/asrdiv_4.c: Update bounds.
+	* gcc.target/aarch64/sve/cond_asrd_2.c: Likewise.
+	* gcc.target/aarch64/sve/cond_uxt_6.c: Likewise.
+	* gcc.target/aarch64/sve/cond_uxt_7.c: Likewise.
+	* gcc.target/aarch64/sve/cond_uxt_8.c: Likewise.
+	* gcc.target/aarch64/sve/miniloop_1.c: Likewise.
+	* gcc.target/aarch64/sve/spill_6.c: Likewise.
+	* gcc.target/aarch64/sve/sve_iters_low_1.c: New test.
+	* gcc.target/aarch64/sve/sve_iters_low_2.c: New test.
+
 2024-09-21  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/90608

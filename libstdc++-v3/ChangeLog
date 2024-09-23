@@ -1,3 +1,72 @@
+2024-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (__format::__is_formattable_integer): New
+	variable template and specializations.
+	(template<integral, __char> struct formatter): Replace
+	constraints on first arg with __is_formattable_integer.
+	* testsuite/std/format/formatter/requirements.cc: Check that
+	std::formatter specializations for char8_t and const int are
+	disabled.
+
+2024-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116754
+	* include/bits/ranges_algobase.h (__copy_or_move): Fix order of
+	arguments to __memcpyable.
+
+2024-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116755
+	* include/bits/chrono_io.h (formatter<duration<R,P>>::format):
+	Cast negative integral durations to unsigned rep.
+	* testsuite/20_util/duration/io.cc: Test the most negative
+	integer durations.
+
+2024-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_vector.h (operator<=>): Use constexpr
+	instead of _GLIBCXX20_CONSTEXPR macro.
+
+2024-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/exception_ptr.h (__exception_ptr::_M_safe_bool_dummy):
+	Remove __attribute__((const)) from function returning void.
+
+2024-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/cxx11-ios_failure.cc (__iosfail_type_info): Unhide
+	the three-arg overload of __do_upcast.
+
+2024-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/version.def: Sort C++26 entries alphabetically.
+	* include/bits/version.h: Regenerate.
+
+2024-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h: Add projected_value_t.
+	* include/bits/algorithmfwd.h: Add the default template
+	parameter to the relevant forward declarations.
+	* include/pstl/glue_algorithm_defs.h: Likewise.
+	* include/bits/ranges_algo.h: Add the default template
+	parameter to range-based algorithms.
+	* include/bits/ranges_algobase.h: Likewise.
+	* include/bits/ranges_util.h: Likewise.
+	* include/bits/ranges_base.h: Add helper macros.
+	* include/bits/stl_iterator_base_types.h: Add helper macro.
+	* include/bits/version.def: Add the new feature-testing macro.
+	* include/bits/version.h: Regenerate.
+	* include/std/algorithm: Pull the feature-testing macro.
+	* include/std/ranges: Likewise.
+	* include/std/deque: Pull the feature-testing macro, add
+	the default for std::erase.
+	* include/std/forward_list: Likewise.
+	* include/std/list: Likewise.
+	* include/std/string: Likewise.
+	* include/std/vector: Likewise.
+	* testsuite/23_containers/default_template_value.cc: New test.
+	* testsuite/25_algorithms/default_template_value.cc: New test.
+
 2024-09-21  Jason Merrill  <jason@redhat.com>
 
 	* include/c_compatibility/ctype.h

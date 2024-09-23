@@ -1,3 +1,22 @@
+2024-09-22  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-patterns.cc (append_inv_pattern_def_seq): New.
+	(vect_recog_bool_pattern): Lower COND_EXPRs.
+	* tree-vect-slp.cc (vect_slp_region): Materialize loop invariant
+	statements.
+	* tree-vect-loop.cc (vect_transform_loop): Likewise.
+	* tree-vect-stmts.cc (vectorizable_comparison_1): Remove
+	VECT_SCALAR_BOOLEAN_TYPE_P handling for vectype.
+	* tree-vectorizer.cc (vec_info::vec_info): Initialize
+	inv_pattern_def_seq.
+	* tree-vectorizer.h (LOOP_VINFO_INV_PATTERN_DEF_SEQ): New.
+	(class vec_info): Add inv_pattern_def_seq.
+
+2024-09-22  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.cc (adjust_body_cost):
+	Cap VF for low iteration loops.
+
 2024-09-21  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/90608
