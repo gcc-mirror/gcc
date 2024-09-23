@@ -3715,7 +3715,7 @@ vect_build_slp_instance (vec_info *vinfo,
   unsigned i;
 
   slp_tree node = NULL;
-  if (force_single_lane)
+  if (group_size > 1 && force_single_lane)
     {
       matches[0] = true;
       matches[1] = false;
