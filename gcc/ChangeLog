@@ -1,3 +1,10 @@
+2024-09-22  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.h (GENERAL_REGNO_P): Define.
+	* config/pa/pa.md: Add SImode and SFmode peephole2
+	patterns to generate loads and stores with long
+	displacements.
+
 2024-09-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ipa-modref.cc (modref_eaf_analysis::analyze_ssa_name): Always
