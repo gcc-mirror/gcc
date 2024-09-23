@@ -22,4 +22,5 @@ program memain
   read (10,*,iostat=iostat,iomsg=iomsg) u
   if (iostat == 0) error stop 7
   if (iomsg /= "Unsigned integer overflow while reading item 1 of list input") error stop 8
+  close(unit=10, status='delete')
  end program memain
