@@ -271,23 +271,25 @@
 	      fs->regs.how[reg] = REG_SAVED_VAL_EXP;
 	      fs->regs.reg[reg].loc.exp = insn_ptr;
 	    }
+	  /* Don't execute the expression, but jump over it by adding
+	     DW_FORM_block's size to insn_ptr.  */
 	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
 	  insn_ptr += utmp;
 	  break;
 
-	case DW_CFA_GNU_window_save:
 #if defined (__aarch64__) && !defined (__ILP32__)
-	  /* This CFA is multiplexed with Sparc.  On AArch64 it's used to toggle
-	     return address signing status.  REG_UNSAVED/REG_UNSAVED_ARCHEXT
-	     mean RA signing is disabled/enabled.  */
-	  reg = DWARF_REGNUM_AARCH64_RA_STATE;
-	  gcc_assert (fs->regs.how[reg] == REG_UNSAVED
-		      || fs->regs.how[reg] == REG_UNSAVED_ARCHEXT);
-	  if (fs->regs.how[reg] == REG_UNSAVED)
-	    fs->regs.how[reg] = REG_UNSAVED_ARCHEXT;
-	  else
-	    fs->regs.how[reg] = REG_UNSAVED;
+	case DW_CFA_AARCH64_negate_ra_state:
+	  /* This CFA is multiplexed with SPARC.
+	     On AArch64 it's used to toggle the status of return address signing
+	     with SP as a diversifier.
+	     - REG_ARCHEXT means that the RA state register in FS contains a
+	     valid value, and that no other DWARF directive has changed the
+	     value of this register.
+	     - any other value is not compatible with negating the RA state.  */
+	  aarch64_fs_ra_state_toggle (fs);
+	  break;
 #else
+	case DW_CFA_GNU_window_save:
 	  /* ??? Hardcoded for SPARC register window configuration.  */
 	  if (__LIBGCC_DWARF_FRAME_REGISTERS__ >= 32)
 	    for (reg = 16; reg < 32; ++reg)
@@ -295,8 +297,8 @@
 		fs->regs.how[reg] = REG_SAVED_OFFSET;
 		fs->regs.reg[reg].loc.offset = (reg - 16) * sizeof (void *);
 	      }
-#endif
 	  break;
+#endif
 
 	case DW_CFA_GNU_args_size:
 	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
