@@ -286,7 +286,7 @@ END ErrorMessageC ;
            to stderr and calls exit (1).
 *)
 
-PROCEDURE HaltC (description, filename, function: ADDRESS; line: CARDINAL) ;
+PROCEDURE HaltC (description, filename, function: ADDRESS; line: CARDINAL) <* noreturn *> ;
 BEGIN
    ErrorMessageC (description, filename, line, function)
 END HaltC ;

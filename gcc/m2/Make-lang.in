@@ -1477,7 +1477,7 @@ mcflex.c: $(srcdir)/m2/mc/mc.flex
 
 m2/gm2-libs-boot/M2RTS.o: $(srcdir)/m2/gm2-libs/M2RTS.mod $(MCDEPS) $(BUILD-BOOT-H)
 	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
-	$(MC) --suppress-noreturn -o=m2/gm2-libs-boot/M2RTS.c $(srcdir)/m2/gm2-libs/M2RTS.mod
+	$(MC) -o=m2/gm2-libs-boot/M2RTS.c $(srcdir)/m2/gm2-libs/M2RTS.mod
 	$(COMPILER) $(CM2DEP) -c -DIN_GCC $(CFLAGS) $(GM2_PICFLAGS) $(MC_SRC_FLAGS) -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot -I$(srcdir)/m2/gm2-libs-ch $(MCINCLUDES) $(INCLUDES) m2/gm2-libs-boot/M2RTS.c -o $@
 	$(POSTCOMPILE)
 

@@ -69,6 +69,8 @@ END ExecuteInitialProcedures ;
 
 PROCEDURE HALT ;
 BEGIN
+   LOOP
+   END
 END HALT ;
 
 
