@@ -2190,12 +2190,23 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	      && single_element_p
 	      && maybe_gt (group_size, TYPE_VECTOR_SUBPARTS (vectype)))
 	    {
-	      *memory_access_type = VMAT_ELEMENTWISE;
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "single-element interleaving not supported "
-				 "for not adjacent vector loads, using "
-				 "elementwise access\n");
+	      if (SLP_TREE_LANES (slp_node) == 1)
+		{
+		  *memory_access_type = VMAT_ELEMENTWISE;
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "single-element interleaving not supported "
+				     "for not adjacent vector loads, using "
+				     "elementwise access\n");
+		}
+	      else
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "single-element interleaving not supported "
+				     "for not adjacent vector loads\n");
+		  return false;
+		}
 	    }
 	}
     }
