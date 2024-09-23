@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Oct 17, 2024
+GNAT Reference Manual , Nov 04, 2024
 
 AdaCore
 
@@ -895,6 +895,7 @@ GNAT language extensions
 Curated Extensions
 
 * Local Declarations Without Block:: 
+* Deep delta Aggregates:: 
 * Fixed lower bounds for array types and subtypes:: 
 * Prefixed-view notation for calls to primitive subprograms of untagged types:: 
 * Expression defaults for generic formal functions:: 
@@ -902,6 +903,13 @@ Curated Extensions
 * Constrained attribute for generic objects:: 
 * Static aspect on intrinsic functions:: 
 * First Controlling Parameter:: 
+
+Deep delta Aggregates
+
+* Syntax:: 
+* Legality Rules:: 
+* Dynamic Semantics:: 
+* Examples:: 
 
 Experimental Language Extensions
 
@@ -28967,6 +28975,7 @@ Features activated via @code{-gnatX} or
 
 @menu
 * Local Declarations Without Block:: 
+* Deep delta Aggregates:: 
 * Fixed lower bounds for array types and subtypes:: 
 * Prefixed-view notation for calls to primitive subprograms of untagged types:: 
 * Expression defaults for generic formal functions:: 
@@ -28977,7 +28986,7 @@ Features activated via @code{-gnatX} or
 
 @end menu
 
-@node Local Declarations Without Block,Fixed lower bounds for array types and subtypes,,Curated Extensions
+@node Local Declarations Without Block,Deep delta Aggregates,,Curated Extensions
 @anchor{gnat_rm/gnat_language_extensions local-declarations-without-block}@anchor{445}
 @subsection Local Declarations Without Block
 
@@ -29070,8 +29079,198 @@ And as such the second `@w{`}A`@w{`} declaration is hiding the first one.
 @end quotation
 @end cartouche
 
-@node Fixed lower bounds for array types and subtypes,Prefixed-view notation for calls to primitive subprograms of untagged types,Local Declarations Without Block,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions fixed-lower-bounds-for-array-types-and-subtypes}@anchor{446}
+@node Deep delta Aggregates,Fixed lower bounds for array types and subtypes,Local Declarations Without Block,Curated Extensions
+@anchor{gnat_rm/gnat_language_extensions deep-delta-aggregates}@anchor{446}
+@subsection Deep delta Aggregates
+
+
+Ada 2022’s delta aggregates are extended to allow deep updates.
+
+A delta aggregate may be used to specify new values for subcomponents of the
+copied base value, instead of only new values for direct components of the
+copied base value. This allows a more compact expression of updated values with
+a single delta aggregate, instead of multiple nested delta aggregates.
+
+The syntax of delta aggregates in the extended version is the following:
+
+@menu
+* Syntax:: 
+* Legality Rules:: 
+* Dynamic Semantics:: 
+* Examples:: 
+
+@end menu
+
+@node Syntax,Legality Rules,,Deep delta Aggregates
+@anchor{gnat_rm/gnat_language_extensions syntax}@anchor{447}
+@subsubsection Syntax
+
+
+@example
+delta_aggregate ::= record_delta_aggregate | array_delta_aggregate
+
+record_delta_aggregate ::=
+  ( base_expression with delta record_subcomponent_association_list )
+
+record_subcomponent_association_list ::=
+  record_subcomponent_association @{, record_subcomponent_association@}
+
+record_subcomponent_association ::=
+  record_subcomponent_choice_list => expression
+
+record_subcomponent_choice_list ::=
+  record_subcomponent_choice @{'|' record_subcomponent_choice@}
+
+record_subcomponent_choice ::=
+    component_selector_name
+  | record_subcomponent_choice (expression)
+  | record_subcomponent_choice . component_selector_name
+
+array_delta_aggregate ::=
+    ( base_expression with delta array_component_association_list )
+  | '[' base_expression with delta array_component_association_list ']'
+  | ( base_expression with delta array_subcomponent_association_list )
+  | '[' base_expression with delta array_subcomponent_association_list ']'
+
+array_subcomponent_association_list ::=
+  array_subcomponent_association @{, array_subcomponent_association@}
+
+array_subcomponent_association ::=
+  array_subcomponent_choice_list => expression
+
+array_subcomponent_choice_list ::=
+  array_subcomponent_choice @{'|' array_subcomponent_choice@}
+
+array_subcomponent_choice ::=
+    ( expression )
+  | array_subcomponent_choice (expression)
+  | array_subcomponent_choice . component_selector_name
+@end example
+
+@node Legality Rules,Dynamic Semantics,Syntax,Deep delta Aggregates
+@anchor{gnat_rm/gnat_language_extensions legality-rules}@anchor{448}
+@subsubsection Legality Rules
+
+
+
+@enumerate 
+
+@item 
+For an @code{array_delta_aggregate}, the discrete_choice shall not be `others'.
+
+@item 
+For an @code{array_delta_aggregate}, the dimensionality of the type of the
+@code{delta_aggregate} shall be 1.
+
+@item 
+For an @code{array_delta_aggregate}, the @code{base_expression} and each
+expression in every @code{array_component_association} or
+@code{array_subcomponent_association} shall be of a nonlimited type.
+
+@item 
+For a @code{record_delta_aggregate}, no @code{record_subcomponent_choices} that
+consists of only @code{component_selector_names} shall be the same or a prefix
+of another record_subcomponent_choice.
+
+@item 
+For an @code{array_subcomponent_choice} or a @code{record_subcomponent_choice} the
+@code{component_selector_name} shall not be a subcomponent that depends on
+discriminants of an unconstrained record subtype with defaulted
+discriminants unless its prefix consists of only
+@code{component_selector_names}.
+
+[Rationale: As a result of this rule, accessing the subcomponent can only
+lead to a discriminant check failure if the subcomponent was not present in
+the object denoted by the base_expression, prior to any update.]
+@end enumerate
+
+@node Dynamic Semantics,Examples,Legality Rules,Deep delta Aggregates
+@anchor{gnat_rm/gnat_language_extensions dynamic-semantics}@anchor{449}
+@subsubsection Dynamic Semantics
+
+
+The evaluation of a @code{delta_aggregate} begins with the evaluation of the
+@code{base_expression} of the delta_aggregate; then that value is used to create
+and initialize the anonymous object of the aggregate. The bounds of the
+anonymous object of an @code{array_delta_aggregate} and the discriminants (if any)
+of the anonymous object of a @code{record_delta_aggregate} are those of the
+@code{base_expression}.
+
+If a @code{record_delta_aggregate} is of a specific tagged type, its tag is that
+of the specific type; if it is of a class-wide type, its tag is that of the
+base_expression.
+
+For a @code{delta_aggregate}, for each @code{discrete_choice} or each subcomponent
+associated with a @code{record_subcomponent_associated},
+@code{array_component_association} or @code{array_subcomponent_association} (in the
+order given in the enclosing @code{discrete_choice_list} or
+@code{subcomponent_association_list}, respectively):
+
+
+@itemize -
+
+@item 
+if the associated subcomponent belongs to a variant, a check is made that the
+values of the governing discriminants are such that the anonymous object has
+this component. The exception @code{Constraint_Error} is raised if this check fails.
+
+@item 
+if the associated subcomponent is a subcomponent of an array, then for each
+represented index value (in ascending order, if the @code{discrete_choice}
+represents a range):
+
+@quotation
+
+
+@itemize *
+
+@item 
+the index value is converted to the index type of the array type.
+
+@item 
+a check is made that the index value belongs to the index range of the
+corresponding array part of the anonymous object; @code{Constraint_Error} is
+raised if this check fails.
+
+@item 
+the expression of the @code{record_subcomponent_association},
+@code{array_component_association} or @code{array_subcomponent_association} is
+evaluated, converted to the nominal subtype of the associated subcomponent,
+and assigned to the corresponding subcomponent of the anonymous object.
+@end itemize
+@end quotation
+@end itemize
+
+@node Examples,,Dynamic Semantics,Deep delta Aggregates
+@anchor{gnat_rm/gnat_language_extensions examples}@anchor{44a}
+@subsubsection Examples
+
+
+@example
+declare
+   type Point is record
+      X, Y : Integer;
+   end record;
+
+   type Segment is array (1 .. 2) of Point;
+   type Triangle is array (1 .. 3) of Segment;
+
+   S : Segment := (1 .. 2 => (0, 0));
+   T : Triangle := (1 .. 3 => (1 .. 2 => (0, 0)));
+begin
+   S := (S with delta (1).X | (2).Y => 12, (1).Y => 15);
+
+   pragma Assert (S (1).X = 12);
+   pragma Assert (S (2).Y = 12);
+   pragma Assert (S (1).Y = 15);
+
+   T := (T with delta (2)(1).Y => 18);
+   pragma Assert (T (2)(1).Y = 18);
+end;
+@end example
+
+@node Fixed lower bounds for array types and subtypes,Prefixed-view notation for calls to primitive subprograms of untagged types,Deep delta Aggregates,Curated Extensions
+@anchor{gnat_rm/gnat_language_extensions fixed-lower-bounds-for-array-types-and-subtypes}@anchor{44b}
 @subsection Fixed lower bounds for array types and subtypes
 
 
@@ -29122,7 +29321,7 @@ lower bound of unconstrained array formals when the formal’s subtype has index
 ranges with static fixed lower bounds.
 
 @node Prefixed-view notation for calls to primitive subprograms of untagged types,Expression defaults for generic formal functions,Fixed lower bounds for array types and subtypes,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions prefixed-view-notation-for-calls-to-primitive-subprograms-of-untagged-types}@anchor{447}
+@anchor{gnat_rm/gnat_language_extensions prefixed-view-notation-for-calls-to-primitive-subprograms-of-untagged-types}@anchor{44c}
 @subsection Prefixed-view notation for calls to primitive subprograms of untagged types
 
 
@@ -29172,7 +29371,7 @@ pragma Assert (V.Nth_Element(1) = 42);
 @end example
 
 @node Expression defaults for generic formal functions,String interpolation,Prefixed-view notation for calls to primitive subprograms of untagged types,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions expression-defaults-for-generic-formal-functions}@anchor{448}
+@anchor{gnat_rm/gnat_language_extensions expression-defaults-for-generic-formal-functions}@anchor{44d}
 @subsection Expression defaults for generic formal functions
 
 
@@ -29203,7 +29402,7 @@ If the default is used (i.e. there is no actual corresponding to Copy),
 then calls to Copy in the instance will simply return Item.
 
 @node String interpolation,Constrained attribute for generic objects,Expression defaults for generic formal functions,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions string-interpolation}@anchor{449}
+@anchor{gnat_rm/gnat_language_extensions string-interpolation}@anchor{44e}
 @subsection String interpolation
 
 
@@ -29370,7 +29569,7 @@ a double quote is " and an open brace is @{
 @end example
 
 @node Constrained attribute for generic objects,Static aspect on intrinsic functions,String interpolation,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions constrained-attribute-for-generic-objects}@anchor{44a}
+@anchor{gnat_rm/gnat_language_extensions constrained-attribute-for-generic-objects}@anchor{44f}
 @subsection Constrained attribute for generic objects
 
 
@@ -29378,7 +29577,7 @@ The @code{Constrained} attribute is permitted for objects of generic types. The
 result indicates whether the corresponding actual is constrained.
 
 @node Static aspect on intrinsic functions,First Controlling Parameter,Constrained attribute for generic objects,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions static-aspect-on-intrinsic-functions}@anchor{44b}
+@anchor{gnat_rm/gnat_language_extensions static-aspect-on-intrinsic-functions}@anchor{450}
 @subsection @code{Static} aspect on intrinsic functions
 
 
@@ -29387,7 +29586,7 @@ and the compiler will evaluate some of these intrinsics statically, in
 particular the @code{Shift_Left} and @code{Shift_Right} intrinsics.
 
 @node First Controlling Parameter,,Static aspect on intrinsic functions,Curated Extensions
-@anchor{gnat_rm/gnat_language_extensions first-controlling-parameter}@anchor{44c}
+@anchor{gnat_rm/gnat_language_extensions first-controlling-parameter}@anchor{451}
 @subsection First Controlling Parameter
 
 
@@ -29487,7 +29686,7 @@ The result of a function is never a controlling result.
 @end itemize
 
 @node Experimental Language Extensions,,Curated Extensions,GNAT language extensions
-@anchor{gnat_rm/gnat_language_extensions experimental-language-extensions}@anchor{6a}@anchor{gnat_rm/gnat_language_extensions id2}@anchor{44d}
+@anchor{gnat_rm/gnat_language_extensions experimental-language-extensions}@anchor{6a}@anchor{gnat_rm/gnat_language_extensions id2}@anchor{452}
 @section Experimental Language Extensions
 
 
@@ -29509,7 +29708,7 @@ Features activated via @code{-gnatX0} or
 @end menu
 
 @node Conditional when constructs,Storage Model,,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions conditional-when-constructs}@anchor{44e}
+@anchor{gnat_rm/gnat_language_extensions conditional-when-constructs}@anchor{453}
 @subsection Conditional when constructs
 
 
@@ -29578,7 +29777,7 @@ end;
 @end example
 
 @node Storage Model,Attribute Super,Conditional when constructs,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions storage-model}@anchor{44f}
+@anchor{gnat_rm/gnat_language_extensions storage-model}@anchor{454}
 @subsection Storage Model
 
 
@@ -29595,7 +29794,7 @@ memory models, in particular to support interactions with GPU.
 @end menu
 
 @node Aspect Storage_Model_Type,Aspect Designated_Storage_Model,,Storage Model
-@anchor{gnat_rm/gnat_language_extensions aspect-storage-model-type}@anchor{450}
+@anchor{gnat_rm/gnat_language_extensions aspect-storage-model-type}@anchor{455}
 @subsubsection Aspect Storage_Model_Type
 
 
@@ -29729,7 +29928,7 @@ end CUDA_Memory;
 @end example
 
 @node Aspect Designated_Storage_Model,Legacy Storage Pools,Aspect Storage_Model_Type,Storage Model
-@anchor{gnat_rm/gnat_language_extensions aspect-designated-storage-model}@anchor{451}
+@anchor{gnat_rm/gnat_language_extensions aspect-designated-storage-model}@anchor{456}
 @subsubsection Aspect Designated_Storage_Model
 
 
@@ -29807,7 +30006,7 @@ begin
 @end example
 
 @node Legacy Storage Pools,,Aspect Designated_Storage_Model,Storage Model
-@anchor{gnat_rm/gnat_language_extensions legacy-storage-pools}@anchor{452}
+@anchor{gnat_rm/gnat_language_extensions legacy-storage-pools}@anchor{457}
 @subsubsection Legacy Storage Pools
 
 
@@ -29858,7 +30057,7 @@ type Acc is access Integer_Array with Storage_Pool => My_Pool;
 can still be accepted as a shortcut for the new syntax.
 
 @node Attribute Super,Simpler Accessibility Model,Storage Model,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions attribute-super}@anchor{453}
+@anchor{gnat_rm/gnat_language_extensions attribute-super}@anchor{458}
 @subsection Attribute Super
 
 
@@ -29893,7 +30092,7 @@ end;
 @end example
 
 @node Simpler Accessibility Model,Case pattern matching,Attribute Super,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions simpler-accessibility-model}@anchor{454}
+@anchor{gnat_rm/gnat_language_extensions simpler-accessibility-model}@anchor{459}
 @subsection Simpler Accessibility Model
 
 
@@ -29924,7 +30123,7 @@ All of the refined rules are compatible with the [use of anonymous access types 
 @end menu
 
 @node Stand-alone objects,Subprogram parameters,,Simpler Accessibility Model
-@anchor{gnat_rm/gnat_language_extensions stand-alone-objects}@anchor{455}
+@anchor{gnat_rm/gnat_language_extensions stand-alone-objects}@anchor{45a}
 @subsubsection Stand-alone objects
 
 
@@ -29972,7 +30171,7 @@ of the RM 4.6 rule “The accessibility level of the operand type shall not be
 statically deeper than that of the target type …”.
 
 @node Subprogram parameters,Function results,Stand-alone objects,Simpler Accessibility Model
-@anchor{gnat_rm/gnat_language_extensions subprogram-parameters}@anchor{456}
+@anchor{gnat_rm/gnat_language_extensions subprogram-parameters}@anchor{45b}
 @subsubsection Subprogram parameters
 
 
@@ -30065,7 +30264,7 @@ end;
 @end example
 
 @node Function results,,Subprogram parameters,Simpler Accessibility Model
-@anchor{gnat_rm/gnat_language_extensions function-results}@anchor{457}
+@anchor{gnat_rm/gnat_language_extensions function-results}@anchor{45c}
 @subsubsection Function results
 
 
@@ -30193,7 +30392,7 @@ end;
 @end example
 
 @node Case pattern matching,Mutably Tagged Types with Size’Class Aspect,Simpler Accessibility Model,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions case-pattern-matching}@anchor{458}
+@anchor{gnat_rm/gnat_language_extensions case-pattern-matching}@anchor{45d}
 @subsection Case pattern matching
 
 
@@ -30323,7 +30522,7 @@ message generated in such cases is usually “Capacity exceeded in compiling
 case statement with composite selector type”.
 
 @node Mutably Tagged Types with Size’Class Aspect,Generalized Finalization,Case pattern matching,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions mutably-tagged-types-with-size-class-aspect}@anchor{459}
+@anchor{gnat_rm/gnat_language_extensions mutably-tagged-types-with-size-class-aspect}@anchor{45e}
 @subsection Mutably Tagged Types with Size’Class Aspect
 
 
@@ -30454,7 +30653,7 @@ parameter exists (that is, before leaving the corresponding callable
 construct).
 
 @node Generalized Finalization,No_Raise aspect,Mutably Tagged Types with Size’Class Aspect,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions generalized-finalization}@anchor{45a}
+@anchor{gnat_rm/gnat_language_extensions generalized-finalization}@anchor{45f}
 @subsection Generalized Finalization
 
 
@@ -30525,7 +30724,7 @@ hence `not' be deallocated either. The result is simply that memory will be
 leaked in those cases.
 
 @item 
-The @code{Finalize} procedure should have have the @ref{45b,,No_Raise aspect} specified.
+The @code{Finalize} procedure should have have the @ref{460,,No_Raise aspect} specified.
 If that’s not the case, a compilation error will be raised.
 @end itemize
 
@@ -30545,7 +30744,7 @@ heap-allocated objects
 @end itemize
 
 @node No_Raise aspect,Inference of Dependent Types in Generic Instantiations,Generalized Finalization,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions id3}@anchor{45c}@anchor{gnat_rm/gnat_language_extensions no-raise-aspect}@anchor{45b}
+@anchor{gnat_rm/gnat_language_extensions id3}@anchor{461}@anchor{gnat_rm/gnat_language_extensions no-raise-aspect}@anchor{460}
 @subsection No_Raise aspect
 
 
@@ -30562,7 +30761,7 @@ this subpropgram, @code{Program_Error} is raised.
 @end menu
 
 @node New specification for Ada Finalization Controlled,Finalized tagged types,,No_Raise aspect
-@anchor{gnat_rm/gnat_language_extensions new-specification-for-ada-finalization-controlled}@anchor{45d}
+@anchor{gnat_rm/gnat_language_extensions new-specification-for-ada-finalization-controlled}@anchor{462}
 @subsubsection New specification for @code{Ada.Finalization.Controlled}
 
 
@@ -30629,7 +30828,7 @@ private
 @end example
 
 @node Finalized tagged types,Composite types,New specification for Ada Finalization Controlled,No_Raise aspect
-@anchor{gnat_rm/gnat_language_extensions finalized-tagged-types}@anchor{45e}
+@anchor{gnat_rm/gnat_language_extensions finalized-tagged-types}@anchor{463}
 @subsubsection Finalized tagged types
 
 
@@ -30642,7 +30841,7 @@ However note that for simplicity, it is forbidden to change the value of any of
 those new aspects in derived types.
 
 @node Composite types,Interoperability with controlled types,Finalized tagged types,No_Raise aspect
-@anchor{gnat_rm/gnat_language_extensions composite-types}@anchor{45f}
+@anchor{gnat_rm/gnat_language_extensions composite-types}@anchor{464}
 @subsubsection Composite types
 
 
@@ -30659,7 +30858,7 @@ are called on the composite object, but @code{Finalize} is  called on the compos
 object first.
 
 @node Interoperability with controlled types,,Composite types,No_Raise aspect
-@anchor{gnat_rm/gnat_language_extensions interoperability-with-controlled-types}@anchor{460}
+@anchor{gnat_rm/gnat_language_extensions interoperability-with-controlled-types}@anchor{465}
 @subsubsection Interoperability with controlled types
 
 
@@ -30680,7 +30879,7 @@ component
 @end itemize
 
 @node Inference of Dependent Types in Generic Instantiations,External_Initialization Aspect,No_Raise aspect,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions inference-of-dependent-types-in-generic-instantiations}@anchor{461}
+@anchor{gnat_rm/gnat_language_extensions inference-of-dependent-types-in-generic-instantiations}@anchor{466}
 @subsection Inference of Dependent Types in Generic Instantiations
 
 
@@ -30757,7 +30956,7 @@ package Int_Array_Operations is new Array_Operations
 @end example
 
 @node External_Initialization Aspect,,Inference of Dependent Types in Generic Instantiations,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions external-initialization-aspect}@anchor{462}
+@anchor{gnat_rm/gnat_language_extensions external-initialization-aspect}@anchor{467}
 @subsection External_Initialization Aspect
 
 
@@ -30798,7 +30997,7 @@ The maximum size of loaded files is limited to 2@w{^31} bytes.
 @end cartouche
 
 @node Security Hardening Features,Obsolescent Features,GNAT language extensions,Top
-@anchor{gnat_rm/security_hardening_features doc}@anchor{463}@anchor{gnat_rm/security_hardening_features id1}@anchor{464}@anchor{gnat_rm/security_hardening_features security-hardening-features}@anchor{15}
+@anchor{gnat_rm/security_hardening_features doc}@anchor{468}@anchor{gnat_rm/security_hardening_features id1}@anchor{469}@anchor{gnat_rm/security_hardening_features security-hardening-features}@anchor{15}
 @chapter Security Hardening Features
 
 
@@ -30820,7 +31019,7 @@ change.
 @end menu
 
 @node Register Scrubbing,Stack Scrubbing,,Security Hardening Features
-@anchor{gnat_rm/security_hardening_features register-scrubbing}@anchor{465}
+@anchor{gnat_rm/security_hardening_features register-scrubbing}@anchor{46a}
 @section Register Scrubbing
 
 
@@ -30856,7 +31055,7 @@ programming languages, see @cite{Using the GNU Compiler Collection (GCC)}.
 @c Stack Scrubbing:
 
 @node Stack Scrubbing,Hardened Conditionals,Register Scrubbing,Security Hardening Features
-@anchor{gnat_rm/security_hardening_features stack-scrubbing}@anchor{466}
+@anchor{gnat_rm/security_hardening_features stack-scrubbing}@anchor{46b}
 @section Stack Scrubbing
 
 
@@ -31000,7 +31199,7 @@ Bar_Callable_Ptr.
 @c Hardened Conditionals:
 
 @node Hardened Conditionals,Hardened Booleans,Stack Scrubbing,Security Hardening Features
-@anchor{gnat_rm/security_hardening_features hardened-conditionals}@anchor{467}
+@anchor{gnat_rm/security_hardening_features hardened-conditionals}@anchor{46c}
 @section Hardened Conditionals
 
 
@@ -31090,7 +31289,7 @@ be used with other programming languages supported by GCC.
 @c Hardened Booleans:
 
 @node Hardened Booleans,Control Flow Redundancy,Hardened Conditionals,Security Hardening Features
-@anchor{gnat_rm/security_hardening_features hardened-booleans}@anchor{468}
+@anchor{gnat_rm/security_hardening_features hardened-booleans}@anchor{46d}
 @section Hardened Booleans
 
 
@@ -31151,7 +31350,7 @@ and more details on that attribute, see @cite{Using the GNU Compiler Collection 
 @c Control Flow Redundancy:
 
 @node Control Flow Redundancy,,Hardened Booleans,Security Hardening Features
-@anchor{gnat_rm/security_hardening_features control-flow-redundancy}@anchor{469}
+@anchor{gnat_rm/security_hardening_features control-flow-redundancy}@anchor{46e}
 @section Control Flow Redundancy
 
 
@@ -31319,7 +31518,7 @@ see @cite{Using the GNU Compiler Collection (GCC)}.  These options
 can be used with other programming languages supported by GCC.
 
 @node Obsolescent Features,Compatibility and Porting Guide,Security Hardening Features,Top
-@anchor{gnat_rm/obsolescent_features doc}@anchor{46a}@anchor{gnat_rm/obsolescent_features id1}@anchor{46b}@anchor{gnat_rm/obsolescent_features obsolescent-features}@anchor{16}
+@anchor{gnat_rm/obsolescent_features doc}@anchor{46f}@anchor{gnat_rm/obsolescent_features id1}@anchor{470}@anchor{gnat_rm/obsolescent_features obsolescent-features}@anchor{16}
 @chapter Obsolescent Features
 
 
@@ -31338,7 +31537,7 @@ compatibility purposes.
 @end menu
 
 @node pragma No_Run_Time,pragma Ravenscar,,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features id2}@anchor{46c}@anchor{gnat_rm/obsolescent_features pragma-no-run-time}@anchor{46d}
+@anchor{gnat_rm/obsolescent_features id2}@anchor{471}@anchor{gnat_rm/obsolescent_features pragma-no-run-time}@anchor{472}
 @section pragma No_Run_Time
 
 
@@ -31351,7 +31550,7 @@ preferred usage is to use an appropriately configured run-time that
 includes just those features that are to be made accessible.
 
 @node pragma Ravenscar,pragma Restricted_Run_Time,pragma No_Run_Time,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features id3}@anchor{46e}@anchor{gnat_rm/obsolescent_features pragma-ravenscar}@anchor{46f}
+@anchor{gnat_rm/obsolescent_features id3}@anchor{473}@anchor{gnat_rm/obsolescent_features pragma-ravenscar}@anchor{474}
 @section pragma Ravenscar
 
 
@@ -31360,7 +31559,7 @@ The pragma @code{Ravenscar} has exactly the same effect as pragma
 is part of the new Ada 2005 standard.
 
 @node pragma Restricted_Run_Time,pragma Task_Info,pragma Ravenscar,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features id4}@anchor{470}@anchor{gnat_rm/obsolescent_features pragma-restricted-run-time}@anchor{471}
+@anchor{gnat_rm/obsolescent_features id4}@anchor{475}@anchor{gnat_rm/obsolescent_features pragma-restricted-run-time}@anchor{476}
 @section pragma Restricted_Run_Time
 
 
@@ -31370,7 +31569,7 @@ preferred since the Ada 2005 pragma @code{Profile} is intended for
 this kind of implementation dependent addition.
 
 @node pragma Task_Info,package System Task_Info s-tasinf ads,pragma Restricted_Run_Time,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features id5}@anchor{472}@anchor{gnat_rm/obsolescent_features pragma-task-info}@anchor{473}
+@anchor{gnat_rm/obsolescent_features id5}@anchor{477}@anchor{gnat_rm/obsolescent_features pragma-task-info}@anchor{478}
 @section pragma Task_Info
 
 
@@ -31396,7 +31595,7 @@ in the spec of package System.Task_Info in the runtime
 library.
 
 @node package System Task_Info s-tasinf ads,,pragma Task_Info,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features package-system-task-info}@anchor{474}@anchor{gnat_rm/obsolescent_features package-system-task-info-s-tasinf-ads}@anchor{475}
+@anchor{gnat_rm/obsolescent_features package-system-task-info}@anchor{479}@anchor{gnat_rm/obsolescent_features package-system-task-info-s-tasinf-ads}@anchor{47a}
 @section package System.Task_Info (@code{s-tasinf.ads})
 
 
@@ -31406,7 +31605,7 @@ to support the @code{Task_Info} pragma. The predefined Ada package
 standard replacement for GNAT’s @code{Task_Info} functionality.
 
 @node Compatibility and Porting Guide,GNU Free Documentation License,Obsolescent Features,Top
-@anchor{gnat_rm/compatibility_and_porting_guide doc}@anchor{476}@anchor{gnat_rm/compatibility_and_porting_guide compatibility-and-porting-guide}@anchor{17}@anchor{gnat_rm/compatibility_and_porting_guide id1}@anchor{477}
+@anchor{gnat_rm/compatibility_and_porting_guide doc}@anchor{47b}@anchor{gnat_rm/compatibility_and_porting_guide compatibility-and-porting-guide}@anchor{17}@anchor{gnat_rm/compatibility_and_porting_guide id1}@anchor{47c}
 @chapter Compatibility and Porting Guide
 
 
@@ -31428,7 +31627,7 @@ applications developed in other Ada environments.
 @end menu
 
 @node Writing Portable Fixed-Point Declarations,Compatibility with Ada 83,,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide id2}@anchor{478}@anchor{gnat_rm/compatibility_and_porting_guide writing-portable-fixed-point-declarations}@anchor{479}
+@anchor{gnat_rm/compatibility_and_porting_guide id2}@anchor{47d}@anchor{gnat_rm/compatibility_and_porting_guide writing-portable-fixed-point-declarations}@anchor{47e}
 @section Writing Portable Fixed-Point Declarations
 
 
@@ -31550,7 +31749,7 @@ If you follow this scheme you will be guaranteed that your fixed-point
 types will be portable.
 
 @node Compatibility with Ada 83,Compatibility between Ada 95 and Ada 2005,Writing Portable Fixed-Point Declarations,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-ada-83}@anchor{47a}@anchor{gnat_rm/compatibility_and_porting_guide id3}@anchor{47b}
+@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-ada-83}@anchor{47f}@anchor{gnat_rm/compatibility_and_porting_guide id3}@anchor{480}
 @section Compatibility with Ada 83
 
 
@@ -31578,7 +31777,7 @@ following subsections treat the most likely issues to be encountered.
 @end menu
 
 @node Legal Ada 83 programs that are illegal in Ada 95,More deterministic semantics,,Compatibility with Ada 83
-@anchor{gnat_rm/compatibility_and_porting_guide id4}@anchor{47c}@anchor{gnat_rm/compatibility_and_porting_guide legal-ada-83-programs-that-are-illegal-in-ada-95}@anchor{47d}
+@anchor{gnat_rm/compatibility_and_porting_guide id4}@anchor{481}@anchor{gnat_rm/compatibility_and_porting_guide legal-ada-83-programs-that-are-illegal-in-ada-95}@anchor{482}
 @subsection Legal Ada 83 programs that are illegal in Ada 95
 
 
@@ -31678,7 +31877,7 @@ the fix is usually simply to add the @code{(<>)} to the generic declaration.
 @end itemize
 
 @node More deterministic semantics,Changed semantics,Legal Ada 83 programs that are illegal in Ada 95,Compatibility with Ada 83
-@anchor{gnat_rm/compatibility_and_porting_guide id5}@anchor{47e}@anchor{gnat_rm/compatibility_and_porting_guide more-deterministic-semantics}@anchor{47f}
+@anchor{gnat_rm/compatibility_and_porting_guide id5}@anchor{483}@anchor{gnat_rm/compatibility_and_porting_guide more-deterministic-semantics}@anchor{484}
 @subsection More deterministic semantics
 
 
@@ -31706,7 +31905,7 @@ which open select branches are executed.
 @end itemize
 
 @node Changed semantics,Other language compatibility issues,More deterministic semantics,Compatibility with Ada 83
-@anchor{gnat_rm/compatibility_and_porting_guide changed-semantics}@anchor{480}@anchor{gnat_rm/compatibility_and_porting_guide id6}@anchor{481}
+@anchor{gnat_rm/compatibility_and_porting_guide changed-semantics}@anchor{485}@anchor{gnat_rm/compatibility_and_porting_guide id6}@anchor{486}
 @subsection Changed semantics
 
 
@@ -31748,7 +31947,7 @@ covers only the restricted range.
 @end itemize
 
 @node Other language compatibility issues,,Changed semantics,Compatibility with Ada 83
-@anchor{gnat_rm/compatibility_and_porting_guide id7}@anchor{482}@anchor{gnat_rm/compatibility_and_porting_guide other-language-compatibility-issues}@anchor{483}
+@anchor{gnat_rm/compatibility_and_porting_guide id7}@anchor{487}@anchor{gnat_rm/compatibility_and_porting_guide other-language-compatibility-issues}@anchor{488}
 @subsection Other language compatibility issues
 
 
@@ -31781,7 +31980,7 @@ include @code{pragma Interface} and the floating point type attributes
 @end itemize
 
 @node Compatibility between Ada 95 and Ada 2005,Implementation-dependent characteristics,Compatibility with Ada 83,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide compatibility-between-ada-95-and-ada-2005}@anchor{484}@anchor{gnat_rm/compatibility_and_porting_guide id8}@anchor{485}
+@anchor{gnat_rm/compatibility_and_porting_guide compatibility-between-ada-95-and-ada-2005}@anchor{489}@anchor{gnat_rm/compatibility_and_porting_guide id8}@anchor{48a}
 @section Compatibility between Ada 95 and Ada 2005
 
 
@@ -31853,7 +32052,7 @@ can declare a function returning a value from an anonymous access type.
 @end itemize
 
 @node Implementation-dependent characteristics,Compatibility with Other Ada Systems,Compatibility between Ada 95 and Ada 2005,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide id9}@anchor{486}@anchor{gnat_rm/compatibility_and_porting_guide implementation-dependent-characteristics}@anchor{487}
+@anchor{gnat_rm/compatibility_and_porting_guide id9}@anchor{48b}@anchor{gnat_rm/compatibility_and_porting_guide implementation-dependent-characteristics}@anchor{48c}
 @section Implementation-dependent characteristics
 
 
@@ -31876,7 +32075,7 @@ transition from certain Ada 83 compilers.
 @end menu
 
 @node Implementation-defined pragmas,Implementation-defined attributes,,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide id10}@anchor{488}@anchor{gnat_rm/compatibility_and_porting_guide implementation-defined-pragmas}@anchor{489}
+@anchor{gnat_rm/compatibility_and_porting_guide id10}@anchor{48d}@anchor{gnat_rm/compatibility_and_porting_guide implementation-defined-pragmas}@anchor{48e}
 @subsection Implementation-defined pragmas
 
 
@@ -31898,7 +32097,7 @@ avoiding compiler rejection of units that contain such pragmas; they are not
 relevant in a GNAT context and hence are not otherwise implemented.
 
 @node Implementation-defined attributes,Libraries,Implementation-defined pragmas,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide id11}@anchor{48a}@anchor{gnat_rm/compatibility_and_porting_guide implementation-defined-attributes}@anchor{48b}
+@anchor{gnat_rm/compatibility_and_porting_guide id11}@anchor{48f}@anchor{gnat_rm/compatibility_and_porting_guide implementation-defined-attributes}@anchor{490}
 @subsection Implementation-defined attributes
 
 
@@ -31912,7 +32111,7 @@ Ada 83, GNAT supplies the attributes @code{Bit}, @code{Machine_Size} and
 @code{Type_Class}.
 
 @node Libraries,Elaboration order,Implementation-defined attributes,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide id12}@anchor{48c}@anchor{gnat_rm/compatibility_and_porting_guide libraries}@anchor{48d}
+@anchor{gnat_rm/compatibility_and_porting_guide id12}@anchor{491}@anchor{gnat_rm/compatibility_and_porting_guide libraries}@anchor{492}
 @subsection Libraries
 
 
@@ -31941,7 +32140,7 @@ be preferable to retrofit the application using modular types.
 @end itemize
 
 @node Elaboration order,Target-specific aspects,Libraries,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide elaboration-order}@anchor{48e}@anchor{gnat_rm/compatibility_and_porting_guide id13}@anchor{48f}
+@anchor{gnat_rm/compatibility_and_porting_guide elaboration-order}@anchor{493}@anchor{gnat_rm/compatibility_and_porting_guide id13}@anchor{494}
 @subsection Elaboration order
 
 
@@ -31977,7 +32176,7 @@ pragmas either globally (as an effect of the `-gnatE' switch) or locally
 @end itemize
 
 @node Target-specific aspects,,Elaboration order,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide id14}@anchor{490}@anchor{gnat_rm/compatibility_and_porting_guide target-specific-aspects}@anchor{491}
+@anchor{gnat_rm/compatibility_and_porting_guide id14}@anchor{495}@anchor{gnat_rm/compatibility_and_porting_guide target-specific-aspects}@anchor{496}
 @subsection Target-specific aspects
 
 
@@ -31990,10 +32189,10 @@ on the robustness of the original design.  Moreover, Ada 95 (and thus
 Ada 2005 and Ada 2012) are sometimes
 incompatible with typical Ada 83 compiler practices regarding implicit
 packing, the meaning of the Size attribute, and the size of access values.
-GNAT’s approach to these issues is described in @ref{492,,Representation Clauses}.
+GNAT’s approach to these issues is described in @ref{497,,Representation Clauses}.
 
 @node Compatibility with Other Ada Systems,Representation Clauses,Implementation-dependent characteristics,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-other-ada-systems}@anchor{493}@anchor{gnat_rm/compatibility_and_porting_guide id15}@anchor{494}
+@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-other-ada-systems}@anchor{498}@anchor{gnat_rm/compatibility_and_porting_guide id15}@anchor{499}
 @section Compatibility with Other Ada Systems
 
 
@@ -32036,7 +32235,7 @@ far beyond this minimal set, as described in the next section.
 @end itemize
 
 @node Representation Clauses,Compatibility with HP Ada 83,Compatibility with Other Ada Systems,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide id16}@anchor{495}@anchor{gnat_rm/compatibility_and_porting_guide representation-clauses}@anchor{492}
+@anchor{gnat_rm/compatibility_and_porting_guide id16}@anchor{49a}@anchor{gnat_rm/compatibility_and_porting_guide representation-clauses}@anchor{497}
 @section Representation Clauses
 
 
@@ -32129,7 +32328,7 @@ with thin pointers.
 @end itemize
 
 @node Compatibility with HP Ada 83,,Representation Clauses,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-hp-ada-83}@anchor{496}@anchor{gnat_rm/compatibility_and_porting_guide id17}@anchor{497}
+@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-hp-ada-83}@anchor{49b}@anchor{gnat_rm/compatibility_and_porting_guide id17}@anchor{49c}
 @section Compatibility with HP Ada 83
 
 
@@ -32159,7 +32358,7 @@ extension of package System.
 @end itemize
 
 @node GNU Free Documentation License,Index,Compatibility and Porting Guide,Top
-@anchor{share/gnu_free_documentation_license doc}@anchor{498}@anchor{share/gnu_free_documentation_license gnu-fdl}@anchor{1}@anchor{share/gnu_free_documentation_license gnu-free-documentation-license}@anchor{499}
+@anchor{share/gnu_free_documentation_license doc}@anchor{49d}@anchor{share/gnu_free_documentation_license gnu-fdl}@anchor{1}@anchor{share/gnu_free_documentation_license gnu-free-documentation-license}@anchor{49e}
 @chapter GNU Free Documentation License
 
 

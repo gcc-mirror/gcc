@@ -131,6 +131,154 @@ handler would be visible in this handler.
 
        And as such the second ``A`` declaration is hiding the first one.
 
+Deep delta Aggregates
+---------------------
+
+Ada 2022's delta aggregates are extended to allow deep updates.
+
+A delta aggregate may be used to specify new values for subcomponents of the
+copied base value, instead of only new values for direct components of the
+copied base value. This allows a more compact expression of updated values with
+a single delta aggregate, instead of multiple nested delta aggregates.
+
+The syntax of delta aggregates in the extended version is the following:
+
+Syntax
+^^^^^^
+
+.. code::
+
+   delta_aggregate ::= record_delta_aggregate | array_delta_aggregate
+
+   record_delta_aggregate ::=
+     ( base_expression with delta record_subcomponent_association_list )
+
+   record_subcomponent_association_list ::=
+     record_subcomponent_association {, record_subcomponent_association}
+
+   record_subcomponent_association ::=
+     record_subcomponent_choice_list => expression
+
+   record_subcomponent_choice_list ::=
+     record_subcomponent_choice {'|' record_subcomponent_choice}
+
+   record_subcomponent_choice ::=
+       component_selector_name
+     | record_subcomponent_choice (expression)
+     | record_subcomponent_choice . component_selector_name
+
+   array_delta_aggregate ::=
+       ( base_expression with delta array_component_association_list )
+     | '[' base_expression with delta array_component_association_list ']'
+     | ( base_expression with delta array_subcomponent_association_list )
+     | '[' base_expression with delta array_subcomponent_association_list ']'
+
+   array_subcomponent_association_list ::=
+     array_subcomponent_association {, array_subcomponent_association}
+
+   array_subcomponent_association ::=
+     array_subcomponent_choice_list => expression
+
+   array_subcomponent_choice_list ::=
+     array_subcomponent_choice {'|' array_subcomponent_choice}
+
+   array_subcomponent_choice ::=
+       ( expression )
+     | array_subcomponent_choice (expression)
+     | array_subcomponent_choice . component_selector_name
+
+Legality Rules
+^^^^^^^^^^^^^^
+
+1. For an ``array_delta_aggregate``, the discrete_choice shall not be **others**.
+
+2. For an ``array_delta_aggregate``, the dimensionality of the type of the
+   ``delta_aggregate`` shall be 1.
+
+3. For an ``array_delta_aggregate``, the ``base_expression`` and each
+   expression in every ``array_component_association`` or
+   ``array_subcomponent_association`` shall be of a nonlimited type.
+
+4. For a ``record_delta_aggregate``, no ``record_subcomponent_choices`` that
+   consists of only ``component_selector_names`` shall be the same or a prefix
+   of another record_subcomponent_choice.
+
+5. For an ``array_subcomponent_choice`` or a ``record_subcomponent_choice`` the
+   ``component_selector_name`` shall not be a subcomponent that depends on
+   discriminants of an unconstrained record subtype with defaulted
+   discriminants unless its prefix consists of only
+   ``component_selector_names``.
+
+   [Rationale: As a result of this rule, accessing the subcomponent can only
+   lead to a discriminant check failure if the subcomponent was not present in
+   the object denoted by the base_expression, prior to any update.]
+
+Dynamic Semantics
+^^^^^^^^^^^^^^^^^
+
+The evaluation of a ``delta_aggregate`` begins with the evaluation of the
+``base_expression`` of the delta_aggregate; then that value is used to create
+and initialize the anonymous object of the aggregate. The bounds of the
+anonymous object of an ``array_delta_aggregate`` and the discriminants (if any)
+of the anonymous object of a ``record_delta_aggregate`` are those of the
+``base_expression``.
+
+If a ``record_delta_aggregate`` is of a specific tagged type, its tag is that
+of the specific type; if it is of a class-wide type, its tag is that of the
+base_expression.
+
+For a ``delta_aggregate``, for each ``discrete_choice`` or each subcomponent
+associated with a ``record_subcomponent_associated``,
+``array_component_association`` or ``array_subcomponent_association`` (in the
+order given in the enclosing ``discrete_choice_list`` or
+``subcomponent_association_list``, respectively):
+
+- if the associated subcomponent belongs to a variant, a check is made that the
+  values of the governing discriminants are such that the anonymous object has
+  this component. The exception ``Constraint_Error`` is raised if this check fails.
+
+- if the associated subcomponent is a subcomponent of an array, then for each
+  represented index value (in ascending order, if the ``discrete_choice``
+  represents a range):
+
+    * the index value is converted to the index type of the array type.
+
+    * a check is made that the index value belongs to the index range of the
+      corresponding array part of the anonymous object; ``Constraint_Error`` is
+      raised if this check fails.
+
+    * the expression of the ``record_subcomponent_association``,
+      ``array_component_association`` or ``array_subcomponent_association`` is
+      evaluated, converted to the nominal subtype of the associated subcomponent,
+      and assigned to the corresponding subcomponent of the anonymous object.
+
+Examples
+^^^^^^^^
+
+.. code-block:: ada
+   :linenos:
+
+   declare
+      type Point is record
+         X, Y : Integer;
+      end record;
+
+      type Segment is array (1 .. 2) of Point;
+      type Triangle is array (1 .. 3) of Segment;
+
+      S : Segment := (1 .. 2 => (0, 0));
+      T : Triangle := (1 .. 3 => (1 .. 2 => (0, 0)));
+   begin
+      S := (S with delta (1).X | (2).Y => 12, (1).Y => 15);
+
+      pragma Assert (S (1).X = 12);
+      pragma Assert (S (2).Y = 12);
+      pragma Assert (S (1).Y = 15);
+
+      T := (T with delta (2)(1).Y => 18);
+      pragma Assert (T (2)(1).Y = 18);
+   end;
+
 
 Fixed lower bounds for array types and subtypes
 -----------------------------------------------
