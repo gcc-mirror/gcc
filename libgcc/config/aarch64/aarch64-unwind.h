@@ -53,6 +53,9 @@ typedef enum {
 #define MD_DEMANGLE_RETURN_ADDR(context, fs, addr) \
   aarch64_demangle_return_addr (context, fs, addr)
 
+#define MD_FRAME_LOCAL_REGISTER_P(reg) \
+  aarch64_frame_local_register (reg)
+
 static inline aarch64_ra_signing_method_t
 aarch64_context_ra_state_get (struct _Unwind_Context *context)
 {
@@ -125,6 +128,14 @@ aarch64_arch_extension_frame_init (struct _Unwind_Context *context ATTRIBUTE_UNU
      DW_CFA_AARCH64_negate_ra_state method of controlling RA signing.  */
   fs->regs.how[AARCH64_DWARF_REGNUM_RA_STATE] = REG_ARCHEXT;
   aarch64_fs_ra_state_set (fs, aarch64_ra_no_signing);
+}
+
+/* Before copying the current context to the target context, check whether
+   the register is local to this context and should not be forwarded.  */
+static inline bool
+aarch64_frame_local_register(long reg)
+{
+  return (reg == AARCH64_DWARF_REGNUM_RA_STATE);
 }
 
 /* Do AArch64 private extraction on ADDR_WORD based on context info CONTEXT and

@@ -1423,6 +1423,11 @@ uw_install_context_1 (struct _Unwind_Context *current,
       void *c = (void *) (_Unwind_Internal_Ptr) current->reg[i];
       void *t = (void *) (_Unwind_Internal_Ptr)target->reg[i];
 
+#ifdef MD_FRAME_LOCAL_REGISTER_P
+      if (MD_FRAME_LOCAL_REGISTER_P (i))
+	continue;
+#endif
+
       gcc_assert (current->by_value[i] == 0);
       if (target->by_value[i] && c)
 	{
