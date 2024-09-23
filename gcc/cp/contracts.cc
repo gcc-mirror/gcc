@@ -2472,12 +2472,12 @@ build_contract_wrapper_function (tree fndecl)
   /* no function body at present * */
   DECL_INITIAL (wrapdecl) = error_mark_node;
 
-
-  if (DECL_RESULT (fndecl))
-  {
-        DECL_RESULT (wrapdecl) = copy_decl (DECL_RESULT (fndecl));
-        DECL_CONTEXT (DECL_RESULT (wrapdecl)) = wrapdecl;
-  }
+  /* Build our result decl.  */
+  tree resdecl = build_decl (loc, RESULT_DECL, 0, wrapper_return_type);
+  DECL_CONTEXT (resdecl) = wrapdecl;
+  DECL_ARTIFICIAL (resdecl) = 1;
+  DECL_IGNORED_P (resdecl) = 1;
+  DECL_RESULT (wrapdecl) = resdecl;
 
   /* Copy the function parameters.  */
   tree last = DECL_ARGUMENTS (wrapdecl) = copy_decl (DECL_ARGUMENTS (fndecl));
@@ -2556,13 +2556,19 @@ set_contract_wrapper_function (tree decl, tree wrapper)
 tree
 maybe_contract_wrap_new_method_call (tree fndecl, tree call)
 {
+  /* We can be called from build_cxx_call without a known callee... */
+  if (!fndecl)
+    return call;
 
-  if (fndecl == error_mark_node) return fndecl;
+  if (fndecl == error_mark_node || call == error_mark_node)
+    return error_mark_node;
 
   /* We only need to wrap the function if it's a virtual function  */
-  if (!flag_contracts_nonattr || !handle_contracts_p (fndecl)
+  if (!flag_contracts_nonattr
+      || !handle_contracts_p (fndecl)
+      || !DECL_IOBJ_MEMBER_FUNCTION_P (fndecl)
       || !DECL_VIRTUAL_P (fndecl))
-      return call;
+    return call;
 
   bool do_pre = has_active_preconditions (fndecl);
   bool do_post = has_active_postconditions (fndecl);
@@ -2632,13 +2638,10 @@ bool define_contract_wrapper_func(const tree& fndecl, const tree& wrapdecl, void
 			    args->address ());
 
   if (!VOID_TYPE_P (return_type))
-    {
-      tree r = build_cplus_new(return_type, call, tf_warning_or_error);
-      finish_return_stmt (r);
-    }
-  else {
-      finish_return_stmt (NULL_TREE);
-  }
+    finish_return_stmt (call);
+  else
+    finish_return_stmt (NULL_TREE);
+
   finish_compound_stmt (compound_stmt);
   finish_function_body (body);
   expand_or_defer_fn (finish_function (/*inline_p=*/false));
