@@ -549,70 +549,6 @@ DefaultResolver::visit (AST::MetaListNameValueStr &)
 {}
 
 void
-DefaultResolver::visit (AST::RangePatternBoundPath &)
-{}
-
-void
-DefaultResolver::visit (AST::RangePatternBoundQualPath &)
-{}
-
-void
-DefaultResolver::visit (AST::RangePattern &)
-{}
-
-void
-DefaultResolver::visit (AST::ReferencePattern &)
-{}
-
-void
-DefaultResolver::visit (AST::StructPatternFieldTuplePat &)
-{}
-
-void
-DefaultResolver::visit (AST::StructPatternFieldIdentPat &)
-{}
-
-void
-DefaultResolver::visit (AST::StructPatternFieldIdent &)
-{}
-
-void
-DefaultResolver::visit (AST::StructPattern &)
-{}
-
-void
-DefaultResolver::visit (AST::TupleStructItemsNoRange &)
-{}
-
-void
-DefaultResolver::visit (AST::TupleStructItemsRange &)
-{}
-
-void
-DefaultResolver::visit (AST::TupleStructPattern &)
-{}
-
-void
-DefaultResolver::visit (AST::TuplePatternItemsMultiple &)
-{}
-
-void
-DefaultResolver::visit (AST::TuplePatternItemsRanged &)
-{}
-
-void
-DefaultResolver::visit (AST::TuplePattern &)
-{}
-
-void
-DefaultResolver::visit (AST::GroupedPattern &)
-{}
-
-void
-DefaultResolver::visit (AST::SlicePattern &)
-{}
-
-void
 DefaultResolver::visit (AST::AltPattern &)
 {}
 
@@ -633,31 +569,11 @@ DefaultResolver::visit (AST::TraitObjectType &)
 {}
 
 void
-DefaultResolver::visit (AST::ParenthesisedType &)
-{}
-
-void
 DefaultResolver::visit (AST::ImplTraitTypeOneBound &)
 {}
 
 void
 DefaultResolver::visit (AST::TraitObjectTypeOneBound &)
-{}
-
-void
-DefaultResolver::visit (AST::TupleType &)
-{}
-
-void
-DefaultResolver::visit (AST::ReferenceType &)
-{}
-
-void
-DefaultResolver::visit (AST::ArrayType &)
-{}
-
-void
-DefaultResolver::visit (AST::SliceType &)
 {}
 
 void
