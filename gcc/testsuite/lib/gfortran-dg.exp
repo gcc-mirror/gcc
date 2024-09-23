@@ -160,6 +160,7 @@ proc gfortran-dg-runtest { testcases flags default-extra-flags } {
 	foreach flags_t $option_list {
 	    verbose "Testing $nshort, $flags $flags_t" 1
 	    dg-test $test "$flags $flags_t" ${default-extra-flags}
+	    fortran-delete-unit-files $test
 	    cleanup-modules ""
 	}
     }
