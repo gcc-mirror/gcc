@@ -3316,6 +3316,9 @@ GOMP_OFFLOAD_get_name (void)
   return "gcn";
 }
 
+/* Return the UID; if not available return NULL.
+   Returns freshly allocated memoy.  */
+
 const char *
 GOMP_OFFLOAD_get_uid (int ord)
 {
@@ -3328,7 +3331,10 @@ GOMP_OFFLOAD_get_uid (int ord)
   status = hsa_fns.hsa_agent_get_info_fn (agent->id, HSA_AMD_AGENT_INFO_UUID,
 					  str);
   if (status != HSA_STATUS_SUCCESS)
-    hsa_fatal ("Could not obtain device UUID", status);
+    {
+      free (str);
+      return NULL;
+    }
   return str;
 }
 

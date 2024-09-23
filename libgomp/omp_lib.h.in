@@ -612,10 +612,9 @@
       end interface
 
       interface
-!       Note: In gfortran, strings are \0 termined
-        integer(c_int) function omp_get_device_from_uid(uid) bind(C)
+        integer(c_int) function omp_get_device_from_uid (uid)
           use iso_c_binding
-          character(c_char), intent(in) :: uid(*)
+          character, intent(in) :: uid(*)
         end function omp_get_device_from_uid
       end interface
 

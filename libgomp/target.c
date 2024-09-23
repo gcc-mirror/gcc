@@ -5268,8 +5268,11 @@ omp_get_device_from_uid (const char *uid)
   if (strcmp (uid, str_omp_initial_device) == 0)
     return omp_initial_device;
   for (int dev = 0; dev < gomp_get_num_devices (); dev++)
-    if (strcmp (uid, gomp_get_uid_for_device (&devices[dev], dev)) == 0)
-      return dev;
+    {
+      struct gomp_device_descr *devicep = resolve_device (dev, false);
+      if (strcmp (uid, gomp_get_uid_for_device (devicep, dev)) == 0)
+	return dev;
+    }
   return omp_invalid_device;
 }
 

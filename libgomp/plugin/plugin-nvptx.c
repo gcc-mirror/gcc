@@ -1242,6 +1242,9 @@ GOMP_OFFLOAD_get_name (void)
   return "nvptx";
 }
 
+/* Return the UID; if not available return NULL.
+   Returns freshly allocated memoy.  */
+
 const char *
 GOMP_OFFLOAD_get_uid (int ord)
 {
@@ -1254,9 +1257,9 @@ GOMP_OFFLOAD_get_uid (int ord)
   else if (CUDA_CALL_EXISTS (cuDeviceGetUuid))
     r = CUDA_CALL_NOCHECK (cuDeviceGetUuid, &s, dev->dev);
   else
-    r = CUDA_ERROR_NOT_FOUND;
+    return NULL;
   if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuDeviceGetUuid error: %s", cuda_error (r));
+    NULL;
 
   size_t len = strlen ("GPU-12345678-9abc-defg-hijk-lmniopqrstuv");
   char *str = (char *) GOMP_PLUGIN_malloc (len + 1);
