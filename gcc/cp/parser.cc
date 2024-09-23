@@ -25982,10 +25982,15 @@ cp_parser_parameter_declaration (cp_parser *parser,
 
   bool xobj_param_p
     = decl_spec_seq_has_spec_p (&decl_specifiers, ds_this);
-  if (xobj_param_p && template_parm_p)
+  if (xobj_param_p
+      && (template_parm_p || current_binding_level->requires_expression))
     {
-      error_at (decl_specifiers.locations[ds_this],
-		"%<this%> specifier in template parameter declaration");
+      if (template_parm_p)
+	error_at (decl_specifiers.locations[ds_this],
+		  "%<this%> specifier in template parameter declaration");
+      else
+	error_at (decl_specifiers.locations[ds_this],
+		  "%<this%> specifier in a requires-expression parameter");
       xobj_param_p = false;
       decl_specifiers.locations[ds_this] = 0;
     }
