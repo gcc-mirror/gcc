@@ -899,7 +899,10 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    and give entire struct the alignment of an int.  */
 /* Required on the 386 since it doesn't have bit-field insns.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
-
+
+#define VECTOR_STORE_FLAG_VALUE(MODE) \
+  (GET_MODE_CLASS (MODE) == MODE_VECTOR_INT ? constm1_rtx : NULL_RTX)
+
 /* Standard register usage.  */
 
 /* This processor has special stack-like registers.  See reg-stack.cc
