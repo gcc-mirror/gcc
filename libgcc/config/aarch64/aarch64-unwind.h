@@ -25,6 +25,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (AARCH64_UNWIND_H) && !defined (__ILP32__)
 #define AARCH64_UNWIND_H
 
+#include "aarch64-unwind-def.h"
+
 #include "ansidecl.h"
 #include <stdbool.h>
 
@@ -37,12 +39,6 @@ typedef enum
   aarch64_ra_no_signing = 0x0,
   aarch64_ra_signing_sp = 0x1,
 } __attribute__((packed)) aarch64_ra_signing_method_t;
-
-/* The key used to sign a function's return address.  */
-typedef enum {
-  AARCH64_PAUTH_KEY_A,
-  AARCH64_PAUTH_KEY_B,
-} __attribute__((packed)) aarch64_pointer_auth_key;
 
 #define MD_ARCH_EXTENSION_CIE_AUG_HANDLER(fs, aug) \
   aarch64_cie_aug_handler (fs, aug)
@@ -100,7 +96,7 @@ aarch64_cie_aug_handler (_Unwind_FrameState *fs, unsigned char aug)
   /* AArch64 B-key pointer authentication.  */
   if (aug == 'B')
     {
-      fs->regs.signing_key = AARCH64_PAUTH_KEY_B;
+      fs->regs.arch_fs.signing_key = AARCH64_PAUTH_KEY_B;
       return true;
     }
   return false;
@@ -119,7 +115,7 @@ aarch64_arch_extension_frame_init (struct _Unwind_Context *context ATTRIBUTE_UNU
   /* By default, DW_CFA_AARCH64_negate_ra_state assumes key A is being used
      for signing.  This can be overridden by adding 'B' to the augmentation
      string.  */
-  fs->regs.signing_key = AARCH64_PAUTH_KEY_A;
+  fs->regs.arch_fs.signing_key = AARCH64_PAUTH_KEY_A;
 
   /* All registers are initially in state REG_UNSAVED, which indicates that
      they inherit register values from the previous frame.  However, the
@@ -174,7 +170,7 @@ aarch64_demangle_return_addr (struct _Unwind_Context *context,
   if (signing_method == aarch64_ra_signing_sp)
     {
       _Unwind_Word salt = (_Unwind_Word) context->cfa;
-      if (fs->regs.signing_key == AARCH64_PAUTH_KEY_B)
+      if (fs->regs.arch_fs.signing_key == AARCH64_PAUTH_KEY_B)
 	return __builtin_aarch64_autib1716 (addr, salt);
       return __builtin_aarch64_autia1716 (addr, salt);
     }

@@ -22,6 +22,8 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#include "md-unwind-def.h"
+
 enum register_rule
 {
   REG_UNSAVED,
@@ -71,8 +73,8 @@ typedef struct
        Note: this information has to be saved in struct frame_state_reg_info
        instead of _Unwind_FrameState as DW_CFA_restore_state has to be able to
        restore them.  */
-#if defined(__aarch64__) && !defined (__ILP32__)
-    unsigned char signing_key;
+#if defined(MD_ARCH_FRAME_STATE_T)
+    MD_ARCH_FRAME_STATE_T arch_fs;
 #endif
   } regs;
 

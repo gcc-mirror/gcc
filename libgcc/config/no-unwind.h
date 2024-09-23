@@ -1,2 +1,3 @@
 /* Dummy header for targets without a definition of
-   MD_FALLBACK_FRAME_STATE_FOR.  */
+   architecture-specific frame information types, or
+   handlers used in the unwinder.  */
