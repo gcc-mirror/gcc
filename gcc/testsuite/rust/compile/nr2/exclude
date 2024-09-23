@@ -4,9 +4,6 @@ debug-diagnostics-on.rs
 
 # main list
 all-cast.rs
-array3.rs
-arrays1.rs
-arrays2.rs
 attr-mismatch-crate-name.rs
 attr_deprecated.rs
 attr_deprecated_2.rs
@@ -37,11 +34,8 @@ complex-path1.rs
 complex_qualified_path_in_expr.rs
 const-issue1440.rs
 const1.rs
-const10.rs
 const3.rs
 const4.rs
-const5.rs
-const6.rs
 const8.rs
 const9.rs
 const_generics_1.rs
@@ -84,13 +78,11 @@ infer-crate-name.rs
 issue-1005.rs
 issue-1006.rs
 issue-1019.rs
-issue-1023.rs
 issue-1031.rs
 issue-1034.rs
 issue-1073.rs
 issue-1089.rs
 issue-1128.rs
-issue-1129-1.rs
 issue-1129-2.rs
 issue-1130.rs
 issue-1131.rs
@@ -99,7 +91,6 @@ issue-1165.rs
 issue-1173.rs
 issue-1235.rs
 issue-1237.rs
-issue-1271.rs
 issue-1272.rs
 issue-1289.rs
 issue-1383.rs
@@ -118,7 +109,6 @@ issue-1981.rs
 issue-2019-1.rs
 issue-2019-2.rs
 issue-2019-3.rs
-issue-2029.rs
 issue-2036.rs
 issue-2037.rs
 issue-2039.rs
@@ -154,7 +144,6 @@ issue-2747.rs
 issue-2782.rs
 issue-2788.rs
 issue-2812.rs
-issue-2847-b.rs
 issue-850.rs
 issue-852.rs
 issue-855.rs
@@ -214,7 +203,6 @@ privacy4.rs
 privacy5.rs
 privacy6.rs
 privacy8.rs
-privacy9.rs
 macros/proc/attribute_non_function.rs
 macros/proc/attribute_non_root_method.rs
 macros/proc/derive_non_function.rs
@@ -228,8 +216,6 @@ redef_error2.rs
 redef_error4.rs
 redef_error5.rs
 redef_error6.rs
-ref_pattern_fn_param2.rs
-reference1.rs
 rustc_attr1.rs
 self-path1.rs
 self-path2.rs
@@ -251,8 +237,6 @@ traits6.rs
 traits7.rs
 traits8.rs
 traits9.rs
-tuple1.rs
-tuple_mismatch.rs
 tuple_struct1.rs
 type-alias1.rs
 type-bindings1.rs
