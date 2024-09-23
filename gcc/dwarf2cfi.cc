@@ -57,6 +57,15 @@ along with GCC; see the file COPYING3.  If not see
 #define DEFAULT_INCOMING_FRAME_SP_OFFSET INCOMING_FRAME_SP_OFFSET
 #endif
 
+
+/* Signing method used for return address authentication.
+   (AArch64 extension)  */
+typedef enum
+{
+  ra_no_signing = 0x0,
+  ra_signing_sp = 0x1,
+} ra_signing_method_t;
+
 /* A collected description of an entire row of the abstract CFI table.  */
 struct GTY(()) dw_cfi_row
 {
@@ -74,8 +83,8 @@ struct GTY(()) dw_cfi_row
   bool window_save;
 
   /* AArch64 extension for DW_CFA_AARCH64_negate_ra_state.
-     True if the return address is in a mangled state.  */
-  bool ra_mangled;
+     Enum which stores the return address state.  */
+  ra_signing_method_t ra_state;
 };
 
 /* The caller's ORIG_REG is saved in SAVED_IN_REG.  */
@@ -857,7 +866,7 @@ cfi_row_equal_p (dw_cfi_row *a, dw_cfi_row *b)
   if (a->window_save != b->window_save)
     return false;
 
-  if (a->ra_mangled != b->ra_mangled)
+  if (a->ra_state != b->ra_state)
     return false;
 
   return true;
@@ -1554,8 +1563,11 @@ dwarf2out_frame_debug_cfa_negate_ra_state (void)
 {
   dw_cfi_ref cfi = new_cfi ();
   cfi->dw_cfi_opc = DW_CFA_AARCH64_negate_ra_state;
+  cur_row->ra_state
+    = (cur_row->ra_state == ra_no_signing
+      ? ra_signing_sp
+      : ra_no_signing);
   add_cfi (cfi);
-  cur_row->ra_mangled = !cur_row->ra_mangled;
 }
 
 /* Record call frame debugging information for an expression EXPR,
@@ -2412,12 +2424,12 @@ change_cfi_row (dw_cfi_row *old_row, dw_cfi_row *new_row)
     {
       dw_cfi_ref cfi = new_cfi ();
 
-      gcc_assert (!old_row->ra_mangled && !new_row->ra_mangled);
+      gcc_assert (!old_row->ra_state && !new_row->ra_state);
       cfi->dw_cfi_opc = DW_CFA_GNU_window_save;
       add_cfi (cfi);
     }
 
-  if (old_row->ra_mangled != new_row->ra_mangled)
+  if (old_row->ra_state != new_row->ra_state)
     {
       dw_cfi_ref cfi = new_cfi ();
 
