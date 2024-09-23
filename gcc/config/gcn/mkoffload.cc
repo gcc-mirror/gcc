@@ -613,6 +613,12 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
   struct oaccdims *dims = XOBFINISH (&dims_os, struct oaccdims *);
   struct regcount *regcounts = XOBFINISH (&regcounts_os, struct regcount *);
 
+  if (gcn_stack_size)
+    {
+      fprintf (cfile, "#include <stdlib.h>\n");
+      fprintf (cfile, "#include <stdbool.h>\n\n");
+    }
+
   fprintf (cfile, "static const int gcn_num_vars = %d;\n\n", var_count);
   fprintf (cfile, "static const int gcn_num_ind_funcs = %d;\n\n", ind_fn_count);
 
