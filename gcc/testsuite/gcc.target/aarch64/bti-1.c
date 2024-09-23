@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* -Os to create jump table.  */
-/* { dg-options "-Os" } */
+/* { dg-options "-Os -dA" } */
 /* { dg-require-effective-target lp64 } */
 /* If configured with --enable-standard-branch-protection, don't use
    command line option.  */
@@ -44,8 +44,8 @@ f_jump_table (int y, int n)
   return (y == 0)? y+1:4;
 }
 /* f_jump_table should have PACIASP and AUTIASP.  */
-/* { dg-final { scan-assembler-times "hint\t25" 1 } } */
-/* { dg-final { scan-assembler-times "hint\t29" 1 } } */
+/* { dg-final { scan-assembler-times "hint\t25 // paciasp" 1 } } */
+/* { dg-final { scan-assembler-times "hint\t29 // autiasp" 1 } } */
 
 int
 f_label_address ()
@@ -59,6 +59,7 @@ lab2:
   addr = &&lab1;
   return 2;
 }
-/* { dg-final { scan-assembler-times "hint\t34" 1 } } */
-/* { dg-final { scan-assembler-times "hint\t36" 12 } } */
-/* { dg-final { scan-assembler ".note.gnu.property" { target *-*-linux* } } } */
+/* { dg-final { scan-assembler-times "hint\t34 // bti c" 1 } } */
+/* { dg-final { scan-assembler-times "hint\t36 // bti j" 12 } } */
+/* { dg-final { scan-assembler "\.section\t\.note\.gnu\.property" { target *-*-linux* } } } */
+/* { dg-final { scan-assembler "\.word\t0x7\t\/\/ GNU_PROPERTY_AARCH64_FEATURE_1_AND \\(BTI, PAC, GCS\\)" { target *-*-linux* } } } */

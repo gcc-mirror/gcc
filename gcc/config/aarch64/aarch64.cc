@@ -30006,10 +30006,41 @@ aarch64_file_end_indicate_exec_stack ()
 	 type   = GNU_PROPERTY_AARCH64_FEATURE_1_AND
 	 datasz = 4
 	 data   = feature_1_and.  */
-      assemble_integer (GEN_INT (GNU_PROPERTY_AARCH64_FEATURE_1_AND), 4, 32, 1);
+      fputs (integer_asm_op (4, true), asm_out_file);
+      fprint_whex (asm_out_file, GNU_PROPERTY_AARCH64_FEATURE_1_AND);
+      putc ('\n', asm_out_file);
       assemble_integer (GEN_INT (4), 4, 32, 1);
-      assemble_integer (GEN_INT (feature_1_and), 4, 32, 1);
 
+      fputs (integer_asm_op (4, true), asm_out_file);
+      fprint_whex (asm_out_file, feature_1_and);
+      if (flag_debug_asm)
+	{
+	  struct flag_name
+	  {
+	    unsigned int mask;
+	    const char *name;
+	  };
+	  static const flag_name flags[] = {
+	    { GNU_PROPERTY_AARCH64_FEATURE_1_BTI, "BTI" },
+	    { GNU_PROPERTY_AARCH64_FEATURE_1_PAC, "PAC" },
+	    { GNU_PROPERTY_AARCH64_FEATURE_1_GCS, "GCS" },
+	  };
+
+	  const char *separator = "";
+	  std::string s_features;
+	  for (auto &flag : flags)
+	    if (feature_1_and & flag.mask)
+	      {
+		s_features.append (separator).append (flag.name);
+		separator = ", ";
+	      }
+
+	  asm_fprintf (asm_out_file,
+		       "\t%s GNU_PROPERTY_AARCH64_FEATURE_1_AND (%s)\n",
+		       ASM_COMMENT_START, s_features.c_str ());
+	}
+      else
+	putc ('\n', asm_out_file);
       /* Pad the size of the note to the required alignment.  */
       assemble_align (POINTER_SIZE);
     }
