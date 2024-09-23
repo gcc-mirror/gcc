@@ -1312,6 +1312,12 @@
    (V8HF "w") (V8BF "w") (V4SF "k") (V2DF "q")
    (HF "w") (BF "w") (SF "k") (DF "q")])
 
+;; Pointer size override for 16-bit upper-convert modes (Intel asm dialect)
+(define_mode_attr iptrh
+ [(V32HI "") (V16SI "") (V8DI "")
+  (V16HI "") (V8SI "") (V4DI "q")
+  (V8HI "") (V4SI "q") (V2DI "k")])
+
 ;; Mapping of vector modes to VPTERNLOG suffix
 (define_mode_attr ternlogsuffix
   [(V8DI "q") (V4DI "q") (V2DI "q")
@@ -7606,7 +7612,7 @@
 	   [(match_operand:<ssePHmode> 1 "<round_nimm_predicate>" "<round_constraint>")]
 	   UNSPEC_US_FIX_NOTRUNC))]
   "TARGET_AVX512FP16 && <round_mode_condition>"
-  "vcvtph2<sseintconvertsignprefix><sseintconvert>\t{<round_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_mask_op2>}"
+  "vcvtph2<sseintconvertsignprefix><sseintconvert>\t{<round_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %<iptrh>1<round_mask_op2>}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
@@ -29840,7 +29846,7 @@
 	    UNSPEC_FPCLASS)
 	  (const_int 1)))]
    "TARGET_AVX512DQ || VALID_AVX512FP16_REG_MODE(<MODE>mode)"
-   "vfpclass<ssescalarmodesuffix>\t{%2, %1, %0<mask_scalar_merge_operand3>|%0<mask_scalar_merge_operand3>, %1, %2}";
+   "vfpclass<ssescalarmodesuffix>\t{%2, %1, %0<mask_scalar_merge_operand3>|%0<mask_scalar_merge_operand3>, %<iptr>1, %2}";
   [(set_attr "type" "sse")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "evex")
