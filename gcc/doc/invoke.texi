@@ -22716,9 +22716,7 @@ the case.
 
 @opindex mlra
 @item -mlra
-Enable Local Register Allocation.  This is still experimental for ARC,
-so by default the compiler uses standard reload
-(i.e.@: @option{-mno-lra}).
+Does nothing.  Preserved for backward compatibility.
 
 @opindex mlra-priority-none
 @item -mlra-priority-none

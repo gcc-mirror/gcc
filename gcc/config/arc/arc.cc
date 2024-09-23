@@ -721,7 +721,7 @@ static rtx arc_legitimize_address_0 (rtx, rtx, machine_mode mode);
   arc_no_speculation_in_delay_slots_p
 
 #undef TARGET_LRA_P
-#define TARGET_LRA_P arc_lra_p
+#define TARGET_LRA_P hook_bool_void_true
 #define TARGET_REGISTER_PRIORITY arc_register_priority
 /* Stores with scaled offsets have different displacement ranges.  */
 #define TARGET_DIFFERENT_ADDR_DISPLACEMENT_P hook_bool_void_true
@@ -10154,14 +10154,6 @@ arc_eh_uses (int regno)
   if (regno == arc_tp_regno)
     return true;
   return false;
-}
-
-/* Return true if we use LRA instead of reload pass.  */
-
-bool
-arc_lra_p (void)
-{
-  return arc_lra_flag;
 }
 
 /* ??? Should we define TARGET_REGISTER_PRIORITY?  We might perfer to
