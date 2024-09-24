@@ -3445,6 +3445,7 @@ update_ssa (unsigned update_flags)
   blocks_with_phis_to_rewrite = BITMAP_ALLOC (NULL);
   bitmap_tree_view (blocks_with_phis_to_rewrite);
   blocks_to_update = BITMAP_ALLOC (NULL);
+  bitmap_tree_view (blocks_to_update);
 
   insert_phi_p = (update_flags != TODO_update_ssa_no_phi);
 
@@ -3492,6 +3493,8 @@ update_ssa (unsigned update_flags)
 	 placement heuristics.  */
       prepare_block_for_update (start_bb, insert_phi_p);
 
+      bitmap_list_view (blocks_to_update);
+
       tree name;
 
       if (flag_checking)
@@ -3517,6 +3520,8 @@ update_ssa (unsigned update_flags)
     }
   else
     {
+      bitmap_list_view (blocks_to_update);
+
       /* Otherwise, the entry block to the region is the nearest
 	 common dominator for the blocks in BLOCKS.  */
       start_bb = nearest_common_dominator_for_set (CDI_DOMINATORS,
