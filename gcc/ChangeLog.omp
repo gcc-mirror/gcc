@@ -1,6 +1,14 @@
 2025-02-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2024-09-24  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+		    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/104957
+	* config/nvptx/nvptx.cc (nvptx_asm_output_def_from_decls): Use
+	cgraph_node::get(name)->ultimate_alias_target instead of value.
+
+	Backported from trunk:
 	2024-09-05  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR target/104957

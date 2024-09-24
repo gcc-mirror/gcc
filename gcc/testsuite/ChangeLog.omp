@@ -1,6 +1,13 @@
 2025-02-18  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from trunk:
+	2024-09-24  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+		    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/104957
+	* gcc.target/nvptx/alias-to-alias-1.c: Adjust.
+
+	Backported from trunk:
 	2024-09-05  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR target/104957
