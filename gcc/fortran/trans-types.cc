@@ -1651,7 +1651,12 @@ gfc_get_dtype_rank_type (int rank, tree etype)
 	  && TYPE_STRING_FLAG (ptype))
 	n = BT_CHARACTER;
       else
-	n = BT_INTEGER;
+	{
+	  if (TYPE_UNSIGNED (etype))
+	    n = BT_UNSIGNED;
+	  else
+	    n = BT_INTEGER;
+	}
       break;
 
     case BOOLEAN_TYPE:

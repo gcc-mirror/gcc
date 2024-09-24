@@ -3973,9 +3973,9 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
 
     case INTRINSIC_DIVIDE:
       /* If expr is a real or complex expr, use an RDIV_EXPR. If op1 is
-         an integer, we must round towards zero, so we use a
+	 an integer or unsigned, we must round towards zero, so we use a
          TRUNC_DIV_EXPR.  */
-      if (expr->ts.type == BT_INTEGER)
+      if (expr->ts.type == BT_INTEGER || expr->ts.type == BT_UNSIGNED)
 	code = TRUNC_DIV_EXPR;
       else
 	code = RDIV_EXPR;

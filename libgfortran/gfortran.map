@@ -1777,4 +1777,14 @@ GFORTRAN_15 {
     _gfortran_internal_unpack_class;
     _gfortran_transfer_unsigned;
     _gfortran_transfer_unsigned_write;
+    _gfortran_random_m1;
+    _gfortran_random_m2;
+    _gfortran_random_m4;
+    _gfortran_random_m8;
+    _gfortran_random_m16;
+    _gfortran_arandom_m1;
+    _gfortran_arandom_m2;
+    _gfortran_arandom_m4;
+    _gfortran_arandom_m8;
+    _gfortran_arandom_m16;
 } GFORTRAN_14;

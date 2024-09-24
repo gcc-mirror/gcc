@@ -7007,8 +7007,14 @@ gfc_check_random_init (gfc_expr *repeatable, gfc_expr *image_distinct)
 bool
 gfc_check_random_number (gfc_expr *harvest)
 {
-  if (!type_check (harvest, 0, BT_REAL))
-    return false;
+  if (flag_unsigned)
+    {
+      if (!type_check2 (harvest, 0, BT_REAL, BT_UNSIGNED))
+	return false;
+    }
+  else
+    if (!type_check (harvest, 0, BT_REAL))
+      return false;
 
   if (!variable_check (harvest, 0, false))
     return false;
