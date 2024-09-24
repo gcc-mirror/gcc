@@ -12748,7 +12748,7 @@ ix86_expand_round_builtin (const struct builtin_description *d,
 	      /* Skip erasing embedded rounding for below expanders who
 		 generates multiple insns.  In ix86_erase_embedded_rounding
 		 the pattern will be transformed to a single set, and emit_insn
-		 appends the set insead of insert it to chain.  So the insns
+		 appends the set instead of insert it to chain.  So the insns
 		 emitted inside define_expander would be ignored.  */
 	      switch (icode)
 		{
