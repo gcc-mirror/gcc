@@ -1066,7 +1066,8 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
 			IDENTIFIER_POINTER (gfc_sym_mangled_identifier (sym))));
 	  token = build_decl (DECL_SOURCE_LOCATION (decl), VAR_DECL, token_name,
 			      token_type);
-	  if (sym->attr.use_assoc)
+	  if (sym->attr.use_assoc
+	      || (sym->attr.host_assoc && sym->attr.used_in_submodule))
 	    DECL_EXTERNAL (token) = 1;
 	  else
 	    TREE_STATIC (token) = 1;
@@ -1091,9 +1092,11 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
 
       if (sym->module && !sym->attr.use_assoc)
 	{
+	  module_htab_entry *mod
+	    = cur_module ? cur_module : gfc_find_module (sym->module);
 	  pushdecl (token);
 	  DECL_CONTEXT (token) = sym->ns->proc_name->backend_decl;
-	  gfc_module_add_decl (cur_module, token);
+	  gfc_module_add_decl (mod, token);
 	}
       else if (sym->attr.host_assoc
 	       && TREE_CODE (DECL_CONTEXT (current_function_decl))
