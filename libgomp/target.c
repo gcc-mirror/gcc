@@ -2454,6 +2454,12 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
       array->right = NULL;
       splay_tree_insert (&devicep->mem_map, array);
       array++;
+
+      if (is_link_var
+	  && (omp_requires_mask
+	      & (GOMP_REQUIRES_UNIFIED_SHARED_MEMORY | GOMP_REQUIRES_SELF_MAPS)))
+	gomp_copy_host2dev (devicep, NULL, (void *) target_var->start,
+			    &k->host_start, sizeof (void *), false, NULL);
     }
 
   /* Last entry is for the ICV struct variable; if absent, start = end = 0.  */
