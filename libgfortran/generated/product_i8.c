@@ -26,24 +26,24 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 
 
-#if defined (HAVE_GFC_INTEGER_8) && defined (HAVE_GFC_INTEGER_8)
+#if defined (HAVE_GFC_UINTEGER_8) && defined (HAVE_GFC_UINTEGER_8)
 
 
-extern void product_i8 (gfc_array_i8 * const restrict, 
-	gfc_array_i8 * const restrict, const index_type * const restrict);
+extern void product_i8 (gfc_array_m8 * const restrict,
+	gfc_array_m8 * const restrict, const index_type * const restrict);
 export_proto(product_i8);
 
 void
-product_i8 (gfc_array_i8 * const restrict retarray, 
-	gfc_array_i8 * const restrict array, 
+product_i8 (gfc_array_m8 * const restrict retarray,
+	gfc_array_m8 * const restrict array,
 	const index_type * const restrict pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
-  const GFC_INTEGER_8 * restrict base;
-  GFC_INTEGER_8 * restrict dest;
+  const GFC_UINTEGER_8 * restrict base;
+  GFC_UINTEGER_8 * restrict dest;
   index_type rank;
   index_type n;
   index_type len;
@@ -104,7 +104,7 @@ product_i8 (gfc_array_i8 * const restrict retarray,
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
-      retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_INTEGER_8));
+      retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_UINTEGER_8));
       if (alloc_size == 0)
 	return;
     }
@@ -135,8 +135,8 @@ product_i8 (gfc_array_i8 * const restrict retarray,
   continue_loop = 1;
   while (continue_loop)
     {
-      const GFC_INTEGER_8 * restrict src;
-      GFC_INTEGER_8 result;
+      const GFC_UINTEGER_8 * restrict src;
+      GFC_UINTEGER_8 result;
       src = base;
       {
 
@@ -188,15 +188,15 @@ product_i8 (gfc_array_i8 * const restrict retarray,
 }
 
 
-extern void mproduct_i8 (gfc_array_i8 * const restrict, 
-	gfc_array_i8 * const restrict, const index_type * const restrict,
+extern void mproduct_i8 (gfc_array_m8 * const restrict,
+	gfc_array_m8 * const restrict, const index_type * const restrict,
 	gfc_array_l1 * const restrict);
 export_proto(mproduct_i8);
 
 void
-mproduct_i8 (gfc_array_i8 * const restrict retarray, 
-	gfc_array_i8 * const restrict array, 
-	const index_type * const restrict pdim, 
+mproduct_i8 (gfc_array_m8 * const restrict retarray,
+	gfc_array_m8 * const restrict array,
+	const index_type * const restrict pdim,
 	gfc_array_l1 * const restrict mask)
 {
   index_type count[GFC_MAX_DIMENSIONS];
@@ -204,8 +204,8 @@ mproduct_i8 (gfc_array_i8 * const restrict retarray,
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
   index_type mstride[GFC_MAX_DIMENSIONS];
-  GFC_INTEGER_8 * restrict dest;
-  const GFC_INTEGER_8 * restrict base;
+  GFC_UINTEGER_8 * restrict dest;
+  const GFC_UINTEGER_8 * restrict base;
   const GFC_LOGICAL_1 * restrict mbase;
   index_type rank;
   index_type dim;
@@ -296,7 +296,7 @@ mproduct_i8 (gfc_array_i8 * const restrict retarray,
       retarray->offset = 0;
       retarray->dtype.rank = rank;
 
-      retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_INTEGER_8));
+      retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_UINTEGER_8));
       if (alloc_size == 0)
 	return;
     }
@@ -327,9 +327,9 @@ mproduct_i8 (gfc_array_i8 * const restrict retarray,
 
   while (base)
     {
-      const GFC_INTEGER_8 * restrict src;
+      const GFC_UINTEGER_8 * restrict src;
       const GFC_LOGICAL_1 * restrict msrc;
-      GFC_INTEGER_8 result;
+      GFC_UINTEGER_8 result;
       src = base;
       msrc = mbase;
       {
@@ -378,21 +378,21 @@ mproduct_i8 (gfc_array_i8 * const restrict retarray,
 }
 
 
-extern void sproduct_i8 (gfc_array_i8 * const restrict, 
-	gfc_array_i8 * const restrict, const index_type * const restrict,
+extern void sproduct_i8 (gfc_array_m8 * const restrict,
+	gfc_array_m8 * const restrict, const index_type * const restrict,
 	GFC_LOGICAL_4 *);
 export_proto(sproduct_i8);
 
 void
-sproduct_i8 (gfc_array_i8 * const restrict retarray, 
-	gfc_array_i8 * const restrict array, 
-	const index_type * const restrict pdim, 
+sproduct_i8 (gfc_array_m8 * const restrict retarray,
+	gfc_array_m8 * const restrict array,
+	const index_type * const restrict pdim,
 	GFC_LOGICAL_4 * mask)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
-  GFC_INTEGER_8 * restrict dest;
+  GFC_UINTEGER_8 * restrict dest;
   index_type rank;
   index_type n;
   index_type dim;
@@ -455,7 +455,7 @@ sproduct_i8 (gfc_array_i8 * const restrict retarray,
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
-      retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_INTEGER_8));
+      retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_UINTEGER_8));
       if (alloc_size == 0)
 	return;
     }

@@ -359,7 +359,16 @@ init_result_expr (gfc_expr *e, int init, gfc_expr *array)
 	      mpz_set_si (e->value.integer, init);
 	    break;
 
-	  case BT_REAL:
+	  case BT_UNSIGNED:
+	    if (init == INT_MIN)
+	      mpz_set_ui (e->value.integer, 0);
+	    else if (init == INT_MAX)
+	      mpz_set (e->value.integer, gfc_unsigned_kinds[i].huge);
+	    else
+	      mpz_set_ui (e->value.integer, init);
+	    break;
+
+	case BT_REAL:
 	    if (init == INT_MIN)
 	      {
 		mpfr_set (e->value.real, gfc_real_kinds[i].huge, GFC_RND_MODE);

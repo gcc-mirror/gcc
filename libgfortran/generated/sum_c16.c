@@ -29,13 +29,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if defined (HAVE_GFC_COMPLEX_16) && defined (HAVE_GFC_COMPLEX_16)
 
 
-extern void sum_c16 (gfc_array_c16 * const restrict, 
+extern void sum_c16 (gfc_array_c16 * const restrict,
 	gfc_array_c16 * const restrict, const index_type * const restrict);
 export_proto(sum_c16);
 
 void
-sum_c16 (gfc_array_c16 * const restrict retarray, 
-	gfc_array_c16 * const restrict array, 
+sum_c16 (gfc_array_c16 * const restrict retarray,
+	gfc_array_c16 * const restrict array,
 	const index_type * const restrict pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS];
@@ -188,15 +188,15 @@ sum_c16 (gfc_array_c16 * const restrict retarray,
 }
 
 
-extern void msum_c16 (gfc_array_c16 * const restrict, 
+extern void msum_c16 (gfc_array_c16 * const restrict,
 	gfc_array_c16 * const restrict, const index_type * const restrict,
 	gfc_array_l1 * const restrict);
 export_proto(msum_c16);
 
 void
-msum_c16 (gfc_array_c16 * const restrict retarray, 
-	gfc_array_c16 * const restrict array, 
-	const index_type * const restrict pdim, 
+msum_c16 (gfc_array_c16 * const restrict retarray,
+	gfc_array_c16 * const restrict array,
+	const index_type * const restrict pdim,
 	gfc_array_l1 * const restrict mask)
 {
   index_type count[GFC_MAX_DIMENSIONS];
@@ -378,15 +378,15 @@ msum_c16 (gfc_array_c16 * const restrict retarray,
 }
 
 
-extern void ssum_c16 (gfc_array_c16 * const restrict, 
+extern void ssum_c16 (gfc_array_c16 * const restrict,
 	gfc_array_c16 * const restrict, const index_type * const restrict,
 	GFC_LOGICAL_4 *);
 export_proto(ssum_c16);
 
 void
-ssum_c16 (gfc_array_c16 * const restrict retarray, 
-	gfc_array_c16 * const restrict array, 
-	const index_type * const restrict pdim, 
+ssum_c16 (gfc_array_c16 * const restrict retarray,
+	gfc_array_c16 * const restrict array,
+	const index_type * const restrict pdim,
 	GFC_LOGICAL_4 * mask)
 {
   index_type count[GFC_MAX_DIMENSIONS];

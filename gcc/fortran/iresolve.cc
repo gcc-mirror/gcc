@@ -175,9 +175,11 @@ resolve_bound (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *kind,
 
 static void
 resolve_transformational (const char *name, gfc_expr *f, gfc_expr *array,
-			  gfc_expr *dim, gfc_expr *mask)
+			  gfc_expr *dim, gfc_expr *mask,
+			  bool use_integer = false)
 {
   const char *prefix;
+  bt type;
 
   f->ts = array->ts;
 
@@ -200,9 +202,18 @@ resolve_transformational (const char *name, gfc_expr *f, gfc_expr *array,
       gfc_resolve_dim_arg (dim);
     }
 
+  /* For those intrinsic like SUM where we use the integer version
+     actually uses unsigned, but we call it as the integer
+     version.  */
+
+  if (use_integer && array->ts.type == BT_UNSIGNED)
+    type = BT_INTEGER;
+  else
+    type = array->ts.type;
+
   f->value.function.name
     = gfc_get_string (PREFIX ("%s%s_%c%d"), prefix, name,
-		      gfc_type_letter (array->ts.type),
+		      gfc_type_letter (type),
 		      gfc_type_abi_kind (&array->ts));
 }
 
@@ -2333,7 +2344,7 @@ void
 gfc_resolve_product (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
 		     gfc_expr *mask)
 {
-  resolve_transformational ("product", f, array, dim, mask);
+  resolve_transformational ("product", f, array, dim, mask, true);
 }
 
 
@@ -2881,7 +2892,7 @@ gfc_resolve_storage_size (gfc_expr *f, gfc_expr *a ATTRIBUTE_UNUSED,
 void
 gfc_resolve_sum (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
 {
-  resolve_transformational ("sum", f, array, dim, mask);
+  resolve_transformational ("sum", f, array, dim, mask, true);
 }
 
 

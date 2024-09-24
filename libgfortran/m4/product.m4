@@ -26,6 +26,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"'
 
 include(iparm.m4)dnl
+ifelse(index(rtype_name,`GFC_INTEGER'),`0',dnl
+define(`rtype_name',patsubst(rtype_name,`GFC_INTEGER',`GFC_UINTEGER'))dnl
+define(`atype_name',patsubst(rtype_name,`GFC_INTEGER',`GFC_UINTEGER'))dnl
+define(`rtype',patsubst(rtype,`gfc_array_i',`gfc_array_m'))dnl
+define(`atype',patsubst(rtype,`gfc_array_i',`gfc_array_m')))dnl
 include(ifunction.m4)dnl
 
 `#if defined (HAVE_'atype_name`) && defined (HAVE_'rtype_name`)'
