@@ -1,3 +1,15 @@
+2024-09-23  Saurabh Jha  <saurabh.jha@arm.com>
+
+	* MAINTAINERS: Fix sort order and add username.
+
+2024-09-23  Saurabh Jha  <saurabh.jha@arm.com>
+
+	* MAINTAINERS: Add myself to write after approval.
+
+2024-09-23  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* MAINTAINERS: Update email and add myself to DCO.
+
 2024-09-18  Andrew Kreimer  <algonell@gmail.com>
 
 	* configure.ac: Fix typos.

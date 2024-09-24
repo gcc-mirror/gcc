@@ -1,3 +1,182 @@
+2024-09-23  Saurabh Jha  <saurabh.jha@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(*aarch64_faminmax_fused): Instruction pattern for faminmax
+	codegen.
+	* config/aarch64/iterators.md: Attribute for faminmax codegen.
+
+2024-09-23  Saurabh Jha  <saurabh.jha@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(ENTRY): Macro to parse the contents of
+	aarch64-simd-pragma-builtins.def.
+	(ENTRY_VHSDF): Macro to parse the contents of
+	aarch64-simd-pragma-builtins.def.
+	(enum aarch64_builtins): New enum values for faminmax builtins
+	via aarch64-simd-pragma-builtins.def.
+	(enum class aarch64_builtin_signatures): Enum class to specify
+	the number of operands a builtin will take.
+	(struct aarch64_pragma_builtins_data): Struct to hold data from
+	aarch64-simd-pragma-builtins.def.
+	(aarch64_fntype): New function to define function types of
+	intrinsics given an object of type aarch64_pragma_builtins_data.
+	(aarch64_init_pragma_builtins): New function to define pragma
+	builtins.
+	(aarch64_get_pragma_builtin): New function to get a row of
+	aarch64_pragma_builtins, given code.
+	(handle_arm_neon_h): Modify to call
+	aarch64_init_pragma_builtins.
+	(aarch64_general_check_builtin_call): Modify to check whether
+	required flag is being used for pragma builtins.
+	(aarch64_expand_pragma_builtin): New function to emit
+	instructions of pragma_builtin.
+	(aarch64_general_expand_builtin): Modify to call
+	aarch64_expand_pragma_builtin.
+	* config/aarch64/aarch64-option-extensions.def
+	(AARCH64_OPT_EXTENSION): Introduce new flag for this extension.
+	* config/aarch64/aarch64-simd.md
+	(@aarch64_<faminmax_uns_op><mode>): Instruction pattern for
+	faminmax intrinsics.
+	* config/aarch64/aarch64.h
+	(TARGET_FAMINMAX): Introduce new flag for this extension.
+	* config/aarch64/iterators.md: New iterators and unspecs.
+	* doc/invoke.texi: Document extension in AArch64 Options.
+	* config/aarch64/aarch64-simd-pragma-builtins.def: New file to
+	list pragma builtins.
+
+2024-09-23  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* dwarf2cfi.cc
+	(struct dw_cfi_row): Declare a new enum type to replace ra_mangled.
+	(cfi_row_equal_p): Use ra_state instead of ra_mangled.
+	(dwarf2out_frame_debug_cfa_negate_ra_state): Same.
+	(change_cfi_row): Same.
+
+2024-09-23  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* config/aarch64/aarch64.cc
+	(aarch64_output_cfi_directive): New hook for CFI directives.
+	(aarch64_dw_cfi_oprnd1_desc): Same.
+	(TARGET_OUTPUT_CFI_DIRECTIVE): Hook for output_cfi_directive.
+	(TARGET_DW_CFI_OPRND1_DESC): Hook for dw_cfi_oprnd1_desc.
+	* config/sparc/sparc.cc
+	(sparc_output_cfi_directive): New hook for CFI directives.
+	(sparc_dw_cfi_oprnd1_desc): Same.
+	(TARGET_OUTPUT_CFI_DIRECTIVE): Hook for output_cfi_directive.
+	(TARGET_DW_CFI_OPRND1_DESC): Hook for dw_cfi_oprnd1_desc.
+	* coretypes.h
+	(struct dw_cfi_node): Forward declaration of CFI type from
+	gcc/dwarf2out.h.
+	(enum dw_cfi_oprnd_type): Same.
+	(enum dwarf_call_frame_info): Same.
+	* doc/tm.texi: Regenerated from doc/tm.texi.in.
+	* doc/tm.texi.in: Add doc for new target hooks.
+	type of enum to allow forward declaration.
+	* dwarf2cfi.cc
+	(struct dw_cfi_row): Update the description for window_save
+	and ra_mangled.
+	(dwarf2out_frame_debug_cfa_negate_ra_state): Use AArch64 CFI
+	directive instead of the SPARC one.
+	(change_cfi_row): Use the right CFI directive's name for RA
+	mangling.
+	(output_cfi): Remove explicit architecture-specific CFI
+	directive DW_CFA_GNU_window_save that falls into default case.
+	(output_cfi_directive): Use target hook as default.
+	* dwarf2out.cc (dw_cfi_oprnd1_desc): Use target hook as default.
+	* dwarf2out.h (enum dw_cfi_oprnd_type): specify underlying type
+	of enum to allow forward declaration.
+	(dw_cfi_oprnd1_desc): Call target hook.
+	(output_cfi_directive): Use dw_cfi_ref instead of struct
+	dw_cfi_node *.
+	* hooks.cc
+	(hook_bool_dwcfi_dwcfioprndtyperef_false): New.
+	(hook_bool_FILEptr_dwcfiptr_false): New.
+	* hooks.h
+	(hook_bool_dwcfi_dwcfioprndtyperef_false): New.
+	(hook_bool_FILEptr_dwcfiptr_false): New.
+	* target.def: Documentation for new hooks.
+
+2024-09-23  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* combine-stack-adj.cc
+	(no_unhandled_cfa): Rename.
+	* config/aarch64/aarch64.cc
+	(aarch64_expand_prologue): Rename.
+	(aarch64_expand_epilogue): Rename.
+	* dwarf2cfi.cc
+	(dwarf2out_frame_debug_cfa_toggle_ra_mangle): Rename this...
+	(dwarf2out_frame_debug_cfa_negate_ra_state): To this.
+	(dwarf2out_frame_debug): Rename.
+	* reg-notes.def (REG_CFA_NOTE): Rename REG_CFA_TOGGLE_RA_MANGLE.
+
+2024-09-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	* omp-general.cc (omp_runtime_api_procname): Strip "omp_" from
+	string; move get_device_from_uid as now a '_' suffix exists.
+
+2024-09-23  Claudiu Zissulescu  <claziss@gmail.com>
+
+	PR target/113954
+	* config/arc/arc.cc (TARGET_LRA_P): Always return true.
+	(arc_lra_p): Remove.
+	* config/arc/arc.h (TARGET_LRA): Remove.
+	* config/arc/arc.opt (mlra): Change it to do nothing.
+	* doc/invoke.texi (mlra): Update option description.
+
+2024-09-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116810
+	* tree-vect-slp.cc (vect_build_slp_instance): Onlu force
+	splitting for group_size > 1.
+
+2024-09-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116796
+	* cfgloopmanip.cc (fix_loop_placements): Get LC-SSA-invalidated
+	bitmap and pass it on.
+	(remove_path): Pass LC-SSA-invalidated to fix_loop_placements.
+
+2024-09-23  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/116812
+	* tree-vect-slp.cc (vect_slp_region): Fix insertion.
+
+2024-09-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116791
+	* tree-vect-stmts.cc (get_group_load_store_type): Only
+	fall back to elementwise access for single-lane SLP, restore
+	hard failure mode for other cases.
+
+2024-09-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/mkoffload.cc (process_asm): (Re)add the fprintf
+	lines for stdlib.h/stdbool.h inclusion if gcn_stack_size is used.
+
+2024-09-23  Pan Li  <pan2.li@intel.com>
+
+	PR target/116795
+	* gimple-match-head.cc (match_cond_with_binary_phi): Fix the
+	incorrect cfg check as b0->b1 in above example.
+
+2024-09-23  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gimple-iterator.h (gimple_seq_nondebug_singleton_p):
+	Rewrite to be simplely, gsi_start_nondebug/gsi_one_nondebug_before_end_p.
+
+2024-09-23  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gimple.h (remove_pointer): Remove.
+	(GIMPLE_CHECK2): Use std::remove_pointer instead of custom one.
+
+2024-09-23  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-operands.h (PHI_ARG_DEF): Remove definition.
+
+2024-09-23  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add the case 3 for signed .SAT_ADD matching.
+
 2024-09-22  Tamar Christina  <tamar.christina@arm.com>
 
 	* tree-vect-patterns.cc (append_inv_pattern_def_seq): New.

@@ -1,3 +1,77 @@
+2024-09-23  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* config/aarch64/aarch64-asm.h (PACIASP): Replace SPARC CFI
+	directive by AArch64 one.
+	(AUTIASP): Same.
+
+2024-09-23  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* Makefile.in: New target for symbolic link to md-unwind-def.h
+	* config.host: New parameter md_unwind_def_header. Set it to
+	aarch64/aarch64-unwind-def.h for AArch64 targets, or no-unwind.h
+	by default.
+	* config/aarch64/aarch64-unwind.h
+	(aarch64_pointer_auth_key): Move to aarch64-unwind-def.h
+	(aarch64_cie_aug_handler): Update.
+	(aarch64_arch_extension_frame_init): Update.
+	(aarch64_demangle_return_addr): Update.
+	* configure.ac: New substitute variable md_unwind_def_header.
+	* unwind-dw2.h (defined): MD_ARCH_FRAME_STATE_T.
+	* config/aarch64/aarch64-unwind-def.h: New file.
+	* configure: Regenerate.
+	* config/no-unwind.h: Updated comment
+
+2024-09-23  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* config/aarch64/aarch64-unwind.h
+	(MD_FRAME_LOCAL_REGISTER_P): new handler checking whether a register
+	from the current context needs to be skipped before installation into
+	the target context.
+	(aarch64_frame_local_register): Likewise.
+	* unwind-dw2.c (uw_install_context_1): use MD_FRAME_LOCAL_REGISTER_P.
+
+2024-09-23  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* config/aarch64/aarch64-unwind.h
+	(AARCH64_DWARF_RA_STATE_MASK): The mask for RA state register.
+	(aarch64_ra_signing_method_t): The diversifiers used to sign a
+	function's return address.
+	(aarch64_pointer_auth_key): The key used to sign a function's
+	return address.
+	(aarch64_cie_signed_with_b_key): Deleted as the signing key is
+	available now in _Unwind_FrameState.
+	(MD_ARCH_EXTENSION_CIE_AUG_HANDLER): New CIE augmentation string
+	handler for architecture extensions.
+	(MD_ARCH_EXTENSION_FRAME_INIT): New architecture-extension
+	initialization routine for DWARF frame state and context before
+	execution of DWARF instructions.
+	(aarch64_context_ra_state_get): Read RA state register from CONTEXT.
+	(aarch64_ra_state_get): Read RA state register from FS.
+	(aarch64_ra_state_set): Write RA state register into FS.
+	(aarch64_ra_state_toggle): Toggle RA state register in FS.
+	(aarch64_cie_aug_handler): Handler AArch64 augmentation strings.
+	(aarch64_arch_extension_frame_init): Initialize defaults for the
+	signing key (PAUTH_KEY_A), and RA state register (RA_no_signing).
+	(aarch64_demangle_return_addr): Rely on the frame registers and
+	the signing_key attribute in _Unwind_FrameState.
+	* unwind-dw2-execute_cfa.h:
+	Use the right alias DW_CFA_AARCH64_negate_ra_state for __aarch64__
+	instead of DW_CFA_GNU_window_save.
+	(DW_CFA_AARCH64_negate_ra_state): Save the signing method in RA
+	state register. Toggle RA state register without resetting 'how'
+	to REG_UNSAVED.
+	* unwind-dw2.c:
+	(extract_cie_info): Save the signing key in the current
+	_Unwind_FrameState while parsing the augmentation data.
+	(uw_frame_state_for): Reset some attributes related to architecture
+	extensions in _Unwind_FrameState.
+	(uw_update_context): Move authentication code to AArch64 unwinding.
+	* unwind-dw2.h (enum register_rule): Give a name to the existing
+	enum for the register rules, and replace 'unsigned char' by 'enum
+	register_rule' to facilitate debugging in GDB.
+	(_Unwind_FrameState): Add a new architecture-extension attribute
+	to store the signing key.
+
 2024-09-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config.host: From macOS 11, limit earliest macOS support

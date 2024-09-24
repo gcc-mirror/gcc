@@ -1,3 +1,7 @@
+2024-09-23  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* dwarf2.h (enum dwarf_call_frame_info): specify underlying
+
 2024-09-20  Tobias Burnus  <tburnus@baylibre.com>
 
 	* cuda/cuda.h (cuDeviceGetUuid): Declare.

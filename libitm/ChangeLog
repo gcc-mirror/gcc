@@ -1,3 +1,8 @@
+2024-09-23  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* config/aarch64/sjlj.S: Replace SPARC CFI directive by
+	AArch64 one.
+
 2024-09-02  Alex Coplan  <alex.coplan@arm.com>
 
 	* testsuite/lib/libitm.exp: Load scanltrans.exp instead of

@@ -1,3 +1,10 @@
+2024-09-23  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in (m2/gm2-libs-boot/M2RTS.o): Remove
+	--suppress-noreturn.
+	* gm2-libs/M2RTS.mod (HaltC): Add noreturn attribute.
+	* gm2-libs-min/M2RTS.mod (HALT): Add LOOP END.
+
 2024-09-21  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-compiler/M2Comp.mod (GenerateDependencies): Remove

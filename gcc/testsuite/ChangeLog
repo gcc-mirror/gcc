@@ -1,3 +1,77 @@
+2024-09-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116798
+	* g++.dg/cpp23/explicit-obj-diagnostics12.C: New test.
+
+2024-09-23  Saurabh Jha  <saurabh.jha@arm.com>
+
+	* gcc.target/aarch64/simd/faminmax-codegen-no-flag.c: New test.
+	* gcc.target/aarch64/simd/faminmax-codegen.c: New test.
+	* gcc.target/aarch64/simd/faminmax-no-codegen.c: New test.
+
+2024-09-23  Saurabh Jha  <saurabh.jha@arm.com>
+
+	* gcc.target/aarch64/simd/faminmax-builtins-no-flag.c: New test.
+	* gcc.target/aarch64/simd/faminmax-builtins.c: New test.
+
+2024-09-23  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* g++.target/aarch64/pr94515-1.C: Improve test documentation.
+	* g++.target/aarch64/pr94515-2.C: Same.
+
+2024-09-23  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* g++.target/aarch64/pr94515-1.C: Replace SPARC CFI directive by
+	AArch64 one.
+	* g++.target/aarch64/pr94515-2.C: Same.
+
+2024-09-23  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/109790
+	PR c++/100632
+	* g++.dg/cpp0x/decltype83.C: New test.
+	* g++.dg/cpp0x/decltype83a.C: New test.
+	* g++.dg/cpp1y/lambda-ice3.C: New test.
+	* g++.dg/cpp1y/lambda-ice3a.C: New test.
+	* g++.dg/cpp2a/nontype-class67.C: New test.
+
+2024-09-23  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/116722
+	* g++.dg/cpp0x/constexpr-ctor22.C: New test.
+
+2024-09-23  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/116812
+	* gcc.dg/vect/pr116812.c: New test.
+
+2024-09-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116791
+	* gcc.dg/vect/pr116791.c: New testcase.
+
+2024-09-23  Pan Li  <pan2.li@intel.com>
+
+	PR target/116795
+	* gcc.dg/torture/pr116795-1.c: New test.
+
+2024-09-23  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vec_sat_arith.h: Add test helper macro.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-run-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-run-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-run-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-run-8.c: New test.
+
+2024-09-23  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR testsuite/116701
+	* gfortran.dg/unsigned_22.f90: Add missing close with delete.
+
 2024-09-22  Pan Li  <pan2.li@intel.com>
 
 	* gcc.target/riscv/sat_arith.h: Add test helper macros.

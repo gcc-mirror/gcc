@@ -1,3 +1,23 @@
+2024-09-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116798
+	* parser.cc (cp_parser_parameter_declaration): Detect an explicit
+	object parameter in a requires expression.
+
+2024-09-23  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/109790
+	PR c++/100632
+	* mangle.cc (write_member_name): Handle members whose type is an
+	anonymous union member. Write missing "on" marker for operators
+	when ABI version is at least 16.
+
+2024-09-23  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/116722
+	* constexpr.cc (cxx_bind_parameters_in_call): Leave early for
+	{con,de}structors of classes with virtual bases.
+
 2024-09-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116613

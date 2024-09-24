@@ -1,3 +1,12 @@
+2024-09-23  Jason Merrill  <jason@redhat.com>
+
+	* include/bits/c++config: Don't try to disable -Wc++??-extensions
+	when compiling as C.
+
+2024-09-23  Jason Merrill  <jason@redhat.com>
+
+	* libsupc++/new: Add _GLIBCXX_TXN_SAFE.
+
 2024-09-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/format (__format::__is_formattable_integer): New

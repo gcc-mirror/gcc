@@ -1,3 +1,16 @@
+2024-09-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	* fortran.c (omp_get_device_from_uid_): New function.
+	* libgomp.map (GOMP_6.0): Add it.
+	* oacc-host.c (host_dispatch): Init '.uid' and '.get_uid_func'.
+	* omp_lib.f90.in: Make it used by removing bind(C).
+	* omp_lib.h.in: Likewise.
+	* target.c (omp_get_device_from_uid): Ensure the device is initialized.
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_get_uid): Add function comment;
+	return NULL in case of an error.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_get_uid): Likewise.
+	* testsuite/libgomp.fortran/device_uid.f90: Update to test substrings.
+
 2024-09-20  Tobias Burnus  <tburnus@baylibre.com>
 
 	* config/gcn/target.c (omp_get_uid_from_device,
