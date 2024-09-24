@@ -5738,7 +5738,7 @@ ira (FILE *f)
     combine_and_move_insns ();
 
   /* Gather additional equivalences with memory.  */
-  if (optimize)
+  if (optimize && flag_expensive_optimizations)
     add_store_equivs ();
 
   loop_optimizer_finalize ();
