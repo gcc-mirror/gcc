@@ -1,6 +1,8 @@
 /* Alias to alias; 'libgomp.c-c++-common/pr96390.c'.  */
 
-/* { dg-do compile } */
+/* { dg-do link } */
+/* { dg-do run { target nvptx_runtime_alias_ptx } } */
+/* { dg-options -save-temps } */
 /* { dg-add-options nvptx_alias_ptx } */
 
 int v;
@@ -32,7 +34,7 @@ main (void)
 /* { dg-final { scan-assembler-times {(?n)^// BEGIN GLOBAL FUNCTION DECL: baz$} 1 } }
    { dg-final { scan-assembler-times {(?n)^\.visible \.func baz;$} 1 } }
    { dg-final { scan-assembler-times {(?n)^// BEGIN GLOBAL FUNCTION DEF: baz$} 1 } }
-   { dg-final { scan-assembler-times {(?n)^\.alias baz,bar;$} 1 } } */
+   { dg-final { scan-assembler-times {(?n)^\.alias baz,foo;$} 1 } } */
 
 /* { dg-final { scan-assembler-times {(?n)\tcall foo;$} 0 } }
    { dg-final { scan-assembler-times {(?n)\tcall bar;$} 0 } }
