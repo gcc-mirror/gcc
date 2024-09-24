@@ -141,6 +141,8 @@ sat_s_add_##T##_fmt_2 (T x, T y)             \
     return sum;                              \
   return x < 0 ? MIN : MAX;                  \
 }
+#define DEF_SAT_S_ADD_FMT_2_WRAP(T, UT, MIN, MAX) \
+  DEF_SAT_S_ADD_FMT_2(T, UT, MIN, MAX)
 
 #define DEF_SAT_S_ADD_FMT_3(T, UT, MIN, MAX)           \
 T __attribute__((noinline))                            \
