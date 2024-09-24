@@ -7995,7 +7995,7 @@ cxx_mark_addressable (tree exp, bool array_ref_p)
 
       case TARGET_EXPR:
 	TREE_ADDRESSABLE (x) = 1;
-	cxx_mark_addressable (TREE_OPERAND (x, 0));
+	cxx_mark_addressable (TARGET_EXPR_SLOT (x));
 	return true;
 
       default:
@@ -8195,10 +8195,10 @@ cp_build_compound_expr (tree lhs, tree rhs, tsubst_flags_t complain)
       /* If the rhs is a TARGET_EXPR, then build the compound
 	 expression inside the target_expr's initializer. This
 	 helps the compiler to eliminate unnecessary temporaries.  */
-      tree init = TREE_OPERAND (rhs, 1);
+      tree init = TARGET_EXPR_INITIAL (rhs);
 
       init = build2 (COMPOUND_EXPR, TREE_TYPE (init), lhs, init);
-      TREE_OPERAND (rhs, 1) = init;
+      TARGET_EXPR_INITIAL (rhs) = init;
 
       if (eptype)
 	rhs = build1 (EXCESS_PRECISION_EXPR, eptype, rhs);
@@ -9861,7 +9861,7 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	 expanded without a target.  */
       if (TREE_CODE (newrhs) == TARGET_EXPR)
 	newrhs = build2 (COMPOUND_EXPR, TREE_TYPE (newrhs), newrhs,
-			 TREE_OPERAND (newrhs, 0));
+			 TARGET_EXPR_SLOT (newrhs));
     }
 
   if (newrhs == error_mark_node)
@@ -11448,9 +11448,9 @@ check_return_expr (tree retval, bool *no_warning, bool *dangling)
       /* We can't initialize a register from a AGGR_INIT_EXPR.  */
       else if (! cfun->returns_struct
 	       && TREE_CODE (retval) == TARGET_EXPR
-	       && TREE_CODE (TREE_OPERAND (retval, 1)) == AGGR_INIT_EXPR)
+	       && TREE_CODE (TARGET_EXPR_INITIAL (retval)) == AGGR_INIT_EXPR)
 	retval = build2 (COMPOUND_EXPR, TREE_TYPE (retval), retval,
-			 TREE_OPERAND (retval, 0));
+			 TARGET_EXPR_SLOT (retval));
       else if (!processing_template_decl
 	       && maybe_warn_about_returning_address_of_local (retval, loc)
 	       && INDIRECT_TYPE_P (valtype))

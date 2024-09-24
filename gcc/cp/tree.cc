@@ -3138,17 +3138,17 @@ bot_manip (tree* tp, int* walk_subtrees, void* data_)
     {
       tree u;
 
-      if (TREE_CODE (TREE_OPERAND (t, 1)) == AGGR_INIT_EXPR)
+      if (TREE_CODE (TARGET_EXPR_INITIAL (t)) == AGGR_INIT_EXPR)
 	{
-	  u = build_cplus_new (TREE_TYPE (t), TREE_OPERAND (t, 1),
+	  u = build_cplus_new (TREE_TYPE (t), TARGET_EXPR_INITIAL (t),
 			       tf_warning_or_error);
 	  if (u == error_mark_node)
 	    return u;
-	  if (AGGR_INIT_ZERO_FIRST (TREE_OPERAND (t, 1)))
-	    AGGR_INIT_ZERO_FIRST (TREE_OPERAND (u, 1)) = true;
+	  if (AGGR_INIT_ZERO_FIRST (TARGET_EXPR_INITIAL (t)))
+	    AGGR_INIT_ZERO_FIRST (TARGET_EXPR_INITIAL (u)) = true;
 	}
       else
-	u = force_target_expr (TREE_TYPE (t), TREE_OPERAND (t, 1),
+	u = force_target_expr (TREE_TYPE (t), TARGET_EXPR_INITIAL (t),
 			       tf_warning_or_error);
 
       TARGET_EXPR_IMPLICIT_P (u) = TARGET_EXPR_IMPLICIT_P (t);
@@ -3158,12 +3158,12 @@ bot_manip (tree* tp, int* walk_subtrees, void* data_)
 
       /* Map the old variable to the new one.  */
       splay_tree_insert (target_remap,
-			 (splay_tree_key) TREE_OPERAND (t, 0),
-			 (splay_tree_value) TREE_OPERAND (u, 0));
+			 (splay_tree_key) TARGET_EXPR_SLOT (t),
+			 (splay_tree_value) TARGET_EXPR_SLOT (u));
 
-      TREE_OPERAND (u, 1) = break_out_target_exprs (TREE_OPERAND (u, 1),
-						    data.clear_location);
-      if (TREE_OPERAND (u, 1) == error_mark_node)
+      TARGET_EXPR_INITIAL (u) = break_out_target_exprs (TARGET_EXPR_INITIAL (u),
+							data.clear_location);
+      if (TARGET_EXPR_INITIAL (u) == error_mark_node)
 	return error_mark_node;
 
       if (data.clear_location)
@@ -4034,8 +4034,8 @@ cp_tree_equal (tree t1, tree t2)
 
     case TARGET_EXPR:
       {
-	tree o1 = TREE_OPERAND (t1, 0);
-	tree o2 = TREE_OPERAND (t2, 0);
+	tree o1 = TARGET_EXPR_SLOT (t1);
+	tree o2 = TARGET_EXPR_SLOT (t2);
 
 	/* Special case: if either target is an unallocated VAR_DECL,
 	   it means that it's going to be unified with whatever the
@@ -4050,7 +4050,8 @@ cp_tree_equal (tree t1, tree t2)
 	else if (!cp_tree_equal (o1, o2))
 	  return false;
 
-	return cp_tree_equal (TREE_OPERAND (t1, 1), TREE_OPERAND (t2, 1));
+	return cp_tree_equal (TARGET_EXPR_INITIAL (t1),
+			      TARGET_EXPR_INITIAL (t2));
       }
 
     case PARM_DECL:

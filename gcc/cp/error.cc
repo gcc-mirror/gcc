@@ -2525,8 +2525,8 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	 it initializes anything other that the parameter slot for the
 	 default argument.  Note we may have cleared out the first
 	 operand in expand_expr, so don't go killing ourselves.  */
-      if (TREE_OPERAND (t, 1))
-	dump_expr (pp, TREE_OPERAND (t, 1), flags | TFF_EXPR_IN_PARENS);
+      if (TARGET_EXPR_INITIAL (t))
+	dump_expr (pp, TARGET_EXPR_INITIAL (t), flags | TFF_EXPR_IN_PARENS);
       break;
 
     case POINTER_PLUS_EXPR:

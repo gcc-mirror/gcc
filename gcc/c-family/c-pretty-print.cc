@@ -1376,14 +1376,14 @@ c_pretty_printer::primary_expression (tree e)
       pp_c_ws_string (this, "__builtin_memcpy");
       pp_c_left_paren (this);
       pp_ampersand (this);
-      primary_expression (TREE_OPERAND (e, 0));
+      primary_expression (TARGET_EXPR_SLOT (e));
       pp_separate_with (this, ',');
       pp_ampersand (this);
-      initializer (TREE_OPERAND (e, 1));
-      if (TREE_OPERAND (e, 2))
+      initializer (TARGET_EXPR_INITIAL (e));
+      if (TARGET_EXPR_CLEANUP (e))
 	{
 	  pp_separate_with (this, ',');
-	  expression (TREE_OPERAND (e, 2));
+	  expression (TARGET_EXPR_CLEANUP (e));
 	}
       pp_c_right_paren (this);
       break;
@@ -2838,7 +2838,7 @@ c_pretty_printer::expression (tree e)
       break;
 
     case TARGET_EXPR:
-      postfix_expression (TREE_OPERAND (e, 1));
+      postfix_expression (TARGET_EXPR_INITIAL (e));
       break;
 
     case BIND_EXPR:

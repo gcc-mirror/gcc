@@ -10446,7 +10446,7 @@ finish_omp_target_clauses (location_t loc, tree body, tree *clauses_ptr)
     {
       tree lobj = *i;
       if (TREE_CODE (lobj) == TARGET_EXPR)
-	lobj = TREE_OPERAND (lobj, 0);
+	lobj = TARGET_EXPR_SLOT (lobj);
 
       tree lt = TREE_TYPE (lobj);
       gcc_assert (LAMBDA_TYPE_P (lt) && CLASS_TYPE_P (lt));
