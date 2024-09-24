@@ -2045,7 +2045,9 @@ await_statement_expander (tree *stmt, int *do_subtree, void *d)
   tree res = NULL_TREE;
 
   /* Process a statement at a time.  */
-  if (STATEMENT_CLASS_P (*stmt) || TREE_CODE (*stmt) == BIND_EXPR)
+  if (STATEMENT_CLASS_P (*stmt)
+      || TREE_CODE (*stmt) == BIND_EXPR
+      || TREE_CODE (*stmt) == CLEANUP_POINT_EXPR)
     return NULL_TREE; /* Just process the sub-trees.  */
   else if (TREE_CODE (*stmt) == STATEMENT_LIST)
     {
