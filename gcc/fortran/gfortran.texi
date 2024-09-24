@@ -2789,6 +2789,7 @@ As of now, the following intrinsics take unsigned arguments:
 @item @code{RANGE}
 @item @code{TRANSFER}
 @item @code{SUM}, @code{PRODUCT}, @code{MATMUL} and @code{DOT_PRODUCT}
+@item @code{IANY}, @code{IALL} and @code{IPARITY}
 @end itemize
 This list will grow in the near future.
 @c ---------------------------------------------------------------------

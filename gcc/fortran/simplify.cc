@@ -3401,9 +3401,20 @@ gfc_simplify_iachar (gfc_expr *e, gfc_expr *kind)
 static gfc_expr *
 do_bit_and (gfc_expr *result, gfc_expr *e)
 {
-  gcc_assert (e->ts.type == BT_INTEGER && e->expr_type == EXPR_CONSTANT);
-  gcc_assert (result->ts.type == BT_INTEGER
-	      && result->expr_type == EXPR_CONSTANT);
+  if (flag_unsigned)
+    {
+      gcc_assert ((e->ts.type == BT_INTEGER || e->ts.type == BT_UNSIGNED)
+		  && e->expr_type == EXPR_CONSTANT);
+      gcc_assert ((result->ts.type == BT_INTEGER
+		   || result->ts.type == BT_UNSIGNED)
+		  && result->expr_type == EXPR_CONSTANT);
+    }
+  else
+    {
+      gcc_assert (e->ts.type == BT_INTEGER && e->expr_type == EXPR_CONSTANT);
+      gcc_assert (result->ts.type == BT_INTEGER
+		  && result->expr_type == EXPR_CONSTANT);
+    }
 
   mpz_and (result->value.integer, result->value.integer, e->value.integer);
   return result;
@@ -3420,9 +3431,20 @@ gfc_simplify_iall (gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
 static gfc_expr *
 do_bit_ior (gfc_expr *result, gfc_expr *e)
 {
-  gcc_assert (e->ts.type == BT_INTEGER && e->expr_type == EXPR_CONSTANT);
-  gcc_assert (result->ts.type == BT_INTEGER
-	      && result->expr_type == EXPR_CONSTANT);
+  if (flag_unsigned)
+    {
+      gcc_assert ((e->ts.type == BT_INTEGER || e->ts.type == BT_UNSIGNED)
+		  && e->expr_type == EXPR_CONSTANT);
+      gcc_assert ((result->ts.type == BT_INTEGER
+		   || result->ts.type == BT_UNSIGNED)
+		  && result->expr_type == EXPR_CONSTANT);
+    }
+  else
+    {
+      gcc_assert (e->ts.type == BT_INTEGER && e->expr_type == EXPR_CONSTANT);
+      gcc_assert (result->ts.type == BT_INTEGER
+		  && result->expr_type == EXPR_CONSTANT);
+    }
 
   mpz_ior (result->value.integer, result->value.integer, e->value.integer);
   return result;
@@ -3884,9 +3906,20 @@ gfc_simplify_ior (gfc_expr *x, gfc_expr *y)
 static gfc_expr *
 do_bit_xor (gfc_expr *result, gfc_expr *e)
 {
-  gcc_assert (e->ts.type == BT_INTEGER && e->expr_type == EXPR_CONSTANT);
-  gcc_assert (result->ts.type == BT_INTEGER
-	      && result->expr_type == EXPR_CONSTANT);
+  if (flag_unsigned)
+    {
+      gcc_assert ((e->ts.type == BT_INTEGER || e->ts.type == BT_UNSIGNED)
+		  && e->expr_type == EXPR_CONSTANT);
+      gcc_assert ((result->ts.type == BT_INTEGER
+		   || result->ts.type == BT_UNSIGNED)
+		  && result->expr_type == EXPR_CONSTANT);
+    }
+  else
+    {
+      gcc_assert (e->ts.type == BT_INTEGER && e->expr_type == EXPR_CONSTANT);
+      gcc_assert (result->ts.type == BT_INTEGER
+		  && result->expr_type == EXPR_CONSTANT);
+    }
 
   mpz_xor (result->value.integer, result->value.integer, e->value.integer);
   return result;

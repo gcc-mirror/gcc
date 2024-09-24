@@ -1195,7 +1195,7 @@ gfc_resolve_hypot (gfc_expr *f, gfc_expr *x, gfc_expr *y ATTRIBUTE_UNUSED)
 void
 gfc_resolve_iall (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
 {
-  resolve_transformational ("iall", f, array, dim, mask);
+  resolve_transformational ("iall", f, array, dim, mask, true);
 }
 
 
@@ -1223,7 +1223,7 @@ gfc_resolve_iand (gfc_expr *f, gfc_expr *i, gfc_expr *j)
 void
 gfc_resolve_iany (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
 {
-  resolve_transformational ("iany", f, array, dim, mask);
+  resolve_transformational ("iany", f, array, dim, mask, true);
 }
 
 
@@ -1429,7 +1429,7 @@ gfc_resolve_long (gfc_expr *f, gfc_expr *a)
 void
 gfc_resolve_iparity (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
 {
-  resolve_transformational ("iparity", f, array, dim, mask);
+  resolve_transformational ("iparity", f, array, dim, mask, true);
 }
 
 

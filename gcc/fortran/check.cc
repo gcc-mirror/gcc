@@ -4430,7 +4430,19 @@ gfc_check_mask (gfc_expr *i, gfc_expr *kind)
 bool
 gfc_check_transf_bit_intrins (gfc_actual_arglist *ap)
 {
-  if (ap->expr->ts.type != BT_INTEGER)
+  bt type = ap->expr->ts.type;
+
+  if (flag_unsigned)
+    {
+      if (type != BT_INTEGER && type != BT_UNSIGNED)
+	{
+	  gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER "
+		     "or UNSIGNED", gfc_current_intrinsic_arg[0]->name,
+		     gfc_current_intrinsic, &ap->expr->where);
+	  return false;
+	}
+    }
+  else if (ap->expr->ts.type != BT_INTEGER)
     {
       gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER",
                  gfc_current_intrinsic_arg[0]->name,
