@@ -3838,7 +3838,8 @@ update_equiv_regs (void)
 static void
 add_store_equivs (void)
 {
-  auto_bitmap seen_insns;
+  auto_sbitmap seen_insns (get_max_uid () + 1);
+  bitmap_clear (seen_insns);
 
   for (rtx_insn *insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
