@@ -1,9 +1,15 @@
 int foo (int, int, int *);
 int bar (int, int, int *);
+int foobar (int, int, int *);
 #pragma omp declare variant (foo) \
   match (construct={parallel,for},\
 	 device={isa(avx512f,avx512vl),kind(host,cpu)},\
 	 implementation={vendor(score(0):gnu),unified_shared_memory},\
+	 user={condition(score(0):0)})
+#pragma omp declare variant (foo) \
+  match (construct={parallel,for},\
+	 device={isa(avx512f,avx512vl),kind(host,cpu)},\
+	 implementation={vendor(score(0):gnu),self_maps},\
 	 user={condition(score(0):0)})
 #pragma omp declare variant (bar) \
   match (device={arch(x86_64,powerpc64),isa(avx512f,popcntb)}, \

@@ -1207,6 +1207,11 @@ struct omp_ts_info omp_ts_map[] =
      OMP_TRAIT_PROPERTY_NONE, true,
      NULL
    },
+   { "self_maps",
+     (1 << OMP_TRAIT_SET_IMPLEMENTATION),
+     OMP_TRAIT_PROPERTY_NONE, true,
+     NULL
+   },
    { "dynamic_allocators",
      (1 << OMP_TRAIT_SET_IMPLEMENTATION),
      OMP_TRAIT_PROPERTY_NONE, true,
@@ -1646,6 +1651,22 @@ omp_context_selector_matches (tree ctx)
 
 		  if ((omp_requires_mask
 		       & OMP_REQUIRES_UNIFIED_SHARED_MEMORY) == 0)
+		    {
+		      if (symtab->state == PARSING)
+			ret = -1;
+		      else
+			return 0;
+		    }
+		}
+	      break;
+	    case OMP_TRAIT_IMPLEMENTATION_SELF_MAPS:
+	      if (set == OMP_TRAIT_SET_IMPLEMENTATION)
+		{
+		  if (cfun && (cfun->curr_properties & PROP_gimple_any) != 0)
+		    break;
+
+		  if ((omp_requires_mask
+		       & OMP_REQUIRES_SELF_MAPS) == 0)
 		    {
 		      if (symtab->state == PARSING)
 			ret = -1;

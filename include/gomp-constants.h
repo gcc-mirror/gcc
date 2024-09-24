@@ -383,10 +383,14 @@ enum gomp_map_kind
 #define GOMP_DEPEND_INOUTSET		5
 
 /* Flag values for OpenMP 'requires' directive features.  */
+// compiler use only: OMP_REQUIRES_ATOMIC_DEFAULT_MEM_ORDER  0xf
 #define GOMP_REQUIRES_UNIFIED_ADDRESS       0x10
 #define GOMP_REQUIRES_UNIFIED_SHARED_MEMORY 0x20
+// compiler use only: OMP_REQUIRES_DYNAMIC_ALLOCATORS 0x40
 #define GOMP_REQUIRES_REVERSE_OFFLOAD       0x80
+// compiler use only: OMP_REQUIRES_ATOMIC_DEFAULT_MEM_ORDER_USED 0x100
 #define GOMP_REQUIRES_TARGET_USED           0x200
+#define GOMP_REQUIRES_SELF_MAPS             0x400
 
 /* Interop foreign-runtime data.  */
 #define GOMP_INTEROP_IFR_LAST	7

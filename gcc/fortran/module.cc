@@ -2095,7 +2095,7 @@ enum ab_attribute
   AB_OACC_ROUTINE_LOP_GANG, AB_OACC_ROUTINE_LOP_WORKER,
   AB_OACC_ROUTINE_LOP_VECTOR, AB_OACC_ROUTINE_LOP_SEQ,
   AB_OACC_ROUTINE_NOHOST,
-  AB_OMP_REQ_REVERSE_OFFLOAD, AB_OMP_REQ_UNIFIED_ADDRESS,
+  AB_OMP_REQ_REVERSE_OFFLOAD, AB_OMP_REQ_UNIFIED_ADDRESS, AB_OMP_REQ_SELF_MAPS,
   AB_OMP_REQ_UNIFIED_SHARED_MEMORY, AB_OMP_REQ_DYNAMIC_ALLOCATORS,
   AB_OMP_REQ_MEM_ORDER_SEQ_CST, AB_OMP_REQ_MEM_ORDER_ACQ_REL,
   AB_OMP_REQ_MEM_ORDER_ACQUIRE, AB_OMP_REQ_MEM_ORDER_RELEASE,
@@ -2178,6 +2178,7 @@ static const mstring attr_bits[] =
     minit ("OMP_REQ_REVERSE_OFFLOAD", AB_OMP_REQ_REVERSE_OFFLOAD),
     minit ("OMP_REQ_UNIFIED_ADDRESS", AB_OMP_REQ_UNIFIED_ADDRESS),
     minit ("OMP_REQ_UNIFIED_SHARED_MEMORY", AB_OMP_REQ_UNIFIED_SHARED_MEMORY),
+    minit ("OMP_REQ_SELF_MAPS", AB_OMP_REQ_SELF_MAPS),
     minit ("OMP_REQ_DYNAMIC_ALLOCATORS", AB_OMP_REQ_DYNAMIC_ALLOCATORS),
     minit ("OMP_REQ_MEM_ORDER_SEQ_CST", AB_OMP_REQ_MEM_ORDER_SEQ_CST),
     minit ("OMP_REQ_MEM_ORDER_ACQ_REL", AB_OMP_REQ_MEM_ORDER_ACQ_REL),
@@ -2442,6 +2443,8 @@ mio_symbol_attribute (symbol_attribute *attr)
 	    MIO_NAME (ab_attribute) (AB_OMP_REQ_UNIFIED_ADDRESS, attr_bits);
 	  if (gfc_current_ns->omp_requires & OMP_REQ_UNIFIED_SHARED_MEMORY)
 	    MIO_NAME (ab_attribute) (AB_OMP_REQ_UNIFIED_SHARED_MEMORY, attr_bits);
+	  if (gfc_current_ns->omp_requires & OMP_REQ_SELF_MAPS)
+	    MIO_NAME (ab_attribute) (AB_OMP_REQ_SELF_MAPS, attr_bits);
 	  if (gfc_current_ns->omp_requires & OMP_REQ_DYNAMIC_ALLOCATORS)
 	    MIO_NAME (ab_attribute) (AB_OMP_REQ_DYNAMIC_ALLOCATORS, attr_bits);
 	  if ((gfc_current_ns->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
@@ -2719,6 +2722,12 @@ mio_symbol_attribute (symbol_attribute *attr)
 	    case AB_OMP_REQ_UNIFIED_SHARED_MEMORY:
 	      gfc_omp_requires_add_clause (OMP_REQ_UNIFIED_SHARED_MEMORY,
 					   "unified_shared_memory",
+					   &gfc_current_locus,
+					   module_name);
+	      break;
+	    case AB_OMP_REQ_SELF_MAPS:
+	      gfc_omp_requires_add_clause (OMP_REQ_SELF_MAPS,
+					   "self_maps",
 					   &gfc_current_locus,
 					   module_name);
 	      break;

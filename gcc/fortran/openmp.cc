@@ -6759,6 +6759,9 @@ gfc_match_omp_parallel_workshare (void)
 void
 gfc_check_omp_requires (gfc_namespace *ns, int ref_omp_requires)
 {
+  const char *msg = G_("Program unit at %L has OpenMP device "
+		       "constructs/routines but does not set !$OMP REQUIRES %s "
+		       "but other program units do");
   if (ns->omp_target_seen
       && (ns->omp_requires & OMP_REQ_TARGET_MASK)
 	 != (ref_omp_requires & OMP_REQ_TARGET_MASK))
@@ -6766,19 +6769,16 @@ gfc_check_omp_requires (gfc_namespace *ns, int ref_omp_requires)
       gcc_assert (ns->proc_name);
       if ((ref_omp_requires & OMP_REQ_REVERSE_OFFLOAD)
 	  && !(ns->omp_requires & OMP_REQ_REVERSE_OFFLOAD))
-	gfc_error ("Program unit at %L has OpenMP device constructs/routines "
-		   "but does not set !$OMP REQUIRES REVERSE_OFFLOAD but other "
-		   "program units do", &ns->proc_name->declared_at);
+	gfc_error (msg, &ns->proc_name->declared_at, "REVERSE_OFFLOAD");
       if ((ref_omp_requires & OMP_REQ_UNIFIED_ADDRESS)
 	  && !(ns->omp_requires & OMP_REQ_UNIFIED_ADDRESS))
-	gfc_error ("Program unit at %L has OpenMP device constructs/routines "
-		   "but does not set !$OMP REQUIRES UNIFIED_ADDRESS but other "
-		   "program units do", &ns->proc_name->declared_at);
+	gfc_error (msg, &ns->proc_name->declared_at, "UNIFIED_ADDRESS");
       if ((ref_omp_requires & OMP_REQ_UNIFIED_SHARED_MEMORY)
 	  && !(ns->omp_requires & OMP_REQ_UNIFIED_SHARED_MEMORY))
-	gfc_error ("Program unit at %L has OpenMP device constructs/routines "
-		   "but does not set !$OMP REQUIRES UNIFIED_SHARED_MEMORY but "
-		   "other program units do", &ns->proc_name->declared_at);
+	gfc_error (msg, &ns->proc_name->declared_at, "UNIFIED_SHARED_MEMORY");
+      if ((ref_omp_requires & OMP_REQ_SELF_MAPS)
+	  && !(ns->omp_requires & OMP_REQ_UNIFIED_SHARED_MEMORY))
+	gfc_error (msg, &ns->proc_name->declared_at, "SELF_MAPS");
     }
 }
 
@@ -6868,6 +6868,7 @@ gfc_match_omp_requires (void)
   static const char *clauses[] = {"reverse_offload",
 				  "unified_address",
 				  "unified_shared_memory",
+				  "self_maps",
 				  "dynamic_allocators",
 				  "atomic_default"};
   const char *clause = NULL;
@@ -6921,13 +6922,20 @@ gfc_match_omp_requires (void)
       else if (gfc_match (clauses[3]) == MATCH_YES)
 	{
 	  clause = clauses[3];
+	  requires_clause = OMP_REQ_SELF_MAPS;
+	  if (requires_clauses & OMP_REQ_SELF_MAPS)
+	    goto duplicate_clause;
+	}
+      else if (gfc_match (clauses[4]) == MATCH_YES)
+	{
+	  clause = clauses[4];
 	  requires_clause = OMP_REQ_DYNAMIC_ALLOCATORS;
 	  if (requires_clauses & OMP_REQ_DYNAMIC_ALLOCATORS)
 	    goto duplicate_clause;
 	}
       else if (gfc_match ("atomic_default_mem_order (") == MATCH_YES)
 	{
-	  clause = clauses[4];
+	  clause = clauses[5];
 	  if (requires_clauses & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
 	    goto duplicate_clause;
 	  if (gfc_match (" seq_cst )") == MATCH_YES)
@@ -6982,7 +6990,7 @@ duplicate_clause:
   gfc_error ("%qs clause at %L specified more than once", clause, &old_loc);
 error:
   if (!gfc_error_flag_test ())
-    gfc_error ("Expected UNIFIED_ADDRESS, UNIFIED_SHARED_MEMORY, "
+    gfc_error ("Expected UNIFIED_ADDRESS, UNIFIED_SHARED_MEMORY, SELF_MAPS, "
 	       "DYNAMIC_ALLOCATORS, REVERSE_OFFLOAD, or "
 	       "ATOMIC_DEFAULT_MEM_ORDER clause at %L", &old_loc);
   return MATCH_ERROR;

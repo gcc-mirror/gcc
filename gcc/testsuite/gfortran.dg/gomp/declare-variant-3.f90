@@ -129,6 +129,9 @@ contains
   subroutine f45 ()
     !$omp declare variant (f13) match (implementation={unified_shared_memory})
   end subroutine
+  subroutine f45a ()
+    !$omp declare variant (f13) match (implementation={self_maps})
+  end subroutine
   subroutine f46 ()
     !$omp declare variant (f13) match (implementation={unified_address})
   end subroutine

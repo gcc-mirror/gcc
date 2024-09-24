@@ -539,7 +539,7 @@ Technical Report (TR) 13 is the third preview for OpenMP 6.0.
 @item Scope requirement changes for @code{declare_target} @tab N @tab
 @item @code{message} and @code{severity} clauses to @code{parallel} directive
       @tab N @tab
-@item @code{self_maps} clause to @code{requires} directive @tab N @tab
+@item @code{self_maps} clause to @code{requires} directive @tab Y @tab
 @item @code{no_openmp_constructs} assumptions clause @tab N @tab
 @item Restriction for @code{ordered} regarding loop-transforming directives
       @tab N @tab

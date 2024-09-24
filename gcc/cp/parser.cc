@@ -50244,6 +50244,8 @@ cp_parser_omp_requires (cp_parser *parser, cp_token *pragma_tok)
 	    this_req = OMP_REQUIRES_UNIFIED_ADDRESS;
 	  else if (!strcmp (p, "unified_shared_memory"))
 	    this_req = OMP_REQUIRES_UNIFIED_SHARED_MEMORY;
+	  else if (!strcmp (p, "self_maps"))
+	    this_req = OMP_REQUIRES_SELF_MAPS;
 	  else if (!strcmp (p, "dynamic_allocators"))
 	    this_req = OMP_REQUIRES_DYNAMIC_ALLOCATORS;
 	  else if (!strcmp (p, "reverse_offload"))
@@ -50316,6 +50318,7 @@ cp_parser_omp_requires (cp_parser *parser, cp_token *pragma_tok)
 	    {
 	      error_at (cloc, "expected %<unified_address%>, "
 			      "%<unified_shared_memory%>, "
+			      "%<self_maps%>, "
 			      "%<dynamic_allocators%>, "
 			       "%<reverse_offload%> "
 			       "or %<atomic_default_mem_order%> clause");

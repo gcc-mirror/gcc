@@ -7415,6 +7415,9 @@ done:
     omp_requires_mask
 	  = (enum omp_requires) (omp_requires_mask
 				 | OMP_REQUIRES_UNIFIED_SHARED_MEMORY);
+  if (omp_requires & OMP_REQ_SELF_MAPS)
+    omp_requires_mask
+	  = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_SELF_MAPS);
   if (omp_requires & OMP_REQ_DYNAMIC_ALLOCATORS)
     omp_requires_mask = (enum omp_requires) (omp_requires_mask
 					     | OMP_REQUIRES_DYNAMIC_ALLOCATORS);

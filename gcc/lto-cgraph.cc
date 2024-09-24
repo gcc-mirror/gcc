@@ -1129,6 +1129,7 @@ output_offload_tables (void)
       HOST_WIDE_INT val = ((HOST_WIDE_INT) omp_requires_mask
 			   & (OMP_REQUIRES_UNIFIED_ADDRESS
 			      | OMP_REQUIRES_UNIFIED_SHARED_MEMORY
+			      | OMP_REQUIRES_SELF_MAPS
 			      | OMP_REQUIRES_REVERSE_OFFLOAD
 			      | OMP_REQUIRES_TARGET_USED));
       /* (Mis)use LTO_symtab_edge for this variable.  */
@@ -1807,6 +1808,9 @@ omp_requires_to_name (char *buf, size_t size, HOST_WIDE_INT requires_mask)
     p += snprintf (p, end - p, "unified_address");
   if (requires_mask & GOMP_REQUIRES_UNIFIED_SHARED_MEMORY)
     p += snprintf (p, end - p, "%sunified_shared_memory",
+		   (p == buf ? "" : ", "));
+  if (requires_mask & GOMP_REQUIRES_SELF_MAPS)
+    p += snprintf (p, end - p, "%sself_maps",
 		   (p == buf ? "" : ", "));
   if (requires_mask & GOMP_REQUIRES_REVERSE_OFFLOAD)
     p += snprintf (p, end - p, "%sreverse_offload",

@@ -1301,6 +1301,7 @@ GOMP_OFFLOAD_get_num_devices (unsigned int omp_requires_mask)
   if (num_devices > 0
       && ((omp_requires_mask
 	   & ~(GOMP_REQUIRES_UNIFIED_ADDRESS
+	       | GOMP_REQUIRES_SELF_MAPS
 	       | GOMP_REQUIRES_UNIFIED_SHARED_MEMORY
 	       | GOMP_REQUIRES_REVERSE_OFFLOAD)) != 0))
     return -1;
@@ -1308,7 +1309,8 @@ GOMP_OFFLOAD_get_num_devices (unsigned int omp_requires_mask)
      if so, enable USM.  Currently, capabilities is per device type, hence,
      check all devices.  */
   if (num_devices > 0
-      && (omp_requires_mask & GOMP_REQUIRES_UNIFIED_SHARED_MEMORY))
+      && (omp_requires_mask
+	  & (GOMP_REQUIRES_UNIFIED_SHARED_MEMORY | GOMP_REQUIRES_SELF_MAPS)))
     for (int dev = 0; dev < num_devices; dev++)
       {
 	int pi;

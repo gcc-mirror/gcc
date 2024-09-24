@@ -2587,6 +2587,9 @@ gomp_requires_to_name (char *buf, size_t size, int requires_mask)
   if (requires_mask & GOMP_REQUIRES_UNIFIED_SHARED_MEMORY)
     p += snprintf (p, end - p, "%sunified_shared_memory",
 		   (p == buf ? "" : ", "));
+  if (requires_mask & GOMP_REQUIRES_SELF_MAPS)
+    p += snprintf (p, end - p, "%sself_maps",
+		   (p == buf ? "" : ", "));
   if (requires_mask & GOMP_REQUIRES_REVERSE_OFFLOAD)
     p += snprintf (p, end - p, "%sreverse_offload",
 		   (p == buf ? "" : ", "));
@@ -2624,9 +2627,9 @@ GOMP_offload_register_ver (unsigned version, const void *host_table,
   if (omp_req && omp_requires_mask && omp_requires_mask != omp_req)
     {
       char buf1[sizeof ("unified_address, unified_shared_memory, "
-			"reverse_offload")];
+			"self_maps, reverse_offload")];
       char buf2[sizeof ("unified_address, unified_shared_memory, "
-			"reverse_offload")];
+			"self_maps, reverse_offload")];
       gomp_requires_to_name (buf2, sizeof (buf2),
 			     omp_req != GOMP_REQUIRES_TARGET_USED
 			     ? omp_req : omp_requires_mask);
@@ -5493,7 +5496,8 @@ gomp_target_init (void)
 
 		/* If USM has been requested and is supported by all devices
 		   of this type, set the capability accordingly.  */
-		if (omp_requires_mask & GOMP_REQUIRES_UNIFIED_SHARED_MEMORY)
+		if (omp_requires_mask
+		    & (GOMP_REQUIRES_UNIFIED_SHARED_MEMORY | GOMP_REQUIRES_SELF_MAPS))
 		  current_device.capabilities |= GOMP_OFFLOAD_CAP_SHARED_MEM;
 
 		devs = realloc (devs, (num_devs + new_num_devs)
