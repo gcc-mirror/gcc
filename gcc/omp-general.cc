@@ -972,6 +972,7 @@ find_combined_omp_for (tree *tp, int *walk_subtrees, void *data)
       *walk_subtrees = 1;
       break;
     case TRY_FINALLY_EXPR:
+    case CLEANUP_POINT_EXPR:
       pdata[0] = tp;
       *walk_subtrees = 1;
       break;
@@ -4226,6 +4227,7 @@ find_nested_loop_xform (tree *tp, int *walk_subtrees, void *data)
       *walk_subtrees = 1;
       break;
     case TRY_FINALLY_EXPR:
+    case CLEANUP_POINT_EXPR:
       pdata[0] = tp;
       *walk_subtrees = 1;
       break;

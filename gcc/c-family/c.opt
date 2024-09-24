@@ -2209,6 +2209,10 @@ fprintf-return-value
 C ObjC C++ ObjC++ LTO Optimization Var(flag_printf_return_value) Init(1)
 Treat known sprintf return values as constants.
 
+frange-for-ext-temps
+C++ ObjC++ Var(flag_range_for_ext_temps)
+Enable lifetime extension of range based for temporaries.
+
 freplace-objc-classes
 ObjC ObjC++ LTO Var(flag_replace_objc_classes)
 Used in Fix-and-Continue mode to indicate that object files may be swapped in at runtime.

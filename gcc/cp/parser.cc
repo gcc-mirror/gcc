@@ -14480,6 +14480,15 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr,
 	{
 	  range_temp = build_range_temp (range_expr);
 	  pushdecl (range_temp);
+	  if (flag_range_for_ext_temps)
+	    {
+	      /* P2718R0 - put the range_temp declaration and everything
+		 until end of the range for body into an extra STATEMENT_LIST
+		 which will have CLEANUP_POINT_EXPR around it, so that all
+		 temporaries are destroyed at the end of it.  */
+	      gcc_assert (FOR_INIT_STMT (statement) == NULL_TREE);
+	      FOR_INIT_STMT (statement) = push_stmt_list ();
+	    }
 	  cp_finish_decl (range_temp, range_expr,
 			  /*is_constant_init*/false, NULL_TREE,
 			  LOOKUP_ONLYCONVERTING);
@@ -44629,7 +44638,8 @@ cp_parser_omp_for_loop_init (cp_parser *parser,
 void
 cp_convert_omp_range_for (tree &this_pre_body, tree &sl,
 			  tree &decl, tree &orig_decl, tree &init,
-			  tree &orig_init, tree &cond, tree &incr)
+			  tree &orig_init, tree &cond, tree &incr,
+			  bool tmpl_p)
 {
   tree begin, end, range_temp_decl = NULL_TREE;
   tree iter_type, begin_expr, end_expr;
@@ -44687,11 +44697,29 @@ cp_convert_omp_range_for (tree &this_pre_body, tree &sl,
       else
 	{
 	  range_temp = build_range_temp (init);
-	  DECL_NAME (range_temp) = NULL_TREE;
+	  tree name = DECL_NAME (range_temp);
+	  /* Temporarily clear DECL_NAME of the __for_range temporary.
+	     While it contains a space at the end and outside of templates
+	     it works even without doing this, when cp_convert_omp_range_for
+	     is called from tsubst_omp_for_iterator, all the associated loops
+	     are in a single scope and so loop nests with 2 or more range
+	     based for loops would error.  */
+	  if (tmpl_p)
+	    DECL_NAME (range_temp) = NULL_TREE;
 	  pushdecl (range_temp);
+	  /* Restore the name back.  This is needed for cp_finish_decl
+	     lifetime extension of temporaries, and can be helpful for user
+	     during debugging after the DECL_NAME is changed to __for_range
+	     without space at the end.  */
+	  if (tmpl_p)
+	    DECL_NAME (range_temp) = name;
 	  cp_finish_decl (range_temp, init,
 			  /*is_constant_init*/false, NULL_TREE,
 			  LOOKUP_ONLYCONVERTING);
+	  /* And clear the name again.  pop_scope requires that the name
+	     used during pushdecl didn't change.  */
+	  if (tmpl_p)
+	    DECL_NAME (range_temp) = NULL_TREE;
 	  range_temp_decl = range_temp;
 	  range_temp = convert_from_reference (range_temp);
 	}
@@ -44791,7 +44819,7 @@ cp_convert_omp_range_for (tree &this_pre_body, tree &sl,
      the whole loop nest.  The remaining elements are decls of derived
      decomposition variables that are bound inside the loop body.  This
      structure is further mangled by finish_omp_for into the form required
-     for the OMP_FOR_ORIG_DECLS field of the OMP_FOR tree node.  */\
+     for the OMP_FOR_ORIG_DECLS field of the OMP_FOR tree node.  */
   unsigned decomp_cnt = decomp ? decomp->count : 0;
   tree v = make_tree_vec (decomp_cnt + 3);
   TREE_VEC_ELT (v, 0) = range_temp_decl;
@@ -45360,7 +45388,7 @@ cp_parser_omp_loop_nest (cp_parser *parser, bool *if_p)
 
 	  cp_convert_omp_range_for (this_pre_body, sl, decl,
 				    orig_decl, init, orig_init,
-				    cond, incr);
+				    cond, incr, false);
 
 	  if (omp_for_parse_state->ordered_cl)
 	    error_at (OMP_CLAUSE_LOCATION (omp_for_parse_state->ordered_cl),
@@ -45623,10 +45651,29 @@ cp_parser_omp_loop_nest (cp_parser *parser, bool *if_p)
 
   /* Pop and remember the init block.  */
   if (sl)
-    add_stmt (pop_stmt_list (sl));
+    {
+      sl = pop_stmt_list (sl);
+      /* P2718R0 - Add CLEANUP_POINT_EXPR so that temporaries in
+	 for-range-initializer whose lifetime is extended are destructed
+	 here.  */
+      if (flag_range_for_ext_temps
+	  && is_range_for
+	  && !processing_template_decl)
+	sl = maybe_cleanup_point_expr_void (sl);
+      add_stmt (sl);
+    }
+  tree range_for_decl[3] = { NULL_TREE, NULL_TREE, NULL_TREE };
+  if (is_range_for && !processing_template_decl)
+    find_range_for_decls (range_for_decl);
   finish_compound_stmt (init_scope);
   init_block = pop_stmt_list (init_block);
   omp_for_parse_state->init_blockv[depth] = init_block;
+
+  if (is_range_for && !processing_template_decl)
+    for (int i = 0; i < 3; i++)
+      if (range_for_decl[i])
+	DECL_NAME (range_for_decl[i])
+	  = cp_global_trees[CPTI_FOR_RANGE_IDENTIFIER + i];
 
   /* Return the init placeholder rather than the remembered init block.
      Again, this is just a unique cookie that will be used to reassemble

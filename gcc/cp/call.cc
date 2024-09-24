@@ -14564,6 +14564,12 @@ extend_ref_init_temps (tree decl, tree init, vec<tree, va_gc> **cleanups,
   if (processing_template_decl)
     return init;
 
+  /* P2718R0 - ignore temporaries in C++23 for-range-initializer, those
+     have all extended lifetime.  */
+  if (DECL_NAME (decl) == for_range__identifier
+      && flag_range_for_ext_temps)
+    return init;
+
   maybe_warn_dangling_reference (decl, init);
 
   if (TYPE_REF_P (type))

@@ -18127,7 +18127,7 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree &orig_declv,
       tree orig_decl = NULL_TREE;
       tree init_sl = NULL_TREE;
       cp_convert_omp_range_for (this_pre_body, init_sl, decl, orig_decl, init,
-				orig_init, cond, incr);
+				orig_init, cond, incr, true);
       if (orig_decl)
 	{
 	  if (orig_declv == NULL_TREE)
@@ -19156,6 +19156,18 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	RECUR (OMP_FOR_PRE_BODY (t));
 	pre_body = pop_stmt_list (pre_body);
 
+	tree sl = NULL_TREE;
+	if (flag_range_for_ext_temps
+	    && OMP_FOR_INIT (t) != NULL_TREE
+	    && !processing_template_decl)
+	  for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (t)); i++)
+	    if (TREE_VEC_ELT (OMP_FOR_INIT (t), i)
+		&& TREE_VEC_ELT (OMP_FOR_COND (t), i) == global_namespace)
+	      {
+		sl = push_stmt_list ();
+		break;
+	      }
+
 	if (OMP_FOR_INIT (t) != NULL_TREE)
 	  for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (t)); i++)
 	    {
@@ -19211,9 +19223,34 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    add_stmt (t);
 	  }
 
+	if (sl)
+	  {
+	    /* P2718R0 - Add CLEANUP_POINT_EXPR so that temporaries in
+	       for-range-initializer whose lifetime is extended are destructed
+	       here.  */
+	    sl = pop_stmt_list (sl);
+	    sl = maybe_cleanup_point_expr_void (sl);
+	    add_stmt (sl);
+	  }
+
 	add_stmt (finish_omp_for_block (finish_omp_structured_block (stmt),
 					t));
 	pop_omp_privatization_clauses (r);
+
+	if (any_range_for && !processing_template_decl && t)
+	  for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (t)); i++)
+	    if (TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (t), i)
+		&& TREE_CODE (TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (t),
+					    i)) == TREE_LIST)
+	      {
+		tree v = TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (t), i);
+		if (TREE_CHAIN (v) == NULL_TREE
+		    || TREE_CODE (TREE_CHAIN (v)) != TREE_VEC)
+		  continue;
+		v = TREE_VEC_ELT (TREE_CHAIN (v), 0);
+		gcc_assert (VAR_P (v) && DECL_NAME (v) == NULL_TREE);
+		DECL_NAME (v) = for_range_identifier;
+	      }
       }
       break;
 
