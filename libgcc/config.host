@@ -239,7 +239,7 @@ case ${host} in
   esac
   tmake_file="$tmake_file t-slibgcc-darwin"
   case ${host} in
-    x86_64-*-darwin2[0-3]*)
+    x86_64-*-darwin2[0-2]*)
       tmake_file="t-darwin-min-11 t-darwin-libgccs1 $tmake_file"
       ;;
     *-*-darwin2*)
