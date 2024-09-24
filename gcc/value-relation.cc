@@ -321,6 +321,7 @@ equiv_oracle::equiv_oracle ()
   m_equiv.create (0);
   m_equiv.safe_grow_cleared (last_basic_block_for_fn (cfun) + 1);
   m_equiv_set = BITMAP_ALLOC (&m_bitmaps);
+  bitmap_tree_view (m_equiv_set);
   obstack_init (&m_chain_obstack);
   m_self_equiv.create (0);
   m_self_equiv.safe_grow_cleared (num_ssa_names + 1);
