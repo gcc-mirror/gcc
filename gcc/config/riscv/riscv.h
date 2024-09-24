@@ -316,7 +316,7 @@ ASM_MISA_SPEC
 
 #define FIRST_PSEUDO_REGISTER 128
 
-/* x0, sp, gp, and tp are fixed.  */
+/* x0, ra, sp, gp, and tp are fixed.  */
 
 #define FIXED_REGISTERS							\
 { /* General registers.  */						\
