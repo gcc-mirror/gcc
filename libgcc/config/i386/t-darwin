@@ -4,6 +4,3 @@ LIB2FUNCS_EXCLUDE = _fixtfdi _fixunstfdi _floatditf _floatunditf
 
 # Extra symbols for this port.
 SHLIB_MAPFILES += $(srcdir)/config/i386/libgcc-darwin.ver
-
-# Build a legacy libgcc_s.1
-BUILD_LIBGCCS1 = YES
