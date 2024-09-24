@@ -818,3 +818,22 @@
 
   return false;
 })
+
+;; Predicats for the arguments of sfunc R4, R5 and R6.
+(define_predicate "hard_reg_r4"
+  (match_code "reg")
+{
+  return REGNO (op) == R4_REG;
+})
+
+(define_predicate "hard_reg_r5"
+  (match_code "reg")
+{
+  return REGNO (op) == R5_REG;
+})
+
+(define_predicate "hard_reg_r6"
+  (match_code "reg")
+{
+  return REGNO (op) == R6_REG;
+})

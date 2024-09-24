@@ -134,7 +134,7 @@ expand_block_move (rtx *operands)
 
 	  int dwords = bytes >> 3;
 	  emit_insn (gen_move_insn (r6, GEN_INT (dwords - 1)));
-	  emit_insn (gen_block_lump_real_i4 (func_addr_rtx, lab));
+	  emit_insn (gen_block_lump_real_i4 (func_addr_rtx, lab, r4, r5, r6));
 	  return true;
 	}
       else
@@ -178,7 +178,7 @@ expand_block_move (rtx *operands)
       final_switch = 16 - ((bytes / 4) % 16);
       while_loop = ((bytes / 4) / 16 - 1) * 16;
       emit_insn (gen_move_insn (r6, GEN_INT (while_loop + final_switch)));
-      emit_insn (gen_block_lump_real (func_addr_rtx, lab));
+      emit_insn (gen_block_lump_real (func_addr_rtx, lab, r4, r5, r6));
       return true;
     }
 

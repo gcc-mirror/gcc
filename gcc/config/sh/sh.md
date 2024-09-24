@@ -2194,13 +2194,24 @@
 ;; there is nothing to prevent reload from using r0 to reload the address.
 ;; This reload would clobber the value in r0 we are trying to store.
 ;; If we let reload allocate r0, then this problem can never happen.
+;;
+;; In addition to that, we also must pin the input regs to hard-regs via the
+;; predicates.  When these insns are instantiated it also emits the
+;; accompanying mov insns to load the hard-regs.  However, subsequent RTL
+;; passes might move things around and reassign the operands to pseudo regs
+;; which might get allocated to different (wrong) hard-regs eventually.  To
+;; avoid that, only allow matching these insns if the operands are the
+;; expected hard-regs.
 (define_insn "udivsi3_i1"
   [(set (match_operand:SI 0 "register_operand" "=z,z")
-	(udiv:SI (reg:SI R4_REG) (reg:SI R5_REG)))
+	(udiv:SI (match_operand:SI 3 "hard_reg_r4" "=r,r")
+		 (match_operand:SI 4 "hard_reg_r5" "=r,r")))
    (clobber (reg:SI T_REG))
    (clobber (reg:SI PR_REG))
    (clobber (reg:SI R1_REG))
-   (clobber (reg:SI R4_REG))
+   (clobber (match_dup 3))
+   (use (reg:SI R4_REG))
+   (use (reg:SI R5_REG))
    (use (match_operand:SI 1 "arith_reg_operand" "r,r"))
    (use (match_operand 2 "" "Z,Ccl"))]
   "TARGET_SH1 && TARGET_DIVIDE_CALL_DIV1"
@@ -2212,7 +2223,8 @@
 
 (define_insn "udivsi3_i4"
   [(set (match_operand:SI 0 "register_operand" "=y,y")
-	(udiv:SI (reg:SI R4_REG) (reg:SI R5_REG)))
+	(udiv:SI (match_operand:SI 3 "hard_reg_r4" "=r,r")
+		 (match_operand:SI 4 "hard_reg_r5" "=r,r")))
    (clobber (reg:SI T_REG))
    (clobber (reg:SI PR_REG))
    (clobber (reg:DF DR0_REG))
@@ -2220,9 +2232,11 @@
    (clobber (reg:DF DR4_REG))
    (clobber (reg:SI R0_REG))
    (clobber (reg:SI R1_REG))
-   (clobber (reg:SI R4_REG))
-   (clobber (reg:SI R5_REG))
+   (clobber (match_dup 3))
+   (clobber (match_dup 4))
    (clobber (reg:SI FPSCR_STAT_REG))
+   (use (reg:SI R4_REG))
+   (use (reg:SI R5_REG))
    (use (match_operand:SI 1 "arith_reg_operand" "r,r"))
    (use (match_operand 2 "" "Z,Ccl"))
    (use (reg:SI FPSCR_MODES_REG))]
@@ -2236,7 +2250,8 @@
 
 (define_insn "udivsi3_i4_single"
   [(set (match_operand:SI 0 "register_operand" "=y,y")
-	(udiv:SI (reg:SI R4_REG) (reg:SI R5_REG)))
+	(udiv:SI (match_operand:SI 3 "hard_reg_r4" "=r,r")
+		 (match_operand:SI 4 "hard_reg_r5" "=r,r")))
    (clobber (reg:SI T_REG))
    (clobber (reg:SI PR_REG))
    (clobber (reg:DF DR0_REG))
@@ -2244,8 +2259,10 @@
    (clobber (reg:DF DR4_REG))
    (clobber (reg:SI R0_REG))
    (clobber (reg:SI R1_REG))
-   (clobber (reg:SI R4_REG))
-   (clobber (reg:SI R5_REG))
+   (clobber (match_dup 3))
+   (clobber (match_dup 4))
+   (use (reg:SI R4_REG))
+   (use (reg:SI R5_REG))
    (use (match_operand:SI 1 "arith_reg_operand" "r,r"))
    (use (match_operand 2 "" "Z,Ccl"))]
   "TARGET_FPU_ANY && TARGET_FPU_SINGLE"
@@ -2278,6 +2295,8 @@
 {
   rtx last;
   rtx func_ptr = gen_reg_rtx (Pmode);
+  rtx r4 = gen_rtx_REG (SImode, R4_REG);
+  rtx r5 = gen_rtx_REG (SImode, R5_REG);
 
   /* Emit the move of the address to a pseudo outside of the libcall.  */
   if (TARGET_DIVIDE_CALL_TABLE)
@@ -2305,9 +2324,9 @@
     {
       rtx lab = function_symbol (func_ptr, "__udivsi3_i4", SFUNC_STATIC).lab;
       if (TARGET_FPU_SINGLE)
-	last = gen_udivsi3_i4_single (operands[0], func_ptr, lab);
+	last = gen_udivsi3_i4_single (operands[0], func_ptr, lab, r4, r5);
       else
-	last = gen_udivsi3_i4 (operands[0], func_ptr, lab);
+	last = gen_udivsi3_i4 (operands[0], func_ptr, lab, r4, r5);
     }
   else if (TARGET_SH2A)
     {
@@ -2319,10 +2338,10 @@
   else
     {
       rtx lab = function_symbol (func_ptr, "__udivsi3", SFUNC_STATIC).lab;
-      last = gen_udivsi3_i1 (operands[0], func_ptr, lab);
+      last = gen_udivsi3_i1 (operands[0], func_ptr, lab, r4, r5);
     }
-  emit_move_insn (gen_rtx_REG (SImode, 4), operands[1]);
-  emit_move_insn (gen_rtx_REG (SImode, 5), operands[2]);
+  emit_move_insn (r4, operands[1]);
+  emit_move_insn (r5, operands[2]);
   emit_insn (last);
   DONE;
 })
@@ -9084,17 +9103,20 @@
    (set_attr "needs_delay_slot" "yes")])
 
 (define_insn "block_lump_real"
-  [(parallel [(set (mem:BLK (reg:SI R4_REG))
-		   (mem:BLK (reg:SI R5_REG)))
-	      (use (match_operand:SI 0 "arith_reg_operand" "r,r"))
-	      (use (match_operand 1 "" "Z,Ccl"))
-	      (use (reg:SI R6_REG))
-	      (clobber (reg:SI PR_REG))
-	      (clobber (reg:SI T_REG))
-	      (clobber (reg:SI R4_REG))
-	      (clobber (reg:SI R5_REG))
-	      (clobber (reg:SI R6_REG))
-	      (clobber (reg:SI R0_REG))])]
+  [(set (mem:BLK (match_operand:SI 2 "hard_reg_r4" "=r,r"))
+	(mem:BLK (match_operand:SI 3 "hard_reg_r5" "=r,r")))
+   (use (match_operand:SI 0 "arith_reg_operand" "r,r"))
+   (use (match_operand 1 "" "Z,Ccl"))
+   (use (match_operand:SI 4 "hard_reg_r6" "=r,r"))
+   (use (reg:SI R4_REG))
+   (use (reg:SI R5_REG))
+   (use (reg:SI R6_REG))
+   (clobber (match_dup 2))
+   (clobber (match_dup 3))
+   (clobber (match_dup 4))
+   (clobber (reg:SI PR_REG))
+   (clobber (reg:SI T_REG))
+   (clobber (reg:SI R0_REG))]
   "TARGET_SH1 && ! TARGET_HARD_SH4"
   "@
 	jsr	@%0%#
@@ -9119,20 +9141,23 @@
    (set_attr "needs_delay_slot" "yes")])
 
 (define_insn "block_lump_real_i4"
-  [(parallel [(set (mem:BLK (reg:SI R4_REG))
-		   (mem:BLK (reg:SI R5_REG)))
-	      (use (match_operand:SI 0 "arith_reg_operand" "r,r"))
-	      (use (match_operand 1 "" "Z,Ccl"))
-	      (use (reg:SI R6_REG))
-	      (clobber (reg:SI PR_REG))
-	      (clobber (reg:SI T_REG))
-	      (clobber (reg:SI R4_REG))
-	      (clobber (reg:SI R5_REG))
-	      (clobber (reg:SI R6_REG))
-	      (clobber (reg:SI R0_REG))
-	      (clobber (reg:SI R1_REG))
-	      (clobber (reg:SI R2_REG))
-	      (clobber (reg:SI R3_REG))])]
+  [(set (mem:BLK (match_operand:SI 2 "hard_reg_r4" "=r,r"))
+	(mem:BLK (match_operand:SI 3 "hard_reg_r5" "=r,r")))
+   (use (match_operand:SI 0 "arith_reg_operand" "r,r"))
+   (use (match_operand 1 "" "Z,Ccl"))
+   (use (match_operand:SI 4 "hard_reg_r6" "=r,r"))
+   (use (reg:SI R4_REG))
+   (use (reg:SI R5_REG))
+   (use (reg:SI R6_REG))
+   (clobber (match_dup 2))
+   (clobber (match_dup 3))
+   (clobber (match_dup 4))
+   (clobber (reg:SI PR_REG))
+   (clobber (reg:SI T_REG))
+   (clobber (reg:SI R0_REG))
+   (clobber (reg:SI R1_REG))
+   (clobber (reg:SI R2_REG))
+   (clobber (reg:SI R3_REG))]
   "TARGET_HARD_SH4"
   "@
 	jsr	@%0%#
