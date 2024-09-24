@@ -65,11 +65,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_data = new __timepunct_cache<char>;
 
       _M_data->_M_date_format = "%m/%d/%y";
-      _M_data->_M_date_era_format = "%m/%d/%y";
+      _M_data->_M_date_era_format = _M_data->_M_date_format;
       _M_data->_M_time_format = "%H:%M:%S";
-      _M_data->_M_time_era_format = "%H:%M:%S";
-      _M_data->_M_date_time_format = "";
-      _M_data->_M_date_time_era_format = "";
+      _M_data->_M_time_era_format = _M_data->_M_time_format;
+      _M_data->_M_date_time_format = "%a %b %e %T %Y";
+      _M_data->_M_date_time_era_format = _M_data->_M_date_time_format;
       _M_data->_M_am = "AM";
       _M_data->_M_pm = "PM";
       _M_data->_M_am_pm_format = "%I:%M:%S %p";
