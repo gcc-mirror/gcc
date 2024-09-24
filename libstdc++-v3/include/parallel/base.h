@@ -166,6 +166,8 @@ namespace __gnu_parallel
       { return !_M_comp(__a, __b) && !_M_comp(__b, __a); }
     };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // *nary_function
 
   /** @brief Similar to std::unary_negate,
    *  but giving the argument types explicitly. */
@@ -296,6 +298,8 @@ namespace __gnu_parallel
   template<typename _Tp>
     struct _Multiplies<_Tp, _Tp, _Tp>
     : public std::multiplies<_Tp> { };
+
+#pragma GCC diagnostic pop // -Wdeprecated-declarations
 
   /** @brief _Iterator associated with __gnu_parallel::_PseudoSequence.
    *  If features the usual random-access iterator functionality.
