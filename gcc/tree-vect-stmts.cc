@@ -13295,6 +13295,12 @@ vect_analyze_stmt (vec_info *vinfo,
           if (dump_enabled_p ())
             dump_printf_loc (MSG_NOTE, vect_location, "irrelevant.\n");
 
+	  if (node)
+	    return opt_result::failure_at (stmt_info->stmt,
+					   "not vectorized:"
+					   " irrelevant stmt as SLP node %p "
+					   "representative.\n",
+					   (void *)node);
           return opt_result::success ();
         }
     }
