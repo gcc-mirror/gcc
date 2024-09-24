@@ -1507,19 +1507,15 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
   if (memory_access_type == VMAT_INVARIANT)
     return;
 
-  unsigned int nvectors;
-  if (slp_node)
-    /* ???  Incorrect for multi-lane lanes.  */
-    nvectors = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) / group_size;
-  else
-    nvectors = vect_get_num_copies (loop_vinfo, vectype);
-
+  unsigned int nvectors = vect_get_num_copies (loop_vinfo, slp_node, vectype);
   vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
   vec_loop_lens *lens = &LOOP_VINFO_LENS (loop_vinfo);
   machine_mode vecmode = TYPE_MODE (vectype);
   bool is_load = (vls_type == VLS_LOAD);
   if (memory_access_type == VMAT_LOAD_STORE_LANES)
     {
+      if (slp_node)
+	nvectors /= group_size;
       internal_fn ifn
 	= (is_load ? vect_load_lanes_supported (vectype, group_size, true)
 		   : vect_store_lanes_supported (vectype, group_size, true));
