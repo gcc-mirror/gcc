@@ -917,6 +917,7 @@ information.
 Juergen Christ                                  <jchrist@linux.ibm.com>
 Robin Dapp                                      <rdapp.gcc@gmail.com>
 Robin Dapp                                      <rdapp@ventanamicro.com>
+Aldy Hernandez                                  <aldy@quesejoda.com>
 Michal Jires                                    <mjires@suse.cz>
 Matthias Kretz                                  <m.kretz@gsi.de>
 Prathamesh Kulkarni                             <prathameshk@nvidia.com>
@@ -949,4 +950,3 @@ Jonathan Wakely                                 <jwakely@redhat.com>
 Alexander Westbrooks                            <alexanderw@gcc.gnu.org>
 Chung-Ju Wu                                     <jasonwucj@gmail.com>
 Pengxuan Zheng                                  <quic_pzheng@quicinc.com>
-Aldy Hernandez                                  <aldy@quesejoda.com>
