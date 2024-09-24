@@ -11462,11 +11462,15 @@ sh_movsf_ie_y_split_p (rtx op0, rtx op1)
 {
   /* f, r */
   if (REG_P (op0)
-      && (SUBREG_P (op1) && GET_MODE (SUBREG_REG (op1)) == SImode))
+      && (SUBREG_P (op1)
+	  && (GET_MODE (SUBREG_REG (op1)) == SImode
+	      || GET_MODE (SUBREG_REG (op1)) == DImode)))
     return true;
   /* r, f */
   if (REG_P (op1)
-      && (SUBREG_P (op0) && GET_MODE (SUBREG_REG (op0)) == SImode))
+      && (SUBREG_P (op0)
+	  && (GET_MODE (SUBREG_REG (op0)) == SImode
+	      || GET_MODE (SUBREG_REG (op0)) == DImode)))
     return true;
 
   return false;
