@@ -1,16 +1,23 @@
 // test that contracts on overriding functions are found correctly
 // { dg-do run }
 // { dg-options "-std=c++2a -fcontracts -fcontract-continuation-mode=on -fcontracts-nonattr" }
+
 #include <cstdio>
+
+struct T {
+  int x;
+  T (int _x) : x(_x) {}
+  ~T () { x = -1; }
+};
 
 struct Base
 {
-  virtual int f(const int a) pre (a > 5);
+  virtual T f(const int a) pre (a > 5);
 };
 
-int Base::f(const int a)
+T Base::f(const int a)
 {
-  return a;
+  return T (a);
 }
 
 // inherits original
@@ -20,22 +27,21 @@ struct Child0 : Base
 
 struct Child1 : Base
 {
-  virtual int f(const int a) pre (a > 14){ return a + 10; }
+  virtual T f(const int a) pre (a > 14){ return T (a + 10); }
 };
 
 
 struct GChild1 : Child0
 {
-  virtual int f(const int a) post(a > 6) { return a + 100; };
+  virtual T f(const int a) post(a > 6) { return T (a + 100); };
 };
 
 struct GChild2 : Child1
 {
-  virtual int f(const int a) post(a > 30) { return a + 200; };
+  virtual T f(const int a) post(a > 30) { return T (a + 200); };
 };
 
-
-int fooBase(Base& b)
+T fooBase(Base& b)
 {
     return b.f(1);
 }
@@ -47,18 +53,18 @@ int main(int, char**)
   Child1 c1;
   GChild1 g1;
   GChild2 g2;
+  T q = b.f(3);     // a > 5
+  printf("Base: %d\n", q.x );
+  printf("Child0: %d\n", c0.f(3).x);  // a > 5
+  printf("Child1: %d\n", c1.f(7).x);  // a > 14
+  printf("GChild1: %d\n", g1.f(3).x);  // a > 6
+  printf("GChild2: %d\n", g2.f(7).x);  // a > 30
 
-  printf("Base: %d\n", b.f(3));     // a > 5
-  printf("Child0: %d\n", c0.f(3));  // a > 5
-  printf("Child1: %d\n", c1.f(7));  // a > 14
-  printf("GChild1: %d\n", g1.f(3));  // a > 6
-  printf("GChild2: %d\n", g2.f(7));  // a > 30
-
-  printf("fooBase(Base): %d\n", fooBase(b));     // a > 5
-  printf("fooBase(Child0): %d\n", fooBase(c0));     // a > 5
-  printf("fooBase(Child1): %d\n", fooBase(c1));     // a > 14
-  printf("fooBase(GChild1): %d\n", fooBase(g1));     // a > 6
-  printf("fooBase(GChild2): %d\n", fooBase(g2));     // a > 30
+  printf("fooBase(Base): %d\n", fooBase(b).x);     // a > 5
+  printf("fooBase(Child0): %d\n", fooBase(c0).x);     // a > 5
+  printf("fooBase(Child1): %d\n", fooBase(c1).x);     // a > 14
+  printf("fooBase(GChild1): %d\n", fooBase(g1).x);     // a > 6
+  printf("fooBase(GChild2): %d\n", fooBase(g2).x);     // a > 30
   return 0;
 }
 
