@@ -2788,6 +2788,7 @@ As of now, the following intrinsics take unsigned arguments:
 @item @code{MVBITS}
 @item @code{RANGE}
 @item @code{TRANSFER}
+@item @code{MATMUL} and @code{DOT_PRODUCT}
 @end itemize
 This list will grow in the near future.
 @c ---------------------------------------------------------------------

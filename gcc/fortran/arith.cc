@@ -711,17 +711,9 @@ gfc_arith_uminus (gfc_expr *op1, gfc_expr **resultp)
     case BT_UNSIGNED:
       {
 	if (pedantic)
-	  return ARITH_UNSIGNED_NEGATIVE;
+	  return check_result (ARITH_UNSIGNED_NEGATIVE, op1, result, resultp);
 
-	arith neg_rc;
 	mpz_neg (result->value.integer, op1->value.integer);
-	neg_rc = gfc_range_check (result);
-	if (neg_rc != ARITH_OK)
-	  gfc_warning (0, gfc_arith_error (neg_rc), &result->where);
-
-	gfc_reduce_unsigned (result);
-	if (pedantic)
-	  rc = neg_rc;
       }
       break;
 
@@ -738,7 +730,15 @@ gfc_arith_uminus (gfc_expr *op1, gfc_expr **resultp)
     }
 
   rc = gfc_range_check (result);
-
+  if (op1->ts.type == BT_UNSIGNED)
+    {
+      if (rc != ARITH_OK)
+	{
+	  gfc_warning (0, gfc_arith_error (rc), &op1->where);
+	  rc = ARITH_OK;
+	}
+      gfc_reduce_unsigned (result);
+    }
   return check_result (rc, op1, result, resultp);
 }
 
@@ -799,8 +799,12 @@ gfc_arith_minus (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
   switch (op1->ts.type)
     {
     case BT_INTEGER:
+      mpz_sub (result->value.integer, op1->value.integer, op2->value.integer);
+      break;
+
     case BT_UNSIGNED:
       mpz_sub (result->value.integer, op1->value.integer, op2->value.integer);
+      gfc_reduce_unsigned (result);
       break;
 
     case BT_REAL:

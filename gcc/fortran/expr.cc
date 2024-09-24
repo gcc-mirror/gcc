@@ -224,6 +224,19 @@ gfc_get_int_expr (int kind, locus *where, HOST_WIDE_INT value)
   return p;
 }
 
+/* Get a new expression node that is an unsigned constant.  */
+
+gfc_expr *
+gfc_get_unsigned_expr (int kind, locus *where, HOST_WIDE_INT value)
+{
+  gfc_expr *p;
+  p = gfc_get_constant_expr (BT_UNSIGNED, kind,
+			     where ? where : &gfc_current_locus);
+  const wide_int w = wi::shwi (value, kind * BITS_PER_UNIT);
+  wi::to_mpz (w, p->value.integer, UNSIGNED);
+
+  return p;
+}
 
 /* Get a new expression node that is a logical constant.  */
 

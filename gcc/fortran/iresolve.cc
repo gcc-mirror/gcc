@@ -1600,6 +1600,7 @@ void
 gfc_resolve_matmul (gfc_expr *f, gfc_expr *a, gfc_expr *b)
 {
   gfc_expr temp;
+  bt type;
 
   if (a->ts.type == BT_LOGICAL && b->ts.type == BT_LOGICAL)
     {
@@ -1648,8 +1649,16 @@ gfc_resolve_matmul (gfc_expr *f, gfc_expr *a, gfc_expr *b)
 	}
     }
 
+  /* We use the same library version of matmul for INTEGER and UNSIGNED,
+     which we call as the INTEGER version.  */
+
+  if (f->ts.type == BT_UNSIGNED)
+    type = BT_INTEGER;
+  else
+    type = f->ts.type;
+
   f->value.function.name
-    = gfc_get_string (PREFIX ("matmul_%c%d"), gfc_type_letter (f->ts.type),
+    = gfc_get_string (PREFIX ("matmul_%c%d"), gfc_type_letter (type),
 		      gfc_type_abi_kind (&f->ts));
 }
 

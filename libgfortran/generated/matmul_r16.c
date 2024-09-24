@@ -35,10 +35,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    matrices.  */
 
 typedef void (*blas_call)(const char *, const char *, const int *, const int *,
-                          const int *, const GFC_REAL_16 *, const GFC_REAL_16 *,
-                          const int *, const GFC_REAL_16 *, const int *,
-                          const GFC_REAL_16 *, GFC_REAL_16 *, const int *,
-                          int, int);
+			  const int *, const GFC_REAL_16 *, const GFC_REAL_16 *,
+			  const int *, const GFC_REAL_16 *, const int *,
+			  const GFC_REAL_16 *, GFC_REAL_16 *, const int *,
+			  int, int);
 
 /* The order of loops is different in the case of plain matrix
    multiplication C=MATMUL(A,B), and in the frequent special case where
@@ -69,7 +69,7 @@ typedef void (*blas_call)(const char *, const char *, const int *, const int *,
    see if there is a way to perform the matrix multiplication by a call
    to the BLAS gemm function.  */
 
-extern void matmul_r16 (gfc_array_r16 * const restrict retarray, 
+extern void matmul_r16 (gfc_array_r16 * const restrict retarray,
 	gfc_array_r16 * const restrict a, gfc_array_r16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm);
 export_proto(matmul_r16);
@@ -80,11 +80,11 @@ export_proto(matmul_r16);
 
 #ifdef HAVE_AVX
 static void
-matmul_r16_avx (gfc_array_r16 * const restrict retarray, 
+matmul_r16_avx (gfc_array_r16 * const restrict retarray,
 	gfc_array_r16 * const restrict a, gfc_array_r16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm) __attribute__((__target__("avx")));
 static void
-matmul_r16_avx (gfc_array_r16 * const restrict retarray, 
+matmul_r16_avx (gfc_array_r16 * const restrict retarray,
 	gfc_array_r16 * const restrict a, gfc_array_r16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm)
 {
@@ -649,11 +649,11 @@ matmul_r16_avx (gfc_array_r16 * const restrict retarray,
 
 #ifdef HAVE_AVX2
 static void
-matmul_r16_avx2 (gfc_array_r16 * const restrict retarray, 
+matmul_r16_avx2 (gfc_array_r16 * const restrict retarray,
 	gfc_array_r16 * const restrict a, gfc_array_r16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm) __attribute__((__target__("avx2,fma")));
 static void
-matmul_r16_avx2 (gfc_array_r16 * const restrict retarray, 
+matmul_r16_avx2 (gfc_array_r16 * const restrict retarray,
 	gfc_array_r16 * const restrict a, gfc_array_r16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm)
 {
@@ -1218,11 +1218,11 @@ matmul_r16_avx2 (gfc_array_r16 * const restrict retarray,
 
 #ifdef HAVE_AVX512F
 static void
-matmul_r16_avx512f (gfc_array_r16 * const restrict retarray, 
+matmul_r16_avx512f (gfc_array_r16 * const restrict retarray,
 	gfc_array_r16 * const restrict a, gfc_array_r16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm) __attribute__((__target__("avx512f")));
 static void
-matmul_r16_avx512f (gfc_array_r16 * const restrict retarray, 
+matmul_r16_avx512f (gfc_array_r16 * const restrict retarray,
 	gfc_array_r16 * const restrict a, gfc_array_r16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm)
 {
@@ -1789,7 +1789,7 @@ matmul_r16_avx512f (gfc_array_r16 * const restrict retarray,
 
 #if defined(HAVE_AVX) && defined(HAVE_FMA3) && defined(HAVE_AVX128)
 void
-matmul_r16_avx128_fma3 (gfc_array_r16 * const restrict retarray, 
+matmul_r16_avx128_fma3 (gfc_array_r16 * const restrict retarray,
 	gfc_array_r16 * const restrict a, gfc_array_r16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm) __attribute__((__target__("avx,fma")));
 internal_proto(matmul_r16_avx128_fma3);
@@ -1797,7 +1797,7 @@ internal_proto(matmul_r16_avx128_fma3);
 
 #if defined(HAVE_AVX) && defined(HAVE_FMA4) && defined(HAVE_AVX128)
 void
-matmul_r16_avx128_fma4 (gfc_array_r16 * const restrict retarray, 
+matmul_r16_avx128_fma4 (gfc_array_r16 * const restrict retarray,
 	gfc_array_r16 * const restrict a, gfc_array_r16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm) __attribute__((__target__("avx,fma4")));
 internal_proto(matmul_r16_avx128_fma4);
@@ -1805,7 +1805,7 @@ internal_proto(matmul_r16_avx128_fma4);
 
 /* Function to fall back to if there is no special processor-specific version.  */
 static void
-matmul_r16_vanilla (gfc_array_r16 * const restrict retarray, 
+matmul_r16_vanilla (gfc_array_r16 * const restrict retarray,
 	gfc_array_r16 * const restrict a, gfc_array_r16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm)
 {
@@ -2371,15 +2371,15 @@ matmul_r16_vanilla (gfc_array_r16 * const restrict retarray,
 
 /* Currently, this is i386 only.  Adjust for other architectures.  */
 
-void matmul_r16 (gfc_array_r16 * const restrict retarray, 
+void matmul_r16 (gfc_array_r16 * const restrict retarray,
 	gfc_array_r16 * const restrict a, gfc_array_r16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm)
 {
-  static void (*matmul_p) (gfc_array_r16 * const restrict retarray, 
+  static void (*matmul_p) (gfc_array_r16 * const restrict retarray,
 	gfc_array_r16 * const restrict a, gfc_array_r16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm);
 
-  void (*matmul_fn) (gfc_array_r16 * const restrict retarray, 
+  void (*matmul_fn) (gfc_array_r16 * const restrict retarray,
 	gfc_array_r16 * const restrict a, gfc_array_r16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm);
 
@@ -2447,7 +2447,7 @@ void matmul_r16 (gfc_array_r16 * const restrict retarray,
 #else  /* Just the vanilla function.  */
 
 void
-matmul_r16 (gfc_array_r16 * const restrict retarray, 
+matmul_r16 (gfc_array_r16 * const restrict retarray,
 	gfc_array_r16 * const restrict a, gfc_array_r16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm)
 {
