@@ -1,3 +1,20 @@
+2024-09-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-09-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (AS_NEEDS_DASH_FOR_PIPED_INPUT): New.
+
+2024-09-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-08-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/116237
+	* config/darwin.h (SUBTARGET_DRIVER_SELF_SPECS): Add a spec for
+	weak_framework.
+	* config/darwin.opt: Handle weak_framework driver option.
+
 2024-09-22  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.h (GENERAL_REGNO_P): Define.

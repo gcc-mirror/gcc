@@ -1,3 +1,59 @@
+2024-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116529
+	* include/bits/unique_ptr.h (unique_ptr(auto_ptr<U>&&)):
+	Use pointer instead of T*.
+	* testsuite/20_util/unique_ptr/creation/116529.cc: New test.
+
+2024-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116754
+	* include/bits/ranges_algobase.h (__copy_or_move): Fix order of
+	arguments to __memcpyable.
+
+2024-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116777
+	* doc/xml/manual/using.xml: Document features that are not
+	supported for the gcc4-compatible ABI.
+	* doc/html/manual/using_dual_abi.html: Regenerate.
+
+2024-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108619
+	* include/bits/alloc_traits.h (__allocator_traits_base): Add
+	variable templates for detecting whether the allocator has a
+	construct member, or if placement new can be used instead.
+	(allocator_traits::__construct_helper): Remove.
+	(allocator_traits::__has_construct): Remove.
+	(allocator_traits::construct): Use 'if constexpr' instead of
+	dispatching to overloads constrained with enable_if.
+	(allocator_traits<allocator<T>>::construct): Use _Construct if
+	construct_at is not supported. Use
+	__is_nothrow_new_constructible for noexcept-specifier.
+	(allocator_traits<allocator<void>>::construct): Use
+	__is_nothrow_new_constructible for noexcept-specifier.
+	* include/bits/new_allocator.h (construct): Likewise.
+	* include/ext/malloc_allocator.h (construct): Likewise.
+	* include/std/type_traits (__is_nothrow_new_constructible): New
+	variable template.
+	* testsuite/20_util/allocator/89510.cc: Adjust expected results.
+	* testsuite/ext/malloc_allocator/89510.cc: Likewise.
+	* testsuite/ext/new_allocator/89510.cc: Likewise.
+	* testsuite/20_util/allocator_traits/members/108619.cc: New test.
+
 2024-09-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
