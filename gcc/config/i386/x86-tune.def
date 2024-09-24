@@ -540,6 +540,14 @@ DEF_TUNE (X86_TUNE_AVOID_512FMA_CHAINS, "avoid_fma512_chains", m_ZNVER5)
 DEF_TUNE (X86_TUNE_V2DF_REDUCTION_PREFER_HADDPD,
 	  "v2df_reduction_prefer_haddpd", m_NONE)
 
+/* X86_TUNE_SSE_MOVCC_USE_BLENDV: Prefer blendv instructions to
+   3-instruction sequence (op1 & mask) | (op2 & ~mask)
+   for vector condition move.
+   For Crestmont, 4-operand vex blendv instructions come from MSROM
+   which is slow.  */
+DEF_TUNE (X86_TUNE_SSE_MOVCC_USE_BLENDV,
+	  "sse_movcc_use_blendv", ~m_CORE_ATOM)
+
 /*****************************************************************************/
 /* AVX instruction selection tuning (some of SSE flags affects AVX, too)     */
 /*****************************************************************************/
