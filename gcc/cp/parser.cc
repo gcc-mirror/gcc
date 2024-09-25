@@ -49571,6 +49571,9 @@ cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
   int device_type = 0;
   bool indirect = false;
   bool only_device_type_or_indirect = true;
+  if (flag_openmp)
+    omp_requires_mask
+      = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_TARGET_USED);
   if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
       || (cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
 	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME)))

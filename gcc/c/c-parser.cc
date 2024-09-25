@@ -25492,6 +25492,9 @@ c_parser_omp_declare_target (c_parser *parser)
   int device_type = 0;
   bool indirect = false;
   bool only_device_type_or_indirect = true;
+  if (flag_openmp)
+    omp_requires_mask
+      = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_TARGET_USED);
   if (c_parser_next_token_is (parser, CPP_NAME)
       || (c_parser_next_token_is (parser, CPP_COMMA)
 	  && c_parser_peek_2nd_token (parser)->type == CPP_NAME))
