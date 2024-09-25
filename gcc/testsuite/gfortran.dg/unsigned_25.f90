@@ -27,9 +27,9 @@ contains
          5u, uint(-6), 7u, uint(-8), 9u],[3,3])
     unsigned, parameter :: v(3,3) = 1u - u
     unsigned, parameter :: w(3,3) = matmul(u,v)
-    integer(kind=16), dimension(3,3), parameter :: &
-         i = int(u,16), j = int(v,16)
-    integer(kind=16), dimension(3,3) :: k = matmul(i,j)
+    integer(kind=8), dimension(3,3), parameter :: &
+         i = int(u,8), j = int(v,8)
+    integer(kind=8), dimension(3,3) :: k = matmul(i,j)
     if (any(uint(k) /= w)) error stop 2
   end subroutine test2
 end program memain
