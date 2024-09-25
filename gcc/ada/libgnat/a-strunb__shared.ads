@@ -153,7 +153,8 @@ is
      Pre    => Length (New_Item) <= Natural'Last - Length (Source),
      Post   =>
        To_String (Source) = To_String (Source)'Old & To_String (New_Item),
-     Global => null;
+     Global => null,
+     Inline => True;
 
    procedure Append
      (Source   : in out Unbounded_String;
@@ -161,7 +162,8 @@ is
    with
      Pre    => New_Item'Length <= Natural'Last - Length (Source),
      Post   => To_String (Source) = To_String (Source)'Old & New_Item,
-     Global => null;
+     Global => null,
+     Inline => True;
 
    procedure Append
      (Source   : in out Unbounded_String;
@@ -169,7 +171,8 @@ is
    with
      Pre    => Length (Source) < Natural'Last,
      Post   => To_String (Source) = To_String (Source)'Old & New_Item,
-     Global => null;
+     Global => null,
+     Inline => True;
 
    function "&"
      (Left  : Unbounded_String;
@@ -217,7 +220,8 @@ is
    with
      Pre    => Index <= Length (Source),
      Post   => Element'Result = To_String (Source) (Index),
-     Global => null;
+     Global => null,
+     Inline => True;
 
    procedure Replace_Element
      (Source : in out Unbounded_String;
@@ -1578,11 +1582,13 @@ private
 
    type Shared_String_Access is access all Shared_String;
 
-   procedure Reference (Item : not null Shared_String_Access);
+   procedure Reference (Item : not null Shared_String_Access)
+   with Inline => True;
    --  Increment reference counter.
    --  Do nothing if Item points to Empty_Shared_String.
 
-   procedure Unreference (Item : not null Shared_String_Access);
+   procedure Unreference (Item : not null Shared_String_Access)
+   with Inline => True;
    --  Decrement reference counter, deallocate Item when counter goes to zero.
    --  Do nothing if Item points to Empty_Shared_String.
 

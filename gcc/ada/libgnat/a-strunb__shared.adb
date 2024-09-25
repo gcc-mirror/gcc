@@ -35,6 +35,23 @@ package body Ada.Strings.Unbounded is
 
    use Ada.Strings.Maps;
 
+   procedure Non_Inlined_Append
+     (Source   : in out Unbounded_String;
+      New_Item : Unbounded_String);
+
+   procedure Non_Inlined_Append
+     (Source   : in out Unbounded_String;
+      New_Item : String);
+
+   procedure Non_Inlined_Append
+      (Source   : in out Unbounded_String;
+       New_Item : Character);
+   --  Non_Inlined_Append are part of the respective Append method that
+   --  should not be inlined. The idea is that the code of Append is inlined.
+   --  In order to make inlining efficient it is better to have the inlined
+   --  code as small as possible. Thus most common cases are inlined and less
+   --  common cases are deferred in these functions.
+
    Growth_Factor : constant := 2;
    --  The growth factor controls how much extra space is allocated when
    --  we have to increase the size of an allocated unbounded string. By
@@ -542,10 +559,12 @@ package body Ada.Strings.Unbounded is
      (Source   : in out Unbounded_String;
       New_Item : Unbounded_String)
    is
+      pragma Suppress (All_Checks);
+      --  Suppress checks as they are redundant with the checks done in that
+      --  function.
+
       SR  : constant Shared_String_Access := Source.Reference;
       NR  : constant Shared_String_Access := New_Item.Reference;
-      DL  : constant Natural              := Sum (SR.Last, NR.Last);
-      DR  : Shared_String_Access;
 
    begin
       --  Source is an empty string, reuse New_Item data
@@ -562,19 +581,17 @@ package body Ada.Strings.Unbounded is
 
       --  Try to reuse existing shared string
 
-      elsif Can_Be_Reused (SR, DL) then
-         SR.Data (SR.Last + 1 .. DL) := NR.Data (1 .. NR.Last);
-         SR.Last := DL;
+      elsif System.Atomic_Counters.Is_One (SR.Counter)
+         and then NR.Last <= SR.Max_Length
+         and then SR.Max_Length - NR.Last >= SR.Last
+      then
+         SR.Data (SR.Last + 1 .. SR.Last + NR.Last) := NR.Data (1 .. NR.Last);
+         SR.Last := SR.Last + NR.Last;
 
       --  Otherwise, allocate new one and fill it
 
       else
-         DR := Allocate (DL, DL / Growth_Factor);
-         DR.Data (1 .. SR.Last) := SR.Data (1 .. SR.Last);
-         DR.Data (SR.Last + 1 .. DL) := NR.Data (1 .. NR.Last);
-         DR.Last := DL;
-         Source.Reference := DR;
-         Unreference (SR);
+         Non_Inlined_Append (Source, New_Item);
       end if;
    end Append;
 
@@ -582,31 +599,34 @@ package body Ada.Strings.Unbounded is
      (Source   : in out Unbounded_String;
       New_Item : String)
    is
-      SR : constant Shared_String_Access := Source.Reference;
-      DL : constant Natural := Sum (SR.Last, New_Item'Length);
-      DR : Shared_String_Access;
+      pragma Suppress (All_Checks);
+      --  Suppress checks as they are redundant with the checks done in that
+      --  function.
 
+      New_Item_Length : constant Natural := New_Item'Length;
+      SR : constant Shared_String_Access := Source.Reference;
    begin
-      --  New_Item is an empty string, nothing to do
 
       if New_Item'Length = 0 then
+         --  New_Item is an empty string, nothing to do
          null;
 
-      --  Try to reuse existing shared string
-
-      elsif Can_Be_Reused (SR, DL) then
-         SR.Data (SR.Last + 1 .. DL) := New_Item;
-         SR.Last := DL;
-
-      --  Otherwise, allocate new one and fill it
+      elsif System.Atomic_Counters.Is_One (SR.Counter)
+         --  The following test checks in fact that
+         --  SR.Max_Length >= SR.Last + New_Item_Length without causing
+         --  overflow.
+         and then New_Item_Length <= SR.Max_Length
+         and then SR.Max_Length - New_Item_Length >= SR.Last
+      then
+         --  Try to reuse existing shared string
+         SR.Data (SR.Last + 1 .. SR.Last + New_Item_Length) := New_Item;
+         SR.Last := SR.Last + New_Item_Length;
 
       else
-         DR := Allocate (DL, DL / Growth_Factor);
-         DR.Data (1 .. SR.Last) := SR.Data (1 .. SR.Last);
-         DR.Data (SR.Last + 1 .. DL) := New_Item;
-         DR.Last := DL;
-         Source.Reference := DR;
-         Unreference (SR);
+         --  Otherwise, allocate new one and fill it. Deferring the worst case
+         --  into a separate non-inlined function ensure that inlined Append
+         --  code size remains short and thus efficient.
+         Non_Inlined_Append (Source, New_Item);
       end if;
    end Append;
 
@@ -614,26 +634,24 @@ package body Ada.Strings.Unbounded is
      (Source   : in out Unbounded_String;
       New_Item : Character)
    is
+      pragma Suppress (All_Checks);
+      --  Suppress checks as they are redundant with the checks done in that
+      --  function.
+
       SR : constant Shared_String_Access := Source.Reference;
-      DL : constant Natural := Sum (SR.Last, 1);
-      DR : Shared_String_Access;
-
    begin
-      --  Try to reuse existing shared string
-
-      if Can_Be_Reused (SR, DL) then
+      if System.Atomic_Counters.Is_One (SR.Counter)
+         and then SR.Max_Length > SR.Last
+      then
+         --  Try to reuse existing shared string
          SR.Data (SR.Last + 1) := New_Item;
          SR.Last := SR.Last + 1;
 
-      --  Otherwise, allocate new one and fill it
-
       else
-         DR := Allocate (DL, DL / Growth_Factor);
-         DR.Data (1 .. SR.Last) := SR.Data (1 .. SR.Last);
-         DR.Data (DL) := New_Item;
-         DR.Last := DL;
-         Source.Reference := DR;
-         Unreference (SR);
+         --  Otherwise, allocate new one and fill it. Deferring the worst case
+         --  into a separate non-inlined function ensure that inlined Append
+         --  code size remains short and thus efficient.
+         Non_Inlined_Append (Source, New_Item);
       end if;
    end Append;
 
@@ -801,9 +819,10 @@ package body Ada.Strings.Unbounded is
      (Source : Unbounded_String;
       Index  : Positive) return Character
    is
+      pragma Suppress (All_Checks);
       SR : constant Shared_String_Access := Source.Reference;
    begin
-      if Index <= SR.Last then
+      if Index <= SR.Last and then Index > 0 then
          return SR.Data (Index);
       else
          raise Index_Error;
@@ -1214,6 +1233,66 @@ package body Ada.Strings.Unbounded is
    begin
       return Left * Right;
    end Mul;
+
+   ------------------------
+   -- Non_Inlined_Append --
+   ------------------------
+
+   procedure Non_Inlined_Append
+       (Source   : in out Unbounded_String;
+        New_Item : Unbounded_String)
+   is
+      SR : constant Shared_String_Access := Source.Reference;
+      NR  : constant Shared_String_Access := New_Item.Reference;
+      DL : constant Natural := Sum (SR.Last, NR.Last);
+      DR : Shared_String_Access;
+   begin
+      DR := Allocate (DL, DL / Growth_Factor);
+      DR.Data (1 .. SR.Last) := SR.Data (1 .. SR.Last);
+      DR.Data (SR.Last + 1 .. DL) := NR.Data (1 .. NR.Last);
+      DR.Last := DL;
+      Source.Reference := DR;
+      Unreference (SR);
+   end Non_Inlined_Append;
+
+   procedure Non_Inlined_Append
+     (Source   : in out Unbounded_String;
+      New_Item : String)
+   is
+      SR : constant Shared_String_Access := Source.Reference;
+      DL : constant Natural := Sum (SR.Last, New_Item'Length);
+      DR : Shared_String_Access;
+   begin
+      DR := Allocate (DL, DL / Growth_Factor);
+      DR.Data (1 .. SR.Last) := SR.Data (1 .. SR.Last);
+      DR.Data (SR.Last + 1 .. DL) := New_Item;
+      DR.Last := DL;
+      Source.Reference := DR;
+      Unreference (SR);
+   end Non_Inlined_Append;
+
+   procedure Non_Inlined_Append
+      (Source   : in out Unbounded_String;
+       New_Item : Character)
+   is
+      SR : constant Shared_String_Access := Source.Reference;
+   begin
+      if SR.Last = Natural'Last then
+         raise Constraint_Error;
+      else
+         declare
+            DL : constant Natural := SR.Last + 1;
+            DR : Shared_String_Access;
+         begin
+            DR := Allocate (DL, DL / Growth_Factor);
+            DR.Data (1 .. SR.Last) := SR.Data (1 .. SR.Last);
+            DR.Data (DL) := New_Item;
+            DR.Last := DL;
+            Source.Reference := DR;
+            Unreference (SR);
+         end;
+      end if;
+   end Non_Inlined_Append;
 
    ---------------
    -- Overwrite --
