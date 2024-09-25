@@ -106,13 +106,13 @@ Wdisabled-optimization
 UrlSuffix(gcc/Warning-Options.html#index-Wdisabled-optimization)
 
 Werror
-UrlSuffix(gcc/Warning-Options.html#index-Werror) LangUrlSuffix_D(gdc/Warnings.html#index-Werror)
+UrlSuffix(gcc/Warning-Options.html#index-Werror) LangUrlSuffix_D(gdc/Warnings.html#index-Werror) LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Werror)
 
 Werror=
-UrlSuffix(gcc/Warning-Options.html#index-Werror) LangUrlSuffix_D(gdc/Warnings.html#index-Werror)
+UrlSuffix(gcc/Warning-Options.html#index-Werror) LangUrlSuffix_D(gdc/Warnings.html#index-Werror) LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Werror)
 
 Wextra
-UrlSuffix(gcc/Warning-Options.html#index-Wextra) LangUrlSuffix_D(gdc/Warnings.html#index-Wextra)
+UrlSuffix(gcc/Warning-Options.html#index-Wextra) LangUrlSuffix_D(gdc/Warnings.html#index-Wextra) LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wextra)
 
 Wfatal-errors
 UrlSuffix(gcc/Warning-Options.html#index-Wfatal-errors)
@@ -173,7 +173,7 @@ Wpadded
 UrlSuffix(gcc/Warning-Options.html#index-Wno-padded)
 
 Wpedantic
-UrlSuffix(gcc/Warning-Options.html#index-Wno-pedantic)
+UrlSuffix(gcc/Warning-Options.html#index-Wno-pedantic) LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wpedantic)
 
 Wreturn-local-addr
 UrlSuffix(gcc/Warning-Options.html#index-Wno-return-local-addr)
@@ -266,7 +266,7 @@ Wunused-label
 UrlSuffix(gcc/Warning-Options.html#index-Wno-unused-label)
 
 Wunused-parameter
-UrlSuffix(gcc/Warning-Options.html#index-Wno-unused-parameter)
+UrlSuffix(gcc/Warning-Options.html#index-Wno-unused-parameter) LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wunused-parameter)
 
 Wunused-value
 UrlSuffix(gcc/Warning-Options.html#index-Wno-unused-value)
@@ -415,7 +415,7 @@ fauto-profile=
 UrlSuffix(gcc/Optimize-Options.html#index-fauto-profile)
 
 fbounds-check
-LangUrlSuffix_D(gdc/Runtime-Options.html#index-fbounds-check)
+LangUrlSuffix_D(gdc/Runtime-Options.html#index-fbounds-check) LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fbounds-check)
 
 fbranch-count-reg
 UrlSuffix(gcc/Optimize-Options.html#index-fbranch-count-reg)
@@ -1367,7 +1367,7 @@ fsync-libcalls
 UrlSuffix(gcc/Code-Gen-Options.html#index-fsync-libcalls)
 
 fsyntax-only
-UrlSuffix(gcc/Warning-Options.html#index-fsyntax-only) LangUrlSuffix_D(gdc/Warnings.html#index-fno-syntax-only)
+UrlSuffix(gcc/Warning-Options.html#index-fsyntax-only) LangUrlSuffix_D(gdc/Warnings.html#index-fno-syntax-only) LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-fsyntax-only)
 
 ftest-coverage
 UrlSuffix(gcc/Instrumentation-Options.html#index-ftest-coverage)
@@ -1744,12 +1744,16 @@ UrlSuffix(gcc/Overall-Options.html#index-pass-exit-codes)
 ;   duplicate: 'gcc/Standards.html#index-pedantic'
 ;   duplicate: 'gcc/Warning-Options.html#index-pedantic-1'
 ;   duplicate: 'gcc/Warnings-and-Errors.html#index-pedantic-4'
+pedantic
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-pedantic)
 
 ; skipping UrlSuffix for 'pedantic-errors' due to multiple URLs:
 ;   duplicate: 'gcc/Non-bugs.html#index-pedantic-errors-2'
 ;   duplicate: 'gcc/Standards.html#index-pedantic-errors'
 ;   duplicate: 'gcc/Warning-Options.html#index-pedantic-errors-1'
 ;   duplicate: 'gcc/Warnings-and-Errors.html#index-pedantic-errors-3'
+pedantic-errors
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-pedantic-errors)
 
 pg
 UrlSuffix(gcc/Instrumentation-Options.html#index-pg)
@@ -1809,7 +1813,7 @@ u
 UrlSuffix(gcc/Link-Options.html#index-u)
 
 undef
-UrlSuffix(gcc/Preprocessor-Options.html#index-undef)
+UrlSuffix(gcc/Preprocessor-Options.html#index-undef) LangUrlSuffix_Fortran(gfortran/Preprocessing-Options.html#index-undef)
 
 v
 UrlSuffix(gcc/Overall-Options.html#index-v) LangUrlSuffix_D(gdc/Developer-Options.html#index-v)
@@ -1845,8 +1849,14 @@ UrlSuffix(gcc/Overall-Options.html#index-specs)
 static-libgcc
 UrlSuffix(gcc/Link-Options.html#index-static-libgcc)
 
+static-libgfortran
+LangUrlSuffix_Fortran(gfortran/Link-Options.html#index-static-libgfortran)
+
 static-libphobos
 LangUrlSuffix_D(gdc/Linking.html#index-static-libphobos)
+
+static-libquadmath
+LangUrlSuffix_Fortran(gfortran/Link-Options.html#index-static-libquadmath)
 
 static-libstdc++
 UrlSuffix(gcc/Link-Options.html#index-static-libstdc_002b_002b)

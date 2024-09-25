@@ -220,8 +220,8 @@ The following options control the details of the Fortran dialect
 accepted by the compiler:
 
 @table @gcctabopt
-@opindex @code{ffree-form}
-@opindex @code{ffixed-form}
+@opindex ffree-form
+@opindex ffixed-form
 @cindex options, Fortran dialect
 @cindex file format, free
 @cindex file format, fixed
@@ -232,7 +232,7 @@ was introduced in Fortran 90.  Fixed form was traditionally used in
 older Fortran programs.  When neither option is specified, the source
 form is determined by the file extension.
 
-@opindex @code{fall-intrinsics}
+@opindex fall-intrinsics
 @item -fall-intrinsics
 This option causes all intrinsic procedures (including the GNU-specific
 extensions) to be accepted.  This can be useful with @option{-std=} to
@@ -241,7 +241,7 @@ available with @command{gfortran}.  As a consequence, @option{-Wintrinsics-std}
 will be ignored and no user-defined procedure with the same name as any
 intrinsic will be called except when it is explicitly declared @code{EXTERNAL}.
 
-@opindex @code{fallow-argument-mismatch}
+@opindex fallow-argument-mismatch
 @item -fallow-argument-mismatch
 Some code contains calls to external procedures with mismatches
 between the calls and the procedure definition, or with mismatches
@@ -256,15 +256,15 @@ Using this option is @emph{strongly} discouraged.  It is possible to
 provide standard-conforming code which allows different types of
 arguments by using an explicit interface and @code{TYPE(*)}.
 
-@opindex @code{allow-invalid-boz}
+@opindex allow-invalid-boz
 @item -fallow-invalid-boz
 A BOZ literal constant can occur in a limited number of contexts in
 standard conforming Fortran.  This option degrades an error condition
 to a warning, and allows a BOZ literal constant to appear where the
 Fortran standard would otherwise prohibit its use.
 
-@opindex @code{fd-lines-as-code}
-@opindex @code{fd-lines-as-comments}
+@opindex fd-lines-as-code
+@opindex fd-lines-as-comments
 @item -fd-lines-as-code
 @itemx -fd-lines-as-comments
 Enable special treatment for lines beginning with @code{d} or @code{D}
@@ -273,7 +273,7 @@ given they are treated as if the first column contained a blank.  If the
 @option{-fd-lines-as-comments} option is given, they are treated as
 comment lines.
 
-@opindex @code{fdec}
+@opindex fdec
 @item -fdec
 DEC compatibility mode. Enables extensions and other features that mimic
 the default behavior of older compilers (such as DEC).
@@ -290,24 +290,24 @@ Other flags enabled by this switch are:
 If @option{-fd-lines-as-code}/@option{-fd-lines-as-comments} are unset, then
 @option{-fdec} also sets @option{-fd-lines-as-comments}.
 
-@opindex @code{fdec-char-conversions}
+@opindex fdec-char-conversions
 @item -fdec-char-conversions
 Enable the use of character literals in assignments and @code{DATA} statements
 for non-character variables.
 
-@opindex @code{fdec-structure}
+@opindex fdec-structure
 @item -fdec-structure
 Enable DEC @code{STRUCTURE} and @code{RECORD} as well as @code{UNION},
 @code{MAP}, and dot ('.') as a member separator (in addition to '%'). This is
 provided for compatibility only; Fortran 90 derived types should be used
 instead where possible.
 
-@opindex @code{fdec-intrinsic-ints}
+@opindex fdec-intrinsic-ints
 @item -fdec-intrinsic-ints
 Enable B/I/J/K kind variants of existing integer functions (e.g. BIAND, IIAND,
 JIAND, etc...). For a complete list of intrinsics see the full documentation.
 
-@opindex @code{fdec-math}
+@opindex fdec-math
 @item -fdec-math
 Obsolete flag.  The purpose of this option was to
 enable legacy math intrinsics such as COTAN and degree-valued trigonometric
@@ -315,28 +315,28 @@ functions (e.g. TAND, ATAND, etc...) for compatability with older code. This
 option is no longer operable. The trigonometric functions are now either 
 part of Fortran 2023 or GNU extensions.
 
-@opindex @code{fdec-static}
+@opindex fdec-static
 @item -fdec-static
 Enable DEC-style STATIC and AUTOMATIC attributes to explicitly specify
 the storage of variables and other objects.
 
-@opindex @code{fdec-include}
+@opindex fdec-include
 @item -fdec-include
 Enable parsing of INCLUDE as a statement in addition to parsing it as
 INCLUDE line.  When parsed as INCLUDE statement, INCLUDE does not have to
 be on a single line and can use line continuations.
 
-@opindex @code{fdec-format-defaults}
+@opindex fdec-format-defaults
 @item -fdec-format-defaults
 Enable format specifiers F, G and I to be used without width specifiers,
 default widths will be used instead.
 
-@opindex @code{fdec-blank-format-item}
+@opindex fdec-blank-format-item
 @item -fdec-blank-format-item
 Enable a blank format item at the end of a format specification i.e. nothing
 following the final comma.
 
-@opindex @code{fdollar-ok}
+@opindex fdollar-ok
 @cindex @code{$}
 @cindex symbol names
 @cindex character set
@@ -346,7 +346,7 @@ that start with @samp{$} are rejected since it is unclear which rules to
 apply to implicit typing as different vendors implement different rules.
 Using @samp{$} in @code{IMPLICIT} statements is also rejected.
 
-@opindex @code{backslash}
+@opindex backslash
 @cindex backslash
 @cindex escape characters
 @item -fbackslash
@@ -362,7 +362,7 @@ translated into the Unicode characters corresponding to the specified code
 points. All other combinations of a character preceded by \ are
 unexpanded.
 
-@opindex @code{fmodule-private}
+@opindex fmodule-private
 @cindex module entities
 @cindex private
 @item -fmodule-private
@@ -370,7 +370,7 @@ Set the default accessibility of module entities to @code{PRIVATE}.
 Use-associated entities will not be accessible unless they are explicitly
 declared as @code{PUBLIC}.
 
-@opindex @code{ffixed-line-length-}@var{n}
+@opindex ffixed-line-length-@var{n}
 @cindex file format, fixed
 @item -ffixed-line-length-@var{n}
 Set column after which characters are ignored in typical fixed-form
@@ -387,7 +387,7 @@ to them to fill out the line.
 @option{-ffixed-line-length-0} means the same thing as
 @option{-ffixed-line-length-none}.
 
-@opindex @code{fpad-source}
+@opindex fpad-source
 @item -fno-pad-source
 By default fixed-form lines have spaces assumed (as if padded to that length)
 after the ends of short fixed-form lines.  This is not done either if
@@ -396,7 +396,7 @@ if @option{-fno-pad-source} option is used.  With any of those options
 continued character constants never have implicit spaces appended
 to them to fill out the line.
 
-@opindex @code{ffree-line-length-}@var{n}
+@opindex ffree-line-length-@var{n}
 @cindex file format, free
 @item -ffree-line-length-@var{n}
 Set column after which characters are ignored in typical free-form
@@ -405,18 +405,18 @@ lines in the source file. The default value is 132.
 @option{-ffree-line-length-0} means the same thing as
 @option{-ffree-line-length-none}.
 
-@opindex @code{fmax-identifier-length=}@var{n}
+@opindex fmax-identifier-length=@var{n}
 @item -fmax-identifier-length=@var{n}
 Specify the maximum allowed identifier length. Typical values are
 31 (Fortran 95) and 63 (Fortran 2003 and later).
 
-@opindex @code{fimplicit-none}
+@opindex fimplicit-none
 @item -fimplicit-none
 Specify that no implicit typing is allowed, unless overridden by explicit
 @code{IMPLICIT} statements.  This is the equivalent of adding
 @code{implicit none} to the start of every procedure.
 
-@opindex @code{fcray-pointer}
+@opindex fcray-pointer
 @item -fcray-pointer
 Enable the Cray pointer extension, which provides C-like pointer
 functionality.
@@ -480,7 +480,7 @@ is additionally specified, the @code{loop} region binds to the current task
 region, independent of the specified @code{bind} clause.
 
 
-@opindex @code{frange-check}
+@opindex frange-check
 @item -fno-range-check
 Disable range checking on results of simplification of constant
 expressions during compilation.  For example, GNU Fortran will give
@@ -494,14 +494,14 @@ Similarly, @code{DATA i/Z'FFFFFFFF'/} will result in an integer overflow
 on most systems, but with @option{-fno-range-check} the value will
 ``wrap around'' and @code{i} will be initialized to @math{-1} instead.
 
-@opindex @code{fdefault-integer-8}
+@opindex fdefault-integer-8
 @item -fdefault-integer-8
 Set the default integer and logical types to an 8 byte wide type.  This option
 also affects the kind of integer constants like @code{42}. Unlike
 @option{-finteger-4-integer-8}, it does not promote variables with explicit
 kind declaration.
 
-@opindex @code{fdefault-real-8}
+@opindex fdefault-real-8
 @item -fdefault-real-8
 Set the default real type to an 8 byte wide type.  This option also affects
 the kind of non-double real constants like @code{1.0}.  This option promotes
@@ -512,7 +512,7 @@ and double real constants are not promoted.  Unlike @option{-freal-4-real-8},
 @code{fdefault-real-8} does not promote variables with explicit kind
 declarations.
 
-@opindex @code{fdefault-real-10}
+@opindex fdefault-real-10
 @item -fdefault-real-10
 Set the default real type to an 10 byte wide type.  This option also affects
 the kind of non-double real constants like @code{1.0}.  This option promotes
@@ -523,7 +523,7 @@ and double real constants are not promoted.  Unlike @option{-freal-4-real-10},
 @code{fdefault-real-10} does not promote variables with explicit kind
 declarations.
 
-@opindex @code{fdefault-real-16}
+@opindex fdefault-real-16
 @item -fdefault-real-16
 Set the default real type to an 16 byte wide type.  This option also affects
 the kind of non-double real constants like @code{1.0}.  This option promotes
@@ -534,7 +534,7 @@ and double real constants are not promoted.  Unlike @option{-freal-4-real-16},
 @code{fdefault-real-16} does not promote variables with explicit kind
 declarations.
 
-@opindex @code{fdefault-double-8}
+@opindex fdefault-double-8
 @item -fdefault-double-8
 Set the @code{DOUBLE PRECISION} type and double real constants
 like @code{1.d0} to an 8 byte wide type.  Do nothing if this
@@ -543,7 +543,7 @@ is already the default.  This option prevents @option{-fdefault-real-8},
 from promoting @code{DOUBLE PRECISION} and double real constants like
 @code{1.d0} to 16 bytes.
 
-@opindex @code{finteger-4-integer-8}
+@opindex finteger-4-integer-8
 @item -finteger-4-integer-8
 Promote all @code{INTEGER(KIND=4)} entities to an @code{INTEGER(KIND=8)}
 entities.  If @code{KIND=8} is unavailable, then an error will be issued.
@@ -554,12 +554,12 @@ BOZ literal constant conversion, and I/O.  Inspection of the intermediate
 representation of the translated Fortran code, produced by
 @option{-fdump-tree-original}, is suggested.
 
-@opindex @code{freal-4-real-8}
-@opindex @code{freal-4-real-10}
-@opindex @code{freal-4-real-16}
-@opindex @code{freal-8-real-4}
-@opindex @code{freal-8-real-10}
-@opindex @code{freal-8-real-16}
+@opindex freal-4-real-8
+@opindex freal-4-real-10
+@opindex freal-4-real-16
+@opindex freal-8-real-4
+@opindex freal-8-real-10
+@opindex freal-8-real-16
 @cindex options, real kind type promotion
 @item  -freal-4-real-8
 @itemx -freal-4-real-10
@@ -588,7 +588,7 @@ when passing a value to the @code{kind=} dummy argument.  Inspection of the
 intermediate representation of the translated Fortran code, produced by
 @option{-fdump-fortran-original} or @option{-fdump-tree-original}, is suggested.
 
-@opindex @code{std=}@var{std} option
+@opindex std=@var{std}
 @item -std=@var{std}
 Specify the standard to which the program is expected to conform,
 which may be one of @samp{f95}, @samp{f2003}, @samp{f2008}, @samp{f2018},
@@ -608,11 +608,11 @@ standards. The deprecated option @samp{-std=f2008ts} acts as an alias for
 @samp{-std=f2018}. It is only present for backwards compatibility with
 earlier gfortran versions and should not be used any more.
 
-@opindex @code{ftest-forall-temp}
+@opindex ftest-forall-temp
 @item -ftest-forall-temp
 Enhance test coverage by forcing most forall assignments to use temporary.
 
-@opindex @code{funsigned}
+@opindex funsigned
 @item -funsigned
 Allow the experimental unsigned extension.
 @end table
@@ -664,8 +664,8 @@ to preprocess such files (@uref{http://www.daniellnagle.com/coco.html}).
 The following options control preprocessing of Fortran code:
 
 @table @gcctabopt
-@opindex @code{cpp}
-@opindex @code{fpp}
+@opindex cpp
+@opindex fpp
 @cindex preprocessor, enable
 @cindex preprocessor, disable
 @item -cpp
@@ -684,7 +684,7 @@ preprocessed output as well, so it might be advisable to use the
 @option{-ffree-line-length-none} or @option{-ffixed-line-length-none}
 options.
 
-@opindex @code{dM}
+@opindex dM
 @cindex preprocessor, debugging
 @cindex debugging, preprocessor
 @item -dM
@@ -698,7 +698,7 @@ Assuming you have no file @file{foo.f90}, the command
 @end smallexample
 will show all the predefined macros.
 
-@opindex @code{dD}
+@opindex dD
 @cindex preprocessor, debugging
 @cindex debugging, preprocessor
 @item -dD
@@ -707,13 +707,13 @@ predefined macros, and it outputs both the @code{#define} directives
 and the result of preprocessing. Both kinds of output go to the
 standard output file.
 
-@opindex @code{dN}
+@opindex dN
 @cindex preprocessor, debugging
 @cindex debugging, preprocessor
 @item -dN
 Like @option{-dD}, but emit only the macro names, not their expansions.
 
-@opindex @code{dU}
+@opindex dU
 @cindex preprocessor, debugging
 @cindex debugging, preprocessor
 @item -dU
@@ -722,14 +722,14 @@ definedness is tested in preprocessor directives, are output; the
 output is delayed until the use or test of the macro; and @code{'#undef'}
 directives are also output for macros tested but undefined at the time.
 
-@opindex @code{dI}
+@opindex dI
 @cindex preprocessor, debugging
 @cindex debugging, preprocessor
 @item -dI
 Output @code{'#include'} directives in addition to the result
 of preprocessing.
 
-@opindex @code{fworking-directory}
+@opindex fworking-directory
 @cindex preprocessor, working directory
 @item -fworking-directory
 Enable generation of linemarkers in the preprocessor output that will
@@ -745,7 +745,7 @@ but this can be inhibited with the negated form
 in the command line, this option has no effect, since no @code{#line}
 directives are emitted whatsoever.
 
-@opindex @code{idirafter @var{dir}}
+@opindex idirafter
 @cindex preprocessing, include path
 @item -idirafter @var{dir}
 Search @var{dir} for include files, but do it after all directories
@@ -754,26 +754,26 @@ been exhausted. @var{dir} is treated as a system include directory.
 If dir begins with @code{=}, then the @code{=} will be replaced by
 the sysroot prefix; see @option{--sysroot} and @option{-isysroot}.
 
-@opindex @code{imultilib @var{dir}}
+@opindex imultilib
 @cindex preprocessing, include path
 @item -imultilib @var{dir}
 Use @var{dir} as a subdirectory of the directory containing target-specific
 C++ headers.
 
-@opindex @code{iprefix @var{prefix}}
+@opindex iprefix
 @cindex preprocessing, include path
 @item -iprefix @var{prefix}
 Specify @var{prefix} as the prefix for subsequent @option{-iwithprefix}
 options. If the @var{prefix} represents a directory, you should include
 the final @code{'/'}.
 
-@opindex @code{isysroot @var{dir}}
+@opindex isysroot
 @cindex preprocessing, include path
 @item -isysroot @var{dir}
 This option is like the @option{--sysroot} option, but applies only to
 header files. See the @option{--sysroot} option for more information.
 
-@opindex @code{iquote @var{dir}}
+@opindex iquote
 @cindex preprocessing, include path
 @item -iquote @var{dir}
 Search @var{dir} only for header files requested with @code{#include "file"};
@@ -782,7 +782,7 @@ specified by @option{-I} and before the standard system directories. If
 @var{dir} begins with @code{=}, then the @code{=} will be replaced by the
 sysroot prefix; see @option{--sysroot} and @option{-isysroot}.
 
-@opindex @code{isystem @var{dir}}
+@opindex isystem
 @cindex preprocessing, include path
 @item -isystem @var{dir}
 Search @var{dir} for header files, after all directories specified by
@@ -792,30 +792,30 @@ applied to the standard system directories. If @var{dir} begins with
 @code{=}, then the @code{=} will be replaced by the sysroot prefix;
 see @option{--sysroot} and @option{-isysroot}.
 
-@opindex @code{nostdinc}
+@opindex nostdinc
 @item -nostdinc
 Do not search the standard system directories for header files. Only
 the directories you have specified with @option{-I} options (and the
 directory of the current file, if appropriate) are searched.
 
-@opindex @code{undef}
+@opindex undef
 @item -undef
 Do not predefine any system-specific or GCC-specific macros.
 The standard predefined macros remain defined.
 
-@opindex @code{A@var{predicate}=@var{answer}}
+@opindex A@var{predicate}=@var{answer}
 @cindex preprocessing, assertion
 @item -A@var{predicate}=@var{answer}
 Make an assertion with the predicate @var{predicate} and answer @var{answer}.
 This form is preferred to the older form -A predicate(answer), which is still
 supported, because it does not use shell special characters.
 
-@opindex @code{A-@var{predicate}=@var{answer}}
+@opindex A-@var{predicate}=@var{answer}
 @cindex preprocessing, assertion
 @item -A-@var{predicate}=@var{answer}
 Cancel an assertion with the predicate @var{predicate} and answer @var{answer}.
 
-@opindex @code{C}
+@opindex C
 @cindex preprocessing, keep comments
 @item -C
 Do not discard comments. All comments are passed through to the output
@@ -831,7 +831,7 @@ token on the line is no longer a @code{'#'}.
 Warning: this currently handles C-Style comments only. The preprocessor
 does not yet recognize Fortran-style comments.
 
-@opindex @code{CC}
+@opindex CC
 @cindex preprocessing, keep comments
 @item -CC
 Do not discard comments, including during macro expansion. This is like
@@ -847,12 +847,12 @@ is generally used to support lint comments.
 Warning: this currently handles C- and C++-Style comments only. The
 preprocessor does not yet recognize Fortran-style comments.
 
-@opindex @code{D@var{name}}
+@opindex D@var{name}
 @cindex preprocessing, define macros
 @item -D@var{name}
 Predefine name as a macro, with definition @code{1}.
 
-@opindex @code{D@var{name}=@var{definition}}
+@opindex D@var{name}=@var{definition}
 @cindex preprocessing, define macros
 @item -D@var{name}=@var{definition}
 The contents of @var{definition} are tokenized and processed as if they
@@ -874,13 +874,13 @@ works.
 given on the command line. All -imacros file and -include file options
 are processed after all -D and -U options.
 
-@opindex @code{H}
+@opindex H
 @item -H
 Print the name of each header file used, in addition to other normal
 activities. Each name is indented to show how deep in the @code{'#include'}
 stack it is.
 
-@opindex @code{P}
+@opindex P
 @cindex preprocessing, no linemarkers
 @item -P
 Inhibit generation of linemarkers in the output from the preprocessor.
@@ -888,7 +888,7 @@ This might be useful when running the preprocessor on something that
 is not C code, and will be sent to a program which might be confused
 by the linemarkers.
 
-@opindex @code{U@var{name}}
+@opindex U@var{name}
 @cindex preprocessing, undefine macros
 @item -U@var{name}
 Cancel any previous definition of @var{name}, either built in or provided
@@ -926,7 +926,7 @@ These options control the amount and kinds of errors and warnings produced
 by GNU Fortran:
 
 @table @gcctabopt
-@opindex @code{fmax-errors=}@var{n}
+@opindex fmax-errors=@var{n}
 @cindex errors, limiting
 @item -fmax-errors=@var{n}
 Limits the maximum number of error messages to @var{n}, at which point
@@ -934,15 +934,15 @@ GNU Fortran bails out rather than attempting to continue processing the
 source code.  If @var{n} is 0, there is no limit on the number of error
 messages produced.
 
-@opindex @code{fsyntax-only}
+@opindex fsyntax-only
 @cindex syntax checking
 @item -fsyntax-only
 Check the code for syntax errors, but do not actually compile it.  This
 will generate module files for each module present in the code, but no
 other output file.
 
-@opindex @code{pedantic}
-@opindex @code{Wpedantic}
+@opindex pedantic
+@opindex Wpedantic
 @item -Wpedantic
 @itemx -pedantic
 Issue warnings for uses of extensions to Fortran.
@@ -965,12 +965,12 @@ This should be used in conjunction with @option{-std=f95},
 @option{-std=f2003}, @option{-std=f2008}, @option{-std=f2018}
 or @option{-std=f2023}.
 
-@opindex @code{pedantic-errors}
+@opindex pedantic-errors
 @item -pedantic-errors
 Like @option{-pedantic}, except that errors are produced rather than
 warnings.
 
-@opindex @code{Wall}
+@opindex Wall
 @cindex all warnings
 @cindex warnings, all
 @item -Wall
@@ -983,7 +983,7 @@ This currently includes @option{-Waliasing}, @option{-Wampersand},
 @option{-Winteger-division}, @option{-Wreal-q-constant}, @option{-Wunused}
 and @option{-Wundefined-do-loop}.
 
-@opindex @code{Waliasing}
+@opindex Waliasing
 @cindex aliasing
 @cindex warnings, aliasing
 @item -Waliasing
@@ -1005,7 +1005,7 @@ The following example will trigger the warning.
   call bar(a,a)
 @end smallexample
 
-@opindex @code{Wampersand}
+@opindex Wampersand
 @cindex warnings, ampersand
 @cindex @code{&}
 @item -Wampersand
@@ -1017,14 +1017,14 @@ character constant, GNU Fortran assumes continuation at the first
 non-comment, non-whitespace character after the ampersand that
 initiated the continuation.
 
-@opindex @code{Warray-temporaries}
+@opindex Warray-temporaries
 @cindex warnings, array temporaries
 @item -Warray-temporaries
 Warn about array temporaries generated by the compiler.  The information
 generated by this warning is sometimes useful in optimization, in order to
 avoid such temporaries.
 
-@opindex @code{Wc-binding-type}
+@opindex Wc-binding-type
 @cindex warning, C binding type
 @item -Wc-binding-type
 Warn if the a variable might not be C interoperable.  In particular, warn if 
@@ -1033,12 +1033,12 @@ instead of using a kind parameter defined for C interoperability in the
 intrinsic @code{ISO_C_Binding} module.  This option is implied by
 @option{-Wall}.
 
-@opindex @code{Wcharacter-truncation}
+@opindex Wcharacter-truncation
 @cindex warnings, character truncation
 @item -Wcharacter-truncation
 Warn when a character assignment will truncate the assigned string.
 
-@opindex @code{Wline-truncation}
+@opindex Wline-truncation
 @cindex warnings, line truncation
 @item -Wline-truncation
 Warn when a source code line will be truncated.  This option is
@@ -1046,21 +1046,21 @@ implied by @option{-Wall}.  For free-form source code, the default is
 @option{-Werror=line-truncation} such that truncations are reported as
 error.
 
-@opindex @code{Wconversion}
+@opindex Wconversion
 @cindex warnings, conversion
 @cindex conversion
 @item -Wconversion
 Warn about implicit conversions that are likely to change the value of 
 the expression after conversion. Implied by @option{-Wall}.
 
-@opindex @code{Wconversion-extra}
+@opindex Wconversion-extra
 @cindex warnings, conversion
 @cindex conversion
 @item -Wconversion-extra
 Warn about implicit conversions between different types and kinds. This
 option does @emph{not} imply @option{-Wconversion}.
 
-@opindex @code{Wextra}
+@opindex Wextra
 @cindex extra warnings
 @cindex warnings, extra
 @item -Wextra
@@ -1068,34 +1068,34 @@ Enables some warning options for usages of language features which
 may be problematic. This currently includes @option{-Wcompare-reals},
 @option{-Wunused-parameter} and @option{-Wdo-subscript}.
 
-@opindex @code{Wfrontend-loop-interchange}
+@opindex Wfrontend-loop-interchange
 @cindex warnings, loop interchange
 @cindex loop interchange, warning
 @item -Wfrontend-loop-interchange
 Warn when using @option{-ffrontend-loop-interchange} for performing loop
 interchanges.
 
-@opindex @code{Wimplicit-interface}
+@opindex Wimplicit-interface
 @cindex warnings, implicit interface
 @item -Wimplicit-interface
 Warn if a procedure is called without an explicit interface.
 Note this only checks that an explicit interface is present.  It does not
 check that the declared interfaces are consistent across program units.
 
-@opindex @code{Wimplicit-procedure}
+@opindex Wimplicit-procedure
 @cindex warnings, implicit procedure
 @item -Wimplicit-procedure
 Warn if a procedure is called that has neither an explicit interface
 nor has been declared as @code{EXTERNAL}.
 
-@opindex @code{Winteger-division}
+@opindex Winteger-division
 @cindex warnings, integer division
 @cindex warnings, division of integers
 @item -Winteger-division
 Warn if a constant integer division truncates its result.
 As an example, 3/5 evaluates to 0.
 
-@opindex @code{Wintrinsics-std}
+@opindex Wintrinsics-std
 @cindex warnings, non-standard intrinsics
 @cindex warnings, intrinsics of other standards
 @item -Wintrinsics-std
@@ -1105,7 +1105,7 @@ it as @code{EXTERNAL} procedure because of this.  @option{-fall-intrinsics} can
 be used to never trigger this behavior and always link to the intrinsic
 regardless of the selected standard.
 
-@opindex @code{Woverwrite-recursive}
+@opindex Woverwrite-recursive
 @cindex  warnings, overwrite recursive
 @item -Wno-overwrite-recursive
 Do not warn when @option{-fno-automatic} is used with @option{-frecursive}. Recursion
@@ -1114,13 +1114,13 @@ will be broken if the relevant local variables do not have the attribute
 when it is known that recursion is not broken. Useful for build environments that use
 @option{-Werror}.
 
-@opindex @code{Wreal-q-constant}
+@opindex Wreal-q-constant
 @cindex warnings, @code{q} exponent-letter
 @item -Wreal-q-constant
 Produce a warning if a real-literal-constant contains a @code{q}
 exponent-letter.
 
-@opindex @code{Wsurprising}
+@opindex Wsurprising
 @cindex warnings, suspicious code
 @item -Wsurprising
 Produce a warning when ``suspicious'' code constructs are encountered.
@@ -1152,7 +1152,7 @@ vendor-extension sentinel is encountered. (The equivalent @code{ompx},
 used in free-form source code, is diagnosed by default.)
 @end itemize
 
-@opindex @code{Wtabs}
+@opindex Wtabs
 @cindex warnings, tabs
 @cindex tabulators
 @item -Wtabs
@@ -1164,21 +1164,21 @@ active for @option{-pedantic}, @option{-std=f95}, @option{-std=f2003},
 @option{-std=f2008}, @option{-std=f2018}, @option{-std=f2023} and
 @option{-Wall}.
 
-@opindex @code{Wundefined-do-loop}
+@opindex Wundefined-do-loop
 @cindex warnings, undefined do loop
 @item -Wundefined-do-loop
 Warn if a DO loop with step either 1 or -1 yields an underflow or an overflow
 during iteration of an induction variable of the loop.
 This option is implied by @option{-Wall}.
 
-@opindex @code{Wunderflow}
+@opindex Wunderflow
 @cindex warnings, underflow
 @cindex underflow
 @item -Wunderflow
 Produce a warning when numerical constant expressions are
 encountered, which yield an UNDERFLOW during compilation. Enabled by default.
 
-@opindex @code{Wintrinsic-shadow}
+@opindex Wintrinsic-shadow
 @cindex warnings, intrinsic
 @cindex intrinsic
 @item -Wintrinsic-shadow
@@ -1187,21 +1187,21 @@ intrinsic; in this case, an explicit interface or @code{EXTERNAL} or
 @code{INTRINSIC} declaration might be needed to get calls later resolved to
 the desired intrinsic/procedure.  This option is implied by @option{-Wall}.
 
-@opindex @code{Wuse-without-only}
+@opindex Wuse-without-only
 @cindex warnings, use statements
 @cindex intrinsic
 @item -Wuse-without-only
 Warn if a @code{USE} statement has no @code{ONLY} qualifier and 
 thus implicitly imports all public entities of the used module.
 
-@opindex @code{Wunused-dummy-argument}
+@opindex Wunused-dummy-argument
 @cindex warnings, unused dummy argument
 @cindex unused dummy argument
 @cindex dummy argument, unused
 @item -Wunused-dummy-argument
 Warn about unused dummy arguments. This option is implied by @option{-Wall}.
 
-@opindex @code{Wunused-parameter}
+@opindex Wunused-parameter
 @cindex warnings, unused parameter
 @cindex unused parameter
 @item -Wunused-parameter
@@ -1212,7 +1212,7 @@ but about unused @code{PARAMETER} values. @option{-Wunused-parameter}
 is implied by @option{-Wextra} if also @option{-Wunused} or
 @option{-Wall} is used.
 
-@opindex @code{Walign-commons}
+@opindex Walign-commons
 @cindex warnings, alignment of @code{COMMON} blocks
 @cindex alignment of @code{COMMON} blocks
 @item -Walign-commons
@@ -1220,7 +1220,7 @@ By default, @command{gfortran} warns about any occasion of variables being
 padded for proper alignment inside a @code{COMMON} block. This warning can be turned
 off via @option{-Wno-align-commons}. See also @option{-falign-commons}.
 
-@opindex @code{Wfunction-elimination}
+@opindex Wfunction-elimination
 @cindex function elimination
 @cindex warnings, function elimination
 @item -Wfunction-elimination
@@ -1228,7 +1228,7 @@ Warn if any calls to impure functions are eliminated by the optimizations
 enabled by the @option{-ffrontend-optimize} option.
 This option is implied by @option{-Wextra}.
 
-@opindex @code{Wrealloc-lhs}
+@opindex Wrealloc-lhs
 @cindex Reallocate the LHS in assignments, notification
 @item -Wrealloc-lhs
 Warn when the compiler might insert code to for allocation or reallocation of
@@ -1241,27 +1241,27 @@ is shown, even if the compiler will optimize reallocation checks away.  For
 instance, when the right-hand side contains the same variable multiplied by
 a scalar.  See also @option{-frealloc-lhs}.
 
-@opindex @code{Wrealloc-lhs-all}
+@opindex Wrealloc-lhs-all
 @item -Wrealloc-lhs-all
 Warn when the compiler inserts code to for allocation or reallocation of an
 allocatable variable; this includes scalars and derived types.
 
-@opindex @code{Wcompare-reals}
+@opindex Wcompare-reals
 @item -Wcompare-reals
 Warn when comparing real or complex types for equality or inequality.
 This option is implied by @option{-Wextra}.
 
-@opindex @code{Wtargt-lifetime}
+@opindex Wtargt-lifetime
 @item -Wtarget-lifetime
 Warn if the pointer in a pointer assignment might be longer than the its
 target. This option is implied by @option{-Wall}.
 
-@opindex @code{Wzerotrip}
+@opindex Wzerotrip
 @item -Wzerotrip
 Warn if a @code{DO} loop is known to execute zero times at compile
 time.  This option is implied by @option{-Wall}.
 
-@opindex @code{Wdo-subscript}
+@opindex Wdo-subscript
 @item -Wdo-subscript
 Warn if an array subscript inside a DO loop could lead to an
 out-of-bounds access even if the compiler cannot prove that the
@@ -1276,7 +1276,7 @@ statement is actually executed, in cases like
 @end smallexample
 This option is implied by @option{-Wextra}.
 
-@opindex @code{Werror}
+@opindex Werror
 @cindex warnings, to errors
 @item -Werror
 Turns all warnings into errors.
@@ -1298,7 +1298,7 @@ GNU Fortran has various special options that are used for debugging
 your program.
 
 @table @gcctabopt
-@opindex @code{fdebug-aux-vars}
+@opindex fdebug-aux-vars
 @item -fdebug-aux-vars
 Renames internal variables created by the gfortran front end and makes
 them accessible to a debugger.  The name of the internal variables then
@@ -1307,7 +1307,7 @@ useful for debugging the compiler's code generation together with
 @code{-fdump-tree-original} and enabling debugging of the executable
 program by using @code{-g} or @code{-ggdb3}.
 
-@opindex @code{ffpe-trap=}@var{list}
+@opindex ffpe-trap=@var{list}
 @item -ffpe-trap=@var{list}
 Specify a list of floating point exception traps to enable.  On most
 systems, if a floating point exception occurs and the trap for that
@@ -1343,7 +1343,7 @@ be uninteresting in practice.
 
 By default no exception traps are enabled.
 
-@opindex @code{ffpe-summary=}@var{list}
+@opindex ffpe-summary=@var{list}
 @item -ffpe-summary=@var{list}
 Specify a list of floating-point exceptions, whose flag status is printed
 to @code{ERROR_UNIT} when invoking @code{STOP} and @code{ERROR STOP}.
@@ -1357,7 +1357,7 @@ last one will be used.
 
 By default, a summary for all exceptions but @samp{inexact} is shown.
 
-@opindex @code{fno-backtrace}
+@opindex fno-backtrace
 @cindex backtrace
 @cindex trace
 @item -fno-backtrace
@@ -1390,7 +1390,7 @@ It also affects the search paths used by @command{cpp} when used to preprocess
 Fortran source.
 
 @table @gcctabopt
-@opindex @code{I}@var{dir}
+@opindex I@var{dir}
 @cindex directory, search paths for inclusion
 @cindex inclusion, directory search paths for
 @cindex search paths, for included files
@@ -1413,8 +1413,8 @@ compiled modules are required by a @code{USE} statement.
 gcc,Using the GNU Compiler Collection (GCC)}, for information on the
 @option{-I} option.
 
-@opindex @code{J}@var{dir}
-@opindex @code{M}@var{dir}
+@opindex J@var{dir}
+@opindex M@var{dir}
 @cindex paths, search
 @cindex module search path
 @item -J@var{dir}
@@ -1424,7 +1424,7 @@ statement.
 
 The default is the current directory.
 
-@opindex @code{fintrinsic-modules-path} @var{dir}
+@opindex fintrinsic-modules-path
 @cindex paths, search
 @cindex module search path
 @item -fintrinsic-modules-path @var{dir}
@@ -1442,7 +1442,7 @@ executable output file. They are meaningless if the compiler is not doing
 a link step.
 
 @table @gcctabopt
-@opindex @code{static-libgfortran}
+@opindex static-libgfortran
 @item -static-libgfortran
 On systems that provide @file{libgfortran} as a shared and a static
 library, this option forces the use of the static version. If no
@@ -1452,7 +1452,7 @@ configured, this option has no effect.
 
 
 @table @gcctabopt
-@opindex @code{static-libquadmath}
+@opindex static-libquadmath
 @item -static-libquadmath
 On systems that provide @file{libquadmath} as a shared and a static
 library, this option forces the use of the static version. If no
@@ -1472,7 +1472,7 @@ requirements when redistributing the resulting binaries.
 These options affect the runtime behavior of programs compiled with GNU Fortran.
 
 @table @gcctabopt
-@opindex @code{fconvert=}@var{conversion}
+@opindex fconvert=@var{conversion}
 @item -fconvert=@var{conversion}
 Specify the representation of data for unformatted files.  Valid
 values for conversion on most systems are: @samp{native}, the default;
@@ -1494,7 +1494,7 @@ commas.  Those are
 The @code{CONVERT} specifier and the GFORTRAN_CONVERT_UNIT environment
 variable override the default specified by @option{-fconvert}.}
 
-@opindex @code{frecord-marker=}@var{length}
+@opindex frecord-marker=@var{length}
 @item -frecord-marker=@var{length}
 Specify the length of record markers for unformatted files.
 Valid values for @var{length} are 4 and 8.  Default is 4.
@@ -1503,13 +1503,13 @@ which specified a default record marker length of 8 on most
 systems.  If you want to read or write files compatible
 with earlier versions of @command{gfortran}, use @option{-frecord-marker=8}.
 
-@opindex @code{fmax-subrecord-length=}@var{length}
+@opindex fmax-subrecord-length=@var{length}
 @item -fmax-subrecord-length=@var{length}
 Specify the maximum length for a subrecord.  The maximum permitted
 value for length is 2147483639, which is also the default.  Only
 really useful for use by the gfortran testsuite.
 
-@opindex @code{fsign-zero}
+@opindex fsign-zero
 @item -fsign-zero
 When enabled, floating point numbers of value zero with the sign bit set
 are written as negative number in formatted output and treated as
@@ -1528,7 +1528,7 @@ GNU Fortran has various special options that are used for debugging
 the GNU Fortran compiler.
 
 @table @gcctabopt
-@opindex @code{fdump-fortran-global}
+@opindex fdump-fortran-global
 @item -fdump-fortran-global
 Output a list of the global identifiers after translating into
 middle-end representation. Mostly useful for debugging the GNU Fortran
@@ -1536,7 +1536,7 @@ compiler itself. The output generated by this option might change
 between releases.  This option may also generate internal compiler
 errors for features which have only recently been added.
 
-@opindex @code{fdump-fortran-optimized}
+@opindex fdump-fortran-optimized
 @item -fdump-fortran-optimized
 Output the parse tree after front-end optimization.  Mostly useful for
 debugging the GNU Fortran compiler itself. The output generated by
@@ -1544,7 +1544,7 @@ this option might change between releases.  This option may also
 generate internal compiler errors for features which have only
 recently been added.
 
-@opindex @code{fdump-fortran-original}
+@opindex fdump-fortran-original
 @item -fdump-fortran-original
 Output the internal parse tree after translating the source program
 into internal representation.  This option is mostly useful for
@@ -1553,7 +1553,7 @@ this option might change between releases. This option may also
 generate internal compiler errors for features which have only
 recently been added.
 
-@opindex @code{fdump-parse-tree}
+@opindex fdump-parse-tree
 @item -fdump-parse-tree
 Output the internal parse tree after translating the source program
 into internal representation.  Mostly useful for debugging the GNU
@@ -1600,7 +1600,7 @@ can figure out the other form by either removing @option{no-} or adding
 it.
 
 @table @gcctabopt
-@opindex @code{fno-automatic}
+@opindex fno-automatic
 @cindex @code{SAVE} statement
 @cindex statement, @code{SAVE}
 @item -fno-automatic
@@ -1649,7 +1649,7 @@ calling conventions will break at execution time.
 of type default @code{REAL} or @code{COMPLEX} as actual arguments, as
 the library implementations use the @option{-fno-f2c} calling conventions.
 
-@opindex @code{fno-underscoring}
+@opindex fno-underscoring
 @cindex underscore
 @cindex symbol names, underscores
 @cindex transforming symbol names
@@ -1718,7 +1718,7 @@ in the source, even if the names as seen by the linker are mangled to
 prevent accidental linking between procedures with incompatible
 interfaces.
 
-@opindex @code{fsecond-underscore}
+@opindex fsecond-underscore
 @cindex underscore
 @cindex symbol names, underscores
 @cindex transforming symbol names
@@ -1743,7 +1743,7 @@ is implemented as a reference to the link-time external symbol
 for compatibility with @command{g77} and @command{f2c}, and is implied
 by use of the @option{-ff2c} option.
 
-@opindex @code{fcoarray}
+@opindex fcoarray
 @cindex coarrays
 @item -fcoarray=@var{<keyword>}
 
@@ -1764,7 +1764,7 @@ albeit it only supports a single image.
 @end table
 
 
-@opindex @code{fcheck}
+@opindex fcheck
 @cindex array, bounds checking
 @cindex bit intrinsics checking
 @cindex bounds checking
@@ -1837,12 +1837,12 @@ will compile the file with all checks enabled as specified above except
 warnings for generated array temporaries.
 
 
-@opindex @code{fbounds-check}
+@opindex fbounds-check
 @item -fbounds-check
 @c Note: This option is also referred in gcc's manpage
 Deprecated alias for @option{-fcheck=bounds}.
 
-@opindex @code{tail-call-workaround}
+@opindex tail-call-workaround
 @item -ftail-call-workaround
 @itemx -ftail-call-workaround=@var{n}
 Some C interfaces to Fortran codes violate the gfortran ABI by
@@ -1875,11 +1875,11 @@ The negative form, @option{-fno-tail-call-workaround} or equivalent
 Default is currently @option{-ftail-call-workaround}, this will change
 in future releases.
 
-@opindex @code{fcheck-array-temporaries}
+@opindex fcheck-array-temporaries
 @item -fcheck-array-temporaries
 Deprecated alias for @option{-fcheck=array-temps}.
 
-@opindex @code{fmax-array-constructor}
+@opindex fmax-array-constructor
 @item -fmax-array-constructor=@var{n}
 This option can be used to increase the upper limit permitted in 
 array constructors.  The code below requires this option to expand
@@ -1901,7 +1901,7 @@ large object files.}
 The default value for @var{n} is 65535.
 
 
-@opindex @code{fmax-stack-var-size}
+@opindex fmax-stack-var-size
 @item -fmax-stack-var-size=@var{n}
 This option specifies the size in bytes of the largest array that will be put
 on the stack; if the size is exceeded static memory is used (except in
@@ -1915,7 +1915,7 @@ Future versions of GNU Fortran may improve this behavior.
 
 The default value for @var{n} is 65536.
 
-@opindex @code{fstack-arrays}
+@opindex fstack-arrays
 @item -fstack-arrays
 Adding this option will make the Fortran compiler put all arrays of
 unknown size and array temporaries onto stack memory.  If your program uses very
@@ -1924,14 +1924,14 @@ limits for stack memory on some operating systems. This flag is enabled
 by default at optimization level @option{-Ofast} unless
 @option{-fmax-stack-var-size} is specified.
 
-@opindex @code{fpack-derived}
+@opindex fpack-derived
 @cindex structure packing
 @item -fpack-derived
 This option tells GNU Fortran to pack derived type members as closely as
 possible.  Code compiled with this option is likely to be incompatible
 with code compiled without this option, and may execute slower.
 
-@opindex @code{frepack-arrays}
+@opindex frepack-arrays
 @cindex repacking arrays
 @item -frepack-arrays
 In some circumstances GNU Fortran may pass assumed shape array
@@ -1943,14 +1943,14 @@ This should result in faster accesses to the array.  However it can introduce
 significant overhead to the function call, especially  when the passed data
 is noncontiguous.
 
-@opindex @code{fshort-enums}
+@opindex fshort-enums
 @item -fshort-enums
 This option is provided for interoperability with C code that was
 compiled with the @option{-fshort-enums} option.  It will make
 GNU Fortran choose the smallest @code{INTEGER} kind a given
 enumerator set will fit in, and give all its enumerators this kind.
 
-@opindex @code{finline-arg-packing}
+@opindex finline-arg-packing
 @item -finline-arg-packing
 When passing an assumed-shape argument of a procedure as actual
 argument to an assumed-size or explicit size or as argument to a
@@ -1978,7 +1978,7 @@ size and also compilation time may become excessive.  If that is the
 case, it may be better to disable this option.  Instances of packing
 can be found by using @option{-Warray-temporaries}.
 
-@opindex @code{fexternal-blas}
+@opindex fexternal-blas
 @item -fexternal-blas
 This option will make @command{gfortran} generate calls to BLAS functions
 for some matrix operations like @code{MATMUL}, instead of using our own
@@ -1987,7 +1987,7 @@ limit (see @option{-fblas-matmul-limit}).  This may be profitable if an
 optimized vendor BLAS library is available.  The BLAS library will have
 to be specified at link time.
 
-@opindex @code{fblas-matmul-limit}
+@opindex fblas-matmul-limit
 @item -fblas-matmul-limit=@var{n}
 Only significant when @option{-fexternal-blas} is in effect.
 Matrix multiplication of matrices with size larger than (or equal to) @var{n}
@@ -1998,7 +1998,7 @@ geometric mean of the dimensions of the argument and result matrices.
 
 The default value for @var{n} is 30.
 
-@opindex @code{finline-intrinsics}
+@opindex finline-intrinsics
 @item -finline-intrinsics
 @itemx -finline-intrinsics=@var{intr1},@var{intr2},...
 Prefer generating inline code over calls to libgfortran functions to implement
@@ -2026,7 +2026,7 @@ The case of rank-1 argument and @code{DIM} argument present, i.e.
 @code{MAXLOC(A(:),DIM=1)} or @code{MINLOC(A(:),DIM=1)} is inlined
 unconditionally for numeric rank-1 array argument @code{A}.
 
-@opindex @code{finline-matmul-limit}
+@opindex finline-matmul-limit
 @item -finline-matmul-limit=@var{n}
 When front-end optimization is active, some calls to the @code{MATMUL}
 intrinsic function will be inlined.  This may result in code size
@@ -2041,18 +2041,18 @@ the dimensions of the argument and result matrices.
 The default value for @var{n} is 30.  The @code{-fblas-matmul-limit}
 can be used to change this value.
 
-@opindex @code{frecursive}
+@opindex frecursive
 @item -frecursive
 Allow indirect recursion by forcing all local arrays to be allocated
 on the stack. This flag cannot be used together with
 @option{-fmax-stack-var-size=} or @option{-fno-automatic}.
 
-@opindex @code{finit-local-zero}
-@opindex @code{finit-derived}
-@opindex @code{finit-integer}
-@opindex @code{finit-real}
-@opindex @code{finit-logical}
-@opindex @code{finit-character}
+@opindex finit-local-zero
+@opindex finit-derived
+@opindex finit-integer
+@opindex finit-real
+@opindex finit-logical
+@opindex finit-character
 @item -finit-local-zero
 @itemx -finit-derived
 @itemx -finit-integer=@var{n}
@@ -2102,7 +2102,7 @@ Finally, note that enabling any of the @option{-finit-*} options will
 silence warnings that would have been emitted by @option{-Wuninitialized}
 for the affected local variables.
 
-@opindex @code{falign-commons}
+@opindex falign-commons
 @cindex alignment of @code{COMMON} blocks
 @item -falign-commons
 By default, @command{gfortran} enforces proper alignment of all variables in a
@@ -2114,7 +2114,7 @@ same form of this option should be used for all files that share a @code{COMMON}
 To avoid potential alignment issues in @code{COMMON} blocks, it is recommended to order
 objects from largest to smallest.
 
-@opindex @code{fno-protect-parens}
+@opindex fno-protect-parens
 @cindex re-association of parenthesized expressions
 @item -fno-protect-parens
 By default the parentheses in expression are honored for all optimization
@@ -2125,7 +2125,7 @@ optimization @option{-fno-signed-zeros} and @option{-fno-trapping-math}
 need to be in effect. The parentheses protection is enabled by default, unless
 @option{-Ofast} is given.
 
-@opindex @code{frealloc-lhs}
+@opindex frealloc-lhs
 @cindex Reallocate the LHS in assignments
 @item -frealloc-lhs
 An allocatable left-hand side of an intrinsic assignment is automatically
@@ -2133,7 +2133,7 @@ An allocatable left-hand side of an intrinsic assignment is automatically
 option is enabled by default except when @option{-std=f95} is given. See
 also @option{-Wrealloc-lhs}.
 
-@opindex @code{faggressive-function-elimination}
+@opindex faggressive-function-elimination
 @cindex Elimination of functions with identical argument lists
 @item -faggressive-function-elimination
 Functions with identical argument lists are eliminated within
@@ -2145,7 +2145,7 @@ statements, regardless of whether these functions are marked
 there will only be a single call to @code{f}.  This option only works
 if @option{-ffrontend-optimize} is in effect.
 
-@opindex @code{frontend-optimize}
+@opindex frontend-optimize
 @cindex Front-end optimization
 @item -ffrontend-optimize
 This option performs front-end optimization, based on manipulating
@@ -2161,7 +2161,7 @@ include:
 @end itemize
 It can be deselected by specifying @option{-fno-frontend-optimize}.
 
-@opindex @code{frontend-loop-interchange}
+@opindex frontend-loop-interchange
 @cindex loop interchange, Fortran
 @item -ffrontend-loop-interchange
 Attempt to interchange loops in the Fortran front end where
@@ -2182,7 +2182,7 @@ shared by @command{gfortran}, @command{gcc}, and other GNU compilers.
 
 @table @asis
 
-@opindex @code{c-prototypes}
+@opindex c-prototypes
 @cindex Generating C prototypes from Fortran BIND(C) enteties
 @item -fc-prototypes
 This option will generate C prototypes from @code{BIND(C)} variable
@@ -2204,7 +2204,7 @@ $ gfortran -fc-prototypes -fsyntax-only foo.f90 > foo.h
 where the C code intended for interoperating with the Fortran code
 then  uses @code{#include "foo.h"}.
 
-@opindex @code{c-prototypes-external}
+@opindex c-prototypes-external
 @cindex Generating C prototypes from external procedures
 @item -fc-prototypes-external
 This option will generate C prototypes from external functions and
