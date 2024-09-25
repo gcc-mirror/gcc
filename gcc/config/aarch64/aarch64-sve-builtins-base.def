@@ -379,3 +379,8 @@ DEF_SVE_FUNCTION (svzip2q, binary, all_data, none)
 DEF_SVE_FUNCTION (svld1ro, load_replicate, all_data, implicit)
 DEF_SVE_FUNCTION (svmmla, mmla, d_float, none)
 #undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS AARCH64_FL_SVE | AARCH64_FL_FAMINMAX
+DEF_SVE_FUNCTION (svamax, binary_opt_single_n, all_float, mxz)
+DEF_SVE_FUNCTION (svamin, binary_opt_single_n, all_float, mxz)
+#undef REQUIRED_EXTENSIONS

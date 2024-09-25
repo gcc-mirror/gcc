@@ -472,6 +472,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
 /* Floating Point Absolute Maximum/Minimum extension instructions are
    enabled through +faminmax.  */
 #define TARGET_FAMINMAX AARCH64_HAVE_ISA (FAMINMAX)
+#define TARGET_SVE_FAMINMAX (TARGET_SVE && TARGET_FAMINMAX)
 
 /* Prefer different predicate registers for the output of a predicated
    operation over re-using an existing input predicate.  */

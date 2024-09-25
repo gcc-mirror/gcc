@@ -840,6 +840,8 @@
     UNSPEC_COND_CMPNE_WIDE ; Used in aarch64-sve.md.
     UNSPEC_COND_FABS	; Used in aarch64-sve.md.
     UNSPEC_COND_FADD	; Used in aarch64-sve.md.
+    UNSPEC_COND_FAMAX	; Used in aarch64-sve.md.
+    UNSPEC_COND_FAMIN	; Used in aarch64-sve.md.
     UNSPEC_COND_FCADD90	; Used in aarch64-sve.md.
     UNSPEC_COND_FCADD270 ; Used in aarch64-sve.md.
     UNSPEC_COND_FCMEQ	; Used in aarch64-sve.md.
@@ -3084,6 +3086,8 @@
 
 (define_int_iterator SVE_COND_FP_BINARY
   [UNSPEC_COND_FADD
+   (UNSPEC_COND_FAMAX "TARGET_SVE_FAMINMAX")
+   (UNSPEC_COND_FAMIN "TARGET_SVE_FAMINMAX")
    UNSPEC_COND_FDIV
    UNSPEC_COND_FMAX
    UNSPEC_COND_FMAXNM
@@ -3123,7 +3127,9 @@
 					    UNSPEC_COND_SMIN])
 
 (define_int_iterator SVE_COND_FP_BINARY_REG
-  [UNSPEC_COND_FDIV
+  [(UNSPEC_COND_FAMAX "TARGET_SVE_FAMINMAX")
+   (UNSPEC_COND_FAMIN "TARGET_SVE_FAMINMAX")
+   UNSPEC_COND_FDIV
    UNSPEC_COND_FMULX])
 
 (define_int_iterator SVE_COND_FCADD [UNSPEC_COND_FCADD90
@@ -3700,6 +3706,8 @@
 			(UNSPEC_ZIP2Q "zip2q")
 			(UNSPEC_COND_FABS "abs")
 			(UNSPEC_COND_FADD "add")
+			(UNSPEC_COND_FAMAX "famax")
+			(UNSPEC_COND_FAMIN "famin")
 			(UNSPEC_COND_FCADD90 "cadd90")
 			(UNSPEC_COND_FCADD270 "cadd270")
 			(UNSPEC_COND_FCMLA "fcmla")
@@ -4236,6 +4244,8 @@
 			    (UNSPEC_FTSSEL "ftssel")
 			    (UNSPEC_COND_FABS "fabs")
 			    (UNSPEC_COND_FADD "fadd")
+			    (UNSPEC_COND_FAMAX "famax")
+			    (UNSPEC_COND_FAMIN "famin")
 			    (UNSPEC_COND_FCVTLT "fcvtlt")
 			    (UNSPEC_COND_FCVTX "fcvtx")
 			    (UNSPEC_COND_FDIV "fdiv")
@@ -4262,6 +4272,8 @@
 			    (UNSPEC_COND_SMIN "fminnm")])
 
 (define_int_attr sve_fp_op_rev [(UNSPEC_COND_FADD "fadd")
+				(UNSPEC_COND_FAMAX "famax")
+				(UNSPEC_COND_FAMIN "famin")
 				(UNSPEC_COND_FDIV "fdivr")
 				(UNSPEC_COND_FMAX "fmax")
 				(UNSPEC_COND_FMAXNM "fmaxnm")
@@ -4400,6 +4412,8 @@
 ;; <optab><mode>3 pattern.
 (define_int_attr sve_pred_fp_rhs1_operand
   [(UNSPEC_COND_FADD "register_operand")
+   (UNSPEC_COND_FAMAX "register_operand")
+   (UNSPEC_COND_FAMIN "register_operand")
    (UNSPEC_COND_FDIV "register_operand")
    (UNSPEC_COND_FMAX "register_operand")
    (UNSPEC_COND_FMAXNM "register_operand")
@@ -4415,6 +4429,8 @@
 ;; <optab><mode>3 pattern.
 (define_int_attr sve_pred_fp_rhs2_operand
   [(UNSPEC_COND_FADD "aarch64_sve_float_arith_with_sub_operand")
+   (UNSPEC_COND_FAMAX "register_operand")
+   (UNSPEC_COND_FAMIN "register_operand")
    (UNSPEC_COND_FDIV "register_operand")
    (UNSPEC_COND_FMAX "aarch64_sve_float_maxmin_operand")
    (UNSPEC_COND_FMAXNM "aarch64_sve_float_maxmin_operand")

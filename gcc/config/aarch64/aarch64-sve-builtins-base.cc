@@ -3071,6 +3071,10 @@ FUNCTION (svadrb, svadr_bhwd_impl, (0))
 FUNCTION (svadrd, svadr_bhwd_impl, (3))
 FUNCTION (svadrh, svadr_bhwd_impl, (1))
 FUNCTION (svadrw, svadr_bhwd_impl, (2))
+FUNCTION (svamax, cond_or_uncond_unspec_function,
+	  (UNSPEC_COND_FAMAX, UNSPEC_FAMAX))
+FUNCTION (svamin, cond_or_uncond_unspec_function,
+	  (UNSPEC_COND_FAMIN, UNSPEC_FAMIN))
 FUNCTION (svand, rtx_code_function, (AND, AND))
 FUNCTION (svandv, reduction, (UNSPEC_ANDV))
 FUNCTION (svasr, rtx_code_function, (ASHIFTRT, ASHIFTRT))
