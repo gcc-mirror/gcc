@@ -6346,7 +6346,6 @@ static void
 break_up_subtract_bb (basic_block bb)
 {
   gimple_stmt_iterator gsi;
-  basic_block son;
   unsigned int uid = 1;
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -6378,10 +6377,6 @@ break_up_subtract_bb (basic_block bb)
 	       && can_reassociate_op_p (gimple_assign_rhs1 (stmt)))
 	plus_negates.safe_push (gimple_assign_lhs (stmt));
     }
-  for (son = first_dom_son (CDI_DOMINATORS, bb);
-       son;
-       son = next_dom_son (CDI_DOMINATORS, son))
-    break_up_subtract_bb (son);
 }
 
 /* Used for repeated factor analysis.  */
@@ -7007,7 +7002,6 @@ static bool
 reassociate_bb (basic_block bb)
 {
   gimple_stmt_iterator gsi;
-  basic_block son;
   gimple *stmt = last_nondebug_stmt (bb);
   bool cfg_cleanup_needed = false;
 
@@ -7270,10 +7264,6 @@ reassociate_bb (basic_block bb)
 	    }
 	}
     }
-  for (son = first_dom_son (CDI_POST_DOMINATORS, bb);
-       son;
-       son = next_dom_son (CDI_POST_DOMINATORS, son))
-    cfg_cleanup_needed |= reassociate_bb (son);
 
   return cfg_cleanup_needed;
 }
@@ -7382,10 +7372,39 @@ debug_ops_vector (vec<operand_entry *> ops)
 /* Bubble up return status from reassociate_bb.  */
 
 static bool
-do_reassoc (void)
+do_reassoc ()
 {
-  break_up_subtract_bb (ENTRY_BLOCK_PTR_FOR_FN (cfun));
-  return reassociate_bb (EXIT_BLOCK_PTR_FOR_FN (cfun));
+  bool cfg_cleanup_needed = false;
+  basic_block *worklist = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
+
+  unsigned sp = 0;
+  for (auto son = first_dom_son (CDI_DOMINATORS, ENTRY_BLOCK_PTR_FOR_FN (cfun));
+       son; son = next_dom_son (CDI_DOMINATORS, son))
+    worklist[sp++] = son;
+  while (sp)
+    {
+      basic_block bb = worklist[--sp];
+      break_up_subtract_bb (bb);
+      for (auto son = first_dom_son (CDI_DOMINATORS, bb);
+	   son; son = next_dom_son (CDI_DOMINATORS, son))
+	worklist[sp++] = son;
+    }
+
+  for (auto son = first_dom_son (CDI_POST_DOMINATORS,
+				 EXIT_BLOCK_PTR_FOR_FN (cfun));
+       son; son = next_dom_son (CDI_POST_DOMINATORS, son))
+    worklist[sp++] = son;
+  while (sp)
+    {
+      basic_block bb = worklist[--sp];
+      cfg_cleanup_needed |= reassociate_bb (bb);
+      for (auto son = first_dom_son (CDI_POST_DOMINATORS, bb);
+	   son; son = next_dom_son (CDI_POST_DOMINATORS, son))
+	worklist[sp++] = son;
+    }
+
+  free (worklist);
+  return cfg_cleanup_needed;
 }
 
 /* Initialize the reassociation pass.  */
