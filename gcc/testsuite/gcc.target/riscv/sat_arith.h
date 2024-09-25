@@ -353,6 +353,23 @@ sat_u_sub_imm_type_check##_##INDEX##_##T##_fmt_4 (T x)    \
   return x > IMM ? x - IMM : 0;                           \
 }
 
+#define DEF_SAT_S_SUB_FMT_1(T, UT, MIN, MAX) \
+T __attribute__((noinline))                  \
+sat_s_sub_##T##_fmt_1 (T x, T y)             \
+{                                            \
+  T minus = (UT)x - (UT)y;                   \
+  return (x ^ y) >= 0                        \
+    ? minus                                  \
+    : (minus ^ x) >= 0                       \
+      ? minus                                \
+      : x < 0 ? MIN : MAX;                   \
+}
+#define DEF_SAT_S_SUB_FMT_1_WRAP(T, UT, MIN, MAX) \
+  DEF_SAT_S_SUB_FMT_1(T, UT, MIN, MAX)
+
+#define RUN_SAT_S_SUB_FMT_1(T, x, y) sat_s_sub_##T##_fmt_1(x, y)
+#define RUN_SAT_S_SUB_FMT_1_WRAP(T, x, y) RUN_SAT_S_SUB_FMT_1(T, x, y)
+
 /******************************************************************************/
 /* Saturation Truncate (unsigned and signed)                                  */
 /******************************************************************************/
