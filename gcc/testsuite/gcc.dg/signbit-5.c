@@ -2,10 +2,7 @@
 /* { dg-options "-O3" } */
 
 /* This test does not work when the truth type does not match vector type.  */
-/* { dg-additional-options "-mno-avx512f" { target { i?86-*-* x86_64-*-* } } } */
 /* { dg-additional-options "-march=armv8-a" { target aarch64_sve } } */
-/* { dg-xfail-run-if "truth type does not match vector type" { amdgcn-*-* } } */
-/* { dg-xfail-run-if "truth type does not match vector type" { riscv_v } } */
 
 
 #include <stdint.h>
@@ -45,8 +42,8 @@ int main ()
   TYPE a[N];
   TYPE b[N];
 
-  a[0] = INT_MIN;
-  b[0] = INT_MIN;
+  a[0] = INT_MIN+1;
+  b[0] = INT_MIN+1;
 
   for (int i = 1; i < N; ++i)
     {

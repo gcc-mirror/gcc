@@ -3,6 +3,13 @@
 #ifdef _AIX
 #define _STD_TYPES_T
 #endif
+
+/* Prevent AVR-LibC from implicitly including inttypes.h.  */
+#ifdef __AVR__
+#define __INTTYPES_H_
+#include <stdint.h>
+#endif
+
 #include <stdio.h>
 #include <stdint.h>
 /* Missing <inttypes.h>.  */

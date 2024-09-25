@@ -5,7 +5,7 @@
    two const qualifier CTF records are expected (const int and const struct
    s1).  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 
 /* { dg-final { scan-assembler-times "ascii \"int.0\"\[\t \]+\[^\n\]*ctf_string" 1 } } */

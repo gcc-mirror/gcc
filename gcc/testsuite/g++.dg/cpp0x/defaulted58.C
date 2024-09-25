@@ -11,6 +11,7 @@ template<typename T> struct W
 {
   W() = default;
   W& operator=(const W&) = default; // { dg-error "binding" }
+// { dg-error "implicitly deleted" "" { target c++17_down } .-1 }
   T t;
 };
 

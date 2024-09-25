@@ -24,8 +24,7 @@
 #include "rust-hir-full-decls.h"
 #include "rust-tyty-bounds.h"
 #include "rust-tyty-region.h"
-
-#include <optional.h>
+#include "optional.h"
 
 namespace Rust {
 namespace TyTy {

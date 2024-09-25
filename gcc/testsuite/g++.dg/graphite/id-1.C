@@ -1,3 +1,5 @@
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
+
 #include <vector>
 
 template <int rank, int dim> class Tensor;

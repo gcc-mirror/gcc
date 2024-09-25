@@ -39,7 +39,7 @@ ADJUST_FLOAT_FORMAT (BF, &arm_bfloat_half_format);
   |BI   |RVVM1BI |RVVMF2BI |RVVMF4BI |RVVMF8BI |RVVMF16BI |RVVMF32BI |RVVMF64BI |  */
 
 /* For RVV modes, each boolean value occupies 1-bit.
-   4th argument is specify the minmial possible size of the vector mode,
+   4th argument specifies the minimal possible size of the vector mode,
    and will adjust to the right size by ADJUST_BYTESIZE.  */
 VECTOR_BOOL_MODE (RVVM1BI, 64, BI, 8);
 VECTOR_BOOL_MODE (RVVMF2BI, 32, BI, 4);
@@ -93,6 +93,7 @@ ADJUST_BYTESIZE (RVVMF64BI, riscv_v_adjust_bytesize (RVVMF64BImode, 1));
    |DF   |RVVM1DF|RVVM2DF|RVVM4DF|RVVM8DF|N/A     |N/A     |N/A     |
    |SF   |RVVM1SF|RVVM2SF|RVVM4SF|RVVM8SF|RVVMF2SF|N/A     |N/A     |
    |HF   |RVVM1HF|RVVM2HF|RVVM4HF|RVVM8HF|RVVMF2HF|RVVMF4HF|N/A     |
+   |BF   |RVVM1BF|RVVM2BF|RVVM4BF|RVVM8BF|RVVMF2BF|RVVMF4BF|N/A     |
 
 There are the following data types for ELEN = 32.
 
@@ -101,11 +102,13 @@ There are the following data types for ELEN = 32.
    |HI   |RVVM1HI|RVVM2HI|RVVM4HI|RVVM8HI|RVVMF2HI|N/A     |N/A     |
    |QI   |RVVM1QI|RVVM2QI|RVVM4QI|RVVM8QI|RVVMF2QI|RVVMF4QI|N/A     |
    |SF   |RVVM1SF|RVVM2SF|RVVM4SF|RVVM8SF|N/A     |N/A     |N/A     |
-   |HF   |RVVM1HF|RVVM2HF|RVVM4HF|RVVM8HF|RVVMF2HF|N/A     |N/A     |  */
+   |HF   |RVVM1HF|RVVM2HF|RVVM4HF|RVVM8HF|RVVMF2HF|N/A     |N/A     |
+   |BF   |RVVM1BF|RVVM2BF|RVVM4BF|RVVM8BF|RVVMF2BF|N/A     |N/A     |  */
 
 #define RVV_WHOLE_MODES(LMUL)                                                  \
   VECTOR_MODE_WITH_PREFIX (RVVM, INT, QI, LMUL, 0);                            \
   VECTOR_MODE_WITH_PREFIX (RVVM, INT, HI, LMUL, 0);                            \
+  VECTOR_MODE_WITH_PREFIX (RVVM, FLOAT, BF, LMUL, 0);				\
   VECTOR_MODE_WITH_PREFIX (RVVM, FLOAT, HF, LMUL, 0);                          \
   VECTOR_MODE_WITH_PREFIX (RVVM, INT, SI, LMUL, 0);                            \
   VECTOR_MODE_WITH_PREFIX (RVVM, FLOAT, SF, LMUL, 0);                          \
@@ -120,6 +123,8 @@ There are the following data types for ELEN = 32.
 		 riscv_v_adjust_nunits (RVVM##LMUL##SImode, false, LMUL, 1));  \
   ADJUST_NUNITS (RVVM##LMUL##DI,                                               \
 		 riscv_v_adjust_nunits (RVVM##LMUL##DImode, false, LMUL, 1));  \
+  ADJUST_NUNITS (RVVM##LMUL##BF,						\
+		 riscv_v_adjust_nunits (RVVM##LMUL##BFmode, false, LMUL, 1));  \
   ADJUST_NUNITS (RVVM##LMUL##HF,                                               \
 		 riscv_v_adjust_nunits (RVVM##LMUL##HFmode, false, LMUL, 1));  \
   ADJUST_NUNITS (RVVM##LMUL##SF,                                               \
@@ -131,6 +136,7 @@ There are the following data types for ELEN = 32.
   ADJUST_ALIGNMENT (RVVM##LMUL##HI, 2);                                        \
   ADJUST_ALIGNMENT (RVVM##LMUL##SI, 4);                                        \
   ADJUST_ALIGNMENT (RVVM##LMUL##DI, 8);                                        \
+  ADJUST_ALIGNMENT (RVVM##LMUL##BF, 2);					\
   ADJUST_ALIGNMENT (RVVM##LMUL##HF, 2);                                        \
   ADJUST_ALIGNMENT (RVVM##LMUL##SF, 4);                                        \
   ADJUST_ALIGNMENT (RVVM##LMUL##DF, 8);
@@ -153,6 +159,8 @@ RVV_FRACT_MODE (INT, QI, 4, 1)
 RVV_FRACT_MODE (INT, QI, 8, 1)
 RVV_FRACT_MODE (INT, HI, 2, 2)
 RVV_FRACT_MODE (INT, HI, 4, 2)
+RVV_FRACT_MODE (FLOAT, BF, 2, 2)
+RVV_FRACT_MODE (FLOAT, BF, 4, 2)
 RVV_FRACT_MODE (FLOAT, HF, 2, 2)
 RVV_FRACT_MODE (FLOAT, HF, 4, 2)
 RVV_FRACT_MODE (INT, SI, 2, 4)
@@ -174,6 +182,9 @@ RVV_FRACT_MODE (FLOAT, SF, 2, 4)
   VECTOR_MODE_WITH_PREFIX (RVVMF4x, INT, HI, NF, 1);                           \
   VECTOR_MODE_WITH_PREFIX (RVVMF2x, INT, HI, NF, 1);                           \
   VECTOR_MODE_WITH_PREFIX (RVVM1x, INT, HI, NF, 1);                            \
+  VECTOR_MODE_WITH_PREFIX (RVVMF4x, FLOAT, BF, NF, 1);				\
+  VECTOR_MODE_WITH_PREFIX (RVVMF2x, FLOAT, BF, NF, 1);				\
+  VECTOR_MODE_WITH_PREFIX (RVVM1x, FLOAT, BF, NF, 1);				\
   VECTOR_MODE_WITH_PREFIX (RVVMF4x, FLOAT, HF, NF, 1);                         \
   VECTOR_MODE_WITH_PREFIX (RVVMF2x, FLOAT, HF, NF, 1);                         \
   VECTOR_MODE_WITH_PREFIX (RVVM1x, FLOAT, HF, NF, 1);                          \
@@ -198,6 +209,12 @@ RVV_FRACT_MODE (FLOAT, SF, 2, 4)
 		 riscv_v_adjust_nunits (RVVMF2x##NF##HImode, true, 2, NF));    \
   ADJUST_NUNITS (RVVM1x##NF##HI,                                               \
 		 riscv_v_adjust_nunits (RVVM1x##NF##HImode, false, 1, NF));    \
+  ADJUST_NUNITS (RVVMF4x##NF##BF,						\
+		 riscv_v_adjust_nunits (RVVMF4x##NF##BFmode, true, 4, NF));    \
+  ADJUST_NUNITS (RVVMF2x##NF##BF,						\
+		 riscv_v_adjust_nunits (RVVMF2x##NF##BFmode, true, 2, NF));    \
+  ADJUST_NUNITS (RVVM1x##NF##BF,						\
+		 riscv_v_adjust_nunits (RVVM1x##NF##BFmode, false, 1, NF));    \
   ADJUST_NUNITS (RVVMF4x##NF##HF,                                              \
 		 riscv_v_adjust_nunits (RVVMF4x##NF##HFmode, true, 4, NF));    \
   ADJUST_NUNITS (RVVMF2x##NF##HF,                                              \
@@ -224,6 +241,9 @@ RVV_FRACT_MODE (FLOAT, SF, 2, 4)
   ADJUST_ALIGNMENT (RVVMF4x##NF##HI, 2);                                       \
   ADJUST_ALIGNMENT (RVVMF2x##NF##HI, 2);                                       \
   ADJUST_ALIGNMENT (RVVM1x##NF##HI, 2);                                        \
+  ADJUST_ALIGNMENT (RVVMF4x##NF##BF, 2);					\
+  ADJUST_ALIGNMENT (RVVMF2x##NF##BF, 2);					\
+  ADJUST_ALIGNMENT (RVVM1x##NF##BF, 2);					\
   ADJUST_ALIGNMENT (RVVMF4x##NF##HF, 2);                                       \
   ADJUST_ALIGNMENT (RVVMF2x##NF##HF, 2);                                       \
   ADJUST_ALIGNMENT (RVVM1x##NF##HF, 2);                                        \
@@ -245,6 +265,7 @@ RVV_NF8_MODES (2)
 #define RVV_NF4_MODES(NF)                                                      \
   VECTOR_MODE_WITH_PREFIX (RVVM2x, INT, QI, NF, 1);                            \
   VECTOR_MODE_WITH_PREFIX (RVVM2x, INT, HI, NF, 1);                            \
+  VECTOR_MODE_WITH_PREFIX (RVVM2x, FLOAT, BF, NF, 1);				\
   VECTOR_MODE_WITH_PREFIX (RVVM2x, FLOAT, HF, NF, 1);                          \
   VECTOR_MODE_WITH_PREFIX (RVVM2x, INT, SI, NF, 1);                            \
   VECTOR_MODE_WITH_PREFIX (RVVM2x, FLOAT, SF, NF, 1);                          \
@@ -255,6 +276,8 @@ RVV_NF8_MODES (2)
 		 riscv_v_adjust_nunits (RVVM2x##NF##QImode, false, 2, NF));    \
   ADJUST_NUNITS (RVVM2x##NF##HI,                                               \
 		 riscv_v_adjust_nunits (RVVM2x##NF##HImode, false, 2, NF));    \
+  ADJUST_NUNITS (RVVM2x##NF##BF,						\
+		 riscv_v_adjust_nunits (RVVM2x##NF##BFmode, false, 2, NF));    \
   ADJUST_NUNITS (RVVM2x##NF##HF,                                               \
 		 riscv_v_adjust_nunits (RVVM2x##NF##HFmode, false, 2, NF));    \
   ADJUST_NUNITS (RVVM2x##NF##SI,                                               \
@@ -268,6 +291,7 @@ RVV_NF8_MODES (2)
                                                                                \
   ADJUST_ALIGNMENT (RVVM2x##NF##QI, 1);                                        \
   ADJUST_ALIGNMENT (RVVM2x##NF##HI, 2);                                        \
+  ADJUST_ALIGNMENT (RVVM2x##NF##BF, 2);					\
   ADJUST_ALIGNMENT (RVVM2x##NF##HF, 2);                                        \
   ADJUST_ALIGNMENT (RVVM2x##NF##SI, 4);                                        \
   ADJUST_ALIGNMENT (RVVM2x##NF##SF, 4);                                        \
@@ -281,6 +305,7 @@ RVV_NF4_MODES (4)
 #define RVV_NF2_MODES(NF)                                                      \
   VECTOR_MODE_WITH_PREFIX (RVVM4x, INT, QI, NF, 1);                            \
   VECTOR_MODE_WITH_PREFIX (RVVM4x, INT, HI, NF, 1);                            \
+  VECTOR_MODE_WITH_PREFIX (RVVM4x, FLOAT, BF, NF, 1);				\
   VECTOR_MODE_WITH_PREFIX (RVVM4x, FLOAT, HF, NF, 1);                          \
   VECTOR_MODE_WITH_PREFIX (RVVM4x, INT, SI, NF, 1);                            \
   VECTOR_MODE_WITH_PREFIX (RVVM4x, FLOAT, SF, NF, 1);                          \
@@ -291,6 +316,8 @@ RVV_NF4_MODES (4)
 		 riscv_v_adjust_nunits (RVVM4x##NF##QImode, false, 4, NF));    \
   ADJUST_NUNITS (RVVM4x##NF##HI,                                               \
 		 riscv_v_adjust_nunits (RVVM4x##NF##HImode, false, 4, NF));    \
+  ADJUST_NUNITS (RVVM4x##NF##BF,						\
+		 riscv_v_adjust_nunits (RVVM4x##NF##BFmode, false, 4, NF));    \
   ADJUST_NUNITS (RVVM4x##NF##HF,                                               \
 		 riscv_v_adjust_nunits (RVVM4x##NF##HFmode, false, 4, NF));    \
   ADJUST_NUNITS (RVVM4x##NF##SI,                                               \
@@ -304,6 +331,7 @@ RVV_NF4_MODES (4)
                                                                                \
   ADJUST_ALIGNMENT (RVVM4x##NF##QI, 1);                                        \
   ADJUST_ALIGNMENT (RVVM4x##NF##HI, 2);                                        \
+  ADJUST_ALIGNMENT (RVVM4x##NF##BF, 2);					\
   ADJUST_ALIGNMENT (RVVM4x##NF##HF, 2);                                        \
   ADJUST_ALIGNMENT (RVVM4x##NF##SI, 4);                                        \
   ADJUST_ALIGNMENT (RVVM4x##NF##SF, 4);                                        \
@@ -396,7 +424,7 @@ VLS_MODES (1024); /* V1024QI  V512HI  V256SI V128DI  V512HF  V256SF V128DF */
 VLS_MODES (2048); /* V2048QI V1024HI  V512SI V256DI V1024HF  V512SF V256DF */
 VLS_MODES (4096); /* V4096QI V2048HI V1024SI V512DI V2048HF V1024SF V512DF */
 
-/* TODO: According to RISC-V 'V' ISA spec, the maximun vector length can
+/* TODO: According to RISC-V 'V' ISA spec, the maximum vector length can
    be 65536 for a single vector register which means the vector mode in
    GCC can be maximum = 65536 * 8 bits (LMUL=8).
    However, 'GET_MODE_SIZE' is using poly_uint16/unsigned short which will

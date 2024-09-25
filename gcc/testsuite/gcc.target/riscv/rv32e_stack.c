@@ -1,4 +1,4 @@
-/* { dg-do compile} */
+/* { dg-do compile } */
 /* { dg-options "-O0 -march=rv32e -mabi=ilp32e -fomit-frame-pointer" } */
 
 int getInt();

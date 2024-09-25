@@ -1,6 +1,7 @@
 // PR tree-optimization/104601
 // { dg-do run }
 // { dg-options "-std=c++17 -Wno-unused-result" }
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 
 #include <algorithm>
 #include <optional>

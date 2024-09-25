@@ -33,7 +33,7 @@ TEST_ALL (DEF_LOOP)
 /* { dg-final { scan-assembler-times {vmacc\.vx\s+v[0-9]+,[a-x][0-9]+,v[0-9]+,v0.t} 3 } } */
 /* { dg-final { scan-assembler-times {vnmsac\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 1 } } */
 /* { dg-final { scan-assembler-times {vnmsac\.vx\s+v[0-9]+,[a-x][0-9]+,v[0-9]+,v0.t} 3 } } */
-/* { dg-final { scan-assembler-times {vfmacc\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 1 } } */
-/* { dg-final { scan-assembler-times {vfmacc\.vf\s+v[0-9]+,fa[0-9],v[0-9]+,v0.t} 2 } } */
+/* { dg-final { scan-assembler-times {vfmacc\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 0 } } */
+/* { dg-final { scan-assembler-times {vfmacc\.vf\s+v[0-9]+,fa[0-9],v[0-9]+,v0.t} 3 } } */
 /* { dg-final { scan-assembler-times {vfnmsac\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 3 } } */
 /* { dg-final { scan-assembler-times {\tvf?merge\.v[vxi]m\t} 14 } } */

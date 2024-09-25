@@ -31,6 +31,11 @@
 
 #pragma GCC system_header
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // include_next
+
 #include_next <time.h>
+
+#pragma GCC diagnostic pop
 
 #endif

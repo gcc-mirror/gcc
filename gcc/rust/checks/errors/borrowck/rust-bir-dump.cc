@@ -1,4 +1,22 @@
-#include <numeric>
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
+
+// This file is part of GCC.
+
+// GCC is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 3, or (at your option) any later
+// version.
+
+// GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with GCC; see the file COPYING3.  If not see
+// <http://www.gnu.org/licenses/>
+
+#include "rust-system.h"
 #include "rust-bir-dump.h"
 #include "rust-diagnostics.h"
 
@@ -6,14 +24,6 @@ namespace Rust {
 namespace BIR {
 
 constexpr auto indentation = "    ";
-
-uint32_t
-get_lifetime_name (Lifetime lifetime_id)
-{
-  rust_assert (lifetime_id.id >= FIRST_NORMAL_LIFETIME_ID);
-  // Start from 1 as rustc does.
-  return lifetime_id.id - FIRST_NORMAL_LIFETIME_ID + 1;
-}
 
 std::string
 get_tyty_name (TyTy::BaseType *tyty)
@@ -42,7 +52,7 @@ void
 renumber_places (const Function &func, std::vector<PlaceId> &place_map)
 {
   // Renumbering places to avoid gaps in the place id space.
-  // This is needed to match MIR shape.
+  // This is needed to match MIR's shape.
   size_t next_out_id = 0;
 
   for (size_t in_id = FIRST_VARIABLE_PLACE; in_id < func.place_db.size ();
@@ -50,13 +60,9 @@ renumber_places (const Function &func, std::vector<PlaceId> &place_map)
     {
       const Place &place = func.place_db[in_id];
       if (place.kind == Place::VARIABLE || place.kind == Place::TEMPORARY)
-	{
-	  place_map[in_id] = next_out_id++;
-	}
+	place_map[in_id] = next_out_id++;
       else
-	{
-	  place_map[in_id] = INVALID_PLACE;
-	}
+	place_map[in_id] = INVALID_PLACE;
     }
 }
 
@@ -116,99 +122,100 @@ Dump::go (bool enable_simplify_cfg)
     stream << "_" << place_map[place_id] << ": "
 	   << get_tyty_name (func.place_db[place_id].tyty);
   });
-  stream << ") -> " << get_tyty_name (func.place_db[RETURN_VALUE_PLACE].tyty)
-	 << " {\n";
+  stream << ") -> " << get_tyty_name (func.place_db[RETURN_VALUE_PLACE].tyty);
+  stream << " {\n";
 
   // Print locals declaration.
-  for (PlaceId id = FIRST_VARIABLE_PLACE; id < func.place_db.size (); ++id)
-    {
-      const Place &place = func.place_db[id];
-      if (place.kind == Place::VARIABLE || place.kind == Place::TEMPORARY)
-	{
-	  if (std::find (func.arguments.begin (), func.arguments.end (), id)
-	      != func.arguments.end ())
-	    continue;
-	  stream << indentation << "let _";
-	  stream << place_map[id] << ": "
-		 << get_tyty_name (func.place_db[id].tyty) << ";\n";
-	}
-    }
+  visit_scope (0);
 
   // Print BBs.
-  for (node_bb = 0; node_bb < func.basic_blocks.size (); ++node_bb)
+  for (statement_bb = 0; statement_bb < func.basic_blocks.size ();
+       ++statement_bb)
     {
-      if (bb_fold_map[node_bb] != node_bb)
+      if (bb_fold_map[statement_bb] != statement_bb)
 	continue; // This BB was folded.
 
-      if (func.basic_blocks[node_bb].statements.empty ()
-	  && func.basic_blocks[node_bb].successors.empty ())
+      if (func.basic_blocks[statement_bb].statements.empty ()
+	  && func.basic_blocks[statement_bb].successors.empty ())
 	continue;
 
       bb_terminated = false;
 
-      BasicBlock &bb = func.basic_blocks[node_bb];
+      BasicBlock &bb = func.basic_blocks[statement_bb];
       stream << "\n";
-      stream << indentation << "bb" << bb_fold_map[node_bb] << ": {\n";
+      stream << indentation << "bb" << bb_fold_map[statement_bb] << ": {\n";
+      size_t i = 0;
       for (auto &stmt : bb.statements)
 	{
-	  stream << indentation << indentation;
+	  stream << indentation << i++ << indentation;
 	  visit (stmt);
 	  stream << ";\n";
 	}
       if (!bb_terminated)
-	{
-	  stream << indentation << indentation << "goto -> bb"
-		 << bb_fold_map[bb.successors.at (0)] << ";\n";
-	}
+	stream << indentation << indentation << "goto -> bb"
+	       << bb_fold_map[bb.successors.at (0)] << ";\t\t" << i++ << "\n";
+
       stream << indentation << "}\n";
     }
 
   stream << "}\n";
 }
 void
-Dump::visit (Node &node)
+Dump::visit (const Statement &stmt)
 {
-  node_place = node.get_place ();
-  switch (node.get_kind ())
+  statement_place = stmt.get_place ();
+  switch (stmt.get_kind ())
     {
-      case Node::Kind::ASSIGNMENT: {
-	visit_place (node.get_place ());
+      case Statement::Kind::ASSIGNMENT: {
+	visit_place (stmt.get_place ());
 	stream << " = ";
-	node.get_expr ().accept_vis (*this);
+	stmt.get_expr ().accept_vis (*this);
 	break;
       }
-    case Node::Kind::SWITCH:
+    case Statement::Kind::SWITCH:
       stream << "switchInt(";
-      visit_move_place (node.get_place ());
+      visit_move_place (stmt.get_place ());
       stream << ") -> [";
-      print_comma_separated (stream, func.basic_blocks[node_bb].successors,
+      print_comma_separated (stream, func.basic_blocks[statement_bb].successors,
 			     [this] (BasicBlockId succ) {
 			       stream << "bb" << bb_fold_map[succ];
 			     });
       stream << "]";
       bb_terminated = true;
       break;
-    case Node::Kind::RETURN:
+    case Statement::Kind::RETURN:
       stream << "return";
       bb_terminated = true;
       break;
-    case Node::Kind::GOTO:
+    case Statement::Kind::GOTO:
       stream << "goto -> bb"
-	     << bb_fold_map[func.basic_blocks[node_bb].successors.at (0)];
+	     << bb_fold_map[func.basic_blocks[statement_bb].successors.at (0)];
       bb_terminated = true;
       break;
-    case Node::Kind::STORAGE_DEAD:
+    case Statement::Kind::STORAGE_DEAD:
       stream << "StorageDead(";
-      visit_move_place (node.get_place ());
+      visit_place (stmt.get_place ());
       stream << ")";
       break;
-    case Node::Kind::STORAGE_LIVE:
+    case Statement::Kind::STORAGE_LIVE:
       stream << "StorageLive(";
-      visit_move_place (node.get_place ());
+      visit_place (stmt.get_place ());
+      stream << ")";
+      break;
+    case Statement::Kind::USER_TYPE_ASCRIPTION:
+      visit_place (stmt.get_place ());
+      stream << " = ";
+      stream << "UserTypeAscription(";
+      stream << get_tyty_name (func.place_db[stmt.get_place ()].tyty);
+      stream << ")";
+      break;
+    case Statement::Kind::FAKE_READ:
+      stream << "FakeRead(";
+      visit_place (stmt.get_place ());
       stream << ")";
       break;
     }
-  node_place = INVALID_PLACE;
+  statement_place = INVALID_PLACE;
 }
 
 void
@@ -252,34 +259,24 @@ void
 Dump::visit_move_place (PlaceId place_id)
 {
   const Place &place = func.place_db[place_id];
-  if (place.is_rvalue || !place.is_copy)
+  if (!place.is_constant ())
     stream << "move ";
   visit_place (place_id);
 }
 
 void
-Dump::visit (BorrowExpr &expr)
+Dump::visit (const BorrowExpr &expr)
 {
   stream << "&";
-  visit_lifetime (node_place);
   visit_place (expr.get_place ());
 }
 
 void
 Dump::visit_lifetime (PlaceId place_id)
-{
-  const Place &place = func.place_db[place_id];
-  if (place.lifetime.has_lifetime ())
-    {
-      if (place.lifetime.id == STATIC_LIFETIME_ID)
-	stream << "'static ";
-      else
-	stream << "'#" << get_lifetime_name (place.lifetime) << " ";
-    }
-}
+{}
 
 void
-Dump::visit (InitializerExpr &expr)
+Dump::visit (const InitializerExpr &expr)
 {
   stream << "{";
   print_comma_separated (stream, expr.get_values (), [this] (PlaceId place_id) {
@@ -289,25 +286,23 @@ Dump::visit (InitializerExpr &expr)
 }
 
 void
-Dump::visit (CallExpr &expr)
+Dump::visit (const CallExpr &expr)
 {
   stream << "Call(";
-  if (auto fn_type
-      = func.place_db[expr.get_callable ()].tyty->try_as<TyTy::FnType> ())
-    {
-      stream << fn_type->get_identifier ();
-    }
+  auto maybe_fn_type
+    = func.place_db[expr.get_callable ()].tyty->try_as<TyTy::FnType> ();
+  if (maybe_fn_type)
+    stream << maybe_fn_type->get_identifier ();
   else
-    {
-      visit_move_place (expr.get_callable ());
-    }
+    visit_move_place (expr.get_callable ());
+
   stream << ")(";
   print_comma_separated (stream, expr.get_arguments (),
 			 [this] (PlaceId place_id) {
 			   visit_move_place (place_id);
 			 });
   stream << ") -> [";
-  print_comma_separated (stream, func.basic_blocks[node_bb].successors,
+  print_comma_separated (stream, func.basic_blocks[statement_bb].successors,
 			 [this] (BasicBlockId succ) {
 			   stream << "bb" << bb_fold_map[succ];
 			 });
@@ -316,7 +311,7 @@ Dump::visit (CallExpr &expr)
 }
 
 void
-Dump::visit (Operator<1> &expr)
+Dump::visit (const Operator<1> &expr)
 {
   stream << "Operator(";
   visit_move_place (expr.get_operand<0> ());
@@ -324,7 +319,7 @@ Dump::visit (Operator<1> &expr)
 }
 
 void
-Dump::visit (Operator<2> &expr)
+Dump::visit (const Operator<2> &expr)
 {
   stream << "Operator(";
   visit_move_place (expr.get_operand<0> ());
@@ -332,10 +327,46 @@ Dump::visit (Operator<2> &expr)
   visit_move_place (expr.get_operand<1> ());
   stream << ")";
 }
+
 void
-Dump::visit (Assignment &expr)
+Dump::visit (const Assignment &expr)
 {
-  visit_move_place (expr.get_rhs ());
+  if (func.place_db[expr.get_rhs ()].is_rvalue ())
+    visit_move_place (expr.get_rhs ());
+  else
+    visit_place (expr.get_rhs ());
+}
+
+std::ostream &
+Dump::indent (size_t depth)
+{
+  for (size_t i = 0; i < depth; ++i)
+    stream << indentation;
+  return stream;
+}
+
+void
+Dump::visit_scope (ScopeId id, size_t depth)
+{
+  auto scope = func.place_db.get_scope (id);
+  if (scope.locals.empty () && scope.children.empty ())
+    return;
+
+  if (id > 1)
+    indent (depth) << "scope " << id - 1 << " {\n";
+
+  for (auto &local : scope.locals)
+    {
+      indent (depth + 1) << "let _";
+      stream << place_map[local] << ": "
+	     << get_tyty_name (func.place_db[local].tyty);
+      stream << ";\n";
+    }
+  for (auto &child : scope.children)
+    visit_scope (child, (id >= 1) ? depth + 1 : depth);
+
+  if (id > 1)
+    indent (depth) << "}\n";
 }
 
 } // namespace BIR

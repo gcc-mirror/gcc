@@ -1,5 +1,6 @@
 // PR c++/77786
 // { dg-do compile { target c++14 } }
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 
 #include <vector>
 

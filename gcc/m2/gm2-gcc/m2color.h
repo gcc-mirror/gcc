@@ -37,7 +37,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 
 EXTERN char *
-m2color_colorize_start (bool show_color, char *name, unsigned int name_len);
+m2color_colorize_start (bool show_color, void *name, unsigned int name_len);
 
 EXTERN char *m2color_colorize_stop (bool show_color);
 

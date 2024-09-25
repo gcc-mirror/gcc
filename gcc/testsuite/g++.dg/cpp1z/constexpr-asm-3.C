@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu++17" } */
+/* { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } } */
 
 #include <string>
 

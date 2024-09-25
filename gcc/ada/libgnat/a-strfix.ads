@@ -1061,9 +1061,9 @@ is
       From    : Positive;
       Through : Natural) return String
    with
-     Pre            => (if From <= Through
-                        then (From in Source'Range
-                                and then Through <= Source'Last)),
+     Pre            => From > Through
+       or else (From - 1 <= Source'Last
+                 and then Through >= Source'First - 1),
 
      --  Lower bound of the returned string is 1
 
@@ -1079,12 +1079,14 @@ is
 
           --  Length of the returned string
 
-          Delete'Result'Length = Source'Length - (Through - From + 1)
+          Delete'Result'Length =
+            Integer'Max (0, From - Source'First)
+            + Integer'Max (Source'Last - Through, 0)
 
             --  Elements before From are preserved
 
             and then
-              Delete'Result (1 .. From - Source'First)
+              Delete'Result (1 .. Integer'Max (0, From - Source'First))
               = Source (Source'First .. From - 1)
 
             --  If there are remaining characters after Through, they are
@@ -1092,9 +1094,11 @@ is
 
             and then
               (if Through < Source'Last
-               then Delete'Result
-                      (From - Source'First + 1 .. Delete'Result'Last)
-                    = Source (Through + 1 .. Source'Last)),
+               then
+                 Delete'Result
+                   (Integer'Max (0, From - Source'First) + 1
+                    .. Delete'Result'Last)
+                 = Source (Through + 1 .. Source'Last)),
 
         --  Otherwise, the returned string is Source with lower bound 1
 

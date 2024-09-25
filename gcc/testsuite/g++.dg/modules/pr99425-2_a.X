@@ -3,5 +3,6 @@
 
 // { dg-additional-options {-x c++-system-header stdexcept -fmodules-ts} }
 // { dg-prune-output {linker input file unused} }
+// { dg-skip-if "requires hosted libstdc++ for stdexcept" { ! hostedlib } }
 
 No! DO NOT COMPILE;

@@ -36,7 +36,9 @@
 namespace std
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
+namespace
+{
+// Attempt to determine the text_encoding used by the named locale.
 text_encoding
 __locale_encoding(const char* name)
 {
@@ -54,6 +56,7 @@ __locale_encoding(const char* name)
   return enc;
 }
 
+} // namespace
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
@@ -87,8 +90,15 @@ std::text_encoding::_M_is_environment() const
 std::text_encoding
 std::locale::encoding() const
 {
-  return std::__locale_encoding(name().c_str());
+  string name = this->name();
+  if (name.length() == 1)
+    {
+      if (name[0] == 'C')
+	return text_encoding(text_encoding::ASCII);
+      if (name[0] == '*')
+	return {};
+    }
+  return __locale_encoding(name.c_str());
 }
 #endif // CHAR_BIT == 8
-
 #endif // _GLIBCXX_USE_NL_LANGINFO_L

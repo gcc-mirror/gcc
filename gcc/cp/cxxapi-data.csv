@@ -197,16 +197,16 @@
 <atomic>,atomic_uintmax_t,1,cxx20
 <atomic>,atomic_signed_lock_free,1,cxx11,__cpp_lib_atomic_lock_free_type_aliases
 <atomic>,atomic_unsigned_lock_free,1,cxx11,__cpp_lib_atomic_lock_free_type_aliases
-# libstdc++/103934 <atomic>,atomic_flag_test,1,no
-# libstdc++/103934 <atomic>,atomic_flag_test_explicit,1,no
+<atomic>,atomic_flag_test,1,no
+<atomic>,atomic_flag_test_explicit,1,no
 <atomic>,atomic_flag_test_and_set,1,no
 <atomic>,atomic_flag_test_and_set_explicit,1,no
 <atomic>,atomic_flag_clear,1,no
 <atomic>,atomic_flag_clear_explicit,1,no
-# libstdc++/103934 <atomic>,atomic_flag_wait,1,no
-# libstdc++/103934 <atomic>,atomic_flag_wait_explicit,1,no
-# libstdc++/103934 <atomic>,atomic_flag_notify_one,1,no
-# libstdc++/103934 <atomic>,atomic_flag_notify_all,1,no
+<atomic>,atomic_flag_wait,1,no
+<atomic>,atomic_flag_wait_explicit,1,no
+<atomic>,atomic_flag_notify_one,1,no
+<atomic>,atomic_flag_notify_all,1,no
 <atomic>,atomic_thread_fence,1,no
 <atomic>,atomic_signal_fence,1,no
 <barrier>,barrier,1,no
@@ -238,7 +238,48 @@
 <charconv>,to_chars,1,no
 <charconv>,from_chars_result,1,no
 <charconv>,from_chars,1,no
-# <chrono> TODO
+<chrono>,chrono::duration,1,cxx11
+<chrono>,chrono::nanoseconds,1,cxx11
+<chrono>,chrono::microseconds,1,cxx11
+<chrono>,chrono::milliseconds,1,cxx11
+<chrono>,chrono::seconds,1,cxx11
+<chrono>,chrono::minutes,1,cxx11
+<chrono>,chrono::hours,1,cxx11
+<chrono>,chrono::days,1,cxx20
+<chrono>,chrono::weeks,1,cxx20
+<chrono>,chrono::months,1,cxx20
+<chrono>,chrono::years,1,cxx20
+<chrono>,chrono::duration_cast,1,cxx11
+<chrono>,chrono::time_point,1,cxx11
+<chrono>,chrono::time_point_cast,1,cxx11
+<chrono>,chrono::system_clock,1,cxx11
+<chrono>,chrono::steady_clock,1,cxx11
+<chrono>,chrono::high_resolution_clock,1,cxx11
+<chrono>,chrono::utc_clock,1,cxx20
+<chrono>,chrono::tai_clock,1,cxx20
+<chrono>,chrono::gps_clock,1,cxx20
+<chrono>,chrono::file_clock,1,cxx20
+<chrono>,chrono::local_t,1,cxx20
+<chrono>,chrono::clock_cast,1,cxx20
+<chrono>,chrono::time_zone,1,cxx20
+<chrono>,chrono::zoned_time,1,cxx20
+<chrono>,chrono::tzdb,1,cxx20
+<chrono>,chrono::tzdb_list,1,cxx20
+<chrono>,chrono::get_tzdb,1,cxx20
+<chrono>,chrono::get_tzdb_list,1,cxx20
+<chrono>,chrono::reload_tzdb,1,cxx20
+<chrono>,chrono::remote_version,1,cxx20
+<chrono>,chrono::locate_zone,1,cxx20
+<chrono>,chrono::leap_second,1,cxx20
+<chrono>,chrono::leap_second_info,1,cxx20
+<chrono>,chrono::get_leap_second_info,1,cxx20
+# c++/106851 <chrono>,chrono::abs,1,cxx17
+# c++/106851 <chrono>,chrono::floor,1,cxx17
+# c++/106851 <chrono>,chrono::ceil,1,cxx17
+<chrono>,chrono::round,1,cxx17
+<chrono>,chrono::from_stream,1,cxx20
+<chrono>,chrono::parse,1,cxx20
+# <chrono> TODO the rest
 # <codecvt> TODO
 <compare>,weak_equality,1,cxx20
 <compare>,strong_equality,1,cxx20
@@ -311,6 +352,33 @@
 # <flat_set>,sorted_equivalent,1,no
 # <flat_set>,erase_if,1,no
 # <flat_set>,uses_allocator,1,no
+<format>,format,1,cxx20
+<format>,format_to,1,cxx20
+<format>,format_to_n,1,cxx20
+<format>,formatted_size,1,cxx20
+<format>,vformat,1,cxx20
+<format>,vformat_to,1,cxx20
+<format>,formatter,1,cxx20
+<format>,range_formatter,1,cxx23
+<format>,range_format,1,cxx23
+<format>,formattable,1,cxx23
+<format>,format_error,1,cxx20
+<format>,basic_format_parse_context,1,cxx20
+<format>,format_parse_context,1,cxx20
+<format>,wformat_parse_context,1,cxx20
+<format>,basic_format_context,1,cxx20
+<format>,format_context,1,cxx20
+<format>,wformat_context,1,cxx20
+<format>,basic_format_string,1,cxx20
+<format>,format_string,1,cxx20
+<format>,wformat_string,1,cxx20
+<format>,basic_format_arg,1,cxx20
+<format>,basic_format_args,1,cxx20
+<format>,format_args,1,cxx20
+<format>,wformat_args,1,cxx20
+<format>,make_format_args,1,cxx20
+<format>,make_wformat_args,1,cxx20
+<format>,runtime_format,1,cxx26
 <forward_list>,forward_list,1,cxx11
 <forward_list>,operator==,1,no
 <forward_list>,operator<=>,1,no
@@ -361,6 +429,8 @@
 <future>,shared_future,1,no
 <future>,packaged_task,1,cxx11
 <future>,async,1,cxx11
+<generator>,generator,1,cxx23
+# c++/106851 <generator>,pmr::generator,1,no
 <initializer_list>,initializer_list,1,no
 <initializer_list>,begin,1,no
 <initializer_list>,end,1,no
@@ -433,6 +503,9 @@
 <iterator>,ostreambuf_iterator,1,cxx98
 <iterator>,prev,1,cxx11
 <iterator>,reverse_iterator,1,cxx98
+<iterator>,common_iterator,1,cxx20
+<iterator>,counted_iterator,1,cxx20
+<iterator>,const_iterator,1,cxx23
 # <iterator> TODO the rest
 <latch>,latch,1,no
 <list>,list,1,cxx98
@@ -590,6 +663,8 @@
 <ostream>,flush_emit,1,cxx20
 <ostream>,operator<<,1,no
 # <numeric> TODO
+<print>,print,1,cxx23
+<print>,println,1,cxx23
 <queue>,queue,1,cxx98
 <queue>,operator==,1,no
 <queue>,operator!=,1,no
@@ -720,6 +795,11 @@
 <stdexcept>,range_error,1,cxx98
 <stdexcept>,overflow_error,1,cxx98
 <stdexcept>,underflow_error,1,cxx98
+<stdfloat>,float16_t,1,cxx23
+<stdfloat>,float32_t,1,cxx23
+<stdfloat>,float64_t,1,cxx23
+<stdfloat>,float128_t,1,cxx23
+<stdfloat>,bfloat16_t,1,cxx23
 <stop_token>,stop_token,1,cxx20
 <stop_token>,stop_source,1,cxx20
 <stop_token>,nostopstate_t,1,no
@@ -801,7 +881,7 @@
 <tuple>,tuple,1,cxx11
 <tuple>,basic_common_reference,1,no
 <tuple>,common_type,1,no
-<tuple>,ignore,1,no
+<tuple>,ignore,1,cxx11
 <tuple>,make_tuple,1,cxx11
 <tuple>,forward_as_tuple,1,cxx11
 <tuple>,tie,1,cxx11

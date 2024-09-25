@@ -1,6 +1,6 @@
 /* Test BTF generation for union type.  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gbtf -dA" } */
 
 /* One union type with 4 members */

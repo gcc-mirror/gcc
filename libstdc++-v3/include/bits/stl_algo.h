@@ -72,6 +72,9 @@
 # endif
 #endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions" // inline namespace
+
 // See concept_check.h for the __glibcxx_*_requires macros.
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -110,8 +113,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  _Predicate __pred)
     {
       return std::__find_if(__first, __last,
-			    __gnu_cxx::__ops::__negate(__pred),
-			    std::__iterator_category(__first));
+			    __gnu_cxx::__ops::__negate(__pred));
     }
 
   /// Like find_if_not(), but uses and updates a count of the
@@ -3838,14 +3840,41 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   template<typename _InputIterator, typename _Tp>
     _GLIBCXX20_CONSTEXPR
     inline _InputIterator
-    find(_InputIterator __first, _InputIterator __last,
-	 const _Tp& __val)
+    find(_InputIterator __first, _InputIterator __last, const _Tp& __val)
     {
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcxx_function_requires(_EqualOpConcept<
 		typename iterator_traits<_InputIterator>::value_type, _Tp>)
       __glibcxx_requires_valid_range(__first, __last);
+
+#if __cpp_if_constexpr && __glibcxx_type_trait_variable_templates
+      using _ValT = typename iterator_traits<_InputIterator>::value_type;
+      if constexpr (__can_use_memchr_for_find<_ValT, _Tp>)
+	if constexpr (is_pointer_v<decltype(std::__niter_base(__first))>
+#if __cpp_lib_concepts
+			|| contiguous_iterator<_InputIterator>
+#endif
+		     )
+	  {
+	    // If conversion to the 1-byte value_type alters the value,
+	    // it would not be found by std::find using equality comparison.
+	    // We need to check this here, because otherwise something like
+	    // memchr("a", 'a'+256, 1) would give a false positive match.
+	    if (!(static_cast<_ValT>(__val) == __val))
+	      return __last;
+	    else if (!__is_constant_evaluated())
+	      {
+		const void* __p0 = std::__to_address(__first);
+		const int __ival = static_cast<int>(__val);
+		if (auto __n = std::distance(__first, __last); __n > 0)
+		  if (auto __p1 = __builtin_memchr(__p0, __ival, __n))
+		    return __first + ((const char*)__p1 - (const char*)__p0);
+		return __last;
+	      }
+	  }
+#endif
+
       return std::__find_if(__first, __last,
 			    __gnu_cxx::__ops::__iter_equals_val(__val));
     }
@@ -4495,15 +4524,39 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    _RandomAccessIterator>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      if (__first != __last)
-	for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
-	  {
-	    // XXX rand() % N is not uniformly distributed
-	    _RandomAccessIterator __j = __first
-					+ std::rand() % ((__i - __first) + 1);
-	    if (__i != __j)
-	      std::iter_swap(__i, __j);
-	  }
+      if (__first == __last)
+	return;
+
+#if RAND_MAX < __INT_MAX__
+      if (__builtin_expect((__last - __first) >= RAND_MAX / 4, 0))
+	{
+	  // Use a xorshift implementation seeded by two calls to rand()
+	  // instead of using rand() for all the random numbers needed.
+	  unsigned __xss
+	    = (unsigned)std::rand() ^ ((unsigned)std::rand() << 15);
+	  for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
+	    {
+	      __xss += !__xss;
+	      __xss ^= __xss << 13;
+	      __xss ^= __xss >> 17;
+	      __xss ^= __xss << 5;
+	      _RandomAccessIterator __j = __first
+					    + (__xss % ((__i - __first) + 1));
+	      if (__i != __j)
+		std::iter_swap(__i, __j);
+	    }
+	  return;
+	}
+#endif
+
+      for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
+	{
+	  // XXX rand() % N is not uniformly distributed
+	  _RandomAccessIterator __j = __first
+					+ (std::rand() % ((__i - __first) + 1));
+	  if (__i != __j)
+	    std::iter_swap(__i, __j);
+	}
     }
 
   /**
@@ -5850,5 +5903,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 _GLIBCXX_END_NAMESPACE_ALGO
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
+
+#pragma GCC diagnostic pop
 
 #endif /* _STL_ALGO_H */

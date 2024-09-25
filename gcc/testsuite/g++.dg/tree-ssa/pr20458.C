@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
+/* { dg-skip-if "requires hosted libstdc++ for std::locale cdtor" { ! hostedlib } } */
 
 /* The tail call optimization would inapproriately tail call the 
    destructors due to not recognizing a call clobbered variable */

@@ -1,5 +1,6 @@
 // { dg-lto-options { "-std=gnu++17" } }
 // { dg-lto-do run }
+// { dg-skip-if "requires hosted libstdc++ for any" { ! hostedlib } }
 
 // Copyright (C) 2014-2017 Free Software Foundation, Inc.
 //

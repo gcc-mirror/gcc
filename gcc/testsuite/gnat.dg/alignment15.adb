@@ -1,4 +1,4 @@
---  { dg-compile }
+--  { dg-do compile }
 
 procedure Alignment15 is
    type T0 is record

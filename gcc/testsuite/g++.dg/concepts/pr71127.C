@@ -1,7 +1,7 @@
-// { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts-ts" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fconcepts" }
 
 template<template<typename> class T>
-concept bool C = T<int>::value;
+concept C = T<int>::value;
 
 C c = 1;  // { dg-error "does not constrain a type" }

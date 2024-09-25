@@ -1,14 +1,13 @@
 // { dg-do compile { target c++20 } }
-// { dg-additional-options "-fconcepts-ts" }
+// { dg-additional-options "-fconcepts" }
 
 template<typename F>
-concept bool FCallable()
-{
-  return requires(F)
+concept FCallable =
+  requires(F)
   {
     F::f();
   };
-}
+
 
 class Test1
 {

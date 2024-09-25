@@ -1502,6 +1502,14 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 	maybe_warn_nodiscard (expr, implicit);
       break;
 
+    case CO_AWAIT_EXPR:
+      {
+	auto awr = co_await_get_resume_call (expr);
+	if (awr && *awr)
+	  *awr = convert_to_void (*awr, implicit, complain);
+	break;
+      }
+
     default:;
     }
   expr = resolve_nondeduced_context (expr, complain);
@@ -1664,6 +1672,8 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 	      if (tclass == tcc_comparison
 		  || tclass == tcc_unary
 		  || tclass == tcc_binary
+		  || code == TRUTH_NOT_EXPR
+		  || code == ADDR_EXPR
 		  || code == VEC_PERM_EXPR
 		  || code == VEC_COND_EXPR)
 		warn_if_unused_value (e, loc);
@@ -1923,6 +1933,7 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
 		{
 		  if (complain)
 		    {
+		      auto_diagnostic_group d;
 		      error ("ambiguous default type conversion from %qT",
 			     basetype);
 		      inform (input_location,

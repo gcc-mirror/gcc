@@ -32,7 +32,7 @@ DEFINITION MODULE M2LexBuf ;
 FROM SYSTEM IMPORT ADDRESS ;
 FROM M2Reserved IMPORT toktype ;
 FROM DynamicStrings IMPORT String ;
-FROM m2linemap IMPORT location_t ;
+FROM gcctypes IMPORT location_t ;
 FROM NameKey IMPORT Name ;
 
 

@@ -26,10 +26,10 @@
  *  This is a Standard C++ Library header.
  */
 
-#pragma GCC system_header
-
 #ifndef _GLIBCXX_CSTDBOOL
 #define _GLIBCXX_CSTDBOOL 1
+
+#pragma GCC system_header
 
 #if __cplusplus < 201103L
 #  include <bits/c++0x_warning.h>
@@ -40,5 +40,4 @@
 #  endif
 #endif
 
-#endif 
-
+#endif

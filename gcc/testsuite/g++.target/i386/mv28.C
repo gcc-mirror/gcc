@@ -1,4 +1,4 @@
-/* { dg-do compile} */
+/* { dg-do compile } */
 /* { dg-require-ifunc "" }  */
 
 void __attribute__ ((target("avx512vl"))) foo () {} /* { dg-error "ISA '\[^\n\r\]*' is not supported in 'target' attribute, use 'arch=' syntax" } */

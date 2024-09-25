@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "dwarf2out.h"
 #include "dwarf2codeview.h"
+#include "rtl.h"
 
 #ifdef CODEVIEW_DEBUGGING_INFO
 
@@ -45,10 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #define DEBUG_S_FILECHKSMS      0xf4
 
 #define CHKSUM_TYPE_MD5		1
-
-#define S_LDATA32		0x110c
-#define S_GDATA32		0x110d
-#define S_COMPILE3		0x113c
 
 #define CV_CFL_80386		0x03
 #define CV_CFL_X64		0xD0
@@ -69,6 +66,1018 @@ along with GCC; see the file COPYING3.  If not see
 #define MAX_FIELDLIST_SIZE	0xfaf8
 
 #define HASH_SIZE 16
+
+/* This is enum SYM_ENUM_e in Microsoft's cvinfo.h.  */
+
+enum cv_sym_type {
+  S_END = 0x0006,
+  S_FRAMEPROC = 0x1012,
+  S_BLOCK32 = 0x1103,
+  S_REGISTER = 0x1106,
+  S_LDATA32 = 0x110c,
+  S_GDATA32 = 0x110d,
+  S_REGREL32 = 0x1111,
+  S_COMPILE3 = 0x113c,
+  S_LOCAL = 0x113e,
+  S_DEFRANGE_REGISTER = 0x1141,
+  S_DEFRANGE_REGISTER_REL = 0x1145,
+  S_LPROC32_ID = 0x1146,
+  S_GPROC32_ID = 0x1147,
+  S_PROC_ID_END = 0x114f
+};
+
+/* This is enum LEAF_ENUM_e in Microsoft's cvinfo.h.  */
+
+enum cv_leaf_type {
+  LF_PAD1 = 0xf1,
+  LF_PAD2 = 0xf2,
+  LF_PAD3 = 0xf3,
+  LF_MODIFIER = 0x1001,
+  LF_POINTER = 0x1002,
+  LF_PROCEDURE = 0x1008,
+  LF_MFUNCTION = 0x1009,
+  LF_ARGLIST = 0x1201,
+  LF_FIELDLIST = 0x1203,
+  LF_BITFIELD = 0x1205,
+  LF_METHODLIST = 0x1206,
+  LF_INDEX = 0x1404,
+  LF_ENUMERATE = 0x1502,
+  LF_ARRAY = 0x1503,
+  LF_CLASS = 0x1504,
+  LF_STRUCTURE = 0x1505,
+  LF_UNION = 0x1506,
+  LF_ENUM = 0x1507,
+  LF_MEMBER = 0x150d,
+  LF_STMEMBER = 0x150e,
+  LF_METHOD = 0x150f,
+  LF_ONEMETHOD = 0x1511,
+  LF_FUNC_ID = 0x1601,
+  LF_MFUNC_ID = 0x1602,
+  LF_STRING_ID = 0x1605,
+  LF_CHAR = 0x8000,
+  LF_SHORT = 0x8001,
+  LF_USHORT = 0x8002,
+  LF_LONG = 0x8003,
+  LF_ULONG = 0x8004,
+  LF_QUADWORD = 0x8009,
+  LF_UQUADWORD = 0x800a
+};
+
+/* These come from enum CV_HREG_e in Microsoft's cvconst.h.  */
+
+enum cv_x86_register {
+  CV_REG_NONE = 0,
+  CV_REG_AL = 1,
+  CV_REG_CL = 2,
+  CV_REG_DL = 3,
+  CV_REG_BL = 4,
+  CV_REG_AH = 5,
+  CV_REG_CH = 6,
+  CV_REG_DH = 7,
+  CV_REG_BH = 8,
+  CV_REG_AX = 9,
+  CV_REG_CX = 10,
+  CV_REG_DX = 11,
+  CV_REG_BX = 12,
+  CV_REG_SP = 13,
+  CV_REG_BP = 14,
+  CV_REG_SI = 15,
+  CV_REG_DI = 16,
+  CV_REG_EAX = 17,
+  CV_REG_ECX = 18,
+  CV_REG_EDX = 19,
+  CV_REG_EBX = 20,
+  CV_REG_ESP = 21,
+  CV_REG_EBP = 22,
+  CV_REG_ESI = 23,
+  CV_REG_EDI = 24,
+  CV_REG_ES = 25,
+  CV_REG_CS = 26,
+  CV_REG_SS = 27,
+  CV_REG_DS = 28,
+  CV_REG_FS = 29,
+  CV_REG_GS = 30,
+  CV_REG_IP = 31,
+  CV_REG_FLAGS = 32,
+  CV_REG_EIP = 33,
+  CV_REG_EFLAGS = 34,
+  CV_REG_TEMP = 40,
+  CV_REG_TEMPH = 41,
+  CV_REG_QUOTE = 42,
+  CV_REG_PCDR3 = 43,
+  CV_REG_PCDR4 = 44,
+  CV_REG_PCDR5 = 45,
+  CV_REG_PCDR6 = 46,
+  CV_REG_PCDR7 = 47,
+  CV_REG_CR0 = 80,
+  CV_REG_CR1 = 81,
+  CV_REG_CR2 = 82,
+  CV_REG_CR3 = 83,
+  CV_REG_CR4 = 84,
+  CV_REG_DR0 = 90,
+  CV_REG_DR1 = 91,
+  CV_REG_DR2 = 92,
+  CV_REG_DR3 = 93,
+  CV_REG_DR4 = 94,
+  CV_REG_DR5 = 95,
+  CV_REG_DR6 = 96,
+  CV_REG_DR7 = 97,
+  CV_REG_GDTR = 110,
+  CV_REG_GDTL = 111,
+  CV_REG_IDTR = 112,
+  CV_REG_IDTL = 113,
+  CV_REG_LDTR = 114,
+  CV_REG_TR = 115,
+  CV_REG_PSEUDO1 = 116,
+  CV_REG_PSEUDO2 = 117,
+  CV_REG_PSEUDO3 = 118,
+  CV_REG_PSEUDO4 = 119,
+  CV_REG_PSEUDO5 = 120,
+  CV_REG_PSEUDO6 = 121,
+  CV_REG_PSEUDO7 = 122,
+  CV_REG_PSEUDO8 = 123,
+  CV_REG_PSEUDO9 = 124,
+  CV_REG_ST0 = 128,
+  CV_REG_ST1 = 129,
+  CV_REG_ST2 = 130,
+  CV_REG_ST3 = 131,
+  CV_REG_ST4 = 132,
+  CV_REG_ST5 = 133,
+  CV_REG_ST6 = 134,
+  CV_REG_ST7 = 135,
+  CV_REG_CTRL = 136,
+  CV_REG_STAT = 137,
+  CV_REG_TAG = 138,
+  CV_REG_FPIP = 139,
+  CV_REG_FPCS = 140,
+  CV_REG_FPDO = 141,
+  CV_REG_FPDS = 142,
+  CV_REG_ISEM = 143,
+  CV_REG_FPEIP = 144,
+  CV_REG_FPEDO = 145,
+  CV_REG_MM0 = 146,
+  CV_REG_MM1 = 147,
+  CV_REG_MM2 = 148,
+  CV_REG_MM3 = 149,
+  CV_REG_MM4 = 150,
+  CV_REG_MM5 = 151,
+  CV_REG_MM6 = 152,
+  CV_REG_MM7 = 153,
+  CV_REG_XMM0 = 154,
+  CV_REG_XMM1 = 155,
+  CV_REG_XMM2 = 156,
+  CV_REG_XMM3 = 157,
+  CV_REG_XMM4 = 158,
+  CV_REG_XMM5 = 159,
+  CV_REG_XMM6 = 160,
+  CV_REG_XMM7 = 161,
+  CV_REG_XMM00 = 162,
+  CV_REG_XMM01 = 163,
+  CV_REG_XMM02 = 164,
+  CV_REG_XMM03 = 165,
+  CV_REG_XMM10 = 166,
+  CV_REG_XMM11 = 167,
+  CV_REG_XMM12 = 168,
+  CV_REG_XMM13 = 169,
+  CV_REG_XMM20 = 170,
+  CV_REG_XMM21 = 171,
+  CV_REG_XMM22 = 172,
+  CV_REG_XMM23 = 173,
+  CV_REG_XMM30 = 174,
+  CV_REG_XMM31 = 175,
+  CV_REG_XMM32 = 176,
+  CV_REG_XMM33 = 177,
+  CV_REG_XMM40 = 178,
+  CV_REG_XMM41 = 179,
+  CV_REG_XMM42 = 180,
+  CV_REG_XMM43 = 181,
+  CV_REG_XMM50 = 182,
+  CV_REG_XMM51 = 183,
+  CV_REG_XMM52 = 184,
+  CV_REG_XMM53 = 185,
+  CV_REG_XMM60 = 186,
+  CV_REG_XMM61 = 187,
+  CV_REG_XMM62 = 188,
+  CV_REG_XMM63 = 189,
+  CV_REG_XMM70 = 190,
+  CV_REG_XMM71 = 191,
+  CV_REG_XMM72 = 192,
+  CV_REG_XMM73 = 193,
+  CV_REG_XMM0L = 194,
+  CV_REG_XMM1L = 195,
+  CV_REG_XMM2L = 196,
+  CV_REG_XMM3L = 197,
+  CV_REG_XMM4L = 198,
+  CV_REG_XMM5L = 199,
+  CV_REG_XMM6L = 200,
+  CV_REG_XMM7L = 201,
+  CV_REG_XMM0H = 202,
+  CV_REG_XMM1H = 203,
+  CV_REG_XMM2H = 204,
+  CV_REG_XMM3H = 205,
+  CV_REG_XMM4H = 206,
+  CV_REG_XMM5H = 207,
+  CV_REG_XMM6H = 208,
+  CV_REG_XMM7H = 209,
+  CV_REG_MXCSR = 211,
+  CV_REG_EDXEAX = 212,
+  CV_REG_EMM0L = 220,
+  CV_REG_EMM1L = 221,
+  CV_REG_EMM2L = 222,
+  CV_REG_EMM3L = 223,
+  CV_REG_EMM4L = 224,
+  CV_REG_EMM5L = 225,
+  CV_REG_EMM6L = 226,
+  CV_REG_EMM7L = 227,
+  CV_REG_EMM0H = 228,
+  CV_REG_EMM1H = 229,
+  CV_REG_EMM2H = 230,
+  CV_REG_EMM3H = 231,
+  CV_REG_EMM4H = 232,
+  CV_REG_EMM5H = 233,
+  CV_REG_EMM6H = 234,
+  CV_REG_EMM7H = 235,
+  CV_REG_MM00 = 236,
+  CV_REG_MM01 = 237,
+  CV_REG_MM10 = 238,
+  CV_REG_MM11 = 239,
+  CV_REG_MM20 = 240,
+  CV_REG_MM21 = 241,
+  CV_REG_MM30 = 242,
+  CV_REG_MM31 = 243,
+  CV_REG_MM40 = 244,
+  CV_REG_MM41 = 245,
+  CV_REG_MM50 = 246,
+  CV_REG_MM51 = 247,
+  CV_REG_MM60 = 248,
+  CV_REG_MM61 = 249,
+  CV_REG_MM70 = 250,
+  CV_REG_MM71 = 251,
+  CV_REG_YMM0 = 252,
+  CV_REG_YMM1 = 253,
+  CV_REG_YMM2 = 254,
+  CV_REG_YMM3 = 255,
+  CV_REG_YMM4 = 256,
+  CV_REG_YMM5 = 257,
+  CV_REG_YMM6 = 258,
+  CV_REG_YMM7 = 259,
+  CV_REG_YMM0H = 260,
+  CV_REG_YMM1H = 261,
+  CV_REG_YMM2H = 262,
+  CV_REG_YMM3H = 263,
+  CV_REG_YMM4H = 264,
+  CV_REG_YMM5H = 265,
+  CV_REG_YMM6H = 266,
+  CV_REG_YMM7H = 267,
+  CV_REG_YMM0I0 = 268,
+  CV_REG_YMM0I1 = 269,
+  CV_REG_YMM0I2 = 270,
+  CV_REG_YMM0I3 = 271,
+  CV_REG_YMM1I0 = 272,
+  CV_REG_YMM1I1 = 273,
+  CV_REG_YMM1I2 = 274,
+  CV_REG_YMM1I3 = 275,
+  CV_REG_YMM2I0 = 276,
+  CV_REG_YMM2I1 = 277,
+  CV_REG_YMM2I2 = 278,
+  CV_REG_YMM2I3 = 279,
+  CV_REG_YMM3I0 = 280,
+  CV_REG_YMM3I1 = 281,
+  CV_REG_YMM3I2 = 282,
+  CV_REG_YMM3I3 = 283,
+  CV_REG_YMM4I0 = 284,
+  CV_REG_YMM4I1 = 285,
+  CV_REG_YMM4I2 = 286,
+  CV_REG_YMM4I3 = 287,
+  CV_REG_YMM5I0 = 288,
+  CV_REG_YMM5I1 = 289,
+  CV_REG_YMM5I2 = 290,
+  CV_REG_YMM5I3 = 291,
+  CV_REG_YMM6I0 = 292,
+  CV_REG_YMM6I1 = 293,
+  CV_REG_YMM6I2 = 294,
+  CV_REG_YMM6I3 = 295,
+  CV_REG_YMM7I0 = 296,
+  CV_REG_YMM7I1 = 297,
+  CV_REG_YMM7I2 = 298,
+  CV_REG_YMM7I3 = 299,
+  CV_REG_YMM0F0 = 300,
+  CV_REG_YMM0F1 = 301,
+  CV_REG_YMM0F2 = 302,
+  CV_REG_YMM0F3 = 303,
+  CV_REG_YMM0F4 = 304,
+  CV_REG_YMM0F5 = 305,
+  CV_REG_YMM0F6 = 306,
+  CV_REG_YMM0F7 = 307,
+  CV_REG_YMM1F0 = 308,
+  CV_REG_YMM1F1 = 309,
+  CV_REG_YMM1F2 = 310,
+  CV_REG_YMM1F3 = 311,
+  CV_REG_YMM1F4 = 312,
+  CV_REG_YMM1F5 = 313,
+  CV_REG_YMM1F6 = 314,
+  CV_REG_YMM1F7 = 315,
+  CV_REG_YMM2F0 = 316,
+  CV_REG_YMM2F1 = 317,
+  CV_REG_YMM2F2 = 318,
+  CV_REG_YMM2F3 = 319,
+  CV_REG_YMM2F4 = 320,
+  CV_REG_YMM2F5 = 321,
+  CV_REG_YMM2F6 = 322,
+  CV_REG_YMM2F7 = 323,
+  CV_REG_YMM3F0 = 324,
+  CV_REG_YMM3F1 = 325,
+  CV_REG_YMM3F2 = 326,
+  CV_REG_YMM3F3 = 327,
+  CV_REG_YMM3F4 = 328,
+  CV_REG_YMM3F5 = 329,
+  CV_REG_YMM3F6 = 330,
+  CV_REG_YMM3F7 = 331,
+  CV_REG_YMM4F0 = 332,
+  CV_REG_YMM4F1 = 333,
+  CV_REG_YMM4F2 = 334,
+  CV_REG_YMM4F3 = 335,
+  CV_REG_YMM4F4 = 336,
+  CV_REG_YMM4F5 = 337,
+  CV_REG_YMM4F6 = 338,
+  CV_REG_YMM4F7 = 339,
+  CV_REG_YMM5F0 = 340,
+  CV_REG_YMM5F1 = 341,
+  CV_REG_YMM5F2 = 342,
+  CV_REG_YMM5F3 = 343,
+  CV_REG_YMM5F4 = 344,
+  CV_REG_YMM5F5 = 345,
+  CV_REG_YMM5F6 = 346,
+  CV_REG_YMM5F7 = 347,
+  CV_REG_YMM6F0 = 348,
+  CV_REG_YMM6F1 = 349,
+  CV_REG_YMM6F2 = 350,
+  CV_REG_YMM6F3 = 351,
+  CV_REG_YMM6F4 = 352,
+  CV_REG_YMM6F5 = 353,
+  CV_REG_YMM6F6 = 354,
+  CV_REG_YMM6F7 = 355,
+  CV_REG_YMM7F0 = 356,
+  CV_REG_YMM7F1 = 357,
+  CV_REG_YMM7F2 = 358,
+  CV_REG_YMM7F3 = 359,
+  CV_REG_YMM7F4 = 360,
+  CV_REG_YMM7F5 = 361,
+  CV_REG_YMM7F6 = 362,
+  CV_REG_YMM7F7 = 363,
+  CV_REG_YMM0D0 = 364,
+  CV_REG_YMM0D1 = 365,
+  CV_REG_YMM0D2 = 366,
+  CV_REG_YMM0D3 = 367,
+  CV_REG_YMM1D0 = 368,
+  CV_REG_YMM1D1 = 369,
+  CV_REG_YMM1D2 = 370,
+  CV_REG_YMM1D3 = 371,
+  CV_REG_YMM2D0 = 372,
+  CV_REG_YMM2D1 = 373,
+  CV_REG_YMM2D2 = 374,
+  CV_REG_YMM2D3 = 375,
+  CV_REG_YMM3D0 = 376,
+  CV_REG_YMM3D1 = 377,
+  CV_REG_YMM3D2 = 378,
+  CV_REG_YMM3D3 = 379,
+  CV_REG_YMM4D0 = 380,
+  CV_REG_YMM4D1 = 381,
+  CV_REG_YMM4D2 = 382,
+  CV_REG_YMM4D3 = 383,
+  CV_REG_YMM5D0 = 384,
+  CV_REG_YMM5D1 = 385,
+  CV_REG_YMM5D2 = 386,
+  CV_REG_YMM5D3 = 387,
+  CV_REG_YMM6D0 = 388,
+  CV_REG_YMM6D1 = 389,
+  CV_REG_YMM6D2 = 390,
+  CV_REG_YMM6D3 = 391,
+  CV_REG_YMM7D0 = 392,
+  CV_REG_YMM7D1 = 393,
+  CV_REG_YMM7D2 = 394,
+  CV_REG_YMM7D3 = 395,
+  CV_REG_BND0 = 396,
+  CV_REG_BND1 = 397,
+  CV_REG_BND2 = 398,
+  CV_REG_BND3 = 399
+};
+
+enum cv_amd64_register {
+  CV_AMD64_NOREG = 0,
+  CV_AMD64_AL = 1,
+  CV_AMD64_CL = 2,
+  CV_AMD64_DL = 3,
+  CV_AMD64_BL = 4,
+  CV_AMD64_AH = 5,
+  CV_AMD64_CH = 6,
+  CV_AMD64_DH = 7,
+  CV_AMD64_BH = 8,
+  CV_AMD64_AX = 9,
+  CV_AMD64_CX = 10,
+  CV_AMD64_DX = 11,
+  CV_AMD64_BX = 12,
+  CV_AMD64_SP = 13,
+  CV_AMD64_BP = 14,
+  CV_AMD64_SI = 15,
+  CV_AMD64_DI = 16,
+  CV_AMD64_EAX = 17,
+  CV_AMD64_ECX = 18,
+  CV_AMD64_EDX = 19,
+  CV_AMD64_EBX = 20,
+  CV_AMD64_ESP = 21,
+  CV_AMD64_EBP = 22,
+  CV_AMD64_ESI = 23,
+  CV_AMD64_EDI = 24,
+  CV_AMD64_ES = 25,
+  CV_AMD64_CS = 26,
+  CV_AMD64_SS = 27,
+  CV_AMD64_DS = 28,
+  CV_AMD64_FS = 29,
+  CV_AMD64_GS = 30,
+  CV_AMD64_FLAGS = 32,
+  CV_AMD64_RIP = 33,
+  CV_AMD64_EFLAGS = 34,
+  CV_AMD64_CR0 = 80,
+  CV_AMD64_CR1 = 81,
+  CV_AMD64_CR2 = 82,
+  CV_AMD64_CR3 = 83,
+  CV_AMD64_CR4 = 84,
+  CV_AMD64_CR8 = 88,
+  CV_AMD64_DR0 = 90,
+  CV_AMD64_DR1 = 91,
+  CV_AMD64_DR2 = 92,
+  CV_AMD64_DR3 = 93,
+  CV_AMD64_DR4 = 94,
+  CV_AMD64_DR5 = 95,
+  CV_AMD64_DR6 = 96,
+  CV_AMD64_DR7 = 97,
+  CV_AMD64_DR8 = 98,
+  CV_AMD64_DR9 = 99,
+  CV_AMD64_DR10 = 100,
+  CV_AMD64_DR11 = 101,
+  CV_AMD64_DR12 = 102,
+  CV_AMD64_DR13 = 103,
+  CV_AMD64_DR14 = 104,
+  CV_AMD64_DR15 = 105,
+  CV_AMD64_GDTR = 110,
+  CV_AMD64_GDTL = 111,
+  CV_AMD64_IDTR = 112,
+  CV_AMD64_IDTL = 113,
+  CV_AMD64_LDTR = 114,
+  CV_AMD64_TR = 115,
+  CV_AMD64_ST0 = 128,
+  CV_AMD64_ST1 = 129,
+  CV_AMD64_ST2 = 130,
+  CV_AMD64_ST3 = 131,
+  CV_AMD64_ST4 = 132,
+  CV_AMD64_ST5 = 133,
+  CV_AMD64_ST6 = 134,
+  CV_AMD64_ST7 = 135,
+  CV_AMD64_CTRL = 136,
+  CV_AMD64_STAT = 137,
+  CV_AMD64_TAG = 138,
+  CV_AMD64_FPIP = 139,
+  CV_AMD64_FPCS = 140,
+  CV_AMD64_FPDO = 141,
+  CV_AMD64_FPDS = 142,
+  CV_AMD64_ISEM = 143,
+  CV_AMD64_FPEIP = 144,
+  CV_AMD64_FPEDO = 145,
+  CV_AMD64_MM0 = 146,
+  CV_AMD64_MM1 = 147,
+  CV_AMD64_MM2 = 148,
+  CV_AMD64_MM3 = 149,
+  CV_AMD64_MM4 = 150,
+  CV_AMD64_MM5 = 151,
+  CV_AMD64_MM6 = 152,
+  CV_AMD64_MM7 = 153,
+  CV_AMD64_XMM0 = 154,
+  CV_AMD64_XMM1 = 155,
+  CV_AMD64_XMM2 = 156,
+  CV_AMD64_XMM3 = 157,
+  CV_AMD64_XMM4 = 158,
+  CV_AMD64_XMM5 = 159,
+  CV_AMD64_XMM6 = 160,
+  CV_AMD64_XMM7 = 161,
+  CV_AMD64_XMM0_0 = 162,
+  CV_AMD64_XMM0_1 = 163,
+  CV_AMD64_XMM0_2 = 164,
+  CV_AMD64_XMM0_3 = 165,
+  CV_AMD64_XMM1_0 = 166,
+  CV_AMD64_XMM1_1 = 167,
+  CV_AMD64_XMM1_2 = 168,
+  CV_AMD64_XMM1_3 = 169,
+  CV_AMD64_XMM2_0 = 170,
+  CV_AMD64_XMM2_1 = 171,
+  CV_AMD64_XMM2_2 = 172,
+  CV_AMD64_XMM2_3 = 173,
+  CV_AMD64_XMM3_0 = 174,
+  CV_AMD64_XMM3_1 = 175,
+  CV_AMD64_XMM3_2 = 176,
+  CV_AMD64_XMM3_3 = 177,
+  CV_AMD64_XMM4_0 = 178,
+  CV_AMD64_XMM4_1 = 179,
+  CV_AMD64_XMM4_2 = 180,
+  CV_AMD64_XMM4_3 = 181,
+  CV_AMD64_XMM5_0 = 182,
+  CV_AMD64_XMM5_1 = 183,
+  CV_AMD64_XMM5_2 = 184,
+  CV_AMD64_XMM5_3 = 185,
+  CV_AMD64_XMM6_0 = 186,
+  CV_AMD64_XMM6_1 = 187,
+  CV_AMD64_XMM6_2 = 188,
+  CV_AMD64_XMM6_3 = 189,
+  CV_AMD64_XMM7_0 = 190,
+  CV_AMD64_XMM7_1 = 191,
+  CV_AMD64_XMM7_2 = 192,
+  CV_AMD64_XMM7_3 = 193,
+  CV_AMD64_XMM0L = 194,
+  CV_AMD64_XMM1L = 195,
+  CV_AMD64_XMM2L = 196,
+  CV_AMD64_XMM3L = 197,
+  CV_AMD64_XMM4L = 198,
+  CV_AMD64_XMM5L = 199,
+  CV_AMD64_XMM6L = 200,
+  CV_AMD64_XMM7L = 201,
+  CV_AMD64_XMM0H = 202,
+  CV_AMD64_XMM1H = 203,
+  CV_AMD64_XMM2H = 204,
+  CV_AMD64_XMM3H = 205,
+  CV_AMD64_XMM4H = 206,
+  CV_AMD64_XMM5H = 207,
+  CV_AMD64_XMM6H = 208,
+  CV_AMD64_XMM7H = 209,
+  CV_AMD64_MXCSR = 211,
+  CV_AMD64_EMM0L = 220,
+  CV_AMD64_EMM1L = 221,
+  CV_AMD64_EMM2L = 222,
+  CV_AMD64_EMM3L = 223,
+  CV_AMD64_EMM4L = 224,
+  CV_AMD64_EMM5L = 225,
+  CV_AMD64_EMM6L = 226,
+  CV_AMD64_EMM7L = 227,
+  CV_AMD64_EMM0H = 228,
+  CV_AMD64_EMM1H = 229,
+  CV_AMD64_EMM2H = 230,
+  CV_AMD64_EMM3H = 231,
+  CV_AMD64_EMM4H = 232,
+  CV_AMD64_EMM5H = 233,
+  CV_AMD64_EMM6H = 234,
+  CV_AMD64_EMM7H = 235,
+  CV_AMD64_MM00 = 236,
+  CV_AMD64_MM01 = 237,
+  CV_AMD64_MM10 = 238,
+  CV_AMD64_MM11 = 239,
+  CV_AMD64_MM20 = 240,
+  CV_AMD64_MM21 = 241,
+  CV_AMD64_MM30 = 242,
+  CV_AMD64_MM31 = 243,
+  CV_AMD64_MM40 = 244,
+  CV_AMD64_MM41 = 245,
+  CV_AMD64_MM50 = 246,
+  CV_AMD64_MM51 = 247,
+  CV_AMD64_MM60 = 248,
+  CV_AMD64_MM61 = 249,
+  CV_AMD64_MM70 = 250,
+  CV_AMD64_MM71 = 251,
+  CV_AMD64_XMM8 = 252,
+  CV_AMD64_XMM9 = 253,
+  CV_AMD64_XMM10 = 254,
+  CV_AMD64_XMM11 = 255,
+  CV_AMD64_XMM12 = 256,
+  CV_AMD64_XMM13 = 257,
+  CV_AMD64_XMM14 = 258,
+  CV_AMD64_XMM15 = 259,
+  CV_AMD64_XMM8_0 = 260,
+  CV_AMD64_XMM8_1 = 261,
+  CV_AMD64_XMM8_2 = 262,
+  CV_AMD64_XMM8_3 = 263,
+  CV_AMD64_XMM9_0 = 264,
+  CV_AMD64_XMM9_1 = 265,
+  CV_AMD64_XMM9_2 = 266,
+  CV_AMD64_XMM9_3 = 267,
+  CV_AMD64_XMM10_0 = 268,
+  CV_AMD64_XMM10_1 = 269,
+  CV_AMD64_XMM10_2 = 270,
+  CV_AMD64_XMM10_3 = 271,
+  CV_AMD64_XMM11_0 = 272,
+  CV_AMD64_XMM11_1 = 273,
+  CV_AMD64_XMM11_2 = 274,
+  CV_AMD64_XMM11_3 = 275,
+  CV_AMD64_XMM12_0 = 276,
+  CV_AMD64_XMM12_1 = 277,
+  CV_AMD64_XMM12_2 = 278,
+  CV_AMD64_XMM12_3 = 279,
+  CV_AMD64_XMM13_0 = 280,
+  CV_AMD64_XMM13_1 = 281,
+  CV_AMD64_XMM13_2 = 282,
+  CV_AMD64_XMM13_3 = 283,
+  CV_AMD64_XMM14_0 = 284,
+  CV_AMD64_XMM14_1 = 285,
+  CV_AMD64_XMM14_2 = 286,
+  CV_AMD64_XMM14_3 = 287,
+  CV_AMD64_XMM15_0 = 288,
+  CV_AMD64_XMM15_1 = 289,
+  CV_AMD64_XMM15_2 = 290,
+  CV_AMD64_XMM15_3 = 291,
+  CV_AMD64_XMM8L = 292,
+  CV_AMD64_XMM9L = 293,
+  CV_AMD64_XMM10L = 294,
+  CV_AMD64_XMM11L = 295,
+  CV_AMD64_XMM12L = 296,
+  CV_AMD64_XMM13L = 297,
+  CV_AMD64_XMM14L = 298,
+  CV_AMD64_XMM15L = 299,
+  CV_AMD64_XMM8H = 300,
+  CV_AMD64_XMM9H = 301,
+  CV_AMD64_XMM10H = 302,
+  CV_AMD64_XMM11H = 303,
+  CV_AMD64_XMM12H = 304,
+  CV_AMD64_XMM13H = 305,
+  CV_AMD64_XMM14H = 306,
+  CV_AMD64_XMM15H = 307,
+  CV_AMD64_EMM8L = 308,
+  CV_AMD64_EMM9L = 309,
+  CV_AMD64_EMM10L = 310,
+  CV_AMD64_EMM11L = 311,
+  CV_AMD64_EMM12L = 312,
+  CV_AMD64_EMM13L = 313,
+  CV_AMD64_EMM14L = 314,
+  CV_AMD64_EMM15L = 315,
+  CV_AMD64_EMM8H = 316,
+  CV_AMD64_EMM9H = 317,
+  CV_AMD64_EMM10H = 318,
+  CV_AMD64_EMM11H = 319,
+  CV_AMD64_EMM12H = 320,
+  CV_AMD64_EMM13H = 321,
+  CV_AMD64_EMM14H = 322,
+  CV_AMD64_EMM15H = 323,
+  CV_AMD64_SIL = 324,
+  CV_AMD64_DIL = 325,
+  CV_AMD64_BPL = 326,
+  CV_AMD64_SPL = 327,
+  CV_AMD64_RAX = 328,
+  CV_AMD64_RBX = 329,
+  CV_AMD64_RCX = 330,
+  CV_AMD64_RDX = 331,
+  CV_AMD64_RSI = 332,
+  CV_AMD64_RDI = 333,
+  CV_AMD64_RBP = 334,
+  CV_AMD64_RSP = 335,
+  CV_AMD64_R8 = 336,
+  CV_AMD64_R9 = 337,
+  CV_AMD64_R10 = 338,
+  CV_AMD64_R11 = 339,
+  CV_AMD64_R12 = 340,
+  CV_AMD64_R13 = 341,
+  CV_AMD64_R14 = 342,
+  CV_AMD64_R15 = 343,
+  CV_AMD64_R8B = 344,
+  CV_AMD64_R9B = 345,
+  CV_AMD64_R10B = 346,
+  CV_AMD64_R11B = 347,
+  CV_AMD64_R12B = 348,
+  CV_AMD64_R13B = 349,
+  CV_AMD64_R14B = 350,
+  CV_AMD64_R15B = 351,
+  CV_AMD64_R8W = 352,
+  CV_AMD64_R9W = 353,
+  CV_AMD64_R10W = 354,
+  CV_AMD64_R11W = 355,
+  CV_AMD64_R12W = 356,
+  CV_AMD64_R13W = 357,
+  CV_AMD64_R14W = 358,
+  CV_AMD64_R15W = 359,
+  CV_AMD64_R8D = 360,
+  CV_AMD64_R9D = 361,
+  CV_AMD64_R10D = 362,
+  CV_AMD64_R11D = 363,
+  CV_AMD64_R12D = 364,
+  CV_AMD64_R13D = 365,
+  CV_AMD64_R14D = 366,
+  CV_AMD64_R15D = 367,
+  CV_AMD64_YMM0 = 368,
+  CV_AMD64_YMM1 = 369,
+  CV_AMD64_YMM2 = 370,
+  CV_AMD64_YMM3 = 371,
+  CV_AMD64_YMM4 = 372,
+  CV_AMD64_YMM5 = 373,
+  CV_AMD64_YMM6 = 374,
+  CV_AMD64_YMM7 = 375,
+  CV_AMD64_YMM8 = 376,
+  CV_AMD64_YMM9 = 377,
+  CV_AMD64_YMM10 = 378,
+  CV_AMD64_YMM11 = 379,
+  CV_AMD64_YMM12 = 380,
+  CV_AMD64_YMM13 = 381,
+  CV_AMD64_YMM14 = 382,
+  CV_AMD64_YMM15 = 383,
+  CV_AMD64_YMM0H = 384,
+  CV_AMD64_YMM1H = 385,
+  CV_AMD64_YMM2H = 386,
+  CV_AMD64_YMM3H = 387,
+  CV_AMD64_YMM4H = 388,
+  CV_AMD64_YMM5H = 389,
+  CV_AMD64_YMM6H = 390,
+  CV_AMD64_YMM7H = 391,
+  CV_AMD64_YMM8H = 392,
+  CV_AMD64_YMM9H = 393,
+  CV_AMD64_YMM10H = 394,
+  CV_AMD64_YMM11H = 395,
+  CV_AMD64_YMM12H = 396,
+  CV_AMD64_YMM13H = 397,
+  CV_AMD64_YMM14H = 398,
+  CV_AMD64_YMM15H = 399,
+  CV_AMD64_XMM0IL = 400,
+  CV_AMD64_XMM1IL = 401,
+  CV_AMD64_XMM2IL = 402,
+  CV_AMD64_XMM3IL = 403,
+  CV_AMD64_XMM4IL = 404,
+  CV_AMD64_XMM5IL = 405,
+  CV_AMD64_XMM6IL = 406,
+  CV_AMD64_XMM7IL = 407,
+  CV_AMD64_XMM8IL = 408,
+  CV_AMD64_XMM9IL = 409,
+  CV_AMD64_XMM10IL = 410,
+  CV_AMD64_XMM11IL = 411,
+  CV_AMD64_XMM12IL = 412,
+  CV_AMD64_XMM13IL = 413,
+  CV_AMD64_XMM14IL = 414,
+  CV_AMD64_XMM15IL = 415,
+  CV_AMD64_XMM0IH = 416,
+  CV_AMD64_XMM1IH = 417,
+  CV_AMD64_XMM2IH = 418,
+  CV_AMD64_XMM3IH = 419,
+  CV_AMD64_XMM4IH = 420,
+  CV_AMD64_XMM5IH = 421,
+  CV_AMD64_XMM6IH = 422,
+  CV_AMD64_XMM7IH = 423,
+  CV_AMD64_XMM8IH = 424,
+  CV_AMD64_XMM9IH = 425,
+  CV_AMD64_XMM10IH = 426,
+  CV_AMD64_XMM11IH = 427,
+  CV_AMD64_XMM12IH = 428,
+  CV_AMD64_XMM13IH = 429,
+  CV_AMD64_XMM14IH = 430,
+  CV_AMD64_XMM15IH = 431,
+  CV_AMD64_YMM0I0 = 432,
+  CV_AMD64_YMM0I1 = 433,
+  CV_AMD64_YMM0I2 = 434,
+  CV_AMD64_YMM0I3 = 435,
+  CV_AMD64_YMM1I0 = 436,
+  CV_AMD64_YMM1I1 = 437,
+  CV_AMD64_YMM1I2 = 438,
+  CV_AMD64_YMM1I3 = 439,
+  CV_AMD64_YMM2I0 = 440,
+  CV_AMD64_YMM2I1 = 441,
+  CV_AMD64_YMM2I2 = 442,
+  CV_AMD64_YMM2I3 = 443,
+  CV_AMD64_YMM3I0 = 444,
+  CV_AMD64_YMM3I1 = 445,
+  CV_AMD64_YMM3I2 = 446,
+  CV_AMD64_YMM3I3 = 447,
+  CV_AMD64_YMM4I0 = 448,
+  CV_AMD64_YMM4I1 = 449,
+  CV_AMD64_YMM4I2 = 450,
+  CV_AMD64_YMM4I3 = 451,
+  CV_AMD64_YMM5I0 = 452,
+  CV_AMD64_YMM5I1 = 453,
+  CV_AMD64_YMM5I2 = 454,
+  CV_AMD64_YMM5I3 = 455,
+  CV_AMD64_YMM6I0 = 456,
+  CV_AMD64_YMM6I1 = 457,
+  CV_AMD64_YMM6I2 = 458,
+  CV_AMD64_YMM6I3 = 459,
+  CV_AMD64_YMM7I0 = 460,
+  CV_AMD64_YMM7I1 = 461,
+  CV_AMD64_YMM7I2 = 462,
+  CV_AMD64_YMM7I3 = 463,
+  CV_AMD64_YMM8I0 = 464,
+  CV_AMD64_YMM8I1 = 465,
+  CV_AMD64_YMM8I2 = 466,
+  CV_AMD64_YMM8I3 = 467,
+  CV_AMD64_YMM9I0 = 468,
+  CV_AMD64_YMM9I1 = 469,
+  CV_AMD64_YMM9I2 = 470,
+  CV_AMD64_YMM9I3 = 471,
+  CV_AMD64_YMM10I0 = 472,
+  CV_AMD64_YMM10I1 = 473,
+  CV_AMD64_YMM10I2 = 474,
+  CV_AMD64_YMM10I3 = 475,
+  CV_AMD64_YMM11I0 = 476,
+  CV_AMD64_YMM11I1 = 477,
+  CV_AMD64_YMM11I2 = 478,
+  CV_AMD64_YMM11I3 = 479,
+  CV_AMD64_YMM12I0 = 480,
+  CV_AMD64_YMM12I1 = 481,
+  CV_AMD64_YMM12I2 = 482,
+  CV_AMD64_YMM12I3 = 483,
+  CV_AMD64_YMM13I0 = 484,
+  CV_AMD64_YMM13I1 = 485,
+  CV_AMD64_YMM13I2 = 486,
+  CV_AMD64_YMM13I3 = 487,
+  CV_AMD64_YMM14I0 = 488,
+  CV_AMD64_YMM14I1 = 489,
+  CV_AMD64_YMM14I2 = 490,
+  CV_AMD64_YMM14I3 = 491,
+  CV_AMD64_YMM15I0 = 492,
+  CV_AMD64_YMM15I1 = 493,
+  CV_AMD64_YMM15I2 = 494,
+  CV_AMD64_YMM15I3 = 495,
+  CV_AMD64_YMM0F0 = 496,
+  CV_AMD64_YMM0F1 = 497,
+  CV_AMD64_YMM0F2 = 498,
+  CV_AMD64_YMM0F3 = 499,
+  CV_AMD64_YMM0F4 = 500,
+  CV_AMD64_YMM0F5 = 501,
+  CV_AMD64_YMM0F6 = 502,
+  CV_AMD64_YMM0F7 = 503,
+  CV_AMD64_YMM1F0 = 504,
+  CV_AMD64_YMM1F1 = 505,
+  CV_AMD64_YMM1F2 = 506,
+  CV_AMD64_YMM1F3 = 507,
+  CV_AMD64_YMM1F4 = 508,
+  CV_AMD64_YMM1F5 = 509,
+  CV_AMD64_YMM1F6 = 510,
+  CV_AMD64_YMM1F7 = 511,
+  CV_AMD64_YMM2F0 = 512,
+  CV_AMD64_YMM2F1 = 513,
+  CV_AMD64_YMM2F2 = 514,
+  CV_AMD64_YMM2F3 = 515,
+  CV_AMD64_YMM2F4 = 516,
+  CV_AMD64_YMM2F5 = 517,
+  CV_AMD64_YMM2F6 = 518,
+  CV_AMD64_YMM2F7 = 519,
+  CV_AMD64_YMM3F0 = 520,
+  CV_AMD64_YMM3F1 = 521,
+  CV_AMD64_YMM3F2 = 522,
+  CV_AMD64_YMM3F3 = 523,
+  CV_AMD64_YMM3F4 = 524,
+  CV_AMD64_YMM3F5 = 525,
+  CV_AMD64_YMM3F6 = 526,
+  CV_AMD64_YMM3F7 = 527,
+  CV_AMD64_YMM4F0 = 528,
+  CV_AMD64_YMM4F1 = 529,
+  CV_AMD64_YMM4F2 = 530,
+  CV_AMD64_YMM4F3 = 531,
+  CV_AMD64_YMM4F4 = 532,
+  CV_AMD64_YMM4F5 = 533,
+  CV_AMD64_YMM4F6 = 534,
+  CV_AMD64_YMM4F7 = 535,
+  CV_AMD64_YMM5F0 = 536,
+  CV_AMD64_YMM5F1 = 537,
+  CV_AMD64_YMM5F2 = 538,
+  CV_AMD64_YMM5F3 = 539,
+  CV_AMD64_YMM5F4 = 540,
+  CV_AMD64_YMM5F5 = 541,
+  CV_AMD64_YMM5F6 = 542,
+  CV_AMD64_YMM5F7 = 543,
+  CV_AMD64_YMM6F0 = 544,
+  CV_AMD64_YMM6F1 = 545,
+  CV_AMD64_YMM6F2 = 546,
+  CV_AMD64_YMM6F3 = 547,
+  CV_AMD64_YMM6F4 = 548,
+  CV_AMD64_YMM6F5 = 549,
+  CV_AMD64_YMM6F6 = 550,
+  CV_AMD64_YMM6F7 = 551,
+  CV_AMD64_YMM7F0 = 552,
+  CV_AMD64_YMM7F1 = 553,
+  CV_AMD64_YMM7F2 = 554,
+  CV_AMD64_YMM7F3 = 555,
+  CV_AMD64_YMM7F4 = 556,
+  CV_AMD64_YMM7F5 = 557,
+  CV_AMD64_YMM7F6 = 558,
+  CV_AMD64_YMM7F7 = 559,
+  CV_AMD64_YMM8F0 = 560,
+  CV_AMD64_YMM8F1 = 561,
+  CV_AMD64_YMM8F2 = 562,
+  CV_AMD64_YMM8F3 = 563,
+  CV_AMD64_YMM8F4 = 564,
+  CV_AMD64_YMM8F5 = 565,
+  CV_AMD64_YMM8F6 = 566,
+  CV_AMD64_YMM8F7 = 567,
+  CV_AMD64_YMM9F0 = 568,
+  CV_AMD64_YMM9F1 = 569,
+  CV_AMD64_YMM9F2 = 570,
+  CV_AMD64_YMM9F3 = 571,
+  CV_AMD64_YMM9F4 = 572,
+  CV_AMD64_YMM9F5 = 573,
+  CV_AMD64_YMM9F6 = 574,
+  CV_AMD64_YMM9F7 = 575,
+  CV_AMD64_YMM10F0 = 576,
+  CV_AMD64_YMM10F1 = 577,
+  CV_AMD64_YMM10F2 = 578,
+  CV_AMD64_YMM10F3 = 579,
+  CV_AMD64_YMM10F4 = 580,
+  CV_AMD64_YMM10F5 = 581,
+  CV_AMD64_YMM10F6 = 582,
+  CV_AMD64_YMM10F7 = 583,
+  CV_AMD64_YMM11F0 = 584,
+  CV_AMD64_YMM11F1 = 585,
+  CV_AMD64_YMM11F2 = 586,
+  CV_AMD64_YMM11F3 = 587,
+  CV_AMD64_YMM11F4 = 588,
+  CV_AMD64_YMM11F5 = 589,
+  CV_AMD64_YMM11F6 = 590,
+  CV_AMD64_YMM11F7 = 591,
+  CV_AMD64_YMM12F0 = 592,
+  CV_AMD64_YMM12F1 = 593,
+  CV_AMD64_YMM12F2 = 594,
+  CV_AMD64_YMM12F3 = 595,
+  CV_AMD64_YMM12F4 = 596,
+  CV_AMD64_YMM12F5 = 597,
+  CV_AMD64_YMM12F6 = 598,
+  CV_AMD64_YMM12F7 = 599,
+  CV_AMD64_YMM13F0 = 600,
+  CV_AMD64_YMM13F1 = 601,
+  CV_AMD64_YMM13F2 = 602,
+  CV_AMD64_YMM13F3 = 603,
+  CV_AMD64_YMM13F4 = 604,
+  CV_AMD64_YMM13F5 = 605,
+  CV_AMD64_YMM13F6 = 606,
+  CV_AMD64_YMM13F7 = 607,
+  CV_AMD64_YMM14F0 = 608,
+  CV_AMD64_YMM14F1 = 609,
+  CV_AMD64_YMM14F2 = 610,
+  CV_AMD64_YMM14F3 = 611,
+  CV_AMD64_YMM14F4 = 612,
+  CV_AMD64_YMM14F5 = 613,
+  CV_AMD64_YMM14F6 = 614,
+  CV_AMD64_YMM14F7 = 615,
+  CV_AMD64_YMM15F0 = 616,
+  CV_AMD64_YMM15F1 = 617,
+  CV_AMD64_YMM15F2 = 618,
+  CV_AMD64_YMM15F3 = 619,
+  CV_AMD64_YMM15F4 = 620,
+  CV_AMD64_YMM15F5 = 621,
+  CV_AMD64_YMM15F6 = 622,
+  CV_AMD64_YMM15F7 = 623,
+  CV_AMD64_YMM0D0 = 624,
+  CV_AMD64_YMM0D1 = 625,
+  CV_AMD64_YMM0D2 = 626,
+  CV_AMD64_YMM0D3 = 627,
+  CV_AMD64_YMM1D0 = 628,
+  CV_AMD64_YMM1D1 = 629,
+  CV_AMD64_YMM1D2 = 630,
+  CV_AMD64_YMM1D3 = 631,
+  CV_AMD64_YMM2D0 = 632,
+  CV_AMD64_YMM2D1 = 633,
+  CV_AMD64_YMM2D2 = 634,
+  CV_AMD64_YMM2D3 = 635,
+  CV_AMD64_YMM3D0 = 636,
+  CV_AMD64_YMM3D1 = 637,
+  CV_AMD64_YMM3D2 = 638,
+  CV_AMD64_YMM3D3 = 639,
+  CV_AMD64_YMM4D0 = 640,
+  CV_AMD64_YMM4D1 = 641,
+  CV_AMD64_YMM4D2 = 642,
+  CV_AMD64_YMM4D3 = 643,
+  CV_AMD64_YMM5D0 = 644,
+  CV_AMD64_YMM5D1 = 645,
+  CV_AMD64_YMM5D2 = 646,
+  CV_AMD64_YMM5D3 = 647,
+  CV_AMD64_YMM6D0 = 648,
+  CV_AMD64_YMM6D1 = 649,
+  CV_AMD64_YMM6D2 = 650,
+  CV_AMD64_YMM6D3 = 651,
+  CV_AMD64_YMM7D0 = 652,
+  CV_AMD64_YMM7D1 = 653,
+  CV_AMD64_YMM7D2 = 654,
+  CV_AMD64_YMM7D3 = 655,
+  CV_AMD64_YMM8D0 = 656,
+  CV_AMD64_YMM8D1 = 657,
+  CV_AMD64_YMM8D2 = 658,
+  CV_AMD64_YMM8D3 = 659,
+  CV_AMD64_YMM9D0 = 660,
+  CV_AMD64_YMM9D1 = 661,
+  CV_AMD64_YMM9D2 = 662,
+  CV_AMD64_YMM9D3 = 663,
+  CV_AMD64_YMM10D0 = 664,
+  CV_AMD64_YMM10D1 = 665,
+  CV_AMD64_YMM10D2 = 666,
+  CV_AMD64_YMM10D3 = 667,
+  CV_AMD64_YMM11D0 = 668,
+  CV_AMD64_YMM11D1 = 669,
+  CV_AMD64_YMM11D2 = 670,
+  CV_AMD64_YMM11D3 = 671,
+  CV_AMD64_YMM12D0 = 672,
+  CV_AMD64_YMM12D1 = 673,
+  CV_AMD64_YMM12D2 = 674,
+  CV_AMD64_YMM12D3 = 675,
+  CV_AMD64_YMM13D0 = 676,
+  CV_AMD64_YMM13D1 = 677,
+  CV_AMD64_YMM13D2 = 678,
+  CV_AMD64_YMM13D3 = 679,
+  CV_AMD64_YMM14D0 = 680,
+  CV_AMD64_YMM14D1 = 681,
+  CV_AMD64_YMM14D2 = 682,
+  CV_AMD64_YMM14D3 = 683,
+  CV_AMD64_YMM15D0 = 684,
+  CV_AMD64_YMM15D1 = 685,
+  CV_AMD64_YMM15D2 = 686,
+  CV_AMD64_YMM15D3 = 687
+};
 
 struct codeview_string
 {
@@ -141,7 +1150,7 @@ struct codeview_function
 struct codeview_symbol
 {
   codeview_symbol *next;
-  uint16_t kind;
+  enum cv_sym_type kind;
 
   union
   {
@@ -151,6 +1160,16 @@ struct codeview_symbol
       char *name;
       dw_die_ref die;
     } data_symbol;
+    struct
+    {
+      uint32_t parent;
+      uint32_t end;
+      uint32_t next;
+      uint32_t type;
+      uint8_t flags;
+      char *name;
+      dw_die_ref die;
+    } function;
   };
 };
 
@@ -185,7 +1204,7 @@ struct codeview_integer
 struct codeview_subtype
 {
   struct codeview_subtype *next;
-  uint16_t kind;
+  enum cv_leaf_type kind;
 
   union
   {
@@ -205,14 +1224,38 @@ struct codeview_subtype
       codeview_integer offset;
       char *name;
     } lf_member;
+    struct
+    {
+      uint16_t attributes;
+      uint32_t type;
+      char *name;
+    } lf_static_member;
+    struct
+    {
+      uint16_t method_attribute;
+      uint32_t method_type;
+      char *name;
+    } lf_onemethod;
+    struct
+    {
+      uint16_t count;
+      uint32_t method_list;
+      char *name;
+    } lf_method;
   };
+};
+
+struct lf_methodlist_entry
+{
+  uint16_t method_attribute;
+  uint32_t method_type;
 };
 
 struct codeview_custom_type
 {
   struct codeview_custom_type *next;
   uint32_t num;
-  uint16_t kind;
+  enum cv_leaf_type kind;
 
   union
   {
@@ -275,6 +1318,39 @@ struct codeview_custom_type
       uint32_t num_entries;
       uint32_t *args;
     } lf_arglist;
+    struct
+    {
+      uint32_t parent_scope;
+      uint32_t function_type;
+      char *name;
+    } lf_func_id;
+    struct
+    {
+      uint32_t parent_type;
+      uint32_t function_type;
+      char *name;
+    } lf_mfunc_id;
+    struct
+    {
+      uint32_t substring;
+      char *string;
+    } lf_string_id;
+    struct
+    {
+      uint32_t return_type;
+      uint32_t containing_class_type;
+      uint32_t this_type;
+      uint8_t calling_convention;
+      uint8_t attributes;
+      uint16_t num_parameters;
+      uint32_t arglist;
+      int32_t this_adjustment;
+    } lf_mfunction;
+    struct
+    {
+      unsigned int count;
+      lf_methodlist_entry *entries;
+    } lf_methodlist;
   };
 };
 
@@ -282,6 +1358,46 @@ struct codeview_deferred_type
 {
   struct codeview_deferred_type *next;
   dw_die_ref type;
+};
+
+struct string_id_hasher : nofree_ptr_hash <struct codeview_custom_type>
+{
+  typedef const char *compare_type;
+
+  static hashval_t hash (const codeview_custom_type *x)
+  {
+    return htab_hash_string (x->lf_string_id.string);
+  }
+
+  static bool equal (const codeview_custom_type *x, const char *y)
+  {
+    return !strcmp (x->lf_string_id.string, y);
+  }
+};
+
+struct codeview_method
+{
+  uint16_t attribute;
+  uint32_t type;
+  char *name;
+  unsigned int count;
+  struct codeview_method *next;
+  struct codeview_method *last;
+};
+
+struct method_hasher : nofree_ptr_hash <struct codeview_method>
+{
+  typedef const char *compare_type;
+
+  static hashval_t hash (const codeview_method *x)
+  {
+    return htab_hash_string (x->name);
+  }
+
+  static bool equal (const codeview_method *x, const char *y)
+  {
+    return !strcmp (x->name, y);
+  }
 };
 
 static unsigned int line_label_num;
@@ -299,8 +1415,13 @@ static codeview_symbol *sym, *last_sym;
 static hash_table<die_hasher> *types_htab;
 static codeview_custom_type *custom_types, *last_custom_type;
 static codeview_deferred_type *deferred_types, *last_deferred_type;
+static hash_table<string_id_hasher> *string_id_htab;
 
 static uint32_t get_type_num (dw_die_ref type, bool in_struct, bool no_fwd_ref);
+static uint32_t get_type_num_subroutine_type (dw_die_ref type, bool in_struct,
+					      uint32_t containing_class_type,
+					      uint32_t this_type,
+					      int32_t this_adjustment);
 
 /* Record new line number against the current function.  */
 
@@ -924,10 +2045,1290 @@ write_data_symbol (codeview_symbol *s)
   ASM_OUTPUT_ASCII (asm_out_file, s->data_symbol.name,
 		    strlen (s->data_symbol.name) + 1);
 
+  ASM_OUTPUT_ALIGN (asm_out_file, 2);
+
   targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
 
 end:
   free (s->data_symbol.name);
+}
+
+/* Write an S_LOCAL symbol, representing an optimized variable.  This is then
+   followed by various S_DEFRANGE_* symbols, which describe how to find the
+   value of a variable and the range for which this is valid.  */
+
+static void
+write_s_local (dw_die_ref die)
+{
+  unsigned int label_num = ++sym_label_num;
+  const char *name = get_AT_string (die, DW_AT_name);
+  uint32_t type;
+
+  /* This is struct LOCALSYM in Microsoft's cvinfo.h:
+
+    struct LOCALSYM {
+      uint16_t reclen;
+      uint16_t rectyp;
+      uint32_t typind;
+      uint16_t flags;
+      char name[];
+    };
+  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	      "%L" SYMBOL_END_LABEL "%u - %L" SYMBOL_START_LABEL "%u\n",
+	      label_num, label_num);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_START_LABEL, label_num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, S_LOCAL);
+  putc ('\n', asm_out_file);
+
+  type = get_type_num (get_AT_ref (die, DW_AT_type), false, false);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, type);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  ASM_OUTPUT_ASCII (asm_out_file, name, strlen (name) + 1);
+
+  ASM_OUTPUT_ALIGN (asm_out_file, 2);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+}
+
+/* Write an S_LDATA32 symbol, representing a static variable within a function.
+   This symbol can also appear outside of a function block - see
+   write_data_symbol.  */
+
+static void
+write_local_s_ldata32 (dw_die_ref die, dw_loc_descr_ref loc_ref)
+{
+  unsigned int label_num = ++sym_label_num;
+  const char *name = get_AT_string (die, DW_AT_name);
+  uint32_t type;
+
+  /* This is struct datasym in binutils:
+
+      struct datasym
+      {
+	uint16_t size;
+	uint16_t kind;
+	uint32_t type;
+	uint32_t offset;
+	uint16_t section;
+	char name[];
+      } ATTRIBUTE_PACKED;
+  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	       "%L" SYMBOL_END_LABEL "%u - %L" SYMBOL_START_LABEL "%u\n",
+	       label_num, label_num);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_START_LABEL, label_num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, S_LDATA32);
+  putc ('\n', asm_out_file);
+
+  type = get_type_num (get_AT_ref (die, DW_AT_type), false, false);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, type);
+  putc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "\t.secrel32 ");
+  output_addr_const (asm_out_file, loc_ref->dw_loc_oprnd1.v.val_addr);
+  fputc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "\t.secidx ");
+  output_addr_const (asm_out_file, loc_ref->dw_loc_oprnd1.v.val_addr);
+  fputc ('\n', asm_out_file);
+
+  ASM_OUTPUT_ASCII (asm_out_file, name, strlen (name) + 1);
+
+  ASM_OUTPUT_ALIGN (asm_out_file, 2);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+}
+
+/* Try to translate a DWARF register number into its CodeView equivalent.  */
+
+static uint16_t
+dwarf_reg_to_cv (unsigned int regno)
+{
+  static const cv_amd64_register amd64_reg_mapping[] = {
+    CV_AMD64_RAX,
+    CV_AMD64_RDX,
+    CV_AMD64_RCX,
+    CV_AMD64_RBX,
+    CV_AMD64_RSI,
+    CV_AMD64_RDI,
+    CV_AMD64_RBP,
+    CV_AMD64_RSP,
+    CV_AMD64_R8,
+    CV_AMD64_R9,
+    CV_AMD64_R10,
+    CV_AMD64_R11,
+    CV_AMD64_R12,
+    CV_AMD64_R13,
+    CV_AMD64_R14,
+    CV_AMD64_R15,
+    CV_AMD64_RIP,
+    CV_AMD64_XMM0,
+    CV_AMD64_XMM1,
+    CV_AMD64_XMM2,
+    CV_AMD64_XMM3,
+    CV_AMD64_XMM4,
+    CV_AMD64_XMM5,
+    CV_AMD64_XMM6,
+    CV_AMD64_XMM7,
+    CV_AMD64_XMM8,
+    CV_AMD64_XMM9,
+    CV_AMD64_XMM10,
+    CV_AMD64_XMM11,
+    CV_AMD64_XMM12,
+    CV_AMD64_XMM13,
+    CV_AMD64_XMM14,
+    CV_AMD64_XMM15,
+    CV_AMD64_ST0,
+    CV_AMD64_ST1,
+    CV_AMD64_ST2,
+    CV_AMD64_ST3,
+    CV_AMD64_ST4,
+    CV_AMD64_ST5,
+    CV_AMD64_ST6,
+    CV_AMD64_ST7,
+    CV_AMD64_NOREG,
+    CV_AMD64_NOREG,
+    CV_AMD64_NOREG,
+    CV_AMD64_NOREG,
+    CV_AMD64_NOREG,
+    CV_AMD64_NOREG,
+    CV_AMD64_NOREG,
+    CV_AMD64_NOREG,
+    CV_AMD64_EFLAGS,
+    CV_AMD64_ES,
+    CV_AMD64_CS,
+    CV_AMD64_SS,
+    CV_AMD64_DS,
+    CV_AMD64_FS,
+    CV_AMD64_GS,
+    CV_AMD64_NOREG,
+    CV_AMD64_NOREG,
+    CV_AMD64_NOREG,
+    CV_AMD64_NOREG,
+    CV_AMD64_NOREG,
+    CV_AMD64_NOREG,
+    CV_AMD64_TR,
+    CV_AMD64_LDTR,
+    CV_AMD64_MXCSR,
+    CV_AMD64_CTRL,
+    CV_AMD64_STAT
+  };
+
+  static const cv_x86_register x86_reg_mapping[] = {
+    CV_REG_EAX,
+    CV_REG_ECX,
+    CV_REG_EDX,
+    CV_REG_EBX,
+    CV_REG_EBP,
+    CV_REG_ESP,
+    CV_REG_ESI,
+    CV_REG_EDI,
+    CV_REG_EIP,
+    CV_REG_EFLAGS,
+    CV_REG_CS,
+    CV_REG_SS,
+    CV_REG_DS,
+    CV_REG_ES,
+    CV_REG_FS,
+    CV_REG_GS,
+    CV_REG_ST0,
+    CV_REG_ST1,
+    CV_REG_ST2,
+    CV_REG_ST3,
+    CV_REG_ST4,
+    CV_REG_ST5,
+    CV_REG_ST6,
+    CV_REG_ST7,
+    CV_REG_CTRL,
+    CV_REG_STAT,
+    CV_REG_TAG,
+    CV_REG_FPCS,
+    CV_REG_FPIP,
+    CV_REG_FPDS,
+    CV_REG_FPDO,
+    CV_REG_NONE,
+    CV_REG_XMM0,
+    CV_REG_XMM1,
+    CV_REG_XMM2,
+    CV_REG_XMM3,
+    CV_REG_XMM4,
+    CV_REG_XMM5,
+    CV_REG_XMM6,
+    CV_REG_XMM7,
+    CV_REG_MXCSR
+  };
+
+  if (TARGET_64BIT)
+    {
+      if (regno < sizeof (amd64_reg_mapping) / sizeof (*amd64_reg_mapping))
+	return amd64_reg_mapping[regno];
+
+      return CV_AMD64_NOREG;
+    }
+  else
+    {
+      if (regno < sizeof (x86_reg_mapping) / sizeof (*x86_reg_mapping))
+	return x86_reg_mapping[regno];
+
+      return CV_REG_NONE;
+    }
+}
+
+/* Write an S_REGISTER symbol, representing an unoptimized variable that has
+   been assigned to a register.  */
+
+static void
+write_s_register (dw_die_ref die, dw_loc_descr_ref loc_ref)
+{
+  unsigned int label_num = ++sym_label_num;
+  const char *name = get_AT_string (die, DW_AT_name);
+  uint16_t regno;
+  uint32_t type;
+
+  /* This is struct regsym in binutils and REGSYM in Microsoft's cvinfo.h:
+
+    struct regsym
+    {
+      uint16_t size;
+      uint16_t kind;
+      uint32_t type;
+      uint16_t reg;
+      char name[];
+    } ATTRIBUTE_PACKED;
+  */
+
+  if (loc_ref->dw_loc_opc == DW_OP_regx)
+    regno = dwarf_reg_to_cv (loc_ref->dw_loc_oprnd1.v.val_int);
+  else
+    regno = dwarf_reg_to_cv (loc_ref->dw_loc_opc - DW_OP_reg0);
+
+  if (regno == 0)
+    return;
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	       "%L" SYMBOL_END_LABEL "%u - %L" SYMBOL_START_LABEL "%u\n",
+	       label_num, label_num);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_START_LABEL, label_num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, S_REGISTER);
+  putc ('\n', asm_out_file);
+
+  type = get_type_num (get_AT_ref (die, DW_AT_type), false, false);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, type);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, regno);
+  putc ('\n', asm_out_file);
+
+  ASM_OUTPUT_ASCII (asm_out_file, name, strlen (name) + 1);
+
+  ASM_OUTPUT_ALIGN (asm_out_file, 2);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+}
+
+/* Write an S_REGREL32 symbol in order to represent an unoptimized stack
+   variable.  The memory address is given by a register value plus an offset,
+   so we need to parse the function's DW_AT_frame_base attribute for this.  */
+
+static void
+write_fbreg_variable (dw_die_ref die, dw_loc_descr_ref loc_ref,
+		      dw_loc_descr_ref fbloc)
+{
+  unsigned int label_num = ++sym_label_num;
+  const char *name = get_AT_string (die, DW_AT_name);
+  uint32_t type;
+  uint16_t regno;
+  int offset;
+
+  /* This is struct regrel in binutils and REGREL32 in Microsoft's cvinfo.h:
+
+    struct regrel
+    {
+      uint16_t size;
+      uint16_t kind;
+      uint32_t offset;
+      uint32_t type;
+      uint16_t reg;
+      char name[];
+    } ATTRIBUTE_PACKED;
+  */
+
+  if (!fbloc)
+    return;
+
+  if (fbloc->dw_loc_opc >= DW_OP_breg0 && fbloc->dw_loc_opc <= DW_OP_breg31)
+    {
+      regno = dwarf_reg_to_cv (fbloc->dw_loc_opc - DW_OP_breg0);
+      offset = fbloc->dw_loc_oprnd1.v.val_int;
+    }
+  else if (fbloc->dw_loc_opc == DW_OP_bregx)
+    {
+      regno = dwarf_reg_to_cv (fbloc->dw_loc_oprnd1.v.val_int);
+      offset = fbloc->dw_loc_oprnd2.v.val_int;
+    }
+  else
+    {
+      return;
+    }
+
+  if (loc_ref->dw_loc_oprnd1.val_class != dw_val_class_unsigned_const)
+    return;
+
+  offset += loc_ref->dw_loc_oprnd1.v.val_int;
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	       "%L" SYMBOL_END_LABEL "%u - %L" SYMBOL_START_LABEL "%u\n",
+	       label_num, label_num);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_START_LABEL, label_num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, S_REGREL32);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, offset);
+  putc ('\n', asm_out_file);
+
+  type = get_type_num (get_AT_ref (die, DW_AT_type), false, false);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, type);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, regno);
+  putc ('\n', asm_out_file);
+
+  ASM_OUTPUT_ASCII (asm_out_file, name, strlen (name) + 1);
+
+  ASM_OUTPUT_ALIGN (asm_out_file, 2);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+}
+
+/* Write an S_DEFRANGE_REGISTER symbol, which describes a range for which an
+   S_LOCAL variable is held in a certain register.  */
+
+static void
+write_defrange_register (dw_loc_descr_ref expr, rtx range_start, rtx range_end)
+{
+  unsigned int label_num = ++sym_label_num;
+  uint16_t regno;
+
+  /* This is defrange_register in binutils and DEFRANGESYMREGISTER in
+     Microsoft's cvinfo.h:
+
+      struct lvar_addr_range
+      {
+	uint32_t offset;
+	uint16_t section;
+	uint16_t length;
+      } ATTRIBUTE_PACKED;
+
+      struct lvar_addr_gap {
+	uint16_t offset;
+	uint16_t length;
+      } ATTRIBUTE_PACKED;
+
+      struct defrange_register
+      {
+	uint16_t size;
+	uint16_t kind;
+	uint16_t reg;
+	uint16_t attributes;
+	struct lvar_addr_range range;
+	struct lvar_addr_gap gaps[];
+      } ATTRIBUTE_PACKED;
+  */
+
+  if (expr->dw_loc_opc == DW_OP_regx)
+    regno = dwarf_reg_to_cv (expr->dw_loc_oprnd1.v.val_int);
+  else
+    regno = dwarf_reg_to_cv (expr->dw_loc_opc - DW_OP_reg0);
+
+  if (regno == 0)
+    return;
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	      "%L" SYMBOL_END_LABEL "%u - %L" SYMBOL_START_LABEL "%u\n",
+	      label_num, label_num);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_START_LABEL, label_num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, S_DEFRANGE_REGISTER);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, regno);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "\t.secrel32 ");
+  output_addr_const (asm_out_file, range_start);
+  fputc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "\t.secidx ");
+  output_addr_const (asm_out_file, range_start);
+  fputc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  output_addr_const (asm_out_file, range_end);
+  fputs (" - ", asm_out_file);
+  output_addr_const (asm_out_file, range_start);
+  putc ('\n', asm_out_file);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+}
+
+/* Write an S_DEFRANGE_REGISTER_REL symbol, which describes a range for which
+   an S_LOCAL variable is held in memory given by the value of a certain
+   register plus an offset.  */
+
+static void
+write_defrange_register_rel (dw_loc_descr_ref expr, dw_loc_descr_ref fbloc,
+			     rtx range_start, rtx range_end)
+{
+  unsigned int label_num = ++sym_label_num;
+  uint16_t regno;
+  int offset;
+
+  /* This is defrange_register_rel in binutils and DEFRANGESYMREGISTERREL in
+     Microsoft's cvinfo.h:
+
+      struct lvar_addr_range
+      {
+	uint32_t offset;
+	uint16_t section;
+	uint16_t length;
+      } ATTRIBUTE_PACKED;
+
+      struct lvar_addr_gap {
+	uint16_t offset;
+	uint16_t length;
+      } ATTRIBUTE_PACKED;
+
+      struct defrange_register_rel
+      {
+	uint16_t size;
+	uint16_t kind;
+	uint16_t reg;
+	uint16_t offset_parent;
+	uint32_t offset_register;
+	struct lvar_addr_range range;
+	struct lvar_addr_gap gaps[];
+      } ATTRIBUTE_PACKED;
+    */
+
+  if (!fbloc)
+    return;
+
+  if (fbloc->dw_loc_opc >= DW_OP_breg0 && fbloc->dw_loc_opc <= DW_OP_breg31)
+    {
+      regno = dwarf_reg_to_cv (fbloc->dw_loc_opc - DW_OP_breg0);
+      offset = fbloc->dw_loc_oprnd1.v.val_int;
+    }
+  else if (fbloc->dw_loc_opc == DW_OP_bregx)
+    {
+      regno = dwarf_reg_to_cv (fbloc->dw_loc_oprnd1.v.val_int);
+      offset = fbloc->dw_loc_oprnd2.v.val_int;
+    }
+  else
+    {
+      return;
+    }
+
+  if (expr->dw_loc_oprnd1.val_class != dw_val_class_unsigned_const)
+    return;
+
+  offset += expr->dw_loc_oprnd1.v.val_int;
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	      "%L" SYMBOL_END_LABEL "%u - %L" SYMBOL_START_LABEL "%u\n",
+	      label_num, label_num);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_START_LABEL, label_num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, S_DEFRANGE_REGISTER_REL);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, regno);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, offset);
+  putc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "\t.secrel32 ");
+  output_addr_const (asm_out_file, range_start);
+  fputc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "\t.secidx ");
+  output_addr_const (asm_out_file, range_start);
+  fputc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  output_addr_const (asm_out_file, range_end);
+  fputs (" - ", asm_out_file);
+  output_addr_const (asm_out_file, range_start);
+  putc ('\n', asm_out_file);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+}
+
+/* Try to write an S_DEFRANGE_* symbol for the given DWARF location.  */
+
+static void
+write_optimized_local_variable_loc (dw_loc_descr_ref expr,
+				    dw_loc_descr_ref fbloc, rtx range_start,
+				    rtx range_end)
+{
+  if (expr->dw_loc_next)
+    return;
+
+  if (!range_start)
+    return;
+
+  if (!range_end)
+    return;
+
+  switch (expr->dw_loc_opc)
+    {
+    case DW_OP_reg0:
+    case DW_OP_reg1:
+    case DW_OP_reg2:
+    case DW_OP_reg3:
+    case DW_OP_reg4:
+    case DW_OP_reg5:
+    case DW_OP_reg6:
+    case DW_OP_reg7:
+    case DW_OP_reg8:
+    case DW_OP_reg9:
+    case DW_OP_reg10:
+    case DW_OP_reg11:
+    case DW_OP_reg12:
+    case DW_OP_reg13:
+    case DW_OP_reg14:
+    case DW_OP_reg15:
+    case DW_OP_reg16:
+    case DW_OP_reg17:
+    case DW_OP_reg18:
+    case DW_OP_reg19:
+    case DW_OP_reg20:
+    case DW_OP_reg21:
+    case DW_OP_reg22:
+    case DW_OP_reg23:
+    case DW_OP_reg24:
+    case DW_OP_reg25:
+    case DW_OP_reg26:
+    case DW_OP_reg27:
+    case DW_OP_reg28:
+    case DW_OP_reg29:
+    case DW_OP_reg30:
+    case DW_OP_reg31:
+    case DW_OP_regx:
+      write_defrange_register (expr, range_start, range_end);
+      break;
+
+    case DW_OP_fbreg:
+      write_defrange_register_rel (expr, fbloc, range_start, range_end);
+      break;
+
+    default:
+      break;
+    }
+}
+
+/* Write an optimized local variable, given by an S_LOCAL symbol followed by
+   any number of S_DEFRANGE_* symbols.  We can't mix and match optimized and
+   unoptimized variables in the same function, so even if it stays in the same
+   place for the whole block we need to write an S_LOCAL.  */
+
+static void
+write_optimized_local_variable (dw_die_ref die, dw_loc_descr_ref fbloc,
+				rtx block_start, rtx block_end)
+{
+  dw_attr_node *loc;
+  dw_loc_list_ref loc_list;
+
+  loc = get_AT (die, DW_AT_location);
+  if (!loc)
+    return;
+
+  switch (loc->dw_attr_val.val_class)
+    {
+    case dw_val_class_loc_list:
+      loc_list = loc->dw_attr_val.v.val_loc_list;
+
+      write_s_local (die);
+
+      while (loc_list)
+	{
+	  rtx range_start = NULL, range_end = NULL;
+
+	  if (loc_list->begin)
+	    range_start = gen_rtx_SYMBOL_REF (Pmode, loc_list->begin);
+
+	  if (loc_list->end)
+	    range_end = gen_rtx_SYMBOL_REF (Pmode, loc_list->end);
+
+	  write_optimized_local_variable_loc (loc_list->expr, fbloc,
+					      range_start, range_end);
+
+	  loc_list = loc_list->dw_loc_next;
+	}
+      break;
+
+    case dw_val_class_loc:
+      write_s_local (die);
+
+      write_optimized_local_variable_loc (loc->dw_attr_val.v.val_loc, fbloc,
+					  block_start, block_end);
+      break;
+
+    default:
+      break;
+    }
+}
+
+/* Write a symbol representing an unoptimized variable within a function, if
+   we're able to translate the DIE's DW_AT_location into its CodeView
+   equivalent.  */
+
+static void
+write_unoptimized_local_variable (dw_die_ref die, dw_loc_descr_ref fbloc)
+{
+  dw_attr_node *loc;
+  dw_loc_descr_ref loc_ref;
+
+  loc = get_AT (die, DW_AT_location);
+  if (!loc)
+    return;
+
+  if (loc->dw_attr_val.val_class != dw_val_class_loc)
+    return;
+
+  loc_ref = loc->dw_attr_val.v.val_loc;
+  if (!loc_ref)
+    return;
+
+  switch (loc_ref->dw_loc_opc)
+    {
+    case DW_OP_addr:
+      write_local_s_ldata32 (die, loc_ref);
+      break;
+
+    case DW_OP_reg0:
+    case DW_OP_reg1:
+    case DW_OP_reg2:
+    case DW_OP_reg3:
+    case DW_OP_reg4:
+    case DW_OP_reg5:
+    case DW_OP_reg6:
+    case DW_OP_reg7:
+    case DW_OP_reg8:
+    case DW_OP_reg9:
+    case DW_OP_reg10:
+    case DW_OP_reg11:
+    case DW_OP_reg12:
+    case DW_OP_reg13:
+    case DW_OP_reg14:
+    case DW_OP_reg15:
+    case DW_OP_reg16:
+    case DW_OP_reg17:
+    case DW_OP_reg18:
+    case DW_OP_reg19:
+    case DW_OP_reg20:
+    case DW_OP_reg21:
+    case DW_OP_reg22:
+    case DW_OP_reg23:
+    case DW_OP_reg24:
+    case DW_OP_reg25:
+    case DW_OP_reg26:
+    case DW_OP_reg27:
+    case DW_OP_reg28:
+    case DW_OP_reg29:
+    case DW_OP_reg30:
+    case DW_OP_reg31:
+    case DW_OP_regx:
+      write_s_register (die, loc_ref);
+      break;
+
+    case DW_OP_fbreg:
+      write_fbreg_variable (die, loc_ref, fbloc);
+      break;
+
+    default:
+      break;
+    }
+}
+
+/* Translate a DW_TAG_lexical_block DIE into an S_BLOCK32 symbol, representing
+   a block within an unoptimized function.  Returns false if we're not able
+   to resolve the location, which will prevent the caller from issuing an
+   unneeded S_END.  */
+
+static bool
+write_s_block32 (dw_die_ref die)
+{
+  unsigned int label_num = ++sym_label_num;
+  dw_attr_node *loc_low, *loc_high;
+  const char *label_low, *label_high;
+  rtx rtx_low, rtx_high;
+
+  /* This is struct blocksym in binutils and BLOCKSYM32 in Microsoft's
+     cvinfo.h:
+
+    struct blocksym
+    {
+      uint16_t size;
+      uint16_t kind;
+      uint32_t parent;
+      uint32_t end;
+      uint32_t len;
+      uint32_t offset;
+      uint16_t section;
+      char name[];
+    } ATTRIBUTE_PACKED;
+  */
+
+  loc_low = get_AT (die, DW_AT_low_pc);
+  if (!loc_low)
+    return false;
+
+  if (loc_low->dw_attr_val.val_class != dw_val_class_lbl_id)
+    return false;
+
+  label_low = loc_low->dw_attr_val.v.val_lbl_id;
+  if (!label_low)
+    return false;
+
+  rtx_low = gen_rtx_SYMBOL_REF (Pmode, label_low);
+
+  loc_high = get_AT (die, DW_AT_high_pc);
+  if (!loc_high)
+    return false;
+
+  if (loc_high->dw_attr_val.val_class != dw_val_class_high_pc)
+    return false;
+
+  label_high = loc_high->dw_attr_val.v.val_lbl_id;
+  if (!label_high)
+    return false;
+
+  rtx_high = gen_rtx_SYMBOL_REF (Pmode, label_high);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	       "%L" SYMBOL_END_LABEL "%u - %L" SYMBOL_START_LABEL "%u\n",
+	       label_num, label_num);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_START_LABEL, label_num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, S_BLOCK32);
+  putc ('\n', asm_out_file);
+
+  /* The parent and end fields get filled in by the linker.  */
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  output_addr_const (asm_out_file, rtx_high);
+  fputs (" - ", asm_out_file);
+  output_addr_const (asm_out_file, rtx_low);
+  putc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "\t.secrel32 ");
+  output_addr_const (asm_out_file, rtx_low);
+  fputc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "\t.secidx ");
+  output_addr_const (asm_out_file, rtx_low);
+  fputc ('\n', asm_out_file);
+
+  ASM_OUTPUT_ASCII (asm_out_file, "", 1);
+
+  ASM_OUTPUT_ALIGN (asm_out_file, 2);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+
+  return true;
+}
+
+/* Write an S_END symbol, which is used to finish off a number of different
+   symbol types.  Here we use it to mark the S_BLOCK32 as finished.  */
+
+static void
+write_s_end (void)
+{
+  unsigned int label_num = ++sym_label_num;
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	       "%L" SYMBOL_END_LABEL "%u - %L" SYMBOL_START_LABEL "%u\n",
+	       label_num, label_num);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_START_LABEL, label_num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, S_END);
+  putc ('\n', asm_out_file);
+
+  ASM_OUTPUT_ALIGN (asm_out_file, 2);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+}
+
+/* Write the S_FRAMEPROC symbol, which is supposed to give information about
+   the function frame.  It doesn't seem to be really used in modern versions of
+   MSVC, which is why we zero-out everything here.  You still need to write it
+   though, otherwise windbg won't necessarily show all the local variables.  */
+
+static void
+write_s_frameproc (void)
+{
+  unsigned int label_num = ++sym_label_num;
+
+  /* This is struct FRAMEPROCSYM in Microsoft's cvinfo.h:
+
+      struct frameprocsym
+      {
+	uint16_t size;
+	uint16_t kind;
+	uint32_t frame_size;
+	uint32_t padding_size;
+	uint32_t padding_offset;
+	uint32_t saved_registers_size;
+	uint32_t exception_handler_offset;
+	uint16_t exception_handler_section;
+	uint32_t flags;
+      } ATTRIBUTE_PACKED;
+   */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	       "%L" SYMBOL_END_LABEL "%u - %L" SYMBOL_START_LABEL "%u\n",
+	       label_num, label_num);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_START_LABEL, label_num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, S_FRAMEPROC);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+}
+
+/* Loop through the DIEs in an unoptimized function, writing out any variables
+   or blocks that we encounter.  */
+
+static void
+write_unoptimized_function_vars (dw_die_ref die, dw_loc_descr_ref fbloc)
+{
+  dw_die_ref first_child, c;
+
+  first_child = dw_get_die_child (die);
+
+  if (!first_child)
+    return;
+
+  c = first_child;
+  do
+  {
+    c = dw_get_die_sib (c);
+
+    switch (dw_get_die_tag (c))
+      {
+      case DW_TAG_formal_parameter:
+      case DW_TAG_variable:
+	write_unoptimized_local_variable (c, fbloc);
+	break;
+
+      case DW_TAG_lexical_block:
+	{
+	  bool block_started = write_s_block32 (c);
+
+	  write_unoptimized_function_vars (c, fbloc);
+
+	  if (block_started)
+	    write_s_end ();
+
+	  break;
+	}
+
+      default:
+	break;
+      }
+  }
+  while (c != first_child);
+}
+
+/* Write the variables in an optimized function or block.  There's no S_BLOCK32s
+   here, with the range determining the lifetime of a variable.  Unfortunately
+   for us CodeView is much less expressive than DWARF when it comes to variable
+   locations, so some degree of "optimized out"s is inevitable.  */
+
+static void
+write_optimized_function_vars (dw_die_ref die, dw_loc_descr_ref fbloc,
+			       rtx block_start, rtx block_end)
+{
+  dw_die_ref first_child, c;
+
+  first_child = dw_get_die_child (die);
+
+  if (!first_child)
+    return;
+
+  c = first_child;
+  do
+  {
+    c = dw_get_die_sib (c);
+
+    switch (dw_get_die_tag (c))
+      {
+      case DW_TAG_formal_parameter:
+      case DW_TAG_variable:
+	write_optimized_local_variable (c, fbloc, block_start, block_end);
+	break;
+
+      case DW_TAG_lexical_block:
+	{
+	  dw_attr_node *loc_low, *loc_high;
+	  const char *label_low, *label_high;
+	  rtx rtx_low, rtx_high;
+
+	  loc_low = get_AT (die, DW_AT_low_pc);
+	  if (!loc_low)
+	    break;
+
+	  if (loc_low->dw_attr_val.val_class != dw_val_class_lbl_id)
+	    break;
+
+	  label_low = loc_low->dw_attr_val.v.val_lbl_id;
+	  if (!label_low)
+	    break;
+
+	  rtx_low = gen_rtx_SYMBOL_REF (Pmode, label_low);
+
+	  loc_high = get_AT (die, DW_AT_high_pc);
+	  if (!loc_high)
+	    break;
+
+	  if (loc_high->dw_attr_val.val_class != dw_val_class_high_pc)
+	    break;
+
+	  label_high = loc_high->dw_attr_val.v.val_lbl_id;
+	  if (!label_high)
+	    break;
+
+	  rtx_high = gen_rtx_SYMBOL_REF (Pmode, label_high);
+
+	  write_optimized_function_vars (c, fbloc, rtx_low, rtx_high);
+
+	  break;
+	}
+
+      default:
+	break;
+      }
+  }
+  while (c != first_child);
+}
+
+/* There's no way to mark the range of a static local variable in an optimized
+   function: there's no S_DEFRANGE_* symbol for this, and you can't have
+   S_BLOCK32 symbols.  So instead we have to loop through after the S_FRAMEPROC
+   has been written, and write the S_LDATA32s at the end.  */
+
+static void
+write_optimized_static_local_vars (dw_die_ref die)
+{
+  dw_die_ref first_child, c;
+
+  first_child = dw_get_die_child (die);
+
+  if (!first_child)
+    return;
+
+  c = first_child;
+  do
+  {
+    c = dw_get_die_sib (c);
+
+    switch (dw_get_die_tag (c))
+      {
+      case DW_TAG_variable:
+	{
+	  dw_attr_node *loc;
+	  dw_loc_descr_ref loc_ref;
+
+	  loc = get_AT (c, DW_AT_location);
+	  if (!loc)
+	    break;
+
+	  if (loc->dw_attr_val.val_class != dw_val_class_loc)
+	    break;
+
+	  loc_ref = loc->dw_attr_val.v.val_loc;
+	  if (!loc_ref)
+	    break;
+
+	  if (loc_ref->dw_loc_opc != DW_OP_addr)
+	    break;
+
+	  write_local_s_ldata32 (c, loc_ref);
+	  break;
+	}
+
+      case DW_TAG_lexical_block:
+	write_optimized_static_local_vars (c);
+	break;
+
+      default:
+	break;
+      }
+  }
+  while (c != first_child);
+}
+
+/* Write an S_GPROC32_ID symbol, representing a global function, or an
+   S_LPROC32_ID symbol, for a static function.  */
+
+static void
+write_function (codeview_symbol *s)
+{
+  unsigned int label_num = ++sym_label_num;
+  dw_attr_node *loc_low, *loc_high, *frame_base;
+  const char *label_low, *label_high;
+  rtx rtx_low, rtx_high;
+  dw_loc_descr_ref fbloc = NULL;
+
+  /* This is struct procsym in binutils and PROCSYM32 in Microsoft's cvinfo.h:
+
+      struct procsym
+      {
+	uint16_t size;
+	uint16_t kind;
+	uint32_t parent;
+	uint32_t end;
+	uint32_t next;
+	uint32_t proc_len;
+	uint32_t debug_start;
+	uint32_t debug_end;
+	uint32_t type;
+	uint32_t offset;
+	uint16_t section;
+	uint8_t flags;
+	char name[];
+      } ATTRIBUTE_PACKED;
+  */
+
+  loc_low = get_AT (s->function.die, DW_AT_low_pc);
+  if (!loc_low)
+    goto end;
+
+  if (loc_low->dw_attr_val.val_class != dw_val_class_lbl_id)
+    goto end;
+
+  label_low = loc_low->dw_attr_val.v.val_lbl_id;
+  if (!label_low)
+    goto end;
+
+  rtx_low = gen_rtx_SYMBOL_REF (Pmode, label_low);
+
+  loc_high = get_AT (s->function.die, DW_AT_high_pc);
+  if (!loc_high)
+    goto end;
+
+  if (loc_high->dw_attr_val.val_class != dw_val_class_high_pc)
+    goto end;
+
+  label_high = loc_high->dw_attr_val.v.val_lbl_id;
+  if (!label_high)
+    goto end;
+
+  rtx_high = gen_rtx_SYMBOL_REF (Pmode, label_high);
+
+  /* Output the S_GPROC32_ID / S_LPROC32_ID record.  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	       "%L" SYMBOL_END_LABEL "%u - %L" SYMBOL_START_LABEL "%u\n",
+	       label_num, label_num);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_START_LABEL, label_num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, s->kind);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, s->function.parent);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, s->function.end);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, s->function.next);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  output_addr_const (asm_out_file, rtx_high);
+  fputs (" - ", asm_out_file);
+  output_addr_const (asm_out_file, rtx_low);
+  putc ('\n', asm_out_file);
+
+  /* FIXME - debug_start should be the end of the prologue, and debug_end
+	     the beginning of the epilogue.  Do the whole function for
+	     now.  */
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  output_addr_const (asm_out_file, rtx_high);
+  fputs (" - ", asm_out_file);
+  output_addr_const (asm_out_file, rtx_low);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, s->function.type);
+  putc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "\t.secrel32 ");
+  output_addr_const (asm_out_file, rtx_low);
+  fputc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "\t.secidx ");
+  output_addr_const (asm_out_file, rtx_low);
+  fputc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (1, false), asm_out_file);
+  fprint_whex (asm_out_file, s->function.flags);
+  putc ('\n', asm_out_file);
+
+  ASM_OUTPUT_ASCII (asm_out_file, s->function.name,
+		    strlen (s->function.name) + 1);
+
+  ASM_OUTPUT_ALIGN (asm_out_file, 2);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+
+  frame_base = get_AT (s->function.die, DW_AT_frame_base);
+
+  if (frame_base && frame_base->dw_attr_val.val_class == dw_val_class_loc)
+    fbloc = frame_base->dw_attr_val.v.val_loc;
+
+  if (flag_var_tracking)
+    {
+      write_optimized_function_vars (s->function.die, fbloc, rtx_low,
+				     rtx_high);
+      write_s_frameproc ();
+      write_optimized_static_local_vars (s->function.die);
+    }
+  else
+    {
+      write_s_frameproc ();
+      write_unoptimized_function_vars (s->function.die, fbloc);
+    }
+
+  /* Output the S_PROC_ID_END record.  */
+
+  label_num = ++sym_label_num;
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	       "%L" SYMBOL_END_LABEL "%u - %L" SYMBOL_START_LABEL "%u\n",
+	       label_num, label_num);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_START_LABEL, label_num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, S_PROC_ID_END);
+  putc ('\n', asm_out_file);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+
+end:
+  free (s->function.name);
 }
 
 /* Write the CodeView symbols into the .debug$S section.  */
@@ -955,6 +3356,12 @@ write_codeview_symbols (void)
 	case S_LDATA32:
 	case S_GDATA32:
 	  write_data_symbol (sym);
+	  break;
+	case S_LPROC32_ID:
+	case S_GPROC32_ID:
+	  write_function (sym);
+	  break;
+	default:
 	  break;
 	}
 
@@ -1004,7 +3411,7 @@ write_lf_pointer (codeview_custom_type *t)
 
 /* All CodeView type definitions have to be aligned to a four-byte boundary,
    so write some padding bytes if necessary.  These have to be specific values:
-   f3, f2, f1.  */
+   LF_PAD3, LF_PAD2, LF_PAD1.  */
 
 static void
 write_cv_padding (size_t padding)
@@ -1015,19 +3422,19 @@ write_cv_padding (size_t padding)
   if (padding == 3)
     {
       fputs (integer_asm_op (1, false), asm_out_file);
-      fprint_whex (asm_out_file, 0xf3);
+      fprint_whex (asm_out_file, LF_PAD3);
       putc ('\n', asm_out_file);
     }
 
   if (padding >= 2)
     {
       fputs (integer_asm_op (1, false), asm_out_file);
-      fprint_whex (asm_out_file, 0xf2);
+      fprint_whex (asm_out_file, LF_PAD2);
       putc ('\n', asm_out_file);
     }
 
   fputs (integer_asm_op (1, false), asm_out_file);
-  fprint_whex (asm_out_file, 0xf1);
+  fprint_whex (asm_out_file, LF_PAD1);
   putc ('\n', asm_out_file);
 }
 
@@ -1075,7 +3482,7 @@ write_lf_modifier (codeview_custom_type *t)
 /* Write a CodeView extensible integer.  If the value is non-negative and
    < 0x8000, the value gets written directly as an uint16_t.  Otherwise, we
    output two bytes for the integer type (LF_CHAR, LF_SHORT, ...), and the
-   actual value follows.  */
+   actual value follows.  Returns the total number of bytes written.  */
 
 static size_t
 write_cv_integer (codeview_integer *i)
@@ -1335,6 +3742,111 @@ write_lf_fieldlist (codeview_custom_type *t)
 	  fprint_whex (asm_out_file, v->lf_index.type_num);
 	  putc ('\n', asm_out_file);
 
+	  break;
+
+	case LF_STMEMBER:
+	  /* This is lf_static_member in binutils and lfSTMember in Microsoft's
+	     cvinfo.h:
+
+	    struct lf_static_member
+	    {
+	      uint16_t kind;
+	      uint16_t attributes;
+	      uint32_t type;
+	      char name[];
+	    } ATTRIBUTE_PACKED;
+	  */
+
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, LF_STMEMBER);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, v->lf_static_member.attributes);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (4, false), asm_out_file);
+	  fprint_whex (asm_out_file, v->lf_static_member.type);
+	  putc ('\n', asm_out_file);
+
+	  name_len = strlen (v->lf_static_member.name) + 1;
+	  ASM_OUTPUT_ASCII (asm_out_file, v->lf_static_member.name, name_len);
+
+	  leaf_len = 8 + name_len;
+	  write_cv_padding (4 - (leaf_len % 4));
+
+	  free (v->lf_static_member.name);
+	  break;
+
+	case LF_ONEMETHOD:
+	  /* This is lf_onemethod in binutils and lfOneMethod in Microsoft's
+	     cvinfo.h:
+
+	    struct lf_onemethod
+	    {
+	      uint16_t kind;
+	      uint16_t method_attribute;
+	      uint32_t method_type;
+	      char name[];
+	    } ATTRIBUTE_PACKED;
+	  */
+
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, LF_ONEMETHOD);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, v->lf_onemethod.method_attribute);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (4, false), asm_out_file);
+	  fprint_whex (asm_out_file, v->lf_onemethod.method_type);
+	  putc ('\n', asm_out_file);
+
+	  name_len = strlen (v->lf_onemethod.name) + 1;
+	  ASM_OUTPUT_ASCII (asm_out_file, v->lf_onemethod.name, name_len);
+
+	  leaf_len = 8 + name_len;
+	  write_cv_padding (4 - (leaf_len % 4));
+
+	  free (v->lf_onemethod.name);
+	  break;
+
+	case LF_METHOD:
+	  /* This is lf_method in binutils and lfMethod in Microsoft's
+	     cvinfo.h:
+
+	    struct lf_method
+	    {
+	      uint16_t kind;
+	      uint16_t count;
+	      uint32_t method_list;
+	      char name[];
+	    } ATTRIBUTE_PACKED;
+	  */
+
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, LF_METHOD);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, v->lf_method.count);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (4, false), asm_out_file);
+	  fprint_whex (asm_out_file, v->lf_method.method_list);
+	  putc ('\n', asm_out_file);
+
+	  name_len = strlen (v->lf_method.name) + 1;
+	  ASM_OUTPUT_ASCII (asm_out_file, v->lf_method.name, name_len);
+
+	  leaf_len = 8 + name_len;
+	  write_cv_padding (4 - (leaf_len % 4));
+
+	  free (v->lf_method.name);
+	  break;
+
+	default:
 	  break;
 	}
 
@@ -1732,6 +4244,273 @@ write_lf_arglist (codeview_custom_type *t)
   asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
 }
 
+/* Write an LF_FUNC_ID type, which marries together a function type with its
+   name.  This will end up in the alternative types stream in the final PDB,
+   but we can just stick it in the normal .debug$T section.  */
+
+static void
+write_lf_func_id (codeview_custom_type *t)
+{
+  size_t name_len;
+
+  /* This is lf_func_id in binutils and lfFuncId in Microsoft's cvinfo.h:
+
+    struct lf_func_id
+    {
+      uint16_t size;
+      uint16_t kind;
+      uint32_t parent_scope;
+      uint32_t function_type;
+      char name[];
+    } ATTRIBUTE_PACKED;
+  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end - %LLcv_type%x_start\n",
+	       t->num, t->num);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_start:\n", t->num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->kind);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_func_id.parent_scope);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_func_id.function_type);
+  putc ('\n', asm_out_file);
+
+  name_len = strlen (t->lf_func_id.name) + 1;
+
+  ASM_OUTPUT_ASCII (asm_out_file, t->lf_func_id.name, name_len);
+
+  write_cv_padding (4 - (name_len % 4));
+
+  free (t->lf_func_id.name);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
+}
+
+/* Write an LF_MFUNC_ID type, which is the version of LF_FUNC_ID for struct
+   functions.  Instead of an LF_STRING_ID for the parent scope, we write the
+   type number of the parent struct.  */
+
+static void
+write_lf_mfunc_id (codeview_custom_type *t)
+{
+  size_t name_len;
+
+  /* This is lf_mfunc_id in binutils and lfMFuncId in Microsoft's cvinfo.h:
+
+    struct lf_mfunc_id
+    {
+      uint16_t size;
+      uint16_t kind;
+      uint32_t parent_type;
+      uint32_t function_type;
+      char name[];
+    } ATTRIBUTE_PACKED
+  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end - %LLcv_type%x_start\n",
+	       t->num, t->num);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_start:\n", t->num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->kind);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_mfunc_id.parent_type);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_mfunc_id.function_type);
+  putc ('\n', asm_out_file);
+
+  name_len = strlen (t->lf_mfunc_id.name) + 1;
+
+  ASM_OUTPUT_ASCII (asm_out_file, t->lf_mfunc_id.name, name_len);
+
+  write_cv_padding (4 - (name_len % 4));
+
+  free (t->lf_mfunc_id.name);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
+}
+
+/* Write an LF_STRING_ID type, which provides a deduplicated string that other
+   types can reference.  */
+
+static void
+write_lf_string_id (codeview_custom_type *t)
+{
+  size_t string_len;
+
+  /* This is lf_string_id in binutils and lfStringId in Microsoft's cvinfo.h:
+
+    struct lf_string_id
+    {
+      uint16_t size;
+      uint16_t kind;
+      uint32_t substring;
+      char string[];
+    } ATTRIBUTE_PACKED;
+  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end - %LLcv_type%x_start\n",
+	       t->num, t->num);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_start:\n", t->num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->kind);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_string_id.substring);
+  putc ('\n', asm_out_file);
+
+  string_len = strlen (t->lf_string_id.string) + 1;
+
+  ASM_OUTPUT_ASCII (asm_out_file, t->lf_string_id.string, string_len);
+
+  write_cv_padding (4 - (string_len % 4));
+
+  free (t->lf_string_id.string);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
+}
+
+/* Write an LF_MFUNCTION type, representing a member function.  This is the
+   struct-scoped equivalent of the LF_PROCEDURE type.  */
+
+static void
+write_lf_mfunction (codeview_custom_type *t)
+{
+  /* This is lf_mfunction in binutils and lfMFunc in Microsoft's cvinfo.h:
+
+    struct lf_mfunction
+    {
+      uint16_t size;
+      uint16_t kind;
+      uint32_t return_type;
+      uint32_t containing_class_type;
+      uint32_t this_type;
+      uint8_t calling_convention;
+      uint8_t attributes;
+      uint16_t num_parameters;
+      uint32_t arglist;
+      int32_t this_adjustment;
+    } ATTRIBUTE_PACKED;
+  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end - %LLcv_type%x_start\n",
+	       t->num, t->num);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_start:\n", t->num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->kind);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_mfunction.return_type);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_mfunction.containing_class_type);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_mfunction.this_type);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (1, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_mfunction.calling_convention);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (1, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_mfunction.attributes);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_mfunction.num_parameters);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_mfunction.arglist);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_mfunction.this_adjustment);
+  putc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
+}
+
+/* Write an LF_METHODLIST type, which is an array of type numbers for
+   LF_MFUNCTION types.  Overloaded functions are represented by a LF_METHOD
+   subtype in the field list, which points to a LF_METHODLIST type for the
+   function's various forms.  */
+
+static void
+write_lf_methodlist (codeview_custom_type *t)
+{
+  /* This is lf_methodlist in binutils and lMethodList in Microsoft's cvinfo.h:
+
+    struct lf_methodlist_entry
+    {
+      uint16_t method_attribute;
+      uint16_t padding;
+      uint32_t method_type;
+    } ATTRIBUTE_PACKED;
+
+    struct lf_methodlist
+    {
+      uint16_t size;
+      uint16_t kind;
+      struct lf_methodlist_entry entries[];
+    } ATTRIBUTE_PACKED;
+  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end - %LLcv_type%x_start\n",
+	       t->num, t->num);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_start:\n", t->num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->kind);
+  putc ('\n', asm_out_file);
+
+  for (unsigned int i = 0; i < t->lf_methodlist.count; i++)
+    {
+      fputs (integer_asm_op (2, false), asm_out_file);
+      fprint_whex (asm_out_file, t->lf_methodlist.entries[i].method_attribute);
+      putc ('\n', asm_out_file);
+
+      fputs (integer_asm_op (2, false), asm_out_file);
+      fprint_whex (asm_out_file, 0);
+      putc ('\n', asm_out_file);
+
+      fputs (integer_asm_op (4, false), asm_out_file);
+      fprint_whex (asm_out_file, t->lf_methodlist.entries[i].method_type);
+      putc ('\n', asm_out_file);
+    }
+
+  free (t->lf_methodlist.entries);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
+}
+
 /* Write the .debug$T section, which contains all of our custom type
    definitions.  */
 
@@ -1790,6 +4569,29 @@ write_custom_types (void)
 	case LF_ARGLIST:
 	  write_lf_arglist (custom_types);
 	  break;
+
+	case LF_FUNC_ID:
+	  write_lf_func_id (custom_types);
+	  break;
+
+	case LF_MFUNC_ID:
+	  write_lf_mfunc_id (custom_types);
+	  break;
+
+	case LF_STRING_ID:
+	  write_lf_string_id (custom_types);
+	  break;
+
+	case LF_MFUNCTION:
+	  write_lf_mfunction (custom_types);
+	  break;
+
+	case LF_METHODLIST:
+	  write_lf_methodlist (custom_types);
+	  break;
+
+	default:
+	  break;
 	}
 
       free (custom_types);
@@ -1818,6 +4620,9 @@ codeview_debug_finish (void)
 
   if (types_htab)
     delete types_htab;
+
+  if (string_id_htab)
+    delete string_id_htab;
 }
 
 /* Translate a DWARF base type (DW_TAG_base_type) into its CodeView
@@ -2025,6 +4830,45 @@ get_type_num_pointer_type (dw_die_ref type, bool in_struct)
   return ct->num;
 }
 
+/* Process a DW_TAG_reference_type or DW_TAG_rvalue_reference_type DIE, add a
+   new LF_POINTER type, and return its number.  */
+
+static uint32_t
+get_type_num_reference_type (dw_die_ref type, bool in_struct, bool rvref)
+{
+  uint32_t base_type_num, byte_size;
+  dw_die_ref base_type;
+  codeview_custom_type *ct;
+
+  byte_size = get_AT_unsigned (type, DW_AT_byte_size);
+  if (byte_size != 4 && byte_size != 8)
+    return 0;
+
+  base_type = get_AT_ref (type, DW_AT_type);
+
+  base_type_num = get_type_num (base_type, in_struct, false);
+  if (base_type_num == 0)
+    return 0;
+
+  ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
+
+  ct->next = NULL;
+  ct->kind = LF_POINTER;
+  ct->lf_pointer.base_type = base_type_num;
+  ct->lf_pointer.attributes = rvref ? CV_PTR_MODE_RVREF : CV_PTR_MODE_LVREF;
+
+  if (byte_size == 4)
+    ct->lf_pointer.attributes |= CV_PTR_NEAR32;
+  else
+    ct->lf_pointer.attributes |= CV_PTR_64;
+
+  ct->lf_pointer.attributes |= byte_size << 13;
+
+  add_custom_type (ct);
+
+  return ct->num;
+}
+
 /* Process a DW_TAG_const_type DIE, adding an LF_MODIFIER type and returning
    its number.  */
 
@@ -2037,23 +4881,26 @@ get_type_num_const_type (dw_die_ref type, bool in_struct)
   bool is_volatile = false;
 
   base_type = get_AT_ref (type, DW_AT_type);
-  if (!base_type)
-    return 0;
 
   /* Handle case when this is a const volatile type - we only need one
      LF_MODIFIER for this.  */
-  if (dw_get_die_tag (base_type) == DW_TAG_volatile_type)
+  if (base_type && dw_get_die_tag (base_type) == DW_TAG_volatile_type)
     {
       is_volatile = true;
 
       base_type = get_AT_ref (base_type, DW_AT_type);
-      if (!base_type)
-	return 0;
     }
 
-  base_type_num = get_type_num (base_type, in_struct, false);
-  if (base_type_num == 0)
-    return 0;
+  if (!base_type)
+    {
+      base_type_num = T_VOID;
+    }
+  else
+    {
+      base_type_num = get_type_num (base_type, in_struct, false);
+      if (base_type_num == 0)
+	return 0;
+    }
 
   ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
 
@@ -2076,13 +4923,22 @@ get_type_num_const_type (dw_die_ref type, bool in_struct)
 static uint32_t
 get_type_num_volatile_type (dw_die_ref type, bool in_struct)
 {
+  dw_die_ref base_type;
   uint32_t base_type_num;
   codeview_custom_type *ct;
 
-  base_type_num = get_type_num (get_AT_ref (type, DW_AT_type), in_struct,
-				false);
-  if (base_type_num == 0)
-    return 0;
+  base_type = get_AT_ref (type, DW_AT_type);
+
+  if (base_type)
+    {
+      base_type_num = get_type_num (base_type, in_struct, false);
+      if (base_type_num == 0)
+	return 0;
+    }
+  else
+    {
+      base_type_num = T_VOID;
+    }
 
   ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
 
@@ -2094,6 +4950,79 @@ get_type_num_volatile_type (dw_die_ref type, bool in_struct)
   add_custom_type (ct);
 
   return ct->num;
+}
+
+/* Return the name of a DIE, traversing its parents in order to construct a
+   C++-style name if necessary.  */
+static char *
+get_name (dw_die_ref die)
+{
+  dw_die_ref decl = get_AT_ref (die, DW_AT_specification);
+  dw_die_ref parent;
+  const char *name;
+  char *str;
+  size_t len;
+
+  static const char anon[] = "<unnamed-tag>";
+  static const char sep[] = "::";
+
+  if (decl)
+    die = decl;
+
+  name = get_AT_string (die, DW_AT_name);
+
+  if (!name)
+    return NULL;
+
+  parent = dw_get_die_parent (die);
+
+  if (!parent || dw_get_die_tag (parent) == DW_TAG_compile_unit)
+    return xstrdup (name);
+
+  len = strlen (name);
+  while (parent && dw_get_die_tag (parent) != DW_TAG_compile_unit)
+    {
+      const char *ns_name = get_AT_string (parent, DW_AT_name);
+
+      len += sizeof (sep) - 1;
+
+      if (ns_name)
+	len += strlen (ns_name);
+      else
+	len += sizeof (anon) - 1;
+
+      parent = dw_get_die_parent (parent);
+    }
+
+  str = (char *) xmalloc (len + 1);
+  str[len] = 0;
+
+  len -= strlen (name);
+  memcpy (str + len, name, strlen (name));
+
+  parent = dw_get_die_parent (die);
+  while (parent && dw_get_die_tag (parent) != DW_TAG_compile_unit)
+    {
+      const char *ns_name = get_AT_string (parent, DW_AT_name);
+
+      len -= sizeof (sep) - 1;
+      memcpy (str + len, sep, sizeof (sep) - 1);
+
+      if (ns_name)
+	{
+	  len -= strlen (ns_name);
+	  memcpy (str + len, ns_name, strlen (ns_name));
+	}
+      else
+	{
+	  len -= sizeof (anon) - 1;
+	  memcpy (str + len, anon, sizeof (anon) - 1);
+	}
+
+      parent = dw_get_die_parent (parent);
+    }
+
+  return str;
 }
 
 /* Add a forward declaration for an enum.  This is legal from C++11 onwards.  */
@@ -2113,7 +5042,7 @@ add_enum_forward_def (dw_die_ref type)
   ct->lf_enum.underlying_type = get_type_num (get_AT_ref (type, DW_AT_type),
 					      false, false);
   ct->lf_enum.fieldlist = 0;
-  ct->lf_enum.name = xstrdup (get_AT_string (type, DW_AT_name));
+  ct->lf_enum.name = get_name (type);
 
   add_custom_type (ct);
 
@@ -2129,7 +5058,7 @@ get_type_num_enumeration_type (dw_die_ref type, bool in_struct)
   dw_die_ref first_child;
   codeview_custom_type *ct;
   uint16_t count = 0;
-  uint32_t last_type;
+  uint32_t last_type = 0;
 
   if (get_AT_flag (type, DW_AT_declaration))
     return add_enum_forward_def (type);
@@ -2273,7 +5202,7 @@ get_type_num_enumeration_type (dw_die_ref type, bool in_struct)
   ct->lf_enum.underlying_type = get_type_num (get_AT_ref (type, DW_AT_type),
 					      in_struct, false);
   ct->lf_enum.fieldlist = last_type;
-  ct->lf_enum.name = xstrdup (get_AT_string (type, DW_AT_name));
+  ct->lf_enum.name = get_name (type);
 
   add_custom_type (ct);
 
@@ -2360,7 +5289,7 @@ add_struct_forward_def (dw_die_ref type)
   ct->lf_structure.vshape = 0;
   ct->lf_structure.length.neg = false;
   ct->lf_structure.length.num = 0;
-  ct->lf_structure.name = xstrdup (get_AT_string (type, DW_AT_name));
+  ct->lf_structure.name = get_name (type);
 
   add_custom_type (ct);
 
@@ -2397,6 +5326,232 @@ create_bitfield (dw_die_ref c)
   return ct->num;
 }
 
+/* Create an LF_MEMBER field list subtype for a struct member, returning its
+   pointer in el and its size in el_len.  */
+
+static void
+add_struct_member (dw_die_ref c, uint16_t accessibility,
+		   codeview_subtype **el, size_t *el_len)
+{
+  *el = (codeview_subtype *) xmalloc (sizeof (**el));
+  (*el)->next = NULL;
+  (*el)->kind = LF_MEMBER;
+  (*el)->lf_member.attributes = accessibility;
+
+  if (get_AT (c, DW_AT_data_bit_offset))
+    (*el)->lf_member.type = create_bitfield (c);
+  else
+    (*el)->lf_member.type = get_type_num (get_AT_ref (c, DW_AT_type),
+					  true, false);
+
+  (*el)->lf_member.offset.neg = false;
+  (*el)->lf_member.offset.num = get_AT_unsigned (c, DW_AT_data_member_location);
+
+  *el_len = 11 + cv_integer_len (&(*el)->lf_member.offset);
+
+  if (get_AT_string (c, DW_AT_name))
+    {
+      (*el)->lf_member.name = xstrdup (get_AT_string (c, DW_AT_name));
+      *el_len += strlen ((*el)->lf_member.name);
+    }
+  else
+    {
+      (*el)->lf_member.name = NULL;
+    }
+
+  if (*el_len % 4)
+    *el_len += 4 - (*el_len % 4);
+}
+
+/* Create an LF_STMEMBER field list subtype for a static struct member,
+   returning its pointer in el and its size in el_len.  */
+
+static void
+add_struct_static_member (dw_die_ref c, uint16_t accessibility,
+			  codeview_subtype **el, size_t *el_len)
+{
+  *el = (codeview_subtype *) xmalloc (sizeof (**el));
+  (*el)->next = NULL;
+  (*el)->kind = LF_STMEMBER;
+  (*el)->lf_static_member.attributes = accessibility;
+  (*el)->lf_static_member.type = get_type_num (get_AT_ref (c, DW_AT_type),
+					       true, false);
+  (*el)->lf_static_member.name = xstrdup (get_AT_string (c, DW_AT_name));
+
+  *el_len = 9 + strlen ((*el)->lf_static_member.name);
+
+  if (*el_len % 4)
+    *el_len += 4 - (*el_len % 4);
+}
+
+/* Create a field list subtype for a struct function, returning its pointer in
+   el and its size in el_len.  If the function is not overloaded, create an
+   LF_ONEMETHOD subtype pointing to the LF_MFUNCTION.  Otherwise, add an
+   LF_METHODLIST type of the function's forms, and create an LF_METHOD subtype
+   pointing to this.  */
+
+static void
+add_struct_function (dw_die_ref c, hash_table<method_hasher> *method_htab,
+		     codeview_subtype **el, size_t *el_len)
+{
+  const char *name = get_AT_string (c, DW_AT_name);
+  codeview_method **slot, *meth;
+
+  slot = method_htab->find_slot_with_hash (name, htab_hash_string (name),
+					   NO_INSERT);
+  if (!slot)
+    return;
+
+  meth = *slot;
+
+  *el = (codeview_subtype *) xmalloc (sizeof (**el));
+  (*el)->next = NULL;
+
+  if (meth->count == 1)
+    {
+      (*el)->kind = LF_ONEMETHOD;
+      (*el)->lf_onemethod.method_attribute = meth->attribute;
+      (*el)->lf_onemethod.method_type = meth->type;
+      (*el)->lf_onemethod.name = xstrdup (name);
+
+      *el_len = 9 + strlen ((*el)->lf_onemethod.name);
+    }
+  else
+    {
+      codeview_custom_type *ct;
+      lf_methodlist_entry *ent;
+
+      ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
+
+      ct->next = NULL;
+      ct->kind = LF_METHODLIST;
+      ct->lf_methodlist.count = meth->count;
+      ct->lf_methodlist.entries = (lf_methodlist_entry *)
+	xmalloc (meth->count * sizeof (lf_methodlist_entry));
+
+      ent = ct->lf_methodlist.entries;
+      for (codeview_method *m = meth; m; m = m->next)
+	{
+	  ent->method_attribute = m->attribute;
+	  ent->method_type = m->type;
+	  ent++;
+	}
+
+      add_custom_type (ct);
+
+      (*el)->kind = LF_METHOD;
+      (*el)->lf_method.count = meth->count;
+      (*el)->lf_method.method_list = ct->num;
+      (*el)->lf_method.name = xstrdup (name);
+
+      *el_len = 9 + strlen ((*el)->lf_method.name);
+    }
+
+  if (*el_len % 4)
+    *el_len += 4 - (*el_len % 4);
+
+  method_htab->remove_elt_with_hash (name, htab_hash_string (name));
+
+  while (meth)
+    {
+      codeview_method *next = meth->next;
+
+      free (meth->name);
+      free (meth);
+      meth = next;
+    }
+}
+
+/* Create a new LF_MFUNCTION type for a struct function, add it to the
+   types_htab hash table, and return its type number.  */
+
+static uint32_t
+get_mfunction_type (dw_die_ref c)
+{
+  uint32_t containing_class_type, this_type, mfunction_type;
+  dw_die_ref obj_pointer;
+  codeview_type **slot, *t;
+
+  containing_class_type = get_type_num (dw_get_die_parent (c), true, false);
+
+  obj_pointer = get_AT_ref (c, DW_AT_object_pointer);
+  if (obj_pointer && dw_get_die_tag (obj_pointer) == DW_TAG_formal_parameter)
+    {
+      this_type = get_type_num (get_AT_ref (obj_pointer, DW_AT_type),
+				true, false);
+    }
+  else
+    {
+      this_type = 0;
+    }
+
+  mfunction_type = get_type_num_subroutine_type (c, true, containing_class_type,
+						 this_type, 0);
+
+  slot = types_htab->find_slot_with_hash (c, htab_hash_pointer (c), INSERT);
+
+  t = (codeview_type *) xmalloc (sizeof (codeview_type));
+
+  t->die = c;
+  t->num = mfunction_type;
+  t->is_fwd_ref = false;
+
+  *slot = t;
+
+  return mfunction_type;
+}
+
+/* Translate a DWARF DW_AT_accessibility constant into its CodeView
+   equivalent.  If implicit, follow the C++ rules.  */
+
+static uint16_t
+get_accessibility (dw_die_ref c)
+{
+  switch (get_AT_unsigned (c, DW_AT_accessibility))
+    {
+    case DW_ACCESS_private:
+      return CV_ACCESS_PRIVATE;
+
+    case DW_ACCESS_protected:
+      return CV_ACCESS_PROTECTED;
+
+    case DW_ACCESS_public:
+      return CV_ACCESS_PUBLIC;
+
+    /* Members in a C++ struct or union are public by default, members
+      in a class are private.  */
+    default:
+      if (dw_get_die_tag (dw_get_die_parent (c)) == DW_TAG_class_type)
+	return CV_ACCESS_PRIVATE;
+      else
+	return CV_ACCESS_PUBLIC;
+    }
+}
+
+/* Returns true if the struct function pointed to by die is an instantiated
+   template function.  These are skipped in CodeView struct definitions, as
+   otherwise the same type might not be deduplicated across different TUs.  */
+
+static bool
+is_templated_func (dw_die_ref die)
+{
+  dw_die_ref c = dw_get_die_child (die);
+
+  if (!c)
+    return false;
+
+  do
+    {
+      c = dw_get_die_sib (c);
+
+      if (dw_get_die_tag (c) == DW_TAG_template_type_param)
+	return true;
+    }
+  while (c != dw_get_die_child (die));
+
+  return false;
+}
+
 /* Process a DW_TAG_structure_type, DW_TAG_class_type, or DW_TAG_union_type
    DIE, add an LF_FIELDLIST and an LF_STRUCTURE / LF_CLASS / LF_UNION type,
    and return the number of the latter.  */
@@ -2407,8 +5562,7 @@ get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
   dw_die_ref first_child;
   codeview_custom_type *ct;
   uint16_t num_members = 0;
-  uint32_t last_type;
-  const char *name;
+  uint32_t last_type = 0;
 
   if ((in_struct && get_AT_string (type, DW_AT_name))
       || get_AT_flag (type, DW_AT_declaration))
@@ -2436,72 +5590,101 @@ get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
 
   if (first_child)
     {
+      hash_table<method_hasher> *method_htab = NULL;
       dw_die_ref c;
+
+      /* First, loop through and record any non-templated member functions.
+	 This is because overloaded and non-overloaded functions are expressed
+	 differently in CodeView, so we need to have a hash table on the name
+	 to know how to record it later on.  */
+
+      c = first_child;
+      do
+	{
+	  c = dw_get_die_sib (c);
+
+	  if (dw_get_die_tag (c) == DW_TAG_subprogram)
+	    {
+	      const char *name = get_AT_string (c, DW_AT_name);
+	      codeview_method *meth, **slot;
+
+	      if (is_templated_func (c))
+		continue;
+
+	      if (!method_htab)
+		method_htab = new hash_table<method_hasher> (10);
+
+	      meth = (codeview_method *) xmalloc (sizeof (*meth));
+
+	      slot = method_htab->find_slot_with_hash (name,
+						       htab_hash_string (name),
+						       INSERT);
+
+	      meth->attribute = get_accessibility (c);
+
+	      if (!get_AT_ref (c, DW_AT_object_pointer))
+		meth->attribute |= CV_METHOD_STATIC;
+
+	      meth->type = get_mfunction_type (c);
+	      meth->next = NULL;
+
+	      if (*slot)
+		{
+		  if ((*slot)->last)
+		    (*slot)->last->next = meth;
+		  else
+		    (*slot)->next = meth;
+
+		  (*slot)->last = meth;
+		  (*slot)->count++;
+
+		  meth->name = NULL;
+		}
+	      else
+		{
+		  meth->name = xstrdup (name);
+		  meth->last = NULL;
+		  meth->count = 1;
+		  *slot = meth;
+		}
+	    }
+	}
+      while (c != first_child);
+
+      /* Now loop through again and record the actual members.  */
 
       c = first_child;
       do
 	{
 	  codeview_subtype *el;
-	  size_t el_len;
+	  size_t el_len = 0;
+	  uint16_t accessibility;
 
 	  c = dw_get_die_sib (c);
 
-	  if (dw_get_die_tag (c) != DW_TAG_member)
-	    continue;
+	  accessibility = get_accessibility (c);
 
-	  el = (codeview_subtype *) xmalloc (sizeof (*el));
-	  el->next = NULL;
-	  el->kind = LF_MEMBER;
-
-	  switch (get_AT_unsigned (c, DW_AT_accessibility))
+	  switch (dw_get_die_tag (c))
 	    {
-	    case DW_ACCESS_private:
-	      el->lf_member.attributes = CV_ACCESS_PRIVATE;
+	    case DW_TAG_member:
+	      add_struct_member (c, accessibility, &el, &el_len);
 	      break;
 
-	    case DW_ACCESS_protected:
-	      el->lf_member.attributes = CV_ACCESS_PROTECTED;
+	    case DW_TAG_variable:
+	      add_struct_static_member (c, accessibility, &el, &el_len);
 	      break;
 
-	    case DW_ACCESS_public:
-	      el->lf_member.attributes = CV_ACCESS_PUBLIC;
+	    case DW_TAG_subprogram:
+	      if (!is_templated_func (c))
+		add_struct_function (c, method_htab, &el, &el_len);
 	      break;
 
-	    /* Members in a C++ struct or union are public by default, members
-	      in a class are private.  */
 	    default:
-	      if (dw_get_die_tag (type) == DW_TAG_class_type)
-		el->lf_member.attributes = CV_ACCESS_PRIVATE;
-	      else
-		el->lf_member.attributes = CV_ACCESS_PUBLIC;
 	      break;
 	    }
 
-	  if (get_AT (c, DW_AT_data_bit_offset))
-	    el->lf_member.type = create_bitfield (c);
-	  else
-	    el->lf_member.type = get_type_num (get_AT_ref (c, DW_AT_type),
-					       true, false);
-
-	  el->lf_member.offset.neg = false;
-	  el->lf_member.offset.num = get_AT_unsigned (c,
-						      DW_AT_data_member_location);
-
-	  el_len = 11;
-	  el_len += cv_integer_len (&el->lf_member.offset);
-
-	  if (get_AT_string (c, DW_AT_name))
-	    {
-	      el->lf_member.name = xstrdup (get_AT_string (c, DW_AT_name));
-	      el_len += strlen (el->lf_member.name);
-	    }
-	  else
-	    {
-	      el->lf_member.name = NULL;
-	    }
-
-	  if (el_len % 4)
-	    el_len += 4 - (el_len % 4);
+	  if (el_len == 0)
+	    continue;
 
 	  /* Add an LF_INDEX subtype if everything's too big for one
 	     LF_FIELDLIST.  */
@@ -2542,6 +5725,9 @@ get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
 	  num_members++;
 	}
       while (c != first_child);
+
+      if (method_htab)
+	delete method_htab;
     }
 
   while (ct)
@@ -2551,8 +5737,11 @@ get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
       ct2 = ct->next;
       ct->next = NULL;
 
-      if (ct->lf_fieldlist.last_subtype->kind == LF_INDEX)
-	ct->lf_fieldlist.last_subtype->lf_index.type_num = last_type;
+      if (ct->lf_fieldlist.last_subtype
+	  && ct->lf_fieldlist.last_subtype->kind == LF_INDEX)
+	{
+	  ct->lf_fieldlist.last_subtype->lf_index.type_num = last_type;
+	}
 
       add_custom_type (ct);
       last_type = ct->num;
@@ -2592,13 +5781,7 @@ get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
   ct->lf_structure.vshape = 0;
   ct->lf_structure.length.neg = false;
   ct->lf_structure.length.num = get_AT_unsigned (type, DW_AT_byte_size);
-
-  name = get_AT_string (type, DW_AT_name);
-
-  if (name)
-    ct->lf_structure.name = xstrdup (name);
-  else
-    ct->lf_structure.name = NULL;
+  ct->lf_structure.name = get_name (type);
 
   add_custom_type (ct);
 
@@ -2606,10 +5789,13 @@ get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
 }
 
 /* Process a DW_TAG_subroutine_type DIE, adding an LF_ARGLIST and an
-   LF_PROCEDURE type, and returning the number of the latter.  */
+   LF_PROCEDURE or LF_MFUNCTION type, and returning the number of the
+   latter.  */
 
 static uint32_t
-get_type_num_subroutine_type (dw_die_ref type, bool in_struct)
+get_type_num_subroutine_type (dw_die_ref type, bool in_struct,
+			      uint32_t containing_class_type,
+			      uint32_t this_type, int32_t this_adjustment)
 {
   codeview_custom_type *ct;
   uint32_t return_type, arglist_type;
@@ -2648,6 +5834,10 @@ get_type_num_subroutine_type (dw_die_ref type, bool in_struct)
 	      && dw_get_die_tag (c) != DW_TAG_unspecified_parameters)
 	    continue;
 
+	  /* We ignore "this" params here.  */
+	  if (get_AT_flag (c, DW_AT_artificial) != 0)
+	    continue;
+
 	  num_args++;
 	}
       while (c != first_child);
@@ -2677,6 +5867,9 @@ get_type_num_subroutine_type (dw_die_ref type, bool in_struct)
 	{
 	  c = dw_get_die_sib (c);
 
+	  if (get_AT_flag (c, DW_AT_artificial) != 0)
+	    continue;
+
 	  switch (dw_get_die_tag (c))
 	    {
 	    case DW_TAG_formal_parameter:
@@ -2705,17 +5898,33 @@ get_type_num_subroutine_type (dw_die_ref type, bool in_struct)
 
   arglist_type = ct->num;
 
-  /* Finally, create an LF_PROCEDURE.  */
+  /* Finally, create an LF_PROCEDURE or LF_MFUNCTION type.  */
 
   ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
 
   ct->next = NULL;
-  ct->kind = LF_PROCEDURE;
-  ct->lf_procedure.return_type = return_type;
-  ct->lf_procedure.calling_convention = 0;
-  ct->lf_procedure.attributes = 0;
-  ct->lf_procedure.num_parameters = num_args;
-  ct->lf_procedure.arglist = arglist_type;
+
+  if (containing_class_type != 0)
+    {
+      ct->kind = LF_MFUNCTION;
+      ct->lf_mfunction.return_type = return_type;
+      ct->lf_mfunction.containing_class_type = containing_class_type;
+      ct->lf_mfunction.this_type = this_type;
+      ct->lf_mfunction.calling_convention = 0;
+      ct->lf_mfunction.attributes = 0;
+      ct->lf_mfunction.num_parameters = num_args;
+      ct->lf_mfunction.arglist = arglist_type;
+      ct->lf_mfunction.this_adjustment = this_adjustment;
+    }
+  else
+    {
+      ct->kind = LF_PROCEDURE;
+      ct->lf_procedure.return_type = return_type;
+      ct->lf_procedure.calling_convention = 0;
+      ct->lf_procedure.attributes = 0;
+      ct->lf_procedure.num_parameters = num_args;
+      ct->lf_procedure.arglist = arglist_type;
+    }
 
   add_custom_type (ct);
 
@@ -2756,6 +5965,8 @@ get_type_num_array_type (dw_die_ref type, bool in_struct)
 	case DW_TAG_class_type:
 	case DW_TAG_union_type:
 	case DW_TAG_pointer_type:
+	case DW_TAG_reference_type:
+	case DW_TAG_rvalue_reference_type:
 	  size = get_AT_unsigned (t, DW_AT_byte_size);
 	  break;
 
@@ -2883,6 +6094,14 @@ get_type_num (dw_die_ref type, bool in_struct, bool no_fwd_ref)
       num = get_type_num_pointer_type (type, in_struct);
       break;
 
+    case DW_TAG_reference_type:
+      num = get_type_num_reference_type (type, in_struct, false);
+      break;
+
+    case DW_TAG_rvalue_reference_type:
+      num = get_type_num_reference_type (type, in_struct, true);
+      break;
+
     case DW_TAG_const_type:
       num = get_type_num_const_type (type, in_struct);
       break;
@@ -2906,7 +6125,7 @@ get_type_num (dw_die_ref type, bool in_struct, bool no_fwd_ref)
       break;
 
     case DW_TAG_subroutine_type:
-      num = get_type_num_subroutine_type (type, in_struct);
+      num = get_type_num_subroutine_type (type, in_struct, 0, 0, 0);
       break;
 
     default:
@@ -2956,8 +6175,191 @@ add_variable (dw_die_ref die)
   s->kind = get_AT (die, DW_AT_external) ? S_GDATA32 : S_LDATA32;
   s->data_symbol.type = get_type_num (get_AT_ref (die, DW_AT_type), false,
 				      false);
-  s->data_symbol.name = xstrdup (name);
+  s->data_symbol.name = get_name (die);
   s->data_symbol.die = die;
+
+  if (last_sym)
+    last_sym->next = s;
+  else
+    sym = s;
+
+  last_sym = s;
+}
+
+/* Return the type number of the LF_STRING_ID entry corresponding to the given
+   string, creating a new one if necessary.  */
+
+static uint32_t
+add_string_id (const char *s)
+{
+  codeview_custom_type **slot;
+  codeview_custom_type *ct;
+
+  if (!string_id_htab)
+    string_id_htab = new hash_table<string_id_hasher> (10);
+
+  slot = string_id_htab->find_slot_with_hash (s, htab_hash_string (s),
+					      INSERT);
+  if (*slot)
+    return (*slot)->num;
+
+  ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
+
+  ct->next = NULL;
+  ct->kind = LF_STRING_ID;
+  ct->lf_string_id.substring = 0;
+  ct->lf_string_id.string = xstrdup (s);
+
+  add_custom_type (ct);
+
+  *slot = ct;
+
+  return ct->num;
+}
+
+/* Return the type number of the LF_STRING_ID corresponding to the given DIE's
+   parent, or 0 if it is in the global scope.  */
+
+static uint32_t
+get_scope_string_id (dw_die_ref die)
+{
+  dw_die_ref decl = get_AT_ref (die, DW_AT_specification);
+  char *name;
+  uint32_t ret;
+
+  if (decl)
+    die = decl;
+
+  die = dw_get_die_parent (die);
+  if (!die)
+    return 0;
+
+  if (dw_get_die_tag (die) == DW_TAG_compile_unit)
+    return 0;
+
+  name = get_name (die);
+  if (!name)
+    return 0;
+
+  ret = add_string_id (name);
+  free (name);
+
+  return ret;
+}
+
+/* Add an LF_FUNC_ID type and return its number (see write_lf_func_id).  */
+
+static uint32_t
+add_lf_func_id (dw_die_ref die, const char *name)
+{
+  uint32_t function_type, scope_type;
+  codeview_custom_type *ct;
+
+  function_type = get_type_num_subroutine_type (die, false, 0, 0, 0);
+  scope_type = get_scope_string_id (die);
+
+  ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
+
+  ct->next = NULL;
+  ct->kind = LF_FUNC_ID;
+  ct->lf_func_id.parent_scope = scope_type;
+  ct->lf_func_id.function_type = function_type;
+  ct->lf_func_id.name = xstrdup (name);
+
+  add_custom_type (ct);
+
+  return ct->num;
+}
+
+/* Add an LF_MFUNC_ID type and return its number (see write_lf_mfunc_id).  */
+
+static uint32_t
+add_lf_mfunc_id (dw_die_ref die, const char *name)
+{
+  uint32_t function_type = 0, parent_type;
+  codeview_custom_type *ct;
+  dw_die_ref spec = get_AT_ref (die, DW_AT_specification);
+
+  parent_type = get_type_num (dw_get_die_parent (spec), false, false);
+
+  if (types_htab)
+    {
+      codeview_type **slot;
+
+      slot = types_htab->find_slot_with_hash (spec, htab_hash_pointer (spec),
+					      NO_INSERT);
+
+      if (slot && *slot)
+	function_type = (*slot)->num;
+    }
+
+  if (function_type == 0)
+    {
+      function_type = get_type_num_subroutine_type (die, false, parent_type,
+						    0, 0);
+    }
+
+  ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
+
+  ct->next = NULL;
+  ct->kind = LF_MFUNC_ID;
+  ct->lf_mfunc_id.parent_type = parent_type;
+  ct->lf_mfunc_id.function_type = function_type;
+  ct->lf_mfunc_id.name = xstrdup (name);
+
+  add_custom_type (ct);
+
+  return ct->num;
+}
+
+/* Process a DW_TAG_subprogram DIE, and add an S_GPROC32_ID or S_LPROC32_ID
+   symbol for this.  */
+
+static void
+add_function (dw_die_ref die)
+{
+  const char *name = get_AT_string (die, DW_AT_name);
+  uint32_t func_id_type;
+  codeview_symbol *s;
+  dw_die_ref spec = get_AT_ref (die, DW_AT_specification);
+  bool do_mfunc_id = false;
+
+  if (!name)
+    return;
+
+  if (spec && dw_get_die_parent (spec))
+    {
+      switch (dw_get_die_tag (dw_get_die_parent (spec)))
+	{
+	case DW_TAG_class_type:
+	case DW_TAG_structure_type:
+	case DW_TAG_union_type:
+	  do_mfunc_id = true;
+	  break;
+
+	default:
+	  break;
+	}
+    }
+
+  if (do_mfunc_id)
+    func_id_type = add_lf_mfunc_id (die, name);
+  else
+    func_id_type = add_lf_func_id (die, name);
+
+  /* Add an S_GPROC32_ID / S_LPROC32_ID symbol.  */
+
+  s = (codeview_symbol *) xmalloc (sizeof (codeview_symbol));
+
+  s->next = NULL;
+  s->kind = get_AT (die, DW_AT_external) ? S_GPROC32_ID : S_LPROC32_ID;
+  s->function.parent = 0;
+  s->function.end = 0;
+  s->function.next = 0;
+  s->function.type = func_id_type;
+  s->function.flags = 0;
+  s->function.name = get_name (die);
+  s->function.die = die;
 
   if (last_sym)
     last_sym->next = s;
@@ -2984,8 +6386,17 @@ codeview_debug_early_finish (dw_die_ref die)
 
   do
     {
-      if (dw_get_die_tag (c) == DW_TAG_variable)
-	add_variable (c);
+      switch (dw_get_die_tag (c))
+	{
+	case DW_TAG_variable:
+	  add_variable (c);
+	  break;
+	case DW_TAG_subprogram:
+	  add_function (c);
+	  break;
+	default:
+	  break;
+	}
 
       c = dw_get_die_sib (c);
     }

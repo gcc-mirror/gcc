@@ -472,7 +472,26 @@ gfc_post_options (const char **pfilename)
   /* Implement -fno-automatic as -fmax-stack-var-size=0.  */
   if (!flag_automatic)
     flag_max_stack_var_size = 0;
-  
+
+  /* Decide inlining preference depending on optimization if nothing was
+     specified on the command line.  */
+  if ((flag_inline_intrinsics & GFC_FLAG_INLINE_INTRINSIC_MAXLOC)
+      == GFC_FLAG_INLINE_INTRINSIC_MAXLOC_UNSET)
+    {
+      if (optimize == 0 || optimize_size != 0)
+	flag_inline_intrinsics &= ~GFC_FLAG_INLINE_INTRINSIC_MAXLOC;
+      else
+	flag_inline_intrinsics |= GFC_FLAG_INLINE_INTRINSIC_MAXLOC;
+    }
+  if ((flag_inline_intrinsics & GFC_FLAG_INLINE_INTRINSIC_MINLOC)
+      == GFC_FLAG_INLINE_INTRINSIC_MINLOC_UNSET)
+    {
+      if (optimize == 0 || optimize_size != 0)
+	flag_inline_intrinsics &= ~GFC_FLAG_INLINE_INTRINSIC_MINLOC;
+      else
+	flag_inline_intrinsics |= GFC_FLAG_INLINE_INTRINSIC_MINLOC;
+    }
+
   /* If the user did not specify an inline matmul limit, inline up to the BLAS
      limit or up to 30 if no external BLAS is specified.  */
 
@@ -843,6 +862,18 @@ gfc_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       /* Set (or unset) the DEC extension flags.  */
       set_dec_flags (value);
       break;
+
+    case OPT_fbuiltin_:
+      /* We only handle -fno-builtin-omp_is_initial_device.  */
+      if (value)
+	return false;  /* Not supported. */
+      if (!strcmp ("omp_is_initial_device", arg))
+	gfc_option.disable_omp_is_initial_device = true;
+      else
+	warning (0, "command-line option %<-fno-builtin-%s%> is not valid for "
+		 "Fortran", arg);
+      break;
+
     }
 
   Fortran_handle_option_auto (&global_options, &global_options_set, 

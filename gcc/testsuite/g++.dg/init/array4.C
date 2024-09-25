@@ -1,5 +1,6 @@
 // { dg-do compile }
 // { dg-require-effective-target size20plus }
+// { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } }
 // Origin: Markus Breuer <markus.breuer@materna.de>
 
 // PR c++/6944

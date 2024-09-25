@@ -1,5 +1,5 @@
 // { dg-do compile { target c++20 } }
-// { dg-additional-options "-fconcepts-ts" }
+// { dg-additional-options "-fconcepts" }
 
 namespace X
 {
@@ -9,7 +9,7 @@ namespace X
 template<int> using helper = void;
 
 template<typename T>
-concept bool C =
+concept C =
   requires
   {
     requires X::x<T>;

@@ -1,4 +1,5 @@
 // { dg-do run  }
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }
 // GROUPS passed code-generation
 // code-gen file
 // From: "David" <norman@pi14.arc.umn.edu>

@@ -27,6 +27,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "substring-locations.h"
 #include "gcc-rich-location.h"
+#include "diagnostic-highlight-colors.h"
+
+const char *const
+format_string_diagnostic_t::highlight_color_format_string
+  = highlight_colors::expected;
+
+const char *const
+format_string_diagnostic_t::highlight_color_param
+  = highlight_colors::actual;
 
 /* format_string_diagnostic_t's ctor, giving information for use by
    the emit_warning* member functions, as follows:
@@ -134,7 +143,7 @@ format_string_diagnostic_t (const substring_loc &fmt_loc,
 {
 }
 
-/* Emit a warning governed by option OPT, using SINGULAR_GMSGID as the
+/* Emit a warning governed by option OPTION_ID, using SINGULAR_GMSGID as the
    format string (or if PLURAL_GMSGID is different from SINGULAR_GMSGID,
    using SINGULAR_GMSGID, PLURAL_GMSGID and N as arguments to ngettext)
    and AP as its arguments.
@@ -142,7 +151,7 @@ format_string_diagnostic_t (const substring_loc &fmt_loc,
    Return true if a warning was emitted, false otherwise.  */
 
 bool
-format_string_diagnostic_t::emit_warning_n_va (int opt,
+format_string_diagnostic_t::emit_warning_n_va (diagnostic_option_id option_id,
 					       unsigned HOST_WIDE_INT n,
 					       const char *singular_gmsgid,
 					       const char *plural_gmsgid,
@@ -184,10 +193,12 @@ format_string_diagnostic_t::emit_warning_n_va (int opt,
     primary_label = m_fmt_label;
 
   auto_diagnostic_group d;
-  gcc_rich_location richloc (primary_loc, primary_label);
+  gcc_rich_location richloc (primary_loc, primary_label,
+			     highlight_color_format_string);
 
   if (m_param_loc != UNKNOWN_LOCATION)
-    richloc.add_range (m_param_loc, SHOW_RANGE_WITHOUT_CARET, m_param_label);
+    richloc.add_range (m_param_loc, SHOW_RANGE_WITHOUT_CARET, m_param_label,
+		       highlight_color_param);
 
   if (!err && m_corrected_substring && substring_within_range)
     richloc.add_fixit_replace (fmt_substring_range, m_corrected_substring);
@@ -212,7 +223,7 @@ format_string_diagnostic_t::emit_warning_n_va (int opt,
   else
     diagnostic_set_info (&diagnostic, singular_gmsgid, ap, &richloc,
 			 DK_WARNING);
-  diagnostic.option_index = opt;
+  diagnostic.option_id = option_id;
   bool warned = diagnostic_report_diagnostic (global_dc, &diagnostic);
 
   if (!err && fmt_substring_loc && !substring_within_range)
@@ -220,8 +231,10 @@ format_string_diagnostic_t::emit_warning_n_va (int opt,
     if (warned)
       {
 	/* Use fmt_label in the note for case 2.  */
-	rich_location substring_richloc (line_table, fmt_substring_loc,
-					 m_fmt_label);
+	rich_location substring_richloc
+	  (line_table, fmt_substring_loc,
+	   m_fmt_label,
+	   highlight_color_format_string);
 	if (m_corrected_substring)
 	  substring_richloc.add_fixit_replace (fmt_substring_range,
 					       m_corrected_substring);
@@ -235,21 +248,23 @@ format_string_diagnostic_t::emit_warning_n_va (int opt,
 /* Singular-only version of the above.  */
 
 bool
-format_string_diagnostic_t::emit_warning_va (int opt, const char *gmsgid,
+format_string_diagnostic_t::emit_warning_va (diagnostic_option_id option_id,
+					     const char *gmsgid,
 					     va_list *ap) const
 {
-  return emit_warning_n_va (opt, 0, gmsgid, gmsgid, ap);
+  return emit_warning_n_va (option_id, 0, gmsgid, gmsgid, ap);
 }
 
 /* Variadic version of the above (singular only).  */
 
 bool
-format_string_diagnostic_t::emit_warning (int opt, const char *gmsgid,
+format_string_diagnostic_t::emit_warning (diagnostic_option_id option_id,
+					  const char *gmsgid,
 					  ...) const
 {
   va_list ap;
   va_start (ap, gmsgid);
-  bool warned = emit_warning_va (opt, gmsgid, &ap);
+  bool warned = emit_warning_va (option_id, gmsgid, &ap);
   va_end (ap);
 
   return warned;
@@ -258,14 +273,15 @@ format_string_diagnostic_t::emit_warning (int opt, const char *gmsgid,
 /* Variadic version of the above (singular vs plural).  */
 
 bool
-format_string_diagnostic_t::emit_warning_n (int opt, unsigned HOST_WIDE_INT n,
+format_string_diagnostic_t::emit_warning_n (diagnostic_option_id option_id,
+					    unsigned HOST_WIDE_INT n,
 					    const char *singular_gmsgid,
 					    const char *plural_gmsgid,
 					    ...) const
 {
   va_list ap;
   va_start (ap, plural_gmsgid);
-  bool warned = emit_warning_n_va (opt, n, singular_gmsgid, plural_gmsgid,
+  bool warned = emit_warning_n_va (option_id, n, singular_gmsgid, plural_gmsgid,
 				   &ap);
   va_end (ap);
 

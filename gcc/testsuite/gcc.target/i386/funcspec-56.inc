@@ -87,6 +87,8 @@ extern void test_sm3 (void)			__attribute__((__target__("sm3")));
 extern void test_sha512 (void)			__attribute__((__target__("sha512")));
 extern void test_sm4 (void)                     __attribute__((__target__("sm4")));
 extern void test_user_msr (void)		__attribute__((__target__("usermsr")));
+extern void test_avx10_2 (void)			__attribute__((__target__("avx10.2")));
+extern void test_avx10_2_512 (void)		__attribute__((__target__("avx10.2-512")));
 
 extern void test_no_sgx (void)			__attribute__((__target__("no-sgx")));
 extern void test_no_avx512vpopcntdq(void)	__attribute__((__target__("no-avx512vpopcntdq")));
@@ -175,6 +177,8 @@ extern void test_no_sm3 (void)			__attribute__((__target__("no-sm3")));
 extern void test_no_sha512 (void)		__attribute__((__target__("no-sha512")));
 extern void test_no_sm4 (void)                  __attribute__((__target__("no-sm4")));
 extern void test_no_user_msr (void)		__attribute__((__target__("no-usermsr")));
+extern void test_no_avx10_2 (void)		__attribute__((__target__("no-avx10.2")));
+extern void test_no_avx10_2_512 (void)		__attribute__((__target__("no-avx10.2-512")));
 
 extern void test_arch_nocona (void)		__attribute__((__target__("arch=nocona")));
 extern void test_arch_core2 (void)		__attribute__((__target__("arch=core2")));

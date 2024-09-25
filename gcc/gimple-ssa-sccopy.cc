@@ -92,11 +92,7 @@ along with GCC; see the file COPYING3.  If not see
      Braun, Buchwald, Hack, Leissa, Mallon, Zwinkau, 2013, LNCS vol. 7791,
      Section 3.2.  */
 
-/* Bitmap tracking statements which were propagated to be removed at the end of
-   the pass.  */
-
 namespace {
-static bitmap dead_stmts;
 
 /* State of vertex during SCC discovery.
 
@@ -458,11 +454,33 @@ get_all_stmt_may_generate_copy (void)
   return result;
 }
 
+/* SCC copy propagation
+
+   'scc_copy_prop::propagate ()' is the main function of this pass.  */
+
+class scc_copy_prop
+{
+public:
+  scc_copy_prop ();
+  ~scc_copy_prop ();
+  void propagate ();
+
+private:
+  /* Bitmap tracking statements which were propagated so that they can be
+     removed at the end of the pass.  */
+  bitmap dead_stmts;
+
+  void visit_op (tree op, hash_set<tree> &outer_ops,
+				hash_set<gimple *> &scc_set, bool &is_inner,
+				tree &last_outer_op);
+  void replace_scc_by_value (vec<gimple *> scc, tree val);
+};
+
 /* For each statement from given SCC, replace its usages by value
    VAL.  */
 
-static void
-replace_scc_by_value (vec<gimple *> scc, tree val)
+void
+scc_copy_prop::replace_scc_by_value (vec<gimple *> scc, tree val)
 {
   for (gimple *stmt : scc)
     {
@@ -475,12 +493,12 @@ replace_scc_by_value (vec<gimple *> scc, tree val)
     fprintf (dump_file, "Replacing SCC of size %d\n", scc.length ());
 }
 
-/* Part of 'sccopy_propagate ()'.  */
+/* Part of 'scc_copy_prop::propagate ()'.  */
 
-static void
-sccopy_visit_op (tree op, hash_set<tree> &outer_ops,
-		 hash_set<gimple *> &scc_set, bool &is_inner,
-		 tree &last_outer_op)
+void
+scc_copy_prop::visit_op (tree op, hash_set<tree> &outer_ops,
+			 hash_set<gimple *> &scc_set, bool &is_inner,
+			 tree &last_outer_op)
 {
   bool op_in_scc = false;
 
@@ -538,8 +556,8 @@ sccopy_visit_op (tree op, hash_set<tree> &outer_ops,
      Braun, Buchwald, Hack, Leissa, Mallon, Zwinkau, 2013, LNCS vol. 7791,
      Section 3.2.  */
 
-static void
-sccopy_propagate ()
+void
+scc_copy_prop::propagate ()
 {
   auto_vec<gimple *> useful_stmts = get_all_stmt_may_generate_copy ();
   scc_discovery discovery;
@@ -574,14 +592,12 @@ sccopy_propagate ()
 		for (j = 0; j < gimple_phi_num_args (phi); j++)
 		  {
 		    op = gimple_phi_arg_def (phi, j);
-		    sccopy_visit_op (op, outer_ops, scc_set, is_inner,
-				   last_outer_op);
+		    visit_op (op, outer_ops, scc_set, is_inner, last_outer_op);
 		  }
 		break;
 	      case GIMPLE_ASSIGN:
 		op = gimple_assign_rhs1 (stmt);
-		sccopy_visit_op (op, outer_ops, scc_set, is_inner,
-			       last_outer_op);
+		visit_op (op, outer_ops, scc_set, is_inner, last_outer_op);
 		break;
 	      default:
 		gcc_unreachable ();
@@ -612,19 +628,13 @@ sccopy_propagate ()
     }
 }
 
-/* Called when pass execution starts.  */
-
-static void
-init_sccopy (void)
+scc_copy_prop::scc_copy_prop ()
 {
   /* For propagated statements.  */
   dead_stmts = BITMAP_ALLOC (NULL);
 }
 
-/* Called before pass execution ends.  */
-
-static void
-finalize_sccopy (void)
+scc_copy_prop::~scc_copy_prop ()
 {
   /* Remove all propagated statements.  */
   simple_dce_from_worklist (dead_stmts);
@@ -667,9 +677,8 @@ public:
 unsigned
 pass_sccopy::execute (function *)
 {
-  init_sccopy ();
-  sccopy_propagate ();
-  finalize_sccopy ();
+  scc_copy_prop sccopy;
+  sccopy.propagate ();
   return 0;
 }
 

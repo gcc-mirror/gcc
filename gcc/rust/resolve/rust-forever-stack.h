@@ -438,6 +438,21 @@ public:
   tl::expected<NodeId, DuplicateNameError> insert (Identifier name, NodeId id);
 
   /**
+   * Insert a new shadowable definition in the innermost `Rib` in this stack
+   *
+   * @param name The name of the definition
+   * @param id Its NodeId
+   *
+   * @return `DuplicateNameError` if that node was already present in the Rib,
+   * the node's `NodeId` otherwise.
+   *
+   * @aborts if there are no `Rib`s inserted in the current map, this function
+   *         aborts the program.
+   */
+  tl::expected<NodeId, DuplicateNameError> insert_shadowable (Identifier name,
+							      NodeId id);
+
+  /**
    * Insert a new definition at the root of this stack
    *
    * @param name The name of the definition
@@ -465,21 +480,21 @@ public:
    * @param name Name of the identifier to locate in this scope or an outermore
    *        scope
    *
-   * @return a valid option with the NodeId if the identifier is present in the
-   *         current map, an empty one otherwise.
+   * @return a valid option with the Definition if the identifier is present in
+   * the current map, an empty one otherwise.
    */
-  tl::optional<NodeId> get (const Identifier &name);
+  tl::optional<Rib::Definition> get (const Identifier &name);
 
   /**
    * Resolve a path to its definition in the current `ForeverStack`
    *
    * // TODO: Add documentation for `segments`
    *
-   * @return a valid option with the NodeId if the path is present in the
+   * @return a valid option with the Definition if the path is present in the
    *         current map, an empty one otherwise.
    */
   template <typename S>
-  tl::optional<NodeId> resolve_path (const std::vector<S> &segments);
+  tl::optional<Rib::Definition> resolve_path (const std::vector<S> &segments);
 
   // FIXME: Documentation
   tl::optional<Resolver::CanonicalPath> to_canonical_path (NodeId id);
@@ -581,10 +596,14 @@ private:
 					 SegIterator<S> iterator);
 
   /* Helper functions for forward resolution (to_canonical_path, to_rib...) */
+  struct DfsResult
+  {
+    Node &first;
+    std::string second;
+  };
 
   // FIXME: Documentation
-  tl::optional<std::pair<Node &, std::string>> dfs (Node &starting_point,
-						    NodeId to_find);
+  tl::optional<DfsResult> dfs (Node &starting_point, NodeId to_find);
   // FIXME: Documentation
   tl::optional<Rib &> dfs_rib (Node &starting_point, NodeId to_find);
 };

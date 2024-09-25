@@ -35,6 +35,7 @@ foo ()
   int *[[omp::directive (threadprivate (t3))]] c;		// { dg-warning "'omp::directive' scoped attribute directive ignored" }
   int &[[omp::directive (threadprivate (t4))]] d = b;		// { dg-warning "'omp::directive' scoped attribute directive ignored" }
   typedef int T [[omp::directive (threadprivate (t5))]];	// { dg-error "'omp::directive' not allowed to be specified in this context" }
-  int e[10] [[omp::directive (threadprivate (t6))]];		// { dg-error "'omp::directive' not allowed to be specified in this context" }
+  int e [[omp::directive (threadprivate (t6))]] [10];		// { dg-error "'omp::directive' not allowed to be specified in this context" }
+  int f[10] [[omp::directive (threadprivate (t6))]];		// { dg-warning "'omp::directive' scoped attribute directive ignored" }
   struct [[omp::directive (threadprivate (t7))]] S {};		// { dg-error "'omp::directive' not allowed to be specified in this context" }
 }

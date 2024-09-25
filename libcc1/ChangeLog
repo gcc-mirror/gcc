@@ -1,3 +1,10 @@
+2024-09-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* context.cc: Include "diagnostic-format-text.h".
+	(plugin_print_error_function): Update first param from
+	diagnostic_context * to diagnostic_text_output_format &.
+
 2024-03-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR middle-end/111632

@@ -14,7 +14,8 @@ struct R
 
 struct S
 {
-  S& operator=(const S&) = default;
+  S& operator=(const S&) = default; // { dg-error "implicitly deleted" "" { target c++17_down } }
+				    // { dg-warning "implicitly deleted" "" { target c++20 } .-1 }
   M m;
 };
 

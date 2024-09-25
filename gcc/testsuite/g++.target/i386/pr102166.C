@@ -1,6 +1,7 @@
 /* PR target/102166 */
 /* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O2 -std=c++14" } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
 
 #include<immintrin.h>
 __attribute__((target("amx-tile"))) void amx()

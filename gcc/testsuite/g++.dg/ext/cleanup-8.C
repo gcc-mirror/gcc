@@ -1,5 +1,6 @@
 /* { dg-do run { target hppa*-*-hpux* *-*-linux* *-*-gnu* powerpc*-*-darwin* *-*-darwin[912]* *-*-uclinux* } } */
 /* { dg-options "-fexceptions -fnon-call-exceptions -O2" } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
 /* Verify that cleanups work with exception handling through signal
    frames.  */
 

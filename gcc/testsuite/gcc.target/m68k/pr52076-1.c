@@ -1,4 +1,4 @@
-/* { dg-do assemble } /*
+/* { dg-do assemble } */
 /* { dg-options "-Os -fomit-frame-pointer -m68040" } */
 /* { dg-final { object-size text <= 72 } } */
 

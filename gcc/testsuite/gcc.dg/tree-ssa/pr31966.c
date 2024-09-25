@@ -1,5 +1,6 @@
 /* Contributed by Jack Lloyd  <lloyd@randombit.net> */
 
+/* { dg-do run } */
 /* { dg-options "-O2 -ftree-vectorize" } */
 /* { dg-options "-O2 -ftree-vectorize -march=nocona" { target { i?86-*-* x86_64-*-* } } } */
 

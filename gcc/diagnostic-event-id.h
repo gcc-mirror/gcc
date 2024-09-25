@@ -41,6 +41,12 @@ class diagnostic_event_id_t
 
   bool known_p () const { return m_index != UNKNOWN_EVENT_IDX; }
 
+  int zero_based () const
+  {
+    gcc_assert (known_p ());
+    return m_index;
+  }
+
   int one_based () const
   {
     gcc_assert (known_p ());
@@ -61,6 +67,6 @@ typedef diagnostic_event_id_t *diagnostic_event_id_ptr;
 /* A type for compactly referring to a particular thread within a
    diagnostic_path.  Typically there is just one thread per path,
    with id 0.  */
-typedef unsigned diagnostic_thread_id_t;
+typedef int diagnostic_thread_id_t;
 
 #endif /* ! GCC_DIAGNOSTIC_EVENT_ID_H */

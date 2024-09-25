@@ -543,6 +543,10 @@ func_checker::compare_loops (basic_block bb1, basic_block bb2)
     return return_false_with_msg ("unroll");
   if (!compare_variable_decl (l1->simduid, l2->simduid))
     return return_false_with_msg ("simduid");
+  if ((l1->any_upper_bound != l2->any_upper_bound)
+      || (l1->any_upper_bound
+	  && (l1->nb_iterations_upper_bound != l2->nb_iterations_upper_bound)))
+    return return_false_with_msg ("nb_iterations_upper_bound");
 
   return true;
 }
@@ -982,7 +986,7 @@ func_checker::compare_gimple_asm (const gasm *g1, const gasm *g2)
   if (gimple_asm_volatile_p (g1) != gimple_asm_volatile_p (g2))
     return false;
 
-  if (gimple_asm_input_p (g1) != gimple_asm_input_p (g2))
+  if (gimple_asm_basic_p (g1) != gimple_asm_basic_p (g2))
     return false;
 
   if (gimple_asm_inline_p (g1) != gimple_asm_inline_p (g2))

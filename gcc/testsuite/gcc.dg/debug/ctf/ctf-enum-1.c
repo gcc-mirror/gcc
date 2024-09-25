@@ -1,6 +1,6 @@
 /* CTF generation for enums.  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 
 /* { dg-final { scan-assembler-times "ascii \"RED.0\"\[\t \]+\[^\n\]*ctf_string" 1 } } */

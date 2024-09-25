@@ -2290,6 +2290,8 @@ notice_special_calls (gcall *call)
     cfun->calls_alloca = true;
   if (flags & ECF_RETURNS_TWICE)
     cfun->calls_setjmp = true;
+  if (gimple_call_must_tail_p (call))
+    cfun->has_musttail = true;
 }
 
 
@@ -2301,6 +2303,7 @@ clear_special_calls (void)
 {
   cfun->calls_alloca = false;
   cfun->calls_setjmp = false;
+  cfun->has_musttail = false;
 }
 
 /* Remove PHI nodes associated with basic block BB and all edges out of BB.  */
@@ -8884,7 +8887,7 @@ stmt_can_terminate_bb_p (gimple *t)
     }
 
   if (gasm *asm_stmt = dyn_cast <gasm *> (t))
-    if (gimple_asm_volatile_p (asm_stmt) || gimple_asm_input_p (asm_stmt))
+    if (gimple_asm_volatile_p (asm_stmt) || gimple_asm_basic_p (asm_stmt))
       return true;
 
   return false;

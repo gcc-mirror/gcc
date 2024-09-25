@@ -2944,7 +2944,7 @@ gimple_asm_clobbers_memory_p (const gasm *stmt)
     }
 
   /* Non-empty basic ASM implicitly clobbers memory.  */
-  if (gimple_asm_input_p (stmt) && strlen (gimple_asm_string (stmt)) != 0)
+  if (gimple_asm_basic_p (stmt) && strlen (gimple_asm_string (stmt)) != 0)
     return true;
 
   return false;

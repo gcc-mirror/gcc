@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "tree-pass.h"
 #include "ssa.h"
+#include "calls.h"
 #include "cgraph.h"
 #include "pretty-print.h"
 #include "diagnostic-core.h"
@@ -293,9 +294,6 @@ execute_early_expand_coro_ifns (void)
   /* Some of the possible YIELD points will hopefully have been removed by
      earlier optimisations; record the ones that are still present.  */
   hash_map<int_hash<HOST_WIDE_INT, -1, -2>, tree> destinations;
-  /* Labels we added to carry the CFG changes, we need to remove these to
-     avoid confusing EH.  */
-  hash_set<tree> to_remove;
   /* List of dispatch points to update.  */
   auto_vec<gimple_stmt_iterator, 16> actor_worklist;
   basic_block bb;
@@ -305,6 +303,15 @@ execute_early_expand_coro_ifns (void)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
       {
 	gimple *stmt = gsi_stmt (gsi);
+
+	/* Tell the user about 'alloca', we don't support it yet.  */
+	if (gimple_alloca_call_p (stmt))
+	  {
+	    sorry_at (gimple_location (stmt),
+		      "%<alloca%> is not yet supported in coroutines");
+	    gsi_next (&gsi);
+	    continue;
+	  }
 
 	if (!is_gimple_call (stmt) || !gimple_call_internal_p (stmt))
 	  {
@@ -374,8 +381,6 @@ execute_early_expand_coro_ifns (void)
 		}
 	      else
 		dst_dest = dst_tgt;
-	      to_remove.add (res_tgt);
-	      to_remove.add (dst_tgt);
 	      /* lose the co_yield.  */
 	      gsi_remove (&gsi, true);
 	      stmt = gsi_stmt (gsi); /* next. */
@@ -462,27 +467,6 @@ execute_early_expand_coro_ifns (void)
 	  gsi_remove (&gsi, true);
 	}
     }
-
-  /* Remove the labels we inserted to map our hidden CFG, this
-     avoids confusing block merges when there are also EH labels.  */
-  FOR_EACH_BB_FN (bb, cfun)
-    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
-      {
-	gimple *stmt = gsi_stmt (gsi);
-	if (glabel *glab = dyn_cast<glabel *> (stmt))
-	  {
-	    tree rem = gimple_label_label (glab);
-	    if (to_remove.contains (rem))
-	      {
-		gsi_remove (&gsi, true);
-		to_remove.remove (rem);
-		continue; /* We already moved to the next insn.  */
-	      }
-	  }
-	else
-	  break;
-	gsi_next (&gsi);
-      }
 
   /* Changed the CFG.  */
   todoflags |= TODO_cleanup_cfg;

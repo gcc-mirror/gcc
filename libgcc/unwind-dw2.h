@@ -22,16 +22,19 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-enum {
+#include "md-unwind-def.h"
+
+enum register_rule
+{
   REG_UNSAVED,
   REG_SAVED_OFFSET,
   REG_SAVED_REG,
   REG_SAVED_EXP,
   REG_SAVED_VAL_OFFSET,
   REG_SAVED_VAL_EXP,
-  REG_UNSAVED_ARCHEXT,		/* Target specific extension.  */
+  REG_ARCHEXT,		/* Target specific extension.  */
   REG_UNDEFINED
-};
+} __attribute__((packed));
 
 /* The result of interpreting the frame unwind info for a frame.
    This is all symbolic at this point, as none of the values can
@@ -49,7 +52,7 @@ typedef struct
 	const unsigned char *exp;
       } loc;
     } reg[__LIBGCC_DWARF_FRAME_REGISTERS__+1];
-    unsigned char how[__LIBGCC_DWARF_FRAME_REGISTERS__+1];
+    enum register_rule how[__LIBGCC_DWARF_FRAME_REGISTERS__+1];
 
     enum {
       CFA_UNSET,
@@ -65,6 +68,14 @@ typedef struct
     _Unwind_Sword cfa_offset;
     _Unwind_Word cfa_reg;
     const unsigned char *cfa_exp;
+
+    /* Architecture extensions information from CIE/FDE.
+       Note: this information has to be saved in struct frame_state_reg_info
+       instead of _Unwind_FrameState as DW_CFA_restore_state has to be able to
+       restore them.  */
+#if defined(MD_ARCH_FRAME_STATE_T)
+    MD_ARCH_FRAME_STATE_T arch_fs;
+#endif
   } regs;
 
   /* The PC described by the current frame state.  */

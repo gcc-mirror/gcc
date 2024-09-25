@@ -20,8 +20,9 @@
 // <http://www.gnu.org/licenses/>.
 
 // 27.4.2.4 ios_base static members
-// @require@ %-*.tst
-// @diff@ %-*.tst %-*.txt
+
+// { dg-additional-files "ios_base_members_static-1.tst" }
+// { dg-final { file-io-diff "ios_base_members_static-1" } }
 
 #include <cstdio>
 #include <sstream>

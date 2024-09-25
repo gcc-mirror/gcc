@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 // GROUPS passed visibility
 // visibility file
 // From: Sandeep Shroff <ss@caere.com>

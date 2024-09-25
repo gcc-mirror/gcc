@@ -197,19 +197,32 @@
 (define_subst_attr "round_sd_mask_op4" "round" "" "<round_sd_mask_operand4>")
 (define_subst_attr "round_sdc_mask_op4" "round" "" "<round_sdc_mask_operand4>")
 (define_subst_attr "round_constraint" "round" "vm" "v")
+(define_subst_attr "round_suff" "round" "{y}" "")
 (define_subst_attr "round_qq2phsuff" "round" "<qq2phsuff>" "")
+(define_subst_attr "round_qq2pssuff" "round" "<qq2pssuff>" "")
+(define_subst_attr "round_pd2udqsuff" "round" "<pd2udqsuff>" "")
 (define_subst_attr "bcst_round_constraint" "round" "vmBr" "v")
 (define_subst_attr "round_constraint2" "round" "m" "v")
 (define_subst_attr "round_constraint3" "round" "rm" "r")
+(define_subst_attr "round_constraint4" "round" "vBm" "v")
 (define_subst_attr "round_nimm_predicate" "round" "vector_operand" "register_operand")
 (define_subst_attr "bcst_round_nimm_predicate" "round" "bcst_vector_operand" "register_operand")
 (define_subst_attr "round_nimm_scalar_predicate" "round" "nonimmediate_operand" "register_operand")
 (define_subst_attr "round_prefix" "round" "vex" "evex")
-(define_subst_attr "round_mode512bit_condition" "round" "1" "(<MODE>mode == V16SFmode
-							      || <MODE>mode == V8DFmode
-							      || <MODE>mode == V8DImode
-							      || <MODE>mode == V16SImode
-							      || <MODE>mode == V32HFmode)")
+(define_subst_attr "round_mode_condition" "round" "1" "((<MODE>mode == V16SFmode
+							       || <MODE>mode == V8DFmode
+							       || <MODE>mode == V8DImode
+							       || <MODE>mode == V16SImode
+							       || <MODE>mode == V32HImode
+							       || <MODE>mode == V32HFmode)
+							       || (TARGET_AVX10_2_256
+								   && (<MODE>mode == V8SFmode
+								       || <MODE>mode == V4DFmode
+								       || <MODE>mode == V4DImode
+								       || <MODE>mode == V8SImode
+								       || <MODE>mode == V16HImode
+								       || <MODE>mode == V16HFmode)))")
+(define_subst_attr "round_applied" "round" "false" "true")
 
 (define_subst_attr "round_modev4sf_condition" "round" "1" "(<MODE>mode == V4SFmode)")
 (define_subst_attr "round_codefor" "round" "*" "")
@@ -250,11 +263,21 @@
 (define_subst_attr "round_saeonly_constraint2" "round_saeonly" "m" "v")
 (define_subst_attr "round_saeonly_nimm_predicate" "round_saeonly" "vector_operand" "register_operand")
 (define_subst_attr "round_saeonly_nimm_scalar_predicate" "round_saeonly" "nonimmediate_operand" "register_operand")
-(define_subst_attr "round_saeonly_mode512bit_condition" "round_saeonly" "1" "(<MODE>mode == V16SFmode
-									      || <MODE>mode == V8DFmode
-									      || <MODE>mode == V8DImode
-									      || <MODE>mode == V16SImode
-									      || <MODE>mode == V32HFmode)")
+(define_subst_attr "round_saeonly_suff" "round_saeonly" "{y}" "")
+(define_subst_attr "round_saeonly_mode_condition" "round_saeonly" "1" "((<MODE>mode == V16SFmode
+									       || <MODE>mode == V8DFmode
+									       || <MODE>mode == V8DImode
+									       || <MODE>mode == V16SImode
+									       || <MODE>mode == V32HImode
+									       || <MODE>mode == V32HFmode)
+									       || (TARGET_AVX10_2_256
+										   && (<MODE>mode == V8SFmode
+										       || <MODE>mode == V4DFmode
+										       || <MODE>mode == V4DImode
+										       || <MODE>mode == V8SImode
+										       || <MODE>mode == V16HImode
+										       || <MODE>mode == V16HFmode)))")
+(define_subst_attr "round_saeonly_applied" "round_saeonly" "false" "true")
 
 
 (define_subst "round_saeonly"
@@ -343,6 +366,8 @@
 (define_subst_attr "mask_scalarcz_operand4" "mask_scalarcz" "" "%{%5%}%N4")
 (define_subst_attr "mask_scalar4_dest_false_dep_for_glc_cond" "mask_scalar" "1" "operands[4] == CONST0_RTX(<MODE>mode)")
 (define_subst_attr "mask_scalarc_dest_false_dep_for_glc_cond" "mask_scalarc" "1" "operands[3] == CONST0_RTX(V8HFmode)")
+(define_subst_attr "mask_scalar_operand_arg34" "mask_scalar" "" ", operands[3], operands[4]")
+(define_subst_attr "mask_scalar_expand_op3" "mask_scalar" "3" "5")
 
 (define_subst "mask_scalar"
   [(set (match_operand:SUBST_V 0)
@@ -450,6 +475,7 @@
 (define_subst_attr "round_saeonly_scalar_constraint" "round_saeonly_scalar" "vm" "v")
 (define_subst_attr "round_saeonly_scalar_prefix" "round_saeonly_scalar" "vex" "evex")
 (define_subst_attr "round_saeonly_scalar_nimm_predicate" "round_saeonly_scalar" "nonimmediate_operand" "register_operand")
+(define_subst_attr "round_saeonly_scalar_mask_arg3" "round_saeonly_scalar" "" ", operands[<mask_scalar_expand_op3>]")
 
 (define_subst "round_saeonly_scalar"
   [(set (match_operand:SUBST_V 0)

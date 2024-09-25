@@ -1,7 +1,6 @@
 // PR preprocessor/57620
-// { dg-do compile }
+// { dg-do compile { target { c || c++11 } } }
 // { dg-options "-std=gnu99 -trigraphs" { target c } }
-// { dg-options "-std=c++11" { target c++ } }
 
 const void *s0 = R"abc\
 def()abcdef" 0;

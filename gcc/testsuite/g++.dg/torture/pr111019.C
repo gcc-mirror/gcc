@@ -1,5 +1,6 @@
 // { dg-do run }
 // { dg-additional-options "-fstrict-aliasing" }
+// { dg-skip-if "requires hosted libstdc++ for cassert" { ! hostedlib } }
 
 #include <cassert>
 #include <memory>

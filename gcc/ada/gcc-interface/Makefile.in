@@ -334,6 +334,16 @@ GNATMAKE_OBJS = a-except.o ali.o ali-util.o aspects.o s-casuti.o alloc.o \
  switch.o switch-m.o table.o targparm.o tempdir.o types.o uintp.o \
  uname.o urealp.o usage.o widechar.o warnsw.o \
  seinfo.o einfo-entities.o einfo-utils.o sinfo-nodes.o sinfo-utils.o \
+ diagnostics-brief_emitter.o  \
+ diagnostics-constructors.o  \
+ diagnostics-converter.o  \
+ diagnostics-json_utils.o  \
+ diagnostics-pretty_emitter.o  \
+ diagnostics-repository.o  \
+ diagnostics-sarif_emitter.o  \
+ diagnostics-switch_repository.o  \
+ diagnostics-utils.o  \
+ diagnostics.o  \
  $(EXTRA_GNATMAKE_OBJS)
 
 # Make arch match the current multilib so that the RTS selection code

@@ -1,3 +1,5 @@
+// { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
+
 // Test handling of the case where we have a void g-r-o and a non-void
 // and non-class-type ramp return.
 
@@ -27,11 +29,11 @@ struct std::coroutine_traits<R, HandleRef, T...> {
 };
 
 int
-my_coro (std::coroutine_handle<>& h)
+my_coro (std::coroutine_handle<>& h) // { dg-error {no viable conversion from 'void' provided by 'get_return_object' to return type 'int'} }
 {
   PRINT ("coro1: about to return");
   co_return;
-} // { dg-error {cannot initialize a return object of type 'int' with an rvalue of type 'void'} }
+}
 
 int main ()
 {

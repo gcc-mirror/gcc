@@ -10,6 +10,7 @@
 #ifndef _PSTL_GLUE_ALGORITHM_DEFS_H
 #define _PSTL_GLUE_ALGORITHM_DEFS_H
 
+#include <bits/stl_iterator_base_types.h>
 #include <bits/stl_pair.h>
 
 #include "execution_defs.h"
@@ -55,7 +56,7 @@ template <class _ExecutionPolicy, class _ForwardIterator, class _Predicate>
 __pstl::__internal::__enable_if_execution_policy<_ExecutionPolicy, _ForwardIterator>
 find_if_not(_ExecutionPolicy&& __exec, _ForwardIterator __first, _ForwardIterator __last, _Predicate __pred);
 
-template <class _ExecutionPolicy, class _ForwardIterator, class _Tp>
+template <class _ExecutionPolicy, class _ForwardIterator, class _Tp _GLIBCXX26_ALGO_DEF_VAL_T(_ForwardIterator)>
 __pstl::__internal::__enable_if_execution_policy<_ExecutionPolicy, _ForwardIterator>
 find(_ExecutionPolicy&& __exec, _ForwardIterator __first, _ForwardIterator __last, const _Tp& __value);
 
@@ -95,7 +96,7 @@ adjacent_find(_ExecutionPolicy&& __exec, _ForwardIterator __first, _ForwardItera
 
 // [alg.count]
 
-template <class _ExecutionPolicy, class _ForwardIterator, class _Tp>
+template <class _ExecutionPolicy, class _ForwardIterator, class _Tp _GLIBCXX26_ALGO_DEF_VAL_T(_ForwardIterator)>
 __pstl::__internal::__enable_if_execution_policy<_ExecutionPolicy,
                                                  typename iterator_traits<_ForwardIterator>::difference_type>
 count(_ExecutionPolicy&& __exec, _ForwardIterator __first, _ForwardIterator __last, const _Tp& __value);
@@ -117,12 +118,12 @@ __pstl::__internal::__enable_if_execution_policy<_ExecutionPolicy, _ForwardItera
 search(_ExecutionPolicy&& __exec, _ForwardIterator1 __first, _ForwardIterator1 __last, _ForwardIterator2 __s_first,
        _ForwardIterator2 __s_last);
 
-template <class _ExecutionPolicy, class _ForwardIterator, class _Size, class _Tp, class _BinaryPredicate>
+template <class _ExecutionPolicy, class _ForwardIterator, class _Size, class _Tp _GLIBCXX26_ALGO_DEF_VAL_T(_ForwardIterator), class _BinaryPredicate>
 __pstl::__internal::__enable_if_execution_policy<_ExecutionPolicy, _ForwardIterator>
 search_n(_ExecutionPolicy&& __exec, _ForwardIterator __first, _ForwardIterator __last, _Size __count,
          const _Tp& __value, _BinaryPredicate __pred);
 
-template <class _ExecutionPolicy, class _ForwardIterator, class _Size, class _Tp>
+template <class _ExecutionPolicy, class _ForwardIterator, class _Size, class _Tp _GLIBCXX26_ALGO_DEF_VAL_T(_ForwardIterator)>
 __pstl::__internal::__enable_if_execution_policy<_ExecutionPolicy, _ForwardIterator>
 search_n(_ExecutionPolicy&& __exec, _ForwardIterator __first, _ForwardIterator __last, _Size __count,
          const _Tp& __value);
@@ -164,17 +165,17 @@ transform(_ExecutionPolicy&& __exec, _ForwardIterator1 __first1, _ForwardIterato
 
 // [alg.replace]
 
-template <class _ExecutionPolicy, class _ForwardIterator, class _UnaryPredicate, class _Tp>
+template <class _ExecutionPolicy, class _ForwardIterator, class _UnaryPredicate, class _Tp _GLIBCXX26_ALGO_DEF_VAL_T(_ForwardIterator)>
 __pstl::__internal::__enable_if_execution_policy<_ExecutionPolicy, void>
 replace_if(_ExecutionPolicy&& __exec, _ForwardIterator __first, _ForwardIterator __last, _UnaryPredicate __pred,
            const _Tp& __new_value);
 
-template <class _ExecutionPolicy, class _ForwardIterator, class _Tp>
+template <class _ExecutionPolicy, class _ForwardIterator, class _Tp _GLIBCXX26_ALGO_DEF_VAL_T(_ForwardIterator)>
 __pstl::__internal::__enable_if_execution_policy<_ExecutionPolicy, void>
 replace(_ExecutionPolicy&& __exec, _ForwardIterator __first, _ForwardIterator __last, const _Tp& __old_value,
         const _Tp& __new_value);
 
-template <class _ExecutionPolicy, class _ForwardIterator1, class _ForwardIterator2, class _UnaryPredicate, class _Tp>
+template <class _ExecutionPolicy, class _ForwardIterator1, class _ForwardIterator2, class _UnaryPredicate, class _Tp _GLIBCXX26_ALGO_DEF_VAL_T(_ForwardIterator2)>
 __pstl::__internal::__enable_if_execution_policy<_ExecutionPolicy, _ForwardIterator2>
 replace_copy_if(_ExecutionPolicy&& __exec, _ForwardIterator1 __first, _ForwardIterator1 __last,
                 _ForwardIterator2 __result, _UnaryPredicate __pred, const _Tp& __new_value);
@@ -186,11 +187,11 @@ replace_copy(_ExecutionPolicy&& __exec, _ForwardIterator1 __first, _ForwardItera
 
 // [alg.fill]
 
-template <class _ExecutionPolicy, class _ForwardIterator, class _Tp>
+template <class _ExecutionPolicy, class _ForwardIterator, class _Tp _GLIBCXX26_ALGO_DEF_VAL_T(_ForwardIterator)>
 __pstl::__internal::__enable_if_execution_policy<_ExecutionPolicy, void>
 fill(_ExecutionPolicy&& __exec, _ForwardIterator __first, _ForwardIterator __last, const _Tp& __value);
 
-template <class _ExecutionPolicy, class _ForwardIterator, class _Size, class _Tp>
+template <class _ExecutionPolicy, class _ForwardIterator, class _Size, class _Tp _GLIBCXX26_ALGO_DEF_VAL_T(_ForwardIterator)>
 __pstl::__internal::__enable_if_execution_policy<_ExecutionPolicy, _ForwardIterator>
 fill_n(_ExecutionPolicy&& __exec, _ForwardIterator __first, _Size __count, const _Tp& __value);
 
@@ -210,7 +211,7 @@ __pstl::__internal::__enable_if_execution_policy<_ExecutionPolicy, _ForwardItera
 remove_copy_if(_ExecutionPolicy&& __exec, _ForwardIterator1 __first, _ForwardIterator1 __last,
                _ForwardIterator2 __result, _Predicate __pred);
 
-template <class _ExecutionPolicy, class _ForwardIterator1, class _ForwardIterator2, class _Tp>
+template <class _ExecutionPolicy, class _ForwardIterator1, class _ForwardIterator2, class _Tp _GLIBCXX26_ALGO_DEF_VAL_T(_ForwardIterator1)>
 __pstl::__internal::__enable_if_execution_policy<_ExecutionPolicy, _ForwardIterator2>
 remove_copy(_ExecutionPolicy&& __exec, _ForwardIterator1 __first, _ForwardIterator1 __last, _ForwardIterator2 __result,
             const _Tp& __value);
@@ -219,7 +220,7 @@ template <class _ExecutionPolicy, class _ForwardIterator, class _UnaryPredicate>
 __pstl::__internal::__enable_if_execution_policy<_ExecutionPolicy, _ForwardIterator>
 remove_if(_ExecutionPolicy&& __exec, _ForwardIterator __first, _ForwardIterator __last, _UnaryPredicate __pred);
 
-template <class _ExecutionPolicy, class _ForwardIterator, class _Tp>
+template <class _ExecutionPolicy, class _ForwardIterator, class _Tp _GLIBCXX26_ALGO_DEF_VAL_T(_ForwardIterator)>
 __pstl::__internal::__enable_if_execution_policy<_ExecutionPolicy, _ForwardIterator>
 remove(_ExecutionPolicy&& __exec, _ForwardIterator __first, _ForwardIterator __last, const _Tp& __value);
 

@@ -82,7 +82,7 @@ struct btf_type
   };
 };
 
-/* The folloing macros access the information encoded in btf_type.info.  */
+/* The following macros access the information encoded in btf_type.info.  */
 /* Type kind. See below.  */
 #define BTF_INFO_KIND(info)	(((info) >> 24) & 0x1f)
 /* Number of entries of variable length data following certain type kinds.
@@ -95,7 +95,7 @@ struct btf_type
 
 /* Encoding for struct btf_type.info.  */
 #define BTF_TYPE_INFO(kind, kflag, vlen) \
-  ((((kflag) ? 1 : 0 ) << 31) | ((kind) << 24) | ((vlen) & 0xffff))
+  ((((kflag) ? 1 : 0 ) << 31) | ((kind & 0x1f) << 24) | ((vlen) & 0xffff))
 
 #define BTF_KIND_UNKN		0	/* Unknown or invalid.  */
 #define BTF_KIND_INT		1	/* Integer.  */

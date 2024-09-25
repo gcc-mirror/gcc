@@ -19,6 +19,7 @@
 #ifndef RUST_AST_LOWER_BASE
 #define RUST_AST_LOWER_BASE
 
+#include "rust-ast.h"
 #include "rust-system.h"
 #include "rust-ast-full.h"
 #include "rust-ast-visitor.h"
@@ -185,7 +186,6 @@ public:
   //  virtual void visit(ExternalItem& item);
   virtual void visit (AST::ExternalTypeItem &item);
   virtual void visit (AST::ExternalStaticItem &item);
-  virtual void visit (AST::ExternalFunctionItem &item);
   virtual void visit (AST::ExternBlock &block);
 
   // rust-macro.h
@@ -253,6 +253,8 @@ public:
   virtual void visit (AST::VariadicParam &param);
   virtual void visit (AST::SelfParam &param);
 
+  virtual void visit (AST::FormatArgs &fmt);
+
 protected:
   ASTLoweringBase ()
     : mappings (Analysis::Mappings::get ()),
@@ -276,11 +278,11 @@ protected:
 
   HIR::GenericArgsBinding lower_binding (AST::GenericArgsBinding &binding);
 
-  HIR::SelfParam lower_self (std::unique_ptr<AST::Param> &self);
+  HIR::SelfParam lower_self (AST::Param &self);
 
-  HIR::Type *lower_type_no_bounds (AST::TypeNoBounds *type);
+  HIR::Type *lower_type_no_bounds (AST::TypeNoBounds &type);
 
-  HIR::TypeParamBound *lower_bound (AST::TypeParamBound *bound);
+  HIR::TypeParamBound *lower_bound (AST::TypeParamBound &bound);
 
   HIR::QualifiedPathType
   lower_qual_path_type (AST::QualifiedPathType &qual_path_type);
@@ -308,7 +310,7 @@ protected:
   lower_tuple_pattern_ranged (AST::TuplePatternItemsRanged &pattern);
 
   std::unique_ptr<HIR::RangePatternBound>
-  lower_range_pattern_bound (AST::RangePatternBound *bound);
+  lower_range_pattern_bound (AST::RangePatternBound &bound);
 
   HIR::Literal lower_literal (const AST::Literal &literal);
 

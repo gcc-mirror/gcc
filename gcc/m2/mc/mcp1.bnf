@@ -57,7 +57,7 @@ FROM mcLexBuf IMPORT currentstring, currenttoken, getToken, insertToken,
                      insertTokenAndRewind, getTokenNo, lastcomment ;
 
 FROM decl IMPORT node, lookupDef, lookupImp, lookupModule, getSymName,
-                 lookupSym, putDefForC,
+                 lookupSym, putDefForC, putDefUnqualified,
                  makeProcedure, makeType, makeTypeImp, makeVar, makeConst,
 		 enterScope, leaveScope, putTypeHidden, putTypeOpaque,
 		 addImportedModule, getCurrentModule,
@@ -1031,7 +1031,7 @@ Priority := "[" ConstExpression "]" =:
 
 Export := "EXPORT" ( "QUALIFIED"
                                  IdentList |
-                     "UNQUALIFIED"
+                     "UNQUALIFIED"                                     % putDefUnqualified (curmodule) %
                                  IdentList |
                      IdentList ) ";" =:
 

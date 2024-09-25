@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-mcpu=neoverse-n1" { target aarch64*-*-* } } */
+/* { dg-additional-options "-mcpu=neoverse-v1" { target aarch64*-*-* } } */
 
 char *a;
 int b;

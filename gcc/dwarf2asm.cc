@@ -488,14 +488,22 @@ eh_data_format_name (int format)
 {
 #if HAVE_DESIGNATED_INITIALIZERS
 #define S(p, v)		[p] = v,
+#elif __cpp_constexpr >= 201304L
+#define S(p, v)		names[p] = v;
 #else
 #define S(p, v)		case p: return v;
 #endif
 
 #if HAVE_DESIGNATED_INITIALIZERS
   __extension__ static const char * const format_names[256] = {
+#elif __cpp_constexpr >= 201304L
+  static constexpr struct format_names_s {
+    const char *names[256];
+    constexpr format_names_s () : names {}
+    {
 #else
-  switch (format) {
+  switch (format)
+    {
 #endif
 
   S(DW_EH_PE_absptr, "absolute")
@@ -635,8 +643,15 @@ eh_data_format_name (int format)
   gcc_assert (format >= 0 && format < 0x100 && format_names[format]);
 
   return format_names[format];
+#elif __cpp_constexpr >= 201304L
+    }
+  } format_names;
+
+  gcc_assert (format >= 0 && format < 0x100 && format_names.names[format]);
+
+  return format_names.names[format];
 #else
-  }
+    }
   gcc_unreachable ();
 #endif
 }

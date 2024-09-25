@@ -14,22 +14,22 @@ US_LFUN (us_add, +, fx_t, ullk, >)
 US_LFUN (us_sub, -, fx_t, ullk, <)
 
 #define VAL(N, X)                               \
-  __attribute__((noinline,noclone))             \
+  __attribute__((noipa))                        \
   satfx_t us_add2_##N (satfx_t a)               \
   {                                             \
     return us_add_ullk (a, X##P##-##48ullk);    \
   }                                             \
-  __attribute__((noinline,noclone))             \
+  __attribute__((noipa))                        \
   satfx_t us_add_##N (satfx_t a)                \
   {                                             \
     return a + X##P##-##48ullk;                 \
   }                                             \
-  __attribute__((noinline,noclone))             \
+  __attribute__((noipa))                        \
   satfx_t us_sub2_##N (satfx_t a)               \
   {                                             \
     return us_sub_ullk (a, X##P##-##48ullk);    \
   }                                             \
-  __attribute__((noinline,noclone))             \
+  __attribute__((noipa))                        \
   satfx_t us_sub_##N (satfx_t a)                \
   {                                             \
     return a - X##P##-##48ullk;                 \

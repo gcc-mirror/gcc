@@ -1112,6 +1112,15 @@ Return the string representing the assembly instruction in
 @code{GIMPLE_ASM} @code{G}.
 @end deftypefn
 
+@deftypefn {GIMPLE function} bool gimple_asm_basic_p (const gasm *g)
+Return true if @code{G} is a basic asm rather than an extended asm.
+@end deftypefn
+
+@deftypefn {GIMPLE function} void gimple_asm_set_basic (gasm *g, bool basic_p)
+Mark asm statement @code{G} as a basic asm or an extended asm based on
+@code{BASIC_P}.
+@end deftypefn
+
 @deftypefn {GIMPLE function} bool gimple_asm_volatile_p (const gasm *g)
 Return true if @code{G} is an asm statement marked volatile.
 @end deftypefn

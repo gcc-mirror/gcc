@@ -26,10 +26,10 @@
  *  This is a Standard C++ Library header.
  */
 
-#include <csetjmp>
-
 #ifndef _GLIBCXX_SETJMP_H
 #define _GLIBCXX_SETJMP_H 1
+
+#include <csetjmp>
 
 #ifdef _GLIBCXX_NAMESPACE_C
 using std::jmp_buf;

@@ -23,7 +23,7 @@ namespace Rust {
 namespace Resolver {
 
 void
-PatternDeclaration::go (AST::Pattern *pattern, Rib::ItemType type)
+PatternDeclaration::go (AST::Pattern &pattern, Rib::ItemType type)
 {
   std::vector<PatternBinding> bindings
     = {PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ())};
@@ -31,11 +31,11 @@ PatternDeclaration::go (AST::Pattern *pattern, Rib::ItemType type)
 }
 
 void
-PatternDeclaration::go (AST::Pattern *pattern, Rib::ItemType type,
+PatternDeclaration::go (AST::Pattern &pattern, Rib::ItemType type,
 			std::vector<PatternBinding> &bindings)
 {
   PatternDeclaration resolver (bindings, type);
-  pattern->accept_vis (resolver);
+  pattern.accept_vis (resolver);
 
   for (auto &map_entry : resolver.missing_bindings)
     {
@@ -71,28 +71,28 @@ PatternDeclaration::visit (AST::IdentifierPattern &pattern)
 void
 PatternDeclaration::visit (AST::GroupedPattern &pattern)
 {
-  pattern.get_pattern_in_parens ()->accept_vis (*this);
+  pattern.get_pattern_in_parens ().accept_vis (*this);
 }
 
 void
 PatternDeclaration::visit (AST::ReferencePattern &pattern)
 {
-  pattern.get_referenced_pattern ()->accept_vis (*this);
+  pattern.get_referenced_pattern ().accept_vis (*this);
 }
 
 void
 PatternDeclaration::visit (AST::PathInExpression &pattern)
 {
-  ResolvePath::go (&pattern);
+  ResolvePath::go (pattern);
 }
 
 void
 PatternDeclaration::visit (AST::TupleStructPattern &pattern)
 {
-  ResolvePath::go (&pattern.get_path ());
+  ResolvePath::go (pattern.get_path ());
 
-  std::unique_ptr<AST::TupleStructItems> &items = pattern.get_items ();
-  switch (items->get_item_type ())
+  AST::TupleStructItems &items = pattern.get_items ();
+  switch (items.get_item_type ())
     {
       case AST::TupleStructItems::RANGE: {
 	// TODO
@@ -101,12 +101,12 @@ PatternDeclaration::visit (AST::TupleStructPattern &pattern)
       break;
 
       case AST::TupleStructItems::NO_RANGE: {
-	AST::TupleStructItemsNoRange &items_no_range
-	  = static_cast<AST::TupleStructItemsNoRange &> (*items.get ());
+	auto &items_no_range
+	  = static_cast<AST::TupleStructItemsNoRange &> (items);
 
 	for (auto &inner_pattern : items_no_range.get_patterns ())
 	  {
-	    inner_pattern.get ()->accept_vis (*this);
+	    inner_pattern->accept_vis (*this);
 	  }
       }
       break;
@@ -116,7 +116,7 @@ PatternDeclaration::visit (AST::TupleStructPattern &pattern)
 void
 PatternDeclaration::visit (AST::StructPattern &pattern)
 {
-  ResolvePath::go (&pattern.get_path ());
+  ResolvePath::go (pattern.get_path ());
 
   auto &struct_pattern_elems = pattern.get_struct_pattern_elems ();
   for (auto &field : struct_pattern_elems.get_struct_pattern_fields ())
@@ -127,7 +127,7 @@ PatternDeclaration::visit (AST::StructPattern &pattern)
 	    AST::StructPatternFieldTuplePat &tuple
 	      = static_cast<AST::StructPatternFieldTuplePat &> (*field);
 
-	    tuple.get_index_pattern ()->accept_vis (*this);
+	    tuple.get_index_pattern ().accept_vis (*this);
 	  }
 	  break;
 
@@ -135,13 +135,12 @@ PatternDeclaration::visit (AST::StructPattern &pattern)
 	    AST::StructPatternFieldIdentPat &ident
 	      = static_cast<AST::StructPatternFieldIdentPat &> (*field);
 
-	    ident.get_ident_pattern ()->accept_vis (*this);
+	    ident.get_ident_pattern ().accept_vis (*this);
 	  }
 	  break;
 
 	  case AST::StructPatternField::ItemType::IDENT: {
-	    AST::StructPatternFieldIdent &ident
-	      = static_cast<AST::StructPatternFieldIdent &> (*field.get ());
+	    auto &ident = static_cast<AST::StructPatternFieldIdent &> (*field);
 
 	    Mutability mut
 	      = ident.is_mut () ? Mutability::Mut : Mutability::Imm;
@@ -158,13 +157,12 @@ PatternDeclaration::visit (AST::StructPattern &pattern)
 void
 PatternDeclaration::visit (AST::TuplePattern &pattern)
 {
-  std::unique_ptr<AST::TuplePatternItems> &items = pattern.get_items ();
-  switch (items->get_pattern_type ())
+  auto &items = pattern.get_items ();
+  switch (items.get_pattern_type ())
     {
       case AST::TuplePatternItems::TuplePatternItemType::MULTIPLE: {
-	AST::TuplePatternItemsMultiple &ref
-	  = *static_cast<AST::TuplePatternItemsMultiple *> (
-	    pattern.get_items ().get ());
+	auto &ref = static_cast<AST::TuplePatternItemsMultiple &> (
+	  pattern.get_items ());
 
 	for (auto &p : ref.get_patterns ())
 	  p->accept_vis (*this);
@@ -172,9 +170,8 @@ PatternDeclaration::visit (AST::TuplePattern &pattern)
       break;
 
       case AST::TuplePatternItems::TuplePatternItemType::RANGED: {
-	AST::TuplePatternItemsRanged &ref
-	  = *static_cast<AST::TuplePatternItemsRanged *> (
-	    pattern.get_items ().get ());
+	auto &ref
+	  = static_cast<AST::TuplePatternItemsRanged &> (pattern.get_items ());
 
 	for (auto &p : ref.get_lower_patterns ())
 	  p->accept_vis (*this);
@@ -342,27 +339,25 @@ PatternDeclaration::check_bindings_consistency (
 }
 
 static void
-resolve_range_pattern_bound (AST::RangePatternBound *bound)
+resolve_range_pattern_bound (AST::RangePatternBound &bound)
 {
-  switch (bound->get_bound_type ())
+  switch (bound.get_bound_type ())
     {
     case AST::RangePatternBound::RangePatternBoundType::LITERAL:
       // Nothing to resolve for a literal.
       break;
 
       case AST::RangePatternBound::RangePatternBoundType::PATH: {
-	AST::RangePatternBoundPath &ref
-	  = *static_cast<AST::RangePatternBoundPath *> (bound);
+	auto &ref = static_cast<AST::RangePatternBoundPath &> (bound);
 
-	ResolvePath::go (&ref.get_path ());
+	ResolvePath::go (ref.get_path ());
       }
       break;
 
       case AST::RangePatternBound::RangePatternBoundType::QUALPATH: {
-	AST::RangePatternBoundQualPath &ref
-	  = *static_cast<AST::RangePatternBoundQualPath *> (bound);
+	auto &ref = static_cast<AST::RangePatternBoundQualPath &> (bound);
 
-	ResolvePath::go (&ref.get_qualified_path ());
+	ResolvePath::go (ref.get_qualified_path ());
       }
       break;
     }
@@ -371,8 +366,8 @@ resolve_range_pattern_bound (AST::RangePatternBound *bound)
 void
 PatternDeclaration::visit (AST::RangePattern &pattern)
 {
-  resolve_range_pattern_bound (pattern.get_upper_bound ().get ());
-  resolve_range_pattern_bound (pattern.get_lower_bound ().get ());
+  resolve_range_pattern_bound (pattern.get_upper_bound ());
+  resolve_range_pattern_bound (pattern.get_lower_bound ());
 }
 
 void

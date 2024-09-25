@@ -67,7 +67,7 @@ handle_suffix (const const_TokenPtr &token, ProcMacro::LitKind kind)
 {
   auto str = token->as_string ();
   auto lookup = suffixes.lookup (token->get_type_hint ());
-  auto suffix = suffixes.is_iter_ok (lookup) ? lookup->second : "";
+  auto suffix = lookup.value_or ("");
   return ProcMacro::Literal::make_literal (kind, convert (token->get_locus ()),
 					   str, suffix);
 }
@@ -296,8 +296,7 @@ from_literal (const ProcMacro::Literal &literal,
 {
   auto lookup = suffixes.lookup (literal.suffix.to_string ());
   auto loc = convert (literal.span);
-  auto suffix
-    = suffixes.is_iter_ok (lookup) ? lookup->second : CORETYPE_UNKNOWN;
+  auto suffix = lookup.value_or (CORETYPE_UNKNOWN);
   // FIXME: Add spans instead of empty locations
   switch (literal.kind.tag)
     {

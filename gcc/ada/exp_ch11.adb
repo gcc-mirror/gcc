@@ -1103,12 +1103,6 @@ package body Exp_Ch11 is
    --  Start of processing for Expand_N_Exception_Declaration
 
    begin
-      --  Nothing to do when generating C code
-
-      if Modify_Tree_For_C then
-         return;
-      end if;
-
       --  Definition of the external name: nam : constant String := "A.B.NAME";
 
       Ex_Id :=
@@ -1989,6 +1983,8 @@ package body Exp_Ch11 is
             Add_Str_To_Name_Buffer ("PE_Overlaid_Controlled_Object");
          when PE_Potentially_Blocking_Operation =>
             Add_Str_To_Name_Buffer ("PE_Potentially_Blocking_Operation");
+         when PE_Raise_Check_Failed =>
+            Add_Str_To_Name_Buffer ("PE_Raise_Check");
          when PE_Stream_Operation_Not_Allowed =>
             Add_Str_To_Name_Buffer ("PE_Stream_Operation_Not_Allowed");
          when PE_Stubbed_Subprogram_Called =>

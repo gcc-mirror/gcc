@@ -1,5 +1,5 @@
 // { dg-do compile { target c++20 } }
-// { dg-additional-options "-fconcepts-ts" }
+// { dg-additional-options "-fconcepts" }
 
 namespace zero
 {
@@ -18,7 +18,7 @@ namespace zero
 
 namespace one
 {
-  template<typename X, typename Y> concept bool Foo = true;
+  template<typename X, typename Y> concept Foo = true;
 
   template<typename... T>
   struct foo

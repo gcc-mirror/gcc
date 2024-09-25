@@ -2,6 +2,7 @@
 /* { dg-options "" } */
 /* { dg-xfail-if "" { powerpc-ibm-aix* } } */
 /* { dg-skip-if "" { ! ucn } } */
+/* { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } } */
 #include <cstdlib>
 
 int À(void) { return 1; }

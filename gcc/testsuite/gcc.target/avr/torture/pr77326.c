@@ -3,13 +3,13 @@
 
 extern void test1 (void) __attribute__((weak));
 
-__attribute__((noinline,noclone))
+__attribute__((noipa))
 static void va_pseudo (int flag, ...)
 {
   __asm ("nop":);
 }
 
-__attribute__((noinline,noclone))
+__attribute__((noipa))
 static void func (void)
 {
   va_pseudo (0, 0, 0, 0);

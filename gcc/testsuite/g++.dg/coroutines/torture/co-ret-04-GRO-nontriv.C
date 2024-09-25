@@ -1,4 +1,5 @@
 //  { dg-do run }
+//  { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
 
 // GRO differs from eventual return type and has non-trivial dtor.
 

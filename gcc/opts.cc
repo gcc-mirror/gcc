@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "spellcheck.h"
 #include "opt-suggestions.h"
 #include "diagnostic-color.h"
+#include "diagnostic-format.h"
 #include "version.h"
 #include "selftest.h"
 #include "file-prefix-map.h"
@@ -634,6 +635,7 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_2_PLUS, OPT_fdevirtualize, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fdevirtualize_speculatively, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fexpensive_optimizations, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fext_dce, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fgcse, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fhoist_adjacent_loads, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_findirect_inlining, NULL, 1 },
@@ -1407,7 +1409,7 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
   /* We know which debug output will be used so we can set flag_var_tracking
      and flag_var_tracking_uninit if the user has not specified them.  */
   if (opts->x_debug_info_level < DINFO_LEVEL_NORMAL
-      || !dwarf_debuginfo_p (opts)
+      || (!dwarf_debuginfo_p (opts) && !codeview_debuginfo_p ())
       /* We have not yet initialized debug hooks so match that to check
 	 whether we're only doing DWARF2_LINENO_DEBUGGING_INFO.  */
 #ifndef DWARF2_DEBUGGING_INFO
@@ -2962,7 +2964,8 @@ common_handle_option (struct gcc_options *opts,
 	{
 	  const char *basename = (opts->x_dump_base_name ? opts->x_dump_base_name
 				  : opts->x_main_input_basename);
-	  diagnostic_output_format_init (dc,
+	  gcc_assert (dc);
+	  diagnostic_output_format_init (*dc,
 					 opts->x_main_input_filename, basename,
 					 (enum diagnostics_output_format)value,
 					 opts->x_flag_diagnostics_json_formatting);
@@ -2989,6 +2992,10 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT_fdiagnostics_escape_format_:
       dc->set_escape_format ((enum diagnostics_escape_format)value);
+      break;
+
+    case OPT_fdiagnostics_show_highlight_colors:
+      dc->set_show_highlight_colors (value);
       break;
 
     case OPT_fdiagnostics_show_cwe:
@@ -3049,7 +3056,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fmessage_length_:
-      pp_set_line_maximum_length (dc->printer, value);
+      pp_set_line_maximum_length (dc->m_printer, value);
       diagnostic_set_caret_max_width (dc, value);
       break;
 
@@ -3063,11 +3070,14 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_foffload_abi_:
+    case OPT_foffload_abi_host_opts_:
 #ifdef ACCEL_COMPILER
       /* Handled in the 'mkoffload's.  */
 #else
-      error_at (loc, "%<-foffload-abi%> option can be specified only for "
-		"offload compiler");
+      error_at (loc,
+		"%qs option can be specified only for offload compiler",
+		(code == OPT_foffload_abi_) ? "-foffload-abi"
+					    : "-foffload-abi-host-opts");
 #endif
       break;
 
@@ -3692,31 +3702,33 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
 }
 
 /* Return malloced memory for the name of the option OPTION_INDEX
-   which enabled a diagnostic (context CONTEXT), originally of type
+   which enabled a diagnostic, originally of type
    ORIG_DIAG_KIND but possibly converted to DIAG_KIND by options such
    as -Werror.  */
 
 char *
-option_name (const diagnostic_context *context, int option_index,
-	     diagnostic_t orig_diag_kind, diagnostic_t diag_kind)
+compiler_diagnostic_option_manager::
+make_option_name (diagnostic_option_id option_id,
+		  diagnostic_t orig_diag_kind,
+		  diagnostic_t diag_kind) const
 {
-  if (option_index)
+  if (option_id.m_idx)
     {
       /* A warning classified as an error.  */
       if ((orig_diag_kind == DK_WARNING || orig_diag_kind == DK_PEDWARN)
 	  && diag_kind == DK_ERROR)
 	return concat (cl_options[OPT_Werror_].opt_text,
 		       /* Skip over "-W".  */
-		       cl_options[option_index].opt_text + 2,
+		       cl_options[option_id.m_idx].opt_text + 2,
 		       NULL);
       /* A warning with option.  */
       else
-	return xstrdup (cl_options[option_index].opt_text);
+	return xstrdup (cl_options[option_id.m_idx].opt_text);
     }
   /* A warning without option classified as an error.  */
   else if ((orig_diag_kind == DK_WARNING || orig_diag_kind == DK_PEDWARN
 	    || diag_kind == DK_WARNING)
-	   && context->warning_as_error_requested_p ())
+	   && m_context.warning_as_error_requested_p ())
     return xstrdup (cl_options[OPT_Werror].opt_text);
   else
     return NULL;
@@ -3769,16 +3781,16 @@ get_option_url_suffix (int option_index, unsigned lang_mask)
 }
 
 /* Return malloced memory for a URL describing the option OPTION_INDEX
-   which enabled a diagnostic (context CONTEXT).  */
+   which enabled a diagnostic.  */
 
 char *
-get_option_url (const diagnostic_context *,
-		int option_index,
-		unsigned lang_mask)
+gcc_diagnostic_option_manager::
+make_option_url (diagnostic_option_id option_id) const
 {
-  if (option_index)
+  if (option_id.m_idx)
     {
-      label_text url_suffix = get_option_url_suffix (option_index, lang_mask);
+      label_text url_suffix = get_option_url_suffix (option_id.m_idx,
+						     m_lang_mask);
       if (url_suffix.get ())
 	return concat (DOCUMENTATION_ROOT_URL, url_suffix.get (), nullptr);
     }
@@ -3821,6 +3833,7 @@ gen_command_line_string (cl_decoded_option *options,
       case OPT_grecord_gcc_switches:
       case OPT_frecord_gcc_switches:
       case OPT__output_pch:
+      case OPT_fdiagnostics_show_highlight_colors:
       case OPT_fdiagnostics_show_location_:
       case OPT_fdiagnostics_show_option:
       case OPT_fdiagnostics_show_caret:

@@ -179,6 +179,27 @@ suppress_warning_at (location_t loc, opt_code opt /* = all_warnings */,
   return true;
 }
 
+/* Change the warning disposition for LOC to match OPTSPEC.  */
+
+void
+put_warning_spec_at (location_t loc, unsigned bits)
+{
+  gcc_checking_assert (!RESERVED_LOCATION_P (loc));
+
+  nowarn_spec_t optspec = nowarn_spec_t::from_bits (bits);
+  if (!optspec)
+    {
+      if (nowarn_map)
+	nowarn_map->remove (loc);
+    }
+  else
+    {
+      if (!nowarn_map)
+	nowarn_map = nowarn_map_t::create_ggc (32);
+      nowarn_map->put (loc, optspec);
+    }
+}
+
 /* Copy the no-warning disposition from one location to another.  */
 
 void

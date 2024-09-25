@@ -394,9 +394,11 @@ emission of floating point pcs attributes.  */
    TARGET_MODE_CHECK that also takes into account the selected CPU and
    architecture.  */
 #define OPTION_DEFAULT_SPECS \
-  {"arch", "%{!march=*:%{!mcpu=*:-march=%(VALUE)}}" }, \
-  {"cpu", "%{!march=*:%{!mcpu=*:-mcpu=%(VALUE)}}" }, \
-  {"tune", "%{!mcpu=*:%{!mtune=*:-mtune=%(VALUE)}}" }, \
+  {"arch", "%{!march=*|march=unset:"\
+      "%{!mcpu=*|mcpu=unset:%<march=* %<mcpu=* -march=%(VALUE)}}" }, \
+  {"tune", "%{!mcpu=*|mcpu=unset:%{!mtune=*:-mtune=%(VALUE)}}" }, \
+  {"cpu", "%{!march=*|march=unset:"\
+      "%{!mcpu=*|mcpu=unset:%<march=* %<mcpu=* -mcpu=%(VALUE)}}" }, \
   {"float", "%{!mfloat-abi=*:-mfloat-abi=%(VALUE)}" }, \
   {"fpu", "%{!mfpu=*:-mfpu=%(VALUE)}"}, \
   {"abi", "%{!mabi=*:-mabi=%(VALUE)}"}, \
@@ -2538,6 +2540,11 @@ const char *arm_be8_option (int argc, const char **argv);
 #define TARGET_MODE_SPECS						\
   " %{!marm:%{!mthumb:%:target_mode_check(%{march=*:arch %*;mcpu=*:cpu %*;:})}}"
 
+/* Cleanup any stray -march=/-mcpu= if either is followed by "unset".  */
+#define ARCH_CPU_CLEANUP_SPECS	\
+  " %{march=unset:%<march=*} "	\
+  " %{mcpu=unset:%<mcpu=*} "
+
 /* Generate a canonical string to represent the architecture selected.  */
 #define ARCH_CANONICAL_SPECS				\
   " -march=%:canon_arch(%{mcpu=*: cpu %*} "		\
@@ -2559,6 +2566,7 @@ const char *arm_be8_option (int argc, const char **argv);
    individual rules so that any option suppression (%<opt...)is
    completed before starting subsequent rules.  */
 #define DRIVER_SELF_SPECS			\
+  ARCH_CPU_CLEANUP_SPECS,			\
   MCPU_MTUNE_NATIVE_SPECS,			\
   TARGET_MODE_SPECS,				\
   MULTILIB_ARCH_CANONICAL_SPECS,		\

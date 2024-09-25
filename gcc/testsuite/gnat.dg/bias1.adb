@@ -1,6 +1,7 @@
 --  { dg-do compile }
 --  { dg-options "-cargs -g -dA -gnatws -fgnat-encodings=gdb -margs" }
 --  { dg-final { scan-assembler "DW_AT_GNU_bias" } }
+--  { dg-final { scan-assembler-times "-7.*DW_AT_GNU_bias" 1 } }
 
 procedure Bias1 is
    type Small is range -7 .. -4;

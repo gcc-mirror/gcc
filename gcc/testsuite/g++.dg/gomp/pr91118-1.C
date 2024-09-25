@@ -1,6 +1,7 @@
 // PR c++/91118
 // { dg-do compile }
 // { dg-additional-options "-fsanitize=undefined" }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 
 #include <iostream>
 

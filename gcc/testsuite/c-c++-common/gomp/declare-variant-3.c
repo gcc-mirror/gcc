@@ -29,13 +29,13 @@ void f17 (void);
 void f18 (void);
 #pragma omp declare variant (f13) match (device={kind(fpga)})
 void f19 (void);
-#pragma omp declare variant (f13) match (device={kind(any,any)})
+#pragma omp declare variant (f13) match (device={kind(any)})
 void f20 (void);
 #pragma omp declare variant (f13) match (device={kind(host,nohost)})
 void f21 (void);
 #pragma omp declare variant (f13) match (device={kind("cpu","gpu","fpga")})
 void f22 (void);
-#pragma omp declare variant (f13) match (device={kind(any,cpu,nohost)})
+#pragma omp declare variant (f13) match (device={kind(cpu,nohost)})
 void f23 (void);
 #pragma omp declare variant (f13) match (device={isa(avx)})
 void f24 (void);
@@ -139,12 +139,8 @@ void f72 (void);
 void f73 (void);
 #pragma omp declare variant (f13) match (user={condition(score(25):1)})
 void f74 (void);
-#pragma omp declare variant (f13) match (device={kind(any,"any")})
+#pragma omp declare variant (f13) match (device={kind("any")})
 void f75 (void);
-#pragma omp declare variant (f13) match (device={kind("any","any")})
-void f76 (void);
-#pragma omp declare variant (f13) match (device={kind("any",any)})
-void f77 (void);
 #pragma omp declare variant (f13) match (implementation={vendor(nvidia)})
 void f78 (void);
 #pragma omp declare variant (f13) match (user={condition(score(0):0)})

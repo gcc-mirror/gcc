@@ -5,7 +5,7 @@ impl Foo<i32> {
         123
     }
 
-    fn test(self) -> i32 { // { dg-error "redefined multiple times" }
+    fn test(self) -> i32 { // { dg-error "defined multiple times" }
         self.0
     }
 }

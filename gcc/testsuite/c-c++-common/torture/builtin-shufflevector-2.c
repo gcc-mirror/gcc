@@ -1,4 +1,4 @@
-/* { dg-do run}  */
+/* { dg-do run }  */
 /* PR target/101529 */
 typedef unsigned char C;
 typedef unsigned char __attribute__((__vector_size__ (8))) V;

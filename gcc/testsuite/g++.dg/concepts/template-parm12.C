@@ -1,8 +1,8 @@
-// { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts-ts" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fconcepts" }
 // Conceptized version of template/ttp23.C
 
-template <class T> concept bool Foo = true;
+template <class T> concept Foo = true;
 
 template <typename T> struct A {};
 
@@ -17,5 +17,5 @@ bool foo (const B<Q>& a);
 
 void bar () {
   B<A> a;
-  foo (a);
+  foo (a);  // { dg-error "call of overloaded" }
 }

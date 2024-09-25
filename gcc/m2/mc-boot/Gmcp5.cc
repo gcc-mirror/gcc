@@ -2500,7 +2500,7 @@ static void followNode (decl_node n)
 
 static decl_node push (decl_node n)
 {
-  return static_cast<decl_node> (mcStack_push (stk, reinterpret_cast<void *> (n)));
+  return static_cast<decl_node> (mcStack_push (stk, reinterpret_cast <void *> (n)));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -2524,7 +2524,7 @@ static decl_node pop (void)
 
 static decl_node replace (decl_node n)
 {
-  return static_cast<decl_node> (mcStack_replace (stk, reinterpret_cast<void *> (n)));
+  return static_cast<decl_node> (mcStack_replace (stk, reinterpret_cast <void *> (n)));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -2592,7 +2592,7 @@ static bool isQualident (decl_node n)
 
 static void startWith (decl_node n)
 {
-  n = static_cast<decl_node> (mcStack_push (withStk, reinterpret_cast<void *> (n)));
+  n = static_cast<decl_node> (mcStack_push (withStk, reinterpret_cast <void *> (n)));
 }
 
 
@@ -2644,7 +2644,7 @@ static decl_node lookupWithSym (nameKey_Name i)
 
 static decl_node pushStmt (decl_node n)
 {
-  return static_cast<decl_node> (mcStack_push (stmtStk, reinterpret_cast<void *> (n)));
+  return static_cast<decl_node> (mcStack_push (stmtStk, reinterpret_cast <void *> (n)));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -2681,7 +2681,7 @@ static decl_node peepStmt (void)
 
 static decl_node pushLoop (decl_node n)
 {
-  return static_cast<decl_node> (mcStack_push (loopStk, reinterpret_cast<void *> (n)));
+  return static_cast<decl_node> (mcStack_push (loopStk, reinterpret_cast <void *> (n)));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }

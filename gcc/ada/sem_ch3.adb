@@ -741,6 +741,11 @@ package body Sem_Ch3 is
    --  Check that an entity in a list of progenitors is an interface,
    --  emit error otherwise.
 
+   procedure Warn_On_Inherently_Limited_Type (E : Entity_Id);
+   --  Emit a warning if a record type that does not have a limited keyword in
+   --  its definition has any components that are limited (which implicitly
+   --  make the type limited).
+
    -----------------------
    -- Access_Definition --
    -----------------------
@@ -3510,6 +3515,46 @@ package body Sem_Ch3 is
       then
          Check_Restriction (No_Local_Tagged_Types, T);
       end if;
+
+      --  Derived tagged types inherit aspect First_Controlling_Parameter
+      --  from their parent type and also from implemented interface types.
+      --  We implicitly perform inheritance here and will check for the
+      --  explicit confirming pragma or aspect in the sources when this type
+      --  is frozen (required for pragmas since they are placed at any place
+      --  after the type declaration; otherwise, when the pragma is used after
+      --  some non-first-controlling-parameter primitive, the reported errors
+      --  and warning would differ when the pragma is used).
+
+      if Is_Tagged_Type (T)
+        and then Is_Derived_Type (T)
+        and then not Has_First_Controlling_Parameter_Aspect (T)
+      then
+         pragma Assert (Etype (T) /= T);
+
+         if Has_First_Controlling_Parameter_Aspect (Etype (T)) then
+            Set_Has_First_Controlling_Parameter_Aspect (T);
+
+         elsif Present (Interfaces (T))
+           and then not Is_Empty_Elmt_List (Interfaces (T))
+         then
+            declare
+               Elmt  : Elmt_Id := First_Elmt (Interfaces (T));
+               Iface : Entity_Id;
+
+            begin
+               while Present (Elmt) loop
+                  Iface := Node (Elmt);
+
+                  if Has_First_Controlling_Parameter_Aspect (Iface) then
+                     Set_Has_First_Controlling_Parameter_Aspect (T);
+                     exit;
+                  end if;
+
+                  Next_Elmt (Elmt);
+               end loop;
+            end;
+         end if;
+      end if;
    end Analyze_Full_Type_Declaration;
 
    ----------------------------------
@@ -4551,11 +4596,7 @@ package body Sem_Ch3 is
             --  If the aggregate is limited it will be built in place, and its
             --  expansion is deferred until the object declaration is expanded.
 
-            --  This is also required when generating C code to ensure that an
-            --  object with an alignment or address clause can be initialized
-            --  by means of component by component assignments.
-
-            if Is_Limited_Type (T) or else Modify_Tree_For_C then
+            if Is_Limited_Type (T) then
                Set_Expansion_Delayed (E);
             end if;
 
@@ -10956,7 +10997,6 @@ package body Sem_Ch3 is
    is
       IR : constant Node_Id := Make_Itype_Reference (Sloc (Nod));
    begin
-
       --  Itype references are only created for use by the back-end
 
       if Inside_A_Generic then
@@ -13118,10 +13158,10 @@ package body Sem_Ch3 is
         and then Present (Underlying_Full_View (Full_Base))
       then
          declare
-            Underlying_Full_Base : constant Entity_Id
-                                           := Underlying_Full_View (Full_Base);
-            Underlying_Full : constant Entity_Id
-                       := Make_Defining_Identifier (Sloc (Priv), Chars (Priv));
+            Underlying_Full_Base : constant Entity_Id :=
+              Underlying_Full_View (Full_Base);
+            Underlying_Full : constant Entity_Id :=
+              Make_Defining_Identifier (Sloc (Priv), Chars (Priv));
          begin
             Set_Is_Itype (Underlying_Full);
             Set_Associated_Node_For_Itype (Underlying_Full, Related_Nod);
@@ -21875,6 +21915,14 @@ package body Sem_Ch3 is
          end;
       end if;
 
+      --  Propagate First_Controlling_Parameter aspect to the full type
+
+      if Is_Tagged_Type (Priv_T)
+        and then Has_First_Controlling_Parameter_Aspect (Priv_T)
+      then
+         Set_Has_First_Controlling_Parameter_Aspect (Full_T);
+      end if;
+
       --  Propagate predicates to full type, and predicate function if already
       --  defined. It is not clear that this can actually happen? the partial
       --  view cannot be frozen yet, and the predicate function has not been
@@ -22881,6 +22929,8 @@ package body Sem_Ch3 is
          Derive_Progenitor_Subprograms (T, T);
       end if;
 
+      Warn_On_Inherently_Limited_Type (T);
+
       Check_Function_Writable_Actuals (N);
    end Record_Type_Declaration;
 
@@ -23352,5 +23402,32 @@ package body Sem_Ch3 is
       Set_RM_Size            (T, UI_From_Int (Minimum_Size (T)));
       Set_Is_Constrained     (T);
    end Signed_Integer_Type_Declaration;
+
+   -------------------------------------
+   -- Warn_On_Inherently_Limited_Type --
+   -------------------------------------
+
+   procedure Warn_On_Inherently_Limited_Type (E : Entity_Id) is
+      C : Entity_Id;
+   begin
+      if Warnsw.Warn_On_Inherently_Limited_Type
+        and then not Is_Limited_Record (E)
+      then
+         C := First_Component (Base_Type (E));
+         while Present (C) loop
+            if Is_Inherently_Limited_Type (Etype (C)) then
+               Error_Msg_Node_2 := E;
+               Error_Msg_NE
+                 ("?_l?limited component & makes & limited", E, C);
+               Error_Msg_N
+                 ("\\?_l?consider annotating the record type "
+                  & "with a LIMITED keyword", E);
+               exit;
+            end if;
+
+            Next_Component (C);
+         end loop;
+      end if;
+   end Warn_On_Inherently_Limited_Type;
 
 end Sem_Ch3;

@@ -455,7 +455,6 @@ package body Exp_Strm is
       Lib_RE  : RE_Id;
 
    begin
-
       --  Check first for Boolean and Character. These are enumeration types,
       --  but we treat them specially, since they may require special handling
       --  in the transfer protocol. However, this special handling only applies

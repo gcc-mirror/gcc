@@ -1,4 +1,4 @@
-;; Predicate definitions for ATMEL AVR micro controllers.
+;; Insn predicate definitions for AVR 8-bit microcontrollers.
 ;; Copyright (C) 2006-2024 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
@@ -147,6 +147,11 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 2, 7)")))
 
+;; Return true if OP is constant integer 1..3 for MODE.
+(define_predicate "const_1_to_3_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 1, 3)")))
+
 ;; Return 1 if OP is constant integer 1..6 for MODE.
 (define_predicate "const_1_to_6_operand"
   (and (match_code "const_int")
@@ -162,6 +167,12 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), -255, -1)")))
 
+;; Return true if OP is a CONST_INT in { -2, -1, 1, 2 }.
+(define_predicate "abs1_abs2_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) != 0")
+       (match_test "IN_RANGE (INTVAL (op), -2, 2)")))
+
 ;; Returns true if OP is either the constant zero or a register.
 (define_predicate "reg_or_0_operand"
   (ior (match_operand 0 "register_operand")
@@ -170,6 +181,20 @@
 ;; Returns 1 if OP is a SYMBOL_REF.
 (define_predicate "symbol_ref_operand"
   (match_code "symbol_ref"))
+
+;; Returns true when OP is a SYMBOL_REF, CONST or CONST_INT that is
+;; a multiple of 256, i.e. lo8(OP) = 0.
+(define_predicate "const_0mod256_operand"
+  (ior (and (match_code "symbol_ref")
+            (match_test "SYMBOL_REF_DECL (op)
+                         && DECL_P (SYMBOL_REF_DECL (op))
+                         && DECL_ALIGN (SYMBOL_REF_DECL (op)) >= 8 * 256"))
+       (and (match_code "const")
+            (match_test "GET_CODE (XEXP (op, 0)) == PLUS")
+            (match_test "const_0mod256_operand (XEXP (XEXP (op, 0), 0), HImode)")
+            (match_test "const_0mod256_operand (XEXP (XEXP (op, 0), 1), HImode)"))
+       (and (match_code "const_int")
+            (match_test "INTVAL (op) % 256 == 0"))))
 
 ;; Return true if OP is a text segment reference.
 ;; This is needed for program memory address expressions.
@@ -228,9 +253,29 @@
   (and (match_operand 0 "comparison_operator")
        (not (match_code "gt,gtu,le,leu"))))
 
+;; True for EQ, NE, GE, LT, GT, LE
+(define_predicate "signed_comparison_operator"
+  (match_code "eq,ne,ge,lt,gt,le"))
+
 ;; True for SIGN_EXTEND, ZERO_EXTEND.
 (define_predicate "extend_operator"
   (match_code "sign_extend,zero_extend"))
+
+;; True for 8-bit operations that set SREG.N and SREG.Z in a
+;; usable way:
+;; * OP0 is a QImode register, and
+;; * OP1 is a QImode register or CONST_INT, and
+;;
+;; the allowed operations is one of:
+;;
+;; * SHIFTs with a const_int offset in { 1, 2, 3 }.
+;; * MINUS and XOR with a register operand
+;; * IOR and AND with a register operand, or d-reg + const_int
+;; * PLUS with a register operand, or d-reg + const_int,
+;;   or a const_int in { -2, -1, 1, 2 }.  */
+(define_predicate "op8_ZN_operator"
+  (and (match_code "plus,minus,ashift,ashiftrt,lshiftrt,and,ior,xor")
+       (match_test "avr_op8_ZN_operator (op)")))
 
 ;; Return true if OP is a valid call operand.
 (define_predicate "call_insn_operand"

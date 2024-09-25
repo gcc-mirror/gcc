@@ -7,7 +7,7 @@ char rvals8[] = { 0, 2, 4 };
 const __flash int fvals16[] = { 1, 2, 3 };
 int rvals16[] = { 0, 2, 4 };
 
-__attribute__((noinline, noclone))
+__attribute__((noipa))
 char xload8_r30 (const __memx char *pc)
 {
   register char c __asm ("r30");
@@ -16,7 +16,7 @@ char xload8_r30 (const __memx char *pc)
   return c;
 }
 
-__attribute__((noinline, noclone))
+__attribute__((noipa))
 int xload16_r30 (const __memx int *pc)
 {
   register int c __asm ("r30");
@@ -25,7 +25,7 @@ int xload16_r30 (const __memx int *pc)
   return c;
 }
 
-__attribute__((noinline, noclone))
+__attribute__((noipa))
 char xload8_r22 (const __memx char *pc)
 {
   register char c __asm ("r22");
@@ -34,7 +34,7 @@ char xload8_r22 (const __memx char *pc)
   return c;
 }
 
-__attribute__((noinline, noclone))
+__attribute__((noipa))
 int xload16_r22 (const __memx int *pc)
 {
   register int c __asm ("r22");
@@ -43,7 +43,7 @@ int xload16_r22 (const __memx int *pc)
   return c;
 }
 
-__attribute__((noinline, noclone))
+__attribute__((noipa))
 int xload16_r20 (const __memx int *pc)
 {
   register int c __asm ("r20");

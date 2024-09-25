@@ -1,4 +1,5 @@
 //  { dg-do run }
+//  { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
 
 // Test co_yield in a loop with no local state.
 

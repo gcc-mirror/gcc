@@ -88,7 +88,47 @@ along with GCC; see the file COPYING3.  If not see
        return -v;
      }
 
-  TODO: reiterate the revised implementation.  */
+   We implement the checking as follows:
+
+   For functions with no post-conditions we wrap the original function body as
+   follows:
+
+   {
+      handle_pre_condition_checking ();
+      original_function_body ();
+   }
+
+   This implements the intent that the preconditions are processed after the
+   function parameters are initialised but before any other actions.
+
+   For functions with post-conditions:
+
+   if (preconditions_exist)
+     handle_pre_condition_checking ();
+   try
+     {
+       original_function_body ();
+     }
+   finally
+     {
+       handle_post_condition_checking ();
+     }
+   else [only if the function is not marked noexcept(true) ]
+     {
+       ;
+     }
+
+   In this, post-conditions [that might apply to the return value etc.] are
+   evaluated on every non-exceptional edge out of the function.
+
+   FIXME outlining contract checks into separate functions was motivated
+   partly by wanting to call the postcondition function at each return
+   statement, which we no longer do; at this point outlining doesn't seem to
+   have any advantage over emitting the contracts directly in the function
+   body.
+
+   More helpful for optimization might be to make the contracts a wrapper
+   function that could be inlined into the caller, the callee, or both.  */
 
 #include "config.h"
 #include "system.h"
@@ -105,6 +145,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "print-tree.h"
 #include "stor-layout.h"
 #include "intl.h"
+#include "cgraph.h"
 
 const int max_custom_roles = 32;
 static contract_role contract_build_roles[max_custom_roles] = {
@@ -697,7 +738,6 @@ tree
 grok_contract (tree attribute, tree mode, tree result, cp_expr condition,
 	       location_t loc)
 {
-
   if (condition == error_mark_node)
     return error_mark_node;
 
@@ -738,7 +778,7 @@ grok_contract (tree attribute, tree mode, tree result, cp_expr condition,
   condition = finish_contract_condition (condition);
 
   if (condition == error_mark_node)
-      return error_mark_node;
+    return error_mark_node;
 
   CONTRACT_CONDITION (contract) = condition;
 
@@ -1439,9 +1479,14 @@ build_contract_condition_function (tree fndecl, bool pre)
       DECL_WEAK (fn) = false;
       DECL_COMDAT (fn) = false;
 
-      /* We haven't set the comdat group on the guarded function yet, we'll add
-	 this to the same group in comdat_linkage later.  */
-      //gcc_assert (!DECL_ONE_ONLY (fndecl));
+      /* We may not have set the comdat group on the guarded function yet.
+	 If we haven't, we'll add this to the same group in comdat_linkage
+	 later.  Otherwise, add it to the same comdat group now.  */
+      if (DECL_ONE_ONLY (fndecl))
+	{
+	  symtab_node *n = symtab_node::get (fndecl);
+	  cgraph_node::get_create (fn)->add_to_same_comdat_group (n);
+	}
 
       DECL_INTERFACE_KNOWN (fn) = true;
     }
@@ -2038,7 +2083,7 @@ add_pre_condition_fn_call (tree fndecl)
   /* If we're starting a guarded function with valid contracts, we need to
      insert a call to the pre function.  */
   gcc_checking_assert (DECL_PRE_FN (fndecl)
-      && DECL_PRE_FN (fndecl) != error_mark_node);
+		       && DECL_PRE_FN (fndecl) != error_mark_node);
 
   releasing_vec args = build_arg_list (fndecl);
   tree call = build_call_a (DECL_PRE_FN (fndecl), args->length (),
@@ -2054,7 +2099,7 @@ static void
 add_post_condition_fn_call (tree fndecl)
 {
   gcc_checking_assert (DECL_POST_FN (fndecl)
-      && DECL_POST_FN (fndecl) != error_mark_node);
+		       && DECL_POST_FN (fndecl) != error_mark_node);
 
   releasing_vec args = build_arg_list (fndecl);
   if (get_postcondition_result_parameter (fndecl))
@@ -2095,9 +2140,9 @@ apply_postconditions (tree fndecl)
    When we have post conditions we build a try-finally block.
    If the function might throw then the handler in the try-finally is an
    EH_ELSE expression, where the post condition check is applied to the
-   non-exceptional path, and a rethrow is applied to the EH path.  If the
-   function has a non-throwing eh spec, then the handler is simply the post
-   contract checker (either a call or, for cdtors, a direct evaluation).  */
+   non-exceptional path, and an empty statement is added to the EH path.  If
+   the function has a non-throwing eh spec, then the handler is simply the
+   post-condition checker.  */
 
 void
 maybe_apply_function_contracts (tree fndecl)
@@ -2118,13 +2163,12 @@ maybe_apply_function_contracts (tree fndecl)
   tree compound_stmt = begin_compound_stmt (0);
   current_binding_level->artificial = 1;
 
-  /* FIXME : find some better location to use - perhaps the position of the
-     function opening brace, if that is available.  */
+  /* Do not add locations for the synthesised code.  */
   location_t loc = UNKNOWN_LOCATION;
 
   /* For other cases, we call a function to process the check.  */
 
-  /* IF we hsve a pre - but not a post, then just emit that.  */
+  /* If we have a pre, but not a post, then just emit that and we are done.  */
   if (!do_post)
     {
       apply_preconditions (fndecl);
@@ -2133,29 +2177,23 @@ maybe_apply_function_contracts (tree fndecl)
       return;
     }
 
-  tree try_fin = build_stmt (loc, TRY_FINALLY_EXPR, NULL_TREE, NULL_TREE);
-  add_stmt (try_fin);
-  TREE_OPERAND (try_fin, 0) = push_stmt_list ();
   if (do_pre)
     /* Add a precondition call, if we have one. */
     apply_preconditions (fndecl);
-  add_stmt (fnbody);
-  TREE_OPERAND (try_fin, 0) = pop_stmt_list (TREE_OPERAND (try_fin, 0));
+  tree try_fin = build_stmt (loc, TRY_FINALLY_EXPR, fnbody, NULL_TREE);
+  add_stmt (try_fin);
   TREE_OPERAND (try_fin, 1) = push_stmt_list ();
-  if (!type_noexcept_p (TREE_TYPE (fndecl)))
+  /* If we have exceptions, and a function that might throw, then add
+     an EH_ELSE clause that allows the exception to propagate upwards
+     without encountering the post-condition checks.  */
+  if (flag_exceptions && !type_noexcept_p (TREE_TYPE (fndecl)))
     {
       tree eh_else = build_stmt (loc, EH_ELSE_EXPR, NULL_TREE, NULL_TREE);
-      /* We need to ignore this in constexpr considerations.  */
-      CONTRACT_EH_ELSE_P (eh_else) = true;
       add_stmt (eh_else);
       TREE_OPERAND (eh_else, 0) = push_stmt_list ();
       apply_postconditions (fndecl);
       TREE_OPERAND (eh_else, 0) = pop_stmt_list (TREE_OPERAND (eh_else, 0));
-      TREE_OPERAND (eh_else, 1) = push_stmt_list ();
-      tree rethrow = build_throw (input_location, NULL_TREE, tf_warning_or_error);
-      suppress_warning (rethrow);
-      finish_expr_stmt (rethrow);
-      TREE_OPERAND (eh_else, 1) = pop_stmt_list (TREE_OPERAND (eh_else, 1));
+      TREE_OPERAND (eh_else, 1) = build_empty_stmt (loc);
     }
   else
     apply_postconditions (fndecl);
@@ -2163,7 +2201,6 @@ maybe_apply_function_contracts (tree fndecl)
   finish_compound_stmt (compound_stmt);
   /* The DECL_SAVED_TREE stmt list will be popped by our caller.  */
 }
-
 
 /* Finish up the pre & post function definitions for a guarded FNDECL,
    and compile those functions all the way to assembler language output.  */

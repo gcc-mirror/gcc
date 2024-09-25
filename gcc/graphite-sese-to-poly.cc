@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #define INCLUDE_ISL
+#define INCLUDE_MEMORY
 
 #include "config.h"
 

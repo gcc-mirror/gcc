@@ -4210,7 +4210,7 @@ pass_profile::execute (function *fun)
      sreal iterations;
      for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
        if (expected_loop_iterations_by_profile (loop, &iterations))
-	 fprintf (dump_file, "Loop got predicted %d to iterate %f times.\n",
+	 fprintf (dump_file, "Loop %d got predicted to iterate %f times.\n",
 	   loop->num, iterations.to_double ());
    }
   return 0;

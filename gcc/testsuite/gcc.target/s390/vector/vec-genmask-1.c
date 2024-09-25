@@ -12,14 +12,14 @@ foo1 ()
 {
   return (uv2di){ 0x000fffffffffff00, 0x000fffffffffff00 };
 }
-/* { dg-final { scan-assembler-times "vgmg\t%v24,12,55" 1 } } */
+/* { dg-final { scan-assembler-times "vgm\t%v24,12,55,3" 1 } } */
 
 uv4si __attribute__((noinline))
 foo2 ()
 {
   return (uv4si){ 0xff00000f, 0xff00000f, 0xff00000f, 0xff00000f };
 }
-/* { dg-final { scan-assembler-times "vgmf\t%v24,28,7" 1 } } */
+/* { dg-final { scan-assembler-times "vgm\t%v24,28,7,2" 1 } } */
 
 uv8hi __attribute__((noinline))
 foo3a ()
@@ -27,7 +27,7 @@ foo3a ()
   return (uv8hi){ 0xfff0, 0xfff0, 0xfff0, 0xfff0,
       0xfff0, 0xfff0, 0xfff0, 0xfff0 };
 }
-/* { dg-final { scan-assembler-times "vgmh\t%v24,0,11" 1 } } */
+/* { dg-final { scan-assembler-times "vgm\t%v24,0,11,1" 1 } } */
 
 uv8hi __attribute__((noinline))
 foo3b ()
@@ -35,7 +35,7 @@ foo3b ()
   return (uv8hi){ 0x0fff, 0x0fff, 0x0fff, 0x0fff,
       0x0fff, 0x0fff, 0x0fff, 0x0fff };
 }
-/* { dg-final { scan-assembler-times "vgmh\t%v24,4,15" 1 } } */
+/* { dg-final { scan-assembler-times "vgm\t%v24,4,15,1" 1 } } */
 
 uv16qi __attribute__((noinline))
 foo4 ()
@@ -45,7 +45,7 @@ foo4 ()
       0x8, 0x8, 0x8, 0x8,
       0x8, 0x8, 0x8, 0x8 };
 }
-/* { dg-final { scan-assembler-times "vgmb\t%v24,4,4" 1 } } */
+/* { dg-final { scan-assembler-times "vgm\t%v24,4,4,0" 1 } } */
 
 int
 main ()

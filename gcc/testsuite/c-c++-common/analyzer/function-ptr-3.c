@@ -1,3 +1,5 @@
+/* { dg-skip-if "requires hosted libstdc++ for stdlib size_t" { ! hostedlib } } */
+
 #include <stdlib.h>
 
 typedef void *(*alloc_func_t) (size_t);

@@ -1,4 +1,4 @@
-// { dg-compile }
+// { dg-do compile }
 // { dg-additional-options "-msve-vector-bits=512" }
 
 #include <arm_sve.h>

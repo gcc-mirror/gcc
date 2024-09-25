@@ -10,7 +10,7 @@ const float vals[] =
 
 #define ARRAY_SIZE(X) ((int) (sizeof(X) / sizeof(*X)))
 
-__attribute__((noinline,noclone))
+__attribute__((noipa))
 void test1 (float x)
 {
   int i;

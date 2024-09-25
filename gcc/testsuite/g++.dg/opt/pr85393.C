@@ -2,6 +2,7 @@
 // { dg-do run { target c++11 } }
 // { dg-options "-O2" }
 // { dg-additional-sources "pr85393-aux.cc" }
+// { dg-skip-if "requires hosted libstdc++ for stdexcept" { ! hostedlib } }
 
 #include <stdexcept>
 #include <vector>

@@ -77,4 +77,4 @@ typedef D<C{ { 0, 1 } }>            DC01;
 typedef D<C{ { 0, 1, 0 } }>         DC01;
 typedef D<C{ { 0, 1, 0, 0 } }>      DC01;
 typedef D<C{ { 0, i1, 0, 0 } }>     DC01;
-typedef D<C{ { i0, i1, i0, i0 } }>  DC01;   // { dg-bogus "conflicting declaration" "pr94567" { xfail *-*-* } }
+typedef D<C{ { i0, i1, i0, i0 } }>  DC01;   // { dg-bogus "conflicting declaration" "pr94568" }

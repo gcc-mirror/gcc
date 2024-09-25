@@ -185,10 +185,6 @@ C_LOOSE_WARN = @c_loose_warn@
 STRICT_WARN = @strict_warn@
 C_STRICT_WARN = @c_strict_warn@
 
-# This is set by --enable-checking.  The idea is to catch forgotten
-# "extern" tags in header files.
-NOCOMMON_FLAG = @nocommon_flag@
-
 NOEXCEPTION_FLAGS = @noexception_flags@
 
 ALIASING_FLAGS = @aliasing_flags@
@@ -215,8 +211,8 @@ VALGRIND_DRIVER_DEFINES = @valgrind_path_defines@
 .-warn = $(STRICT_WARN)
 build-warn = $(STRICT_WARN)
 rtl-ssa-warn = $(STRICT_WARN)
-GCC_WARN_CFLAGS = $(LOOSE_WARN) $(C_LOOSE_WARN) $($(@D)-warn) $(if $(filter-out $(STRICT_WARN),$($(@D)-warn)),,$(C_STRICT_WARN)) $(NOCOMMON_FLAG) $($@-warn)
-GCC_WARN_CXXFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG) $($@-warn)
+GCC_WARN_CFLAGS = $(LOOSE_WARN) $(C_LOOSE_WARN) $($(@D)-warn) $(if $(filter-out $(STRICT_WARN),$($(@D)-warn)),,$(C_STRICT_WARN)) $($@-warn)
+GCC_WARN_CXXFLAGS = $(LOOSE_WARN) $($(@D)-warn) $($@-warn)
 
 # 1 2 3 ... 9999
 one_to_9999_0:=1 2 3 4 5 6 7 8 9
@@ -1455,6 +1451,7 @@ OBJS = \
 	explow.o \
 	expmed.o \
 	expr.o \
+	ext-dce.o \
 	fibonacci_heap.o \
 	file-prefix-map.o \
 	final.o \
@@ -1824,6 +1821,7 @@ OBJS = \
 OBJS-libcommon = diagnostic-spec.o diagnostic.o diagnostic-color.o \
 	diagnostic-format-json.o \
 	diagnostic-format-sarif.o \
+	diagnostic-format-text.o \
 	diagnostic-global-context.o \
 	diagnostic-macro-unwinding.o \
 	diagnostic-path.o \
@@ -1835,6 +1833,7 @@ OBJS-libcommon = diagnostic-spec.o diagnostic.o diagnostic-color.o \
 	vec.o input.o hash-table.o ggc-none.o memory-block.o \
 	selftest.o selftest-diagnostic.o sort.o \
 	selftest-diagnostic-path.o \
+	selftest-json.o \
 	selftest-logical-location.o \
 	text-art/box-drawing.o \
 	text-art/canvas.o \

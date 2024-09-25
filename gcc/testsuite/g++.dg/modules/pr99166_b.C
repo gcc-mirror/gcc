@@ -1,4 +1,6 @@
 // { dg-additional-options {-fmodules-ts -flang-info-module-cmi=<iostream>} }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
+
 export module Foo;
 import <iostream>;
 

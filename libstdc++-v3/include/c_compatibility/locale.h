@@ -26,10 +26,10 @@
  *  This is a Standard C++ Library header.
  */
 
-#include <clocale>
-
 #ifndef _GLIBCXX_LOCALE_H
 #define _GLIBCXX_LOCALE_H 1
+
+#include <clocale>
 
 #ifdef _GLIBCXX_NAMESPACE_C
 using std::lconv;

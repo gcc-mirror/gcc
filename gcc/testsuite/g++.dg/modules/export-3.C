@@ -26,5 +26,3 @@ namespace {
 }
 
 export namespace {}  // { dg-error "internal linkage" }
-
-// { dg-prune-output "not writing module" }

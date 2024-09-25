@@ -68,7 +68,7 @@ static bool ext_gcn_constants_init = 0;
 
 /* Holds the ISA variant, derived from the command line parameters.  */
 
-enum gcn_isa gcn_isa = ISA_GCN3;	/* Default to GCN3.  */
+enum gcn_isa gcn_isa = ISA_GCN5;	/* Default to GCN5.  */
 
 /* Reserve this much space for LDS (for propagating variables from
    worker-single mode to worker-partitioned mode), per workgroup.  Global
@@ -133,8 +133,7 @@ gcn_option_override (void)
   if (!flag_pic)
     flag_pic = flag_pie;
 
-  gcn_isa = (gcn_arch == PROCESSOR_FIJI ? ISA_GCN3
-      : gcn_arch == PROCESSOR_VEGA10 ? ISA_GCN5
+  gcn_isa = (gcn_arch == PROCESSOR_VEGA10 ? ISA_GCN5
       : gcn_arch == PROCESSOR_VEGA20 ? ISA_GCN5
       : gcn_arch == PROCESSOR_GFX908 ? ISA_CDNA1
       : gcn_arch == PROCESSOR_GFX90a ? ISA_CDNA2
@@ -164,17 +163,15 @@ gcn_option_override (void)
 	acc_lds_size = 32768;
     }
 
-  /* gfx803 "Fiji", gfx1030 and gfx1100 do not support XNACK.  */
-  if (gcn_arch == PROCESSOR_FIJI
-      || gcn_arch == PROCESSOR_GFX1030
+  /* gfx1030 and gfx1100 do not support XNACK.  */
+  if (gcn_arch == PROCESSOR_GFX1030
       || gcn_arch == PROCESSOR_GFX1036
       || gcn_arch == PROCESSOR_GFX1100
       || gcn_arch == PROCESSOR_GFX1103)
     {
       if (flag_xnack == HSACO_ATTR_ON)
 	error ("%<-mxnack=on%> is incompatible with %<-march=%s%>",
-	       (gcn_arch == PROCESSOR_FIJI ? "fiji"
-		: gcn_arch == PROCESSOR_GFX1030 ? "gfx1030"
+	       (gcn_arch == PROCESSOR_GFX1030 ? "gfx1030"
 		: gcn_arch == PROCESSOR_GFX1036 ? "gfx1036"
 		: gcn_arch == PROCESSOR_GFX1100 ? "gfx1100"
 		: gcn_arch == PROCESSOR_GFX1103 ? "gfx1103"
@@ -190,7 +187,6 @@ gcn_option_override (void)
   if (flag_xnack == HSACO_ATTR_DEFAULT)
     switch (gcn_arch)
       {
-      case PROCESSOR_FIJI:
       case PROCESSOR_VEGA10:
       case PROCESSOR_VEGA20:
       case PROCESSOR_GFX908:
@@ -1532,8 +1528,7 @@ gcn_flat_address_p (rtx x, machine_mode mode)
   if (!vec_mode && gcn_vec_address_register_p (x, DImode, false))
     return true;
 
-  if (TARGET_FLAT_OFFSETS
-      && GET_CODE (x) == PLUS
+  if (GET_CODE (x) == PLUS
       && gcn_vec_address_register_p (XEXP (x, 0), DImode, false)
       && CONST_INT_P (XEXP (x, 1)))
     return true;
@@ -1644,10 +1639,6 @@ static bool
 gcn_addr_space_legitimate_address_p (machine_mode mode, rtx x, bool strict,
 				     addr_space_t as, code_helper = ERROR_MARK)
 {
-  /* All vector instructions need to work on addresses in registers.  */
-  if (!TARGET_FLAT_OFFSETS && (vgpr_vector_mode_p (mode) && !REG_P (x)))
-    return false;
-
   if (AS_SCALAR_FLAT_P (as))
     {
       if (mode == QImode || mode == HImode)
@@ -1693,15 +1684,13 @@ gcn_addr_space_legitimate_address_p (machine_mode mode, rtx x, bool strict,
     return gcn_address_register_p (x, SImode, strict);
   else if (AS_FLAT_P (as) || AS_FLAT_SCRATCH_P (as))
     {
-      if (!TARGET_FLAT_OFFSETS || GET_CODE (x) == REG)
+      if (GET_CODE (x) == REG)
        return ((GET_MODE_CLASS (mode) == MODE_VECTOR_INT
 		|| GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
 	       ? gcn_address_register_p (x, DImode, strict)
 	       : gcn_vec_address_register_p (x, DImode, strict));
       else
 	{
-	  gcc_assert (TARGET_FLAT_OFFSETS);
-
 	  if (GET_CODE (x) == PLUS)
 	    {
 	      rtx x1 = XEXP (x, 1);
@@ -1725,8 +1714,6 @@ gcn_addr_space_legitimate_address_p (machine_mode mode, rtx x, bool strict,
     }
   else if (AS_GLOBAL_P (as))
     {
-      gcc_assert (TARGET_FLAT_OFFSETS);
-
       if (GET_CODE (x) == REG)
        return (gcn_address_register_p (x, DImode, strict)
 	       || (!VECTOR_MODE_P (mode)
@@ -2203,7 +2190,7 @@ gcn_addr_space_legitimize_address (rtx x, rtx old, machine_mode mode,
     case ADDR_SPACE_FLAT:
     case ADDR_SPACE_FLAT_SCRATCH:
     case ADDR_SPACE_GLOBAL:
-      return !TARGET_FLAT_OFFSETS ? force_reg (DImode, x) : x;
+      return x;
     case ADDR_SPACE_LDS:
     case ADDR_SPACE_GDS:
       /* FIXME: LDS support offsets, handle them!.  */
@@ -2240,13 +2227,6 @@ gcn_expand_scalar_to_vector_address (machine_mode mode, rtx exec, rtx mem,
   gcc_assert (MEM_P (mem));
   rtx mem_base = XEXP (mem, 0);
   rtx mem_index = NULL_RTX;
-
-  if (!TARGET_FLAT_OFFSETS)
-    {
-      /* gcn_addr_space_legitimize_address should have put the address in a
-         register.  If not, it is too late to do anything about it.  */
-      gcc_assert (REG_P (mem_base));
-    }
 
   if (GET_CODE (mem_base) == PLUS)
     {
@@ -2493,6 +2473,13 @@ gcn_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
 static void
 gcn_conditional_register_usage (void)
 {
+  /* Some architectures have a register allocation granularity that does not
+     permit use of the full register count.  */
+  for (int i = 256 - (256 % TARGET_VGPR_GRANULARITY);
+       i < 256;
+       i++)
+    fixed_regs[VGPR_REGNO (i)] = call_used_regs[VGPR_REGNO (i)] = 1;
+
   if (!cfun || !cfun->machine)
     return;
 
@@ -3043,8 +3030,6 @@ gcn_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
     case omp_device_arch:
       return strcmp (name, "amdgcn") == 0 || strcmp (name, "gcn") == 0;
     case omp_device_isa:
-      if (strcmp (name, "fiji") == 0 || strcmp (name, "gfx803") == 0)
-	return gcn_arch == PROCESSOR_FIJI;
       if (strcmp (name, "gfx900") == 0)
 	return gcn_arch == PROCESSOR_VEGA10;
       if (strcmp (name, "gfx906") == 0)
@@ -3555,17 +3540,6 @@ gcn_expand_prologue ()
   /* Ensure that the scheduler doesn't do anything unexpected.  */
   emit_insn (gen_blockage ());
 
-  if (TARGET_M0_LDS_LIMIT)
-  {
-    /* m0 is initialized for the usual LDS DS and FLAT memory case.
-       The low-part is the address of the topmost addressable byte, which is
-       size-1.  The high-part is an offset and should be zero.  */
-    emit_move_insn (gen_rtx_REG (SImode, M0_REG),
-	gen_int_mode (LDS_SIZE, SImode));
-
-    emit_insn (gen_prologue_use (gen_rtx_REG (SImode, M0_REG)));
-  }
-
   if (cfun && cfun->machine && !cfun->machine->normal_function && flag_openmp)
     {
       /* OpenMP kernels have an implicit call to gomp_gcn_enter_kernel.  */
@@ -3787,6 +3761,7 @@ gcn_asm_trampoline_template (FILE *f)
   asm_fprintf (f, "\ts_mov_b32\ts%i, 0xffff\n", CC_SAVE_REG);
   asm_fprintf (f, "\ts_mov_b32\ts%i, 0xffff\n", CC_SAVE_REG + 1);
   asm_fprintf (f, "\ts_setpc_b64\ts[%i:%i]\n", CC_SAVE_REG, CC_SAVE_REG + 1);
+  asm_fprintf (f, "\t.align 8\n");
 }
 
 /* Implement TARGET_TRAMPOLINE_INIT.
@@ -3799,11 +3774,6 @@ gcn_asm_trampoline_template (FILE *f)
 static void
 gcn_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 {
-  // FIXME
-  if (TARGET_GCN5_PLUS)
-    sorry ("nested function trampolines not supported on GCN5 due to"
-           " non-executable stacks");
-
   emit_block_move (m_tramp, assemble_trampoline_template (),
 		   GEN_INT (TRAMPOLINE_SIZE), BLOCK_OP_NORMAL);
 
@@ -5594,8 +5564,7 @@ gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
 		    || unspec == UNSPEC_UMAX_DPP_SHR);
   bool use_plus_carry = unspec == UNSPEC_PLUS_DPP_SHR
 			&& GET_MODE_CLASS (mode) == MODE_VECTOR_INT
-			/* FIXME: why GCN3?  */
-			&& (TARGET_GCN3 || scalar_mode == DImode);
+			&& scalar_mode == DImode;
 
   if (use_plus_carry)
     unspec = UNSPEC_PLUS_CARRY_DPP_SHR;
@@ -6584,11 +6553,6 @@ output_file_start (void)
   const char *cpu;
   switch (gcn_arch)
     {
-    case PROCESSOR_FIJI:
-      cpu = "gfx803";
-      xnack = "";
-      sram_ecc = "";
-      break;
     case PROCESSOR_VEGA10:
       cpu = "gfx900";
       sram_ecc = "";
@@ -7067,15 +7031,10 @@ print_operand_address (FILE *file, rtx mem)
       if (GET_CODE (addr) == REG)
 	print_reg (file, addr);
       else
-	{
-	  gcc_assert (TARGET_FLAT_OFFSETS);
-	  print_reg (file, XEXP (addr, 0));
-	}
+	print_reg (file, XEXP (addr, 0));
     }
   else if (AS_GLOBAL_P (as))
     {
-      gcc_assert (TARGET_GLOBAL_ADDRSPACE);
-
       rtx base = addr;
       rtx vgpr_offset = NULL_RTX;
 
@@ -7187,7 +7146,6 @@ print_operand_address (FILE *file, rtx mem)
    E - print conditional code for v_cmp (eq_u64/ne_u64...)
    A - print address in formatting suitable for given address space.
    O - print offset:n for data share operations.
-   ^ - print "_co" suffix for GCN5 mnemonics
    g - print "glc", if appropriate for given MEM
    L - print low-part of a multi-reg value
    H - print second part of a multi-reg value (high-part of 2-reg value)
@@ -7436,8 +7394,6 @@ print_operand (FILE *file, rtx x, int code)
 	rtx x0 = XEXP (x, 0);
 	if (AS_GLOBAL_P (MEM_ADDR_SPACE (x)))
 	  {
-	    gcc_assert (TARGET_GLOBAL_ADDRSPACE);
-
 	    fprintf (file, ", ");
 
 	    rtx base = x0;
@@ -7805,10 +7761,6 @@ print_operand (FILE *file, rtx x, int code)
 	}
       else
 	output_addr_const (file, x);
-      return;
-    case '^':
-      if (TARGET_EXPLICIT_CARRY)
-	fputs ("_co", file);
       return;
     case 'g':
       gcc_assert (xcode == MEM);

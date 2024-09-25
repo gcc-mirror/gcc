@@ -937,7 +937,8 @@ public:
   void print (pretty_printer *pp) const;
 
 private:
-  clobber_group (clobber_info *clobber);
+  clobber_group (clobber_info *);
+  clobber_group (clobber_info *, clobber_info *, clobber_info *);
 
   // Set the values of first_clobber () and last_clobber ().
   void set_first_clobber (clobber_info *c) { m_clobber_or_set = c; }
@@ -1051,6 +1052,7 @@ void pp_accesses (pretty_printer *, access_array,
 void pp_def_node (pretty_printer *, const def_node *);
 void pp_def_mux (pretty_printer *, def_mux);
 void pp_def_lookup (pretty_printer *, def_lookup);
+void pp_def_splay_tree (pretty_printer *, def_splay_tree);
 
 }
 
@@ -1062,6 +1064,7 @@ void dump (FILE *, rtl_ssa::access_array,
 void dump (FILE *, const rtl_ssa::def_node *);
 void dump (FILE *, rtl_ssa::def_mux);
 void dump (FILE *, rtl_ssa::def_lookup);
+void dump (FILE *, rtl_ssa::def_splay_tree);
 
 void DEBUG_FUNCTION debug (const rtl_ssa::resource_info *);
 void DEBUG_FUNCTION debug (const rtl_ssa::access_info *);
@@ -1069,3 +1072,4 @@ void DEBUG_FUNCTION debug (const rtl_ssa::access_array);
 void DEBUG_FUNCTION debug (const rtl_ssa::def_node *);
 void DEBUG_FUNCTION debug (const rtl_ssa::def_mux &);
 void DEBUG_FUNCTION debug (const rtl_ssa::def_lookup &);
+void DEBUG_FUNCTION debug (const rtl_ssa::def_splay_tree &);

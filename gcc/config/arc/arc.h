@@ -1660,8 +1660,4 @@ enum
 /* The default option for BI/BIH instructions.  */
 #define DEFAULT_BRANCH_INDEX 0
 
-#ifndef TARGET_LRA
-#define TARGET_LRA arc_lra_p()
-#endif
-
 #endif /* GCC_ARC_H */

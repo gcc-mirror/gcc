@@ -46,8 +46,7 @@ ASTLoweringStmt::translate (AST::Stmt *stmt, bool *terminated)
 void
 ASTLoweringStmt::visit (AST::ExprStmt &stmt)
 {
-  HIR::Expr *expr
-    = ASTLoweringExpr::translate (stmt.get_expr ().get (), &terminated);
+  HIR::Expr *expr = ASTLoweringExpr::translate (stmt.get_expr (), &terminated);
 
   auto crate_num = mappings->get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, stmt.get_node_id (),
@@ -61,21 +60,20 @@ ASTLoweringStmt::visit (AST::ExprStmt &stmt)
 void
 ASTLoweringStmt::visit (AST::ConstantItem &constant)
 {
-  translated = ASTLoweringItem::translate (&constant);
+  translated = ASTLoweringItem::translate (constant);
 }
 
 void
 ASTLoweringStmt::visit (AST::LetStmt &stmt)
 {
   HIR::Pattern *variables
-    = ASTLoweringPattern::translate (stmt.get_pattern ().get (), true);
+    = ASTLoweringPattern::translate (stmt.get_pattern (), true);
   HIR::Type *type = stmt.has_type ()
-		      ? ASTLoweringType::translate (stmt.get_type ().get ())
+		      ? ASTLoweringType::translate (stmt.get_type ())
 		      : nullptr;
   HIR::Expr *init_expression
-    = stmt.has_init_expr ()
-	? ASTLoweringExpr::translate (stmt.get_init_expr ().get ())
-	: nullptr;
+    = stmt.has_init_expr () ? ASTLoweringExpr::translate (stmt.get_init_expr ())
+			    : nullptr;
 
   auto crate_num = mappings->get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, stmt.get_node_id (),
@@ -91,25 +89,25 @@ ASTLoweringStmt::visit (AST::LetStmt &stmt)
 void
 ASTLoweringStmt::visit (AST::TupleStruct &struct_decl)
 {
-  translated = ASTLoweringItem::translate (&struct_decl);
+  translated = ASTLoweringItem::translate (struct_decl);
 }
 
 void
 ASTLoweringStmt::visit (AST::StructStruct &struct_decl)
 {
-  translated = ASTLoweringItem::translate (&struct_decl);
+  translated = ASTLoweringItem::translate (struct_decl);
 }
 
 void
 ASTLoweringStmt::visit (AST::Union &union_decl)
 {
-  translated = ASTLoweringItem::translate (&union_decl);
+  translated = ASTLoweringItem::translate (union_decl);
 }
 
 void
 ASTLoweringStmt::visit (AST::Enum &enum_decl)
 {
-  translated = ASTLoweringItem::translate (&enum_decl);
+  translated = ASTLoweringItem::translate (enum_decl);
 }
 
 void
@@ -126,7 +124,7 @@ ASTLoweringStmt::visit (AST::EmptyStmt &empty)
 void
 ASTLoweringStmt::visit (AST::Function &function)
 {
-  translated = ASTLoweringItem::translate (&function);
+  translated = ASTLoweringItem::translate (function);
 }
 
 void
@@ -144,19 +142,19 @@ ASTLoweringStmt::visit (AST::MacroRulesDefinition &def)
 void
 ASTLoweringStmt::visit (AST::Trait &trait)
 {
-  translated = ASTLoweringItem::translate (&trait);
+  translated = ASTLoweringItem::translate (trait);
 }
 
 void
 ASTLoweringStmt::visit (AST::InherentImpl &impl_block)
 {
-  translated = ASTLoweringItem::translate (&impl_block);
+  translated = ASTLoweringItem::translate (impl_block);
 }
 
 void
 ASTLoweringStmt::visit (AST::TraitImpl &impl_block)
 {
-  translated = ASTLoweringItem::translate (&impl_block);
+  translated = ASTLoweringItem::translate (impl_block);
 }
 
 } // namespace HIR

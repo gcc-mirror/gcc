@@ -5,6 +5,7 @@
 // { dg-additional-options -fdeps-format=p1689r5 }
 // { dg-additional-options -fdeps-target=p1689-2.o }
 // { dg-additional-options -fdeps-file=p1689-2.ddi }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 
 // Export a module partition that uses modules.
 

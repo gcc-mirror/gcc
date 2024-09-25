@@ -1,11 +1,11 @@
-// { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts-ts" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fconcepts" }
 
 template<typename T>
-  concept bool One() { return sizeof(T) >= 4; }
+  concept One = sizeof(T) >= 4;
 
 template<typename T>
-  concept bool Two() { return One<T>() && sizeof(T) >= 8; }
+  concept Two = One<T> && sizeof(T) >= 8;
 
 // Check ordering of partial specializaitons
 template<typename T>

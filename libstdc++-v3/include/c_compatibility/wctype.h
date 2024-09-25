@@ -26,10 +26,10 @@
  *  This is a Standard C++ Library header.
  */
 
-#include <cwctype>
-
 #ifndef _GLIBCXX_CWCTYPE_H
 #define _GLIBCXX_CWCTYPE_H 1
+
+#include <cwctype>
 
 #ifdef _GLIBCXX_NAMESPACE_C
 using std::wctype_t;

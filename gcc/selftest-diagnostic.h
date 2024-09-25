@@ -40,6 +40,16 @@ class test_diagnostic_context : public diagnostic_context
      real filename (to avoid printing the names of tempfiles).  */
   static void
   start_span_cb (diagnostic_context *context, expanded_location exploc);
+
+  /* Report a diagnostic to this context.  For a selftest, this
+     should only be called on a context that uses a non-standard formatter
+     that e.g. gathers the results in memory, rather than emits to stderr.  */
+  bool
+  report (diagnostic_t kind,
+	  rich_location &richloc,
+	  const diagnostic_metadata *metadata,
+	  int option,
+	  const char * fmt, ...) ATTRIBUTE_GCC_DIAG(6,7);
 };
 
 } // namespace selftest

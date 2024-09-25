@@ -22,8 +22,8 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 DEFINITION MODULE m2decl ;
 
 FROM SYSTEM IMPORT ADDRESS ;
-FROM m2tree IMPORT Tree ;
-FROM m2linemap IMPORT location_t ;
+FROM gcctypes IMPORT location_t, tree ;
+FROM CDataTypes IMPORT ConstCharStar ;
 
 
 (*
@@ -31,14 +31,14 @@ FROM m2linemap IMPORT location_t ;
    the dynamic linking scaffold.
 *)
 
-PROCEDURE BuildModuleCtor (moduleCtor: Tree) ;
+PROCEDURE BuildModuleCtor (moduleCtor: tree) ;
 
 
 (*
    DeclareModuleCtor configures the function to be used as a ctor.
 *)
 
-PROCEDURE DeclareModuleCtor (decl: Tree) : Tree ;
+PROCEDURE DeclareModuleCtor (decl: tree) : tree ;
 
 
 
@@ -47,13 +47,13 @@ PROCEDURE DeclareModuleCtor (decl: Tree) : Tree ;
 *)
 
 PROCEDURE DeclareM2linkForcedModuleInitOrder (location: location_t;
-                                              RuntimeOverride: ADDRESS) : Tree ;
+                                              RuntimeOverride: ADDRESS) : tree ;
 
 
 PROCEDURE DeclareM2linkStaticInitialization (location: location_t;
-                                             ScaffoldStatic: INTEGER) : Tree ;
+                                             ScaffoldStatic: INTEGER) : tree ;
 
-PROCEDURE BuildPtrToTypeString (location: location_t; string: ADDRESS; type: Tree) : Tree ;
+PROCEDURE BuildPtrToTypeString (location: location_t; string: ADDRESS; type: tree) : tree ;
 
 
 (*
@@ -88,14 +88,14 @@ PROCEDURE GetBitsPerWord () : INTEGER ;
     BuildIntegerConstant - return a tree containing the integer value.
 *)
 
-PROCEDURE BuildIntegerConstant (value: INTEGER) : Tree ;
+PROCEDURE BuildIntegerConstant (value: INTEGER) : tree ;
 
 
 (*
     BuildStringConstantType - builds a string constant with a type.
 *)
 
-PROCEDURE BuildStringConstantType (length: INTEGER; string: ADDRESS; type: Tree) : Tree ;
+PROCEDURE BuildStringConstantType (length: INTEGER; string: ConstCharStar; type: tree) : tree ;
 
 
 (*
@@ -105,9 +105,9 @@ PROCEDURE BuildStringConstantType (length: INTEGER; string: ADDRESS; type: Tree)
                            isglobal is TRUE.
 *)
 
-PROCEDURE DeclareKnownVariable (location: location_t; name: ADDRESS; type: Tree;
+PROCEDURE DeclareKnownVariable (location: location_t; name: ConstCharStar; type: tree;
                                 exported, imported, istemporary, isglobal: BOOLEAN;
-                                scope, initial: Tree) : Tree ;
+                                scope, initial: tree) : tree ;
 
 
 (*
@@ -120,7 +120,7 @@ PROCEDURE DeclareKnownVariable (location: location_t; name: ADDRESS; type: Tree;
                            always be referenced.
 *)
 
-PROCEDURE DeclareKnownConstant (location: location_t; type: Tree; value: Tree) : Tree ;
+PROCEDURE DeclareKnownConstant (location: location_t; type: tree; value: tree) : tree ;
 
 
 (*
@@ -130,8 +130,8 @@ PROCEDURE DeclareKnownConstant (location: location_t; type: Tree; value: Tree) :
                                 type declaration and we ignore names.
 *)
 
-PROCEDURE BuildParameterDeclaration (location: location_t; name: ADDRESS; type: Tree;
-                                     isreference: BOOLEAN) : Tree ;
+PROCEDURE BuildParameterDeclaration (location: location_t; name: ConstCharStar; type: tree;
+                                     isreference: BOOLEAN) : tree ;
 
 
 (*
@@ -148,16 +148,16 @@ PROCEDURE BuildStartFunctionDeclaration (uses_varargs: BOOLEAN) ;
 *)
 
 PROCEDURE BuildEndFunctionDeclaration (location_begin, location_end: location_t;
-                                       name: ADDRESS; returntype: Tree;
+                                       name: ConstCharStar; returntype: tree;
                                        isexternal, isnested, ispublic,
-                                       isnoreturn: BOOLEAN) : Tree ;
+                                       isnoreturn: BOOLEAN) : tree ;
 
 
 (*
     RememberVariables -
 *)
 
-PROCEDURE RememberVariables (l: Tree) ;
+PROCEDURE RememberVariables (l: tree) ;
 
 
 (*
@@ -168,8 +168,8 @@ PROCEDURE RememberVariables (l: Tree) ;
 *)
 
 PROCEDURE BuildConstLiteralNumber (location: location_t;
-                                   str: ADDRESS; base: CARDINAL;
-                                   issueError: BOOLEAN) : Tree ;
+                                   str: ConstCharStar; base: CARDINAL;
+                                   issueError: BOOLEAN) : tree ;
 
 
 (*
@@ -177,7 +177,7 @@ PROCEDURE BuildConstLiteralNumber (location: location_t;
                           and, length.
 *)
 
-PROCEDURE BuildStringConstant (string: ADDRESS; length: INTEGER) : Tree ;
+PROCEDURE BuildStringConstant (string: ConstCharStar; length: INTEGER) : tree ;
 
 
 (*
@@ -185,11 +185,11 @@ PROCEDURE BuildStringConstant (string: ADDRESS; length: INTEGER) : Tree ;
                            and, length.
 *)
 
-PROCEDURE BuildCStringConstant (string: ADDRESS; length: INTEGER) : Tree ;
+PROCEDURE BuildCStringConstant (string: ConstCharStar; length: INTEGER) : tree ;
 
 
 
-PROCEDURE GetDeclContext (t: Tree) : Tree ;
+PROCEDURE GetDeclContext (t: tree) : tree ;
 
 
 END m2decl.

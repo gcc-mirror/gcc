@@ -23,7 +23,16 @@
 #define GCC_AARCH64_OPTS_H
 
 #ifndef USED_FOR_TARGET
-typedef uint64_t aarch64_feature_flags;
+#include "bbitmap.h"
+
+typedef uint64_t aarch64_isa_mode;
+
+constexpr unsigned int AARCH64_NUM_ISA_MODES = (0
+#define DEF_AARCH64_ISA_MODE(IDENT) + 1
+#include "aarch64-isa-modes.def"
+);
+
+typedef bbitmap<2> aarch64_feature_flags;
 #endif
 
 /* The various cores that implement AArch64.  */
@@ -104,6 +113,23 @@ enum stack_protector_guard {
 enum aarch64_key_type {
   AARCH64_KEY_A,
   AARCH64_KEY_B
+};
+
+/* An enum for setting the auto-vectorization preference:
+   - AARCH64_AUTOVEC_DEFAULT: Use default heuristics
+   - AARCH64_AUTOVEC_ASIMD_ONLY: Use only Advanced SIMD (Neon)
+   for auto-vectorisation
+   - AARCH64_AUTOVEC_SVE_ONLY: Use only SVE for auto-vectorisation
+   - AARCH64_AUTOVEC_PREFER_ASIMD: Use both Neon and SVE,
+   but prefer Neon when the costs are equal
+   - AARCH64_AUTOVEC_PREFER_SVE: Use both Neon and SVE,
+   but prefer SVE when the costs are equal.  */
+enum aarch64_autovec_preference_enum {
+  AARCH64_AUTOVEC_DEFAULT,
+  AARCH64_AUTOVEC_ASIMD_ONLY,
+  AARCH64_AUTOVEC_SVE_ONLY,
+  AARCH64_AUTOVEC_PREFER_ASIMD,
+  AARCH64_AUTOVEC_PREFER_SVE
 };
 
 /* An enum specifying how to handle load and store pairs using

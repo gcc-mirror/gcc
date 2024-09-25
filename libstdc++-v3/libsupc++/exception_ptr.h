@@ -151,8 +151,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
 #ifdef _GLIBCXX_EH_PTR_COMPAT
       // Retained for compatibility with CXXABI_1.3.
-      void _M_safe_bool_dummy() _GLIBCXX_USE_NOEXCEPT
-	__attribute__ ((__const__));
+      void _M_safe_bool_dummy() _GLIBCXX_USE_NOEXCEPT;
       bool operator!() const _GLIBCXX_USE_NOEXCEPT
 	__attribute__ ((__pure__));
       operator __safe_bool() const _GLIBCXX_USE_NOEXCEPT;

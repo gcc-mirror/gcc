@@ -1,6 +1,7 @@
 // Explicit generic lambda test from N3690 5.1.2.5
 // { dg-do compile { target c++14 } }
 // { dg-options "-Wpedantic" }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 
 #include <iostream>
 

@@ -28,8 +28,7 @@ namespace Resolver {
 
 static bool
 resolve_operator_overload_fn (
-  Analysis::RustLangItem::ItemType lang_item_type, TyTy::BaseType *ty,
-  TyTy::FnType **resolved_fn,
+  LangItem::Kind lang_item_type, TyTy::BaseType *ty, TyTy::FnType **resolved_fn,
   Adjustment::AdjustmentType *requires_ref_adjustment);
 
 TyTy::BaseType *
@@ -42,8 +41,7 @@ Adjuster::adjust_type (const std::vector<Adjustment> &adjustments)
 }
 
 Adjustment
-Adjuster::try_deref_type (TyTy::BaseType *ty,
-			  Analysis::RustLangItem::ItemType deref_lang_item)
+Adjuster::try_deref_type (TyTy::BaseType *ty, LangItem::Kind deref_lang_item)
 {
   TyTy::FnType *fn = nullptr;
   Adjustment::AdjustmentType requires_ref_adjustment
@@ -68,11 +66,11 @@ Adjuster::try_deref_type (TyTy::BaseType *ty,
     = Adjustment::AdjustmentType::ERROR;
   switch (deref_lang_item)
     {
-    case Analysis::RustLangItem::ItemType::DEREF:
+    case LangItem::Kind::DEREF:
       adjustment_type = Adjustment::AdjustmentType::DEREF;
       break;
 
-    case Analysis::RustLangItem::ItemType::DEREF_MUT:
+    case LangItem::Kind::DEREF_MUT:
       adjustment_type = Adjustment::AdjustmentType::DEREF_MUT;
       break;
 
@@ -122,7 +120,7 @@ Adjuster::try_unsize_type (TyTy::BaseType *ty)
 
 static bool
 resolve_operator_overload_fn (
-  Analysis::RustLangItem::ItemType lang_item_type, TyTy::BaseType *lhs,
+  LangItem::Kind lang_item_type, TyTy::BaseType *lhs,
   TyTy::FnType **resolved_fn,
   Adjustment::AdjustmentType *requires_ref_adjustment)
 {
@@ -130,8 +128,7 @@ resolve_operator_overload_fn (
   auto mappings = Analysis::Mappings::get ();
 
   // look up lang item for arithmetic type
-  std::string associated_item_name
-    = Analysis::RustLangItem::ToString (lang_item_type);
+  std::string associated_item_name = LangItem::ToString (lang_item_type);
   DefId respective_lang_item_id = UNKNOWN_DEFID;
   bool lang_item_defined
     = mappings->lookup_lang_item (lang_item_type, &respective_lang_item_id);
@@ -359,8 +356,7 @@ AutoderefCycle::cycle (TyTy::BaseType *receiver)
 	  return false;
 	}
 
-      Adjustment deref
-	= Adjuster::try_deref_type (r, Analysis::RustLangItem::ItemType::DEREF);
+      Adjustment deref = Adjuster::try_deref_type (r, LangItem::Kind::DEREF);
       if (!deref.is_error ())
 	{
 	  auto deref_r = deref.get_expected ();
@@ -374,8 +370,8 @@ AutoderefCycle::cycle (TyTy::BaseType *receiver)
 	  adjustments.pop_back ();
 	}
 
-      Adjustment deref_mut = Adjuster::try_deref_type (
-	r, Analysis::RustLangItem::ItemType::DEREF_MUT);
+      Adjustment deref_mut
+	= Adjuster::try_deref_type (r, LangItem::Kind::DEREF_MUT);
       if (!deref_mut.is_error ())
 	{
 	  auto deref_r = deref_mut.get_expected ();

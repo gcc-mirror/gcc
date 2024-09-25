@@ -1,0 +1,19 @@
+MODULE badconst ;
+
+IMPORT SYSTEM;
+
+TYPE
+   T = POINTER TO CONS;
+   CONS = RECORD
+             CAR: SYSTEM.ADDRESS;
+             CDR: T;
+          END ;
+
+PROCEDURE POP(VAR LST: T): SYSTEM.ADDRESS;
+CONST CAR = LST.CAR;
+BEGIN
+   RETURN NIL;
+END POP;
+
+BEGIN
+END badconst.

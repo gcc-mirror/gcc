@@ -1,5 +1,6 @@
 // { dg-do compile { target c++11 } }
 // { dg-require-effective-target stdint_types }
+// { dg-skip-if "requires hosted libstdc++ for string in udlit-string-literal.h" { ! hostedlib } }
 // PR c++/55582
 
 #include "udlit-string-literal.h"

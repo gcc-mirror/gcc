@@ -82,6 +82,27 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"a", "zaamo"},
   {"a", "zalrsc"},
 
+  {"c", "zca"},
+  {"c", "zcf",
+   [] (const riscv_subset_list *subset_list) -> bool
+   {
+     return subset_list->xlen () == 32 && subset_list->lookup ("f");
+   }},
+  {"c", "zcd",
+   [] (const riscv_subset_list *subset_list) -> bool
+   {
+     return subset_list->lookup ("d");
+   }},
+
+  {"zabha", "zaamo"},
+  {"zacas", "zaamo"},
+
+  {"zcmop", "zca"},
+
+  {"b", "zba"},
+  {"b", "zbb"},
+  {"b", "zbs"},
+
   {"zdinx", "zfinx"},
   {"zfinx", "zicsr"},
   {"zdinx", "zicsr"},
@@ -198,6 +219,8 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"ssstateen", "zicsr"},
   {"sstc", "zicsr"},
 
+  {"xsfvcp", "zve32x"},
+
   {NULL, NULL}
 };
 
@@ -243,6 +266,8 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"c", ISA_SPEC_CLASS_20190608, 2, 0},
   {"c", ISA_SPEC_CLASS_2P2,      2, 0},
 
+  {"b",       ISA_SPEC_CLASS_NONE, 1, 0},
+
   {"h",       ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"v",       ISA_SPEC_CLASS_NONE, 1, 0},
@@ -260,6 +285,8 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zawrs", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zaamo", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zalrsc", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zabha", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zacas", ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"zba", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zbb", ISA_SPEC_CLASS_NONE, 1, 0},
@@ -293,6 +320,9 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"ziccif",   ISA_SPEC_CLASS_NONE, 1, 0},
   {"zicclsm",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"ziccrse",  ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"zimop", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zcmop", ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"zicntr", ISA_SPEC_CLASS_NONE, 2, 0},
   {"zihpm",  ISA_SPEC_CLASS_NONE, 2, 0},
@@ -394,6 +424,9 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
 
   {"xventanacondops", ISA_SPEC_CLASS_NONE, 1, 0},
 
+  {"xsfvcp",   ISA_SPEC_CLASS_NONE, 1, 0},
+  {"xsfcease", ISA_SPEC_CLASS_NONE, 1, 0},
+
   /* Terminate the list.  */
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
 };
@@ -402,6 +435,7 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
 static const struct riscv_ext_version riscv_combine_info[] =
 {
   {"a", ISA_SPEC_CLASS_20191213, 2, 1},
+  {"b",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"zk",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"zkn",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"zks",  ISA_SPEC_CLASS_NONE, 1, 0},
@@ -435,108 +469,11 @@ static const char *riscv_supported_std_ext (void);
 
 bool riscv_subset_list::parse_failed = false;
 
-static riscv_subset_list *current_subset_list = NULL;
-
 static riscv_subset_list *cmdline_subset_list = NULL;
 
-struct riscv_func_target_info
-{
-  tree fn_decl;
-  std::string fn_target_name;
-
-  riscv_func_target_info (const tree &decl, const std::string &target_name)
-    : fn_decl (decl), fn_target_name (target_name)
-  {
-  }
-};
-
-struct riscv_func_target_hasher : nofree_ptr_hash<struct riscv_func_target_info>
-{
-  typedef tree compare_type;
-
-  static hashval_t hash (value_type);
-  static bool equal (value_type, const compare_type &);
-};
-
-static hash_table<riscv_func_target_hasher> *func_target_table = NULL;
-
-static inline hashval_t riscv_func_decl_hash (tree fn_decl)
-{
-  inchash::hash h;
-
-  h.add_ptr (fn_decl);
-
-  return h.end ();
-}
-
-inline hashval_t
-riscv_func_target_hasher::hash (value_type value)
-{
-  return riscv_func_decl_hash (value->fn_decl);
-}
-
-inline bool
-riscv_func_target_hasher::equal (value_type value, const compare_type &key)
-{
-  return value->fn_decl == key;
-}
-
-const riscv_subset_list *riscv_current_subset_list ()
-{
-  return current_subset_list;
-}
-
-const riscv_subset_list * riscv_cmdline_subset_list ()
+const riscv_subset_list *riscv_cmdline_subset_list ()
 {
   return cmdline_subset_list;
-}
-
-static inline void riscv_func_target_table_lazy_init ()
-{
-  if (func_target_table != NULL)
-    return;
-
-  func_target_table = new hash_table<riscv_func_target_hasher> (1023);
-}
-
-std::string * riscv_func_target_get (tree fn_decl)
-{
-  riscv_func_target_table_lazy_init ();
-
-  hashval_t hash = riscv_func_decl_hash (fn_decl);
-  struct riscv_func_target_info *info
-    = func_target_table->find_with_hash (fn_decl, hash);
-
-  return info == NULL ? NULL : &info->fn_target_name;
-}
-
-void riscv_func_target_put (tree fn_decl, std::string fn_target_name)
-{
-  riscv_func_target_table_lazy_init ();
-
-  hashval_t hash = riscv_func_decl_hash (fn_decl);
-  struct riscv_func_target_info **target_info_slot
-    = func_target_table->find_slot_with_hash (fn_decl, hash, INSERT);
-
-  gcc_assert (!*target_info_slot);
-
-  struct riscv_func_target_info *info
-    = new riscv_func_target_info (fn_decl, fn_target_name);
-
-  *target_info_slot = info;
-}
-
-void riscv_func_target_remove_and_destory (tree fn_decl)
-{
-  hashval_t hash = riscv_func_decl_hash (fn_decl);
-  struct riscv_func_target_info *info
-    = func_target_table->find_with_hash (fn_decl, hash);
-
-  if (info)
-    {
-      func_target_table->remove_elt_with_hash (fn_decl, hash);
-      delete info;
-    }
 }
 
 /* struct for recording multi-lib info.  */
@@ -566,7 +503,8 @@ riscv_subset_t::riscv_subset_t ()
 }
 
 riscv_subset_list::riscv_subset_list (const char *arch, location_t loc)
-  : m_arch (arch), m_loc (loc), m_head (NULL), m_tail (NULL), m_xlen (0)
+  : m_arch (arch), m_loc (loc), m_head (NULL), m_tail (NULL), m_xlen (0),
+    m_subset_num (0)
 {
 }
 
@@ -771,12 +709,17 @@ riscv_subset_list::add (const char *subset, int major_version,
 	  ext->minor_version = minor_version;
 	}
       else
-	error_at (
-	  m_loc,
-	  "%<-march=%s%>: extension %qs appear more than one time",
-	  m_arch,
-	  subset);
-
+	{
+	  /* The extension is already in the list.  */
+	  if (!m_allow_adding_dup
+	      || ext->major_version != major_version
+	      || ext->minor_version != minor_version)
+	    error_at (
+	      m_loc,
+	      "%<-march=%s%>: extension %qs appear more than one time",
+	      m_arch,
+	      subset);
+	}
       return;
     }
   else if (strlen (subset) == 1 && !standard_extensions_p (subset))
@@ -812,6 +755,7 @@ riscv_subset_list::add (const char *subset, int major_version,
       return;
     }
 
+  m_subset_num++;
   riscv_subset_t *s = new riscv_subset_t ();
   riscv_subset_t *itr;
 
@@ -919,6 +863,7 @@ riscv_subset_list::to_string (bool version_p) const
   bool skip_zifencei = false;
   bool skip_zaamo_zalrsc = false;
   bool skip_zicsr = false;
+  bool skip_b = false;
   bool i2p0 = false;
 
   /* For RISC-V ISA version 2.2 or earlier version, zicsr and zifencei is
@@ -946,8 +891,14 @@ riscv_subset_list::to_string (bool version_p) const
   skip_zifencei = true;
 #endif
 #ifndef HAVE_AS_MARCH_ZAAMO_ZALRSC
-  /* Skip since binutils 2.42 and earlier don't recognize zaamo/zalrsc.  */
+  /* Skip since binutils 2.42 and earlier don't recognize zaamo/zalrsc.
+     Expanding 'a' to zaamo/zalrsc would otherwise break compilations
+     for users with an older version of binutils.  */
   skip_zaamo_zalrsc = true;
+#endif
+#ifndef HAVE_AS_MARCH_B
+  /* Skip since binutils 2.42 and earlier don't recognize b.  */
+  skip_b = true;
 #endif
 
   for (subset = m_head; subset != NULL; subset = subset->next)
@@ -964,6 +915,9 @@ riscv_subset_list::to_string (bool version_p) const
 	continue;
 
       if (skip_zaamo_zalrsc && subset->name == "zalrsc")
+	continue;
+
+      if (skip_b && subset->name == "b")
 	continue;
 
       /* For !version_p, we only separate extension with underline for
@@ -1586,9 +1540,15 @@ void
 riscv_subset_list::finalize ()
 {
   riscv_subset_t *subset;
+  unsigned pre_subset_num;
 
-  for (subset = m_head; subset != NULL; subset = subset->next)
-    handle_implied_ext (subset->name.c_str ());
+  do
+    {
+      pre_subset_num = m_subset_num;
+      for (subset = m_head; subset != NULL; subset = subset->next)
+	handle_implied_ext (subset->name.c_str ());
+    }
+  while (pre_subset_num != m_subset_num);
 
   gcc_assert (check_implied_ext ());
 
@@ -1601,8 +1561,8 @@ riscv_subset_list::finalize ()
 std::string
 riscv_arch_str (bool version_p)
 {
-  if (current_subset_list)
-    return current_subset_list->to_string (version_p);
+  if (cmdline_subset_list)
+    return cmdline_subset_list->to_string (version_p);
   else
     return std::string();
 }
@@ -1638,6 +1598,8 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zawrs",   &gcc_options::x_riscv_za_subext, MASK_ZAWRS},
   {"zaamo",   &gcc_options::x_riscv_za_subext, MASK_ZAAMO},
   {"zalrsc",  &gcc_options::x_riscv_za_subext, MASK_ZALRSC},
+  {"zabha",   &gcc_options::x_riscv_za_subext, MASK_ZABHA},
+  {"zacas",   &gcc_options::x_riscv_za_subext, MASK_ZACAS},
 
   {"zba",    &gcc_options::x_riscv_zb_subext, MASK_ZBA},
   {"zbb",    &gcc_options::x_riscv_zb_subext, MASK_ZBB},
@@ -1671,6 +1633,9 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zicbom", &gcc_options::x_riscv_zicmo_subext, MASK_ZICBOM},
   {"zicbop", &gcc_options::x_riscv_zicmo_subext, MASK_ZICBOP},
   {"zic64b", &gcc_options::x_riscv_zicmo_subext, MASK_ZIC64B},
+
+  {"zimop",    &gcc_options::x_riscv_mop_subext, MASK_ZIMOP},
+  {"zcmop",    &gcc_options::x_riscv_mop_subext, MASK_ZCMOP},
 
   {"zve32x",   &gcc_options::x_target_flags, MASK_VECTOR},
   {"zve32f",   &gcc_options::x_target_flags, MASK_VECTOR},
@@ -1783,11 +1748,13 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
 
   {"xventanacondops", &gcc_options::x_riscv_xventana_subext, MASK_XVENTANACONDOPS},
 
+  {"xsfvcp",   &gcc_options::x_riscv_sifive_subext, MASK_XSFVCP},
+  {"xsfcease", &gcc_options::x_riscv_sifive_subext, MASK_XSFCEASE},
+
   {NULL, NULL, 0}
 };
 
-/* Apply SUBSET_LIST to OPTS if OPTS is not null, also set CURRENT_SUBSET_LIST
-   to SUBSET_LIST, just note this WON'T delete old CURRENT_SUBSET_LIST.  */
+/* Apply SUBSET_LIST to OPTS if OPTS is not null.  */
 
 void
 riscv_set_arch_by_subset_list (riscv_subset_list *subset_list,
@@ -1806,15 +1773,14 @@ riscv_set_arch_by_subset_list (riscv_subset_list *subset_list,
       else if (subset_list->xlen () == 64)
 	opts->x_target_flags |= MASK_64BIT;
 
-      for (arch_ext_flag_tab = &riscv_ext_flag_table[0]; arch_ext_flag_tab->ext;
+      for (arch_ext_flag_tab = &riscv_ext_flag_table[0];
+	   arch_ext_flag_tab->ext;
 	   ++arch_ext_flag_tab)
 	{
 	  if (subset_list->lookup (arch_ext_flag_tab->ext))
 	    opts->*arch_ext_flag_tab->var_ref |= arch_ext_flag_tab->mask;
 	}
     }
-
-  current_subset_list = subset_list;
 }
 
 /* Parse a RISC-V ISA string into an option mask.  Must clear or set all arch
@@ -1830,38 +1796,12 @@ riscv_parse_arch_string (const char *isa,
   if (!subset_list)
     return;
 
-  if (opts)
-    {
-      const riscv_ext_flag_table_t *arch_ext_flag_tab;
-      /* Clean up target flags before we set.  */
-      for (arch_ext_flag_tab = &riscv_ext_flag_table[0];
-	   arch_ext_flag_tab->ext;
-	   ++arch_ext_flag_tab)
-	opts->*arch_ext_flag_tab->var_ref &= ~arch_ext_flag_tab->mask;
-
-      if (subset_list->xlen () == 32)
-	opts->x_target_flags &= ~MASK_64BIT;
-      else if (subset_list->xlen () == 64)
-	opts->x_target_flags |= MASK_64BIT;
-
-
-      for (arch_ext_flag_tab = &riscv_ext_flag_table[0];
-	   arch_ext_flag_tab->ext;
-	   ++arch_ext_flag_tab)
-	{
-	  if (subset_list->lookup (arch_ext_flag_tab->ext))
-	    opts->*arch_ext_flag_tab->var_ref |= arch_ext_flag_tab->mask;
-	}
-    }
-
-  /* Avoid double delete if current_subset_list equals cmdline_subset_list.  */
-  if (current_subset_list && current_subset_list != cmdline_subset_list)
-    delete current_subset_list;
-
   if (cmdline_subset_list)
     delete cmdline_subset_list;
 
-  current_subset_list = cmdline_subset_list = subset_list;
+  cmdline_subset_list = subset_list;
+
+  riscv_set_arch_by_subset_list (subset_list, opts);
 }
 
 /* Return the riscv_cpu_info entry for CPU, NULL if not found.  */
@@ -2139,7 +2079,7 @@ riscv_select_multilib_by_abi (
   const std::string &riscv_current_abi_str,
   const std::vector<riscv_multi_lib_info_t> &multilib_infos)
 {
-  for (size_t i = 0; i < multilib_infos.size (); ++i)
+  for (ssize_t i = multilib_infos.size () - 1; i >= 0; --i)
     if (riscv_current_abi_str == multilib_infos[i].abi_str)
       return xstrdup (multilib_infos[i].path.c_str ());
 

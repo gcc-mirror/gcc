@@ -37,6 +37,8 @@
 /* { dg-final { scan-assembler "xvcvsxdsp" } } */
 /* { dg-final { scan-assembler "xvcvuxdsp" } } */
 
+#include <altivec.h>
+
 extern __vector int si[][4];
 extern __vector short ss[][4];
 extern __vector signed char sc[][4];
@@ -61,23 +63,23 @@ int do_sel(void)
 {
   int i = 0;
 
-  si[i][0] = __builtin_vsx_xxsel_4si (si[i][1], si[i][2], si[i][3]); i++;
-  ss[i][0] = __builtin_vsx_xxsel_8hi (ss[i][1], ss[i][2], ss[i][3]); i++;
-  sc[i][0] = __builtin_vsx_xxsel_16qi (sc[i][1], sc[i][2], sc[i][3]); i++;
-  f[i][0] = __builtin_vsx_xxsel_4sf (f[i][1], f[i][2], f[i][3]); i++;
-  d[i][0] = __builtin_vsx_xxsel_2df (d[i][1], d[i][2], d[i][3]); i++;
+  si[i][0] = vec_sel (si[i][1], si[i][2], ui[i][3]); i++;
+  ss[i][0] = vec_sel (ss[i][1], ss[i][2], us[i][3]); i++;
+  sc[i][0] = vec_sel (sc[i][1], sc[i][2], uc[i][3]); i++;
+  f[i][0] = vec_sel (f[i][1], f[i][2], f[i][3]); i++;
+  d[i][0] = vec_sel (d[i][1], d[i][2], d[i][3]); i++;
 
-  si[i][0] = __builtin_vsx_xxsel (si[i][1], si[i][2], bi[i][3]); i++;
-  ss[i][0] = __builtin_vsx_xxsel (ss[i][1], ss[i][2], bs[i][3]); i++;
-  sc[i][0] = __builtin_vsx_xxsel (sc[i][1], sc[i][2], bc[i][3]); i++;
-  f[i][0] = __builtin_vsx_xxsel (f[i][1], f[i][2], bi[i][3]); i++;
-  d[i][0] = __builtin_vsx_xxsel (d[i][1], d[i][2], bl[i][3]); i++;
+  si[i][0] = vec_sel (si[i][1], si[i][2], bi[i][3]); i++;
+  ss[i][0] = vec_sel (ss[i][1], ss[i][2], bs[i][3]); i++;
+  sc[i][0] = vec_sel (sc[i][1], sc[i][2], bc[i][3]); i++;
+  f[i][0] = vec_sel (f[i][1], f[i][2], bi[i][3]); i++;
+  d[i][0] = vec_sel (d[i][1], d[i][2], bl[i][3]); i++;
 
-  si[i][0] = __builtin_vsx_xxsel (si[i][1], si[i][2], ui[i][3]); i++;
-  ss[i][0] = __builtin_vsx_xxsel (ss[i][1], ss[i][2], us[i][3]); i++;
-  sc[i][0] = __builtin_vsx_xxsel (sc[i][1], sc[i][2], uc[i][3]); i++;
-  f[i][0] = __builtin_vsx_xxsel (f[i][1], f[i][2], ui[i][3]); i++;
-  d[i][0] = __builtin_vsx_xxsel (d[i][1], d[i][2], ul[i][3]); i++;
+  si[i][0] = vec_sel (si[i][1], si[i][2], ui[i][3]); i++;
+  ss[i][0] = vec_sel (ss[i][1], ss[i][2], us[i][3]); i++;
+  sc[i][0] = vec_sel (sc[i][1], sc[i][2], uc[i][3]); i++;
+  f[i][0] = vec_sel (f[i][1], f[i][2], ui[i][3]); i++;
+  d[i][0] = vec_sel (d[i][1], d[i][2], ul[i][3]); i++;
 
   return i;
 }
@@ -86,17 +88,17 @@ int do_perm(void)
 {
   int i = 0;
 
-  si[i][0] = __builtin_vsx_vperm_4si (si[i][1], si[i][2], uc[i][3]); i++;
-  ss[i][0] = __builtin_vsx_vperm_8hi (ss[i][1], ss[i][2], uc[i][3]); i++;
-  sc[i][0] = __builtin_vsx_vperm_16qi (sc[i][1], sc[i][2], uc[i][3]); i++;
-  f[i][0] = __builtin_vsx_vperm_4sf (f[i][1], f[i][2], uc[i][3]); i++;
-  d[i][0] = __builtin_vsx_vperm_2df (d[i][1], d[i][2], uc[i][3]); i++;
+  si[i][0] = vec_perm (si[i][1], si[i][2], uc[i][3]); i++;
+  ss[i][0] = vec_perm (ss[i][1], ss[i][2], uc[i][3]); i++;
+  sc[i][0] = vec_perm (sc[i][1], sc[i][2], uc[i][3]); i++;
+  f[i][0] = vec_perm (f[i][1], f[i][2], uc[i][3]); i++;
+  d[i][0] = vec_perm (d[i][1], d[i][2], uc[i][3]); i++;
 
-  si[i][0] = __builtin_vsx_vperm (si[i][1], si[i][2], uc[i][3]); i++;
-  ss[i][0] = __builtin_vsx_vperm (ss[i][1], ss[i][2], uc[i][3]); i++;
-  sc[i][0] = __builtin_vsx_vperm (sc[i][1], sc[i][2], uc[i][3]); i++;
-  f[i][0] = __builtin_vsx_vperm (f[i][1], f[i][2], uc[i][3]); i++;
-  d[i][0] = __builtin_vsx_vperm (d[i][1], d[i][2], uc[i][3]); i++;
+  si[i][0] = vec_perm (si[i][1], si[i][2], uc[i][3]); i++;
+  ss[i][0] = vec_perm (ss[i][1], ss[i][2], uc[i][3]); i++;
+  sc[i][0] = vec_perm (sc[i][1], sc[i][2], uc[i][3]); i++;
+  f[i][0] = vec_perm (f[i][1], f[i][2], uc[i][3]); i++;
+  d[i][0] = vec_perm (d[i][1], d[i][2], uc[i][3]); i++;
 
   return i;
 }
@@ -114,12 +116,6 @@ double x, y;
 void do_concat (void)
 {
   d[0][0] = __builtin_vsx_concat_2df (x, y);
-}
-
-void do_set (void)
-{
-  d[0][0] = __builtin_vsx_set_2df (d[0][1], x, 0);
-  d[1][0] = __builtin_vsx_set_2df (d[1][1], y, 1);
 }
 
 extern double z[][4];
@@ -154,13 +150,27 @@ int do_cmp (void)
 {
   int i = 0;
 
-  d[i][0] = __builtin_vsx_xvcmpeqdp (d[i][1], d[i][2]); i++;
-  d[i][0] = __builtin_vsx_xvcmpgtdp (d[i][1], d[i][2]); i++;
-  d[i][0] = __builtin_vsx_xvcmpgedp (d[i][1], d[i][2]); i++;
+  /* The __builtin_vsx_xvcmp[gt|ge|eq]dp and __builtin_vsx_xvcmp[gt|ge|eq]sp
+     have been removed in favor of the overloaded vec_cmpeq, vec_cmpgt and
+     vec_cmpge built-ins.  The __builtin_vsx_xvcmp* builtins returned a vector
+     result of the same type as the arguments.  The vec_cmp* built-ins return
+     a vector of boolenas of the same size as the arguments.  Thus the result
+     assignment must be to a boolean or cast to a boolean.  Test both cases.
+  */
+     
+  d[i][0] = (vector double) vec_cmpeq (d[i][1], d[i][2]); i++;
+  d[i][0] = (vector double) vec_cmpgt (d[i][1], d[i][2]); i++;
+  d[i][0] = (vector double) vec_cmpge (d[i][1], d[i][2]); i++;
+  bl[i][0] = vec_cmpeq (d[i][1], d[i][2]); i++;
+  bl[i][0] = vec_cmpgt (d[i][1], d[i][2]); i++;
+  bl[i][0] = vec_cmpge (d[i][1], d[i][2]); i++;
 
-  f[i][0] = __builtin_vsx_xvcmpeqsp (f[i][1], f[i][2]); i++;
-  f[i][0] = __builtin_vsx_xvcmpgtsp (f[i][1], f[i][2]); i++;
-  f[i][0] = __builtin_vsx_xvcmpgesp (f[i][1], f[i][2]); i++;
+  f[i][0] = (vector float) vec_cmpeq (f[i][1], f[i][2]); i++;
+  f[i][0] = (vector float) vec_cmpgt (f[i][1], f[i][2]); i++;
+  f[i][0] = (vector float) vec_cmpge (f[i][1], f[i][2]); i++;
+  bi[i][0] = vec_cmpeq (f[i][1], f[i][2]); i++;
+  bi[i][0] = vec_cmpgt (f[i][1], f[i][2]); i++;
+  bi[i][0] = vec_cmpge (f[i][1], f[i][2]); i++;
   return i;
 }
 

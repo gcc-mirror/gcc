@@ -1,4 +1,5 @@
 // { dg-do run  }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 // GROUPS passed virtual-functions
 // virtual file
 // From: allan@ramjet.multinet.DE (Allan Brighton)

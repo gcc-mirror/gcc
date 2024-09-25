@@ -521,8 +521,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  esize = UI_To_Int (Esize (gnat_entity));
 
 	  if (IN (kind, Float_Kind))
+#ifdef WIDEST_HARDWARE_FP_SIZE
+	    max_esize = fp_prec_to_size (WIDEST_HARDWARE_FP_SIZE);
+#else
 	    max_esize
 	      = fp_prec_to_size (TYPE_PRECISION (long_double_type_node));
+#endif
 	  else if (IN (kind, Access_Kind))
 	    max_esize = POINTER_SIZE * 2;
 	  else
@@ -1426,7 +1430,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 			post_error
 			  ("??too large object cannot be allocated statically",
 			   gnat_entity);
-			post_error ("\\?dynamic allocation will be used instead",
+			post_error ("\\??dynamic allocation will be used instead",
 				    gnat_entity);
 		      }
 
@@ -1767,14 +1771,25 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	/* Use the arbitrary scale factor description.  Note that we support
 	   a Small_Value whose magnitude is larger than 64-bit even on 32-bit
-	   platforms, so we unconditionally use a (dummy) 128-bit type.  */
+	   platforms.  UI_To_gnu chooses a wide-enough integral type.  */
 	else
 	  {
 	    const Uint gnat_num = Norm_Num (gnat_small_value);
 	    const Uint gnat_den = Norm_Den (gnat_small_value);
-	    tree gnu_small_type = make_unsigned_type (128);
-	    tree gnu_num = UI_To_gnu (gnat_num, gnu_small_type);
-	    tree gnu_den = UI_To_gnu (gnat_den, gnu_small_type);
+	    tree gnu_num = UI_To_gnu (gnat_num, NULL_TREE);
+	    tree gnu_den = UI_To_gnu (gnat_den, NULL_TREE);
+
+	    if (!gnu_num || !gnu_den)
+	      gnu_num = gnu_den = integer_zero_node;
+
+	    tree gnu_num_type = TREE_TYPE (gnu_num);
+	    tree gnu_den_type = TREE_TYPE (gnu_den);
+	    tree gnu_small_type = (TYPE_PRECISION (gnu_num_type)
+				   >= TYPE_PRECISION (gnu_den_type)
+				   ? gnu_num_type : gnu_den_type);
+
+	    gnu_num = convert (gnu_small_type, gnu_num);
+	    gnu_den = convert (gnu_small_type, gnu_den);
 
 	    scale_factor
 	      = build2 (RDIV_EXPR, gnu_small_type, gnu_num, gnu_den);
@@ -6550,7 +6565,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 			    ("??cannot import type-generic 'G'C'C builtin!",
 			     gnat_subprog);
 			  post_error
-			    ("\\?use a supported result type",
+			    ("\\??use a supported result type",
 			     gnat_subprog);
 			  gnu_builtin_decl = NULL_TREE;
 			}
@@ -6572,7 +6587,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 			    ("??cannot import type-generic 'G'C'C builtin!",
 			     gnat_subprog);
 			  post_error
-			    ("\\?use a supported second parameter type",
+			    ("\\??use a supported second parameter type",
 			     gnat_subprog);
 			  gnu_builtin_decl = NULL_TREE;
 			}
@@ -6593,7 +6608,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 			    ("??cannot import type-generic 'G'C'C builtin!",
 			     gnat_subprog);
 			  post_error
-			    ("\\?use a supported third parameter type",
+			    ("\\??use a supported third parameter type",
 			     gnat_subprog);
 			  gnu_builtin_decl = NULL_TREE;
 			}
@@ -7671,6 +7686,8 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 	  gnu_field_type = gnu_packable_type;
 	  if (!gnu_size)
 	    gnu_size = rm_size (gnu_field_type);
+	  if (TREE_CODE (gnu_size) != INTEGER_CST)
+	    gnu_size = NULL_TREE;
 	}
     }
 

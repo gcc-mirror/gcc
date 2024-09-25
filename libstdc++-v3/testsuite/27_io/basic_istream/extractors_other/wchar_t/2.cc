@@ -15,11 +15,14 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 27.6.1.2.3 basic_istream::operator>>
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
+// C++98 27.6.1.2.3 basic_istream::operator>>
 
 // { dg-require-fileio "" }
+// { dg-additional-files "wistream_extractor_other-1.tst" }
+// { dg-additional-files "wistream_extractor_other-1.txt" }
+// { dg-additional-files "wistream_extractor_other-2.tst" }
+// { dg-final { file-io-diff "wistream_extractor_other-1" } }
+// { dg-final { file-io-diff "wistream_extractor_other-2" } }
 
 #include <istream>
 #include <fstream>

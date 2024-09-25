@@ -20,13 +20,11 @@
 // 27.8.1.4 Overridden virtual functions
 
 // { dg-require-fileio "" }
+// { dg-additional-files "sgetc.txt" }
 
 #include <fstream>
 #include <testsuite_hooks.h>
 #include <testsuite_io.h>
-
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %*.txt
 
 const char name_01[] = "sgetc.txt"; // file with data in it
 

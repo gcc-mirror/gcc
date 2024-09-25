@@ -24,7 +24,7 @@ PROCEDURE foo ;
 VAR
    fd: INTEGER ;
 BEGIN
-   fd := open(ADR("/dev/tty"), 0)
+   fd := open(ADR("/dev/tty"), 0, 0)
 END foo ;
 
 BEGIN

@@ -102,9 +102,15 @@ package System.Finalization_Primitives with Preelaborate is
    --  reverse of the order in which they were attached. Calls to the procedure
    --  with a Master that has already been finalized have no effects.
 
-   procedure Finalize_Object (Node : in out Master_Node);
-   --  Finalizes the controlled object attached to Node. Calls to the procedure
-   --  with a Node that has already been finalized have no effects.
+   procedure Finalize_Object
+     (Node             : in out Master_Node;
+      Finalize_Address : Finalize_Address_Ptr);
+   --  Finalizes the controlled object attached to Node by generating a call to
+   --  Finalize_Address on it, which has to be equal to Node.Finalize_Address.
+   --  The weird redundancy is intended to help the optimizer turn an indirect
+   --  call to Finalize_Address into a direct one and then inline it if needed,
+   --  after having inlined Finalize_Object itself. Calls to the procedure with
+   --  a Node that has already been finalized have no effects.
 
    procedure Suppress_Object_Finalize_At_End (Node : in out Master_Node);
    --  Changes the state of Node to effectively suppress a call to Node's
@@ -171,13 +177,6 @@ package System.Finalization_Primitives with Preelaborate is
 
 private
 
-   --  Since RTSfind cannot contain names of the form RE_"+", the following
-   --  routine serves as a wrapper around System.Storage_Elements."+".
-
-   function Add_Offset_To_Address
-     (Addr   : System.Address;
-      Offset : System.Storage_Elements.Storage_Offset) return System.Address;
-
    --  Finalization masters:
 
    --  Master node type structure. Finalize_Address comes first because it is
@@ -186,7 +185,7 @@ private
 
    type Master_Node is record
       Finalize_Address : Finalize_Address_Ptr := null;
-      Object_Address   : System.Address       := System.Null_Address;
+      Object_Address   : System.Address       := Null_Address;
       Next             : Master_Node_Ptr      := null;
    end record;
 

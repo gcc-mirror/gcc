@@ -1,5 +1,5 @@
-/* { dg-require-effective-target vect_simd_clones } */
 /* { dg-do compile } */
+/* { dg-require-effective-target vect_simd_clones } */
 
 int __attribute__ ((__simd__, const)) fn (int);
 

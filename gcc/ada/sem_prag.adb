@@ -13489,16 +13489,16 @@ package body Sem_Prag is
 
                   when N_Op_Concat =>
                      declare
-                        L_Type : constant Entity_Id
-                          := Preferred_String_Type (Left_Opnd (Expr));
-                        R_Type : constant Entity_Id
-                          := Preferred_String_Type (Right_Opnd (Expr));
+                        L_Type : constant Entity_Id :=
+                          Preferred_String_Type (Left_Opnd (Expr));
+                        R_Type : constant Entity_Id :=
+                          Preferred_String_Type (Right_Opnd (Expr));
 
-                        Type_Table : constant array (1 .. 4) of Entity_Id
-                          := (Empty,
-                              Standard_Wide_Wide_String,
-                              Standard_Wide_String,
-                              Standard_String);
+                        Type_Table : constant array (1 .. 4) of Entity_Id :=
+                          (Empty,
+                           Standard_Wide_Wide_String,
+                           Standard_Wide_String,
+                           Standard_String);
                      begin
                         for Idx in Type_Table'Range loop
                            if L_Type = Type_Table (Idx) or
@@ -17756,6 +17756,124 @@ package body Sem_Prag is
             end if;
          end Finalize_Storage;
 
+         ----------------------------------------
+         -- Pragma_First_Controlling_Parameter --
+         ----------------------------------------
+
+         when Pragma_First_Controlling_Parameter => First_Ctrl_Param : declare
+            Arg  : Node_Id;
+            E    : Entity_Id := Empty;
+            Expr : Node_Id := Empty;
+
+         begin
+            GNAT_Pragma;
+            Check_At_Least_N_Arguments (1);
+            Check_At_Most_N_Arguments  (2);
+
+            Arg := Get_Pragma_Arg (Arg1);
+            Check_Arg_Is_Identifier (Arg);
+
+            Analyze (Arg);
+            E := Entity (Arg);
+
+            if Present (Arg2) then
+               Check_Arg_Is_OK_Static_Expression (Arg2, Standard_Boolean);
+               Expr := Get_Pragma_Arg (Arg2);
+               Analyze_And_Resolve (Expr, Standard_Boolean);
+            end if;
+
+            if not Core_Extensions_Allowed then
+               if No (Expr)
+                 or else
+                   (Present (Expr)
+                      and then Is_Entity_Name (Expr)
+                      and then Entity (Expr) = Standard_True)
+               then
+                  Error_Msg_GNAT_Extension
+                    ("'First_'Controlling_'Parameter", Sloc (N),
+                     Is_Core_Extension => True);
+               end if;
+
+               return;
+
+            elsif Present (Expr)
+              and then Is_Entity_Name (Expr)
+              and then Entity (Expr) = Standard_False
+            then
+               if Is_Derived_Type (E)
+                 and then Has_First_Controlling_Parameter_Aspect (Etype (E))
+               then
+                  Error_Msg_Name_1 := Name_First_Controlling_Parameter;
+                  Error_Msg_N
+                    ("specification of inherited True value for aspect% can "
+                      & "only confirm parent value", Pragma_Identifier (N));
+               end if;
+
+               return;
+            end if;
+
+            if No (E)
+              or else not Is_Type (E)
+              or else not (Is_Tagged_Type (E)
+                             or else Is_Concurrent_Type (E))
+            then
+               Error_Pragma
+                 ("pragma% must specify tagged type or concurrent type");
+            end if;
+
+            --  Check use of the pragma on private types
+
+            if Has_Private_Declaration (E) then
+               declare
+                  Prev_Id : constant Entity_Id :=
+                              Incomplete_Or_Partial_View (E);
+               begin
+                  if Is_Tagged_Type (Prev_Id) then
+                     if Has_First_Controlling_Parameter_Aspect (Prev_Id) then
+                        Error_Pragma
+                          ("pragma already specified in private declaration");
+                     else
+                        Error_Msg_N
+                          ("hidden 'First_'Controlling_'Parameter tagged type"
+                           & " not allowed", N);
+                     end if;
+
+                  --  No action needed if the partial view is not tagged. For
+                  --  example:
+
+                  --     package Example is
+                  --        type Private_Type is private;
+                  --     private
+                  --        type Private_Type is new ... with null record
+                  --          with First_Controlling_Parameter;      -- Legal
+                  --     end;
+
+                  else
+                     null;
+                  end if;
+               end;
+            end if;
+
+            --  The corresponding record type of concurrent types will not be
+            --  a tagged type when it does not implement some interface type.
+
+            if Is_Concurrent_Type (E)
+              and then Present (Parent (E))
+              and then No (Interface_List (Parent (E)))
+            then
+               if Warn_On_Non_Dispatching_Primitives then
+                  Error_Msg_N
+                    ("?_j?'First_'Controlling_'Parameter has no effect", N);
+                  Error_Msg_NE
+                    ("?_j?because & does not implement interface types",
+                     N, E);
+               end if;
+
+            else
+               Set_Has_First_Controlling_Parameter_Aspect (E);
+            end if;
+         end First_Ctrl_Param;
+
          -----------
          -- Ghost --
          -----------
@@ -20806,6 +20924,81 @@ package body Sem_Prag is
          when Pragma_No_Inline =>
             GNAT_Pragma;
             Process_Inline (Suppressed);
+
+         --------------
+         -- No_Raise --
+         --------------
+
+         --  pragma No_Raise (procedure_LOCAL_NAME {, procedure_LOCAL_NAME});
+
+         when Pragma_No_Raise => Prag_No_Raise : declare
+            Arg   : Node_Id;
+            Assoc : Node_Id;
+            Subp  : Entity_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_No_Identifiers;
+            Check_At_Least_N_Arguments (1);
+
+            Assoc := Arg1;
+            while Present (Assoc) loop
+               Arg := Get_Pragma_Arg (Assoc);
+               Analyze (Arg);
+
+               if Is_Entity_Name (Arg) then
+                  Subp := Entity (Arg);
+
+                  --  If previous error, avoid cascaded errors
+
+                  if Subp = Any_Id then
+                     Check_Error_Detected;
+
+                  --  The argument must be a [generic] subprogram
+
+                  elsif not Is_Subprogram_Or_Generic_Subprogram (Subp) then
+                     Error_Pragma_Arg
+                       ("argument for pragma% must be a subprogram", Assoc);
+
+                  --  The argument must be in current scope
+
+                  elsif Scope (Subp) = Current_Scope then
+                     Check_Duplicate_Pragma (Subp);
+                     Record_Rep_Item (Subp, N);
+
+                     Set_No_Raise (Subp);
+
+                     --  For the pragma case, climb homonym chain. This is
+                     --  what implements allowing the pragma in the renaming
+                     --  case, with the result applying to the ancestors, and
+                     --  allows No_Raise to apply to all previous homonyms.
+
+                     if not From_Aspect_Specification (N) then
+                        while Present (Homonym (Subp))
+                          and then Scope (Homonym (Subp)) = Current_Scope
+                        loop
+                           Subp := Homonym (Subp);
+                           Set_No_Raise (Subp);
+                        end loop;
+                     end if;
+
+                  --  If entity in not in current scope it may be the enclosing
+                  --  subprogram body to which the aspect applies.
+
+                  elsif Subp = Current_Scope
+                    and then From_Aspect_Specification (N)
+                  then
+                     Set_No_Raise (Subp);
+
+                  else
+                     Error_Pragma_Arg
+                       ("expect local subprogram name for pragma%", Assoc);
+                  end if;
+               end if;
+
+               Next (Assoc);
+            end loop;
+         end Prag_No_Raise;
 
          ---------------
          -- No_Return --
@@ -24758,14 +24951,6 @@ package body Sem_Prag is
 
             if No (Context) then
                Check_Valid_Configuration_Pragma;
-
-               if Present (SPARK_Mode_Pragma) then
-                  Duplication_Error
-                    (Prag => N,
-                     Prev => SPARK_Mode_Pragma);
-                  raise Pragma_Exit;
-               end if;
-
                Set_SPARK_Context;
 
             --  The pragma acts as a configuration pragma in a compilation unit
@@ -32723,6 +32908,7 @@ package body Sem_Prag is
       Pragma_Fast_Math                      =>  0,
       Pragma_Favor_Top_Level                =>  0,
       Pragma_Finalize_Storage_Only          =>  0,
+      Pragma_First_Controlling_Parameter    =>  0,
       Pragma_Ghost                          =>  0,
       Pragma_Global                         => -1,
       Pragma_GNAT_Annotate                  => 93,
@@ -32777,6 +32963,7 @@ package body Sem_Prag is
       Pragma_No_Elaboration_Code_All        =>  0,
       Pragma_No_Heap_Finalization           =>  0,
       Pragma_No_Inline                      =>  0,
+      Pragma_No_Raise                       =>  0,
       Pragma_No_Return                      =>  0,
       Pragma_No_Run_Time                    => -1,
       Pragma_Interrupts_System_By_Default   =>  0,
@@ -33565,7 +33752,7 @@ package body Sem_Prag is
             Error_Msg_N ("Check_Policy is a non-standard pragma??", N);
             Error_Msg_N
               ("\use Assertion_Policy and aspect names Pre/Post for "
-               & "Ada2012 conformance?", N);
+               & "Ada2012 conformance??", N);
          end if;
 
          return;
@@ -33950,7 +34137,6 @@ package body Sem_Prag is
    --  Start of processing for Validate_Compile_Time_Warning_Errors
 
    begin
-
       --  These error/warning messages were deferred because they could not be
       --  evaluated in the front-end and they needed additional information
       --  from the back-end. There is no reason to run these checks again if

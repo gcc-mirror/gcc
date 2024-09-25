@@ -67,7 +67,7 @@ tracedb (const char *format, ...)
 
 static
 void
-tracedb_open (const char *p, int flags, mode_t mode)
+tracedb_open (const void *p, int flags, int mode)
 {
 #if defined(BUILD_MC_LIBC_TRACE)
   bool item_written = false;
@@ -161,7 +161,7 @@ libc_exit (int code)
 
 EXTERN
 void
-libc_perror (char *s)
+libc_perror (const char *s, unsigned int length)
 {
   perror (s);
 }
@@ -207,7 +207,7 @@ libc_printf (const char *_format, unsigned int _format_high, ...)
 
   do
     {
-      c = index (&_format[i], '\\');
+      c = index (&const_cast <char *> (_format)[i], '\\');
       if (c == NULL)
         strcpy (&format[j], &_format[i]);
       else
@@ -233,7 +233,7 @@ libc_printf (const char *_format, unsigned int _format_high, ...)
 
 EXTERN
 int
-libc_snprintf (char *dest, size_t length, const char *_format, unsigned int _format_high, ...)
+libc_snprintf (void *dest, size_t length, const char *_format, unsigned int _format_high, ...)
 {
   va_list arg;
   int done;
@@ -244,7 +244,7 @@ libc_snprintf (char *dest, size_t length, const char *_format, unsigned int _for
 
   do
     {
-      c = index (&_format[i], '\\');
+      c = index (&const_cast <char *> (_format)[i], '\\');
       if (c == NULL)
         strcpy (&format[j], &_format[i]);
       else
@@ -263,7 +263,7 @@ libc_snprintf (char *dest, size_t length, const char *_format, unsigned int _for
   while (c != NULL);
 
   va_start (arg, _format_high);
-  done = vsnprintf (dest, length, format, arg);
+  done = vsnprintf (reinterpret_cast<char *> (dest), length, format, arg);
   va_end (arg);
   return done;
 }
@@ -343,10 +343,10 @@ libc_creat (char *p, mode_t mode)
 
 EXTERN
 int
-libc_open (char *p, int flags, mode_t mode)
+libc_open (void *p, int flags, int mode)
 {
   tracedb_open (p, flags, mode);
-  int result = open (p, flags, mode);
+  int result = open (reinterpret_cast <char *> (p), flags, mode);
   tracedb_result (result);
   return result;
 }

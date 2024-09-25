@@ -1,4 +1,5 @@
 // PR middle-end/101586
+// { dg-do run }
 
 struct A { char a; };
 struct B : virtual A {};

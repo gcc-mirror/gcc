@@ -31,10 +31,15 @@
 
 #pragma GCC system_header
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // include_next
+
 #include <bits/c++config.h>
 
 #if _GLIBCXX_HAVE_WCTYPE_H
 #include_next <wctype.h>
 #endif
+
+#pragma GCC diagnostic pop
 
 #endif

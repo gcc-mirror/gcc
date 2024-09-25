@@ -2,6 +2,7 @@
 // { dg-do run { target sse2_runtime } }
 // { dg-options "-O2 -msse2 -mfpmath=387" }
 // { dg-require-effective-target c++11 }
+// { dg-skip-if "requires hosted libstdc++ for cstdlib malloc" { ! hostedlib } }
 
 #include <cassert>
 #include <unordered_map>

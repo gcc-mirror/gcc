@@ -1008,6 +1008,10 @@ extern bool must_pass_by_ref (tree gnu_type);
 /* Return the size of the FP mode with precision PREC.  */
 extern int fp_prec_to_size (int prec);
 
+/* Return the default alignment of a FIELD of TYPE declared in a record or
+   union type as specified by the ABI of the target architecture.  */
+extern unsigned int default_field_alignment (tree field, tree type);
+
 /* Return the precision of the FP mode with size SIZE.  */
 extern int fp_size_to_prec (int size);
 

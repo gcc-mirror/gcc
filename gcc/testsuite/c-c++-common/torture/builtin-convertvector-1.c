@@ -1,3 +1,4 @@
+/* { dg-do run } */
 /* { dg-skip-if "double support is incomplete" { "avr-*-*" } } */
 
 extern

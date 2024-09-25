@@ -54,6 +54,45 @@ atomic_uintmax_t, "<atomic>", cxx20
 atomic_unsigned_lock_free, "<atomic>", cxx11
 # <bitset>
 bitset, "<bitset>", cxx11
+# <chrono>
+chrono::clock_cast, "<chrono>", cxx20
+chrono::days, "<chrono>", cxx20
+chrono::duration, "<chrono>", cxx11
+chrono::duration_cast, "<chrono>", cxx11
+chrono::file_clock, "<chrono>", cxx20
+chrono::from_stream, "<chrono>", cxx20
+chrono::get_leap_second_info, "<chrono>", cxx20
+chrono::get_tzdb, "<chrono>", cxx20
+chrono::get_tzdb_list, "<chrono>", cxx20
+chrono::gps_clock, "<chrono>", cxx20
+chrono::high_resolution_clock, "<chrono>", cxx11
+chrono::hours, "<chrono>", cxx11
+chrono::leap_second, "<chrono>", cxx20
+chrono::leap_second_info, "<chrono>", cxx20
+chrono::local_t, "<chrono>", cxx20
+chrono::locate_zone, "<chrono>", cxx20
+chrono::microseconds, "<chrono>", cxx11
+chrono::milliseconds, "<chrono>", cxx11
+chrono::minutes, "<chrono>", cxx11
+chrono::months, "<chrono>", cxx20
+chrono::nanoseconds, "<chrono>", cxx11
+chrono::parse, "<chrono>", cxx20
+chrono::reload_tzdb, "<chrono>", cxx20
+chrono::remote_version, "<chrono>", cxx20
+chrono::round, "<chrono>", cxx17
+chrono::seconds, "<chrono>", cxx11
+chrono::steady_clock, "<chrono>", cxx11
+chrono::system_clock, "<chrono>", cxx11
+chrono::tai_clock, "<chrono>", cxx20
+chrono::time_point, "<chrono>", cxx11
+chrono::time_point_cast, "<chrono>", cxx11
+chrono::time_zone, "<chrono>", cxx20
+chrono::tzdb, "<chrono>", cxx20
+chrono::tzdb_list, "<chrono>", cxx20
+chrono::utc_clock, "<chrono>", cxx20
+chrono::weeks, "<chrono>", cxx20
+chrono::years, "<chrono>", cxx20
+chrono::zoned_time, "<chrono>", cxx20
 # <compare>
 partial_ordering, "<compare>", cxx20
 strong_equality, "<compare>", cxx20
@@ -90,6 +129,34 @@ terminate, "<exception>", cxx98
 uncaught_exceptions, "<exception>", cxx17
 # <expected>
 expected, "<expected>", cxx23
+# <format>
+basic_format_arg, "<format>", cxx20
+basic_format_args, "<format>", cxx20
+basic_format_context, "<format>", cxx20
+basic_format_parse_context, "<format>", cxx20
+basic_format_string, "<format>", cxx20
+format, "<format>", cxx20
+format_args, "<format>", cxx20
+format_context, "<format>", cxx20
+format_error, "<format>", cxx20
+format_parse_context, "<format>", cxx20
+format_string, "<format>", cxx20
+format_to, "<format>", cxx20
+format_to_n, "<format>", cxx20
+formattable, "<format>", cxx23
+formatted_size, "<format>", cxx20
+formatter, "<format>", cxx20
+make_format_args, "<format>", cxx20
+make_wformat_args, "<format>", cxx20
+range_format, "<format>", cxx23
+range_formatter, "<format>", cxx23
+runtime_format, "<format>", cxx26
+vformat, "<format>", cxx20
+vformat_to, "<format>", cxx20
+wformat_args, "<format>", cxx20
+wformat_context, "<format>", cxx20
+wformat_parse_context, "<format>", cxx20
+wformat_string, "<format>", cxx20
 # <forward_list>
 forward_list, "<forward_list>", cxx11
 # <fstream>
@@ -119,6 +186,8 @@ async, "<future>", cxx11
 future, "<future>", cxx11
 packaged_task, "<future>", cxx11
 promise, "<future>", cxx11
+# <generator>
+generator, "<generator>", cxx23
 # <iomanip>
 get_money, "<iomanip>", cxx11
 get_time, "<iomanip>", cxx11
@@ -172,6 +241,9 @@ ws, "<istream>", cxx98
 advance, "<iterator>", cxx98
 back_inserter, "<iterator>", cxx98
 begin, "<iterator>", cxx11
+common_iterator, "<iterator>", cxx20
+const_iterator, "<iterator>", cxx23
+counted_iterator, "<iterator>", cxx20
 distance, "<iterator>", cxx98
 end, "<iterator>", cxx11
 front_inserter, "<iterator>", cxx98
@@ -284,6 +356,9 @@ flush_emit, "<ostream>", cxx20
 noemit_on_flush, "<ostream>", cxx20
 ostream, "<ostream>", cxx98
 wostream, "<ostream>", cxx98
+# <print>
+print, "<print>", cxx23
+println, "<print>", cxx23
 # <queue>
 priority_queue, "<queue>", cxx98
 queue, "<queue>", cxx98
@@ -346,6 +421,12 @@ overflow_error, "<stdexcept>", cxx98
 range_error, "<stdexcept>", cxx98
 runtime_error, "<stdexcept>", cxx98
 underflow_error, "<stdexcept>", cxx98
+# <stdfloat>
+bfloat16_t, "<stdfloat>", cxx23
+float128_t, "<stdfloat>", cxx23
+float16_t, "<stdfloat>", cxx23
+float32_t, "<stdfloat>", cxx23
+float64_t, "<stdfloat>", cxx23
 # <stop_token>
 stop_callback, "<stop_token>", cxx20
 stop_source, "<stop_token>", cxx20
@@ -395,6 +476,7 @@ thread, "<thread>", cxx11
 # <tuple>
 apply, "<tuple>", cxx17
 forward_as_tuple, "<tuple>", cxx11
+ignore, "<tuple>", cxx11
 make_from_tuple, "<tuple>", cxx17
 make_tuple, "<tuple>", cxx11
 tie, "<tuple>", cxx11

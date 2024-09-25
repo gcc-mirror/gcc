@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -465,7 +466,8 @@ vec_info::vec_info (vec_info::vec_kind kind_in, vec_info_shared *shared_)
     shared (shared_),
     stmt_vec_info_ro (false),
     bbs (NULL),
-    nbbs (0)
+    nbbs (0),
+    inv_pattern_def_seq (NULL)
 {
   stmt_vec_infos.create (50);
 }
@@ -534,6 +536,7 @@ stmt_vec_info
 vec_info::add_pattern_stmt (gimple *stmt, stmt_vec_info stmt_info)
 {
   stmt_vec_info res = new_stmt_vec_info (stmt);
+  res->pattern_stmt_p = true;
   set_vinfo_for_stmt (stmt, res, false);
   STMT_VINFO_RELATED_STMT (res) = stmt_info;
   return res;

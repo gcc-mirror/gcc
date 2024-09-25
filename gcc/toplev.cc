@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
    Error messages and low-level interface to malloc also handled here.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -92,6 +93,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-param-manipulation.h"
 #include "dbgcnt.h"
 #include "gcc-urlifier.h"
+#include "unique-argv.h"
 
 #include "selftest.h"
 
@@ -99,7 +101,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <isl/version.h>
 #endif
 
-static void general_init (const char *, bool);
+static void general_init (const char *, bool, unique_argv original_argv);
 static void backend_init (void);
 static int lang_dependent_init (const char *);
 static void init_asm_output (const char *);
@@ -227,7 +229,7 @@ announce_function (tree decl)
 	fprintf (stderr, " %s",
 		 identifier_to_locale (lang_hooks.decl_printable_name (decl, 2)));
       fflush (stderr);
-      pp_needs_newline (global_dc->printer) = true;
+      pp_needs_newline (global_dc->m_printer) = true;
       diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
     }
 }
@@ -912,6 +914,37 @@ dump_final_callee_vcg (FILE *f, location_t location, tree callee)
   fputs ("\" }\n", f);
 }
 
+/* Callback for cgraph_node::call_for_symbol_thunks_and_aliases to dump to F_ a
+   node and an edge from ALIAS->DECL to CURRENT_FUNCTION_DECL.  */
+
+static bool
+dump_final_alias_vcg (cgraph_node *alias, void *f_)
+{
+  FILE *f = (FILE *)f_;
+
+  if (alias->decl == current_function_decl)
+    return false;
+
+  dump_final_node_vcg_start (f, alias->decl);
+  fputs ("\" shape : triangle }\n", f);
+
+  fputs ("edge: { sourcename: \"", f);
+  print_decl_identifier (f, alias->decl, PRINT_DECL_UNIQUE_NAME);
+  fputs ("\" targetname: \"", f);
+  print_decl_identifier (f, current_function_decl, PRINT_DECL_UNIQUE_NAME);
+  location_t location = DECL_SOURCE_LOCATION (alias->decl);
+  if (LOCATION_LOCUS (location) != UNKNOWN_LOCATION)
+    {
+      expanded_location loc;
+      fputs ("\" label: \"", f);
+      loc = expand_location (location);
+      fprintf (f, "%s:%d:%d", loc.file, loc.line, loc.column);
+    }
+  fputs ("\" }\n", f);
+
+  return false;
+}
+
 /* Dump final cgraph node in VCG format.  */
 
 static void
@@ -948,6 +981,12 @@ dump_final_node_vcg (FILE *f)
     dump_final_callee_vcg (f, c->location, c->decl);
   vec_free (cfun->su->callees);
   cfun->su->callees = NULL;
+
+  cgraph_node *node = cgraph_node::get (current_function_decl);
+  if (!node)
+    return;
+  node->call_for_symbol_thunks_and_aliases (dump_final_alias_vcg, f,
+					    true, false);
 }
 
 /* Output stack usage and callgraph info, as requested.  */
@@ -999,7 +1038,7 @@ internal_error_function (diagnostic_context *, const char *, va_list *)
    options are parsed.  Signal handlers, internationalization etc.
    ARGV0 is main's argv[0].  */
 static void
-general_init (const char *argv0, bool init_signals)
+general_init (const char *argv0, bool init_signals, unique_argv original_argv)
 {
   const char *p;
 
@@ -1027,6 +1066,8 @@ general_init (const char *argv0, bool init_signals)
      override it later.  */
   tree_diagnostics_defaults (global_dc);
 
+  global_dc->set_original_argv (std::move (original_argv));
+
   global_dc->m_source_printing.enabled
     = global_options_init.x_flag_diagnostics_show_caret;
   global_dc->m_source_printing.show_event_links_p
@@ -1048,13 +1089,15 @@ general_init (const char *argv0, bool init_signals)
     = global_options_init.x_diagnostics_minimum_margin_width;
   global_dc->m_show_column
     = global_options_init.x_flag_show_column;
+  global_dc->set_show_highlight_colors
+    (global_options_init.x_flag_diagnostics_show_highlight_colors);
   global_dc->m_internal_error = internal_error_function;
   const unsigned lang_mask = lang_hooks.option_lang_mask ();
-  global_dc->set_option_hooks (option_enabled,
-			       &global_options,
-			       option_name,
-			       get_option_url,
-			       lang_mask);
+  global_dc->set_option_manager
+    (new compiler_diagnostic_option_manager (*global_dc,
+					     lang_mask,
+					     &global_options),
+     lang_mask);
   global_dc->set_urlifier (make_gcc_urlifier (lang_mask));
 
   if (init_signals)
@@ -1462,6 +1505,14 @@ process_options ()
     dwarf2out_as_loc_support = dwarf2out_default_as_loc_support ();
   if (!OPTION_SET_P (dwarf2out_as_locview_support))
     dwarf2out_as_locview_support = dwarf2out_default_as_locview_support ();
+  if (dwarf2out_as_locview_support && !dwarf2out_as_loc_support)
+    {
+      if (OPTION_SET_P (dwarf2out_as_locview_support))
+	warning_at (UNKNOWN_LOCATION, 0,
+		    "%<-gas-locview-support%> is forced disabled "
+		    "without %<-gas-loc-support%>");
+      dwarf2out_as_locview_support = false;
+    }
 
   if (!OPTION_SET_P (debug_variable_location_views))
     {
@@ -1469,9 +1520,7 @@ process_options ()
 	= (flag_var_tracking
 	   && debug_info_level >= DINFO_LEVEL_NORMAL
 	   && dwarf_debuginfo_p ()
-	   && !dwarf_strict
-	   && dwarf2out_as_loc_support
-	   && dwarf2out_as_locview_support);
+	   && !dwarf_strict);
     }
   else if (debug_variable_location_views == -1 && dwarf_version != 5)
     {
@@ -2238,10 +2287,14 @@ toplev::main (int argc, char **argv)
      Increase stack size limits if possible.  */
   stack_limit_increase (64 * 1024 * 1024);
 
+  /* Stash a copy of the original argv before expansion
+     for use by SARIF output.  */
+  unique_argv original_argv (dupargv (argv));
+
   expandargv (&argc, &argv);
 
   /* Initialization of GCC's environment, and diagnostics.  */
-  general_init (argv[0], m_init_signals);
+  general_init (argv[0], m_init_signals, std::move (original_argv));
 
   /* One-off initialization of options that does not need to be
      repeated when options are added for particular functions.  */
@@ -2334,7 +2387,7 @@ toplev::main (int argc, char **argv)
   if (auto edit_context_ptr = global_dc->get_edit_context ())
     {
       pretty_printer pp;
-      pp_show_color (&pp) = pp_show_color (global_dc->printer);
+      pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
       edit_context_ptr->print_diff (&pp, true);
       pp_flush (&pp);
     }
@@ -2345,7 +2398,7 @@ toplev::main (int argc, char **argv)
 
   after_memory_report = true;
 
-  if (seen_error () || werrorcount)
+  if (global_dc->execution_failed_p ())
     return (FATAL_EXIT_CODE);
 
   return (SUCCESS_EXIT_CODE);

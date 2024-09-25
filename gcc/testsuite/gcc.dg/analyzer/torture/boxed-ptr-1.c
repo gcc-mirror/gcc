@@ -1,4 +1,5 @@
 /* { dg-skip-if "" { *-*-* } { "-fno-fat-lto-objects" } { "" } } */
+/* { dg-require-effective-target size24plus } */
 
 #include <stdlib.h>
 #include "../analyzer-decls.h"

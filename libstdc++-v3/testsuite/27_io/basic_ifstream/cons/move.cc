@@ -17,8 +17,9 @@
 
 // { dg-do run { target c++11 } }
 // { dg-require-fileio "" }
+// { dg-additional-files "thirty_years_among_the_dead_preproc.txt" }
 
-// 27.9.1.7 basic_ifstream constructors [ifstream.cons]
+// C++11 27.9.1.7 basic_ifstream constructors [ifstream.cons]
 
 #include <fstream>
 #include <sstream>

@@ -3,7 +3,7 @@
    In this testcase,  there is a single function type expected for two
    different function pointer types.  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 /* { dg-final { scan-assembler-times "\[\t \]0x16000001\[\t \]+\[^\n\]*ctt_info" 1 } } */
 /* { dg-final { scan-assembler-times "ascii \"rcu_callback_t.0\"\[\t \]+\[^\n\]*ctf_string" 1 } } */

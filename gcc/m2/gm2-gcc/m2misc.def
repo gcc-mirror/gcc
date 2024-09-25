@@ -21,10 +21,10 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 DEFINITION MODULE FOR "C" m2misc ;
 
-FROM m2tree IMPORT Tree ;
+FROM gcctypes IMPORT tree ;
 FROM SYSTEM IMPORT ADDRESS ;
 
-PROCEDURE DebugTree (t: Tree) ;
+PROCEDURE DebugTree (t: tree) ;
 PROCEDURE error (message: ARRAY OF CHAR) ;
 PROCEDURE cerror (message: ADDRESS) ;
 PROCEDURE warning_m2_dump_filter (message, rule: ADDRESS) ;

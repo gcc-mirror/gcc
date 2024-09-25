@@ -15,7 +15,7 @@ make_lisp_ptr (void *ptr, int type)
 static _Bool
 TAGGEDP (struct lisp *a, unsigned tag)
 {
-  return ! (((unsigned) (long) a - tag) & 7);
+  return ! (((unsigned) (__INTPTR_TYPE__) a - tag) & 7);
 }
 
 static _Bool

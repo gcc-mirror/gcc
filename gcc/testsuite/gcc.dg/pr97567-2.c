@@ -1,4 +1,4 @@
-/* { dg-do compile} */
+/* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-evrp -fdisable-tree-ethread" } */
 
 char a[2];

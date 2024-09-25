@@ -318,10 +318,6 @@ package Exp_Util is
    --  type Typ at runtime. Flag Partial_Invariant should be set when building
    --  the invariant procedure for a private type.
 
-   procedure Build_Procedure_Form (N : Node_Id);
-   --  Create a procedure declaration which emulates the behavior of a function
-   --  that returns an array type, for C-compatible generation.
-
    function Build_Runtime_Call (Loc : Source_Ptr; RE : RE_Id) return Node_Id;
    --  Build an N_Procedure_Call_Statement calling the given runtime entity.
    --  The call has no parameters. The first argument provides the location
@@ -461,24 +457,14 @@ package Exp_Util is
    --  following functions allow this behavior to be modified.
 
    function Duplicate_Subexpr_No_Checks
-     (Exp           : Node_Id;
-      Name_Req      : Boolean   := False;
-      Renaming_Req  : Boolean   := False;
-      Related_Id    : Entity_Id := Empty;
-      Is_Low_Bound  : Boolean   := False;
-      Is_High_Bound : Boolean   := False) return Node_Id;
+     (Exp          : Node_Id;
+      Name_Req     : Boolean := False;
+      Renaming_Req : Boolean := False) return Node_Id;
    --  Identical in effect to Duplicate_Subexpr, except that Remove_Checks is
    --  called on the result, so that the duplicated expression does not include
    --  checks. This is appropriate for use when Exp, the original expression is
    --  unconditionally elaborated before the duplicated expression, so that
    --  there is no need to repeat any checks.
-   --
-   --  Related_Id denotes the entity of the context where Expr appears. Flags
-   --  Is_Low_Bound and Is_High_Bound specify whether the expression to check
-   --  is the low or the high bound of a range. These three optional arguments
-   --  signal Remove_Side_Effects to create an external symbol of the form
-   --  Chars (Related_Id)_FIRST/_LAST. For suggested use of these parameters
-   --  see the warning in the body of Sem_Ch3.Process_Range_Expr_In_Decl.
 
    function Duplicate_Subexpr_Move_Checks
      (Exp          : Node_Id;
@@ -772,6 +758,15 @@ package Exp_Util is
    --    type Ann is access all Typ;
    --    Rnn : constant Ann := Func (...)'reference;
    --    Rnn.all
+
+   function Is_Conversion_Or_Reference_To_Formal (N : Node_Id) return Boolean;
+   --  Return True if N is a type conversion, or a dereference thereof, or a
+   --  reference to a formal parameter.
+
+   function Is_Expanded_Class_Wide_Interface_Object_Decl
+      (N : Node_Id) return Boolean;
+   --  Determine if N is the expanded code for a class-wide interface type
+   --  object declaration.
 
    function Is_Finalizable_Transient
      (Decl : Node_Id;
@@ -1259,6 +1254,11 @@ package Exp_Util is
    --  the Thunk_Entity of the last member on the thunk chain.
 
    --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
+   function Try_Inline_Always (Subp : Entity_Id) return Boolean;
+   --  Determines if the backend should try hard to inline Subp. This is
+   --  similar to Subp having a pragma Inline_Always, but doesn't cause an
+   --  error if Subp can't actually be inlined.
 
    function Type_May_Have_Bit_Aligned_Components
      (Typ : Entity_Id) return Boolean;

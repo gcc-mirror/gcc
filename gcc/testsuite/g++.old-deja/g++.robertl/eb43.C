@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 // All the pointer_to_binary_function cases used to fail because g++
 // couldn't handle converting an overloaded function to a class type.
 // The first one should still fail because it requires an implicit conversion

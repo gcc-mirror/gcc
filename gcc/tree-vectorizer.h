@@ -222,6 +222,9 @@ struct _slp_tree {
   unsigned int lanes;
   /* The operation of this node.  */
   enum tree_code code;
+  /* Whether uses of this load or feeders of this store are suitable
+     for load/store-lanes.  */
+  bool ldst_lanes;
 
   int vertex;
 
@@ -508,6 +511,12 @@ public:
 
   /* The count of the basic blocks in the vectorization region.  */
   unsigned int nbbs;
+
+  /* Used to keep a sequence of def stmts of a pattern stmt that are loop
+    invariant if they exists.
+    The sequence is emitted in the loop preheader should the loop be vectorized
+    and are reset when undoing patterns.  */
+  gimple_seq inv_pattern_def_seq;
 
 private:
   stmt_vec_info new_stmt_vec_info (gimple *stmt);
@@ -1039,6 +1048,7 @@ public:
 #define LOOP_VINFO_ORIG_LOOP_INFO(L)       (L)->orig_loop_info
 #define LOOP_VINFO_SIMD_IF_COND(L)         (L)->simd_if_cond
 #define LOOP_VINFO_INNER_LOOP_COST_FACTOR(L) (L)->inner_loop_cost_factor
+#define LOOP_VINFO_INV_PATTERN_DEF_SEQ(L)  (L)->inv_pattern_def_seq
 
 #define LOOP_VINFO_FULLY_MASKED_P(L)		\
   (LOOP_VINFO_USING_PARTIAL_VECTORS_P (L)	\
@@ -1401,6 +1411,12 @@ public:
 
   /* The vector type for performing the actual reduction.  */
   tree reduc_vectype;
+
+  /* For loop reduction with multiple vectorized results (ncopies > 1), a
+     lane-reducing operation participating in it may not use all of those
+     results, this field specifies result index starting from which any
+     following land-reducing operation would be assigned to.  */
+  unsigned int reduc_result_pos;
 
   /* If IS_REDUC_INFO is true and if the vector code is performing
      N scalar reductions in parallel, this variable gives the initial
@@ -2080,6 +2096,32 @@ vect_get_num_vectors (poly_uint64 nunits, tree vectype)
   return exact_div (nunits, TYPE_VECTOR_SUBPARTS (vectype)).to_constant ();
 }
 
+/* Return the number of vectors in the context of vectorization region VINFO,
+   needed for a group of statements, whose size is specified by lanes of NODE,
+   if NULL, it is 1.  The statements are supposed to be interleaved together
+   with no gap, and all operate on vectors of type VECTYPE, if NULL, the
+   vectype of NODE is used.  */
+
+inline unsigned int
+vect_get_num_copies (vec_info *vinfo, slp_tree node, tree vectype = NULL)
+{
+  poly_uint64 vf;
+
+  if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
+    vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  else
+    vf = 1;
+
+  if (node)
+    {
+      vf *= SLP_TREE_LANES (node);
+      if (!vectype)
+	vectype = SLP_TREE_VECTYPE (node);
+    }
+
+  return vect_get_num_vectors (vf, vectype);
+}
+
 /* Return the number of copies needed for loop vectorization when
    a statement operates on vectors of type VECTYPE.  This is the
    vectorization factor divided by the number of elements in
@@ -2088,7 +2130,7 @@ vect_get_num_vectors (poly_uint64 nunits, tree vectype)
 inline unsigned int
 vect_get_num_copies (loop_vec_info loop_vinfo, tree vectype)
 {
-  return vect_get_num_vectors (LOOP_VINFO_VECT_FACTOR (loop_vinfo), vectype);
+  return vect_get_num_copies (loop_vinfo, NULL, vectype);
 }
 
 /* Update maximum unit count *MAX_NUNITS so that it accounts for
@@ -2281,6 +2323,7 @@ extern bool supportable_indirect_convert_operation (code_helper,
 						    tree, tree,
 						    vec<std::pair<tree, tree_code> > *,
 						    tree = NULL_TREE);
+extern int compare_step_with_zero (vec_info *, stmt_vec_info);
 
 extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
 				  enum vect_cost_for_stmt, stmt_vec_info,
@@ -2459,6 +2502,8 @@ extern loop_vec_info vect_create_loop_vinfo (class loop *, vec_info_shared *,
 extern bool vectorizable_live_operation (vec_info *, stmt_vec_info,
 					 slp_tree, slp_instance, int,
 					 bool, stmt_vector_for_cost *);
+extern bool vectorizable_lane_reducing (loop_vec_info, stmt_vec_info,
+					slp_tree, stmt_vector_for_cost *);
 extern bool vectorizable_reduction (loop_vec_info, stmt_vec_info,
 				    slp_tree, slp_instance,
 				    stmt_vector_for_cost *);
@@ -2500,7 +2545,7 @@ extern bool vect_transform_slp_perm_load (vec_info *, slp_tree, const vec<tree> 
 					  unsigned * = nullptr, bool = false);
 extern bool vect_slp_analyze_operations (vec_info *);
 extern void vect_schedule_slp (vec_info *, const vec<slp_instance> &);
-extern opt_result vect_analyze_slp (vec_info *, unsigned);
+extern opt_result vect_analyze_slp (vec_info *, unsigned, bool);
 extern bool vect_make_slp_decision (loop_vec_info);
 extern void vect_detect_hybrid_slp (loop_vec_info);
 extern void vect_optimize_slp (vec_info *);

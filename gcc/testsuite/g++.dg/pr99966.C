@@ -1,6 +1,7 @@
 // { dg-do compile }
 // { dg-require-effective-target c++17 }
 // { dg-options "-O2 -fdump-tree-vrp1" }
+// { dg-skip-if "requires hosted libstdc++ for cassert" { ! hostedlib } }
 
 // Test we can remove a range bound after the assert.
 

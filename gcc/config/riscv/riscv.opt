@@ -82,7 +82,7 @@ Target Mask(DIV)
 Use hardware instructions for integer division.
 
 march=
-Target RejectNegative Joined Negative(march=)
+Target RejectNegative Joined Negative(march=) Var(riscv_arch_string) Save
 -march=	Generate code for given RISC-V ISA (e.g. RV64IM).  ISA strings must be
 lower-case.
 
@@ -262,6 +262,10 @@ Mask(ZAAMO)  Var(riscv_za_subext)
 
 Mask(ZALRSC) Var(riscv_za_subext)
 
+Mask(ZABHA) Var(riscv_za_subext)
+
+Mask(ZACAS) Var(riscv_za_subext)
+
 Mask(ZA64RS)  Var(riscv_za_subext)
 
 Mask(ZA128RS) Var(riscv_za_subext)
@@ -403,6 +407,13 @@ Mask(ZICBOP) Var(riscv_zicmo_subext)
 Mask(ZIC64B) Var(riscv_zicmo_subext)
 
 TargetVariable
+int riscv_mop_subext
+
+Mask(ZIMOP) Var(riscv_mop_subext)
+
+Mask(ZCMOP) Var(riscv_mop_subext)
+
+TargetVariable
 int riscv_zf_subext
 
 Mask(ZFBFMIN)  Var(riscv_zf_subext)
@@ -504,6 +515,13 @@ TargetVariable
 int riscv_xventana_subext
 
 Mask(XVENTANACONDOPS) Var(riscv_xventana_subext)
+
+TargetVariable
+int riscv_sifive_subext
+
+Mask(XSFVCP) Var(riscv_sifive_subext)
+
+Mask(XSFCEASE) Var(riscv_sifive_subext)
 
 Enum
 Name(isa_spec_class) Type(enum riscv_isa_spec_class)

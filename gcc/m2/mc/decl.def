@@ -185,6 +185,20 @@ PROCEDURE putDefForC (n: node) ;
 
 
 (*
+   putDefUnqualified - the definition module uses export unqualified.
+*)
+
+PROCEDURE putDefUnqualified (n: node) ;
+
+
+(*
+   isDefUnqualified - returns TRUE if the definition module uses unqualified.
+*)
+
+PROCEDURE isDefUnqualified (n: node) : BOOLEAN ;
+
+
+(*
    lookupInScope - looks up a symbol named, n, from, scope.
 *)
 

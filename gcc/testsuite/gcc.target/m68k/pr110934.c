@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { do-options "-fzero-call-used-regs=used -fpic -O2" } */
+/* { dg-options "-fzero-call-used-regs=used -fpic -O2" } */
 
 extern double clobber_fp0 (void);
 

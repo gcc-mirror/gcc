@@ -15,10 +15,13 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 27.6.1.3 unformatted input functions
+// C++98 27.6.1.3 unformatted input functions
 // NB: ostream has a particular "seeks" category. Adopt this for istreams too.
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
+
+// { dg-additional-files "wistream_seeks-1.tst" }
+// { dg-additional-files "wistream_seeks-1.txt" }
+// Reading the .txt file should not alter it:
+// { dg-final { file-io-diff "wistream_seeks-1" } }
 
 #include <istream>
 #include <fstream>

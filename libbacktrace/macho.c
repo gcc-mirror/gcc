@@ -271,12 +271,14 @@ struct macho_nlist_64
 
 /* Value found in nlist n_type field.  */
 
-#define MACH_O_N_EXT	0x01	/* Extern symbol */
-#define MACH_O_N_ABS	0x02	/* Absolute symbol */
-#define MACH_O_N_SECT	0x0e	/* Defined in section */
-
-#define MACH_O_N_TYPE	0x0e	/* Mask for type bits */
 #define MACH_O_N_STAB	0xe0	/* Stabs debugging symbol */
+#define MACH_O_N_TYPE	0x0e	/* Mask for type bits */
+
+/* Values found after masking with MACH_O_N_TYPE.  */
+#define MACH_O_N_UNDF	0x00	/* Undefined symbol */
+#define MACH_O_N_ABS	0x02	/* Absolute symbol */
+#define MACH_O_N_SECT	0x0e	/* Defined in section from n_sect field */
+
 
 /* Information we keep for a Mach-O symbol.  */
 
@@ -313,8 +315,9 @@ static const char * const dwarf_section_names[DEBUG_MAX] =
 /* Forward declaration.  */
 
 static int macho_add (struct backtrace_state *, const char *, int, off_t,
-		      const unsigned char *, uintptr_t, int,
-		      backtrace_error_callback, void *, fileline *, int *);
+		      const unsigned char *, struct libbacktrace_base_address,
+		      int, backtrace_error_callback, void *, fileline *,
+		      int *);
 
 /* A dummy callback function used when we can't find any debug info.  */
 
@@ -324,7 +327,7 @@ macho_nodebug (struct backtrace_state *state ATTRIBUTE_UNUSED,
 	       backtrace_full_callback callback ATTRIBUTE_UNUSED,
 	       backtrace_error_callback error_callback, void *data)
 {
-  error_callback (data, "no debug info in Mach-O executable", -1);
+  error_callback (data, "no debug info in Mach-O executable (make sure to compile with -g; may need to run dsymutil)", -1);
   return 0;
 }
 
@@ -492,10 +495,10 @@ macho_defined_symbol (uint8_t type)
 {
   if ((type & MACH_O_N_STAB) != 0)
     return 0;
-  if ((type & MACH_O_N_EXT) != 0)
-    return 0;
   switch (type & MACH_O_N_TYPE)
     {
+    case MACH_O_N_UNDF:
+      return 0;
     case MACH_O_N_ABS:
       return 1;
     case MACH_O_N_SECT:
@@ -509,7 +512,7 @@ macho_defined_symbol (uint8_t type)
 
 static int
 macho_add_symtab (struct backtrace_state *state, int descriptor,
-		  uintptr_t base_address, int is_64,
+		  struct libbacktrace_base_address base_address, int is_64,
 		  off_t symoff, unsigned int nsyms, off_t stroff,
 		  unsigned int strsize,
 		  backtrace_error_callback error_callback, void *data)
@@ -624,7 +627,7 @@ macho_add_symtab (struct backtrace_state *state, int descriptor,
       if (name[0] == '_')
 	++name;
       macho_symbols[j].name = name;
-      macho_symbols[j].address = value + base_address;
+      macho_symbols[j].address = libbacktrace_add_base (value, base_address);
       ++j;
     }
 
@@ -674,7 +677,6 @@ macho_add_symtab (struct backtrace_state *state, int descriptor,
 	      struct macho_syminfo_data *p;
 
 	      p = backtrace_atomic_load_pointer (pp);
-	      
 	      if (p == NULL)
 		break;
 
@@ -757,7 +759,8 @@ macho_syminfo (struct backtrace_state *state, uintptr_t addr,
 static int
 macho_add_fat (struct backtrace_state *state, const char *filename,
 	       int descriptor, int swapped, off_t offset,
-	       const unsigned char *match_uuid, uintptr_t base_address,
+	       const unsigned char *match_uuid,
+	       struct libbacktrace_base_address base_address,
 	       int skip_symtab, uint32_t nfat_arch, int is_64,
 	       backtrace_error_callback error_callback, void *data,
 	       fileline *fileline_fn, int *found_sym)
@@ -859,7 +862,8 @@ macho_add_fat (struct backtrace_state *state, const char *filename,
 
 static int
 macho_add_dsym (struct backtrace_state *state, const char *filename,
-		uintptr_t base_address, const unsigned char *uuid,
+		struct libbacktrace_base_address base_address,
+		const unsigned char *uuid,
 		backtrace_error_callback error_callback, void *data,
 		fileline* fileline_fn)
 {
@@ -977,7 +981,7 @@ macho_add_dsym (struct backtrace_state *state, const char *filename,
 static int
 macho_add (struct backtrace_state *state, const char *filename, int descriptor,
 	   off_t offset, const unsigned char *match_uuid,
-	   uintptr_t base_address, int skip_symtab,
+	   struct libbacktrace_base_address base_address, int skip_symtab,
 	   backtrace_error_callback error_callback, void *data,
 	   fileline *fileline_fn, int *found_sym)
 {
@@ -1239,7 +1243,7 @@ backtrace_initialize (struct backtrace_state *state, const char *filename,
   c = _dyld_image_count ();
   for (i = 0; i < c; ++i)
     {
-      uintptr_t base_address;
+      struct libbacktrace_base_address base_address;
       const char *name;
       int d;
       fileline mff;
@@ -1263,7 +1267,7 @@ backtrace_initialize (struct backtrace_state *state, const char *filename,
 	    continue;
 	}
 
-      base_address = _dyld_get_image_vmaddr_slide (i);
+      base_address.m = _dyld_get_image_vmaddr_slide (i);
 
       mff = macho_nodebug;
       if (!macho_add (state, name, d, 0, NULL, base_address, 0,
@@ -1318,10 +1322,12 @@ backtrace_initialize (struct backtrace_state *state, const char *filename,
 		      void *data, fileline *fileline_fn)
 {
   fileline macho_fileline_fn;
+  struct libbacktrace_base_address zero_base_address;
   int found_sym;
 
   macho_fileline_fn = macho_nodebug;
-  if (!macho_add (state, filename, descriptor, 0, NULL, 0, 0,
+  memset (&zero_base_address, 0, sizeof zero_base_address);
+  if (!macho_add (state, filename, descriptor, 0, NULL, zero_base_address, 0,
 		  error_callback, data, &macho_fileline_fn, &found_sym))
     return 0;
 

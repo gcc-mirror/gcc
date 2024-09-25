@@ -36,13 +36,16 @@
 // ISO C++ 14882: 18.2.2  Implementation properties: C library
 //
 
+#ifndef _GLIBCXX_CLIMITS
+#define _GLIBCXX_CLIMITS 1
+
 #pragma GCC system_header
 
 #include <bits/c++config.h>
 #include <limits.h>
 
-#ifndef _GLIBCXX_CLIMITS
-#define _GLIBCXX_CLIMITS 1
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
 
 #ifndef LLONG_MIN
 #define LLONG_MIN (-__LONG_LONG_MAX__ - 1)
@@ -55,5 +58,7 @@
 #ifndef ULLONG_MAX
 #define ULLONG_MAX (__LONG_LONG_MAX__ * 2ULL + 1)
 #endif
+
+#pragma GCC diagnostic pop
 
 #endif

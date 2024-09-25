@@ -494,7 +494,7 @@ get_user_facing_name (const gcall *call)
 label_text
 make_label_text (bool can_colorize, const char *fmt, ...)
 {
-  pretty_printer *pp = global_dc->printer->clone ();
+  pretty_printer *pp = global_dc->m_printer->clone ();
   pp_clear_output_area (pp);
 
   if (!can_colorize)
@@ -524,7 +524,7 @@ make_label_text_n (bool can_colorize, unsigned HOST_WIDE_INT n,
 		   const char *singular_fmt,
 		   const char *plural_fmt, ...)
 {
-  pretty_printer *pp = global_dc->printer->clone ();
+  pretty_printer *pp = global_dc->m_printer->clone ();
   pp_clear_output_area (pp);
 
   if (!can_colorize)

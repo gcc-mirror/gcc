@@ -8,4 +8,3 @@ constexpr float* pf = static_cast<float*>(vpr);  // { dg-error "cast from .void\
 
 constexpr void* vnp = nullptr;
 constexpr int* pi2 = static_cast<int*>(vnp);  // { dg-error "cast from .void\\*. is not allowed" "" { target c++23_down } }
-// { dg-error "cast from .void\\*. is not allowed in a constant expression because .vnp. does not point to an object" "" { target c++26 } .-1 }

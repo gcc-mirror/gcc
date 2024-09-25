@@ -1,7 +1,7 @@
 /* { dg-do run { target { riscv_v } } } */
 /* { dg-additional-options "-std=c99" } */
 
-#include "vec_sat_arith.h"
+#include "../vec_sat_arith.h"
 
 #define T                  uint8_t
 #define N                  16
@@ -72,4 +72,4 @@ T test_data[][3][N] = {
   },
 };
 
-#include "vec_sat_binary.h"
+#include "vec_sat_binary_vvv_run.h"

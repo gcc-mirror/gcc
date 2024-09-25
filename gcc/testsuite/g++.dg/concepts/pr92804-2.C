@@ -1,8 +1,8 @@
 // { dg-do compile { target c++17 } }
-// { dg-options "-fconcepts-ts" }
+// { dg-options "-fconcepts" }
 
 template<typename T>
-concept bool foo() { return true; };  // { dg-message "declared here" }
+concept foo = true;  // { dg-message "declared here" }
 
 template<typename T>
 void bar(T t)

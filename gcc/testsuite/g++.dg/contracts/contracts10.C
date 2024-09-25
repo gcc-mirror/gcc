@@ -62,6 +62,7 @@ int main()
   return 0;
 }
 
+// { dg-skip-if "requires hosted libstdc++ for stdc++exp" { ! hostedlib } }
 // { dg-output "contract violation in function main at .*.C:47: .*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function main at .*.C:48: .*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function main at .*.C:49: .*(\n|\r\n|\r)" }

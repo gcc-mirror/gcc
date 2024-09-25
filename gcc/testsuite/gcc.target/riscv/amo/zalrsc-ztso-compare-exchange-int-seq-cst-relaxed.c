@@ -3,6 +3,7 @@
 /* Mixed mappings need to be unioned.  */
 /* { dg-add-options riscv_zalrsc } */
 /* { dg-add-options riscv_ztso } */
+/* { dg-remove-options riscv_zacas } */
 /* { dg-final { scan-assembler-times "lr.w.aqrl\t" 1 } } */
 /* { dg-final { scan-assembler-times "sc.w.rl\t" 1 } } */
 

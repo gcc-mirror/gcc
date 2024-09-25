@@ -4,6 +4,6 @@
 #include "vmul-template.h"
 
 /* { dg-final { scan-assembler-times {\tvmul\.vv} 16 } } */
-/* { dg-final { scan-assembler-times {\tvfmul\.vv} 4 } } */
-/* { dg-final { scan-assembler-times {\tvfmul\.vf} 2 } } */
+/* { dg-final { scan-assembler-times {\tvfmul\.vv} 3 } } */
+/* { dg-final { scan-assembler-times {\tvfmul\.vf} 3 } } */
 /* { dg-final { scan-tree-dump-times "\.COND_LEN_MUL" 6 "optimized" } } */

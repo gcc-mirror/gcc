@@ -51,7 +51,7 @@ logger::logger (FILE *f_out,
   m_pp (reference_pp.clone ())
 {
   pp_show_color (m_pp) = 0;
-  pp_buffer (m_pp)->stream = f_out;
+  pp_buffer (m_pp)->m_stream = f_out;
 
   /* %qE in logs for SSA_NAMEs should show the ssa names, rather than
      trying to prettify things by showing the underlying var.  */

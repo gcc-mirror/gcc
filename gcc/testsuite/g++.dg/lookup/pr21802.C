@@ -1,5 +1,8 @@
 // PR c++/21802
 // { dg-do run }
+// { dg-require-effective-target size20plus }
+// { dg-skip-if "requires hosted libstdc++ for cassert" { ! hostedlib } }
+
 #include <cassert>
 
 struct X;

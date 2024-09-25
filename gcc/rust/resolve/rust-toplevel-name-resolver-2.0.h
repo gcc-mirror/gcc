@@ -26,6 +26,29 @@
 namespace Rust {
 namespace Resolver2_0 {
 
+class GlobbingVisitor : public AST::DefaultASTVisitor
+{
+  using AST::DefaultASTVisitor::visit;
+
+public:
+  GlobbingVisitor (NameResolutionContext &ctx) : ctx (ctx) {}
+
+  void go (AST::Module *module);
+  void visit (AST::Module &module) override;
+  void visit (AST::MacroRulesDefinition &macro) override;
+  void visit (AST::Function &function) override;
+  void visit (AST::StaticItem &static_item) override;
+  void visit (AST::StructStruct &struct_item) override;
+  void visit (AST::TupleStruct &tuple_struct) override;
+  void visit (AST::Enum &enum_item) override;
+  void visit (AST::Union &union_item) override;
+  void visit (AST::ConstantItem &const_item) override;
+  void visit (AST::ExternCrate &crate) override;
+  void visit (AST::UseDeclaration &use) override;
+
+private:
+  NameResolutionContext &ctx;
+};
 /**
  * The `TopLevel` visitor takes care of collecting all the definitions in a
  * crate, and inserting them into the proper namespaces. These definitions can
@@ -60,7 +83,12 @@ private:
   // FIXME: Do we move these to our mappings?
   std::unordered_map<NodeId, location_t> node_locations;
 
+  // Store node forwarding for use declaration, the link between a
+  // "new" local name and its definition.
+  std::unordered_map<NodeId, NodeId> node_forwarding;
+
   void visit (AST::Module &module) override;
+  void visit (AST::Trait &trait) override;
   void visit (AST::MacroRulesDefinition &macro) override;
   void visit (AST::Function &function) override;
   void visit (AST::BlockExpr &expr) override;
@@ -80,7 +108,9 @@ private:
   // Call this on all the paths of a UseDec - so each flattened path in a
   // UseTreeList for example
   // FIXME: Should that return `found`?
-  bool handle_use_dec (AST::SimplePath path);
+  bool handle_use_dec (AST::SimplePath &path);
+  bool handle_use_glob (AST::SimplePath &glob);
+  bool handle_rebind (std::pair<AST::SimplePath, AST::UseTreeRebind> &pair);
 
   void visit (AST::UseDeclaration &use) override;
 };

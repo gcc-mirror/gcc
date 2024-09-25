@@ -33,7 +33,7 @@ FROM Indexing IMPORT InitIndex, InBounds, LowIndice, HighIndice,
                      PutIndice, GetIndice, InitIndexTuned ;
 
 FROM Sets IMPORT Set, InitSet, IncludeElementIntoSet, IsElementInSet ;
-FROM m2linemap IMPORT location_t ;
+FROM gcctypes IMPORT location_t ;
 
 FROM M2Options IMPORT Pedantic, ExtendedOpaque,
                       GetDebugFunctionLineNumbers, ScaffoldDynamic,
@@ -82,7 +82,7 @@ FROM M2Base IMPORT MixTypes, InitBase, Char, Integer, LongReal,
 
 FROM M2System IMPORT Address ;
 FROM m2expr IMPORT OverflowZType ;
-FROM m2tree IMPORT Tree ;
+FROM gcctypes IMPORT tree ;
 FROM m2linemap IMPORT BuiltinsLocation ;
 FROM StrLib IMPORT StrEqual ;
 FROM m2builtins IMPORT BuiltinExists ;
@@ -728,7 +728,7 @@ TYPE
                StartFinishQuad: CARDINAL ;  (* Signify the finalization      *)
                                             (* code.                         *)
                EndFinishQuad : CARDINAL ;   (* should point to a finish      *)
-               FinallyFunction: Tree ;      (* The GCC function for finally  *)
+               FinallyFunction: tree ;      (* The GCC function for finally  *)
                ExceptionFinally,
                ExceptionBlock: BOOLEAN ;    (* does it have an exception?    *)
                ContainsHiddenType: BOOLEAN ;(* True if this module           *)
@@ -803,7 +803,7 @@ TYPE
                StartFinishQuad: CARDINAL ;  (* Signify the finalization      *)
                                             (* code.                         *)
                EndFinishQuad : CARDINAL ;   (* should point to a finish      *)
-               FinallyFunction: Tree ;      (* The GCC function for finally  *)
+               FinallyFunction: tree ;      (* The GCC function for finally  *)
                ExceptionFinally,
                ExceptionBlock: BOOLEAN ;    (* does it have an exception?    *)
                ModLink       : BOOLEAN ;    (* Is the module parsed for      *)
@@ -12876,7 +12876,7 @@ END GetModuleQuads ;
    PutModuleFinallyFunction - Places Tree, finally, into the Module symbol, Sym.
 *)
 
-PROCEDURE PutModuleFinallyFunction (Sym: CARDINAL; finally: Tree) ;
+PROCEDURE PutModuleFinallyFunction (Sym: CARDINAL; finally: tree) ;
 VAR
    pSym: PtrToSymbol ;
 BEGIN
@@ -12898,7 +12898,7 @@ END PutModuleFinallyFunction ;
    GetModuleFinallyFunction - returns the finally tree from the Module symbol, Sym.
 *)
 
-PROCEDURE GetModuleFinallyFunction (Sym: CARDINAL) : Tree ;
+PROCEDURE GetModuleFinallyFunction (Sym: CARDINAL) : tree ;
 VAR
    pSym: PtrToSymbol ;
 BEGIN

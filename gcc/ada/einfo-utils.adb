@@ -1567,15 +1567,6 @@ package body Einfo.Utils is
                     Has_Option (Id, Name_Synchronous));
    end Is_External_State;
 
-   ------------------
-   -- Is_Finalizer --
-   ------------------
-
-   function Is_Finalizer (Id : E) return B is
-   begin
-      return Ekind (Id) = E_Procedure and then Chars (Id) = Name_uFinalizer;
-   end Is_Finalizer;
-
    ----------------------
    -- Is_Full_Access --
    ----------------------

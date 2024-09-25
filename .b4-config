@@ -1,0 +1,4 @@
+[b4]
+    midmask = https://inbox.sourceware.org/%s
+    linkmask = https://inbox.sourceware.org/%s
+    send-series-to = gcc-patches@gcc.gnu.org

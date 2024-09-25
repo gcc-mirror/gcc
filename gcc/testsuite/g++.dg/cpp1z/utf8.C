@@ -1,4 +1,5 @@
 // { dg-do compile { target c++17 } }
+// { dg-skip-if "requires hosted libstdc++ for cassert" { ! hostedlib } }
 
 #include <cassert>
 #include <experimental/type_traits>

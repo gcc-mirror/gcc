@@ -17,14 +17,20 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-type-check-item.h"
+#include "rust-canonical-path.h"
+#include "rust-diagnostics.h"
 #include "rust-hir-type-check-enumitem.h"
 #include "rust-hir-type-check-implitem.h"
 #include "rust-hir-type-check-type.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-type-check-pattern.h"
 #include "rust-hir-trait-resolve.h"
+#include "rust-identifier.h"
+#include "rust-session-manager.h"
+#include "rust-immutable-name-resolution-context.h"
 #include "rust-substitution-mapper.h"
 #include "rust-type-util.h"
+#include "rust-tyty-variance-analysis.h"
 
 namespace Rust {
 namespace Resolver {
@@ -184,11 +190,30 @@ TypeCheckItem::visit (HIR::TupleStruct &struct_decl)
     }
 
   // get the path
-  const CanonicalPath *canonical_path = nullptr;
-  bool ok = mappings->lookup_canonical_path (
-    struct_decl.get_mappings ().get_nodeid (), &canonical_path);
-  rust_assert (ok);
-  RustIdent ident{*canonical_path, struct_decl.get_locus ()};
+
+  auto path = CanonicalPath::create_empty ();
+
+  // FIXME: HACK: ARTHUR: Disgusting
+  if (flag_name_resolution_2_0)
+    {
+      auto nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+      auto canonical_path = nr_ctx.values.to_canonical_path (
+	struct_decl.get_mappings ().get_nodeid ());
+
+      path = canonical_path.value ();
+    }
+  else
+    {
+      const CanonicalPath *canonical_path = nullptr;
+      bool ok = mappings->lookup_canonical_path (
+	struct_decl.get_mappings ().get_nodeid (), &canonical_path);
+      rust_assert (ok);
+
+      path = *canonical_path;
+    }
+
+  RustIdent ident{path, struct_decl.get_locus ()};
 
   // its a single variant ADT
   std::vector<TyTy::VariantDef *> variants;
@@ -204,7 +229,7 @@ TypeCheckItem::visit (HIR::TupleStruct &struct_decl)
   TyTy::ADTType::ReprOptions repr
     = parse_repr_options (attrs, struct_decl.get_locus ());
 
-  TyTy::BaseType *type = new TyTy::ADTType (
+  auto *type = new TyTy::ADTType (
     struct_decl.get_mappings ().get_hirid (), mappings->get_next_hir_id (),
     struct_decl.get_identifier ().as_string (), ident,
     TyTy::ADTType::ADTKind::TUPLE_STRUCT, std::move (variants),
@@ -215,6 +240,8 @@ TypeCheckItem::visit (HIR::TupleStruct &struct_decl)
 
   context->insert_type (struct_decl.get_mappings (), type);
   infered = type;
+
+  context->get_variance_analysis_ctx ().add_type_constraints (*type);
 }
 
 void
@@ -245,12 +272,31 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
       context->insert_type (field.get_mappings (), ty_field->get_field_type ());
     }
 
-  // get the path
-  const CanonicalPath *canonical_path = nullptr;
-  bool ok = mappings->lookup_canonical_path (
-    struct_decl.get_mappings ().get_nodeid (), &canonical_path);
-  rust_assert (ok);
-  RustIdent ident{*canonical_path, struct_decl.get_locus ()};
+  auto path = CanonicalPath::create_empty ();
+
+  // FIXME: HACK: ARTHUR: Disgusting
+  if (flag_name_resolution_2_0)
+    {
+      auto nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+      auto canonical_path = nr_ctx.types.to_canonical_path (
+	struct_decl.get_mappings ().get_nodeid ());
+
+      if (!canonical_path.has_value ())
+	rust_unreachable ();
+      path = canonical_path.value ();
+    }
+  else
+    {
+      const CanonicalPath *canonical_path = nullptr;
+      bool ok = mappings->lookup_canonical_path (
+	struct_decl.get_mappings ().get_nodeid (), &canonical_path);
+      rust_assert (ok);
+
+      path = *canonical_path;
+    }
+
+  RustIdent ident{path, struct_decl.get_locus ()};
 
   // its a single variant ADT
   std::vector<TyTy::VariantDef *> variants;
@@ -266,7 +312,7 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
   TyTy::ADTType::ReprOptions repr
     = parse_repr_options (attrs, struct_decl.get_locus ());
 
-  TyTy::BaseType *type = new TyTy::ADTType (
+  auto *type = new TyTy::ADTType (
     struct_decl.get_mappings ().get_hirid (), mappings->get_next_hir_id (),
     struct_decl.get_identifier ().as_string (), ident,
     TyTy::ADTType::ADTKind::STRUCT_STRUCT, std::move (variants),
@@ -277,6 +323,8 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
 
   context->insert_type (struct_decl.get_mappings (), type);
   infered = type;
+
+  context->get_variance_analysis_ctx ().add_type_constraints (*type);
 }
 
 void
@@ -307,7 +355,7 @@ TypeCheckItem::visit (HIR::Enum &enum_decl)
   RustIdent ident{*canonical_path, enum_decl.get_locus ()};
 
   // multi variant ADT
-  TyTy::BaseType *type
+  auto *type
     = new TyTy::ADTType (enum_decl.get_mappings ().get_hirid (),
 			 mappings->get_next_hir_id (),
 			 enum_decl.get_identifier ().as_string (), ident,
@@ -316,6 +364,8 @@ TypeCheckItem::visit (HIR::Enum &enum_decl)
 
   context->insert_type (enum_decl.get_mappings (), type);
   infered = type;
+
+  context->get_variance_analysis_ctx ().add_type_constraints (*type);
 }
 
 void
@@ -363,7 +413,7 @@ TypeCheckItem::visit (HIR::Union &union_decl)
 			  TyTy::VariantDef::VariantType::STRUCT, nullptr,
 			  std::move (fields)));
 
-  TyTy::BaseType *type
+  auto *type
     = new TyTy::ADTType (union_decl.get_mappings ().get_hirid (),
 			 mappings->get_next_hir_id (),
 			 union_decl.get_identifier ().as_string (), ident,
@@ -372,6 +422,8 @@ TypeCheckItem::visit (HIR::Union &union_decl)
 
   context->insert_type (union_decl.get_mappings (), type);
   infered = type;
+
+  context->get_variance_analysis_ctx ().add_type_constraints (*type);
 }
 
 void
@@ -501,13 +553,29 @@ TypeCheckItem::visit (HIR::Function &function)
       TypeCheckPattern::Resolve (param.get_param_name ().get (), param_tyty);
     }
 
-  const CanonicalPath *canonical_path = nullptr;
-  bool ok
-    = mappings->lookup_canonical_path (function.get_mappings ().get_nodeid (),
-				       &canonical_path);
-  rust_assert (ok);
+  auto path = CanonicalPath::create_empty ();
 
-  RustIdent ident{*canonical_path, function.get_locus ()};
+  // FIXME: HACK: ARTHUR: Disgusting
+  if (flag_name_resolution_2_0)
+    {
+      auto nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+      auto canonical_path = nr_ctx.values.to_canonical_path (
+	function.get_mappings ().get_nodeid ());
+
+      path = canonical_path.value ();
+    }
+  else
+    {
+      const CanonicalPath *canonical_path = nullptr;
+      bool ok = mappings->lookup_canonical_path (
+	function.get_mappings ().get_nodeid (), &canonical_path);
+      rust_assert (ok);
+
+      path = *canonical_path;
+    }
+
+  RustIdent ident{path, function.get_locus ()};
 
   auto fn_type = new TyTy::FnType (
     function.get_mappings ().get_hirid (),

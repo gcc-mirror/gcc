@@ -7232,7 +7232,8 @@ native_encode_rtx (machine_mode mode, rtx x, vec<target_unit> &bytes,
 	      target_unit value = 0;
 	      for (unsigned int j = 0; j < BITS_PER_UNIT; j += elt_bits)
 		{
-		  value |= (INTVAL (CONST_VECTOR_ELT (x, elt)) & mask) << j;
+		  if (INTVAL (CONST_VECTOR_ELT (x, elt)))
+		    value |= mask << j;
 		  elt += 1;
 		}
 	      bytes.quick_push (value);
@@ -7743,8 +7744,9 @@ simplify_context::simplify_subreg (machine_mode outermode, rtx op,
 	return NULL_RTX;
 
       if (outermode == innermostmode
-	  && known_eq (byte, 0U)
-	  && known_eq (SUBREG_BYTE (op), 0))
+	  && known_eq (byte, subreg_lowpart_offset (outermode, innermode))
+	  && known_eq (SUBREG_BYTE (op),
+		       subreg_lowpart_offset (innermode, innermostmode)))
 	return SUBREG_REG (op);
 
       /* Work out the memory offset of the final OUTERMODE value relative

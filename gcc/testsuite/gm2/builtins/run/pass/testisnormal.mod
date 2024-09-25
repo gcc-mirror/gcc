@@ -1,4 +1,4 @@
-MODULE testisnormal ;
+IMPLEMENTATION MODULE testisnormal ;
 
 FROM libc IMPORT printf, exit ;
 FROM Builtins IMPORT isnormal ;

@@ -280,15 +280,18 @@ def_builtin (HOST_WIDE_INT mask, HOST_WIDE_INT mask2,
       if (((mask2 == 0 || (mask2 & ix86_isa_flags2) != 0)
 	   && (mask == 0 || (mask & ix86_isa_flags) != 0))
 	  || ((mask & OPTION_MASK_ISA_MMX) != 0 && TARGET_MMX_WITH_SSE)
-	  /* "Unified" builtin used by either AVXVNNI/AVXIFMA/AES intrinsics
-	     or AVX512VNNIVL/AVX512IFMAVL/VAESVL non-mask intrinsics should be
-	     defined whenever avxvnni/avxifma/aes or avx512vnni/avx512ifma/vaes
-	     && avx512vl exist.  */
+	  /* "Unified" builtin used by either AVXVNNI/AVXIFMA/AES/
+	     AVXVNNIINT{8,16} intrinsics or AVX512VNNIVL/AVX512IFMAVL/VAESVL/
+	     AVX10.2 non-mask intrinsics should be defined whenever avxvnni/
+	     avxifma/aes/avxvnniint{8,16} or avx512vnni && avx512vl/avx512ifma
+	     && avx512vl/vaes && avx512vl/avx10.2 exist.  */
 	  || (mask2 == OPTION_MASK_ISA2_AVXVNNI)
 	  || (mask2 == OPTION_MASK_ISA2_AVXIFMA)
 	  || (mask2 == (OPTION_MASK_ISA2_AVXNECONVERT
 			| OPTION_MASK_ISA2_AVX512BF16))
 	  || ((mask2 & OPTION_MASK_ISA2_VAES) != 0)
+	  || ((mask2 & OPTION_MASK_ISA2_AVXVNNIINT8) != 0)
+	  || ((mask2 & OPTION_MASK_ISA2_AVXVNNIINT16) != 0)
 	  || (lang_hooks.builtin_function
 	      == lang_hooks.builtin_function_ext_scope))
 	{

@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "cfgrtl.h"
 #include "tree-pass.h"
+#include "opts.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -156,6 +157,7 @@ static rtx_insn *cris_md_asm_adjust (vec<rtx> &, vec<rtx> &,
 				     HARD_REG_SET &, location_t);
 
 static void cris_option_override (void);
+static void cris_option_override_after_change ();
 
 static bool cris_frame_pointer_required (void);
 
@@ -281,6 +283,8 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE cris_option_override
+#undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
+#define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE cris_option_override_after_change
 
 #undef TARGET_ASM_TRAMPOLINE_TEMPLATE
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE cris_asm_trampoline_template
@@ -2409,6 +2413,38 @@ cris_option_override (void)
 
   /* Set the per-function-data initializer.  */
   init_machine_status = cris_init_machine_status;
+
+  cris_option_override_after_change ();
+}
+
+/* The TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE worker.
+
+   The CRIS port doesn't have any port-specific function attributes to
+   handle, but to keep attributes consistent across per-function changes
+   and not fail per-function optimization settings as exposed by
+   gcc.dg/ipa/iinline-attr.c, any OPTION_SET_P work need to be done
+   here, not in the TARGET_OPTION_OVERRIDE function.  This function then
+   instead needs to called from that function.  */
+
+static void
+cris_option_override_after_change ()
+{
+  /* The combine pass inserts extra copies of the incoming parameter
+     registers in make_more_copies, between the hard registers and
+     pseudo-registers holding the "original" copies.  When doing that,
+     it does not copy attributes from those original registers.  With
+     the late-combine pass, those extra copies are propagated into more
+     places than the original copies, and trips up LRA which doesn't see
+     e.g. REG_POINTER where it's expected.  This causes an ICE for
+     gcc.target/cris/rld-legit1.c.  That's a red flag, but also a very
+     special corner case.
+
+     A more valid reason is that coremark with -march=v10 -O2 regresses
+     by 2.6% @r15-2005-g13757e50ff0b compared to late-combined disabled.
+
+     Disable late-combine by default until that's fixed.  */
+  if (!OPTION_SET_P (flag_late_combine_instructions))
+    flag_late_combine_instructions = 0;
 }
 
 /* The TARGET_ASM_OUTPUT_MI_THUNK worker.  */

@@ -661,7 +661,7 @@ fast_modulo_reduction (tree op, tree modulus, unsigned int precision)
 	  if (type_precision < BITS_PER_WORD)
 	    {
 	      const scalar_int_mode m
-		= smallest_int_mode_for_size (type_precision + 1);
+		= smallest_int_mode_for_size (type_precision + 1).require ();
 	      tree new_type = gnat_type_for_mode (m, 1);
 	      op = fold_convert (new_type, op);
 	      modulus = fold_convert (new_type, modulus);
@@ -721,7 +721,8 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
      for its mode since operations are ultimately performed in the mode.  */
   if (TYPE_PRECISION (type) < precision)
     {
-      const scalar_int_mode m = smallest_int_mode_for_size (precision);
+      const scalar_int_mode m
+	= smallest_int_mode_for_size (precision).require ();
       op_type = gnat_type_for_mode (m, 1);
       modulus = fold_convert (op_type, modulus);
       lhs = fold_convert (op_type, lhs);

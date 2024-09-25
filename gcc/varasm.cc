@@ -2101,7 +2101,19 @@ void
 assemble_string (const char *p, int size)
 {
   int pos = 0;
+#if defined(BASE64_ASM_OP) \
+    && BITS_PER_UNIT == 8 \
+    && CHAR_BIT == 8 \
+    && 'A' == 65 \
+    && 'a' == 97 \
+    && '0' == 48 \
+    && '+' == 43 \
+    && '/' == 47 \
+    && '=' == 61
+  int maximum = 16384;
+#else
   int maximum = 2000;
+#endif
 
   /* If the string is very long, split it up.  */
 
@@ -7801,6 +7813,8 @@ decl_binds_to_current_def_p (const_tree decl)
      for all other declaration types.  */
   if (DECL_WEAK (decl))
     return false;
+  if (DECL_COMDAT_GROUP (decl))
+    return false;
   if (DECL_COMMON (decl)
       && (DECL_INITIAL (decl) == NULL
 	  || (!in_lto_p && DECL_INITIAL (decl) == error_mark_node)))
@@ -8454,8 +8468,7 @@ default_elf_asm_output_limited_string (FILE *f, const char *s)
   int escape;
   unsigned char c;
 
-  fputs (STRING_ASM_OP, f);
-  putc ('"', f);
+  fputs (STRING_ASM_OP "\"", f);
   while (*s != '\0')
     {
       c = *s;
@@ -8489,9 +8502,11 @@ default_elf_asm_output_ascii (FILE *f, const char *s, unsigned int len)
 {
   const char *limit = s + len;
   const char *last_null = NULL;
+  const char *last_base64 = s;
   unsigned bytes_in_chunk = 0;
   unsigned char c;
   int escape;
+  bool prev_base64 = false;
 
   for (; s < limit; s++)
     {
@@ -8504,7 +8519,7 @@ default_elf_asm_output_ascii (FILE *f, const char *s, unsigned int len)
 	  bytes_in_chunk = 0;
 	}
 
-      if (s > last_null)
+      if ((uintptr_t) s > (uintptr_t) last_null)
 	{
 	  for (p = s; p < limit && *p != '\0'; p++)
 	    continue;
@@ -8512,6 +8527,112 @@ default_elf_asm_output_ascii (FILE *f, const char *s, unsigned int len)
 	}
       else
 	p = last_null;
+
+#if defined(BASE64_ASM_OP) \
+    && BITS_PER_UNIT == 8 \
+    && CHAR_BIT == 8 \
+    && 'A' == 65 \
+    && 'a' == 97 \
+    && '0' == 48 \
+    && '+' == 43 \
+    && '/' == 47 \
+    && '=' == 61
+      if (s >= last_base64)
+	{
+	  unsigned cnt = 0;
+	  unsigned char prev_c = ' ';
+	  const char *t;
+	  for (t = s; t < limit && (t - s) < (long) ELF_STRING_LIMIT - 1; t++)
+	    {
+	      if (t == p && t != s)
+		{
+		  if (cnt <= ((unsigned) (t - s) + 1 + 2) / 3 * 4
+		      && (!prev_base64 || (t - s) >= 16)
+		      && ((t - s) > 1 || cnt <= 2))
+		    {
+		      last_base64 = p;
+		      goto no_base64;
+		    }
+		}
+	      c = *t;
+	      escape = ELF_ASCII_ESCAPES[c];
+	      switch (escape)
+		{
+		case 0:
+		  ++cnt;
+		  break;
+		case 1:
+		  if (c == 0)
+		    {
+		      if (prev_c == 0
+			  && t + 1 < limit
+			  && (t + 1 - s) < (long) ELF_STRING_LIMIT - 1)
+			break;
+		      cnt += 2 + strlen (STRING_ASM_OP) + 1;
+		    }
+		  else
+		    cnt += 4;
+		  break;
+		default:
+		  cnt += 2;
+		  break;
+		}
+	      prev_c = c;
+	    }
+	  if (cnt > ((unsigned) (t - s) + 2) / 3 * 4 && (t - s) >= 3)
+	    {
+	      if (bytes_in_chunk > 0)
+		{
+		  putc ('\"', f);
+		  putc ('\n', f);
+		  bytes_in_chunk = 0;
+		}
+
+	      unsigned char buf[(ELF_STRING_LIMIT + 2) / 3 * 4 + 3];
+	      unsigned j = 0;
+	      static const char base64_enc[] =
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+		"0123456789+/";
+
+	      fputs (BASE64_ASM_OP "\"", f);
+	      while (s < t)
+		{
+		  unsigned char a = *s;
+		  unsigned char b = 0, c = 0;
+		  if (s < t - 1)
+		    b = s[1];
+		  if (s < t - 2)
+		    c = s[2];
+		  unsigned long v = ((((unsigned long) a) << 16)
+				     | (((unsigned long) b) << 8)
+				     | c);
+		  buf[j++] = base64_enc[(v >> 18) & 63];
+		  buf[j++] = base64_enc[(v >> 12) & 63];
+		  buf[j++] = base64_enc[(v >> 6) & 63];
+		  buf[j++] = base64_enc[v & 63];
+		  if (s >= t - 2)
+		    {
+		      buf[j - 1] = '=';
+		      if (s >= t - 1)
+			buf[j - 2] = '=';
+		      break;
+		    }
+		  s += 3;
+		}
+	      memcpy (buf + j, "\"\n", 3);
+	      fputs ((const char *) buf, f);
+	      s = t - 1;
+	      prev_base64 = true;
+	      continue;
+	    }
+	  last_base64 = t;
+	no_base64:
+	  prev_base64 = false;
+	}
+#else
+      (void) last_base64;
+      (void) prev_base64;
+#endif
 
       if (p < limit && (p - s) <= (long) ELF_STRING_LIMIT)
 	{
@@ -8522,8 +8643,18 @@ default_elf_asm_output_ascii (FILE *f, const char *s, unsigned int len)
 	      bytes_in_chunk = 0;
 	    }
 
-	  default_elf_asm_output_limited_string (f, s);
-	  s = p;
+	  if (p == s && p + 1 < limit && p[1] == '\0')
+	    {
+	      for (p = s + 2; p < limit && *p == '\0'; p++)
+		continue;
+	      ASM_OUTPUT_SKIP (f, (unsigned HOST_WIDE_INT) (p - s));
+	      s = p - 1;
+	    }
+	  else
+	    {
+	      default_elf_asm_output_limited_string (f, s);
+	      s = p;
+	    }
 	}
       else
 	{

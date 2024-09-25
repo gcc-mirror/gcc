@@ -1,19 +1,19 @@
-// { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts-ts" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fconcepts" }
 
 template<typename T>
-concept bool C1 = __is_class(T);
+concept C1 = __is_class(T);
 
 template<typename T>
-concept bool C2 = requires (T t) { t; };
+concept C2 = requires (T t) { t; };
 
-void f1(C1, C1) { }
+void f1(C1 auto, C1 auto) { }
 
 template<typename T>
   requires C2<T>
 void f2(T) { }
 
-void f3(C2) { }
+void f3(C2 auto) { }
 
 struct S1 {};
 

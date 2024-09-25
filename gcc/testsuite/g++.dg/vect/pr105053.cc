@@ -1,5 +1,6 @@
 // { dg-require-effective-target c++11 }
 // { dg-require-effective-target int32plus }
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 
 #include <vector>
 #include <tuple>

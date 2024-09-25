@@ -19,6 +19,7 @@
 // { dg-do run { target c++11 } }
 // { dg-additional-options "-pthread" { target pthread } }
 // { dg-require-gthreads "" }
+// { dg-skip-if "no high resolution timer support" { hppa*-*-linux* } }
 
 #include <future>
 #include <chrono>
@@ -40,51 +41,74 @@ print(const char* desc, Duration dur)
   return d;
 }
 
+static void
+calibrate()
+{
+  /* After set_value, wait_for is faster, so use that for the
+     calibration loops to avoid zero at low clock resultions.  */
+  promise<int> p = {};
+  future<int> f = p.get_future();
+  p.set_value(1);
+
+  auto start = chrono::high_resolution_clock::now();
+  auto stop = start;
+  /* Loop until the clock advances, so that start is right after a
+     time increment.  */
+  do
+    stop = chrono::high_resolution_clock::now();
+  while (start == stop);
+
+  /* This approximates the smallest time increment we may expect to be
+     able to measure.  It doesn't have to be very precise, just a
+     ballpart of the right magnitude.  */
+  auto tick = stop - start;
+
+  int i = 0;
+  start = stop;
+  /* Now until the clock advances again, so that stop is right
+     after another time increment.  */
+  do
+    {
+      f.wait_for(chrono::seconds(0));
+      stop = chrono::high_resolution_clock::now();
+      i++;
+    }
+  while (start == stop);
+
+  /* Aim for some 10 ticks.  This won't be quite right if now() takes
+     up a significant portion of the loop time, but we'll measure
+     without that and adjust in the loop below.  */
+  if (iterations < i * 10)
+    iterations = i * 10;
+
+  /* We aim for some 10 ticks for the loop that's expected to be fastest,
+     but even if we don't get quite that many, we're still fine.  */
+  iterations /= 2;
+  do
+    {
+      iterations *= 2;
+      start = chrono::high_resolution_clock::now();
+      for(int i = 0; i < iterations; i++)
+	f.wait_for(chrono::seconds(0));
+      stop = chrono::high_resolution_clock::now();
+    }
+  while (stop - start < 5 * tick);
+}
+
 int main()
 {
+  /* First, calibrate the iteration count so that we don't get any of
+     the actual measurement loops to complete in less than the clock
+     granularity.  */
+  calibrate ();
+
   promise<int> p;
   future<int> f = p.get_future();
 
- start_over:
   auto start = chrono::high_resolution_clock::now();
   for(int i = 0; i < iterations; i++)
     f.wait_for(chrono::seconds(0));
   auto stop = chrono::high_resolution_clock::now();
-
-  /* We've run too few iterations for the clock resolution.
-     Attempt to calibrate it.  */
-  if (start == stop)
-    {
-      /* After set_value, wait_for is faster, so use that for the
-	 calibration to avoid zero at low clock resultions.  */
-      promise<int> pc;
-      future<int> fc = pc.get_future();
-      pc.set_value(1);
-
-      /* Loop until the clock advances, so that start is right after a
-	 time increment.  */
-      do
-	start = chrono::high_resolution_clock::now();
-      while (start == stop);
-      int i = 0;
-      /* Now until the clock advances again, so that stop is right
-	 after another time increment.  */
-      do
-	{
-	  fc.wait_for(chrono::seconds(0));
-	  stop = chrono::high_resolution_clock::now();
-	  i++;
-	}
-      while (start == stop);
-      /* Go for some 10 cycles, but if we're already past that and
-	 still get into the calibration loop, double the iteration
-	 count and try again.  */
-      if (iterations < i * 10)
-	iterations = i * 10;
-      else
-	iterations *= 2;
-      goto start_over;
-    }
 
   double wait_for_0 = print("wait_for(0s)", stop - start);
 
@@ -128,15 +152,21 @@ int main()
   // after the result is ready.
   VERIFY( wait_for_0 < (ready * 30) );
 
-  // Polling before ready using wait_until(min) should not be terribly slow.
-  VERIFY( wait_until_sys_min < (ready * 100) );
-  VERIFY( wait_until_steady_min < (ready * 100) );
+  // Polling before ready using wait_until(min) should not be terribly
+  // slow.  We hope for no more than 100x slower, but a little over
+  // 100x has been observed, and since the measurements may have a lot
+  // of noise, and increasing the measurement precision through
+  // additional iterations would make the test run for too long on
+  // systems with very low clock precision (60Hz clocks are not
+  // unheard of), we tolerate a lot of error.
+  VERIFY( wait_until_sys_min < (ready * 200) );
+  VERIFY( wait_until_steady_min < (ready * 200) );
 
   // The following two tests fail with GCC 11, see
   // https://gcc.gnu.org/pipermail/libstdc++/2020-November/051422.html
 #if 0
   // Polling before ready using wait_until(epoch) should not be terribly slow.
-  VERIFY( wait_until_sys_epoch < (ready * 100) );
-  VERIFY( wait_until_steady_epoch < (ready * 100) );
+  VERIFY( wait_until_sys_epoch < (ready * 200) );
+  VERIFY( wait_until_steady_epoch < (ready * 200) );
 #endif
 }

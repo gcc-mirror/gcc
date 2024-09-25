@@ -15,6 +15,3 @@ inline void dob ()
 {
   extern int bob; // { dg-error "block-scope extern" }
 }
-
-
-// { dg-prune-output "not writing module" }

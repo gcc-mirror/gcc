@@ -1,4 +1,5 @@
 //  { dg-do run }
+//  { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
 
 /* check the code-gen for the failed alloc return.
    In this case, we use an operator new that always fails.

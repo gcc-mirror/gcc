@@ -705,11 +705,12 @@ package Types is
    Container_Checks           : constant := 26;
    Tampering_Check            : constant := 27;
    Tasking_Check              : constant := 28;
+   Raise_Check                : constant := 29;
    --  Values used to represent individual predefined checks (including the
    --  setting of Atomic_Synchronization, which is implemented internally using
    --  a "check" whose name is Atomic_Synchronization).
 
-   All_Checks : constant := 29;
+   All_Checks : constant := 30;
    --  Value used to represent All_Checks value
 
    subtype Predefined_Check_Id is Check_Id range 1 .. All_Checks;
@@ -946,7 +947,8 @@ package Types is
       SE_Infinite_Recursion,             -- 34
       SE_Object_Too_Large,               -- 35
       PE_Stream_Operation_Not_Allowed,   -- 36
-      PE_Build_In_Place_Mismatch);       -- 37
+      PE_Build_In_Place_Mismatch,        -- 37
+      PE_Raise_Check_Failed);            -- 38
    pragma Convention (C, RT_Exception_Code);
 
    Last_Reason_Code : constant :=
@@ -956,7 +958,7 @@ package Types is
    type Reason_Kind is (CE_Reason, PE_Reason, SE_Reason);
    --  Categorization of reason codes by exception raised
 
-   Rkind : constant array (RT_Exception_Code range <>) of Reason_Kind :=
+   Rkind : constant array (RT_Exception_Code) of Reason_Kind :=
              (CE_Access_Check_Failed            => CE_Reason,
               CE_Access_Parameter_Is_Null       => CE_Reason,
               CE_Discriminant_Check_Failed      => CE_Reason,
@@ -978,6 +980,7 @@ package Types is
               PE_Aliased_Parameters             => PE_Reason,
               PE_All_Guards_Closed              => PE_Reason,
               PE_Bad_Predicated_Generic_Type    => PE_Reason,
+              PE_Build_In_Place_Mismatch        => PE_Reason,
               PE_Current_Task_In_Entry_Body     => PE_Reason,
               PE_Duplicated_Entry_Address       => PE_Reason,
               PE_Explicit_Raise                 => PE_Reason,
@@ -985,13 +988,13 @@ package Types is
               PE_Implicit_Return                => PE_Reason,
               PE_Misaligned_Address_Value       => PE_Reason,
               PE_Missing_Return                 => PE_Reason,
+              PE_Non_Transportable_Actual       => PE_Reason,
               PE_Overlaid_Controlled_Object     => PE_Reason,
               PE_Potentially_Blocking_Operation => PE_Reason,
+              PE_Raise_Check_Failed             => PE_Reason,
+              PE_Stream_Operation_Not_Allowed   => PE_Reason,
               PE_Stubbed_Subprogram_Called      => PE_Reason,
               PE_Unchecked_Union_Restriction    => PE_Reason,
-              PE_Non_Transportable_Actual       => PE_Reason,
-              PE_Stream_Operation_Not_Allowed   => PE_Reason,
-              PE_Build_In_Place_Mismatch        => PE_Reason,
 
               SE_Empty_Storage_Pool             => SE_Reason,
               SE_Explicit_Raise                 => SE_Reason,

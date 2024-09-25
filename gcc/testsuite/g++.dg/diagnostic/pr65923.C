@@ -1,4 +1,5 @@
 // { dg-do compile { target c++14 } }
+// { dg-skip-if "requires hosted libstdc++ for chrono" { ! hostedlib } }
 
 #include <chrono>
 
@@ -16,7 +17,7 @@ struct X2
 
 namespace std
 {
-  template<> void swap(X&, X&)
+  template<> void swap(X&, X&) noexcept
   {
     constexpr std::chrono::duration<long double> operator""s(long double);
   }

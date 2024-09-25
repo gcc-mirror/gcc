@@ -952,6 +952,9 @@ proc parse_function_bodies { config filename result } {
 		verbose "parse_function_bodies: $function_name:\n$function_body"
 		set up_result($function_name) $function_body
 		set in_function 0
+	    } elseif { $up_config(matched) ne "" \
+		       && [regexp $up_config(matched) $line] } {
+		append function_body $line "\n"
 	    } elseif { [regexp $up_config(fluff) $line] } {
 		verbose "parse_function_bodies: $function_name: ignoring fluff line: $line"
 	    } else {
@@ -982,7 +985,7 @@ proc check_function_body { functions name body_regexp } {
 
 # Check the implementations of functions against expected output.  Used as:
 #
-# { dg-do { check-function-bodies PREFIX TERMINATOR[ OPTION[ SELECTOR]] } }
+# { dg-do { check-function-bodies PREFIX TERMINATOR[ OPTION[ SELECTOR [MATCHED]]] } }
 #
 # See sourcebuild.texi for details.
 
@@ -990,7 +993,7 @@ proc check-function-bodies { args } {
     if { [llength $args] < 2 } {
 	error "too few arguments to check-function-bodies"
     }
-    if { [llength $args] > 4 } {
+    if { [llength $args] > 5 } {
 	error "too many arguments to check-function-bodies"
     }
 
@@ -1029,6 +1032,11 @@ proc check-function-bodies { args } {
 	}
     }
 
+    set matched ""
+    if { [llength $args] >= 5 } {
+	set matched [lindex $args 4]
+    }
+
     set testcase [testname-for-summary]
     # The name might include a list of options; extract the file name.
     set filename [lindex $testcase 0]
@@ -1048,6 +1056,7 @@ proc check-function-bodies { args } {
     # (name in \1).  This may be different from '$config(start)'.
     set start_expected {^(\S+):$}
 
+    set config(matched) $matched
     configure_check-function-bodies config
     set have_bodies 0
     if { [is_remote host] } {
@@ -1090,6 +1099,8 @@ proc check-function-bodies { args } {
 		append function_regexp ")"
 	    } elseif { [string equal $line "..."] } {
 		append function_regexp ".*"
+	    } elseif { [regexp {^\.L} $line] } {
+		append function_regexp $line "\n"
 	    } else {
 		append function_regexp $config(line_prefix) $line "\n"
 	    }

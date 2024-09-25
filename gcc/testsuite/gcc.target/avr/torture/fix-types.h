@@ -60,7 +60,7 @@ typedef __UINT64_TYPE__ xint_ulr_t;
 #define INTullk_MAX __UINT64_MAX__
 
 #define SS_FUN(NAME, OP, T, FX)                 \
-  T __attribute__((noinline,noclone))           \
+  T __attribute__((noipa))                      \
   NAME##_##FX (T fa, T fb)                      \
   {                                             \
     int_##FX##_t ia;                            \
@@ -79,7 +79,7 @@ typedef __UINT64_TYPE__ xint_ulr_t;
   }
 
 #define US_FUN(NAME, OP, T, FX)                 \
-  T __attribute__((noinline,noclone))           \
+  T __attribute__((noipa))                      \
   NAME##_##FX (T fa, T fb)                      \
   {                                             \
     int_##FX##_t ia;                            \
@@ -98,7 +98,7 @@ typedef __UINT64_TYPE__ xint_ulr_t;
   }
 
 #define SS_LFUN(NAME, OP, T, FX, CMP)           \
-  T __attribute__((noinline,noclone))           \
+  T __attribute__((noipa))                      \
   NAME##_##FX (T fa, T fb)                      \
   {                                             \
     int_##FX##_t ia;                            \
@@ -116,7 +116,7 @@ typedef __UINT64_TYPE__ xint_ulr_t;
   }
 
 #define US_LFUN(NAME, OP, T, FX, CMP)           \
-  T __attribute__((noinline,noclone))           \
+  T __attribute__((noipa))                      \
   NAME##_##FX (T fa, T fb)                      \
   {                                             \
     int_##FX##_t ia;                            \

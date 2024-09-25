@@ -2,7 +2,7 @@
    (e.g. s390) needs additional code.  So it is invalid to do tail
    call optimization here.  */
 
-/* { dg-do compile } */
+/* { dg-do run } */
 /* { dg-options "-O2" } */
 
 extern void abort (void);

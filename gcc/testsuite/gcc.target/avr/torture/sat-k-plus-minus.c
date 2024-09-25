@@ -14,22 +14,22 @@ SS_FUN (ss_add, +, fx_t, k)
 SS_FUN (ss_sub, -, fx_t, k)
 
 #define VAL(N, X)                               \
-  __attribute__((noinline,noclone))             \
+  __attribute__((noipa))                        \
   satfx_t ss_add2_##N (satfx_t a)               \
   {                                             \
     return ss_add_k (a, X##P##-##16k);          \
   }                                             \
-  __attribute__((noinline,noclone))             \
+  __attribute__((noipa))                        \
   satfx_t ss_add_##N (satfx_t a)                \
   {                                             \
     return a + X##P##-##16k;                    \
   }                                             \
-  __attribute__((noinline,noclone))             \
+  __attribute__((noipa))                        \
   satfx_t ss_sub2_##N (satfx_t a)               \
   {                                             \
     return ss_sub_k (a, X##P##-##16k);          \
   }                                             \
-  __attribute__((noinline,noclone))             \
+  __attribute__((noipa))                        \
   satfx_t ss_sub_##N (satfx_t a)                \
   {                                             \
     return a - X##P##-##16k;                    \
@@ -37,25 +37,25 @@ SS_FUN (ss_sub, -, fx_t, k)
 #include "vals-k.def"
 #undef VAL
 
-__attribute__((noinline,noclone))
+__attribute__((noipa))
 satfx_t ss_add2_99 (satfx_t a)
 {
   return ss_add_k (a, __ACCUM_MIN__);
 }
 
-__attribute__((noinline,noclone))
+__attribute__((noipa))
 satfx_t ss_add_99 (satfx_t a)
 {
   return a + __ACCUM_MIN__;
 }
 
-__attribute__((noinline,noclone))
+__attribute__((noipa))
 satfx_t ss_sub2_99 (satfx_t a)
 {
   return ss_sub_k (a, __ACCUM_MIN__);
 }
 
-__attribute__((noinline,noclone))
+__attribute__((noipa))
 satfx_t ss_sub_99 (satfx_t a)
 {
   return a - __ACCUM_MIN__;

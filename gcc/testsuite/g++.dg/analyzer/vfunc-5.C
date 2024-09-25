@@ -1,4 +1,5 @@
 /* { dg-additional-options "-fdiagnostics-show-line-numbers -fdiagnostics-path-format=inline-events -fanalyzer-checker=malloc -fdiagnostics-show-caret" } */
+/* { dg-skip-if "requires hosted libstdc++ for cstdlib malloc" { ! hostedlib } } */
 /* { dg-enable-nn-line-numbers "" } */
 
 #include <cstdlib>

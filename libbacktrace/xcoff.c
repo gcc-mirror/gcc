@@ -385,7 +385,7 @@ struct xcoff_fileline_data
   size_t linenos_size;
   uint64_t lnnoptr0;
   /* Loader address.  */
-  uintptr_t base_address;
+  struct libbacktrace_base_address base_address;
 };
 
 /* Information we gather for the DWARF sections we care about.  */
@@ -586,7 +586,7 @@ xcoff_symname (const b_xcoff_syment *asym,
 
 static int
 xcoff_initialize_syminfo (struct backtrace_state *state,
-			  uintptr_t base_address,
+			  struct libbacktrace_base_address base_address,
 			  const b_xcoff_syment *syms, size_t nsyms,
 			  const unsigned char *strtab, size_t strtab_size,
 			  backtrace_error_callback error_callback, void *data,
@@ -628,7 +628,8 @@ xcoff_initialize_syminfo (struct backtrace_state *state,
 	{
 	  const b_xcoff_auxent *aux = (const b_xcoff_auxent *) (asym + 1);
 	  xcoff_symbols[j].name = xcoff_symname (asym, strtab, strtab_size);
-	  xcoff_symbols[j].address = base_address + asym->n_value;
+	  xcoff_symbols[j].address =
+	    libbacktrace_add_base (asym->n_value, base_address);
 	  /* x_fsize will be 0 if there is no debug information.  */
 	  xcoff_symbols[j].size = aux->x_fcn.x_fsize;
 	  ++j;
@@ -766,7 +767,8 @@ xcoff_lookup_pc (struct backtrace_state *state ATTRIBUTE_UNUSED,
       lineno = (const b_xcoff_lineno *) lineptr;
       if (lineno->l_lnno == 0)
 	break;
-      if (pc <= fdata->base_address + lineno->l_addr.l_paddr)
+      if (pc <= libbacktrace_add_base (lineno->l_addr.l_paddr,
+				       fdata->base_address))
 	break;
       match = lnnoptr;
       lnno = lineno->l_lnno;
@@ -860,7 +862,7 @@ xcoff_fileline (struct backtrace_state *state, uintptr_t pc,
 
 static int
 xcoff_initialize_fileline (struct backtrace_state *state,
-			   uintptr_t base_address,
+			   struct libbacktrace_base_address base_address,
 			   const b_xcoff_scnhdr *sects,
 			   const b_xcoff_syment *syms, size_t nsyms,
 			   const unsigned char *strtab, size_t strtab_size,
@@ -1001,7 +1003,7 @@ xcoff_initialize_fileline (struct backtrace_state *state,
 	    fn->name = xcoff_symname (fsym, strtab, strtab_size);
 	    fn->filename = filename;
 	    fn->sect_base = sects[fsym->n_scnum - 1].s_paddr;
-	    fn->pc = base_address + fsym->n_value;
+	    fn->pc = libbacktrace_add_base (fsym->n_value, base_address);
 	    fn->size = fsize;
 	    fn->lnno = lnno;
 	    fn->lnnoptr = lnnoptr;
@@ -1070,7 +1072,8 @@ fail:
 
 static int
 xcoff_add (struct backtrace_state *state, int descriptor, off_t offset,
-	   uintptr_t base_address, backtrace_error_callback error_callback,
+	   struct libbacktrace_base_address base_address,
+	   backtrace_error_callback error_callback,
 	   void *data, fileline *fileline_fn, int *found_sym, int exe)
 {
   struct backtrace_view fhdr_view;
@@ -1159,9 +1162,9 @@ xcoff_add (struct backtrace_state *state, int descriptor, off_t offset,
      On AIX, virtual address is either fixed for executable
      or given by ldinfo.  This address will include the XCOFF
      headers.  */
-  base_address = ((exe ? XCOFF_AIX_TEXTBASE : base_address)
-		  + stext->s_scnptr
-		  - stext->s_paddr);
+  base_address.m = ((exe ? XCOFF_AIX_TEXTBASE : base_address.m)
+		    + stext->s_scnptr
+		    - stext->s_paddr);
 
   lnnoptr = stext->s_lnnoptr;
   nlnno = stext->s_nlnno;
@@ -1200,7 +1203,9 @@ xcoff_add (struct backtrace_state *state, int descriptor, off_t offset,
 	goto fail;
       syms_view_valid = 1;
 
-      memcpy (&str_size, syms_view.data + syms_size, 4);
+      memcpy (&str_size,
+	      (const unsigned char *) syms_view.data + syms_size,
+	      4);
 
       str_off = fhdr.f_symptr + syms_size;
 
@@ -1391,9 +1396,9 @@ xcoff_parse_decimal (const char *buf, size_t size, off_t *off)
 
 static int
 xcoff_armem_add (struct backtrace_state *state, int descriptor,
-		 uintptr_t base_address, const char *member,
-		 backtrace_error_callback error_callback, void *data,
-		 fileline *fileline_fn, int *found_sym)
+		 struct libbacktrace_base_address base_address,
+		 const char *member, backtrace_error_callback error_callback,
+		 void *data, fileline *fileline_fn, int *found_sym)
 {
   struct backtrace_view view;
   b_ar_fl_hdr fl_hdr;
@@ -1514,6 +1519,8 @@ xcoff_add_shared_libs (struct backtrace_state *state,
   ldinfo = (const struct ld_info *) buf;
   while ((const char *) ldinfo < (const char *) buf + buflen)
     {
+      struct libbacktrace_base_address base_address;
+
       if (*ldinfo->ldinfo_filename != '/')
 	goto next;
 
@@ -1525,16 +1532,17 @@ xcoff_add_shared_libs (struct backtrace_state *state,
       /* Check if it is an archive (member name not empty).  */
 
       member = ldinfo->ldinfo_filename + strlen (ldinfo->ldinfo_filename) + 1;
+      memset (&base_address, 0, sizeof base_address);
+      base_address.m = (uintptr_t) ldinfo->ldinfo_textorg;
       if (*member)
 	{
-	  xcoff_armem_add (state, descriptor,
-			   (uintptr_t) ldinfo->ldinfo_textorg, member,
+	  xcoff_armem_add (state, descriptor, base_address, member,
 			   error_callback, data, fileline_fn, &lib_found_sym);
 	}
       else
 	{
-	  xcoff_add (state, descriptor, 0, (uintptr_t) ldinfo->ldinfo_textorg,
-		     error_callback, data, fileline_fn, &lib_found_sym, 0);
+	  xcoff_add (state, descriptor, 0, base_address, error_callback, data,
+		     fileline_fn, &lib_found_sym, 0);
 	}
       if (lib_found_sym)
 	*found_sym = 1;
@@ -1559,12 +1567,14 @@ backtrace_initialize (struct backtrace_state *state,
 		      backtrace_error_callback error_callback,
 		      void *data, fileline *fileline_fn)
 {
+  struct libbacktrace_base_address zero_base_address;
   int ret;
   int found_sym;
   fileline xcoff_fileline_fn = xcoff_nodebug;
 
-  ret = xcoff_add (state, descriptor, 0, 0, error_callback, data,
-		   &xcoff_fileline_fn, &found_sym, 1);
+  memset (&zero_base_address, 0, sizeof zero_base_address);
+  ret = xcoff_add (state, descriptor, 0, zero_base_address,
+		   error_callback, data, &xcoff_fileline_fn, &found_sym, 1);
   if (!ret)
     return 0;
 

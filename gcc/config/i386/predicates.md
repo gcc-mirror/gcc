@@ -825,6 +825,11 @@
   (and (match_code "const_int")
        (match_test "op == constm1_rtx")))
 
+;; Match 0 or -1.
+(define_predicate "const0_or_m1_operand"
+  (ior (match_operand 0 "const0_operand")
+       (match_operand 0 "constm1_operand")))
+
 ;; Match exactly eight.
 (define_predicate "const8_operand"
   (and (match_code "const_int")
@@ -1628,7 +1633,13 @@
 })
 
 ;; Return true if this comparison only requires testing one flag bit.
+;; VCOMX/VUCOMX set ZF, SF, OF, differently from COMI/UCOMI.
 (define_predicate "ix86_trivial_fp_comparison_operator"
+  (if_then_else (match_test "TARGET_AVX10_2_256")
+		(match_code "gt,ge,unlt,unle,eq,uneq,ne,ltgt,ordered,unordered")
+		(match_code "gt,ge,unlt,unle,uneq,ltgt,ordered,unordered")))
+
+(define_predicate "ix86_trivial_fp_comparison_operator_xf"
   (match_code "gt,ge,unlt,unle,uneq,ltgt,ordered,unordered"))
 
 ;; Return true if we know how to do this comparison.  Others require
@@ -1639,6 +1650,12 @@
                              == IX86_FPCMP_ARITH")
                (match_operand 0 "comparison_operator")
                (match_operand 0 "ix86_trivial_fp_comparison_operator")))
+
+(define_predicate "ix86_fp_comparison_operator_xf"
+  (if_then_else (match_test "ix86_fp_comparison_strategy (GET_CODE (op))
+                             == IX86_FPCMP_ARITH")
+               (match_operand 0 "comparison_operator")
+               (match_operand 0 "ix86_trivial_fp_comparison_operator_xf")))
 
 ;; Return true if we can perform this comparison on TImode operands.
 (define_predicate "ix86_timode_comparison_operator"
@@ -2260,10 +2277,10 @@
 })
 
 ;; Return true if OP is a memory operand that can be also used in APX
-;; NDD patterns with immediate operand.  With non-default address space,
-;; segment register or address size prefix, APX NDD instruction length
-;; can exceed the 15 byte size limit.
-(define_predicate "apx_ndd_memory_operand"
+;; EVEX-encoded patterns (i.e. APX NDD/NF) with immediate operand.  With
+;; non-default address space, segment register or address size prefix,
+;; APX EVEX-encoded instruction length can exceed the 15 byte size limit.
+(define_predicate "apx_evex_memory_operand"
   (match_operand 0 "memory_operand")
 {
   /* OK if immediate operand size < 4 bytes.  */
@@ -2307,34 +2324,25 @@
   return true;
 })
 
-;; Return true if OP is a memory operand which can be used in APX NDD
-;; ADD with register source operand.  UNSPEC_GOTNTPOFF memory operand
-;; is allowed with APX NDD ADD only if R_X86_64_CODE_6_GOTTPOFF works.
-(define_predicate "apx_ndd_add_memory_operand"
+;; Return true if OP is a memory operand which can be used in APX EVEX-encoded
+;; ADD patterns (i.e. APX NDD/NF) for with register source operand.
+;; UNSPEC_GOTNTPOFF memory operand is allowed with APX EVEX-encoded ADD only if
+;; R_X86_64_CODE_6_GOTTPOFF works.
+(define_predicate "apx_evex_add_memory_operand"
   (match_operand 0 "memory_operand")
 {
-  /* OK if "add %reg1, name@gottpoff(%rip), %reg2" is supported.  */
+  /* OK if "add %reg1, name@gottpoff(%rip), %reg2" or
+   "{nf} add name@gottpoff(%rip), %reg1" are supported.  */
   if (HAVE_AS_R_X86_64_CODE_6_GOTTPOFF)
     return true;
 
   op = XEXP (op, 0);
 
-  /* Disallow APX NDD ADD with UNSPEC_GOTNTPOFF.  */
+  /* Disallow APX EVEX-encoded ADD with UNSPEC_GOTNTPOFF.  */
   if (GET_CODE (op) == CONST
       && GET_CODE (XEXP (op, 0)) == UNSPEC
       && XINT (XEXP (op, 0), 1) == UNSPEC_GOTNTPOFF)
     return false;
 
-  return true;
-})
-
-;; Check that each element is odd and incrementally increasing from 1
-(define_predicate "vcvtne2ps2bf_parallel"
-  (and (match_code "const_vector")
-       (match_code "const_int" "a"))
-{
-  for (int i = 0; i < XVECLEN (op, 0); ++i)
-    if (INTVAL (XVECEXP (op, 0, i)) != (2 * i + 1))
-      return false;
   return true;
 })

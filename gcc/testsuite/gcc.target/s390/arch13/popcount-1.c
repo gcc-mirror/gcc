@@ -1,4 +1,4 @@
-/* { dg-compile } */
+/* { dg-do compile } */
 
 unsigned int ui;
 unsigned long ul;

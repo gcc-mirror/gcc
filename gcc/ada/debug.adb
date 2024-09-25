@@ -105,7 +105,7 @@ package body Debug is
    --  d.r  Disable reordering of components in record types
    --  d.s  Strict secondary stack management
    --  d.t  Disable static allocation of library level dispatch tables
-   --  d.u  Enable Modify_Tree_For_C (update tree for c)
+   --  d.u
    --  d.v  Enforce SPARK elaboration rules in SPARK code
    --  d.w  Do not check for infinite loops
    --  d.x  No exception handlers
@@ -168,12 +168,12 @@ package body Debug is
    --  d_A  Stop generation of ALI file
    --  d_B  Warn on build-in-place function calls
    --  d_C
-   --  d_D
-   --  d_E
+   --  d_D  Use improved diagnostics
+   --  d_E  Print diagnostics and switch repository
    --  d_F  Encode full invocation paths in ALI files
    --  d_G
    --  d_H
-   --  d_I
+   --  d_I  Note generic formal type inference
    --  d_J
    --  d_K  (Reserved) Enable reporting a warning on known-problem issues
    --  d_L  Output trace information on elaboration checking
@@ -207,7 +207,7 @@ package body Debug is
    --  d.3  Output debugging information from Exp_Unst
    --  d.4  Do not delete generated C file in case of errors
    --  d.5  Do not generate imported subprogram definitions in C code
-   --  d.6  Do not avoid declaring unreferenced types in C code
+   --  d.6
    --  d.7  Disable unsound heuristics in gnat2scil (for CP as SPARK prover)
    --  d.8  Disable unconditional inlining of expression functions
    --  d.9
@@ -797,8 +797,7 @@ package body Debug is
    --       previous dynamic construction of tables. It is there as a possible
    --       work around if we run into trouble with the new implementation.
 
-   --  d.u  Sets Modify_Tree_For_C mode in which tree is modified to make it
-   --       easier to generate code using a C compiler.
+   --  d.u
 
    --  d.v  This flag enforces the elaboration rules defined in the SPARK
    --       Reference Manual, chapter 7.7, to all SPARK code within a unit. As
@@ -1030,6 +1029,9 @@ package body Debug is
    --       an external target, offering additional information to GNATBIND for
    --       purposes of error diagnostics.
 
+   --  d_I  Generic formal type inference: print a "note:" message for each
+   --       actual type that is inferred, or could be inferred.
+
    --  d_K  (Reserved) Enable reporting a warning on known-problem issues of
    --       previous releases. No action performed in the wavefront.
 
@@ -1117,10 +1119,6 @@ package body Debug is
    --  d.5  By default a subprogram imported generates a subprogram profile.
    --       This debug flag disables this generation when generating C code,
    --       assuming a proper #include will be used instead.
-
-   --  d.6  By default the C back-end avoids declaring types that are not
-   --       referenced by the generated C code. This debug flag restores the
-   --       output of all the types.
 
    --  d.7  Indicates (to gnat2scil) that CodePeer is being invoked as a
    --       prover by the SPARK tools and that therefore gnat2scil should

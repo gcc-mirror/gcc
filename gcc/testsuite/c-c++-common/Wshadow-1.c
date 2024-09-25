@@ -1,4 +1,4 @@
-/* { dg-do-compile } */
+/* { dg-do compile } */
 /* { dg-additional-options "-Wshadow=local -Wno-shadow=compatible-local" } */
 int c;
 void foo(int *c, int *d)   /* { dg-bogus   "Wshadow" } */

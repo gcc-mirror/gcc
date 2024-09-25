@@ -22,7 +22,7 @@
   of the macro is <code class="literal">1</code> which causes the new ABI to be active,
   so to use the old ABI you must explicitly define the macro to
   <code class="literal">0</code> before including any library headers.
-  (Be aware that some GNU/Linux distributions configure GCC 5 differently so
+  (Be aware that some GNU/Linux distributions configured GCC 5 differently so
   that the default value of the macro is <code class="literal">0</code> and users must
   define it to <code class="literal">1</code> to enable the new ABI.)
 </p><p> Although the changes were made for C++11 conformance, the choice of ABI
@@ -72,6 +72,22 @@
   Handlers for <code class="classname">std::exception</code> will always catch
   iostreams exceptions, because the old and new type both inherit from
   <code class="classname">std::exception</code>.
+</p><p>
+  Some features are not supported when using the old ABI, including:
+  </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+    Using <code class="classname">std::string::const_iterator</code> for
+    positional arguments to member functions such as
+    <code class="function">std::string::erase</code>.
+  </li><li class="listitem">
+    Allocator propagation in <code class="classname">std::string</code>.
+  </li><li class="listitem">
+    Using <code class="classname">std::string</code> at compile-time in
+    <code class="code">constexpr</code> functions.
+  </li><li class="listitem">
+    Class <code class="classname">std::chrono::time_zone</code> and all related APIs.
+  </li><li class="listitem">
+    The <code class="filename">&lt;syncstream&gt;</code> header.
+  </li></ul></div><p>
 </p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.abi.trouble"></a>Troubleshooting</h3></div></div></div><p> If you get linker errors about undefined references to symbols
   that involve types in the <code class="code">std::__cxx11</code> namespace or the tag
   <code class="code">[abi:cxx11]</code> then it probably indicates that you are trying to

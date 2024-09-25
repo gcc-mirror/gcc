@@ -90,8 +90,8 @@
 /* { dg-final { scan-assembler-times "test7_v8u16:.*subv.h.*test7_v8u16" 1 } } */
 /* { dg-final { scan-assembler-times "test7_v4u32:.*subv.w.*test7_v4u32" 1 } } */
 /* { dg-final { scan-assembler-times "test7_v2u64:.*subv.d.*test7_v2u64" 1 } } */
-/* { dg-final { scan-assembler-times "test7_v4f32:.*fsub.w.*test7_v4f32" 1 } } */
-/* { dg-final { scan-assembler-times "test7_v2f64:.*fsub.d.*test7_v2f64" 1 } } */
+/* { dg-final { scan-assembler-times "test7_v4f32:.*bnegi.w.*test7_v4f32" 1 } } */
+/* { dg-final { scan-assembler-times "test7_v2f64:.*bnegi.d.*test7_v2f64" 1 } } */
 /* { dg-final { scan-assembler-times "test8_v16i8:.*xor.v.*test8_v16i8" 1 } } */
 /* { dg-final { scan-assembler-times "test8_v8i16:.*xor.v.*test8_v8i16" 1 } } */
 /* { dg-final { scan-assembler-times "test8_v4i32:.*xor.v.*test8_v4i32" 1 } } */
@@ -401,7 +401,7 @@
 /* { dg-final { scan-assembler-times "test43_v16i8:.*insve.b.*test43_v16i8" 1 } } */
 /* { dg-final { scan-assembler-times "test43_v8i16:.*insve.h.*test43_v8i16" 1 } } */
 /* { dg-final { scan-assembler-times "test43_v4i32:.*insve.w.*test43_v4i32" 1 } } */
-/* { dg-final { scan-assembler-times "test43_v2i64:.*insve.d.*test43_v2i64" 1 } } */
+/* { dg-final { scan-assembler-times "test43_v2i64:.*ilvr.d.*test43_v2i64" 1 } } */
 /* { dg-final { scan-assembler-times "test44_v16i8:.*copy_s.b.*test44_v16i8" 1 } } */
 /* { dg-final { scan-assembler-times "test44_v8i16:.*copy_s.h.*test44_v8i16" 1 } } */
 /* { dg-final { scan-assembler-times "test44_v4i32:.*copy_s.w.*test44_v4i32" 1 } } */

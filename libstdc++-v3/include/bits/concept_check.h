@@ -34,6 +34,9 @@
 
 #include <bits/c++config.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wvariadic-macros"
+
 // All places in libstdc++-v3 where these are used, or /might/ be used, or
 // don't need to be used, or perhaps /should/ be used, are commented with
 // "concept requirements" (and maybe some more text).  So grep like crazy
@@ -78,4 +81,5 @@
 
 #endif // enable/disable
 
+#pragma GCC diagnostic pop
 #endif // _GLIBCXX_CONCEPT_CHECK

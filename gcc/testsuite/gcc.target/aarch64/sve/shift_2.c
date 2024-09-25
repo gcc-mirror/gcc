@@ -44,9 +44,9 @@ TEST_TYPE (uint32_t, 128, 31)
 /* { dg-final { scan-assembler-times {\tasr\tz[0-9]+\.h, p[0-7]/m, z[0-9]+\.h, z[0-9]+\.h\n} 2 } } */
 /* { dg-final { scan-assembler-times {\tasr\tz[0-9]+\.s, p[0-7]/m, z[0-9]+\.s, z[0-9]+\.s\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tlsl\tz[0-9]+\.b, z[0-9]+\.b, #1\n} 6 } } */
-/* { dg-final { scan-assembler-times {\tlsl\tz[0-9]+\.h, z[0-9]+\.h, #1\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tlsl\tz[0-9]+\.s, z[0-9]+\.s, #1\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tadd\tz[0-9]+\.b, z[0-9]+\.b, z[0-9]+\.b\n} 6 } } */
+/* { dg-final { scan-assembler-times {\tadd\tz[0-9]+\.h, z[0-9]+\.h, z[0-9]+\.h\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tadd\tz[0-9]+\.s, z[0-9]+\.s, z[0-9]+\.s\n} 2 } } */
 
 /* { dg-final { scan-assembler-times {\tlsr\tz[0-9]+\.b, z[0-9]+\.b, #1\n} 3 } } */
 /* { dg-final { scan-assembler-times {\tlsr\tz[0-9]+\.h, z[0-9]+\.h, #1\n} 2 } } */

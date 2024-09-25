@@ -21,9 +21,9 @@ test (void)
   for (int i = 0; i < 100; ++i)
     dummy (i);
 
-  #pragma omp tile sizes(1,2 /* { dg-error "expected ',' before end of line" } */
-  for (int i = 0; i < 100; ++i)
-    dummy (i);
+  #pragma omp tile sizes(1,2 /* { dg-error "expected '\\\)' before end of line" "" { target c } } */
+  for (int i = 0; i < 100; ++i) /* { dg-error "not enough nested loops" "" { target c } } */
+    dummy (i); /* { dg-error "expected ',' before end of line" "" { target c++ } .-2 } */
 
   #pragma omp tile sizes /* { dg-error "expected '\\\(' before end of line" } */
   for (int i = 0; i < 100; ++i)

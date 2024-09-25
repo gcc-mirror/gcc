@@ -41,7 +41,7 @@ show_tree (tree node)
     return;
 
   gcc_rich_location richloc (EXPR_LOCATION (node));
-  richloc.add_expr (node, NULL);
+  richloc.add_expr (node, nullptr, nullptr);
 
   if (richloc.get_num_locations () < 2)
     {

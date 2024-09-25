@@ -49,7 +49,7 @@ POSSIBILITY OF SUCH DAMAGE.  */
 
 /* Test the backtrace function with non-inlined functions.  */
 
-static int test1 (void) __attribute__ ((noinline, noclone, unused));
+static int test1 (void) __attribute__ ((noinline, noclone, optnone, unused));
 static int f2 (int) __attribute__ ((noinline, noclone));
 static int f3 (int, int) __attribute__ ((noinline, noclone));
 
@@ -163,7 +163,7 @@ f13 (int f1line, int f2line)
 
 /* Test the backtrace_simple function with non-inlined functions.  */
 
-static int test3 (void) __attribute__ ((noinline, noclone, unused));
+static int test3 (void) __attribute__ ((noinline, noclone, optnone, unused));
 static int f22 (int) __attribute__ ((noinline, noclone));
 static int f23 (int, int) __attribute__ ((noinline, noclone));
 
@@ -440,7 +440,7 @@ test5 (void)
 		   (unsigned long) (uintptr_t) &global);
 	  symdata.failed = 1;
 	}
-      else if (symdata.size != sizeof (global))
+      else if (symdata.size != sizeof (global) && symdata.size != 0)
 	{
 	  fprintf (stderr,
 		   "test5: unexpected syminfo size got %lx expected %lx\n",

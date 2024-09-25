@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fgnu-tm -fdump-tree-tmmark" } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
 
 #include <stdlib.h>
 

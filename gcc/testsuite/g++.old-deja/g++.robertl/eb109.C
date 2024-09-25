@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-skip-if "requires hosted libstdc++ for map" { ! hostedlib } }
 #include<map>
 #include<iostream>
 #include<vector>

@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-options "-mdejagnu-cpu=power7" } */
-/* { dg-require-effective-target powerpc_vsx } */
 /* { dg-skip-if "" { powerpc*-*-aix* } } */
+/* { dg-options "-mdejagnu-cpu=power7" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 /* This test should succeed on both 32- and 64-bit configurations.  */
 #include <altivec.h>

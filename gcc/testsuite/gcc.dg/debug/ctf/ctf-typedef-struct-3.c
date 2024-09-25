@@ -16,7 +16,7 @@
       4: const my_int_t (size 0x8) -> 3: my_int_t (size 0x8) -> 1: struct my_int (size 0x8)
 */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 
 /* { dg-final { scan-assembler-times "\[\t \]0x4\[\t \]+\[^\n\]*ctv_typeidx" 1 } } */

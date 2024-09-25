@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mno-avx512f -mavx2 -mtune=sandybridge" } */
+/* { dg-options "-O2 -mno-avx512f -mavx2 -mprefer-vector-width=128 -mtune=sandybridge" } */
 /* Cope with --enable-frame-pointer, Solaris/x86 -mstackrealign default.  */
 /* { dg-additional-options "-fomit-frame-pointer -mno-stackrealign" } */
 

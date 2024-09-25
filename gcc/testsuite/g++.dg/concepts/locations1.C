@@ -1,5 +1,6 @@
-// { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts-ts" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fconcepts" }
+// { dg-prune-output "concept definition syntax is" }
 
 struct S
 {

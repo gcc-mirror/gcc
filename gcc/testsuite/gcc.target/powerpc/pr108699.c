@@ -1,4 +1,4 @@
-/* { dg-run } */
+/* { dg-do run } */
 /* { dg-options "-O2 -ftree-vectorize -fno-vect-cost-model" } */
 
 #define N 16

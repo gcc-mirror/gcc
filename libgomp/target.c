@@ -51,6 +51,9 @@
 #define splay_tree_c
 #include "splay-tree.h"
 
+/* Used by omp_get_device_from_uid / omp_get_uid_from_device for the host.  */
+static char *str_omp_initial_device = "OMP_INITIAL_DEVICE";
+#define STR_OMP_DEV_PREFIX "OMP_DEV_"
 
 typedef uintptr_t *hash_entry_type;
 static inline void * htab_alloc (size_t size) { return gomp_malloc (size); }
@@ -1820,8 +1823,11 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		if (k->aux && k->aux->link_key)
 		  {
 		    /* Set link pointer on target to the device address of the
-		       mapped object.  */
-		    void *tgt_addr = (void *) (tgt->tgt_start + k->tgt_offset);
+		       mapped object.  Also deal with offsets due to
+		       array-section mapping.  */
+		    void *tgt_addr = (void *) (tgt->tgt_start + k->tgt_offset
+					       - (k->host_start
+						  - k->aux->link_key->host_start));
 		    /* We intentionally do not use coalescing here, as it's not
 		       data allocated by the current call to this function.  */
 		    gomp_copy_host2dev (devicep, aq, (void *) n->tgt_offset,
@@ -2359,15 +2365,14 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
 				num_ind_funcs
 				  ? (uint64_t *) host_ind_func_table : NULL);
 
-  if (num_target_entries != num_funcs + num_vars
-      /* "+1" due to the additional ICV struct.  */
-      && num_target_entries != num_funcs + num_vars + 1)
+  /* The "+1" is due to the additional ICV struct.  */
+  if (num_target_entries != num_funcs + num_vars + 1)
     {
       gomp_mutex_unlock (&devicep->lock);
       if (is_register_lock)
 	gomp_mutex_unlock (&register_lock);
       gomp_fatal ("Cannot map target functions or variables"
-		  " (expected %u, have %u)", num_funcs + num_vars,
+		  " (expected %u + %u + 1, have %u)", num_funcs, num_vars,
 		  num_target_entries);
     }
 
@@ -2449,50 +2454,49 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
       array->right = NULL;
       splay_tree_insert (&devicep->mem_map, array);
       array++;
+
+      if (is_link_var
+	  && (omp_requires_mask
+	      & (GOMP_REQUIRES_UNIFIED_SHARED_MEMORY | GOMP_REQUIRES_SELF_MAPS)))
+	gomp_copy_host2dev (devicep, NULL, (void *) target_var->start,
+			    &k->host_start, sizeof (void *), false, NULL);
     }
 
-  /* Last entry is for a ICVs variable.
-     Tolerate case where plugin does not return those entries.  */
-  if (num_funcs + num_vars < num_target_entries)
+  /* Last entry is for the ICV struct variable; if absent, start = end = 0.  */
+  struct addr_pair *icv_var = &target_table[num_funcs + num_vars];
+  if (icv_var->start != 0)
     {
-      struct addr_pair *var = &target_table[num_funcs + num_vars];
-
-      /* Start address will be non-zero for the ICVs variable if
-	 the variable was found in this image.  */
-      if (var->start != 0)
+      /* The index of the devicep within devices[] is regarded as its
+	 'device number', which is different from the per-device type
+	 devicep->target_id.  */
+      int dev_num = (int) (devicep - &devices[0]);
+      struct gomp_offload_icvs *icvs = get_gomp_offload_icvs (dev_num);
+      size_t var_size = icv_var->end - icv_var->start;
+      if (var_size != sizeof (struct gomp_offload_icvs))
 	{
-	  /* The index of the devicep within devices[] is regarded as its
-	     'device number', which is different from the per-device type
-	     devicep->target_id.  */
-	  int dev_num = (int) (devicep - &devices[0]);
-	  struct gomp_offload_icvs *icvs = get_gomp_offload_icvs (dev_num);
-	  size_t var_size = var->end - var->start;
-	  if (var_size != sizeof (struct gomp_offload_icvs))
-	    {
-	      gomp_mutex_unlock (&devicep->lock);
-	      if (is_register_lock)
-		gomp_mutex_unlock (&register_lock);
-	      gomp_fatal ("offload plugin managed 'icv struct' not of expected "
-			  "format");
-	    }
-	  /* Copy the ICVs variable to place on device memory, hereby
-	     actually designating its device number into effect.  */
-	  gomp_copy_host2dev (devicep, NULL, (void *) var->start, icvs,
-			      var_size, false, NULL);
-	  splay_tree_key k = &array->key;
-	  k->host_start = (uintptr_t) icvs;
-	  k->host_end =
-	    k->host_start + (size_mask & sizeof (struct gomp_offload_icvs));
-	  k->tgt = tgt;
-	  k->tgt_offset = var->start;
-	  k->refcount = REFCOUNT_INFINITY;
-	  k->dynamic_refcount = 0;
-	  k->aux = NULL;
-	  array->left = NULL;
-	  array->right = NULL;
-	  splay_tree_insert (&devicep->mem_map, array);
-	  array++;
+	  gomp_mutex_unlock (&devicep->lock);
+	  if (is_register_lock)
+	    gomp_mutex_unlock (&register_lock);
+	  gomp_fatal ("offload plugin managed 'icv struct' not of expected "
+		      "format");
 	}
+      /* Copy the ICVs variable to place on device memory, hereby
+	     actually designating its device number into effect.  */
+      gomp_copy_host2dev (devicep, NULL, (void *) icv_var->start, icvs,
+			  var_size, false, NULL);
+      splay_tree_key k = &array->key;
+      k->host_start = (uintptr_t) icvs;
+      k->host_end =
+      k->host_start + (size_mask & sizeof (struct gomp_offload_icvs));
+      k->tgt = tgt;
+      k->tgt_offset = icv_var->start;
+      k->refcount = REFCOUNT_INFINITY;
+      k->dynamic_refcount = 0;
+      k->aux = NULL;
+      array->left = NULL;
+      array->right = NULL;
+      splay_tree_insert (&devicep->mem_map, array);
+      array++;
     }
 
   free (target_table);
@@ -2589,6 +2593,9 @@ gomp_requires_to_name (char *buf, size_t size, int requires_mask)
   if (requires_mask & GOMP_REQUIRES_UNIFIED_SHARED_MEMORY)
     p += snprintf (p, end - p, "%sunified_shared_memory",
 		   (p == buf ? "" : ", "));
+  if (requires_mask & GOMP_REQUIRES_SELF_MAPS)
+    p += snprintf (p, end - p, "%sself_maps",
+		   (p == buf ? "" : ", "));
   if (requires_mask & GOMP_REQUIRES_REVERSE_OFFLOAD)
     p += snprintf (p, end - p, "%sreverse_offload",
 		   (p == buf ? "" : ", "));
@@ -2626,9 +2633,9 @@ GOMP_offload_register_ver (unsigned version, const void *host_table,
   if (omp_req && omp_requires_mask && omp_requires_mask != omp_req)
     {
       char buf1[sizeof ("unified_address, unified_shared_memory, "
-			"reverse_offload")];
+			"self_maps, reverse_offload")];
       char buf2[sizeof ("unified_address, unified_shared_memory, "
-			"reverse_offload")];
+			"self_maps, reverse_offload")];
       gomp_requires_to_name (buf2, sizeof (buf2),
 			     omp_req != GOMP_REQUIRES_TARGET_USED
 			     ? omp_req : omp_requires_mask);
@@ -4352,6 +4359,8 @@ gomp_target_task_fn (void *data)
   return false;
 }
 
+/* Implement OpenMP 'teams' construct, legacy entry point.  */
+
 void
 GOMP_teams (unsigned int num_teams, unsigned int thread_limit)
 {
@@ -4363,6 +4372,13 @@ GOMP_teams (unsigned int num_teams, unsigned int thread_limit)
     }
   (void) num_teams;
 }
+
+/* Implement OpenMP 'teams' construct.
+
+   Initialize upon FIRST call.  Return whether this invocation is active.
+   Depending on whether NUM_TEAMS_LOW asks for more teams than are provided
+   in hardware, we may need to loop multiple times; in that case make sure to
+   update the team-level variable used by 'omp_get_team_num'.  */
 
 bool
 GOMP_teams4 (unsigned int num_teams_low, unsigned int num_teams_high,
@@ -5109,6 +5125,169 @@ omp_pause_resource_all (omp_pause_resource_t kind)
 ialias (omp_pause_resource)
 ialias (omp_pause_resource_all)
 
+int
+omp_get_num_interop_properties (const omp_interop_t interop
+				__attribute__ ((unused)))
+{
+  /* Zero implementation defined. In total:
+     omp_get_num_interop_properties () - omp_ipr_first.  */
+  return 0;
+}
+
+omp_intptr_t
+omp_get_interop_int (const omp_interop_t interop __attribute__ ((unused)),
+		     omp_interop_property_t property_id,
+		     omp_interop_rc_t *ret_code)
+{
+  if (ret_code == NULL)
+    return 0;
+  if (property_id < omp_ipr_first || property_id >= 0)
+    *ret_code = omp_irc_out_of_range;
+  else
+    *ret_code = omp_irc_empty;  /* Assume omp_interop_none.  */
+  return 0;
+}
+
+void *
+omp_get_interop_ptr (const omp_interop_t interop __attribute__ ((unused)),
+		     omp_interop_property_t property_id,
+		     omp_interop_rc_t *ret_code)
+{
+  if (ret_code == NULL)
+    return NULL;
+  if (property_id < omp_ipr_first || property_id >= 0)
+    *ret_code = omp_irc_out_of_range;
+  else
+    *ret_code = omp_irc_empty;  /* Assume omp_interop_none.  */
+  return NULL;
+}
+
+const char *
+omp_get_interop_str (const omp_interop_t interop __attribute__ ((unused)),
+		     omp_interop_property_t property_id,
+		     omp_interop_rc_t *ret_code)
+{
+  if (ret_code == NULL)
+    return NULL;
+  if (property_id < omp_ipr_first || property_id >= 0)
+    *ret_code = omp_irc_out_of_range;
+  else
+    *ret_code = omp_irc_empty;  /* Assume omp_interop_none.  */
+  return NULL;
+}
+
+const char *
+omp_get_interop_name (const omp_interop_t interop __attribute__ ((unused)),
+		      omp_interop_property_t property_id)
+{
+  static const char *prop_string[0 - omp_ipr_first]
+    = {"fr_id", "fr_name", "vendor", "vendor_name", "device_num", "platform",
+       "device", "device_context", "targetsync"};
+  if (property_id < omp_ipr_first || property_id >= 0)
+    return NULL;
+  return prop_string[omp_ipr_fr_id - property_id];
+}
+
+const char *
+omp_get_interop_type_desc (const omp_interop_t interop,
+			   omp_interop_property_t property_id)
+{
+  static const char *desc[omp_ipr_fr_id - omp_ipr_device_num + 1]
+    = {"omp_interop_t",	/* fr_id */
+       "const char*",	/* fr_name */
+       "int",		/* vendor */
+       "const char *",	/* vendor_name */
+       "int"};		/* device_num */
+  if (property_id > omp_ipr_fr_id || property_id < omp_ipr_first)
+    return NULL;
+  if (interop == omp_interop_none)
+    return NULL;
+  if (property_id >= omp_ipr_device_num)
+    return desc[omp_ipr_fr_id - property_id];
+  return NULL;  /* FIXME: Call plugin.  */
+}
+
+const char *
+omp_get_interop_rc_desc (const omp_interop_t interop __attribute__ ((unused)),
+			 omp_interop_rc_t ret_code)
+{
+  static const char *rc_strings[omp_irc_no_value - omp_irc_other]
+    = {"no meaningful value available",
+       "successful",
+       "provided interoperability object is equal to omp_interop_none",
+       "property ID is out of range",
+       "property type is integer; use omp_get_interop_int",
+       "property type is pointer; use omp_get_interop_ptr",
+       "property type is string; use omp_get_interop_str"};
+
+  /* omp_irc_other is returned by device-side omp_get_interop_{int,ptr,str};
+     on the host it is not used, hence, return NULL here.   */
+  if (ret_code > omp_irc_no_value || ret_code <= omp_irc_other)
+    return NULL;
+  return rc_strings[omp_irc_no_value - ret_code];
+}
+
+ialias (omp_get_num_interop_properties)
+ialias (omp_get_interop_int)
+ialias (omp_get_interop_ptr)
+ialias (omp_get_interop_str)
+ialias (omp_get_interop_name)
+ialias (omp_get_interop_type_desc)
+ialias (omp_get_interop_rc_desc)
+
+static const char *
+gomp_get_uid_for_device (struct gomp_device_descr *devicep, int device_num)
+{
+  if (devicep->uid)
+    return devicep->uid;
+
+  if (devicep->get_uid_func)
+    devicep->uid = devicep->get_uid_func (devicep->target_id);
+  if (!devicep->uid)
+    {
+      size_t ln = strlen (STR_OMP_DEV_PREFIX) + 10 + 1;
+      char *uid;
+      uid = gomp_malloc (ln);
+      snprintf (uid, ln, "%s%d", STR_OMP_DEV_PREFIX, device_num);
+      devicep->uid = uid;
+    }
+  return devicep->uid;
+}
+
+const char *
+omp_get_uid_from_device (int device_num)
+{
+  if (device_num < omp_initial_device || device_num > gomp_get_num_devices ())
+    return NULL;
+
+  if (device_num == omp_initial_device || device_num == gomp_get_num_devices ())
+    return str_omp_initial_device;
+
+  struct gomp_device_descr *devicep = resolve_device (device_num, false);
+  if (devicep == NULL)
+    return NULL;
+  return gomp_get_uid_for_device (devicep, device_num);
+}
+
+int
+omp_get_device_from_uid (const char *uid)
+{
+  if (uid == NULL)
+    return omp_invalid_device;
+  if (strcmp (uid, str_omp_initial_device) == 0)
+    return omp_initial_device;
+  for (int dev = 0; dev < gomp_get_num_devices (); dev++)
+    {
+      struct gomp_device_descr *devicep = resolve_device (dev, false);
+      if (strcmp (uid, gomp_get_uid_for_device (devicep, dev)) == 0)
+	return dev;
+    }
+  return omp_invalid_device;
+}
+
+ialias (omp_get_uid_from_device)
+ialias (omp_get_device_from_uid)
+
 #ifdef PLUGIN_SUPPORT
 
 /* This function tries to load a plugin for DEVICE.  Name of plugin is passed
@@ -5150,6 +5329,7 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
     }
 
   DLSYM (get_name);
+  DLSYM_OPT (get_uid, get_uid);
   DLSYM (get_caps);
   DLSYM (get_type);
   DLSYM (get_num_devices);
@@ -5322,7 +5502,8 @@ gomp_target_init (void)
 
 		/* If USM has been requested and is supported by all devices
 		   of this type, set the capability accordingly.  */
-		if (omp_requires_mask & GOMP_REQUIRES_UNIFIED_SHARED_MEMORY)
+		if (omp_requires_mask
+		    & (GOMP_REQUIRES_UNIFIED_SHARED_MEMORY | GOMP_REQUIRES_SELF_MAPS))
 		  current_device.capabilities |= GOMP_OFFLOAD_CAP_SHARED_MEM;
 
 		devs = realloc (devs, (num_devs + new_num_devs)
@@ -5335,6 +5516,8 @@ gomp_target_init (void)
 		  }
 
 		current_device.name = current_device.get_name_func ();
+		/* Defer UID setting until needed + after gomp_init_device.  */
+		current_device.uid = NULL;
 		/* current_device.capabilities has already been set.  */
 		current_device.type = current_device.get_type_func ();
 		current_device.mem_map.root = NULL;

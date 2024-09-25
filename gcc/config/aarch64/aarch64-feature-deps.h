@@ -97,9 +97,10 @@ template<aarch64_feature> struct info;
 constexpr aarch64_feature_flags
 get_flags_off (aarch64_feature_flags mask)
 {
-  return (0
+  return (aarch64_feature_flags (0)
 #define AARCH64_OPT_EXTENSION(A, IDENT, C, D, E, F) \
-	  | (feature_deps::IDENT ().enable & mask ? AARCH64_FL_##IDENT : 0)
+	  | (feature_deps::IDENT ().enable & mask ? AARCH64_FL_##IDENT \
+						  : aarch64_feature_flags (0))
 #include "config/aarch64/aarch64-option-extensions.def"
 	  );
 }

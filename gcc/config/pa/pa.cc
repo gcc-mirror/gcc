@@ -1410,6 +1410,7 @@ hppa_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       /* If the index adds a large constant, try to scale the
 	 constant so that it can be loaded with only one insn.  */
       if (GET_CODE (XEXP (idx, 1)) == CONST_INT
+	  && INTVAL (XEXP (idx, 1)) % (1 << shift_val) == 0
 	  && VAL_14_BITS_P (INTVAL (XEXP (idx, 1))
 			    / INTVAL (XEXP (XEXP (idx, 0), 1)))
 	  && INTVAL (XEXP (idx, 1)) % INTVAL (XEXP (XEXP (idx, 0), 1)) == 0)
@@ -2042,8 +2043,7 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 	      op1 = replace_equiv_address (op1, scratch_reg);
 	    }
 	}
-      else if (((TARGET_ELF32 || !TARGET_PA_20)
-		&& symbolic_memory_operand (op1, VOIDmode))
+      else if ((!INT14_OK_STRICT && symbolic_memory_operand (op1, VOIDmode))
 	       || IS_LO_SUM_DLT_ADDR_P (XEXP (op1, 0))
 	       || IS_INDEX_ADDR_P (XEXP (op1, 0)))
 	{
@@ -2092,8 +2092,7 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 	      op0 = replace_equiv_address (op0, scratch_reg);
 	    }
 	}
-      else if (((TARGET_ELF32 || !TARGET_PA_20)
-		&& symbolic_memory_operand (op0, VOIDmode))
+      else if ((!INT14_OK_STRICT && symbolic_memory_operand (op0, VOIDmode))
 	       || IS_LO_SUM_DLT_ADDR_P (XEXP (op0, 0))
 	       || IS_INDEX_ADDR_P (XEXP (op0, 0)))
 	{
@@ -4516,7 +4515,7 @@ load_reg (int reg, HOST_WIDE_INT disp, int base)
       rtx tmpreg = gen_rtx_REG (Pmode, 1);
 
       emit_move_insn (tmpreg, delta);
-      if (TARGET_DISABLE_INDEXING)
+      if (!TARGET_NO_SPACE_REGS || TARGET_DISABLE_INDEXING)
 	{
 	  emit_move_insn (tmpreg, gen_rtx_PLUS (Pmode, tmpreg, basereg));
 	  src = gen_rtx_MEM (word_mode, tmpreg);
@@ -11008,17 +11007,13 @@ pa_legitimate_address_p (machine_mode mode, rtx x, bool strict, code_helper)
 	}
 
       if (!TARGET_DISABLE_INDEXING
-	  /* Only accept the "canonical" INDEX+BASE operand order
-	     on targets with non-equivalent space registers.  */
-	  && (TARGET_NO_SPACE_REGS
-	      ? REG_P (index)
-	      : (base == XEXP (x, 1) && REG_P (index)
-		 && (reload_completed
-		     || (reload_in_progress && HARD_REGISTER_P (base))
-		     || REG_POINTER (base))
-		 && (reload_completed
-		     || (reload_in_progress && HARD_REGISTER_P (index))
-		     || !REG_POINTER (index))))
+	  /* Currently, the REG_POINTER flag is not set in a variety
+	     of situations (e.g., call arguments and pointer arithmetic).
+	     As a result, we can't reliably determine when unscaled
+	     addresses are legitimate on targets that need space register
+	     selection.  */
+	  && TARGET_NO_SPACE_REGS
+	  && REG_P (index)
 	  && MODE_OK_FOR_UNSCALED_INDEXING_P (mode)
 	  && (strict ? STRICT_REG_OK_FOR_INDEX_P (index)
 		     : REG_OK_FOR_INDEX_P (index))
@@ -11027,14 +11022,13 @@ pa_legitimate_address_p (machine_mode mode, rtx x, bool strict, code_helper)
 	return true;
 
       if (!TARGET_DISABLE_INDEXING
-	  && GET_CODE (index) == MULT
 	  /* Only accept base operands with the REG_POINTER flag prior to
 	     reload on targets with non-equivalent space registers.  */
 	  && (TARGET_NO_SPACE_REGS
-	      || (base == XEXP (x, 1)
-		  && (reload_completed
-		      || (reload_in_progress && HARD_REGISTER_P (base))
-		      || REG_POINTER (base))))
+	      || reload_completed
+	      || (reload_in_progress && HARD_REGISTER_P (base))
+	      || REG_POINTER (base))
+	  && GET_CODE (index) == MULT
 	  && REG_P (XEXP (index, 0))
 	  && GET_MODE (XEXP (index, 0)) == Pmode
 	  && MODE_OK_FOR_SCALED_INDEXING_P (mode)
@@ -11062,20 +11056,21 @@ pa_legitimate_address_p (machine_mode mode, rtx x, bool strict, code_helper)
 	{
 	  y = XEXP (x, 1);
 
-	  /* Needed for -fPIC */
+	  /* UNSPEC_DLTIND14R is always okay.  Needed for -fPIC */
 	  if (mode == Pmode
 	      && GET_CODE (y) == UNSPEC)
 	    return true;
 
 	  /* Before reload, we need support for 14-bit floating
 	     point loads and stores, and associated relocations.  */
-	  if ((TARGET_ELF32 || !INT14_OK_STRICT)
+	  if (!INT14_OK_STRICT
 	      && !reload_completed
 	      && mode != QImode
 	      && mode != HImode)
 	    return false;
 
-	  if (CONSTANT_P (y))
+	  if (CONSTANT_P (y)
+	      || (!flag_pic && symbolic_operand (y, mode)))
 	    return true;
 	}
       return false;

@@ -1,3 +1,5 @@
+/* { dg-skip-if "requires hosted libstdc++ for stdlib free" { ! hostedlib } } */
+
 #include <stdlib.h>
 
 #define _cleanup_(f) __attribute__((cleanup(f)))

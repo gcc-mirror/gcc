@@ -1,5 +1,6 @@
 // { dg-do compile }
 // { dg-additional-options "-fdump-tree-gimple" }
+/* { dg-skip-if "requires hosted libstdc++ for cstdlib malloc" { ! hostedlib } } */
 
 #include <cstdlib>
 

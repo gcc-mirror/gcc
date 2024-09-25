@@ -430,6 +430,9 @@ struct GTY(()) function {
   /* Nonzero when the tail call has been identified.  */
   unsigned int tail_call_marked : 1;
 
+  /* Has musttail marked calls.  */
+  unsigned int has_musttail : 1;
+
   /* Nonzero if the current function contains a #pragma GCC unroll.  */
   unsigned int has_unroll : 1;
 

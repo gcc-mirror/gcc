@@ -69,7 +69,7 @@ void g5(char x)
 
 /* 
 ** g6:
-** 	tbnz	w0, 0, .L[0-9]+
+** 	tbnz	x0, 0, .L[0-9]+
 ** 	ret
 ** 	...
 */
@@ -81,7 +81,7 @@ void g6(char x)
 
 /* 
 ** g7:
-** 	tst	w0, 3
+** 	tst	x0, 3
 ** 	bne	.L[0-9]+
 ** 	ret
 ** 	...
@@ -94,7 +94,7 @@ void g7(char x)
 
 /* 
 ** g8:
-** 	tbnz	w0, 7, .L[0-9]+
+** 	tbnz	x0, 7, .L[0-9]+
 ** 	ret
 ** 	...
 */

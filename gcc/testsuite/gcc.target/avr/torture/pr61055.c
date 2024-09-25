@@ -7,7 +7,7 @@ typedef __UINT16_TYPE__ uint16_t;
 typedef __INT16_TYPE__  int16_t;
 typedef __UINT8_TYPE__  uint8_t;
 
-uint8_t __attribute__((noinline,noclone))
+uint8_t __attribute__((noipa))
 fun_inc (uint8_t c0)
 {
   register uint8_t c asm ("r15") = c0;
@@ -24,7 +24,7 @@ fun_inc (uint8_t c0)
   return c;
 }
 
-uint8_t __attribute__((noinline,noclone))
+uint8_t __attribute__((noipa))
 fun_dec (uint8_t c0)
 {
   register uint8_t c asm ("r15") = c0;
@@ -42,7 +42,7 @@ fun_dec (uint8_t c0)
 }
 
 
-uint8_t __attribute__((noinline,noclone))
+uint8_t __attribute__((noipa))
 fun_neg (uint8_t c0)
 {
   register uint8_t c asm ("r15") = c0;
@@ -54,7 +54,7 @@ fun_neg (uint8_t c0)
   return c;
 }
 
-uint16_t __attribute__((noinline,noclone))
+uint16_t __attribute__((noipa))
 fun_adiw (uint16_t c0)
 {
   register uint16_t c asm ("r24") = c0;

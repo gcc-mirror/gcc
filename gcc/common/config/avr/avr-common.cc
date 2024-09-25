@@ -1,4 +1,4 @@
-/* Common hooks for ATMEL AVR.
+/* Common hooks for AVR 8-bit microcontrollers.
    Copyright (C) 1998-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.

@@ -29,14 +29,14 @@ foo ()
   uv2di = vec_splat_u64 (64000);
 }
 
-/* { dg-final { scan-assembler-times "vrepib\t%v.*,-112" 1 } } */
-/* { dg-final { scan-assembler-times "vrepib\t%v.*,-41" 1 } } */
+/* { dg-final { scan-assembler-times "vrepi\t%v.*,-112,0" 1 } } */
+/* { dg-final { scan-assembler-times "vrepi\t%v.*,-41,0" 1 } } */
 
-/* { dg-final { scan-assembler-times "vrepih\t%v.*,-32000" 1 } } */
-/* { dg-final { scan-assembler-times "vrepih\t%v.*,-1536" 1 } } */
+/* { dg-final { scan-assembler-times "vrepi\t%v.*,-32000,1" 1 } } */
+/* { dg-final { scan-assembler-times "vrepi\t%v.*,-1536,1" 1 } } */
 
-/* { dg-final { scan-assembler-times "vrepif\t%v.*,-32000" 1 } } */
-/* { dg-final { scan-assembler-times "vrepif\t%v.*,-1536" 1 } } */
+/* { dg-final { scan-assembler-times "vrepi\t%v.*,-32000,2" 1 } } */
+/* { dg-final { scan-assembler-times "vrepi\t%v.*,-1536,2" 1 } } */
 
-/* { dg-final { scan-assembler-times "vrepig\t%v.*,-32000" 1 } } */
-/* { dg-final { scan-assembler-times "vrepig\t%v.*,-1536" 1 } } */
+/* { dg-final { scan-assembler-times "vrepi\t%v.*,-32000,3" 1 } } */
+/* { dg-final { scan-assembler-times "vrepi\t%v.*,-1536,3" 1 } } */

@@ -35,6 +35,7 @@
 #include "tree.h"
 #include "inchash.h"
 #include "fold-const.h"
+#include "stor-layout.h"
 
 #include "ada.h"
 #include "types.h"
@@ -67,7 +68,9 @@ build_cst_from_int (tree type, HOST_WIDE_INT low)
 /* Similar to UI_To_Int, but return a GCC INTEGER_CST or REAL_CST node,
    depending on whether TYPE is an integral or real type.  Overflow is tested
    by the constant-folding used to build the node.  TYPE is the GCC type of
-   the resulting node.  */
+   the resulting node.  If TYPE is NULL, an unsigned integer type wide enough
+   to hold the entire constant is selected, and if no such type exists,
+   return NULL_TREE.  */
 
 tree
 UI_To_gnu (Uint Input, tree type)
@@ -77,8 +80,10 @@ UI_To_gnu (Uint Input, tree type)
      any such possible value for intermediate computations and then rely on a
      conversion back to TYPE to perform the bias adjustment when need be.  */
   tree comp_type
-    = TREE_CODE (type) == INTEGER_TYPE && TYPE_BIASED_REPRESENTATION_P (type)
-      ? get_base_type (type) : type;
+    = (!type ? gnat_type_for_size (32, 1)
+       : (TREE_CODE (type) == INTEGER_TYPE
+	  && TYPE_BIASED_REPRESENTATION_P (type))
+       ? get_base_type (type) : type);
   tree gnu_ret;
 
   if (Input <= Uint_Direct_Last)
@@ -88,9 +93,14 @@ UI_To_gnu (Uint Input, tree type)
       Int Idx = (*Uints_Ptr)[Input - Uint_Table_Start].Loc;
       Pos Length = (*Uints_Ptr)[Input - Uint_Table_Start].Length;
       Int First = (*Udigits_Ptr)[Idx];
+      tree_code code = First < 0 ? MINUS_EXPR : PLUS_EXPR;
       tree gnu_base;
 
       gcc_assert (Length > 0);
+      /* The extension of unsigned types we use to try to fit the
+	 constant only works if we're dealing with nonnegative
+	 constants, but that's what we expect when !TYPE.  */
+      gcc_assert (type || First >= 0);
 
       /* The computations we perform below always require a type at least as
 	 large as an integer not to overflow.  FP types are always fine, but
@@ -103,22 +113,44 @@ UI_To_gnu (Uint Input, tree type)
       gnu_base = build_cst_from_int (comp_type, Base);
 
       gnu_ret = build_cst_from_int (comp_type, First);
-      if (First < 0)
-	for (Idx++, Length--; Length; Idx++, Length--)
-	  gnu_ret = fold_build2 (MINUS_EXPR, comp_type,
-				 fold_build2 (MULT_EXPR, comp_type,
-					      gnu_ret, gnu_base),
-				 build_cst_from_int (comp_type,
-						     (*Udigits_Ptr)[Idx]));
-      else
-	for (Idx++, Length--; Length; Idx++, Length--)
-	  gnu_ret = fold_build2 (PLUS_EXPR, comp_type,
-				 fold_build2 (MULT_EXPR, comp_type,
-					      gnu_ret, gnu_base),
-				 build_cst_from_int (comp_type,
-						     (*Udigits_Ptr)[Idx]));
+      for (Idx++, Length--; Length; Idx++, Length--)
+	for (;;)
+	  {
+	    tree elt, scaled, next_ret;
+	    elt = build_cst_from_int (comp_type, (*Udigits_Ptr)[Idx]);
+	    /* We want to detect overflows with an unsigned type when
+	       TYPE is not given, but int_const_binop doesn't work for
+	       e.g. floating-point TYPEs.  */
+	    if (!type)
+	      {
+		scaled = int_const_binop (MULT_EXPR, gnu_ret, gnu_base, -1);
+		next_ret = int_const_binop (code, scaled, elt, -1);
+	      }
+	    else
+	      {
+		scaled = fold_build2 (MULT_EXPR, comp_type, gnu_ret, gnu_base);
+		next_ret = fold_build2 (code, comp_type, scaled, elt);
+	      }
+	    if (!TREE_OVERFLOW (next_ret) || type)
+	      {
+		gnu_ret = next_ret;
+		break;
+	      }
+	    opt_scalar_int_mode wider_mode
+	      = GET_MODE_WIDER_MODE (SCALAR_INT_TYPE_MODE
+				     (comp_type)).require ();
+	    if (!wider_mode.exists ())
+	      /* Signal that we couldn't represent the value.  */
+	      return NULL_TREE;
+	    comp_type = make_unsigned_type (GET_MODE_BITSIZE
+					    (wider_mode.require ()));
+	    gnu_base = convert (comp_type, gnu_base);
+	    gnu_ret = convert (comp_type, gnu_ret);
+	  }
     }
 
+  if (!type)
+    type = comp_type;
   gnu_ret = convert (type, gnu_ret);
 
   /* We don't need any NOP_EXPR or NON_LVALUE_EXPR on GNU_RET.  */

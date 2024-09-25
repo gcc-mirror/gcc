@@ -1,6 +1,6 @@
 /* CTF is not generated for entities not at file-scope.  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 
 /* { dg-final { scan-assembler-times "ascii \"SFOO.0\"\[\t \]+\[^\n\]*ctf_string" 0 } } */

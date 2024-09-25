@@ -57,13 +57,13 @@ static const advsimd_vec_cost neoversev2_advsimd_vector_cost =
   2, /* ld2_st2_permute_cost */
   2, /* ld3_st3_permute_cost  */
   3, /* ld4_st4_permute_cost  */
-  3, /* permute_cost  */
+  2, /* permute_cost  */
   4, /* reduc_i8_cost  */
   4, /* reduc_i16_cost  */
   2, /* reduc_i32_cost  */
   2, /* reduc_i64_cost  */
   6, /* reduc_f16_cost  */
-  3, /* reduc_f32_cost  */
+  4, /* reduc_f32_cost  */
   2, /* reduc_f64_cost  */
   2, /* store_elt_extra_cost  */
   /* This value is just inherited from the Cortex-A57 table.  */
@@ -86,22 +86,22 @@ static const sve_vec_cost neoversev2_sve_vector_cost =
   {
     2, /* int_stmt_cost  */
     2, /* fp_stmt_cost  */
-    3, /* ld2_st2_permute_cost  */
+    2, /* ld2_st2_permute_cost  */
     3, /* ld3_st3_permute_cost  */
-    4, /* ld4_st4_permute_cost  */
-    3, /* permute_cost  */
+    3, /* ld4_st4_permute_cost  */
+    2, /* permute_cost  */
     /* Theoretically, a reduction involving 15 scalar ADDs could
-       complete in ~3 cycles and would have a cost of 15.  [SU]ADDV
-       completes in 11 cycles, so give it a cost of 15 + 8.  */
-    21, /* reduc_i8_cost  */
-    /* Likewise for 7 scalar ADDs (~2 cycles) vs. 9: 7 + 7.  */
-    14, /* reduc_i16_cost  */
-    /* Likewise for 3 scalar ADDs (~2 cycles) vs. 8: 3 + 4.  */
+       complete in ~5 cycles and would have a cost of 15.  [SU]ADDV
+       completes in 9 cycles, so give it a cost of 15 + 4.  */
+    19, /* reduc_i8_cost  */
+    /* Likewise for 7 scalar ADDs (~3 cycles) vs. 8: 7 + 5.  */
+    12, /* reduc_i16_cost  */
+    /* Likewise for 3 scalar ADDs (~2 cycles) vs. 6: 3 + 4.  */
     7, /* reduc_i32_cost  */
-    /* Likewise for 1 scalar ADD (~1 cycles) vs. 2: 1 + 1.  */
-    2, /* reduc_i64_cost  */
+    /* Likewise for 1 scalar ADDs (~1 cycles) vs. 4: 1 + 3.  */
+    4, /* reduc_i64_cost  */
     /* Theoretically, a reduction involving 7 scalar FADDs could
-       complete in ~6 cycles and would have a cost of 14.  FADDV
+       complete in ~6 cycles and would have a cost of  14.  FADDV
        completes in 8 cycles, so give it a cost of 14 + 2.  */
     16, /* reduc_f16_cost  */
     /* Likewise for 3 scalar FADDs (~4 cycles) vs. 6: 6 + 2.  */
@@ -127,7 +127,7 @@ static const sve_vec_cost neoversev2_sve_vector_cost =
   /* A strided Advanced SIMD x64 load would take two parallel FP loads
      (8 cycles) plus an insertion (2 cycles).  Assume a 64-bit SVE gather
      is 1 cycle more.  The Advanced SIMD version is costed as 2 scalar loads
-     (cost 8) and a vec_construct (cost 2).  Add a full vector operation
+     (cost 8) and a vec_construct (cost 4).  Add a full vector operation
      (cost 2) to that, to avoid the difference being lost in rounding.
 
      There is no easy comparison between a strided Advanced SIMD x32 load
@@ -135,6 +135,8 @@ static const sve_vec_cost neoversev2_sve_vector_cost =
      operation more than a 64-bit gather.  */
   14, /* gather_load_x32_cost  */
   12, /* gather_load_x64_cost  */
+  42, /* gather_load_x32_init_cost  */
+  24, /* gather_load_x64_init_cost  */
   3 /* scatter_store_elt_cost  */
 };
 
@@ -165,14 +167,14 @@ static const aarch64_sve_vec_issue_info neoversev2_sve_issue_info =
 {
   {
     {
-      3, /* loads_per_cycle  */
+      3, /* loads_stores_per_cycle  */
       2, /* stores_per_cycle  */
       4, /* general_ops_per_cycle  */
       0, /* fp_simd_load_general_ops  */
       1 /* fp_simd_store_general_ops  */
     },
     2, /* ld2_st2_general_ops  */
-    3, /* ld3_st3_general_ops  */
+    2, /* ld3_st3_general_ops  */
     3 /* ld4_st4_general_ops  */
   },
   2, /* pred_ops_per_cycle  */
@@ -190,7 +192,7 @@ static const aarch64_vec_issue_info neoversev2_vec_issue_info =
   &neoversev2_sve_issue_info
 };
 
-/* Demeter costs for vector insn classes.  */
+/* Neoversev2 costs for vector insn classes.  */
 static const struct cpu_vector_cost neoversev2_vector_cost =
 {
   1, /* scalar_int_stmt_cost  */
@@ -202,6 +204,19 @@ static const struct cpu_vector_cost neoversev2_vector_cost =
   &neoversev2_advsimd_vector_cost, /* advsimd  */
   &neoversev2_sve_vector_cost, /* sve  */
   &neoversev2_vec_issue_info /* issue_info  */
+};
+
+/* Prefetch settings.  Disable software prefetch generation but set L1 cache
+   line size.  */
+static const cpu_prefetch_tune neoversev2_prefetch_tune =
+{
+  0,			/* num_slots  */
+  -1,			/* l1_cache_size  */
+  64,			/* l1_cache_line_size  */
+  -1,			/* l2_cache_size  */
+  true,			/* prefetch_dynamic_strides */
+  -1,			/* minimum_stride */
+  -1			/* default_opt_level  */
 };
 
 static const struct tune_params neoversev2_tunings =
@@ -221,12 +236,15 @@ static const struct tune_params neoversev2_tunings =
     2 /* store_pred.  */
   }, /* memmov_cost.  */
   5, /* issue_rate  */
-  (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH), /* fusible_ops  */
+  (AARCH64_FUSE_AES_AESMC
+   | AARCH64_FUSE_CMP_BRANCH
+   | AARCH64_FUSE_CMP_CSEL
+   | AARCH64_FUSE_CMP_CSET), /* fusible_ops  */
   "32:16",	/* function_align.  */
   "4",		/* jump_align.  */
   "32:16",	/* loop_align.  */
   3,	/* int_reassoc_width.  */
-  6,	/* fp_reassoc_width.  */
+  4,	/* fp_reassoc_width.  */
   4,	/* fma_reassoc_width.  */
   3,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
@@ -237,8 +255,9 @@ static const struct tune_params neoversev2_tunings =
    | AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS
    | AARCH64_EXTRA_TUNE_USE_NEW_VECTOR_COSTS
    | AARCH64_EXTRA_TUNE_MATCHED_VECTOR_THROUGHPUT
-   | AARCH64_EXTRA_TUNE_AVOID_PRED_RMW),	/* tune_flags.  */
-  &generic_prefetch_tune,
+   | AARCH64_EXTRA_TUNE_AVOID_PRED_RMW
+   | AARCH64_EXTRA_TUNE_FULLY_PIPELINED_FMA),	/* tune_flags.  */
+  &neoversev2_prefetch_tune,
   AARCH64_LDP_STP_POLICY_ALWAYS,   /* ldp_policy_model.  */
   AARCH64_LDP_STP_POLICY_ALWAYS	   /* stp_policy_model.  */
 };

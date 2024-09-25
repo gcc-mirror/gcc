@@ -1,4 +1,4 @@
-/* Subroutines for the gcc driver.
+/* Subroutines for the gcc driver for AVR 8-bit microcontrollers.
    Copyright (C) 2009-2024 Free Software Foundation, Inc.
    Contributed by Georg-Johann Lay <avr@gjlay.de>
 

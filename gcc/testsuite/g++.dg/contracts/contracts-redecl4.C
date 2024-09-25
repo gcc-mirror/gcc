@@ -33,6 +33,7 @@ int main(int, char **)
   printf("=====\n");
 }
 
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }
 // { dg-output "contract violation in function f at .*.C:10: .*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function f at .*.C:11: .*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function f at .*.C:12: .*(\n|\r\n|\r)" }

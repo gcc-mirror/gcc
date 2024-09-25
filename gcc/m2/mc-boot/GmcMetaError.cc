@@ -11,9 +11,9 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
-You should have received a copy of the GNU General Public License along
-with gm2; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
 #include "system.h"
@@ -866,7 +866,7 @@ static DynamicStrings_String symDesc (decl_node n, DynamicStrings_String o)
   else if (decl_isConstSet (n))
     {
       /* avoid dangling else.  */
-      /* 
+      /*
    ELSIF IsConstructor(n)
    THEN
       RETURN( ConCatWord (o, Mark (InitString ('constructor'))) )

@@ -1,4 +1,4 @@
-/* { dg-options "-march=rv32imc -mabi=ilp32" } */
+/* { dg-options "-march=rv32imc -mabi=ilp32 -fno-late-combine-instructions" } */
 /* { dg-skip-if "" { *-*-* } { "*" } { "-Os" } } */
 
 /* shorten_memrefs should use a correct base address*/

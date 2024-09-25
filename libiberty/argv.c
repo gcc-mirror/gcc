@@ -124,15 +124,6 @@ consume_whitespace (const char **input)
     }
 }
 
-static int
-only_whitespace (const char* input)
-{
-  while (*input != EOS && ISSPACE (*input))
-    input++;
-
-  return (*input == EOS);
-}
-
 /*
 
 @deftypefn Extension char** buildargv (char *@var{sp})
@@ -212,67 +203,74 @@ char **buildargv (const char *input)
 	      argv[argc] = NULL;
 	    }
 	  /* Begin scanning arg */
-	  arg = copybuf;
-	  while (*input != EOS)
+	  if (*input != EOS)
 	    {
-	      if (ISSPACE (*input) && !squote && !dquote && !bsquote)
+	      arg = copybuf;
+	      while (*input != EOS)
 		{
-		  break;
-		}
-	      else
-		{
-		  if (bsquote)
+		  if (ISSPACE (*input) && !squote && !dquote && !bsquote)
 		    {
-		      bsquote = 0;
-		      *arg++ = *input;
-		    }
-		  else if (*input == '\\')
-		    {
-		      bsquote = 1;
-		    }
-		  else if (squote)
-		    {
-		      if (*input == '\'')
-			{
-			  squote = 0;
-			}
-		      else
-			{
-			  *arg++ = *input;
-			}
-		    }
-		  else if (dquote)
-		    {
-		      if (*input == '"')
-			{
-			  dquote = 0;
-			}
-		      else
-			{
-			  *arg++ = *input;
-			}
+		      break;
 		    }
 		  else
 		    {
-		      if (*input == '\'')
+		      if (bsquote)
 			{
-			  squote = 1;
+			  bsquote = 0;
+			  if (*input != '\n')
+			    *arg++ = *input;
 			}
-		      else if (*input == '"')
+		      else if (*input == '\\'
+			       && !squote
+			       && (!dquote
+				   || strchr ("$`\"\\\n", *(input + 1)) != NULL))
 			{
-			  dquote = 1;
+			  bsquote = 1;
+			}
+		      else if (squote)
+			{
+			  if (*input == '\'')
+			    {
+			      squote = 0;
+			    }
+			  else
+			    {
+			      *arg++ = *input;
+			    }
+			}
+		      else if (dquote)
+			{
+			  if (*input == '"')
+			    {
+			      dquote = 0;
+			    }
+			  else
+			    {
+			      *arg++ = *input;
+			    }
 			}
 		      else
 			{
-			  *arg++ = *input;
+			  if (*input == '\'')
+			    {
+			      squote = 1;
+			    }
+			  else if (*input == '"')
+			    {
+			      dquote = 1;
+			    }
+			  else
+			    {
+			      *arg++ = *input;
+			    }
 			}
+		      input++;
 		    }
-		  input++;
 		}
+	      *arg = EOS;
+	      argv[argc] = xstrdup (copybuf);
+	      argc++;
 	    }
-	  *arg = EOS;
-	  argv[argc] = xstrdup (copybuf);
-	  argc++;
 	  argv[argc] = NULL;
 
 	  consume_whitespace (&input);
@@ -435,17 +433,8 @@ expandargv (int *argcp, char ***argvp)
 	}
       /* Add a NUL terminator.  */
       buffer[len] = '\0';
-      /* If the file is empty or contains only whitespace, buildargv would
-	 return a single empty argument.  In this context we want no arguments,
-	 instead.  */
-      if (only_whitespace (buffer))
-	{
-	  file_argv = (char **) xmalloc (sizeof (char *));
-	  file_argv[0] = NULL;
-	}
-      else
-	/* Parse the string.  */
-	file_argv = buildargv (buffer);
+      /* Parse the string.  */
+      file_argv = buildargv (buffer);
       /* If *ARGVP is not already dynamically allocated, copy it.  */
       if (*argvp == original_argv)
 	*argvp = dupargv (*argvp);

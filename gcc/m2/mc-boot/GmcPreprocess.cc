@@ -11,9 +11,9 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
-You should have received a copy of the GNU General Public License along
-with gm2; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
 #include "system.h"
@@ -93,7 +93,7 @@ static DynamicStrings_String makeTempFile (DynamicStrings_String ext)
 
 static DynamicStrings_String onExitDelete (DynamicStrings_String filename)
 {
-  alists_includeItemIntoList (listOfFiles, reinterpret_cast<void *> (DynamicStrings_Dup (filename)));
+  alists_includeItemIntoList (listOfFiles, reinterpret_cast <void *> (DynamicStrings_Dup (filename)));
   return filename;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -148,7 +148,7 @@ extern "C" DynamicStrings_String mcPreprocess_preprocessModule (DynamicStrings_S
     }
   else
     {
-      tempfile = DynamicStrings_InitStringCharStar (reinterpret_cast<void *> (makeTempFile (DynamicStrings_InitString ((const char *) "cpp", 3))));
+      tempfile = DynamicStrings_InitStringCharStar (reinterpret_cast <void *> (makeTempFile (DynamicStrings_InitString ((const char *) "cpp", 3))));
       commandLine = DynamicStrings_Dup (command);
       commandLine = DynamicStrings_ConCat (DynamicStrings_ConCat (DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Dup (commandLine), ' '), filename), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) " -o ", 4))), tempfile);
       if (mcOptions_getVerbose ())

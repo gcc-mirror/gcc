@@ -453,6 +453,25 @@ class PassPrinter:
 
 ######################################################################
 
+VEC_KIND_EMBED = 0
+VEC_KIND_PTR = 1
+
+"""
+Given a vec or pointer to vec, return its layout (embedded or space
+efficient).
+"""
+def get_vec_kind(val):
+    typ = val.type
+    if typ.code == gdb.TYPE_CODE_PTR:
+        typ = typ.target()
+    kind = typ.template_argument(2).name
+    if kind == "vl_embed":
+        return VEC_KIND_EMBED
+    elif kind == "vl_ptr":
+        return VEC_KIND_PTR
+    else:
+        assert False, f"unexpected vec kind {kind}"
+
 class VecPrinter:
     #    -ex "up" -ex "p bb->preds"
     def __init__(self, gdbval):
@@ -467,11 +486,16 @@ class VecPrinter:
         return '0x%x' % intptr(self.gdbval)
 
     def children (self):
-        if intptr(self.gdbval) == 0:
-            return
-        m_vecpfx = self.gdbval['m_vecpfx']
-        m_num = m_vecpfx['m_num']
         val = self.gdbval
+        if intptr(val) != 0 and get_vec_kind(val) == VEC_KIND_PTR:
+            val = val['m_vec']
+
+        if intptr(val) == 0:
+            return
+
+        assert get_vec_kind(val) == VEC_KIND_EMBED
+        m_vecpfx = val['m_vecpfx']
+        m_num = m_vecpfx['m_num']
         typ = val.type
         if typ.code == gdb.TYPE_CODE_PTR:
             typ = typ.target()
@@ -783,6 +807,18 @@ class DumpFn(gdb.Command):
 
 DumpFn()
 
+class GCCDotCmd(gdb.Parameter):
+    """
+    This parameter controls the command used to render dot files within
+    GCC's dot-fn command.  It will be invoked as gcc-dot-cmd <dot-file>.
+    """
+    def __init__(self):
+        super(GCCDotCmd, self).__init__('gcc-dot-cmd',
+                gdb.COMMAND_NONE, gdb.PARAM_STRING)
+        self.value = "dot -Tx11"
+
+gcc_dot_cmd = GCCDotCmd()
+
 class DotFn(gdb.Command):
     """
     A custom command to show a gimple/rtl function control flow graph.
@@ -848,8 +884,17 @@ class DotFn(gdb.Command):
             return
 
         # Show graph in temp file
-        os.system("( dot -Tx11 \"%s\"; rm \"%s\" ) &" % (filename, filename))
+        dot_cmd = gcc_dot_cmd.value
+        os.system("( %s \"%s\"; rm \"%s\" ) &" % (dot_cmd, filename, filename))
 
 DotFn()
+
+# Try and invoke the user-defined command "on-gcc-hooks-load".  Doing
+# this allows users to customize the GCC extensions once they've been
+# loaded by defining the hook in their .gdbinit.
+try:
+    gdb.execute('on-gcc-hooks-load')
+except gdb.error:
+    pass
 
 print('Successfully loaded GDB hooks for GCC')

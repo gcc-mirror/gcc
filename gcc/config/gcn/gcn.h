@@ -20,9 +20,7 @@
   do                                                                           \
     {                                                                          \
       builtin_define ("__AMDGCN__");                                           \
-      if (TARGET_GCN3)                                                         \
-	builtin_define ("__GCN3__");                                           \
-      else if (TARGET_GCN5)                                                    \
+      if (TARGET_GCN5)                                                    \
 	builtin_define ("__GCN5__");                                           \
       else if (TARGET_CDNA1)                                                   \
 	builtin_define ("__CDNA1__");                                          \
@@ -34,12 +32,7 @@
 	builtin_define ("__RDNA3__");                                          \
       else                                                                     \
 	gcc_unreachable ();                                                    \
-      if (TARGET_FIJI)                                                         \
-	{                                                                      \
-	  builtin_define ("__fiji__");                                         \
-	  builtin_define ("__gfx803__");                                       \
-	}                                                                      \
-      else if (TARGET_VEGA10)                                                  \
+      if (TARGET_VEGA10)                                                       \
 	builtin_define ("__gfx900__");                                         \
       else if (TARGET_VEGA20)                                                  \
 	builtin_define ("__gfx906__");                                         \
@@ -581,8 +574,7 @@ enum gcn_address_spaces
   c_register_addr_space ("__global", ADDR_SPACE_GLOBAL);             \
 } while (0);
 
-#define STACK_ADDR_SPACE \
-  (TARGET_GCN5_PLUS ? ADDR_SPACE_GLOBAL : ADDR_SPACE_FLAT)
+#define STACK_ADDR_SPACE ADDR_SPACE_GLOBAL
 #define DEFAULT_ADDR_SPACE \
   ((cfun && cfun->machine && !cfun->machine->use_flat_addressing) \
    ? ADDR_SPACE_GLOBAL : ADDR_SPACE_FLAT)
@@ -831,7 +823,7 @@ enum gcn_builtin_codes
 #define PROFILE_BEFORE_PROLOGUE 0
 
 /* Trampolines */
-#define TRAMPOLINE_SIZE 36
+#define TRAMPOLINE_SIZE 40  /* 36 + 4 padding for alignment.  */
 #define TRAMPOLINE_ALIGNMENT 64
 
 /* MD Optimization.

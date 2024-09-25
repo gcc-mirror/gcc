@@ -3121,7 +3121,7 @@ expand_asm_stmt (gasm *stmt)
 
   location_t locus = gimple_location (stmt);
 
-  if (gimple_asm_input_p (stmt))
+  if (gimple_asm_basic_p (stmt))
     {
       const char *s = gimple_asm_string (stmt);
       tree string = build_string (strlen (s), s);
@@ -4867,7 +4867,7 @@ expand_debug_expr (tree exp)
 		if (maybe_gt (bitsize, MAX_BITSIZE_MODE_ANY_INT))
 		  return NULL;
 		/* Bitfield.  */
-		mode1 = smallest_int_mode_for_size (bitsize);
+		mode1 = smallest_int_mode_for_size (bitsize).require ();
 	      }
 	    poly_int64 bytepos = bits_to_bytes_round_down (bitpos);
 	    if (maybe_ne (bytepos, 0))

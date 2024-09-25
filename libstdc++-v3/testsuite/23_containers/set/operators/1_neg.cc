@@ -28,11 +28,10 @@ void test01()
 {
   std::set<unsigned int> setByIndex;
   std::set<std::string> setByName;
-  
-  std::set<unsigned int>::iterator itr(setByIndex.begin());
-  
-  // NB: it's not setByIndex!!
-  test &= itr != setByName.end(); // { dg-error "no" } 
-  test &= itr == setByName.end(); // { dg-error "no" } 
-}
 
+  std::set<unsigned int>::iterator itr(setByIndex.begin());
+
+  // NB: it's not setByIndex!!
+  itr != setByName.end(); // { dg-error "no match" }
+  itr == setByName.end(); // { dg-error "no match" }
+}

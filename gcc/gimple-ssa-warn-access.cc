@@ -2943,7 +2943,7 @@ pass_waccess::maybe_warn_memmodel (gimple *stmt, tree ord_sucs,
 
       /* Print a note with the valid memory models.  */
       pretty_printer pp;
-      pp_show_color (&pp) = pp_show_color (global_dc->printer);
+      pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
       for (unsigned i = 0; valid[i] != UCHAR_MAX; ++i)
 	{
 	  const char *modname = memory_models[valid[i]].modname;

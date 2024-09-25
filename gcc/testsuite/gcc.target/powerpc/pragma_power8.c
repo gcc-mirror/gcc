@@ -1,6 +1,9 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
+/* Ensure there is no explicit -mno-vsx etc., otherwise
+   the below bif __builtin_vec_vcmpeq_p replies on power8
+   vsx would fail.  */
+/* { dg-require-effective-target powerpc_vsx } */
 /* { dg-options "-mdejagnu-cpu=power6 -maltivec -O2" } */
 
 #include <altivec.h>

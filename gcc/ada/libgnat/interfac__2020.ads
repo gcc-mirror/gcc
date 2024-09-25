@@ -227,6 +227,7 @@ is
    --  Note: it is harmless, and explicitly permitted, to include additional
    --  types in interfaces, so it is not wrong to have IEEE_Extended_Float
    --  defined even if the extended format is not available.
+   --  See RM-B.2(11).
 
    type IEEE_Extended_Float is new Long_Long_Float;
 

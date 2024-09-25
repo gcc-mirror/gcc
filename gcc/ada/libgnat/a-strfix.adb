@@ -266,36 +266,27 @@ package body Ada.Strings.Fixed with SPARK_Mode is
             return Result_Type (Source);
          end;
 
-      elsif From not in Source'Range
-        or else Through > Source'Last
-      then
-         pragma Annotate
-           (CodePeer, False_Positive,
-            "test always false", "self fullfilling prophecy");
-
-         --  In most cases this raises an exception, but the case of deleting
-         --  a null string at the end of the current one is a special-case, and
-         --  reflects the equivalence with Replace_String (RM A.4.3 (86/3)).
-
-         if From = Source'Last + 1 and then From = Through then
-            return Source;
-         else
-            raise Index_Error;
-         end if;
-
       else
          declare
-            Front : constant Integer := From - Source'First;
+            Front_Len     : constant Integer :=
+              Integer'Max (0, From - Source'First);
+            --  Length of prefix of Source copied to result
 
+            Back_Len      : constant Integer :=
+              Integer'Max (0, Source'Last - Through);
+            --  Length of suffix of Source copied to result
+
+            Result_Length : constant Integer := Front_Len + Back_Len;
+            --  Length of result
          begin
-            return Result : String (1 .. Source'Length - (Through - From + 1))
+            return Result : String (1 .. Result_Length)
               with Relaxed_Initialization
             do
-               Result (1 .. Front) :=
+               Result (1 .. Front_Len) :=
                  Source (Source'First .. From - 1);
 
                if Through < Source'Last then
-                  Result (Front + 1 .. Result'Last) :=
+                  Result (Front_Len + 1 .. Result'Last) :=
                     Source (Through + 1 .. Source'Last);
                end if;
             end return;

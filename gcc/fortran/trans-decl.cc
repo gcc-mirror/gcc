@@ -46,7 +46,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-stmt.h"
 #include "gomp-constants.h"
 #include "gimplify.h"
+#include "context.h"
 #include "omp-general.h"
+#include "omp-offload.h"
 #include "attr-fnspec.h"
 #include "tree-iterator.h"
 #include "dependency.h"
@@ -118,6 +120,8 @@ tree gfor_fndecl_fdate;
 tree gfor_fndecl_ttynam;
 tree gfor_fndecl_in_pack;
 tree gfor_fndecl_in_unpack;
+tree gfor_fndecl_in_pack_class;
+tree gfor_fndecl_in_unpack_class;
 tree gfor_fndecl_associated;
 tree gfor_fndecl_system_clock4;
 tree gfor_fndecl_system_clock8;
@@ -840,7 +844,7 @@ gfc_allocate_lang_decl (tree decl)
 static bool
 decl_order (gfc_symbol *sym1, gfc_symbol *sym2)
 {
-  if (sym1->declared_at.lb->location > sym2->declared_at.lb->location)
+  if (sym1->decl_order > sym2->decl_order)
     return true;
   else
     return false;
@@ -1014,7 +1018,7 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
   gfc_namespace* procns;
   symbol_attribute *array_attr;
   gfc_array_spec *as;
-  bool is_classarray = IS_CLASS_ARRAY (sym);
+  bool is_classarray = IS_CLASS_COARRAY_OR_ARRAY (sym);
 
   type = TREE_TYPE (decl);
   array_attr = is_classarray ? &CLASS_DATA (sym)->attr : &sym->attr;
@@ -1132,7 +1136,7 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
 	gfc_add_decl_to_function (GFC_TYPE_ARRAY_OFFSET (type));
     }
 
-  if (GFC_TYPE_ARRAY_SIZE (type) == NULL_TREE
+  if (GFC_TYPE_ARRAY_SIZE (type) == NULL_TREE && as->rank != 0
       && as->type != AS_ASSUMED_SIZE)
     {
       GFC_TYPE_ARRAY_SIZE (type) = create_index_var ("size", nest);
@@ -1236,7 +1240,7 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
   gfc_packed packed;
   int n;
   bool known_size;
-  bool is_classarray = IS_CLASS_ARRAY (sym);
+  bool is_classarray = IS_CLASS_COARRAY_OR_ARRAY (sym);
 
   /* Use the array as and attr.  */
   as = is_classarray ? CLASS_DATA (sym)->as : sym->as;
@@ -1470,19 +1474,18 @@ gfc_add_assign_aux_vars (gfc_symbol * sym)
 }
 
 
-static tree
-add_attributes_to_decl (symbol_attribute sym_attr, tree list)
+static void
+add_attributes_to_decl (tree *decl_p, const gfc_symbol *sym)
 {
   unsigned id;
-  tree attr;
+  tree list = NULL_TREE;
+  symbol_attribute sym_attr = sym->attr;
 
   for (id = 0; id < EXT_ATTR_NUM; id++)
     if (sym_attr.ext_attr & (1 << id) && ext_attr_list[id].middle_end_name)
       {
-	attr = build_tree_list (
-		 get_identifier (ext_attr_list[id].middle_end_name),
-				 NULL_TREE);
-	list = chainon (list, attr);
+	tree ident = get_identifier (ext_attr_list[id].middle_end_name);
+	list = tree_cons (ident, NULL_TREE, list);
       }
 
   tree clauses = NULL_TREE;
@@ -1545,6 +1548,7 @@ add_attributes_to_decl (symbol_attribute sym_attr, tree list)
       clauses = c;
     }
 
+  bool has_declare = true;
   if (sym_attr.omp_declare_target_link
       || sym_attr.oacc_declare_link)
     list = tree_cons (get_identifier ("omp declare target link"),
@@ -1556,12 +1560,45 @@ add_attributes_to_decl (symbol_attribute sym_attr, tree list)
 	   || sym_attr.oacc_declare_device_resident)
     list = tree_cons (get_identifier ("omp declare target"),
 		      clauses, list);
+  else
+    has_declare = false;
 
   if (sym_attr.omp_declare_target_indirect)
     list = tree_cons (get_identifier ("omp declare target indirect"),
 		      clauses, list);
 
-  return list;
+  decl_attributes (decl_p, list, 0);
+
+  if (has_declare
+      && VAR_P (*decl_p)
+      && sym->ns->proc_name->attr.flavor != FL_MODULE)
+    {
+      has_declare = false;
+      for (gfc_namespace* ns = sym->ns->contained; ns; ns = ns->sibling)
+	if (ns->proc_name->attr.omp_declare_target)
+	  {
+	    has_declare = true;
+	    break;
+	  }
+    }
+
+  if (has_declare && VAR_P (*decl_p) && has_declare)
+    {
+      /* Add to offload_vars; get_create does so for omp_declare_target,
+	 omp_declare_target_link requires manual work.  */
+      gcc_assert (symtab_node::get (*decl_p) == 0);
+      symtab_node *node = symtab_node::get_create (*decl_p);
+      if (node != NULL && sym_attr.omp_declare_target_link)
+	{
+	  node->offloadable = 1;
+	  if (ENABLE_OFFLOADING)
+	    {
+	      g->have_offload = true;
+	      if (is_a <varpool_node *> (node))
+		vec_safe_push (offload_vars, *decl_p);
+	    }
+	}
+    }
 }
 
 
@@ -1576,7 +1613,6 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 {
   tree decl;
   tree length = NULL_TREE;
-  tree attributes;
   int byref;
   bool intrinsic_array_parameter = false;
   bool fun_or_res;
@@ -1758,7 +1794,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	 sym->backend_decl's GFC_DECL_SAVED_DESCRIPTOR.  The caller is then
 	 responsible to extract it from there, when the descriptor is
 	 desired.  */
-      if (IS_CLASS_ARRAY (sym)
+      if (IS_CLASS_COARRAY_OR_ARRAY (sym)
 	  && (!DECL_LANG_SPECIFIC (sym->backend_decl)
 	      || !GFC_DECL_SAVED_DESCRIPTOR (sym->backend_decl)))
 	{
@@ -1773,10 +1809,11 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       if (sym->attr.assign && GFC_DECL_ASSIGN (sym->backend_decl) == 0)
 	gfc_add_assign_aux_vars (sym);
 
-      if (sym->ts.type == BT_CLASS && sym->backend_decl)
-	GFC_DECL_CLASS(sym->backend_decl) = 1;
+      if (sym->ts.type == BT_CLASS && sym->backend_decl
+	  && !IS_CLASS_COARRAY_OR_ARRAY (sym))
+	GFC_DECL_CLASS (sym->backend_decl) = 1;
 
-     return sym->backend_decl;
+      return sym->backend_decl;
     }
 
   if (sym->result == sym && sym->attr.assign
@@ -1860,12 +1897,6 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   /* Create the decl for the variable.  */
   decl = build_decl (gfc_get_location (&sym->declared_at),
 		     VAR_DECL, gfc_sym_identifier (sym), gfc_sym_type (sym));
-
-  /* Add attributes to variables.  Functions are handled elsewhere.  */
-  attributes = add_attributes_to_decl (sym->attr, NULL_TREE);
-  decl_attributes (&decl, attributes, 0);
-  if (sym->ts.deferred && VAR_P (length))
-    decl_attributes (&length, attributes, 0);
 
   /* Symbols from modules should have their assembler names mangled.
      This is done here rather than in gfc_finish_var_decl because it
@@ -2032,6 +2063,12 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	TREE_READONLY (decl) = 1;
     }
 
+  /* Add attributes to variables.  Functions are handled elsewhere.  */
+  add_attributes_to_decl (&decl, sym);
+
+  if (sym->ts.deferred && VAR_P (length))
+    decl_attributes (&length, DECL_ATTRIBUTES (decl), 0);
+
   return decl;
 }
 
@@ -2068,7 +2105,6 @@ static tree
 get_proc_pointer_decl (gfc_symbol *sym)
 {
   tree decl;
-  tree attributes;
 
   if (sym->module || sym->fn_result_spec)
     {
@@ -2148,8 +2184,7 @@ get_proc_pointer_decl (gfc_symbol *sym)
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
     set_decl_tls_model (decl, decl_default_tls_model (decl));
 
-  attributes = add_attributes_to_decl (sym->attr, NULL_TREE);
-  decl_attributes (&decl, attributes, 0);
+  add_attributes_to_decl (&decl, sym);
 
   return decl;
 }
@@ -2163,7 +2198,6 @@ gfc_get_extern_function_decl (gfc_symbol * sym, gfc_actual_arglist *actual_args,
 {
   tree type;
   tree fndecl;
-  tree attributes;
   gfc_expr e;
   gfc_intrinsic_sym *isym;
   gfc_expr argexpr;
@@ -2179,6 +2213,15 @@ gfc_get_extern_function_decl (gfc_symbol * sym, gfc_actual_arglist *actual_args,
      The procedure may be an alternate entry point, but we don't want/need
      to know that.  */
   gcc_assert (!(sym->attr.entry || sym->attr.entry_master));
+
+  if (!gfc_option.disable_omp_is_initial_device
+      && flag_openmp && sym->attr.function && sym->ts.type == BT_LOGICAL
+      && !strcmp (sym->name, "omp_is_initial_device"))
+    {
+      sym->backend_decl
+	= builtin_decl_explicit (BUILT_IN_OMP_IS_INITIAL_DEVICE);
+      return sym->backend_decl;
+    }
 
   if (sym->attr.proc_pointer)
     return get_proc_pointer_decl (sym);
@@ -2361,8 +2404,7 @@ module_sym:
   DECL_EXTERNAL (fndecl) = 1;
   TREE_PUBLIC (fndecl) = 1;
 
-  attributes = add_attributes_to_decl (sym->attr, NULL_TREE);
-  decl_attributes (&fndecl, attributes, 0);
+  add_attributes_to_decl (&fndecl, sym);
 
   gfc_set_decl_assembler_name (fndecl, mangled_name);
 
@@ -2421,7 +2463,7 @@ module_sym:
 static void
 build_function_decl (gfc_symbol * sym, bool global)
 {
-  tree fndecl, type, attributes;
+  tree fndecl, type;
   symbol_attribute attr;
   tree result_decl;
   gfc_formal_arglist *f;
@@ -2472,15 +2514,14 @@ build_function_decl (gfc_symbol * sym, bool global)
   if (sym->attr.referenced || sym->attr.entry_master)
     TREE_USED (fndecl) = 1;
 
-  attributes = add_attributes_to_decl (attr, NULL_TREE);
-  decl_attributes (&fndecl, attributes, 0);
+  add_attributes_to_decl (&fndecl, sym);
 
   /* Figure out the return type of the declared function, and build a
      RESULT_DECL for it.  If this is a subroutine with alternate
      returns, build a RESULT_DECL for it.  */
   result_decl = NULL_TREE;
   /* TODO: Shouldn't this just be TREE_TYPE (TREE_TYPE (fndecl)).  */
-  if (attr.function)
+  if (sym->attr.function)
     {
       if (gfc_return_by_reference (sym))
 	type = void_type_node;
@@ -2527,7 +2568,7 @@ build_function_decl (gfc_symbol * sym, bool global)
   /* Set attributes for PURE functions. A call to a PURE function in the
      Fortran 95 sense is both pure and without side effects in the C
      sense.  */
-  if (attr.pure || attr.implicit_pure)
+  if (sym->attr.pure || sym->attr.implicit_pure)
     {
       /* TODO: check if a pure SUBROUTINE has no INTENT(OUT) arguments
 	 including an alternate return. In that case it can also be
@@ -3916,9 +3957,19 @@ gfc_build_builtin_function_decls (void)
 	get_identifier (PREFIX("internal_unpack")), ". w R ",
 	void_type_node, 2, pvoid_type_node, pvoid_type_node);
 
+  gfor_fndecl_in_pack_class = gfc_build_library_function_decl_with_spec (
+    get_identifier (PREFIX ("internal_pack_class")), ". w R r r ",
+    void_type_node, 4, pvoid_type_node, pvoid_type_node, size_type_node,
+    integer_type_node);
+
+  gfor_fndecl_in_unpack_class = gfc_build_library_function_decl_with_spec (
+    get_identifier (PREFIX ("internal_unpack_class")), ". w R r r ",
+    void_type_node, 4, pvoid_type_node, pvoid_type_node, size_type_node,
+    integer_type_node);
+
   gfor_fndecl_associated = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("associated")), ". R R ",
-	integer_type_node, 2, ppvoid_type_node, ppvoid_type_node);
+    get_identifier (PREFIX ("associated")), ". R R ", integer_type_node, 2,
+    ppvoid_type_node, ppvoid_type_node);
   DECL_PURE_P (gfor_fndecl_associated) = 1;
   TREE_NOTHROW (gfor_fndecl_associated) = 1;
 
@@ -4877,9 +4928,10 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	  TREE_CONSTANT (DECL_INITIAL (sym->backend_decl)) = 1;
 	}
       else if ((sym->attr.dimension || sym->attr.codimension
-	       || (IS_CLASS_ARRAY (sym) && !CLASS_DATA (sym)->attr.allocatable)))
+		|| (IS_CLASS_COARRAY_OR_ARRAY (sym)
+		    && !CLASS_DATA (sym)->attr.allocatable)))
 	{
-	  bool is_classarray = IS_CLASS_ARRAY (sym);
+	  bool is_classarray = IS_CLASS_COARRAY_OR_ARRAY (sym);
 	  symbol_attribute *array_attr;
 	  gfc_array_spec *as;
 	  array_type type_of_array;
@@ -5488,7 +5540,8 @@ gfc_create_module_variable (gfc_symbol * sym)
   /* Create the variable.  */
   pushdecl (decl);
   gcc_assert (sym->ns->proc_name->attr.flavor == FL_MODULE
-	      || (sym->ns->parent->proc_name->attr.flavor == FL_MODULE
+	      || ((sym->ns->parent->proc_name->attr.flavor == FL_MODULE
+		   || sym->ns->parent->proc_name->attr.flavor == FL_PROCEDURE)
 		  && sym->fn_result_spec));
   DECL_CONTEXT (decl) = sym->ns->proc_name->backend_decl;
   rest_of_decl_compilation (decl, 1, 0);
@@ -5898,7 +5951,7 @@ generate_coarray_sym_init (gfc_symbol *sym)
    coarrays.  */
 
 static void
-generate_coarray_init (gfc_namespace * ns __attribute((unused)))
+generate_coarray_init (gfc_namespace *ns)
 {
   tree fndecl, tmp, decl, save_fn_decl;
 
@@ -7046,6 +7099,10 @@ gfc_conv_cfi_to_gfc (stmtblock_t *init, stmtblock_t *finally,
 		  type = (sym->ts.u.derived->intmod_sym_id == ISOCBINDING_FUNPTR
 			? CFI_type_cfunptr : CFI_type_cptr);
 		  break;
+
+	      case BT_UNSIGNED:
+		gfc_internal_error ("Unsigned not yet implemented");
+
 		case BT_ASSUMED:
 		case BT_CLASS:
 		case BT_PROCEDURE:

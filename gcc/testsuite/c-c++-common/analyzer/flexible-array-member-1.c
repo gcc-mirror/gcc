@@ -1,3 +1,5 @@
+/* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
+
 #include <stdlib.h>
 #include <string.h>
 #include "../../gcc.dg/analyzer/analyzer-decls.h"

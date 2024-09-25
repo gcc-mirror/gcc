@@ -46,4 +46,4 @@ extern "C" {
 }
 #endif // __cplusplus
 #endif // __riscv_xtheadvector
-#endif // __RISCV_TH_ECTOR_H
+#endif // __RISCV_TH_VECTOR_H

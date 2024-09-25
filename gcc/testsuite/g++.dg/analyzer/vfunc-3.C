@@ -1,3 +1,5 @@
+/* { dg-skip-if "requires hosted libstdc++ for cstdlib malloc" { ! hostedlib } } */
+
 #include <cstdlib>
 
 struct A

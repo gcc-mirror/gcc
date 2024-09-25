@@ -1,6 +1,6 @@
 /* { dg-do run } */
 
-#define NI __attribute__((noinline, noclone))
+#define NI __attribute__((noipa))
 
 typedef __INT8_TYPE__ s8;
 typedef __INT16_TYPE__ s16;

@@ -1,5 +1,5 @@
 /* { dg-do compile { target int128 } } */
-/* { dg-options "-O2 -mavx" } */
+/* { dg-options "-Os -mavx" } */
 __int128 m;
 
 void foo()

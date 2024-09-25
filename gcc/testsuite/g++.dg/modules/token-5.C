@@ -7,4 +7,3 @@ class Y;
 
 export module frob;
 // { dg-module-cmi !frob }
-// { dg-prune-output "not writing module" }

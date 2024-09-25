@@ -1,6 +1,7 @@
 /* PR target/54700 */
 /* { dg-do run { target avx2 } } */
 /* { dg-options "-O2 -std=c++14 -mavx2 -mno-xop -mno-avx512f" } */
+/* { dg-skip-if "requires hosted libstdc++ for cstdlib malloc" { ! hostedlib } } */
 
 #ifndef CHECK_H
 #define CHECK_H "avx2-check.h"

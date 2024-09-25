@@ -2,11 +2,10 @@
 /* { dg-options "-O -fno-signaling-nans -fno-trapping-math -fdump-tree-original" } */
 
 /* We can not get rid of comparison in tests below because of
-   pending NaN exceptions.
-
-   TODO: avoid under -fno-trapping-math.  */
+   pending NaN exceptions.  */
 
 #define QNAN __builtin_nanf ("0")
+#define SNAN __builtin_nansf ("0")
 
 void nonfinite(unsigned short x) {
   {
@@ -31,6 +30,43 @@ void nonfinite(unsigned short x) {
     volatile int nonfinite_4;
     nonfinite_4 = (float) x <= QNAN;
     /* { dg-final { scan-tree-dump "nonfinite_4 = 0" "original" } } */
+  }
+
+  {
+    volatile int nonfinite_5;
+    nonfinite_5 = (float) x > SNAN;
+    /* { dg-final { scan-tree-dump "nonfinite_5 = 0" "original" } } */
+  }
+
+  {
+    volatile int nonfinite_6;
+    nonfinite_6 = (float) x >= SNAN;
+    /* { dg-final { scan-tree-dump "nonfinite_6 = 0" "original" } } */
+  }
+
+  {
+    volatile int nonfinite_7;
+    nonfinite_7 = (float) x < SNAN;
+    /* { dg-final { scan-tree-dump "nonfinite_7 = 0" "original" } } */
+  }
+
+  {
+    volatile int nonfinite_8;
+    nonfinite_8 = (float) x <= SNAN;
+    /* { dg-final { scan-tree-dump "nonfinite_8 = 0" "original" } } */
+  }
+
+  {
+    volatile int nonfinite_9;
+    nonfinite_9 = (float) x == SNAN;
+    /* { dg-final { scan-tree-dump "nonfinite_9 = 0" "original" } } */
+  }
+
+  {
+    volatile int nonfinite_10;
+    nonfinite_10 = (float) x != SNAN;
+    /* { dg-final { scan-tree-dump "nonfinite_10 = 1" "original" } } *
+ */
   }
 
   {

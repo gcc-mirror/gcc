@@ -3266,6 +3266,18 @@
     VSEL_2DI_UNS  VSEL_2DI_BB
   vbll __builtin_vec_sel (vbll, vbll, vull);
     VSEL_2DI_UNS  VSEL_2DI_BU
+  vsq __builtin_vec_sel (vsq, vsq, vbq);
+    VSEL_1TI  VSEL_1TI_B
+  vsq __builtin_vec_sel (vsq, vsq, vuq);
+    VSEL_1TI  VSEL_1TI_U
+  vuq __builtin_vec_sel (vuq, vuq, vbq);
+    VSEL_1TI_UNS  VSEL_1TI_UB
+  vuq __builtin_vec_sel (vuq, vuq, vuq);
+    VSEL_1TI_UNS  VSEL_1TI_UU
+  vbq __builtin_vec_sel (vbq, vbq, vbq);
+    VSEL_1TI_UNS  VSEL_1TI_BB
+  vbq __builtin_vec_sel (vbq, vbq, vuq);
+    VSEL_1TI_UNS  VSEL_1TI_BU
   vf __builtin_vec_sel (vf, vf, vbi);
     VSEL_4SF  VSEL_4SF_B
   vf __builtin_vec_sel (vf, vf, vui);
@@ -3307,10 +3319,14 @@
 [VEC_SIGNEDE, vec_signede, __builtin_vec_vsignede]
   vsi __builtin_vec_vsignede (vd);
     VEC_VSIGNEDE_V2DF
+  vsll __builtin_vec_vsignede (vf);
+    VEC_VSIGNEDE_V4SF
 
 [VEC_SIGNEDO, vec_signedo, __builtin_vec_vsignedo]
   vsi __builtin_vec_vsignedo (vd);
     VEC_VSIGNEDO_V2DF
+  vsll __builtin_vec_vsignedo (vf);
+    VEC_VSIGNEDO_V4SF
 
 [VEC_SIGNEXTI, vec_signexti, __builtin_vec_signexti]
   vsi __builtin_vec_signexti (vsc);
@@ -3383,6 +3399,10 @@
     VSLDOI_4SF
   vd __builtin_vec_sld (vd, vd, const int);
     VSLDOI_2DF
+  vsq __builtin_vec_sld (vsq, vsq, const int);
+    VSLDOI_1TI  VSLDOI_VSQ
+  vuq __builtin_vec_sld (vuq, vuq, const int);
+    VSLDOI_1TI  VSLDOI_VUQ
 
 [VEC_SLDB, vec_sldb, __builtin_vec_sldb]
   vsc __builtin_vec_sldb (vsc, vsc, const int);
@@ -3401,6 +3421,10 @@
     VSLDB_V2DI  VSLDB_VSLL
   vull __builtin_vec_sldb (vull, vull, const int);
     VSLDB_V2DI  VSLDB_VULL
+  vsq __builtin_vec_sldb (vsq, vsq, const int);
+    VSLDB_V1TI  VSLDB_VSQ
+  vuq __builtin_vec_sldb (vuq, vuq, const int);
+    VSLDB_V1TI  VSLDB_VUQ
 
 [VEC_SLDW, vec_sldw, __builtin_vec_sldw]
   vsc __builtin_vec_sldw (vsc, vsc, const int);
@@ -3423,6 +3447,10 @@
     XXSLDWI_4SF  XXSLDWI_VF
   vd __builtin_vec_sldw (vd, vd, const int);
     XXSLDWI_2DF  XXSLDWI_VD
+  vsq __builtin_vec_sldw (vsq, vsq, const int);
+    XXSLDWI_1TI  XXSLDWI_VSQ
+  vuq __builtin_vec_sldw (vuq, vuq, const int);
+    XXSLDWI_1TI  XXSLDWI_VUQ
 
 [VEC_SLL, vec_sll, __builtin_vec_sll]
   vsc __builtin_vec_sll (vsc, vuc);
@@ -3443,6 +3471,10 @@
     VSL  VSL_VSLL
   vull __builtin_vec_sll (vull, vuc);
     VSL  VSL_VULL
+  vsq __builtin_vec_sll (vsq, vuc);
+    VSL  VSL_VSQ
+  vuq __builtin_vec_sll (vuq, vuc);
+    VSL  VSL_VUQ
 ; The following variants are deprecated.
   vsc __builtin_vec_sll (vsc, vus);
     VSL  VSL_VSC_VUS
@@ -3538,6 +3570,14 @@
     VSLO  VSLO_VFS
   vf __builtin_vec_slo (vf, vuc);
     VSLO  VSLO_VFU
+  vsq __builtin_vec_slo (vsq, vsc);
+    VSLO  VSLDO_VSQS
+  vsq __builtin_vec_slo (vsq, vuc);
+    VSLO  VSLDO_VSQU
+  vuq __builtin_vec_slo (vuq, vsc);
+    VSLO  VSLDO_VUQS
+  vuq __builtin_vec_slo (vuq, vuc);
+    VSLO  VSLDO_VUQU
 
 [VEC_SLV, vec_slv, __builtin_vec_vslv]
   vuc __builtin_vec_vslv (vuc, vuc);
@@ -3683,6 +3723,10 @@
     VSRDB_V2DI  VSRDB_VSLL
   vull __builtin_vec_srdb (vull, vull, const int);
     VSRDB_V2DI  VSRDB_VULL
+  vsq __builtin_vec_srdb (vsq, vsq, const int);
+    VSRDB_V1TI  VSRDB_VSQ
+  vuq __builtin_vec_srdb (vuq, vuq, const int);
+    VSRDB_V1TI  VSRDB_VUQ
 
 [VEC_SRL, vec_srl, __builtin_vec_srl]
   vsc __builtin_vec_srl (vsc, vuc);
@@ -3703,6 +3747,10 @@
     VSR  VSR_VSLL
   vull __builtin_vec_srl (vull, vuc);
     VSR  VSR_VULL
+  vsq __builtin_vec_srl (vsq, vuc);
+    VSR  VSR_VSQ
+  vuq __builtin_vec_srl (vuq, vuc);
+    VSR  VSR_VUQ
 ; The following variants are deprecated.
   vsc __builtin_vec_srl (vsc, vus);
     VSR  VSR_VSC_VUS
@@ -3792,6 +3840,14 @@
     VSRO  VSRO_VFS
   vf __builtin_vec_sro (vf, vuc);
     VSRO  VSRO_VFU
+  vsq __builtin_vec_sro (vsq, vsc);
+    VSRO  VSRDO_VSQS
+  vsq __builtin_vec_sro (vsq, vuc);
+    VSRO  VSRDO_VSQU
+  vuq __builtin_vec_sro (vuq, vsc);
+    VSRO  VSRDO_VUQS
+  vuq __builtin_vec_sro (vuq, vuc);
+    VSRO  VSRDO_VUQU
 
 [VEC_SRV, vec_srv, __builtin_vec_vsrv]
   vuc __builtin_vec_vsrv (vuc, vuc);
@@ -4347,12 +4403,20 @@
     XXEVAL  XXEVAL_VUQ
 
 [VEC_TEST_LSBB_ALL_ONES, vec_test_lsbb_all_ones, __builtin_vec_xvtlsbb_all_ones]
+  signed int __builtin_vec_xvtlsbb_all_ones (vsc);
+    XVTLSBB_ONES LSBB_ALL_ONES_VSC
   signed int __builtin_vec_xvtlsbb_all_ones (vuc);
-    XVTLSBB_ONES
+    XVTLSBB_ONES LSBB_ALL_ONES_VUC
+  signed int __builtin_vec_xvtlsbb_all_ones (vbc);
+    XVTLSBB_ONES LSBB_ALL_ONES_VBC
 
 [VEC_TEST_LSBB_ALL_ZEROS, vec_test_lsbb_all_zeros, __builtin_vec_xvtlsbb_all_zeros]
+  signed int __builtin_vec_xvtlsbb_all_zeros (vsc);
+    XVTLSBB_ZEROS LSBB_ALL_ZEROS_VSC
   signed int __builtin_vec_xvtlsbb_all_zeros (vuc);
-    XVTLSBB_ZEROS
+    XVTLSBB_ZEROS LSBB_ALL_ZEROS_VUC
+  signed int __builtin_vec_xvtlsbb_all_zeros (vbc);
+    XVTLSBB_ZEROS LSBB_ALL_ZEROS_VBC
 
 [VEC_TRUNC, vec_trunc, __builtin_vec_trunc]
   vf __builtin_vec_trunc (vf);
@@ -4433,10 +4497,14 @@
 [VEC_UNSIGNEDE, vec_unsignede, __builtin_vec_vunsignede]
   vui __builtin_vec_vunsignede (vd);
     VEC_VUNSIGNEDE_V2DF
+  vull __builtin_vec_vunsignede (vf);
+    VEC_VUNSIGNEDE_V4SF
 
 [VEC_UNSIGNEDO, vec_unsignedo, __builtin_vec_vunsignedo]
   vui __builtin_vec_vunsignedo (vd);
     VEC_VUNSIGNEDO_V2DF
+  vull __builtin_vec_vunsignedo (vf);
+    VEC_VUNSIGNEDO_V4SF
 
 [VEC_VEE, vec_extract_exp, __builtin_vec_extract_exp]
   vui __builtin_vec_extract_exp (vf);
@@ -4916,6 +4984,10 @@
     XXPERMDI_2DI  XXPERMDI_VSLL
   vull __builtin_vsx_xxpermdi (vull, vull, const int);
     XXPERMDI_2DI  XXPERMDI_VULL
+  vsq __builtin_vsx_xxpermdi (vsq, vsq, const int);
+    XXPERMDI_1TI  XXPERMDI_SQ
+  vuq __builtin_vsx_xxpermdi (vuq, vuq, const int);
+    XXPERMDI_1TI  XXPERMDI_UQ
   vf __builtin_vsx_xxpermdi (vf, vf, const int);
     XXPERMDI_4SF  XXPERMDI_VF
   vd __builtin_vsx_xxpermdi (vd, vd, const int);

@@ -1,6 +1,7 @@
 // PR c++/105593
 // { dg-do compile { target c++14 } }
 // { dg-options "-mavx512fp16 -W -Wall -O2" }
+/* { dg-skip-if "requires hosted libstdc++ for cstdlib malloc" { ! hostedlib } } */
 
 #include <x86intrin.h>
 

@@ -1506,7 +1506,10 @@ maybe_rewrite_mem_ref_base (tree *tp, bitmap suitable_for_renaming)
 	}
       else if (TREE_CODE (TREE_TYPE (sym)) == COMPLEX_TYPE
 	       && useless_type_conversion_p (TREE_TYPE (*tp),
-					     TREE_TYPE (TREE_TYPE (sym))))
+					     TREE_TYPE (TREE_TYPE (sym)))
+	       && (integer_zerop (TREE_OPERAND (*tp, 1))
+		   || tree_int_cst_equal (TREE_OPERAND (*tp, 1),
+					  TYPE_SIZE_UNIT (TREE_TYPE (*tp)))))
 	{
 	  *tp = build1 (integer_zerop (TREE_OPERAND (*tp, 1))
 			? REALPART_EXPR : IMAGPART_EXPR,

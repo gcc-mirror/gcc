@@ -42,7 +42,7 @@ void test1 (void)
 
 /**********************************************************************/
 
-__attribute__((noinline,noclone))
+__attribute__((noipa))
 void inc_r2 (void)
 {
   reg2++;

@@ -175,8 +175,8 @@ riscv_sr_match_epilogue (void)
    prologue instructions but not the epilogue then we might have the case
    where the epilogue has been optimized out due to a call to a no-return
    function.  In this case we might be able to remove the prologue too -
-   that's what this function does.  PROLOGUE is the matched prolgoue
-   instruction, by the time this function returns the progloue instruction
+   that's what this function does.  PROLOGUE is the matched prologue
+   instruction, by the time this function returns the prologue instruction
    may have been removed.  */
 
 static void

@@ -14,22 +14,22 @@ SS_LFUN (ss_add, +, fx_t, llk, >)
 SS_LFUN (ss_sub, -, fx_t, llk, <)
 
 #define VAL(N, X)                               \
-  __attribute__((noinline,noclone))             \
+  __attribute__((noipa))                        \
   satfx_t ss_add2_##N (satfx_t a)               \
   {                                             \
     return ss_add_llk (a, X##P##-##48llk);      \
   }                                             \
-  __attribute__((noinline,noclone))             \
+  __attribute__((noipa))                        \
   satfx_t ss_add_##N (satfx_t a)                \
   {                                             \
     return a + X##P##-##48llk;                  \
   }                                             \
-  __attribute__((noinline,noclone))             \
+  __attribute__((noipa))                        \
   satfx_t ss_sub2_##N (satfx_t a)               \
   {                                             \
     return ss_sub_llk (a, X##P##-##48llk);      \
   }                                             \
-  __attribute__((noinline,noclone))             \
+  __attribute__((noipa))                        \
   satfx_t ss_sub_##N (satfx_t a)                \
   {                                             \
     return a - X##P##-##48llk;                  \
@@ -37,25 +37,25 @@ SS_LFUN (ss_sub, -, fx_t, llk, <)
 #include "vals-llk.def"
 #undef VAL
 
-__attribute__((noinline,noclone))
+__attribute__((noipa))
 satfx_t ss_add2_99 (satfx_t a)
 {
   return ss_add_llk (a, __LLACCUM_MIN__);
 }
 
-__attribute__((noinline,noclone))
+__attribute__((noipa))
 satfx_t ss_add_99 (satfx_t a)
 {
   return a + __LLACCUM_MIN__;
 }
 
-__attribute__((noinline,noclone))
+__attribute__((noipa))
 satfx_t ss_sub2_99 (satfx_t a)
 {
   return ss_sub_llk (a, __LLACCUM_MIN__);
 }
 
-__attribute__((noinline,noclone))
+__attribute__((noipa))
 satfx_t ss_sub_99 (satfx_t a)
 {
   return a - __LLACCUM_MIN__;

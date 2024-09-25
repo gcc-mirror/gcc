@@ -33,21 +33,27 @@ __libat_feat1_init (void)
 {
   unsigned int eax, ebx, ecx, edx;
   FEAT1_REGISTER = 0;
-  __get_cpuid (1, &eax, &ebx, &ecx, &edx);
-#ifdef __x86_64__
-  if ((FEAT1_REGISTER & (bit_AVX | bit_CMPXCHG16B))
-      == (bit_AVX | bit_CMPXCHG16B))
+  if (__get_cpuid (1, &eax, &ebx, &ecx, &edx))
     {
-      /* Intel SDM guarantees that 16-byte VMOVDQA on 16-byte aligned address
-	 is atomic, and AMD is going to do something similar soon.
-	 We don't have a guarantee from vendors of other CPUs with AVX,
-	 like Zhaoxin and VIA.  */
-      unsigned int ecx2 = 0;
-      __get_cpuid (0, &eax, &ebx, &ecx2, &edx);
-      if (ecx2 != signature_INTEL_ecx && ecx2 != signature_AMD_ecx)
-	FEAT1_REGISTER &= ~bit_AVX;
-    }
+#ifdef __x86_64__
+      if ((FEAT1_REGISTER & (bit_AVX | bit_CMPXCHG16B))
+	  == (bit_AVX | bit_CMPXCHG16B))
+	{
+	  /* Intel SDM guarantees that 16-byte VMOVDQA on 16-byte aligned
+	     address is atomic, and AMD is going to do something similar soon.
+	     Zhaoxin also guarantees this.  We don't have a guarantee
+	     from vendors of other CPUs with AVX, like VIA.  */
+	  unsigned int family = (eax >> 8) & 0x0f;
+	  unsigned int ecx2;
+	  __cpuid (0, eax, ebx, ecx2, edx);
+	  if (ecx2 != signature_INTEL_ecx
+	      && ecx2 != signature_AMD_ecx
+	      && !(ecx2 == signature_CENTAUR_ecx && family > 6)
+	      && ecx2 != signature_SHANGHAI_ecx)
+	    FEAT1_REGISTER &= ~bit_AVX;
+	}
 #endif
+    }
   /* See the load in load_feat1.  */
   __atomic_store_n (&__libat_feat1, FEAT1_REGISTER, __ATOMIC_RELAXED);
   return FEAT1_REGISTER;

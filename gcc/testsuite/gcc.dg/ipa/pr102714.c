@@ -54,16 +54,16 @@ static inline __attribute__((__gnu_inline__)) __attribute__((__unused__)) __attr
 
 static inline __attribute__((__gnu_inline__)) __attribute__((__unused__)) __attribute__((no_instrument_function)) struct xa_node *entry_to_node(void *ptr)
 {
- return (void *)((unsigned long)ptr & ~2UL);
+ return (void *)((__UINTPTR_TYPE__)ptr & ~(__UINTPTR_TYPE__)2);
 }
 
 static inline __attribute__((__gnu_inline__)) __attribute__((__unused__)) __attribute__((no_instrument_function)) bool radix_tree_is_internal_node(void *ptr)
 {
- return ((unsigned long)ptr & 3UL) ==
+ return ((__UINTPTR_TYPE__)ptr & 3UL) ==
     2UL;
 }
 
-static inline __attribute__((__gnu_inline__)) __attribute__((__unused__)) __attribute__((no_instrument_function)) void *xa_mk_internal(unsigned long v)
+static inline __attribute__((__gnu_inline__)) __attribute__((__unused__)) __attribute__((no_instrument_function)) void *xa_mk_internal(__UINTPTR_TYPE__ v)
 {
  return (void *)((v << 2) | 2);
 }

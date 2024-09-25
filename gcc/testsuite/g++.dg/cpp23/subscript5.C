@@ -1,5 +1,6 @@
 // P2128R6
 // { dg-do run { target c++11 } }
+// { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
 
 #include <initializer_list>
 #include <cstdlib>

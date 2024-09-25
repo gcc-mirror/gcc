@@ -653,7 +653,7 @@ static void writeStringDesc (DynamicStrings_String__opaque s)
   writeString ((const char *) ":", 1);
   writeCstring (s->debug.proc);
   writeString ((const char *) " ", 1);
-  writeAddress (reinterpret_cast<void *> (s));
+  writeAddress (reinterpret_cast <void *> (s));
   writeString ((const char *) " ", 1);
   switch (s->head->state)
     {
@@ -1332,7 +1332,7 @@ static void ConcatContentsAddress (DynamicStrings_Contents *c, void * a, unsigne
       (*c).next->head = NULL;
       (*c).next->contents.len = 0;
       (*c).next->contents.next = static_cast<DynamicStrings_String__opaque> (NULL);
-      ConcatContentsAddress (&(*c).next->contents, reinterpret_cast<void *> (p), h-j);
+      ConcatContentsAddress (&(*c).next->contents, reinterpret_cast <void *> (p), h-j);
       AddDebugInfo ((*c).next);
       if (TraceOn)
         {
@@ -1472,7 +1472,7 @@ static void DumpStringSynopsis (DynamicStrings_String__opaque s)
   writeString ((const char *) ":", 1);
   writeCstring (s->debug.proc);
   writeString ((const char *) " string ", 8);
-  writeAddress (reinterpret_cast<void *> (s));
+  writeAddress (reinterpret_cast <void *> (s));
   writeString ((const char *) " ", 1);
   DumpState (s);
   if (IsOnAllocated (s))
@@ -2064,7 +2064,7 @@ extern "C" DynamicStrings_String DynamicStrings_Slice (DynamicStrings_String s, 
   DynamicStrings_String__opaque d;
   DynamicStrings_String__opaque t;
   int start;
-  int end;
+  int stop;
   int o;
 
   if (PoisonOn)
@@ -2107,7 +2107,7 @@ extern "C" DynamicStrings_String DynamicStrings_Slice (DynamicStrings_String s, 
                 {
                   start = low-o;
                 }
-              end = Max (Min (MaxBuf, static_cast<unsigned int> (high-o)), 0);
+              stop = Max (Min (MaxBuf, static_cast<unsigned int> (high-o)), 0);
               while (t->contents.len == MaxBuf)
                 {
                   if (t->contents.next == NULL)
@@ -2123,7 +2123,7 @@ extern "C" DynamicStrings_String DynamicStrings_Slice (DynamicStrings_String s, 
                     }
                   t = t->contents.next;
                 }
-              ConcatContentsAddress (&t->contents, &static_cast<DynamicStrings_String__opaque> (s)->contents.buf.array[start], static_cast<unsigned int> (end-start));
+              ConcatContentsAddress (&t->contents, &static_cast<DynamicStrings_String__opaque> (s)->contents.buf.array[start], static_cast<unsigned int> (stop-start));
               o += static_cast<DynamicStrings_String__opaque> (s)->contents.len;
               s = static_cast<DynamicStrings_String> (static_cast<DynamicStrings_String__opaque> (s)->contents.next);
             }

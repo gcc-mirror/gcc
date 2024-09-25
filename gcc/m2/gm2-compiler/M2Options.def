@@ -32,7 +32,7 @@ DEFINITION MODULE M2Options ;
 
 FROM SYSTEM IMPORT ADDRESS ;
 FROM DynamicStrings IMPORT String ;
-FROM m2linemap IMPORT location_t ;
+FROM gcctypes IMPORT location_t ;
 
 
 VAR

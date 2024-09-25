@@ -22,6 +22,8 @@
 #include "rust-compile-base.h"
 #include "rust-compile-intrinsic.h"
 #include "rust-compile-type.h"
+#include "rust-diagnostics.h"
+#include "rust-hir-full-decls.h"
 
 namespace Rust {
 namespace Compile {
@@ -150,6 +152,11 @@ public:
     ctx->insert_function_decl (fntype, fndecl);
 
     reference = address_expression (fndecl, ref_locus);
+  }
+
+  void visit (HIR::ExternalTypeItem &type) override
+  {
+    rust_sorry_at (type.get_locus (), "extern types are not supported yet");
   }
 
 private:

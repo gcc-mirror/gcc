@@ -184,11 +184,10 @@ CfgStrip::maybe_strip_struct_fields (std::vector<AST::StructField> &fields)
 
       // expand sub-types of type, but can't strip type itself
       auto &type = field.get_field_type ();
-      type->accept_vis (*this);
+      type.accept_vis (*this);
 
-      if (type->is_marked_for_strip ())
-	rust_error_at (type->get_locus (),
-		       "cannot strip type in this position");
+      if (type.is_marked_for_strip ())
+	rust_error_at (type.get_locus (), "cannot strip type in this position");
 
       // if nothing else happens, increment
       ++it;
@@ -212,10 +211,9 @@ CfgStrip::maybe_strip_tuple_fields (std::vector<AST::TupleField> &fields)
 
       // expand sub-types of type, but can't strip type itself
       auto &type = field.get_field_type ();
-      type->accept_vis (*this);
-      if (type->is_marked_for_strip ())
-	rust_error_at (type->get_locus (),
-		       "cannot strip type in this position");
+      type.accept_vis (*this);
+      if (type.is_marked_for_strip ())
+	rust_error_at (type.get_locus (), "cannot strip type in this position");
 
       // if nothing else happens, increment
       ++it;
@@ -242,16 +240,16 @@ CfgStrip::maybe_strip_function_params (
 
 	  // TODO: should an unwanted strip lead to break out of loop?
 	  auto &pattern = param->get_pattern ();
-	  pattern->accept_vis (*this);
-	  if (pattern->is_marked_for_strip ())
-	    rust_error_at (pattern->get_locus (),
+	  pattern.accept_vis (*this);
+	  if (pattern.is_marked_for_strip ())
+	    rust_error_at (pattern.get_locus (),
 			   "cannot strip pattern in this position");
 
 	  auto &type = param->get_type ();
-	  type->accept_vis (*this);
+	  type.accept_vis (*this);
 
-	  if (type->is_marked_for_strip ())
-	    rust_error_at (type->get_locus (),
+	  if (type.is_marked_for_strip ())
+	    rust_error_at (type.get_locus (),
 			   "cannot strip type in this position");
 	}
       // increment
@@ -272,19 +270,19 @@ CfgStrip::maybe_strip_generic_args (AST::GenericArgs &args)
 	{
 	  case AST::GenericArg::Kind::Type: {
 	    auto &type = arg.get_type ();
-	    type->accept_vis (*this);
+	    type.accept_vis (*this);
 
-	    if (type->is_marked_for_strip ())
-	      rust_error_at (type->get_locus (),
+	    if (type.is_marked_for_strip ())
+	      rust_error_at (type.get_locus (),
 			     "cannot strip type in this position");
 	    break;
 	  }
 	  case AST::GenericArg::Kind::Const: {
 	    auto &expr = arg.get_expression ();
-	    expr->accept_vis (*this);
+	    expr.accept_vis (*this);
 
-	    if (expr->is_marked_for_strip ())
-	      rust_error_at (expr->get_locus (),
+	    if (expr.is_marked_for_strip ())
+	      rust_error_at (expr.get_locus (),
 			     "cannot strip expression in this position");
 	    break;
 	  }
@@ -303,11 +301,10 @@ CfgStrip::maybe_strip_generic_args (AST::GenericArgs &args)
   for (auto &binding : args.get_binding_args ())
     {
       auto &type = binding.get_type ();
-      type->accept_vis (*this);
+      type.accept_vis (*this);
 
-      if (type->is_marked_for_strip ())
-	rust_error_at (type->get_locus (),
-		       "cannot strip type in this position");
+      if (type.is_marked_for_strip ())
+	rust_error_at (type.get_locus (), "cannot strip type in this position");
     }
 }
 
@@ -315,10 +312,10 @@ void
 CfgStrip::maybe_strip_qualified_path_type (AST::QualifiedPathType &path_type)
 {
   auto &type = path_type.get_type ();
-  type->accept_vis (*this);
+  type.accept_vis (*this);
 
-  if (type->is_marked_for_strip ())
-    rust_error_at (type->get_locus (), "cannot strip type in this position");
+  if (type.is_marked_for_strip ())
+    rust_error_at (type.get_locus (), "cannot strip type in this position");
 
   if (path_type.has_as_clause ())
     {
@@ -347,18 +344,18 @@ CfgStrip::CfgStrip::maybe_strip_closure_params (
 	}
 
       auto &pattern = param.get_pattern ();
-      pattern->accept_vis (*this);
-      if (pattern->is_marked_for_strip ())
-	rust_error_at (pattern->get_locus (),
+      pattern.accept_vis (*this);
+      if (pattern.is_marked_for_strip ())
+	rust_error_at (pattern.get_locus (),
 		       "cannot strip pattern in this position");
 
       if (param.has_type_given ())
 	{
 	  auto &type = param.get_type ();
-	  type->accept_vis (*this);
+	  type.accept_vis (*this);
 
-	  if (type->is_marked_for_strip ())
-	    rust_error_at (type->get_locus (),
+	  if (type.is_marked_for_strip ())
+	    rust_error_at (type.get_locus (),
 			   "cannot strip type in this position");
 	}
 
@@ -451,8 +448,8 @@ CfgStrip::visit (AST::TypePathSegmentFunction &segment)
     {
       auto &return_type = type_path_function.get_return_type ();
 
-      if (return_type->is_marked_for_strip ())
-	rust_error_at (return_type->get_locus (),
+      if (return_type.is_marked_for_strip ())
+	rust_error_at (return_type.get_locus (),
 		       "cannot strip type in this position");
     }
 }
@@ -516,8 +513,8 @@ CfgStrip::visit (AST::BorrowExpr &expr)
    * allowed to have external attributes in this position so can't be
    * stripped. */
   auto &borrowed_expr = expr.get_borrowed_expr ();
-  if (borrowed_expr->is_marked_for_strip ())
-    rust_error_at (borrowed_expr->get_locus (),
+  if (borrowed_expr.is_marked_for_strip ())
+    rust_error_at (borrowed_expr.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -536,9 +533,9 @@ CfgStrip::visit (AST::DereferenceExpr &expr)
    * allowed to have external attributes in this position so can't be
    * stripped. */
   auto &dereferenced_expr = expr.get_dereferenced_expr ();
-  dereferenced_expr->accept_vis (*this);
-  if (dereferenced_expr->is_marked_for_strip ())
-    rust_error_at (dereferenced_expr->get_locus (),
+  dereferenced_expr.accept_vis (*this);
+  if (dereferenced_expr.is_marked_for_strip ())
+    rust_error_at (dereferenced_expr.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -559,8 +556,8 @@ CfgStrip::visit (AST::ErrorPropagationExpr &expr)
    * allowed to have external attributes in this position so can't be
    * stripped. */
   auto &propagating_expr = expr.get_propagating_expr ();
-  if (propagating_expr->is_marked_for_strip ())
-    rust_error_at (propagating_expr->get_locus (),
+  if (propagating_expr.is_marked_for_strip ())
+    rust_error_at (propagating_expr.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -580,8 +577,8 @@ CfgStrip::visit (AST::NegationExpr &expr)
    * allowed to have external attributes in this position so can't be
    * stripped. */
   auto &negated_expr = expr.get_negated_expr ();
-  if (negated_expr->is_marked_for_strip ())
-    rust_error_at (negated_expr->get_locus (),
+  if (negated_expr.is_marked_for_strip ())
+    rust_error_at (negated_expr.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -593,13 +590,13 @@ CfgStrip::visit (AST::ArithmeticOrLogicalExpr &expr)
    * two direct descendant expressions, can strip ones below that */
 
   // ensure that they are not marked for strip
-  if (expr.get_left_expr ()->is_marked_for_strip ())
-    rust_error_at (expr.get_left_expr ()->get_locus (),
+  if (expr.get_left_expr ().is_marked_for_strip ())
+    rust_error_at (expr.get_left_expr ().get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes are never allowed "
 		   "before binary op exprs");
-  if (expr.get_right_expr ()->is_marked_for_strip ())
-    rust_error_at (expr.get_right_expr ()->get_locus (),
+  if (expr.get_right_expr ().is_marked_for_strip ())
+    rust_error_at (expr.get_right_expr ().get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -612,13 +609,13 @@ CfgStrip::visit (AST::ComparisonExpr &expr)
   AST::DefaultASTVisitor::visit (expr);
 
   // ensure that they are not marked for strip
-  if (expr.get_left_expr ()->is_marked_for_strip ())
-    rust_error_at (expr.get_left_expr ()->get_locus (),
+  if (expr.get_left_expr ().is_marked_for_strip ())
+    rust_error_at (expr.get_left_expr ().get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes are never allowed "
 		   "before binary op exprs");
-  if (expr.get_right_expr ()->is_marked_for_strip ())
-    rust_error_at (expr.get_right_expr ()->get_locus (),
+  if (expr.get_right_expr ().is_marked_for_strip ())
+    rust_error_at (expr.get_right_expr ().get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -631,13 +628,13 @@ CfgStrip::visit (AST::LazyBooleanExpr &expr)
   AST::DefaultASTVisitor::visit (expr);
 
   // ensure that they are not marked for strip
-  if (expr.get_left_expr ()->is_marked_for_strip ())
-    rust_error_at (expr.get_left_expr ()->get_locus (),
+  if (expr.get_left_expr ().is_marked_for_strip ())
+    rust_error_at (expr.get_left_expr ().get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes are never allowed "
 		   "before binary op exprs");
-  if (expr.get_right_expr ()->is_marked_for_strip ())
-    rust_error_at (expr.get_right_expr ()->get_locus (),
+  if (expr.get_right_expr ().is_marked_for_strip ())
+    rust_error_at (expr.get_right_expr ().get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -651,15 +648,15 @@ CfgStrip::visit (AST::TypeCastExpr &expr)
 
   auto &casted_expr = expr.get_casted_expr ();
   // ensure that they are not marked for strip
-  if (casted_expr->is_marked_for_strip ())
-    rust_error_at (casted_expr->get_locus (),
+  if (casted_expr.is_marked_for_strip ())
+    rust_error_at (casted_expr.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes are never allowed before cast exprs");
 
   // TODO: strip sub-types of type
   auto &type = expr.get_type_to_cast_to ();
-  if (type->is_marked_for_strip ())
-    rust_error_at (type->get_locus (), "cannot strip type in this position");
+  if (type.is_marked_for_strip ())
+    rust_error_at (type.get_locus (), "cannot strip type in this position");
 }
 void
 CfgStrip::visit (AST::AssignmentExpr &expr)
@@ -673,13 +670,13 @@ CfgStrip::visit (AST::AssignmentExpr &expr)
   AST::DefaultASTVisitor::visit (expr);
 
   // ensure that they are not marked for strip
-  if (expr.get_left_expr ()->is_marked_for_strip ())
-    rust_error_at (expr.get_left_expr ()->get_locus (),
+  if (expr.get_left_expr ().is_marked_for_strip ())
+    rust_error_at (expr.get_left_expr ().get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes are never allowed "
 		   "before binary op exprs");
-  if (expr.get_right_expr ()->is_marked_for_strip ())
-    rust_error_at (expr.get_right_expr ()->get_locus (),
+  if (expr.get_right_expr ().is_marked_for_strip ())
+    rust_error_at (expr.get_right_expr ().get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -691,13 +688,13 @@ CfgStrip::visit (AST::CompoundAssignmentExpr &expr)
   AST::DefaultASTVisitor::visit (expr);
 
   // ensure that they are not marked for strip
-  if (expr.get_left_expr ()->is_marked_for_strip ())
-    rust_error_at (expr.get_left_expr ()->get_locus (),
+  if (expr.get_left_expr ().is_marked_for_strip ())
+    rust_error_at (expr.get_left_expr ().get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes are never allowed "
 		   "before binary op exprs");
-  if (expr.get_right_expr ()->is_marked_for_strip ())
-    rust_error_at (expr.get_right_expr ()->get_locus (),
+  if (expr.get_right_expr ().is_marked_for_strip ())
+    rust_error_at (expr.get_right_expr ().get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -727,8 +724,8 @@ CfgStrip::visit (AST::GroupedExpr &expr)
   AST::DefaultASTVisitor::visit (expr);
 
   auto &inner_expr = expr.get_expr_in_parens ();
-  if (inner_expr->is_marked_for_strip ())
-    rust_error_at (inner_expr->get_locus (),
+  if (inner_expr.is_marked_for_strip ())
+    rust_error_at (inner_expr.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -750,15 +747,15 @@ CfgStrip::visit (AST::ArrayElemsCopied &elems)
 
   // only intend stripping for internal sub-expressions
   auto &copied_expr = elems.get_elem_to_copy ();
-  if (copied_expr->is_marked_for_strip ())
-    rust_error_at (copied_expr->get_locus (),
+  if (copied_expr.is_marked_for_strip ())
+    rust_error_at (copied_expr.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 
   auto &copy_count = elems.get_num_copies ();
-  copy_count->accept_vis (*this);
-  if (copy_count->is_marked_for_strip ())
-    rust_error_at (copy_count->get_locus (),
+  copy_count.accept_vis (*this);
+  if (copy_count.is_marked_for_strip ())
+    rust_error_at (copy_count.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -807,14 +804,14 @@ CfgStrip::visit (AST::ArrayIndexExpr &expr)
   AST::DefaultASTVisitor::visit (expr);
 
   const auto &array_expr = expr.get_array_expr ();
-  if (array_expr->is_marked_for_strip ())
-    rust_error_at (array_expr->get_locus (),
+  if (array_expr.is_marked_for_strip ())
+    rust_error_at (array_expr.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 
   const auto &index_expr = expr.get_index_expr ();
-  if (index_expr->is_marked_for_strip ())
-    rust_error_at (index_expr->get_locus (),
+  if (index_expr.is_marked_for_strip ())
+    rust_error_at (index_expr.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -861,8 +858,8 @@ CfgStrip::visit (AST::TupleIndexExpr &expr)
    * associated with this level), but any sub-expressions would be
    * stripped. Thus, no need to erase when strip check called. */
   auto &tuple_expr = expr.get_tuple_expr ();
-  if (tuple_expr->is_marked_for_strip ())
-    rust_error_at (tuple_expr->get_locus (),
+  if (tuple_expr.is_marked_for_strip ())
+    rust_error_at (tuple_expr.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -903,8 +900,8 @@ CfgStrip::visit (AST::StructExprFieldIdentifierValue &field)
   AST::DefaultASTVisitor::visit (field);
 
   auto &value = field.get_value ();
-  if (value->is_marked_for_strip ())
-    rust_error_at (value->get_locus (),
+  if (value.is_marked_for_strip ())
+    rust_error_at (value.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -916,8 +913,8 @@ CfgStrip::visit (AST::StructExprFieldIndexValue &field)
   AST::DefaultASTVisitor::visit (field);
 
   auto &value = field.get_value ();
-  if (value->is_marked_for_strip ())
-    rust_error_at (value->get_locus (),
+  if (value.is_marked_for_strip ())
+    rust_error_at (value.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -959,9 +956,9 @@ CfgStrip::visit (AST::StructExprStructFields &expr)
   if (expr.has_struct_base ())
     {
       auto &base_struct_expr = expr.get_struct_base ().get_base_struct ();
-      base_struct_expr->accept_vis (*this);
-      if (base_struct_expr->is_marked_for_strip ())
-	rust_error_at (base_struct_expr->get_locus (),
+      base_struct_expr.accept_vis (*this);
+      if (base_struct_expr.is_marked_for_strip ())
+	rust_error_at (base_struct_expr.get_locus (),
 		       "cannot strip expression in this position - outer "
 		       "attributes not allowed");
     }
@@ -998,9 +995,9 @@ CfgStrip::visit (AST::StructExprStructBase &expr)
    * the expression. as such, can only strip sub-expressions. */
   rust_assert (!expr.get_struct_base ().is_invalid ());
   auto &base_struct_expr = expr.get_struct_base ().get_base_struct ();
-  base_struct_expr->accept_vis (*this);
-  if (base_struct_expr->is_marked_for_strip ())
-    rust_error_at (base_struct_expr->get_locus (),
+  base_struct_expr.accept_vis (*this);
+  if (base_struct_expr.is_marked_for_strip ())
+    rust_error_at (base_struct_expr.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -1021,8 +1018,8 @@ CfgStrip::visit (AST::CallExpr &expr)
   AST::DefaultASTVisitor::visit (expr);
 
   auto &function = expr.get_function_expr ();
-  if (function->is_marked_for_strip ())
-    rust_error_at (function->get_locus (),
+  if (function.is_marked_for_strip ())
+    rust_error_at (function.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 
@@ -1049,8 +1046,8 @@ CfgStrip::visit (AST::MethodCallExpr &expr)
   AST::DefaultASTVisitor::visit (expr);
 
   auto &receiver = expr.get_receiver_expr ();
-  if (receiver->is_marked_for_strip ())
-    rust_error_at (receiver->get_locus (),
+  if (receiver.is_marked_for_strip ())
+    rust_error_at (receiver.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 
@@ -1079,8 +1076,8 @@ CfgStrip::visit (AST::FieldAccessExpr &expr)
   AST::DefaultASTVisitor::visit (expr);
 
   auto &receiver = expr.get_receiver_expr ();
-  if (receiver->is_marked_for_strip ())
-    rust_error_at (receiver->get_locus (),
+  if (receiver.is_marked_for_strip ())
+    rust_error_at (receiver.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -1103,8 +1100,8 @@ CfgStrip::visit (AST::ClosureExprInner &expr)
 
   // can't strip expression itself, but can strip sub-expressions
   auto &definition_expr = expr.get_definition_expr ();
-  if (definition_expr->is_marked_for_strip ())
-    rust_error_at (definition_expr->get_locus (),
+  if (definition_expr.is_marked_for_strip ())
+    rust_error_at (definition_expr.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -1138,7 +1135,7 @@ CfgStrip::visit (AST::BlockExpr &expr)
     {
       auto &tail_expr = expr.get_tail_expr ();
 
-      if (tail_expr->is_marked_for_strip ())
+      if (tail_expr.is_marked_for_strip ())
 	expr.strip_tail_expr ();
     }
 }
@@ -1163,14 +1160,14 @@ CfgStrip::visit (AST::ClosureExprInnerTyped &expr)
   // can't strip return type, but can strip sub-types
   auto &type = expr.get_return_type ();
 
-  if (type->is_marked_for_strip ())
-    rust_error_at (type->get_locus (), "cannot strip type in this position");
+  if (type.is_marked_for_strip ())
+    rust_error_at (type.get_locus (), "cannot strip type in this position");
 
   // can't strip expression itself, but can strip sub-expressions
   auto &definition_block = expr.get_definition_block ();
-  definition_block->accept_vis (*this);
-  if (definition_block->is_marked_for_strip ())
-    rust_error_at (definition_block->get_locus (),
+  definition_block.accept_vis (*this);
+  if (definition_block.is_marked_for_strip ())
+    rust_error_at (definition_block.get_locus (),
 		   "cannot strip block expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -1204,8 +1201,8 @@ CfgStrip::visit (AST::BreakExpr &expr)
     {
       auto &break_expr = expr.get_break_expr ();
 
-      if (break_expr->is_marked_for_strip ())
-	rust_error_at (break_expr->get_locus (),
+      if (break_expr.is_marked_for_strip ())
+	rust_error_at (break_expr.get_locus (),
 		       "cannot strip expression in this position - outer "
 		       "attributes not allowed");
     }
@@ -1218,13 +1215,13 @@ CfgStrip::visit (AST::RangeFromToExpr &expr)
   AST::DefaultASTVisitor::visit (expr);
 
   // ensure that they are not marked for strip
-  if (expr.get_from_expr ()->is_marked_for_strip ())
-    rust_error_at (expr.get_from_expr ()->get_locus (),
+  if (expr.get_from_expr ().is_marked_for_strip ())
+    rust_error_at (expr.get_from_expr ().get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes are never allowed "
 		   "before range exprs");
-  if (expr.get_to_expr ()->is_marked_for_strip ())
-    rust_error_at (expr.get_to_expr ()->get_locus (),
+  if (expr.get_to_expr ().is_marked_for_strip ())
+    rust_error_at (expr.get_to_expr ().get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -1238,8 +1235,8 @@ CfgStrip::visit (AST::RangeFromExpr &expr)
   /* should have no possibility for outer attrs as would be parsed
    * with outer expr */
   auto &from_expr = expr.get_from_expr ();
-  if (from_expr->is_marked_for_strip ())
-    rust_error_at (from_expr->get_locus (),
+  if (from_expr.is_marked_for_strip ())
+    rust_error_at (from_expr.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes are never allowed before range exprs");
 }
@@ -1253,8 +1250,8 @@ CfgStrip::visit (AST::RangeToExpr &expr)
   /* should syntactically not have outer attributes, though this may
    * not have worked in practice */
   auto &to_expr = expr.get_to_expr ();
-  if (to_expr->is_marked_for_strip ())
-    rust_error_at (to_expr->get_locus (),
+  if (to_expr.is_marked_for_strip ())
+    rust_error_at (to_expr.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -1268,13 +1265,13 @@ CfgStrip::visit (AST::RangeFromToInclExpr &expr)
   AST::DefaultASTVisitor::visit (expr);
 
   // ensure that they are not marked for strip
-  if (expr.get_from_expr ()->is_marked_for_strip ())
-    rust_error_at (expr.get_from_expr ()->get_locus (),
+  if (expr.get_from_expr ().is_marked_for_strip ())
+    rust_error_at (expr.get_from_expr ().get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes are never allowed "
 		   "before range exprs");
-  if (expr.get_to_expr ()->is_marked_for_strip ())
-    rust_error_at (expr.get_to_expr ()->get_locus (),
+  if (expr.get_to_expr ().is_marked_for_strip ())
+    rust_error_at (expr.get_to_expr ().get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -1288,8 +1285,8 @@ CfgStrip::visit (AST::RangeToInclExpr &expr)
   /* should syntactically not have outer attributes, though this may
    * not have worked in practice */
   auto &to_expr = expr.get_to_expr ();
-  if (to_expr->is_marked_for_strip ())
-    rust_error_at (to_expr->get_locus (),
+  if (to_expr.is_marked_for_strip ())
+    rust_error_at (to_expr.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -1312,8 +1309,8 @@ CfgStrip::visit (AST::ReturnExpr &expr)
   if (expr.has_returned_expr ())
     {
       auto &returned_expr = expr.get_returned_expr ();
-      if (returned_expr->is_marked_for_strip ())
-	rust_error_at (returned_expr->get_locus (),
+      if (returned_expr.is_marked_for_strip ())
+	rust_error_at (returned_expr.get_locus (),
 		       "cannot strip expression in this position - outer "
 		       "attributes not allowed");
     }
@@ -1338,8 +1335,8 @@ CfgStrip::visit (AST::UnsafeBlockExpr &expr)
 
   // can't strip block itself, but can strip sub-expressions
   auto &block_expr = expr.get_block_expr ();
-  if (block_expr->is_marked_for_strip ())
-    rust_error_at (block_expr->get_locus (),
+  if (block_expr.is_marked_for_strip ())
+    rust_error_at (block_expr.get_locus (),
 		   "cannot strip block expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -1358,8 +1355,8 @@ CfgStrip::visit (AST::LoopExpr &expr)
 
   // can't strip block itself, but can strip sub-expressions
   auto &loop_block = expr.get_loop_block ();
-  if (loop_block->is_marked_for_strip ())
-    rust_error_at (loop_block->get_locus (),
+  if (loop_block.is_marked_for_strip ())
+    rust_error_at (loop_block.get_locus (),
 		   "cannot strip block expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -1377,15 +1374,15 @@ CfgStrip::visit (AST::WhileLoopExpr &expr)
   AST::DefaultASTVisitor::visit (expr);
   // can't strip predicate expr itself, but can strip sub-expressions
   auto &predicate_expr = expr.get_predicate_expr ();
-  if (predicate_expr->is_marked_for_strip ())
-    rust_error_at (predicate_expr->get_locus (),
+  if (predicate_expr.is_marked_for_strip ())
+    rust_error_at (predicate_expr.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 
   // can't strip block itself, but can strip sub-expressions
   auto &loop_block = expr.get_loop_block ();
-  if (loop_block->is_marked_for_strip ())
-    rust_error_at (loop_block->get_locus (),
+  if (loop_block.is_marked_for_strip ())
+    rust_error_at (loop_block.get_locus (),
 		   "cannot strip block expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -1409,15 +1406,15 @@ CfgStrip::visit (AST::WhileLetLoopExpr &expr)
 
   // can't strip scrutinee expr itself, but can strip sub-expressions
   auto &scrutinee_expr = expr.get_scrutinee_expr ();
-  if (scrutinee_expr->is_marked_for_strip ())
-    rust_error_at (scrutinee_expr->get_locus (),
+  if (scrutinee_expr.is_marked_for_strip ())
+    rust_error_at (scrutinee_expr.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 
   // can't strip block itself, but can strip sub-expressions
   auto &loop_block = expr.get_loop_block ();
-  if (loop_block->is_marked_for_strip ())
-    rust_error_at (loop_block->get_locus (),
+  if (loop_block.is_marked_for_strip ())
+    rust_error_at (loop_block.get_locus (),
 		   "cannot strip block expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -1435,21 +1432,21 @@ CfgStrip::visit (AST::ForLoopExpr &expr)
   AST::DefaultASTVisitor::visit (expr);
   // strip sub-patterns of pattern
   auto &pattern = expr.get_pattern ();
-  if (pattern->is_marked_for_strip ())
-    rust_error_at (pattern->get_locus (),
+  if (pattern.is_marked_for_strip ())
+    rust_error_at (pattern.get_locus (),
 		   "cannot strip pattern in this position");
 
   // can't strip scrutinee expr itself, but can strip sub-expressions
   auto &iterator_expr = expr.get_iterator_expr ();
-  if (iterator_expr->is_marked_for_strip ())
-    rust_error_at (iterator_expr->get_locus (),
+  if (iterator_expr.is_marked_for_strip ())
+    rust_error_at (iterator_expr.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 
   // can't strip block itself, but can strip sub-expressions
   auto &loop_block = expr.get_loop_block ();
-  if (loop_block->is_marked_for_strip ())
-    rust_error_at (loop_block->get_locus (),
+  if (loop_block.is_marked_for_strip ())
+    rust_error_at (loop_block.get_locus (),
 		   "cannot strip block expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -1471,15 +1468,15 @@ CfgStrip::visit (AST::IfExpr &expr)
 
   // can't strip condition expr itself, but can strip sub-expressions
   auto &condition_expr = expr.get_condition_expr ();
-  if (condition_expr->is_marked_for_strip ())
-    rust_error_at (condition_expr->get_locus (),
+  if (condition_expr.is_marked_for_strip ())
+    rust_error_at (condition_expr.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 
   // can't strip if block itself, but can strip sub-expressions
   auto &if_block = expr.get_if_block ();
-  if (if_block->is_marked_for_strip ())
-    rust_error_at (if_block->get_locus (),
+  if (if_block.is_marked_for_strip ())
+    rust_error_at (if_block.get_locus (),
 		   "cannot strip block expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -1499,22 +1496,22 @@ CfgStrip::visit (AST::IfExprConseqElse &expr)
 
   // can't strip condition expr itself, but can strip sub-expressions
   auto &condition_expr = expr.get_condition_expr ();
-  if (condition_expr->is_marked_for_strip ())
-    rust_error_at (condition_expr->get_locus (),
+  if (condition_expr.is_marked_for_strip ())
+    rust_error_at (condition_expr.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 
   // can't strip if block itself, but can strip sub-expressions
   auto &if_block = expr.get_if_block ();
-  if (if_block->is_marked_for_strip ())
-    rust_error_at (if_block->get_locus (),
+  if (if_block.is_marked_for_strip ())
+    rust_error_at (if_block.get_locus (),
 		   "cannot strip block expression in this position - outer "
 		   "attributes not allowed");
 
   // can't strip else block itself, but can strip sub-expressions
   auto &else_block = expr.get_else_block ();
-  if (else_block->is_marked_for_strip ())
-    rust_error_at (else_block->get_locus (),
+  if (else_block.is_marked_for_strip ())
+    rust_error_at (else_block.get_locus (),
 		   "cannot strip block expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -1539,15 +1536,15 @@ CfgStrip::visit (AST::IfLetExpr &expr)
 
   // can't strip value expr itself, but can strip sub-expressions
   auto &value_expr = expr.get_value_expr ();
-  if (value_expr->is_marked_for_strip ())
-    rust_error_at (value_expr->get_locus (),
+  if (value_expr.is_marked_for_strip ())
+    rust_error_at (value_expr.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 
   // can't strip if block itself, but can strip sub-expressions
   auto &if_block = expr.get_if_block ();
-  if (if_block->is_marked_for_strip ())
-    rust_error_at (if_block->get_locus (),
+  if (if_block.is_marked_for_strip ())
+    rust_error_at (if_block.get_locus (),
 		   "cannot strip block expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -1571,22 +1568,22 @@ CfgStrip::visit (AST::IfLetExprConseqElse &expr)
 
   // can't strip value expr itself, but can strip sub-expressions
   auto &value_expr = expr.get_value_expr ();
-  if (value_expr->is_marked_for_strip ())
-    rust_error_at (value_expr->get_locus (),
+  if (value_expr.is_marked_for_strip ())
+    rust_error_at (value_expr.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 
   // can't strip if block itself, but can strip sub-expressions
   auto &if_block = expr.get_if_block ();
-  if (if_block->is_marked_for_strip ())
-    rust_error_at (if_block->get_locus (),
+  if (if_block.is_marked_for_strip ())
+    rust_error_at (if_block.get_locus (),
 		   "cannot strip block expression in this position - outer "
 		   "attributes not allowed");
 
   // can't strip else block itself, but can strip sub-expressions
   auto &else_block = expr.get_else_block ();
-  if (else_block->is_marked_for_strip ())
-    rust_error_at (else_block->get_locus (),
+  if (else_block.is_marked_for_strip ())
+    rust_error_at (else_block.get_locus (),
 		   "cannot strip block expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -1613,8 +1610,8 @@ CfgStrip::visit (AST::MatchExpr &expr)
 
   // can't strip scrutinee expr itself, but can strip sub-expressions
   auto &scrutinee_expr = expr.get_scrutinee_expr ();
-  if (scrutinee_expr->is_marked_for_strip ())
-    rust_error_at (scrutinee_expr->get_locus (),
+  if (scrutinee_expr.is_marked_for_strip ())
+    rust_error_at (scrutinee_expr.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 
@@ -1646,16 +1643,16 @@ CfgStrip::visit (AST::MatchExpr &expr)
       if (match_arm.has_match_arm_guard ())
 	{
 	  auto &guard_expr = match_arm.get_guard_expr ();
-	  if (guard_expr->is_marked_for_strip ())
-	    rust_error_at (guard_expr->get_locus (),
+	  if (guard_expr.is_marked_for_strip ())
+	    rust_error_at (guard_expr.get_locus (),
 			   "cannot strip expression in this position - outer "
 			   "attributes not allowed");
 	}
 
       // strip sub-expressions from match cases
       auto &case_expr = match_case.get_expr ();
-      if (case_expr->is_marked_for_strip ())
-	rust_error_at (case_expr->get_locus (),
+      if (case_expr.is_marked_for_strip ())
+	rust_error_at (case_expr.get_locus (),
 		       "cannot strip expression in this position - outer "
 		       "attributes not allowed");
 
@@ -1713,8 +1710,8 @@ CfgStrip::visit (AST::TypeParam &param)
 
   AST::DefaultASTVisitor::visit (param);
 
-  if (param.has_type () && param.get_type ()->is_marked_for_strip ())
-    rust_error_at (param.get_type ()->get_locus (),
+  if (param.has_type () && param.get_type ().is_marked_for_strip ())
+    rust_error_at (param.get_type ().get_locus (),
 		   "cannot strip type in this position");
 }
 
@@ -1725,8 +1722,8 @@ CfgStrip::visit (AST::TypeBoundWhereClauseItem &item)
   AST::DefaultASTVisitor::visit (item);
 
   auto &type = item.get_type ();
-  if (type->is_marked_for_strip ())
-    rust_error_at (type->get_locus (), "cannot strip type in this position");
+  if (type.is_marked_for_strip ())
+    rust_error_at (type.get_locus (), "cannot strip type in this position");
 }
 
 void
@@ -1807,8 +1804,8 @@ CfgStrip::visit (AST::Function &function)
   if (function.has_return_type ())
     {
       auto &return_type = function.get_return_type ();
-      if (return_type->is_marked_for_strip ())
-	rust_error_at (return_type->get_locus (),
+      if (return_type.is_marked_for_strip ())
+	rust_error_at (return_type.get_locus (),
 		       "cannot strip type in this position");
     }
 
@@ -1839,8 +1836,8 @@ CfgStrip::visit (AST::TypeAlias &type_alias)
   AST::DefaultASTVisitor::visit (type_alias);
 
   auto &type = type_alias.get_type_aliased ();
-  if (type->is_marked_for_strip ())
-    rust_error_at (type->get_locus (), "cannot strip type in this position");
+  if (type.is_marked_for_strip ())
+    rust_error_at (type.get_locus (), "cannot strip type in this position");
 }
 
 void
@@ -1933,8 +1930,8 @@ CfgStrip::visit (AST::EnumItemDiscriminant &item)
    * allowed to have external attributes in this position so can't be
    * stripped. */
   auto &expr = item.get_expr ();
-  if (expr->is_marked_for_strip ())
-    rust_error_at (expr->get_locus (),
+  if (expr.is_marked_for_strip ())
+    rust_error_at (expr.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -1987,8 +1984,8 @@ CfgStrip::visit (AST::ConstantItem &const_item)
 
   // strip any sub-types
   auto &type = const_item.get_type ();
-  if (type->is_marked_for_strip ())
-    rust_error_at (type->get_locus (), "cannot strip type in this position");
+  if (type.is_marked_for_strip ())
+    rust_error_at (type.get_locus (), "cannot strip type in this position");
 
   /* strip any internal sub-expressions - expression itself isn't
    * allowed to have external attributes in this position so can't be
@@ -1996,8 +1993,8 @@ CfgStrip::visit (AST::ConstantItem &const_item)
   if (const_item.has_expr ())
     {
       auto &expr = const_item.get_expr ();
-      if (expr->is_marked_for_strip ())
-	rust_error_at (expr->get_locus (),
+      if (expr.is_marked_for_strip ())
+	rust_error_at (expr.get_locus (),
 		       "cannot strip expression in this position - outer "
 		       "attributes not allowed");
     }
@@ -2018,15 +2015,15 @@ CfgStrip::visit (AST::StaticItem &static_item)
   // strip any sub-types
   auto &type = static_item.get_type ();
 
-  if (type->is_marked_for_strip ())
-    rust_error_at (type->get_locus (), "cannot strip type in this position");
+  if (type.is_marked_for_strip ())
+    rust_error_at (type.get_locus (), "cannot strip type in this position");
 
   /* strip any internal sub-expressions - expression itself isn't
    * allowed to have external attributes in this position so can't be
    * stripped. */
   auto &expr = static_item.get_expr ();
-  if (expr->is_marked_for_strip ())
-    rust_error_at (expr->get_locus (),
+  if (expr.is_marked_for_strip ())
+    rust_error_at (expr.get_locus (),
 		   "cannot strip expression in this position - outer "
 		   "attributes not allowed");
 }
@@ -2047,8 +2044,8 @@ CfgStrip::visit (AST::TraitItemConst &item)
   // strip any sub-types
   auto &type = item.get_type ();
 
-  if (type->is_marked_for_strip ())
-    rust_error_at (type->get_locus (), "cannot strip type in this position");
+  if (type.is_marked_for_strip ())
+    rust_error_at (type.get_locus (), "cannot strip type in this position");
 
   /* strip any internal sub-expressions - expression itself isn't
    * allowed to have external attributes in this position so can't be
@@ -2056,8 +2053,8 @@ CfgStrip::visit (AST::TraitItemConst &item)
   if (item.has_expression ())
     {
       auto &expr = item.get_expr ();
-      if (expr->is_marked_for_strip ())
-	rust_error_at (expr->get_locus (),
+      if (expr.is_marked_for_strip ())
+	rust_error_at (expr.get_locus (),
 		       "cannot strip expression in this position - outer "
 		       "attributes not allowed");
     }
@@ -2124,8 +2121,8 @@ CfgStrip::visit (AST::InherentImpl &impl)
 
   auto &type = impl.get_type ();
 
-  if (type->is_marked_for_strip ())
-    rust_error_at (type->get_locus (), "cannot strip type in this position");
+  if (type.is_marked_for_strip ())
+    rust_error_at (type.get_locus (), "cannot strip type in this position");
 
   maybe_strip_pointer_allow_strip (impl.get_impl_items ());
 }
@@ -2152,8 +2149,8 @@ CfgStrip::visit (AST::TraitImpl &impl)
   AST::DefaultASTVisitor::visit (impl);
 
   auto &type = impl.get_type ();
-  if (type->is_marked_for_strip ())
-    rust_error_at (type->get_locus (), "cannot strip type in this position");
+  if (type.is_marked_for_strip ())
+    rust_error_at (type.get_locus (), "cannot strip type in this position");
 
   auto &trait_path = impl.get_trait_path ();
   visit (trait_path);
@@ -2191,64 +2188,8 @@ CfgStrip::visit (AST::ExternalStaticItem &item)
   AST::DefaultASTVisitor::visit (item);
 
   auto &type = item.get_type ();
-  if (type->is_marked_for_strip ())
-    rust_error_at (type->get_locus (), "cannot strip type in this position");
-}
-
-void
-CfgStrip::visit (AST::ExternalFunctionItem &item)
-{
-  // strip test based on outer attrs
-  expand_cfg_attrs (item.get_outer_attrs ());
-  if (fails_cfg_with_expand (item.get_outer_attrs ()))
-    {
-      item.mark_for_strip ();
-      return;
-    }
-
-  AST::DefaultASTVisitor::visit (item);
-
-  /* strip function parameters if required - this is specifically
-   * allowed by spec */
-  auto &params = item.get_function_params ();
-  for (auto it = params.begin (); it != params.end ();)
-    {
-      auto &param = *it;
-
-      auto &param_attrs = param.get_outer_attrs ();
-      expand_cfg_attrs (param_attrs);
-      if (fails_cfg_with_expand (param_attrs))
-	{
-	  it = params.erase (it);
-	  continue;
-	}
-
-      if (!param.is_variadic ())
-	{
-	  auto &type = param.get_type ();
-	  if (type->is_marked_for_strip ())
-	    rust_error_at (type->get_locus (),
-			   "cannot strip type in this position");
-	}
-
-      // increment if nothing else happens
-      ++it;
-    }
-  /* NOTE: these are extern function params, which may have different
-   * rules and restrictions to "normal" function params. So expansion
-   * handled separately. */
-
-  /* TODO: assuming that variadic nature cannot be stripped. If this
-   * is not true, then have code here to do so. */
-
-  if (item.has_return_type ())
-    {
-      auto &return_type = item.get_return_type ();
-
-      if (return_type->is_marked_for_strip ())
-	rust_error_at (return_type->get_locus (),
-		       "cannot strip type in this position");
-    }
+  if (type.is_marked_for_strip ())
+    rust_error_at (type.get_locus (), "cannot strip type in this position");
 }
 
 void
@@ -2295,8 +2236,8 @@ CfgStrip::visit (AST::IdentifierPattern &pattern)
   AST::DefaultASTVisitor::visit (pattern);
 
   auto &sub_pattern = pattern.get_pattern_to_bind ();
-  if (sub_pattern->is_marked_for_strip ())
-    rust_error_at (sub_pattern->get_locus (),
+  if (sub_pattern.is_marked_for_strip ())
+    rust_error_at (sub_pattern.get_locus (),
 		   "cannot strip pattern in this position");
 }
 
@@ -2326,8 +2267,8 @@ CfgStrip::visit (AST::ReferencePattern &pattern)
   AST::DefaultASTVisitor::visit (pattern);
 
   auto &sub_pattern = pattern.get_referenced_pattern ();
-  if (sub_pattern->is_marked_for_strip ())
-    rust_error_at (sub_pattern->get_locus (),
+  if (sub_pattern.is_marked_for_strip ())
+    rust_error_at (sub_pattern.get_locus (),
 		   "cannot strip pattern in this position");
 }
 void
@@ -2345,8 +2286,8 @@ CfgStrip::visit (AST::StructPatternFieldTuplePat &field)
 
   // strip sub-patterns (can't strip top-level pattern)
   auto &sub_pattern = field.get_index_pattern ();
-  if (sub_pattern->is_marked_for_strip ())
-    rust_error_at (sub_pattern->get_locus (),
+  if (sub_pattern.is_marked_for_strip ())
+    rust_error_at (sub_pattern.get_locus (),
 		   "cannot strip pattern in this position");
 }
 
@@ -2364,8 +2305,8 @@ CfgStrip::visit (AST::StructPatternFieldIdentPat &field)
   AST::DefaultASTVisitor::visit (field);
   // strip sub-patterns (can't strip top-level pattern)
   auto &sub_pattern = field.get_ident_pattern ();
-  if (sub_pattern->is_marked_for_strip ())
-    rust_error_at (sub_pattern->get_locus (),
+  if (sub_pattern.is_marked_for_strip ())
+    rust_error_at (sub_pattern.get_locus (),
 		   "cannot strip pattern in this position");
 }
 void
@@ -2498,8 +2439,8 @@ CfgStrip::visit (AST::GroupedPattern &pattern)
   // can't strip inner pattern, only sub-patterns
   auto &pattern_in_parens = pattern.get_pattern_in_parens ();
 
-  if (pattern_in_parens->is_marked_for_strip ())
-    rust_error_at (pattern_in_parens->get_locus (),
+  if (pattern_in_parens.is_marked_for_strip ())
+    rust_error_at (pattern_in_parens.get_locus (),
 		   "cannot strip pattern in this position");
 }
 
@@ -2545,8 +2486,8 @@ CfgStrip::visit (AST::LetStmt &stmt)
   AST::DefaultASTVisitor::visit (stmt);
   // can't strip pattern, but call for sub-patterns
   auto &pattern = stmt.get_pattern ();
-  if (pattern->is_marked_for_strip ())
-    rust_error_at (pattern->get_locus (),
+  if (pattern.is_marked_for_strip ())
+    rust_error_at (pattern.get_locus (),
 		   "cannot strip pattern in this position");
 
   // similar for type
@@ -2554,9 +2495,8 @@ CfgStrip::visit (AST::LetStmt &stmt)
     {
       auto &type = stmt.get_type ();
 
-      if (type->is_marked_for_strip ())
-	rust_error_at (type->get_locus (),
-		       "cannot strip type in this position");
+      if (type.is_marked_for_strip ())
+	rust_error_at (type.get_locus (), "cannot strip type in this position");
     }
 
   /* strip any internal sub-expressions - expression itself isn't
@@ -2566,8 +2506,8 @@ CfgStrip::visit (AST::LetStmt &stmt)
     {
       auto &init_expr = stmt.get_init_expr ();
 
-      if (init_expr->is_marked_for_strip ())
-	rust_error_at (init_expr->get_locus (),
+      if (init_expr.is_marked_for_strip ())
+	rust_error_at (init_expr.get_locus (),
 		       "cannot strip expression in this position - outer "
 		       "attributes not allowed");
     }
@@ -2585,7 +2525,7 @@ CfgStrip::visit (AST::ExprStmt &stmt)
   AST::DefaultASTVisitor::visit (stmt);
   // strip if expr is to be stripped
   auto &expr = stmt.get_expr ();
-  if (expr->is_marked_for_strip ())
+  if (expr.is_marked_for_strip ())
     {
       stmt.mark_for_strip ();
       return;
@@ -2636,8 +2576,8 @@ CfgStrip::visit (AST::RawPointerType &type)
   AST::DefaultASTVisitor::visit (type);
   // expand but don't strip type pointed to
   auto &pointed_type = type.get_type_pointed_to ();
-  if (pointed_type->is_marked_for_strip ())
-    rust_error_at (pointed_type->get_locus (),
+  if (pointed_type.is_marked_for_strip ())
+    rust_error_at (pointed_type.get_locus (),
 		   "cannot strip type in this position");
 }
 
@@ -2647,8 +2587,8 @@ CfgStrip::visit (AST::ReferenceType &type)
   AST::DefaultASTVisitor::visit (type);
   // expand but don't strip type referenced
   auto &referenced_type = type.get_type_referenced ();
-  if (referenced_type->is_marked_for_strip ())
-    rust_error_at (referenced_type->get_locus (),
+  if (referenced_type.is_marked_for_strip ())
+    rust_error_at (referenced_type.get_locus (),
 		   "cannot strip type in this position");
 }
 
@@ -2658,14 +2598,14 @@ CfgStrip::visit (AST::ArrayType &type)
   AST::DefaultASTVisitor::visit (type);
   // expand but don't strip type referenced
   auto &base_type = type.get_elem_type ();
-  if (base_type->is_marked_for_strip ())
-    rust_error_at (base_type->get_locus (),
+  if (base_type.is_marked_for_strip ())
+    rust_error_at (base_type.get_locus (),
 		   "cannot strip type in this position");
 
   // same for expression
   auto &size_expr = type.get_size_expr ();
-  if (size_expr->is_marked_for_strip ())
-    rust_error_at (size_expr->get_locus (),
+  if (size_expr.is_marked_for_strip ())
+    rust_error_at (size_expr.get_locus (),
 		   "cannot strip expression in this position");
 }
 void
@@ -2674,8 +2614,8 @@ CfgStrip::visit (AST::SliceType &type)
   AST::DefaultASTVisitor::visit (type);
   // expand but don't strip elem type
   auto &elem_type = type.get_elem_type ();
-  if (elem_type->is_marked_for_strip ())
-    rust_error_at (elem_type->get_locus (),
+  if (elem_type.is_marked_for_strip ())
+    rust_error_at (elem_type.get_locus (),
 		   "cannot strip type in this position");
 }
 
@@ -2700,9 +2640,8 @@ CfgStrip::visit (AST::BareFunctionType &type)
 	}
 
       auto &type = param.get_type ();
-      if (type->is_marked_for_strip ())
-	rust_error_at (type->get_locus (),
-		       "cannot strip type in this position");
+      if (type.is_marked_for_strip ())
+	rust_error_at (type.get_locus (), "cannot strip type in this position");
 
       // increment if nothing else happens
       ++it;
@@ -2717,8 +2656,8 @@ CfgStrip::visit (AST::BareFunctionType &type)
       // In that case, we need to handle AST::TypeNoBounds on top of just
       // AST::Types
       auto &return_type = type.get_return_type ();
-      if (return_type->is_marked_for_strip ())
-	rust_error_at (return_type->get_locus (),
+      if (return_type.is_marked_for_strip ())
+	rust_error_at (return_type.get_locus (),
 		       "cannot strip type in this position");
     }
 
@@ -2733,9 +2672,8 @@ CfgStrip::visit (AST::SelfParam &param)
   if (param.has_type ())
     {
       auto &type = param.get_type ();
-      if (type->is_marked_for_strip ())
-	rust_error_at (type->get_locus (),
-		       "cannot strip type in this position");
+      if (type.is_marked_for_strip ())
+	rust_error_at (type.get_locus (), "cannot strip type in this position");
     }
   /* TODO: maybe check for invariants being violated - e.g. both type and
    * lifetime? */

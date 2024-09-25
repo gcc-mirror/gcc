@@ -1,6 +1,7 @@
-// { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts-ts" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fconcepts" }
 
-template<class T> concept bool C1 = true;
+template<class T> concept C1 = true;
 template<class A, class B> struct Pair {};
-void f(Pair<auto, C1>);
+// We used to test "Pair<auto, C1 >".
+void f(Pair<C1 auto, C1 auto>);

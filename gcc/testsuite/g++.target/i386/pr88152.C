@@ -8,6 +8,7 @@
 // { dg-final { scan-assembler-times "vmovmskpd\[^\n\r]*xmm" 4 } }
 // { dg-final { scan-assembler-times "vmovmskpd\[^\n\r]*ymm" 4 } }
 // { dg-final { scan-assembler-not "vpcmpgt|vpcmpeq|vpsra" } }
+// { dg-skip-if "requires hosted libstdc++ for cstdlib malloc" { ! hostedlib } }
 
 #include <x86intrin.h>
 

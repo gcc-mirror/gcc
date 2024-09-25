@@ -24,6 +24,8 @@
 #include "rust-hir-path-probe.h"
 #include "rust-type-util.h"
 #include "rust-hir-type-bounds.h"
+#include "rust-session-manager.h"
+#include "rust-immutable-name-resolution-context.h"
 
 namespace Rust {
 namespace Resolver {
@@ -199,10 +201,18 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 
       // then lookup the reference_node_id
       NodeId ref_node_id = UNKNOWN_NODEID;
-      if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
+
+      if (flag_name_resolution_2_0)
 	{
-	  resolver->lookup_resolved_type (ast_node_id, &ref_node_id);
+	  auto nr_ctx
+	    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
+	  // assign the ref_node_id if we've found something
+	  nr_ctx.lookup (expr.get_mappings ().get_nodeid ())
+	    .map ([&ref_node_id] (NodeId resolved) { ref_node_id = resolved; });
 	}
+      else if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
+	resolver->lookup_resolved_type (ast_node_id, &ref_node_id);
 
       // ref_node_id is the NodeId that the segments refers to.
       if (ref_node_id == UNKNOWN_NODEID)
@@ -258,8 +268,10 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 	{
 	  if (is_root)
 	    {
-	      rust_error_at (seg.get_locus (),
-			     "failed to resolve root segment");
+	      rust_error_at (expr.get_locus (), ErrorCode::E0425,
+			     "cannot find value %qs in this scope",
+			     expr.as_simple_path ().as_string ().c_str ());
+
 	      return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
 	    }
 	  return root_tyty;

@@ -2,6 +2,7 @@
 // Origin: Joseph Myers <joseph@codesourcery.com>
 // { dg-do link }
 // { dg-options "-pedantic-errors" }
+// { dg-skip-if "requires hosted libstdc++ for cmath" { ! hostedlib } }
 
 #include <math.h>
 

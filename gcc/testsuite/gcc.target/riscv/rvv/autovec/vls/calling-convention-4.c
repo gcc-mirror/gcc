@@ -115,7 +115,7 @@ DEF_RET1_ARG9 (v512di)
 
 // RET1_ARG0 tests
 /* { dg-final { scan-assembler-times {li\s+a[0-1],\s*0} 6 } } */
-/* { dg-final { scan-assembler-times {mv\s+s0,a0\s+call\s+memset\s+mv\s+a0,s0} 3 } } */
+/* { dg-final { scan-assembler-times {call\s+memset} 3 } } */
 
 // v1di and v2di tests: return value (ld) and function prologue (sd)
 //   - 1 ld per v1di and 2 ld per v2di with args > 1

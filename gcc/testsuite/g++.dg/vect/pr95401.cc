@@ -1,5 +1,5 @@
 // { dg-additional-options "-mavx2 -O3" { target avx2_runtime } }
-// { dg-additional-sources pr95401a.cc }
+// { dg-additional-sources pr95401a.cc linkonly }
 
 extern int var_9;
 extern unsigned var_14;

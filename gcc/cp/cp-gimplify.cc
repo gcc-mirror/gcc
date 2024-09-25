@@ -53,6 +53,10 @@ static GTY(()) hash_set<tree> *deferred_escalating_exprs;
 static void
 remember_escalating_expr (tree t)
 {
+  if (uses_template_parms (t))
+    /* Templates don't escalate, and cp_fold_immediate can get confused by
+       other template trees in the function body (c++/115986).  */
+    return;
   if (!deferred_escalating_exprs)
     deferred_escalating_exprs = hash_set<tree>::create_ggc (37);
   deferred_escalating_exprs->add (t);
@@ -2088,15 +2092,6 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       break;
 
     case CALL_EXPR:
-      /* Evaluate function concept checks instead of treating them as
-	 normal functions.  */
-      if (concept_check_p (stmt))
-	{
-	  *stmt_p = evaluate_concept_check (stmt);
-	  * walk_subtrees = 0;
-	  break;
-	}
-
       if (!wtd->no_sanitize_p
 	  && sanitize_flags_p ((SANITIZE_NULL
 				| SANITIZE_ALIGNMENT | SANITIZE_VPTR)))
@@ -3309,6 +3304,7 @@ cp_fold (tree x, fold_flags_t flags)
 	    && DECL_NAME (callee) != NULL_TREE
 	    && (id_equal (DECL_NAME (callee), "move")
 		|| id_equal (DECL_NAME (callee), "forward")
+		|| id_equal (DECL_NAME (callee), "forward_like")
 		|| id_equal (DECL_NAME (callee), "addressof")
 		/* This addressof equivalent is used heavily in libstdc++.  */
 		|| id_equal (DECL_NAME (callee), "__addressof")
@@ -3929,7 +3925,14 @@ fold_builtin_source_location (const_tree t)
 	      const char *name = "";
 
 	      if (current_function_decl)
-		name = cxx_printable_name (current_function_decl, 2);
+		{
+		  /* If this is a coroutine, we should get the name of the user
+		     function rather than the actor we generate.  */
+		  if (tree ramp = DECL_RAMP_FN (current_function_decl))
+		    name = cxx_printable_name (ramp, 2);
+		  else
+		    name = cxx_printable_name (current_function_decl, 2);
+		}
 
 	      val = build_string_literal (name);
 	    }

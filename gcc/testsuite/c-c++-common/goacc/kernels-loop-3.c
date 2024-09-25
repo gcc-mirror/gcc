@@ -1,6 +1,7 @@
 /* { dg-additional-options "-O2" } */
 /* { dg-additional-options "-fdump-tree-parloops1-all" } */
 /* { dg-additional-options "-fdump-tree-optimized" } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
 
 #include <stdlib.h>
 

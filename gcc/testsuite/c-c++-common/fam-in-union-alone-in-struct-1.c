@@ -1,6 +1,6 @@
 /* testing the correct usage of flexible array members in unions 
    and alone in structures.  */
-/* { dg-do run} */
+/* { dg-do run } */
 /* { dg-options "-Wpedantic" } */
 
 union with_fam_1 {
@@ -45,7 +45,7 @@ int main ()
     __builtin_abort ();
   if (sizeof (struct only_fam) != 0)
     __builtin_abort ();
-  if (sizeof (struct only_fam_2) != sizeof (int))
+  if (sizeof (struct only_fam_2) != __alignof__ (int))
     __builtin_abort ();
   return 0;
 }

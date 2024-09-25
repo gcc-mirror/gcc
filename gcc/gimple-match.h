@@ -136,6 +136,8 @@ public:
 
   /* The operands to CODE.  Only the first NUM_OPS entries are meaningful.  */
   tree ops[MAX_NUM_OPS];
+
+  bool operands_occurs_in_abnormal_phi() const;
 };
 
 inline

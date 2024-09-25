@@ -2,6 +2,7 @@
 // such as std::vector<bool>'s reference type the same as ordinary
 // bool.
 // { dg-additional-options "-Wparentheses" }
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 
 #include <vector>
 

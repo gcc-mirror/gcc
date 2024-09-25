@@ -21,17 +21,15 @@
 // causes "in_avail" to return an incorrect value.
 // { dg-do run { xfail arm*-*-elf arm*-*-eabi } }
 
-// 27.8.1.4 Overridden virtual functions
+// C++98 27.8.1.4 Overridden virtual functions
 
 // { dg-require-fileio "" }
 // { dg-require-binary-io "" }
+// { dg-additional-files "sgetn.txt" }
 
 #include <fstream>
 #include <testsuite_hooks.h>
 #include <testsuite_io.h>
-
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %*.txt
 
 const char name_01[] = "sgetn.txt"; // file with data in it
 const char name_03[] = "tmp_sgetn_2io.tst"; // empty file, need to create

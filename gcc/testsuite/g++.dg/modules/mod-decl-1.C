@@ -27,5 +27,3 @@ void Bink ()
 
 module a.; // { dg-error "only permitted as" }
 
-// { dg-prune-output "not writing module" }
-

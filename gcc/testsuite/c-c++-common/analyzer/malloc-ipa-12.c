@@ -1,3 +1,5 @@
+/* { dg-skip-if "requires hosted libstdc++ for stdlib free" { ! hostedlib } } */
+
 #include <stdlib.h>
 
 void recursive_free (void *ptr)

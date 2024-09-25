@@ -19,6 +19,7 @@
 #ifndef RUST_NAME_RESOLVER_2_0_H
 #define RUST_NAME_RESOLVER_2_0_H
 
+#include "optional.h"
 #include "rust-forever-stack.h"
 #include "rust-hir-map.h"
 
@@ -132,6 +133,28 @@ change?
 correct
 */
 
+// FIXME: Documentation
+class Usage
+{
+public:
+  explicit Usage (NodeId id) : id (id) {}
+
+  // TODO: move to name-resolution-ctx.cc
+  // storing it as a key in a map
+  bool operator< (const Usage other) const { return other.id < id; }
+
+  NodeId id;
+};
+
+// FIXME: Documentation
+class Definition
+{
+public:
+  explicit Definition (NodeId id) : id (id) {}
+
+  NodeId id;
+};
+
 // Now our resolver, which keeps track of all the `ForeverStack`s we could want
 class NameResolutionContext
 {
@@ -147,6 +170,9 @@ public:
    */
   tl::expected<NodeId, DuplicateNameError> insert (Identifier name, NodeId id,
 						   Namespace ns);
+
+  tl::expected<NodeId, DuplicateNameError>
+  insert_shadowable (Identifier name, NodeId id, Namespace ns);
 
   /**
    * Run a lambda in a "scoped" context, meaning that a new `Rib` will be pushed
@@ -180,11 +206,14 @@ public:
   Analysis::Mappings &mappings;
 
   // TODO: Rename
-  void map_usage (NodeId usage, NodeId definition);
+  // TODO: Use newtype pattern for Usage and Definition
+  void map_usage (Usage usage, Definition definition);
+
+  tl::optional<NodeId> lookup (NodeId usage);
 
 private:
   /* Map of "usage" nodes which have been resolved to a "definition" node */
-  std::map<NodeId, NodeId> resolved_nodes;
+  std::map<Usage, Definition> resolved_nodes;
 };
 
 } // namespace Resolver2_0

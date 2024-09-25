@@ -49,8 +49,6 @@
 #undef  ELFABIVERSION_AMDGPU_HSA_V4
 #define ELFABIVERSION_AMDGPU_HSA_V4 2
 
-#undef  EF_AMDGPU_MACH_AMDGCN_GFX803
-#define EF_AMDGPU_MACH_AMDGCN_GFX803 0x2a
 #undef  EF_AMDGPU_MACH_AMDGCN_GFX900
 #define EF_AMDGPU_MACH_AMDGCN_GFX900 0x2c
 #undef  EF_AMDGPU_MACH_AMDGCN_GFX906
@@ -135,6 +133,8 @@ static const char *gcn_dumpbase;
 static struct obstack files_to_cleanup;
 
 enum offload_abi offload_abi = OFFLOAD_ABI_UNSET;
+const char *offload_abi_host_opts = NULL;
+
 uint32_t elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX900;  // Default GPU architecture.
 uint32_t elf_flags = EF_AMDGPU_FEATURE_SRAMECC_UNSUPPORTED_V4;
 
@@ -180,44 +180,6 @@ xputenv (const char *string)
   if (verbose)
     fprintf (stderr, "%s\n", string);
   putenv (CONST_CAST (char *, string));
-}
-
-/* Read the whole input file.  It will be NUL terminated (but
-   remember, there could be a NUL in the file itself.  */
-
-static const char *
-read_file (FILE *stream, size_t *plen)
-{
-  size_t alloc = 16384;
-  size_t base = 0;
-  char *buffer;
-
-  if (!fseek (stream, 0, SEEK_END))
-    {
-      /* Get the file size.  */
-      long s = ftell (stream);
-      if (s >= 0)
-	alloc = s + 100;
-      fseek (stream, 0, SEEK_SET);
-    }
-  buffer = XNEWVEC (char, alloc);
-
-  for (;;)
-    {
-      size_t n = fread (buffer + base, 1, alloc - base - 1, stream);
-
-      if (!n)
-	break;
-      base += n;
-      if (base + 1 == alloc)
-	{
-	  alloc *= 2;
-	  buffer = XRESIZEVEC (char, buffer, alloc);
-	}
-    }
-  buffer[base] = 0;
-  *plen = base;
-  return buffer;
 }
 
 /* Parse STR, saving found tokens into PVALUES and return their number.
@@ -352,18 +314,12 @@ copy_early_debug_info (const char *infile, const char *outfile)
   /* We only support host relocations of x86_64, for now.  */
   gcc_assert (ehdr.e_machine == EM_X86_64);
 
-  /* Fiji devices use HSACOv3 regardless of the assembler.  */
-  uint32_t elf_flags_actual = (elf_arch == EF_AMDGPU_MACH_AMDGCN_GFX803
-			       ? 0 : elf_flags);
-
   /* Patch the correct elf architecture flag into the file.  */
   ehdr.e_ident[7] = ELFOSABI_AMDGPU_HSA;
-  ehdr.e_ident[8] = (elf_arch == EF_AMDGPU_MACH_AMDGCN_GFX803
-		     ? ELFABIVERSION_AMDGPU_HSA_V3
-		     : ELFABIVERSION_AMDGPU_HSA_V4);
+  ehdr.e_ident[8] = ELFABIVERSION_AMDGPU_HSA_V4;
   ehdr.e_type = ET_REL;
   ehdr.e_machine = EM_AMDGPU;
-  ehdr.e_flags = elf_arch | elf_flags_actual;
+  ehdr.e_flags = elf_arch | elf_flags;
 
   /* Load the section headers so we can walk them later.  */
   Elf64_Shdr *sections = (Elf64_Shdr *)xmalloc (sizeof (Elf64_Shdr)
@@ -657,9 +613,11 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
   struct oaccdims *dims = XOBFINISH (&dims_os, struct oaccdims *);
   struct regcount *regcounts = XOBFINISH (&regcounts_os, struct regcount *);
 
-  fprintf (cfile, "#include <stdlib.h>\n");
-  fprintf (cfile, "#include <stdint.h>\n");
-  fprintf (cfile, "#include <stdbool.h>\n\n");
+  if (gcn_stack_size)
+    {
+      fprintf (cfile, "#include <stdlib.h>\n");
+      fprintf (cfile, "#include <stdbool.h>\n\n");
+    }
 
   fprintf (cfile, "static const int gcn_num_vars = %d;\n\n", var_count);
   fprintf (cfile, "static const int gcn_num_ind_funcs = %d;\n\n", ind_fn_count);
@@ -725,35 +683,28 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 /* Embed an object file into a C source file.  */
 
 static void
-process_obj (FILE *in, FILE *cfile, uint32_t omp_requires)
+process_obj (const char *fname_in, FILE *cfile, uint32_t omp_requires)
 {
-  size_t len = 0;
-  const char *input = read_file (in, &len);
-
   /* Dump out an array containing the binary.
-     FIXME: do this with objcopy.  */
-  fprintf (cfile, "static unsigned char gcn_code[] = {");
-  for (size_t i = 0; i < len; i += 17)
-    {
-      fprintf (cfile, "\n\t");
-      for (size_t j = i; j < i + 17 && j < len; j++)
-	fprintf (cfile, "%3u,", (unsigned char) input[j]);
-    }
-  fprintf (cfile, "\n};\n\n");
+     If the file is empty, a parse error is shown as the argument to is_empty
+     is an undeclared identifier.  */
+  fprintf (cfile,
+	   "static unsigned char gcn_code[] = {\n"
+	   "#embed \"%s\" if_empty (error_file_is_empty)\n"
+	   "};\n\n", fname_in);
 
   fprintf (cfile,
 	   "static const struct gcn_image {\n"
-	   "  size_t size;\n"
+	   "  __SIZE_TYPE__ size;\n"
 	   "  void *image;\n"
 	   "} gcn_image = {\n"
-	   "  %zu,\n"
+	   "  sizeof(gcn_code),\n"
 	   "  gcn_code\n"
-	   "};\n\n",
-	   len);
+	   "};\n\n");
 
   fprintf (cfile,
 	   "static const struct gcn_data {\n"
-	   "  uintptr_t omp_requires_mask;\n"
+	   "  __UINTPTR_TYPE__ omp_requires_mask;\n"
 	   "  const struct gcn_image *gcn_image;\n"
 	   "  unsigned kernel_count;\n"
 	   "  const struct hsa_kernel_description *kernel_infos;\n"
@@ -827,17 +778,10 @@ compile_native (const char *infile, const char *outfile, const char *compiler,
   obstack_ptr_grow (&argv_obstack, gcn_dumpbase);
   obstack_ptr_grow (&argv_obstack, "-dumpbase-ext");
   obstack_ptr_grow (&argv_obstack, ".c");
-  switch (offload_abi)
-    {
-    case OFFLOAD_ABI_LP64:
-      obstack_ptr_grow (&argv_obstack, "-m64");
-      break;
-    case OFFLOAD_ABI_ILP32:
-      obstack_ptr_grow (&argv_obstack, "-m32");
-      break;
-    default:
-      gcc_unreachable ();
-    }
+  if (!offload_abi_host_opts)
+    fatal_error (input_location,
+		 "%<-foffload-abi-host-opts%> not specified.");
+  obstack_ptr_grow (&argv_obstack, offload_abi_host_opts);
   obstack_ptr_grow (&argv_obstack, infile);
   obstack_ptr_grow (&argv_obstack, "-c");
   obstack_ptr_grow (&argv_obstack, "-o");
@@ -853,9 +797,7 @@ compile_native (const char *infile, const char *outfile, const char *compiler,
 static int
 get_arch (const char *str, const char *with_arch_str)
 {
-  if (strcmp (str, "fiji") == 0)
-    return EF_AMDGPU_MACH_AMDGCN_GFX803;
-  else if (strcmp (str, "gfx900") == 0)
+  if (strcmp (str, "gfx900") == 0)
     return EF_AMDGPU_MACH_AMDGCN_GFX900;
   else if (strcmp (str, "gfx906") == 0)
     return EF_AMDGPU_MACH_AMDGCN_GFX906;
@@ -1008,6 +950,15 @@ main (int argc, char **argv)
 			 "unrecognizable argument of option %<" STR "%>");
 	}
 #undef STR
+      else if (startswith (argv[i], "-foffload-abi-host-opts="))
+	{
+	  if (offload_abi_host_opts)
+	    fatal_error (input_location,
+			 "%<-foffload-abi-host-opts%> specified "
+			 "multiple times");
+	  offload_abi_host_opts
+	    = argv[i] + strlen ("-foffload-abi-host-opts=");
+	}
       else if (strcmp (argv[i], "-fopenmp") == 0)
 	fopenmp = true;
       else if (strcmp (argv[i], "-fopenacc") == 0)
@@ -1076,7 +1027,6 @@ main (int argc, char **argv)
      and ASM_SPEC.  */
   switch (elf_arch)
     {
-    case EF_AMDGPU_MACH_AMDGCN_GFX803:
     case EF_AMDGPU_MACH_AMDGCN_GFX1030:
     case EF_AMDGPU_MACH_AMDGCN_GFX1036:
     case EF_AMDGPU_MACH_AMDGCN_GFX1100:
@@ -1312,13 +1262,7 @@ main (int argc, char **argv)
       fork_execute (ld_argv[0], CONST_CAST (char **, ld_argv), true, ".ld_args");
       obstack_free (&ld_argv_obstack, NULL);
 
-      in = fopen (gcn_o_name, "r");
-      if (!in)
-	fatal_error (input_location, "cannot open intermediate gcn obj file");
-
-      process_obj (in, cfile, omp_requires);
-
-      fclose (in);
+      process_obj (gcn_o_name, cfile, omp_requires);
 
       xputenv (concat ("GCC_EXEC_PREFIX=", execpath, NULL));
       xputenv (concat ("COMPILER_PATH=", cpath, NULL));

@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target arm32 } */
+/* { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } } */
 
 /* Test to catch off-by-one errors in arm/pr-support.c.  */
 

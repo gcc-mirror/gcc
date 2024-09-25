@@ -77,6 +77,7 @@ int main(int, char**)
   return 0;
 }
 
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }
 // { dg-output "contract violation in function S::now at .*.C:9: .*(\n|\r\n|\r)" }
 // { dg-output "S::now: a: -10, t->pri: -10(\n|\r\n|\r)" }
 // { dg-output "contract violation in function now at .*.C:15: .*(\n|\r\n|\r)" }

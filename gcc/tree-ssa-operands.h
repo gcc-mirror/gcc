@@ -72,12 +72,8 @@ struct GTY(()) ssa_operands {
 #define USE_OP_PTR(OP)		(&((OP)->use_ptr))
 #define USE_OP(OP)		(USE_FROM_PTR (USE_OP_PTR (OP)))
 
-#define PHI_RESULT_PTR(PHI)	gimple_phi_result_ptr (PHI)
-#define PHI_RESULT(PHI)		DEF_FROM_PTR (PHI_RESULT_PTR (PHI))
-#define SET_PHI_RESULT(PHI, V)	SET_DEF (PHI_RESULT_PTR (PHI), (V))
-/*
-#define PHI_ARG_DEF(PHI, I)	USE_FROM_PTR (PHI_ARG_DEF_PTR ((PHI), (I)))
-*/
+#define PHI_RESULT(PHI)		gimple_phi_result (PHI)
+#define SET_PHI_RESULT(PHI, V)	SET_DEF (gimple_phi_result_ptr (PHI), (V))
 #define PHI_ARG_DEF_PTR(PHI, I)	gimple_phi_arg_imm_use_ptr ((PHI), (I))
 #define PHI_ARG_DEF(PHI, I)	gimple_phi_arg_def ((PHI), (I))
 #define SET_PHI_ARG_DEF(PHI, I, V)					\

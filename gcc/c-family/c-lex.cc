@@ -445,7 +445,9 @@ c_common_has_attribute (cpp_reader *pfile, bool std_syntax)
 		  || is_attribute_p ("maybe_unused", attr_name)
 		  || is_attribute_p ("nodiscard", attr_name)
 		  || is_attribute_p ("noreturn", attr_name)
-		  || is_attribute_p ("_Noreturn", attr_name))
+		  || is_attribute_p ("_Noreturn", attr_name)
+		  || is_attribute_p ("reproducible", attr_name)
+		  || is_attribute_p ("unsequenced", attr_name))
 		result = 202311;
 	    }
 	  if (result)
@@ -1254,8 +1256,8 @@ interpret_float (const cpp_token *token, unsigned int flags,
 	  }
 	else if (!extended)
 	  {
-	    if (cxx_dialect < cxx23)
-	      pedwarn (input_location, OPT_Wpedantic,
+	    if (cxx_dialect < cxx23 && pedantic)
+	      pedwarn (input_location, OPT_Wc__23_extensions,
 		       "%<f%d%> or %<F%d%> suffix on floating constant only "
 		       "available with %<-std=c++2b%> or %<-std=gnu++2b%>",
 		       n, n);
@@ -1275,8 +1277,8 @@ interpret_float (const cpp_token *token, unsigned int flags,
 	if (!c_dialect_cxx ())
 	  pedwarn (input_location, OPT_Wpedantic,
 		   "non-standard suffix on floating constant");
-	else if (cxx_dialect < cxx23)
-	  pedwarn (input_location, OPT_Wpedantic,
+	else if (cxx_dialect < cxx23 && pedantic)
+	  pedwarn (input_location, OPT_Wc__23_extensions,
 		   "%<bf16%> or %<BF16%> suffix on floating constant only "
 		   "available with %<-std=c++2b%> or %<-std=gnu++2b%>");
       }

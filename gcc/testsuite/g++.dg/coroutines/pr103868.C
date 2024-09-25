@@ -79,6 +79,8 @@ namespace std {
 template <typename...> struct coroutine_traits;
 template <typename = void> struct coroutine_handle {
   operator coroutine_handle<>();
+  static coroutine_handle from_address(void*);
+  void* address();
 };
 struct suspend_always {
   bool await_ready();
@@ -114,7 +116,7 @@ struct awaitable_frame_base {
   template <typename T> auto await_transform(T a) { return a; }
 };
 template <> struct awaitable_frame<void> : awaitable_frame_base {
-  void get_return_object();
+  awaitable<void> get_return_object();
 };
 } // namespace detail
 } // namespace asio

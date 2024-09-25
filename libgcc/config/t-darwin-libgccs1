@@ -1,0 +1,3 @@
+
+# Build a legacy libgcc_s.1
+BUILD_LIBGCCS1 = YES

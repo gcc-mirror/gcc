@@ -3780,7 +3780,6 @@ package body Sprint is
       Node_Exists : Boolean := False;
 
    begin
-
       if Is_Non_Empty_List (List) then
 
          if Dump_Original_Only then

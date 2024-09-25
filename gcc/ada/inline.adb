@@ -2136,8 +2136,6 @@ package body Inline is
          end;
       end if;
 
-      pragma Assert (Msg (Msg'Last) = '?');
-
       --  Legacy front-end inlining model
 
       if not Back_End_Inlining then
@@ -3022,7 +3020,6 @@ package body Inline is
                     (N           => Decl,
                      Clean_Stmts => No_List,
                      Mark_Id     => Empty,
-                     Top_Decls   => No_List,
                      Defer_Abort => False,
                      Fin_Id      => Fin);
 
@@ -3364,19 +3361,10 @@ package body Inline is
       Targ1 : Node_Id := Empty;
       --  A separate target used when the return type is unconstrained
 
-      procedure Declare_Postconditions_Result;
-      --  When generating C code, declare _Result, which may be used in the
-      --  inlined _Postconditions procedure to verify the return value.
-
       procedure Make_Exit_Label;
       --  Build declaration for exit label to be used in Return statements,
       --  sets Exit_Lab (the label node) and Lab_Decl (corresponding implicit
       --  declaration). Does nothing if Exit_Lab already set.
-
-      procedure Make_Loop_Labels_Unique (HSS : Node_Id);
-      --  When compiling for CCG and performing front-end inlining, replace
-      --  loop names and references to them so that they do not conflict with
-      --  homographs in the current subprogram.
 
       function Process_Formals (N : Node_Id) return Traverse_Result;
       --  Replace occurrence of a formal with the corresponding actual, or the
@@ -3412,45 +3400,6 @@ package body Inline is
       --  If procedure body has no local variables, inline body without
       --  creating block, otherwise rewrite call with block.
 
-      -----------------------------------
-      -- Declare_Postconditions_Result --
-      -----------------------------------
-
-      procedure Declare_Postconditions_Result is
-         Enclosing_Subp : constant Entity_Id := Scope (Subp);
-
-      begin
-         pragma Assert
-           (Modify_Tree_For_C
-             and then Is_Subprogram (Enclosing_Subp)
-             and then Present (Wrapped_Statements (Enclosing_Subp)));
-
-         if Ekind (Enclosing_Subp) = E_Function then
-            if Nkind (First (Parameter_Associations (N))) in
-                 N_Numeric_Or_String_Literal
-            then
-               Append_To (Declarations (Blk),
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier =>
-                     Make_Defining_Identifier (Loc, Name_uResult),
-                   Constant_Present    => True,
-                   Object_Definition   =>
-                     New_Occurrence_Of (Etype (Enclosing_Subp), Loc),
-                   Expression          =>
-                     New_Copy_Tree (First (Parameter_Associations (N)))));
-            else
-               Append_To (Declarations (Blk),
-                 Make_Object_Renaming_Declaration (Loc,
-                   Defining_Identifier =>
-                     Make_Defining_Identifier (Loc, Name_uResult),
-                   Subtype_Mark        =>
-                     New_Occurrence_Of (Etype (Enclosing_Subp), Loc),
-                   Name                =>
-                     New_Copy_Tree (First (Parameter_Associations (N)))));
-            end if;
-         end if;
-      end Declare_Postconditions_Result;
-
       ---------------------
       -- Make_Exit_Label --
       ---------------------
@@ -3468,61 +3417,6 @@ package body Inline is
                 Label_Construct     => Exit_Lab);
          end if;
       end Make_Exit_Label;
-
-      -----------------------------
-      -- Make_Loop_Labels_Unique --
-      -----------------------------
-
-      procedure Make_Loop_Labels_Unique (HSS : Node_Id) is
-         function Process_Loop (N : Node_Id) return Traverse_Result;
-
-         ------------------
-         -- Process_Loop --
-         ------------------
-
-         function Process_Loop (N : Node_Id) return Traverse_Result is
-            Id : Entity_Id;
-
-         begin
-            if Nkind (N) = N_Loop_Statement
-              and then Present (Identifier (N))
-            then
-               --  Create new external name for loop and update the
-               --  corresponding entity.
-
-               Id := Entity (Identifier (N));
-               Set_Chars (Id, New_External_Name (Chars (Id), 'L', -1));
-               Set_Chars (Identifier (N), Chars (Id));
-
-            elsif Nkind (N) = N_Exit_Statement
-              and then Present (Name (N))
-            then
-               --  The exit statement must name an enclosing loop, whose name
-               --  has already been updated.
-
-               Set_Chars (Name (N), Chars (Entity (Name (N))));
-            end if;
-
-            return OK;
-         end Process_Loop;
-
-         procedure Update_Loop_Names is new Traverse_Proc (Process_Loop);
-
-         --  Local variables
-
-         Stmt : Node_Id;
-
-      --  Start of processing for Make_Loop_Labels_Unique
-
-      begin
-         if Modify_Tree_For_C then
-            Stmt := First (Statements (HSS));
-            while Present (Stmt) loop
-               Update_Loop_Names (Stmt);
-               Next (Stmt);
-            end loop;
-         end if;
-      end Make_Loop_Labels_Unique;
 
       ---------------------
       -- Process_Formals --
@@ -3812,8 +3706,6 @@ package body Inline is
          Fst : constant Node_Id := First (Statements (HSS));
 
       begin
-         Make_Loop_Labels_Unique (HSS);
-
          --  Optimize simple case: function body is a single return statement,
          --  which has been expanded into an assignment.
 
@@ -3900,8 +3792,6 @@ package body Inline is
          HSS : constant Node_Id := Handled_Statement_Sequence (Blk);
 
       begin
-         Make_Loop_Labels_Unique (HSS);
-
          --  If there is a transient scope for N, this will be the scope of the
          --  actions for N, and the statements in Blk need to be within this
          --  scope. For example, they need to have visibility on the constant
@@ -4004,16 +3894,6 @@ package body Inline is
 
             if No (Declarations (Bod)) then
                Set_Declarations (Blk, New_List);
-            end if;
-
-            --  When generating C code, declare _Result, which may be used to
-            --  verify the return value.
-
-            if Modify_Tree_For_C
-              and then Nkind (N) = N_Procedure_Call_Statement
-              and then Chars (Name (N)) = Name_uWrapped_Statements
-            then
-               Declare_Postconditions_Result;
             end if;
 
             --  For the unconstrained case, capture the name of the local

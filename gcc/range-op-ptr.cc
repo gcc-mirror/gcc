@@ -977,9 +977,9 @@ operator_equal::fold_range (irange &r, tree type,
   if (op1_const && op2_const)
     {
       if (wi::eq_p (op1.lower_bound (), op2.upper_bound()))
-	r = range_true ();
+	r = range_true (type);
       else
-	r = range_false ();
+	r = range_false (type);
     }
   else
     {
@@ -988,14 +988,14 @@ operator_equal::fold_range (irange &r, tree type,
       prange tmp = op1;
       tmp.intersect (op2);
       if (tmp.undefined_p ())
-	r = range_false ();
+	r = range_false (type);
       // Check if a constant cannot satisfy the bitmask requirements.
       else if (op2_const && !op1.get_bitmask ().member_p (op2.lower_bound ()))
-	 r = range_false ();
+	 r = range_false (type);
       else if (op1_const && !op2.get_bitmask ().member_p (op1.lower_bound ()))
-	 r = range_false ();
+	 r = range_false (type);
       else
-	r = range_true_and_false ();
+	r = range_true_and_false (type);
     }
 
   //update_known_bitmask (r, EQ_EXPR, op1, op2);
@@ -1076,9 +1076,9 @@ operator_not_equal::fold_range (irange &r, tree type,
   if (op1_const && op2_const)
     {
       if (wi::ne_p (op1.lower_bound (), op2.upper_bound()))
-	r = range_true ();
+	r = range_true (type);
       else
-	r = range_false ();
+	r = range_false (type);
     }
   else
     {
@@ -1087,14 +1087,14 @@ operator_not_equal::fold_range (irange &r, tree type,
       prange tmp = op1;
       tmp.intersect (op2);
       if (tmp.undefined_p ())
-	r = range_true ();
+	r = range_true (type);
       // Check if a constant cannot satisfy the bitmask requirements.
       else if (op2_const && !op1.get_bitmask ().member_p (op2.lower_bound ()))
-	 r = range_true ();
+	 r = range_true (type);
       else if (op1_const && !op2.get_bitmask ().member_p (op1.lower_bound ()))
-	 r = range_true ();
+	 r = range_true (type);
       else
-	r = range_true_and_false ();
+	r = range_true_and_false (type);
     }
 
   //update_known_bitmask (r, NE_EXPR, op1, op2);
@@ -1173,14 +1173,14 @@ operator_lt::fold_range (irange &r, tree type,
   gcc_checking_assert (sign == TYPE_SIGN (op2.type ()));
 
   if (wi::lt_p (op1.upper_bound (), op2.lower_bound (), sign))
-    r = range_true ();
+    r = range_true (type);
   else if (!wi::lt_p (op1.lower_bound (), op2.upper_bound (), sign))
-    r = range_false ();
+    r = range_false (type);
   // Use nonzero bits to determine if < 0 is false.
   else if (op2.zero_p () && !wi::neg_p (op1.get_nonzero_bits (), sign))
-    r = range_false ();
+    r = range_false (type);
   else
-    r = range_true_and_false ();
+    r = range_true_and_false (type);
 
   //update_known_bitmask (r, LT_EXPR, op1, op2);
   return true;
@@ -1266,11 +1266,11 @@ operator_le::fold_range (irange &r, tree type,
   gcc_checking_assert (sign == TYPE_SIGN (op2.type ()));
 
   if (wi::le_p (op1.upper_bound (), op2.lower_bound (), sign))
-    r = range_true ();
+    r = range_true (type);
   else if (!wi::le_p (op1.lower_bound (), op2.upper_bound (), sign))
-    r = range_false ();
+    r = range_false (type);
   else
-    r = range_true_and_false ();
+    r = range_true_and_false (type);
 
   //update_known_bitmask (r, LE_EXPR, op1, op2);
   return true;
@@ -1355,11 +1355,11 @@ operator_gt::fold_range (irange &r, tree type,
   gcc_checking_assert (sign == TYPE_SIGN (op2.type ()));
 
   if (wi::gt_p (op1.lower_bound (), op2.upper_bound (), sign))
-    r = range_true ();
+    r = range_true (type);
   else if (!wi::gt_p (op1.upper_bound (), op2.lower_bound (), sign))
-    r = range_false ();
+    r = range_false (type);
   else
-    r = range_true_and_false ();
+    r = range_true_and_false (type);
 
   //update_known_bitmask (r, GT_EXPR, op1, op2);
   return true;
@@ -1444,11 +1444,11 @@ operator_ge::fold_range (irange &r, tree type,
   gcc_checking_assert (sign == TYPE_SIGN (op2.type ()));
 
   if (wi::ge_p (op1.lower_bound (), op2.upper_bound (), sign))
-    r = range_true ();
+    r = range_true (type);
   else if (!wi::ge_p (op1.upper_bound (), op2.lower_bound (), sign))
-    r = range_false ();
+    r = range_false (type);
   else
-    r = range_true_and_false ();
+    r = range_true_and_false (type);
 
   //update_known_bitmask (r, GE_EXPR, op1, op2);
   return true;

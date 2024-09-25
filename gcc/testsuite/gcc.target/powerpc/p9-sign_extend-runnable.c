@@ -1,5 +1,4 @@
 /* { dg-do run { target { *-*-linux* && { lp64 && p9vector_hw } } } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O2 -mdejagnu-cpu=power9 -mvsx -save-temps" } */
 
 /* These builtins were not defined until ISA 3.1 but only require ISA 3.0

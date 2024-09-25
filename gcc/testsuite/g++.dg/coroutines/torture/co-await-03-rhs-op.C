@@ -1,4 +1,5 @@
 //  { dg-do run }
+//  { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
 
 // Basic check of co_await with an expression to await transform.
 

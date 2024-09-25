@@ -1,0 +1,10 @@
+# Inherit settings from EditorConfig files above this dir.
+root = false
+
+# All files under this directory are C++ headers.
+[*]
+charset = utf-8
+indent_style = tab
+indent_size = 2
+tab_width = 8
+trim_trailing_whitespace = true

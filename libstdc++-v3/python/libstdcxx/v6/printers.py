@@ -613,6 +613,9 @@ class StdBitReferencePrinter(printer_base):
 
     def to_string(self):
         if not self._val['_M_p']:
+            # PR libstdc++/115098 removed the reference default constructor
+            # that this case relates to. New code should never need this,
+            # but we still handle it for compatibility with old binaries.
             return 'invalid std::vector<bool>::reference'
         return bool(self._val['_M_p'].dereference() & (self._val['_M_mask']))
 

@@ -1,5 +1,4 @@
-;;   This file contains instructions that support fixed-point operations
-;;   for Atmel AVR micro controllers.
+;;   Support fixed-point operations for AVR 8-bit microcontrollers.
 ;;   Copyright (C) 2012-2024 Free Software Foundation, Inc.
 ;;
 ;;   Contributed by Sean D'Epagnier  (sean@depagnier.com)
@@ -231,7 +230,7 @@
         (match_dup 2))]
   ""
   {
-    operands[2] = gen_rtx_REG (<MODE>mode, 26 - GET_MODE_SIZE (<MODE>mode));
+    operands[2] = gen_rtx_REG (<MODE>mode, 26 - <SIZE>);
   })
 
 ;; "*ssneghq2"  "*ssnegha2"
@@ -651,7 +650,7 @@
   {
     if (CONST_INT_P (operands[2])
         && !(optimize_size
-             && 4 == GET_MODE_SIZE (<MODE>mode)))
+             && 4 == <SIZE>))
       {
         emit_insn (gen_round<mode>3_const (operands[0], operands[1], operands[2]));
         DONE;
@@ -661,8 +660,8 @@
     const unsigned int regno_in[]  = { -1U, 22, 22, -1U, 18 };
     const unsigned int regno_out[] = { -1U, 24, 24, -1U, 22 };
 
-    operands[3] = gen_rtx_REG (<MODE>mode, regno_out[(size_t) GET_MODE_SIZE (<MODE>mode)]);
-    operands[4] = gen_rtx_REG (<MODE>mode,  regno_in[(size_t) GET_MODE_SIZE (<MODE>mode)]);
+    operands[3] = gen_rtx_REG (<MODE>mode, regno_out[(size_t) <SIZE>]);
+    operands[4] = gen_rtx_REG (<MODE>mode,  regno_in[(size_t) <SIZE>]);
     avr_fix_inputs (operands, 1 << 2, regmask (<MODE>mode, REGNO (operands[4])));
     operands[5] = simplify_gen_subreg (QImode, force_reg (HImode, operands[2]), HImode, 0);
     // $2 is no more needed, but is referenced for expand.

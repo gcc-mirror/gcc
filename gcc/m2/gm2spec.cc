@@ -20,6 +20,8 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_STRING
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
@@ -31,8 +33,6 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "gcc.h"
 #include "opts.h"
 #include "vec.h"
-#include <vector>
-#include <string>
 
 #include "m2/gm2config.h"
 

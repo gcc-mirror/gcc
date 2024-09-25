@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-skip-if "requires hosted libstdc++ for complex" { ! hostedlib } }
 // GROUPS passed old-abort
 #include <complex>
 typedef std::complex<double> Complex;

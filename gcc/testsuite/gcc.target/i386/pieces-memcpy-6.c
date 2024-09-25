@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-O2 -mno-avx2 -mavx -mtune=sandybridge" } */
+/* { dg-options "-O2 -mno-avx2 -mavx -mprefer-vector-width=128 -mtune=sandybridge" } */
 
 extern char *dst, *src;
 

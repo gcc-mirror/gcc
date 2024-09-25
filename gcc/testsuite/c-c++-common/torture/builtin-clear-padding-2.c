@@ -1,4 +1,6 @@
 /* PR libstdc++/88101 */
+/* { dg-do run } */
+/* { dg-require-effective-target size20plus } */
 
 typedef int T __attribute__((aligned (16384)));
 struct S { char a; short b; long double c; T d; T e; long long f; };

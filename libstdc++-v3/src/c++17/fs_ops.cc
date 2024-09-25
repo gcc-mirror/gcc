@@ -350,7 +350,7 @@ fs::copy(const path& from, const path& to, copy_options options,
   f = make_file_status(from_st);
 
   if (exists(t) && !is_other(t) && !is_other(f)
-      && to_st.st_dev == from_st.st_dev && to_st.st_ino == from_st.st_ino)
+      && fs::equiv_files(from.c_str(), from_st, to.c_str(), to_st, ec))
     {
       ec = std::make_error_code(std::errc::file_exists);
       return;
@@ -822,6 +822,77 @@ fs::equivalent(const path& p1, const path& p2)
   return result;
 }
 
+#if _GLIBCXX_FILESYSTEM_IS_WINDOWS
+namespace
+{
+  // An RAII type that opens a handle for an existing file.
+  struct auto_win_file_handle
+  {
+    explicit
+    auto_win_file_handle(const wchar_t* p, std::error_code& ec) noexcept
+    : handle(CreateFileW(p, 0,
+			 FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+			 0, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0)),
+      ec(ec)
+    {
+      if (handle == INVALID_HANDLE_VALUE)
+	ec = std::__last_system_error();
+    }
+
+    ~auto_win_file_handle()
+    { if (*this) CloseHandle(handle); }
+
+    explicit operator bool() const noexcept
+    { return handle != INVALID_HANDLE_VALUE; }
+
+    bool get_info() noexcept
+    {
+      if (GetFileInformationByHandle(handle, &info))
+	return true;
+      ec = std::__last_system_error();
+      return false;
+    }
+
+    HANDLE handle;
+    BY_HANDLE_FILE_INFORMATION info;
+    // Like errno, we only set this on error and never clear it.
+    // This propagates an error_code to the caller when something goes wrong,
+    // but the caller should not assume a non-zero ec means an error happened
+    // unless they explicitly cleared it before passing it to our constructor.
+    std::error_code& ec;
+  };
+}
+#endif
+
+#ifdef _GLIBCXX_HAVE_SYS_STAT_H
+#ifdef NEED_DO_COPY_FILE // Only define this once, not in cow-fs_ops.o too
+bool
+fs::equiv_files([[maybe_unused]] const char_type* p1, const stat_type& st1,
+		[[maybe_unused]] const char_type* p2, const stat_type& st2,
+		[[maybe_unused]] error_code& ec)
+{
+#if ! _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  // For POSIX the device ID and inode number uniquely identify a file.
+  return st1.st_dev == st2.st_dev && st1.st_ino == st2.st_ino;
+#else
+  // For Windows st_ino is not set, so can't be used to distinguish files.
+  // We can compare modes and device IDs as a cheap initial check:
+  if (st1.st_mode != st2.st_mode || st1.st_dev != st2.st_dev)
+    return false;
+
+  // Use GetFileInformationByHandle to get more info about the files.
+  if (auto_win_file_handle h1{p1, ec})
+    if (auto_win_file_handle h2{p2, ec})
+      if (h1.get_info() && h2.get_info())
+	return h1.info.dwVolumeSerialNumber == h2.info.dwVolumeSerialNumber
+		 && h1.info.nFileIndexHigh == h2.info.nFileIndexHigh
+		 && h1.info.nFileIndexLow == h2.info.nFileIndexLow;
+  return false;
+#endif // _GLIBCXX_FILESYSTEM_IS_WINDOWS
+}
+#endif // NEED_DO_COPY_FILE
+#endif // _GLIBCXX_HAVE_SYS_STAT_H
+
 bool
 fs::equivalent(const path& p1, const path& p2, error_code& ec) noexcept
 {
@@ -853,49 +924,7 @@ fs::equivalent(const path& p1, const path& p2, error_code& ec) noexcept
       ec.clear();
       if (is_other(s1) || is_other(s2))
 	return false;
-#if _GLIBCXX_FILESYSTEM_IS_WINDOWS
-      // st_ino is not set, so can't be used to distinguish files
-      if (st1.st_mode != st2.st_mode || st1.st_dev != st2.st_dev)
-	return false;
-
-      struct auto_handle {
-	explicit auto_handle(const path& p_)
-	: handle(CreateFileW(p_.c_str(), 0,
-	      FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
-	      0, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0))
-	{ }
-
-	~auto_handle()
-	{ if (*this) CloseHandle(handle); }
-
-	explicit operator bool() const
-	{ return handle != INVALID_HANDLE_VALUE; }
-
-	bool get_info()
-	{ return GetFileInformationByHandle(handle, &info); }
-
-	HANDLE handle;
-	BY_HANDLE_FILE_INFORMATION info;
-      };
-      auto_handle h1(p1);
-      auto_handle h2(p2);
-      if (!h1 || !h2)
-	{
-	  if (!h1 && !h2)
-	    ec = __last_system_error();
-	  return false;
-	}
-      if (!h1.get_info() || !h2.get_info())
-	{
-	  ec = __last_system_error();
-	  return false;
-	}
-      return h1.info.dwVolumeSerialNumber == h2.info.dwVolumeSerialNumber
-	&& h1.info.nFileIndexHigh == h2.info.nFileIndexHigh
-	&& h1.info.nFileIndexLow == h2.info.nFileIndexLow;
-#else
-      return st1.st_dev == st2.st_dev && st1.st_ino == st2.st_ino;
-#endif
+      return fs::equiv_files(p1.c_str(), st1, p2.c_str(), st2, ec);
     }
   else if (!exists(s1) || !exists(s2))
     ec = std::make_error_code(std::errc::no_such_file_or_directory);
@@ -982,7 +1011,15 @@ fs::hard_link_count(const path& p)
 std::uintmax_t
 fs::hard_link_count(const path& p, error_code& ec) noexcept
 {
-#ifdef _GLIBCXX_HAVE_SYS_STAT_H
+#if _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  auto_win_file_handle h(p.c_str(), ec);
+  if (h && h.get_info())
+    {
+      ec.clear();
+      return static_cast<uintmax_t>(h.info.nNumberOfLinks);
+    }
+  return static_cast<uintmax_t>(-1);
+#elif defined _GLIBCXX_HAVE_SYS_STAT_H
   return do_stat(p, ec, std::mem_fn(&stat_type::st_nlink),
 		 static_cast<uintmax_t>(-1));
 #else

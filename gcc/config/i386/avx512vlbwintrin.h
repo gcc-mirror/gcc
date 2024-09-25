@@ -2089,7 +2089,7 @@ _mm_maskz_slli_epi16 (__mmask8 __U, __m128i __A, unsigned int __B)
 #define _mm256_mask_alignr_epi8(W, U, X, Y, N)					    \
   ((__m256i) __builtin_ia32_palignr256_mask ((__v4di)(__m256i)(X),		    \
 					    (__v4di)(__m256i)(Y), (int)((N) * 8),   \
-					    (__v4di)(__m256i)(X), (__mmask32)(U)))
+					    (__v4di)(__m256i)(W), (__mmask32)(U)))
 
 #define _mm256_mask_srli_epi16(W, U, A, B)                              \
   ((__m256i) __builtin_ia32_psrlwi256_mask ((__v16hi)(__m256i)(A),      \
@@ -2172,7 +2172,7 @@ _mm_maskz_slli_epi16 (__mmask8 __U, __m128i __A, unsigned int __B)
 #define _mm_mask_alignr_epi8(W, U, X, Y, N)					    \
   ((__m128i) __builtin_ia32_palignr128_mask ((__v2di)(__m128i)(X),		    \
 					    (__v2di)(__m128i)(Y), (int)((N) * 8),   \
-					    (__v2di)(__m128i)(X), (__mmask16)(U)))
+					    (__v2di)(__m128i)(W), (__mmask16)(U)))
 
 #define _mm_maskz_alignr_epi8(U, X, Y, N)					    \
   ((__m128i) __builtin_ia32_palignr128_mask ((__v2di)(__m128i)(X),		    \

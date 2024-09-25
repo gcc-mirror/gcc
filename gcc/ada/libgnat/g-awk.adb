@@ -261,7 +261,7 @@ package body GNAT.AWK is
    -- Session Data --
    ------------------
 
-   type Session_Data is record
+   type Session_Data is limited record
       Current_File : Text_IO.File_Type;
       Current_Line : Unbounded_String;
       Separators   : Split.Mode_Access;

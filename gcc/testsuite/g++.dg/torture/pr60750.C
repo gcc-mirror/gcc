@@ -1,5 +1,6 @@
 // { dg-do run }
 // { dg-options "-std=c++11" }
+// { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } }
 
 #include <string>
 #include <stdexcept>

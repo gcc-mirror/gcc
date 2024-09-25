@@ -334,6 +334,10 @@ environment to your ``good'' shell prior to running
 @command{zsh} is not a fully compliant POSIX shell and will not
 work when configuring GCC@.
 
+@item GNU flex
+
+Necessary to build the lexical analysis module.
+
 @item A POSIX or SVR4 awk
 
 Necessary for creating some of the generated source files for GCC@.
@@ -1272,7 +1276,7 @@ default set of libraries is selected based on the value of
 @option{--target}.
 
 @item amdgcn*-*-*
-@var{list} is a comma separated list of ISA names (allowed values: @code{fiji},
+@var{list} is a comma separated list of ISA names (allowed values:
 @code{gfx900}, @code{gfx906}, @code{gfx908}, @code{gfx90a}, @code{gfx90c}, 
 @code{gfx1030}, @code{gfx1036}, @code{gfx1100}, @code{gfx1103}).
 It ought not include the name of the default
@@ -2684,13 +2688,14 @@ omitted from @file{libgcc.a} on the assumption that it will be provided by
 <a name="avr"></a>
 @end html
 @item --with-avrlibc
-Only supported for the AVR target. Specifies that @samp{AVR-Libc} is
-being used as the target C@tie{} library.  This causes float support
+Only supported for the AVR target. Specifies that
+@uref{https://github.com/avrdudes/avr-libc/,,AVR-LibC}
+is being used as the target C@tie{} library.  This causes float support
 functions like @code{__addsf3} to be omitted from @file{libgcc.a} on
 the assumption that it will be provided by @file{libm.a}.  For more
 technical details, cf. @uref{https://gcc.gnu.org/PR54461,,PR54461}.
 It is not supported for
-RTEMS configurations, which currently use newlib.  The option is
+RTEMS configurations, which currently use Newlib.  The option is
 supported since version 4.7.2 and is the default in 4.8.0 and newer.
 
 @item --with-double=@{32|64|32,64|64,32@}
@@ -3952,20 +3957,14 @@ Instead of GNU Binutils, you will need to install LLVM 15, or later, and copy
 by specifying a @code{--with-multilib-list=} that does not list @code{gfx1100}
 and @code{gfx1103}.
 
-Use Newlib (4.3.0 or newer; 4.4.0 contains some improvements and git commit
-7dd4eb1db (2024-03-25, post-4.4.0) fixes device console output for GFX10 and
-GFX11 devices).
+Use Newlib (4.3.0 or newer; 4.4.0 contains some improvements and git commits
+7dd4eb1db and ed50a50b9 (2024-04-04, post-4.4.0) fix device console output
+for GFX10 and GFX11 devices).
 
 To run the binaries, install the HSA Runtime from the
 @uref{https://rocm.docs.amd.com/,,ROCm Platform}, and use
 @file{libexec/gcc/amdhsa-amdhsa/@var{version}/gcn-run} to launch them
 on the GPU.
-
-To enable support for GCN3 Fiji devices (gfx803), GCC has to be configured with
-@option{--with-arch=@code{fiji}} or
-@option{--with-multilib-list=@code{fiji},...}.  Note that support for Fiji
-devices has been removed in ROCm 4.0 and support in LLVM was deprecated and has
-been removed in LLVM 18.
 
 @html
 <hr />
@@ -4001,33 +4000,29 @@ GNAT 4.6, 4.9 or 5 release branches are known to succeed.
 @end html
 @anchor{avr}
 @heading avr
-ATMEL AVR-family micro controllers.  These are used in embedded
+AVR 8-bit microcontrollers.  These are used in embedded
 applications.  There are no standard Unix configurations.
 @ifnothtml
 @xref{AVR Options,, AVR Options, gcc, Using the GNU Compiler
 Collection (GCC)},
 @end ifnothtml
 @ifhtml
-See ``AVR Options'' in the main manual
+See @uref{https://gcc.gnu.org/onlinedocs/gcc/AVR-Options.html,,AVR Options}
+in the main manual
 @end ifhtml
 for the list of supported MCU types.
 
-Use @samp{configure --target=avr --enable-languages="c"} to configure GCC@.
+Use @samp{configure --target=avr --enable-languages="c,c++"} to configure GCC@.
 
 Further installation notes and other useful information about AVR tools
 can also be obtained from:
 
 @itemize @bullet
 @item
-@uref{http://www.nongnu.org/avr/,,http://www.nongnu.org/avr/}
+@uref{https://avrdudes.github.io/avr-libc/avr-libc-user-manual/install_tools.html,,AVR-LibC: Building and Installing the GNU Tool Chain}
+@item
+@uref{https://github.com/sprintersb/atest?tab=readme-ov-file#running-the-avr-gcc-testsuite-using-the-avrtest-simulator,,AVRtest: Running the avr-gcc Testsuite}
 @end itemize
-
-The following error:
-@smallexample
-Error: register required
-@end smallexample
-
-indicates that you should upgrade to a newer version of the binutils.
 
 @html
 <hr />
@@ -5044,7 +5039,7 @@ as the @command{build} parameter on the @command{configure} line.  For example:
 @end html
 @anchor{c6x-x-x}
 @heading c6x-*-*
-The C6X family of processors. This port requires binutils-2.22 or newer.
+The C6X family of processors. This port requires binutils 2.22 or newer.
 
 @html
 <hr />

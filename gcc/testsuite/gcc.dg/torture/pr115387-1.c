@@ -3,7 +3,7 @@
 
 #define PRINTF_CHK 0x34
 
-typedef unsigned long uintptr_t;
+typedef __UINTPTR_TYPE__ uintptr_t;
 
 struct __printf_buffer {
   char *write_ptr;

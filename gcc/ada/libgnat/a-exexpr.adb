@@ -494,8 +494,8 @@ package body Exception_Propagation is
       then
          declare
             Current : constant EOA := Get_Current_Excep.all;
-            Cur_Occ : constant GCC_Exception_Access
-              := To_GCC_Exception (Current.Machine_Occurrence);
+            Cur_Occ : constant GCC_Exception_Access :=
+              To_GCC_Exception (Current.Machine_Occurrence);
          begin
             --  If we are releasing the Machine_Occurrence of the current
             --  exception, reset the access to it, so that it is no

@@ -1,4 +1,5 @@
-/* { dg-options "-fcondition-coverage -ftest-coverage -O2 -c" } */
+/* { dg-options "-fcondition-coverage -ftest-coverage -O2" } */
+/* { dg-do compile } */
 
 #include <stdint.h>
 #include <limits.h>

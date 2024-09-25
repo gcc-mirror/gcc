@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv64em -mabi=lp64e -mno-div -mcmodel=medlow" } */
+/* { dg-warning "LP64E ABI is marked for deprecation in GCC" "" { target *-*-* } 0 } */
+/* { dg-note "if you need LP64E please notify the GCC project via PR116152" "" { target *-*-* } 0 } */
 
 int main () {
 #if !defined(__riscv)

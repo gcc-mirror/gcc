@@ -50,6 +50,22 @@
 #error "bad result for ___Noreturn__"
 #endif
   
+#if __has_c_attribute (unsequenced) != 202311L
+#error "bad result for unsequenced"
+#endif
+
+#if __has_c_attribute (__unsequenced__) != 202311L
+#error "bad result for __unsequenced__"
+#endif
+
+#if __has_c_attribute (reproducible) != 202311L
+#error "bad result for reproducible"
+#endif
+
+#if __has_c_attribute (__reproducible__) != 202311L
+#error "bad result for __reproducible__"
+#endif
+
 /* Macros in the attribute name are expanded.  */
 #define foo deprecated
 #if __has_c_attribute (foo) != 202311L

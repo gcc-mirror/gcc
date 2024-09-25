@@ -19,8 +19,7 @@
 #ifndef RUST_BIR_DUMP_H
 #define RUST_BIR_DUMP_H
 
-#include <ostream>
-#include <utility>
+#include "rust-system.h"
 #include "rust-bir-place.h"
 #include "rust-bir-visitor.h"
 #include "rust-bir.h"
@@ -38,8 +37,8 @@ class Dump : public Visitor
   std::vector<BasicBlockId> bb_fold_map;
   std::vector<PlaceId> place_map;
 
-  PlaceId node_place = INVALID_PLACE;
-  BasicBlockId node_bb = INVALID_BB;
+  PlaceId statement_place = INVALID_PLACE;
+  BasicBlockId statement_bb = INVALID_BB;
   bool bb_terminated = false;
 
 public:
@@ -50,16 +49,19 @@ public:
   void go (bool enable_simplify_cfg = false);
 
 protected:
-  void visit (Node &node) override;
+  void visit (const Statement &stmt) override;
   void visit_place (PlaceId place_id);
   void visit_move_place (PlaceId place_id);
-  void visit (BorrowExpr &expr) override;
+  void visit (const BorrowExpr &expr) override;
   void visit_lifetime (PlaceId place_id);
-  void visit (InitializerExpr &expr) override;
-  void visit (CallExpr &expr) override;
-  void visit (Operator<1> &expr) override;
-  void visit (Operator<2> &expr) override;
-  void visit (Assignment &expr) override;
+  void visit (const InitializerExpr &expr) override;
+  void visit (const CallExpr &expr) override;
+  void visit (const Operator<1> &expr) override;
+  void visit (const Operator<2> &expr) override;
+  void visit (const Assignment &expr) override;
+  void visit_scope (ScopeId id, size_t depth = 1);
+
+  std::ostream &indent (size_t depth);
 };
 
 } // namespace BIR

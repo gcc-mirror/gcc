@@ -1,4 +1,5 @@
 //  { dg-additional-options "-std=c++17" }
+//  { dg-skip-if "requires hosted libstdc++ for vector in ramp-return.h" { ! hostedlib } }
 #define DELETE_COPY_CTOR 1
 #include "ramp-return.h"
 

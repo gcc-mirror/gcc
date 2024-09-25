@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Converts between INT_CST and GMP integer representations.  */
 tree gfc_conv_mpz_to_tree (mpz_t, int);
+tree gfc_conv_mpz_unsigned_to_tree (mpz_t, int);
 tree gfc_conv_mpz_to_tree_type (mpz_t, const tree);
 void gfc_conv_tree_to_mpz (mpz_t, tree);
 

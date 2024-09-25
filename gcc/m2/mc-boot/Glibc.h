@@ -85,6 +85,17 @@ typedef libc_exitP_t libc_exitP_C;
 
 struct libc_exitP_p { libc_exitP_t proc; };
 
+EXTERN double libc_atof (void * nptr);
+EXTERN int libc_atoi (void * nptr);
+EXTERN ssize_t libc_atol (void * nptr);
+EXTERN long int libc_atoll (void * nptr);
+EXTERN double libc_strtod (void * nptr, void * endptr);
+EXTERN float libc_strtof (void * nptr, void * endptr);
+EXTERN long double libc_strtold (void * nptr, void * endptr);
+EXTERN ssize_t libc_strtol (void * nptr, void * endptr, int base);
+EXTERN long int libc_strtoll (void * nptr, void * endptr, int base);
+EXTERN size_t libc_strtoul (void * nptr, void * endptr, int base);
+EXTERN long unsigned int libc_strtoull (void * nptr, void * endptr, int base);
 EXTERN ssize_t libc_write (int d, void * buf, size_t nbytes);
 EXTERN ssize_t libc_read (int d, void * buf, size_t nbytes);
 EXTERN int libc_system (void * a);
@@ -178,7 +189,7 @@ EXTERN int libc_close (int d);
    open - open the file, filename with flag and mode.
 */
 
-EXTERN int libc_open (void * filename, int oflag, ...);
+EXTERN int libc_open (void * filename, int oflag, int mode);
 
 /*
    creat - creates a new file

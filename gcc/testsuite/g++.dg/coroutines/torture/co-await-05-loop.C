@@ -1,4 +1,5 @@
 //  { dg-do run }
+//  { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
 
 // Check correct operation of co_await in a loop without local state.
 

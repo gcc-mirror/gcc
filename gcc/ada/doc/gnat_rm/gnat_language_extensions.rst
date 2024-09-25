@@ -35,7 +35,8 @@ file, or in a ``.adc`` file corresponding to your project.
 * The ``-gnatX`` option, that you can pass to the compiler directly, will
   activate the curated subset of extensions.
 
-.. attention:: You can activate the extended set of extensions by using either
+.. attention:: You can activate the experimental set of extensions
+   in addition by using either
    the ``-gnatX0`` command line flag, or the pragma ``Extensions_Allowed`` with
    ``All_Extensions`` as an argument. However, it is not recommended you use
    this subset for serious projects; it is only meant as a technology preview
@@ -46,6 +47,9 @@ file, or in a ``.adc`` file corresponding to your project.
 Curated Extensions
 ==================
 
+Features activated via ``-gnatX`` or
+``pragma Extensions_Allowed (On)``.
+
 Local Declarations Without Block
 --------------------------------
 
@@ -53,8 +57,6 @@ A basic_declarative_item may appear at the place of any statement.
 This avoids the heavy syntax of block_statements just to declare
 something locally.
 
-Link to the original RFC:
-https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-local-vars-without-block.md
 For example:
 
 .. code-block:: ada
@@ -67,76 +69,8 @@ For example:
       X := X + Squared;
    end if;
 
-Conditional when constructs
----------------------------
-
-This feature extends the use of ``when`` as a way to condition a control-flow
-related statement, to all control-flow related statements.
-
-To do a conditional return in a procedure the following syntax should be used:
-
-.. code-block:: ada
-
-   procedure P (Condition : Boolean) is
-   begin
-      return when Condition;
-   end;
-
-This will return from the procedure if ``Condition`` is true.
-
-When being used in a function the conditional part comes after the return value:
-
-.. code-block:: ada
-
-   function Is_Null (I : Integer) return Boolean is
-   begin
-      return True when I = 0;
-      return False;
-   end;
-
-In a similar way to the ``exit when`` a ``goto ... when`` can be employed:
-
-.. code-block:: ada
-
-   procedure Low_Level_Optimized is
-      Flags : Bitmapping;
-   begin
-      Do_1 (Flags);
-      goto Cleanup when Flags (1);
-
-      Do_2 (Flags);
-      goto Cleanup when Flags (32);
-
-      --  ...
-
-   <<Cleanup>>
-      --  ...
-   end;
-
-.. code-block
-
-To use a conditional raise construct:
-
-.. code-block:: ada
-
-   procedure Foo is
-   begin
-      raise Error when Imported_C_Func /= 0;
-   end;
-
-An exception message can also be added:
-
-.. code-block:: ada
-
-   procedure Foo is
-   begin
-      raise Error with "Unix Error"
-        when Imported_C_Func /= 0;
-   end;
-
-
 Link to the original RFC:
-https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-conditional-when-constructs.rst
+https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-local-vars-without-block.md
 
 Fixed lower bounds for array types and subtypes
 -----------------------------------------------
@@ -323,20 +257,8 @@ For example:
        f" a double quote is \" and" &
        f" an open brace is \{");
 
-Finally, a syntax is provided for creating multi-line string literals,
-without having to explicitly use an escape sequence such as ``\n``. For
-example:
-
-.. code-block:: ada
-
-    Put_Line
-      (f"This is a multi-line"
-        "string literal"
-        "There is no ambiguity about how many"
-        "spaces are included in each line");
-
-Here is a link to the original RFC   :
-https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-string-interpolation.rst
+Link to the original RFC:
+https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-string-interpolation.md
 
 Constrained attribute for generic objects
 -----------------------------------------
@@ -351,10 +273,165 @@ The Ada 202x ``Static`` aspect can be specified on Intrinsic imported functions
 and the compiler will evaluate some of these intrinsics statically, in
 particular the ``Shift_Left`` and ``Shift_Right`` intrinsics.
 
+First Controlling Parameter
+---------------------------
+
+A new pragma/aspect, ``First_Controlling_Parameter``, is introduced for tagged
+types, altering the semantics of primitive/controlling parameters. When a
+tagged type is marked with this aspect, only subprograms where the first
+parameter is of that type will be considered dispatching primitives. This
+pragma/aspect applies to the entire hierarchy, starting from the specified
+type, without affecting inherited primitives.
+
+Here is an example of this feature:
+
+.. code-block:: ada
+
+    package Example is
+       type Root is tagged private;
+
+       procedure P (V : Integer; V2 : Root);
+       -- Primitive
+
+       type Child is tagged private
+         with First_Controlling_Parameter;
+
+    private
+       type Root is tagged null record;
+       type Child is new Root with null record;
+
+       overriding
+       procedure P (V : Integer; V2 : Child);
+       -- Primitive
+
+       procedure P2 (V : Integer; V2 : Child);
+       -- NOT Primitive
+
+       function F return Child; -- NOT Primitive
+
+       function F2 (V : Child) return Child;
+       -- Primitive, but only controlling on the first parameter
+    end;
+
+Note that ``function F2 (V : Child) return Child;`` differs from ``F2 (V : Child)
+return Child'Class;`` in that the return type is a specific, definite type. This
+is also distinct from the legacy semantics, where further derivations with
+added fields would require overriding the function.
+
+The option ``-gnatw_j``, that you can pass to the compiler directly, enables
+warnings related to this new language feature. For instance, compiling the
+example above without this switch produces no warnings, but compiling it with
+``-gnatw_j`` generates the following warning on the declaration of procedure P2:
+
+.. code-block:: ada
+
+    warning: not a dispatching primitive of tagged type "Child"
+    warning: disallowed by First_Controlling_Parameter on "Child"
+
+For generic formal tagged types, you can specify whether the type has the
+First_Controlling_Parameter aspect enabled:
+
+.. code-block:: ada
+
+    generic
+       type T is tagged private with First_Controlling_Parameter;
+    package T is
+        type U is new T with null record;
+        function Foo return U; -- Not a primitive
+    end T;
+
+For tagged partial views, the value of the aspect must be consistent between
+the partial and full views:
+
+.. code-block:: ada
+
+    package R is
+       type T is tagged private;
+    ...
+    private
+       type T is tagged null record with First_Controlling_Parameter; -- ILLEGAL
+    end R;
+
+Link to the original RFC:
+https://github.com/AdaCore/ada-spark-rfcs/blob/master/considered/rfc-oop-first-controlling.rst
+
 .. _Experimental_Language_Extensions:
 
 Experimental Language Extensions
 ================================
+
+Features activated via ``-gnatX0`` or
+``pragma Extensions_Allowed (All_Extensions)``.
+
+Conditional when constructs
+---------------------------
+
+This feature extends the use of ``when`` as a way to condition a control-flow
+related statement, to all control-flow related statements.
+
+To do a conditional return in a procedure the following syntax should be used:
+
+.. code-block:: ada
+
+   procedure P (Condition : Boolean) is
+   begin
+      return when Condition;
+   end;
+
+This will return from the procedure if ``Condition`` is true.
+
+When being used in a function the conditional part comes after the return value:
+
+.. code-block:: ada
+
+   function Is_Null (I : Integer) return Boolean is
+   begin
+      return True when I = 0;
+      return False;
+   end;
+
+In a similar way to the ``exit when`` a ``goto ... when`` can be employed:
+
+.. code-block:: ada
+
+   procedure Low_Level_Optimized is
+      Flags : Bitmapping;
+   begin
+      Do_1 (Flags);
+      goto Cleanup when Flags (1);
+
+      Do_2 (Flags);
+      goto Cleanup when Flags (32);
+
+      --  ...
+
+   <<Cleanup>>
+      --  ...
+   end;
+
+.. code-block
+
+To use a conditional raise construct:
+
+.. code-block:: ada
+
+   procedure Foo is
+   begin
+      raise Error when Imported_C_Func /= 0;
+   end;
+
+An exception message can also be added:
+
+.. code-block:: ada
+
+   procedure Foo is
+   begin
+      raise Error with "Unix Error"
+        when Imported_C_Func /= 0;
+   end;
+
+Link to the original RFC:
+https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-conditional-when-constructs.rst
 
 Storage Model
 -------------
@@ -590,8 +667,76 @@ Example:
     procedure Finalize   (Obj : in out Ctrl);
     procedure Initialize (Obj : in out Ctrl);
 
-As of this writing, the relaxed semantics for finalization operations are
-only implemented for dynamically allocated objects.
-
 Link to the original RFC:
 https://github.com/AdaCore/ada-spark-rfcs/blob/topic/finalization-rehaul/considered/rfc-generalized-finalization.md
+
+Inference of Dependent Types in Generic Instantiations
+------------------------------------------------------
+
+If a generic formal type T2 depends on another formal type T1,
+the actual for T1 can be inferred from the actual for T2.
+That is, you can give the actual for T2, and leave out the one
+for T1.
+
+For example, ``Ada.Unchecked_Deallocation`` has two generic formals:
+
+.. code-block:: ada
+
+    generic
+       type Object (<>) is limited private;
+       type Name is access Object;
+    procedure Ada.Unchecked_Deallocation (X : in out Name);
+
+where ``Name`` depends on ``Object``. With this language extension,
+you can leave out the actual for ``Object``, as in:
+
+.. code-block:: ada
+
+    type Integer_Access is access all Integer;
+
+    procedure Free is new Unchecked_Deallocation (Name => Integer_Access);
+
+The compiler will infer that the actual type for ``Object`` is ``Integer``.
+Note that named notation is always required when using inference.
+
+The following inferences are allowed:
+
+- For a formal access type, the designated type can be inferred.
+
+- For a formal array type, the index type(s) and the component
+  type can be inferred.
+
+- For a formal type with discriminats, the type(s) of the discriminants
+  can be inferred.
+
+Example for arrays:
+
+.. code-block:: ada
+
+    generic
+        type Element_Type is private;
+        type Index_Type is (<>);
+        type Array_Type is array (Index_Type range <>) of Element_Type;
+    package Array_Operations is
+        ...
+    end Array_Operations;
+
+    ...
+
+    type Int_Array is array (Positive range <>) of Integer;
+
+    package Int_Array_Operations is new Array_Operations (Array_Type => Int_Array);
+
+The index and component types of ``Array_Type`` are inferred from
+``Int_Array``, so that the above instantiation is equivalent to
+the following standard-Ada instantiation:
+
+.. code-block:: ada
+
+    package Int_Array_Operations is new Array_Operations
+      (Element_Type => Integer,
+       Index_Type   => Positive,
+       Array_Type   => Int_Array);
+
+Link to the original RFC:
+https://github.com/AdaCore/ada-spark-rfcs/blob/topic/generic_instantiations/considered/rfc-inference-of-dependent-types.md

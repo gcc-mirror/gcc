@@ -91,6 +91,18 @@
 ;; the same template.
 (define_mode_iterator SHI [SI HI])
 
+;; This iterator and attribute allow signed/unsigned FP truncations to be
+;; generated from one template.
+(define_code_iterator any_fix [fix unsigned_fix])
+(define_code_attr m_fix [(fix "trunc") (unsigned_fix "utrunc")])
+(define_code_attr s_fix [(fix "") (unsigned_fix "uns")])
+
+;; This iterator and attribute allow signed/unsigned FP conversions to be
+;; generated from one template.
+(define_code_iterator any_float [float unsigned_float])
+(define_code_attr m_float [(float "float") (unsigned_float "ufloat")])
+(define_code_attr s_float [(float "") (unsigned_float "uns")])
+
 
 ;; Attributes.
 
@@ -1132,38 +1144,60 @@
 
 ;; Conversions.
 
-(define_insn "fix_truncsfsi2"
+(define_insn "fix<s_fix>_truncsfsi2"
   [(set (match_operand:SI 0 "register_operand" "=a")
-	(fix:SI (match_operand:SF 1 "register_operand" "f")))]
+	(any_fix:SI (match_operand:SF 1 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
-  "trunc.s\t%0, %1, 0"
+  "<m_fix>.s\t%0, %1, 0"
   [(set_attr "type"	"fconv")
    (set_attr "mode"	"SF")
    (set_attr "length"	"3")])
 
-(define_insn "fixuns_truncsfsi2"
+(define_insn "*fix<s_fix>_truncsfsi2_2x"
   [(set (match_operand:SI 0 "register_operand" "=a")
-	(unsigned_fix:SI (match_operand:SF 1 "register_operand" "f")))]
+	(any_fix:SI (plus:SF (match_operand:SF 1 "register_operand" "f")
+			     (match_dup 1))))]
   "TARGET_HARD_FLOAT"
-  "utrunc.s\t%0, %1, 0"
+  "<m_fix>.s\t%0, %1, 1"
   [(set_attr "type"	"fconv")
    (set_attr "mode"	"SF")
    (set_attr "length"	"3")])
 
-(define_insn "floatsisf2"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(float:SF (match_operand:SI 1 "register_operand" "a")))]
+(define_insn "*fix<s_fix>_truncsfsi2_scaled"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(any_fix:SI (mult:SF (match_operand:SF 1 "register_operand" "f")
+			     (match_operand:SF 2 "fix_scaling_operand" "F"))))]
   "TARGET_HARD_FLOAT"
-  "float.s\t%0, %1, 0"
+{
+  static char result[64];
+  sprintf (result, "<m_fix>.s\t%%0, %%1, %d",
+	   REAL_EXP (CONST_DOUBLE_REAL_VALUE (operands[2])) - 1);
+  return result;
+}
   [(set_attr "type"	"fconv")
    (set_attr "mode"	"SF")
    (set_attr "length"	"3")])
 
-(define_insn "floatunssisf2"
+(define_insn "float<s_float>sisf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
-	(unsigned_float:SF (match_operand:SI 1 "register_operand" "a")))]
+	(any_float:SF (match_operand:SI 1 "register_operand" "a")))]
   "TARGET_HARD_FLOAT"
-  "ufloat.s\t%0, %1, 0"
+  "<m_float>.s\t%0, %1, 0"
+  [(set_attr "type"	"fconv")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"3")])
+
+(define_insn "*float<s_float>sisf2_scaled"
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(mult:SF (any_float:SF (match_operand:SI 1 "register_operand" "a"))
+		 (match_operand:SF 2 "float_scaling_operand" "F")))]
+  "TARGET_HARD_FLOAT"
+{
+  static char result[64];
+  sprintf (result, "<m_float>.s\t%%0, %%1, %d",
+	   1 - REAL_EXP (CONST_DOUBLE_REAL_VALUE (operands[2])));
+  return result;
+}
   [(set_attr "type"	"fconv")
    (set_attr "mode"	"SF")
    (set_attr "length"	"3")])
@@ -1215,9 +1249,8 @@
   xtensa_split_operand_pair (operands, SImode);
   if (reg_overlap_mentioned_p (operands[0], operands[3]))
     {
-      rtx tmp;
-      tmp = operands[0], operands[0] = operands[1], operands[1] = tmp;
-      tmp = operands[2], operands[2] = operands[3], operands[3] = tmp;
+      std::swap (operands[0], operands[1]);
+      std::swap (operands[2], operands[3]);
     }
 })
 
@@ -1420,8 +1453,8 @@
 })
 
 (define_insn "movsf_internal"
-  [(set (match_operand:SF 0 "nonimmed_operand" "=f,f,U,D,D,R,a,f,a,a,W,a,a,U")
-	(match_operand:SF 1 "move_operand" "f,U,f,d,R,d,r,r,f,Y,iF,T,U,r"))]
+  [(set (match_operand:SF 0 "nonimmed_operand" "=f,f,^U,D,a,D,R,a,f,a,a,W,a,U")
+	(match_operand:SF 1 "move_operand" "f,^U,f,d,T,R,d,r,r,f,Y,iF,U,r"))]
   "((register_operand (operands[0], SFmode)
      || register_operand (operands[1], SFmode))
     && !(FP_REG_P (xt_true_regnum (operands[0]))
@@ -1431,6 +1464,7 @@
    %v1lsi\t%0, %1
    %v0ssi\t%1, %0
    mov.n\t%0, %1
+   %v1l32r\t%0, %1
    %v1l32i.n\t%0, %1
    %v0s32i.n\t%1, %0
    mov\t%0, %1
@@ -1438,12 +1472,11 @@
    rfr\t%0, %1
    movi\t%0, %y1
    const16\t%0, %t1\;const16\t%0, %b1
-   %v1l32r\t%0, %1
    %v1l32i\t%0, %1
    %v0s32i\t%1, %0"
-  [(set_attr "type"	"farith,fload,fstore,move,load,store,move,farith,farith,move,move,load,load,store")
+  [(set_attr "type"	"farith,fload,fstore,move,load,load,store,move,farith,farith,move,move,load,store")
    (set_attr "mode"	"SF")
-   (set_attr "length"	"3,3,3,2,2,2,3,3,3,3,6,3,3,3")])
+   (set_attr "length"	"3,3,3,2,3,2,2,3,3,3,3,6,3,3")])
 
 (define_insn "*lsiu"
   [(set (match_operand:SF 0 "register_operand" "=f")
@@ -1562,9 +1595,8 @@
   xtensa_split_operand_pair (operands, SFmode);
   if (reg_overlap_mentioned_p (operands[0], operands[3]))
     {
-      rtx tmp;
-      tmp = operands[0], operands[0] = operands[1], operands[1] = tmp;
-      tmp = operands[2], operands[2] = operands[3], operands[3] = tmp;
+      std::swap (operands[0], operands[1]);
+      std::swap (operands[2], operands[3]);
     }
 })
 
@@ -2565,7 +2597,7 @@
 	 (match_operand 1 "" ""))]
   ""
 {
-  xtensa_expand_call (0, operands, false);
+  xtensa_expand_call (0, operands);
   DONE;
 })
 
@@ -2586,7 +2618,7 @@
 	      (match_operand 2 "" "")))]
   ""
 {
-  xtensa_expand_call (1, operands, false);
+  xtensa_expand_call (1, operands);
   DONE;
 })
 
@@ -2607,7 +2639,7 @@
 	 (match_operand 1 "" ""))]
   "!TARGET_WINDOWED_ABI"
 {
-  xtensa_expand_call (0, operands, true);
+  xtensa_expand_call (0, operands);
   DONE;
 })
 
@@ -2628,7 +2660,7 @@
 	      (match_operand 2 "" "")))]
   "!TARGET_WINDOWED_ABI"
 {
-  xtensa_expand_call (1, operands, true);
+  xtensa_expand_call (1, operands);
   DONE;
 })
 
@@ -2745,6 +2777,7 @@
   "!TARGET_WINDOWED_ABI"
 {
   xtensa_expand_epilogue ();
+  emit_use (gen_rtx_REG (SImode, A0_REG));
   DONE;
 })
 

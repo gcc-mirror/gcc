@@ -31,6 +31,7 @@
 #include "rust-type-util.h"
 #include "rust-compile-implitem.h"
 #include "rust-attribute-values.h"
+#include "rust-immutable-name-resolution-context.h"
 
 #include "fold-const.h"
 #include "stringpool.h"
@@ -657,6 +658,12 @@ HIRCompileBase::compile_function (
 
   // we don't mangle the main fn since we haven't implemented the main shim
   bool is_main_fn = fn_name.compare ("main") == 0;
+  if (is_main_fn)
+    {
+      rust_assert (!main_identifier_node);
+      /* So that 'MAIN_NAME_P' works.  */
+      main_identifier_node = get_identifier (ir_symbol_name.c_str ());
+    }
   std::string asm_name = fn_name;
 
   unsigned int flags = 0;

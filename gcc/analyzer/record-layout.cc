@@ -83,11 +83,8 @@ record_layout::dump_to_pp (pretty_printer *pp) const
 void
 record_layout::dump () const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp.set_output_stream (stderr);
+  tree_dump_pretty_printer pp (stderr);
   dump_to_pp (&pp);
-  pp_flush (&pp);
 }
 
 const record_layout::item *

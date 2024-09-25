@@ -1,3 +1,23 @@
+2024-09-23  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* dwarf2.h (enum dwarf_call_frame_info): specify underlying
+
+2024-09-20  Tobias Burnus  <tburnus@baylibre.com>
+
+	* cuda/cuda.h (cuDeviceGetUuid): Declare.
+	(cuDeviceGetUuid_v2): Add prototype.
+
+2024-09-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/116661
+	* gomp-constants.h (GOMP_INTEROP_IFR_LAST,
+	GOMP_INTEROP_IFR_SEPARATOR, GOMP_INTEROP_IFR_NONE): New.
+
+2024-08-09  Will Hawkins  <hawkinsw@obs.cr>
+
+	* btf.h (BTF_TYPE_INFO): Protect against user providing invalid
+	kind.
+
 2024-07-02  David Faust  <david.faust@oracle.com>
 
 	* btf.h (BTF_VOID_TYPEID, BTF_INIT_TYPEID): Move defines here,

@@ -896,9 +896,7 @@ package body Exp_Imgv is
          --  Apply a validity check, since it is a bit drastic to get a
          --  completely junk image value for an invalid value.
 
-         if not Expr_Known_Valid (Expr) then
-            Insert_Valid_Check (Expr);
-         end if;
+         Insert_Valid_Check (Expr);
 
          --  Generate:
          --    P1 : constant Natural := Typ'Pos (Typ?(Expr));
@@ -1249,9 +1247,7 @@ package body Exp_Imgv is
             --  Apply a validity check, since it is a bit drastic to get a
             --  completely junk image value for an invalid value.
 
-            if not Expr_Known_Valid (Expr) then
-               Insert_Valid_Check (Expr);
-            end if;
+            Insert_Valid_Check (Expr);
 
             Enum_Case := True;
          end if;

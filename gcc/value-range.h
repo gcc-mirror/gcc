@@ -363,7 +363,7 @@ protected:
 // HARD_MAX_RANGES.  This new storage is freed upon destruction.
 
 template<unsigned N, bool RESIZABLE = false>
-class int_range : public irange
+class int_range final : public irange
 {
 public:
   int_range ();
@@ -380,7 +380,7 @@ private:
   wide_int m_ranges[N*2];
 };
 
-class prange : public vrange
+class prange final : public vrange
 {
   friend class prange_storage;
   friend class vrange_printer;
@@ -523,7 +523,7 @@ nan_state::neg_p () const
 // The representation is a type with a couple of endpoints, unioned
 // with the set of { -NAN, +Nan }.
 
-class frange : public vrange
+class frange final : public vrange
 {
   friend class frange_storage;
   friend class vrange_printer;
@@ -588,6 +588,8 @@ public:
   bool maybe_isinf () const;
   bool signbit_p (bool &signbit) const;
   bool nan_signbit_p (bool &signbit) const;
+  bool known_isnormal () const;
+  bool known_isdenormal_or_zero () const;
 
 protected:
   virtual bool contains_p (tree cst) const override;
@@ -1648,6 +1650,33 @@ frange::known_isfinite () const
   return (!maybe_isnan () && !real_isinf (&m_min) && !real_isinf (&m_max));
 }
 
+// Return TRUE if range is known to be normal.
+
+inline bool
+frange::known_isnormal () const
+{
+  if (!known_isfinite ())
+    return false;
+
+  machine_mode mode = TYPE_MODE (type ());
+  return (!real_isdenormal (&m_min, mode) && !real_isdenormal (&m_max, mode)
+	  && !real_iszero (&m_min) && !real_iszero (&m_max)
+	  && (!real_isneg (&m_min) || real_isneg (&m_max)));
+}
+
+// Return TRUE if range is known to be denormal.
+
+inline bool
+frange::known_isdenormal_or_zero () const
+{
+  if (!known_isfinite ())
+    return false;
+
+  machine_mode mode = TYPE_MODE (type ());
+  return ((real_isdenormal (&m_min, mode) || real_iszero (&m_min))
+	  && (real_isdenormal (&m_max, mode) || real_iszero (&m_max)));
+}
+
 // Return TRUE if range may be infinite.
 
 inline bool
@@ -1764,13 +1793,7 @@ range_compatible_p (tree type1, tree type2)
   // types_compatible_p requires conversion in both directions to be useless.
   // GIMPLE only requires a cast one way in order to be compatible.
   // Ranges really only need the sign and precision to be the same.
-  return TYPE_SIGN (type1) == TYPE_SIGN (type2)
-	 && (TYPE_PRECISION (type1) == TYPE_PRECISION (type2)
-	     // FIXME: As PR112788 shows, for now on rs6000 _Float128 has
-	     // type precision 128 while long double has type precision 127
-	     // but both have the same mode so their precision is actually
-	     // the same, workaround it temporarily.
-	     || (SCALAR_FLOAT_TYPE_P (type1)
-		 && TYPE_MODE (type1) == TYPE_MODE (type2)));
+  return (TYPE_PRECISION (type1) == TYPE_PRECISION (type2)
+	  && TYPE_SIGN (type1) == TYPE_SIGN (type2));
 }
 #endif // GCC_VALUE_RANGE_H

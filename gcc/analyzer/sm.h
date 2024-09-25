@@ -94,18 +94,18 @@ public:
   state_t get_state_by_name (const char *name) const;
 
   /* Return true if STMT is a function call recognized by this sm.  */
-  virtual bool on_stmt (sm_context *sm_ctxt,
+  virtual bool on_stmt (sm_context &sm_ctxt,
 			const supernode *node,
 			const gimple *stmt) const = 0;
 
-  virtual void on_phi (sm_context *sm_ctxt ATTRIBUTE_UNUSED,
+  virtual void on_phi (sm_context &sm_ctxt ATTRIBUTE_UNUSED,
 		       const supernode *node ATTRIBUTE_UNUSED,
 		       const gphi *phi ATTRIBUTE_UNUSED,
 		       tree rhs ATTRIBUTE_UNUSED) const
   {
   }
 
-  virtual void on_condition (sm_context *sm_ctxt ATTRIBUTE_UNUSED,
+  virtual void on_condition (sm_context &sm_ctxt ATTRIBUTE_UNUSED,
 			     const supernode *node ATTRIBUTE_UNUSED,
 			     const gimple *stmt ATTRIBUTE_UNUSED,
 			     const svalue *lhs ATTRIBUTE_UNUSED,
@@ -115,7 +115,7 @@ public:
   }
 
   virtual void
-  on_bounded_ranges (sm_context *sm_ctxt ATTRIBUTE_UNUSED,
+  on_bounded_ranges (sm_context &sm_ctxt ATTRIBUTE_UNUSED,
 		     const supernode *node ATTRIBUTE_UNUSED,
 		     const gimple *stmt ATTRIBUTE_UNUSED,
 		     const svalue &sval ATTRIBUTE_UNUSED,

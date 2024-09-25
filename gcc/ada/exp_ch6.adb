@@ -346,10 +346,6 @@ package body Exp_Ch6 is
    --  of the return scope's entity list and the list structure would otherwise
    --  be corrupted. The homonym chain is preserved as well.
 
-   procedure Rewrite_Function_Call_For_C (N : Node_Id);
-   --  When generating C code, replace a call to a function that returns an
-   --  array into the generated procedure with an additional out parameter.
-
    procedure Set_Enclosing_Sec_Stack_Return (N : Node_Id);
    --  N is a return statement for a function that returns its result on the
    --  secondary stack. This sets the Sec_Stack_Needed_For_Return flag on the
@@ -521,15 +517,11 @@ package body Exp_Ch6 is
       else
          Desig_Typ := Directly_Designated_Type (Ptr_Typ);
 
-         --  Check for a library-level access type whose designated type has
-         --  suppressed finalization or the access type is subject to pragma
-         --  No_Heap_Finalization. Such an access type lacks a collection. Pass
-         --  a null actual to callee in order to signal a missing collection.
+         --  Check for a type that is subject to pragma No_Heap_Finalization.
+         --  Such a type lacks a collection. Pass a null actual to callee to
+         --  signal a missing collection.
 
-         if Is_Library_Level_Entity (Ptr_Typ)
-           and then (Finalize_Storage_Only (Desig_Typ)
-                      or else No_Heap_Finalization (Ptr_Typ))
-         then
+         if No_Heap_Finalization (Ptr_Typ) then
             Actual := Make_Null (Loc);
 
          --  Types in need of finalization actions
@@ -3883,7 +3875,7 @@ package body Exp_Ch6 is
                Formal : Entity_Id;
 
             begin
-               Actual := First (Parameter_Associations (Call_Node));
+               Actual := First_Actual (Call_Node);
                Formal := First_Formal (Subp);
                while Present (Actual)
                  and then Present (Formal)
@@ -3895,7 +3887,7 @@ package body Exp_Ch6 is
                      return True;
                   end if;
 
-                  Next (Actual);
+                  Next_Actual (Actual);
                   Next_Formal (Formal);
                end loop;
             end;
@@ -4076,73 +4068,6 @@ package body Exp_Ch6 is
         and then Can_Fold_Predicate_Call (Subp)
       then
          return;
-      end if;
-
-      if Transform_Function_Array
-        and then Nkind (Call_Node) = N_Function_Call
-        and then Is_Entity_Name (Name (Call_Node))
-      then
-         declare
-            Func_Id : constant Entity_Id :=
-                        Ultimate_Alias (Entity (Name (Call_Node)));
-         begin
-            --  When generating C code, transform a function call that returns
-            --  a constrained array type into procedure form.
-
-            if Rewritten_For_C (Func_Id) then
-
-               --  For internally generated calls ensure that they reference
-               --  the entity of the spec of the called function (needed since
-               --  the expander may generate calls using the entity of their
-               --  body).
-
-               if not Comes_From_Source (Call_Node)
-                 and then Nkind (Unit_Declaration_Node (Func_Id)) =
-                            N_Subprogram_Body
-               then
-                  Set_Entity (Name (Call_Node),
-                    Corresponding_Function
-                      (Corresponding_Procedure (Func_Id)));
-               end if;
-
-               Rewrite_Function_Call_For_C (Call_Node);
-               return;
-
-            --  Also introduce a temporary for functions that return a record
-            --  called within another procedure or function call, since records
-            --  are passed by pointer in the generated C code, and we cannot
-            --  take a pointer from a subprogram call.
-
-            elsif Modify_Tree_For_C
-              and then Nkind (Parent (Call_Node)) in N_Subprogram_Call
-              and then Is_Record_Type (Etype (Func_Id))
-            then
-               declare
-                  Temp_Id : constant Entity_Id := Make_Temporary (Loc, 'T');
-                  Decl    : Node_Id;
-
-               begin
-                  --  Generate:
-                  --    Temp : ... := Func_Call (...);
-
-                  Decl :=
-                    Make_Object_Declaration (Loc,
-                      Defining_Identifier => Temp_Id,
-                      Object_Definition   =>
-                        New_Occurrence_Of (Etype (Func_Id), Loc),
-                      Expression          =>
-                        Make_Function_Call (Loc,
-                          Name                   =>
-                            New_Occurrence_Of (Func_Id, Loc),
-                          Parameter_Associations =>
-                            Parameter_Associations (Call_Node)));
-
-                  Insert_Action (Parent (Call_Node), Decl);
-                  Rewrite (Call_Node, New_Occurrence_Of (Temp_Id, Loc));
-                  return;
-               end;
-            end if;
-         end;
       end if;
 
       --  First step, compute extra actuals, corresponding to any Extra_Formals
@@ -4575,17 +4500,6 @@ package body Exp_Ch6 is
            and then Nkind (Actual) = N_Type_Conversion
          then
             Add_View_Conversion_Invariants (Formal, Actual);
-         end if;
-
-         --  Generating C the initialization of an allocator is performed by
-         --  means of individual statements, and hence it must be done before
-         --  the call.
-
-         if Modify_Tree_For_C
-           and then Nkind (Actual) = N_Allocator
-           and then Nkind (Expression (Actual)) = N_Qualified_Expression
-         then
-            Remove_Side_Effects (Actual);
          end if;
 
          --  This label is required when skipping extra actual generation for
@@ -5262,15 +5176,6 @@ package body Exp_Ch6 is
                     and then In_Package_Body
                   then
                      Must_Inline := not In_Extended_Main_Source_Unit (Subp);
-
-                  --  Inline calls to _Wrapped_Statements when generating C
-
-                  elsif Modify_Tree_For_C
-                    and then In_Same_Extended_Unit (Sloc (Bod), Loc)
-                    and then Chars (Name (Call_Node))
-                               = Name_uWrapped_Statements
-                  then
-                     Must_Inline := True;
                   end if;
                end if;
 
@@ -5353,7 +5258,9 @@ package body Exp_Ch6 is
       --  function call is transformed into a reference to the result that has
       --  been built either on the primary or the secondary stack.
 
-      if Needs_Finalization (Etype (Subp)) then
+      if Nkind (Call_Node) = N_Function_Call
+        and then Needs_Finalization (Etype (Call_Node))
+      then
          if not Is_Build_In_Place_Function_Call (Call_Node)
            and then
              (No (First_Formal (Subp))
@@ -5361,7 +5268,7 @@ package body Exp_Ch6 is
                  not Is_Concurrent_Record_Type (Etype (First_Formal (Subp))))
          then
             Expand_Ctrl_Function_Call
-              (Call_Node, Needs_Secondary_Stack (Etype (Subp)));
+              (Call_Node, Needs_Secondary_Stack (Etype (Call_Node)));
 
          --  Build-in-place function calls which appear in anonymous contexts
          --  need a transient scope to ensure the proper finalization of the
@@ -5383,7 +5290,7 @@ package body Exp_Ch6 is
                  Is_Build_In_Place_Function_Call (Parent (Call_Node)))
          then
             Establish_Transient_Scope
-              (Call_Node, Needs_Secondary_Stack (Etype (Subp)));
+              (Call_Node, Needs_Secondary_Stack (Etype (Call_Node)));
          end if;
       end if;
    end Expand_Call_Helper;
@@ -5780,8 +5687,6 @@ package body Exp_Ch6 is
    --  (this makes things easier on Gigi which does not want to have to handle
    --  a missing return).
 
-   --  Add call to Activate_Tasks if body is a task activator
-
    --  Deal with possible detection of infinite recursion
 
    --  Eliminate body completely if convention stubbed
@@ -5795,7 +5700,7 @@ package body Exp_Ch6 is
    --  or has any parameters of limited types, where limited means that the
    --  run-time view is limited (i.e. the full type is limited).
 
-   --  Wrap thread body
+   --  Apply raise check
 
    procedure Expand_N_Subprogram_Body (N : Node_Id) is
       Body_Id  : constant Entity_Id  := Defining_Entity (N);
@@ -6124,6 +6029,10 @@ package body Exp_Ch6 is
       --  without it being previously elaborated.
 
       Install_Primitive_Elaboration_Check (N);
+
+      --  If the subprogram is subject to pragma No_Raise, apply the check
+
+      Apply_Raise_Check (N);
    end Expand_N_Subprogram_Body;
 
    -----------------------------------
@@ -6173,7 +6082,6 @@ package body Exp_Ch6 is
       Prot_Bod  : Node_Id;
       Prot_Decl : Node_Id;
       Prot_Id   : Entity_Id;
-      Typ       : Entity_Id;
 
    begin
       --  Deal with case of protected subprogram. Do not generate protected
@@ -6238,25 +6146,6 @@ package body Exp_Ch6 is
 
             Set_Is_Inlined (Subp, False);
          end;
-      end if;
-
-      --  When generating C code, transform a function that returns a
-      --  constrained array type into a procedure with an out parameter
-      --  that carries the return value.
-
-      --  We skip this transformation for unchecked conversions, since they
-      --  are not needed by the C generator (and this also produces cleaner
-      --  output).
-
-      Typ := Get_Fullest_View (Etype (Subp));
-
-      if Transform_Function_Array
-        and then Nkind (Specification (N)) = N_Function_Specification
-        and then Is_Array_Type (Typ)
-        and then Is_Constrained (Typ)
-        and then not Is_Unchecked_Conversion_Instance (Subp)
-      then
-         Build_Procedure_Form (N);
       end if;
    end Expand_N_Subprogram_Declaration;
 
@@ -7100,14 +6989,7 @@ package body Exp_Ch6 is
       if Present (Utyp)
         and then Is_Tagged_Type (Utyp)
         and then not Is_Class_Wide_Type (Utyp)
-        and then (Nkind (Exp) in
-                      N_Type_Conversion | N_Unchecked_Type_Conversion
-                    or else (Nkind (Exp) = N_Explicit_Dereference
-                               and then Nkind (Prefix (Exp)) in
-                                          N_Type_Conversion |
-                                          N_Unchecked_Type_Conversion)
-                    or else (Is_Entity_Name (Exp)
-                               and then Is_Formal (Entity (Exp))))
+        and then Is_Conversion_Or_Reference_To_Formal (Exp)
       then
          --  When the return type is limited, perform a check that the tag of
          --  the result is the same as the tag of the return type.
@@ -9718,120 +9600,6 @@ package body Exp_Ch6 is
 
       Set_Is_Aliased (Orig_Id, Is_Aliased (New_Id));
    end Replace_Renaming_Declaration_Id;
-
-   ---------------------------------
-   -- Rewrite_Function_Call_For_C --
-   ---------------------------------
-
-   procedure Rewrite_Function_Call_For_C (N : Node_Id) is
-      Orig_Func   : constant Entity_Id  := Entity (Name (N));
-      Func_Id     : constant Entity_Id  := Ultimate_Alias (Orig_Func);
-      Par         : constant Node_Id    := Parent (N);
-      Proc_Id     : constant Entity_Id  := Corresponding_Procedure (Func_Id);
-      Loc         : constant Source_Ptr := Sloc (Par);
-      Actuals     : List_Id;
-      Last_Actual : Node_Id;
-      Last_Formal : Entity_Id;
-
-   --  Start of processing for Rewrite_Function_Call_For_C
-
-   begin
-      --  The actuals may be given by named associations, so the added actual
-      --  that is the target of the return value of the call must be a named
-      --  association as well, so we retrieve the name of the generated
-      --  out_formal.
-
-      Last_Formal := First_Formal (Proc_Id);
-      while Present (Next_Formal (Last_Formal)) loop
-         Next_Formal (Last_Formal);
-      end loop;
-
-      Actuals := Parameter_Associations (N);
-
-      --  The original function may lack parameters
-
-      if No (Actuals) then
-         Actuals := New_List;
-      end if;
-
-      --  If the function call is the expression of an assignment statement,
-      --  transform the assignment into a procedure call. Generate:
-
-      --    LHS := Func_Call (...);
-
-      --    Proc_Call (..., LHS);
-
-      --  If function is inherited, a conversion may be necessary.
-
-      if Nkind (Par) = N_Assignment_Statement then
-         Last_Actual := Name (Par);
-
-         if not Comes_From_Source (Orig_Func)
-           and then Etype (Orig_Func) /= Etype (Func_Id)
-         then
-            Last_Actual :=
-              Make_Type_Conversion (Loc,
-                New_Occurrence_Of (Etype (Func_Id), Loc),
-                Last_Actual);
-         end if;
-
-         Append_To (Actuals,
-           Make_Parameter_Association (Loc,
-             Selector_Name             =>
-               Make_Identifier (Loc, Chars (Last_Formal)),
-             Explicit_Actual_Parameter => Last_Actual));
-
-         Rewrite (Par,
-           Make_Procedure_Call_Statement (Loc,
-             Name                   => New_Occurrence_Of (Proc_Id, Loc),
-             Parameter_Associations => Actuals));
-         Analyze (Par);
-
-      --  Otherwise the context is an expression. Generate a temporary and a
-      --  procedure call to obtain the function result. Generate:
-
-      --    ... Func_Call (...) ...
-
-      --    Temp : ...;
-      --    Proc_Call (..., Temp);
-      --    ... Temp ...
-
-      else
-         declare
-            Temp_Id : constant Entity_Id := Make_Temporary (Loc, 'T');
-            Call    : Node_Id;
-            Decl    : Node_Id;
-
-         begin
-            --  Generate:
-            --    Temp : ...;
-
-            Decl :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Temp_Id,
-                Object_Definition   =>
-                  New_Occurrence_Of (Etype (Func_Id), Loc));
-
-            --  Generate:
-            --    Proc_Call (..., Temp);
-
-            Append_To (Actuals,
-              Make_Parameter_Association (Loc,
-                Selector_Name             =>
-                  Make_Identifier (Loc, Chars (Last_Formal)),
-                Explicit_Actual_Parameter =>
-                  New_Occurrence_Of (Temp_Id, Loc)));
-
-            Call :=
-              Make_Procedure_Call_Statement (Loc,
-                Name                   => New_Occurrence_Of (Proc_Id, Loc),
-                Parameter_Associations => Actuals);
-
-            Insert_Actions (Par, New_List (Decl, Call));
-            Rewrite (N, New_Occurrence_Of (Temp_Id, Loc));
-         end;
-      end if;
-   end Rewrite_Function_Call_For_C;
 
    ------------------------------------
    -- Set_Enclosing_Sec_Stack_Return --

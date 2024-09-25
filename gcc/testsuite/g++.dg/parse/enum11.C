@@ -2,5 +2,5 @@
 
 template<typename> struct A
 { 
-  enum A::B::C {};   // { dg-error "has not been declared" }
+  enum A::B::C {};   // { dg-error "" }
 };

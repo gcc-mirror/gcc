@@ -21,8 +21,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 DEFINITION MODULE FOR "C" m2except ;
 
-FROM m2tree IMPORT Tree ;
-FROM m2linemap IMPORT location_t ;
+FROM gcctypes IMPORT location_t, tree ;
 
 
 (*
@@ -38,14 +37,14 @@ PROCEDURE InitExceptions (location: location_t) ;
    BuildThrow - builds a throw statement and return the tree.
 *)
 
-PROCEDURE BuildThrow (location: location_t; t: Tree) : Tree ;
+PROCEDURE BuildThrow (location: location_t; t: tree) : tree ;
 
 
 (*
     BuildTryBegin - returns a tree representing the 'try' block.
 *)
 
-PROCEDURE BuildTryBegin (location: location_t) : Tree ;
+PROCEDURE BuildTryBegin (location: location_t) : tree ;
 
 
 (*
@@ -53,7 +52,7 @@ PROCEDURE BuildTryBegin (location: location_t) : Tree ;
                  for the catch handlers.
 *)
 
-PROCEDURE BuildTryEnd (tryBlock: Tree) ;
+PROCEDURE BuildTryEnd (tryBlock: tree) ;
 
 
 (*
@@ -62,7 +61,7 @@ PROCEDURE BuildTryEnd (tryBlock: Tree) ;
                      It returns the handler tree.
 *)
 
-PROCEDURE BuildCatchBegin (location: location_t) : Tree ;
+PROCEDURE BuildCatchBegin (location: location_t) : tree ;
 
 
 (*
@@ -73,7 +72,7 @@ PROCEDURE BuildCatchBegin (location: location_t) : Tree ;
                    '}' which matches the catch above.
 *)
 
-PROCEDURE BuildCatchEnd (location: location_t; handler, tryBlock: Tree) : Tree ;
+PROCEDURE BuildCatchEnd (location: location_t; handler, tryBlock: tree) : tree ;
 
 
 END m2except.

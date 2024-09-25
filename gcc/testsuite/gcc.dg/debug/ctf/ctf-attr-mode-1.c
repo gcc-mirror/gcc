@@ -6,7 +6,7 @@
    variable refers to a specific CTF type, so this testcase merely asserts
    for existence of individual CTF records.  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 
 /* { dg-final { scan-assembler-times "ascii \"B1.0\"\[\t \]+\[^\n\]*ctf_string" 1 } } */

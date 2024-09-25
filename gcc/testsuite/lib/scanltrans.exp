@@ -1,0 +1,80 @@
+#   Copyright (C) 2000-2024 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Various utilities for scanning ltrans tree dump output, used by gcc-dg.exp and
+# g++-dg.exp.
+
+load_lib scandump.exp
+
+# Define scan-ltrans-{tree,rtl}-dump{,-not,-dem,-dem-not}.  These are LTO
+# variants of the corresponding functions without -ltrans in the name.
+foreach ir { tree rtl } {
+    foreach modifier { {} -not -dem -dem-not } {
+	eval [string map [list @NAME@ scan-ltrans-$ir-dump$modifier \
+			       @SCAN@ scan-dump$modifier \
+			       @TYPE@ ltrans-$ir \
+			       @SUFFIX@ [string index $ir 0]] {
+	    proc @NAME@ { args } {
+		if { [llength $args] < 2 } {
+		    error "@NAME@: too few arguments"
+		    return
+		}
+		if { [llength $args] > 3 } {
+		    error "@NAME@: too many arguments"
+		    return
+		}
+		if { [llength $args] >= 3 } {
+		    @SCAN@ @TYPE@ [lindex $args 0] \
+			"\[0-9\]\[0-9\]\[0-9\]@SUFFIX@.[lindex $args 1]" \
+			".ltrans0.ltrans" \
+			[lindex $args 2]
+		} else {
+		    @SCAN@ @TYPE@ [lindex $args 0] \
+			"\[0-9\]\[0-9\]\[0-9\]@SUFFIX@.[lindex $args 1]" \
+			".ltrans0.ltrans"
+		}
+	    }
+	}]
+    }
+}
+
+# Define scan-ltrans-{tree,rtl}-dump-times.  These are LTO variants of the
+# corresponding functions without -ltrans in the name.
+foreach ir { tree rtl } {
+    eval [string map [list @NAME@ scan-ltrans-$ir-dump-times \
+			   @TYPE@ ltrans-$ir \
+			   @SUFFIX@ [string index $ir 0]] {
+	proc @NAME@ { args } {
+	    if { [llength $args] < 3 } {
+		error "@NAME@: too few arguments"
+		return
+	    }
+	    if { [llength $args] > 4 } {
+		error "@NAME@: too many arguments"
+		return
+	    }
+	    if { [llength $args] >= 4 } {
+		scan-dump-times "@TYPE@" [lindex $args 0] [lindex $args 1] \
+		    "\[0-9\]\[0-9\]\[0-9\]@SUFFIX@.[lindex $args 2]" \
+		    ".ltrans0.ltrans" [lindex $args 3]
+	    } else {
+		scan-dump-times "@TYPE@" [lindex $args 0] [lindex $args 1] \
+		    "\[0-9\]\[0-9\]\[0-9\]@SUFFIX@.[lindex $args 2]" \
+		    ".ltrans0.ltrans"
+	    }
+	}
+    }]
+}

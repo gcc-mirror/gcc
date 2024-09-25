@@ -26,10 +26,10 @@
  *  This is a Standard C++ Library header.
  */
 
-#include <cuchar>
-
 #ifndef _GLIBCXX_UCHAR_H
 #define _GLIBCXX_UCHAR_H 1
+
+#include <cuchar>
 
 #ifdef _GLIBCXX_NAMESPACE_C
 

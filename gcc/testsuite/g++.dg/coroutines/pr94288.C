@@ -1,4 +1,5 @@
 //  { dg-additional-options  "-w" }
+//  { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 
 #include "coro.h"
 

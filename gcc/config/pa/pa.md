@@ -2280,6 +2280,58 @@
    (set_attr "pa_combine_type" "addmove")
    (set_attr "length" "4")])
 
+; Rewrite RTL using a REG+D store.  This will allow the insn that
+; computes the address to be deleted if the register it sets is dead.
+(define_peephole2
+  [(set (match_operand:SI 0 "register_operand" "")
+	(plus:SI (match_operand:SI 1 "register_operand" "")
+		 (match_operand:SI 2 "const_int_operand" "")))
+   (set (mem:SI (match_dup 0))
+	(match_operand:SI 3 "register_operand" ""))]
+  "!TARGET_64BIT
+   && !INT14_OK_STRICT
+   && GENERAL_REGNO_P (REGNO (operands[0]))
+   && GENERAL_REGNO_P (REGNO (operands[3]))
+   && REGNO (operands[0]) != REGNO (operands[3])
+   && base14_operand (operands[2], E_SImode)"
+  [(set (mem:SI (plus:SI (match_dup 1) (match_dup 2))) (match_dup 3))
+   (set (match_dup 0) (plus:SI (match_dup 1) (match_dup 2)))]
+  "")
+
+; Rewrite RTL using a REG+D load.  This will allow the insn that
+; computes the address to be deleted if the register it sets is dead.
+(define_peephole2
+  [(set (match_operand:SI 0 "register_operand" "")
+	(plus:SI (match_operand:SI 1 "register_operand" "")
+		 (match_operand:SI 2 "const_int_operand" "")))
+   (set (match_operand:SI 3 "register_operand" "")
+	(mem:SI (match_dup 0)))]
+  "!TARGET_64BIT
+   && !INT14_OK_STRICT
+   && GENERAL_REGNO_P (REGNO (operands[0]))
+   && GENERAL_REGNO_P (REGNO (operands[3]))
+   && REGNO (operands[0]) != REGNO (operands[3])
+   && REGNO (operands[1]) != REGNO (operands[3])
+   && base14_operand (operands[2], E_SImode)"
+  [(set (match_dup 3) (mem:SI (plus:SI (match_dup 1) (match_dup 2))))
+   (set (match_dup 0) (plus:SI (match_dup 1) (match_dup 2)))]
+  "")
+
+(define_peephole2
+  [(set (match_operand:SI 0 "register_operand" "")
+	(plus:SI (match_operand:SI 1 "register_operand" "")
+		 (match_operand:SI 2 "const_int_operand" "")))
+   (set (match_operand:SI 3 "register_operand" "")
+	(mem:SI (match_dup 0)))]
+  "!TARGET_64BIT
+   && !INT14_OK_STRICT
+   && GENERAL_REGNO_P (REGNO (operands[0]))
+   && GENERAL_REGNO_P (REGNO (operands[3]))
+   && REGNO (operands[0]) == REGNO (operands[3])
+   && base14_operand (operands[2], E_SImode)"
+  [(set (match_dup 3) (mem:SI (plus:SI (match_dup 1) (match_dup 2))))]
+  "")
+
 ; Rewrite RTL using an indexed store.  This will allow the insn that
 ; computes the address to be deleted if the register it sets is dead.
 (define_peephole2
@@ -3866,7 +3918,7 @@
 (define_insn ""
   [(set (match_operand:DF 0 "move_dest_operand"
 			  "=f,*r,T,?o,?Q,f,*r,*r,?*r,?f")
-	(match_operand:DF 1 "reg_or_0_or_nonsymb_mem_operand"
+	(match_operand:DF 1 "reg_or_0_or_mem_operand"
 			  "fG,*rG,f,*r,*r,RT,o,RQ,f,*r"))]
   "(register_operand (operands[0], DFmode)
     || reg_or_0_operand (operands[1], DFmode))
@@ -4040,7 +4092,7 @@
 (define_insn ""
   [(set (match_operand:DF 0 "move_dest_operand"
 			  "=r,?o,?Q,r,r")
-	(match_operand:DF 1 "reg_or_0_or_nonsymb_mem_operand"
+	(match_operand:DF 1 "reg_or_0_or_mem_operand"
 			  "rG,r,r,o,RQ"))]
   "(register_operand (operands[0], DFmode)
     || reg_or_0_operand (operands[1], DFmode))
@@ -4440,7 +4492,7 @@
 (define_insn ""
   [(set (match_operand:SF 0 "move_dest_operand"
 			  "=f,!*r,f,*r,T,Q,?*r,?f")
-	(match_operand:SF 1 "reg_or_0_or_nonsymb_mem_operand"
+	(match_operand:SF 1 "reg_or_0_or_mem_operand"
 			  "fG,!*rG,RT,RQ,f,*rG,f,*r"))]
   "(register_operand (operands[0], SFmode)
     || reg_or_0_operand (operands[1], SFmode))
@@ -4462,7 +4514,7 @@
 (define_insn ""
   [(set (match_operand:SF 0 "move_dest_operand"
 			  "=f,!*r,f,*r,T,Q")
-	(match_operand:SF 1 "reg_or_0_or_nonsymb_mem_operand"
+	(match_operand:SF 1 "reg_or_0_or_mem_operand"
 			  "fG,!*rG,RT,RQ,f,*rG"))]
   "(register_operand (operands[0], SFmode)
     || reg_or_0_operand (operands[1], SFmode))
@@ -4482,7 +4534,7 @@
 (define_insn ""
   [(set (match_operand:SF 0 "move_dest_operand"
 			  "=!*r,*r,Q")
-	(match_operand:SF 1 "reg_or_0_or_nonsymb_mem_operand"
+	(match_operand:SF 1 "reg_or_0_or_mem_operand"
 			  "!*rG,RQ,*rG"))]
   "(register_operand (operands[0], SFmode)
     || reg_or_0_operand (operands[1], SFmode))
@@ -4506,6 +4558,54 @@
   [(set_attr "type" "fpstore")
    (set_attr "pa_combine_type" "addmove")
    (set_attr "length" "4")])
+
+(define_peephole2
+  [(set (match_operand:SI 0 "register_operand" "")
+	(plus:SI (match_operand:SI 1 "register_operand" "")
+		 (match_operand:SI 2 "const_int_operand" "")))
+   (set (mem:SF (match_dup 0))
+	(match_operand:SF 3 "register_operand" ""))]
+  "!TARGET_64BIT
+   && !INT14_OK_STRICT
+   && GENERAL_REGNO_P (REGNO (operands[0]))
+   && GENERAL_REGNO_P (REGNO (operands[3]))
+   && REGNO (operands[0]) != REGNO (operands[3])
+   && base14_operand (operands[2], E_SImode)"
+  [(set (mem:SF (plus:SI (match_dup 1) (match_dup 2))) (match_dup 3))
+   (set (match_dup 0) (plus:SI (match_dup 1) (match_dup 2)))]
+  "")
+
+(define_peephole2
+  [(set (match_operand:SI 0 "register_operand" "")
+	(plus:SI (match_operand:SI 1 "register_operand" "")
+		 (match_operand:SI 2 "const_int_operand" "")))
+   (set (match_operand:SF 3 "register_operand" "")
+	(mem:SF (match_dup 0)))]
+  "!TARGET_64BIT
+   && !INT14_OK_STRICT
+   && GENERAL_REGNO_P (REGNO (operands[0]))
+   && GENERAL_REGNO_P (REGNO (operands[3]))
+   && REGNO (operands[0]) != REGNO (operands[3])
+   && REGNO (operands[1]) != REGNO (operands[3])
+   && base14_operand (operands[2], E_SImode)"
+  [(set (match_dup 3) (mem:SF (plus:DI (match_dup 1) (match_dup 2))))
+   (set (match_dup 0) (plus:SI (match_dup 1) (match_dup 2)))]
+  "")
+
+(define_peephole2
+  [(set (match_operand:SI 0 "register_operand" "")
+	(plus:SI (match_operand:SI 1 "register_operand" "")
+		 (match_operand:SI 2 "const_int_operand" "")))
+   (set (match_operand:SF 3 "register_operand" "")
+	(mem:SF (match_dup 0)))]
+  "!TARGET_64BIT
+   && !INT14_OK_STRICT
+   && GENERAL_REGNO_P (REGNO (operands[0]))
+   && GENERAL_REGNO_P (REGNO (operands[3]))
+   && REGNO (operands[0]) == REGNO (operands[3])
+   && base14_operand (operands[2], E_SImode)"
+  [(set (match_dup 3) (mem:SF (plus:DI (match_dup 1) (match_dup 2))))]
+  "")
 
 (define_peephole2
   [(set (match_operand:SI 0 "register_operand" "")
@@ -4615,7 +4715,7 @@
 (define_insn ""
   [(set (match_operand:SF 0 "move_dest_operand"
 			  "=r,r,Q")
-	(match_operand:SF 1 "reg_or_0_or_nonsymb_mem_operand"
+	(match_operand:SF 1 "reg_or_0_or_mem_operand"
 			  "rG,RQ,rG"))]
   "(register_operand (operands[0], SFmode)
     || reg_or_0_operand (operands[1], SFmode))

@@ -1442,6 +1442,7 @@ begin
          | Pragma_Fast_Math
          | Pragma_Favor_Top_Level
          | Pragma_Finalize_Storage_Only
+         | Pragma_First_Controlling_Parameter
          | Pragma_Ghost
          | Pragma_Global
          | Pragma_GNAT_Annotate
@@ -1494,6 +1495,7 @@ begin
          | Pragma_No_Elaboration_Code_All
          | Pragma_No_Heap_Finalization
          | Pragma_No_Inline
+         | Pragma_No_Raise
          | Pragma_No_Return
          | Pragma_No_Run_Time
          | Pragma_Interrupts_System_By_Default

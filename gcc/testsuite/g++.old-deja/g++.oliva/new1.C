@@ -1,4 +1,6 @@
 // { dg-do run  }
+// { dg-skip-if "requires hosted libstdc++ for stdlib size_t" { ! hostedlib } }
+
 // Copyright (C) 1999 Free Software Foundation
 
 // by Alexandre Oliva <oliva@dcc.unicamp.br>

@@ -2,6 +2,7 @@
 // { dg-do compile { target i?86-*-* x86_64-*-* } }
 // { dg-require-effective-target c++11 }
 // { dg-options "-O2 -msse2" }
+/* { dg-skip-if "requires hosted libstdc++ for cstdlib malloc" { ! hostedlib } } */
 
 #include <xmmintrin.h>
 #include <emmintrin.h>

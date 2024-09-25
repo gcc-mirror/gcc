@@ -122,6 +122,11 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_AVX10_1_256_SET OPTION_MASK_ISA2_AVX10_1_256
 #define OPTION_MASK_ISA2_AVX10_1_512_SET \
   (OPTION_MASK_ISA2_AVX10_1_256_SET | OPTION_MASK_ISA2_AVX10_1_512)
+#define OPTION_MASK_ISA2_AVX10_2_256_SET \
+  (OPTION_MASK_ISA2_AVX10_1_256_SET | OPTION_MASK_ISA2_AVX10_2_256)
+#define OPTION_MASK_ISA2_AVX10_2_512_SET \
+  (OPTION_MASK_ISA2_AVX10_1_512_SET | OPTION_MASK_ISA2_AVX10_2_256_SET \
+   | OPTION_MASK_ISA2_AVX10_2_512)
 
 /* SSE4 includes both SSE4.1 and SSE4.2. -msse4 should be the same
    as -msse4.2.  */
@@ -307,8 +312,12 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_EVEX512_UNSET OPTION_MASK_ISA2_EVEX512
 #define OPTION_MASK_ISA2_USER_MSR_UNSET OPTION_MASK_ISA2_USER_MSR
 #define OPTION_MASK_ISA2_AVX10_1_256_UNSET \
-  (OPTION_MASK_ISA2_AVX10_1_256 | OPTION_MASK_ISA2_AVX10_1_512_UNSET)
-#define OPTION_MASK_ISA2_AVX10_1_512_UNSET OPTION_MASK_ISA2_AVX10_1_512
+  (OPTION_MASK_ISA2_AVX10_1_256 | OPTION_MASK_ISA2_AVX10_1_512_UNSET \
+   | OPTION_MASK_ISA2_AVX10_2_256_UNSET)
+#define OPTION_MASK_ISA2_AVX10_1_512_UNSET \
+  (OPTION_MASK_ISA2_AVX10_1_512 | OPTION_MASK_ISA2_AVX10_2_512_UNSET)
+#define OPTION_MASK_ISA2_AVX10_2_256_UNSET OPTION_MASK_ISA2_AVX10_2_256
+#define OPTION_MASK_ISA2_AVX10_2_512_UNSET OPTION_MASK_ISA2_AVX10_2_512
 
 /* SSE4 includes both SSE4.1 and SSE4.2.  -mno-sse4 should the same
    as -mno-sse4.1. */
@@ -1367,6 +1376,36 @@ ix86_handle_option (struct gcc_options *opts,
 	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_AVX10_1_512_UNSET;
 	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AVX10_1_512_UNSET;
 	  opts->x_ix86_no_avx10_1_explicit = 1;
+	}
+      return true;
+
+    case OPT_mavx10_2_256:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AVX10_2_256_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AVX10_2_256_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX2_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AVX2_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_AVX10_2_256_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AVX10_2_256_UNSET;
+	}
+      return true;
+
+    case OPT_mavx10_2_512:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AVX10_2_512_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AVX10_2_512_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX2_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AVX2_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_AVX10_2_512_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AVX10_2_512_UNSET;
 	}
       return true;
 

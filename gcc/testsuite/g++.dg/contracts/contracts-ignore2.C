@@ -2,6 +2,7 @@
 // assumptions; see contracts-assume2 for the assumed case
 // { dg-do run }
 // { dg-options "-std=c++2a -fcontracts" }
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }
 #include <cstdio>
 
 int fun(int x) {

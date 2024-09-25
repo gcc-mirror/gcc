@@ -1,5 +1,6 @@
 // PR c++/85710
 // { dg-additional-options -Wmemset-elt-size }
+// { dg-skip-if "requires hosted libstdc++ for cstring" { ! hostedlib } }
 
 #include <cstring>
 

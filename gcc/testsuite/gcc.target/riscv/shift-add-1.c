@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc_zba_zbb_zbs -mabi=lp64" } */
+/* { dg-options "-march=rv64gcb -mabi=lp64" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-Og" } } */
 
 int composeFromSurrogate(const unsigned short high) {

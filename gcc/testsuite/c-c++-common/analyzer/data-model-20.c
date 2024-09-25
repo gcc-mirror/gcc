@@ -1,4 +1,5 @@
 /* { dg-additional-options "-Wno-analyzer-too-complex" } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
 
 #include <stdlib.h>
 

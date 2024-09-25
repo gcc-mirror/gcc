@@ -3,7 +3,7 @@
 /* { dg-options "-O2 -msse2 -mno-sse3 -masm=att" } */
 /* { dg-final { scan-assembler-times "\tpmovmskb\t" 3 } } */
 /* { dg-final { scan-assembler-not "\tmovzwl" } } */
-/* { dg-final { scan-assembler-times "\tnotl" 1 } } *
+/* { dg-final { scan-assembler-times "\tnotl" 1 } } */
 /* { dg-final { scan-assembler-times "\txorl" 1 } } */
 
 #include <immintrin.h>

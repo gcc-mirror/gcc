@@ -62,7 +62,7 @@ public:
 private:
   auto_vec<std::pair <tree, tree>> m_stack;
   auto_vec<tree> m_replacements;
-  const std::pair <tree, tree> m_marker = std::make_pair (NULL, NULL);
+  const std::pair <tree, tree> m_marker = std::make_pair (NULL_TREE, NULL_TREE);
 };
 
 ssa_equiv_stack::ssa_equiv_stack ()

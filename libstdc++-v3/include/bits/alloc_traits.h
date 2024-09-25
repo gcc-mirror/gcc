@@ -48,10 +48,19 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++14-extensions" // for variable templates
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // for if-constexpr
+
   /// @cond undocumented
   struct __allocator_traits_base
   {
+#if __cpp_concepts
+    template<typename _Tp, typename _Up>
+#else
     template<typename _Tp, typename _Up, typename = void>
+#endif
       struct __rebind : __replace_first_arg<_Tp, _Up>
       {
 	static_assert(is_same<
@@ -61,8 +70,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       };
 
     template<typename _Tp, typename _Up>
+#if __cpp_concepts
+      requires requires { typename _Tp::template rebind<_Up>::other; }
+      struct __rebind<_Tp, _Up>
+#else
       struct __rebind<_Tp, _Up,
 		      __void_t<typename _Tp::template rebind<_Up>::other>>
+#endif
       {
 	using type = typename _Tp::template rebind<_Up>::other;
 
@@ -89,6 +103,135 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __pocs = typename _Tp::propagate_on_container_swap;
     template<typename _Tp>
       using __equal = __type_identity<typename _Tp::is_always_equal>;
+
+    // __has_allocate_hint is true if a.allocate(n, hint) is well-formed.
+#if __cpp_concepts
+    template<typename _Alloc, typename _Sz, typename _Vp>
+      static constexpr bool __has_allocate_hint
+	= requires (_Alloc& __a, _Sz __n, _Vp __hint) {
+	__a.allocate(__n, __hint);
+      };
+#else
+    template<typename _Alloc, typename _Sz, typename _Vp>
+      using __allocate_hint_t
+	= decltype(std::declval<_Alloc&>()
+		     .allocate(std::declval<_Sz>(), std::declval<_Vp>()));
+    template<typename _Alloc, typename _Sz, typename _Vp, typename = void>
+      static constexpr bool __has_allocate_hint = false;
+    template<typename _Alloc, typename _Sz, typename _Vp>
+      static constexpr bool
+      __has_allocate_hint<_Alloc, _Sz, _Vp,
+			  __void_t<__allocate_hint_t<_Alloc, _Sz, _Vp>>>
+	= true;
+#endif
+
+    // __has_construct is true if a.construct(p, args...) is well-formed.
+    // __can_construct is true if either __has_construct is true, or if
+    // a placement new-expression for T(args...) is well-formed. We use this
+    // to constrain allocator_traits::construct, as a libstdc++ extension.
+#if __cpp_concepts
+    template<typename _Alloc, typename _Tp, typename... _Args>
+      static constexpr bool __has_construct
+	= requires (_Alloc& __a, _Tp* __p, _Args&&... __args) {
+	  __a.construct(__p, std::forward<_Args>(__args)...);
+	};
+    template<typename _Tp, typename... _Args>
+      static constexpr bool __can_construct_at
+	= requires (_Tp* __p, _Args&&... __args) {
+#if __cpp_constexpr_dynamic_alloc
+	  std::construct_at(__p, std::forward<_Args>(__args)...);
+#else
+	  ::new((void*)__p) _Tp(std::forward<_Args>(__args)...);
+#endif
+	};
+    template<typename _Alloc, typename _Tp, typename... _Args>
+      static constexpr bool __can_construct
+	= __has_construct<_Alloc, _Tp, _Args...>
+	    || __can_construct_at<_Tp, _Args...>;
+#else
+    template<typename _Alloc, typename _Tp, typename... _Args>
+      using __construct_t
+	= decltype(std::declval<_Alloc&>().construct(std::declval<_Tp*>(),
+						     std::declval<_Args>()...));
+    template<typename _Alloc, typename _Tp, typename, typename... _Args>
+      static constexpr bool __has_construct_impl = false;
+    template<typename _Alloc, typename _Tp, typename... _Args>
+      static constexpr bool
+      __has_construct_impl<_Alloc, _Tp,
+			   __void_t<__construct_t<_Alloc, _Tp, _Args...>>,
+			   _Args...>
+	= true;
+    template<typename _Alloc, typename _Tp, typename... _Args>
+      static constexpr bool __has_construct
+	= __has_construct_impl<_Alloc, _Tp, void, _Args...>;
+    template<typename _Tp, typename... _Args>
+      using __new_expr_t
+	= decltype(::new((void*)0) _Tp(std::declval<_Args>()...));
+    template<typename _Tp, typename, typename... _Args>
+      static constexpr bool __has_new_expr = false;
+    template<typename _Tp, typename... _Args>
+      static constexpr bool
+      __has_new_expr<_Tp, __void_t<__new_expr_t<_Tp, _Args...>>, _Args...>
+	= true;
+    template<typename _Alloc, typename _Tp, typename... _Args>
+      static constexpr bool __can_construct
+	= __has_construct<_Alloc, _Tp, _Args...>
+	    || __has_new_expr<_Tp, void, _Args...>;
+#endif
+
+    // __has_destroy is true if a.destroy(p) is well-formed.
+#if __cpp_concepts
+    template<typename _Alloc, typename _Tp>
+      static constexpr bool __has_destroy = requires (_Alloc& __a, _Tp* __p) {
+	__a.destroy(__p);
+      };
+#else
+    template<typename _Alloc, typename _Tp>
+      using __destroy_t
+	= decltype(std::declval<_Alloc&>().destroy(std::declval<_Tp*>()));
+    template<typename _Alloc, typename _Tp, typename = void>
+      static constexpr bool __has_destroy = false;
+    template<typename _Alloc, typename _Tp>
+      static constexpr bool __has_destroy<_Alloc, _Tp,
+					  __void_t<__destroy_t<_Alloc, _Tp>>>
+	= true;
+#endif
+
+    // __has_max_size is true if a.max_size() is well-formed.
+#if __cpp_concepts
+    template<typename _Alloc>
+      static constexpr bool __has_max_size = requires (const _Alloc& __a) {
+	__a.max_size();
+      };
+#else
+    template<typename _Alloc>
+      using __max_size_t = decltype(std::declval<const _Alloc&>().max_size());
+    template<typename _Alloc, typename = void>
+      static constexpr bool __has_max_size = false;
+    template<typename _Alloc>
+      static constexpr bool __has_max_size<_Alloc,
+					   __void_t<__max_size_t<_Alloc>>>
+	= true;
+#endif
+
+    // __has_soccc is true if a.select_on_container_copy_construction()
+    // is well-formed.
+#if __cpp_concepts
+    template<typename _Alloc>
+      static constexpr bool __has_soccc = requires (const _Alloc& __a) {
+	__a.select_on_container_copy_construction();
+      };
+#else
+    template<typename _Alloc>
+      using __soccc_t
+	= decltype(std::declval<const _Alloc&>()
+		     .select_on_container_copy_construction());
+    template<typename _Alloc, typename = void>
+      static constexpr bool __has_soccc = false;
+    template<typename _Alloc>
+      static constexpr bool __has_soccc<_Alloc, __void_t<__soccc_t<_Alloc>>>
+	= true;
+#endif
   };
 
   template<typename _Alloc, typename _Up>
@@ -230,98 +373,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Tp>
 	using rebind_traits = allocator_traits<rebind_alloc<_Tp>>;
 
-    private:
-      template<typename _Alloc2>
-	static constexpr auto
-	_S_allocate(_Alloc2& __a, size_type __n, const_void_pointer __hint, int)
-	-> decltype(__a.allocate(__n, __hint))
-	{ return __a.allocate(__n, __hint); }
-
-      template<typename _Alloc2>
-	static constexpr pointer
-	_S_allocate(_Alloc2& __a, size_type __n, const_void_pointer, ...)
-	{ return __a.allocate(__n); }
-
-      template<typename _Tp, typename... _Args>
-	struct __construct_helper
-	{
-	  template<typename _Alloc2,
-	    typename = decltype(std::declval<_Alloc2*>()->construct(
-		  std::declval<_Tp*>(), std::declval<_Args>()...))>
-	    static true_type __test(int);
-
-	  template<typename>
-	    static false_type __test(...);
-
-	  using type = decltype(__test<_Alloc>(0));
-	};
-
-      template<typename _Tp, typename... _Args>
-	using __has_construct
-	  = typename __construct_helper<_Tp, _Args...>::type;
-
-      template<typename _Tp, typename... _Args>
-	static _GLIBCXX14_CONSTEXPR _Require<__has_construct<_Tp, _Args...>>
-	_S_construct(_Alloc& __a, _Tp* __p, _Args&&... __args)
-	noexcept(noexcept(__a.construct(__p, std::forward<_Args>(__args)...)))
-	{ __a.construct(__p, std::forward<_Args>(__args)...); }
-
-      template<typename _Tp, typename... _Args>
-	static _GLIBCXX14_CONSTEXPR
-	_Require<__and_<__not_<__has_construct<_Tp, _Args...>>,
-			       is_constructible<_Tp, _Args...>>>
-	_S_construct(_Alloc&, _Tp* __p, _Args&&... __args)
-	noexcept(std::is_nothrow_constructible<_Tp, _Args...>::value)
-	{
-#if __cplusplus <= 201703L
-	  ::new((void*)__p) _Tp(std::forward<_Args>(__args)...);
-#else
-	  std::construct_at(__p, std::forward<_Args>(__args)...);
-#endif
-	}
-
-      template<typename _Alloc2, typename _Tp>
-	static _GLIBCXX14_CONSTEXPR auto
-	_S_destroy(_Alloc2& __a, _Tp* __p, int)
-	noexcept(noexcept(__a.destroy(__p)))
-	-> decltype(__a.destroy(__p))
-	{ __a.destroy(__p); }
-
-      template<typename _Alloc2, typename _Tp>
-	static _GLIBCXX14_CONSTEXPR void
-	_S_destroy(_Alloc2&, _Tp* __p, ...)
-	noexcept(std::is_nothrow_destructible<_Tp>::value)
-	{ std::_Destroy(__p); }
-
-      template<typename _Alloc2>
-	static constexpr auto
-	_S_max_size(_Alloc2& __a, int)
-	-> decltype(__a.max_size())
-	{ return __a.max_size(); }
-
-      template<typename _Alloc2>
-	static constexpr size_type
-	_S_max_size(_Alloc2&, ...)
-	{
-	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	  // 2466. allocator_traits::max_size() default behavior is incorrect
-	  return __gnu_cxx::__numeric_traits<size_type>::__max
-	    / sizeof(value_type);
-	}
-
-      template<typename _Alloc2>
-	static constexpr auto
-	_S_select(_Alloc2& __a, int)
-	-> decltype(__a.select_on_container_copy_construction())
-	{ return __a.select_on_container_copy_construction(); }
-
-      template<typename _Alloc2>
-	static constexpr _Alloc2
-	_S_select(_Alloc2& __a, ...)
-	{ return __a; }
-
-    public:
-
       /**
        *  @brief  Allocate memory.
        *  @param  __a  An allocator.
@@ -346,7 +397,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       _GLIBCXX_NODISCARD static _GLIBCXX20_CONSTEXPR pointer
       allocate(_Alloc& __a, size_type __n, const_void_pointer __hint)
-      { return _S_allocate(__a, __n, __hint, 0); }
+      {
+	if constexpr (__has_allocate_hint<_Alloc, size_type, const_void_pointer>)
+	  return __a.allocate(__n, __hint);
+	else
+	  return __a.allocate(__n);
+      }
 
       /**
        *  @brief  Deallocate memory.
@@ -372,12 +428,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  arguments @a __args...
       */
       template<typename _Tp, typename... _Args>
-	static _GLIBCXX20_CONSTEXPR auto
+#if __cpp_concepts && __cpp_constexpr_dynamic_alloc
+	requires __can_construct<_Alloc, _Tp, _Args...>
+	static constexpr void
+#else
+	static __enable_if_t<__can_construct<_Alloc, _Tp, _Args...>>
+#endif
 	construct(_Alloc& __a, _Tp* __p, _Args&&... __args)
-	noexcept(noexcept(_S_construct(__a, __p,
-				       std::forward<_Args>(__args)...)))
-	-> decltype(_S_construct(__a, __p, std::forward<_Args>(__args)...))
-	{ _S_construct(__a, __p, std::forward<_Args>(__args)...); }
+	noexcept(_S_nothrow_construct<_Tp, _Args...>())
+	{
+	  if constexpr (__has_construct<_Alloc, _Tp, _Args...>)
+	    __a.construct(__p, std::forward<_Args>(__args)...);
+	  else
+	    std::_Construct(__p, std::forward<_Args>(__args)...);
+	}
 
       /**
        *  @brief  Destroy an object of type @a _Tp
@@ -390,8 +454,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Tp>
 	static _GLIBCXX20_CONSTEXPR void
 	destroy(_Alloc& __a, _Tp* __p)
-	noexcept(noexcept(_S_destroy(__a, __p, 0)))
-	{ _S_destroy(__a, __p, 0); }
+	noexcept(_S_nothrow_destroy<_Tp>())
+	{
+	  if constexpr (__has_destroy<_Alloc, _Tp>)
+	    __a.destroy(__p);
+	  else
+	    std::_Destroy(__p);
+	}
 
       /**
        *  @brief  The maximum supported allocation size
@@ -403,7 +472,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       static _GLIBCXX20_CONSTEXPR size_type
       max_size(const _Alloc& __a) noexcept
-      { return _S_max_size(__a, 0); }
+      {
+	if constexpr (__has_max_size<_Alloc>)
+	  return __a.max_size();
+	else
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 2466. allocator_traits::max_size() default behavior is incorrect
+	  return __gnu_cxx::__numeric_traits<size_type>::__max
+	    / sizeof(value_type);
+      }
 
       /**
        *  @brief  Obtain an allocator to use when copying a container.
@@ -415,11 +492,70 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       static _GLIBCXX20_CONSTEXPR _Alloc
       select_on_container_copy_construction(const _Alloc& __rhs)
-      { return _S_select(__rhs, 0); }
+      {
+	if constexpr (__has_soccc<_Alloc>)
+	  return __rhs.select_on_container_copy_construction();
+	else
+	  return __rhs;
+      }
+
+    private:
+#if __cpp_constexpr >= 201304 // >= C++14
+      template<typename _Tp, typename... _Args>
+	static constexpr bool
+	_S_nothrow_construct(_Alloc* __a = nullptr, _Tp* __p = nullptr)
+	{
+	  if constexpr (__has_construct<_Alloc, _Tp, _Args...>)
+	    return noexcept(__a->construct(__p, std::declval<_Args>()...));
+	  else
+	    return __is_nothrow_new_constructible<_Tp, _Args...>;
+	}
+
+      template<typename _Tp>
+	static constexpr bool
+	_S_nothrow_destroy(_Alloc* __a = nullptr, _Tp* __p = nullptr)
+	{
+	  if constexpr (__has_destroy<_Alloc, _Tp>)
+	    return noexcept(__a->destroy(__p));
+	  else
+	    return is_nothrow_destructible<_Tp>::value;
+	}
+#else
+      template<typename _Tp, typename... _Args>
+	static constexpr
+	__enable_if_t<__has_construct<_Alloc, _Tp, _Args...>, bool>
+	_S_nothrow_construct(_Alloc* __a = nullptr, _Tp* __p = nullptr)
+	{ return noexcept(__a->construct(__p, std::declval<_Args>()...)); }
+
+      template<typename _Tp, typename... _Args>
+	static constexpr
+	__enable_if_t<!__has_construct<_Alloc, _Tp, _Args...>, bool>
+	_S_nothrow_construct(_Alloc* = nullptr, _Tp* __p = nullptr)
+	{ return __is_nothrow_new_constructible<_Tp, _Args...>; }
+
+      template<typename _Tp>
+	static constexpr
+	__enable_if_t<__has_destroy<_Alloc, _Tp>, bool>
+	_S_nothrow_destroy(_Alloc* __a = nullptr, _Tp* __p = nullptr)
+	{ return noexcept(__a->destroy(__p)); }
+
+      template<typename _Tp>
+	static constexpr
+	__enable_if_t<!__has_destroy<_Alloc, _Tp>, bool>
+	_S_nothrow_destroy(_Alloc* = nullptr, _Tp* __p = nullptr)
+	{ return is_nothrow_destructible<_Tp>::value; }
+#endif
     };
+#pragma GCC diagnostic pop
 
 #if _GLIBCXX_HOSTED
-  /// Partial specialization for std::allocator.
+  /**
+   * @brief  Partial specialization for `std::allocator`
+   * @headerfile memory
+   * @ingroup allocators
+   * @since C++11
+   * @see std::allocator_traits
+  */
   template<typename _Tp>
     struct allocator_traits<allocator<_Tp>>
     {
@@ -526,14 +662,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Up, typename... _Args>
 	[[__gnu__::__always_inline__]]
 	static _GLIBCXX20_CONSTEXPR void
-	construct(allocator_type& __a __attribute__((__unused__)), _Up* __p,
-		  _Args&&... __args)
-	noexcept(std::is_nothrow_constructible<_Up, _Args...>::value)
+	construct(allocator_type& __a __attribute__((__unused__)),
+		  _Up* __p, _Args&&... __args)
+#if __cplusplus <= 201703L
+	noexcept(noexcept(__a.construct(__p, std::forward<_Args>(__args)...)))
+#else
+	noexcept(__is_nothrow_new_constructible<_Up, _Args...>)
+#endif
 	{
 #if __cplusplus <= 201703L
 	  __a.construct(__p, std::forward<_Args>(__args)...);
-#else
+#elif __cpp_constexpr_dynamic_alloc // >= C++20
 	  std::construct_at(__p, std::forward<_Args>(__args)...);
+#else
+	  std::_Construct(__p, std::forward<_Args>(__args)...);
 #endif
 	}
 
@@ -584,7 +726,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __rhs; }
     };
 
-  /// Explicit specialization for std::allocator<void>.
+  /**
+   * @brief  Explicit specialization for `std::allocator<void>`
+   * @headerfile memory
+   * @ingroup allocators
+   * @since C++11
+   * @see std::allocator_traits
+  */
   template<>
     struct allocator_traits<allocator<void>>
     {
@@ -653,7 +801,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	[[__gnu__::__always_inline__]]
 	static _GLIBCXX20_CONSTEXPR void
 	construct(allocator_type&, _Up* __p, _Args&&... __args)
-	noexcept(std::is_nothrow_constructible<_Up, _Args...>::value)
+	noexcept(__is_nothrow_new_constructible<_Up, _Args...>)
 	{ std::_Construct(__p, std::forward<_Args>(__args)...); }
 
       /**
@@ -944,6 +1092,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::_Destroy(__first, __last);
     }
 #endif
+
   /// @endcond
 
 _GLIBCXX_END_NAMESPACE_VERSION

@@ -1,4 +1,6 @@
 // { dg-do run  }
+// { dg-skip-if "requires hosted libstdc++ for stdlib size_t" { ! hostedlib } }
+
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 #include <stdlib.h>

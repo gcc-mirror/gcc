@@ -1,3 +1,4 @@
+#include <immintrin.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -492,4 +493,12 @@ verify_code (gcc_jit_context *ctxt, gcc_jit_result *result)
 
   CHECK_VALUE (gcc_jit_type_get_size (gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_FLOAT)), sizeof (float));
   CHECK_VALUE (gcc_jit_type_get_size (gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_DOUBLE)), sizeof (double));
+#ifdef HAVE_BFmode
+  CHECK_VALUE (gcc_jit_type_get_size (gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_BFLOAT16)), sizeof (__bfloat16));
+#endif
+
+  gcc_jit_type *int_type = gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_INT);
+  gcc_jit_type *array_type1 = gcc_jit_context_new_array_type (ctxt, NULL, int_type, 2);
+  gcc_jit_type *array_type2 = gcc_jit_context_new_array_type (ctxt, NULL, int_type, 2);
+  CHECK (gcc_jit_compatible_types (array_type1, array_type2));
 }

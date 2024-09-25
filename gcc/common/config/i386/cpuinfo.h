@@ -998,14 +998,17 @@ get_available_features (struct __processor_model *cpu_model,
 	}
     }
 
-  /* Get Advanced Features at level 0x24 (eax = 0x24).  */
+  /* Get Advanced Features at level 0x24 (eax = 0x24, ecx = 0).  */
   if (avx10_set && max_cpuid_level >= 0x24)
     {
-      __cpuid (0x24, eax, ebx, ecx, edx);
+      __cpuid_count (0x24, 0, eax, ebx, ecx, edx);
       version = ebx & 0xff;
       if (ebx & bit_AVX10_256)
 	switch (version)
 	  {
+	  case 2:
+	    set_feature (FEATURE_AVX10_2_256);
+	    /* Fall through.  */
 	  case 1:
 	    set_feature (FEATURE_AVX10_1_256);
 	    break;
@@ -1016,6 +1019,9 @@ get_available_features (struct __processor_model *cpu_model,
       if (ebx & bit_AVX10_512)
 	switch (version)
 	  {
+	  case 2:
+	    set_feature (FEATURE_AVX10_2_512);
+	    /* Fall through.  */
 	  case 1:
 	    set_feature (FEATURE_AVX10_1_512);
 	    break;

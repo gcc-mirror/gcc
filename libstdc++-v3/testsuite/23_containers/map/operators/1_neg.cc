@@ -28,14 +28,13 @@ void test01()
 {
   std::map<unsigned int, int> mapByIndex;
   std::map<std::string, unsigned> mapByName;
-  
+
   mapByIndex.insert(std::pair<unsigned, int>(0, 1));
   mapByIndex.insert(std::pair<unsigned, int>(6, 5));
-  
+
   std::map<unsigned, int>::iterator itr(mapByIndex.begin());
 
   // NB: notice, it's not mapByIndex!!
-  test &= itr != mapByName.end(); // { dg-error "no" } 
-  test &= itr == mapByName.end(); // { dg-error "no" } 
+  itr != mapByName.end(); // { dg-error "no match" }
+  itr == mapByName.end(); // { dg-error "no match" }
 }
-

@@ -167,9 +167,9 @@ option_proposer::build_option_suggestions (const char *prefix)
 	    add_misspelling_candidates (m_option_suggestions, option,
 					opt_text);
 
+	    struct cl_option optb;
 	    for (int j = 0; sanitizer_opts[j].name != NULL; ++j)
 	      {
-		struct cl_option optb;
 		/* -fsanitize=all is not valid, only -fno-sanitize=all.
 		   So don't register the positive misspelling candidates
 		   for it.  */

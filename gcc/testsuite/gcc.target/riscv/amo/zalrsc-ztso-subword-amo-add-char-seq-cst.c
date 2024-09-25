@@ -2,6 +2,7 @@
 /* Verify that subword atomic op mappings match the PSABI doc's suggested mapping.  */
 /* { dg-add-options riscv_zalrsc } */
 /* { dg-add-options riscv_ztso } */
+/* { dg-remove-options riscv_zabha } */
 /* { dg-final { scan-assembler-times "lr.w.aqrl\t" 1 } } */
 /* { dg-final { scan-assembler-times "sc.w.rl\t" 1 } } */
 

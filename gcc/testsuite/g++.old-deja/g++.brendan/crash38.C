@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 // GROUPS passed old-abort
 /*
    I received the following message when using g++ (version 2.3.3):

@@ -452,7 +452,7 @@
   [(set (match_operand:V_1REG 0 "nonimmediate_operand")
 	(match_operand:V_1REG 1 "general_operand"))]
   ""
-  {@ [cons: =0, 1; attrs: type, length, gcn_version]
+  {@ [cons: =0, 1; attrs: type, length, cdna]
   [v  ,vA;vop1     ,4,*    ] v_mov_b32\t%0, %1
   [v  ,B ;vop1     ,8,*    ] ^
   [v  ,a ;vop3p_mai,8,*    ] v_accvgpr_read_b32\t%0, %1
@@ -519,7 +519,7 @@
        return \"v_accvgpr_mov_b32\t%H0, %H1\;v_accvgpr_mov_b32\t%L0, %L1\";"
   [(set_attr "type" "vmult,vmult,vmult,vmult")
    (set_attr "length" "16,16,16,8")
-   (set_attr "gcn_version" "*,*,*,cdna2")])
+   (set_attr "cdna" "*,*,*,cdna2")])
 
 (define_insn "mov<mode>_exec"
   [(set (match_operand:V_2REG 0 "nonimmediate_operand" "= v,   v,   v, v, m")
@@ -565,7 +565,7 @@
   [(set (match_operand:V_4REG 0 "nonimmediate_operand")
 	(match_operand:V_4REG 1 "general_operand"))]
   ""
-  {@ [cons: =0, 1; attrs: type, length, gcn_version]
+  {@ [cons: =0, 1; attrs: type, length, cdna]
   [v ,vDB;vmult,16,*    ]           v_mov_b32\t%L0, %L1\;          v_mov_b32\t%H0, %H1\;          v_mov_b32\t%J0, %J1\;          v_mov_b32\t%K0, %K1
   [v ,a  ;vmult,32,*    ]  v_accvgpr_read_b32\t%L0, %L1\; v_accvgpr_read_b32\t%H0, %H1\; v_accvgpr_read_b32\t%J0, %J1\; v_accvgpr_read_b32\t%K0, %K1
   [$a,v  ;vmult,32,*    ] v_accvgpr_write_b32\t%L0, %L1\;v_accvgpr_write_b32\t%H0, %H1\;v_accvgpr_write_b32\t%J0, %J1\;v_accvgpr_write_b32\t%K0, %K1
@@ -662,7 +662,7 @@
 	  UNSPEC_SGPRBASE))
    (clobber (match_operand:<VnDI> 2 "register_operand"))]
   "lra_in_progress || reload_completed"
-  {@ [cons: =0, 1, =2; attrs: type, length, gcn_version]
+  {@ [cons: =0, 1, =2; attrs: type, length, cdna]
   [v,vA,&v;vop1,4 ,*    ] v_mov_b32\t%0, %1
   [v,vB,&v;vop1,8 ,*    ] ^
   [v,m ,&v;*   ,12,*    ] #
@@ -689,7 +689,7 @@
    #"
   [(set_attr "type" "vmult,*,*,*,*")
    (set_attr "length" "8,12,12,12,12")
-   (set_attr "gcn_version" "*,*,*,cdna2,cdna2")])
+   (set_attr "cdna" "*,*,*,cdna2,cdna2")])
 
 (define_insn "@mov<mode>_sgprbase"
   [(set (match_operand:V_4REG 0 "nonimmediate_operand")
@@ -1156,23 +1156,16 @@
 	   (mem:BLK (scratch))]
 	  UNSPEC_GATHER))]
   "(AS_FLAT_P (INTVAL (operands[3]))
-    && ((TARGET_GCN3 && INTVAL(operands[2]) == 0)
-	|| ((unsigned HOST_WIDE_INT)INTVAL(operands[2]) < 0x1000)))
-    || (AS_GLOBAL_P (INTVAL (operands[3]))
-	&& (((unsigned HOST_WIDE_INT)INTVAL(operands[2]) + 0x1000) < 0x2000))"
+    && ((unsigned HOST_WIDE_INT)INTVAL(operands[2]) < 0x1000))
+   || (AS_GLOBAL_P (INTVAL (operands[3]))
+       && (((unsigned HOST_WIDE_INT)INTVAL(operands[2]) + 0x1000) < 0x2000))"
   {
     addr_space_t as = INTVAL (operands[3]);
     const char *glc = INTVAL (operands[4]) ? " glc" : "";
 
     static char buf[200];
     if (AS_FLAT_P (as))
-      {
-	if (TARGET_FLAT_OFFSETS)
-	  sprintf (buf, "flat_load%%o0\t%%0, %%1 offset:%%2%s\;s_waitcnt\t0",
-		   glc);
-	else
-	  sprintf (buf, "flat_load%%o0\t%%0, %%1%s\;s_waitcnt\t0", glc);
-      }
+      sprintf (buf, "flat_load%%o0\t%%0, %%1 offset:%%2%s\;s_waitcnt\t0", glc);
     else if (AS_GLOBAL_P (as))
       sprintf (buf, "global_load%%o0\t%%0, %%1, off offset:%%2%s\;"
 	       "s_waitcnt\tvmcnt(0)", glc);
@@ -1183,7 +1176,7 @@
   }
   [(set_attr "type" "flat")
    (set_attr "length" "12")
-   (set_attr "gcn_version" "*,cdna2,*,cdna2")
+   (set_attr "cdna" "*,cdna2,*,cdna2")
    (set_attr "xnack" "off,off,on,on")])
 
 (define_insn "gather<mode>_insn_1offset_ds<exec>"
@@ -1207,7 +1200,7 @@
   }
   [(set_attr "type" "ds")
    (set_attr "length" "12")
-   (set_attr "gcn_version" "*,cdna2")])
+   (set_attr "cdna" "*,cdna2")])
 
 (define_insn "gather<mode>_insn_2offsets<exec>"
   [(set (match_operand:V_MOV 0 "register_operand"		"=v,a,&v,&a")
@@ -1241,7 +1234,7 @@
   }
   [(set_attr "type" "flat")
    (set_attr "length" "12")
-   (set_attr "gcn_version" "*,cdna2,*,cdna2")
+   (set_attr "cdna" "*,cdna2,*,cdna2")
    (set_attr "xnack" "off,off,on,on")])
 
 (define_expand "scatter_store<mode><vnsi>"
@@ -1290,8 +1283,7 @@
 	  UNSPEC_SCATTER))]
   "(AS_FLAT_P (INTVAL (operands[3]))
     && (INTVAL(operands[1]) == 0
-	|| (TARGET_FLAT_OFFSETS
-	    && (unsigned HOST_WIDE_INT)INTVAL(operands[1]) < 0x1000)))
+	|| ((unsigned HOST_WIDE_INT)INTVAL(operands[1]) < 0x1000)))
     || (AS_GLOBAL_P (INTVAL (operands[3]))
 	&& (((unsigned HOST_WIDE_INT)INTVAL(operands[1]) + 0x1000) < 0x2000))"
   {
@@ -1300,12 +1292,7 @@
 
     static char buf[200];
     if (AS_FLAT_P (as))
-      {
-	if (TARGET_FLAT_OFFSETS)
 	  sprintf (buf, "flat_store%%s2\t%%0, %%2 offset:%%1%s", glc);
-	else
-	  sprintf (buf, "flat_store%%s2\t%%0, %%2%s", glc);
-      }
     else if (AS_GLOBAL_P (as))
       sprintf (buf, "global_store%%s2\t%%0, %%2, off offset:%%1%s", glc);
     else
@@ -1315,7 +1302,7 @@
   }
   [(set_attr "type" "flat")
    (set_attr "length" "12")
-   (set_attr "gcn_version" "*,cdna2")])
+   (set_attr "cdna" "*,cdna2")])
 
 (define_insn "scatter<mode>_insn_1offset_ds<exec_scatter>"
   [(set (mem:BLK (scratch))
@@ -1338,7 +1325,7 @@
   }
   [(set_attr "type" "ds")
    (set_attr "length" "12")
-   (set_attr "gcn_version" "*,cdna2")])
+   (set_attr "cdna" "*,cdna2")])
 
 (define_insn "scatter<mode>_insn_2offsets<exec_scatter>"
   [(set (mem:BLK (scratch))
@@ -1370,7 +1357,7 @@
   }
   [(set_attr "type" "flat")
    (set_attr "length" "12")
-   (set_attr "gcn_version" "*,cdna2")])
+   (set_attr "cdna" "*,cdna2")])
 
 ;; }}}
 ;; {{{ Permutations
@@ -1476,7 +1463,7 @@
    (clobber (reg:DI VCC_REG))]
   ""
   {@ [cons: =0, %1, 2; attrs: type, length]
-  [v,v,vSvA;vop2,4] v_add%^_u32\t%0, vcc, %2, %1
+  [v,v,vSvA;vop2,4] v_add_co_u32\t%0, vcc, %2, %1
   [v,v,vSvB;vop2,8] ^
   })
 
@@ -1489,7 +1476,7 @@
    (clobber (reg:DI VCC_REG))]
   ""
   {@ [cons: =0, 1, 2; attrs: type, length]
-  [v,v,SvA;vop2,4] v_add%^_u32\t%0, vcc, %2, %1
+  [v,v,SvA;vop2,4] v_add_co_u32\t%0, vcc, %2, %1
   [v,v,SvB;vop2,8] ^
   })
 
@@ -1503,7 +1490,7 @@
 		(match_dup 1)))]
   ""
   {@ [cons: =0, %1, 2, =3; attrs: type, length]
-  [v,v,vSvA,cV;vop2 ,4] v_add%^_u32\t%0, %3, %2, %1
+  [v,v,vSvA,cV;vop2 ,4] v_add_co_u32\t%0, %3, %2, %1
   [v,v,vSvB,cV;vop2 ,8] ^
   [v,v,vSvA,Sg;vop3b,8] ^
   })
@@ -1523,7 +1510,7 @@
 		(vec_duplicate:V_SI (match_dup 2))))]
   ""
   {@ [cons: =0, 1, 2, =3; attrs: type, length]
-  [v,SvA,v,cV;vop2 ,4] v_add%^_u32\t%0, %3, %1, %2
+  [v,SvA,v,cV;vop2 ,4] v_add_co_u32\t%0, %3, %1, %2
   [v,SvB,v,cV;vop2 ,8] ^
   [v,SvA,v,Sg;vop3b,8] ^
   })
@@ -1560,7 +1547,7 @@
 			  (match_dup 1))
 			(match_dup 1))))]
   ""
-  "{v_addc%^_u32|v_add_co_ci_u32}\t%0, %4, %2, %1, %3"
+  "{v_addc_co_u32|v_add_co_ci_u32}\t%0, %4, %2, %1, %3"
   [(set_attr "type" "vop2,vop3b")
    (set_attr "length" "4,8")])
 
@@ -1572,8 +1559,8 @@
    (clobber (reg:DI VCC_REG))]
   ""
   "@
-   v_sub%^_u32\t%0, vcc, %1, %2
-   v_subrev%^_u32\t%0, vcc, %2, %1"
+   v_sub_co_u32\t%0, vcc, %1, %2
+   v_subrev_co_u32\t%0, vcc, %2, %1"
   [(set_attr "type" "vop2")
    (set_attr "length" "8,8")])
 
@@ -1587,10 +1574,10 @@
 		(match_dup 1)))]
   ""
   "@
-   v_sub%^_u32\t%0, %3, %1, %2
-   v_sub%^_u32\t%0, %3, %1, %2
-   v_subrev%^_u32\t%0, %3, %2, %1
-   v_subrev%^_u32\t%0, %3, %2, %1"
+   v_sub_co_u32\t%0, %3, %1, %2
+   v_sub_co_u32\t%0, %3, %1, %2
+   v_subrev_co_u32\t%0, %3, %2, %1
+   v_subrev_co_u32\t%0, %3, %2, %1"
   [(set_attr "type" "vop2,vop3b,vop2,vop3b")
    (set_attr "length" "8")])
 
@@ -1625,10 +1612,10 @@
 			(match_dup 1))))]
   ""
   "@
-   {v_subb%^_u32|v_sub_co_ci_u32}\t%0, %4, %1, %2, %3
-   {v_subb%^_u32|v_sub_co_ci_u32}\t%0, %4, %1, %2, %3
-   {v_subbrev%^_u32|v_subrev_co_ci_u32}\t%0, %4, %2, %1, %3
-   {v_subbrev%^_u32|v_subrev_co_ci_u32}\t%0, %4, %2, %1, %3"
+   {v_subb_co_u32|v_sub_co_ci_u32}\t%0, %4, %1, %2, %3
+   {v_subb_co_u32|v_sub_co_ci_u32}\t%0, %4, %1, %2, %3
+   {v_subbrev_co_u32|v_subrev_co_ci_u32}\t%0, %4, %2, %1, %3
+   {v_subbrev_co_u32|v_subrev_co_ci_u32}\t%0, %4, %2, %1, %3"
   [(set_attr "type" "vop2,vop3b,vop2,vop3b")
    (set_attr "length" "4,8,4,8")])
 
@@ -4297,10 +4284,7 @@
 	   (match_operand:V_1REG 2 "register_operand" "v")
 	   (match_operand:SI 3 "const_int_operand"        "n")]
 	  REDUC_UNSPEC))]
-  ; GCN3 requires a carry out, GCN5 not
-  "!(TARGET_GCN3 && SCALAR_INT_MODE_P (<SCALAR_MODE>mode)
-     && <reduc_unspec> == UNSPEC_PLUS_DPP_SHR)
-   && TARGET_DPP_FULL"
+  "TARGET_DPP_FULL"
   {
     return gcn_expand_dpp_shr_insn (<MODE>mode, "<reduc_insn>",
 				    <reduc_unspec>, INTVAL (operands[3]));
@@ -4347,7 +4331,7 @@
    (clobber (reg:DI VCC_REG))]
   "TARGET_DPP_FULL"
   {
-    return gcn_expand_dpp_shr_insn (<VnSI>mode, "v_add%^_u32",
+    return gcn_expand_dpp_shr_insn (<VnSI>mode, "v_add_co_u32",
 				    UNSPEC_PLUS_CARRY_DPP_SHR,
 				    INTVAL (operands[3]));
   }
@@ -4365,7 +4349,7 @@
    (clobber (reg:DI VCC_REG))]
   "TARGET_DPP_FULL"
   {
-    return gcn_expand_dpp_shr_insn (<MODE>mode, "v_addc%^_u32",
+    return gcn_expand_dpp_shr_insn (<MODE>mode, "v_addc_co_u32",
 				    UNSPEC_PLUS_CARRY_IN_DPP_SHR,
 				    INTVAL (operands[3]));
   }

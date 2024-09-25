@@ -32,7 +32,7 @@ DEFINITION MODULE SymbolTable ;
 FROM SYSTEM IMPORT WORD ;
 FROM SymbolKey IMPORT PerformOperation ;
 FROM NameKey IMPORT Name ;
-FROM m2tree IMPORT Tree ;
+FROM gcctypes IMPORT tree ;
 FROM DynamicStrings IMPORT String ;
 FROM M2Error IMPORT ErrorScope ;
 FROM Lists IMPORT List ;
@@ -1467,14 +1467,14 @@ PROCEDURE GetModuleQuads (Sym: CARDINAL;
    PutModuleFinallyFunction - Places Tree, finally, into the Module symbol, Sym.
 *)
 
-PROCEDURE PutModuleFinallyFunction (Sym: CARDINAL; finally: Tree) ;
+PROCEDURE PutModuleFinallyFunction (Sym: CARDINAL; finally: tree) ;
 
 
 (*
    GetModuleFinallyFunction - returns the finally tree from the Module symbol, Sym.
 *)
 
-PROCEDURE GetModuleFinallyFunction (Sym: CARDINAL) : Tree ;
+PROCEDURE GetModuleFinallyFunction (Sym: CARDINAL) : tree ;
 
 
 (*

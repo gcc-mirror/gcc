@@ -1,4 +1,5 @@
 /* PR libstdc++/88101 */
+/* { dg-do run } */
 
 struct S {} s1, s2;
 struct T : public S { char a; short b; char c; } t1, t2;

@@ -6,6 +6,10 @@
 
 /*
 ** sat_u_sub_uint32_t_fmt_9:
+** slli\s+a0,\s*a0,\s*32
+** srli\s+a0,\s*a0,\s*32
+** slli\s+a1,\s*a1,\s*32
+** srli\s+a1,\s*a1,\s*32
 ** sub\s+[atx][0-9]+,\s*a0,\s*a1
 ** sltu\s+[atx][0-9]+,\s*a0,\s*a1
 ** addi\s+[atx][0-9]+,\s*[atx][0-9]+,\s*-1

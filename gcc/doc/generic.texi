@@ -2095,11 +2095,17 @@ asm ("fsinx %1,%0" : "=f" (result) : "f" (angle));
 @end smallexample
 The first string is the @code{ASM_STRING}, containing the instruction
 template.  The next two strings are the output and inputs, respectively;
-this statement has no clobbers.  As this example indicates, ``plain''
-assembly statements are merely a special case of extended assembly
-statements; they have no cv-qualifiers, outputs, inputs, or clobbers.
-All of the strings will be @code{NUL}-terminated, and will contain no
-embedded @code{NUL}-characters.
+this statement has no clobbers.  All of the strings will be
+@code{NUL}-terminated, and will contain no embedded @code{NUL}-characters.
+
+@code{ASM_BASIC_P} indicates whether the assembly statement used the
+``basic'' syntax (as for the first example above) or whether it used
+the extended syntax (as for the second example above).  In many cases
+this information could be inferred from other accessors, but the flag
+is necessary to distinguish extended statements that have no operands
+from basic statements.  A key difference between the two is that
+@code{%} substitution is applied to @code{ASM_STRING} for extended
+statements but not for basic statements.
 
 If the assembly statement is declared @code{volatile}, or if the
 statement was not an extended assembly statement, and is therefore

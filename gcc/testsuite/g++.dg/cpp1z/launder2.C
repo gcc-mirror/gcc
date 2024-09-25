@@ -4,11 +4,11 @@ int a;
 int *b = __builtin_launder ();		// { dg-error "wrong number of arguments to" }
 int *c = __builtin_launder (&a, 2);	// { dg-error "wrong number of arguments to" }
 int *d = __builtin_launder (&a);
-int e = __builtin_launder (a);		// { dg-error "non-pointer argument to" }
+int e = __builtin_launder (a);		// { dg-error "not a pointer to object type" }
 int &f = a;
-int g = __builtin_launder (f);		// { dg-error "non-pointer argument to" }
+int g = __builtin_launder (f);		// { dg-error "not a pointer to object type" }
 
-template <typename T> T f1 (T x) { return __builtin_launder (x); }	// { dg-error "non-pointer argument to" }
+template <typename T> T f1 (T x) { return __builtin_launder (x); }	// { dg-error "not a pointer to object type" }
 template <typename T> T f2 (T x) { return __builtin_launder (x); }
 
 int h = f1 (a);

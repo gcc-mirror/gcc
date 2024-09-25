@@ -52,6 +52,9 @@
 #define __glibcxx_want_byte
 #include <bits/version.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // __int128
+
 extern "C++"
 {
 #if __cplusplus >= 201103L
@@ -188,5 +191,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // __cpp_lib_byte
 } // extern "C++"
+
+#pragma GCC diagnostic pop
 
 #endif // _GLIBCXX_CSTDDEF

@@ -4,7 +4,7 @@
 #include "exit-abort.h"
 volatile unsigned char y;
 
-unsigned char __attribute__((noinline,noclone))
+unsigned char __attribute__((noipa))
 foo1 (char x)
 {
   switch (x)
@@ -22,7 +22,7 @@ foo1 (char x)
   return y;
 }
 
-unsigned char __attribute__((noinline,noclone))
+unsigned char __attribute__((noipa))
 foo2 (char x)
 {
   switch (x)
@@ -40,7 +40,7 @@ foo2 (char x)
   return y;
 }
 
-unsigned char __attribute__((noinline,noclone))
+unsigned char __attribute__((noipa))
 foo3 (char x)
 {
   switch (x)
@@ -58,7 +58,7 @@ foo3 (char x)
   return y;
 }
 
-unsigned char __attribute__((noinline,noclone))
+unsigned char __attribute__((noipa))
 foo4 (char x)
 {
   switch (x)
@@ -76,7 +76,7 @@ foo4 (char x)
   return y;
 }
 
-unsigned char __attribute__((noinline,noclone))
+unsigned char __attribute__((noipa))
 foo5 (int x)
 {
   switch (x)
@@ -94,7 +94,7 @@ foo5 (int x)
   return y;
 }
 
-unsigned char __attribute__((noinline,noclone))
+unsigned char __attribute__((noipa))
 foo6 (int x)
 {
   switch (x)
@@ -112,7 +112,7 @@ foo6 (int x)
   return y;
 }
 
-unsigned char __attribute__((noinline,noclone))
+unsigned char __attribute__((noipa))
 foo7 (int x)
 {
   switch (x)
@@ -130,7 +130,7 @@ foo7 (int x)
   return y;
 }
 
-unsigned char __attribute__((noinline,noclone))
+unsigned char __attribute__((noipa))
 foo8 (int x)
 {
   switch (x)
@@ -148,7 +148,7 @@ foo8 (int x)
   return y;
 }
 
-unsigned char __attribute__((noinline,noclone))
+unsigned char __attribute__((noipa))
 foo9 (long x)
 {
   switch (x)
@@ -166,7 +166,7 @@ foo9 (long x)
   return y;
 }
 
-unsigned char __attribute__((noinline,noclone))
+unsigned char __attribute__((noipa))
 foo10 (unsigned long x)
 {
   switch (x)
@@ -184,7 +184,7 @@ foo10 (unsigned long x)
   return y;
 }
 
-unsigned char __attribute__((noinline,noclone))
+unsigned char __attribute__((noipa))
 foo11 (long x)
 {
   switch (x)
@@ -202,7 +202,7 @@ foo11 (long x)
   return y;
 }
 
-unsigned char __attribute__((noinline,noclone))
+unsigned char __attribute__((noipa))
 foo12 (long x)
 {
   switch (x)
@@ -220,7 +220,7 @@ foo12 (long x)
   return y;
 }
 
-unsigned char __attribute__((noinline,noclone))
+unsigned char __attribute__((noipa))
 foo13 (long long x)
 {
   switch (x)
@@ -238,7 +238,7 @@ foo13 (long long x)
   return y;
 }
 
-unsigned char __attribute__((noinline,noclone))
+unsigned char __attribute__((noipa))
 foo14 (long long x)
 {
   switch (x)
@@ -256,7 +256,7 @@ foo14 (long long x)
   return y;
 }
 
-unsigned char __attribute__((noinline,noclone))
+unsigned char __attribute__((noipa))
 foo15 (long long x)
 {
   switch (x)
@@ -275,7 +275,7 @@ foo15 (long long x)
 }
 
 
-unsigned char __attribute__((noinline,noclone))
+unsigned char __attribute__((noipa))
 foo16 (long long x)
 {
   switch (x)

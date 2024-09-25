@@ -92,9 +92,8 @@ NameResolution::go (AST::Crate &crate)
   // first gather the top-level namespace names then we drill down so this
   // allows for resolving forward declarations since an impl block might have
   // a Self type Foo which is defined after the impl block for example.
-  for (auto it = crate.items.begin (); it != crate.items.end (); it++)
-    ResolveTopLevel::go (it->get (), CanonicalPath::create_empty (),
-			 crate_prefix);
+  for (auto &item : crate.items)
+    ResolveTopLevel::go (*item, CanonicalPath::create_empty (), crate_prefix);
 
   // FIXME remove this
   if (saw_errors ())
@@ -104,8 +103,8 @@ NameResolution::go (AST::Crate &crate)
     }
 
   // next we can drill down into the items and their scopes
-  for (auto it = crate.items.begin (); it != crate.items.end (); it++)
-    ResolveItem::go (it->get (), CanonicalPath::create_empty (), crate_prefix);
+  for (auto &item : crate.items)
+    ResolveItem::go (*item, CanonicalPath::create_empty (), crate_prefix);
 
   // done
   resolver->pop_module_scope ();

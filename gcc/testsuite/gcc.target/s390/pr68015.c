@@ -1,4 +1,4 @@
-/* { dg-compile } */
+/* { dg-do compile } */
 /* { dg-options "-O2 -march=z196" } */
 
 extern long useme (long, ...);

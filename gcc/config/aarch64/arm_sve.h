@@ -26,6 +26,7 @@
 #define _ARM_SVE_H_
 
 #include <stdint.h>
+#include <arm_private_fp8.h>
 #include <arm_bf16.h>
 
 typedef __fp16 float16_t;

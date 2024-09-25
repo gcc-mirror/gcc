@@ -1,0 +1,21 @@
+[package]
+name = "libformat_parser"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+
+members = [
+  "generic_format_parser",
+]
+
+[dependencies]
+libc = "0.2"
+generic_format_parser = { path = "generic_format_parser" }
+
+[lib]
+crate_type = ["staticlib", "rlib"]
+
+[[bin]]
+name = "format_parser_test"
+path = "src/bin.rs"

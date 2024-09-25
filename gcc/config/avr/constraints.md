@@ -1,4 +1,4 @@
-;; Constraint definitions for ATMEL AVR micro controllers.
+;; Insn constraint definitions for AVR 8-bit microcontrollers.
 ;; Copyright (C) 2006-2024 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
@@ -253,6 +253,11 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (ival, -255, -1)")))
 
+(define_constraint "Cp8"
+  "A constant integer or symbolic operand that is at least .p2align 8."
+  (and (match_code "const_int,symbol_ref,const")
+       (match_test "const_0mod256_operand (op, HImode)")))
+
 ;; CONST_FIXED is no element of 'n' so cook our own.
 ;; "i" or "s" would match but because the insn uses iterators that cover
 ;; INT_MODE, "i" or "s" is not always possible.
@@ -307,6 +312,13 @@
   "Fixed-point constant from @minus{}0x003f to 0x003f."
   (and (match_code "const_fixed")
        (match_test "IN_RANGE (INTVAL (avr_to_int_mode (op)), -63, 63)")))
+
+;; Similar to "M", but for CONST_FIXED.
+
+(define_constraint "YMM"
+  "Fixed-point constant in the range 0 @dots{} 0xff when viewed as CONST_INT."
+  (and (match_code "const_fixed")
+       (match_test "IN_RANGE (INTVAL (avr_to_int_mode (op)), 0, 0xff)")))
 
 (define_constraint "Yil"
   "Memory in the lower half of the I/O space."

@@ -1,5 +1,5 @@
-// Test for hiding of used base functions when all the conversion sequences are
-// equivalent, needed to avoid a regression on inherited default ctors.
+// Test the CWG 2273 inheritedness tiebreaker doesn't apply to
+// non-constructors.
 
 struct A
 {
@@ -17,7 +17,7 @@ struct B:A
 
 int main()
 {
-  B().f(1);			// OK, derived f hides base f for single arg
+  B().f(1);			// { dg-error "ambiguous" }
   B().f(1,2);			// OK, base f can still be called with two args
-  B().g(1);			// { dg-error "" } signatures differ, ambiguous
+  B().g(1);			// { dg-error "ambiguous" }
 }

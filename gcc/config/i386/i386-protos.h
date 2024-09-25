@@ -181,6 +181,7 @@ extern void ix86_split_rshift_ndd (enum rtx_code, rtx *, rtx);
 extern void ix86_expand_v1ti_shift (enum rtx_code, rtx[]);
 extern void ix86_expand_v1ti_rotate (enum rtx_code, rtx[]);
 extern void ix86_expand_v1ti_ashiftrt (rtx[]);
+extern void ix86_expand_v2di_ashiftrt (rtx[]);
 extern rtx ix86_replace_reg_with_reg (rtx, rtx, rtx);
 extern rtx ix86_find_base_term (rtx);
 extern bool ix86_check_movabs (rtx, int);
@@ -423,6 +424,8 @@ extern rtl_opt_pass *make_pass_insert_endbr_and_patchable_area
   (gcc::context *);
 extern rtl_opt_pass *make_pass_remove_partial_avx_dependency
   (gcc::context *);
+extern rtl_opt_pass *make_pass_apx_nf_convert (gcc::context *);
+extern rtl_opt_pass *make_pass_align_tight_loops (gcc::context *);
 
 extern bool ix86_has_no_direct_extern_access;
 extern bool ix86_rpad_gate ();

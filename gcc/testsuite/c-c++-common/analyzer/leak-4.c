@@ -1,3 +1,5 @@
+/* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
+
 /* Various tests of memory leak detection.  */
 
 #include <stdlib.h>

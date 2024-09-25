@@ -2700,10 +2700,12 @@ package body Exp_Ch3 is
          end if;
 
          --  Adjust the component if controlled except if it is an aggregate
-         --  that will be expanded inline.
+         --  that will be expanded inline (but note that the case of container
+         --  aggregates does require component adjustment).
 
          if Needs_Finalization (Typ)
-           and then Nkind (Exp_Q) not in N_Aggregate | N_Extension_Aggregate
+           and then (Nkind (Exp_Q) not in N_Aggregate | N_Extension_Aggregate
+                      or else Is_Container_Aggregate (Exp_Q))
            and then not Is_Build_In_Place_Function_Call (Exp)
          then
             Adj_Call :=
@@ -3530,6 +3532,7 @@ package body Exp_Ch3 is
                DF_Id :=
                  Make_Defining_Identifier (Loc,
                    Chars => New_External_Name (Name_uFinalizer));
+               Set_Is_Finalizer (DF_Id);
 
                Append_To (Decls, Make_Local_Deep_Finalize (Rec_Type, DF_Id));
 
@@ -4649,14 +4652,6 @@ package body Exp_Ch3 is
          end if;
 
          Set_Is_Inlined (Proc_Id, Inline_Init_Proc (Rec_Type));
-
-         --  Do not build an aggregate if Modify_Tree_For_C, this isn't
-         --  needed and may generate early references to non frozen types
-         --  since we expand aggregate much more systematically.
-
-         if Modify_Tree_For_C then
-            return;
-         end if;
 
          declare
             Agg : constant Node_Id :=
@@ -7663,11 +7658,9 @@ package body Exp_Ch3 is
            and then Is_Library_Level_Entity (Def_Id)
          then
             declare
-               Prag : Node_Id;
+               Prag : constant Node_Id :=
+                 Make_Linker_Section_Pragma (Def_Id, Loc, ".persistent.bss");
             begin
-               Prag :=
-                 Make_Linker_Section_Pragma
-                   (Def_Id, Sloc (N), ".persistent.bss");
                Insert_After (N, Prag);
                Analyze (Prag);
             end;
@@ -7690,13 +7683,11 @@ package body Exp_Ch3 is
             --  An aggregate that must be built in place is not resolved and
             --  expanded until the enclosing construct is expanded. This will
             --  happen when the aggregate is limited and the declared object
-            --  has a following address clause; it happens also when generating
-            --  C code for an aggregate that has an alignment or address clause
-            --  (see Analyze_Object_Declaration). Resolution is done without
+            --  has a following address clause. Resolution is done without
             --  expansion because it will take place when the declaration
             --  itself is expanded.
 
-            if (Is_Limited_Type (Typ) or else Modify_Tree_For_C)
+            if Is_Limited_Type (Typ)
               and then not Analyzed (Expr)
             then
                Expander_Mode_Save_And_Set (False);
@@ -8356,10 +8347,8 @@ package body Exp_Ch3 is
          --  An Ada 2012 stand-alone object of an anonymous access type
 
          declare
-            Loc : constant Source_Ptr := Sloc (N);
-
             Level : constant Entity_Id :=
-                      Make_Defining_Identifier (Sloc (N),
+                      Make_Defining_Identifier (Loc,
                         Chars =>
                           New_External_Name (Chars (Def_Id), Suffix => "L"));
 
@@ -10255,7 +10244,8 @@ package body Exp_Ch3 is
          if Nkind (Expr) = N_Unchecked_Type_Conversion
            and then Is_Scalar_Type (Under_Typ)
          then
-            Set_No_Truncation (Expr);
+            Set_Kill_Range_Check (Expr);
+            Set_No_Truncation    (Expr);
          end if;
 
          return Expr;

@@ -153,9 +153,6 @@ main()
   std::vector<bool>::reference br5 = *vbIt5;
 // { dg-final { note-test br5 {true} } }
 
- std::vector<bool>::reference br0;
-// { dg-final { note-test br0 {invalid std::vector<bool>::reference} } }
-
   __gnu_cxx::slist<int> sll;
   sll.push_front(23);
   sll.push_front(47);

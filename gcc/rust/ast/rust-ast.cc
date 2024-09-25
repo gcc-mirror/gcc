@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "rust-ast.h"
 #include "optional.h"
+#include "rust-builtin-ast-nodes.h"
 #include "rust-system.h"
 #include "rust-ast-full.h"
 #include "rust-diagnostics.h"
@@ -1060,9 +1061,11 @@ Union::as_string () const
 }
 
 Function::Function (Function const &other)
-  : VisItem (other), qualifiers (other.qualifiers),
-    function_name (other.function_name), where_clause (other.where_clause),
-    locus (other.locus), is_default (other.is_default)
+  : VisItem (other), ExternalItem (other.get_node_id ()),
+    qualifiers (other.qualifiers), function_name (other.function_name),
+    where_clause (other.where_clause), locus (other.locus),
+    is_default (other.is_default),
+    is_external_function (other.is_external_function)
 {
   // guard to prevent null dereference (always required)
   if (other.return_type != nullptr)
@@ -1094,6 +1097,7 @@ Function::operator= (Function const &other)
   // outer_attrs = other.outer_attrs;
   locus = other.locus;
   is_default = other.is_default;
+  is_external_function = other.is_external_function;
 
   // guard to prevent null dereference (always required)
   if (other.return_type != nullptr)
@@ -2287,7 +2291,7 @@ std::string
 VariadicParam::as_string () const
 {
   if (has_pattern ())
-    return get_pattern ()->as_string () + " : ...";
+    return get_pattern ().as_string () + " : ...";
   else
     return "...";
 }
@@ -2966,69 +2970,6 @@ ExternalStaticItem::as_string () const
 
   // add type on new line
   str += "\n Type: " + item_type->as_string ();
-
-  return str;
-}
-
-std::string
-ExternalFunctionItem::as_string () const
-{
-  // outer attributes
-  std::string str = append_attributes (outer_attrs, OUTER);
-
-  // start visibility on new line and with a space
-  str += "\n" + visibility.as_string () + " ";
-
-  str += "fn ";
-
-  // add name
-  str += item_name.as_string ();
-
-  // generic params
-  str += "\n Generic params: ";
-  if (generic_params.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      for (const auto &param : generic_params)
-	{
-	  // DEBUG: null pointer check
-	  if (param == nullptr)
-	    {
-	      rust_debug (
-		"something really terrible has gone wrong - null pointer "
-		"generic param in external function item.");
-	      return "NULL_POINTER_MARK";
-	    }
-
-	  str += "\n  " + param->as_string ();
-	}
-    }
-
-  // function params
-  str += "\n Function params: ";
-  if (function_params.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      for (const auto &param : function_params)
-	str += "\n  " + param.as_string ();
-    }
-
-  // add type on new line
-  str += "\n (return) Type: "
-	 + (has_return_type () ? return_type->as_string () : "()");
-
-  // where clause
-  str += "\n Where clause: ";
-  if (has_where_clause ())
-    str += where_clause.as_string ();
-  else
-    str += "none";
 
   return str;
 }
@@ -4317,7 +4258,7 @@ BlockExpr::normalize_tail_expr ()
 
 	  if (!stmt.is_semicolon_followed ())
 	    {
-	      expr = std::move (stmt.get_expr ());
+	      expr = std::move (stmt.take_expr ());
 	      statements.pop_back ();
 	    }
 	}
@@ -4863,12 +4804,6 @@ ExternalStaticItem::accept_vis (ASTVisitor &vis)
 }
 
 void
-ExternalFunctionItem::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
 ExternBlock::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
@@ -5046,6 +4981,62 @@ void
 MetaWord::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
+}
+
+void
+FormatArgs::accept_vis (ASTVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+std::string
+FormatArgs::as_string () const
+{
+  // FIXME(Arthur): Improve
+  return "FormatArgs";
+}
+
+location_t
+FormatArgs::get_locus () const
+{
+  return loc;
+}
+
+bool
+FormatArgs::is_expr_without_block () const
+{
+  return false;
+}
+
+void
+FormatArgs::mark_for_strip ()
+{
+  marked_for_strip = true;
+}
+
+bool
+FormatArgs::is_marked_for_strip () const
+{
+  return marked_for_strip;
+}
+
+std::vector<Attribute> &
+FormatArgs::get_outer_attrs ()
+{
+  rust_unreachable ();
+}
+
+void FormatArgs::set_outer_attrs (std::vector<Attribute>)
+{
+  rust_unreachable ();
+}
+
+Expr *
+FormatArgs::clone_expr_impl () const
+{
+  std::cerr << "[ARTHUR] cloning FormatArgs! " << std::endl;
+
+  return new FormatArgs (*this);
 }
 
 } // namespace AST

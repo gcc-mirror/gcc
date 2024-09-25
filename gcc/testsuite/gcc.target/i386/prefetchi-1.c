@@ -1,7 +1,7 @@
 /* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-mprefetchi -O2" } */
-/* { dg-final { scan-assembler-times "\[ \\t\]+prefetchit0\[ \\t\]+" 2 } } */
-/* { dg-final { scan-assembler-times "\[ \\t\]+prefetchit1\[ \\t\]+" 2 } } */
+/* { dg-final { scan-assembler-times "\[ \\t\]+prefetchit0\[ \\t\]+bar\\(%rip\\)" 2 } } */
+/* { dg-final { scan-assembler-times "\[ \\t\]+prefetchit1\[ \\t\]+bar\\(%rip\\)" 2 } } */
 
 #include <x86intrin.h>
 

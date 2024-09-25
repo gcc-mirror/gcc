@@ -1,4 +1,5 @@
 // { dg-do run { target c++17 } }
+// { dg-options "" }
 
 #include <new>
 
@@ -12,7 +13,7 @@ void* operator new (std::size_t n, std::align_val_t)
 }
 
 bool deleted = false;
-void operator delete (void *p, std::size_t, std::align_val_t)
+void operator delete (void *p, std::size_t, std::align_val_t) // { dg-warning "exception specifier" }
 {
   deleted = true;
   operator delete (p);

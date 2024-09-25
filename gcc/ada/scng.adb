@@ -1166,6 +1166,7 @@ package body Scng is
                      when '\' | '"' | '{' | '}'
                               => Code := Get_Char_Code (C);
                      when others =>
+                        Code := Get_Char_Code ('?');
                         Error_Msg_S ("illegal escaped character");
                   end case;
 
@@ -2134,14 +2135,19 @@ package body Scng is
          --  Lower case letters
 
          when 'a' .. 'z' =>
-            if Core_Extensions_Allowed
-              and then Source (Scan_Ptr) = 'f'
+            if Source (Scan_Ptr) = 'f'
               and then Source (Scan_Ptr + 1) = '"'
             then
-               Scan_Ptr := Scan_Ptr + 1;
-               Accumulate_Checksum (Source (Scan_Ptr));
-               Token := Tok_Left_Interpolated_String;
-               return;
+               if Core_Extensions_Allowed then
+                  Scan_Ptr := Scan_Ptr + 1;
+                  Accumulate_Checksum (Source (Scan_Ptr));
+                  Token := Tok_Left_Interpolated_String;
+                  return;
+               else
+                  Error_Msg_GNAT_Extension
+                    ("interpolated string", Scan_Ptr,
+                     Is_Core_Extension => True);
+               end if;
             end if;
 
             Name_Len := 1;
@@ -2154,15 +2160,20 @@ package body Scng is
          --  Upper case letters
 
          when 'A' .. 'Z' =>
-            if Core_Extensions_Allowed
-              and then Source (Scan_Ptr) = 'F'
+            if Source (Scan_Ptr) = 'F'
               and then Source (Scan_Ptr + 1) = '"'
             then
-               Error_Msg_S
-                 ("delimiter of interpolated string must be in lowercase");
-               Scan_Ptr := Scan_Ptr + 1;
-               Token := Tok_Left_Interpolated_String;
-               return;
+               if Core_Extensions_Allowed then
+                  Error_Msg_S
+                    ("delimiter of interpolated string must be in lowercase");
+                  Scan_Ptr := Scan_Ptr + 1;
+                  Token := Tok_Left_Interpolated_String;
+                  return;
+               else
+                  Error_Msg_GNAT_Extension
+                    ("interpolated string", Scan_Ptr,
+                     Is_Core_Extension => True);
+               end if;
             end if;
 
             Token_Contains_Uppercase := True;

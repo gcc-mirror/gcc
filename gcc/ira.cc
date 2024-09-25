@@ -5144,7 +5144,10 @@ split_live_ranges_for_shrink_wrap (void)
 	   use = DF_REF_NEXT_REG (use))
 	{
 	  int ubbi = DF_REF_BB (use)->index;
-	  if (bitmap_bit_p (reachable, ubbi))
+
+	  /* Only non debug insns should be taken into account.  */
+	  if (NONDEBUG_INSN_P (DF_REF_INSN (use))
+	      && bitmap_bit_p (reachable, ubbi))
 	    bitmap_set_bit (need_new, ubbi);
 	}
       last_interesting_insn = insn;

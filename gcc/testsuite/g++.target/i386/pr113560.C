@@ -1,5 +1,6 @@
 /* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-Ofast -std=c++23 -march=znver4" } */
+/* { dg-skip-if "requires hosted libstdc++ for cstdlib malloc" { ! hostedlib } } */
 
 #include <immintrin.h>
 auto f(char *buf, unsigned long long in) noexcept

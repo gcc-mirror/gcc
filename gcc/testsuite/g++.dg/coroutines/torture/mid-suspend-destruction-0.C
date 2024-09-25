@@ -3,6 +3,7 @@
 // { dg-output "Destroyed coro1(\n|\r\n|\r)" }
 // { dg-output "Destroyed suspend_always_prt(\n|\r\n|\r)" }
 // { dg-output "Destroyed Promise(\n|\r\n|\r)" }
+// { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
 
 // Check that we still get the right DTORs run when we let a suspended coro
 // go out of scope.

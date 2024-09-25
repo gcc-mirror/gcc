@@ -501,11 +501,11 @@ extract_cie_info (const struct dwarf_cie *cie, struct _Unwind_Context *context,
 	  fs->signal_frame = 1;
 	  aug += 1;
 	}
-      /* aarch64 B-key pointer authentication.  */
-      else if (aug[0] == 'B')
-	{
-	  aug += 1;
-      }
+
+#if defined(MD_ARCH_EXTENSION_CIE_AUG_HANDLER)
+      else if (MD_ARCH_EXTENSION_CIE_AUG_HANDLER (fs, aug[0]))
+	aug += 1;
+#endif
 
       /* Otherwise we have an unknown augmentation string.
 	 Bail unless we saw a 'z' prefix.  */
@@ -996,6 +996,9 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 
   memset (&fs->regs.how[0], 0,
 	  sizeof (*fs) - offsetof (_Unwind_FrameState, regs.how[0]));
+#if defined(MD_ARCH_EXTENSION_FRAME_INIT)
+  MD_ARCH_EXTENSION_FRAME_INIT (context, fs);
+#endif
   context->args_size = 0;
   context->lsda = 0;
 
@@ -1197,7 +1200,11 @@ uw_update_context_1 (struct _Unwind_Context *context, _Unwind_FrameState *fs)
       {
       case REG_UNSAVED:
       case REG_UNDEFINED:
-      case REG_UNSAVED_ARCHEXT:
+      /* If the value depends on an augmenter, then there is no processing
+	 to do here, and the value computation should be delayed until the
+	 architecture handler computes the value correctly based on the
+	 augmenter information.  */
+      case REG_ARCHEXT:
 	break;
 
       case REG_SAVED_OFFSET:
@@ -1415,6 +1422,11 @@ uw_install_context_1 (struct _Unwind_Context *current,
     {
       void *c = (void *) (_Unwind_Internal_Ptr) current->reg[i];
       void *t = (void *) (_Unwind_Internal_Ptr)target->reg[i];
+
+#ifdef MD_FRAME_LOCAL_REGISTER_P
+      if (MD_FRAME_LOCAL_REGISTER_P (i))
+	continue;
+#endif
 
       gcc_assert (current->by_value[i] == 0);
       if (target->by_value[i] && c)

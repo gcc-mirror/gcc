@@ -1,4 +1,5 @@
 // { dg-do run }
+// { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
 
 // template parm in a class
 

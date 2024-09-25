@@ -304,7 +304,7 @@ namespace tr2
       bool
       _M_is_proper_subset_of(const __dynamic_bitset_base& __b) const noexcept
       {
-	if (this->is_subset_of(__b))
+	if (this->_M_is_subset_of(__b))
 	  {
 	    if (*this == __b)
 	      return false;

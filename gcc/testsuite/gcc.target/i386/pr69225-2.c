@@ -1,4 +1,4 @@
-/* { dg-do compile} */
+/* { dg-do compile } */
 /* { dg-options "-mno-sse -mno-80387" } */
 
 #include <float.h>

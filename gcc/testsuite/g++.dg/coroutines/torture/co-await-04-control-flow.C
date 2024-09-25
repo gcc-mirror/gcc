@@ -1,4 +1,6 @@
 //  { dg-do run }
+//  { dg-additional-options "-Wno-unused-label" }
+//  { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
 
 // Check correct operation of await transform.
 

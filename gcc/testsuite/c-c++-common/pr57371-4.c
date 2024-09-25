@@ -2,9 +2,7 @@
 /* { dg-options "-O -fsignaling-nans -fdump-tree-original" } */
 
 /* We can not get rid of comparison in tests below because of
-   pending NaN exceptions.
-
-   TODO: avoid under -fno-trapping-math.  */
+   pending NaN exceptions.  */
 
 #define QNAN __builtin_nanf ("0")
 #define SNAN __builtin_nansf ("0")

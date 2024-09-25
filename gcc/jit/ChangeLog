@@ -1,3 +1,54 @@
+2024-09-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* dummy-frontend.cc: Include "diagnostic-format-text.h".
+	(jit_begin_diagnostic): Convert first param from
+	diagnostic_context * to diagnostic_text_output_format &
+	(jit_end_diagnostic): Likewise.  Update accordingly.
+	(jit_langhook_init): Update for renamings.
+
+2024-09-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* libgccjit.h: Include <sys/types.h>
+
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* jit-playback.cc (add_diagnostic): Rename diagnostic_context's
+	"printer" field to "m_printer".
+
+2024-09-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* jit-playback.cc (playback::block::add_extended_asm):  Rename
+	ASM_INPUT_P to ASM_BASIC_P.
+
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.cc (jit::playback_context::compile) Add a trailing
+	null to argvec.
+
+2024-07-05  Antoni Boucher  <bouanto@zoho.com>
+
+	* jit-common.h: Add array_type class.
+	* jit-recording.h (type::dyn_cast_array_type,
+	memento_of_get_aligned::dyn_cast_array_type,
+	array_type::dyn_cast_array_type, array_type::is_same_type_as):
+	New methods.
+
+2024-07-05  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/112574
+	* docs/topics/types.rst: Document GCC_JIT_TYPE_BFLOAT16.
+	* jit-common.h: Update NUM_GCC_JIT_TYPES.
+	* jit-playback.cc (get_tree_node_for_type): Support bfloat16.
+	* jit-recording.cc (recording::memento_of_get_type::get_size,
+	recording::memento_of_get_type::dereference,
+	recording::memento_of_get_type::is_int,
+	recording::memento_of_get_type::is_signed,
+	recording::memento_of_get_type::is_float,
+	recording::memento_of_get_type::is_bool): Support bfloat16.
+	* libgccjit.h (enum gcc_jit_types): Add GCC_JIT_TYPE_BFLOAT16.
+
 2024-06-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* jit-recording.cc

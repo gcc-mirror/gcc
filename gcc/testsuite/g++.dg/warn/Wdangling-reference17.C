@@ -1,6 +1,7 @@
 // PR c++/111410
 // { dg-do compile { target c++20 } }
 // { dg-options "-Wdangling-reference" }
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 
 #include <vector>
 #include <ranges>

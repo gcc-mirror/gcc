@@ -66,9 +66,19 @@ test02()
   static_assert(ranges::find(y, 5, &Y::j) == y+3);
 }
 
+void
+test_pr115799()
+{
+  const char str[3] = { 'a', 'b', 'c' };
+  __gnu_test::test_contiguous_sized_range<const char> r(str);
+  VERIFY(std::ranges::find(r, 'a') == std::ranges::begin(r));
+  VERIFY(std::ranges::find(r, 'a'+255) == std::ranges::end(r));
+}
+
 int
 main()
 {
   test01();
   test02();
+  test_pr115799();
 }

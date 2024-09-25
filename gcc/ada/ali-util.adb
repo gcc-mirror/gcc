@@ -29,6 +29,7 @@ with Opt;     use Opt;
 with Output;  use Output;
 with Osint;   use Osint;
 with Scans;   use Scans;
+with Fname;   use Fname;
 with Scng;
 with Sinput.C;
 with Stringt;
@@ -87,8 +88,10 @@ package body ALI.Util is
    -----------------------
 
    function Get_File_Checksum (Fname : File_Name_Type) return Word is
-      Full_Name    : File_Name_Type;
-      Source_Index : Source_File_Index;
+      Full_Name           : File_Name_Type;
+      Source_Index        : Source_File_Index;
+      Ada_Version_Current : Ada_Version_Type;
+      Internal_Unit       : constant Boolean := Is_Internal_File_Name (Fname);
 
    begin
       Full_Name := Find_File (Fname, Osint.Source);
@@ -109,12 +112,27 @@ package body ALI.Util is
 
       Scanner.Initialize_Scanner (Source_Index);
 
+      --  The runtime files are precompiled with an implicitly defined Ada
+      --  version that we set here to improve the parsing required to compute
+      --  the checksum.
+
+      if Internal_Unit then
+         Ada_Version_Current := Ada_Version;
+         Ada_Version := Ada_Version_Runtime;
+      end if;
+
       --  Scan the complete file to compute its checksum
 
       loop
          Scanner.Scan;
          exit when Token = Tok_EOF;
       end loop;
+
+      --  Restore the Ada version if we changed it
+
+      if Internal_Unit then
+         Ada_Version := Ada_Version_Current;
+      end if;
 
       return Scans.Checksum;
    end Get_File_Checksum;

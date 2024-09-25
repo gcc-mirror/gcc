@@ -1,6 +1,7 @@
 // PR c++/107488
 // { dg-do compile }
 // { dg-options "-Wdangling-reference" }
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 
 #include <vector>
 

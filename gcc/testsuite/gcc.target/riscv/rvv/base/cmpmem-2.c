@@ -1,6 +1,6 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-add-options riscv_v } */
 /* { dg-options "-O2 -mrvv-max-lmul=dynamic" } */
+/* { dg-add-options riscv_v } */
 
 #include <stdlib.h>
 

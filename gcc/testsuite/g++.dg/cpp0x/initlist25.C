@@ -1,5 +1,6 @@
 // PR c++/41754
 // { dg-do run { target c++11 } }
+// { dg-skip-if "requires hosted libstdc++ for map" { ! hostedlib } }
 
 #include <map>
 #include <string>

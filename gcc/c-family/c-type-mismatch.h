@@ -98,7 +98,8 @@ class op_location_t;
        |        arg1 type
        arg0 type
 
-   labelling the types of the arguments if SHOW_TYPES is true.
+   labelling the types of the arguments if SHOW_TYPES is true,
+   and using highlight_colors::lhs and highlight_colors::rhs for the ranges.
 
    Otherwise, it will fall back to a 1-location rich_location using the
    compound location within LOC:

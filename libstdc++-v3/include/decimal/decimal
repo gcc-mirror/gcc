@@ -33,6 +33,9 @@
 
 #pragma GCC system_header
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // DF suffix
+
 #include <bits/c++config.h>
 
 #ifndef _GLIBCXX_USE_DECIMAL_FLOAT
@@ -491,4 +494,5 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #include <decimal/decimal.h>
 
+#pragma GCC diagnostic pop
 #endif /* _GLIBCXX_DECIMAL */

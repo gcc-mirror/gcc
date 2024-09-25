@@ -3,18 +3,16 @@
 /* { dg-skip-if "" { *-*-* } { "-flto" } } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
-#include "vec_sat_arith.h"
+#include "../vec_sat_arith.h"
 
 /*
 ** vec_sat_u_add_uint32_t_fmt_8:
 ** ...
 ** vsetvli\s+[atx][0-9]+,\s*[atx][0-9]+,\s*e32,\s*m1,\s*ta,\s*ma
 ** ...
-** vle32\.v\s+v[0-9]+,\s*0\([atx][0-9]+\)
-** vle32\.v\s+v[0-9]+,\s*0\([atx][0-9]+\)
 ** vsaddu\.vv\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+
 ** ...
 */
 DEF_VEC_SAT_U_ADD_FMT_8(uint32_t)
 
-/* { dg-final { scan-rtl-dump-times ".SAT_ADD " 2 "expand" } } */
+/* { dg-final { scan-rtl-dump-times ".SAT_ADD " 4 "expand" } } */

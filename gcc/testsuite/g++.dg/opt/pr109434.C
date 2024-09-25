@@ -1,6 +1,7 @@
 // { dg-do compile }
 // { dg-require-effective-target c++17 }
 // { dg-options "-O2 -Wall" }
+// { dg-skip-if "requires hosted libstdc++ for stdexcept" { ! hostedlib } }
 
 #include <optional>
 #include <stdexcept>

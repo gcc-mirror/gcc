@@ -1,4 +1,4 @@
-/* { dg-options "-O2" } *
+/* { dg-options "-O2" } */
 /* { dg-do assemble } */
 
 /* This file fails to assemble if we forgot to increase the number of

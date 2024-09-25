@@ -1,6 +1,7 @@
 // { dg-do run }
 // { dg-require-effective-target c++14 }
 // { dg-options "-O2 -funroll-loops -fno-tree-vectorize" }
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 
 #include <vector>
 #include <algorithm>

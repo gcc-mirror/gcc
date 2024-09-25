@@ -12,6 +12,7 @@ using true_type = bool_constant<true>;
 using false_type = bool_constant<false>;
 
 struct S {
+  int i;
   template<bool B>
   [[gnu::no_dangling(B)]] int &foo (const int &);
 };

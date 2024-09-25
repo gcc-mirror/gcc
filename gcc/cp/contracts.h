@@ -303,7 +303,6 @@ extern void update_late_contract		(tree, tree, tree);
 extern tree splice_out_contracts		(tree);
 extern bool all_attributes_are_contracts_p	(tree);
 extern void copy_and_remap_contracts		(tree, tree);
-//extern tree apply_postcondition_to_return	(tree);
 extern void start_function_contracts		(tree);
 extern void maybe_apply_function_contracts	(tree);
 extern void finish_function_contracts		(tree);

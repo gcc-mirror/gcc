@@ -1,3 +1,4 @@
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 #include <vector>
 #include <cstdlib>
 typedef unsigned short uint16;

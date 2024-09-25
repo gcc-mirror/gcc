@@ -757,6 +757,18 @@ typedef struct
 #define VAR1(T, N, MAP, FLAG, A) \
   AARCH64_SIMD_BUILTIN_##T##_##N##A,
 
+#undef ENTRY
+#define ENTRY(N, S, M, U, F) \
+  AARCH64_##N,
+
+#undef ENTRY_VHSDF
+#define ENTRY_VHSDF(NAME, SIGNATURE, UNSPEC, EXTENSIONS) \
+  AARCH64_##NAME##_f16, \
+  AARCH64_##NAME##q_f16, \
+  AARCH64_##NAME##_f32, \
+  AARCH64_##NAME##q_f32, \
+  AARCH64_##NAME##q_f64,
+
 enum aarch64_builtins
 {
   AARCH64_BUILTIN_MIN,
@@ -829,6 +841,10 @@ enum aarch64_builtins
   AARCH64_RBIT,
   AARCH64_RBITL,
   AARCH64_RBITLL,
+  /* Pragma builtins.  */
+  AARCH64_PRAGMA_BUILTIN_START,
+#include "aarch64-simd-pragma-builtins.def"
+  AARCH64_PRAGMA_BUILTIN_END,
   /* System register builtins.  */
   AARCH64_RSR,
   AARCH64_RSRP,
@@ -947,6 +963,7 @@ const char *aarch64_scalar_builtin_types[] = {
 
 extern GTY(()) aarch64_simd_type_info aarch64_simd_types[];
 
+#undef ENTRY
 #define ENTRY(E, M, Q, G)  \
   {E, "__" #E, #G "__" #E, NULL_TREE, NULL_TREE, E_##M##mode, qualifier_##Q},
 struct aarch64_simd_type_info aarch64_simd_types [] = {
@@ -1547,6 +1564,78 @@ aarch64_init_simd_builtin_functions (bool called_from_pragma)
     }
 }
 
+enum class aarch64_builtin_signatures
+{
+  binary,
+};
+
+#undef ENTRY
+#define ENTRY(N, S, M, U, F) \
+  {#N, aarch64_builtin_signatures::S, E_##M##mode, U, F},
+
+#undef ENTRY_VHSDF
+#define ENTRY_VHSDF(NAME, SIGNATURE, UNSPEC, EXTENSIONS) \
+  ENTRY (NAME##_f16, SIGNATURE, V4HF, UNSPEC, EXTENSIONS) \
+  ENTRY (NAME##q_f16, SIGNATURE, V8HF, UNSPEC, EXTENSIONS) \
+  ENTRY (NAME##_f32, SIGNATURE, V2SF, UNSPEC, EXTENSIONS) \
+  ENTRY (NAME##q_f32, SIGNATURE, V4SF, UNSPEC, EXTENSIONS) \
+  ENTRY (NAME##q_f64, SIGNATURE, V2DF, UNSPEC, EXTENSIONS)
+
+/* Initialize pragma builtins.  */
+
+struct aarch64_pragma_builtins_data
+{
+  const char *name;
+  aarch64_builtin_signatures signature;
+  machine_mode mode;
+  int unspec;
+  aarch64_feature_flags required_extensions;
+};
+
+static aarch64_pragma_builtins_data aarch64_pragma_builtins[] = {
+#include "aarch64-simd-pragma-builtins.def"
+};
+
+static tree
+aarch64_fntype (const aarch64_pragma_builtins_data &builtin_data)
+{
+  auto type = aarch64_simd_builtin_type (builtin_data.mode, qualifier_none);
+  switch (builtin_data.signature)
+    {
+    case aarch64_builtin_signatures::binary:
+      return build_function_type_list (type, type, type, NULL_TREE);
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static void
+aarch64_init_pragma_builtins ()
+{
+  for (size_t i = 0; i < ARRAY_SIZE (aarch64_pragma_builtins); ++i)
+    {
+      auto data = aarch64_pragma_builtins[i];
+      auto fntype = aarch64_fntype (data);
+      auto code = AARCH64_PRAGMA_BUILTIN_START + i + 1;
+      aarch64_builtin_decls[code]
+	= aarch64_general_simulate_builtin (data.name, fntype, code);
+    }
+}
+
+/* If the builtin function with code CODE has an entry in
+   aarch64_pragma_builtins, return its entry, otherwise return null.  */
+
+static const aarch64_pragma_builtins_data*
+aarch64_get_pragma_builtin (int code)
+{
+  if (!(code > AARCH64_PRAGMA_BUILTIN_START
+	&& code < AARCH64_PRAGMA_BUILTIN_END))
+    return NULL;
+
+  auto idx = code - (AARCH64_PRAGMA_BUILTIN_START + 1);
+  return &aarch64_pragma_builtins[idx];
+}
+
 /* Register the tuple type that contains NUM_VECTORS of the AdvSIMD type
    indexed by TYPE_INDEX.  */
 static void
@@ -1640,6 +1729,7 @@ handle_arm_neon_h (void)
 
   aarch64_init_simd_builtin_functions (true);
   aarch64_init_simd_intrinsics ();
+  aarch64_init_pragma_builtins ();
 }
 
 static void
@@ -1791,21 +1881,17 @@ aarch64_init_tme_builtins (void)
     = build_function_type_list (void_type_node, uint64_type_node, NULL);
 
   aarch64_builtin_decls[AARCH64_TME_BUILTIN_TSTART]
-    = aarch64_general_add_builtin ("__builtin_aarch64_tstart",
-				   ftype_uint64_void,
-				   AARCH64_TME_BUILTIN_TSTART);
+    = aarch64_general_simulate_builtin ("__tstart", ftype_uint64_void,
+					AARCH64_TME_BUILTIN_TSTART);
   aarch64_builtin_decls[AARCH64_TME_BUILTIN_TTEST]
-    = aarch64_general_add_builtin ("__builtin_aarch64_ttest",
-				   ftype_uint64_void,
-				   AARCH64_TME_BUILTIN_TTEST);
+    = aarch64_general_simulate_builtin ("__ttest", ftype_uint64_void,
+					AARCH64_TME_BUILTIN_TTEST);
   aarch64_builtin_decls[AARCH64_TME_BUILTIN_TCOMMIT]
-    = aarch64_general_add_builtin ("__builtin_aarch64_tcommit",
-				   ftype_void_void,
-				   AARCH64_TME_BUILTIN_TCOMMIT);
+    = aarch64_general_simulate_builtin ("__tcommit", ftype_void_void,
+					AARCH64_TME_BUILTIN_TCOMMIT);
   aarch64_builtin_decls[AARCH64_TME_BUILTIN_TCANCEL]
-    = aarch64_general_add_builtin ("__builtin_aarch64_tcancel",
-				   ftype_void_uint64,
-				   AARCH64_TME_BUILTIN_TCANCEL);
+    = aarch64_general_simulate_builtin ("__tcancel", ftype_void_uint64,
+					AARCH64_TME_BUILTIN_TCANCEL);
 }
 
 /* Add builtins for Random Number instructions.  */
@@ -1936,27 +2022,27 @@ aarch64_init_memtag_builtins (void)
 
 #define AARCH64_INIT_MEMTAG_BUILTINS_DECL(F, N, I, T) \
   aarch64_builtin_decls[AARCH64_MEMTAG_BUILTIN_##F] \
-    = aarch64_general_add_builtin ("__builtin_aarch64_memtag_"#N, \
-				   T, AARCH64_MEMTAG_BUILTIN_##F); \
+    = aarch64_general_simulate_builtin ("__arm_mte_"#N, T, \
+					AARCH64_MEMTAG_BUILTIN_##F); \
   aarch64_memtag_builtin_data[AARCH64_MEMTAG_BUILTIN_##F - \
 			      AARCH64_MEMTAG_BUILTIN_START - 1] = \
 				{T, CODE_FOR_##I};
 
   fntype = build_function_type_list (ptr_type_node, ptr_type_node,
 				     uint64_type_node, NULL);
-  AARCH64_INIT_MEMTAG_BUILTINS_DECL (IRG, irg, irg, fntype);
+  AARCH64_INIT_MEMTAG_BUILTINS_DECL (IRG, create_random_tag, irg, fntype);
 
   fntype = build_function_type_list (uint64_type_node, ptr_type_node,
 				     uint64_type_node, NULL);
-  AARCH64_INIT_MEMTAG_BUILTINS_DECL (GMI, gmi, gmi, fntype);
+  AARCH64_INIT_MEMTAG_BUILTINS_DECL (GMI, exclude_tag, gmi, fntype);
 
   fntype = build_function_type_list (ptrdiff_type_node, ptr_type_node,
 				     ptr_type_node, NULL);
-  AARCH64_INIT_MEMTAG_BUILTINS_DECL (SUBP, subp, subp, fntype);
+  AARCH64_INIT_MEMTAG_BUILTINS_DECL (SUBP, ptrdiff, subp, fntype);
 
   fntype = build_function_type_list (ptr_type_node, ptr_type_node,
 				     unsigned_type_node, NULL);
-  AARCH64_INIT_MEMTAG_BUILTINS_DECL (INC_TAG, inc_tag, addg, fntype);
+  AARCH64_INIT_MEMTAG_BUILTINS_DECL (INC_TAG, increment_tag, addg, fntype);
 
   fntype = build_function_type_list (void_type_node, ptr_type_node, NULL);
   AARCH64_INIT_MEMTAG_BUILTINS_DECL (SET_TAG, set_tag, stg, fntype);
@@ -2066,8 +2152,9 @@ aarch64_init_data_intrinsics (void)
 void
 handle_arm_acle_h (void)
 {
-  if (TARGET_LS64)
-    aarch64_init_ls64_builtins ();
+  aarch64_init_ls64_builtins ();
+  aarch64_init_tme_builtins ();
+  aarch64_init_memtag_builtins ();
 }
 
 /* Initialize fpsr fpcr getters and setters.  */
@@ -2160,12 +2247,6 @@ aarch64_general_init_builtins (void)
   if (!TARGET_ILP32)
     aarch64_init_pauth_hint_builtins ();
 
-  if (TARGET_TME)
-    aarch64_init_tme_builtins ();
-
-  if (TARGET_MEMTAG)
-    aarch64_init_memtag_builtins ();
-
   if (in_lto_p)
     handle_arm_acle_h ();
 }
@@ -2180,11 +2261,112 @@ aarch64_general_builtin_decl (unsigned code, bool)
   return aarch64_builtin_decls[code];
 }
 
+/* True if we've already complained about attempts to use functions
+   when the required extension is disabled.  */
+static bool reported_missing_extension_p;
+
+/* True if we've already complained about attempts to use functions
+   which require registers that are missing.  */
+static bool reported_missing_registers_p;
+
+/* Report an error against LOCATION that the user has tried to use
+   function FNDECL when extension EXTENSION is disabled.  */
+static void
+aarch64_report_missing_extension (location_t location, tree fndecl,
+				  const char *extension)
+{
+  /* Avoid reporting a slew of messages for a single oversight.  */
+  if (reported_missing_extension_p)
+    return;
+
+  error_at (location, "ACLE function %qD requires ISA extension %qs",
+	    fndecl, extension);
+  inform (location, "you can enable %qs using the command-line"
+	  " option %<-march%>, or by using the %<target%>"
+	  " attribute or pragma", extension);
+  reported_missing_extension_p = true;
+}
+
+/* Report an error against LOCATION that the user has tried to use
+   function FNDECL when non-general registers are disabled.  */
+static void
+aarch64_report_missing_registers (location_t location, tree fndecl)
+{
+  /* Avoid reporting a slew of messages for a single oversight.  */
+  if (reported_missing_registers_p)
+    return;
+
+  error_at (location,
+	    "ACLE function %qD is incompatible with the use of %qs",
+	    fndecl, "-mgeneral-regs-only");
+  reported_missing_registers_p = true;
+}
+
+/* Check whether all the AARCH64_FL_* values in REQUIRED_EXTENSIONS are
+   enabled, given that those extensions are required for function FNDECL.
+   Report an error against LOCATION if not.  */
+bool
+aarch64_check_required_extensions (location_t location, tree fndecl,
+				   aarch64_feature_flags required_extensions)
+{
+  if ((required_extensions & ~aarch64_isa_flags) == 0)
+    return true;
+
+  auto missing_extensions = required_extensions & ~aarch64_asm_isa_flags;
+
+  if (missing_extensions == 0)
+    {
+      /* All required extensions are enabled in aarch64_asm_isa_flags, so the
+	 error must be the use of general-regs-only.  */
+      aarch64_report_missing_registers (location, fndecl);
+      return false;
+    }
+
+  if (missing_extensions & AARCH64_FL_SM_OFF)
+    {
+      error_at (location, "ACLE function %qD cannot be called when"
+		" SME streaming mode is enabled", fndecl);
+      return false;
+    }
+
+  if (missing_extensions & AARCH64_FL_SM_ON)
+    {
+      error_at (location, "ACLE function %qD can only be called when"
+		" SME streaming mode is enabled", fndecl);
+      return false;
+    }
+
+  if (missing_extensions & AARCH64_FL_ZA_ON)
+    {
+      error_at (location, "ACLE function %qD can only be called from"
+		" a function that has %qs state", fndecl, "za");
+      return false;
+    }
+
+  static const struct {
+    aarch64_feature_flags flag;
+    const char *name;
+  } extensions[] = {
+#define AARCH64_OPT_EXTENSION(EXT_NAME, IDENT, C, D, E, F) \
+    { AARCH64_FL_##IDENT, EXT_NAME },
+#include "aarch64-option-extensions.def"
+  };
+
+  for (unsigned int i = 0; i < ARRAY_SIZE (extensions); ++i)
+    if (missing_extensions & extensions[i].flag)
+      {
+	aarch64_report_missing_extension (location, fndecl, extensions[i].name);
+	return false;
+      }
+  gcc_unreachable ();
+}
+
 bool
 aarch64_general_check_builtin_call (location_t location, vec<location_t>,
 			    unsigned int code, tree fndecl,
 			    unsigned int nargs ATTRIBUTE_UNUSED, tree *args)
 {
+  tree decl = aarch64_builtin_decls[code];
   switch (code)
     {
     case AARCH64_RSR:
@@ -2197,17 +2379,49 @@ aarch64_general_check_builtin_call (location_t location, vec<location_t>,
     case AARCH64_WSR64:
     case AARCH64_WSRF:
     case AARCH64_WSRF64:
-      tree addr = STRIP_NOPS (args[0]);
-      if (TREE_CODE (TREE_TYPE (addr)) != POINTER_TYPE
-	  || TREE_CODE (addr) != ADDR_EXPR
-	  || TREE_CODE (TREE_OPERAND (addr, 0)) != STRING_CST)
-	{
-	  error_at (location, "first argument to %qD must be a string literal",
-		    fndecl);
-	  return false;
-	}
+      {
+	tree addr = STRIP_NOPS (args[0]);
+	if (TREE_CODE (TREE_TYPE (addr)) != POINTER_TYPE
+	    || TREE_CODE (addr) != ADDR_EXPR
+	    || TREE_CODE (TREE_OPERAND (addr, 0)) != STRING_CST)
+	  {
+	    error_at (location,
+		      "first argument to %qD must be a string literal",
+		      fndecl);
+	    return false;
+	  }
+	break;
+      }
+
+    case AARCH64_TME_BUILTIN_TSTART:
+    case AARCH64_TME_BUILTIN_TCOMMIT:
+    case AARCH64_TME_BUILTIN_TTEST:
+    case AARCH64_TME_BUILTIN_TCANCEL:
+      return aarch64_check_required_extensions (location, decl,
+						AARCH64_FL_TME);
+
+    case AARCH64_LS64_BUILTIN_LD64B:
+    case AARCH64_LS64_BUILTIN_ST64B:
+    case AARCH64_LS64_BUILTIN_ST64BV:
+    case AARCH64_LS64_BUILTIN_ST64BV0:
+      return aarch64_check_required_extensions (location, decl,
+						AARCH64_FL_LS64);
+
+    default:
+      break;
     }
-  /* Default behavior.  */
+
+  if (code >= AARCH64_MEMTAG_BUILTIN_START
+      && code <= AARCH64_MEMTAG_BUILTIN_END)
+    return aarch64_check_required_extensions (location, decl,
+					      AARCH64_FL_MEMTAG);
+
+  if (auto builtin_data = aarch64_get_pragma_builtin (code))
+    {
+      auto flags = builtin_data->required_extensions;
+      return aarch64_check_required_extensions (location, decl, flags);
+    }
+
   return true;
 }
 
@@ -3071,6 +3285,25 @@ aarch64_expand_builtin_data_intrinsic (unsigned int fcode, tree exp, rtx target)
   return ops[0].value;
 }
 
+static rtx
+aarch64_expand_pragma_builtin (tree exp, rtx target,
+			       const aarch64_pragma_builtins_data *builtin_data)
+{
+  expand_operand ops[3];
+  auto mode = builtin_data->mode;
+  auto op1 = expand_normal (CALL_EXPR_ARG (exp, 0));
+  auto op2 = expand_normal (CALL_EXPR_ARG (exp, 1));
+  create_output_operand (&ops[0], target, mode);
+  create_input_operand (&ops[1], op1, mode);
+  create_input_operand (&ops[2], op2, mode);
+
+  auto unspec = builtin_data->unspec;
+  auto icode = code_for_aarch64 (unspec, mode);
+  expand_insn (icode, 3, ops);
+
+  return target;
+}
+
 /* Expand an expression EXP as fpsr or fpcr setter (depending on
    UNSPEC) using MODE.  */
 static void
@@ -3250,6 +3483,9 @@ aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target,
   if (fcode >= AARCH64_REV16
       && fcode <= AARCH64_RBITLL)
     return aarch64_expand_builtin_data_intrinsic (fcode, exp, target);
+
+  if (auto builtin_data = aarch64_get_pragma_builtin (fcode))
+    return aarch64_expand_pragma_builtin (exp, target, builtin_data);
 
   gcc_unreachable ();
 }
@@ -3903,6 +4139,7 @@ aarch64_resolve_overloaded_builtin_general (location_t loc, tree function,
 #undef CF3
 #undef CF4
 #undef CF10
+#undef ENTRY_VHSDF
 #undef VAR1
 #undef VAR2
 #undef VAR3

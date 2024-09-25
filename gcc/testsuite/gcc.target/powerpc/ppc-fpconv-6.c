@@ -1,6 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-require-effective-target powerpc_fprs } */
 /* { dg-options "-O3 -mdejagnu-cpu=power6 -ffast-math" } */
 /* { dg-final { scan-assembler-times "fctiwz " 2 } } */
 /* { dg-final { scan-assembler-not "fctiwuz " } } */

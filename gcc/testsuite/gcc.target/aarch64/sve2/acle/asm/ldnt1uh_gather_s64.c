@@ -204,7 +204,7 @@ TEST_LOAD_GATHER_SZ (ldnt1uh_gather_untied_s64_u64offset, svint64_t, uint16_t, s
 
 /*
 ** ldnt1uh_gather_x0_s64_s64index:
-**	lsl	(z[0-9]+\.d), z0\.d, #1
+**	add	(z[0-9]+\.d), z0\.d, z0\.d
 **	ldnt1h	z0\.d, p0/z, \[\1, x0\]
 **	ret
 */
@@ -214,7 +214,7 @@ TEST_LOAD_GATHER_SZ (ldnt1uh_gather_x0_s64_s64index, svint64_t, uint16_t, svint6
 
 /*
 ** ldnt1uh_gather_tied1_s64_s64index:
-**	lsl	(z[0-9]+\.d), z0\.d, #1
+**	add	(z[0-9]+\.d), z0\.d, z0\.d
 **	ldnt1h	z0\.d, p0/z, \[\1, x0\]
 **	ret
 */
@@ -224,7 +224,7 @@ TEST_LOAD_GATHER_SZ (ldnt1uh_gather_tied1_s64_s64index, svint64_t, uint16_t, svi
 
 /*
 ** ldnt1uh_gather_untied_s64_s64index:
-**	lsl	(z[0-9]+\.d), z1\.d, #1
+**	add	(z[0-9]+\.d), z1\.d, z1\.d
 **	ldnt1h	z0\.d, p0/z, \[\1, x0\]
 **	ret
 */
@@ -234,7 +234,7 @@ TEST_LOAD_GATHER_SZ (ldnt1uh_gather_untied_s64_s64index, svint64_t, uint16_t, sv
 
 /*
 ** ldnt1uh_gather_x0_s64_u64index:
-**	lsl	(z[0-9]+\.d), z0\.d, #1
+**	add	(z[0-9]+\.d), z0\.d, z0\.d
 **	ldnt1h	z0\.d, p0/z, \[\1, x0\]
 **	ret
 */
@@ -244,7 +244,7 @@ TEST_LOAD_GATHER_SZ (ldnt1uh_gather_x0_s64_u64index, svint64_t, uint16_t, svuint
 
 /*
 ** ldnt1uh_gather_tied1_s64_u64index:
-**	lsl	(z[0-9]+\.d), z0\.d, #1
+**	add	(z[0-9]+\.d), z0\.d, z0\.d
 **	ldnt1h	z0\.d, p0/z, \[\1, x0\]
 **	ret
 */
@@ -254,7 +254,7 @@ TEST_LOAD_GATHER_SZ (ldnt1uh_gather_tied1_s64_u64index, svint64_t, uint16_t, svu
 
 /*
 ** ldnt1uh_gather_untied_s64_u64index:
-**	lsl	(z[0-9]+\.d), z1\.d, #1
+**	add	(z[0-9]+\.d), z1\.d, z1\.d
 **	ldnt1h	z0\.d, p0/z, \[\1, x0\]
 **	ret
 */

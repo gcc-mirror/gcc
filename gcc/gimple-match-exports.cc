@@ -126,6 +126,20 @@ gimple_match_op::resimplify (gimple_seq *seq, tree (*valueize)(tree))
     }
 }
 
+/* Returns true if any of the operands of THIS occurs
+   in abnormal phis. */
+bool
+gimple_match_op::operands_occurs_in_abnormal_phi() const
+{
+  for (unsigned int i = 0; i < num_ops; i++)
+    {
+       if (TREE_CODE (ops[i]) == SSA_NAME
+	   && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[i]))
+	return true;
+    }
+  return false;
+}
+
 /* Return whether T is a constant that we'll dispatch to fold to
    evaluate fully constant expressions.  */
 
@@ -726,6 +740,9 @@ gimple_extract (gimple *stmt, gimple_match_op *res_op,
 		|| code == VIEW_CONVERT_EXPR)
 	      {
 		tree op0 = TREE_OPERAND (gimple_assign_rhs1 (stmt), 0);
+		/* op0 needs to be a SSA name or an min invariant. */
+		if (TREE_CODE (op0) != SSA_NAME && !is_gimple_min_invariant (op0))
+		  return false;
 		res_op->set_op (code, type, valueize_op (op0));
 		return true;
 	      }
@@ -733,6 +750,9 @@ gimple_extract (gimple *stmt, gimple_match_op *res_op,
 	      {
 		tree rhs1 = gimple_assign_rhs1 (stmt);
 		tree op0 = valueize_op (TREE_OPERAND (rhs1, 0));
+		/* op0 needs to be a SSA name or an min invariant. */
+		if (TREE_CODE (op0) != SSA_NAME && !is_gimple_min_invariant (op0))
+		  return false;
 		res_op->set_op (code, type, op0,
 				TREE_OPERAND (rhs1, 1),
 				TREE_OPERAND (rhs1, 2),

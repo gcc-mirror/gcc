@@ -62,7 +62,7 @@ protected:
   void visit (HIR::LazyBooleanExpr &expr) override
   {
     auto lhs = visit_expr (*expr.get_lhs ());
-    push_switch (make_arg (lhs), {short_circuit_bb});
+    push_switch (move_place (lhs), {short_circuit_bb});
 
     start_new_consecutive_bb ();
     return_place (visit_expr (*expr.get_rhs ()));

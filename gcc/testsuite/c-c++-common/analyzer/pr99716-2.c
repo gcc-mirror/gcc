@@ -1,3 +1,5 @@
+/* { dg-skip-if "requires hosted libstdc++ for stdlib rand" { ! hostedlib } } */
+
 /* Reduced from
    https://github.com/libguestfs/libguestfs/blob/e0a11061035d47b118c95706240bcc17fd576edc/tests/mount-local/test-parallel-mount-local.c#L299-L335
    which is GPLv2 or later.  */

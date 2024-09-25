@@ -9,7 +9,7 @@
 #define __memx  /* empty */
 #endif
 
-#define NC __attribute__((noinline,noclone))
+#define NC __attribute__((noipa))
 
 void NC vfun (char n, ...)
 {

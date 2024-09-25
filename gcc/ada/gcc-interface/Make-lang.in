@@ -309,6 +309,16 @@ GNAT_ADA_OBJS =	\
  ada/cstand.o	\
  ada/debug.o	\
  ada/debug_a.o	\
+ ada/diagnostics-brief_emitter.o      \
+ ada/diagnostics-constructors.o      \
+ ada/diagnostics-converter.o      \
+ ada/diagnostics-json_utils.o      \
+ ada/diagnostics-pretty_emitter.o      \
+ ada/diagnostics-repository.o      \
+ ada/diagnostics-sarif_emitter.o      \
+ ada/diagnostics-switch_repository.o      \
+ ada/diagnostics-utils.o      \
+ ada/diagnostics.o      \
  ada/einfo-entities.o \
  ada/einfo-utils.o \
  ada/einfo.o	\
@@ -594,6 +604,16 @@ GNATBIND_OBJS = \
  ada/casing.o     \
  ada/csets.o      \
  ada/debug.o      \
+ ada/diagnostics-brief_emitter.o      \
+ ada/diagnostics-constructors.o      \
+ ada/diagnostics-converter.o      \
+ ada/diagnostics-json_utils.o      \
+ ada/diagnostics-pretty_emitter.o      \
+ ada/diagnostics-repository.o      \
+ ada/diagnostics-sarif_emitter.o      \
+ ada/diagnostics-switch_repository.o      \
+ ada/diagnostics-utils.o      \
+ ada/diagnostics.o      \
  ada/einfo-entities.o \
  ada/einfo-utils.o \
  ada/einfo.o      \
@@ -780,6 +800,7 @@ regnattools:
 cross-gnattools: force
 	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools1-re
 	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2
+	$(GNATTOOLS_CROSS_MV)
 
 canadian-gnattools: force
 	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools1-re
@@ -795,19 +816,23 @@ gnatlib gnatlib-sjlj gnatlib-zcx gnatlib-shared: force
 	   FORCE_DEBUG_ADAFLAGS="$(FORCE_DEBUG_ADAFLAGS)" \
 	   $@
 
+gnattools-cross-mv:
+	$(GNATTOOLS_CROSS_MV)
+
+GNATTOOLS_CROSS_MV=\
+  for tool in $(ADA_TOOLS) ; do \
+    if [ -f $$tool$(exeext) ] ; \
+    then \
+      $(MV) $$tool$(exeext) $$tool-cross$(exeext); \
+    fi; \
+  done
+
 # use only for native compiler
 gnatlib_and_tools: gnatlib gnattools
 
 # Build hooks:
 
 ada.all.cross:
-	for tool in $(ADA_TOOLS) ; do \
-	  if [ -f $$tool$(exeext) ] ; \
-	  then \
-	    $(MV) $$tool$(exeext) $$tool-cross$(exeext); \
-	  fi; \
-	done
-
 ada.start.encap:
 ada.rest.encap:
 ada.man:

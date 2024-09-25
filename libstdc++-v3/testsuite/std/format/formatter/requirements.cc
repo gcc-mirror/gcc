@@ -26,6 +26,16 @@ test_specializations() // [format.formatter.spec]
   static_assert( std::is_copy_assignable_v<Fi> );
   static_assert( std::is_move_assignable_v<Fi> );
 
+#ifdef _GLIBCXX_USE_CHAR8_T
+  // std::string s0 = std::format("{}", u8'a'); // error: disabled formatter
+  using Fc8 = std::format_context::formatter_type<char8_t>;
+  static_assert( ! std::is_default_constructible_v<Fc8> );
+  static_assert( ! std::is_copy_constructible_v<Fc8> );
+  static_assert( ! std::is_move_constructible_v<Fc8> );
+  static_assert( ! std::is_copy_assignable_v<Fc8> );
+  static_assert( ! std::is_move_assignable_v<Fc8> );
+#endif
+
   // std::string s1 = std::format("{}", L"foo"); // error: disabled formatter
   using Fw = std::format_context::formatter_type<wchar_t>;
   static_assert( ! std::is_default_constructible_v<Fw> );
@@ -33,6 +43,13 @@ test_specializations() // [format.formatter.spec]
   static_assert( ! std::is_move_constructible_v<Fw> );
   static_assert( ! std::is_copy_assignable_v<Fw> );
   static_assert( ! std::is_move_assignable_v<Fw> );
+
+  using Fic = std::format_context::formatter_type<const int>; // disabled
+  static_assert( ! std::is_default_constructible_v<Fic> );
+  static_assert( ! std::is_copy_constructible_v<Fic> );
+  static_assert( ! std::is_move_constructible_v<Fic> );
+  static_assert( ! std::is_copy_assignable_v<Fic> );
+  static_assert( ! std::is_move_assignable_v<Fic> );
 
   std::string s2 = std::format("{}", red);  // OK, user-provided formatter
   VERIFY( s2 == "red" );

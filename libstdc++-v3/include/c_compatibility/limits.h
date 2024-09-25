@@ -26,9 +26,9 @@
  *  This is a Standard C++ Library header.
  */
 
-#include <climits>
-
 #ifndef _GLIBCXX_LIMITS_H
 #define _GLIBCXX_LIMITS_H 1
+
+#include <climits>
 
 #endif

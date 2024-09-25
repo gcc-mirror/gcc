@@ -1,5 +1,5 @@
 // { dg-do compile { target c++20 } }
-// { dg-additional-options "-fconcepts-ts" }
+// { dg-additional-options "-fconcepts" }
 
 #include <type_traits>
 
@@ -15,11 +15,11 @@ template <class... Operands> constexpr bool and_(Operands... operands) {
   return and_impl(operands...);
 }
 
-template <class X> concept bool C() { return true; }
+template <class X> concept C = true;
 
 // v1
 template<int, class... Xs>
-  requires and_(C<Xs>()...)
+  requires (and_(C<Xs>...))
 constexpr int f(const Xs&... xs) {
   return 0;
 }
@@ -38,10 +38,10 @@ int main() {
 // 2nd example
 
 template <typename T, typename... Us>
-concept bool AreType() {
-  return (std::is_same<T,Us>::value && ...);
+concept AreType =
+  (std::is_same<T,Us>::value && ...);
   // return true; gives the same overloaded error
-}
+
 
 // Function with constraint
 template<typename T, AreType<T>... Us>

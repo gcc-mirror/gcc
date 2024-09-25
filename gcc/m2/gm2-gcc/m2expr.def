@@ -21,20 +21,19 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 DEFINITION MODULE FOR "C" m2expr  ;
 
-FROM SYSTEM IMPORT ADDRESS ;
-FROM m2tree IMPORT Tree ;
-FROM m2linemap IMPORT location_t ;
+FROM gcctypes IMPORT location_t, tree ;
+FROM CDataTypes IMPORT CharStar, ConstCharStar ;
 
 
 TYPE
-   BuildBinCheckProcedure   = PROCEDURE (location_t, Tree, Tree, Tree, Tree, Tree) : Tree ;
-   BuildBinProcedure        = PROCEDURE (location_t, Tree, Tree, BOOLEAN) : Tree ;
-   BuildUnaryProcedure      = PROCEDURE (location_t, Tree, BOOLEAN) : Tree ;
-   BuildUnaryCheckProcedure = PROCEDURE (location_t, Tree, Tree, Tree, Tree) : Tree ;
-   BuildExprProcedure       = PROCEDURE (location_t, Tree, Tree) : Tree ;
-   BuildSetProcedure        = PROCEDURE (location_t, Tree, Tree, Tree, Tree, BOOLEAN) ;
-   BuildUnarySetProcedure   = PROCEDURE (location_t, Tree, BOOLEAN) ;
-   BuildUnarySetFunction    = PROCEDURE (location_t, Tree, BOOLEAN) : Tree ;
+   BuildBinCheckProcedure   = PROCEDURE (location_t, tree, tree, tree, tree, tree) : tree ;
+   BuildBinProcedure        = PROCEDURE (location_t, tree, tree, BOOLEAN) : tree ;
+   BuildUnaryProcedure      = PROCEDURE (location_t, tree, BOOLEAN) : tree ;
+   BuildUnaryCheckProcedure = PROCEDURE (location_t, tree, tree, tree, tree) : tree ;
+   BuildExprProcedure       = PROCEDURE (location_t, tree, tree) : tree ;
+   BuildSetProcedure        = PROCEDURE (location_t, tree, tree, tree, tree, BOOLEAN) ;
+   BuildUnarySetProcedure   = PROCEDURE (location_t, tree, BOOLEAN) ;
+   BuildUnarySetFunction    = PROCEDURE (location_t, tree, BOOLEAN) : tree ;
 
 
 (*
@@ -49,53 +48,54 @@ PROCEDURE init (location: location_t) ;
                     The string returned will have been malloc'd.
 *)
 
-PROCEDURE CSTIntToString (t: Tree) : ADDRESS ;
+PROCEDURE CSTIntToString (t: tree) : CharStar ;
+
 
 (*
    CSTIntToChar - return the CHAR representation of tree t.
 *)
 
-PROCEDURE CSTIntToChar (t: Tree) : CHAR ;
+PROCEDURE CSTIntToChar (t: tree) : CHAR ;
 
 
 PROCEDURE CheckConstStrZtypeRange (location: location_t;
-				   str: ADDRESS; base: CARDINAL) : BOOLEAN ;
+				   str: CharStar; base: CARDINAL) : BOOLEAN ;
 
 (*
    CompareTrees - returns -1 if e1 < e2, 0 if e1 == e2, and 1 if e1 > e2.
 *)
 
-PROCEDURE CompareTrees (e1: Tree; e2: Tree) : INTEGER ;
+PROCEDURE CompareTrees (e1: tree; e2: tree) : INTEGER ;
 
 
-PROCEDURE GetPointerOne (location: location_t) : Tree ;
+PROCEDURE GetPointerOne (location: location_t) : tree ;
 
 
-PROCEDURE GetPointerZero (location: location_t) : Tree ;
+PROCEDURE GetPointerZero (location: location_t) : tree ;
 
 
-PROCEDURE GetWordOne (location: location_t) : Tree ;
+PROCEDURE GetWordOne (location: location_t) : tree ;
 
 
-PROCEDURE GetWordZero (location: location_t) : Tree ;
+PROCEDURE GetWordZero (location: location_t) : tree ;
 
 
-PROCEDURE GetIntegerOne (location: location_t) : Tree ;
+PROCEDURE GetIntegerOne (location: location_t) : tree ;
 
 
-PROCEDURE GetIntegerZero (location: location_t) : Tree ;
+PROCEDURE GetIntegerZero (location: location_t) : tree ;
 
 
-PROCEDURE GetCardinalOne (location: location_t) : Tree ;
+PROCEDURE GetCardinalOne (location: location_t) : tree ;
 
 
-PROCEDURE GetCardinalZero (location: location_t) : Tree ;
+PROCEDURE GetCardinalZero (location: location_t) : tree ;
 
 
-PROCEDURE GetSizeOfInBits (type: Tree) : Tree ;
+PROCEDURE GetSizeOfInBits (type: tree) : tree ;
 
 
-PROCEDURE GetSizeOf (location: location_t; type: Tree) : Tree ;
+PROCEDURE GetSizeOf (location: location_t; type: tree) : tree ;
 
 
 (*
@@ -103,7 +103,7 @@ PROCEDURE GetSizeOf (location: location_t; type: Tree) : Tree ;
                          for a fundamental data type.
 *)
 
-PROCEDURE BuildLogicalRotate (location: location_t; op1: Tree; op2: Tree; op3: Tree; nBits: Tree; needconvert: BOOLEAN) ;
+PROCEDURE BuildLogicalRotate (location: location_t; op1: tree; op2: tree; op3: tree; nBits: tree; needconvert: BOOLEAN) ;
 
 
 (*
@@ -111,7 +111,7 @@ PROCEDURE BuildLogicalRotate (location: location_t; op1: Tree; op2: Tree; op3: T
                 it rotates a set of size, nBits.
 *)
 
-PROCEDURE BuildLRRn (location: location_t; op1: Tree; op2: Tree; nBits: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildLRRn (location: location_t; op1: tree; op2: tree; nBits: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
@@ -119,39 +119,39 @@ PROCEDURE BuildLRRn (location: location_t; op1: Tree; op2: Tree; nBits: Tree; ne
                 it rotates a set of size, nBits.
 *)
 
-PROCEDURE BuildLRLn (location: location_t; op1: Tree; op2: Tree; nBits: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildLRLn (location: location_t; op1: tree; op2: tree; nBits: tree; needconvert: BOOLEAN) : tree ;
 
 
 
-PROCEDURE BuildMask (location: location_t; nBits: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildMask (location: location_t; nBits: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
     BuildMult - builds a multiplication tree.
 *)
 
-PROCEDURE BuildMult (location: location_t; op1: Tree; op2: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildMult (location: location_t; op1: tree; op2: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
     BuildMultCheck - builds a multiplication tree after checking for overflow.
 *)
 
-PROCEDURE BuildMultCheck (location: location_t; op1, op2, lowest, min, max: Tree) : Tree ;
+PROCEDURE BuildMultCheck (location: location_t; op1, op2, lowest, min, max: tree) : tree ;
 
 
 (*
     BuildLRR - builds and returns tree (op1 rotate right by op2 bits)
 *)
 
-PROCEDURE BuildLRR (location: location_t; op1: Tree; op2: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildLRR (location: location_t; op1: tree; op2: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
     BuildLRL - builds and returns tree (op1 rotate left by op2 bits)
 *)
 
-PROCEDURE BuildLRL (location: location_t; op1: Tree; op2: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildLRL (location: location_t; op1: tree; op2: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
@@ -159,21 +159,21 @@ PROCEDURE BuildLRL (location: location_t; op1: Tree; op2: Tree; needconvert: BOO
                         for a fundamental data type.
 *)
 
-PROCEDURE BuildLogicalShift (location: location_t; op1: Tree; op2: Tree; op3: Tree; nBits: Tree; needconvert: BOOLEAN) ;
+PROCEDURE BuildLogicalShift (location: location_t; op1: tree; op2: tree; op3: tree; nBits: tree; needconvert: BOOLEAN) ;
 
 
 (*
     BuildLSR - builds and returns tree (op1 >> op2)
 *)
 
-PROCEDURE BuildLSR (location: location_t; op1: Tree; op2: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildLSR (location: location_t; op1: tree; op2: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
     BuildLSL - builds and returns tree (op1 << op2)
 *)
 
-PROCEDURE BuildLSL (location: location_t; op1: Tree; op2: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildLSL (location: location_t; op1: tree; op2: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
@@ -182,7 +182,7 @@ PROCEDURE BuildLSL (location: location_t; op1: Tree; op2: Tree; needconvert: BOO
                 return op1 div trunc op2
 *)
 
-PROCEDURE BuildDivM2 (location: location_t; op1, op2: Tree; needsconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildDivM2 (location: location_t; op1, op2: tree; needsconvert: BOOLEAN) : tree ;
 
 
 (*
@@ -191,7 +191,7 @@ PROCEDURE BuildDivM2 (location: location_t; op1, op2: Tree; needsconvert: BOOLEA
                      return op1 div trunc op2.  Use the checking div equivalents.
 *)
 
-PROCEDURE BuildDivM2Check (location: location_t; op1, op2, lowest, min, max: Tree) : Tree ;
+PROCEDURE BuildDivM2Check (location: location_t; op1, op2, lowest, min, max: tree) : tree ;
 
 
 (*
@@ -200,7 +200,7 @@ PROCEDURE BuildDivM2Check (location: location_t; op1, op2, lowest, min, max: Tre
                 return op1 div trunc op2
 *)
 
-PROCEDURE BuildModM2 (location: location_t; op1, op2: Tree; needsconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildModM2 (location: location_t; op1, op2: tree; needsconvert: BOOLEAN) : tree ;
 
 
 (*
@@ -212,56 +212,56 @@ PROCEDURE BuildModM2 (location: location_t; op1, op2: Tree; needsconvert: BOOLEA
                      return op1 div trunc op2.  Use the checking div equivalents.
 *)
 
-PROCEDURE BuildModM2Check (location: location_t; op1, op2, lowest, min, max: Tree) : Tree ;
+PROCEDURE BuildModM2Check (location: location_t; op1, op2, lowest, min, max: tree) : tree ;
 
 
 (*
     BuildModFloor - builds a modulus tree.
 *)
 
-PROCEDURE BuildModFloor (location: location_t; op1: Tree; op2: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildModFloor (location: location_t; op1: tree; op2: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
     BuildDivCeil - builds a division tree.
 *)
 
-PROCEDURE BuildDivCeil (location: location_t; op1: Tree; op2: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildDivCeil (location: location_t; op1: tree; op2: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
     BuildModCeil - builds a modulus tree.
 *)
 
-PROCEDURE BuildModCeil (location: location_t; op1: Tree; op2: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildModCeil (location: location_t; op1: tree; op2: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
     BuildDivFloor - builds a division tree.
 *)
 
-PROCEDURE BuildDivFloor (location: location_t; op1: Tree; op2: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildDivFloor (location: location_t; op1: tree; op2: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
     BuildModTrunc - builds a modulus tree.
 *)
 
-PROCEDURE BuildModTrunc (location: location_t; op1: Tree; op2: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildModTrunc (location: location_t; op1: tree; op2: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
     BuildDivTrunc - builds a division tree.
 *)
 
-PROCEDURE BuildDivTrunc (location: location_t; op1: Tree; op2: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildDivTrunc (location: location_t; op1: tree; op2: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
     BuildDivTruncCheck - builds a division tree after checking for overflow.
 *)
 
-PROCEDURE BuildDivTruncCheck (location: location_t; op1, op2, lowest, min, max: Tree) : Tree ;
+PROCEDURE BuildDivTruncCheck (location: location_t; op1, op2, lowest, min, max: tree) : tree ;
 
 
 (*
@@ -269,42 +269,42 @@ PROCEDURE BuildDivTruncCheck (location: location_t; op1, op2, lowest, min, max: 
                types and NEVER for integer based types).
 *)
 
-PROCEDURE BuildRDiv (location: location_t; op1, op2: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildRDiv (location: location_t; op1, op2: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
     BuildSubCheck - builds a subtraction tree after checking for overflow.
 *)
 
-PROCEDURE BuildSubCheck (location: location_t; op1, op2, lowest, min, max: Tree) : Tree ;
+PROCEDURE BuildSubCheck (location: location_t; op1, op2, lowest, min, max: tree) : tree ;
 
 
 (*
     BuildAddCheck - builds an addition tree after checking for overflow.
 *)
 
-PROCEDURE BuildAddCheck (location: location_t; op1, op2, lowest, min, max: Tree) : Tree ;
+PROCEDURE BuildAddCheck (location: location_t; op1, op2, lowest, min, max: tree) : tree ;
 
 
 (*
     BuildSub - builds a subtraction tree.
 *)
 
-PROCEDURE BuildSub (location: location_t; op1: Tree; op2: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildSub (location: location_t; op1: tree; op2: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
     BuildAdd - builds an addition tree.
 *)
 
-PROCEDURE BuildAdd (location: location_t; op1: Tree; op2: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildAdd (location: location_t; op1: tree; op2: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
     FoldAndStrip - return expression, t, after it has been folded (if possible).
 *)
 
-PROCEDURE FoldAndStrip (t: Tree) : Tree ;
+PROCEDURE FoldAndStrip (t: tree) : tree ;
 
 
 (*
@@ -312,7 +312,7 @@ PROCEDURE FoldAndStrip (t: Tree) : Tree ;
                    of, string.
 *)
 
-PROCEDURE StringLength (string: Tree) : CARDINAL ;
+PROCEDURE StringLength (string: tree) : CARDINAL ;
 
 
 (*
@@ -321,7 +321,7 @@ PROCEDURE StringLength (string: Tree) : CARDINAL ;
                   is emitted and no modification is made to, t.
 *)
 
-PROCEDURE TreeOverflow (t: Tree) : BOOLEAN ;
+PROCEDURE TreeOverflow (t: tree) : BOOLEAN ;
 
 
 (*
@@ -329,7 +329,7 @@ PROCEDURE TreeOverflow (t: Tree) : BOOLEAN ;
                      any overflow flag and returns, t.
 *)
 
-PROCEDURE RemoveOverflow (t: Tree) : Tree ;
+PROCEDURE RemoveOverflow (t: tree) : tree ;
 
 
 (*
@@ -337,49 +337,49 @@ PROCEDURE RemoveOverflow (t: Tree) : Tree ;
                   it has been coersed to, type.
 *)
 
-PROCEDURE BuildCoerce (location: location_t; des: Tree; type: Tree; expr: Tree) : Tree ;
+PROCEDURE BuildCoerce (location: location_t; des: tree; type: tree; expr: tree) : tree ;
 
 
 (*
     BuildTrunc - returns an integer expression from a REAL or LONGREAL op1.
 *)
 
-PROCEDURE BuildTrunc (op1: Tree) : Tree ;
+PROCEDURE BuildTrunc (op1: tree) : tree ;
 
 
 (*
     BuildNegate - builds a negate expression and returns the tree.
 *)
 
-PROCEDURE BuildNegate (location: location_t; op1: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildNegate (location: location_t; op1: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
     BuildNegateCheck - builds a negate expression and returns the tree.
 *)
 
-PROCEDURE BuildNegateCheck (location: location_t; arg, lowest, min, max: Tree) : Tree ;
+PROCEDURE BuildNegateCheck (location: location_t; arg, lowest, min, max: tree) : tree ;
 
 
 (*
     BuildSetNegate - builds a set negate expression and returns the tree.
 *)
 
-PROCEDURE BuildSetNegate (location: location_t; op1: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildSetNegate (location: location_t; op1: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
     BuildTBitSize - returns the minimum number of bits to represent, type.
 *)
 
-PROCEDURE BuildTBitSize (location: location_t; type: Tree) : Tree ;
+PROCEDURE BuildTBitSize (location: location_t; type: tree) : tree ;
 
 
 (*
     BuildSize - builds a SIZE function expression and returns the tree.
 *)
 
-PROCEDURE BuildSize (location: location_t; op1: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildSize (location: location_t; op1: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
@@ -387,7 +387,7 @@ PROCEDURE BuildSize (location: location_t; op1: Tree; needconvert: BOOLEAN) : Tr
                 op1 and returns the tree.
 *)
 
-PROCEDURE BuildAddr (location: location_t; op1: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildAddr (location: location_t; op1: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
@@ -398,7 +398,7 @@ PROCEDURE BuildAddr (location: location_t; op1: Tree; needconvert: BOOLEAN) : Tr
                    The expression is returned.
 *)
 
-PROCEDURE BuildOffset1 (location: location_t; field: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildOffset1 (location: location_t; field: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
@@ -407,32 +407,32 @@ PROCEDURE BuildOffset1 (location: location_t; field: Tree; needconvert: BOOLEAN)
                   The expression is returned.
 *)
 
-PROCEDURE BuildOffset (location: location_t; record: Tree; field: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildOffset (location: location_t; record: tree; field: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
     BuildLogicalOrAddress - build a logical or expressions and return the tree.
 *)
 
-PROCEDURE BuildLogicalOrAddress (location: location_t; op1: Tree; op2: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildLogicalOrAddress (location: location_t; op1: tree; op2: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
     BuildLogicalOr - build a logical or expressions and return the tree.
 *)
 
-PROCEDURE BuildLogicalOr (location: location_t; op1: Tree; op2: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildLogicalOr (location: location_t; op1: tree; op2: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
     BuildLogicalAnd - build a logical and expression and return the tree.
 *)
 
-PROCEDURE BuildLogicalAnd (location: location_t; op1: Tree; op2: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildLogicalAnd (location: location_t; op1: tree; op2: tree; needconvert: BOOLEAN) : tree ;
 
 
 
-PROCEDURE BuildSymmetricDifference (location: location_t; op1: Tree; op2: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildSymmetricDifference (location: location_t; op1: tree; op2: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
@@ -441,99 +441,99 @@ PROCEDURE BuildSymmetricDifference (location: location_t; op1: Tree; op2: Tree; 
                              (op1 and (not op2))
 *)
 
-PROCEDURE BuildLogicalDifference (location: location_t; op1: Tree; op2: Tree; needconvert: BOOLEAN) : Tree ;
+PROCEDURE BuildLogicalDifference (location: location_t; op1: tree; op2: tree; needconvert: BOOLEAN) : tree ;
 
 
 (*
     BuildLessThan - return a tree which computes <
 *)
 
-PROCEDURE BuildLessThan (location: location_t; op1: Tree; op2: Tree) : Tree ;
+PROCEDURE BuildLessThan (location: location_t; op1: tree; op2: tree) : tree ;
 
 
 (*
     BuildGreaterThan - return a tree which computes >
 *)
 
-PROCEDURE BuildGreaterThan (location: location_t; op1: Tree; op2: Tree) : Tree ;
+PROCEDURE BuildGreaterThan (location: location_t; op1: tree; op2: tree) : tree ;
 
 
 (*
     BuildLessThanOrEqual - return a tree which computes <
 *)
 
-PROCEDURE BuildLessThanOrEqual (location: location_t; op1: Tree; op2: Tree) : Tree ;
+PROCEDURE BuildLessThanOrEqual (location: location_t; op1: tree; op2: tree) : tree ;
 
 
 (*
     BuildGreaterThanOrEqual - return a tree which computes >=
 *)
 
-PROCEDURE BuildGreaterThanOrEqual (location: location_t; op1: Tree; op2: Tree) : Tree ;
+PROCEDURE BuildGreaterThanOrEqual (location: location_t; op1: tree; op2: tree) : tree ;
 
 
 (*
     BuildEqualTo - return a tree which computes =
 *)
 
-PROCEDURE BuildEqualTo (location: location_t; op1: Tree; op2: Tree) : Tree ;
+PROCEDURE BuildEqualTo (location: location_t; op1: tree; op2: tree) : tree ;
 
 
 
-PROCEDURE BuildNotEqualTo (location: location_t; op1: Tree; op2: Tree) : Tree ;
+PROCEDURE BuildNotEqualTo (location: location_t; op1: tree; op2: tree) : tree ;
 
 
 (*
     BuildIsSuperset - return a tree which computes:  op1 & op2 == op2
 *)
 
-PROCEDURE BuildIsSuperset (location: location_t; op1: Tree; op2: Tree) : Tree ;
+PROCEDURE BuildIsSuperset (location: location_t; op1: tree; op2: tree) : tree ;
 
 
 (*
     BuildIsNotSuperset - return a tree which computes: op1 & op2 != op2
 *)
 
-PROCEDURE BuildIsNotSuperset (location: location_t; op1: Tree; op2: Tree) : Tree ;
+PROCEDURE BuildIsNotSuperset (location: location_t; op1: tree; op2: tree) : tree ;
 
 
 (*
     BuildIsSubset - return a tree which computes:  op1 & op2 == op1
 *)
 
-PROCEDURE BuildIsSubset (location: location_t; op1: Tree; op2: Tree) : Tree ;
+PROCEDURE BuildIsSubset (location: location_t; op1: tree; op2: tree) : tree ;
 
 
 (*
     BuildIsNotSubset - return a tree which computes: op1 & op2 != op1
 *)
 
-PROCEDURE BuildIsNotSubset (location: location_t; op1: Tree; op2: Tree) : Tree ;
+PROCEDURE BuildIsNotSubset (location: location_t; op1: tree; op2: tree) : tree ;
 
 
 (*
     BuildIfConstInVar - generates: if constel in varset then goto label.
 *)
 
-PROCEDURE BuildIfConstInVar (location: location_t; type: Tree; varset: Tree; constel: Tree; is_lvalue: BOOLEAN; fieldno: INTEGER; label: ADDRESS) ;
+PROCEDURE BuildIfConstInVar (location: location_t; type: tree; varset: tree; constel: tree; is_lvalue: BOOLEAN; fieldno: INTEGER; label: CharStar) ;
 
 
 
-PROCEDURE BuildIfNotConstInVar (location: location_t; type: Tree; varset: Tree; constel: Tree; is_lvalue: BOOLEAN; fieldno: INTEGER; label: ADDRESS) ;
+PROCEDURE BuildIfNotConstInVar (location: location_t; type: tree; varset: tree; constel: tree; is_lvalue: BOOLEAN; fieldno: INTEGER; label: CharStar) ;
 
 
 (*
     BuildIfVarInVar - generates: if varel in varset then goto label
 *)
 
-PROCEDURE BuildIfVarInVar (location: location_t; type: Tree; varset: Tree; varel: Tree; is_lvalue: BOOLEAN; low: Tree; high: Tree; label: ADDRESS) ;
+PROCEDURE BuildIfVarInVar (location: location_t; type: tree; varset: tree; varel: tree; is_lvalue: BOOLEAN; low: tree; high: tree; label: CharStar) ;
 
 
 (*
     BuildIfNotVarInVar - generates: if not (varel in varset) then goto label
 *)
 
-PROCEDURE BuildIfNotVarInVar (location: location_t; type: Tree; varset: Tree; varel: Tree; is_lvalue: BOOLEAN; low: Tree; high: Tree; label: ADDRESS) ;
+PROCEDURE BuildIfNotVarInVar (location: location_t; type: tree; varset: tree; varel: tree; is_lvalue: BOOLEAN; low: tree; high: tree; label: CharStar) ;
 
 
 (*
@@ -542,24 +542,24 @@ PROCEDURE BuildIfNotVarInVar (location: location_t; type: Tree; varset: Tree; va
 *)
 
 PROCEDURE BuildForeachWordInSetDoIfExpr (location: location_t;
-                                         type, op1, op2: Tree;
+                                         type, op1, op2: tree;
 				         is_op1lvalue, is_op2lvalue,
 				         is_op1const, isop2const: BOOLEAN;
-                                         expr: BuildExprProcedure; label: ADDRESS) ;
+                                         expr: BuildExprProcedure; label: CharStar) ;
 
 
 (*
     BuildIfInRangeGoto - if var is in the range low..high then goto label
 *)
 
-PROCEDURE BuildIfInRangeGoto (location: location_t; var: Tree; low: Tree; high: Tree; label: ADDRESS) ;
+PROCEDURE BuildIfInRangeGoto (location: location_t; var: tree; low: tree; high: tree; label: CharStar) ;
 
 
 (*
     BuildIfNotInRangeGoto - if var is not in the range low..high then goto label
 *)
 
-PROCEDURE BuildIfNotInRangeGoto (location: location_t; var: Tree; low: Tree; high: Tree; label: ADDRESS) ;
+PROCEDURE BuildIfNotInRangeGoto (location: location_t; var: tree; low: tree; high: tree; label: CharStar) ;
 
 
 (*
@@ -567,7 +567,7 @@ PROCEDURE BuildIfNotInRangeGoto (location: location_t; var: Tree; low: Tree; hig
                  given, lowIndice.
 *)
 
-PROCEDURE BuildArray (location: location_t; type: Tree; array: Tree; index: Tree; lowIndice: Tree) : Tree ;
+PROCEDURE BuildArray (location: location_t; type: tree; array: tree; index: tree; lowIndice: tree) : tree ;
 
 
 (*
@@ -576,35 +576,35 @@ PROCEDURE BuildArray (location: location_t; type: Tree; array: Tree; index: Tree
                        BuildComponentRef on the penultimate field.
 *)
 
-PROCEDURE BuildComponentRef (location: location_t; record: Tree; field: Tree) : Tree ;
+PROCEDURE BuildComponentRef (location: location_t; record: tree; field: tree) : tree ;
 
 
 (*
     BuildIndirect - build: ( *target) given that the object to be copied is of, type.
 *)
 
-PROCEDURE BuildIndirect (location: location_t; target: Tree; type: Tree) : Tree ;
+PROCEDURE BuildIndirect (location: location_t; target: tree; type: tree) : tree ;
 
 
 (*
     IsTrue - returns TRUE if, t, is known to be TRUE.
 *)
 
-PROCEDURE IsTrue (t: Tree) : BOOLEAN ;
+PROCEDURE IsTrue (t: tree) : BOOLEAN ;
 
 
 (*
     IsFalse - returns FALSE if, t, is known to be FALSE.
 *)
 
-PROCEDURE IsFalse (t: Tree) : BOOLEAN ;
+PROCEDURE IsFalse (t: tree) : BOOLEAN ;
 
 
 (*
     GetCstInteger - return the integer value of the cst tree.
 *)
 
-PROCEDURE GetCstInteger (cst: Tree) : INTEGER ;
+PROCEDURE GetCstInteger (cst: tree) : INTEGER ;
 
 
 (*
@@ -612,7 +612,7 @@ PROCEDURE GetCstInteger (cst: Tree) : INTEGER ;
                         TRUE if the value of e1 is the same as e2.
 *)
 
-PROCEDURE AreConstantsEqual (e1: Tree; e2: Tree) : BOOLEAN ;
+PROCEDURE AreConstantsEqual (e1: tree; e2: tree) : BOOLEAN ;
 
 
 (*
@@ -624,7 +624,7 @@ PROCEDURE AreConstantsEqual (e1: Tree; e2: Tree) : BOOLEAN ;
                                      -0 == 0 and NaN != NaN.
 *)
 
-PROCEDURE AreRealOrComplexConstantsEqual (e1: Tree; e2: Tree) : BOOLEAN ;
+PROCEDURE AreRealOrComplexConstantsEqual (e1: tree; e2: tree) : BOOLEAN ;
 
 
 (*
@@ -635,44 +635,44 @@ PROCEDURE AreRealOrComplexConstantsEqual (e1: Tree; e2: Tree) : BOOLEAN ;
                     an unsigned constant will never return -1
 *)
 
-PROCEDURE DetermineSign (e: Tree) : INTEGER ;
+PROCEDURE DetermineSign (e: tree) : INTEGER ;
 
 
 (*
     BuildCap - builds the Modula-2 function CAP(t) and returns
-               the result in a gcc Tree.
+               the result in a gcc tree.
 *)
 
-PROCEDURE BuildCap (location: location_t; t: Tree) : Tree ;
+PROCEDURE BuildCap (location: location_t; t: tree) : tree ;
 
 
 (*
     BuildAbs - builds the Modula-2 function ABS(t) and returns
-               the result in a gcc Tree.
+               the result in a gcc tree.
 *)
 
-PROCEDURE BuildAbs (location: location_t; t: Tree) : Tree ;
+PROCEDURE BuildAbs (location: location_t; t: tree) : tree ;
 
 
 (*
     BuildRe - builds an expression for the function RE.
 *)
 
-PROCEDURE BuildRe (op1: Tree) : Tree ;
+PROCEDURE BuildRe (op1: tree) : tree ;
 
 
 (*
     BuildIm - builds an expression for the function IM.
 *)
 
-PROCEDURE BuildIm (op1: Tree) : Tree ;
+PROCEDURE BuildIm (op1: tree) : tree ;
 
 
 (*
     BuildCmplx - builds an expression for the function CMPLX.
 *)
 
-PROCEDURE BuildCmplx (location: location_t; type: Tree; real: Tree; imag: Tree) : Tree ;
+PROCEDURE BuildCmplx (location: location_t; type: tree; real: tree; imag: tree) : tree ;
 
 
 (*
@@ -683,7 +683,7 @@ PROCEDURE BuildCmplx (location: location_t; type: Tree; real: Tree; imag: Tree) 
 *)
 
 PROCEDURE BuildBinaryForeachWordDo (location: location_t;
-                                    type, op1, op2, op3: Tree;
+                                    type, op1, op2, op3: tree;
                                     binop: BuildBinProcedure;
                                     is_op1lvalue,
                                     is_op2lvalue,
@@ -700,17 +700,17 @@ PROCEDURE BuildBinaryForeachWordDo (location: location_t;
 *)
 
 PROCEDURE BuildBinarySetDo (location: location_t;
-                            settype, op1, op2, op3: Tree;
+                            settype, op1, op2, op3: tree;
                             binop: BuildSetProcedure;
                             is_op1lvalue, is_op2lvalue, is_op3lvalue: BOOLEAN;
-                            nBits, unbounded: Tree;
-                            varproc, leftproc, rightproc: Tree) ;
+                            nBits, unbounded: tree;
+                            varproc, leftproc, rightproc: tree) ;
 
 (*
    ConstantExpressionWarning - issue a warning if the constant has overflowed.
 *)
 
-PROCEDURE ConstantExpressionWarning (value: Tree) ;
+PROCEDURE ConstantExpressionWarning (value: tree) ;
 
 
 (*
@@ -718,7 +718,7 @@ PROCEDURE ConstantExpressionWarning (value: Tree) ;
                      and op2 is not a pointer type.
 *)
 
-PROCEDURE BuildAddAddress (location: location_t; op1, op2: Tree) : Tree ;
+PROCEDURE BuildAddAddress (location: location_t; op1, op2: tree) : tree ;
 
 
 (*
@@ -726,7 +726,7 @@ PROCEDURE BuildAddAddress (location: location_t; op1, op2: Tree) : Tree ;
                represent: min..max.
 *)
 
-PROCEDURE calcNbits (location: location_t; min, max: Tree) : Tree ;
+PROCEDURE calcNbits (location: location_t; min, max: tree) : tree ;
 
 
 (*
@@ -734,7 +734,7 @@ PROCEDURE calcNbits (location: location_t; min, max: Tree) : Tree ;
 *)
 
 PROCEDURE OverflowZType (location: location_t;
-                         str: ADDRESS; base: CARDINAL;
+                         str: ConstCharStar; base: CARDINAL;
                          issueError: BOOLEAN) : BOOLEAN ;
 
 (*
@@ -742,7 +742,7 @@ PROCEDURE OverflowZType (location: location_t;
                            (condition) ? (left) : right.
 *)
 
-PROCEDURE BuildCondIfExpression (condition, type, left, right: Tree) : Tree ;
+PROCEDURE BuildCondIfExpression (condition, type, left, right: tree) : tree ;
 
 
 END m2expr.

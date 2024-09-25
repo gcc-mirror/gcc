@@ -1,4 +1,4 @@
-#!/usr/bin/gawk
+#!/usr/bin/awk -f
 #
 # A simple script that generates loongarch-evolution.h
 # from genopts/isa-evolution.in
@@ -94,8 +94,9 @@ function gen_cpucfg_useful_idx()
         idx_bucket[cpucfg_word[i]] = 1
 
     delete idx_list
+    j = 1
     for (i in idx_bucket)
-        idx_list[length(idx_list)-1] = i+0
+        idx_list[j++] = i+0
     delete idx_bucket
 
     asort (idx_list)
@@ -108,7 +109,7 @@ function gen_cpucfg_useful_idx()
     print ""
 
     printf ("static constexpr int N_CPUCFG_WORDS = %d;\n",
-            idx_list[length(idx_list)] + 1)
+            idx_list[j - 1] + 1)
 
     delete idx_list
 }

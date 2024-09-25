@@ -94,7 +94,7 @@ extern "C" bool SArgs_GetArg (DynamicStrings_String *s, unsigned int n)
       a = (void *) (UnixArgs_GetArgV ());
       a = reinterpret_cast<void *> (reinterpret_cast<char *> (a)+n*sizeof (SArgs_PtrToChar));
       ppc = static_cast<SArgs_PtrToPtrToChar> (a);
-      (*s) = DynamicStrings_InitStringCharStar (reinterpret_cast<void *> ((*ppc)));
+      (*s) = DynamicStrings_InitStringCharStar (reinterpret_cast <void *> ((*ppc)));
       return true;
     }
   else

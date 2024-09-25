@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "target.h"
 #include "cp-tree.h"
+#include "decl.h"
 #include "stringpool.h"
 #include "cgraph.h"
 #include "varasm.h"
@@ -282,6 +283,11 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 
   /* Thunks are always addressable; they only appear in vtables.  */
   TREE_ADDRESSABLE (thunk_fndecl) = 1;
+
+  /* Don't diagnose deprecated or unavailable functions just because they
+     have thunks emitted for them.  */
+  auto du = make_temp_override (deprecated_state,
+                                UNAVAILABLE_DEPRECATED_SUPPRESS);
 
   /* Figure out what function is being thunked to.  It's referenced in
      this translation unit.  */
@@ -1787,6 +1793,7 @@ synthesize_method (tree fndecl)
   int error_count = errorcount;
   int warning_count = warningcount + werrorcount;
   special_function_kind sfk = special_function_p (fndecl);
+  auto_diagnostic_group d;
 
   /* Reset the source location, we might have been previously
      deferred, and thus have saved where we were first needed.  */
@@ -3502,11 +3509,89 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   return fn;
 }
 
-/* Gives any errors about defaulted functions which need to be deferred
-   until the containing class is complete.  */
+/* Mark an explicitly defaulted function FN as =deleted and warn.
+   IMPLICIT_FN is the corresponding special member function that
+   would have been implicitly declared.  */
 
 void
-defaulted_late_check (tree fn)
+maybe_delete_defaulted_fn (tree fn, tree implicit_fn)
+{
+  if (DECL_ARTIFICIAL (fn) || !DECL_DEFAULTED_IN_CLASS_P (fn))
+    return;
+
+  DECL_DELETED_FN (fn) = true;
+
+  auto_diagnostic_group d;
+  const special_function_kind kind = special_function_p (fn);
+  tree parmtype
+    = TREE_VALUE (DECL_XOBJ_MEMBER_FUNCTION_P (fn)
+		  ? TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (fn)))
+		  : FUNCTION_FIRST_USER_PARMTYPE (fn));
+  const bool illformed_p
+    /* [dcl.fct.def.default] "if F1 is an assignment operator"...  */
+    = (SFK_ASSIGN_P (kind)
+       /* "and the return type of F1 differs from the return type of F2"  */
+       && (!same_type_p (TREE_TYPE (TREE_TYPE (fn)),
+			 TREE_TYPE (TREE_TYPE (implicit_fn)))
+	   /* "or F1's non-object parameter type is not a reference,
+	      the program is ill-formed"  */
+	   || !TYPE_REF_P (parmtype)));
+  /* Decide if we want to emit a pedwarn, error, or a warning.  */
+  diagnostic_t diag_kind;
+  int opt;
+  if (illformed_p)
+    {
+      diag_kind = DK_ERROR;
+      opt = 0;
+    }
+  else
+    {
+      diag_kind = cxx_dialect >= cxx20 ? DK_WARNING : DK_PEDWARN;
+      opt = OPT_Wdefaulted_function_deleted;
+    }
+
+  /* Don't warn for template instantiations.  */
+  if (DECL_TEMPLATE_INSTANTIATION (fn) && diag_kind == DK_WARNING)
+    return;
+
+  const char *wmsg;
+  switch (kind)
+    {
+    case sfk_copy_constructor:
+      wmsg = G_("explicitly defaulted copy constructor is implicitly deleted "
+		"because its declared type does not match the type of an "
+		"implicit copy constructor");
+      break;
+    case sfk_move_constructor:
+      wmsg = G_("explicitly defaulted move constructor is implicitly deleted "
+		"because its declared type does not match the type of an "
+		"implicit move constructor");
+      break;
+    case sfk_copy_assignment:
+      wmsg = G_("explicitly defaulted copy assignment operator is implicitly "
+		"deleted because its declared type does not match the type "
+		"of an implicit copy assignment operator");
+      break;
+    case sfk_move_assignment:
+      wmsg = G_("explicitly defaulted move assignment operator is implicitly "
+		"deleted because its declared type does not match the type "
+		"of an implicit move assignment operator");
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  if (emit_diagnostic (diag_kind, DECL_SOURCE_LOCATION (fn), opt, wmsg))
+    inform (DECL_SOURCE_LOCATION (fn),
+	    "expected signature: %qD", implicit_fn);
+}
+
+/* Gives any errors about defaulted functions which need to be deferred
+   until the containing class is complete.  IMP_CONST is false or true
+   if we are called from check_bases_and_members and signals whether
+   the implicit function has a non-object parameter of type const C&.  */
+
+void
+defaulted_late_check (tree fn, tristate imp_const/*=tristate::unknown()*/)
 {
   /* Complain about invalid signature for defaulted fn.  */
   tree ctx = DECL_CONTEXT (fn);
@@ -3527,8 +3612,14 @@ defaulted_late_check (tree fn)
     }
 
   bool fn_const_p = (copy_fn_p (fn) == 2);
+  /* "if F2 has a non-object parameter of type const C&, the corresponding
+     non-object parameter of F1 may be of type C&."  But not the other way
+     around.  */
+  if (fn_const_p && imp_const.is_false ())
+    fn_const_p = false;
   tree implicit_fn = implicitly_declare_fn (kind, ctx, fn_const_p,
-					    NULL, NULL);
+					    /*pattern_fn=*/NULL_TREE,
+					    /*inherited_parms=*/NULL_TREE);
   tree eh_spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (implicit_fn));
 
   /* Includes special handling for a default xobj operator.  */
@@ -3557,12 +3648,7 @@ defaulted_late_check (tree fn)
   if (!same_type_p (TREE_TYPE (TREE_TYPE (fn)),
 		    TREE_TYPE (TREE_TYPE (implicit_fn)))
       || !compare_fn_params (fn, implicit_fn))
-    {
-      error ("defaulted declaration %q+D does not match the "
-	     "expected signature", fn);
-      inform (DECL_SOURCE_LOCATION (fn),
-	      "expected signature: %qD", implicit_fn);
-    }
+    maybe_delete_defaulted_fn (fn, implicit_fn);
 
   if (DECL_DELETED_FN (implicit_fn))
     {
@@ -3593,6 +3679,7 @@ defaulted_late_check (tree fn)
     {
       if (!CLASSTYPE_TEMPLATE_INSTANTIATION (ctx))
 	{
+	  auto_diagnostic_group d;
 	  error ("explicitly defaulted function %q+D cannot be declared "
 		 "%qs because the implicit declaration is not %qs:", fn,
 		 DECL_IMMEDIATE_FUNCTION_P (fn) ? "consteval" : "constexpr",

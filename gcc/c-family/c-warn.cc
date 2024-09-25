@@ -1808,6 +1808,10 @@ c_do_switch_warnings (splay_tree cases, location_t switch_location,
 		  TREE_PURPOSE (chain));
     }
 
+  /* Attribute flag_enum means bitwise combinations are OK.  */
+  if (lookup_attribute ("flag_enum", TYPE_ATTRIBUTES (type)))
+    return;
+
   /* Warn if there are case expressions that don't correspond to
      enumerators.  This can occur since C and C++ don't enforce
      type-checking of assignments to enumeration variables.

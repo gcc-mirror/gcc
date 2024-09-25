@@ -46,7 +46,7 @@ class hash
   }
 
   /* End incremential hashing and provide the final value.  */
-  hashval_t end ()
+  hashval_t end () const
   {
     return val;
   }
@@ -109,7 +109,7 @@ class hash
   }
 
   /* Hash in state from other inchash OTHER.  */
-  void merge (hash &other)
+  void merge (const hash &other)
   {
     merge_hash (other.val);
   }
@@ -136,7 +136,7 @@ class hash
      based on their value. This is useful for hashing commutative
      expressions, so that A+B and B+A get the same hash.  */
 
-  void add_commutative (hash &a, hash &b)
+  void add_commutative (const hash &a, const hash &b)
   {
     if (a.end() > b.end())
       {

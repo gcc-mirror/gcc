@@ -18,13 +18,13 @@ class D2
 template <typename T>
 class D3
 {
-  enum D3::A { foo } c; // { dg-error "extra qualification not allowed" }
+  enum D3::A { foo } c; // { dg-error "does not name an enumeration" }
 };
 
 template <typename T>
 class D4
 {
-  enum D4<T>::A { foo } c; // { dg-error "extra qualification not allowed" }
+  enum D4<T>::A { foo } c; // { dg-error "does not name an enumeration" }
 };
 
 template <typename T>
@@ -32,7 +32,7 @@ class D5
 {
   class D6
   {
-    enum D6::A { foo } c; // { dg-error "extra qualification not allowed" }
+    enum D6::A { foo } c; // { dg-error "does not name an enumeration" }
   };
 };
 

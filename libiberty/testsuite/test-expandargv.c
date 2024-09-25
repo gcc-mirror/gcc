@@ -142,6 +142,64 @@ const char *test_data[] = {
   "b",
   0,
 
+  /* Test 7 - No backslash removal within single quotes.  */
+  "'a\\$VAR' '\\\"'",    /* Test 7 data */
+  ARGV0,
+  "@test-expandargv-7.lst",
+  0,
+  ARGV0,
+  "a\\$VAR",
+  "\\\"",
+  0,
+
+  /* Test 8 - Remove backslash / newline pairs.  */
+  "\"ab\\\ncd\" ef\\\ngh",    /* Test 8 data */
+  ARGV0,
+  "@test-expandargv-8.lst",
+  0,
+  ARGV0,
+  "abcd",
+  "efgh",
+  0,
+
+  /* Test 9 - Backslash within double quotes.  */
+  "\"\\$VAR\" \"\\`\" \"\\\"\" \"\\\\\" \"\\n\" \"\\t\"",    /* Test 9 data */
+  ARGV0,
+  "@test-expandargv-9.lst",
+  0,
+  ARGV0,
+  "$VAR",
+  "`",
+  "\"",
+  "\\",
+  "\\n",
+  "\\t",
+  0,
+
+  /* Test 10 - Mixed white space characters.  */
+  "\t \n \t ",		/* Test 10 data */
+  ARGV0,
+  "@test-expandargv-10.lst",
+  0,
+  ARGV0,
+  0,
+
+  /* Test 11 - Single ' ' character.  */
+  " ",		/* Test 11 data */
+  ARGV0,
+  "@test-expandargv-11.lst",
+  0,
+  ARGV0,
+  0,
+
+  /* Test 12 - Multiple ' ' characters.  */
+  "   ",		/* Test 12 data */
+  ARGV0,
+  "@test-expandargv-12.lst",
+  0,
+  ARGV0,
+  0,
+
   0 /* Test done marker, don't remove. */
 };
 
@@ -231,6 +289,78 @@ erase_test (int test)
     fatal_error (__LINE__, "Failed to erase test file.", errno);
 }
 
+/* compare_argv:
+     TEST is the current test number, and NAME is a short string to identify
+     which libibery function is being tested.  ARGC_A and ARGV_A describe an
+     argument array, and this is compared to ARGC_B and ARGV_B, return 0 if
+     the two arrays match, otherwise return 1.  */
+
+static int
+compare_argv (int test, const char *name, int argc_a, char *argv_a[],
+	      int argc_b, char *argv_b[])
+{
+  int failed = 0, k;
+
+  if (argc_a != argc_b)
+    {
+      printf ("FAIL: test-%s-%d.  Argument count didn't match\n", name, test);
+      failed = 1;
+    }
+  /* Compare each of the argv's ... */
+  else
+    for (k = 0; k < argc_a; k++)
+      if (strcmp (argv_a[k], argv_b[k]) != 0)
+	{
+	  printf ("FAIL: test-%s-%d. Arguments don't match.\n", name, test);
+	  failed = 1;
+	  break;
+	}
+
+  if (!failed)
+    printf ("PASS: test-%s-%d.\n", name, test);
+
+  return failed;
+}
+
+/* test_buildargv
+     Test the buildargv function from libiberty.  TEST is the current test
+     number and TEST_INPUT is the string to pass to buildargv (after calling
+     run_replaces on it).  ARGC_AFTER and ARGV_AFTER are the expected
+     results.  Return 0 if the test passes, otherwise return 1.  */
+
+static int
+test_buildargv (int test, const char * test_input, int argc_after,
+		char *argv_after[])
+{
+  char * input, ** argv;
+  size_t len;
+  int argc, failed;
+
+  /* Generate RW copy of data for replaces */
+  len = strlen (test_input);
+  input = malloc (sizeof (char) * (len + 1));
+  if (input == NULL)
+    fatal_error (__LINE__, "Failed to malloc buildargv input buffer.", errno);
+
+  memcpy (input, test_input, sizeof (char) * (len + 1));
+  /* Run all possible replaces */
+  run_replaces (input);
+
+  /* Split INPUT into separate arguments.  */
+  argv = buildargv (input);
+
+  /* Count the arguments we got back.  */
+  argc = 0;
+  while (argv[argc])
+    ++argc;
+
+  failed = compare_argv (test, "buildargv", argc_after, argv_after, argc, argv);
+
+  free (input);
+  freeargv (argv);
+
+  return failed;
+}
 
 /* run_tests:
     Run expandargv
@@ -242,12 +372,16 @@ run_tests (const char **test_data)
 {
   int argc_after, argc_before;
   char ** argv_before, ** argv_after;
-  int i, j, k, fails, failed;
+  int i, j, k, fails;
+  const char * input_str;
 
   i = j = fails = 0;
   /* Loop over all the tests */
   while (test_data[j])
     {
+      /* Save original input in case we run a buildargv test.  */
+      input_str = test_data[j];
+
       /* Write test data */
       writeout_test (i, test_data[j++]);
       /* Copy argv before */
@@ -271,29 +405,23 @@ run_tests (const char **test_data)
       for (k = 0; k < argc_after; k++)
         run_replaces (argv_after[k]);
 
+      /* If the test input is just a file to expand then we can also test
+	 calling buildargv directly as the expected output is equivalent to
+	 calling buildargv on the contents of the file.
+
+	 The results of calling buildargv will not include the ARGV0 constant,
+	 which is why we pass 'argc_after - 1' and 'argv_after + 1', this skips
+	 over the ARGV0 in the expected results.  */
+      if (argc_before == 2)
+	fails += test_buildargv (i, input_str, argc_after - 1, argv_after + 1);
+      else
+	printf ("SKIP: test-buildargv-%d.  This test isn't for buildargv\n", i);
+
       /* Run test: Expand arguments */
       expandargv (&argc_before, &argv_before);
 
-      failed = 0;
-      /* Compare size first */
-      if (argc_before != argc_after)
-        {
-          printf ("FAIL: test-expandargv-%d. Number of arguments don't match.\n", i);
-	  failed++;
-        }
-      /* Compare each of the argv's ... */
-      else
-        for (k = 0; k < argc_after; k++)
-          if (strcmp (argv_before[k], argv_after[k]) != 0)
-            {
-              printf ("FAIL: test-expandargv-%d. Arguments don't match.\n", i);
-              failed++;
-            }
-
-      if (!failed)
-        printf ("PASS: test-expandargv-%d.\n", i);
-      else
-        fails++;
+      fails += compare_argv (i, "expandargv", argc_before, argv_before,
+			     argc_after, argv_after);
 
       freeargv (argv_before);
       freeargv (argv_after);

@@ -13,10 +13,10 @@ using ty1 = B<int>;
 
 template<class T=void>
 struct C : A<int> {
-  using A<int>::A; // FIXME: we don't notice this one either
+  using A<int>::A;
 };
 
-using ty2 = decltype(C(0)); // { dg-bogus "" "" { xfail *-*-* } }
+using ty2 = decltype(C(0));
 using ty2 = C<void>;
 
 template<class T>

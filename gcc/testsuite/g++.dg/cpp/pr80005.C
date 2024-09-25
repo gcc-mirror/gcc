@@ -1,5 +1,6 @@
 // PR preprocessor/80005
 // { dg-do preprocess }
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 
 #undef vector
 #define vector NOPE

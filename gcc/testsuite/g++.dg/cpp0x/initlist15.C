@@ -1,4 +1,5 @@
 // { dg-do compile { target c++11 } }
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 
 // Just discard errors pointing at header files
 // { dg-prune-output "include" }

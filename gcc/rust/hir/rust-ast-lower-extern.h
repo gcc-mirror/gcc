@@ -22,6 +22,7 @@
 #include "rust-ast-lower-base.h"
 #include "rust-ast-lower-type.h"
 #include "rust-ast-lower.h"
+#include "rust-hir-full-decls.h"
 
 namespace Rust {
 namespace HIR {
@@ -50,8 +51,7 @@ public:
   void visit (AST::ExternalStaticItem &item) override
   {
     HIR::Visibility vis = translate_visibility (item.get_visibility ());
-    HIR::Type *static_type
-      = ASTLoweringType::translate (item.get_type ().get ());
+    HIR::Type *static_type = ASTLoweringType::translate (item.get_type ());
 
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, item.get_node_id (),
@@ -64,7 +64,7 @@ public:
       item.get_outer_attrs (), item.get_locus ());
   }
 
-  void visit (AST::ExternalFunctionItem &function) override
+  void visit (AST::Function &function) override
   {
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
@@ -76,7 +76,7 @@ public:
 
     HIR::Type *return_type
       = function.has_return_type ()
-	  ? ASTLoweringType::translate (function.get_return_type ().get ())
+	  ? ASTLoweringType::translate (function.get_return_type ())
 	  : nullptr;
 
     bool is_variadic = function.is_variadic ();
@@ -87,12 +87,24 @@ public:
     std::vector<HIR::NamedFunctionParam> function_params;
     for (auto it = begin; it != end; it++)
       {
-	HIR::Type *param_type
-	  = ASTLoweringType::translate (it->get_type ().get ());
-	Identifier param_name = it->get_name ();
+	auto &param = static_cast<AST::FunctionParam &> (**it);
+
+	if (param.is_variadic () || param.is_self ())
+	  continue;
+	auto param_kind = param.get_pattern ().get_pattern_kind ();
+
+	rust_assert (param_kind == AST::Pattern::Kind::Identifier
+		     || param_kind == AST::Pattern::Kind::Wildcard);
+	auto &param_ident
+	  = static_cast<AST::IdentifierPattern &> (param.get_pattern ());
+	Identifier param_name = param_kind == AST::Pattern::Kind::Identifier
+				  ? param_ident.get_ident ()
+				  : std::string ("_");
+
+	HIR::Type *param_type = ASTLoweringType::translate (param.get_type ());
 
 	auto crate_num = mappings->get_current_crate ();
-	Analysis::NodeMapping mapping (crate_num, it->get_node_id (),
+	Analysis::NodeMapping mapping (crate_num, param.get_node_id (),
 				       mappings->get_next_hir_id (crate_num),
 				       mappings->get_next_localdef_id (
 					 crate_num));
@@ -108,10 +120,23 @@ public:
 				   mappings->get_next_localdef_id (crate_num));
 
     translated = new HIR::ExternalFunctionItem (
-      mapping, function.get_identifier (), std::move (generic_params),
+      mapping, function.get_function_name (), std::move (generic_params),
       std::unique_ptr<HIR::Type> (return_type), std::move (where_clause),
       std::move (function_params), is_variadic, std::move (vis),
       function.get_outer_attrs (), function.get_locus ());
+  }
+
+  void visit (AST::ExternalTypeItem &type) override
+  {
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   mappings->get_next_localdef_id (crate_num));
+
+    HIR::Visibility vis = translate_visibility (type.get_visibility ());
+
+    translated = new HIR::ExternalTypeItem (mapping, type.get_identifier (),
+					    vis, type.get_locus ());
   }
 
 private:

@@ -43,7 +43,7 @@ POSSIBILITY OF SUCH DAMAGE.  */
 
 #include "testlib.h"
 
-static int test1 (void) __attribute__ ((noinline, noclone, unused));
+static int test1 (void) __attribute__ ((noinline, noclone, optnone, unused));
 extern int f2 (int);
 extern int f3 (int, int);
 

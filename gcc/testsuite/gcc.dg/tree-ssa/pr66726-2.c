@@ -16,4 +16,4 @@ foo (char b)
   return a + b;
 }
 
-/* { dg-final { scan-tree-dump-times "factor conversion out" 0 "phiopt1" } } */
+/* { dg-final { scan-tree-dump-times "factor operation out" 0 "phiopt1" } } */

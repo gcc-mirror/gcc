@@ -18,6 +18,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -1182,7 +1183,7 @@ issue_prefetch_ref (struct mem_ref *ref, unsigned unroll_factor, unsigned ahead)
   addr_base = force_gimple_operand_gsi (&bsi, unshare_expr (addr_base),
 					true, NULL, true, GSI_SAME_STMT);
   write_p = ref->write_p ? integer_one_node : integer_zero_node;
-  local = nontemporal ? integer_zero_node : integer_three_node;
+  local = nontemporal ? integer_zero_node : build_int_cst (integer_type_node, 3);
 
   for (ap = 0; ap < n_prefetches; ap++)
     {

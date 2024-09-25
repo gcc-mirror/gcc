@@ -1364,7 +1364,7 @@ requirements of the license of GCC.
   <?dbhtml filename="make.html"?>
 
    <para>If you have never done this before, you should read the basic
-      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/install/">GCC Installation
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/install/">GCC Installation
       Instructions</link> first.  Read <emphasis>all of them</emphasis>.
       <emphasis>Twice.</emphasis>
    </para>

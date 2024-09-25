@@ -1,5 +1,5 @@
 // { dg-do compile { target c++20 } }
-// { dg-additional-options "-fconcepts-ts" }
+// { dg-additional-options "-fconcepts" }
 
 struct A {
   template <class T>
@@ -8,13 +8,12 @@ struct A {
   }
 };
 
-template <class X> concept bool C() {
-  return requires {
+template <class X> concept C =
+  requires {
     &X::operator();
   };
-}
 
 int main() {
-  static_assert(!C<A>());
+  static_assert(!C<A>);
   return 0;
 }

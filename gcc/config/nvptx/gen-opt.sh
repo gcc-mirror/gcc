@@ -38,12 +38,24 @@ echo
 
 . $gen_copyright_sh opt
 
+# Not emitting the following here (in addition to having it in 'nvptx.opt'), as
+# we'll otherwise run into:
+# 
+#     gtyp-input.list:10: file [...]/gcc/config/nvptx/nvptx-opts.h specified more than once for language (all)
+#     make[2]: *** [Makefile:2981: s-gtype] Error 1
+: ||
+cat <<EOF
+
+HeaderInclude
+config/nvptx/nvptx-opts.h
+EOF
+
 # Separator.
 echo
 
 cat <<EOF
 Enum
-Name(ptx_isa) Type(int)
+Name(ptx_isa) Type(enum ptx_isa)
 Known PTX ISA target architectures (for use with the -misa= option):
 EOF
 

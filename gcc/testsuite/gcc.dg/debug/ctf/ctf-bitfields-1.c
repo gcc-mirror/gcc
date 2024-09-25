@@ -3,7 +3,7 @@
    In this testcase, two slices are expected - one for enum and the other for
    int.  CTF slices are unnamed records.  */
    
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 
 /* { dg-final { scan-assembler-times "\[\t \]0x2\[\t \]+\[^\n\]*cts_bits" 1 } } */

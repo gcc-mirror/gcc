@@ -24,6 +24,16 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 #include "gm2-libs-host.h"
 
+#ifdef MC_M2
+#include "GSysExceptions.h"
+#define DECL_PROC_T(X) SysExceptions_PROCEXCEPTION X
+#define PROC_FUNC(X) X.proc
+#else
+#define DECL_PROC_T(X) void (*X) (void *)
+#define PROC_FUNC(X) X
+#endif
+
+#undef EXTERN
 #if defined(__cplusplus)
 #define EXTERN extern "C"
 #else
@@ -68,13 +78,11 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #define SIGSYS 31      /* Bad system call.  */
 #define SIGUNUSED 31
 
-
     (indexException,     rangeException,         caseSelectException,  invalidLocation,
      functionException,  wholeValueException,    wholeDivException,    realValueException,
      realDivException,   complexValueException,  complexDivException,  protException,
      sysException,       coException,            exException
     );
-
 #endif
 
 /* wholeDivException and realDivException are caught by SIGFPE
@@ -105,6 +113,7 @@ static void (*protectionProc) (void *);
 static void (*systemProc) (void *);
 static void (*coroutineProc) (void *);
 static void (*exceptionProc) (void *);
+
 
 static void
 sigbusDespatcher (int signum, siginfo_t *info, void *ucontext)
@@ -159,32 +168,39 @@ sigfpeDespatcher (int signum, siginfo_t *info, void *ucontext)
 
 EXTERN
 void
-SysExceptions_InitExceptionHandlers (
-    void (*indexf) (void *), void (*range) (void *), void (*casef) (void *),
-    void (*invalidloc) (void *), void (*function) (void *),
-    void (*wholevalue) (void *), void (*wholediv) (void *),
-    void (*realvalue) (void *), void (*realdiv) (void *),
-    void (*complexvalue) (void *), void (*complexdiv) (void *),
-    void (*protection) (void *), void (*systemf) (void *),
-    void (*coroutine) (void *), void (*exception) (void *))
+SysExceptions_InitExceptionHandlers (DECL_PROC_T(indexf),
+				     DECL_PROC_T(range),
+				     DECL_PROC_T(casef),
+				     DECL_PROC_T(invalidloc),
+				     DECL_PROC_T(function),
+				     DECL_PROC_T(wholevalue),
+				     DECL_PROC_T(wholediv),
+				     DECL_PROC_T(realvalue),
+				     DECL_PROC_T(realdiv),
+				     DECL_PROC_T(complexvalue),
+				     DECL_PROC_T(complexdiv),
+				     DECL_PROC_T(protection),
+				     DECL_PROC_T(systemf),
+				     DECL_PROC_T(coroutine),
+				     DECL_PROC_T(exception))
 {
   struct sigaction old;
 
-  indexProc = indexf;
-  rangeProc = range;
-  caseProc = casef;
-  invalidlocProc = invalidloc;
-  functionProc = function;
-  wholevalueProc = wholevalue;
-  wholedivProc = wholediv;
-  realvalueProc = realvalue;
-  realdivProc = realdiv;
-  complexvalueProc = complexvalue;
-  complexdivProc = complexdiv;
-  protectionProc = protection;
-  systemProc = systemf;
-  coroutineProc = coroutine;
-  exceptionProc = exception;
+  indexProc = PROC_FUNC (indexf);
+  rangeProc = PROC_FUNC (range);
+  caseProc = PROC_FUNC (casef);
+  invalidlocProc = PROC_FUNC (invalidloc);
+  functionProc = PROC_FUNC (function);
+  wholevalueProc = PROC_FUNC (wholevalue);
+  wholedivProc = PROC_FUNC (wholediv);
+  realvalueProc = PROC_FUNC (realvalue);
+  realdivProc = PROC_FUNC (realdiv);
+  complexvalueProc = PROC_FUNC (complexvalue);
+  complexdivProc = PROC_FUNC (complexdiv);
+  protectionProc = PROC_FUNC (protection);
+  systemProc = PROC_FUNC (systemf);
+  coroutineProc = PROC_FUNC (coroutine);
+  exceptionProc = PROC_FUNC (exception);
 
   sigbus.sa_sigaction = sigbusDespatcher;
   sigbus.sa_flags = (SA_SIGINFO);
@@ -211,13 +227,21 @@ SysExceptions_InitExceptionHandlers (
 #else
 EXTERN
 void
-SysExceptions_InitExceptionHandlers (void *indexf, void *range, void *casef,
-                                     void *invalidloc, void *function,
-                                     void *wholevalue, void *wholediv,
-                                     void *realvalue, void *realdiv,
-                                     void *complexvalue, void *complexdiv,
-                                     void *protection, void *systemf,
-                                     void *coroutine, void *exception)
+SysExceptions_InitExceptionHandlers (DECL_PROC_T(indexf),
+				     DECL_PROC_T(range),
+				     DECL_PROC_T(casef),
+				     DECL_PROC_T(invalidloc),
+				     DECL_PROC_T(function),
+				     DECL_PROC_T(wholevalue),
+				     DECL_PROC_T(wholediv),
+				     DECL_PROC_T(realvalue),
+				     DECL_PROC_T(realdiv),
+				     DECL_PROC_T(complexvalue),
+				     DECL_PROC_T(complexdiv),
+				     DECL_PROC_T(protection),
+				     DECL_PROC_T(systemf),
+				     DECL_PROC_T(coroutine),
+				     DECL_PROC_T(exception))
 {
 }
 #endif
@@ -226,12 +250,12 @@ SysExceptions_InitExceptionHandlers (void *indexf, void *range, void *casef,
 
 EXTERN
 void
-_M2_SysExceptions_init (void)
+_M2_SysExceptions_init (int argc, char *argv[], char *envp[])
 {
 }
 
 EXTERN
 void
-_M2_SysExceptions_fini (void)
+_M2_SysExceptions_fini (int argc, char *argv[], char *envp[])
 {
 }

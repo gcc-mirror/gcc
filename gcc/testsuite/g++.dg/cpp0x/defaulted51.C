@@ -4,7 +4,7 @@
 template<int> struct A
 {
   A();
-  A(volatile A&) = default;  // { dg-error "defaulted" }
+  A(volatile A&) = default;  // { dg-error "defaulted" "" { target c++17_down } }
 };
 
 struct B

@@ -35,10 +35,11 @@ along with GCC; see the file COPYING3.  If not see
 struct clobber_pat
 {
   struct clobber_ent *insns;
-  rtx pattern;
+  rtvec pattern;
   int first_clobber;
   struct clobber_pat *next;
   int has_hard_reg;
+  rtx_code code;
 } *clobber_list;
 
 /* Records one insn that uses the clobber list.  */
@@ -337,19 +338,25 @@ gen_insn (md_rtx_info *info, FILE *file)
   if (XVEC (insn, 1))
     {
       int has_hard_reg = 0;
+      rtvec pattern = XVEC (insn, 1);
 
-      for (i = XVECLEN (insn, 1) - 1; i > 0; i--)
+      /* Look though an explicit parallel. */
+      if (GET_NUM_ELEM (pattern) == 1
+	  && GET_CODE (RTVEC_ELT (pattern, 0)) == PARALLEL)
+	pattern = XVEC (RTVEC_ELT (pattern, 0), 0);
+
+      for (i = GET_NUM_ELEM (pattern) - 1; i > 0; i--)
 	{
-	  if (GET_CODE (XVECEXP (insn, 1, i)) != CLOBBER)
+	  if (GET_CODE (RTVEC_ELT (pattern, i)) != CLOBBER)
 	    break;
 
-	  if (REG_P (XEXP (XVECEXP (insn, 1, i), 0)))
+	  if (REG_P (XEXP (RTVEC_ELT (pattern, i), 0)))
 	    has_hard_reg = 1;
-	  else if (GET_CODE (XEXP (XVECEXP (insn, 1, i), 0)) != MATCH_SCRATCH)
+	  else if (GET_CODE (XEXP (RTVEC_ELT (pattern, i), 0)) != MATCH_SCRATCH)
 	    break;
 	}
 
-      if (i != XVECLEN (insn, 1) - 1)
+      if (i != GET_NUM_ELEM (pattern) - 1)
 	{
 	  struct clobber_pat *p;
 	  struct clobber_ent *link = XNEW (struct clobber_ent);
@@ -363,13 +370,13 @@ gen_insn (md_rtx_info *info, FILE *file)
 	  for (p = clobber_list; p; p = p->next)
 	    {
 	      if (p->first_clobber != i + 1
-		  || XVECLEN (p->pattern, 1) != XVECLEN (insn, 1))
+		  || GET_NUM_ELEM (p->pattern) != GET_NUM_ELEM (pattern))
 		continue;
 
-	      for (j = i + 1; j < XVECLEN (insn, 1); j++)
+	      for (j = i + 1; j < GET_NUM_ELEM (pattern); j++)
 		{
-		  rtx old_rtx = XEXP (XVECEXP (p->pattern, 1, j), 0);
-		  rtx new_rtx = XEXP (XVECEXP (insn, 1, j), 0);
+		  rtx old_rtx = XEXP (RTVEC_ELT (p->pattern, j), 0);
+		  rtx new_rtx = XEXP (RTVEC_ELT (pattern, j), 0);
 
 		  /* OLD and NEW_INSN are the same if both are to be a SCRATCH
 		     of the same mode,
@@ -383,7 +390,7 @@ gen_insn (md_rtx_info *info, FILE *file)
 		    break;
 		}
 
-	      if (j == XVECLEN (insn, 1))
+	      if (j == GET_NUM_ELEM (pattern))
 		break;
 	    }
 
@@ -392,10 +399,11 @@ gen_insn (md_rtx_info *info, FILE *file)
 	      p = XNEW (struct clobber_pat);
 
 	      p->insns = 0;
-	      p->pattern = insn;
+	      p->pattern = pattern;
 	      p->first_clobber = i + 1;
 	      p->next = clobber_list;
 	      p->has_hard_reg = has_hard_reg;
+	      p->code = GET_CODE (insn);
 	      clobber_list = p;
 	    }
 
@@ -662,11 +670,11 @@ output_add_clobbers (md_rtx_info *info, FILE *file)
       for (ent = clobber->insns; ent; ent = ent->next)
 	fprintf (file, "    case %d:\n", ent->code_number);
 
-      for (i = clobber->first_clobber; i < XVECLEN (clobber->pattern, 1); i++)
+      for (i = clobber->first_clobber; i < GET_NUM_ELEM (clobber->pattern); i++)
 	{
 	  fprintf (file, "      XVECEXP (pattern, 0, %d) = ", i);
-	  gen_exp (XVECEXP (clobber->pattern, 1, i),
-		   GET_CODE (clobber->pattern), NULL, info, file);
+	  gen_exp (RTVEC_ELT (clobber->pattern, i),
+		   clobber->code, NULL, info, file);
 	  fprintf (file, ";\n");
 	}
 

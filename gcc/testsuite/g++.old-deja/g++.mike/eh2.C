@@ -1,5 +1,6 @@
 // { dg-do run { xfail sparc64-*-elf arm-*-pe } }
 // { dg-options "-fexceptions" }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 
 #include <cstdlib>
 #include <iostream>

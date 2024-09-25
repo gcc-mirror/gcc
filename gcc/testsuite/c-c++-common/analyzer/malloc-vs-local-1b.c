@@ -1,4 +1,5 @@
 /* { dg-additional-options "-fanalyzer-call-summaries" } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
 
 #include <stdlib.h>
 #include "analyzer-decls.h"

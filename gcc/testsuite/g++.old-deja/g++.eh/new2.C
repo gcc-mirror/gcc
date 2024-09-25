@@ -3,6 +3,7 @@
 // Avoid use of none-overridable new/delete operators in shared
 // { dg-options "-static" { target *-*-mingw* } }
 // { dg-xfail-run-if "AIX operator new" { powerpc-ibm-aix* } }
+/* { dg-skip-if "requires hosted libstdc++ for cstdlib malloc" { ! hostedlib } } */
 
 #include <cstddef>
 #include <cstdlib>

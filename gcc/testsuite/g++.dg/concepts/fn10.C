@@ -1,5 +1,5 @@
-// { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts-ts" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fconcepts" }
 
 // Test that constraint satisfaction checks work even when
 // processing template declarations.
@@ -26,10 +26,7 @@ auto end(T const& t) -> decltype(t.end()) { return t.end(); }
 
 
 template <typename T>
-  concept bool Float()
-  {
-    return __is_same_as( T, float );
-  }
+  concept Float = __is_same_as( T, float );
 
 template <typename T>
   constexpr decltype(auto) project( T t )
@@ -38,12 +35,9 @@ template <typename T>
   }
 
 template <typename T>
-  concept bool Concept()
-  {
-    return requires( T t ) { // { dg-message "in requirements" }
-      requires Float<decltype( project(t) )>();
+  concept Concept = requires( T t ) { // { dg-message "in requirements" }
+      requires Float<decltype( project(t) )>;
     };
-  }
 
 template <Concept E, Concept F>
   constexpr decltype(auto) operator<<( E&& e, F&& f ) {}
@@ -59,13 +53,11 @@ template <Concept T>
 
 
 template <typename R>
-concept bool Range()
-{
-  return requires( R r ) {
+concept Range =
+  requires( R r ) {
     requires __is_same_as(
       decltype(std::begin(r)), decltype(std::end(r)) );
   };
-}
 
 struct A
 {

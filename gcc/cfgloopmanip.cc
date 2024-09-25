@@ -39,7 +39,7 @@ static void loop_redirect_edge (edge, basic_block);
 static void remove_bbs (basic_block *, int);
 static bool rpe_enum_p (const_basic_block, const void *);
 static int find_path (edge, basic_block **);
-static void fix_loop_placements (class loop *, bool *);
+static void fix_loop_placements (class loop *, bool *, bitmap);
 static bool fix_bb_placement (basic_block);
 static void fix_bb_placements (basic_block, bool *, bitmap);
 
@@ -415,7 +415,8 @@ remove_path (edge e, bool *irred_invalidated,
   /* Fix placements of basic blocks inside loops and the placement of
      loops in the loop tree.  */
   fix_bb_placements (from, irred_invalidated, loop_closed_ssa_invalidated);
-  fix_loop_placements (from->loop_father, irred_invalidated);
+  fix_loop_placements (from->loop_father, irred_invalidated,
+		       loop_closed_ssa_invalidated);
 
   if (local_irred_invalidated
       && loops_state_satisfies_p (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS))
@@ -1048,7 +1049,8 @@ unloop (class loop *loop, bool *irred_invalidated,
    invalidate the information about irreducible regions.  */
 
 static void
-fix_loop_placements (class loop *loop, bool *irred_invalidated)
+fix_loop_placements (class loop *loop, bool *irred_invalidated,
+		     bitmap loop_closed_ssa_invalidated)
 {
   class loop *outer;
 
@@ -1064,7 +1066,7 @@ fix_loop_placements (class loop *loop, bool *irred_invalidated)
 	 to the loop.  So call fix_bb_placements to fix up the placement
 	 of the preheader and (possibly) of its predecessors.  */
       fix_bb_placements (loop_preheader_edge (loop)->src,
-			 irred_invalidated, NULL);
+			 irred_invalidated, loop_closed_ssa_invalidated);
       loop = outer;
     }
 }
