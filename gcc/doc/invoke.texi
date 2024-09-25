@@ -17144,6 +17144,9 @@ in the outgoing range calculator.
 @item relation-block-limit
 Maximum number of relations the oracle will register in a basic block.
 
+@item transitive-relations-work-bound
+Work bound when discovering transitive relations from existing relations.
+
 @item min-pagesize
 Minimum page size for warning purposes.
 

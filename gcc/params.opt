@@ -924,6 +924,10 @@ outgoing range calculator.
 Common Joined UInteger Var(param_relation_block_limit) Init(200) IntegerRange(0, 9999) Param Optimization
 Maximum number of relations the oracle will register in a basic block.
 
+-param=transitive-relations-work-bound=
+Common Joined UInteger Var(param_transitive_relations_work_bound) Init(256) IntegerRange(0, 9999) Param Optimization
+Work bound when discovering transitive relations from existing relations.
+
 -param=rpo-vn-max-loop-depth=
 Common Joined UInteger Var(param_rpo_vn_max_loop_depth) Init(7) IntegerRange(2, 65536) Param Optimization
 Maximum depth of a loop nest to fully value-number optimistically.
