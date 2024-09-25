@@ -8182,6 +8182,31 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (rdiv @0 (exps:s @1))
     (mult @0 (exps (negate @1)))))
 
+ (if (! HONOR_SIGN_DEPENDENT_ROUNDING (type)
+      && ! HONOR_NANS (type) && ! HONOR_INFINITIES (type)
+      && ! flag_trapping_math
+      && ! flag_errno_math)
+  (for logs (LOG LOG2 LOG10)
+   /* Simplify logN(1.0/a) into -logN(a).  */
+   (simplify
+    (logs (rdiv:s real_onep@0 @1))
+     (negate (logs @1)))
+
+   /* Simplify logN(C/a) into logN(C)-logN(a).  */
+   (simplify
+    (logs (rdiv:s REAL_CST@0 @1))
+     (minus (logs! @0) (logs @1)))
+
+   /* Simplify logN(a)+logN(b) into logN(a*b).  */
+   (simplify
+    (plus (logs:s @0) (logs:s @1))
+     (logs (mult @0 @1)))
+
+   /* Simplify logN(a)-logN(b) into logN(a/b).  */
+   (simplify
+    (minus (logs:s @0) (logs:s @1))
+     (logs (rdiv @0 @1)))))
+
  (for logs (LOG LOG2 LOG10 LOG10)
       exps (EXP EXP2 EXP10 POW10)
   /* logN(expN(x)) -> x.  */
